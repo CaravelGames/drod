@@ -1,0 +1,145 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1138\cocoasubrtf510
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 LucidaGrande;\f2\froman\fcharset0 Times-Roman;
+\f3\fnil\fcharset0 Menlo-Regular;\f4\fnil\fcharset0 TrebuchetMS;\f5\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red38\green38\blue38;\red219\green230\blue240;\red234\green234\blue234;
+\red46\green40\blue40;\red245\green245\blue245;\red248\green189\blue255;}
+\margl1440\margr1440\vieww10800\viewh15040\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 System setup process:\
+\
+\
+Updated OS to 10.7.3 (now 10.7.5+)\
+Install XCode 4.3.2 (4.6+ for SDL2)\
+	* Auto-install components on startup\
+	* Under Preferences -> Downloads -> Install "Command Line Tools"\
+		-> gcc is 4.2.1\
+Get rarosx-4.1.1.tar from rarlab.com.  Install unrar to /usr/local/bin\
+----\
+\
+Then checkout Caravel repos from Bitbucket.\
+* Set up symbolic links to BackEndLib and FrontEndLib in the top dir within each game module\
+	e.g., "ln -s ../backendlib BackEndLib"\
+\
+* Then download and untag TPLs into a separate directory for building the libs, e.g. "~/libs"\
+\
+* Make and install third-party libs as follows:\
+\
+export MACOSX_DEPLOYMENT_TARGET=10.4\
+\
+metakit-2.4.9.7:\
+	view README for build steps on UNIX (MAC)\
+	i.e. cd builds && ../unix/configure && make && sudo make install\
+\
+freetype-2.4.9:\
+	default: ./configure && make && sudo make install\
+\
+expat-2.0.1:\
+	(default)		\
+\
+jpeg-6b:\
+	(default)\
+	Then copy libjpeg.a to /usr/local/lib\
+libpng-1.5.9:\
+	(default)\
+libogg-1.3.0:\
+	(default)\
+libvorbis-1.3.3:\
+	(default)\
+\
+SDL_1.2.15:\
+	(default)\
+SDL_ttf-2.0.11:\
+	(default)\
+SDL_mixer-1.2.12:\
+	./configure 
+\f1\fs26 \cf2 \cb3 --enable-music-ogg=yes 
+\f2\fs32 \cf0 \cb1 --disable-music-ogg-shared
+\f1\fs26 \cf2 \cb3 \
+	so that the Makefile is generated with:\
+		-DOGG_MUSIC and has hard .dylib dependencies generated
+\f0\fs24 \cf0 \cb1 \
+\
+libtheora-1.1.1:\
+	(default)\
+\
+curl-7.21.4:\
+	(default)\
+\
+*zlib:\
+	sudo cp /usr/lib/libz.1.dylib /usr/local/lib/\
+\
+-----------\
+Building SDL2 libraries:\
+\
+SDL2-2.0.4:\
+\
+mkdir build\
+cd build\
+CC=$PWD/../build-scripts/gcc-fat.sh ../configure\
+make\
+\
+# NOTE: With my old version of XCode and developer libraries, building doesn't work without some straightforward down-porting:\
+1. Comment out two #if sections that result in compile error\
+2. Replace @autoreleasepool with older handling\
+        http://stackoverflow.com/questions/7926843/a-fail-concerning-the-expression-autoreleasepool\
+\
+SDL2_ttf-2.0.13:\
+	(default)\
+SDL2_mixer-2.0.1:\
+	(default)\
+\
+-----------\
+32-bit library building (obsolete):\
+\
+TRY:\
+\pard\pardeftab720
+
+\f3\fs28 \cf0 \cb4 ./configure "CFLAGS=-arch i386" "CXXFLAGS=-arch i386" "LDFLAGS=-arch i386" --prefix=/usr/local/32bit
+\f0\fs24 \cb1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+\cf0 \
+metakit:\
+gets stuck linking in middle of make process, so do\
+g++ -arch i386 -dynamiclib -flat_namespace -undefined suppress -o libmk4.dylib column.o custom.o derived.o fileio.o field.o format.o handler.o persist.o remap.o std.o store.o string.o table.o univ.o view.o viewx.o -lpthread\
+\'85then continue with "make"\
+\
+\pard\pardeftab720
+
+\f4\fs28 \cf5 SDL_mixer:\
+*** needs libvorbis* temporarily placed I'm /usr/local/lib in order for configure script to find them.  Consider doing:\
+	sudo ln -s 32bit/lib lib
+\f3 \cf0 \cb4 \
+
+\f4 \cf5 \cb1 \
+\pard\pardeftab720
+
+\f3 \cf0 \cb4 ./configure "CFLAGS=-arch i386" "CXXFLAGS=-arch i386" "LDFLAGS=-arch i386" --prefix=/usr/local/32bit 
+\f1\fs26 \cf2 \cb3 --enable-music-ogg=yes 
+\f2\fs32 \cf0 \cb1 --disable-music-ogg-shared\
+\pard\pardeftab720
+
+\f4\fs28 \cf5 \
+* The make process stalls at a certain point.  To get past, add "-arch i386" to the following two lines in the Makefile:\
+\
+\pard\pardeftab720
+
+\f5\fs26 \cf0 \cb6 $(objects)/\cb7 playwave\cb6 $(EXE): $(objects)/playwave.lo $(objects)/$(TARGET)\
+	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playwave.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) -arch i386\
+\
+$(objects)/playmus$(EXE): $(objects)/playmus.lo $(objects)/$(TARGET)\
+	$(LIBTOOL) --mode=link $(CC) -o $@ $(objects)/playmus.lo $(SDL_CFLAGS) $(SDL_LIBS) $(objects)/$(TARGET) -arch i386
+\f4\fs28 \cf5 \cb1 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural
+
+\f0\fs24 \cf0 \
+libtheora:\
+\pard\pardeftab720
+
+\f3\fs28 \cf0 \cb4 ./configure "CFLAGS=-arch i386" "CXXFLAGS=-arch i386" "LDFLAGS=-arch i386" --prefix=/usr/local/32bit --with-ogg=/usr/local/32bit --with-vorbis=/usr/local/32bit\
+\
+In Master/Darwin:\
+* Config: Change ARCHITECTURE var to 'i386'\
+* buildcmd.sh: Change architecture to '32bit'\
+}

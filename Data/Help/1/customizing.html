@@ -1,0 +1,147 @@
+<html>
+<head>
+  <title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg" />
+<hr />
+<h3><u>Customizing your DROD installation</u></h3>
+<p><a href="#graphics">Graphics</a><br />
+<a href="#sound">Sound effects</a><br />
+<a href="#music">Music</a><br />
+<a href="#other">Other options</a><br />
+<a href="#console">Using the console</a></p>
+<p>Your local DROD installation may be customized/modded by creating the appropriate
+files and altering the game's <i>Data/drod.ini</i> file in the following ways:</p>
+<br />
+
+<a name="graphics"><b><u>Graphics</u></b></a><br />
+<p>You may show new or different graphics in the game by editing the entries
+listed under the <b>[Graphics]</b> section.<br />
+Selectively override the in-game tile sprites by adding:</p>
+<p><b><a name="general">General</a>=&lt;base name of my tile files&gt;</b></p>
+<p>Add your own room styles by adding new semicolon-separated entries to the following line:</p>
+<p><b><a name="style">Style</a>=&lt;my style name&gt;</b></p>
+<p>and adding a separate line that says</p>
+<p><b>&lt;my style name&gt;=&lt;base name of my style's graphics files&gt;</b></p>
+<p><a name="sky">New</a> or existing sky images for this style may be designated by adding the line:</p>
+<p><b>&lt;my style name&gt; Skies=&lt;name of my style's sky files for each light level&gt;</b></p>
+<p><a name="clock"><b>Clock</b></a> specifies the base name(s) of image files used to display the threat clock (turn counter).
+&lt;basename&gt;1 is the image file used for displaying half-turn increments and &lt;basename&gt;2 displays whole-turn increments.
+The threat clock graphics may be substituted or augmented by modifying this entry.
+If multiple filenames are indicated, clicking the clock image in-game will change
+to the next set of clock images.</p>
+<p>Which images are used for existing styles may be likewise changed.<br />
+Image files in the game's <i>Data/Bitmaps</i> subdirectory may also be modified or
+replaced for personal use.</p>
+<p><a name="supportedimg">PNG</a>, JPG, and BMP image file formats are supported.</p>
+<br />
+
+<a name="sound"><b><u>Sound effects</u></b></a><br />
+<p>Play different sound effects by modifying the entries in the <b>[Waves]</b> section.<br />
+You may either replace the stock sound effects with your own sound file names
+or add additional sound effects to a line (semicolon-separated).</p>
+<p><a name="supportedsnd">Ogg</a> Vorbis and Wave sound file formats are supported.</p>
+<br />
+
+<a name="music"><b><u>Music</u></b></a><br />
+<p>Play different songs in-game by modifying the entries in the <b>[Songs]</b> section.</p>
+<p>Ogg Vorbis and Wave sound file formats are supported.</p>
+<br />
+
+<a name="other"><b><u>Other options</u></b></a><br />
+<p>The <b>[Customizing]</b> section:<br />
+<a name="alwaysfullblit"><b>AlwaysFullBlit</b></a>: By default, DROD will selectively perform partial screen refreshes when this is heuristically determined to be faster
+than a full screen refresh.  Set this parameter to 1 to always perform a full screen
+refresh every video frame.<br />
+Set <a name="autologin"><b>AutoLogin=1</b></a> to have the game skip the player login screen and
+automatically select the player profile used last game session.
+Player selection is skipped by default when only one player profile exists.<br />
+<a name="crossfade"><b>CrossfadeDuration</b></a> defines screen transition times (maximum = 1000 milliseconds).<br />
+Set <a name="exportspeech"><b>ExportSpeech=1</b></a> to have the game prompt you to export the speech
+script for the hold to a separate HTML file when you export a hold.  Use this
+file as a convenience in externally preparing scripted character dialogue.<br />
+Set <a name="FullScoreUpload"><b>FullScoreUpload=1</b></a> to have the game
+resend all your victory scores to CaravelNet,
+including scores that may have already been sent,
+the next you click "Upload My Scores" on the Player Settings Screen.  Scores
+are validated independently on the server, and your online results will be updated
+as soon as your scores have been processed.
+Suggestion: If you are missing scores for rooms only from a specific hold, click
+the "Upload Hold Scores" button on the Change Location screen to resend all
+victory demo scores for that hold only.<br />
+Set <a name="logvars"><b>LogVars=1</b></a> to output a log of the current state of hold variables
+while playing any hold for which your player has edit permissions.<br />
+Set <a name="maxundodelay"><b>MaxDelayForUndo=&lt;# milliseconds&gt;</b></a> to change the maximum time allowed
+to rewind moves in-game.  Consider reducing this value if the delay experienced
+when pressing R to rewind to a checkpoint or Backspace to undo the last move
+is too long for your taste.  Making this number smaller will enforce faster rewinds
+but may also take up more memory while playing a room to store more detailed game
+state information.  Alternately, making the number larger will allow more delayed
+rewinds for room sessions with many moves but will avoid using extra memory
+for storing extra game state information.  A very large value is equivalent to
+how the DROD engine operated before version 3.0.<br />
+Set <a name="quickexport"><b>QuickPlayerExport=1</b></a> to have the game
+provide you a "quick" option when you export a player profile.  A quick export
+includes only level and room start save positions to facilitate a smaller
+file size and fast file import later.
+All general room progress is retained, but demos and checkpoint saves are skipped.<br />
+<a name="transitionspeed"><b>RoomTransitionSpeed</b></a> is the time spent
+(in milliseconds) panning and adjusting the light setting when moving between rooms.
+Change this value to alter the duration of room pan and lighting crossfade.  Set
+the value to 0 to disable these effects completely.<br/>
+Set <a name="validatesaves"><b>ValidateSavesOnImport</b></a> to 0 to skip verifying the integrity of game
+move sequences for saved games and demos when a player file is imported or a
+hold is upgraded.  This can speed up import significantly but saved games and demos
+recorded in older versions of imported holds may appear broken when viewed.<br />
+<a name="windib"><b>Windib</b></a>: By default, DROD uses Windib drivers under Windows.
+Set this parameter to 0 to use DirectX drivers instead.</p>
+<p>
+The <a name="localization"><b>[Localization]</b></a> section:<br />
+Set <a name="keyboard"><b>Keyboard=1</b></a> to have new player profiles use the default Laptop
+movement key settings.  A value of <b>0</b> has new player profiles use
+the default Desktop movement key settings.<br />
+Change <a name="language"><b>Language=Eng</b></a> to a different
+<a href="http://www.ethnologue.com/codes/LanguageCodes.tab">three-letter code</a>
+to have the game play in a different language, if supported.<br />
+Set <a name="exporttext"><b>ExportText=1</b></a> to have the game prompt you to export the entire text of
+a hold for hold localization when exporting a hold.
+Add additional entries to this file in other languages alongside
+the native texts for lines requiring translation, then re-import this file to add
+support for this new language(s) to your hold.<br />
+ASCII/UTF-8 text file formats are supported.</p>
+
+<a name="enginelocalization"><b>Game engine localization.</b></a><br />
+You may localize your DROD installation by following these steps:<br />
+1. Run DROD with the command line argument "-exportTexts &lt;filename&gt;" to save
+all main game texts (i.e., excluding hold-specific text) for the current
+language to the file you specify.  The file is output in ASCII/UTF-8 format
+with specific syntax to identify messages by number.<br />
+2. Translate texts to a new language, leaving the number codes alone.
+You may delete any codes and texts not requiring translation.<br />
+3. Change the Language setting in drod.ini to the code for the translated language.<br />
+4. Run DROD with the command line argument "-importTexts &lt;filename&gt;" to
+add or update the specified texts for the active language setting.<br />
+To help someone else localize their DROD installation, share your translation file
+and have them perform steps 3 and 4.<br />
+<br />
+
+<a name="console"><b><u>Using the console</u></b></a><br />
+<p>Press Enter while playing or in the room editor to bring up the chat/console dialog.
+You may use the console to configure INI settings for DROD while you play.
+Type "~SectionName:Setting" to view the current value for a setting.
+Type "~SectionName:Setting=&lt;value&gt;" to update a setting.
+The value you specify will take effect the next time the setting is queried.
+Type "~help" to review this information in-game.</p>
+<br />
+
+<p><a name="redistibuting">Game</a> media files created or owned by Caravel Games may not be redistributed
+without written permission from Caravel Games.</p>
+<p>Further information may be found on the
+<a href="http://forum.caravelgames.com/viewboard.php?BoardID=5">Development Board</a>
+of the
+<a href="http://forum.caravelgames.com">CaravelNet Forum</a>.</p>
+<hr />
+<a href="contents.html">Contents</a>
+</body>
+</html>

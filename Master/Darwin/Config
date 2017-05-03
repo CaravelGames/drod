@@ -1,0 +1,613 @@
+#######################################
+### DROD Linux Configuration: Index ###
+#######################################
+# $Header: /home/cvsroot/DROD30/Master/Darwin/Config,v 1.11 2007/03/02 16:06:35 mrimer Exp $
+
+# <0>  Requirements
+# <1>  Install setup
+# <2>  Compiler flags
+# <3>  Library locations and flags
+# <3.5> Include flags setup
+# <4>  Linker flags setup
+# <5>  Link type setup
+# <6>  System config
+# <7>  Misc build vars
+# <8>  Program names
+
+#########################
+### <0>  Requirements ###
+#########################
+
+# Compile-time requirements:
+#
+#   * GNU make (or compatible)
+#   * g++ 3 or 4 (wmarkham uses Apple's 3.3 20030304, from the current XCode update; system headers and libraries are from the same, on OS X 10.3.9)
+#                (mrimer is building on 4.01 on OS X 10.5+)
+#   * if using g++ 3.x, libstdc++-v3 with pod_char_traits.h (see below)
+#   * Metakit 2.4.9.5+ (earlier may work; I couldn't get 2.4.9.3 to work, though.)
+#                 "../unix/configure" from the builds directory, then
+#                 "make libmk4.a; ranlib libmk4.a" from their builds directory, in order to build the static library
+#
+# Run-time (and compile-time) requirements:
+#
+#   * OS X libcurl, Cocoa, OpenGL, and System libraries.  The SDK for OS X 10.2.8 does not have curl headers
+#     that are compatible with our code.  10.3.0 works.
+#   * Freetype 2.1.9 (2.1.4 or better probably works.  I have used fink's freetype2-dev 2.1.3-22, although there may be some problems with it at runtime.)
+#   * SDL2 2.0.3+ (NOT 1.2.8, >=1.2.9 should be ok)
+#   * SDL2_ttf 2.0.13+
+#   * fmod, or SDL2_mixer 2.0.1+ with libogg + libvorbis
+#   * Expat 2.0.0+ (fink's 1.95.8-1 works; 1.95.7 also works, but with compile-time warnings)
+#   * libpng 1.2.12+ (The fink libpng3 1:1.2.8-1 works for me)
+#   * libjpeg (fink's libjpeg 6b-16 works for me)
+#   * zlib 1.2.3+ (1.1.4 is Apple's included with OS X 10.3.9)
+#   * libogg 1.1.3+, libvorbis 1.1.2+, libtheora 1.0alpha7+
+#   * jsoncpp 0.6.0-rc2
+#
+# (most of) These are included in the binary distribution. Lower versions might work, but
+# are untested. (Lower versions of Freetype/SDL2_ttf are known to have problems
+# with DROD, so if you decide to be adventurous, at least get those.)
+#
+# pod_char_traits.h:
+#
+# If your distro of c++ has pod_char_traits.h, then you don't need to do anything special.
+# Otherwise, you need to download a copy of it to compile WCHAR types.
+# To get libstdc++-v3's pod_char_traits.h, you have three options:
+#
+#   * To see whether you already have it: Get the other stuff, edit this
+#     config file to your liking, and run make. If the compile goes past
+#     BackEndLib without complaining about missing pod_char_traits.h,
+#     congratulations!
+#
+#   * Otherwise, if you have CVS installed, do this:
+#
+#     $ cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc login
+#     Logging in to :pserver:anoncvs@subversions.gnu.org:2401/cvsroot/gcc
+#     CVS password: <press enter>
+#     $ cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/gcc checkout
+#         gcc/libstdc++-v3/include/ext/pod_char_traits.h
+#
+#   * Otherwise, get it from one of these CVS web frontends:
+#
+#     http://savannah.gnu.org/cgi-bin/viewcvs/gcc/gcc/libstdc++-v3/include/ext/pod_char_traits.h
+#     http://gcc.gnu.org/cgi-bin/cvsweb.cgi/gcc/libstdc++-v3/include/ext/pod_char_traits.h
+#
+# If you got it from CVS, create a new directory called 'ext' in the top source
+# directory (e.g. .../DROD30), and place pod_char_traits.h in there.
+#
+
+##########################
+### <1>  Install setup ###
+##########################
+
+# The first time DROD is run by a new user, it searches for its resource and
+# data files. The result of this search is saved in
+# $(HOME)/.caravel/drod/DataPath.txt. If you want to install DROD resource or
+# data files into a path not listed in the respective search path below, either
+# place the data in the same directory as DROD (the 'one' alternative), or
+# place DataPath.txt somewhere in the data search path and edit it to point to
+# your resource and data files. The DataPath.txt format is:
+# /path/to/data;/path/to/resource;
+
+# For resource files (read-only data), the search path is:
+# (for each of these, a subdir 'Data' is also searched)
+#   <app path>
+#   /usr/drod
+#   /usr/share/drod
+#   /usr/share/games/drod
+#   /usr/games/drod
+#   /usr/local/drod
+#   /usr/local/share/drod
+#   /usr/local/share/games/drod
+#   /usr/local/games/drod
+
+# For data files (writable), the search path is:
+# (for each of these, a subdir 'Data' is also searched)
+#   $(HOME)/.caravel/drod
+#   <app path>
+#   /var/drod
+#   /var/games/drod
+#   /var/lib/drod
+#   /var/lib/games/drod
+
+# Installation prefix, handy for sandbox installation / package creation.
+# This is automatically prefixed to all installation paths specified below
+# (don't add this to the paths below, it's added in the makefile).
+# No trailing slash! Empty means root.
+DESTDIR =
+
+# These are the arguments to the install commands used to install the data.
+# The data directory needs to be writable by all users that want to run DROD,
+# with permission to create and delete files.
+
+INST_DAT_DIRS  = -m 0775 -g games
+INST_DAT_FILES = -m 0664 -g games
+INST_RES_DIRS  = -m 0755
+INST_RES_FILES = -m 0644
+INST_BIN_DIRS  = -m 0755
+INST_BIN_FILES = -m 0755
+
+# Convenience variable: Set to 'usr', 'local', 'one', or create your own set.
+INSTALL_TYPE = local
+
+BIN_usr = usr/games
+RES_usr = usr/share/games/drod
+DAT_usr = var/games/drod
+
+BIN_local = usr/local/games
+RES_local = usr/local/share/games/drod
+DAT_local = var/games/drod
+
+# Variable used by 'one'. Anything goes. (This variable is only used here.)
+# To install in currect dir, set to '.'
+prefix  = opt/games/drod
+
+BIN_one = $(prefix)
+RES_one = $(prefix)/Data
+DAT_one = $(prefix)/Data
+
+###########################
+### <2>  Compiler flags ###
+###########################
+
+#PPC_BUILD = 1
+
+ifdef PPC_BUILD
+ARCHITECTURE = ppc
+else
+ARCHITECTURE = x86_64
+#ARCHITECTURE = i386
+endif
+
+CXXFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.5
+LDFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.5
+
+# Common flags (always used)
+CXXFLAGS_common = -W -Wall -g
+
+# DROD/Util/cgi: Custom flags (use env if available)
+ifdef CXXFLAGS
+CXXFLAGS_custom = $(CXXFLAGS)
+CXXFLAGS_steam = $(CXXFLAGS) -DSTEAMBUILD
+else
+CXXFLAGS_custom = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math
+CXXFLAGS_steam = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math -DSTEAMBUILD
+endif
+# DROD/Util/cgi: Release flags
+#CXXFLAGS_release = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math -fprefetch-loop-arrays -fvisibility=hidden
+#CXXFLAGS_release = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math -fvisibility=hidden
+CXXFLAGS_release = -Wno-unused -pipe -O2 -fomit-frame-pointer -ffast-math
+#CXXFLAGS_release = -Wno-unused -pipe -O3 -fomit-frame-pointer -ffast-math
+# DROD: Beta flags
+CXXFLAGS_beta = $(CXXFLAGS_release) -DBETA
+# DROD/Util/cgi: Debug flags
+CXXFLAGS_debug   = -Wno-unused -pipe -ffast-math -ggdb -D_DEBUG
+# DROD/Util/cgi: Profile flags
+CXXFLAGS_profile = $(CXXFLAGS_debug) -pg
+
+#######################################
+### <3> Library locations and flags ###
+#######################################
+
+# Note that for most users, there is little harm in simply putting all
+# of the preprocessor flags into OTHER_INCLUDE and all the linker flags
+# into OTHER_LIBS.  For the sake of ensuring reproducibility, I happen
+# to be particular about having a mechanism to track exactly how each
+# compile-time dependency is being satisfied.
+
+# In this section, FOO_LIBS_DYNAMIC gives the linker flags needed to link
+# against a shared copy of component foo.  The linker will generally
+# fall back on linking to static libraries.
+# By contrast, FOO_LIBS_STATIC means that component foo may be linked
+# statically.  In some cases, this configuration file may fall back on
+# linking to shared libraries.  That means that I have not yet tried
+# statically linking the library.  Linking against a static library may
+# introduce additional dependencies.
+# FOO_BAR_LIBS_STATIC means that component foo is linked statically, as
+# well as its dependencies on component bar.
+
+#TODO:  FOO_BAR_LIBS_STATIC is probably not useful.
+#TODO:  figure out that -dylib_file linker option.
+#TODO:  clean out all of the shortcut paths, so that I really can see
+#       exactly what I am linking against.
+
+ifeq ($(ARCHITECTURE),x86_64)
+	LIBS_ROOT = /usr/local
+else
+	ifdef PPC_BUILD
+		LIBS_ROOT = /usr/local
+	else
+		LIBS_ROOT = /usr/local/32bit
+	endif
+endif
+LIB_INCLUDE_DIR = $(LIBS_ROOT)/include
+LIB_LIB_DIR = $(LIBS_ROOT)/lib
+LIB_BIN_DIR = $(LIBS_ROOT)/bin
+
+CURL_ROOT = $(LIBS_ROOT)
+CURL_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lcurl
+
+# used directly, and also needed for libpng
+ZLIB_ROOT = $(LIBS_ROOT)
+ZLIB_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lz
+
+EXPAT_ROOT = $(LIBS_ROOT)
+EXPAT_INCLUDE = -I$(LIB_INCLUDE_DIR)
+EXPAT_LIBS_STATIC = $(LIB_LIB_DIR)/libexpat.a
+EXPAT_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lexpat
+
+FMOD_ROOT = $(LIBS_ROOT)
+FMOD_INCLUDE = -I$(LIB_INCLUDE_DIR)
+ifdef PPC_BUILD
+FMOD_LIBS_STATIC = $(LIB_LIB_DIR)/libfmod.a
+FMOD_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lfmod
+else
+FMOD_LIBS_STATIC = $(LIB_LIB_DIR)/libfmodx86.a
+FMOD_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lfmodx86
+endif
+
+# (only needed for static SDL2_ttf)
+FREETYPE_ROOT = $(LIBS_ROOT)
+#FREETYPE_LIBS_STATIC = /usr/X11R6/lib/libfreetype.a
+FREETYPE_LIBS_STATIC = $(LIB_LIB_DIR)/libfreetype.a
+FREETYPE_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lfreetype
+
+JPEG_ROOT = $(LIBS_ROOT)
+JPEG_INCLUDE = -I/Users/mrimer/libs/jpeg-6b
+JPEG_LIBS_STATIC = $(LIB_LIB_DIR)/libjpeg.a
+JPEG_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -ljpeg
+
+# (only needed for static vorbis)
+LIBOGG_ROOT = $(LIBS_ROOT)
+OGG_INCLUDE = -I$(LIB_INCLUDE_DIR)
+LIBOGG_LIBS_STATIC = $(LIB_LIB_DIR)/libogg.a
+LIBOGG_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -logg
+
+LIBVORBIS_ROOT = $(LIBS_ROOT)
+VORBIS_INCLUDE = -I$(LIB_INCLUDE_DIR)
+LIBVORBIS_LIBS_STATIC = $(LIB_LIB_DIR)/libvorbisfile.a $(LIB_LIB_DIR)/libvorbis.a
+LIBVORBIS_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lvorbisfile -lvorbis
+
+LIBTHEORA_ROOT = $(LIBS_ROOT)
+THEORA_INCLUDE = -I$(LIB_INCLUDE_DIR)
+LIBTHEORA_LIBS_STATIC = $(LIB_LIB_DIR)/libtheora.a
+LIBTHEORA_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -ltheora
+
+METAKIT_ROOT = $(LIBS_ROOT)
+METAKIT_INCLUDE = -I$(LIB_INCLUDE_DIR)
+METAKIT_LIBS_STATIC = $(LIB_LIB_DIR)/libmk4.a
+METAKIT_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lmk4
+
+PNG_ROOT = $(LIBS_ROOT)
+PNG_INCLUDE = -I$(LIB_INCLUDE_DIR)
+PNG_LIBS_STATIC = $(LIB_LIB_DIR)/libpng.a
+PNG_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lpng
+
+SDL_ROOT = $(LIBS_ROOT)
+SDL_BIN_DIR = $(LIB_BIN_DIR)
+SDL_INCLUDE = $(shell $(SDL_BIN_DIR)/sdl2-config --cflags)
+SDL_LIBS_STATIC = $(shell $(SDL_BIN_DIR)/sdl2-config --static-libs)
+SDL_LIBS_DYNAMIC = $(shell $(SDL_BIN_DIR)/sdl2-config --libs)
+
+SDL_MIXER_ROOT = $(LIBS_ROOT)
+SDL_MIXER_INCLUDE = -I$(LIB_INCLUDE_DIR)
+SDL_MIXER_LIBS_STATIC = $(LIB_LIB_DIR)/libSDL2_mixer.a
+SDL_MIXER_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lSDL2_mixer
+
+SDL_TTF_ROOT = $(LIBS_ROOT)
+SDL_TTF_INCLUDE = -I$(LIB_INCLUDE_DIR)
+SDL_TTF_LIBS_STATIC = $(LIB_LIB_DIR)/libSDL2_ttf.a
+SDL_TTF_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lSDL2_ttf
+
+JSON_ROOT = $(LIBS_ROOT)
+JSON_INCLUDE = -I/Users/mrimer/libs/jsoncpp-src-0.6.0-rc2/include
+JSON_LIBS_STATIC = $(LIB_LIB_DIR)/libjson_linux-gcc-4.2.1_libmt.a
+JSON_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -ljson_linux-gcc-4.2.1_libmt
+
+STEAM_ROOT = $(LIBS_ROOT)
+STEAM_INCLUDE = -I$(LIB_INCLUDE_DIR)
+STEAM_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lsteam_api
+
+ifdef PPC_BUILD
+
+#For PowerPC builds:
+APPLE_SDK_ROOT = /Developer/SDKs/MacOSX10.4u.sdk
+#Weston suggests using: -isyslibroot    #works cleaner with g++ 4?
+#
+# avoid cruft in the command line, since I'm pulling some of these from fink
+# put this last in the command lines, in case I want to override something.
+#
+INCLUDE_DARWIN = $(APPLE_SDK_ROOT)/usr/include/gcc/darwin/4.0
+LIB_DARWIN = $(APPLE_SDK_ROOT)/usr/lib/gcc/powerpc-apple-darwin8/4.0.0
+BITS_DARWIN = $(INCLUDE_DARWIN)/c++/powerpc-apple-darwin8
+OTHER_INCLUDE = -I$(APPLE_SDK_ROOT)/usr/include -I$(BITS_DARWIN) -I$(INCLUDE_DARWIN) -I$(INCLUDE_DARWIN)/c++ -F$(APPLE_SDK_ROOT)/System/Library/Frameworks
+OTHER_LIBS = -lcurl -lz $(LIB_DARWIN)/libstdc++.a $(LIB_DARWIN)/libgcc.a $(APPLE_SDK_ROOT)/usr/lib/libc.dylib -framework QuickTime -F$(APPLE_SDK_ROOT)/System/Library/Frameworks -framework Carbon -framework System -headerpad_max_install_names
+
+else
+
+#For OSX 10.5+ Intel builds
+APPLE_SDK_ROOT = /usr/llvm-gcc-4.2
+APPLE_SDK_ROOT = /Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2
+
+LIB_DARWIN = $(APPLE_SDK_ROOT)/lib/gcc/i686-apple-darwin11/4.2.1
+OTHER_INCLUDE = -I$(BITS_DARWIN)
+
+ifeq ($(ARCHITECTURE),x86_64)
+
+OTHER_LIBS = -lcurl -lz $(LIB_DARWIN)/libstdc++.dylib $(LIB_DARWIN)/x86_64/libgcc.a /usr/lib/libc.dylib -framework AudioToolbox -framework AudioUnit -framework Carbon -framework System -headerpad_max_install_names
+
+else
+
+OTHER_LIBS = -lcurl -lz $(LIB_DARWIN)/libstdc++.dylib $(LIB_DARWIN)/libgcc.a /usr/lib/libc.dylib -framework AudioToolbox -framework AudioUnit -framework Carbon -framework System -headerpad_max_install_names
+
+endif
+
+endif
+
+#################################
+### <3.5> Include flags setup ###
+#################################
+
+# "variant selection" flags
+#VARIANT_FLAGS = -DUSE_SDL_MIXER -DWHM_MEMORY_AVAILABLE_HACK
+#VARIANT_FLAGS = -DCARAVELBUILD -DARCADETOWN -DUSE_SDL_MIXER
+ifeq ($(ARCHITECTURE),x86_64)
+VARIANT_FLAGS = -DCARAVELBUILD -DUSE_SDL_MIXER
+else
+VARIANT_FLAGS = -DCARAVELBUILD
+endif
+
+CPPFLAGS_BackEndLib  = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(SDL_INCLUDE) $(JSON_INCLUDE) $(OTHER_INCLUDE)
+CPPFLAGS_CaravelNet  = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(EXPAT_INCLUDE) $(SDL_INCLUDE) $(JSON_INCLUDE) $(OTHER_INCLUDE)
+CPPFLAGS_DRODLib     = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(EXPAT_INCLUDE) $(SDL_INCLUDE) $(JSON_INCLUDE) $(OTHER_INCLUDE)
+CPPFLAGS_FrontEndLib = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(PNG_INCLUDE) $(JPEG_INCLUDE) $(EXPAT_INCLUDE) $(SDL_INCLUDE) $(SDL_TTF_INCLUDE) \
+	$(OGG_INCLUDE) $(VORBIS_INCLUDE) $(THEORA_INCLUDE) \
+	$(FMOD_INCLUDE) $(SDL_MIXER_INCLUDE) $(OTHER_INCLUDE)
+CPPFLAGS_DROD        = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(PNG_INCLUDE) $(JPEG_INCLUDE) $(EXPAT_INCLUDE) $(SDL_INCLUDE) $(JSON_INCLUDE) $(SDL_TTF_INCLUDE) \
+	$(FMOD_INCLUDE) $(SDL_MIXER_INCLUDE) $(OTHER_INCLUDE)
+CPPFLAGS_DRODUtil    = $(VARIANT_FLAGS) $(METAKIT_INCLUDE) $(EXPAT_INCLUDE) $(SDL_INCLUDE) $(OTHER_INCLUDE) $(SDL_TTF_INCLUDE) \
+	$(SDL_MIXER_INCLUDE)
+
+###############################
+### <4>  Linker flags setup ###
+###############################
+
+# DROD: All dynamic
+LDFLAGS_DROD_dynamic = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_DYNAMIC) \
+	$(EXPAT_LIBS_DYNAMIC) \
+	$(SDL_MIXER_LIBS_DYNAMIC) \
+	$(LIBVORBIS_LIBS_DYNAMIC) \
+	$(LIBOGG_LIBS_DYNAMIC) \
+	$(LIBTHEORA_LIBS_DYNAMIC) \
+	$(SDL_TTF_LIBS_DYNAMIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_LIBS_DYNAMIC) \
+	$(PNG_LIBS_DYNAMIC) \
+	$(JPEG_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) \
+	$(CURL_LIBS_DYNAMIC) \
+	$(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+
+# DROD: All static, except zlib, curl, and system libraries.  These are provided by Apple.
+LDFLAGS_DROD_static = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_STATIC) \
+	$(EXPAT_LIBS_STATIC) \
+	$(SDL_MIXER_LIBS_STATIC) \
+	$(LIBVORBIS_LIBS_STATIC) \
+	$(LIBOGG_LIBS_STATIC) \
+	$(LIBTHEORA_LIBS_STATIC) \
+	$(SDL_TTF_LIBS_STATIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_LIBS_STATIC) \
+	$(PNG_LIBS_STATIC) \
+	$(JPEG_LIBS_STATIC) \
+	$(ZLIB_LIBS_DYNAMIC) \
+	$(CURL_LIBS_DYNAMIC) \
+	$(JSON_LIBS_STATIC) \
+	$(OTHER_LIBS)
+
+# DROD: Static metakit, SDL_ttf, and freetype
+# The assumption is that everything else is available through fink....
+# If we can work around the freetype 2.1.3 problem, then fink freetype can be dynamic too.
+#TODO: Oops, there's also a problem with the version of SDL_mixer (mrimer: version #?) from fink.
+#TODO: ... and I don't know enough about SDL & dynamic linking on Mac to try to
+# satisfy drod's use of SDL with one library and SDL_ttf's use elsewhere.
+LDFLAGS_DROD_staticmkttfft = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_STATIC) \
+	$(EXPAT_LIBS_DYNAMIC) \
+	$(SDL_MIXER_LIBS_STATIC) \
+	$(LIBVORBIS_LIBS_STATIC) \
+	$(LIBOGG_LIBS_STATIC) \
+	$(LIBTHEORA_LIBS_STATIC) \
+	$(SDL_TTF_LIBS_STATIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_LIBS_STATIC) \
+	$(PNG_LIBS_DYNAMIC) \
+	$(JPEG_LIBS_DYNAMIC) \
+	$(CURL_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) \
+	$(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+
+# mrimer -- this is the only configuration working for me right now
+#
+# DROD: Static metakit AND SDL_ttf
+# (note libz shouldn't be static, unless we need a different version than libpng; actually, linker needs to have exactly one libz)
+ifeq ($(ARCHITECTURE),x86_64)
+LDFLAGS_DROD_somestatic = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_DYNAMIC) \
+	$(EXPAT_LIBS_DYNAMIC) \
+	$(SDL_MIXER_LIBS_DYNAMIC) \
+	$(LIBVORBIS_LIBS_DYNAMIC) \
+	$(LIBOGG_LIBS_DYNAMIC) \
+	$(LIBTHEORA_LIBS_STATIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_LIBS_DYNAMIC) \
+	$(SDL_TTF_LIBS_DYNAMIC) \
+	$(PNG_LIBS_STATIC) \
+	$(JPEG_LIBS_STATIC) \
+	$(CURL_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) \
+	$(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+else
+LDFLAGS_DROD_somestatic = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_DYNAMIC) \
+	$(EXPAT_LIBS_DYNAMIC) \
+	$(FMOD_LIBS_DYNAMIC) \
+	$(LIBVORBIS_LIBS_DYNAMIC) \
+	$(LIBOGG_LIBS_DYNAMIC) \
+	$(LIBTHEORA_LIBS_STATIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_LIBS_DYNAMIC) \
+	$(SDL_TTF_LIBS_DYNAMIC) \
+	$(PNG_LIBS_STATIC) \
+	$(JPEG_LIBS_STATIC) \
+	$(CURL_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) \
+	$(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+endif
+
+# DRODUtil: All dynamic
+LDFLAGS_UTIL_dynamic = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_DYNAMIC) $(EXPAT_LIBS_DYNAMIC) \
+	$(LIBVORBIS_LIBS_DYNAMIC) $(LIBOGG_LIBS_DYNAMIC) \
+	$(LIBTHEORA_LIBS_DYNAMIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_MIXER_LIBS_DYNAMIC) $(SDL_TTF_LIBS_DYNAMIC) $(SDL_LIBS_DYNAMIC) \
+	$(PNG_LIBS_DYNAMIC) $(JPEG_LIBS_DYNAMIC) $(CURL_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) $(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+
+# DRODUtil: Static metakit
+LDFLAGS_UTIL_staticmk = \
+	$(LDFLAGS) \
+	$(METAKIT_LIBS_STATIC) $(EXPAT_LIBS_DYNAMIC) \
+	$(LIBVORBIS_LIBS_DYNAMIC) $(LIBOGG_LIBS_DYNAMIC) \
+	$(LIBTHEORA_LIBS_DYNAMIC) \
+	$(FREETYPE_LIBS_STATIC) \
+	$(SDL_MIXER_LIBS_DYNAMIC) $(SDL_TTF_LIBS_DYNAMIC) $(SDL_LIBS_DYNAMIC) \
+	$(PNG_LIBS_DYNAMIC) $(JPEG_LIBS_DYNAMIC) $(CURL_LIBS_DYNAMIC) \
+	$(ZLIB_LIBS_DYNAMIC) $(JSON_LIBS_DYNAMIC) \
+	$(OTHER_LIBS)
+
+
+############################
+### <5>  Link type setup ###
+############################
+
+# DROD: Custom
+#LDFLAGS_DROD_custom = $(LDFLAGS_DROD_dynamic)
+LDFLAGS_DROD_custom = $(LDFLAGS_DROD_somestatic)
+LDFLAGS_DROD_steam = $(LDFLAGS_DROD_custom) \
+	$(STEAM_LIBS_DYNAMIC)
+# DROD: Release / Beta
+#LDFLAGS_DROD_release = -Wl,-s $(LDFLAGS_DROD_dynamic)
+LDFLAGS_DROD_release = -Wl,-s $(LDFLAGS_DROD_somestatic)
+LDFLAGS_DROD_beta = -Wl,-s $(LDFLAGS_DROD_dynamic)
+# DROD: Debug
+LDFLAGS_DROD_debug = $(LDFLAGS_DROD_somestatic)
+# DROD: Profile
+LDFLAGS_DROD_profile = -pg $(LDFLAGS_DROD_dynamic)
+
+# DRODUtil: Custom
+LDFLAGS_UTIL_custom = $(LDFLAGS_UTIL_dynamic)
+# DRODUtil: Release
+LDFLAGS_UTIL_release = -Wl,-s $(LDFLAGS_UTIL_staticmk)
+# DRODUtil: Debug
+LDFLAGS_UTIL_debug = $(LDFLAGS_UTIL_staticmk)
+# DRODUtil: Profile
+LDFLAGS_UTIL_profile = -pg $(LDFLAGS_UTIL_staticmk)
+
+##########################
+### <6>  System config ###
+##########################
+
+# All external programs used in the makefile are defined here.
+
+# Compiler
+CXX      = g++
+
+# Compile and generate dependencies in one operation
+CXXDEP   = $(CXX) -MD
+# Switch to specify out-file for dependency info
+DEPOUT   = -MF
+
+# Linker
+LD       = $(CXX)
+
+# Archiver
+AR       = ar cr
+RANLIB   = ranlib
+
+# Grep
+GREP     = grep
+
+# Stream Editor
+SED      = sed -e
+
+# Test
+TEST     = test
+
+# Create directory
+MKDIR    = mkdir -p
+
+# Installer
+INSTALL  = install
+
+# Recursive copy
+CP_R     = cp -r
+
+# Remove file / recursive
+RM_F     = rm -f
+RM_RF    = rm -rf
+
+# Echo
+ECHO     = echo
+
+# UnRar
+UNRAR_X = /usr/local/bin/unrar x
+
+# ImageMagick mogrify command, or other appropriate conversion:
+MOGRIFY = /sw/bin/mogrify
+
+############################
+### <7>  Misc build vars ###
+############################
+
+# Top source directory
+SRCDIR = ../..
+
+# Data
+SRC_DATADIR  = $(SRCDIR)/Data
+SRC_DAT      = *.dat *.ini
+SRC_RES_BMP  = *.png *.tim
+SRC_RES_FONT = *.ttf
+SRC_RES_MSX  = *.ogg
+SRC_RES_SFX  = *.ogg
+SRC_RES_HELP = *.html
+SRC_RES_HIMG = *.jpg
+
+#See buildcmd.sh for details of linking the real Data.rar to Data.rar is done
+DATA_ARCHIVE_beta = $(SRCDIR)/DemoData.rar
+DATA_ARCHIVE_debug = $(SRCDIR)/Data.rar
+DATA_ARCHIVE_custom = $(SRCDIR)/Data.rar
+DATA_ARCHIVE_release = $(SRCDIR)/Data.rar
+DATA_ARCHIVE_steam = $(SRCDIR)/Data.rar
+
+##########################
+### <8>  Program names ###
+##########################
+
+# No path
+DROD     = drod
+DRODUTIL = drodutil
+

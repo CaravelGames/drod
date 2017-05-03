@@ -1,0 +1,107 @@
+<html>
+<head>
+  <title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#ffffff">
+<img src="images/drodlogo.jpg" />
+<hr />
+<a href="editroom.html">Room Editor</a><br />
+&nbsp;&nbsp;&nbsp;<a href="character.html">Characters</a><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="script.html">Script commands</a><br />
+<a href="modscreen.html">Mod management</a><br />
+<a href="weather.html">Environmental settings</a><br />
+<hr />
+<h3><u>Level Editor</u></h3>
+<p>The Level Editor is reached by choosing "<b>B</b>uild levels" from the
+<a href="commands.html">Main Menu</a>.&nbsp; You can use it to edit any
+hold (dungeon), level or room in the game's data file.</p>
+<p>The Level Editor has the following options available:</p>
+<p><a name="choosehold"><b>Choose Hold</b></a> - Click on the name of any hold in the list to edit it.
+Add a new one of your own by clicking "New Hold". &nbsp;You will be asked to
+provide your new hold with a name that users will see it by.&nbsp; Click "Settings"
+to bring up a dialog to change the hold name, description, or to provide a
+personalized message that players will see upon finishing your hold.&nbsp;
+Click "Copy" to make a duplicate copy of the selected hold.&nbsp; Click "Manage"
+to switch to the <a href="holdselect.html">Hold Management Screen</a>, from
+which you may choose to permanently delete a hold or save a hold to a file on disk.
+Exporting a hold to disk allows you to share it with other players,
+and it is suggested you back up your holds to disk regularly as you work on them.</p>
+<p><a name="editprivileges"><b>Who Can Edit?</b></a> - Each hold is
+accessible in the editor depending on its editing
+privileges.&nbsp; The "Who Can Edit?" box specifies which
+players can view and edit your hold.&nbsp; "Anyone" means that any
+player who has imported your hold can view and
+modify it any way they want to (this is the default).&nbsp; Selecting
+"You and Conquerors" means that a player will be
+able to view and edit your hold once they have completed it (found a
+stairway exiting the hold). "You and Masters" means only players who have
+conquered the hold and found and conquered 100% of the hold's secret rooms
+may have access to it.  "Only You" means that no other player besides the author
+can ever access the hold in the editor.</p>
+<p><a name="modifiedcopy">When</a> you modify a room in someone else's hold, you will be asked to
+confirm the changes before saving.&nbsp; If you agree, a modified copy of the
+original hold will be made and you become listed as the creator of the new,
+modified hold.&nbsp; The hold name and description are changed
+accordingly.&nbsp; This denotes to you and other players that your
+version of the hold is a modification of someone else's hold.  If you decline
+making your own copy of the hold, your changes will not be saved.</p>
+
+<p><a name="chooselevel"><b>Levels</b></a> - Select a level
+in the selected hold to edit it, or add a new level by clicking "(add new level)" from the bottom of the list. You
+will be asked to provide your new level with a name that
+users will see when playing. Click "Rename" to change the level name
+or "Describe" to change the level description (the introductory text of the main level
+entrance). Click "Delete" to permanently erase the selected
+level from the game.&nbsp; Hit &lt;Ctrl-X&gt; or &lt;Ctrl-C&gt;
+to copy a level. &nbsp;Hit &lt;Ctrl-V&gt; to paste that level
+to the currently selected position in the level list.  <a name="rearrange">You</a> can rearrange
+the order of your hold's levels by clicking on a level name and dragging it
+with the mouse to a new position.  The first level in the list is always
+where a new game starts.</p>
+<p><a name="levelsettings"><b>Level Settings</b></a> - Displays
+the author of the selected level, the date the level was created, and whether
+the "Exit Level!" message should be shown when all required rooms in the level
+have been conquered.</p>
+
+<p><a name="worldmaps"><b>Maps</b></a> - Click this menu tab to switch the Levels view to a list of overworld maps in the currently selected hold. Overworld maps may be selected as alternate destinations for level exits and provide quick travel to locations you specify via in-game scripting. Click "(add new world map)" to add a new map to the hold. You will be asked to provide a name for the new map. After adding a map, click "Image" to select or reselect an image for the background for the overworld map. A default background image will be displayed if no image is provided. As with levels, you can rename, reorder and delete overworld maps.</p>
+
+<p><a name="mapdisplaytype"><b>Map display type</b></a> - Select how map locations will be labeled on the currectly selected world map. You may choose to have level names displayed, not displayed, or only displayed once the location has been visited by the player.</p>
+
+<p><a name="chooseroom"><b>Choose Room</b></a> - Click on the
+level map to select any room in the selected level.&nbsp; A miniature view of the room will be
+displayed in the bottom right corner of the screen.&nbsp; Click on
+a blank area of the map adjacent to an existing room to
+add a new room to the level at
+that location. &nbsp;Hit &lt;Ctrl-C&gt; to copy the selected room on the map.&nbsp;
+Press &lt;Ctrl-X&gt; to cut a room for pasting in a different location. &nbsp;
+Hit &lt;Ctrl-V&gt; to paste that room to the currently
+selected spot on the map. &nbsp;Hit the &lt;delete&gt; key to
+permanently erase a room.</p>
+<p><a name="roomstyle"><b>Room Style</b></a> - Each room can have a given style, or motif (graphics and music),
+associated with it. &nbsp;Choose one from the list to set the selected
+room to that motif.  If you hold down the Control key while selecting a new style,
+all the rooms in the level will be set to the new style.</p>
+<p><a name="weather"><b>Weather</b></a> - Each room has its own environmental settings.  To configure
+them, click Weather to bring up <a href="weather.html">this dialog</a>.</p>
+<p><a name="required"><b>Required Room</b></a> - Check this box
+to require players to beat the selected room before the level
+can be completed (i.e., blue doors open).&nbsp; If no monsters exist in
+a required room, the player is at least required to visit it
+once before exiting the level.&nbsp; Unchecking this box means the player does
+not have to visit or conquer the selected room in order to complete the level.</p>
+<p><a name="secret"><b>Secret Room</b></a> - Check this box to mark this room as a secret room.
+Secret rooms found by a player are tallied for each level on the <a href="restore.html">
+Restore screen</a>.  Once a hold is completed, the percentage of secret rooms
+found and conquered overall will be shown on the <a href="holdselect.html">Hold Select</a>
+screen.  100% of rooms marked secret must be found and conquered in order for
+the player to be able to pass through <a href="editroom.html#masterwalls">Master walls</a>.</p>
+<p><a name="editroom">Click</a> the "<b>E</b>dit Room" button or click on the mini-room image to
+begin <a href="editroom.html">editing the selected room</a>.</p>
+<p><a name="reflect"><b>Reflecting the level</b></a> - Press &lt;F7&gt; to reflect the level
+horizontally (about the vertical axis) and &lt;F8&gt; to reflect the level
+vertically.  All rooms will likewise be reflected.  Hint: individual rooms
+can also be reflected in the <a href="editroom.html">room editor</a> using these keys.</p>
+<hr />
+<a href="contents.html">Contents</a>
+</body>
+</html>

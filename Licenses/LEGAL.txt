@@ -1,0 +1,106 @@
+THIRD PARTY CLAIMS
+
+This file is provided with the Caravel Deadly Rooms of Death Distribution to help Contributors comply with terms of Mozilla Public License 1.1 (the "License"); You may obtain a copy of the License at http://www.mozilla.org/MPL/.
+
+The Original Code is Deadly Rooms of Death.
+
+The Initial Developer of the Original Code is Caravel Software.
+Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+1997, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007 Caravel Software. All Rights Reserved.
+
+The Following Third Party Claims are present within the Caravel Deadly Rooms of Death Distribution:
+
+Component Name: cURL 7.20.0
+Licensed from:  Daniel Stenberg
+License:        cURL license
+Info:           http://curl.haxx.se
+Contact:        Daniel Stenberg <daniel@haxx.se>
+
+Component Name: Expat 2.0.1
+Licensed from:  Thai Open Source Software Center Ltd.
+License:        MIT
+Info:           http://expat.sourceforge.net/
+                http://www.jclark.com/xml/expat.html
+Contact:        Fred L. Drake, Jr. <fdrake@acm.org>
+                James Clark <jjc@jclark.com>
+
+Component Name: fmod 3.7.5
+Licensed from:  Firelight Multimedia
+License:        FMOD License
+Info:           http://www.fmod.org
+Contact:        sales@fmod.org
+
+Component Name: libogg 1.2.0
+Licensed from:  The Xiph.org Foundation
+License:        LibOgg license
+Info:           http://xiph.org/ogg
+Contact:        Xiph.org
+
+Component Name: libpng 1.4.1
+Licensed from:  Glenn Randers-Pehrson
+License:        libpng license
+Info:           http://www.libpng.org/pub/png/libpng.html
+Contact:        Glenn Randers-Pehrson <glennrp@users.sf.net>
+
+Component Name: libvorbis 1.2.0
+Licensed from:  The Xiph.org Foundation
+License:        LibOgg license
+Info:           http://xiph.org/ogg
+Contact:        Xiph.org
+
+Component Name: jpeglib 6b
+Licensed from:  Independent JPEG Group
+License:        jpeglib license
+Info:           http://www.ijg.org
+Contact:        Thomas G. Lane <jpeg-info@uunet.uu.net>
+
+Component Name: LibTheora 1.1.1
+Licensed from:  The Xiph.org Foundation
+License:        LibTheora license
+Info:           http://www.theora.org
+Contact:        Xiph.org
+
+Component Name: Metakit 2.4.9.7
+Licensed from:  Equi4 Software 
+License:        MetaKit License (described as "X/MIT-style").
+Info:           http://www.equi4.com/metakit
+Contact:        Equi4 Software
+                Meekrap oord 6
+                3991 VE, Houten
+                The Netherlands
+                jcw@equi4.com
+
+Component Name: Simple DirectMedia Layer 1.2.14
+Licensed from:  Free Software Foundation
+License:        GNU Library General Public License version 2
+Info:           http://www.gnu.org
+Contact:        Free Software Foundation 
+                59 Temple Place - Suite 330 
+                Boston, MA  02111-1307,  USA 
+                +1-617-542-5942
+                gnu@gnu.org
+
+Component Name: SDL_ttf 2.0.8
+Licensed from:  Free Software Foundation
+License:        GNU Library General Public License version 2
+Info:           http://www.gnu.org
+Contact:        Free Software Foundation 
+                59 Temple Place - Suite 330 
+                Boston, MA  02111-1307,  USA 
+                +1-617-542-5942
+                gnu@gnu.org
+
+Component Name: FreeType 2.1.4
+Licensed from:  David Turner, Robert Wilhelm, and Werner Lemberg
+License:        The Freetype Project License 2000-Feb-08
+Info:           http://www.freetype.org
+Contact:        David Turner <david.turner@freetype.org>
+                Robert Wilhelm <robert.wilhelm@freetype.org>
+                Werner Lemberg <werner.lemberg@freetype.org>
+
+Component Name: zlib 1.2.4
+Licensed from:  Jean-loup Gailly and Mark Adler
+License:        zlib license
+Info:           http://www.gzip.org/zlib/zlib.html
+Contact:        Jean-loup Gailly <jloup@gzip.org>
+                Mark Adler <madler@alumni.caltech.edu>

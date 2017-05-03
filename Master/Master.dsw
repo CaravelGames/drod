@@ -1,0 +1,134 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "BackEndLib"=..\..\BackEndLib\BackEndLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "CaravelNet"=..\CaravelNet\CaravelNet.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name BackEndLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name DRODLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DRODLib"=..\DRODLib\DRODLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name BackEndLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "DRODUtil"=..\DRODUtil\DRODUtil.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name DRODLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name BackEndLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name FrontEndLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CaravelNet
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "FrontEndLib"=..\..\FrontEndLib\FrontEndLib.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name BackEndLib
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "Help"=..\Data\Help\Help.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "drod"=..\DROD\DROD.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name BackEndLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name FrontEndLib
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name CaravelNet
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+

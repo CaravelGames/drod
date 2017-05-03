@@ -1,0 +1,296 @@
+<html>
+<head>
+	<title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+<img src="images/drodlogo.jpg" />
+
+<h3><u>The Mechanics of Monster Movement and Element Interactions</u></h3>
+<p>DROD is fairly easy to pick up, and most of the monsters have movement patterns that become clear with a little observation and experimentation. 
+However, things can get complex (for example, where there are brains involved, or multiple wraithwings), so sometimes it is useful to have a more 
+comprehensive understanding of the mechanics behind how monsters choose where to move, and how elements interact. This page is designed to be fairly 
+comprehensive, so may be daunting for beginners, but a lot of more obscure information is still missed out. It is derived mainly from the excellent 
+explanations by TFMurphy and bibelot on the Caravel Forum.</p>
+
+<p>If you are already familiar with basic DROD monster movement and elements, we strongly recommend you play the Advanced Concept holds, downloadable from 
+the <a href="http://forum.caravelgames.com/holds.php?f=10&amp;npp=10&amp;ob=t&amp;d=a&amp;g=1#H">Caravel DROD website</a>, which provide fantastic tutorials on the mechanics of monster behaviour and interactions.</p>
+<ul><li><a href="#general">General Principles</a> </li>
+<li><a href="#simple">Roaches, tar and mud babies, spiders and awakened evil eyes</a> </li>
+<li><a href="#bsimple">Brained roaches, tar and mud babies, spiders and awakened evil eyes</a> </li>
+<li><a href="#seep">The Seep</a> </li>
+<li><a href="#bseep">Brained Seep</a> </li>
+<li><a href="#direct">Rock Golems, Gel babies and Wubbas</a> </li>
+<li><a href="#bdirect">Brained Rock Golems, Gel babies and Wubbas</a> </li>
+<li><a href="#rq">Roach Queens</a> </li>
+<li><a href="#brq">Brained Roach Queens</a> </li>
+<li><a href="#lich">Aumtlich</a> </li>
+<li><a href="#rg">Rock Giants</a> </li>
+<li><a href="#guards">Guards</a> </li>
+<li><a href="#ww">Wraithwings</a> </li>
+<li><a href="#bww">Brained Wraithwings</a> </li>
+<li><a href="#snake">Red Serpents, Rattleserpents and Adders</a> </li>
+<li><a href="#bsnake">Brained Red Serpents, Rattleserpents and Adders</a> </li>
+<li><a href="#gob">Goblins</a> </li>
+<li><a href="#bgob">Brained Goblins</a> </li>
+<li><a href="#water">Water Skippers and Their Nests</a> </li>
+<li><a href="#tar">Tarstuff and Tar Mothers</a> </li>
+<li><a href="#fegundo">Fegundo</a> </li>
+<li><a href="#ally">Stalwarts and Rasarun Soldiers</a></li>
+<li><a href="#order">Element Behaviour Order</a> </li>
+<li><a href="#element">Some miscellaneous element and monster interactions</a></li></ul>
+
+<p><a name="general"><b>General Principles</b></a></p>
+<p>DROD is a deterministic, turn-based game. As you know, moving the player character starts off the turn, with all monsters and other NPCs following this, 
+in a defined order. For the most part, the exact order does not matter, but there are occasions where it might. The order goes in groups 
+as follows:</p>
+<ul><li>Player</li>
+<li>Mimics, Decoys and Clones</li>
+<li>Fegundo</li> 
+<li>Stalwarts and Soldiers</li>
+<li>Slayers</li> 
+<li>Guards</li> 
+<li>Monsters and Halph</li> 
+<li>Citizens</li>
+<li>Scripted  Characters</li></ul> 
+<p>Within each group, movement order is according to the order they were placed in the room by the architect, followed by the order in which 
+any spawned monsters (e.g. roaches laid by roach queens, babies formed from tarstuff) were spawned. In the case of mimics, they move in the order they 
+were placed.</p> 
+<p>Following this, various game elements carry out their own behaviour, as discussed later.</p>
+<p>Monsters have various types of behaviour, mainly differing in terms of which tiles they can move on, how they find their way to the player, 
+how they behave when the direction they chose to travel in is blocked, what they consider obstacles, and how they behave when a brain is in the room.</p>
+<p>Brains affect all monsters in a room (excluding guards and slayers). They generate a path map for each monster recursively by calculating the distance 
+from the player in terms of the minimum number of moves it would take to reach him. When calculating this distance, the brain treats as obstacles any room 
+objects that a roach could not step onto ("brain-visible obstacles".) It does not take into account the location of enemies  or other "brain-invisible obstacles". If a brain cannot find a path from a monster to the player, the monster acts as unbrained. Lastly, if a brain 
+is within "smelling range" of the player when he is invisible (whether due to potion or shallow water), all monsters in the room will act as if brained, 
+even if he is outside of their "smelling range".</p>
+<p>Brain-visible objects include walls, scrolls, bombs, arrows (regardless of direction), orbs, serpent bodies, tarstuff and mirrors. Whether water or pits 
+are brain-visible depends on whether a monster can normally traverse them.</p>
+<p>Brain-invisible objects include other monsters, serpent heads and orthogonal squares.</p>
+
+<p><a name="simple"><b>Roaches, tar and mud babies, spiders and awakened evil eyes.</b></a></p>
+<p>These monsters determine which of their eight adjoining squares is closest to the player and attempt to move there. 
+If that square is blocked  horizontally or vertically, the monster does nothing.  If the blocked move was diagonal, however, the monster will try to move 
+vertically closer to the player and then, if this is also blocked, horizontally closer. This results in the monster's ability to "slide" along walls. If neither is possible, the 
+monster does not move.</p>
+<p>These monsters are blocked by deep water, walls, closed doors, orbs, bombs, mirrors, pits and potions.</p><p> Spiders can walk in shallow water, while roaches, tar and mud babies, and awakened evil eyes cannot.</p>
+
+<p><a name="bsimple"><b>Brained roaches, tar and mud babies, spiders and awakened evil eyes.</b></a></p>
+<p>The brain considers the nine possible tiles that the monster can move to (including the option to wait in place) that do not contain visible obstacles (as defined above). It then
+sorts them in order of distance from the player. If there is a tie the move preference is: orthogonal moves first>waiting in its current square>and then the diagonal
+moves, with north-westerly moves taking precedence. The brain then orders the monster to move to the first square on the list; if it can't do so (because
+it is blocked by a invisible obstacle) it tries the second, and so on. If the brain does not give the monster an order, or if it orders it to wait,
+then the monster's own instinct kicks in and it tries to move towards the player as if it were unbrained, even if this includes moving over a brain-visible
+obstacle. Of course, if no path to you exists at all, then the monster will also move as it would when unbrained.</p>
+<p>When brained, these monsters will still be drawn to decoys that are in range, but not to stalwarts/soldiers. They will kill stalwarts/soldiers, however, 
+if that is the quickest path to get to the player.</p>
+
+<p><a name="seep"><b>The Seep</b></a></p>
+<p>The Seep can only travel through walls and closed doors. They can jump out of the walls, only if their move is to kill the player, or a stalwart/soldier. 
+Doing this kills them too. (This also allows them to step on a tile containing a potion).</p>
+<p>Their movement algorithm is the same as the roach's (see above), except when the path they wish to take is blocked diagonally. Here, rather than picking a vertical 
+choice over a horizontal, the seep will pick the one which reduces the longest orthogonal distance to the player. E.g. It will move west if the player is 
+five squares west and four north, and vice versa. If these are the same, then the seep go back to having vertical preference.</p>
+
+<p><a name="bseep"><b>Brained Seep</b></a></p>
+<p>Seep use a similar algorithm to roaches for picking a tile to move to, except they move within walls and doors instead of open area. When a full path is not available, a path with the fewest obstacles along the way is chosen.</p>
+
+<p><a name="direct"><b>Rock golems, Gel Babies and Wubbas</b></a></p>
+<p>Similar to roaches, these monsters determine which of their eight adjoining squares is closest to the player and attempt to move there.
+However, if blocked vertically, horizontally or diagonally they choose not to move at all. This means that they do not "slide" along walls the way roaches do.</p>
+<p>These monsters are blocked by deep water, walls, closed doors, orbs, bombs, mirrors, pits and potions. Rock golems and gel babies can walk in shallow water.</p>
+<p>Rock golems differ from most other monsters in that they form an obstacle - a rock pile - in the tile they were killed in</p>
+
+<p><a name="bdirect"><b>Brained rock golems, Gel Babies and Wubbas</b></a></p>
+<p>Brained movement is identical to that of roaches, unless the highest priority move is blocked by a brain-invisible object. Instead of attempting another 
+direction, these monsters just stop moving.</p>
+
+<p><a name="rq"><b>Roach Queens</b></a></p>
+<p>Like roaches, roach queens determine which of the eight adjoining squares is closest to player but then attempt to move in the opposite direction. If 
+blocked  horizontally or vertically, she does nothing.  If the move was diagonal, however, she will try to move vertically away and then horizontally away 
+if that is blocked too. Every 30 turns, roach queens lay eggs on every blank square in each of the eight directions from her in the order of NW, N, NE, W,
+ E, SW, S, SE (this is the order in which the roaches will hatch and move; they will be fully hatched on their fifth turn on the screen and move the turn 
+after that). She cannot lay eggs on open yellow doors, tokens, scrolls, force arrows or trapdoors.</p>
+
+<p><a name="brq"><b>Brained Roach Queens</b></a></p>
+<p>For a roach queen, the brain looks at the first move that it would try giving to the roach queen if she were a roach (excluding "wait") The brain then 
+orders the queen to move in the opposite direction with a small exception; if the queen would have been told to move vertically, it orders the queen to 
+move diagonally vertically and towards the vertical line passing through the center of the room, and if the queen would have been told to move 
+horizontally, it orders the queen to move diagonally horizontally and towards the horizontal line passing through the center of the room. The queen then 
+tries to move in the direction suggested by the brain (this will always be diagonally); if it can't, then it tries to move in the closest vertical 
+direction, and then it tries the closest horizontal direction.</p>
+
+<p><a name="lich"><b>Aumtlich and Constructs</b></a></p>
+<p>Similar to all the previous monsters, Aumtlich and Constructs determine which of their eight adjoining squares is closest to the player and attempt to move there. 
+Unlike them, if blocked vertically or horizontally, these monsters can sidestep the obstacle by moving diagonally around it. If given the choice, they 
+will chose to move north over south, and west over east. If blocked diagonally, they use the same algorithm as seep.</p>
+<p>Aumtlich differ from most enemies (with the exception of guards) in that they care about the direction they are facing, and take one turn for each 45 degrees they rotate. Unbrained, they will never move unless facing within 45 degrees of the direction they want to move in.
+An Aumtlich always wants to will face orthogonally if the distance to the player in one of the orthogonal directions is greater than twice the 
+distance than the other orthogonal direction: for example, if the target is 5 North and 2 West from the Aumtlich, then the Aumtlich will face North (since it's over twice as large than the West distance), instead of Northwest. If they are not facing the direction they want, they will turn towards that
+direction , preferring to turn clockwise instead of anti-clockwise if both take the same amount of time. The Aumtlich has one last movement quirk - it
+can sidestep the player! If the aumtlich is adjacent to the player (or other target), orthogonally, but cannot step onto the player (e.g. due to force arrows), it can step around its target diagonally to get into another position. This can cause the aumtlich to get stuck in a loop, if the target
+remains unkillable.</p>
+<p>The Aumtlich fires a beam in the direction it is facing which can freeze the player, stalwarts, soldiers and mimics at the end of the turn.
+An Aumtlich gaze will also damage Cracked Orbs and destroy Broken Orbs and light fuses.
+If an Aumtlich gazes into a mirror or a sword perpendicular to it, the beam is reflected back and it will freeze itself.</p>
+<p>Constructs disregard the direction they are currently facing, and move without having to turn first, automatically turning to face the direction they want to move in. Like rock golems, they form an obstacle when killed. However, if the room is still unconquered by the time the threat clock reaches 30, they reanimate again and must be killed again</p>
+<p>Brained aumtlich and constructs use standard brain pathmapping, but aumtlich still obey the rules governing the direction they face in and rotation.</p>
+
+<p><a name="rg"><b>Rock Giants</b></a></p>
+<p>Rock giants actually share the same movement rules as aumtlich, except they do not waste turns turning - they always automatically face the direction
+they are moving in, like most other monsters. They also differ, of course, in the fact that they are 2x2 monsters and therefore all 4 pieces must be
+able to carry out the move it wants to make. The segment nearest the giant's target determines its move choice.</p>
+
+<p><a name="guards"><b>Guards (including Tuenan enemies and the Dugandy Royal Guard)</b></a></p>
+<p>Guards follow the same movement rules as Aumtlich, including their ability to side-step when needed and the need to be facing the right direction,
+but there are a few notable differences. Firstly, Guards always act brained, as long as there is a pathmap to the player, regardless of whether there
+is a brain in the room or not. If there is no path to the player, they act like unbrained aumtlich. Another difference is that they do not share the 
+"side-stepping the player" behaviour described above and their movement is restricted by the fact that they will not make a move that causes their sword
+to strike another guard, a slayer or bomb.  If the guard's sword is within 1 square of their target, they will make whatever possible move to get their
+sword on top of the target first, preferring to step rather than rotate if both are possible killing moves.</p>
+
+<p><a name="ww"><b>Wraithwings</b></a></p>
+<p>Wraithwings are flying monsters, and therefore can traverse water and pits. They do not activate pressure plates.
+The movement pattern of wraithwings is one of the most complex, as its movement depends on how far it is from the player, and also takes into account the 
+wraithwings in the room.</p>
+<p>Wraithwings calculate distance by taking the maximum of horizontal and vertical distance. On a wraithwing's turn, it first calculates 
+the distance from itself to the player: X. 
+<ul><li>If X is more than 5, it will move closer to the player like a roach.</li> 
+<li>If X is 5 or less, however, it will look at all the other wraithwings in the room. For each other wraithwing, it calculates that wraithwing's 
+distance from the player (using the same rules): Y, and that wraithwing's distance from itself: Z.</li>
+<li>If for some other wraithwing, the absolute value of (X-Y) is less than 3 and Z is more than 2, it will attack the player like a roach. 
+In other words, it will attack if there's another wraithwing that's roughly equidistant from the player, but not too close to the wraithwing itself.</li>
+<li>Otherwise, if X is 5 exactly it will freeze, and if X is less than 5 it will flee like a roach queen. 
+(Collectively this explains why lone wraithwings will always try to keep exactly 5 spaces away)</li></ul></p>
+<p>This scenario is complicated by the fact that, as we know, the wraithwings move according to their movement order, and so these variables will change
+for each wraithwing, each time its nearby wraithwings make a move.</p>
+
+<p><a name="bww"><b>Brained Wraithwings</b></a></p>
+<p>Wraithwings use similar rules when brained as unbrained. If the wraithwing calculates itself to be more than five squares from the player (that is,
+if X is at least five), the wraithwing will attack like a brained roach. If the X is five or less, it will do a search for other wraithwings as before.
+If it decides to attack, it attacks like a brained roach, and if it decides to flee, it flees like a brained roach queen, except without the diagonal
+movement toward the center of the room.</p>
+
+<p><a name="snake"><b>Red Serpents, Rattleserpents and Adders</b></a></p>
+<p>The movement algorithm for all three of these serpents is essentially the same and none of them can move diagonally. (Differences in behaviour are described later). 
+The serpent first checks to see if the player is directly in front of or behind its head. If he is, the serpent continues moving in that direction.</p>
+<p>Failing this, it refers to its an internal counter: the first five turns it prefers horizontal movement, the next five it prefers vertical, and
+then this repeats. The serpent picks a square into which it wants to move; if it is thinking horizontally, then it picks which of the two squares
+horizontally adjacent to its head is closer to the player. If it is in the same vertical column as the player, it picks which of the two vertical
+squares adjacent to its head is closer to the player.</p>
+<p>If it is thinking vertically, it does the same thing but looks at the vertical squares first, then the horizontal squares. The serpent then tries to
+move into the square that it has picked. If that square is blocked, the serpent tries to move N, then E, then S, then W.  Red serpents' tails shrink
+by one tile if they are blocked in all four directions.</p>
+<p>Rattleserpents can also move over Scrolls and Force Arrows (providing the arrow does not block the direction). If their tail moves onto a sword after
+movement, then it is automatically stabbed.</p>
+<p>Adders move the same way.  They do not consider 1x1 tile monsters, disabled constructs or rock piles to be obstacles and will eat them instead (the only exception to this is 
+NPCs with the Invulnerable imperative). They may also eat tarstuff providing it is a piece not vulnerable to stabbing. If they eat something, they grow by 
+one square. An Adder moving onto a sword does not take damage - damage is only done on the sword-wielders' turns. An Adder that is trapped will shrink if 
+one of the possible squares it could've moved to contains an Adder piece (either its own or another Adder).</p>
+
+<p><a name="bsnake"><b>Brained Red Serpents, Rattleserpents and Adders</b></a></p>
+<p>A brain directs a serpent in the same way that it directs a roach, except at any given time the brain ranks only the three plausible moves; 
+the serpent then tries these moves until it finds one that it can do, otherwise it shrinks. If the brain cannot find a path from the serpent's 
+head to the player, the serpent moves as unbrained, but note that this path is determined by the path map and thus does not account for the fact that 
+serpents cannot move diagonally. Another consequence of brain-pathmapping is that rattleserpents and adders will not go over arrows or scrolls if there is
+an available path-map to the player.</p>
+
+<p><a name="gob"><b>Goblins</b></a></p>
+<p>Goblins calculate distance to the player using the Pythagorean Theorem. They assign a score to each of the eight adjacent squares 
+that it can enter. The highest number goes to a square that contains the player and the lowest to any other square that is adjacent to the sword.
+Any other squares are assigned numbers in terms of their distance from the player; closer squares get higher numbers. If best scores are tied, it uses the preference
+order: NW, N, NE, W, its own square, E, SW, S, SE. This system allows the goblin avoid the sword and also to increase their vertical or horizontal
+distance from the player in order to move to a diagonal tile that is closer to them, by Pythagoras' theorem - behaviour that is distinct from
+un-brained roach-like creatures.</p>
+
+<p><a name="bgob"><b>Brained Goblins</b></a></p>
+<p>Brained goblins move the same way unbrained goblins do, except that they calculate distance differently. If there is no visible path to the player or the 
+square is within two squares from the player (according to the brain), then distance is calculated as normal. Otherwise, distance is calculated in terms of 
+brained distance, with a preference towards nondiagonal moves.</p>
+
+<p><a name="water"><b>Water Skippers and their nests</b></a></p>
+<p>Waterskippers follow the roachlike movement rules, but only move on water. They may additionally move onto any square that doesn't contain either a
+Wall or a closed door if there is a target on the square they wish to kill.</p>
+<p>Every 10 turns, if there's a visible target in the room, water skipper nests spawn a single Water Skipper on an empty Water square surrounding them. 
+The square chosen must be water, and must not contain any standard obstacle or the player. The square chosen will be the one closest to the nearest target.
+ If the Water Skipper Nest is brain-controlled, then it will use the brain's distance to decide. Otherwise, it uses the Pythagorean theorem. In the case of 
+ties, priority is given in the order of NW, N, NE, W, E, SW, S, SE.</p>
+
+<p><a name="tar"><b>Tarstuff and Tarstuff Mothers</b></a></p>
+<p>There are three varieties of tarstuff, all obeying the same stability rules. Tarstuff cannot overlie or expand into pits, water, orthosquares, scrolls
+arrows or any standard obstacle. Tarstuff cannot be less than 2 tiles wide, meaning that the smallest area tarstuff can cover is 2X2 tiles. If a tile, or
+or tiles of tarstuff are destroyed, leaving a one tile wide segment, this remaining segment is converted to tarstuff babies. Tarstuff can be destroyed by 
+explosions, briar, removal by builders, ingestion by adder or by sword. Tar can only by cut on its edges, mud on external corners and gel on internal 
+corners. The intricacies are well covered in Martin Jacobson's excellent <a href="http://forum.caravelgames.com/viewsitepage.php?id=92024">On the (Ab)use of tarstuff</a></p>
+<p>Tar and mud mothers affect any of their respective tarstuff in the room, whereas gel mothers only affect the gel blob they are connected to.
+Every thirty turns, if the player is visible to a tarstuff mother a spawn will occur as follows. 
+At the end of any spawning turn for the tar mother, any blank square (or trapdoor, platform, raft or open door) 
+that is adjacent in one of the eight directions to a square of tarstuff will be filled with either that tarstuff or a tarstuff baby 
+the following turn (unless a tarstuff baby would be formed under a sword, in which case it is immediately killed.) 
+As follows from the stability rules above: tarstuff blobs will form in those squares in which it can be part of a 2x2 square of tar; 
+all other tar squares will turn into tar babies. The movement order for babies produced by tarstuff cutting is from left-to-right, row by row; 
+whereas those produced in a spawn are formed in reverse order. Tarstuff grows in the order: Tar, Mud, then Gel; but babies are only spawned after 
+all stable tarstuff has finished growing for the turn.</p>
+
+<p><a name="fegundo"><b>Fegundo</b></a></p>
+<p>Fegundo are flying creatures that can be controlled by the player.  They are immune to sword swipes, monsters and hot tiles. They do not activate pressure plates.
+They don't move until a Power Token has been activated. At that point, they fly in the 
+direction that the player is currently facing, providing they can either see or smell the player. If an obstacle is in the way and an Arrow or Orthosquare 
+isn't preventing movement in that direction, then the fegundo explodes in a 3x3 square, turning into <b>Fegundo Ashes</b>. Other fegundo hit by the explosion turn 
+into ash as well. After five turns, fegundo ashes revive into new fegundo. Fegundo ashes fall to the floor and can activate pressure plates. Fegundo ashes are vulnerable to being destroyed in many ways, including swords, subsequent explosions
+and being dropped into water or pits. Both fegundo and their ashes
+can be destroyed by briar.</p>
+
+<p><a name="ally"><b>Stalwarts and Rasarun Soldiers</b></a></p>
+<p>Stalwarts and soldiers are, of course, not monsters or enemies, but their behaviour is worth discussing. Each turn, the stalwart works out who its 
+target is, by using a pathmapping algorithm and picking the nearest target. This algorithm is smarter than a brain's since it knows it can walk over scrolls and arrows that are pointed the right way, and can't walk through allies (other stalwarts, decoys etc) or swords.
+<ul><li>If there are no accesible targets, the stalwart stands still.</li>
+<li>If the stalwart's sword is adjacent to the target, it will try to kill it, preferring to turn its sword, rather than move its body, if given the choice.</li>
+<li>If the stalwart is two tiles from the enemy, it will turn its sword to aim in its direction. This is a common cause for stalwart mortality since, if their
+enemy is around a corner, or on the other side of a wall, this puts the sword in the wrong orientation for its next move.</li>
+<li>If the target is further away than this, the stalwart will work out where it needs to move next to start moving towards it (following the current
+pathmap. However, stalwarts always like to have their sword pointed within 45 degrees of the direction they are travelling, so will turn 
+their sword before moving (if this direction is directly behind him, he will turn counter-clockwise).</li>
+<li>This last rule has two exceptions:<ul><li>If the target's horizontal distance is more than twice its vertical, the stalwart will try to point its sword 
+horizontally, and vice versa.</li><li>If the stalwart cannot turn its sword in the direction in wants before moving (e.g. bombs on either side), it will immediately move.</li></ul></li></ul></p>
+<p>Stalwart movement has a few more quirks however. Stalwarts will only look at pathmaps that are available with their current sword orientation. They are
+also clever enough to realise that they don't want their sword to come into contact with their allies (which includes mimics, decoys and the player) or bombs.
+Together, these two rules can result in a stalwart rejecting a particular path since, at some point along it, its current sword orientation would strike one
+of these elements. In this case, the stalwart will go for an alternative route, but, since it is likely to change sword orientation in doing so, this can
+sometimes result in an infinite loop, or at least some unintuitive behaviour.</p>
+<p>Finally, Stalwarts are frozen be Aumtlich beams. Their response to this is to start rotating clockwise. This behaviour takes priority over all other 
+behaviour such that the stalwart may accidentally strike a bomb or ally.</p>
+
+<p><a name="order"><b>Element Behavior Order</b></a>
+Here is the order that non-monster interactions take place and affect room elements:
+<ul><li>Any non-flying monsters fall off platforms that have been moved out from under them, causing them to die.</li>
+<li> Tarstuff is destroyed through any sword stabs, allowing for simultaneous multi-stab removal.</li>
+<li> Unsupported Bridges fall.</li>
+<li> Fuses burn.</li>
+<li> Live briar grows.</li>
+<li> Tarstuff grows.</li>
+<li> Pressure Plates that were depressed but no longer have weight on them now pop up again.</li>
+<li> Seep outside walls and closed doors die.</li>
+<li> Green Doors toggle if the room is conquered.</li></ul></p>
+<p>Just about everything else happens during the movement of whatever monster is currently being looked at: 
+Orbs are activated immediately when hit, Red and Black Doors activate as soon as the last trapdoor/tarstuff is removed, 
+Explosions occur immediately, with all connected explosions resolving before triggering any orbs they activate, and so forth.
+Double placement is its own self-contained turn that happens after everything here.
+Once placed, the new Mimic/Decoy/Clone immediately interacts with the room (activates orbs and tokens, stabs tarstuff, etc).</p>
+
+<p><a name="element"><b>Some miscellaneous element and monster interactions</b></a></p>
+<ul><li>Bomb and fegundo explosions activate orbs and destroy broken orbs.</li>
+<li>Items and monsters on closed doors are not affected by explosions. Explosions will not go against the direction of a force arrow.</li>
+<li>Mirrors block evil eye and Aumtlich gazes, but also reflect them.</li>
+<li>Mirrors and rock piles act as stepping stones when pushed into or formed in shallow water.</li>
+<li>Mirrors extinguish lit fuses.</li>
+<li>Briars can expand over water, orbs and mirrors, but not hot tiles or pits. They can expand diagonally over orthogonal squares.</li>
+<li>Briar growth, fuse burning and pressure plates popping up only occur on full turns (i.e. not during the additional half-turns the player gets when 
+using a speed potion).</li>
+<li>All monsters die when they spend more than one turn on a hot tile, with the exception of flying monsters and tarstuff babies.</li>
+<li>Platforms and rafts cannot be moved if weighed down by tarstuff, serpents or rock giants.</li></ul>
+
+<hr />
+<a href="contents.html">Contents</a>
+</body>
+</html>

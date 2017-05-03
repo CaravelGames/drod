@@ -1,0 +1,64 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODLib", "..\DRODLib\DRODLib.vcxproj", "{7105881E-2DA6-4044-8EC7-2691F24B296A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODUtil", "..\DRODUtil\DRODUtil.vcxproj", "{7B031E3B-8A8E-4260-B496-9909A8E50E1B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackEndLib", "..\BackEndLib\BackEndLib.vcxproj", "{896C0D2A-91F2-4988-911E-C3D00912C5C9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrontEndLib", "..\FrontEndLib\FrontEndLib.vcxproj", "{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DROD", "..\DROD\DROD.vcxproj", "{3FDF4563-C819-4E05-8958-E3D652C5B432}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		BuildDats|Win32 = BuildDats|Win32
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+		Russian|Win32 = Russian|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.BuildDats|Win32.ActiveCfg = BuildDats|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.BuildDats|Win32.Build.0 = BuildDats|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Debug|Win32.Build.0 = Debug|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Release|Win32.ActiveCfg = Release|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Release|Win32.Build.0 = Release|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Russian|Win32.ActiveCfg = Russian|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Russian|Win32.Build.0 = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|Win32.ActiveCfg = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|Win32.Build.0 = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|Win32.Build.0 = Debug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Release|Win32.ActiveCfg = Release|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian|Win32.ActiveCfg = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian|Win32.Build.0 = Russian|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.BuildDats|Win32.ActiveCfg = Release|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.BuildDats|Win32.Build.0 = Release|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Debug|Win32.Build.0 = Debug|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Release|Win32.ActiveCfg = Release|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Release|Win32.Build.0 = Release|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Russian|Win32.ActiveCfg = Russian|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Russian|Win32.Build.0 = Russian|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.BuildDats|Win32.ActiveCfg = Release|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.BuildDats|Win32.Build.0 = Release|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Debug|Win32.Build.0 = Debug|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Release|Win32.ActiveCfg = Release|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Release|Win32.Build.0 = Release|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Russian|Win32.ActiveCfg = Russian|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Russian|Win32.Build.0 = Russian|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.BuildDats|Win32.ActiveCfg = BuildDats|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.BuildDats|Win32.Build.0 = BuildDats|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Debug|Win32.Build.0 = Debug|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Release|Win32.ActiveCfg = Release|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Release|Win32.Build.0 = Release|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Russian|Win32.ActiveCfg = Russian|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Russian|Win32.Build.0 = Russian|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

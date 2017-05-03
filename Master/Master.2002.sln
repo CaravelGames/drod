@@ -1,0 +1,61 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackEndLib", "..\BackEndLib\BackEndLib.2002.vcproj", "{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrontEndLib", "..\FrontEndLib\FrontEndLib.2002.vcproj", "{B911887F-9D09-4F16-8CFA-0B4624B01A1E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODLib", "..\DRODLib\DRODLib.2002.vcproj", "{1F9065EA-BBEE-469C-AD81-59DC23C0A266}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drod", "..\DROD\drod.2002.vcproj", "{CBA38884-2B0E-46E2-991E-8643D096BAA5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E} = {B911887F-9D09-4F16-8CFA-0B4624B01A1E}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODUtil", "..\DRODUtil\DRODUtil.2002.vcproj", "{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E} = {B911887F-9D09-4F16-8CFA-0B4624B01A1E}
+		{CBA38884-2B0E-46E2-991E-8643D096BAA5} = {CBA38884-2B0E-46E2-991E-8643D096BAA5}
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266} = {1F9065EA-BBEE-469C-AD81-59DC23C0A266}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Debug.ActiveCfg = Debug|Win32
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Debug.Build.0 = Debug|Win32
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Release.ActiveCfg = Release|Win32
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Release.Build.0 = Release|Win32
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E}.Debug.ActiveCfg = Debug|Win32
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E}.Debug.Build.0 = Debug|Win32
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E}.Release.ActiveCfg = Release|Win32
+		{B911887F-9D09-4F16-8CFA-0B4624B01A1E}.Release.Build.0 = Release|Win32
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266}.Debug.ActiveCfg = Debug|Win32
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266}.Debug.Build.0 = Debug|Win32
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266}.Release.ActiveCfg = Release|Win32
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266}.Release.Build.0 = Release|Win32
+		{CBA38884-2B0E-46E2-991E-8643D096BAA5}.Debug.ActiveCfg = Debug|Win32
+		{CBA38884-2B0E-46E2-991E-8643D096BAA5}.Debug.Build.0 = Debug|Win32
+		{CBA38884-2B0E-46E2-991E-8643D096BAA5}.Release.ActiveCfg = Release|Win32
+		{CBA38884-2B0E-46E2-991E-8643D096BAA5}.Release.Build.0 = Release|Win32
+		{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}.Debug.ActiveCfg = Debug|Win32
+		{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}.Debug.Build.0 = Debug|Win32
+		{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}.Release.ActiveCfg = Release|Win32
+		{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

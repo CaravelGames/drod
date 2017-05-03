@@ -1,0 +1,8 @@
+syntax: glob
+
+DebugVS2013/
+DebugVS2013-Temp/
+Release/
+Release-Temp/
+*.vcxproj.user
+*.log

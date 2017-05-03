@@ -1,0 +1,102 @@
+<html>
+<head>
+  <title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg" />
+<hr />
+<h3><u>Character Scripting</u></h3>
+<p><a name="npc">Non-player characters (NPCs)</a> can be used to develop a story
+in your hold by assigning them a list of things to do and say.
+When an NPC is placed in a room, a dialog box will appear for
+customizing the NPC's appearance and behavior.  On this dialog, a list box
+displays the character's script, which is initially empty.
+The script tells the NPC what to do when the player enters the room.</p>
+
+<p><a name="graphic"><b>Graphic</b></a> - Select what your NPC will look like from the list of
+available actors.  Selecting "None" (the default)
+indicates this NPC is used for scripting events but will not appear as a visible character
+in the room.  Hint: With the "None" setting, a character cannot be made visible.</p>
+
+<p><a name="management"><b>Character Management</b></a> -
+Click <b>"Characters"</b> to pop up the Character Management dialog.
+Here, you may create custom actors for use anywhere in the hold being edited.
+Type a name and click "Add Character" to create a new actor for this hold.
+Next, select what the actor will look like from the Graphic list box.
+Click <b><a name="defaultscript">"Default script"</a></b>
+to define what an instance of this character type will do by default
+if no script commands are defined for the particular NPC instance.
+Also, use this in conjunction with <b><a href="script.html#startglobalscript">Start Global Script</a></b>
+to create a script that runs in each room instead of just one particular room.
+Click <b>"Custom avatar"</b> to import a custom face from an image file (130x164 pixels)
+on disk into your hold.
+When this actor speaks, this image will be shown in the game screen's face box.
+Click <a name="customtiles">"Custom Tiles"</a> to import a custom tileset for this
+character.<br />
+<br />
+Tilesets typically range from a 1x1 tile image to a 9x6 grid of 22x22 pixel tiles.
+Each column stores tiles for a certain orientation, starting from northward and
+progressing clockwise at 45 degree increments.
+The ninth column stores the central <a name="orientation">orientation</a> (i.e. no direction).  If an
+orientation to display is not included, the northward image is used by default.
+The <u>second</u> row may be included to display a second animation frame, displayed
+at random time intervals.
+The <u>third</u> row, if included, stores custom sword images for character types
+wielding swords.
+The <u>fourth</u> row, when included, stores custom images for a sword-wielding
+character when they are not currently wielding a sword.
+The <u>fifth</u> and <u>sixth</u> rows are for displaying wading in shallow water,
+with and without wielding a weapon, respectively.
+If the third and subsequent rows are not included, then tiles from the first
+row are displayed in their place.  If the type set is an entity without a sword,
+the third, fourth and sixth rows are ignored.<br />
+<br />
+Alternately, when a custom tile image is set, you may enter a looping <a name="animationspeed"><b>Animation Speed</b></a>. When a non-zero value is specified, then the rows in the custom tile image take on a different meaning. Now, the display frame will advance through the rows at the rate you specify. The animation will loop following the final row/frame.
+<br />
+Click "Default" to <a name="reset">reset</a> the actor's avatar or tileset to the default for this
+character type.
+<br />
+Click <a name="delete">"Delete"</a> to permanently remove the selected actor from your hold.</p>
+<p><a name="visible"><b>Visible</b></a> - If checked, the NPC will be visible when the player
+enters the room.  Otherwise, it will be invisible.  When an NPC is invisible, its
+script continues to play but it otherwise behaves as if it were not in the room.
+Hint: making a character with a "None" graphic visible will set it to the
+"Citizen" type.</p>
+
+<p><a name="options"><b>Options</b></a> - Click to set the NPC's processing sequence, or the relative order in which the NPC takes its turn in relation to other entities in the room.</p>
+<p><a name="addcommand"><b>Add Command</b></a> - Click to add another <a href="script.html">command</a>
+to the script.</p>
+<p><a name="deletecommand"><b>Delete Command</b></a> - Deletes the selected commands from the script.  Also
+performed by pressing the &lt;Delete&gt; key.</p>
+
+<p><a name="reorder"><b>Reordering commands</b></a> - During play, commands are performed in the order
+they are placed in the script.  Hold down the mouse button on a command and drag it
+to reposition it in the script.</p>
+
+<p><a name="cutcopypaste"><b>Cut-copy-paste commands</b></a> - With one or more commands selected, press
+&lt;Ctrl-X&gt; to cut the commands from the script and place them in the script
+clipboard.  Press &lt;Ctrl-C&gt; to make a copy of the selected script commands
+and place them in the script clipboard.  Press &lt;Ctrl-V&gt; to paste the
+script commands in the script clipboard after the selected script command.
+The script clipboard is only valid while editing the current NPC.</p>
+<p><a name="importexport"><b>Importing and exporting commands</b></a> -
+Script commands may be imported from and exported to the operating system clipboard.
+Press &lt;Ctrl-B&gt; to export the currently highlighted script commands.
+Then you may paste these commands as text into a text editor.
+Press &lt;Ctrl-Shift-B&gt; to import a text selection from the OS clipboard.
+Command syntax must match that of exported commands in order for text to be
+imported correctly.</p>
+
+<p>Click "Okay" to finish customizing the NPC.</p>
+<p><a name="revise">You</a> may click on the character in the room at any time
+to revise its appearance or script.  With the character monster selected in
+the edit menu, click on the NPC again to change its initial orientation.
+<a name="reposition">Click</a> and drag a character to reposition it in the room.</p>
+<p><a href="script.html">Command list</a>. Read what script commands do and how to
+use them.</p>
+<hr />
+<a href="editroom.html">Room Editor</a><br />
+<a href="editselect.html">Level Editor</a><br />
+<a href="contents.html">Contents</a><br />
+</body>
+</html>

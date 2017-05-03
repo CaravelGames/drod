@@ -1,0 +1,75 @@
+##############################################################################
+#
+# Version: MPL 1.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is Deadly Rooms of Death.
+#
+# The Initial Developer of the Original Code is
+# Caravel Software.
+# Portions created by the Initial Developer are Copyright (C) 2002 
+# Caravel Software. All Rights Reserved.
+#
+# Contributor(s): Matt Schikore (Schik)
+#
+##############################################################################
+
+SHELL      = /bin/sh
+LIBDIR     = ../lib
+LIB        = $(LIBDIR)/libdrod.a
+INCLUDE    = -I/usr/people/schikore/include/
+DEFINES    = -D_DEBUG
+
+TESTINI    = testini
+
+SOURCES    = Assert.cpp Base64.cpp CoordIndex.cpp CueEvents.cpp \
+   		 	 CurrentGame.cpp IDList.cpp StretchyBuffer.cpp \
+			 SysTimer.cpp Db.cpp DbBase.cpp DbCommands.cpp DbDate.cpp \
+			 DbDemos.cpp DbHolds.cpp DbLevels.cpp DbMessageText.cpp \
+			 DbPackedVars.cpp DbPlayers.cpp DbRefs.cpp DbRooms.cpp \
+			 DbSavedGames.cpp DbXML.cpp Brain.cpp EvilEye.cpp Goblin.cpp \
+			 Mimic.cpp Monster.cpp MonsterFactory.cpp MonsterMessage.cpp \
+			 Neather.cpp PathMap.cpp Roach.cpp RoachEgg.cpp RoachQueen.cpp \
+			 Serpent.cpp Spider.cpp TarBaby.cpp TarMother.cpp Wraithwing.cpp \
+			 Ports.o Files.cpp IniFile.o Wchar.o Swordsman.cpp
+
+CXX			= CC
+CFLAGS      = -c -g -xansi -n32 -mips3 -ptused -diag_suppress 1171,1001,1682,1525,3439,1401,1174 
+#CXX			= g++
+#CFLAGS      = -c -g $(DEFINES)
+
+OBJECTS    = $(SOURCES:%.cpp=%.o)
+
+all: $(LIB)
+
+install: $(LIB)
+
+$(LIB): $(OBJECTS)
+	$(AR) -cr $(LIB) $(OBJECTS)
+
+clean:
+	/bin/rm -f $(OBJECTS) $(MAIN) main
+
+%.o: %.cpp
+	$(CXX) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+# $Log: Makefile.sgi,v $
+# Revision 1.1.1.1  2003/05/18 01:32:11  mrimer
+# DROD 3.0 module.
+#
+# Revision 1.1.1.1  2003/05/18 02:32:11  mrimer
+# Initial check-in.
+#
+# Revision 1.1  2003/05/18 03:32:11  schik
+# Initial Makefile for the SGI version - needs to have the obvious lib and include directories changed to fit your configuration.  Also, right now there are no dependencies set up in this Makefile, so "make clean; make" is the only really correct way to compile after changing any header files.  This could probably be fixed with makedepend.
+#
+#

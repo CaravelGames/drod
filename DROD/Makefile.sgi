@@ -1,0 +1,91 @@
+##############################################################################
+# 
+# Version: MPL 1.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is Deadly Rooms of Death.
+#
+# The Initial Developer of the Original Code is
+# Caravel Software.
+# Portions created by the Initial Developer are Copyright (C) 2002 
+# Caravel Software. All Rights Reserved.
+#
+# Contributor(s): Matt Schikore (Schik)
+#
+#
+##############################################################################
+
+SHELL      = /bin/sh
+LIBDIR     = -L../lib -L/usr/people/schikore/lib/
+INCLUDE    = -I/usr/people/schikore/include/ -I/usr/people/schikore/include/SDL
+DROD	   = drod
+DEFINES    = -D_DEBUG
+
+SOURCES    = AnimatedTileEffect.cpp BitmapManager.cpp BloodEffect.cpp \
+			Bolt.cpp Browser.cpp BumpObstacleEffect.cpp ButtonWidget.cpp \
+			CheckpointEffect.cpp Colors.cpp CreditsScreen.cpp DebrisEffect.cpp \
+			DemoScreen.cpp DemosScreen.cpp DialogWidget.cpp EditRoomScreen.cpp \
+			EditSelectScreen.cpp Effect.cpp EffectList.cpp \
+			EventHandlerWidget.cpp FaceWidget.cpp Fade.cpp \
+			FileDialogWidget.cpp FlashMessageEffect.cpp FocusWidget.cpp \
+			FontManager.cpp FrameRateEffect.cpp FrameWidget.cpp GameScreen.cpp \
+			HoldSelectScreen.cpp Inset.cpp KeypressDialogWidget.cpp \
+			LabelWidget.cpp LevelSelectDialogWidget.cpp LevelStartScreen.cpp \
+			ListBoxWidget.cpp Main.cpp MapWidget.cpp NewPlayerScreen.cpp \
+			ObjectMenuWidget.cpp OptionButtonWidget.cpp Outline.cpp Pan.cpp \
+			ParticleExplosionEffect.cpp PendingPlotEffect.cpp \
+			RestoreScreen.cpp RoomScreen.cpp RoomWidget.cpp ScalerWidget.cpp \
+			Screen.cpp ScreenManager.cpp ScrollingTextWidget.cpp \
+			SettingsScreen.cpp ShadeEffect.cpp SliderWidget.cpp Sound.cpp \
+			StrikeOrbEffect.cpp SwordsmanSwirlEffect.cpp TabbedMenuWidget.cpp \
+			TarStabEffect.cpp TextBoxWidget.cpp TileImageCalcs.cpp \
+			TitleScreen.cpp ToolTipEffect.cpp TransTileEffect.cpp \
+			TrapdoorFallEffect.cpp Widget.cpp WinAudienceScreen.cpp \
+			WinPicScreen.cpp WinRoomScreen.cpp WinScreen.cpp \
+			WinStartScreen.cpp
+
+CXX			= CC
+CFLAGS      = -c -g -xansi -n32 -mips3 -ptused -diag_suppress 1171,1001,1682 -Wf,-old_conditional_operator_rules 
+#CXX			= g++
+#CFLAGS      = -c -g 
+
+OBJECTS    = $(SOURCES:%.cpp=%.o)
+
+all: $(DROD)
+
+install: $(LIB)
+
+$(DROD): $(OBJECTS) ../lib/libdrod.a
+	$(CXX) -o$(DROD) $(LIBDIR) $(OBJECTS) -ldrod -lexpat -lSDL -lSDL_ttf  -lmk4 -lm 
+
+../lib/libdrod.a:
+	cd ../DRODLib
+	$(MAKE)
+
+clean:
+	/bin/rm -f $(OBJECTS) $(DROD)
+
+%.o: %.cpp
+	$(CXX) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+# $Log: Makefile.sgi,v $
+# Revision 1.1.1.1  2003/05/18 01:31:32  mrimer
+# DROD 3.0 module.
+#
+# Revision 1.1.1.1  2003/05/18 02:31:32  mrimer
+# Initial check-in.
+#
+# Revision 1.1  2003/05/18 03:31:32  schik
+# Initial Makefile for the SGI version - needs to have the obvious lib and include directories changed to fit your configuration.  Also, right now there are no dependencies set up in this Makefile, so "make clean; make" is the only really correct way to compile after changing any header files.  This could probably be fixed with makedepend.
+#
+#
+
