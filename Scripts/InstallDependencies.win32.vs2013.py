@@ -11,6 +11,8 @@ from subprocess import Popen, PIPE
 from pprint import pprint
 
 def overrideOptions():
+	global DevEnvPath,DepsToBuild,IgnoreBuilds
+
 	DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\devenv.com'
 	IgnoreBuilds = 0 # Set this to 0 to skip the build step
 	DepsToBuild = "all" # Change it to array of lib names to build and copy only the sepcific ones
@@ -137,7 +139,7 @@ dependencies = {
 		}
 	},
 	'jpeg-6b':{
-		# Prebuilt binaries for VS2013
+		# Custom version with prepared VS project files
 		'urls': ['http://cdn.retrocade.net/jpeg-6b.zip'],
 		'builds': [
 			{
@@ -293,8 +295,8 @@ dependencies = {
 			'lpng1512/pngstruct.h': ''
 		},
 		'libs': {
-			'lpng1512/projects/visualc71/Win32_DLL_Debug/libpng.lib': 'Debug',
-			'lpng1512/projects/visualc71/Win32_DLL_Release/libpng.lib': 'Release',
+			'lpng1512/projects/visualc71/Win32_LIB_Release/libpng.lib': 'Debug',
+			'lpng1512/projects/visualc71/Win32_LIB_Release/libpng.lib': 'Release',
 			'lpng1512/projects/visualc71/Win32_DLL_Debug/ZLib/zlib.lib': 'Debug',
 			'lpng1512/projects/visualc71/Win32_DLL_Release/ZLib/zlib.lib': 'Release'
 		},
