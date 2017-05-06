@@ -1,0 +1,16 @@
+# Dependancies
+Deps/
+DepsSrc/
+
+# Build Folders
+**/Release/
+**/Release-Temp/
+**/Debug/
+**/Debug-Temp/
+
+# Various things we don't want.
+**/*.obj
+**/*.log
+**/*.dll
+**/*.lib
+**/*.exe
