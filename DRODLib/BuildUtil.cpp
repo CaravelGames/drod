@@ -223,7 +223,7 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, c
 
 	bool bValid = CanBuildAt(room, tile, x, y, bAllowSame);
 
-	if (bIsWall(baseTile) || bIsCrumblyWall(baseTile))
+	if (bIsWall(baseTile) || bIsCrumblyWall(baseTile) || bIsBriar(baseTile))
 	{
 		//If the build tile would fill a square, the tile must be vacant now.
 		CMonster *pMonster = room.GetMonsterAtSquare(x, y);

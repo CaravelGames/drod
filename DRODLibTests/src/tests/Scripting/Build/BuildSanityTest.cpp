@@ -118,13 +118,13 @@ TEST_CASE("Testing can build T_POTION_SP on player", "[game]") {
 	CanBuildOnPlayer(T_POTION_SP, true);
 }
 TEST_CASE("Testing can build T_BRIAR_SOURCE on player", "[game]") {
-	CanBuildOnPlayer(T_BRIAR_SOURCE, true);
+	CanBuildOnPlayer(T_BRIAR_SOURCE, false);
 }
 TEST_CASE("Testing can build T_BRIAR_DEAD on player", "[game]") {
-	CanBuildOnPlayer(T_BRIAR_DEAD, true);
+	CanBuildOnPlayer(T_BRIAR_DEAD, false);
 }
 TEST_CASE("Testing can build T_BRIAR_LIVE on player", "[game]") {
-	CanBuildOnPlayer(T_BRIAR_LIVE, true);
+	CanBuildOnPlayer(T_BRIAR_LIVE, false);
 }
 TEST_CASE("Testing can build T_LIGHT_CEILING on player", "[game]") {
 	CanBuildOnPlayer(T_LIGHT_CEILING, false);
