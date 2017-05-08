@@ -286,7 +286,7 @@ void CCitizen::BuildTile(CCueEvents& CueEvents)
 
 	//Check for vacancy.
 	UINT wBuildTile = room.building.get(this->goal.wX, this->goal.wY) - 1; //1-based
-	if (bIsWall(wBuildTile) || bIsCrumblyWall(wBuildTile))
+	if (bIsWall(wBuildTile) || bIsCrumblyWall(wBuildTile) || bIsBriar(wBuildTile))
 	{
 		//If the build tile would fill a square, the tile must be vacant now.
 		CMonster *pMonster = room.GetMonsterAtSquare(this->goal.wX, this->goal.wY);
