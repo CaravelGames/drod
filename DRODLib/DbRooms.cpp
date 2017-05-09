@@ -9919,6 +9919,37 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::IsMonsterWeaponTypeAt(
+    //Determines if a square contains a monster's weapon, and it is of the
+    //given type.
+    //
+    //
+    //Params:
+    const UINT wX, const UINT wY, //(in)   Square to check.
+    const WeaponType wt, //Type of weapon
+    const CMonster *pIgnore) //[default=NULL] optional monster to ignore in search
+                             //
+                             //Returns:
+                             //True if it does, false if not.
+    const
+{
+    //For a monster to have a sword in this square, the monster must be adjacent.
+    for (int nJ = -1; nJ <= 1; ++nJ) //O(9) search
+        for (int nI = -1; nI <= 1; ++nI)
+            if (nI || nJ)
+            {
+                CMonster *pMonster = GetMonsterAtSquare(wX + nI, wY + nJ);
+                //Monsters can walk into their own sword square.
+                if (pMonster && pMonster != pIgnore && pMonster->HasSwordAt(wX, wY)) {
+                    if (pMonster->GetWeaponType() == wt)
+                        return true;
+                }
+            }
+
+    return false;
+}
+
+//*****************************************************************************
 bool bIsArrowObstacle(
 //Determines whether a specified arrow tile would be an obstacle when
 //approaching it from a specified angle, and whether the tile could

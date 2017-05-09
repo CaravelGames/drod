@@ -352,6 +352,8 @@ public:
 			const UINT wSquares, const bool bConsiderPieces=true) const;
 	bool           IsMonsterSwordAt(const UINT wX, const UINT wY,
 			const bool bIgnoreDagger=false, const CMonster *pIgnore=NULL) const;
+    bool           IsMonsterWeaponTypeAt(const UINT wX, const UINT wY,
+        const WeaponType wt, const CMonster *pIgnore = NULL) const;
 	bool           IsPathmapNeeded() const;
 	bool           IsTimerNeeded() const;
 	static bool    IsRequired(const UINT dwRoomID);

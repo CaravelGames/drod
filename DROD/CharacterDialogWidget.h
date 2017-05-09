@@ -194,7 +194,7 @@ private:
 	CListBoxWidget *pDisplayFilterListBox;
 	CListBoxWidget *pWorldMapIconFlagListBox;
 	CListBoxWidget *pWorldMapImageFlagListBox;
-	CListBoxWidget *pWeaponListBox;
+	CListBoxWidget *pWeaponListBox, *pWeaponFlagsListBox;
 	CListBoxWidget *pAttackTileListBox;
 
 	CCharacter *pCharacter;       //character being edited
