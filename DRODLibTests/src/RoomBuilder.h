@@ -4,6 +4,7 @@
 #include "CTestDb.h"
 #include "../../DRODLib/Character.h"
 #include "../../DRODLib/Serpent.h"
+#include "../../DRODLib/Gentryii.h"
 #include "../../DRODLib/DbRooms.h"
 #include <BackEndLib/Types.h>
 
@@ -15,6 +16,7 @@ public:
 	static CMonster* AddMonster(const UINT wType, const UINT wX, const UINT wY, const UINT wO = N);
 	static CCharacter* AddMonsterWithWeapon(const UINT wType, const WeaponType weaponType, const UINT wX, const UINT wY, const UINT wO = N);
 	static void AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UINT pieceY);
+    static void AddGentryiiPiece(CGentryii* gentryii, const UINT pieceX, const UINT pieceY);
 	static void AddWallLight(const UINT wX, const UINT wY, const UINT type);
 	static void AddCeilingLight(const UINT wX, const UINT wY, const UINT type);
 	static void AddCeilingDarkness(const UINT wX, const UINT wY, const UINT type);
