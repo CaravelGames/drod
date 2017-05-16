@@ -1337,7 +1337,10 @@ void CCharacter::Process(
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(wDestX, wDestY, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
 				if (bStopTurn)
-					STOP_COMMAND;
+				{
+					bProcessNextCommand = true;
+					break;
+				}
 				if (!dx && !dy)
 				{
 					if (ph)
@@ -1348,6 +1351,7 @@ void CCharacter::Process(
 							if (!TurnsSlowly())
 								SetOrientation(dxFirst,dyFirst);
 						}
+						bProcessNextCommand = true;
 						break;
 					}
 					STOP_COMMAND;
