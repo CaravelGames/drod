@@ -1337,7 +1337,10 @@ void CCharacter::Process(
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(wDestX, wDestY, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
 				if (bStopTurn)
-					STOP_COMMAND;
+				{
+					bProcessNextCommand = true;
+					break;
+				}
 				if (!dx && !dy)
 				{
 					if (ph)
@@ -1348,6 +1351,7 @@ void CCharacter::Process(
 							if (!TurnsSlowly())
 								SetOrientation(dxFirst,dyFirst);
 						}
+						bProcessNextCommand = true;
 						break;
 					}
 					STOP_COMMAND;
@@ -1363,8 +1367,10 @@ void CCharacter::Process(
 						{
 							this->wSwordMovement = CSwordsman::GetSwordMovement(
 									this->wO == nNextCO(wOldO) ? CMD_C : CMD_CC, this->wO);
-							if (ph)  //single step?
+							if (ph) //single step?
+							{
 								break;
+							}
 							STOP_DONECOMMAND;
 						}
 					}
@@ -1452,7 +1458,10 @@ void CCharacter::Process(
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(this->wXRel, this->wYRel, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
 				if (bStopTurn)
-					STOP_COMMAND;
+				{
+					bProcessNextCommand = true;
+					break;
+				}
 				if (!dx && !dy)
 				{
 					if (ph && IsVisible())
@@ -1464,6 +1473,7 @@ void CCharacter::Process(
 								SetOrientation(dxFirst,dyFirst);
 						}
 						this->bMovingRelative = false;
+						bProcessNextCommand = true;
 						break;
 					}
 					STOP_COMMAND;
