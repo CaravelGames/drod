@@ -3,9 +3,33 @@ Deps/
 DepsSrc/
 
 # Build Folders
-**/Release/
-**/Release-Temp/
-**/Debug*/
+Master/Linux/build.*
+Master/Linux/builds/
+Master/Linux/drod-sdl2.sublime-*
+DRODLibTests/debug/
+DRODLibTests/DebugVS2008/
+DRODLibTests\DRODLibTest.log
+DRODLibTests/Release/
+DROD/DebugVS2008/
+DROD/DebugVS2013/
+DROD/DebugVS2013-Temp/
+DROD/Steam/
+DROD/SteamBuildDats/
+DROD/Release/
+DROD/Release-Temp/
+DRODLib/DebugVS2008/
+DRODLib/DebugVS2013/
+DRODLib/Release/
+DRODLib/Steam/
+DRODLib/BuildDats/
+DRODLib/SteamBuildDats/
+DRODUtil/DebugVS2008/
+DRODUtil/DebugVS2013/
+DRODUtil/DebugVS2013-Temp/
+DRODUtil/Release/
+DRODUtil/Release-Temp/
+DRODUtil/Steam/
+DRODUtil/Steam-Temp/
 
 # Various things we don't want.
 **/*.obj
@@ -13,3 +37,10 @@ DepsSrc/
 **/*.dll
 **/*.lib
 **/*.exe
+**/*.vcxproj.user
+**/*.vcxproj.filters
+**/*.suo
+**/*.sdf
+**/*.opensdf
+**/*.vspx
+**/*.tlog
