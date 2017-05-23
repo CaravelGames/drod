@@ -84,6 +84,12 @@ void RoomBuilder::AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UI
 	}
 }
 
+void RoomBuilder::AddGentryiiPiece(CGentryii* gentryii, const UINT pieceX, const UINT pieceY){
+    CMonsterPiece* newPiece = new CMonsterPiece(gentryii, T_GENTRYII, pieceX, pieceY);
+    GetRoom()->SetMonsterSquare(newPiece);
+    gentryii->Pieces.push_back(newPiece);
+}
+
 CCharacter* RoomBuilder::AddMonsterWithWeapon(const UINT wType, const WeaponType weaponType, const UINT wX, const UINT wY, const UINT wO){
 	CCharacter *pCharacter = AddVisibleCharacter(wX, wY, wO, wType);
 	AddCommand(pCharacter, CCharacterCommand::CC_VarSet, ScriptVars::P_MONSTER_WEAPON, ScriptVars::Assign, weaponType);

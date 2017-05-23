@@ -2627,6 +2627,8 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 			return false;
 		if (!this->pRoom->CanPushOntoFTile(this->swordsman.wX, this->swordsman.wY, wDestX, wDestY))
 			return false;
+        if (this->pRoom->DoesGentryiiPreventDiagonal(this->swordsman.wX, this->swordsman.wY, wDestX, wDestY))
+            return false;
 
 		if (!this->swordsman.Move(wDestX, wDestY))
 			return false;
