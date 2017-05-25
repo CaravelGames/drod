@@ -16,7 +16,7 @@ TEST_CASE("Wait for Weapon script command", "[game][scripting][weapon]") {
         RoomBuilder::AddCommand(character, CCharacterCommand::CC_Wait, 1);
         RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForWeapon, 20, 10);
         RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"One");
-        
+
         RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WeaponType::WT_Sword, 19, 11, N);
         RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WeaponType::WT_Staff, 17, 11, N);
         RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WeaponType::WT_Spear, 15, 11, N);
