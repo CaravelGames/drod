@@ -872,7 +872,7 @@ const
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE ||
 						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION ||
-						bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1])) &&
+						bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1]) || bIsPotion(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER ||
 					 bIsEntityFlying(wTileNo[2]) || bIsEntitySwimming(wTileNo[2]) ||
 					 bCanEntityWadeInShallowWater(wTileNo[2]));
