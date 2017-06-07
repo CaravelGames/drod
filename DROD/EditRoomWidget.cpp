@@ -881,6 +881,9 @@ const
 			//Don't allow stair juxtaposition w/ t-layer items (except tar and obstacles).
 			if (!(wTileNo[1] == T_EMPTY || bIsTarOrFluff(wTileNo[1]) || wTileNo[1] == T_OBSTACLE))
 				return false;
+			//Allowing stairs under a level start can trap the player in a loop of stairs.
+			if (bSwordsmanAt)
+				return false;
 			if (bIsTarOrFluff(wTileNo[1]))
 				return true;
 			break;
