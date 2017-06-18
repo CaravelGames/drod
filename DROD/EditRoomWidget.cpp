@@ -856,14 +856,14 @@ const
 			if (bIsPit(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
-					  wTileNo[1] == T_FLUFF || bIsLight(wTileNo[1])) &&
+					  wTileNo[1] == T_FLUFF || wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER || bIsEntityFlying(wTileNo[2]));
 		case T_WATER:
 			//Water -- flying+water monsters can be on it.
 			if (bIsDeepWater(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
-						wTileNo[1] == T_FLUFF || bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1])) &&
+						wTileNo[1] == T_FLUFF || wTileNo[1] == T_TOKEN || bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER ||
 					bIsEntityFlying(wTileNo[2]) || bIsEntitySwimming(wTileNo[2]));
 		case T_SHALLOW_WATER: case T_STEP_STONE:
@@ -871,7 +871,7 @@ const
 			if (bIsShallowWater(wTileNo[0]) || bIsSteppingStone(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE ||
-						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION ||
+						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION || wTileNo[1] == T_TOKEN ||
 						bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1]) || bIsPotion(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER ||
 					 bIsEntityFlying(wTileNo[2]) || bIsEntitySwimming(wTileNo[2]) ||
