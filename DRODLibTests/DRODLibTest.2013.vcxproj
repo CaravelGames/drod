@@ -201,6 +201,7 @@
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
