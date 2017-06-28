@@ -5898,7 +5898,12 @@ CheckMonsterLayer:
 						const UINT wDestX = pCharacter->wX + dx;
 						const UINT wDestY = pCharacter->wY + dy;
 
-						if (this->pRoom->IsValidColRow(wDestX, wDestY) &&
+						//Prevent pushes that would allow an otherwise illegal move.
+						bool bPlayerCanMoveTo = this->pRoom->CanPlayerMoveOnThisElement(
+							this->swordsman.wAppearance, this->pRoom->GetOSquare(destX, destY)
+						) && ! (bIsTar(wNewTTile) || wNewTTile == T_OBSTACLE || wNewTTile == T_BOMB || wNewTTile == T_STATION || wNewTTile == T_LIGHT);
+
+						if (this->pRoom->IsValidColRow(wDestX, wDestY) && bPlayerCanMoveTo &&
 								this->pRoom->CanPushMonster(pMonster, pMonster->wX, pMonster->wY, wDestX, wDestY)){
 							pCharacter->PushInDirection(dx, dy, false, CueEvents);
 							bPushedCharacter = true;
