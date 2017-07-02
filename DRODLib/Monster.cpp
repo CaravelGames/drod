@@ -2173,7 +2173,7 @@ void CMonster::Move(
 				break;
 			default:
 				ASSERT(this->CanDaggerStep(pMonster->wType, false));
-				ASSERT(pMonster->IsAttackableTarget() != this->IsAttackableTarget());
+				ASSERT(bIsStalwart(this->wType) || this->wType == M_GUARD || this->wType == M_SLAYER || this->wType == M_SLAYER2);
 
 				pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
 				VERIFY(room.KillMonster(pMonster, *pCueEvents, false, this));
