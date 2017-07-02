@@ -363,10 +363,21 @@ bool CSlayer::DoesSquareContainObstacle(
 	const UINT wCol, const UINT wRow) //(in) Coords of square to evaluate.  Must be valid.
 const
 {
-	if (!this->bMovingWisp)
-		return CArmedMonster::DoesSquareContainObstacle(wCol, wRow);
-
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (!this->bMovingWisp) {
+		//Check for monster at square.
+		CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
+		if (pMonster)
+		{
+			//Don't step-kill guards or other slayers
+			if (pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 || pMonster->wType == M_GUARD)
+				return true;
+		}
+
+		return CArmedMonster::DoesSquareContainObstacle(wCol, wRow);
+	}
+
 	if (!room.IsValidColRow(wCol,wRow))
 	{
 		ASSERT(!"CSlayer::DoesSquareContainObstacle -- (wCol,wRow) must be valid.");
