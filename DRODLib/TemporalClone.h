@@ -43,6 +43,8 @@ public:
 	virtual bool IsHiding() const;
 	virtual bool IsMonsterTarget() const;
 	virtual bool IsTarget() const;
+	virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX = (UINT)-1, const UINT wY = (UINT)-1,
+		WeaponType weaponType = WT_Sword);
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 	virtual void PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEvents);
 	virtual bool SetWeaponSheathed();

@@ -133,6 +133,23 @@ bool CTemporalClone::IsTarget() const
 	return this->bIsTarget;
 }
 
+bool CTemporalClone::OnStabbed(CCueEvents & CueEvents, const UINT wX, const UINT wY, WeaponType weaponType)
+{
+	if (this->wIdentity == M_WUBBA && weaponType != WeaponType::WT_Firetrap) {
+		// Wubbas can only be killed by Firetrap stabs.
+		return false;
+	}
+
+	if (this->wIdentity == M_FEGUNDO) {
+		// Fegundoes are immune to all weapon types.
+		return false;
+	}
+
+	//Monster dies.
+	CueEvents.Add(CID_MonsterDiedFromStab, this);
+	return true;
+}
+
 //*****************************************************************************
 void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 {
