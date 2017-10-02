@@ -133,7 +133,14 @@ bool CTemporalClone::IsTarget() const
 	return this->bIsTarget;
 }
 
-bool CTemporalClone::OnStabbed(CCueEvents & CueEvents, const UINT wX, const UINT wY, WeaponType weaponType)
+//*****************************************************************************
+bool CTemporalClone::OnStabbed(
+// Override for Temporal Clone, as some player roles can survive stabs.
+	CCueEvents & CueEvents,
+	const UINT wX,
+	const UINT wY,
+	WeaponType weaponType
+)
 {
 	if (this->wIdentity == M_WUBBA && weaponType != WeaponType::WT_Firetrap) {
 		// Wubbas can only be killed by Firetrap stabs.
