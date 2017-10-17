@@ -702,6 +702,9 @@
     <ProjectReference Include="..\FrontEndLib\FrontEndLib.2013.vcxproj">
       <Project>{a23303ca-acf1-4bac-9519-0e5febff69c1}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\CaravelNet\CaravelNet.2013.vcxproj">
+      <Project>{aa06dde7-be8e-4411-8eac-1cf60eee2f02}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\DRODLib\DRODLib.2013.vcxproj">
       <Project>{7105881e-2da6-4044-8ec7-2691f24b296a}</Project>
     </ProjectReference>

@@ -1,4 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CaravelNet", "..\CaravelNet\CaravelNet.vcproj", "{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
+		{1F9065EA-BBEE-469C-AD81-59DC23C0A266} = {1F9065EA-BBEE-469C-AD81-59DC23C0A266}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackEndLib", "..\BackEndLib\BackEndLib.2002.vcproj", "{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}"
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
@@ -17,6 +23,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "drod", "..\DROD\drod.2002.v
 	ProjectSection(ProjectDependencies) = postProject
 		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C} = {C7112B41-1779-4CD8-8E17-0A1C7F913E7C}
 		{B911887F-9D09-4F16-8CFA-0B4624B01A1E} = {B911887F-9D09-4F16-8CFA-0B4624B01A1E}
+		{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB} = {E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODUtil", "..\DRODUtil\DRODUtil.2002.vcproj", "{A77FAB7A-1D14-4A81-97FE-496E1259ADBA}"
@@ -33,6 +40,10 @@ Global
 		Release = Release
 	EndGlobalSection
 	GlobalSection(ProjectConfiguration) = postSolution
+		{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}.Debug.ActiveCfg = Debug|Win32
+		{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}.Debug.Build.0 = Debug|Win32
+		{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}.Release.ActiveCfg = Release|Win32
+		{E74E2BB9-73D3-4315-9A70-1E50DC4BE0FB}.Release.Build.0 = Release|Win32
 		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Debug.ActiveCfg = Debug|Win32
 		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Debug.Build.0 = Debug|Win32
 		{C7112B41-1779-4CD8-8E17-0A1C7F913E7C}.Release.ActiveCfg = Release|Win32
