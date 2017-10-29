@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-TEST_CASE("Slayers wielding different weapons", "[game]") {
+TEST_CASE("Slayers wielding different weapons", "[game][slayer][weapon]") {
 	RoomBuilder::ClearRoom();
 	
 	
@@ -28,8 +28,6 @@ TEST_CASE("Slayers wielding different weapons", "[game]") {
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
 	
-
-	
 	SECTION("Slayer with a dagger won't turn while moving"){
 		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Staff, 10, 10, E);
 
@@ -38,5 +36,19 @@ TEST_CASE("Slayers wielding different weapons", "[game]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10));
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10)->wO == NE);
+	}
+
+	SECTION("Slayer with a dagger will kill-step normal monsters") {
+		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_BRAIN, 11, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(13, 10, N);
+		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
+		REQUIRE(CueEvents.HasOccurred(CID_MonsterDiedFromStab));
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_SLAYER);
 	}
 }

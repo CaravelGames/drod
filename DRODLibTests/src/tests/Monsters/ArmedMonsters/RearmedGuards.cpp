@@ -9,7 +9,7 @@
 #include <vector>
 using namespace std;
 
-TEST_CASE("Guards wielding different weapons", "[game]") {
+TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 	RoomBuilder::ClearRoom();
 	
 	SECTION("Guard with a dagger won't bother to turn around"){
@@ -38,6 +38,20 @@ TEST_CASE("Guards wielding different weapons", "[game]") {
 		Runner::StartGame(11, 10, N);
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(!CueEvents.HasOccurred(CID_MonsterKilledPlayer));
+	}
+
+	SECTION("Guard with a dagger will kill-step normal monsters") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_BRAIN, 11, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game =  Runner::StartGame(13, 10, N);
+		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
+		REQUIRE(CueEvents.HasOccurred(CID_MonsterDiedFromStab));
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_GUARD);
 	}
 
 	SECTION("Guard with a caber on player will stay in place to kill the player"){
