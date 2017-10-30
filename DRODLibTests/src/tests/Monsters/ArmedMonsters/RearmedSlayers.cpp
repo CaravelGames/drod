@@ -43,12 +43,34 @@ TEST_CASE("Slayers wielding different weapons", "[game][slayer][weapon]") {
 		RoomBuilder::AddMonster(M_BRAIN, 11, 10, S);
 
 		CCueEvents CueEvents;
-		CCurrentGame* game = Runner::StartGame(13, 10, N);
+		CCurrentGame* game = Runner::StartGame(12, 10, N);
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 
 		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterDiedFromStab));
 		REQUIRE(monster != NULL);
 		REQUIRE(monster->wType == M_SLAYER);
+	}
+
+	SECTION("Slayer with a dagger won't kill-step guards") {
+		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Sword, 11, 10, S);
+
+		RoomBuilder::PlotRect(T_WALL, 9, 9, 14, 11);
+		RoomBuilder::PlotRect(T_FLOOR, 10, 10, 13, 10);
+		RoomBuilder::Plot(T_FLOOR, 10, 11);
+		RoomBuilder::Plot(T_BOMB, 10, 11);
+		RoomBuilder::Plot(T_FLOOR, 12, 11);
+		RoomBuilder::Plot(T_BOMB, 12, 11);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(12, 10, N);
+		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
+		REQUIRE(!CueEvents.HasOccurred(CID_MonsterDiedFromStab));
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_GUARD);
+		REQUIRE(monster->GetWeaponType() == WT_Sword);
 	}
 }

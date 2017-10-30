@@ -54,6 +54,28 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(monster->wType == M_GUARD);
 	}
 
+	SECTION("Guard with a dagger won't kill-step other guards") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Sword, 11, 10, S);
+
+		RoomBuilder::PlotRect(T_WALL, 9, 9, 14, 11);
+		RoomBuilder::PlotRect(T_FLOOR, 10, 10, 13, 10);
+		RoomBuilder::Plot(T_FLOOR, 10, 11);
+		RoomBuilder::Plot(T_BOMB, 10, 11);
+		RoomBuilder::Plot(T_FLOOR, 12, 11);
+		RoomBuilder::Plot(T_BOMB, 12, 11);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(13, 10, N);
+		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
+		REQUIRE(!CueEvents.HasOccurred(CID_MonsterDiedFromStab));
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_GUARD);
+		REQUIRE(monster->GetWeaponType() == WT_Sword);
+	}
+
 	SECTION("Guard with a caber on player will stay in place to kill the player"){
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Caber, 10, 10, S);
 
