@@ -134,6 +134,29 @@ bool CTemporalClone::IsTarget() const
 }
 
 //*****************************************************************************
+bool CTemporalClone::KillIfOnDeadlyTile(CCueEvents & CueEvents)
+//Kill the Temporal Clone if it is on a tile that would kill its role.
+{
+	if (!(this->wIdentity == M_CONSTRUCT || this->wIdentity == M_FLUFFBABY)) {
+		// Only Constructs and Puffs die from being on a specific tile.
+		return false;
+	}
+
+	CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+	const UINT dwTileNo = pGame->pRoom->GetOSquare(this->wX, this->wY);
+
+	if ((this->wIdentity == M_CONSTRUCT && dwTileNo == T_GOO) ||
+		(this->wIdentity == M_FLUFFBABY && dwTileNo == T_HOT) ) {
+		pGame->pRoom->KillMonster(this, CueEvents);
+		SetKillInfo(NO_ORIENTATION); //center stab effect
+		CueEvents.Add(CID_MonsterDiedFromStab, this);
+		return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CTemporalClone::OnStabbed(
 // Override for Temporal Clone, as some player roles can survive stabs.
 	CCueEvents & CueEvents,
@@ -169,6 +192,9 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 		pGame->pRoom->RemoveMonsterDuringPlayWithoutEffect(this);
 		return;
 	}
+
+	if (KillIfOnDeadlyTile(CueEvents))
+		return;
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 

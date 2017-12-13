@@ -3087,6 +3087,12 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 				pConstruct->KillIfOnOremites(CueEvents);
 			}
 			break;
+			case M_TEMPORALCLONE:
+			{
+				CTemporalClone *pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+				pTemporalClone->KillIfOnDeadlyTile(CueEvents);
+			}
+			break;
 		}
 		pMonster = pNext;
 	}
