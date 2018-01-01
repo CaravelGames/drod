@@ -4142,7 +4142,9 @@ void CDbRoom::ActivateToken(
 		case TemporalSplit:
 			//Touching a temporal split point for the first time.
 			if (!bOn && this->pCurrentGame->swordsman.wX == wX &&
-					this->pCurrentGame->swordsman.wY == wY && this->pCurrentGame->StartTemporalSplit()) {
+					this->pCurrentGame->swordsman.wY == wY && 
+					this->pCurrentGame->swordsman.wPlacingDoubleType == 0 &&
+					this->pCurrentGame->StartTemporalSplit()) {
 				SetTParam(wX, wY, tParam + TOKEN_ACTIVE);  //toggle on-off
 				CueEvents.Add(CID_TemporalSplitStart);
 				this->PlotsMade.insert(wX,wY);
