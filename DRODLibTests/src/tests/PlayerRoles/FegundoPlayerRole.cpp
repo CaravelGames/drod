@@ -46,4 +46,22 @@ TEST_CASE("Fegundo player role", "[game]") {
 
 		REQUIRE(game->GetDyingEntity() == NULL);
 	}
+
+	SECTION("Fegundo time clone should not be killed by fire trap") {
+		RoomBuilder::Plot(T_FIRETRAP_ON, 10, 12);
+
+		CTemporalClone* time_clone = DYN_CAST(
+			CTemporalClone*, CMonster*, RoomBuilder::AddMonster(M_TEMPORALCLONE, 10, 10)
+		);
+		time_clone->wIdentity = M_FEGUNDO;
+		std::vector<int> time_moves = { 7, 7, 12, 12 };
+		time_clone->InputCommands(time_moves);
+
+		CCurrentGame* game = Runner::StartGame(5, 5, N);
+
+		CCueEvents CueEvents;
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		REQUIRE(game->GetDyingEntity() == NULL);
+	}
 }
