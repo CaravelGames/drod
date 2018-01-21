@@ -54,10 +54,11 @@ TEST_CASE("Fegundo player role", "[game]") {
 			CTemporalClone*, CMonster*, RoomBuilder::AddMonster(M_TEMPORALCLONE, 10, 10)
 		);
 		time_clone->wIdentity = M_FEGUNDO;
-		std::vector<int> time_moves = { 7, 7, 12, 12 };
+		std::vector<int> time_moves = { CMD_S, CMD_S, CMD_WAIT, CMD_WAIT };
 		time_clone->InputCommands(time_moves);
 
 		CCurrentGame* game = Runner::StartGame(5, 5, N);
+		time_clone->eMovement = AIR;
 
 		CCueEvents CueEvents;
 		Runner::ExecuteCommand(CMD_WAIT, 2);

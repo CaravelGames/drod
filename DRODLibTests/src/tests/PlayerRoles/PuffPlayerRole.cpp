@@ -43,12 +43,13 @@ TEST_CASE("Puff player role", "[game]") {
 			CTemporalClone*, CMonster*, RoomBuilder::AddMonster(M_TEMPORALCLONE, 10, 10)
 		);
 		time_clone->wIdentity = M_FLUFFBABY;
-		std::vector<int> time_moves = { 7, 7 };
+		std::vector<int> time_moves = { CMD_S, CMD_S };
 		std::vector<int> wait_ten = { 12, 12, 12, 12, 12, 12, 12, 12, 12, 12 };
 		time_clone->InputCommands(time_moves);
 		time_clone->InputCommands(wait_ten);
 
 		CCurrentGame* game = Runner::StartGame(5, 5, N);
+		time_clone->eMovement = AIR;
 
 		CCueEvents CueEvents;
 		Runner::ExecuteCommand(CMD_WAIT, 10);
