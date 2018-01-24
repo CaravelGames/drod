@@ -39,20 +39,15 @@ TEST_CASE("Puff player role", "[game]") {
 
 	SECTION("Puff time clone should be safe from spike traps") {
 		RoomBuilder::Plot(T_FLOOR_SPIKES, 10, 12);
-		CTemporalClone* time_clone = DYN_CAST(
-			CTemporalClone*, CMonster*, RoomBuilder::AddMonster(M_TEMPORALCLONE, 10, 10)
-		);
-		time_clone->wIdentity = M_FLUFFBABY;
-		std::vector<int> time_moves = { CMD_S, CMD_S };
-		std::vector<int> wait_ten = { 12, 12, 12, 12, 12, 12, 12, 12, 12, 12 };
-		time_clone->InputCommands(time_moves);
-		time_clone->InputCommands(wait_ten);
+		RoomBuilder::PlotToken(TemporalSplit, 10, 11);
 
-		CCurrentGame* game = Runner::StartGame(5, 5, N);
-		time_clone->eMovement = AIR;
+		CCurrentGame* game = Runner::StartGame(10, 10, N);
 
-		CCueEvents CueEvents;
+		Runner::ExecuteCommand(CMD_S, 2);
 		Runner::ExecuteCommand(CMD_WAIT, 10);
+		Runner::ExecuteCommand(CMD_CLONE);
+		Runner::ExecuteCommand(CMD_N);
+		Runner::ExecuteCommand(CMD_WAIT, 8);
 
 		REQUIRE(game->GetDyingEntity() == NULL);
 	}
