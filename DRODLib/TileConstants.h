@@ -377,6 +377,7 @@ static inline bool bIsTLayerCoverableItem(const UINT t) {
 		default: return false;
 	}
 }
+static inline bool bIsTLayerObstacle(const UINT t) { return bIsTarOrFluff(t) || t==T_OBSTACLE || t==T_BOMB || t==T_STATION || t==T_LIGHT; }
 
 static inline bool bIsFuseConnected(const UINT t) { return t==T_FUSE || t==T_BOMB; }
 static inline bool bIsCombustibleItem(const UINT t) { return t==T_FUSE || t==T_BOMB || t==T_POWDER_KEG; }
