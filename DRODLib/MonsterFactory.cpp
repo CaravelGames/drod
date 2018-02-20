@@ -208,7 +208,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CWraithWing();
 
 		case M_AUMTLICH:
-		return new CZombie();
+		return new CAumtlich();
 
 		case M_ARCHITECT:
 		return new CArchitect();

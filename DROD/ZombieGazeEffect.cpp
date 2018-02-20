@@ -27,9 +27,9 @@
 #include "ZombieGazeEffect.h"
 #include "RoomWidget.h"
 #include "DrodBitmapManager.h"
+#include "../DRODLib/Aumtlich.h"
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/GameConstants.h"
-#include "../DRODLib/Zombie.h"
 #include <BackEndLib/Assert.h>
 
 Uint32 CZombieGazeEffect::dwLastDraw = 0;
@@ -132,7 +132,7 @@ void CZombieGazeEffect::PrepareBeam(const CMonster *pZombie)
 
 	CCoordIndex SwordCoords;
 	pRoom->GetSwordCoords(SwordCoords);
-	const CZombie *pAumtlich = DYN_CAST(const CZombie*, const CMonster*, pZombie);
+	const CAumtlich *pAumtlich = DYN_CAST(const CAumtlich*, const CMonster*, pZombie);
 
 	//Follow direction of zombie's gaze.
 	int oX = nGetOX(this->origin.wO);
@@ -148,7 +148,7 @@ void CZombieGazeEffect::PrepareBeam(const CMonster *pZombie)
 
 		UINT wTX = pAumtlich->wTX;
 		UINT wTY = pAumtlich->wTY;
-		while (CZombie::GetNextGaze(Ignored, NULL, pRoom, SwordCoords, wX, wY, oX, oY, wTX, wTY))
+		while (CAumtlich::GetNextGaze(Ignored, NULL, pRoom, SwordCoords, wX, wY, oX, oY, wTX, wTY))
 		{
 			//Draw beam.
 			UINT wTileNo = 0;

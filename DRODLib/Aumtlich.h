@@ -24,34 +24,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Zombie.h
-//Declarations for CZombie.
-//Class for handling zombie monster game logic.
+//Aumtlich.h
+//Declarations for CAumtlich.
+//Class for handling Aumtlich monster game logic.
 
-#ifndef ZOMBIE_H
-#define ZOMBIE_H
+#ifndef Aumtlich_H
+#define Aumtlich_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CZombie : public CMonster
+class CAumtlich : public CMonster
 {
 public:
-	CZombie(CCurrentGame *pSetCurrentGame = NULL)
+	CAumtlich(CCurrentGame *pSetCurrentGame = NULL)
 		: CMonster(M_AUMTLICH, pSetCurrentGame)
 		, wTX(-1000), wTY(-1000)
 		, bFrozen(false) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CZombie);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CAumtlich);
 	
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
-	static  bool GetNextGaze(CCueEvents &CueEvents, CZombie *pZombie, CDbRoom *pRoom,
+	static  bool GetNextGaze(CCueEvents &CueEvents, CAumtlich *pAumtlich, CDbRoom *pRoom,
 			CCoordIndex &SwordCoords, UINT& cx, UINT& cy, int& dx, int& dy,
 			UINT wTX, UINT wTY, const bool bFullTurn=true);
 	void UpdateGaze(CCueEvents &CueEvents, CCoordIndex &SwordCoords, const bool bFullTurn);
 
 	UINT wTX, wTY; //target this turn
-	bool bFrozen;  //zombie can freeze itself with gaze
+	bool bFrozen;  //Aumtlich can freeze itself with gaze
 
 protected:
 	enum DeflectType {
@@ -63,4 +63,4 @@ protected:
 	ROOMCOORD lastGazedTile;
 };
 
-#endif //...#ifndef ZOMBIE_H
+#endif //...#ifndef Aumtlich_H

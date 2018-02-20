@@ -945,7 +945,7 @@
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
     <ClCompile Include="Wubba.cpp" />
-    <ClCompile Include="Zombie.cpp">
+    <ClCompile Include="Aumtlich.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -1042,7 +1042,7 @@
     <ClInclude Include="Weapons.h" />
     <ClInclude Include="Wraithwing.h" />
     <ClInclude Include="Wubba.h" />
-    <ClInclude Include="Zombie.h" />
+    <ClInclude Include="Aumtlich.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VTune\DRODLib.vpj" />

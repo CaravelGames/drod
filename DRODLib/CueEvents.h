@@ -399,15 +399,15 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_NPCTypeChange,
 
-	//Player (or stalwart) has been frozen by zombie.
+	//Player (or stalwart) has been frozen by aumtlich.
 	//
 	//Private data: CMoveCoord* (one or more)
 	CID_PlayerFrozen,
 
-	//Zombie gaze emanating from here.
+	//Aumtlich gaze emanating from here.
 	//
-	//Private data: CMonster *pZombie (one or more)
-	CID_ZombieGaze,
+	//Private data: CMonster *pAumtlich (one or more)
+	CID_AumtlichGaze,
 
 	//Wubba stabbed by sword.
 	//

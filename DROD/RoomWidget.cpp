@@ -59,6 +59,7 @@
 #include <FrontEndLib/TextEffect.h>
 #include <FrontEndLib/TransTileEffect.h>
 
+#include "../DRODLib/Aumtlich.h"
 #include "../DRODLib/Character.h"
 #include "../DRODLib/Citizen.h"
 #include "../DRODLib/Clone.h"
@@ -79,7 +80,6 @@
 #include "../DRODLib/SettingsKeys.h"
 #include "../DRODLib/TemporalClone.h"
 #include "../DRODLib/TileConstants.h"
-#include "../DRODLib/Zombie.h"
 #include "../DRODLib/Db.h"
 
 #include "../Texts/MIDs.h"
@@ -6598,7 +6598,7 @@ void CRoomWidget::DrawMonster(
 				break;
 				case M_AUMTLICH:
 				{
-					const CZombie *pAumtlich = DYN_CAST(const CZombie*, const CMonster*, pMonster);
+					const CAumtlich *pAumtlich = DYN_CAST(const CAumtlich*, const CMonster*, pMonster);
 					if (pAumtlich->bFrozen)
 						nAddColor = FROZEN_COLOR_INDEX;
 				}
