@@ -30,6 +30,7 @@
 #include "DrodScreen.h"
 #include "GameScreen.h"
 
+#include "AumtlichGazeEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "GridEffect.h"
 #include "ImageOverlayEffect.h"
@@ -44,7 +45,6 @@
 #include "TileImageCalcs.h"
 #include "TileImageConstants.h"
 #include "VarMonitorEffect.h"
-#include "ZombieGazeEffect.h"
 
 #include "Light.h"
 #include "Rectangle.h"

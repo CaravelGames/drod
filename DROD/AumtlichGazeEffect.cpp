@@ -24,7 +24,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "ZombieGazeEffect.h"
+#include "AumtlichGazeEffect.h"
 #include "RoomWidget.h"
 #include "DrodBitmapManager.h"
 #include "../DRODLib/Aumtlich.h"
