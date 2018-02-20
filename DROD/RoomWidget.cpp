@@ -795,7 +795,7 @@ void CRoomWidget::AddZombieGazeEffect(
 //Params:
       const CMonster *pZombie)        //(in) Zombie sending out gaze.
 {
-	CZombieGazeEffect *pEffect = new CZombieGazeEffect(this, pZombie);
+	CAumtlichGazeEffect *pEffect = new CAumtlichGazeEffect(this, pZombie);
 	AddMLayerEffect(pEffect);
 
 	//Add sparks where gaze hits.

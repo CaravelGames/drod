@@ -32,11 +32,11 @@
 #include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Assert.h>
 
-Uint32 CZombieGazeEffect::dwLastDraw = 0;
+Uint32 CAumtlichGazeEffect::dwLastDraw = 0;
 
 
 //********************************************************************************
-CZombieGazeEffect::CZombieGazeEffect(
+CAumtlichGazeEffect::CAumtlichGazeEffect(
 //Constructor.
 //
 //Params:
@@ -62,7 +62,7 @@ CZombieGazeEffect::CZombieGazeEffect(
 }
 
 //********************************************************************************
-bool CZombieGazeEffect::Draw(SDL_Surface* pDestSurface)
+bool CAumtlichGazeEffect::Draw(SDL_Surface* pDestSurface)
 //Draw the effect.
 //
 //Returns:
@@ -79,9 +79,9 @@ bool CZombieGazeEffect::Draw(SDL_Surface* pDestSurface)
 	{
 		static bool bMakeBrighter = false;
 		const Uint32 dwNow = SDL_GetTicks();
-		UINT dwTimeElapsed = dwNow - CZombieGazeEffect::dwLastDraw;
+		UINT dwTimeElapsed = dwNow - CAumtlichGazeEffect::dwLastDraw;
 		dwTimeElapsed /= 2; //half-speed
-		CZombieGazeEffect::dwLastDraw = dwNow;
+		CAumtlichGazeEffect::dwLastDraw = dwNow;
 		if (dwTimeElapsed > 255)
 			dwTimeElapsed = 255;
 		const Uint8 timeElapsed = static_cast<Uint8>(dwTimeElapsed);
@@ -125,7 +125,7 @@ bool CZombieGazeEffect::Draw(SDL_Surface* pDestSurface)
 }
 
 //*****************************************************************************
-void CZombieGazeEffect::PrepareBeam(const CMonster *pZombie)
+void CAumtlichGazeEffect::PrepareBeam(const CMonster *pZombie)
 {
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
 	ASSERT(pRoom);
