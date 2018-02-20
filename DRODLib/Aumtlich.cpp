@@ -27,7 +27,7 @@
 //Zombie.cpp
 //Implementation of CZombie.
 
-#include "Zombie.h"
+#include "Aumtlich.h"
 #include "Stalwart.h"
 #include "CueEvents.h"
 #include "CurrentGame.h"

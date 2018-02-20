@@ -31,6 +31,7 @@
 
 #include "DbRooms.h"
 
+#include "Aumtlich.h"
 #include "Construct.h"
 #include "CurrentGame.h"
 #include "Db.h"
@@ -46,7 +47,6 @@
 #include "Splitter.h"
 #include "Stalwart.h"
 #include "TemporalClone.h"
-#include "Zombie.h"
 #include "Platform.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Base64.h>

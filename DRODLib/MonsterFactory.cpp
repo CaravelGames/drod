@@ -33,6 +33,7 @@
 #include "Ant.h"
 #include "AntHill.h"
 #include "Architect.h"
+#include "Aumtlich.h"
 #include "BlueSerpent.h"
 #include "Brain.h"
 #include "Character.h"
@@ -66,7 +67,6 @@
 #include "TemporalClone.h"
 #include "WraithWing.h"
 #include "Wubba.h"
-#include "Zombie.h"
 
 #include <BackEndLib/Assert.h>
 
