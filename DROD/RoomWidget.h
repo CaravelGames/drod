@@ -250,7 +250,7 @@ public:
 	CSubtitleEffect* AddSubtitle(CFiredCharacterCommand *pCommand, const Uint32 dwDuration);
 	void           AddTLayerEffect(CEffect *pEffect);
 	void           AddToSubtitles(CSubtitleEffect *pEffect);
-	void           AddZombieGazeEffect(const CMonster *pZombie);
+	void           AddAumtlichGazeEffect(const CMonster *pAumtlich);
 	UINT           AdvanceAnimationFrame(const UINT wCol, const UINT wRow);
 	void           AdvanceAnimationFrame(const CMonster *pMonster);
 	void           AllowSleep(const bool bVal);

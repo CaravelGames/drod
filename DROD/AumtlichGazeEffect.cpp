@@ -41,7 +41,7 @@ CAumtlichGazeEffect::CAumtlichGazeEffect(
 //
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
-	const CMonster *pZombie)      //(in)   Zombie emitting gaze.
+	const CMonster *pAumtlich)      //(in)   Aumtlich emitting gaze.
 	: CEffect(pSetWidget, EGAZE)
 {
 	ASSERT(pSetWidget);
@@ -52,13 +52,13 @@ CAumtlichGazeEffect::CAumtlichGazeEffect(
 	ASSERT(!pRoom || pRoom->GetCurrentGame());
 	this->wValidTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo : 0;
 
-	ASSERT(pZombie);
-	this->origin.wX = pZombie->wX;
-	this->origin.wY = pZombie->wY;
-	this->origin.wO = pZombie->wO;
+	ASSERT(pAumtlich);
+	this->origin.wX = pAumtlich->wX;
+	this->origin.wY = pAumtlich->wY;
+	this->origin.wO = pAumtlich->wO;
 
 	//Prepare beam effect.
-	PrepareBeam(pZombie);
+	PrepareBeam(pAumtlich);
 }
 
 //********************************************************************************
@@ -125,19 +125,19 @@ bool CAumtlichGazeEffect::Draw(SDL_Surface* pDestSurface)
 }
 
 //*****************************************************************************
-void CAumtlichGazeEffect::PrepareBeam(const CMonster *pZombie)
+void CAumtlichGazeEffect::PrepareBeam(const CMonster *pMonster)
 {
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
 	ASSERT(pRoom);
 
 	CCoordIndex SwordCoords;
 	pRoom->GetSwordCoords(SwordCoords);
-	const CAumtlich *pAumtlich = DYN_CAST(const CAumtlich*, const CMonster*, pZombie);
+	const CAumtlich *pAumtlich = DYN_CAST(const CAumtlich*, const CMonster*, pMonster);
 
-	//Follow direction of zombie's gaze.
+	//Follow direction of aumtlich's gaze.
 	int oX = nGetOX(this->origin.wO);
 	int oY = nGetOY(this->origin.wO);
-	UINT wX = this->origin.wX + oX;   //start in front of zombie
+	UINT wX = this->origin.wX + oX;   //start in front of aumtlich
 	UINT wY = this->origin.wY + oY;
 
 	if (!pRoom->DoesGentryiiPreventDiagonal(this->origin.wX, this->origin.wY, wX, wY))
@@ -158,7 +158,7 @@ void CAumtlichGazeEffect::PrepareBeam(const CMonster *pZombie)
 				case E: case W: wTileNo = TI_ZGAZE_EW;	break;
 				case NW: case SE: wTileNo = TI_ZGAZE_NWSE; break;
 				case NE: case SW: wTileNo = TI_ZGAZE_NESW; break;
-				default: ASSERT(!"Bad zombie gaze orientation"); break;
+				default: ASSERT(!"Bad Aumtlich gaze orientation"); break;
 			}
 			this->coords.push_back(CMoveCoord(destX, destY, wTileNo));
 			SDL_Rect Dest = MAKE_SDL_RECT(destX, destY, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);

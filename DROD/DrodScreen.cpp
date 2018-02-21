@@ -799,7 +799,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CMonster *pMonster = DYN_CAST(const CMonster*, const CAttachableObject*, pObj);
-		pRoomWidget->AddZombieGazeEffect(pMonster);
+		pRoomWidget->AddAumtlichGazeEffect(pMonster);
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_FlashingMessage);

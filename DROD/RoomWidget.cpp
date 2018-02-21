@@ -789,13 +789,13 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 }
 
 //*****************************************************************************
-void CRoomWidget::AddZombieGazeEffect(
-//Add a zombie gaze effect to room.
+void CRoomWidget::AddAumtlichGazeEffect(
+//Add an aumtlich gaze effect to room.
 //
 //Params:
-      const CMonster *pZombie)        //(in) Zombie sending out gaze.
+      const CMonster *pAumtlich)        //(in) Aumtlich sending out gaze.
 {
-	CAumtlichGazeEffect *pEffect = new CAumtlichGazeEffect(this, pZombie);
+	CAumtlichGazeEffect *pEffect = new CAumtlichGazeEffect(this, pAumtlich);
 	AddMLayerEffect(pEffect);
 
 	//Add sparks where gaze hits.

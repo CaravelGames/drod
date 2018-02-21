@@ -4703,7 +4703,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CMonster *pMonster = DYN_CAST(const CMonster*, const CAttachableObject*, pObj);
-		this->pRoomWidget->AddZombieGazeEffect(pMonster);
+		this->pRoomWidget->AddAumtlichGazeEffect(pMonster);
 	}
 	if (CueEvents.HasOccurred(CID_Swordfight)) {
 		const CAttachableWrapper<int> *wt = DYN_CAST(const CAttachableWrapper<int>*,

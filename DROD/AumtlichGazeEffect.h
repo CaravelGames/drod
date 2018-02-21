@@ -54,7 +54,7 @@ protected:
 
 	CRoomWidget *  pRoomWidget;
 
-	static Uint32 dwLastDraw;  //to synchronize all zombie gazes
+	static Uint32 dwLastDraw;  //to synchronize all aumtlich gazes
 };
 
 #endif //...#ifndef AUMTLICHGAZEEFFECT_H
