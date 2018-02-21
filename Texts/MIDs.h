@@ -496,7 +496,7 @@ enum MID_CONSTANT {
   MID_GreenSerpent = 364,
   MID_Ant = 365,
   MID_AntHill = 366,
-  MID_Zombie = 367,
+  MID_Aumtlich = 367,
   MID_Stalwart = 1245,
   MID_Stalwart2 = 1441,
   MID_Phoenix = 369,

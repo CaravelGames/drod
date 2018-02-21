@@ -4734,7 +4734,7 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_Gunthro, g_pTheDB->GetMessageText(MID_Gunthro));
 	pListBox->AddItem(Speaker_SerpentG, g_pTheDB->GetMessageText(MID_GreenSerpent));
 	pListBox->AddItem(Speaker_Architect, g_pTheDB->GetMessageText(MID_Architect));
-	pListBox->AddItem(Speaker_Aumtlich, g_pTheDB->GetMessageText(MID_Zombie));
+	pListBox->AddItem(Speaker_Aumtlich, g_pTheDB->GetMessageText(MID_Aumtlich));
 	pListBox->AddItem(Speaker_Brain, g_pTheDB->GetMessageText(MID_Brain));
 	pListBox->AddItem(Speaker_Citizen, g_pTheDB->GetMessageText(MID_Citizen));
 	pListBox->AddItem(Speaker_Citizen1, g_pTheDB->GetMessageText(MID_Citizen1));
