@@ -24,23 +24,23 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Ant.h
-//Declarations for CAnt.
-//Class for handling Ant monster game logic.
+//Waterskipper.h
+//Declarations for CWaterskipper.
+//Class for handling Waterskipper monster game logic.
 
-#ifndef ANT_H
-#define ANT_H
+#ifndef WATERSKIPPER_H
+#define WATERSKIPPER_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CAnt : public CMonster
+class CWaterskipper : public CMonster
 {
 public:
-	CAnt(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CAnt);
+	CWaterskipper(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CWaterskipper);
 	
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
-#endif //...#ifndef ANT_H
+#endif //...#ifndef WATERSKIPPER_H

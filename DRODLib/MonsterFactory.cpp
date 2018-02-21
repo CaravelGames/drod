@@ -88,10 +88,10 @@ CMonster* CMonsterFactory::GetNewMonster(
 	switch (eType)
 	{
 		case M_WATERSKIPPER:
-		return new CAnt();
+		return new CWaterskipper();
 
 		case M_SKIPPERNEST:
-		return new CAntHill();
+		return new CWaterskipperNest();
 
 		case M_BRAIN:
 		return new CBrain();

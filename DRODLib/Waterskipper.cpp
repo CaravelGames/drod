@@ -24,8 +24,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Ant.cpp
-//Implementation of CAnt.
+//Waterskipper.cpp
+//Implementation of CWaterskipper.
 
 #include "Waterskipper.h"
 #include "CurrentGame.h"
@@ -39,13 +39,13 @@ static const UINT MAX_TURNS_STUCK = 1;
 //
 
 //*****************************************************************************************
-CAnt::CAnt(CCurrentGame *pSetCurrentGame)
+CWaterskipper::CWaterskipper(CCurrentGame *pSetCurrentGame)
 	: CMonster(M_WATERSKIPPER, pSetCurrentGame, WATER)
 {}
 
 //*****************************************************************************************
-void CAnt::Process(
-//Process an ant for movement.
+void CWaterskipper::Process(
+//Process a waterskipper for movement.
 //Params:
 	const int /*nLastCommand*/,   //(in) Last swordsman command.
 	CCueEvents &CueEvents)  //(in/out) Accepts pointer to a cues object that will be populated
@@ -66,7 +66,7 @@ void CAnt::Process(
 		return;
 
 	//If next to the target then jump out and kill it.
-	//The ant is not killed, but is largely immobile out of water.
+	//The waterskipper is not killed, but is largely immobile out of water.
 	if (abs(static_cast<int>(this->wX - wSX)) <= 1 && abs(static_cast<int>(this->wY - wSY)) <= 1)
 	{
 		bool bAttack = this->pCurrentGame->IsPlayerAt(wSX, wSY);
