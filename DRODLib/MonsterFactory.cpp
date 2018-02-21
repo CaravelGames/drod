@@ -30,8 +30,6 @@
 #include "MonsterFactory.h"
 
 //Monster child class includes.
-#include "Ant.h"
-#include "AntHill.h"
 #include "Architect.h"
 #include "Aumtlich.h"
 #include "BlueSerpent.h"
@@ -65,6 +63,8 @@
 #include "TarBaby.h"
 #include "TarMother.h"
 #include "TemporalClone.h"
+#include "Waterskipper.h"
+#include "WaterskipperNest.h"
 #include "WraithWing.h"
 #include "Wubba.h"
 

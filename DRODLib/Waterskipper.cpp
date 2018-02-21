@@ -27,7 +27,7 @@
 //Ant.cpp
 //Implementation of CAnt.
 
-#include "Ant.h"
+#include "Waterskipper.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
 #include <math.h>

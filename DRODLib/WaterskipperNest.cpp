@@ -27,7 +27,7 @@
 //AntHill.cpp
 //Implementation of CAntHill.
 
-#include "AntHill.h"
+#include "WaterskipperNest.h"
 
 #include "CurrentGame.h"
 #include "DbRooms.h"
