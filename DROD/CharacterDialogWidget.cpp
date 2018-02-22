@@ -4779,8 +4779,8 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_TarMother, g_pTheDB->GetMessageText(MID_TarMother));
 	pListBox->AddItem(Speaker_TarTechnician, g_pTheDB->GetMessageText(MID_TarTechnician));
 	pListBox->AddItem(Speaker_TemporalClone, g_pTheDB->GetMessageText(MID_TemporalClone));
-	pListBox->AddItem(Speaker_WaterSkipper, g_pTheDB->GetMessageText(MID_Ant));
-	pListBox->AddItem(Speaker_WaterSkipperNest, g_pTheDB->GetMessageText(MID_AntHill));
+	pListBox->AddItem(Speaker_WaterSkipper, g_pTheDB->GetMessageText(MID_Waterskipper));
+	pListBox->AddItem(Speaker_WaterSkipperNest, g_pTheDB->GetMessageText(MID_WaterskipperNest));
 	pListBox->AddItem(Speaker_WWing, g_pTheDB->GetMessageText(MID_Wraithwing));
 	pListBox->AddItem(Speaker_Wubba, g_pTheDB->GetMessageText(MID_Wubba));
 

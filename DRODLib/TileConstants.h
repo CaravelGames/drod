@@ -854,8 +854,8 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_GreenSerpent, //M_SERPENTG      +13
 	MID_BlueSerpent,  //M_SERPENTB      +14
 	MID_StoneGolem,   //M_ROCKGOLEM     +15
-	MID_Ant,          //M_WATERSKIPPER  +16
-	MID_AntHill,      //M_SKIPPERNEST   +17
+	MID_Waterskipper, //M_WATERSKIPPER  +16
+	MID_WaterskipperNest, //M_SKIPPERNEST   +17
 	MID_Aumtlich,       //M_AUMTLICH      +18
 	MID_Clone,        //M_CLONE         +19
 	MID_Decoy,        //M_DECOY         +20
