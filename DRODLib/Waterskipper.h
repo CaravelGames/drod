@@ -24,28 +24,23 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//AntHill.h
-//Declarations for CAntHill.
-//Class for handling Ant Hill monster game logic.
+//Waterskipper.h
+//Declarations for CWaterskipper.
+//Class for handling Waterskipper monster game logic.
 
-#ifndef ANTHILL_H
-#define ANTHILL_H
-
-class CCurrentGame;
+#ifndef WATERSKIPPER_H
+#define WATERSKIPPER_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CAntHill : public CMonster
+class CWaterskipper : public CMonster
 {
 public:
-	CAntHill(CCurrentGame *pSetCurrentGame = NULL) : 
-			CMonster(M_SKIPPERNEST, pSetCurrentGame, WATER) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CAntHill);
-
-	virtual bool HasOrientation() const {return false;}
-	virtual bool IsAggressive() const {return false;}
+	CWaterskipper(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CWaterskipper);
+	
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
-#endif //...#ifndef ANTHILL_H
+#endif //...#ifndef WATERSKIPPER_H

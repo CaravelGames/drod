@@ -30,9 +30,8 @@
 #include "MonsterFactory.h"
 
 //Monster child class includes.
-#include "Ant.h"
-#include "AntHill.h"
 #include "Architect.h"
+#include "Aumtlich.h"
 #include "BlueSerpent.h"
 #include "Brain.h"
 #include "Character.h"
@@ -64,9 +63,10 @@
 #include "TarBaby.h"
 #include "TarMother.h"
 #include "TemporalClone.h"
+#include "Waterskipper.h"
+#include "WaterskipperNest.h"
 #include "WraithWing.h"
 #include "Wubba.h"
-#include "Zombie.h"
 
 #include <BackEndLib/Assert.h>
 
@@ -88,10 +88,10 @@ CMonster* CMonsterFactory::GetNewMonster(
 	switch (eType)
 	{
 		case M_WATERSKIPPER:
-		return new CAnt();
+		return new CWaterskipper();
 
 		case M_SKIPPERNEST:
-		return new CAntHill();
+		return new CWaterskipperNest();
 
 		case M_BRAIN:
 		return new CBrain();
@@ -208,7 +208,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CWraithWing();
 
 		case M_AUMTLICH:
-		return new CZombie();
+		return new CAumtlich();
 
 		case M_ARCHITECT:
 		return new CArchitect();

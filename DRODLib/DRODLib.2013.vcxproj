@@ -380,7 +380,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Ant.cpp">
+    <ClCompile Include="Waterskipper.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -391,7 +391,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="AntHill.cpp">
+    <ClCompile Include="WaterskipperNest.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -945,7 +945,7 @@
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
     <ClCompile Include="Wubba.cpp" />
-    <ClCompile Include="Zombie.cpp">
+    <ClCompile Include="Aumtlich.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -959,8 +959,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Texts\MIDs.h" />
-    <ClInclude Include="Ant.h" />
-    <ClInclude Include="AntHill.h" />
+    <ClInclude Include="Waterskipper.h" />
+    <ClInclude Include="WaterskipperNest.h" />
     <ClInclude Include="Architect.h" />
     <ClInclude Include="BlueSerpent.h" />
     <ClInclude Include="Brain.h" />
@@ -1042,7 +1042,7 @@
     <ClInclude Include="Weapons.h" />
     <ClInclude Include="Wraithwing.h" />
     <ClInclude Include="Wubba.h" />
-    <ClInclude Include="Zombie.h" />
+    <ClInclude Include="Aumtlich.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VTune\DRODLib.vpj" />

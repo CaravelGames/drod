@@ -30,7 +30,6 @@
 //Implementation of CCurrentGame.
 
 #include "CurrentGame.h"
-#include "Ant.h"
 #include "Db.h"
 #include "DbPlayers.h"
 #include "DbProps.h"
@@ -53,6 +52,7 @@
 #include "TileConstants.h"
 #include "NetInterface.h"
 #include "SettingsKeys.h"
+#include "Waterskipper.h"
 
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>

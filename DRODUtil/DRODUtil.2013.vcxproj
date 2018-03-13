@@ -431,7 +431,7 @@
     <ClCompile Include="..\DROD\TileImageCalcs.cpp" />
     <ClCompile Include="..\DROD\VarMonitorEffect.cpp" />
     <ClCompile Include="..\DROD\WadeEffect.cpp" />
-    <ClCompile Include="..\DROD\ZombieGazeEffect.cpp" />
+    <ClCompile Include="..\DROD\AumtlichGazeEffect.cpp" />
     <ClCompile Include="DRODUtil.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>

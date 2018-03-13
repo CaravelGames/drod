@@ -31,6 +31,7 @@
 
 #include "DbRooms.h"
 
+#include "Aumtlich.h"
 #include "Construct.h"
 #include "CurrentGame.h"
 #include "Db.h"
@@ -46,7 +47,6 @@
 #include "Splitter.h"
 #include "Stalwart.h"
 #include "TemporalClone.h"
-#include "Zombie.h"
 #include "Platform.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Base64.h>
@@ -5897,7 +5897,7 @@ void CDbRoom::ProcessAumtlichGaze(CCueEvents &CueEvents, const bool bFullMove)
 			break;
 			case M_AUMTLICH:
 			{
-				CZombie *pAumtlich = DYN_CAST(CZombie*, CMonster*, pMonster);
+				CAumtlich *pAumtlich = DYN_CAST(CAumtlich*, CMonster*, pMonster);
 				pAumtlich->bFrozen = false;
 			}
 			break;
@@ -5917,8 +5917,8 @@ void CDbRoom::ProcessAumtlichGaze(CCueEvents &CueEvents, const bool bFullMove)
 				pSwordCoords = new CCoordIndex();
 			   GetSwordCoords(*pSwordCoords);
 			}
-			//Update zombie's line of sight.
-			CZombie *pAumtlich = DYN_CAST(CZombie*, CMonster*, pMonster);
+			//Update aumtlich's line of sight.
+			CAumtlich *pAumtlich = DYN_CAST(CAumtlich*, CMonster*, pMonster);
 			pAumtlich->UpdateGaze(CueEvents, *pSwordCoords, bFullMove);
 		}
 	}

@@ -24,43 +24,28 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Zombie.h
-//Declarations for CZombie.
-//Class for handling zombie monster game logic.
+//WaterskipperNest.h
+//Declarations for CWaterskipperNest.
+//Class for handling Waterskipper Nest monster game logic.
 
-#ifndef ZOMBIE_H
-#define ZOMBIE_H
+#ifndef WATERSKIPPERNEST_H
+#define WATERSKIPPERNEST_H
+
+class CCurrentGame;
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CZombie : public CMonster
+class CWaterskipperNest : public CMonster
 {
 public:
-	CZombie(CCurrentGame *pSetCurrentGame = NULL)
-		: CMonster(M_AUMTLICH, pSetCurrentGame)
-		, wTX(-1000), wTY(-1000)
-		, bFrozen(false) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CZombie);
-	
+	CWaterskipperNest(CCurrentGame *pSetCurrentGame = NULL) :
+			CMonster(M_SKIPPERNEST, pSetCurrentGame, WATER) {}
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CWaterskipperNest);
+
+	virtual bool HasOrientation() const {return false;}
+	virtual bool IsAggressive() const {return false;}
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
-
-	static  bool GetNextGaze(CCueEvents &CueEvents, CZombie *pZombie, CDbRoom *pRoom,
-			CCoordIndex &SwordCoords, UINT& cx, UINT& cy, int& dx, int& dy,
-			UINT wTX, UINT wTY, const bool bFullTurn=true);
-	void UpdateGaze(CCueEvents &CueEvents, CCoordIndex &SwordCoords, const bool bFullTurn);
-
-	UINT wTX, wTY; //target this turn
-	bool bFrozen;  //zombie can freeze itself with gaze
-
-protected:
-	enum DeflectType {
-		GazeBlocked,
-		GazeReturned,
-		GazePassesThrough
-	};
-	static DeflectType DeflectAngle(const UINT wInAngle, const UINT wDeflectSurface, const UINT weaponType);
-	ROOMCOORD lastGazedTile;
 };
 
-#endif //...#ifndef ZOMBIE_H
+#endif //...#ifndef WATERSKIPPERNEST_H

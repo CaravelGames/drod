@@ -24,10 +24,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//AntHill.cpp
-//Implementation of CAntHill.
+//WaterskipperNest.cpp
+//Implementation of CWaterskipperNest.
 
-#include "AntHill.h"
+#include "WaterskipperNest.h"
 
 #include "CurrentGame.h"
 #include "DbRooms.h"
@@ -35,7 +35,7 @@
 #define ANT_SPAWN_SPEED (10)
 
 //*****************************************************************************************
-void CAntHill::Process(
+void CWaterskipperNest::Process(
 //Process an ant hill (to release ants).
 //
 //Params:

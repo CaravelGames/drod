@@ -30,6 +30,7 @@
 #include "DrodScreen.h"
 #include "GameScreen.h"
 
+#include "AumtlichGazeEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "GridEffect.h"
 #include "ImageOverlayEffect.h"
@@ -44,7 +45,6 @@
 #include "TileImageCalcs.h"
 #include "TileImageConstants.h"
 #include "VarMonitorEffect.h"
-#include "ZombieGazeEffect.h"
 
 #include "Light.h"
 #include "Rectangle.h"
@@ -59,6 +59,7 @@
 #include <FrontEndLib/TextEffect.h>
 #include <FrontEndLib/TransTileEffect.h>
 
+#include "../DRODLib/Aumtlich.h"
 #include "../DRODLib/Character.h"
 #include "../DRODLib/Citizen.h"
 #include "../DRODLib/Clone.h"
@@ -79,7 +80,6 @@
 #include "../DRODLib/SettingsKeys.h"
 #include "../DRODLib/TemporalClone.h"
 #include "../DRODLib/TileConstants.h"
-#include "../DRODLib/Zombie.h"
 #include "../DRODLib/Db.h"
 
 #include "../Texts/MIDs.h"
@@ -789,13 +789,13 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 }
 
 //*****************************************************************************
-void CRoomWidget::AddZombieGazeEffect(
-//Add a zombie gaze effect to room.
+void CRoomWidget::AddAumtlichGazeEffect(
+//Add an aumtlich gaze effect to room.
 //
 //Params:
-      const CMonster *pZombie)        //(in) Zombie sending out gaze.
+      const CMonster *pAumtlich)        //(in) Aumtlich sending out gaze.
 {
-	CZombieGazeEffect *pEffect = new CZombieGazeEffect(this, pZombie);
+	CAumtlichGazeEffect *pEffect = new CAumtlichGazeEffect(this, pAumtlich);
 	AddMLayerEffect(pEffect);
 
 	//Add sparks where gaze hits.
@@ -6598,7 +6598,7 @@ void CRoomWidget::DrawMonster(
 				break;
 				case M_AUMTLICH:
 				{
-					const CZombie *pAumtlich = DYN_CAST(const CZombie*, const CMonster*, pMonster);
+					const CAumtlich *pAumtlich = DYN_CAST(const CAumtlich*, const CMonster*, pMonster);
 					if (pAumtlich->bFrozen)
 						nAddColor = FROZEN_COLOR_INDEX;
 				}

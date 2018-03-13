@@ -24,10 +24,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Zombie.cpp
-//Implementation of CZombie.
+//Aumtlich.cpp
+//Implementation of CAumtlich.
 
-#include "Zombie.h"
+#include "Aumtlich.h"
 #include "Stalwart.h"
 #include "CueEvents.h"
 #include "CurrentGame.h"
@@ -38,8 +38,8 @@
 //
 
 //*****************************************************************************************
-void CZombie::Process(
-//Process a Zombie for movement.
+void CAumtlich::Process(
+//Process a Aumtlich for movement.
 //
 //Params:
 	const int /*nLastCommand*/,   //(in) Last swordsman command.
@@ -66,7 +66,7 @@ void CZombie::Process(
 		return;
 	}
 
-	if (this->bFrozen) return; //zombie is frozen -- can't move
+	if (this->bFrozen) return; //Aumtlich is frozen -- can't move
 
 	//Get movement offsets.
 	int dxFirst, dyFirst, dx, dy;
@@ -75,8 +75,8 @@ void CZombie::Process(
 
 	if (dx || dy)
 	{
-		//If not facing the direction it will move, turn zombie that way.
-		//Else move zombie (in direction it's facing) forward to new destination square.
+		//If not facing the direction it will move, turn Aumtlich that way.
+		//Else move Aumtlich (in direction it's facing) forward to new destination square.
 		const UINT desiredOrientation = GetOrientationFacingTarget(this->wTX, this->wTY);
 		if (desiredOrientation != this->wO)
 			MakeSlowTurn(desiredOrientation);
@@ -90,10 +90,10 @@ void CZombie::Process(
 }
 
 //*****************************************************************************************
-void CZombie::UpdateGaze(
+void CAumtlich::UpdateGaze(
 //Each turn, after all monsters have moved:
-//Check tiles along zombie's line of sight.  If player is along this line
-//he is frozen for this turn.  Swords can reflect the zombie's gaze back at itself.
+//Check tiles along Aumtlich's line of sight.  If player is along this line
+//he is frozen for this turn.  Swords can reflect the Aumtlich's gaze back at itself.
 //
 //Params:
 	CCueEvents &CueEvents, CCoordIndex &SwordCoords,
@@ -102,12 +102,12 @@ void CZombie::UpdateGaze(
 	if (this->pCurrentGame->IsPlayerAt(this->wX, this->wY))
 		return; //when killing player, don't send out a gaze
 
-	CueEvents.Add(CID_ZombieGaze, this);
+	CueEvents.Add(CID_AumtlichGaze, this);
 
-	//Follow direction of zombie's gaze.
+	//Follow direction of Aumtlich's gaze.
 	int oX = nGetOX(this->wO);
 	int oY = nGetOY(this->wO);
-	UINT wX = this->wX + oX;   //start checking in front of zombie
+	UINT wX = this->wX + oX;   //start checking in front of Aumtlich
 	UINT wY = this->wY + oY;
 	CDbRoom *pRoom = this->pCurrentGame->pRoom;
 
@@ -125,14 +125,14 @@ void CZombie::UpdateGaze(
 }
 
 //*****************************************************************************************
-bool CZombie::GetNextGaze(
+bool CAumtlich::GetNextGaze(
 //Updates (cx,cy) based on how aumtlich gaze travels when facing (dx,dy).
 //
 //Returns: true if gaze continues, false if blocked
 //
 //Params:
 	CCueEvents &CueEvents,	//(in/out)
-	CZombie *pAumtlich,		//non-NULL if aumtlich and game state is affected
+	CAumtlich *pAumtlich,		//non-NULL if aumtlich and game state is affected
 	CDbRoom *pRoom,			//active room
 	CCoordIndex &SwordCoords,	//where swords are located
 	UINT& cx, UINT& cy, int& dx, int& dy,	//(cx,cy) + (dx,dy)
@@ -347,8 +347,8 @@ bool CZombie::GetNextGaze(
 }
 
 //*****************************************************************************************
-CZombie::DeflectType CZombie::DeflectAngle(
-//When zombie gaze encounters a surface, determine whether the gaze would
+CAumtlich::DeflectType CAumtlich::DeflectAngle(
+//When Aumtlich gaze encounters a surface, determine whether the gaze would
 //reflect or be blocked by the specific weapon type
 //
 //Params:

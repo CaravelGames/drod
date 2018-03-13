@@ -602,7 +602,7 @@
     <ClCompile Include="WinStartScreen.cpp" />
     <ClCompile Include="WorldMapScreen.cpp" />
     <ClCompile Include="WorldMapWidget.cpp" />
-    <ClCompile Include="ZombieGazeEffect.cpp" />
+    <ClCompile Include="AumtlichGazeEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BloodEffect.h" />
@@ -687,7 +687,7 @@
     <ClInclude Include="WinStartScreen.h" />
     <ClInclude Include="WorldMapScreen.h" />
     <ClInclude Include="WorldMapWidget.h" />
-    <ClInclude Include="ZombieGazeEffect.h" />
+    <ClInclude Include="AumtlichGazeEffect.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\DROD.ico" />

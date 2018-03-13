@@ -24,8 +24,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef ZOMBIEGAZEEFFECT_H
-#define ZOMBIEGAZEEFFECT_H
+#ifndef AUMTLICHGAZEEFFECT_H
+#define AUMTLICHGAZEEFFECT_H
 
 #include <FrontEndLib/Effect.h>
 #include <BackEndLib/Types.h>
@@ -36,17 +36,17 @@
 //****************************************************************************************
 class CMonster;
 class CRoomWidget;
-class CZombieGazeEffect : public CEffect
+class CAumtlichGazeEffect : public CEffect
 {
 public:
-	CZombieGazeEffect(CWidget *pSetWidget, const CMonster *pZombie);
+	CAumtlichGazeEffect(CWidget *pSetWidget, const CMonster *pAumtlich);
 
 	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 
 	CMoveCoord endCoord;
 
 protected:
-	void PrepareBeam(const CMonster *pZombie);
+	void PrepareBeam(const CMonster *pAumtlich);
 
 	CMoveCoord  origin;
 	UINT        wValidTurn;   //game turn this gaze is valid for
@@ -54,7 +54,7 @@ protected:
 
 	CRoomWidget *  pRoomWidget;
 
-	static Uint32 dwLastDraw;  //to synchronize all zombie gazes
+	static Uint32 dwLastDraw;  //to synchronize all aumtlich gazes
 };
 
-#endif //...#ifndef ZOMBIEGAZEEFFECT_H
+#endif //...#ifndef AUMTLICHGAZEEFFECT_H
