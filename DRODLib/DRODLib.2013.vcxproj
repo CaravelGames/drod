@@ -771,7 +771,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="Phoenix.cpp">
+    <ClCompile Include="Fegundo.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -782,7 +782,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="PhoenixAshes.cpp">
+    <ClCompile Include="FegundoAshes.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -1016,8 +1016,8 @@
     <ClInclude Include="Neather.h" />
     <ClInclude Include="NetInterface.h" />
     <ClInclude Include="PathMap.h" />
-    <ClInclude Include="Phoenix.h" />
-    <ClInclude Include="PhoenixAshes.h" />
+    <ClInclude Include="Fegundo.h" />
+    <ClInclude Include="FegundoAshes.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PlayerDouble.h" />
     <ClInclude Include="PlayerStats.h" />

@@ -27,7 +27,7 @@
 //Phoenix.cpp
 //Implementation of CPhoenix.
 
-#include "Phoenix.h"
+#include "Fegundo.h"
 
 #include "CurrentGame.h"
 #include "DbRooms.h"
