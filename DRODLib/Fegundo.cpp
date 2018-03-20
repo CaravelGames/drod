@@ -25,7 +25,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 //Phoenix.cpp
-//Implementation of CPhoenix.
+//Implementation of CFegundo.
 
 #include "Fegundo.h"
 
@@ -37,12 +37,12 @@
 //
 
 //*****************************************************************************************
-CPhoenix::CPhoenix(CCurrentGame *pSetCurrentGame)
+CFegundo::CFegundo(CCurrentGame *pSetCurrentGame)
 	: CMonster(M_FEGUNDO, pSetCurrentGame, AIR, SPD_FEGUNDO) //move after mimics, before stalwarts
 {}
 
 //*****************************************************************************
-bool CPhoenix::CanFindSwordsman()
+bool CFegundo::CanFindSwordsman()
 //Overridable method for determining if a monster can find the player on its own.
 //Currently used by movement routines to see if a fegundo is controllable
 //by the player or not.
@@ -71,7 +71,7 @@ const
 }
 
 //*****************************************************************************
-bool CPhoenix::DoesSquareContainObstacle(
+bool CFegundo::DoesSquareContainObstacle(
 //Override for fegundo -- they can't step on attackable monsters or the player.
 //
 //Params:
@@ -92,7 +92,7 @@ const
 }
 
 //*****************************************************************************************
-void CPhoenix::Process(
+void CFegundo::Process(
 //Process a Fegundo for movement.
 //
 //Params:
@@ -144,7 +144,7 @@ void CPhoenix::Process(
 }
 
 //*****************************************************************************************
-void CPhoenix::Explode(CCueEvents &CueEvents)
+void CFegundo::Explode(CCueEvents &CueEvents)
 //Explodes this Fegundo.
 {
 	CDbRoom& room = *(this->pCurrentGame->pRoom);

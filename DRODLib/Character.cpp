@@ -5372,7 +5372,7 @@ void CCharacter::TurnIntoMonster(
 			pMonster->wO = this->wO;
 			if (bSpecial)
 			{
-				CPhoenix *pFegundo = DYN_CAST(CPhoenix*, CMonster*, pMonster);
+				CFegundo *pFegundo = DYN_CAST(CFegundo*, CMonster*, pMonster);
 				pFegundo->Explode(CueEvents);
 			}
 		break;

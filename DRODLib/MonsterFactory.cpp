@@ -151,10 +151,10 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CNeather();
 
 		case M_FEGUNDO:
-		return new CPhoenix();
+		return new CFegundo();
 
 		case M_FEGUNDOASHES:
-		return new CPhoenixAshes();
+		return new CFegundoAshes();
 
 		case M_ROACH:
 		return new CRoach();

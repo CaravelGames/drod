@@ -25,20 +25,20 @@
  * ***** END LICENSE BLOCK ***** */
 
 //Phoenix.h
-//Declarations for CPhoenix.
+//Declarations for CFegundo.
 //Class for handling Fegundo monster game logic.
 
-#ifndef PHOENIX_H
-#define PHOENIX_H
+#ifndef FEGUNDO_H
+#define FEGUNDO_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CPhoenix : public CMonster
+class CFegundo : public CMonster
 {
 public:
-	CPhoenix(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CPhoenix);
+	CFegundo(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CFegundo);
 	
 	void Explode(CCueEvents &CueEvents);
 

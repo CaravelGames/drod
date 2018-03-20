@@ -25,20 +25,20 @@
  * ***** END LICENSE BLOCK ***** */
 
 //PhoenixAshes.h
-//Declarations for CPhoenixAshes.
+//Declarations for CFegundoAshes.
 //Class for handling Fegundo (in ashes state) monster game logic.
 
-#ifndef PHOENIXASHES_H
-#define PHOENIXASHES_H
+#ifndef FEGUNDOASHES_H
+#define FEGUNDOASHES_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CPhoenixAshes : public CMonster
+class CFegundoAshes : public CMonster
 {
 public:
-	CPhoenixAshes(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CPhoenixAshes);
+	CFegundoAshes(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CFegundoAshes);
 	
 	virtual bool HasOrientation() const {return false;}
 	virtual bool IsAggressive() const {return false;}

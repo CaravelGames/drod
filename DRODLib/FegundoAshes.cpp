@@ -25,7 +25,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 //PhoenixAshes.cpp
-//Implementation of CPhoenixAshes.
+//Implementation of CFegundoAshes.
 
 #include "FegundoAshes.h"
 
@@ -36,14 +36,14 @@
 //Public methods.
 //
 
-CPhoenixAshes::CPhoenixAshes(CCurrentGame *pSetCurrentGame)
+CFegundoAshes::CFegundoAshes(CCurrentGame *pSetCurrentGame)
 	: CMonster(M_FEGUNDOASHES, pSetCurrentGame, GROUND)
 {
 	this->wO = S;  //begin respawn timer
 }
 
 //*****************************************************************************************
-void CPhoenixAshes::Process(
+void CFegundoAshes::Process(
 //Process a phoenix for movement.
 //
 //Params:
