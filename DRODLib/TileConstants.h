@@ -864,8 +864,8 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Stalwart,     //M_STALWART      +23
 	MID_Halph,        //M_HALPH         +24
 	MID_Slayer,       //M_SLAYER        +25
-	MID_Phoenix,      //M_FEGUNDO       +26
-	MID_PhoenixAshes, //M_FEGUNDOASHES  +27
+	MID_Fegundo,      //M_FEGUNDO       +26
+	MID_FegundoAshes, //M_FEGUNDOASHES  +27
 	MID_Guard,        //M_GUARD         +28
 	MID_Character,    //M_CHARACTER     +29
 	MID_MudMother,    //M_MUDMOTHER     +30

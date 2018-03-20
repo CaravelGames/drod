@@ -181,8 +181,8 @@ UINT getSpeakerNameText(const UINT wSpeaker, std::string& color)
 		case Speaker_Decoy: dwSpeakerTextID = MID_Decoy; color = "000080"; break;
 		case Speaker_Wubba: dwSpeakerTextID = MID_Wubba; color = "000000"; break;
 		case Speaker_Seep: dwSpeakerTextID = MID_Ghost; color = "000000"; break;
-		case Speaker_Fegundo: dwSpeakerTextID = MID_Phoenix; color = "800000"; break;
-		case Speaker_FegundoAshes: dwSpeakerTextID = MID_Phoenix; color = "800000"; break;
+		case Speaker_Fegundo: dwSpeakerTextID = MID_Fegundo; color = "800000"; break;
+		case Speaker_FegundoAshes: dwSpeakerTextID = MID_Fegundo; color = "800000"; break;
 		case Speaker_MudMother: dwSpeakerTextID = MID_MudMother; color = "FF0000"; break;
 		case Speaker_MudBaby: dwSpeakerTextID = MID_MudBaby; color = "FF0000"; break;
 		case Speaker_GelMother: dwSpeakerTextID = MID_GelMother; color = "00FF00"; break;
