@@ -24,21 +24,21 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Ghost.h
-//Declarations for CGhost.
-//Class for handling Ghost monster game logic.
+//Seep.h
+//Declarations for CSeep.
+//Class for handling Seep monster game logic.
 
-#ifndef GHOST_H
-#define GHOST_H
+#ifndef SEEP_H
+#define SEEP_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CGhost : public CMonster
+class CSeep : public CMonster
 {
 public:
-	CGhost(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CGhost);
+	CSeep(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CSeep);
 
 	bool           KillIfOutsideWall(CCueEvents &CueEvents);
 	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);

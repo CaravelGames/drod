@@ -124,7 +124,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CGelBaby();
 
 		case M_SEEP:
-		return new CGhost();
+		return new CSeep();
 
 		case M_GOBLIN:
 		return new CGoblin();

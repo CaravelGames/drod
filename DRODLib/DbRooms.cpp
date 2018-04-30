@@ -3077,7 +3077,7 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 		{
 			case M_SEEP:
 			{
-				CGhost *pWallMonster = DYN_CAST(CGhost*, CMonster*, pMonster);
+				CSeep *pWallMonster = DYN_CAST(CSeep*, CMonster*, pMonster);
 				pWallMonster->KillIfOutsideWall(CueEvents);
 			}
 			break;
