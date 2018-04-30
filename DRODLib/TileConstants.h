@@ -860,7 +860,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Clone,        //M_CLONE         +19
 	MID_Decoy,        //M_DECOY         +20
 	MID_Wubba,        //M_WUBBA         +21
-	MID_Ghost,        //M_SEEP          +22
+	MID_Seep,        //M_SEEP          +22
 	MID_Stalwart,     //M_STALWART      +23
 	MID_Halph,        //M_HALPH         +24
 	MID_Slayer,       //M_SLAYER        +25

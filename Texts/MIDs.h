@@ -518,7 +518,7 @@ enum MID_CONSTANT {
   MID_Spider = 383,
   MID_StoneGolem = 384,
   MID_Wubba = 385,
-  MID_Ghost = 386,
+  MID_Seep = 386,
   MID_Halph = 387,
   MID_Halph2 = 1337,
   MID_Slayer = 388,
