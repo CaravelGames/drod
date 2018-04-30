@@ -637,7 +637,7 @@
     <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="Gentryii.cpp" />
-    <ClCompile Include="Ghost.cpp">
+    <ClCompile Include="Seep.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -1000,7 +1000,7 @@
     <ClInclude Include="FluffBaby.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Gentryii.h" />
-    <ClInclude Include="Ghost.h" />
+    <ClInclude Include="Seep.h" />
     <ClInclude Include="Goblin.h" />
     <ClInclude Include="GreenSerpent.h" />
     <ClInclude Include="Guard.h" />

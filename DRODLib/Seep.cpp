@@ -28,7 +28,7 @@
 //Ghost.cpp
 //Implementation of CGhost.
 
-#include "Ghost.h"
+#include "Seep.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
 
