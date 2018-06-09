@@ -24,7 +24,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#include "RockGiant.h"
+#include "RockGolem.h"
 
 #include "CurrentGame.h"
 #include "DbRooms.h"

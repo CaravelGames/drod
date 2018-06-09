@@ -54,7 +54,7 @@
 #include "Roach.h"
 #include "RoachEgg.h"
 #include "RoachQueen.h"
-#include "RockGiant.h"
+#include "RockGolem.h"
 #include "Seep.h"
 #include "Slayer.h"
 #include "Spider.h"

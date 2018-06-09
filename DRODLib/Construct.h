@@ -29,7 +29,7 @@
 
 #include "Monster.h"
 #include "MonsterFactory.h"
-#include "RockGiant.h"
+#include "RockGolem.h"
 
 class CConstruct : public CRockGolem
 {
