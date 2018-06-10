@@ -29,7 +29,7 @@
 #include "DbRooms.h"
 #include "GameConstants.h"
 #include "MonsterPiece.h"
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "TileConstants.h"
 #include <BackEndLib/Assert.h>
 

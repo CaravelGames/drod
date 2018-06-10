@@ -895,7 +895,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="Splitter.cpp" />
+    <ClCompile Include="RockGiant.cpp" />
     <ClCompile Include="Stalwart.cpp" />
     <ClCompile Include="Station.cpp" />
     <ClCompile Include="Swordsman.cpp">
@@ -1031,7 +1031,7 @@
     <ClInclude Include="SettingsKeys.h" />
     <ClInclude Include="Slayer.h" />
     <ClInclude Include="Spider.h" />
-    <ClInclude Include="Splitter.h" />
+    <ClInclude Include="RockGiant.h" />
     <ClInclude Include="Stalwart.h" />
     <ClInclude Include="Station.h" />
     <ClInclude Include="Swordsman.h" />

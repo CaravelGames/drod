@@ -47,7 +47,7 @@
 #include "FegundoAshes.h"
 #include "Mimic.h"
 #include "Pathmap.h"
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "TemporalClone.h"
 #include "TileConstants.h"
 #include "NetInterface.h"

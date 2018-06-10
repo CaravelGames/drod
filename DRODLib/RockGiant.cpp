@@ -27,7 +27,7 @@
 //Splitter.cpp
 //Implementation of CSplitter.
 
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "MonsterPiece.h"
 
 #include "CurrentGame.h"

@@ -33,8 +33,8 @@
 #include "EvilEye.h"
 #include "Fegundo.h"
 #include "Serpent.h"
-#include "Splitter.h"
 #include "RockGiant.h"
+#include "RockGolem.h"
 #include "../Texts/MIDs.h"
 
 #include <BackEndLib/Base64.h>
