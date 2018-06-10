@@ -25,20 +25,20 @@
  * ***** END LICENSE BLOCK ***** */
 
 //Splitter.h
-//Declarations for CSplitter.
+//Declarations for CRockGiant.
 //Class for handling splitter monster game logic.
 
-#ifndef SPLITTER_H
-#define SPLITTER_H
+#ifndef ROCKGIANT_H
+#define ROCKGIANT_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CSplitter : public CMonster
+class CRockGiant : public CMonster
 {
 public:
-	CSplitter(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CSplitter);
+	CRockGiant(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CRockGiant);
 
 	virtual bool IsLongMonster() const {return true;}
 	virtual bool IsOpenMove(const int dx, const int dy) const;

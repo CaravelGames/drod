@@ -25,7 +25,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 //Splitter.cpp
-//Implementation of CSplitter.
+//Implementation of CRockGiant.
 
 #include "RockGiant.h"
 #include "MonsterPiece.h"
@@ -38,13 +38,13 @@
 //
 
 //*****************************************************************************
-CSplitter::CSplitter(CCurrentGame *pSetCurrentGame)
+CRockGiant::CRockGiant(CCurrentGame *pSetCurrentGame)
 	: CMonster(M_ROCKGIANT, pSetCurrentGame, GROUND_AND_SHALLOW_WATER)
 	, wOrigX(0), wOrigY(0)
 {}
 
 //*****************************************************************************
-bool CSplitter::IsOpenMove(const int dx, const int dy) const
+bool CRockGiant::IsOpenMove(const int dx, const int dy) const
 //Returns: whether moving from the current position along (dx,dy) is valid
 {
 	ASSERT(dx || dy);
@@ -97,7 +97,7 @@ inline bool bIsObstacle(const UINT wTile)
 }
 
 //*****************************************************************************
-void CSplitter::Shatter(
+void CRockGiant::Shatter(
 //Shatter a splitter monster at (wX,wY)
 	CCueEvents& CueEvents, CCurrentGame *pGame, const UINT wX, const UINT wY,
 	const bool bBreakOverPit, //[default=false]
@@ -178,7 +178,7 @@ void CSplitter::Shatter(
 }
 
  //****************************************************************************
-void CSplitter::MyClosestTile(
+void CRockGiant::MyClosestTile(
 //This routine outputs the location of a movable part of this monster
 //closest to the given coordinates.
 //
@@ -197,7 +197,7 @@ const
 }
 
 //*****************************************************************************************
-void CSplitter::Process(
+void CRockGiant::Process(
 //Process a splitter for movement.
 //
 //Params:
@@ -263,7 +263,7 @@ void CSplitter::Process(
 }
 
 //*****************************************************************************************
-void CSplitter::ReflectX(CDbRoom *pRoom)
+void CRockGiant::ReflectX(CDbRoom *pRoom)
 {
 	CMonster::ReflectX(pRoom);
 
@@ -283,7 +283,7 @@ void CSplitter::ReflectX(CDbRoom *pRoom)
 }
 
 //*****************************************************************************************
-void CSplitter::ReflectY(CDbRoom *pRoom)
+void CRockGiant::ReflectY(CDbRoom *pRoom)
 {
 	CMonster::ReflectY(pRoom);
 
@@ -303,7 +303,7 @@ void CSplitter::ReflectY(CDbRoom *pRoom)
 }
 
 //*****************************************************************************************
-void CSplitter::MovePiece(
+void CRockGiant::MovePiece(
 //Called instead of CMonster::Move to handle moving pieces of this large monster
 //one at a time.
 //

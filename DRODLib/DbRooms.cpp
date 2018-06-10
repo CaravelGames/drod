@@ -5221,7 +5221,7 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 		//Splitter breaks into pieces.
 		KillMonster(pMonster, CueEvents);
 		this->pCurrentGame->TallyKill();
-		CSplitter::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
+		CRockGiant::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
 				pMonster->wY, true); //allow forming monster shards over pit/water
 
 		pMonster = GetMonsterAtSquare(wX, wY); //get resultant piece
@@ -5864,7 +5864,7 @@ void CDbRoom::ProcessExplosionSquare(
 				}
 			}
 			else if (bShatterRockGiant && this->pCurrentGame)
-				CSplitter::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
+				CRockGiant::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
 		}
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))

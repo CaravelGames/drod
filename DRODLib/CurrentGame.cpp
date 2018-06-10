@@ -2758,7 +2758,7 @@ void CCurrentGame::StabMonsterAt(
 				{
 
 					ROOMCOORD attackCoords = ROOMCOORD(wSX, wSY);
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
 					//Make sure the Golem at (wSX,wSY) is killed
 					CMonster *pNewGolem = this->pRoom->GetMonsterAtSquare(wSX, wSY);
 					if (pNewGolem)
@@ -5440,7 +5440,7 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 				this->pRoom->KillMonster(pMonster, CueEvents);
 				CheckTallyKill(pMonster);
 				if (pMonster->wType == M_ROCKGIANT)
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
 				return;  //extra processing below gets skipped on death
 			}
 

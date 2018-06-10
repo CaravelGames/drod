@@ -187,7 +187,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CSpider();
 
 		case M_ROCKGIANT:
-		return new CSplitter();
+		return new CRockGiant();
 
 		case M_STALWART:
 		return new CStalwart();

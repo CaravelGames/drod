@@ -1853,7 +1853,7 @@ void CCharacter::Process(
 								break;
 								case M_ROCKGIANT:
 									room.KillMonster(pMonster, CueEvents, false, this);
-									CSplitter::Shatter(CueEvents, pGame, pMonster->wX, pMonster->wY);
+									CRockGiant::Shatter(CueEvents, pGame, pMonster->wX, pMonster->wY);
 									pGame->TallyKill();
 								break;
 								case M_ROCKGOLEM: case M_CONSTRUCT:
