@@ -4766,8 +4766,8 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_RoachEgg, g_pTheDB->GetMessageText(MID_RoachEgg));
 	pListBox->AddItem(Speaker_QRoach, g_pTheDB->GetMessageText(MID_RoachQueen));
 	pListBox->AddItem(Speaker_SerpentB, g_pTheDB->GetMessageText(MID_BlueSerpent));
-	pListBox->AddItem(Speaker_RockGolem, g_pTheDB->GetMessageText(MID_StoneGolem));
-	pListBox->AddItem(Speaker_RockGiant, g_pTheDB->GetMessageText(MID_Splitter));
+	pListBox->AddItem(Speaker_RockGolem, g_pTheDB->GetMessageText(MID_RockGolem));
+	pListBox->AddItem(Speaker_RockGiant, g_pTheDB->GetMessageText(MID_RockGiant));
 	pListBox->AddItem(Speaker_Seep, g_pTheDB->GetMessageText(MID_Seep));
 	pListBox->AddItem(Speaker_Serpent, g_pTheDB->GetMessageText(MID_Serpent));
 	pListBox->AddItem(Speaker_Slayer, g_pTheDB->GetMessageText(MID_Slayer));

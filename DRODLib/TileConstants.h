@@ -853,7 +853,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Spider,       //M_SPIDER        +12
 	MID_GreenSerpent, //M_SERPENTG      +13
 	MID_BlueSerpent,  //M_SERPENTB      +14
-	MID_StoneGolem,   //M_ROCKGOLEM     +15
+	MID_RockGolem,   //M_ROCKGOLEM     +15
 	MID_Waterskipper, //M_WATERSKIPPER  +16
 	MID_WaterskipperNest, //M_SKIPPERNEST   +17
 	MID_Aumtlich,       //M_AUMTLICH      +18
@@ -873,7 +873,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_GelMother,    //M_GELMOTHER     +32
 	MID_GelBaby,      //M_GELBABY       +33
 	MID_Citizen,      //M_CITIZEN       +34
-	MID_Splitter,     //M_ROCKGIANT     +35
+	MID_RockGiant,     //M_ROCKGIANT     +35
 	MID_Halph2,       //M_HALPH2        +36
 	MID_Slayer2,      //M_SLAYER2       +37
 	MID_Stalwart2,    //M_STALWART2     +38

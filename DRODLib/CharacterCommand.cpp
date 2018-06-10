@@ -157,7 +157,7 @@ UINT getSpeakerNameText(const UINT wSpeaker, std::string& color)
 		case Speaker_Slayer: dwSpeakerTextID = MID_Slayer; color = "B00060"; break;
 		case Speaker_Slayer2: dwSpeakerTextID = MID_Slayer2; color = "B00060"; break;
 		case Speaker_Goblin: dwSpeakerTextID = MID_Goblin; color = "008000"; break;
-		case Speaker_RockGolem: dwSpeakerTextID = MID_StoneGolem; color = "800000"; break;
+		case Speaker_RockGolem: dwSpeakerTextID = MID_RockGolem; color = "800000"; break;
 		case Speaker_Guard: dwSpeakerTextID = MID_Guard; color = "400000"; break;
 		case Speaker_Stalwart: dwSpeakerTextID = MID_Stalwart; color = "D0D080"; break;
 		case Speaker_Stalwart2: dwSpeakerTextID = MID_Stalwart2; color = "806040"; break;
@@ -188,7 +188,7 @@ UINT getSpeakerNameText(const UINT wSpeaker, std::string& color)
 		case Speaker_GelMother: dwSpeakerTextID = MID_GelMother; color = "00FF00"; break;
 		case Speaker_GelBaby: dwSpeakerTextID = MID_GelBaby; color = "00FF00"; break;
 		case Speaker_Citizen: dwSpeakerTextID = MID_Citizen; color = "D0D000"; break;
-		case Speaker_RockGiant: dwSpeakerTextID = MID_Splitter; color = "800000"; break;
+		case Speaker_RockGiant: dwSpeakerTextID = MID_RockGiant; color = "800000"; break;
 		case Speaker_Construct: dwSpeakerTextID = MID_Construct; color = "402020"; break;
 		case Speaker_Gentryii: dwSpeakerTextID = MID_Gentryii; color = "303030"; break;
 		case Speaker_TemporalClone: dwSpeakerTextID = MID_TemporalClone; color = "0000A0"; break;
