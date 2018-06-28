@@ -3867,6 +3867,8 @@ void CCurrentGame::SetPlayerRole(const UINT wType, CCueEvents& CueEvents)
 	if (!IsSupportedPlayerRole(wType))
 		return;
 
+	UINT wOldIdentity = this->swordsman.wIdentity;
+
 	if (wType >= CUSTOM_CHARACTER_FIRST && wType != M_NONE)
 	{
 		//When logical role is a custom value, use its designated appearance
@@ -3889,6 +3891,11 @@ void CCurrentGame::SetPlayerRole(const UINT wType, CCueEvents& CueEvents)
 
 	//When changing the player role, then all clones in the room must be synched.
 	SynchClonesWithPlayer(CueEvents);
+
+	//When player's role changes, cancel temporal recordings.
+	if (wOldIdentity != this->swordsman.wIdentity) {
+		ResetPendingTemporalSplit(CueEvents);
+	}
 
 	//When player's role changes, brain pathmap needs to be updated.
 	if (this->swordsman.IsTarget() && this->pRoom &&
