@@ -189,6 +189,7 @@
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />
     <ClCompile Include="src\tests\Monsters\Rattlesnake\RattlesnakeVsFiretrap.cpp" />
     <ClCompile Include="src\tests\Monsters\RoachQueen\StunnedRoachQueen.cpp" />
+    <ClCompile Include="src\tests\Monsters\Seep\SeepAttackWeaponBlock.cpp" />
     <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp" />
     <ClCompile Include="src\tests\PlayerRoles\ConstructPlayerRole.cpp" />
     <ClCompile Include="src\tests\PlayerRoles\FegundoPlayerRole.cpp" />
