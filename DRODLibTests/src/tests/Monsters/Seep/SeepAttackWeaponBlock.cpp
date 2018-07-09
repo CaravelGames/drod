@@ -48,4 +48,71 @@ TEST_CASE("Seep interaction with weapons on targets", "[game][player][seep]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
+
+	SECTION("Player staff should protect stalwart") {
+		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddMonster(M_SEEP, 10, 10);
+
+		RoomBuilder::Plot(T_WALL, 10, 10);
+		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Sword, 9, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(8, 10, E);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(9, 10);
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_STALWART);
+	}
+
+	SECTION("Player spear should protect stalwart") {
+		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddMonster(M_SEEP, 10, 10);
+
+		RoomBuilder::Plot(T_WALL, 10, 10);
+		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Sword, 9, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(8, 10, E);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(9, 10);
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_STALWART);
+	}
+
+	SECTION("Player pickaxe should protect stalwart") {
+		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddMonster(M_SEEP, 10, 10);
+
+		RoomBuilder::Plot(T_WALL, 10, 10);
+		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Sword, 9, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(8, 10, E);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(9, 10);
+		REQUIRE(monster != NULL);
+		REQUIRE(monster->wType == M_STALWART);
+	}
+
+	SECTION("Player dagger should not protect stalwart") {
+		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddMonster(M_SEEP, 10, 10);
+
+		RoomBuilder::Plot(T_WALL, 10, 10);
+		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Sword, 9, 10, S);
+
+		CCueEvents CueEvents;
+		CCurrentGame* game = Runner::StartGame(8, 10, E);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		CMonster* monster = game->pRoom->GetMonsterAtSquare(9, 10);
+		REQUIRE(monster == NULL);
+	}
 }
