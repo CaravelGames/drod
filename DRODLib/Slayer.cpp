@@ -181,7 +181,9 @@ void CSlayer::Process(
 		const bool bFoundMove = GetDirectMovement(this->wTX, this->wTY, dxFirst, dyFirst, dx, dy);
 		this->bMovingWisp = false;
 
-		if (bFoundMove && this->wX + dx == this->wTX && this->wY + dy == this->wTY) //if this move can successfully be made
+		if (bFoundMove && this->wX + dx == this->wTX && this->wY + dy == this->wTY && 
+			!(this->pCurrentGame->IsPlayerWeaponAt(wTX, wTY, true) ||
+			  this->pCurrentGame->pRoom->IsMonsterSwordAt(wTX, wTY, true, this))) //if this move can successfully be made
 		{
 			MakeStandardMove(CueEvents,dx,dy);
 			this->wSwordMovement = nGetO(dx,dy);
