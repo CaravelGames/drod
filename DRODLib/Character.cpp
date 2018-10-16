@@ -2522,6 +2522,12 @@ void CCharacter::Process(
 					bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_Behaviour:
+			{
+				// Set NPC behaviour flag
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_TurnIntoMonster:
 				TurnIntoMonster(CueEvents);
 			break;
