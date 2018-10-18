@@ -128,6 +128,11 @@ namespace ScriptFlag
 		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
 	};
 
+	enum Behaviour
+	{
+		None = 0,
+	};
+
 	enum DisplayFilter
 	{
 		D_Nothing=-1, //used in front-end
