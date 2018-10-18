@@ -274,7 +274,7 @@ private:
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
-	std::set<ScriptFlag::Behaviour> behaviourFlags; //stores which behaviours are active
+	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 
 	UINT wLastSpeechLineNumber; //used during language import
 
