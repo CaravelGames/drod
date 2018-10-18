@@ -1714,6 +1714,7 @@ enum MID_CONSTANT {
   MID_BriarImmune = 1926,
   MID_AdderImmune = 1927,
   MID_PuffImmune = 1928,
+  MID_WaitForWeapon = 1904,
 
   //Messages from Stats.uni:
   MID_VarMonsterWeapon = 1810,
