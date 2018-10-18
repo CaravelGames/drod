@@ -128,7 +128,7 @@ namespace ScriptFlag
 		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
 	};
 
-	enum Behaviour
+	enum Behavior
 	{
 		None = 0,
 	};
@@ -166,6 +166,14 @@ namespace ScriptFlag
 	static const UINT WMI_DISABLED   = 0x00000004; //disabled area
 	static const UINT WMI_LOCKED     = 0x00000008; //locked area
 	static const UINT WMI_NOLABEL    = 0x00000010; //disabled area with no label shown
+
+	//Weapons
+	static const UINT WEAPON_SWORD = 0x00000001; // Sword
+	static const UINT WEAPON_PICKAXE = 0x00000002; // Pickaxe
+	static const UINT WEAPON_SPEAR = 0x00000004; // Spear
+	static const UINT WEAPON_STAFF = 0x00000008; // Staff
+	static const UINT WEAPON_DAGGER = 0x00000010; // Dagger
+	static const UINT WEAPON_CABER = 0x00000020; // Caber
 };
 
 class CDbSpeech;
@@ -183,8 +191,8 @@ public:
 		CC_Appear=0,            //Appear at current square.
 		CC_AppearAt,            //Appear at square (x,y).
 		CC_MoveTo,              //Move to square (x,y) or target set in flags.
-		                        //If w is set, then forbid turning while moving.
-		                        //If h is set, then take only a single step before advancing to next command.
+								//If w is set, then forbid turning while moving.
+								//If h is set, then take only a single step before advancing to next command.
 		CC_Wait,                //Wait X turns.
 		CC_WaitForCueEvent,     //Wait for cue event X to fire.
 		CC_WaitForRect,         //Wait until an entity in flags is in rect (x,y,w,h).
@@ -222,7 +230,7 @@ public:
 		CC_SetPlayerAppearance, //Sets player to look like entity X.
 		CC_CutScene,            //Begin cut scene (if X is set), else ends cut scene.
 		CC_MoveRel,             //Move (x,y) relative to current position. If w is set, then forbid turning while moving.
-		                        //If h is set, then take only a single step before advancing to next command.
+								//If h is set, then take only a single step before advancing to next command.
 		CC_PlayerEquipsWeapon,  //(deprecated) If X is set, player is given a weapon, else it is taken away.
 		CC_AnswerOption,        //Text answer option (speech text) for a Question command that jumps to Label (x).
 		CC_BuildMarker,         //Mark rect (x,y,w,h) for building game element (flags).
@@ -270,6 +278,8 @@ public:
 		CC_FaceTowards,         //Makes the character face a specific other entity or position
 		CC_GetNaturalTarget,   //Finds the location of closest natural target
 		CC_GetEntityDirection, //Finds the direction an entity at a given tile is facing
+		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
+		CC_Behavior,			// Set behavior X on or off.
 
 		CC_Count
 	};
