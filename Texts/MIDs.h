@@ -1360,6 +1360,7 @@ enum MID_CONSTANT {
   MID_Question = 988,
   MID_SetMusic = 989,
   MID_Imperative = 990,
+  MID_Behavior = 1905, //New.
   MID_Label = 991,
   MID_GoTo = 992,
   MID_Disappear = 993,
@@ -1714,6 +1715,7 @@ enum MID_CONSTANT {
   MID_BriarImmune = 1926,
   MID_AdderImmune = 1927,
   MID_PuffImmune = 1928,
+  MID_WaitForWeapon = 1904,
 
   //Messages from Stats.uni:
   MID_VarMonsterWeapon = 1810,
