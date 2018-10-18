@@ -4275,6 +4275,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_Behavior, g_pTheDB->GetMessageText(MID_Behavior));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Label, g_pTheDB->GetMessageText(MID_Label));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveRel, g_pTheDB->GetMessageText(MID_MoveRel));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveTo, g_pTheDB->GetMessageText(MID_MoveTo));
