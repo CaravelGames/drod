@@ -128,7 +128,7 @@ namespace ScriptFlag
 		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
 	};
 
-	enum Behaviour
+	enum Behavior
 	{
 		None = 0,
 	};
@@ -270,7 +270,7 @@ public:
 		CC_FaceTowards,         //Makes the character face a specific other entity or position
 		CC_GetNaturalTarget,   //Finds the location of closest natural target
 		CC_GetEntityDirection, //Finds the direction an entity at a given tile is facing
-		CC_Behaviour,			// Set behaviour X on or off.
+		CC_Behavior,			// Set behavior X on or off.
 
 		CC_Count
 	};
