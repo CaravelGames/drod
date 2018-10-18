@@ -2624,6 +2624,15 @@ void CCharacter::Process(
 					}
 				}
 
+				const ScriptFlag::Behaviour eBehaviour = (ScriptFlag::Behaviour)command.x;
+				const bool activate = (bool)command.y;
+
+				if (activate) {
+					behaviourFlags.insert(eBehaviour);
+				} else {
+					behaviourFlags.erase(eBehaviour);
+				}
+
 				bProcessNextCommand = true;
 			}
 			break;
