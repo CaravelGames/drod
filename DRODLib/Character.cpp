@@ -2525,6 +2525,15 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_Behaviour:
 			{
 				// Set NPC behaviour flag
+				const ScriptFlag::Behaviour eBehaviour = (ScriptFlag::Behaviour)command.x;
+				const bool activate = (bool)command.y;
+
+				if (activate) {
+					behaviourFlags.insert(eBehaviour);
+				} else {
+					behaviourFlags.erase(eBehaviour);
+				}
+
 				bProcessNextCommand = true;
 			}
 			break;
