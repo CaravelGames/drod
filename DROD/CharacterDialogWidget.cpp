@@ -171,6 +171,7 @@ const UINT TAG_IMAGEOVERLAY_LABEL = 891;
 const UINT TAG_IMAGEOVERLAYTEXT = 890;
 
 const UINT TAG_WEAPON_LISTBOX2 = 883;
+const UINT TAG_BEHAVIOR_LISTBOX = 882;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1622,6 +1623,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_IMPERATIVELISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pImperativeListBox);
 	PopulateImperativeListBox();
+
+	this->pBehaviorListBox = new CListBoxWidget(TAG_BEHAVIOR_LISTBOX,
+			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_IMPERATIVELISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pBehaviorListBox);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_DISPLAYSPEECHLABEL,
 			X_DISPLAYSPEECHLABEL, Y_DISPLAYSPEECHLABEL,
@@ -4104,6 +4109,7 @@ const
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
 		case CCharacterCommand::CC_LevelEntrance:
 		case CCharacterCommand::CC_SetMusic:
@@ -4988,7 +4994,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 50;
+	static const UINT NUM_WIDGETS = 51;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5005,7 +5011,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5027,6 +5033,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
+	static const UINT BEHAVIOR[] =      {TAG_ONOFFLISTBOX, TAG_BEHAVIOR_LISTBOX, 0};
 	static const UINT ANSWER[] =        {TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0};
 	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, 0 };
 	static const UINT BUILD_MARKER_ITEMS[] = { TAG_BUILDMARKERITEMLISTBOX, 0 };
@@ -5132,7 +5139,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		FACE_TOWARDS,       //CC_FaceTowards,
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
-		WEAPONS2          //CC_WaitForWeapon
+		WEAPONS2,          //CC_WaitForWeapon
+		BEHAVIOR,           //CC_BEHAVIOR
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5256,7 +5264,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		FACE_TOWARDS_L,     //CC_FaceTowards,
 		NO_LABELS,          //CC_GetNaturalTarget
 		NO_LABELS,           //CC_GetEntityDirection
-		NO_LABELS			//CC_WaitForWeapon
+		NO_LABELS,			//CC_WaitForWeapon
+		NO_LABELS           //CC_Behavior
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
