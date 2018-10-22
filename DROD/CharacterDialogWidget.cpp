@@ -1062,6 +1062,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
 
+	static const UINT CY_BEHAVIORLISTBOX = 10 * LIST_LINE_HEIGHT + 4;
+
 	static const UINT CX_OPENCLOSELISTBOX = 100;
 	static const UINT CY_OPENCLOSELISTBOX = 53;
 	static const int X_OPENCLOSELISTBOX = X_EVENTLISTBOX;
@@ -1625,7 +1627,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	PopulateImperativeListBox();
 
 	this->pBehaviorListBox = new CListBoxWidget(TAG_BEHAVIOR_LISTBOX,
-			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_IMPERATIVELISTBOX);
+			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_BEHAVIORLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBehaviorListBox);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_DISPLAYSPEECHLABEL,
@@ -5033,7 +5035,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
-	static const UINT BEHAVIOR[] =      {TAG_ONOFFLISTBOX, TAG_BEHAVIOR_LISTBOX, 0};
+	static const UINT BEHAVIOR[] =      {TAG_ONOFFLISTBOX3, TAG_BEHAVIOR_LISTBOX, 0};
 	static const UINT ANSWER[] =        {TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0};
 	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, 0 };
 	static const UINT BUILD_MARKER_ITEMS[] = { TAG_BUILDMARKERITEMLISTBOX, 0 };
@@ -5784,6 +5786,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			AddCommand();
 		break;
 
+		case CCharacterCommand::CC_Behavior:
+			this->pCommand->x = this->pBehaviorListBox->GetSelectedItem();
+			AddCommand();
+			break;
+
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pCommand->x = this->pStealthListBox->GetSelectedItem();
 			AddCommand();
@@ -6466,6 +6473,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_Imperative:
 			this->pImperativeListBox->SelectItem(this->pCommand->x);
 		break;
+
+		case CCharacterCommand::CC_Behavior:
+			this->pBehaviorListBox->SelectItem(this->pCommand->x);
+			break;
 
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pStealthListBox->SelectItem(this->pCommand->x);
