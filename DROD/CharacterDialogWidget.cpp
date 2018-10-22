@@ -6994,6 +6994,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->y);
 	break;
 
+	case CCharacterCommand::CC_Behavior:
+		skipLeftParen;
+		parseNumber(pCommand->x);
+		skipComma;
+		parseMandatoryOption(pCommand->y, this->pDirectionListBox3, bFound);
+	break;
+
 	case CCharacterCommand::CC_AttackTile:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
@@ -7615,6 +7622,11 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_Wait:
 	case CCharacterCommand::CC_WaitForTurn:
 		concatNum(c.x);
+	break;
+
+	case CCharacterCommand::CC_Behavior:
+		concatNumWithComma(c.x);
+		wstr += this->pDirectionListBox3->GetTextForKey(c.y);
 	break;
 
 	case CCharacterCommand::CC_ActivateItemAt:
