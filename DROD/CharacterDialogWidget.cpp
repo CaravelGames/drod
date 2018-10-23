@@ -3734,6 +3734,12 @@ const
 			wstr += this->pImperativeListBox->GetTextForKey(command.x);
 		break;
 
+		case CCharacterCommand::CC_Behavior:
+			wstr += this->pBehaviorListBox->GetTextForKey(command.x);
+			wstr += wszSpace;
+			wstr += this->pOnOffListBox3->GetTextForKey(command.y);
+		break;
+
 		case CCharacterCommand::CC_SetMusic:
 			if (command.label.size())
 				wstr += command.label;
