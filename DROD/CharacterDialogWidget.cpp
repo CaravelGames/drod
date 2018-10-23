@@ -1629,6 +1629,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox = new CListBoxWidget(TAG_BEHAVIOR_LISTBOX,
 			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_BEHAVIORLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBehaviorListBox);
+	PopulateBehaviorListBox();
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_DISPLAYSPEECHLABEL,
 			X_DISPLAYSPEECHLABEL, Y_DISPLAYSPEECHLABEL,
@@ -4282,6 +4283,13 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 	this->pImperativeListBox->AddItem(ScriptFlag::PushableByBoth, g_pTheDB->GetMessageText(MID_NPCPushableByBoth));
 	this->pImperativeListBox->AddItem(ScriptFlag::Stunnable, g_pTheDB->GetMessageText(MID_NPCStunnable));
 	this->pImperativeListBox->AddItem(ScriptFlag::NotStunnable, g_pTheDB->GetMessageText(MID_NPCNotStunnable));
+	this->pImperativeListBox->SelectLine(0);
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::PopulateBehaviorListBox()
+{
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::None, g_pTheDB->GetMessageText(MID_None));
 	this->pImperativeListBox->SelectLine(0);
 }
 

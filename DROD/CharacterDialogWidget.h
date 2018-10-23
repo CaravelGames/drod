@@ -133,6 +133,7 @@ private:
 	void  PopulateItemListBox(CListBoxWidget *pListBox, const bool bIsBuild, const bool bIsBuildMarker, const bool bIsWaitForItem);
 	void  PopulatePlayerGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
+	void  PopulateBehaviorListBox();
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
