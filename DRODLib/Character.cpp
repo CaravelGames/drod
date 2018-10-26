@@ -3189,11 +3189,10 @@ bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 	if (!bIsFallingTile(oTile))
 		return false;
 
-	const UINT wResolvedIdentity = GetResolvedIdentity();
-	if (wResolvedIdentity == M_CONSTRUCT)
+	if (behaviorFlags.count(ScriptFlag::DropTrapdoors))
 		return true;
 	
-	if (bIsBeethroDouble(wResolvedIdentity)) {
+	if (behaviorFlags.count(ScriptFlag::DropTrapdoorsArmed)) {
 		if (bIsThinIce(oTile))
 			return true;
 
@@ -4502,8 +4501,20 @@ void CCharacter::SetCurrentGame(
 			case M_HALPH: case M_HALPH2:
 				SetImperative(ScriptFlag::MissionCritical);
 			break;
+			case M_CONSTRUCT:
+				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
+			break;
 			default: break;
 		}
+	}
+
+	if (bIsBeethroDouble(GetResolvedIdentity())) {
+		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
+	}
+
+	if (bIsHuman(GetResolvedIdentity()))
+	{
+		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
 	}
 
 	//If this NPC is a custom character with no script,
@@ -5202,7 +5213,11 @@ void CCharacter::MoveCharacter(
 			room.PushTLayerObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
 			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the item
 		}
-		if (tTile==T_TOKEN)
+	}
+
+	if (behaviorFlags.count(ScriptFlag::ActivateTokens)) {
+		UINT tTile = room.GetTSquare(this->wX, this->wY);
+		if (tTile == T_TOKEN)
 			room.ActivateToken(CueEvents, this->wX, this->wY, this);
 	}
 
