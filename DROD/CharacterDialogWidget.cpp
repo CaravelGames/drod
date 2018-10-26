@@ -4289,7 +4289,9 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 //*****************************************************************************
 void CCharacterDialogWidget::PopulateBehaviorListBox()
 {
-	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::None, g_pTheDB->GetMessageText(MID_None));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ActivateTokens, g_pTheDB->GetMessageText(MID_ActivateToken));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
 	this->pImperativeListBox->SelectLine(0);
 }
 
