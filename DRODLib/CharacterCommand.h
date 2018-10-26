@@ -130,7 +130,9 @@ namespace ScriptFlag
 
 	enum Behavior
 	{
-		None = 0,
+		ActivateTokens = 0,
+		DropTrapdoors = 1,
+		DropTrapdoorsArmed = 2,
 	};
 
 	enum DisplayFilter
