@@ -5755,6 +5755,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 		case CCharacterCommand::CC_Behavior:
 			this->pCommand->x = this->pBehaviorListBox->GetSelectedItem();
+			this->pCommand->y = this->pOnOffListBox3->GetSelectedItem();
 			AddCommand();
 			break;
 
@@ -6443,6 +6444,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 
 		case CCharacterCommand::CC_Behavior:
 			this->pBehaviorListBox->SelectItem(this->pCommand->x);
+			this->pOnOffListBox3->SelectItem(this->pCommand->y);
 			break;
 
 		case CCharacterCommand::CC_SetPlayerStealth:
