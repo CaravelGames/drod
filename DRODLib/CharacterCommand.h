@@ -133,6 +133,8 @@ namespace ScriptFlag
 		ActivateTokens = 0,
 		DropTrapdoors = 1,
 		DropTrapdoorsArmed = 2,
+		PushObjects = 3,
+		MovePlatforms = 4,
 	};
 
 	enum DisplayFilter

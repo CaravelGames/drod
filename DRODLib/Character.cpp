@@ -3265,7 +3265,7 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents& CueEve
 
 //*****************************************************************************
 bool CCharacter::CanPushObjects() const {
-	return this->GetResolvedIdentity() == M_CONSTRUCT || bIsHuman(this->GetResolvedIdentity());
+	return behaviorFlags.count(ScriptFlag::PushObjects);
 }
 
 //*****************************************************************************
@@ -4204,17 +4204,6 @@ bool CCharacter::DoesSquareContainObstacle(
 	const UINT wCol, const UINT wRow) //(in) Coords of square to evaluate.
 const
 {
-	//Code below only applies to characters in human roles.
-	if (!bIsHuman(GetResolvedIdentity()))
-	{
-		//Can't step on the player if flag is set.
-		if (this->bSafeToPlayer && this->pCurrentGame->IsPlayerAt(wCol, wRow))
-			return true;
-
-		//Rest of the checks for monster types is done in the base method.
-		return CMonster::DoesSquareContainObstacle(wCol, wRow);
-	}
-
 	//Routine is not written to check the square on which this monster is
 	//standing.
 	ASSERT(wCol != this->wX || wRow != this->wY);
@@ -4232,7 +4221,8 @@ const
 		{
 			//If standing on a platform, check whether it can move.
 			case T_PIT: case T_PIT_IMAGE:
-				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P)
+				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P 
+						&& behaviorFlags.count(ScriptFlag::MovePlatforms))
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
 					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
@@ -4240,7 +4230,8 @@ const
 				}
 			return true;
 			case T_WATER: /*case T_SHALLOW_WATER:*/
-				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_W)
+				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_W
+						&& behaviorFlags.count(ScriptFlag::MovePlatforms))
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
 					// @FIXME - nDist is a temporary fix to prevent hard crashes 
@@ -4258,7 +4249,7 @@ const
 	{
 		//There is something at the destination that is normally an obstacle,
 		//but some of them are handled specially.  Check for special handling first.
-		if (bIsTLayerCoveringItem(wLookTileNo))
+		if (bIsTLayerCoveringItem(wLookTileNo) && CanPushObjects())
 		{
 			//item is not an obstacle when it can be pushed away
 			const int dx = (int)wCol - (int)this->wX;
@@ -4600,6 +4591,8 @@ void CCharacter::SetCurrentGame(
 	if (bIsHuman(GetResolvedIdentity()))
 	{
 		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
+		behaviorFlags.insert(ScriptFlag::Behavior::PushObjects);
+		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
 	}
 
 	//If this NPC is a custom character with no script,
@@ -5271,27 +5264,24 @@ void CCharacter::MoveCharacter(
 	if (CanDropTrapdoor(wOTile))
 		room.DestroyTrapdoor(this->wX - dx, this->wY - dy, CueEvents);
 
-	//Special actions for human types.
-	if (bIsHuman(GetResolvedIdentity()))
-	{
-		if (bWasOnPlatform)
-		{
-			const UINT wOTile = room.GetOSquare(this->wX, this->wY);
-			if (bIsPit(wOTile) || bIsDeepWater(wOTile))
-				room.MovePlatform(this->wX - dx, this->wY - dy, nGetO(dx,dy));
-		}
 
-		//Process any and all of these item interactions.
-		UINT tTile = room.GetTSquare(this->wX, this->wY);
-		if (bIsTLayerCoveringItem(tTile))
-		{
-			room.PushTLayerObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
-			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the item
-		}
+	//Process any and all of these item interactions.
+	if (bWasOnPlatform && behaviorFlags.count(ScriptFlag::MovePlatforms))
+	{
+		const UINT wOTile = room.GetOSquare(this->wX, this->wY);
+		if (bIsPit(wOTile) || bIsDeepWater(wOTile))
+			room.MovePlatform(this->wX - dx, this->wY - dy, nGetO(dx,dy));
+	}
+
+	UINT tTile = room.GetTSquare(this->wX, this->wY);
+
+	if (bIsTLayerCoveringItem(tTile) && behaviorFlags.count(ScriptFlag::PushObjects))
+	{
+		room.PushTLayerObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
+		tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the item
 	}
 
 	if (behaviorFlags.count(ScriptFlag::ActivateTokens)) {
-		UINT tTile = room.GetTSquare(this->wX, this->wY);
 		if (tTile == T_TOKEN)
 			room.ActivateToken(CueEvents, this->wX, this->wY, this);
 	}
