@@ -2149,8 +2149,9 @@ void CMonster::Move(
 			case M_CHARACTER:
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
-					bIsStalwart(pMonster->GetIdentity()));
-				if (bIsStalwart(pMonster->GetIdentity()))
+					bIsStalwart(pMonster->GetIdentity()) ||
+					pMonster->IsAttackableTarget());
+				if (pMonster->IsAttackableTarget() && !bIsSmitemaster(pMonster->GetIdentity()))
 				{
 					pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
 					room.KillMonster(pMonster, *pCueEvents, false, this); //will return false if it's a critical NPC
