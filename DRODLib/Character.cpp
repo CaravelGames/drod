@@ -3322,9 +3322,7 @@ bool CCharacter::IsAttackableTarget() const
 	if (IsInvulnerable())
 		return false;
 
-	//These types can be attacked and killed.
-	const UINT identity = GetResolvedIdentity();
-	return bIsSmitemaster(identity) || bIsStalwart(identity);
+	return behaviorFlags.count(ScriptFlag::MonsterAttackable);
 }
 
 //*****************************************************************************
@@ -4503,15 +4501,22 @@ void CCharacter::SetCurrentGame(
 		}
 	}
 
-	if (bIsBeethroDouble(GetResolvedIdentity())) {
+	UINT wResolvedIdentity = GetResolvedIdentity();
+
+	if (bIsBeethroDouble(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
 	}
 
-	if (bIsHuman(GetResolvedIdentity()))
+	if (bIsHuman(wResolvedIdentity))
 	{
 		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
 		behaviorFlags.insert(ScriptFlag::Behavior::PushObjects);
 		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
+	}
+
+	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
+		//These types can be attacked and killed by default.
+		behaviorFlags.insert(ScriptFlag::Behavior::MonsterAttackable);
 	}
 
 	//If this NPC is a custom character with no script,
