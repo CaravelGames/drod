@@ -135,6 +135,7 @@ namespace ScriptFlag
 		DropTrapdoorsArmed = 2,
 		PushObjects = 3,
 		MovePlatforms = 4,
+		MonsterTarget = 5,
 	};
 
 	enum DisplayFilter
