@@ -3355,6 +3355,10 @@ bool CCharacter::IsFriendly() const
 bool CCharacter::IsMonsterTarget() const
 //Returns: whether the character is a valid target for monsters
 {
+	if (behaviorFlags.count(ScriptFlag::MonsterTarget)) {
+		return true;
+	}
+
 	const UINT identity = GetIdentity();
 	//Clones are only targets if the player is
 	if (identity == M_CLONE || identity == M_TEMPORALCLONE)
