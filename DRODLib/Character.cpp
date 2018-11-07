@@ -4517,6 +4517,8 @@ void CCharacter::SetCurrentGame(
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
 		//These types can be attacked and killed by default.
 		behaviorFlags.insert(ScriptFlag::Behavior::MonsterAttackable);
+	}	else if (wResolvedIdentity == M_CLONE || wResolvedIdentity == M_TEMPORALCLONE) {
+		behaviorFlags.insert(ScriptFlag::MonsterTargetIfPlayerIs);
 	}
 
 	//If this NPC is a custom character with no script,
