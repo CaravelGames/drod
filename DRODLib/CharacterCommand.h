@@ -137,6 +137,8 @@ namespace ScriptFlag
 		MovePlatforms = 4,
 		MonsterAttackable = 5,
 		MonsterTarget = 6,
+		MonsterTargetIfPlayerIs = 7,
+		AllyTarget = 8,
 	};
 
 	enum DisplayFilter
