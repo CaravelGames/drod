@@ -4258,6 +4258,13 @@ bool CCharacter::IsOpenMove(const int dx, const int dy) const
 }
 
 //*****************************************************************************
+bool CCharacter::IsPuffTarget() const
+// Returns: whether Puff monsters should treat this character as a target
+{
+	return behaviorFlags.count(ScriptFlag::PuffTarget);
+}
+
+//*****************************************************************************
 bool CCharacter::IsTileObstacle(
 //Override for NPCs.
 //
@@ -4504,6 +4511,10 @@ void CCharacter::SetCurrentGame(
 		behaviorFlags.insert(ScriptFlag::Behavior::MonsterAttackable);
 	}	else if (wResolvedIdentity == M_CLONE || wResolvedIdentity == M_TEMPORALCLONE) {
 		behaviorFlags.insert(ScriptFlag::MonsterTargetIfPlayerIs);
+	}
+
+	if (bCanFluffTrack(wResolvedIdentity)) {
+		behaviorFlags.insert(ScriptFlag::PuffTarget);
 	}
 
 	//If this NPC is a custom character with no script,
