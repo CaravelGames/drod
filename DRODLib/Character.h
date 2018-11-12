@@ -146,6 +146,7 @@ public:
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}
