@@ -139,6 +139,7 @@ namespace ScriptFlag
 		MonsterTarget = 6,
 		MonsterTargetIfPlayerIs = 7,
 		AllyTarget = 8,
+		PuffTarget = 9,
 	};
 
 	enum DisplayFilter
