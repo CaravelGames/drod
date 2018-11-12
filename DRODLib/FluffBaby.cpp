@@ -87,7 +87,7 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 
 	for (const CMonster *pMonster = room.pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		if (bCanFluffTrack(pMonster->GetResolvedIdentity()))
+		if (bCanFluffTrack(pMonster->wType))
 		{
 			if (pMonster->IsHiding() && !CanSmellObjectAt(pMonster->wX, pMonster->wY))
 			{
@@ -99,6 +99,7 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 				if (!pCharacter) continue;
 				if (!pCharacter->IsVisible()) continue;
+				if (!pCharacter->IsPuffTarget()) continue;
 			}
 
 			wDistance = nDist(pMonster->wX, pMonster->wY, this->wX, this->wY);
