@@ -4264,6 +4264,13 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MovePlatforms, g_pTheDB->GetMessageText(MID_MovePlatforms));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterAttackable, g_pTheDB->GetMessageText(MID_CanBeMonsterAttacked));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DaggerDamageImmune, g_pTheDB->GetMessageText(MID_DaggerDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::CaberDamageImmune, g_pTheDB->GetMessageText(MID_CaberDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FloorSpikeImmune, g_pTheDB->GetMessageText(MID_FloorSpikeImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
 	this->pImperativeListBox->SelectLine(0);
 }
 

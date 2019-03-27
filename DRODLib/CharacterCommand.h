@@ -140,6 +140,13 @@ namespace ScriptFlag
 		MonsterTargetIfPlayerIs = 7,
 		AllyTarget = 8,
 		PuffTarget = 9,
+		SwordDamageImmune = 10,
+		PickaxeDamageImmune = 11,
+		SpearDamageImmune = 12,
+		DaggerDamageImmune = 13,
+		CaberDamageImmune = 14,
+		FloorSpikeImmune = 15,
+		FiretrapImmune = 16
 	};
 
 	enum DisplayFilter
