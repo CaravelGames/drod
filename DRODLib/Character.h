@@ -141,6 +141,7 @@ public:
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
 	bool           IsGhostImageOverhead() const {return this->eDisplayMode == CDM_GhostOverhead;}
+	bool           IsImmuneToWeapon(WeaponType type) const;
 	bool           IsInvulnerable() const {return GetImperative() == ScriptFlag::Invulnerable;}
 	bool           IsMissionCritical() const {return GetImperative() == ScriptFlag::MissionCritical;}
 	virtual bool   IsMonsterTarget() const;
