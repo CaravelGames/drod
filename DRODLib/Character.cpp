@@ -714,11 +714,49 @@ bool CCharacter::OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/, const UINT 
 //Returns: whether character was killed
 {
 	if (this->eImperative == ScriptFlag::Invulnerable || 
-			(this->bPushableByWeapon && weaponType != WT_Firetrap && weaponType != WT_FloorSpikes))
+			(this->bPushableByWeapon && weaponType != WT_Firetrap && weaponType != WT_FloorSpikes) ||
+			this->IsImmuneToWeapon(weaponType))
 		return false;
 
 	CueEvents.Add(CID_MonsterDiedFromStab, this);
 	return true;
+}
+
+//*****************************************************************************
+bool CCharacter::IsImmuneToWeapon(WeaponType type) const
+//Returns: wether the character is safe from the given weapon type
+{
+	switch (type)
+	{
+		case WT_Firetrap: {
+			return behaviorFlags.count(ScriptFlag::FiretrapImmune); 
+		}
+		case WT_FloorSpikes: {
+			return behaviorFlags.count(ScriptFlag::FloorSpikeImmune);
+		}
+		case WT_Sword: {
+			return behaviorFlags.count(ScriptFlag::SwordDamageImmune);
+		}
+		case WT_Pickaxe: {
+			return behaviorFlags.count(ScriptFlag::PickaxeDamageImmune);
+		}
+		case WT_Spear: {
+			return behaviorFlags.count(ScriptFlag::SpearDamageImmune);
+		}
+		case WT_Staff: {
+			return true;
+		}
+		case WT_Dagger: {
+			return behaviorFlags.count(ScriptFlag::DaggerDamageImmune);
+		}
+		case WT_Caber: {
+			return behaviorFlags.count(ScriptFlag::CaberDamageImmune);
+		}
+		default: {
+			ASSERT(!"Bad weapon type");
+			return true;
+		}
+	}
 }
 
 //*****************************************************************************
