@@ -1,7 +1,7 @@
 # Building DROD
 
 1. Download and build the libraries.
-2. Update include and library paths in the project files.
+2. Update `include` and `library` paths in the project files.
 3. Build the project.
 4. Copy DLLs.
 5. Copy `drod5_0.dat`.
@@ -53,7 +53,7 @@ Alternatively you can add all the necessary path to the projects or to your glob
 
 Now you can open one of the solutions located in `Master/` depending on which project files you've modified and build the project like you'd always do. It's highly likely the first time you'll encounter some errors - maybe you built a library incorrectly, maybe you have to update include/library paths, maybe you need to change some setting specific to your development environment.
 
-##### Copy DDLs
+##### Copy DLLs
 
 Once the project is built copy the necessary DLL files to `DROD/Release` or `DROD/DebugVS2013` depending on which version was built.
 
@@ -63,7 +63,7 @@ Go to your installation of DROD (either Demo or Full version) and copy `Data/dro
 
 After all that you should be able to run the game without a problem! If it worked, then congratulations!
 
-## Troubleshoting
+## Troubleshooting
 
 Here is a list of all the problems that have been reported to happen while building the game and ways to work around them.
 
