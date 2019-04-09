@@ -728,6 +728,9 @@ bool CCharacter::IsImmuneToWeapon(WeaponType type) const
 {
 	switch (type)
 	{
+		case WT_HotTile: {
+			return behaviorFlags.count(ScriptFlag::HotTileImmune);
+		}
 		case WT_Firetrap: {
 			return behaviorFlags.count(ScriptFlag::FiretrapImmune); 
 		}
@@ -4541,6 +4544,9 @@ void CCharacter::SetCurrentGame(
 			break;
 			case M_CONSTRUCT:
 				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
+			break;
+			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
+				behaviorFlags.insert(ScriptFlag::HotTileImmune);
 			break;
 			default: break;
 		}
