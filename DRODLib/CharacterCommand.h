@@ -146,7 +146,8 @@ namespace ScriptFlag
 		DaggerDamageImmune = 13,
 		CaberDamageImmune = 14,
 		FloorSpikeImmune = 15,
-		FiretrapImmune = 16
+		FiretrapImmune = 16,
+		HotTileImmune = 17
 	};
 
 	enum DisplayFilter
