@@ -5810,7 +5810,7 @@ void CDbRoom::ProcessExplosionSquare(
 			case M_CHARACTER:
 			{
 				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->IsInvulnerable())
+				if (pCharacter->IsInvulnerable() || pCharacter->IsExplosionImmune())
 					eImperative = ScriptFlag::Invulnerable;
 			}
 			break;
