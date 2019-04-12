@@ -136,6 +136,7 @@ public:
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
+	bool           IsBriarImmune() const { return behaviorFlags.count(ScriptFlag::BriarImmune) > 0; }
 	bool           IsExplosionImmune() const {return behaviorFlags.count(ScriptFlag::ExplosionImmune);}
 	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
@@ -226,6 +227,7 @@ private:
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
+	void RefreshBriars();
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
