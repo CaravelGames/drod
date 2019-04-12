@@ -721,6 +721,7 @@ bool CCharacter::OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/, const UINT 
 		return false;
 
 	CueEvents.Add(CID_MonsterDiedFromStab, this);
+	RefreshBriars();
 	return true;
 }
 
@@ -5236,6 +5237,8 @@ void CCharacter::Disappear()
 
 	this->bVisible = false;
 	this->bWeaponSheathed = true;
+	RefreshBriars();
+
 	ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
 	room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] = NULL;
 }
@@ -5296,6 +5299,7 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 
 	CMonster::PushInDirection(dx, dy, bStun, CueEvents);
 	SetWeaponSheathed();
+	RefreshBriars();
 
 	if (HasSword())
 	{
@@ -5353,6 +5357,7 @@ void CCharacter::MoveCharacter(
 	}
 
 	SetWeaponSheathed();
+	RefreshBriars();
 
 	//If player was stepped on, kill him.
 	if (!this->bSafeToPlayer && this->pCurrentGame->IsPlayerAt(this->wX, this->wY))
@@ -5360,6 +5365,17 @@ void CCharacter::MoveCharacter(
 		CCurrentGame *pGame = (CCurrentGame*)this->pCurrentGame; //non-const
 		pGame->SetDyingEntity(&pGame->swordsman, this);
 		CueEvents.Add(CID_MonsterKilledPlayer, this);
+	}
+}
+
+//*****************************************************************************
+void CCharacter::RefreshBriars()
+// Refresh briars if the NPC can block them
+// Do so by acting as if a new tile has been plotted at the character's position
+{
+	if (behaviorFlags.count(ScriptFlag::BriarImmune)) {
+		CDbRoom& room = *(this->pCurrentGame->pRoom);
+		room.briars.plotted(this->wX, this->wY, T_EMPTY);
 	}
 }
 
