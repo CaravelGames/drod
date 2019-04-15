@@ -5810,8 +5810,12 @@ void CDbRoom::ProcessExplosionSquare(
 			case M_CHARACTER:
 			{
 				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->IsInvulnerable() || pCharacter->IsExplosionImmune())
+				if (pCharacter->IsInvulnerable() || pCharacter->IsExplosionImmune()) {
 					eImperative = ScriptFlag::Invulnerable;
+				} else if (pCharacter->IsBriarImmune()) {
+					// If a briar blocking NPC is killed, act as if a tile has been plotted.
+					this->briars.plotted(wX, wY, T_EMPTY);
+				}
 			}
 			break;
 			case M_FEGUNDOASHES:
