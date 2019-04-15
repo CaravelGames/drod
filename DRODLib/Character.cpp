@@ -2574,6 +2574,10 @@ void CCharacter::Process(
 					behaviorFlags.insert(eBehavior);
 				} else {
 					behaviorFlags.erase(eBehavior);
+					if (eBehavior == ScriptFlag::BriarImmune) {
+						// This NPC can no longer plot briars, so act as if a tile was plotted.
+						room.briars.plotted(this->wX, this->wY, T_EMPTY);
+					}
 				}
 
 				bProcessNextCommand = true;
