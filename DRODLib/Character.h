@@ -133,6 +133,7 @@ public:
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
 
+	bool           IsAdderImmune() const { return behaviorFlags.count(ScriptFlag::AdderImmune) == 1; }
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
@@ -149,6 +150,7 @@ public:
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	bool           IsPuffImmune() const { return behaviorFlags.count(ScriptFlag::PuffImmune) == 1; }
 	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;

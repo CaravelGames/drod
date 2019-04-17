@@ -4604,7 +4604,7 @@ void CDbRoom::ProcessPuffAttack(
 			{
 				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 				ASSERT(pCharacter);
-				if (bCanFluffKill(pCharacter->GetResolvedIdentity()) && !pCharacter->IsInvulnerable())
+				if (!pCharacter->IsPuffImmune() && !pCharacter->IsInvulnerable())
 				{
 					KillMonster(pMonster, CueEvents);
 					this->pCurrentGame->CheckTallyKill(pMonster);
