@@ -4565,6 +4565,9 @@ void CCharacter::SetCurrentGame(
 	if (bCanFluffTrack(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffTarget);
 	}
+	if (!bCanFluffKill(wResolvedIdentity)) {
+		behaviorFlags.insert(ScriptFlag::PuffImmune);
+	}
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
