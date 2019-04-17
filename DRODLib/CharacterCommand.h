@@ -149,7 +149,9 @@ namespace ScriptFlag
 		FiretrapImmune = 16,
 		HotTileImmune = 17,
 		ExplosionImmune = 18,
-		BriarImmune = 19
+		BriarImmune = 19,
+		AdderImmune = 20,
+		PuffImmune = 21
 	};
 
 	enum DisplayFilter

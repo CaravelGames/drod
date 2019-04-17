@@ -4274,6 +4274,8 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ExplosionImmune, g_pTheDB->GetMessageText(MID_ExplosionImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::BriarImmune, g_pTheDB->GetMessageText(MID_BriarImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AdderImmune, g_pTheDB->GetMessageText(MID_AdderImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
 	this->pImperativeListBox->SelectLine(0);
 }
 
