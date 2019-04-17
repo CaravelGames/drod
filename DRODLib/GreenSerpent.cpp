@@ -281,7 +281,7 @@ const
 		if (pMonster->wType == M_CHARACTER)
 		{
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsInvulnerable())
+			if (pCharacter->IsInvulnerable() || pCharacter->IsAdderImmune())
 				return true;
 		}
 	}
