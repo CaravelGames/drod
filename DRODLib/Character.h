@@ -137,8 +137,8 @@ public:
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
-	bool           IsBriarImmune() const { return behaviorFlags.count(ScriptFlag::BriarImmune) > 0; }
-	bool           IsExplosionImmune() const {return behaviorFlags.count(ScriptFlag::ExplosionImmune);}
+	bool           IsBriarImmune() const { return behaviorFlags.count(ScriptFlag::BriarImmune) == 1; }
+	bool           IsExplosionImmune() const {return behaviorFlags.count(ScriptFlag::ExplosionImmune) == 1;}
 	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
