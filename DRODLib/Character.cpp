@@ -730,31 +730,31 @@ bool CCharacter::IsImmuneToWeapon(WeaponType type) const
 	switch (type)
 	{
 		case WT_HotTile: {
-			return behaviorFlags.count(ScriptFlag::HotTileImmune);
+			return (behaviorFlags.count(ScriptFlag::HotTileImmune) == 1);
 		}
 		case WT_Firetrap: {
-			return behaviorFlags.count(ScriptFlag::FiretrapImmune); 
+			return (behaviorFlags.count(ScriptFlag::FiretrapImmune) == 1);
 		}
 		case WT_FloorSpikes: {
-			return behaviorFlags.count(ScriptFlag::FloorSpikeImmune);
+			return (behaviorFlags.count(ScriptFlag::FloorSpikeImmune) == 1);
 		}
 		case WT_Sword: {
-			return behaviorFlags.count(ScriptFlag::SwordDamageImmune);
+			return (behaviorFlags.count(ScriptFlag::SwordDamageImmune) == 1);
 		}
 		case WT_Pickaxe: {
-			return behaviorFlags.count(ScriptFlag::PickaxeDamageImmune);
+			return (behaviorFlags.count(ScriptFlag::PickaxeDamageImmune) == 1);
 		}
 		case WT_Spear: {
-			return behaviorFlags.count(ScriptFlag::SpearDamageImmune);
+			return (behaviorFlags.count(ScriptFlag::SpearDamageImmune) == 1);
 		}
 		case WT_Staff: {
 			return true;
 		}
 		case WT_Dagger: {
-			return behaviorFlags.count(ScriptFlag::DaggerDamageImmune);
+			return (behaviorFlags.count(ScriptFlag::DaggerDamageImmune) == 1);
 		}
 		case WT_Caber: {
-			return behaviorFlags.count(ScriptFlag::CaberDamageImmune);
+			return (behaviorFlags.count(ScriptFlag::CaberDamageImmune) == 1);
 		}
 		default: {
 			ASSERT(!"Bad weapon type");
@@ -3226,7 +3226,7 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents& CueEve
 
 //*****************************************************************************
 bool CCharacter::CanPushObjects() const {
-	return behaviorFlags.count(ScriptFlag::PushObjects);
+	return (behaviorFlags.count(ScriptFlag::PushObjects) == 1);
 }
 
 //*****************************************************************************
@@ -3235,10 +3235,10 @@ bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 	if (!bIsFallingTile(oTile))
 		return false;
 
-	if (behaviorFlags.count(ScriptFlag::DropTrapdoors))
+	if (behaviorFlags.count(ScriptFlag::DropTrapdoors) == 1)
 		return true;
 	
-	if (behaviorFlags.count(ScriptFlag::DropTrapdoorsArmed)) {
+	if (behaviorFlags.count(ScriptFlag::DropTrapdoorsArmed) == 1) {
 		if (bIsThinIce(oTile))
 			return true;
 
@@ -3368,7 +3368,7 @@ bool CCharacter::IsAttackableTarget() const
 	if (IsInvulnerable())
 		return false;
 
-	return behaviorFlags.count(ScriptFlag::MonsterAttackable);
+	return (behaviorFlags.count(ScriptFlag::MonsterAttackable) == 1);
 }
 
 //*****************************************************************************
@@ -4185,7 +4185,7 @@ const
 			//If standing on a platform, check whether it can move.
 			case T_PIT: case T_PIT_IMAGE:
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P 
-						&& behaviorFlags.count(ScriptFlag::MovePlatforms))
+						&& behaviorFlags.count(ScriptFlag::MovePlatforms) == 1)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
 					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
@@ -4194,7 +4194,7 @@ const
 			return true;
 			case T_WATER: /*case T_SHALLOW_WATER:*/
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_W
-						&& behaviorFlags.count(ScriptFlag::MovePlatforms))
+						&& behaviorFlags.count(ScriptFlag::MovePlatforms) == 1)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
 					// @FIXME - nDist is a temporary fix to prevent hard crashes 
@@ -4322,7 +4322,7 @@ bool CCharacter::IsOpenMove(const int dx, const int dy) const
 bool CCharacter::IsPuffTarget() const
 // Returns: whether Puff monsters should treat this character as a target
 {
-	return behaviorFlags.count(ScriptFlag::PuffTarget);
+	return (behaviorFlags.count(ScriptFlag::PuffTarget) == 1);
 }
 
 //*****************************************************************************
@@ -5268,7 +5268,7 @@ void CCharacter::MoveCharacter(
 
 
 	//Process any and all of these item interactions.
-	if (bWasOnPlatform && behaviorFlags.count(ScriptFlag::MovePlatforms))
+	if (bWasOnPlatform && behaviorFlags.count(ScriptFlag::MovePlatforms) == 1)
 	{
 		const UINT wOTile = room.GetOSquare(this->wX, this->wY);
 		if (bIsPit(wOTile) || bIsDeepWater(wOTile))
@@ -5277,13 +5277,13 @@ void CCharacter::MoveCharacter(
 
 	UINT tTile = room.GetTSquare(this->wX, this->wY);
 
-	if (bIsTLayerCoveringItem(tTile) && behaviorFlags.count(ScriptFlag::PushObjects))
+	if (bIsTLayerCoveringItem(tTile) && behaviorFlags.count(ScriptFlag::PushObjects) == 1)
 	{
 		room.PushTLayerObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
 		tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the item
 	}
 
-	if (behaviorFlags.count(ScriptFlag::ActivateTokens)) {
+	if (behaviorFlags.count(ScriptFlag::ActivateTokens) == 1) {
 		if (tTile == T_TOKEN)
 			room.ActivateToken(CueEvents, this->wX, this->wY, this);
 	}
@@ -5310,7 +5310,7 @@ void CCharacter::RefreshBriars()
 // Refresh briars if the NPC can block them
 // Do so by acting as if a new tile has been plotted at the character's position
 {
-	if (behaviorFlags.count(ScriptFlag::BriarImmune)) {
+	if (behaviorFlags.count(ScriptFlag::BriarImmune) == 1) {
 		CDbRoom& room = *(this->pCurrentGame->pRoom);
 		room.briars.plotted(this->wX, this->wY, T_EMPTY);
 	}
