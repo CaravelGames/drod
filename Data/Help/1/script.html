@@ -101,6 +101,9 @@ designate.  There are four general classes of script commands, as follows:</p>
     <li><a name="imperative"><b>Imperative</b></a> - Sets a special status
       condition on the NPC (see <a href="#imperativelist">Imperatives</a>).
       Compatible imperatives may be combined.</li>
+    <li><a name="behavior"><b>Behavior</b></a> - Turn various NPC interactions on
+      and off. Some appearances have behaviors set by default.
+      Behaviors may be combined. (see <a href="#behaviorlist">Behaviors</a>).</li>
   </ol>
 
 <p><a name="interaction"><b>3.&nbsp;&nbsp;Interaction</b></a> - How the NPC
@@ -494,6 +497,30 @@ continue executing script commands from a different location in the script.</p>
     <li><a name="imp-stunnable"><u>Stunnable</u></a>: Weapon pushes will stun this NPC.</li>
 	<li><a name="imp-not-stunnable"><u>Not stunnable</u></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
   </ol>
+
+<p><a name="behaviorlist"><b>Behaviors</b>
+</a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors.</p>
+<ol>
+	<li><a name ="beh-activate-token"><u>Activate Tokens</u></a>: The NPC will activate architectural tokens when it moves onto them, other than Temporal Split Points.</li>
+	<li><a name="beh-drop-trapdoor"><u>Drops Trapdoors</u></a>: The NPC will drop trapdoors and melt thin ice.</li>
+	<li><a name="beh-drop-trapdoor-armed"><u>Drop Trapdoors When Armed</u></a>: The NPC will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
+	<li><a name="beh-push-objects"><u>Push Objects</u></a>: The NPC can push objects such as Mirrors and Powder Kegs.</li>
+	<li><a name="beh-move-platform"><u>Move Platforms and Rafts</u></a>: The NPC can push platforms and rafts by moving against their sides.</li>
+	<li><a name="beh-monster-attackable"><u>Can Be Attacked By Monsters</u></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
+	<li><a name="beh-puff-target"><u>Puff Target</u></a>: Puffs will treat the NPC as a target. This does not affect the NPC's vunerability to puffs.</li>
+	<li><a name="beh-sword-immune"><u>Sword Damage Immunity</u></a>: Attack from swords will not kill the NPC.</li>
+	<li><a name="beh-pickaxe-immune"><u>Pickaxe Damage Immunity</u></a>: Attack from pickaxes will not kill the NPC. The NPC can still be pushed by pickaxes</li>
+	<li><a name="beh-spear-immune"><u>Spear Damage Immunity</u></a>: Attack from spears will not kill the NPC. The NPC can still be pushed by spears.</li>
+	<li><a name="beh-dagger-immune"><u>Dagger Damage Immunity</u></a>: Attack from daggers will not kill the NPC.</li>
+	<li><a name="beh-caber-immune"><u>Caber Damage Immunity</u></a>: Attack from cabers will not kill the NPC. The NPC can still be pushed by cabers.</li>
+	<li><a name="beh-floor-spike-immune"><u>Floor Spikes Immunity</u></a>: The NPC cannot be killed by spike traps. Flying NPCs will ignore the state of this behavior, and are always immune to spike traps.</li>
+	<li><a name="beh-fire-trap-immune"><u>Fire Trap Immunity</u></a>: The NPC will not be killed due to ending the turn on an active fire trap.</li>
+	<li><a name="beh-hot-tile-immune"><u>Hot Tile Immunity</u></a>: The NPC will not be killed due to staying on a hot tile for more than a turn. Flying NPCs will ignore the state of this behavior, and are always immune to hot tiles.</li>
+	<li><a name="beh-explosion-immune"><u>Explosion Immunity</u></a>: The NPC cannot be killed by explosions, including ones from the Attack Tile command.</li>
+	<li><a name="beh-briar-immune"><u>Briar Immunity</u></a>: Briar cannot grow onto and kill the NPC.</li>
+	<li><a name="beh-adder-immune"><u>Adder Immunity</u></a>: Adders cannot eat the NPC.</li>
+	<li><a name="beh-puff-immune"><u>Puff Immunity</u></a>: The NPC cannot be killed by puffs, either from Puffs moving onto them, or due to the NPC moving onto a Puff. This does not affect whether the NPC attracts Puffs.</li>
+</ol>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
 <ol>
