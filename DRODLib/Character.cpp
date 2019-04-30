@@ -4235,7 +4235,7 @@ const
 			const int dy = (int)wRow - (int)this->wY;
 
 			if (pMonster->wType != M_FLUFFBABY && 
-				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster->wType)) &&
+				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster)) &&
 				(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
 				return true;
 			}

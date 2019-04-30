@@ -98,7 +98,7 @@ const
 	if (pMonster && pMonster->wType != M_FLUFFBABY){
 		if (!CStalwart::typesToAttack.has(pMonster->wType))
 			return true;
-		else if (!this->CanDaggerStep(pMonster->wType))
+		else if (!this->CanDaggerStep(pMonster))
 			return true;
 		if (pMonster->wType == M_STALWART || pMonster->wType == M_STALWART2)
 			return true;

@@ -66,7 +66,7 @@ public:
 	bool CanDropTrapdoor(const UINT oTile) const;
 	bool CanLightFuses() const;
 	bool CanStepOnMonsters() const;
-	bool CanDaggerStep(const UINT wMonsterType = M_NONE, const bool bIgnoreSheath = false) const;
+	bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();
 	void EquipWeapon(const UINT type);
