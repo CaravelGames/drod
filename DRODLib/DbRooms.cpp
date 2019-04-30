@@ -2737,7 +2737,7 @@ const
 				bObstacle = bMonsterObstacle = true; //Fluff babies block Fluff babies
 		} else {
 			if (!(this->pCurrentGame->swordsman.CanStepOnMonsters() ||
-					this->pCurrentGame->swordsman.CanDaggerStep(pMonster->wType)))
+					this->pCurrentGame->swordsman.CanDaggerStep(pMonster)))
 				bObstacle = bMonsterObstacle = true; //some roles can't step on monsters
 
 			if (pMonster->IsLongMonster())
