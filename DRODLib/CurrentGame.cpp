@@ -3794,7 +3794,7 @@ void CCurrentGame::TeleportPlayer(
 		}
 		else if (pMonster->wType == M_FEGUNDOASHES ||  //fegundo ashes
 			this->swordsman.CanStepOnMonsters() ||  //player in monster-role attacked another monster
-			this->swordsman.CanDaggerStep(pMonster->wType, true))  //player stabbed with a dagger
+			this->swordsman.CanDaggerStep(pMonster, true))  //player stabbed with a dagger
 		{
 			CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);
@@ -6024,7 +6024,7 @@ MakeMove:
 		}
 		else if (pMonster->wType == M_FEGUNDOASHES ||  //fegundo ashes
 			this->swordsman.CanStepOnMonsters() ||  //player in monster-role attacked another monster
-			this->swordsman.CanDaggerStep(pMonster->wType, true))  //player stabbed with a dagger
+			this->swordsman.CanDaggerStep(pMonster, true))  //player stabbed with a dagger
 		{
 			CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);

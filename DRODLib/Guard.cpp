@@ -64,7 +64,7 @@ const
 	//Can't move onto monsters except Fluff Babies -- even target ones.
 	CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(wCol, wRow);
 	if (pMonster){
-		if (pMonster->wType != M_FLUFFBABY && !CanDaggerStep(pMonster->wType))
+		if (pMonster->wType != M_FLUFFBABY && !CanDaggerStep(pMonster))
 			return true;
 		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2)
 			return true;

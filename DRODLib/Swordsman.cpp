@@ -31,6 +31,7 @@
 #include "Swordsman.h"
 #include "Weapons.h"
 #include "TileConstants.h"
+#include "Character.h"
 #include <BackEndLib/Assert.h>
 
 //
@@ -78,7 +79,7 @@ bool CSwordsman::CanStepOnMonsters() const
 }
 
 //*****************************************************************************
-bool CSwordsman::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) const
+bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath) const
 //Returns: true if player is capable of killing the target monster with a "dagger step"
 {
 	//You can't "dagger step" without a dagger
@@ -94,10 +95,17 @@ bool CSwordsman::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath
 		
 	//Citizens are the only entities that can be stepped on
 	//  when they are invulnerable to weapons
-	switch(wMonsterType)
+	switch(pMonster->wType)
 	{
 		case M_CITIZEN: case M_ARCHITECT:
 			return false;
+		case M_CHARACTER: {
+			const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+			if (!pCharacter || !pCharacter->IsVisible()) {
+				return true; // You can always step on something that isn't there
+			} 
+			return !pCharacter->IsImmuneToWeapon(WT_Dagger);
+		}
 		default:
 			return true;
 	}
