@@ -306,10 +306,10 @@ dependencies = {
 		}
 	},
 	'metakit-2.4.9.5': {
-		'urls': ['https://github.com/jcw/metakit/archive/2.4.9.5.tar.gz'],
+		'urls': ['https://git.jeelabs.org/jcw/metakit/archive/2.4.9.5.tar.gz'],
 		'builds': [
 			{
-				'sln': 'metakit-2.4.9.5/win/msvc70/mksrc.sln',
+				'sln': 'metakit/win/msvc70/mksrc.sln',
 				'configs': [
 					['Debug', '/project', 'mkbug.vcxproj', '/projectconfig', 'Debug'],
 					['Release', '/project', 'mkbug.vcxproj', '/projectconfig', 'Release']
@@ -317,15 +317,15 @@ dependencies = {
 			}
 		],
 		"include": {
-			"metakit-2.4.9.5/include/mk4.h": "",
-			"metakit-2.4.9.5/include/mk4dll.h": "",
-			"metakit-2.4.9.5/include/mk4io.h": "",
-			"metakit-2.4.9.5/include/mk4str.h": "",
-			"metakit-2.4.9.5/include/mk4.inl": ""
+			"metakit/include/mk4.h": "",
+			"metakit/include/mk4dll.h": "",
+			"metakit/include/mk4io.h": "",
+			"metakit/include/mk4str.h": "",
+			"metakit/include/mk4.inl": ""
 		},
 		'libs': {
-			'metakit-2.4.9.5/builds/mk4vc70s_d.lib': 'Debug',
-			'metakit-2.4.9.5/builds/mk4vc70s.lib': 'Release'
+			'metakit/builds/mk4vc70s_d.lib': 'Debug',
+			'metakit/builds/mk4vc70s.lib': 'Release'
 		}
 	},
 	SdlName: {
