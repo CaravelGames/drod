@@ -34,6 +34,7 @@
     <ProjectGuid>{7105881E-2DA6-4044-8EC7-2691F24B296A}</ProjectGuid>
     <RootNamespace>DRODLib</RootNamespace>
     <ProjectName>DRODLib</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
@@ -62,9 +63,9 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v142</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -114,38 +115,38 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>.\DebugVS2013\</OutDir>
-    <IntDir>.\DebugVS2013-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>.\Release\</OutDir>
-    <IntDir>.\Release-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">
-    <OutDir>.\BuildDats\</OutDir>
-    <IntDir>.\BuildDats-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">
-    <OutDir>.\Russian\</OutDir>
-    <IntDir>.\Russian-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">
-    <OutDir>.\Steam\</OutDir>
-    <IntDir>.\Steam-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
-    <OutDir>.\SteamBuildDats\</OutDir>
-    <IntDir>.\SteamBuildDats-Temp\</IntDir>
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-temp\</IntDir>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -167,10 +168,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\DebugVS2013/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\DebugVS2013/</AssemblerListingLocation>
-      <ObjectFileName>.\DebugVS2013/</ObjectFileName>
-      <ProgramDataBaseFileName>.\DebugVS2013/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -184,7 +185,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\DebugVS2013\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -202,10 +203,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\Release/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
-      <ObjectFileName>.\Release/</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -216,7 +217,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\Release\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -234,10 +235,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\BuildDats/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\BuildDats/</AssemblerListingLocation>
-      <ObjectFileName>.\BuildDats/</ObjectFileName>
-      <ProgramDataBaseFileName>.\BuildDats/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -248,7 +249,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\BuildDats\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -266,10 +267,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\Release/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
-      <ObjectFileName>.\Release/</ObjectFileName>
-      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -280,7 +281,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\Russian\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -298,10 +299,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\Steam/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\Steam/</AssemblerListingLocation>
-      <ObjectFileName>.\Steam/</ObjectFileName>
-      <ProgramDataBaseFileName>.\Steam/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -312,7 +313,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\Steam\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -330,10 +331,10 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\SteamBuildDats/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\SteamBuildDats/</AssemblerListingLocation>
-      <ObjectFileName>.\SteamBuildDats/</ObjectFileName>
-      <ProgramDataBaseFileName>.\SteamBuildDats/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
@@ -344,7 +345,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Lib>
-      <OutputFile>.\SteamBuildDats\DRODLib.lib</OutputFile>
+      <OutputFile>$(Configuration)\DRODLib.lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
   </ItemDefinitionGroup>
@@ -360,10 +361,10 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <PrecompiledHeaderOutputFile>.\$(Configuration)/DRODLib.pch</PrecompiledHeaderOutputFile>
-      <AssemblerListingLocation>.\$(Configuration)/</AssemblerListingLocation>
-      <ObjectFileName>.\$(Configuration)/</ObjectFileName>
-      <ProgramDataBaseFileName>.\$(Configuration)/</ProgramDataBaseFileName>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -1048,7 +1049,7 @@
     <None Include="VTune\DRODLib.vpj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BackEndLib\BackEndLib.2013.vcxproj">
+    <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">
       <Project>{896c0d2a-91f2-4988-911e-c3d00912c5c9}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
