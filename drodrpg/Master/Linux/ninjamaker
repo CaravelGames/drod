@@ -1,0 +1,225 @@
+#!/bin/bash -u
+
+die () {
+	echo -e "\e[1;31merror\e[0m: $*" >&2
+	exit 1
+}
+
+cpucount=$(grep processor /proc/cpuinfo | wc -l)
+
+args=("$@")
+declare -A options
+
+declare -A archflags
+archflags=(
+	[x86_64]="-m64"
+	[i686]="-m32 -march=i686"
+)
+
+declare -A distflags
+distflags=(
+	[custom]=""
+	[caravel]="-DCARAVELBUILD"
+)
+
+declare -A distlinkflags
+distlinkflags=(
+	[custom]=""
+	[caravel]=""
+)
+
+declare -A buildflags
+buildflags=(
+	[debug]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS"
+	[debugsan]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
+	[dev]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
+	[release]="-O2 -DNDEBUG -flto"
+	[beta]="-O2 -DNDEBUG -DBETA -flto"
+)
+
+declare -A linkflags
+linkflags=(
+	[debug]=""
+	[debugsan]="-fsanitize=address -fsanitize=undefined -static-libasan -static-libubsan"
+	[dev]=""
+	[release]="-flto=${cpucount}"
+	[beta]="-flto=${cpucount}"
+)
+
+TOPDIR=../..
+getoptarg=
+
+options[exec]=
+options[cxx]=g++
+options[archexec]=
+options[arch]=x86_64
+options[dist]=custom
+options[build]=release
+options[nostatic]=false
+options[name]=
+allargs=
+
+if [[ ${#args[@]} > 0 ]]; then
+	allargs="${args[@]}"
+	for arg in "${args[@]}"; do
+		if [[ ! -z $getoptarg ]]; then
+			options[$getoptarg]=$arg
+			getoptarg=
+		else
+			case "$arg" in
+				-64)
+					options[arch]=x86_64
+					options[archexec]=linux64
+					;;
+				-32)
+					options[arch]=i686
+					options[archexec]=linux32
+					;;
+				-exec|-arch|-dist|-build|-cxx)
+					getoptarg=${arg/-}
+					;;
+				-no-static)
+					options[${arg//-}]=true
+					;;
+				-caravel|-custom)
+					options[dist]=${arg/-}
+					;;
+				-debug|-debugsan|-dev|-release|-beta)
+					options[build]=${arg/-}
+					;;
+				-crossenv)
+					options[exec]=crossenv-exec
+					;;
+				-*)
+					die "unknown argument: $arg"
+					;;
+				*)
+					if [[ -z ${options[name]} ]]; then
+						options[name]="$arg"
+					else
+						die "can't set name to \"$arg\" -- it was already set to \"${options[name]}\""
+					fi
+			esac
+		fi
+	done
+fi
+if [[ -z ${options[name]} ]]; then
+	NAME=${options[dist]}.${options[build]}.${options[arch]}
+else
+	NAME=${options[name]}
+fi
+BUILDDIR=builds/$NAME
+EXEC="${options[archexec]} ${options[exec]}"
+
+SDL_CONFIG="$EXEC sdl-config"
+PKG_CONFIG="$EXEC pkg-config"
+
+declare -a libs
+libs=(
+	${TOPDIR}/DROD
+	${TOPDIR}/DRODLib
+	${TOPDIR}/CaravelNet
+	${TOPDIR}/../FrontEndLib
+	${TOPDIR}/../BackEndLib
+)
+
+gen_rules () {
+	echo "exec = $EXEC"
+	echo "arch = ${options[arch]}"
+	echo "archflags = ${archflags[${options[arch]}]}"
+	echo "distflags = ${distflags[${options[dist]}]}"
+	echo "buildflags = ${buildflags[${options[build]}]} -DDROD_AUTODETECT_REVISION"
+	echo "linkflags = ${linkflags[${options[build]}]} ${distlinkflags[${options[dist]}]}"
+	echo "cxxbin = ${options[cxx]}"
+	cat <<'X'
+
+cxx = $exec $cxxbin
+ar = $exec gcc-ar
+ranlib = $exec gcc-ranlib
+
+config = $distflags -DUSE_SDL_MIXER
+
+optflags = -std=c++11 $archflags $buildflags -g
+
+cflags = $optflags -pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized
+ldflags = $optflags $linkflags -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
+
+revision = $$(hg id -n)
+debugsuffix = -${arch}-${revision}.dbg
+
+rule cxx
+  depfile = $out.d
+  deps = gcc
+  command = $cxx -o $out -MMD -MF $out.d $cflags $config $includes -c $in
+  description = Compile $out
+
+rule link
+  command = $cxx -o $out $ldflags $in $libs && rm -f ${out}-*.dbg && objcopy --only-keep-debug $out ${out}${debugsuffix} && objcopy --add-gnu-debuglink=${out}${debugsuffix} $out && strip --strip-all $out
+  description = Link $out
+
+rule ar
+  command = $ar cr $out $in && $ranlib $out
+  description = Archive $out
+
+rule update-revision
+  command = echo "#define DROD_VERSION_REVISION ${revision}" >$out.new && diff -q $out $out.new >/dev/null 2>&1 && rm -f $out.new || mv -f $out.new $out
+  description = Update revision
+  restat = true
+
+X
+	echo "rule regen"
+	echo "  command = ./ninjamaker $allargs"
+	echo
+	echo "builddir = $BUILDDIR"
+	local idirs=("-I$BUILDDIR")
+	local ilibs=()
+	for dir in ${libs[@]}; do
+		idirs+=(-I$(dirname $dir))
+		ilibs+=($BUILDDIR/$(basename $dir).a)
+	done
+	cat <<X
+includes = ${idirs[@]} $(${SDL_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
+staticlibs = $(${PKG_CONFIG} --libs-only-L SDL_mixer SDL_ttf theora vorbisfile vorbis ogg) -lSDL_mixer -lSDL_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
+dynamiclibs = $(${SDL_CONFIG} --libs) -lrt -ldl
+build $BUILDDIR/drod: link ${ilibs[@]}
+X
+	if ${options[nostatic]}; then
+		echo "libs = \$staticlibs \$dynamiclibs"
+	else
+		echo "libs = -static-libgcc -static-libstdc++ -Wl,-Bstatic \$staticlibs -Wl,-Bdynamic \$dynamiclibs"
+	fi
+}
+
+vcprojs=()
+gen_lib_build () {
+	local path="$1"
+	local lib=$(basename "$path")
+	local vcproj="$path/$lib.vcproj"
+	vcprojs+=($vcproj)
+	local files=($(grep 'RelativePath=.*\.cpp' "$vcproj" | sed 's,^.*RelativePath="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
+	local objs=()
+	for file in ${files[@]}; do
+		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"
+		objs+=($obj)
+		echo -n "build $obj: cxx $file"
+		case "$file" in
+			*/GameConstants.cpp)
+				echo " | $BUILDDIR/drod-revision.h"
+				;;
+			*)
+				echo
+				;;
+		esac
+	done
+	echo "build $BUILDDIR/$lib.a: ar ${objs[@]}"
+	echo "build $lib.a: phony $BUILDDIR/$lib.a"
+}
+
+out=build.$NAME.ninja
+gen_rules >$out
+for lib in "${libs[@]}"; do
+	gen_lib_build "$lib" >>$out
+done
+echo "build $BUILDDIR/drod-revision.h: update-revision | always-build" >>$out
+echo "build always-build: phony" >>$out
+echo "build $out: regen ninjamaker ${vcprojs[@]}" >>$out

@@ -1,0 +1,349 @@
+<html>
+<head>
+  <title>Help for DROD RPG</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg"/>
+<hr />
+<a href="character.html">Characters</a><br />
+&nbsp;&nbsp;&nbsp;<a href="script.html">Script commands</a><br />
+&nbsp;&nbsp;&nbsp;<a href="customchar.html">Custom character management</a><br />
+<a href="elements.html">Game elements</a><br />
+<a href="equipment.html">Equipment</a><br />
+<hr />
+<h3><u>Room Editor</u></h3>
+<p>The Room Editor is reached by selecting a room in the <a
+ href="editselect.html">Editor screen</a>. You can use it to edit
+any room in the selected hold. </p>
+<p>The Room Editor displays a view of the selected room roughly as it would be
+seen in the game.</p>
+<p><a name="selectobjects"><b>Selecting Objects for Placement</b></a> - A tabbed menu of game
+objects is shown on the left side of the screen. The objects in
+DROD are divided into four categories, also called <a name="layers">layers</a>:</p>
+<ol>
+  <li>room pieces: what the room is made from (such as walls, doors, pits, etc)</li>
+  <li>floor controls: force arrows, ortho tiles, and tile lighting</li>
+  <li>items: what goes on a tile, such as orbs, scrolls, potions, tar, etc.</li>
+  and
+  <li>monsters, NPCs/scripts and level entrance positions.</li>
+</ol>
+<p>Select a tab to display that object
+category. Click on an item in the menu to select it for placement.
+Many menu items have two or more modes, which may be selected by rotating the tile
+with the Q/W keys (default), the mouse wheel, or clicking on the menu item
+again while already selected.
+Items with several types have a pop-up menu that appears when the item is
+clicked on again.</p>
+<p><a name="placingobjects"><b>Placing Objects</b></a> - Left-click on a square in the room to place
+the currently selected item there. Items cannot be placed on a
+square if something already exists there on the same layer as the
+object being placed. To delete placed objects, see "<a href="#deletingobjects">Deleting
+Objects</a>" below. When an item can't or shouldn't be placed on a
+square, it will be shaded red to indicate a new object
+won't be placed there.</p>
+<p><a name="setobjorientation"><b>Setting Object Orientation</b></a> -
+For certain objects, their orientation is significant (such as force
+arrows, monsters, and the player's starting position). Use the rotation keys
+or the mouse wheel to
+rotate the way objects get placed. The "Roach" icon on the monster menu tab
+is updated to indicate which way placed monsters will be oriented.
+While holding down the left mouse button to place an object, its orientation
+can be changed until the mouse button is released.
+When certain customizable items are selected,
+using the rotation keys or mouse wheel will select the item's mode.</p>
+<p><a name="placemultipleobj"><b>Placing Multiple Objects</b></a> - Dragging the mouse with the left
+button down will fill the highlighted region with the selected object on
+all open squares. Hint: <a href="#obstacles">Scenery objects</a> larger than 1x1 tile may be placed this way.
+Some items, such as scrolls, are intended to be placed only one at a time.
+For these items, placing more than one at a time is disabled.</p>
+<p><a name="deletingobjects"><b>Deleting Objects</b></a> -
+Right-clicking on a square will delete any object on that square from
+the currently selected menu layer. Dragging a region with the
+right mouse button down will delete all objects of that layer in the
+selected area.  Exceptions are checkpoints and individual tile <a href="#lighting">lighting</a>.
+These may be placed concurrently with other items on their menu tab,
+so must be explicitly selected in order to delete them.  Hold &lt;Shift&gt; while
+deleting to erase objects from all room layers in the selected region together.</p>
+<p><a name="movingregions"><b>Moving large regions</b></a> - To make a duplicate copy of a room region,
+drag the mouse to highlight a rectangular area and press &lt;Ctrl-C&gt; while
+the mouse button is down to mark the region to be copied. The region marked
+for copying stays chosen until a new region is marked or you begin
+editing a different room. Press &lt;Ctrl-V&gt; at any time to
+re-copy the marked region. Click on a
+square to paste a copy of that region, the clicked square being the
+top-left corner.  You may use this operation to paste a copied room region
+into another room within the same level.</p>
+<p><a name="reflectroom"><b>Reflecting the room</b></a> - Press &lt;F7&gt; to reflect the room
+horizontally (about the vertical axis) and &lt;F8&gt; to reflect the room
+vertically.  All object looks and behaviors are likewise updated to match.</p>
+<p><a name="rotateroom"><b>Rotating the room</b></a> - Press &lt;Ctrl-F7&gt; to rotate the room
+clockwise.  All object appearances and behaviors are likewise updated to match
+as best as possible.</p>
+<p><a name="undoredo"><b>Undo/Redo</b></a> - Click the "Undo" button or &lt;Ctrl-Z&gt; to undo
+changes you've made to the room during this session (since selecting the
+room for editing). Press "Redo" or &lt;Ctrl-Y&gt; to
+redo changes that have been undone. Note that undone commands cannot be
+redone once you starting making other changes to the room.</p>
+<p><a name="editsettings"><b>Editor Settings</b></a> - Enabling
+the "Show Errors" checkbox will highlight objects in the room that
+have an improper or questionable placement (see <a href="#roomerrors">Room Errors</a>
+below). Uncheck "Save room automatically" on the <a
+ href="settings.html">Player Settings Screen</a> if you want the editor
+to prompt you before saving any changes you have made to a room.
+When the room is saved, if the active player profile is not the author of the room's hold,
+you will be prompted to make a copy of the hold that your player profile may edit
+before any room changes are saved.</p>
+<p><a name="playtesting"><b>Playtesting</b></a> - You can test the current room by hitting F5,
+then clicking on the room position where you
+want to begin play. Hit &lt;F4&gt; to define the player's starting stats
+for playtesting.  During playtesting, you may hit &lt;F4&gt; to alter
+certain game state vars at any time.
+Playtesting continues until &lt;Escape&gt; is pressed.</p>
+<p><a name="chooseroom"><b>Choosing a Room from the Minimap</b></a> - Click on the level map to
+select any room in the selected level. You can also click on an
+empty area adjacent to an existing room to add a new room to the level at
+that location. Hit &lt;Ctrl-X&gt; to cut and &lt;Ctrl-C&gt; to copy
+the current room. Hit &lt;Ctrl-V&gt; to paste the marked room to the
+currently selected spot on the map. Hit the &lt;delete&gt; key to
+permanently erase a room from the game.</p>
+<p><a name="switchlevel"><b>Switching to another level</b></a> - Press the PageDown and PageUp keys to
+exit the current room you are working on and go to the next and previous <a href="#levelentrance">level
+entrances</a>, respectively.</p>
+<p><a name="customize"><b>Customizing and Special Objects</b></a> -
+Several items can be customized to look or act a certain way. Customizable
+objects are the following:</p>
+<ol>
+  <li><u><a href="character.html" name="characters">Characters</a></u>.  Special
+      NPC <a href="script.html">scripts</a> can be defined to look or act a
+      certain way.</li>
+  <li><u><a href="equipment.html" name="equipment">Equipment</a></u>.  Items
+      the player may pick up and place in inventory slots.</li>
+  <li><a name="orbs"><u>Orbs</u></a>. Click on an orb to view which room objects
+      it affects. <a href="#gates">Gates</a> and
+      <a href="#lighting">lights</a> may be affected. Lightning bolts will flash
+      from the orb to all objects it is defined to act on. Objects
+      highlighted green will be opened/enabled when the orb is
+      struck, objects highlighted orange will be toggled, and objects
+      highlighted red will be closed/disabled. Clicking on an applicable object
+      while in orb editing mode will change the effect the orb has on this
+      object. Clicking on a tile without an orb or affected object will exit orb
+      editing mode. Rotate or click on the orb menu selection again to change
+      the orb type.</li>
+  <li><a name="pressureplates"><u>Pressure plates</u></a>. As
+      <a href="#orbs">orbs</a>, except they are activated when depressed. Also,
+      they may be placed as a connected component larger than a single room
+      tile.</li>
+  <li><a name="gates"><u>Gates</u></a>. Click on a gate to
+      view which <a href="#orbs">orbs</a> and <a href="#pressureplates">pressure
+      plates</a> affect it. Lightning bolts will flash from the gate to all
+      objects acting on it. Clicking on an orb or pressure plate while in door
+      editing mode will change the effect the object has on the selected gate.
+      The color coding scheme is the same as for orb/plate customization.
+      Clicking on a tile without an orb, pressure plate or gate will exit
+      door editing mode.</li>
+  <li><a name="levelentrance"><u>Level entrances</u></a>. Each level can be
+      entered at any number of user-definable locations. After placing a level
+      entrance, click on it to specify what text the player will see when they
+      enter the level at that point.  This text may be the same or different
+      from the descriptions for other level entrances. You may set the entrance
+	  text to be shown only the first time the player uses the entrance,
+	  or it may be disabled entirely, which will avoid transitioning to the
+	  level entrance screen when going to this level entrance.
+	  Click on the entrance again to revise the text
+      description, reorient the direction the player faces when entering the
+      level here, to change whether and when the entrance text screen is shown
+	  when starting from this entrance, or to mark this entrance as the main
+	  entrance to the level.
+	  The main level entrance designates its room as the level's
+      Entrance room, or the relative origin from which all other rooms locations
+      in the level are measured. Click and drag a level entrance with the mouse
+      to reposition it elsewhere in the room.</li>
+  <li><a name="stairs"><u>Stairs</u></a>. After placing stairs, a dialog box
+      will appear with the list of all <a href="#levelentrance">level
+      entrances</a> in the hold and their text descriptions. Select one of the
+      entrances to designate where the player goes from this staircase.
+      Selecting "End hold" means the player will finish the hold on using these
+      stairs. The destination level can be changed at any time by clicking on
+      the staircase again. Hint: use pairs of stairways and adjacent level
+      entrances to make two-way staircases.</li>
+  <li><a name="serpents"><u>Serpents</u></a>. Serpents are placed a piece at a
+      time, starting from its head. Once you start placing a serpent, click on a
+      room square to mark a turn in its body. Continue placing segments by
+      clicking to lay down each new piece of the serpent. Pieces that have
+      already been placed can be removed by clicking on part of the last segment
+      placed. To finish placing the monster, click twice on the same spot. A
+      serpent must be at least two squares long. Click on any previously placed
+      serpent to modify it.</li>
+  <li><a name="lighting"><u>Light sources</u></a>.  Click light sources after
+      placement to change their color to the currently selected light color.  If
+      their light color already matches the current color selection, clicking
+      lights will increase their light intensity and radius by a tile, up to a
+      maximum of eight tiles. Shift-click lights to decrease their intensity and
+      range.</li>
+  <li><a name="customtextures"><u>Custom room textures</u></a>. Several floor
+      textures are included with each room style. Additionally, you may add your
+      own textures for floors, walls, and pits by selecting color swirl tile on
+      the object menu.  When first placing a custom texture tile in a room, you
+      will be prompted to import an image file into your hold from disk to use
+      as your custom texture. These images should be a multiple of the room tile
+      size, which is 44x44 pixels. <a name="supportedimg">Only</a> JPEG and PNG
+      images are supported for import, and transparency is not supported. Once
+      one or more images have been imported into your hold, you may select from
+      these for display in any room in the hold. Only one image can be selected
+      as a custom texture for each room. Press F9 to change the image selected
+      for a room and its origin tile (i.e. the coordinates the image starts tiling
+      from).</li>
+  <li><a name="obstacles"><u>Scenery obstacles</u></a>. Scenery obstacles can
+      appear in a variety of different shapes and sizes. You can switch between
+      different types of obstacles with the rotate keys or clicking the scenery
+      menu option again while selected. If you place scenery obstacles by
+      highlighting an area rather than square by square, then the largest
+      possible obstacle of the current type will be placed. The following is a
+      list of all possible object types and sizes:
+      <table>
+        <tr>
+          <td width="150">Type</td><td>1x1</td><td>2x2</td><td>3x3</td><td>4x4</td><td>5x5</td><td>other</td>
+        </tr><tr>
+          <td>rock 1</td><td>X</td><td>X</td><td>X</td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>rock 2</td><td>X</td><td>X</td><td>X</td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>plant 1</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>plant 2</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>dwelling 1</td><td>X</td><td></td><td>X</td><td></td><td>X</td><td></td>
+        </tr><tr>
+          <td>dwelling 2</td><td>X</td><td></td><td>X</td><td></td><td>X</td><td></td>
+        </tr><tr>
+          <td>pile o' skulls 1</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>pile o' skulls 2</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>goblin statue</td><td>X</td><td>X</td><td></td><td>X</td><td></td><td></td>
+        </tr><tr>
+          <td>empire statue</td><td>X</td><td>X</td><td></td><td>X</td><td></td><td></td>
+        </tr><tr>
+          <td>desk</td><td>X</td><td></td><td>X</td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>bookshelf</td><td>X</td><td></td><td></td><td></td><td></td><td>2x1</td>
+        </tr><tr>
+          <td>chair N</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>chair E</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>chair S</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>chair W</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>book on pedestal</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>treasure chest</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>tombstone 1</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>tombstone 2</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>ubiquitous crate</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>table</td><td>X</td><td>X</td><td>X</td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>table w/ runner</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>clockweight</td><td>X</td><td></td><td></td><td>X</td><td></td><td></td>
+        </tr><tr>
+          <td>hut</td><td>X</td><td></td><td>X</td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>cauldron</td><td>X</td><td>X</td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>bed</td><td>X</td><td></td><td></td><td></td><td></td><td>1x2</td>
+        </tr><tr>
+          <td>signpost</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>barrel</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr><tr>
+          <td>pipe</td><td>X</td><td></td><td></td><td></td><td></td><td>3x1</td>
+        </tr><tr>
+          <td>couch</td><td>X</td><td></td><td></td><td></td><td></td><td>2x1</td>
+        </tr><tr>
+          <td>washbasin</td><td>X</td><td></td><td></td><td></td><td></td><td></td>
+        </tr>
+      </table></li>
+  <li><a name="tokens"><u>Tokens</u></a>.  Architectural tokens may be placed on
+      the item layer to add persistent room effects when touched by the player
+      (with some exceptions, noted below). Rotate or click the token
+      while selected on the object menu to select a different type of token for
+      placement.
+      <ul>
+        <li><a name="arrowtoken"><u>Arrow rotator (CW/CCW)</u></a>.  Rotates all
+            force arrows in the room one-eighth turn clockwise or
+            counter-clockwise when stepped on. Stepping on it again rotates
+            arrows back.</li>
+        <li><a name="tartoken"><u>Tarstuff toggles</u></a>.  Swaps the nature of
+            two kinds of tarstuff in the room, including monsters of that type.</li>
+        <li><a name="visiontoken"><u>Enhanced vision</u></a>.  Allows the player
+            to see what is under tarstuff.</li>
+        <li><a name="disarmtoken"><u>Disarm</u></a>.  Toggles whether the player
+            can use a sword or not. Without a sword, the player does not drop
+            trapdoors.  This token does not cancel other situations in which the
+            player is already swordless.</li>
+      </ul>
+  </li>
+</ol>
+<p><a name="roomerrors"><b>Room Errors</b></a> - Errors highlighted in the room
+include the following:</p>
+<ol>
+  <li>Matching room edges. Room edge squares are highlighted blue if they don't
+      match the squares of an adjacent room. An open square will be highlighted,
+      for instance, if no adjoining room exists, or if
+	  a non-matching room element type is at the edge of the adjoining room.</li>
+  <li>Orbs/plates. Orbs and pressure plates generally affect gates.
+      Orbs that don't affect any objects are marked orange.</li>
+  <li>Stairs.  Stairs that exit the hold are highlighted, not as an error but as
+      a helpful reminder.</li>
+  <li>Strange placement. If an object is put in a location that might not allow
+      it to be used correctly, it will be marked red.</li>
+</ol>
+<p><a name="miscnotes"><b>Misc. Notes</b></a> -</p>
+<ol>
+  <li>Here are some notes on <a href="lastword.html">good room design</a>.</li>
+  <li>Drag scrolls, characters, and level entrances to reposition them.</li>
+  <li>Click on monsters with a different active direction to reorient them.</li>
+  <li>Press PageUp and PageDown to switch to editing the next and previous
+      levels in the hold.</li>
+  <li>Tarstuff can be kept off of walls by holding the <b>Shift</b> key when
+      placing.</li>
+  <li>After modifying a room, realize that saved games recorded
+      previously in that room might no longer be valid.</li>
+</ol>
+<p><a name="keyboardref"><b>Editor key command reference</b></a> -</p>
+<ul>
+  <li>F1 - view these help docs</li>
+  <li>F2 - copy a list of all hold variable references to the clipboard
+   (open a text editor and use the Paste command to display this text)</li>
+  <li>F3 - force reload of the current room graphics.
+   Useful for graphic mod development with the game open.</li>
+  <li>F4 - assign default player stats when playtesting</li>
+  <li>F5 - playtest room</li>
+  <li>Ctrl-F7 - rotate room clockwise</li>
+  <li>F7 - reflect room horizontally</li>
+  <li>F8 - reflect room vertically</li>
+  <li>F9 - (re)define a custom room image and its tile origin</li>
+  <li>PageUp - warp editor to the hold's next logical level entrance</li>
+  <li>PageDown - warp editor to the previous logical level entrance</li>
+  <li>Ctrl-[1-4] - select editor menu tab 1 through 4</li>
+  <li>Ctrl-left - switch to previous editor menu tab</li>
+  <li>Ctrl-right - switch to next editor menu tab</li>
+  <li>Ctrl-Z - undo room edits</li>
+  <li>Ctrl-Y - redo room edits</li>
+  <li>Ctrl-X,C,V - cut/copy/paste a room region highlighted by a mouse drag</li>
+  <li>Alt - hold down to display the in-game appearance of NPCs</li>
+  <li>Enter - pull up CaravelNet chat/console window</li>
+</ul>
+<p>Press &lt;Escape&gt; to return to the <a href="editselect.html">main
+editor screen</a>.</p>
+<hr />
+<a href="editselect.html">Level Editor</a><br />
+<a href="contents.html">Contents</a>
+</body>
+</html>

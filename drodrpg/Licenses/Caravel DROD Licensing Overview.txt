@@ -1,0 +1,35 @@
+LICENSING OVERVIEW FOR CARAVEL DEADLY ROOMS OF DEATH DISTRIBUTION
+
+Thanks for reading this document!  It explains what you need to take into account if you want to redistribute all or some of the files found in the Caravel Deadly Rooms of Death Distribution.  You are probably the sort that wants to play by the rules and help me out, so I'll try to make this quick, clear, and painless.  
+
+This is not a legally binding document, and it does not contain legal advice.  This is just my layman's opinion of what I think is legally required of you for redistributing Caravel DROD files.  You can use it at your own risk.  If you've got a lot at stake, you might choose to consult a lawyer.
+
+An easy mistake you could make would be to assume that all of the files are redistributable because the project is "open source".  No, it isn't that simple.  Read on!
+
+DISTRIBUTIONS
+
+This file you are reading should be included with the Caravel DROD distribution.  The Caravel DROD distribution is home of the original open source release of DROD.  It will probably be the only distribution, but just to keep things clear, I'm making the distinction early.  If another party decided they wanted to distribute a modified DROD, that would be considered a different distribution, and they could call it something different like "Extra Special DROD Distribution" if they wanted.
+
+There's basically three types of files that are used to make the DROD game go:
+
+1. third-party libraries
+2. DROD source code and executables
+3. all other files
+
+You can consider which parts you want to make use of, and learn about the specific licenses involved as needed.
+
+THIRD-PARTY LIBRARIES
+
+The Caravel DROD distribution only contains original or modified DROD files.  Other third party components (i.e. MetaKit, FMOD) that are used by the DROD executables have different licenses and aren't included in the distribution or discussed here.  See LEGAL.txt for a list of these.  If you wish to use these components, you should comply with their licenses as well.
+
+DROD SOURCE CODE AND EXECUTABLES
+
+All DROD source code and executables are licensed under Mozilla Public License 1.1.  A copy of this license can be retrieved from www.mozilla.org.  I won't try to paraphrase the license, so just read the thing.  Especially note sections 1.5 and 1.11 which detail which files are considered "source code" and "executables".  Also note that the MPL applies to DROD files found in other non-Caravel distributions.
+
+ALL OTHER FILES (BITMAPS, AUDIO, GAME LEVELS, DOCUMENTATION)
+
+All other DROD files (not source code or executables as defined by MPL) in the Caravel DROD distribution require permission to distribute.  No license is granted here to distribute these files, which include but are not limited to: bitmaps, audio samples, game levels, help documentation, and descriptive text appearing on screens.
+
+FUTURE RELEASES
+
+The licensing requirements may change in future releases of the Caravel DROD distribution.  You must follow the licensing requirements for the release that contains the files you are redistributing.
