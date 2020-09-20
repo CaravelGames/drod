@@ -53,7 +53,7 @@ bool Sphere::intersects(const Point& Ro, const Point& Rd, float &min_t)
 	//Step 3. If square root is imaginary, there are no real intersections.
 	if (desc < 0.0f) return false;
 	//Step 4. Solve quadratic.
-	const float SqrtDesc = sqrt(desc);
+	const float SqrtDesc = static_cast<float>(sqrt(desc));
 	const float t0 = -(B + SqrtDesc);	//smaller of two roots -- check it first
 	//Step 5. Determine parametric point(s) of intersection.
 	if (t0 < 0.001f)

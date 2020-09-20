@@ -84,7 +84,7 @@ namespace CNetChat
 	};
 
 	struct orderChats {
-		bool operator() (const Data* p1, const Data* p2);
+		bool operator() (const Data* p1, const Data* p2) const;
 	};
 	typedef std::set<Data*, orderChats> ORDERED_CHATS;
 	typedef std::vector<Data*> CHAT_VECTOR;

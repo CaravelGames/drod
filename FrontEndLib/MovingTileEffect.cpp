@@ -115,10 +115,10 @@ bool CMovingTileEffect::UpdateLocation()
 		//Move in straight line to destination.
 		const float fDeltaX = this->wMoveToX - this->fX;
 		const float fDeltaY = this->wMoveToY - this->fY;
-		const float fAngle = atan2(fDeltaY, fDeltaX ? fDeltaX : 0.00001f);
+		const float fAngle = static_cast<float>(atan2(fDeltaY, fDeltaX ? fDeltaX : 0.00001f));
 
-		const float fNewX = this->fX + cos(fAngle) * fVel;
-		const float fNewY = this->fY + sin(fAngle) * fVel;
+		const float fNewX = this->fX + static_cast<float>(cos(fAngle)) * fVel;
+		const float fNewY = this->fY + static_cast<float>(sin(fAngle)) * fVel;
 
 		//Ensure we don't overshoot our destination.
 		if (((this->fX-this->wMoveToX) * (fNewX-this->wMoveToX)) < 0.0)

@@ -1951,7 +1951,7 @@ bool CFiles::GetDriveList(
 
 	if (!CFiles::bDrivesChecked)
 	{
-		for (UINT drive=0; drive<NUMDRIVES; ++drive)
+		for (char drive=0; drive<NUMDRIVES; ++drive)
 		{
 			char buffer[4] = { drive+'a', ':', '\\', 0};
 			UINT uType = GetDriveTypeA(buffer); //Use instead of GetDriveType() for pre-NT compatibility.

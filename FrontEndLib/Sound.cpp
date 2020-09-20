@@ -1750,7 +1750,7 @@ void CSound::Update(
 		ASSERT(fDir);
 
 		//Orientation vectors must be of unit length.  Normalize.
-		const float fDirMagnitude = sqrt(fDir[0]*fDir[0] + fDir[1]*fDir[1] + fDir[2]*fDir[2]);
+		const float fDirMagnitude = static_cast<float>(sqrt(fDir[0]*fDir[0] + fDir[1]*fDir[1] + fDir[2]*fDir[2]));
 		ASSERT(fDirMagnitude > 0.0);
 		const float fDirOneOverMagnitude = 1.0f / fDirMagnitude;
 		fDir[0] *= fDirOneOverMagnitude;
@@ -1776,7 +1776,7 @@ void CSound::Update(
 			this->f2DListenerDir[0] = 0.0;  this->f2DListenerDir[1] = 1.0;	//north
 		} else {
 			//Orientation vector must be of unit length.  Normalize.
-			const float fDirMagnitude = sqrt(fDir[0]*fDir[0] + fDir[1]*fDir[1]);
+			const float fDirMagnitude = static_cast<float>(sqrt(fDir[0]*fDir[0] + fDir[1]*fDir[1]));
 			ASSERT(fDirMagnitude > 0.0);
 			const float fDirOneOverMagnitude = 1.0f / fDirMagnitude;
 
@@ -1836,7 +1836,7 @@ void CSound::Update(
 			const float fCosine = v2 > 0.0 ?
 				(this->f2DListenerDir[1] * (this->f2DListenerPos[0]-fPos[0]) +
 				-this->f2DListenerDir[0] * (this->f2DListenerPos[1]-fPos[1]))
-				/ sqrt(v2) : 0;
+				/ static_cast<float>(sqrt(v2)) : 0;
 			ASSERT(-1.0 <= fCosine && fCosine <= 1.0);
 
 #ifdef USE_SDL_MIXER
@@ -1853,11 +1853,11 @@ void CSound::Update(
 			{
 				case 0: fDistToSound = MAX(fDistX, fDistY); break; //L-inf norm
 				case 1: fDistToSound = fDistX + fDistY; break;     //Manhattan
-				case 2: fDistToSound = sqrt(fDistX*fDistX + fDistY*fDistY); break; //Euclidean
+				case 2: fDistToSound = static_cast<float>(sqrt(fDistX*fDistX + fDistY*fDistY)); break; //Euclidean
 				default:
-					fDistToSound = pow(
+					fDistToSound = static_cast<float>(pow(
 						pow(fDistX, this->nDistanceNorm) + pow(fDistY, this->nDistanceNorm),
-						1.0f/(float)this->nDistanceNorm);
+						1.0f/(float)this->nDistanceNorm));
 				break;
 			}
 			float fMin = this->fMinDist, fMax = this->fMaxDist;

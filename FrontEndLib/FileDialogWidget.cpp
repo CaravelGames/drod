@@ -175,7 +175,7 @@ void CFileDialogWidget::CheckDrives()
 #ifdef WIN32
 	if (!bDrivesChecked)
 	{
-		for (UINT drive=0; drive<numDrives; ++drive)
+		for (char drive=0; drive<numDrives; ++drive)
 		{
 			char buffer[4] = { drive+'a', ':', '\\', 0};
 			UINT uType = GetDriveTypeA(buffer); //Use instead of GetDriveType() for pre-NT compatibility.

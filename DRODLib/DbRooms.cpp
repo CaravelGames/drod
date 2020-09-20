@@ -12463,7 +12463,7 @@ bool CDbRoom::RemovePressurePlateTile(
 			pPlate->tiles = *reg;
 			reg->first(pPlate->wX, pPlate->wY);
 			this->orbs.push_back(pPlate);
-			wPlateI = this->orbs.size(); //base-1
+			wPlateI = static_cast<USHORT>(this->orbs.size()); //base-1
 			for (CCoordSet::const_iterator sq = reg->begin();
 				 sq != reg->end(); ++sq)
 				this->pressurePlateIndex.Add(sq->wX, sq->wY, wPlateI);
