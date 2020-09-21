@@ -7,6 +7,10 @@
 5. Copy DLLs.
 6. Copy `drod5_0.dat`.
 
+### Building DROD RPG
+
+To build DROD RPG, first complete steps 1 and 2 above, then use the project files within the `drodrpg` sub-directory to repeat an analogous process for steps 3 through 6.
+
 #### Short version
 
 There is a Python script that downloads and builds all of the required third-party libraries that DROD requires in `Scripts/InstallDependencies.win32.vs2013.py`.
@@ -55,12 +59,14 @@ Known build issues:
 
 ##### Update include and library paths in the project files
 
-There are two ways to approach this - either copy the necessary include and library files from their original projects to a new location (like the build script does) and only have to add a single path to each projects.
+Once the above script completes successfully, LIB and DLL files are placed within a `Deps` sub-directory. With VS2019 at least, the include and link paths in DROD's project files may just work as-is to reference these directories and find the necessary third-party files. If so, there's nothing else you need to do for this step.
+
+Otherwise, there are two ways to approach this - either copy the necessary include and library files from their original projects to a new location (like the build script does) and only have to add a single path to each projects.
 Alternatively you can add all the necessary path to the projects or to your global settings ([more information here](https://www.curlybrace.com/words/2012/12/17/setting-global-c-include-paths-in-visual-studio-2012-and-2011-and-2010/)).
 
 ##### Build the project
 
-Now you can open one of the solutions located in `Master/` depending on which project files you've modified and build the project like you'd always do. It's highly likely the first time you'll encounter some errors - maybe you built a library incorrectly, maybe you have to update include/library paths, maybe you need to change some setting specific to your development environment.
+Open one of the solutions located in `Master/` depending on which project files you've modified and build the project like you'd always do. It's highly likely the first time you'll encounter some errors - maybe you built a library incorrectly, maybe you have to update include/library paths, maybe you need to change some setting specific to your development environment.
 
 ##### Copy DLLs
 
