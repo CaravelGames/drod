@@ -1,0 +1,900 @@
+<html>
+<head>
+  <title>Help for DROD RPG</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg" />
+<hr />
+<h3><u>Character Script Commands</u></h3>
+<p>When the player enters the room, NPCs start performing the custom behavior
+you designate.  The scripting system is quite flexible and allows you to
+implement a wide variety of behaviors.
+There are five general classes of script commands, as follows:</p>
+<ol>
+  <li><a href="#placement">Placement</a></li>
+  <li><a href="#condition">Condition</a></li>
+  <li><a href="#interaction">Interaction</a></li>
+  <li><a href="#queries">Queries</a></li>
+  <li><a href="#decision">Decision making</a></li>
+</ol>
+<p>
+<a href="#usagenotes">Notes about using NPC scripts</a><br />
+<a href="#imperativelist">Imperatives</a><br />
+<a href="#behaviorlist">Behaviors</a><br />
+<a href="#predefinedvars">Predefined vars</a><br />
+<a href="#branchingexamples">Examples of branching code structures</a><br />
+<a href="#multichoiceexample">Example of a multiple choice question</a><br />
+<a href="#newmonsters">How to make a new monster type</a><br />
+<a href="#character-on-tarstuff">Character on tarstuff</a><br />
+<a href="#customequipment">How to make custom equipment</a>
+</p>
+<hr />
+<p><a name="placement"><b>1.&nbsp;&nbsp;Placement</b></a> - Change the NPC's location.</p>
+<ol>
+  <li><a name="appear"><b>Appear</b></a> - If not visible, the NPC will appear
+      at the current square (i.e. it enters the room).  This command does
+      nothing if the NPC is already visible. If a monster or the player occupies
+      the square it is appearing in, then the NPC will wait until the square is
+      vacant to appear.</li>
+  <li><a name="appearat"><b>Appear at</b></a> - Use this to have an invisible
+      NPC enter the room at a designated square different from the one where the
+      NPC is current located. After selecting this command, the room will
+      temporarily appear.  Click on a square to select where the NPC will enter
+      the room. This command does nothing if the NPC is already visible.  If a
+      monster or the player occupies the square the NPC is to appear in, it will
+      wait until the square becomes vacant to appear.</li>
+  <li><a name="disappear"><b>Disappear</b></a> - Removes the NPC from the room,
+      making him invisible. Use this to show an NPC leaving the room. Script
+      commands continue to play while the character is invisible but the NPC
+      will not physically interact with any room elements unless it Appears
+      again.</li>
+  <li><a name="moveto"><b>Move to</b></a> - The NPC will move to the indicated
+      square (selected by clicking on a room square, as above).  Optionally, one
+      of the entity types listed in the adjacent list box may be selected as who
+      the NPC should follow. Hold &lt;Ctrl&gt; while clicking to select and
+      unselect multiple selections. Each turn, the NPC will attempt to move one
+      square closer to its destination. It moves roughly in a straight line and
+      won't move on a given turn if something is in its way.
+      <a name="forbidturning">Enable</a> "Forbid turning" if you don't want the
+      monster turning to face the direction it is moving each step. Hint: If you
+      want the NPC to move in a more complex fashion, such as following a
+      twisting corridor, this can be accomplished with a sequence of <b>Move
+      to</b> commands, one to navigate each twist in the corridor.  This command
+      finishes when the NPC arrives at the destination square.  If the NPC is
+	  not visible (i.e. not in the room), movement to the destination tile is
+	  immediate.
+      <a name="singlestep">Enable</a> "Single step" to have the NPC only attempt
+      to make a single step toward the indicated destination before continuing
+      to the next script command.  If no move can be made, the next script
+      command is executed immediately.</li>
+  <li><a name="move"><b>Move</b></a> - Similar to <a href="#moveto"><b>Move
+      to</b></a>, except a relative number of tiles to move from the NPC's
+      current location is specified.  Positive numbers indicate movement south
+      and east, and negative numbers are for moving north and west.
+	  When a cut scene is executing and the player's role is set to None,
+	  an NPC executing a Move command that would cause the NPC to exit the room
+	  causes the game to exit the room in that direction as if the player
+	  had exited it.  If the NPC is
+	  not visible (i.e. not in the room), movement to the destination tile is
+	  immediate.</li>
+  <li><a name="facedirection"><b>Face direction</b></a> - Initially, the NPC
+      faces the direction it is oriented when placed in the room.  Use this
+      command to turn the NPC in a different direction without moving (takes 1
+      turn).</li>
+</ol>
+
+<p><a name="condition"><b>2.&nbsp;&nbsp;Condition</b></a> - How the NPC
+functions.</p>
+<ol>
+  <li><a name="setappearance"><b>Set appearance</b></a> - Changes the NPC's
+      "Graphic" and default properties to the specified entity type.</li>
+  <li><a name="turnintomonster"><b>Turn into monster</b></a> - Turns the NPC
+      into a regular monster of the type indicated by its graphic.  This ends
+      script execution immediately and the NPC is permanently replaced by a
+	  regular monster.</li>
+  <li><a name="imperative"><b>Imperative</b></a> - Sets a special status
+      condition on the NPC (see <a href="#imperativelist">Imperatives</a>).
+	  Compatible imperatives may be combined.</li>
+  <li><a name="behavior"><b>Behavior</b></a> - Enables a behavior
+      pattern for the NPC that is executed following script commands each
+	  turn.  Also used to define certain attributes of the NPC's abilities
+	  (see <a href="#behaviorlist">Behaviors</a>).  Compatible behaviors
+	  may be combined.</li>
+</ol>
+
+<p><a name="interaction"><b>3.&nbsp;&nbsp;Interaction</b></a> - How the NPC
+interacts with its environment.</p>
+<ol>
+  <li><a name="activateat"><b>Activate item at</b></a> - Activates the item at
+      the room square you select. Items that can be activated are: orbs,
+      pressure plates, lights and wall lights. Nothing will happen this turn if
+      no relevant item is at the indicated square. Hint: Move the character next
+      to orbs before striking them for more intuitive behavior.  If no one is
+      next to the orb when struck, it will appear that Beethro is using his
+      portable orb.</li>
+  <li><a name="speech"><b>Speech</b></a> - Causes someone in the room to say
+      something.<br />
+      <a name="dialogtext"><u>Dialog text</u></a>: Type the words that are said.
+      This may be left blank in order to only play a sound effect.<br />
+      <a name="speaker"><u>Speaker</u></a>: who says the words. The text appears
+      next to the person's figure in the room and their face appears on screen
+      while they are speaking.  Use "Custom" to have the NPC "throw its voice"
+      to a different square in the room.  If a monster or character is located
+      at the indicated square when this command is executed, it will appear as
+      if this monster or character is speaking. If speaker is set to "None", or
+      the person indicated is not present in the room, then the words will
+      appear next to the NPC.<br />
+      <a name="mood"><u>Mood</u></a>: the face displays the indicated mood.
+	  Only supports Beethro's facial expressions.<br />
+      <a name="speechdelay"><u>Speech delay</u></a>: How long, in milliseconds,
+      the speech lasts for.  If placing multiple lines of speech in sequence,
+      this determines how much time passes until the next line of speech (and
+      corresponding speaker) is displayed.  Set this value to zero to have the
+      game engine calculate how long to wait based on the length of the speech
+      text.<br />
+      <a name="addsound"><u>Add sound</u></a>: A sound file (Wave or Ogg Vorbis
+      format) on disk can be optionally attached to the speech.  If a sound is
+      specified, it will play along with the text and the next speech command
+      will be played when the sound completes. Use a non-zero speech delay to
+      force when the next line of speech will play regardless of how long the
+      attached sound file plays.<br />
+      <a name="exportspeech"><u>Exporting speech text</u></a>: A hold's entire
+      speech script can be exported to an HTML file on disk when exporting the
+      hold by adding the line "ExportSpeech=1" to the "[Startup]" section of
+      Data/drod.ini.
+  </li>
+  <li><a name="flushspeech"><b>Flush Speech (on/off)</b></a> - Tells the game to
+      immediately process any previously queued speech that hasn't had time to
+      play yet.  If "On" is selected, these texts will appear immediately
+      onscreen.  If "Off" is selected, then text that hasn't played yet won't
+      show at all. Hint: This command is used for dramatic effect, to ensure
+      speech queued after this command will be immediately spoken, as intended.
+      This command is not needed if it doesn't matter at what point in play
+      speech texts are delivered.</li>
+  <li><a name="ambient"><b>Ambient sound</b></a> - Plays a custom sound effect,
+      imported from a sound file on disk.  Select "Loop Off" to play the sound
+      once, and "Loop On" to play the sound repeatedly.  Selecting no sound file
+      in conjunction with this command will silence any ambient sounds playing
+      when the command is executed.</li>
+  <li><a name="ambientat"><b>Ambient sound at</b></a> - Plays a custom sound
+      effect, imported from a sound file on disk, from the room location you
+      specify.  The sound will play from the direction the sound is coming to
+      the player in the room and will be quieter the further the player is away
+      from that room tile.  Selecting no sound file in conjunction with this
+      command will silence any ambient sounds currently playing at the room
+      location you specify.</li>
+  <li><a name="buildmarker"><b>Build</b></a> - Build the specified item
+      in the marked room region.</li>
+  <li><a name="gotoentrance"><b>Go to level entrance</b></a> - Sends the player
+      immediately to any level entrance defined in the hold, or ends the hold.
+      "<u>Return to Prior Location</u>" will return the player to the last level exit
+      point taken, either via stairs or script.
+      Using it again consecutively will return to the location of original use.
+      </li>
+  <li><a name="playvideo"><b>Play video</b></a> - Plays a video file, imported
+      from a video file on disk, at the specified screen coordinates.  Sound
+      tracks in video files are not supported, but sounds and music may be
+      played concurrently with the proper script commands.
+      <a name="supportedvideo">Currently</a>, only Ogg Theora video format is
+      supported.</li>
+  <li><a name="setmusic"><b>Set music</b></a> - Set any of the available music
+      themes to play. Additionally, custom music, imported from a music file on
+      disk, may be played. Only Ogg Vorbis and Wave formats are supported.
+      Custom music can be set to continue playing across rooms by executing this
+      command on room entrance.</li>
+  <li><a name="role"><b>Player role</b></a> - Indefinitely sets the player to
+      play the role you indicate. In these roles, properties that apply to that
+      entity type generally hold.</li>
+  <li><a name="generateentity"><b>Generate entity</b></a> - Creates a new
+      entity of the specified type at room location (x,y) and the indicated
+	  orientation once that room tile is vacant.  Custom NPCs with a default
+	  script defined may be created where an entity already occupies the room tile,
+	  but begins as not visible.
+	  NPCs will begin executing their default script when created.</li>
+  <li><a name="cutscene"><b>Cut scene</b></a> - When set, room turns will
+      proceed automatically at the rate you specify without player intervention.
+      Invoke this command with a rate of "0" to end the cut scene and return
+      movement control to the player. Hint: This command is used for dramatic
+      effect, to have NPCs do things, such as move around the room, without
+      requiring the player to take turns to allow the NPCs to likewise move.
+      If on a given turn no NPCs are executing, the cut scene playing will
+      automatically terminate, restoring control to the player.</li>
+  <li><a name="answer"><b>Answer option</b></a> - Provides a multiple choice
+      option for a <a href="#question"><b>Question</b></a> command (see below).
+      A label from the list of defined <a href="#label"><b>Label</b></a>
+      commands in the script must be selected as the point from where the script
+      will continue execution if the user selects this choice.
+      Up to nine answer options are supported for a given Question.  Any
+      additional options are ignored.</li>
+  <li><a name="setvar"><b>Set var</b></a> - In addition to
+      <a href="#predefinedvars">predefined variables</a>,
+	  each hold you create contains a set
+      of zero or more variables, named by you.  Use these variables to track
+      persistent game state information across rooms during play. To add a variable
+      to a hold, type its name into the uppermost text box and click "Add".
+	  Variable names must begin with a letter and not contain any punctuation
+	  except underscore ('_').  
+      To permanently remove a hold variable, select it from the list box on the
+      left and click "Remove".  Note that this removes the variable completely
+      from the hold and all NPC scripts that use it, not just from this
+      particular script.<br />
+      <a name="varops">Select</a> a hold variable from the list, choose an
+      operation and a value. Variables may either store an integer or text. If
+      the operation you specify is "Assign text" or "Add text", the variable you
+      select will be set to store the text you provide. You may also reference
+	  other variables to insert into the given text.  For operations dealing
+      with numbers, if you provide the name of another variable, its value will
+      be used (invalid names will be considered a value of 0). Otherwise, the
+      number you provide is used. Use the text box on top to specify the text
+      being assigned or added to the variable. For other operations, use the
+      text box on the right to input a number or variable name. The variable
+      will store a number.<br />
+      <a name="varsintext"><u>Using vars in text</u></a>:
+      In variable text assignments,
+	  <a href="#speech">Speech</a>, <a href="#question">Questions</a>
+      (see below), level entrance texts, and scroll text,
+      type "$&lt;var name&gt;$" to insert the
+      current value of the variable you name at this point in the text.
+	  Type "$\n$" to skip to the next line of text.<br />
+      <a name="varref"><u>Comprehensive variable reference list</u></a>:
+      In the <a href="editroom.html">Room Editor Screen</a>, press F2 to output
+      a comprehensive list of hold variables to the clipboard (use the paste
+      option of your favorite text editor to view this text). This list shows
+      all rooms and NPC (x,y) locations where the variable is referenced in a
+      script throughout the hold. A number after the (x,y) location of the
+      script indicates how many times the variable is referenced in that script.<br />
+      <a name="varmonitor"><u>Monitoring variables during play</u></a>:
+      Press Ctrl-F7 while playing to turn on and off the variable monitor.
+      Whenever a script changes a hold variable, you will be notified onscreen.
+      This only works while playtesting, playing a hold you authored, or playing
+      a CaravelNet hold in beta.</li>
+  <li><a name="eachattack"><b>Each attack</b></a> - Each time the NPC attacks,
+      jump the script to the indicated <a href="#label">Label</a>.</li>
+  <li><a name="eachdefend"><b>Each defend</b></a> - Each time the NPC is hit,
+      jump the script to the indicated <a href="#label">Label</a>.</li>
+  <li><a name="eachuse"><b>Each use</b></a> - (Custom equipment scripts only)
+      Each time this equipment is activated by the player,
+      jump the script to the indicated <a href="#label">Label</a>.</li>
+  <li><a name="equipment"><b>Equipment</b></a> - Modifies the player's indicated
+      equipment slot.  <u>Trade</u>: set the specified custom NPC as a custom
+	  item.  Any equipment the player is carrying in that slot is dropped in
+	  the room, if this action will not destroy an incompatible item at the
+	  player's current location.  The custom equipment begins functioning as a
+	  <a href="#makescriptglobal">global script</a> until the player
+	  acquires a different item.  <u>Destroy</u>: Removes any item from the
+	  indicated equipment slot.  <u>Sell</u>: Gives the player the monetary
+	  value of the indicated equipment and destroys it.  Non-custom equipment
+	  has no sell value.  <u>Disable</u>: Indefinitely remove the use of the
+	  indicated equipment type.  <u>Enable</u>: Reenable a disabled equipment type.
+	  Activating a custom inventory item will execute its scripted "EachUse"
+	  code segment, if defined.
+	  When the "Command" type is selected, it initiates a unique global default
+	  script that runs during play.
+	  The player may invoke this command script using the "Special" command,
+	  which executes this scripts "EachUse" block, if defined.
+	  Hint: use this to enable special any-time events like warping to an
+	  inventory room. Like with other items, it cannot be invoked when the
+	  player is not in the room, questions are needing to be answered, or
+	  combat or a cut scene is playing out.
+	  Selecting this type again will replace any previous command script.
+	  </li>
+  <li><a name="score"><b>Score checkpoint</b></a> - Marks a score point where
+      the player's score will be displayed onscreen.
+	  The name you provide for this checkpoint is used on the CaravelNet score
+	  boards if you publish your hold.  CaravelNet players will have their game
+	  stats and score submitted to the CaravelNet high score list for this
+	  checkpoint when this command executes.</li>
+  <li><a name="addroomtomap"><b>Add room to map</b></a> - Marks a room in the
+      current level on the player's map.  If "Full room reveal" is set,
+	  then it will show the room on the minimap as if the player has already
+	  explored it.  If the indicated room has already been explored
+	  by the player, this command does nothing.</li>
+  <li><a name="autosave"><b>Autosave</b></a> - Automatically saves the player's
+      game in an "Autosave" slot under the name you provide.
+	  Whenever this command is executed, any previous
+	  autosave slot with the same name will be overwritten.
+	  Hint: You might consider
+	  including this command at importing game points, such as whenever a new
+	  level is entered.</li>
+  <li><a name="gameeffect"><b>Game effect</b></a> - Display a visual effect
+	  at a specified room location.  Particle effects may have a direction
+	  given them.  Some effects may play an optional accompanying sound effect.</li>
+</ol>
+
+<p><a name="queries"><b>4.&nbsp;&nbsp;Queries</b></a> - Use queries to examine
+the state of the room and wait indefinitely until certain events occur.</p>
+<ol>
+  <li><a name="question"><b>Question</b></a> - If one or more <a href="#answer">
+      <b>Answer option</b></a> commands have been provided previously in script
+      execution, this will ask the user a multiple choice question with the
+      dialogue you specify and answer options previously provided. Script
+      execution will continue from the label of the Answer option selected by
+      the player.  Once a <b>Question</b> has been asked, the list of Answer
+      options is reset for the next <b>Question</b>.<br />
+      If no <a href="#answer"><b>Answer option</b></a> commands have been
+      provided before this command is executed, the user will be asked a "Yes"
+      or "No" question with the dialogue you specify. If a yes/no
+      <b>Question</b> is executed as the condition for an <a href="#if">
+      <b>If ...</b></a> command, the corresponding script block will execute if
+      the user answers "Yes".</li>
+  <li><a name="wait"><b>Wait</b></a> - This tells the NPC to do nothing until
+      the number of game turns you specify has passed.  <b>Wait 0</b> will stop
+      the script at the current point until the next turn.</li>
+  <li><a name="waitevent"><b>Wait for event</b></a> - The NPC waits until the
+      specified game event has taken place.</li>
+  <li><a name="waitentity"><b>Wait for entity</b></a> - The NPC waits for any of
+      the selected entity type (or entities) to enter the room region you
+      specify.  Hold &lt;Ctrl&gt; while clicking to select and unselect multiple
+      selections.  After selecting this command, the room will temporarily
+      appear.  Hold down the mouse button and drag the mouse cursor to select
+      the area any of the entity or entities must enter before the NPC does
+      anything else.</li>
+  <li><a name="waitentityis"><b>Wait while entity</b></a> - Wait while any of
+      the selected entity type remains in the room region that you select.</li>
+  <li><a name="waitdoor"><b>Wait for door to (open/close)</b></a> - Waits for
+      the door at the selected room square to either open or close.</li>
+  <li><a name="waitturn"><b>Wait for turn</b></a> - The NPC does nothing until
+      at least the specified number of game turns has passed since the player
+      entered the room.</li>
+  <li><b>Wait for turn</b> - Waits until the player has made the specified
+      number of moves in the room.</li>
+  <li><a name="waitplayerface"><b>Wait for player to face</b></a> - Waits until
+      the player turns in the specified direction.</li>
+  <li><a name="waitplayermove"><b>Wait for player to move</b></a> - Waits until
+      the player moves in the specified direction.</li>
+  <li><a name="waitplayertouch"><b>Wait for player to touch me</b></a> - Waits
+      until the player bumps into the NPC.</li>
+  <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
+      hold variable</a> meets the condition you specify.</li>
+  <li><a name="waitdefeat"><b>Wait for defeat</b></a> - Waits until the
+      NPC has been defeated (i.e. its HP has been reduced to zero).
+	  This must be used in conjunction with
+	  <a href="#impinvulnerable">Imperative: Unkillable</a> in order to create
+	  an NPC that may be defeated in battle but continue to execute commands
+	  afterward.  After the NPC has been defeated, its defeated status may
+	  be undone by resetting its HP to a nonzero value.  Other sources of 
+	  damage, such as briars or bomb-blasts, will also flag the NPC as
+	  defeated.</li>
+  <li><a name="waitforopenmove"><b>Wait for open move</b></a> - Wait until the
+      NPC is able to make a move in the specified direction.  When rotations
+	  are considered, they will check for a "safe" turn, i.e. that a sword-
+	  wielding NPC would not harm itself by striking a bomb.  Hint: Use this
+	  query to test whether a move may be made before executing a
+	  <a href="#move">Move</a> command in that direction.</li>
+  <li><a name="waitforitem"><b>Wait for item</b></a> - Wait until the
+      specified element is located in the marked room region.</li>
+</ol>
+
+<p><a name="decision"><b>5.&nbsp;&nbsp;Decision making</b></a> - Use the
+following commands to execute only a marked portion of script commands or to
+continue executing script commands from a different location in the script.</p>
+<ol>
+  <li><a name="if"><b>If ...</b></a> - Use this command to optionally run a
+      block of one or more script commands, based on a condition you specify in
+      the next script command, which must be a query. If the query is
+      immediately satisfied, then the script commands that follow after will be
+      executed.  An <a href="#ifend"><b>If End</b></a> or
+      <a href="#else"><b>Else</b></a> command indicates the end of the optional
+      code block. If the following query is not true, the script will continue
+      after the following the next <a href="#else"><b>Else</b></a> or
+      <a href="#ifend"><b>If End</b></a> command that marks the end of the
+      optional code block.</li>
+  <li><a name="if"><b>If ...</b></a>. The end of the <a href="#else"><b>Else</b></a>
+      block is indicated with an <a href="#ifend"><b>If End</b></a> command.</li>
+  <li><a name="else"><b>Else</b></a> - Marks the beginning of a script section
+      that is executed if the query condition following the
+      <a href="#if"><b>If ...</b></a> command is <u>not</u> satisfied.
+      <b>Else</b> commands in conditional blocks are optional, but they must
+      always follow somewhere after an <a href="#if"><b>If ...</b></a> to be
+      meaningful.</li>
+  <li><a name="ifend"><b>If End</b></a> - Marks the end of
+      <a href="#if"><b>If ...</b></a> and <a href="#else"><b>Else</b></a> blocks.<br />
+      <a name="condnotes">Notes:</a>
+      <ol>
+        <li>A "?" symbol displayed in front of a command in the script list
+            means the command is not a recognized as a valid condition for an
+            <a href="#if"><b>If ...</b></a> command.</li>
+        <li><a href="#if"><b>If ...</b></a> commands may be nested, i.e., an
+            inner code block may be completely contained within an outer code
+            block.</li>
+        <li>A "!" symbol displayed in front of a command in the script list
+            means that an <a href="#if"><b>If ...</b></a> or
+            <a href="#else"><b>Else</b></a> block is not properly closed with an
+            <a href="#ifend"><b>If End</b></a> command at the end, or that an
+            <a href="#else"><b>Else</b></a> command is placed without an
+            <a href="#if"><b>If ...</b></a> coming first.</li>
+        <li>See "<a href="#branchingexamples">Examples of branching code
+             structures</a>" below.</li>
+      </ol></li>
+  <li><a name="label"><b>Label</b></a> - marks a location in the script to
+      continue executing commands from (used in conjunction with
+      <a href="#goto"><b>Go to</b></a>, <a href="#answer"><b>Answer option</b></a>,
+	  <a href="#eachattack"><b>Each Attack</b></a>,
+	  <a href="#eachdefend"><b>Each Defend</b></a>
+	  and <a href="#eachuse"><b>Each Use</b></a>
+      commands).  Also, labels may be used to simply comment in normal language
+      on what the following script commands do.</li>
+  <li><a name="goto"><b>Go to</b></a> - Select a label to continue executing
+      commands from.  Hint: Use Goto to make a loop in the script that repeats a
+      sequence of commands over and over. Use a <a href="#wait"><b>Wait 0</b></a>
+      command as the last statement of a loop that is to be executed once each
+      turn.</li>
+  <li><a name="endonexit"><b>End on room exit</b></a> - Removes the NPC for the
+      rest of the current game when the room is exited.
+	  Hint: use this command at the start of a script to have the NPC execute
+	  commands until the player exits the room, and then never appear again.</li>
+  <li><a name="end"><b>End</b></a> - Ends the character script executing
+      immediately, and the NPC will be removed from the room for the rest of the
+	  current game when the room is exited. Hint: use this command to permanently
+	  stop the NPC from executing any more commands, and then disappear when
+	  the room is exited.</li>
+</ol>
+
+<br />
+
+<p><a name="usagenotes"><b>Notes about using NPC scripts</b></a></p>
+<ol>
+  <li><a name="lifecycle">Each</a> character script begins execution when the
+      room is first entered. Upon room reentry,
+      the script will continue where it left off by default.</li>
+  <li><a name="restart">A</a> script can be made to restart from the
+      beginning when the player reenters the room by executing an
+	  <a href="#restartscript"><b>Imperative: Restart script on entrance</b></a>
+      command at the anywhere within the script.</li>
+  <li>NPCs with <a href="#end"><b>End</b></a>ed scripts will not
+      appear in the room when the player enters it in the future.</li>
+  <li>An NPC can be turned into a regular monster of its specified entity type
+      with the
+      <a href="#turnintomonster"><b>Turn into monster</b></a> command, but
+	  it might be preferable to set stat vars for the NPC so the player
+	  may fight it in its current form.</li>
+</ol>
+
+<p><a name="imperativelist"><b>Imperatives</b></a> - NPC/script properties
+that may be set with the <a href="#imperative">Imperative</a> command.</p>
+<ol>
+  <li><a name="impvulnerable"><u>Killable</u></a>: Makes the NPC vulnerable to
+      killing (default).</li>
+  <li><a name="impinvulnerable"><u>Unkillable</u></a>: Makes the NPC
+      invincible so it cannot be killed by combat or other methods of
+      inflicting damage. When an unkillable NPC has its HP dropped to zero, its 
+	  "defeated" flag is set (see <a href="#waitdefeat">Wait For Defeat</a>).
+	  Non-flying NPCs may still be killed by dropping them off a platform.
+      </li>
+  <li><a name="impcritical"><u>Critical hero</u></a>: When set, the room will
+      automatically restart if the NPC is ever killed.</li>
+  <li><a name="impsafe"><u>Safe</u></a>: Forbids the NPC to harm the player,
+      by engaging in combat when bumping into the player, and vice-versa.</li>
+  <li><a name="impswordsafe"><u>Sword safe to player</u></a>: Sword stabs from
+      this NPC won't harm the player.</li>
+  <li><a name="impdeadly"><u>Deadly</u></a>: Allows the NPC to bump into the
+      player to engage in combat.  Also makes sword hits harm to the player
+	  according to the ATK rating of the NPC (default).</li>
+  <li><a name="impdie"><u>Die</u></a>: Makes the NPC die with a blood splatter.</li>
+  <li><a name="hidestatchanges"><u>Hide stat changes</u></a>: Makes
+	  <a href="#setvar">Set Var</a>
+	  commands that alter the player's stats not display as game effects.</li>
+  <li><a name="showstatchanges"><u>Showstat changes</u></a>: Makes
+	  <a href="#setvar">Set Var</a>
+	  commands that alter the player's stats display as game effects (default).</li>
+  <li><a name="ghost"><u>Ghost display</u></a>: When the NPC is not in the room,
+	  the NPC's image will appear at its current coordinates anyway.</li>
+  <li><a name="noghost"><u>No ghost display</u></a>: When the NPC is not in the room,
+	  it is not displayed (default).</li>
+  <li><a name="restartscript"><u>Restart script on entrance</u></a>: When the
+	  player reenters the room, the NPC's script and internal state vars will
+	  restart from the beginning.</li>
+  <li><a name="norestartscript"><u>No restart on entrance</u></a>: When the
+	  player reenters the room, the NPC's script and internal state vars will
+	  continue as they left off when the room was last exited (default).</li>
+  <li><a name="makescriptglobal"><u>Make script global</u></a>: When executed,
+	  the NPC and its script are removed from the room into a list of global scripts.
+	  Global scripts continue to execute for the duration of the current
+	  game, within all rooms.
+      Once a script is in the global list, it may no longer re-enter
+	  the player's current room as an NPC with the Appear command variants.
+	  If an <a href="#end">End</a> command variant is executed, the
+	  script terminates as usual.
+	  Hint: use this to create a script that can make things happen in any room
+	  or check for things happening at any time during play,
+	  not only in a particular room.
+      <u>LIMITATION</u>: only available within default scripts of custom NPCs.</li>
+</ol>
+
+<p><a name="behaviorlist"><b>Behaviors</b></a> - NPC behaviors and attributes
+that may be set with the <a href="#behavior">Behavior</a> command.</p>
+<ol>
+  <li><a name="be_standard"><u>Standard</u></a>: Reverts the NPC to no
+	  special behavior pattern or attributes (default).</li>
+  <li><a name="be_face"><u>Face target</u></a>: Face toward the player.</li>
+  <li><a name="be_faceaway"><u>Face away from target</u></a>: Face away from
+	  the player.</li>
+  <li><a name="be_attackfrontback"><u>Attack in front with back turned</u></a>:
+	  Attack(<a href="#attack">*</a>) whenever the player is in front of the NPC and has his back
+	  turned.</li>
+  <li><a name="be_attackfront"><u>Attack in front</u></a>:
+	  Attack(<a href="#attack">*</a>) whenever the player is in front of the NPC.</li>
+  <li><a name="be_attack"><u>Attack adjacent</u></a>:
+	  Attack(<a href="#attack">*</a>) whenever the player is adjacent the NPC.</li>
+  <li><a name="be_beam"><u>Beam attack</u></a>:
+	  NPC emits a beam that halves the player's health on contact.</li>
+  <li><a name="be_surprised"><u>Surprised from behind</u></a>:
+	  If the player attacks a monster with this attribute from behind,
+	  the NPC loses its first attack turn.  For equipment, it gives the player's
+	  first hit x2 ATK when hitting the monster first from behind.</li>
+  <li><a name="be_goblin"><u>Goblin Weakness</u></a>:
+	  NPC is weak to goblin blades (i.e. player gets x2 ATK).
+	  Embues custom weapons with goblin blade attribute.</li>
+  <li><a name="be_wyrm"><u>Wyrm Weakness</u></a>:
+	  NPC is weak to wyrm blades (i.e. player gets x2 ATK).
+	  Embues custom weapons with wyrm blade attribute.</li>
+  <li><a name="be_metal"><u>Metal</u></a>:
+      Metal monsters will be damaged on oremites the same as if on a hot tile.
+	  Embues custom equipment with metal attribute (disabled on oremites).</li>
+  <li><a name="be_lucky"><u>Lucky</u></a>:
+	  Embues custom equipment with lucky attribute (x2 GR from combat
+	  for each lucky item held).</li>
+  <li><a name="be_luckyREP"><u>REP Doubler</u></a>:
+	  Embues custom equipment with REP doubler attribute (x2 REP from combat
+	  for each REP doubler item held).</li>
+  <li><a name="be_briar"><u>Briar cutter</u></a>:
+	  NPC can cut briars with its sword.
+	  Embues custom equipment with briar-cutting attribute (the player's
+	  sword can cut briars).</li>
+  <li><a name="be_noenemydefense"><u>No enemy defense</u></a>:
+	  Attacks nullify the enemy's DEF rating.  Embues custom armor with
+	  protection against monsters with this attack ability.</li>
+  <li><a name="be_attackfirst"><u>Attack first</u></a>:
+	  Get first attack against the enemy.  Embues custom armor and accessory with
+	  protection against monsters with this attack ability.</li>
+  <li><a name="be_attacklast"><u>Attack last</u></a>:
+	  Always attack last against the enemy.</li>
+  <li><a name="be_droptrapdoors"><u>Drop Trapdoors</u></a>:
+	  When moving off trapdoors, setting this causes them to drop.
+	  Otherwise, nothing happens (default).</li>
+  <li><a name="be_moveintoswords"><u>Move Into Swords</u></a>:
+	  Allows the NPC to move onto swords.
+	  Otherwise, it is not allowed (default).</li>
+  <li><a name="be_pushobjects"><u>Push Objects</u></a>:
+	  Allows the NPC to push mirrors and move platforms.
+	  Otherwise, it is not allowed (default).</li>
+  <li><a name="be_directonlymovement"><u>Direct-only movement</u></a>: If the
+      target is in a diagonal direction from the NPC, but
+	  diagonal movement is blocked, then don't move at all.  If the target is
+	  in an orthogonal direction, attempt to move along a straight path to
+	  the target.</li>
+  <li><a name="be_normalmovement"><u>Normal movement</u></a>: When a
+	  desired diagonal movement is blocked, then choose vertical movement,
+	  if possible, otherwise choose a horizontal movement to approach the
+	  destination (default).</li>
+  <li><a name="be_smartermovement"><u>Smarter movement</u></a>: When a
+	  desired diagonal movement is blocked, then choose the better of
+	  horizontal or vertical movement to approach the destination.</li>
+  <li><a name="be_omnimovement"><u>Omni movement</u></a>: When a
+	  desired diagonal or orthogonal movement is blocked, then attempt to make
+	  a movement to the side that might help to approach the destination.</li>
+</ol>
+<p><a name="attack"><b>*Attack</b></a> - Monsters may not attack the player
+when the player is above the monster, e.g. standing on a raised door when
+the monster is not.
+</p>
+
+<p><a name="predefinedvars"><b>Predefined vars</b></a> - There are several
+predefined variables that may be set and queried with the
+<a href="#setvar">Set var</a> and <a href="#waitvar">Wait until var</a> commands.
+Some of these variables are tied to game state and are updated automatically
+as play progresses.  Others are altered solely through script commands.
+<br /><br />
+<table>
+  <tr>
+    <td width="160"><b>Name</b></td><td width="350"><b>Description</b></td><td width="170"><b>Default value</b></td><td width="150"><b>Valid range</b></td>
+  </tr><tr>
+    <td><b>NPC stats</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_MyHP</td><td>NPC's HP</td><td>0 (<a href="#myhp">*</a>)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyATK</td><td>NPC's ATK</td><td>0</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyDEF</td><td>NPC's DEF</td><td>0</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyGold</td><td>NPC's GR (battle loot)</td><td>0</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyREP</td><td>NPC's REP (battle loot)</td><td>0</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyColor</td><td>NPC's RGB modifier (<a href="#mycolor">*</a>)</td><td>505050</td><td>000000,999999</td>
+  </tr><tr>
+    <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
+  </tr><tr>
+    <td>_MyX</td><td>NPC's X coordinate (room column)</td><td></td><td>0,15</td>
+  </tr><tr>
+    <td>_MyY</td><td>NPC's Y coordinate (room row)</td><td></td><td>0,15</td>
+  </tr><tr>
+    <td>_MyO</td><td>NPC's orientation (direction faced)</td><td></td><td>0,8</td>
+  </tr><tr>
+    <td>_MyScriptX</td><td>NPC's command X param override(<a href="#paramoverride">*</a>)</td><td>-9999 (no override)</td><td>by command</td>
+  </tr><tr>
+    <td>_MyScriptY</td><td>NPC's command Y param override</td><td>-9999 (no override)</td><td>by command</td>
+  </tr><tr>
+    <td>_MyScriptW</td><td>NPC's command W param override</td><td>-9999 (no override)</td><td>by command</td>
+  </tr><tr>
+    <td>_MyScriptH</td><td>NPC's command H param override</td><td>-9999 (no override)</td><td>by command</td>
+  </tr><tr>
+    <td>_MyScriptF</td><td>NPC's command Flags param override</td><td>-9999 (no override)</td><td>by command</td>
+  </tr><tr>
+    <td><b>Game state modifiers</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_MonsterHPMult</td><td>global monster HP multiplier(<a href="#monhpmult">*</a>)</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MonsterATKMult</td><td>global monster ATK multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MonsterDEFMult</td><td>global monster DEF multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MonsterGRMult</td><td>global monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MonsterREFMult</td><td>global monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemMult</td><td>global item stat multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemHPMult</td><td>global health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemATKMult</td><td>global ATK power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemDEFMult</td><td>global DEF power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemGRMult</td><td>global money door multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_HotTile</td><td>hot tile damage(<a href="#damage">*</a>)</td><td>5 (percent)</td><td>-MAX,100</td>
+  </tr><tr>
+    <td>_Explosion</td><td>explosion damage(<a href="#damage">*</a>)</td><td>100 (percent)</td><td>-MAX,100</td>
+  </tr><tr>
+    <td><b>Player stats</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_HP</td><td>player's HP</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_Attack</td><td>player's ATK</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_Defense</td><td>player's DEF</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_Gold</td><td>player's GR</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_REP</td><td>player's REP</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_YellowKeys</td><td>player's yellow keys</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_GreenKeys</td><td>player's green keys</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_BlueKeys</td><td>player's blue keys</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_SkeletonKeys</td><td>player's skeleton keys</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_Sword</td><td>player's sword type</td><td></td><td>0,9</td>
+  </tr><tr>
+    <td>_Shield</td><td>player's shield type</td><td></td><td>0,5</td>
+  </tr><tr>
+    <td>_Accessory</td><td>player's accessory type</td><td></td><td>0,11</td>
+  </tr><tr>
+    <td>_X</td><td>player's X coordinate (room column)</td><td></td><td>0,15</td>
+  </tr><tr>
+    <td>_Y</td><td>player's Y coordinate (room row)</td><td></td><td>0,15</td>
+  </tr><tr>
+    <td>_O</td><td>player's orientation (direction faced)</td><td></td><td>0,8</td>
+  </tr><tr>
+    <td><b>Play info</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_TotalMoves</td><td>total moves made by the player this game</td><td></td><td></td>
+  </tr><tr>
+    <td>_TotalTime</td><td>total time spent by the player this game (in ms)</td><td></td><td></td>
+  </tr><tr>
+    <td><b>Combat stats</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_EnemyHP</td><td>Enemy's HP(<a href="#enemy">*</a>)</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_EnemyATK</td><td>Enemy's ATK</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_EnemyDEF</td><td>Enemy's DEF</td><td></td><td>0,MAX</td>
+  </tr><tr>
+    <td>_EnemyGR</td><td>Enemy's GR (battle loot)</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_EnemyREP</td><td>Enemy's REP (battle loot)</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td><b>Equipment values</b></td><td></td><td></td><td></td>
+  </tr><tr>
+    <td>_WeaponATK</td><td>player weapon ATK(<a href="#equipquery">*</a>)</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_WeaponDEF</td><td>player weapon DEF</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_WeaponGR</td><td>player weapon GR</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ArmorATK</td><td>player armor ATK</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ArmorDEF</td><td>player armor DEF</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ArmorGR</td><td>player armor GR</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_AccessoryATK</td><td>player accessory ATK</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_AccessoryDEF</td><td>player accessory DEF</td><td></td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_AccessoryGR</td><td>player accessory GR</td><td></td><td>-MAX,MAX</td>
+  </tr>
+</table>
+</p>
+
+<p><a name="myhp"><b>*_MyHP</b></a> - In order for an NPC to
+  engage the player in combat, its HP stat must be set to a value
+  greater than zero (the default).  You probably want to set the ATK, DEF, GR,
+  and REP values as well.
+</p>
+<p><a name="mycolor"><b>*_MyColor</b></a> - a six-digit number, where each
+  two-digit pair defines the
+  amount of R/G/B color offset to the NPC's image.  A value of 50 is normal.
+  Lower values (0-49) remove a proportionate amount of that color.
+  Greater values (51-99) enhance that color.
+</p>
+<p><a name="mysword"><b>*_MySword</b></a> - set this to change what kind of
+  sword the NPC wields.  This affects the NPC's appearance only, and does
+  not alter the NPC's ATK rating.
+  See <a href="equipment.html">Equipment</a> for
+  available choices, numbered in order of appearance.
+  A value of 0 indicates no sword.
+</p>
+<p><a name="paramoverride"><b>*_MyScriptX</b></a> - This and the other script
+  command parameter overrides are used if variable parameters are required
+  for certain script commands instead of hard-coded values.
+  This applies to commands:
+  AppearAt (x,y), MoveTo (x,y), Move (x,y), FaceDirection (x),
+  ActivateItemAt (x), Wait (x turns), WaitForRect (x,y,w,h,flags),
+  WaitWhileRect (x,y,w,h,flags), WaitForDoorTo (x,y), WaitForTurn (x),
+  WaitForPlayerToFace (x), WaitForPlayerToMove (x), WaitForOpenMove (x),
+  LevelEntrance (y=display text or not), CutScene (x=speed),
+  AmbientSoundAt (x,y), PlayVideo (x,y), BuildTiles (x,y,w,h,flags),
+  WaitForItem (x,y,w,h,flags).  <b>Note:</b> You must remember to reset
+  parameter override vars to -9999 (their default value) after executing a
+  command with variable parameters in order to ensure later commands are not
+  affected unintentionally by your parameter overrides.
+</p>
+<p><a name="monhpmult"><b>*_MonsterHPmult</b></a> - This value is a percent
+  multiplier.  It is applied to
+  a predefined monster's base HP when the player first enters the room.
+  The other stat multipliers are applied to the monster's base stats during
+  combat.
+</p>
+<p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
+  positive value, it indicates the percentage of HP the target will
+  lose.  A negative value indicates a flat damage to inflict.
+  When the player is hasted by a Speed Potion, expected damage is halved.
+</p>
+<p><a name="enemy"><b>*_EnemyHP, _EnemyATK, _EnemyDEF, _EnemyGR, _EnemyREP</b></a> - 
+  These vars are only applicable when in combat.  Custom equipment may
+  query or set these values to affect the enemy being fought.  When used by
+  the script of the monster being fought itself, its own stats are affected.
+</p>
+<p><a name="equipquery"><b>*_WeaponATK, _WeaponDEF, _WeaponGR,
+  _ArmorATK, _ArmorDEF, _ArmorGR,
+  _AccessoryATK, _AccessoryDEF, _AccessoryGR</b></a> - 
+  These vars reference the stat values of the player's current equipment.
+  When predefined equipment is carried, its values may be queried but not
+  altered.
+</p>
+
+<p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
+<ol>
+  <li><a name="singlecodebranch">A single code branch:</a><br />
+      <b>If ...</b><br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition&gt;<br />
+      &nbsp;&nbsp;&nbsp;some commands here<br />
+      <b>If End</b>
+  </li>
+  <br />
+  <li><a name="twocodebranch">Two code branches:</a><br />
+      <b>If ...</b><br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition&gt;<br />
+      &nbsp;&nbsp;&nbsp;some commands here<br />
+      <b>Else</b><br />
+      &nbsp;&nbsp;&nbsp;some commands here<br />
+      <b>If End</b>
+  </li>
+  <br />
+  <li><a name="nestedbranches">Nested branches:</a><br />
+      <b>If ...</b><br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition1&gt;<br />
+      &nbsp;&nbsp;&nbsp;some commands here<br />
+      &nbsp;&nbsp;&nbsp;<b>If ...</b><br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition2&gt;<br />
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;some commands here<br />
+      &nbsp;&nbsp;&nbsp;<b>If End</b><br />
+      &nbsp;&nbsp;&nbsp;some commands here<br />
+      <b>If End</b>
+  </li>
+</ol>
+
+<p><a name="multichoiceexample"><b>Examples of a multiple choice question:</b></a></p>
+<b>Answer option</b> "Attack!",attack<br />
+<b>Answer option</b> "Run away!",run<br />
+<b>Answer option</b> "Have lunch!",lunch<br />
+<b>Question</b> What will you do?<br />
+<b>Label</b> attack<br />
+Whatever you want the character to do<br />
+<b>Goto</b> Done<br />
+<b>Label</b> run<br />
+Whatever you want the character to do<br />
+<b>Goto</b> Done<br />
+<b>Label</b> lunch<br />
+Whatever you want the character to do<br />
+<b>Goto</b> Done<br />
+<b>Label</b> Done<br />
+
+<p><a name="newmonsters"><b>How to make a new monster type:</b></a></p>
+<ol>
+  <li>While editing an NPC script, click "Characters" to go to the
+    <a href="customchar.html">Custom Character Management</a> dialog.</li>
+  <li>Type in the name of your new monster and click "Add Character".</li>
+  <li>Specify its base entity type in the "Graphics" list.</li>
+  <li>Click "Edit Default Script" and add <a href="#setvar">Set Var</a> commands
+    to the script to define your monster's stats (_MyHP, _MyATK, _MyDEF, _MyGold, _MyREP).</li>
+  <li>Add <a href="#imperativelist">Imperatives</a>,
+    <a href="#behaviorlist">Behaviors</a>, and other custom scripting if
+	desired.</li>
+  <li>Import custom tile graphics and an avatar (speech portrait) if needed.
+    Otherwise, you might consider setting the _MyColor var to an alternate
+	value so your monster doesn't look identical to predefined monster types.</li>
+  <li>To place your new monster in your rooms, just place NPCs and set
+    them to your new custom type.  They should automatically function according
+	to the Default Script you specified for their type.</li>
+</ol>
+
+<p><a name="character-on-tarstuff"><b>Character on tarstuff:</b></a></p>
+<p>Any Character (whether visible or not) that is standing on any Tarstuff
+will lend its own attributes to the Tarstuff.
+If the Character is invisible, then the tarstuff is invulnerable.
+If the Character is visible and has attackable stats,
+then the tarstuff can be stabbed once, which reduces the Character's HP to 0,
+but does not kill the Character.
+If the Character's HP is restored, then the tarstuff may be stabbed again.
+If the Character is killed (via the Imperative Die command or a direct stab),
+then the tarstuff can be cut normally.
+Essentially, it's being treated as a Tarstuff Mother, although there are certain differences.
+</p>
+
+<p><a name="customequipment"><b>How to make custom equipment</b></a></p>
+<ol>
+  <li>While editing an NPC script, click "Characters" to go to the
+    <a href="customchar.html">Custom Character Management</a> dialog.</li>
+  <li>Type in the name of your new equipment and click "Add Character".</li>
+  <li>To give the player this custom equipment, have an NPC execute 
+    "<a href="#equipment">Equipment</a> Swap (type) (equipment name)".</li>
+  <li>When this equipment is acquired, the NPC's default script will begin
+    running from the start
+    as a <a href="#makescriptglobal">global script</a>.
+	Click "Edit Default Script" to define how this equipment functions.</li>
+  <li>Provide <a href="#setvar">Set Var</a> commands (_MyATK, _MyDEF)
+    to the beginning of the script to define
+	how the equipment modifies the player's ATK and DEF stats.</li>
+  <li>Add <a href="#behaviorlist">Behaviors</a> to determine any special
+    attributes the equipment has.  Monster action behaviors are ignored.</li>
+  <li>Provide an <a href="#eachuse">Each Use</a> command and matching
+    <a href="#label">Label</a> and script segment to define scripting that
+	is executed whenever the player activates this item.
+	When <a href="#eachattack">Each Attack</a> is executed for a custom weapon,
+	script commands after the specified label will be executed each time
+	the weapon is used for attack.
+	When <a href="#eachdefend">Each Defend</a> is executed for custom armor,
+	script commands after the specified label will be called each time
+	an enemy attacks the player.</li>
+  <li>Add other custom scripting if desired.</li>
+  <li>Import a custom tile graphic for the equipment display icon and,
+    in the case of weapons, eight directional display tiles.
+    If no custom tiles are used, a generic equipment icon is displayed.
+	Defining the _MySword var to a valid index will make a custom weapon
+	appear as that predefined weapon type.</li>
+  <li>The "Graphics" list selection and "Avatar" image are
+    irrelevant for custom equipment.</li>
+</ol>
+
+<hr />
+<a href="character.html">Character Scripting</a><br />
+<a href="editroom.html">Room Editor</a><br />
+<a href="editselect.html">Level Editor</a><br />
+<a href="contents.html">Contents</a><br />
+</body>
+</html>

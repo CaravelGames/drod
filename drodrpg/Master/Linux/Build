@@ -1,0 +1,10 @@
+#!/bin/bash -e
+cd "$(dirname "$(readlink -e "$0")")"
+if [[ $1 = -clean ]]; then
+	for i in build.*.ninja; do
+		rm -rf "${i/.ninja}"
+	done
+fi
+for i in build.*.ninja; do
+	ninja -f "$i"
+done
