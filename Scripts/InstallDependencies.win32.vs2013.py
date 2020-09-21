@@ -18,7 +18,7 @@ def overrideOptions():
 	DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\devenv.com'
 	#DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.com'
 	IgnoreBuilds = 0 # Set this to 0 to skip the build step
-	DepsToBuild = "all" # Change it to array of lib names to build and copy only the sepcific ones
+	DepsToBuild = "all" # Change it to array of lib names to build and copy only the specific ones
 
 #### DEFAULT OPTIONS ####
 DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\devenv.com'
