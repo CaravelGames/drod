@@ -22,7 +22,7 @@ In order to build with this script do the following:
 2. Run the script, e.g., `py InstallDependencies.win32.vs2013.py` from the Scripts directory on the command line.
 3. After it finishes (see below for known issues with building), open the solution `Master/Master.2019.sln` (etc) and build the project. The paths are all set to work with the landing locations of the LIBs and DLLs used in the dependency installing script.
 4. After the script finishes building, copy DLLs from `Deps/Dll/Debug` or `Deps/Dll/Release` and paste them to `DROD/Debug/` or `DROD/Release/` respectively.
-5. Go to your local installation of DROD (either Demo or Full version) and copy `Data/drod5_0.dat` and paste it to `DROD/Debug/Data/` or `DROD/Release/Data/`.
+5. Go to your local installation of DROD (either Demo or Full version), copy `Data/drod5_0.dat` and paste it over the barebones version in `DROD/Data/`.
 6. Run the game.
 
 #### Download and build the libraries
