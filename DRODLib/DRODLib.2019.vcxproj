@@ -141,19 +141,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-temp\</IntDir>
-    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\Deps\Include;..\Deps\steam-sdk\public\steam;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-temp\</IntDir>
-    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\Deps\Include;..\Deps\steam-sdk\public\steam;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-temp\</IntDir>
-    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <IncludePath>..\Deps\Include;..\Deps\steam-sdk\public\steam;$(IncludePath)</IncludePath>
     <LibraryPath>..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -231,7 +231,7 @@
       <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\SDL2-2.0.5\include;C:\Caravel\libs\SDL2_ttf-2.0.12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;UNICODE;_CRT_SECURE_NO_DEPRECATE;DEV_BUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -263,7 +263,7 @@
       <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\SDL2-2.0.5\include;C:\Caravel\libs\SDL2_ttf-2.0.12;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -295,7 +295,7 @@
       <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\SDL2-2.0.5\include;C:\Caravel\libs\SDL2_ttf-2.0.12;C:\Caravel\libs\steam-sdk\public\steam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;UNICODE;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -327,7 +327,7 @@
       <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\SDL2-2.0.5\include;C:\Caravel\libs\SDL2_ttf-2.0.12;C:\Caravel\libs\steam-sdk\public\steam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;WIN32;_LIB;UNICODE;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;DEV_BUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -358,7 +358,7 @@
       <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\SDL2-2.0.5\include;C:\Caravel\libs\SDL2_ttf-2.0.12;C:\Caravel\libs\steam-sdk\public\steam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG;_DEBUG;UNICODE;WIN32;_LIB;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
