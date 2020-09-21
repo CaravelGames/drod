@@ -135,7 +135,7 @@ int wmain(int argc, WCHAR* argv[])
 {
 #ifdef _DEBUG
 #  ifdef WIN32
-#     define DEBUGPAUSE getch()
+#     define DEBUGPAUSE _getch()
 #  else
 #     define DEBUGPAUSE getchar()
 #  endif
