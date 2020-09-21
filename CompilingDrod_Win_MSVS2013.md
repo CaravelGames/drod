@@ -1,24 +1,20 @@
 # Building DROD
 
-1. Install Python.
-2. Download and build the libraries.
-3. Update `include` and `library` paths in the project files.
-4. Build the project.
-5. Copy DLLs.
-6. Copy `drod5_0.dat`.
+1. Download and build the libraries.
+2. Update `include` and `library` paths in the project files.
+3. Build the project.
+4. Copy DLLs.
+5. Copy `drod5_0.dat`.
 
 #### Short version
 
-There is a Python script that downloads and builds all of the required third-party libraries that DROD requires in `Scripts/InstallDependencies.win32.vs2013.py`.
-It was optimized for Visual Studio 2013, and I've verified it also works for newer versions like MSVS 2019 with little effort required.
-In order to build with this script do the following:
+There is a Python script that downloads and builds all of the required libraries in `Scripts/InstallDependencies.win32.vs2013.py`, optimized for Visual Studio 2013 but it should work for newer versions with little changes. In order to build with this script do the following:
 
-1. Have Python 3 installed.  You can get it from multiple sites, e.g., https://www.python.org/downloads/ .
-1. Edit `Scripts/InstallDependencies.win32.vs2013.py` and provide the correct path to `DevEnv.com` in the overrideOptions() function.
-2. Run the script, e.g., `py InstallDependencies.win32.vs2013.py` from the Scripts directory on the command line.
-3. After it finishes (see below for known issues with building), open the solution `Master/Master.2019.sln` (etc) and build the project. The paths are all set to work with the landing locations of the LIBs and DLLs used in the dependency installing script.
-4. After the script finishes building, copy DLLs from `Deps/Dll/Debug` or `Deps/Dll/Release` and paste them to `DROD/Debug/` or `DROD/Release/` respectively.
-5. Go to your local installation of DROD (either Demo or Full version) and copy `Data/drod5_0.dat` and paste it to `DROD/Debug/Data/` or `DROD/Release/Data/`.
+1. Edit `Scripts/InstallDependencies.win32.vs2013.py` and provide the correct path to `DevEnv.com`.
+2. Run the script.
+3. After it finishes, open the solution `Master/Master.2013.sln` and build the project - the paths are all set to work with the dependency installing script.
+4. After the script finished building copy DLLs from `Deps/Dll/Debug` or `Deps/Dll/Release` and paste them to `DROD/DebugVS2013/` or `DROD/Release/` respectively.
+5. Go to your installation of DROD (either Demo or Full version) and copy `Data/drod5_0.dat` and paste it to `DROD/DebugVS2013/Data/` or `DROD/Release/Data/`.
 6. Run the game.
 
 #### Download and build the libraries
@@ -28,18 +24,18 @@ The game requires the following libraries. Different versions may potentially be
  - `curl-7.27.0` => https://curl.haxx.se/download/curl-7.27.0.zip
  - `expat-2.1.0` => https://downloads.sourceforge.net/project/expat/expat/2.1.0/expat-2.1.0.tar.gz
  - `fmodapi-375-win` => http://cdn.retrocade.net/fmodapi375win.zip (This file is no longer readily available from FMOD website)
- - `jpeg-6b` => http://cdn.retrocade.net/jpeg-6b.zip (This package contains libraries prebuilt in VS2013; original sources may be used and built manually)
+ - `jpeg-6b` => http://cdn.retrocade.net/jpeg-6b.zip (This package contains libraries prebuilt in VS2013, original sources may be used and built manually)
  -  `json-0.6.2-rc2` => http://cdn.retrocade.net/jsoncpp-src-0.6.0-rc2.zip (This is exactly the same as the official version with the single exception being that assembly generation was removed from the release target in VS project)
  -  `libogg-1.3.0` => http://downloads.xiph.org/releases/ogg/libogg-1.3.0.tar.gz
  -  `libtheora-1.1.1` => http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.gz
  -  `libvorbis-1.3.3` => http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz
  -  `lpng-1512` => https://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.12/lpng1512.zip
- -  `metakit-2.4.9.7` => https://github.com/jnorthrup/metakit/archive/master.zip
- -  `sdl2-2.0.12` => https://www.libsdl.org/release/SDL2-2.0.12.zip
+ -  `metakit-2.4.9.5` => https://github.com/jcw/metakit/archive/2.4.9.5.tar.gz
+ -  `sdl2-2.0.5` => https://www.libsdl.org/release/SDL2-2.0.5.zip
  -  `sdl-ttf-2.0.14` => https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip
  -  `zlib` => http://www.zlib.net/fossils/zlib-1.2.11.tar.gz
 
-You need the DLLs from the following libraries to go into the same dir with your built drod.exe:
+You need the DLLs from the following libraries:
  - fmod
  - curl
  - expat
@@ -47,11 +43,6 @@ You need the DLLs from the following libraries to go into the same dir with your
  - SDL2
  - SDL2_ttf
  - zlib (might best to use the one from lpng)
-
-Known build issues:
- - Expat has an incompatible compiler flag when upgrading the project to MSVS 2019.  Workaround: I manually made the top change proposed on this StackOverflow topic:
-   https://stackoverflow.com/questions/43141401/visual-studio-error-d8016-zi-and-gy-command-line-options-are-incompatible/43141537
-   (If tweaks like this are required, to speed up repeat re-runs of the build script, note that you can set the `DepsToBuild` variable to skip re-building libraries that have already built successfully.)
 
 ##### Update include and library paths in the project files
 
@@ -64,13 +55,13 @@ Now you can open one of the solutions located in `Master/` depending on which pr
 
 ##### Copy DLLs
 
-Once the project is built copy the necessary DLL files to `DROD/Release` or `DROD/Debug` depending on which version was built.
+Once the project is built copy the necessary DLL files to `DROD/Release` or `DROD/DebugVS2013` depending on which version was built.
 
 #### Copy drod5_0.dat
 
-Go to your installation of DROD (either Demo or Full version) and copy `Data/drod5_0.dat` and paste it to `DROD/Data/` over the barebones version included in the repo.
+Go to your installation of DROD (either Demo or Full version) and copy `Data/drod5_0.dat` and paste it to `DROD/DebugVS2013/Data/` or `DROD/Release/Data/`.
 
-After all that, you should be able to run the game. If it works, then congratulations!
+After all that you should be able to run the game without a problem! If it worked, then congratulations!
 
 ## Troubleshooting
 
