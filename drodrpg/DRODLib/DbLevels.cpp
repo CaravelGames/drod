@@ -41,7 +41,7 @@
 #include <BackEndLib/Ports.h>
 
 //*****************************************************************************
-bool sortLevels::operator() (const CDbLevel* pLevel1, const CDbLevel* pLevel2)
+bool sortLevels::operator() (const CDbLevel* pLevel1, const CDbLevel* pLevel2) const
 //Compare positions of two levels in their hold.
 {
 	const int i1 = (int)(pLevel1->dwOrderIndex);

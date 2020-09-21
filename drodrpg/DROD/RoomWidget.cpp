@@ -66,6 +66,7 @@
 //#include "../DRODLib/Neather.h"
 #include "../DRODLib/Serpent.h"
 #include "../DRODLib/Character.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../DRODLib/TileConstants.h"
 #include "../DRODLib/Db.h"
 #include "../Texts/MIDs.h"
@@ -1957,7 +1958,7 @@ void CRoomWidget::GetWeather()
 	if (this->bFog)
 	{
 		ASSERT(this->images[FOG_SURFACE]);
-		SDL_SetAlpha(this->images[FOG_SURFACE], SDL_SRCALPHA, 128);
+		EnableSurfaceBlending(this->images[FOG_SURFACE], 128);
 	}
 
 	this->wSnow = this->pRoom->weather.wSnow;
@@ -2110,7 +2111,7 @@ void CRoomWidget::LoadRoomImages()
 			style += wszSpace;
 			style += wszSKIES;
 			list<WSTRING> skies;
-			if (CFiles::GetGameProfileString("Graphics", style.c_str(), skies) && !skies.empty())
+			if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
 			{
 				//Sky images specified.  Choose the one closest to specified light level.
 				UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size()-1;
@@ -2289,7 +2290,7 @@ void CRoomWidget::FadeToLightLevel(
 	//Query fade duration.
 	string str;
 	Uint32 dwFadeDuration = 500/2; //default
-	if (CFiles::GetGameProfileString("Customizing", "RoomTransitionSpeed", str))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::RoomTransitionSpeed, str))
 		dwFadeDuration = atoi(str.c_str()) / 2;
 	dwFadeDuration *= wLightDelta;
 
@@ -2403,7 +2404,7 @@ void CRoomWidget::ShowRoomTransition(
 
 	string str;
 	Uint32 dwPanDuration = 500; //default
-	if (CFiles::GetGameProfileString("Customizing", "RoomTransitionSpeed", str))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::RoomTransitionSpeed, str))
 		dwPanDuration = atoi(str.c_str());
 
 	//Make panning speed consistent along either axis.
@@ -4276,7 +4277,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 							if (opacity) {
 								SDL_Rect src = MAKE_SDL_RECT((int)(wXOffset + wX * CX_TILE), (int)(wYOffset + wY * CY_TILE), CX_TILE, CY_TILE);
 								SDL_Rect dest = MAKE_SDL_RECT(this->x + wX * CX_TILE, this->y + wY * CY_TILE, CX_TILE, CY_TILE);
-								SDL_SetAlpha(this->images[FOG_SURFACE], SDL_SRCALPHA, opacity);
+								EnableSurfaceBlending(this->images[FOG_SURFACE], opacity);
 								g_pTheBM->BlitWrappingSurface(this->images[FOG_SURFACE], src, pDestSurface, dest);
 							}
 						}
@@ -4369,7 +4370,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 					if (opacity) {
 						SDL_Rect src = MAKE_SDL_RECT((int)(wXOffset + wXDest), (int)(wYOffset + wYDest), CX_TILE, CY_TILE);
 						SDL_Rect dest = MAKE_SDL_RECT(this->x + wXDest, this->y + wYDest, CX_TILE, CY_TILE);
-						SDL_SetAlpha(this->images[FOG_SURFACE], SDL_SRCALPHA, opacity);
+						EnableSurfaceBlending(this->images[FOG_SURFACE], opacity);
 						g_pTheBM->BlitWrappingSurface(this->images[FOG_SURFACE], src, pDestSurface, dest);
 					}
 				}
@@ -4467,6 +4468,7 @@ void CRoomWidget::RenderFogInPit(SDL_Surface *pDestSurface) //[default=NULL]
 						fDark = darkMap[darkVal - LIGHT_OFF - 1];
 					}
 
+
 					if (wPitHeight >= wMaxPitHeight)
 					{
 						//Fog with uniform alpha.
@@ -4474,7 +4476,7 @@ void CRoomWidget::RenderFogInPit(SDL_Surface *pDestSurface) //[default=NULL]
 						if (opacity) {
 							SDL_Rect src = MAKE_SDL_RECT(srcX, srcY, wPixelWidth, wPixelHeight);
 							SDL_Rect dest = MAKE_SDL_RECT(destX, destY, wPixelWidth, wPixelHeight);
-							SDL_SetAlpha(this->images[FOG_SURFACE], SDL_SRCALPHA, opacity);
+							EnableSurfaceBlending(this->images[FOG_SURFACE], opacity);
 							g_pTheBM->BlitWrappingSurface(this->images[FOG_SURFACE], src, pDestSurface, dest);
 						}
 					} else {
@@ -4490,7 +4492,7 @@ void CRoomWidget::RenderFogInPit(SDL_Surface *pDestSurface) //[default=NULL]
 							if ((this->cFogLayer > 1) && (nOpacity < minOpacity))
 								nOpacity = minOpacity;
 							if (nOpacity) {
-								SDL_SetAlpha(this->images[FOG_SURFACE], SDL_SRCALPHA, nOpacity);
+								EnableSurfaceBlending(this->images[FOG_SURFACE], nOpacity);
 								g_pTheBM->BlitWrappingSurface(this->images[FOG_SURFACE], src, pDestSurface, dest);
 							}
 							++src.y;
@@ -4834,7 +4836,7 @@ bool CRoomWidget::Load()
 
 	static Uint32 TransparentColor = SDL_MapRGB(this->images[BOLTS_SURFACE]->format,
 			TRANSPARENT_RGB);
-	SDL_SetColorKey(this->images[BOLTS_SURFACE], SDL_SRCCOLORKEY, TransparentColor);
+	SetColorKey(this->images[BOLTS_SURFACE], SDL_TRUE, TransparentColor);
 
 	if (this->pCurrentGame)
 		if (!LoadFromCurrentGame(this->pCurrentGame))
@@ -5570,6 +5572,7 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 
 				const bool bPitPlatformTiles = !bAddLightLayers;
 
+
 				//Determine this tile's darkness.
 				float fDark = fLightLevel;
 				const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
@@ -5591,6 +5594,7 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 
 				if (tiles.Exists(wX, wY))
 					this->pTileImages[tileIndex].dirty = 1;
+
 			}
 		}
 	}

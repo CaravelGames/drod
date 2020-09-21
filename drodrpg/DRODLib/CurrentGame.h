@@ -75,6 +75,7 @@
 
 #include "DbSavedGames.h"
 #include "DbDemos.h"
+#include "GameConstants.h"
 #include "MonsterMessage.h"
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
@@ -239,6 +240,7 @@ public:
 	UINT     GetChecksum() const;
 	void     getEquipmentStats(const UINT type, int& ATKstat, int &DEFstat) const;
 	UINT     getNewScriptID();
+	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
 	int      getItemAmount(const UINT item) const;

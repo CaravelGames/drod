@@ -37,6 +37,7 @@
 
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbRooms.h"
+#include "../DRODLib/SettingsKeys.h"
 #include <BackEndLib/Files.h>
 
 //Widget tag constants.  These must be different than tags on the parent widget.
@@ -177,7 +178,7 @@ void CWeatherDialogWidget::PopulateSkyList()
 
 	//Get names of all room styles.
 	list<WSTRING> styles;
-	if (!CFiles::GetGameProfileString("Graphics", "Style", styles))
+	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 		return;	//styles are missing
 
 	set<WSTRING> parsedImages;
@@ -191,7 +192,7 @@ void CWeatherDialogWidget::PopulateSkyList()
 		//Get this style's base filename from the INI.
 		//ATTN: Gets the first name only.
 		list<WSTRING> styleBasenames;
-		if (!CFiles::GetGameProfileString("Graphics", styleName.c_str(), styleBasenames))
+		if (!CFiles::GetGameProfileString(INISection::Graphics, styleName.c_str(), styleBasenames))
 			continue;	//this style is missing
 		if (styleBasenames.empty())
 			continue;   //style name not specified
@@ -202,7 +203,7 @@ void CWeatherDialogWidget::PopulateSkyList()
 		wstrSkyname += wszSpace;
 		wstrSkyname += wszSKIES;
 		list<WSTRING> skies;
-		if (CFiles::GetGameProfileString("Graphics", wstrSkyname.c_str(), skies))
+		if (CFiles::GetGameProfileString(INISection::Graphics, wstrSkyname.c_str(), skies))
 			for (list<WSTRING>::const_iterator sky = skies.begin(); sky != skies.end(); ++sky)
 			{
 				const WSTRING& skyName = *sky;

@@ -147,7 +147,7 @@ private:
 };
 
 struct sortLevels {
-	bool operator() (const CDbLevel* pLevel1, const CDbLevel* pLevel2);
+	bool operator() (const CDbLevel* pLevel1, const CDbLevel* pLevel2) const;
 };
 typedef std::set<CDbLevel*, sortLevels> SORTED_LEVELS;
 

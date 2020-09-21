@@ -39,6 +39,7 @@
 
 #include "../Texts/MIDs.h"
 #include "../DRODLib/Db.h"
+#include "../DRODLib/SettingsKeys.h"
 
 #include <BackEndLib/Browser.h>
 #include <BackEndLib/Files.h>
@@ -134,7 +135,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	const bool bDemo = !IsGameFullVersion();
 
 	string str;
-	this->bExtraCritters = CFiles::GetGameProfileString("Startup", "ExtraCritters", str);
+	this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
 
 	//Game title.
 	AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
@@ -263,7 +264,7 @@ bool CTitleScreen::SetForActivate()
 	LoadDemos();
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
-	g_pTheSound->bNoFocusPlaysMusic = settings.GetVar(noFocusPlaysMusic, false);
+	g_pTheSound->bNoFocusPlaysMusic = settings.GetVar(Settings::NoFocusPlaysMusic, false);
 
 	ASSERT(!this->bWaitingForHoldlist); //no previous transaction should be left uncompleted
 	if (g_pTheNet->IsEnabled()) //if CaravelNet connection hasn't been disabled
@@ -374,8 +375,7 @@ void CTitleScreen::OnClick(
 		ASSERTP(pHyperLink != NULL, "Missing hyperlink: GetWidget returned NULL");
 		ASSERT(pHyperLink->IsExternal());
 
-		string strLink;
-		UnicodeToAscii(pHyperLink->GetLink(), strLink);
+		const string strLink = UnicodeToUTF8(pHyperLink->GetLink());
 		SetFullScreen(false);
 		OpenExtBrowser(strLink.c_str());
 	}
@@ -465,7 +465,7 @@ void CTitleScreen::OnKeyDown(
 
 		case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:  case SDLK_BREAK:
+		case SDLK_PAUSE:
 #endif
 			if (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL))
 				GoToScreen(SCR_None);   //boss key -- exit immediately
@@ -700,11 +700,11 @@ bool CTitleScreen::PollForNews()
 			strFromWeb = pszFromWeb;
 			string str;
 			CFiles f;
-			f.GetGameProfileString("Startup", "LastNews", str);
+			f.GetGameProfileString(INISection::Startup, "LastNews", str);
 			if (strFromWeb.size() && str.compare(strFromWeb.c_str()) != 0)
 			{
 				//New news!
-				f.WriteGameProfileString("Startup", "LastNews", strFromWeb.c_str());
+				f.WriteGameProfileString(INISection::Startup, "LastNews", strFromWeb.c_str());
 				g_pTheSound->PlaySoundEffect(SEID_WISP);
 			}
 		}
@@ -981,7 +981,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	SDL_Surface *pDestSurface = GetDestSurface();
 
 	int nMouseX, nMouseY;
-	SDL_GetMouseState(&nMouseX, &nMouseY);
+	GetMouseState(&nMouseX, &nMouseY);
 
 	//Blit the title background.
 	SDL_Rect redrawRect = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
@@ -1052,12 +1052,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		this->pStatusDialog->Paint();
 
 	if (bUpdate)
-	{
-		if (bAlpha)
-			UpdateRect();
-		else
-			g_pTheBM->UpdateRects(pDestSurface);
-	}
+		UpdateRect();
 }
 
 //*****************************************************************************
@@ -1083,11 +1078,10 @@ void CTitleScreen::RequestNews()
 {
 	ASSERT(!this->wNewsHandle);
 
-	string ver, newsQuery = "http://forum.caravelgames.com/gamenews.php?game=";
+	string newsQuery = "http://forum.caravelgames.com/gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	UnicodeToAscii(wszVersionReleaseNumber, ver);
-	newsQuery += ver;
+	newsQuery += UnicodeToAscii(wszVersionReleaseNumber);
 #ifdef BETA
 	newsQuery += "-BETA-";
 	newsQuery += __DATE__;

@@ -36,6 +36,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbSavedGames.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -210,7 +211,7 @@ bool CSelectPlayerScreen::SetForActivate()
 			//Automatically login to previous player selected if option is set.
 			string str;
 			bool bAutoLogin = false;
-			if (CFiles::GetGameProfileString("Customizing", "AutoLogin", str))
+			if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::AutoLogin, str))
 				if (atoi(str.c_str()) > 0)
 					bAutoLogin = true;
 
@@ -488,7 +489,7 @@ void CSelectPlayerScreen::SetPlayerID(
 			//Quick player export if requested.
 			bool bQuickExport = false;
 			string str;
-			if (CFiles::GetGameProfileString("Customizing", "QuickPlayerExport", str))
+			if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::QuickPlayerExport, str))
 				bQuickExport = atoi(str.c_str()) != 0;
 			if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
 				CDbXML::info.bQuickPlayerExport = true;
@@ -545,7 +546,7 @@ void CSelectPlayerScreen::SetPlayerID(
 			//Quick player export if requested.
 			bool bQuickExport = false;
 			string str;
-			if (CFiles::GetGameProfileString("Customizing", "QuickPlayerExport", str))
+			if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::QuickPlayerExport, str))
 				bQuickExport = atoi(str.c_str()) != 0;
 			if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
 				CDbXML::info.bQuickPlayerExport = true;

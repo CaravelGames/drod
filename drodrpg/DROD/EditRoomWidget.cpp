@@ -1441,7 +1441,7 @@ void CEditRoomWidget::HandleDrag(
 {
 	//Don't update coords when outside widget.
 	if (Motion.x < this->x || Motion.y < this->y) return;
-	if (Motion.x >= this->x + this->w || Motion.y >= this->y + this->h) return;
+	if ((UINT)Motion.x >= this->x + this->w || (UINT)Motion.y >= this->y + this->h) return;
 
 	//When placing only one object, keep it located at mouse cursor.
 	if (this->bSinglePlacement)
@@ -1468,7 +1468,7 @@ void CEditRoomWidget::HandleMouseMotion(
 
 	//Don't update coords when outside widget.
 	if (Motion.x < this->x || Motion.y < this->y) return;
-	if (Motion.x >= this->x + this->w || Motion.y >= this->y + this->h) return;
+	if ((UINT)Motion.x >= this->x + this->w || (UINT)Motion.y >= this->y + this->h) return;
 
 	this->wEndX = (Motion.x - this->x) / CX_TILE;
 	this->wEndY = (Motion.y - this->y) / CY_TILE;
@@ -1486,7 +1486,7 @@ void CEditRoomWidget::HandleMouseUp(
 	//Don't update coords when outside widget.
 	this->bMouseInBounds = false;
 	if (Button.x < this->x || Button.y < this->y) return;
-	if (Button.x >= this->x + this->w || Button.y >= this->y + this->h) return;
+	if ((UINT)Button.x >= this->x + this->w || (UINT)Button.y >= this->y + this->h) return;
 
 	const bool bCtrlKey = (SDL_GetModState() & KMOD_CTRL) != 0;
 

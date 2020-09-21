@@ -207,8 +207,8 @@ void CPendingPlotEffect::PlotTile(
 	{
 		g_pTheBM->BlitTileImage(wTileNo, dest.x, dest.y, pDestSurface, false, this->nOpacity);
 		this->dirtyRects.push_back(dest);
-	} else if (wX * CBitmapManager::CX_TILE < this->OwnerRect.w && wY *
-				CBitmapManager::CY_TILE < this->OwnerRect.h)
+	} else if (wX * CBitmapManager::CX_TILE < (UINT)this->OwnerRect.w && wY *
+				CBitmapManager::CY_TILE < (UINT)this->OwnerRect.h)
 	{
 		g_pTheBM->ShadeTile(dest.x, dest.y, Red, pDestSurface);
 		this->dirtyRects.push_back(dest);

@@ -40,6 +40,7 @@
 
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -379,17 +380,15 @@ void CModScreen::DeleteSelectedMods()
 				g_pTheDB->Data.Delete(*id);
 
 		//Remove style entry from INI also.
-		string styleName;
-		UnicodeToAscii(wModName.c_str(), styleName);
-		f.DeleteINIEntry("Graphics", "Style", styleName.c_str());
-		f.DeleteINIEntry("Graphics", styleName.c_str(), NULL);
+		string styleName = UnicodeToAscii(wModName.c_str());
+		f.DeleteINIEntry(INISection::Graphics, INIKey::Style, styleName.c_str());
+		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 
 		//Delete style skies entry, if exists.
 		wModName += wszSpace;
 		wModName += wszSKIES;
-		styleName.resize(0);
-		UnicodeToAscii(wModName.c_str(), styleName);
-		f.DeleteINIEntry("Graphics", styleName.c_str(), NULL);
+		styleName = UnicodeToAscii(wModName.c_str());
+		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 	}
 
 	PopulateModListBox();
@@ -526,7 +525,7 @@ bool CModScreen::IsLocalMod(const WCHAR* pName) const
 	//Is room style listed?
 	CFiles f;
 	list<WSTRING> styles;
-	f.GetGameProfileString("Graphics", "Style", styles);
+	f.GetGameProfileString(INISection::Graphics, INIKey::Style, styles);
 	for (list<WSTRING>::const_iterator style = styles.begin(); style != styles.end(); ++style)
 		if (!WCScmp(style->c_str(), pName))
 			return true; //that means it's on disk
@@ -642,12 +641,15 @@ void CModScreen::OnKeyDown(
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Fast select.
-	if (Key.keysym.mod & KMOD_CTRL && iswalnum(W_t(Key.keysym.unicode)))
-		if (this->pModListBoxWidget->SelectLineStartingWith(W_t(Key.keysym.unicode)))
+	const WCHAR wc = TranslateUnicodeKeysym(Key.keysym);
+	if (Key.keysym.mod & KMOD_CTRL && iswalnum(wc))
+	{
+		if (this->pModListBoxWidget->SelectLineStartingWith(wc))
 		{
 			SetDesc();
 			Paint();
 		}
+	}
 }
 
 //*****************************************************************************
@@ -691,12 +693,12 @@ bool CModScreen::PollForOperationInterrupt()
 	//Prompt to halt the process on a key press.
 	bool bInterrupt = false;
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
+	while (PollEvent(&event))
 	{
 		switch (event.type)
 		{
-			case SDL_ACTIVEEVENT:
-				OnActiveEvent(event.active);
+			case SDL_WINDOWEVENT:
+				OnWindowEvent(event.window);
 				this->pStatusDialog->Paint();	//make sure this stays on top
 			break;
 			case SDL_KEYDOWN:
@@ -707,7 +709,7 @@ bool CModScreen::PollForOperationInterrupt()
 					case SDLK_RETURN:	case SDLK_KP_ENTER:
 					case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-					case SDLK_PAUSE:  case SDLK_BREAK:
+					case SDLK_PAUSE:
 #endif
 						SetCursor();
 						if (ShowYesNoMessage(MID_HaltOperationPrompt) != TAG_NO)
@@ -869,7 +871,7 @@ void CModScreen::SetDesc()
 	//Export button is active when the style's image files are in the user's Bitmaps dir on disk.
 	const WSTRING name = this->pModListBoxWidget->GetSelectedItemText();
 	list<WSTRING> styleNames, skies;
-	CFiles::GetGameProfileString("Graphics", name.c_str(), styleNames);
+	CFiles::GetGameProfileString(INISection::Graphics, name.c_str(), styleNames);
 	this->pExportButton->Enable(IsStyleOnDisk(styleNames, skies));
 
 	ShowCaravelNetWidgets(!cNetMedia.empty(), bIsImportedMod, bIsCaravelNetMod);
@@ -996,7 +998,7 @@ void CModScreen::PopulateModListBox()
 	{
 		CFiles f;
 		list<WSTRING> ini_styles;
-		if (f.GetGameProfileString("Graphics", "Style", ini_styles)) {
+		if (f.GetGameProfileString(INISection::Graphics, INIKey::Style, ini_styles)) {
 			for (list<WSTRING>::const_iterator ini_style = ini_styles.begin(); ini_style != ini_styles.end(); ++ini_style)
 				loadedStyles.insert(*ini_style);
 		}

@@ -202,7 +202,7 @@ bool CSellScreen::SetForActivate()
 	//Set transparent tile colorkey on screen shot source surface.
 	const Uint32 TranspColor = SDL_MapRGB(pSrcSurface->format,
 			SDL_TRANSPARENT_COLOR);
-	SDL_SetColorKey(pSrcSurface, SDL_SRCCOLORKEY, TranspColor);
+	SetColorKey(pSrcSurface, SDL_TRUE, TranspColor);
 
 	//Set frame rate as high as needed for smooth animations.
 	SetBetweenEventsInterval(15); //60+ fps
@@ -301,7 +301,7 @@ void CSellScreen::MoveScreenshots(SDL_Surface *pDestSurface, const bool bUpdateR
 		for (i=0; i<2; ++i)
 		{
 			const SDL_Rect& rect = updateRect[i];
-			SDL_UpdateRect(pDestSurface, rect.x, rect.y, rect.w, rect.h);
+			PresentRect(pDestSurface, &rect);
 		}
 	}
 }

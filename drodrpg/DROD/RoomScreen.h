@@ -69,6 +69,7 @@ class CRoomScreen : public CDrodScreen
 {
 public:
 	static void    SetMusicStyle(WSTRING style, const UINT wMood, const UINT fadeDuration=3000);
+	int     GetCommandForKeysym(const SDL_Keycode& sym) const;
 
 protected:
 	friend class CScreenManager;
@@ -76,8 +77,7 @@ protected:
 	CRoomScreen(const SCREENTYPE eSetType);
 	virtual ~CRoomScreen() { }
 
-	int      FindKey(const int nCommand) const;
-	SDLKey   GetKeysymForCommand(const UINT wCommand) const;
+	SDL_Keycode GetKeysymForCommand(const UINT wCommand) const;
 	void     HideScroll() {this->bIsScrollVisible = false;}
 	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
 	void     PaintBackground();
@@ -95,7 +95,8 @@ protected:
 
 	bool              bIsScrollVisible;
 
-	int               KeysymToCommandMap[SDLK_LAST];
+private:
+	std::map<SDL_Keycode,int> KeysymToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H

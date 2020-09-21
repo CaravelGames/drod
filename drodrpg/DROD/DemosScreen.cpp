@@ -42,6 +42,7 @@
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Base64.h>
@@ -400,7 +401,7 @@ bool CDemosScreen::SetForActivate()
 	ASSERT(this->dwRoomID);
 
 	//Prepare display of CaravelNet room demos.
-	this->pShowFromLevel->SetChecked(pCurrentPlayer->Settings.GetVar("ShowDemosFromLevel", false));
+	this->pShowFromLevel->SetChecked(pCurrentPlayer->Settings.GetVar(Settings::ShowDemosFromLevel, false));
 	this->pCNetDemoListBoxWidget->Clear();	//call before PopulateDemoListBox sets widget states
 	this->dwDownloadDemosForRoomID = 0;	//no downloaded demos are listed now
 

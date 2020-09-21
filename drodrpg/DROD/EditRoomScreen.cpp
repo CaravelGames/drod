@@ -66,6 +66,7 @@
 #include "../DRODLib/Combat.h"
 #include "../DRODLib/MonsterPiece.h"
 #include "../DRODLib/Serpent.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../DRODLib/PlayerDouble.h"
 #include "../DRODLib/Db.h"
 #include "../Texts/MIDs.h"
@@ -1503,8 +1504,8 @@ void CEditRoomScreen::ClickRoom()
 			pPlayer->CNetNameText = wszEmpty;
 			pPlayer->CNetPasswordText = wszEmpty;
 			pPlayer->Settings = pCurPlayer->Settings;
-//			pPlayer->Settings.SetVar(showCheckpoints, true); //always show checkpoints
-			pPlayer->Settings.SetVar(useInternetStr, false);
+//			pPlayer->Settings.SetVar(Settings::ShowCheckpoints, true); //always show checkpoints
+			pPlayer->Settings.SetVar(Settings::ConnectToInternet, false);
 			pPlayer->Update();
 			this->dwTestPlayerID = pPlayer->dwPlayerID;
 			this->dwSavePlayerID = g_pTheDB->GetPlayerID();
@@ -2001,9 +2002,9 @@ void CEditRoomScreen::ApplyPlayerSettings()
 
 	//Synch player setting to current screen mode, if needed.
 	const bool bIsFullScreen = IsFullScreen();
-	if (bIsFullScreen != pCurrentPlayer->Settings.GetVar(fullScreenStr, bIsFullScreen))
+	if (bIsFullScreen != pCurrentPlayer->Settings.GetVar(Settings::Fullscreen, bIsFullScreen))
 	{
-		pCurrentPlayer->Settings.SetVar(fullScreenStr, bIsFullScreen);
+		pCurrentPlayer->Settings.SetVar(Settings::Fullscreen, bIsFullScreen);
 		pCurrentPlayer->Update();
 	}
 
@@ -2012,16 +2013,16 @@ void CEditRoomScreen::ApplyPlayerSettings()
 		pCurrentPlayer->Update();
 
 	//Set room editing options.
-	this->bAutoSave = pCurrentPlayer->Settings.GetVar("AutoSave", true);
+	this->bAutoSave = pCurrentPlayer->Settings.GetVar(Settings::AutoSave, true);
 
 	COptionButtonWidget *pOptionButton = static_cast<COptionButtonWidget *>(
 			GetWidget(TAG_SHOWERRORS));
-	this->bShowErrors = pCurrentPlayer->Settings.GetVar("ShowErrors", true);
+	this->bShowErrors = pCurrentPlayer->Settings.GetVar(Settings::ShowErrors, true);
 	pOptionButton->SetChecked(this->bShowErrors);
 
 	//Chat.
-	this->bEnableChat = pCurrentPlayer->Settings.GetVar(enableChat, false);
-	this->bReceiveWhispersOnly = pCurrentPlayer->Settings.GetVar(receiveWhispersOnly, false);
+	this->bEnableChat = pCurrentPlayer->Settings.GetVar(Settings::EnableChatInGame, false);
+	this->bReceiveWhispersOnly = pCurrentPlayer->Settings.GetVar(Settings::ReceiveWhispersOnlyInGame, false);
 
 	delete pCurrentPlayer;
 }
@@ -2126,7 +2127,7 @@ UINT CEditRoomScreen::ImportHoldSound()
 	CFiles Files;
 	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
 	WSTRING wstrImportPath = pCurrentPlayer ?
-			pCurrentPlayer->Settings.GetVar(importSoundPath, Files.GetDatPath().c_str()) :
+			pCurrentPlayer->Settings.GetVar(Settings::ImportSoundPath, Files.GetDatPath().c_str()) :
 			Files.GetDatPath();
 
 	WSTRING wstrImportFile;
@@ -2143,7 +2144,7 @@ UINT CEditRoomScreen::ImportHoldSound()
 		//comes up it will have the same path.
 		if (pCurrentPlayer)
 		{
-			pCurrentPlayer->Settings.SetVar(importSoundPath, wstrImportPath.c_str());
+			pCurrentPlayer->Settings.SetVar(Settings::ImportSoundPath, wstrImportPath.c_str());
 			pCurrentPlayer->Update();
 		}
 
@@ -2185,7 +2186,7 @@ UINT CEditRoomScreen::ImportHoldVideo()
 	CFiles Files;
 	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
 	WSTRING wstrImportPath = pCurrentPlayer ?
-			pCurrentPlayer->Settings.GetVar(importVideoPath, Files.GetDatPath().c_str()) :
+			pCurrentPlayer->Settings.GetVar(Settings::ImportVideoPath, Files.GetDatPath().c_str()) :
 			Files.GetDatPath();
 
 	WSTRING wstrImportFile;
@@ -2202,7 +2203,7 @@ UINT CEditRoomScreen::ImportHoldVideo()
 		//comes up it will have the same path.
 		if (pCurrentPlayer)
 		{
-			pCurrentPlayer->Settings.SetVar(importVideoPath, wstrImportPath.c_str());
+			pCurrentPlayer->Settings.SetVar(Settings::ImportVideoPath, wstrImportPath.c_str());
 			pCurrentPlayer->Update();
 		}
 
@@ -2715,14 +2716,12 @@ void CEditRoomScreen::OnMouseWheel(
 //Called when a mouse wheel event is received.
 //
 //Params:
-	const SDL_MouseButtonEvent &Button)
+	const SDL_MouseWheelEvent &Wheel)
 {
 	//Mouse wheel changes orientation.
-	if (Button.button == SDL_BUTTON_WHEELDOWN)
-	{
+	if (Wheel.y < 0 || Wheel.x > 0) {
 		RotateClockwise();
-	} else if (Button.button == SDL_BUTTON_WHEELUP)
-	{
+	} else if (Wheel.y > 0 || Wheel.x < 0) {
 		RotateCounterClockwise();
 	}
 
@@ -2837,8 +2836,8 @@ void CEditRoomScreen::OnDeactivate()
 	CDbPackedVars& vars = pCurrentPlayer->Settings;
 
 	//Save chat preference.
-	vars.SetVar(enableChat, this->bEnableChat);
-	vars.SetVar(receiveWhispersOnly, this->bReceiveWhispersOnly);
+	vars.SetVar(Settings::EnableChatInGame, this->bEnableChat);
+	vars.SetVar(Settings::ReceiveWhispersOnlyInGame, this->bReceiveWhispersOnly);
 
 	pCurrentPlayer->Update();
 	delete pCurrentPlayer;
@@ -2985,10 +2984,10 @@ void CEditRoomScreen::OnKeyDown(
 			GetFloorImageID(true);
 		break;
 
-		case SDLK_PAGEUP: case SDLK_KP9:
+		case SDLK_PAGEUP: case SDLK_KP_9:
 			WarpToNextLevel(false);
 		break;
-		case SDLK_PAGEDOWN: case SDLK_KP3:
+		case SDLK_PAGEDOWN: case SDLK_KP_3:
 			WarpToNextLevel(true);
 		break;
 
@@ -2999,9 +2998,9 @@ void CEditRoomScreen::OnKeyDown(
 
 		//Menu tab hotkeys.
 		case SDLK_LEFT:
-		case SDLK_KP4:
+		case SDLK_KP_4:
 		case SDLK_RIGHT:
-		case SDLK_KP6:
+		case SDLK_KP_6:
 			if ((Key.keysym.mod & KMOD_CTRL) && dwTagNo != this->pTabbedMenu->GetTagNo())
 			{
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
@@ -3161,7 +3160,7 @@ void CEditRoomScreen::OnKeyDown(
 			{
 				//Paste destination is at mouse's current location.
 				int nMouseX, nMouseY;
-				SDL_GetMouseState(&nMouseX, &nMouseY);
+				GetMouseState(&nMouseX, &nMouseY);
 				this->pRoomWidget->wEndX = (nMouseX - this->pRoomWidget->GetX()) / CBitmapManager::CX_TILE;
 				this->pRoomWidget->wEndY = (nMouseY - this->pRoomWidget->GetY()) / CBitmapManager::CY_TILE;
 
@@ -3206,7 +3205,7 @@ void CEditRoomScreen::OnKeyDown(
 	const UINT wOldSwordType = this->wSelSwordType;
 	const UINT wOldShieldType = this->wSelShieldType;
 	const UINT wOldAccessoryType = this->wSelAccessoryType;
-	const int nCommand = this->KeysymToCommandMap[Key.keysym.sym];
+	const int nCommand = GetCommandForKeysym(Key.keysym.sym);
 	switch (nCommand)
 	{
 		//Rotate orientation.

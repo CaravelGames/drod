@@ -41,6 +41,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/MonsterFactory.h"
 #include "../DRODLib/PlayerStats.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -1167,7 +1168,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	CFiles f;
 	list<WSTRING> styles;
-	if (f.GetGameProfileString("Graphics", "Style", styles))
+	if (f.GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 	{
 		UINT wCount = SONGID_COUNT;
 		for (list<WSTRING>::iterator style = styles.begin(); style != styles.end(); ++style)
@@ -2383,7 +2384,7 @@ void CCharacterDialogWidget::AddSound()
 	//Get sound import path.
 	CFiles Files;
 	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	WSTRING wstrImportPath = pCurrentPlayer ? pCurrentPlayer->Settings.GetVar(importSoundPath,
+	WSTRING wstrImportPath = pCurrentPlayer ? pCurrentPlayer->Settings.GetVar(Settings::ImportSoundPath,
 			Files.GetDatPath().c_str()) : Files.GetDatPath();
 
 	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
@@ -2398,7 +2399,7 @@ void CCharacterDialogWidget::AddSound()
 		//comes up it will have the same path.
 		if (pCurrentPlayer)
 		{
-			pCurrentPlayer->Settings.SetVar(importSoundPath, wstrImportPath.c_str());
+			pCurrentPlayer->Settings.SetVar(Settings::ImportSoundPath, wstrImportPath.c_str());
 			pCurrentPlayer->Update();
 		}
 

@@ -30,6 +30,7 @@
 
 #include "DrodSound.h"
 #include "../DRODLib/Db.h"
+#include "../DRODLib/SettingsKeys.h"
 #include <BackEndLib/Files.h>
 
 const char moodText[SONG_MOOD_COUNT][8] = {
@@ -210,7 +211,7 @@ const
 
 	//Retrieve sound filename(s) from INI file.
 	CFiles Files;
-	return Files.GetGameProfileString("Waves", strKeyName.c_str(), FilepathList);
+	return Files.GetGameProfileString(INISection::Waves, strKeyName.c_str(), FilepathList);
 }
 
 //***********************************************************************************
@@ -250,7 +251,7 @@ bool CDrodSound::GetSongFilepaths(
 
 	//Retrieve song filename(s) from INI file.
 	CFiles Files;
-	return Files.GetGameProfileString("Songs", strKeyName.c_str(), FilepathList);
+	return Files.GetGameProfileString(INISection::Songs, strKeyName.c_str(), FilepathList);
 }
 
 //**********************************************************************************
@@ -449,10 +450,9 @@ bool CDrodSound::LoadMusicFileLists()
 		{
 			CFiles f;
 			f.AppendErrorLog("A song sequence wasn't listed. Check whether ");
-			char filepath[512];
-			UnicodeToAscii(this->SongListArray[eSongID].empty() ? wszQuestionMark :
-					this->SongListArray[eSongID].front(), filepath);
-			f.AppendErrorLog(filepath);
+			const string filepath = UnicodeToAscii(this->SongListArray[eSongID].empty() ?
+					wszQuestionMark : this->SongListArray[eSongID].front());
+			f.AppendErrorLog(filepath.c_str());
 			f.AppendErrorLog(" is a valid filename." NEWLINE);
 			ASSERT(!"Song sequence wasn't listed.");
 			return false;
@@ -531,7 +531,7 @@ SOUNDSTREAM* CDrodSound::LoadStream(
 #ifdef USE_SDL_MIXER
 				if (this->pSongStream)
 					Mix_FreeMusic(this->pSongStream);
-				this->pSongStream = pStream = Mix_LoadMUS_RW(SDL_RWFromConstMem((BYTE*)pRawData, dwSize));
+				this->pSongStream = pStream = Mix_LoadMUS_RW(SDL_RWFromConstMem((BYTE*)pRawData, dwSize), 1);
 #else
 				const UINT wStreamMode = mode | FSOUND_LOADMEMORY;
 				pStream = FSOUND_Stream_Open((char*)pRawData, wStreamMode, 0, dwSize);

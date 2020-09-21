@@ -410,7 +410,7 @@ const
 	//Calculate Euclidean distance.
 	const int xd = x - wX;
 	const int yd = y - wY;
-	return sqrt(static_cast<float>(xd * xd + yd * yd));
+	return static_cast<float>(sqrt(xd * xd + yd * yd));
 }
 
 //*****************************************************************************

@@ -32,36 +32,10 @@
 #include <FrontEndLib/TextBoxWidget.h>
 #include <FrontEndLib/KeypressDialogWidget.h>
 #include "../DRODLib/DbPlayers.h"
+#include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Types.h>
 
-//Definable command constants.  Must be in same order as associated widgets and
-//their tags.
-enum DCMD
-{
-	DCMD_First = 0,
-	DCMD_NW = DCMD_First,
-	DCMD_N,
-	DCMD_NE,
-	DCMD_W,
-	DCMD_Wait,
-	DCMD_E,
-	DCMD_SW,
-	DCMD_S,
-	DCMD_SE,
-	DCMD_C,
-	DCMD_CC,
-	DCMD_Restart,
-	DCMD_Undo,
-	DCMD_Battle,
-	DCMD_UseAccessory,
-	DCMD_Lock,
-	DCMD_Command,
-
-	DCMD_Count
-};
-
-extern const char COMMANDNAME_ARRAY[DCMD_Count][24];
-extern const SDLKey COMMANDKEY_ARRAY[2][DCMD_Count];	//numpad or laptop
+extern const SDL_Keycode COMMANDKEY_ARRAY[2][InputCommands::DCMD_Count];	//desktop or notebook
 
 //*****************************************************************************************
 class CSettingsScreen : public CDrodScreen
@@ -76,7 +50,8 @@ protected:
 
 private:
 	bool     AllCommandsAreAssignedToKeys(CDbPackedVars &Settings) const;
-	bool     GetCommandKeyRedefinition(const DCMD eCommand, const SDLKey CurrentKey, SDLKey &NewKey);
+	bool     AreCNetDetailsChanged(CDbPlayer *pPlayer);
+	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const SDL_Keycode CurrentKey, SDL_Keycode &NewKey);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void OnClick(const UINT dwTagNo);
 	virtual void OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
@@ -94,7 +69,7 @@ private:
 
 	CKeypressDialogWidget * pDialogBox;
 	CLabelWidget *       pCommandLabel;
-	CWidget  *           pCommandLabelWidgets[DCMD_Count];
+	CWidget  *           pCommandLabelWidgets[InputCommands::DCMD_Count];
 	CDbPlayer *          pCurrentPlayer;
 
 	CTextBoxWidget * pNameWidget;

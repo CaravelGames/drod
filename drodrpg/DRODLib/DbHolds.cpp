@@ -3003,6 +3003,11 @@ MESSAGE_ID CDbHold::SetProperty(
 			break;
 		case P_Status:
 			this->status = static_cast<HoldStatus>(convertToInt(str));
+#if defined(STEAMBUILD) && !defined(DEV_BUILD)
+			if ((this->status == CDbHold::Main || this->status == CDbHold::Official) &&
+					info.typeBeingImported == CImportInfo::Hold)
+				return MID_SteamErrorAttemptingToImportOfficialHold;
+#endif
 			break;
 		case P_VarID:
 			this->dwVarID = convertToUINT(str);

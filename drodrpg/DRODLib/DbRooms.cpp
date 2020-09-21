@@ -61,6 +61,17 @@ CMonsterPiece *pImportPiece = NULL;
 CExitData     *pImportExit = NULL;
 ROOMCOORD      importCheckpoint;
 
+#define WEATHER_OUTSIDE "outside"
+#define WEATHER_LIGHTNING "lightning"
+#define WEATHER_CLOUDS "clouds"
+#define WEATHER_SUN "sunshine"
+#define WEATHER_LIGHTFADE "lf"
+#define WEATHER_FOG "fog"
+#define WEATHER_LIGHT "light"
+#define WEATHER_SNOW "snow"
+#define WEATHER_SKY "sky"
+#define WEATHER_RAIN "rain"
+
 //*****************************************************************************
 UINT readBpUINT(const BYTE* &pRead)
 //Deserialize 1..5 bytes --> UINT
@@ -763,8 +774,7 @@ void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 				wstr += wszColon;
 
 				pRoom->GetLevelPositionDescription(wstr, true);
-				string str;
-				UnicodeToAscii(wstr, str);
+				string str = UnicodeToAscii(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendErrorLog(str.c_str());
@@ -9071,15 +9081,15 @@ void CDbRoom::SetExtraVarsFromMembers()
 	//Weather vars.
 	CDbPackedVars& v = this->ExtraVars;
 	Weather& w = this->weather;
-	v.SetVar("outside", w.bOutside);
-	v.SetVar("lightning", w.bLightning);
-	v.SetVar("clouds", w.bClouds);
-	v.SetVar("sunshine", w.bSunshine);
-	v.SetVar("lf", w.bSkipLightfade);
-	v.SetVar("fog", w.wFog);
-	v.SetVar("light", w.wLight);
-	v.SetVar("snow", w.wSnow);
-	v.SetVar("sky", w.sky.c_str());
+	v.SetVar(WEATHER_OUTSIDE, w.bOutside);
+	v.SetVar(WEATHER_LIGHTNING, w.bLightning);
+	v.SetVar(WEATHER_CLOUDS, w.bClouds);
+	v.SetVar(WEATHER_SUN, w.bSunshine);
+	v.SetVar(WEATHER_LIGHTFADE, w.bSkipLightfade);
+	v.SetVar(WEATHER_FOG, w.wFog);
+	v.SetVar(WEATHER_LIGHT, w.wLight);
+	v.SetVar(WEATHER_SNOW, w.wSnow);
+	v.SetVar(WEATHER_SKY, w.sky.c_str());
 }
 
 //*****************************************************************************
@@ -9089,15 +9099,15 @@ void CDbRoom::SetMembersFromExtraVars()
 	//Weather vars.
 	CDbPackedVars& v = this->ExtraVars;
 	Weather& w = this->weather;
-	w.bOutside = v.GetVar("outside", false);
-	w.bLightning = v.GetVar("lightning", false);
-	w.bClouds = v.GetVar("clouds", false);
-	w.bSunshine = v.GetVar("sunshine", false);
-	w.bSkipLightfade = v.GetVar("lf", false);
-	w.wFog = v.GetVar("fog", UINT(0));
-	w.wLight = v.GetVar("light", UINT(0));
-	w.wSnow = v.GetVar("snow", UINT(0));
-	w.sky = v.GetVar("sky", wszEmpty);
+	w.bOutside = v.GetVar(WEATHER_OUTSIDE, false);
+	w.bLightning = v.GetVar(WEATHER_LIGHTNING, false);
+	w.bClouds = v.GetVar(WEATHER_CLOUDS, false);
+	w.bSunshine = v.GetVar(WEATHER_SUN, false);
+	w.bSkipLightfade = v.GetVar(WEATHER_LIGHTFADE, false);
+	w.wFog = v.GetVar(WEATHER_FOG, UINT(0));
+	w.wLight = v.GetVar(WEATHER_LIGHT, UINT(0));
+	w.wSnow = v.GetVar(WEATHER_SNOW, UINT(0));
+	w.sky = v.GetVar(WEATHER_SKY, wszEmpty);
 }
 
 //*****************************************************************************
@@ -9704,7 +9714,7 @@ bool CDbRoom::RemovePressurePlateTile(
 			pPlate->tiles = *reg;
 			reg->first(pPlate->wX, pPlate->wY);
 			this->orbs.push_back(pPlate);
-			wPlateI = this->orbs.size(); //base-1
+			wPlateI = static_cast<USHORT>(this->orbs.size()); //base-1
 			for (CCoordSet::const_iterator sq = reg->begin();
 				 sq != reg->end(); ++sq)
 				this->pressurePlateIndex.Add(sq->wX, sq->wY, wPlateI);

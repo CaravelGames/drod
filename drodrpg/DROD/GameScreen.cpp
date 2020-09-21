@@ -86,6 +86,7 @@
 #include "../DRODLib/Monster.h"
 #include "../DRODLib/MonsterFactory.h"
 #include "../DRODLib/MonsterPiece.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../DRODLib/TileConstants.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Clipboard.h>
@@ -95,6 +96,10 @@
 #include <BackEndLib/IDList.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
+
+#ifdef STEAMBUILD
+#	include <steam_api.h>
+#endif
 
 #define DEFAULT_COMBAT_TICK (75) //default speed one round of combat plays out (ms)
 
@@ -182,6 +187,112 @@ const int X_PIC[numMenuPics] = {160, 160+44, 160,    160+44,  135, 135, 135};
 const int Y_PIC[numMenuPics] = {427, 427,    427+44, 427+44,  205, 255, 305};
 
 const int rightEndOfEquipmentSlot = 259; //same as value in CX_SWORD in RoomScreen.cpp
+
+#ifdef STEAMBUILD
+CSteamLeaderboards::CSteamLeaderboards() { }
+
+void CSteamLeaderboards::FindLeaderboardAndUploadScore(const char *pchLeaderboardName, int score)
+{
+	if (!pchLeaderboardName)
+		return;
+
+	const string leaderboard(pchLeaderboardName);
+	m_scoresToUpload.insert(make_pair(leaderboard, score)); //persist
+
+	if (!FindLeaderboard(pchLeaderboardName))
+		m_scoresToUpload.erase(leaderboard);
+}
+
+bool CSteamLeaderboards::FindLeaderboard(const char *pchLeaderboardName)
+{
+	if (SteamUserStats()) {
+		SteamAPICall_t hSteamAPICall = SteamUserStats()->FindLeaderboard(pchLeaderboardName);
+		m_steamCallResultFindLeaderboard.Set(hSteamAPICall, this, &CSteamLeaderboards::OnFindLeaderboard);
+		return true;
+	}
+
+	return false;
+}
+
+bool CSteamLeaderboards::UploadScore(SteamLeaderboard_t hLeaderboard)
+{
+	if (!hLeaderboard)
+		return false;
+
+	const char *pchName = SteamUserStats()->GetLeaderboardName(hLeaderboard);
+	if (!pchName)
+		return false;
+	map<string, int>::iterator it = m_scoresToUpload.find(string(pchName));
+	if (it == m_scoresToUpload.end())
+		return false;
+	const int score = it->second;
+
+	SteamAPICall_t hSteamAPICall = SteamUserStats()->UploadLeaderboardScore(
+			hLeaderboard, k_ELeaderboardUploadScoreMethodKeepBest, score, NULL, 0);
+	m_SteamCallResultUploadScore.Set(hSteamAPICall, this, &CSteamLeaderboards::OnUploadScore);
+
+	// Load the top entry of the specified leaderboard.
+	hSteamAPICall = SteamUserStats()->DownloadLeaderboardEntries(
+			hLeaderboard, k_ELeaderboardDataRequestGlobal, 0, 1);
+	m_steamCallResultDownloadScore.Set(hSteamAPICall, this, &CSteamLeaderboards::OnDownloadTopScore);
+
+	return true;
+}
+
+void CSteamLeaderboards::OnFindLeaderboard(LeaderboardFindResult_t *pResult, bool bIOFailure) {
+	// see if we encountered an error during the call
+	if (!pResult->m_bLeaderboardFound || bIOFailure)
+	{
+		//OutputDebugString("Leaderboard could not be found\n");
+		return;
+	}
+
+	UploadScore(pResult->m_hSteamLeaderboard);
+}
+
+void CSteamLeaderboards::OnUploadScore(LeaderboardScoreUploaded_t *pResult, bool bIOFailure) {
+	if (!pResult->m_bSuccess || bIOFailure)
+	{
+		//OutputDebugString( "Score could not be uploaded to Steam\n" );
+	}
+}
+
+void CSteamLeaderboards::OnDownloadTopScore(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure)
+{
+	if (bIOFailure)
+		return;
+
+	const char *pchName = SteamUserStats()->GetLeaderboardName(pResult->m_hSteamLeaderboard);
+	if (!pchName)
+		return;
+
+	if (pResult->m_cEntryCount) {
+		LeaderboardEntry_t m_leaderboardEntry;
+		SteamUserStats()->GetDownloadedLeaderboardEntry(
+				pResult->m_hSteamLeaderboardEntries, 0, &m_leaderboardEntry, NULL, 0);
+
+		ShowSteamScoreOnGameScreen(pchName, m_leaderboardEntry.m_nScore);
+	}
+}
+
+void CSteamLeaderboards::ShowSteamScoreOnGameScreen(const char *pchLeaderboardName, int topScore)
+{
+	if (!pchLeaderboardName)
+		return;
+
+	map<string, int>::iterator it = m_scoresToUpload.find(string(pchLeaderboardName));
+	if (it != m_scoresToUpload.end()) {
+		CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*, g_pTheSM->GetScreen(SCR_Game));
+		if (pGameScreen) {
+			const int playerScore = it->second;
+			pGameScreen->ShowScorepointRating(playerScore, topScore);
+		}
+	}
+}
+
+CSteamLeaderboards g_steamLeaderboards;
+
+#endif
 
 //
 //CGameScreen public methods.
@@ -763,10 +874,10 @@ void CGameScreen::SetMusicStyle()
 		CFiles f;
 		list<WSTRING> songlist;
 		//Ensure mood selection is valid.
-		if (f.GetGameProfileString("Songs", music.songMood.c_str(), songlist))
+		if (f.GetGameProfileString(INISection::Songs, music.songMood.c_str(), songlist))
 		{
 			g_pTheSound->CrossFadeSong(&songlist);
-			f.WriteGameProfileString("Songs", music.songMood.c_str(), songlist);
+			f.WriteGameProfileString(INISection::Songs, music.songMood.c_str(), songlist);
 			return;
 		}
 	}
@@ -800,7 +911,8 @@ void CGameScreen::SetQuickCombat()
 //Player settings option: immediately combat resolution on encounter.
 {
 	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	const BYTE val = pCurrentPlayer->Settings.GetVar(combatRateStr, BYTE(0));
+	CDbPackedVars &settings = pCurrentPlayer->Settings;
+	const BYTE val = settings.GetVar(Settings::CombatRate, BYTE(0));
 	switch (val)
 	{
 		case 0: this->wCombatTickSpeed = DEFAULT_COMBAT_TICK; break;
@@ -906,6 +1018,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, dwLastCombatTick(0)
 
 	, bIsSavedGameStale(false)
+	, bPlayTesting(false)
 //	, bRoomClearedOnce(false)
 	, wUndoToTurn(0)
 //	, bHoldConquered(false)
@@ -1458,7 +1571,7 @@ void CGameScreen::ApplyINISettings()
 /*
 	//Set game replay speed optimization.
 	string str;
-	if (CFiles::GetGameProfileString("Customizing", "MaxDelayForUndo", str))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::MaxDelayForUndo, str))
 		this->pCurrentGame->SetComputationTimePerSnapshot(atoi(str.c_str()));
 */
 
@@ -1901,20 +2014,17 @@ void CGameScreen::LogHoldVars()
 {
 	ASSERT(this->pCurrentGame);
 
-	string strPos;
-	WSTRING wstrPos;
-	char temp[16];
-	bool bFirst = true;
-
-	wstrPos = (const WCHAR *)this->pCurrentGame->pLevel->NameText;
+	WSTRING wstrPos = (const WCHAR *)this->pCurrentGame->pLevel->NameText;
 	wstrPos += wszColon;
 	this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrPos, true);
 	wstrPos += wszColon;
-	UnicodeToAscii(wstrPos, strPos);
+	string strPos = UnicodeToAscii(wstrPos);
 
 	string str = "Game vars ";
 	str += strPos;
 
+	char temp[16];
+	bool bFirst = true;
 	for (UNPACKEDVAR *pVar = this->pCurrentGame->stats.GetFirst();
 			pVar != NULL; pVar = this->pCurrentGame->stats.GetNext())
 	{
@@ -1928,9 +2038,7 @@ void CGameScreen::LogHoldVars()
 			bFirst = false;
 		}
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		string tempStr;
-		UnicodeToAscii(this->pCurrentGame->pHold->GetVarName(wVarID), tempStr);
-		str += tempStr;
+		str += UnicodeToAscii(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
 		if (bInteger)
@@ -1938,10 +2046,8 @@ void CGameScreen::LogHoldVars()
 			const int nVal = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), (int)0);
 			str += _itoa(nVal, temp, 10);
 		} else {
-			WSTRING wstr = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), wszEmpty);
-			string tempStr2;
-			UnicodeToAscii(wstr, tempStr2);
-			str += tempStr2;
+			const WSTRING wstr = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), wszEmpty);
+			str += UnicodeToAscii(wstr);
 		}
 		str += NEWLINE;
 	}
@@ -1954,30 +2060,34 @@ void CGameScreen::LogHoldVars()
 }
 
 //*****************************************************************************
-void CGameScreen::OnActiveEvent(const SDL_ActiveEvent &Active)
+void CGameScreen::OnWindowEvent(const SDL_WindowEvent &wevent)
 {
-	CEventHandlerWidget::OnActiveEvent(Active);
+	CEventHandlerWidget::OnWindowEvent(wevent);
 
 	if (this->pCurrentGame)
 	{
 		this->pCurrentGame->UpdateTime(SDL_GetTicks()); //add time until app activity change
 
-		const Uint8 state = SDL_GetAppState();
-		const bool bActive = (state & SDL_APPACTIVE) == SDL_APPACTIVE;
-		if (!bActive)
+		switch (wevent.event)
 		{
-			//When app is minimized or w/o focus, pause game time and speech.
-			this->pCurrentGame->UpdateTime();
-			if (!this->dwTimeMinimized)
-				this->dwTimeMinimized = SDL_GetTicks();
-		} else {
-			//Unpause speech.
-			if (this->dwTimeMinimized)
-			{
-				if (this->dwNextSpeech)
-					this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
-				this->dwTimeMinimized = 0;
-			}
+			case SDL_WINDOWEVENT_FOCUS_LOST:
+				//When app is minimized or w/o focus, pause game time and speech.
+				this->pCurrentGame->UpdateTime();
+				if (!this->dwTimeMinimized)
+					this->dwTimeMinimized = SDL_GetTicks();
+				break;
+
+			case SDL_WINDOWEVENT_FOCUS_GAINED:
+				//Unpause speech.
+				if (this->dwTimeMinimized)
+				{
+					if (this->dwNextSpeech)
+						this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+					this->dwTimeMinimized = 0;
+				}
+				break;
+
+			default: break;
 		}
 	}
 }
@@ -2135,7 +2245,7 @@ void CGameScreen::OnBetweenEvents()
 				!this->bShowingBigMap && !this->bShowingTempRoom)
 		{
 			int nX, nY;
-			const Uint8 buttons = SDL_GetMouseState(&nX, &nY);
+			const Uint8 buttons = GetMouseState(&nX, &nY);
 			if (buttons == SDL_BUTTON_LMASK && !this->bDisableMouseMovement && !this->bNoMoveByCurrentMouseClick)
 				MovePlayerToward(nX, nY);
 			else if (!buttons)
@@ -2419,8 +2529,8 @@ void CGameScreen::OnDeactivate()
 		CDbPackedVars& vars = pCurrentPlayer->Settings;
 
 		//Save chat preference.
-		vars.SetVar(enableChat, this->bEnableChat);
-		vars.SetVar(receiveWhispersOnly, this->bReceiveWhispersOnly);
+		vars.SetVar(Settings::EnableChatInGame, this->bEnableChat);
+		vars.SetVar(Settings::ReceiveWhispersOnlyInGame, this->bReceiveWhispersOnly);
 
 		pCurrentPlayer->Update();
 
@@ -2481,52 +2591,49 @@ void CGameScreen::OnKeyDown(
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Check for a game command.
-	if ((UINT)Key.keysym.sym < SDLK_LAST)
+	int nCommand = GetCommandForKeysym(Key.keysym.sym);
+	if (nCommand != CMD_UNSPECIFIED)
 	{
-		int nCommand = this->KeysymToCommandMap[Key.keysym.sym];
-		if (nCommand != CMD_UNSPECIFIED)
+		//Hide mouse cursor while playing.
+		HideCursor();
+
+		const bool bCtrl = (Key.keysym.mod & KMOD_CTRL) != 0;
+		const bool bShift = (Key.keysym.mod & KMOD_SHIFT) != 0;
+
+		//When Ctrl-moveCommand is pressed and no cut scene is playing,
+		//perform a quick backtracking to the next room in that direction.
+		if (bCtrl && !this->pCurrentGame->dwCutScene && (bIsMovementCommand(nCommand) || nCommand == CMD_WAIT))
 		{
-			//Hide mouse cursor while playing.
-			HideCursor();
-
-			const bool bCtrl = (Key.keysym.mod & KMOD_CTRL) != 0;
-			const bool bShift = (Key.keysym.mod & KMOD_SHIFT) != 0;
-
-			//When Ctrl-moveCommand is pressed and no cut scene is playing,
-			//perform a quick backtracking to the next room in that direction.
-			if (bCtrl && !this->pCurrentGame->dwCutScene && (bIsMovementCommand(nCommand) || nCommand == CMD_WAIT))
+			switch (nCommand)
 			{
-				switch (nCommand)
+				case CMD_N: SearchForPathToNextRoom(N); break;
+				case CMD_S: SearchForPathToNextRoom(S); break;
+				case CMD_E: SearchForPathToNextRoom(E); break;
+				case CMD_W: SearchForPathToNextRoom(W); break;
+				case CMD_WAIT: SearchForPathToNextRoom(GO_TO_STAIRS); break;
+				default: break; //no other Ctrl-move is recognized
+			}
+		} else {
+			//Only allow inputting player movement commands when no cutscene is playing.
+			if (!this->pCurrentGame->dwCutScene || nCommand >= CMD_WAIT)
+			{
+				//Ctrl and Shift key modifiers use weapon and armor instead of accessory.
+				if (nCommand == CMD_USE_ACCESSORY)
 				{
-					case CMD_N: SearchForPathToNextRoom(N); break;
-					case CMD_S: SearchForPathToNextRoom(S); break;
-					case CMD_E: SearchForPathToNextRoom(E); break;
-					case CMD_W: SearchForPathToNextRoom(W); break;
-					case CMD_WAIT: SearchForPathToNextRoom(GO_TO_STAIRS); break;
-					default: break; //no other Ctrl-move is recognized
+					if (bShift)
+						nCommand = CMD_USE_WEAPON;
+					else if (bCtrl)
+						nCommand = CMD_USE_ARMOR;
 				}
-			} else {
-				//Only allow inputting player movement commands when no cutscene is playing.
-				if (!this->pCurrentGame->dwCutScene || nCommand >= CMD_WAIT)
-				{
-					//Ctrl and Shift key modifiers use weapon and armor instead of accessory.
-					if (nCommand == CMD_USE_ACCESSORY)
-					{
-						if (bShift)
-							nCommand = CMD_USE_WEAPON;
-						else if (bCtrl)
-							nCommand = CMD_USE_ARMOR;
-					}
 
-					if (!ProcessCommandWrapper(nCommand))
-						return;
+				if (!ProcessCommandWrapper(nCommand))
+					return;
 
-					//If a mouse-inputted or quick backtracking path
-					//has been calculated and is in process of execution,
-					//any manually-inputted commands will terminate it.
-					this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
-					this->pCurrentGame->pPlayer->ResetMyPathToGoal();
-				}
+				//If a mouse-inputted or quick backtracking path
+				//has been calculated and is in process of execution,
+				//any manually-inputted commands will terminate it.
+				this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
+				this->pCurrentGame->pPlayer->ResetMyPathToGoal();
 			}
 		}
 	}
@@ -2567,7 +2674,7 @@ void CGameScreen::OnKeyDown(
 /*
 		case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:  case SDLK_BREAK:
+		case SDLK_PAUSE:
 #endif
 		if ((Key.keysym.mod & (KMOD_CTRL | KMOD_ALT)) == 0)
 		{
@@ -2777,25 +2884,25 @@ void CGameScreen::OnKeyDown(
 		case SDLK_UP: //Up arrow.
 			if (Key.keysym.mod & KMOD_CTRL)
 				SearchForPathToNextRoom(N);
-			else if (this->KeysymToCommandMap[Key.keysym.sym] == CMD_UNSPECIFIED)
+			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
 				ProcessCommandWrapper(CMD_N);
 		return;
 		case SDLK_DOWN:   //Down arrow.
 			if (Key.keysym.mod & KMOD_CTRL)
 				SearchForPathToNextRoom(S);
-			else if (this->KeysymToCommandMap[Key.keysym.sym] == CMD_UNSPECIFIED)
+			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
 				ProcessCommandWrapper(CMD_S);
 		return;
 		case SDLK_LEFT: //Left arrow.
 			if (Key.keysym.mod & KMOD_CTRL)
 				SearchForPathToNextRoom(W);
-			else if (this->KeysymToCommandMap[Key.keysym.sym] == CMD_UNSPECIFIED)
+			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
 				ProcessCommandWrapper(CMD_W);
 		return;
 		case SDLK_RIGHT: //Right arrow.
 			if (Key.keysym.mod & KMOD_CTRL)
 				SearchForPathToNextRoom(E);
-			else if (this->KeysymToCommandMap[Key.keysym.sym] == CMD_UNSPECIFIED)
+			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
 				ProcessCommandWrapper(CMD_E);
 		return;
 
@@ -2805,7 +2912,8 @@ void CGameScreen::OnKeyDown(
 
 //*****************************************************************************
 void CGameScreen::OnMouseDown(
-	const UINT dwTagNo,   const SDL_MouseButtonEvent &Button)
+	const UINT dwTagNo,
+	const SDL_MouseButtonEvent &Button)
 {
 	this->bNoMoveByCurrentMouseClick = false; //receiving this event implies last mouse click ended
 
@@ -2906,16 +3014,16 @@ void CGameScreen::OnMouseWheel(
 //Called when a mouse wheel event is received.
 //
 //Params:
-	const SDL_MouseButtonEvent &Button)
+	const SDL_MouseWheelEvent &Wheel)
 {
 	if (this->bShowingBigMap || this->bShowingTempRoom)
 		return;
 
 	if (!this->bDisableMouseMovement)
 	{
-		if (Button.button == SDL_BUTTON_WHEELDOWN)
+		if (Wheel.y < 0)
 			ProcessCommandWrapper(CMD_C);
-		else if (Button.button == SDL_BUTTON_WHEELUP)
+		else if (Wheel.y > 0)
 			ProcessCommandWrapper(CMD_CC);
 	}
 }
@@ -3223,7 +3331,7 @@ void CGameScreen::ShowBattleDialog(const WCHAR* pwczMessage)
 	StopKeyRepeating();
 	StopMouseRepeating();
 	SDL_Event event;
-	while (SDL_PollEvent(&event)) ;
+	while (PollEvent(&event)) ;
 }
 
 //*****************************************************************************
@@ -3613,7 +3721,7 @@ void CGameScreen::MovePlayerTowardDestTile()
 	{
 		//Holding mouse button down on player's location.
 		int nX, nY;
-		const Uint8 buttons = SDL_GetMouseState(&nX, &nY);
+		const Uint8 buttons = GetMouseState(&nX, &nY);
 		if (buttons == SDL_BUTTON_LMASK)
 		{
 			//After moving to room edge, exit room in this direction.
@@ -3912,15 +4020,15 @@ void CGameScreen::ApplyPlayerSettings()
 	InitKeysymToCommandMap(settings);
 
 	//Set room widget to either show checkpoints or not.
-	this->pRoomWidget->ShowCheckpoints(
-			settings.GetVar("ShowCheckpoints", true));
+	this->pRoomWidget->ShowCheckpoints(true); //always show checkpoints
+//			settings.GetVar(Settings::ShowCheckpoints, true));
 
 	this->bShowingSubtitlesWithVoice =
-			settings.GetVar("ShowSubtitlesWithVoices", true);
+			settings.GetVar(Settings::ShowSubtitlesWithVoices, true);
 
 	//Set mouse UI preference.
 	this->bDisableMouseMovement =
-			settings.GetVar(disableMouseMovementStr, false);
+			settings.GetVar(Settings::DisableMouse, false);
 	CWidget *pWidget = GetWidget(TAG_UNDO);
 	pWidget->Show(!this->bDisableMouseMovement);
 	pWidget = GetWidget(TAG_ROT_CW);
@@ -3935,14 +4043,14 @@ void CGameScreen::ApplyPlayerSettings()
 	pWidget->Show(!this->bDisableMouseMovement);
 
 	//Move repeat rate.
-	const UINT dwRepeatRate = (((long)(settings.GetVar("RepeatRate",
+	const UINT dwRepeatRate = (((long)(settings.GetVar(Settings::RepeatRate,
 			(BYTE)128))) * MAX_REPEAT_RATE / 256) + 1;  //value from 1 to MAX
 	const UINT dwTimePerRepeat = 1000L / dwRepeatRate;
 	SetKeyRepeat(dwTimePerRepeat);
 	this->pRoomWidget->SetMoveDuration(dwTimePerRepeat);
 
-	this->bEnableChat = settings.GetVar(enableChat, false);
-	this->bReceiveWhispersOnly = settings.GetVar(receiveWhispersOnly, false);
+	this->bEnableChat = settings.GetVar(Settings::EnableChatInGame, false);
+	this->bReceiveWhispersOnly = settings.GetVar(Settings::ReceiveWhispersOnlyInGame, false);
 
 	SetQuickCombat();
 
@@ -3950,8 +4058,8 @@ void CGameScreen::ApplyPlayerSettings()
 	//Set times when saved games and demos are saved automatically.
 	if (!this->bPlayTesting)
 	{
-		const UINT dwAutoSaveOptions = pCurrentPlayer->Settings.GetVar(
-				"AutoSaveOptions", ASO_DEFAULT | ASO_CONQUERDEMO);
+		const UINT dwAutoSaveOptions = settings.GetVar(
+				Settings::AutoSaveOptions, ASO_DEFAULT | ASO_CONQUERDEMO);
 		this->pCurrentGame->SetAutoSaveOptions(dwAutoSaveOptions);
 		pCurrentPlayer->Update();
 	}
@@ -4208,7 +4316,7 @@ SCREENTYPE CGameScreen::LevelExit_OnKeydown(
 
 		case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:  case SDLK_BREAK:
+		case SDLK_PAUSE:
 #endif
 			if (KeyboardEvent.keysym.mod & (KMOD_ALT | KMOD_CTRL))
 				return SCR_None;        //boss key -- exit immediately
@@ -4336,16 +4444,11 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 	SDL_Surface *pDestSurface = GetDestSurface();
 	if (bFadeIn)
 	{
-		SDL_Rect snapshotRect(destRect);
-		SDL_BlitSurface(this->pRoomWidget->pRoomSnapshotSurface, &snapshotRect,
-				pSurface, &snapshotRect);
-		this->pRoomWidget->RenderFogInPit(pSurface);
-		this->pRoomWidget->DrawPlatforms(pSurface);
-		this->pRoomWidget->DrawMonsters(this->pCurrentGame->pRoom->pFirstMonster, pSurface, true);
-		this->pRoomWidget->RenderEnvironment(pSurface);
-		this->pRoomWidget->DrawPlayer(*this->pCurrentGame->pPlayer, pSurface);
+		SDL_BlitSurface(this->pRoomWidget->pRoomSnapshotSurface, &srcRect,
+				pSurface, &srcRect);
+		this->pRoomWidget->RenderRoomLayers(pSurface);
 	} else {
-		SDL_BlitSurface(pDestSurface, &srcRect, pSurface, &destRect);
+		SDL_BlitSurface(pDestSurface, &srcRect, pSurface, &srcRect);
 	}
 
 	//Fade.
@@ -4359,8 +4462,8 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 		{
 			dwNow = SDL_GetTicks();
 			fade.IncrementFade((dwNow - dwStart) / (float)dwDuration);
-			SDL_BlitSurface(pFadingSurface, &(bFadeIn ? srcRect : destRect), pDestSurface, &srcRect);
-			SDL_UpdateRect(pDestSurface, srcRect.x, srcRect.y, srcRect.w, srcRect.h);
+			SDL_BlitSurface(pFadingSurface, &srcRect, pDestSurface, &srcRect);
+			PresentRect(pDestSurface, &srcRect);
 		} while (dwNow < dwEnd);
 	}
 	SDL_FreeSurface(pSurface);
@@ -4458,6 +4561,8 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
 	pLabel->SetText(wstrLevelStats.c_str());
+
+	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwScore);
 
 	//Display.
 	SetCursor();
@@ -4585,12 +4690,12 @@ void CGameScreen::HandleEventsForHoldExit()
 	SDL_Event event;
 	while (true)
 	{
-		while (SDL_PollEvent(&event))
+		while (PollEvent(&event))
 		{
 			switch (event.type)
 			{
-				case SDL_ACTIVEEVENT:
-					OnActiveEvent(event.active);
+				case SDL_WINDOWEVENT:
+					OnWindowEvent(event.window);
 				break;
 
 				case SDL_KEYDOWN:
@@ -4654,12 +4759,12 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 	for (;;)
 	{
 		//Get any events waiting in the queue.
-		while (SDL_PollEvent(&event))
+		while (PollEvent(&event))
 		{
 			switch (event.type)
 			{
-				case SDL_ACTIVEEVENT:
-					OnActiveEvent(event.active);
+				case SDL_WINDOWEVENT:
+					OnWindowEvent(event.window);
 				break;
 
 				case SDL_KEYDOWN:
@@ -4669,8 +4774,6 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				break;
 
 				case SDL_MOUSEBUTTONUP:	//not DOWN, so mouse up doesn't exit next screen immediately too
-					if (event.button.button == SDL_BUTTON_WHEELDOWN ||
-							event.button.button == SDL_BUTTON_WHEELUP) break;	//ignore mouse wheel
 					eNextScreen = SCR_LevelStart;
 					goto Done;
 				break;
@@ -4908,16 +5011,16 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	while (true)
 	{
 		//Get any events waiting in the queue.
-		while (SDL_PollEvent(&event))
+		while (PollEvent(&event))
 		{
          switch (event.type)
 			{
-				case SDL_ACTIVEEVENT:
-					OnActiveEvent(event.active);
+				case SDL_WINDOWEVENT:
+					OnWindowEvent(event.window);
 				break;
 				case SDL_KEYDOWN:
 				{
-					const int nCommand = this->KeysymToCommandMap[event.key.keysym.sym];
+					const int nCommand = GetCommandForKeysym(event.key.keysym.sym);
 					if (nCommand == CMD_UNDO)
 						bUndoDeath = true;
 					else if (nCommand == CMD_RESTART)
@@ -5155,6 +5258,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 			{
 				this->pRoomWidget->FinishMoveAnimation();
 				this->pRoomWidget->Paint();
+				g_pTheBM->UpdateRects(GetWidgetScreenSurface());
 			}
 
 			const bool bWasCutScene = this->pCurrentGame->dwCutScene != 0;
@@ -5267,7 +5371,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 		if (bLeftRoom && this->pCurrentGame && this->pCurrentGame->bIsGameActive)
 		{
 			string str;
-			if (CFiles::GetGameProfileString("Customizing", "LogVars", str))
+			if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::LogVars, str))
 				if (atoi(str.c_str()) > 0)
 					if (g_pTheDB->Holds.PlayerCanEditHold(this->pCurrentGame->pHold->dwHoldID))
 						LogHoldVars();
@@ -6502,6 +6606,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 		LOGCONTEXT("CGameScreen::ProcessCueEventsAfterRoomDraw--Winning game.");
 		if (!this->bPlayTesting && GetScreenType() == SCR_Game)
 		{
+			SendAchievement("WIN");
 			UploadExploredRooms(ST_EndHold);	//end hold saved game should exist by now
 			g_pTheDB->Commit();
 		}
@@ -7780,15 +7885,15 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 	{
 		//Get any events waiting in the queue.
 		SDL_Event event;
-		while (SDL_PollEvent(&event))
+		while (PollEvent(&event))
 		{
 			if (IsDeactivating()) //skip events
 				continue;
 
 			switch (event.type)
 			{
-				case SDL_ACTIVEEVENT:
-					OnActiveEvent(event.active);
+				case SDL_WINDOWEVENT:
+					OnWindowEvent(event.window);
 				break;
 
 				case SDL_MOUSEBUTTONDOWN:
@@ -7818,7 +7923,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 						case SDLK_DOWN: nCommand = CMD_S; break;
 						case SDLK_LEFT: nCommand = CMD_W; break;
 						case SDLK_RIGHT: nCommand = CMD_E; break;
-						default: nCommand = this->KeysymToCommandMap[event.key.keysym.sym]; break;
+						default: nCommand = GetCommandForKeysym(event.key.keysym.sym); break;
 					}
 					switch (nCommand)
 					{
@@ -8499,4 +8604,52 @@ void CGameScreen::WaitToUploadDemos()
 		SetCursor();
 		HideStatusMessage();
 	}
+}
+
+void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
+{
+#ifdef STEAMBUILD
+	if (GetScreenType() == SCR_Game && !this->bPlayTesting &&
+			(this->pCurrentGame->pHold && this->pCurrentGame->pHold->status == CDbHold::Main) &&
+			SteamUserStats())
+	{
+		const WSTRING holdName = static_cast<const WCHAR *>(this->pCurrentGame->pHold->NameText);
+
+		string achievementName = "ACH_";
+		achievementName += UnicodeToUTF8(filterFirstLettersAndNumbers(holdName));
+		achievementName += "_";
+		achievementName += achievement;
+
+		SteamUserStats()->SetAchievement(achievementName.c_str());
+		SteamUserStats()->StoreStats();
+
+		if (dwScore)
+			g_steamLeaderboards.FindLeaderboardAndUploadScore(achievementName.c_str(), int(dwScore));
+	}
+#endif
+}
+
+void CGameScreen::ShowScorepointRating(int playerScore, int topScore)
+{
+	if (g_pTheNet && g_pTheNet->IsLoggedIn())
+		return; //don't show Steam scores along with CaravelNet scores
+
+	int percent;
+	if (playerScore <= 0) {
+		percent = 0;
+	} else if (playerScore >= topScore) {
+		percent = 100;
+	} else {
+		percent = (playerScore * 100) / topScore;
+	}
+
+	char czPercent[16];
+	sprintf(czPercent, "%d%%", percent);
+
+	WSTRING wStr;
+	AsciiToUnicode(czPercent, wStr);
+
+	if (this->pRoomWidget)
+		this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
+				this->pRoomWidget, wStr.c_str(), -300, 3000));	//show at top of room for 3s
 }

@@ -183,19 +183,19 @@ void CDemoScreen::OnKeyDown(
 	switch (Key.keysym.sym)
 	{
 		//Change speed.
-		case SDLK_KP2: case SDLK_DOWN:
+		case SDLK_KP_2: case SDLK_DOWN:
 			this->bPaused = this->bPauseNextMove = false;
 			if (this->fMoveRateMultiplier < 20.0f) this->fMoveRateMultiplier *= 1.1f;
 			this->dwNextCommandTime = 0;	//play next move immediately
 			break;
-		case SDLK_KP8: case SDLK_UP:
+		case SDLK_KP_8: case SDLK_UP:
 			this->bPaused = this->bPauseNextMove = false;
 			if (this->fMoveRateMultiplier > 0.15f) this->fMoveRateMultiplier *= 0.9f;
 			this->dwNextCommandTime = 0;	//play next move immediately
 			break;
 
 		//Pause.
-		case SDLK_SPACE: case SDLK_KP5:
+		case SDLK_SPACE: case SDLK_KP_5:
 			if (!this->bCanChangeSpeed) break;
 			if (this->dwNextCommandTime == static_cast<UINT>(-1))	//if watching move-by-move
 				this->bPaused = false;	//resume normal playback speed
@@ -215,7 +215,7 @@ void CDemoScreen::OnKeyDown(
 		break;
 
 		//Back one move.
-		case SDLK_KP4: case SDLK_LEFT:
+		case SDLK_KP_4: case SDLK_LEFT:
 			if (!this->bCanChangeSpeed) break;
 			if (CGameScreen::pCurrentGame->wTurnNo <= this->pDemo->wBeginTurnNo)
 				break; //can't go before beginning of demo
@@ -233,7 +233,7 @@ void CDemoScreen::OnKeyDown(
 		break;
 
 		//Forward one move.
-		case SDLK_KP6: case SDLK_RIGHT:
+		case SDLK_KP_6: case SDLK_RIGHT:
 			if (!this->bCanChangeSpeed) break;
 			this->bPaused = false;
 			this->bPauseNextMove = true;
@@ -242,7 +242,7 @@ void CDemoScreen::OnKeyDown(
 		break;
 
 		//Toggle uniform turn playback speed.
-		case SDLK_KP7:
+		case SDLK_KP_7:
 			if (!this->bCanChangeSpeed) break;
 			this->bUniformTurnSpeed = !this->bUniformTurnSpeed;
 		break;

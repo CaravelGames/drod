@@ -199,7 +199,7 @@ void ScriptVars::init()
 			//Get user-readable form of var.
 			ASSERT(index < PredefinedVarCount);
 			const WCHAR *pText = g_pTheDB->GetMessageText(predefinedVarMIDs[index]);
-			UnicodeToAscii(pText, midTexts[index]);
+			midTexts[index] = UnicodeToAscii(pText);
 		}
 		ASSERT(!midTexts[0].empty());
 	}
@@ -209,8 +209,7 @@ void ScriptVars::init()
 Predefined ScriptVars::parsePredefinedVar(const WSTRING& wstr)
 //Returns: the enumeration for this variable name, or P_NoVar if not recognized
 {
-	string str;
-	UnicodeToAscii(wstr, str);
+	const string str = UnicodeToAscii(wstr);
 	return parsePredefinedVar(str);
 }
 

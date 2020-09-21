@@ -26,6 +26,7 @@
 
 #include "ClockWidget.h"
 #include "DrodBitmapManager.h"
+#include "../DRODLib/SettingsKeys.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
@@ -56,7 +57,7 @@ CClockWidget::CClockWidget(
 	, dwLastAnimate(0)
 	, bShowImmediate(false)
 {
-   CFiles::GetGameProfileString("Graphics", "Clock", clockOptions);
+   CFiles::GetGameProfileString(INISection::Graphics, "Clock", clockOptions);
 
    if (clockOptions.size() == 0)
       clockOptions.push_back("Clock");
@@ -139,9 +140,9 @@ void CClockWidget::HandleAnimate()
 			{
 				//Mark transparent color on clock parts surface once.
 				static Uint32 TransparentColor = SDL_MapRGB(this->images[0]->format, TRANSPARENT_RGB);
-				SDL_SetColorKey(this->images[0], SDL_SRCCOLORKEY, TransparentColor);
+				SetColorKey(this->images[0], SDL_TRUE, TransparentColor);
 				static Uint32 TransparentColor2 = SDL_MapRGB(this->images[1]->format, TRANSPARENT_RGB);
-				SDL_SetColorKey(this->images[1], SDL_SRCCOLORKEY, TransparentColor2);
+				SetColorKey(this->images[1], SDL_TRUE, TransparentColor2);
 			}
 			SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, CX_CLOCK, CY_CLOCK);
 			SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, CX_CLOCK, CY_CLOCK);

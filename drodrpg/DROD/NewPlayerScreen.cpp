@@ -35,6 +35,7 @@
 
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -224,9 +225,7 @@ void CNewPlayerScreen::OnBetweenEvents()
 		}
 
 		//Warn user if required screen resolution is not supported.
-		UINT wX, wY;
-		GetHighestScreenRes(wX,wY);
-		if (wX < (UINT)CScreen::CX_SCREEN || wY < (UINT)CScreen::CY_SCREEN)
+		if (GetDisplayForDesktopResOfAtLeast(CScreen::CX_SCREEN, CScreen::CY_SCREEN) == -1)
 			ShowOkMessage(MID_LowResWarning);
 	}
 }
@@ -257,7 +256,7 @@ UINT CNewPlayerScreen::AddPlayer()
    if (dwAnswer == TAG_YES || dwAnswer == TAG_NO)
 	{
 		CFiles f;
-		f.WriteGameProfileString("Localization", "Keyboard", dwAnswer == TAG_YES ? "0" : "1");
+		f.WriteGameProfileString(INISection::Localization, INIKey::Keyboard, dwAnswer == TAG_YES ? "0" : "1");
 	}
 
 	//Add player to DB.
@@ -294,11 +293,11 @@ UINT CNewPlayerScreen::Benchmark() const
 	const Uint32 dwEnd = dwStart + 1000; //1s
 	SDL_Surface *pSrcSurface = g_pTheBM->ConvertSurface(SDL_CreateRGBSurface(
 			SDL_SWSURFACE, pDestSurface->w, pDestSurface->h, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0));
-	SDL_SetAlpha(pSrcSurface, SDL_SRCALPHA, 1);	//non-optimized alpha value
+	EnableSurfaceBlending(pSrcSurface, 1);	//non-optimized alpha value
 	do {
 		//Do a dummy redraw of the entire screen.
 		SDL_BlitSurface(pSrcSurface, NULL, pDestSurface, NULL);
-		SDL_UpdateRect(pDestSurface, 0, 0, 0, 0);
+		PresentRect(pDestSurface);
 		++wFrames;
 	} while (SDL_GetTicks() < dwEnd);
 	SDL_FreeSurface(pSrcSurface);

@@ -35,7 +35,7 @@
 #include "../DRODLib/NetInterface.h"
 #include "../Texts/MIDs.h"
 
-#include "../FrontEndLib/TextEffect.h"
+#include <FrontEndLib/TextEffect.h>
 
 const UINT TAG_YOUWON_LABEL = 1001;
 const UINT TAG_INFO_LABEL = 1002;

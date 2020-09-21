@@ -220,13 +220,13 @@ void CCreditsScreen::OnKeyDown(
 			this->bPaused = !this->bPaused;
 			SetRate(this->bPaused ? 0 : this->fScrollRateMultiplier);
 			break;
-		case SDLK_KP2: case SDLK_DOWN:
+		case SDLK_KP_2: case SDLK_DOWN:
 			//increase scroll rate
 			this->bPaused = false;
 			if (this->fScrollRateMultiplier < 5.0f) this->fScrollRateMultiplier += 0.10f;
 			SetRate(this->fScrollRateMultiplier);
 			break;
-		case SDLK_KP8: case SDLK_UP:
+		case SDLK_KP_8: case SDLK_UP:
 			//slow scroll rate
 			this->bPaused = false;
 			if (this->fScrollRateMultiplier > 0.15f) this->fScrollRateMultiplier -= 0.10f;

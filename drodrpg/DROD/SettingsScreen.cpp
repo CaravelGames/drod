@@ -43,10 +43,15 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
+
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
+
+using namespace InputCommands;
 
 //Tabbed menu info.
 #define PERSONAL_TAB (0)
@@ -54,47 +59,15 @@
 #define COMMANDS_TAB (2)
 #define BG_COLOR 220,210,190
 
-
-//Internal command names.
-const char COMMANDNAME_ARRAY[DCMD_Count][24] =
-{
-	"MoveNorthwest",
-	"MoveNorth",
-	"MoveNortheast",
-	"MoveWest",
-	"Wait",
-	"MoveEast",
-	"MoveSouthwest",
-	"MoveSouth",
-	"MoveSoutheast",
-	"SwingClockwise",
-	"SwingCounterclockwise",
-	"Restart",
-	"Undo",
-	"Battle",
-	"UseAccessory", //UseWeapon and UseArmor commands are piggybacked
-	"Lock",
-	"UseCommand"
-};
-
 //Default command key mappings.
-const SDLKey COMMANDKEY_ARRAY[2][DCMD_Count] = {	//desktop or laptop keyboard
+const SDL_Keycode COMMANDKEY_ARRAY[2][DCMD_Count] = {	//desktop or laptop keyboard
 {	//numpad default
-	SDLK_KP7, SDLK_KP8, SDLK_KP9, SDLK_KP4, SDLK_KP5, SDLK_KP6, SDLK_KP1, SDLK_KP2, SDLK_KP3,
-	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_KP_PLUS, SDLK_TAB, SDLK_KP0, SDLK_KP_PERIOD
+	SDLK_KP_7, SDLK_KP_8, SDLK_KP_9, SDLK_KP_4, SDLK_KP_5, SDLK_KP_6, SDLK_KP_1, SDLK_KP_2, SDLK_KP_3,
+	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_KP_PLUS, SDLK_TAB, SDLK_KP_0, SDLK_KP_PERIOD
 },{	//laptop default
 	SDLK_7, SDLK_8, SDLK_9, SDLK_u, SDLK_i, SDLK_o, SDLK_j, SDLK_k, SDLK_l,
 	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_0, SDLK_TAB, SDLK_COMMA, SDLK_PERIOD
 }};
-
-const MESSAGE_ID COMMAND_MIDS[DCMD_Count] = {
-	MID_MoveNorthwest, MID_MoveNorth, MID_MoveNortheast,
-	MID_MoveWest, MID_Wait, MID_MoveEast,
-	MID_MoveSouthwest, MID_MoveSouth, MID_MoveSoutheast,
-	MID_SwingClockwise, MID_SwingCounterclockwise,
-	MID_RestartRoom, MID_UndoMove, MID_BattleKey, MID_UseAccessoryKey,
-	MID_LockCommand, MID_UseCommandKey
-};
 
 //Widget tag constants.
 const UINT TAG_NW_BUTTON = 1001;
@@ -161,6 +134,29 @@ const UINT TAG_MENU = 1093;
 
 const UINT CX_MESSAGE = 370;
 const UINT CY_MESSAGE = 120;
+
+//************************************************************************************
+MESSAGE_ID KeyToMID(const SDL_Keycode nKey) {
+	switch (nKey) {
+		case SDLK_KP_DIVIDE: return MID_KEY_KP_DIVIDE;
+		case SDLK_KP_MULTIPLY: return MID_KEY_KP_MULTIPLY;
+		case SDLK_KP_MINUS: return MID_KEY_KP_MINUS;
+		case SDLK_KP_PLUS: return MID_KEY_KP_PLUS;
+		case SDLK_KP_ENTER: return MID_KEY_KP_ENTER;
+		case SDLK_KP_1: return MID_KEY_KP1;
+		case SDLK_KP_2: return MID_KEY_KP2;
+		case SDLK_KP_3: return MID_KEY_KP3;
+		case SDLK_KP_4: return MID_KEY_KP4;
+		case SDLK_KP_5: return MID_KEY_KP5;
+		case SDLK_KP_6: return MID_KEY_KP6;
+		case SDLK_KP_7: return MID_KEY_KP7;
+		case SDLK_KP_8: return MID_KEY_KP8;
+		case SDLK_KP_9: return MID_KEY_KP9;
+		case SDLK_KP_0: return MID_KEY_KP0;
+		case SDLK_KP_PERIOD: return MID_KEY_KP_PERIOD;
+		default: return static_cast<MESSAGE_ID>((long) MID_UNKNOWN + nKey);
+	}
+}
 
 //
 //Protected methods.
@@ -589,6 +585,8 @@ CSettingsScreen::CSettingsScreen()
 			Y_USEFULLSCREEN, CX_USEFULLSCREEN, CY_USEFULLSCREEN,
 			g_pTheDB->GetMessageText(MID_UseFullScreen), false);
 	pGraphicsFrame->AddWidget(pOptionButton);
+	if (!CScreen::bAllowFullScreen || !CScreen::bAllowWindowed)
+		pOptionButton->Disable();
 
 	pOptionButton = new COptionButtonWidget(TAG_ALPHA, X_ALPHA, Y_ALPHA,
 			CX_ALPHA, CY_ALPHA, g_pTheDB->GetMessageText(MID_AlphaBlending), true);
@@ -597,6 +595,9 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_ENVIRONMENT, X_ENVIRONMENTAL, Y_ENVIRONMENTAL,
 			CX_ENVIRONMENTAL, CY_ENVIRONMENTAL, g_pTheDB->GetMessageText(MID_EnvironmentalEffects), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
+
+/*
+	// Gamma currently doesn't work on the SDL2 engine
 
 	//Gamma.
 	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_GAMMA_LABEL, Y_GAMMA_LABEL,
@@ -615,10 +616,11 @@ CSettingsScreen::CSettingsScreen()
 	AsciiToUnicode(numtext, wstr);
 	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_GAMMA_MAX, Y_GAMMA_LABEL,
 			CX_GAMMA_MAX_LABEL, CY_GAMMA_LABEL, F_Small, wstr.c_str()) );
-
+*/
 	pSliderWidget = new CSliderWidget(TAG_GAMMA, X_GAMMA,	Y_GAMMA,
 			CX_GAMMA, CY_GAMMA, CDrodBitmapManager::GetGammaOne());
 	pGraphicsFrame->AddWidget(pSliderWidget);
+	pSliderWidget->Hide();
 
 	//Sound frame.
 	CFrameWidget *pSoundFrame = new CFrameWidget(0, X_SOUND_FRAME, Y_SOUND_FRAME,
@@ -847,7 +849,6 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 	//Conversion macros.
 #  define BUTTONTAG_TO_DCMD(t)      (static_cast<DCMD>((t) - TAG_NW_BUTTON))
 #  define DCMD_TO_LABELTAG(d)    (TAG_NE_LABEL + (d))
-#  define KEY_TO_MID(k)           (MESSAGE_ID)((long) MID_UNKNOWN + (k))
 
 	switch (dwTagNo) {
 					
@@ -872,12 +873,15 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 				ShowOkMessage(MID_DefineAllKeys);
 				break;
 			}
+			const bool bCNetDetailsChanged = AreCNetDetailsChanged(this->pCurrentPlayer);
 			UpdatePlayerDataFromWidgets(this->pCurrentPlayer);
 			delete this->pCurrentPlayer;
 			this->pCurrentPlayer = NULL;
 			
-			//Use new player settings to get latest hold list.
-			g_pTheNet->DownloadHoldList();	//must be done after UpdatePlayerData...
+			if (bCNetDetailsChanged){
+				//Use new player settings to get latest hold list.
+				g_pTheNet->DownloadHoldList();	//must be done after UpdatePlayerData...
+			}
 
 			GoToScreen(SCR_Return);
 			return;
@@ -894,15 +898,15 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 			{
 				//Revert key command settings to default.
 				CFiles f;
-				f.WriteGameProfileString("Localization", "Keyboard", dwTagNo == TAG_DEFAULT_LAPTOP ? "1" : "0");
+				f.WriteGameProfileString(INISection::Localization, INIKey::Keyboard, dwTagNo == TAG_DEFAULT_LAPTOP ? "1" : "0");
 				const UINT wKeyboard = dwTagNo == TAG_DEFAULT_LAPTOP ? 1 : 0;
 
 				for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 				{
-					const SDLKey nKey = COMMANDKEY_ARRAY[wKeyboard][wIndex];
+					const SDL_Keycode nKey = COMMANDKEY_ARRAY[wKeyboard][wIndex];
 					this->pCurrentPlayer->Settings.SetVar(COMMANDNAME_ARRAY[wIndex], nKey);
 					DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[wIndex])->
-							SetText(g_pTheDB->GetMessageText( (MESSAGE_ID)((long)MID_UNKNOWN + nKey) ) );
+							SetText(g_pTheDB->GetMessageText(KeyToMID(nKey)));
 				}
 
 				Paint();
@@ -919,8 +923,8 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 		{
 			DCMD eCommand = BUTTONTAG_TO_DCMD(dwTagNo);
 
-			SDLKey newKey, currentKey;
-			currentKey = static_cast<SDLKey>(this->pCurrentPlayer->Settings.GetVar(
+			SDL_Keycode newKey, currentKey;
+			currentKey = static_cast<SDL_Keycode>(this->pCurrentPlayer->Settings.GetVar(
 				COMMANDNAME_ARRAY[eCommand], SDLK_UNKNOWN));
 			if (GetCommandKeyRedefinition(eCommand, currentKey, newKey))
 			{
@@ -936,7 +940,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 								COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
 							DYN_CAST(CLabelWidget*, CWidget*,
 								this->pCommandLabelWidgets[nCommand])->
-								SetText(g_pTheDB->GetMessageText(KEY_TO_MID(SDLK_UNKNOWN)));
+								SetText(g_pTheDB->GetMessageText(KeyToMID(SDLK_UNKNOWN)));
 						}
 					}
 
@@ -947,7 +951,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 					//Update label of command that was changed.
 					DYN_CAST(CLabelWidget*, CWidget*,
 							this->pCommandLabelWidgets[eCommand])->
-								SetText(g_pTheDB->GetMessageText(KEY_TO_MID(newKey)));
+								SetText(g_pTheDB->GetMessageText(KeyToMID(newKey)));
 
 					Paint();
 				}
@@ -967,8 +971,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			string str;
-			UnicodeToAscii(pCaravelNetNameWidget->GetText(), str);
+			const string str = UnicodeToAscii(pCaravelNetNameWidget->GetText());
 			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
 			if (!wCaravelNetRequest) {
 				ShowOkMessage(MID_CaravelNetUnreachable);
@@ -1014,7 +1017,6 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 #  undef BUTTONTAG_TO_DCMD
 #  undef DCMD_TO_LABELTAG
-#  undef KEY_TO_MID
 }
 
 //************************************************************************************
@@ -1153,36 +1155,37 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 	//Set-if-missing macros.
 #  define SETMISSING(name, value) if (!Settings.DoesVarExist(name)) Settings.SetVar(name, value);
 
-	SETMISSING("Language", Language::English);
+	SETMISSING(Settings::Language, Language::English);
 	
-	SETMISSING(fullScreenStr, IsFullScreen());
-	SETMISSING("Alpha", true);
-	SETMISSING("Gamma", (BYTE)CDrodBitmapManager::GetGammaOne());
-	SETMISSING("EyeCandy", true);
+	SETMISSING(Settings::Fullscreen, IsFullScreen());
+	SETMISSING(Settings::Alpha, true);
+	SETMISSING(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne());
+	SETMISSING(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
 
-	SETMISSING("Music", true);
-	SETMISSING("SoundEffects", true);
-	SETMISSING("Voices", true);
-	SETMISSING("MusicVolume", (BYTE)DEFAULT_MUSIC_VOLUME);
-	SETMISSING("SoundEffectsVolume", (BYTE)DEFAULT_SOUND_VOLUME);
-	SETMISSING("VoicesVolume", (BYTE)DEFAULT_VOICE_VOLUME);
-	SETMISSING(showSubtitlesWithVoices, true);
-	SETMISSING(noFocusPlaysMusic, false);
+	SETMISSING(Settings::Music, true);
+	SETMISSING(Settings::SoundEffects, true);
+	SETMISSING(Settings::Voices, true);
+	SETMISSING(Settings::MusicVolume, (BYTE)DEFAULT_MUSIC_VOLUME);
+	SETMISSING(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME);
+	SETMISSING(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME);
+	SETMISSING(Settings::ShowSubtitlesWithVoices, true);
+	SETMISSING(Settings::NoFocusPlaysMusic, false);
 
-//	SETMISSING(showCheckpoints, true);
-//	SETMISSING("AutoSaveOptions", ASO_DEFAULT | ASO_CONQUERDEMO);
+//	SETMISSING(Settings::ShowCheckpoints, true);
+//	SETMISSING(Settings::AutoSaveOptions, ASO_DEFAULT | ASO_CONQUERDEMO);
 
-	SETMISSING("AutoSave", true);
-	SETMISSING("ItemTips", true);
+	SETMISSING(Settings::AutoSave, true);
+	SETMISSING(Settings::ItemTips, true);
+//	SETMISSING(Settings::GEMI, false);
 
-	SETMISSING("RepeatRate", (BYTE)128);
+	SETMISSING(Settings::RepeatRate, (BYTE)128);
 
-	SETMISSING(useInternetStr, false);
+	SETMISSING(Settings::ConnectToInternet, false);
 
 	//Check whether default is for keyboard or laptop.
 	string strKeyboard;
 	UINT wKeyboard = 0;	//default to numpad
-	if (CFiles::GetGameProfileString("Localization", "Keyboard", strKeyboard))
+	if (CFiles::GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
 	{
 		wKeyboard = atoi(strKeyboard.c_str());
 		if (wKeyboard > 1) wKeyboard = 0;	//invalid setting
@@ -1191,6 +1194,12 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 	for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 	{
 		SETMISSING(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+
+		//SDL1 key mapping migration
+		const int nKey = Settings.GetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
+		if (bInvalidSDL1mapping)
+			Settings.SetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
 	}
 
 #  undef SETMISSING
@@ -1289,62 +1298,64 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	CSliderWidget *pSliderWidget;
 	COptionButtonWidget *pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_USE_FULLSCREEN));
-	pOptionButton->SetChecked(settings.GetVar(fullScreenStr, IsFullScreen()));
+	pOptionButton->SetChecked((CScreen::bAllowFullScreen && CScreen::bAllowWindowed) ?
+			settings.GetVar(Settings::Fullscreen, IsFullScreen()) :
+			IsFullScreen());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ALPHA));
-	pOptionButton->SetChecked(settings.GetVar("Alpha", g_pTheBM->bAlpha));
+	pOptionButton->SetChecked(settings.GetVar(Settings::Alpha, g_pTheBM->bAlpha));
 
-	BYTE bytValue = settings.GetVar("Gamma", (BYTE)CDrodBitmapManager::GetGammaOne());
+	BYTE bytValue = settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne());
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,	GetWidget(TAG_GAMMA));
 	pSliderWidget->SetValue(bytValue);
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ENVIRONMENT));
-	pOptionButton->SetChecked(settings.GetVar("EyeCandy", g_pTheBM->eyeCandy > 0));
+	pOptionButton->SetChecked(settings.GetVar(Settings::EyeCandy, g_pTheBM->eyeCandy > 0));
 
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
-	pOptionButton->SetChecked(settings.GetVar("SoundEffects", g_pTheSound->IsSoundEffectsOn()));
+	pOptionButton->SetChecked(settings.GetVar(Settings::SoundEffects, g_pTheSound->IsSoundEffectsOn()));
 	
-	BYTE bytVolume = settings.GetVar("SoundEffectsVolume", (BYTE)DEFAULT_SOUND_VOLUME);
+	BYTE bytVolume = settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_VOICES));
-	pOptionButton->SetChecked(settings.GetVar("Voices", g_pTheSound->IsSoundEffectsOn()));
+	pOptionButton->SetChecked(settings.GetVar(Settings::Voices, g_pTheSound->IsSoundEffectsOn()));
 	
-	bytVolume = settings.GetVar("VoicesVolume", (BYTE)DEFAULT_VOICE_VOLUME);
+	bytVolume = settings.GetVar(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_VOICES_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_MUSIC));
-	pOptionButton->SetChecked(settings.GetVar("Music", g_pTheSound->IsMusicOn()));
+	pOptionButton->SetChecked(settings.GetVar(Settings::Music, g_pTheSound->IsMusicOn()));
 
-	bytVolume = settings.GetVar("MusicVolume", (BYTE)DEFAULT_MUSIC_VOLUME);
+	bytVolume = settings.GetVar(Settings::MusicVolume, (BYTE)DEFAULT_MUSIC_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_MUSIC_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOW_SUBTITLES));
-	pOptionButton->SetChecked(settings.GetVar(showSubtitlesWithVoices, true));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ShowSubtitlesWithVoices, true));
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_NO_FOCUS_PLAYS_MUSIC));
-	pOptionButton->SetChecked(settings.GetVar(noFocusPlaysMusic, false));
+	pOptionButton->SetChecked(settings.GetVar(Settings::NoFocusPlaysMusic, false));
 
 	//Special settings.
-	bytValue = settings.GetVar(combatRateStr, BYTE(0));
+	bytValue = settings.GetVar(Settings::CombatRate, BYTE(0));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_QUICKCOMBAT));
 	pSliderWidget->SetValue(bytValue);
 /*
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOWCHECKPOINTS));
 	pOptionButton->SetChecked(settings.GetVar(showCheckpoints, true));
-		const UINT dwAutoSaveOptions = settings.GetVar("AutoSaveOptions", 
+		const UINT dwAutoSaveOptions = settings.GetVar(Settings::AutoSaveOptions,
 			ASO_DEFAULT | ASO_CONQUERDEMO);
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SAVEONCONQUER));
@@ -1357,25 +1368,25 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	//Editor settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_AUTOSAVE));
-	pOptionButton->SetChecked(settings.GetVar("AutoSave", true));
+	pOptionButton->SetChecked(settings.GetVar(Settings::AutoSave, true));
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ITEMTIPS));
-	pOptionButton->SetChecked(settings.GetVar("ItemTips", true));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ItemTips, true));
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
-	pOptionButton->SetChecked(settings.GetVar(disableMouseMovementStr, false));
+	pOptionButton->SetChecked(settings.GetVar(Settings::DisableMouse, false));
 
 	//Command settings.
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
-		int nKey = settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
+		const int nKey = settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
 		DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[nCommand])->SetText(
-			g_pTheDB->GetMessageText( (MESSAGE_ID)((long)MID_UNKNOWN + nKey) ) );
+			g_pTheDB->GetMessageText(KeyToMID(SDL_Keycode(nKey))));
 	}
 
-	bytVolume = settings.GetVar("RepeatRate", (BYTE)128);
+	bytVolume = settings.GetVar(Settings::RepeatRate, (BYTE)128);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_REPEATRATE));
 	pSliderWidget->SetValue(bytVolume);
@@ -1413,58 +1424,58 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	CSliderWidget *pSliderWidget;
 	COptionButtonWidget *pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_USE_FULLSCREEN));
-	settings.SetVar(fullScreenStr, pOptionButton->IsChecked());
+	settings.SetVar(Settings::Fullscreen, pOptionButton->IsChecked());
 	SetFullScreen(pOptionButton->IsChecked());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ALPHA));
-	settings.SetVar("Alpha", pOptionButton->IsChecked());
+	settings.SetVar(Settings::Alpha, pOptionButton->IsChecked());
 	g_pTheBM->bAlpha = pOptionButton->IsChecked();
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,	GetWidget(TAG_GAMMA));
-	settings.SetVar("Gamma", pSliderWidget->GetValue());
+	settings.SetVar(Settings::Gamma, pSliderWidget->GetValue());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ENVIRONMENT));
-	settings.SetVar("EyeCandy", pOptionButton->IsChecked());
+	settings.SetVar(Settings::EyeCandy, pOptionButton->IsChecked());
 	g_pTheBM->eyeCandy = pOptionButton->IsChecked() ? 1 : 0;
 
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
-	settings.SetVar("SoundEffects", pOptionButton->IsChecked());
+	settings.SetVar(Settings::SoundEffects, pOptionButton->IsChecked());
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_SOUNDEFF_VOLUME));
-	settings.SetVar("SoundEffectsVolume", pSliderWidget->GetValue());
+	settings.SetVar(Settings::SoundEffectsVolume, pSliderWidget->GetValue());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_VOICES));
-	settings.SetVar("Voices", pOptionButton->IsChecked());
+	settings.SetVar(Settings::Voices, pOptionButton->IsChecked());
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_VOICES_VOLUME));
-	settings.SetVar("VoicesVolume", pSliderWidget->GetValue());
+	settings.SetVar(Settings::VoicesVolume, pSliderWidget->GetValue());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_MUSIC));
-	settings.SetVar("Music", pOptionButton->IsChecked());
+	settings.SetVar(Settings::Music, pOptionButton->IsChecked());
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_MUSIC_VOLUME));
-	settings.SetVar("MusicVolume", pSliderWidget->GetValue());
+	settings.SetVar(Settings::MusicVolume, pSliderWidget->GetValue());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOW_SUBTITLES));
-	settings.SetVar(showSubtitlesWithVoices, pOptionButton->IsChecked());
+	settings.SetVar(Settings::ShowSubtitlesWithVoices, pOptionButton->IsChecked());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_NO_FOCUS_PLAYS_MUSIC));
-	settings.SetVar(noFocusPlaysMusic, pOptionButton->IsChecked());
+	settings.SetVar(Settings::NoFocusPlaysMusic, pOptionButton->IsChecked());
 	g_pTheSound->bNoFocusPlaysMusic = pOptionButton->IsChecked();
 
 	//Special settings.
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_QUICKCOMBAT));
-	settings.SetVar(combatRateStr, pSliderWidget->GetValue());
+	settings.SetVar(Settings::CombatRate, pSliderWidget->GetValue());
 /*
 	UINT dwAutoSaveOptions = ASO_ROOMBEGIN | ASO_LEVELBEGIN;
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
@@ -1490,7 +1501,7 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
-	settings.SetVar(disableMouseMovementStr, pOptionButton->IsChecked());
+	settings.SetVar(Settings::DisableMouse, pOptionButton->IsChecked());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.
@@ -1507,18 +1518,40 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 }
 
 //************************************************************************************
+bool CSettingsScreen::AreCNetDetailsChanged(
+//Checks if any of the CNet details have been changed
+//
+//Params:
+	CDbPlayer *pPlayer)  //(in)  Loaded player which is checked against the settings
+{
+	CTextBoxWidget *pTextBox;
+	
+	pTextBox = DYN_CAST(CTextBoxWidget*, CWidget*, GetWidget(TAG_CNETNAME));
+	if (pPlayer->CNetNameText != pTextBox->GetText()){
+		return true;
+	}
+
+	pTextBox = DYN_CAST(CTextBoxWidget*, CWidget*, GetWidget(TAG_CNETPASSWORD));
+	if (pPlayer->CNetPasswordText != pTextBox->GetText()){
+		return true;
+	}
+
+	return false;
+}
+
+//************************************************************************************
 bool CSettingsScreen::PollForInterrupt()
 //Returns: whether the user has prompted to halt the operation
 {
 	//Get any events waiting in the queue.
 	//Prompt to halt the process on a key press.
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
+	while (PollEvent(&event))
 	{
 		switch (event.type)
 		{
-			case SDL_ACTIVEEVENT:
-				OnActiveEvent(event.active);
+			case SDL_WINDOWEVENT:
+				OnWindowEvent(event.window);
 				this->pStatusDialog->Paint();	//make sure this stays on top
 			break;
 			case SDL_KEYDOWN:
@@ -1529,7 +1562,7 @@ bool CSettingsScreen::PollForInterrupt()
 					case SDLK_RETURN:	case SDLK_KP_ENTER:
 					case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-					case SDLK_PAUSE:  case SDLK_BREAK:
+					case SDLK_PAUSE:
 #endif
 						if (ShowYesNoMessage(MID_HaltDemoUploadPrompt) != TAG_NO)
 							return true;
@@ -1602,7 +1635,7 @@ void CSettingsScreen::UploadScores()
 	bool bFullScoreUpload = false;
 	CFiles f;
 	string str;
-	if (f.GetGameProfileString("Customizing", "FullScoreUpload", str))
+	if (f.GetGameProfileString(INISection::Customizing, INIKey::FullScoreUpload, str))
 		bFullScoreUpload = atoi(str.c_str()) != 0;
 
 	UINT wCount=0;
@@ -1662,7 +1695,7 @@ void CSettingsScreen::UploadScores()
 	}
 
 	if (bFullScoreUpload) //reset after completing operation
-		f.WriteGameProfileString("Customizing", "FullScoreUpload", "0");
+		f.WriteGameProfileString(INISection::Customizing, INIKey::FullScoreUpload, "0");
 
 	g_pTheDB->Commit();
 	}
@@ -1748,16 +1781,14 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 //
 //Params:
 	const DCMD eCommand,    //(in) Command being redefined
-	const SDLKey CurrentKey,   //(in)
-	SDLKey &NewKey)            //(out)
+	const SDL_Keycode CurrentKey,   //(in)
+	SDL_Keycode &NewKey)            //(out)
 {
-#define KEY_TO_MID(k) (MESSAGE_ID)((long)MID_UNKNOWN + (k))
-
 	const MESSAGE_ID eButtonMID = COMMAND_MIDS[eCommand];
 	this->pCommandLabel->SetText(g_pTheDB->GetMessageText(eButtonMID));
 
 	UINT dwRetTagNo;
-	SDLKey DialogKey = SDLK_UNKNOWN;
+	SDL_Keycode DialogKey = SDLK_UNKNOWN;
 	bool bInvalidKey; 
 	do 
 	{
@@ -1765,7 +1796,7 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL ||
 				dwRetTagNo == TAG_ESCAPE) break;
 		DialogKey = this->pDialogBox->GetKey();
-		bInvalidKey = (DialogKey >= SDLK_F1 && DialogKey <= SDLK_F15);
+		bInvalidKey = (DialogKey >= SDLK_F1 && DialogKey <= SDLK_F12) || (DialogKey >= SDLK_F13);
 		if (bInvalidKey)
 			ShowOkMessage(MID_InvalidCommandKey);
 	} while (bInvalidKey);
@@ -1781,8 +1812,6 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 
 	NewKey = DialogKey;
 	return true;
-
-#undef KEY_TO_MID
 }
 
 //*****************************************************************************

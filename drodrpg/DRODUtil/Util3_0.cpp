@@ -67,85 +67,43 @@ bool CUtil3_0::PrintDelete(
 const
 {
 	//Get paths to data storage files.
-	WSTRING wstrHoldFilepath;//, wstrPlayerFilepath;
-	GetHoldFilepath(wstrHoldFilepath);
-	//GetPlayerFilepath(wstrPlayerFilepath);
+	WSTRING wstrMasterDatFilepath;
+	GetMasterFilepath(wstrMasterDatFilepath);
 
 	//Make sure at least one of the files exists.
-	if (!CFiles::DoesFileExist(wstrHoldFilepath.c_str()))// && !CFiles::DoesFileExist(wstrPlayerFilepath.c_str()))
+	if (!CFiles::DoesFileExist(wstrMasterDatFilepath.c_str()))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--Couldn't find data to delete at %S.\r\n", this->strPath.c_str());
+		printf("FAILED--Couldn't find data to delete at %S." NEWLINE, this->strPath.c_str());
 #else
-		char path[strPath.length()+1];
-		UnicodeToAscii(strPath, path);
-		printf("FAILED--Couldn't find data to delete at %s.\r\n", path);
+		const string path = UnicodeToAscii(strPath);
+		printf("FAILED--Couldn't find data to delete at %s." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
 
-	//Delete hold dat.
-	bool bDeleteSuccess = !CFiles::DoesFileExist(wstrHoldFilepath.c_str()) ||
-		DeleteDat(wstrHoldFilepath.c_str());
-	if (!bDeleteSuccess) printf("Couldn't delete %S.\r\n",wstrHoldFilepath.c_str());
-
-/*
-	//Delete player dat.
-	if (CFiles::DoesFileExist(wstrPlayerFilepath.c_str()))
+	//Delete official dat.
+	bool bDeleteSuccess = !CFiles::DoesFileExist(wstrMasterDatFilepath.c_str()) ||
+		DeleteDat(wstrMasterDatFilepath.c_str());
+#ifdef __linux__
+	if (!bDeleteSuccess)
 	{
-		if (!DeleteDat(wstrPlayerFilepath.c_str()))
-		{
-			bDeleteSuccess = false;
-			printf("Couldn't delete player.dat.\r\n");
-		}
+		//FIXME: use utf8 in stead ? (need 0-term to_utf8)
+		const string strHoldFilepath = UnicodeToAscii(wstrMasterDatFilepath);
+		printf("Couldn't delete %s.\n", strHoldFilepath.c_str());
 	}
-*/
+#else
+	if (!bDeleteSuccess) printf("Couldn't delete %S." NEWLINE,wstrMasterDatFilepath.c_str());
+#endif
 
 	if (!bDeleteSuccess)
 	{
 		printf("FAILED--Couldn't delete all of the files.  Possibly an access problem.  "
-				"Make sure DROD isn't running.\r\n");
+				"Make sure DROD isn't running." NEWLINE);
 		return false;
 	}
 
 	//Success.
-	return true;
-}
-
-//**************************************************************************************
-bool CUtil3_0::createDatabase(const WSTRING& wstrFilepath) const
-//Creates a new, blank database file.
-//Returns: true if operation succeeded, else false
-{
-	char szFilepath[MAX_PATH + 1];
-	UnicodeToAscii(wstrFilepath, szFilepath);
-
-	c4_Storage newStorage(szFilepath, true); //create file on disk
-	if (!DoesFileExist(wstrFilepath.c_str()))
-	{
-#ifdef HAS_UNICODE
-		printf("FAILED--Was not able to create %S.\r\n", wstrFilepath.c_str());
-#else
-		char path[wstrFilepath.length()+1];
-		UnicodeToAscii(wstrFilepath, path);
-		printf("FAILED--Was not able to create %s.\r\n", path);
-#endif
-		return false;
-	}
-
-	//Add all views to database file.
-	c4_View IncrementedIDs = newStorage.GetAs(INCREMENTEDIDS_VIEWDEF);
-	c4_View Data = newStorage.GetAs(DATA_VIEWDEF);
-	c4_View Demos = newStorage.GetAs(DEMOS_VIEWDEF);
-	c4_View Holds = newStorage.GetAs(HOLDS_VIEWDEF);
-	c4_View Levels = newStorage.GetAs(LEVELS_VIEWDEF);
-	c4_View MessageTexts = newStorage.GetAs(MESSAGETEXTS_VIEWDEF);
-	c4_View Players = newStorage.GetAs(PLAYERS_VIEWDEF);
-	c4_View Rooms = newStorage.GetAs(ROOMS_VIEWDEF);
-	c4_View SavedGames = newStorage.GetAs(SAVEDGAMES_VIEWDEF);
-	c4_View Speech = newStorage.GetAs(SPEECH_VIEWDEF);
-	newStorage.Commit();
-
 	return true;
 }
 
@@ -164,38 +122,33 @@ const
 	if (!IsPathValid(this->strPath.c_str()))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--Destination path (%S) is not a valid path.\r\n", this->strPath.c_str());
+		printf("FAILED--Destination path (%S) is not a valid path." NEWLINE, this->strPath.c_str());
 #else
-		char path[strPath.length()+1];
-		UnicodeToAscii(strPath, path);
-		printf("FAILED--Destination path (%s) is not a valid path.\r\n", path);
+		const string path = UnicodeToAscii(strPath);
+		printf("FAILED--Destination path (%s) is not a valid path." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
 
 	//Get paths to data storage files.
-	WSTRING wstrHoldFilepath;//, wstrPlayerFilepath;
-	GetHoldFilepath(wstrHoldFilepath);
-//	GetPlayerFilepath(wstrPlayerFilepath);
+	WSTRING wstrMasterDatFilepath;
+	GetMasterFilepath(wstrMasterDatFilepath);
 
 	//If any of the data storage files already exit, then exit.
-	if (DoesFileExist(wstrHoldFilepath.c_str()))// || DoesFileExist(wstrPlayerFilepath.c_str()))
+	if (DoesFileExist(wstrMasterDatFilepath.c_str()))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--data already exists at %S.\r\n", this->strPath.c_str());
+		printf("FAILED--data already exists at %S." NEWLINE, this->strPath.c_str());
 #else
-		char path[strPath.length()+1];
-		UnicodeToAscii(strPath, path);
-		printf("FAILED--data already exists at %s.\r\n", path);
+		const string path = UnicodeToAscii(strPath);
+		printf("FAILED--data already exists at %s." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
 
-	//Create the hold and player databases.
-	if (!createDatabase(wstrHoldFilepath))
+	//Create the database(s).
+	if (!CDbBase::CreateDatabase(wstrMasterDatFilepath))
 		return false;
-//	if (!createDatabase(wstrPlayerFilepath))
-//		return false;
 
 	//Success.
 	return true;
@@ -222,11 +175,10 @@ const
 	if (!IsPathValid(this->strPath.c_str()))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--Destination path (%S) is not a valid path.\r\n", this->strPath.c_str());
+		printf("FAILED--Destination path (%S) is not a valid path." NEWLINE, this->strPath.c_str());
 #else
-		char path[strPath.length()+1];
-		UnicodeToAscii(strPath, path);
-		printf("FAILED--Destination path (%s) is not a valid path.\r\n", path);
+		const string path = UnicodeToAscii(strPath);
+		printf("FAILED--Destination path (%s) is not a valid path." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
@@ -235,28 +187,24 @@ const
 	if (!IsPathValid(pszSrcPath))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--Source path (%S) is not a valid path.\r\n", pszSrcPath);
+		printf("FAILED--Source path (%S) is not a valid path." NEWLINE, pszSrcPath);
 #else
-		WSTRING tmp = pszSrcPath;
-		char path[tmp.length()+1];
-		UnicodeToAscii(tmp, path);
-		printf("FAILED--Source path (%s) is not a valid path.\r\n", path);
+		const string path = UnicodeToAscii(pszSrcPath);
+		printf("FAILED--Source path (%s) is not a valid path." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
 
 	//Check for presence of destination dat files.
-	WSTRING wstrHoldFilepath;//, wstrPlayerFilepath;
-	GetHoldFilepath(wstrHoldFilepath);
-//	GetPlayerFilepath(wstrPlayerFilepath);
-	if (!DoesFileExist(wstrHoldFilepath.c_str()))// || !DoesFileExist(wstrPlayerFilepath.c_str()))
+	WSTRING wstrMasterDatFilepath;
+	GetMasterFilepath(wstrMasterDatFilepath);
+	if (!DoesFileExist(wstrMasterDatFilepath.c_str()))
 	{
 #ifdef HAS_UNICODE
-		printf("FAILED--Storage files not found at %S.\r\n", this->strPath.c_str());
+		printf("FAILED--Storage files not found at %S." NEWLINE, this->strPath.c_str());
 #else
-		char path[strPath.length()+1];
-		UnicodeToAscii(strPath, path);
-		printf("FAILED--Storage files not found at %s.\r\n", path);
+		const string path = UnicodeToAscii(strPath);
+		printf("FAILED--Storage files not found at %s." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
@@ -264,37 +212,14 @@ const
 	//Populate hold database with messages needed and maybe basic text.
 	{
 		//Open database.
-		printf("Opening text.dat...");
-		char filename[MAX_PATH];
-		UnicodeToAscii(wstrHoldFilepath.c_str(), filename);
-		c4_Storage HoldStorage(filename, true);
-		printf("done.\r\n");
+		const string filename = UnicodeToAscii(wstrMasterDatFilepath.c_str());
+		printf("Opening %s...", filename.c_str());
+		c4_Storage HoldStorage(filename.c_str(), true);
+		printf("done." NEWLINE);
 
 		if (bImportMIDs)
 		{
-/*
 			//Ensure all incremented IDs have been created at this time.
-			char filename[FILENAME_MAX];
-			UnicodeToAscii(wstrPlayerFilepath.c_str(), filename);
-			c4_Storage PlayerStorage(filename, true);
-			c4_View PlayerIncrementedIDs = PlayerStorage.View("IncrementedIDs");
-			if (PlayerIncrementedIDs.GetSize() < 1)
-			{
-				printf("Creating fresh incremented IDs...\r\n");
-				PlayerIncrementedIDs.Add(
-					p_DataID[        START_LOCAL_ID ] +
-					p_DemoID[        START_LOCAL_ID ] +
-					p_HoldID[        START_LOCAL_ID ] +
-					p_LevelID[       START_LOCAL_ID ] +
-					p_MessageID[     START_LOCAL_ID ] +
-					p_MessageTextID[ START_LOCAL_ID ] +
-					p_PlayerID[      START_LOCAL_ID ] +
-					p_RoomID[        START_LOCAL_ID ] +
-					p_SavedGameID[   START_LOCAL_ID ] +
-					p_SpeechID[      START_LOCAL_ID ]);
-				PlayerStorage.Commit();
-			}
-*/
 			c4_View HoldIncrementedIDs = HoldStorage.View("IncrementedIDs");
 			if (HoldIncrementedIDs.GetSize() < 1)
 			{
@@ -315,10 +240,10 @@ const
 			printf("Importing basic messages...");
 			if (!ImportBasicMessages(pszSrcPath, HoldStorage))
 			{
-				printf("FAILED.\r\n");
+				printf("FAILED." NEWLINE);
 				return false;
 			}
-			printf("done.\r\n");
+			printf("done." NEWLINE);
 			HoldStorage.Commit();
 		}
 	}
@@ -557,8 +482,8 @@ bool CUtil3_0::PrintTest(const COptionList &Options, UINT dwDemoID) const
 //
 
 //**************************************************************************************
-void CUtil3_0::GetHoldFilepath(
-//Concat filepath to hold dat.
+void CUtil3_0::GetMasterFilepath(
+//Concat filepath to the master .dat filename.
 //
 //Params:
 	WSTRING &wstrFilepath)  //(out)  Filepath.
@@ -571,34 +496,19 @@ const
 }
 
 //**************************************************************************************
-void CUtil3_0::GetPlayerFilepath(
-//Concat filepath to player dat.
-//
-//Params:
-	WSTRING &wstrFilepath)  //(out)  Filepath.
-const
-{
-	static const WCHAR wszPlayerDat[] = {{'p'},{'l'},{'a'},{'y'},{'e'},{'r'},{'.'},{'d'},{'a'},{'t'},{0}};
-	wstrFilepath += this->strPath.c_str();
-	wstrFilepath += wszSlash;
-	wstrFilepath += wszPlayerDat;
-}
-
-//**************************************************************************************
 bool CUtil3_0::DeleteDat(
 //Delete a dat file.
 //
 //Params:
 	const WCHAR *pwszFilepath) //(in)   Dat to delete.
 {
-	char szFilepath[MAX_PATH + 1];
-	UnicodeToAscii(WSTRING(pwszFilepath), szFilepath);
+	const string filepath = UnicodeToAscii(WSTRING(pwszFilepath));
 #ifdef WIN32
 	OFSTRUCT ofs;
 	memset(&ofs, 0, sizeof(ofs));
-	return (OpenFile(szFilepath, &ofs, OF_DELETE)!=HFILE_ERROR);
+	return (OpenFile(filepath.c_str(), &ofs, OF_DELETE)!=HFILE_ERROR);
 #else
-	return !unlink(szFilepath);
+	return !unlink(filepath.c_str());
 #endif
 }
 
@@ -640,30 +550,30 @@ const
 
 	 //Concat first part of MIDS.h.
 	 string strMIDs =
-		  "//MIDs.h\r\n"
+		  "//MIDs.h" NEWLINE
 		  "//Generated by DRODUTIL at ";
 	 strMIDs += szNow;
-	 strMIDs += ".\r\n"
-		  "\r\n"
-		  "#ifndef _MIDS_H_\r\n"
-		  "#define _MIDS_H_\r\n"
-		  "\r\n"
-		  "enum MID_CONSTANT {\r\n"
-		  "  //Range of MIDs between 0 and 99 are reserved for IDs that do not correspond to\r\n"
-		  "  //messages stored in the database.\r\n"
-		  "  MID_Success = 0,\r\n"
-		  "  MID_DatMissing = 1,\r\n"
-		  "  MID_DatNoAccess = 2,\r\n"
-		  "  MID_DatCorrupted_NoBackup = 3,\r\n"
-		  "  MID_DatCorrupted_Restored = 4,\r\n"
-		  "  MID_CouldNotOpenDB = 5,\r\n"
-		  "  MID_MemPerformanceWarning = 6,\r\n"
-		  "  MID_MemLowWarning = 7,\r\n"
-		  "  MID_MemLowExitNeeded = 8,\r\n"
+	 strMIDs += "." NEWLINE
+		  "" NEWLINE
+		  "#ifndef _MIDS_H_" NEWLINE
+		  "#define _MIDS_H_" NEWLINE
+		  "" NEWLINE
+		  "enum MID_CONSTANT {" NEWLINE
+		  "  //Range of MIDs between 0 and 99 are reserved for IDs that do not correspond to" NEWLINE
+		  "  //messages stored in the database." NEWLINE
+		  "  MID_Success = 0," NEWLINE
+		  "  MID_DatMissing = 1," NEWLINE
+		  "  MID_DatNoAccess = 2," NEWLINE
+		  "  MID_DatCorrupted_NoBackup = 3," NEWLINE
+		  "  MID_DatCorrupted_Restored = 4," NEWLINE
+		  "  MID_CouldNotOpenDB = 5," NEWLINE
+		  "  MID_MemPerformanceWarning = 6," NEWLINE
+		  "  MID_MemLowWarning = 7," NEWLINE
+		  "  MID_MemLowExitNeeded = 8," NEWLINE
 		  "  MID_AppConfigError = 9,\r\n"
 		  "  MID_DRODIsAlreadyRunning = 10,\r\n"
-		  "  MID_DataPathDotTextFileIsInvalid = 11,\r\n"
-		  "  MID_LastUnstored = 99,\r\n";
+		  "  MID_DataPathDotTextFileIsInvalid = 11," NEWLINE
+		  "  MID_LastUnstored = 99," NEWLINE;
 	 if (dwMaxMessageID < 99)
 		 dwMaxMessageID = 99;
 
@@ -729,14 +639,14 @@ const
 #endif
 
 			strMIDs +=
-			"\r\n"
+			"" NEWLINE
 			"  //Messages from ";
 #ifdef WIN32
 			strMIDs += szFilename;
 #else
 			strMIDs += pDir->d_name;
 #endif
-			strMIDs += ":\r\n";
+			strMIDs += ":" NEWLINE;
 
 			if (!ImportUNI(wstrUNIFilepath.c_str(), TextStorage, AssignedMIDs, dwMaxMessageID, strMIDs))
 			{
@@ -755,15 +665,12 @@ const
 	 }
 
 	 //Finish MIDs concatenation.
-	char temp[12];
-	strMIDs +=
-		"\r\n"
-		"  MID_END_UNUSED=";
-	strMIDs += _itoa(dwMaxMessageID+1, temp, 10);
-	strMIDs += "\r\n"
-		"};\r\n"
-		"\r\n"
-		"#endif //...#ifndef _MIDS_H_\r\n";
+	 strMIDs +=
+		  "" NEWLINE
+		  "  MID_END_UNUSED" NEWLINE
+		  "};" NEWLINE
+		  "" NEWLINE
+		  "#endif //...#ifndef _MIDS_H_" NEWLINE;
 
 	//Write MIDs.h.
 	{

@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\DebugVS2008"
-			IntermediateDirectory=".\DebugVS2008"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -124,10 +124,10 @@
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\DebugVS2008/CaravelNet.pch"
-				AssemblerListingLocation=".\DebugVS2008/"
-				ObjectFile=".\DebugVS2008/"
-				ProgramDataBaseFileName=".\DebugVS2008/"
+				PrecompiledHeaderFile="$(ConfigurationName)/CaravelNet.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\DebugVS2008\CaravelNet.lib"
+				OutputFile="$(ConfigurationName)\CaravelNet.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -200,10 +200,10 @@
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\BuildDats/CaravelNet.pch"
-				AssemblerListingLocation=".\BuildDats/"
-				ObjectFile=".\BuildDats/"
-				ProgramDataBaseFileName=".\BuildDats/"
+				PrecompiledHeaderFile="$(ConfigurationName)/CaravelNet.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -220,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\BuildDats\CaravelNet.lib"
+				OutputFile="$(ConfigurationName)\CaravelNet.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -275,10 +275,10 @@
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Russian/CaravelNet.pch"
-				AssemblerListingLocation=".\Russian/"
-				ObjectFile=".\Russian/"
-				ProgramDataBaseFileName=".\Russian/"
+				PrecompiledHeaderFile="$(ConfigurationName)/CaravelNet.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 			/>
@@ -295,7 +295,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Russian\CaravelNet.lib"
+				OutputFile="$(ConfigurationName)\CaravelNet.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool

@@ -275,7 +275,6 @@ public:
 			const bool bEditor=true);
 	void           RenderRoomInPlay(int wCol=0, int wRow=0,
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
-	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
 	void           RenderRoomTileObjects(const UINT wX, const UINT wY,
@@ -420,7 +419,8 @@ protected:
 	void           RenderRoomItemsOnTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
 			const float fLightLevel, const bool bAddLight, const bool bEditor);
 	void           RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2);
-	virtual bool	SkyWillShow() const;
+	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
+	virtual bool   SkyWillShow() const;
 	void           SetCeilingLight(const UINT wX, const UINT wY);
 	void           SetFrameVars(const bool bMoveMade);
 	void           SetMoveCountText();

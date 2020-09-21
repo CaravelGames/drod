@@ -27,7 +27,7 @@
 
 /*
 #ifndef CARAVELBUILD
-#define CARAVELBUILD
+#	define CARAVELBUILD
 #endif
 */
 
@@ -49,15 +49,21 @@
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/NetInterface.h"
+#include "../DRODLib/SettingsKeys.h"
 #ifdef CARAVELBUILD
 #	include "../CaravelNet/CaravelNetInterface.h"
 #endif
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 #include <BackEndLib/Ports.h>
 #include <BackEndLib/Date.h>
 #include <BackEndLib/Internet.h>
+
+#ifdef STEAMBUILD
+#	include <steam_api.h>
+#endif
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #	include <BackEndLib/Dyn.h>
@@ -145,79 +151,46 @@ static void         DeinitDB();
 static void         DeinitGraphics();
 static void         DeinitSound();
 static void         DisplayInitErrorMessage(MESSAGE_ID dwMessageID);
-static int          FindArg(int argc, char *argv[], const char *pszArgName);
 static void         GetAppPath(const char *pszArg0, WSTRING &wstrAppPath);
 static MESSAGE_ID   Init(bool bNoFullscreen, bool bNoSound);
 static void         InitCDate();
 static MESSAGE_ID   InitDB();
 static MESSAGE_ID   InitGraphics();
+static void         InitMetadata();
 static MESSAGE_ID   InitSound(bool bNoSound);
 static bool         IsAppAlreadyRunning();
 static void         RepairMissingINIKeys(const bool bFullVersion);
-
-//*****************************************************************************
-# if defined(__linux__) || defined(__FreeBSD__)
-static bool DetectDemo (const WSTRING &wstrPath)
-{
-	// perhaps dehorrify this some day
-	BYTE *u8buf = NULL;
-	to_utf8(wstrPath.c_str(), u8buf);
-	std::string strPath = (char*)u8buf;
-	delete[] u8buf; u8buf = NULL;
-	std::string::size_type spos = strPath.rfind('/');
-	if (spos == std::string::npos)
-		strPath = ".";
-	else
-		strPath.resize(spos);
-	strPath += "/Data/";
-	to_utf8(wszDROD, u8buf);
-	strPath += (char*)u8buf;
-	delete[] u8buf; u8buf = NULL;
-	to_utf8(wszDROD_VER, u8buf);
-	strPath += (char*)u8buf;
-	delete[] u8buf;
-	strPath += ".dat";
-	struct stat st;
-	if (stat(strPath.c_str(), &st))
-		return false;
-	return (st.st_size < 100*1024*1024); // less than 100mb = demo ..
-}
-
-static void SetXdgPath (const WSTRING &wstrPath)
-{
-	std::string str = getenv("PATH");
-	if (!str.empty())
-		str += ':';
-	BYTE *u8Path = NULL;
-	to_utf8(wstrPath.c_str(), u8Path);
-	str += (char*)u8Path;
-	std::string::size_type spos = str.rfind('/'), cpos = str.rfind(':');
-	if (spos == std::string::npos || spos < cpos) return;
-	str.resize(spos);
-	str += "/Xdg";
-	setenv("PATH", str.c_str(), 1);
-	delete[] u8Path;
-}
-# endif
 
 //*****************************************************************************
 int main(int argc, char *argv[])
 {
 	LOGCONTEXT("main");
 
-	bool bNoFullscreen = FindArg(argc, argv, "nofullscreen") != -1;
-	bool bNoSound = FindArg(argc, argv, "nosound") != -1;
-	bool bIsDemo = FindArg(argc, argv, "demo") != -1;
+	InitMetadata();
+
+	//command line arguments
+	bool bNoFullscreen = false, bNoSound = false, bIsDemo = false;
+	for (int nArgNo=0; nArgNo < argc; ++nArgNo) {
+		const char* arg = argv[nArgNo];
+		if (!_stricmp(arg, "nofullscreen")) {
+			bNoFullscreen = true;
+		} else if (!_stricmp(arg, "nosound")) {
+			bNoSound = true;
+		} else if (!_stricmp(arg, "demo")) {
+			bIsDemo = true;
+			Metadata::Set(MetaKey::DEMO, "1");
+		}
+		//else: more command line arg processing occurs below
+	}
+
+# if defined(__linux__) || defined(__FreeBSD__)
+	Dyn::LoadX11();
+# endif
 
 	//Initialize the app.
 	WSTRING wstrPath;
 	GetAppPath(argv[0], wstrPath);
 
-#if defined(__linux__) || defined(__FreeBSD__)
-	bIsDemo = bIsDemo || DetectDemo(wstrPath);
-	SetXdgPath(wstrPath);
-	Dyn::LoadX11();
-#endif
 #if defined(__linux__) || defined (__FreeBSD__) || defined(__APPLE__)
 	//Check if the executable name includes the string "demo", in case
 	//DROD was launched without the launch script (otherwise CFiles will
@@ -229,10 +202,26 @@ int main(int argc, char *argv[])
 		if (slashpos == WSTRING::npos) slashpos = 0;
 		bIsDemo = (wstrPath.substr(slashpos).find(wszDemo, 0) != WSTRING::npos);
 	}
+#elif defined(WIN32)
+	//Support separate dir for demo player files.
+	if (!bIsDemo)
+	{
+		const WCHAR wszDemo[] = { We('D'),We('e'),We('m'),We('o'),We(0) };
+		bIsDemo = (wstrPath.find(wszDemo, 0) != WSTRING::npos);
+	}
 #endif
 
 	std::vector<string> datFiles; //writable .dats.  [0]: + = copy, - = no copy
-	CFiles::InitAppVars(wszUniqueResFile, datFiles);
+	std::vector<string> playerDataSubDirs;  // subdirs to create. [0]: + = copy files, - = don't copy files, anything else = don't copy & don't offset name
+	playerDataSubDirs.push_back("Bitmaps");
+#if defined(__linux__) || defined (__FreeBSD__) //|| defined(__APPLE__)
+	playerDataSubDirs.push_back("+Homemade");
+#else
+	playerDataSubDirs.push_back("Homemade");
+#endif
+	playerDataSubDirs.push_back("Music");
+	playerDataSubDirs.push_back("Sounds");
+	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
 
 	m_pFiles = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, bIsDemo);
 	if (CFiles::bad_data_path_file) {
@@ -256,7 +245,7 @@ int main(int argc, char *argv[])
 #ifdef BETA
 	//Disable app outside certain time range.
 	string str;
-	if (m_pFiles->GetGameProfileString("Waves", "Old", str))
+	if (m_pFiles->GetGameProfileString(INISection::Waves, "Old", str))
 	{
 		DisplayInitErrorMessage(MID_AppConfigError);
 		delete m_pFiles;
@@ -285,7 +274,7 @@ int main(int argc, char *argv[])
 	if (timetoexpire < 0)
 	{
 		fprintf(stderr, "*** This BETA has expired.\n");
-		m_pFiles->WriteGameProfileString("Waves", "Old", "old.ogg");
+		m_pFiles->WriteGameProfileString(INISection::Waves, "Old", "old.ogg");
 		DisplayInitErrorMessage(MID_AppConfigError);
 		delete m_pFiles;
 		Dyn::UnloadX11();
@@ -318,7 +307,7 @@ int main(int argc, char *argv[])
 	tm* pLocalTime = localtime(&t);
 	if (!(pLocalTime->tm_year == 108 && pLocalTime->tm_mon <= 6)) //<=jul08
 	{
-		m_pFiles->WriteGameProfileString("Waves", "Old", "old.ogg");
+		m_pFiles->WriteGameProfileString(INISection::Waves, "Old", "old.ogg");
 		DisplayInitErrorMessage(MID_AppConfigError);
 		delete m_pFiles;
 		return -1;
@@ -400,12 +389,11 @@ int main(int argc, char *argv[])
 
 			//Get active player ID.
 			string strPlayerID;
-			CDbPlayer *pCurrentPlayer;
-			if (m_pFiles->GetGameProfileString("Startup", "PlayerID", strPlayerID))
+			if (m_pFiles->GetGameProfileString(INISection::Startup, "PlayerID", strPlayerID))
 			{
 				//If ID is for a valid local player, set active player.
 				const UINT dwPlayerID = convertToUINT(strPlayerID.c_str());
-				pCurrentPlayer = g_pTheDB->Players.GetByID(dwPlayerID);
+				CDbPlayer *pCurrentPlayer = g_pTheDB->Players.GetByID(dwPlayerID);
 				if (pCurrentPlayer)
 				{
 					if (pCurrentPlayer->bIsLocal)
@@ -415,73 +403,46 @@ int main(int argc, char *argv[])
 			}
 
 			//Set player preferences.
-			pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-			if (pCurrentPlayer)
-			{
-				CDbPackedVars& s = pCurrentPlayer->Settings;
-				g_pTheDBM->bAlpha = s.GetVar("Alpha", true);
-				const BYTE gammaOne = CDrodBitmapManager::GetGammaOne();
-				const BYTE gamma = s.GetVar("Gamma", gammaOne);
-				if (gamma != gammaOne) //causes tinted display issues on Mac
-					g_pTheDBM->SetGamma(gamma);
-				g_pTheDBM->eyeCandy = s.GetVar("EyeCandy", true) ? 1 : 0;
+			const CDbPackedVars s = g_pTheDB->GetCurrentPlayerSettings();
+			g_pTheDBM->bAlpha = s.GetVar(Settings::Alpha, true);
+			const BYTE gammaOne = CDrodBitmapManager::GetGammaOne();
+			const BYTE gamma = s.GetVar(Settings::Gamma, gammaOne);
+			if (gamma != gammaOne) //causes tinted display issues on Mac
+				g_pTheDBM->SetGamma(gamma);
+			g_pTheDBM->eyeCandy = s.GetVar(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
 
-				//Set sound preferences.
-				g_pTheSound->EnableSoundEffects(s.GetVar("SoundEffects", true));
-				g_pTheSound->SetSoundEffectsVolume(s.GetVar("SoundEffectsVolume", (BYTE)DEFAULT_SOUND_VOLUME));
-				g_pTheSound->EnableVoices(s.GetVar("Voices", true));
-				g_pTheSound->SetVoicesVolume(s.GetVar("VoicesVolume", (BYTE)DEFAULT_VOICE_VOLUME));
-				g_pTheSound->EnableMusic(s.GetVar("Music", true));
-				g_pTheSound->SetMusicVolume(s.GetVar("MusicVolume", (BYTE)DEFAULT_MUSIC_VOLUME));
-			} else {
-				//No player profile -- use default settings.
-				g_pTheSound->EnableSoundEffects(true);
-				g_pTheSound->SetSoundEffectsVolume(DEFAULT_SOUND_VOLUME);
-				g_pTheSound->EnableVoices(true);
-				g_pTheSound->SetVoicesVolume(DEFAULT_VOICE_VOLUME);
-				g_pTheSound->EnableMusic(true);
-				g_pTheSound->SetMusicVolume(DEFAULT_MUSIC_VOLUME);
-			}
+			//Set sound preferences.
+			g_pTheSound->EnableSoundEffects(s.GetVar(Settings::SoundEffects, true));
+			g_pTheSound->SetSoundEffectsVolume(s.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME));
+			g_pTheSound->EnableVoices(s.GetVar(Settings::Voices, true));
+			g_pTheSound->SetVoicesVolume(s.GetVar(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME));
+			g_pTheSound->EnableMusic(s.GetVar(Settings::Music, true));
+			g_pTheSound->SetMusicVolume(s.GetVar(Settings::MusicVolume, (BYTE)DEFAULT_MUSIC_VOLUME));
+
 			//Decide whether app is fullscreen (default) or not.
-			const bool bFullscreen = !bNoFullscreen && (pCurrentPlayer ? pCurrentPlayer->Settings.GetVar(
-					fullScreenStr, false) :
-#if defined(__APPLE__) || defined(__linux__)
-//KLUDGE: fullscreen doesn't work on Intel Mac for some user's systems
-//Use windowed by default on Linux too for now, at least until we can use SDL 2
-					false
-#else
-					true
-#endif
-				);
+			const bool bFullscreen = !CScreen::bAllowWindowed || (!bNoFullscreen && s.GetVar(Settings::Fullscreen, false));
 			if (bFullscreen)
 			{
-				SDL_Surface *pScreenSurface = SDL_SetVideoMode(CScreen::CX_SCREEN,
-						CScreen::CY_SCREEN, g_pTheBM->BITS_PER_PIXEL, SDL_FULLSCREEN);
-				if (pScreenSurface)
-					SetWidgetScreenSurface(pScreenSurface);
+				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
 			} else {
+#ifndef __linux__  //This doesn't work well on X11. The window manager handles it anyway.
 				int nX, nY, nW, nH;
 				CScreen::GetScreenSize(nW, nH);
-				if (CScreen::GetWindowPos(nX, nY))  // only move the window if we know where it is
-				{
-					if (pCurrentPlayer) {
-						//Set window position to user preference.
-						nX = pCurrentPlayer->Settings.GetVar("ScreenX", nX);
-						nY = pCurrentPlayer->Settings.GetVar("ScreenY", nY);
-					}
+				CScreen::GetWindowPos(nX, nY);
+				//Set window position to user preference.
+				// XXX add display index?
+				nX = s.GetVar("ScreenX", nX);
+				nY = s.GetVar("ScreenY", nY);
+				//If app window extends off screen, relocate to top-left corner for better viewing.
+				if (nW < nX + CScreen::CX_SCREEN || nH < nY + CScreen::CY_SCREEN)
+					nX = nY = -3;
+				//If app has somehow gone too far left/up, put it back onscreen.
+				if (nX < -50) nX = 0;
+				if (nY < -50) nY = 0;
 
-					//If app window extends off screen, relocate to top-left corner for better viewing.
-					if (nW < nX + CScreen::CX_SCREEN || nH < nY + CScreen::CY_SCREEN)
-						nX = nY = -3;
-					//If app has somehow gone too far left/up, put it back onscreen.
-					if (nX < -50) nX = 0;
-					if (nY < -50) nY = 0;
-
-					CScreen::SetWindowPos(nX, nY);
-				}
+				CScreen::SetWindowPos(nX, nY);
+#endif
 			}
-			delete pCurrentPlayer;
-			pCurrentPlayer = NULL;
 
 			//Event-handling will happen in the execution of ActivateScreen().
 			//ActivateScreen() will return when player exits a screen.
@@ -502,12 +463,12 @@ int main(int argc, char *argv[])
 			CDrodScreen::logoutFromChat();
 
 			//Record player preferences for next session.
-			pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+			CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
 			if (pCurrentPlayer)
 			{
 				//Record windowed app coordinates on screen.
 				const bool bFullscreen = !bNoFullscreen &&
-						(pCurrentPlayer->Settings.GetVar(fullScreenStr, false));
+						(pCurrentPlayer->Settings.GetVar(Settings::Fullscreen, false));
 				if (!bFullscreen)
 				{
 					int nX, nY;
@@ -520,7 +481,7 @@ int main(int argc, char *argv[])
 				//Save active player ID.
 				char cPlayerID[20];
 				_itoa(pCurrentPlayer->dwPlayerID, cPlayerID, 10);
-				m_pFiles->WriteGameProfileString("Startup", "PlayerID", cPlayerID);
+				m_pFiles->WriteGameProfileString(INISection::Startup, "PlayerID", cPlayerID);
 
 				delete pCurrentPlayer;
 			}
@@ -592,6 +553,20 @@ MESSAGE_ID Init(
 	if (ret == MID_MemLowWarning || ret == MID_MemPerformanceWarning)
 	  DisplayInitErrorMessage(ret); //Init() can continue after the warning.
 
+#ifdef STEAMBUILD
+	bool bSteamInit = false;
+	const UINT MAX_STEAMINIT_TRIES=3;
+	for (UINT steamInitTries=1; steamInitTries<=MAX_STEAMINIT_TRIES && !bSteamInit; ++steamInitTries) {
+		if (!(bSteamInit = SteamAPI_Init())) {
+			if (steamInitTries < MAX_STEAMINIT_TRIES)
+				SDL_Delay(steamInitTries * 1000); //s
+		}
+	}
+
+	// never go into windowed mode in steam big picture
+	CScreen::bAllowWindowed = !(SteamUtils() && SteamUtils()->IsSteamInBigPictureMode());
+#endif
+
 	//Initialize graphics before other things, because I want to show the
 	//screen quickly for the user.
 	ret = InitGraphics();
@@ -634,10 +609,14 @@ MESSAGE_ID Init(
 	ret = InitSound(bNoSound);
 	if (ret) return ret;
 
-	//Enable international support.
-	SDL_EnableUNICODE(1);
+#ifdef STEAMBUILD
+	if (!bSteamInit)
+		DisplayInitErrorMessage(MID_SteamAPIInitError);
+	if (SteamUserStats())
+		SteamUserStats()->RequestCurrentStats();
+#endif
 
-   srand(time(NULL));
+	srand(int(time(NULL)));
 
 	//Success.
 	return (bRestoredFromCorruption) ? MID_DatCorrupted_Restored : MID_Success;
@@ -665,7 +644,11 @@ void Deinit()
 	}
 
 	//Generally, deinit subsystems in reverse order of their initialization.
-   delete g_pTheNet;
+#ifdef STEAMBUILD
+	SteamAPI_Shutdown();
+#endif
+
+	delete g_pTheNet;
 	g_pTheNet = NULL;
 	DeinitGraphics(); //free graphics objects first to avoid DB assertion
 	DeinitSound(); //closing SDL audio may hang a few seconds on Linux for some reason, so do it after graphics
@@ -746,31 +729,89 @@ MESSAGE_ID InitGraphics()
 {
 	LOGCONTEXT("InitGraphics");
 
+/*
 #ifdef WIN32
+	//we could use SDL2's software renderer, but it's best to avoid it if we can
 	//Use Windib input driver on Windows unless explicitly set otherwise.
 #	if SDL_VERSION_ATLEAST(1,2,10)
 		string strDriver;
-		if (CFiles::GetGameProfileString("Customizing", "Windib", strDriver) && atoi(strDriver.c_str()) == 0)
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::Windib, strDriver) && atoi(strDriver.c_str()) == 0)
 			SDL_putenv("SDL_VIDEODRIVER=directx");
 #	endif
 #endif
+*/
+	//Ensure screensaver remains enabled
+	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 
-#ifndef __linux__
-	//Ensure screensaver remains enabled on OS X (SDL 1.2.12+).
-#	if SDL_VERSION_ATLEAST(1,2,12)
-	SDL_putenv("SDL_VIDEO_ALLOW_SCREENSAVER=1");
-#	endif
-#endif
+	//Default to filtered scaling (not ideal, but better than uneven pixel sizes)
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "best");
 
-	char szErrMsg[80];
+	//Minimize on focus loss doesn't work well with multiple monitors
+	SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+
+	//Vsync eliminates tearing and uses less resources (we don't need to render at thousands of fps)
+	SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
+
 	//Initialize the library.
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) //Note: Audio is initialized in CSound, if required
 	{
+sdl_error:
 		CFiles Files;
-		sprintf(szErrMsg, "Couldn't initialize SDL: %s\n", SDL_GetError());
+		char szErrMsg[100];
+		szErrMsg[sizeof(szErrMsg)-1] = 0; //windows' snprintf doesn't zero-terminate on overflow
+		_snprintf(szErrMsg, sizeof(szErrMsg)-1, "SDL error: %s\n", SDL_GetError());
 		Files.AppendErrorLog(szErrMsg);
 		return MID_SDLInitFailed;
 	}
+
+	//Don't open on a too small monitor if a larger one is available
+	int default_display = CScreen::GetDisplayForDesktopResOfAtLeast(CScreen::CX_SCREEN, CScreen::CY_SCREEN);
+	if (default_display < 0)
+		default_display = 0;
+
+	//Get a 1024x768x<bpp> screen.
+
+	UniquePtr<SDL_Window, SDL_DestroyWindow> window((
+		SDL_CreateWindow(windowTitle,
+			SDL_WINDOWPOS_CENTERED_DISPLAY(default_display), SDL_WINDOWPOS_CENTERED_DISPLAY(default_display),
+			CScreen::CX_SCREEN, CScreen::CY_SCREEN, CScreen::bAllowWindowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP)
+	));
+	if (!window.get())
+		goto sdl_error;
+
+	UniquePtr<SDL_Renderer, SDL_DestroyRenderer> renderer((
+		SDL_CreateRenderer(window.get(), -1, 0)
+	));
+	if (!renderer.get())
+		goto sdl_error;
+
+	UniquePtr<SDL_Texture, SDL_DestroyTexture> screentexture((
+		SDL_CreateTexture(renderer.get(),
+			SDL_PIXELFORMAT_RGB888, SDL_TEXTUREACCESS_STREAMING, CScreen::CX_SCREEN, CScreen::CY_SCREEN)
+	));
+	if (!screentexture.get())
+		goto sdl_error;
+
+	Uint32 tex_fmt, tex_rmask, tex_gmask, tex_bmask, tex_amask;
+	int tex_bpp;
+	SDL_QueryTexture(screentexture.get(), &tex_fmt, NULL, NULL, NULL);
+	SDL_PixelFormatEnumToMasks(tex_fmt, &tex_bpp, &tex_rmask, &tex_gmask, &tex_bmask, &tex_amask);
+
+	g_pTheBM->BITS_PER_PIXEL = tex_bpp;
+
+	UniquePtr<SDL_Surface, SDL_FreeSurface> shadowsurface((
+		SDL_CreateRGBSurface(0,
+			CScreen::CX_SCREEN, CScreen::CY_SCREEN, tex_bpp, tex_rmask, tex_gmask, tex_bmask, tex_amask)
+	));
+	if (!shadowsurface.get())
+		goto sdl_error;
+
+	SetMainWindow(window.get(), shadowsurface.get(), screentexture.get());
+
+	//Center window on screen immediately.
+	CScreen::SetWindowCentered();
+	SDL_RenderClear(renderer.get());
+	SDL_RenderPresent(renderer.get());
 
 	//Set icon.
 	{
@@ -787,7 +828,7 @@ MESSAGE_ID InitGraphics()
 		CStretchyBuffer bitmap;
 		CFiles::ReadFileIntoBuffer(wstrIconFilepath.c_str(), bitmap, true);
 		SDL_Surface *iconsurf = SDL_LoadBMP_RW(SDL_RWFromMem((BYTE*)bitmap, bitmap.Size()), 1);
-		SDL_WM_SetIcon(iconsurf, NULL);
+		SDL_SetWindowIcon(window.get(), iconsurf);
 		SDL_FreeSurface(iconsurf);
 #if defined(__APPLE__) || defined(__linux__) || defined __FreeBSD__
 		// set 128x128 icon, if a bitmap exists
@@ -799,33 +840,11 @@ MESSAGE_ID InitGraphics()
 		bitmap = CStretchyBuffer();
 		if (CFiles::ReadFileIntoBuffer(wstrIconFilepath.c_str(), bitmap, true)) {
 			iconsurf = SDL_LoadBMP_RW(SDL_RWFromMem((BYTE*)bitmap, bitmap.Size()), 1);
-			SDL_WM_SetIcon(iconsurf, NULL);
+			SDL_SetWindowIcon(window.get(), iconsurf);
 			SDL_FreeSurface(iconsurf);
 		}
 #endif
 	}
-
-	SDL_WM_SetCaption(windowTitle, NULL);
-
-	//Get a 1024x768x<bpp> screen.
-	CBitmapManager::BITS_PER_PIXEL = SDL_VideoModeOK(CScreen::CX_SCREEN, CScreen::CY_SCREEN, CBitmapManager::BITS_PER_PIXEL, 0);
-	if (CBitmapManager::BITS_PER_PIXEL < 24)
-		CBitmapManager::BITS_PER_PIXEL = 24;
-	SDL_Surface *pScreenSurface = SDL_SetVideoMode(
-			CScreen::CX_SCREEN, CScreen::CY_SCREEN, CBitmapManager::BITS_PER_PIXEL, 0);
-
-	if (!pScreenSurface)
-	{
-		CFiles Files;
-		sprintf(szErrMsg, "Couldn't set %ix%ix%i video mode: %s\n",
-				CScreen::CX_SCREEN, CScreen::CY_SCREEN, CBitmapManager::BITS_PER_PIXEL, SDL_GetError());
-		Files.AppendErrorLog(szErrMsg);
-		return MID_SDLInitFailed;
-	}
-
-	//Center window on screen immediately.
-	CScreen::SetWindowCentered();
-	SDL_UpdateRect(pScreenSurface, 0, 0, 0, 0);
 
 	//In Windows, set focus to window in case it was lost during startup.
 	//This is to avoid losing the input focus.
@@ -833,12 +852,12 @@ MESSAGE_ID InitGraphics()
 	{
 		SDL_SysWMinfo Info;
 		SDL_VERSION(&Info.version);
-		SDL_GetWMInfo(&Info);
-		HWND hwndRet = SetFocus(Info.window);
+		SDL_GetWindowWMInfo(window.get(), &Info);
+		HWND hwndRet = SetFocus(Info.info.win.window);
 		if (CFiles::WindowsCanBrowseUnicode())
-		  SetPropW(Info.window, W_APP_PROP, hDrodWindowProp);
+			SetPropW(Info.info.win.window, W_APP_PROP, hDrodWindowProp);
 		else
-		  SetPropA(Info.window, APP_PROP, hDrodWindowProp);
+			SetPropA(Info.info.win.window, APP_PROP, hDrodWindowProp);
 
 		//Disallow running more than one instance of the app at a time.
 		if (IsAppAlreadyRunning())
@@ -851,9 +870,9 @@ MESSAGE_ID InitGraphics()
 		FILE *fp;
 		SDL_SysWMinfo Info;
 		SDL_VERSION(&Info.version);
-		if (SDL_GetWMInfo(&Info) == 1 && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfile, "ab")))
+		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfile, "ab")))
 		{
-			fprintf(fp, ":%x:", (UINT)Info.info.x11.wmwindow);
+			fprintf(fp, ":%x:", (UINT)Info.info.x11.window);
 			fclose(fp);
 		}
 	}
@@ -877,7 +896,7 @@ MESSAGE_ID InitGraphics()
 
 	//Init the screen manager.
 	ASSERT(!g_pTheSM);
-	g_pTheDSM = new CDrodScreenManager(pScreenSurface);
+	g_pTheDSM = new CDrodScreenManager(shadowsurface.get());
 	g_pTheSM = (CScreenManager*)g_pTheDSM;
 	if (!g_pTheSM) return MID_OutOfMemory;
 	ret = (MESSAGE_ID)g_pTheDSM->Init();
@@ -895,13 +914,17 @@ MESSAGE_ID InitGraphics()
 	static const WCHAR wszSplashscreenGraphic[] = {We('D'),We('o'),We('o'),We('r'),We(0)};
 	CImageWidget *pTitleImage = new CImageWidget(0, X_TITLE, Y_TITLE, wszSplashscreenGraphic);
 	pTitleImage->Paint();
-	SDL_UpdateRect(pScreenSurface, X_TITLE, Y_TITLE, pTitleImage->GetW(), pTitleImage->GetH());
+	PresentRect();
 	delete pTitleImage;
 
 	//Ignore any keys being held down on startup.
 	SDL_SetModState(KMOD_NONE);
 
 	//Success.
+	window.release();
+	renderer.release();
+	screentexture.release();
+	shadowsurface.release();
 	return MID_Success;
 }
 
@@ -923,10 +946,20 @@ void DeinitGraphics()
 	delete g_pTheBM;
 	g_pTheBM = NULL;
 
-	//Window the app screen before exiting to avoid side-effects.
-	SDL_SetVideoMode(CScreen::CX_SCREEN, CScreen::CY_SCREEN, g_pTheBM->BITS_PER_PIXEL, 0);
-
 	//Close the window.
+	if (SDL_Window *window = GetMainWindow())
+	{
+		if (CScreen::bAllowWindowed)
+			SDL_SetWindowFullscreen(window, 0);
+
+		if (SDL_Texture *texture = GetWindowTexture(window))
+			SDL_DestroyTexture(texture);
+		if (SDL_Surface *shadow = GetWindowShadowSurface(window))
+			SDL_FreeSurface(shadow);
+		if (SDL_Renderer *renderer = SDL_GetRenderer(window))
+			SDL_DestroyRenderer(renderer);
+		SDL_DestroyWindow(window);
+	}
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
 }
 
@@ -969,6 +1002,13 @@ void DeinitSound()
 		delete g_pTheSound;
 		g_pTheSound = NULL;
 	}
+}
+
+//*****************************************************************************
+void InitMetadata()
+{
+	Metadata::Set(MetaKey::DEMO, "0");
+	Metadata::Set(MetaKey::MAX_EYE_CANDY, "1");
 }
 
 //*****************************************************************************
@@ -1015,6 +1055,7 @@ void DisplayInitErrorMessage(
 		static const WCHAR wstrAppConfigError[] = {1044, 1072, 1085, 1085, 1072, 1103, 32, 1074, 1077, 1088, 1089, 1080, 1103, 32, 1080, 1075, 1088, 1099, 32, 1085, 1077, 1076, 1077, 1081, 1089, 1090, 1074, 1080, 1090, 1077, 1083, 1100, 1085, 1072, 46, 32, 32, 1054, 1073, 1088, 1072, 1097, 1072, 1081, 1090, 1077, 1089, 1100, 32, 1074, 32, 1090, 1077, 1093, 1085, 1080, 1095, 1077, 1089, 1082, 1091, 1102, 32, 1087, 1086, 1076, 1076, 1077, 1088, 1078, 1082, 1091, 32, 1085, 1072, 32, 119, 119, 119, 46, 67, 97, 114, 97, 118, 101, 108, 71, 97, 109, 101, 115, 46, 99, 111, 109, 46, 0};
 		static const WCHAR wstrAppAlreadyRunning[] = {1044, 1056, 1054, 1044, 32, 1091, 1078, 1077, 32, 1079, 1072, 1087, 1091, 1097, 1077, 1085, 46, 0};
 		static const WCHAR wstrUnknownError[] = {1055, 1088, 1086, 1080, 1079, 1086, 1096, 1083, 1072, 32, 1085, 1077, 1086, 1078, 1080, 1076, 1072, 1085, 1085, 1072, 1103, 32, 1086, 1096, 1080, 1073, 1082, 1072, 44, 32, 1087, 1088, 1080, 1095, 1080, 1085, 1072, 32, 1087, 1088, 1086, 1073, 1083, 1077, 1084, 1099, 32, 1085, 1077, 32, 1091, 1089, 1090, 1072, 1085, 1086, 1074, 1083, 1077, 1085, 1072, 46, 32, 32, 1069, 1090, 1091, 32, 1087, 1088, 1086, 1073, 1083, 1077, 1084, 1091, 32, 1084, 1086, 1078, 1085, 1086, 32, 1088, 1077, 1096, 1080, 1090, 1100, 32, 1087, 1077, 1088, 1077, 1091, 1089, 1090, 1072, 1085, 1086, 1074, 1082, 1086, 1081, 32, 34, 68, 82, 79, 68, 34, 46, 32, 1054, 1096, 1080, 1073, 1082, 1072, 0};
+		static const WCHAR wstrDataPathDotTextFileIsInvalid[] = {0}; //TODO
 		switch (dwMessageID)
 		{
 			case MID_DatMissing:
@@ -1168,6 +1209,7 @@ void DisplayInitErrorMessage(
 	{
 		case MID_MemPerformanceWarning: case MID_MemLowWarning:
 		case MID_DatCorrupted_Restored:
+		case MID_SteamAPIInitError:
 			SETTITLE("Alert", MSG_WARNING);
 		break;
 		default:
@@ -1181,17 +1223,13 @@ void DisplayInitErrorMessage(
 
 	//Switch to windowed mode if in fullscreen.
 	{
-		SDL_Surface *pScreenSurface = GetWidgetScreenSurface();
-		if (pScreenSurface && (pScreenSurface->flags & SDL_FULLSCREEN) != 0)
+		SDL_Window *window = GetMainWindow();
+		if ((SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP))
+				&& CScreen::bAllowWindowed)
 		{
-			pScreenSurface = SDL_SetVideoMode(
-					CScreen::CX_SCREEN, CScreen::CY_SCREEN, g_pTheBM->BITS_PER_PIXEL, 0);
-			if (pScreenSurface)
-			{
-				SetWidgetScreenSurface(pScreenSurface);
-				CScreen::SetWindowCentered();
-				SDL_UpdateRect(pScreenSurface, 0, 0, 0, 0);
-			}
+			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetWindowCentered();
+			PresentRect();
 		}
 	}
 
@@ -1200,23 +1238,13 @@ void DisplayInitErrorMessage(
 #else
 	BYTE *u8msg = NULL;
 	to_utf8(pwczMessage, u8msg);
+
 #if defined(USE_GTK)
 	bool bSuccess;
 	if ((bSuccess = Dyn::LoadGTK()))
 	{
-		SDL_SysWMinfo info;
-		SDL_VERSION(&info.version);
-		void (*locksdlevents)(void) = NULL;
-		void (*unlocksdlevents)(void) = NULL;
-		if (SDL_GetWMInfo(&info) == 1 && info.subsystem == SDL_SYSWM_X11)
-		{
-			locksdlevents = info.info.x11.lock_func;
-			unlocksdlevents = info.info.x11.unlock_func;
-		}
-
 		GtkWidget *dialog;
 
-		if (locksdlevents) locksdlevents();
 		if ((bSuccess = (Dyn::gtk_init_check(NULL, NULL)
 			&& (dialog = Dyn::gtk_message_dialog_new(NULL, GTK_DIALOG_DESTROY_WITH_PARENT,
 				msgtype, GTK_BUTTONS_OK, "%s", u8msg)))))
@@ -1232,35 +1260,16 @@ void DisplayInitErrorMessage(
 			Dyn::gtk_widget_show(DYN_GTK_WIDGET(dialog));
 			Dyn::gtk_main();
 		}
-		if (unlocksdlevents) unlocksdlevents();
 		Dyn::UnloadGTK();
 	}
 	if (!bSuccess)
-		fprintf(stderr, "%s: %s\n", strTitle.c_str(), u8msg);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, strTitle.c_str(), (char*)u8msg, GetMainWindow());
 #else
-#warning Message display code is not provided (GTK not enabled). Using the console.
-	fprintf(stderr, "%s: %s\n", strTitle.c_str(), u8msg);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, strTitle.c_str(), (char*)u8msg, GetMainWindow());
 #endif
+
 	delete[] u8msg;
 #endif //not Win32
-}
-
-//*****************************************************************************
-int FindArg(
-//Find an argument by its name.
-//
-//Params:
-  int argc,                 //(in)  From main.
-  char *argv[],             //(in)  From main.
-  const char *pszArgName)   //(in)  Check for this arg--case insensitive.
-//
-//Returns:
-//-1 if argument was not found, or arg index if found.
-{
-	for (int nArgNo=0; nArgNo < argc; ++nArgNo)
-		if (_stricmp(argv[nArgNo],pszArgName)==0)
-			return nArgNo;
-	return -1;
 }
 
 //*****************************************************************************
@@ -1458,7 +1467,7 @@ void GetAppPath(
 	if (len && len != -1)
 	{
 		exepath[len] = 0;
-		UTF8ToUCS2(exepath, len, wstrAppPath);
+		UTF8ToUnicode(exepath, len, wstrAppPath);
 		return;
 	}
 #elif defined(WIN32)
@@ -1480,12 +1489,12 @@ void GetAppPath(
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 	char fullPathBuffer[PATH_MAX];
 	realpath(pszArg0, fullPathBuffer);
-	AsciiToUnicode(fullPathBuffer, wstrAppPath);
+	UTF8ToUnicode(fullPathBuffer, wstrAppPath);
 	return;
 #endif
 
     //Fallback solution--use the command-line argument.
-    AsciiToUnicode(pszArg0, wstrAppPath);
+    UTF8ToUnicode(pszArg0, wstrAppPath);
 }
 
 //*****************************************************************************
@@ -1757,184 +1766,184 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	if (!m_pFiles->GetGameProfileString((section), (key), temp)) \
 		m_pFiles->WriteGameProfileString((section), (key), (value))
 
-	AddIfMissing("Customizing", "AlwaysFullBlit", "0");
-	AddIfMissing("Customizing", "AutoLogin", "0");
-	AddIfMissing("Customizing", "CrossfadeDuration", "300");
-	AddIfMissing("Customizing", "ExportSpeech", "0");
-//	AddIfMissing("Customizing", "FullScoreUpload", "0");
-	AddIfMissing("Customizing", "LogVars", "0");
-//	AddIfMissing("Customizing", "QuickPlayerExport", "0");
-	AddIfMissing("Customizing", "RoomTransitionSpeed", "500");
-//	AddIfMissing("Customizing", "ValidateSavesOnImport", "1");
-	AddIfMissing("Customizing", "Windib", "1");
+	AddIfMissing(INISection::Customizing, INIKey::AlwaysFullBlit, "0");
+	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
+	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "300");
+	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
+//	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
+	AddIfMissing(INISection::Customizing, INIKey::LogVars, "0");
+//	AddIfMissing(INISection::Customizing, INIKey::QuickPlayerExport, "0");
+	AddIfMissing(INISection::Customizing, INIKey::RoomTransitionSpeed, "500");
+//	AddIfMissing(INISection::Customizing, INIKey::ValidateSavesOnImport, "1");
+	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 
-// AddIfMissing("Graphics", "Clock", "Clock");
-	AddIfMissing("Graphics", "General", "GeneralTiles");
-	AddIfMissing("Graphics", "Aboveground", "Aboveground");
-	AddIfMissing("Graphics", "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing("Graphics", "City", "City");
-	AddIfMissing("Graphics", "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing("Graphics", "Deep Spaces", "DeepSpaces");
-	AddIfMissing("Graphics", "Deep Spaces Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing("Graphics", "Fortress", "Fortress");
-	AddIfMissing("Graphics", "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing("Graphics", "Foundation", "Foundation");
-	AddIfMissing("Graphics", "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing("Graphics", "Iceworks", "Iceworks");
-	AddIfMissing("Graphics", "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing("Graphics", "Style", "Aboveground;City;Deep Spaces;Fortress;Foundation;Iceworks");
+// AddIfMissing(INISection::Graphics, "Clock", "Clock");
+	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
+	AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
+	AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+	AddIfMissing(INISection::Graphics, "City", "City");
+	AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
+	AddIfMissing(INISection::Graphics, "Deep Spaces", "DeepSpaces");
+	AddIfMissing(INISection::Graphics, "Deep Spaces Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
+	AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
+	AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+	AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
+	AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+	AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
+	AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+	AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;City;Deep Spaces;Fortress;Foundation;Iceworks");
 
-	AddIfMissing("Localization", "ExportText", "0");
-	AddIfMissing("Localization", "Keyboard", "0");
-	AddIfMissing("Localization", "Language", "Eng");
+	AddIfMissing(INISection::Localization, INIKey::ExportText, "0");
+	AddIfMissing(INISection::Localization, INIKey::Keyboard, "0");
+	AddIfMissing(INISection::Localization, INIKey::Language, "Eng");
 
 	//General music.
-	AddIfMissing("Songs", "Credits",    "credits.ogg");
-	AddIfMissing("Songs", "Exit",       "Busride.ogg");
-	AddIfMissing("Songs", "Intro",      "RPGTitle.ogg");
-	AddIfMissing("Songs", "WinGame",    "endhold.ogg");
-	AddIfMissing("Songs", "Architects", "architects.ogg");
-	AddIfMissing("Songs", "Battle",     "battle.ogg");
-	AddIfMissing("Songs", "Beneath",    "beneath.ogg");
-	AddIfMissing("Songs", "Dreamer",    "dreamer.ogg");
-	AddIfMissing("Songs", "Goblins",    "goblins.ogg");
-	AddIfMissing("Songs", "Redguard",   "redguard.ogg");
-	AddIfMissing("Songs", "Seaside",    "seaside.ogg");
-	AddIfMissing("Songs", "Serpents",   "serpents.ogg");
-	AddIfMissing("Songs", "Slayer",     "slayer.ogg");
+	AddIfMissing(INISection::Songs, "Credits",    "credits.ogg");
+	AddIfMissing(INISection::Songs, "Exit",       "Busride.ogg");
+	AddIfMissing(INISection::Songs, "Intro",      "RPGTitle.ogg");
+	AddIfMissing(INISection::Songs, "WinGame",    "endhold.ogg");
+	AddIfMissing(INISection::Songs, "Architects", "architects.ogg");
+	AddIfMissing(INISection::Songs, "Battle",     "battle.ogg");
+	AddIfMissing(INISection::Songs, "Beneath",    "beneath.ogg");
+	AddIfMissing(INISection::Songs, "Dreamer",    "dreamer.ogg");
+	AddIfMissing(INISection::Songs, "Goblins",    "goblins.ogg");
+	AddIfMissing(INISection::Songs, "Redguard",   "redguard.ogg");
+	AddIfMissing(INISection::Songs, "Seaside",    "seaside.ogg");
+	AddIfMissing(INISection::Songs, "Serpents",   "serpents.ogg");
+	AddIfMissing(INISection::Songs, "Slayer",     "slayer.ogg");
 
 	//Style-specific music.
-	AddIfMissing("Songs", "Deep SpacesExit", "Devious.ogg");
-	AddIfMissing("Songs", "Deep SpacesPuzzle", "Uncovered.ogg;Last Gameshow.ogg;In My Skin.ogg;Far Enough.ogg");
+	AddIfMissing(INISection::Songs, "Deep SpacesExit", "Devious.ogg");
+	AddIfMissing(INISection::Songs, "Deep SpacesPuzzle", "Uncovered.ogg;Last Gameshow.ogg;In My Skin.ogg;Far Enough.ogg");
 	if (bFullVersion)
 	{
-		AddIfMissing("Songs", "AbovegroundExit", "above win.ogg");
-		AddIfMissing("Songs", "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
-		AddIfMissing("Songs", "CityExit", "city win level.ogg");
-		AddIfMissing("Songs", "CityPuzzle", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
-		AddIfMissing("Songs", "FortressExit", "fortress win.ogg");
-		AddIfMissing("Songs", "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
-		AddIfMissing("Songs", "FoundationExit", "Delver.ogg");
-		AddIfMissing("Songs", "FoundationPuzzle", "After Paraguay.ogg;Brood.ogg;WithoutFear.ogg;Ancient Machine I.ogg");
-		AddIfMissing("Songs", "IceworksExit", "MySmallBox.ogg");
-		AddIfMissing("Songs", "IceworksPuzzle", "Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg;The Reward.ogg");
+		AddIfMissing(INISection::Songs, "AbovegroundExit", "above win.ogg");
+		AddIfMissing(INISection::Songs, "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "CityExit", "city win level.ogg");
+		AddIfMissing(INISection::Songs, "CityPuzzle", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "FortressExit", "fortress win.ogg");
+		AddIfMissing(INISection::Songs, "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "FoundationExit", "Delver.ogg");
+		AddIfMissing(INISection::Songs, "FoundationPuzzle", "After Paraguay.ogg;Brood.ogg;WithoutFear.ogg;Ancient Machine I.ogg");
+		AddIfMissing(INISection::Songs, "IceworksExit", "MySmallBox.ogg");
+		AddIfMissing(INISection::Songs, "IceworksPuzzle", "Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg;The Reward.ogg");
 	}
 
-	AddIfMissing("Startup", "LogErrors", "1");
+	AddIfMissing(INISection::Startup, "LogErrors", "1");
 
-//	AddIfMissing("Waves", "BeethroClear", "BeethroClear1.ogg;BeethroClear2.ogg;BeethroClear3.ogg");
-	AddIfMissing("Waves", "BeethroDie", "BeethroDie1.ogg;BeethroDie2.ogg");
-//	AddIfMissing("Waves", "BeethroHi", "my name is Beethro.ogg;what.ogg;uh huh.ogg;uh yah.ogg;i see.ogg;what you got food.ogg");
-	AddIfMissing("Waves", "BeethroOof", "BeethroOof1.ogg;BeethroOof2.ogg;BeethroOof3.ogg");
-	AddIfMissing("Waves", "BeethroScared", "BeethroScared1.ogg;BeethroScared2.ogg;BeethroScared3.ogg");
+//	AddIfMissing(INISection::Waves, "BeethroClear", "BeethroClear1.ogg;BeethroClear2.ogg;BeethroClear3.ogg");
+	AddIfMissing(INISection::Waves, "BeethroDie", "BeethroDie1.ogg;BeethroDie2.ogg");
+//	AddIfMissing(INISection::Waves, "BeethroHi", "my name is Beethro.ogg;what.ogg;uh huh.ogg;uh yah.ogg;i see.ogg;what you got food.ogg");
+	AddIfMissing(INISection::Waves, "BeethroOof", "BeethroOof1.ogg;BeethroOof2.ogg;BeethroOof3.ogg");
+	AddIfMissing(INISection::Waves, "BeethroScared", "BeethroScared1.ogg;BeethroScared2.ogg;BeethroScared3.ogg");
 
-	AddIfMissing("Waves", "CitizenDie", "C_die1.ogg;C_die2.ogg");
-	AddIfMissing("Waves", "CitizenOof", "C_oof1.ogg;C_oof2.ogg");
-	AddIfMissing("Waves", "CitizenScared", "C_scared1.ogg;C_scared2.ogg");
-	AddIfMissing("Waves", "GoblinDie", "G_die1.ogg;G_die2.ogg");
-	AddIfMissing("Waves", "GoblinOof", "G_oof1.ogg;G_oof2.ogg");
-	AddIfMissing("Waves", "GoblinScared", "G_scared1.ogg;G_scared2.ogg");
-	AddIfMissing("Waves", "HalphDie", "H2_die1.ogg;H2_die2.ogg");
-	AddIfMissing("Waves", "HalphOof", "H2_oof1.ogg;H2_oof2.ogg");
-	AddIfMissing("Waves", "HalphScared", "H2_scared1.ogg;H2_scared2.ogg");
-	AddIfMissing("Waves", "MonsterOof", "hiss_short.ogg");
-	AddIfMissing("Waves", "NFrustrated", "NeatherMad.ogg");
-	AddIfMissing("Waves", "NScared", "NeatherScared2.ogg;NeatherScared3.ogg");
-	AddIfMissing("Waves", "RockDie", "RG_die1.ogg;RG_die2.ogg");
-	AddIfMissing("Waves", "RockOof", "RG_oof1.ogg;RG_oof2.ogg");
-	AddIfMissing("Waves", "RockScared", "RG_scared1.ogg;RG_scared2.ogg");
-	AddIfMissing("Waves", "SlayerDie", "slayer demise.ogg");
-	AddIfMissing("Waves", "SlayerOof", "S_oof1.ogg;S_oof2.ogg");
-	AddIfMissing("Waves", "SlayerScared", "S_scared1.ogg;S_scared2.ogg");
-	AddIfMissing("Waves", "StalwartDie", "St_die1.ogg;St_die2.ogg");
-	AddIfMissing("Waves", "StalwartOof", "St_oof1.ogg;St_oof2.ogg");
-	AddIfMissing("Waves", "StalwartScared", "St_scared1.ogg;St_scared2.ogg");
-	AddIfMissing("Waves", "TarOof", "TarOof.ogg");
-	AddIfMissing("Waves", "TarScared", "TarScared.ogg");
-	AddIfMissing("Waves", "WomanDie", "Cf_die1.ogg;Cf_die2.ogg");
-	AddIfMissing("Waves", "WomanOof", "Cf_oof1.ogg;Cf_oof2.ogg");
-	AddIfMissing("Waves", "WomanScared", "Cf_scared1.ogg;Cf_scared2.ogg");
+	AddIfMissing(INISection::Waves, "CitizenDie", "C_die1.ogg;C_die2.ogg");
+	AddIfMissing(INISection::Waves, "CitizenOof", "C_oof1.ogg;C_oof2.ogg");
+	AddIfMissing(INISection::Waves, "CitizenScared", "C_scared1.ogg;C_scared2.ogg");
+	AddIfMissing(INISection::Waves, "GoblinDie", "G_die1.ogg;G_die2.ogg");
+	AddIfMissing(INISection::Waves, "GoblinOof", "G_oof1.ogg;G_oof2.ogg");
+	AddIfMissing(INISection::Waves, "GoblinScared", "G_scared1.ogg;G_scared2.ogg");
+	AddIfMissing(INISection::Waves, "HalphDie", "H2_die1.ogg;H2_die2.ogg");
+	AddIfMissing(INISection::Waves, "HalphOof", "H2_oof1.ogg;H2_oof2.ogg");
+	AddIfMissing(INISection::Waves, "HalphScared", "H2_scared1.ogg;H2_scared2.ogg");
+	AddIfMissing(INISection::Waves, "MonsterOof", "hiss_short.ogg");
+	AddIfMissing(INISection::Waves, "NFrustrated", "NeatherMad.ogg");
+	AddIfMissing(INISection::Waves, "NScared", "NeatherScared2.ogg;NeatherScared3.ogg");
+	AddIfMissing(INISection::Waves, "RockDie", "RG_die1.ogg;RG_die2.ogg");
+	AddIfMissing(INISection::Waves, "RockOof", "RG_oof1.ogg;RG_oof2.ogg");
+	AddIfMissing(INISection::Waves, "RockScared", "RG_scared1.ogg;RG_scared2.ogg");
+	AddIfMissing(INISection::Waves, "SlayerDie", "slayer demise.ogg");
+	AddIfMissing(INISection::Waves, "SlayerOof", "S_oof1.ogg;S_oof2.ogg");
+	AddIfMissing(INISection::Waves, "SlayerScared", "S_scared1.ogg;S_scared2.ogg");
+	AddIfMissing(INISection::Waves, "StalwartDie", "St_die1.ogg;St_die2.ogg");
+	AddIfMissing(INISection::Waves, "StalwartOof", "St_oof1.ogg;St_oof2.ogg");
+	AddIfMissing(INISection::Waves, "StalwartScared", "St_scared1.ogg;St_scared2.ogg");
+	AddIfMissing(INISection::Waves, "TarOof", "TarOof.ogg");
+	AddIfMissing(INISection::Waves, "TarScared", "TarScared.ogg");
+	AddIfMissing(INISection::Waves, "WomanDie", "Cf_die1.ogg;Cf_die2.ogg");
+	AddIfMissing(INISection::Waves, "WomanOof", "Cf_oof1.ogg;Cf_oof2.ogg");
+	AddIfMissing(INISection::Waves, "WomanScared", "Cf_scared1.ogg;Cf_scared2.ogg");
 
 /*
-	AddIfMissing("Waves", "CitizenClear", "CitizenClear1.ogg;CitizenClear2.ogg;CitizenClear3.ogg");
-	AddIfMissing("Waves", "CitizenHi", "CitizenHi1.ogg;CitizenHi2.ogg;CitizenHi3.ogg");
+	AddIfMissing(INISection::Waves, "CitizenClear", "CitizenClear1.ogg;CitizenClear2.ogg;CitizenClear3.ogg");
+	AddIfMissing(INISection::Waves, "CitizenHi", "CitizenHi1.ogg;CitizenHi2.ogg;CitizenHi3.ogg");
 
-	AddIfMissing("Waves", "GoblinClear", "GoblinClear1.ogg");
-	AddIfMissing("Waves", "GoblinHi", "GoblinHi1.ogg;GoblinHi2.ogg;GoblinHi3.ogg;GoblinHi4.ogg");
+	AddIfMissing(INISection::Waves, "GoblinClear", "GoblinClear1.ogg");
+	AddIfMissing(INISection::Waves, "GoblinHi", "GoblinHi1.ogg;GoblinHi2.ogg;GoblinHi3.ogg;GoblinHi4.ogg");
 
-	AddIfMissing("Waves", "MonsterClear", "hiss.ogg");
+	AddIfMissing(INISection::Waves, "MonsterClear", "hiss.ogg");
 
-	AddIfMissing("Waves", "RockClear", "RockClear1.ogg");
-	AddIfMissing("Waves", "RockHi", "RockHi1.ogg;RockHi2.ogg");
+	AddIfMissing(INISection::Waves, "RockClear", "RockClear1.ogg");
+	AddIfMissing(INISection::Waves, "RockHi", "RockHi1.ogg;RockHi2.ogg");
 
-	AddIfMissing("Waves", "WomanClear", "WomanClear1.ogg");
-	AddIfMissing("Waves", "WomanHi", "WomanHi1.ogg");
+	AddIfMissing(INISection::Waves, "WomanClear", "WomanClear1.ogg");
+	AddIfMissing(INISection::Waves, "WomanHi", "WomanHi1.ogg");
 */
 /*
-	AddIfMissing("Waves", "HalphCantOpen", "HalphDoorBlocked1.ogg;HalphDoorBlocked2.ogg");
-	AddIfMissing("Waves", "HalphEntered", "heya unk.ogg;here i am again.ogg;what did i miss.ogg;im back.ogg;whats going on.ogg;oh hey there you are.ogg");
-	AddIfMissing("Waves", "HalphFollowing", "HalphFollow1.ogg;HalphFollow2.ogg");
-	AddIfMissing("Waves", "HalphHurryUp", "HalphHurryUp1.ogg;HalphHurryUp2.ogg");
-	AddIfMissing("Waves", "HalphInterrupted", "now i cant get there.ogg;hey im blocked.ogg");
-	AddIfMissing("Waves", "HalphStriking", "HalphGetDoor1.ogg;HalphGetDoor2.ogg");
-	AddIfMissing("Waves", "HalphWaiting", "HalphWait1.ogg;HalphWait2.ogg");
+	AddIfMissing(INISection::Waves, "HalphCantOpen", "HalphDoorBlocked1.ogg;HalphDoorBlocked2.ogg");
+	AddIfMissing(INISection::Waves, "HalphEntered", "heya unk.ogg;here i am again.ogg;what did i miss.ogg;im back.ogg;whats going on.ogg;oh hey there you are.ogg");
+	AddIfMissing(INISection::Waves, "HalphFollowing", "HalphFollow1.ogg;HalphFollow2.ogg");
+	AddIfMissing(INISection::Waves, "HalphHurryUp", "HalphHurryUp1.ogg;HalphHurryUp2.ogg");
+	AddIfMissing(INISection::Waves, "HalphInterrupted", "now i cant get there.ogg;hey im blocked.ogg");
+	AddIfMissing(INISection::Waves, "HalphStriking", "HalphGetDoor1.ogg;HalphGetDoor2.ogg");
+	AddIfMissing(INISection::Waves, "HalphWaiting", "HalphWait1.ogg;HalphWait2.ogg");
 */
 /*
-	AddIfMissing("Waves", "NLaughing", "NeatherLaugh1.ogg;NeatherLaugh2.ogg;NeatherLaugh3.ogg");
-	AddIfMissing("Waves", "SlayerCombat", "i am unassailable.ogg;come closer and strike.ogg;cut me if you can.ogg;i will give you the hook.ogg;prepare for your removal.ogg;ah this maneuver.ogg;careful the hook is sharp.ogg;slaying time.ogg");
+	AddIfMissing(INISection::Waves, "NLaughing", "NeatherLaugh1.ogg;NeatherLaugh2.ogg;NeatherLaugh3.ogg");
+	AddIfMissing(INISection::Waves, "SlayerCombat", "i am unassailable.ogg;come closer and strike.ogg;cut me if you can.ogg;i will give you the hook.ogg;prepare for your removal.ogg;ah this maneuver.ogg;careful the hook is sharp.ogg;slaying time.ogg");
 */
 /*
-	AddIfMissing("Waves", "SlayerEnterFar", "keep running delver.ogg;the wisp will find you.ogg;wait there ill be along.ogg");
-	AddIfMissing("Waves", "SlayerEnterNear", "ready for the hook.ogg;the empire commands.ogg;ah there you are.ogg");
+	AddIfMissing(INISection::Waves, "SlayerEnterFar", "keep running delver.ogg;the wisp will find you.ogg;wait there ill be along.ogg");
+	AddIfMissing(INISection::Waves, "SlayerEnterNear", "ready for the hook.ogg;the empire commands.ogg;ah there you are.ogg");
 */
 
-	AddIfMissing("Waves", "SlayerKill", "laughing.ogg;a textbook delver mistake.ogg;finally how could i.ogg;the job is done.ogg");
+	AddIfMissing(INISection::Waves, "SlayerKill", "laughing.ogg;a textbook delver mistake.ogg;finally how could i.ogg;the job is done.ogg");
 
-	AddIfMissing("Waves", "AreaClear", "areaclear.ogg");
-	AddIfMissing("Waves", "Autosave", "ShortHarps.ogg");
-	AddIfMissing("Waves", "Bomb", "explosion.ogg");
-	AddIfMissing("Waves", "BreakWall", "LowShatter.ogg");
-	AddIfMissing("Waves", "BriarBreak", "briar-break1.ogg;briar-break2.ogg");
-	AddIfMissing("Waves", "Button", "buttonClick.ogg");
-	AddIfMissing("Waves", "Checkpoint", "blooomp.ogg");
-	AddIfMissing("Waves", "DoorOpen", "hugedoor.ogg");
-	AddIfMissing("Waves", "EvilEyeWoke", "hmm.ogg");
-	AddIfMissing("Waves", "Falling", "whoosh.ogg");
-	AddIfMissing("Waves", "Frozen", "frozen.ogg");
-	AddIfMissing("Waves", "Fuse", "fuselighting.ogg");
-	AddIfMissing("Waves", "Hit", "hit.ogg");
-	AddIfMissing("Waves", "Jump", "jump.ogg");
-	AddIfMissing("Waves", "Key", "key.ogg");
-	AddIfMissing("Waves", "LastBrain", "Powerdown2.ogg");
-	AddIfMissing("Waves", "LevelComplete", "LongHarps.ogg");
-	AddIfMissing("Waves", "Mimic", "mimic.ogg");
-	AddIfMissing("Waves", "MonsterAttack", "monsterAttack.ogg");
-	AddIfMissing("Waves", "OrbBroke", "orbbroke.ogg");
-	AddIfMissing("Waves", "OrbHit", "orbhit.ogg");
-	AddIfMissing("Waves", "OrbHitQuiet", "orbhitQuiet.ogg");
-	AddIfMissing("Waves", "Potion", "potion.ogg");
-	AddIfMissing("Waves", "PressPlate", "pressurePlate.ogg");
-	AddIfMissing("Waves", "PressPlateUp", "pressurePlateUp.ogg");
-	AddIfMissing("Waves", "Punch", "punch.ogg");
-	AddIfMissing("Waves", "Read", "read.ogg");
-	AddIfMissing("Waves", "Secret", "SecretArea.ogg");
-	AddIfMissing("Waves", "Shatter", "shatter.ogg");
-	AddIfMissing("Waves", "Shielded", "shielded.ogg");
-	AddIfMissing("Waves", "Sizzle", "sizzle.ogg");
-	AddIfMissing("Waves", "Snoring", "snoring.ogg");
-	AddIfMissing("Waves", "Splash", "splash.ogg");
-	AddIfMissing("Waves", "Splat", "HeavyZap.ogg;HeavyZap2.ogg;HeavyZap3.ogg");
-	AddIfMissing("Waves", "StabTar", "TarSplat.ogg");
-	AddIfMissing("Waves", "Swing", "QuickScrape.ogg");
-	AddIfMissing("Waves", "Sword", "sword1.ogg;sword2.ogg;sword3.ogg;sword4.ogg;sword5.ogg");
-	AddIfMissing("Waves", "Thunder", "thunder.ogg");
-	AddIfMissing("Waves", "Tired", "BeethroTired1.ogg;BeethroTired2.ogg;BeethroTired3.ogg;BeethroTired4.ogg");
-	AddIfMissing("Waves", "Trapdoor", "somethingbelow.ogg");
-	AddIfMissing("Waves", "Tunnel", "poptwang.ogg");
-	AddIfMissing("Waves", "Walk", "tinyblip.ogg;tinyblip2.ogg");
-	AddIfMissing("Waves", "WaterStep", "waterstep.ogg");
-	AddIfMissing("Waves", "Wisp", "belltoll.ogg");
-	AddIfMissing("Waves", "Wubba", "wubba.ogg");
+	AddIfMissing(INISection::Waves, "AreaClear", "areaclear.ogg");
+	AddIfMissing(INISection::Waves, "Bomb", "explosion.ogg");
+	AddIfMissing(INISection::Waves, "Autosave", "ShortHarps.ogg");
+	AddIfMissing(INISection::Waves, "BreakWall", "LowShatter.ogg");
+	AddIfMissing(INISection::Waves, "Button", "buttonClick.ogg");
+	AddIfMissing(INISection::Waves, "BriarBreak", "briar-break1.ogg;briar-break2.ogg");
+	AddIfMissing(INISection::Waves, "Checkpoint", "blooomp.ogg");
+	AddIfMissing(INISection::Waves, "DoorOpen", "hugedoor.ogg");
+	AddIfMissing(INISection::Waves, "EvilEyeWoke", "hmm.ogg");
+	AddIfMissing(INISection::Waves, "Falling", "whoosh.ogg");
+	AddIfMissing(INISection::Waves, "Frozen", "frozen.ogg");
+	AddIfMissing(INISection::Waves, "Fuse", "fuselighting.ogg");
+	AddIfMissing(INISection::Waves, "Hit", "hit.ogg");
+	AddIfMissing(INISection::Waves, "Jump", "jump.ogg");
+	AddIfMissing(INISection::Waves, "Key", "key.ogg");
+	AddIfMissing(INISection::Waves, "LastBrain", "Powerdown2.ogg");
+	AddIfMissing(INISection::Waves, "LevelComplete", "LongHarps.ogg");
+	AddIfMissing(INISection::Waves, "Mimic", "mimic.ogg");
+	AddIfMissing(INISection::Waves, "MonsterAttack", "monsterAttack.ogg");
+	AddIfMissing(INISection::Waves, "OrbBroke", "orbbroke.ogg");
+	AddIfMissing(INISection::Waves, "OrbHit", "orbhit.ogg");
+	AddIfMissing(INISection::Waves, "OrbHitQuiet", "orbhitQuiet.ogg");
+	AddIfMissing(INISection::Waves, "Potion", "potion.ogg");
+	AddIfMissing(INISection::Waves, "PressPlate", "pressurePlate.ogg");
+	AddIfMissing(INISection::Waves, "PressPlateUp", "pressurePlateUp.ogg");
+	AddIfMissing(INISection::Waves, "Punch", "punch.ogg");
+	AddIfMissing(INISection::Waves, "Read", "read.ogg");
+	AddIfMissing(INISection::Waves, "Secret", "SecretArea.ogg");
+	AddIfMissing(INISection::Waves, "Shatter", "shatter.ogg");
+	AddIfMissing(INISection::Waves, "Shielded", "shielded.ogg");
+	AddIfMissing(INISection::Waves, "Sizzle", "sizzle.ogg");
+	AddIfMissing(INISection::Waves, "Snoring", "snoring.ogg");
+	AddIfMissing(INISection::Waves, "Splash", "splash.ogg");
+	AddIfMissing(INISection::Waves, "Splat", "HeavyZap.ogg;HeavyZap2.ogg;HeavyZap3.ogg");
+	AddIfMissing(INISection::Waves, "StabTar", "TarSplat.ogg");
+	AddIfMissing(INISection::Waves, "Swing", "QuickScrape.ogg");
+	AddIfMissing(INISection::Waves, "Sword", "sword1.ogg;sword2.ogg;sword3.ogg;sword4.ogg;sword5.ogg");
+	AddIfMissing(INISection::Waves, "Tired", "BeethroTired1.ogg;BeethroTired2.ogg;BeethroTired3.ogg;BeethroTired4.ogg");
+	AddIfMissing(INISection::Waves, "Trapdoor", "somethingbelow.ogg");
+	AddIfMissing(INISection::Waves, "Tunnel", "poptwang.ogg");
+	AddIfMissing(INISection::Waves, "Thunder", "thunder.ogg");
+	AddIfMissing(INISection::Waves, "Walk", "tinyblip.ogg;tinyblip2.ogg");
+	AddIfMissing(INISection::Waves, "WaterStep", "waterstep.ogg");
+	AddIfMissing(INISection::Waves, "Wisp", "belltoll.ogg");
+	AddIfMissing(INISection::Waves, "Wubba", "wubba.ogg");
 
 #undef AddIfMissing
 }

@@ -209,8 +209,7 @@ void CBrowserScreen::OnClick(
 		ASSERTP(pHyperLink != NULL, "Missing hyperlink: GetWidget returned NULL");
 		if (pHyperLink->IsExternal())
 		{
-			string strLink;
-			UnicodeToAscii(pHyperLink->GetLink(), strLink);
+			const string strLink = UnicodeToUTF8(pHyperLink->GetLink());
 			SetFullScreen(false);
 			OpenExtBrowser(strLink.c_str());
 		}
@@ -279,18 +278,18 @@ void CBrowserScreen::OnKeyDown(
 			break;
 
 		//Scroll browser window.
-		case SDLK_UP:  case SDLK_KP8:
+		case SDLK_UP:  case SDLK_KP_8:
 			this->pHTML->ScrollUp();
 			break;
-		case SDLK_HOME:  case SDLK_KP7:
-		case SDLK_PAGEUP:    case SDLK_KP9:
+		case SDLK_HOME:  case SDLK_KP_7:
+		case SDLK_PAGEUP:    case SDLK_KP_9:
 			this->pHTML->ScrollUpPage();
 			break;
-		case SDLK_DOWN:  case SDLK_KP2:
+		case SDLK_DOWN:  case SDLK_KP_2:
 			this->pHTML->ScrollDown();
 			break;
-		case SDLK_END:  case SDLK_KP1:
-		case SDLK_PAGEDOWN:  case SDLK_KP3:
+		case SDLK_END:  case SDLK_KP_1:
+		case SDLK_PAGEDOWN:  case SDLK_KP_3:
 			this->pHTML->ScrollDownPage();
 			break;
 		default: break;
@@ -302,16 +301,16 @@ void CBrowserScreen::OnMouseWheel(
 //Called when a mouse wheel event is received.
 //
 //Params:
-	const SDL_MouseButtonEvent &Button)
+	const SDL_MouseWheelEvent &Wheel)
 {
 	//Mouse wheel scrolls browser widget (if it doesn't already have focus).
 	ASSERT(this->pBrowser);
 	if (!this->pBrowser->IsSelected())
 	{
 		ASSERT(this->pHTML);
-		if (Button.button == SDL_BUTTON_WHEELDOWN)
+		if (Wheel.y < 0)
 			this->pHTML->ScrollDown();
-		else if (Button.button == SDL_BUTTON_WHEELUP)
+		else if (Wheel.y > 0)
 			this->pHTML->ScrollUp();
 	}
 }

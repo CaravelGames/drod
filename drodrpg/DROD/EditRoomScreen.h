@@ -139,7 +139,7 @@ private:
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
 	virtual void   OnMouseMotion(const UINT dwTagNo, const SDL_MouseMotionEvent &Motion);
 	virtual void   OnMouseUp(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
-	virtual void   OnMouseWheel(const SDL_MouseButtonEvent &Button);
+	virtual void   OnMouseWheel(const SDL_MouseWheelEvent &Wheel);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 
 	virtual void   Paint(bool bUpdateRect=true);

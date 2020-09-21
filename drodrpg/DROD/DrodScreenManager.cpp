@@ -47,6 +47,7 @@
 #include "SettingsScreen.h"
 #include "TitleScreen.h"
 #include "WinStartScreen.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 
@@ -116,7 +117,7 @@ void CDrodScreenManager::InitCrossfadeDuration()
 //Queries the current setting for crossfade duration and applies it.
 {
 	string strDuration;
-	if (CFiles::GetGameProfileString("Customizing", "CrossfadeDuration", strDuration))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::CrossfadeDuration, strDuration))
 	{
 		static const UINT MAX_CROSSFADE = 1000; //ms
 		const UINT duration = atoi(strDuration.c_str());

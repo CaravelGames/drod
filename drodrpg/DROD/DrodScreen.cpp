@@ -46,6 +46,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include <FrontEndLib/ButtonWidget.h>
 #include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/ProgressBarWidget.h>
@@ -64,16 +65,7 @@ CNetChat::Interface CDrodScreen::chat;
 
 typedef map<ROOMCOORD, vector<UINT> > TilesMap;
 
-const char importSoundPath[] = "ImportSoundPath";
-const char importVideoPath[] = "ImportVideoPath";
-const char fullScreenStr[] = "Fullscreen";
-const char combatRateStr[] = "CombatRate";
-const char showSubtitlesWithVoices[] = "ShowSubtitlesWithVoices";
-const char enableChat[] = "EnableChatInGame";
-const char receiveWhispersOnly[] = "ReceiveWhispersOnlyInGame";
-const char disableMouseMovementStr[] = "DisableMouse";
 const char noFocusPlaysMusic[] = "NoFocusPlaysMusic";
-
 const SDL_Color FriendColor = {0, 0, 128, 0};
 const SDL_Color FriendAFKColor = {64, 64, 128, 0};
 const SDL_Color AFKColor = {64, 64, 64, 0}; //darker than ignored Gray-128
@@ -834,7 +826,7 @@ void CDrodScreen::ApplyINISettings()
 
 	//Disable error logging if requested.
 	string str;
-	if (CFiles::GetGameProfileString("Startup", "LogErrors", str))
+	if (CFiles::GetGameProfileString(INISection::Startup, INIKey::LogErrors, str))
 		SetLogErrors(atoi(str.c_str()) != 0);
 }
 
@@ -871,12 +863,12 @@ void CDrodScreen::Callbackf(float fVal)
 
 	//Monitor events received.  Handle window changes properly.
 	SDL_Event event;
-	while (SDL_PollEvent(&event)) 
+	while (PollEvent(&event)) 
 	{
 		switch (event.type)
 		{
-			case SDL_ACTIVEEVENT:
-				OnActiveEvent(event.active);
+			case SDL_WINDOWEVENT:
+				OnWindowEvent(event.window);
 				this->pStatusDialog->Paint();	//make sure this stays on top
 			break;
 		}
@@ -1014,8 +1006,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 #undef MACROMATCH
 
 	//Parse "section:key[=value]".
-	string str;
-	UnicodeToAscii(pText+index, str);
+	string str = UnicodeToAscii(pText+index);
 	char *pStr = (char*)str.c_str();
 	string originalStr = pStr;
 	char *pSection = strtok(pStr, ":");
@@ -1222,14 +1213,14 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 	//Export hold texts for localization if requested.
 	string str;
 	bool bExportText = false;
-	if (CFiles::GetGameProfileString("Localization", "ExportText", str))
+	if (CFiles::GetGameProfileString(INISection::Localization, INIKey::ExportText, str))
 		bExportText = atoi(str.c_str()) != 0;
 	if (bExportText && ShowYesNoMessage(MID_ExportHoldTextPrompt) == TAG_YES)
 		ExportHoldTexts(pHold);
 
 	//Export hold script if requested.
 	bool bExportScripts = false;
-	if (CFiles::GetGameProfileString("Customizing", "ExportSpeech", str))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::ExportSpeech, str))
 		bExportScripts = atoi(str.c_str()) != 0;
 	if (bExportScripts && ShowYesNoMessage(MID_ExportHoldScriptsPrompt) == TAG_YES)
 		ExportHoldScripts(pHold);
@@ -1358,18 +1349,22 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-#if defined(WIN32)
-	if (!OpenExtBrowser("http://www.caravelgames.com/buyRPG.html"))
+	string url = "http://www.caravelgames.com/buyRPG.html";
+#ifdef STEAMBUILD
+	url = "http://store.steampowered.com/app/351330";
+#elif defined(WIN32)
+	//use default
 #elif defined(__linux__)
-	if (!OpenExtBrowser("http://www.caravelgames.com/buyRPGLinux.html"))
+	url = "http://www.caravelgames.com/buyRPGLinux.html";
 #elif defined(__FreeBSD__)
-	if (!OpenExtBrowser("http://www.caravelgames.com/buyRPGFreeBSD.html"))
+	url = "http://www.caravelgames.com/buyRPGFreeBSD.html";
 #elif defined(__APPLE__)
-	if (!OpenExtBrowser("http://www.caravelgames.com/buyRPGOSX.html"))
+	url = "http://www.caravelgames.com/buyRPGOSX.html";
 #else
 #error Add a buy link for this platform ?
-	if (!OpenExtBrowser("http://www.caravelgames.com/buyRPG.html"))
 #endif
+
+	if (!OpenExtBrowser(url.c_str()))
 		ShowOkMessage(MID_NoBrowserToBuy);
 }
 
@@ -1585,7 +1580,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 {
 	CFiles f;
 	list<WSTRING> styleName, tiles;
-	if (!f.GetGameProfileString("Graphics", style.c_str(), styleName))
+	if (!f.GetGameProfileString(INISection::Graphics, style.c_str(), styleName))
 		return; //style not listed
 	if (styleName.empty())
 		return; //no entries for style
@@ -1599,7 +1594,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 		skyName = style;
 		skyName += wszSpace;
 		skyName += wszSKIES;
-		f.GetGameProfileString("Graphics", skyName.c_str(), skies);
+		f.GetGameProfileString(INISection::Graphics, skyName.c_str(), skies);
 	}
 
 	UINT wI;
@@ -1687,7 +1682,7 @@ void CDrodScreen::ImportHoldMedia()
 #if defined(EMBED_STYLES) && defined(CARAVELBUILD)
 	//Get names of all styles.
 	list<WSTRING> styles;
-	if (!CFiles::GetGameProfileString("Graphics", "Style", styles))
+	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 		return;	//styles are missing
 
 	//If hold being exported is for demo, include the City style only.
@@ -1717,7 +1712,7 @@ void CDrodScreen::ImportHoldMedia()
 		//Get this style's base filename from the INI.
 		//ATTN: Gets the first name only.
 		list<WSTRING> styleBasenames;
-		if (!CFiles::GetGameProfileString("Graphics", styleName.c_str(), styleBasenames))
+		if (!CFiles::GetGameProfileString(INISection::Graphics, styleName.c_str(), styleBasenames))
 			continue;	//this style is missing
 		if (styleBasenames.empty())
 			continue;   //style name not specified
@@ -1755,7 +1750,7 @@ void CDrodScreen::ImportHoldMedia()
 
 					//General game tiles.
 					//ATTN: This only recognizes the first name in a set of tiles names.
-					if (!f.GetGameProfileString("Graphics", "General", tiles))
+					if (!f.GetGameProfileString(INISection::Graphics, "General", tiles))
 						continue;	//missing
 					ASSERT(!tiles.empty());
 					wstrImportFile = tiles.front();
@@ -1830,7 +1825,7 @@ void CDrodScreen::ImportHoldMedia()
 		wstrSkyname += wszSpace;
 		wstrSkyname += wszSKIES;
 		list<WSTRING> skies;
-		if (CFiles::GetGameProfileString("Graphics", wstrSkyname.c_str(), skies))
+		if (CFiles::GetGameProfileString(INISection::Graphics, wstrSkyname.c_str(), skies))
 			for (list<WSTRING>::const_iterator sky = skies.begin(); sky != skies.end(); ++sky)
 			{
 				if (embeddedImages.count(*sky) != 0)
@@ -1874,7 +1869,7 @@ void CDrodScreen::ImportHoldMedia()
 				WSTRING wMoodText;
 				AsciiToUnicode(moodText[wI], wMoodText);
 				WSTRING wstrSongmood = styleName + wMoodText;
-				f.GetGameProfileString("Songs", wstrSongmood.c_str(), songlist);
+				f.GetGameProfileString(INISection::Songs, wstrSongmood.c_str(), songlist);
 			}
 			else switch (wI)
 			{
@@ -2028,19 +2023,19 @@ void CDrodScreen::EnablePlayerSettings(
 		return;
 	}
 
-	g_pTheSound->EnableSoundEffects(pPlayer->Settings.GetVar("SoundEffects", true));
-	g_pTheSound->SetSoundEffectsVolume(pPlayer->Settings.GetVar("SoundEffectsVolume", (BYTE)DEFAULT_SOUND_VOLUME));
+	g_pTheSound->EnableSoundEffects(pPlayer->Settings.GetVar(Settings::SoundEffects, true));
+	g_pTheSound->SetSoundEffectsVolume(pPlayer->Settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME));
 
-	g_pTheSound->EnableVoices(pPlayer->Settings.GetVar("Voices", true));
-	g_pTheSound->SetVoicesVolume(pPlayer->Settings.GetVar("VoicesVolume", (BYTE)DEFAULT_VOICE_VOLUME));
+	g_pTheSound->EnableVoices(pPlayer->Settings.GetVar(Settings::Voices, true));
+	g_pTheSound->SetVoicesVolume(pPlayer->Settings.GetVar(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME));
 
-	g_pTheSound->EnableMusic(pPlayer->Settings.GetVar("Music", true));
-	g_pTheSound->SetMusicVolume(pPlayer->Settings.GetVar("MusicVolume", (BYTE)DEFAULT_MUSIC_VOLUME));
+	g_pTheSound->EnableMusic(pPlayer->Settings.GetVar(Settings::Music, true));
+	g_pTheSound->SetMusicVolume(pPlayer->Settings.GetVar(Settings::MusicVolume, (BYTE)DEFAULT_MUSIC_VOLUME));
 
-	SetFullScreen(pPlayer->Settings.GetVar(fullScreenStr, false));
-	g_pTheBM->bAlpha = pPlayer->Settings.GetVar("Alpha", true);
-	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar("Gamma", (BYTE)CDrodBitmapManager::GetGammaOne()));
-	g_pTheBM->eyeCandy = (pPlayer->Settings.GetVar("EyeCandy", true) ? 1 : 0);
+	SetFullScreen(pPlayer->Settings.GetVar(Settings::Fullscreen, false));
+	g_pTheBM->bAlpha = pPlayer->Settings.GetVar(Settings::Alpha, true);
+	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne()));
+	g_pTheBM->eyeCandy = (pPlayer->Settings.GetVar(Settings::EyeCandy, true) ? 1 : 0);
 
 	//RepeatRate is queried in CGameScreen::ApplyPlayerSettings().
 
@@ -2172,7 +2167,7 @@ bool CDrodScreen::PlayVideo(const UINT dwDataID, const int x, const int y)
 	const bool bIsCursorShowing = IsCursorVisible();
 	if (bIsCursorShowing)
 		HideCursor();
-	const bool bRes = PlayVideoBuffer(buffer, GetWidgetScreenSurface(), x, y);
+	const bool bRes = PlayVideoBuffer(buffer, GetMainWindow(), x, y);
 	if (bIsCursorShowing)
 	{
 		ShowCursor();
@@ -2191,12 +2186,12 @@ bool CDrodScreen::PollForCNetInterrupt()
 	//Get any events waiting in the queue.
 	bool bInterrupt = false;
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
+	while (PollEvent(&event))
 	{
 		switch (event.type)
 		{
-			case SDL_ACTIVEEVENT:
-				OnActiveEvent(event.active);
+			case SDL_WINDOWEVENT:
+				OnWindowEvent(event.window);
 				this->pStatusDialog->Paint();	//make sure this stays on top
 			break;
 			case SDL_KEYDOWN:
@@ -2529,7 +2524,7 @@ void CDrodScreen::ToggleScreenSize()
 	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
 	if (pCurrentPlayer)
 	{
-		pCurrentPlayer->Settings.SetVar(fullScreenStr, IsFullScreen());
+		pCurrentPlayer->Settings.SetVar(Settings::Fullscreen, IsFullScreen());
 		pCurrentPlayer->Update();
 		delete pCurrentPlayer;
 	}

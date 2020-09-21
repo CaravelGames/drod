@@ -253,30 +253,32 @@ c4_RowRef CDbBase::GetRowRef(const VIEWTYPE vType, UINT dwGlobalIndex)
 //calling this is incorrect.  Instead, invoke view[returnedIndex] to retrieve
 //the locally-indexed row from the proper view.
 {
-	static c4_View View;
-	View = GetView(vType,0);
-	const UINT dwSize = View.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
+	const char* viewName = ViewTypeStr(vType);
+
+	UINT localIndex = dwGlobalIndex;
+	c4_View View = m_pMainStorage->View(viewName);
+	const UINT size = View.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
 	                                    //but this is only a problem if other .dat files are non-empty
 	                                    //which should be avoided when building the main .dat file.
-	if (dwGlobalIndex < dwSize)
-		return View.GetAt(dwGlobalIndex);
+	if (localIndex < size)
+		return View.GetAt(localIndex);
+	localIndex -= size; //index not in this view -- use relative index in subsequent views
 
 	//Look in other DB.
-	View = GetView(vType,START_LOCAL_ID);
-	return View.GetAt(dwGlobalIndex - dwSize);
+	c4_View localContentView = GetPlayerDataView(vType, viewName);
+	return localContentView.GetAt(localIndex);
 }
 
 //*****************************************************************************
 c4_ViewRef CDbBase::GetActiveView(const VIEWTYPE vType)
 //Returns: the view of indicated type that may be written to
 {
-	return GetView(vType,
+	const char* viewName = ViewTypeStr(vType);
 #ifdef DEV_BUILD
-		0
+	return m_pMainStorage->View(viewName);
 #else
-		START_LOCAL_ID
+	return GetPlayerDataView(vType, viewName);
 #endif
-	);
 }
 
 //*****************************************************************************
@@ -287,7 +289,16 @@ c4_ViewRef CDbBase::GetView(const VIEWTYPE vType, const UINT dwID)
 	if (dwID < START_LOCAL_ID)
 		return m_pMainStorage->View(viewName); //pre-packaged database
 
-	//The player's database.
+	//The player's local content database.
+	return GetPlayerDataView(vType, viewName);
+}
+
+c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName)
+{
+#ifdef DEV_BUILD
+	static c4_Storage noView; //not using any player view under this mode
+	return noView.View(viewName);
+#else
 	switch (vType)
 	{
 		case V_Data:
@@ -310,15 +321,18 @@ c4_ViewRef CDbBase::GetView(const VIEWTYPE vType, const UINT dwID)
 			ASSERT(!"Non-supported DB table");
 			return m_pMainStorage->View(viewName); //gotta return something
 	}
+#endif
 }
 
 //*****************************************************************************
 UINT CDbBase::GetViewSize(const VIEWTYPE vType)
 //Returns: the number of rows in all DB views of the specified type.
 {
-	c4_View view = GetView(vType,0);
-	c4_View view2 = GetView(vType,START_LOCAL_ID);
-	return view.GetSize() + view2.GetSize();
+	const char* viewName = ViewTypeStr(vType);
+
+	c4_View view = m_pMainStorage->View(viewName);
+	c4_View localContentView = GetPlayerDataView(vType, viewName);
+	return view.GetSize() + localContentView.GetSize();
 }
 
 //*****************************************************************************
@@ -389,9 +403,15 @@ UINT CDbBase::LookupRowByPrimaryKey(
 //*****************************************************************************
 bool CDbBase::IsOpen()
 {
-	return m_pMainStorage != NULL &&
-			m_pDataStorage != NULL && m_pHoldStorage != NULL && m_pPlayerStorage != NULL &&
+	if (!m_pMainStorage)
+		return false;
+
+#ifndef DEV_BUILD
+	return m_pDataStorage != NULL && m_pHoldStorage != NULL && m_pPlayerStorage != NULL &&
 			m_pSaveStorage != NULL && m_pSaveMoveStorage != NULL && m_pTextStorage != NULL;
+#endif
+
+	return true;
 }
 
 //*****************************************************************************
@@ -471,7 +491,7 @@ MESSAGE_ID CDbBase::Open(
 		//Verify read and write access.
 #if defined(WIN32) && defined(DEV_BUILD)
 		if (!CFiles::HasReadWriteAccess(wstrMainDatPath.c_str())
-			&& !CFiles::MakeFileWritable(wstrMainDatPath.c_str()))
+				&& !CFiles::MakeFileWritable(wstrMainDatPath.c_str()))
 			return MID_DatNoAccess;
 #endif
 #if defined(WIN32) || !defined(DEV_BUILD)
@@ -507,6 +527,7 @@ MESSAGE_ID CDbBase::Open(
 		if (!m_pMainStorage)
 			throw MID_CouldNotOpenDB;
 
+#ifndef DEV_BUILD
 		UnicodeToAscii(wstrDataDatPath, filename);
 		m_pDataStorage = new c4_Storage(filename.c_str(), 1);
 		UnicodeToAscii(wstrHoldDatPath, filename);
@@ -522,6 +543,7 @@ MESSAGE_ID CDbBase::Open(
 		if (!m_pDataStorage || !m_pHoldStorage ||
 				!m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
 			throw MID_CouldNotOpenDB;
+#endif
 
 		buildIndex();
 	}
@@ -572,18 +594,16 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 //Creates a new, blank database file with support for all record types.
 //Returns: true if operation succeeded, else false
 {
-	char szFilepath[MAX_PATH + 1];
-	UnicodeToAscii(wstrFilepath, szFilepath);
+	const string filepath = UnicodeToAscii(wstrFilepath);
 
-	c4_Storage newStorage(szFilepath, true); //create file on disk
+	c4_Storage newStorage(filepath.c_str(), true); //create file on disk
 	if (!CFiles::DoesFileExist(wstrFilepath.c_str()))
 	{
 #ifdef HAS_UNICODE
 		printf("FAILED--Was not able to create %S." NEWLINE, wstrFilepath.c_str());
 #else
-		char path[wstrFilepath.length()+1];
-		UnicodeToAscii(wstrFilepath, path);
-		printf("FAILED--Was not able to create %s." NEWLINE, path);
+		const string path = UnicodeToAscii(wstrFilepath);
+		printf("FAILED--Was not able to create %s." NEWLINE, path.c_str());
 #endif
 		return false;
 	}
@@ -1025,7 +1045,7 @@ bool CDbBase::ImportTexts(c4_View& /*MessageTextsView*/, CStretchyBuffer& buf)
 //Sets all message texts of current language in view from info contained in 'buf'.
 {
 	WSTRING wstr;
-	UTF8ToUCS2((char*)(BYTE*)buf, buf.Size(), wstr);
+	UTF8ToUnicode((char*)(BYTE*)buf, buf.Size(), wstr);
 	const UINT wstrSize = wstr.size();
 
 	static const WCHAR IDMARKER[] = { We('['), We('['), We(0) };

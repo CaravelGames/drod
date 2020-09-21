@@ -197,7 +197,7 @@ void CDbMessageText::ImportText(const char** atts)
 	ASSERT(!this->bIsDirty); //don't lose any updates to a text in memory
 
 	//Add new language version of this message.
-	UTF8ToUCS2(atts[3], strlen(atts[3]), this->wstrText);
+	UTF8ToUnicode(atts[3], strlen(atts[3]), this->wstrText);
 	AddMessageText(this->eMessageID, this->wstrText.c_str());
 	this->bIsLoaded = true;
 

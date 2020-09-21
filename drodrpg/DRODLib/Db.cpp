@@ -93,10 +93,19 @@ UINT CDb::GetHoldID()
 	if (!CDb::dwCurrentHoldID)
 	{
 		CDbHold *pHold = this->Holds.GetFirst(true);
-		if (pHold)
+		while (pHold)
 		{
-			CDb::dwCurrentHoldID = pHold->dwHoldID;
+			const CDbHold::HoldStatus status = pHold->status;
+			const UINT holdID = pHold->dwHoldID;
 			delete pHold;
+
+			//Skip tutorial holds
+			if (status != CDbHold::Tutorial) {
+				CDb::dwCurrentHoldID = holdID;
+				pHold = NULL;
+			} else {
+				pHold = this->Holds.GetNext();
+			}
 		}
 	}
 	return CDb::dwCurrentHoldID;

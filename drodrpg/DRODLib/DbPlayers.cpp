@@ -392,6 +392,18 @@ CDbPackedVars CDbPlayers::GetSettings(const UINT dwPlayerID)
 }
 
 //*****************************************************************************
+bool CDbPlayers::Exists(const UINT playerID)
+{
+	if (!playerID)
+		return false;
+
+	ASSERT(IsOpen());
+	c4_View PlayersView;
+	const UINT dwPlayerRowI = LookupRowByPrimaryKey(playerID, V_Players, PlayersView);
+	return dwPlayerRowI != ROW_NO_MATCH;
+}
+
+//*****************************************************************************
 bool CDbPlayers::IsLocal(const UINT dwPlayerID)
 //Returns: whether the indicated player is marked as local
 {

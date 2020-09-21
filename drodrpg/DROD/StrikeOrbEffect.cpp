@@ -120,7 +120,7 @@ bool CStrikeOrbEffect::Draw(SDL_Surface* pDestSurface)
 	if (g_pTheBM->bAlpha)
 	{
 		const Uint8 nOpacity = (Uint8)(255.0 * (dwDuration - dwTimeElapsed) / (float)dwDuration);
-		SDL_SetAlpha(this->pPartsSurface, SDL_SRCALPHA, nOpacity);
+		EnableSurfaceBlending(this->pPartsSurface, nOpacity);
 	}
 
 	//Draw energy bolts.
@@ -133,7 +133,7 @@ bool CStrikeOrbEffect::Draw(SDL_Surface* pDestSurface)
 	}
 
 	//Remove transparency level.
-	SDL_SetAlpha(this->pPartsSurface, 0, 0);   //not needed
+	DisableSurfaceBlending(this->pPartsSurface);   //not needed
 
 	//Unclip screen surface.
 	SDL_SetClipRect(pDestSurface, NULL);

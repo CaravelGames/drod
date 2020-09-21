@@ -32,9 +32,14 @@
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
 
+//Global app parameters.
+extern const char szCompanyName[];
+
 extern const char szDROD[];
 extern const WCHAR wszDROD[];
+extern const char szDROD_VER[];
 extern const WCHAR wszDROD_VER[];
+extern const char szUserspaceFolder[];
 
 extern const UINT VERSION_NUMBER;
 extern const UINT NEXT_VERSION_NUMBER;
@@ -83,6 +88,39 @@ static const UINT S = 7;
 static const UINT SE = 8;
 static const UINT NO_ORIENTATION = 4;
 static const UINT ORIENTATION_COUNT = 9;
+
+//******************************************************************************************
+namespace InputCommands
+{
+	enum DCMD
+	{
+		DCMD_First = 0,
+		DCMD_NW = DCMD_First,
+		DCMD_N,
+		DCMD_NE,
+		DCMD_W,
+		DCMD_Wait,
+		DCMD_E,
+		DCMD_SW,
+		DCMD_S,
+		DCMD_SE,
+		DCMD_C,
+		DCMD_CC,
+		DCMD_Restart,
+		DCMD_Undo,
+		DCMD_Battle,
+		DCMD_UseAccessory,
+		DCMD_Lock,
+		DCMD_Command,
+
+		DCMD_Count,
+		DCMD_NotFound=DCMD_Count
+	};
+	extern const char *COMMANDNAME_ARRAY[DCMD_Count];
+	extern const UINT COMMAND_MIDS[DCMD_Count];
+
+	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
+}
 
 //Returns: whether the command is a movement in a compass direction
 static inline bool bIsMovementCommand(const int command)

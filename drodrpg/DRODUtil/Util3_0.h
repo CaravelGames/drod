@@ -59,12 +59,10 @@ public:
 private:
 	static void AddMessageText(c4_Storage &TextStorage, const UINT dwMessageID,
 		  const Language::LANGUAGE eLanguage, const WCHAR *pwszText);
-	bool createDatabase(const WSTRING& wstrFilepath) const;
 	static bool DeleteDat(const WCHAR *pwszFilepath);
 	void        GetAssignedMIDs(const WCHAR *pwzMIDFilepath, ASSIGNEDMIDS &AssignedMIDs, 
 				UINT &dwMaxMessageID) const;
-	void        GetHoldFilepath(WSTRING &wstrFilepath) const;
-	void        GetPlayerFilepath(WSTRING &wstrFilepath) const;
+	void        GetMasterFilepath(WSTRING &wstrFilepath) const;
 	bool        ImportBasicMessages(const WCHAR *pwzSrcPath, c4_Storage &TextStorage) const;
 	bool        ImportMessageTexts(c4_Storage &SourceStorage, c4_Storage &DestStorage, 
 				const list<UINT> &NeededMessages) const;

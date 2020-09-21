@@ -49,6 +49,7 @@ protected:
 
 public:
 	virtual void   Delete(const UINT dwPlayerID, const bool bRetainRef=true);
+	static bool    Exists(const UINT playerID);
 	virtual bool   ExportText(const UINT dwPlayerID, CDbRefs &dbRefs, CStretchyBuffer &str);
 	virtual void   ExportXML(const UINT dwPlayerID, CDbRefs &dbRefs, string &str, const bool bRef=false);
 	void     FilterByLocal(const bool bVar=true);

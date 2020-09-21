@@ -39,10 +39,6 @@
 
 #define MAPSIZE_MULTIPLIER (2) //how large to make each tile on the minimap (pixels)
 
-extern const char importSoundPath[], importVideoPath[], fullScreenStr[],
-		combatRateStr[], showSubtitlesWithVoices[], enableChat[], receiveWhispersOnly[],
-		disableMouseMovementStr[], noFocusPlaysMusic[];
-
 #define TAG_EMPTYCHATUSERLIST (UINT(0))
 
 //*****************************************************************************

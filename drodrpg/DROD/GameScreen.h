@@ -69,6 +69,7 @@ public:
 	void     SetMusicStyle();
 	void     SetQuickCombat();
 	bool     ShouldShowLevelStart();
+	void     ShowScorepointRating(int playerScore, int topScore);
 	void     ShowStatsForMonster(CMonster *pMonster);
 	void     ShowStatsForMonsterAt(const UINT wX, const UINT wY);
 	bool     TestRoom(const UINT dwRoomID, const UINT wX, const UINT wY,
@@ -95,11 +96,11 @@ protected:
 	void           GotoHelpPage();
 	virtual bool   IsDoubleClickable() const {return false;}
 	void           LoadGame();
-	virtual void   OnActiveEvent(const SDL_ActiveEvent &Active);
 	virtual void   OnBetweenEvents();
 	virtual void   OnDeactivate();
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
 	virtual void   OnSelectChange(const UINT dwTagNo);
+	virtual void   OnWindowEvent(const SDL_WindowEvent &wevent);
 	virtual void   Paint(bool bUpdateRect=true);
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEvents);
@@ -160,7 +161,7 @@ private:
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnMouseMotion(const UINT dwTagNo, const SDL_MouseMotionEvent &MotionEvent);
 	virtual void   OnMouseUp(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
-	virtual void   OnMouseWheel(const SDL_MouseButtonEvent &Button);
+	virtual void   OnMouseWheel(const SDL_MouseWheelEvent &Wheel);
 	void           PlayAmbientSound(const UINT dwDataID, const bool bLoop,
 			const UINT wX, const UINT wY);
 	void           PlaySpeakerSoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL) const;
@@ -172,6 +173,7 @@ private:
 	bool           ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand);
 	void           ReattachRetainedSubtitles();
 	void           ScoreCheckpoint(const WCHAR* pScoreIDText);
+	void           SendAchievement(const char* achievement, const UINT dwScore=0);
 	void           ShowBigMap();
 	void           showStat(const UINT eType, const int delta, CEntity *pEntity, UINT& count);
 //	void           ShowLockIcon(const bool bShow=true);
@@ -265,5 +267,34 @@ private:
 	//Auto-help detection.
 //	Uint32 dwTimeInRoom, dwLastTime, dwTotalPlayTime;
 };
+
+#	ifdef STEAMBUILD
+#		include <steam_api.h>
+
+class CSteamLeaderboards
+{
+public:
+	CSteamLeaderboards();
+	~CSteamLeaderboards() {}
+
+	void FindLeaderboardAndUploadScore(const char *pchLeaderboardName, int score);
+
+private:
+	map<string, int> m_scoresToUpload; //scores pending to upload on asynchronous OnFindLeaderboard callback
+
+	bool FindLeaderboard(const char *pchLeaderboardName);
+	bool UploadScore(SteamLeaderboard_t hLeaderboard);
+	void ShowSteamScoreOnGameScreen(const char *pchLeaderboardName, int topScore);
+
+	void OnFindLeaderboard(LeaderboardFindResult_t *pResult, bool bIOFailure);
+	CCallResult<CSteamLeaderboards, LeaderboardFindResult_t> m_steamCallResultFindLeaderboard;
+
+	void OnUploadScore(LeaderboardScoreUploaded_t *pResult, bool bIOFailure);
+	CCallResult<CSteamLeaderboards, LeaderboardScoreUploaded_t> m_SteamCallResultUploadScore;
+
+	void OnDownloadTopScore(LeaderboardScoresDownloaded_t *pResult, bool bIOFailure);
+	CCallResult<CSteamLeaderboards, LeaderboardScoresDownloaded_t> m_steamCallResultDownloadScore;
+};
+#	endif
 
 #endif //...#ifndef GAMESCREEN_H

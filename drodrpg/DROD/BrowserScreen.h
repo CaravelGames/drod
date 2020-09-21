@@ -50,7 +50,7 @@ protected:
 private:
 	virtual void OnClick(const UINT dwTagNo);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
-	virtual void OnMouseWheel(const SDL_MouseButtonEvent &Button);
+	virtual void OnMouseWheel(const SDL_MouseWheelEvent &Wheel);
 	virtual void Paint(bool bUpdateRect = true);
 	void  UpdateWidgets();
 

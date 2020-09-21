@@ -817,6 +817,7 @@ WSTRING CCurrentGame::ExpandText(
 					//Resolve var name.
 					WCHAR wIntText[20];
 					const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wEscapeStr);
+					InputCommands::DCMD reserved_lookup_id;
 					if (eVar != ScriptVars::P_NoVar)
 					{
 						//Is it a predefined var?
@@ -826,6 +827,9 @@ WSTRING CCurrentGame::ExpandText(
 						else
 							val = getVar(eVar);
 						wStr += _itoW(int(val), wIntText, 10);
+					} else if ((reserved_lookup_id = InputCommands::getCommandIDByVarName(wEscapeStr)) < InputCommands::DCMD_Count) {
+						//Is it a player input button?
+						wStr += getTextForInputCommandKey(reserved_lookup_id);
 					} else {
 						//Is it a hold-local var?
 						const UINT varID = this->pHold->GetVarID(wEscapeStr.c_str());
@@ -871,6 +875,18 @@ WSTRING CCurrentGame::ExpandText(
 		wStr += wEscapeStr;
 
 	return wStr;
+}
+
+//*****************************************************************************
+WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
+{
+	ASSERT(id < InputCommands::DCMD_Count);
+
+	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
+	const InputCommands::DCMD eCommand = InputCommands::DCMD(
+			settings.GetVar(InputCommands::COMMANDNAME_ARRAY[id], 0));
+
+	return g_pTheDB->GetMessageText(MID_UNKNOWN + eCommand);
 }
 
 //*****************************************************************************
@@ -1191,9 +1207,8 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 			continue;
 
 		//Get var name.
-		string varName;
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		UnicodeToAscii(this->pHold->GetVarName(wVarID), varName);
+		const string varName = UnicodeToAscii(this->pHold->GetVarName(wVarID));
 
 		const bool bInteger = pVar->eType == UVT_int;
 		VarMapInfo info;

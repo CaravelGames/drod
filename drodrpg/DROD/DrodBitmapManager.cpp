@@ -34,6 +34,7 @@
 
 #include "TileImageConstants.h"
 #include "../DRODLib/Db.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
@@ -60,6 +61,8 @@ const char textureTileNames[TEXTURE_COUNT][13] = {
 	"Floor", "Mosaic", "Pit", "Wall", "Pitside", "PitsideSmall",
 	"DONT_USE"  //no default FLOOR_IMAGE
 };
+
+const UINT TI_DONT_USE = (UINT)-1;
 
 //
 //Public methods.
@@ -93,7 +96,7 @@ CDrodBitmapManager::CDrodBitmapManager()
 	//User-specified parameter to always refresh entire screen.
 	string str;
 	this->bAlwaysUpdateScreen =
-			CFiles::GetGameProfileString("Customizing", "AlwaysFullBlit", str) &&
+			CFiles::GetGameProfileString(INISection::Customizing, INIKey::AlwaysFullBlit, str) &&
 			atoi(str.c_str()) != 0;
 }
 
@@ -111,7 +114,7 @@ Language::LANGUAGE CDrodBitmapManager::GetLanguage()
 //Returns current language setting.
 {
 	 string strLanguage;
-	 if (!CFiles::GetGameProfileString("Localization", "Language", strLanguage))
+	 if (!CFiles::GetGameProfileString(INISection::Localization, INIKey::Language, strLanguage))
 		 return Language::English;
 	 const UINT eLanguage = Language::Get(strLanguage.c_str());
 	 if (eLanguage == Language::Unknown)
@@ -164,7 +167,7 @@ bool CDrodBitmapManager::ConvertStyle(WSTRING& style)
 	//If style is explicitly defined, accept it.
 	CFiles f;
 	list<WSTRING> styles;
-	VERIFY(f.GetGameProfileString("Graphics", "Style", styles));
+	VERIFY(f.GetGameProfileString(INISection::Graphics, INIKey::Style, styles));
 	if (std::find(styles.begin(), styles.end(), style) != styles.end())
 		return true;
 
@@ -229,10 +232,11 @@ bool CDrodBitmapManager::LoadCustomTileSet(const UINT wTileSetDataID)
 
 	//Consider all tiles as transparent type.
 	SDL_Surface *pSurface = tiles.pSurface;
+	SDL_SetSurfaceRLE(pSurface, 0); //need to be able to access pixels directly for blits
 	if (pSurface->format->Amask)
-		SDL_SetAlpha(pSurface,0,0); //make image opaque and use the transparency color
+		DisableSurfaceBlending(pSurface); //make image opaque and use the transparency color
 	const Uint32 TranspColor = SDL_MapRGB(pSurface->format, TRANSPARENT_RGB);
-	SDL_SetColorKey(pSurface, SDL_SRCCOLORKEY, TranspColor);
+	SetColorKey(pSurface, SDL_TRUE, TranspColor);
 
 	tiles.wTileStartNo = this->wNextCustomTileNo;
 	this->customTiles[wTileSetDataID] = tiles;
@@ -292,7 +296,7 @@ bool CDrodBitmapManager::LoadGeneralTileImages(
 {
 	CFiles f;
 	list<WSTRING> tiles;
-	if (!f.GetGameProfileString("Graphics", "General", tiles))
+	if (!f.GetGameProfileString(INISection::Graphics, "General", tiles))
 		return false;
 
 	list<WSTRING>::const_iterator iStr;
@@ -332,7 +336,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 	//Lookup base filename given for style.
 	CFiles f;
 	list<WSTRING> tiles;
-	if (!f.GetGameProfileString("Graphics", style.c_str(), tiles))
+	if (!f.GetGameProfileString(INISection::Graphics, style.c_str(), tiles))
 		tiles.push_back(style);
 
 	//Load the tilesets for this style in listed order.
@@ -389,7 +393,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 
 			//Look up the base filename for this style and use that if defined.
 			list<WSTRING> styleFilename;
-			if (f.GetGameProfileString("Graphics", wszDefaultStyleName, styleFilename) &&
+			if (f.GetGameProfileString(INISection::Graphics, wszDefaultStyleName, styleFilename) &&
 					!styleFilename.empty())
 				wstrFilename = styleFilename.front();
 
@@ -532,10 +536,10 @@ SDL_Surface* CDrodBitmapManager::LoadJPEGSurface(
 
 //**********************************************************************************
 SDL_Surface* CDrodBitmapManager::LoadPNGSurface(
-//Loads a JPEG image from the appropriate location into a new surface.
+//Loads a PNG image from the appropriate location into a new surface.
 //
 //Params:
-	BYTE* imageBuffer, const UINT wSize)   //(in)   JPEG image data buffer
+	BYTE* imageBuffer, const UINT wSize)   //(in)   PNG image data buffer
 {
 	if (!wSize) return NULL;
 	return ConvertSurface(CPNGHandler::CreateSurface(imageBuffer, wSize));
@@ -554,26 +558,32 @@ bool CDrodBitmapManager::LoadTexture(
 {
 	static SDL_Rect src = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
 	static SDL_Rect dest = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
-	if (this->pTextures[wI])
-		SDL_FreeSurface(this->pTextures[wI]);
-	this->pTextures[wI] = LoadImageSurface(wstrFilename.c_str(), 0);
-	if (!this->pTextures[wI]) return false;
+	SDL_Surface* &texture = this->pTextures[wI];
+	if (texture)
+		SDL_FreeSurface(texture);
+	texture = LoadImageSurface(wstrFilename.c_str(), 0);
+	if (!texture)
+		return false;
 
 	//Texture dimensions must be a multiple of the tile size.
 	//Exception: pitside textures can have an arbitrary height.
-	ASSERT((UINT)this->pTextures[wI]->w >= CX_TILE && (UINT)this->pTextures[wI]->w % CX_TILE == 0);
-	ASSERT(((UINT)this->pTextures[wI]->h >= CY_TILE &&
-			(UINT)this->pTextures[wI]->h % CY_TILE == 0) || wI >= PITSIDE_MOSAIC);
+	ASSERT((UINT)texture->w >= CX_TILE && (UINT)texture->w % CX_TILE == 0);
+	ASSERT(((UINT)texture->h >= CY_TILE &&
+			(UINT)texture->h % CY_TILE == 0) || (wI == PITSIDE_MOSAIC || wI == PITSIDE_SMALL));
 
 	//Load a tile from these images for editor to display a sample.
 	static const UINT textureTiles[TEXTURE_COUNT] = {
 		TI_ROAD, TI_GRASS, TI_DIRT, TI_ALT, TI_FLOOR, TI_FLOOR_M,
 		TI_PIT_M, TI_WALL_M, TI_SPIKE, TI_SPIKE, TI_FLOOR_IMAGE
 	};
-	dest.y = GetTileSurfaceY(textureTiles[wI]);
-	SDL_BlitSurface(this->pTextures[wI], &src, GetTileSurface(textureTiles[wI]), &dest);
+	const UINT textureTile = textureTiles[wI];
+	if (textureTile != TI_DONT_USE) {
+		dest.y = GetTileSurfaceY(textureTile);
+		SDL_BlitSurface(texture, &src, GetTileSurface(textureTile), &dest);
 
-	this->TileImageTypes[textureTiles[wI]] = TIT_Opaque;
+		this->TileImageTypes[textureTile] = TIT_Opaque;
+	}
+
 	return true;
 }
 
@@ -624,9 +634,8 @@ bool CDrodBitmapManager::LoadTileImages(
 			for (UINT wX = 0; wX < wCols; ++wX)
 			{
 				wTileImageNo = *iIndex;
-
 				if (wTileImageNo != (UINT)(TI_UNSPECIFIED) &&
-						wTileImageNo <= TI_COUNT)	//ensure this is true
+						wTileImageNo < TI_COUNT)	//ensure this is true
 				{
 					//Only load tiles specified in this set if non-NULL.
 					if (!pLoadTileSet || pLoadTileSet->has(wTileImageNo))

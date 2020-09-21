@@ -123,6 +123,8 @@ private:
 	static void   deleteMessages(const CIDSet& messageIDs, const CIDSet& rowIDs);
 	static CIDSet getMessageRows(const UINT messageID);
 
+	static c4_ViewRef GetPlayerDataView(const VIEWTYPE vType, const char* viewName);
+
 	static UINT         LookupRowByPrimaryKey(const UINT dwID,
 			const VIEWTYPE vType, const c4_IntProp *pPropID, const UINT rowCount, c4_View &View);
 

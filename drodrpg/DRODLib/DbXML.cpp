@@ -1024,7 +1024,7 @@ void CDbXML::VerifySavedGames()
 	bool bFullValidate = true;
 	CFiles f;
 	string str;
-	if (f.GetGameProfileString("Customizing", "ValidateSavesOnImport", str))
+	if (f.GetGameProfileString(INISection::Customizing, INIKey::ValidateSavesOnImport, str))
 		bFullValidate = atoi(str.c_str()) != 0;
 
 	float fNumRecords;
@@ -1622,8 +1622,7 @@ MESSAGE_ID CDbXML::ImportXML(
 			wstrLogFilename += wstrLog;
 
 			info.userMessages += wszCRLF;
-			string strLog;
-			UnicodeToAscii(info.userMessages, strLog);
+			string strLog = UnicodeToAscii(info.userMessages);
 			CStretchyBuffer text(strLog);
 			if (f.WriteBufferToFile(wstrLogFilename.c_str(), text, true))
 				info.userMessages.resize(0);

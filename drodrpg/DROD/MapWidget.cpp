@@ -256,27 +256,27 @@ void CMapWidget::HandleKeyDown(
 	if (!this->bUserMoveable)
 		return;
 
-	const SDLKey key = KeyboardEvent.keysym.sym;
+	const SDL_Keycode key = KeyboardEvent.keysym.sym;
 	UINT dwRoomX = this->dwSelectedRoomX, dwRoomY = this->dwSelectedRoomY;
 
 	switch (key) {
 		//Moving selection to an adjacent room
-		case SDLK_DOWN: case SDLK_KP2:
+		case SDLK_DOWN: case SDLK_KP_2:
 			if (KeyboardEvent.keysym.mod & KMOD_CTRL) return;
 			if (dwRoomY < (this->bEditing ? this->dwBottomRoomY + 1 : this->dwBottomRoomY))
 				++dwRoomY;
 			break;
-		case SDLK_LEFT: case SDLK_KP4:
+		case SDLK_LEFT: case SDLK_KP_4:
 			if (KeyboardEvent.keysym.mod & KMOD_CTRL) return;
 			if (dwRoomX > (this->bEditing ? this->dwLeftRoomX - 1 : this->dwLeftRoomX))
 				--dwRoomX;
 			break;
-		case SDLK_RIGHT: case SDLK_KP6:
+		case SDLK_RIGHT: case SDLK_KP_6:
 			if (KeyboardEvent.keysym.mod & KMOD_CTRL) return;
 			if (dwRoomX < (this->bEditing ? this->dwRightRoomX + 1 : this->dwRightRoomX))
 				++dwRoomX;
 			break;
-		case SDLK_UP: case SDLK_KP8:
+		case SDLK_UP: case SDLK_KP_8:
 			if (KeyboardEvent.keysym.mod & KMOD_CTRL) return;
 			if (dwRoomY > (this->bEditing ? this->dwRightRoomX - 1 : this->dwTopRoomY))
 				--dwRoomY;
@@ -1144,9 +1144,9 @@ bool CMapWidget::LoadMapSurface(
 		SDL_Rect rect;
 		pContainer->GetRectAvailableForChildren(rect, wMapW + this->wBorderW * 2,
 				wMapH + this->wBorderH * 2);
-		if (rect.w > wMapW + this->wBorderW * 2)
+		if ((UINT)rect.w > wMapW + this->wBorderW * 2)
 			this->wBorderW = (rect.w - wMapW) / 2;
-		if (rect.h > wMapH + this->wBorderH * 2)
+		if ((UINT)rect.h > wMapH + this->wBorderH * 2)
 			this->wBorderH = (rect.h - wMapH) / 2;
 	} else {
 		//always scroll so as to be able to add empty rooms on the edges in the level editor.

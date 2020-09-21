@@ -32,6 +32,8 @@
 #include "SettingsScreen.h"
 #include <FrontEndLib/LabelWidget.h>
 
+#include "../DRODLib/SettingsKeys.h"
+
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -233,11 +235,11 @@ void CRoomScreen::SetMusicStyle(
 	//Fade to next song in list and update play order.
 	CFiles f;
 	list<WSTRING> songlist;
-	if (f.GetGameProfileString("Songs", style.c_str(), songlist))
+	if (f.GetGameProfileString(INISection::Songs, style.c_str(), songlist))
 	{
 		ASSERT(g_pTheSound);
 		g_pTheSound->CrossFadeSong(&songlist, fadeDuration);
-		f.WriteGameProfileString("Songs", style.c_str(), songlist);
+		f.WriteGameProfileString(INISection::Songs, style.c_str(), songlist);
 	}
 }
 
@@ -353,9 +355,9 @@ void CRoomScreen::PaintSign()
 		SDL_Rect Dest = MAKE_SDL_RECT(X_SIGN + ((CX_SIGN - wSignWidth) / 2), Y_SIGN, 
 				CX_LEFT_SIGN, CY_SIGN);
 		Uint32 TransparentColor = SDL_MapRGB(this->images[PARTS_SURFACE]->format, 226, 0, 0);
-		SDL_SetColorKey(this->images[PARTS_SURFACE], SDL_SRCCOLORKEY, TransparentColor);
+		SetColorKey(this->images[PARTS_SURFACE], SDL_TRUE, TransparentColor);
 		SDL_BlitSurface(this->images[PARTS_SURFACE], &LeftSignSource, pDestSurface, &Dest);
-		SDL_SetColorKey(this->images[PARTS_SURFACE], 0, TransparentColor);
+		SetColorKey(this->images[PARTS_SURFACE], 0, TransparentColor);
 
 		//Blit middle parts of sign.
 		Dest.x += CX_LEFT_SIGN;
@@ -368,7 +370,7 @@ void CRoomScreen::PaintSign()
 
 		//Blit right part of sign.
 		Dest.w = CX_RIGHT_SIGN;
-		SDL_SetColorKey(this->images[PARTS_SURFACE], SDL_SRCCOLORKEY, TransparentColor);
+		SetColorKey(this->images[PARTS_SURFACE], SDL_TRUE, TransparentColor);
 		SDL_BlitSurface(this->images[PARTS_SURFACE], &RightSignSource, pDestSurface, &Dest);
 
 		//Draw text on sign.
@@ -388,19 +390,19 @@ void CRoomScreen::PaintSign()
 				CX_SIGN - CX_LEFT_SIGN);
 
 		g_pTheFM->SetFontColor(F_Sign, origColor);
-		SDL_SetColorKey(this->images[PARTS_SURFACE], 0, TransparentColor);
+		SetColorKey(this->images[PARTS_SURFACE], 0, TransparentColor);
 	}
 
 	UpdateRect(EntireSign);
 }
 
 //*****************************************************************************
-SDLKey CRoomScreen::GetKeysymForCommand(const UINT wCommand) const
+SDL_Keycode CRoomScreen::GetKeysymForCommand(const UINT wCommand) const
 //Returns: keysym currently set for indicated command
 {
-	for (UINT wIndex=0; wIndex<SDLK_LAST; ++wIndex)
-		if (static_cast<UINT>(this->KeysymToCommandMap[wIndex]) == wCommand)
-			return SDLKey(wIndex);
+	for (std::map<SDL_Keycode,int>::const_iterator it = KeysymToCommandMap.begin(); it != KeysymToCommandMap.end(); ++it)
+		if (it->second == (int)wCommand)
+			return it->first;
 
 	ASSERT(!"Command not assigned");
 	return SDLK_UNKNOWN;
@@ -415,21 +417,20 @@ void CRoomScreen::InitKeysymToCommandMap(
 	CDbPackedVars &PlayerSettings)   //(in)   Player settings to load from.
 {
 	//Clear the map.
-	memset(this->KeysymToCommandMap, CMD_UNSPECIFIED, 
-			sizeof(this->KeysymToCommandMap));
+	this->KeysymToCommandMap.clear();
 
 	//Check whether default is for keyboard or laptop.
 	CFiles Files;
 	string strKeyboard;
 	UINT wKeyboard = 0;	//default to numpad
-	if (Files.GetGameProfileString("Localization", "Keyboard", strKeyboard))
+	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
 	{
 		wKeyboard = atoi(strKeyboard.c_str());
 		if (wKeyboard > 1) wKeyboard = 0;	//invalid setting
 	}
 
 	//Get key command values from current player settings.
-	static const int commands[DCMD_Count] = {
+	static const int commands[InputCommands::DCMD_Count] = {
 		CMD_NW, CMD_N, CMD_NE,
 		CMD_W, CMD_WAIT, CMD_E,
 		CMD_SW, CMD_S, CMD_SE,
@@ -438,23 +439,21 @@ void CRoomScreen::InitKeysymToCommandMap(
 		CMD_LOCK, CMD_EXEC_COMMAND
 	};
 
-	for (int wIndex = DCMD_First; wIndex < DCMD_Count; ++wIndex)
-	{
-		const int nKey = PlayerSettings.GetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		this->KeysymToCommandMap[nKey] = commands[wIndex];
+	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex) {
+		const int nKey = PlayerSettings.GetVar(InputCommands::COMMANDNAME_ARRAY[wIndex],
+				COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
+		this->KeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : nKey] = commands[wIndex];
 	}
 }
 
 //*****************************************************************************
-int CRoomScreen::FindKey(
-//Returns:
-//Key index mapped to command.
-	const int nCommand) const  //(in) Command to find mapping for.
+int CRoomScreen::GetCommandForKeysym(const SDL_Keycode& sym) const
 {
-	for (int nIndex=0; nIndex<SDLK_LAST; ++nIndex)
-		if (this->KeysymToCommandMap[nIndex] == nCommand)
-			return nIndex;
-	ASSERT(!"Failed to find key mapping.");
-	return -1;
+	std::map<SDL_Keycode,int>::const_iterator it = this->KeysymToCommandMap.find(sym);
+	if (it != this->KeysymToCommandMap.end())
+			return it->second;
+
+	return CMD_UNSPECIFIED;
 }
 

@@ -55,6 +55,7 @@
 #include "../DRODLib/DbProps.h"
 #include "../DRODLib/DbRooms.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Clipboard.h>
@@ -2236,7 +2237,7 @@ void CEditSelectScreen::PopulateStyleListBox()
 	{
 		CFiles f;
 		list<WSTRING> ini_styles;
-		if (f.GetGameProfileString("Graphics", "Style", ini_styles)) {
+		if (f.GetGameProfileString(INISection::Graphics, INIKey::Style, ini_styles)) {
 			for (list<WSTRING>::const_iterator ini_style = ini_styles.begin(); ini_style != ini_styles.end(); ++ini_style)
 				loadedStyles.insert(*ini_style);
 		}

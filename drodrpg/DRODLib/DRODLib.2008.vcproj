@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\DebugVS2008"
-			IntermediateDirectory=".\DebugVS2008"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -49,10 +49,10 @@
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\DebugVS2008/DRODLib.pch"
-				AssemblerListingLocation=".\DebugVS2008/"
-				ObjectFile=".\DebugVS2008/"
-				ProgramDataBaseFileName=".\DebugVS2008/"
+				PrecompiledHeaderFile="$(ConfigurationName)/DRODLib.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -71,7 +71,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Debug\DRODLib.lib"
+				OutputFile="$(ConfigurationName)\DRODLib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -92,8 +92,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -126,10 +126,10 @@
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Release/DRODLib.pch"
-				AssemblerListingLocation=".\Release/"
-				ObjectFile=".\Release/"
-				ProgramDataBaseFileName=".\Release/"
+				PrecompiledHeaderFile="$(ConfigurationName)/DRODLib.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -147,7 +147,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Release\DRODLib.lib"
+				OutputFile="$(ConfigurationName)\DRODLib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -202,10 +202,10 @@
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\BuildDats/DRODLib.pch"
-				AssemblerListingLocation=".\BuildDats/"
-				ObjectFile=".\BuildDats/"
-				ProgramDataBaseFileName=".\BuildDats/"
+				PrecompiledHeaderFile="$(ConfigurationName)/DRODLib.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -223,7 +223,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\BuildDats\DRODLib.lib"
+				OutputFile="$(ConfigurationName)\DRODLib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -278,10 +278,10 @@
 				EnableFunctionLevelLinking="true"
 				TreatWChar_tAsBuiltInType="false"
 				RuntimeTypeInfo="true"
-				PrecompiledHeaderFile=".\Russian/DRODLib.pch"
-				AssemblerListingLocation=".\Russian/"
-				ObjectFile=".\Russian/"
-				ProgramDataBaseFileName=".\Russian/"
+				PrecompiledHeaderFile="$(ConfigurationName)/DRODLib.pch"
+				AssemblerListingLocation="$(ConfigurationName)/"
+				ObjectFile="$(ConfigurationName)/"
+				ProgramDataBaseFileName="$(ConfigurationName)/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -299,7 +299,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile=".\Russian\DRODLib.lib"
+				OutputFile="$(ConfigurationName)\DRODLib.lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool

@@ -46,6 +46,7 @@
 
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
@@ -279,6 +280,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 			X_HOLDLISTBOX, Y_HOLDLISTBOX, CX_HOLDLISTBOX, CY_HOLDLISTBOX, false,
 			false, true);
 	this->pHoldListBoxWidget->SetHotkeyItemSelection(true);
+	this->pHoldListBoxWidget->IgnoreLeadingArticlesInSort();
 	AddWidget(this->pHoldListBoxWidget);
 	//Used for storing hold info.  Not added to the screen as a child widget.
 	this->pFullHoldList = new CListBoxWidget(0, X_HOLDLISTBOX, Y_HOLDLISTBOX,
@@ -674,7 +676,7 @@ void CHoldSelectScreen::DownloadNewRoomStyles(set<WSTRING>& importedStyles)
 
 	//Get set of local styles.
 	list<WSTRING> styles;
-	if (!CFiles::GetGameProfileString("Graphics", "Style", styles))
+	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 		return;
 
 	//Remove local styles from set of imported styles.
@@ -1036,9 +1038,7 @@ void CHoldSelectScreen::OnKeyDown(
 	//Fast hold select.
 	if (Key.keysym.mod & KMOD_CTRL)
 	{
-		const WCHAR wc = Key.keysym.unicode ?
-				W_t(Key.keysym.unicode + 96) : //convert Ctrl-<char> to <char> (lowercase)
-				W_t(Key.keysym.sym);
+		const WCHAR wc = TranslateUnicodeKeysym(Key.keysym);
 		if (this->pHoldListBoxWidget->SelectLineStartingWith(wc))
 		{
 			SetHoldDesc();
@@ -1104,12 +1104,12 @@ bool CHoldSelectScreen::PollForOperationInterrupt()
 	//Prompt to halt the process on a key press.
 	bool bInterrupt = false;
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
+	while (PollEvent(&event))
 	{
 		switch (event.type)
 		{
-			case SDL_ACTIVEEVENT:
-				OnActiveEvent(event.active);
+			case SDL_WINDOWEVENT:
+				OnWindowEvent(event.window);
 				this->pStatusDialog->Paint();	//make sure this stays on top
 			break;
 			case SDL_KEYDOWN:
@@ -1120,7 +1120,7 @@ bool CHoldSelectScreen::PollForOperationInterrupt()
 					case SDLK_RETURN:	case SDLK_KP_ENTER:
 					case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
-					case SDLK_PAUSE:  case SDLK_BREAK:
+					case SDLK_PAUSE:
 #endif
 						SetCursor();
 						if (ShowYesNoMessage(MID_HaltOperationPrompt) != TAG_NO)

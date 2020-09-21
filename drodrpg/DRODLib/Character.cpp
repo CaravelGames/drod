@@ -1134,8 +1134,7 @@ int CCharacter::parseExpression(
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str;
-			UnicodeToAscii(pwStr + index, str);
+			string str = UnicodeToAscii(pwStr + index);
 			str += ": Parse error (bad symbol)";
 			f.AppendErrorLog(str.c_str());
 			return val;
@@ -1215,8 +1214,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str;
-			UnicodeToAscii(pwStr, str);
+			string str = UnicodeToAscii(pwStr);
 			str += ": Parse error (missing close parenthesis)";
 			f.AppendErrorLog(str.c_str());
 		}
@@ -1240,8 +1238,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 				++index;
 
 			CFiles f;
-			string str;
-			UnicodeToAscii(pwStr, str);
+			string str = UnicodeToAscii(pwStr);
 			str += ": Parse error (invalid var name)";
 			f.AppendErrorLog(str.c_str());
 
@@ -1284,8 +1281,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 
 	//Invalid identifier
 	CFiles f;
-	string str;
-	UnicodeToAscii(pwStr + index, str);
+	string str = UnicodeToAscii(pwStr + index);
 	str += ": Parse error (invalid var name)";
 	f.AppendErrorLog(str.c_str());
 

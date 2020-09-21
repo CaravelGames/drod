@@ -70,7 +70,7 @@ CTrapdoorFallEffect::CTrapdoorFallEffect(
 		static const Uint32 TranspColor = SDL_MapRGB(this->pSurface->format,
 				255, 0, 255);
 		SDL_FillRect(this->pSurface, NULL, TranspColor);
-		SDL_SetColorKey(this->pSurface, SDL_SRCCOLORKEY, TranspColor);
+		SetColorKey(this->pSurface, SDL_TRUE, TranspColor);
 	}
 
 	for (tile = tiles.begin(); tile != tiles.end(); ++tile)
@@ -152,7 +152,7 @@ bool CTrapdoorFallEffect::Draw(SDL_Surface* pDestSurface)
 	}
 
 	if (nOpacity < 255)
-		SDL_SetAlpha(this->pSurface,SDL_SRCALPHA,nOpacity);
+		EnableSurfaceBlending(this->pSurface, nOpacity);
 	SDL_Rect src = MAKE_SDL_RECT(0, clipRect.y - yPos, CBitmapManager::CX_TILE, clipRect.h);
 	SDL_BlitSurface(this->pSurface, &src, pDestSurface, &clipRect);
 
