@@ -1,5 +1,7 @@
+#Python 3 support
+
 import os 
-import urllib
+import urllib.request
 import ntpath
 import zipfile
 import tarfile
@@ -14,6 +16,7 @@ def overrideOptions():
 	global DevEnvPath,DepsToBuild,IgnoreBuilds
 
 	DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio 12.0\\Common7\\IDE\\devenv.com'
+	#DevEnvPath = 'C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.com'
 	IgnoreBuilds = 0 # Set this to 0 to skip the build step
 	DepsToBuild = "all" # Change it to array of lib names to build and copy only the sepcific ones
 
@@ -35,7 +38,7 @@ DependenciesLibraries = DependenciesDir + "Library\\"
 DependenciesDlls = DependenciesDir + "Dll\\"
 ZlibUrl = 'http://www.zlib.net/fossils/zlib-1.2.11.tar.gz'
 LibOggName = 'libogg-1.3.0'
-SdlName = 'sdl2-2.0.5'
+SdlName = 'sdl2-2.0.12'
 
 if DepsToBuild == "all":
 	DepsToBuild = [
@@ -48,7 +51,7 @@ if DepsToBuild == "all":
 		'libtheora-1.1.1',
 		'libvorbis-1.3.3',
 		'lpng-1512',
-		'metakit-2.4.9.5',
+		'metakit-2.4.9.7',
 		SdlName,
 		'sdl-ttf-2.0.14',
 		'zlib'
@@ -295,7 +298,7 @@ dependencies = {
 			'lpng1512/pngstruct.h': ''
 		},
 		'libs': {
-			'lpng1512/projects/visualc71/Win32_LIB_Release/libpng.lib': 'Debug',
+			'lpng1512/projects/visualc71/Win32_LIB_Debug/libpngd.lib': 'Debug',
 			'lpng1512/projects/visualc71/Win32_LIB_Release/libpng.lib': 'Release',
 			'lpng1512/projects/visualc71/Win32_DLL_Debug/ZLib/zlib.lib': 'Debug',
 			'lpng1512/projects/visualc71/Win32_DLL_Release/ZLib/zlib.lib': 'Release'
@@ -305,11 +308,11 @@ dependencies = {
 			'lpng1512/projects/visualc71/Win32_DLL_Release/ZLib/zlib1.dll': 'Release'
 		}
 	},
-	'metakit-2.4.9.5': {
-		'urls': ['https://github.com/jcw/metakit/archive/2.4.9.5.tar.gz'],
+	'metakit-2.4.9.7': {
+		'urls': ['https://github.com/jnorthrup/metakit/archive/master.zip'],
 		'builds': [
 			{
-				'sln': 'metakit-2.4.9.5/win/msvc70/mksrc.sln',
+				'sln': 'metakit-master/win/msvc70/mksrc.sln',
 				'configs': [
 					['Debug', '/project', 'mkbug.vcxproj', '/projectconfig', 'Debug'],
 					['Release', '/project', 'mkbug.vcxproj', '/projectconfig', 'Release']
@@ -317,22 +320,22 @@ dependencies = {
 			}
 		],
 		"include": {
-			"metakit-2.4.9.5/include/mk4.h": "",
-			"metakit-2.4.9.5/include/mk4dll.h": "",
-			"metakit-2.4.9.5/include/mk4io.h": "",
-			"metakit-2.4.9.5/include/mk4str.h": "",
-			"metakit-2.4.9.5/include/mk4.inl": ""
+			"metakit-master/include/mk4.h": "",
+			"metakit-master/include/mk4dll.h": "",
+			"metakit-master/include/mk4io.h": "",
+			"metakit-master/include/mk4str.h": "",
+			"metakit-master/include/mk4.inl": ""
 		},
 		'libs': {
-			'metakit-2.4.9.5/builds/mk4vc70s_d.lib': 'Debug',
-			'metakit-2.4.9.5/builds/mk4vc70s.lib': 'Release'
+			'metakit-master/builds/mk4vc70s_d.lib': 'Debug',
+			'metakit-master/builds/mk4vc70s.lib': 'Release'
 		}
 	},
 	SdlName: {
-		'urls': ['https://www.libsdl.org/release/SDL2-2.0.5.zip'],
+		'urls': ['https://www.libsdl.org/release/SDL2-2.0.12.zip'],
 		'builds': [
 			{
-				'sln': 'sdl2-2.0.5/VisualC/SDL.sln',
+				'sln': 'sdl2-2.0.12/VisualC/SDL.sln',
 				'configs': [
 					['Debug', '/project', 'SDL2'],
 					['Release', '/project', 'SDL2'],
@@ -342,17 +345,17 @@ dependencies = {
 			}
 		],
 		'include': {
-			'SDL2-2.0.5/include': '' #Too many files to list them one by one
+			'SDL2-2.0.12/include': '' #Too many files to list them one by one
 		},
 		'libs': {
-			'SDL2-2.0.5/VisualC/Win32/Debug/SDL2.lib': 'Debug',
-			'SDL2-2.0.5/VisualC/Win32/Release/SDL2.lib': 'Release',
-			'SDL2-2.0.5/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
-			'SDL2-2.0.5/VisualC/Win32/Release/SDL2main.lib': 'Release'
+			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.lib': 'Debug',
+			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.lib': 'Release',
+			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
+			'SDL2-2.0.12/VisualC/Win32/Release/SDL2main.lib': 'Release'
 		},
 		'dlls': {
-			'SDL2-2.0.5/VisualC/Win32/Debug/SDL2.dll': 'Debug',
-			'SDL2-2.0.5/VisualC/Win32/Release/SDL2.dll': 'Release'
+			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.dll': 'Debug',
+			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.dll': 'Release'
 		}
 	},
 	'sdl-ttf-2.0.14': {
@@ -406,7 +409,7 @@ def execute():
 				break
 
 			
-			urllib.urlretrieve (url, finalPath)
+			urllib.request.urlretrieve(url, finalPath)
 
 			if os.path.exists(finalPath):
 				break
@@ -493,7 +496,7 @@ def downloadCodependency(url, unzipPath, fromName, toName):
 	zlibFileName = os.path.basename(ZlibUrl)
 	zipPath = unzipPath + zlibFileName
 	if not os.path.exists(zipPath):
-		urllib.urlretrieve(url, zipPath)
+		urllib.request.urlretrieve(url, zipPath)
 		if not os.path.exists(zipPath):
 			raise FileNotFoundError("Failed to download Zlib dependency")
 
@@ -506,13 +509,15 @@ def runShell(args, ignoreErrors):
 	print("Execute: " + ' '.join(args))
 	p = Popen(args, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	output, err = p.communicate(b"input data that is passed to subprocess' stdin")
+	output = bytes.decode(output)
+	err = bytes.decode(err)
 	rc = p.returncode
 
 	if (not ignoreErrors and rc != 0):
 		print('OUT >> ' + output.replace('\n', '\n       '))
 		print('ERR >> ' + err.replace('\n', '\n       '))
 		print('RC  >> ' + str(rc))
-		raw_input("AN ERROR OCCURED, Press enter to continue")
+		input("AN ERROR OCCURED, Press enter to continue")
 
 def unpack(file, unzipDir):
 	if (file.endswith('zip')):

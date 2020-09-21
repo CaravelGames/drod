@@ -72,7 +72,7 @@ void stripCRs(WSTRING& line)
 }
 
 //*****************************************************************************
-bool orderChats::operator() (const Data* p1, const Data* p2)
+bool orderChats::operator() (const Data* p1, const Data* p2) const
 //Compare the ordering of two chat messages.
 {
 	return p1->chatID < p2->chatID; //IDs are always in order of receival by server

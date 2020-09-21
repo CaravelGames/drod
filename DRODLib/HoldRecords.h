@@ -81,7 +81,7 @@ struct HoldWorldMap
 };
 
 struct sortWorldMaps {
-	bool operator() (const HoldWorldMap* pMap1, const HoldWorldMap* pMap2)
+	bool operator() (const HoldWorldMap* pMap1, const HoldWorldMap* pMap2) const
 	{
 		return pMap1->orderIndex < pMap2->orderIndex;
 	}
