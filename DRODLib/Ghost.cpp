@@ -101,7 +101,9 @@ void CGhost::Process(
 			const int dx = wSX - this->wX;
 			const int dy = wSY - this->wY;
 			if (!(DoesArrowPreventMovement(dx, dy) ||
-					this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy)))
+					this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy) ||
+					this->pCurrentGame->IsPlayerWeaponAt(wSX, wSY, true) ||
+					this->pCurrentGame->pRoom->IsMonsterSwordAt(wSX, wSY, true, this)))
 			{
 				MakeStandardMove(CueEvents, dx, dy);
 				SetOrientation(dx, dy);
