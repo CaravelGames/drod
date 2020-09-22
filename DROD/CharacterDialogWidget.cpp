@@ -5140,7 +5140,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
-		BEHAVIOR,           //CC_BEHAVIOR
+		BEHAVIOR            //CC_BEHAVIOR
 	};
 
 	static const UINT NUM_LABELS = 29;
