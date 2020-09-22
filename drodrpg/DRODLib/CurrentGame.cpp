@@ -3284,14 +3284,14 @@ bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
 			return pMonster->HasSerpentWeakness();
 		default:
 		{
-			if (IsEquipmentStrongAgainst(pMonster, ScriptFlag::Weapon) ||
-				IsEquipmentStrongAgainst(pMonster, ScriptFlag::Accessory))
+			if (IsEquipmentStrongAgainst(pMonster, ScriptFlag::Weapon))
 				return true;
 		}
 		return false;
 	}
 }
 
+//*****************************************************************************
 bool CCurrentGame::IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const
 //Returns: whether the player has an item that is strong against this monster
 {
