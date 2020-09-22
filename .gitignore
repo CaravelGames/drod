@@ -3,13 +3,14 @@ Deps/
 DepsSrc/
 
 # Build Folders
-Master/Linux/build.*
-Master/Linux/builds/
-Master/Linux/drod-sdl2.sublime-*
-DRODLibTests/debug/
-DRODLibTests/DebugVS2008/
-DRODLibTests\DRODLibTest.log
-DRODLibTests/Release/
+BackEndLib/Debug-Temp/
+BackEndLib/Release-Temp/
+CaravelNet/Debug/
+CaravelNet/Debug-Temp/
+CaravelNet/Release/
+CaravelNet/Release-Temp/
+DROD/Debug/
+DROD/Debug-Temp/
 DROD/DebugVS2008/
 DROD/DebugVS2013/
 DROD/DebugVS2013-Temp/
@@ -17,12 +18,22 @@ DROD/Steam/
 DROD/SteamBuildDats/
 DROD/Release/
 DROD/Release-Temp/
+DRODLib/Debug-Temp/
 DRODLib/DebugVS2008/
 DRODLib/DebugVS2013/
 DRODLib/Release/
+DRODLib/Release-Temp/
 DRODLib/Steam/
 DRODLib/BuildDats/
 DRODLib/SteamBuildDats/
+DRODLibTests/Debug/
+DRODLibTests/Debug-Temp/
+DRODLibTests/DebugVS2008/
+DRODLibTests/DRODLibTest.log
+DRODLibTests/Release/
+DRODLibTests/Release-Temp/
+DRODUtil/Debug/
+DRODUtil/Debug-Temp/
 DRODUtil/DebugVS2008/
 DRODUtil/DebugVS2013/
 DRODUtil/DebugVS2013-Temp/
@@ -30,8 +41,14 @@ DRODUtil/Release/
 DRODUtil/Release-Temp/
 DRODUtil/Steam/
 DRODUtil/Steam-Temp/
+FrontEndLib/Debug-Temp/
+FrontEndLib/Release-Temp/
+Master/Linux/build.*
+Master/Linux/builds/
+Master/Linux/drod-sdl2.sublime-*
 
 # Various things we don't want.
+Master/.vs/
 **/*.obj
 **/*.log
 **/*.dll
