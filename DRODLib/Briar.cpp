@@ -318,9 +318,12 @@ void CBriars::expand(
 						case M_CHARACTER: {
 							// Visible NPCs with Briar Immunity stop briar
 							const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-							if (!pCharacter) break;
-							if (!pCharacter->IsVisible()) break;
-							if (pCharacter->IsBriarImmune()) bBlocked = true;
+							if (!pCharacter)
+								break;
+							if (!pCharacter->IsVisible())
+								break;
+							if (pCharacter->IsBriarImmune())
+								bBlocked = true;
 							break;
 						}
 
