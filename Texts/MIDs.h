@@ -1354,6 +1354,7 @@ enum MID_CONSTANT {
   MID_WaitForPlayerToMove = 1284,
   MID_WaitForPlayerToTouchMe = 1315,
   MID_WaitForSomeoneToPushMe = 1710,
+  MID_WaitForWeapon = 1904, //New.
   MID_Speech = 986,
   MID_FlushSpeech = 987,
   MID_Question = 988,
@@ -1688,7 +1689,7 @@ enum MID_CONSTANT {
   MID_OrbWaitAny = 1900,
   MID_OrbWaitNormal = 1901,
   MID_OrbWaitCracked = 1902,
-  MID_OrbWaitBroken = 1903, //New.
+  MID_OrbWaitBroken = 1903,
   MID_WaitForWeapon = 1904,
   MID_Behavior = 1905,
   MID_ActivateToken = 1906,
