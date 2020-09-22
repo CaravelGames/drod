@@ -1355,6 +1355,7 @@ enum MID_CONSTANT {
   MID_WaitForPlayerToMove = 1284,
   MID_WaitForPlayerToTouchMe = 1315,
   MID_WaitForSomeoneToPushMe = 1710,
+  MID_WaitForWeapon = 1904, //New.
   MID_Speech = 986,
   MID_FlushSpeech = 987,
   MID_Question = 988,
