@@ -2743,7 +2743,8 @@ void CCharacter::Process(
 				const UINT identity = ph;
 				if (room.IsValidColRow(px,py)) {
 					if (identity < CUSTOM_CHARACTER_FIRST &&
-						(room.GetMonsterAtSquare(px, py) != NULL ||
+						(identity == M_NEATHER ||
+						 room.GetMonsterAtSquare(px, py) != NULL ||
 							pGame->IsPlayerAt(px, py)))
 					STOP_COMMAND;
 

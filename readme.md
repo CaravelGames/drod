@@ -1,21 +1,23 @@
-# DROD: The Second Sky
-**(c) Caravel Games 2005-2017**
+# DROD 5
+# DROD RPG
+**(c) Caravel Games 2005-2020**
 
 ----------------------------
 
 ### Building the application
 
-This is the DROD:TSS source.
+This is the source used with DROD: The Second Sky and also with DROD RPG.
 It may be used under the terms of the MPL and other licenses, described in the Licenses subdirectory.
 
 ##### Building for Windows
 
-Currently there are two documents that describe the build process:
-1. *CompilingDrod_Win.md* - which uses automated script for building the libraries and is aimed at VS2013.
-2. *CompilingDrod_Win_Old.md* - which was assembled for DROD TCB that should work for older versions of Visual Studio
+Currently there are three documents that describe the build process for DROD and DROD RPG:
+1. *CompilingDrod_Win.md* - which describes use of an automated script for building required third-party libraries and is aimed at using VS2013 and newer, e.g., VS2019.
+2. *CompilingDrod_Win_MSVS2013.md* - an earlier version of the document which points to earlier lib versions.
+3. *CompilingDrod_Win_Old.md* - which was assembled for DROD TCB that should work for older versions of Visual Studio
 
 Windows, Linux and Mac OS X compilations are supported.
-Workspace files are included for Visual Studio 2005, Visual Studio 2008 and Visual Studio 2013 in the Master subdirectory.
+Workspace files are included for Visual Studio 2005, Visual Studio 2008, Visual Studio 2013, and Visual Studio 2019 in the Master subdirectory.
 Workspace files for Microsoft Visual Studio 6.0 and Visual Studio 2002 are also present but likely outdated.
 
 ##### Linux builds
@@ -49,11 +51,11 @@ To build a 64-bit binary, run "make custom" (etc.)
 
 ### To use SDL_mixer instead of FMOD:
 
-Add `-lSDL_mixe`r to the link flags (LDFLAGS_* in `Master/Linux/Confi`g) and either (1) add `-DUSE_SDL_MIXER` flag to the C++ flags (i.e., CXXFLAGS_* in Config) -- this will require a clean recompile, since the dependency system doesn't detect command-line changes yet; or (2) add `#define USE_SDL_MIXER` to the top of `FrontEndLib/Sound.h` -- this will make the dependency system pick up the change, so a normal recompile is sufficient.
+Add `-lSDL_mixer` to the link flags (LDFLAGS_* in `Master/Linux/Confi`g) and either (1) add `-DUSE_SDL_MIXER` flag to the C++ flags (i.e., CXXFLAGS_* in Config) -- this will require a clean recompile, since the dependency system doesn't detect command-line changes yet; or (2) add `#define USE_SDL_MIXER` to the top of `FrontEndLib/Sound.h` -- this will make the dependency system pick up the change, so a normal recompile is sufficient.
 
 ### Including content media
 
-A fresh Data/drod5_0.dat file is provided, but you will need to use the drod5_0.dat file provided in an official Caravel installation of DROD (demo or full) to make this compiled source run.  Note that files obtained from a Caravel installation are protected under the DROD copyright and are not for distribution, public or private.
+A barebones Data/drod5_0.dat file is provided, but you will need to use the drod5_0.dat file provided in an official Caravel installation of DROD (either demo or full) to make this compiled source run.  Note that files obtained from a Caravel installation are protected under the DROD copyright and are not for distribution, public or private.
 
 Graphics/styles:
 Stub and mod versions of the tile and styles graphics are available, and can be found on the Development Board on http://forum.caravelgames.com Add these graphics files to the Data/Bitmaps directory for in-game use. To avoid running in fullscreen mode, run the application with the "nofullscreen" command line parameter.

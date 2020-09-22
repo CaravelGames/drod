@@ -1,0 +1,189 @@
+// $Id: FaceWidget.h 9131 2008-08-05 04:22:02Z mrimer $
+
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is Deadly Rooms of Death.
+ *
+ * The Initial Developer of the Original Code is
+ * Caravel Software.
+ * Portions created by the Initial Developer are Copyright (C) 2002, 2005, 2007
+ * Caravel Software. All Rights Reserved.
+ *
+ * Contributor(s):
+ * Mike Rimer (mrimer)
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+#ifndef FACEWIDGET_H
+#define FACEWIDGET_H
+
+#include "DrodWidget.h"
+#include "DrodSound.h"
+#include "../DRODLib/MonsterFactory.h"
+#include "../DRODLib/Character.h"
+
+static const UINT CX_FACE = 130;
+static const UINT CY_FACE = 164;
+
+//Moods the swordsman can be in that affect his facial expression.
+enum MOOD
+{
+	Mood_Normal = 0,
+	Mood_Aggressive,
+	Mood_Nervous,
+	Mood_Strike,
+	Mood_Happy,
+	Mood_Dying,
+	Mood_Talking,
+
+	Mood_Count
+};
+
+//Face frame enum--corresponds to order within bitmap.
+enum FACE_FRAME
+{
+	FF_Normal = 0,
+	FF_Normal_Blinking,
+	FF_Striking,
+	FF_HalphNormal,
+	FF_Stalwart,
+	FF_unused2,
+	FF_unused3,
+
+	FF_Aggressive,
+	FF_Aggressive_Blinking,
+	FF_Dying_1,
+	FF_Slayer,
+	FF_Goblin,
+	FF_RockGolem,
+	FF_RockGiant,
+
+	FF_Nervous,
+	FF_Nervous_Blinking,
+	FF_Dying_2,
+	FF_Citizen1,
+	FF_Citizen2,
+	FF_Citizen3,
+	FF_Citizen4,
+
+	FF_Happy,
+	FF_Happy_Blinking,
+	FF_Dying_3,
+	FF_Guard,
+	FF_Pirate,
+	FF_Aumtlich,
+	FF_Citizen,
+
+	FF_Talking,
+	FF_Talking_Blinking,
+	FF_dontuse,
+	FF_None,
+	FF_GoblinKing,
+	FF_MudCoord,
+	FF_TarTech,
+
+	FF_Roach,
+	FF_QRoach,
+	FF_RoachEgg,
+	FF_WWing,
+	FF_Eye,
+	FF_MadEye,
+	FF_Brain,
+
+	FF_TarMother,
+	FF_TarBaby,
+	FF_MudMother,
+	FF_MudBaby,
+	FF_GelMother,
+	FF_GelBaby,
+	FF_Seep,
+
+	FF_Spider,
+	FF_WaterSkipper,
+	FF_SkipperNest,
+	FF_Fegundo,
+	FF_FegundoAshes,
+	FF_Mimic,
+	FF_Decoy,
+
+	FF_Wubba,
+	FF_Serpent,
+	FF_SerpentG,
+	FF_SerpentB,
+	FF_Default
+};
+
+typedef std::map<UINT, SDL_Surface*> SurfaceMap;
+
+//******************************************************************************
+class CFaceWidget : public CWidget
+{
+public:
+	CFaceWidget(const UINT dwSetTagNo, const int nSetX, const int nSetY,
+			const UINT wSetW, const UINT wSetH);
+	~CFaceWidget();
+
+	void           PaintFull(const bool bVal=true) {this->bAlwaysPaintFull = bVal;}
+	inline SPEAKER GetCharacter() const {return this->eSpeaker;}
+	inline UINT   GetImageID() const {return this->dwImageID;}
+	inline bool    IsMoodLocked() const {return this->bMoodLocked;}
+	bool           IsSpeakerAnimated() const;
+	void           MovePupils(const UINT wLookAtX=(UINT)-1, const UINT wLookAtY=(UINT)-1);
+	virtual void      Paint(bool bUpdateRect = true);
+	virtual void      PaintClipped(const int nX, const int nY, const UINT wW,
+			const UINT wH, const bool bUpdateRect = true);
+	void           ResetForPaint() {this->bMoodDrawn = false;}
+	FACE_FRAME     ResolveFace();
+	void           SetCharacter(const SPEAKER eSpeaker, const bool bLockMood);
+	void           SetImage(const UINT dwDataID);
+	void           SetMood(const MOOD eSetMood, const Uint32 lDelay=0,
+		const bool bOverrideLock=false);
+	void           SetMoodToSoundEffect(MOOD eSetMood, SEID eUntilSEID);
+	void           SetReading(const bool bReading);
+	void           SetSleeping();
+
+protected:
+	virtual void   HandleAnimate();
+	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &Button);
+	virtual bool   IsAnimated() const {return true;}
+
+private:
+	void           DrawPupils();
+	inline void       DrawPupils_DrawOnePupil(
+			SDL_Surface *pDestSurface, const int nDestX, const int nDestY,
+			const int nMaskX, const int nMaskY) const;
+	bool           bHasMoodDelayPassed() const {return SDL_GetTicks()-this->dwStartDelayMood > this->dwDelayMood;}
+	void           SetMoodDelay(const Uint32 dwDelay);
+
+	SPEAKER        eSpeaker;         //character face being displayed
+	MOOD           eMood, ePrevMood; //face's mood
+	Uint32         dwDelayMood, dwStartDelayMood;        //how long to show face (0 means indefinitely)
+	bool           bMoodDrawn, bIsReading, bIsBlinking, bIsSleeping;  //whether face is reading, etc.
+	bool           bDoBlink;      //when set, do a blink at next possible time
+	SEID           eMoodSEID;
+	bool           bMoodLocked;   //can't change mood w/o explicit flag
+
+	//Eye movement.
+	int               nPupilX, nPupilY;
+	int               nPupilTargetX, nPupilTargetY;
+
+	Uint32			dwLastFrame;
+	bool           bAlwaysPaintFull;
+
+	SDL_Surface *pImage;   //custom image currently being shown
+	UINT dwImageID;       //ID of image being shown
+	SurfaceMap faceImages; //loaded custom images
+};
+
+#endif //#ifndef FACEWIDGET_H

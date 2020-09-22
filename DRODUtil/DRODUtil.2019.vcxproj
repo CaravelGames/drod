@@ -1,0 +1,578 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Russian|Win32">
+      <Configuration>Russian</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="SteamBuildDats|Win32">
+      <Configuration>SteamBuildDats</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="SteamDebug|Win32">
+      <Configuration>SteamDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Steam|Win32">
+      <Configuration>Steam</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{7B031E3B-8A8E-4260-B496-9909A8E50E1B}</ProjectGuid>
+    <ProjectName>DRODUtil</ProjectName>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>.\Debug/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurld_imp.lib;mk4vc70s_d.lib;jpeglib.lib;libpngd.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(Configuration)/DRODUtil.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>$(Configuration)/DRODUtil.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>$(Configuration)/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurl_imp.lib;mk4vc70s.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(Configuration)/DRODUtil.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>.\Release/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurl_imp.lib;mk4vc70s.lib;libjpeg.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>.\Release/DRODUtil.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>.\Release/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\steam-sdk\public\steam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurl_imp.lib;mk4vc70s.lib;libjpeg.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(Configuration)/DRODUtil.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>$(Configuration)/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..;..\..;C:\Caravel\libs\steam-sdk\public\steam;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;DEV_BUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurl_imp.lib;mk4vc70s.lib;libjpeg.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>$(Configuration)/DRODUtil.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">
+    <BuildLog>
+      <Path />
+    </BuildLog>
+    <Midl>
+      <TypeLibraryName>$(Configuration)/DRODUtil.tlb</TypeLibraryName>
+      <HeaderFileName />
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;UNICODE;_CRT_SECURE_NO_DEPRECATE;STEAMBUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;libcurl_imp.lib;mk4vc70s.lib;libjpeg.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmtd.lib;steam_api.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\$(Configuration)/DRODUtil.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreSpecificDefaultLibraries>msvcrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\$(Configuration)/DRODUtil.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\$(Configuration)/DRODUtil.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\DROD\BloodEffect.cpp" />
+    <ClCompile Include="..\DROD\BoundingBox.cpp" />
+    <ClCompile Include="..\DROD\Color.cpp" />
+    <ClCompile Include="..\DROD\DrodBitmapManager.cpp" />
+    <ClCompile Include="..\DROD\EditRoomWidget.cpp" />
+    <ClCompile Include="..\DROD\EvilEyeGazeEffect.cpp" />
+    <ClCompile Include="..\DROD\FaceWidget.cpp" />
+    <ClCompile Include="..\DROD\GridEffect.cpp" />
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp" />
+    <ClCompile Include="..\DROD\Light.cpp" />
+    <ClCompile Include="..\DROD\MapWidget.cpp" />
+    <ClCompile Include="..\DROD\ParticleExplosionEffect.cpp" />
+    <ClCompile Include="..\DROD\PendingBuildEffect.cpp" />
+    <ClCompile Include="..\DROD\PendingPlotEffect.cpp" />
+    <ClCompile Include="..\DROD\Point.cpp" />
+    <ClCompile Include="..\DROD\RaindropEffect.cpp" />
+    <ClCompile Include="..\DROD\Rectangle.cpp" />
+    <ClCompile Include="..\DROD\RoomDrawStatsEffect.cpp" />
+    <ClCompile Include="..\DROD\RoomEffectList.cpp" />
+    <ClCompile Include="..\DROD\RoomWidget.cpp" />
+    <ClCompile Include="..\DROD\Scene.cpp" />
+    <ClCompile Include="..\DROD\SnowflakeEffect.cpp" />
+    <ClCompile Include="..\DROD\SparkEffect.cpp" />
+    <ClCompile Include="..\DROD\Sphere.cpp" />
+    <ClCompile Include="..\DROD\StrikeOrbEffect.cpp" />
+    <ClCompile Include="..\DROD\TemporalMoveEffect.cpp" />
+    <ClCompile Include="..\DROD\TileImageCalcs.cpp" />
+    <ClCompile Include="..\DROD\VarMonitorEffect.cpp" />
+    <ClCompile Include="..\DROD\WadeEffect.cpp" />
+    <ClCompile Include="..\DROD\AumtlichGazeEffect.cpp" />
+    <ClCompile Include="DRODUtil.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+    <ClCompile Include="OptionList.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+    <ClCompile Include="Util1_5.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+    <ClCompile Include="Util1_6.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+    <ClCompile Include="Util2_0.cpp" />
+    <ClCompile Include="Util3_0.cpp" />
+    <ClCompile Include="v1_11c.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">true</BrowseInformation>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
+      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">true</BrowseInformation>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\DROD\BoundingBox.h" />
+    <ClInclude Include="..\DROD\Color.h" />
+    <ClInclude Include="..\DROD\Light.h" />
+    <ClInclude Include="..\DROD\MapWidget.h" />
+    <ClInclude Include="..\DROD\Point.h" />
+    <ClInclude Include="..\DROD\Rectangle.h" />
+    <ClInclude Include="..\DROD\Scene.h" />
+    <ClInclude Include="..\DROD\Sphere.h" />
+    <ClInclude Include="GameScreenDummy.h" />
+    <ClInclude Include="OptionList.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="Util1_5.h" />
+    <ClInclude Include="Util1_6.h" />
+    <ClInclude Include="Util2_0.h" />
+    <ClInclude Include="Util3_0.h" />
+    <ClInclude Include="v1_11c.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">
+      <Project>{896c0d2a-91f2-4988-911e-c3d00912c5c9}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="..\FrontEndLib\FrontEndLib.2019.vcxproj">
+      <Project>{a23303ca-acf1-4bac-9519-0e5febff69c1}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\DRODLib\DRODLib.2019.vcxproj">
+      <Project>{7105881e-2da6-4044-8ec7-2691f24b296a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\DROD\DROD.2019.vcxproj">
+      <Project>{3fdf4563-c819-4e05-8958-e3d652c5b432}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
