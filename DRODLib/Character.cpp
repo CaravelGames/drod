@@ -126,7 +126,7 @@ CCharacter::CCharacter(
 									//    for game processing.
 	: CPlayerDouble(M_CHARACTER, pSetCurrentGame, GROUND_AND_SHALLOW_WATER,
 			SPD_CHARACTER)  //put last in process sequence so all cue events will have
-					        //occurred and can be detected by the time Process() is called
+							//occurred and can be detected by the time Process() is called
 	, dwScriptID(0)
 	, wIdentity(UINT(-1)) //none
 	, wLogicalIdentity(UINT(-1))
@@ -562,6 +562,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_AttackTile:
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
+			case CCharacterCommand::CC_WaitForWeapon:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -623,6 +624,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_AttackTile:
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
+			case CCharacterCommand::CC_WaitForWeapon:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -3030,6 +3032,102 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForWeapon:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
+				bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
+				bool bFound = false;
+
+				if (!(bPlayerWeapon || bMonsterWeapon))
+				{
+					STOP_COMMAND;
+				}
+
+				if (!pflags) {
+					bFound = true;
+				}
+
+				if (!bFound && (pflags & ScriptFlag::WEAPON_SWORD) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Sword);
+					}
+				}
+				if (!bFound && (pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Pickaxe);
+					}
+				}
+				if (!bFound && (pflags & ScriptFlag::WEAPON_SPEAR) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Spear);
+					}
+				}
+				if (!bFound && (pflags & ScriptFlag::WEAPON_STAFF) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Staff);
+					}
+				}
+				if (!bFound && (pflags & ScriptFlag::WEAPON_DAGGER) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Dagger);
+					}
+				}
+				if (!bFound && (pflags & ScriptFlag::WEAPON_CABER) != 0)
+				{
+					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
+					{
+						bFound = true;
+					}
+					else if (bMonsterWeapon)
+					{
+						bFound = room.IsMonsterWeaponTypeAt(px, py,
+							WT_Caber);
+					}
+				}
+
+				if (!bFound)
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
@@ -3087,7 +3185,7 @@ Finish:
 	if (this->bVisible && bIsBeethroDouble(GetResolvedIdentity()) && IsAlive())
 	{
 		//Light any fuse stood on.
- 		room.LightFuseEnd(CueEvents, this->wX, this->wY);
+		room.LightFuseEnd(CueEvents, this->wX, this->wY);
 	}
 
 	this->bPlayerTouchedMe = false; //these flags are reset at the end of each turn

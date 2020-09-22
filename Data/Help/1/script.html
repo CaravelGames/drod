@@ -63,8 +63,8 @@ designate.  There are four general classes of script commands, as follows:</p>
       finishes when the NPC arrives at the destination square.
       <a name="singlestep">Enable</a> "Single step" to have the NPC only attempt
       to make a single step toward the indicated destination before continuing
-      to the next script command.  If no move can be made, the next script
-      command is executed immediately.</li>
+      to the next script command.  If no move can be made character will wait instead 
+	  and the next script command will run on the next turn.</li>
   <li><a name="move"><b>Move</b></a> - Similar to <a href="#moveto"><b>Move
       to</b></a>, except a relative number of tiles to move from the NPC's
       current location is specified.  Positive numbers indicate movement south
@@ -339,6 +339,9 @@ the state of the room and wait indefinitely until certain events occur.</p>
       exist in the room region you specify.</li>
   <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
       hold variable</a> meets the condition you specify.</li>
+  <li><a name="waitweapon"><b>Wait for Weapon</b></a> - Waits a weapon is in the specified square. By default, this command
+      checks for any weapon, but specific weapons can be waited for instead. Hold &lt;Ctrl&gt; while clicking to select and unselect multiple
+      selections.</li>
   <li><a name="waitforitem"><b>Wait for item</b>
     </a> - Wait until the specified element is located in the marked room region.</li>
 	 <li><a name="get-natural-target"><b>Get natural target</b></a> - Finds the position of the entity this character would target if it was a monster and stores it in two global variables, <b>_ReturnX</b> and <b>_ReturnY</b>.<br/>
