@@ -4642,7 +4642,7 @@ void CCharacter::SetCurrentGame(
 		}
 	}
 
-	UINT wResolvedIdentity = GetResolvedIdentity();
+	const UINT wResolvedIdentity = GetResolvedIdentity();
 
 	if (bIsBeethroDouble(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
