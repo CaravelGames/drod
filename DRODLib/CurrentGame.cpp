@@ -3159,8 +3159,13 @@ void CCurrentGame::WeaponPushback(
 					pNewFluff->PushInDirection(dx, dy, true, CueEvents);
 			} else {
 				this->pRoom->KillMonster(pNewFluff,CueEvents);
-				if (bValidDestinationTile)
+				if (bValidDestinationTile) {
+					const CMonster* pMonsterAtDest = this->pRoom->GetMonsterAtSquare(wDestX, wDestY);
+					const bool bKillingTarstuffMother = pMonsterAtDest && bIsMother(pMonsterAtDest->wType);
 					this->pRoom->ProcessPuffAttack(CueEvents, wDestX, wDestY);
+					if (bKillingTarstuffMother)
+						this->pRoom->FixUnstableTar(CueEvents);
+				}
 				else
 					CueEvents.Add(CID_FluffPuffDestroyed, new CCoord(wFromX, wFromY), true);
 			}
