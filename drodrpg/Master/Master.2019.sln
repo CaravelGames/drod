@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BackEndLib", "..\..\BackEnd
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FrontEndLib", "..\..\FrontEndLib\FrontEndLib.2019.vcxproj", "{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODUtil", "..\DRODUtil\DRODUtil.2019.vcxproj", "{7B031E3B-8A8E-4260-B496-9909A8E50E1B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		BuildDats|x86 = BuildDats|x86
@@ -105,6 +107,22 @@ Global
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Steam|x86.Build.0 = Steam|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.SteamDebug|x86.ActiveCfg = SteamDebug|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.SteamDebug|x86.Build.0 = SteamDebug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|x86.ActiveCfg = BuildDats|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|x86.Build.0 = BuildDats|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|x86.ActiveCfg = Debug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|x86.Build.0 = Debug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.FandM|x86.ActiveCfg = SteamDebug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.FandM|x86.Build.0 = SteamDebug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Release|x86.ActiveCfg = Release|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Release|x86.Build.0 = Release|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian Build|x86.ActiveCfg = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian Build|x86.Build.0 = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian|x86.ActiveCfg = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Russian|x86.Build.0 = Russian|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Steam|x86.ActiveCfg = Steam|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Steam|x86.Build.0 = Steam|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.SteamDebug|x86.ActiveCfg = SteamDebug|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.SteamDebug|x86.Build.0 = SteamDebug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
