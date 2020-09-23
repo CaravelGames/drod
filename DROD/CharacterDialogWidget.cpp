@@ -170,8 +170,6 @@ const UINT TAG_INPUTLISTBOX = 892;
 const UINT TAG_IMAGEOVERLAY_LABEL = 891;
 const UINT TAG_IMAGEOVERLAYTEXT = 890;
 
-const UINT TAG_WEAPON_LISTBOX2 = 883;
-
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
 const UINT CX_DIALOG = 820;
@@ -409,7 +407,6 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pWorldMapIconFlagListBox(NULL)
 	, pWorldMapImageFlagListBox(NULL)
 	, pWeaponListBox(NULL)
-	, pWeaponFlagsListBox(NULL)
 	, pAttackTileListBox(NULL)
 
 	, pCharacter(NULL)
@@ -1648,19 +1645,6 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWeaponListBox->AddItem(WT_Off, g_pTheDB->GetMessageText(MID_Off));
 	this->pWeaponListBox->AddItem(WT_On, g_pTheDB->GetMessageText(MID_On));
 	this->pWeaponListBox->SelectLine(0);
-
-	// Weapon Flags
-	this->pWeaponFlagsListBox = new CListBoxWidget(TAG_WEAPON_LISTBOX2,
-		X_WEAPON_LISTBOX, Y_WEAPON_LISTBOX, CX_WEAPON_LISTBOX, CY_WEAPON_LISTBOX);
-	this->pAddCommandDialog->AddWidget(this->pWeaponFlagsListBox);
-	this->pWeaponFlagsListBox->SelectMultipleItems(true);
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_SWORD, g_pTheDB->GetMessageText(MID_WeaponSword));
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_PICKAXE, g_pTheDB->GetMessageText(MID_WeaponPickaxe));
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_SPEAR, g_pTheDB->GetMessageText(MID_WeaponSpear));
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_STAFF, g_pTheDB->GetMessageText(MID_WeaponStaff));
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_DAGGER, g_pTheDB->GetMessageText(MID_WeaponDagger));
-	this->pWeaponFlagsListBox->AddItem(ScriptFlag::WEAPON_CABER, g_pTheDB->GetMessageText(MID_WeaponCaber));
-	this->pWeaponFlagsListBox->SelectLine(0);
 
 	//Goto label.
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_GOTOLABEL, X_GOTOLABEL,
@@ -3480,24 +3464,6 @@ const
 			wstr += _itoW(command.y, temp, 10);
 			wstr += wszRightParen;
 		break;
-		case CCharacterCommand::CC_WaitForWeapon:
-		{
-			UINT wBitfield = 1;
-			for (UINT wBits = 0; wBits<32; ++wBits, wBitfield *= 2)
-			{
-				if ((command.flags & wBitfield) == wBitfield)
-				{
-					wstr += this->pWeaponFlagsListBox->GetTextForKey(wBitfield);
-					wstr += wszSpace;
-				}
-			}
-			wstr += wszLeftParen;
-			wstr += _itoW(command.x, temp, 10);
-			wstr += wszComma;
-			wstr += _itoW(command.y, temp, 10);
-			wstr += wszRightParen;
-		}
-		break;
 
 		case CCharacterCommand::CC_BuildMarker:
 			wstr += this->pBuildMarkerListBox->GetTextForKey(command.flags);
@@ -4348,7 +4314,6 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
@@ -4987,7 +4952,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 50;
+	static const UINT NUM_WIDGETS = 49;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5004,7 +4969,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2
+		TAG_NATURAL_TARGET_TYPES
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5012,27 +4977,27 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CUEEVENT[] =      {TAG_EVENTLISTBOX, 0};
 	static const UINT SPEECH[] =        {TAG_DELAY, TAG_SPEECHTEXT, TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, 0};
 	static const UINT ORIENTATION[] =   {TAG_DIRECTIONLISTBOX, 0};
-	static const UINT ONOFF[] =         {TAG_ONOFFLISTBOX, 0};
+ 	static const UINT ONOFF[] =         {TAG_ONOFFLISTBOX, 0};
 	static const UINT OPENCLOSE[] =     {TAG_OPENCLOSELISTBOX, 0};
 	static const UINT TEXTBOX[] =       {TAG_GOTOLABELTEXT, 0};
 	static const UINT TEXT_AND_COLOR[] ={TAG_GOTOLABELTEXT, TAG_TEXT2, 0};
 	static const UINT GOTOLIST[] =      {TAG_GOTOLABELLISTBOX, 0};
 	static const UINT MUSIC[] =         {TAG_MUSICLISTBOX, 0};
-	static const UINT MOVE[] =          {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_WAITFLAGSLISTBOX, 0};
-	static const UINT WAITFLAGS[] =     {TAG_WAITFLAGSLISTBOX, 0};
-	static const UINT VARSET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0};
-	static const UINT VARGET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0};
+ 	static const UINT MOVE[] =          {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_WAITFLAGSLISTBOX, 0};
+ 	static const UINT WAITFLAGS[] =     {TAG_WAITFLAGSLISTBOX, 0};
+ 	static const UINT VARSET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0};
+ 	static const UINT VARGET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0};
 	static const UINT GRAPHIC[] =       {TAG_GRAPHICLISTBOX3, 0};
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
-	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
-	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
+ 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
+ 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
 	static const UINT ANSWER[] =        {TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0};
 	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, 0 };
 	static const UINT BUILD_MARKER_ITEMS[] = { TAG_BUILDMARKERITEMLISTBOX, 0 };
 	static const UINT WAIT_FOR_ITEMS[] = {TAG_WAITFORITEMLISTBOX, 0};
-	static const UINT XY[] =            {TAG_X_COORD, TAG_Y_COORD, 0};
+ 	static const UINT XY[] =            {TAG_X_COORD, TAG_Y_COORD, 0};
 	static const UINT STEALTH[] =       {TAG_STEALTHLISTBOX, 0};
-	static const UINT WATERTRAVEL[] =   {TAG_WATERTRAVERSALLISTBOX, 0};
+ 	static const UINT WATERTRAVEL[] =   {TAG_WATERTRAVERSALLISTBOX, 0};
 	static const UINT GLOBALSCRIPT[] =  {TAG_GLOBALSCRIPTLISTBOX, 0};
 	static const UINT NEWENTITY[] =     {TAG_GRAPHICLISTBOX3, TAG_DIRECTIONLISTBOX2, 0};
 	static const UINT EFFECT[] =        {TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3, 0};
@@ -5040,7 +5005,6 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WORLD_MAP_ICON[] ={TAG_GRAPHICLISTBOX3, TAG_ICONDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0};
 	static const UINT WORLD_MAP_IMAGE[]={TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0};
 	static const UINT WEAPONS[] =       {TAG_WEAPON_LISTBOX, 0};
-	static const UINT WEAPONS2[] =      { TAG_WEAPON_LISTBOX2, 0 };
 	static const UINT ATTACK_TYPES[] =  {TAG_ATTACKTILE, 0};
 	static const UINT INPUT[] =         { TAG_INPUTLISTBOX, 0 };
 	static const UINT IMAGEOVERLAY[] =  { TAG_IMAGEOVERLAYTEXT, 0 };
@@ -5130,8 +5094,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_IfElseIf
 		FACE_TOWARDS,       //CC_FaceTowards,
 		NATURAL_TARGET,     //CC_GetNaturalTarget
-		NO_WIDGETS,          //CC_GetEntityDirection
-		WEAPONS2          //CC_WaitForWeapon
+		NO_WIDGETS          //CC_GetEntityDirection
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5254,8 +5217,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_IfElseIf
 		FACE_TOWARDS_L,     //CC_FaceTowards,
 		NO_LABELS,          //CC_GetNaturalTarget
-		NO_LABELS,           //CC_GetEntityDirection
-		NO_LABELS			//CC_WaitForWeapon
+		NO_LABELS           //CC_GetEntityDirection
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5697,19 +5659,6 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForNotEntityType:
 			this->pCommand->flags = this->pAddCommandGraphicListBox->GetSelectedItem();
 			QueryRect();
-		break;
-
-		case CCharacterCommand::CC_WaitForWeapon:
-		{
-			//Add set bit-fields.
-			this->pCommand->flags = 0;
-			CIDSet flagSet = this->pWeaponFlagsListBox->GetSelectedItems();
-			for (CIDSet::const_iterator flag = flagSet.begin();
-				flag != flagSet.end(); ++flag)
-				this->pCommand->flags += *flag;
-
-			QueryXY();
-		}
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
@@ -6533,7 +6482,6 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 
 		case CCharacterCommand::CC_WaitForRect:
 		case CCharacterCommand::CC_WaitForNotRect:
-		case CCharacterCommand::CC_WaitForWeapon:
 			SetBitFlags();
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
@@ -6716,33 +6664,13 @@ const
 void CCharacterDialogWidget::SetBitFlags()
 //Set list items by bit-field.
 {
-	CCharacterCommand::CharCommand c = this->pCommand->command;
 	this->pWaitFlagsListBox->DeselectAll();
-	this->pWeaponFlagsListBox->DeselectAll();
 
 	UINT wBitfield = 1;
 	for (UINT wBits = 0; wBits<32; ++wBits, wBitfield *= 2)
 	{
-		if ((this->pCommand->flags & wBitfield) == wBitfield) {
-			switch (c) 
-			{
-				case CCharacterCommand::CC_WaitForEntityType:
-				case CCharacterCommand::CC_WaitForNotEntityType:
-				{
-					this->pWaitFlagsListBox->SelectItem(wBitfield, true);
-				}
-				break;
-				case CCharacterCommand::CC_WaitForWeapon: 
-				{
-					this->pWeaponFlagsListBox->SelectItem(wBitfield, true);
-				}
-				break;
-				default: 
-				{
-					ASSERT(!"Bad CCharacter command"); break;
-				}
-			}
-		}
+		if ((this->pCommand->flags & wBitfield) == wBitfield)
+			this->pWaitFlagsListBox->SelectItem(wBitfield,true);
 	}
 }
 
@@ -6875,7 +6803,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 //Returns: pointer to a new character command if text parsed correctly, else NULL
 //
 //Params:
-	WSTRING text)  //Text to parse
+    WSTRING text)  //Text to parse
 {
 #define skipWhitespace while (pos < textLength && iswspace(pText[pos])) ++pos
 
@@ -7072,21 +7000,6 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
-	break;
-
-	case CCharacterCommand::CC_WaitForWeapon:
-	{
-		UINT flag;
-		do {
-			parseOption(flag, this->pWeaponFlagsListBox, bFound);
-			if (bFound)
-				pCommand->flags |= flag;
-			skipWhitespace;
-		} while (bFound);
-		skipLeftParen;
-		parseNumber(pCommand->x); skipComma;
-		parseNumber(pCommand->y);
-	}
 	break;
 
 	case CCharacterCommand::CC_GetNaturalTarget:
@@ -7553,7 +7466,7 @@ WSTRING CCharacterDialogWidget::toText(
 //
 //Params:
 	const COMMANDPTR_VECTOR& commands,
-	CCharacterCommand* pCommand)   //Command to parse
+    CCharacterCommand* pCommand)   //Command to parse
 {
 #define concatNum(n) wstr += _itoW(n,temp,10)
 #define concatNumWithComma(n) concatNum(n); wstr += wszComma;
@@ -7695,22 +7608,6 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);
 		concatNum(c.y + c.h);
-	}
-	break;
-
-	case CCharacterCommand::CC_WaitForWeapon:
-	{
-		UINT wBitfield = 1;
-		for (UINT wBits = 0; wBits<32; ++wBits, wBitfield *= 2)
-		{
-			if ((c.flags & wBitfield) == wBitfield)
-			{
-				wstr += this->pWeaponFlagsListBox->GetTextForKey(wBitfield);
-				wstr += wszSpace;
-			}
-		}
-		concatNumWithComma(c.x);
-		concatNumWithComma(c.y);
 	}
 	break;
 
