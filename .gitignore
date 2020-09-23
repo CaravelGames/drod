@@ -65,6 +65,10 @@ drodrpg/DRODLib/Release-Temp/
 drodrpg/DRODLib/Steam/
 drodrpg/DRODLib/BuildDats/
 drodrpg/DRODLib/SteamBuildDats/
+drodrpg/DRODUtil/Debug/
+drodrpg/DRODUtil/Debug-Temp/
+drodrpg/DRODUtil/Release/
+drodrpg/DRODUtil/Release-Temp/
 
 # Various things we don't want.
 **/.vs/
