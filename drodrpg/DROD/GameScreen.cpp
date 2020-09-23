@@ -1810,6 +1810,8 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					def = (int)pCharacter->getDEF();
 					bMetal = pCharacter->IsMetal();
 					bBeamBlock = pCharacter->HasRayGun();
+					bGoblinWeakness = pCharacter->HasGoblinWeakness();
+					bSerpentWeakness = pCharacter->HasSerpentWeakness();
 				}
 			}
 			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Accessory);
