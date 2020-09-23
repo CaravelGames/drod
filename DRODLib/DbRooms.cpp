@@ -9216,17 +9216,20 @@ void CDbRoom::BreakUnstableTar(CCueEvents &CueEvents)
 			const bool bFluff = wTarType == T_FLUFF;
 			if (bIsTarOrFluff(wTarType) && !IsTarStableAt(wX, wY, wTarType))
 			{
-				bStable = false;
 				//Get rid of the unstable tar
 				if (bFluff){
 					RemoveStabbedTar(wX, wY, CueEvents, true);
 					CueEvents.Add(CID_FluffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_FLUFF), true);
 
 				} else {
+					CMonster* pMonster = GetMonsterAtSquare(wX, wY);
+					if (pMonster && bIsMother(pMonster->wType))
+						continue; //allow unstable tarstuff to remain under a mother
 					CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTarType), true);
 					DestroyTar(wX, wY, CueEvents);
 				}
 
+				bStable = false;
 				CMonster *pMonster = GetMonsterAtSquare(wX, wY);
 
 				//Don't spawn tar babies under living monsters
