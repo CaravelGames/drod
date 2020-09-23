@@ -24,9 +24,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Splitter.h
+//RockGiant.h
 //Declarations for CRockGiant.
-//Class for handling splitter monster game logic.
+//Class for handling rock giant monster game logic.
 
 #ifndef ROCKGIANT_H
 #define ROCKGIANT_H

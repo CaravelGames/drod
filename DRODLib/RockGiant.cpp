@@ -24,7 +24,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Splitter.cpp
 //Implementation of CRockGiant.
 
 #include "RockGiant.h"
