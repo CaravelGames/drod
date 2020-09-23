@@ -33,6 +33,7 @@ CTemporalClone::CTemporalClone(
 	CCurrentGame *pSetCurrentGame)
 	: CMimic(M_TEMPORALCLONE, pSetCurrentGame, SPD_TEMPORALCLONE)
 	, wIdentity(M_TEMPORALCLONE)
+	, wAppearance(M_TEMPORALCLONE)
 	, bInvisible(false)
 	, bIsTarget(false)
 { }
