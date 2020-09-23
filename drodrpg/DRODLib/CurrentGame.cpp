@@ -6374,7 +6374,7 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 
 			//Save current state of NPC, but the NPCs script itself doesn't need to be saved,
 			//and should not be included to save space.
-			pCharacter->SetExtraVarsFromMembersWithoutScript();
+			pCharacter->SetExtraVarsFromMembersWithoutScript(pCharacter->ExtraVars);
 		}
 
 		//Make copy of monster in its current state.
