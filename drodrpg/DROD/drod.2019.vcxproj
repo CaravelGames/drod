@@ -174,7 +174,7 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
@@ -266,7 +266,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;UNICODE;_CRT_SECURE_NO_DEPRECATE;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -285,7 +285,7 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
@@ -366,7 +366,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..;..\..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;UNICODE;ENABLE_CHEATS;_CRT_SECURE_NO_DEPRECATE;DEV_BUILD;CARAVELBUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;UNICODE;ENABLE_CHEATS;_CRT_SECURE_NO_DEPRECATE;DEV_BUILD;_USING_V110_SDK71_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -385,7 +385,7 @@
       <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
