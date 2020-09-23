@@ -645,7 +645,7 @@ public:
 	void           SetHoldForMonsters(CDbHold* pHold); //back door
 	void           SetMembersFromExploredRoomData(ExploredRoom *pExpRoom);
 	void           SetMonstersFromExploredRoomData(ExploredRoom* pExpRoom,
-			const bool bLoadNPCScripts=true);
+			const bool bLoadNPCScripts);
 
 //	void           SetHalphSlayerEntrance();
 	void           SetMonsterSquare(CMonster *pMonster);

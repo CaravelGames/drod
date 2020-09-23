@@ -131,8 +131,8 @@ public:
 	static bool    IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
 	virtual bool   IsVisible() const {return this->bVisible;}
 	virtual bool   IsVulnerable() const {return this->bVulnerable;}
-	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
-	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
+	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
+	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);
 	virtual bool   OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/=-1, const UINT /*wY*/=-1);
 	static int     parseExpression(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC=NULL, const bool bExpectCloseParen=false);
@@ -157,9 +157,8 @@ public:
 	static void    SaveSpeech(const COMMAND_VECTOR& commands);
 	static void    SaveSpeech(const COMMANDPTR_VECTOR& commands);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
-	virtual void   SetExtraVarsFromMembers();
-	void           SetExtraVarsFromMembersWithoutScript();
-	virtual void   SetMembersFromExtraVars();
+	void           SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) const;
+	virtual void   SetMembers(const CDbPackedVars& vars);
 	virtual void   Delete();
 
 	//Behavior patterns.
@@ -210,7 +209,7 @@ private:
 	static void  SerializeCommands(string& buffer, const COMMANDPTR_VECTOR& commands);
 	static void  writeBpUINT(string& buffer, UINT n);
 
-	void  setBaseMembersFromExtraVars();
+	void  setBaseMembers(const CDbPackedVars& vars);
 
 	UINT wCurrentCommandIndex; //command to play next
 	UINT wTurnDelay;        //turns before next command

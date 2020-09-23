@@ -416,8 +416,8 @@ CMonster* CDbSavedGame::LoadMonster(const c4_RowRef& row)
 	pNew->wY = pNew->wPrevY = wY;
 	pNew->wO = pNew->wPrevO = p_O(row);
 
-	pNew->ExtraVars = p_ExtraVars(row);
-	pNew->SetMembersFromExtraVars();
+	const CDbPackedVars vars = p_ExtraVars(row);
+	pNew->SetMembers(vars);
 
 	//Pieces.
 	c4_View PiecesView = p_Pieces(row);
@@ -1035,7 +1035,7 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 					delete[] data;
 /*
 //Monsters in saved games are saved without script info, so they don't need speech import.
-//If this step is performed, having an empty script will cause their attributes,
+//If this step is performed, having an empty script would cause their attributes,
 //saved in ExtraVars, to be cleared inside ImportSpeech.
 					if (pImportERMonster->wType == M_CHARACTER)
 					{
