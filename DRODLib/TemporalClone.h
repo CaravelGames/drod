@@ -58,6 +58,7 @@ public:
 
 	//player stats on creation
 	UINT wIdentity;
+	UINT wAppearance;
 	bool bInvisible;
 	bool bIsTarget;
 
