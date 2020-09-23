@@ -638,7 +638,7 @@
     <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="Gentryii.cpp" />
-    <ClCompile Include="Ghost.cpp">
+    <ClCompile Include="Seep.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -772,7 +772,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="Phoenix.cpp">
+    <ClCompile Include="Fegundo.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -783,7 +783,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="PhoenixAshes.cpp">
+    <ClCompile Include="FegundoAshes.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -851,7 +851,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="RockGiant.cpp">
+    <ClCompile Include="RockGolem.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">MaxSpeed</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
@@ -896,7 +896,7 @@
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">MaxSpeed</Optimization>
     </ClCompile>
-    <ClCompile Include="Splitter.cpp" />
+    <ClCompile Include="RockGiant.cpp" />
     <ClCompile Include="Stalwart.cpp" />
     <ClCompile Include="Station.cpp" />
     <ClCompile Include="Swordsman.cpp">
@@ -1001,7 +1001,7 @@
     <ClInclude Include="FluffBaby.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Gentryii.h" />
-    <ClInclude Include="Ghost.h" />
+    <ClInclude Include="Seep.h" />
     <ClInclude Include="Goblin.h" />
     <ClInclude Include="GreenSerpent.h" />
     <ClInclude Include="Guard.h" />
@@ -1017,8 +1017,8 @@
     <ClInclude Include="Neather.h" />
     <ClInclude Include="NetInterface.h" />
     <ClInclude Include="PathMap.h" />
-    <ClInclude Include="Phoenix.h" />
-    <ClInclude Include="PhoenixAshes.h" />
+    <ClInclude Include="Fegundo.h" />
+    <ClInclude Include="FegundoAshes.h" />
     <ClInclude Include="Platform.h" />
     <ClInclude Include="PlayerDouble.h" />
     <ClInclude Include="PlayerStats.h" />
@@ -1026,13 +1026,13 @@
     <ClInclude Include="Roach.h" />
     <ClInclude Include="RoachEgg.h" />
     <ClInclude Include="RoachQueen.h" />
-    <ClInclude Include="RockGiant.h" />
+    <ClInclude Include="RockGolem.h" />
     <ClInclude Include="RoomData.h" />
     <ClInclude Include="Serpent.h" />
     <ClInclude Include="SettingsKeys.h" />
     <ClInclude Include="Slayer.h" />
     <ClInclude Include="Spider.h" />
-    <ClInclude Include="Splitter.h" />
+    <ClInclude Include="RockGiant.h" />
     <ClInclude Include="Stalwart.h" />
     <ClInclude Include="Station.h" />
     <ClInclude Include="Swordsman.h" />

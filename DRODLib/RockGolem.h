@@ -20,29 +20,33 @@
  * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Matt Schikore (schik)
+ * Contributor(s): Mike Rimer (mrimer)
  *
  * ***** END LICENSE BLOCK ***** */
 
-//PhoenixAshes.h
-//Declarations for CPhoenixAshes.
-//Class for handling Fegundo (in ashes state) monster game logic.
-
-#ifndef PHOENIXASHES_H
-#define PHOENIXASHES_H
+#ifndef ROCKGOLEM_H
+#define ROCKGOLEM_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CPhoenixAshes : public CMonster
+class CRockGolem : public CMonster
 {
 public:
-	CPhoenixAshes(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CPhoenixAshes);
+	CRockGolem(CCurrentGame *pSetCurrentGame = NULL, UINT monsterType=M_ROCKGOLEM)
+		: CMonster(monsterType, pSetCurrentGame, GROUND_AND_SHALLOW_WATER), bBroken(false) {}
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CRockGolem);
 	
-	virtual bool HasOrientation() const {return false;}
-	virtual bool IsAggressive() const {return false;}
+	virtual bool CheckForDamage(CCueEvents& CueEvents);
+	virtual bool IsAggressive() const {return !this->bBroken;}
+	virtual bool IsAlive() const {return this->bAlive && !this->bBroken;}
+	virtual bool IsFriendly() const {return this->bBroken;}
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX=(UINT)-1, const UINT wY=(UINT)-1,
+			WeaponType weaponType=WT_Sword);
+
+protected:
+	bool  bBroken; //whether monster is inactive (effectually dead)
 };
 
-#endif //...#ifndef PHOENIXASHES_H
+#endif //...#ifndef ROCKGOLEM_H

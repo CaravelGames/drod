@@ -29,7 +29,7 @@
 #include "DbRooms.h"
 #include "GameConstants.h"
 #include "MonsterPiece.h"
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "TileConstants.h"
 #include <BackEndLib/Assert.h>
 
@@ -365,7 +365,7 @@ void CBriars::expand(
 					CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 
 					if (pMonster->wType == M_ROCKGIANT)
-						CSplitter::Shatter(CueEvents, this->pRoom->GetCurrentGame(),
+						CRockGiant::Shatter(CueEvents, this->pRoom->GetCurrentGame(),
 								pMonster->wX, pMonster->wY);
 				}
 

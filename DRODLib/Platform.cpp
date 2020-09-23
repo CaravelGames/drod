@@ -30,7 +30,7 @@
 #include "DbRooms.h"
 #include "TileConstants.h"
 #include "MonsterFactory.h"
-#include "RockGiant.h"
+#include "RockGolem.h"
 
 CCoordSet CPlatform::fallTiles;
 

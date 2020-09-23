@@ -39,12 +39,12 @@
 #include "DbProps.h"
 #include "Character.h"
 #include "Gentryii.h"
-#include "Ghost.h"
 #include "MonsterPiece.h"
 #include "PlayerDouble.h"
+#include "RockGiant.h"
+#include "Seep.h"
 #include "Serpent.h"
 #include "Spider.h"
-#include "Splitter.h"
 #include "Stalwart.h"
 #include "TemporalClone.h"
 #include "Platform.h"
@@ -3077,7 +3077,7 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 		{
 			case M_SEEP:
 			{
-				CGhost *pWallMonster = DYN_CAST(CGhost*, CMonster*, pMonster);
+				CSeep *pWallMonster = DYN_CAST(CSeep*, CMonster*, pMonster);
 				pWallMonster->KillIfOutsideWall(CueEvents);
 			}
 			break;
@@ -5229,7 +5229,7 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 		//Splitter breaks into pieces.
 		KillMonster(pMonster, CueEvents);
 		this->pCurrentGame->TallyKill();
-		CSplitter::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
+		CRockGiant::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
 				pMonster->wY, true); //allow forming monster shards over pit/water
 
 		pMonster = GetMonsterAtSquare(wX, wY); //get resultant piece
@@ -5872,7 +5872,7 @@ void CDbRoom::ProcessExplosionSquare(
 				}
 			}
 			else if (bShatterRockGiant && this->pCurrentGame)
-				CSplitter::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
+				CRockGiant::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
 		}
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
