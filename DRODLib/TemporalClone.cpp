@@ -296,7 +296,7 @@ bool CTemporalClone::SetWeaponSheathed()
 		return true;
 	//If player or player's identity type is marked to not have a sword, then clones do not either.
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (!bEntityHasSword(GetIdentity()) || player.bWeaponOff || player.bNoWeapon)
+	if (!bEntityHasSword(this->wAppearance) || player.bWeaponOff || player.bNoWeapon)
 	{
 		this->bWeaponSheathed = true;
 		return true;
