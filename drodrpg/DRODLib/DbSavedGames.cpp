@@ -416,8 +416,8 @@ CMonster* CDbSavedGame::LoadMonster(const c4_RowRef& row)
 	pNew->wY = pNew->wPrevY = wY;
 	pNew->wO = pNew->wPrevO = p_O(row);
 
-	const CDbPackedVars vars = p_ExtraVars(row);
-	pNew->SetMembers(vars);
+	pNew->ExtraVars = p_ExtraVars(row);
+	pNew->SetMembers(pNew->ExtraVars);
 
 	//Pieces.
 	c4_View PiecesView = p_Pieces(row);
