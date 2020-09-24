@@ -40,25 +40,25 @@
 #include "Construct.h"
 #include "Decoy.h"
 #include "EvilEye.h"
+#include "Fegundo.h"
+#include "FegundoAshes.h"
 #include "FluffBaby.h"
 #include "Gentryii.h"
-#include "Ghost.h"
 #include "Goblin.h"
 #include "GreenSerpent.h"
 #include "Guard.h"
 #include "Halph.h"
 #include "Mimic.h"
 #include "Neather.h"
-#include "Phoenix.h"
-#include "PhoenixAshes.h"
 #include "RedSerpent.h"
 #include "Roach.h"
 #include "RoachEgg.h"
 #include "RoachQueen.h"
 #include "RockGiant.h"
+#include "RockGolem.h"
+#include "Seep.h"
 #include "Slayer.h"
 #include "Spider.h"
-#include "Splitter.h"
 #include "Stalwart.h"
 #include "TarBaby.h"
 #include "TarMother.h"
@@ -124,7 +124,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CGelBaby();
 
 		case M_SEEP:
-		return new CGhost();
+		return new CSeep();
 
 		case M_GOBLIN:
 		return new CGoblin();
@@ -151,10 +151,10 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CNeather();
 
 		case M_FEGUNDO:
-		return new CPhoenix();
+		return new CFegundo();
 
 		case M_FEGUNDOASHES:
-		return new CPhoenixAshes();
+		return new CFegundoAshes();
 
 		case M_ROACH:
 		return new CRoach();
@@ -187,7 +187,7 @@ CMonster* CMonsterFactory::GetNewMonster(
 		return new CSpider();
 
 		case M_ROCKGIANT:
-		return new CSplitter();
+		return new CRockGiant();
 
 		case M_STALWART:
 		return new CStalwart();

@@ -20,29 +20,29 @@
  * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Mike Rimer (mrimer)
+ * Contributor(s): Matt Schikore (schik)
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Ghost.h
-//Declarations for CGhost.
-//Class for handling Ghost monster game logic.
+//PhoenixAshes.h
+//Declarations for CFegundoAshes.
+//Class for handling Fegundo (in ashes state) monster game logic.
 
-#ifndef GHOST_H
-#define GHOST_H
+#ifndef FEGUNDOASHES_H
+#define FEGUNDOASHES_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CGhost : public CMonster
+class CFegundoAshes : public CMonster
 {
 public:
-	CGhost(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CGhost);
-
-	bool           KillIfOutsideWall(CCueEvents &CueEvents);
-	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
-	virtual bool  CanPressPressurePlates() const { return false; }
+	CFegundoAshes(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CFegundoAshes);
+	
+	virtual bool HasOrientation() const {return false;}
+	virtual bool IsAggressive() const {return false;}
+	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
-#endif //...#ifndef GHOST_H
+#endif //...#ifndef PHOENIXASHES_H

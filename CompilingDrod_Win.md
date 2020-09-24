@@ -56,6 +56,8 @@ Known build issues:
  - Expat has an incompatible compiler flag when upgrading the project to MSVS 2019.  Workaround: I manually made the top change proposed on this StackOverflow topic:
    https://stackoverflow.com/questions/43141401/visual-studio-error-d8016-zi-and-gy-command-line-options-are-incompatible/43141537
    (If tweaks like this are required, to speed up repeat re-runs of the build script, note that you can set the `DepsToBuild` variable to skip re-building libraries that have already built successfully.)
+   
+   Open DepsSrc/expat-2.1.0/expat-2.1.0.expat.sln, and for each project file, right-click it --> Properties --> Configuration Properties --> C/C++ --> Code Generation --> Enable Function-level Linking. Change this to `Yes (/Gy)`
 
 ##### Update include and library paths in the project files
 

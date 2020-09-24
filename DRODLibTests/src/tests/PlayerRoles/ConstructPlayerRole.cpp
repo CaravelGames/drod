@@ -1,6 +1,6 @@
 #include "../../test-include.hpp"
 
-TEST_CASE("Construct player role", "[game]") {
+TEST_CASE("Construct player role", "[game][construct][player][player role]") {
 	RoomBuilder::ClearRoom();
 
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);

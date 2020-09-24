@@ -20,36 +20,29 @@
  * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Matt Schikore (schik)
+ * Contributor(s): Mike Rimer (mrimer)
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Phoenix.h
-//Declarations for CPhoenix.
-//Class for handling Fegundo monster game logic.
+//Seep.h
+//Declarations for CSeep.
+//Class for handling Seep monster game logic.
 
-#ifndef PHOENIX_H
-#define PHOENIX_H
+#ifndef SEEP_H
+#define SEEP_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CPhoenix : public CMonster
+class CSeep : public CMonster
 {
 public:
-	CPhoenix(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CPhoenix);
-	
-	void Explode(CCueEvents &CueEvents);
+	CSeep(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CSeep);
 
-	virtual bool BrainAffects() const {return false;}
-	virtual bool CanFindSwordsman() const;
-	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
-	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
-	virtual bool OnStabbed(CCueEvents &/*CueEvents*/,
-			const UINT /*wX*/=(UINT)-1, const UINT /*wY*/=(UINT)-1,
-			WeaponType /*weaponType*/=WT_Sword)
-		{return false;}	//stabs and firetraps don't kill fegundos
+	bool           KillIfOutsideWall(CCueEvents &CueEvents);
+	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual bool  CanPressPressurePlates() const { return false; }
 };
 
-#endif //...#ifndef PHOENIX_H
+#endif //...#ifndef GHOST_H

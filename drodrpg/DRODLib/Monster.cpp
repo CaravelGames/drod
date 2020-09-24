@@ -1897,9 +1897,9 @@ void CMonster::Save(
 	const c4_RowRef &MonsterRowRef,     //(in/out) Open row ref to fill.
 	const bool /*bSaveScript*/) //currently for NPCs only [default=true]
 {
-	//Don't clear this->ExtraVars here, or CCharacter::Save won't work properly.
+	//Don't clear this->ExtraVars here, as CCharacter::Save, which is called above this, won't work properly because its compiled data will be wiped.
 
-	//Prepare monster data.
+	//Pack monster stats.
 	if (this->HP)
 		this->ExtraVars.SetVar(HPStr, this->HP);
 	if (this->ATK)
@@ -1945,14 +1945,14 @@ void CMonster::Save(
 }
 
 //*****************************************************************************
-void CMonster::SetMembersFromExtraVars()
+void CMonster::SetMembers(const CDbPackedVars& vars)
 //Reads vars from ExtraVars to reconstruct the monster's stats.
 {
-	this->HP = this->ExtraVars.GetVar(HPStr, this->HP);
-	this->ATK = this->ExtraVars.GetVar(ATKStr, this->ATK);
-	this->DEF = this->ExtraVars.GetVar(DEFStr, this->DEF);
-	this->GOLD = this->ExtraVars.GetVar(GOLDStr, this->GOLD);
-	this->XP = this->ExtraVars.GetVar(XPStr, this->XP);
+	this->HP = vars.GetVar(HPStr, this->HP);
+	this->ATK = vars.GetVar(ATKStr, this->ATK);
+	this->DEF = vars.GetVar(DEFStr, this->DEF);
+	this->GOLD = vars.GetVar(GOLDStr, this->GOLD);
+	this->XP = vars.GetVar(XPStr, this->XP);
 }
 
 //

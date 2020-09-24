@@ -39,12 +39,12 @@
 #include "DbProps.h"
 #include "Character.h"
 #include "Gentryii.h"
-#include "Ghost.h"
 #include "MonsterPiece.h"
 #include "PlayerDouble.h"
+#include "RockGiant.h"
+#include "Seep.h"
 #include "Serpent.h"
 #include "Spider.h"
-#include "Splitter.h"
 #include "Stalwart.h"
 #include "TemporalClone.h"
 #include "Platform.h"
@@ -1405,7 +1405,7 @@ MESSAGE_ID CDbRoom::SetProperty(
 			}
 			break;
 		case VP_Orbs:
-		  ASSERT(pType == P_Start || pImportOrb);
+	      ASSERT(pType == P_Start || pImportOrb);
 			ASSERT(pType == P_Start || !pImportOrbAgent);
 			switch (pType)
 			{
@@ -1702,7 +1702,7 @@ MESSAGE_ID CDbRoom::SetProperty(
 					break;
 				//Backwards compatibility:
 				//1.6 Format
-			case P_LevelID:
+            case P_LevelID:
 					//Change this LevelID to the EntranceID for the level's main entrance.
 					//IDs will be matched to local ones later on completion of import
 					pImportExit->dwEntranceID = convertToUINT(str);
@@ -3077,7 +3077,7 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 		{
 			case M_SEEP:
 			{
-				CGhost *pWallMonster = DYN_CAST(CGhost*, CMonster*, pMonster);
+				CSeep *pWallMonster = DYN_CAST(CSeep*, CMonster*, pMonster);
 				pWallMonster->KillIfOutsideWall(CueEvents);
 			}
 			break;
@@ -3085,6 +3085,12 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 			{
 				CConstruct *pConstruct = DYN_CAST(CConstruct*, CMonster*, pMonster);
 				pConstruct->KillIfOnOremites(CueEvents);
+			}
+			break;
+			case M_TEMPORALCLONE:
+			{
+				CTemporalClone *pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+				pTemporalClone->KillIfOnDeadlyTile(CueEvents);
 			}
 			break;
 		}
@@ -4142,7 +4148,9 @@ void CDbRoom::ActivateToken(
 		case TemporalSplit:
 			//Touching a temporal split point for the first time.
 			if (!bOn && this->pCurrentGame->swordsman.wX == wX &&
-					this->pCurrentGame->swordsman.wY == wY && this->pCurrentGame->StartTemporalSplit()) {
+					this->pCurrentGame->swordsman.wY == wY && 
+					this->pCurrentGame->swordsman.wPlacingDoubleType == 0 &&
+					this->pCurrentGame->StartTemporalSplit()) {
 				SetTParam(wX, wY, tParam + TOKEN_ACTIVE);  //toggle on-off
 				CueEvents.Add(CID_TemporalSplitStart);
 				this->PlotsMade.insert(wX,wY);
@@ -4365,7 +4373,7 @@ void CDbRoom::BurnFuses(
 	//Ordering issues might place new fuses where these fuses just burned.
 	//Ensure that they won't burn here again.
 	this->NewFuses -= this->LitFuses;
-		this->LitFuses.clear();
+        this->LitFuses.clear();
 }
 
 //*****************************************************************************
@@ -5221,7 +5229,7 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 		//Splitter breaks into pieces.
 		KillMonster(pMonster, CueEvents);
 		this->pCurrentGame->TallyKill();
-		CSplitter::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
+		CRockGiant::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
 				pMonster->wY, true); //allow forming monster shards over pit/water
 
 		pMonster = GetMonsterAtSquare(wX, wY); //get resultant piece
@@ -5762,9 +5770,9 @@ void CDbRoom::ProcessExplosionSquare(
 			ActivateBeacon(wX, wY, CueEvents);
 		break;
 		case T_TAR:	case T_MUD: case T_GEL: case T_FLUFF:
-						// Remove tarstuff.  A CID_TarstuffDestroyed was added
-						// in ExpandExplosion(), since that method can add a
-						// direction for the animation.
+                        // Remove tarstuff.  A CID_TarstuffDestroyed was added
+                        // in ExpandExplosion(), since that method can add a
+                        // direction for the animation.
 			RemoveStabbedTar(wX,wY, CueEvents);
 		break;
 		case T_BRIAR_SOURCE:
@@ -5864,7 +5872,7 @@ void CDbRoom::ProcessExplosionSquare(
 				}
 			}
 			else if (bShatterRockGiant && this->pCurrentGame)
-				CSplitter::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
+				CRockGiant::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
 		}
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
@@ -8700,7 +8708,7 @@ bool CDbRoom::NewGelWouldBeStable(
 	const vector<tartype> &addedGel, //(in) where gel is located in room
 	const UINT tx, const UINT ty,    //(in) square where gel is growing
 	const CCoordSet& contiguousGel)  //(in) currently only used to represent the set
-									 //of gel tiles connected to gel mothers
+	                                 //of gel tiles connected to gel mothers
 //
 //Returns:
 //True if gel should go here, false if gel baby.
@@ -8833,22 +8841,22 @@ const
 		 bRight = wX < this->wRoomCols-1 && wTar == GetTSquare(wX+1,wY);
 
 		bAddTop = bAddBottom = bAddLeft = bAddRight = false;
-	  if (bTop && bLeft && wTar == GetTSquare(wX-1,wY-1))
+      if (bTop && bLeft && wTar == GetTSquare(wX-1,wY-1))
 		{
 			PushTileIfOfType(wX-1,wY-1);
 			bAddTop = bAddLeft = true;
 		}
-	  if (bTop && bRight && wTar == GetTSquare(wX+1,wY-1))
+      if (bTop && bRight && wTar == GetTSquare(wX+1,wY-1))
 		{
 			PushTileIfOfType(wX+1,wY-1);
 			bAddTop = bAddRight = true;
 		}
-	  if (bBottom && bLeft && wTar == GetTSquare(wX-1,wY+1))
+      if (bBottom && bLeft && wTar == GetTSquare(wX-1,wY+1))
 		{
 			PushTileIfOfType(wX-1,wY+1);
 			bAddBottom = bAddLeft = true;
 		}
-	  if (bBottom && bRight && wTar == GetTSquare(wX+1,wY+1))
+      if (bBottom && bRight && wTar == GetTSquare(wX+1,wY+1))
 		{
 			PushTileIfOfType(wX+1,wY+1);
 			bAddBottom = bAddRight = true;
@@ -8987,7 +8995,7 @@ void CDbRoom::GrowTar(
 				(wFTile == T_EMPTY || bIsDisabledArrow(wFTile)) && 
 				GetTSquare(x, y) == T_EMPTY &&
 				!(x == wSManX && y == wSManY) &&
-					(!pMonster || pMonster->wType == wMotherType ||
+			        (!pMonster || pMonster->wType == wMotherType ||
 					pMonster->wType == M_FLUFFBABY || babies.Exists(x,y)))
 			{
 				for (UINT o = 0; o < ORIENTATION_COUNT; ++o)
@@ -9043,7 +9051,7 @@ void CDbRoom::GrowTar(
 			{
 				contiguousGel.insert(x,y); //this gel is likewise connected to a gel mother
 				wCount=0;  //Need to re-iterate through the entire remaining queue
-						   //to ensure no remaining new tiles might also be stable.
+				           //to ensure no remaining new tiles might also be stable.
 			}
 			bTarstuffGrew = true;
 		} else {
@@ -9208,17 +9216,20 @@ void CDbRoom::BreakUnstableTar(CCueEvents &CueEvents)
 			const bool bFluff = wTarType == T_FLUFF;
 			if (bIsTarOrFluff(wTarType) && !IsTarStableAt(wX, wY, wTarType))
 			{
-				bStable = false;
 				//Get rid of the unstable tar
 				if (bFluff){
 					RemoveStabbedTar(wX, wY, CueEvents, true);
 					CueEvents.Add(CID_FluffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_FLUFF), true);
 
 				} else {
+					CMonster* pMonster = GetMonsterAtSquare(wX, wY);
+					if (pMonster && bIsMother(pMonster->wType))
+						continue; //allow unstable tarstuff to remain under a mother
 					CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTarType), true);
 					DestroyTar(wX, wY, CueEvents);
 				}
 
+				bStable = false;
 				CMonster *pMonster = GetMonsterAtSquare(wX, wY);
 
 				//Don't spawn tar babies under living monsters
@@ -9912,37 +9923,6 @@ const
 					if (bIgnoreDagger && pMonster->GetWeaponType() == WT_Dagger)
 						continue;
 					return true;
-				}
-			}
-
-	return false;
-}
-
-//*****************************************************************************
-bool CDbRoom::IsMonsterWeaponTypeAt(
-	//Determines if a square contains a monster's weapon, and it is of the
-	//given type.
-	//
-	//
-	//Params:
-	const UINT wX, const UINT wY, //(in)   Square to check.
-	const WeaponType wt, //Type of weapon
-	const CMonster *pIgnore) //[default=NULL] optional monster to ignore in search
-							 //
-							 //Returns:
-							 //True if it does, false if not.
-	const
-{
-	//For a monster to have a sword in this square, the monster must be adjacent.
-	for (int nJ = -1; nJ <= 1; ++nJ) //O(9) search
-		for (int nI = -1; nI <= 1; ++nI)
-			if (nI || nJ)
-			{
-				CMonster *pMonster = GetMonsterAtSquare(wX + nI, wY + nJ);
-				//Monsters can walk into their own sword square.
-				if (pMonster && pMonster != pIgnore && pMonster->HasSwordAt(wX, wY)) {
-					if (pMonster->GetWeaponType() == wt)
-						return true;
 				}
 			}
 

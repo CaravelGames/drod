@@ -20,33 +20,43 @@
  * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Mike Rimer (mrimer)
+ * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef ROCKGOLEM_H
-#define ROCKGOLEM_H
+//RockGiant.h
+//Declarations for CRockGiant.
+//Class for handling rock giant monster game logic.
+
+#ifndef ROCKGIANT_H
+#define ROCKGIANT_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CRockGolem : public CMonster
+class CRockGiant : public CMonster
 {
 public:
-	CRockGolem(CCurrentGame *pSetCurrentGame = NULL, UINT monsterType=M_ROCKGOLEM)
-		: CMonster(monsterType, pSetCurrentGame, GROUND_AND_SHALLOW_WATER), bBroken(false) {}
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CRockGolem);
-	
-	virtual bool CheckForDamage(CCueEvents& CueEvents);
-	virtual bool IsAggressive() const {return !this->bBroken;}
-	virtual bool IsAlive() const {return this->bAlive && !this->bBroken;}
-	virtual bool IsFriendly() const {return this->bBroken;}
-	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
-	virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX=(UINT)-1, const UINT wY=(UINT)-1,
-			WeaponType weaponType=WT_Sword);
+	CRockGiant(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CRockGiant);
 
-protected:
-	bool  bBroken; //whether monster is inactive (effectually dead)
+	virtual bool IsLongMonster() const {return true;}
+	virtual bool IsOpenMove(const int dx, const int dy) const;
+	virtual void MyClosestTile(const UINT wX, const UINT wY, UINT &wMyCX, UINT &wMyCY) const;
+	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+
+	virtual void ReflectX(CDbRoom *pRoom);
+	virtual void ReflectY(CDbRoom *pRoom);
+
+	static void  Shatter(CCueEvents& CueEvents, CCurrentGame *pGame,
+			const UINT wX, const UINT wY, const bool bBreakOverPit=false,
+			const ROOMCOORD *pWeaponDamagePosition = NULL);
+
+private:
+	void MovePiece(CMonster *pMonster, const int dx, const int dy,
+			CCueEvents &CueEvents);
+
+	UINT wOrigX, wOrigY; //to facilitate movement calculation
 };
 
-#endif //...#ifndef ROCKGOLEM_H
+#endif //...#ifndef SPLITTER_H

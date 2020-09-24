@@ -85,7 +85,9 @@ void CWaterskipper::Process(
 			const UINT wOSquare = this->pCurrentGame->pRoom->GetOSquare(wSX,wSY);
 			if (!(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare) ||
 					DoesArrowPreventMovement(dx, dy) ||
-					this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy)))
+					this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy) ||
+					this->pCurrentGame->IsPlayerWeaponAt(wSX, wSY, true) ||
+					this->pCurrentGame->pRoom->IsMonsterSwordAt(wSX, wSY, true)))
 			{
 				MakeStandardMove(CueEvents, dx, dy);
 				SetOrientation(dx, dy);

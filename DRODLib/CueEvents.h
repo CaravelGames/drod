@@ -506,17 +506,17 @@ enum CUEEVENT_ID
 	CID_OrbActivated,
 
 	//A fegundo has burned.  This event is used by ProcessMonsters() to delete
-	//the CPhoenix monster.  A new CPhoenixAshes monster will be present in the same
+	//the CFegundo monster.  A new CFegundoAshes monster will be present in the same
 	//square.
 	//
-	//Private data: CPhoenix *pPhoenix (one or more)
+	//Private data: CFegundo *pPhoenix (one or more)
 	CID_FegundoToAsh,
 
 	//A fegundo has been re-born.  This event is used by ProcessMonsters() to delete
-	//the CPhoenixAshes monster.  A new CPhoenix monster will be present in the same
+	//the CFegundoAshes monster.  A new CFegundo monster will be present in the same
 	//square.
 	//
-	//Private data: CPhoenixAshes *pAshes (one or more)
+	//Private data: CFegundoAshes *pAshes (one or more)
 	CID_AshToFegundo,
 
 	//An ambient sound effect is played.  Attached object contains play info.

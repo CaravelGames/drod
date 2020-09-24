@@ -20,43 +20,36 @@
  * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
- * Contributor(s):
+ * Contributor(s): Matt Schikore (schik)
  *
  * ***** END LICENSE BLOCK ***** */
 
-//Splitter.h
-//Declarations for CSplitter.
-//Class for handling splitter monster game logic.
+//Phoenix.h
+//Declarations for CFegundo.
+//Class for handling Fegundo monster game logic.
 
-#ifndef SPLITTER_H
-#define SPLITTER_H
+#ifndef FEGUNDO_H
+#define FEGUNDO_H
 
 #include "Monster.h"
 #include "MonsterFactory.h"
 
-class CSplitter : public CMonster
+class CFegundo : public CMonster
 {
 public:
-	CSplitter(CCurrentGame *pSetCurrentGame = NULL);
-	IMPLEMENT_CLONE_REPLICATE(CMonster, CSplitter);
+	CFegundo(CCurrentGame *pSetCurrentGame = NULL);
+	IMPLEMENT_CLONE_REPLICATE(CMonster, CFegundo);
+	
+	void Explode(CCueEvents &CueEvents);
 
-	virtual bool IsLongMonster() const {return true;}
-	virtual bool IsOpenMove(const int dx, const int dy) const;
-	virtual void MyClosestTile(const UINT wX, const UINT wY, UINT &wMyCX, UINT &wMyCY) const;
+	virtual bool BrainAffects() const {return false;}
+	virtual bool CanFindSwordsman() const;
+	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
-
-	virtual void ReflectX(CDbRoom *pRoom);
-	virtual void ReflectY(CDbRoom *pRoom);
-
-	static void  Shatter(CCueEvents& CueEvents, CCurrentGame *pGame,
-			const UINT wX, const UINT wY, const bool bBreakOverPit=false,
-			const ROOMCOORD *pWeaponDamagePosition = NULL);
-
-private:
-	void MovePiece(CMonster *pMonster, const int dx, const int dy,
-			CCueEvents &CueEvents);
-
-	UINT wOrigX, wOrigY; //to facilitate movement calculation
+	virtual bool OnStabbed(CCueEvents &/*CueEvents*/,
+			const UINT /*wX*/=(UINT)-1, const UINT /*wY*/=(UINT)-1,
+			WeaponType /*weaponType*/=WT_Sword)
+		{return false;}	//stabs and firetraps don't kill fegundos
 };
 
-#endif //...#ifndef SPLITTER_H
+#endif //...#ifndef PHOENIX_H

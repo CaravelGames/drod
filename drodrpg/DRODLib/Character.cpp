@@ -3829,11 +3829,10 @@ MESSAGE_ID CCharacter::ImportSpeech(
 //Params:
 	CImportInfo &info)   //(in/out) Import data
 {
-	// Set member vars at the same time
-	setBaseMembersFromExtraVars();
+	// Set member vars to use in repopulating ExtraVars from scratch below
+	setBaseMembers(this->ExtraVars);
 
 	this->dwScriptID = this->ExtraVars.GetVar(scriptIDstr, UINT(0));
-
 
 	UINT dwSpeechID, dwDataID, eCommand;
 	const UINT wNumCommands = this->ExtraVars.GetVar(numCommandsStr, UINT(0));
@@ -3905,61 +3904,17 @@ MESSAGE_ID CCharacter::ImportSpeech(
 				}
 			}
 
-//			Upgrade2_0CommandTo3_0(command);
 			this->commands.push_back(command);
 		}
 		ASSERT(index == bufferSize);
 		ASSERT(this->commands.size() == wNumCommands);
-	} else {
-		//Pre-3.0.2 rev2 script data format.
-
-		//When importing rooms, there will be scriptless characters as placeholders for explored room data.
-		//When importing them, this assertion should not fire since this is a valid state for a saved game.
-		//ASSERT(!"Should be obsolete and not encountered anywhere");
-
-		/*
-		char num[10];
-		char varName[20];
-		UINT eCommand;
-		for (UINT wIndex=0; wIndex<wNumCommands; ++wIndex)
-		{
-			_itoa(wIndex, num, 10);
-			strcpy(varName, num);
-			strcat(varName, "c");
-			eCommand = this->ExtraVars.GetVar(varName, (UINT)CCharacterCommand::CC_Count);
-			if (bCommandHasData(eCommand))
-			{
-				strcpy(varName, num);
-				strcat(varName, "w");
-				dwDataID = this->ExtraVars.GetVar(varName, UINT(0));
-				if (dwDataID)
-				{
-					//If data is not present, simply reset this field.
-					localID = info.DataIDMap.find(dwDataID);
-					dwDataID = localID != info.DataIDMap.end() ? localID->second : 0;
-					this->ExtraVars.SetVar(varName, dwDataID);
-				}
-			}
-
-			strcpy(varName, num);
-			strcat(varName, "s");
-			dwSpeechID = this->ExtraVars.GetVar(varName, UINT(0));
-			if (dwSpeechID)
-			{
-				localID = info.SpeechIDMap.find(dwSpeechID);
-				if (localID == info.SpeechIDMap.end())
-					return MID_FileCorrupted;  //record should have been loaded already
-				dwSpeechID = localID->second;
-				this->ExtraVars.SetVar(varName, dwSpeechID);
-			}
-		}
-
-		//Upgrade deprecated 2.0 functionality to 3.0 replacements.
-		SetMembersFromExtraVars();
-		*/
 	}
 
-	SetExtraVarsFromMembers();
+	//Reset ExtraVars to repopulate from scratch with re-mapped script commands
+	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
+
+	//Save command sequence (script) into packed vars member.
+	SaveCommands(this->ExtraVars, this->commands);
 
 	return MID_ImportSuccessful;
 }
@@ -4223,7 +4178,7 @@ const CCharacterCommand* CCharacter::GetCommandWithLabel(const UINT label) const
 }
 
 //*****************************************************************************
-void CCharacter::LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands)
+void CCharacter::LoadCommands(const CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands)
 {
 	commands.clear();
 	const UINT wNumCommands = ExtraVars.GetVar(numCommandsStr, UINT(0));
@@ -4241,63 +4196,11 @@ void CCharacter::LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands
 	} else {
 		//Pre-3.1 script data encapsulation format:
 		ASSERT(!"Should be obsolete and not encountered anywhere");
-
-		/*
-		//Construct each command.
-		char num[10];
-		char varName[20];
-		UINT eCommand;
-		UINT dwSpeechID;
-		for (UINT wIndex=0; wIndex<wNumCommands; ++wIndex)
-		{
-			CCharacterCommand command;
-
-			//Vars loaded here must match the naming convention used in CCharacter::Save().
-			_itoa(wIndex, num, 10);
-			strcpy(varName, num);
-			strcat(varName, "c");
-			eCommand = ExtraVars.GetVar(varName, (UINT)CCharacterCommand::CC_Count);
-			ASSERT(eCommand < CCharacterCommand::CC_Count);
-			command.command = (CCharacterCommand::CharCommand)eCommand;
-
-			//Query in alphabetical order for speed.
-			strcpy(varName, num);
-			strcat(varName, "f");
-			command.flags = ExtraVars.GetVar(varName, UINT(0));
-			strcpy(varName, num);
-			strcat(varName, "h");
-			command.h = ExtraVars.GetVar(varName, UINT(0));
-			strcpy(varName, num);
-			strcat(varName, "l");
-			command.label = ExtraVars.GetVar(varName, wszEmpty);
-			strcpy(varName, num);
-			strcat(varName, "s");
-			dwSpeechID = ExtraVars.GetVar(varName, UINT(0));
-			strcpy(varName, num);
-			strcat(varName, "w");
-			command.w = ExtraVars.GetVar(varName, UINT(0));
-			strcpy(varName, num);
-			strcat(varName, "x");
-			command.x = ExtraVars.GetVar(varName, UINT(0));
-			strcpy(varName, num);
-			strcat(varName, "y");
-			command.y = ExtraVars.GetVar(varName, UINT(0));
-			if (dwSpeechID)
-			{
-				command.pSpeech = g_pTheDB->Speech.GetByID(dwSpeechID);
-				//this might be null if speech commands were removed after a saved game was recorded
-				//ASSERT(command.pSpeech);
-			}
-
-			//Upgrade2_0CommandTo3_0(command);
-			commands.push_back(command);
-		}
-	*/
 	}
 }
 
 //*****************************************************************************
-void CCharacter::LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands)
+void CCharacter::LoadCommands(const CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands)
 //Overloaded method with vector of pointers to commands.
 {
 	//Delete commands pointed to.
@@ -4631,222 +4534,213 @@ void CCharacter::SerializeCommands(string& buffer, const COMMANDPTR_VECTOR& comm
 }
 
 //*****************************************************************************
-void CCharacter::setBaseMembersFromExtraVars()
+void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 //Use default values if these packed vars do not exist.
 //Otherwise, override them.
 {
-	this->wLogicalIdentity = this->ExtraVars.GetVar(idStr, this->wLogicalIdentity);
+	this->wLogicalIdentity = vars.GetVar(idStr, this->wLogicalIdentity);
 
 	this->wIdentity = this->wLogicalIdentity; //by default, these are the same
 
-	this->bVisible = this->ExtraVars.GetVar(visibleStr, this->bVisible);
+	this->bVisible = vars.GetVar(visibleStr, this->bVisible);
 	if (!this->bVisible)
 		this->bSwordSheathed = true;
 
-	this->equipType = (ScriptFlag::EquipmentType)this->ExtraVars.GetVar(equipTypeStr, (int)this->equipType);
+	this->equipType = (ScriptFlag::EquipmentType)vars.GetVar(equipTypeStr, (int)this->equipType);
 
 	//Various properties.
-	this->wTurnDelay = this->ExtraVars.GetVar(TurnDelayStr, this->wTurnDelay);
-	this->wXRel = this->ExtraVars.GetVar(XRelStr, this->wXRel);
-	this->wYRel = this->ExtraVars.GetVar(YRelStr, this->wYRel);
-	this->bMovingRelative = this->ExtraVars.GetVar(MovingRelativeStr, this->bMovingRelative);
-	this->wExitingRoomO = this->ExtraVars.GetVar(ExitRoomOStr, this->wExitingRoomO);
+	this->wTurnDelay = vars.GetVar(TurnDelayStr, this->wTurnDelay);
+	this->wXRel = vars.GetVar(XRelStr, this->wXRel);
+	this->wYRel = vars.GetVar(YRelStr, this->wYRel);
+	this->bMovingRelative = vars.GetVar(MovingRelativeStr, this->bMovingRelative);
+	this->wExitingRoomO = vars.GetVar(ExitRoomOStr, this->wExitingRoomO);
 
-	this->eachAttackLabelIndex = this->ExtraVars.GetVar(EachAttackStr, this->eachAttackLabelIndex);
-	this->eachDefendLabelIndex = this->ExtraVars.GetVar(EachDefendStr, this->eachDefendLabelIndex);
-	this->eachUseLabelIndex = this->ExtraVars.GetVar(EachUseStr, this->eachUseLabelIndex);
+	this->eachAttackLabelIndex = vars.GetVar(EachAttackStr, this->eachAttackLabelIndex);
+	this->eachDefendLabelIndex = vars.GetVar(EachDefendStr, this->eachDefendLabelIndex);
+	this->eachUseLabelIndex = vars.GetVar(EachUseStr, this->eachUseLabelIndex);
 
 	//Imperatives.
-	this->bVulnerable = this->ExtraVars.GetVar(VulnerableStr, this->bVulnerable);
-	this->bMissionCritical = this->ExtraVars.GetVar(MissionCriticalStr, this->bMissionCritical);
-	this->bSafeToPlayer = this->ExtraVars.GetVar(SafeToPlayerStr, this->bSafeToPlayer);
-	this->bSwordSafeToPlayer = this->ExtraVars.GetVar(SwordSafeToPlayerStr, this->bSwordSafeToPlayer);
-	this->bDefeated = this->ExtraVars.GetVar(DefeatedStr, this->bDefeated);
-	this->bShowStatChanges = this->ExtraVars.GetVar(ShowStatChangesStr, this->bShowStatChanges);
-	this->bGhostImage = this->ExtraVars.GetVar(GhostImageStr, this->bGhostImage);
-	this->bRestartScriptOnRoomEntrance = this->ExtraVars.GetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
-	this->bGlobal = this->ExtraVars.GetVar(GlobalStr, this->bGlobal);
-	this->bExecuteScriptOnCombat = this->ExtraVars.GetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
+	this->bVulnerable = vars.GetVar(VulnerableStr, this->bVulnerable);
+	this->bMissionCritical = vars.GetVar(MissionCriticalStr, this->bMissionCritical);
+	this->bSafeToPlayer = vars.GetVar(SafeToPlayerStr, this->bSafeToPlayer);
+	this->bSwordSafeToPlayer = vars.GetVar(SwordSafeToPlayerStr, this->bSwordSafeToPlayer);
+	this->bDefeated = vars.GetVar(DefeatedStr, this->bDefeated);
+	this->bShowStatChanges = vars.GetVar(ShowStatChangesStr, this->bShowStatChanges);
+	this->bGhostImage = vars.GetVar(GhostImageStr, this->bGhostImage);
+	this->bRestartScriptOnRoomEntrance = vars.GetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
+	this->bGlobal = vars.GetVar(GlobalStr, this->bGlobal);
+	this->bExecuteScriptOnCombat = vars.GetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
 
 	//Behaviors.
-	this->bAttackAdjacent = this->ExtraVars.GetVar(AttackAdjacentStr, this->bAttackAdjacent);
-	this->bAttackInFront = this->ExtraVars.GetVar(AttackInFrontStr, this->bAttackInFront);
-	this->bAttackInFrontWhenBackIsTurned = this->ExtraVars.GetVar(AttackInFrontWhenBackIsTurnedStr, this->bAttackInFrontWhenBackIsTurned);
-	this->bFaceAwayFromTarget = this->ExtraVars.GetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
-	this->bFaceTarget = this->ExtraVars.GetVar(FaceTargetStr, this->bFaceTarget);
-	this->bHasRayGun = this->ExtraVars.GetVar(RayGunStr, this->bHasRayGun);
-	this->bSurprisedFromBehind = this->ExtraVars.GetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
-	this->bGoblinWeakness = this->ExtraVars.GetVar(GoblinWeaknessStr, this->bGoblinWeakness);
-	this->bSerpentWeakness = this->ExtraVars.GetVar(SerpentWeaknessStr, this->bSerpentWeakness);
-	this->bMetal = this->ExtraVars.GetVar(MetalStr, this->bMetal);
-	this->bLuckyGR = this->ExtraVars.GetVar(LuckyGRStr, this->bLuckyGR);
-	this->bLuckyXP = this->ExtraVars.GetVar(LuckyXPStr, this->bLuckyXP);
-	this->bBriar = this->ExtraVars.GetVar(BriarStr, this->bBriar);
-	this->bNoEnemyDEF = this->ExtraVars.GetVar(NoEnemyDefenseStr, this->bNoEnemyDEF);
-	this->bAttackFirst = this->ExtraVars.GetVar(AttackFirstStr, this->bAttackFirst);
-	this->bAttackLast = this->ExtraVars.GetVar(AttackLastStr, this->bAttackLast);
-	this->movementIQ = (MovementIQ)this->ExtraVars.GetVar(MovementIQStr, this->movementIQ);
-	this->bDropTrapdoors = this->ExtraVars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
-	this->bMoveIntoSwords = this->ExtraVars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
-	this->bPushObjects = this->ExtraVars.GetVar(PushObjectsStr, this->bPushObjects);
+	this->bAttackAdjacent = vars.GetVar(AttackAdjacentStr, this->bAttackAdjacent);
+	this->bAttackInFront = vars.GetVar(AttackInFrontStr, this->bAttackInFront);
+	this->bAttackInFrontWhenBackIsTurned = vars.GetVar(AttackInFrontWhenBackIsTurnedStr, this->bAttackInFrontWhenBackIsTurned);
+	this->bFaceAwayFromTarget = vars.GetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
+	this->bFaceTarget = vars.GetVar(FaceTargetStr, this->bFaceTarget);
+	this->bHasRayGun = vars.GetVar(RayGunStr, this->bHasRayGun);
+	this->bSurprisedFromBehind = vars.GetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
+	this->bGoblinWeakness = vars.GetVar(GoblinWeaknessStr, this->bGoblinWeakness);
+	this->bSerpentWeakness = vars.GetVar(SerpentWeaknessStr, this->bSerpentWeakness);
+	this->bMetal = vars.GetVar(MetalStr, this->bMetal);
+	this->bLuckyGR = vars.GetVar(LuckyGRStr, this->bLuckyGR);
+	this->bLuckyXP = vars.GetVar(LuckyXPStr, this->bLuckyXP);
+	this->bBriar = vars.GetVar(BriarStr, this->bBriar);
+	this->bNoEnemyDEF = vars.GetVar(NoEnemyDefenseStr, this->bNoEnemyDEF);
+	this->bAttackFirst = vars.GetVar(AttackFirstStr, this->bAttackFirst);
+	this->bAttackLast = vars.GetVar(AttackLastStr, this->bAttackLast);
+	this->movementIQ = (MovementIQ)vars.GetVar(MovementIQStr, this->movementIQ);
+	this->bDropTrapdoors = vars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
+	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
+	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 
 	//Stats.
-	this->color = this->ExtraVars.GetVar(ColorStr, this->color);
-	this->sword = this->ExtraVars.GetVar(SwordStr, this->sword);
-	this->paramX = this->ExtraVars.GetVar(ParamXStr, this->paramX);
-	this->paramY = this->ExtraVars.GetVar(ParamYStr, this->paramY);
-	this->paramW = this->ExtraVars.GetVar(ParamWStr, this->paramW);
-	this->paramH = this->ExtraVars.GetVar(ParamHStr, this->paramH);
-	this->paramF = this->ExtraVars.GetVar(ParamFStr, this->paramF);
+	this->color = vars.GetVar(ColorStr, this->color);
+	this->sword = vars.GetVar(SwordStr, this->sword);
+	this->paramX = vars.GetVar(ParamXStr, this->paramX);
+	this->paramY = vars.GetVar(ParamYStr, this->paramY);
+	this->paramW = vars.GetVar(ParamWStr, this->paramW);
+	this->paramH = vars.GetVar(ParamHStr, this->paramH);
+	this->paramF = vars.GetVar(ParamFStr, this->paramF);
 }
 
 //*****************************************************************************
-void CCharacter::SetExtraVarsFromMembers()
-//Packs NPC state info and command script.
-{
-	SetExtraVarsFromMembersWithoutScript();
-
-	//Save command sequence (script) in packed vars member.
-	SaveCommands(this->ExtraVars, this->commands);
-}
-
-//*****************************************************************************
-void CCharacter::SetExtraVarsFromMembersWithoutScript()
+void CCharacter::SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) //(in/out)
+const
 //Packs NPC state info.
 {
 	//Only save info currently in NPC object's data structures.
-	this->ExtraVars.Clear();
+	vars.Clear();
 
-	this->ExtraVars.SetVar(idStr, this->wLogicalIdentity);
-	this->ExtraVars.SetVar(visibleStr, this->bVisible);
-	this->ExtraVars.SetVar(equipTypeStr, (int)this->equipType);
+	vars.SetVar(idStr, this->wLogicalIdentity);
+	vars.SetVar(visibleStr, this->bVisible);
+	vars.SetVar(equipTypeStr, (int)this->equipType);
 
 	//Various properties.
 	//Only set if not the default value to save space.
 	if (this->wTurnDelay)
-		this->ExtraVars.SetVar(TurnDelayStr, this->wTurnDelay);
+		vars.SetVar(TurnDelayStr, this->wTurnDelay);
 	if (this->wXRel)
-		this->ExtraVars.SetVar(XRelStr, this->wXRel);
+		vars.SetVar(XRelStr, this->wXRel);
 	if (this->wYRel)
-		this->ExtraVars.SetVar(YRelStr, this->wYRel);
+		vars.SetVar(YRelStr, this->wYRel);
 	if (this->bMovingRelative)
-		this->ExtraVars.SetVar(MovingRelativeStr, this->bMovingRelative);
+		vars.SetVar(MovingRelativeStr, this->bMovingRelative);
 	if (this->wExitingRoomO != NO_ORIENTATION)
-		this->ExtraVars.SetVar(ExitRoomOStr, this->wExitingRoomO);
+		vars.SetVar(ExitRoomOStr, this->wExitingRoomO);
 
 	if (this->eachAttackLabelIndex != NO_LABEL)
-		this->ExtraVars.SetVar(EachAttackStr, this->eachAttackLabelIndex);
+		vars.SetVar(EachAttackStr, this->eachAttackLabelIndex);
 	if (this->eachDefendLabelIndex != NO_LABEL)
-		this->ExtraVars.SetVar(EachDefendStr, this->eachDefendLabelIndex);
+		vars.SetVar(EachDefendStr, this->eachDefendLabelIndex);
 	if (this->eachUseLabelIndex != NO_LABEL)
-		this->ExtraVars.SetVar(EachUseStr, this->eachUseLabelIndex);
+		vars.SetVar(EachUseStr, this->eachUseLabelIndex);
 
 	//Imperatives.
 	if (!this->bVulnerable)
-		this->ExtraVars.SetVar(VulnerableStr, this->bVulnerable);
+		vars.SetVar(VulnerableStr, this->bVulnerable);
 	if (this->bMissionCritical)
-		this->ExtraVars.SetVar(MissionCriticalStr, this->bMissionCritical);
+		vars.SetVar(MissionCriticalStr, this->bMissionCritical);
 	if (this->bSafeToPlayer)
-		this->ExtraVars.SetVar(SafeToPlayerStr, this->bSafeToPlayer);
+		vars.SetVar(SafeToPlayerStr, this->bSafeToPlayer);
 	if (this->bSwordSafeToPlayer)
-		this->ExtraVars.SetVar(SwordSafeToPlayerStr, this->bSwordSafeToPlayer);
+		vars.SetVar(SwordSafeToPlayerStr, this->bSwordSafeToPlayer);
 	if (this->bDefeated)
-		this->ExtraVars.SetVar(DefeatedStr, this->bDefeated);
+		vars.SetVar(DefeatedStr, this->bDefeated);
 	if (!this->bShowStatChanges)
-		this->ExtraVars.SetVar(ShowStatChangesStr, this->bShowStatChanges);
+		vars.SetVar(ShowStatChangesStr, this->bShowStatChanges);
 	if (this->bGhostImage)
-		this->ExtraVars.SetVar(GhostImageStr, this->bGhostImage);
+		vars.SetVar(GhostImageStr, this->bGhostImage);
 	if (this->bRestartScriptOnRoomEntrance)
-		this->ExtraVars.SetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
+		vars.SetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
 	if (this->bGlobal)
-		this->ExtraVars.SetVar(GlobalStr, this->bGlobal);
+		vars.SetVar(GlobalStr, this->bGlobal);
 	if (this->bExecuteScriptOnCombat)
-		this->ExtraVars.SetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
+		vars.SetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
 
 	//Behaviors.
 	if (this->bAttackAdjacent)
-		this->ExtraVars.SetVar(AttackAdjacentStr, this->bAttackAdjacent);
+		vars.SetVar(AttackAdjacentStr, this->bAttackAdjacent);
 	if (this->bAttackInFront)
-		this->ExtraVars.SetVar(AttackInFrontStr, this->bAttackInFront);
+		vars.SetVar(AttackInFrontStr, this->bAttackInFront);
 	if (this->bAttackInFrontWhenBackIsTurned)
-		this->ExtraVars.SetVar(AttackInFrontWhenBackIsTurnedStr, this->bAttackInFrontWhenBackIsTurned);
+		vars.SetVar(AttackInFrontWhenBackIsTurnedStr, this->bAttackInFrontWhenBackIsTurned);
 	if (this->bFaceAwayFromTarget)
-		this->ExtraVars.SetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
+		vars.SetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
 	if (this->bFaceTarget)
-		this->ExtraVars.SetVar(FaceTargetStr, this->bFaceTarget);
+		vars.SetVar(FaceTargetStr, this->bFaceTarget);
 	if (this->bHasRayGun)
-		this->ExtraVars.SetVar(RayGunStr, this->bHasRayGun);
+		vars.SetVar(RayGunStr, this->bHasRayGun);
 	if (this->bSurprisedFromBehind)
-		this->ExtraVars.SetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
+		vars.SetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
 	if (this->bGoblinWeakness)
-		this->ExtraVars.SetVar(GoblinWeaknessStr, this->bGoblinWeakness);
+		vars.SetVar(GoblinWeaknessStr, this->bGoblinWeakness);
 	if (this->bSerpentWeakness)
-		this->ExtraVars.SetVar(SerpentWeaknessStr, this->bSerpentWeakness);
+		vars.SetVar(SerpentWeaknessStr, this->bSerpentWeakness);
 	if (this->bMetal)
-		this->ExtraVars.SetVar(MetalStr, this->bMetal);
+		vars.SetVar(MetalStr, this->bMetal);
 	if (this->bLuckyGR)
-		this->ExtraVars.SetVar(LuckyGRStr, this->bLuckyGR);
+		vars.SetVar(LuckyGRStr, this->bLuckyGR);
 	if (this->bLuckyXP)
-		this->ExtraVars.SetVar(LuckyXPStr, this->bLuckyXP);
+		vars.SetVar(LuckyXPStr, this->bLuckyXP);
 	if (this->bBriar)
-		this->ExtraVars.SetVar(BriarStr, this->bBriar);
+		vars.SetVar(BriarStr, this->bBriar);
 	if (this->bNoEnemyDEF)
-		this->ExtraVars.SetVar(NoEnemyDefenseStr, this->bNoEnemyDEF);
+		vars.SetVar(NoEnemyDefenseStr, this->bNoEnemyDEF);
 	if (this->bAttackFirst)
-		this->ExtraVars.SetVar(AttackFirstStr, this->bAttackFirst);
+		vars.SetVar(AttackFirstStr, this->bAttackFirst);
 	if (this->bAttackLast)
-		this->ExtraVars.SetVar(AttackLastStr, this->bAttackLast);
+		vars.SetVar(AttackLastStr, this->bAttackLast);
 	if (this->movementIQ)
-		this->ExtraVars.SetVar(MovementIQStr, this->movementIQ);
+		vars.SetVar(MovementIQStr, this->movementIQ);
 	if (this->bDropTrapdoors)
-		this->ExtraVars.SetVar(DropTrapdoorsStr, this->bDropTrapdoors);
+		vars.SetVar(DropTrapdoorsStr, this->bDropTrapdoors);
 	if (this->bMoveIntoSwords)
-		this->ExtraVars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
+		vars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	if (this->bPushObjects)
-		this->ExtraVars.SetVar(PushObjectsStr, this->bPushObjects);
+		vars.SetVar(PushObjectsStr, this->bPushObjects);
 
 	//Stats.
 	if (this->color)
-		this->ExtraVars.SetVar(ColorStr, this->color);
+		vars.SetVar(ColorStr, this->color);
 	if (this->sword != NPC_DEFAULT_SWORD)
-		this->ExtraVars.SetVar(SwordStr, this->sword);
+		vars.SetVar(SwordStr, this->sword);
 	if (this->paramX != NO_OVERRIDE)
-		this->ExtraVars.SetVar(ParamXStr, this->paramX);
+		vars.SetVar(ParamXStr, this->paramX);
 	if (this->paramY != NO_OVERRIDE)
-		this->ExtraVars.SetVar(ParamYStr, this->paramY);
+		vars.SetVar(ParamYStr, this->paramY);
 	if (this->paramW != NO_OVERRIDE)
-		this->ExtraVars.SetVar(ParamWStr, this->paramW);
+		vars.SetVar(ParamWStr, this->paramW);
 	if (this->paramH != NO_OVERRIDE)
-		this->ExtraVars.SetVar(ParamHStr, this->paramH);
+		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
-		this->ExtraVars.SetVar(ParamFStr, this->paramF);
+		vars.SetVar(ParamFStr, this->paramF);
 
-	this->ExtraVars.SetVar(scriptIDstr, this->dwScriptID);
+	vars.SetVar(scriptIDstr, this->dwScriptID);
 
-	this->ExtraVars.SetVar(startLineStr, this->wCurrentCommandIndex);
+	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
 }
 
 //*****************************************************************************
-void CCharacter::SetMembersFromExtraVars()
+void CCharacter::SetMembers(const CDbPackedVars& vars)
 //Reads vars from ExtraVars to reconstruct the character's ID and command sequence.
 {
-	setBaseMembersFromExtraVars();
+	setBaseMembers(vars);
 
-	LoadCommands(this->ExtraVars, this->commands);
+	LoadCommands(vars, this->commands);
 
-	this->dwScriptID = this->ExtraVars.GetVar(scriptIDstr, UINT(0));
+	this->dwScriptID = vars.GetVar(scriptIDstr, UINT(0));
 
-	this->wCurrentCommandIndex = this->ExtraVars.GetVar(startLineStr, UINT(0));
+	this->wCurrentCommandIndex = vars.GetVar(startLineStr, UINT(0));
 //	ASSERT(this->wCurrentCommandIndex <= this->commands.size()); //not valid when scripts are not loaded
 
-	CMonster::SetMembersFromExtraVars();
+	CMonster::SetMembers(vars);
 }
 
 //*****************************************************************************
 void CCharacter::Delete()
 //Deletes speech records (exclusively) owned by character from DB.
 {
-	SetMembersFromExtraVars();
+	SetMembers(this->ExtraVars);
 	for (UINT wIndex=this->commands.size(); wIndex--; )
 	{
 		if (this->commands[wIndex].pSpeech)
@@ -4863,10 +4757,10 @@ void CCharacter::Save(
 	const bool bSaveScript) //whether to save the NPC script in packed vars [default=true]
 {
 	//Pack vars.
-	if (bSaveScript)
-		SetExtraVarsFromMembers();
-	else
-		SetExtraVarsFromMembersWithoutScript();
+	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
+	if (bSaveScript) {
+		SaveCommands(this->ExtraVars, this->commands);
+	}
 
 	CMonster::Save(MonsterRowRef);
 }

@@ -1403,7 +1403,7 @@ MESSAGE_ID CDbRoom::SetProperty(
 				{
 					BYTE *data;
 					Base64::decode(str,data);
-					pImportMonster->ExtraVars = (const BYTE*)data;
+					const CDbPackedVars vars = (const BYTE*)data;
 					delete[] data;
 					if (pImportMonster->wType == M_CHARACTER)
 					{
@@ -1411,11 +1411,14 @@ MESSAGE_ID CDbRoom::SetProperty(
 						CMonsterFactory mf;
 						CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*,
 								mf.GetNewMonster(M_CHARACTER));
-						pCharacter->ExtraVars = pImportMonster->ExtraVars;
+						pCharacter->ExtraVars = vars;
 						const MESSAGE_ID val = pCharacter->ImportSpeech(info);
-						if (val != MID_ImportSuccessful) return val;
+						if (val != MID_ImportSuccessful)
+							return val;
 						pImportMonster->ExtraVars = pCharacter->ExtraVars;
 						delete pCharacter;
+					} else {
+						ASSERTP(vars.Empty(), "Import error: Non character monster has ExtraVars data");
 					}
 					break;
 				}
@@ -6235,9 +6238,9 @@ CMonster* CDbRoom::LoadMonster(const c4_RowRef& row)
 	CMonster *pNew = AddNewMonster((MONSTERTYPE)wMonsterType, wX, wY);
 	if (!pNew) throw CException("CDbRoom::LoadMonster: Alloc failed");
 //	pNew->bIsFirstTurn = (p_IsFirstTurn(row) == 1);
-	pNew->ExtraVars = p_ExtraVars(row);
 	pNew->wO = pNew->wPrevO = p_O(row);
-	pNew->SetMembersFromExtraVars();
+	const CDbPackedVars vars = p_ExtraVars(row);
+	pNew->SetMembers(vars);
 
 	c4_View PiecesView = p_Pieces(row);
 	const UINT wNumPieces = PiecesView.GetSize();
@@ -8978,61 +8981,59 @@ void CDbRoom::SetMembersFromExploredRoomData(ExploredRoom *pExpRoom)
 		this->orbs[count]->eType = OrbType(pExpRoom->orbTypes[count]);
 */
 
-	SetMonstersFromExploredRoomData(pExpRoom);
+	SetMonstersFromExploredRoomData(pExpRoom, true);
 }
 
 //*****************************************************************************
 void CDbRoom::SetMonstersFromExploredRoomData(
-//Adds monsters objects to the room from data saved in to explored room record.
+//Adds monsters objects to the room from data saved in the explored room record.
 //
 //Params:
 	ExploredRoom* pExpRoom,
 	const bool bLoadNPCScripts) //whether NPC scripts should be loaded from the
-	                            //original room data [default=true]
+	                            //original room data
 {
 	//Add NPC script info to that of saved NPC state info.
 	vector<CDbPackedVars> extraVars;
-	CMonster *pMonster = pExpRoom->pMonsterList;
+	CMonster *pMonster;
 	if (bLoadNPCScripts)
 	{
-		while (pMonster)
+		for (pMonster = pExpRoom->pMonsterList; pMonster != NULL; pMonster = pMonster->pNext)
 		{
-			if (pMonster->wType != M_CHARACTER)
+			if (pMonster->wType == M_CHARACTER)
 			{
-				//No script information needs to be added.
-				extraVars.push_back(pMonster->ExtraVars);
-			} else {
 				//Find original NPC containing the script for this saved character.
 				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 				CCharacter *pOrigNPC = GetCharacterWithScriptID(pCharacter->dwScriptID);
-				if (!pOrigNPC)
+				if (pOrigNPC)
 				{
+					//Add the script data to the NPC's state, saved in the explored room data.
+					CDbPackedVars vars = pCharacter->ExtraVars; //don't alter the explored room data (needed?)
+					CCharacter::SaveCommands(vars, pOrigNPC->commands);
+					extraVars.push_back(vars);
+				} else {
 					//No script found for this NPC in the base room data.
 					//It could be a generated entity with a default script or the saved
 					//game could be out of synch with the current hold version.
-					extraVars.push_back(pMonster->ExtraVars);
-				} else {
-					//Add the script data to the NPC's state, saved in the explored room data.
-					CDbPackedVars vars = pMonster->ExtraVars; //don't alter the explored room data (needed?)
-					CCharacter::SaveCommands(vars, pOrigNPC->commands);
-					extraVars.push_back(vars);
+					extraVars.push_back(pCharacter->ExtraVars);
 				}
 			}
-			pMonster = pMonster->pNext;
 		}
 	}
 
 	//Remove room's original monster setup and replace it with monsters in the
 	//saved room data.
 	ClearMonsters();
-	UINT monsterIndex=0;
-	for (pMonster = pExpRoom->pMonsterList; pMonster != NULL; pMonster = pMonster->pNext, ++monsterIndex)
+	UINT characterIndex=0;
+	for (pMonster = pExpRoom->pMonsterList; pMonster != NULL; pMonster = pMonster->pNext)
 	{
 		//NPC setup.
 		bool bInRoom = true;
-		if (pMonster->wType == M_CHARACTER)
+		const bool bCharacter = pMonster->wType == M_CHARACTER;
+		CCharacter* pCharacter = NULL;
+		if (bCharacter)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
 			//Invisible characters are not in room.
 			if (!pCharacter->IsVisible())
@@ -9046,11 +9047,13 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 		pNew->GOLD = pMonster->GOLD;
 		pNew->HP = pMonster->HP;
 		pNew->XP = pMonster->XP;
-		if (bLoadNPCScripts)
-			pNew->ExtraVars = extraVars[monsterIndex]; //get from data prepared above
-		else
-			pNew->ExtraVars = pMonster->ExtraVars; //don't need script data
-		pNew->SetMembersFromExtraVars();
+		if (bCharacter) {
+			if (bLoadNPCScripts) {
+				pNew->SetMembers(extraVars[characterIndex++]); //get from data prepared above
+			} else {
+				pNew->SetMembers(pCharacter->ExtraVars); //don't need script data, just pre-existing stats
+			}
+		}
 
 		ASSERT(pNew->IsLongMonster() || pMonster->Pieces.empty());
 		for (list<CMonsterPiece*>::const_iterator p = pMonster->Pieces.begin();

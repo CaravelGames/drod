@@ -790,14 +790,14 @@ const
 			if (bIsPit(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
-					  bIsLight(wTileNo[1])) &&
+					  wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO || wTileNo[2] == M_CHARACTER);
 		case T_WATER:
 			//Water -- flying+water monsters can be on it.
 			if (bIsWater(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE ||
-						wTileNo[1] == T_OBSTACLE || bIsLight(wTileNo[1])) &&
+						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
 					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER);// || wTileNo[2] == M_SKIPPERNEST);
 		case T_STAIRS:
@@ -805,13 +805,16 @@ const
 			//Don't allow stair juxtaposition w/ t-layer items (except tar and obstacles).
 			if (!(wTileNo[1] == T_EMPTY || bIsTar(wTileNo[1]) || wTileNo[1] == T_OBSTACLE))
 				return false;
+			//Allowing stairs under a level start can trap the player in a loop of stairs.
+			if (bSwordsmanAt)
+				return false;
 			if (bIsTar(wTileNo[1]))
 				return true;
 			break;
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_RO:
 		case T_DOOR_CO: case T_DOOR_BO: case T_DOOR_MONEYO:
-			//Open doors can't have orbs or bombs on them, but can have tar.
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_BOMB)// || wTileNo[1] == T_STATION)
+			//Open doors can't have orbs on them, but can have tar.
+			if (wTileNo[1] == T_ORB)// || wTileNo[1] == T_STATION)
 				return false;
 			if (bIsTar(wTileNo[1]) || bIsBriar(wTileNo[1]))
 				return true;
@@ -847,7 +850,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_G:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Doors can't have orbs on them.
 			//But can have tar.
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_BOMB)// || wTileNo[1] == T_STATION)
+			if (wTileNo[1] == T_ORB)// || wTileNo[1] == T_STATION)
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
 			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
@@ -868,9 +871,6 @@ const
 			//Can't place orbs on pressure plates (conflicting room data).
 			if (wTileNo[0] == T_PRESSPLATE)
 				return false;
-			//no break
-//		case T_STATION:
-		case T_BOMB:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
 			return !bSwordsmanAt &&
 					(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
@@ -879,6 +879,16 @@ const
 						wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
 						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
+		case T_BOMB:
+			//On normal floor, wall, goo, tunnels, or pressure plates.
+			return !bSwordsmanAt &&
+				(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
+					bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
+					bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
+					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
+					wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
+					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+				(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			//On normal floor, platforms, goo or water.
 			return !bSwordsmanAt &&

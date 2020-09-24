@@ -213,7 +213,7 @@ OBJECT_ITERATOR CObjectMenuWidget::GetObjectAt(const UINT x, const UINT y) const
 }
 
 //******************************************************************************
-UINT CObjectMenuWidget::GetSelectedObject()
+UINT CObjectMenuWidget::GetSelectedObject() const
 //Returns the ID of the currently selected object.
 {
 	return this->iterSelectedObject == this->lObjects.end() ?
@@ -537,5 +537,6 @@ void CObjectMenuWidget::SetSelectedObject(
 
 	//Call OnSelectChange() notifier.
 	CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
-	if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
+	if (pEventHandler)
+		pEventHandler->OnSelectChange(GetTagNo());
 }
