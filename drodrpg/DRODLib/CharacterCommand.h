@@ -137,7 +137,8 @@ namespace ScriptFlag
 		MoveIntoSwords=20,      //can move onto swords instead of being blocked by them
 		PushObjects=21,         //can push movable objects
 		LuckyXP=22,             //x2 XP from fights
-		AttackLast=23           //I always attack last in combat
+		AttackLast=23,          //I always attack last in combat
+		BeamBlock=24            //blocks beam attacks
 	};
 
 	//Inventory and global script types.
