@@ -6954,13 +6954,12 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 			this->wLastFloorSelected = wObject;
 	}
 
+	if (int(wObject) < 0)
+		return;
+
 	UINT wMID = 0;
 	switch (wObject)
 	{
-		default:
-			if (int(wObject) >= 0)
-				wMID = TILE_MID[wObject];
-		break;
 		case T_ORB:
 			wMID = this->pRoomWidget->GetOrbMID(this->wSelOrbType);
 		break;
@@ -6981,6 +6980,9 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 		break;
 		case T_ACCESSORY:
 			wMID = this->pRoomWidget->GetAccessoryMID(this->wSelAccessoryType);
+		break;
+		default:
+			wMID = TILE_MID[wObject];
 		break;
 	}
 	if (wMID)

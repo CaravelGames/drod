@@ -68,7 +68,7 @@ public:
 	void           ClearObjects();
 	inline void    DrawBackground(const bool bVal) {this->bDrawBackground = bVal;}
 	UINT           GetObjectIDAt(const UINT x, const UINT y) const;
-	UINT           GetSelectedObject();
+	UINT           GetSelectedObject() const;
 
 	virtual void   Paint(bool bUpdateRect = true);
 
