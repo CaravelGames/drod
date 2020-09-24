@@ -1101,6 +1101,7 @@ void DisplayInitErrorMessage(
 				wstrMessage += _itoW(dwMessageID, temp, 10);
 				ASSERT(!"Unexpected MID value."); //Probably forgot to add a MID to the database.
 			break;
+		}
 #else
 		switch (dwMessageID)
 		{
