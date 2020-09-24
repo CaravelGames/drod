@@ -9,5 +9,6 @@
 
 SCREENTYPE CGameScreen::ProcessCommand(const int nCommand, const UINT wX, const UINT wY) {return (SCREENTYPE)0;}
 void CGameScreen::ShowStatsForMonsterAt(const UINT wX, const UINT wY) {}
+void CGameScreen::ShowStatsForMonster(CMonster*) {}
 
 #endif

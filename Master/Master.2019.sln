@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2019
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 12.0.31101.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DRODLib", "..\DRODLib\DRODLib.2019.vcxproj", "{7105881E-2DA6-4044-8EC7-2691F24B296A}"
 EndProject
@@ -26,6 +26,7 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		BuildDats|Win32 = BuildDats|Win32
+		CaravelRelease|Win32 = CaravelRelease|Win32
 		Debug|Win32 = Debug|Win32
 		FandM|Win32 = FandM|Win32
 		Release|Win32 = Release|Win32
@@ -37,6 +38,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.BuildDats|Win32.ActiveCfg = BuildDats|Win32
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.BuildDats|Win32.Build.0 = BuildDats|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{7105881E-2DA6-4044-8EC7-2691F24B296A}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Debug|Win32.ActiveCfg = Debug|Win32
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Debug|Win32.Build.0 = Debug|Win32
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.FandM|Win32.ActiveCfg = SteamDebug|Win32
@@ -53,6 +56,8 @@ Global
 		{7105881E-2DA6-4044-8EC7-2691F24B296A}.Tests Release|Win32.Build.0 = Release|Win32
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|Win32.ActiveCfg = SteamBuildDats|Win32
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.BuildDats|Win32.Build.0 = SteamBuildDats|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|Win32.ActiveCfg = Debug|Win32
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Debug|Win32.Build.0 = Debug|Win32
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.FandM|Win32.ActiveCfg = SteamDebug|Win32
@@ -67,6 +72,8 @@ Global
 		{7B031E3B-8A8E-4260-B496-9909A8E50E1B}.Tests Release|Win32.ActiveCfg = Release|Win32
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.BuildDats|Win32.ActiveCfg = BuildDats|Win32
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.BuildDats|Win32.Build.0 = BuildDats|Win32
+		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.Debug|Win32.ActiveCfg = Debug|Win32
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.Debug|Win32.Build.0 = Debug|Win32
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.FandM|Win32.ActiveCfg = SteamDebug|Win32
@@ -81,6 +88,8 @@ Global
 		{AA06DDE7-BE8E-4411-8EAC-1CF60EEE2F02}.Tests Release|Win32.ActiveCfg = Release|Win32
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.BuildDats|Win32.ActiveCfg = Release|Win32
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.BuildDats|Win32.Build.0 = Release|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Debug|Win32.ActiveCfg = Debug|Win32
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Debug|Win32.Build.0 = Debug|Win32
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.FandM|Win32.ActiveCfg = FandM|Win32
@@ -97,6 +106,8 @@ Global
 		{896C0D2A-91F2-4988-911E-C3D00912C5C9}.Tests Release|Win32.Build.0 = Release|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.BuildDats|Win32.ActiveCfg = Release|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.BuildDats|Win32.Build.0 = Release|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Debug|Win32.Build.0 = Debug|Win32
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.FandM|Win32.ActiveCfg = FandM|Win32
@@ -111,6 +122,8 @@ Global
 		{A23303CA-ACF1-4BAC-9519-0E5FEBFF69C1}.Tests Release|Win32.ActiveCfg = FandM|Win32
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.BuildDats|Win32.ActiveCfg = BuildDats|Win32
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.BuildDats|Win32.Build.0 = BuildDats|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{3FDF4563-C819-4E05-8958-E3D652C5B432}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Debug|Win32.ActiveCfg = Debug|Win32
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Debug|Win32.Build.0 = Debug|Win32
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.FandM|Win32.ActiveCfg = SteamDebug|Win32
@@ -125,6 +138,8 @@ Global
 		{3FDF4563-C819-4E05-8958-E3D652C5B432}.Tests Release|Win32.ActiveCfg = Release|Win32
 		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.BuildDats|Win32.ActiveCfg = Release|Win32
 		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.BuildDats|Win32.Build.0 = Release|Win32
+		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.CaravelRelease|Win32.ActiveCfg = CaravelRelease|Win32
+		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.CaravelRelease|Win32.Build.0 = CaravelRelease|Win32
 		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.Debug|Win32.Build.0 = Debug|Win32
 		{2E5391ED-04DB-4E9E-BE38-F4DB3CAB3F3E}.FandM|Win32.ActiveCfg = Release|Win32
@@ -142,5 +157,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {60D18B09-3EF0-4930-818D-2B1D7AFAD178}
 	EndGlobalSection
 EndGlobal
