@@ -2934,7 +2934,7 @@ bool CCurrentGame::equipmentBlocksGaze(const UINT type) const
 		return true;
 
 	CCharacter* pCharacter = getCustomEquipment(type);
-	if (pCharacter && pCharacter->HasRayGun())
+	if (pCharacter && pCharacter->HasRayBlocking())
 		return true;
 
 	return false;
