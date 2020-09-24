@@ -788,6 +788,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_OrbWaitCracked: strText = "Orb (cracked)"; break;
 	case MID_OrbWaitBroken: strText = "Orb (broken)"; break;
 	case MID_DemoDescConquerToken: strText = "The player touches a Conquer token on turn"; break;
+	case MID_WaitForWeapon: strText = "Wait for Weapon"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
