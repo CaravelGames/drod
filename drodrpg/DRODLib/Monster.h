@@ -252,10 +252,9 @@ public:
 	virtual void  Save(const c4_RowRef &MonsterRowRef, const bool bSaveScript=true);
 	void          Say(MESSAGE_ID eMessageID, CCueEvents &CueEvents) const;
 	virtual void  SetCurrentGame(const CCurrentGame *pSetCurrentGame);
-	virtual void  SetExtraVarsFromMembers() { }
 	void          SetHP();
 	void          SetKillInfo(const UINT wKillDirection);
-	virtual void  SetMembersFromExtraVars();
+	virtual void  SetMembers(const CDbPackedVars& vars);
 	void          SetOrientation(const int dxFirst, const int dyFirst);
 	virtual bool  TurnToFacePlayerWhenFighting() const {return false;}
 	void          UpdateGaze(CCueEvents &CueEvents);
@@ -268,7 +267,7 @@ public:
 
 	UINT HP, ATK, DEF, GOLD, XP; //combat stats
 
-	CDbPackedVars ExtraVars;
+	CDbPackedVars ExtraVars; //used only for saving stats during play and for storing CCharacter properties and scripting
 	MonsterPieces Pieces;  //when monster fills more than one square
 
 	CMonster *    pNext; //should be updated by caller when copying a monster

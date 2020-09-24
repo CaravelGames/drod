@@ -428,6 +428,9 @@ bool CCombat::PlayerDoesStrongHit(CMonster* pMonster) const
 		if (this->pGame->IsSwordStrongAgainst(pMonster))
 			return true;
 	}
+	if (this->pGame->IsEquipmentStrongAgainst(pMonster, ScriptFlag::Accessory)) {
+		return true;
+	}
 
 	return false;
 }

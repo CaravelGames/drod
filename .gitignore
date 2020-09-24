@@ -2,7 +2,7 @@
 Deps/
 DepsSrc/
 
-# Build Folders
+# DROD Build Folders
 BackEndLib/Debug-Temp/
 BackEndLib/Release-Temp/
 CaravelNet/Debug/
@@ -47,8 +47,31 @@ Master/Linux/build.*
 Master/Linux/builds/
 Master/Linux/drod-sdl2.sublime-*
 
+# DROD RPG Build Folders
+drodrpg/CaravelNet/Debug/
+drodrpg/CaravelNet/Debug-Temp/
+drodrpg/CaravelNet/Release/
+drodrpg/CaravelNet/Release-Temp/
+drodrpg/DROD/Debug/
+drodrpg/DROD/Debug-Temp/
+drodrpg/DROD/Steam/
+drodrpg/DROD/SteamBuildDats/
+drodrpg/DROD/Release/
+drodrpg/DROD/Release-Temp/
+drodrpg/DRODLib/Debug/
+drodrpg/DRODLib/Debug-Temp/
+drodrpg/DRODLib/Release/
+drodrpg/DRODLib/Release-Temp/
+drodrpg/DRODLib/Steam/
+drodrpg/DRODLib/BuildDats/
+drodrpg/DRODLib/SteamBuildDats/
+drodrpg/DRODUtil/Debug/
+drodrpg/DRODUtil/Debug-Temp/
+drodrpg/DRODUtil/Release/
+drodrpg/DRODUtil/Release-Temp/
+
 # Various things we don't want.
-Master/.vs/
+**/.vs/
 **/*.obj
 **/*.log
 **/*.dll

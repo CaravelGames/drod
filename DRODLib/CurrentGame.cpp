@@ -44,10 +44,10 @@
 #include "Character.h"
 #include "Clone.h"
 #include "EvilEye.h"
+#include "FegundoAshes.h"
 #include "Mimic.h"
 #include "Pathmap.h"
-#include "PhoenixAshes.h"
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "TemporalClone.h"
 #include "TileConstants.h"
 #include "NetInterface.h"
@@ -2336,6 +2336,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 	pClone->bIsTarget = this->swordsman.IsTarget();
 	pClone->weaponType = this->swordsman.GetActiveWeapon();
 	pClone->wIdentity = this->swordsman.wIdentity;
+	pClone->wAppearance = this->swordsman.wAppearance;
 	pClone->SetWeaponSheathed();
 	pClone->SetMovementType();
 	pClone->InputCommands(player_commands);
@@ -2758,7 +2759,7 @@ void CCurrentGame::StabMonsterAt(
 				{
 
 					ROOMCOORD attackCoords = ROOMCOORD(wSX, wSY);
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
 					//Make sure the Golem at (wSX,wSY) is killed
 					CMonster *pNewGolem = this->pRoom->GetMonsterAtSquare(wSX, wSY);
 					if (pNewGolem)
@@ -5452,7 +5453,7 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 				this->pRoom->KillMonster(pMonster, CueEvents);
 				CheckTallyKill(pMonster);
 				if (pMonster->wType == M_ROCKGIANT)
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
 				return;  //extra processing below gets skipped on death
 			}
 

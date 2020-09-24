@@ -33,6 +33,7 @@ CTemporalClone::CTemporalClone(
 	CCurrentGame *pSetCurrentGame)
 	: CMimic(M_TEMPORALCLONE, pSetCurrentGame, SPD_TEMPORALCLONE)
 	, wIdentity(M_TEMPORALCLONE)
+	, wAppearance(M_TEMPORALCLONE)
 	, bInvisible(false)
 	, bIsTarget(false)
 { }
@@ -296,7 +297,7 @@ bool CTemporalClone::SetWeaponSheathed()
 		return true;
 	//If player or player's identity type is marked to not have a sword, then clones do not either.
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (!bEntityHasSword(GetIdentity()) || player.bWeaponOff || player.bNoWeapon)
+	if (!bEntityHasSword(this->wAppearance) || player.bWeaponOff || player.bNoWeapon)
 	{
 		this->bWeaponSheathed = true;
 		return true;

@@ -93,14 +93,18 @@ class CDbPackedVars
 public:
 	CDbPackedVars() {Clear();}
 	CDbPackedVars(const CDbPackedVars& Src);
-	CDbPackedVars(const BYTE *pBuf);
+	CDbPackedVars(const BYTE* pBuf);
+	CDbPackedVars(const c4_BytesRef& Buf) {
+		c4_Bytes Bytes = (c4_Bytes)Buf;
+		UnpackBuffer(Bytes.Contents(), Bytes.Size());
+	}
 	~CDbPackedVars();
 
 	CDbPackedVars& operator=(const CDbPackedVars &Src) {SetMembers(Src); return *this;}
 	const BYTE* operator = (const BYTE *pBuf) {UnpackBuffer(pBuf, 1); return pBuf;}
 	CDbPackedVars& operator = (const c4_BytesRef &Buf)
 	{
-      c4_Bytes Bytes = (c4_Bytes) Buf;
+		c4_Bytes Bytes = (c4_Bytes) Buf;
 		UnpackBuffer(Bytes.Contents(), Bytes.Size());
 		return *this;
 	}
@@ -116,6 +120,8 @@ public:
 	{
 		return FindVarByName(pszVarName)!=NULL;
 	}
+	bool        Empty() const { return vars.empty(); }
+
 	UNPACKEDVAR*   GetFirst();
 	UNPACKEDVAR*   GetNext();
 	BYTE *         GetPackedBuffer(UINT &dwBufferSize) const;

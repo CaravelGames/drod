@@ -828,8 +828,10 @@ sdl_error:
 		CStretchyBuffer bitmap;
 		CFiles::ReadFileIntoBuffer(wstrIconFilepath.c_str(), bitmap, true);
 		SDL_Surface *iconsurf = SDL_LoadBMP_RW(SDL_RWFromMem((BYTE*)bitmap, bitmap.Size()), 1);
-		SDL_SetWindowIcon(window.get(), iconsurf);
-		SDL_FreeSurface(iconsurf);
+		if (iconsurf) {
+			SDL_SetWindowIcon(window.get(), iconsurf);
+			SDL_FreeSurface(iconsurf);
+		}
 #if defined(__APPLE__) || defined(__linux__) || defined __FreeBSD__
 		// set 128x128 icon, if a bitmap exists
 		static const WCHAR wszIcon128x128[] = {
@@ -1099,6 +1101,7 @@ void DisplayInitErrorMessage(
 				wstrMessage += _itoW(dwMessageID, temp, 10);
 				ASSERT(!"Unexpected MID value."); //Probably forgot to add a MID to the database.
 			break;
+		}
 #else
 		switch (dwMessageID)
 		{

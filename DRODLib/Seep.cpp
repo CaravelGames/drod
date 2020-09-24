@@ -26,9 +26,9 @@
  * ***** END LICENSE BLOCK ***** */
 
 //Ghost.cpp
-//Implementation of CGhost.
+//Implementation of CSeep.
 
-#include "Ghost.h"
+#include "Seep.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
 
@@ -37,7 +37,7 @@
 //
 
 //*****************************************************************************************
-bool CGhost::KillIfOutsideWall(CCueEvents &CueEvents)
+bool CSeep::KillIfOutsideWall(CCueEvents &CueEvents)
 //Kill the monster if outside wall.
 {
 	if (IsOnSwordsman())
@@ -58,7 +58,7 @@ bool CGhost::KillIfOutsideWall(CCueEvents &CueEvents)
 }
 
 //*****************************************************************************************
-void CGhost::Process(
+void CSeep::Process(
 //Process a Ghost for movement.
 //
 //Params:

@@ -278,6 +278,7 @@ public:
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
 	bool     IsSwordStrongAgainst(CMonster* pMonster) const;
+	bool     IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const;
 	bool     IsValidatingPlayback() const {return this->bValidatingPlayback;}
 	bool     LoadFromHold(const UINT dwHoldID, CCueEvents &CueEvents);
 	bool     LoadFromLevelEntrance(const UINT dwHoldID, const UINT dwEntranceID,

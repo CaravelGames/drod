@@ -3233,8 +3233,8 @@ void CEditRoomScreen::OnSelectChange(
 			//Object selection.
 			if (g_pTheSM->bTransitioning)
 				break; //ignore item selection changes while screen is activating
-			const UINT wObject = DYN_CAST(CObjectMenuWidget*, CWidget*,
-					GetWidget(dwTagNo))->GetSelectedObject();
+			const CObjectMenuWidget* pMenu = DYN_CAST(const CObjectMenuWidget*, CWidget*, GetWidget(dwTagNo));
+			const UINT wObject = pMenu->GetSelectedObject();
 			if (wObject != NO_SELECTED_OBJECT)
 			{
 				//Is selecting the same object, then rotate to the next item type or orientation.
@@ -7097,14 +7097,12 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 		if (bIsPlainFloor(wObject) && wObject != T_FLOOR_IMAGE)
 			this->wLastFloorSelected = wObject;
 	}
+	if (int(wObject) < 0)
+		return;
 
 	UINT wMID = 0;
 	switch (wObject)
 	{
-		default:
-			if (int(wObject) >= 0)
-				wMID = TILE_MID[wObject];
-		break;
 		case T_WATER:
 			wMID = TILE_MID[this->bGroupMenuItems ? wObject : this->wSelWaterType];
 		break;
@@ -7116,6 +7114,9 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 		break;
 		case T_TOKEN:
 			wMID = this->pRoomWidget->GetTokenMID(this->wSelTokenType);
+		break;
+		default:
+			wMID = TILE_MID[wObject];
 		break;
 	}
 	if (wMID)
