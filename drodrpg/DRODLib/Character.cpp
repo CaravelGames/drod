@@ -89,6 +89,7 @@ const UINT MAX_ANSWERS = 9;
 #define AttackInFrontWhenBackIsTurnedStr "AttackInFrontWhenBackIsTurned"
 #define FaceTargetStr "FaceTarget"
 #define RayGunStr "RayGun"
+#define RayBlockingStr "RayBlocking"
 #define SurprisedFromBehindStr "SurprisedFromBehind"
 #define FaceAwayFromTargetStr "FaceAwayFromTarget"
 #define GoblinWeaknessStr "GoblinWeakness"
@@ -201,6 +202,7 @@ CCharacter::CCharacter(
 	, bFaceAwayFromTarget(false)
 	, bFaceTarget(false)
 	, bHasRayGun(false)
+	, bHasRayBlocking(false)
 	, bSurprisedFromBehind(false)
 	, bGoblinWeakness(false)
 	, bSerpentWeakness(false)
@@ -2414,7 +2416,7 @@ void CCharacter::Process(
 						this->bAttackInFrontWhenBackIsTurned =
 						this->bFaceAwayFromTarget =
 						this->bFaceTarget =
-						this->bHasRayGun =
+						this->bHasRayGun = this->bHasRayBlocking =
 						this->bSurprisedFromBehind =
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
@@ -2443,6 +2445,9 @@ void CCharacter::Process(
 					case ScriptFlag::BeamAttack:
 						this->bHasRayGun = true;
 					break;
+					case ScriptFlag::BeamBlock:
+						this->bHasRayBlocking = true;
+						break;
 					case ScriptFlag::SurprisedFromBehind:
 						this->bSurprisedFromBehind = true;
 					break;
@@ -4292,6 +4297,7 @@ void CCharacter::RestartScript()
 	this->bAttackInFrontWhenBackIsTurned =
 	this->bFaceTarget =
 	this->bHasRayGun =
+	this->bHasRayBlocking =
 	this->bSurprisedFromBehind = false;
 	this->movementIQ = SmartDiagonalOnly;
 
@@ -4578,6 +4584,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bFaceAwayFromTarget = vars.GetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
 	this->bFaceTarget = vars.GetVar(FaceTargetStr, this->bFaceTarget);
 	this->bHasRayGun = vars.GetVar(RayGunStr, this->bHasRayGun);
+	this->bHasRayBlocking = vars.GetVar(RayBlockingStr, this->bHasRayBlocking);
 	this->bSurprisedFromBehind = vars.GetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
 	this->bGoblinWeakness = vars.GetVar(GoblinWeaknessStr, this->bGoblinWeakness);
 	this->bSerpentWeakness = vars.GetVar(SerpentWeaknessStr, this->bSerpentWeakness);
@@ -4670,6 +4677,8 @@ const
 		vars.SetVar(FaceTargetStr, this->bFaceTarget);
 	if (this->bHasRayGun)
 		vars.SetVar(RayGunStr, this->bHasRayGun);
+	if (this->bHasRayBlocking)
+		vars.SetVar(RayBlockingStr, this->bHasRayBlocking);
 	if (this->bSurprisedFromBehind)
 		vars.SetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
 	if (this->bGoblinWeakness)

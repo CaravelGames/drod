@@ -209,6 +209,7 @@ public:
 	virtual bool  HasGoblinWeakness() const {return false;}
 	virtual bool  HasNoEnemyDefense() const {return false;}
 	virtual bool  HasRayGun() const {return false;}
+	virtual bool  HasRayBlocking() const {return false;}
 	virtual bool  HasSerpentWeakness() const {return false;}
 	virtual bool  HasSword() const {return false;}
 	bool          HasSwordAt(const UINT wX, const UINT wY) const;

@@ -2231,7 +2231,10 @@ bool CMonster::GetNextGaze(
 				(!pCurrentGame->IsFighting(pCaster)))
 */
 			{
-				if (!pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor) &&
+				const int nPlayerO = player.wO;
+				const int dot = dx * nGetOX(nPlayerO) + dy * nGetOY(nPlayerO);
+
+				if (!(pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor) && dot < 0) &&
 					 !pCurrentGame->equipmentBlocksGaze(ScriptFlag::Accessory))
 				{
 					//Cut player's health in half (one-quarter when hasted).
