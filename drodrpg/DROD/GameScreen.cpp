@@ -1809,7 +1809,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					atk = (int)pCharacter->getATK();
 					def = (int)pCharacter->getDEF();
 					bMetal = pCharacter->IsMetal();
-					bBeamBlock = pCharacter->HasRayGun();
+					bBeamBlock = pCharacter->HasRayBlocking();
 					bGoblinWeakness = pCharacter->HasGoblinWeakness();
 					bSerpentWeakness = pCharacter->HasSerpentWeakness();
 				}
@@ -1877,7 +1877,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 	{
 		if (bNeedCR)
 			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBeamAttack);
+		text += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
 		bNeedCR = true;
 	}
 	if (bBriar)
