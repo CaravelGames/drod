@@ -1507,7 +1507,6 @@ CWidget* CWidget::GetWidget(
 	const UINT dwFindTagNo,   //(in)   Identifies widget to get.
 	const bool bFindVisibleOnly)  //(in)   Widget must be visible (default=false).
 {
-	CWidget *pFromChild;
 	for (WIDGET_ITERATOR iSeek = this->Children.begin(); 
 			iSeek != this->Children.end(); ++iSeek)
 	{
@@ -1515,12 +1514,11 @@ CWidget* CWidget::GetWidget(
 		{
 			if ((*iSeek)->GetTagNo() == dwFindTagNo)
 				return *iSeek; //Found it.
-			else
-			{
-				//Look recursively for the tag.
-				pFromChild = (*iSeek)->GetWidget(dwFindTagNo);
-				if (pFromChild) return pFromChild;
-			}
+
+			//Look recursively for the tag.
+			CWidget *pFromChild = (*iSeek)->GetWidget(dwFindTagNo);
+			if (pFromChild)
+				return pFromChild;
 		}
 	}
 
@@ -1529,7 +1527,7 @@ CWidget* CWidget::GetWidget(
 }
 
 //***************************************************************************
-CWidget * CWidget::GetWidgetContainingCoords(
+CWidget* CWidget::GetWidgetContainingCoords(
 //Gets widget that contains coords.  Recursively called on child widgets
 //to get the widget with a smaller area containing the coords.  If two or more
 //widget siblings contain the coords, then the first one found will be returned.
@@ -1546,7 +1544,6 @@ CWidget * CWidget::GetWidgetContainingCoords(
 const
 {
 	//Each iteration looks at one child of this widget for a match.
-	CWidget *pFromChild;
 	for (WIDGET_ITERATOR iSeek = this->Children.begin(); 
 			iSeek != this->Children.end(); ++iSeek)
 	{
@@ -1567,7 +1564,7 @@ const
 				return pWidget;
 
 			//Look recursively for an even closer match.
-			pFromChild = pWidget->GetWidgetContainingCoords(nX, nY,
+			CWidget *pFromChild = pWidget->GetWidgetContainingCoords(nX, nY,
 					eWidgetType);
 			if (pFromChild &&
 					(eWidgetType == WT_Unspecified || pFromChild->eType == eWidgetType) )
