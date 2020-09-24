@@ -673,6 +673,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_NoFocusPlaysMusic: strText = "No focus plays music"; break;
 		case MID_MoneyDoorOperated: strText = "Money door opened"; break;
 		case MID_MoneyDoorLocked: strText = "Money door locked"; break;
+		case MID_BehaviorBeamBlock: strText = "Beam blocker"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
