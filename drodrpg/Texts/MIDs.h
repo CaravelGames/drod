@@ -1557,7 +1557,7 @@ enum MID_CONSTANT {
   MID_Snow = 1151,
   MID_LightCrossfade = 1278,
 
-  MID_END_UNUSED
+  MID_END_UNUSED=1749
 };
 
 #endif //...#ifndef _MIDS_H_
