@@ -163,6 +163,7 @@ public:
 
 	//Behavior patterns.
 	virtual bool HasRayGun() const {return this->bHasRayGun && IsVisible();}
+	virtual bool HasRayBlocking() const {return this->bHasRayBlocking;}
 	virtual bool TurnToFacePlayerWhenFighting() const {return this->bSurprisedFromBehind;}
 
 	bool           IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvents) const;
@@ -236,6 +237,7 @@ private:
 	bool bFaceAwayFromTarget;  //face away from target each turn
 	bool bFaceTarget;          //face toward the target each turn
 	bool bHasRayGun;           //shoot a beam attack each turn
+	bool bHasRayBlocking;      //can block beam attack
 	bool bSurprisedFromBehind; //an attack from behind causes me to lose my first combat turn
 	bool bGoblinWeakness;      //goblin sword does strong hit
 	bool bSerpentWeakness;     //serpent sword does strong hit
