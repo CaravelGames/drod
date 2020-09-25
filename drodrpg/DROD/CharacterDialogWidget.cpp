@@ -167,6 +167,22 @@ void stripTrailingWhitespace(WSTRING& text)
 }
 
 //******************************************************************************
+void AddOperatorSymbol(WSTRING& wstr, const UINT op)
+{
+	switch (op)
+	{
+		case ScriptVars::Equals:
+		case ScriptVars::EqualsText: wstr += wszEqual; break;
+		case ScriptVars::Greater: wstr += wszCloseAngle; break;
+		case ScriptVars::GreaterThanOrEqual: wstr += wszCloseAngle; wstr += wszEqual; break;
+		case ScriptVars::Less: wstr += wszOpenAngle; break;
+		case ScriptVars::LessThanOrEqual: wstr += wszOpenAngle; wstr += wszEqual; break;
+		case ScriptVars::Inequal: wstr += wszExclamation; wstr += wszEqual; break;
+		default: wstr += wszQuestionMark; break;
+	}
+}
+
+//******************************************************************************
 CRenameDialogWidget::CRenameDialogWidget(
 //Constructor.
 //
@@ -3397,14 +3413,7 @@ const
 			const WCHAR *wszVarName = this->pVarListBox->GetTextForKey(command.x);
 			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 			wstr += wszSpace;
-			switch (command.y)
-			{
-				case ScriptVars::Equals:
-				case ScriptVars::EqualsText: wstr += wszEqual; break;
-				case ScriptVars::Greater: wstr += wszCloseAngle; break;
-				case ScriptVars::Less: wstr += wszOpenAngle; break;
-				default: wstr += wszQuestionMark; break;
-			}
+			AddOperatorSymbol(wstr, command.y);
 			wstr += wszSpace;
 			switch (command.y)
 			{
@@ -6198,12 +6207,33 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		}
 		const char varOperator = char(WCv(pText[pos]));
 		++pos;
+		const char varOperator2 = pos < textLength ? char(WCv(pText[pos])) : 0;
 		switch (varOperator)
 		{
 			default: //robust default for bad operator char
 			case '=': pCommand->y = ScriptVars::Equals; break;
-			case '>': pCommand->y = ScriptVars::Greater; break;
-			case '<': pCommand->y = ScriptVars::Less; break;
+			case '>':
+				if (varOperator2 == '=') {
+					pCommand->y = ScriptVars::GreaterThanOrEqual;
+					++pos;
+				} else {
+					pCommand->y = ScriptVars::Greater;
+				}
+				break;
+			case '<':
+				if (varOperator2 == '=') {
+					pCommand->y = ScriptVars::LessThanOrEqual;
+					++pos;
+				} else {
+					pCommand->y = ScriptVars::Less;
+				}
+				break;
+			case '!':
+				if (varOperator2 == '=') {
+					pCommand->y = ScriptVars::Inequal;
+					++pos;
+				}
+				break;
 			case ':': pCommand->y = ScriptVars::EqualsText; break;
 		}
 
@@ -6569,13 +6599,10 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
 		wstr += wszSpace;
-		switch (c.y)
-		{
-			case ScriptVars::Equals: wstr += wszEqual; break;
-			case ScriptVars::EqualsText: wstr += wszColon; break;
-			case ScriptVars::Greater: wstr += wszCloseAngle; break;
-			case ScriptVars::Less: wstr += wszOpenAngle; break;
-			default: wstr += wszQuestionMark; break;
+		if (c.y == ScriptVars::EqualsText) {
+			wstr += wszColon;
+		} else {
+			AddOperatorSymbol(wstr, c.y);
 		}
 		wstr += wszSpace;
 		switch (c.y)
