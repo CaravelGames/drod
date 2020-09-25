@@ -888,9 +888,8 @@ const
 				return true;
 			break;
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_RO: case T_DOOR_CO: case T_DOOR_BO:
-			//Open doors can't have orbs or bombs on them, but can have tar.
-			if (wTileNo[1] == T_ORB || wTileNo[1]==T_BOMB ||
-					wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
+			//Open doors can't have orbs, relay stations or beacons on them, but can have tar.
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTarOrFluff(wTileNo[1]) || bIsBriar(wTileNo[1]))
 				return true;
@@ -933,7 +932,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_M:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Walls/Doors can't have orbs on them, but can have tar.
 			if (bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) return false;
-			if (wTileNo[1] == T_ORB || bIsExplodingItem(wTileNo[1]) ||
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_POWDER_KEG ||
 					wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
@@ -959,7 +958,6 @@ const
 			if (wTileNo[0] == T_PRESSPLATE)
 				return false;
 			//no break
-		case T_BOMB:
 		case T_BEACON: case T_BEACON_OFF:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
 			return !bSwordsmanAt &&
@@ -971,6 +969,18 @@ const
 						wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
 						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
+		case T_BOMB:
+			//On normal floor, wall, doors, goo, tunnels, or pressure plates.
+			return !bSwordsmanAt &&
+				(bIsPlainFloor(wTileNo[0]) || bIsFallingTile(wTileNo[0]) ||
+					bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
+					bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
+					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
+					wTileNo[0] == T_FLOOR_SPIKES || wTileNo[0] == T_FLUFFVENT ||
+					bIsFiretrap(wTileNo[0]) ||
+					wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
+					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+				(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_STATION:
 			//On normal floor, wall, goo, tunnels, plates or shallow water.
 			return !bSwordsmanAt &&

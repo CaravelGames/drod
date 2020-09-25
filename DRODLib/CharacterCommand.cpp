@@ -157,7 +157,7 @@ UINT getSpeakerNameText(const UINT wSpeaker, std::string& color)
 		case Speaker_Slayer: dwSpeakerTextID = MID_Slayer; color = "B00060"; break;
 		case Speaker_Slayer2: dwSpeakerTextID = MID_Slayer2; color = "B00060"; break;
 		case Speaker_Goblin: dwSpeakerTextID = MID_Goblin; color = "008000"; break;
-		case Speaker_RockGolem: dwSpeakerTextID = MID_StoneGolem; color = "800000"; break;
+		case Speaker_RockGolem: dwSpeakerTextID = MID_RockGolem; color = "800000"; break;
 		case Speaker_Guard: dwSpeakerTextID = MID_Guard; color = "400000"; break;
 		case Speaker_Stalwart: dwSpeakerTextID = MID_Stalwart; color = "D0D080"; break;
 		case Speaker_Stalwart2: dwSpeakerTextID = MID_Stalwart2; color = "806040"; break;
@@ -180,15 +180,15 @@ UINT getSpeakerNameText(const UINT wSpeaker, std::string& color)
 		case Speaker_Clone: dwSpeakerTextID = MID_Clone; color = "0000A0"; break;
 		case Speaker_Decoy: dwSpeakerTextID = MID_Decoy; color = "000080"; break;
 		case Speaker_Wubba: dwSpeakerTextID = MID_Wubba; color = "000000"; break;
-		case Speaker_Seep: dwSpeakerTextID = MID_Ghost; color = "000000"; break;
-		case Speaker_Fegundo: dwSpeakerTextID = MID_Phoenix; color = "800000"; break;
-		case Speaker_FegundoAshes: dwSpeakerTextID = MID_Phoenix; color = "800000"; break;
+		case Speaker_Seep: dwSpeakerTextID = MID_Seep; color = "000000"; break;
+		case Speaker_Fegundo: dwSpeakerTextID = MID_Fegundo; color = "800000"; break;
+		case Speaker_FegundoAshes: dwSpeakerTextID = MID_Fegundo; color = "800000"; break;
 		case Speaker_MudMother: dwSpeakerTextID = MID_MudMother; color = "FF0000"; break;
 		case Speaker_MudBaby: dwSpeakerTextID = MID_MudBaby; color = "FF0000"; break;
 		case Speaker_GelMother: dwSpeakerTextID = MID_GelMother; color = "00FF00"; break;
 		case Speaker_GelBaby: dwSpeakerTextID = MID_GelBaby; color = "00FF00"; break;
 		case Speaker_Citizen: dwSpeakerTextID = MID_Citizen; color = "D0D000"; break;
-		case Speaker_RockGiant: dwSpeakerTextID = MID_Splitter; color = "800000"; break;
+		case Speaker_RockGiant: dwSpeakerTextID = MID_RockGiant; color = "800000"; break;
 		case Speaker_Construct: dwSpeakerTextID = MID_Construct; color = "402020"; break;
 		case Speaker_Gentryii: dwSpeakerTextID = MID_Gentryii; color = "303030"; break;
 		case Speaker_TemporalClone: dwSpeakerTextID = MID_TemporalClone; color = "0000A0"; break;

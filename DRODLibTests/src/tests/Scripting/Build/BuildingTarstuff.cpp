@@ -43,6 +43,18 @@ static void TestShouldBreakIntoBabiesWhenUnstable(const UINT tarType, const UINT
 	REQUIRE(game->pRoom->GetMonsterAtSquare(11, 10)->wType == babyType);
 }
 
+static void TestShouldNotBreakMotherSupportedTarStuff(const UINT tarType, const UINT motherType) {
+	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
+	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Build, 12, 12, 1, 1, tarType);
+
+	RoomBuilder::AddMonster(motherType, 10, 10);
+	RoomBuilder::Plot(tarType, 10, 10);
+
+	CCurrentGame* game = Runner::StartGame(15, 15, N);
+
+	REQUIRE(game->pRoom->GetTSquare(10, 10) == tarType);
+}
+
 TEST_CASE("Scripting: Build tarstuff over monsters", "[game]") {
 	RoomBuilder::ClearRoom();
 
@@ -86,6 +98,16 @@ TEST_CASE("Scripting: Build tarstuff over monsters", "[game]") {
 	}
 	SECTION("Break Fluff when unstable on build"){
 		TestShouldBreakIntoBabiesWhenUnstable(T_FLUFF, M_FLUFFBABY);
+	}
+
+	SECTION("Don't break mother supported Tar on build") {
+		TestShouldNotBreakMotherSupportedTarStuff(T_TAR, M_TARMOTHER);
+	}
+	SECTION("Don't break mother supported Mud on build") {
+		TestShouldNotBreakMotherSupportedTarStuff(T_MUD, M_MUDMOTHER);
+	}
+	SECTION("Don't break mother supported Gel on build") {
+		TestShouldNotBreakMotherSupportedTarStuff(T_GEL, M_GELMOTHER);
 	}
 }
 

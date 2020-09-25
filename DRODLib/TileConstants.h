@@ -377,6 +377,7 @@ static inline bool bIsTLayerCoverableItem(const UINT t) {
 		default: return false;
 	}
 }
+static inline bool bIsTLayerObstacle(const UINT t) { return bIsTarOrFluff(t) || t==T_OBSTACLE || t==T_BOMB || t==T_STATION || t==T_LIGHT; }
 
 static inline bool bIsFuseConnected(const UINT t) { return t==T_FUSE || t==T_BOMB; }
 static inline bool bIsCombustibleItem(const UINT t) { return t==T_FUSE || t==T_BOMB || t==T_POWDER_KEG; }
@@ -853,19 +854,19 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Spider,       //M_SPIDER        +12
 	MID_GreenSerpent, //M_SERPENTG      +13
 	MID_BlueSerpent,  //M_SERPENTB      +14
-	MID_StoneGolem,   //M_ROCKGOLEM     +15
+	MID_RockGolem,   //M_ROCKGOLEM     +15
 	MID_Waterskipper, //M_WATERSKIPPER  +16
 	MID_WaterskipperNest, //M_SKIPPERNEST   +17
 	MID_Aumtlich,       //M_AUMTLICH      +18
 	MID_Clone,        //M_CLONE         +19
 	MID_Decoy,        //M_DECOY         +20
 	MID_Wubba,        //M_WUBBA         +21
-	MID_Ghost,        //M_SEEP          +22
+	MID_Seep,        //M_SEEP          +22
 	MID_Stalwart,     //M_STALWART      +23
 	MID_Halph,        //M_HALPH         +24
 	MID_Slayer,       //M_SLAYER        +25
-	MID_Phoenix,      //M_FEGUNDO       +26
-	MID_PhoenixAshes, //M_FEGUNDOASHES  +27
+	MID_Fegundo,      //M_FEGUNDO       +26
+	MID_FegundoAshes, //M_FEGUNDOASHES  +27
 	MID_Guard,        //M_GUARD         +28
 	MID_Character,    //M_CHARACTER     +29
 	MID_MudMother,    //M_MUDMOTHER     +30
@@ -873,7 +874,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_GelMother,    //M_GELMOTHER     +32
 	MID_GelBaby,      //M_GELBABY       +33
 	MID_Citizen,      //M_CITIZEN       +34
-	MID_Splitter,     //M_ROCKGIANT     +35
+	MID_RockGiant,     //M_ROCKGIANT     +35
 	MID_Halph2,       //M_HALPH2        +36
 	MID_Slayer2,      //M_SLAYER2       +37
 	MID_Stalwart2,    //M_STALWART2     +38

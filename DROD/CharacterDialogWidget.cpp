@@ -4406,7 +4406,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_AllBrainsRemoved, g_pTheDB->GetMessageText(MID_AllBrainsRemoved));
 	this->pEventListBox->AddItem(CID_AllTarRemoved, g_pTheDB->GetMessageText(MID_AllTarRemoved));
 	this->pEventListBox->AddItem(CID_AllTrapdoorsRemoved, g_pTheDB->GetMessageText(MID_AllTrapdoorsRemoved));
-	this->pEventListBox->AddItem(CID_AshToFegundo, g_pTheDB->GetMessageText(MID_AshToPhoenix));
+	this->pEventListBox->AddItem(CID_AshToFegundo, g_pTheDB->GetMessageText(MID_AshToFegundo));
 	this->pEventListBox->AddItem(CID_BombExploded, g_pTheDB->GetMessageText(MID_BombExploded));
 	this->pEventListBox->AddItem(CID_BriarExpanded, g_pTheDB->GetMessageText(MID_FlowExpanded));
 	this->pEventListBox->AddItem(CID_CommandKeyPressed, g_pTheDB->GetMessageText(MID_CommandKeyPressed));
@@ -4417,7 +4417,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_EggHatched, g_pTheDB->GetMessageText(MID_EggHatched));
 	this->pEventListBox->AddItem(CID_EggSpawned, g_pTheDB->GetMessageText(MID_EggSpawned));
 	this->pEventListBox->AddItem(CID_EvilEyeWoke, g_pTheDB->GetMessageText(MID_EvilEyeWoke));
-	this->pEventListBox->AddItem(CID_FegundoToAsh, g_pTheDB->GetMessageText(MID_PhoenixToAsh));
+	this->pEventListBox->AddItem(CID_FegundoToAsh, g_pTheDB->GetMessageText(MID_FegundoToAsh));
 	this->pEventListBox->AddItem(CID_FiretrapActivated, g_pTheDB->GetMessageText(MID_FiretrapActivated));
 	this->pEventListBox->AddItem(CID_Firetrap, g_pTheDB->GetMessageText(MID_FiretrapBurning));
 	this->pEventListBox->AddItem(CID_FluffDestroyed, g_pTheDB->GetMessageText(MID_FluffDestroyed));
@@ -4787,8 +4787,8 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_Decoy, g_pTheDB->GetMessageText(MID_Decoy));
 	pListBox->AddItem(Speaker_Eye, g_pTheDB->GetMessageText(MID_EvilEye));
 	pListBox->AddItem(Speaker_EyeActive, g_pTheDB->GetMessageText(MID_EvilEyeActive));
-	pListBox->AddItem(Speaker_Fegundo, g_pTheDB->GetMessageText(MID_Phoenix));
-	pListBox->AddItem(Speaker_FegundoAshes, g_pTheDB->GetMessageText(MID_PhoenixAshes));
+	pListBox->AddItem(Speaker_Fegundo, g_pTheDB->GetMessageText(MID_Fegundo));
+	pListBox->AddItem(Speaker_FegundoAshes, g_pTheDB->GetMessageText(MID_FegundoAshes));
 	pListBox->AddItem(Speaker_FluffBaby, g_pTheDB->GetMessageText(MID_FluffBaby));
 	pListBox->AddItem(Speaker_GelBaby, g_pTheDB->GetMessageText(MID_GelBaby));
 	pListBox->AddItem(Speaker_GelMother, g_pTheDB->GetMessageText(MID_GelMother));
@@ -4807,9 +4807,9 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_RoachEgg, g_pTheDB->GetMessageText(MID_RoachEgg));
 	pListBox->AddItem(Speaker_QRoach, g_pTheDB->GetMessageText(MID_RoachQueen));
 	pListBox->AddItem(Speaker_SerpentB, g_pTheDB->GetMessageText(MID_BlueSerpent));
-	pListBox->AddItem(Speaker_RockGolem, g_pTheDB->GetMessageText(MID_StoneGolem));
-	pListBox->AddItem(Speaker_RockGiant, g_pTheDB->GetMessageText(MID_Splitter));
-	pListBox->AddItem(Speaker_Seep, g_pTheDB->GetMessageText(MID_Ghost));
+	pListBox->AddItem(Speaker_RockGolem, g_pTheDB->GetMessageText(MID_RockGolem));
+	pListBox->AddItem(Speaker_RockGiant, g_pTheDB->GetMessageText(MID_RockGiant));
+	pListBox->AddItem(Speaker_Seep, g_pTheDB->GetMessageText(MID_Seep));
 	pListBox->AddItem(Speaker_Serpent, g_pTheDB->GetMessageText(MID_Serpent));
 	pListBox->AddItem(Speaker_Slayer, g_pTheDB->GetMessageText(MID_Slayer));
 	pListBox->AddItem(Speaker_Slayer2, g_pTheDB->GetMessageText(MID_Slayer2));

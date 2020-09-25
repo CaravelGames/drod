@@ -39,12 +39,12 @@
 #include "DbProps.h"
 #include "Character.h"
 #include "Gentryii.h"
-#include "Ghost.h"
 #include "MonsterPiece.h"
 #include "PlayerDouble.h"
+#include "RockGiant.h"
+#include "Seep.h"
 #include "Serpent.h"
 #include "Spider.h"
-#include "Splitter.h"
 #include "Stalwart.h"
 #include "TemporalClone.h"
 #include "Platform.h"
@@ -3077,7 +3077,7 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 		{
 			case M_SEEP:
 			{
-				CGhost *pWallMonster = DYN_CAST(CGhost*, CMonster*, pMonster);
+				CSeep *pWallMonster = DYN_CAST(CSeep*, CMonster*, pMonster);
 				pWallMonster->KillIfOutsideWall(CueEvents);
 			}
 			break;
@@ -3085,6 +3085,12 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 			{
 				CConstruct *pConstruct = DYN_CAST(CConstruct*, CMonster*, pMonster);
 				pConstruct->KillIfOnOremites(CueEvents);
+			}
+			break;
+			case M_TEMPORALCLONE:
+			{
+				CTemporalClone *pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+				pTemporalClone->KillIfOnDeadlyTile(CueEvents);
 			}
 			break;
 		}
@@ -4142,7 +4148,9 @@ void CDbRoom::ActivateToken(
 		case TemporalSplit:
 			//Touching a temporal split point for the first time.
 			if (!bOn && this->pCurrentGame->swordsman.wX == wX &&
-					this->pCurrentGame->swordsman.wY == wY && this->pCurrentGame->StartTemporalSplit()) {
+					this->pCurrentGame->swordsman.wY == wY && 
+					this->pCurrentGame->swordsman.wPlacingDoubleType == 0 &&
+					this->pCurrentGame->StartTemporalSplit()) {
 				SetTParam(wX, wY, tParam + TOKEN_ACTIVE);  //toggle on-off
 				CueEvents.Add(CID_TemporalSplitStart);
 				this->PlotsMade.insert(wX,wY);
@@ -5221,7 +5229,7 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 		//Splitter breaks into pieces.
 		KillMonster(pMonster, CueEvents);
 		this->pCurrentGame->TallyKill();
-		CSplitter::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
+		CRockGiant::Shatter(CueEvents, this->pCurrentGame, pMonster->wX,
 				pMonster->wY, true); //allow forming monster shards over pit/water
 
 		pMonster = GetMonsterAtSquare(wX, wY); //get resultant piece
@@ -5868,7 +5876,7 @@ void CDbRoom::ProcessExplosionSquare(
 				}
 			}
 			else if (bShatterRockGiant && this->pCurrentGame)
-				CSplitter::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
+				CRockGiant::Shatter(CueEvents, this->pCurrentGame, wNewX, wNewY);
 		}
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
@@ -9212,17 +9220,20 @@ void CDbRoom::BreakUnstableTar(CCueEvents &CueEvents)
 			const bool bFluff = wTarType == T_FLUFF;
 			if (bIsTarOrFluff(wTarType) && !IsTarStableAt(wX, wY, wTarType))
 			{
-				bStable = false;
 				//Get rid of the unstable tar
 				if (bFluff){
 					RemoveStabbedTar(wX, wY, CueEvents, true);
 					CueEvents.Add(CID_FluffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_FLUFF), true);
 
 				} else {
+					CMonster* pMonster = GetMonsterAtSquare(wX, wY);
+					if (pMonster && bIsMother(pMonster->wType))
+						continue; //allow unstable tarstuff to remain under a mother
 					CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTarType), true);
 					DestroyTar(wX, wY, CueEvents);
 				}
 
+				bStable = false;
 				CMonster *pMonster = GetMonsterAtSquare(wX, wY);
 
 				//Don't spawn tar babies under living monsters
@@ -12467,7 +12478,7 @@ bool CDbRoom::RemovePressurePlateTile(
 			pPlate->tiles = *reg;
 			reg->first(pPlate->wX, pPlate->wY);
 			this->orbs.push_back(pPlate);
-			wPlateI = this->orbs.size(); //base-1
+			wPlateI = static_cast<USHORT>(this->orbs.size()); //base-1
 			for (CCoordSet::const_iterator sq = reg->begin();
 				 sq != reg->end(); ++sq)
 				this->pressurePlateIndex.Add(sq->wX, sq->wY, wPlateI);

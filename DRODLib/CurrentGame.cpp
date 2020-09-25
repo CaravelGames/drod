@@ -44,10 +44,10 @@
 #include "Character.h"
 #include "Clone.h"
 #include "EvilEye.h"
+#include "FegundoAshes.h"
 #include "Mimic.h"
 #include "Pathmap.h"
-#include "PhoenixAshes.h"
-#include "Splitter.h"
+#include "RockGiant.h"
 #include "TemporalClone.h"
 #include "TileConstants.h"
 #include "NetInterface.h"
@@ -2336,6 +2336,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 	pClone->bIsTarget = this->swordsman.IsTarget();
 	pClone->weaponType = this->swordsman.GetActiveWeapon();
 	pClone->wIdentity = this->swordsman.wIdentity;
+	pClone->wAppearance = this->swordsman.wAppearance;
 	pClone->SetWeaponSheathed();
 	pClone->SetMovementType();
 	pClone->InputCommands(player_commands);
@@ -2758,7 +2759,7 @@ void CCurrentGame::StabMonsterAt(
 				{
 
 					ROOMCOORD attackCoords = ROOMCOORD(wSX, wSY);
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY, false, &attackCoords);
 					//Make sure the Golem at (wSX,wSY) is killed
 					CMonster *pNewGolem = this->pRoom->GetMonsterAtSquare(wSX, wSY);
 					if (pNewGolem)
@@ -3159,8 +3160,13 @@ void CCurrentGame::WeaponPushback(
 					pNewFluff->PushInDirection(dx, dy, true, CueEvents);
 			} else {
 				this->pRoom->KillMonster(pNewFluff,CueEvents);
-				if (bValidDestinationTile)
+				if (bValidDestinationTile) {
+					const CMonster* pMonsterAtDest = this->pRoom->GetMonsterAtSquare(wDestX, wDestY);
+					const bool bKillingTarstuffMother = pMonsterAtDest && bIsMother(pMonsterAtDest->wType);
 					this->pRoom->ProcessPuffAttack(CueEvents, wDestX, wDestY);
+					if (bKillingTarstuffMother)
+						this->pRoom->FixUnstableTar(CueEvents);
+				}
 				else
 					CueEvents.Add(CID_FluffPuffDestroyed, new CCoord(wFromX, wFromY), true);
 			}
@@ -3862,6 +3868,8 @@ void CCurrentGame::SetPlayerRole(const UINT wType, CCueEvents& CueEvents)
 	if (!IsSupportedPlayerRole(wType))
 		return;
 
+	UINT wOldIdentity = this->swordsman.wIdentity;
+
 	if (wType >= CUSTOM_CHARACTER_FIRST && wType != M_NONE)
 	{
 		//When logical role is a custom value, use its designated appearance
@@ -3884,6 +3892,11 @@ void CCurrentGame::SetPlayerRole(const UINT wType, CCueEvents& CueEvents)
 
 	//When changing the player role, then all clones in the room must be synched.
 	SynchClonesWithPlayer(CueEvents);
+
+	//When player's role changes, cancel temporal recordings.
+	if (wOldIdentity != this->swordsman.wIdentity) {
+		ResetPendingTemporalSplit(CueEvents);
+	}
 
 	//When player's role changes, brain pathmap needs to be updated.
 	if (this->swordsman.IsTarget() && this->pRoom &&
@@ -5440,7 +5453,7 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 				this->pRoom->KillMonster(pMonster, CueEvents);
 				CheckTallyKill(pMonster);
 				if (pMonster->wType == M_ROCKGIANT)
-					CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
+					CRockGiant::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
 				return;  //extra processing below gets skipped on death
 			}
 
@@ -5898,7 +5911,12 @@ CheckMonsterLayer:
 						const UINT wDestX = pCharacter->wX + dx;
 						const UINT wDestY = pCharacter->wY + dy;
 
-						if (this->pRoom->IsValidColRow(wDestX, wDestY) &&
+						//Prevent pushes that would allow an otherwise illegal move.
+						bool bPlayerCanMoveTo = this->pRoom->CanPlayerMoveOnThisElement(
+							this->swordsman.wAppearance, this->pRoom->GetOSquare(destX, destY)
+						) && !bIsTLayerObstacle(wNewTTile);
+
+						if (this->pRoom->IsValidColRow(wDestX, wDestY) && bPlayerCanMoveTo &&
 								this->pRoom->CanPushMonster(pMonster, pMonster->wX, pMonster->wY, wDestX, wDestY)){
 							pCharacter->PushInDirection(dx, dy, false, CueEvents);
 							bPushedCharacter = true;

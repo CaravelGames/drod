@@ -46,4 +46,17 @@ TEST_CASE("Fegundo player role", "[game]") {
 
 		REQUIRE(game->GetDyingEntity() == NULL);
 	}
+
+	SECTION("Fegundo time clone should not be killed by fire trap") {
+		RoomBuilder::Plot(T_FIRETRAP_ON, 10, 12);
+		RoomBuilder::PlotToken(TemporalSplit, 10, 11);
+
+		CCurrentGame* game = Runner::StartGame(10, 10, N);
+		
+		Runner::ExecuteCommand(CMD_S, 2);
+		Runner::ExecuteCommand(CMD_CLONE);
+		Runner::ExecuteCommand(CMD_N);
+
+		REQUIRE(game->GetDyingEntity() == NULL);
+	}
 }

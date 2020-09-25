@@ -1,0 +1,60 @@
+<html>
+<head>
+	<title>Help for DROD RPG</title>
+</head>
+<body bgcolor="#FFFFFF">
+
+<img src="images/drodlogo.jpg" />
+<hr />
+
+<h3><u><b>Custom Character Management</b></u></h3>
+
+<p>Here, you may create custom NPCs for use anywhere in the current hold.</p>
+<p><b>Add Character</b> - Type a name and click "Add Character"
+to create a new custom character for the hold.</p>
+<p><b>Characters</b> - Displays the set of custom NPCs you have defined for the hold.
+Click one to select it for modification.  Double-click one to rename it.</p>
+<p><b>Graphic</b> - Choose what the selected custom character will look like by default.</p>
+<p><a name="defaultscript"><b>Edit default script</b></a> - Click to define
+a default script to be used by all instances of this custom NPC in the hold.
+That is, when you place an NPC of this type, if you leave its script empty,
+then the default script will be used automatically.  <i>Hint</i>: Use default
+scripts to define new monster types and game elements, where each instance
+should share a common behavior.</p>
+<p><a name="avatar"><b>Custom avatar</b></a> - Import a custom face from an
+image file on disk into your hold. When an NPC of this custom type speaks,
+this image will be shown in the game screen's face box (130x164 pixels).</p>
+<p><a name="tiles"><b>Custom tiles</b></a> - Click to import a custom tileset
+for this character.
+The tileset may be a grid of from one to nine columns of 44x44 pixel tiles.
+Each column stores tiles for a specific orientation, starting from northward and
+progressing clockwise at 45 degree increments.
+The ninth column stores the central <a name="orientation">orientation</a> (i.e. no direction).  If an
+orientation to display is not included, the northward image is used by default.
+An optional <b>second row</b> may be included to display a second animation frame, toggled
+at random time intervals with the first frame.
+For character types wielding swords, optional third and fourth rows may be included.
+The <b>third row</b> contains custom sword images for the NPC.
+The <b>fourth row</b> stores custom images for the NPC when it is not wielding its sword.
+When the third and fourth rows are not included, then tiles from the first
+row are displayed in their place.  When the set graphic type belongs to an
+entity without a sword, the third and fourth rows are ignored.</p>
+<p><a name="animationspeed"><b>Animation speed</b></a> - Custom tiles may also
+be used to display a fully animated image.  When custom tiles have been imported,
+set this field to a non-zero value to specify how much time (in milli-seconds)
+should pass before advancing to the next display frame.  Your image may contain
+as many rows of animation as you like, up to about 750 frames.</p>
+<p><b>Default</b> - Click to <a name="reset">reset</a> the custom NPC's avatar or
+tileset to the default (i.e. the selected graphic type).</p>
+<p><a name="delete"><b>Delete</b></a> - Click to permanently remove the selected custom
+NPC from your hold.  This will cause any NPCs previously set to this type
+to now use a default appearance.</p>
+
+<hr />
+<a href="character.html">Character Scripting</a><br />
+<a href="editroom.html">Room Editor</a><br />
+<a href="editselect.html">Level Editor</a><br />
+<a href="contents.html">Contents</a>
+
+</body>
+</html>
