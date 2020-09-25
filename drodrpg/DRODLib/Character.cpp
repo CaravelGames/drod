@@ -2801,55 +2801,8 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForVar:
 			{
 				//Wait until var X (comparison Y) W, e.g. X >= 5
-
-				//Get variable.
-				CDbPackedVars& stats = pGame->stats;
-				char varID[10], varName[11] = "v";
-				UNPACKEDVARTYPE vType = UVT_int;
-
-				const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
-				bool bValidInt = true;
-				if (!bPredefinedVar)
-				{
-					//Get local hold var.
-					_itoa(command.x, varID, 10);
-					strcat(varName, varID);
-
-					//Enforce basic type checking.
-					vType = stats.GetVarType(varName);
-					bValidInt = vType == UVT_int || vType == UVT_unknown;
-				}
-
-				int operand = int(command.w); //expect an integer value by default
-				if (!operand && !command.label.empty() && command.y != ScriptVars::EqualsText)
-				{
-					//Operand is not just an integer, but a text expression.
-					UINT index=0;
-					operand = parseExpression(command.label.c_str(), index, pGame, this);
-				}
-
-				int x=0;
-				const bool bNumber = bValidInt && command.y != ScriptVars::EqualsText;
-				if (bNumber)
-					x = (bPredefinedVar ? int(getPredefinedVar(command.x))
-							: stats.GetVar(varName, (int)0));
-
-				switch (command.y)
-				{
-					case ScriptVars::Equals: if (x != operand) STOP_COMMAND; break;
-					case ScriptVars::Greater: if (x <= operand) STOP_COMMAND; break;
-					case ScriptVars::Less: if (x >= operand) STOP_COMMAND; break;
-					case ScriptVars::EqualsText:
-					{
-						WSTRING wStr;
-						if (vType == UVT_wchar_string)
-							wStr = stats.GetVar(varName, wszEmpty);
-						const WSTRING operand = pGame->ExpandText(command.label.c_str(), this);
-						if (wStr.compare(operand) != 0) STOP_COMMAND;
-					}
-					break;
-					default: break;
-				}
+				if (!DoesVarSatisfy(command, pGame))
+					STOP_COMMAND;
 
 				bProcessNextCommand = true;
 			}
@@ -3161,6 +3114,64 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 		}
 	}
 
+	return false;
+}
+
+
+bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	//Get variable.
+	CDbPackedVars& stats = pGame->stats;
+	char varID[10], varName[11] = "v";
+	UNPACKEDVARTYPE vType = UVT_int;
+
+	const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
+	bool bValidInt = true;
+	if (!bPredefinedVar)
+	{
+		//Get local hold var.
+		_itoa(command.x, varID, 10);
+		strcat(varName, varID);
+
+		//Enforce basic type checking.
+		vType = stats.GetVarType(varName);
+		bValidInt = vType == UVT_int || vType == UVT_unknown;
+	}
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty() && command.y != ScriptVars::EqualsText)
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	int x = 0;
+	const bool bNumber = bValidInt && command.y != ScriptVars::EqualsText;
+	if (bNumber)
+		x = (bPredefinedVar ? int(getPredefinedVar(command.x))
+			: stats.GetVar(varName, (int)0));
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return x == operand;
+		case ScriptVars::Greater: return x > operand;
+		case ScriptVars::GreaterThanOrEqual: return x >= operand;
+		case ScriptVars::Less: return x < operand;
+		case ScriptVars::LessThanOrEqual: return x <= operand;
+		case ScriptVars::Inequal: return x != operand;
+		case ScriptVars::EqualsText:
+		{
+			WSTRING wStr;
+			if (vType == UVT_wchar_string)
+				wStr = stats.GetVar(varName, wszEmpty);
+			const WSTRING operand = pGame->ExpandText(command.label.c_str(), this);
+			return wStr == operand;
+		}
+		break;
+		default: break;
+	}
+	ASSERT(!"Unrecognized var operator");
 	return false;
 }
 
