@@ -296,6 +296,7 @@ public:
 			const bool bTruncateInvalidCommands=false);
 	void     ProcessCommand(int nCommand, CCueEvents &CueEvents,
 			const UINT wX=(UINT)-1, const UINT wY=(UINT)-1);
+	void     ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents);
 	void     ProcessCommandSetVar(CCueEvents& CueEvents,
 			const UINT itemID, UINT newVal);
 	void     ProcessMonsterDefeat(CCueEvents& CueEvents,

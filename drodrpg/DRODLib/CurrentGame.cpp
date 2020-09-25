@@ -1395,6 +1395,7 @@ bool CCurrentGame::LoadFromHold(
 */			
 	//Get members ready.
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1502,6 +1503,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 	RetrieveExploredRoomData(*this->pRoom);
 	CDbSavedGame::SetMonsterListAtRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1572,6 +1574,7 @@ bool CCurrentGame::LoadFromRoom(
 	SetPlayerToRoomStart();
 
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1653,11 +1656,13 @@ bool CCurrentGame::LoadFromSavedGame(
 	{
 		//Cue events come from first step into the room.
 		SetMembersAfterRoomLoad(CueEvents, false);
+		ProcessCommand_EndOfTurnEventHandling(CueEvents);
 	} else {
 		//Cue events come from processing of last command below.
 		//Ignore cue events from first step into the room.
 		CCueEvents IgnoredCueEvents;
 		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
+		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
@@ -2515,85 +2520,8 @@ void CCurrentGame::ProcessCommand(
 		}
 	}
 
-	ProcessTokenActivations(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
-	//Check for new questions that were asked.  Put them in a list of questions
-	//for which answers will be expected on subsequent calls.
-	AddQuestionsToList(CueEvents, this->UnansweredQuestions);
-
-	//Did player die this turn?
-	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
-	{
-		//The player died -- remember that the game is now inactive.
-		this->pPlayer->bAlive = false;
-		this->bIsGameActive = false;
-//		++this->dwLevelDeaths;
-//		Manual and automatic recording of death demos handled in front end.
-	}
-
-/*
-	if (bIsMovementCommand(nCommand))
-		QueryCheckpoint(CueEvents, this->pPlayer->wX, this->pPlayer->wY);
-	if (CueEvents.HasOccurred(CID_CheckpointActivated))
-	{
-		CCoord *pCoord = DYN_CAST(CCoord*, CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_CheckpointActivated));
-		ASSERT(pCoord);
-		this->wLastCheckpointX = pCoord->wX;
-		this->wLastCheckpointY = pCoord->wY;
-
-		this->checkpointTurns.push_back(this->wTurnNo);
-		//If player is still alive after checkpoint was stepped on:
-		if (!this->Commands.IsFrozen() && this->bIsGameActive)
-			SaveToCheckpoint();
-	} else {
-		//If checkpoint wasn't touched this turn, allow saving to it starting next turn.
-		if (this->pRoom->IsValidColRow(this->wLastCheckpointX, this->wLastCheckpointY) &&
-				(this->wLastCheckpointX != this->pPlayer->wX ||
-					this->wLastCheckpointY != this->pPlayer->wY) &&
-				!this->pRoom->IsMonsterOfTypeAt(M_MIMIC, this->wLastCheckpointX, this->wLastCheckpointY))
-			this->wLastCheckpointX = this->wLastCheckpointY = static_cast<UINT>(-1);
-	}
-	//If there were monsters, but not any more, then remove green doors.
-	if (CueEvents.HasOccurred(CID_AllMonstersKilled) && !this->pRoom->bGreenDoorsOpened)
-		if (ToggleGreenDoors())
-			//Adding this event with true flag indicates green doors toggled?
-			CueEvents.Add(CID_AllMonstersKilled, new CAttachableWrapper<bool>(true), true);
-*/
-	//Return cue event for plots if any plots were made.  This check needs
-	//to go after any code that could call pRoom->Plot().
-	if (this->pRoom->PlotsMade.size())
-		CueEvents.Add(CID_Plots, &(this->pRoom->PlotsMade));
-
-	//During active moves, check for swords colliding.
-	if (//!this->pPlayer->wPlacingDoubleType &&
-		this->pRoom->SwordfightCheck())
-		CueEvents.Add(CID_Swordfight);
-
-	//Call once all cue events could have fired.
-	if (this->bIsGameActive) //don't need to check when game is no longer in play (incl. transitioning to a new level)
-	{
-		this->pRoom->CharactersCheckForCueEvents(CueEvents, this->pRoom->pFirstMonster);
-		this->pRoom->CharactersCheckForCueEvents(CueEvents, CDbSavedGame::pMonsterList); //global scripts
-	}
-
-	//Cut scene updates.
-	if (!this->bContinueCutScene)
-		this->dwCutScene = 0;
-
-	//Player should always be visible while cut scene is not playing.
-	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
-		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
-
-/*
-	//Update path maps to NPC Beethro.
-	if (this->pPlayer->wAppearance != M_BEETHRO)
-	{
-		UINT wSX, wSY;
-		if (GetSwordsman(wSX, wSY))
-			this->pRoom->SetPathMapsTarget(wSX, wSY);
-	}
-*/
 
 	if (!CueEvents.HasOccurred(CID_ExitRoom)) //on exit, this will have already been handled for the new room
 		AmbientSoundTracking(CueEvents);
@@ -2650,6 +2578,92 @@ void CCurrentGame::ProcessCommand(
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_InvalidAttackMove, &coord); //add an event to let the front-end know what happened
 	}
+}
+
+//Checks that happen at the end of ProcessCommand.
+//This method also needs to be called anytime a new room is loaded, before commands are (re)played.
+//This includes when starting a new hold/level/room, on room restart (that includes move undo), and loading game.
+void CCurrentGame::ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents) //(in/out)
+{
+	ProcessTokenActivations(CueEvents);
+
+	//Check for new questions that were asked.  Put them in a list of questions
+	//for which answers will be expected on subsequent calls.
+	AddQuestionsToList(CueEvents, this->UnansweredQuestions);
+
+	//Did player die this turn?
+	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
+	{
+		//The player died -- remember that the game is now inactive.
+		this->pPlayer->bAlive = false;
+		this->bIsGameActive = false;
+		//		++this->dwLevelDeaths;
+		//		Manual and automatic recording of death demos handled in front end.
+	}
+
+	/*
+		if (bIsMovementCommand(nCommand))
+			QueryCheckpoint(CueEvents, this->pPlayer->wX, this->pPlayer->wY);
+		if (CueEvents.HasOccurred(CID_CheckpointActivated))
+		{
+			CCoord *pCoord = DYN_CAST(CCoord*, CAttachableObject*,
+					CueEvents.GetFirstPrivateData(CID_CheckpointActivated));
+			ASSERT(pCoord);
+			this->wLastCheckpointX = pCoord->wX;
+			this->wLastCheckpointY = pCoord->wY;
+
+			this->checkpointTurns.push_back(this->wTurnNo);
+			//If player is still alive after checkpoint was stepped on:
+			if (!this->Commands.IsFrozen() && this->bIsGameActive)
+				SaveToCheckpoint();
+		} else {
+			//If checkpoint wasn't touched this turn, allow saving to it starting next turn.
+			if (this->pRoom->IsValidColRow(this->wLastCheckpointX, this->wLastCheckpointY) &&
+					(this->wLastCheckpointX != this->pPlayer->wX ||
+						this->wLastCheckpointY != this->pPlayer->wY) &&
+					!this->pRoom->IsMonsterOfTypeAt(M_MIMIC, this->wLastCheckpointX, this->wLastCheckpointY))
+				this->wLastCheckpointX = this->wLastCheckpointY = static_cast<UINT>(-1);
+		}
+		//If there were monsters, but not any more, then remove green doors.
+		if (CueEvents.HasOccurred(CID_AllMonstersKilled) && !this->pRoom->bGreenDoorsOpened)
+			if (ToggleGreenDoors())
+				//Adding this event with true flag indicates green doors toggled?
+				CueEvents.Add(CID_AllMonstersKilled, new CAttachableWrapper<bool>(true), true);
+	*/
+	//Return cue event for plots if any plots were made.  This check needs
+	//to go after any code that could call pRoom->Plot().
+	if (this->pRoom->PlotsMade.size())
+		CueEvents.Add(CID_Plots, &(this->pRoom->PlotsMade));
+
+	//During active moves, check for swords colliding.
+	if (//!this->pPlayer->wPlacingDoubleType &&
+		this->pRoom->SwordfightCheck())
+		CueEvents.Add(CID_Swordfight);
+
+	//Call once all cue events could have fired.
+	if (this->bIsGameActive) //don't need to check when game is no longer in play (incl. transitioning to a new level)
+	{
+		this->pRoom->CharactersCheckForCueEvents(CueEvents, this->pRoom->pFirstMonster);
+		this->pRoom->CharactersCheckForCueEvents(CueEvents, CDbSavedGame::pMonsterList); //global scripts
+	}
+
+	//Cut scene updates.
+	if (!this->bContinueCutScene)
+		this->dwCutScene = 0;
+
+	//Player should always be visible while cut scene is not playing.
+	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
+		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
+
+/*
+	//Update path maps to NPC Beethro.
+	if (this->pPlayer->wAppearance != M_BEETHRO)
+	{
+		UINT wSX, wSY;
+		if (GetSwordsman(wSX, wSY))
+			this->pRoom->SetPathMapsTarget(wSX, wSY);
+	}
+*/
 }
 
 //*****************************************************************************
@@ -3566,7 +3580,7 @@ void CCurrentGame::RestartRoom(
 	CueEvents.Clear();
 	SetPlayerToRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
-
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 /*
 	//If player was recording a demo from the beginning of the room,
 	//then resume recording from this point.
@@ -3974,6 +3988,8 @@ void CCurrentGame::SetTurn(
 	CueEvents.Clear();
 	SetPlayerToRoomStart();
 	SetMembersAfterRoomLoad(CueEvents, false);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+
 	UnfreezeCommands();
 
 	//Play the commands back.
