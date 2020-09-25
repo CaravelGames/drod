@@ -171,6 +171,7 @@ const UINT TAG_IMAGEOVERLAY_LABEL = 891;
 const UINT TAG_IMAGEOVERLAYTEXT = 890;
 
 const UINT TAG_WEAPON_LISTBOX2 = 883;
+const UINT TAG_BEHAVIOR_LISTBOX = 882;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1061,6 +1062,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
 
+	static const UINT CY_BEHAVIORLISTBOX = 10 * LIST_LINE_HEIGHT + 4;
+
 	static const UINT CX_OPENCLOSELISTBOX = 100;
 	static const UINT CY_OPENCLOSELISTBOX = 53;
 	static const int X_OPENCLOSELISTBOX = X_EVENTLISTBOX;
@@ -1622,6 +1625,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_IMPERATIVELISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pImperativeListBox);
 	PopulateImperativeListBox();
+
+	this->pBehaviorListBox = new CListBoxWidget(TAG_BEHAVIOR_LISTBOX,
+			X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_IMPERATIVELISTBOX, CY_BEHAVIORLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pBehaviorListBox);
+	PopulateBehaviorListBox();
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_DISPLAYSPEECHLABEL,
 			X_DISPLAYSPEECHLABEL, Y_DISPLAYSPEECHLABEL,
@@ -3727,6 +3735,12 @@ const
 			wstr += this->pImperativeListBox->GetTextForKey(command.x);
 		break;
 
+		case CCharacterCommand::CC_Behavior:
+			wstr += this->pBehaviorListBox->GetTextForKey(command.x);
+			wstr += wszSpace;
+			wstr += this->pOnOffListBox3->GetTextForKey(command.y);
+		break;
+
 		case CCharacterCommand::CC_SetMusic:
 			if (command.label.size())
 				wstr += command.label;
@@ -4104,6 +4118,7 @@ const
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
 		case CCharacterCommand::CC_LevelEntrance:
 		case CCharacterCommand::CC_SetMusic:
@@ -4272,6 +4287,31 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 }
 
 //*****************************************************************************
+void CCharacterDialogWidget::PopulateBehaviorListBox()
+{
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ActivateTokens, g_pTheDB->GetMessageText(MID_ActivateToken));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MovePlatforms, g_pTheDB->GetMessageText(MID_MovePlatforms));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterAttackable, g_pTheDB->GetMessageText(MID_CanBeMonsterAttacked));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DaggerDamageImmune, g_pTheDB->GetMessageText(MID_DaggerDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::CaberDamageImmune, g_pTheDB->GetMessageText(MID_CaberDamageImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FloorSpikeImmune, g_pTheDB->GetMessageText(MID_FloorSpikeImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ExplosionImmune, g_pTheDB->GetMessageText(MID_ExplosionImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::BriarImmune, g_pTheDB->GetMessageText(MID_BriarImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AdderImmune, g_pTheDB->GetMessageText(MID_AdderImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
+	this->pImperativeListBox->SelectLine(0);
+}
+
+//*****************************************************************************
 void CCharacterDialogWidget::PopulateCommandListBox()
 //Add to list all usable script commands.
 {
@@ -4309,6 +4349,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_Behavior, g_pTheDB->GetMessageText(MID_Behavior));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Label, g_pTheDB->GetMessageText(MID_Label));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveRel, g_pTheDB->GetMessageText(MID_MoveRel));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveTo, g_pTheDB->GetMessageText(MID_MoveTo));
@@ -4987,7 +5028,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 50;
+	static const UINT NUM_WIDGETS = 51;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5004,7 +5045,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5026,6 +5067,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
+	static const UINT BEHAVIOR[] =      {TAG_ONOFFLISTBOX3, TAG_BEHAVIOR_LISTBOX, 0};
 	static const UINT ANSWER[] =        {TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0};
 	static const UINT BUILD_ITEMS[] =   { TAG_BUILDITEMLISTBOX, 0 };
 	static const UINT BUILD_MARKER_ITEMS[] = { TAG_BUILDMARKERITEMLISTBOX, 0 };
@@ -5131,7 +5173,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		FACE_TOWARDS,       //CC_FaceTowards,
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
-		WEAPONS2          //CC_WaitForWeapon
+		WEAPONS2,          //CC_WaitForWeapon
+		BEHAVIOR            //CC_BEHAVIOR
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5255,7 +5298,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		FACE_TOWARDS_L,     //CC_FaceTowards,
 		NO_LABELS,          //CC_GetNaturalTarget
 		NO_LABELS,           //CC_GetEntityDirection
-		NO_LABELS			//CC_WaitForWeapon
+		NO_LABELS,			//CC_WaitForWeapon
+		NO_LABELS           //CC_Behavior
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5773,6 +5817,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->x = this->pImperativeListBox->GetSelectedItem();
 			AddCommand();
 		break;
+
+		case CCharacterCommand::CC_Behavior:
+			this->pCommand->x = this->pBehaviorListBox->GetSelectedItem();
+			this->pCommand->y = this->pOnOffListBox3->GetSelectedItem();
+			AddCommand();
+			break;
 
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pCommand->x = this->pStealthListBox->GetSelectedItem();
@@ -6457,6 +6507,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pImperativeListBox->SelectItem(this->pCommand->x);
 		break;
 
+		case CCharacterCommand::CC_Behavior:
+			this->pBehaviorListBox->SelectItem(this->pCommand->x);
+			this->pOnOffListBox3->SelectItem(this->pCommand->y);
+			break;
+
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pStealthListBox->SelectItem(this->pCommand->x);
 		break;
@@ -6971,6 +7026,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y);
+	break;
+
+	case CCharacterCommand::CC_Behavior:
+		skipLeftParen;
+		parseNumber(pCommand->x);
+		skipComma;
+		parseMandatoryOption(pCommand->y, this->pDirectionListBox3, bFound);
 	break;
 
 	case CCharacterCommand::CC_AttackTile:
@@ -7594,6 +7656,11 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_Wait:
 	case CCharacterCommand::CC_WaitForTurn:
 		concatNum(c.x);
+	break;
+
+	case CCharacterCommand::CC_Behavior:
+		concatNumWithComma(c.x);
+		wstr += this->pDirectionListBox3->GetTextForKey(c.y);
 	break;
 
 	case CCharacterCommand::CC_ActivateItemAt:

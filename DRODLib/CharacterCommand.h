@@ -128,6 +128,32 @@ namespace ScriptFlag
 		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
 	};
 
+	enum Behavior
+	{
+		ActivateTokens = 0,
+		DropTrapdoors = 1,
+		DropTrapdoorsArmed = 2,
+		PushObjects = 3,
+		MovePlatforms = 4,
+		MonsterAttackable = 5,
+		MonsterTarget = 6,
+		MonsterTargetIfPlayerIs = 7,
+		AllyTarget = 8,
+		PuffTarget = 9,
+		SwordDamageImmune = 10,
+		PickaxeDamageImmune = 11,
+		SpearDamageImmune = 12,
+		DaggerDamageImmune = 13,
+		CaberDamageImmune = 14,
+		FloorSpikeImmune = 15,
+		FiretrapImmune = 16,
+		HotTileImmune = 17,
+		ExplosionImmune = 18,
+		BriarImmune = 19,
+		AdderImmune = 20,
+		PuffImmune = 21
+	};
+
 	enum DisplayFilter
 	{
 		D_Nothing=-1, //used in front-end
@@ -274,6 +300,7 @@ public:
 		CC_GetNaturalTarget,   //Finds the location of closest natural target
 		CC_GetEntityDirection, //Finds the direction an entity at a given tile is facing
 		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
+		CC_Behavior,			// Set behavior X on or off.
 
 		CC_Count
 	};

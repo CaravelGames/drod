@@ -133,19 +133,25 @@ public:
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
 
+	bool           IsAdderImmune() const { return behaviorFlags.count(ScriptFlag::AdderImmune) == 1; }
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
+	bool           IsBriarImmune() const { return behaviorFlags.count(ScriptFlag::BriarImmune) == 1; }
+	bool           IsExplosionImmune() const {return behaviorFlags.count(ScriptFlag::ExplosionImmune) == 1;}
 	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
 	bool           IsGhostImageOverhead() const {return this->eDisplayMode == CDM_GhostOverhead;}
+	bool           IsImmuneToWeapon(WeaponType type) const;
 	bool           IsInvulnerable() const {return GetImperative() == ScriptFlag::Invulnerable;}
 	bool           IsMissionCritical() const {return GetImperative() == ScriptFlag::MissionCritical;}
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	bool           IsPuffImmune() const { return behaviorFlags.count(ScriptFlag::PuffImmune) == 1; }
+	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}
@@ -223,6 +229,7 @@ private:
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
+	void RefreshBriars();
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
@@ -274,6 +281,7 @@ private:
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
+	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 
 	UINT wLastSpeechLineNumber; //used during language import
 

@@ -380,13 +380,13 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 
 	const UINT wIdentity = GetResolvedIdentity();
 	//Flying and tarstuff identities are safe from hot tiles.
-	if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(wIdentity))
+	if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(this->wType))
 		return false;
 
 	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT)
 	{
 		CCueEvents Ignored;
-		if (OnStabbed(Ignored, this->wX, this->wY))
+		if (OnStabbed(Ignored, this->wX, this->wY, WeaponType::WT_HotTile))
 		{
 			//Add special cue events here instead of inside OnStabbed.
 			CueEvents.Add(CID_MonsterBurned, this);
@@ -568,7 +568,7 @@ CheckMonster:
 		const int dx = (int)wCol - (int)this->wX;
 		const int dy = (int)wRow - (int)this->wY;
 
-		if (pMonster->wType != M_FLUFFBABY && !this->CanDaggerStep(pMonster->wType, false) && !pMonster->IsAttackableTarget() &&
+		if (pMonster->wType != M_FLUFFBABY && !this->CanDaggerStep(pMonster, false) && !pMonster->IsAttackableTarget() &&
 			(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
 
 			if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle())
@@ -2149,8 +2149,9 @@ void CMonster::Move(
 			case M_CHARACTER:
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
-					bIsStalwart(pMonster->GetIdentity()));
-				if (bIsStalwart(pMonster->GetIdentity()))
+					bIsStalwart(pMonster->GetIdentity()) ||
+					pMonster->IsAttackableTarget());
+				if (pMonster->IsAttackableTarget() && !bIsSmitemaster(pMonster->GetIdentity()))
 				{
 					pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
 					room.KillMonster(pMonster, *pCueEvents, false, this); //will return false if it's a critical NPC
@@ -2172,7 +2173,7 @@ void CMonster::Move(
 				bFluffPoison = true;
 				break;
 			default:
-				ASSERT(this->CanDaggerStep(pMonster->wType, false));
+				ASSERT(this->CanDaggerStep(pMonster, false));
 				ASSERT(bIsStalwart(this->wType) || this->wType == M_GUARD || this->wType == M_SLAYER || this->wType == M_SLAYER2);
 
 				pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
@@ -2334,7 +2335,7 @@ bool CMonster::SensesTarget() const
 }
 
 //*****************************************************************************
-bool CMonster::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) const
+bool CMonster::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath) const
 //Returns: true if monster is capable of killing the target monster with a "dagger step"
 {
 	//You can't "dagger step" without a dagger
@@ -2348,11 +2349,18 @@ bool CMonster::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) 
 		return false;
 
 	// These monsters can't be dagger stepped because they are either invulnerable or leave a dead body
-	switch (wMonsterType)
+	switch (pMonster->wType)
 	{
 	case M_CITIZEN: case M_ARCHITECT: case M_ROCKGOLEM:
 	case M_CONSTRUCT: case M_WUBBA:
 		return false;
+	case M_CHARACTER: {
+		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+		if (!pCharacter || !pCharacter->IsVisible()) {
+			return true; // You can always step on something that isn't there
+		}
+		return !pCharacter->IsImmuneToWeapon(WT_Dagger);
+	}
 	default:
 		return true;
 	}

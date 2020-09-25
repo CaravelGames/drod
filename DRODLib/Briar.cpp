@@ -25,6 +25,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "Briar.h"
+#include "Character.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
 #include "GameConstants.h"
@@ -313,6 +314,18 @@ void CBriars::expand(
 							killedPuffs.insert(wX, wY);
 							bBlocked = true;
 						break;
+
+						case M_CHARACTER: {
+							// Visible NPCs with Briar Immunity stop briar
+							const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+							if (!pCharacter)
+								break;
+							if (!pCharacter->IsVisible())
+								break;
+							if (pCharacter->IsBriarImmune())
+								bBlocked = true;
+							break;
+						}
 
 						//All other monsters engulfed.
 						default: break;

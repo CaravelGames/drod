@@ -2737,7 +2737,7 @@ const
 				bObstacle = bMonsterObstacle = true; //Fluff babies block Fluff babies
 		} else {
 			if (!(this->pCurrentGame->swordsman.CanStepOnMonsters() ||
-					this->pCurrentGame->swordsman.CanDaggerStep(pMonster->wType)))
+					this->pCurrentGame->swordsman.CanDaggerStep(pMonster)))
 				bObstacle = bMonsterObstacle = true; //some roles can't step on monsters
 
 			if (pMonster->IsLongMonster())
@@ -4612,7 +4612,7 @@ void CDbRoom::ProcessPuffAttack(
 			{
 				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 				ASSERT(pCharacter);
-				if (bCanFluffKill(pCharacter->GetResolvedIdentity()) && !pCharacter->IsInvulnerable())
+				if (!pCharacter->IsPuffImmune() && !pCharacter->IsInvulnerable())
 				{
 					KillMonster(pMonster, CueEvents);
 					this->pCurrentGame->CheckTallyKill(pMonster);
@@ -5818,8 +5818,12 @@ void CDbRoom::ProcessExplosionSquare(
 			case M_CHARACTER:
 			{
 				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->IsInvulnerable())
+				if (pCharacter->IsInvulnerable() || pCharacter->IsExplosionImmune()) {
 					eImperative = ScriptFlag::Invulnerable;
+				} else if (pCharacter->IsBriarImmune()) {
+					// If a briar blocking NPC is killed, act as if a tile has been plotted.
+					this->briars.plotted(wX, wY, T_EMPTY);
+				}
 			}
 			break;
 			case M_FEGUNDOASHES:
