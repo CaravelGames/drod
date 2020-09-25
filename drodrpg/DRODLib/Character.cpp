@@ -427,8 +427,9 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 }
 
 //*****************************************************************************
-void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
+bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
+//Returns: false if command cannot be allowed to execute (e.g., killing player on turn 0), otherwise true
 {
 	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
 	switch (varIndex)
@@ -612,6 +613,8 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 				switch (varIndex)
 				{
 					case (UINT)ScriptVars::P_HP:
+						if (int(newVal) <= 0 && this->pCurrentGame->wTurnNo == 0) //forbid killing player on turn 0 (avoids respawn loop)
+							return false;
 						type = delta < 0 ? CET_HARM : CET_HEAL;
 						if (delta < 0)
 							delta = -delta;
@@ -657,17 +660,17 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 
 					case (UINT)ScriptVars::P_SWORD:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Weapon))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_SHIELD:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Armor))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_ACCESSORY:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Accessory))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_SPEED:
@@ -711,6 +714,7 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		}
 		break;
 	}
+	return true;
 }
 
 //*****************************************************************************
@@ -2772,10 +2776,13 @@ void CCharacter::Process(
 				}
 				if (bSetNumber)
 				{
-					if (bPredefinedVar)
-						setPredefinedVar(command.x, x, CueEvents);
-					else
+					if (bPredefinedVar) {
+						if (!setPredefinedVar(command.x, x, CueEvents)) {
+							STOP_COMMAND;
+						}
+					} else {
 						stats.SetVar(varName, x);
+					}
 				}
 
 				//When a var is set, this might get it out of an otherwise infinite loop.
