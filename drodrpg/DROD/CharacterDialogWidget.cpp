@@ -1552,7 +1552,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
 	this->pVarCompListBox->AddItem(ScriptVars::EqualsText, g_pTheDB->GetMessageText(MID_VarEqualsText));
 	this->pVarCompListBox->AddItem(ScriptVars::Greater, g_pTheDB->GetMessageText(MID_VarGreater));
+	this->pVarCompListBox->AddItem(ScriptVars::GreaterThanOrEqual, g_pTheDB->GetMessageText(MID_VarGreaterThanOrEqual));
 	this->pVarCompListBox->AddItem(ScriptVars::Less, g_pTheDB->GetMessageText(MID_VarLess));
+	this->pVarCompListBox->AddItem(ScriptVars::LessThanOrEqual, g_pTheDB->GetMessageText(MID_VarLessThanOrEqual));
+	this->pVarCompListBox->AddItem(ScriptVars::Inequal, g_pTheDB->GetMessageText(MID_VarInequal));
 	this->pVarCompListBox->SelectLine(0);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VARVALUELABEL,
