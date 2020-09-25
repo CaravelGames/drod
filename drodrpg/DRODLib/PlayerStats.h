@@ -29,7 +29,10 @@ namespace ScriptVars
 		Equals=0,
 		Greater=1,
 		Less=2,
-		EqualsText=3
+		EqualsText=3,
+		LessThanOrEqual = 8, //to avoid collision with Op values
+		GreaterThanOrEqual = 9,
+		Inequal = 10
 	};
 
 	//Predefined global and relative game state vars, accessed through these key values.
