@@ -78,6 +78,7 @@ public:
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	void           Defeat();
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
+	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
 
 	void   ExportText(CDbRefs &dbRefs, CStretchyBuffer& str);
 	static string ExportXMLSpeech(CDbRefs &dbRefs, const COMMAND_VECTOR& commands, const bool bRef=false);
