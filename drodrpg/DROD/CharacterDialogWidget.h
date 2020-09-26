@@ -127,6 +127,7 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
+	void  PopulateItemListBox(CListBoxWidget* pListBox);
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();

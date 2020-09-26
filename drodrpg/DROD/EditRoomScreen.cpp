@@ -537,13 +537,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 21;
+const UINT numTLayerEntries = 22;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_DEF_UP, T_ATK_UP,
 	T_MAP, T_KEY, T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG,
-	T_SCROLL, T_BOMB, T_FUSE, T_BRIAR_SOURCE, T_BRIAR_DEAD,
-	T_MIRROR, T_ORB, T_TOKEN, T_LIGHT, T_OBSTACLE,
-	T_TAR
+	T_SCROLL, T_BOMB, T_FUSE, T_TOKEN, T_OBSTACLE,
+	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
+	T_TAR, T_MIRROR
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -751,7 +751,7 @@ CEditRoomScreen::CEditRoomScreen()
 	const UINT CY_FLOORMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
 	static const int X_TOKENMENU = X_OBSMENU;
-	const int Y_TOKENMENU = Y_OBSMENU + CDrodBitmapManager::CY_TILE + CY_MENUSPACE;
+	const int Y_TOKENMENU = Y_OBSMENU + CDrodBitmapManager::CY_TILE;
 	const UINT CX_TOKENMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x2
 	const UINT CY_TOKENMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
