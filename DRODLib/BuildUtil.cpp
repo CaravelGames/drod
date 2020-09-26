@@ -28,6 +28,45 @@
 #include "CurrentGame.h"
 
 //*****************************************************************************
+bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
+{
+	switch (wTileNo)
+	{
+	case T_OBSTACLE:
+	case T_PRESSPLATE:
+	case T_SNKT_E:
+	case T_SNKT_N:
+	case T_SNKT_S:
+	case T_SNKT_W:
+	case T_SNK_EW:
+	case T_SNK_NE:
+	case T_SNK_NS:
+	case T_SNK_NW:
+	case T_SNK_SE:
+	case T_SNK_SW:
+	case T_CHECKPOINT:
+	case T_LIGHT_CEILING:
+	case T_PLATFORM_W:
+	case T_PLATFORM_P:
+	case T_WALL_M:
+	case T_STAIRS_UP:
+	case T_STAIRS:
+	case T_DARK_CEILING:
+	case T_WALLLIGHT:
+	case T_WALL_WIN:
+	case T_ACTIVETOKEN:
+	case T_TOKEN_TSPLIT_USED:
+	case T_TOKEN:
+	case T_PLATE_ONEUSE:
+	case T_PLATE_MULTI:
+	case T_PLATE_ON_OFF:
+		return false;
+	default:
+		return true;
+	}
+}
+
+//*****************************************************************************
 void BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, const UINT pw, const UINT ph, const bool bAllowSame, CCueEvents& CueEvents)
 {
 	if (!bIsValidBuildTile(tile))
@@ -52,7 +91,6 @@ void BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 //*****************************************************************************
 bool BuildUtil::BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
 {
-
 	if (!bIsValidBuildTile(tile))
 		return false;
 
@@ -66,8 +104,7 @@ bool BuildUtil::BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const 
 
 //*****************************************************************************
 bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame)
-{
-	
+{	
 	if (x >= room.wRoomCols || y >= room.wRoomRows)
 		return false; //build area is completely out of room bounds -- do nothing
 
@@ -150,8 +187,9 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 	}
 	return bValid;
 }
+
 //*****************************************************************************
-bool BuildUtil::BuildAnyTile(CDbRoom& room, UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
+bool BuildUtil::BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
 {
 	switch (tile)
 	{
@@ -216,11 +254,11 @@ bool BuildUtil::BuildAnyTile(CDbRoom& room, UINT baseTile, const UINT tile, cons
 }
 
 //*****************************************************************************
-bool BuildUtil::BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
+bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
 {
-	//Make sure there's no critical obstruction
 	const CCurrentGame* pCurrentGame = room.GetCurrentGame();
 
+	//Make sure there's no critical obstruction
 	bool bValid = CanBuildAt(room, tile, x, y, bAllowSame);
 
 	if (bIsWall(baseTile) || bIsCrumblyWall(baseTile) || bIsBriar(baseTile))
@@ -239,11 +277,11 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, c
 		return false;
 
 	const UINT wOldOTile = room.GetOSquare(x, y);
-	const UINT wLayer = TILE_LAYER[baseTile];
 	if (baseTile == wOldOTile && !bAllowSame)
 		return false;
 
-	if (TILE_LAYER[baseTile] == LAYER_OPAQUE)
+	const UINT wLayer = TILE_LAYER[baseTile];
+	if (wLayer == LAYER_OPAQUE)
 	{
 		//Update room's trapdoor stats when a trapdoor is removed this special way.
 		if (!bIsTrapdoor(baseTile) && bIsTrapdoor(wOldOTile))
@@ -267,7 +305,7 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, c
 			room.RemoveYellowDoorTile(x, y, wOldOTile);
 		}
 	}
-	else if (TILE_LAYER[baseTile] == LAYER_TRANSPARENT)
+	else if (wLayer == LAYER_TRANSPARENT)
 	{
 		const UINT wOldTTile = room.GetTSquare(x, y);
 		if (bIsTar(wOldTTile) && baseTile != wOldTTile)
@@ -427,12 +465,11 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, c
 
 	CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
 	
-	if (bIsShallowWater(baseTile) && bIsSteppingStone(room.GetOSquare(x, y)))
-		baseTile = T_STEP_STONE;
-
 	//When o-layer changes, refresh bridge supports.
-	if (TILE_LAYER[baseTile] == 0)
-		room.bridges.built(x, y, baseTile);
+	if (wLayer == LAYER_OPAQUE) {
+		const UINT newTile = (bIsShallowWater(baseTile) && bIsSteppingStone(room.GetOSquare(x, y))) ? T_STEP_STONE : baseTile;
+		room.bridges.built(x, y, newTile);
+	}
 
 	if (room.building.get(x, y))
 		room.building.remove(x, y);
