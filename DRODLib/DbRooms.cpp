@@ -3814,6 +3814,7 @@ const
 				if ((*pMonsters)->wType == wType)
 					return true;
 			}
+			++pMonsters;
 		}
 	}
 
