@@ -87,6 +87,14 @@ LIB32=link.exe -lib
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\BuildUtil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BuildUtil.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Combat.cpp
 # End Source File
 # Begin Source File
