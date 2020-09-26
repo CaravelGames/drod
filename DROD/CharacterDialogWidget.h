@@ -189,7 +189,7 @@ private:
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
-		*pNaturalTargetTypesListBox, *pBehaviorListBox;
+		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;
