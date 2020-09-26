@@ -809,6 +809,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_BriarImmune: strText = "Briar Immunity"; break;
 	case MID_AdderImmune: strText = "Adder Immunity"; break;
 	case MID_PuffImmune: strText = "Puff Immunity"; break;
+	case MID_WaitForRemains: strText = "Wait for monster remains"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
