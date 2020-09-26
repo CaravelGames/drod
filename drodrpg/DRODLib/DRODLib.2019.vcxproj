@@ -382,6 +382,7 @@
     <ClCompile Include="Briar.cpp" />
     <ClCompile Include="Bridge.cpp" />
     <ClCompile Include="Building.cpp" />
+    <ClCompile Include="BuildUtil.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="CharacterCommand.cpp" />
     <ClCompile Include="Citizen.cpp" />
@@ -453,6 +454,7 @@
     <ClInclude Include="Briar.h" />
     <ClInclude Include="Bridge.h" />
     <ClInclude Include="Building.h" />
+    <ClInclude Include="BuildUtil.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="CharacterCommand.h" />
     <ClInclude Include="Citizen.h" />

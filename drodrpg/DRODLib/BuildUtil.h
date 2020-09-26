@@ -18,7 +18,7 @@
 * The Initial Developer of the Original Code is
 * Caravel Software.
 * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
-* 1997, 2000, 2001, 2002, 2005, 2016 Caravel Software. All Rights Reserved.
+* 1997, 2000, 2001, 2002, 2005, 2016, 2020 Caravel Software. All Rights Reserved.
 *
 * Contributor(s):
 *
@@ -39,12 +39,12 @@ public:
 	static bool bIsValidBuildTile(const UINT wTileNo);
 
 	static void BuildTilesAt(CDbRoom& room, const UINT tile, UINT x, UINT y, const UINT w, const UINT h, const bool bAllowSame, CCueEvents& CueEvents);
-	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+//	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame);
 
 private:
-	static bool BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
-	static bool BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+	static bool BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+	static bool BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 };
 
 #endif //...#ifndef BUILD_UTIL_H

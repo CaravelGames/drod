@@ -29,6 +29,7 @@
 #endif
 
 #include "Character.h"
+#include "BuildUtil.h"
 #include "Combat.h"
 #include "Db.h"
 #include "DbHolds.h"
@@ -429,8 +430,9 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 }
 
 //*****************************************************************************
-void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
+bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
+//Returns: false if command cannot be allowed to execute (e.g., killing player on turn 0), otherwise true
 {
 	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
 	switch (varIndex)
@@ -614,6 +616,8 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 				switch (varIndex)
 				{
 					case (UINT)ScriptVars::P_HP:
+						if (int(newVal) <= 0 && this->pCurrentGame->wTurnNo == 0) //forbid killing player on turn 0 (avoids respawn loop)
+							return false;
 						type = delta < 0 ? CET_HARM : CET_HEAL;
 						if (delta < 0)
 							delta = -delta;
@@ -659,17 +663,17 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 
 					case (UINT)ScriptVars::P_SWORD:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Weapon))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_SHIELD:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Armor))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_ACCESSORY:
 						if (!const_cast<CCurrentGame*>(this->pCurrentGame)->IsEquipmentValid(newVal, ScriptFlag::Accessory))
-							return;
+							return true;
 						break;
 
 					case (UINT)ScriptVars::P_SPEED:
@@ -713,6 +717,7 @@ void CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		}
 		break;
 	}
+	return true;
 }
 
 //*****************************************************************************
@@ -2777,10 +2782,13 @@ void CCharacter::Process(
 				}
 				if (bSetNumber)
 				{
-					if (bPredefinedVar)
-						setPredefinedVar(command.x, x, CueEvents);
-					else
+					if (bPredefinedVar) {
+						if (!setPredefinedVar(command.x, x, CueEvents)) {
+							STOP_COMMAND;
+						}
+					} else {
 						stats.SetVar(varName, x);
+					}
 				}
 
 				//When a var is set, this might get it out of an otherwise infinite loop.
@@ -2974,291 +2982,7 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEve
 	getCommandParams(command, px, py, pw, ph, pflags);
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
-
-	//Crop check to valid room region
-	UINT endX = px + pw;
-	UINT endY = py + ph;
-	if (!room.CropRegion(px, py, endX, endY))
-		return;
-
-	//Tile values that shouldn't be built.
-	//The virtual item types need to be specified.
-	const UINT tile = pflags;
-	switch (tile)
-	{
-		case T_CHECKPOINT: case T_WALLLIGHT: //not real items
-		case T_KEY: case T_SWORD: case T_SHIELD: case T_ACCESSORY: //virtual items below are used to place cases of these
-		case T_TOKEN:
-			return;
-	}
-
-	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F;
-	const bool bVirtualTile = IsVirtualTile(tile);
-	if (!bRealTile && !bVirtualTile)
-		return; //unrecognized tile ID
-	bool bConvertUnstableTarstuff = false;
-	CCoordSet bridgeChecks;
-	for (UINT y=py; y <= endY; ++y)
-	{
-		for (UINT x=px; x <= endX; ++x)
-		{
-			//Build if there is no critical obstruction.
-			bool bValid = true;
-			if (bRealTile)
-			{
-				switch (TILE_LAYER[tile])
-				{
-					case 0:  //o-layer
-					{
-						//Don't build if this element is already there.
-						const UINT wOTile = room.GetOSquare(x,y);
-						if (wOTile == pflags)
-							bValid = false;
-						//Adding tiles to platforms is not currently supported by the engine.
-						if (bIsPlatform(tile))
-							return;
-
-						//Update orb data if a pressure plate or door is removed.
-						if (wOTile == T_PRESSPLATE) {
-							room.RemovePressurePlateTile(x,y);
-						} else if (bIsDoor(wOTile)) {
-							room.RemoveDoorTile(x, y, wOTile);
-						} else if (bIsPlatform(wOTile)) {
-							// Removing tiles from platforms is currently not supported
-							// by the saved game mechanism.
-							// (In next major version, would need to upgrade saved room data
-							//  to store explicit set of tiles for each platform, not platformDeltas.)
-							ASSERT(tile != wOTile);
-							CPlatform *pPlatform = room.GetPlatformAt(x, y);
-							ASSERT(pPlatform);
-							bValid = false; //pPlatform->RemoveTile(x, y);
-						}
-					}
-					break;
-					case 1:  //t-layer
-					{
-						//Don't build if this element is already there.
-						const UINT wTTile = room.GetTSquare(x,y);
-						if (wTTile == pflags)
-						{
-							bValid = false;
-							break;
-						}
-
-						//Obstacles may not be built -- only queried in IsTileAt.
-						if (tile == T_OBSTACLE)
-							bValid = false;
-
-						//Can't build orbs on pressure plates.
-						if (tile == T_ORB && room.GetOSquare(x,y) == T_PRESSPLATE)
-							bValid = false;
-
-						//Most items can be replaced.
-						if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
-								bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
-								bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-								wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
-								wTTile == T_TOKEN || bIsTar(wTTile))
-							break;
-						//No other item can be built over.
-						bValid = false;
-					}
-					break;
-					case 3:  //f-layer
-					{
-						const UINT wFTile = room.GetFSquare(x,y);
-						if (wFTile == pflags)
-						{
-							bValid = false;
-							break;
-						}
-						//Can replace any item trivially on this layer.
-					}
-					break;
-					default: ASSERT(!"Unsupported build layer");
-						//no break
-					case 2:
-						bValid = false;
-					break;
-				}
-			}
-			//else: handle virtual tiles below
-
-			if (bValid)
-			{
-				//Build tile now.
-
-				//Special data updating.
-				if (bVirtualTile)
-				{
-					//Virtual tiles must be plotted in special ways.
-					UINT newTile=T_EMPTY;
-					switch (tile)
-					{
-						case TV_KEY_Y: case TV_KEY_G: case TV_KEY_B: case TV_KEY_S:
-							newTile = T_KEY;
-						break;
-						case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
-						case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
-							newTile = T_SWORD;
-						break;
-						case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5: case TV_SHIELD6:
-							newTile = T_SHIELD;
-						break;
-						case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
-						case TV_ACCESSORY5: case TV_ACCESSORY6: case TV_ACCESSORY7: case TV_ACCESSORY8:
-						case TV_ACCESSORY9: case TV_ACCESSORY10: case TV_ACCESSORY11: case TV_ACCESSORY12:
-							newTile = T_ACCESSORY;
-						break;
-						case TV_EXPLOSION:
-						{
-							const bool bBombHere = room.GetTSquare(x,y) == T_BOMB;
-							room.ProcessExplosionSquare(CueEvents, x, y);
-							if (bBombHere)
-							{
-								CCoordStack bombs(x,y);
-								room.BombExplode(CueEvents, bombs);
-							}
-							bConvertUnstableTarstuff = true;
-						}
-						break;
-						default: break;
-					}
-					if (newTile != T_EMPTY)
-					{
-						//Check for legal placement.
-						const UINT wTTile = room.GetTSquare(x,y);
-
-						//Most items can be replaced.
-						//(Same logic as the above t-layer check.)
-						if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
-								bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
-								bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-								wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
-								wTTile == T_TOKEN || bIsTar(wTTile))
-						{
-							if (TILE_LAYER[newTile] == 1 && bIsTar(wTTile) && newTile != wTTile) {
-								room.RemoveStabbedTar(x,y,CueEvents);
-								bConvertUnstableTarstuff = true;
-							}
-							room.Plot(x,y, newTile);
-						} else {
-							continue; //do nothing here -- proceed to next tile
-						}
-					}
-					switch (tile) //2nd pass -- set T-layer param
-					{
-						case TV_KEY_Y: room.SetTParam(x,y, YellowKey); break;
-						case TV_KEY_G: room.SetTParam(x,y, GreenKey); break;
-						case TV_KEY_B: room.SetTParam(x,y, BlueKey); break;
-						case TV_KEY_S: room.SetTParam(x,y, SkeletonKey); break;
-						case TV_SWORD1: room.SetTParam(x,y, WoodenBlade); break;
-						case TV_SWORD2: room.SetTParam(x,y, ShortSword); break;
-						case TV_SWORD3: room.SetTParam(x,y, GoblinSword); break;
-						case TV_SWORD4: room.SetTParam(x,y, LongSword); break;
-						case TV_SWORD5: room.SetTParam(x,y, HookSword); break;
-						case TV_SWORD6: room.SetTParam(x,y, ReallyBigSword); break;
-						case TV_SWORD7: room.SetTParam(x,y, LuckySword); break;
-						case TV_SWORD8: room.SetTParam(x,y, SerpentSword); break;
-						case TV_SWORD9: room.SetTParam(x,y, BriarSword); break;
-						case TV_SWORD10: room.SetTParam(x,y, WeaponSlot); break;
-						case TV_SHIELD1: room.SetTParam(x,y, WoodenShield); break;
-						case TV_SHIELD2: room.SetTParam(x,y, BronzeShield); break;
-						case TV_SHIELD3: room.SetTParam(x,y, SteelShield); break;
-						case TV_SHIELD4: room.SetTParam(x,y, KiteShield); break;
-						case TV_SHIELD5: room.SetTParam(x,y, OremiteShield); break;
-						case TV_SHIELD6: room.SetTParam(x,y, ArmorSlot); break;
-						case TV_ACCESSORY1: room.SetTParam(x,y, GrapplingHook); break;
-						case TV_ACCESSORY2: room.SetTParam(x,y, WaterBoots); break;
-						case TV_ACCESSORY3: room.SetTParam(x,y, InvisibilityPotion); break;
-						case TV_ACCESSORY4: room.SetTParam(x,y, SpeedPotion); break;
-						case TV_ACCESSORY5: room.SetTParam(x,y, HandBomb); break;
-						case TV_ACCESSORY6: room.SetTParam(x,y, PickAxe); break;
-						case TV_ACCESSORY7: room.SetTParam(x,y, WarpToken); break;
-						case TV_ACCESSORY8: room.SetTParam(x,y, PortableOrb); break;
-						case TV_ACCESSORY9: room.SetTParam(x,y, LuckyGold); break;
-						case TV_ACCESSORY10: room.SetTParam(x,y, WallWalking); break;
-						case TV_ACCESSORY11: room.SetTParam(x,y, XPDoubler); break;
-						case TV_ACCESSORY12: room.SetTParam(x,y, AccessorySlot); break;
-						default: break; //nothing else to do here
-					}
-				} else {
-					//Real tile being plotted.
-
-					//Handle special bookkeeping.
-					const bool bWater = bIsWater(tile);
-					if (TILE_LAYER[tile] == 0) {
-						const UINT oldTile = room.GetOSquare(x,y);
-						const bool bReplacingPit = bIsPit(oldTile) && !bIsPit(tile);
-						if ((bIsCrumblyWall(tile) && bIsWall(oldTile)) || //if a crumbly wall replaces a normal wall...
-								bReplacingPit)                              //...or when replacing a pit with non-pit...
-						{
-							room.Plot(x,y,T_FLOOR);                        //...plot floor first to update the covered o-layer
-						} else if (bIsTrapdoor(tile) && !bIsTrapdoor(oldTile)) {
-							room.IncTrapdoor(CueEvents);
-						} else if (!bIsPlatform(tile) && bIsPlatform(oldTile)) {
-							ASSERT(tile != oldTile);
-							CPlatform *pPlatform = room.GetPlatformAt(x,y);
-							ASSERT(pPlatform);
-							pPlatform->RemoveTile(x,y);
-						}
-
-						//Refresh bridge supports.
-						bridgeChecks.insert(x,y);
-
-						//Refresh bank around new or previous WATER tiles.
-						//WARNING: Where plots are needed is front-end implementation dependent.
-						if (bWater || bIsWater(oldTile))
-						{
-							CCoordSet plots;
-							for (UINT nx=x-1; nx!=x+2; ++nx)
-								if (nx < room.wRoomCols)
-									for (UINT ny=y-1; ny!=y+2; ++ny)
-										if (ny < room.wRoomRows)
-											plots.insert(nx,ny);
-							room.Plot(plots);
-						}
-						//When pit is added/removed, redraw this tile's pit edge.
-						//WARNING: Where plots are needed is front-end implementation dependent.
-						if ((bIsFloor(oldTile) || bIsWall(oldTile) || bIsCrumblyWall(oldTile)) &&
-								(bIsPlatform(tile) || bIsBridge(tile) || bIsTrapdoor(tile)))
-						{
-							CCoordSet plots;
-								for (UINT ny=y+1; ny<room.wRoomRows; ++ny) //all the way down
-									plots.insert(x,ny);
-							room.Plot(plots);
-						}
-					} else if (TILE_LAYER[tile] == 1) {
-						const UINT oldTTile = room.GetTSquare(x,y);
-						if (bIsTar(oldTTile) && tile != oldTTile) {
-							room.RemoveStabbedTar(x,y,CueEvents);
-							bConvertUnstableTarstuff = true;
-						}
-					}
-
-					room.Plot(x,y,tile);
-
-					//When placing a hole, things might fall.
-					if ((bIsPit(tile) || bWater) &&
-							this->pCurrentGame->wTurnNo > 0) //don't allow player falling on room entrance
-					{
-						room.CheckForFallingAt(x, y, CueEvents);
-						bConvertUnstableTarstuff = true;
-					}
-				}
-
-				if (tile == TV_EXPLOSION)
-					CueEvents.Add(CID_BombExploded, new CMoveCoord(x,y,0), true);
-				else
-					CueEvents.Add(CID_ObjectBuilt, new CMoveCoord(x,y,tile), true);
-			}
-		}
-	}
-
-	if (bConvertUnstableTarstuff)
-		room.ConvertUnstableTar(CueEvents);
-	for (CCoordSet::const_iterator it=bridgeChecks.begin(); it!=bridgeChecks.end(); ++it)
-		room.bridges.built(it->wX, it->wY, tile);
+	BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
 }
 
 //*****************************************************************************

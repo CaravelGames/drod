@@ -1319,6 +1319,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildItemsListBox->AddItem(T_GOO, g_pTheDB->GetMessageText(MID_Goo));
 	this->pBuildItemsListBox->AddItem(T_HOT, g_pTheDB->GetMessageText(MID_Hot));
 	this->pBuildItemsListBox->AddItem(T_WALL, g_pTheDB->GetMessageText(MID_Wall));
+	this->pBuildItemsListBox->AddItem(T_WALL2, g_pTheDB->GetMessageText(MID_Wall2));
 	this->pBuildItemsListBox->AddItem(T_WALL_B, g_pTheDB->GetMessageText(MID_BrokenWall));
 	this->pBuildItemsListBox->AddItem(T_WALL_H, g_pTheDB->GetMessageText(MID_SecretWall));
 	this->pBuildItemsListBox->AddItem(T_WALL_IMAGE, g_pTheDB->GetMessageText(MID_WallImage));
