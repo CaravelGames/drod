@@ -326,6 +326,7 @@ public:
 	void     SellInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
 	void     SetExecuteNoMoveCommands(const bool bVal=true) {this->bExecuteNoMoveCommands = bVal;}
 	bool     SetPlayer(const UINT wSetX, const UINT wSetY);
+	void     TeleportPlayer(const UINT wSetX, const UINT wSetY, CCueEvents& CueEvents);
 	void     SetPlayerRole(const UINT wType);
 	bool     SetPlayerSwordSheathed();
 	void     SetTurn(UINT wSetTurnNo, CCueEvents &CueEvents);
@@ -419,6 +420,8 @@ private:
 	void     ProcessMonsters(int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessTokenActivations(CCueEvents &CueEvents);
 	void     ProcessPlayer(const int nCommand, CCueEvents &CueEvents);
+	void     ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
+		const bool bWasOnSameScroll, const bool bPlayerMove = true, const bool bPlayerTeleported = false);
 	void     ProcessPlayer_HandleLeaveLevel(CCueEvents &CueEvents,
 			const UINT wEntrance=EXIT_LOOKUP, const bool bSkipEntranceDisplay=false);
 	bool     ProcessPlayer_HandleLeaveRoom(const UINT wMoveO,

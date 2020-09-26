@@ -106,6 +106,7 @@ void CSwordsman::Clear(const bool bNewGame)
 	this->wX = this->wY = this->wO = this->wPrevX = this->wPrevY = this->wPrevO = 0;
 	this->wAppearance = defaultPlayerType();
 	this->bSwordOff = this->bShieldOff = this->bAccessoryOff = this->bCommandOff = false;
+	this->bHasTeleported = false;
 	ResetRoomStats();
 	if (bNewGame)
 		this->st.clear();
@@ -419,6 +420,7 @@ void CSwordsman::ResetRoomStats()
 */
 	this->bAlive = true;
 	this->bNoSword = this->bSwordSheathed = false;
+	this->bHasTeleported = false;
 
 	this->bInvisible = this->bHasted = false; //only lasts for the current room
 }

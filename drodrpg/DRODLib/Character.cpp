@@ -466,12 +466,10 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 
 		//Room position.
 		case (UINT)ScriptVars::P_PLAYER_X:
-			if (this->pCurrentGame->pRoom->IsValidColRow(val, this->pCurrentGame->pPlayer->wY))
-				this->pCurrentGame->pPlayer->wX = val;
+			const_cast<CCurrentGame*>(this->pCurrentGame)->TeleportPlayer(val, this->pCurrentGame->pPlayer->wY, CueEvents);
 		break;
 		case (UINT)ScriptVars::P_PLAYER_Y:
-			if (this->pCurrentGame->pRoom->IsValidColRow(this->pCurrentGame->pPlayer->wX, val))
-				this->pCurrentGame->pPlayer->wY = val;
+			const_cast<CCurrentGame*>(this->pCurrentGame)->TeleportPlayer(this->pCurrentGame->pPlayer->wX, val, CueEvents);
 		break;
 		case (UINT)ScriptVars::P_PLAYER_O:
 			if (IsValidOrientation(val) && val != NO_ORIENTATION)
@@ -589,7 +587,7 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		//Stat modifications that may display the change as a special effect.
 		default:
 		{
-			CSwordsman &p = *(((CCurrentGame*)(this->pCurrentGame))->pPlayer);
+			CSwordsman &p = *(const_cast<CCurrentGame*>(this->pCurrentGame)->pPlayer);
 			PlayerStats& st = p.st;
 
 			//Bounds checks
