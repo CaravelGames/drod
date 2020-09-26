@@ -301,6 +301,7 @@ public:
 		CC_GetEntityDirection, //Finds the direction an entity at a given tile is facing
 		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
 		CC_Behavior,			// Set behavior X on or off.
+		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
 
 		CC_Count
 	};
