@@ -2698,6 +2698,46 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::DoesSquareContainTeleportationObstacle(
+	// Checks if an entity of given type can teleport to this position.
+	// Ignores monster layer, as player can step through monsters in certain states, e.g., when invisible
+	//
+	//Params:
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const UINT wIdentity)   //(in)   Identity of the teleported entity
+	//
+	//Returns:
+	//True if a teleportation-preventing tile is present on the target square, otherwise false
+	const
+{
+	const UINT tTile = GetTSquare(wX, wY);
+	switch (tTile) {
+	case T_TAR:
+		if (wIdentity != M_TARMOTHER) {
+			return true;
+		}
+		break;
+	case T_MUD:
+		if (wIdentity != M_MUDMOTHER) {
+			return true;
+		}
+		break;
+	case T_GEL:
+		if (wIdentity != M_GELMOTHER) {
+			return true;
+		}
+		break;
+	case T_BRIAR_DEAD:
+	case T_BRIAR_LIVE:
+	case T_BRIAR_SOURCE:
+	case T_LIGHT:
+		return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 void CDbRoom::ExpandBriars(CCueEvents& CueEvents)
 //Process one iteration of briar growth.
 {
