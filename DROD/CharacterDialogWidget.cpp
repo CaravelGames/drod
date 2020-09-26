@@ -4420,7 +4420,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, L"Wait for Remains");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
