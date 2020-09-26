@@ -2157,15 +2157,22 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForRemains:
 			{
 				//Wait until a specified dead monster type is in rect (x,y,w,h).
+				bool bFound = false;
 				getCommandParams(command, px, py, pw, ph, pflags);
 				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
 					STOP_COMMAND;
 				if (pflags == M_NONE)
 					STOP_COMMAND;
 
-				if (!room.IsMonsterRemainsInRectOfType(px, py, px + pw, py + ph, pflags)) {
-					STOP_COMMAND;
+				if (pflags == M_FEGUNDO) {
+					// Fegundo remains are their own monster type, so special handling is required
+					bFound = room.IsMonsterInRectOfType(px, py, px + pw, py + ph, M_FEGUNDOASHES);
+				} else {
+					bFound = room.IsMonsterRemainsInRectOfType(px, py, px + pw, py + ph, pflags);
 				}
+
+				if (!bFound)
+					STOP_COMMAND;
 
 				bProcessNextCommand = true;
 			}
