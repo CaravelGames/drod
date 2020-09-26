@@ -36,13 +36,15 @@ class BuildUtil;
 class BuildUtil
 {
 public:
+	static bool bIsValidBuildTile(const UINT wTileNo);
+
 	static void BuildTilesAt(CDbRoom& room, const UINT tile, UINT x, UINT y, const UINT w, const UINT h, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame);
 
 private:
-	static bool BuildAnyTile(CDbRoom& room, UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
-	static bool BuildNormalTile(CDbRoom& room, UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+	static bool BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+	static bool BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 };
 
 #endif //...#ifndef BUILD_UTIL_H

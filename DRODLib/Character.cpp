@@ -3116,7 +3116,7 @@ void CCharacter::BuildMarker(const CCharacterCommand& command)
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
 	
-	if (!bIsValidBuildTile(pflags))
+	if (!BuildUtil::bIsValidBuildTile(pflags))
 		return;
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
@@ -3125,10 +3125,6 @@ void CCharacter::BuildMarker(const CCharacterCommand& command)
 
 	if (!room.CropRegion(px, py, endX, endY))
 		return;
-
-	ASSERT(bIsValidBuildTile(pflags));
-	if (!bIsValidBuildTile(pflags))
-		return; //We can't build the forbidden elements
 
 	for (UINT y = py; y <= endY; ++y) {
 		for (UINT x = px; x <= endX; ++x)
