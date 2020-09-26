@@ -333,146 +333,153 @@ static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_ACCESSORY12;}
 
 #define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 3)
 
+enum TILELAYERS {
+	LAYER_OPAQUE = 0,
+	LAYER_TRANSPARENT = 1,
+	LAYER_MONSTER = 2,
+	LAYER_FLOOR = 3
+};
+
 //Layer associated with each tile--0 is opaque layer, 1 is transparent layer,
 //    2 is monster layer, and 3 is the floor layer.
 static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 {
-	1, //T_EMPTY         0
-	0, //T_FLOOR         1
-	0, //T_PIT           2
-	0, //T_STAIRS        3
-	0, //T_WALL          4
-	0, //T_WALL_B        5
-	0, //T_DOOR_C        6
-	0, //T_DOOR_G        7
-	0, //T_DOOR_R        8
-	0, //T_DOOR_Y        9
-	0, //T_DOOR_YO       10
-	0, //T_TRAPDOOR      11
-	1, //T_OBSTACLE      12 //was in layer 0 before v2.0
-	3, //T_ARROW_N       13 //arrows were in layer 1 before v3.0
-	3, //T_ARROW_NE      14
-	3, //T_ARROW_E       15
-	3, //T_ARROW_SE      16
-	3, //T_ARROW_S       17
-	3, //T_ARROW_SW      18
-	3, //T_ARROW_W       19
-	3, //T_ARROW_NW      20
-	1, //T_HEALTH_MED    21
-	1, //T_HEALTH_BIG    22
-	1, //T_SCROLL        23
-	1, //T_ORB           24
-	2, //T_SNK_EW        25
-	2, //T_SNK_NS        26
-	2, //T_SNK_NW        27
-	2, //T_SNK_NE        28
-	2, //T_SNK_SW        29
-	2, //T_SNK_SE        30
-	2, //T_SNKT_S        31
-	2, //T_SNKT_W        32
-	2, //T_SNKT_N        33
-	2, //T_SNKT_E        34
-	1, //T_TAR           35
-	0, //T_CHECKPOINT    36
+	LAYER_TRANSPARENT, //T_EMPTY         0
+	LAYER_OPAQUE, //T_FLOOR         1
+	LAYER_OPAQUE, //T_PIT           2
+	LAYER_OPAQUE, //T_STAIRS        3
+	LAYER_OPAQUE, //T_WALL          4
+	LAYER_OPAQUE, //T_WALL_B        5
+	LAYER_OPAQUE, //T_DOOR_C        6
+	LAYER_OPAQUE, //T_DOOR_G        7
+	LAYER_OPAQUE, //T_DOOR_R        8
+	LAYER_OPAQUE, //T_DOOR_Y        9
+	LAYER_OPAQUE, //T_DOOR_YO       10
+	LAYER_OPAQUE, //T_TRAPDOOR      11
+	LAYER_TRANSPARENT, //T_OBSTACLE      12 //was in layer 0 before v2.0
+	LAYER_FLOOR, //T_ARROW_N       13 //arrows were in layer 1 before v3.0
+	LAYER_FLOOR, //T_ARROW_NE      14
+	LAYER_FLOOR, //T_ARROW_E       15
+	LAYER_FLOOR, //T_ARROW_SE      16
+	LAYER_FLOOR, //T_ARROW_S       17
+	LAYER_FLOOR, //T_ARROW_SW      18
+	LAYER_FLOOR, //T_ARROW_W       19
+	LAYER_FLOOR, //T_ARROW_NW      20
+	LAYER_TRANSPARENT, //T_HEALTH_MED    21
+	LAYER_TRANSPARENT, //T_HEALTH_BIG    22
+	LAYER_TRANSPARENT, //T_SCROLL        23
+	LAYER_TRANSPARENT, //T_ORB           24
+	LAYER_MONSTER, //T_SNK_EW        25
+	LAYER_MONSTER, //T_SNK_NS        26
+	LAYER_MONSTER, //T_SNK_NW        27
+	LAYER_MONSTER, //T_SNK_NE        28
+	LAYER_MONSTER, //T_SNK_SW        29
+	LAYER_MONSTER, //T_SNK_SE        30
+	LAYER_MONSTER, //T_SNKT_S        31
+	LAYER_MONSTER, //T_SNKT_W        32
+	LAYER_MONSTER, //T_SNKT_N        33
+	LAYER_MONSTER, //T_SNKT_E        34
+	LAYER_TRANSPARENT, //T_TAR           35
+	LAYER_OPAQUE, //T_CHECKPOINT    36
 
-	0, //T_DOOR_B        37
-	1, //T_POTION_SP     38
-	1, //T_BRIAR_SOURCE   39
-	1, //T_BRIAR_DEAD    40
-	1, //T_BRIAR_LIVE     41
-	3, //T_LIGHT_CEILING 42 //front end only -- show on f-layer menu
-	1, //T_BOMB          43
-	1, //T_FUSE          44
-	3, //T_NODIAGONAL    45 //was in layer 1 before v3.0
-	1, //T_TOKEN         46
-	0, //T_TUNNEL_N      47
-	0, //T_TUNNEL_S      48
-	1, //T_MIRROR        49
-	1, //T_ATK_UP        50
-	1, //T_DEF_UP        51
-	0, //T_PLATFORM_W    52
-	0, //T_PLATFORM_P    53
-	0, //T_FLOOR_M       54
-	0, //T_FLOOR_ROAD    55
-	0, //T_FLOOR_GRASS   56
-	0, //T_FLOOR_DIRT    57
-	0, //T_FLOOR_ALT     58
-	0, //T_WALL_M        59
-	1, //T_MUD           60
-	0, //T_STAIRS_UP     61
-	0, //T_WALL_H        62
-	0, //T_TUNNEL_E      63
-	0, //T_TUNNEL_W      64
-	0, //T_FLOOR_IMAGE   65
-	0,	//T_WALL2         66
-	0,	//T_WATER         67
-	0, //T_DOOR_GO       68
-	0, //T_DOOR_CO       69
-	0, //T_DOOR_RO       70
-	0, //T_DOOR_BO       71
-	0, //T_TRAPDOOR2     72
-	0, //T_GOO           73
-	1, //T_LIGHT			74
-	0, //T_HOT           75
-	1, //T_GEL           76
-	1, //T_MAP           77
-	0, //T_PRESSPLATE    78
-	0, //T_BRIDGE        79
-	0, //T_BRIDGE_H      80
-	0, //T_BRIDGE_V      81
-	0, //T_PIT_IMAGE     82
-	0, //T_WALL_IMAGE    83
-	3, //T_DARK_CEILING  84 //front end only -- show on f-layer menu
-	3, //T_WALLLIGHT     85 //front end only -- show on f-layer menu
-	1, //T_KEY           86
-	1, //T_SWORD         87
-	0, //T_DOOR_MONEY    88
-	1, //T_SHIELD        89
-	1, //T_HEALTH_SM     90
-	1, //T_ACCESSORY     91
+	LAYER_OPAQUE, //T_DOOR_B        37
+	LAYER_TRANSPARENT, //T_POTION_SP     38
+	LAYER_TRANSPARENT, //T_BRIAR_SOURCE   39
+	LAYER_TRANSPARENT, //T_BRIAR_DEAD    40
+	LAYER_TRANSPARENT, //T_BRIAR_LIVE     41
+	LAYER_FLOOR, //T_LIGHT_CEILING 42 //front end only -- show on f-layer menu
+	LAYER_TRANSPARENT, //T_BOMB          43
+	LAYER_TRANSPARENT, //T_FUSE          44
+	LAYER_FLOOR, //T_NODIAGONAL    45 //was in layer 1 before v3.0
+	LAYER_TRANSPARENT, //T_TOKEN         46
+	LAYER_OPAQUE, //T_TUNNEL_N      47
+	LAYER_OPAQUE, //T_TUNNEL_S      48
+	LAYER_TRANSPARENT, //T_MIRROR        49
+	LAYER_TRANSPARENT, //T_ATK_UP        50
+	LAYER_TRANSPARENT, //T_DEF_UP        51
+	LAYER_OPAQUE, //T_PLATFORM_W    52
+	LAYER_OPAQUE, //T_PLATFORM_P    53
+	LAYER_OPAQUE, //T_FLOOR_M       54
+	LAYER_OPAQUE, //T_FLOOR_ROAD    55
+	LAYER_OPAQUE, //T_FLOOR_GRASS   56
+	LAYER_OPAQUE, //T_FLOOR_DIRT    57
+	LAYER_OPAQUE, //T_FLOOR_ALT     58
+	LAYER_OPAQUE, //T_WALL_M        59
+	LAYER_TRANSPARENT, //T_MUD           60
+	LAYER_OPAQUE, //T_STAIRS_UP     61
+	LAYER_OPAQUE, //T_WALL_H        62
+	LAYER_OPAQUE, //T_TUNNEL_E      63
+	LAYER_OPAQUE, //T_TUNNEL_W      64
+	LAYER_OPAQUE, //T_FLOOR_IMAGE   65
+	LAYER_OPAQUE,	//T_WALL2         66
+	LAYER_OPAQUE,	//T_WATER         67
+	LAYER_OPAQUE, //T_DOOR_GO       68
+	LAYER_OPAQUE, //T_DOOR_CO       69
+	LAYER_OPAQUE, //T_DOOR_RO       70
+	LAYER_OPAQUE, //T_DOOR_BO       71
+	LAYER_OPAQUE, //T_TRAPDOOR2     72
+	LAYER_OPAQUE, //T_GOO           73
+	LAYER_TRANSPARENT, //T_LIGHT			74
+	LAYER_OPAQUE, //T_HOT           75
+	LAYER_TRANSPARENT, //T_GEL           76
+	LAYER_TRANSPARENT, //T_MAP           77
+	LAYER_OPAQUE, //T_PRESSPLATE    78
+	LAYER_OPAQUE, //T_BRIDGE        79
+	LAYER_OPAQUE, //T_BRIDGE_H      80
+	LAYER_OPAQUE, //T_BRIDGE_V      81
+	LAYER_OPAQUE, //T_PIT_IMAGE     82
+	LAYER_OPAQUE, //T_WALL_IMAGE    83
+	LAYER_FLOOR, //T_DARK_CEILING  84 //front end only -- show on f-layer menu
+	LAYER_FLOOR, //T_WALLLIGHT     85 //front end only -- show on f-layer menu
+	LAYER_TRANSPARENT, //T_KEY           86
+	LAYER_TRANSPARENT, //T_SWORD         87
+	LAYER_OPAQUE, //T_DOOR_MONEY    88
+	LAYER_TRANSPARENT, //T_SHIELD        89
+	LAYER_TRANSPARENT, //T_HEALTH_SM     90
+	LAYER_TRANSPARENT, //T_ACCESSORY     91
 
-	2, //M_ROACH         +0
-	2, //M_QROACH        +1
-	2, //M_REGG          +2
-	2, //M_GOBLIN        +3
-	2, //M_NEATHER       +4
-	2, //M_WWING         +5
-	2, //M_EYE           +6
-	2, //M_SERPENT       +7
-	2, //M_TARMOTHER     +8
-	2, //M_TARBABY       +9
-	2, //M_BRAIN         +10
-	2, //M_MIMIC         +11
-	2, //M_SPIDER        +12
-	2, //M_SERPENTG      +13
-	2, //M_SERPENTB      +14
-	2, //M_ROCKGOLEM     +15
-	2, //M_WATERSKIPPER  +16
-	2, //M_SKIPPERNEST   +17
-	2, //M_AUMTLICH      +18
-	2, //M_CLONE         +19
-	2, //M_DECOY         +20
-	2, //M_WUBBA         +21
-	2, //M_SEEP          +22
-	2, //M_PIRATE        +23
-	2, //M_HALPH         +24
-	2, //M_SLAYER        +25
-	2, //M_FEGUNDO       +26
-	2, //M_FEGUNDOASHES  +27
-	2, //M_GUARD         +28
-	2, //M_CHARACTER     +29
-	2, //M_MUDMOTHER     +30
-	2, //M_MUDBABY       +31
-	2, //M_GELMOTHER     +32
-	2, //M_GELBABY       +33
-	2, //M_CITIZEN       +34
-	2, //M_ROCKGIANT     +35
-	2, //M_MADEYE        +36
-	2, //M_GOBLINKING    +37
+	LAYER_MONSTER, //M_ROACH         +0
+	LAYER_MONSTER, //M_QROACH        +1
+	LAYER_MONSTER, //M_REGG          +2
+	LAYER_MONSTER, //M_GOBLIN        +3
+	LAYER_MONSTER, //M_NEATHER       +4
+	LAYER_MONSTER, //M_WWING         +5
+	LAYER_MONSTER, //M_EYE           +6
+	LAYER_MONSTER, //M_SERPENT       +7
+	LAYER_MONSTER, //M_TARMOTHER     +8
+	LAYER_MONSTER, //M_TARBABY       +9
+	LAYER_MONSTER, //M_BRAIN         +10
+	LAYER_MONSTER, //M_MIMIC         +11
+	LAYER_MONSTER, //M_SPIDER        +12
+	LAYER_MONSTER, //M_SERPENTG      +13
+	LAYER_MONSTER, //M_SERPENTB      +14
+	LAYER_MONSTER, //M_ROCKGOLEM     +15
+	LAYER_MONSTER, //M_WATERSKIPPER  +16
+	LAYER_MONSTER, //M_SKIPPERNEST   +17
+	LAYER_MONSTER, //M_AUMTLICH      +18
+	LAYER_MONSTER, //M_CLONE         +19
+	LAYER_MONSTER, //M_DECOY         +20
+	LAYER_MONSTER, //M_WUBBA         +21
+	LAYER_MONSTER, //M_SEEP          +22
+	LAYER_MONSTER, //M_PIRATE        +23
+	LAYER_MONSTER, //M_HALPH         +24
+	LAYER_MONSTER, //M_SLAYER        +25
+	LAYER_MONSTER, //M_FEGUNDO       +26
+	LAYER_MONSTER, //M_FEGUNDOASHES  +27
+	LAYER_MONSTER, //M_GUARD         +28
+	LAYER_MONSTER, //M_CHARACTER     +29
+	LAYER_MONSTER, //M_MUDMOTHER     +30
+	LAYER_MONSTER, //M_MUDBABY       +31
+	LAYER_MONSTER, //M_GELMOTHER     +32
+	LAYER_MONSTER, //M_GELBABY       +33
+	LAYER_MONSTER, //M_CITIZEN       +34
+	LAYER_MONSTER, //M_ROCKGIANT     +35
+	LAYER_MONSTER, //M_MADEYE        +36
+	LAYER_MONSTER, //M_GOBLINKING    +37
 
-	2, //T_SWORDSMAN     TOTAL+0
-	2, //T_NOMONSTER     TOTAL+1
-	3  //T_EMPTY_F       TOTAL+2
+	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
+	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
+	LAYER_FLOOR  //T_EMPTY_F       TOTAL+2
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
