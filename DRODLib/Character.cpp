@@ -302,6 +302,7 @@ void CCharacter::ChangeHoldForCommands(
 				break;
 				case CCharacterCommand::CC_WaitForEntityType:
 				case CCharacterCommand::CC_WaitForNotEntityType:
+				case CCharacterCommand::CC_WaitForRemains:
 					SyncCustomCharacterData(c.flags, pOldHold, pNewHold, info);
 				break;
 
@@ -574,6 +575,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForRemains:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -636,6 +638,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForRemains:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -2159,6 +2162,23 @@ void CCharacter::Process(
 				if ((command.command == CCharacterCommand::CC_WaitForEntityType && !bFound) ||
 					 (command.command == CCharacterCommand::CC_WaitForNotEntityType && bFound))
 					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_WaitForRemains:
+			{
+				//Wait until a specified dead monster type is in rect (x,y,w,h).
+				getCommandParams(command, px, py, pw, ph, pflags);
+				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+					STOP_COMMAND;
+				if (pflags == M_NONE)
+					STOP_COMMAND;
+
+				if (!room.IsMonsterRemainsInRectOfType(px, py, px + pw, py + ph, pflags)) {
+					STOP_COMMAND;
+				}
+
 				bProcessNextCommand = true;
 			}
 			break;
