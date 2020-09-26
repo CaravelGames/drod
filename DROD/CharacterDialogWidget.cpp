@@ -5208,7 +5208,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,           //CC_BEHAVIOR
-		MONSTER_REMAINS,    //CC_WaitForRemains
+		MONSTER_REMAINS     //CC_WaitForRemains
 	};
 
 	static const UINT NUM_LABELS = 29;
