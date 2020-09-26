@@ -346,6 +346,8 @@ public:
 	bool           IsMonsterInRectOfType(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const UINT wType,
 			const bool bConsiderNPCIdentity=false, const bool bUseNPCLogicalIdentity=false) const;
+	bool           IsMonsterRemainsInRectOfType(const UINT wLeft, const UINT wTop,
+		const UINT wRight, const UINT wBottom, const UINT wType) const;
 	bool           IsMonsterNextTo(const UINT wX, const UINT wY, const UINT wType) const;
 	bool           IsMonsterOfTypeAt(const UINT eType, const UINT wX, const UINT wY,
 			const bool bConsiderNPCIdentity=false, const bool bOnlyLiveMonsters=true) const;
