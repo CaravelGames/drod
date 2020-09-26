@@ -308,6 +308,18 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	if (!bValid)
 		return false;
 
+	const CCurrentGame* pCurrentGame = room.GetCurrentGame();
+	if (bIsWall(tile) || bIsCrumblyWall(tile) || bIsBriar(tile))
+	{
+		//If the build tile would fill a square, the tile must be vacant now.
+		CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+		if (pMonster || pCurrentGame->IsPlayerAt(x, y))
+		{
+			//Build tile is occupied and invalid.
+			return false;
+		}
+	}
+
 	const UINT wOldOTile = room.GetOSquare(x, y);
 	if (tile == wOldOTile && !bAllowSame)
 		return false;
@@ -368,22 +380,51 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	else if (wLayer == LAYER_TRANSPARENT) {
 		const UINT oldTTile = room.GetTSquare(x, y);
 		if (bIsTar(oldTTile) && tile != oldTTile) {
-			room.RemoveStabbedTar(x, y, CueEvents);
-			room.ConvertUnstableTar(CueEvents);
+			room.StabTar(x, y, CueEvents, true, NO_ORIENTATION);
+		}
+		else if (tile == T_BRIAR_SOURCE && tile != oldTTile) {
+			room.briars.insert(x, y);
+			//room.briars.forceRecalc();
+		}
+		else if (oldTTile == T_BRIAR_SOURCE && tile != oldTTile) {
+			room.briars.removeSource(x, y);
+			//room.briars.forceRecalc();
+		}
+		else if (oldTTile == T_BRIAR_LIVE && tile == T_BRIAR_DEAD) {
+			//this case isn't handled in briars.plotted() via room plot below
+			//room.briars.forceRecalc();
+		}
+
+		//Update room tarstuff state
+		if (bIsTar(tile)) {
+			if (pCurrentGame->IsPlayerAt(x, y)) {
+				return false;
+			}
+
+			if (pCurrentGame->pRoom->GetMonsterAtSquare(x, y) != NULL) {
+				return false;
+			}
+
+			//room.bTarWasBuilt = true;
+
+			if (!bIsTar(room.GetTSquare(x, y))) {
+				if (room.wTarLeft == 0) {
+					room.ToggleBlackGates(CueEvents);
+				}
+				++room.wTarLeft;
+			}
 		}
 	}
 
 	room.Plot(x, y, tile);
 
 	//When placing a hole, things might fall.
-	const CCurrentGame* pCurrentGame = room.GetCurrentGame();
 	if ((bIsPit(tile) || bIsWater(tile) || wLayer == LAYER_TRANSPARENT) &&
 		pCurrentGame->wTurnNo > 0) //don't allow player falling on room entrance
 	{
 		room.CheckForFallingAt(x, y, CueEvents);
 		room.ConvertUnstableTar(CueEvents);
 	}
-
 
 	//When o-layer changes, refresh bridge supports.
 	if (wLayer == LAYER_OPAQUE)
