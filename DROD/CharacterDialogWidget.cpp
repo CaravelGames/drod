@@ -172,6 +172,7 @@ const UINT TAG_IMAGEOVERLAYTEXT = 890;
 
 const UINT TAG_WEAPON_LISTBOX2 = 883;
 const UINT TAG_BEHAVIOR_LISTBOX = 882;
+const UINT TAG_REMAINS_LISTBOX = 881;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1597,6 +1598,16 @@ void CCharacterDialogWidget::AddCommandDialog()
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Puff, g_pTheDB->GetMessageText(MID_FluffBaby));
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Stalwart, g_pTheDB->GetMessageText(MID_Stalwart));
 	this->pNaturalTargetTypesListBox->SelectLine(0);
+
+	this->pRemainsListBox = new CListBoxWidget(TAG_REMAINS_LISTBOX,
+		X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_GRAPHICLISTBOX2, 3 * LIST_LINE_HEIGHT + 4);
+	this->pAddCommandDialog->AddWidget(this->pRemainsListBox);
+	this->pRemainsListBox->SortAlphabetically(true);
+	this->pRemainsListBox->SetHotkeyItemSelection(true);
+	this->pRemainsListBox->AddItem(M_ROCKGOLEM, g_pTheDB->GetMessageText(MID_RockGolem));
+	this->pRemainsListBox->AddItem(M_FEGUNDO, g_pTheDB->GetMessageText(MID_Fegundo));
+	this->pRemainsListBox->AddItem(M_CONSTRUCT, g_pTheDB->GetMessageText(MID_Construct));
+	this->pRemainsListBox->SelectLine(0);
 
 	this->pWaitForItemsListBox = new CListBoxWidget(TAG_WAITFORITEMLISTBOX,
 		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
@@ -3477,6 +3488,26 @@ const
 			wstr += wszRightParen;
 		}
 		break;
+		case CCharacterCommand::CC_WaitForRemains:
+		{
+			WSTRING charName = this->pRemainsListBox->GetTextForKey(command.flags);
+			wstr += charName.length() ? charName : wszQuestionMark;
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		}
+		break;
 		case CCharacterCommand::CC_WaitForDoorTo:
 			wstr += this->pOpenCloseListBox->GetTextForKey(command.w);
 			wstr += wszSpace;
@@ -4389,6 +4420,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, L"Wait for Remains");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
@@ -5028,7 +5060,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 51;
+	static const UINT NUM_WIDGETS = 52;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5045,7 +5077,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5088,6 +5120,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMAGEOVERLAY[] =  { TAG_IMAGEOVERLAYTEXT, 0 };
 	static const UINT FACE_TOWARDS[] = { TAG_ONOFFLISTBOX, TAG_WAITFLAGSLISTBOX, 0 };
 	static const UINT NATURAL_TARGET[] = { TAG_NATURAL_TARGET_TYPES, 0 };
+	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5174,7 +5207,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
-		BEHAVIOR            //CC_BEHAVIOR
+		BEHAVIOR,           //CC_BEHAVIOR
+		MONSTER_REMAINS,    //CC_WaitForRemains
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5299,7 +5333,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_GetNaturalTarget
 		NO_LABELS,           //CC_GetEntityDirection
 		NO_LABELS,			//CC_WaitForWeapon
-		NO_LABELS           //CC_Behavior
+		NO_LABELS,          //CC_Behavior
+		NO_LABELS           //CC_WaitForRemains
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5740,6 +5775,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
 			this->pCommand->flags = this->pAddCommandGraphicListBox->GetSelectedItem();
+			QueryRect();
+		break;
+
+		case CCharacterCommand::CC_WaitForRemains:
+			this->pCommand->flags = this->pRemainsListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
@@ -6596,6 +6636,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pAddCommandGraphicListBox->SelectItem(this->pCommand->flags);
 		break;
 
+		case CCharacterCommand::CC_WaitForRemains:
+			this->pRemainsListBox->SelectItem(this->pCommand->flags);
+		break;
+
 		case CCharacterCommand::CC_VarSet:
 		case CCharacterCommand::CC_WaitForVar:
 		{
@@ -7125,6 +7169,19 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
 		parseMandatoryOption(pCommand->flags, this->pAddCommandGraphicListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+
+	case CCharacterCommand::CC_WaitForRemains:
+		parseMandatoryOption(pCommand->flags, this->pRemainsListBox, bFound);
 		skipComma;
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
@@ -7756,6 +7813,18 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_WaitForNotEntityType:
 	{
 		WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(c.flags);
+		wstr += charName.length() ? charName : wszQuestionMark;
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	}
+	break;
+
+	case CCharacterCommand::CC_WaitForRemains:
+	{
+		WSTRING charName = this->pRemainsListBox->GetTextForKey(c.flags);
 		wstr += charName.length() ? charName : wszQuestionMark;
 		wstr += wszComma;
 		concatNumWithComma(c.x);
