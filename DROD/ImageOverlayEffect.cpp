@@ -459,6 +459,11 @@ void CImageOverlayEffect::FinishCommand(const ImageOverlayCommand& command, cons
 			this->angle = clipAngle(ce.startAngle + command.val[0]);
 			this->bPrepareAlteredImage = true;
 			break;
+		case ImageOverlayCommand::TurnDuration:
+			// This is required for any time-based command that runs afterwards to correctly
+			// calculate the start time
+			this->startOfNextEffect = SDL_GetTicks();
+			break;
 		default: break;
 	}
 }
