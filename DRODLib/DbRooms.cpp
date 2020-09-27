@@ -3786,6 +3786,43 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::IsMonsterRemainsInRectOfType(
+//Determines if any dead monster of specified type is in a rectangular area of the room.
+//
+//Params:
+	const UINT wLeft, const UINT wTop,     //(in)   Rect to find monsters in.
+	const UINT wRight, const UINT wBottom, //     Boundaries are inclusive.
+	const UINT wType)					   //(in) monster type
+//
+//Returns:
+//True if there is a monster in the rect, false otherwise.
+const
+{
+	ASSERT(wLeft <= wRight && wTop <= wBottom);
+
+	//Check each square for a monster (or monster piece).
+	CMonster** pMonsters;
+
+	ASSERT(wRight < this->wRoomCols&& wBottom < this->wRoomRows);
+	for (UINT y = wTop; y <= wBottom; ++y)
+	{
+		pMonsters = &(this->pMonsterSquares[ARRAYINDEX(wLeft, y)]);
+		for (UINT x = wLeft; x <= wRight; ++x)
+		{
+			if (*pMonsters && !(*pMonsters)->IsAlive())
+			{
+				if ((*pMonsters)->wType == wType)
+					return true;
+			}
+			++pMonsters;
+		}
+	}
+
+	//No monster in rect.
+	return false;
+}
+
+//*****************************************************************************
 bool CDbRoom::IsMonsterNextTo(
 //Returns: true if monster of specified type is adjacent to (not on) specified square
 //
