@@ -150,76 +150,31 @@ CS_error:
 	// Grayscale with alpha isn't supported by SDL, so make it RGBA
 	if (colortype == PNG_COLOR_TYPE_GRAY_ALPHA)
 		png_set_gray_to_rgb(pPNG);
-
-	// Got transparency ?
-	if (png_get_valid(pPNG, pInfo, PNG_INFO_tRNS))
-	{
-		png_bytep trans;
-		int num_trans;
-		png_get_tRNS(pPNG, pInfo, &trans, &num_trans, &trans_values);
-
-		// Convert transparency to colorkey and/or surface alpha, if possible
-		if (colortype == PNG_COLOR_TYPE_PALETTE)
-		{
-			int i = num_trans, ck = -1;
-			while (i--) {
-				if (trans[i] == 0)
-					ck = i;
-				else if (surfalpha < 0)
-					surfalpha = trans[i];
-				else if (trans[i] != surfalpha)
-				{
-					surfalpha = -1;
-					break;
-				}
-			}
-			if (i == -1)
-				colorkey = ck;
-			else
-				png_set_tRNS_to_alpha(pPNG);
-		}
-		else colorkey = 0; // Need a surface to set this
-	}
+	if (colortype == PNG_COLOR_TYPE_PALETTE)
+		png_set_tRNS_to_alpha(pPNG);
 
 	// Done with transformation setup, update info
 	png_read_update_info(pPNG, pInfo);
 	png_get_IHDR(pPNG, pInfo, &width, &height, &bitdepth, &colortype, &interlace, NULL, NULL);
 
-	// Create the SDL surface
-	if (colortype == PNG_COLOR_TYPE_PALETTE)
-	{
-		if ((surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth, 0, 0, 0, 0)))
-		{
-			if (colorkey >= 0)
-			{
-				SetColorKey(surface, SDL_TRUE, colorkey);
-				SDL_SetSurfaceRLE(surface, 1);
-			}
-			if (surfalpha >= 0)
-				SDL_SetSurfaceAlphaMod(surface, surfalpha);
-		}
-	}
-	else
-	{
-		const int channels = png_get_channels(pPNG, pInfo);
+	const int channels = png_get_channels(pPNG, pInfo);
 #if (SDL_BYTEORDER != SDL_LIL_ENDIAN)
-		if (channels == 4)
-			surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth * 4,
-				0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-		else
-			surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth * channels,
-				0x00ff0000, 0x0000ff00, 0x000000ff, 0);
-#else
+	if (channels == 4)
+		surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth * 4,
+			0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	else
 		surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth * channels,
-			0x000000ff, 0x0000ff00, 0x00ff0000, channels == 4 ? 0xff000000 : 0);
+			0x00ff0000, 0x0000ff00, 0x000000ff, 0);
+#else
+	surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, bitdepth * channels,
+		0x000000ff, 0x0000ff00, 0x00ff0000, channels == 4 ? 0xff000000 : 0);
 #endif
-		if (surface && !colorkey)
-		{
-			SetColorKey(surface, SDL_TRUE,
-				SDL_MapRGB(surface->format, trans_values->red,
-					trans_values->green, trans_values->blue));
-			SDL_SetSurfaceRLE(surface, 1);
-		}
+	if (surface && !colorkey)
+	{
+		SetColorKey(surface, SDL_TRUE,
+			SDL_MapRGB(surface->format, trans_values->red,
+				trans_values->green, trans_values->blue));
+		SDL_SetSurfaceRLE(surface, 1);
 	}
 
 	// Read image directly into the SDL surface
