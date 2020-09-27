@@ -4441,6 +4441,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		CueEvents.Clear();	//clear after death sequence (whether move is undone or not)
 		//but before room restart so speech on room start can be retained
 
+		// Image overlay opacity must be restored, otherwise they'll keep their opacity while playing until they are regenerated
+		this->pRoomWidget->SetOpacityForEffectsOfType(EIMAGEOVERLAY, 1.0f);
+
 		ASSERT(!this->pCurrentGame->bIsGameActive || bUndoDeath);
 		if (GetScreenType() == SCR_Demo)
 			return eNextScreen;	//stop showing demo on death
