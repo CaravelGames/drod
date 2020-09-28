@@ -4053,6 +4053,8 @@ const
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_While:
+		case CCharacterCommand::CC_WhileEnd:
 		case CCharacterCommand::CC_Return:
 		break;
 
@@ -4378,6 +4380,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIf, g_pTheDB->GetMessageText(MID_IfElseIf));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_While, L"While ...");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WhileEnd, L"While End");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Behavior, g_pTheDB->GetMessageText(MID_Behavior));
@@ -5016,6 +5020,8 @@ void CCharacterDialogWidget::SetCommandColor(
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_While:
+		case CCharacterCommand::CC_WhileEnd:
 			pListBox->SetItemColorAtLine(line, DarkBlue);
 		break;
 		case CCharacterCommand::CC_VarSet:
@@ -5208,7 +5214,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,           //CC_BEHAVIOR
-		MONSTER_REMAINS     //CC_WaitForRemains
+		MONSTER_REMAINS,    //CC_WaitForRemains
+		NO_WIDGETS,         //CC_While
+		NO_WIDGETS          //CC_WhileEnd
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5334,7 +5342,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,           //CC_GetEntityDirection
 		NO_LABELS,			//CC_WaitForWeapon
 		NO_LABELS,          //CC_Behavior
-		NO_LABELS           //CC_WaitForRemains
+		NO_LABELS,          //CC_WaitForRemains
+		NO_LABELS,          //CC_While
+		NO_LABELS           //CC_WhileEnd
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6348,6 +6358,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_While:
+		case CCharacterCommand::CC_WhileEnd:
 		case CCharacterCommand::CC_Return:
 			AddCommand();
 		break;
@@ -6752,6 +6764,8 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_While:
+		case CCharacterCommand::CC_WhileEnd:
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_GetEntityDirection:
@@ -7045,6 +7059,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_IfElse:
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
+	case CCharacterCommand::CC_While:
+	case CCharacterCommand::CC_WhileEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForCleanLevel:
@@ -7700,6 +7716,8 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_IfElse:
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
+	case CCharacterCommand::CC_While:
+	case CCharacterCommand::CC_WhileEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForCleanLevel:
