@@ -79,6 +79,7 @@ drodrpg/DRODUtil/Release-Temp/
 **/*.exe
 **/*.vcxproj.user
 **/*.vcxproj.filters
+!DRODLibTests/DRODLibTest.2019.vcxproj.filters
 **/*.suo
 **/*.sdf
 **/*.opensdf

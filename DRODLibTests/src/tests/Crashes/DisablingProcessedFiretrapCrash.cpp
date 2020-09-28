@@ -12,7 +12,7 @@ using namespace std;
 TEST_CASE("Disabling currently processed firetrap should no longer crash the game", "[game]") {
 	RoomBuilder::ClearRoom();
 
-	SECTION("Make sure bomb was fired and do not crash!"){
+	SECTION("Make sure bomb was fired and did not crash!"){
 		RoomBuilder::Plot(T_FIRETRAP, 10, 10);
 		RoomBuilder::Plot(T_FIRETRAP, 11, 10);
 		RoomBuilder::Plot(T_BOMB, 10, 10);
