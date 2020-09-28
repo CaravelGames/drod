@@ -2893,7 +2893,8 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_BuildTile:
 			{
 				//Build game element (flags) in rect (x,y,w,h).
-				BuildTiles(command, CueEvents);
+				if (!BuildTiles(command, CueEvents))
+					STOP_COMMAND;
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3015,14 +3016,14 @@ Finish:
 }
 
 //*****************************************************************************
-void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents)
+bool CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents)
 //Build the specified game element (flags) in rect (x,y,w,h).
 {
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
-	BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
+	return BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
 }
 
 //*****************************************************************************
