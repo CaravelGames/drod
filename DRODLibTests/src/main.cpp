@@ -14,6 +14,8 @@ int main(int argc, char* const argv[])
 
 	int result = Catch::Session().run(argc, argv);
 
+	CTestDb::Teardown();
+
 	system("pause");
 
 	return result;
