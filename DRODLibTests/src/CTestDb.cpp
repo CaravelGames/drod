@@ -39,6 +39,14 @@ void CTestDb::Init(int argc, char* const argv[])
 	CTestDb::InitializeEntrance();
 }
 
+void CTestDb::Teardown()
+{
+	CTestDb::db->Rooms.Delete(CTestDb::globalRoomID);
+	CTestDb::db->Levels.Delete(CTestDb::globalLevelID);
+	CTestDb::db->Holds.Delete(CTestDb::globalHoldID);
+	CTestDb::db->Players.Delete(CTestDb::globalPlayerID, false);
+}
+
 CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UINT playerO){
 	CCueEvents CueEvents;
 
@@ -92,7 +100,7 @@ void CTestDb::InitializeDb()
 void CTestDb::InitializePlayer()
 {
 	CTestDb::player = CTestDb::db->Players.GetNew();
-	const WCHAR NameText[] = { We('T'), We('e'), We('s'), We('t') };
+	const WCHAR NameText[] = { We('_'), We('_'), We('T'), We('e'), We('s'), We('t'), We(0) };
 	CTestDb::player->NameText = NameText;
 	CTestDb::player->CNetNameText = wszEmpty;
 	CTestDb::player->CNetPasswordText = wszEmpty;
@@ -105,7 +113,7 @@ void CTestDb::InitializeHold()
 {
 	CTestDb::hold = CTestDb::db->Holds.GetNew();
 
-	const WCHAR NameText[] = { We('T'), We('e'), We('s'), We('t') };
+	const WCHAR NameText[] = { We('_'), We('_'), We('T'), We('e'), We('s'), We('t'), We(0) };
 	CTestDb::hold->NameText = NameText;
 	CTestDb::hold->DescriptionText = L"";
 	CTestDb::hold->dwPlayerID = CTestDb::globalPlayerID;
@@ -128,7 +136,7 @@ void CTestDb::InitializeLevel()
 	//Note: pLevel->dwHoldID was already set to match its containing hold
 	//in the call to CDbLevels::GetNew().
 	CTestDb::level->dwPlayerID = CTestDb::globalPlayerID;
-	const WCHAR NameText[] = { We('T'), We('e'), We('s'), We('t') };
+	const WCHAR NameText[] = { We('_'), We('_'), We('T'), We('e'), We('s'), We('t'), We(0) };
 	CTestDb::level->NameText = NameText;
 
 	//Save the new level.
