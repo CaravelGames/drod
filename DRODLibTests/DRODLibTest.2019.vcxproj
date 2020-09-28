@@ -256,6 +256,14 @@
     <ClCompile Include="src\RoomBuilder.cpp" />
     <ClCompile Include="src\Runner.cpp" />
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedSlayers.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedStalwarts.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
+    <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">
