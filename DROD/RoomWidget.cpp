@@ -1532,6 +1532,19 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		}
 	}
 
+	// T-Covered tiles.
+	const UINT tCoveredTile = this->pRoom->GetCoveredTSquare(wX, wY);
+	if (tCoveredTile != T_EMPTY)
+	{
+		switch (tCoveredTile)
+		{
+			case T_TOKEN:
+				mid = GetTokenMID(this->pRoom->GetTParam(wX, wY)); break;
+			default: mid = TILE_MID[tCoveredTile]; break;
+		}
+		AppendLine(mid);
+	}
+
 	//Flat layer.
 	const UINT fTile = this->pRoom->GetFSquare(wX, wY);
 	if (fTile != 0)
