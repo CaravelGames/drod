@@ -7599,6 +7599,39 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 	return this->dwSavedGameID;
 }
 
+//Only call this on a temporary object, prior to temporary room preview in the front-end.
+//Returns: whether prep operation succeeded
+bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
+{
+	SaveExploredRoomData(*this->pRoom); //so current room can be viewed while panning the map
+
+	this->pPlayer->wIdentity = this->pPlayer->wAppearance = M_NONE; //not in room
+
+	SetRoomStartToPlayer(); //applies current stats for displaying temp rooms
+
+	//Get current room state.
+	delete this->pRoom;
+	this->pRoom = g_pTheDB->Rooms.GetByID(roomID);
+	if (!this->pRoom) {
+		return false;
+	}
+
+	CCueEvents Ignored;
+	RestartRoom(Ignored);
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ResolveLogicalIdentity(this->pHold);
+		}
+	}
+
+	this->pRoom->SetSwordsSheathed();
+
+	return true;
+}
+
 //***************************************************************************************
 /*
 UINT CCurrentGame::WriteCurrentRoomDemo(

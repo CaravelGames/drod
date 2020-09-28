@@ -346,6 +346,8 @@ public:
 //	UINT     WriteCurrentRoomDieDemo();
 	UINT     WriteScoreCheckpointSave(const WSTRING& name);
 
+	bool     PrepTempGameForRoomDisplay(const UINT roomID);
+
 	CDbRoom *   pRoom;
 	CDbLevel *  pLevel;
 	CDbHold *   pHold;
