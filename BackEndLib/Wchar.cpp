@@ -560,7 +560,7 @@ int _Wtoi(const WCHAR* wsz)
 }
 
 //*****************************************************************************
-WCHAR* _itoW(int value, WCHAR* wcz, int radix)
+WCHAR* _itoW(int value, WCHAR* wcz, int radix, int bufferLength)
 {
 	int i = 0;
 	bool bNegative = false;
@@ -568,12 +568,17 @@ WCHAR* _itoW(int value, WCHAR* wcz, int radix)
 	{
 		value = -value;
 		bNegative = true;
+		bufferLength--; // We have one character fewers for numbers because we need negative sign
 	}
+	bufferLength--; // Make space for null termination char
 	do {
 		int val = value % radix;
 		if (val < 10)
 			buffer[i++] = (value % radix) + '0';
 		else buffer[i++] = (value % radix) - 10 + 'A';
+
+		if (i >= bufferLength) // Ran out of space in the buffer
+			break;
 	} while ((value /= radix) > 0);
 	if (bNegative)
 		buffer[i++] = '-';

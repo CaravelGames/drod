@@ -129,7 +129,7 @@ bool isWInteger(const WCHAR* wcz);
 bool isInteger(const char* pcz);
 
 int      _Wtoi(const WCHAR* wsz);
-WCHAR*   _itoW(int value, WCHAR* wcz, int radix);
+WCHAR*   _itoW(int value, WCHAR* wcz, int radix, int bufferLength = INT_MAX);
 
 UINT     WCSlen(const WCHAR* wsz)  FUNCATTR_PURE;
 int      WCScmp(const WCHAR* pwcz1, const WCHAR* pwcz2)  FUNCATTR_PURE;
