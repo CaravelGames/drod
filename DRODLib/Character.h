@@ -110,6 +110,7 @@ public:
 	void   ImportText(const char** atts);
 
 	void           FailedIfCondition();
+	void           FailedWhileCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
@@ -280,6 +281,7 @@ private:
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
+	bool bWhileBlock;
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 

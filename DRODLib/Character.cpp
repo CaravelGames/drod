@@ -159,6 +159,7 @@ CCharacter::CCharacter(
 
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
+	, bWhileBlock(false)
 	, wLastSpeechLineNumber(0)
 
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
@@ -1165,7 +1166,7 @@ void CCharacter::Process(
 	//don't require a turn to execute (e.g., visibility, gotos, etc.).
 	bool bExecuteNoMoveCommands = pGame->ExecutingNoMoveCommands();
 
-	this->bWaitingForCueEvent = this->bIfBlock = false;
+	this->bWaitingForCueEvent = this->bIfBlock = this->bWhileBlock = false;
 	this->wSwordMovement = NO_ORIENTATION;
 	this->wJumpLabel = 0;
 
@@ -2636,6 +2637,8 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_While:
+				this->bWhileBlock = true;
 			case CCharacterCommand::CC_If:
 				//Begin a conditional block if the next command is satisfied.
 				//If it is not satisfied, the code block will be skipped.
@@ -2674,6 +2677,36 @@ void CCharacter::Process(
 				//Ends a conditional If or IfElse block.
 				bProcessNextCommand = true;
 				this->bParseIfElseAsCondition = false;
+			break;
+			case CCharacterCommand::CC_WhileEnd:
+			{
+				UINT wCommandIndex = this->wCurrentCommandIndex - 1;
+				UINT wNestingDepth = 0;
+				bool bScanning = true;
+
+				do {
+					if (wCommandIndex == -1) //No matching while found
+						break;
+
+					CCharacterCommand scanCommand = this->commands[wCommandIndex];
+					switch (scanCommand.command) {
+					case CCharacterCommand::CC_WhileEnd:
+						++wNestingDepth; //Entering a nested while block
+						break;
+					case CCharacterCommand::CC_While:
+						if (wNestingDepth-- == 0)	//exiting a while block
+							bScanning = false;  //found the end of the while block
+						break;
+					}
+
+					--wCommandIndex;
+				} while (bScanning);
+
+				if (!bScanning)
+					this->wCurrentCommandIndex = wCommandIndex; //Jump to matched while
+
+				bProcessNextCommand = true;
+			}
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
@@ -3170,8 +3203,13 @@ void CCharacter::Process(
 			this->wJumpLabel = 0;
 			this->bIfBlock = false;
 		}
-		else if (this->bIfBlock) //arriving here indicates If condition failed
-			FailedIfCondition();
+		else if (this->bIfBlock) { //arriving here indicates If condition failed
+			if (this->bWhileBlock) {
+				FailedWhileCondition();
+			} else {
+				FailedIfCondition();
+			}
+		}
 
 		//Stop script if more than a certain number of commands have played through
 		//on this turn, indicating a probable infinite loop.
@@ -3409,7 +3447,7 @@ void CCharacter::CriticalNPCDied(CCueEvents& CueEvents)
 void CCharacter::FailedIfCondition()
 //An if condition failed.  Move command execution pointer past the if block.
 {
-	ASSERT(this->bIfBlock);
+	ASSERT(this->bIfBlock && !this->bWhileBlock);
 
 	this->bIfBlock = false;
 	this->bParseIfElseAsCondition = false;
@@ -3450,6 +3488,43 @@ void CCharacter::FailedIfCondition()
 		++this->wCurrentCommandIndex;
 	} while (bScanning);
 
+}
+
+//*****************************************************************************
+void CCharacter::FailedWhileCondition()
+//A while condition failed.  Move command execution pointer past the while block.
+{
+	ASSERT(this->bIfBlock && this->bWhileBlock);
+
+	this->bIfBlock = false;
+	this->bWhileBlock = false;
+
+	//Scan until the end of the while block is encountered.
+	UINT wNestingDepth = 0;
+	bool bScanning = true;
+
+	do
+	{
+		if (this->wCurrentCommandIndex >= this->commands.size())
+			return; //block continued to the end of the script
+
+		CCharacterCommand& command = this->commands[this->wCurrentCommandIndex];
+		switch (command.command)
+		{
+		case CCharacterCommand::CC_While:
+			++wNestingDepth;  //entering a nested while block
+			break;
+		case CCharacterCommand::CC_WhileEnd:
+			if (wNestingDepth-- == 0)	//exiting a while block
+				bScanning = false;  //found the end of the while block
+			break;
+		default: break;
+		}
+		++this->wCurrentCommandIndex;
+	} while (bScanning);
+
+	// Move on to the next command since WhileEnd does something
+	++this->wCurrentCommandIndex;
 }
 
 //*****************************************************************************

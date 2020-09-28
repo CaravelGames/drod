@@ -302,6 +302,8 @@ public:
 		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
 		CC_Behavior,			// Set behavior X on or off.
 		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
+		CC_While,               //Begin a while block if the next command is statified. Return point for WhileEnd command
+		CC_WhileEnd,            //Return to the starting command of a while block
 
 		CC_Count
 	};
