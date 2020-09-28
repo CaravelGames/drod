@@ -4399,8 +4399,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIf, g_pTheDB->GetMessageText(MID_IfElseIf));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_While, L"While ...");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WhileEnd, L"While End");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_While, g_pTheDB->GetMessageText(MID_While));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WhileEnd, g_pTheDB->GetMessageText(MID_WhileEnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Behavior, g_pTheDB->GetMessageText(MID_Behavior));
