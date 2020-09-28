@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp">
+      <Filter>Tests\Crashes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\catch.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{b1886f84-672c-490e-afc0-8c7f85842473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Crashes">
+      <UniqueIdentifier>{36ff5018-d6ba-418b-b22e-c5d9c4984e47}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
