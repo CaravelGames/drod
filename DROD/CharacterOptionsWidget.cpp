@@ -60,6 +60,7 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);
+	this->pSequenceTextBox->AddHotkey(SDLK_RETURN, TAG_SAVE);
 
 	AddWidget(this->pSequenceTextBox);
 }
@@ -95,14 +96,11 @@ void CCharacterOptionsDialog::OnKeyDown(
 	const UINT /*dwTagNo*/,       //(in)   Widget that event applied to.
 	const SDL_KeyboardEvent &Key) //(in)   Event.
 {
-	//Trap ESC so it doesn't close the parent dialog.
-	if (Key.keysym.sym == SDLK_ESCAPE)
+	switch (Key.keysym.sym) 
 	{
-		//CWidget *pWidget = GetWidget(TAG_OK2);
-		//if (!pWidget)
-		//	pWidget = GetWidget(TAG_OK);
-		//if (pWidget)
-		//	OnClick(pWidget->GetTagNo()); //deactivate
-		//return;
+		case SDLK_ESCAPE:
+			Deactivate();
+			dwDeactivateValue = CCharacterOptionsDialog::TAG_CANCEL;
+			break;
 	}
 }
