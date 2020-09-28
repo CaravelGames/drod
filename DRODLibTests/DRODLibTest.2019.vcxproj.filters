@@ -5,6 +5,30 @@
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp">
       <Filter>Tests\Crashes</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedSlayers.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedStalwarts.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -15,6 +39,15 @@
     </Filter>
     <Filter Include="Tests\Crashes">
       <UniqueIdentifier>{36ff5018-d6ba-418b-b22e-c5d9c4984e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters">
+      <UniqueIdentifier>{cb8dc739-4e76-427a-a239-6aa27710cf0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\ArmedMonsters">
+      <UniqueIdentifier>{d1c44d27-e92c-4676-8364-469be2717a51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Aumtlich">
+      <UniqueIdentifier>{87c43398-97ec-4e67-8bf0-b09bf658aaa8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
