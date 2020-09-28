@@ -5989,7 +5989,7 @@ void CGameScreen::ShowRoomTemporarily(const UINT roomID)
 	pTempGame->bSwordsmanOutsideRoom = true;
 	pTempGame->CompletedScripts = this->pCurrentGame->CompletedScripts;
 	pTempGame->ConqueredRooms = this->pCurrentGame->ConqueredRooms;
-	pTempGame->stats = this->pCurrentGame->stats;
+	pTempGame->statsAtRoomStart = this->pCurrentGame->statsAtRoomStart;
 	pRoom->SetCurrentGame(pTempGame);
 	pTempGame->SetTurn(0, CueEvents);
 
