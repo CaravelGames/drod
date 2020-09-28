@@ -167,7 +167,7 @@ bool CTemporalClone::OnStabbed(
 )
 {
 	if ((this->wIdentity == M_WUBBA || this->wIdentity == M_FLUFFBABY)
-		 && weaponType != WeaponType::WT_Firetrap) {
+		 && weaponType != WT_Firetrap) {
 		// Wubbas and Puffs can only be killed by Firetrap stabs.
 		return false;
 	}

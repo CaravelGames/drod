@@ -358,19 +358,11 @@ SOURCE=.\ImportInfo.h
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\Ant.cpp
+SOURCE=.\Aumtlich.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Ant.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\AntHill.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\AntHill.h
+SOURCE=.\Aumtlich.h
 # End Source File
 # Begin Source File
 
@@ -454,6 +446,22 @@ SOURCE=.\EvilEye.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Fegundo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Fegundo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\FegundoAshes.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\FegundoAshes.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\FluffBaby.cpp
 # End Source File
 # Begin Source File
@@ -467,14 +475,6 @@ SOURCE=.\Gentryii.cpp
 # Begin Source File
 
 SOURCE=.\Gentryii.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Ghost.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Ghost.h
 # End Source File
 # Begin Source File
 
@@ -562,22 +562,6 @@ SOURCE=.\Neather.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Phoenix.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Phoenix.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\PhoenixAshes.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PhoenixAshes.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\PlayerDouble.cpp
 # End Source File
 # Begin Source File
@@ -626,6 +610,22 @@ SOURCE=.\RockGiant.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\RockGolem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\RockGolem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Seep.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Seep.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Serpent.cpp
 # End Source File
 # Begin Source File
@@ -647,14 +647,6 @@ SOURCE=.\Spider.cpp
 # Begin Source File
 
 SOURCE=.\Spider.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Splitter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Splitter.h
 # End Source File
 # Begin Source File
 
@@ -690,6 +682,22 @@ SOURCE=.\TemporalClone.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\Waterskipper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Waterskipper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaterskipperNest.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaterskipperNest.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\WraithWing.cpp
 # End Source File
 # Begin Source File
@@ -703,14 +711,6 @@ SOURCE=.\Wubba.cpp
 # Begin Source File
 
 SOURCE=.\Wubba.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\Zombie.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Zombie.h
 # End Source File
 # End Group
 # Begin Group "Items"
