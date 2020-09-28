@@ -4106,7 +4106,7 @@ const
 	if (pCommand->command == CCharacterCommand::CC_Label)  //labels always have indent 0
 		return wstr;
 
-	UINT wNestDepth = 0, wIndent = 2;  //insert past labels
+	UINT wIfNestDepth = 0, wWhileNestDepth = 0, wIndent = 2;  //insert past labels
 
 	bool bIfCondition = false;
 	for (COMMANDPTR_VECTOR::const_iterator command = commands.begin();
@@ -4117,16 +4117,26 @@ const
 		{
 			case CCharacterCommand::CC_If:
 				bIfCondition = true;
-				++wNestDepth; //indent inside of if block
+				++wIfNestDepth; //indent inside of if block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
 				bIfCondition = true;
 			break;
 			case CCharacterCommand::CC_IfEnd:
-				if (wNestDepth)
-					--wNestDepth;
+				if (wIfNestDepth)
+					--wIfNestDepth;
 				else
 					wstr += wszExclamation;	//superfluous IfEnd
+			break;
+			case CCharacterCommand::CC_While:
+				bIfCondition = true;
+				++wWhileNestDepth; //indent inside of while block
+			break;
+			case CCharacterCommand::CC_WhileEnd:
+				if (wWhileNestDepth)
+					--wWhileNestDepth;
+				else
+					wstr += wszExclamation;	//superfluous WhileEnd
 			break;
 			default: break;
 		}
@@ -4138,10 +4148,18 @@ const
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
-			if (wNestDepth)
-				--wNestDepth;
+			if (wIfNestDepth)
+				--wIfNestDepth;
 			else
 				wstr += wszExclamation;	//superfluous IfEnd
+			if (bIfCondition)
+				wstr += wszQuestionMark;	//questionable If condition
+		break;
+		case CCharacterCommand::CC_WhileEnd:
+			if (wWhileNestDepth)
+				--wWhileNestDepth;
+			else
+				wstr += wszExclamation;	//superfluous WhileEnd
 		//no break
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -4150,6 +4168,7 @@ const
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_While:
 		case CCharacterCommand::CC_Imperative:
 		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
@@ -4231,12 +4250,12 @@ const
 	if (bIfCondition)
 	{
 		wIndent += ifIndent;
-		if (bIfCondition)
-			if (wNestDepth)  //...but don't include If indentation in the code block
-				--wNestDepth;
+		if (wIfNestDepth)  //...but don't include If indentation in the code block
+			--wIfNestDepth;
 	}
 
-	wstr.insert(wstr.end(), wIndent + wNestDepth*tabSize, W_t(' '));
+	UINT wNestDepth = wIfNestDepth + wWhileNestDepth;
+	wstr.insert(wstr.end(), wIndent + wNestDepth *tabSize, W_t(' '));
 
 	return wstr;
 }
