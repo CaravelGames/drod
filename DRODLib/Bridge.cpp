@@ -228,6 +228,11 @@ void CBridge::process(CCueEvents &CueEvents)
 	if (this->droppingBridges.empty())
 		return; //no bridges are dropping
 
+	// Do not process bridges on turn 0, even after double placement
+	CCurrentGame* pCurrentGame = this->pRoom->GetCurrentGame();
+	if (pCurrentGame->wPlayerTurn == 0)
+		return;
+
 	//Drop any bridges marked without support now.
 	CIDSet indices;
 	for (vector<UINT>::const_iterator dropIndex = this->droppingBridges.begin();

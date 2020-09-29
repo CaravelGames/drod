@@ -69,3 +69,37 @@ void Assert::NoMonster(const char* file, int line, const UINT wExpectedX, const 
 
 	REQUIRE(monster == NULL);
 }
+
+void Assert::Tile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+	CDbRoom* room = game->pRoom;
+
+	const UINT baseTile = bConvertFakeElement(wExpectedType);
+	REQUIRE(IsValidTileNo(baseTile));
+	
+	switch (TILE_LAYER[baseTile])
+	{
+		case LAYER_OPAQUE:
+			switch (baseTile) {
+				default: REQUIRE(room->GetOSquare(wExpectedX, wExpectedY) == baseTile);  break;
+				case T_OVERHEAD_IMAGE: REQUIRE(room->overheadTiles.Exists(wExpectedX, wExpectedY)); break;
+			}
+			break;
+		case LAYER_TRANSPARENT:
+		{
+			const UINT wTTile = room->GetBottomTSquare(wExpectedX, wExpectedY);
+			const UINT wTObject = room->GetTSquare(wExpectedX, wExpectedY);
+
+			REQUIRE((wTTile == baseTile || wTObject == baseTile));
+		}
+		break;
+	case LAYER_FLOOR:
+		REQUIRE(room->GetFSquare(wExpectedX, wExpectedY) == baseTile);
+		break;
+	default:
+		FAIL("Unknown tile layer");
+		break;
+	}
+}
