@@ -297,6 +297,8 @@
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForPressurePlates.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForToken.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp" />
+    <ClCompile Include="src\tests\TemporalToken\DoublePlacementPreventsRecording.cpp" />
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">
