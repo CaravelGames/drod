@@ -68,7 +68,7 @@ TEST_CASE("Waterskipper interaction with weapons on targets", "[game][player][wa
 
 	SECTION("Player spear should protect stalwart") {
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Spear);
 		RoomBuilder::AddMonster(M_WATERSKIPPER, 10, 10);
 
 		RoomBuilder::Plot(T_WATER, 10, 10);
@@ -85,7 +85,7 @@ TEST_CASE("Waterskipper interaction with weapons on targets", "[game][player][wa
 
 	SECTION("Player pickaxe should protect stalwart") {
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Pickaxe);
 		RoomBuilder::AddMonster(M_WATERSKIPPER, 10, 10);
 
 		RoomBuilder::Plot(T_WATER, 10, 10);
@@ -102,7 +102,7 @@ TEST_CASE("Waterskipper interaction with weapons on targets", "[game][player][wa
 
 	SECTION("Player dagger should not protect stalwart") {
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1, SW, M_CLONE);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Staff);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_SetPlayerWeapon, WT_Dagger);
 		RoomBuilder::AddMonster(M_WATERSKIPPER, 10, 10);
 
 		RoomBuilder::Plot(T_WATER, 10, 10);
