@@ -29,6 +29,24 @@
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp">
       <Filter>Tests\Monsters\Aumtlich</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp">
+      <Filter>Tests\Monsters\Player\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp">
+      <Filter>Tests\Monsters\Player\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp">
+      <Filter>Tests\Monsters\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp">
+      <Filter>Tests\Monsters\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp">
+      <Filter>Tests\Monsters\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp">
+      <Filter>Tests\Monsters\Player\Bugs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -48,6 +66,18 @@
     </Filter>
     <Filter Include="Tests\Monsters\Aumtlich">
       <UniqueIdentifier>{87c43398-97ec-4e67-8bf0-b09bf658aaa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Player">
+      <UniqueIdentifier>{fffc2e19-3296-42cf-aef9-adf8a8d10952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Player\Basic">
+      <UniqueIdentifier>{39575c3c-c7e8-425b-9d16-edcc3a925b70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Player\Bugs">
+      <UniqueIdentifier>{80164149-2896-492e-9c28-41f47a3d7764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Player\PlayerRoles">
+      <UniqueIdentifier>{897c7299-3813-4983-849f-c443ade18f48}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
