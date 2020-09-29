@@ -19,6 +19,7 @@ public:
 	static CTemporalClone* GetTemporalClone(UINT indexOfClone = 0);
 
 	static void InitializeDatPath();
+	static CCurrentGame* GetCurrentGame();
 
 private:
 	static char *pErrorLogPath;
