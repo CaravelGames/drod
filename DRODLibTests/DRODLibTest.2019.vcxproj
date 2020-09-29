@@ -245,12 +245,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CAssert.h" />
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
     <ClInclude Include="src\Runner.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CAssert.cpp" />
     <ClCompile Include="src\CTestDb.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomBuilder.cpp" />
@@ -283,6 +285,7 @@
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
+    <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />

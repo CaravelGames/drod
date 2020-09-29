@@ -23,6 +23,14 @@ CCurrentGame* Runner::StartGame(const UINT playerX, const UINT playerY, const UI
 	return Runner::currentGame;
 }
 
+CCurrentGame* Runner::GetCurrentGame() {
+	if (Runner::currentGame == NULL) {
+		throw "Tried to get game when there is no game started";
+	}
+
+	return Runner::currentGame;
+}
+
 void Runner::ExecuteCommand(const UINT command, const UINT repeats){
 	CCueEvents CueEvents;
 
