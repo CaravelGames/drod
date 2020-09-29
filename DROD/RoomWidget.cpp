@@ -2707,7 +2707,7 @@ void CRoomWidget::DrawTileEdges(
 		const bool bNotInnerWall = GetWallTypeAtSquare(this->pRoom, wX, wY) != WALL_INNER;
 		if (wX > 0 && (pTI-1)->edges.bHalfWall && bNotInnerWall)
 			DrawCol(nX, nY + halfWallY, CY_TILE - halfWallY, EdgeColor[2], pDestSurface);
-		else if (wX+1 < this->pRoom->wRoomCols && (pTI+1)->edges.bHalfWall && bNotInnerWall)
+		if (wX+1 < this->pRoom->wRoomCols && (pTI+1)->edges.bHalfWall && bNotInnerWall)
 			DrawCol(nX + CX_TILE-1, nY + halfWallY, CY_TILE - halfWallY, EdgeColor[2], pDestSurface);
 	}
 }
