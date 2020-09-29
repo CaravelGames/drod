@@ -3522,9 +3522,6 @@ void CCharacter::FailedWhileCondition()
 		}
 		++this->wCurrentCommandIndex;
 	} while (bScanning);
-
-	// Move on to the next command since WhileEnd does something
-	++this->wCurrentCommandIndex;
 }
 
 //*****************************************************************************
