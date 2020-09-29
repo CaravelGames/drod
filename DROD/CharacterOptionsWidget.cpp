@@ -56,7 +56,7 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, g_pTheDB->GetMessageText(MID_SetProcessingSequenceDescription)));
 
 	this->pSequenceTextBox = new CTextBoxWidget(0L, X_SEQUENCETEXT, Y_SEQUENCETEXT,
-		CX_SEQUENCETEXT, CY_SEQUENCETEXT, 9, TAG_OK);
+		CX_SEQUENCETEXT, CY_SEQUENCETEXT, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);
@@ -69,23 +69,29 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 void CCharacterOptionsDialog::SetCharacter(
 	const CCharacter *pCharacter
 ){
-	WCHAR temp[8];
+	const UINT bufferLength = PROCESSING_SEQUENCE_MAX_LENGTH + 1; // Added space for null-termination
+	WCHAR temp[bufferLength];
 
-	this->pSequenceTextBox->SetText(_itoW(pCharacter->wProcessSequence, temp, 10));
+	_itoW(pCharacter->wProcessSequence, temp, 10, bufferLength);
+
+	this->pSequenceTextBox->SetText(temp);
 }
 
 //*****************************************************************************
 void CCharacterOptionsDialog::SetCharacter(
 	HoldCharacter *pCharacter
 ){
-	WCHAR temp[8];
-	
-	this->pSequenceTextBox->SetText(_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER), temp, 10));
+	const UINT bufferLength = PROCESSING_SEQUENCE_MAX_LENGTH + 1; // Added space for null-termination
+	WCHAR temp[bufferLength];
+
+	_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER), temp, 10, bufferLength);
+
+	this->pSequenceTextBox->SetText(temp);
 }
 
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetProcessSequence(){
-	return (UINT) _Wtoi(this->pSequenceTextBox->GetText());
+	return (UINT) this->pSequenceTextBox->GetNumber();
 }
 
 //*****************************************************************************
