@@ -5,7 +5,9 @@
 #include "../../../../../DRODLib/CurrentGame.h"
 
 TEST_CASE("Slayer interaction with weapons on targets", "[game][player][Slayer]") {
-	SECTION("Staff should block Slayer attack") {
+	RoomBuilder::ClearRoom();
+
+	/*SECTION("Staff should block Slayer attack") {
 		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Off, 10, 10);
 		RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WT_Staff, 8, 10, E);
 
@@ -107,5 +109,5 @@ TEST_CASE("Slayer interaction with weapons on targets", "[game][player][Slayer]"
 		CMonster* monster = game->pRoom->GetMonsterAtSquare(9, 10);
 		REQUIRE(monster != NULL);
 		REQUIRE(monster->wType == M_SLAYER);
-	}
+	}*/
 }

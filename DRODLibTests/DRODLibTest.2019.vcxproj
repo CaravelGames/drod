@@ -245,12 +245,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CAssert.h" />
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
     <ClInclude Include="src\Runner.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CAssert.cpp" />
     <ClCompile Include="src\CTestDb.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomBuilder.cpp" />

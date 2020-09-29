@@ -74,12 +74,17 @@
     <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp">
       <Filter>Tests\Monsters\Waterskipper</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Slayer\SlayerBodyKillBlocked.cpp">
+      <Filter>Tests\Monsters\Slayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CAssert.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
     <ClInclude Include="src\Runner.h" />
+    <ClInclude Include="src\CAssert.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">
