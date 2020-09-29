@@ -78,6 +78,42 @@
       <Filter>Tests\Monsters\Slayer</Filter>
     </ClCompile>
     <ClCompile Include="src\CAssert.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\FegundoPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\PuffPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\WraithwingPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\ConstructPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp">
+      <Filter>Tests\Scripting\WaitForSomeoneToPushMe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForPressurePlates.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForToken.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp">
+      <Filter>Tests\Scripting\TeleportPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp">
+      <Filter>Tests\Scripting\ImperativePushable</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp">
+      <Filter>Tests\Scripting\ImperativePushable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -128,6 +164,24 @@
     </Filter>
     <Filter Include="Tests\Monsters\Slayer">
       <UniqueIdentifier>{a1d92dfc-94b7-4873-977e-b4de75f56173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\PlayerRoles">
+      <UniqueIdentifier>{8311fd90-946f-480d-928f-f0b0cdc7b57f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting">
+      <UniqueIdentifier>{cc941e93-d0a7-4630-848e-7a451b1b8192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\WaitForSomeoneToPushMe">
+      <UniqueIdentifier>{6e1d7363-5c71-451e-a604-8ae7aafa4e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\WaitForItem">
+      <UniqueIdentifier>{fdf9061f-7d68-4a8c-886e-a8a1719607b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\TeleportPlayer">
+      <UniqueIdentifier>{f6c33167-1894-4f30-bcf3-7253f9e87a1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\ImperativePushable">
+      <UniqueIdentifier>{cc9d50d6-9c31-477a-8443-3c511f4696ad}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

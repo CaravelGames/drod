@@ -42,7 +42,7 @@ TEST_CASE("Slayers wielding daggers", "[game][slayer][weapon][dagger]") {
 	}
 
 	SECTION("Slayer with a dagger will kill-step normal monsters") {
-		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonsterWithWeapon(M_SLAYER, WT_Dagger, 10, 10, E);
 		RoomBuilder::AddMonster(M_BRAIN, 11, 10, S);
 
 		CCueEvents CueEvents;
