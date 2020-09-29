@@ -2952,6 +2952,10 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 						break;
 						default: break;
 					}
+					if (keysym.sym == SDLK_ESCAPE) {
+						cmd_response = CMD_ESCAPE;
+						dwStart = 0;
+					}
 				}
 				break;
 				default: break;
@@ -4432,7 +4436,15 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 		PaintClock();
 		const int cmd_response = HandleEventsForPlayerDeath(CueEvents);
-		const bool bUndoDeath = cmd_response == CMD_UNDO;
+
+		if (cmd_response == CMD_ESCAPE) {
+			eNextScreen = SCR_Return;
+		}
+
+		const bool bUndoDeath = (
+			cmd_response == CMD_UNDO 
+			|| cmd_response == CMD_ESCAPE // Undo the death move when exiting from death so that state is saved
+		);
 		if (bUndoDeath) {
 			if (this->pCurrentGame && !this->pCurrentGame->dwCutScene)
 				this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);

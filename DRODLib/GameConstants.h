@@ -85,6 +85,7 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_BUMP_S (COMMAND_COUNT+8)
 #define CMD_BUMP_SE (COMMAND_COUNT+9)
 #define CMD_BUMP_NW (COMMAND_COUNT+10)
+#define CMD_ESCAPE (COMMAND_COUNT+11) // Used only in front end for tracking wish to exit game
 
 //Sword orientation.
 //TODO make an enum?
