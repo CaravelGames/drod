@@ -114,6 +114,18 @@
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp">
       <Filter>Tests\Scripting\ImperativePushable</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -182,6 +194,9 @@
     </Filter>
     <Filter Include="Tests\Scripting\ImperativePushable">
       <UniqueIdentifier>{cc9d50d6-9c31-477a-8443-3c511f4696ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\Build">
+      <UniqueIdentifier>{a20303f0-fc27-414b-874f-d11c47404727}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
