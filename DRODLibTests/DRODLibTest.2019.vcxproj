@@ -245,12 +245,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CAssert.h" />
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
     <ClInclude Include="src\Runner.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CAssert.cpp" />
     <ClCompile Include="src\CTestDb.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomBuilder.cpp" />
@@ -271,6 +273,7 @@
     <ClCompile Include="src\tests\Monsters\RoachQueen\StunnedRoachQueen.cpp" />
     <ClCompile Include="src\tests\Monsters\Seep\SeepAttackWeaponBlock.cpp" />
     <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp" />
+    <ClCompile Include="src\tests\Monsters\Slayer\SlayerBodyKillBlocked.cpp" />
     <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp" />
     <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp" />
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />
