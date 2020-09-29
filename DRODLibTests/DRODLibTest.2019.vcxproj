@@ -275,12 +275,24 @@
     <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp" />
     <ClCompile Include="src\tests\Monsters\Slayer\SlayerBodyKillBlocked.cpp" />
     <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\ConstructPlayerRole.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\FegundoPlayerRole.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\PuffPlayerRole.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\WraithwingPlayerRole.cpp" />
     <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp" />
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
+    <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForPressurePlates.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForToken.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">

@@ -6,6 +6,8 @@ static void AddPushableCharacter(UINT x, UINT y) {
 }
 
 TEST_CASE("Player should push NPC on blocking tile", "[game][scripting][player][player moves][push][bug]") {
+	RoomBuilder::ClearRoom();
+
 	SECTION("Player should not move") {
 		// Surround player with various obstacles, place pushable characters on top of them and then make player move onto each one
 		// and making sure the thin ice under player is not dropped

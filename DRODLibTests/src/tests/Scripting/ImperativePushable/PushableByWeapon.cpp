@@ -1,4 +1,5 @@
 #include "../../../test-include.hpp"
+#include "../../../CAssert.h"
 
 static void AddPushableCharacter(UINT x, UINT y) {
 	CCharacter *character = RoomBuilder::AddVisibleCharacter(x, y); 
@@ -24,18 +25,20 @@ TEST_CASE("Invulnerable character with 'Imperative: Pushable by weapon'", "[game
 		REQUIRE(game->swordsman.wY == 10);
 	}
 
-	SECTION("Guard with a dagger should not be able to push the character"){
-		AddPushableCharacter(10, 9);
-		RoomBuilder::PlotRect(T_WALL, 9, 7, 9, 9);
-		RoomBuilder::PlotRect(T_WALL, 11, 7, 11, 9);
-		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 8, S);
+	SECTION("Guard with a dagger should not be able to push or kill the character"){
+		// W.W
+		// WGW - Guard with dagger facing North
+		// WCW - Pushable-by-body character, Player placed below
 
-		CCurrentGame* game = Runner::StartGame(10, 15, N);
+		RoomBuilder::PlotRect(T_WALL, 9, 9, 9, 11);
+		RoomBuilder::PlotRect(T_WALL, 11, 9, 11, 11);
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		AddPushableCharacter(10, 11);
+
+		CCurrentGame* game = Runner::StartGame(10, 15, S);
 		Runner::ExecuteCommand(CMD_WAIT);
-		REQUIRE(game->pRoom->GetMonsterAtSquare(10, 8));
-		REQUIRE(game->pRoom->GetMonsterAtSquare(10, 8)->wType == M_GUARD);
-		REQUIRE(game->pRoom->GetMonsterAtSquare(10, 9));
-		REQUIRE(game->pRoom->GetMonsterAtSquare(10, 9)->wType == M_CHARACTER);
+		AssertMonsterTypeO(10, 10, M_GUARD, S);
+		AssertMonsterType(10, 11, M_CHARACTER);
 	}
 
 	SECTION("Stalwart with a dagger should not be able to push the character"){
