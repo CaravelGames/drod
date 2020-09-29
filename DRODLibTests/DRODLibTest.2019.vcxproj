@@ -264,6 +264,14 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
+    <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
+    <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />
+    <ClCompile Include="src\tests\Monsters\Puff\PushFluffOntoTarstuffMother.cpp" />
+    <ClCompile Include="src\tests\Monsters\Rattlesnake\RattlesnakeVsFiretrap.cpp" />
+    <ClCompile Include="src\tests\Monsters\RoachQueen\StunnedRoachQueen.cpp" />
+    <ClCompile Include="src\tests\Monsters\Seep\SeepAttackWeaponBlock.cpp" />
+    <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp" />
+    <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp" />
     <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp" />
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />

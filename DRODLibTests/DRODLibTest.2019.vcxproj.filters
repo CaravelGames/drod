@@ -30,26 +30,56 @@
       <Filter>Tests\Monsters\Aumtlich</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp">
-      <Filter>Tests\Monsters\Player\Basic</Filter>
+      <Filter>Tests\Player\Basic</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp">
-      <Filter>Tests\Monsters\Player\Basic</Filter>
+      <Filter>Tests\Player\Basic</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp">
-      <Filter>Tests\Monsters\Player\Bugs</Filter>
+      <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp">
-      <Filter>Tests\Monsters\Player\Bugs</Filter>
+      <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp">
-      <Filter>Tests\Monsters\Player\Bugs</Filter>
+      <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp">
-      <Filter>Tests\Monsters\Player\Bugs</Filter>
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CTestDb.cpp" />
+    <ClCompile Include="src\RoomBuilder.cpp" />
+    <ClCompile Include="src\Runner.cpp" />
+    <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Puff\PushFluffOntoTarstuffMother.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Rattlesnake\RattlesnakeVsFiretrap.cpp">
+      <Filter>Tests\Monsters\Rattlesnake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\RoachQueen\StunnedRoachQueen.cpp">
+      <Filter>Tests\Monsters\RoachQueen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp">
+      <Filter>Tests\Monsters\Seep</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Seep\SeepAttackWeaponBlock.cpp">
+      <Filter>Tests\Monsters\Seep</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp">
+      <Filter>Tests\Monsters\Waterskipper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
+    <ClInclude Include="src\CTestDb.h" />
+    <ClInclude Include="src\RoomBuilder.h" />
+    <ClInclude Include="src\Runner.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">
@@ -67,17 +97,32 @@
     <Filter Include="Tests\Monsters\Aumtlich">
       <UniqueIdentifier>{87c43398-97ec-4e67-8bf0-b09bf658aaa8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tests\Monsters\Player">
+    <Filter Include="Tests\Player">
       <UniqueIdentifier>{fffc2e19-3296-42cf-aef9-adf8a8d10952}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tests\Monsters\Player\Basic">
+    <Filter Include="Tests\Player\Basic">
       <UniqueIdentifier>{39575c3c-c7e8-425b-9d16-edcc3a925b70}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tests\Monsters\Player\Bugs">
+    <Filter Include="Tests\Player\Bugs">
       <UniqueIdentifier>{80164149-2896-492e-9c28-41f47a3d7764}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Tests\Monsters\Player\PlayerRoles">
-      <UniqueIdentifier>{897c7299-3813-4983-849f-c443ade18f48}</UniqueIdentifier>
+    <Filter Include="Tests\Monsters\Puff">
+      <UniqueIdentifier>{b3a96d23-a82b-40a1-ad71-8ec418d27ffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Rattlesnake">
+      <UniqueIdentifier>{edcd5350-5458-43c1-9ea2-e78f4af8cad8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\RoachQueen">
+      <UniqueIdentifier>{8a623a1e-928e-4ac1-b96f-019f16fb95cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Seep">
+      <UniqueIdentifier>{92892e49-1490-430e-a61a-fc103a776a73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Waterskipper">
+      <UniqueIdentifier>{adc0aff6-7e81-4ca9-b163-dcd55330a372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Slayer">
+      <UniqueIdentifier>{a1d92dfc-94b7-4873-977e-b4de75f56173}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
