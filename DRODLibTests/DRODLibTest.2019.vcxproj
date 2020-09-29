@@ -264,6 +264,12 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
+    <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp" />
+    <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BackEndLib\BackEndLib.2019.vcxproj">
