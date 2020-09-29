@@ -135,6 +135,12 @@
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp">
       <Filter>Tests\RoomProcessing\TarstuffGates</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\Bridges.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -215,6 +221,9 @@
     </Filter>
     <Filter Include="Tests\RoomProcessing\TarstuffGates">
       <UniqueIdentifier>{06722f80-8303-4b9e-9e01-ee90b7cbfb5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Elements">
+      <UniqueIdentifier>{b54326e6-d558-404f-82fc-5e8214ef1169}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

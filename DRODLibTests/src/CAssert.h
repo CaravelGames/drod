@@ -21,6 +21,7 @@ public:
 	static void PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY);
 	static void PlayerIsAlive(const char* file, int line);
 	static void PlayerIsDead(const char* file, int line);
+	static void Tile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType);
 	static void Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType = -1, const long int wExpectedO = -1);
 	static void NoMonster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY);
 };
@@ -33,5 +34,7 @@ public:
 #define AssertMonsterO(wExpectedX, wExpectedY, wExpectedO) Assert::Monster(__FILE__, __LINE__, wExpectedX, wExpectedY, -1, wExpectedO);
 #define AssertMonsterTypeO(wExpectedX, wExpectedY, wExpectedType, wExpectedO) Assert::Monster(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType, wExpectedO);
 #define AssertNoMonster(wExpectedX, wExpectedY) Assert::NoMonster(__FILE__, __LINE__, wExpectedX, wExpectedY);
+#define AssertTile(wExpectedX, wExpectedY, wExpectedType) Assert::Tile(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType);
+
 
 #endif
