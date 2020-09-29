@@ -126,6 +126,12 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\DoublePlacementPreventsRecording.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -197,6 +203,9 @@
     </Filter>
     <Filter Include="Tests\Scripting\Build">
       <UniqueIdentifier>{a20303f0-fc27-414b-874f-d11c47404727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TemporalToken">
+      <UniqueIdentifier>{5749df41-85cb-481c-99ca-6f7a7725696c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

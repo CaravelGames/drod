@@ -2402,6 +2402,7 @@ void CCurrentGame::ResetPendingTemporalSplit(CCueEvents& CueEvents)
 {
 	if (this->temporalSplit.queuing()) {
 		this->pRoom->DisableToken(CueEvents, this->temporalSplit.x, this->temporalSplit.y);
+		CueEvents.ClearEvent(CID_TemporalSplitStart);
 		this->temporalSplit.clear();
 	}
 }
