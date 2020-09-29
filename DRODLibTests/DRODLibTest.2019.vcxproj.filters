@@ -132,6 +132,9 @@
     <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp">
       <Filter>Tests\TemporalToken</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp">
+      <Filter>Tests\RoomProcessing\TarstuffGates</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -206,6 +209,12 @@
     </Filter>
     <Filter Include="Tests\TemporalToken">
       <UniqueIdentifier>{5749df41-85cb-481c-99ca-6f7a7725696c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\RoomProcessing">
+      <UniqueIdentifier>{fed09e08-4b0d-464e-9d02-ad1d0d408e23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\RoomProcessing\TarstuffGates">
+      <UniqueIdentifier>{06722f80-8303-4b9e-9e01-ee90b7cbfb5e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
