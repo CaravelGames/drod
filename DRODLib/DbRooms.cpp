@@ -5933,6 +5933,10 @@ void CDbRoom::ProcessAumtlichGaze(CCueEvents &CueEvents, const bool bFullMove)
 //Determine which squares are affected by aumtlich in room.
 //Do freeze player/aumtlich check.
 {
+	// Do not process on turn 0, even after double placement
+	if (this->pCurrentGame->wPlayerTurn == 0)
+		return;
+
 	//Remove all previous gaze effects.
 	this->pCurrentGame->swordsman.bFrozen = false;
 
