@@ -2830,6 +2830,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	this->pRoomWidget->DrawOverheadLayer(this->pRoomWidget->pRoomSnapshotSurface);
 	this->pRoomWidget->DrawGhostOverheadCharacters(this->pRoomWidget->pRoomSnapshotSurface, false);
 	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
+	this->pFaceWidget->SetIsDeathAnimation(true);
 
 	const bool bFade = g_pTheBM->bAlpha;
 	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
@@ -3061,6 +3062,8 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		ClearSpeech();
 		this->pFaceWidget->SetMood(Mood_Normal);
 	}
+
+	this->pFaceWidget->SetIsDeathAnimation(false);
 
 	return cmd_response;
 }
