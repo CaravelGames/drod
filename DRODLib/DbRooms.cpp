@@ -10841,6 +10841,9 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 
 	const UINT oldTile = tObj ? tObj->tile : RoomObject::emptyTile();
 
+	if (oldTile == T_BRIAR_SOURCE)
+		this->briars.removeSource(wX, wY);
+
 //!!I think this logic can be cleaned up thanks to the new RoomObject data structures -- see updated pushable object logic for how to refactor
 	bool bReplacedCoveringItem = (bIsTLayerCoveringItem(oldTile) && !bIsEmptyTile(wTileNo));
 	if (bIsEmptyTile(wTileNo) && !bIsEmptyTile(GetCoveredTSquare(wX,wY)))
