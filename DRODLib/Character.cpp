@@ -2678,7 +2678,7 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_LevelEntrance:
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
-				if (!pGame->wTurnNo)
+				if (!pGame->wPlayerTurn)
 					return; //don't execute on the room entrance move -- execute next turn
 
 				//When saving room data in GotoLevelEntrance,
@@ -2690,7 +2690,9 @@ void CCharacter::Process(
 				if (!CueEvents.HasOccurred(CID_ExitLevelPending)) //don't queue more than one level exit
 					pGame->GotoLevelEntrance(CueEvents, command.x, py != 0);
 
-				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
+				// revert to current command so it increments correctly for global scripts
+				// or to try again if somehow it failed
+				--this->wCurrentCommandIndex;
 			break;
 
 			case CCharacterCommand::CC_VarSet:

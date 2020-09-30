@@ -144,6 +144,9 @@
     <ClCompile Include="src\tests\Elements\Bridges.cpp">
       <Filter>Tests\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
