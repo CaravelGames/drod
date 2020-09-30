@@ -1829,11 +1829,11 @@ void RepairMissingINIKeys(const bool bFullVersion)
 		AddIfMissing(INISection::Songs, "AbovegroundExit", "above win.ogg");
 		AddIfMissing(INISection::Songs, "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "BeachExit", "above win.ogg");
-		AddIfMissing(INISection::Songs, "BeachPuzzle", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg");
+		AddIfMissing(INISection::Songs, "BeachPuzzle", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg;FnM/CRUS AG 01.ogg;FnM/CRUS AG 02.ogg;FnM/CRUS AG 03.ogg;FnM/CRUS AG 04.ogg");
 		AddIfMissing(INISection::Songs, "CityExit", "city win level.ogg");
 		AddIfMissing(INISection::Songs, "CityPuzzle", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "ForestExit", "city win level.ogg");
-		AddIfMissing(INISection::Songs, "ForestPuzzle", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg");
+		AddIfMissing(INISection::Songs, "ForestPuzzle", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg;FnM/ANFM AG 01.ogg;FnM/ANFM AG 02.ogg;FnM/ANFM AG 03.ogg;FnM/ANFM AG 04.ogg");
 		AddIfMissing(INISection::Songs, "FortressExit", "fortress win.ogg");
 		AddIfMissing(INISection::Songs, "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "FoundationExit", "Delver.ogg");
@@ -1841,7 +1841,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 		AddIfMissing(INISection::Songs, "IceworksExit", "MySmallBox.ogg");
 		AddIfMissing(INISection::Songs, "IceworksPuzzle", "Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg;The Reward.ogg");
 		AddIfMissing(INISection::Songs, "SwampExit", "fortress win.ogg");
-		AddIfMissing(INISection::Songs, "SwampPuzzle", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg");
+		AddIfMissing(INISection::Songs, "SwampPuzzle", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg;FnM/POND AG 01.ogg;FnM/POND AG 02.ogg;FnM/POND AG 03.ogg;FnM/POND AG 04.ogg");
 	}
 
 	AddIfMissing(INISection::Startup, "LogErrors", "1");
