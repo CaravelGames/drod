@@ -605,6 +605,7 @@ void CBriars::process(
 		//Keep old connected component info for reference while restructuring below.
 		CCoordIndex_T<USHORT> oldBriarIndices = this->briarIndices;
 		std::vector<CCoordSet> oldBriarComponents = this->briarComponents;
+		std::vector<CCoordSet> oldBriarEdges = this->briarEdge;
 
 		this->briarComponents.clear();
 		this->briarEdge.clear();
@@ -627,12 +628,16 @@ void CBriars::process(
 			}
 
 			//Calculate this briar root's connected component.
+			const USHORT oldIndex = oldBriarIndices.GetAt(briarObj.wX, briarObj.wY);
+			CCoordSet oldBriarCoords = oldBriarComponents[oldIndex - 1];
+			oldBriarCoords += oldBriarEdges[oldIndex - 1];
+
 			briarObj.wComponentIndex = this->briarComponents.size()+1;
-			this->pRoom->GetConnected8NeighborTiles(briarObj.wX, briarObj.wY, briarMask, preBriarComponent);
+			this->pRoom->GetConnected8NeighborTiles(briarObj.wX, briarObj.wY, briarMask, preBriarComponent, NULL, &oldBriarCoords);
 
 			//Sort tiles into filled and edge tiles.
 			CCoordSet edges, briarComponent;
-			const USHORT oldIndex = oldBriarIndices.GetAt(briarObj.wX, briarObj.wY);
+			
 			for (CCoordSet::const_iterator tile=preBriarComponent.begin(); tile!=preBriarComponent.end(); ++tile)
 			{
 				//Only tiles that were part of this root's component before
