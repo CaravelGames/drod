@@ -173,6 +173,7 @@ public:
 		const bool bOverrideLock=false);
 	void           SetMoodToSoundEffect(MOOD eSetMood, SEID eUntilSEID);
 	void           SetReading(const bool bReading);
+	void           SetIsDeathAnimation(const bool bIsDeathAnimation);
 	void           SetSleeping();
 
 struct POINT
@@ -205,6 +206,7 @@ private:
 	bool           bDoBlink;      //when set, do a blink at next possible time
 	SEID           eMoodSEID;
 	bool           bMoodLocked;   //can't change mood w/o explicit flag
+	bool           bIsDeathAnimation; // Whether death animation is playing
 
 	//Eye movement.
 	int               nPupilX, nPupilY;

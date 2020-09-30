@@ -135,7 +135,7 @@ CFaceWidget::CFaceWidget(
 	, eMood(Mood_Normal), ePrevMood(Mood_Normal)
 	, dwDelayMood(0), dwStartDelayMood(0)
 	, bMoodDrawn(false), bIsReading(false), bIsBlinking(false), bIsSleeping(false)
-	, bDoBlink(false)
+	, bDoBlink(false), bIsDeathAnimation(false)
 	, eMoodSEID(SEID_NONE)
 	, bMoodLocked(false)
 	, nPupilX(0), nPupilY(0), nPupilTargetX(0), nPupilTargetY(0)
@@ -284,6 +284,12 @@ void CFaceWidget::SetMoodDelay(
 {
 	this->dwDelayMood = dwDelay;
 	this->dwStartDelayMood = SDL_GetTicks();
+}
+
+//****************************************************************************
+void CFaceWidget::SetIsDeathAnimation(const bool bIsDeathAnimation)
+{
+	this->bIsDeathAnimation = bIsDeathAnimation;
 }
 
 //****************************************************************************
@@ -767,7 +773,7 @@ void CFaceWidget::Paint(
 	const bool bWasBlinking = this->bIsBlinking;
 	if (!this->bIsSleeping)
 	{
-		if (this->bIsBlinking)
+		if (this->bIsBlinking || this->bIsDeathAnimation)
 			this->bIsBlinking = false;
 		else
 		{
