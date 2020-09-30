@@ -187,7 +187,7 @@ public:
 	MovementIQ movementIQ;  //movement behavior
 
 private:
-	void BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
+	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
 	void Disappear();
 	int  GetIndexOfCommandWithLabel(const UINT label) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;

@@ -68,21 +68,37 @@ bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 }
 
 //*****************************************************************************
-void BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, const UINT pw, const UINT ph, const bool bAllowSame, CCueEvents& CueEvents)
+//Returns: false if building should pause to avoid turn 0 idiosyncracies, otherwise true
+bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, const UINT pw, const UINT ph, const bool bAllowSame, CCueEvents& CueEvents)
 {
 	if (!bIsValidBuildTile(tile))
-		return;
+		return true;
 
 	//Crop check to valid room region
 	UINT endX = px + pw;
 	UINT endY = py + ph;
 	if (!room.CropRegion(px, py, endX, endY))
-		return;
+		return true;
 
 	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F;
 	const bool bVirtualTile = IsVirtualTile(tile);
 	if (!bRealTile && !bVirtualTile)
-		return; //unrecognized tile ID
+		return true; //unrecognized tile ID
+
+	//Do not allow building an explosion on player or bombs on turn 0 (to avoid potential room entrance death loops)
+	const CCurrentGame& game = *(room.GetCurrentGame());
+	if (tile == TV_EXPLOSION && game.wTurnNo == 0) {
+		for (UINT y = py; y <= endY; ++y)
+		{
+			for (UINT x = px; x <= endX; ++x)
+			{
+				if (room.GetTSquare(x, y) == T_BOMB)
+					return false;
+				if (game.IsPlayerAt(x, y))
+					return false;
+			}
+		}
+	}
 
 	for (UINT y = py; y <= endY; ++y)
 	{
@@ -95,6 +111,7 @@ void BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 			}
 		}
 	}
+	return true;
 }
 
 //*****************************************************************************

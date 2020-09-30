@@ -14,11 +14,13 @@ public:
 	static CCurrentGame* StartGame(const UINT playerX, const UINT playerY, const UINT playerO, CCueEvents &CueEvents);
 	static void ExecuteCommand(const UINT command, const UINT repeats = 1);
 	static void ExecuteCommand(const UINT command, CCueEvents &CueEvents);
+	static void PlaceDouble(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	static UINT GetNewAssertsCount();
 
 	static CTemporalClone* GetTemporalClone(UINT indexOfClone = 0);
 
 	static void InitializeDatPath();
+	static CCurrentGame* GetCurrentGame();
 
 private:
 	static char *pErrorLogPath;

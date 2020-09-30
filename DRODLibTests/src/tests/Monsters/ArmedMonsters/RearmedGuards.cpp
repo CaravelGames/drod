@@ -1,4 +1,5 @@
 #include "../../../catch.hpp"
+#include "../../../CAssert.h"
 #include "../../../CTestDb.h"
 #include "../../../Runner.h"
 #include "../../../RoomBuilder.h"
@@ -186,5 +187,22 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 11));
 		REQUIRE(pGame->pRoom->GetTObject(10, 13));
+	}
+
+	SECTION("Guard with a dagger won't step on an invulnerable character") {
+		// W.W
+		// WGW - Guard with dagger facing North
+		// WCW - Invulnerable character, Player placed below
+
+		CCharacter* character = RoomBuilder::AddVisibleCharacter(10, 11, S, M_CITIZEN);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_Imperative, ScriptFlag::Invulnerable);
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::PlotRect(T_WALL, 9, 9, 9, 11);
+		RoomBuilder::PlotRect(T_WALL, 11, 9, 11, 11);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 15, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+		AssertMonsterTypeO(10, 10, M_GUARD, S);
+		AssertMonsterType(10, 11, M_CHARACTER);
 	}
 }

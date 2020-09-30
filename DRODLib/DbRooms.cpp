@@ -5516,6 +5516,11 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 void CDbRoom::PostProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 // Process some things which need to happen after all room-state-changing things are finished 
 {
+	// This flag is used in a situation where tar mother in a room with 0 tar grows but its tar is
+	// then destroyed by, for example, spike-induced keg explosion, which normally would cause
+	// tar gates to be toggled ONCE
+	this->bTarstuffGateTogglePending = false;
+
 	//Seep die only after pressure plates may have triggered
 	KillMonstersOnHazard(CueEvents);
 
@@ -5887,6 +5892,10 @@ void CDbRoom::ProcessAumtlichGaze(CCueEvents &CueEvents, const bool bFullMove)
 //Determine which squares are affected by aumtlich in room.
 //Do freeze player/aumtlich check.
 {
+	// Do not process on turn 0, even after double placement
+	if (this->pCurrentGame->wPlayerTurn == 0)
+		return;
+
 	//Remove all previous gaze effects.
 	this->pCurrentGame->swordsman.bFrozen = false;
 
@@ -7466,6 +7475,7 @@ void CDbRoom::Clear()
 		this->wOverheadImageStartX = this->wOverheadImageStartY =
 		this->wTrapDoorsLeft = this->wTarLeft = 0;
 	this->bTarWasBuilt = false;
+	this->bTarstuffGateTogglePending = false;
 	this->bBetterVision = false;
 	this->bPersistentCitizenMovement = this->bHasConquerToken = this->bHasActiveBeacon = false;
 	this->bIsRequired = false;
@@ -8963,6 +8973,9 @@ void CDbRoom::GrowTar(
 		{
 			if (pMonster->wType == wMotherType && GetTSquare(pMonster->wX, pMonster->wY) != wTarType)
 			{
+				if (this->wTarLeft == 0)
+					this->bTarstuffGateTogglePending = true;
+
 				Plot(pMonster->wX, pMonster->wY, wTarType);
 				++this->wTarLeft;
 				ASSERT(GetTSquare(pMonster->wX, pMonster->wY) == wTarType);
@@ -10311,7 +10324,7 @@ void CDbRoom::DestroyTar(
 	{
 		ASSERT(this->wTarLeft); //This function should never be called with 0 Tar squares
 		--this->wTarLeft;
-		if (!this->wTarLeft)
+		if (!this->wTarLeft && !this->bTarstuffGateTogglePending)
 		{
 			CueEvents.Add(CID_AllTarRemoved);
 			ToggleBlackGates(CueEvents);
@@ -11544,6 +11557,7 @@ bool CDbRoom::SetMembers(
 	this->bHasConquerToken = Src.bHasConquerToken;
 	this->bHasActiveBeacon = Src.bHasActiveBeacon;
 	this->bTarWasBuilt = Src.bTarWasBuilt;
+	this->bTarstuffGateTogglePending = Src.bTarstuffGateTogglePending;
 
 	//Room tile layers
 	if (!AllocTileLayers())

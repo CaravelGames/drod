@@ -20,6 +20,7 @@ class CTestDb{
 
 public:
 	static void Init(int argc, char* const argv[]);
+	static void Teardown();
 	static void NameCurrentLevel(WCHAR* name);
 
 protected:

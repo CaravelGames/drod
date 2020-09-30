@@ -28,6 +28,7 @@
 //Implementation of CGuard.
 
 #include "Guard.h"
+#include "Character.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
 
@@ -67,6 +68,12 @@ const
 			return true;
 		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2)
 			return true;
+		if (pMonster->wType == M_CHARACTER) {
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (pCharacter->IsInvulnerable() || pCharacter->IsPushableByWeaponAttack()) {
+				return true;
+			}
+		}
 
 	}
 

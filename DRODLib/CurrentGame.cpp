@@ -2402,6 +2402,7 @@ void CCurrentGame::ResetPendingTemporalSplit(CCueEvents& CueEvents)
 {
 	if (this->temporalSplit.queuing()) {
 		this->pRoom->DisableToken(CueEvents, this->temporalSplit.x, this->temporalSplit.y);
+		CueEvents.ClearEvent(CID_TemporalSplitStart);
 		this->temporalSplit.clear();
 	}
 }
@@ -6232,6 +6233,9 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 
 	//If a critical character died on exit move, the exit doesn't count.
 	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
+		return;
+
+	if (this->wPlayerTurn == 0)
 		return;
 
 	//Write a demo record if recording.

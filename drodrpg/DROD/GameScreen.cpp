@@ -8061,28 +8061,10 @@ void CGameScreen::ShowRoomTemporarily(UINT roomID)
 Loop:
 	CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
 	*pTempGame = *this->pCurrentGame;
-	pTempGame->SaveExploredRoomData(*pTempGame->pRoom); //so current room can be viewed while panning the map
-
-	pTempGame->pPlayer->wIdentity = pTempGame->pPlayer->wAppearance = M_NONE; //not in room
-
-	//Get current room state.
-	delete pTempGame->pRoom;
-	pTempGame->pRoom = g_pTheDB->Rooms.GetByID(roomID);
-	if (!pTempGame->pRoom) {
+	if (!pTempGame->PrepTempGameForRoomDisplay(roomID)) {
 		delete pTempGame;
 		return;
 	}
-	CCueEvents Ignored;
-	pTempGame->RestartRoom(Ignored);
-	for (CMonster *pMonster = pTempGame->pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
-	{
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			pCharacter->ResolveLogicalIdentity(pTempGame->pHold);
-		}
-	}
-	pTempGame->pRoom->SetSwordsSheathed();
 
 	this->bShowingTempRoom = true;
 	this->bNoMoveByCurrentMouseClick = true;

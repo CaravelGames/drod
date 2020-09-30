@@ -104,8 +104,10 @@ void CGreenSerpent::Process(
 			} else {
 				CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 				bool bMonsterRemoved = false;
-				if (pMonster->bAlive)
+				if (pMonster->bAlive) {
+					room.GetCurrentGame()->CheckTallyKill(pMonster);
 					bMonsterRemoved = room.KillMonster(pMonster, CueEvents, false, this);
+				}
 				if (!bMonsterRemoved)
 				{
 					//We need to allow the serpent to move onto this tile though,
