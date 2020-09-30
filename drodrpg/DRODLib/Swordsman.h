@@ -92,6 +92,7 @@ public:
 	bool     bFrozen; //prevent moves if frozen
 	bool     bCanGetItems; //whether non-Beethro role can pick up items
 */
+	bool     bHasTeleported;
 	UINT     wAppearance, wIdentity; //visual appearance, actual logical role enumeration
 
 	//RPG stats

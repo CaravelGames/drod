@@ -86,7 +86,7 @@ const WCHAR wszITag[] = { We('<'),We('i'),We('>'), We(0) };
 const WCHAR wszEndITag[] = { We('<'),We('/'),We('i'),We('>'), We(0) };
 const WCHAR wszPTag[] = { We('<'),We('p'),We('>'), We(0) };
 
-static char buffer[512];
+static char buffer[WCHAR_INTERNAL_BUFFER];
 
 //*****************************************************************************
 void AsciiToUnicode(const char *psz, WSTRING &wstr)
@@ -560,20 +560,31 @@ int _Wtoi(const WCHAR* wsz)
 }
 
 //*****************************************************************************
-WCHAR* _itoW(int value, WCHAR* wcz, int radix)
+WCHAR* _itoW(int value, WCHAR* wcz, int radix, int bufferLength)
 {
+	// Internal buffer's max length should never ever be exceeded
+	bufferLength = min(WCHAR_INTERNAL_BUFFER, bufferLength);
+
 	int i = 0;
 	bool bNegative = false;
 	if (value < 0) //negative?
 	{
 		value = -value;
 		bNegative = true;
+		bufferLength--; // We have one character fewers for numbers because we need negative sign
 	}
+	bufferLength--; // Make space for null termination char
 	do {
+		if (i >= bufferLength) {
+			ASSERT(!"_itoW: ran out of space in the provided buffer - it will be trimmed.");
+			break;
+		}
+
 		int val = value % radix;
 		if (val < 10)
 			buffer[i++] = (value % radix) + '0';
 		else buffer[i++] = (value % radix) - 10 + 'A';
+
 	} while ((value /= radix) > 0);
 	if (bNegative)
 		buffer[i++] = '-';

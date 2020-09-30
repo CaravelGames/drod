@@ -1355,11 +1355,13 @@ enum MID_CONSTANT {
   MID_WaitForPlayerToMove = 1284,
   MID_WaitForPlayerToTouchMe = 1315,
   MID_WaitForSomeoneToPushMe = 1710,
+  MID_WaitForWeapon = 1904, //New.
   MID_Speech = 986,
   MID_FlushSpeech = 987,
   MID_Question = 988,
   MID_SetMusic = 989,
   MID_Imperative = 990,
+  MID_Behavior = 1905, //New.
   MID_Label = 991,
   MID_GoTo = 992,
   MID_Disappear = 993,
@@ -1714,6 +1716,7 @@ enum MID_CONSTANT {
   MID_BriarImmune = 1926,
   MID_AdderImmune = 1927,
   MID_PuffImmune = 1928,
+  MID_WaitForWeapon = 1904,
 
   //Messages from Stats.uni:
   MID_VarMonsterWeapon = 1810,

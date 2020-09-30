@@ -12,7 +12,7 @@ static void CanBuildOnPlayer(const UINT tileToBuild, const bool canBuild){
 	
 	Setup_BuildScript(tileToBuild);
 
-	CCurrentGame* game = Runner::StartGame(5, 10, N);
+	CCurrentGame* game = Runner::StartGame(10, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
 
 	const UINT wBaseTile = getBaseTile(tileToBuild);
@@ -43,10 +43,10 @@ TEST_CASE("Testing can build T_STAIRS on player", "[game]") {
 	CanBuildOnPlayer(T_STAIRS, false);
 }
 TEST_CASE("Testing can build T_WALL on player", "[game]") {
-	CanBuildOnPlayer(T_WALL, true);
+	CanBuildOnPlayer(T_WALL, false);
 }
 TEST_CASE("Testing can build T_WALL_B on player", "[game]") {
-	CanBuildOnPlayer(T_WALL_B, true);
+	CanBuildOnPlayer(T_WALL_B, false);
 }
 TEST_CASE("Testing can build T_DOOR_C on player", "[game]") {
 	CanBuildOnPlayer(T_DOOR_C, true);
@@ -106,7 +106,7 @@ TEST_CASE("Testing can build T_ORB on player", "[game]") {
 	CanBuildOnPlayer(T_ORB, true);
 }
 TEST_CASE("Testing can build T_TAR on player", "[game]") {
-	CanBuildOnPlayer(T_TAR, true);
+	CanBuildOnPlayer(T_TAR, false);
 }
 TEST_CASE("Testing can build T_CHECKPOINT on player", "[game]") {
 	CanBuildOnPlayer(T_CHECKPOINT, false);
@@ -181,13 +181,13 @@ TEST_CASE("Testing can build T_WALL_M on player", "[game]") {
 	CanBuildOnPlayer(T_WALL_M, false);
 }
 TEST_CASE("Testing can build T_MUD on player", "[game]") {
-	CanBuildOnPlayer(T_MUD, true);
+	CanBuildOnPlayer(T_MUD, false);
 }
 TEST_CASE("Testing can build T_STAIRS_UP on player", "[game]") {
 	CanBuildOnPlayer(T_STAIRS_UP, false);
 }
 TEST_CASE("Testing can build T_WALL_H on player", "[game]") {
-	CanBuildOnPlayer(T_WALL_H, true);
+	CanBuildOnPlayer(T_WALL_H, false);
 }
 TEST_CASE("Testing can build T_TUNNEL_E on player", "[game]") {
 	CanBuildOnPlayer(T_TUNNEL_E, true);
@@ -199,7 +199,7 @@ TEST_CASE("Testing can build T_FLOOR_IMAGE on player", "[game]") {
 	CanBuildOnPlayer(T_FLOOR_IMAGE, true);
 }
 TEST_CASE("Testing can build T_WALL2 on player", "[game]") {
-	CanBuildOnPlayer(T_WALL2, true);
+	CanBuildOnPlayer(T_WALL2, false);
 }
 TEST_CASE("Testing can build T_WATER on player", "[game]") {
 	CanBuildOnPlayer(T_WATER, true);
@@ -229,7 +229,7 @@ TEST_CASE("Testing can build T_HOT on player", "[game]") {
 	CanBuildOnPlayer(T_HOT, true);
 }
 TEST_CASE("Testing can build T_GEL on player", "[game]") {
-	CanBuildOnPlayer(T_GEL, true);
+	CanBuildOnPlayer(T_GEL, false);
 }
 TEST_CASE("Testing can build T_STATION on player", "[game]") {
 	CanBuildOnPlayer(T_STATION, true);
@@ -250,7 +250,7 @@ TEST_CASE("Testing can build T_PIT_IMAGE on player", "[game]") {
 	CanBuildOnPlayer(T_PIT_IMAGE, true);
 }
 TEST_CASE("Testing can build T_WALL_IMAGE on player", "[game]") {
-	CanBuildOnPlayer(T_WALL_IMAGE, true);
+	CanBuildOnPlayer(T_WALL_IMAGE, false);
 }
 TEST_CASE("Testing can build T_DARK_CEILING on player", "[game]") {
 	CanBuildOnPlayer(T_DARK_CEILING, false);
@@ -307,7 +307,7 @@ TEST_CASE("Testing can build T_ARROW_OFF_NW on player", "[game]") {
 	CanBuildOnPlayer(T_ARROW_OFF_NW, true);
 }
 TEST_CASE("Testing can build T_FLUFF on player", "[game]") {
-	CanBuildOnPlayer(T_FLUFF, true);
+	CanBuildOnPlayer(T_FLUFF, false);
 }
 TEST_CASE("Testing can build T_FLUFFVENT on player", "[game]") {
 	CanBuildOnPlayer(T_FLUFFVENT, true);

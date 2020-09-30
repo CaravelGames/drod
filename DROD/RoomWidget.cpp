@@ -1532,6 +1532,19 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		}
 	}
 
+	// T-Covered tiles.
+	const UINT tCoveredTile = this->pRoom->GetCoveredTSquare(wX, wY);
+	if (tCoveredTile != T_EMPTY)
+	{
+		switch (tCoveredTile)
+		{
+			case T_TOKEN:
+				mid = GetTokenMID(this->pRoom->GetTParam(wX, wY)); break;
+			default: mid = TILE_MID[tCoveredTile]; break;
+		}
+		AppendLine(mid);
+	}
+
 	//Flat layer.
 	const UINT fTile = this->pRoom->GetFSquare(wX, wY);
 	if (fTile != 0)
@@ -2694,7 +2707,7 @@ void CRoomWidget::DrawTileEdges(
 		const bool bNotInnerWall = GetWallTypeAtSquare(this->pRoom, wX, wY) != WALL_INNER;
 		if (wX > 0 && (pTI-1)->edges.bHalfWall && bNotInnerWall)
 			DrawCol(nX, nY + halfWallY, CY_TILE - halfWallY, EdgeColor[2], pDestSurface);
-		else if (wX+1 < this->pRoom->wRoomCols && (pTI+1)->edges.bHalfWall && bNotInnerWall)
+		if (wX+1 < this->pRoom->wRoomCols && (pTI+1)->edges.bHalfWall && bNotInnerWall)
 			DrawCol(nX + CX_TILE-1, nY + halfWallY, CY_TILE - halfWallY, EdgeColor[2], pDestSurface);
 	}
 }

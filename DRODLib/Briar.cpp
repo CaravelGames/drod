@@ -369,6 +369,7 @@ void CBriars::expand(
 				//Briar kills monster once briar tile has been plotted.
 				if (pMonster)
 				{
+					this->pRoom->GetCurrentGame()->CheckTallyKill(pMonster);
 					this->pRoom->KillMonster(pMonster, CueEvents);
 					//!!Won't get to see the move this monster just made since it's
 					//getting removed from the monster list here.  Adding this cue event

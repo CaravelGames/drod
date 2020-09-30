@@ -245,17 +245,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\CAssert.h" />
     <ClInclude Include="src\catch.hpp" />
     <ClInclude Include="src\CTestDb.h" />
     <ClInclude Include="src\RoomBuilder.h" />
     <ClInclude Include="src\Runner.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CAssert.cpp" />
     <ClCompile Include="src\CTestDb.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\RoomBuilder.cpp" />
     <ClCompile Include="src\Runner.cpp" />
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp" />
+    <ClCompile Include="src\tests\Elements\Bridges.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp" />
@@ -264,6 +267,7 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
+    <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PushFluffOntoTarstuffMother.cpp" />
@@ -283,10 +287,13 @@
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
+    <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
+    <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
+    <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
     <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />

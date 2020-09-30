@@ -419,44 +419,6 @@ static inline BYTE calcLightRadius(const UINT val) {return (val & ((MAX_LIGHT_DI
 static inline BYTE calcLightType(const UINT val) {return val & (NUM_LIGHT_TYPES-1);}
 
 
-static inline bool bIsValidBuildTile(const UINT wTileNo)
-{
-	switch (wTileNo)
-	{
-	case T_OBSTACLE:
-	case T_PRESSPLATE:
-	case T_SNKT_E:
-	case T_SNKT_N:
-	case T_SNKT_S:
-	case T_SNKT_W:
-	case T_SNK_EW:
-	case T_SNK_NE:
-	case T_SNK_NS:
-	case T_SNK_NW:
-	case T_SNK_SE:
-	case T_SNK_SW:
-	case T_CHECKPOINT:
-	case T_LIGHT_CEILING:
-	case T_PLATFORM_W:
-	case T_PLATFORM_P:
-	case T_WALL_M:
-	case T_STAIRS_UP:
-	case T_STAIRS:
-	case T_DARK_CEILING:
-	case T_WALLLIGHT:
-	case T_WALL_WIN:
-	case T_ACTIVETOKEN:
-	case T_TOKEN_TSPLIT_USED:
-	case T_TOKEN:
-	case T_PLATE_ONEUSE:
-	case T_PLATE_MULTI:
-	case T_PLATE_ON_OFF:
-		return false;
-	default:
-		return true;
-	}
-}
-
 static inline UINT getBaseTile(const UINT wVirtualTile)
 {
 	switch (wVirtualTile)

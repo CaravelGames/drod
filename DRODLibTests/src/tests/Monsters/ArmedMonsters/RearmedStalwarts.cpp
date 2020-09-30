@@ -12,7 +12,6 @@ using namespace std;
 TEST_CASE("Stalwarts wielding different weapons", "[game]") {
 	RoomBuilder::ClearRoom();
 
-	
 	SECTION("Stalwart with a dagger won't bother to turn around"){
 		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Dagger, 10, 10, W);
 		RoomBuilder::AddMonster(M_BRAIN, 12, 10);

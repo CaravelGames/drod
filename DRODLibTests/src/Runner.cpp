@@ -3,6 +3,7 @@
 #include "Runner.h"
 #include "RoomBuilder.h"
 #include "CTestDb.h"
+#include "catch.hpp"
 
 CCurrentGame* Runner::currentGame = NULL;
 UINT Runner::wLastErrorLogSize;
@@ -23,6 +24,14 @@ CCurrentGame* Runner::StartGame(const UINT playerX, const UINT playerY, const UI
 	return Runner::currentGame;
 }
 
+CCurrentGame* Runner::GetCurrentGame() {
+	if (Runner::currentGame == NULL) {
+		throw "Tried to get game when there is no game started";
+	}
+
+	return Runner::currentGame;
+}
+
 void Runner::ExecuteCommand(const UINT command, const UINT repeats){
 	CCueEvents CueEvents;
 
@@ -33,6 +42,11 @@ void Runner::ExecuteCommand(const UINT command, const UINT repeats){
 
 void Runner::ExecuteCommand(const UINT command, CCueEvents &CueEvents){
 	Runner::currentGame->ProcessCommand(command, CueEvents);
+}
+
+void Runner::PlaceDouble(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
+	REQUIRE(Runner::currentGame->swordsman.wPlacingDoubleType);
+	Runner::currentGame->ProcessCommand(CMD_DOUBLE, CueEvents, wX, wY);
 }
 
 UINT Runner::GetErrorLogSize(){

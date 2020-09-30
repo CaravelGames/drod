@@ -66,7 +66,7 @@ queue<SCORE_UPLOAD*> CCurrentGame::scoresForUpload;
 
 //Game character/monster constant that speaker refers to.
 const UINT SpeakerConstant[Speaker_Count] = {
-	M_BEETHRO, /*M_HALPH*/ M_NEATHER, M_SLAYER, M_NEGOTIATOR, M_CUSTOM, M_CUSTOM,
+	M_BEETHRO, /*M_HALPH*/ M_NEATHER, M_SLAYER, M_NEGOTIATOR, UINT(M_CUSTOM), UINT(M_CUSTOM),
 	M_CITIZEN1, M_CITIZEN2, M_GOBLINKING, M_GOBLIN,
 	M_INSTRUCTOR, M_MUDCOORDINATOR, M_ROCKGOLEM, M_TARTECHNICIAN, M_GUARD, M_MADEYE,
 	M_CITIZEN, M_PIRATE, M_ROACH, M_QROACH, M_REGG, M_WWING, M_EYE,
@@ -74,7 +74,7 @@ const UINT SpeakerConstant[Speaker_Count] = {
 	M_SERPENTG, M_SERPENTB, M_WATERSKIPPER, M_SKIPPERNEST, M_AUMTLICH, M_CLONE,
 	M_DECOY, M_WUBBA, M_SEEP, M_FEGUNDO, M_FEGUNDOASHES, M_MUDMOTHER,
 	M_MUDBABY, M_GELMOTHER, M_GELBABY, M_ROCKGIANT, M_CITIZEN3, M_CITIZEN4,
-	M_BEETHRO_IN_DISGUISE, M_CUSTOM, M_PLAYER, M_STALWART
+	M_BEETHRO_IN_DISGUISE, UINT(M_CUSTOM), UINT(M_PLAYER), M_STALWART
 };
 
 #define shieldOffStr    "ShieldOff"
@@ -1395,6 +1395,7 @@ bool CCurrentGame::LoadFromHold(
 */			
 	//Get members ready.
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1502,6 +1503,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 	RetrieveExploredRoomData(*this->pRoom);
 	CDbSavedGame::SetMonsterListAtRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1572,6 +1574,7 @@ bool CCurrentGame::LoadFromRoom(
 	SetPlayerToRoomStart();
 
 	SetMembersAfterRoomLoad(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
 Cleanup:
 	if (!bSuccess) Clear();
@@ -1653,11 +1656,13 @@ bool CCurrentGame::LoadFromSavedGame(
 	{
 		//Cue events come from first step into the room.
 		SetMembersAfterRoomLoad(CueEvents, false);
+		ProcessCommand_EndOfTurnEventHandling(CueEvents);
 	} else {
 		//Cue events come from processing of last command below.
 		//Ignore cue events from first step into the room.
 		CCueEvents IgnoredCueEvents;
 		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
+		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
@@ -2016,8 +2021,12 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 		{
 			//Process a custom accessory script.
 			CCharacter *pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-			if (pCharacter)
+			if (pCharacter) {
+				const UINT wX = this->pPlayer->wX, wY = this->pPlayer->wY;
 				pCharacter->ProcessAfterUse(CueEvents);
+				if (this->pPlayer->wX != wX || this->pPlayer->wY != wY)
+					return true; //show this movement; don't override in ProcessPlayer:MakeMove
+			}
 		}
 		//return in order to not expend the item below
 		return false; //assume player doesn't move
@@ -2212,6 +2221,8 @@ void CCurrentGame::ProcessCommand(
 	UpdatePrevPlatformCoords();
 
 //	const UINT dwStart = GetTicks();
+	
+	this->pPlayer->bHasTeleported = false;
 
 	const bool bPlayerIsAnsweringQuestion = this->UnansweredQuestions.size() != 0;
 
@@ -2515,85 +2526,8 @@ void CCurrentGame::ProcessCommand(
 		}
 	}
 
-	ProcessTokenActivations(CueEvents);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 
-	//Check for new questions that were asked.  Put them in a list of questions
-	//for which answers will be expected on subsequent calls.
-	AddQuestionsToList(CueEvents, this->UnansweredQuestions);
-
-	//Did player die this turn?
-	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
-	{
-		//The player died -- remember that the game is now inactive.
-		this->pPlayer->bAlive = false;
-		this->bIsGameActive = false;
-//		++this->dwLevelDeaths;
-//		Manual and automatic recording of death demos handled in front end.
-	}
-
-/*
-	if (bIsMovementCommand(nCommand))
-		QueryCheckpoint(CueEvents, this->pPlayer->wX, this->pPlayer->wY);
-	if (CueEvents.HasOccurred(CID_CheckpointActivated))
-	{
-		CCoord *pCoord = DYN_CAST(CCoord*, CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_CheckpointActivated));
-		ASSERT(pCoord);
-		this->wLastCheckpointX = pCoord->wX;
-		this->wLastCheckpointY = pCoord->wY;
-
-		this->checkpointTurns.push_back(this->wTurnNo);
-		//If player is still alive after checkpoint was stepped on:
-		if (!this->Commands.IsFrozen() && this->bIsGameActive)
-			SaveToCheckpoint();
-	} else {
-		//If checkpoint wasn't touched this turn, allow saving to it starting next turn.
-		if (this->pRoom->IsValidColRow(this->wLastCheckpointX, this->wLastCheckpointY) &&
-				(this->wLastCheckpointX != this->pPlayer->wX ||
-					this->wLastCheckpointY != this->pPlayer->wY) &&
-				!this->pRoom->IsMonsterOfTypeAt(M_MIMIC, this->wLastCheckpointX, this->wLastCheckpointY))
-			this->wLastCheckpointX = this->wLastCheckpointY = static_cast<UINT>(-1);
-	}
-	//If there were monsters, but not any more, then remove green doors.
-	if (CueEvents.HasOccurred(CID_AllMonstersKilled) && !this->pRoom->bGreenDoorsOpened)
-		if (ToggleGreenDoors())
-			//Adding this event with true flag indicates green doors toggled?
-			CueEvents.Add(CID_AllMonstersKilled, new CAttachableWrapper<bool>(true), true);
-*/
-	//Return cue event for plots if any plots were made.  This check needs
-	//to go after any code that could call pRoom->Plot().
-	if (this->pRoom->PlotsMade.size())
-		CueEvents.Add(CID_Plots, &(this->pRoom->PlotsMade));
-
-	//During active moves, check for swords colliding.
-	if (//!this->pPlayer->wPlacingDoubleType &&
-		this->pRoom->SwordfightCheck())
-		CueEvents.Add(CID_Swordfight);
-
-	//Call once all cue events could have fired.
-	if (this->bIsGameActive) //don't need to check when game is no longer in play (incl. transitioning to a new level)
-	{
-		this->pRoom->CharactersCheckForCueEvents(CueEvents, this->pRoom->pFirstMonster);
-		this->pRoom->CharactersCheckForCueEvents(CueEvents, CDbSavedGame::pMonsterList); //global scripts
-	}
-
-	//Cut scene updates.
-	if (!this->bContinueCutScene)
-		this->dwCutScene = 0;
-
-	//Player should always be visible while cut scene is not playing.
-	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
-		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
-
-/*
-	//Update path maps to NPC Beethro.
-	if (this->pPlayer->wAppearance != M_BEETHRO)
-	{
-		UINT wSX, wSY;
-		if (GetSwordsman(wSX, wSY))
-			this->pRoom->SetPathMapsTarget(wSX, wSY);
-	}
-*/
 
 	if (!CueEvents.HasOccurred(CID_ExitRoom)) //on exit, this will have already been handled for the new room
 		AmbientSoundTracking(CueEvents);
@@ -2650,6 +2584,92 @@ void CCurrentGame::ProcessCommand(
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_InvalidAttackMove, &coord); //add an event to let the front-end know what happened
 	}
+}
+
+//Checks that happen at the end of ProcessCommand.
+//This method also needs to be called anytime a new room is loaded, before commands are (re)played.
+//This includes when starting a new hold/level/room, on room restart (that includes move undo), and loading game.
+void CCurrentGame::ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents) //(in/out)
+{
+	ProcessTokenActivations(CueEvents);
+
+	//Check for new questions that were asked.  Put them in a list of questions
+	//for which answers will be expected on subsequent calls.
+	AddQuestionsToList(CueEvents, this->UnansweredQuestions);
+
+	//Did player die this turn?
+	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
+	{
+		//The player died -- remember that the game is now inactive.
+		this->pPlayer->bAlive = false;
+		this->bIsGameActive = false;
+		//		++this->dwLevelDeaths;
+		//		Manual and automatic recording of death demos handled in front end.
+	}
+
+	/*
+		if (bIsMovementCommand(nCommand))
+			QueryCheckpoint(CueEvents, this->pPlayer->wX, this->pPlayer->wY);
+		if (CueEvents.HasOccurred(CID_CheckpointActivated))
+		{
+			CCoord *pCoord = DYN_CAST(CCoord*, CAttachableObject*,
+					CueEvents.GetFirstPrivateData(CID_CheckpointActivated));
+			ASSERT(pCoord);
+			this->wLastCheckpointX = pCoord->wX;
+			this->wLastCheckpointY = pCoord->wY;
+
+			this->checkpointTurns.push_back(this->wTurnNo);
+			//If player is still alive after checkpoint was stepped on:
+			if (!this->Commands.IsFrozen() && this->bIsGameActive)
+				SaveToCheckpoint();
+		} else {
+			//If checkpoint wasn't touched this turn, allow saving to it starting next turn.
+			if (this->pRoom->IsValidColRow(this->wLastCheckpointX, this->wLastCheckpointY) &&
+					(this->wLastCheckpointX != this->pPlayer->wX ||
+						this->wLastCheckpointY != this->pPlayer->wY) &&
+					!this->pRoom->IsMonsterOfTypeAt(M_MIMIC, this->wLastCheckpointX, this->wLastCheckpointY))
+				this->wLastCheckpointX = this->wLastCheckpointY = static_cast<UINT>(-1);
+		}
+		//If there were monsters, but not any more, then remove green doors.
+		if (CueEvents.HasOccurred(CID_AllMonstersKilled) && !this->pRoom->bGreenDoorsOpened)
+			if (ToggleGreenDoors())
+				//Adding this event with true flag indicates green doors toggled?
+				CueEvents.Add(CID_AllMonstersKilled, new CAttachableWrapper<bool>(true), true);
+	*/
+	//Return cue event for plots if any plots were made.  This check needs
+	//to go after any code that could call pRoom->Plot().
+	if (this->pRoom->PlotsMade.size())
+		CueEvents.Add(CID_Plots, &(this->pRoom->PlotsMade));
+
+	//During active moves, check for swords colliding.
+	if (//!this->pPlayer->wPlacingDoubleType &&
+		this->pRoom->SwordfightCheck())
+		CueEvents.Add(CID_Swordfight);
+
+	//Call once all cue events could have fired.
+	if (this->bIsGameActive) //don't need to check when game is no longer in play (incl. transitioning to a new level)
+	{
+		this->pRoom->CharactersCheckForCueEvents(CueEvents, this->pRoom->pFirstMonster);
+		this->pRoom->CharactersCheckForCueEvents(CueEvents, CDbSavedGame::pMonsterList); //global scripts
+	}
+
+	//Cut scene updates.
+	if (!this->bContinueCutScene)
+		this->dwCutScene = 0;
+
+	//Player should always be visible while cut scene is not playing.
+	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
+		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
+
+/*
+	//Update path maps to NPC Beethro.
+	if (this->pPlayer->wAppearance != M_BEETHRO)
+	{
+		UINT wSX, wSY;
+		if (GetSwordsman(wSX, wSY))
+			this->pRoom->SetPathMapsTarget(wSX, wSY);
+	}
+*/
 }
 
 //*****************************************************************************
@@ -3566,7 +3586,7 @@ void CCurrentGame::RestartRoom(
 	CueEvents.Clear();
 	SetPlayerToRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
-
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 /*
 	//If player was recording a demo from the beginning of the room,
 	//then resume recording from this point.
@@ -3827,6 +3847,47 @@ void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
 */
 
 //*****************************************************************************
+void CCurrentGame::TeleportPlayer(
+	//Attempt to teleport player to a new square and init all changes
+	//
+	//Params:
+	const UINT wSetX, const UINT wSetY,  //(in)   Coords of new square.
+	CCueEvents& CueEvents)
+{
+	if (!this->pRoom->IsValidColRow(wSetX, wSetY))
+	{
+		return;
+	}
+
+	if (this->pRoom->DoesSquareContainTeleportationObstacle(wSetX, wSetY, this->pPlayer->wIdentity)) {
+		return;
+	}
+
+	// Teleporting to the tile the player is already standing at should do nothing
+	if (IsPlayerAt(wSetX, wSetY))
+	{
+		this->pPlayer->wPrevX = wSetX;
+		this->pPlayer->wPrevY = wSetY;
+		return;
+	}
+
+	const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
+	const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
+
+	this->pPlayer->wSwordMovement = NO_ORIENTATION;
+
+	SetPlayer(wSetX, wSetY);
+
+	this->pPlayer->SetSwordSheathed();
+
+	ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
+
+	this->pRoom->CheckForFallingAt(wSetX, wSetY, CueEvents);
+
+	this->pPlayer->bHasTeleported = true;
+}
+
+//*****************************************************************************
 bool CCurrentGame::SetPlayer(
 //Move player to new square.
 //
@@ -3974,6 +4035,8 @@ void CCurrentGame::SetTurn(
 	CueEvents.Clear();
 	SetPlayerToRoomStart();
 	SetMembersAfterRoomLoad(CueEvents, false);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+
 	UnfreezeCommands();
 
 	//Play the commands back.
@@ -5743,184 +5806,7 @@ MakeMove:
 		TunnelMove(dx,dy);
 	}
 
-	if (wNewOSquare == T_PRESSPLATE && bMoved && !p.IsFlying())
-		room.ActivateOrb(p.wX, p.wY, CueEvents, OAT_PressurePlate);
-
-	UINT wNewTSquare = room.GetTSquare(p.wX, p.wY);
-
-	//Check for scroll events.
-	if (!bWasOnSameScroll && wNewTSquare == T_SCROLL)
-	{
-		CDbMessageText *pScrollText = new CDbMessageText();
-		const WSTRING wstr = GetScrollTextAt(p.wX, p.wY);
-		*pScrollText = wstr.c_str();
-		ASSERT((const WCHAR *)(*pScrollText)); //On assertion failure, room data is probably stored incorrectly.
-		CueEvents.Add(CID_StepOnScroll, pScrollText, true);
-	}
-
-	//Check for t-layer items player can step onto and use.
-	switch (wNewTSquare)
-	{
-		case T_ATK_UP:
-		{
-			const int atk = getItemAmount(wNewTSquare);
-			incintValueWithBounds(p.st.ATK, atk);
-			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
-			room.Plot(p.wX, p.wY, T_EMPTY);
-			CueEvents.Add(CID_DrankPotion);
-		}
-		break;
-
-		case T_DEF_UP:
-		{
-			const int def = getItemAmount(wNewTSquare);
-			incintValueWithBounds(p.st.DEF, def);
-			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
-			room.Plot(p.wX, p.wY, T_EMPTY);
-			CueEvents.Add(CID_DrankPotion);
-		}
-		break;
-
-		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-		{
-			const int heal = getItemAmount(wNewTSquare);
-			if (heal < 0)
-				p.DecHealth(CueEvents, -heal, CID_ExplosionKilledPlayer);
-			else
-			{
-				incUINTValueWithBounds(p.st.HP, heal);
-				CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_HEAL, heal), true);
-			}
-			room.Plot(p.wX, p.wY, T_EMPTY);
-			CueEvents.Add(CID_DrankPotion);
-		}
-		break;
-
-/*
-		case T_POTION_SP:  //Speed potion.
-			{
-				++p.st.speedPotions;
-				room.Plot(p.wX, p.wY, T_EMPTY);
-				CueEvents.Add(CID_DrankPotion);
-			}
-		break;
-*/
-
-		case T_FUSE:
-			//Light the fuse.
-			room.LightFuse(CueEvents, p.wX, p.wY,
-					this->wTurnNo > 0);  //start burning right away if lit on room entrance
-		break;
-
-		case T_TOKEN:
-			//Activate token now, before the monsters move.
-			if (bMoved || !this->wTurnNo)
-				room.ActivateToken(CueEvents, p.wX, p.wY);
-		break;
-
-		case T_KEY:
-		{
-			PlayerStats& ps = p.st;
-			const UINT tParam = room.GetTParam(p.wX, p.wY);
-			switch (tParam)
-			{
-				case YellowKey: incUINTValueWithBounds(ps.yellowKeys, 1); break;
-				case GreenKey: incUINTValueWithBounds(ps.greenKeys, 1); break;
-				case BlueKey: incUINTValueWithBounds(ps.blueKeys, 1); break;
-				case SkeletonKey: incUINTValueWithBounds(ps.skeletonKeys, 1); break;
-				default: break;
-			}
-			room.Plot(p.wX, p.wY, T_EMPTY);
-			CueEvents.Add(CID_ReceivedKey, new CAttachableWrapper<BYTE>(tParam), true);
-		}
-		break;
-		case T_SWORD:
-		{
-			if (!bMoved && this->wTurnNo > 0)
-				break; //don't keep trading equipment when standing on it
-
-			//Acquired/traded a sword.
-			const UINT oldEquipment = p.st.sword;
-			const UINT newEquipment = room.GetTParam(p.wX, p.wY);
-			TradeWeapon(CueEvents, newEquipment);
-			//Place a weapon slot where this weapon was picked up and nothing was replaced.
-			if (oldEquipment == NoSword && p.st.sword != NoSword)
-			{
-				ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
-				room.Plot(p.wX, p.wY, T_SWORD);
-				room.SetTParam(p.wX, p.wY, WeaponSlot);
-			}
-		}
-		break;
-		case T_SHIELD:
-		{
-			if (!bMoved && this->wTurnNo > 0)
-				break; //don't keep trading equipment when standing on it
-
-			//Acquired/traded a shield.
-			const UINT oldEquipment = p.st.shield;
-			const UINT newEquipment = room.GetTParam(p.wX, p.wY);
-			TradeArmor(CueEvents, newEquipment);
-			//Place an armor slot where this armor was picked up and nothing was replaced.
-			if (oldEquipment == NoShield && p.st.shield != NoShield)
-			{
-				ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
-				room.Plot(p.wX, p.wY, T_SHIELD);
-				room.SetTParam(p.wX, p.wY, ArmorSlot);
-			}
-		}
-		break;
-		case T_ACCESSORY:
-		{
-			if (!bMoved && this->wTurnNo > 0)
-				break; //don't keep trading equipment when standing on it
-
-			//Acquired/traded an accessory.
-			const UINT oldEquipment = p.st.accessory;
-			const UINT newEquipment = room.GetTParam(p.wX, p.wY);
-			TradeAccessory(CueEvents, newEquipment);
-			//Place an accessory slot where this accessory was picked up and nothing was replaced.
-			if (oldEquipment == NoAccessory && p.st.accessory != NoAccessory)
-			{
-				ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
-				room.Plot(p.wX, p.wY, T_ACCESSORY);
-				room.SetTParam(p.wX, p.wY, AccessorySlot);
-			}
-		}
-		break;
-
-		case T_MAP:
-		{
-			//Level map.
-			//Mark all non-secret rooms in level on map.
-			CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
-			roomsInLevel -= GetExploredRooms(true); //ignore rooms already marked
-			roomsInLevel -= room.dwRoomID;  //ignore current room
-			for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
-					roomIter != roomsInLevel.end(); ++roomIter)
-			{
-				const UINT roomID = *roomIter;
-				if (!CDbRoom::IsSecret(roomID))
-				{
-					ASSERT(!getExploredRoom(roomID));
-					AddRoomToMap(roomID);
-				}
-			}
-
-			room.Plot(p.wX, p.wY, T_EMPTY);
-			CueEvents.Add(CID_LevelMap);
-		}
-		break;
-
-		default:        //normal step (footfalls)
-			if (bMoved && !bJumping && !bSwimming)
-				CueEvents.Add(CID_Step);
-		break;
-	}
-
-	//Check for things that sword could hit.
-	if (p.HasSword())
-		ProcessSwordHit(p.GetSwordX(), p.GetSwordY(), CueEvents);
+	ProcessPlayerMoveInteraction(dx, dy, CueEvents, bWasOnSameScroll, true);
 
 	//Check for o-square things swordsman can step onto.
 	bool bCannotLock = nCommand == CMD_LOCK;
@@ -5955,6 +5841,199 @@ MakeMove:
 	}
 	if (bCannotLock)
 		CueEvents.Add(CID_CantLockHere);
+}
+
+//***************************************************************************************
+void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
+	const bool bWasOnSameScroll, const bool bPlayerMove, const bool bPlayerTeleported)
+{
+	CSwordsman& p = *this->pPlayer; //shorthand
+	CDbRoom& room = *this->pRoom;
+
+	const bool bMoved = dx != 0 || dy != 0 || bPlayerTeleported;
+//	const bool bSmitemaster = bIsSmitemaster(p.wAppearance);
+//	const bool bCanGetItems = p.CanLightFuses();
+	const UINT wOSquare = room.GetOSquare(p.wX, p.wY);
+	const UINT wTSquare = room.GetTSquare(p.wX, p.wY);
+
+	if (wOSquare == T_PRESSPLATE && bMoved && !p.IsFlying())
+		room.ActivateOrb(p.wX, p.wY, CueEvents, OAT_PressurePlate);
+
+	UINT wNewTSquare = room.GetTSquare(p.wX, p.wY);
+
+	//Check for scroll events.
+	if (!bWasOnSameScroll && wNewTSquare == T_SCROLL)
+	{
+		CDbMessageText* pScrollText = new CDbMessageText();
+		const WSTRING wstr = GetScrollTextAt(p.wX, p.wY);
+		*pScrollText = wstr.c_str();
+		ASSERT((const WCHAR*)(*pScrollText)); //On assertion failure, room data is probably stored incorrectly.
+		CueEvents.Add(CID_StepOnScroll, pScrollText, true);
+	}
+
+	//Check for t-layer items player can step onto and use.
+	switch (wNewTSquare)
+	{
+	case T_ATK_UP:
+	{
+		const int atk = getItemAmount(wNewTSquare);
+		incintValueWithBounds(p.st.ATK, atk);
+		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_DrankPotion);
+	}
+	break;
+
+	case T_DEF_UP:
+	{
+		const int def = getItemAmount(wNewTSquare);
+		incintValueWithBounds(p.st.DEF, def);
+		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_DrankPotion);
+	}
+	break;
+
+	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
+	{
+		const int heal = getItemAmount(wNewTSquare);
+		if (heal < 0)
+			p.DecHealth(CueEvents, -heal, CID_ExplosionKilledPlayer);
+		else
+		{
+			incUINTValueWithBounds(p.st.HP, heal);
+			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_HEAL, heal), true);
+		}
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_DrankPotion);
+	}
+	break;
+
+	/*
+			case T_POTION_SP:  //Speed potion.
+				{
+					++p.st.speedPotions;
+					room.Plot(p.wX, p.wY, T_EMPTY);
+					CueEvents.Add(CID_DrankPotion);
+				}
+			break;
+	*/
+
+	case T_FUSE:
+		//Light the fuse.
+		room.LightFuse(CueEvents, p.wX, p.wY,
+			this->wTurnNo > 0);  //start burning right away if lit on room entrance
+		break;
+
+	case T_TOKEN:
+		//Activate token now, before the monsters move.
+		if (bMoved || !this->wTurnNo)
+			room.ActivateToken(CueEvents, p.wX, p.wY);
+		break;
+
+	case T_KEY:
+	{
+		PlayerStats& ps = p.st;
+		const UINT tParam = room.GetTParam(p.wX, p.wY);
+		switch (tParam)
+		{
+		case YellowKey: incUINTValueWithBounds(ps.yellowKeys, 1); break;
+		case GreenKey: incUINTValueWithBounds(ps.greenKeys, 1); break;
+		case BlueKey: incUINTValueWithBounds(ps.blueKeys, 1); break;
+		case SkeletonKey: incUINTValueWithBounds(ps.skeletonKeys, 1); break;
+		default: break;
+		}
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_ReceivedKey, new CAttachableWrapper<BYTE>(tParam), true);
+	}
+	break;
+	case T_SWORD:
+	{
+		if (!bMoved && this->wTurnNo > 0)
+			break; //don't keep trading equipment when standing on it
+
+		//Acquired/traded a sword.
+		const UINT oldEquipment = p.st.sword;
+		const UINT newEquipment = room.GetTParam(p.wX, p.wY);
+		TradeWeapon(CueEvents, newEquipment);
+		//Place a weapon slot where this weapon was picked up and nothing was replaced.
+		if (oldEquipment == NoSword && p.st.sword != NoSword)
+		{
+			ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
+			room.Plot(p.wX, p.wY, T_SWORD);
+			room.SetTParam(p.wX, p.wY, WeaponSlot);
+		}
+	}
+	break;
+	case T_SHIELD:
+	{
+		if (!bMoved && this->wTurnNo > 0)
+			break; //don't keep trading equipment when standing on it
+
+		//Acquired/traded a shield.
+		const UINT oldEquipment = p.st.shield;
+		const UINT newEquipment = room.GetTParam(p.wX, p.wY);
+		TradeArmor(CueEvents, newEquipment);
+		//Place an armor slot where this armor was picked up and nothing was replaced.
+		if (oldEquipment == NoShield && p.st.shield != NoShield)
+		{
+			ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
+			room.Plot(p.wX, p.wY, T_SHIELD);
+			room.SetTParam(p.wX, p.wY, ArmorSlot);
+		}
+	}
+	break;
+	case T_ACCESSORY:
+	{
+		if (!bMoved && this->wTurnNo > 0)
+			break; //don't keep trading equipment when standing on it
+
+		//Acquired/traded an accessory.
+		const UINT oldEquipment = p.st.accessory;
+		const UINT newEquipment = room.GetTParam(p.wX, p.wY);
+		TradeAccessory(CueEvents, newEquipment);
+		//Place an accessory slot where this accessory was picked up and nothing was replaced.
+		if (oldEquipment == NoAccessory && p.st.accessory != NoAccessory)
+		{
+			ASSERT(room.GetTSquare(p.wX, p.wY) == T_EMPTY);
+			room.Plot(p.wX, p.wY, T_ACCESSORY);
+			room.SetTParam(p.wX, p.wY, AccessorySlot);
+		}
+	}
+	break;
+
+	case T_MAP:
+	{
+		//Level map.
+		//Mark all non-secret rooms in level on map.
+		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
+		roomsInLevel -= GetExploredRooms(true); //ignore rooms already marked
+		roomsInLevel -= room.dwRoomID;  //ignore current room
+		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
+			roomIter != roomsInLevel.end(); ++roomIter)
+		{
+			const UINT roomID = *roomIter;
+			if (!CDbRoom::IsSecret(roomID))
+			{
+				ASSERT(!getExploredRoom(roomID));
+				AddRoomToMap(roomID);
+			}
+		}
+
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_LevelMap);
+	}
+	break;
+
+	default:        //normal step (footfalls)
+		if (bMoved)
+			CueEvents.Add(CID_Step);
+		break;
+	}
+
+	//Check for things that sword could hit.
+	if (p.HasSword())
+		ProcessSwordHit(p.GetSwordX(), p.GetSwordY(), CueEvents);
 }
 
 //***************************************************************************************
@@ -6730,7 +6809,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pBlockedSwordHit = NULL;
 
 	//Process the swordsman's movement onto the first square.
-	if (this->pPlayer->IsInRoom())
+	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported)
 		ProcessPlayer(CMD_WAIT, CueEvents);
 
 	//Init NPCs and sworded entities after initial room state checks and modifications are performed.
@@ -7518,6 +7597,39 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 	}
    delete pPlayer;
 	return this->dwSavedGameID;
+}
+
+//Only call this on a temporary object, prior to temporary room preview in the front-end.
+//Returns: whether prep operation succeeded
+bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
+{
+	SaveExploredRoomData(*this->pRoom); //so current room can be viewed while panning the map
+
+	this->pPlayer->wIdentity = this->pPlayer->wAppearance = M_NONE; //not in room
+
+	SetRoomStartToPlayer(); //applies current stats for displaying temp rooms
+
+	//Get current room state.
+	delete this->pRoom;
+	this->pRoom = g_pTheDB->Rooms.GetByID(roomID);
+	if (!this->pRoom) {
+		return false;
+	}
+
+	CCueEvents Ignored;
+	RestartRoom(Ignored);
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ResolveLogicalIdentity(this->pHold);
+		}
+	}
+
+	this->pRoom->SetSwordsSheathed();
+
+	return true;
 }
 
 //***************************************************************************************
