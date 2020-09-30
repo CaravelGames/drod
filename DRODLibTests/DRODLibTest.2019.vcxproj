@@ -293,6 +293,7 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
+    <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
     <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />
