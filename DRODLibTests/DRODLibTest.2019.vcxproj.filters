@@ -138,8 +138,14 @@
     <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp">
       <Filter>Tests\Monsters\Aumtlich</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp">
+      <Filter>Tests\Player\TurnZero</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Elements\Bridges.cpp">
       <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp">
+      <Filter>Tests\Scripting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +230,9 @@
     </Filter>
     <Filter Include="Tests\Elements">
       <UniqueIdentifier>{b54326e6-d558-404f-82fc-5e8214ef1169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Player\TurnZero">
+      <UniqueIdentifier>{2d45dc5d-441e-4fb0-93b4-569dc83b1979}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

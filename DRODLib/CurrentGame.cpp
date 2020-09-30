@@ -6235,6 +6235,9 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
 		return;
 
+	if (this->wPlayerTurn == 0)
+		return;
+
 	//Write a demo record if recording.
 	if (this->bIsDemoRecording)
 	{
