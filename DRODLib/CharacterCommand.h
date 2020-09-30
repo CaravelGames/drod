@@ -184,6 +184,12 @@ namespace ScriptFlag
 		Stalwart=4
 	};
 
+	enum GotoSmartType
+	{
+		LastIf = 0,
+		LastIfOrElseIf = 1
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
@@ -306,6 +312,7 @@ public:
 		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
 		CC_Behavior,			// Set behavior X on or off.
 		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
+		CC_GoToSmart,           //Jumps script execution to specified logical location
 
 		CC_Count
 	};

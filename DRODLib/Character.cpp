@@ -2365,6 +2365,21 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
 
+			case CCharacterCommand::CC_GoToSmart:
+			{
+				const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType)command.x;
+				switch (eGotoType) {
+				case ScriptFlag::GotoSmartType::LastIf:
+					JumpToPreviousIf(true);
+				break;
+				case ScriptFlag::GotoSmartType::LastIfOrElseIf:
+					JumpToPreviousIf(false);
+				break;
+				}
+			}
+			bProcessNextCommand = true;
+			continue;   //don't increment wCurrentCommandIndex again
+
 			case CCharacterCommand::CC_Speech:
 			{
 				//Deliver speech dialog.
@@ -5360,6 +5375,39 @@ bool CCharacter::JumpToCommandWithLabel(const UINT num)
 	WCHAR temp[12];
 	_itoW(num, temp, 10);
 	return JumpToCommandWithLabel(temp);
+}
+
+//*****************************************************************************
+//Move execution point to the If or Else If command at the beginning of the block
+void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex - 1;
+	UINT wNestingDepth = 0;
+	bool bScanning = true;
+
+	do {
+		--wCommandIndex;
+		if (wCommandIndex == -1) //No matching if found
+			break;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			if (wNestingDepth-- == 0)
+				bScanning = false; // Found start of if block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				bScanning = false; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		}
+	} while (bScanning);
+
+	if (!bScanning)
+		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
 }
 
 //*****************************************************************************
