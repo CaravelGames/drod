@@ -186,6 +186,7 @@ private:
 	CListBoxWidget *pStealthListBox, *pWaterTraversalListBox, *pGlobalScriptListBox;
 	CListBoxWidget *pOnOffListBox, *pOnOffListBox2, *pOpenCloseListBox;
 	CListBoxWidget *pGotoLabelListBox;
+	CListBoxWidget *pGotoSmartListBox;
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,

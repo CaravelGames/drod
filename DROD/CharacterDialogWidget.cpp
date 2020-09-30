@@ -173,6 +173,7 @@ const UINT TAG_IMAGEOVERLAYTEXT = 890;
 const UINT TAG_WEAPON_LISTBOX2 = 883;
 const UINT TAG_BEHAVIOR_LISTBOX = 882;
 const UINT TAG_REMAINS_LISTBOX = 881;
+const UINT TAG_GOTOSMART_LISTBOX = 880;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -402,7 +403,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pDirectionListBox(NULL), pInputListBox(NULL)
 	, pStealthListBox(NULL), pWaterTraversalListBox(NULL), pGlobalScriptListBox(NULL)
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOpenCloseListBox(NULL)
-	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
+	, pGotoLabelListBox(NULL), pGotoSmartListBox(NULL), pMusicListBox(NULL)
 	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL)
@@ -1692,6 +1693,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pGotoLabelListBox = new CListBoxWidget(TAG_GOTOLABELLISTBOX,
 			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pGotoLabelListBox);
+
+	//Goto smart label list.
+	this->pGotoSmartListBox = new CListBoxWidget(TAG_GOTOSMART_LISTBOX,
+			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pGotoSmartListBox);
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIf, L"Last If");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIf, L"Last If or Else If");
+	this->pGotoSmartListBox->SelectLine(0);
 
 	//Variable handling widgets.
 
@@ -3844,6 +3853,10 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_GoToSmart:
+			wstr += this->pGotoSmartListBox->GetTextForKey(command.x);
+		break;
+
 		case CCharacterCommand::CC_LevelEntrance:
 		{
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
@@ -4147,6 +4160,7 @@ const
 		case CCharacterCommand::CC_FlushSpeech:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
+		case CCharacterCommand::CC_GoToSmart:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
 		case CCharacterCommand::CC_Behavior:
@@ -4377,6 +4391,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoSub, g_pTheDB->GetMessageText(MID_GoSub));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_GoToSmart, L"Goto Smart:");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
@@ -5010,6 +5025,7 @@ void CCharacterDialogWidget::SetCommandColor(
 			pListBox->SetItemColorAtLine(line, DarkGreen);
 		break;
 		case CCharacterCommand::CC_GoTo:
+		case CCharacterCommand::CC_GoToSmart:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_AnswerOption:
@@ -5065,7 +5081,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 52;
+	static const UINT NUM_WIDGETS = 53;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5082,7 +5098,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
+		TAG_GOTOSMART_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5126,6 +5143,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT FACE_TOWARDS[] = { TAG_ONOFFLISTBOX, TAG_WAITFLAGSLISTBOX, 0 };
 	static const UINT NATURAL_TARGET[] = { TAG_NATURAL_TARGET_TYPES, 0 };
 	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
+	static const UINT GOTOSMART[] = { TAG_GOTOSMART_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5213,7 +5231,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,            //CC_BEHAVIOR
-		MONSTER_REMAINS     //CC_WaitForRemains
+		MONSTER_REMAINS,    //CC_WaitForRemains
+		GOTOSMART           //CC_GoToSmart
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5339,7 +5358,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,           //CC_GetEntityDirection
 		NO_LABELS,			//CC_WaitForWeapon
 		NO_LABELS,          //CC_Behavior
-		NO_LABELS           //CC_WaitForRemains
+		NO_LABELS,          //CC_WaitForRemains
+		NO_LABELS           //CC_GoToSmart
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6081,6 +6101,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			}
 		break;
 
+		case CCharacterCommand::CC_GoToSmart:
+			this->pCommand->x = this->pGotoSmartListBox->GetSelectedItem();
+			AddCommand();
+		break;
+
 		case CCharacterCommand::CC_LevelEntrance:
 		{
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
@@ -6629,6 +6654,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 			this->pGotoLabelListBox->SelectItem(this->pCommand->x);
+		break;
+
+		case CCharacterCommand::CC_GoToSmart:
+			this->pGotoSmartListBox->SelectItem(this->pCommand->x);
 		break;
 
 		case CCharacterCommand::CC_WaitForRect:
@@ -7299,6 +7328,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		//Caller must look up label ID.
 	break;
 
+	case CCharacterCommand::CC_GoToSmart:
+		parseMandatoryOption(pCommand->x, this->pGotoSmartListBox, bFound);
+	break;
+
 	case CCharacterCommand::CC_AnswerOption:
 	{
 		//Answer is all text between outermost quotes.
@@ -7912,6 +7945,10 @@ WSTRING CCharacterDialogWidget::toText(
 		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
 		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
 	}
+	break;
+
+	case CCharacterCommand::CC_GoToSmart:
+		wstr += this->pGotoSmartListBox->GetTextForKey(c.x);
 	break;
 
 	case CCharacterCommand::CC_AnswerOption:
