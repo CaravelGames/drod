@@ -1784,17 +1784,23 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
 	AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
 	AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+	AddIfMissing(INISection::Graphics, "Beach", "Beach");
+	AddIfMissing(INISection::Graphics, "Beach Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
 	AddIfMissing(INISection::Graphics, "City", "City");
 	AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
 	AddIfMissing(INISection::Graphics, "Deep Spaces", "DeepSpaces");
 	AddIfMissing(INISection::Graphics, "Deep Spaces Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
+	AddIfMissing(INISection::Graphics, "Forest", "Forest");
+	AddIfMissing(INISection::Graphics, "Forest Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds;DarkNightClouds");
 	AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
 	AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
 	AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
 	AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
 	AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
 	AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;City;Deep Spaces;Fortress;Foundation;Iceworks");
+	AddIfMissing(INISection::Graphics, "Swamp", "Swamp");
+	AddIfMissing(INISection::Graphics, "Swamp Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
+	AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;Beach;City;Deep Spaces;Forest;Fortress;Foundation;Iceworks;Swamp");
 
 	AddIfMissing(INISection::Localization, INIKey::ExportText, "0");
 	AddIfMissing(INISection::Localization, INIKey::Keyboard, "0");
@@ -1822,14 +1828,20 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	{
 		AddIfMissing(INISection::Songs, "AbovegroundExit", "above win.ogg");
 		AddIfMissing(INISection::Songs, "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "BeachExit", "above win.ogg");
+		AddIfMissing(INISection::Songs, "BeachPuzzle", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg");
 		AddIfMissing(INISection::Songs, "CityExit", "city win level.ogg");
 		AddIfMissing(INISection::Songs, "CityPuzzle", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "ForestExit", "city win level.ogg");
+		AddIfMissing(INISection::Songs, "ForestPuzzle", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg");
 		AddIfMissing(INISection::Songs, "FortressExit", "fortress win.ogg");
 		AddIfMissing(INISection::Songs, "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "FoundationExit", "Delver.ogg");
 		AddIfMissing(INISection::Songs, "FoundationPuzzle", "After Paraguay.ogg;Brood.ogg;WithoutFear.ogg;Ancient Machine I.ogg");
 		AddIfMissing(INISection::Songs, "IceworksExit", "MySmallBox.ogg");
 		AddIfMissing(INISection::Songs, "IceworksPuzzle", "Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg;The Reward.ogg");
+		AddIfMissing(INISection::Songs, "SwampExit", "fortress win.ogg");
+		AddIfMissing(INISection::Songs, "SwampPuzzle", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg");
 	}
 
 	AddIfMissing(INISection::Startup, "LogErrors", "1");
