@@ -24,6 +24,45 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/*
+Poor man's notes about how Briar is processed:
+
+Vocabulary:
+ - Component - a connected mass of briar. Say you have two 5x5 blocks of briar in a room, not connected to each other. Each one of them is a separate Component. When a growth causes two components to combine, they merge into one.
+
+
+It appears we have a few variables:
+ 1. briars - stores the instances of the briar roots
+ 2. briarComponents - a vector of coordinate-sets containing positions of a given COMPONENT's Withered Briar tiles, but I think more accurate would be a map of ID to COMPONENT, where ID is the index in the vector. When a COMPONENT is removed from the start of the list then I guess all the other's IDs will change
+ 3. briarEdge - a vector of coordinate-sets containing positions of a given COMPONENT's edge Briar Growth tiles
+ 4. connectedBriars - a vector if coordinate-pairs, apparently only used during growth, it links COMPONENT's tiles prior to growin with the new tiles so that it can be used to merge everything together. It's emptied at the end of processing briar.
+
+How is briar processed:
+ 1. If during this turn Briar was damaged in SPECIFIC WAY then RECALCULATE ALL of the components.
+ 2. The following operation are done for every briar root in sequence.
+	a) Process briar growth - solidify a single Briar Growth (briarEdge) into a Withered Briar. Does nothing if there are no growable edges left
+	b) Expand into new space - if the root's component has no briarEdges left, every briar tile in this root's component tries to grow out into 8 cardinal directions. The growing follows EXPANSIONS RULES
+	c) Merge components - using the power of `connectedBriars` coordinate-pairs we can find out if any two components have grown into each other and merge them. Nothing fun happens here
+ 3. Explode powder kegs
+ 4. Convert unstable tar to tar babies
+ 5. And process pressure plate pressing and depressing
+
+Damaged in SPECIFIC WAY:
+ When a briar that belongs to a component (has briar root) is damaged then a flag is set that forces the briar data regeneration
+
+RECALCULATE ALL:
+ 1. All briar data, except roots info, is prunned.
+ 2. Then for every root its component is rebuilt
+
+EXPANSION RULES:
+ 1. Grow into all 8 directions
+ 2. But given tile can only grow diagonally if there is no put orthogonally to that diagonal
+ 3. Can't grow against force arrows
+ 4. Hot tiles prevent growth
+ 5. Grows into solid fluff but is consumed by it but consumption happens at the end of a single expansion cycle for a given briar root
+ 6. Explodes kegs but they explode after everything has finished growing
+*/
+
 #include "Briar.h"
 #include "CurrentGame.h"
 #include "DbRooms.h"
@@ -606,6 +645,7 @@ void CBriars::process(
 		//Keep old connected component info for reference while restructuring below.
 		CCoordIndex_T<USHORT> oldBriarIndices = this->briarIndices;
 		std::vector<CCoordSet> oldBriarComponents = this->briarComponents;
+		std::vector<CCoordSet> oldBriarEdges = this->briarEdge;
 
 		this->briarComponents.clear();
 		this->briarEdge.clear();
@@ -628,12 +668,16 @@ void CBriars::process(
 			}
 
 			//Calculate this briar root's connected component.
+			const USHORT oldIndex = oldBriarIndices.GetAt(briarObj.wX, briarObj.wY);
+			CCoordSet oldBriarCoords = oldBriarComponents[oldIndex - 1];
+			oldBriarCoords += oldBriarEdges[oldIndex - 1];
+
 			briarObj.wComponentIndex = this->briarComponents.size()+1;
-			this->pRoom->GetConnected8NeighborTiles(briarObj.wX, briarObj.wY, briarMask, preBriarComponent);
+			this->pRoom->GetConnected8NeighborTiles(briarObj.wX, briarObj.wY, briarMask, preBriarComponent, NULL, &oldBriarCoords);
 
 			//Sort tiles into filled and edge tiles.
 			CCoordSet edges, briarComponent;
-			const USHORT oldIndex = oldBriarIndices.GetAt(briarObj.wX, briarObj.wY);
+			
 			for (CCoordSet::const_iterator tile=preBriarComponent.begin(); tile!=preBriarComponent.end(); ++tile)
 			{
 				//Only tiles that were part of this root's component before
