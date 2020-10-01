@@ -2685,13 +2685,15 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_SetPlayerWeapon:
 			{
-				const bool bArm = command.x == (UINT)WT_Off || command.x == (UINT)WT_On;
+				getCommandX(command, px);
+
+				const bool bArm = px == (UINT)WT_Off || px == (UINT)WT_On;
 				if (this->bIfBlock)
 				{
 					//As an If condition, this acts as a query that is true when
 					//the player's weapon state matches the specified parameter value.
 					if (bArm) {
-						if (command.x == (UINT)WT_Off) {
+						if (px == (UINT)WT_Off) {
 							if (!player.bWeaponOff)
 								STOP_COMMAND;
 						} else {
@@ -2699,12 +2701,12 @@ void CCharacter::Process(
 								STOP_COMMAND;
 						}
 					} else {
-						if (command.x != (UINT)player.GetActiveWeapon())
+						if (px != (UINT)player.GetActiveWeapon())
 							STOP_COMMAND;
 					}
 				} else {
 					//Sets the player weapon type to X (incl. on/off -- replaces CC_PlayerEquipsWeapon)
-					player.EquipWeapon(command.x);
+					player.EquipWeapon(px);
 					if (bArm)
 						pGame->SetCloneWeaponsSheathed(); //synch clones
 				}
