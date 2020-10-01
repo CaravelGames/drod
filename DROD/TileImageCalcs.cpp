@@ -1709,7 +1709,6 @@ UINT GetWadingEntityTile(
 		case M_MIMIC: return MIMIC_WATER_TI[wO];
 		case M_CITIZEN: return CITIZEN_WATER_TI[wO];
 		case M_ARCHITECT: return ARCHITECT_WATER_TI[wO];
-		case M_HALPH:
 		case M_HALPH2: return HALPH_WATER_TI[wO];
 		case M_SLAYER:
 		case M_SLAYER2: return SLAYER_WATER_TI[wO];
@@ -1739,7 +1738,6 @@ UINT GetWadingUnarmedEntityTile(
 		case M_MIMIC: return MIMIC_WATER_UTI[wO];
 		case M_CITIZEN: return CITIZEN_WATER_TI[wO];
 		case M_ARCHITECT: return ARCHITECT_WATER_TI[wO];
-		case M_HALPH:
 		case M_HALPH2: return HALPH_WATER_TI[wO];
 		case M_SLAYER:
 		case M_SLAYER2: return SLAYER_WATER_UTI[wO];
