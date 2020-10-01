@@ -559,8 +559,8 @@ CRoomEffectList* CRoomWidget::GetEffectListForLayer(const int layer) const
 		case 0: return this->pOLayerEffects;
 		case 1: return this->pTLayerEffects;
 		case 2: return this->pMLayerEffects;
-		case 3: return this->pLastLayerEffects;
-		default: return NULL;
+		case 3: 
+		default: return this->pLastLayerEffects;
 	}
 }
 
