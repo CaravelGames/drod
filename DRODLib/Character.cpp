@@ -2368,23 +2368,43 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_GoToSmart:
 			{
 				const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType)command.x;
+				bool bJumped = false;
+
 				switch (eGotoType) {
 				case ScriptFlag::GotoSmartType::LastIf:
 				case ScriptFlag::GotoSmartType::LastIfSkipCondition:
-					JumpToPreviousIf(true);
+					bJumped = JumpToPreviousIf(true);
 				break;
 				case ScriptFlag::GotoSmartType::LastIfOrElseIf:
 				case ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition:
-					JumpToPreviousIf(false);
+					bJumped = JumpToPreviousIf(false);
 				break;
 				case ScriptFlag::GotoSmartType::NextElse:
-					JumpToNextElse(true);
+					bJumped = JumpToNextElse(true);
 				break;
 				case ScriptFlag::GotoSmartType::NextElseOrElseIf:
 				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-					JumpToNextElse(false);
+					bJumped = JumpToNextElse(false);
 				break;
 				}
+
+				if (!bJumped) {
+					bProcessNextCommand = true;
+					break; //If we didn't jump to another command, DO increment wCurrentCommandIndex
+				}
+
+				bool bSkipCondition = false;
+				switch (eGotoType) {
+				case ScriptFlag::GotoSmartType::LastIfSkipCondition:
+				case ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition:
+				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+					bSkipCondition = true;
+				default:
+				break;
+				}
+
+				if (bSkipCondition)
+					this->wCurrentCommandIndex += 2; // move ahead two commands
 			}
 			bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
