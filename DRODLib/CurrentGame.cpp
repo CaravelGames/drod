@@ -6030,7 +6030,8 @@ MakeMove:
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);
 			CheckTallyKill(pMonster);
 			pMonster->wO = this->swordsman.wO; //splatter in this direction
-			SetPlayerAsTarget();  //monsters will attack the player now
+			if (!pMonster->IsFriendly())
+				SetPlayerAsTarget();  //monsters will attack the player now
 		}
 	}
 
