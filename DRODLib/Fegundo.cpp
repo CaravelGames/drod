@@ -127,8 +127,7 @@ void CFegundo::Process(
 	SetOrientation(dxFirst, dyFirst);
 
 	//If can't move and something solid is in the way, explode.
-	if (!dx && !dy && !DoesArrowPreventMovement(this->wX, this->wY, dxFirst, dyFirst) &&
-			!this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dxFirst, dyFirst))
+	if (!dx && !dy && !DoesMovePreventExplosion(this->wX, this->wY, dxFirst, dyFirst))
 	{
 		CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(
 				this->wX + dxFirst, this->wY + dyFirst);
@@ -190,4 +189,26 @@ void CFegundo::Explode(CCueEvents &CueEvents)
 	room.DoExplode(CueEvents, bombs, powder_kegs);
 
 	room.ConvertUnstableTar(CueEvents);
+}
+
+
+//*****************************************************************************
+bool CFegundo::DoesMovePreventExplosion(
+// Checks if obstacles during a given move can prevent explosions from occuring
+	const UINT wX, const UINT wY,  //(in) Coords of square from which to move.  Must be valid.
+	const int dx, const int dy  //(in) Directional coords to move
+)
+{
+
+	// Arrows prevent explosion even if they are placed on top of an obstacle, even if they are
+	// behind gentryii chain diagonal
+	if (DoesArrowPreventMovement(wX, wY, dx, dy))
+		return true;
+
+	// Ditto for ortho squares, must NOT use DoesSquarePreventDiagonal, otherwise gentryii chain
+	// diagonals will also prevent explosion
+	if (this->pCurrentGame->pRoom->DoesOrthoSquarePreventDiagonal(wX, wY, dx, dy))
+		return true;
+
+	return false;
 }
