@@ -5379,9 +5379,10 @@ bool CCharacter::JumpToCommandWithLabel(const UINT num)
 
 //*****************************************************************************
 //Move execution point to the If or Else If command at the beginning of the block
+//No jump occurs if initial execution point is not in an If block
 void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
 {
-	UINT wCommandIndex = this->wCurrentCommandIndex - 1;
+	UINT wCommandIndex = this->wCurrentCommandIndex;
 	UINT wNestingDepth = 0;
 	bool bScanning = true;
 
@@ -5395,11 +5396,11 @@ void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
 		case CCharacterCommand::CC_If:
 			if (wNestingDepth-- == 0)
 				bScanning = false; // Found start of if block
-			break;
+		break;
 		case CCharacterCommand::CC_IfElseIf:
 			if (wNestingDepth == 0 && !bIgnoreElseIf)
 				bScanning = false; // Found start of else-if block
-			break;
+		break;
 		case CCharacterCommand::CC_IfEnd:
 			wNestingDepth++; // entering a nested if-block
 		break;
