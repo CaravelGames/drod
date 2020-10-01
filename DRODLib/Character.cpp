@@ -2370,10 +2370,19 @@ void CCharacter::Process(
 				const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType)command.x;
 				switch (eGotoType) {
 				case ScriptFlag::GotoSmartType::LastIf:
+				case ScriptFlag::GotoSmartType::LastIfSkipCondition:
 					JumpToPreviousIf(true);
 				break;
 				case ScriptFlag::GotoSmartType::LastIfOrElseIf:
+				case ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition:
 					JumpToPreviousIf(false);
+				break;
+				case ScriptFlag::GotoSmartType::NextElse:
+					JumpToNextElse(true);
+				break;
+				case ScriptFlag::GotoSmartType::NextElseOrElseIf:
+				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+					JumpToNextElse(false);
 				break;
 				}
 			}
