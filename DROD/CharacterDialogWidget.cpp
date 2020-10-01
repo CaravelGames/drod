@@ -4889,6 +4889,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_X, g_pTheDB->GetMessageText(MID_VarMonsterX));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_Y, g_pTheDB->GetMessageText(MID_VarMonsterY));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_O, g_pTheDB->GetMessageText(MID_VarMonsterO));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_NAME, g_pTheDB->GetMessageText(MID_VarMonsterName));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_X, g_pTheDB->GetMessageText(MID_VarMonsterParamX));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_Y, g_pTheDB->GetMessageText(MID_VarMonsterParamY));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_W, g_pTheDB->GetMessageText(MID_VarMonsterParamW));
@@ -5207,7 +5208,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
-		BEHAVIOR,           //CC_BEHAVIOR
+		BEHAVIOR,            //CC_BEHAVIOR
 		MONSTER_REMAINS     //CC_WaitForRemains
 	};
 

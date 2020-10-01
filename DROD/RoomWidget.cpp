@@ -1425,7 +1425,12 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		const CCharacter *pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 		bool bCharacterName = false;
 		if (pCharacter) {
-			if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+			if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+				wstr += wszCRLF;
+				wstr += pCharacter->GetCustomName();
+				bCharacterName = true;
+
+			} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
 				//Show custom character name.
 				ASSERT(this->pRoom);
 				if (this->pCurrentGame) {
