@@ -85,3 +85,8 @@ drodrpg/DRODUtil/Release-Temp/
 **/*.opensdf
 **/*.vspx
 **/*.tlog
+
+# OS X specific files/folders
+Master/Darwin/custom/
+.DS_Store
+.idea
