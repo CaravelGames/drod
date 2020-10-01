@@ -6116,7 +6116,7 @@ void CGameScreen::ShowSpeechLog()
 		{
 			//Play any attached speech for this line.
 			ASSERT(this->pCurrentGame->roomSpeech.size() >= dwItemID);
-			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1];
+			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1].pSpeechCommand;
 			ASSERT(pCmd);
 
 			const CDbDatum *pSound = pCmd->pSpeech->GetSound();

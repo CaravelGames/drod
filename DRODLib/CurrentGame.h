@@ -100,6 +100,20 @@ class CDbHold;
 
 static const UINT TIRED_TURN_COUNT = 40;   //# previous turns to check for player becoming tired
 
+struct SpeechLog
+{
+	SpeechLog(WSTRING customName, CCharacterCommand* pSpeechCommand) {
+		this->customName = customName;
+		this->pSpeechCommand = pSpeechCommand;
+	}
+	SpeechLog(CCharacterCommand* pSpeechCommand) {
+		this->pSpeechCommand = pSpeechCommand;
+	}
+
+	WSTRING customName;
+	CCharacterCommand* pSpeechCommand;
+};
+
 //*******************************************************************************
 struct TemporalSplitData
 {
@@ -321,7 +335,7 @@ public:
 	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
-	vector<CCharacterCommand*> roomSpeech; //speech played up to this moment in the current room
+	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 	UINT     conquerTokenTurn; //turn player touched a Conquer token
 

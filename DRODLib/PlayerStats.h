@@ -67,7 +67,8 @@ namespace ScriptVars
 		P_PLAYERLIGHTTYPE = -24,
 		P_RETURN_X = -25,
 		P_RETURN_Y = -26,
-		FirstPredefinedVar = P_RETURN_Y, //set this to the last var in the enumeration
+		P_MONSTER_NAME = -27,
+		FirstPredefinedVar = P_MONSTER_NAME, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

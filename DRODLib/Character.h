@@ -75,6 +75,8 @@
 #define ParamFStr "FParam"
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 
+#define DefaultCustomCharacterName wszEmpty
+
 enum CharacterDisplayMode {
 	CDM_Normal,
 	CDM_GhostFloor,
@@ -117,6 +119,7 @@ public:
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
+	WSTRING        GetCustomName() const { return this->customName; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -234,7 +237,8 @@ private:
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
 
-	void setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
 
@@ -284,6 +288,7 @@ private:
 	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 
 	UINT wLastSpeechLineNumber; //used during language import
+	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
 
 	//Predefined vars.
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
