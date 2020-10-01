@@ -125,7 +125,7 @@ static inline bool bIsWadingMonsterType(const UINT mt) {
 		case M_MIMIC:
 		case M_DECOY:
 		case M_CITIZEN: case M_ARCHITECT:
-		case M_HALPH: case M_HALPH2:
+		case M_HALPH2:
 		case M_SLAYER: case M_SLAYER2:
 		case M_GOBLIN:
 		case M_ROCKGOLEM:
