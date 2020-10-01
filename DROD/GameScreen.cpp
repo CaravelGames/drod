@@ -4658,9 +4658,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_RoomConquerPending))  //priority of temporary moods
 	{
-		UINT eClearID = GetPlayerClearSEID();
-		if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
-		this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		if (this->pRoomWidget->subtitles.empty()) {
+			UINT eClearID = GetPlayerClearSEID();
+			if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
+			this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_MonsterDiedFromStab))
 	{
