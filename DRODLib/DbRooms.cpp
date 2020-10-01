@@ -9695,6 +9695,26 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 			if (pMonster)
 			{
+
+				if (pMonster->wType == M_TEMPORALCLONE) {
+					CTemporalClone* pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+					const int nType = SwapTarstuffRoles(pTemporalClone->wAppearance, bTar, bMud, bGel);
+					if (nType != -1)
+					{
+						//Switched Gel Babies can't swim.  Kill them instead.
+						if (pTemporalClone->wAppearance == M_GELBABY && bIsShallowWater(GetOSquare(wX, wY)))
+						{
+							CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
+							KillMonster(pMonster, CueEvents);
+						}
+
+						pTemporalClone->wIdentity = pTemporalClone->wAppearance = nType;
+
+					}
+
+					continue;
+				}
+
 				const int nType = SwapTarstuffRoles(pMonster->wType, bTar, bMud, bGel);
 				if (nType != -1)
 				{
