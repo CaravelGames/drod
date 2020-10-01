@@ -1692,8 +1692,6 @@ enum MID_CONSTANT {
   MID_OrbWaitNormal = 1901,
   MID_OrbWaitCracked = 1902,
   MID_OrbWaitBroken = 1903,
-  MID_WaitForWeapon = 1904,
-  MID_Behavior = 1905,
   MID_ActivateToken = 1906,
   MID_DropTrapdoors = 1907,
   MID_DropTrapdoorsArmed = 1908,
@@ -1716,7 +1714,6 @@ enum MID_CONSTANT {
   MID_BriarImmune = 1926,
   MID_AdderImmune = 1927,
   MID_PuffImmune = 1928,
-  MID_WaitForWeapon = 1904,
 
   //Messages from Stats.uni:
   MID_VarMonsterWeapon = 1810,
