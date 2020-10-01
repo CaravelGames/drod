@@ -1179,6 +1179,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1217,6 +1221,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1235,6 +1243,10 @@ void CCharacter::Process(
 				}
 
 				Disappear();
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -2373,6 +2385,9 @@ void CCharacter::Process(
 					case ScriptFlag::Die:
 						if (bExecuteNoMoveCommands && bChangeImperative)
 							return; //wait until first move to die
+
+						if (this->bBrainPathmapObstacle)
+							room.UpdatePathMapAt(this->wX, this->wY);
 
 						//Stop script execution whether visible or not.
 						if (bChangeImperative)
