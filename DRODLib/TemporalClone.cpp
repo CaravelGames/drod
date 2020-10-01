@@ -243,7 +243,8 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 		}
 	}
 
-	ApplyMimicMove(dx, dy, command, nGetO(dx,dy), CueEvents, bEnteredTunnel);
+	if (!this->bPushedThisTurn)
+		ApplyMimicMove(dx, dy, command, nGetO(dx,dy), CueEvents, bEnteredTunnel);
 
 	//Light any fuse stood on.
 	if (CanLightFuses())
