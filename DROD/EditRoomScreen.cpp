@@ -7501,7 +7501,10 @@ void CEditRoomScreen::ShowErrors()
 					if (!pMonster || wTileNo[1] == T_FLUFF || !bIsMother(pMonster->wType))
 						AddShadeToTile(LightRed);
 				}
-				bTar = true;
+
+				if (wTileNo[1] != T_FLUFF)
+					bTar = true;
+
 				break;
 			}
 
