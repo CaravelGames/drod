@@ -5344,9 +5344,19 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 	if (this->bStunnable)
 		this->bPreventMoveAfterPush = true;
 
+	const UINT wOldX = this->wX, wOldY = this->wY;
+
 	CMonster::PushInDirection(dx, dy, bStun, CueEvents);
 	SetWeaponSheathed();
 	RefreshBriars();
+
+
+	if (this->bBrainPathmapObstacle) {
+		CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+		room.UpdatePathMapAt(wOldX, wOldY);
+		room.UpdatePathMapAt(this->wX, this->wY);
+	}
 
 	if (HasSword())
 	{
