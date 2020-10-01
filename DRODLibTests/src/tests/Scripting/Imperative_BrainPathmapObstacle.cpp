@@ -100,6 +100,16 @@ TEST_CASE("Scripting: Imperative - Brain Pathmap Obstacle", "[game]") {
 		AssertRoachBrained();
 	}
 
+	SECTION("Pushing the blocking character by should clear pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Imperative, ScriptFlag::PushableByWeapon);
+		RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WT_Spear, 11, 7, S);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_C);
+
+		AssertRoachBrained();
+	}
+
 	SECTION("Move Relative should update the pathmap") {
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_MoveRel, 0, -1);
 
