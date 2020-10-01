@@ -3360,7 +3360,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	}
 
 	if (this->pCurrentGame && !bWasCutScene)
-		this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+		this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 
 	return eNextScreen;
 }
@@ -4450,7 +4450,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		);
 		if (bUndoDeath) {
 			if (this->pCurrentGame && !this->pCurrentGame->dwCutScene)
-				this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+				this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 			UndoMove();
 		}
 		CueEvents.Clear();	//clear after death sequence (whether move is undone or not)
@@ -6204,7 +6204,7 @@ void CGameScreen::UndoMove()
 		return; //nothing to undo
 
 	if (!this->bPlayTesting && //unlimited undo always allowed during playtesting
-			!this->undo.canUndoBefore(this->pCurrentGame->wTurnNo))
+			!this->undo.canUndoBefore(this->pCurrentGame->wPlayerTurn))
 		return;
 
 	g_pTheSound->PlaySoundEffect(SEID_UNDO);
