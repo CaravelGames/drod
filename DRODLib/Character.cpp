@@ -5389,7 +5389,8 @@ bool CCharacter::JumpToCommandWithLabel(const UINT num)
 //*****************************************************************************
 //Move execution point to the If or Else If command at the beginning of the block
 //No jump occurs if initial execution point is not in an If block
-void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
+//Return: if a jump was performed
+bool CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
 {
 	UINT wCommandIndex = this->wCurrentCommandIndex;
 	UINT wNestingDepth = 0;
@@ -5416,15 +5417,20 @@ void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
 		}
 	} while (bScanning);
 
-	if (!bScanning)
+	if (!bScanning) {
 		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
+		return true;
+	}
+
+	return false;
 }
 
 //*****************************************************************************
 //Move the execution point to the next Else or Else If for the current If block
 //No jump occurs if initial execution point is not in an If block, or if the
 //block does not have a following Else block.
-void CCharacter::JumpToNextElse(const bool bIgnoreElseIf)
+//Return: if a jump was performed
+bool CCharacter::JumpToNextElse(const bool bIgnoreElseIf)
 {
 	UINT wCommandIndex = this->wCurrentCommandIndex;
 	UINT wNestingDepth = 0;
@@ -5455,8 +5461,12 @@ void CCharacter::JumpToNextElse(const bool bIgnoreElseIf)
 		}
 	} while (bScanning);
 
-	if (!bScanning)
+	if (!bScanning) {
 		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
+		return true;
+	}
+
+	return false;
 }
 
 //*****************************************************************************
