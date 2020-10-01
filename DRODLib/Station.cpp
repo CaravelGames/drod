@@ -80,6 +80,8 @@ UINT CStation::GetDirectionFrom(const UINT wX, const UINT wY) const
 		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wXDest, wYDest);
 		if (pMonster && pMonster->wType != M_FLUFFBABY)
 			bMonsterObstacle = true;
+		if (this->pRoom->DoesGentryiiPreventDiagonal(wX, wY, wXDest, wYDest))
+			bMonsterObstacle = true;
 		if (wScore && wDist < wCurrentDist && wScore < wBestScore &&
 				!bMonsterObstacle && !CStation::swords.Exists(wXDest, wYDest) &&
 				!IsObstacle(wT, wXDest, wYDest, nGetO(dxDir[n], dyDir[n])) &&
