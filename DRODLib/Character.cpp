@@ -5402,7 +5402,46 @@ void CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
 			break;
 		case CCharacterCommand::CC_IfEnd:
 			wNestingDepth++; // entering a nested if-block
+		break;
+		}
+	} while (bScanning);
+
+	if (!bScanning)
+		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
+}
+
+//*****************************************************************************
+//Move the execution point to the next Else or Else If for the current If block
+//No jump occurs if initial execution point is not in an If block, or if the
+//block does not have a following Else block.
+void CCharacter::JumpToNextElse(const bool bIgnoreElseIf)
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+	bool bScanning = true;
+
+	do {
+		++wCommandIndex;
+		if (wCommandIndex == this->commands.size()) //No matching else found
 			break;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			wNestingDepth++; // entering a nested if-block
+		break;
+		case CCharacterCommand::CC_IfElse:
+			if (wNestingDepth == 0)
+				bScanning = false; // Found start of else block
+		break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				bScanning = false; // Found start of else-if block
+		break;
+		case CCharacterCommand::CC_IfEnd:
+			if (wNestingDepth > 0)
+				wNestingDepth--; // exiting a nested if-block
+		break;
 		}
 	} while (bScanning);
 

@@ -173,6 +173,7 @@ public:
 	bool           JumpToCommandWithLabel(const WCHAR *pText);
 	bool           JumpToCommandWithLabel(const UINT num);
 	void           JumpToPreviousIf(const bool bIgnoreElseIf);
+	void           JumpToNextElse(const bool bIgnoreElseIf);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);
