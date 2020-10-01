@@ -99,4 +99,49 @@ TEST_CASE("Scripting: Imperative - Brain Pathmap Obstacle", "[game]") {
 
 		AssertRoachBrained();
 	}
+
+	SECTION("Move Relative should update the pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_MoveRel, 0, -1);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		AssertRoachBrained();
+	}
+
+	SECTION("Move To should update the pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_MoveTo, 5, 5);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		AssertRoachBrained();
+	}
+
+	SECTION("Changing X position should update the pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_VarSet, ScriptVars::P_MONSTER_X, ScriptVars::Assign, 20);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		AssertRoachBrained();
+	}
+
+	SECTION("Changing Y position should update the pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_VarSet, ScriptVars::P_MONSTER_Y, ScriptVars::Assign, 2);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		AssertRoachBrained();
+	}
+
+	SECTION("Turning into monster should update the pathmap") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_TurnIntoMonster);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 20, N);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		AssertRoachBrained();
+	}
 }

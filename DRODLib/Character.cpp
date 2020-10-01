@@ -5190,6 +5190,11 @@ void CCharacter::MoveCharacter(
 		pGame->SetDyingEntity(&pGame->swordsman, this);
 		CueEvents.Add(CID_MonsterKilledPlayer, this);
 	}
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(this->wX - dx, this->wY - dy);
+	}
 }
 
 //*****************************************************************************
@@ -5204,6 +5209,9 @@ void CCharacter::TeleportCharacter(
 	ASSERT(this->pCurrentGame->pRoom);
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
+	const UINT wOldX = this->wX;
+	const UINT wOldY = this->wY;
+
 	if (this->bVisible)
 	{
 		ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
@@ -5216,6 +5224,11 @@ void CCharacter::TeleportCharacter(
 	//the caller must handle setting of wPrevX/Y as applicable
 	this->wX = wDestX;
 	this->wY = wDestY;
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(wOldX, wOldY);
+	}
 
 	if (this->bVisible)
 	{
