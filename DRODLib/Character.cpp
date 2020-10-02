@@ -2544,6 +2544,14 @@ void CCharacter::Process(
 						this->eDisplayMode = CDM_GhostOverhead;
 						bChangeImperative = false;
 					break;
+					case ScriptFlag::InvisibleInspectable:
+						this->bInvisibleInspectable = true;
+						bChangeImperative = false;
+						break;
+					case ScriptFlag::InvisibleNotInspectable:
+						this->bInvisibleInspectable = false;
+						bChangeImperative = false;
+						break;
 					case ScriptFlag::NotPushable:
 						this->bNotPushable = true;
 						this->bPushableByBody = false;
