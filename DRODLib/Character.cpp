@@ -405,6 +405,8 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_OVERHEADIMAGE_X:
 		case (UINT)ScriptVars::P_OVERHEADIMAGE_Y:
 		case (UINT)ScriptVars::P_THREATCLOCK:
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
 		case (UINT)ScriptVars::P_PLAYERLIGHT:
 		case (UINT)ScriptVars::P_PLAYERLIGHTTYPE:
 		case (UINT)ScriptVars::P_RETURN_X:

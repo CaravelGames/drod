@@ -857,6 +857,13 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			return this->scriptReturnX;
 		case (UINT)ScriptVars::P_RETURN_Y:
 			return this->scriptReturnY;
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
+		{
+			int dX, dY;
+			this->pRoom->GetPositionInLevel(dX, dY);
+			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
+		}
 		default:
 			return 0;
 	}
