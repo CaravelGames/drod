@@ -537,8 +537,6 @@ void CCharacter::setPredefinedVarString(
 	CCueEvents& CueEvents)
 	//Sets the value of the predefined var with this relative index to the specified value
 {
-	CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
-
 	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
 	switch (varIndex)
 	{

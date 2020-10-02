@@ -4669,7 +4669,7 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				if (pMonster)
 				{
 					if (pMonster->wType == M_CHARACTER) {
-						CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+						const CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
 						customName = pCharacter->GetCustomName();
 					}

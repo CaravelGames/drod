@@ -1428,7 +1428,6 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 
 		const CCharacter *pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 		bool bCharacterName = false;
-		bool bDescribeMonster = true;
 		bool bShowMoveOrder = pMonster->IsVisible();
 		if (pCharacter) {
 			if (!pCharacter->IsVisible() && !pCharacter->IsInvisibleInspectable()) {

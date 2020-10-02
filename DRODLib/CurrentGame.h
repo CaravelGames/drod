@@ -102,7 +102,7 @@ static const UINT TIRED_TURN_COUNT = 40;   //# previous turns to check for playe
 
 struct SpeechLog
 {
-	SpeechLog(WSTRING customName, CCharacterCommand* pSpeechCommand) {
+	SpeechLog(const WSTRING customName, CCharacterCommand* pSpeechCommand) {
 		this->customName = customName;
 		this->pSpeechCommand = pSpeechCommand;
 	}

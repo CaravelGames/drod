@@ -11,7 +11,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMonsterWeapon,
 	0, 0,
 	MID_VarX, MID_VarY, MID_VarO,
-	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO, 
+	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO,
 	0, 0,
 	MID_VarMonsterParamX, MID_VarMonsterParamY, MID_VarMonsterParamW, MID_VarMonsterParamH, MID_VarMonsterParamF,
 	MID_VarRoomImageX, MID_VarRoomImageY, MID_VarOverheadImageX, MID_VarOverheadImageY,
