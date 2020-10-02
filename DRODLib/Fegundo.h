@@ -46,6 +46,7 @@ public:
 	virtual bool CanFindSwordsman() const;
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	bool DoesMovePreventExplosion(const UINT wX, const UINT wY, const int dx, const int dy);
 	virtual bool OnStabbed(CCueEvents &/*CueEvents*/,
 			const UINT /*wX*/=(UINT)-1, const UINT /*wY*/=(UINT)-1,
 			WeaponType /*weaponType*/=WT_Sword)

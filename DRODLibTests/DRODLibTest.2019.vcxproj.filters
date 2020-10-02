@@ -147,6 +147,15 @@
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Imperative_BrainPathmapObstacle.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\Briars.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Fegundo.cpp">
+      <Filter>Tests\Monsters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

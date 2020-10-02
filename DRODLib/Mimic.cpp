@@ -305,7 +305,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 					room.KillMonster(pMonster, CueEvents, false, this); //will return false if it's a critical NPC
 					pMonster->SetKillInfo(nGetO(dx,dy));
 					room.RemoveMonsterFromTileArray(pMonster);
-					if (this->wType == M_TEMPORALCLONE && pMonster->GetIdentity() != M_FLUFFBABY)
+					if (this->wType == M_TEMPORALCLONE && pMonster->GetIdentity() != M_FLUFFBABY && !pMonster->IsFriendly)
 					{
 						CTemporalClone *pClone = DYN_CAST(CTemporalClone*, CMimic*, this);
 						pClone->bIsTarget = true;

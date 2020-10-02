@@ -2826,8 +2826,8 @@ const
 }
 
 //*****************************************************************************
-bool CDbRoom::DoesSquarePreventDiagonal(
-//Does a 4-connected space prevent diagonal movement?
+bool CDbRoom::DoesOrthoSquarePreventDiagonal(
+//Does an ortho-square prevent diagonal movement between the two tiles?
 //The current square and destination square are both checked for these.
 //
 //Params:
@@ -2852,9 +2852,25 @@ const
 	if (GetFSquare(x2, y2) == T_NODIAGONAL)
 		return true;
 
-	return DoesGentryiiPreventDiagonal(wX, wY, x2, y2);
+	return false;
 }
 
+
+//*****************************************************************************
+bool CDbRoom::DoesSquarePreventDiagonal(
+//Does anything on source/target square prevent moving in the specified diagonal?
+	//
+	//Params:
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const int dx, const int dy)   //(in)   Directional offset
+//
+//Returns:
+//True if an ortho square or gentryii chain prevents diagonal movement
+const
+{
+	return DoesOrthoSquarePreventDiagonal(wX, wY, dx, dy)
+		|| DoesGentryiiPreventDiagonal(wX, wY, wX + dx, wY + dy);
+}
 
 //*****************************************************************************
 bool CDbRoom::DoesSquareContainTeleportationObstacle(
@@ -9695,6 +9711,26 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 			if (pMonster)
 			{
+
+				if (pMonster->wType == M_TEMPORALCLONE) {
+					CTemporalClone* pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+					const int nType = SwapTarstuffRoles(pTemporalClone->wAppearance, bTar, bMud, bGel);
+					if (nType != -1)
+					{
+						//Switched Gel Babies can't swim.  Kill them instead.
+						if (pTemporalClone->wAppearance == M_GELBABY && bIsShallowWater(GetOSquare(wX, wY)))
+						{
+							CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
+							KillMonster(pMonster, CueEvents);
+						}
+
+						pTemporalClone->wIdentity = pTemporalClone->wAppearance = nType;
+
+					}
+
+					continue;
+				}
+
 				const int nType = SwapTarstuffRoles(pMonster->wType, bTar, bMud, bGel);
 				if (nType != -1)
 				{
@@ -10768,6 +10804,9 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 	RoomObject *tObj = this->tLayer[tileIndex];
 
 	const UINT oldTile = tObj ? tObj->tile : RoomObject::emptyTile();
+
+	if (oldTile == T_BRIAR_SOURCE)
+		this->briars.removeSource(wX, wY);
 
 //!!I think this logic can be cleaned up thanks to the new RoomObject data structures -- see updated pushable object logic for how to refactor
 	bool bReplacedCoveringItem = (bIsTLayerCoveringItem(oldTile) && !bIsEmptyTile(wTileNo));
