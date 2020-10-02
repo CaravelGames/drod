@@ -258,6 +258,7 @@
     <ClCompile Include="src\RoomBuilder.cpp" />
     <ClCompile Include="src\Runner.cpp" />
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp" />
+    <ClCompile Include="src\tests\Elements\Briars.cpp" />
     <ClCompile Include="src\tests\Elements\Bridges.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
@@ -268,6 +269,7 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp" />
+    <ClCompile Include="src\tests\Monsters\Fegundo.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PushFluffOntoTarstuffMother.cpp" />

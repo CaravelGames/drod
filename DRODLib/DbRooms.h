@@ -243,6 +243,8 @@ public:
 			const UINT wO, bool& bMonsterObstacle) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
+	bool           DoesOrthoSquarePreventDiagonal(const UINT wX, const UINT wY,
+		const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 	bool           DoubleCanActivateToken(RoomTokenType type) const;
 

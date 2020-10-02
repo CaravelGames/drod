@@ -2826,8 +2826,8 @@ const
 }
 
 //*****************************************************************************
-bool CDbRoom::DoesSquarePreventDiagonal(
-//Does a 4-connected space prevent diagonal movement?
+bool CDbRoom::DoesOrthoSquarePreventDiagonal(
+//Does an ortho-square prevent diagonal movement between the two tiles?
 //The current square and destination square are both checked for these.
 //
 //Params:
@@ -2852,9 +2852,25 @@ const
 	if (GetFSquare(x2, y2) == T_NODIAGONAL)
 		return true;
 
-	return DoesGentryiiPreventDiagonal(wX, wY, x2, y2);
+	return false;
 }
 
+
+//*****************************************************************************
+bool CDbRoom::DoesSquarePreventDiagonal(
+//Does anything on source/target square prevent moving in the specified diagonal?
+	//
+	//Params:
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const int dx, const int dy)   //(in)   Directional offset
+//
+//Returns:
+//True if an ortho square or gentryii chain prevents diagonal movement
+const
+{
+	return DoesOrthoSquarePreventDiagonal(wX, wY, dx, dy)
+		|| DoesGentryiiPreventDiagonal(wX, wY, wX + dx, wY + dy);
+}
 
 //*****************************************************************************
 bool CDbRoom::DoesSquareContainTeleportationObstacle(
