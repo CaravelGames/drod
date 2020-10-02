@@ -167,6 +167,7 @@ static bool OpenSystemBrowser(
 
 #elif defined(__APPLE__)
 #include <string>
+#include <cstring>
 #include <cstdlib>
 
 static bool OpenSystemBrowser(

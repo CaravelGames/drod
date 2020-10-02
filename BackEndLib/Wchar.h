@@ -38,6 +38,8 @@
 #define STRFY(x) #x
 #define STRFY_EXPAND(x) STRFY(x)
 
+#define WCHAR_INTERNAL_BUFFER 512
+
 // C++11 has native 16-bit string support, so use that if we can
 #if !defined(USE_CXX11) && (defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__))
 
@@ -129,7 +131,7 @@ bool isWInteger(const WCHAR* wcz);
 bool isInteger(const char* pcz);
 
 int      _Wtoi(const WCHAR* wsz);
-WCHAR*   _itoW(int value, WCHAR* wcz, int radix);
+WCHAR*   _itoW(int value, WCHAR* wcz, int radix, int bufferLength = WCHAR_INTERNAL_BUFFER);
 
 UINT     WCSlen(const WCHAR* wsz)  FUNCATTR_PURE;
 int      WCScmp(const WCHAR* pwcz1, const WCHAR* pwcz2)  FUNCATTR_PURE;

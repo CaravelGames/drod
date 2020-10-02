@@ -1226,6 +1226,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1264,6 +1268,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1282,6 +1290,10 @@ void CCharacter::Process(
 				}
 
 				Disappear();
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -2445,6 +2457,9 @@ void CCharacter::Process(
 						if (bExecuteNoMoveCommands && bChangeImperative)
 							return; //wait until first move to die
 
+						if (this->bBrainPathmapObstacle)
+							room.UpdatePathMapAt(this->wX, this->wY);
+
 						//Stop script execution whether visible or not.
 						if (bChangeImperative)
 							this->wCurrentCommandIndex = this->commands.size();
@@ -2678,7 +2693,7 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_LevelEntrance:
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
-				if (!pGame->wTurnNo)
+				if (!pGame->wPlayerTurn)
 					return; //don't execute on the room entrance move -- execute next turn
 
 				//When saving room data in GotoLevelEntrance,
@@ -2690,7 +2705,9 @@ void CCharacter::Process(
 				if (!CueEvents.HasOccurred(CID_ExitLevelPending)) //don't queue more than one level exit
 					pGame->GotoLevelEntrance(CueEvents, command.x, py != 0);
 
-				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
+				// revert to current command so it increments correctly for global scripts
+				// or to try again if somehow it failed
+				--this->wCurrentCommandIndex;
 			break;
 
 			case CCharacterCommand::CC_VarSet:
@@ -3302,7 +3319,7 @@ void CCharacter::BuildMarker(const CCharacterCommand& command)
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
 	
-	if (!bIsValidBuildTile(pflags))
+	if (!BuildUtil::bIsValidBuildTile(pflags))
 		return;
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
@@ -3311,10 +3328,6 @@ void CCharacter::BuildMarker(const CCharacterCommand& command)
 
 	if (!room.CropRegion(px, py, endX, endY))
 		return;
-
-	ASSERT(bIsValidBuildTile(pflags));
-	if (!bIsValidBuildTile(pflags))
-		return; //We can't build the forbidden elements
 
 	for (UINT y = py; y <= endY; ++y) {
 		for (UINT x = px; x <= endX; ++x)
@@ -5331,9 +5344,19 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 	if (this->bStunnable)
 		this->bPreventMoveAfterPush = true;
 
+	const UINT wOldX = this->wX, wOldY = this->wY;
+
 	CMonster::PushInDirection(dx, dy, bStun, CueEvents);
 	SetWeaponSheathed();
 	RefreshBriars();
+
+
+	if (this->bBrainPathmapObstacle) {
+		CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+		room.UpdatePathMapAt(wOldX, wOldY);
+		room.UpdatePathMapAt(this->wX, this->wY);
+	}
 
 	if (HasSword())
 	{
@@ -5400,6 +5423,11 @@ void CCharacter::MoveCharacter(
 		pGame->SetDyingEntity(&pGame->swordsman, this);
 		CueEvents.Add(CID_MonsterKilledPlayer, this);
 	}
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(this->wX - dx, this->wY - dy);
+	}
 }
 
 //*****************************************************************************
@@ -5425,6 +5453,9 @@ void CCharacter::TeleportCharacter(
 	ASSERT(this->pCurrentGame->pRoom);
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
+	const UINT wOldX = this->wX;
+	const UINT wOldY = this->wY;
+
 	if (this->bVisible)
 	{
 		ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
@@ -5437,6 +5468,11 @@ void CCharacter::TeleportCharacter(
 	//the caller must handle setting of wPrevX/Y as applicable
 	this->wX = wDestX;
 	this->wY = wDestY;
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(wOldX, wOldY);
+	}
 
 	if (this->bVisible)
 	{

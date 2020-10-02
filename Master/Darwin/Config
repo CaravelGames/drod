@@ -158,8 +158,8 @@ ARCHITECTURE = x86_64
 #ARCHITECTURE = i386
 endif
 
-CXXFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.5
-LDFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.5
+CXXFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.8
+LDFLAGS += -arch $(ARCHITECTURE) -mmacosx-version-min=10.8
 
 # Common flags (always used)
 CXXFLAGS_common = -W -Wall -g
@@ -248,7 +248,7 @@ endif
 # (only needed for static SDL2_ttf)
 FREETYPE_ROOT = $(LIBS_ROOT)
 #FREETYPE_LIBS_STATIC = /usr/X11R6/lib/libfreetype.a
-FREETYPE_LIBS_STATIC = $(LIB_LIB_DIR)/libfreetype.a
+FREETYPE_LIBS_STATIC = -lz -lbz2 $(LIB_LIB_DIR)/libfreetype.a
 FREETYPE_LIBS_DYNAMIC = -L$(LIB_LIB_DIR) -lfreetype
 
 JPEG_ROOT = $(LIBS_ROOT)
@@ -325,15 +325,14 @@ OTHER_LIBS = -lcurl -lz $(LIB_DARWIN)/libstdc++.a $(LIB_DARWIN)/libgcc.a $(APPLE
 else
 
 #For OSX 10.5+ Intel builds
-APPLE_SDK_ROOT = /usr/llvm-gcc-4.2
-APPLE_SDK_ROOT = /Applications/Xcode.app/Contents/Developer/usr/llvm-gcc-4.2
+APPLE_SDK_ROOT =  /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk
 
-LIB_DARWIN = $(APPLE_SDK_ROOT)/lib/gcc/i686-apple-darwin11/4.2.1
-OTHER_INCLUDE = -I$(BITS_DARWIN)
+LIB_DARWIN =  /usr/local/Cellar/gcc@4.9/4.9.4_2/lib/gcc/4.9/gcc/x86_64-apple-darwin17.7.0/4.9.4/
+OTHER_INCLUDE =  -I/opt/sw/include/ -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
 
 ifeq ($(ARCHITECTURE),x86_64)
 
-OTHER_LIBS = -lcurl -lz $(LIB_DARWIN)/libstdc++.dylib $(LIB_DARWIN)/x86_64/libgcc.a /usr/lib/libc.dylib -framework AudioToolbox -framework AudioUnit -framework Carbon -framework System -headerpad_max_install_names
+OTHER_LIBS = -lcurl -lz  /usr/lib/libc.dylib -F$(APPLE_SDK_ROOT)/System/Library/Frameworks -framework AudioToolbox -framework AudioUnit -framework Carbon -framework System -headerpad_max_install_names
 
 else
 

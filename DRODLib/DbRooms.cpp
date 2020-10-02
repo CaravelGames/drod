@@ -2826,8 +2826,8 @@ const
 }
 
 //*****************************************************************************
-bool CDbRoom::DoesSquarePreventDiagonal(
-//Does a 4-connected space prevent diagonal movement?
+bool CDbRoom::DoesOrthoSquarePreventDiagonal(
+//Does an ortho-square prevent diagonal movement between the two tiles?
 //The current square and destination square are both checked for these.
 //
 //Params:
@@ -2852,9 +2852,25 @@ const
 	if (GetFSquare(x2, y2) == T_NODIAGONAL)
 		return true;
 
-	return DoesGentryiiPreventDiagonal(wX, wY, x2, y2);
+	return false;
 }
 
+
+//*****************************************************************************
+bool CDbRoom::DoesSquarePreventDiagonal(
+//Does anything on source/target square prevent moving in the specified diagonal?
+	//
+	//Params:
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const int dx, const int dy)   //(in)   Directional offset
+//
+//Returns:
+//True if an ortho square or gentryii chain prevents diagonal movement
+const
+{
+	return DoesOrthoSquarePreventDiagonal(wX, wY, dx, dy)
+		|| DoesGentryiiPreventDiagonal(wX, wY, wX + dx, wY + dy);
+}
 
 //*****************************************************************************
 bool CDbRoom::DoesSquareContainTeleportationObstacle(
@@ -5553,6 +5569,11 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 void CDbRoom::PostProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 // Process some things which need to happen after all room-state-changing things are finished 
 {
+	// This flag is used in a situation where tar mother in a room with 0 tar grows but its tar is
+	// then destroyed by, for example, spike-induced keg explosion, which normally would cause
+	// tar gates to be toggled ONCE
+	this->bTarstuffGateTogglePending = false;
+
 	//Seep die only after pressure plates may have triggered
 	KillMonstersOnHazard(CueEvents);
 
@@ -5928,6 +5949,10 @@ void CDbRoom::ProcessAumtlichGaze(CCueEvents &CueEvents, const bool bFullMove)
 //Determine which squares are affected by aumtlich in room.
 //Do freeze player/aumtlich check.
 {
+	// Do not process on turn 0, even after double placement
+	if (this->pCurrentGame->wPlayerTurn == 0)
+		return;
+
 	//Remove all previous gaze effects.
 	this->pCurrentGame->swordsman.bFrozen = false;
 
@@ -7507,6 +7532,7 @@ void CDbRoom::Clear()
 		this->wOverheadImageStartX = this->wOverheadImageStartY =
 		this->wTrapDoorsLeft = this->wTarLeft = 0;
 	this->bTarWasBuilt = false;
+	this->bTarstuffGateTogglePending = false;
 	this->bBetterVision = false;
 	this->bPersistentCitizenMovement = this->bHasConquerToken = this->bHasActiveBeacon = false;
 	this->bIsRequired = false;
@@ -9004,6 +9030,9 @@ void CDbRoom::GrowTar(
 		{
 			if (pMonster->wType == wMotherType && GetTSquare(pMonster->wX, pMonster->wY) != wTarType)
 			{
+				if (this->wTarLeft == 0)
+					this->bTarstuffGateTogglePending = true;
+
 				Plot(pMonster->wX, pMonster->wY, wTarType);
 				++this->wTarLeft;
 				ASSERT(GetTSquare(pMonster->wX, pMonster->wY) == wTarType);
@@ -9723,6 +9752,26 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 			if (pMonster)
 			{
+
+				if (pMonster->wType == M_TEMPORALCLONE) {
+					CTemporalClone* pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
+					const int nType = SwapTarstuffRoles(pTemporalClone->wAppearance, bTar, bMud, bGel);
+					if (nType != -1)
+					{
+						//Switched Gel Babies can't swim.  Kill them instead.
+						if (pTemporalClone->wAppearance == M_GELBABY && bIsShallowWater(GetOSquare(wX, wY)))
+						{
+							CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
+							KillMonster(pMonster, CueEvents);
+						}
+
+						pTemporalClone->wIdentity = pTemporalClone->wAppearance = nType;
+
+					}
+
+					continue;
+				}
+
 				const int nType = SwapTarstuffRoles(pMonster->wType, bTar, bMud, bGel);
 				if (nType != -1)
 				{
@@ -10383,7 +10432,7 @@ void CDbRoom::DestroyTar(
 	{
 		ASSERT(this->wTarLeft); //This function should never be called with 0 Tar squares
 		--this->wTarLeft;
-		if (!this->wTarLeft)
+		if (!this->wTarLeft && !this->bTarstuffGateTogglePending)
 		{
 			CueEvents.Add(CID_AllTarRemoved);
 			ToggleBlackGates(CueEvents);
@@ -10827,6 +10876,9 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 	RoomObject *tObj = this->tLayer[tileIndex];
 
 	const UINT oldTile = tObj ? tObj->tile : RoomObject::emptyTile();
+
+	if (oldTile == T_BRIAR_SOURCE)
+		this->briars.removeSource(wX, wY);
 
 //!!I think this logic can be cleaned up thanks to the new RoomObject data structures -- see updated pushable object logic for how to refactor
 	bool bReplacedCoveringItem = (bIsTLayerCoveringItem(oldTile) && !bIsEmptyTile(wTileNo));
@@ -11616,6 +11668,7 @@ bool CDbRoom::SetMembers(
 	this->bHasConquerToken = Src.bHasConquerToken;
 	this->bHasActiveBeacon = Src.bHasActiveBeacon;
 	this->bTarWasBuilt = Src.bTarWasBuilt;
+	this->bTarstuffGateTogglePending = Src.bTarstuffGateTogglePending;
 
 	//Room tile layers
 	if (!AllocTileLayers())

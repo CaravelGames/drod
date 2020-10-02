@@ -90,6 +90,8 @@ private:
 	static const int CY_CANCEL = CY_STANDARD_BUTTON;
 	static const int X_CANCEL = CX_DIALOG / 2 + CX_SPACE / 2;
 	static const int Y_CANCEL = CY_DIALOG - CY_SAVE - CY_SPACE;
+
+	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
 
 #endif

@@ -326,6 +326,14 @@
 			Name="General"
 			>
 			<File
+				RelativePath=".\BuildUtil.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\BuildUtil.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Combat.cpp"
 				>
 			</File>

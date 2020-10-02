@@ -185,7 +185,7 @@ public:
 	MovementIQ movementIQ;  //movement behavior
 
 private:
-	void BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
+	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
 	void Disappear();
 	int  GetIndexOfCommandWithLabel(const UINT label) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
@@ -194,7 +194,7 @@ private:
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 
-	void  setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	bool setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 
 	void SyncCustomCharacterData(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
 	static void SyncCustomCharacterData(UINT& wLogicalIdentity, const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);

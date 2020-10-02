@@ -1,0 +1,247 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp">
+      <Filter>Tests\Crashes</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedSlayers.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedStalwarts.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp">
+      <Filter>Tests\Player\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp">
+      <Filter>Tests\Player\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp">
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp">
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp">
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp">
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CTestDb.cpp" />
+    <ClCompile Include="src\RoomBuilder.cpp" />
+    <ClCompile Include="src\Runner.cpp" />
+    <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Puff\PushFluffOntoTarstuffMother.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp">
+      <Filter>Tests\Monsters\Puff</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Rattlesnake\RattlesnakeVsFiretrap.cpp">
+      <Filter>Tests\Monsters\Rattlesnake</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\RoachQueen\StunnedRoachQueen.cpp">
+      <Filter>Tests\Monsters\RoachQueen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Seep\SeepVsPit.cpp">
+      <Filter>Tests\Monsters\Seep</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Seep\SeepAttackWeaponBlock.cpp">
+      <Filter>Tests\Monsters\Seep</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Waterskipper\SkipperAttackWeaponBlock.cpp">
+      <Filter>Tests\Monsters\Waterskipper</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Slayer\SlayerBodyKillBlocked.cpp">
+      <Filter>Tests\Monsters\Slayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CAssert.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\FegundoPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\PuffPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\WraithwingPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\ConstructPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp">
+      <Filter>Tests\Scripting\WaitForSomeoneToPushMe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForPressurePlates.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForToken.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp">
+      <Filter>Tests\Scripting\WaitForItem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp">
+      <Filter>Tests\Scripting\TeleportPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp">
+      <Filter>Tests\Scripting\ImperativePushable</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp">
+      <Filter>Tests\Scripting\ImperativePushable</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\DoublePlacementPreventsRecording.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp">
+      <Filter>Tests\RoomProcessing\TarstuffGates</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp">
+      <Filter>Tests\Player\TurnZero</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\Bridges.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Imperative_BrainPathmapObstacle.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\Briars.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Fegundo.cpp">
+      <Filter>Tests\Monsters</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\catch.hpp" />
+    <ClInclude Include="src\CTestDb.h" />
+    <ClInclude Include="src\RoomBuilder.h" />
+    <ClInclude Include="src\Runner.h" />
+    <ClInclude Include="src\CAssert.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Tests">
+      <UniqueIdentifier>{b1886f84-672c-490e-afc0-8c7f85842473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Crashes">
+      <UniqueIdentifier>{36ff5018-d6ba-418b-b22e-c5d9c4984e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters">
+      <UniqueIdentifier>{cb8dc739-4e76-427a-a239-6aa27710cf0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\ArmedMonsters">
+      <UniqueIdentifier>{d1c44d27-e92c-4676-8364-469be2717a51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Aumtlich">
+      <UniqueIdentifier>{87c43398-97ec-4e67-8bf0-b09bf658aaa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Player">
+      <UniqueIdentifier>{fffc2e19-3296-42cf-aef9-adf8a8d10952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Player\Basic">
+      <UniqueIdentifier>{39575c3c-c7e8-425b-9d16-edcc3a925b70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Player\Bugs">
+      <UniqueIdentifier>{80164149-2896-492e-9c28-41f47a3d7764}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Puff">
+      <UniqueIdentifier>{b3a96d23-a82b-40a1-ad71-8ec418d27ffb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Rattlesnake">
+      <UniqueIdentifier>{edcd5350-5458-43c1-9ea2-e78f4af8cad8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\RoachQueen">
+      <UniqueIdentifier>{8a623a1e-928e-4ac1-b96f-019f16fb95cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Seep">
+      <UniqueIdentifier>{92892e49-1490-430e-a61a-fc103a776a73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Waterskipper">
+      <UniqueIdentifier>{adc0aff6-7e81-4ca9-b163-dcd55330a372}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Slayer">
+      <UniqueIdentifier>{a1d92dfc-94b7-4873-977e-b4de75f56173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\PlayerRoles">
+      <UniqueIdentifier>{8311fd90-946f-480d-928f-f0b0cdc7b57f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting">
+      <UniqueIdentifier>{cc941e93-d0a7-4630-848e-7a451b1b8192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\WaitForSomeoneToPushMe">
+      <UniqueIdentifier>{6e1d7363-5c71-451e-a604-8ae7aafa4e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\WaitForItem">
+      <UniqueIdentifier>{fdf9061f-7d68-4a8c-886e-a8a1719607b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\TeleportPlayer">
+      <UniqueIdentifier>{f6c33167-1894-4f30-bcf3-7253f9e87a1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\ImperativePushable">
+      <UniqueIdentifier>{cc9d50d6-9c31-477a-8443-3c511f4696ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\Build">
+      <UniqueIdentifier>{a20303f0-fc27-414b-874f-d11c47404727}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\TemporalToken">
+      <UniqueIdentifier>{5749df41-85cb-481c-99ca-6f7a7725696c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\RoomProcessing">
+      <UniqueIdentifier>{fed09e08-4b0d-464e-9d02-ad1d0d408e23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\RoomProcessing\TarstuffGates">
+      <UniqueIdentifier>{06722f80-8303-4b9e-9e01-ee90b7cbfb5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Elements">
+      <UniqueIdentifier>{b54326e6-d558-404f-82fc-5e8214ef1169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Player\TurnZero">
+      <UniqueIdentifier>{2d45dc5d-441e-4fb0-93b4-569dc83b1979}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

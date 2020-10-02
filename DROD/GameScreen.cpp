@@ -2830,6 +2830,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	this->pRoomWidget->DrawOverheadLayer(this->pRoomWidget->pRoomSnapshotSurface);
 	this->pRoomWidget->DrawGhostOverheadCharacters(this->pRoomWidget->pRoomSnapshotSurface, false);
 	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
+	this->pFaceWidget->SetIsDeathAnimation(true);
 
 	const bool bFade = g_pTheBM->bAlpha;
 	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
@@ -2952,6 +2953,10 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 						break;
 						default: break;
 					}
+					if (keysym.sym == SDLK_ESCAPE) {
+						cmd_response = CMD_ESCAPE;
+						dwStart = 0;
+					}
 				}
 				break;
 				default: break;
@@ -3057,6 +3062,8 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		ClearSpeech();
 		this->pFaceWidget->SetMood(Mood_Normal);
 	}
+
+	this->pFaceWidget->SetIsDeathAnimation(false);
 
 	return cmd_response;
 }
@@ -3353,7 +3360,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	}
 
 	if (this->pCurrentGame && !bWasCutScene)
-		this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+		this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 
 	return eNextScreen;
 }
@@ -4432,14 +4439,25 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 		PaintClock();
 		const int cmd_response = HandleEventsForPlayerDeath(CueEvents);
-		const bool bUndoDeath = cmd_response == CMD_UNDO;
+
+		if (cmd_response == CMD_ESCAPE) {
+			eNextScreen = SCR_Return;
+		}
+
+		const bool bUndoDeath = (
+			cmd_response == CMD_UNDO 
+			|| cmd_response == CMD_ESCAPE // Undo the death move when exiting from death so that state is saved
+		);
 		if (bUndoDeath) {
 			if (this->pCurrentGame && !this->pCurrentGame->dwCutScene)
-				this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+				this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 			UndoMove();
 		}
 		CueEvents.Clear();	//clear after death sequence (whether move is undone or not)
 		//but before room restart so speech on room start can be retained
+
+		// Image overlay opacity must be restored, otherwise they'll keep their opacity while playing until they are regenerated
+		this->pRoomWidget->SetOpacityForEffectsOfType(EIMAGEOVERLAY, 1.0f);
 
 		ASSERT(!this->pCurrentGame->bIsGameActive || bUndoDeath);
 		if (GetScreenType() == SCR_Demo)
@@ -4640,9 +4658,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_RoomConquerPending))  //priority of temporary moods
 	{
-		UINT eClearID = GetPlayerClearSEID();
-		if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
-		this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		if (this->pRoomWidget->subtitles.empty()) {
+			UINT eClearID = GetPlayerClearSEID();
+			if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
+			this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_MonsterDiedFromStab))
 	{
@@ -5989,7 +6009,7 @@ void CGameScreen::ShowRoomTemporarily(const UINT roomID)
 	pTempGame->bSwordsmanOutsideRoom = true;
 	pTempGame->CompletedScripts = this->pCurrentGame->CompletedScripts;
 	pTempGame->ConqueredRooms = this->pCurrentGame->ConqueredRooms;
-	pTempGame->stats = this->pCurrentGame->stats;
+	pTempGame->statsAtRoomStart = this->pCurrentGame->stats;
 	pRoom->SetCurrentGame(pTempGame);
 	pTempGame->SetTurn(0, CueEvents);
 
@@ -6186,7 +6206,7 @@ void CGameScreen::UndoMove()
 		return; //nothing to undo
 
 	if (!this->bPlayTesting && //unlimited undo always allowed during playtesting
-			!this->undo.canUndoBefore(this->pCurrentGame->wTurnNo))
+			!this->undo.canUndoBefore(this->pCurrentGame->wPlayerTurn))
 		return;
 
 	g_pTheSound->PlaySoundEffect(SEID_UNDO);

@@ -167,7 +167,7 @@ bool CTemporalClone::OnStabbed(
 )
 {
 	if ((this->wIdentity == M_WUBBA || this->wIdentity == M_FLUFFBABY)
-		 && weaponType != WeaponType::WT_Firetrap) {
+		 && weaponType != WT_Firetrap) {
 		// Wubbas and Puffs can only be killed by Firetrap stabs.
 		return false;
 	}
@@ -243,7 +243,8 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 		}
 	}
 
-	ApplyMimicMove(dx, dy, command, nGetO(dx,dy), CueEvents, bEnteredTunnel);
+	if (!this->bPushedThisTurn)
+		ApplyMimicMove(dx, dy, command, nGetO(dx,dy), CueEvents, bEnteredTunnel);
 
 	//Light any fuse stood on.
 	if (CanLightFuses())

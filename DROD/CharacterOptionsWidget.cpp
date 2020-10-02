@@ -56,10 +56,11 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, g_pTheDB->GetMessageText(MID_SetProcessingSequenceDescription)));
 
 	this->pSequenceTextBox = new CTextBoxWidget(0L, X_SEQUENCETEXT, Y_SEQUENCETEXT,
-		CX_SEQUENCETEXT, CY_SEQUENCETEXT, 9, TAG_OK);
+		CX_SEQUENCETEXT, CY_SEQUENCETEXT, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);
+	this->pSequenceTextBox->AddHotkey(SDLK_RETURN, TAG_SAVE);
 
 	AddWidget(this->pSequenceTextBox);
 }
@@ -68,23 +69,29 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 void CCharacterOptionsDialog::SetCharacter(
 	const CCharacter *pCharacter
 ){
-	WCHAR temp[8];
+	const UINT bufferLength = PROCESSING_SEQUENCE_MAX_LENGTH + 1; // Added space for null-termination
+	WCHAR temp[bufferLength];
 
-	this->pSequenceTextBox->SetText(_itoW(pCharacter->wProcessSequence, temp, 10));
+	_itoW(pCharacter->wProcessSequence, temp, 10, bufferLength);
+
+	this->pSequenceTextBox->SetText(temp);
 }
 
 //*****************************************************************************
 void CCharacterOptionsDialog::SetCharacter(
 	HoldCharacter *pCharacter
 ){
-	WCHAR temp[8];
-	
-	this->pSequenceTextBox->SetText(_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER), temp, 10));
+	const UINT bufferLength = PROCESSING_SEQUENCE_MAX_LENGTH + 1; // Added space for null-termination
+	WCHAR temp[bufferLength];
+
+	_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER), temp, 10, bufferLength);
+
+	this->pSequenceTextBox->SetText(temp);
 }
 
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetProcessSequence(){
-	return (UINT) _Wtoi(this->pSequenceTextBox->GetText());
+	return (UINT) this->pSequenceTextBox->GetNumber();
 }
 
 //*****************************************************************************
@@ -95,14 +102,11 @@ void CCharacterOptionsDialog::OnKeyDown(
 	const UINT /*dwTagNo*/,       //(in)   Widget that event applied to.
 	const SDL_KeyboardEvent &Key) //(in)   Event.
 {
-	//Trap ESC so it doesn't close the parent dialog.
-	if (Key.keysym.sym == SDLK_ESCAPE)
+	switch (Key.keysym.sym) 
 	{
-		//CWidget *pWidget = GetWidget(TAG_OK2);
-		//if (!pWidget)
-		//	pWidget = GetWidget(TAG_OK);
-		//if (pWidget)
-		//	OnClick(pWidget->GetTagNo()); //deactivate
-		//return;
+		case SDLK_ESCAPE:
+			Deactivate();
+			dwDeactivateValue = CCharacterOptionsDialog::TAG_CANCEL;
+			break;
 	}
 }

@@ -502,6 +502,8 @@ public:
 			const UINT wO, const bool bRaisedSrc) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
+	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
+
 	void           ExpandBriars(CCueEvents& CueEvents);
 //	CMonster*      FindNextClone();
 	void           FixUnstableTar(CCueEvents& CueEvents);

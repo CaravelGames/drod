@@ -131,6 +131,7 @@ public:
 	UINT           wTarLeft;
 	UINT           wTrapDoorsLeft;
 	bool		   bTarWasBuilt;	//Whether tar was built this turn and the unstable tar needs to be cleared
+	bool           bTarstuffGateTogglePending; // Whether new tar was grown while there was zero tar in the room
 	bool           bBetterVision;    //sight token
 	bool           bPersistentCitizenMovement; //citizen movement algorithm
 	bool           bHasConquerToken;   //whether a Conquer token is in the room
@@ -242,6 +243,8 @@ public:
 			const UINT wO, bool& bMonsterObstacle) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
+	bool           DoesOrthoSquarePreventDiagonal(const UINT wX, const UINT wY,
+		const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 	bool           DoubleCanActivateToken(RoomTokenType type) const;
 
