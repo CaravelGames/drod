@@ -52,6 +52,7 @@ public:
 	void SetMovementType();
 	virtual void Stun(CCueEvents &CueEvents, UINT val=1);
 	virtual bool CanMoveOntoTunnelAt(UINT /*col*/, UINT /*row*/) const { return true; }
+	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
 
 	int getNextCommand() const;
 	void InputCommands(const vector<int>& commands);
