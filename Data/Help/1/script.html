@@ -25,7 +25,8 @@ designate.  There are four general classes of script commands, as follows:</p>
 <a href="#predefined-script-vars">Predefined script vars</a><br />
 <a href="#threatclockdisplay">Threat clock display modes</a><br />
 <a href="#playerinputvars">List of player command input variables</a><br />
-<a href="#image-overlay-commands">Image Overlay commands</a>
+<a href="#image-overlay-commands">Image Overlay commands</a><br/>
+<a href="#myscript-injection">_MyScript variable injections</a>
 </p>
 <hr />
 
@@ -63,7 +64,7 @@ designate.  There are four general classes of script commands, as follows:</p>
       finishes when the NPC arrives at the destination square.
       <a name="singlestep">Enable</a> "Single step" to have the NPC only attempt
       to make a single step toward the indicated destination before continuing
-      to the next script command.  If no move can be made character will wait instead 
+      to the next script command.  If no move can be made character will wait instead
 	  and the next script command will run on the next turn.</li>
   <li><a name="move"><b>Move</b></a> - Similar to <a href="#moveto"><b>Move
       to</b></a>, except a relative number of tiles to move from the NPC's
@@ -76,8 +77,8 @@ designate.  There are four general classes of script commands, as follows:</p>
   <li><a name="face-towards-like-guard"><b>Face towards like guard</b></a> - Use this command to make the NPC change the direction they're facing towards a given point or entity just as the guard would.<br/>
       <a name="face-towards-like-guard-single-step"><u>Single step</u></a>: Setting this to <i>on</i> will make the character slowly turn towards the target direction. <i>Off</i> will make it turn immediately, just as <i>face direction</i> does.<br />
       <a name="face-towards-like-guard-targets"><u>Targets</u></a>: You can select zero, one or multiple targets from the list of entity groups - ctrl+click to deselect/select multiple. If no group is selected you will be asked to select a tile towards which the NPC should face.<br />
-      <a name="face-towards-like-guard-conditions"><u>Using in conditions</u></a>: This command can be used with <a href="#if">if statements</a> to check if the character is already facing the target direction.<br />
-      <a name="face-towards-like-guard-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position in the room if no target group is selected; <b>W</b> - single step 0/1; <b>F</b> - bit map of the target groups.</li>
+      <a name="face-towards-like-guard-conditions"><u>Using in conditions</u></a>: This command can be used with <a href="#if">if statements</a> to check if the character is already facing the target direction.
+	</li>
   <li><a name="teleport-to"><b>Teleport to</b></a> - Instantly moves the NPC
       to the indicated tile, as long as another entity is not occupying it.</li>
   <li><a name="teleport-player-to"><b>Teleport player to</b></a> - Instantly moves the player to the indicated tile processing all interactions: player will drown or fall into pit, potions will be drunk,
@@ -86,8 +87,7 @@ designate.  There are four general classes of script commands, as follows:</p>
       <a name="teleport-player-to-blocked-teleport"><u>Blocked teleports</u></a>: This command will be silently ignored if you try to teleport the player: onto another monster/entity which can't be killed by stepping, to a location outside the room boundaries, onto the tile currently occupied by the player.<br />
       <a name="teleport-player-to-temporal-split"><u>Temporal recording</u></a>: If the player gets teleported the quantum flux will reset and stop the temporal recording.<br />
       <a name="teleport-player-to-consequences"><u>Monsters on target tile</u></a>: You can teleport onto a monster and instantly kill it if you are currently capable of killing that monster by stepping onto it. You can't teleport onto monsters that leave a pile behind, just like you can't step on them in the Slayer role or while wielding a dagger (in case of the dagger it's the stab that kills, you don't actually end up moving onto their space).<br />
-      <a name="teleport-player-to-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position where the player should be teleported.<br />
-      </li>
+    </li>
 </ol>
 
   <p>
@@ -350,13 +350,13 @@ the state of the room and wait indefinitely until certain events occur.</p>
       <a name="get-natural-target-results"><u>Results</u></a>: Results from this function are stored in <b>_ReturnX</b> and <b>_ReturnY</b> which are global variables, accessible by all scripts.<br />
 	  <a name="get-natural-target-no-target"><u>No target</u></a>: If no target is found the character's current position will be returned.<br />
       <a name="get-natural-target-using-in-conditions"><u>Using in conditions</u></a>: This command <b>cannot</b> be used with an <a href="#if">if statements</a>.<br />
-	  <a name="get-natural-target-using-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X</b> - type of targetting (0=Regular monster).</li>
+	</li>
 	<li><a name="get-entity-direction"><b>Get entity direction</b></a> - Gets the direction an entity at a given position is facing and stores the result in <b>_ReturnX</b>.<br/>
       <a name="get-entity-direction-direction-values"><u>Direction values</u></a>: NW=0, N=1, NE=2, W=3, No orientation=4, E=5, SW=6, S=7, SE=8.<br />
       <a name="get-entity-direction-guard-targets"><u>Results</u></a>: Result from this function is stored in <b>_ReturnX</b> which is a global variables, accessible by all scripts.<br />
 	  <a name="get-entity-direction-no-target"><u>No target</u></a>:  If no entity is found the function returns No orientation. If player is found on the specified position, the player's direction is returned.<br />
       <a name="get-entity-direction-using-in-conditions"><u>Using in conditions</u></a>: This command <b>cannot</b> be used with an <a href="#if">if statements</a>.<br />
-	  <a name="get-entity-direction-using-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position to check.</li>
+	</li>
 </ol>
 
 <p><a name="decision"><b>5.&nbsp;&nbsp;Decision making</b></a> - Use the
@@ -648,6 +648,188 @@ setalpha 0 fadetoalpha 255 1000 display 2000 fadetoalpha 0 800<br />
 <br />
 The text supports variable interpolation, so you can have parameters like "$.ImageX$" in the text. Any part of the command text may be inserted in this fashion.<br />
 Certain commands with time duration, marked above, may be optionally prefixed with the letter "p".  This indicates that the command will not run to completion before any subsequent commands are executed, but rather will run in parallel with the next command. Multiple parallel commands may be executed concurrently.<br />
+
+<p><a name="myscript-injection"><b>_MyScript variable injections</b></a></p>
+
+Many commands in DROD Script can accept dynamic values for certain options by taking values from any of the _MyScript variables. When a _MyScript variable is equal to -9999 it indicates its value should not be used - anything else and commands will take their values, overriding whatever you input in the command itself.<br/>
+<br/>
+Below is a table of all the ways this can be used:<br/>
+<br/>
+<table>
+<tr>
+<td width="150">Command</td>
+<td width="100">X</td>
+<td width="100">Y</td>
+<td width="100">W</td>
+<td width="100">H</td>
+<td width="100">F</td>
+</tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Activate item</td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td>Amb. Sound at</td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td>Appear at</td>            <td>Target X</td>     <td> Target Y</td>     <td></td>             <td></td>             <td></td></tr>
+<tr><td>Attack Tile</td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Attack type</td></tr>
+<tr><td>Build</td>                <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Build marker</td>         <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td>Cut scene</td>            <td>Ms per frame</td> <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>Destroy trapdoor</td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td>Display filter</td>       <td>Filter</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>Face Direction</td>       <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Face Towards</td>         <td>Target X</td>     <td>Target Y</td>      <td>Single Step</td>  <td></td>             <td>Entity bitmap</td></tr>
+<tr><td>Flash mess.</td>          <td>Red (0-255)</td>  <td>Green (0-255)</td> <td>Blue (0-255)</td> <td>Use color?</td>   <td></td></tr>
+<tr><td>Game effect</td>          <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Game effect</td>  <td>Play sound</td></tr>
+<tr><td>Generate entity</td>      <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Entity</td>       <td></td></tr>
+<tr><td>Get entity dir.</td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Get natural target</td>   <td>Target type</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>Goto lev. entrance</td>   <td></td>             <td>Skip e. screen</td><td></td>             <td></td>             <td></td></tr>
+<tr><td>Move</td>                 <td>X Move</td>       <td>Y Move</td>        <td>Allow Turn.</td>  <td>Single Step</td>  <td></td></tr>
+<tr><td>Move to</td>              <td>Target X</td>     <td>Target Y</td>      <td>Allow Turn.</td>  <td>Single Step</td>  <td>Entity bitmap</td></tr>
+<tr><td>Play Video</td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>Set player weapon</td>    <td>Weapon</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>Teleport Player</td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td>Teleport To</td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td>Wait</td>                 <td>Wait turns</td>   <td>Y</td>             <td> </td>            <td> </td>            <td> </td></tr>
+<tr><td>W. entity</td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>W. entity type</td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td>W. door</td>        <td>X</td>            <td>Y</td>             <td></td>             <td></td>             <td></td></tr>
+<tr><td>W. item</td>        <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td>W. no build mark.</td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td>W. open move</td>         <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>W. player to face</td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>W. player to input</td>   <td>Command</td>      <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>W. player to move</td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td>W. remains</td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Remains</td></tr>
+<tr><td>W. turn</td>        <td>Turn number</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td>W. weapon</td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Weapon</td></tr>
+<tr><td>W. while entity</td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td>W. while ent. type</td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td>W.Map Tile Icon</td>      <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Entity</td>       <td>Map display</td></tr>
+<tr><td>W.Map Image Icon</td>     <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Image</td>        <td>Map display</td></tr>
+</table>
+<br />
+<br />
+
+<b>Entity bitmap</b><br />
+This is a bit map value, meaning it can contain multiple values created by just adding them.<br/>
+<b>1 (0x001)</b> - Player<br/>
+<b>2 (0x002)</b> - Halph<br/>
+<b>4 (0x004)</b> - Monster<br/>
+<b>8 (0x008)</b> - NPC<br/>
+<b>16 (0x010)</b> - Double<br/>
+<b>32 (0x020)</b> - Self<br/>
+<b>64 (0x040)</b> - Slayer<br/>
+<b>128 (0x080)</b> - Beethro<br/>
+<b>256 (0x100)</b> - Stalwart<br/>
+<br/>
+
+<b>Attack type</b>:<br />
+<b>0</b> - Stab<br/>
+<b>1</b> - Explode<br/>
+<b>2</b> - Damage<br/>
+<b>3</b> - Kill<br/>
+<br/>
+
+<b>Remains</b><br />
+<b>15</b> - Rock golem<br/>
+<b>26</b> - Fegundo<br/>
+<b>40</b> - Construct<br/>
+<br/>
+
+<b>Weapon</b><br />
+<b>-2</b> - Off<br/>
+<b>-1</b> - On<br/>
+<b>0</b> - Sword<br/>
+<b>1</b> - Pickaxe<br/>
+<b>2</b> - Spear<br/>
+<b>3</b> - Staff<br/>
+<b>4</b> - Dagger<br/>
+<b>5</b> - Caber<br/>
+
+<b>Game effect</b><br />
+<b>0</b> - Blood splatter<br/>
+<b>1</b> - Mud splatter<br/>
+<b>2</b> - Tar splatter<br/>
+<b>3</b> - Gel splatter<br/>
+<b>4</b> - Seep splatter<br/>
+<b>5</b> - Golem splatter<br/>
+<b>6</b> - Slayer splatter<br/>
+<b>7</b> - Debris<br/>
+<b>8</b> - Sparks<br/>
+<b>9</b> - Explosion<br/>
+<b>10</b> - Splash<br/>
+<b>11</b> - Steam<br/>
+<b>12</b> - Swirl<br/>
+<b>13</b> - Vermin<br/>
+<b>14</b> - Bolt<br/>
+<b>15</b> - Jitter<br/>
+<b>16</b> - Floor spikes<br/>
+<b>17</b> - Puff explosion<br/>
+<b>18</b> - Fire trap<br/>
+<b>19</b> - Ice melting<br/>
+<b>20</b> - Puff merged into fluff<br/>
+
+<b>Filter</b><br />
+<b>0</b> - Normal<br/>
+<b>1</b> - Black and White<br/>
+<b>2</b> - Sepia<br/>
+<b>3</b> - Negative<br/>
+<br/>
+
+<b>Map display</b><br />
+<b>0</b> - Off<br />
+<b>1</b> - On<br />
+<b>2</b> - Level state<br />
+<b>4</b> - Locked<br />
+<b>8</b> - Disabled<br />
+<b>16</b> - Image only<br />
+<br />
+
+<b>Target type</b><br />
+<b>0</b> - Regular Monster<br />
+<br />
+
+<b>Tile type</b><br />
+ID of the tile. Please refer to the source code DRODLib\TileConstants.h for a list of all tiles and their IDs.<br />
+<br />
+
+<b>Entity</b><br />
+ID of the entity. Please refer to the source code DRODLib\MonsterType.h for a list of all entities and their IDs.<br />
+You can also use IDs of custom entities, visible above the list of custom entities on the "Character Management" dialog<br/>
+<br />
+
+<b>Orientation values:</b><br />
+<b>0</b> - North-West<br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>4</b> - No Orientation<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Clockwise<br />
+<b>10</b> - Counter clockwise<br />
+<br />
+<b>Command values:</b><br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Rotate Clockwise<br />
+<b>10</b> - Rotate Counter clockwise<br />
+<b>11</b> - North-West<br />
+<b>12</b> - Wait<br />
+<b>23</b> - Special command<br />
 
 <hr />
 <a href="character.html">Character Scripting</a><br />
