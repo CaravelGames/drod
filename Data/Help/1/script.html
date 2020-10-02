@@ -450,58 +450,62 @@ continue executing script commands from a different location in the script.</p>
 
 <p><a name="imperativelist"><b>Imperatives</b>
 </a> - NPC/script properties that may be set with the <a href="#imperative">Imperative</a> command.</p>
-  <ol>
-    <li><a name="impvulnerable"><u>Vulnerable</u></a>: Makes the NPC vulnerable to
+  <ul>
+    <li><a name="impvulnerable"><b>Vulnerable</b></a>: Makes the NPC vulnerable to
       killing. This is the default setting for most NPC graphic types.</li>
-    <li><a name="impinvulnerable"><u>Invulnerable</u></a>: Makes the NPC
+    <li><a name="impinvulnerable"><b>Invulnerable</b></a>: Makes the NPC
       invincible so it cannot be killed by stabbing or other methods of
       inflicting damage. The NPC may still be killed by falling off a platform
       or by briar growth.  Some NPC types, like Wubbas, are invulnerable by
       default.</li>
-    <li><a name="impcritical"><u>Critical hero</u></a>: When set, the room will
+    <li><a name="impcritical"><b>Critical hero</b></a>: When set, the room will
       restart if the NPC is ever killed. Some NPC types, like Beethro and Halph,
       are marked critical heros by default.</li>
-    <li><a name="imprequired"><u>Required target</u></a>: When set, the NPC must
+    <li><a name="imprequired"><b>Required target</b></a>: When set, the NPC must
       be killed in order to conquer the room.  This command only applies when
       the room is not otherwise clean on entrance.</li>
-    <li><a name="impsafe"><u>Safe</u></a>: Forbids the NPC to step on the player
+    <li><a name="impsafe"><b>Safe</b></a>: Forbids the NPC to step on the player
       and kill him (default).</li>
-    <li><a name="impswordsafe"><u>Sword safe to player</u></a>: Sword stabs from
+    <li><a name="impswordsafe"><b>Sword safe to player</b></a>: Sword stabs from
       this NPC won't harm the player.</li>
-    <li><a name="impdeadly"><u>Deadly</u></a>: Allows the NPC to step on the
+    <li><a name="impdeadly"><b>Deadly</b></a>: Allows the NPC to step on the
       player and kill him.  Also makes sword hits deadly to the player (default).</li>
-    <li><a name="impdie"><u>Die</u></a>: Makes the NPC die with a blood splatter.</li>
-    <li><a name="impdiespecial"><u>Die special</u></a>: Makes the NPC perform a
+    <li><a name="impdie"><b>Die</b></a>: Makes the NPC die with a blood splatter.</li>
+    <li><a name="impdiespecial"><b>Die special</b></a>: Makes the NPC perform a
       monster-specific death sequence, if applicable.  Currently, this command
       applies to rock golems and fegundos. Rock golem NPCs will turn into a rock
       pile when this command is invoked. Fegundos will explode and turn into a
       regular fegundo ash monster. For other monster types, this acts
       identically to "Die".</li>
-    <li><a name="impendwhenkilled"><u>End when killed</u></a>: If the NPC is killed,
+    <li><a name="impendwhenkilled"><b>End when killed</b></a>: If the NPC is killed,
       mark the script as ended so it doesn't repeat when the room is reentered.</li>
-    <li><a name="impdirectonlybeelining"><u>Direct-only beelining</u></a>: When
+    <li><a name="impdirectonlybeelining"><b>Direct-only beelining</b></a>: When
       desired diagonal movement is blocked, then don't move at all.</li>
-    <li><a name="imp-normal-beelining"><u>Normal beelining</u></a>: Move diagonally when desired and possible, otherwise move axially if possible, prefering vertical movement when both horizontal and vertical movements are open.</li>
-    <li><a name="impflexiblebeelining"><u>Flexible beelining</u></a>: When a
+    <li><a name="imp-normal-beelining"><b>Normal beelining</b></a>: Move diagonally when desired and possible, otherwise move axially if possible, prefering vertical movement when both horizontal and vertical movements are open.</li>
+    <li><a name="impflexiblebeelining"><b>Flexible beelining</b></a>: When a
       desired diagonal movement is blocked, choose the better of
       horizontal or vertical movement that will get closer to the destination (default).</li>
-    <li><a name="imp-smart-beelining"><u>Smart beelining</u></a>: As flexible beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
-    <li><a name="imp-pathfinding-openonly"><u>Pathfinding (open only)</u></a>: The shortest path is calculated and taken to the destination.  Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found, no movement is made.</li>
-    <li><a name="imp-pathfinding"><u>Pathfinding</u></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
-    <li><a name="imp-brain-pathmap-obstacle"><u>Brain pathmap obstacle</u></a>: This NPC is perceived as an obstacle to brain pathmaps, and brained pathmaps will calculate paths around the NPC.</li>
-    <li><a name="imp-not-brain-pathmap-obstacle"><u>Not brain pathmap obstacle</u></a>: This NPC is not perceived as an obstacle to brain pathmaps (default), and brained pathmaps will not calculate paths around the NPC.</li>
-    <li><a name="imp-npc-pathmap-obstacle"><u>NPC pathmap obstacle</u></a>: This NPC is perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will be calculated around this NPC.</li>
-    <li><a name="imp-not-npc-pathmap-obstacle"><u>Not NPC pathmap obstacle</u></a>: This NPC is not perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will not be calculated around this NPC.</li>
-	<li><a name="imp-ghost-display"><u>Ghost display</u></a>: When invisible this character will still be drawn to the screen. It will be drawn before (underneath) visible entities.</li>
-	<li><a name="imp-ghost-display-overhead"><u>Ghost display overhead</u></a>: Just like <i>Ghost display</i> above, except the NPC will be drawn over other characters and monsters.</li>
-	<li><a name="imp-no-ghost-display"><u>No ghost display</u></a>: Disables any previously activated <i>Ghost display</i> on this NPC.</li>
-	<li><a name="imp-not-pushable"><u>Not pushable</u></a>: Makes this NPC resistant to any kind of pushing, even with weapons which naturally allow pushing (eg. staff).</li>
-	<li><a name="imp-default-pushable-behavior"><u>Default pushable behavior</u></a>: Resets the pushability of the NPC to the default behavior.</li>
-	<li><a name="imp-pushable-by-body"><u>Pushable by body</u></a>: Makes the NPC pushable by the body of the player, mimics, constructs and human-role characters (if a given entity is able to push mirrors it will also be able to push an NPC with this imperative). Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
-	<li><a name="imp-pushable-by-weapon"><u>Pushable by weapon</u></a>: Makes the NPC pushable by any weapon effectively making it invulnerable to weapon attacks. It won't be able to push the NPC wielding dagger because dagger doesn't occupy a physical space. All other forms of attack still kill the NPC, including adders eating them, explosions, spike and fire traps.</li>
-    <li><a name="imp-stunnable"><u>Stunnable</u></a>: Weapon pushes will stun this NPC.</li>
-	<li><a name="imp-not-stunnable"><u>Not stunnable</u></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
-  </ol>
+    <li><a name="imp-smart-beelining"><b>Smart beelining</b></a>: As flexible beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
+    <li><a name="imp-pathfinding-openonly"><b>Pathfinding (open only)</b></a>: The shortest path is calculated and taken to the destination.  Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found, no movement is made.</li>
+    <li><a name="imp-pathfinding"><b>Pathfinding</b></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
+    <li><a name="imp-brain-pathmap-obstacle"><b>Brain pathmap obstacle</b></a>: This NPC is perceived as an obstacle to brain pathmaps, and brained pathmaps will calculate paths around the NPC.</li>
+    <li><a name="imp-not-brain-pathmap-obstacle"><b>Not brain pathmap obstacle</b></a>: This NPC is not perceived as an obstacle to brain pathmaps (default), and brained pathmaps will not calculate paths around the NPC.</li>
+    <li><a name="imp-npc-pathmap-obstacle"><b>NPC pathmap obstacle</b></a>: This NPC is perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will be calculated around this NPC.</li>
+    <li><a name="imp-not-npc-pathmap-obstacle"><b>Not NPC pathmap obstacle</b></a>: This NPC is not perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will not be calculated around this NPC.</li>
+	<li><a name="imp-ghost-display"><b>Ghost display</b></a>: When invisible this character will still be drawn to the screen. It will be drawn before (underneath) visible entities.</li>
+	<li><a name="imp-ghost-display-overhead"><b>Ghost display overhead</b></a>: Just like <i>Ghost display</i> above, except the NPC will be drawn over other characters and monsters.</li>
+	<li><a name="imp-no-ghost-display"><b>No ghost display</b></a>: Disables any previously activated <i>Ghost display</i> on this NPC.</li>
+	<li><a name="imp-invisible-inspectable"><b>Invisible inspectable</b></a>: This NPC will be included in the tile description when right-clicking on its tile even when it is invisible (Ghost Display is treated as invisible).</li>
+	<li><a name="imp-invisible-not-inspectable"><b>Invisible not inspectable</b></a>: This NPC will not be included in the tile description when right-clicking on its tile when it is invisible.</li>
+	<li><a name="imp-invisible-includes-move-order"><b>Invisible includes move order</b></a>: Even when invisible (Ghost Display is still invisible) this NPC will be counted for the purpose of determining movement order. Additionally, if <i>Invisible inspectable</i> imperative is set, the movement order of this character will also be visible.</li>
+	<li><a name="imp-invisible-dont-include-move-order"><b>Invisible don't include move order</b></a>: Reverses the above to original behavior - this NPC when invisible will not be included when counting movement order and if it's inspectable the movement order will not be displayed when right clicking on its tile.</li>
+	<li><a name="imp-not-pushable"><b>Not pushable</b></a>: Makes this NPC resistant to any kind of pushing, even with weapons which naturally allow pushing (eg. staff).</li>
+	<li><a name="imp-default-pushable-behavior"><b>Default pushable behavior</b></a>: Resets the pushability of the NPC to the default behavior.</li>
+	<li><a name="imp-pushable-by-body"><b>Pushable by body</b></a>: Makes the NPC pushable by the body of the player, mimics, constructs and human-role characters (if a given entity is able to push mirrors it will also be able to push an NPC with this imperative). Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
+	<li><a name="imp-pushable-by-weapon"><b>Pushable by weapon</b></a>: Makes the NPC pushable by any weapon effectively making it invulnerable to weapon attacks. It won't be able to push the NPC wielding dagger because dagger doesn't occupy a physical space. All other forms of attack still kill the NPC, including adders eating them, explosions, spike and fire traps.</li>
+    <li><a name="imp-stunnable"><b>Stunnable</b></a>: Weapon pushes will stun this NPC.</li>
+	<li><a name="imp-not-stunnable"><b>Not stunnable</b></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
+  </ul>
 
 <p><a name="behaviorlist"><b>Behaviors</b>
 </a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors.</p>
