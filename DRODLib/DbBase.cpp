@@ -811,6 +811,10 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_PuffImmune: strText = "Puff Immunity"; break;
 	case MID_WaitForRemains: strText = "Wait for monster remains"; break;
 	case MID_VarMonsterName: strText = "_MyName"; break;
+	case MID_NPCInvisibleInspectable: strText = "Invisible inspectable"; break;
+	case MID_NPCInvisibleNotInspectable: strText = "Invisible not inspectable"; break;
+	case MID_NPCInvisibleIncludeMoveOrder: strText = "Invisible includes move order"; break;
+	case MID_NPCInvisibleNotIncludeMoveOrder: strText = "Invisible don't include move order"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

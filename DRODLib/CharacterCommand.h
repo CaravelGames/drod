@@ -125,7 +125,13 @@ namespace ScriptFlag
 		NotNPCPathmapObstacle=26,
 		NormalBeelining=27,  //use Roach-like movement
 		SmartBeelining=28,   //use Roach-like movement but with better orthogonal choice when diagonal is blocked
-		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
+		PathfindingOpenOnly=29, //pathfinding movement, no movement when blocked
+		InvisibleInspectable=30,   // Causes disappeared characters to be included when right clicking in the room
+		InvisibleNotInspectable=31,
+		InvisibleCountMoveOrder = 32,   // Causes disappeared characters to be counted when displaying move order on right click
+		InvisibleNotCountMoveOrder = 33,
+
+
 	};
 
 	enum Behavior
