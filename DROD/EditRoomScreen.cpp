@@ -4925,7 +4925,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 			{
 				//Head already here.  Update head's direction.
 				ASSERT(pMonster->IsLongMonster());
-				pMonster->wO = wDirection;
+				pMonster->wO = nGetReverseO(wDirection);
 			} else {
 				PlotObjectAt(wX, wY, T_GENTRYII, wDirection);
 			}
@@ -7501,7 +7501,10 @@ void CEditRoomScreen::ShowErrors()
 					if (!pMonster || wTileNo[1] == T_FLUFF || !bIsMother(pMonster->wType))
 						AddShadeToTile(LightRed);
 				}
-				bTar = true;
+
+				if (wTileNo[1] != T_FLUFF)
+					bTar = true;
+
 				break;
 			}
 

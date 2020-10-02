@@ -469,6 +469,14 @@ SOURCE=.\WorldMapWidget.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\AumtlichGazeEffect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\AumtlichGazeEffect.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\BloodEffect.cpp
 # End Source File
 # Begin Source File
@@ -726,14 +734,6 @@ SOURCE=.\WadeEffect.cpp
 # Begin Source File
 
 SOURCE=.\WadeEffect.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ZombieGazeEffect.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ZombieGazeEffect.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

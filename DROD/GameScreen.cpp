@@ -3360,7 +3360,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	}
 
 	if (this->pCurrentGame && !bWasCutScene)
-		this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+		this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 
 	return eNextScreen;
 }
@@ -4450,7 +4450,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		);
 		if (bUndoDeath) {
 			if (this->pCurrentGame && !this->pCurrentGame->dwCutScene)
-				this->undo.advanceTurnThreshold(this->pCurrentGame->wTurnNo);
+				this->undo.advanceTurnThreshold(this->pCurrentGame->wPlayerTurn);
 			UndoMove();
 		}
 		CueEvents.Clear();	//clear after death sequence (whether move is undone or not)
@@ -4658,9 +4658,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_RoomConquerPending))  //priority of temporary moods
 	{
-		UINT eClearID = GetPlayerClearSEID();
-		if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
-		this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		if (this->pRoomWidget->subtitles.empty()) {
+			UINT eClearID = GetPlayerClearSEID();
+			if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
+			this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_MonsterDiedFromStab))
 	{
@@ -6204,7 +6206,7 @@ void CGameScreen::UndoMove()
 		return; //nothing to undo
 
 	if (!this->bPlayTesting && //unlimited undo always allowed during playtesting
-			!this->undo.canUndoBefore(this->pCurrentGame->wTurnNo))
+			!this->undo.canUndoBefore(this->pCurrentGame->wPlayerTurn))
 		return;
 
 	g_pTheSound->PlaySoundEffect(SEID_UNDO);

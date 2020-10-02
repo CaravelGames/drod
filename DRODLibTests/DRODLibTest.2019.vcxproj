@@ -296,6 +296,7 @@
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
+    <ClCompile Include="src\tests\Scripting\Imperative_BrainPathmapObstacle.cpp" />
     <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp" />

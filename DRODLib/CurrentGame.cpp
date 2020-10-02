@@ -71,7 +71,7 @@ queue<DEMO_UPLOAD*> CCurrentGame::demosForUpload;
 
 //Game character/monster constant that speaker refers to
 const UINT SpeakerConstant[Speaker_Count] = {
-	M_BEETHRO, M_HALPH, M_SLAYER, M_NEGOTIATOR, M_CUSTOM, M_CUSTOM,
+	M_BEETHRO, M_HALPH, M_SLAYER, M_NEGOTIATOR, UINT(M_CUSTOM), UINT(M_CUSTOM),
 	M_CITIZEN1, M_CITIZEN2, M_GOBLINKING, M_GOBLIN,
 	M_INSTRUCTOR, M_MUDCOORDINATOR, M_ROCKGOLEM, M_TARTECHNICIAN, M_GUARD, M_EYE,
 	M_CITIZEN, M_STALWART, M_ROACH, M_QROACH, M_REGG, M_WWING, M_EYE,
@@ -79,7 +79,7 @@ const UINT SpeakerConstant[Speaker_Count] = {
 	M_SERPENTG, M_SERPENTB, M_WATERSKIPPER, M_SKIPPERNEST, M_AUMTLICH, M_CLONE,
 	M_DECOY, M_WUBBA, M_SEEP, M_FEGUNDO, M_FEGUNDOASHES, M_MUDMOTHER,
 	M_MUDBABY, M_GELMOTHER, M_GELBABY, M_ROCKGIANT, M_CITIZEN3, M_CITIZEN4,
-	M_BEETHRO_IN_DISGUISE, M_SLAYER2, M_HALPH2, M_CUSTOM, M_GUNTHRO, M_PLAYER, M_STALWART2,
+	M_BEETHRO_IN_DISGUISE, M_SLAYER2, M_HALPH2, UINT(M_CUSTOM), M_GUNTHRO, UINT(M_PLAYER), M_STALWART2,
 	M_ARCHITECT, M_CONSTRUCT, M_GENTRYII, M_TEMPORALCLONE, M_FLUFFBABY
 };
 
@@ -6030,7 +6030,8 @@ MakeMove:
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);
 			CheckTallyKill(pMonster);
 			pMonster->wO = this->swordsman.wO; //splatter in this direction
-			SetPlayerAsTarget();  //monsters will attack the player now
+			if (!pMonster->IsFriendly())
+				SetPlayerAsTarget();  //monsters will attack the player now
 		}
 	}
 

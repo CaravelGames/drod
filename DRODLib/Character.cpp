@@ -1226,6 +1226,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1264,6 +1268,10 @@ void CCharacter::Process(
 					++room.wMonsterCount;
 					CueEvents.Add(CID_NPCTypeChange);
 				}
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -1282,6 +1290,10 @@ void CCharacter::Process(
 				}
 
 				Disappear();
+
+				if (this->bBrainPathmapObstacle)
+					room.UpdatePathMapAt(this->wX, this->wY);
+
 				bExecuteNoMoveCommands = true;	//allow executing commands that don't require moves immediately
 			}
 			break;
@@ -2445,6 +2457,9 @@ void CCharacter::Process(
 						if (bExecuteNoMoveCommands && bChangeImperative)
 							return; //wait until first move to die
 
+						if (this->bBrainPathmapObstacle)
+							room.UpdatePathMapAt(this->wX, this->wY);
+
 						//Stop script execution whether visible or not.
 						if (bChangeImperative)
 							this->wCurrentCommandIndex = this->commands.size();
@@ -2607,6 +2622,15 @@ void CCharacter::Process(
 						// This NPC can no longer plot briars, so act as if a tile was plotted.
 						room.briars.plotted(this->wX, this->wY, T_EMPTY);
 					}
+				}
+
+				const ScriptFlag::Behaviour eBehaviour = (ScriptFlag::Behaviour)command.x;
+				const bool activate = (bool)command.y;
+
+				if (activate) {
+					behaviourFlags.insert(eBehaviour);
+				} else {
+					behaviourFlags.erase(eBehaviour);
 				}
 
 				bProcessNextCommand = true;
@@ -5329,9 +5353,19 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 	if (this->bStunnable)
 		this->bPreventMoveAfterPush = true;
 
+	const UINT wOldX = this->wX, wOldY = this->wY;
+
 	CMonster::PushInDirection(dx, dy, bStun, CueEvents);
 	SetWeaponSheathed();
 	RefreshBriars();
+
+
+	if (this->bBrainPathmapObstacle) {
+		CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+		room.UpdatePathMapAt(wOldX, wOldY);
+		room.UpdatePathMapAt(this->wX, this->wY);
+	}
 
 	if (HasSword())
 	{
@@ -5398,6 +5432,11 @@ void CCharacter::MoveCharacter(
 		pGame->SetDyingEntity(&pGame->swordsman, this);
 		CueEvents.Add(CID_MonsterKilledPlayer, this);
 	}
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(this->wX - dx, this->wY - dy);
+	}
 }
 
 //*****************************************************************************
@@ -5423,6 +5462,9 @@ void CCharacter::TeleportCharacter(
 	ASSERT(this->pCurrentGame->pRoom);
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
+	const UINT wOldX = this->wX;
+	const UINT wOldY = this->wY;
+
 	if (this->bVisible)
 	{
 		ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
@@ -5435,6 +5477,11 @@ void CCharacter::TeleportCharacter(
 	//the caller must handle setting of wPrevX/Y as applicable
 	this->wX = wDestX;
 	this->wY = wDestY;
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(wOldX, wOldY);
+	}
 
 	if (this->bVisible)
 	{
