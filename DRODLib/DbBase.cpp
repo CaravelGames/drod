@@ -815,6 +815,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_NPCInvisibleNotInspectable: strText = "Invisible not inspectable"; break;
 	case MID_NPCInvisibleIncludeMoveOrder: strText = "Invisible includes move order"; break;
 	case MID_NPCInvisibleNotIncludeMoveOrder: strText = "Invisible don't include move order"; break;
+	case MID_VarRoomX: strText = "_RoomX"; break;
+	case MID_VarRoomY: strText = "_RoomY"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
