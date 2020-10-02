@@ -579,13 +579,32 @@ Label "Loop"<br />
 <p><a name="predefined-script-vars"><b>Predefined script vars</b></a></p>
 <p>There are a number of predefined script vars that begin with an underscore.
 You may select these in variable commands to examine or set certain game states.
-For instance, you might query "<b>_LevelName</b>" in a global script to have it operate only in rooms on a certain level.<br />
+<ul>
+	<li><b>_MyWeapon</b> - Sets the weapon wielded by the NPC.</li>
+	<li><b>_MyX</b> and <b>_MyY</b> - X and Y position of the NPC. Please keep in mind that the change is instanteous, if you need to modify the position in both axes use 'Teleport to' instead, otherwise you risk creating problematic situation when the NPC teleports first in one axis and then in the other.</li>
+	<li><b>_MyO</b> - NPC's current orientation.</li>
+	<li><b>_MyName</b> - Name of this NPC. Used for right-click inspecting and for speech log.</li>
+	<li><b>_MyScript*</b> - Variables used to inject dynamic values into other scripting commands. Please check the relevant documentation section.</li>
+	<li><b>_X</b> and <b>_Y</b> - X and Y position of the Player. Can cause the same potential problems as <b>_MyX</b> and <b>_MyY</b>, so use 'Teleport player to' wheen you need to teleport along two axes.</li>
+	<li><b>_O</b> - Player's current orientation.</li>
+	<li><b>_RoomImageX</b> and <b>_RoomImageY</b> - Offset of the custom room image in tiles.</li>
+	<li><b>_OverheadImageX</b> and <b>_OverheadImageY</b> - Offset of the custom overhead image in tiles.</li>
+	<li><b>_ThreatClock</b> - <a href="#threadclockdisplay">See this section</a>.</li>
+	<li><b>_LevelName</b> - Read only! Gets the name of the level.</li>
+	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
+	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
+	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
+	
+</ul>
+
+<p><a name="playerlightvars"><b>Threat clock display modes</b></a></p>
 "<b>_PlayerLightType</b>" affects the player's light in dark rooms.
 Set it to a value &lt;0 to turn off, 0 to turn on, and from 1-100 to use a flashlight beam.  A higher value creates a more focused beam.<br />
 Set "<b>_PlayerLight</b>" to a value between 0 (default) through 128 to alter the player's light intensity and color, as follows:<br />
 16*(INTENSITY-1) + LIGHT_COLOR<br />
 where INTENSITY is from 1-8 and LIGHT_COLOR is from 1-16.<br />
-Variables prefixed with "_My" are connected to the state of the NPC, the "_*ImageX/Y" vars are tied to the defined origin for your room's custom images, and so forth.</p>
+Variables prefixed with "_My" are connected to the state of the NPC, the "_*ImageX/Y" vars are tied to the defined origin for your room's custom images, and so forth.<br/>
+<br/>
 
 <p><a name="threatclockdisplay"><b>Threat clock display modes</b></a></p>
   You may set the predefined "_ThreatClock" script variable to modify dynamically how the threat clock is displayed during play. The supported values are:<br />
@@ -595,6 +614,7 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 3: backwards time<br />
 100-129: display specific time (0-29)<br />
 200-229: display specific half-tick (0-29)<br />
+<br/>
 
 <p><a name="playerinputvars"><b>List of player command input variables</b></a></p>
   Predefined variable names may be provided in texts to output the player's current key binding for the respective command as text. To do this, provide a variable name of the form "$_CMD_&lt;key&gt;$", where &lt;key&gt; is one of the following:
