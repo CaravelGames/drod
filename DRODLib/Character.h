@@ -144,6 +144,8 @@ public:
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
 	bool           IsGhostImageOverhead() const {return this->eDisplayMode == CDM_GhostOverhead;}
+	bool           IsInvisibleInspectable() const { return this->bInvisibleInspectable; }
+	bool           IsInvisibleCountMoveOrder() const { return this->bInvisibleCountsMoveOrder; }
 	bool           IsImmuneToWeapon(WeaponType type) const;
 	bool           IsInvulnerable() const {return GetImperative() == ScriptFlag::Invulnerable;}
 	bool           IsMissionCritical() const {return GetImperative() == ScriptFlag::MissionCritical;}
@@ -272,6 +274,8 @@ private:
 	bool bPushableByBody;		//if true, the character can be pushed with body
 	bool bPushableByWeapon;	//if true, the character can be pushed with any weapon
 	bool bStunnable;         //if false, the character will never be stunned
+	bool bInvisibleInspectable;  // Whether the character is included in the description when right clicking while not part of the room
+	bool bInvisibleCountsMoveOrder;  // Whether the character is counted for calculating move order while not part of the room
 	bool bBrainPathmapObstacle, bNPCPathmapObstacle;
 	bool bWeaponOverride;   //Whether P_MONSTER_WEAPON now overrides the NPCs default properties
 	MovementIQ movementIQ;  //movement behavior

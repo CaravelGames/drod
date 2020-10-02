@@ -1419,13 +1419,30 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	}
 
 	//Monster.
-	const CMonster *pMonster = this->pRoom->GetOwningMonsterOnSquare(wX, wY);
-	if (pMonster)
+	const CMonster* pMonster = this->pRoom->pFirstMonster;
+	int index = 1;
+	while (pMonster)
 	{
+		if (pMonster->wX != wX || pMonster->wY != wY)
+			goto SkipDescribingMonster;
+
 		const CCharacter *pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 		bool bCharacterName = false;
+		bool bDescribeMonster = true;
+		bool bShowMoveOrder = pMonster->IsVisible();
 		if (pCharacter) {
-			if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+			if (!pCharacter->IsVisible() && !pCharacter->IsInvisibleInspectable()) {
+				goto SkipDescribingMonster;
+			}
+
+			bShowMoveOrder = bShowMoveOrder || pCharacter->IsInvisibleCountMoveOrder();
+
+			if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+				wstr += wszCRLF;
+				wstr += pCharacter->GetCustomName();
+				bCharacterName = true;
+
+			} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
 				//Show custom character name.
 				ASSERT(this->pRoom);
 				if (this->pCurrentGame) {
@@ -1484,23 +1501,20 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		}
 
 		//Indicate monster's position in movement order sequence.
-		UINT index=1;
-		for (const CMonster *pTrav = this->pRoom->pFirstMonster; pTrav != NULL; pTrav = pTrav->pNext)
-		{
-			if (pMonster == pTrav)
-			{
-				wstr += wszSpace;
-				wstr += wszLeftParen;
-				wstr += wszPoundSign;
-				wstr += _itoW(index, temp, 10);
-				wstr += wszRightParen;
-				break;
-			}
-			//Only count monsters that are in the room
-			if (pTrav->IsVisible())
-				++index;
+		if (bShowMoveOrder) {
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += wszPoundSign;
+			wstr += _itoW(index, temp, 10);
+			wstr += wszRightParen;
 		}
 
+SkipDescribingMonster:
+		//Only count monsters that are in the room
+		if (bShowMoveOrder)
+			++index;
+
+		pMonster = pMonster->pNext;
 	}
 
 	//Items.
