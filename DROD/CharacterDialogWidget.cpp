@@ -1699,7 +1699,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pGotoSmartListBox);
 	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIf, L"Last If");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfSkipCondition, L"Last If (Skip Condition)");
 	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIf, L"Last If or Else If");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition, L"Last If or Else If  (Skip Condition)");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElse, L"Next Else");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIf, L"Next Else or Else If");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, L"Next Else or Else If (Skip Condition)");
 	this->pGotoSmartListBox->SelectLine(0);
 
 	//Variable handling widgets.
