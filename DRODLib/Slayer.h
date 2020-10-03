@@ -73,6 +73,7 @@ private:
 	void MoveToOpenDoor(CCueEvents &CueEvents);
 	void StopOpeningDoor();
 	void StopStrikingOrb(CCueEvents &CueEvents);
+	bool CanBodyKillTarget(const UINT wTX, const UINT wTY) const;
 	CCoord openingDoorAt; //door being opened
 	CCoordSet orbsToHit, platesToDepress;  //set of possible destination orbs/plates
 
