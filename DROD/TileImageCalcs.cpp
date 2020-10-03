@@ -3320,7 +3320,7 @@ UINT CalcTileImageForTarstuff(
 	ASSERT(wIndex < TAR_TYPES);
 
 	static const UINT wTarType[TAR_TYPES] = {T_TAR, T_MUD, T_GEL, T_FLUFF};
-	static const UINT wMotherType[TAR_TYPES] = {M_TARMOTHER, M_MUDMOTHER, M_GELMOTHER, M_NONE};
+	static const UINT wMotherType[TAR_TYPES] = {M_TARMOTHER, M_MUDMOTHER, M_GELMOTHER, UINT(M_NONE)};
 	enum TarTileTypes {
 		TAR_NSEW, TAR_NWSEI, TAR_NESWI,
 		TAR_N, TAR_E, TAR_S,	TAR_W,

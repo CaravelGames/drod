@@ -4141,6 +4141,7 @@ void CDbRoom::ActivateToken(
 					{
 						CTemporalClone *pClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
 						pClone->bIsTarget = true;
+						pClone->SetMovementType();
 					}
 					break;
 					default: break;

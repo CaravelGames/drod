@@ -650,13 +650,16 @@ void CRoomWidget::AddPlayerLight(const bool bAlwaysRefresh) //[default=false]
 	ASSERT(this->pCurrentGame);
 	CEntity *pPlayer = GetLightholder();
 
-	//Redraw light around player whenever he moves in dark rooms.
-	//Also call to erase light.
-	if ((IsPlayerLightShowing() &&
-			this->pCurrentGame->wTurnNo != this->wLastTurn &&
-			pPlayer && (pPlayer->wX != this->wLastPlayerLightX ||
-					pPlayer->wY != this->wLastPlayerLightY)) || PlayerLightTurnedOff())
+	//Redraw light around player whenever they move in a dark room.
+	if (IsPlayerLightShowing() && this->pCurrentGame->wTurnNo != this->wLastTurn)
+	{
+		if (pPlayer && (pPlayer->wX != this->wLastPlayerLightX || pPlayer->wY != this->wLastPlayerLightY))
+			this->bRenderPlayerLight = true;
+	}
+	//Also set flag to refresh area previously lit by player light when it's no longer rendering.
+	if (PlayerLightTurnedOff() && !this->pCurrentGame->swordsman.wPlacingDoubleType) {
 		this->bRenderPlayerLight = true;
+	}
 }
 
 //*****************************************************************************
@@ -838,6 +841,9 @@ void CRoomWidget::PlacePlayerLightAt(int pixel_x, int pixel_y)
 {
 	ASSERT(this->pRoom);
 	ASSERT(GetCurrentGame());
+
+	if (this->pCurrentGame->swordsman.wPlacingDoubleType)
+		return; //not supported while placing double
 
 	if (this->wDark >= LANTERN_LEVEL && IsLightingRendered())
 	{

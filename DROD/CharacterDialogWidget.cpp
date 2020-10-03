@@ -4670,7 +4670,7 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 		M_GOBLINKING, M_MUDCOORDINATOR, M_TARTECHNICIAN,
 		M_NEGOTIATOR, M_EYE_ACTIVE,
 		M_BEETHRO, M_GUNTHRO,
-		M_NONE,
+		UINT(M_NONE),
 
 		MONSTER_TYPES //sentinel
 	};

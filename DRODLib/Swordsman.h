@@ -75,7 +75,7 @@ public:
 	bool IsInRoom() const;
 	bool IsStabbable() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
-	bool IsVulnerableToBodyAttack() const;
+	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
 	bool IsTarget() const;
 	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool IsVisible() const { return !(this->bIsInvisible || this->bIsHiding); }

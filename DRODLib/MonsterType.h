@@ -283,6 +283,20 @@ static inline bool bCanFluffTrack(const UINT mt) {
 			return true;
 	}	
 }
+static inline bool bIsVulnerableToBodyAttack(const UINT mt) {
+	switch (mt){
+		case M_WUBBA:
+		case M_FLUFFBABY:
+		case M_FEGUNDO:
+		case M_NONE:
+			//case M_ROCKGOLEM: // For backwards compatibility rock golems are not resistant to body attack. 
+			return false;
+		default:
+			//All other (monster) roles are vulnerable.
+			return true;
+		}
+}
+
 static inline bool bCanFluffKill(const UINT mt) {
 	switch(mt) {
 		case M_ROCKGOLEM: case M_ROCKGIANT: case M_CONSTRUCT:

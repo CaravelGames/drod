@@ -223,25 +223,6 @@ bool CSwordsman::IsVulnerableToWeapon(const WeaponType weaponType) const
 }
 
 //*****************************************************************************
-bool CSwordsman::IsVulnerableToBodyAttack() const
-//Returns: true if player in current role is vulnerable to attacks made by monster body moving onto the player
-{
-	//Human roles can't step on monsters.
-	//Exception: Slayer
-	switch (this->wAppearance)
-	{
-		case M_WUBBA:
-		case M_FLUFFBABY:
-		case M_FEGUNDO:
-		case M_NONE:
-			//case M_ROCKGOLEM: // For backwards compatibility rock golems are not resistant to body attack. 
-			return false;
-		default:
-			//All other (monster) roles are vulnerable.
-			return true;
-	}
-}
-//*****************************************************************************
 bool CSwordsman::IsTarget() const
 //Returns: whether player is a target to monsters
 {
