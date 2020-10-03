@@ -25,7 +25,8 @@ designate.  There are four general classes of script commands, as follows:</p>
 <a href="#predefined-script-vars">Predefined script vars</a><br />
 <a href="#threatclockdisplay">Threat clock display modes</a><br />
 <a href="#playerinputvars">List of player command input variables</a><br />
-<a href="#image-overlay-commands">Image Overlay commands</a>
+<a href="#image-overlay-commands">Image Overlay commands</a><br/>
+<a href="#myscript-injection">_MyScript variable injections</a>
 </p>
 <hr />
 
@@ -63,7 +64,7 @@ designate.  There are four general classes of script commands, as follows:</p>
       finishes when the NPC arrives at the destination square.
       <a name="singlestep">Enable</a> "Single step" to have the NPC only attempt
       to make a single step toward the indicated destination before continuing
-      to the next script command.  If no move can be made character will wait instead 
+      to the next script command.  If no move can be made character will wait instead
 	  and the next script command will run on the next turn.</li>
   <li><a name="move"><b>Move</b></a> - Similar to <a href="#moveto"><b>Move
       to</b></a>, except a relative number of tiles to move from the NPC's
@@ -76,8 +77,8 @@ designate.  There are four general classes of script commands, as follows:</p>
   <li><a name="face-towards-like-guard"><b>Face towards like guard</b></a> - Use this command to make the NPC change the direction they're facing towards a given point or entity just as the guard would.<br/>
       <a name="face-towards-like-guard-single-step"><u>Single step</u></a>: Setting this to <i>on</i> will make the character slowly turn towards the target direction. <i>Off</i> will make it turn immediately, just as <i>face direction</i> does.<br />
       <a name="face-towards-like-guard-targets"><u>Targets</u></a>: You can select zero, one or multiple targets from the list of entity groups - ctrl+click to deselect/select multiple. If no group is selected you will be asked to select a tile towards which the NPC should face.<br />
-      <a name="face-towards-like-guard-conditions"><u>Using in conditions</u></a>: This command can be used with <a href="#if">if statements</a> to check if the character is already facing the target direction.<br />
-      <a name="face-towards-like-guard-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position in the room if no target group is selected; <b>W</b> - single step 0/1; <b>F</b> - bit map of the target groups.</li>
+      <a name="face-towards-like-guard-conditions"><u>Using in conditions</u></a>: This command can be used with <a href="#if">if statements</a> to check if the character is already facing the target direction.
+	</li>
   <li><a name="teleport-to"><b>Teleport to</b></a> - Instantly moves the NPC
       to the indicated tile, as long as another entity is not occupying it.</li>
   <li><a name="teleport-player-to"><b>Teleport player to</b></a> - Instantly moves the player to the indicated tile processing all interactions: player will drown or fall into pit, potions will be drunk,
@@ -86,8 +87,7 @@ designate.  There are four general classes of script commands, as follows:</p>
       <a name="teleport-player-to-blocked-teleport"><u>Blocked teleports</u></a>: This command will be silently ignored if you try to teleport the player: onto another monster/entity which can't be killed by stepping, to a location outside the room boundaries, onto the tile currently occupied by the player.<br />
       <a name="teleport-player-to-temporal-split"><u>Temporal recording</u></a>: If the player gets teleported the quantum flux will reset and stop the temporal recording.<br />
       <a name="teleport-player-to-consequences"><u>Monsters on target tile</u></a>: You can teleport onto a monster and instantly kill it if you are currently capable of killing that monster by stepping onto it. You can't teleport onto monsters that leave a pile behind, just like you can't step on them in the Slayer role or while wielding a dagger (in case of the dagger it's the stab that kills, you don't actually end up moving onto their space).<br />
-      <a name="teleport-player-to-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position where the player should be teleported.<br />
-      </li>
+    </li>
 </ol>
 
   <p>
@@ -350,13 +350,13 @@ the state of the room and wait indefinitely until certain events occur.</p>
       <a name="get-natural-target-results"><u>Results</u></a>: Results from this function are stored in <b>_ReturnX</b> and <b>_ReturnY</b> which are global variables, accessible by all scripts.<br />
 	  <a name="get-natural-target-no-target"><u>No target</u></a>: If no target is found the character's current position will be returned.<br />
       <a name="get-natural-target-using-in-conditions"><u>Using in conditions</u></a>: This command <b>cannot</b> be used with an <a href="#if">if statements</a>.<br />
-	  <a name="get-natural-target-using-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X</b> - type of targetting (0=Regular monster).</li>
+	</li>
 	<li><a name="get-entity-direction"><b>Get entity direction</b></a> - Gets the direction an entity at a given position is facing and stores the result in <b>_ReturnX</b>.<br/>
       <a name="get-entity-direction-direction-values"><u>Direction values</u></a>: NW=0, N=1, NE=2, W=3, No orientation=4, E=5, SW=6, S=7, SE=8.<br />
       <a name="get-entity-direction-guard-targets"><u>Results</u></a>: Result from this function is stored in <b>_ReturnX</b> which is a global variables, accessible by all scripts.<br />
 	  <a name="get-entity-direction-no-target"><u>No target</u></a>:  If no entity is found the function returns No orientation. If player is found on the specified position, the player's direction is returned.<br />
       <a name="get-entity-direction-using-in-conditions"><u>Using in conditions</u></a>: This command <b>cannot</b> be used with an <a href="#if">if statements</a>.<br />
-	  <a name="get-entity-direction-using-my-script"><u>Using MyScript</u></a>: This command supports the following MyScript parameter injections: <b>X/Y</b> - position to check.</li>
+	</li>
 </ol>
 
 <p><a name="decision"><b>5.&nbsp;&nbsp;Decision making</b></a> - Use the
@@ -450,58 +450,62 @@ continue executing script commands from a different location in the script.</p>
 
 <p><a name="imperativelist"><b>Imperatives</b>
 </a> - NPC/script properties that may be set with the <a href="#imperative">Imperative</a> command.</p>
-  <ol>
-    <li><a name="impvulnerable"><u>Vulnerable</u></a>: Makes the NPC vulnerable to
+  <ul>
+    <li><a name="impvulnerable"><b>Vulnerable</b></a>: Makes the NPC vulnerable to
       killing. This is the default setting for most NPC graphic types.</li>
-    <li><a name="impinvulnerable"><u>Invulnerable</u></a>: Makes the NPC
+    <li><a name="impinvulnerable"><b>Invulnerable</b></a>: Makes the NPC
       invincible so it cannot be killed by stabbing or other methods of
       inflicting damage. The NPC may still be killed by falling off a platform
       or by briar growth.  Some NPC types, like Wubbas, are invulnerable by
       default.</li>
-    <li><a name="impcritical"><u>Critical hero</u></a>: When set, the room will
+    <li><a name="impcritical"><b>Critical hero</b></a>: When set, the room will
       restart if the NPC is ever killed. Some NPC types, like Beethro and Halph,
       are marked critical heros by default.</li>
-    <li><a name="imprequired"><u>Required target</u></a>: When set, the NPC must
+    <li><a name="imprequired"><b>Required target</b></a>: When set, the NPC must
       be killed in order to conquer the room.  This command only applies when
       the room is not otherwise clean on entrance.</li>
-    <li><a name="impsafe"><u>Safe</u></a>: Forbids the NPC to step on the player
+    <li><a name="impsafe"><b>Safe</b></a>: Forbids the NPC to step on the player
       and kill him (default).</li>
-    <li><a name="impswordsafe"><u>Sword safe to player</u></a>: Sword stabs from
+    <li><a name="impswordsafe"><b>Sword safe to player</b></a>: Sword stabs from
       this NPC won't harm the player.</li>
-    <li><a name="impdeadly"><u>Deadly</u></a>: Allows the NPC to step on the
+    <li><a name="impdeadly"><b>Deadly</b></a>: Allows the NPC to step on the
       player and kill him.  Also makes sword hits deadly to the player (default).</li>
-    <li><a name="impdie"><u>Die</u></a>: Makes the NPC die with a blood splatter.</li>
-    <li><a name="impdiespecial"><u>Die special</u></a>: Makes the NPC perform a
+    <li><a name="impdie"><b>Die</b></a>: Makes the NPC die with a blood splatter.</li>
+    <li><a name="impdiespecial"><b>Die special</b></a>: Makes the NPC perform a
       monster-specific death sequence, if applicable.  Currently, this command
       applies to rock golems and fegundos. Rock golem NPCs will turn into a rock
       pile when this command is invoked. Fegundos will explode and turn into a
       regular fegundo ash monster. For other monster types, this acts
       identically to "Die".</li>
-    <li><a name="impendwhenkilled"><u>End when killed</u></a>: If the NPC is killed,
+    <li><a name="impendwhenkilled"><b>End when killed</b></a>: If the NPC is killed,
       mark the script as ended so it doesn't repeat when the room is reentered.</li>
-    <li><a name="impdirectonlybeelining"><u>Direct-only beelining</u></a>: When
+    <li><a name="impdirectonlybeelining"><b>Direct-only beelining</b></a>: When
       desired diagonal movement is blocked, then don't move at all.</li>
-    <li><a name="imp-normal-beelining"><u>Normal beelining</u></a>: Move diagonally when desired and possible, otherwise move axially if possible, prefering vertical movement when both horizontal and vertical movements are open.</li>
-    <li><a name="impflexiblebeelining"><u>Flexible beelining</u></a>: When a
+    <li><a name="imp-normal-beelining"><b>Normal beelining</b></a>: Move diagonally when desired and possible, otherwise move axially if possible, prefering vertical movement when both horizontal and vertical movements are open.</li>
+    <li><a name="impflexiblebeelining"><b>Flexible beelining</b></a>: When a
       desired diagonal movement is blocked, choose the better of
       horizontal or vertical movement that will get closer to the destination (default).</li>
-    <li><a name="imp-smart-beelining"><u>Smart beelining</u></a>: As flexible beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
-    <li><a name="imp-pathfinding-openonly"><u>Pathfinding (open only)</u></a>: The shortest path is calculated and taken to the destination.  Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found, no movement is made.</li>
-    <li><a name="imp-pathfinding"><u>Pathfinding</u></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
-    <li><a name="imp-brain-pathmap-obstacle"><u>Brain pathmap obstacle</u></a>: This NPC is perceived as an obstacle to brain pathmaps, and brained pathmaps will calculate paths around the NPC.</li>
-    <li><a name="imp-not-brain-pathmap-obstacle"><u>Not brain pathmap obstacle</u></a>: This NPC is not perceived as an obstacle to brain pathmaps (default), and brained pathmaps will not calculate paths around the NPC.</li>
-    <li><a name="imp-npc-pathmap-obstacle"><u>NPC pathmap obstacle</u></a>: This NPC is perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will be calculated around this NPC.</li>
-    <li><a name="imp-not-npc-pathmap-obstacle"><u>Not NPC pathmap obstacle</u></a>: This NPC is not perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will not be calculated around this NPC.</li>
-	<li><a name="imp-ghost-display"><u>Ghost display</u></a>: When invisible this character will still be drawn to the screen. It will be drawn before (underneath) visible entities.</li>
-	<li><a name="imp-ghost-display-overhead"><u>Ghost display overhead</u></a>: Just like <i>Ghost display</i> above, except the NPC will be drawn over other characters and monsters.</li>
-	<li><a name="imp-no-ghost-display"><u>No ghost display</u></a>: Disables any previously activated <i>Ghost display</i> on this NPC.</li>
-	<li><a name="imp-not-pushable"><u>Not pushable</u></a>: Makes this NPC resistant to any kind of pushing, even with weapons which naturally allow pushing (eg. staff).</li>
-	<li><a name="imp-default-pushable-behavior"><u>Default pushable behavior</u></a>: Resets the pushability of the NPC to the default behavior.</li>
-	<li><a name="imp-pushable-by-body"><u>Pushable by body</u></a>: Makes the NPC pushable by the body of the player, mimics, constructs and human-role characters (if a given entity is able to push mirrors it will also be able to push an NPC with this imperative). Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
-	<li><a name="imp-pushable-by-weapon"><u>Pushable by weapon</u></a>: Makes the NPC pushable by any weapon effectively making it invulnerable to weapon attacks. It won't be able to push the NPC wielding dagger because dagger doesn't occupy a physical space. All other forms of attack still kill the NPC, including adders eating them, explosions, spike and fire traps.</li>
-    <li><a name="imp-stunnable"><u>Stunnable</u></a>: Weapon pushes will stun this NPC.</li>
-	<li><a name="imp-not-stunnable"><u>Not stunnable</u></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
-  </ol>
+    <li><a name="imp-smart-beelining"><b>Smart beelining</b></a>: As flexible beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
+    <li><a name="imp-pathfinding-openonly"><b>Pathfinding (open only)</b></a>: The shortest path is calculated and taken to the destination.  Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found, no movement is made.</li>
+    <li><a name="imp-pathfinding"><b>Pathfinding</b></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
+    <li><a name="imp-brain-pathmap-obstacle"><b>Brain pathmap obstacle</b></a>: This NPC is perceived as an obstacle to brain pathmaps, and brained pathmaps will calculate paths around the NPC.</li>
+    <li><a name="imp-not-brain-pathmap-obstacle"><b>Not brain pathmap obstacle</b></a>: This NPC is not perceived as an obstacle to brain pathmaps (default), and brained pathmaps will not calculate paths around the NPC.</li>
+    <li><a name="imp-npc-pathmap-obstacle"><b>NPC pathmap obstacle</b></a>: This NPC is perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will be calculated around this NPC.</li>
+    <li><a name="imp-not-npc-pathmap-obstacle"><b>Not NPC pathmap obstacle</b></a>: This NPC is not perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will not be calculated around this NPC.</li>
+	<li><a name="imp-ghost-display"><b>Ghost display</b></a>: When invisible this character will still be drawn to the screen. It will be drawn before (underneath) visible entities.</li>
+	<li><a name="imp-ghost-display-overhead"><b>Ghost display overhead</b></a>: Just like <i>Ghost display</i> above, except the NPC will be drawn over other characters and monsters.</li>
+	<li><a name="imp-no-ghost-display"><b>No ghost display</b></a>: Disables any previously activated <i>Ghost display</i> on this NPC.</li>
+	<li><a name="imp-invisible-inspectable"><b>Invisible inspectable</b></a>: This NPC will be included in the tile description when right-clicking on its tile even when it is invisible (Ghost Display is treated as invisible).</li>
+	<li><a name="imp-invisible-not-inspectable"><b>Invisible not inspectable</b></a>: This NPC will not be included in the tile description when right-clicking on its tile when it is invisible.</li>
+	<li><a name="imp-invisible-includes-move-order"><b>Invisible includes move order</b></a>: Even when invisible (Ghost Display is still invisible) this NPC will be counted for the purpose of determining movement order. Additionally, if <i>Invisible inspectable</i> imperative is set, the movement order of this character will also be visible.</li>
+	<li><a name="imp-invisible-dont-include-move-order"><b>Invisible don't include move order</b></a>: Reverses the above to original behavior - this NPC when invisible will not be included when counting movement order and if it's inspectable the movement order will not be displayed when right clicking on its tile.</li>
+	<li><a name="imp-not-pushable"><b>Not pushable</b></a>: Makes this NPC resistant to any kind of pushing, even with weapons which naturally allow pushing (eg. staff).</li>
+	<li><a name="imp-default-pushable-behavior"><b>Default pushable behavior</b></a>: Resets the pushability of the NPC to the default behavior.</li>
+	<li><a name="imp-pushable-by-body"><b>Pushable by body</b></a>: Makes the NPC pushable by the body of the player, mimics, constructs and human-role characters (if a given entity is able to push mirrors it will also be able to push an NPC with this imperative). Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
+	<li><a name="imp-pushable-by-weapon"><b>Pushable by weapon</b></a>: Makes the NPC pushable by any weapon effectively making it invulnerable to weapon attacks. It won't be able to push the NPC wielding dagger because dagger doesn't occupy a physical space. All other forms of attack still kill the NPC, including adders eating them, explosions, spike and fire traps.</li>
+    <li><a name="imp-stunnable"><b>Stunnable</b></a>: Weapon pushes will stun this NPC.</li>
+	<li><a name="imp-not-stunnable"><b>Not stunnable</b></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
+  </ul>
 
 <p><a name="behaviorlist"><b>Behaviors</b>
 </a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors.</p>
@@ -579,13 +583,32 @@ Label "Loop"<br />
 <p><a name="predefined-script-vars"><b>Predefined script vars</b></a></p>
 <p>There are a number of predefined script vars that begin with an underscore.
 You may select these in variable commands to examine or set certain game states.
-For instance, you might query "<b>_LevelName</b>" in a global script to have it operate only in rooms on a certain level.<br />
+<ul>
+	<li><b>_MyWeapon</b> - Sets the weapon wielded by the NPC.</li>
+	<li><b>_MyX</b> and <b>_MyY</b> - X and Y position of the NPC. Please keep in mind that the change is instanteous, if you need to modify the position in both axes use 'Teleport to' instead, otherwise you risk creating problematic situation when the NPC teleports first in one axis and then in the other.</li>
+	<li><b>_MyO</b> - NPC's current <a href="#valuesorientation">orientation</a>.</li>
+	<li><b>_MyName</b> - Name of this NPC. Used for right-click inspecting and for speech log.</li>
+	<li><b>_MyScript*</b> - Variables used to inject dynamic values into other scripting commands. <a href="#myscript-injection">See this section</a> for explanation on how to use them.</li>
+	<li><b>_X</b> and <b>_Y</b> - X and Y position of the Player. Can cause the same potential problems as <b>_MyX</b> and <b>_MyY</b>, so use 'Teleport player to' wheen you need to teleport along two axes.</li>
+	<li><b>_O</b> - Player's current <a href="#valuesorientation">orientation</a>.</li>
+	<li><b>_RoomImageX</b> and <b>_RoomImageY</b> - Offset of the custom room image in tiles.</li>
+	<li><b>_OverheadImageX</b> and <b>_OverheadImageY</b> - Offset of the custom overhead image in tiles.</li>
+	<li><b>_ThreatClock</b> - <a href="#threatclockdisplay">See this section</a>.</li>
+	<li><b>_LevelName</b> - Read only! Gets the name of the level.</li>
+	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
+	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
+	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
+	
+</ul>
+
+<p><a name="playerlightvars"><b>Player light vars</b></a></p>
 "<b>_PlayerLightType</b>" affects the player's light in dark rooms.
 Set it to a value &lt;0 to turn off, 0 to turn on, and from 1-100 to use a flashlight beam.  A higher value creates a more focused beam.<br />
 Set "<b>_PlayerLight</b>" to a value between 0 (default) through 128 to alter the player's light intensity and color, as follows:<br />
 16*(INTENSITY-1) + LIGHT_COLOR<br />
 where INTENSITY is from 1-8 and LIGHT_COLOR is from 1-16.<br />
-Variables prefixed with "_My" are connected to the state of the NPC, the "_*ImageX/Y" vars are tied to the defined origin for your room's custom images, and so forth.</p>
+Variables prefixed with "_My" are connected to the state of the NPC, the "_*ImageX/Y" vars are tied to the defined origin for your room's custom images, and so forth.<br/>
+<br/>
 
 <p><a name="threatclockdisplay"><b>Threat clock display modes</b></a></p>
   You may set the predefined "_ThreatClock" script variable to modify dynamically how the threat clock is displayed during play. The supported values are:<br />
@@ -595,10 +618,11 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 3: backwards time<br />
 100-129: display specific time (0-29)<br />
 200-229: display specific half-tick (0-29)<br />
+<br/>
 
 <p><a name="playerinputvars"><b>List of player command input variables</b></a></p>
   Predefined variable names may be provided in texts to output the player's current key binding for the respective command as text. To do this, provide a variable name of the form "$_CMD_&lt;key&gt;$", where &lt;key&gt; is one of the following:
-<ol>
+<ul>
 <li>MoveNorthwest</li>
 <li>MoveNorth</li>
 <li>MoveNortheast</li>
@@ -615,7 +639,7 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 <li>Battle</li>
 <li>UseCommand</li>
 <li>CloneSwitch</li>
-</ol>
+</ul>
 
 <p><a name="image-overlay-commands"><b>Image overlay commands</b></a></p>
   In addition to selecting an image for display with the "Image overlay" command, you must provide a simple set of commands to define how the image will be displayed in-game.  The list of supported (case-insensitive) commands for use in an Image Overlay script is as follows:<br />
@@ -648,6 +672,190 @@ setalpha 0 fadetoalpha 255 1000 display 2000 fadetoalpha 0 800<br />
 <br />
 The text supports variable interpolation, so you can have parameters like "$.ImageX$" in the text. Any part of the command text may be inserted in this fashion.<br />
 Certain commands with time duration, marked above, may be optionally prefixed with the letter "p".  This indicates that the command will not run to completion before any subsequent commands are executed, but rather will run in parallel with the next command. Multiple parallel commands may be executed concurrently.<br />
+
+<p><a name="myscript-injection"><b>_MyScript variable injections</b></a></p>
+
+Many commands in DROD Script can accept dynamic values for certain options by taking values from any of the _MyScript variables. When a _MyScript variable is equal to -9999 it indicates its value should not be used - anything else and commands will take their values, overriding whatever you input in the command itself.<br/>
+<br/>
+Below is a table of all the ways this can be used:<br/>
+<br/>
+<table>
+<tr>
+<td width="180">Command</td>
+<td width="95">X</td>
+<td width="95">Y</td>
+<td width="95">W</td>
+<td width="95">H</td>
+<td width="95">F</td>
+</tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Activate item</b></td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Amb. Sound at</b></td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Appear at</b></td>            <td>Target X</td>     <td> Target Y</td>     <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Attack Tile</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Attack type</td></tr>
+<tr><td><b>Build</b></td>                <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Build marker</b></td>         <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>Cut scene</b></td>            <td>Ms per frame</td> <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Destroy trapdoor</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>Display filter</b></td>       <td>Filter</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Face Direction</b></td>       <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Face Towards</b></td>         <td>Target X</td>     <td>Target Y</td>      <td>Single Step</td>  <td></td>             <td>Entity bitmap</td></tr>
+<tr><td><b>Flash mess.</b></td>          <td>Red, 0-255</td>   <td>Green, 0-255</td>  <td>Blue, 0-255</td> <td>Use color?</td>   <td></td></tr>
+<tr><td><b>Game effect</b></td>          <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Game effect</td>  <td>Play sound</td></tr>
+<tr><td><b>Generate entity</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Entity</td>       <td></td></tr>
+<tr><td><b>Get entity dir.</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Get natural target</b></td>   <td>Target type</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Goto lev. entrance</b></td>   <td></td>             <td>Skip e. screen</td><td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Move</b></td>                 <td>X Move</td>       <td>Y Move</td>        <td>Allow Turn.</td>  <td>Single Step</td>  <td></td></tr>
+<tr><td><b>Move to</b></td>              <td>Target X</td>     <td>Target Y</td>      <td>Allow Turn.</td>  <td>Single Step</td>  <td>Entity bitmap</td></tr>
+<tr><td><b>Play Video</b></td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Set player weapon</b></td>    <td>Weapon</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Teleport Player</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Teleport To</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Wait</b></td>                 <td>Wait turns</td>   <td>Y</td>             <td> </td>            <td> </td>            <td> </td></tr>
+<tr><td><b>W. entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. entity type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td><b>W. door</b></td>        <td>X</td>            <td>Y</td>             <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. item</b></td>        <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>W. no build mark.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>W. open move</b></td>         <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. player to face</b></td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. player to input</b></td>   <td>Command</td>      <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. player to move</b></td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. remains</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Remains</td></tr>
+<tr><td><b>W. turn</b></td>        <td>Turn number</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. weapon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Weapon</td></tr>
+<tr><td><b>W. while entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td><b>W. while ent. type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td><b>W.Map Tile Icon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Entity</td>       <td>Map display</td></tr>
+<tr><td><b>W.Map Image Icon</b></td>     <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Image</td>        <td>Map display</td></tr>
+</table>
+<br />
+<br />
+
+<b>Entity bitmap</b><br />
+This is a bit map value, meaning it can contain multiple values created by just adding them.<br/>
+<b>1 (0x001)</b> - Player<br/>
+<b>2 (0x002)</b> - Halph<br/>
+<b>4 (0x004)</b> - Monster<br/>
+<b>8 (0x008)</b> - NPC<br/>
+<b>16 (0x010)</b> - Double<br/>
+<b>32 (0x020)</b> - Self<br/>
+<b>64 (0x040)</b> - Slayer<br/>
+<b>128 (0x080)</b> - Beethro<br/>
+<b>256 (0x100)</b> - Stalwart<br/>
+<br/>
+
+<b>Attack type</b>:<br />
+<b>0</b> - Stab<br/>
+<b>1</b> - Explode<br/>
+<b>2</b> - Damage<br/>
+<b>3</b> - Kill<br/>
+<br/>
+
+<b>Remains</b><br />
+<b>15</b> - Rock golem<br/>
+<b>26</b> - Fegundo<br/>
+<b>40</b> - Construct<br/>
+<br/>
+
+<b>Weapon</b><br />
+<b>-2</b> - Off<br/>
+<b>-1</b> - On<br/>
+<b>0</b> - Sword<br/>
+<b>1</b> - Pickaxe<br/>
+<b>2</b> - Spear<br/>
+<b>3</b> - Staff<br/>
+<b>4</b> - Dagger<br/>
+<b>5</b> - Caber<br/>
+<br />
+
+<b>Game effect</b><br />
+<b>0</b> - Blood splatter<br/>
+<b>1</b> - Mud splatter<br/>
+<b>2</b> - Tar splatter<br/>
+<b>3</b> - Gel splatter<br/>
+<b>4</b> - Seep splatter<br/>
+<b>5</b> - Golem splatter<br/>
+<b>6</b> - Slayer splatter<br/>
+<b>7</b> - Debris<br/>
+<b>8</b> - Sparks<br/>
+<b>9</b> - Explosion<br/>
+<b>10</b> - Splash<br/>
+<b>11</b> - Steam<br/>
+<b>12</b> - Swirl<br/>
+<b>13</b> - Vermin<br/>
+<b>14</b> - Bolt<br/>
+<b>15</b> - Jitter<br/>
+<b>16</b> - Floor spikes<br/>
+<b>17</b> - Puff explosion<br/>
+<b>18</b> - Fire trap<br/>
+<b>19</b> - Ice melting<br/>
+<b>20</b> - Puff merged into fluff<br/>
+<br />
+
+<p><a name="valuesfilters"><b>Filter</b></a></p>
+<b>0</b> - Normal<br/>
+<b>1</b> - Black and White<br/>
+<b>2</b> - Sepia<br/>
+<b>3</b> - Negative<br/>
+<br/>
+
+<p><a name="valuesmapdisplay"><b>Map display</b></a></p>
+<b>0</b> - Off<br />
+<b>1</b> - On<br />
+<b>2</b> - Level state<br />
+<b>4</b> - Locked<br />
+<b>8</b> - Disabled<br />
+<b>16</b> - Image only<br />
+<br />
+
+<p><a name="valuestargettype"><b>Target type</b></a></p>
+<b>0</b> - Regular Monster<br />
+<br />
+
+<b>Tile type</b><br />
+ID of the tile. Please refer to the source code DRODLib\TileConstants.h for a list of all tiles and their IDs.<br />
+<br />
+
+<b>Entity</b><br />
+ID of the entity. Please refer to the source code DRODLib\MonsterType.h for a list of all entities and their IDs.<br />
+You can also use IDs of custom entities, visible above the list of custom entities on the "Character Management" dialog<br/>
+<br />
+
+<p><a name="valuesorientation"><b>Orientation values:</b></a></p>
+<b>0</b> - North-West<br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>4</b> - No Orientation<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Clockwise<br />
+<b>10</b> - Counter clockwise<br />
+<br />
+<b>Command values:</b><br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Rotate Clockwise<br />
+<b>10</b> - Rotate Counter clockwise<br />
+<b>11</b> - North-West<br />
+<b>12</b> - Wait<br />
+<b>23</b> - Special command<br />
 
 <hr />
 <a href="character.html">Character Scripting</a><br />

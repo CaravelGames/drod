@@ -16,7 +16,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMonsterParamX, MID_VarMonsterParamY, MID_VarMonsterParamW, MID_VarMonsterParamH, MID_VarMonsterParamF,
 	MID_VarRoomImageX, MID_VarRoomImageY, MID_VarOverheadImageX, MID_VarOverheadImageY,
 	MID_VarLevelName, MID_VarThreatClock, MID_VarPlayerLight, MID_VarPlayerLightType,
-	MID_VarReturnX, MID_VarReturnY
+	MID_VarReturnX, MID_VarReturnY,
+	MID_VarMonsterName
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -68,7 +69,7 @@ void ScriptVars::init()
 //*****************************************************************************
 bool ScriptVars::IsStringVar(Predefined val)
 {
-	return val == P_LEVELNAME;
+	return val == P_LEVELNAME || val == P_MONSTER_NAME;
 }
 
 //*****************************************************************************

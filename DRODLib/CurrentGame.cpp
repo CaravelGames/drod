@@ -373,9 +373,9 @@ void CCurrentGame::Clear(
 	this->bHalfTurn = false;
 
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	this->wMonsterKills = this->wMonsterKillCombo = 0;
@@ -4627,7 +4627,7 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 			if (this->roomSpeech.size() >= MAX_SPEECH_HISTORY)
 			{
 				//Pop first item from speech sequence.
-				delete this->roomSpeech[0];
+				delete this->roomSpeech[0].pSpeechCommand;
 				const UINT sizeMinusOne = this->roomSpeech.size()-1;
 				for (UINT i=0; i<sizeMinusOne; ++i)
 					this->roomSpeech[i] = this->roomSpeech[i+1];
@@ -4638,6 +4638,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 			ASSERT(pCommand->pSpeech);
 			pCommand->pSpeech->MessageText = pCmd->text.c_str(); //get interpolated text
 			UINT& characterType = pCommand->pSpeech->wCharacter;
+			WSTRING customName = DefaultCustomCharacterName;
+
 			if (characterType == Speaker_Self)
 			{
 				//Resolve now because there won't be any hook to the executing NPC later.
@@ -4647,6 +4649,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				//Convert to the speaker type.
 				if (characterType < CUSTOM_CHARACTER_FIRST)
 					characterType = getSpeakerType(MONSTERTYPE(characterType));
+
+				customName = pCharacter->GetCustomName();
 			}
 			else if (characterType == Speaker_Player)
 			{
@@ -4664,11 +4668,17 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 					pCommand->x, pCommand->y);
 				if (pMonster)
 				{
+					if (pMonster->wType == M_CHARACTER) {
+						const CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+
+						customName = pCharacter->GetCustomName();
+					}
+					
 					characterType = getSpeakerType(MONSTERTYPE(pMonster->GetResolvedIdentity()));
 				}
 			}
 
-			this->roomSpeech.push_back(pCommand);
+			this->roomSpeech.push_back(SpeechLog(customName, pCommand));
 		}
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -6607,14 +6617,14 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->conquerTokenTurn = Src.conquerTokenTurn;
 
 	//Speech log.
-	vector<CCharacterCommand*>::const_iterator iter;
+	vector<SpeechLog>::const_iterator iter;
 	for (iter = this->roomSpeech.begin();	iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	for (iter = Src.roomSpeech.begin();	iter != Src.roomSpeech.end(); ++iter)
 	{
-		CCharacterCommand& c = *(*iter);
-		this->roomSpeech.push_back(new CCharacterCommand(c));
+		CCharacterCommand& c = *iter->pSpeechCommand;
+		this->roomSpeech.push_back(SpeechLog(iter->customName, new CCharacterCommand(c)));
 	}
 
 	//"swordsman exhausted/relieved" event logic
@@ -6890,9 +6900,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Reset ambient sounds and speech.
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	StashPersistingEvents(CueEvents);

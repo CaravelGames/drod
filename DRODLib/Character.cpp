@@ -425,6 +425,8 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 	{
 		case (UINT)ScriptVars::P_LEVELNAME:
 			return this->pCurrentGame->getStringVar(varIndex);
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+			return this->customName;
 		default:
 			ASSERT(!"getPredefinedStringVar val not supported");
 			return WSTRING();
@@ -432,7 +434,7 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 }
 
 //*****************************************************************************
-void CCharacter::setPredefinedVar(
+void CCharacter::setPredefinedVarInt(
 	const UINT varIndex, const UINT val,
 	CCueEvents &CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
@@ -526,6 +528,21 @@ void CCharacter::setPredefinedVar(
 		default:
 			pGame->ProcessCommandSetVar(varIndex, val);
 		break;
+	}
+}
+
+//*****************************************************************************
+void CCharacter::setPredefinedVarString(
+	const UINT varIndex, const WSTRING val,
+	CCueEvents& CueEvents)
+	//Sets the value of the predefined var with this relative index to the specified value
+{
+	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
+	switch (varIndex)
+	{
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+			this->customName = val;
+			break;
 	}
 }
 
@@ -2525,6 +2542,14 @@ void CCharacter::Process(
 						this->eDisplayMode = CDM_GhostOverhead;
 						bChangeImperative = false;
 					break;
+					case ScriptFlag::InvisibleInspectable:
+						this->bInvisibleInspectable = true;
+						bChangeImperative = false;
+						break;
+					case ScriptFlag::InvisibleNotInspectable:
+						this->bInvisibleInspectable = false;
+						bChangeImperative = false;
+						break;
 					case ScriptFlag::NotPushable:
 						this->bNotPushable = true;
 						this->bPushableByBody = false;
@@ -2775,13 +2800,15 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_SetPlayerWeapon:
 			{
-				const bool bArm = command.x == (UINT)WT_Off || command.x == (UINT)WT_On;
+				getCommandX(command, px);
+
+				const bool bArm = px == (UINT)WT_Off || px == (UINT)WT_On;
 				if (this->bIfBlock)
 				{
 					//As an If condition, this acts as a query that is true when
 					//the player's weapon state matches the specified parameter value.
 					if (bArm) {
-						if (command.x == (UINT)WT_Off) {
+						if (px == (UINT)WT_Off) {
 							if (!player.bWeaponOff)
 								STOP_COMMAND;
 						} else {
@@ -2789,12 +2816,12 @@ void CCharacter::Process(
 								STOP_COMMAND;
 						}
 					} else {
-						if (command.x != (UINT)player.GetActiveWeapon())
+						if (px != (UINT)player.GetActiveWeapon())
 							STOP_COMMAND;
 					}
 				} else {
 					//Sets the player weapon type to X (incl. on/off -- replaces CC_PlayerEquipsWeapon)
-					player.EquipWeapon(command.x);
+					player.EquipWeapon(px);
 					if (bArm)
 						pGame->SetCloneWeaponsSheathed(); //synch clones
 				}
@@ -3866,7 +3893,9 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 		case ScriptVars::AssignText:
 		{
 			const WSTRING text = pGame->ExpandText(command.label.c_str(), this);
-			if (bLocalVar)
+			if (bPredefinedVar)
+				setPredefinedVarString(varIndex, text, CueEvents);
+			else if (bLocalVar)
 				SetLocalVar(localVarName, text);
 			else
 				stats.SetVar(varName, text.c_str());
@@ -3876,7 +3905,9 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 		{
 			WSTRING text = bLocalVar ? getLocalVarString(localVarName) : stats.GetVar(varName, wszEmpty);
 			text += pGame->ExpandText(command.label.c_str(), this);
-			if (bLocalVar)
+			if (bPredefinedVar)
+				setPredefinedVarString(varIndex, text, CueEvents);
+			else if (bLocalVar)
 				SetLocalVar(localVarName, text);
 			else
 				stats.SetVar(varName, text.c_str());
@@ -3887,7 +3918,7 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 	if (bSetNumber)
 	{
 		if (bPredefinedVar) {
-			setPredefinedVar(varIndex, x, CueEvents);
+			setPredefinedVarInt(varIndex, x, CueEvents);
 		} else if (bLocalVar) {
 			WCHAR wIntText[20];
 			_itoW(int(x), wIntText, 10);

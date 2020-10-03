@@ -1058,7 +1058,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_WATERTRAVERSALLISTBOX = X_ONOFFLISTBOX;
 	static const int Y_WATERTRAVERSALLISTBOX = Y_ONOFFLISTBOX;
 
-	static const UINT CX_IMPERATIVELISTBOX = 250;
+	static const UINT CX_IMPERATIVELISTBOX = 420;
 	static const UINT CY_IMPERATIVELISTBOX = 12*LIST_LINE_HEIGHT + 4;
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
@@ -4307,6 +4307,10 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 	this->pImperativeListBox->AddItem(ScriptFlag::GhostDisplay, g_pTheDB->GetMessageText(MID_NPCGhostDisplay));
 	this->pImperativeListBox->AddItem(ScriptFlag::GhostDisplayOverhead, g_pTheDB->GetMessageText(MID_NPCGhostDisplayOverhead));
 	this->pImperativeListBox->AddItem(ScriptFlag::NoGhostDisplay, g_pTheDB->GetMessageText(MID_NPCNoGhostDisplay));
+	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleInspectable, g_pTheDB->GetMessageText(MID_NPCInvisibleInspectable));
+	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleNotInspectable, g_pTheDB->GetMessageText(MID_NPCInvisibleNotInspectable));
+	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleCountMoveOrder, g_pTheDB->GetMessageText(MID_NPCInvisibleIncludeMoveOrder));
+	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleNotCountMoveOrder, g_pTheDB->GetMessageText(MID_NPCInvisibleNotIncludeMoveOrder));
 	this->pImperativeListBox->AddItem(ScriptFlag::NotPushable, g_pTheDB->GetMessageText(MID_NPCNotPushable));
 	this->pImperativeListBox->AddItem(ScriptFlag::DefaultPushability, g_pTheDB->GetMessageText(MID_NPCDefaultPushableBehavior));
 	this->pImperativeListBox->AddItem(ScriptFlag::PushableByBody, g_pTheDB->GetMessageText(MID_NPCPushableByBody));
@@ -4889,6 +4893,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_X, g_pTheDB->GetMessageText(MID_VarMonsterX));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_Y, g_pTheDB->GetMessageText(MID_VarMonsterY));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_O, g_pTheDB->GetMessageText(MID_VarMonsterO));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_NAME, g_pTheDB->GetMessageText(MID_VarMonsterName));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_X, g_pTheDB->GetMessageText(MID_VarMonsterParamX));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_Y, g_pTheDB->GetMessageText(MID_VarMonsterParamY));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_W, g_pTheDB->GetMessageText(MID_VarMonsterParamW));
@@ -5207,7 +5212,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NATURAL_TARGET,     //CC_GetNaturalTarget
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
-		BEHAVIOR,           //CC_BEHAVIOR
+		BEHAVIOR,            //CC_BEHAVIOR
 		MONSTER_REMAINS     //CC_WaitForRemains
 	};
 

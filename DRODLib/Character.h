@@ -75,6 +75,8 @@
 #define ParamFStr "FParam"
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 
+#define DefaultCustomCharacterName wszEmpty
+
 enum CharacterDisplayMode {
 	CDM_Normal,
 	CDM_GhostFloor,
@@ -117,6 +119,7 @@ public:
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
+	WSTRING        GetCustomName() const { return this->customName; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -144,6 +147,8 @@ public:
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
 	bool           IsGhostImageOverhead() const {return this->eDisplayMode == CDM_GhostOverhead;}
+	bool           IsInvisibleInspectable() const { return this->bInvisibleInspectable; }
+	bool           IsInvisibleCountMoveOrder() const { return this->bInvisibleCountsMoveOrder; }
 	bool           IsImmuneToWeapon(WeaponType type) const;
 	bool           IsInvulnerable() const {return GetImperative() == ScriptFlag::Invulnerable;}
 	bool           IsMissionCritical() const {return GetImperative() == ScriptFlag::MissionCritical;}
@@ -234,7 +239,8 @@ private:
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
 
-	void setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
 
@@ -272,6 +278,8 @@ private:
 	bool bPushableByBody;		//if true, the character can be pushed with body
 	bool bPushableByWeapon;	//if true, the character can be pushed with any weapon
 	bool bStunnable;         //if false, the character will never be stunned
+	bool bInvisibleInspectable;  // Whether the character is included in the description when right clicking while not part of the room
+	bool bInvisibleCountsMoveOrder;  // Whether the character is counted for calculating move order while not part of the room
 	bool bBrainPathmapObstacle, bNPCPathmapObstacle;
 	bool bWeaponOverride;   //Whether P_MONSTER_WEAPON now overrides the NPCs default properties
 	MovementIQ movementIQ;  //movement behavior
@@ -284,6 +292,7 @@ private:
 	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 
 	UINT wLastSpeechLineNumber; //used during language import
+	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
 
 	//Predefined vars.
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
