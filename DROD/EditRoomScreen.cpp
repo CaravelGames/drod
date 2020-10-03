@@ -1194,7 +1194,7 @@ bool CEditRoomScreen::SetForActivate()
 
 	//Ensure everything's current and fresh.
 	this->pRoom->Reload();
-	CRoomScreen::SetMusicStyle(this->pRoom->style, SONG_AMBIENT); //do after reload
+	CRoomScreen::SetMusicStyle(this->pRoom->style, SONG_EDITOR); //do after reload
 	g_pTheDBM->LoadTileImagesForStyle(this->pRoom->style);
 	if (!this->pRoomWidget->LoadFromRoom(this->pRoom, this->pHold, &this->LevelEntrances))
 		return false; //couldn't load image resources for room
@@ -2396,7 +2396,7 @@ bool CEditRoomScreen::LoadRoom(
 		this->pRoom->PlaceCharacters(this->pHold);
 		this->pRoomWidget->LoadFromRoom(pNewRoom, this->pHold, &this->LevelEntrances);
 		this->pMapWidget->SelectRoom(this->pRoom->dwRoomX, this->pRoom->dwRoomY);
-		CRoomScreen::SetMusicStyle(this->pRoom->style, SONG_AMBIENT);
+		CRoomScreen::SetMusicStyle(this->pRoom->style, SONG_EDITOR);
 		SetSignTextToCurrentRoom();
 	}
 	ResetAdjacentRooms();

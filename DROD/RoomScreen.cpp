@@ -130,7 +130,7 @@ void CRoomScreen::SetMusicStyle(
 	WSTRING wMoodText;
 	switch (wMood)
 	{
-		case SONG_AMBIENT: case SONG_ATTACK: case SONG_PUZZLE: case SONG_EXIT:
+		case SONG_AMBIENT: case SONG_ATTACK: case SONG_PUZZLE: case SONG_EXIT: case SONG_EDITOR:
 			AsciiToUnicode(moodText[wMood], wMoodText);
 		break;
 		default: ASSERT(!"Invalid style mood"); break;
