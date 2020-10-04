@@ -1698,13 +1698,13 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pGotoSmartListBox = new CListBoxWidget(TAG_GOTOSMART_LISTBOX,
 			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pGotoSmartListBox);
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIf, L"Last If");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfSkipCondition, L"Last If (Skip Condition)");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIf, L"Last If or Else If");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition, L"Last If or Else If  (Skip Condition)");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElse, L"Next Else");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIf, L"Next Else or Else If");
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, L"Next Else or Else If (Skip Condition)");
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIf, g_pTheDB->GetMessageText(MID_LastIf));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfSkipCondition, g_pTheDB->GetMessageText(MID_LastIfSkip));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIf, g_pTheDB->GetMessageText(MID_LastIfOrElseIf));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_LastIfOrElseIfSkip));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElse, g_pTheDB->GetMessageText(MID_NextElse));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIf, g_pTheDB->GetMessageText(MID_NextElseOrElseIf));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
 	this->pGotoSmartListBox->SelectLine(0);
 
 	//Variable handling widgets.
@@ -3315,7 +3315,10 @@ const
 		case CCharacterCommand::CC_Label:
 			wstr.clear();
 			break;
-
+		case CCharacterCommand::CC_GoToSmart:
+			wstr += wszColon;
+			wstr += wszSpace;
+		break;
 		//deprecated commands still display
 		case CCharacterCommand::CC_PlayerEquipsWeapon:
 			wstr = g_pTheDB->GetMessageText(MID_SetPlayerSword);
@@ -4396,7 +4399,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoSub, g_pTheDB->GetMessageText(MID_GoSub));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_GoToSmart, L"Goto Smart:");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_GoToSmart, g_pTheDB->GetMessageText(MID_GotoSmart));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
