@@ -3238,7 +3238,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				}
 				if (bPlayerDied)
 					this->pRoomWidget->RenderRoomLighting();
-				this->pRoomWidget->ResetForPaint();
 
 				if (!bPlayerDied)
 					this->bRoomClearedOnce = false;
@@ -3270,6 +3269,13 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	bPlayerDied = this->sCueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
 	const bool bPlayingVideo = this->sCueEvents.HasOccurred(CID_PlayVideo);
  	SCREENTYPE eNextScreen = ProcessCueEventsBeforeRoomDraw(this->sCueEvents);
+
+	// ResetForPaint() must happen after ProcessCueEventsBeforeRoomDraw so that it can inspect the state of the rendered
+	// room from the previous turn, otherwise things can get weird, like briar getting disconnected if it falls on the
+	// turn the player dies/leaves the room
+	if (bLeftRoom)
+		this->pRoomWidget->ResetForPaint();
+
 	if (eNextScreen == SCR_Game)
 	{
 		//Redraw the room.
