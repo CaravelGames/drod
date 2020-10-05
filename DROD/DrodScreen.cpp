@@ -548,7 +548,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)

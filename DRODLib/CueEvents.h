@@ -531,7 +531,7 @@ enum CUEEVENT_ID
 
 	//Object fell out of room.
 	//
-	//Private data: UINT (one or more)
+	//Private data: CMoveCoordEx2(x, y, orientation, monster type, weapon type)
 	CID_ObjectFell,
 
 	//Player burned (killed) by hot tile.

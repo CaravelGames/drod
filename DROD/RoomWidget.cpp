@@ -7811,6 +7811,7 @@ void CRoomWidget::DrawSwordFor(
 UINT CRoomWidget::GetSwordTileFor(const CMonster *pMonster, const UINT wO, const UINT wType) const
 {
 	ASSERT(pMonster);
+	UINT wMonsterType = wType;
 	UINT wSwordTI = TI_UNSPECIFIED;
 
 	//Get optional custom sword tile.
@@ -7824,28 +7825,40 @@ UINT CRoomWidget::GetSwordTileFor(const CMonster *pMonster, const UINT wO, const
 			case M_CHARACTER:
 			{
 				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-				pCustomChar = this->pCurrentGame->pHold->GetCharacter(
-						pCharacter->wLogicalIdentity);
+				wMonsterType = pCharacter->wLogicalIdentity;
 			}
 			break;
 			case M_CLONE:
 			case M_TEMPORALCLONE:
 			{
 				CSwordsman& player = this->pCurrentGame->swordsman;
-				pCustomChar = this->pCurrentGame->pHold->GetCharacter(player.wIdentity);
+				wMonsterType = player.wIdentity;
 			}
 			break;
 			default: break;
 		}
+	}
 
-		if (pCustomChar)
-			wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles,
-					GetCustomTileIndex(wO), SWORD_FRAME);
+	//Calculate monster's default sword tile.
+	return GetSwordTile(wMonsterType, wO, pMonster->GetWeaponType());
+}
+
+
+//*****************************************************************************
+UINT CRoomWidget::GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const
+{
+	UINT wSwordTI = TI_UNSPECIFIED;
+
+	//Get optional custom sword tile.
+	if (this->pCurrentGame && wMonsterType >= CUSTOM_CHARACTER_FIRST)
+	{
+		HoldCharacter* pCustomChar = this->pCurrentGame->pHold->GetCharacter(wMonsterType);
+		wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles, GetCustomTileIndex(wO), SWORD_FRAME);
 	}
 
 	//Calculate monster's default sword tile.
 	if (wSwordTI == TI_UNSPECIFIED)
-		wSwordTI = GetSwordTile(wType, wO, pMonster->GetWeaponType());
+		wSwordTI = GetSwordTile(wMonsterType, wO, wWeaponType);
 
 	return wSwordTI;
 }
