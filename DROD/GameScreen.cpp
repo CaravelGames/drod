@@ -4611,7 +4611,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
-		this->pMapWidget->UpdateFromCurrentGame();
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
 		this->pMapWidget->RequestPaint();
 		if (bLevelComplete)
 		{
