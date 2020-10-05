@@ -474,12 +474,12 @@ continue executing script commands from a different location in the script.</p>
     <li><a name="impdirectonlybeelining"><u>Direct-only beelining</u></a>: When
       desired diagonal movement is blocked, then don't move at all.</li>
     <li><a name="imp-normal-beelining"><u>Normal beelining</u></a>: Move diagonally when desired and possible, otherwise move axially if possible, prefering vertical movement when both horizontal and vertical movements are open.</li>
-    <li><a name="impflexiblebeelining"><u>Flexible beelining</u></a>: When a
+    <li><a name="imp-smart-beelining"><u>Smart beelining</u></a>: In addition to Normal beelining behavior, when a
       desired diagonal movement is blocked, choose the better of
       horizontal or vertical movement that will get closer to the destination (default).</li>
-    <li><a name="imp-smart-beelining"><u>Smart beelining</u></a>: As flexible beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
+    <li><a name="impflexiblebeelining"><u>Flexible beelining</u></a>: As Smart beelining, but also will move diagonally closer to the destination when a desired axial move is blocked.</li>
     <li><a name="imp-pathfinding-openonly"><u>Pathfinding (open only)</u></a>: The shortest path is calculated and taken to the destination.  Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found, no movement is made.</li>
-    <li><a name="imp-pathfinding"><u>Pathfinding</u></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
+    <li><a name="imp-pathfinding"><u>Pathfinding</u></a>: The most intelligent movement option. The shortest path is calculated and taken to the destination. Whenever the currently calculated path becomes blocked, or a shorter path becomes available to a mobile target, then a new shortest path is calculated. When no open path is found to the destination, then the path that has the fewest obstacles along the way is followed, defaulting to normal beelining whenever obstacles completely block the remaining path.</li>
     <li><a name="imp-brain-pathmap-obstacle"><u>Brain pathmap obstacle</u></a>: This NPC is perceived as an obstacle to brain pathmaps, and brained pathmaps will calculate paths around the NPC.</li>
     <li><a name="imp-not-brain-pathmap-obstacle"><u>Not brain pathmap obstacle</u></a>: This NPC is not perceived as an obstacle to brain pathmaps (default), and brained pathmaps will not calculate paths around the NPC.</li>
     <li><a name="imp-npc-pathmap-obstacle"><u>NPC pathmap obstacle</u></a>: This NPC is perceived as an obstacle to other NPCs using the Pathfinding imperative. Other NPC pathmaps will be calculated around this NPC.</li>

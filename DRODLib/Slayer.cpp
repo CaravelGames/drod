@@ -28,6 +28,7 @@
 //Implementation of CSlayer.
 
 #include "Slayer.h"
+#include "TemporalClone.h"
 
 #include "CurrentGame.h"
 #include "DbRooms.h"
@@ -171,8 +172,7 @@ void CSlayer::Process(
 
 	
 	ASSERT(this->wDistToTarget > 0);
-	if (this->wDistToTarget == 1 &&
-	    !(bTargetIsPlayer && !player.IsVulnerableToBodyAttack()))  // can't step on wubba player
+	if (this->wDistToTarget == 1 && CanBodyKillTarget(this->wTX, this->wTY))
 	{
 		//Step on target.
 		int dxFirst, dyFirst;
@@ -377,7 +377,7 @@ const
 				return true;
 		}
 
-		return CArmedMonster::DoesSquareContainObstacle(wCol, wRow);
+		return CArmedMonster::DoesSquareContainObstacle(wCol, wRow) || !CanBodyKillTarget(wCol, wRow);
 	}
 
 	if (!room.IsValidColRow(wCol,wRow))
@@ -1072,4 +1072,20 @@ void CSlayer::StopOpeningDoor()
 	this->state = Seeking;
 	this->orbsToHit.clear();
 	this->openingDoorAt.wX = this->openingDoorAt.wY = static_cast<UINT>(-1);
+}
+
+//***************************************************************************************
+bool CSlayer::CanBodyKillTarget(
+	const UINT wTX, const UINT wTY
+) const {
+	if (this->pCurrentGame->IsPlayerAt(wTX, wTY))
+		return this->pCurrentGame->swordsman.IsVulnerableToBodyAttack();
+
+	CMonster* pTarget = this->pCurrentGame->pRoom->GetMonsterAtSquare(wTX, wTY);
+	if (pTarget && pTarget->wType == M_TEMPORALCLONE) {
+		CTemporalClone* pClone = DYN_CAST(CTemporalClone*, CMonster*, pTarget);
+		return pClone->IsVulnerableToBodyAttack();
+	}
+
+	return true;
 }

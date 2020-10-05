@@ -34,7 +34,7 @@
 #include <BackEndLib/Files.h>
 
 const char moodText[SONG_MOOD_COUNT][8] = {
-	"Ambient", "Attack", "Puzzle", "Exit"
+	"Ambient", "Attack", "Puzzle", "Exit", "Editor"
 };
 
 //Channels required/allocated for playing songs and sound effects.

@@ -501,7 +501,7 @@ void CScreen::OnBetweenEvents()
 {
 	//Show tool tip after mouse inactivity, if applicable.
 	const Uint32 dwNow = SDL_GetTicks();
-	const bool bTimeToShowTip = dwNow - this->dwLastMouseMove > 1000; //1 second
+	const bool bTimeToShowTip = dwNow - this->dwLastMouseMove > 500; //0.5 second
 	this->bShowTip = (bTimeToShowTip && !this->bShowingTip && !this->MouseDraggingInWidget());
 
 	//Draw effects onto screen.
