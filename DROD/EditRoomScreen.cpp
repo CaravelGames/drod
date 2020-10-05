@@ -4735,9 +4735,9 @@ void CEditRoomScreen::PasteRegion(
 							pNewMonster = room.AddNewMonster(
 									pMonster->wType, xDest, yDest);
 							pNewMonster->wO = pMonster->wO;
-							if (bEntityHasSword(pMonster->wType))
+							if (bEntityHasSword(pNewMonster->wType))
 							{
-								CArmedMonster *pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+								CArmedMonster *pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pNewMonster);
 								if (this->pRoom->IsValidColRow(pArmedMonster->GetWeaponX(),pArmedMonster->GetWeaponY()))
 									this->pRoomWidget->swords.Add(pArmedMonster->GetWeaponX(),pArmedMonster->GetWeaponY());
 							}
