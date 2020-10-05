@@ -4911,6 +4911,8 @@ void CCharacterDialogWidget::PopulateVarList()
 
 	this->pVarListBox->AddItem(ScriptVars::P_THREATCLOCK, g_pTheDB->GetMessageText(MID_VarThreatClock));
 	this->pVarListBox->AddItem(ScriptVars::P_LEVELNAME, g_pTheDB->GetMessageText(MID_VarLevelName));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_Y, g_pTheDB->GetMessageText(MID_VarRoomY));
 
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYERLIGHT, g_pTheDB->GetMessageText(MID_VarPlayerLight));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYERLIGHTTYPE, g_pTheDB->GetMessageText(MID_VarPlayerLightType));
