@@ -2466,19 +2466,26 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_WALL_H: case T_WALL_B:
 				case T_STAIRS: case T_STAIRS_UP:
 				case T_THINICE: case T_THINICE_SH: case T_STEP_STONE:
+				case T_ARROW_N: case T_ARROW_E: case T_ARROW_S: case T_ARROW_W:
+				case T_ARROW_NE: case T_ARROW_NW: case T_ARROW_SE: case T_ARROW_SW:
+				case T_ARROW_OFF_N: case T_ARROW_OFF_E: case T_ARROW_OFF_S: case T_ARROW_OFF_W:
+				case T_ARROW_OFF_NE: case T_ARROW_OFF_NW: case T_ARROW_OFF_SE: case T_ARROW_OFF_SW:
+				case T_TUNNEL_N: case T_TUNNEL_E: case T_TUNNEL_S: case T_TUNNEL_W:
+				case T_WATER: case T_SHALLOW_WATER:
+				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
+				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
 					RequestToolTip(MID_RotateToChangeType);
 				break;
 				case T_TAR: case T_MUD: case T_GEL:
-				case T_PIT: case T_WATER: case T_SHALLOW_WATER:
+				case T_PIT:
 				case T_TRAPDOOR: case T_TRAPDOOR2:
 				case T_PLATFORM_P: case T_PLATFORM_W:
 				case T_POTION_K: case T_POTION_I: case T_POTION_D:
 				case T_POTION_SP: case T_POTION_C:
-				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
-				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
 				case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 				case T_HORN_SQUAD: case T_HORN_SOLDIER:
 				case T_BEACON: case T_BEACON_OFF:
+				case T_WALL_M: case T_WALL_WIN:
 					if (this->bGroupMenuItems)
 						RequestToolTip(MID_RotateToChangeType);
 				break;
