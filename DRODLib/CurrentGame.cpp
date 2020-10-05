@@ -4828,8 +4828,8 @@ void CCurrentGame::FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents)
 		switch (wOTile)
 		{
 			case T_PIT: case T_PIT_IMAGE:
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY,
-					S, M_OFFSET + M_FEGUNDOASHES), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY,
+					S, M_OFFSET + M_FEGUNDOASHES, 0), true);
 			break;
 			case T_WATER: case T_SHALLOW_WATER:
 				CueEvents.Add(CID_Splash, new CCoord(wX,wY), true);

@@ -3925,7 +3925,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)
@@ -3948,6 +3948,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					}
 
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
+				}
+
+				if (pCoord->wValue2 != WT_Off) {
+					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
+					if (swordTile)
+						fallingTiles[ROOMCOORD(pCoord->wX + nGetOX(pCoord->wO), pCoord->wY + nGetOY(pCoord->wO))].push_back(swordTile);
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
