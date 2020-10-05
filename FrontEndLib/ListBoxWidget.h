@@ -40,9 +40,9 @@ struct LBOX_ITEM
 	LBOX_ITEM()
 		: bGrayed(false)
 		, rearrangeable(true)
-	{
-		color.r = color.g = color.b = 0; //[default=black]
-	}
+		, color({0, 0, 0, 0})
+    {
+    }
 
 	union {
 		UINT dwKey;

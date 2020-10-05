@@ -630,7 +630,7 @@ const
 {
 	switch (wTileLayer)
 	{
-	case 0:
+	case LAYER_OPAQUE:
 		//Floor types can replace themselves,
 		//except for doors: to facilitate editing them when clicked on.
 		if (bIsPlainFloor(wTileNo)) return true; //anything can replace floor
@@ -656,7 +656,7 @@ const
 		if (wObject == T_PRESSPLATE)
 			return false;
 		return wObject == wTileNo;
-	case 3:
+	case LAYER_FLOOR:
 		//Arrows can replace arrows.
 		if ((bIsArrow(wObject) || bIsDisabledArrow(wObject)) &&
 			(bIsArrow(wTileNo) || bIsDisabledArrow(wTileNo)))
@@ -664,7 +664,7 @@ const
 		if (wObject == T_WALLLIGHT)
 			return false;
 		return wObject == wTileNo;
-	case 1:
+	case LAYER_TRANSPARENT:
 		//Can't replace customizable objects: scrolls, obstacles and lights.
 		if (wObject == T_SCROLL || wObject == T_OBSTACLE || bIsLight(wObject))
 			return false;
@@ -681,7 +681,7 @@ const
 		if (bIsBeacon(wTileNo) && bIsBeacon(wObject))
 			return true;
 		return wObject == wTileNo;
-	case 2:
+	case LAYER_MONSTER:
 		//Same type of monster can replace itself, except long monsters and special character.
 		if (bIsSerpentOrGentryii(wObject) || wObject == T_CHARACTER || wObject == T_ROCKGIANT)
 			return false;
@@ -740,7 +740,7 @@ const
 	wTileNo[3] = this->pRoom->pszFSquares[wSquareIndex];
 
 	//Don't allow objects to clobber existing objects on their layer.
-	if (wTileLayer == 2 && wSelectedObject != T_NOMONSTER)
+	if (wTileLayer == LAYER_MONSTER && wSelectedObject != T_NOMONSTER)
 	{
 		//Monster can't overwrite a monster of a different type.
 		if (!bAllowSelf && pMonster)
@@ -767,7 +767,7 @@ const
 	if (bSwordsmanAt)
 	{
 		UINT wTile;
-		wTile = wTileLayer == 0 ? wSelectedObject : wTileNo[0];
+		wTile = wTileLayer == LAYER_OPAQUE ? wSelectedObject : wTileNo[0];
 		if (!(bIsFloor(wTileNo[0]) || bIsTunnel(wTileNo[0]) ||
 				bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 				bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
@@ -775,7 +775,7 @@ const
 				bIsPit(wTileNo[0]) || bIsWater(wTileNo[0])))
 			return false;
 
-		wTile = wTileLayer == 1 ? wSelectedObject : wTileNo[1];
+		wTile = wTileLayer == LAYER_TRANSPARENT ? wSelectedObject : wTileNo[1];
 		if (bIsTarOrFluff(wTile) || wTile == T_ORB || bIsExplodingItem(wTile) ||
 				bIsBeacon(wTile) || bIsBriar(wTile) || wTile == T_STATION)
 			return false;
@@ -787,13 +787,13 @@ const
 	{
 		switch (wTileLayer)
 		{
-			case 0:
+			case LAYER_OPAQUE:
 				if (bIsCrumblyWall(wSelectedObject))
 					return false;
 				break;
-			case 1: case 3:
+			case LAYER_TRANSPARENT: case LAYER_FLOOR:
 				break;
-			case 2:
+			case LAYER_MONSTER:
 				//Sword can be placed on serpents and maybe NPCs, but no other monster.
 				if (wSelectedObject == T_SWORDSMAN && bAllowSelf)
 					break;

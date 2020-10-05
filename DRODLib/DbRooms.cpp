@@ -5121,7 +5121,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 			if (bIsWater(wOSquare))
 				CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
 			else
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 		break;
 		//These types survive in shallow water
 		case T_STATION: case T_SCROLL:
@@ -5133,7 +5133,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 				if (bIsDeepWater(wOSquare))
 					CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
 				else
-					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 			}
 		break;
 		case T_MIRROR:
@@ -5148,18 +5148,18 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 				}
 				CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
 			} else
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 			break;
 		case T_TAR: case T_MUD: case T_GEL:
 			//Gel Babies may survive a fall into shallow water
 			RemoveStabbedTar(wX, wY, CueEvents, false);
-			CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+			CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 		break;
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			if (bIsPit(wOSquare)) //remains on top of water without falling
 			{
 				Plot(wX, wY, T_EMPTY);
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 			}
 		break;
 		default: break; //nothing else falls
@@ -5255,8 +5255,11 @@ const
 			id = pCharacter->wLogicalIdentity;
 		}
 
-		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(pMonster->wX, pMonster->wY,
-				wO, M_OFFSET + id), true);
+		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+			pMonster->wX, pMonster->wY, wO, 
+			M_OFFSET + id, 
+			pMonster->HasSword() ? pMonster->GetWeaponType() : WT_Off
+		), true);
 		return true;
 	}
 
@@ -5315,9 +5318,9 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 			{
 				const CMonsterPiece& piece = **pieceIt;
 				if (bIsPit(GetOSquare(piece.wX, piece.wY))) {
-					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
+					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
 							piece.wX, piece.wY, pMonster->wType,
-							piece.wTileNo), true);
+							piece.wTileNo, 0), true);
 				}
 			}
 		}
@@ -5353,9 +5356,9 @@ bool CDbRoom::LargeMonsterFalls(CMonster* &pMonster, const UINT wX, const UINT w
 			{
 				const CMonsterPiece& piece = **breakoff_piece;
 				if (bIsPit(GetOSquare(piece.wX, piece.wY)))
-					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
+					CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
 							piece.wX, piece.wY, pMonster->wType,
-							piece.wTileNo), true);
+							piece.wTileNo, 0), true);
 			}
 
 			//Shorten tail to just past this point.
@@ -5407,14 +5410,14 @@ UINT CDbRoom::GentryiiFallsInPit(
 			//the offset indicates this is a body piece instead of the head so the front-end can render it correctly
 			UINT wO = nGetO(int(piece.wX - wPrevX), int(piece.wY - wPrevY)) + ORIENTATION_COUNT;
 
-			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
-					piece.wX, piece.wY, wO, T_GENTRYII), true);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+					piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
 
 			MonsterPieces::const_iterator nextPiece = pieceIt;
 			if (++nextPiece != pieces_end) {
 				wO = nGetO(int(piece.wX - (*nextPiece)->wX), int(piece.wY - (*nextPiece)->wY)) + ORIENTATION_COUNT;
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
-						piece.wX, piece.wY, wO, T_GENTRYII), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+						piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
 			}
 		}
 
@@ -5921,8 +5924,8 @@ void CDbRoom::ProcessExplosionSquare(
 				switch(wOTile)
 				{
 					case T_PIT: case T_PIT_IMAGE:
-						CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wNewX, wNewY,
-							S, M_OFFSET + M_FEGUNDOASHES), true);
+						CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wNewX, wNewY,
+							S, M_OFFSET + M_FEGUNDOASHES, 0), true);
 					break;
 					case T_WATER: case T_SHALLOW_WATER:
 						CueEvents.Add(CID_Splash, new CCoord(wNewX,wNewY), true);
@@ -6197,8 +6200,8 @@ void CDbRoom::PushTLayerObject(
 	{
 		case T_PIT: case T_PIT_IMAGE:
 			Plot(wSrcX, wSrcY, RoomObject::emptyTile());
-			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wDestX, wDestY,
-					NO_ORIENTATION, wTile), true);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wDestX, wDestY,
+					NO_ORIENTATION, wTile, 0), true);
 		return;
 		case T_WATER:
 			Plot(wSrcX, wSrcY, RoomObject::emptyTile());

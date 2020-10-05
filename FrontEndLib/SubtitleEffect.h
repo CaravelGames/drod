@@ -40,8 +40,8 @@ class CSubtitleEffect;
 typedef std::map<CMoveCoord*, CSubtitleEffect*> SUBTITLES;
 
 struct TEXTLINE {
-	TEXTLINE() {color.r = color.g = color.b = 0;} //black
-	TEXTLINE(const WCHAR* pText) : text(pText) {color.r = color.g = color.b = 0;}
+	TEXTLINE() : color({0, 0, 0, 0}) {} //black
+	TEXTLINE(const WCHAR* pText) : text(pText), color({0, 0, 0, 0}) {}
 	WSTRING text;
 	SDL_Color color;
 };
