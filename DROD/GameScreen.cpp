@@ -3845,7 +3845,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		const CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
 		const bool bPlayer = this->pCurrentGame->swordsman.wX == pCoord->wX && this->pCurrentGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive()))
+		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
 			this->pRoomWidget->AddMLayerEffect(new CStunEffect(this->pRoomWidget, *pCoord));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);

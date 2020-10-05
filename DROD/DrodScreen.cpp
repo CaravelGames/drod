@@ -620,7 +620,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		const CMonster *pMonster = pGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
 		const bool bPlayer = pGame->swordsman.wX == pCoord->wX && pGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive()))
+		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
 			pRoomWidget->AddMLayerEffect(new CStunEffect(pRoomWidget, *pCoord));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MonsterPieceStabbed);
