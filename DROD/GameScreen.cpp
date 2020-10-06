@@ -2806,11 +2806,12 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 						new CTrapdoorFallEffect(this->pRoomWidget, player, playerTile, fallTime));
 			}
 			if (wSwordTI != TI_UNSPECIFIED) {
-				const CCoord sword(player.wSwordX, player.wSwordY);
-				const vector<UINT> swordTile(1, wSwordTI);
-				if (this->pRoomWidget->pRoom->IsValidColRow(sword.wX, sword.wY))
+				if (this->pRoomWidget->pRoom->IsValidColRow(player.wSwordX, player.wSwordY)) {
+					const CCoord sword(player.wSwordX, player.wSwordY);
+					const vector<UINT> swordTile(1, wSwordTI);
 					this->pRoomWidget->AddMLayerEffect(
 							new CTrapdoorFallEffect(this->pRoomWidget, sword, swordTile, fallTime));
+				}
 			}
 		}
 	}
@@ -3959,10 +3960,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 				if (pCoord->wValue2 != WT_Off) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
-					const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
-					const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
-					if (swordTile && this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
-						fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
+					if (swordTile) {
+						const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
+						const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
+						if (this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
+							fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
+					}
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
