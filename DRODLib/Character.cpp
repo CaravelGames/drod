@@ -2373,12 +2373,12 @@ void CCharacter::Process(
 				bool bJumped = false;
 
 				switch (eGotoType) {
-				case ScriptFlag::GotoSmartType::LastIf:
-				case ScriptFlag::GotoSmartType::LastIfSkipCondition:
+				case ScriptFlag::GotoSmartType::PreviousIf:
+				case ScriptFlag::GotoSmartType::PreviousIfSkipCondition:
 					bJumped = JumpToPreviousIf(true);
 				break;
-				case ScriptFlag::GotoSmartType::LastIfOrElseIf:
-				case ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition:
+				case ScriptFlag::GotoSmartType::PreviousIfOrElseIf:
+				case ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition:
 					bJumped = JumpToPreviousIf(false);
 				break;
 				case ScriptFlag::GotoSmartType::NextElse:
@@ -2397,8 +2397,8 @@ void CCharacter::Process(
 
 				bool bSkipCondition = false;
 				switch (eGotoType) {
-				case ScriptFlag::GotoSmartType::LastIfSkipCondition:
-				case ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition:
+				case ScriptFlag::GotoSmartType::PreviousIfSkipCondition:
+				case ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition:
 				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
 					bSkipCondition = true;
 				default:

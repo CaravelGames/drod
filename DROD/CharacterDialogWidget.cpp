@@ -1698,10 +1698,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pGotoSmartListBox = new CListBoxWidget(TAG_GOTOSMART_LISTBOX,
 			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pGotoSmartListBox);
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIf, g_pTheDB->GetMessageText(MID_LastIf));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfSkipCondition, g_pTheDB->GetMessageText(MID_LastIfSkip));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIf, g_pTheDB->GetMessageText(MID_LastIfOrElseIf));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::LastIfOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_LastIfOrElseIfSkip));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIf, g_pTheDB->GetMessageText(MID_PreviousIf));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfSkipCondition, g_pTheDB->GetMessageText(MID_PreviousIfSkip));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfOrElseIf, g_pTheDB->GetMessageText(MID_PreviousIfOrElseIf));
+	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_PreviousIfOrElseIfSkip));
 	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElse, g_pTheDB->GetMessageText(MID_NextElse));
 	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIf, g_pTheDB->GetMessageText(MID_NextElseOrElseIf));
 	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));

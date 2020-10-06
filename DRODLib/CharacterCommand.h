@@ -186,10 +186,10 @@ namespace ScriptFlag
 
 	enum GotoSmartType
 	{
-		LastIf = 0,
-		LastIfOrElseIf = 1,
-		LastIfSkipCondition = 2,
-		LastIfOrElseIfSkipCondition = 3,
+		PreviousIf = 0,
+		PreviousIfOrElseIf = 1,
+		PreviousIfSkipCondition = 2,
+		PreviousIfOrElseIfSkipCondition = 3,
 		NextElse = 4,
 		NextElseOrElseIf = 5,
 		NextElseOrElseIfSkipCondition = 6
