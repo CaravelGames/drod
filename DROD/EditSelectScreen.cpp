@@ -2429,7 +2429,7 @@ void CEditSelectScreen::SetSelectedRoom(
 
 	//Select room style from the list box.
 	SelectListStyle(this->pSelectedRoom->style);
-	CRoomScreen::SetMusicStyle(this->pSelectedRoom->style, SONG_AMBIENT);
+	CRoomScreen::SetMusicStyle(this->pSelectedRoom->style, SONG_EDITOR);
 
 	//Update room label.
 	WSTRING wstrDesc;
@@ -2453,7 +2453,7 @@ void CEditSelectScreen::SetRoomStyle(
 	this->pRoomWidget->LoadFromRoom(this->pSelectedRoom, this->pSelectedHold, &this->LevelEntrances);
 	this->pRoomWidget->Paint();
 
-	CRoomScreen::SetMusicStyle(this->pSelectedRoom->style, SONG_AMBIENT);
+	CRoomScreen::SetMusicStyle(this->pSelectedRoom->style, SONG_EDITOR);
 }
 
 //*****************************************************************************

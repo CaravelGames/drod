@@ -371,6 +371,9 @@ void CDemoScreen::OnBetweenEvents()
 				//so here we need to re-sync it
 				this->currentCommandIter = CGameScreen::pCurrentGame->Commands.Get(CGameScreen::pCurrentGame->wTurnNo);
 
+				//call this to unlink characters deleted during room reset caused by temporal split, will crash game randomly otherwise
+				CGameScreen::ClearSpeech(false, true);
+
 				if (this->sCueEvents.HasOccurred(CID_ActivatedTemporalSplit))
 					DrawCurrentTurn();
 			} else {

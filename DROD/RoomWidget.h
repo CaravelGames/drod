@@ -458,6 +458,7 @@ protected:
 
 	CEntity*       GetLightholder() const;
 	UINT           GetSwordTileFor(const CMonster *pMonster, const UINT wO, const UINT wType) const;
+	UINT           GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const;
 	float          getTileElev(const UINT i, const UINT j) const;
 	float          getTileElev(const UINT wOTile) const;
 	void           GetWeather();

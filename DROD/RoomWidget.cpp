@@ -6306,6 +6306,10 @@ bool CRoomWidget::NeedsSwordRedrawing(const CMonster *pMonster) const
 	if (pMonster->wType == M_TEMPORALCLONE)
 		return !IsTemporalCloneAnimated();
 
+	// Hiding clones are redrawn every turn
+	if (pMonster->wType == M_CLONE)
+		return !pMonster->IsHiding();
+
 	return true;
 }
 
@@ -7673,6 +7677,10 @@ void CRoomWidget::DrawArmedMonster(
 		TileImageBlitParams::setDisplayArea(0, y_bottom, CX_TILE, CY_TILE - y_bottom);
 	}
 
+	// Transparent armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	if (blit.nOpacity < 255)
+		this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->wX, pArmedMonster->wY)].dirty = 1;
+
 	DrawTileImage(blit, pDestSurface);
 
 	if (bHasSword) {
@@ -7682,6 +7690,10 @@ void CRoomWidget::DrawArmedMonster(
 		weaponBlit.nAddColor = -1;
 		weaponBlit.wTileImageNo = wSwordTI;
 		DrawSwordFor(pArmedMonster, weaponBlit, pDestSurface);
+
+		// The same for the sword, want to avoid flickering
+		if (blit.nOpacity < 255 && IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
+			this->pTileImages[this->pRoom->ARRAYINDEX(weaponBlit.wCol, weaponBlit.wRow)].dirty = 1;
 	}
 
 	TileImageBlitParams::resetDisplayArea();
@@ -7812,6 +7824,7 @@ void CRoomWidget::DrawSwordFor(
 UINT CRoomWidget::GetSwordTileFor(const CMonster *pMonster, const UINT wO, const UINT wType) const
 {
 	ASSERT(pMonster);
+	UINT wMonsterType = wType;
 	UINT wSwordTI = TI_UNSPECIFIED;
 
 	//Get optional custom sword tile.
@@ -7825,28 +7838,40 @@ UINT CRoomWidget::GetSwordTileFor(const CMonster *pMonster, const UINT wO, const
 			case M_CHARACTER:
 			{
 				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-				pCustomChar = this->pCurrentGame->pHold->GetCharacter(
-						pCharacter->wLogicalIdentity);
+				wMonsterType = pCharacter->wLogicalIdentity;
 			}
 			break;
 			case M_CLONE:
 			case M_TEMPORALCLONE:
 			{
 				CSwordsman& player = this->pCurrentGame->swordsman;
-				pCustomChar = this->pCurrentGame->pHold->GetCharacter(player.wIdentity);
+				wMonsterType = player.wIdentity;
 			}
 			break;
 			default: break;
 		}
+	}
 
-		if (pCustomChar)
-			wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles,
-					GetCustomTileIndex(wO), SWORD_FRAME);
+	//Calculate monster's default sword tile.
+	return GetSwordTile(wMonsterType, wO, pMonster->GetWeaponType());
+}
+
+
+//*****************************************************************************
+UINT CRoomWidget::GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const
+{
+	UINT wSwordTI = TI_UNSPECIFIED;
+
+	//Get optional custom sword tile.
+	if (this->pCurrentGame && wMonsterType >= CUSTOM_CHARACTER_FIRST)
+	{
+		HoldCharacter* pCustomChar = this->pCurrentGame->pHold->GetCharacter(wMonsterType);
+		wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles, GetCustomTileIndex(wO), SWORD_FRAME);
 	}
 
 	//Calculate monster's default sword tile.
 	if (wSwordTI == TI_UNSPECIFIED)
-		wSwordTI = GetSwordTile(wType, wO, pMonster->GetWeaponType());
+		wSwordTI = GetSwordTile(wMonsterType, wO, wWeaponType);
 
 	return wSwordTI;
 }

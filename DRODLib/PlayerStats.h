@@ -68,7 +68,9 @@ namespace ScriptVars
 		P_RETURN_X = -25,
 		P_RETURN_Y = -26,
 		P_MONSTER_NAME = -27,
-		FirstPredefinedVar = P_MONSTER_NAME, //set this to the last var in the enumeration
+		P_ROOM_X = -28,
+		P_ROOM_Y = -29,
+		FirstPredefinedVar = P_ROOM_Y, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

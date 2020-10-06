@@ -3238,7 +3238,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				}
 				if (bPlayerDied)
 					this->pRoomWidget->RenderRoomLighting();
-				this->pRoomWidget->ResetForPaint();
 
 				if (!bPlayerDied)
 					this->bRoomClearedOnce = false;
@@ -3270,6 +3269,13 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	bPlayerDied = this->sCueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
 	const bool bPlayingVideo = this->sCueEvents.HasOccurred(CID_PlayVideo);
  	SCREENTYPE eNextScreen = ProcessCueEventsBeforeRoomDraw(this->sCueEvents);
+
+	// ResetForPaint() must happen after ProcessCueEventsBeforeRoomDraw so that it can inspect the state of the rendered
+	// room from the previous turn, otherwise things can get weird, like briar getting disconnected if it falls on the
+	// turn the player dies/leaves the room
+	if (bLeftRoom)
+		this->pRoomWidget->ResetForPaint();
+
 	if (eNextScreen == SCR_Game)
 	{
 		//Redraw the room.
@@ -3845,7 +3851,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		const CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
 		const bool bPlayer = this->pCurrentGame->swordsman.wX == pCoord->wX && this->pCurrentGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive()))
+		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
 			this->pRoomWidget->AddMLayerEffect(new CStunEffect(this->pRoomWidget, *pCoord));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
@@ -3925,7 +3931,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)
@@ -3948,6 +3954,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					}
 
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
+				}
+
+				if (pCoord->wValue2 != WT_Off) {
+					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
+					if (swordTile)
+						fallingTiles[ROOMCOORD(pCoord->wX + nGetOX(pCoord->wO), pCoord->wY + nGetOY(pCoord->wO))].push_back(swordTile);
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
@@ -4611,7 +4623,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
-		this->pMapWidget->UpdateFromCurrentGame();
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
 		this->pMapWidget->RequestPaint();
 		if (bLevelComplete)
 		{

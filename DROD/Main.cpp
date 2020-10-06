@@ -1909,16 +1909,19 @@ void RepairMissingINIKeys(const bool bFullVersion)
 
 	AddIfMissing(INISection::Songs, "CityAmbient", "city ambient.ogg");
 	AddIfMissing(INISection::Songs, "CityAttack", "city aggr 1.ogg;city aggr 2.ogg");
+	AddIfMissing(INISection::Songs, "CityEditor", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
 	AddIfMissing(INISection::Songs, "CityExit", "city win level.ogg");
 	AddIfMissing(INISection::Songs, "CityPuzzle", "city cont 1.ogg;city cont 2.ogg");
 
 	AddIfMissing(INISection::Songs, "Deep SpacesAmbient", "Carve it Deep.ogg");
 	AddIfMissing(INISection::Songs, "Deep SpacesAttack", "In My Skin.ogg;Far Enough.ogg");
+	AddIfMissing(INISection::Songs, "Deep SpacesEditor", "Uncovered.ogg;Last Gameshow.ogg;In My Skin.ogg;Far Enough.ogg");
 	AddIfMissing(INISection::Songs, "Deep SpacesExit", "Devious.ogg");
 	AddIfMissing(INISection::Songs, "Deep SpacesPuzzle", "Uncovered.ogg;Last Gameshow.ogg");
 
 	AddIfMissing(INISection::Songs, "AbovegroundAmbient", "above ambient.ogg");
 	AddIfMissing(INISection::Songs, "AbovegroundAttack", "above aggr 1.ogg;above aggr 2.ogg");
+	AddIfMissing(INISection::Songs, "AbovegroundEditor", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
 	AddIfMissing(INISection::Songs, "AbovegroundExit", "above win.ogg");
 	AddIfMissing(INISection::Songs, "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg");
 
@@ -1926,38 +1929,47 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	{
 		AddIfMissing(INISection::Songs, "CalderaAmbient", "TSS/D3 song14 lis01.ogg;TSS/D3 song17 lis01.ogg");
 		AddIfMissing(INISection::Songs, "CalderaAttack", "TSS/D3 Song05 lis03.ogg;TSS/D3 Song08 lis02.ogg");
+		AddIfMissing(INISection::Songs, "CalderaEditor", "TSS/D3 Song01 lis03.ogg;TSS/D3 Song07 lis02.ogg;TSS/D3 song10 lis02.ogg;TSS/D3 Song05 lis03.ogg;TSS/D3 Song08 lis02.ogg");
 		AddIfMissing(INISection::Songs, "CalderaExit", "TSS/D3 Song01 alt.ogg");
 		AddIfMissing(INISection::Songs, "CalderaPuzzle", "TSS/D3 Song01 lis03.ogg;TSS/D3 Song07 lis02.ogg;TSS/D3 song10 lis02.ogg");
 		AddIfMissing(INISection::Songs, "BeachAmbient", "FnM/CRUS NL 01.ogg;FnM/CRUS NL 02.ogg;FnM/CRUS NL 03.ogg;FnM/CRUS NL 04.ogg");
 		AddIfMissing(INISection::Songs, "BeachAttack", "FnM/CRUS AG 01.ogg;FnM/CRUS AG 02.ogg;FnM/CRUS AG 03.ogg;FnM/CRUS AG 04.ogg");
+		AddIfMissing(INISection::Songs, "BeachEditor", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg;FnM/CRUS AG 01.ogg;FnM/CRUS AG 02.ogg;FnM/CRUS AG 03.ogg;FnM/CRUS AG 04.ogg");
 		AddIfMissing(INISection::Songs, "BeachExit", "above win.ogg");
 		AddIfMissing(INISection::Songs, "BeachPuzzle", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg");
 		AddIfMissing(INISection::Songs, "ForestAmbient", "FnM/ANFM NL 01.ogg;FnM/ANFM NL 02.ogg;FnM/ANFM NL 03.ogg;FnM/ANFM NL 04.ogg");
 		AddIfMissing(INISection::Songs, "ForestAttack", "FnM/ANFM AG 01.ogg;FnM/ANFM AG 02.ogg;FnM/ANFM AG 03.ogg;FnM/ANFM AG 04.ogg");
+		AddIfMissing(INISection::Songs, "ForestEditor", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg;FnM/ANFM AG 01.ogg;FnM/ANFM AG 02.ogg;FnM/ANFM AG 03.ogg;FnM/ANFM AG 04.ogg");
 		AddIfMissing(INISection::Songs, "ForestExit", "city win level.ogg");
 		AddIfMissing(INISection::Songs, "ForestPuzzle", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg");
 		AddIfMissing(INISection::Songs, "FortressAmbient", "fortress ambient.ogg");
 		AddIfMissing(INISection::Songs, "FortressAttack", "fortress aggr 1.ogg;fortress aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "FortressEditor", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "FortressExit", "fortress win.ogg");
 		AddIfMissing(INISection::Songs, "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg");
 		AddIfMissing(INISection::Songs, "FoundationAmbient", "Sneaking around the docks.ogg");
 		AddIfMissing(INISection::Songs, "FoundationAttack", "WithoutFear.ogg;Ancient Machine I.ogg");
+		AddIfMissing(INISection::Songs, "FoundationEditor", "After Paraguay.ogg;Brood.ogg;WithoutFear.ogg;Ancient Machine I.ogg");
 		AddIfMissing(INISection::Songs, "FoundationExit", "Delver.ogg");
 		AddIfMissing(INISection::Songs, "FoundationPuzzle", "After Paraguay.ogg;Brood.ogg");
 		AddIfMissing(INISection::Songs, "GreenhouseAmbient", "TSS/D3 Song02 lis03.ogg;TSS/D3 Song06 lis03.ogg");
 		AddIfMissing(INISection::Songs, "GreenhouseAttack", "TSS/D3 song11 lis01.ogg;TSS/D3 song21 lis01.ogg");
+		AddIfMissing(INISection::Songs, "GreenhouseEditor", "TSS/D3 song04 lis03.ogg;TSS/D3 song12 lis01.ogg;TSS/D3 song11 lis01.ogg;TSS/D3 song21 lis01.ogg");
 		AddIfMissing(INISection::Songs, "GreenhouseExit", "TSS/D3 song04 alt.ogg");
 		AddIfMissing(INISection::Songs, "GreenhousePuzzle", "TSS/D3 song04 lis03.ogg;TSS/D3 song12 lis01.ogg");
 		AddIfMissing(INISection::Songs, "IceworksAmbient", "Leave Everything.ogg");
 		AddIfMissing(INISection::Songs, "IceworksAttack", "Ive Been Here.ogg;The Steady Smite.ogg");
+		AddIfMissing(INISection::Songs, "IceworksEditor", "The Reward.ogg;Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg");
 		AddIfMissing(INISection::Songs, "IceworksExit", "MySmallBox.ogg");
 		AddIfMissing(INISection::Songs, "IceworksPuzzle", "The Reward.ogg;Larger View.ogg");
 		AddIfMissing(INISection::Songs, "BadlandsAmbient", "TSS/D3 song16 lis01.ogg;TSS/D3 song20 lis01.ogg");
 		AddIfMissing(INISection::Songs, "BadlandsAttack", "TSS/D3 song15 lis01.ogg;TSS/D3 song19 lis01.ogg");
+		AddIfMissing(INISection::Songs, "BadlandsEditor", "TSS/D3 song03 lis02.ogg;TSS/D3 song18 lis01.ogg;TSS/D3 song15 lis01.ogg;TSS/D3 song19 lis01.ogg");
 		AddIfMissing(INISection::Songs, "BadlandsExit", "TSS/D3 song19 alt.ogg");
 		AddIfMissing(INISection::Songs, "BadlandsPuzzle", "TSS/D3 song03 lis02.ogg;TSS/D3 song18 lis01.ogg");
 		AddIfMissing(INISection::Songs, "SwampAmbient", "FnM/POND NL 01.ogg;FnM/POND NL 02.ogg;FnM/POND NL 03.ogg;FnM/POND NL 04.ogg");
 		AddIfMissing(INISection::Songs, "SwampAttack", "FnM/POND AG 01.ogg;FnM/POND AG 02.ogg;FnM/POND AG 03.ogg;FnM/POND AG 04.ogg");
+		AddIfMissing(INISection::Songs, "SwampEditor", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg;FnM/POND AG 01.ogg;FnM/POND AG 02.ogg;FnM/POND AG 03.ogg;FnM/POND AG 04.ogg");
 		AddIfMissing(INISection::Songs, "SwampExit", "fortress win.ogg");
 		AddIfMissing(INISection::Songs, "SwampPuzzle", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg");
 	}

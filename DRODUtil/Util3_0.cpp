@@ -788,16 +788,13 @@ const
 
 	 //Copy name to MIDs concatenation.
 	 {
-		  //In the format "  tagname = tagvalue,".  The explicit value assignment is not necessary, but makes
-		  //for easier parsing for code that is planned later.
+		  //In the format "  tagname = tagvalue,".
 		  static char szNumBuf[20];
 		  strMIDs += "  ";
 		  strMIDs += szNameTag;
 		  strMIDs += " = ";
 		  strMIDs += _itoa(dwUseMessageID, szNumBuf, 10);
 		  strMIDs += ",";
-		  if (dwUseMessageID == dwLastMessageID)
-				strMIDs += " //New.";
 		  strMIDs += "" NEWLINE;
 	 }
 

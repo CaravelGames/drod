@@ -815,7 +815,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_NPCInvisibleNotInspectable: strText = "Invisible not inspectable"; break;
 	case MID_NPCInvisibleIncludeMoveOrder: strText = "Invisible includes move order"; break;
 	case MID_NPCInvisibleNotIncludeMoveOrder: strText = "Invisible don't include move order"; break;
-	case MID_GotoSmart: strText = "Goto Smart"; break;
+	case MID_VarRoomX: strText = "_RoomX"; break;
+	case MID_VarRoomY: strText = "_RoomY"; break;	case MID_GotoSmart: strText = "Goto Smart"; break;
 	case MID_LastIf: strText = "Last If"; break;
 	case MID_LastIfSkip: strText = "Last If (Skip Condition)"; break;
 	case MID_LastIfOrElseIf: strText = "Last If or Else If"; break;
