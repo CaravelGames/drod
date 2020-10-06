@@ -29,6 +29,7 @@
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/GameConstants.h"
 #include <FrontEndLib/BitmapManager.h>
+#include <FrontEndLib/Colors.h>
 
 const Uint32 START_DELAY = 500;
 const Uint32 DISPLAY_DURATION = 750;
@@ -89,12 +90,21 @@ bool CTemporalMoveEffect::Draw(SDL_Surface* pDestSurface)
 
 	const UINT wThisX = this->startX + int(deltaX * percent);
 	const UINT wThisY = this->startY + int(deltaY * percent);
+	
+	SDL_Rect BlitRect = MAKE_SDL_RECT(wThisX, wThisY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	SDL_Rect WidgetRect = MAKE_SDL_RECT(0, 0, 0, 0);
+	this->pRoomWidget->GetRect(WidgetRect);
+	if (!CWidget::ClipRectToRect(BlitRect, WidgetRect))
+		return true;
 
-	g_pTheBM->BlitTileImage(this->wTileNo, wThisX, wThisY,
-			pDestSurface, this->bUseLightLevel, opacity);
+	g_pTheBM->BlitTileImagePart(
+		this->wTileNo, 
+		BlitRect.x, BlitRect.y,
+		BlitRect.x - wThisX, BlitRect.y - wThisY, BlitRect.w, BlitRect.h,
+		pDestSurface, this->bUseLightLevel, opacity);
 
-	SDL_Rect clipRect = MAKE_SDL_RECT(wThisX, wThisY,
-			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	SDL_Rect clipRect = MAKE_SDL_RECT(BlitRect.x, BlitRect.y,
+		BlitRect.w, BlitRect.h);
 	this->dirtyRects[0] = clipRect;
 
 	//Continue effect.

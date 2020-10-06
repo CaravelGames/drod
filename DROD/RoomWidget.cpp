@@ -7736,12 +7736,10 @@ void CRoomWidget::AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, cons
 	if (pTC->HasSword()) {
 		coord.wX += nGetOX(newO);
 		coord.wY += nGetOY(newO);
-		if (this->pRoom->IsValidColRow(coord.wX + dx, coord.wY + dy)) {
-			const UINT wSwordTI = GetSwordTileFor(pTC, newO, logicalIdentity);
-			pTME = new CTemporalMoveEffect(this, coord, wSwordTI,
-					EFFECTLIB::EGENERIC); //don't prevent another similar effect from originating here
-			AddMLayerEffect(pTME);
-		}
+		const UINT wSwordTI = GetSwordTileFor(pTC, newO, logicalIdentity);
+		pTME = new CTemporalMoveEffect(this, coord, wSwordTI,
+				EFFECTLIB::EGENERIC); //don't prevent another similar effect from originating here
+		AddMLayerEffect(pTME);
 	}
 }
 
