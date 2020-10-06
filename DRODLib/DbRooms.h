@@ -136,7 +136,7 @@ public:
 	bool           bPersistentCitizenMovement; //citizen movement algorithm
 	bool           bHasConquerToken;   //whether a Conquer token is in the room
 	bool           bHasActiveBeacon;   //whether a Seeding Beacon has reseeded the room
-	CMonster      *pLastClone;       //last clone queried
+	UINT           wLastCloneIndex; //Creation index of the last clone selected, to preserve processing sequence
 
 
 	CPathMap *     pPathMap[NumMovementTypes];

@@ -7234,6 +7234,9 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 	pMonster->wO = this->swordsman.wO;
 
 	CClone *pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+	const UINT wSwappedCreationIndex = pClone->wCreationIndex;
+	pClone->wCreationIndex = this->pRoom->wLastCloneIndex;
+	this->pRoom->wLastCloneIndex = wSwappedCreationIndex;
 	const WeaponType playerWeapon = this->swordsman.GetActiveWeapon();
 	this->swordsman.SetWeaponType(pClone->weaponType, false);
 	pClone->weaponType = playerWeapon;
@@ -7249,12 +7252,28 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 	//Don't show swapping movement.
 	UpdatePrevCoords();
 
-	//Keep track of last clone moved to.
-	this->pRoom->pLastClone = pMonster;
-
 	//Brain pathmap target is now at this location.
 	if (this->swordsman.IsTarget())
 		this->pRoom->SetPathMapsTarget(wX,wY);
+
+	// Sort the clones by creationIndex and relink them in the room
+	{
+		std::vector<CClone*> clones;
+		pMonster = this->pRoom->GetMonsterOfType(M_CLONE);
+		while (pMonster && pMonster->wType == M_CLONE) {
+			pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			clones.push_back(pClone);
+			this->pRoom->UnlinkMonster(pClone);
+			pMonster = pMonster->pNext;
+		}
+		std::sort(clones.begin(), clones.end(), [](CClone *a, CClone *b) {
+			return a->wCreationIndex < b->wCreationIndex;
+		});
+
+		for (vector<CClone*>::const_iterator iter = clones.begin(); iter != clones.end(); ++iter)
+			this->pRoom->LinkMonster(*iter, false);
+
+	}
 
 	//Currently, this command can happen without anything else changing.
 	//Q: How to handle invisible player swapping with clone?

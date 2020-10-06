@@ -33,6 +33,8 @@
 
 #include "PlayerDouble.h"
 
+#define CLONE_NO_CREATION_INDEX (UINT) -1
+
 class CClone : public CPlayerDouble
 {
 public:
@@ -48,6 +50,10 @@ public:
 
 	virtual bool SetWeaponSheathed();
 	virtual void Stun(CCueEvents &CueEvents, UINT val=1);
+
+	void CalculateCreationIndex(CDbRoom *pRoom);
+
+	UINT wCreationIndex;
 };
 	
 #endif //...#ifndef CLONE_H

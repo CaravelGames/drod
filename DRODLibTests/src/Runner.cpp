@@ -49,6 +49,17 @@ void Runner::PlaceDouble(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
 	Runner::currentGame->ProcessCommand(CMD_DOUBLE, CueEvents, wX, wY);
 }
 
+void Runner::ClickClone(const UINT wX, const UINT wY) {
+	CCueEvents CueEvents;
+	ClickClone(wX, wY, CueEvents);
+}
+
+void Runner::ClickClone(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
+	REQUIRE(!Runner::currentGame->swordsman.wPlacingDoubleType);
+	REQUIRE(Runner::currentGame->pRoom->GetMonsterTypeAt(wX, wY) == M_CLONE);
+	Runner::currentGame->ProcessCommand(CMD_CLONE, CueEvents, wX, wY);
+}
+
 UINT Runner::GetErrorLogSize(){
 	struct stat st;
 	if (stat(pErrorLogPath, &st) == 0)

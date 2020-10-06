@@ -32,6 +32,7 @@
 #include "DbRooms.h"
 
 #include "Aumtlich.h"
+#include "Clone.h"
 #include "Construct.h"
 #include "CurrentGame.h"
 #include "Db.h"
@@ -2924,30 +2925,18 @@ bool CDbRoom::DoesSquareContainTeleportationObstacle(
 CMonster* CDbRoom::FindNextClone()
 //Returns: pointer to next monster of type M_CLONE, else NULL if none
 {
-	ASSERT(!this->pLastClone || this->pLastClone->IsAlive());
-
-	CMonster *pMonster = this->pLastClone; //keep track of last one returned
-	if (!pMonster)
-		pMonster = this->pFirstMonster;
-	else {
-		pMonster = pMonster->pNext; //start looking after this monster
-		if (!pMonster)
-			pMonster = this->pFirstMonster;
-	}
-
-	while (pMonster)
-	{
-		if (pMonster->wType == M_CLONE)
-			break; //found next clone
+	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE));
+	CMonster* pMonster = pFirstClone;
+	while (pMonster && pMonster->wType == M_CLONE) {
+		CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+		if (pClone->wCreationIndex > this->wLastCloneIndex) {
+			return pClone;
+		}
 
 		pMonster = pMonster->pNext;
-		if (pMonster == this->pLastClone)
-			break; //only one clone is in the monster list -- return it again
-		if (!pMonster)
-			pMonster = this->pFirstMonster;
 	}
 
-	return pMonster;
+	return pFirstClone;
 }
 
 //*****************************************************************************
@@ -3511,6 +3500,12 @@ void CDbRoom::LinkMonster(
 			else
 				this->monsterEnemies.push_back(DYN_CAST(CPlayerDouble*, CMonster*, pMonster));
 		break;
+		case M_CLONE:
+		{
+			CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			pClone->CalculateCreationIndex(this);
+			break;
+		}
 		default: break;
 	}
 
@@ -7561,7 +7556,7 @@ void CDbRoom::Clear()
 
 	this->bCheckForHoldCompletion = this->bCheckForHoldMastery = false;
 	this->bTarWasStabbed = this->bGreenDoorsOpened = false;
-	this->pLastClone = NULL;
+	this->wLastCloneIndex = 0;
 
 	DeletePathMaps();
 
@@ -11705,13 +11700,9 @@ bool CDbRoom::SetMembers(
 
 		//In-game state information.
 		this->PlotsMade = Src.PlotsMade;
+		this->wLastCloneIndex = Src.wLastCloneIndex;
 		//	this->geometryChanges = Src.geometryChanges; //temporary front-end only info not needed
 		//	this->disabledLights = Src.disabledLights;
-		if (Src.pLastClone)
-		{
-			this->pLastClone = this->pMonsterSquares[ARRAYINDEX(Src.pLastClone->wX,Src.pLastClone->wY)];
-			ASSERT(this->pLastClone);
-		}
 		for (wIndex=NumMovementTypes; wIndex--; )
 			if (Src.pPathMap[wIndex])
 				this->pPathMap[wIndex] = new CPathMap(*(Src.pPathMap[wIndex]));
