@@ -4284,7 +4284,7 @@ void CRoomWidget::RenderRoomTileObjects(
 		} else if (bTIsTransparent) {
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
-			static const Uint8 TRANSLUCENT_ALPHA = 204;
+			static const Uint8 TRANSLUCENT_ALPHA = 166;
 			Uint8 tar_alpha = IsShowingBetterVision() ? TRANSLUCENT_ALPHA : 255;
 			if (g_pTheDBM->tarstuffAlpha < tar_alpha) {
 				tar_alpha = g_pTheDBM->tarstuffAlpha;

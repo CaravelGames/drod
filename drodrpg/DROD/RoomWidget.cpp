@@ -3905,7 +3905,7 @@ void CRoomWidget::RenderRoomTileObjects(
 		{
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
-			DrawTransparentRoomTile(ti.t, 204);
+			DrawTransparentRoomTile(ti.t, 166);
 		} else {
 			DrawRoomTile(ti.t);
 		}
