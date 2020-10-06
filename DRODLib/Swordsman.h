@@ -71,6 +71,7 @@ public:
 	void Clear();
 	void EquipWeapon(const UINT type);
 	UINT GetWaterTraversalState(UINT wRole = M_NONE) const;
+	MovementType GetMovementType() const;
 	bool IsAt(UINT wX, UINT wY) const;
 	bool IsInRoom() const;
 	bool IsStabbable() const;

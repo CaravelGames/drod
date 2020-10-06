@@ -260,6 +260,8 @@
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp" />
     <ClCompile Include="src\tests\Elements\Briars.cpp" />
     <ClCompile Include="src\tests\Elements\Bridges.cpp" />
+    <ClCompile Include="src\tests\Elements\SoldierHorn.cpp" />
+    <ClCompile Include="src\tests\Elements\SquadHorn.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp" />

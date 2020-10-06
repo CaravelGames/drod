@@ -46,6 +46,24 @@ void Assert::PlayerIsDead(const char* file, int line) {
 	REQUIRE(game->IsPlayerDying());
 }
 
+void Assert::RoomHasMonster(const char* file, int line, const long int wExpectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
+
+	REQUIRE(monster != NULL);
+}
+
+void Assert::RoomHasNoMonster(const char* file, int line, const long int wExpectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
+
+	REQUIRE(monster == NULL);
+}
+
 void Assert::Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType, const long int wExpectedO) {
 	INFO(MakeLogMessage(file, line));
 

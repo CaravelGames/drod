@@ -23,6 +23,8 @@ public:
 	static void PlayerIsDead(const char* file, int line);
 	static void Tile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType);
 	static void NoTile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType);
+	static void RoomHasMonster(const char* file, int line, const long int wExpectedType = -1);
+	static void RoomHasNoMonster(const char* file, int line, const long int wExpectedType = -1);
 	static void Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType = -1, const long int wExpectedO = -1);
 	static void NoMonster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY);
 
@@ -38,6 +40,8 @@ private :
 #define AssertMonsterO(wExpectedX, wExpectedY, wExpectedO) Assert::Monster(__FILE__, __LINE__, wExpectedX, wExpectedY, -1, wExpectedO);
 #define AssertMonsterTypeO(wExpectedX, wExpectedY, wExpectedType, wExpectedO) Assert::Monster(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType, wExpectedO);
 #define AssertNoMonster(wExpectedX, wExpectedY) Assert::NoMonster(__FILE__, __LINE__, wExpectedX, wExpectedY);
+#define AssertRoomHasMonster(wExpectedType) Assert::RoomHasMonster(__FILE__, __LINE__, wExpectedType);
+#define AssertRoomHasNoMonster(wExpectedType) Assert::RoomHasNoMonster(__FILE__, __LINE__, wExpectedType);
 #define AssertTile(wExpectedX, wExpectedY, wExpectedType) Assert::Tile(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType);
 #define AssertNoTile(wExpectedX, wExpectedY, wExpectedType) Assert::NoTile(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType);
 
