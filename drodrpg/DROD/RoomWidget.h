@@ -384,8 +384,9 @@ protected:
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	void           DrawSerpent(CMonster *pMonster, SDL_Surface *pDestSurface, const bool bMoveInProgress);
 //	void           DrawSlayerWisp(const CPlayerDouble *pDouble, SDL_Surface *pDestSurface);
-	void           DrawSwordFor(const CMonster *pMonster,	const UINT wType,
-			const UINT wMSwordX, const UINT wMSwordY,	const UINT wXOffset, const UINT wYOffset,
+
+	void           DrawSwordFor(const CMonster *pMonster, const UINT wType,
+			const UINT wMSwordX, const UINT wMSwordY, const UINT wXOffset, const UINT wYOffset,
 			const bool bDrawRaised, SDL_Surface *pDestSurface, const bool bMoveInProgress,
 			const Uint8 nOpacity=255, const UINT nColor=0);
 	void           DrawSwordFor(const CMonster *pMonster, const UINT wMSwordX,
@@ -393,6 +394,8 @@ protected:
 			const bool bDrawRaised, const UINT wSwordTI, SDL_Surface *pDestSurface,
 			const bool bMoveInProgress, const Uint8 nOpacity=255, const UINT nColor=0);
 	void           DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surface *pDestSurface);
+	UINT           GetSwordTileFor(const CMonster* pMonster, const UINT wO, const UINT wType) const;
+	UINT           GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const;
 
 	void           DrawTileEdges(const UINT wX, const UINT wY,
 			const TileImages* pTI, SDL_Surface *pDestSurface);

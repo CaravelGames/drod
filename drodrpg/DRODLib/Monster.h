@@ -70,6 +70,7 @@
 
 #include "DbPackedVars.h"
 #include "DbRefs.h"
+#include "RoomData.h"
 #include <BackEndLib/Coord.h>
 #include <BackEndLib/CoordIndex.h>
 #include <BackEndLib/CoordSet.h>
@@ -193,9 +194,12 @@ public:
 	static  bool  GetNextGaze(CCueEvents &CueEvents, CMonster *pCaster, CDbRoom *pRoom,
 			const bool bElevatedSource, UINT& cx, UINT& cy, int& dx, int& dy);
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;
+	const CMonster* GetOwningMonsterConst() const;
+	inline CMonster* GetOwningMonster() { return const_cast<CMonster*>(GetOwningMonsterConst()); }
 	CCoordStack*  GetPathToGoal() {return &this->pathToDest;}
 	virtual UINT  GetResolvedIdentity() const {return GetIdentity();}
 	bool          GetSwordCoords(UINT& wX, UINT& wY) const;
+	virtual SwordType GetWeaponType() const { return SwordType::NoSword; }
 	bool          GetTarget(UINT &wX, UINT &wY);
 
 	virtual UINT  getATK() const;

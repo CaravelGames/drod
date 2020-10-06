@@ -634,10 +634,10 @@ inline bool bIsEmptyTile(const UINT wObject, const UINT wLayer)
 {
 	switch (wLayer)
 	{
-		case 0: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT;
-		case 1: return wObject == T_EMPTY;
-		case 2: return wObject == T_NOMONSTER;
-		case 3: return wObject == T_EMPTY || wObject == T_EMPTY_F ||
+		case LAYER_OPAQUE: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT;
+		case LAYER_TRANSPARENT: return wObject == T_EMPTY;
+		case LAYER_MONSTER: return wObject == T_NOMONSTER;
+		case LAYER_FLOOR: return wObject == T_EMPTY || wObject == T_EMPTY_F ||
 				wObject == T_LIGHT_CEILING || wObject == T_DARK_CEILING ||
 				wObject == T_WALLLIGHT;
 		default: ASSERT(!"bIsEmptyTile: Bad layer"); return false;
@@ -671,14 +671,14 @@ const
 	UINT wTileNo[4];
 	const UINT wTileLayer = TILE_LAYER[wSelectedObject];
 	const UINT wSquareIndex = this->pRoom->ARRAYINDEX(wX,wY);
-	wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
-	wTileNo[1] = this->pRoom->pszTSquares[wSquareIndex];
+	wTileNo[LAYER_OPAQUE] = this->pRoom->pszOSquares[wSquareIndex];
+	wTileNo[LAYER_TRANSPARENT] = this->pRoom->pszTSquares[wSquareIndex];
 	const CMonster *pMonster = this->pRoom->pMonsterSquares[wSquareIndex];
-	wTileNo[2] = pMonster ? pMonster->wType : T_NOMONSTER;
-	wTileNo[3] = this->pRoom->pszFSquares[wSquareIndex];
+	wTileNo[LAYER_MONSTER] = pMonster ? pMonster->wType : T_NOMONSTER;
+	wTileNo[LAYER_FLOOR] = this->pRoom->pszFSquares[wSquareIndex];
 
 	//Don't allow objects to clobber existing objects on their layer.
-	if (wTileLayer == 2 && wSelectedObject != T_NOMONSTER)
+	if (wTileLayer == LAYER_MONSTER && wSelectedObject != T_NOMONSTER)
 	{
 		//Monster can't overwrite a monster of a different type.
 		if (!bAllowSelf && pMonster)
@@ -705,42 +705,18 @@ const
 	if (bSwordsmanAt)
 	{
 		UINT wTile;
-		wTile = wTileLayer == 0 ? wSelectedObject : wTileNo[0];
+		wTile = wTileLayer == LAYER_OPAQUE ? wSelectedObject : wTileNo[LAYER_OPAQUE];
 		if (!(bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsDoor(wTile) ||
 				bIsCrumblyWall(wTile) || bIsTunnel(wTile) || bIsPlatform(wTile)))
 			return false;
 
-		wTile = wTileLayer == 1 ? wSelectedObject : wTileNo[1];
+		wTile = wTileLayer == LAYER_TRANSPARENT ? wSelectedObject : wTileNo[LAYER_TRANSPARENT];
 		if (bIsTar(wTile) || wTile == T_ORB || wTile == T_BOMB ||
 				bIsBriar(wTile) || wTile == T_MAP)
 			return false;
 		if (pMonster || (wSelectedObject == T_SWORDSMAN && !bAllowSelf))
 			return false;
 	}
-/*
-	//No items affected by swords can be placed under one.
-	if (this->swords.Exists(wX,wY))
-	{
-		switch (wTileLayer)
-		{
-			case 0:
-				if (bIsCrumblyWall(wSelectedObject))
-					return false;
-				break;
-			case 1: case 3:
-				break;
-			case 2:
-				//Sword can be placed on serpents and maybe NPCs, but no other monster.
-				if (wSelectedObject == T_SWORDSMAN && bAllowSelf)
-					break;
-				if (!(wSelectedObject == T_NOMONSTER || wSelectedObject == T_CHARACTER ||
-						bIsSerpent(wSelectedObject) || bIsSerpentTile(wSelectedObject) ))
-					return false;
-				break;
-			default: ASSERT(!"Invalid layer"); break;
-		}
-	}
-*/
 
 	//Checks on other layers.
 	switch (wSelectedObject)
@@ -1025,32 +1001,6 @@ const
 			if (bSwordsmanAt) return false;
 			return !(bIsPit(wTileNo[0]) || bIsWater(wTileNo[0])) && //same as for gel
 					(wTileNo[1] == T_GEL || wTileNo[1] == T_EMPTY);
-/*
-		case T_HALPH:
-		case T_SLAYER:
-			//Ground type.
-			if (wX > 0 && wX < this->pRoom->wRoomCols-1 &&
-					wY > 0 && wY < this->pRoom->wRoomRows-1)
-			{
-				//Inner room placement.
-				if (bSwordsmanAt) return false;
-				return (bIsFloor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
-						!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
-						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION);
-			}
-
-			//Edge placement -- Only one of them can enter from edge at a time.
-			if (wSelectedObject == T_SLAYER && this->pRoom->halphEnters.has(wX,wY))
-				return false;
-			if (wSelectedObject == T_HALPH && this->pRoom->slayerEnters.has(wX,wY))
-				return false;
-			//Can enter on crumbly wall or tar, since player entered there and
-			//must have already cleaned the square.
-			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
-					bIsCrumblyWall(wTileNo[0])) &&
-					!(wTileNo[1] == T_ORB || wTileNo[1] == T_BOMB || wTileNo[1] == T_OBSTACLE);
-//					wTileNo[1] == T_STATION);
-*/
 		case T_WWING:
 		case T_FEGUNDO:
 			//Air movement types

@@ -3399,11 +3399,7 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 		CMonster *pMonster = pRoom->GetMonsterAtSquare(
 				riter->second.wX, riter->second.wY);
 		ASSERT(pMonster);
-		if (pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		//Draw monster tiles at current text height.
 		CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
@@ -5089,8 +5085,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				CMonster *pMonster = this->pRoomWidget->pRoom->GetMonsterAtSquare(wSX, wSY);
 				if (pMonster && pMonster->IsPiece())
 				{
-					CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-					pMonster = pPiece->pMonster;
+					pMonster = pMonster->GetOwningMonster();
 					wMX = pMonster->wX;
 					wMY = pMonster->wY;
 				}
@@ -5850,7 +5845,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 			
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)
@@ -5875,6 +5870,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					wTileNo = GetTileImageForRockGiantPiece(wPieceIndex, wO, 0);
 				} else {
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
+				}
+
+				if (pCoord->wValue2 != SwordType::NoSword) {
+					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
+					if (swordTile)
+						fallingTiles[ROOMCOORD(pCoord->wX + nGetOX(pCoord->wO), pCoord->wY + nGetOY(pCoord->wO))].push_back(swordTile);
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
@@ -7844,11 +7845,7 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 	if (pMonster)
 	{
 		const CMonster *pOrigMonster = pMonster;
-		if (pMonster->IsPiece())
-		{
-			const CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		if (g_pPredictedCombat)
 			delete g_pPredictedCombat;

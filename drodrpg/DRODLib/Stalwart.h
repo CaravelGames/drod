@@ -41,6 +41,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CStalwart);
 
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual SwordType GetWeaponType() const { return SwordType::ShortSword; }
 };
 
 #endif //...#ifndef STARWART_H

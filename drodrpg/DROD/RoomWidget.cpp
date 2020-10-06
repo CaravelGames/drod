@@ -1514,11 +1514,7 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 			return wstr;
 	}
 
-	if (pMonster->IsPiece())
-	{
-		CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pPiece->pMonster;
-	}
+	pMonster = pMonster->GetOwningMonster();
 
 	UINT type = pMonster->wType;
 	if (!this->pCurrentGame)
@@ -5974,11 +5970,7 @@ bool CRoomWidget::IsMonsterInvolvedInDeath(CMonster *pMonster) const
 		CMonster *pMonsterOnPlayer = this->pRoom->GetMonsterAtSquare(wPX, wPY);
 		if (pMonsterOnPlayer)
 		{
-			if (pMonsterOnPlayer->IsPiece())
-			{
-				CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonsterOnPlayer);
-				pMonsterOnPlayer = pPiece->pMonster;
-			}
+			pMonsterOnPlayer = pMonsterOnPlayer->GetOwningMonster();
 			if (pMonster == pMonsterOnPlayer)
 				return true;
 		}
@@ -6101,11 +6093,7 @@ void CRoomWidget::DrawMonsterKillingPlayer(SDL_Surface *pDestSurface)
 	CMonster *pMonsterOnPlayer = this->pRoom->GetMonsterAtSquare(wPX, wPY);
 	if (pMonsterOnPlayer)
 	{
-		if (pMonsterOnPlayer->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonsterOnPlayer);
-			pMonsterOnPlayer = pPiece->pMonster;
-		}
+		pMonsterOnPlayer = pMonsterOnPlayer->GetOwningMonster();
 		DrawMonster(pMonsterOnPlayer, this->pRoom, pDestSurface, true);
 	}
 
@@ -6884,22 +6872,32 @@ void CRoomWidget::DrawSwordFor(
 {
 	ASSERT(pMonster);
 	ASSERT(IsValidOrientation(pMonster->wO));
+	const UINT wSwordTI = GetSwordTileFor(pMonster, pMonster->wO, wType);
+
+	DrawSwordFor(pMonster, wMSwordX, wMSwordY, wXOffset, wYOffset,
+			bDrawRaised, wSwordTI, pDestSurface, bMoveInProgress, nOpacity, nColor);
+}
+
+//*****************************************************************************
+UINT CRoomWidget::GetSwordTileFor(const CMonster* pMonster, const UINT wO, const UINT wType) const
+{
 	UINT wSwordTI = TI_UNSPECIFIED;
 
 	//Get optional custom sword tile (currently, for characters and player only).
 	if (pMonster->wType == M_CHARACTER && this->pCurrentGame)
 	{
 		ASSERT(this->pCurrentGame->pHold);
-		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+		const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 		const UINT sword = pCharacter->getSword();
 		if (sword == NPC_DEFAULT_SWORD)
 		{
-			HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(
-					pCharacter->wLogicalIdentity);
+			HoldCharacter* pCustomChar = this->pCurrentGame->pHold->GetCharacter(
+				pCharacter->wLogicalIdentity);
 			if (pCustomChar)
 				wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles,
-						GetCustomTileIndex(pMonster->wO), SWORD_FRAME);
-		} else {
+					GetCustomTileIndex(pMonster->wO), SWORD_FRAME);
+		}
+		else {
 			//Show custom weapon type.
 			wSwordTI = GetSwordTile(wType, pMonster->wO, sword);
 		}
@@ -6909,8 +6907,26 @@ void CRoomWidget::DrawSwordFor(
 	if (wSwordTI == TI_UNSPECIFIED)
 		wSwordTI = GetSwordTile(wType, pMonster->wO);
 
-	DrawSwordFor(pMonster, wMSwordX, wMSwordY, wXOffset, wYOffset,
-			bDrawRaised, wSwordTI, pDestSurface, bMoveInProgress, nOpacity, nColor);
+	return wSwordTI;
+}
+
+//*****************************************************************************
+UINT CRoomWidget::GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const
+{
+	UINT wSwordTI = TI_UNSPECIFIED;
+
+	//Get optional custom sword tile.
+	if (this->pCurrentGame && wMonsterType >= CUSTOM_CHARACTER_FIRST)
+	{
+		HoldCharacter* pCustomChar = this->pCurrentGame->pHold->GetCharacter(wMonsterType);
+		wSwordTI = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles, GetCustomTileIndex(wO), SWORD_FRAME);
+	}
+
+	//Calculate monster's default sword tile.
+	if (wSwordTI == TI_UNSPECIFIED)
+		wSwordTI = GetSwordTile(wMonsterType, wO, wWeaponType);
+
+	return wSwordTI;
 }
 
 //*****************************************************************************
