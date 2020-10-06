@@ -508,6 +508,7 @@
     <ClInclude Include="RoachEgg.h" />
     <ClInclude Include="RoachQueen.h" />
     <ClInclude Include="RockGiant.h" />
+    <ClInclude Include="RoomData.h" />
     <ClInclude Include="Seep.h" />
     <ClInclude Include="Serpent.h" />
     <ClInclude Include="SettingsKeys.h" />

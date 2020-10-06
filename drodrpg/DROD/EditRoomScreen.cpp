@@ -3505,9 +3505,7 @@ void CEditRoomScreen::EditObjects()
 		//Get parent object.
 		if (pMonster->IsPiece())
 		{
-			//Get the monster that this piece belongs to.
-			CMonsterPiece *pMPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pMPiece->pMonster;
+			pMonster = pMonster->GetOwningMonster();
 			ASSERT(pMonster);
 		}
 
@@ -4574,13 +4572,7 @@ void CEditRoomScreen::PasteRegion(
 							//actually part of the source monster, and will be moved accordingly.
 							if (pOldMonster)
 							{
-								if (pOldMonster->IsPiece())
-								{
-									//Get parent monster.
-									CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*,
-											CMonster*, pOldMonster);
-									pOldMonster = pPiece->pMonster;
-								}
+								pOldMonster = pOldMonster->GetOwningMonster();
 
 								if (pOldMonster->IsLongMonster())
 									break; //not the same long monster -- don't overwrite
@@ -4605,13 +4597,7 @@ void CEditRoomScreen::PasteRegion(
 										wX+wDeltaX, wY+wDeltaY);
 								if (pMonsterAtDest)
 								{
-									if (pMonsterAtDest->IsPiece())
-									{
-										//Get parent monster.
-										CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*,
-												CMonster*, pMonsterAtDest);
-										pMonsterAtDest = pPiece->pMonster;
-									}
+									pMonsterAtDest = pMonsterAtDest->GetOwningMonster();
 									if (pMonsterAtDest->IsLongMonster())
 									{
 										bInRegion = false;
@@ -6381,9 +6367,7 @@ bool CEditRoomScreen::RemoveMonster(
 
 	if (pMonster->IsPiece())
 	{
-		//Get the monster that this piece belongs to.
-		CMonsterPiece *pMPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pMPiece->pMonster;
+		pMonster = pMonster->GetOwningMonster();
 		ASSERT(pMonster);
 	}
 
@@ -6502,11 +6486,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 				{
 					//Confirm monster deletion if it's not (a part of) a long monster
 					//being edited right now.
-					if (pMonster->IsPiece())
-					{
-						CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-						pMonster = pPiece->pMonster;
-					}
+					pMonster = pMonster->GetOwningMonster();
 					if (pMonster != this->pLongMonster)
 					{
 						const bool bTarstuffMother = bIsMother(pMonster->wType);
