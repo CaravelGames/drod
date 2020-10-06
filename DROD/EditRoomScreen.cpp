@@ -4626,10 +4626,15 @@ void CEditRoomScreen::PasteRegion(
 							const UINT wDeltaX = xDest - xSrc;
 							const UINT wDeltaY = yDest - ySrc;
 							MonsterPieces::iterator piece;
+							UINT wLastX = (UINT)-1;
+							UINT wLastY = (UINT)-1;
 							for (piece = pMonster->Pieces.begin();
 									piece != pMonster->Pieces.end(); ++piece)
 							{
 								const UINT wX = (*piece)->wX, wY = (*piece)->wY;
+								if (wLastX == (UINT)-1) wLastX = wX;
+								if (wLastY == (UINT)-1) wLastY = wY;
+
 								if (wX < this->wCopyX1 || wX > this->wCopyX2 ||
 										wY < this->wCopyY1 || wY > this->wCopyY2 ||
 										!room.IsValidColRow(wX+wDeltaX, wY+wDeltaY))
@@ -4654,6 +4659,12 @@ void CEditRoomScreen::PasteRegion(
 										break;
 									}
 								}
+								if (this->pRoom->DoesGentryiiPreventDiagonal(wX + wDeltaX, wY + wDeltaY, wLastX + wDeltaX, wLastY + wDeltaY)) {
+									bInRegion = false;
+									break;
+								}
+								wLastX = wX;
+								wLastY = wY;
 							}
 							if (bInRegion)
 							{
