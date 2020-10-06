@@ -137,6 +137,16 @@ struct MusicData
 	WSTRING songlistKey;
 };
 
+struct RoomCompletionData
+{
+	RoomCompletionData(UINT wOriginalMonsterCount, bool bConquerTokenNeedsActivating)
+		: wOriginalMonsterCount(wOriginalMonsterCount),
+		bConquerTokenNeedsActivating(bConquerTokenNeedsActivating) {}
+
+	UINT wOriginalMonsterCount;
+	bool bConquerTokenNeedsActivating;
+};
+
 //*******************************************************************************
 class CCharacter;
 class CDb;
@@ -377,6 +387,7 @@ private:
 	void     ProcessMonsters(int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents);
+	void     ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents);
 	void     ProcessPlayer(const int nCommand, CCueEvents &CueEvents);
 	void     ProcessPlayer_HandleLeaveLevel(CCueEvents &CueEvents,
 			const LevelExit& exit=LevelExit(), const bool bSkipEntranceDisplay=false);

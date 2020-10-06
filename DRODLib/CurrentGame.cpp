@@ -2064,6 +2064,7 @@ void CCurrentGame::ProcessCommand(
 	const UINT wOriginalMonsterCount = this->pRoom->wMonsterCount;
 	const UINT bConquerTokenNeedsActivating = this->pRoom->bHasConquerToken &&
 			this->conquerTokenTurn==NO_CONQUER_TOKEN_TURN;
+	const RoomCompletionData roomCompletionData(wOriginalMonsterCount, bConquerTokenNeedsActivating);
 	this->bContinueCutScene = false;
 
 	//If there are any unanswered questions, process them.
@@ -2139,19 +2140,9 @@ void CCurrentGame::ProcessCommand(
 				ProcessReactionToPlayerMove(nCommand, CueEvents);
 			}
 		}
-
-		//Was the room just conquered?
-		//Criteria for conquering are:
-		//1. Player didn't just leave the room.
-		//2. No monsters in the room.
-		//3. If Conquer tokens are in the room, one must be touched.
-		if (!bPlayerLeftRoom &&
-			((!bConquerTokenNeedsActivating && wOriginalMonsterCount && !this->pRoom->wMonsterCount) || //last monsters were killed
-			(!this->pRoom->wMonsterCount && bConquerTokenNeedsActivating &&
-				this->conquerTokenTurn!=NO_CONQUER_TOKEN_TURN))) //conquer token was activated (and possibly last monsters were killed also)
-			if (!IsCurrentRoomConquered())   //and was it not already cleared?
-				CueEvents.Add(CID_RoomConquerPending);
 	}
+
+	ProcessRoomCompletion(roomCompletionData, CueEvents);
 
 	//Check for new questions that were asked.  Put them in a list of questions
 	//for which answers will be expected on subsequent calls.
@@ -2407,6 +2398,38 @@ void CCurrentGame::ResetPendingTemporalSplit(CCueEvents& CueEvents)
 	}
 }
 
+
+//***************************************************************************************
+void CCurrentGame::ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents)
+// Does all the necessary room completion checks and adds the event if it should be completed
+{
+	const bool bPlayerLeftRoom = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
+	const bool bIsLastMonsterKilled = roomCompletionData.wOriginalMonsterCount && !this->pRoom->wMonsterCount;
+
+	const bool bIsKillMonstersSatisfied = (
+		!roomCompletionData.bConquerTokenNeedsActivating
+		&& roomCompletionData.wOriginalMonsterCount 
+		&& !this->pRoom->wMonsterCount
+	);
+	const bool bIsConquerTokenSatisfied = (
+		!this->pRoom->wMonsterCount
+		&& roomCompletionData.bConquerTokenNeedsActivating
+		&& this->conquerTokenTurn != NO_CONQUER_TOKEN_TURN
+	);
+	const bool bIsAnyCompletionSatisfied = (
+		bIsKillMonstersSatisfied
+		|| bIsConquerTokenSatisfied
+	);
+
+	//Was the room just conquered?
+	//Criteria for conquering are:
+	//1. Player didn't just leave the room.
+	//2. No monsters in the room.
+	//3. If Conquer tokens are in the room, one must be touched.
+	if (!bPlayerLeftRoom || bIsAnyCompletionSatisfied)
+		if (!IsCurrentRoomConquered())   // and was it not already cleared?
+			CueEvents.Add(CID_RoomConquerPending);
+}
 //***************************************************************************************
 void CCurrentGame::ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents)
 //After the player's turn, and the room hasn't been exited, everything else in the room takes a turn.
