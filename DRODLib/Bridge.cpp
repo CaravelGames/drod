@@ -330,7 +330,7 @@ void CBridge::drop(CCueEvents &CueEvents, const CCoordSet& tiles)
 		const UINT wX = tile->wX, wY = tile->wY;
 		const UINT wOTile = this->pRoom->GetOSquare(wX, wY);
 		if (bIsPit(wTileToPlot))
-			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wOTile), true);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wOTile, 0), true);
 		else {
 			ASSERT(bIsWater(wTileToPlot));
 			CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);

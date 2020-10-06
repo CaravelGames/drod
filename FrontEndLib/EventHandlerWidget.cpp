@@ -435,6 +435,7 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 	{
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
 			g_pTheSound->Unmute();
+			g_pTheSound->UnpauseSounds();
 			ClearEvents();  // !!! do we still need this?
 			break;
 
@@ -442,6 +443,8 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 			//Disable sound/music when app is inactive.
 			if (!g_pTheSound->bNoFocusPlaysMusic)
 				g_pTheSound->Mute();
+			else
+				g_pTheSound->PauseSounds();
 			ClearEvents();  // !!! do we still need this?
 			break;
 
