@@ -1109,6 +1109,10 @@ void CCharacter::Process(
 	if (this->wCurrentCommandIndex >= this->commands.size())
 		goto Finish;
 
+	//Sword cache must be cleared to avoid using state of the room from some other entity's
+	//turn and/or being blocked by this character's own weapon
+	this->swordsInRoom.Clear();
+
 	//Only character monsters taking up a single tile are implemented.
 	ASSERT(!bIsSerpentOrGentryii(GetResolvedIdentity()));
 
@@ -3043,7 +3047,6 @@ bool CCharacter::GetMovement(
 	const bool bAllowTurning)
 {
 	bPathmapping = false;
-	this->swordsInRoom.Clear();
 
 	bool bStopTurn = false;
 	switch (this->movementIQ)
