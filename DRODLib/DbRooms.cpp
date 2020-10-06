@@ -3618,7 +3618,10 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	//As pathmap targets are updated, we should make sure that only the new maps for Horn Blowing are used
 	//Ideally, GetNearestEntranceTo should use its own pathmap storage rather than the global one leading
 	//  to the player, but for now, this works.
-	ASSERT(eMovement == GROUND_FORCE || eMovement == GROUND_AND_SHALLOW_WATER_FORCE);
+	ASSERT(eMovement == GROUND_FORCE
+		|| eMovement == GROUND_AND_SHALLOW_WATER_FORCE
+		|| eMovement == AIR_FORCE
+		|| eMovement == WATER_FORCE);
 
 	if (!this->pPathMap[eMovement])
 		CreatePathMap(wX, wY, eMovement);
@@ -7214,6 +7217,7 @@ const
 				return DMASK_ALL;
 			break;
 		case AIR:
+		case AIR_FORCE:
 			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare)))
 				switch (wOSquare)
 				{
@@ -7229,6 +7233,7 @@ const
 				return DMASK_ALL;
 			break;
 		case WATER:
+		case WATER_FORCE:
 			if (!bIsWater(wOSquare))
 				return DMASK_ALL;
 			break;

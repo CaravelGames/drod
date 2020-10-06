@@ -4685,9 +4685,9 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	ResetPendingTemporalSplit(CueEvents);
 
-	MovementType eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
-	if (wSummonType == M_CLONE && this->swordsman.GetWaterTraversalState() == WTrv_NoEntry)
-		eMovement = GROUND_FORCE;
+	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
+	if (wSummonType != M_CLONE)
+		eMovement = MovementType::GROUND_AND_SHALLOW_WATER_FORCE;
 	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);

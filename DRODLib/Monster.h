@@ -100,6 +100,8 @@ enum MovementType {
 	GROUND_AND_SHALLOW_WATER,
 	GROUND_FORCE,
 	GROUND_AND_SHALLOW_WATER_FORCE,
+	AIR_FORCE,
+	WATER_FORCE,
 	NumMovementTypes
 };
 
@@ -131,7 +133,28 @@ static inline bool bMovementSupportsPartialObstacles (MovementType movement)
 //Returns true if the movement type supports pathmapping over partial obstacles such as
 //arrows and orthosquares.  Also doesn't treat potions and horns as obstacles.
 {
-	return movement == GROUND_FORCE || movement == GROUND_AND_SHALLOW_WATER_FORCE;
+	return movement == GROUND_FORCE
+		|| movement == GROUND_AND_SHALLOW_WATER_FORCE
+		|| movement == AIR_FORCE
+		|| movement == WATER_FORCE;
+}
+
+static inline MovementType GetHornMovementType(MovementType movement)
+{
+	switch (movement) {
+		case AIR:
+			return AIR_FORCE;
+
+		case WATER:
+			return WATER_FORCE;
+
+		case GROUND:
+			return GROUND_FORCE;
+
+		case GROUND_AND_SHALLOW_WATER:
+		default:
+			return GROUND_AND_SHALLOW_WATER_FORCE;
+	}
 }
 
 //******************************************************************************************
