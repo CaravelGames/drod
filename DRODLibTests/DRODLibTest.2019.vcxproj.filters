@@ -162,6 +162,9 @@
     <ClCompile Include="src\tests\Elements\SoldierHorn.cpp">
       <Filter>Tests\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Elements\GreenGate.cpp">
+       <Filter>Tests\Elements</Filter>
+     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

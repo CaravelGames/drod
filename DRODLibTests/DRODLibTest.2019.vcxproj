@@ -262,6 +262,7 @@
     <ClCompile Include="src\tests\Elements\Bridges.cpp" />
     <ClCompile Include="src\tests\Elements\SoldierHorn.cpp" />
     <ClCompile Include="src\tests\Elements\SquadHorn.cpp" />
+    <ClCompile Include="src\tests\Elements\GreenGate.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp" />

@@ -2426,7 +2426,7 @@ void CCurrentGame::ProcessRoomCompletion(RoomCompletionData roomCompletionData, 
 	//1. Player didn't just leave the room.
 	//2. No monsters in the room.
 	//3. If Conquer tokens are in the room, one must be touched.
-	if (!bPlayerLeftRoom || bIsAnyCompletionSatisfied)
+	if (!bPlayerLeftRoom && bIsAnyCompletionSatisfied)
 		if (!IsCurrentRoomConquered())   // and was it not already cleared?
 			CueEvents.Add(CID_RoomConquerPending);
 }
