@@ -173,7 +173,6 @@ const UINT TAG_IMAGEOVERLAYTEXT = 890;
 const UINT TAG_WEAPON_LISTBOX2 = 883;
 const UINT TAG_BEHAVIOR_LISTBOX = 882;
 const UINT TAG_REMAINS_LISTBOX = 881;
-const UINT TAG_GOTOSMART_LISTBOX = 880;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -403,7 +402,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pDirectionListBox(NULL), pInputListBox(NULL)
 	, pStealthListBox(NULL), pWaterTraversalListBox(NULL), pGlobalScriptListBox(NULL)
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOpenCloseListBox(NULL)
-	, pGotoLabelListBox(NULL), pGotoSmartListBox(NULL), pMusicListBox(NULL)
+	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
 	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL)
@@ -1693,19 +1692,6 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pGotoLabelListBox = new CListBoxWidget(TAG_GOTOLABELLISTBOX,
 			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pGotoLabelListBox);
-
-	//Goto smart label list.
-	this->pGotoSmartListBox = new CListBoxWidget(TAG_GOTOSMART_LISTBOX,
-			X_GOTOLABELLISTBOX, Y_GOTOLABELLISTBOX, CX_GOTOLABELLISTBOX, CY_GOTOLABELLISTBOX);
-	this->pAddCommandDialog->AddWidget(this->pGotoSmartListBox);
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIf, g_pTheDB->GetMessageText(MID_PreviousIf));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfSkipCondition, g_pTheDB->GetMessageText(MID_PreviousIfSkip));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfOrElseIf, g_pTheDB->GetMessageText(MID_PreviousIfOrElseIf));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_PreviousIfOrElseIfSkip));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElse, g_pTheDB->GetMessageText(MID_NextElse));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIf, g_pTheDB->GetMessageText(MID_NextElseOrElseIf));
-	this->pGotoSmartListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
-	this->pGotoSmartListBox->SelectLine(0);
 
 	//Variable handling widgets.
 
@@ -5097,8 +5083,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
-		TAG_GOTOSMART_LISTBOX
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5142,7 +5127,6 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT FACE_TOWARDS[] = { TAG_ONOFFLISTBOX, TAG_WAITFLAGSLISTBOX, 0 };
 	static const UINT NATURAL_TARGET[] = { TAG_NATURAL_TARGET_TYPES, 0 };
 	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
-	static const UINT GOTOSMART[] = { TAG_GOTOSMART_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
