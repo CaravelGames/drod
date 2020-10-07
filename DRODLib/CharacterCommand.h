@@ -317,7 +317,6 @@ public:
 		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
 		CC_Behavior,			// Set behavior X on or off.
 		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
-		CC_GoToSmart,           //Jumps script execution to specified logical location
 
 		CC_Count
 	};

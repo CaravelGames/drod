@@ -2366,7 +2366,7 @@ void CCharacter::Process(
 				}
 				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
-
+			/*
 			case CCharacterCommand::CC_GoToSmart:
 			{
 				const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType)command.x;
@@ -2410,7 +2410,7 @@ void CCharacter::Process(
 			}
 			bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
-
+			*/
 			case CCharacterCommand::CC_Speech:
 			{
 				//Deliver speech dialog.

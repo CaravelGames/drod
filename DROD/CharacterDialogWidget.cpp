@@ -3315,10 +3315,6 @@ const
 		case CCharacterCommand::CC_Label:
 			wstr.clear();
 			break;
-		case CCharacterCommand::CC_GoToSmart:
-			wstr += wszColon;
-			wstr += wszSpace;
-		break;
 		//deprecated commands still display
 		case CCharacterCommand::CC_PlayerEquipsWeapon:
 			wstr = g_pTheDB->GetMessageText(MID_SetPlayerSword);
@@ -3861,10 +3857,6 @@ const
 		}
 		break;
 
-		case CCharacterCommand::CC_GoToSmart:
-			wstr += this->pGotoSmartListBox->GetTextForKey(command.x);
-		break;
-
 		case CCharacterCommand::CC_LevelEntrance:
 		{
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
@@ -4168,7 +4160,6 @@ const
 		case CCharacterCommand::CC_FlushSpeech:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
-		case CCharacterCommand::CC_GoToSmart:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
 		case CCharacterCommand::CC_Behavior:
@@ -4399,7 +4390,6 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoSub, g_pTheDB->GetMessageText(MID_GoSub));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_GoToSmart, g_pTheDB->GetMessageText(MID_GotoSmart));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
@@ -5035,7 +5025,6 @@ void CCharacterDialogWidget::SetCommandColor(
 			pListBox->SetItemColorAtLine(line, DarkGreen);
 		break;
 		case CCharacterCommand::CC_GoTo:
-		case CCharacterCommand::CC_GoToSmart:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_AnswerOption:
@@ -5241,8 +5230,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,            //CC_BEHAVIOR
-		MONSTER_REMAINS,    //CC_WaitForRemains
-		GOTOSMART           //CC_GoToSmart
+		MONSTER_REMAINS     //CC_WaitForRemains
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5368,8 +5356,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,           //CC_GetEntityDirection
 		NO_LABELS,			//CC_WaitForWeapon
 		NO_LABELS,          //CC_Behavior
-		NO_LABELS,          //CC_WaitForRemains
-		NO_LABELS           //CC_GoToSmart
+		NO_LABELS           //CC_WaitForRemains
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6111,11 +6098,6 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			}
 		break;
 
-		case CCharacterCommand::CC_GoToSmart:
-			this->pCommand->x = this->pGotoSmartListBox->GetSelectedItem();
-			AddCommand();
-		break;
-
 		case CCharacterCommand::CC_LevelEntrance:
 		{
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
@@ -6664,10 +6646,6 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 			this->pGotoLabelListBox->SelectItem(this->pCommand->x);
-		break;
-
-		case CCharacterCommand::CC_GoToSmart:
-			this->pGotoSmartListBox->SelectItem(this->pCommand->x);
 		break;
 
 		case CCharacterCommand::CC_WaitForRect:
@@ -7338,10 +7316,6 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		//Caller must look up label ID.
 	break;
 
-	case CCharacterCommand::CC_GoToSmart:
-		parseMandatoryOption(pCommand->x, this->pGotoSmartListBox, bFound);
-	break;
-
 	case CCharacterCommand::CC_AnswerOption:
 	{
 		//Answer is all text between outermost quotes.
@@ -7955,10 +7929,6 @@ WSTRING CCharacterDialogWidget::toText(
 		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
 		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
 	}
-	break;
-
-	case CCharacterCommand::CC_GoToSmart:
-		wstr += this->pGotoSmartListBox->GetTextForKey(c.x);
 	break;
 
 	case CCharacterCommand::CC_AnswerOption:
