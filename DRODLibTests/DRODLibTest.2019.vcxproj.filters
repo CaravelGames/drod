@@ -159,6 +159,9 @@
     <ClCompile Include="src\tests\Elements\SquadHorn.cpp">
       <Filter>Tests\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Clone.cpp">
+      <Filter>Tests\Monsters</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Elements\SoldierHorn.cpp">
       <Filter>Tests\Elements</Filter>
     </ClCompile>

@@ -2,8 +2,6 @@
 
 #include "Runner.h"
 #include "test-include.hpp"
-#include <iostream>
-#include <string>
 
 const char* MakeLogMessage(const char* file, int line) {
 	std::stringstream message;
@@ -15,13 +13,6 @@ const char* MakeLogMessage(const char* file, int line) {
 
 	return message.str().c_str();
 }
-
-#define CatchLog(message, file, line) \
-	Catch::ScopedMessage INTERNAL_CATCH_UNIQUE_NAME(catchlog) = Catch::MessageBuilder(\
-		"Info", \
-		::Catch::SourceLineInfo( file, static_cast<std::size_t>( line ) ), \
-		Catch::ResultWas::Info \
-	) << message;
 
 void Assert::PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY) {
 	INFO(MakeLogMessage(file, line));

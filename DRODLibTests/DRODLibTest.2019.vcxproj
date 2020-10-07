@@ -272,6 +272,7 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp" />
+    <ClCompile Include="src\tests\Monsters\Clone.cpp" />
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />

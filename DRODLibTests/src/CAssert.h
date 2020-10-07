@@ -13,6 +13,8 @@
 #define DISPLAY_ROWS     32
 #define DISPLAY_COLS     38
 
+const char* MakeLogMessage(const char* file, int line);
+
 class Assert{
 	friend class Runner;
 	friend class RoomBuilder;
