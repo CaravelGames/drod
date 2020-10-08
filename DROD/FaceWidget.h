@@ -32,9 +32,16 @@
 #include "DrodSound.h"
 #include "../DRODLib/MonsterFactory.h"
 #include "../DRODLib/Character.h"
+#include "../DRODLib/HoldRecords.h"
 
 static const UINT CX_FACE = 130;
 static const UINT CY_FACE = 164;
+
+enum FaceWidgetLayer {
+	PlayerRole = 0,
+	Speaker,
+	Death
+};
 
 //Moods the swordsman can be in that affect his facial expression.
 enum MOOD
@@ -148,6 +155,32 @@ enum FACE_FRAME
 
 typedef std::map<UINT, SDL_Surface*> SurfaceMap;
 
+struct Face {
+	Face(FaceWidgetLayer eLayer) :
+		eLayer(eLayer),
+		pHoldCharacter(NULL), eCharacter(Speaker_Beethro), dwImageID(0), eMoodSEID(SEID_NONE),
+		eMood(MOOD::Mood_Normal), ePrevMood(MOOD::Mood_Normal), dwMoodUntil(0),
+		bIsActive(false), bIsReading(false), bIsSleeping(false), bIsBlinking(false),
+		bIsDrawn(false)
+	{}
+
+	FaceWidgetLayer eLayer;
+	const HoldCharacter* pHoldCharacter;
+	SPEAKER         eCharacter;
+	Uint32          dwImageID;
+	MOOD            eMood;
+	MOOD            ePrevMood;
+	
+	Uint32          dwMoodUntil;
+	SEID            eMoodSEID; // Show current mood until this sound ends
+
+	bool            bIsActive;
+	bool            bIsReading;
+	bool            bIsSleeping;
+	bool            bIsBlinking;
+	bool            bIsDrawn;
+};
+
 //******************************************************************************
 class CFaceWidget : public CWidget
 {
@@ -156,25 +189,24 @@ public:
 			const UINT wSetW, const UINT wSetH);
 	~CFaceWidget();
 
-	void           PaintFull(const bool bVal=true) {this->bAlwaysPaintFull = bVal;}
-	inline SPEAKER GetCharacter() const {return this->eSpeaker;}
-	inline UINT   GetImageID() const {return this->dwImageID;}
-	inline bool    IsMoodLocked() const {return this->bMoodLocked;}
-	bool           IsSpeakerAnimated() const;
-	void           MovePupils(const UINT wLookAtX=(UINT)-1, const UINT wLookAtY=(UINT)-1);
+	void            PaintFull(const bool bVal=true) {this->bAlwaysPaintFull = bVal;}
+	void            MovePupils(const UINT wLookAtX=(UINT)-1, const UINT wLookAtY=(UINT)-1);
 	virtual void      Paint(bool bUpdateRect = true);
 	virtual void      PaintClipped(const int nX, const int nY, const UINT wW,
 			const UINT wH, const bool bUpdateRect = true);
-	void           ResetForPaint() {this->bMoodDrawn = false;}
-	FACE_FRAME     ResolveFace();
-	void           SetCharacter(const SPEAKER eSpeaker, const bool bLockMood);
-	void           SetImage(const UINT dwDataID);
-	void           SetMood(const MOOD eSetMood, const Uint32 lDelay=0,
-		const bool bOverrideLock=false);
-	void           SetMoodToSoundEffect(MOOD eSetMood, SEID eUntilSEID);
-	void           SetReading(const bool bReading);
-	void           SetIsDeathAnimation(const bool bIsDeathAnimation);
-	void           SetSleeping();
+	void            ResetForPaint() { GetActiveFace()->bIsDrawn = false; }
+	void            SetCharacter(const FaceWidgetLayer eLayer, const SPEAKER eSpeaker, const HoldCharacter* pHoldCharacter);
+	void            SetMood(const FaceWidgetLayer eLayer, const MOOD eSetMood, const Uint32 lDelay=0);
+	void            SetMoodToSoundEffect(const FaceWidgetLayer eLayer, MOOD eSetMood, SEID eUntilSEID);
+	void            SetReading(const bool bReading);
+	void            SetDying(const bool bIsDying, MOOD eDyingMood = Mood_Normal);
+	void            SetSpeaker(const bool bIsSpeaking,
+			const SPEAKER eSpeaker = Speaker_None, const HoldCharacter* pHoldCharacter = NULL, MOOD eDyingMood = Mood_Normal);
+	void            SetSleeping();
+
+	Face           facePlayer;
+	Face           faceSpeaker;
+	Face           faceDying;
 
 struct POINT
 {
@@ -184,39 +216,37 @@ struct POINT
 
 protected:
 	virtual void   HandleAnimate();
+	void           HandleAnimateFace(Face *face);
 	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &Button);
 	virtual bool   IsAnimated() const {return true;}
 
 private:
+	void           PaintFace(Face* face);
 	void           DrawPupils();
-	inline void       DrawPupils_DrawOnePupil(
+	inline void    DrawPupils_DrawOnePupil(
 			SDL_Surface *pDestSurface, const int nDestX, const int nDestY,
-			const int nMaskX, const int nMaskY) const;
-	bool           bHasMoodDelayPassed() const {return SDL_GetTicks()-this->dwStartDelayMood > this->dwDelayMood;}
-	void           SetMoodDelay(const Uint32 dwDelay);
+			const int nMaskX, const int nMaskY);
 
-	SDL_Rect*      getEyeMask() const;
-	const POINT*   getEyeMaskOffset() const;
-	UINT           getBetweenPupils() const;
+	SDL_Rect*      getEyeMask();
+	const POINT*   getEyeMaskOffset();
+	UINT           getBetweenPupils();
+	FACE_FRAME     ResolveFaceFrame(Face* face);
 
-	SPEAKER        eSpeaker;         //character face being displayed
-	MOOD           eMood, ePrevMood; //face's mood
-	Uint32         dwDelayMood, dwStartDelayMood;        //how long to show face (0 means indefinitely)
-	bool           bMoodDrawn, bIsReading, bIsBlinking, bIsSleeping;  //whether face is reading, etc.
+	bool            IsSpeakerAnimated(const Face* face) const;
+	Face*           GetFace(const FaceWidgetLayer layer);
+	Face*           GetActiveFace();
+	const FaceWidgetLayer GetActiveLayer() const;
+
 	bool           bDoBlink;      //when set, do a blink at next possible time
-	SEID           eMoodSEID;
-	bool           bMoodLocked;   //can't change mood w/o explicit flag
-	bool           bIsDeathAnimation; // Whether death animation is playing
 
 	//Eye movement.
 	int               nPupilX, nPupilY;
 	int               nPupilTargetX, nPupilTargetY;
 
 	Uint32			dwLastFrame;
-	bool           bAlwaysPaintFull;
+	bool            bAlwaysPaintFull;
 
 	SDL_Surface *pImage;   //custom image currently being shown
-	UINT dwImageID;       //ID of image being shown
 	SurfaceMap faceImages; //loaded custom images
 };
 
