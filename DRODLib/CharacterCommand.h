@@ -186,13 +186,8 @@ namespace ScriptFlag
 
 	enum GotoSmartType
 	{
-		PreviousIf = 0,
-		PreviousIfOrElseIf = 1,
-		PreviousIfSkipCondition = 2,
-		PreviousIfOrElseIfSkipCondition = 3,
-		NextElse = 4,
-		NextElseOrElseIf = 5,
-		NextElseOrElseIfSkipCondition = 6
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
 	};
 
 	//World map icons
