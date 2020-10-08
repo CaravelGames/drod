@@ -10818,12 +10818,19 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 	{
 		ASSERT(tObj);
 		tObj->remove_top();
-	} else if (bUnderObject && bIsTLayerCoveringItem(oldTile) &&
+	}
+	else if (bUnderObject && bIsTLayerCoveringItem(oldTile) &&
 		(wTileNo == T_SCROLL || wTileNo == T_FUSE || wTileNo == T_TOKEN))
 	{
 		bReplacedCoveringItem = false;
 		ASSERT(tObj);
 		tObj->place_under(wTileNo);
+
+	} else if (bIsTLayerCoveringItem(wTileNo) && bIsTLayerCoverableItem(oldTile)) {
+		// Cover coverables
+		tObj = SetTLayer(wX, wY, wTileNo);
+		tObj->place_under(oldTile);
+
 	} else {
 		tObj = SetTLayer(wX,wY,wTileNo);
 	}
