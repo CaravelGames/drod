@@ -88,6 +88,8 @@ public:
 	virtual bool BrainAffects() const {return false;}
 	virtual bool IsAggressive() const {return false;}
 	virtual bool IsFriendly() const {return true;}
+
+	virtual void PushInDirection(int dx, int dy, bool bStun, CCueEvents& CueEvents);
 };
 
 #endif //...#ifndef PLAYERDOUBLE_H

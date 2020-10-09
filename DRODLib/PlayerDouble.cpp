@@ -357,6 +357,16 @@ void CArmedMonster::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueE
 }
 
 //*****************************************************************************
+// Pushed doubles activate tokens
+void CPlayerDouble::PushInDirection(int dx, int dy, bool bStun, CCueEvents& CueEvents)
+{
+	CArmedMonster::PushInDirection(dx, dy, bStun, CueEvents);
+
+	CCurrentGame* pGame = (CCurrentGame*)this->pCurrentGame; //non-const
+	pGame->pRoom->ActivateToken(CueEvents, this->wX, this->wY, this);
+}
+
+//*****************************************************************************
 bool CPlayerDouble::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))

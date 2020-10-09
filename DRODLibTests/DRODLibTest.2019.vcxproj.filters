@@ -166,8 +166,11 @@
       <Filter>Tests\Elements</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Elements\GreenGate.cpp">
-       <Filter>Tests\Elements</Filter>
-     </ClCompile>
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\PlayerDoubles.cpp">
+      <Filter>Tests\Monsters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

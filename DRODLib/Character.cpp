@@ -5147,6 +5147,12 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 		this->wSwordMovement = nGetO(dx,dy);
 		pGame->ProcessArmedMonsterWeapon(this, CueEvents);
 	}
+
+	// Same token activation rules as for moving
+	if (bIsHuman(GetResolvedIdentity())) {
+		CDbRoom& room = *(this->pCurrentGame->pRoom);
+		room.ActivateToken(CueEvents, this->wX, this->wY, this);
+	}
 }
 
 //*****************************************************************************
