@@ -331,6 +331,7 @@ public:
 	bool          bNewStun; //whether monster stun was inflicted this turn
 	bool          bPushedThisTurn; //whether monster was pushed this turn
 	bool          bWaitedOnHotFloorLastTurn; //for hasteable playerdoubles
+	bool          bSafeToDelete;
 
 	CDbPackedVars ExtraVars;
 	MonsterPieces Pieces;  //when monster fills more than one square

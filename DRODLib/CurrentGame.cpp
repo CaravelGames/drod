@@ -1943,6 +1943,7 @@ void CCurrentGame::ProcessCommand(
 
 	//Reset relative movement for the current turn.
 	UpdatePrevCoords();
+	this->pRoom->ClearDeadMonsters(true);
 	this->pRoom->ClearPushStates();
 
 	if (!this->dwCutScene)
