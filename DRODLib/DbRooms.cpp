@@ -3502,8 +3502,9 @@ void CDbRoom::LinkMonster(
 		break;
 		case M_CLONE:
 		{
-			CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
-			pClone->CalculateCreationIndex(this);
+			CClone* pClone = dynamic_cast<CClone*>(pMonster); // Not using DYN_CAST intentionally to avoid assertion errors
+			if (pClone != NULL) //This may happen during import, when the room is created only to be stored in the database, ignore
+				pClone->CalculateCreationIndex(this);
 			break;
 		}
 		default: break;
@@ -4078,6 +4079,7 @@ void CDbRoom::ActivateToken(
 					{
 						CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pMonster);
 						pDouble->bNoWeapon = this->pCurrentGame->swordsman.bNoWeapon;
+						pDouble->SetWeaponSheathed();
 					}
 					break;
 					default: break;
