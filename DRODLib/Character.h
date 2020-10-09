@@ -172,8 +172,6 @@ public:
 	virtual bool   IsVisible() const {return this->bVisible;}
 	bool           JumpToCommandWithLabel(const WCHAR *pText);
 	bool           JumpToCommandWithLabel(const UINT num);
-	bool           JumpToPreviousIf(const bool bIgnoreElseIf);
-	bool           JumpToNextElse(const bool bIgnoreElseIf);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);
@@ -232,6 +230,8 @@ private:
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
 	ScriptFlag::Imperative GetImperative() const {return this->eImperative;}
 	int  GetIndexOfCommandWithLabel(const UINT label) const;
+	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,

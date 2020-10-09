@@ -2366,51 +2366,7 @@ void CCharacter::Process(
 				}
 				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
-			/*
-			case CCharacterCommand::CC_GoToSmart:
-			{
-				const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType)command.x;
-				bool bJumped = false;
 
-				switch (eGotoType) {
-				case ScriptFlag::GotoSmartType::PreviousIf:
-				case ScriptFlag::GotoSmartType::PreviousIfSkipCondition:
-					bJumped = JumpToPreviousIf(true);
-				break;
-				case ScriptFlag::GotoSmartType::PreviousIfOrElseIf:
-				case ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition:
-					bJumped = JumpToPreviousIf(false);
-				break;
-				case ScriptFlag::GotoSmartType::NextElse:
-					bJumped = JumpToNextElse(true);
-				break;
-				case ScriptFlag::GotoSmartType::NextElseOrElseIf:
-				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-					bJumped = JumpToNextElse(false);
-				break;
-				}
-
-				if (!bJumped) {
-					bProcessNextCommand = true;
-					break; //If we didn't jump to another command, DO increment wCurrentCommandIndex
-				}
-
-				bool bSkipCondition = false;
-				switch (eGotoType) {
-				case ScriptFlag::GotoSmartType::PreviousIfSkipCondition:
-				case ScriptFlag::GotoSmartType::PreviousIfOrElseIfSkipCondition:
-				case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-					bSkipCondition = true;
-				default:
-				break;
-				}
-
-				if (bSkipCondition)
-					this->wCurrentCommandIndex += 2; // move ahead two commands
-			}
-			bProcessNextCommand = true;
-			continue;   //don't increment wCurrentCommandIndex again
-			*/
 			case CCharacterCommand::CC_Speech:
 			{
 				//Deliver speech dialog.
@@ -5371,14 +5327,110 @@ void CCharacter::Disappear()
 int CCharacter::GetIndexOfCommandWithLabel(const UINT label) const
 //Returns: index of command with specified label, or NO_LABEL if none
 {
-	if (label)
-		for (UINT wIndex=this->commands.size(); wIndex--; )
+	if (label > 0) {
+		for (UINT wIndex = this->commands.size(); wIndex--; )
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-					label == command.x)
+				label == command.x)
 				return wIndex;
 		}
+	} else if (label < 0) {
+		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
+		switch (eGotoType) {
+		case ScriptFlag::GotoSmartType::PreviousIf:
+			return GetIndexOfPreviousIf(true);
+		break;
+		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+		{
+			int wIndex = GetIndexOfNextElse(false);
+			if (wIndex != NO_LABEL) {
+				return wIndex + 2;
+			}
+		}
+		break;
+		default:
+			return NO_LABEL;
+		break;
+		}
+	}
+	return NO_LABEL;
+}
+//*****************************************************************************
+//Return: Index of the if or else if command at the beginning of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+	bool bScanning = true;
+
+	do {
+		--wCommandIndex;
+		if (wCommandIndex == -1) //No matching if found
+			break;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			if (wNestingDepth-- == 0)
+				bScanning = false; // Found start of if block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				bScanning = false; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		}
+	} while (bScanning);
+
+	if (!bScanning) {
+		return wCommandIndex;
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the else or else if command at the end of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+	bool bScanning = true;
+
+	do {
+		++wCommandIndex;
+		if (wCommandIndex == this->commands.size()) //No matching else found
+			break;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		case CCharacterCommand::CC_IfElse:
+			if (wNestingDepth == 0)
+				bScanning = false; // Found start of else block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				bScanning = false; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			if (wNestingDepth > 0)
+				wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+	} while (bScanning);
+
+	if (!bScanning) {
+		return wCommandIndex;
+	}
+
 	return NO_LABEL;
 }
 
@@ -5406,89 +5458,6 @@ bool CCharacter::JumpToCommandWithLabel(const UINT num)
 	WCHAR temp[12];
 	_itoW(num, temp, 10);
 	return JumpToCommandWithLabel(temp);
-}
-
-//*****************************************************************************
-//Move execution point to the If or Else If command at the beginning of the block
-//No jump occurs if initial execution point is not in an If block
-//Return: if a jump was performed
-bool CCharacter::JumpToPreviousIf(const bool bIgnoreElseIf)
-{
-	UINT wCommandIndex = this->wCurrentCommandIndex;
-	UINT wNestingDepth = 0;
-	bool bScanning = true;
-
-	do {
-		--wCommandIndex;
-		if (wCommandIndex == -1) //No matching if found
-			break;
-
-		CCharacterCommand command = this->commands[wCommandIndex];
-		switch (command.command) {
-		case CCharacterCommand::CC_If:
-			if (wNestingDepth-- == 0)
-				bScanning = false; // Found start of if block
-		break;
-		case CCharacterCommand::CC_IfElseIf:
-			if (wNestingDepth == 0 && !bIgnoreElseIf)
-				bScanning = false; // Found start of else-if block
-		break;
-		case CCharacterCommand::CC_IfEnd:
-			wNestingDepth++; // entering a nested if-block
-		break;
-		}
-	} while (bScanning);
-
-	if (!bScanning) {
-		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
-		return true;
-	}
-
-	return false;
-}
-
-//*****************************************************************************
-//Move the execution point to the next Else or Else If for the current If block
-//No jump occurs if initial execution point is not in an If block, or if the
-//block does not have a following Else block.
-//Return: if a jump was performed
-bool CCharacter::JumpToNextElse(const bool bIgnoreElseIf)
-{
-	UINT wCommandIndex = this->wCurrentCommandIndex;
-	UINT wNestingDepth = 0;
-	bool bScanning = true;
-
-	do {
-		++wCommandIndex;
-		if (wCommandIndex == this->commands.size()) //No matching else found
-			break;
-
-		CCharacterCommand command = this->commands[wCommandIndex];
-		switch (command.command) {
-		case CCharacterCommand::CC_If:
-			wNestingDepth++; // entering a nested if-block
-		break;
-		case CCharacterCommand::CC_IfElse:
-			if (wNestingDepth == 0)
-				bScanning = false; // Found start of else block
-		break;
-		case CCharacterCommand::CC_IfElseIf:
-			if (wNestingDepth == 0 && !bIgnoreElseIf)
-				bScanning = false; // Found start of else-if block
-		break;
-		case CCharacterCommand::CC_IfEnd:
-			if (wNestingDepth > 0)
-				wNestingDepth--; // exiting a nested if-block
-		break;
-		}
-	} while (bScanning);
-
-	if (!bScanning) {
-		this->wCurrentCommandIndex = wCommandIndex; //Jump to matched command
-		return true;
-	}
-
-	return false;
 }
 
 //*****************************************************************************
