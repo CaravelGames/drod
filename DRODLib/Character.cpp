@@ -5324,7 +5324,7 @@ void CCharacter::Disappear()
 }
 
 //*****************************************************************************
-int CCharacter::GetIndexOfCommandWithLabel(const UINT label) const
+int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 //Returns: index of command with specified label, or NO_LABEL if none
 {
 	if (label > 0) {

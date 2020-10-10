@@ -229,7 +229,7 @@ private:
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
 	ScriptFlag::Imperative GetImperative() const {return this->eImperative;}
-	int  GetIndexOfCommandWithLabel(const UINT label) const;
+	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
