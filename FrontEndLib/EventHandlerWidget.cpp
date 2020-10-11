@@ -207,6 +207,7 @@ void CEventHandlerWidget::Activate()
 	while (!this->bDeactivate)
 	{
 		//Process one frame.
+		CScreen::dwCurrentTicks = SDL_GetTicks();
 
 		//Get any events waiting in the queue.
 		while (!this->bDeactivate && PollEvent(&event))
