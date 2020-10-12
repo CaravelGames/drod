@@ -156,6 +156,10 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 						bIsPotion(wTTile) || bIsBriar(wTTile))
 					break;
 
+				// Allow covering Tlayer tiles
+				if (bIsTLayerCoveringItem(baseTile) && bIsTLayerCoverableItem(wTTile))
+					break;
+
 				//No other item can be built over.
 				bValid = false;
 			}

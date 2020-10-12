@@ -166,8 +166,17 @@
       <Filter>Tests\Elements</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Elements\GreenGate.cpp">
-       <Filter>Tests\Elements</Filter>
-     </ClCompile>
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingMirrors.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
