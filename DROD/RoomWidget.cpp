@@ -4010,14 +4010,7 @@ OLayerDone:
 										dest, pDestSurface, 128);
 						}
 
-						//4. Add dark+light to o-layer before sky reflection is rendered.
-						if (bAddLight)
-						{
-							AddLightInterp(pDestSurface, wX, wY, psL, fDark);
-							bAddLightLayers = true;
-						}
-
-						//5. Draw sky/water bottom.
+						//4. Draw sky/water bottom.
 						if (this->bOutside && this->pSkyImage)
 						{
 							const int wXOffset = this->dwSkyX % this->pSkyImage->w;
@@ -4110,7 +4103,7 @@ OLayerDone:
 							}
 						}
 
-						//6. Draw stepping stones and thin ice on top of water.
+						//5. Draw stepping stones and thin ice on top of water.
 						if (bIsSteppingStone(wOTileNo))
 						{
 							DrawRoomTile(TI_STEP_STONE);
@@ -4121,6 +4114,13 @@ OLayerDone:
 						{
 							const UINT wTileImageNo = CalcTileImageForWater(this->pRoom, wX, wY, T_THINICE);
 							DrawTransparentRoomTile(wTileImageNo,THIN_ICE_OPACITY);
+						}
+
+						//6. Add dark+light to o-layer after everything else is ddrawn.
+						if (bAddLight)
+						{
+							AddLightInterp(pDestSurface, wX, wY, psL, fDark);
+							bAddLightLayers = true;
 						}
 					}
 				}
