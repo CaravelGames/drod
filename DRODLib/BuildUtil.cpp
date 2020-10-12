@@ -330,9 +330,15 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		}
 	}
 
-	//When water or doors are plotted (or overwritted), redraw edges.
+	//When water, ice or doors are plotted (or overwritten), redraw edges.
 	//WARNING: Where plots are needed is front-end implementation dependent.
-	if (bIsWater(baseTile) || bIsWater(wOldOTile) || bIsDoor(wOldOTile) || bIsDoor(baseTile))
+	if (
+		bIsWater(baseTile)
+		|| bIsWater(wOldOTile)
+		|| bIsThinIce(baseTile)
+		|| bIsThinIce(wOldOTile)
+		|| bIsDoor(wOldOTile)
+		|| bIsDoor(baseTile))
 	{
 		CCoordSet plots;
 		for (int nJ = -1; nJ <= 1; ++nJ){
