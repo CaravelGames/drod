@@ -2655,6 +2655,15 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
         if (this->pRoom->DoesGentryiiPreventDiagonal(this->swordsman.wX, this->swordsman.wY, wDestX, wDestY))
             return false;
 
+		for (UINT nO = 0; nO < ORIENTATION_COUNT; ++nO) {
+			if (nO != NO_ORIENTATION)
+			{
+				CMonster* pMonster = this->pRoom->GetMonsterAtSquare(wDestX - nGetOX(nO), wDestY - nGetOY(nO));
+				if (pMonster && pMonster->HasSwordAt(wDestX, wDestY) && pMonster->GetWeaponType() == WT_Caber)
+					return false;
+			}
+		}
+
 		if (!this->swordsman.Move(wDestX, wDestY))
 			return false;
 
