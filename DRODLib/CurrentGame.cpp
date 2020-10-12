@@ -5809,7 +5809,8 @@ void CCurrentGame::ProcessPlayer(
 					} else
 						CueEvents.Add(CID_HitObstacle,
 								new CMoveCoord(destX, destY, wMoveO), true);
-				}
+				} else
+					CueEvents.Add(CID_HitObstacle, new CMoveCoord(destX, destY, wMoveO), true);
 			break;
 			case T_WALL_M:
 				if (!this->bHoldMastered)
