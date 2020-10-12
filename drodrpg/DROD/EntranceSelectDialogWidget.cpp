@@ -516,6 +516,29 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromGlobalVars(const PlayerStat
 }
 
 //*****************************************************************************
+void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGame)
+{
+	CDbPackedVars& stats = pGame->stats;
+
+	for (vector<HoldVar>::const_iterator var = pGame->pHold->vars.begin();
+		var != pGame->pHold->vars.end(); ++var) {
+		char varID[10], varName[11] = "v";
+		//Get local hold var.
+		_itoa(var->dwVarID, varID, 10);
+		strcat(varName, varID);
+
+		const WCHAR* varValue = stats.GetVar(varName, L"0");
+
+		WSTRING wstr = var->varNameText.c_str();
+		wstr += wszSpace;
+		wstr += wszEqual;
+		wstr += wszSpace;
+		wstr += varValue;
+		this->pListBoxWidget->AddItem(var->dwVarID, wstr.c_str());
+	}
+}
+
+//*****************************************************************************
 void CEntranceSelectDialogWidget::SelectItem(
 	const UINT dwTagNo) //(in)
 {
