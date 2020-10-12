@@ -2559,7 +2559,7 @@ void CCharacter::Process(
 			{
 				UINT dwCharID = (UINT)command.x;
 				if (!pGame->GlobalScriptsRunning.has(dwCharID))
-					room.AddNewGlobalScript(dwCharID, CueEvents);
+					room.AddNewGlobalScript(dwCharID, true, CueEvents);
 
 				bProcessNextCommand = true;
 			}

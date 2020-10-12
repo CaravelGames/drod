@@ -175,7 +175,7 @@ public:
 	bool           AddOrb(COrbData *pOrb);
 	COrbData *     AddOrbToSquare(const UINT wX, const UINT wY);
 	bool           AddPressurePlateTiles(COrbData* pPlate);
-	bool           AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents);
+	bool           AddNewGlobalScript(const UINT dwCharID, const bool bProcessMove, CCueEvents &CueEvents);
 	void           AddRunningGlobalScripts(CCueEvents &CueEvents);
 	bool           AddScroll(CScrollData *pScroll);
 	bool           AddExit(CExitData *pExit);
