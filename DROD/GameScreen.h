@@ -128,7 +128,7 @@ protected:
 private:
 	void           AddBloodEffect(const CMoveCoord& coord, const UINT wAppearance);
 	void           AddComboEffect(CCueEvents& CueEvents);
-	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord);
+	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, const bool bIsCriticalNpc = false);
 	void           AddRoomStatsDialog();
 	void           AmbientSoundSetup();
 	void           ApplyPlayerSettings();
