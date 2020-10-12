@@ -8,6 +8,7 @@
 <p>The Settings Screen can be reached from the <a href="commands.html">Main
 Menu</a> by choosing the "Change <b>S</b>ettings" option. &nbsp;The following settings
 are available: </p>
+
 <p><a name="personal"><b>Personal</b></a> - Enter your player name and optional
  <a href="caravelNet.html">CaravelNet</a> information here.</p>
 <p><a name="special"><b>Special</b></a> - Select whether to play with room checkpoints or not,
@@ -20,9 +21,26 @@ automatically" is checked, changes you make to a room in the <a
 &nbsp;Turn this option off if you want to be prompted before saving any
 room changes. &nbsp;Check "Show item tips" to receive help placing
 special objects in the room. </p>
+
 <p><a name="graphics"><b>Graphics</b></a> - Click "Use <a name="fullscreen">full screen</a>" to toggle between
 full screen and windowed mode (1024x768). &nbsp;Note that you can also
-use the F10 key to do this at any time. Turn off <a name="alpha">"Alpha blending"</a> to disable dynamic room lighting and transparency in certain graphical effects. Lower <a name="environmentaleffects">"Environmental effects"</a> to reduce or disable in-game weather display. Disabling these settings might help with performance if you're experiencing a low framerate. Slide the <a name="tarstuffalpha">"Tarstuff alpha"</a> bar to change tarstuff transparency, and uncheck <a name="displaycombos">"Display combos"</a> if you don't want to see kill combo messages during play.</p>
+use the F10 key to do this at any time. Slide the <a name="tarstuffalpha">"Tarstuff alpha"</a> bar to change tarstuff transparency, and uncheck <a name="displaycombos">"Display combos"</a> if you don't want to see kill combo messages during play.</p>
+
+<ul>
+<li>
+	<b>Alpha Blending</b> - Controls whether light effects are used in the game. Turning it off will disable: transparency of most game effects and monsters, all lighting effects. Turning it off will improve the performance of the game.
+</li>
+<li>
+	<b>Environmental effects</b> - Controls the density of various particle effects, and certain threshold values have additional consequences:
+	<ul>
+		<li><b>0</b> - turns off particle rotation; turns off weather; turns off light; </li>
+		<li><b>8 and above</b> (second larger vertical line) - Enable animating shadow casting when light sources move; </li>
+		<li><b>12 and above</b> (third larger vertical line) - Enable temporal projections casting light; </li>
+		<li><b>Any value</b> - Affects the number of debris particles when bomb explodes;</li>
+	</ul>
+	Moving the slider to the left will improve the peformance of the game.
+</li>
+</ul>
 <p><a name="sound"><b>Sound</b></a> - You may turn sound effects, game <a name="speech">speech</a> and background <a name="music">music</a>
 on or off and set the volume each is played at. Unclick "Show <a name="subtitles">subtitles</a> when voices play"
 if you do not want subtitle text to be displayed in the game while characters
