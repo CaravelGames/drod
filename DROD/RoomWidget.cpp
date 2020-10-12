@@ -6192,6 +6192,10 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 		const UINT wYOffset = (pObj->wPrevY - coord.wY) * this->dwMovementStepsLeft;
 		const TileImageBlitParams blit(coord.wX, coord.wY, tileImage, wXOffset, wYOffset, true);
 		DrawTileImage(blit, pDestSurface);
+		//Absolutely required, otherwise on slow repeat speed a quick undo followed by
+		// action can cause an object to disappear, because its first blit will be entirely
+		// in the previous position, causing it to not be drawn nor animated on subsqeuent frames
+		this->pTileImages[tileIndex].dirty = true;
 	}
 	this->movingTLayerObjectsToRender.clear();
 }
