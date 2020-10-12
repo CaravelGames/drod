@@ -490,6 +490,9 @@ protected:
 	bool           UpdateDrawSquareInfo(const CCoordSet *pSet=NULL, const CCoordSet *pGeometryChanges=NULL);
 	void           UpdateRoomRects();
 
+	void           DebugDraw_Pathmap(SDL_Surface* pDestSurface, MovementType eType);
+	void           DebugDraw_MarkedTiles(SDL_Surface* pDestSurface);
+
 	UINT             dwRoomX, dwRoomY;
 	WSTRING           style;
 	UINT              wShowCol, wShowRow;
