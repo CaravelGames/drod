@@ -5499,9 +5499,8 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		static const UINT CY_TILES = 6 * CDrodBitmapManager::CY_TILE;
 
 		pCharGraphicList->SelectItem(pChar->wType);
-		pFace->SetCharacter(getSpeakerType(MONSTERTYPE(pChar->wType)), false);
+		pFace->SetCharacter(FaceWidgetLayer::PlayerRole, getSpeakerType(MONSTERTYPE(pChar->wType)), pChar);
 		pDefaultAvatar->Enable(pChar->dwDataID_Avatar != 0);
-		pFace->SetImage(pChar->dwDataID_Avatar);
 
 		const bool bHasTiles = pChar->dwDataID_Tiles != 0;
 		pDefaultTiles->Enable(bHasTiles);
@@ -5527,8 +5526,8 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		IDtext += _itoW(pChar->dwCharID, temp, 10);
 		pIDLabel->SetText(IDtext.c_str());
 	} else {
-		pFace->SetCharacter(getSpeakerType(
-				MONSTERTYPE(pCharGraphicList->GetSelectedItem())), false);
+		pFace->SetCharacter(FaceWidgetLayer::PlayerRole, getSpeakerType(
+				MONSTERTYPE(pCharGraphicList->GetSelectedItem())), NULL);
 		pDefaultAvatar->Disable();
 		pDefaultTiles->Disable();
 		pAnimateSpeed->SetText(wszEmpty);

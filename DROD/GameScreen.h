@@ -175,7 +175,8 @@ private:
 	void           ShowBigMap();
 	void           ShowDemosForRoom(const UINT roomID);
 	void           ShowLockIcon(const bool bShow=true);
-	void           ShowPlayerFace(const bool bOverrideLock=false, const bool bLockMood=false);
+	void           UpdatePlayerFace();
+	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter **playerHoldCharacter);
 	void           ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents);
 	void           ShowRoomTemporarily(const UINT roomID);
 	void           ShowSpeechLog();
