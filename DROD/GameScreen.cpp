@@ -2790,6 +2790,18 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const bool bNPCBeethroDied = CueEvents.HasOccurred(CID_NPCBeethroDied);
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied) ||
 			(!bPlayerDied && !bNPCBeethroDied && !bIsSmitemaster(player.wAppearance));
+
+	//Render Game Effect commands
+	for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_VisualEffect);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const VisualEffectInfo* pEffect = DYN_CAST(const VisualEffectInfo*, const CAttachableObject*, pObj);
+		AddVisualEffect(pEffect, this->pRoomWidget, this->pCurrentGame);
+		AddSoundEffect(pEffect);
+	}
+
+	// And we want image events to be rendered too
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
