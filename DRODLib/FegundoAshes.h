@@ -42,6 +42,7 @@ public:
 	
 	virtual bool HasOrientation() const {return false;}
 	virtual bool IsAggressive() const {return false;}
+	virtual bool IsFriendly() const { return  true; }
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
