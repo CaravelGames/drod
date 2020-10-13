@@ -929,7 +929,9 @@ void CDrodScreen::EditGlobalVars(
 	pListBox->SetPrompt(MID_GameVarsTitle);
 	pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
 	pListBox->PopulateListBoxFromGlobalVars(*st);
-	pListBox->PopulateListBoxFromHoldVars(pGame);
+	if (pGame) {
+		pListBox->PopulateListBoxFromHoldVars(pGame);
+	}
 	pListBox->SelectItem(0);
 
 	SetCursor();
@@ -970,7 +972,9 @@ void CDrodScreen::EditGlobalVars(
 				//Update value in widget list.
 				pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
 				pListBox->PopulateListBoxFromGlobalVars(*st);
-				pListBox->PopulateListBoxFromHoldVars(pGame->pHold);
+				if (pGame) {
+					pListBox->PopulateListBoxFromHoldVars(pGame);
+				}
 				pListBox->SelectItem(itemID);
 			}
 		}
