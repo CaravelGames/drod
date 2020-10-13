@@ -527,13 +527,22 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGam
 		_itoa(var->dwVarID, varID, 10);
 		strcat(varName, varID);
 
-		const WCHAR* varValue = stats.GetVar(varName, L"0");
+		UNPACKEDVARTYPE vType;
+		WSTRING wVarValue;
+		vType = stats.GetVarType(varName);
+
+		if (vType == UVT_int) {
+			int iVarValue = stats.GetVar(varName, (int)0);
+			wVarValue = std::to_wstring(iVarValue);
+		} else {
+			wVarValue = stats.GetVar(varName, L"0");
+		}
 
 		WSTRING wstr = var->varNameText.c_str();
 		wstr += wszSpace;
 		wstr += wszEqual;
 		wstr += wszSpace;
-		wstr += varValue;
+		wstr += wVarValue;
 		this->pListBoxWidget->AddItem(var->dwVarID, wstr.c_str());
 	}
 }
