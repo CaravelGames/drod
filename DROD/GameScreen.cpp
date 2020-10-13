@@ -6053,7 +6053,7 @@ void CGameScreen::UpdatePlayerFace()
 	if (!this->pCurrentGame)
 		return;
 
-	HoldCharacter* pPlayerHoldCharacter;
+	HoldCharacter* pPlayerHoldCharacter = NULL;
 
 	//Handle custom character images specially.
 	UINT dwCharID = this->pCurrentGame->swordsman.wIdentity;

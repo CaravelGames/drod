@@ -61,7 +61,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -70,7 +70,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -79,7 +79,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CaravelRelease|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -118,6 +118,7 @@
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <PreprocessToFile>false</PreprocessToFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -179,7 +180,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;mk4vc70s.lib;libcurl_imp.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/DRODLibTests.exe</OutputFile>
+      <OutputFile>$(OutDir)/DRODLibTests.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -226,6 +227,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -233,7 +235,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;mk4vc70s.lib;libcurl_imp.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/DRODLibTests.exe</OutputFile>
+      <OutputFile>$(OutDir)/DRODLibTests.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
