@@ -593,6 +593,10 @@ CSettingsScreen::CSettingsScreen()
 			CX_ENVIRONMENTAL_LABEL, CY_ENVIRONMENTAL_LABEL, F_Small, g_pTheDB->GetMessageText(MID_EnvironmentalEffects)) );
 	pSliderWidget = new CSliderWidget(TAG_ENVIRONMENT, X_ENVIRONMENTAL, Y_ENVIRONMENTAL,
 			CX_ENVIRONMENTAL, CY_ENVIRONMENTAL, 1, 1 + Metadata::GetInt(MetaKey::MAX_EYE_CANDY));
+	pSliderWidget->SetDrawTickMarks(true);
+	pSliderWidget->pBiggerTicks.push_back(4);
+	pSliderWidget->pBiggerTicks.push_back(8);
+	pSliderWidget->pBiggerTicks.push_back(12);
 	pGraphicsFrame->AddWidget(pSliderWidget);
 
 	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_TARSTUFFALPHA_LABEL, Y_TARSTUFFALPHA_LABEL,

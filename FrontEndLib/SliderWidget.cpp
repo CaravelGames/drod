@@ -56,7 +56,9 @@ CSliderWidget::CSliderWidget(
 	, bWasSliderDrawn(false)
 	, bFocusRegionsSaved(false)
 	, pEraseSurface(NULL)
+	, bDrawTickMarks(false)
 {
+	this->pBiggerTicks = std::vector<UINT>();
 	this->imageFilenames.push_back(string("Dialog"));
 
 	this->pFocusSurface[0] = this->pFocusSurface[1] = NULL;
@@ -121,6 +123,8 @@ void CSliderWidget::Paint(
 
 	static SDL_Rect SliderRect = MAKE_SDL_RECT(X_SLIDER, Y_SLIDER, CX_SLIDER, CY_SLIDER);
 	static SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, CX_SLIDER, CY_SLIDER);
+	static UINT TickMarkSmall = 7;
+	static UINT TickMarkBig = 17;
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(0, 0, CX_SLIDER, CY_SLIDER);
 	SDL_Rect FocusScreenRect = MAKE_SDL_RECT(this->x + 1, 0, this->w-2, 1);
 	SDL_Rect FocusRect = MAKE_SDL_RECT(0, 0, this->w-2, 1);
@@ -153,13 +157,38 @@ void CSliderWidget::Paint(
 	}
 
 	//Draw the line that slider travels over.
-	DrawCol(this->x, this->y, this->h, Dark);
-	DrawCol(this->x + 1, this->y, this->h, Light);
-	DrawCol(this->x + this->w - 2, this->y, this->h, Dark);
-	DrawCol(this->x + this->w - 1, this->y, this->h, Light);
 	int yLine = this->y + this->h / 2;
-	DrawRow(this->x + 1, yLine - 1, this->w - 2, Dark);
+	DrawCol(this->x + 1, this->y, this->h, Light);
+	DrawCol(this->x + this->w - 1, this->y, this->h, Light);
 	DrawRow(this->x + 1, yLine, this->w - 2, Light);
+
+	// <X position of tick, height of tick>
+	std::vector< std::pair<UINT, UINT> > ticks;
+	ticks.reserve(this->bytTickMarks);
+
+	if (this->bDrawTickMarks && this->bytTickMarks > 0) {
+		for (BYTE i = 0; i < this->bytTickMarks; i += 1) {
+			ticks.push_back(std::make_pair(
+				this->x + (this->w * i / this->bytTickMarks) + SliderRect.w / 2,
+				std::find(this->pBiggerTicks.begin(), this->pBiggerTicks.end(), i) != this->pBiggerTicks.end()
+				? TickMarkBig : TickMarkSmall
+			));
+		}
+	}
+
+	for (BYTE i = 0; i < ticks.size(); i++) {
+		std::pair<UINT, UINT> lineData = ticks[i];
+		DrawCol(lineData.first + 1, this->y + (this->h - lineData.second) / 2, lineData.second, Light);
+	}
+
+	DrawCol(this->x, this->y, this->h, Dark);
+	DrawCol(this->x + this->w - 2, this->y, this->h, Dark);
+	DrawRow(this->x + 1, yLine - 1, this->w - 2, Dark);
+
+	for (BYTE i = 0; i < ticks.size(); i++) {
+		std::pair<UINT, UINT> lineData = ticks[i];
+		DrawCol(lineData.first, this->y + (this->h - lineData.second) / 2, lineData.second, Dark);
+	}
 
 	//Calculate where to put slider.
 	float fSlider;
@@ -199,6 +228,11 @@ void CSliderWidget::Paint(
 	}
 
 	if (bUpdateRect) UpdateRect();
+}
+//******************************************************************************
+void CSliderWidget::SetDrawTickMarks(const bool bDrawTickMarks)
+{
+	this->bDrawTickMarks = bDrawTickMarks;
 }
 
 //******************************************************************************
