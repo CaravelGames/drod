@@ -75,6 +75,8 @@ ROOMCOORD      importCheckpoint;
 #define WEATHER_SKY "sky"
 #define WEATHER_RAIN "rain"
 
+CCoordSet CDbRoom::debugMarkedTiles;
+
 //
 //CDbRooms public methods.
 //

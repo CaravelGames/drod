@@ -477,6 +477,10 @@ public:
 	set<const CMonster*> pushed_monsters;
 	bool pushed_player;
 
+	// Var used for debugging, clear tile positions at a convenient spot, then add tile positions
+	// here and uncomment DebugDraw_MarkedTiles() in CRoomWidget
+	static CCoordSet debugMarkedTiles;
+
 private:
 	enum tartype {oldtar, newtar, notar};
 

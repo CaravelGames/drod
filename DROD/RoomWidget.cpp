@@ -4488,6 +4488,18 @@ void CRoomWidget::Paint(
 		if (!bPlayerIsAlive)
 			DrawMonsterKillingPlayer(pDestSurface);
 
+		//X. Debug draws, comment out when you want them to be visible
+		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::AIR);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::WALL);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::WATER);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND_AND_SHALLOW_WATER);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND_FORCE);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND_AND_SHALLOW_WATER_FORCE);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::AIR_FORCE);
+		//DebugDraw_Pathmap(pDestSurface, MovementType::WATER_FORCE);
+		//DebugDraw_MarkedTiles(pDestSurface);
+
 		//5a. Draw effects that go on top of monsters/swordsman.
 		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
@@ -9614,4 +9626,60 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	static const SURFACECOLOR ExpColor = {224, 160, 0};
 	for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+//*****************************************************************************
+//Draws on each tile which directions are blocked on the selected pathmap (draws them as tiny squares)
+void CRoomWidget::DebugDraw_MarkedTiles(SDL_Surface* pDestSurface) {
+	static const SURFACECOLOR Color = { 128, 255, 255 };
+	static const UINT CX_TILE = CBitmapManager::CX_TILE;
+	static const UINT CY_TILE = CBitmapManager::CY_TILE;
+
+	for (CCoordSet::const_iterator tile = CDbRoom::debugMarkedTiles.begin(); tile != CDbRoom::debugMarkedTiles.end(); ++tile) {
+		this->ShadeRect(pDestSurface, Color, tile->wX, tile->wY, 1, 1);
+		this->pTileImages[this->pRoom->ARRAYINDEX(tile->wX, tile->wY)].dirty = 1;
+	}
+}
+//*****************************************************************************
+//Draws on each tile which directions are blocked on the selected pathmap (draws them as tiny squares)
+void CRoomWidget::DebugDraw_Pathmap(SDL_Surface* pDestSurface, MovementType eType) {
+	static const SURFACECOLOR ColorWhite = { 255, 255, 255 };
+	static const SURFACECOLOR ColorBlack = { 0, 0, 0 };
+	static const UINT CX_TILE = CBitmapManager::CX_TILE;
+	static const UINT CY_TILE = CBitmapManager::CY_TILE;
+	static const UINT wNumNeighbors = 8;
+	static const int dxDir[wNumNeighbors] = { -1,  0,  1, -1,  1, -1,  0,  1 };
+	static const int dyDir[wNumNeighbors] = { -1, -1, -1,  0,  0,  1,  1,  1 };
+	static const UINT rdirmask[] = { DMASK_SE, DMASK_S, DMASK_SW, DMASK_E, DMASK_W, DMASK_NE, DMASK_N, DMASK_NW };
+
+	const CDbRoom* pRoom = this->GetRoom();
+	const CPathMap* pPathmap = pRoom->pPathMap[eType];
+
+	if (pPathmap == NULL)
+		return;
+
+	for (UINT wX = 0; wX < pRoom->wRoomCols; ++wX) {
+		for (UINT wY = 0; wY < pRoom->wRoomRows; ++wY) {
+			const SQUARE square = pPathmap->squares[pRoom->ARRAYINDEX(wX, wY)];
+
+			for (UINT wO = 0; wO < wNumNeighbors; wO++) {
+				if (square.eBlockedDirections & rdirmask[wO]) {
+					SDL_Rect src = MAKE_SDL_RECT(
+						this->GetX() + wX * CX_TILE + CX_TILE / 2 - 5 * dxDir[wO] - 3,
+						this->GetY() + wY * CY_TILE + CY_TILE / 2 - 5 * dyDir[wO] - 3,
+						4,
+						4
+					);
+					this->DrawRect(src, ColorBlack, pDestSurface);
+					src = MAKE_SDL_RECT(
+						this->GetX() + wX * CX_TILE + CX_TILE / 2 - 5 * dxDir[wO] - 2,
+						this->GetY() + wY * CY_TILE + CY_TILE / 2 - 5 * dyDir[wO] - 2,
+						2,
+						2
+					);
+					this->DrawRect(src, ColorWhite, pDestSurface);
+				}
+			}
+		}
+	}
 }
