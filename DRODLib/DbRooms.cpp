@@ -4408,7 +4408,7 @@ void CDbRoom::BurnFuseEvents(CCueEvents &CueEvents)
 	{
 		const UINT wX = fuse->wX;
 		const UINT wY = fuse->wY;
-		const UINT wTileNo = GetTSquare(wX,wY);
+		const UINT wTileNo = GetBottomTSquare(wX,wY);
 		ASSERT(bIsCombustibleItem(wTileNo) || wTileNo==T_EMPTY);
 		if (bIsCombustibleItem(wTileNo))
 		{
