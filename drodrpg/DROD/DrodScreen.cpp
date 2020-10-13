@@ -936,12 +936,12 @@ void CDrodScreen::EditGlobalVars(
 
 	SetCursor();
 
-	UINT itemID=0;
+	int itemID=0;
 	do {
 		const CEntranceSelectDialogWidget::BUTTONTYPE eButton =
 				(CEntranceSelectDialogWidget::BUTTONTYPE)pListBox->Display();
 		itemID = eButton == CEntranceSelectDialogWidget::OK ? pListBox->GetSelectedItem() : 0;
-		if (itemID)
+		if (itemID < 0)
 		{
 			//Change this variable's value.
 			WCHAR temp[16];
@@ -967,6 +967,46 @@ void CDrodScreen::EditGlobalVars(
 					pGame->ProcessCommand(CMD_SETVAR, Ignored, itemID, newVal);
 				} else {
 					st->setVar(ScriptVars::Predefined(itemID), newVal);
+				}
+
+				//Update value in widget list.
+				pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
+				pListBox->PopulateListBoxFromGlobalVars(*st);
+				if (pGame) {
+					pListBox->PopulateListBoxFromHoldVars(pGame);
+				}
+				pListBox->SelectItem(itemID);
+			}
+		} else if (itemID > 0 && pGame) {
+			CDbPackedVars& stats = pGame->stats;
+			char varID[10], varName[11] = "v";
+			//Get local hold var.
+			_itoa(itemID, varID, 10);
+			strcat(varName, varID);
+
+			UNPACKEDVARTYPE vType;
+			WSTRING wstrValue;
+			vType = stats.GetVarType(varName);
+
+			if (vType == UVT_int) {
+				int iVarValue = stats.GetVar(varName, (int)0);
+				wstrValue = std::to_wstring(iVarValue);
+			}
+			else {
+				wstrValue = stats.GetVar(varName, L"0");
+			}
+
+			const UINT tagNo = ShowTextInputMessage(MID_ChangeVarValuePrompt,
+				wstrValue);
+			if (tagNo == TAG_OK)
+			{
+				// Hold variables can be strings or integers
+				if (isWInteger(wstrValue.c_str())) {
+					int varValue = _Wtoi(wstrValue.c_str());
+					stats.SetVar(varName, varValue);
+				}
+				else {
+					stats.SetVar(varName, wstrValue.c_str());
 				}
 
 				//Update value in widget list.
