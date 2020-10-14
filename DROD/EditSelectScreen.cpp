@@ -703,6 +703,8 @@ void CEditSelectScreen::ResetSelectedHold()
 	delete this->pSelectedRoom;
 	this->pSelectedRoom = NULL;
 
+	this->selectedWorldMapID = 0;
+
 	GetLevelEntrancesInRoom(); //will clear list
 
 	//Clear widgets.
