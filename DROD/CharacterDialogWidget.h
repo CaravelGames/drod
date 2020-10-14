@@ -112,7 +112,7 @@ private:
 			CCharacterCommand* pCommand,
 			const UINT ifIndent, const UINT tabSize) const;
 	WSTRING GetEntranceName(CEditRoomScreen *pEditRoomScreen, UINT entranceID) const;
-	WSTRING GetGotoDestinationName(const COMMANDPTR_VECTOR& commands,
+	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
 		const CCharacterCommand& pCommand) const;
 	WSTRING GetWorldMapNameText(CEditRoomScreen *pEditRoomScreen, UINT worldMapID) const;
 

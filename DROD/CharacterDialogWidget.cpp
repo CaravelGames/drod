@@ -3828,16 +3828,20 @@ const
 			wstr += wszSpace;
 			wstr += wstrGoto;
 			wstr += wszSpace;
-			wstr += GetGotoDestinationName(commands, command);
+			AppendGotoDestination(wstr, commands, command);
 		}
 		break;
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_GotoIf:
 		{
-			wstr += wszQuote;
-			wstr += GetGotoDestinationName(commands, command);
-			wstr += wszQuote;
+			if ((int)command.x < 0) {
+				AppendGotoDestination(wstr, commands, command);
+			} else {
+				wstr += wszQuote;
+				AppendGotoDestination(wstr, commands, command);
+				wstr += wszQuote;
+			}
 		}
 		break;
 
@@ -4258,7 +4262,7 @@ const
 	return wstr;
 }
 
-WSTRING CCharacterDialogWidget::GetGotoDestinationName(
+void CCharacterDialogWidget::AppendGotoDestination(WSTRING& wstr,
 	const COMMANDPTR_VECTOR& commands, const CCharacterCommand& pCommand
 ) const
 {
@@ -4266,18 +4270,20 @@ WSTRING CCharacterDialogWidget::GetGotoDestinationName(
 	if (label < 0) {
 		switch (label) {
 		case ScriptFlag::GotoSmartType::PreviousIf:
-			return g_pTheDB->GetMessageText(MID_PreviousIf);
+			wstr += g_pTheDB->GetMessageText(MID_PreviousIf);
 		break;
 		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-			return g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip);
+			wstr += g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip);
 		break;
 		default:
-			return wszQuestionMark;
+			wstr += wszQuestionMark;
 		}
+
+		return;
 	}
 
 	const CCharacterCommand* pGotoCommand = GetCommandWithLabel(commands, label);
-	return pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+	wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
 }
 
 WSTRING CCharacterDialogWidget::GetWorldMapNameText(CEditRoomScreen *pEditRoomScreen, UINT worldMapID) const
@@ -7933,7 +7939,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	{
-		wstr += GetGotoDestinationName(commands, c);
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 
@@ -7944,7 +7950,7 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += pSpeech ? (const WCHAR*)(pSpeech->MessageText) : wszQuestionMark;
 		wstr += wszQuote;
 		wstr += wszComma;
-		wstr += GetGotoDestinationName(commands, c);
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 
