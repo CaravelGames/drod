@@ -703,6 +703,8 @@ void CEditSelectScreen::ResetSelectedHold()
 	delete this->pSelectedRoom;
 	this->pSelectedRoom = NULL;
 
+	this->selectedWorldMapID = 0;
+
 	GetLevelEntrancesInRoom(); //will clear list
 
 	//Clear widgets.
@@ -891,10 +893,12 @@ void CEditSelectScreen::OnClick(
 		break;
 
 		case TAG_SETIMAGE_WORLDMAP:
-			SetImageWorldMap();
-			this->pSelectedHold->Update();
-			DrawScaledWorldMapImage();
-			Paint();
+			if (ModifyHold()) {
+				SetImageWorldMap();
+				this->pSelectedHold->Update();
+				DrawScaledWorldMapImage();
+				Paint();
+			}
 		break;
 
 		case TAG_DELETE_WORLDMAP:
@@ -1437,10 +1441,16 @@ void CEditSelectScreen::OnSelectChange(
 		{
 			COptionButtonWidget *pButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 					GetWidget(TAG_SHOWEXITLEVEL));
-			ASSERT(this->pSelectedLevel);
-			this->pSelectedLevel->bIsRequired = pButton->IsChecked();
-			this->pSelectedLevel->Update();
-			this->pSelectedHold->Update();
+			if (!ModifyHold())
+			{
+				pButton->SetChecked(this->pSelectedLevel->bIsRequired);
+				pButton->Paint();
+			} else {
+				ASSERT(this->pSelectedLevel);
+				this->pSelectedLevel->bIsRequired = pButton->IsChecked();
+				this->pSelectedLevel->Update();
+				this->pSelectedHold->Update();
+			}
 		}
 		break;
 
@@ -1493,12 +1503,20 @@ void CEditSelectScreen::OnSelectChange(
 
 		case TAG_WORLDMAPDISPLAYLIST:
 		{
-			CListBoxWidget *pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
-					GetWidget(TAG_WORLDMAPDISPLAYLIST));
-			this->pSelectedHold->SetDisplayTypeForWorldMap(
-				this->pWorldMapListBoxWidget->GetSelectedItem(),
-				HoldWorldMap::DisplayType(pWorldMapDisplayListBox->GetSelectedItem()));
-			this->pSelectedHold->Update();
+			CListBoxWidget* pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
+				GetWidget(TAG_WORLDMAPDISPLAYLIST));
+			if (ModifyHold()) {
+				this->pSelectedHold->SetDisplayTypeForWorldMap(
+					this->pWorldMapListBoxWidget->GetSelectedItem(),
+					HoldWorldMap::DisplayType(pWorldMapDisplayListBox->GetSelectedItem()));
+				this->pSelectedHold->Update();
+			}
+			else {
+				pWorldMapDisplayListBox->SelectItem(
+					this->pSelectedHold->GetWorldMapDisplayType(pWorldMapDisplayListBox->GetSelectedItem())
+				);
+				pWorldMapDisplayListBox->Paint();
+			}
 		}
 		break;
 	}
