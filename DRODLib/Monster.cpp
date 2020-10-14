@@ -109,6 +109,7 @@ CMonster::CMonster(
 	, bWaitedOnHotFloorLastTurn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
+	, bSafeToDelete(true)
 {
 	if (pSetCurrentGame)
 		SetCurrentGame(pSetCurrentGame);

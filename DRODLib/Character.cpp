@@ -2286,6 +2286,9 @@ void CCharacter::Process(
 				//Deliver speech dialog.
 				if (!command.pSpeech)
 					break; //robustness check
+				//We set this flag to false because this character will be used for as long as the speech
+				//is not finished, so we don't want this object to be deleted next turn
+				this->bSafeToDelete = false;
 				CFiredCharacterCommand *pSpeech = new CFiredCharacterCommand(this, &command,
 					pGame->wTurnNo, this->dwScriptID, this->wCurrentCommandIndex);
 				pSpeech->text = pGame->ExpandText(
@@ -2396,28 +2399,33 @@ void CCharacter::Process(
 						//Stop script execution whether visible or not.
 						if (bChangeImperative)
 							this->wCurrentCommandIndex = this->commands.size();
-						if (this->bVisible && IsAlive())
+						if (IsAlive())
 						{
-							//NPC dies.
-							if (!bExecuteNoMoveCommands) {
-								if (!room.AddFallingMonsterEvent(CueEvents, this, room.GetOSquare(this->wX,this->wY)))
-									CueEvents.Add(CID_MonsterDiedFromStab, this);
-							}
-							if (bChangeImperative)
-							{
-								//Normal death behavior.
-								CCueEvents Ignored;
-								SetKillInfo(NO_ORIENTATION); //center stab effect
-								room.KillMonster(this, Ignored, true);
-								if (IsMissionCritical())
-									CriticalNPCDied(CueEvents);
-							} else {
-								//Special death behavior.
-								switch (GetResolvedIdentity())
+							if (!this->bVisible)
+								room.KillInvisibleCharacter(this);
+							else {
+								//NPC dies.
+								if (!bExecuteNoMoveCommands) {
+									if (!room.AddFallingMonsterEvent(CueEvents, this, room.GetOSquare(this->wX, this->wY)))
+										CueEvents.Add(CID_MonsterDiedFromStab, this);
+								}
+								if (bChangeImperative)
 								{
-									case M_ROCKGOLEM: case M_CONSTRUCT: this->wO = NO_ORIENTATION; break;
-									case M_FEGUNDO: TurnIntoMonster(CueEvents, true); break;
-									default: break;
+									//Normal death behavior.
+									CCueEvents Ignored;
+									SetKillInfo(NO_ORIENTATION); //center stab effect
+									room.KillMonster(this, Ignored, true);
+									if (IsMissionCritical())
+										CriticalNPCDied(CueEvents);
+								}
+								else {
+									//Special death behavior.
+									switch (GetResolvedIdentity())
+									{
+										case M_ROCKGOLEM: case M_CONSTRUCT: this->wO = NO_ORIENTATION; break;
+										case M_FEGUNDO: TurnIntoMonster(CueEvents, true); break;
+										default: break;
+									}
 								}
 							}
 						}
@@ -2548,6 +2556,10 @@ void CCharacter::Process(
 				//Remove character from any future play in the current game.
 				this->bScriptDone = true;
 				this->wCurrentCommandIndex = this->commands.size();
+
+				if (!this->bVisible) // Invisible ended characters should just be removed from the room
+					room.KillInvisibleCharacter(this);
+
 			goto Finish;
 			case CCharacterCommand::CC_EndScriptOnExit:
 				//Remove character from any future play in the current game once the room is exited.

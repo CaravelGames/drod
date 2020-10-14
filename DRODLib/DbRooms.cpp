@@ -3257,6 +3257,23 @@ bool CDbRoom::KillMonster(
 }
 
 //*****************************************************************************
+void CDbRoom::KillInvisibleCharacter(
+	//Kills an invisible character
+	//
+	//Params:
+	CCharacter* pCharacter) //(in) Character to be removed
+{
+	ASSERT(pCharacter);
+	ASSERT(!pCharacter->IsVisible());
+	ASSERT(pCharacter->IsAlive());
+
+	UnlinkMonster(pCharacter);
+	this->DeadMonsters.push_back(pCharacter);
+
+	pCharacter->bAlive = false;
+}
+
+//*****************************************************************************
 bool CDbRoom::KillMonsterAtSquare(
 //Kills a monster in a specified square.
 //Supports monsters occupying multiple squares.
@@ -8223,16 +8240,38 @@ void CDbRoom::RemoveMonsterFromLayer(CMonster *pMonster)
 }
 
 //*****************************************************************************
-void CDbRoom::ClearDeadMonsters()
+void CDbRoom::ClearDeadMonsters(
+	bool bOnlySafe) //(in) When true will only delete monsters that are marked as safe to delete
 //Frees memory and resets members for dead monster list.
 {
-	for (list<CMonster *>::const_iterator iSeek = this->DeadMonsters.begin();
+	if (bOnlySafe) {
+		// Not the most elegant solution but I think that as long as the loop's logic is this simple
+		// it's fine to leave it as-is
+		list<CMonster*> KeptDeadMonsters;
+		for (list<CMonster*>::const_iterator iSeek = this->DeadMonsters.begin();
+			iSeek != this->DeadMonsters.end(); ++iSeek)
+		{
+			CMonster *pDelete = *iSeek;
+			ASSERT(pDelete);
+			if (pDelete->bSafeToDelete)
+				delete pDelete;
+			else
+				KeptDeadMonsters.push_back(pDelete);
+		}
+
+		this->DeadMonsters.clear();
+		this->DeadMonsters.splice(KeptDeadMonsters.end(), KeptDeadMonsters);
+		return;
+	}
+
+	for (list<CMonster*>::const_iterator iSeek = this->DeadMonsters.begin();
 		iSeek != this->DeadMonsters.end(); ++iSeek)
 	{
 		CMonster *pDelete = *iSeek;
 		ASSERT(pDelete);
 		delete pDelete;
 	}
+	
 	this->DeadMonsters.clear();
 }
 

@@ -205,7 +205,7 @@ public:
 	void           ChangeTiles(const RoomTokenType tType);
 	void           CharactersCheckForCueEvents(CCueEvents &CueEvents);
 	void           CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEvents, bool bTrapdoorFell=false);
-	void           ClearDeadMonsters();
+	void           ClearDeadMonsters(bool bOnlySafe = false);
 	void           ClearDeadRoomObjects();
 	void           ClearMonsters(const bool bRetainNonConquerableMonsters=false);
 	void           ClearPlatforms();
@@ -374,6 +374,7 @@ public:
 			const bool bForce=false, const CEntity* pKillingEntity=NULL);
 	bool           KillMonsterAtSquare(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const bool bForce=false);
+	void           KillInvisibleCharacter(CCharacter* pCharacter);
 	void           LightFuse(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LightFuseEnd(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LinkMonster(CMonster *pMonster, const bool bInRoom=true, const bool bReverseRule=false);
