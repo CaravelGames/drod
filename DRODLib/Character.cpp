@@ -5363,31 +5363,24 @@ int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
 {
 	UINT wCommandIndex = this->wCurrentCommandIndex;
 	UINT wNestingDepth = 0;
-	bool bScanning = true;
 
-	do {
+	while (wCommandIndex > 0) {
 		--wCommandIndex;
-		if (wCommandIndex == -1) //No matching if found
-			break;
 
 		CCharacterCommand command = this->commands[wCommandIndex];
 		switch (command.command) {
 			case CCharacterCommand::CC_If:
 				if (wNestingDepth-- == 0)
-					bScanning = false; // Found start of if block
+					return wCommandIndex; // Found start of if block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
 				if (wNestingDepth == 0 && !bIgnoreElseIf)
-					bScanning = false; // Found start of else-if block
+					return wCommandIndex; // Found start of else-if block
 			break;
 			case CCharacterCommand::CC_IfEnd:
 				wNestingDepth++; // entering a nested if-block
 			break;
 		}
-	} while (bScanning);
-
-	if (!bScanning) {
-		return wCommandIndex;
 	}
 
 	return NO_LABEL;
@@ -5400,13 +5393,8 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 {
 	UINT wCommandIndex = this->wCurrentCommandIndex;
 	UINT wNestingDepth = 0;
-	bool bScanning = true;
 
-	do {
-		++wCommandIndex;
-		if (wCommandIndex == this->commands.size()) //No matching else found
-			break;
-
+	while (wCommandIndex < this->commands.size()) {
 		CCharacterCommand command = this->commands[wCommandIndex];
 		switch (command.command) {
 			case CCharacterCommand::CC_If:
@@ -5414,21 +5402,19 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 			break;
 			case CCharacterCommand::CC_IfElse:
 				if (wNestingDepth == 0)
-					bScanning = false; // Found start of else block
+					return wCommandIndex; // Found start of else block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
 				if (wNestingDepth == 0 && !bIgnoreElseIf)
-					bScanning = false; // Found start of else-if block
+					return wCommandIndex; // Found start of else-if block
 			break;
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestingDepth > 0)
 					wNestingDepth--; // exiting a nested if-block
 			break;
 		}
-	} while (bScanning);
 
-	if (!bScanning) {
-		return wCommandIndex;
+		++wCommandIndex;
 	}
 
 	return NO_LABEL;
