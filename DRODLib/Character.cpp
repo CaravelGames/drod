@@ -4697,7 +4697,12 @@ void CCharacter::SetCurrentGame(
 		{
 			case M_CITIZEN: case M_ARCHITECT:
 			case M_WUBBA:
-				SetImperative(ScriptFlag::Invulnerable);
+				behaviorFlags.insert(ScriptFlag::SwordDamageImmune);
+				behaviorFlags.insert(ScriptFlag::SpearDamageImmune);
+				behaviorFlags.insert(ScriptFlag::PickaxeDamageImmune);
+				behaviorFlags.insert(ScriptFlag::DaggerDamageImmune);
+				behaviorFlags.insert(ScriptFlag::CaberDamageImmune);
+				behaviorFlags.insert(ScriptFlag::FloorSpikeImmune);
 			break;
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: case M_GUNTHRO:
 			case M_CLONE:
