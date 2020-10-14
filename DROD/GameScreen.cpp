@@ -1869,7 +1869,7 @@ void CGameScreen::OnSelectChange(
 //
 
 //*****************************************************************************
-void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord)
+void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, const bool bIsCriticalNpc)
 //Adds an effect for a monster type getting damaged to the room.
 {
 	//If player stabs monster, center sound on player for nicer effect.
@@ -1907,6 +1907,8 @@ void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coo
 		default: seid = SEID_SPLAT;
 			break;
 	}
+	if (bIsCriticalNpc)
+		seid = SEID_SPLAT;
 	PlaySoundEffect(seid, this->fPos);
 
 	//Effect shown based on monster type.
@@ -3854,7 +3856,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const UINT wO = IsValidOrientation(pMonster->wKillInfo) ?
 				pMonster->wKillInfo : NO_ORIENTATION;
 		CMoveCoord coord(pMonster->wX,pMonster->wY,wO);
-		AddDamageEffect(pMonster->GetIdentity(), coord);
+		// Mission-critical NPCs should get the generic death sound, as they all have a personalized scream
+		const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+		AddDamageEffect(pMonster->GetIdentity(), coord, pCharacter && pCharacter->IsMissionCritical());
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Stun);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
