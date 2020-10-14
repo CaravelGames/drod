@@ -2785,7 +2785,8 @@ void CCharacter::Process(
 					else if (pw == CMD_CC)
 						pw = nNextCCO(this->wO);
 
-					pGame->AddNewEntity(CueEvents, identity, px, py, pw);
+					this->GenerateEntity(identity, px, py, pw, CueEvents);
+
 					CueEvents.Add(CID_NPCTypeChange);
 				}
 
@@ -4279,6 +4280,26 @@ bool CCharacter::IsOpenMove(const int dx, const int dy) const
 	return CMonster::IsOpenMove(dx,dy) &&
 		(!this->bSafeToPlayer || !this->pCurrentGame->IsPlayerAt(this->wX+dx, this->wY+dy));
 }
+
+//*****************************************************************************
+void CCharacter::GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents)
+{
+	CCurrentGame* pGame = (CCurrentGame*)this->pCurrentGame; //non-const
+	UINT wBaseIdentity = bEntityBaseIdentity(identity);
+
+	CMonster* pMonster = pGame->AddNewEntity(CueEvents, wBaseIdentity, wX, wY, wO);
+
+	if (pMonster)
+		switch (identity) {
+			case M_EYE_ACTIVE:
+				CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
+				pEvilEye->SetActive(true);
+				break;
+		}
+	
+}
+
+
 
 //*****************************************************************************
 bool CCharacter::IsTileObstacle(

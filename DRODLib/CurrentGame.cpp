@@ -203,7 +203,7 @@ WSTRING CCurrentGame::AbbrevRoomLocation()
 }
 
 //*****************************************************************************
-void CCurrentGame::AddNewEntity(
+CMonster* CCurrentGame::AddNewEntity(
 //Adds a new monster in the room of the indicated type.
 //
 //Params:
@@ -211,9 +211,9 @@ void CCurrentGame::AddNewEntity(
 	const UINT identity, const UINT wX, const UINT wY, const UINT wO)
 {
 	if (!IsValidOrientation(wO))
-		return; //invalid
+		return NULL; //invalid
 	if (bIsSerpentOrGentryii(identity) || identity == M_FEGUNDOASHES || identity == M_CHARACTER)
-		return; //not supported
+		return NULL; //not supported
 	if (IsValidMonsterType(identity))
 	{
 		CMonster *pMonster = this->pRoom->AddNewMonster(identity, wX, wY);
@@ -236,19 +236,19 @@ void CCurrentGame::AddNewEntity(
 		if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && pMonster->CanPressPressurePlates())
 			this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
 		this->pRoom->CreatePathMaps();
-		return;
+		return pMonster;
 	}
 
 	if (identity == M_NONE)
 	{
 		//Remove any entity occupying this tile.
 		this->pRoom->KillMonsterAtSquare(wX, wY, CueEvents, true);
-		return;
+		return NULL;
 	}
 
 	if (identity >= CUSTOM_CHARACTER_FIRST &&
 			!this->pHold->GetCharacter(identity))
-		return; //do nothing if this is an invalid custom character type
+		return NULL; //do nothing if this is an invalid custom character type
 
 	//Add NPC to the room.
 	CMonster *pNew = CMonsterFactory::GetNewMonster((MONSTERTYPE)M_CHARACTER);
@@ -276,7 +276,7 @@ void CCurrentGame::AddNewEntity(
 			//There is no default script for the NPC, so it would never appear.
 			//Just pretend it was never added to the room.
 			delete pCharacter;
-			return;
+			return NULL;
 		}
 
 		pCharacter->bVisible = false;
@@ -312,6 +312,8 @@ void CCurrentGame::AddNewEntity(
 
 		SetExecuteNoMoveCommands(bExec);
 	}
+
+	return pCharacter;
 }
 
 //*****************************************************************************

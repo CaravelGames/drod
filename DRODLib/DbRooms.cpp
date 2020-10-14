@@ -39,6 +39,7 @@
 #include "DbData.h"
 #include "DbProps.h"
 #include "Character.h"
+#include "EvilEye.h"
 #include "Gentryii.h"
 #include "MonsterPiece.h"
 #include "PlayerDouble.h"
@@ -3790,6 +3791,8 @@ const
 	//Check each square for a monster (or monster piece).
 	CMonster **pMonsters;
 
+	const UINT wBaseType = bEntityBaseIdentity(wType);
+
 	ASSERT(wRight < this->wRoomCols && wBottom < this->wRoomRows);
 	for (UINT y=wTop; y<=wBottom; ++y)
 	{
@@ -3798,8 +3801,20 @@ const
 		{
 			if (*pMonsters && (*pMonsters)->IsAlive())
 			{
-				if ((*pMonsters)->wType == wType)
-					return true;
+				if ((*pMonsters)->wType == wBaseType) {
+					if (wBaseType == wType)
+						return true;
+
+					switch(wType) {
+						case M_EYE_ACTIVE:
+						{
+							const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, (*pMonsters));
+							if (pEvilEye->IsAggressive())
+								return true;
+						}
+					}
+				}
+
 				if ((*pMonsters)->wType == M_CHARACTER && bConsiderNPCIdentity)
 				{
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, *pMonsters);

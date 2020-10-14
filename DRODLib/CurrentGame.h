@@ -173,7 +173,7 @@ public:
 	}
 
 	WSTRING  AbbrevRoomLocation();
-	void     AddNewEntity(CCueEvents& CueEvents, const UINT identity,
+	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
 	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 			const bool bUseCurrentTurnNo=true);
