@@ -5338,20 +5338,20 @@ int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 	} else if (label < 0) {
 		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
 		switch (eGotoType) {
-		case ScriptFlag::GotoSmartType::PreviousIf:
-			return GetIndexOfPreviousIf(true);
-		break;
-		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-		{
-			int wIndex = GetIndexOfNextElse(false);
-			if (wIndex != NO_LABEL) {
-				return wIndex + 2;
+			case ScriptFlag::GotoSmartType::PreviousIf:
+				return GetIndexOfPreviousIf(true);
+			break;
+			case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			{
+				int wIndex = GetIndexOfNextElse(false);
+				if (wIndex != NO_LABEL) {
+					return wIndex + 2;
+				}
 			}
-		}
-		break;
-		default:
-			return NO_LABEL;
-		break;
+			break;
+			default:
+				return NO_LABEL;
+			break;
 		}
 	}
 	return NO_LABEL;
@@ -5372,16 +5372,16 @@ int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
 
 		CCharacterCommand command = this->commands[wCommandIndex];
 		switch (command.command) {
-		case CCharacterCommand::CC_If:
-			if (wNestingDepth-- == 0)
-				bScanning = false; // Found start of if block
+			case CCharacterCommand::CC_If:
+				if (wNestingDepth-- == 0)
+					bScanning = false; // Found start of if block
 			break;
-		case CCharacterCommand::CC_IfElseIf:
-			if (wNestingDepth == 0 && !bIgnoreElseIf)
-				bScanning = false; // Found start of else-if block
+			case CCharacterCommand::CC_IfElseIf:
+				if (wNestingDepth == 0 && !bIgnoreElseIf)
+					bScanning = false; // Found start of else-if block
 			break;
-		case CCharacterCommand::CC_IfEnd:
-			wNestingDepth++; // entering a nested if-block
+			case CCharacterCommand::CC_IfEnd:
+				wNestingDepth++; // entering a nested if-block
 			break;
 		}
 	} while (bScanning);
@@ -5409,20 +5409,20 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 
 		CCharacterCommand command = this->commands[wCommandIndex];
 		switch (command.command) {
-		case CCharacterCommand::CC_If:
-			wNestingDepth++; // entering a nested if-block
+			case CCharacterCommand::CC_If:
+				wNestingDepth++; // entering a nested if-block
 			break;
-		case CCharacterCommand::CC_IfElse:
-			if (wNestingDepth == 0)
-				bScanning = false; // Found start of else block
+			case CCharacterCommand::CC_IfElse:
+				if (wNestingDepth == 0)
+					bScanning = false; // Found start of else block
 			break;
-		case CCharacterCommand::CC_IfElseIf:
-			if (wNestingDepth == 0 && !bIgnoreElseIf)
-				bScanning = false; // Found start of else-if block
+			case CCharacterCommand::CC_IfElseIf:
+				if (wNestingDepth == 0 && !bIgnoreElseIf)
+					bScanning = false; // Found start of else-if block
 			break;
-		case CCharacterCommand::CC_IfEnd:
-			if (wNestingDepth > 0)
-				wNestingDepth--; // exiting a nested if-block
+			case CCharacterCommand::CC_IfEnd:
+				if (wNestingDepth > 0)
+					wNestingDepth--; // exiting a nested if-block
 			break;
 		}
 	} while (bScanning);
