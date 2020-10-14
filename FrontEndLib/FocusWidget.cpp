@@ -69,7 +69,7 @@ void CFocusWidget::Unselect(
 	const bool bPaint)   //(in) whether to repaint widget
 {
 	this->bSelected = false;
-	if (bPaint && IsVisible())
+	if (bPaint && IsVisible(true))
 		RequestPaint();
 }
 

@@ -685,6 +685,20 @@ const
 }
 
 //***************************************************************************
+void CWidget::Show(const bool bFlag)
+{
+	this->bIsVisible = bFlag;
+	if (!bFlag)
+		this->Hide(false);
+}
+
+//***************************************************************************
+void CWidget::Hide(const bool /*bPaint*/)
+{
+	this->bIsVisible = false;
+}
+
+//***************************************************************************
 void CWidget::HideChildren()
 //Hides all children of this widget, but not the widget itself.  If you wish
 //to hide both, simply call Hide().
@@ -746,6 +760,20 @@ const
 	return (nX >= this->x + nOffsetX && nY >= this->y + nOffsetY &&
 			nX < this->x + nOffsetX + static_cast<int>(this->w) && nY < this->y +
 			nOffsetY + static_cast<int>(this->h));
+}
+
+//*****************************************************************************
+bool CWidget::IsVisible(
+	// Is this widget visible?
+	const bool bInParent // Also check if all the parents are visible
+) const {
+	if (bInParent) {
+		for (CWidget* pParent = this->pParent; pParent != NULL; pParent = pParent->pParent)
+			if (!pParent->IsVisible())
+				return false;
+	}
+
+	return this->bIsVisible;
 }
 
 //*****************************************************************************
