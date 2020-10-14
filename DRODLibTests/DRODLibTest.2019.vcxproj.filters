@@ -180,6 +180,9 @@
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp">
       <Filter>Tests\Player\Bugs</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

@@ -2708,7 +2708,7 @@ void CCharacter::Process(
 					//the player's weapon state matches the specified parameter value.
 					if (bArm) {
 						if (command.x == (UINT)WT_Off) {
-							if (!player.bWeaponOff)
+							if (!player.bWeaponOff && !player.bNoWeapon)
 								STOP_COMMAND;
 						} else {
 							if (player.bWeaponOff)
