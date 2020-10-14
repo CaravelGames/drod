@@ -372,7 +372,7 @@ public:
 	UINT        GetW() const {return this->w;}
 	UINT        GetH() const {return this->h;}
 
-	virtual void   Hide(const bool /*bPaint*/ = true);
+	virtual void   Hide(const bool bPaint = true);
 	void        HideChildren();
 	bool        IsActive() const {return IsEnabled() && IsVisible();}
 	bool        IsEnabled() const {return bIsEnabled;}

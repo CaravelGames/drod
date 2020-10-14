@@ -689,11 +689,11 @@ void CWidget::Show(const bool bFlag)
 {
 	this->bIsVisible = bFlag;
 	if (!bFlag)
-		this->Hide(false);
+		Hide(false);
 }
 
 //***************************************************************************
-void CWidget::Hide(const bool /*bPaint*/)
+void CWidget::Hide(const bool bPaint)
 {
 	this->bIsVisible = false;
 }

@@ -1503,12 +1503,20 @@ void CEditSelectScreen::OnSelectChange(
 
 		case TAG_WORLDMAPDISPLAYLIST:
 		{
-			CListBoxWidget *pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
-					GetWidget(TAG_WORLDMAPDISPLAYLIST));
-			this->pSelectedHold->SetDisplayTypeForWorldMap(
-				this->pWorldMapListBoxWidget->GetSelectedItem(),
-				HoldWorldMap::DisplayType(pWorldMapDisplayListBox->GetSelectedItem()));
-			this->pSelectedHold->Update();
+			CListBoxWidget* pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
+				GetWidget(TAG_WORLDMAPDISPLAYLIST));
+			if (ModifyHold()) {
+				this->pSelectedHold->SetDisplayTypeForWorldMap(
+					this->pWorldMapListBoxWidget->GetSelectedItem(),
+					HoldWorldMap::DisplayType(pWorldMapDisplayListBox->GetSelectedItem()));
+				this->pSelectedHold->Update();
+			}
+			else {
+				pWorldMapDisplayListBox->SelectItem(
+					this->pSelectedHold->GetWorldMapDisplayType(pWorldMapDisplayListBox->GetSelectedItem())
+				);
+				pWorldMapDisplayListBox->Paint();
+			}
 		}
 		break;
 	}
