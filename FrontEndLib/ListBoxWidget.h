@@ -112,6 +112,7 @@ public:
 	virtual void   Paint(bool bUpdateRect = true);
 	bool           RemoveItem(const UINT dwKey);
 	bool           RemoveItem(const void* pKey);
+	bool           RemoveItems(const CIDSet& keys);
 	void           SelectAllLines();
 	void           SelectItem(const UINT dwKey, const bool bRetainSelections=false);
 	void           SelectItems(const CIDSet& keys, bool bRetainSelections=false);
