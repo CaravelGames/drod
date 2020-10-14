@@ -893,10 +893,12 @@ void CEditSelectScreen::OnClick(
 		break;
 
 		case TAG_SETIMAGE_WORLDMAP:
-			SetImageWorldMap();
-			this->pSelectedHold->Update();
-			DrawScaledWorldMapImage();
-			Paint();
+			if (ModifyHold()) {
+				SetImageWorldMap();
+				this->pSelectedHold->Update();
+				DrawScaledWorldMapImage();
+				Paint();
+			}
 		break;
 
 		case TAG_DELETE_WORLDMAP:
