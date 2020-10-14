@@ -1437,10 +1437,16 @@ void CEditSelectScreen::OnSelectChange(
 		{
 			COptionButtonWidget *pButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 					GetWidget(TAG_SHOWEXITLEVEL));
-			ASSERT(this->pSelectedLevel);
-			this->pSelectedLevel->bIsRequired = pButton->IsChecked();
-			this->pSelectedLevel->Update();
-			this->pSelectedHold->Update();
+			if (!ModifyHold())
+			{
+				pButton->SetChecked(this->pSelectedLevel->bIsRequired);
+				pButton->Paint();
+			} else {
+				ASSERT(this->pSelectedLevel);
+				this->pSelectedLevel->bIsRequired = pButton->IsChecked();
+				this->pSelectedLevel->Update();
+				this->pSelectedHold->Update();
+			}
 		}
 		break;
 
