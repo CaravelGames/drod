@@ -295,6 +295,7 @@
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
     <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
