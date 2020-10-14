@@ -737,8 +737,12 @@ bool CCharacter::ResetLevelExits()
 bool CCharacter::OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/, const UINT /*wY*/, WeaponType weaponType)
 //Returns: whether character was killed
 {
+	const bool bIsPushableSafe = this->bPushableByWeapon
+		&& weaponType != WT_Firetrap
+		&& weaponType != WT_FloorSpikes
+		&& weaponType != WT_HotTile;
 	if (this->eImperative == ScriptFlag::Invulnerable || 
-			(this->bPushableByWeapon && weaponType != WT_Firetrap && weaponType != WT_FloorSpikes) ||
+			bIsPushableSafe ||
 			this->IsImmuneToWeapon(weaponType))
 		return false;
 
