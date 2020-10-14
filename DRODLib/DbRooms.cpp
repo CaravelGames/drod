@@ -2225,7 +2225,7 @@ void CDbRoom::ResetMonsterFirstTurnFlags()
 }
 
 //*****************************************************************************
-bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents)
+bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, const bool bProcessMove, CCueEvents &CueEvents)
 //Create a new global script character at (0,0)
 //
 //Returns: True if successful, false if not.
@@ -2261,10 +2261,12 @@ bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents)
 	//Make sure that the current list of Global Scripts includes this ID
 	this->pCurrentGame->GlobalScriptsRunning += dwCharID;
 
-	const bool bExec = this->pCurrentGame->ExecutingNoMoveCommands();
-	this->pCurrentGame->SetExecuteNoMoveCommands();
-	pCharacter->Process(CMD_WAIT, CueEvents);
-	this->pCurrentGame->SetExecuteNoMoveCommands(bExec);
+	if (bProcessMove) {
+		const bool bExec = this->pCurrentGame->ExecutingNoMoveCommands();
+		this->pCurrentGame->SetExecuteNoMoveCommands();
+		pCharacter->Process(CMD_WAIT, CueEvents);
+		this->pCurrentGame->SetExecuteNoMoveCommands(bExec);
+	}
 
 	return true;
 }
@@ -2280,7 +2282,7 @@ void CDbRoom::AddRunningGlobalScripts(CCueEvents &CueEvents)
 
 	for (CIDSet::const_iterator c = this->pCurrentGame->GlobalScriptsRunning.begin();
 			c != this->pCurrentGame->GlobalScriptsRunning.end(); ++c)
-		if (!AddNewGlobalScript(*c, CueEvents))
+		if (!AddNewGlobalScript(*c, false, CueEvents))
 			BrokenGlobalScripts += *c;
 
 	this->pCurrentGame->GlobalScriptsRunning -= BrokenGlobalScripts;
