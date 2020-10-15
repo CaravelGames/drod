@@ -88,8 +88,8 @@ bool CTemporalMoveEffect::Draw(SDL_Surface* pDestSurface)
 		pDestSurface = GetDestSurface();
 
 	const float percent = (dwElapsed - this->startDelay) / float(this->dwDuration);
-	const float transparencyPercent = percent > 0.5
-		? (percent - 0.5) * 2
+	const float transparencyPercent = percent > 0.5f
+		? (percent - 0.5f) * 2
 		: 0;
 	const float positionPercent = (this->isBump && percent > 0.5)
 		? 1 - percent // Bump commands should look differently

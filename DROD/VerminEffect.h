@@ -61,6 +61,7 @@ public:
 	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
 
 private:
+	void MarkVerminInactive(const UINT wIndex);
 	bool OutOfBounds(const VERMIN &v) const;
 	bool HitsObstacle(const CDbRoom *pRoom, const VERMIN &v) const;
 	void UpdateDirection(VERMIN &v);
