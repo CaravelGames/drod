@@ -1194,7 +1194,9 @@ const
 		case T_SEEP:
 			//Wall movement types
 			if (bSwordsmanAt) return false;
-			if (bIsTarOrFluff(wTileNo[1])) return false;
+			if (bIsTLayerObstacle(wTileNo[1])) return false;
+			if (bIsTLayerCoveringItem(wTileNo[1])) return false;
+			if (bIsBeacon(wTileNo[1])) return false;
 			return bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsDoor(wTileNo[0]);
 
 		case T_WATERSKIPPER:
