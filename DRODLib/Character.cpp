@@ -5345,7 +5345,10 @@ int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 			{
 				int wIndex = GetIndexOfNextElse(false);
 				if (wIndex != NO_LABEL) {
-					return wIndex + 2;
+					if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
+						return wIndex + 2;
+
+					return wIndex + 1;
 				}
 			}
 			break;
