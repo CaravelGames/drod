@@ -512,8 +512,9 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance
 #define T_NOMONSTER           (TOTAL_TILE_COUNT + 1)  //for erasing monsters only
 #define T_EMPTY_F             (TOTAL_TILE_COUNT + 2)  //for erasing f-layer objects only
+#define T_GENTRYII_CHAIN      (TOTAL_TILE_COUNT + 3)  //for having different placement rules than gentryii head
 
-#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 3)
+#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 4)
 
 enum TILELAYERS {
 	LAYER_OPAQUE = 0,
@@ -685,7 +686,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
-	LAYER_FLOOR  //T_EMPTY_F       TOTAL+2
+	LAYER_FLOOR,   //T_EMPTY_F       TOTAL+2
+	LAYER_MONSTER  //T_NOMONSTER     TOTAL+3
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =

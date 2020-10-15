@@ -4916,7 +4916,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		wY = it->wY;
 		const bool bPlotOverMonsterLayer = overwritable_coords.has(wX, wY) ||
 					!this->pRoom->GetMonsterAtSquare(wX,wY);
-		if (!bPlotOverMonsterLayer || !pRW->IsSafePlacement(T_GENTRYII,wX,wY))
+		if (!bPlotOverMonsterLayer || !pRW->IsSafePlacement(T_GENTRYII_CHAIN,wX,wY))
 			return PLOT_NOTHING;
 
 		if (this->pRoom->DoesGentryiiPreventDiagonal(wPrevX, wPrevY, wX, wY))
@@ -7418,9 +7418,13 @@ void CEditRoomScreen::ShowErrors()
 				AddShadeToTile(Red);
 			else if (!this->pRoomWidget->IsSafePlacement(wTileNo[1], wX, wY, NO_ORIENTATION, true))
 				AddShadeToTile(Red);
-			else if (pMonster)
-				if (!this->pRoomWidget->IsSafePlacement(wTileNo[2], wX, wY, NO_ORIENTATION, true))
+			else if (pMonster) {
+				UINT wType = wTileNo[2];
+				if (pMonster->wType == M_GENTRYII && pMonster->IsPiece())
+					wType = T_GENTRYII_CHAIN;
+				if (!this->pRoomWidget->IsSafePlacement(wType, wX, wY, NO_ORIENTATION, true))
 					AddShadeToTile(Red);
+			}
 
 			//Check for rules on specific objects.
 			switch (wTileNo[0])
