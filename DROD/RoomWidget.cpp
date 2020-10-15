@@ -6436,6 +6436,14 @@ void CRoomWidget::AnimateMonster(CMonster* pMonster)
 
 	this->pTileImages[this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY)].dirty = 1;
 
+	// Also dirty the tile with the weapon, to ensure it's properly redrawn
+	const CArmedMonster* pArmedMonster = dynamic_cast<CArmedMonster*>(pMonster);
+	if (pArmedMonster
+		&& pArmedMonster->HasSword()
+		&& this->pRoom->IsValidColRow(pArmedMonster->GetWeaponX(), pArmedMonster->GetWeaponY())
+	)
+		this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->GetWeaponX(), pArmedMonster->GetWeaponY())].dirty = 1;
+
 	//Redraw all changing parts of large monsters.
 	if (pMonster->IsLongMonster() && !bIsSerpentOrGentryii(pMonster->wType))
 	{
