@@ -5739,6 +5739,13 @@ void CRoomWidget::AnimateMonster(CMonster* pMonster)
 {
 	AdvanceAnimationFrame(pMonster->wX, pMonster->wY);
 	this->pTileImages[this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY)].dirty = 1;
+
+	// Also dirty any tile with a weapon, to ensure it's properly redrawn
+	const CPlayerDouble* pDouble = dynamic_cast<CPlayerDouble*>(pMonster);
+	if (pDouble && pDouble->HasSword()
+			&& this->pRoom->IsValidColRow(pDouble->GetSwordX(), pDouble->GetSwordY()))
+		this->pTileImages[this->pRoom->ARRAYINDEX(pDouble->GetSwordX(), pDouble->GetSwordY())].dirty = 1;
+
 	//Redraw all changing parts of large monsters.
 	if (!bIsSerpent(pMonster->wType) && pMonster->IsLongMonster())
 	{
@@ -6965,72 +6972,6 @@ void CRoomWidget::DrawSwordFor(
 	DrawTileImage(wMSwordX, wMSwordY, wXOffset, wYOffset,
 			wSwordTI, bDrawRaised, pDestSurface, bMoveInProgress, nOpacity, bClipped, nColor);
 }
-
-//*****************************************************************************
-/*
-void CRoomWidget::DrawDoubleCursor(
-//Draws a double cursor to a specified square of the room.
-//
-//Params:
-	const UINT wCol, const UINT wRow,      //(in)   Destination square coords.
-	SDL_Surface *pDestSurface) //(in)   Surface to draw to.
-{
-	ASSERT(IS_COLROW_IN_DISP(wCol, wRow));
-	ASSERT(this->pCurrentGame);
-
-	const int xPixel = this->x + wCol * CX_TILE;
-	const int yPixel = this->y + wRow * CY_TILE;
-	const bool bObstacle = this->pRoom->
-			DoesSquareContainDoublePlacementObstacle(wCol, wRow);
-
-	//Draw cursor.
-	//Animate mimic cursor movement.
-	static UINT wPrevCol = wCol, wPrevRow = wRow;
-	if (!this->dwMovementStepsLeft || this->bFinishLastMovementNow)
-	{
-		wPrevCol = wCol;
-		wPrevRow = wRow;
-	}
-
-	//Show illegal placement tile.
-	if (bObstacle)
-	{
-		g_pTheBM->ShadeTile(xPixel,yPixel,Red,GetDestSurface());
-	} else {
-		//Fade in and out.
-		static Uint8 nOpacity = 160;
-		static bool bFadeIn = false;
-		if (nOpacity < 35)   //don't make too faint
-			bFadeIn = true;
-		else if (nOpacity > 180)   //don't make too dark
-			bFadeIn = false;
-		if (bFadeIn)
-			nOpacity += 7;
-		else
-			nOpacity -= 5;
-
-		//This double is disconnected from the current game.
-		CPlayerDouble Double(this->pCurrentGame->swordsman.wPlacingDoubleType);
-		Double.wO = this->pCurrentGame->swordsman.wO;
-		Double.wX = wCol;
-		Double.wY = wRow;
-		Double.wPrevX = wPrevCol;
-		Double.wPrevY = wPrevRow;
-		DrawDouble(&Double, true, pDestSurface, true, nOpacity);
-	}
-
-	//Draw bolt from swordsman to cursor.
-	static const UINT CX_TILE_HALF = CX_TILE / 2;
-	static const UINT CY_TILE_HALF = CY_TILE / 2;
-	const UINT wSX = this->pCurrentGame->swordsman.wX; //always use player's actual position, since he's the only one who can place doubles
-	const UINT wSY = this->pCurrentGame->swordsman.wY;
-	const int xS = this->x + wSX * CX_TILE + CX_TILE_HALF;
-	const int yS = this->y + wSY * CY_TILE + CY_TILE_HALF;
-	const int xC = xPixel + CX_TILE_HALF;
-	const int yC = yPixel + CY_TILE_HALF;
-	DrawBoltInRoom(xS, yS, xC, yC);
-}
-*/
 
 //*****************************************************************************************
 void CRoomWidget::DrawSerpent(
