@@ -269,7 +269,14 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 	{
 		//If the build tile would fill a square, the tile must be vacant now.
 		CMonster *pMonster = room.GetMonsterAtSquare(x, y);
-		if (pMonster || (pCurrentGame->swordsman.wX == x &&
+		// Allow building walls on top of Gentryii chain
+		const bool bIsGentryiiChainBuildable = pMonster
+			&& pMonster->wType == M_GENTRYII
+			&& pMonster->IsPiece()
+			&& (bIsWall(baseTile) || bIsCrumblyWall(baseTile));
+
+		const bool bMonsterBlocksBuild = pMonster && !bIsGentryiiChainBuildable;
+		if (bMonsterBlocksBuild || (pCurrentGame->swordsman.wX == x &&
 			pCurrentGame->swordsman.wY == y))
 		{
 			//Build tile is occupied and invalid.
