@@ -7106,6 +7106,16 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 {
 	if (this->wSelectedObject != wObject)
 	{
+		// Finish long-monster placement, otherwise we will lose our changes...
+		if (this->eState == ES_LONGMONSTER) {
+			const bool bIsOldTileSerpent = (this->wSelectedObject == T_SERPENT || this->wSelectedObject == T_SERPENTB || this->wSelectedObject == T_SERPENTG);
+			const bool bIsNewTileSerpent = (wObject == T_SERPENT || wObject == T_SERPENTB || wObject == T_SERPENTG);
+
+			// ... but changing serpent type will not make us lose changes so do nothing
+			if (!bIsOldTileSerpent || !bIsNewTileSerpent)
+				VERIFY(SetState(ES_PLACING));
+		}
+
 		RemoveToolTip();
 		this->dwLastMouseMove = SDL_GetTicks();
 
