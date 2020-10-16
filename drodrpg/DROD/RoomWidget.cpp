@@ -2848,6 +2848,9 @@ void CRoomWidget::RenderRoomInPlay(
 }
 
 //*****************************************************************************
+//Calculate lighting for a source originating from the player's position.
+//This is done by caching lighting information in a buffer,
+//then adding this buffer's info to the overall lighting to be displayed in the room.
 void CRoomWidget::RenderPlayerLight()
 {
 	//Reset entity tile lighting from last render.
@@ -2917,6 +2920,12 @@ void CRoomWidget::RenderPlayerLight()
 }
 
 //*****************************************************************************
+// Determine a cartesian coordinate position for an entity light source and cast it.
+//
+// Calculates lighting from player's light source onto the respective data structures,
+// for subsequent display in the room.
+//
+// Pre-condition: player light vars are clear
 void CRoomWidget::PropagatePlayerLight()
 {
 	CEntity *pEntity = GetLightholder();
@@ -7004,51 +7013,29 @@ void CRoomWidget::DrawSerpent(
 }
 
 //*****************************************************************************
-/*
-void CRoomWidget::DrawSlayerWisp(
-//Draw the wisp coming off of the Slayer.
-//
-//Params:
-	const CPlayerDouble *pDouble,
-	SDL_Surface *pDestSurface)
-{
-	static const UINT NUM_WISP_FRAMES = 4;
-	static const UINT wispFrame[NUM_WISP_FRAMES] = {
-		TI_WISP1, TI_WISP2, TI_WISP3, TI_WISP4
-	};
-
-	for (MonsterPieces::const_iterator piece = pDouble->Pieces.begin();
-			piece != pDouble->Pieces.end(); ++piece)
-	{
-		CMonsterPiece *pPiece = *piece;
-		ASSERT(this->pRoom->IsValidColRow(pPiece->wX, pPiece->wY));
-
-		//Animate each piece.
-		if (!pPiece->wTileNo)
-			pPiece->wTileNo = 1 + RAND(NUM_WISP_FRAMES);
-		if (this->bNextWispFrame)
-		{
-			if (++pPiece->wTileNo > NUM_WISP_FRAMES)
-				pPiece->wTileNo = 1;
-		}
-
-		ASSERT(pPiece->wTileNo-1 < NUM_WISP_FRAMES);
-		DrawTileImage(pPiece->wX, pPiece->wY, 0, 0, wispFrame[pPiece->wTileNo-1],
-				false, pDestSurface,	false);
-
-		//Must erase tile next frame.
-		this->pTileImages[this->pRoom->ARRAYINDEX(pPiece->wX, pPiece->wY)].dirty = 1;
-	}
-}
-*/
-
-//*****************************************************************************
-void CRoomWidget::CastLightOnTile(
 //Determines how far light will be cast and what intensity it has at this square.
 //If distance limit has not been reached, then light continues from square (wX,wY),
 //according to direction light is being cast.
 //
-//Params:
+//As a performance optimization, objects casting shadow (based on room tile types)
+//are considered and tileLight is populated with annotations of where shadows fall,
+//as follows:
+//
+//L_Dark: Where a room tile creates a full occlusion of more distant tiles in
+//a given direction, evaluation of more distant tiles can be skipped because
+//this light will not fall anywhere on them.
+//
+//L_Light: Where no occlusion occurs, the 3-D room geometry does not need to
+//be consulted to determine which parts of the tile this light shines on.
+//
+//L_Partial: When there is a partial occlusion, then the 3-D model needs to be
+//consulated for potential intersections as multiple rays are cast from the
+//light source to points on the tile (called "supersampling" below). Light
+//is only added at points where no intersection from source to destination is found.
+//
+//The amount of light cast onto this tile is noted, to propagate this information
+//to subsequent tiles processed further along this direction from the source.
+void CRoomWidget::CastLightOnTile(
 	const UINT wX, const UINT wY,    //(in) square to place light effect
 	const PointLightObject& light,   //(in) light source
 	const bool bGeometry)     //if true (default), take room geometry into account, otherwise ignore
@@ -7648,8 +7635,15 @@ void CRoomWidget::modelVertTileface(
 }
 
 //*****************************************************************************
-//Radiate out a light source onto the room tiles from its given position in the room,
-//taking room geometry into account.
+//Radiate out a light source onto the room tiles from its given position
+//in the room, taking room geometry into account to identify areas of shadow.
+//
+//This is performed by casting light rays, first onto the tile where the light source
+//originates, and then into each of the four cartesian quadrants in sequence.
+//Each quadrant is processed distinctly, building a 3-D model
+//of that area of the room only (for efficiency in applying the model)
+//and then casting shadow rays to each tile of the area to determine where light
+//shines and where shadow falls.
 void CRoomWidget::PropagateLight(
 	const float fSX, const float fSY, const UINT tParam,
 	const bool bCenterOnTile) //[default=true]
@@ -7813,8 +7807,12 @@ void CRoomWidget::ResetUserLightsource()
 }
 
 //*****************************************************************************
+//Generate 3-D model of specified room area
+//  (i.e. simple geometry of obstructing surfaces, like walls and orbs).
+//This model is subsequently used to assess where shadows are cast,
+//by checking for intersections of rays from the source to destination points
+//with the room geometry.
 void CRoomWidget::RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2)
-//Generate 3d model of room area (i.e. simple obstructing surfaces, like walls and spheres).
 {
 	int nMinX = min(nX1,nX2), nMinY = min(nY1,nY2);
 	int nMaxX = max(nX1,nX2), nMaxY = max(nY1,nY2);

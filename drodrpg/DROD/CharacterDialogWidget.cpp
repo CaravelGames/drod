@@ -493,6 +493,8 @@ bool CCharacterDialogWidget::RenameCharacter()
 		return false;
 	ASSERT(!wstr.empty());
 
+	SanitizeSingleLineString(wstr);
+
 	if (!pEditRoomScreen->pHold->RenameCharacter(charID, wstr))
 	{
 		pEditRoomScreen->ShowOkMessage(MID_CharNameDuplicationError);
@@ -1677,7 +1679,10 @@ void CCharacterDialogWidget::AddCustomCharacter()
 	const WCHAR *pCharName = this->pCharNameText->GetText();
 	ASSERT(WCSlen(pCharName) > 0);
 
-	const UINT dwNewCharID = pEditRoomScreen->pHold->AddCharacter(pCharName);
+	WSTRING charName(pCharName);
+	SanitizeSingleLineString(charName);
+
+	const UINT dwNewCharID = pEditRoomScreen->pHold->AddCharacter(charName.c_str());
 	if (!dwNewCharID)
 		pEditRoomScreen->ShowOkMessage(MID_CharNameDuplicationError);
 	else {
@@ -3569,26 +3574,28 @@ const
 		case CCharacterCommand::CC_AmbientSound:
 		case CCharacterCommand::CC_AmbientSoundAt:
 		case CCharacterCommand::CC_Autosave:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_EndScript:
-		case CCharacterCommand::CC_EndScriptOnExit:
-		case CCharacterCommand::CC_FlushSpeech:
-		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EndScript:
+		case CCharacterCommand::CC_EndScriptOnExit:
+		case CCharacterCommand::CC_Equipment:
+		case CCharacterCommand::CC_FlushSpeech:
+		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
 		case CCharacterCommand::CC_LevelEntrance:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_ScoreCheckpoint:
 		case CCharacterCommand::CC_SetMusic:
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
-		case CCharacterCommand::CC_Equipment:
 			if (bIfCondition)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
