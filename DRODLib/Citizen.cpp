@@ -301,6 +301,12 @@ void CCitizen::BuildTile(CCueEvents& CueEvents)
 
 	if (BuildUtil::BuildTileAt(room, wBuildTile, this->goal.wX, this->goal.wY, true, CueEvents)){
 		this->bHasSupply = false;
+		if (wBuildTile == T_STATION && this->wType == M_CITIZEN) {
+			// When a citizen builds a station, the station inherits its group
+			room.SetTParam(this->goal.wX, this->goal.wY, this->nStationType);
+			CStation* builtStation = room.stations.back();
+			builtStation->UpdateType();
+		}
 	}
 }
 
