@@ -4069,6 +4069,8 @@ const
 				wstr += wszExclamation;	//superfluous IfEnd
 		//no break
 		case CCharacterCommand::CC_Disappear:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_FlushSpeech:
