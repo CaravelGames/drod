@@ -174,6 +174,14 @@ void RoomBuilder::PlotToken(const RoomTokenType tokenType, const UINT wX, const 
 	GetRoom()->SetTParam(wX, wY, tokenType);
 }
 
+void RoomBuilder::PlotStation(const UINT wX, const UINT wY, const UINT stationType)
+{
+	PlotRect(T_STATION, wX, wY, wX, wY);
+	GetRoom()->stations.push_back(new CStation(wX, wY, GetRoom()));
+	GetRoom()->SetTParam(wX, wY, stationType);
+	GetRoom()->stations.back()->UpdateType();
+}
+
 void RoomBuilder::PlotRect(const UINT tileType, const UINT startX, const UINT startY, const UINT endX, const UINT endY){
 	for (UINT x = startX; x <= endX; ++x){
 		for (UINT y = startY; y <= endY; ++y){
