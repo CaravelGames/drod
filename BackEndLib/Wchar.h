@@ -86,6 +86,7 @@ extern const WCHAR wszAmpersand[], wszAsterisk[], wszOpenAngle[], wszCloseAngle[
 extern const WCHAR wszHtml[], wszEndHtml[], wszBody[], wszEndBody[], wszHeader[],
 	wszEndHeader[], wszBTag[], wszEndBTag[], wszITag[], wszEndITag[], wszPTag[];
 
+void SanitizeSingleLineString(WSTRING& wstr);
 void AsciiToUnicode(const char *psz, WSTRING &wstr);
 void AsciiToUnicode(const std::string& str, WSTRING &wstr);
 void CTextToUnicode(const char *psz, WSTRING &wstr);
