@@ -3181,7 +3181,7 @@ const
 		if (bIsDarkTileValue(val))
 		{
 			ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-			fDark = darkMap[(val - LIGHT_OFF - 1) *3/4]; //add 3/4 darkness
+			fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
 		}
 		const float dark_value = fDark/256.0f; //div by 256 instead of 255 for speed optimization
 		const bool add_darkness = fDark < 1.0f;
@@ -6210,7 +6210,8 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 		ASSERT(pObj);
 		const UINT wXOffset = (pObj->wPrevX - coord.wX) * this->dwMovementStepsLeft;
 		const UINT wYOffset = (pObj->wPrevY - coord.wY) * this->dwMovementStepsLeft;
-		const TileImageBlitParams blit(coord.wX, coord.wY, tileImage, wXOffset, wYOffset, true);
+		TileImageBlitParams blit(coord.wX, coord.wY, tileImage, wXOffset, wYOffset, true);
+		blit.appliedDarkness = 1;
 		DrawTileImage(blit, pDestSurface);
 		//Absolutely required, otherwise on slow repeat speed a quick undo followed by
 		// action can cause an object to disappear, because its first blit will be entirely
@@ -6971,7 +6972,7 @@ void CRoomWidget::DrawTileImage(
 			if (bIsDarkTileValue(val))
 			{
 				ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-				fDark = darkMap[(val - LIGHT_OFF - 1) *3/4]; //add 3/4 darkness
+				fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
 			}
 
 			//Add light to sprite.
