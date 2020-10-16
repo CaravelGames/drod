@@ -1352,9 +1352,11 @@ void CCharacter::Process(
 				bool bPathmapping;
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(wDestX, wDestY, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
-				if (bStopTurn)
+
+				//When pathfinding indicates to not move, 'Single Step' causes script execution to advance on the next turn.
+				if (bStopTurn && !ph)
 					STOP_COMMAND;
-				if (!dx && !dy)
+				if (bStopTurn || (!dx && !dy))
 				{
 					if (ph)
 					{
@@ -1467,9 +1469,11 @@ void CCharacter::Process(
 				bool bPathmapping;
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(this->wXRel, this->wYRel, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
-				if (bStopTurn)
+
+				//When pathfinding indicates to not move, 'Single Step' causes script execution to advance on the next turn.
+				if (bStopTurn && !ph)
 					STOP_COMMAND;
-				if (!dx && !dy)
+				if (bStopTurn || (!dx && !dy))
 				{
 					if (ph && IsVisible())
 					{
@@ -3058,6 +3062,8 @@ bool CCharacter::GetMovement(
 	const UINT wDestX, const UINT wDestY,
 	int& dx, int& dy, int& dxFirst, int& dyFirst, bool& bPathmapping, //(out)
 	const bool bAllowTurning)
+	// Returns: true if the move should not be done, even if dx & dy are non-zero,
+	// used by pathmapping movement rules
 {
 	bPathmapping = false;
 
