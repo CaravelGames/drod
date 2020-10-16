@@ -2795,6 +2795,9 @@ void CEditSelectScreen::RenameHold()
 	{
 		if (!ModifyHold())
 			return;
+
+		SanitizeSingleLineString(wstr);
+
 		this->pSelectedHold->NameText = wstr.c_str();
 		this->pSelectedHold->Update();
 		this->pHoldListBoxWidget->SetSelectedItemText(wstr.c_str());
@@ -2816,6 +2819,8 @@ void CEditSelectScreen::RenameLevel()
 	const UINT dwAnswerTagNo = ShowTextInputMessage(MID_NameLevel, wstr);
 	if (dwAnswerTagNo == TAG_OK)
 	{
+		SanitizeSingleLineString(wstr);
+
 		this->pSelectedLevel->NameText = wstr.c_str();
 		this->pSelectedLevel->Update();
 		this->pLevelListBoxWidget->SetSelectedItemText(wstr.c_str());

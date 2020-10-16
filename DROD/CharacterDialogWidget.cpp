@@ -607,6 +607,8 @@ bool CCharacterDialogWidget::RenameCharacter()
 		return false;
 	ASSERT(!wstr.empty());
 
+	SanitizeSingleLineString(wstr);
+	
 	if (!pEditRoomScreen->pHold->RenameCharacter(charID, wstr))
 	{
 		pEditRoomScreen->ShowOkMessage(MID_CharNameDuplicationError);
@@ -1945,7 +1947,11 @@ void CCharacterDialogWidget::AddCustomCharacter()
 	const WCHAR *pCharName = this->pCharNameText->GetText();
 	ASSERT(WCSlen(pCharName) > 0);
 
-	const UINT dwNewCharID = pEditRoomScreen->pHold->AddCharacter(pCharName);
+	WSTRING charName(pCharName);
+
+	SanitizeSingleLineString(charName);
+
+	const UINT dwNewCharID = pEditRoomScreen->pHold->AddCharacter(charName.c_str());
 	if (!dwNewCharID)
 		pEditRoomScreen->ShowOkMessage(MID_CharNameDuplicationError);
 	else {
