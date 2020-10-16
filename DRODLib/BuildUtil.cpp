@@ -334,6 +334,8 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		} else if (wOldTTile == T_BRIAR_LIVE && baseTile == T_BRIAR_DEAD) {
 			//this case isn't handled in briars.plotted() via room plot below
 			room.briars.forceRecalc();
+		} else if (baseTile == T_STATION) {
+			room.stations.push_back(new CStation(x, y, &room));
 		}
 	}
 
