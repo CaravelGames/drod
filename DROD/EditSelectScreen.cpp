@@ -2699,6 +2699,10 @@ bool CEditSelectScreen::PasteLevel()
 	if (!pNewLevel)
 		return false;
 
+	//This is not needed in the new hold, it'll be reassigned anyway
+	pNewLevel->dwLevelIndex = 0;
+	pNewLevel->dwOrderIndex = 0;
+
 	const UINT newLevelID = pNewLevel->dwLevelID;
 	ASSERT(newLevelID != 0);
 
