@@ -7947,6 +7947,7 @@ void CRoomWidget::DrawDoubleCursor(
 	if (bObstacle)
 	{
 		g_pTheBM->ShadeTile(xPixel,yPixel,Red,GetDestSurface());
+		this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].dirty = 1;
 	} else {
 		//Fade in and out.
 		static Uint8 nOpacity = 160;
