@@ -2219,6 +2219,7 @@ void CCurrentGame::ProcessCommand(
 
 	//Reset relative movement for the current turn.
 	UpdatePrevPlatformCoords();
+	this->pRoom->ClearPushInfo();
 
 //	const UINT dwStart = GetTicks();
 	

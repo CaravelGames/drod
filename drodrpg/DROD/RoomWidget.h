@@ -473,6 +473,7 @@ protected:
 //	bool              bRequestEvilEyeGaze; //for vision power-up
 	Uint8             ghostOpacity;
 	UINT              wHighlightX, wHighlightY; //user highlight position
+	CCoordSet         movingTLayerObjectsToRender;
 
 	UINT              dwLastDrawSquareInfoUpdateCount;
 	Uint32            dwLastAnimationFrame;   //monster animation

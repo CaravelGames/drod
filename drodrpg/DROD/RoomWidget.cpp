@@ -3862,6 +3862,13 @@ void CRoomWidget::RenderRoomTileObjects(
 				else
 					DrawRoomTile(ti.t);
 			break;
+			case T_MIRROR:
+				//Render moving objects later.
+				if (this->dwMovementStepsLeft && this->pRoom->GetPushedObjectAt(wX, wY) != NULL)
+					this->movingTLayerObjectsToRender.insert(wX, wY);
+				else
+					DrawRoomTile(ti.t);
+				break;
 			default: DrawRoomTile(ti.t); break;
 		}
 		if (bAddLightLayers || (bIsPitTile && bAddLight))
@@ -5556,6 +5563,8 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 	const UINT wRowOffset = this->pRoom->wRoomCols - CDrodBitmapManager::DISPLAY_COLS;
 	TileImages *pTI = this->pTileImages + wStartPos;
 
+	ASSERT(this->movingTLayerObjectsToRender.empty());
+
 	for (UINT wY = this->wShowRow; wY < CDrodBitmapManager::DISPLAY_ROWS; ++wY, pTI += wRowOffset)
 	{
 		for (UINT wX = this->wShowCol; wX < CDrodBitmapManager::DISPLAY_COLS; ++wX, ++pTI)
@@ -5603,6 +5612,26 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 			}
 		}
 	}
+
+	//Render all moving t-layer objects at this point
+	for (CCoordSet::const_iterator it = this->movingTLayerObjectsToRender.begin();
+		it != this->movingTLayerObjectsToRender.end(); ++it)
+	{
+		const ROOMCOORD& coord = *it;
+		const UINT tileIndex = this->pRoom->ARRAYINDEX(coord.wX, coord.wY);
+		const UINT tileImage = this->pTileImages[tileIndex].t;
+		const RoomObject* pObj = this->pRoom->GetPushedObjectAt(coord.wX, coord.wY);
+		ASSERT(pObj);
+		const UINT wXOffset = (pObj->wPrevX - coord.wX) * this->dwMovementStepsLeft;
+		const UINT wYOffset = (pObj->wPrevY - coord.wY) * this->dwMovementStepsLeft;
+//		blit.appliedDarkness = 1;
+		DrawTileImage(coord.wX, coord.wY, wXOffset, wYOffset, tileImage, false, pDestSurface, true);
+		//Absolutely required, otherwise on slow repeat speed a quick undo followed by
+		// action can cause an object to disappear, because its first blit will be entirely
+		// in the previous position, causing it to not be drawn nor animated on subsqeuent frames
+		this->pTileImages[tileIndex].dirty = true;
+	}
+	this->movingTLayerObjectsToRender.clear();
 }
 
 //*****************************************************************************
@@ -5929,35 +5958,6 @@ void CRoomWidget::DrawMonster(
 			}
 			else if (bIsMother(pMonster->wType))
 				bDrawRaised = false; //tarstuff is never raised
-/*
-			else if (pMonster->wType == M_SPIDER && this->pCurrentGame &&
-					!this->pCurrentGame->pRoom->bBetterVision)
-			{
-				//spiders are about 35% opaque, more when adjacent to player
-				const UINT wDistance = pMonster->DistToSwordsman();
-				switch (wDistance)
-				{
-					case 0: case 1: opacity = 190; break;
-					case 2: opacity = 145; break;
-					case 3: opacity = 135; break;
-					case 4: opacity = 125; break;
-					case 5: opacity = 110; break;
-					default: opacity = 95; break;
-				}
-			}
-			else if (pMonster->wType == M_EYE)
-			{
-				//Draw active eyes differently.  (Only one animation frame currently supported.)
-				CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
-				if (pEye->IsAggressive())
-					wTileImageNo = GetTileImageForEntity(M_MADEYE, pMonster->wO, 0);
-				else if (this->bRequestEvilEyeGaze) {
-					//Show eye beams with vision power-up.
-					AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-							pMonster->wY,pMonster->wO, 0));
-				}
-			}
-*/
 
 			DrawTileImage(pMonster->wX, pMonster->wY, wXOffset, wYOffset,
 					wTileImageNo, bDrawRaised, pDestSurface,
@@ -6768,33 +6768,6 @@ void CRoomWidget::DrawCharacter(
 				wXOffset, wYOffset, bDrawRaised, pDestSurface,
 				bMoveInProgress || wXOffset || wYOffset, 255, nColor);
 }
-
-//*****************************************************************************
-/*
-void CRoomWidget::DrawCitizen(
-//Draws character if visible, according to set appearance.
-//
-//Params:
-	CCitizen *pCitizen,        //(in)   Pointer to CCitizen monster.
-	const bool bDrawRaised,    //(in)   Draw raised above floor?
-	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress)
-{
-	const UINT wTileImageNo = GetTileImageForEntity(M_CITIZEN, pCitizen->wO,
-			wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pCitizen->wX, pCitizen->wY)].animFrame % ANIMATION_FRAMES);
-	//Calculate animation offset.
-	UINT wXOffset = 0, wYOffset = 0;
-	if (this->dwMovementStepsLeft)
-	{
-		wXOffset = (pCitizen->wPrevX - pCitizen->wX) * this->dwMovementStepsLeft;
-		wYOffset = (pCitizen->wPrevY - pCitizen->wY) * this->dwMovementStepsLeft;
-	}
-
-	DrawTileImage(pCitizen->wX, pCitizen->wY, wXOffset, wYOffset,
-			wTileImageNo, bDrawRaised, pDestSurface, bMoveInProgress, 255, false,
-			pCitizen->StationType());
-}
-*/
 
 //*****************************************************************************
 void CRoomWidget::DrawDouble(
