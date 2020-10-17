@@ -68,6 +68,17 @@ const UINT MAX_ANSWERS = 9;
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
 
+#define MonsterATKMultStr "MonsterATKMultiplier"
+#define MonsterDEFMultStr "MonsterDEFMultiplier"
+#define MonsterGRMultStr "MonsterGRMultiplier"
+#define MonsterXPMultStr "MonsterXPMultiplier"
+
+#define ItemMultStr "ItemMultiplier"
+#define ItemHPMultStr "ItemHPMultiplier"
+#define ItemATKMultStr "ItemATKMultiplier"
+#define ItemDEFMultStr "ItemDEFMultiplier"
+#define ItemGRMultStr "ItemGRMultiplier"
+
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
 #define YRelStr "YRel"
@@ -219,6 +230,8 @@ CCharacter::CCharacter(
 
 	, color(0), sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
+	, monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
+	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
 {
 }
 
@@ -4342,6 +4355,18 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramW = vars.GetVar(ParamWStr, this->paramW);
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
+
+	//Modifiers
+	this->monsterATKmult = vars.GetVar(MonsterATKMultStr, this->monsterATKmult);
+	this->monsterDEFmult = vars.GetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	this->monsterGRmult = vars.GetVar(MonsterGRMultStr, this->monsterGRmult);
+	this->monsterXPmult = vars.GetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	this->itemMult = vars.GetVar(ItemMultStr, this->itemMult);
+	this->itemHPmult = vars.GetVar(ItemHPMultStr, this->itemHPmult);
+	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
+	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
+	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
 }
 
 //*****************************************************************************
@@ -4457,6 +4482,27 @@ const
 		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		vars.SetVar(ParamFStr, this->paramF);
+
+	// Modifiers
+	if (this->monsterATKmult != 100)
+		vars.SetVar(MonsterATKMultStr, this->monsterATKmult);
+	if (this->monsterDEFmult != 100)
+		vars.SetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	if (this->monsterGRmult != 100)
+		vars.SetVar(MonsterGRMultStr, this->monsterGRmult);
+	if (this->monsterXPmult != 100)
+		vars.SetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	if (this->itemMult != 100)
+		vars.SetVar(ItemMultStr, this->itemMult);
+	if (this->itemHPmult != 100)
+		vars.SetVar(ItemHPMultStr, this->itemHPmult);
+	if (this->itemATKmult != 100)
+		vars.SetVar(ItemATKMultStr, this->itemATKmult);
+	if (this->itemDEFmult != 100)
+		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
+	if (this->itemGRmult != 100)
+		vars.SetVar(ItemGRMultStr, this->itemGRmult);
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 
