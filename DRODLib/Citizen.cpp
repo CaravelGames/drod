@@ -188,8 +188,7 @@ void CCitizen::Process(
 
 	//Init.
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
-	if (room.stations.empty())
-		this->bDone = true;
+	this->bDone = room.stations.empty();
 
 	if (HasSupply() && !room.building.empty())
 	{
