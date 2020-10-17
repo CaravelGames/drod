@@ -1690,6 +1690,19 @@ void CDbRoom::RecalcStationPaths()
 */
 
 //*****************************************************************************
+const RoomObject* CDbRoom::GetPushedObjectAt(const UINT wX, const UINT wY) const
+{
+	for (set<const RoomObject*>::const_iterator it = this->pushed_objects.begin();
+		it != this->pushed_objects.end(); it++)
+	{
+		const RoomObject& obj = **it;
+		if (obj.wX == wX && obj.wY == wY)
+			return *it;
+	}
+	return NULL;
+}
+
+//*****************************************************************************
 void CDbRoom::ReevalBriarNear(
 //Alert briar structures that room geometry has changed at (x,y).
 //
@@ -4739,20 +4752,30 @@ void CDbRoom::PushObject(
 		return;
 		default: break;
 	}
-	switch (GetTSquare(wDestX, wDestY))
+
+	const UINT oldTTile = GetTSquare(wDestX, wDestY);
+	switch (oldTTile)
 	{
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			CueEvents.Add(CID_Splash, new CCoord(wDestX, wDestY), true);
 		return;
 		default:
 			//Keep track of item covered up
-			if (TILE_LAYER[wTile] == 1 && GetTSquare(wDestX, wDestY) != T_EMPTY)
-				this->coveredTSquares.Add(wDestX, wDestY, GetTSquare(wDestX, wDestY));
+			if (TILE_LAYER[wTile] == 1 && oldTTile != T_EMPTY)
+				this->coveredTSquares.Add(wDestX, wDestY, oldTTile);
 
 			Plot(wDestX, wDestY, wTile);
 			if (GetOSquare(wDestX, wDestY) == T_PRESSPLATE)
 				ActivateOrb(wDestX, wDestY, CueEvents, OAT_PressurePlate);
-		return;
+
+			//Persist the pushed object's data,
+			//so it can be globally referenced for the duration of turn processing.
+			RoomObject* pObj = new RoomObject(wDestX, wDestY, wTile);
+			pObj->wPrevX = wSrcX;
+			pObj->wPrevY = wSrcY;
+			this->pushed_objects.insert(pObj);
+			
+			break;
 	}
 }
 
@@ -5802,11 +5825,24 @@ void CDbRoom::Clear()
 	this->deletedSpeechIDs.clear();
 	this->deletedDataIDs.clear();
 
+	ClearPushInfo();
+
 /*
 	//These should have been cleared by the calls above.
 	ASSERT(this->Decoys.empty());
 	ASSERT(this->stalwarts.empty());
 */
+}
+
+//*****************************************************************************
+void CDbRoom::ClearPushInfo()
+{
+	for (set<const RoomObject*>::const_iterator it = this->pushed_objects.begin();
+		it != this->pushed_objects.end(); it++)
+	{
+		delete *it;
+	}
+	this->pushed_objects.clear();
 }
 
 //*****************************************************************************

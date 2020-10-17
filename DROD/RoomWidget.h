@@ -212,7 +212,7 @@ struct TileImageBlitParams {
 	int nAddColor;
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
-	                       // same opacity as the stationary ones, which os 100% ceiling darkness, otherwise things look weird.
+	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
 //******************************************************************************

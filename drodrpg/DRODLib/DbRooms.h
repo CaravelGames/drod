@@ -396,11 +396,17 @@ public:
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);
 
+	//scope: used while processing the current turn
+	const RoomObject* GetPushedObjectAt(const UINT wX, const UINT wY) const;
+
 private:
+	set<const RoomObject*> pushed_objects; //a simplified implementation of pushed objects to facilitate mirror movement animation
+
 	enum tartype {oldtar, newtar, notar};
 
 	void           AddPlatformPiece(const UINT wX, const UINT wY, CCoordIndex &plots);
 	void           Clear();
+	void           ClearPushInfo();
 	void           CloseDoor(const UINT wX, const UINT wY);
 //	void           DeletePathMaps();
 	CMonster*      FindLongMonster(const UINT wX, const UINT wY,

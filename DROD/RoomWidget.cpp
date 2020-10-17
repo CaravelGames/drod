@@ -264,6 +264,7 @@ TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	, nOpacity(rhs.nOpacity)
 	, bClipped(rhs.bClipped)
 	, nAddColor(rhs.nAddColor)
+	, appliedDarkness(rhs.appliedDarkness)
 { }
 
 bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)
@@ -6200,8 +6201,8 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 	}
 
 	//Render all moving t-layer objects at this point
-	for (CCoordSet::const_iterator it=movingTLayerObjectsToRender.begin();
-			it!=movingTLayerObjectsToRender.end(); ++it)
+	for (CCoordSet::const_iterator it=this->movingTLayerObjectsToRender.begin();
+			it!=this->movingTLayerObjectsToRender.end(); ++it)
 	{
 		const ROOMCOORD& coord = *it;
 		const UINT tileIndex = this->pRoom->ARRAYINDEX(coord.wX, coord.wY);

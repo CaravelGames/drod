@@ -309,4 +309,105 @@ struct Weather
 	WSTRING sky;      //name of sky image (if non-default)
 };
 
+//******************************************************************************************
+class RoomObject : public CCoord
+{
+public:
+	RoomObject(UINT wX, UINT wY, UINT tile)
+		: CCoord(wX, wY)
+		, wPrevX(wX), wPrevY(wY)
+		, tile(tile)
+		, param(noParam())
+		, coveredTile(emptyTile())
+	{ }
+	RoomObject(const RoomObject& obj)
+		: CCoord(obj.wX, obj.wY)
+		, tile(obj.tile)
+		, param(obj.param)
+		, coveredTile(obj.coveredTile)
+	{ }
+
+	static UINT emptyTile() { return T_EMPTY; }
+	static UINT noParam() { return 0; }
+
+	void operator=(UINT newTile) {
+		tile = newTile;
+
+		param = noParam();
+		coveredTile = emptyTile();
+	}
+
+	void set_pos(UINT newX, UINT newY) {
+		wPrevX = wX = newX;
+		wPrevY = wY = newY;
+	}
+	void move(UINT newX, UINT newY) {
+		wPrevX = wX;
+		wPrevY = wY;
+
+		wX = newX;
+		wY = newY;
+	}
+	void syncPrevPosition() {
+		wPrevX = wX;
+		wPrevY = wY;
+	}
+
+	void place_under(const UINT tile) {
+		coveredTile = tile;
+	}
+
+	void remove_top() {
+		tile = coveredTile; //anything underneath is revealed
+		remove_covered();
+	}
+	void remove_covered() {
+		coveredTile = emptyTile();
+	}
+
+	bool cover(RoomObject* obj) {
+		if (!obj)
+			return false;
+
+		coveredTile = obj->tile;
+		param = obj->param;
+		ASSERT(obj->coveredTile == emptyTile());
+		return true;
+	}
+
+	//If a covered object exists, remove it from this record
+	//and create a record for it
+	RoomObject* uncover() {
+		if (coveredTile == emptyTile())
+			return NULL;
+
+		RoomObject* pCoveredObj = new RoomObject(*this);
+		pCoveredObj->remove_top();
+
+		remove_covered();
+
+		return pCoveredObj;
+	}
+
+	/*
+	UINT getBottomTile() const {
+		//Since covered tiles are relatively rare, check the "actual" T-layer
+		//first, and only check the "covered" layer if a movable object is on top.
+		if (bIsTLayerCoveringItem(tile)) {
+			if (coveredTile != emptyTile())
+				return coveredTile;
+		}
+
+		return tile;
+	}
+	*/
+
+	UINT wPrevX, wPrevY;
+
+	UINT tile;
+	UINT param;
+
+	UINT coveredTile;
+};
+
 #endif

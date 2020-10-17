@@ -210,6 +210,43 @@ const UINT CY_RAISED = 9; //vertical offset when monster is on a raised object (
 const UINT MAX_JITTER = 10; //maximum jitter magnitude (pixels)
 const Uint32 JITTER_REDUCTION_INTERVAL = 50; //how often to reduce jitters (ms)
 
+//*****************************************************************************
+SDL_Rect TileImageBlitParams::display_area = { 0,0,0,0 };
+bool TileImageBlitParams::crop_display = false;
+
+//*****************************************************************************
+TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
+	: wCol(rhs.wCol), wRow(rhs.wRow)
+	, wTileImageNo(rhs.wTileImageNo)
+	, wXOffset(rhs.wXOffset), wYOffset(rhs.wYOffset)
+	, bDirtyTiles(rhs.bDirtyTiles)
+	, bDrawRaised(rhs.bDrawRaised)
+	, nOpacity(rhs.nOpacity)
+	, bClipped(rhs.bClipped)
+	, nAddColor(rhs.nAddColor)
+	, appliedDarkness(rhs.appliedDarkness)
+{ }
+
+bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)
+{
+	if (!TileImageBlitParams::crop_display)
+		return true;
+	return CWidget::ClipRectToRect(BlitRect, TileImageBlitParams::display_area);
+}
+
+void TileImageBlitParams::setDisplayArea(int x, int y, int w, int h) {
+	ASSERT(x >= 0);
+	ASSERT(y >= 0);
+	ASSERT(w > 0);
+	ASSERT(h > 0);
+
+	crop_display = true;
+	display_area.x = x;
+	display_area.y = y;
+	display_area.w = w;
+	display_area.h = h;
+}
+
 //
 //Public methods.
 //
@@ -2976,7 +3013,8 @@ void CRoomWidget::AddLightInterp(
 	const float fDark,      //(in) darkness multiplier also being added to tile
 	const UINT wTileMask,	//(in) optional tile mask [default = TI_UNSPECIFIED]
 	const Uint8 opacity,    //adding light to a transparent object? [default=255]
-	const int yRaised)      //vertical offset [default=0]
+	const int yRaised,      //vertical offset [default=0]
+	SDL_Rect* crop) //if not NULL, defines a sub-tile crop area [default=NULL]
 const
 {
 /*
@@ -3091,29 +3129,26 @@ void CRoomWidget::AddLightOffset(
 //Darkness value is mixed together with the light for higher end resolution.
 //
 //Params:
-	SDL_Surface *pDestSurface,		//(in) dest surface
-	const UINT wCol, const UINT wRow,   //(in)   Destination square coords.
-	const UINT wXOffset, const UINT wYOffset, //(in)   Animation offset.
-	const UINT wTileImageNo,
-	const bool bDrawRaised, const Uint8 nOpacity)
+	SDL_Surface* pDestSurface,		//(in) dest surface
+	const TileImageBlitParams& blit)
 const
 {
 	//Must have an offset, otherwise we would've been better off using AddLight
-	ASSERT(wXOffset || wYOffset);
+	ASSERT(blit.wXOffset || blit.wYOffset);
 
-	const UINT yRaised = bDrawRaised ? -int(CY_RAISED) : 0;
+	const UINT yRaised = blit.bDrawRaised ? -int(CY_RAISED) : 0;
 
-	const UINT wXPos = this->x + wCol*CX_TILE + wXOffset;
-	const UINT wYPos = this->y + wRow*CY_TILE + wYOffset + yRaised;
+	const UINT wXPos = this->x + blit.wCol * CX_TILE + blit.wXOffset;
+	const UINT wYPos = this->y + blit.wRow * CY_TILE + blit.wYOffset + yRaised;
 
-	const UINT xIndex = wCol*CX_TILE + wXOffset;
-	const UINT yIndex = wRow*CY_TILE + wYOffset;
+	const UINT xIndex = blit.wCol * CX_TILE + blit.wXOffset;
+	const UINT yIndex = blit.wRow * CY_TILE + blit.wYOffset;
 	const UINT wOX    = xIndex / CX_TILE;
 	const UINT wOY    = yIndex / CY_TILE;
 	const UINT wOXOff = xIndex % CX_TILE;
 	const UINT wOYOff = yIndex % CY_TILE;
 
-	const float fMax = 3 * (1.0f + (fMaxLightIntensity[this->wDark] * nOpacity / 255)); //optimization
+	const float fMax = 3 * (1.0f + (fMaxLightIntensity[this->wDark] * blit.nOpacity / 255)); //optimization
 	UINT wNX, wNY, wNXPos, wNYPos, w, h;
 	const UINT wOffsetWidth  = CX_TILE - wOXOff;
 	const UINT wOffsetHeight = CY_TILE - wOYOff;
@@ -3147,7 +3182,7 @@ const
 		if (bIsDarkTileValue(val))
 		{
 			ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-			fDark = darkMap[(val - LIGHT_OFF - 1) *3/4]; //add 3/4 darkness
+			fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
 		}
 		const float dark_value = fDark/256.0f; //div by 256 instead of 255 for speed optimization
 		const bool add_darkness = fDark < 1.0f;
@@ -3270,10 +3305,10 @@ const
 						//If darkness is set, add that.
 						if (add_darkness)
 						{
-							if (wTileImageNo == TI_UNSPECIFIED)
+							if (blit.wTileImageNo == TI_UNSPECIFIED)
 								g_pTheDBM->DarkenRect(wXPos + wLX, wYPos + wLY,	wLW, wLH, fDark, pDestSurface);
 							else
-								g_pTheDBM->DarkenTileWithMask(wTileImageNo, wLX, wLY,
+								g_pTheDBM->DarkenTileWithMask(blit.wTileImageNo, wLX, wLY,
 										wXPos + wLX, wYPos + wLY, wLW, wLH, pDestSurface, fDark);
 						}
 
@@ -3302,7 +3337,7 @@ const
 #else
 							R, G, B,
 #endif
-							wTileImageNo, wLX, wLY);
+							blit.wTileImageNo, wLX, wLY);
 
 					sRGBIntensity += LIGHT_BPP; //get next sub-tile RGB value
 				}
@@ -3326,14 +3361,23 @@ void CRoomWidget::AddLight(
 	LIGHTTYPE* sRGBIntensity,	//(in) what % of light to add
 	const float fDark,      //(in) darkness multiplier also being added to tile
 	const UINT wTileMask,	//(in) tile mask
-	const Uint8 opacity)    //adding light to a transparent object? [default=255]
+	const Uint8 opacity,    //adding light to a transparent object? [default=255]
+	SDL_Rect* crop) //if not NULL, defines a sub-tile crop area [default=NULL]
 const
 {
-	//Must be drawn within the room bounds.
-	ASSERT((int)wXPos >= this->x);
-	ASSERT((int)wYPos >= this->y);
-	ASSERT(wXPos <= this->x + this->w - CX_TILE);
-	ASSERT(wYPos <= this->y + this->h - CY_TILE);
+	if (!CropTileBlitToRoomBounds(crop, wXPos, wYPos))
+		return;
+
+	const float dark_value = fDark / 256.0f; //div by 256 instead of 255 for speed optimization
+	const bool add_darkness = fDark < 1.0f;
+
+	UINT x, y, w, h;
+	UINT iStart, jStart, iEnd, jEnd;
+	CropAddLightParams(crop, x, y, w, h, iStart, jStart, iEnd, jEnd, sRGBIntensity);
+
+	//TODO: currently, the below doesn't respect the exact edging for the crop rect
+	//      It makes a neat lighting effect for temporal clones, but should probably be fixed.
+	//      Method: where x,y,w,h parameters are used below, ensure they are cropped
 
 	const float fMax = 3 * (1.0f + (fMaxLightIntensity[this->wDark] * opacity / 255)); //optimization
 	float R, G, B;
@@ -3353,7 +3397,7 @@ const
 			{
 				//There is no light to add here.
 				//If darkness is set, add that.
-				if (fDark < 1.0)
+				if (add_darkness)
 				{
 					if (wTileMask == TI_UNSPECIFIED)
 						g_pTheDBM->DarkenRect(wXPos + wLightCellPos[i], wYPos + wLightCellPos[j],
@@ -3369,12 +3413,12 @@ const
 			}
 
 			//add 256 (unity) so math for multiplicative light blending works correctly
-			R = (wR+256.0f)*fDark/256.0f; //div by 256 instead of 255 for speed optimization
-			G = (wG+256.0f)*fDark/256.0f;
-			B = (wB+256.0f)*fDark/256.0f;
+			R = (wR + 256.0f) * dark_value;
+			G = (wG + 256.0f) * dark_value;
+			B = (wB + 256.0f) * dark_value;
 
 			//Cap values at maximum light addition.  Don't alter hue or saturation.
-			float fSum = R + G + B;
+			const float fSum = R + G + B;
 			if (fSum > fMax)
 			{
 				const float fNormalize = fMax / fSum;
@@ -3398,6 +3442,95 @@ const
 		}
 		sRGBIntensity += LIGHT_BPP; //finish row
 	}
+}
+
+//*****************************************************************************
+void CRoomWidget::CropAddLightParams(const SDL_Rect* crop,
+	UINT& x, UINT& y, UINT& w, UINT& h,
+	UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
+	LIGHTTYPE*& sRGBIntensity)
+	const
+{
+	x = y = 0;
+	w = CX_TILE;
+	h = CY_TILE;
+
+	iStart = jStart = 0;
+	iEnd = LIGHT_SPT_MINUSONE;
+	jEnd = LIGHT_SPT_MINUSONE;
+
+	if (!crop)
+		return;
+
+	x = crop->x;
+	y = crop->y;
+	w = crop->w;
+	h = crop->h;
+
+	ASSERT(x < UINT(CX_TILE));
+	ASSERT(y < UINT(CY_TILE));
+	ASSERT(x + w <= UINT(CX_TILE));
+	ASSERT(y + h <= UINT(CY_TILE));
+
+	//Start at light cell containing (x,y)
+	while (iStart < iEnd - 1 && wLightCellPos[iStart + 1] <= x)
+		++iStart;
+	while (jStart < jEnd - 1 && wLightCellPos[jStart + 1] <= y)
+		++jStart;
+	while (iEnd > iStart + 1 && wLightCellPos[iEnd - 1] > x + w)
+		--iEnd;
+	while (jEnd > jStart + 1 && wLightCellPos[jEnd - 1] > y + h)
+		--jEnd;
+
+	sRGBIntensity += jStart * LIGHT_SPT * LIGHT_BPP;
+	sRGBIntensity += iStart * LIGHT_BPP;
+}
+
+//*****************************************************************************
+bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const
+{
+	const int xCropDelta = this->x - dest_x;
+	const int yCropDelta = this->y - dest_y;
+	const int wCropDelta = dest_x - (this->x + this->w - CX_TILE);
+	const int hCropDelta = dest_y - (this->y + this->h - CY_TILE);
+	if (xCropDelta > 0 || yCropDelta > 0 ||
+		wCropDelta > 0 || hCropDelta > 0)
+	{
+		if (!crop) {
+			static SDL_Rect local_crop;
+			local_crop.x = local_crop.y = 0;
+			local_crop.w = CX_TILE;
+			local_crop.h = CY_TILE;
+			crop = &local_crop;
+		}
+
+		if (xCropDelta > 0) {
+			if (xCropDelta >= crop->w)
+				return false; //nothing left to render
+
+			crop->w -= xCropDelta;
+			crop->x += xCropDelta;
+		}
+		if (yCropDelta > 0) {
+			if (yCropDelta >= crop->h)
+				return false;
+
+			crop->h -= yCropDelta;
+			crop->y += yCropDelta;
+		}
+		if (wCropDelta > 0) {
+			if (wCropDelta >= crop->w)
+				return false;
+			crop->w -= wCropDelta;
+		}
+		if (hCropDelta > 0) {
+			if (hCropDelta >= crop->h)
+				return false;
+			crop->h -= hCropDelta;
+		}
+	}
+
+	return true;
 }
 
 //*****************************************************************************
@@ -3862,6 +3995,13 @@ void CRoomWidget::RenderRoomTileObjects(
 				else
 					DrawRoomTile(ti.t);
 			break;
+			case T_MIRROR:
+				//Render moving objects later.
+				if (this->dwMovementStepsLeft && this->pRoom->GetPushedObjectAt(wX, wY) != NULL)
+					this->movingTLayerObjectsToRender.insert(wX, wY);
+				else
+					DrawRoomTile(ti.t);
+				break;
 			default: DrawRoomTile(ti.t); break;
 		}
 		if (bAddLightLayers || (bIsPitTile && bAddLight))
@@ -5384,9 +5524,8 @@ void CRoomWidget::DrawDamagedMonsters(
 				if (pTI->dirty || pTI->damaged)
 				{
 					//Copied from DrawSerpent().
-					DrawTileImage(piece.wX, piece.wY, 0, 0,
-							GetTileImageForSerpentPiece(pMonster->wType, piece.wTileNo),
-							false, pDestSurface, false);
+					const TileImageBlitParams blit(piece.wX, piece.wY, GetTileImageForSerpentPiece(pMonster->wType, piece.wTileNo));
+					DrawTileImage(blit, pDestSurface);
 				}
 			}
 		} else if (pMonster->IsLongMonster()) {
@@ -5463,15 +5602,13 @@ void CRoomWidget::DrawDamagedMonsterSwords(SDL_Surface *pDestSurface)
 				ASSERT(this->pRoom->IsValidColRow(wSX, wSY));
 				const TileImages& ti = this->pTileImages[this->pRoom->ARRAYINDEX(wSX, wSY)];
 				if (ti.dirty || ti.damaged) {
-					const bool draw_raised = DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY));
 					UINT wXOffset = 0, wYOffset = 0;
 					JitterBoundsCheck(wSX, wSY, wXOffset, wYOffset);
 
-					DrawSwordFor(pMonster, pMonster->GetIdentity(),
-							wSX, wSY,
-							wXOffset, wYOffset,
-							draw_raised, pDestSurface,
-							false, 255, pMonster->getColor());
+					TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false,
+						DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY)));
+					blit.nAddColor = pMonster->getColor();
+					DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 				}
 			}
 		}
@@ -5526,9 +5663,11 @@ void CRoomWidget::DrawPlatforms(
 				if (wTileImageNo == CALC_NEEDED)
 				{
 					wTileImageNo = CalcTileImageFor(this->pRoom, oTile, wX, wY);
-					DrawTileImage(wX, wY, wXOffset, wYOffset,
-							wTileImageNo, false, pDestSurface,
-							bPlatformAnimating); // || wXOffset || wYOffset); -- only needed if platform has jitter independent of movement animation
+					TileImageBlitParams blit(wX, wY, wTileImageNo, wXOffset, wYOffset,
+						bPlatformAnimating); // || wXOffset || wYOffset); -- only needed if platform has jitter independent of movement animation
+					if (oTile == T_PLATFORM_W)
+						blit.bCastShadowsOnTop = false;
+					DrawTileImage(blit, pDestSurface);
 					tilesDrawn.Add(wX,wY);
 					//tiles being moved off of need to have items redrawn too
 					tilesDrawn.Add(wX - platform.xDelta, wY - platform.yDelta);
@@ -5555,6 +5694,8 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 	const UINT wStartPos = this->wShowRow * this->pRoom->wRoomCols + this->wShowCol;
 	const UINT wRowOffset = this->pRoom->wRoomCols - CDrodBitmapManager::DISPLAY_COLS;
 	TileImages *pTI = this->pTileImages + wStartPos;
+
+	ASSERT(this->movingTLayerObjectsToRender.empty());
 
 	for (UINT wY = this->wShowRow; wY < CDrodBitmapManager::DISPLAY_ROWS; ++wY, pTI += wRowOffset)
 	{
@@ -5603,6 +5744,27 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 			}
 		}
 	}
+
+	//Render all moving t-layer objects at this point
+	for (CCoordSet::const_iterator it = this->movingTLayerObjectsToRender.begin();
+		it != this->movingTLayerObjectsToRender.end(); ++it)
+	{
+		const ROOMCOORD& coord = *it;
+		const UINT tileIndex = this->pRoom->ARRAYINDEX(coord.wX, coord.wY);
+		const UINT tileImage = this->pTileImages[tileIndex].t;
+		const RoomObject* pObj = this->pRoom->GetPushedObjectAt(coord.wX, coord.wY);
+		ASSERT(pObj);
+		const UINT wXOffset = (pObj->wPrevX - coord.wX) * this->dwMovementStepsLeft;
+		const UINT wYOffset = (pObj->wPrevY - coord.wY) * this->dwMovementStepsLeft;
+		TileImageBlitParams blit(coord.wX, coord.wY, tileImage, wXOffset, wYOffset, true);
+		blit.appliedDarkness = 1;
+		DrawTileImage(blit, pDestSurface);
+		//Absolutely required, otherwise on slow repeat speed a quick undo followed by
+		// action can cause an object to disappear, because its first blit will be entirely
+		// in the previous position, causing it to not be drawn nor animated on subsqeuent frames
+		this->pTileImages[tileIndex].dirty = true;
+	}
+	this->movingTLayerObjectsToRender.clear();
 }
 
 //*****************************************************************************
@@ -5671,12 +5833,9 @@ void CRoomWidget::DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surf
 			const bool draw_raised = DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY));
 			UINT wXOffset = 0, wYOffset = 0;
 			JitterBoundsCheck(wSX, wSY, wXOffset, wYOffset);
-
-			DrawSwordFor(pMonster, pMonster->GetIdentity(),
-					wSX, wSY,
-					wXOffset, wYOffset,
-					draw_raised, pDestSurface,
-					false, 255, pMonster->getColor());
+			TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false, draw_raised);
+			blit.nAddColor = pMonster->getColor();
+			DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 		}
 	}
 }
@@ -5901,7 +6060,7 @@ void CRoomWidget::DrawMonster(
 		case M_SERPENTB:
 			bDrawRaised = false;
 			if (bDrawPieces)
-				DrawSerpent(pMonster, pDestSurface, bMoveInProgress);
+				DrawSerpentBody(pMonster, pDestSurface, bMoveInProgress);
 			//no break
 		default:
 		{
@@ -5929,40 +6088,11 @@ void CRoomWidget::DrawMonster(
 			}
 			else if (bIsMother(pMonster->wType))
 				bDrawRaised = false; //tarstuff is never raised
-/*
-			else if (pMonster->wType == M_SPIDER && this->pCurrentGame &&
-					!this->pCurrentGame->pRoom->bBetterVision)
-			{
-				//spiders are about 35% opaque, more when adjacent to player
-				const UINT wDistance = pMonster->DistToSwordsman();
-				switch (wDistance)
-				{
-					case 0: case 1: opacity = 190; break;
-					case 2: opacity = 145; break;
-					case 3: opacity = 135; break;
-					case 4: opacity = 125; break;
-					case 5: opacity = 110; break;
-					default: opacity = 95; break;
-				}
-			}
-			else if (pMonster->wType == M_EYE)
-			{
-				//Draw active eyes differently.  (Only one animation frame currently supported.)
-				CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
-				if (pEye->IsAggressive())
-					wTileImageNo = GetTileImageForEntity(M_MADEYE, pMonster->wO, 0);
-				else if (this->bRequestEvilEyeGaze) {
-					//Show eye beams with vision power-up.
-					AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-							pMonster->wY,pMonster->wO, 0));
-				}
-			}
-*/
 
-			DrawTileImage(pMonster->wX, pMonster->wY, wXOffset, wYOffset,
-					wTileImageNo, bDrawRaised, pDestSurface,
-					bMoveInProgress || wXOffset || wYOffset,
-					opacity, false, pMonster->getColor());
+			TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+			blit.nOpacity = opacity;
+			blit.nAddColor = pMonster->getColor();
+			DrawTileImage(blit, pDestSurface);
 		}
 		break;
 	}
@@ -6160,169 +6290,131 @@ void CRoomWidget::DrawTileImage(
 //Dirties tiles covered by this blit.
 //
 //Params:
-		const UINT wCol, const UINT wRow,   //(in)   Destination square coords.
-		const UINT wXOffset, const UINT wYOffset, //(in)   Animation offset.
-		const UINT wTileImageNo,         //(in)   Indicates which tile image to blit.
-		const bool bDrawRaised,       //(in)   Draw tile raised above surface?
-		SDL_Surface *pDestSurface,    //(in)   Surface to draw to.
-		const bool bDirtyTiles, //(in)   Whether tiles should be dirtied
-		const Uint8 nOpacity,   //(in)   Tile opacity (0 = transparent, 255 = opaque).
-		bool bClipped,    //(in)   Tile image is not fully on screen and must be clipped [default=false]
-		const int nAddColor) // Palette color to add to tile [default=-1 (none)]
+	const TileImageBlitParams& blit,
+	SDL_Surface* pDestSurface)    //(in)   Surface to draw to.
 {
-	ASSERT(IS_COLROW_IN_DISP(wCol, wRow) || bClipped);
-	if (wTileImageNo == TI_TEMPTY) return; //Wasteful to make this call for empty blit.
+	if (blit.wTileImageNo == TI_TEMPTY)
+		return; //Wasteful to make this call for empty blit.
+
+	const UINT wCol = blit.wCol;
+	const UINT wRow = blit.wRow;
+
+	bool bClipped = blit.bClipped;
+	ASSERT(IS_COLROW_IN_DISP(blit.wCol, blit.wRow) || blit.bClipped);
 
 	//Determine pixel positions.
-	UINT wX = (CX_TILE * wCol) + wXOffset;
-	UINT wY = (CY_TILE * wRow) + wYOffset;
-	if (bDrawRaised)
+	const int nRoomPixelX = (CX_TILE * wCol) + blit.wXOffset;
+	int nRoomPixelY = (CY_TILE * wRow) + blit.wYOffset;
+	if (blit.bDrawRaised)
 	{
-		wY -= CY_RAISED;
+		nRoomPixelY -= CY_RAISED;
 		if (wRow == 0)
 			bClipped = true;
 	}
-	const int nPixelX = this->x + (int)wX;
-	const int nPixelY = this->y + (int)wY;
-	if (nPixelX < this->x || nPixelY < this->y ||
-			nPixelX + int(CX_TILE) >= this->x + int(this->w) ||
-			nPixelY + int(CY_TILE) >= this->y + int(this->h))
-		bClipped = true;
+	int nPixelX = this->x + nRoomPixelX;
+	int nPixelY = this->y + nRoomPixelY;
 
-	if (bClipped)
+	SDL_Rect BlitRect = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
+	if (bClipped && !ClipTileArea(nPixelX, nPixelY, BlitRect))
+		return;
+
+	ASSERT(BlitRect.w <= CX_TILE);
+	ASSERT(BlitRect.h <= CY_TILE);
+
+	if (!TileImageBlitParams::CropRectToTileDisplayArea(BlitRect))
+		return;
+
+	nPixelX += BlitRect.x;
+	nPixelY += BlitRect.y;
+
+	//Draw sprite.
+	g_pTheDBM->BlitTileImagePart(blit.wTileImageNo,
+		nPixelX, nPixelY,
+		BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
+		pDestSurface, true, blit.nOpacity);
+
+	AddColorToTile(pDestSurface, blit.nAddColor, blit.wTileImageNo,
+		nPixelX, nPixelY,
+		BlitRect.w, BlitRect.h);
+
+	//Set to proper light level.
+	if (IsLightingRendered() && this->pRoom->IsValidColRow(wCol, wRow))
 	{
-		//Calculate what part of tile is showing.
-		SDL_Rect ClipRect, BlitRect = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
-		GetRect(ClipRect);
-		if (!GetBlitRectFromClipRect(nPixelX, nPixelY, ClipRect, BlitRect))
-			return; //completely outside clipping rect
-		ASSERT(BlitRect.w <= CX_TILE);
-		ASSERT(BlitRect.h <= CY_TILE);
+		const bool bMoving = blit.wXOffset || blit.wYOffset;
 
-		g_pTheDBM->BlitTileImagePart(wTileImageNo,
-				nPixelX + BlitRect.x, nPixelY + BlitRect.y,
-				BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
-				pDestSurface, true, nOpacity);
-		AddColorToTile(pDestSurface, nAddColor, wTileImageNo, nPixelX, nPixelY,
-				BlitRect.w, BlitRect.h, BlitRect.x, BlitRect.y);
+		SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;
 
-		//Set to proper light level.
-		if (IsLightingRendered() && this->pRoom->IsValidColRow(wCol, wRow))
+		//Add cast shadows to sprite.
+		if (blit.bCastShadowsOnTop && !blit.bDrawRaised)
 		{
-			//No cast shadows when sprite is partially outside room.
+			if (!bMoving)
+			{
+				const vector<UINT> &shadows = this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].shadowMasks;
+				if (!shadows.empty())
+					g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
+						blit.wTileImageNo, nPixelX, nPixelY, pDestSurface, pCropRect);
+			}
+			else if (!pCropRect) { //routine doesn't support cropping
+				BlitTileShadowsOnMovingSprite(blit, pDestSurface);
+			}
+		}
 
+		if (bMoving && !pCropRect)
+		{
+			AddLightOffset(pDestSurface, blit);
+		}
+		else {
 			//Add dark to sprite.
 			const UINT val = this->pRoom->tileLights.GetAt(wCol, wRow);
+			float fDark = 1.0f;
 			if (bIsDarkTileValue(val))
 			{
 				ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-				g_pTheBM->DarkenTileWithMask(wTileImageNo, BlitRect.x, BlitRect.y,
-					nPixelX + BlitRect.x, nPixelY + BlitRect.y, BlitRect.w, BlitRect.h,
-					pDestSurface, darkMap[(val - LIGHT_OFF - 1) *3/4]); //add 3/4 darkness
+				fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
 			}
 
 			//Add light to sprite.
-			//!!not implemented when partially outside of room
-		}
-	} else {
-		//Draw sprite.
-		g_pTheDBM->BlitTileImage(wTileImageNo, nPixelX, nPixelY, pDestSurface, true, nOpacity);
-		AddColorToTile(pDestSurface, nAddColor, wTileImageNo, nPixelX, nPixelY,
-				CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
-
-		//Set to proper light level.
-		if (IsLightingRendered())
-		{
-			const bool bMoving = wXOffset || wYOffset;
-
-			//Add cast shadows to sprite.
-			if (!bDrawRaised)
+			if (this->pRoom->tileLights.Exists(wCol,wRow) ||
+					this->lightedRoomTiles.has(wCol,wRow) || this->lightedPlayerTiles.has(wCol,wRow))
 			{
-				if (!bMoving)
-				{
-					const vector<UINT> &shadows = this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].shadowMasks;
-					if (!shadows.empty())
-						g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
-							wTileImageNo, nPixelX, nPixelY, pDestSurface);
+				LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (wRow * this->pRoom->wRoomCols + wCol) * wLightValuesPerTile;
+				if (bMoving) {
+					AddLight(pDestSurface, nPixelX - BlitRect.x, nPixelY - BlitRect.y, psL, fDark, blit.wTileImageNo, blit.nOpacity, pCropRect); //faster lighting when moving
 				} else {
-					BlitTileShadowsOnMovingSprite(wCol, wRow, wXOffset, wYOffset, wTileImageNo,
-							pDestSurface);
-				}
-			}
-
-			if (bMoving)
-			{
-				AddLightOffset(pDestSurface, wCol, wRow, wXOffset, wYOffset, wTileImageNo, bDrawRaised, nOpacity);
-			} else {
-				//Add dark to sprite.
-				const UINT val = this->pRoom->tileLights.GetAt(wCol, wRow);
-				float fDark = 1.0;
-				if (bIsDarkTileValue(val))
-				{
-					ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-					fDark = darkMap[(val - LIGHT_OFF - 1) *3/4]; //add 3/4 darkness
-					/*
-					g_pTheBM->DarkenTileWithMask(wTileImageNo, 0, 0,
-						nPixelX, nPixelY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE,
-						pDestSurface, fDark);
-					*/
-				}
-
-				//Add light to sprite.
-				if (this->pRoom->tileLights.Exists(wCol,wRow) ||
-					 this->lightedRoomTiles.has(wCol,wRow) || this->lightedPlayerTiles.has(wCol,wRow))
-				{
-					LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (wRow * this->pRoom->wRoomCols + wCol) * wLightValuesPerTile;
-					if (wXOffset || wYOffset)
-						AddLight(pDestSurface, nPixelX, nPixelY, psL, fDark, wTileImageNo, nOpacity); //faster lighting when moving
-					else
-						AddLightInterp(pDestSurface, wCol, wRow, psL, fDark, wTileImageNo, nOpacity, bDrawRaised ? -int(CY_RAISED) : 0);
+					AddLightInterp(pDestSurface, wCol, wRow, psL, fDark, blit.wTileImageNo, blit.nOpacity, blit.bDrawRaised ? -int(CY_RAISED) : 0, pCropRect);
 				}
 			}
 		}
 	}
 
-	//Dirty tiles covered by blit.  (There are up to four of them.)
-	if (!bDirtyTiles)
+	if (!blit.bDirtyTiles)
 	{
 		//The 'monster' flag indicates that something was drawn here, and that
 		//at the latest the tile should be repainted next turn.
 		if (IS_COLROW_IN_DISP(wCol, wRow))
 			this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].monster = 1;
-		return;
+	} else {
+		//Dirty tiles covered by blit.
+		DirtyTilesForSpriteAt(nRoomPixelX + BlitRect.x, nRoomPixelY + BlitRect.y, BlitRect.w, BlitRect.h);
 	}
-	UINT wMinX = wX/CX_TILE;
-	UINT wMinY = wY/CY_TILE;
-	const UINT wMaxX = (wX+CX_TILE-1)/CX_TILE;
-	const UINT wMaxY = (wY+CY_TILE-1)/CY_TILE;
-	if (wMinX > wMaxX)
-		wMinX = wMaxX;   //bounds checking
-	if (wMinY > wMaxY)
-		wMinY = wMaxY;
-	for (wY = wMinY; wY <= wMaxY; ++wY)
-		for (wX = wMinX; wX <= wMaxX; ++wX)
-			if (IS_COLROW_IN_DISP(wX, wY))
-				this->pTileImages[this->pRoom->ARRAYINDEX(wX,wY)].dirty = 1;
 }
 
 //*****************************************************************************
 void CRoomWidget::BlitTileShadowsOnMovingSprite(
-	const UINT wCol_, const UINT wRow_,   //(in)   Destination square coords.
-	const UINT wXOffset, const UINT wYOffset, //(in)   Animation offset.
-	const UINT wTileImageNo,
-	SDL_Surface *pDestSurface)
+	const TileImageBlitParams& blit,
+	SDL_Surface* pDestSurface)
 {
-	int xOffset = wXOffset, yOffset = wYOffset;
+	int xOffset = blit.wXOffset, yOffset = blit.wYOffset;
 	ASSERT(xOffset || yOffset); //sprite is moving
 
 	if (abs(xOffset) > CX_TILE || abs(yOffset) > CY_TILE) //doesn't support multi-tile movement
 		return;
 
-	const UINT wCol = wCol_ - (xOffset < 0 ? 1 : 0);
-	const UINT wRow = wRow_ - (yOffset < 0 ? 1 : 0);
+	const UINT wCol = blit.wCol - (xOffset < 0 ? 1 : 0);
+	const UINT wRow = blit.wRow - (yOffset < 0 ? 1 : 0);
 
 	ASSERT(IS_COLROW_IN_DISP(wCol, wRow));
-//	ASSERT(!blit.bDrawRaised);
+	ASSERT(!blit.bDrawRaised);
 
 	//Get positive offset values.
 	while (xOffset < 0)
@@ -6334,54 +6426,110 @@ void CRoomWidget::BlitTileShadowsOnMovingSprite(
 	const int nPixelX = this->x + (CX_TILE * wCol);
 	const int nPixelY = this->y + (CY_TILE * wRow);
 
-	const vector<UINT> *pShadows;
+	const vector<UINT>* pShadows;
 
 	//(xL,yT)
-	pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].shadowMasks);
+	pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].shadowMasks);
 	if (!pShadows->empty()) {
 		SDL_Rect shadowCrop = MAKE_SDL_RECT(xOffset, yOffset, CX_TILE - xOffset, CY_TILE - yOffset);
 
 		g_pTheBM->BlitTileShadowsWithTileMask(&((*pShadows)[0]), pShadows->size(),
-			wTileImageNo, nPixelX + shadowCrop.x, nPixelY + shadowCrop.y,
+			blit.wTileImageNo, nPixelX + shadowCrop.x, nPixelY + shadowCrop.y,
 			pDestSurface, &shadowCrop, 0, 0);
 	}
 
-	const UINT nextCol = wCol+1, nextRow = wRow+1;
-	if (wYOffset && nextRow < this->pRoom->wRoomRows) {
+	const UINT nextCol = wCol + 1, nextRow = wRow + 1;
+	if (blit.wYOffset && nextRow < this->pRoom->wRoomRows) {
 		//(xL, yB)
-		pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(wCol,nextRow)].shadowMasks);
+		pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(wCol, nextRow)].shadowMasks);
 		if (!pShadows->empty()) {
 			SDL_Rect shadowCrop = MAKE_SDL_RECT(xOffset, 0, CX_TILE - xOffset, yOffset);
 
 			g_pTheBM->BlitTileShadowsWithTileMask(&((*pShadows)[0]), pShadows->size(),
-				wTileImageNo, nPixelX + shadowCrop.x, nPixelY + CY_TILE + shadowCrop.y,
+				blit.wTileImageNo, nPixelX + shadowCrop.x, nPixelY + CY_TILE + shadowCrop.y,
 				pDestSurface, &shadowCrop, 0, CY_TILE - shadowCrop.h);
 		}
 	}
 
-	if (wXOffset && nextCol < this->pRoom->wRoomCols) {
+	if (blit.wXOffset && nextCol < this->pRoom->wRoomCols) {
 		//(xR, yT)
-		pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(nextCol,wRow)].shadowMasks);
+		pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(nextCol, wRow)].shadowMasks);
 		if (!pShadows->empty()) {
 			SDL_Rect shadowCrop = MAKE_SDL_RECT(0, yOffset, xOffset, CY_TILE - yOffset);
 
 			g_pTheBM->BlitTileShadowsWithTileMask(&((*pShadows)[0]), pShadows->size(),
-				wTileImageNo, nPixelX + CX_TILE + shadowCrop.x, nPixelY + shadowCrop.y,
+				blit.wTileImageNo, nPixelX + CX_TILE + shadowCrop.x, nPixelY + shadowCrop.y,
 				pDestSurface, &shadowCrop, CX_TILE - shadowCrop.w, 0);
 		}
 
-		if (wYOffset && nextRow < this->pRoom->wRoomRows) {
+		if (blit.wYOffset && nextRow < this->pRoom->wRoomRows) {
 			//(xR, yB)
-			pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(nextCol,nextRow)].shadowMasks);
+			pShadows = &(this->pTileImages[this->pRoom->ARRAYINDEX(nextCol, nextRow)].shadowMasks);
 			if (!pShadows->empty()) {
 				SDL_Rect shadowCrop = MAKE_SDL_RECT(0, 0, xOffset, yOffset);
 
 				g_pTheBM->BlitTileShadowsWithTileMask(&((*pShadows)[0]), pShadows->size(),
-					wTileImageNo, nPixelX + CX_TILE + shadowCrop.x, nPixelY + CY_TILE + shadowCrop.y,
+					blit.wTileImageNo, nPixelX + CX_TILE + shadowCrop.x, nPixelY + CY_TILE + shadowCrop.y,
 					pDestSurface, &shadowCrop, CX_TILE - shadowCrop.w, CY_TILE - shadowCrop.h);
 			}
 		}
 	}
+}
+
+//*****************************************************************************
+bool CRoomWidget::ClipTileArea(
+	int nPixelX, int nPixelY,
+	SDL_Rect& BlitRect) //(in/out)
+{
+	//Calculate what part of tile is showing.
+	SDL_Rect ClipRect;
+	GetRect(ClipRect);
+	if (nPixelX < ClipRect.x)
+	{
+		BlitRect.x = ClipRect.x - nPixelX;
+		ASSERT(BlitRect.x > 0);
+		if (BlitRect.x >= BlitRect.w)
+			return false; //completely outside rect
+		BlitRect.w -= BlitRect.x;
+	}
+	else if (nPixelX + (int)BlitRect.w >= ClipRect.x + (int)ClipRect.w)
+	{
+		if (nPixelX >= ClipRect.x + (int)ClipRect.w)
+			return false; //completely outside rect
+		BlitRect.w = (ClipRect.x + ClipRect.w) - nPixelX;
+	}
+	if (nPixelY < ClipRect.y)
+	{
+		BlitRect.y = ClipRect.y - nPixelY;
+		ASSERT(BlitRect.y > 0);
+		if (BlitRect.y >= BlitRect.h)
+			return false; //completely outside rect
+		BlitRect.h -= BlitRect.y;
+	}
+	else if (nPixelY + (int)BlitRect.h >= ClipRect.y + (int)ClipRect.h)
+	{
+		if (nPixelY >= ClipRect.y + (int)ClipRect.h)
+			return false; //completely outside rect
+		BlitRect.h = (ClipRect.y + ClipRect.h) - nPixelY;
+	}
+	return true;
+}
+
+//*****************************************************************************
+void CRoomWidget::DirtyTilesForSpriteAt(UINT pixel_x, UINT pixel_y, UINT w, UINT h)
+{
+	//There are up to four tiles dirtied by a tile blit at this pixel location.
+	UINT wMinX = pixel_x / CX_TILE;
+	UINT wMinY = pixel_y / CY_TILE;
+	const UINT wMaxX = (pixel_x + w - 1) / CX_TILE;
+	const UINT wMaxY = (pixel_y + h - 1) / CY_TILE;
+	if (wMinX > wMaxX) wMinX = wMaxX;   //bounds checking
+	if (wMinY > wMaxY) wMinY = wMaxY;
+
+	for (UINT wY = wMinY; wY <= wMaxY; ++wY)
+		for (UINT wX = wMinX; wX <= wMaxX; ++wX)
+			if (IS_COLROW_IN_DISP(wX, wY))
+				this->pTileImages[this->pRoom->ARRAYINDEX(wX, wY)].dirty = 1;
 }
 
 //*****************************************************************************
@@ -6610,8 +6758,12 @@ void CRoomWidget::DrawPlayer(
 	}
 
 	//Blit the player.
-	DrawTileImage(swordsman.wX, swordsman.wY, wXOffset, wYOffset, wSManTI,
-			bDrawRaised, pDestSurface, true, nOpacity);
+	{
+		TileImageBlitParams blit(swordsman.wX, swordsman.wY, wSManTI, wXOffset, wYOffset, true, bDrawRaised);
+		blit.nOpacity = nOpacity;
+		//blit.nAddColor = nAddColor;
+		DrawTileImage(blit, pDestSurface);
+	}
 
 	//Blit the sword.
 	if (!bHasSword)
@@ -6629,8 +6781,10 @@ void CRoomWidget::DrawPlayer(
 	const bool bClipped = !IS_COLROW_IN_DISP(wSX, wSY) ||
 			 !IS_COLROW_IN_DISP(wSX + nSgnX, wSY + nSgnY);
 
-	DrawTileImage(wSX, wSY, wXOffset, wYOffset,
-			wSwordTI, bDrawRaised, pDestSurface, true, nOpacity, bClipped);
+	TileImageBlitParams blit(wSX, wSY, wSwordTI, wXOffset, wYOffset, true, bDrawRaised);
+	blit.nOpacity = nOpacity;
+	blit.bClipped = bClipped;
+	DrawTileImage(blit, pDestSurface);
 }
 
 //*****************************************************************************
@@ -6757,44 +6911,17 @@ void CRoomWidget::DrawCharacter(
 	AddJitterOffset(pCharacter->wX, pCharacter->wY, wXOffset, wYOffset);
 
 	//Draw character.
-	const UINT nColor = pCharacter->getColor();
-	DrawTileImage(pCharacter->wX, pCharacter->wY, wXOffset, wYOffset,
-			wTileImageNo, bDrawRaised, pDestSurface, bMoveInProgress || wXOffset || wYOffset,
-			255, false, nColor);
+	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+	blit.nAddColor = pCharacter->getColor();
+	DrawTileImage(blit, pDestSurface);
 
 	//Draw character with sword.
-	if (bHasSword)
-		DrawSwordFor(pCharacter, wIdentity, wSX, wSY,
-				wXOffset, wYOffset, bDrawRaised, pDestSurface,
-				bMoveInProgress || wXOffset || wYOffset, 255, nColor);
-}
-
-//*****************************************************************************
-/*
-void CRoomWidget::DrawCitizen(
-//Draws character if visible, according to set appearance.
-//
-//Params:
-	CCitizen *pCitizen,        //(in)   Pointer to CCitizen monster.
-	const bool bDrawRaised,    //(in)   Draw raised above floor?
-	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress)
-{
-	const UINT wTileImageNo = GetTileImageForEntity(M_CITIZEN, pCitizen->wO,
-			wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pCitizen->wX, pCitizen->wY)].animFrame % ANIMATION_FRAMES);
-	//Calculate animation offset.
-	UINT wXOffset = 0, wYOffset = 0;
-	if (this->dwMovementStepsLeft)
-	{
-		wXOffset = (pCitizen->wPrevX - pCitizen->wX) * this->dwMovementStepsLeft;
-		wYOffset = (pCitizen->wPrevY - pCitizen->wY) * this->dwMovementStepsLeft;
+	if (bHasSword) {
+		blit.wCol = wSX;
+		blit.wRow = wSY;
+		DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
 	}
-
-	DrawTileImage(pCitizen->wX, pCitizen->wY, wXOffset, wYOffset,
-			wTileImageNo, bDrawRaised, pDestSurface, bMoveInProgress, 255, false,
-			pCitizen->StationType());
 }
-*/
 
 //*****************************************************************************
 void CRoomWidget::DrawDouble(
@@ -6824,15 +6951,29 @@ void CRoomWidget::DrawDouble(
 	const bool bHasSword = pDouble->HasSword();
 	const UINT wFrame = bHasSword ? 0 : SWORDLESS_FRAME;
 	const UINT wDoubleTI = GetTileImageForEntity(pDouble->wType, pDouble->wO, wFrame);
-	DrawTileImage(pDouble->wX, pDouble->wY, wXOffset, wYOffset, wDoubleTI,
-			bDrawRaised, pDestSurface, bMoveInProgress || wXOffset || wYOffset,
-			nOpacity, false, pDouble->getColor());
+	TileImageBlitParams blit(pDouble->wX, pDouble->wY, wDoubleTI, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+	blit.nAddColor = pDouble->getColor();
+	blit.nOpacity = nOpacity;
 
-	if (bHasSword)
-		DrawSwordFor(pDouble, pDouble->wType,
-				pDouble->GetSwordX(), pDouble->GetSwordY(),
-				wXOffset, wYOffset, bDrawRaised, pDestSurface,
-				bMoveInProgress || wXOffset || wYOffset, nOpacity, 0);
+	// Transparent armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	if (blit.nOpacity < 255)
+		this->pTileImages[this->pRoom->ARRAYINDEX(pDouble->wX, pDouble->wY)].dirty = 1;
+
+	DrawTileImage(blit, pDestSurface);
+
+	if (bHasSword) {
+		TileImageBlitParams weaponBlit(blit);
+		weaponBlit.wCol = pDouble->GetSwordX();
+		weaponBlit.wRow = pDouble->GetSwordY();
+		weaponBlit.nAddColor = -1;
+		DrawSwordFor(pDouble, pDouble->wType, weaponBlit, pDestSurface);
+
+		// The same for the sword, want to avoid flickering
+		if (blit.nOpacity < 255 && IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
+			this->pTileImages[this->pRoom->ARRAYINDEX(weaponBlit.wCol, weaponBlit.wRow)].dirty = 1;
+	}
+
+	TileImageBlitParams::resetDisplayArea();
 }
 
 //*****************************************************************************
@@ -6856,42 +6997,37 @@ void CRoomWidget::DrawRockGiant(
 	}
 	const UINT wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY)].animFrame % ANIMATION_FRAMES;
 
-	const UINT wSplitterTI = GetTileImageForEntity(M_ROCKGIANT, pMonster->wO, wFrame);
-	DrawTileImage(pMonster->wX, pMonster->wY, wXOffset, wYOffset,
-			wSplitterTI, false, pDestSurface, bMoveInProgress, 255, false, pMonster->getColor());
+	const UINT wTopLeftTI = GetTileImageForEntity(M_ROCKGIANT, pMonster->wO, wFrame);
+	TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTopLeftTI, wXOffset, wYOffset, bMoveInProgress);
+	blit.nAddColor = pMonster->getColor();
+	DrawTileImage(blit, pDestSurface);
 
 	UINT wI = 0;
 	for (MonsterPieces::const_iterator piece = pMonster->Pieces.begin();
 			piece != pMonster->Pieces.end(); ++piece, ++wI)
 	{
 		ASSERT(this->pRoom->IsValidColRow((*piece)->wX, (*piece)->wY));
-		DrawTileImage((*piece)->wX, (*piece)->wY, wXOffset, wYOffset,
-				GetTileImageForRockGiantPiece(wI, pMonster->wO, wFrame),
-				false, pDestSurface, bMoveInProgress, 255, false, pMonster->getColor());
+		blit.wCol = (*piece)->wX;
+		blit.wRow = (*piece)->wY;
+		blit.wTileImageNo = GetTileImageForRockGiantPiece(wI, pMonster->wO, wFrame);
+		DrawTileImage(blit, pDestSurface);
 	}
 }
 
 //*****************************************************************************
 void CRoomWidget::DrawSwordFor(
-//Draw a sword for the given monster.
-//
-//Params:
-	const CMonster *pMonster,    //(in)   Pointer to monster.
-	const UINT wType,									//monster type
-	const UINT wMSwordX, const UINT wMSwordY,	//coord
-	const UINT wXOffset, const UINT wYOffset,	//pixel offset
-	const bool bDrawRaised,    //Draw sword raised above floor?
-	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress,
-	const Uint8 nOpacity,      //Opacity of sword [default=255]
-	const UINT nColor)         //color tinting [default=0]
+	//Draw a sword for the given monster.
+	//
+	//Params:
+	const CMonster* pMonster,    //(in)   Pointer to monster.
+	const UINT wType,            //monster type
+	TileImageBlitParams& blit,
+	SDL_Surface* pDestSurface)
 {
-	ASSERT(pMonster);
 	ASSERT(IsValidOrientation(pMonster->wO));
-	const UINT wSwordTI = GetSwordTileFor(pMonster, pMonster->wO, wType);
+	blit.wTileImageNo = GetSwordTileFor(pMonster, pMonster->wO, wType);
 
-	DrawSwordFor(pMonster, wMSwordX, wMSwordY, wXOffset, wYOffset,
-			bDrawRaised, wSwordTI, pDestSurface, bMoveInProgress, nOpacity, nColor);
+	DrawSwordFor(pMonster, blit, pDestSurface);
 }
 
 //*****************************************************************************
@@ -6947,18 +7083,12 @@ UINT CRoomWidget::GetSwordTileFor(const UINT wMonsterType, const UINT wO, const 
 
 //*****************************************************************************
 void CRoomWidget::DrawSwordFor(
-//Draw's a sword tile for the given monster.
-//
-//Params:
-	const CMonster *pMonster,    //(in)   Pointer to monster.
-	const UINT wMSwordX, const UINT wMSwordY,	//coord
-	const UINT wXOffset, const UINT wYOffset,	//pixel offset
-	const bool bDrawRaised,    //Draw mimic raised above floor?
-	const UINT wSwordTI,			//sword tile
-	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress,
-	const Uint8 nOpacity,      //Opacity of sword [default=255]
-	const UINT nColor)         //color tinting [default=0]
+	//Draw's a sword tile for the given monster.
+	//
+	//Params:
+	const CMonster* pMonster,    //(in)   Pointer to monster.
+	TileImageBlitParams& blit,
+	SDL_Surface* pDestSurface) //(in)   Surface to draw to.
 {
 	ASSERT(pMonster);
 	ASSERT(IS_COLROW_IN_DISP(pMonster->wX, pMonster->wY));
@@ -6973,17 +7103,17 @@ void CRoomWidget::DrawSwordFor(
 				pMonster->wPrevY > pMonster->wY ? 1 : -1;
 	}
 
-	//If sword is not fully in display, draw it clipped.
-	//This is needed when raised at top edge or stepping onto room edge.
-	const bool bClipped = !IS_COLROW_IN_DISP(wMSwordX, wMSwordY) ||
-			 !IS_COLROW_IN_DISP(wMSwordX + nSgnX, wMSwordY + nSgnY);
+	//Sword isn't fully in display -- just draw it clipped.
+	//(This is needed for when stepping onto room edge.)
+	if (!IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
+		!IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY))
+		blit.bClipped = true;
 
-	DrawTileImage(wMSwordX, wMSwordY, wXOffset, wYOffset,
-			wSwordTI, bDrawRaised, pDestSurface, bMoveInProgress, nOpacity, bClipped, nColor);
+	DrawTileImage(blit, pDestSurface);
 }
 
 //*****************************************************************************************
-void CRoomWidget::DrawSerpent(
+void CRoomWidget::DrawSerpentBody(
 // Starting after head, traverse and draw room tiles to the tail.
 // Assumes a valid serpent.
 //
@@ -6996,12 +7126,15 @@ void CRoomWidget::DrawSerpent(
 	ASSERT(this->pRoom);
 
 	//No animation of pieces.
+	TileImageBlitParams blit(0, 0, 0, 0, 0, bMoveInProgress);
+	blit.nAddColor = pMonster->getColor();
 	for (MonsterPieces::iterator piece = pMonster->Pieces.begin();
 			piece != pMonster->Pieces.end(); ++piece)
 	{
-		DrawTileImage((*piece)->wX, (*piece)->wY, 0, 0,
-				GetTileImageForSerpentPiece(pMonster->wType, (*piece)->wTileNo),
-				false, pDestSurface, bMoveInProgress, 255, false, pMonster->getColor());
+		blit.wCol = (*piece)->wX;
+		blit.wRow = (*piece)->wY;
+		blit.wTileImageNo = GetTileImageForSerpentPiece(pMonster->wType, (*piece)->wTileNo);
+		DrawTileImage(blit, pDestSurface);
 	}
 
 	if (this->dwMovementStepsLeft)
