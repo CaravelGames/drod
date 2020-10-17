@@ -183,6 +183,9 @@
     <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

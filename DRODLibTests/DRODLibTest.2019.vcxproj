@@ -304,6 +304,7 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingMirrors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
