@@ -4908,6 +4908,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 	if (this->pLongMonster)
 		overwritable_coords = this->pLongMonster->GetMatchingEndTiles(coords);
 
+	//1. Check if all selected tiles are valid
 	UINT wX, wY, wPrevX = coords.begin()->wX, wPrevY = coords.begin()->wY;
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
@@ -4925,6 +4926,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		wPrevY = wY;
 	}
 
+	//2. Find or plot the head
 	bool bHeadPlotted = false;
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
@@ -4937,16 +4939,11 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 			ASSERT(!bHeadPlotted);
 			bHeadPlotted = true;
 
-			const UINT wDirection = pRW->monsterSegment.wDirection;
 			CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wX,wY);
-			if (pMonster)
-			{
-				//Head already here.  Update head's direction.
-				ASSERT(pMonster->IsLongMonster());
-				pMonster->wO = nGetReverseO(wDirection);
-			} else {
-				PlotObjectAt(wX, wY, T_GENTRYII, wDirection);
-			}
+			if (!pMonster)
+				PlotObjectAt(wX, wY, T_GENTRYII, S); // Correct orientation is figured out at the end of this function
+
+			break;
 		}
 	}
 	//now have a monster object to assign additional pieces
@@ -4955,6 +4952,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 	UINT wNextStartX = 0, wNextStartY = 0;
 	bool bSegmentPlotted = false, bTailPlotted = false;
 
+	//3. Plot the chains
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
 	{
@@ -5005,6 +5003,14 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		this->pRoom->PlotMonster(wX,wY,erase_tile ? T_NOMONSTER : T_GENTRYII,this->pLongMonster);
 		overwritable_coords.erase(wX, wY);
 	}
+
+	if (this->pLongMonster->Pieces.size() > 0)
+		this->pLongMonster->wO = GetOrientation(
+			this->pLongMonster->Pieces.front()->wX, this->pLongMonster->Pieces.front()->wY,
+			this->pLongMonster->wX, this->pLongMonster->wY
+		);
+	else
+		this->pLongMonster->wO = wO;
 
 	this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
 	this->pRoomWidget->ResetForPaint();
