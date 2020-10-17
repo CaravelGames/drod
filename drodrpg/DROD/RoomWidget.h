@@ -166,6 +166,41 @@ struct LightMaps
 };
 
 //******************************************************************************
+struct TileImageBlitParams {
+	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset = 0, UINT yOffset = 0, bool dirtyTiles = false, bool drawRaised = false)
+		: wCol(col), wRow(row)
+		, wTileImageNo(tile)
+		, wXOffset(xOffset), wYOffset(yOffset)
+		, bDirtyTiles(dirtyTiles)
+		, bDrawRaised(drawRaised)
+		, nOpacity(255)
+		, bClipped(false)
+		, nAddColor(-1)
+		, bCastShadowsOnTop(true)
+		, appliedDarkness(0.75)
+	{ }
+	TileImageBlitParams(const TileImageBlitParams& rhs);
+
+	static inline bool CropRectToTileDisplayArea(SDL_Rect& BlitRect);
+	static void resetDisplayArea() { crop_display = false; }
+	static void setDisplayArea(int x, int y, int w, int h);
+	static bool crop_display;
+	static SDL_Rect display_area;
+
+	UINT wCol, wRow;
+	UINT wTileImageNo;
+	UINT wXOffset, wYOffset;
+	bool bDirtyTiles;
+	bool bDrawRaised;
+	Uint8 nOpacity;
+	bool bClipped;
+	int nAddColor;
+	bool bCastShadowsOnTop;
+	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
+						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
+};
+
+//******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
 class CPlayerDouble;
@@ -324,14 +359,12 @@ protected:
 	void           AddObstacleShadowMask(const UINT wCol, const UINT wRow);
 	void           AddLight(SDL_Surface *pDestSurface, const UINT wX, const UINT wY,
 			LIGHTTYPE* sRGBIntensity, const float fDark, const UINT wTileMask,
-			const Uint8 opacity=255) const;
+			const Uint8 opacity=255, SDL_Rect* crop=NULL) const;
 	void           AddLightInterp(SDL_Surface *pDestSurface, const UINT wX, const UINT wY,
 			LIGHTTYPE* sRGBIntensity, const float fDark,
 			const UINT wTileMask=TI_UNSPECIFIED, const Uint8 opacity=255,
-			const int yRaised=0) const;
-	void           AddLightOffset(SDL_Surface *pDestSurface,
-			const UINT wCol, const UINT wRow, const UINT wXOffset, const UINT wYOffset,
-			const UINT wTileImageNo, const bool bDrawRaised, const Uint8 nOpacity) const;
+			const int yRaised=0, SDL_Rect* crop = NULL) const;
+	void           AddLightOffset(SDL_Surface* pDestSurface, const TileImageBlitParams& blit) const;
 	virtual void   AnimateMonsters();
 //	void           BetterVisionQuery();
 	void           BoundsCheckRect(int &wCol, int &wRow,
@@ -341,9 +374,7 @@ protected:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS,
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           BlitDirtyRoomTiles(const bool bMoveMade);
-	void           BlitTileShadowsOnMovingSprite(const UINT wCol, const UINT wRow,
-			const UINT wXOffset, const UINT wYOffset, const UINT wTileImageNo,
-			SDL_Surface *pDestSurface);
+
 	void           CastLightOnTile(const UINT wX, const UINT wY,
 			const PointLightObject& light, const bool bGeometry=true);
 	void           ClearLights();
@@ -358,6 +389,7 @@ protected:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS,
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           DeleteArrays();
+	void           DirtyTilesForSpriteAt(UINT pixel_x, UINT pixel_y, UINT w, UINT h);
 	void           DirtyTileRect(const int x1, const int y1,
 			const int x2, const int y2);
 	void           DrawBoltInRoom(const int xS, const int yS, const int xC,
@@ -382,27 +414,20 @@ protected:
 	bool           DrawRaised(const UINT wTileNo) const {return bIsElevatedTile(wTileNo);}
 	void           DrawRockGiant(const CMonster *pMonster,	const bool bDrawRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
-	void           DrawSerpent(CMonster *pMonster, SDL_Surface *pDestSurface, const bool bMoveInProgress);
-//	void           DrawSlayerWisp(const CPlayerDouble *pDouble, SDL_Surface *pDestSurface);
-
-	void           DrawSwordFor(const CMonster *pMonster, const UINT wType,
-			const UINT wMSwordX, const UINT wMSwordY, const UINT wXOffset, const UINT wYOffset,
-			const bool bDrawRaised, SDL_Surface *pDestSurface, const bool bMoveInProgress,
-			const Uint8 nOpacity=255, const UINT nColor=0);
-	void           DrawSwordFor(const CMonster *pMonster, const UINT wMSwordX,
-			const UINT wMSwordY, const UINT wXOffset, const UINT wYOffset,
-			const bool bDrawRaised, const UINT wSwordTI, SDL_Surface *pDestSurface,
-			const bool bMoveInProgress, const Uint8 nOpacity=255, const UINT nColor=0);
+	void           DrawSerpentBody(CMonster *pMonster, SDL_Surface *pDestSurface, const bool bMoveInProgress);
+	void           DrawSwordFor(const CMonster* pMonster, const UINT wType,
+		TileImageBlitParams& blit, SDL_Surface* pDestSurface);
+	void           DrawSwordFor(const CMonster* pMonster, TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surface *pDestSurface);
 	UINT           GetSwordTileFor(const CMonster* pMonster, const UINT wO, const UINT wType) const;
 	UINT           GetSwordTileFor(const UINT wMonsterType, const UINT wO, const UINT wWeaponType) const;
 
 	void           DrawTileEdges(const UINT wX, const UINT wY,
 			const TileImages* pTI, SDL_Surface *pDestSurface);
-	void           DrawTileImage(const UINT wCol, const UINT wRow,
-			const UINT wXOffset, const UINT wYOffset,
-			const UINT wTileImageNo, const bool bDrawRaised, SDL_Surface *pDestSurface,
-			const bool bDirtyTiles, const Uint8 nOpacity=255, bool bClipped=false, const int nAddColor=-1);
+
+	void           DrawTileImage(const TileImageBlitParams& blit, SDL_Surface *pDestSurface);
+	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect);
+
 	CEntity*       GetLightholder() const;
 	bool           GetPlayerDisplayTiles(const CSwordsman &swordsman,
 			UINT& wO, UINT& wFrame, UINT& wSManTI, UINT& wSwordTI) const;
@@ -526,6 +551,13 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
+	void           CropAddLightParams(const SDL_Rect* crop,
+		UINT& x, UINT& y, UINT& w, UINT& h,
+		UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
+		LIGHTTYPE*& sRGBIntensity) const;
+	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
+
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 
 	void           PropagateLight(const float fSX, const float fSY, const UINT tParam, const bool bCenterOnTile=true);			

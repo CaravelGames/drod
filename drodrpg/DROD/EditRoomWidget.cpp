@@ -1296,20 +1296,25 @@ void CEditRoomWidget::DrawCharacter(
 
 		//Draw character.
 		const Uint8 opacity = pCharacter->IsVisible() ? 255 : 128;
-		DrawTileImage(pCharacter->wX, pCharacter->wY, 0, 0,
-				wTileImageNo, bDrawRaised, pDestSurface, true, opacity,
-				false, pCharacter->getColor());
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, bDrawRaised);
+		blit.nOpacity = opacity;
+		blit.nAddColor = pCharacter->getColor();
+		DrawTileImage(blit, pDestSurface);
 
 		//Draw character with sword.
-		if (bHasSword)
-			DrawSwordFor(pCharacter, wIdentity, wSX, wSY,
-					0, 0, bDrawRaised, pDestSurface, true, opacity);
+		if (bHasSword) {
+			blit.wCol = wSX;
+			blit.wRow = wSY;
+			blit.nAddColor = -1;
+			DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
+		}
 	} else {
 		//Draw generic NPC image.
 		const UINT wTileImageNo = GetTileImageForEntity(pCharacter->wType, pCharacter->wO, wFrameIndex);
-		DrawTileImage(pCharacter->wX, pCharacter->wY, 0, 0,
-				wTileImageNo, wIdentity != M_NONE ? bDrawRaised : false, pDestSurface,
-				true, !bAlt || pCharacter->IsVisible() ? 255 : 128);
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, wIdentity != M_NONE ? bDrawRaised : false);
+		if (bAlt && !pCharacter->IsVisible())
+			blit.nOpacity = 128;
+		DrawTileImage(blit, pDestSurface);
 	}
 }
 
@@ -1346,8 +1351,8 @@ void CEditRoomWidget::DrawLevelEntrances(SDL_Surface *pDestSurface)
 		swordsman.wY = pEntrance->wY;
 //		swordsman.wAppearance = M_BEETHRO;
 		swordsman.SetOrientation(pEntrance->wO);
-		DrawTileImage(swordsman.wX, swordsman.wY, 0, 0, TI_CHECKPOINT,
-				false, pDestSurface, true);
+		TileImageBlitParams blit(swordsman.wX, swordsman.wY, TI_CHECKPOINT, 0, 0, true);
+		DrawTileImage(blit, pDestSurface);
 		DrawPlayer(swordsman, pDestSurface);
 	}
 }
