@@ -20,6 +20,8 @@ class Assert{
 	friend class RoomBuilder;
 
 public:
+	static void Event(const char* file, int line, const CUEEVENT_ID eEventType);
+	static void NoEvent(const char* file, int line, const CUEEVENT_ID eEventType);
 	static void PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY);
 	static void PlayerIsAlive(const char* file, int line);
 	static void PlayerIsDead(const char* file, int line);
@@ -34,6 +36,8 @@ private :
 	static bool HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType);
 };
 
+#define AssertEvent(eEventType) Assert::Event(__FILE__, __LINE__, eEventType);
+#define AssertNoEvent(eEventType) Assert::NoEvent(__FILE__, __LINE__, eEventType);
 #define AssertPlayerAt(wExpectedX, wExpectedY) Assert::PlayerAt(__FILE__, __LINE__, wExpectedX, wExpectedY);
 #define AssertPlayerIsAlive() Assert::PlayerIsAlive(__FILE__, __LINE__);
 #define AssertPlayerIsDead() Assert::PlayerIsDead(__FILE__, __LINE__);

@@ -2148,15 +2148,19 @@ void CMonster::Move(
 			switch (pMonster->wType)
 			{
 			case M_CHARACTER:
+			{
+				const bool bCanStrike = bIsStalwart(pMonster->GetIdentity()) ||
+					this->CanDaggerStep(pMonster->GetIdentity(), false);
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
-					bIsStalwart(pMonster->GetIdentity()));
-				if (bIsStalwart(pMonster->GetIdentity()))
+					bCanStrike);
+				if (bCanStrike)
 				{
 					pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
 					room.KillMonster(pMonster, *pCueEvents, false, this); //will return false if it's a critical NPC
 					pMonster->SetKillInfo(GetOrientation(this->wX, this->wY, wDestX, wDestY));
 				}
+			}
 				break;
 			case M_STALWART: case M_STALWART2:
 				pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);

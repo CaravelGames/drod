@@ -7,7 +7,7 @@ void RoomBuilder::ClearRoom(){
 }
 
 CCharacter* RoomBuilder::AddCharacter(const UINT wX, const UINT wY, const UINT wO, const UINT identity){
-	CMonster *pMonster = GetRoom()->AddNewMonster(M_CHARACTER, wX, wY);
+	CMonster *pMonster = GetRoom()->AddNewMonster(M_CHARACTER, wX, wY, false);
 	pMonster->wO = wO;
 
 	CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
@@ -22,6 +22,8 @@ CCharacter* RoomBuilder::AddCharacter(const UINT wX, const UINT wY, const UINT w
 CCharacter* RoomBuilder::AddVisibleCharacter(const UINT wX, const UINT wY, const UINT wO, const UINT identity){
 	CCharacter *pCharacter = RoomBuilder::AddCharacter(wX, wY, wO, identity);
 	pCharacter->bVisible = true;
+
+	GetRoom()->SetMonsterSquare(pCharacter);
 
 	return pCharacter;
 }

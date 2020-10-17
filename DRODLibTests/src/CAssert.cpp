@@ -14,6 +14,22 @@ const char* MakeLogMessage(const char* file, int line) {
 	return message.str().c_str();
 }
 
+void Assert::Event(const char* file, int line, const CUEEVENT_ID eEventType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCueEvents& CueEvents = Runner::GetLastCueEvents();
+
+	REQUIRE(CueEvents.HasOccurred(eEventType));
+}
+
+void Assert::NoEvent(const char* file, int line, const CUEEVENT_ID eEventType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCueEvents& CueEvents = Runner::GetLastCueEvents();
+
+	REQUIRE(!CueEvents.HasOccurred(eEventType));
+}
+
 void Assert::PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY) {
 	INFO(MakeLogMessage(file, line));
 
@@ -119,6 +135,6 @@ bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wE
 
 	default:
 		FAIL("Unknown tile layer");
-		break;
+		return false;
 	}
 }

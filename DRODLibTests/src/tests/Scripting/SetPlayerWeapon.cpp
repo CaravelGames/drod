@@ -3,7 +3,7 @@
 
 namespace {
 	void AddScript_IfSetWeapon(const WeaponType eType) {
-		CCharacter* pScript = RoomBuilder::AddCharacter(1, 1);
+		CCharacter* pScript = RoomBuilder::AddCharacter(2, 2);
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_WaitForPlayerInput, CMD_EXEC_COMMAND);
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_If);
 		RoomBuilder::AddCommand(pScript, CCharacterCommand::CC_SetPlayerWeapon, eType);
