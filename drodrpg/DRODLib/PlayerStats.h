@@ -35,6 +35,20 @@ namespace ScriptVars
 		Inequal = 10
 	};
 
+	enum StatModifiers
+	{
+		MonsterHP = 0,
+		MonsterATK = 1,
+		MonsterDEF = 2,
+		MonsterGR = 3,
+		MonsterXP = 4,
+		ItemAll = 5,
+		ItemHP = 6,
+		ItemATK = 7,
+		ItemDEF = 8,
+		ItemGR = 9
+	};
+
 	//Predefined global and relative game state vars, accessed through these key values.
 	enum Predefined
 	{
