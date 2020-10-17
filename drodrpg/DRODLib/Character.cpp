@@ -3403,6 +3403,37 @@ UINT CCharacter::GetResolvedIdentity() const
 }
 
 //*****************************************************************************
+float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the NPC's local modifier value for the given type
+{
+	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterATK:
+			return this->monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return this->monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return this->monsterGRmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return this->monsterXPmult / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return this->itemMult / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return this->itemHPmult / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return this->itemATKmult / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return this->itemDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return this->itemGRmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterHP:
+		default:
+			return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
 bool CCharacter::IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const
 //Returns: whether player may attack this character
 {

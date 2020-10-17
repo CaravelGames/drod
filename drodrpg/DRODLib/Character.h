@@ -90,6 +90,7 @@ public:
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
+	float          GetStatModifier(ScriptVars::StatModifiers statType) const;
 	bool           HasSpecialDeath() const;
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
