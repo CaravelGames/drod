@@ -23,11 +23,13 @@ public:
 
 	static void InitializeDatPath();
 	static CCurrentGame* GetCurrentGame();
+	static CCueEvents& GetLastCueEvents();
 
 private:
 	static char *pErrorLogPath;
 	static UINT GetErrorLogSize();
 	static CCurrentGame* currentGame;
+	static CCueEvents lastCueEvents;
 	static CDbRoom* GetRoom();
 	static UINT wLastErrorLogSize;
 };

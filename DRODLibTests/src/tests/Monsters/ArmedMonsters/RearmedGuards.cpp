@@ -22,7 +22,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
 	
-	SECTION("Guard with a dagger will body-kill"){
+	SECTION("Guard with a dagger will body-kill player"){
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, W);
 
 		CCueEvents CueEvents;
@@ -53,6 +53,43 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterDiedFromStab));
 		REQUIRE(monster != NULL);
 		REQUIRE(monster->wType == M_GUARD);
+	}
+
+	SECTION("Guard with a dagger will kill-step vulnerable characters") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddVisibleCharacter(11, 10, S, M_BRAIN);
+
+		CCurrentGame* game = Runner::StartGame(13, 10, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertEvent(CID_MonsterDiedFromStab);
+		AssertMonsterType(11, 10, M_GUARD);
+	}
+
+	SECTION("Guard with a dagger will walk around invulnerable characters") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(11, 10, S, M_BRAIN);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Imperative, ScriptFlag::Invulnerable);
+
+		CCurrentGame* game = Runner::StartGame(13, 10, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoEvent(CID_MonsterDiedFromStab);
+		AssertMonsterType(11, 10, M_CHARACTER);
+		AssertMonsterType(11, 9, M_GUARD);
+	}
+
+	SECTION("Guard with a dagger will walk around pushable-by-weapon characters") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(11, 10, S, M_BRAIN);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Imperative, ScriptFlag::PushableByWeapon);
+
+		CCurrentGame* game = Runner::StartGame(13, 10, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoEvent(CID_MonsterDiedFromStab);
+		AssertMonsterType(11, 10, M_CHARACTER);
+		AssertMonsterType(11, 9, M_GUARD);
 	}
 
 	SECTION("Guard with a dagger won't kill-step other guards") {

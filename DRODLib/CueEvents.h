@@ -888,6 +888,8 @@ public:
 	CCueEvents() {Zero();}
 	virtual ~CCueEvents() {Clear();}
 
+	void SetMembers(const CCueEvents& Src);
+
 	void     Add(const CUEEVENT_ID eCID, const CAttachableObject *pvPrivateData = NULL, const bool bIsAttached=false);
 	void     Clear();
 	void		ClearEvent(const CUEEVENT_ID eCID, const bool bDeleteAttached=true);
