@@ -2965,20 +2965,20 @@ int CCurrentGame::getItemAmount(const UINT item) const
 
 	//Apply general item multiplier and item-specific multiplier.
 	ASSERT(this->pPlayer);
-	float fMult = int(this->pPlayer->st.itemMult) / 100.0f; //may be negative, so treat as a signed int
+	float fMult = GetTotalStatModifier(ScriptVars::ItemAll) / 100.0f; //may be negative
 	switch (item)
 	{
 		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			fMult *= int(this->pPlayer->st.itemHPmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemHP);
 		break;
 		case T_ATK_UP:
-			fMult *= int(this->pPlayer->st.itemATKmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemATK);
 		break;
 		case T_DEF_UP:
-			fMult *= int(this->pPlayer->st.itemDEFmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemDEF);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
-			fMult *= int(this->pPlayer->st.itemGRmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemGR);
 		break;
 		default: break;
 	}
