@@ -9759,6 +9759,12 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 	const CUEEVENT_ID eGrowth1 = bTar ? CID_TarGrew : CID_MudGrew;
 	const CUEEVENT_ID eGrowth2 = bGel ? CID_GelGrew : CID_MudGrew;
 
+	//If player is in a tar role, switch player role. Must do it before processing monsters so
+	//that temporal clone movement type can be set correctly from player
+	const int nSwappedPlayerType = SwapTarstuffRoles(this->pCurrentGame->swordsman.wAppearance, bTar, bMud, bGel);
+	if (nSwappedPlayerType >= 0)
+		this->pCurrentGame->SetPlayerRole(nSwappedPlayerType, CueEvents);
+
 	UINT wX, wY;
 	CCueEvents Ignored;
 	for (wY=0; wY<this->wRoomRows; ++wY)
@@ -9789,6 +9795,7 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 						}
 
 						pTemporalClone->wIdentity = pTemporalClone->wAppearance = nType;
+						pTemporalClone->SetMovementType();
 
 					}
 
@@ -9850,11 +9857,6 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 		CueEvents.ClearEvent(eGrowth1);
 	if (CueEvents.HasOccurred(eGrowth2) && CueEvents.GetOccurrenceCount(eGrowth2) == 0)
 		CueEvents.ClearEvent(eGrowth2);
-
-	//If player is in a tar role, switch player role.
-	const int nSwappedPlayerType = SwapTarstuffRoles(this->pCurrentGame->swordsman.wAppearance, bTar, bMud, bGel);
-	if (nSwappedPlayerType >= 0)
-		this->pCurrentGame->SetPlayerRole(nSwappedPlayerType, CueEvents);
 }
 
 //*****************************************************************************
