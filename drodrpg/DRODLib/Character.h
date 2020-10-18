@@ -263,7 +263,7 @@ private:
 	//Predefined vars.
 	UINT color, sword; //cosmetic details
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
-	UINT monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
+	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
 };
 

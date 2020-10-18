@@ -68,6 +68,7 @@ const UINT MAX_ANSWERS = 9;
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
 
+#define MonsterHPMultStr "MonsterHPMultiplier"
 #define MonsterATKMultStr "MonsterATKMultiplier"
 #define MonsterDEFMultStr "MonsterDEFMultiplier"
 #define MonsterGRMultStr "MonsterGRMultiplier"
@@ -230,7 +231,7 @@ CCharacter::CCharacter(
 
 	, color(0), sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
-	, monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
+	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
 	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
 {
 }
@@ -3407,6 +3408,8 @@ float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 //Returns: the NPC's local modifier value for the given type
 {
 	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterHP:
+			return this->monsterHPmult / 100.0f;
 		case ScriptVars::StatModifiers::MonsterATK:
 			return this->monsterATKmult / 100.0f;
 		case ScriptVars::StatModifiers::MonsterDEF:
@@ -3425,7 +3428,6 @@ float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 			return this->itemDEFmult / 100.0f;
 		case ScriptVars::StatModifiers::ItemGR:
 			return this->itemGRmult / 100.0f;
-		case ScriptVars::StatModifiers::MonsterHP:
 		default:
 			return 1.0f;
 	}
@@ -4388,6 +4390,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
 
 	//Modifiers
+	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
 	this->monsterATKmult = vars.GetVar(MonsterATKMultStr, this->monsterATKmult);
 	this->monsterDEFmult = vars.GetVar(MonsterDEFMultStr, this->monsterDEFmult);
 	this->monsterGRmult = vars.GetVar(MonsterGRMultStr, this->monsterGRmult);
@@ -4515,6 +4518,8 @@ const
 		vars.SetVar(ParamFStr, this->paramF);
 
 	// Modifiers
+	if (this->monsterHPmult != 100)
+		vars.SetVar(MonsterHPMultStr, this->monsterHPmult);
 	if (this->monsterATKmult != 100)
 		vars.SetVar(MonsterATKMultStr, this->monsterATKmult);
 	if (this->monsterDEFmult != 100)
