@@ -5306,6 +5306,7 @@ float CDbRoom::GetStatModifierFromCharacters(ScriptVars::StatModifiers statType)
 	while (pMonster)
 	{
 		if (pMonster->wType != M_CHARACTER) {
+			pMonster = pMonster->pNext;
 			continue;
 		}
 
