@@ -101,6 +101,14 @@ void SanitizeSingleLineString(WSTRING &wstr)
 }
 
 //*****************************************************************************
+void SanitizeMultiLineString(WSTRING &wstr)
+//Remove any unwanted characters from a multi-line string. Currently strips:
+// * horizontal tab
+{
+	wstr.erase(std::remove(wstr.begin(), wstr.end(), '\t'), wstr.end());
+}
+
+//*****************************************************************************
 void AsciiToUnicode(const char *psz, WSTRING &wstr)
 {
 	WCHAR *pwczConvertBuffer = new WCHAR[strlen(psz) + 1];
