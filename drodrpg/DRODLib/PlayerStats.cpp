@@ -52,7 +52,9 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarEnemyHP, MID_VarEnemyAtk, MID_VarEnemyDef, MID_VarEnemyGold, MID_VarEnemyXP,
 	MID_VarWeaponATK, MID_VarWeaponDEF, MID_VarWeaponGR,
 	MID_VarArmorATK, MID_VarArmorDEF, MID_VarArmorGR,
-	MID_VarAccessoryATK, MID_VarAccessoryDEF, MID_VarAccessoryGR
+	MID_VarAccessoryATK, MID_VarAccessoryDEF, MID_VarAccessoryGR,
+	MID_VarMyMonsterHPMult, MID_VarMyMonsterATKMult, MID_VarMyMonsterDEFMult, MID_VarMyMonsterGRMult,
+	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -376,14 +378,16 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 23: case 24: case 25: case 26: case 27: case 28: break; //monster and player coords
 			case 49: case 50: case 51: case 52: case 53: //enemy stats
 			case 54: case 55: case 56: //equipment
-			case 57: case 58: case 59: case 60: case 61: case 62: 
+			case 57: case 58: case 59: case 60: case 61: case 62:
+			case 63: case 64: case 65: case 66: case 67: // local monster stat modifiers
+			case 68: case 69: case 70: case 71: case 72: // local item value modifiers
 				break;
 
 			default: ASSERT(!"Bad var"); break;
 		}
 
 		if ((i >= 10 && i <= 14) || i == 21 || (i >= 23 && i <= 28) || i == 30 || (i >= 38 && i <= 42) ||
-			 (i >= 49 && i <= 62))
+			 (i >= 49 && i <= 72))
 			continue; //these are not player stats
 
 		stats.SetVar(predefinedVarTexts[i], val);
@@ -397,7 +401,7 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 	for (UINT i=PredefinedVarCount; i--; )
 	{
 		if ((i >= 10 && i <= 14) || i == 21 || (i >= 23 && i <= 28) || i == 30 || (i >= 38 && i <= 42) ||
-			 (i >= 49 && i <= 62))
+			 (i >= 49 && i <= 72))
 			continue; //these are not player stats
 
 		UINT val = stats.GetVar(predefinedVarTexts[i], UINT(0));
@@ -450,7 +454,9 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 23: case 24: case 25: case 26: case 27: case 28: break; //monster and player coords
 			case 49: case 50: case 51: case 52: case 53: //enemy stats
 			case 54: case 55: case 56: //equipment
-			case 57: case 58: case 59: case 60: case 61: case 62: 
+			case 57: case 58: case 59: case 60: case 61: case 62:
+			case 63: case 64: case 65: case 66: case 67: // local monster stat modifiers
+			case 68: case 69: case 70: case 71: case 72: // local item value modifiers
 				ASSERT(!"Case should be skipped above");
 				break;
 
