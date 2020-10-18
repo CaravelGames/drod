@@ -306,6 +306,10 @@ void CFaceWidget::SetMoodToSoundEffect(
 //****************************************************************************
 void CFaceWidget::SetDying(const bool bIsDying, MOOD eDyingMood)
 {
+	// Faces with less priority must redraw when this face ever ends
+	facePlayer.bIsDrawn = false;
+	faceSpeaker.bIsDrawn = false;
+
 	faceDying.bIsActive = bIsDying;
 	faceDying.pHoldCharacter = NULL;
 
@@ -324,6 +328,9 @@ void CFaceWidget::SetSpeaker(
 	const HoldCharacter* pHoldCharacter,
 	MOOD eSpeakingMood)
 {
+	// Faces with less priority must redraw when this face ever ends
+	facePlayer.bIsDrawn = false;
+
 	faceSpeaker.bIsActive = bIsSpeaking;
 	faceSpeaker.pHoldCharacter = NULL;
 
