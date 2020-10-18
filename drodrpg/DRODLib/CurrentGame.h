@@ -239,6 +239,8 @@ public:
 	CCharacter* GetCharacterWithScriptID(const UINT scriptID);
 	UINT     GetChecksum() const;
 	void     getEquipmentStats(const UINT type, int& ATKstat, int &DEFstat) const;
+	float    GetGlobalStatModifier(ScriptVars::StatModifiers statType) const;
+	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;

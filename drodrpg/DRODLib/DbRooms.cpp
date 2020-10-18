@@ -5297,6 +5297,28 @@ const
 }
 
 //*****************************************************************************
+float CDbRoom::GetStatModifierFromCharacters(ScriptVars::StatModifiers statType) const
+// Calculates the overall stat modifier provided by NPCs in the room
+{
+	float fMult = 1.0f;
+
+	CMonster* pMonster = this->pFirstMonster;
+	while (pMonster)
+	{
+		if (pMonster->wType != M_CHARACTER) {
+			continue;
+		}
+
+		CCharacter* pCharacer = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		fMult *= pCharacer->GetStatModifier(statType);
+
+		pMonster = pMonster->pNext;
+	}
+
+	return fMult;
+}
+
+//*****************************************************************************
 void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 //Tallies the value of stat-affecting items in the room.
 //

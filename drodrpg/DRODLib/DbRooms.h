@@ -540,6 +540,7 @@ public:
 	UINT           GetOSquareWithGuessing(const int nX, const int nY) const;
 	COrbData*      GetPressurePlateAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetPrimaryKey() const {return this->dwRoomID;}
+	float          GetStatModifierFromCharacters(ScriptVars::StatModifiers statType) const;
 	void           getStats(RoomStats& stats, const CDbLevel *pLevel) const;
 	const WCHAR*   GetScrollTextAtSquare(const UINT wX, const UINT wY) const;
 	CScrollData*   GetScrollAtSquare(const UINT wX, const UINT wY) const;

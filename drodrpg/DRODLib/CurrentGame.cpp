@@ -495,6 +495,64 @@ const
 }
 
 //*****************************************************************************
+float CCurrentGame::GetGlobalStatModifier(ScriptVars::StatModifiers statType) const
+// Returns: the multiplicative global modifier for the given statistic
+{
+	PlayerStats& st = this->pPlayer->st;
+
+	switch (statType) {
+	case ScriptVars::StatModifiers::MonsterHP:
+		return st.monsterHPmult / 100.0f;
+	case ScriptVars::StatModifiers::MonsterATK:
+		return st.monsterATKmult / 100.0f;
+	case ScriptVars::StatModifiers::MonsterDEF:
+		return st.monsterDEFmult / 100.0f;
+	case ScriptVars::StatModifiers::MonsterGR:
+		return st.monsterGRmult / 100.0f;
+	case ScriptVars::StatModifiers::MonsterXP:
+		return st.monsterXPmult / 100.0f;
+	case ScriptVars::StatModifiers::ItemAll:
+		return st.itemMult / 100.0f;
+	case ScriptVars::StatModifiers::ItemHP:
+		return st.itemHPmult / 100.0f;
+	case ScriptVars::StatModifiers::ItemATK:
+		return st.itemATKmult / 100.0f;
+	case ScriptVars::StatModifiers::ItemDEF:
+		return st.itemDEFmult / 100.0f;
+	case ScriptVars::StatModifiers::ItemGR:
+		return st.itemGRmult / 100.0f;
+	default:
+		return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
+float CCurrentGame::GetTotalStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the total multiplicative modifier for the given statistic
+//It is the product of the global, NPC and equipment modifiers
+{
+	float fMult = GetGlobalStatModifier(statType);
+	fMult *= pRoom->GetStatModifierFromCharacters(statType);
+
+	const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
+	if (pWeapon) {
+		fMult *= pWeapon->GetStatModifier(statType);
+	}
+	const CCharacter* pArmor = getCustomEquipment(ScriptFlag::Armor);
+	if (pArmor) {
+		fMult *= pArmor->GetStatModifier(statType);
+	}
+	const CCharacter* pAccessory = getCustomEquipment(ScriptFlag::Accessory);
+	if (pAccessory) {
+		fMult *= pAccessory->GetStatModifier(statType);
+	}
+
+	return fMult;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsEquipmentValid(
 	const UINT id, // (in) Index/ID of the equipment
 	const UINT type) // (in) type of the equipment (ScriptFlag::EquipmentType constant)
