@@ -340,10 +340,10 @@ void CFaceWidget::SetReading(const bool bReading)
 }
 
 //****************************************************************************
-void CFaceWidget::SetSleeping()
+void CFaceWidget::SetSleeping(const bool bIsSleeping)
 {
-	facePlayer.bIsSleeping = true;
-	facePlayer.bIsBlinking = true;
+	facePlayer.bIsSleeping = bIsSleeping;
+	facePlayer.bIsBlinking = bIsSleeping;
 	facePlayer.bIsDrawn = false;
 }
 

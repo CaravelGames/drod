@@ -202,7 +202,7 @@ public:
 	void            SetDying(const bool bIsDying, MOOD eDyingMood = Mood_Normal);
 	void            SetSpeaker(const bool bIsSpeaking,
 			const SPEAKER eSpeaker = Speaker_None, const HoldCharacter* pHoldCharacter = NULL, MOOD eDyingMood = Mood_Normal);
-	void            SetSleeping();
+	void            SetSleeping(const bool bIsSleeping);
 
 	Face           facePlayer;
 	Face           faceSpeaker;

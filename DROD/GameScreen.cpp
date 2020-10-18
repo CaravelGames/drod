@@ -6084,6 +6084,7 @@ void CGameScreen::UpdatePlayerFace()
 			}
 	}
 
+	this->pFaceWidget->SetSleeping(false);
 	this->pFaceWidget->SetCharacter(FaceWidgetLayer::PlayerRole, player, pPlayerHoldCharacter);
 }
 
