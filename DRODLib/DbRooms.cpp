@@ -8275,7 +8275,7 @@ void CDbRoom::ClearDeadMonsters(
 		}
 
 		this->DeadMonsters.clear();
-		this->DeadMonsters.splice(KeptDeadMonsters.end(), KeptDeadMonsters);
+		this->DeadMonsters.insert(this->DeadMonsters.end(), KeptDeadMonsters.begin(), KeptDeadMonsters.end());
 		return;
 	}
 
