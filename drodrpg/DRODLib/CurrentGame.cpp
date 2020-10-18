@@ -2965,7 +2965,7 @@ int CCurrentGame::getItemAmount(const UINT item) const
 
 	//Apply general item multiplier and item-specific multiplier.
 	ASSERT(this->pPlayer);
-	float fMult = GetTotalStatModifier(ScriptVars::ItemAll) / 100.0f; //may be negative
+	float fMult = GetTotalStatModifier(ScriptVars::ItemAll); //may be negative
 	switch (item)
 	{
 		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
