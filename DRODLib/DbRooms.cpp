@@ -5257,7 +5257,7 @@ const
 		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
 			pMonster->wX, pMonster->wY, wO, 
 			M_OFFSET + id, 
-			pMonster->HasSword() ? pMonster->GetWeaponType() : WT_Off
+			pMonster->HasSword() ? pMonster->GetWeaponType() : (UINT)WT_Off
 		), true);
 		return true;
 	}
@@ -5410,13 +5410,13 @@ UINT CDbRoom::GentryiiFallsInPit(
 			UINT wO = nGetO(int(piece.wX - wPrevX), int(piece.wY - wPrevY)) + ORIENTATION_COUNT;
 
 			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
-					piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
+					piece.wX, piece.wY, wO, T_GENTRYII, (UINT)WT_Off), true);
 
 			MonsterPieces::const_iterator nextPiece = pieceIt;
 			if (++nextPiece != pieces_end) {
 				wO = nGetO(int(piece.wX - (*nextPiece)->wX), int(piece.wY - (*nextPiece)->wY)) + ORIENTATION_COUNT;
 				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
-						piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
+						piece.wX, piece.wY, wO, T_GENTRYII, (UINT)WT_Off), true);
 			}
 		}
 
