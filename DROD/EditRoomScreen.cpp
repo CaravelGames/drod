@@ -2474,6 +2474,7 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_WATER: case T_SHALLOW_WATER:
 				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
 				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
+				case T_WALL_M: case T_WALL_WIN:
 					RequestToolTip(MID_RotateToChangeType);
 				break;
 				case T_TAR: case T_MUD: case T_GEL:
@@ -2485,7 +2486,6 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 				case T_HORN_SQUAD: case T_HORN_SOLDIER:
 				case T_BEACON: case T_BEACON_OFF:
-				case T_WALL_M: case T_WALL_WIN:
 					if (this->bGroupMenuItems)
 						RequestToolTip(MID_RotateToChangeType);
 				break;
