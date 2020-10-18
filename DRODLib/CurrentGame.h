@@ -315,6 +315,7 @@ public:
 	//Game state vars
 	bool     bSwordsmanOutsideRoom;
 	bool     bIsDemoRecording;
+	bool     bIsLeavingLevel;
 	bool     bIsGameActive;
 	UINT     wTurnNo;
 	UINT     wPlayerTurn;      //player move #
@@ -454,6 +455,7 @@ private:
 	UINT     dwAutoSaveOptions;
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
+	bool     bWasRoomConqueredAtTurnStart;
 
 	CCurrentGame *pSnapshotGame; //for optimized room rewinds
 	UINT dwComputationTime; //time required to process game moves up to this point

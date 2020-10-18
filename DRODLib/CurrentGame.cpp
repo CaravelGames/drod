@@ -402,6 +402,8 @@ void CCurrentGame::Clear(
 
 	this->dwCutScene = 0;
 	this->bWaitedOnHotFloorLastTurn = false;
+	this->bWasRoomConqueredAtTurnStart = false;
+	this->bIsLeavingLevel = false;
 
 	this->DemoRecInfo.clear();
 
@@ -1023,6 +1025,10 @@ bool CCurrentGame::IsCurrentRoomPendingExit() const
 bool CCurrentGame::IsCurrentRoomPendingConquer() const
 //Returns: whether this room will be marked as conquered when the player exits
 {
+	// See WasRoomConqueredOnThisVisit() for more details
+	if (this->bWasRoomConqueredAtTurnStart && this->bIsLeavingLevel)
+		return true;
+
 	 return IsCurrentRoomPendingExit() && !this->pRoom->IsBeaconActive();
 }
 
@@ -1950,6 +1956,9 @@ void CCurrentGame::ProcessCommand(
 
 	if (!this->dwCutScene)
 		ResetCutSceneStartTurn();
+
+	this->bWasRoomConqueredAtTurnStart = false; // Must set to false before the next line
+	this->bWasRoomConqueredAtTurnStart = WasRoomConqueredOnThisVisit();
 
 	this->swordsman.bHasTeleported = false;
 
@@ -6283,6 +6292,8 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 	if (this->wPlayerTurn == 0)
 		return;
 
+	this->bIsLeavingLevel = true;
+
 	//Write a demo record if recording.
 	if (this->bIsDemoRecording)
 	{
@@ -6629,6 +6640,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->swordsman = Src.swordsman;
 
 	this->bIsDemoRecording = Src.bIsDemoRecording;
+	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 	this->bIsGameActive = Src.bIsGameActive;
 	this->wPlayerTurn = Src.wPlayerTurn;
 	this->wSpawnCycleCount = Src.wSpawnCycleCount;
@@ -6649,6 +6661,8 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->statsAtRoomStart = Src.statsAtRoomStart;
 	this->ambientSounds = Src.ambientSounds;
 	this->conquerTokenTurn = Src.conquerTokenTurn;
+	this->bWasRoomConqueredAtTurnStart = Src.bWasRoomConqueredAtTurnStart;
+	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 
 	//Speech log.
 	vector<CCharacterCommand*>::const_iterator iter;
@@ -6770,6 +6784,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->bHalfTurn = false;
 	this->bWaitedOnHotFloorLastTurn = false;
 	this->conquerTokenTurn = NO_CONQUER_TOKEN_TURN;
+	this->bWasRoomConqueredAtTurnStart = false;
+	this->bIsLeavingLevel = false;
 
 	this->wMonsterKills = this->wMonsterKillCombo = 0;
 
@@ -7391,6 +7407,12 @@ bool CCurrentGame::WasRoomConqueredOnThisVisit()
 const
 {
 	ASSERT(this->bIsGameActive);
+
+	// Level exit can be triggered by a scripting command and it's not fun for the player to be told right at this
+	// time that the room was actually not conquered, because something in the room caused that to be.
+	// Therefore we just assume that Go to level entrance keeps the room solved if it was solved when the turn started
+	if (this->bWasRoomConqueredAtTurnStart)
+		return true;
 
 	if (this->pRoom->wMonsterCount)
 		return false;     //Room is still in an unconquered state.

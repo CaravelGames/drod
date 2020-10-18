@@ -4687,7 +4687,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	else if (CueEvents.HasOccurred(CID_SwordsmanNormal))
 		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 
-	if (CueEvents.HasOccurred(CID_RoomConquerPending))  //priority of temporary moods
+	if (CueEvents.HasOccurred(CID_RoomConquerPending))
 	{
 		if (this->pRoomWidget->subtitles.empty()) {
 			UINT eClearID = GetPlayerClearSEID();
