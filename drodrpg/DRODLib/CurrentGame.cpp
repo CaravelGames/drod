@@ -500,29 +500,30 @@ float CCurrentGame::GetGlobalStatModifier(ScriptVars::StatModifiers statType) co
 {
 	PlayerStats& st = this->pPlayer->st;
 
+	// When calculating, treat values that can be negative as signed int
 	switch (statType) {
-	case ScriptVars::StatModifiers::MonsterHP:
-		return st.monsterHPmult / 100.0f;
-	case ScriptVars::StatModifiers::MonsterATK:
-		return st.monsterATKmult / 100.0f;
-	case ScriptVars::StatModifiers::MonsterDEF:
-		return st.monsterDEFmult / 100.0f;
-	case ScriptVars::StatModifiers::MonsterGR:
-		return st.monsterGRmult / 100.0f;
-	case ScriptVars::StatModifiers::MonsterXP:
-		return st.monsterXPmult / 100.0f;
-	case ScriptVars::StatModifiers::ItemAll:
-		return st.itemMult / 100.0f;
-	case ScriptVars::StatModifiers::ItemHP:
-		return st.itemHPmult / 100.0f;
-	case ScriptVars::StatModifiers::ItemATK:
-		return st.itemATKmult / 100.0f;
-	case ScriptVars::StatModifiers::ItemDEF:
-		return st.itemDEFmult / 100.0f;
-	case ScriptVars::StatModifiers::ItemGR:
-		return st.itemGRmult / 100.0f;
-	default:
-		return 1.0f;
+		case ScriptVars::StatModifiers::MonsterHP:
+			return st.monsterHPmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterATK:
+			return st.monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return st.monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return int(st.monsterGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return int(st.monsterXPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return int(st.itemMult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return int(st.itemHPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return int(st.itemATKmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return int(st.itemDEFmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return int(st.itemGRmult) / 100.0f;
+		default:
+			return 1.0f;
 	}
 
 	return 1.0f;

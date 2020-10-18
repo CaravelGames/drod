@@ -3407,6 +3407,7 @@ UINT CCharacter::GetResolvedIdentity() const
 float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 //Returns: the NPC's local modifier value for the given type
 {
+	// When calculating, treat values that can be negative as signed int
 	switch (statType) {
 		case ScriptVars::StatModifiers::MonsterHP:
 			return this->monsterHPmult / 100.0f;
@@ -3415,19 +3416,19 @@ float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 		case ScriptVars::StatModifiers::MonsterDEF:
 			return this->monsterDEFmult / 100.0f;
 		case ScriptVars::StatModifiers::MonsterGR:
-			return this->monsterGRmult / 100.0f;
+			return int(this->monsterGRmult) / 100.0f;
 		case ScriptVars::StatModifiers::MonsterXP:
-			return this->monsterXPmult / 100.0f;
+			return int(this->monsterXPmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemAll:
-			return this->itemMult / 100.0f;
+			return int(this->itemMult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemHP:
-			return this->itemHPmult / 100.0f;
+			return int(this->itemHPmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemATK:
-			return this->itemATKmult / 100.0f;
+			return int(this->itemATKmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemDEF:
-			return this->itemDEFmult / 100.0f;
+			return int(this->itemDEFmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemGR:
-			return this->itemGRmult / 100.0f;
+			return int(this->itemGRmult) / 100.0f;
 		default:
 			return 1.0f;
 	}
