@@ -2699,7 +2699,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 	}
 
 	//Display non-functional temporary stun effect to highlight player was pushed
-	CueEvents.Add(CID_Stun, new CMoveCoord(wDestX, wDestY, 1), true);
+	CueEvents.Add(CID_Stun, new CStunTarget(NULL, 1, true), true);
 
 	if (this->swordsman.IsTarget())
 		this->pRoom->SetPathMapsTarget(wDestX, wDestY);

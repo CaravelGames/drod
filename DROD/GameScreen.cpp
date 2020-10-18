@@ -3863,11 +3863,22 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Stun);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-		const CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
-		const bool bPlayer = this->pCurrentGame->swordsman.wX == pCoord->wX && this->pCurrentGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
-			this->pRoomWidget->AddMLayerEffect(new CStunEffect(this->pRoomWidget, *pCoord));
+		const CStunTarget *pStunTarget = DYN_CAST(const CStunTarget*, const CAttachableObject*, pObj);
+
+		if (pStunTarget->bIsPlayerStunned)
+			pRoomWidget->AddMLayerEffect(new CStunEffect(
+				pRoomWidget,
+				this->pCurrentGame->swordsman.wX,
+				this->pCurrentGame->swordsman.wY,
+				pStunTarget->stunDuration
+			));
+		else if (pStunTarget->pStunnedMonster && pStunTarget->pStunnedMonster->IsAlive())
+			pRoomWidget->AddMLayerEffect(new CStunEffect(
+				pRoomWidget,
+				pStunTarget->pStunnedMonster->wX,
+				pStunTarget->pStunnedMonster->wY,
+				pStunTarget->stunDuration
+			));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())

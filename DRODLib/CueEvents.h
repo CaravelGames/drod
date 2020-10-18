@@ -691,7 +691,7 @@ enum CUEEVENT_ID
 
 	//Stun effect.
 	//
-	//Private data: CMoveCoord *pSquare (one or more)
+	//Private data: CStunTarget *pStunTarget (one or more)
 	CID_Stun,
 
 	//A tile of briar was cut with a weapon.
