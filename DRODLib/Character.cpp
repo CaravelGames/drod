@@ -5277,11 +5277,6 @@ void CCharacter::TeleportCharacter(
 	this->wX = wDestX;
 	this->wY = wDestY;
 
-	if (this->bBrainPathmapObstacle) {
-		room.UpdatePathMapAt(this->wX, this->wY);
-		room.UpdatePathMapAt(wOldX, wOldY);
-	}
-
 	if (this->bVisible)
 	{
 		ASSERT(!room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)]);
@@ -5294,6 +5289,11 @@ void CCharacter::TeleportCharacter(
 	}
 
 	room.Plot(coords); //update room
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(wOldX, wOldY);
+	}
 }
 
 //*****************************************************************************
