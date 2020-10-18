@@ -569,8 +569,17 @@ CheckMonster:
 		const int dx = (int)wCol - (int)this->wX;
 		const int dy = (int)wRow - (int)this->wY;
 
-		if (pMonster->wType != M_FLUFFBABY && !this->CanDaggerStep(pMonster->wType, false) && !pMonster->IsAttackableTarget() &&
-			(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
+		if (
+			pMonster->wType != M_FLUFFBABY // Fluff babies can be stepped on regardless of anything
+			&& !this->CanDaggerStep(pMonster->wType, false)
+			// Even when attackable, body-attack-invulnerable targets just can't be killed by a body-attack
+			&& (!pMonster->IsAttackableTarget() || !bIsVulnerableToBodyAttack(pMonster->GetIdentity()))
+			&& ( // If object is pushable AND cannot be pushed
+				!this->CanPushObjects()
+				|| !pMonster->IsPushableByBody()
+				|| !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy)
+			)
+		){
 
 			if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle())
 				return true;
