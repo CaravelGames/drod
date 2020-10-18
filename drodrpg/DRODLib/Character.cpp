@@ -434,6 +434,30 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 		case (UINT)ScriptVars::P_SCRIPT_F:
 			return this->paramF;
 
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			return this->monsterHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			return this->monsterATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			return this->monsterDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			return this->monsterGRmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			return this->monsterXPmult;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			return this->itemMult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			return this->itemHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			return this->itemATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			return this->itemDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			return this->itemGRmult;
+
+
 		//Hidden global values
 		case (UINT)ScriptVars::P_TOTALTIME:
 			return 0;
@@ -537,6 +561,39 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		break;
 		case (UINT)ScriptVars::P_SCRIPT_F:
 			this->paramF = val;
+		break;
+
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			this->monsterHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			this->monsterATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			this->monsterDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			this->monsterGRmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			this->monsterXPmult = val;
+		break;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			this->itemMult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			this->itemHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			this->itemATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			this->itemDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			this->itemGRmult = val;
 		break;
 
 		//Combat enemy stats.

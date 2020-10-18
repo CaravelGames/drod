@@ -116,7 +116,17 @@ namespace ScriptVars
 		P_ACCESSORY_ATK = -61,
 		P_ACCESSORY_DEF = -62,
 		P_ACCESSORY_GR = -63,
-		FirstPredefinedVar = P_ACCESSORY_GR, //set this to the last var in the enumeration
+		P_SCRIPT_MONSTER_HP_MULT = -64,
+		P_SCRIPT_MONSTER_ATK_MULT = -65,
+		P_SCRIPT_MONSTER_DEF_MULT = -66,
+		P_SCRIPT_MONSTER_GOLD_MULT = -67,
+		P_SCRIPT_MONSTER_XP_MULT = -68,
+		P_SCRIPT_ITEM_MULT = -69,
+		P_SCRIPT_ITEM_HP_MULT = -70,
+		P_SCRIPT_ITEM_ATK_MULT = -71,
+		P_SCRIPT_ITEM_DEF_MULT = -72,
+		P_SCRIPT_ITEM_GR_MULT = -73,
+		FirstPredefinedVar = P_SCRIPT_ITEM_GR_MULT, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
