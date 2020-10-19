@@ -2479,7 +2479,7 @@ void CCurrentGame::ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEven
 		}
 	}
 
-	this->pRoom->PostProcessTurn(CueEvents, !this->bHalfTurn);
+	this->pRoom->PostProcessTurn(CueEvents, false);
 
 	SetPlayerMood(CueEvents);
 }

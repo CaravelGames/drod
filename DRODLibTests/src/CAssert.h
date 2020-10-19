@@ -31,6 +31,7 @@ public:
 	static void RoomHasNoMonster(const char* file, int line, const long int wExpectedType = -1);
 	static void Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType = -1, const long int wExpectedO = -1);
 	static void NoMonster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY);
+	static void OrbState(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const OrbType expectedType);
 
 private :
 	static bool HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType);
@@ -50,6 +51,7 @@ private :
 #define AssertRoomHasNoMonster(wExpectedType) Assert::RoomHasNoMonster(__FILE__, __LINE__, wExpectedType);
 #define AssertTile(wExpectedX, wExpectedY, wExpectedType) Assert::Tile(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType);
 #define AssertNoTile(wExpectedX, wExpectedY, wExpectedType) Assert::NoTile(__FILE__, __LINE__, wExpectedX, wExpectedY, wExpectedType);
+#define AssertOrbState(wExpectedX, wExpectedY, expectedType) Assert::OrbState(__FILE__, __LINE__, wExpectedX, wExpectedY, expectedType);
 
 
 #endif
