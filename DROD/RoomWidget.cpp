@@ -4175,6 +4175,7 @@ void CRoomWidget::RenderRoomTileObjects(
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
 
+	bool bIsMoving = false;
 	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
@@ -4238,15 +4239,18 @@ void CRoomWidget::RenderRoomTileObjects(
 			case T_MIRROR:
 			case T_POWDER_KEG:
 				//Render moving objects later.
-				if (this->dwMovementStepsLeft)
-					this->movingTLayerObjectsToRender.insert(wX,wY);
+				if (this->dwMovementStepsLeft) {
+					bIsMoving = true;
+					this->movingTLayerObjectsToRender.insert(wX, wY);
+				}
 				else
 					DrawRoomTile(ti.t);
 			break;
 			default: DrawRoomTile(ti.t); break;
 		}
-		if (bAddLightLayers || (bIsPitTile && bAddLight))
-			AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.t);
+		if (!bIsMoving) //Moving object's light is applied while it is drawn
+			if (bAddLightLayers || (bIsPitTile && bAddLight))
+				AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.t);
 	}
 
 	if (bEditor) //Area light sprite only shows in room editor.
