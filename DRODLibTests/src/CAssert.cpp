@@ -107,6 +107,20 @@ void Assert::NoTile(const char* file, int line, const UINT wExpectedX, const UIN
 	REQUIRE(!HasTile(wExpectedX, wExpectedY, wExpectedType));
 }
 
+void Assert::OrbState(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const OrbType expectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+
+	COrbData* pOrbData = game->pRoom->GetOrbAtCoords(wExpectedX, wExpectedY);
+	if (!pOrbData) {
+		INFO("No orb data on target tile, so we assume it's OT_NORMAL");
+		REQUIRE(expectedType == OrbType::OT_NORMAL);
+	}
+	else
+		REQUIRE(pOrbData->eType == expectedType);
+}
+
 bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType) {
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CDbRoom* room = game->pRoom;

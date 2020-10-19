@@ -186,6 +186,9 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\DoubleGaze.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
