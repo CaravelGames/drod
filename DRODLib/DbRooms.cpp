@@ -5658,7 +5658,7 @@ void CDbRoom::ResetUnloadedPressurePlates(CCueEvents &CueEvents)
 			{
 				//These objects can depress a pressure plate.
 				CMonster *pMonster = GetMonsterAtSquare(tile->wX,tile->wY);
-				if (pMonster && !(pMonster->IsFlying() || pMonster->wType == M_SEEP))
+				if (pMonster && pMonster->CanPressPressurePlates())
 					bEmpty = false;
 				else if (PressurePlateIsDepressedBy(GetTSquare(tile->wX,tile->wY)))
 					bEmpty = false;

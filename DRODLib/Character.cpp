@@ -4780,6 +4780,10 @@ void CCharacter::SetCurrentGame(
 		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
 	}
 
+	if (!this->IsFlying() && this->GetIdentity() != M_SEEP) {
+		behaviorFlags.insert(ScriptFlag::ActivatePlates);
+	}
+
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
 		//These types can be attacked and killed by default.
 		behaviorFlags.insert(ScriptFlag::Behavior::MonsterAttackable);
