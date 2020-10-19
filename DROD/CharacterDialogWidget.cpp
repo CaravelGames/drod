@@ -3301,7 +3301,6 @@ const
 		case CCharacterCommand::CC_Label:
 			wstr.clear();
 			break;
-
 		//deprecated commands still display
 		case CCharacterCommand::CC_PlayerEquipsWeapon:
 			wstr = g_pTheDB->GetMessageText(MID_SetPlayerSword);
@@ -3815,7 +3814,6 @@ const
 		break;
 		case CCharacterCommand::CC_AnswerOption:
 		{
-			const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, command.x);
 			WSTRING wstrGoto = this->pActionListBox->GetTextForKey(CCharacterCommand::CC_GoTo);
 			CDbSpeech *pSpeech = command.pSpeech;
 			ASSERT(pSpeech);
@@ -3830,17 +3828,20 @@ const
 			wstr += wszSpace;
 			wstr += wstrGoto;
 			wstr += wszSpace;
-			wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+			AppendGotoDestination(wstr, commands, command);
 		}
 		break;
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_GotoIf:
 		{
-			const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, command.x);
-			wstr += wszQuote;
-			wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
-			wstr += wszQuote;
+			if ((int)command.x < 0) {
+				AppendGotoDestination(wstr, commands, command);
+			} else {
+				wstr += wszQuote;
+				AppendGotoDestination(wstr, commands, command);
+				wstr += wszQuote;
+			}
 		}
 		break;
 
@@ -4259,6 +4260,30 @@ const
 		}
 	}
 	return wstr;
+}
+
+void CCharacterDialogWidget::AppendGotoDestination(WSTRING& wstr,
+	const COMMANDPTR_VECTOR& commands, const CCharacterCommand& pCommand
+) const
+{
+	int label = pCommand.x;
+	if (label < 0) {
+		switch (label) {
+		case ScriptFlag::GotoSmartType::PreviousIf:
+			wstr += g_pTheDB->GetMessageText(MID_PreviousIf);
+		break;
+		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			wstr += g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip);
+		break;
+		default:
+			wstr += wszQuestionMark;
+		}
+
+		return;
+	}
+
+	const CCharacterCommand* pGotoCommand = GetCommandWithLabel(commands, label);
+	wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
 }
 
 WSTRING CCharacterDialogWidget::GetWorldMapNameText(CEditRoomScreen *pEditRoomScreen, UINT worldMapID) const
@@ -4737,6 +4762,9 @@ void CCharacterDialogWidget::PopulateGotoLabelList(const COMMANDPTR_VECTOR& comm
 {
 	this->pGotoLabelListBox->Clear();
 	this->wIncrementedLabel = 0;
+
+	this->pGotoLabelListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIf, g_pTheDB->GetMessageText(MID_PreviousIf));
+	this->pGotoLabelListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
 
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
@@ -7911,8 +7939,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	{
-		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
-		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 
@@ -7923,8 +7950,7 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += pSpeech ? (const WCHAR*)(pSpeech->MessageText) : wszQuestionMark;
 		wstr += wszQuote;
 		wstr += wszComma;
-		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
-		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 

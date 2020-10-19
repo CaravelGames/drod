@@ -184,6 +184,12 @@ namespace ScriptFlag
 		Stalwart=4
 	};
 
+	enum GotoSmartType
+	{
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display

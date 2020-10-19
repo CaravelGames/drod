@@ -5333,17 +5333,102 @@ void CCharacter::Disappear()
 }
 
 //*****************************************************************************
-int CCharacter::GetIndexOfCommandWithLabel(const UINT label) const
+int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 //Returns: index of command with specified label, or NO_LABEL if none
 {
-	if (label)
-		for (UINT wIndex=this->commands.size(); wIndex--; )
+	if (label > 0) {
+		for (UINT wIndex = this->commands.size(); wIndex--; )
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-					label == command.x)
+				label == command.x)
 				return wIndex;
 		}
+	} else if (label < 0) {
+		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
+		switch (eGotoType) {
+			case ScriptFlag::GotoSmartType::PreviousIf:
+				return GetIndexOfPreviousIf(true);
+			break;
+			case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			{
+				int wIndex = GetIndexOfNextElse(false);
+				if (wIndex != NO_LABEL) {
+					if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
+						return wIndex + 2;
+
+					return wIndex + 1;
+				}
+			}
+			break;
+			default:
+				return NO_LABEL;
+			break;
+		}
+	}
+	return NO_LABEL;
+}
+//*****************************************************************************
+//Return: Index of the if or else if command at the beginning of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex > 0) {
+		--wCommandIndex;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+			case CCharacterCommand::CC_If:
+				if (wNestingDepth-- == 0)
+					return wCommandIndex; // Found start of if block
+			break;
+			case CCharacterCommand::CC_IfElseIf:
+				if (wNestingDepth == 0 && !bIgnoreElseIf)
+					return wCommandIndex; // Found start of else-if block
+			break;
+			case CCharacterCommand::CC_IfEnd:
+				wNestingDepth++; // entering a nested if-block
+			break;
+		}
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the else or else if command at the end of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+			case CCharacterCommand::CC_If:
+				wNestingDepth++; // entering a nested if-block
+			break;
+			case CCharacterCommand::CC_IfElse:
+				if (wNestingDepth == 0)
+					return wCommandIndex; // Found start of else block
+			break;
+			case CCharacterCommand::CC_IfElseIf:
+				if (wNestingDepth == 0 && !bIgnoreElseIf)
+					return wCommandIndex; // Found start of else-if block
+			break;
+			case CCharacterCommand::CC_IfEnd:
+				if (wNestingDepth > 0)
+					wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
 	return NO_LABEL;
 }
 
