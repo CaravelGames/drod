@@ -617,11 +617,17 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Stun);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-		const CMonster *pMonster = pGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
-		const bool bPlayer = pGame->swordsman.wX == pCoord->wX && pGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
-			pRoomWidget->AddMLayerEffect(new CStunEffect(pRoomWidget, *pCoord));
+		const CStunTarget *pStunTarget = DYN_CAST(const CStunTarget*, const CAttachableObject*, pObj);
+
+		if (pStunTarget->bIsPlayerStunned)
+			pRoomWidget->AddMLayerEffect(new CStunEffect(pRoomWidget, pGame->swordsman.wX, pGame->swordsman.wY, pStunTarget->stunDuration));
+		else if (pStunTarget->pStunnedMonster && pStunTarget->pStunnedMonster->IsAlive())
+			pRoomWidget->AddMLayerEffect(new CStunEffect(
+				pRoomWidget,
+				pStunTarget->pStunnedMonster->wX,
+				pStunTarget->pStunnedMonster->wY,
+				pStunTarget->stunDuration
+			));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MonsterPieceStabbed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())

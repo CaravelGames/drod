@@ -165,6 +165,22 @@ static inline MovementType GetHornMovementType(MovementType movement)
 	IMPLEMENT_CLONE(CBase, CDerived) \
 	virtual CBase* Replicate() const { return Clone(); }
 
+class CMonster;
+class CStunTarget : public CAttachableObject
+{
+public:
+	CStunTarget(const CMonster* pStunnedMonster, const UINT stunDuration, const bool bIsPlayerStunned = false)
+		: CAttachableObject(),
+		pStunnedMonster(pStunnedMonster),
+		stunDuration(stunDuration),
+		bIsPlayerStunned(bIsPlayerStunned)
+	{}
+
+	const CMonster* pStunnedMonster;
+	const UINT stunDuration;
+	const bool bIsPlayerStunned;
+};
+
 class CEntity : public CMoveCoord
 {
 public:

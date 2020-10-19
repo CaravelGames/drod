@@ -32,9 +32,11 @@
 
 //********************************************************************************
 CStunEffect::CStunEffect(
-	CWidget *pSetWidget,    //(in)   Should be a room widget.
-	const CMoveCoord &SetCoord) //(in)   tile location
-	: CAnimatedTileEffect(pSetWidget,CCoord(SetCoord.wX,SetCoord.wY),
+	CWidget *pSetWidget,            //(in)   Should be a room widget.
+	const UINT stunX,
+	const UINT stunY,
+	const UINT stunDuration)    //(in)   stun duration
+	: CAnimatedTileEffect(pSetWidget,CCoord(stunX, stunY),
 			0,TI_STUN1,false,ESTUN)
 	, fading(false)
 {
@@ -45,7 +47,7 @@ CStunEffect::CStunEffect(
 	ASSERT(pRoom);
 	ASSERT(!pRoom || pRoom->GetCurrentGame());
 
-	UINT turnDuration = SetCoord.wO;
+	UINT turnDuration = stunDuration;
 	ASSERT(turnDuration > 0);
 	if (turnDuration == 1) {
 		//effect lasts for turn that just passed only -- show as temporary effect that expires next turn

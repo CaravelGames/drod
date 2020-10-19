@@ -321,7 +321,7 @@ void CMonster::Stun(CCueEvents &CueEvents, UINT val) //[default=1]
 		this->stunned = val;
 
 	if (val)
-		CueEvents.Add(CID_Stun, new CMoveCoord(this->wX, this->wY, val), true);
+		CueEvents.Add(CID_Stun, new CStunTarget(this, val), true);
 }
 
 //*****************************************************************************
