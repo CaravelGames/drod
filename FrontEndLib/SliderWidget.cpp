@@ -242,8 +242,18 @@ void CSliderWidget::SetValue(
 //Params:
 	const BYTE bytSetValue) //(in)   New value.
 {
+	const UINT oldValue = this->bytValue;
 	this->bytValue = (this->bytTickMarks && bytSetValue >= this->bytTickMarks) ?
 		this->bytTickMarks-1 : bytSetValue;
+
+	if (this->bytValue != oldValue)
+	{
+		//Call OnSelectChange() notifier.
+		CEventHandlerWidget* pEventHandler = GetEventHandlerWidget();
+		if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
+	}
+
+	RequestPaint();
 }
 
 //
@@ -284,15 +294,13 @@ void CSliderWidget::HandleKeyDown(
 {
 	const SDL_Keycode key = KeyboardEvent.keysym.sym;
 	const BYTE incAmount = this->bytTickMarks ? (BYTE)1 : (BYTE)8;
+	const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks - 1 : 255;
 
 	switch (key)
 	{
 		case SDLK_HOME:  case SDLK_KP_7:
 			if (this->bytValue > 0)
-			{
-				this->bytValue = 0;
-				RequestPaint();
-			}
+				SetValue(0);
 		break;
 		case SDLK_LEFT: case SDLK_KP_4:
 			//slide left
@@ -300,45 +308,33 @@ void CSliderWidget::HandleKeyDown(
 			{
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{  //all the way to left
-					this->bytValue = 0;
+					SetValue(0);
 				} else {
 					if (this->bytValue < incAmount)
-						this->bytValue = 0;
+						SetValue(0);
 					else
-						this->bytValue -= incAmount;
+						SetValue(this->bytValue - incAmount);
 				}
-				RequestPaint();
 			}
 		break;
 
 		case SDLK_RIGHT: case SDLK_KP_6:
-		{
 			//slide right
-			const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks-1 : 255;
 			if (this->bytValue < bytMaxValue)
 			{
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{  //all the way to right
-					this->bytValue = bytMaxValue;
+					SetValue(bytMaxValue);
 				} else {
 					if (this->bytValue > bytMaxValue - incAmount)
-						this->bytValue = bytMaxValue;
+						SetValue(bytMaxValue);
 					else
-						this->bytValue += incAmount;
+						SetValue(this->bytValue + incAmount);
 				}
-				RequestPaint();
 			}
-		}
 		break;
 		case SDLK_END: case SDLK_KP_1:
-		{
-			const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks-1 : 255;
-			if (this->bytValue < bytMaxValue)
-			{
-				this->bytValue = bytMaxValue;
-				RequestPaint();
-			}
-		}
+			SetValue(bytMaxValue);
 		break;
 		default: break;
 	}
