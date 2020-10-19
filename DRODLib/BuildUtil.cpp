@@ -26,6 +26,7 @@
 
 #include "BuildUtil.h"
 #include "CurrentGame.h"
+#include "PlayerDouble.h"
 
 //*****************************************************************************
 bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
@@ -484,10 +485,19 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 
 	CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
 	
-	//When o-layer changes, refresh bridge supports.
 	if (wLayer == LAYER_OPAQUE) {
+		//When o-layer changes, refresh bridge supports.
 		const UINT newTile = (bIsShallowWater(baseTile) && bIsSteppingStone(room.GetOSquare(x, y))) ? T_STEP_STONE : baseTile;
 		room.bridges.built(x, y, newTile);
+
+		// Building/removing tiles that (can) affect weapon sheathing should refresh it immediately
+		if (bIsSheatheAffecting(wOldOTile) || bIsSheatheAffecting(baseTile)) {
+			CArmedMonster* pArmedMonster = dynamic_cast<CArmedMonster*>(room.GetMonsterAtSquare(x, y));
+
+			if (pArmedMonster) {
+				pArmedMonster->SetWeaponSheathed();
+			}
+		}
 	}
 
 	if (room.building.get(x, y))

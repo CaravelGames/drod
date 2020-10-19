@@ -303,6 +303,7 @@ static inline bool bIsPit(const UINT t) {return t==T_PIT || t==T_PIT_IMAGE;}
 static inline bool bIsDeepWater (const UINT t) {return t==T_WATER;}
 static inline bool bIsShallowWater (const UINT t) {return t==T_SHALLOW_WATER;}
 static inline bool bIsWater(const UINT t) {return bIsDeepWater(t) || bIsShallowWater(t);}
+static inline bool bIsSheatheAffecting(const UINT t) { return bIsShallowWater(t) || t == T_GOO; }
 
 static inline bool bIsArrow(const UINT t) {return t>=T_ARROW_N && t<=T_ARROW_NW;}
 static inline bool bIsDisabledArrow(const UINT t) {return t>=T_ARROW_OFF_N && t<=T_ARROW_OFF_NW;}
