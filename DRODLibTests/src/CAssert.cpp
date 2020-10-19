@@ -3,6 +3,8 @@
 #include "Runner.h"
 #include "test-include.hpp"
 
+#include <sstream>
+
 const char* MakeLogMessage(const char* file, int line) {
 	std::stringstream message;
 	message << "From: ";
