@@ -5656,7 +5656,7 @@ void CDbRoom::ExpandExplosion(
 	const UINT wBombX, const UINT wBombY,  //(in) source of explosion
 	const UINT wX, const UINT wY, //(in) square to place explosion
 	CCoordStack& bombs,        //(in/out) bombs to be exploded
-	CCoordStack& powder_kegs,  //(in/out) bombs to be exploded
+	CCoordStack& powder_kegs,  //(in/out) powder kegs to be exploded
 	CCoordSet& explosion,      //(in/out) tiles needed to be destroyed/activated
 	const CCoordIndex& caberCoords,   //(in) list of tiles containing cabers and their directions
 	const UINT radius)

@@ -2448,6 +2448,9 @@ void CCurrentGame::ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEven
 {
 	this->bHalfTurn = this->swordsman.bIsHasted && !this->bHalfTurn;
 
+	// Explode any kegs that might've been stabbed by player push
+	this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
 	ProcessMonsters(nCommand, CueEvents);
 
 	this->pRoom->ClearPushStates();
@@ -5427,6 +5430,9 @@ void CCurrentGame::ProcessMonsters(
 		}
 
 		ProcessMonster(pMonster, nLastCommand, CueEvents);
+
+		// Kegs stabbed by pushes should explode after each monster
+		this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 		pMonster->bProcessing = false;
 
