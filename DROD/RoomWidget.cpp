@@ -5498,7 +5498,7 @@ void CRoomWidget::SetFrameVars(const bool bMoveMade)
 					{
 						CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*, pScreen);
 						ASSERT(pGameScreen);
-						pGameScreen->GetFaceWidget()->SetSleeping();
+						pGameScreen->GetFaceWidget()->SetSleeping(true);
 					}
 				}
 			}
