@@ -936,7 +936,7 @@ void CDrodScreen::ProcessImageEvents(
 		return;
 
 	const UINT currentTurn = pGame ? pGame->wTurnNo : 0;
-	const Uint32 dwNow = SDL_GetTicks();
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
 
 	const CAttachableObject *pObj = CueEvents.GetFirstPrivateData(cid);
 	while (pObj)

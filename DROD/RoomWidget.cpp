@@ -2225,7 +2225,7 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 	}
 
 	const UINT currentTurn = this->pCurrentGame->wTurnNo;
-	const Uint32 dwNow = SDL_GetTicks();
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
 
 	for (vector<CImageOverlay>::const_iterator it=this->pCurrentGame->persistingImageOverlays.begin();
 			it!=this->pCurrentGame->persistingImageOverlays.end(); ++it)
