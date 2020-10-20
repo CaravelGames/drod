@@ -587,7 +587,7 @@ as play progresses.  Others are altered solely through script commands.
 <br /><br />
 <table>
   <tr>
-    <td width="160"><b>Name</b></td><td width="350"><b>Description</b></td><td width="170"><b>Default value</b></td><td width="150"><b>Valid range</b></td>
+    <td width="200"><b>Name</b></td><td width="340"><b>Description</b></td><td width="170"><b>Default value</b></td><td width="150"><b>Valid range</b></td>
   </tr><tr>
     <td><b>NPC stats</b></td><td></td><td></td><td></td>
   </tr><tr>
@@ -631,9 +631,19 @@ as play progresses.  Others are altered solely through script commands.
   </tr><tr>
     <td>_MonsterGRMult</td><td>global monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_MonsterREFMult</td><td>global monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+    <td>_MonsterREPMult</td><td>global monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_ItemMult</td><td>global item stat multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+    <td>_MyMonsterHPMult</td><td>local monster HP multiplier(<a href="#mymonhpmult">*</a>)</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterATKMult</td><td>local monster ATK multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterDEFMult</td><td>local monster DEF multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterGRMult</td><td>local monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterREPMult</td><td>local monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_ItemMult</td><td>global item stat multiplier(<a href="#itemmult">*</a>)</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_ItemHPMult</td><td>global health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
@@ -642,6 +652,16 @@ as play progresses.  Others are altered solely through script commands.
     <td>_ItemDEFMult</td><td>global DEF power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_ItemGRMult</td><td>global money door multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemMult</td><td>local item stat multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemHPMult</td><td>local health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemATKMult</td><td>local ATK power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemDEFMult</td><td>local DEF power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemGRMult</td><td>local money door multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_HotTile</td><td>hot tile damage(<a href="#damage">*</a>)</td><td>5 (percent)</td><td>-MAX,100</td>
   </tr><tr>
@@ -753,11 +773,22 @@ as play progresses.  Others are altered solely through script commands.
   command with variable parameters in order to ensure later commands are not
   affected unintentionally by your parameter overrides.
 </p>
-<p><a name="monhpmult"><b>*_MonsterHPmult</b></a> - This value is a percent
+<p><a name="monhpmult"><b>*_MonsterHPMult</b></a> - This value is a percent
   multiplier.  It is applied to
   a predefined monster's base HP when the player first enters the room.
   The other stat multipliers are applied to the monster's base stats during
   combat.
+</p>
+<p><a name="mymonhpmult"><b>*_MyMonsterHPMult</b></a> - This value is a percent
+  multiplier. It is a local version of the monster HP multiplier.
+  Local modifiers stack multiplicatively with global modifiers, and are applied
+  by NPCs and custom player equipment.
+</p>
+<p><a name="mymonhpmult"><b>*_ItemMult</b></a> - This value is a percent
+  multiplier. Item multipliers are applied to items of the appropriate type,
+  and are available in global and local versions, and are applied when items are
+  collected. If the total multiplier for an item is negative, collecting it will
+  reduce the player's statistics.
 </p>
 <p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
   positive value, it indicates the percentage of HP the target will
