@@ -2289,18 +2289,31 @@ void CCharacter::Process(
 				//A comment or destination marker for a GoTo command.
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			{
 				//Continue executing script commands from marked jump point.
 				//Will continue script if jump point is invalid.
 				const int wNextIndex = GetIndexOfCommandWithLabel(command.x);
 				this->bParseIfElseAsCondition = false;
-				if (wNextIndex != NO_LABEL)
+				if (wNextIndex != NO_LABEL) {
+					if (command.command == CCharacterCommand::CC_GoSub)
+						this->jumpStack.push_back(this->wCurrentCommandIndex + 1);
 					this->wCurrentCommandIndex = wNextIndex;
-				else
+				} else {
 					++this->wCurrentCommandIndex; //invalid jump -- just play next command
+				}
 				bProcessNextCommand = true;
 			}
+			continue;   //don't increment wCurrentCommandIndex again
+			case CCharacterCommand::CC_Return:
+				if (this->jumpStack.empty()) {
+					this->wCurrentCommandIndex = this->commands.size(); //done with script execution
+				} else {
+					this->wCurrentCommandIndex = this->jumpStack.back();
+					this->jumpStack.pop_back();
+				}
+				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
 
 			case CCharacterCommand::CC_Speech:

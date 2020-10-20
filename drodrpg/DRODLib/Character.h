@@ -260,6 +260,7 @@ private:
 	bool bIfBlock;
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	UINT wLastSpeechLineNumber; //used during language import
+	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 
 	//Predefined vars.
 	UINT color, sword; //cosmetic details

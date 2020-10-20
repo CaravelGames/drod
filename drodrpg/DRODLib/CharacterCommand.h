@@ -241,6 +241,8 @@ public:
 		CC_GenerateEntity,      //Generates a new entity of type h in the room at (x,y) with orientation w.
 		CC_GameEffect,          //Cues the front end to generate a graphic+sound effect (w,h,flags) at (x,y).
 		CC_IfElseIf,            //Else combined with if to reduce code nesting
+		CC_Return,              //Return to just after the previous CC_GoSub command executed.
+		CC_GoSub,               //Jumps script execution to the indicated label.
 		CC_Count
 	};
 
