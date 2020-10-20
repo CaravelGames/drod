@@ -5389,6 +5389,7 @@ void CCharacter::TurnIntoMonster(
 	{
 		CArmedMonster *pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
 		pArmedMonster->weaponType = GetWeaponType();
+		pArmedMonster->bNoWeapon = this->bNoWeapon;
 		pArmedMonster->SetWeaponSheathed();
 	}
 
