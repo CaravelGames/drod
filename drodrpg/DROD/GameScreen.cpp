@@ -8435,12 +8435,25 @@ bool CGameScreen::UploadDemoPolling()
 	{
 		ASSERT(!this->dwUploadingDemo || !this->dwUploadingSavedGame); //only one at a time
 
-		if (g_pTheNet->GetStatus(this->wUploadingScoreHandle) >= 0)
+		const int status = g_pTheNet->GetStatus(this->wUploadingScoreHandle);
+		if (status >= 0)
 		{
 			//Get ranking.
 			CStretchyBuffer* pBuffer = g_pTheNet->GetResults(this->wUploadingScoreHandle);
-			if (pBuffer)
-			{
+			if (!pBuffer) {
+				//Fail gracefully from server-related errors.
+				const long responseCode = CInternet::GetErrorResponseCode(this->wUploadingScoreHandle);
+				if (responseCode >= 300) {
+					//Remove saved game from the upload queue.
+					//(It can be manually uploaded later from the Settings Screen.)
+					SCORE_UPLOAD* pScoreInfo = CCurrentGame::scoresForUpload.front();
+					delete pScoreInfo;
+					CCurrentGame::scoresForUpload.pop();
+
+					SetCursor();
+					ShowOkMessage(MID_CaravelServerError);
+				}
+			} else {
 				if (pBuffer->Size())
 				{
 					//Get demo ranking.
