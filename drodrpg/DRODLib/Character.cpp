@@ -68,6 +68,18 @@ const UINT MAX_ANSWERS = 9;
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
 
+#define MonsterHPMultStr "MonsterHPMultiplier"
+#define MonsterATKMultStr "MonsterATKMultiplier"
+#define MonsterDEFMultStr "MonsterDEFMultiplier"
+#define MonsterGRMultStr "MonsterGRMultiplier"
+#define MonsterXPMultStr "MonsterXPMultiplier"
+
+#define ItemMultStr "ItemMultiplier"
+#define ItemHPMultStr "ItemHPMultiplier"
+#define ItemATKMultStr "ItemATKMultiplier"
+#define ItemDEFMultStr "ItemDEFMultiplier"
+#define ItemGRMultStr "ItemGRMultiplier"
+
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
 #define YRelStr "YRel"
@@ -219,6 +231,8 @@ CCharacter::CCharacter(
 
 	, color(0), sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
+	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
+	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
 {
 }
 
@@ -420,6 +434,30 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 		case (UINT)ScriptVars::P_SCRIPT_F:
 			return this->paramF;
 
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			return this->monsterHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			return this->monsterATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			return this->monsterDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			return this->monsterGRmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			return this->monsterXPmult;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			return this->itemMult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			return this->itemHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			return this->itemATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			return this->itemDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			return this->itemGRmult;
+
+
 		//Hidden global values
 		case (UINT)ScriptVars::P_TOTALTIME:
 			return 0;
@@ -523,6 +561,39 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		break;
 		case (UINT)ScriptVars::P_SCRIPT_F:
 			this->paramF = val;
+		break;
+
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			this->monsterHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			this->monsterATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			this->monsterDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			this->monsterGRmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			this->monsterXPmult = val;
+		break;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			this->itemMult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			this->itemHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			this->itemATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			this->itemDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			this->itemGRmult = val;
 		break;
 
 		//Combat enemy stats.
@@ -3390,6 +3461,39 @@ UINT CCharacter::GetResolvedIdentity() const
 }
 
 //*****************************************************************************
+float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the NPC's local modifier value for the given type
+{
+	// When calculating, treat values that can be negative as signed int
+	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterHP:
+			return this->monsterHPmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterATK:
+			return this->monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return this->monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return int(this->monsterGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return int(this->monsterXPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return int(this->itemMult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return int(this->itemHPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return int(this->itemATKmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return int(this->itemDEFmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return int(this->itemGRmult) / 100.0f;
+		default:
+			return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
 bool CCharacter::IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const
 //Returns: whether player may attack this character
 {
@@ -4342,6 +4446,19 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramW = vars.GetVar(ParamWStr, this->paramW);
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
+
+	//Modifiers
+	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
+	this->monsterATKmult = vars.GetVar(MonsterATKMultStr, this->monsterATKmult);
+	this->monsterDEFmult = vars.GetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	this->monsterGRmult = vars.GetVar(MonsterGRMultStr, this->monsterGRmult);
+	this->monsterXPmult = vars.GetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	this->itemMult = vars.GetVar(ItemMultStr, this->itemMult);
+	this->itemHPmult = vars.GetVar(ItemHPMultStr, this->itemHPmult);
+	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
+	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
+	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
 }
 
 //*****************************************************************************
@@ -4457,6 +4574,29 @@ const
 		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		vars.SetVar(ParamFStr, this->paramF);
+
+	// Modifiers
+	if (this->monsterHPmult != 100)
+		vars.SetVar(MonsterHPMultStr, this->monsterHPmult);
+	if (this->monsterATKmult != 100)
+		vars.SetVar(MonsterATKMultStr, this->monsterATKmult);
+	if (this->monsterDEFmult != 100)
+		vars.SetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	if (this->monsterGRmult != 100)
+		vars.SetVar(MonsterGRMultStr, this->monsterGRmult);
+	if (this->monsterXPmult != 100)
+		vars.SetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	if (this->itemMult != 100)
+		vars.SetVar(ItemMultStr, this->itemMult);
+	if (this->itemHPmult != 100)
+		vars.SetVar(ItemHPMultStr, this->itemHPmult);
+	if (this->itemATKmult != 100)
+		vars.SetVar(ItemATKMultStr, this->itemATKmult);
+	if (this->itemDEFmult != 100)
+		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
+	if (this->itemGRmult != 100)
+		vars.SetVar(ItemGRMultStr, this->itemGRmult);
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 

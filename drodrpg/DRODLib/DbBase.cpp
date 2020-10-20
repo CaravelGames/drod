@@ -677,6 +677,16 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarLessThanOrEqual: strText = "<="; break;
 		case MID_VarGreaterThanOrEqual: strText = ">="; break;
 		case MID_VarInequal: strText = "!="; break;
+		case MID_VarMyMonsterHPMult: strText = "_MyMonsterHPMult"; break;
+		case MID_VarMyMonsterATKMult: strText = "_MyMonsterATKMult"; break;
+		case MID_VarMyMonsterDEFMult: strText = "_MyMonsterDEFMult"; break;
+		case MID_VarMyMonsterGRMult: strText = "_MyMonsterGRMult"; break;
+		case MID_VarMyMonsterXPMult: strText = "_MyMonsterREPMult"; break;
+		case MID_VarMyItemMult: strText = "_MyItemMult"; break;
+		case MID_VarMyItemHPMult: strText = "_MyItemHPMult"; break;
+		case MID_VarMyItemATKMult: strText = "_MyItemATKMult"; break;
+		case MID_VarMyItemDEFMult: strText = "_MyItemDEFMult"; break;
+		case MID_VarMyItemGRMult: strText = "_MyItemGRMult"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

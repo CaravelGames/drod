@@ -241,7 +241,7 @@ void CMonster::SetHP()
 	if (this->pCurrentGame && this->HP)
 	{
 		ASSERT(this->pCurrentGame->pPlayer);
-		const float fMult = this->pCurrentGame->pPlayer->st.monsterHPmult / 100.0f;
+		const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterHP);
 		this->HP = UINTBounds(this->HP * fMult);
 		if (!this->HP)
 			this->HP = 1; //don't let a small multiplier reduce HP to zero
@@ -1401,7 +1401,7 @@ UINT CMonster::getATK() const
 	UINT val = this->ATK;
 	if (!this->pCurrentGame || !val) //multiply by zero will still be zero, so return now
 		return val;
-	const float fMult = this->pCurrentGame->pPlayer->st.monsterATKmult / 100.0f;
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterATK);
 	val = UINTBounds(val * fMult);
 	return !val ? 1 : val; //ATK always >= 1
 }
@@ -1420,7 +1420,7 @@ UINT CMonster::getDEF() const
 	UINT val = this->DEF;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = this->pCurrentGame->pPlayer->st.monsterDEFmult / 100.0f;
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterDEF);
 	val = UINTBounds(val * fMult);
 	return !val ? 1 : val; //DEF always >= 1
 }
@@ -1432,7 +1432,7 @@ int CMonster::getGOLD() const
 	int val = this->GOLD;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = int(this->pCurrentGame->pPlayer->st.monsterGRmult) / 100.0f; //may be negative, so treat as a signed int
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterGR); //may be negative
 	val = intBounds(val * fMult); //may be positive, zero or negative
 	if (!val)
 	{
@@ -1471,7 +1471,7 @@ int CMonster::getXP() const
 	int val = this->XP;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = int(this->pCurrentGame->pPlayer->st.monsterXPmult) / 100.0f; //may be negative, so treat as a signed int
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterXP); //may be negative
 	val = intBounds(val * fMult); //may be positive, zero or negative
 	if (!val)
 	{

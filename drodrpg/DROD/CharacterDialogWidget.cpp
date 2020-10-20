@@ -4086,6 +4086,18 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_DEF_MULT, g_pTheDB->GetMessageText(MID_VarItemDEFMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_GR_MULT, g_pTheDB->GetMessageText(MID_VarItemGRMult));
 
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_HP_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterHPMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_ATK_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterATKMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_DEF_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterDEFMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterGRMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_XP_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterXPMult));
+
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_MULT, g_pTheDB->GetMessageText(MID_VarMyItemMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_HP_MULT, g_pTheDB->GetMessageText(MID_VarMyItemHPMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_ATK_MULT, g_pTheDB->GetMessageText(MID_VarMyItemATKMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_DEF_MULT, g_pTheDB->GetMessageText(MID_VarMyItemDEFMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_GR_MULT, g_pTheDB->GetMessageText(MID_VarMyItemGRMult));
+
 	this->pVarListBox->AddItem(ScriptVars::P_HOTTILE, g_pTheDB->GetMessageText(MID_VarHotTile));
 	this->pVarListBox->AddItem(ScriptVars::P_EXPLOSION, g_pTheDB->GetMessageText(MID_VarExplosion));
 

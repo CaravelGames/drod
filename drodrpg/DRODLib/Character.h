@@ -90,6 +90,7 @@ public:
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
+	float          GetStatModifier(ScriptVars::StatModifiers statType) const;
 	bool           HasSpecialDeath() const;
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
@@ -262,6 +263,8 @@ private:
 	//Predefined vars.
 	UINT color, sword; //cosmetic details
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
+	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
+	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
 };
 
 //*****************************************************************************

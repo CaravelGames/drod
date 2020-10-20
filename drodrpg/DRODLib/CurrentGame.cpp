@@ -495,6 +495,65 @@ const
 }
 
 //*****************************************************************************
+float CCurrentGame::GetGlobalStatModifier(ScriptVars::StatModifiers statType) const
+// Returns: the multiplicative global modifier for the given statistic
+{
+	PlayerStats& st = this->pPlayer->st;
+
+	// When calculating, treat values that can be negative as signed int
+	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterHP:
+			return st.monsterHPmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterATK:
+			return st.monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return st.monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return int(st.monsterGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return int(st.monsterXPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return int(st.itemMult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return int(st.itemHPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return int(st.itemATKmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return int(st.itemDEFmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return int(st.itemGRmult) / 100.0f;
+		default:
+			return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
+float CCurrentGame::GetTotalStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the total multiplicative modifier for the given statistic
+//It is the product of the global, NPC and equipment modifiers
+{
+	float fMult = GetGlobalStatModifier(statType);
+	fMult *= pRoom->GetStatModifierFromCharacters(statType);
+
+	const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
+	if (pWeapon) {
+		fMult *= pWeapon->GetStatModifier(statType);
+	}
+	const CCharacter* pArmor = getCustomEquipment(ScriptFlag::Armor);
+	if (pArmor) {
+		fMult *= pArmor->GetStatModifier(statType);
+	}
+	const CCharacter* pAccessory = getCustomEquipment(ScriptFlag::Accessory);
+	if (pAccessory) {
+		fMult *= pAccessory->GetStatModifier(statType);
+	}
+
+	return fMult;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsEquipmentValid(
 	const UINT id, // (in) Index/ID of the equipment
 	const UINT type) // (in) type of the equipment (ScriptFlag::EquipmentType constant)
@@ -2906,20 +2965,20 @@ int CCurrentGame::getItemAmount(const UINT item) const
 
 	//Apply general item multiplier and item-specific multiplier.
 	ASSERT(this->pPlayer);
-	float fMult = int(this->pPlayer->st.itemMult) / 100.0f; //may be negative, so treat as a signed int
+	float fMult = GetTotalStatModifier(ScriptVars::ItemAll); //may be negative
 	switch (item)
 	{
 		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			fMult *= int(this->pPlayer->st.itemHPmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemHP);
 		break;
 		case T_ATK_UP:
-			fMult *= int(this->pPlayer->st.itemATKmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemATK);
 		break;
 		case T_DEF_UP:
-			fMult *= int(this->pPlayer->st.itemDEFmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemDEF);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
-			fMult *= int(this->pPlayer->st.itemGRmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemGR);
 		break;
 		default: break;
 	}
