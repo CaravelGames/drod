@@ -1490,15 +1490,15 @@ void CDemosScreen::UploadSelectedDemo()
 		ShowStatusMessage(MID_Exporting);
 
 		string text;
-		bool bSuccess = false;
+		UINT handle = 0;
 		if (CDbXML::ExportXML(V_Demos, uploadDemoIDs, text, UINT(-1))) //no multi-room demos
 		{
 			SetCursor(CUR_Internet);
-			bSuccess = g_pTheNet->UploadDemos(text);
+			handle = g_pTheNet->UploadDemos(text);
 		}
 		HideStatusMessage();
 		SetCursor();
-		ShowOkMessage(bSuccess ? MID_ScoresUploaded : MID_ScoresNotUploaded);
+		ShowOkMessage(handle > 0 ? MID_ScoresUploaded : MID_ScoresNotUploaded);
 	}
 }
 

@@ -8451,7 +8451,7 @@ bool CGameScreen::UploadDemoPolling()
 					CCurrentGame::scoresForUpload.pop();
 
 					SetCursor();
-					const UINT dwTag = ShowOkMessage(MID_CaravelServerError);
+					ShowOkMessage(MID_CaravelServerError);
 				}
 			} else {
 				if (pBuffer->Size())

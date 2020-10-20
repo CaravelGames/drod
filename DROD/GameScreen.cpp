@@ -6367,7 +6367,8 @@ bool CGameScreen::UploadDemoPolling()
 	//Ensure last request was completed before another upload is initiated.
 	if (this->wUploadingDemoHandle)
 	{
-		if (g_pTheNet->GetStatus(this->wUploadingDemoHandle) >= 0)
+		const int status = g_pTheNet->GetStatus(this->wUploadingDemoHandle);
+		if (status >= 0)
 		{
 			//Get ranking.
 			CNetResult* pBuffer = g_pTheNet->GetResults(this->wUploadingDemoHandle);
@@ -6404,6 +6405,19 @@ bool CGameScreen::UploadDemoPolling()
 					} //else the demo was deleted before the response was received
 				}
 				delete pBuffer;
+			} else {
+				//Fail gracefully from server-related errors.
+				const long responseCode = CInternet::GetErrorResponseCode(this->wUploadingDemoHandle);
+				if (responseCode >= 300) {
+					//Remove saved game from the upload queue.
+					//(It can be manually uploaded later from the Settings Screen.)
+					DEMO_UPLOAD* pDemoInfo = CCurrentGame::demosForUpload.front();
+					delete pDemoInfo;
+					CCurrentGame::demosForUpload.pop();
+
+					SetCursor();
+					ShowOkMessage(MID_CaravelServerError);
+				}
 			}
 			this->dwUploadingDemo = this->wUploadingDemoHandle = 0;
 		}

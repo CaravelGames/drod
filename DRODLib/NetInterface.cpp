@@ -353,10 +353,10 @@ UINT CNetInterface::UploadDemo(const CNetRoom&, const WSTRING&, const string&,
 }
 
 //*****************************************************************************
-bool CNetInterface::UploadDemos(const string& /*text*/)
+UINT CNetInterface::UploadDemos(const string& /*text*/)
 //Returns: True if upload was sent successfully, false on failure.
 {
-	return false;
+	return 0;
 }
 
 //*****************************************************************************
