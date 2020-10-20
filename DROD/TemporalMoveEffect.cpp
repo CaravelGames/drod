@@ -63,59 +63,55 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 }
 
 //********************************************************************************
-bool CTemporalMoveEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const CDbRoom *pRoom = this->pRoomWidget->GetRoom();
-	if (!pRoom) return false;
-	const CCurrentGame *pGame = pRoom->GetCurrentGame();
+	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+	if (!pRoom) 
+		return false;
+
+	const CCurrentGame* pGame = pRoom->GetCurrentGame();
 	if (!pGame || pGame->wTurnNo != this->wValidTurn)
 		return false;
 
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed < this->startDelay || dwElapsed >= this->startDelay + this->dwDuration) {
+	if (dwTimeElapsed < this->startDelay || dwTimeElapsed >= this->startDelay + this->dwDuration) {
 		//Effect persists for a while, to prevent new one from being created right away.
 		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
 
 		const Uint32 totalDuration = this->startDelay + this->dwDuration + this->endDelay;
-		return dwElapsed < totalDuration;
+		return dwTimeElapsed < totalDuration;
 	}
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	const float percent = (dwElapsed - this->startDelay) / float(this->dwDuration);
-	const float transparencyPercent = percent > 0.5f
-		? (percent - 0.5f) * 2
+	const float elapsedFraction = (dwTimeElapsed - this->startDelay) / float(this->dwDuration);
+	const float transparencyPercent = elapsedFraction > 0.5f
+		? (elapsedFraction - 0.5f) * 2
 		: 0;
-	const float positionPercent = (this->isBump && percent > 0.5)
-		? 1 - percent // Bump commands should look differently
-		: percent;
+	const float positionPercent = (this->isBump && elapsedFraction > 0.5)
+		? 1 - elapsedFraction // Bump commands should look differently
+		: elapsedFraction;
 
-	const Uint8 opacity = static_cast<Uint8>(255 * (1.0f- transparencyPercent));
+	this->nOpacity = static_cast<Uint8>(255 * (1.0f - transparencyPercent));
 
-	const UINT wThisX = this->startX + int(deltaX * positionPercent);
-	const UINT wThisY = this->startY + int(deltaY * positionPercent);
-	
-	SDL_Rect BlitRect = MAKE_SDL_RECT(wThisX, wThisY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	this->wDrawX = this->startX + int(deltaX * positionPercent);
+	this->wDrawY = this->startY + int(deltaY * positionPercent);
+
+	this->blitRect = MAKE_SDL_RECT(this->wDrawX, this->wDrawY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+
 	SDL_Rect WidgetRect = MAKE_SDL_RECT(0, 0, 0, 0);
 	this->pRoomWidget->GetRect(WidgetRect);
-	if (!CWidget::ClipRectToRect(BlitRect, WidgetRect))
+
+	if (!CWidget::ClipRectToRect(this->blitRect, WidgetRect))
 		return true;
 
+	this->dirtyRects[0] = this->blitRect;
+}
+
+//********************************************************************************
+void CTemporalMoveEffect::Draw(SDL_Surface& pDestSurface)
+{
 	g_pTheBM->BlitTileImagePart(
 		this->wTileNo, 
-		BlitRect.x, BlitRect.y,
-		BlitRect.x - wThisX, BlitRect.y - wThisY, BlitRect.w, BlitRect.h,
-		pDestSurface, this->bUseLightLevel, opacity);
-
-	SDL_Rect clipRect = MAKE_SDL_RECT(BlitRect.x, BlitRect.y,
-		BlitRect.w, BlitRect.h);
-	this->dirtyRects[0] = clipRect;
-
-	//Continue effect.
-	return true;
+		this->blitRect.x, this->blitRect.y,
+		this->blitRect.x - this->wDrawX, this->blitRect.y - this->wDrawY, 
+		this->blitRect.w, this->blitRect.h,
+		&pDestSurface, this->bUseLightLevel, this->nOpacity);
 }

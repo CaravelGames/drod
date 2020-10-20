@@ -52,7 +52,7 @@ CParticleExplosionEffect::CParticleExplosionEffect(
 											//so effect lasts indefinitely [default=false]
 	const bool bFromEdge,         //(in) particles originate from tile's edge, not center
 	const EffectType eType)       //[default = EGENERIC]
-	: CEffect(pSetWidget, eType)
+	: CEffect(pSetWidget, (UINT)-1, eType)
 	, origin(MoveCoord)
 	, wParticleTypes(wParticleTypes)
 	, wParticleMinDuration(wParticleMinDuration)
@@ -139,18 +139,17 @@ CParticleExplosionEffect::~CParticleExplosionEffect()
 }
 
 //********************************************************************************
-bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CParticleExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!MoveParticles())
+	static const Uint32 MAX_TIME_STEP = 100; //at least 10fps
+
+	if (!MoveParticles(min(MAX_TIME_STEP, wDeltaTime)))
 		return false;
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
+}
+//********************************************************************************
+void CParticleExplosionEffect::Draw(SDL_Surface& pDestSurface)
+{
 	SDL_Surface *pRotatedSurface = NULL;
 	for (int nIndex=wParticleCount; nIndex--; )
 	{
@@ -182,13 +181,13 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 			{
 				//Unrotated particle.
 				g_pTheBM->BlitTileImagePart(wTileNo, ROUND(p.x),
-						ROUND(p.y), 0, 0, dimX, dimY, pDestSurface, true);
+						ROUND(p.y), 0, 0, dimX, dimY, &pDestSurface, true);
 			} else {
 				//Blit rotated particle.
 				dimX = pRotatedSurface->w, dimY = pRotatedSurface->h;
 				SDL_Rect src = MAKE_SDL_RECT(0, 0, dimX, dimY);
 				SDL_Rect dest = MAKE_SDL_RECT(ROUND(p.x), ROUND(p.y), dimX, dimY);
-				g_pTheDBM->BlitSurface(pRotatedSurface, &src, pDestSurface, &dest);
+				g_pTheDBM->BlitSurface(pRotatedSurface, &src, &pDestSurface, &dest);
 
 				//Darken sprite.
 				if (dest.w && dest.h)
@@ -198,7 +197,7 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 					src.w = dest.w; //update to blitted area
 					src.h = dest.h;
 					g_pTheDBM->DarkenWithMask(pRotatedSurface, src,
-							pDestSurface, dest, CBitmapManager::fLightLevel, true);
+							&pDestSurface, dest, CBitmapManager::fLightLevel, true);
 				}
 
 				SDL_FreeSurface(pRotatedSurface);
@@ -206,8 +205,6 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 			}
 		}
 	}
-
-	return true;
 }
 
 //*****************************************************************************
@@ -219,7 +216,7 @@ void CParticleExplosionEffect::InitParticles()
 }
 
 //*****************************************************************************
-bool CParticleExplosionEffect::MoveParticles()
+bool CParticleExplosionEffect::MoveParticles(const UINT wDeltaTime)
 //Updates positions of all the particles.
 //Invalidates particles having left the valid display area.
 //
@@ -234,12 +231,7 @@ bool CParticleExplosionEffect::MoveParticles()
 	this->dirtyRects[0].y = this->screenRect.y + this->screenRect.h;
 	this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
 
-	static const Uint32 MAX_TIME_STEP = 100;        //at least 10fps
-	const Uint32 dwNow = SDL_GetTicks();
-	const Uint32 dwTimeElapsed = this->dwTimeOfLastMove >= dwNow ? 1 :
-			dwNow - this->dwTimeOfLastMove >= MAX_TIME_STEP ? MAX_TIME_STEP :
-			dwNow - this->dwTimeOfLastMove;
-	const float fMultiplier = dwTimeElapsed / 33.0f;
+	const float fMultiplier = wDeltaTime / 33.0f;
 	const int nDecay = ROUND(2.0f / fMultiplier);
 
 	const CDbRoom *pRoom = this->pRoomWidget ? this->pRoomWidget->GetCurrentGame()->pRoom : NULL;
@@ -327,8 +319,6 @@ bool CParticleExplosionEffect::MoveParticles()
 		this->dirtyRects[0].w = xMax - this->dirtyRects[0].x;
 		this->dirtyRects[0].h = yMax - this->dirtyRects[0].y;
 	}
-
-	this->dwTimeOfLastMove = SDL_GetTicks();
 
 	return bActiveParticles;
 }

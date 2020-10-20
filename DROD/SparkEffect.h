@@ -37,7 +37,9 @@ public:
 			const UINT wParticles=PARTICLES_PER_EXPLOSION, const bool bContinue=true,
 			const bool bFromEdge=false);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 };
 
 #endif //...#ifndef SPARKEFFECT_H

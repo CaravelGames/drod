@@ -43,8 +43,11 @@ public:
 	CBloodInWallEffect(CWidget *pSetWidget, const CMoveCoord &MoveCoord,
 			const UINT wParticles=PARTICLES_PER_EXPLOSION);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	virtual bool HitsObstacle(const CDbRoom *pRoom, const PARTICLE &particle) const;
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 };
 
 #endif //...#ifndef BLOODEFFECT_H

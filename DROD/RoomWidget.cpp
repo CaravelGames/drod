@@ -2321,6 +2321,8 @@ void CRoomWidget::FadeToLightLevel(
 		AddPlayerLight(IsPlayerLightRendered());
 		DirtyRoom();
 		UpdateDrawSquareInfo();
+
+		SetEffectsFrozen(true);
 		RenderRoomInPlay(this->wShowCol, this->wShowRow);
 		SDL_BlitSurface(this->pRoomSnapshotSurface, &rect, pNewRoomSurface, &tempRect);
 
@@ -2352,6 +2354,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Done.
 		SDL_FreeSurface(pOldRoomSurface);
 		SDL_FreeSurface(pNewRoomSurface);
+		SetEffectsFrozen(false);
 	}
 }
 
@@ -2361,18 +2364,22 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-	this->pOLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	// @FIXME-FREEZING
+	this->pOLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 	DrawPlatforms(pSurface);
-	this->pTLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	// @FIXME-FREEZING
+	this->pTLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(this->pCurrentGame->swordsman, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-	this->pMLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	// @FIXME-FREEZING
+	this->pMLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
-	this->pLastLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	// @FIXME-FREEZING
+	this->pLastLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
 
@@ -2410,6 +2417,9 @@ void CRoomWidget::ShowRoomTransition(
 		Paint();
 		return;
 	}
+
+	// We don't want effects to lose "animation" time while the transition happens
+	SetEffectsFrozen(true);
 
 	//Show a smooth transition between rooms.
 	PanDirection panDirection = PanNorth;
@@ -2486,10 +2496,13 @@ void CRoomWidget::ShowRoomTransition(
 				//Done panning.
 				SDL_FreeSurface(pOldRoomSurface);
 				SDL_FreeSurface(pNewRoomSurface);
-				return;
+				break;
 			}
 		}
 	}
+
+	// And now the effects can continue
+	SetEffectsFrozen(false);
 }
 
 //*****************************************************************************
@@ -2767,17 +2780,21 @@ void CRoomWidget::RenderRoomInPlay(
 		//a. Effects that go on top of room image, under monsters/swordsman.
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
-		DrawPlatforms(pDestSurface);
 
-		this->pTLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		// @FIXME-FREEZING
+		this->pOLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
+		DrawPlatforms(pDestSurface);
+		
+		// @FIXME-FREEZING
+		this->pTLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface); 
 
 		//b. Draw monsters (not killing player).
 		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface,
 				bIsPlacingDouble || bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		// @FIXME-FREEZING
+		this->pMLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 
 		//d. Double placement effects:
 		//Make room black-and-white, and draw (unmoving) swordsman on top.
@@ -4489,7 +4506,8 @@ void CRoomWidget::Paint(
 			PopulateBuildMarkerEffects(room);
 		} else {
 			//Add certain images as static during death animation
-			this->pOLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY);
+
+			this->pOLayerEffects->DrawEffects(false, NULL, EIMAGEOVERLAY);
 			this->pOLayerEffects->DirtyTiles();
 		}
 
@@ -7151,6 +7169,7 @@ void CRoomWidget::DrawBoltInRoom(
 	GetRect(RoomRect);
 	SDL_SetClipRect(pDestSurface, &RoomRect);
 	vector<SDL_Rect> dirtyRects;
+
 	DrawBolt(xS, yS, xC, yC, CDrodBitmapManager::DISPLAY_COLS,
 			this->images[BOLTS_SURFACE], pDestSurface, dirtyRects);
 	this->pLastLayerEffects->DirtyTilesForRects(dirtyRects);
@@ -9663,24 +9682,33 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	room.InitRoomStats();
 	CCoordStack bombs, powder_kegs;
 	switch (tTile) {
-		case T_BOMB: bombs.Push(x,y); break;
-		case T_POWDER_KEG: powder_kegs.Push(x,y); break;
-		default: break;
+	case T_BOMB: bombs.Push(x, y); break;
+	case T_POWDER_KEG: powder_kegs.Push(x, y); break;
+	default: break;
 	}
 	room.DoExplode(CueEvents, bombs, powder_kegs);
 
 	CCoordSet coords;
-	const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+	const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
 		CueEvents.GetFirstPrivateData(CID_Explosion));
 	while (pCoord)
 	{
 		coords.insert(pCoord->wX, pCoord->wY);
 		pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-				CueEvents.GetNextPrivateData());
+			CueEvents.GetNextPrivateData());
 	}
-	static const SURFACECOLOR ExpColor = {224, 160, 0};
-	for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
+	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
+	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+void CRoomWidget::SetEffectsFrozen(const bool bIsFrozen)
+// Updates frozen status of all effects layers. Frozen effects do not continue their animation and are suspended, waiting
+{
+	this->pLastLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pMLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pOLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pTLayerEffects->SetEffectsFrozen(bIsFrozen);
 }
 
 //*****************************************************************************

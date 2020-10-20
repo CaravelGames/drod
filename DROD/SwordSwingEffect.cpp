@@ -30,6 +30,8 @@
 #include "../DRODLib/Weapons.h"
 #include <FrontEndLib/BitmapManager.h>
 
+const UINT EffectDuration = 250;
+
 //********************************************************************************
 CSwordSwingEffect::CSwordSwingEffect(
 //Constructor.
@@ -39,7 +41,7 @@ CSwordSwingEffect::CSwordSwingEffect(
 	const CCoord &SetCoord,    //(in)   Location of axis of rotation.
 	const UINT wO,
 	const UINT weaponType)
-	: CEffect(pSetWidget,ESWORDSWING)
+	: CEffect(pSetWidget, EffectDuration, ESWORDSWING)
 	, wO(wO)
 	, weaponType(weaponType)
 {
@@ -68,74 +70,68 @@ CSwordSwingEffect::CSwordSwingEffect(
 	SDL_Rect rect = MAKE_SDL_RECT(this->wX, this->wY,
 			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	this->dirtyRects.push_back(rect);
+
+	CalculateFrame();
 }
 
 //********************************************************************************
-bool CSwordSwingEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns: True if effect should continue, or false if effect is done.
+bool CSwordSwingEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	static const Uint32 dwDuration = 250;	//ms
+	this->nOpacity = static_cast<Uint8>(GetRemainingFraction() * 255);
 
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= dwDuration) return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw lit up checkpoint.
-	static const float fMultiplier = 255.0f / (float)dwDuration;
-	const Uint8 opacity = static_cast<Uint8>((dwDuration-dwElapsed) * fMultiplier);
-
+	return true;
+}
+//********************************************************************************
+void CSwordSwingEffect::Draw(SDL_Surface& pDestSurface)
+{
 	//Clip screen surface to owner widget in case effect goes outside.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&pDestSurface, &OwnerRect);
 
-	//Draw tile graphic.
+	g_pTheBM->BlitTileImage(this->wTileNo, this->wX, this->wY, &pDestSurface, true, this->nOpacity);
+
+	//Unclip screen surface.
+	SDL_SetClipRect(&pDestSurface, NULL);
+}
+
+void CSwordSwingEffect::CalculateFrame()
+{
 	ASSERT(IsValidOrientation(this->wO));
 	ASSERT(this->wO != NO_ORIENTATION);
 	static const UINT sword_tiles[ORIENTATION_COUNT] = {
 		TI_ROTATE_NW_N, TI_ROTATE_N_NE, TI_ROTATE_NE_E,
 		TI_ROTATE_W_NW, TI_TEMPTY,	    TI_ROTATE_E_SE,
-		TI_ROTATE_SW_W, TI_ROTATE_S_SW, TI_ROTATE_SE_S 
+		TI_ROTATE_SW_W, TI_ROTATE_S_SW, TI_ROTATE_SE_S
 	};
 	static const UINT pickaxe_tiles[ORIENTATION_COUNT] = {
 		TI_ROTATE_PICKAXE_NW_N, TI_ROTATE_PICKAXE_N_NE, TI_ROTATE_PICKAXE_NE_E,
 		TI_ROTATE_PICKAXE_W_NW, TI_TEMPTY,	            TI_ROTATE_PICKAXE_E_SE,
-		TI_ROTATE_PICKAXE_SW_W, TI_ROTATE_PICKAXE_S_SW, TI_ROTATE_PICKAXE_SE_S 
+		TI_ROTATE_PICKAXE_SW_W, TI_ROTATE_PICKAXE_S_SW, TI_ROTATE_PICKAXE_SE_S
 	};
 	static const UINT spear_tiles[ORIENTATION_COUNT] = {
 		TI_ROTATE_SPEAR_NW_N, TI_ROTATE_SPEAR_N_NE, TI_ROTATE_SPEAR_NE_E,
 		TI_ROTATE_SPEAR_W_NW, TI_TEMPTY,	        TI_ROTATE_SPEAR_E_SE,
-		TI_ROTATE_SPEAR_SW_W, TI_ROTATE_SPEAR_S_SW, TI_ROTATE_SPEAR_SE_S 
+		TI_ROTATE_SPEAR_SW_W, TI_ROTATE_SPEAR_S_SW, TI_ROTATE_SPEAR_SE_S
 	};
 	static const UINT staff_tiles[ORIENTATION_COUNT] = {
 		TI_ROTATE_STAFF_NW_N, TI_ROTATE_STAFF_N_NE, TI_ROTATE_STAFF_NE_E,
 		TI_ROTATE_STAFF_W_NW, TI_TEMPTY,	        TI_ROTATE_STAFF_E_SE,
-		TI_ROTATE_STAFF_SW_W, TI_ROTATE_STAFF_S_SW, TI_ROTATE_STAFF_SE_S 
+		TI_ROTATE_STAFF_SW_W, TI_ROTATE_STAFF_S_SW, TI_ROTATE_STAFF_SE_S
 	};
 	static const UINT dagger_tiles[ORIENTATION_COUNT] = {
 		TI_ROTATE_DAGGER_NW_N, TI_ROTATE_DAGGER_N_NE, TI_ROTATE_DAGGER_NE_E,
 		TI_ROTATE_DAGGER_W_NW, TI_TEMPTY,	          TI_ROTATE_DAGGER_E_SE,
-		TI_ROTATE_DAGGER_SW_W, TI_ROTATE_DAGGER_S_SW, TI_ROTATE_DAGGER_SE_S 
+		TI_ROTATE_DAGGER_SW_W, TI_ROTATE_DAGGER_S_SW, TI_ROTATE_DAGGER_SE_S
 	};
-	UINT tileNo;
+
 	switch (this->weaponType) {
 		default:
-		case WT_Sword: tileNo = sword_tiles[this->wO]; break;
-		case WT_Pickaxe: tileNo = pickaxe_tiles[this->wO]; break;
-		case WT_Spear: tileNo = spear_tiles[this->wO]; break;
-		case WT_Staff: tileNo = staff_tiles[this->wO]; break;
-		case WT_Dagger: tileNo = dagger_tiles[this->wO]; break;
-		case WT_Caber: tileNo = staff_tiles[this->wO]; break;
+		case WT_Sword: this->wTileNo = sword_tiles[this->wO]; break;
+		case WT_Pickaxe: this->wTileNo = pickaxe_tiles[this->wO]; break;
+		case WT_Spear: this->wTileNo = spear_tiles[this->wO]; break;
+		case WT_Staff: this->wTileNo = staff_tiles[this->wO]; break;
+		case WT_Dagger: this->wTileNo = dagger_tiles[this->wO]; break;
+		case WT_Caber: this->wTileNo = staff_tiles[this->wO]; break;
 	}
-	g_pTheBM->BlitTileImage(tileNo, this->wX, this->wY, pDestSurface,
-			true, opacity);
-
-	//Unclip screen surface.
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	//Continue effect.
-	return true;
 }

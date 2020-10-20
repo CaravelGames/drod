@@ -29,6 +29,7 @@
 #include "BitmapManager.h"
 
 #include <BackEndLib/Assert.h>
+#include <BackEndLib/Ports.h>
 #include <BackEndLib/UtilFuncs.h>
 
 //
@@ -50,12 +51,11 @@ CFloatTextEffect::CFloatTextEffect(
 	const bool bFitToParent,       //(in) if set, then ensure widget displays
 	                               //     initially within parent area [default=true]
 	const bool bPerPixelTransparency)
-	: CEffect(pSetWidget,EFFECTLIB::EFLOATTEXT)
+	: CEffect(pSetWidget, dwDuration, EFFECTLIB::EFLOATTEXT)
 	, fX(float(wX)), fY(float(wY))
 	, text(text)
 	, color(color)
 	, eFontType(eSetFontType)
-	, dwDuration(dwDuration)
 	, speed(speed)
 	, pTextSurface(NULL)
 	, bPerPixelTransparency(bPerPixelTransparency)
@@ -97,11 +97,10 @@ CFloatTextEffect::CFloatTextEffect(
 	const bool bFitToParent,       //(in) if set, then ensure widget displays
 	                               //     initially within parent area [default=true]
 	const bool bPerPixelTransparency)
-	: CEffect(pSetWidget,EFFECTLIB::EFLOATTEXT)
+	: CEffect(pSetWidget, dwDuration, EFFECTLIB::EFLOATTEXT)
 	, fX(float(wX)), fY(float(wY))
 	, color(color)
 	, eFontType(eSetFontType)
-	, dwDuration(dwDuration)
 	, speed(speed)
 	, pTextSurface(NULL)
 	, bPerPixelTransparency(bPerPixelTransparency)
@@ -202,66 +201,74 @@ void CFloatTextEffect::PrepWidget()
 }
 
 //*****************************************************************************
-bool CFloatTextEffect::Draw(SDL_Surface* pDestSurface)
+bool CFloatTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration)
-		return false;
-
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	//Calculate position delta.
-	const Uint32 dwNow = SDL_GetTicks();
-	const Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	this->dwTimeOfLastMove = dwNow;
- 
-	const float fMultiplier = dwFrameTime / this->speed;   //1 pixel / #ms
+	const float fMultiplier = wDeltaTime / this->speed;   //1 pixel / #ms
 	this->fY -= fMultiplier;   //float upward
 
 	//Clip to owner widget.
-	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->fX, this->fY,
-			this->srcRect.w, this->srcRect.h);
+	this->drawRect = MAKE_SDL_RECT(this->fX, this->fY,
+		this->srcRect.w, this->srcRect.h);
 	SDL_Rect SrcRect = this->srcRect;
-	SDL_Rect ClipRect;
-	this->pOwnerWidget->GetRect(ClipRect);
+	this->pOwnerWidget->GetRect(this->clipRect);
 
 	const Uint32 fadeDuration = this->dwDuration / 4;
 	const Uint32 periodBeforeFade = this->dwDuration - fadeDuration;
 	Uint32 dwOpacity = 255;
-	if (dwElapsed > periodBeforeFade)
-		dwOpacity = static_cast<Uint32>(dwOpacity * (1.0 - (dwElapsed - periodBeforeFade) / float(fadeDuration)));
-	const Uint8 nOpacity = dwOpacity >= 255 ? 255 : dwOpacity;
+	if (dwTimeElapsed > periodBeforeFade)
+		dwOpacity = static_cast<Uint32>(dwOpacity * (1.0 - (dwTimeElapsed - periodBeforeFade) / float(fadeDuration)));
+	this->nOpacity = min(255, dwOpacity);
 
-	//Blit.
-	SDL_SetClipRect(pDestSurface, &ClipRect);
 	if (this->bPerPixelTransparency) {
 		//manual clipping potentially required
-		if (ScreenRect.y < ClipRect.y) {
-			const int delta = ClipRect.y - ScreenRect.y;
-			if (delta >= SrcRect.h) {
-				SDL_SetClipRect(pDestSurface, NULL);
+		if (this->drawRect.y < this->clipRect.y) {
+			const int delta = this->clipRect.y - this->drawRect.y;
+			if (delta >= SrcRect.h)
 				return false; //permanently out of display area
-			}
-			ScreenRect.y = ClipRect.y;
+			
+			this->drawRect.y = this->clipRect.y;
 			SrcRect.y += delta;
 			SrcRect.h -= delta;
-			ScreenRect.h -= delta;
+			this->drawRect.h -= delta;
 		}
-		if (ScreenRect.y < 0) {
+		if (this->drawRect.y < 0) {
 			ASSERT(!"Invalid display region");
-			ScreenRect.y = 0; //routine doesn't support drawing outside rect
+			this->drawRect.y = 0; //routine doesn't support drawing outside rect
 		}
-		g_pTheBM->BlitAlphaSurfaceWithTransparency(SrcRect, this->pTextSurface, ScreenRect, pDestSurface, nOpacity);
-	} else {
-		g_pTheBM->BlitSurface(this->pTextSurface, &SrcRect, pDestSurface, &ScreenRect, nOpacity);
 	}
-	SDL_SetClipRect(pDestSurface, NULL);
 
 	//Dirty screen area.
 	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0] = ScreenRect;
+	this->dirtyRects[0] = this->drawRect;
 
 	return true;
+}
+
+//*****************************************************************************
+void CFloatTextEffect::Draw(SDL_Surface& pDestSurface)
+{
+	//Clip to owner widget.
+	this->drawRect = MAKE_SDL_RECT(this->fX, this->fY,
+			this->srcRect.w, this->srcRect.h);
+	SDL_Rect SrcRect = this->srcRect;
+
+	const Uint32 fadeDuration = this->dwDuration / 4;
+	const Uint32 periodBeforeFade = this->dwDuration - fadeDuration;
+	Uint32 dwOpacity = 255;
+	if (dwTimeElapsed > periodBeforeFade)
+		dwOpacity = static_cast<Uint32>(dwOpacity * (1.0 - (dwTimeElapsed - periodBeforeFade) / float(fadeDuration)));
+	const Uint8 nOpacity = dwOpacity >= 255 ? 255 : dwOpacity;
+
+	//Blit.
+	SDL_SetClipRect(&pDestSurface, &this->clipRect);
+	if (this->bPerPixelTransparency) {
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(SrcRect, this->pTextSurface, this->drawRect, &pDestSurface, this->nOpacity);
+	} else {
+		g_pTheBM->BlitSurface(this->pTextSurface, &SrcRect, &pDestSurface, &this->drawRect, this->nOpacity);
+	}
+	SDL_SetClipRect(&pDestSurface, NULL);
+
+	//Dirty screen area.
+	ASSERT(this->dirtyRects.size() == 1);
+	this->dirtyRects[0] = this->drawRect;
 }

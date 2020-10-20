@@ -22,13 +22,12 @@ CExpandingTextEffect::CExpandingTextEffect(
 	const float scaleIncrease, // multiplier, how much larger to make text over original size
 	const Uint32 wDuration, //(in)  How long to display (in milliseconds) [default=1000]
 	const Uint32 fadeTime)  //fade out time at end of duration [default=900]
-	: CEffect(pSetWidget)
+	: CEffect(pSetWidget, wDuration, EFFECTLIB::EGENERIC)
 	, pTextSurface(NULL)
 	, eFont(eFont)
 	, xOffset(xOffset)
 	, yOffset(yOffset)
 	, scaleIncrease(scaleIncrease)
-	, wDuration(wDuration)
 	, fadeTime(fadeTime)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -50,51 +49,57 @@ CExpandingTextEffect::~CExpandingTextEffect()
 }
 
 //********************************************************************************
-//Draws an expanding fading text message at the specified offset in the parent widget.
-bool CExpandingTextEffect::Draw(SDL_Surface* pDestSurface)
+bool CExpandingTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	//End after duration has elapsed.
-	const Uint32 elapsed = TimeElapsed();
-	if (elapsed >= this->wDuration)
-		return false;
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Expand text size, starting at 75% and growing to specified scale factor.
-	const float size_delta = 0.75f + ((0.25f + this->scaleIncrease) * elapsed / (float)this->wDuration);
+	const float size_delta = 0.75f + 0.25f * GetElapsedFraction();
 	const UINT scaled_w = ROUND(size_delta * this->base_size.w);
 	const UINT scaled_h = ROUND(size_delta * this->base_size.h);
 
 	//Scale.
-	Uint8 *pSrcPixel = (Uint8*)this->pTextSurface->pixels;
-	SDL_Surface *pScaledSurface = g_pTheBM->ScaleSurface(this->pTextSurface, pSrcPixel,
-			this->base_size.w, this->base_size.h,
-			scaled_w, scaled_h);
-	if (!pScaledSurface)
-		return false;
+	Uint8* pSrcPixel = (Uint8*)this->pTextSurface->pixels;
 
 	//Specify area of effect.
-	const UINT xDraw = this->screenRect.x + this->xOffset - scaled_w/2;
-	const UINT yDraw = this->screenRect.y + this->yOffset - scaled_h/2;
-	SDL_Rect rect = MAKE_SDL_RECT(xDraw, yDraw, scaled_w, scaled_h);
-	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0] = rect;
+	const UINT xDraw = this->screenRect.x + this->xOffset - scaled_w / 2;
+	const UINT yDraw = this->screenRect.y + this->yOffset - scaled_h / 2;
+	this->drawRect.x = xDraw;
+	this->drawRect.y = yDraw;
+	this->drawRect.w = scaled_w;
+	this->drawRect.h = scaled_h;
 
+	ASSERT(this->dirtyRects.size() == 1);
+	this->dirtyRects[0] = this->drawRect;
+
+	this->nOpacity = 255;
 	if (g_pTheBM->bAlpha) {
-		const Uint32 time_left = this->wDuration - elapsed;
+		const Uint32 time_left = this->dwDuration - dwTimeElapsed;
 		if (time_left < this->fadeTime) {
-			static const Uint8 start_opacity = 255;
-			const float fFadePerMS = start_opacity / float(this->fadeTime);
-			const Uint8 opacity = (Uint8)(time_left * fFadePerMS);
-			EnableSurfaceBlending(pScaledSurface, opacity);
+			const float fFadePerMS = 255 / float(this->fadeTime);
+			this->nOpacity = (Uint8)(time_left * fFadePerMS);
 		}
 	}
 
-	SDL_BlitSurface(pScaledSurface, NULL, pDestSurface, &rect);
+	return true;
+}
+
+//********************************************************************************
+//Draws an expanding fading text message at the specified offset in the parent widget.
+void CExpandingTextEffect::Draw(SDL_Surface& pDestSurface)
+{
+	Uint8 *pSrcPixel = (Uint8*)this->pTextSurface->pixels;
+	SDL_Surface *pScaledSurface = g_pTheBM->ScaleSurface(this->pTextSurface, pSrcPixel,
+			this->base_size.w, this->base_size.h,
+			this->drawRect.w, this->drawRect.h);
+
+	if (!pScaledSurface)
+		return;
+
+	if (this->nOpacity < 255)
+		EnableSurfaceBlending(pScaledSurface, this->nOpacity);
+
+	SDL_BlitSurface(pScaledSurface, NULL, &pDestSurface, &this->drawRect);
 
 	SDL_FreeSurface(pScaledSurface);
-
-	return true;
 }
 
 //********************************************************************************

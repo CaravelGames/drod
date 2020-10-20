@@ -36,7 +36,7 @@ CFloatEffect::CFloatEffect(
 	const CMoveCoord &origin,  //(in) Location and initial direction of movement.
 	const UINT wTileNo,        //(in) tile image to display
 	const UINT wXSize, const UINT wYSize)
-	: CEffect(pSetWidget, EFFECTLIB::EFLOAT)
+	: CEffect(pSetWidget, (UINT)-1, EFFECTLIB::EFLOAT)
 	, origin(origin)
 	, wTileNo(wTileNo)
 	, wXSize(wXSize), wYSize(wYSize)
@@ -54,44 +54,37 @@ CFloatEffect::CFloatEffect(
 }
 
 //*****************************************************************************
-bool CFloatEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CFloatEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Update real position in real time.
 	static const Uint32 dwDuration = 2000;
-	const Uint32 dwTimeElapsed = TimeElapsed();
 	if (dwTimeElapsed > dwDuration)
 		ResetParticle();
 
-	const Uint32 dwNow = SDL_GetTicks();
-	const Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	this->dwTimeOfLastMove = dwNow;
-  
-	const float fMultiplier = dwFrameTime / 100.0f;
+	const float fMultiplier = wDeltaTime / 100.0f;
 	this->fY -= fMultiplier;   //float upward
 
-	if (!OutOfBounds())
-	{
-		//Fade out particle.
-		const BYTE nOpacity = g_pTheBM->bAlpha ?
-				(BYTE)((1.0 - dwTimeElapsed/(float)dwDuration) * 255.0) : 255;
-		g_pTheBM->BlitTileImagePart(this->wTileNo, static_cast<UINT>(this->fX),
-				static_cast<UINT>(this->fY), 0, 0, this->wXSize, this->wYSize,
-				pDestSurface, false, nOpacity);
 
-		//Update bounding box position.
-		ASSERT(this->dirtyRects.size() == 1);
-		this->dirtyRects[0].x = static_cast<Sint16>(this->fX);
-		this->dirtyRects[0].y = static_cast<Sint16>(this->fY);
-	}
+	this->nOpacity = g_pTheBM->bAlpha ?
+		(BYTE)(GetRemainingFraction() * 255.0) : 
+		255;
+
+	//Update bounding box position.
+	ASSERT(this->dirtyRects.size() == 1);
+	this->dirtyRects[0].x = static_cast<Sint16>(this->fX);
+	this->dirtyRects[0].y = static_cast<Sint16>(this->fY);
 
 	return true;
+}
+
+//*****************************************************************************
+void CFloatEffect::Draw(SDL_Surface& pDestSurface)
+{
+	if (!OutOfBounds())
+		g_pTheBM->BlitTileImagePart(this->wTileNo, 
+			static_cast<UINT>(this->fX), static_cast<UINT>(this->fY), 
+			0, 0, this->wXSize, this->wYSize,
+			&pDestSurface, false, this->nOpacity);
 }
 
 //*****************************************************************************
@@ -110,5 +103,5 @@ inline void CFloatEffect::ResetParticle()
 	const int nY = this->screenRect.y + this->origin.wY*CBitmapManager::CY_TILE;
 	this->fX = static_cast<float>(nX) + fRAND(CBitmapManager::CY_TILE);
 	this->fY = static_cast<float>(nY);
-	this->dwTimeOfLastMove = this->dwTimeStarted = SDL_GetTicks();
+	this->dwTimeElapsed = 0;
 }

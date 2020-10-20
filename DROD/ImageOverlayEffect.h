@@ -33,13 +33,13 @@
 struct CommandExecution
 {
 	CommandExecution()
-		: startMS(0), endMS(0)
+		: duration(0), remainingTime(0)
 		, startAlpha(0)
 		, startX(0), startY(0)
 		, startAngle(0), startScale(0)
 	{ }
 
-	Uint32 startMS, endMS;
+	Uint32 duration, remainingTime;
 	Uint8 startAlpha;
 	int startX, startY;
 	int startAngle;
@@ -47,15 +47,15 @@ struct CommandExecution
 	UINT endTurn;
 };
 
-struct ConcurrentCommand
+struct ParallelCommand
 {
-	ConcurrentCommand(const ImageOverlayCommand& command, const CommandExecution& ce)
+	ParallelCommand(const ImageOverlayCommand& command, const CommandExecution& ce)
 		: command(command)
-		, ce(ce)
+		, executionState(ce)
 	{ }
 
 	ImageOverlayCommand command;
-	CommandExecution ce;
+	CommandExecution executionState;
 };
 
 class CImageOverlay;
@@ -67,22 +67,33 @@ public:
 			const Uint32 dwStartTime);
 	virtual ~CImageOverlayEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface);
 	virtual long GetDrawSequence() const { return drawSequence; }
 
 	UINT getInstanceID() const { return instanceID; }
 	UINT getStartTurn() const { return turnNo; }
 
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
+
 private:
-	bool AdvanceState();
+	bool AdvanceState(const UINT wDeltaTime);
 
-	bool BeginCommand(const ImageOverlayCommand& command, bool& bProcessNextCommand);
-	void ContinueCommand(const ImageOverlayCommand& command, const CommandExecution& ce, const Uint32 dwNow);
+	Uint32 UpdateCommand(const ImageOverlayCommand& command, CommandExecution& ce, const Uint32 dwRemainingTime);
+	Uint32 UpdateParallelCommands(const Uint32 dwDeltaTime);
+	bool IsCurrentCommandFinished() const;
+	bool CanContinuePlayingEffect(const Uint32 dwRemainingTime) const;
+	bool CanLoop() const;
+	inline bool IsCommandQueueFinished() const;
+	bool IsImageDrawn();
+	void PrepareDrawProperties();
+	void StartNextCommand();
 	void FinishCommand(const ImageOverlayCommand& command, const CommandExecution& ce);
-	Uint32 ProcessConcurrentCommands(const Uint32 dwNow);
-	bool RestartCommands();
 
-	void DisplayImage(SDL_Surface* pDestSurface);
+	bool IsTimeBasedCommand(const ImageOverlayCommand::IOC commandType) const;
+	bool IsTurnBasedCommand(const ImageOverlayCommand::IOC commandType) const;
+	bool IsInstantCommand(const ImageOverlayCommand::IOC commandType) const;
+	bool IsParallelCommand(const ImageOverlayCommand::IOC commandType) const;
 
 	void InitParams();
 
@@ -96,20 +107,26 @@ private:
 	SDL_Surface *pImageSurface, *pAlteredSurface;
 	bool bPrepareAlteredImage;
 
-	int x, y;
+	int x, y; // Real position of the image
 	Uint8 alpha;
 	int angle;
 	int scale;
 	int jitter;
 	SDL_Rect sourceClipRect;
 
+	// Properties used for the drawing
+	int drawX, drawY; // Position to draw image after applying any active effects
+	Uint8 drawAlpha;
+	SDL_Rect drawSourceRect;
+	SDL_Rect drawDestinationRect;
+
 	ImageOverlayCommands commands;
 	UINT index;
 	int loopIteration, maxLoops;
 	Uint32 startOfNextEffect;
 
-	CommandExecution ce;
-	vector<ConcurrentCommand> concurrentCommands;
+	CommandExecution executionState;
+	vector<ParallelCommand> parallelCommands;
 
 	CRoomWidget *pRoomWidget;
 	UINT turnNo;

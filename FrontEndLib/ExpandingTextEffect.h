@@ -18,8 +18,10 @@ public:
 			const float scaleIncrease,
 			const Uint32 wDuration = 1000, const Uint32 fadeTime = 900);
 	virtual ~CExpandingTextEffect();
-	
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	void RenderText();
@@ -31,7 +33,10 @@ private:
 	UINT eFont;
 	int xOffset, yOffset;
 	float scaleIncrease;
-	Uint32 wDuration, fadeTime;
+	Uint32 fadeTime;
+
+	Uint8 nOpacity;
+	SDL_Rect drawRect;
 };
 
 #endif   //...#ifndef CEXPANDINGTEXTEFFECT_H

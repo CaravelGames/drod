@@ -52,11 +52,11 @@ CNoticeEffect::CNoticeEffect(
 	const WCHAR* pTitle, const WCHAR* pText,
 	const UINT wYOffset, //[default=0]
 	const UINT eType)
-	: CEffect(pSetWidget, eType)
+	: CEffect(pSetWidget, (UINT)-1, eType)
 	, wYOffset(wYOffset)
 	, eFontType(FONTLIB::F_Small)
 	, x(0), y(0)
-	, dwStartTime(0), dwDuration(3000) //ms
+	, dwDuration(3000) //ms
 	, state(NS_Init)
 	, pNoticeSurface(NULL)
 	, opacity(225)	//88%
@@ -147,33 +147,33 @@ void CNoticeEffect::SetAlpha(const Uint8 opacity)
 }
 
 //*****************************************************************************
-bool CNoticeEffect::Draw(SDL_Surface* pDestSurface)
+bool CNoticeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	if (this->state == NS_Done)
 		return false;
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	SetLocation();
+	SetLocation(dwTimeElapsed);
 
 	//Update area of effect.
 	ASSERT(this->dirtyRects.size() == 1);
 	this->dirtyRects[0].x = this->x;
 	this->dirtyRects[0].y = this->y;
 
+	return true;
+}
+//*****************************************************************************
+void CNoticeEffect::Draw(SDL_Surface& pDestSurface)
+{
 	SDL_Rect SrcRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
 
-	SDL_SetClipRect(pDestSurface, &this->screenRect);
-	SDL_BlitSurface(this->pNoticeSurface, &SrcRect, pDestSurface, &ScreenRect);
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	return true;
+	SDL_SetClipRect(&pDestSurface, &this->screenRect);
+	SDL_BlitSurface(this->pNoticeSurface, &SrcRect, &pDestSurface, &ScreenRect);
+	SDL_SetClipRect(&pDestSurface, NULL);
 }
 
 //*****************************************************************************
-void CNoticeEffect::SetLocation()
+void CNoticeEffect::SetLocation(const Uint32 dwTimeElapsed)
 {
 	switch (this->state) {
 		case NS_Init:
@@ -184,7 +184,6 @@ void CNoticeEffect::SetLocation()
 			this->state = NS_SlideIn;
 			this->targetX = this->screenRect.x;
 			this->targetY = this->y;
-			this->dwStartTime = SDL_GetTicks();
 			break;
 		case NS_SlideIn:
 			if (this->x >= this->targetX) {
@@ -193,7 +192,7 @@ void CNoticeEffect::SetLocation()
 			}
 			break;
 		case NS_DisplayPause:
-			if (SDL_GetTicks() >= this->dwStartTime + this->dwDuration) {
+			if (dwTimeElapsed >= this->dwDuration) {
 				this->state = NS_SlideOut;
 				this->targetX = this->x;
 				this->targetY = this->screenRect.y - this->h;
@@ -249,7 +248,7 @@ void CCaravelNetNoticeEffect::RemoveFromNotices()
 }
 
 //*****************************************************************************
-void CCaravelNetNoticeEffect::SetLocation()
+void CCaravelNetNoticeEffect::SetLocation(const Uint32 dwTimeElapsed)
 {
 	switch (this->state) {
 		case NS_Init:
@@ -264,12 +263,12 @@ void CCaravelNetNoticeEffect::SetLocation()
 		case NS_SlideIn:
 			if (this->x + this->w <= (UINT)(this->screenRect.x + this->screenRect.w)) {
 				this->state = NS_DisplayPause;
-				this->dwStartTime = SDL_GetTicks();
+				this->dwTimeElapsed = 0;
 			}
 			break;
 
 		case NS_DisplayPause:
-			if (SDL_GetTicks() - this->dwStartTime > this->dwDuration) {
+			if (dwTimeElapsed > this->dwDuration) {
 				this->state = NS_SlideOut;
 				this->targetX = this->x;
 				this->targetY = this->screenRect.y < int(this->h) ? 0 : this->screenRect.y - this->h;

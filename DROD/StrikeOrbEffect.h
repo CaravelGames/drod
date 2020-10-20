@@ -30,6 +30,7 @@
 #include "DrodEffect.h"
 #include "../DRODLib/DbRooms.h"
 #include <BackEndLib/Types.h>
+#include <FrontEndLib/Bolt.h>
 
 #include <vector>
 using std::vector;
@@ -48,14 +49,20 @@ class CStrikeOrbEffect : public CEffect
 public:
 	CStrikeOrbEffect(CWidget *pSetWidget, const COrbData &SetOrbData, 
 			SDL_Surface *pSetPartsSurface, const bool bSetDrawOrb);
+	~CStrikeOrbEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	UINT        wOrbX, wOrbY;
 	OrbType     eOrbType;
 	vector<BOLT> bolts;
 	bool        bDrawOrb;
+
+	Uint8 nOpacity;
+	vector<BOLT_SEGMENTS*> drawBolts;
 
 	SDL_Surface *  pPartsSurface;
 };

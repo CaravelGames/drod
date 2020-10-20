@@ -39,10 +39,11 @@ CEvilEyeGazeEffect::CEvilEyeGazeEffect(
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const UINT wX, const UINT wY, const UINT wO,    //(in)   Eye's location.
 	const Uint32 dwDuration) //effect duration (0 = indefinite)
-	: CEffect(pSetWidget, dwDuration ? EGENERIC : EEVILEYEGAZE)
+	: CEffect(pSetWidget, dwDuration, dwDuration ? EGENERIC : EEVILEYEGAZE)
 	, wX(wX)
 	, wY(wY)
 	, dwDuration(dwDuration)
+	, opacity(255)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
@@ -60,62 +61,87 @@ CEvilEyeGazeEffect::CEvilEyeGazeEffect(
 }
 
 //********************************************************************************
-bool CEvilEyeGazeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CEvilEyeGazeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Set transparency level: beam strobes.
-	const UINT dwTimeElapsed = this->dwDuration ? TimeElapsed() : 0;
-	if (dwTimeElapsed > this->dwDuration)
+	if (this->dwDuration && dwTimeElapsed > this->dwDuration)
 		return false;
 
-	Uint8 opacity = 255;
-	if (g_pTheBM->bAlpha)
-	{
-		if (this->dwDuration)
-		{
-			const float fMultiplier = 255.0f / (float)this->dwDuration;
-			opacity = (Uint8)((this->dwDuration - dwTimeElapsed) * fMultiplier);
-		} else {
-			opacity = 128;
-		}
-	}
+	UpdateOpacity(dwTimeElapsed);
 
 	//Tiles affected by beam last rendering must be erased.
+	DirtyOldBeamTiles();
+	DrawNewBeam();
+
+	return true;
+}
+
+void CEvilEyeGazeEffect::DirtyOldBeamTiles()
+{
 	static SDL_Rect Dest = MAKE_SDL_RECT(0, 0, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);
 	this->dirtyRects.clear();
-	for (CCoordSet::const_iterator coord=this->lastGazeTiles.begin();
-			coord!=this->lastGazeTiles.end(); ++coord)
+	for (CCoordSet::const_iterator coord = this->gazeTiles.begin();
+		coord != this->gazeTiles.end(); ++coord)
 	{
 		Dest.x = this->pRoomWidget->GetX() + coord->wX * CBitmapManager::CX_TILE;
 		Dest.y = this->pRoomWidget->GetY() + coord->wY * CBitmapManager::CY_TILE;
 		this->dirtyRects.push_back(Dest);
 	}
+}
 
-	//Draw beam.
+//********************************************************************************
+void CEvilEyeGazeEffect::UpdateOpacity(const Uint32& dwTimeElapsed)
+{
+	this->opacity = 255;
+	if (g_pTheBM->bAlpha)
+	{
+		if (this->dwDuration)
+		{
+			const float fMultiplier = 255.0f / (float)this->dwDuration;
+			this->opacity = (Uint8)((this->dwDuration - dwTimeElapsed) * fMultiplier);
+		}
+		else
+			this->opacity = 128;
+	}
+}
+
+//********************************************************************************
+void CEvilEyeGazeEffect::DrawNewBeam()
+{
+	static SDL_Rect Dest = MAKE_SDL_RECT(0, 0, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);
 	UINT cx = this->wX, cy = this->wY;
 	int nDx = this->dx, nDy = this->dy;
 	bool bReflected = false;
-	CCoordSet thisGazeTiles;
+	CCoordSet newGazeTiles;
 	while (CEvilEye::GetNextGaze(this->pRoomWidget->GetRoom(), cx, cy, nDx, nDy, bReflected))
 	{
 		const int destX = this->pRoomWidget->GetX() + cx * CBitmapManager::CX_TILE;
 		const int destY = this->pRoomWidget->GetY() + cy * CBitmapManager::CY_TILE;
-		g_pTheBM->BlitTileImage(this->wTileNo, destX, destY, pDestSurface, false, opacity);
-		if (!this->lastGazeTiles.has(cx,cy))
+		if (!this->gazeTiles.has(cx, cy))
 		{
 			Dest.x = destX;
 			Dest.y = destY;
 			this->dirtyRects.push_back(Dest);
 		}
-		thisGazeTiles.insert(cx, cy);
+		newGazeTiles.insert(cx, cy);
 	}
-	this->lastGazeTiles = thisGazeTiles;
 
-	//Continue effect.
-	return true;
+	this->gazeTiles = newGazeTiles;
+}
+
+//********************************************************************************
+void CEvilEyeGazeEffect::Draw(SDL_Surface& pDestSurface)
+//Draw the effect.
+//
+//Returns:
+//True if effect should continue, or false if effect is done.
+{
+	//Draw beam.
+	for (CCoordSet::const_iterator coord = this->gazeTiles.begin();
+		coord != this->gazeTiles.end(); ++coord)
+	{
+		const int destX = this->pRoomWidget->GetX() + coord->wX * CBitmapManager::CX_TILE;
+		const int destY = this->pRoomWidget->GetY() + coord->wY * CBitmapManager::CY_TILE;
+		g_pTheBM->BlitTileImage(this->wTileNo, destX, destY, &pDestSurface, false, this->opacity);
+	}
 }

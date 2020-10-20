@@ -41,13 +41,15 @@ public:
 			const UINT duration);
 	~CRotateTileEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	void SetRotationAngle(const float fAngle);
 	void SetOpacity(const BYTE opacity) {this->nOpacity = opacity;}
 	void SetTile(const UINT tileNo);
 
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
+
 private:
-	UINT  dwDuration;
 	UINT  tileNo;
 	SDL_Rect srcRect; //area of src tile to rotate
 	int   xCenter, yCenter;
@@ -57,6 +59,8 @@ private:
 	Uint8 *pSrcPixel; //origin pixel in source surface to rotate
 	float fInitialAngle, fLastAngle; //initial angle of rotation (degrees)
 	float fRotationRate; //degrees per second
+
+	SDL_Rect drawRect;
 };
 
 #endif //...#ifndef ROTATETILEEFFECT_H

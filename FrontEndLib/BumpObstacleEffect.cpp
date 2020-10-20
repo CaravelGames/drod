@@ -42,7 +42,7 @@ CBumpObstacleEffect::CBumpObstacleEffect(
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
 	UINT wSetCol, UINT wSetRow, //(in)  Square containing obstacle.
 	UINT wSetBumpO)            //(in)   Direction to bump square.
-	: CEffect(pSetWidget,EFFECTLIB::EBUMPOBSTACLE)
+	: CEffect(pSetWidget, BUMP_OBSTACLE_EFFECT_DURATION, EFFECTLIB::EBUMPOBSTACLE)
 	, pEraseSurface(NULL)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -74,34 +74,27 @@ CBumpObstacleEffect::~CBumpObstacleEffect()
 }
 
 //********************************************************************************
-bool CBumpObstacleEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CBumpObstacleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (TimeElapsed() >= 200)
-		//Effect is done.
-		return false;
-
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
 	SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, this->src.w, this->src.h);
 	if (!this->pEraseSurface)
 	{
 		this->pEraseSurface = g_pTheBM->ConvertSurface(SDL_CreateRGBSurface(
-				SDL_SWSURFACE, EraseRect.w, EraseRect.h, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0));
+			SDL_SWSURFACE, EraseRect.w, EraseRect.h, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0));
 		SDL_BlitSurface(GetDestSurface(), &this->src, this->pEraseSurface, &EraseRect);
 	}
+
+	return true;
+}
+//********************************************************************************
+void CBumpObstacleEffect::Draw(SDL_Surface& pDestSurface)
+{
+	SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, this->src.w, this->src.h);
 
 	//Blit the bumped area.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(pDestSurface, &ClipRect);
-	SDL_BlitSurface(this->pEraseSurface, &EraseRect, pDestSurface, &this->dest);
-	SDL_SetClipRect(pDestSurface, NULL);
-	
-	//Effect continues.
-	return true;
+	SDL_SetClipRect(&pDestSurface, &ClipRect);
+	SDL_BlitSurface(this->pEraseSurface, &EraseRect, &pDestSurface, &this->dest);
+	SDL_SetClipRect(&pDestSurface, NULL);
 }

@@ -48,11 +48,15 @@ public:
 			const int yOffset = 0, const Uint32 wDuration = 3000, const Uint32 fadeTime = 1000);
 	virtual ~CFlashMessageEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 	void SetColor(int r, int g, int b);
 	void SetMovement(bool val) { this->movement = val; }
 	void SlowExpansion(bool val=true) { this->bSlowExpansion = val; }
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	void ScaleText(const Uint32& dwTimeElapsed, UINT& scaled_w, UINT& scaled_h);
+	void UpdateOpacity(const Uint32& dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	void FreeTextSurface();
@@ -63,7 +67,7 @@ private:
 	SDL_Rect screenRect;
 	WSTRING wstrText;
 	int yOffset;
-	Uint32 wDuration, fadeTime;
+	Uint32 fadeTime;
 	bool movement;
 	bool bSlowExpansion;
 
@@ -71,6 +75,9 @@ private:
 
 	bool bCustomColor;
 	SDL_Color customColor;
+
+	Uint8 nOpacity;
+	SDL_Rect drawRect;
 };
 
 #endif   //...#ifndef CFLASHMESSAGEEFFECT_H

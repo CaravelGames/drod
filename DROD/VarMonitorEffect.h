@@ -38,21 +38,26 @@ public:
 	CVarMonitorEffect(CWidget *pSetWidget);
 	~CVarMonitorEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	void SetText(const WCHAR* pText);
 
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
+	
 private:
+	void UpdateOpacity(const Uint32 dwTimeElapsed);
 	void SetTextForNewTurn();
 
 	int x, y;          //pixel position
 	UINT lastTurn;      //last turn var query was made
 
-	Uint32 lastUpdate; //tick last update was displayed
 	VARMAP lastVars;   //latest displayed var state
 
 	CRoomWidget *pRoomWidget;
 
 	SDL_Surface *pTextSurface;  //text to display
+
+	Uint8 nOpacity;
 };
 
 #endif //...#ifndef VARMONITOREFFECT_H

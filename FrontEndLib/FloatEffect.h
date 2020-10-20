@@ -37,7 +37,9 @@ public:
 	CFloatEffect(CWidget *pSetWidget, const CMoveCoord &origin, const UINT wTileNo,
 			const UINT wXSize, const UINT wYSize);
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	bool OutOfBounds() const;
@@ -48,6 +50,8 @@ private:
 	UINT wTileNo;        //image
 	UINT wXSize, wYSize; //image dimensions
 	SDL_Rect screenRect;
+
+	Uint8 nOpacity;
 };
 
 #endif   //...#ifndef FLOATEFFECT_H

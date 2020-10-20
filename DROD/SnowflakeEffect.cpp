@@ -27,11 +27,14 @@
 #include "SnowflakeEffect.h"
 #include "TileImageConstants.h"
 #include <FrontEndLib/BitmapManager.h>
+#include <FrontEndLib/Screen.h>
 
 //All instanced snowflakes have a similar horizontal drift
 float CSnowflakeEffect::fXDrift = 0.0;
 
 const UINT SNOW_TYPES = 2;
+
+const UINT EffectDuration = 5000;
 
 //*****************************************************************************
 CSnowflakeEffect::CSnowflakeEffect(
@@ -39,7 +42,8 @@ CSnowflakeEffect::CSnowflakeEffect(
 //
 //Params:
 	CWidget *pSetWidget)       //(in) parent widget
-	: CEffect(pSetWidget, ESNOWFLAKE)
+		: CEffect(pSetWidget, EffectDuration, ESNOWFLAKE),
+		nOpacity(255), wTileNo(TI_TEMPTY), wDrawSize(0)
 {
 	ASSERT(pSetWidget);
 	pSetWidget->GetRect(this->screenRect);
@@ -49,7 +53,6 @@ CSnowflakeEffect::CSnowflakeEffect(
 	const int nY = this->screenRect.y + RAND(this->screenRect.h + wVerticalFill) - wVerticalFill;
 	this->fX = static_cast<float>(nX);
 	this->fY = static_cast<float>(nY);
-	this->dwTimeOfLastMove = this->dwTimeStarted = SDL_GetTicks();
 
 	this->wType = RAND(SNOW_TYPES);
 
@@ -61,29 +64,33 @@ CSnowflakeEffect::CSnowflakeEffect(
 }
 
 //*****************************************************************************
-bool CSnowflakeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CSnowflakeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	UpdateWind();
 
-	static const Uint32 dwDuration = 5000;
-	const Uint32 dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= dwDuration)	return false;
-
-	//Update real position in real time.
-	const Uint32 dwNow = SDL_GetTicks();
-	const Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	this->dwTimeOfLastMove = dwNow;
-  
 	//Downward drift movement pattern.
 	//Snowflake appears to move slower as it falls down.
-	static const Uint32 dwBuffer = dwDuration/4;
-	const float fMultiplier = (50 * dwFrameTime) / (float)(dwBuffer + dwTimeElapsed);
+	static const Uint32 dwBuffer = dwDuration / 4;
+	const float fMultiplier = (50 * wDeltaTime) / (float)(dwBuffer + wDeltaTime);
 	this->fY += fMultiplier;   //float downward
+	this->fX += fMultiplier * CSnowflakeEffect::fXDrift;	//wind blows sideways
+
+	if (OutOfBounds()) 
+		return false;
+
+	this->nOpacity = g_pTheBM->bAlpha
+		? (BYTE)(GetRemainingFraction() * this->fOpacity * 255.0)
+		: 255;
+}
+
+//*****************************************************************************
+void CSnowflakeEffect::UpdateWind()
+{
+	static Uint32 lastUpdatePresentCount = 0;
+
+	// Already updated this frame
+	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
+		return;
 
 	//Sideways wind movement.
 	//Wind changes gradually.  Occasionally, velocity changes sharply.
@@ -92,46 +99,52 @@ bool CSnowflakeEffect::Draw(SDL_Surface* pDestSurface)
 		CSnowflakeEffect::fXDrift += fRAND_MID(0.5f);
 	else
 		CSnowflakeEffect::fXDrift += fRAND_MID(0.005f);
+
 	if (CSnowflakeEffect::fXDrift < -fMaxDrift)
 		CSnowflakeEffect::fXDrift = -fMaxDrift;
 	else if (CSnowflakeEffect::fXDrift > fMaxDrift)
 		CSnowflakeEffect::fXDrift = fMaxDrift;
-	this->fX += fMultiplier * CSnowflakeEffect::fXDrift;	//wind blows sideways
+}
 
-	if (OutOfBounds()) return false;
-
-	//Fade out particle.
-	const BYTE nOpacity = g_pTheBM->bAlpha ?
-			(BYTE)((1.0 - dwTimeElapsed/(float)dwDuration) * this->fOpacity * 255.0) : 255;
-
-	//Particle shrinks.
+//*****************************************************************************
+void CSnowflakeEffect::UpdateFrame(float elapsedFraction)
+{
 	static const UINT NUM_SPRITES = 4;        //Sprites in animation
 	static const UINT SpriteNum[SNOW_TYPES][NUM_SPRITES] = {	//two types
 		{TI_SNOWFLAKE_a1, TI_SNOWFLAKE_a2, TI_SNOWFLAKE_a3, TI_SNOWFLAKE_a4},
 		{TI_SNOWFLAKE_b1, TI_SNOWFLAKE_b2, TI_SNOWFLAKE_b3, TI_SNOWFLAKE_b4}
 	};
 	static const UINT SpriteSize[SNOW_TYPES][NUM_SPRITES] = {
-		{8, 6, 4, 3},{7, 5, 4, 3}
+		{8, 6, 4, 3},
+		{7, 5, 4, 3}
 	};
-	const UINT wSpriteNo = (dwTimeElapsed * NUM_SPRITES)/dwDuration;
+
+	UINT wSpriteNo = elapsedFraction * NUM_SPRITES;
 	ASSERT(wSpriteNo < NUM_SPRITES);
 
-	//Blit if in bounds.
-	const UINT wX = static_cast<UINT>(this->fX), wY = static_cast<UINT>(this->fY);
-	const UINT wSize = SpriteSize[this->wType][wSpriteNo];
-	if (wX >= (UINT)this->screenRect.x && wY >= (UINT)this->screenRect.y &&
-				wX < this->screenRect.x + this->screenRect.w - wSize &&
-				wY < this->screenRect.y + this->screenRect.h - wSize)
-		g_pTheBM->BlitTileImagePart(SpriteNum[this->wType][wSpriteNo], wX, wY,
-				0, 0, wSize, wSize, pDestSurface, true, nOpacity);
+	this->wTileNo = SpriteNum[this->wType][wSpriteNo];
+	this->wDrawSize = SpriteSize[this->wType][wSpriteNo];
 
-	//Update bounding box position.
 	ASSERT(this->dirtyRects.size() == 1);
 	this->dirtyRects[0].x = static_cast<Sint16>(this->fX);
 	this->dirtyRects[0].y = static_cast<Sint16>(this->fY);
-	this->dirtyRects[0].w = this->dirtyRects[0].h = wSize;
+	this->dirtyRects[0].w = this->dirtyRects[0].h = this->wDrawSize;
+}
 
-	return true;
+//*****************************************************************************
+void CSnowflakeEffect::Draw(SDL_Surface& pDestSurface)
+{
+	const UINT wX = static_cast<UINT>(this->fX), wY = static_cast<UINT>(this->fY);
+	const UINT wSize = this->wDrawSize;
+	if (wX >= (UINT)this->screenRect.x && 
+			wY >= (UINT)this->screenRect.y &&
+			wX < this->screenRect.x + this->screenRect.w - wSize &&
+			wY < this->screenRect.y + this->screenRect.h - wSize)
+		g_pTheBM->BlitTileImagePart(
+			this->wTileNo, 
+			wX, wY,
+			0, 0, wSize, wSize, 
+			&pDestSurface, true, nOpacity);
 }
 
 //*****************************************************************************

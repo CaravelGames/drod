@@ -1709,7 +1709,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 				g_pTheDBM->fLightLevel = this->fDarkFactor;
 				addParticle();
 				updateParticles(pDestSurface, nMouseX, nMouseY);
-				verminEffects.DrawEffects(false, false, pDestSurface);
+				verminEffects.DrawEffects(false, pDestSurface);
 
 				DrawLightMask(pDestSurface, nMouseX, nMouseY, 1.0f/this->fDarkFactor + 0.002f * RAND(100));
 			}

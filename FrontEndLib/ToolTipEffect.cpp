@@ -54,11 +54,9 @@ CToolTipEffect::CToolTipEffect(
 	const WCHAR *pwczSetText,           //(in)   Text that label will display.
 	const Uint32 dwDisplayDuration,     //(in)   Display (default = 5000ms)
 	const UINT eSetFontType)
-	: CEffect(pSetWidget,EFFECTLIB::ETOOLTIP)
+	: CEffect(pSetWidget, dwDisplayDuration, EFFECTLIB::ETOOLTIP)
 	, eFontType(eSetFontType)
 	, pToolTipSurface(NULL)
-	, dwWhenEnabled(SDL_GetTicks())
-	, dwDuration(dwDisplayDuration)
 {
 	this->wstrText = pwczSetText ? pwczSetText : wszEmpty;
 
@@ -134,20 +132,18 @@ const
 }
 
 //*****************************************************************************
-bool CToolTipEffect::Draw(SDL_Surface* pDestSurface)
+bool CToolTipEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwNow = SDL_GetTicks();
-	if (dwNow - this->dwWhenEnabled > this->dwDuration)
+	if (this->wstrText.size() == 0) 
 		return false;
 
-	if (this->wstrText.size()==0) return false;
+	return true;
+}
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
+//*****************************************************************************
+void CToolTipEffect::Draw(SDL_Surface& pDestSurface)
+{
 	SDL_Rect ToolTipRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
-	SDL_BlitSurface(this->pToolTipSurface, &ToolTipRect, pDestSurface, &ScreenRect);
-
-	return true;
+	SDL_BlitSurface(this->pToolTipSurface, &ToolTipRect, &pDestSurface, &ScreenRect);
 }

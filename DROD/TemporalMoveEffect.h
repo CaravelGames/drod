@@ -38,7 +38,9 @@ public:
 	CTemporalMoveEffect(CWidget *pSetWidget,
 		const CMoveCoord &SetCoord, const UINT wTI, const bool isBump, const UINT type=ETEMPORALMOVE);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	UINT startX, startY;
@@ -49,6 +51,11 @@ private:
 
 	CRoomWidget *pRoomWidget;
 	UINT wValidTurn;   //game turn this effect is valid for
+
+	Uint8 nOpacity;
+	UINT wDrawX;
+	UINT wDrawY;
+	SDL_Rect blitRect;
 };
 
 #endif //...#ifndef TEMPORALMOVEEFFECT_H

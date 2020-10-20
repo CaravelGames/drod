@@ -48,12 +48,15 @@ public:
 			const bool bFadeOut = false, const bool bPerPixelTransparency=false);
 	virtual ~CTextEffect();
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
 	void     FadeOut(const bool bVal=true) {this->bFadeOut = bVal;}
 	int		X() const {return this->nX;}
 	int		Y() const {return this->nY;}
 	void		Move(const int nX, const int nY);
 	void     SetText(const WCHAR *text, const UINT eFont);
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	SDL_Surface * pTextSurface;  //text to display
@@ -64,6 +67,9 @@ private:
 	int nX, nY;
 	bool bFadeOut;
 	bool bPerPixelTransparency;
+
+	Uint8 nOpacity;
+	SDL_Rect drawRect;
 };
 
 #endif   //...#ifndef CTEXTEFFECT_H

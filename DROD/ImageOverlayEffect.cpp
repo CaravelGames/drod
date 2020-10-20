@@ -24,6 +24,16 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/*
+A poor man's guide to how Image Overlay effects work.
+
+In its simplest, an Image Overlay is a queue of commands that each time 0 or more milliseconds
+and are executed one after the other. This is the core functionality, but besides it you have:
+ - Looping  - essentially rerun the whole queue X number of times
+ - Parallel commands - they run parallel to other commands, all at once
+ - Cancelling layers - handled externally
+*/
+
 #include "ImageOverlayEffect.h"
 #include "DrodBitmapManager.h"
 #include "DrodEffect.h"
@@ -74,11 +84,12 @@ CImageOverlayEffect::CImageOverlayEffect(
 	const CImageOverlay *pImageOverlay,
 	const UINT turnNo,
 	const Uint32 dwStartTime)
-	: CEffect(pSetWidget, EIMAGEOVERLAY)
+	: CEffect(pSetWidget, (UINT)-1, EIMAGEOVERLAY)
 	, drawSequence(++nextDrawSequence)
 	, pImageSurface(NULL), pAlteredSurface(NULL)
 	, bPrepareAlteredImage(false)
 	, x(0), y(0)
+	, drawX(0), drawY(0)
 	, alpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
@@ -117,6 +128,8 @@ void CImageOverlayEffect::InitParams()
 {
 	this->x = 0;
 	this->y = 0;
+	this->drawX = 0;
+	this->drawY = 0;
 	this->alpha = 255;
 	this->angle = 0;
 	this->jitter = 0;
@@ -124,15 +137,15 @@ void CImageOverlayEffect::InitParams()
 
 	static const SDL_Rect rect = {0,0,0,0};
 	this->sourceClipRect = rect;
-	this->concurrentCommands.clear();
+	this->parallelCommands.clear();
 }
 
-bool CImageOverlayEffect::Draw(SDL_Surface* pDestSurface)
+bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	if (!this->pImageSurface)
 		return false;
 
-	if (!AdvanceState())
+	if (!AdvanceState(wDeltaTime))
 		return false;
 
 	if (this->bPrepareAlteredImage) {
@@ -140,427 +153,472 @@ bool CImageOverlayEffect::Draw(SDL_Surface* pDestSurface)
 		this->bPrepareAlteredImage = false;
 	}
 
-	DisplayImage(pDestSurface);
+	PrepareDrawProperties();
+
 	return true;
 }
 
-bool CImageOverlayEffect::AdvanceState()
+void CImageOverlayEffect::PrepareDrawProperties()
 {
-	const Uint32 dwNow = CScreen::dwCurrentTicks;
+	this->drawX = this->x;
+	this->drawY = this->y;
 
-	const Uint32 maxCompletedEndMS = ProcessConcurrentCommands(dwNow);
-
-	const CDbRoom *pRoom = this->pRoomWidget->GetRoom();
-	const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo : 0;
-
-	const bool bExecuteNextCommand =
-		this->index >= this->commands.size() || //either at start, or waiting for parallel commands to complete
-		dwNow >= this->ce.endMS ||
-		gameTurn >= this->ce.endTurn;
-	if (bExecuteNextCommand)
-	{
-		if (this->index < this->commands.size()) {
-			const ImageOverlayCommand& command = this->commands[this->index];
-			FinishCommand(command, this->ce);
-		}
-
-		//Advance to next display command.
-		bool bLoopedThisTurn = false;
-		bool bProcessNextCommand;
-		do {
-			if (this->index != this->commands.size())
-				++this->index;
-
-			if (this->index >= this->commands.size())
-			{
-				//No more commands to execute.
-
-				//wait until any parallel commands have finished displaying
-				if (!this->concurrentCommands.empty())
-					return true;
-
-				if (bLoopedThisTurn)
-					return false; //looping without any display -- stop processing
-
-				//When command advancement was only waiting on concurrent effects to complete,
-				//set time for starting the next loop to the end of the final concurrent command
-				if (maxCompletedEndMS > this->startOfNextEffect)
-					this->startOfNextEffect = maxCompletedEndMS;
-
-				if (!RestartCommands())
-					return false;
-				bLoopedThisTurn = true;
-			}
-
-			bProcessNextCommand = false;
-
-			const ImageOverlayCommand& command = this->commands[this->index];
-			if (!BeginCommand(command, bProcessNextCommand))
-				return false;
-		} while (bProcessNextCommand);
-
-		this->startOfNextEffect = this->ce.endMS;
+	if (this->jitter) {
+		this->drawX += ROUND(fRAND_MID(this->jitter));
+		this->drawY += ROUND(fRAND_MID(this->jitter));
 	}
 
-	ASSERT(this->index < this->commands.size());
-	ContinueCommand(this->commands[this->index], this->ce, dwNow);
+	this->pOwnerWidget->GetRect(this->drawDestinationRect);
 
-	return true;
+	SDL_Surface* pSrcSurface;
+	int display_x = this->x, display_y = this->y;
+
+	if (this->pAlteredSurface) {
+		SDL_Surface* pSrcSurface = this->pAlteredSurface;
+		if (!this->drawSourceRect.w)
+			this->drawSourceRect.w = pSrcSurface->w;
+		else if (this->drawSourceRect.w > pSrcSurface->w)
+			this->drawSourceRect.w = pSrcSurface->w;
+		if (!this->drawSourceRect.h)
+			this->drawSourceRect.h = pSrcSurface->h;
+		else if (this->drawSourceRect.h > pSrcSurface->h)
+			this->drawSourceRect.h = pSrcSurface->h;
+		display_x += (int(this->pImageSurface->w) - pSrcSurface->w) / 2; //keep centered
+		display_y += (int(this->pImageSurface->h) - pSrcSurface->h) / 2; //keep centered
+	}
+	else {
+		SDL_Surface* pSrcSurface = this->pImageSurface;
+		if (!this->drawSourceRect.w)
+			this->drawSourceRect.w = this->pImageSurface->w;
+		if (!this->drawSourceRect.h)
+			this->drawSourceRect.h = this->pImageSurface->h;
+	}
+
+	this->drawAlpha = Uint8(this->alpha * this->fOpacity);
+
+	if (IsImageDrawn())
+		this->dirtyRects[0] = this->drawDestinationRect;
+	else
+		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
 }
 
-bool CImageOverlayEffect::BeginCommand(const ImageOverlayCommand& command, bool& bProcessNextCommand)
+void CImageOverlayEffect::Draw(SDL_Surface& pDestSurface)
 {
-	this->ce.startMS = this->startOfNextEffect;
-	this->ce.endMS = UINT(-1);
-	this->ce.endTurn = UINT(-1);
+	this->pOwnerWidget->GetRect(this->drawDestinationRect);
+
+	SDL_Surface* pSrcSurface;
+	int display_x = this->x, display_y = this->y;
+
+	if (this->pAlteredSurface)
+		pSrcSurface = this->pAlteredSurface;
+	else
+		pSrcSurface = this->pImageSurface;
+
+	if (IsImageDrawn()) {
+		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
+		if (bSurfaceAlpha) {
+			EnableSurfaceBlending(pSrcSurface, this->drawAlpha);
+			SDL_BlitSurface(pSrcSurface, &this->drawSourceRect, &pDestSurface, &this->drawDestinationRect);
+			DisableSurfaceBlending(pSrcSurface);
+		}
+		else {
+			g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &pDestSurface, this->drawAlpha);
+		}
+	}
+}
+
+bool CImageOverlayEffect::IsImageDrawn()
+{
+	return this->drawAlpha > 0 && PositionDisplayInsideRect(this->drawSourceRect, this->drawDestinationRect, this->drawX, this->drawY);
+}
+
+bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
+{
+	// We execute commands one by one and use up the time we have allocated for this rendering pass
+	Uint32 dwRemainingTime = wDeltaTime;
+	// For infinite loop protection
+	const UINT wInitialIndex = this->index;
+
+	// do{} is used because on the first draw wDeltaTime will be 0, and we still want non time-based commands to happen
+	do {
+		Uint32 dwConsumedTime = UpdateCommand(this->commands[this->index], this->executionState, dwRemainingTime);
+		UpdateParallelCommands(dwConsumedTime);
+
+		ASSERT(dwConsumedTime <= dwRemainingTime);
+		dwRemainingTime -= dwConsumedTime;
+
+		if (IsCurrentCommandFinished()) {
+			FinishCommand(this->commands[this->index], this->executionState);
+			++this->index;
+			StartNextCommand();
+		}
+		else
+			break;
+	} while (CanContinuePlayingEffect(dwRemainingTime));
+
+	if (dwRemainingTime > 0)
+		dwRemainingTime -= UpdateParallelCommands(dwRemainingTime);
+
+	if (dwRemainingTime > 0 && IsCommandQueueFinished()) {
+		if (wInitialIndex == (UINT)-1 && dwRemainingTime == wDeltaTime)
+			return false; // Infinite loop protection
+
+		++this->loopIteration;
+		if (!CanLoop())
+			return false;
+
+		//Loop
+		InitParams();
+		this->index = (UINT)-1;
+		AdvanceState(dwRemainingTime);
+	}
+
+	return CanLoop() || !IsCommandQueueFinished();
+}
+
+bool CImageOverlayEffect::CanLoop() const
+{
+	return this->maxLoops == ImageOverlayCommand::NO_LOOP_MAX || this->loopIteration < this->maxLoops;
+}
+
+bool CImageOverlayEffect::CanContinuePlayingEffect(const Uint32 dwRemainingTIme) const
+{
+	// There are no more effects to play, so AdvanceState() has to handle looping nopw
+	if (IsCommandQueueFinished())
+		return false;
+
+	// If there is any remaining time then continue playing commands
+	if (dwRemainingTIme > 0)
+		return true;
+
+	// If it's a time based command we need to stop
+	return !IsTimeBasedCommand(this->commands[this->index].type);
+}
+
+bool CImageOverlayEffect::IsCommandQueueFinished() const
+{
+	return this->index >= this->commands.size();
+}
+
+bool CImageOverlayEffect::IsCurrentCommandFinished() const
+{
+	if (IsCommandQueueFinished())
+		return true;
+	
+	const ImageOverlayCommand command = this->commands[this->index];
+	if (IsTimeBasedCommand(command.type))
+		return this->executionState.remainingTime == 0;
+
+	else if (IsTurnBasedCommand(command.type)) {
+		const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+		const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wPlayerTurn : 0;
+
+		return this->executionState.endTurn == gameTurn;
+	}
+	else
+		return true;
+}
+
+Uint32 CImageOverlayEffect::UpdateCommand(
+	const ImageOverlayCommand& command,     //(in) Command to be updated
+	CommandExecution& executionState,       //(in) Command's execution state
+	const Uint32 wRemainingTime)            //(in) Amount of time that the command can consume
+// Updates the consumed time in the execution state and updates the display state of the image to match the command
+// Returns: amount of milliseconds consumed by the effect
+{
+	// Non-time-based commands do nothing here
+	if (!IsTimeBasedCommand(command.type))
+		return 0;
+
+	// Parallel commands executed
+	const Uint32 dwConsumedTime = min(executionState.remainingTime, wRemainingTime);
+	executionState.remainingTime -= dwConsumedTime;
+
+	const float t = 1.0 - (float(executionState.remainingTime) / float(executionState.duration));
+	switch (command.type) {
+		case ImageOverlayCommand::FadeToAlpha:
+		{
+			const int deltaAlpha = command.val[0] - executionState.startAlpha;
+			this->alpha = clipAlpha(executionState.startAlpha + int(deltaAlpha * t));
+		}
+		break;
+		case ImageOverlayCommand::Grow:
+		{
+			const int deltaScale = command.val[0];
+			this->scale = clipScale(executionState.startScale + int(deltaScale * t));
+			this->bPrepareAlteredImage = true;
+		}
+		break;
+		case ImageOverlayCommand::Jitter:
+			//nothing to do here
+			break;
+		case ImageOverlayCommand::Move:
+		{
+			const int deltaX = command.val[0];
+			const int deltaY = command.val[1];
+			this->x = executionState.startX + int(deltaX * t);
+			this->y = executionState.startY + int(deltaY * t);
+		}
+		break;
+		case ImageOverlayCommand::MoveTo:
+		{
+			const int deltaX = command.val[0] - executionState.startX;
+			const int deltaY = command.val[1] - executionState.startY;
+			this->x = executionState.startX + int(deltaX * t);
+			this->y = executionState.startY + int(deltaY * t);
+		}
+		break;
+		case ImageOverlayCommand::Rotate:
+		{
+			const int deltaAngle = command.val[0];
+			this->angle = clipAngle(executionState.startAngle + int(deltaAngle * t));
+			this->bPrepareAlteredImage = true;
+		}
+		break;
+		default: break;
+	}
+
+	return dwConsumedTime;
+}
+
+
+Uint32 CImageOverlayEffect::UpdateParallelCommands(const Uint32 dwDeltaTime)
+// Updates the parallel commands, removing them when finished
+// Returns: the max number of milliseconds consumed by any parallel commands
+{
+	if (this->parallelCommands.empty())
+		return 0;
+
+	vector<ParallelCommand> continuingCommands;
+	Uint32 maxConsumedTime = 0;
+
+	for (vector<ParallelCommand>::iterator it = this->parallelCommands.begin();
+		it != this->parallelCommands.end(); ++it)
+	{
+		ParallelCommand& c = *it;
+		const Uint32 dwConsumedTime = UpdateCommand(c.command, c.executionState, dwDeltaTime);
+
+		if (dwConsumedTime > maxConsumedTime)
+			maxConsumedTime = max(maxConsumedTime, dwConsumedTime);
+
+		if (c.executionState.remainingTime == 0) {
+			FinishCommand(c.command, c.executionState);
+		}
+		else
+			continuingCommands.push_back(c);
+	}
+
+	this->parallelCommands = continuingCommands;
+
+	return maxConsumedTime;
+}
+
+
+void CImageOverlayEffect::StartNextCommand()
+{
+	this->executionState.duration = this->startOfNextEffect;
+	this->executionState.remainingTime = UINT(-1);
+	this->executionState.endTurn = UINT(-1);
+
+	if (IsCommandQueueFinished())
+		return;
+
+	const ImageOverlayCommand command = this->commands[this->index];
 
 	const ImageOverlayCommand::IOC curCommand = command.type;
 	int val = command.val[0];
 	switch (curCommand) {
-		case ImageOverlayCommand::CancelAll:
-		case ImageOverlayCommand::CancelLayer:
-			//these must be handled by some owning widget
-			//stop processing when encountered
-		return false;
+	case ImageOverlayCommand::CancelAll:
+	case ImageOverlayCommand::CancelLayer:
+	case ImageOverlayCommand::Layer:
+		// Do nothing, these are handled externally
+		return;
 
-		case ImageOverlayCommand::Center:
-			this->x = (int(this->pRoomWidget->GetW()) - int(this->pImageSurface->w)) / 2;
-			this->y = (int(this->pRoomWidget->GetH()) - int(this->pImageSurface->h)) / 2;
-			bProcessNextCommand = true;
-		break;
-
-		case ImageOverlayCommand::DisplayDuration:
-			this->ce.endMS = this->ce.startMS + max(0, val);
-		break;
-		case ImageOverlayCommand::DisplayRect:
-			this->sourceClipRect.x = max(0, val);
-			this->sourceClipRect.y = max(0, command.val[1]);
-			this->sourceClipRect.w = min(max(0, command.val[2]), this->pImageSurface->w);
-			this->sourceClipRect.h = min(max(0, command.val[3]), this->pImageSurface->h);
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::DisplaySize:
-			this->sourceClipRect.w = min(max(0, val), this->pImageSurface->w);
-			this->sourceClipRect.h = min(max(0, command.val[1]), this->pImageSurface->h);
-			bProcessNextCommand = true;
+	case ImageOverlayCommand::Center:
+		this->x = (int(this->pRoomWidget->GetW()) - int(this->pImageSurface->w)) / 2;
+		this->y = (int(this->pRoomWidget->GetH()) - int(this->pImageSurface->h)) / 2;
 		break;
 
-		case ImageOverlayCommand::FadeToAlpha:
-			this->ce.endMS = this->ce.startMS + max(0, command.val[1]);
-			this->ce.startAlpha = this->alpha;
-		break;
-		case ImageOverlayCommand::ParallelFadeToAlpha:
-		{
-			ConcurrentCommand c(command, this->ce);
-			c.ce.endMS = this->ce.startMS + max(0, command.val[1]);
-			c.ce.startAlpha = this->alpha;
-			this->concurrentCommands.push_back(c);
-
-			bProcessNextCommand = true;
-		}
+	case ImageOverlayCommand::DisplayDuration:
+		this->executionState.remainingTime = this->executionState.duration = max(0, val);
 		break;
 
-		case ImageOverlayCommand::Grow:
-			this->ce.startScale = this->scale;
-			this->ce.endMS = this->ce.startMS + max(0, command.val[1]);
-		break;
-		case ImageOverlayCommand::ParallelGrow:
-		{
-			ConcurrentCommand c(command, this->ce);
-			c.ce.startScale = this->scale;
-			c.ce.endMS = this->ce.startMS + max(0, command.val[1]);
-			this->concurrentCommands.push_back(c);
-
-			bProcessNextCommand = true;
-		}
+	case ImageOverlayCommand::DisplayRect:
+		this->sourceClipRect.x = max(0, val);
+		this->sourceClipRect.y = max(0, command.val[1]);
+		this->sourceClipRect.w = min(max(0, command.val[2]), this->pImageSurface->w);
+		this->sourceClipRect.h = min(max(0, command.val[3]), this->pImageSurface->h);
 		break;
 
-		case ImageOverlayCommand::Jitter:
-			this->jitter = max(0, val);
-			this->ce.endMS = this->ce.startMS + max(0, command.val[1]);
-		break;
-		case ImageOverlayCommand::ParallelJitter:
-		{
-			this->jitter = max(0, val);
-
-			ConcurrentCommand c(command, this->ce);
-			c.ce.endMS = this->ce.startMS + max(0, command.val[1]);
-			this->concurrentCommands.push_back(c);
-
-			bProcessNextCommand = true;
-		}
+	case ImageOverlayCommand::DisplaySize:
+		this->sourceClipRect.w = min(max(0, val), this->pImageSurface->w);
+		this->sourceClipRect.h = min(max(0, command.val[1]), this->pImageSurface->h);
 		break;
 
-		case ImageOverlayCommand::Layer:
-			bProcessNextCommand = true;
+	case ImageOverlayCommand::FadeToAlpha:
+		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
+		this->executionState.startAlpha = this->alpha;
 		break;
 
-		case ImageOverlayCommand::Loop:
-			this->maxLoops = val;
-			bProcessNextCommand = true;
-		break;
-
-		case ImageOverlayCommand::Move:
-		case ImageOverlayCommand::MoveTo:
-			this->ce.startX = this->x;
-			this->ce.startY = this->y;
-			this->ce.endMS = this->ce.startMS + max(0, command.val[2]);
-		break;
-		case ImageOverlayCommand::ParallelMove:
-		case ImageOverlayCommand::ParallelMoveTo:
-		{
-			ConcurrentCommand c(command, this->ce);
-			c.ce.startX = this->x;
-			c.ce.startY = this->y;
-			c.ce.endMS = this->ce.startMS + max(0, command.val[2]);
-			this->concurrentCommands.push_back(c);
-
-			bProcessNextCommand = true;
-		}
-		break;
-
-		case ImageOverlayCommand::Rotate:
-			this->ce.startAngle = this->angle;
-			this->ce.endMS = this->ce.startMS + max(0, command.val[1]);
-		break;
-		case ImageOverlayCommand::ParallelRotate:
-		{
-			ConcurrentCommand c(command, this->ce);
-			c.ce.startAngle = this->angle;
-			c.ce.endMS = this->ce.startMS + max(0, command.val[1]);
-			this->concurrentCommands.push_back(c);
-
-			bProcessNextCommand = true;
-		}
-		break;
-
-		case ImageOverlayCommand::Scale:
-			this->scale = clipScale(val);
-			this->bPrepareAlteredImage = true;
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::SetAlpha:
-			this->alpha = clipAlpha(val);
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::SetAngle:
-			this->angle = clipAngle(val);
-			this->bPrepareAlteredImage = true;
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::SetX:
-			this->x = val;
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::SetY:
-			this->y = val;
-			bProcessNextCommand = true;
-		break;
-		case ImageOverlayCommand::SrcXY:
-			this->sourceClipRect.x = max(0, val);
-			this->sourceClipRect.y = max(0, command.val[1]);
-			bProcessNextCommand = true;
-		break;
-
-		case ImageOverlayCommand::TurnDuration:
-		{
-			const CDbRoom *pRoom = this->pRoomWidget->GetRoom();
-			const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo : 0;
-			this->ce.endTurn = gameTurn + max(0, val);
-		}
-		break;
-
-		default:
-			return false;
-	}
-	return true;
-}
-
-void CImageOverlayEffect::ContinueCommand(const ImageOverlayCommand& command, const CommandExecution& ce, const Uint32 dwNow)
-{
-	const UINT durationMS = ce.endMS - ce.startMS;
-	const float t = (dwNow - ce.startMS) / float(durationMS);
-	switch (command.type) {
-		case ImageOverlayCommand::FadeToAlpha:
-		case ImageOverlayCommand::ParallelFadeToAlpha:
-		{
-			const int deltaAlpha = command.val[0] - ce.startAlpha;
-			this->alpha = clipAlpha(ce.startAlpha + int(deltaAlpha * t));
-		}
-		break;
-		case ImageOverlayCommand::Grow:
-		case ImageOverlayCommand::ParallelGrow:
-		{
-			const int deltaScale = command.val[0];
-			this->scale = clipScale(ce.startScale + int(deltaScale * t));
-			this->bPrepareAlteredImage = true;
-		}
-		break;
-		case ImageOverlayCommand::Jitter:
-		case ImageOverlayCommand::ParallelJitter:
-			//nothing to do here
-		break;
-		case ImageOverlayCommand::Move:
-		case ImageOverlayCommand::ParallelMove:
-		{
-			const int deltaX = command.val[0];
-			const int deltaY = command.val[1];
-			this->x = ce.startX + int(deltaX * t);
-			this->y = ce.startY + int(deltaY * t);
-		}
-		break;
-		case ImageOverlayCommand::MoveTo:
-		case ImageOverlayCommand::ParallelMoveTo:
-		{
-			const int deltaX = command.val[0] - ce.startX;
-			const int deltaY = command.val[1] - ce.startY;
-			this->x = ce.startX + int(deltaX * t);
-			this->y = ce.startY + int(deltaY * t);
-		}
-		break;
-		case ImageOverlayCommand::Rotate:
-		case ImageOverlayCommand::ParallelRotate:
-		{
-			const int deltaAngle = command.val[0];
-			this->angle = clipAngle(ce.startAngle + int(deltaAngle * t));
-			this->bPrepareAlteredImage = true;
-		}
-		break;
-		default: break;
-	}
-}
-
-void CImageOverlayEffect::FinishCommand(const ImageOverlayCommand& command, const CommandExecution& ce)
-{
-	switch (command.type) {
-		case ImageOverlayCommand::FadeToAlpha:
-		case ImageOverlayCommand::ParallelFadeToAlpha:
-			this->alpha = clipAlpha(command.val[0]);
-			break;
-		case ImageOverlayCommand::Grow:
-		case ImageOverlayCommand::ParallelGrow:
-			this->scale = clipScale(ce.startScale + command.val[0]);
-			this->bPrepareAlteredImage = true;
-			break;
-		case ImageOverlayCommand::Jitter:
-		case ImageOverlayCommand::ParallelJitter:
-			this->jitter = 0;
-			break;
-		case ImageOverlayCommand::Move:
-		case ImageOverlayCommand::ParallelMove:
-			this->x = ce.startX + command.val[0];
-			this->y = ce.startY + command.val[1];
-			break;
-		case ImageOverlayCommand::MoveTo:
-		case ImageOverlayCommand::ParallelMoveTo:
-			this->x = command.val[0];
-			this->y = command.val[1];
-			break;
-		case ImageOverlayCommand::Rotate:
-		case ImageOverlayCommand::ParallelRotate:
-			this->angle = clipAngle(ce.startAngle + command.val[0]);
-			this->bPrepareAlteredImage = true;
-			break;
-		case ImageOverlayCommand::TurnDuration:
-			// This is required for any time-based command that runs afterwards to correctly
-			// calculate the start time
-			this->startOfNextEffect = CScreen::dwCurrentTicks;
-			break;
-		default: break;
-	}
-}
-
-Uint32 CImageOverlayEffect::ProcessConcurrentCommands(const Uint32 dwNow)
-{
-	if (this->concurrentCommands.empty())
-		return 0;
-
-	vector<ConcurrentCommand> continuingCommands;
-	Uint32 maxCompletedEndMS = 0;
-
-	for (vector<ConcurrentCommand>::const_iterator it=this->concurrentCommands.begin();
-		it!=this->concurrentCommands.end(); ++it)
+	case ImageOverlayCommand::ParallelFadeToAlpha:
 	{
-		const ConcurrentCommand& c = *it;
-		if (dwNow >= c.ce.endMS) {
-			if (c.ce.endMS > maxCompletedEndMS)
-				maxCompletedEndMS = c.ce.endMS;
-
-			FinishCommand(c.command, c.ce);
-		} else {
-			ContinueCommand(c.command, c.ce, dwNow);
-			continuingCommands.push_back(c);
-		}
+		ParallelCommand c(command, this->executionState);
+		c.command.type = ImageOverlayCommand::FadeToAlpha;
+		c.executionState.duration = max(0, command.val[1]);
+		c.executionState.remainingTime = max(0, command.val[1]);
+		c.executionState.startAlpha = this->alpha;
+		this->parallelCommands.push_back(c);
 	}
+	break;
 
-	this->concurrentCommands = continuingCommands;
+	case ImageOverlayCommand::Grow:
+		this->executionState.startScale = this->scale;
+		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
+		break;
 
-	return maxCompletedEndMS;
+	case ImageOverlayCommand::ParallelGrow:
+	{
+		ParallelCommand c(command, this->executionState);
+		c.command.type = ImageOverlayCommand::Grow;
+		c.executionState.startScale = this->scale;
+		c.executionState.duration = max(0, command.val[1]);
+		c.executionState.remainingTime = max(0, command.val[1]);
+		this->parallelCommands.push_back(c);
+	}
+	break;
+
+	case ImageOverlayCommand::Jitter:
+		this->jitter = max(0, val);
+		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
+		break;
+
+	case ImageOverlayCommand::ParallelJitter:
+	{
+		this->jitter = max(0, val);
+
+		ParallelCommand c(command, this->executionState);
+		c.command.type = ImageOverlayCommand::Jitter;
+		c.executionState.duration = max(0, command.val[1]);
+		c.executionState.remainingTime = max(0, command.val[1]);
+		this->parallelCommands.push_back(c);
+	}
+	break;
+
+		break;
+
+	case ImageOverlayCommand::Loop:
+		this->maxLoops = val;
+		break;
+
+	case ImageOverlayCommand::Move:
+	case ImageOverlayCommand::MoveTo:
+		this->executionState.startX = this->x;
+		this->executionState.startY = this->y;
+		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[2]);
+		break;
+	case ImageOverlayCommand::ParallelMove:
+	case ImageOverlayCommand::ParallelMoveTo:
+	{
+		ParallelCommand c(command, this->executionState);
+		c.command.type = c.command.type == ImageOverlayCommand::ParallelMove
+			? ImageOverlayCommand::Move
+			: ImageOverlayCommand::MoveTo;
+		c.executionState.startX = this->x;
+		c.executionState.startY = this->y;
+		c.executionState.duration = max(0, command.val[1]);
+		c.executionState.remainingTime = max(0, command.val[1]);
+		this->parallelCommands.push_back(c);
+	}
+	break;
+
+	case ImageOverlayCommand::Rotate:
+		this->executionState.startAngle = this->angle;
+		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
+		break;
+
+	case ImageOverlayCommand::ParallelRotate:
+	{
+		ParallelCommand c(command, this->executionState);
+		c.command.type = ImageOverlayCommand::Rotate;
+		c.executionState.startAngle = this->angle;
+		c.executionState.duration = max(0, command.val[1]);
+		c.executionState.remainingTime = max(0, command.val[1]);
+		this->parallelCommands.push_back(c);
+	}
+	break;
+
+	case ImageOverlayCommand::Scale:
+		this->scale = clipScale(val);
+		this->bPrepareAlteredImage = true;
+		break;
+	case ImageOverlayCommand::SetAlpha:
+		this->alpha = clipAlpha(val);
+		break;
+	case ImageOverlayCommand::SetAngle:
+		this->angle = clipAngle(val);
+		this->bPrepareAlteredImage = true;
+		break;
+	case ImageOverlayCommand::SetX:
+		this->x = val;
+		break;
+	case ImageOverlayCommand::SetY:
+		this->y = val;
+		break;
+	case ImageOverlayCommand::SrcXY:
+		this->sourceClipRect.x = max(0, val);
+		this->sourceClipRect.y = max(0, command.val[1]);
+		break;
+
+	case ImageOverlayCommand::TurnDuration:
+	{
+		const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+		const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo : 0;
+		this->executionState.endTurn = gameTurn + max(0, val);
+	}
+	break;
+	}
 }
 
-bool CImageOverlayEffect::RestartCommands()
+void CImageOverlayEffect::FinishCommand(
+// Finalizes state update of a given command
+	const ImageOverlayCommand& command,
+	const CommandExecution& executionState)
 {
-	++this->loopIteration;
-	if (this->maxLoops != ImageOverlayCommand::NO_LOOP_MAX && this->loopIteration >= this->maxLoops)
-		return false; 
-
-	//Loop
-	InitParams();
-	this->index = 0;
-	return true;
-}
-
-void CImageOverlayEffect::DisplayImage(SDL_Surface* pDestSurface)
-{
-	SDL_Rect src = this->sourceClipRect;
-	SDL_Rect dest;
-	this->pOwnerWidget->GetRect(dest);
-
-	SDL_Surface *pSrcSurface;
-	int display_x = this->x, display_y = this->y;
-
-	if (this->jitter) {
-		display_x += ROUND(fRAND_MID(this->jitter));
-		display_y += ROUND(fRAND_MID(this->jitter));
-	}
-
-	if (this->pAlteredSurface) {
-		pSrcSurface = this->pAlteredSurface;
-		if (!src.w)
-			src.w = pSrcSurface->w;
-		else if (src.w > pSrcSurface->w)
-			src.w = pSrcSurface->w;
-		if (!src.h)
-			src.h = pSrcSurface->h;
-		else if (src.h > pSrcSurface->h)
-			src.h = pSrcSurface->h;
-		display_x += (int(this->pImageSurface->w) - pSrcSurface->w) / 2; //keep centered
-		display_y += (int(this->pImageSurface->h) - pSrcSurface->h) / 2; //keep centered
-	} else {
-		pSrcSurface = this->pImageSurface;
-		if (!src.w)
-			src.w = this->pImageSurface->w;
-		if (!src.h)
-			src.h = this->pImageSurface->h;
-	}
-
-	const Uint8 displayAlpha = Uint8(this->alpha * this->fOpacity);
-	if (!displayAlpha || !PositionDisplayInsideRect(src, dest, display_x, display_y)) {
-		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
-	} else {
-		if (!pDestSurface)
-			pDestSurface = GetDestSurface();
-
-		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
-		if (bSurfaceAlpha) {
-			EnableSurfaceBlending(pSrcSurface, displayAlpha);
-			SDL_BlitSurface(pSrcSurface, &src, pDestSurface, &dest);
-			DisableSurfaceBlending(pSrcSurface);
-		} else {
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(src, pSrcSurface, dest, pDestSurface, displayAlpha);
-		}
-
-		this->dirtyRects[0] = dest;
+	switch (command.type) {
+	case ImageOverlayCommand::FadeToAlpha:
+		this->alpha = clipAlpha(command.val[0]);
+		break;
+	case ImageOverlayCommand::Grow:
+		this->scale = clipScale(executionState.startScale + command.val[0]);
+		this->bPrepareAlteredImage = true;
+		break;
+	case ImageOverlayCommand::Jitter:
+		this->jitter = 0;
+		break;
+	case ImageOverlayCommand::Move:
+		this->x = executionState.startX + command.val[0];
+		this->y = executionState.startY + command.val[1];
+		break;
+	case ImageOverlayCommand::MoveTo:
+		this->x = command.val[0];
+		this->y = command.val[1];
+		break;
+	case ImageOverlayCommand::Rotate:
+		this->angle = clipAngle(executionState.startAngle + command.val[0]);
+		this->bPrepareAlteredImage = true;
+		break;
+	case ImageOverlayCommand::TurnDuration:
+		// This is required for any time-based command that runs afterwards to correctly
+		// calculate the start time
+		this->startOfNextEffect = CScreen::dwCurrentTicks;
+		break;
+	case ImageOverlayCommand::ParallelFadeToAlpha:
+	case ImageOverlayCommand::ParallelRotate:
+	case ImageOverlayCommand::ParallelMoveTo:
+	case ImageOverlayCommand::ParallelMove:
+	case ImageOverlayCommand::ParallelJitter:
+	case ImageOverlayCommand::ParallelGrow:
+	default: break;
 	}
 }
 
@@ -638,5 +696,67 @@ void CImageOverlayEffect::PrepareAlteredImage()
 				this->pAlteredSurface = pRotatedSurface;
 			}
 		}
+	}
+}
+
+bool CImageOverlayEffect::IsTimeBasedCommand(const ImageOverlayCommand::IOC commandType) const {
+	switch (commandType) {
+		// Intentionally excluded parallel commands, see IsInstantCommand()
+		case ImageOverlayCommand::DisplayDuration:
+		case ImageOverlayCommand::FadeToAlpha:
+		case ImageOverlayCommand::Grow:
+		case ImageOverlayCommand::Jitter:
+		case ImageOverlayCommand::Move:
+		case ImageOverlayCommand::MoveTo:
+		case ImageOverlayCommand::Rotate:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool CImageOverlayEffect::IsTurnBasedCommand(const ImageOverlayCommand::IOC commandType) const {
+	return commandType == ImageOverlayCommand::TurnDuration;
+}
+
+bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC commandType) const {
+	switch (commandType) {
+		case ImageOverlayCommand::CancelAll:
+		case ImageOverlayCommand::CancelLayer:
+		case ImageOverlayCommand::Center:
+		case ImageOverlayCommand::DisplayRect:
+		case ImageOverlayCommand::DisplaySize:
+		case ImageOverlayCommand::Rotate:
+		case ImageOverlayCommand::Scale:
+		case ImageOverlayCommand::SetAlpha:
+		case ImageOverlayCommand::SetAngle:
+		case ImageOverlayCommand::SetX:
+		case ImageOverlayCommand::SetY:
+		case ImageOverlayCommand::SrcXY:
+		// Parallel commands may take time but they run parallelly so for the purpose of occupying
+		// effect's time they are instant
+		case ImageOverlayCommand::ParallelFadeToAlpha:
+		case ImageOverlayCommand::ParallelJitter:
+		case ImageOverlayCommand::ParallelMove:
+		case ImageOverlayCommand::ParallelMoveTo:
+		case ImageOverlayCommand::ParallelRotate:
+		case ImageOverlayCommand::Invalid:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool CImageOverlayEffect::IsParallelCommand(const ImageOverlayCommand::IOC commandType) const {
+	switch (commandType) {
+		case ImageOverlayCommand::ParallelFadeToAlpha:
+		case ImageOverlayCommand::ParallelGrow:
+		case ImageOverlayCommand::ParallelJitter:
+		case ImageOverlayCommand::ParallelMove:
+		case ImageOverlayCommand::ParallelMoveTo:
+		case ImageOverlayCommand::ParallelRotate:
+			return true;
+		default:
+			return false;
 	}
 }

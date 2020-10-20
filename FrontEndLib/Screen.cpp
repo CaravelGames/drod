@@ -732,7 +732,7 @@ void CScreen::Paint(
 
 	PaintChildren();
 
-	this->pEffects->DrawEffects(true, false, pScreenSurface);
+	this->pEffects->DrawEffects(true, pScreenSurface);
 
 	if (bUpdateRect) UpdateRect();
 }

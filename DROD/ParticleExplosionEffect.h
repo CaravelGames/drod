@@ -65,13 +65,14 @@ public:
 			const EffectType eType=EGENERIC);
 	virtual ~CParticleExplosionEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 	void SetRotating(const bool bVal) {this->bRotatingParticles = bVal;}
 
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
+
 	void InitParticles();
-	bool MoveParticles();
+	bool MoveParticles(const UINT wDeltaTime);
 	void ResetParticle(const UINT wIndex);
 
 	CMoveCoord origin;

@@ -31,9 +31,9 @@
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Assert.h>
+#include <FrontEndLib/Screen.h>
 
-Uint32 CAumtlichGazeEffect::dwLastDraw = 0;
-
+Uint8 CAumtlichGazeEffect::brightness = 255;
 
 //********************************************************************************
 CAumtlichGazeEffect::CAumtlichGazeEffect(
@@ -42,7 +42,7 @@ CAumtlichGazeEffect::CAumtlichGazeEffect(
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const CMonster *pAumtlich)      //(in)   Aumtlich emitting gaze.
-	: CEffect(pSetWidget, EGAZE)
+	: CEffect(pSetWidget, (UINT) -1, EGAZE)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -62,66 +62,80 @@ CAumtlichGazeEffect::CAumtlichGazeEffect(
 }
 
 //********************************************************************************
-bool CAumtlichGazeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
+void CAumtlichGazeEffect::SharedStateUpdate(const UINT wDeltaTime)
+//Updates the state for this effect shared by all instances
+{	
+	static bool bMakeBrighter = false;
+	static Uint32 lastUpdatePresentCount = 0;
+
+	// Already updated this frame
+	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
+		return;
+
+	UINT dwTimeElapsed = wDeltaTime / 2; // Run this effect at half speed
+
+	if (dwTimeElapsed > 255)
+		dwTimeElapsed = 255;
+
+	const Uint8 timeElapsed = static_cast<Uint8>(dwTimeElapsed);
+	if (bMakeBrighter)
+	{
+		if (CAumtlichGazeEffect::brightness >= 255 - timeElapsed)
+		{
+			CAumtlichGazeEffect::brightness = 255;
+			bMakeBrighter = false;
+		}
+		else
+			CAumtlichGazeEffect::brightness += timeElapsed;
+	}
+	else {
+		if (CAumtlichGazeEffect::brightness <= timeElapsed)
+		{
+			CAumtlichGazeEffect::brightness = 0;
+			bMakeBrighter = true;
+		}
+		else
+			CAumtlichGazeEffect::brightness -= timeElapsed;
+	}
+}
+
+//********************************************************************************
+bool CAumtlichGazeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+//Updates the effect state & dirty rects
 //
 //Returns:
 //True if effect should continue, or false if effect is done.
 {
 	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
-	if (wTurnNow != this->wValidTurn) return false;
+	if (wTurnNow != this->wValidTurn) 
+		return false;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	CAumtlichGazeEffect::SharedStateUpdate(wDeltaTime);
 
-	//Set transparency level: beam strobes.
-	static Uint8 brightness = 255;
-	if (g_pTheBM->bAlpha)
-	{
-		static bool bMakeBrighter = false;
-		const Uint32 dwNow = SDL_GetTicks();
-		UINT dwTimeElapsed = dwNow - CAumtlichGazeEffect::dwLastDraw;
-		dwTimeElapsed /= 2; //half-speed
-		CAumtlichGazeEffect::dwLastDraw = dwNow;
-		if (dwTimeElapsed > 255)
-			dwTimeElapsed = 255;
-		const Uint8 timeElapsed = static_cast<Uint8>(dwTimeElapsed);
-		if (bMakeBrighter)
-		{
-			if (brightness >= 255 - timeElapsed)
-			{
-				brightness = 255;
-				bMakeBrighter = false;
-			} else
-				brightness += timeElapsed;
-		} else {
-			if (brightness <= timeElapsed)
-			{
-				brightness = 0;
-				bMakeBrighter = true;
-				return true;  //nothing to draw this frame
-			}
-			else
-				brightness -= timeElapsed;
-		}
-	}
+	return true;
+}
+
+//********************************************************************************
+void CAumtlichGazeEffect::Draw(SDL_Surface& pDestSurface)
+//Draw the effect.
+{
+	if (CAumtlichGazeEffect::brightness == 0)
+		return; // Nothing to draw this frame
 
 	//Clip screen surface to widget because beams will go all over the place.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&pDestSurface, &OwnerRect);
 
 	//Draw beam.
 	for (UINT wIndex=this->coords.size(); wIndex--; )
 	{
 		CMoveCoord& coord = this->coords[wIndex];
-		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, pDestSurface, false, brightness);
+		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, &pDestSurface, false, CAumtlichGazeEffect::brightness);
 	}
 
 	//Unclip screen surface.
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	//Continue effect.
-	return true;
+	SDL_SetClipRect(&pDestSurface, NULL);
 }
 
 //*****************************************************************************

@@ -41,12 +41,13 @@ class CAumtlichGazeEffect : public CEffect
 public:
 	CAumtlichGazeEffect(CWidget *pSetWidget, const CMonster *pAumtlich);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 	CMoveCoord endCoord;
 
 protected:
-	void PrepareBeam(const CMonster *pAumtlich);
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
+
+	void         PrepareBeam(const CMonster *pAumtlich);
 
 	CMoveCoord  origin;
 	UINT        wValidTurn;   //game turn this gaze is valid for
@@ -54,7 +55,10 @@ protected:
 
 	CRoomWidget *  pRoomWidget;
 
-	static Uint32 dwLastDraw;  //to synchronize all aumtlich gazes
+private:
+	static void SharedStateUpdate(const UINT wDeltaTime);
+
+	static Uint8 brightness;
 };
 
 #endif //...#ifndef AUMTLICHGAZEEFFECT_H

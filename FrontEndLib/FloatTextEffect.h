@@ -51,7 +51,9 @@ public:
 			const bool bPerPixelTransparency=true);
 	virtual ~CFloatTextEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	void           PrepWidget();
@@ -62,12 +64,15 @@ private:
 
 	SURFACECOLOR color;
 	UINT         eFontType;
-	Uint32       dwDuration;
 	float        speed;
 
 	SDL_Rect srcRect;
 	SDL_Surface *  pTextSurface;
 	bool bPerPixelTransparency;
+
+	Uint8 nOpacity;
+	SDL_Rect clipRect;
+	SDL_Rect drawRect;
 };
 
 #endif   //...#ifndef FLOATTEXTEFFECT_H

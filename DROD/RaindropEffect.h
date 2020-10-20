@@ -36,10 +36,15 @@ class CRaindropEffect : public CEffect
 public:
 	CRaindropEffect(CWidget *pSetWidget, bool bHasted);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	bool TryToCreateSplash();
+	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
 	bool OutOfBounds() const;
+	void CalculateFrameProperties();
+	static void UpdateWind();
 
 	static float fXDrift; //delta (wind drift)
 	float fX, fY;         //real position
@@ -49,6 +54,10 @@ private:
 
 	CRoomWidget *pRoomWidget;
 	SDL_Rect screenRect;
+
+	//Used for drawing only
+	UINT wDrawXSize;
+	UINT wDrawYSize;
 };
 
 #endif   //...#ifndef RAINDROPEFFECT_H
