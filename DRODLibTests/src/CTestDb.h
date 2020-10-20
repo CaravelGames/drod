@@ -23,6 +23,8 @@ public:
 	static void Teardown();
 	static void NameCurrentLevel(WCHAR* name);
 
+	const static std::string *currentTestCaseName;
+
 protected:
 	static CCurrentGame* GetGame(const UINT playerX, const UINT playerY, const UINT playerO);
 	static CCurrentGame* GetGame(const UINT playerX, const UINT playerY, const UINT playerO, CCueEvents &CueEvents);
@@ -44,7 +46,7 @@ private:
 	static CDbHold* hold;
 	static CDbLevel* level;
 	static CDbRoom* room;
-
+	
 	static CCurrentGame* lastCurrentGame;
 
 	static UINT globalPlayerID;

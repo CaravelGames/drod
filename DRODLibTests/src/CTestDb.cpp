@@ -1,3 +1,4 @@
+#include "catch.hpp"
 #include "CTestDb.h"
 
 #include "../../DRODLib/Db.h"
@@ -25,11 +26,13 @@ UINT CTestDb::globalPlayerID = UINT(-1);
 UINT CTestDb::globalHoldID = UINT(-1);
 UINT CTestDb::globalLevelID = UINT(-1);
 UINT CTestDb::globalRoomID = UINT(-1);
+const std::string *CTestDb::currentTestCaseName = NULL;
 
 bool Setting_SaveTestLevels = false;
 
 void CTestDb::Init(int argc, char* const argv[])
 {
+
 	CTestDb::InitializeCFiles(argv);
 	CTestDb::InitializeDb();
 	CTestDb::InitializePlayer();
@@ -205,6 +208,11 @@ void CTestDb::InitializeEntrance()
 
 void CTestDb::RegenerateRoom(){
 	if (Setting_SaveTestLevels){
+		WSTRING buffer;
+		AsciiToUnicode(CTestDb::currentTestCaseName->c_str(), buffer);
+		level->NameText = buffer.c_str();
+		level->NameText.Update();
+		
 		room->Update();
 		level->Update();
 		hold->Update();
