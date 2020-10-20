@@ -116,7 +116,7 @@ public:
 	bool     bHasTeleported; //flag to indicate that the player has teleported this turn
 	UINT     wAppearance, wIdentity; //visual appearance, actual logical role enumeration
 	bool     bIsTarget;    //whether monsters target non-Beethro role
-	bool     bCanGetItems; //whether non-Beethro role can pick up items
+	bool     bCanGetItems; //whether non-Beethro role can pick up items (was power token activated)
 	UINT     wStealth; //whether the player has gained or lost any natural stealth (current room only)
 	UINT     wWaterTraversal; //can override player role's natural (in)ability to wade or hide in Shallow Water
 	WeaponType weaponType;
