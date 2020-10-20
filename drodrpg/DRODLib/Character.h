@@ -186,6 +186,7 @@ public:
 	bool  bAttacked;        //only one behavior-based attack per turn is allowed
 	ScriptFlag::EquipmentType equipType;//what type of inventory I represent
 	MovementIQ movementIQ;  //movement behavior
+	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
 
 private:
 	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);

@@ -240,6 +240,7 @@ public:
 		CC_WaitForItem,         //Wait for game element (flags) to exist in rect (x,y,w,h).
 		CC_GenerateEntity,      //Generates a new entity of type h in the room at (x,y) with orientation w.
 		CC_GameEffect,          //Cues the front end to generate a graphic+sound effect (w,h,flags) at (x,y).
+		CC_IfElseIf,            //Else combined with if to reduce code nesting
 		CC_Count
 	};
 
