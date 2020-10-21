@@ -1075,6 +1075,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 			CX_ACTIONLABEL, CY_ACTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_Action)));
 	this->pActionListBox = new CListBoxWidget(TAG_ACTIONLISTBOX,
 			X_ACTIONLISTBOX, Y_ACTIONLISTBOX, CX_ACTIONLISTBOX, CY_ACTIONLISTBOX);
+	this->pActionListBox->SetHotkeyItemSelection(true);
+	this->pActionListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pActionListBox);
 	PopulateCommandListBox();
 
@@ -1267,6 +1269,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox = new CListBoxWidget(TAG_VISUALEFFECTS_LISTBOX,
 			X_EFFECTLISTBOX, Y_EFFECTLISTBOX, CX_EFFECTLISTBOX, CY_EFFECTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pVisualEffectsListBox);
+	this->pVisualEffectsListBox->SetHotkeyItemSelection(true);
+	this->pVisualEffectsListBox->SortAlphabetically(true);
 	this->pVisualEffectsListBox->AddItem(VET_BLOODSPLAT, g_pTheDB->GetMessageText(MID_BloodSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_MUDSPLAT, g_pTheDB->GetMessageText(MID_MudSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_TARSPLAT, g_pTheDB->GetMessageText(MID_TarSplatterEffect));
@@ -1293,6 +1297,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_ITEMLISTBOX,
 			X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBuildItemsListBox);
+	this->pBuildItemsListBox->SortAlphabetically(true);
+	this->pBuildItemsListBox->SetHotkeyItemSelection(true);
 	this->pBuildItemsListBox->AddItem(T_FLOOR, g_pTheDB->GetMessageText(MID_Floor));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_M, g_pTheDB->GetMessageText(MID_FloorMosaic));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_ROAD, g_pTheDB->GetMessageText(MID_FloorRoad));
@@ -2324,6 +2330,7 @@ void CCharacterDialogWidget::AddCommand()
 		nSelectedLine = pActiveCommandListBox->AddItemPointer(pCommand,
 				wszEmpty,	//real text added below
 				false, nSelectedLine+1);
+		SetCommandColor(pActiveCommandListBox, nSelectedLine, pCommand->command);
 	}
 
 	AddLabel(pCommand);
@@ -3866,8 +3873,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
 		CCharacterCommand *pCommand = commands[wIndex];
-		pCommandList->AddItemPointer(pCommand,
+		const UINT insertedIndex = pCommandList->AddItemPointer(pCommand,
 				GetCommandDesc(commands, pCommand).c_str());
+		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
 	if (commands.size())
 		pCommandList->SelectLine(0);
@@ -4806,6 +4814,38 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		pAnimateSpeed->SetText(wszEmpty);
 		pAnimateSpeed->Disable();
 		pIDLabel->SetText(wszEmpty);
+	}
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::SetCommandColor(
+	CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command)
+{
+	switch (command) {
+	case CCharacterCommand::CC_Label:
+		pListBox->SetItemColorAtLine(line, DarkGreen);
+		break;
+	case CCharacterCommand::CC_GoTo:
+	case CCharacterCommand::CC_EachAttack:
+	case CCharacterCommand::CC_EachDefend:
+	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_AnswerOption:
+	case CCharacterCommand::CC_EndScript:
+	case CCharacterCommand::CC_EndScriptOnExit:
+		pListBox->SetItemColorAtLine(line, Maroon);
+		break;
+	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfEnd:
+		pListBox->SetItemColorAtLine(line, DarkBlue);
+		break;
+	case CCharacterCommand::CC_VarSet:
+		pListBox->SetItemColorAtLine(line, FullRed);
+		break;
+	case CCharacterCommand::CC_Wait:
+		pListBox->SetItemColorAtLine(line, DarkGray);
+		break;
+	default: break;
 	}
 }
 
