@@ -4917,6 +4917,8 @@ UINT CGameScreen::GetPlayerClearSEID() const
 			eSoundID = SEID_STALWART_CLEAR; break;
 		case M_STALWART2:
 			eSoundID = SEID_SOLDIER_CLEAR; break;
+		case M_NONE:
+			eSoundID = SEID_NONE; break;
 		default: eSoundID = SEID_MON_CLEAR; break;
 	}
 	return eSoundID;
