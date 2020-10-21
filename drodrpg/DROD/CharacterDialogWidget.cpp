@@ -1075,6 +1075,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 			CX_ACTIONLABEL, CY_ACTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_Action)));
 	this->pActionListBox = new CListBoxWidget(TAG_ACTIONLISTBOX,
 			X_ACTIONLISTBOX, Y_ACTIONLISTBOX, CX_ACTIONLISTBOX, CY_ACTIONLISTBOX);
+	this->pActionListBox->SetHotkeyItemSelection(true);
+	this->pActionListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pActionListBox);
 	PopulateCommandListBox();
 
@@ -1267,6 +1269,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox = new CListBoxWidget(TAG_VISUALEFFECTS_LISTBOX,
 			X_EFFECTLISTBOX, Y_EFFECTLISTBOX, CX_EFFECTLISTBOX, CY_EFFECTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pVisualEffectsListBox);
+	this->pVisualEffectsListBox->SetHotkeyItemSelection(true);
+	this->pVisualEffectsListBox->SortAlphabetically(true);
 	this->pVisualEffectsListBox->AddItem(VET_BLOODSPLAT, g_pTheDB->GetMessageText(MID_BloodSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_MUDSPLAT, g_pTheDB->GetMessageText(MID_MudSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_TARSPLAT, g_pTheDB->GetMessageText(MID_TarSplatterEffect));
@@ -1293,6 +1297,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_ITEMLISTBOX,
 			X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBuildItemsListBox);
+	this->pBuildItemsListBox->SortAlphabetically(true);
+	this->pBuildItemsListBox->SetHotkeyItemSelection(true);
 	this->pBuildItemsListBox->AddItem(T_FLOOR, g_pTheDB->GetMessageText(MID_Floor));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_M, g_pTheDB->GetMessageText(MID_FloorMosaic));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_ROAD, g_pTheDB->GetMessageText(MID_FloorRoad));
