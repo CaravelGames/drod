@@ -114,6 +114,8 @@ private:
 	WSTRING GetPrettyPrinting(const COMMANDPTR_VECTOR& commands,
 			CCharacterCommand* pCommand,
 			const UINT ifIndent, const UINT tabSize) const;
+	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
+		const CCharacterCommand& pCommand) const;
    virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
