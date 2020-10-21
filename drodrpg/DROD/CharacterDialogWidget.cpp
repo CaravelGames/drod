@@ -2330,6 +2330,7 @@ void CCharacterDialogWidget::AddCommand()
 		nSelectedLine = pActiveCommandListBox->AddItemPointer(pCommand,
 				wszEmpty,	//real text added below
 				false, nSelectedLine+1);
+		SetCommandColor(pActiveCommandListBox, nSelectedLine, pCommand->command);
 	}
 
 	AddLabel(pCommand);
@@ -3872,8 +3873,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
 		CCharacterCommand *pCommand = commands[wIndex];
-		pCommandList->AddItemPointer(pCommand,
+		const UINT insertedIndex = pCommandList->AddItemPointer(pCommand,
 				GetCommandDesc(commands, pCommand).c_str());
+		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
 	if (commands.size())
 		pCommandList->SelectLine(0);
@@ -4812,6 +4814,38 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		pAnimateSpeed->SetText(wszEmpty);
 		pAnimateSpeed->Disable();
 		pIDLabel->SetText(wszEmpty);
+	}
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::SetCommandColor(
+	CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command)
+{
+	switch (command) {
+	case CCharacterCommand::CC_Label:
+		pListBox->SetItemColorAtLine(line, DarkGreen);
+		break;
+	case CCharacterCommand::CC_GoTo:
+	case CCharacterCommand::CC_EachAttack:
+	case CCharacterCommand::CC_EachDefend:
+	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_AnswerOption:
+	case CCharacterCommand::CC_EndScript:
+	case CCharacterCommand::CC_EndScriptOnExit:
+		pListBox->SetItemColorAtLine(line, Maroon);
+		break;
+	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfEnd:
+		pListBox->SetItemColorAtLine(line, DarkBlue);
+		break;
+	case CCharacterCommand::CC_VarSet:
+		pListBox->SetItemColorAtLine(line, FullRed);
+		break;
+	case CCharacterCommand::CC_Wait:
+		pListBox->SetItemColorAtLine(line, DarkGray);
+		break;
+	default: break;
 	}
 }
 
