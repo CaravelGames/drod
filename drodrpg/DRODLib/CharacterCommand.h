@@ -160,6 +160,11 @@ namespace ScriptFlag
 		Enable=4,        //this equipment type is (re)enabled
 		QueryStatus=5    //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
 	};
+
+	enum GotoSmartType {
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
+	};
 };
 
 class CDbSpeech;

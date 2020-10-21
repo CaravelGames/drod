@@ -191,7 +191,9 @@ public:
 private:
 	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
 	void Disappear();
-	int  GetIndexOfCommandWithLabel(const UINT label) const;
+	int  GetIndexOfCommandWithLabel(const int label) const;
+	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
