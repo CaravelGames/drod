@@ -6377,15 +6377,22 @@ bool CGameScreen::UploadDemoPolling()
 			if (pBuffer && pBuffer->pJson)
 			{
 				//Get demo ranking.
+				const string customRank = pBuffer->pJson->get("Custom", "").asString();
 				const int nRanking = pBuffer->pJson->get("Place", 0).asInt();
 				const bool bTie = pBuffer->pJson->get("Tie", false).asBool();
-				if (nRanking && this->pRoomWidget)
+				if ((customRank != "" || nRanking) && this->pRoomWidget)
 				{
 					//Demo ranked on hi-score list -- give feedback to user.
-					WSTRING wStr = PrintRank(nRanking, bTie);
-					wStr += wszExclamation;
-					if (nRanking == 1 && !bTie)
+					WSTRING wStr;
+					if (customRank != "") {
+						AsciiToUnicode(customRank, wStr);
+					}
+					else {
+						wStr = PrintRank(nRanking, bTie);
 						wStr += wszExclamation;
+						if (nRanking == 1 && !bTie)
+							wStr += wszExclamation;
+					}
 					this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
 							this->pRoomWidget, wStr.c_str(), -300));	//show at top of room
 				}
