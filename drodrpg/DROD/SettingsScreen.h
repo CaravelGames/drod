@@ -66,6 +66,7 @@ private:
 	void     UpdatePlayerDataFromWidgets(CDbPlayer *pPlayer);
 	void     UpdateWidgetsFromPlayerData(CDbPlayer *pPlayer);
 	void     UploadScores();
+	void     UploadScoreCheckpointSaves(const UINT dwPlayerID);
 
 	CKeypressDialogWidget * pDialogBox;
 	CLabelWidget *       pCommandLabel;

@@ -2,8 +2,8 @@
 
 #include "Runner.h"
 #include "test-include.hpp"
-#include <iostream>
-#include <string>
+
+#include <sstream>
 
 const char* MakeLogMessage(const char* file, int line) {
 	std::stringstream message;
@@ -16,12 +16,21 @@ const char* MakeLogMessage(const char* file, int line) {
 	return message.str().c_str();
 }
 
-#define CatchLog(message, file, line) \
-	Catch::ScopedMessage INTERNAL_CATCH_UNIQUE_NAME(catchlog) = Catch::MessageBuilder(\
-		"Info", \
-		::Catch::SourceLineInfo( file, static_cast<std::size_t>( line ) ), \
-		Catch::ResultWas::Info \
-	) << message;
+void Assert::Event(const char* file, int line, const CUEEVENT_ID eEventType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCueEvents& CueEvents = Runner::GetLastCueEvents();
+
+	REQUIRE(CueEvents.HasOccurred(eEventType));
+}
+
+void Assert::NoEvent(const char* file, int line, const CUEEVENT_ID eEventType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCueEvents& CueEvents = Runner::GetLastCueEvents();
+
+	REQUIRE(!CueEvents.HasOccurred(eEventType));
+}
 
 void Assert::PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY) {
 	INFO(MakeLogMessage(file, line));
@@ -44,6 +53,24 @@ void Assert::PlayerIsDead(const char* file, int line) {
 	CCurrentGame* game = Runner::GetCurrentGame();
 
 	REQUIRE(game->IsPlayerDying());
+}
+
+void Assert::RoomHasMonster(const char* file, int line, const long int wExpectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
+
+	REQUIRE(monster != NULL);
+}
+
+void Assert::RoomHasNoMonster(const char* file, int line, const long int wExpectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
+
+	REQUIRE(monster == NULL);
 }
 
 void Assert::Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType, const long int wExpectedO) {
@@ -82,6 +109,20 @@ void Assert::NoTile(const char* file, int line, const UINT wExpectedX, const UIN
 	REQUIRE(!HasTile(wExpectedX, wExpectedY, wExpectedType));
 }
 
+void Assert::OrbState(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const OrbType expectedType) {
+	INFO(MakeLogMessage(file, line));
+
+	CCurrentGame* game = Runner::GetCurrentGame();
+
+	COrbData* pOrbData = game->pRoom->GetOrbAtCoords(wExpectedX, wExpectedY);
+	if (!pOrbData) {
+		INFO("No orb data on target tile, so we assume it's OT_NORMAL");
+		REQUIRE(expectedType == OrbType::OT_NORMAL);
+	}
+	else
+		REQUIRE(pOrbData->eType == expectedType);
+}
+
 bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType) {
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CDbRoom* room = game->pRoom;
@@ -110,6 +151,6 @@ bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wE
 
 	default:
 		FAIL("Unknown tile layer");
-		break;
+		return false;
 	}
 }

@@ -2474,6 +2474,7 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_WATER: case T_SHALLOW_WATER:
 				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
 				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
+				case T_WALL_M: case T_WALL_WIN:
 					RequestToolTip(MID_RotateToChangeType);
 				break;
 				case T_TAR: case T_MUD: case T_GEL:
@@ -2485,7 +2486,6 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 				case T_HORN_SQUAD: case T_HORN_SOLDIER:
 				case T_BEACON: case T_BEACON_OFF:
-				case T_WALL_M: case T_WALL_WIN:
 					if (this->bGroupMenuItems)
 						RequestToolTip(MID_RotateToChangeType);
 				break;
@@ -4626,10 +4626,15 @@ void CEditRoomScreen::PasteRegion(
 							const UINT wDeltaX = xDest - xSrc;
 							const UINT wDeltaY = yDest - ySrc;
 							MonsterPieces::iterator piece;
+							UINT wLastX = (UINT)-1;
+							UINT wLastY = (UINT)-1;
 							for (piece = pMonster->Pieces.begin();
 									piece != pMonster->Pieces.end(); ++piece)
 							{
 								const UINT wX = (*piece)->wX, wY = (*piece)->wY;
+								if (wLastX == (UINT)-1) wLastX = wX;
+								if (wLastY == (UINT)-1) wLastY = wY;
+
 								if (wX < this->wCopyX1 || wX > this->wCopyX2 ||
 										wY < this->wCopyY1 || wY > this->wCopyY2 ||
 										!room.IsValidColRow(wX+wDeltaX, wY+wDeltaY))
@@ -4654,6 +4659,12 @@ void CEditRoomScreen::PasteRegion(
 										break;
 									}
 								}
+								if (this->pRoom->DoesGentryiiPreventDiagonal(wX + wDeltaX, wY + wDeltaY, wLastX + wDeltaX, wLastY + wDeltaY)) {
+									bInRegion = false;
+									break;
+								}
+								wLastX = wX;
+								wLastY = wY;
 							}
 							if (bInRegion)
 							{
@@ -4897,6 +4908,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 	if (this->pLongMonster)
 		overwritable_coords = this->pLongMonster->GetMatchingEndTiles(coords);
 
+	//1. Check if all selected tiles are valid
 	UINT wX, wY, wPrevX = coords.begin()->wX, wPrevY = coords.begin()->wY;
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
@@ -4905,7 +4917,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		wY = it->wY;
 		const bool bPlotOverMonsterLayer = overwritable_coords.has(wX, wY) ||
 					!this->pRoom->GetMonsterAtSquare(wX,wY);
-		if (!bPlotOverMonsterLayer || !pRW->IsSafePlacement(T_GENTRYII,wX,wY))
+		if (!bPlotOverMonsterLayer || !pRW->IsSafePlacement(T_GENTRYII_CHAIN,wX,wY))
 			return PLOT_NOTHING;
 
 		if (this->pRoom->DoesGentryiiPreventDiagonal(wPrevX, wPrevY, wX, wY))
@@ -4914,6 +4926,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		wPrevY = wY;
 	}
 
+	//2. Find or plot the head
 	bool bHeadPlotted = false;
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
@@ -4926,16 +4939,11 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 			ASSERT(!bHeadPlotted);
 			bHeadPlotted = true;
 
-			const UINT wDirection = pRW->monsterSegment.wDirection;
 			CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wX,wY);
-			if (pMonster)
-			{
-				//Head already here.  Update head's direction.
-				ASSERT(pMonster->IsLongMonster());
-				pMonster->wO = nGetReverseO(wDirection);
-			} else {
-				PlotObjectAt(wX, wY, T_GENTRYII, wDirection);
-			}
+			if (!pMonster)
+				PlotObjectAt(wX, wY, T_GENTRYII, S); // Correct orientation is figured out at the end of this function
+
+			break;
 		}
 	}
 	//now have a monster object to assign additional pieces
@@ -4944,6 +4952,7 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 	UINT wNextStartX = 0, wNextStartY = 0;
 	bool bSegmentPlotted = false, bTailPlotted = false;
 
+	//3. Plot the chains
 	for (vector<CCoord>::const_iterator it=coords.begin();
 			it!=coords.end(); ++it)
 	{
@@ -4994,6 +5003,14 @@ PlotType CEditRoomScreen::PlotGentryiiSegment()
 		this->pRoom->PlotMonster(wX,wY,erase_tile ? T_NOMONSTER : T_GENTRYII,this->pLongMonster);
 		overwritable_coords.erase(wX, wY);
 	}
+
+	if (this->pLongMonster->Pieces.size() > 0)
+		this->pLongMonster->wO = GetOrientation(
+			this->pLongMonster->Pieces.front()->wX, this->pLongMonster->Pieces.front()->wY,
+			this->pLongMonster->wX, this->pLongMonster->wY
+		);
+	else
+		this->pLongMonster->wO = wO;
 
 	this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
 	this->pRoomWidget->ResetForPaint();
@@ -7095,6 +7112,16 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 {
 	if (this->wSelectedObject != wObject)
 	{
+		// Finish long-monster placement, otherwise we will lose our changes...
+		if (this->eState == ES_LONGMONSTER) {
+			const bool bIsOldTileSerpent = (this->wSelectedObject == T_SERPENT || this->wSelectedObject == T_SERPENTB || this->wSelectedObject == T_SERPENTG);
+			const bool bIsNewTileSerpent = (wObject == T_SERPENT || wObject == T_SERPENTB || wObject == T_SERPENTG);
+
+			// ... but changing serpent type will not make us lose changes so do nothing
+			if (!bIsOldTileSerpent || !bIsNewTileSerpent)
+				VERIFY(SetState(ES_PLACING));
+		}
+
 		RemoveToolTip();
 		this->dwLastMouseMove = SDL_GetTicks();
 
@@ -7407,9 +7434,13 @@ void CEditRoomScreen::ShowErrors()
 				AddShadeToTile(Red);
 			else if (!this->pRoomWidget->IsSafePlacement(wTileNo[1], wX, wY, NO_ORIENTATION, true))
 				AddShadeToTile(Red);
-			else if (pMonster)
-				if (!this->pRoomWidget->IsSafePlacement(wTileNo[2], wX, wY, NO_ORIENTATION, true))
+			else if (pMonster) {
+				UINT wType = wTileNo[2];
+				if (pMonster->wType == M_GENTRYII && pMonster->IsPiece())
+					wType = T_GENTRYII_CHAIN;
+				if (!this->pRoomWidget->IsSafePlacement(wType, wX, wY, NO_ORIENTATION, true))
 					AddShadeToTile(Red);
+			}
 
 			//Check for rules on specific objects.
 			switch (wTileNo[0])

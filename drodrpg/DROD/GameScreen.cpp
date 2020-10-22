@@ -3399,11 +3399,7 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 		CMonster *pMonster = pRoom->GetMonsterAtSquare(
 				riter->second.wX, riter->second.wY);
 		ASSERT(pMonster);
-		if (pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		//Draw monster tiles at current text height.
 		CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
@@ -4909,9 +4905,11 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			}
 			if (wSwordTI != TI_UNSPECIFIED) {
 				const CCoord sword(player.GetSwordX(), player.GetSwordY());
-				const vector<UINT> swordTile(1, wSwordTI);
-				this->pRoomWidget->AddMLayerEffect(
-						new CTrapdoorFallEffect(this->pRoomWidget, sword, swordTile, fallTime));
+				if (this->pRoomWidget->pRoom->IsValidColRow(sword.wX, sword.wY)) {
+					const vector<UINT> swordTile(1, wSwordTI);
+					this->pRoomWidget->AddMLayerEffect(
+							new CTrapdoorFallEffect(this->pRoomWidget, sword, swordTile, fallTime));
+				}
 			}
 		}
 	}
@@ -5089,8 +5087,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				CMonster *pMonster = this->pRoomWidget->pRoom->GetMonsterAtSquare(wSX, wSY);
 				if (pMonster && pMonster->IsPiece())
 				{
-					CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-					pMonster = pPiece->pMonster;
+					pMonster = pMonster->GetOwningMonster();
 					wMX = pMonster->wX;
 					wMY = pMonster->wY;
 				}
@@ -5850,7 +5847,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 			
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)
@@ -5875,6 +5872,16 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					wTileNo = GetTileImageForRockGiantPiece(wPieceIndex, wO, 0);
 				} else {
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
+				}
+
+				if (pCoord->wValue2 != SwordType::NoSword) {
+					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
+					if (swordTile) {
+						const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
+						const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
+						if (this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
+							fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
+					}
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
@@ -7844,11 +7851,7 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 	if (pMonster)
 	{
 		const CMonster *pOrigMonster = pMonster;
-		if (pMonster->IsPiece())
-		{
-			const CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		if (g_pPredictedCombat)
 			delete g_pPredictedCombat;
@@ -8432,12 +8435,25 @@ bool CGameScreen::UploadDemoPolling()
 	{
 		ASSERT(!this->dwUploadingDemo || !this->dwUploadingSavedGame); //only one at a time
 
-		if (g_pTheNet->GetStatus(this->wUploadingScoreHandle) >= 0)
+		const int status = g_pTheNet->GetStatus(this->wUploadingScoreHandle);
+		if (status >= 0)
 		{
 			//Get ranking.
 			CStretchyBuffer* pBuffer = g_pTheNet->GetResults(this->wUploadingScoreHandle);
-			if (pBuffer)
-			{
+			if (!pBuffer) {
+				//Fail gracefully from server-related errors.
+				const long responseCode = CInternet::GetErrorResponseCode(this->wUploadingScoreHandle);
+				if (responseCode >= 300) {
+					//Remove saved game from the upload queue.
+					//(It can be manually uploaded later from the Settings Screen.)
+					SCORE_UPLOAD* pScoreInfo = CCurrentGame::scoresForUpload.front();
+					delete pScoreInfo;
+					CCurrentGame::scoresForUpload.pop();
+
+					SetCursor();
+					ShowOkMessage(MID_CaravelServerError);
+				}
+			} else {
 				if (pBuffer->Size())
 				{
 					//Get demo ranking.

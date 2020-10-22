@@ -31,6 +31,8 @@
 #include "../DRODLib/CharacterCommand.h"
 #include "../DRODLib/CurrentGame.h"
 
+#include <FrontEndLib/Screen.h>
+
 #include <map>
 #include <string>
 using std::map;
@@ -144,7 +146,7 @@ bool CImageOverlayEffect::Draw(SDL_Surface* pDestSurface)
 
 bool CImageOverlayEffect::AdvanceState()
 {
-	const Uint32 dwNow = SDL_GetTicks();
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
 
 	const Uint32 maxCompletedEndMS = ProcessConcurrentCommands(dwNow);
 
@@ -462,7 +464,7 @@ void CImageOverlayEffect::FinishCommand(const ImageOverlayCommand& command, cons
 		case ImageOverlayCommand::TurnDuration:
 			// This is required for any time-based command that runs afterwards to correctly
 			// calculate the start time
-			this->startOfNextEffect = SDL_GetTicks();
+			this->startOfNextEffect = CScreen::dwCurrentTicks;
 			break;
 		default: break;
 	}

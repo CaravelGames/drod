@@ -154,6 +154,10 @@ public:
 	static SDL_Rect WindowTargetRect;      //position of logical screen in physical window
 	static double   WindowScaleFactor;
 
+	static Uint32 dwCurrentTicks; // SDL_GetTicks() value during the start of handling of the current frame
+	static Uint32 dwLastRenderTicks; // SDL_GetTicks() value during the last present frame call
+	static Uint32 dwPresentsCount; // Count of how many times SDL presented a frame to a window
+
 protected:
 	friend class CScreenManager;
 	friend class CEffectList;

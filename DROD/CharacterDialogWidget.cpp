@@ -2827,7 +2827,6 @@ void CCharacterDialogWidget::DeleteCommands(
 		COMMANDPTR_VECTOR::iterator iter = commands.begin() + wLine;
 		ASSERT(iter != commands.end());
 		commands.erase(iter);
-		pActiveCommandList->RemoveItem(pCommand);
 		if (pCommand->command == CCharacterCommand::CC_Label)
 			this->pGotoLabelListBox->RemoveItem(pCommand->x);
 		if (pCommand->pSpeech)
@@ -2842,6 +2841,7 @@ void CCharacterDialogWidget::DeleteCommands(
 		}
 		delete pCommand;
 	}
+	pActiveCommandList->RemoveItems(lines);
 
 	PopulateCommandDescriptions(pActiveCommandList, commands);  //refresh script
 	const UINT wLines = pActiveCommandList->GetItemCount();
@@ -4063,6 +4063,8 @@ const
 				wstr += wszExclamation;	//superfluous IfEnd
 		//no break
 		case CCharacterCommand::CC_Disappear:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_FlushSpeech:
@@ -5499,9 +5501,8 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		static const UINT CY_TILES = 6 * CDrodBitmapManager::CY_TILE;
 
 		pCharGraphicList->SelectItem(pChar->wType);
-		pFace->SetCharacter(getSpeakerType(MONSTERTYPE(pChar->wType)), false);
+		pFace->SetCharacter(FaceWidgetLayer::PlayerRole, getSpeakerType(MONSTERTYPE(pChar->wType)), pChar);
 		pDefaultAvatar->Enable(pChar->dwDataID_Avatar != 0);
-		pFace->SetImage(pChar->dwDataID_Avatar);
 
 		const bool bHasTiles = pChar->dwDataID_Tiles != 0;
 		pDefaultTiles->Enable(bHasTiles);
@@ -5527,8 +5528,8 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		IDtext += _itoW(pChar->dwCharID, temp, 10);
 		pIDLabel->SetText(IDtext.c_str());
 	} else {
-		pFace->SetCharacter(getSpeakerType(
-				MONSTERTYPE(pCharGraphicList->GetSelectedItem())), false);
+		pFace->SetCharacter(FaceWidgetLayer::PlayerRole, getSpeakerType(
+				MONSTERTYPE(pCharGraphicList->GetSelectedItem())), NULL);
 		pDefaultAvatar->Disable();
 		pDefaultTiles->Disable();
 		pAnimateSpeed->SetText(wszEmpty);

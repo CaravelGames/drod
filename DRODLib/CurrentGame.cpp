@@ -203,7 +203,7 @@ WSTRING CCurrentGame::AbbrevRoomLocation()
 }
 
 //*****************************************************************************
-void CCurrentGame::AddNewEntity(
+CMonster* CCurrentGame::AddNewEntity(
 //Adds a new monster in the room of the indicated type.
 //
 //Params:
@@ -211,9 +211,9 @@ void CCurrentGame::AddNewEntity(
 	const UINT identity, const UINT wX, const UINT wY, const UINT wO)
 {
 	if (!IsValidOrientation(wO))
-		return; //invalid
+		return NULL; //invalid
 	if (bIsSerpentOrGentryii(identity) || identity == M_FEGUNDOASHES || identity == M_CHARACTER)
-		return; //not supported
+		return NULL; //not supported
 	if (IsValidMonsterType(identity))
 	{
 		CMonster *pMonster = this->pRoom->AddNewMonster(identity, wX, wY);
@@ -236,19 +236,19 @@ void CCurrentGame::AddNewEntity(
 		if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && pMonster->CanPressPressurePlates())
 			this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
 		this->pRoom->CreatePathMaps();
-		return;
+		return pMonster;
 	}
 
 	if (identity == M_NONE)
 	{
 		//Remove any entity occupying this tile.
 		this->pRoom->KillMonsterAtSquare(wX, wY, CueEvents, true);
-		return;
+		return NULL;
 	}
 
 	if (identity >= CUSTOM_CHARACTER_FIRST &&
 			!this->pHold->GetCharacter(identity))
-		return; //do nothing if this is an invalid custom character type
+		return NULL; //do nothing if this is an invalid custom character type
 
 	//Add NPC to the room.
 	CMonster *pNew = CMonsterFactory::GetNewMonster((MONSTERTYPE)M_CHARACTER);
@@ -276,7 +276,7 @@ void CCurrentGame::AddNewEntity(
 			//There is no default script for the NPC, so it would never appear.
 			//Just pretend it was never added to the room.
 			delete pCharacter;
-			return;
+			return NULL;
 		}
 
 		pCharacter->bVisible = false;
@@ -312,6 +312,8 @@ void CCurrentGame::AddNewEntity(
 
 		SetExecuteNoMoveCommands(bExec);
 	}
+
+	return pCharacter;
 }
 
 //*****************************************************************************
@@ -400,6 +402,8 @@ void CCurrentGame::Clear(
 
 	this->dwCutScene = 0;
 	this->bWaitedOnHotFloorLastTurn = false;
+	this->bWasRoomConqueredAtTurnStart = false;
+	this->bIsLeavingLevel = false;
 
 	this->DemoRecInfo.clear();
 
@@ -1021,6 +1025,10 @@ bool CCurrentGame::IsCurrentRoomPendingExit() const
 bool CCurrentGame::IsCurrentRoomPendingConquer() const
 //Returns: whether this room will be marked as conquered when the player exits
 {
+	// See WasRoomConqueredOnThisVisit() for more details
+	if (this->bWasRoomConqueredAtTurnStart && this->bIsLeavingLevel)
+		return true;
+
 	 return IsCurrentRoomPendingExit() && !this->pRoom->IsBeaconActive();
 }
 
@@ -1943,10 +1951,14 @@ void CCurrentGame::ProcessCommand(
 
 	//Reset relative movement for the current turn.
 	UpdatePrevCoords();
+	this->pRoom->ClearDeadMonsters(true);
 	this->pRoom->ClearPushStates();
 
 	if (!this->dwCutScene)
 		ResetCutSceneStartTurn();
+
+	this->bWasRoomConqueredAtTurnStart = false; // Must set to false before the next line
+	this->bWasRoomConqueredAtTurnStart = WasRoomConqueredOnThisVisit();
 
 	this->swordsman.bHasTeleported = false;
 
@@ -2064,6 +2076,7 @@ void CCurrentGame::ProcessCommand(
 	const UINT wOriginalMonsterCount = this->pRoom->wMonsterCount;
 	const UINT bConquerTokenNeedsActivating = this->pRoom->bHasConquerToken &&
 			this->conquerTokenTurn==NO_CONQUER_TOKEN_TURN;
+	const RoomCompletionData roomCompletionData(wOriginalMonsterCount, bConquerTokenNeedsActivating);
 	this->bContinueCutScene = false;
 
 	//If there are any unanswered questions, process them.
@@ -2139,19 +2152,9 @@ void CCurrentGame::ProcessCommand(
 				ProcessReactionToPlayerMove(nCommand, CueEvents);
 			}
 		}
-
-		//Was the room just conquered?
-		//Criteria for conquering are:
-		//1. Player didn't just leave the room.
-		//2. No monsters in the room.
-		//3. If Conquer tokens are in the room, one must be touched.
-		if (!bPlayerLeftRoom &&
-			((!bConquerTokenNeedsActivating && wOriginalMonsterCount && !this->pRoom->wMonsterCount) || //last monsters were killed
-			(!this->pRoom->wMonsterCount && bConquerTokenNeedsActivating &&
-				this->conquerTokenTurn!=NO_CONQUER_TOKEN_TURN))) //conquer token was activated (and possibly last monsters were killed also)
-			if (!IsCurrentRoomConquered())   //and was it not already cleared?
-				CueEvents.Add(CID_RoomConquerPending);
 	}
+
+	ProcessRoomCompletion(roomCompletionData, CueEvents);
 
 	//Check for new questions that were asked.  Put them in a list of questions
 	//for which answers will be expected on subsequent calls.
@@ -2407,11 +2410,46 @@ void CCurrentGame::ResetPendingTemporalSplit(CCueEvents& CueEvents)
 	}
 }
 
+
+//***************************************************************************************
+void CCurrentGame::ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents)
+// Does all the necessary room completion checks and adds the event if it should be completed
+{
+	const bool bPlayerLeftRoom = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
+	const bool bIsLastMonsterKilled = roomCompletionData.wOriginalMonsterCount && !this->pRoom->wMonsterCount;
+
+	const bool bIsKillMonstersSatisfied = (
+		!roomCompletionData.bConquerTokenNeedsActivating
+		&& roomCompletionData.wOriginalMonsterCount 
+		&& !this->pRoom->wMonsterCount
+	);
+	const bool bIsConquerTokenSatisfied = (
+		!this->pRoom->wMonsterCount
+		&& roomCompletionData.bConquerTokenNeedsActivating
+		&& this->conquerTokenTurn != NO_CONQUER_TOKEN_TURN
+	);
+	const bool bIsAnyCompletionSatisfied = (
+		bIsKillMonstersSatisfied
+		|| bIsConquerTokenSatisfied
+	);
+
+	//Was the room just conquered?
+	//Criteria for conquering are:
+	//1. Player didn't just leave the room.
+	//2. No monsters in the room.
+	//3. If Conquer tokens are in the room, one must be touched.
+	if (!bPlayerLeftRoom && bIsAnyCompletionSatisfied)
+		if (!IsCurrentRoomConquered())   // and was it not already cleared?
+			CueEvents.Add(CID_RoomConquerPending);
+}
 //***************************************************************************************
 void CCurrentGame::ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents)
 //After the player's turn, and the room hasn't been exited, everything else in the room takes a turn.
 {
 	this->bHalfTurn = this->swordsman.bIsHasted && !this->bHalfTurn;
+
+	// Explode any kegs that might've been stabbed by player push
+	this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 	ProcessMonsters(nCommand, CueEvents);
 
@@ -2453,7 +2491,7 @@ void CCurrentGame::ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEven
 		}
 	}
 
-	this->pRoom->PostProcessTurn(CueEvents, !this->bHalfTurn);
+	this->pRoom->PostProcessTurn(CueEvents, false);
 
 	SetPlayerMood(CueEvents);
 }
@@ -2632,6 +2670,15 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
         if (this->pRoom->DoesGentryiiPreventDiagonal(this->swordsman.wX, this->swordsman.wY, wDestX, wDestY))
             return false;
 
+		for (UINT nO = 0; nO < ORIENTATION_COUNT; ++nO) {
+			if (nO != NO_ORIENTATION)
+			{
+				CMonster* pMonster = this->pRoom->GetMonsterAtSquare(wDestX - nGetOX(nO), wDestY - nGetOY(nO));
+				if (pMonster && pMonster->HasSwordAt(wDestX, wDestY) && pMonster->GetWeaponType() == WT_Caber)
+					return false;
+			}
+		}
+
 		if (!this->swordsman.Move(wDestX, wDestY))
 			return false;
 
@@ -2664,7 +2711,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 	}
 
 	//Display non-functional temporary stun effect to highlight player was pushed
-	CueEvents.Add(CID_Stun, new CMoveCoord(wDestX, wDestY, 1), true);
+	CueEvents.Add(CID_Stun, new CStunTarget(NULL, 1, true), true);
 
 	if (this->swordsman.IsTarget())
 		this->pRoom->SetPathMapsTarget(wDestX, wDestY);
@@ -4147,6 +4194,12 @@ void CCurrentGame::SetTurn(
 	CCueEvents &CueEvents)  //(out)  Cue events generated by the last command.
 {
 	ASSERT(this->pRoom);
+
+	// It's possible player made moves against room edge that couldn't lead anywhere - disable
+	// room exit lock to avoid those moves from breaking playback
+	const bool bOldIsRoomLocked = this->bRoomExitLocked;
+	this->bRoomExitLocked = false;
+
 	if (wTurnNo > this->Commands.Count())	//bounds check
 		wTurnNo = this->Commands.Count();
 
@@ -4233,6 +4286,8 @@ void CCurrentGame::SetTurn(
 	//Play the commands back.
 	if (wTurnNo)
 		PlayCommandsToTurn(wTurnNo, CueEvents);
+
+	this->bRoomExitLocked = bOldIsRoomLocked;
 }
 
 //*****************************************************************************
@@ -4685,9 +4740,9 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	ResetPendingTemporalSplit(CueEvents);
 
-	MovementType eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
-	if (wSummonType == M_CLONE && this->swordsman.GetWaterTraversalState() == WTrv_NoEntry)
-		eMovement = GROUND_FORCE;
+	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
+	if (wSummonType != M_CLONE)
+		eMovement = MovementType::GROUND_AND_SHALLOW_WATER_FORCE;
 	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
@@ -5376,6 +5431,9 @@ void CCurrentGame::ProcessMonsters(
 
 		ProcessMonster(pMonster, nLastCommand, CueEvents);
 
+		// Kegs stabbed by pushes should explode after each monster
+		this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
 		pMonster->bProcessing = false;
 
 		//If we deferred an Unlink due to processing the monster, then unlink it now.
@@ -5786,7 +5844,8 @@ void CCurrentGame::ProcessPlayer(
 					} else
 						CueEvents.Add(CID_HitObstacle,
 								new CMoveCoord(destX, destY, wMoveO), true);
-				}
+				} else
+					CueEvents.Add(CID_HitObstacle, new CMoveCoord(destX, destY, wMoveO), true);
 			break;
 			case T_WALL_M:
 				if (!this->bHoldMastered)
@@ -6239,6 +6298,8 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 	if (this->wPlayerTurn == 0)
 		return;
 
+	this->bIsLeavingLevel = true;
+
 	//Write a demo record if recording.
 	if (this->bIsDemoRecording)
 	{
@@ -6585,6 +6646,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->swordsman = Src.swordsman;
 
 	this->bIsDemoRecording = Src.bIsDemoRecording;
+	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 	this->bIsGameActive = Src.bIsGameActive;
 	this->wPlayerTurn = Src.wPlayerTurn;
 	this->wSpawnCycleCount = Src.wSpawnCycleCount;
@@ -6605,6 +6667,8 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->statsAtRoomStart = Src.statsAtRoomStart;
 	this->ambientSounds = Src.ambientSounds;
 	this->conquerTokenTurn = Src.conquerTokenTurn;
+	this->bWasRoomConqueredAtTurnStart = Src.bWasRoomConqueredAtTurnStart;
+	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 
 	//Speech log.
 	vector<CCharacterCommand*>::const_iterator iter;
@@ -6726,6 +6790,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->bHalfTurn = false;
 	this->bWaitedOnHotFloorLastTurn = false;
 	this->conquerTokenTurn = NO_CONQUER_TOKEN_TURN;
+	this->bWasRoomConqueredAtTurnStart = false;
+	this->bIsLeavingLevel = false;
 
 	this->wMonsterKills = this->wMonsterKillCombo = 0;
 
@@ -7211,6 +7277,9 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 	pMonster->wO = this->swordsman.wO;
 
 	CClone *pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+	const UINT wSwappedCreationIndex = pClone->wCreationIndex;
+	pClone->wCreationIndex = this->pRoom->wLastCloneIndex;
+	this->pRoom->wLastCloneIndex = wSwappedCreationIndex;
 	const WeaponType playerWeapon = this->swordsman.GetActiveWeapon();
 	this->swordsman.SetWeaponType(pClone->weaponType, false);
 	pClone->weaponType = playerWeapon;
@@ -7226,12 +7295,28 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 	//Don't show swapping movement.
 	UpdatePrevCoords();
 
-	//Keep track of last clone moved to.
-	this->pRoom->pLastClone = pMonster;
-
 	//Brain pathmap target is now at this location.
 	if (this->swordsman.IsTarget())
 		this->pRoom->SetPathMapsTarget(wX,wY);
+
+	// Sort the clones by creationIndex and relink them in the room
+	{
+		std::vector<CClone*> clones;
+		pMonster = this->pRoom->GetMonsterOfType(M_CLONE);
+		while (pMonster && pMonster->wType == M_CLONE) {
+			pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			clones.push_back(pClone);
+			this->pRoom->UnlinkMonster(pClone);
+			pMonster = pMonster->pNext;
+		}
+		std::sort(clones.begin(), clones.end(), [](CClone *a, CClone *b) {
+			return a->wCreationIndex < b->wCreationIndex;
+		});
+
+		for (vector<CClone*>::const_iterator iter = clones.begin(); iter != clones.end(); ++iter)
+			this->pRoom->LinkMonster(*iter, false);
+
+	}
 
 	//Currently, this command can happen without anything else changing.
 	//Q: How to handle invisible player swapping with clone?
@@ -7328,6 +7413,12 @@ bool CCurrentGame::WasRoomConqueredOnThisVisit()
 const
 {
 	ASSERT(this->bIsGameActive);
+
+	// Level exit can be triggered by a scripting command and it's not fun for the player to be told right at this
+	// time that the room was actually not conquered, because something in the room caused that to be.
+	// Therefore we just assume that Go to level entrance keeps the room solved if it was solved when the turn started
+	if (this->bWasRoomConqueredAtTurnStart)
+		return true;
 
 	if (this->pRoom->wMonsterCount)
 		return false;     //Room is still in an unconquered state.

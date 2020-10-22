@@ -46,6 +46,7 @@ public:
 	virtual void   HandleKeyDown(const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   HandleMouseDown(const SDL_MouseButtonEvent &MouseButtonEvent);
 	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &MouseButtonEvent);
+	virtual void   SanitizeText(WSTRING &text);
 	virtual void   SetCursorByPos(int xPos, int yPos);
 	virtual void   SetCursorIndex(const UINT wIndex);
 

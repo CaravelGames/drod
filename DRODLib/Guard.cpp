@@ -70,7 +70,7 @@ const
 			return true;
 		if (pMonster->wType == M_CHARACTER) {
 			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsInvulnerable() || pCharacter->IsPushableByWeaponAttack()) {
+			if (pCharacter->IsInvulnerable() || pCharacter->IsPushableByWeaponAttack() || !this->CanDaggerStep(pCharacter->GetIdentity())) {
 				return true;
 			}
 		}

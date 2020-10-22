@@ -192,6 +192,7 @@ struct TileImageBlitParams {
 		, bClipped(false)
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
+		, appliedDarkness(0.75)
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -210,6 +211,8 @@ struct TileImageBlitParams {
 	bool bClipped;
 	int nAddColor;
 	bool bCastShadowsOnTop;
+	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
+	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
 //******************************************************************************
@@ -489,6 +492,9 @@ protected:
 	void           SyncRoomPointerToGame(CCurrentGame* pGame);
 	bool           UpdateDrawSquareInfo(const CCoordSet *pSet=NULL, const CCoordSet *pGeometryChanges=NULL);
 	void           UpdateRoomRects();
+
+	void           DebugDraw_Pathmap(SDL_Surface* pDestSurface, MovementType eType);
+	void           DebugDraw_MarkedTiles(SDL_Surface* pDestSurface);
 
 	UINT             dwRoomX, dwRoomY;
 	WSTRING           style;

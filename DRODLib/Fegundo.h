@@ -44,6 +44,7 @@ public:
 
 	virtual bool BrainAffects() const {return false;}
 	virtual bool CanFindSwordsman() const;
+	virtual bool IsFriendly() const { return  true; }
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 	bool DoesMovePreventExplosion(const UINT wX, const UINT wY, const int dx, const int dy);

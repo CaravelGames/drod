@@ -1109,6 +1109,10 @@ void CCharacter::Process(
 	if (this->wCurrentCommandIndex >= this->commands.size())
 		goto Finish;
 
+	//Sword cache must be cleared to avoid using state of the room from some other entity's
+	//turn and/or being blocked by this character's own weapon
+	this->swordsInRoom.Clear();
+
 	//Only character monsters taking up a single tile are implemented.
 	ASSERT(!bIsSerpentOrGentryii(GetResolvedIdentity()));
 
@@ -1348,9 +1352,11 @@ void CCharacter::Process(
 				bool bPathmapping;
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(wDestX, wDestY, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
-				if (bStopTurn)
+
+				//When pathfinding indicates to not move, 'Single Step' causes script execution to advance on the next turn.
+				if (bStopTurn && !ph)
 					STOP_COMMAND;
-				if (!dx && !dy)
+				if (bStopTurn || (!dx && !dy))
 				{
 					if (ph)
 					{
@@ -1463,9 +1469,11 @@ void CCharacter::Process(
 				bool bPathmapping;
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(this->wXRel, this->wYRel, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
-				if (bStopTurn)
+
+				//When pathfinding indicates to not move, 'Single Step' causes script execution to advance on the next turn.
+				if (bStopTurn && !ph)
 					STOP_COMMAND;
-				if (!dx && !dy)
+				if (bStopTurn || (!dx && !dy))
 				{
 					if (ph && IsVisible())
 					{
@@ -2282,6 +2290,9 @@ void CCharacter::Process(
 				//Deliver speech dialog.
 				if (!command.pSpeech)
 					break; //robustness check
+				//We set this flag to false because this character will be used for as long as the speech
+				//is not finished, so we don't want this object to be deleted next turn
+				this->bSafeToDelete = false;
 				CFiredCharacterCommand *pSpeech = new CFiredCharacterCommand(this, &command,
 					pGame->wTurnNo, this->dwScriptID, this->wCurrentCommandIndex);
 				pSpeech->text = pGame->ExpandText(
@@ -2392,28 +2403,33 @@ void CCharacter::Process(
 						//Stop script execution whether visible or not.
 						if (bChangeImperative)
 							this->wCurrentCommandIndex = this->commands.size();
-						if (this->bVisible && IsAlive())
+						if (IsAlive())
 						{
-							//NPC dies.
-							if (!bExecuteNoMoveCommands) {
-								if (!room.AddFallingMonsterEvent(CueEvents, this, room.GetOSquare(this->wX,this->wY)))
-									CueEvents.Add(CID_MonsterDiedFromStab, this);
-							}
-							if (bChangeImperative)
-							{
-								//Normal death behavior.
-								CCueEvents Ignored;
-								SetKillInfo(NO_ORIENTATION); //center stab effect
-								room.KillMonster(this, Ignored, true);
-								if (IsMissionCritical())
-									CriticalNPCDied(CueEvents);
-							} else {
-								//Special death behavior.
-								switch (GetResolvedIdentity())
+							if (!this->bVisible)
+								room.KillInvisibleCharacter(this);
+							else {
+								//NPC dies.
+								if (!bExecuteNoMoveCommands) {
+									if (!room.AddFallingMonsterEvent(CueEvents, this, room.GetOSquare(this->wX, this->wY)))
+										CueEvents.Add(CID_MonsterDiedFromStab, this);
+								}
+								if (bChangeImperative)
 								{
-									case M_ROCKGOLEM: case M_CONSTRUCT: this->wO = NO_ORIENTATION; break;
-									case M_FEGUNDO: TurnIntoMonster(CueEvents, true); break;
-									default: break;
+									//Normal death behavior.
+									CCueEvents Ignored;
+									SetKillInfo(NO_ORIENTATION); //center stab effect
+									room.KillMonster(this, Ignored, true);
+									if (IsMissionCritical())
+										CriticalNPCDied(CueEvents);
+								}
+								else {
+									//Special death behavior.
+									switch (GetResolvedIdentity())
+									{
+										case M_ROCKGOLEM: case M_CONSTRUCT: this->wO = NO_ORIENTATION; break;
+										case M_FEGUNDO: TurnIntoMonster(CueEvents, true); break;
+										default: break;
+									}
 								}
 							}
 						}
@@ -2544,6 +2560,10 @@ void CCharacter::Process(
 				//Remove character from any future play in the current game.
 				this->bScriptDone = true;
 				this->wCurrentCommandIndex = this->commands.size();
+
+				if (!this->bVisible) // Invisible ended characters should just be removed from the room
+					room.KillInvisibleCharacter(this);
+
 			goto Finish;
 			case CCharacterCommand::CC_EndScriptOnExit:
 				//Remove character from any future play in the current game once the room is exited.
@@ -2555,7 +2575,7 @@ void CCharacter::Process(
 			{
 				UINT dwCharID = (UINT)command.x;
 				if (!pGame->GlobalScriptsRunning.has(dwCharID))
-					room.AddNewGlobalScript(dwCharID, CueEvents);
+					room.AddNewGlobalScript(dwCharID, true, CueEvents);
 
 				bProcessNextCommand = true;
 			}
@@ -2692,7 +2712,7 @@ void CCharacter::Process(
 					//the player's weapon state matches the specified parameter value.
 					if (bArm) {
 						if (command.x == (UINT)WT_Off) {
-							if (!player.bWeaponOff)
+							if (!player.bWeaponOff && !player.bNoWeapon)
 								STOP_COMMAND;
 						} else {
 							if (player.bWeaponOff)
@@ -2769,7 +2789,8 @@ void CCharacter::Process(
 					else if (pw == CMD_CC)
 						pw = nNextCCO(this->wO);
 
-					pGame->AddNewEntity(CueEvents, identity, px, py, pw);
+					this->GenerateEntity(identity, px, py, pw, CueEvents);
+
 					CueEvents.Add(CID_NPCTypeChange);
 				}
 
@@ -3041,9 +3062,10 @@ bool CCharacter::GetMovement(
 	const UINT wDestX, const UINT wDestY,
 	int& dx, int& dy, int& dxFirst, int& dyFirst, bool& bPathmapping, //(out)
 	const bool bAllowTurning)
+	// Returns: true if the move should not be done, even if dx & dy are non-zero,
+	// used by pathmapping movement rules
 {
 	bPathmapping = false;
-	this->swordsInRoom.Clear();
 
 	bool bStopTurn = false;
 	switch (this->movementIQ)
@@ -4266,6 +4288,26 @@ bool CCharacter::IsOpenMove(const int dx, const int dy) const
 }
 
 //*****************************************************************************
+void CCharacter::GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents)
+{
+	CCurrentGame* pGame = (CCurrentGame*)this->pCurrentGame; //non-const
+	UINT wBaseIdentity = bEntityBaseIdentity(identity);
+
+	CMonster* pMonster = pGame->AddNewEntity(CueEvents, wBaseIdentity, wX, wY, wO);
+
+	if (pMonster)
+		switch (identity) {
+			case M_EYE_ACTIVE:
+				CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
+				pEvilEye->SetActive(true);
+				break;
+		}
+	
+}
+
+
+
+//*****************************************************************************
 bool CCharacter::IsTileObstacle(
 //Override for NPCs.
 //
@@ -5235,11 +5277,6 @@ void CCharacter::TeleportCharacter(
 	this->wX = wDestX;
 	this->wY = wDestY;
 
-	if (this->bBrainPathmapObstacle) {
-		room.UpdatePathMapAt(this->wX, this->wY);
-		room.UpdatePathMapAt(wOldX, wOldY);
-	}
-
 	if (this->bVisible)
 	{
 		ASSERT(!room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)]);
@@ -5252,6 +5289,11 @@ void CCharacter::TeleportCharacter(
 	}
 
 	room.Plot(coords); //update room
+
+	if (this->bBrainPathmapObstacle) {
+		room.UpdatePathMapAt(this->wX, this->wY);
+		room.UpdatePathMapAt(wOldX, wOldY);
+	}
 }
 
 //*****************************************************************************
@@ -5347,6 +5389,7 @@ void CCharacter::TurnIntoMonster(
 	{
 		CArmedMonster *pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
 		pArmedMonster->weaponType = GetWeaponType();
+		pArmedMonster->bNoWeapon = this->bNoWeapon;
 		pArmedMonster->SetWeaponSheathed();
 	}
 

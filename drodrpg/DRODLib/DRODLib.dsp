@@ -673,6 +673,10 @@ SOURCE=.\Platform.cpp
 
 SOURCE=.\Platform.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\RoomData.h
+# End Source File
 # End Group
 # End Target
 # End Project

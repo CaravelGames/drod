@@ -43,6 +43,7 @@ CClone::CClone(
 									//    accessing data, and not
 									//    for game processing.
 	: CPlayerDouble(M_CLONE, pSetCurrentGame)
+	, wCreationIndex(CLONE_NO_CREATION_INDEX)
 { }
 
 //*****************************************************************************
@@ -172,4 +173,33 @@ bool CClone::SetWeaponSheathed()
 void CClone::Stun(CCueEvents &CueEvents, UINT /*val*/) //[default=1]
 {
 	CMonster::Stun(CueEvents, 1);
+}
+
+
+//*****************************************************************************
+//Calculated the index of this clone in the room, which is used to maintain their processing sequence
+//regardless of how they were switched. Index is the highest index of another clone in the room + 1,
+//or last clone's index +1, whichever is higher
+void CClone::CalculateCreationIndex(CDbRoom* pRoom)
+{
+	if (this->wCreationIndex != CLONE_NO_CREATION_INDEX) // Already calculated it once
+		return;
+
+	CMonster* pMonster = pRoom->pFirstMonster;
+
+	UINT index = 0;
+	while (pMonster) {
+		if (pMonster == this)
+			break;
+
+		if (pMonster->wType == M_CLONE) {
+			CClone *pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			index = max(index, pClone->wCreationIndex);
+		}
+		else if (pMonster->GetProcessSequence() > this->GetProcessSequence())
+			ASSERT(!"Calculating clone's creation index when the clone is not in the room is invalid.");
+
+		pMonster = pMonster->pNext;
+	}
+	this->wCreationIndex = max(pRoom->wLastCloneIndex, index) + 1;
 }

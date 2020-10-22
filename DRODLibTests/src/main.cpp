@@ -7,6 +7,17 @@
 #include "Runner.h"
 #undef main
 
+// Used to extract test name to name the Level when saving the hold
+struct MyListener : Catch::TestEventListenerBase {
+
+	using TestEventListenerBase::TestEventListenerBase; // inherit constructor
+
+	void testCaseStarting(Catch::TestCaseInfo const& testInfo) override {
+		CTestDb::currentTestCaseName = &(testInfo.name);
+	}
+};
+CATCH_REGISTER_LISTENER(MyListener)
+
 int main(int argc, char* const argv[])
 {
 	CTestDb::Init(argc, argv);

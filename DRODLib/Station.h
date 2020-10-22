@@ -44,6 +44,7 @@ public:
 	inline UINT GetType() const {return this->wType;}
 	void RecalcPathmap();
 	bool UpdateTurn(const UINT wTurnNo);
+	void UpdateType();
 	inline UINT X() const {return this->wX;}
 	inline UINT Y() const {return this->wY;}
 

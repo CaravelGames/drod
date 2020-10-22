@@ -1091,6 +1091,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 			CX_ACTIONLABEL, CY_ACTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_Action)));
 	this->pActionListBox = new CListBoxWidget(TAG_ACTIONLISTBOX,
 			X_ACTIONLISTBOX, Y_ACTIONLISTBOX, CX_ACTIONLISTBOX, CY_ACTIONLISTBOX);
+	this->pActionListBox->SetHotkeyItemSelection(true);
+	this->pActionListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pActionListBox);
 	PopulateCommandListBox();
 
@@ -1283,6 +1285,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox = new CListBoxWidget(TAG_VISUALEFFECTS_LISTBOX,
 			X_EFFECTLISTBOX, Y_EFFECTLISTBOX, CX_EFFECTLISTBOX, CY_EFFECTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pVisualEffectsListBox);
+	this->pVisualEffectsListBox->SetHotkeyItemSelection(true);
+	this->pVisualEffectsListBox->SortAlphabetically(true);
 	this->pVisualEffectsListBox->AddItem(VET_BLOODSPLAT, g_pTheDB->GetMessageText(MID_BloodSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_MUDSPLAT, g_pTheDB->GetMessageText(MID_MudSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_TARSPLAT, g_pTheDB->GetMessageText(MID_TarSplatterEffect));
@@ -2253,6 +2257,7 @@ void CCharacterDialogWidget::AddCommand()
 		nSelectedLine = pActiveCommandListBox->AddItemPointer(pCommand,
 				wszEmpty,	//real text added below
 				false, nSelectedLine+1);
+		SetCommandColor(pActiveCommandListBox, nSelectedLine, pCommand->command);
 	}
 
 	AddLabel(pCommand);
@@ -3491,26 +3496,28 @@ const
 		case CCharacterCommand::CC_AmbientSound:
 		case CCharacterCommand::CC_AmbientSoundAt:
 		case CCharacterCommand::CC_Autosave:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_EndScript:
-		case CCharacterCommand::CC_EndScriptOnExit:
-		case CCharacterCommand::CC_FlushSpeech:
-		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EndScript:
+		case CCharacterCommand::CC_EndScriptOnExit:
+		case CCharacterCommand::CC_Equipment:
+		case CCharacterCommand::CC_FlushSpeech:
+		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
 		case CCharacterCommand::CC_LevelEntrance:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_ScoreCheckpoint:
 		case CCharacterCommand::CC_SetMusic:
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
-		case CCharacterCommand::CC_Equipment:
 			if (bIfCondition)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -3891,8 +3898,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
 		CCharacterCommand *pCommand = commands[wIndex];
-		pCommandList->AddItemPointer(pCommand,
+		const UINT insertedIndex = pCommandList->AddItemPointer(pCommand,
 				GetCommandDesc(commands, pCommand).c_str());
+		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
 	if (commands.size())
 		pCommandList->SelectLine(0);
@@ -4843,6 +4851,38 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 		pAnimateSpeed->SetText(wszEmpty);
 		pAnimateSpeed->Disable();
 		pIDLabel->SetText(wszEmpty);
+	}
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::SetCommandColor(
+	CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command)
+{
+	switch (command) {
+	case CCharacterCommand::CC_Label:
+		pListBox->SetItemColorAtLine(line, DarkGreen);
+		break;
+	case CCharacterCommand::CC_GoTo:
+	case CCharacterCommand::CC_EachAttack:
+	case CCharacterCommand::CC_EachDefend:
+	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_AnswerOption:
+	case CCharacterCommand::CC_EndScript:
+	case CCharacterCommand::CC_EndScriptOnExit:
+		pListBox->SetItemColorAtLine(line, Maroon);
+		break;
+	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfEnd:
+		pListBox->SetItemColorAtLine(line, DarkBlue);
+		break;
+	case CCharacterCommand::CC_VarSet:
+		pListBox->SetItemColorAtLine(line, FullRed);
+		break;
+	case CCharacterCommand::CC_Wait:
+		pListBox->SetItemColorAtLine(line, DarkGray);
+		break;
+	default: break;
 	}
 }
 
