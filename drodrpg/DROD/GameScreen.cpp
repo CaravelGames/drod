@@ -5877,8 +5877,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				if (pCoord->wValue2 != SwordType::NoSword) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
 					if (swordTile) {
-						const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
-						const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
+						const int wSwordX = pCoord->wX + nGetOX(pCoord->wO);
+						const int wSwordY = pCoord->wY + nGetOY(pCoord->wO);
 						if (this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
 							fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
 					}

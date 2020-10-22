@@ -4742,7 +4742,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
 	if (wSummonType != M_CLONE)
-		eMovement = MovementType::GROUND_AND_SHALLOW_WATER_FORCE;
+		eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
 	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
@@ -7258,6 +7258,13 @@ void CCurrentGame::TallyKill()
 }
 
 //*****************************************************************************
+bool cloneComparator::operator() (const CClone *a, const CClone *b) const
+//Compare clones by wCreationIndex
+{
+    return a->wCreationIndex < b->wCreationIndex;
+}
+
+//*****************************************************************************
 bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 //Switch player and clone's positions.
 {
@@ -7309,9 +7316,7 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 			this->pRoom->UnlinkMonster(pClone);
 			pMonster = pMonster->pNext;
 		}
-		std::sort(clones.begin(), clones.end(), [](CClone *a, CClone *b) {
-			return a->wCreationIndex < b->wCreationIndex;
-		});
+		std::sort(clones.begin(), clones.end(), cloneComparator());
 
 		for (vector<CClone*>::const_iterator iter = clones.begin(); iter != clones.end(); ++iter)
 			this->pRoom->LinkMonster(*iter, false);

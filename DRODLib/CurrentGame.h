@@ -74,6 +74,7 @@
 #  pragma warning(disable:4786)
 #endif
 
+#include "Clone.h"
 #include "CurrentGameRecords.h"
 #include "DemoRecInfo.h"
 #include "DbSavedGames.h"
@@ -145,6 +146,10 @@ struct RoomCompletionData
 
 	UINT wOriginalMonsterCount;
 	bool bConquerTokenNeedsActivating;
+};
+
+struct cloneComparator {
+    bool operator() (const CClone *a, const CClone *b) const;
 };
 
 //*******************************************************************************
