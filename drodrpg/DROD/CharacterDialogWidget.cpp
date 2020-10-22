@@ -4912,6 +4912,7 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_Label:
 		pListBox->SetItemColorAtLine(line, DarkGreen);
 		break;
+	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
@@ -4919,10 +4920,12 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_AnswerOption:
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
+	case CCharacterCommand::CC_Return:
 		pListBox->SetItemColorAtLine(line, Maroon);
 		break;
 	case CCharacterCommand::CC_If:
 	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 		pListBox->SetItemColorAtLine(line, DarkBlue);
 		break;
