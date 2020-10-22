@@ -969,7 +969,7 @@ bool CGameScreen::SetForActivate()
 		this->pRoomWidget->ShowVarUpdates(false);
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
 	SetSignTextToCurrentRoom();
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 	SynchScroll();
 	PaintClock(true);
 
@@ -1743,7 +1743,7 @@ void CGameScreen::OnKeyDown(
 			this->pMapWidget->RequestPaint();
 			this->pRoomWidget->ClearEffects();
 			this->pRoomWidget->Paint();
-			ShowPlayerFace();
+			UpdatePlayerFace();
 			this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
 		}
 		break;
@@ -1869,7 +1869,7 @@ void CGameScreen::OnSelectChange(
 //
 
 //*****************************************************************************
-void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord)
+void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, const bool bIsCriticalNpc)
 //Adds an effect for a monster type getting damaged to the room.
 {
 	//If player stabs monster, center sound on player for nicer effect.
@@ -1907,6 +1907,8 @@ void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coo
 		default: seid = SEID_SPLAT;
 			break;
 	}
+	if (bIsCriticalNpc)
+		seid = SEID_SPLAT;
 	PlaySoundEffect(seid, this->fPos);
 
 	//Effect shown based on monster type.
@@ -2195,9 +2197,6 @@ void CGameScreen::ClearSpeech(
 	{
 		if (g_pTheSound)
 			g_pTheSound->FreeSoundDump();
-
-		//Show player when no one is speaking.
-		ShowPlayerFace(true);
 	}
 
 	SetGameAmbience();
@@ -2240,6 +2239,7 @@ void CGameScreen::CutSpeech(const bool bForceClearAll) //[default=true]
 	this->speechChannels = retain;
 	if (this->speechChannels.empty())
 		this->dwNextSpeech = 0; //can start next speech immediately
+	this->pFaceWidget->SetSpeaker(false);
 }
 
 //*****************************************************************************
@@ -2648,7 +2648,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 
 	HideScroll();
 	this->pFaceWidget->SetReading(false);
-	this->pFaceWidget->SetMood(Mood_Happy);
+	this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Happy);
 	this->pRoomWidget->AllowSleep(false);
 
 	//Show the screen after first arriving here.
@@ -2674,7 +2674,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 					eNextScreen = LevelExit_OnKeydown(event.key);
 					if (eNextScreen != SCR_Game)
 					{
-						this->pFaceWidget->SetMood(Mood_Normal);
+						this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 						g_pTheSound->StopSong();
 						if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 							this->pRoomWidget->ShowPlayer();
@@ -2685,7 +2685,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				break;
 
 				case SDL_MOUSEBUTTONUP:	//not DOWN, so mouse up doesn't exit next screen immediately too
-					this->pFaceWidget->SetMood(Mood_Normal);
+					this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 					g_pTheSound->StopSong();
 					if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 						this->pRoomWidget->ShowPlayer();
@@ -2723,7 +2723,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				this->pRoomWidget->Paint();
 
 				//Beethro's thinking about the next level now.
-				this->pFaceWidget->SetMood(Mood_Normal);
+				this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 			}
 			dwLastStep = dwNow;
 		}
@@ -2792,6 +2792,18 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const bool bNPCBeethroDied = CueEvents.HasOccurred(CID_NPCBeethroDied);
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied) ||
 			(!bPlayerDied && !bNPCBeethroDied && !bIsSmitemaster(player.wAppearance));
+
+	//Render Game Effect commands
+	for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_VisualEffect);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const VisualEffectInfo* pEffect = DYN_CAST(const VisualEffectInfo*, const CAttachableObject*, pObj);
+		AddVisualEffect(pEffect, this->pRoomWidget, this->pCurrentGame);
+		AddSoundEffect(pEffect);
+	}
+
+	// And we want image events to be rendered too
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
@@ -2806,10 +2818,12 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 						new CTrapdoorFallEffect(this->pRoomWidget, player, playerTile, fallTime));
 			}
 			if (wSwordTI != TI_UNSPECIFIED) {
-				const CCoord sword(player.wSwordX, player.wSwordY);
-				const vector<UINT> swordTile(1, wSwordTI);
-				this->pRoomWidget->AddMLayerEffect(
-						new CTrapdoorFallEffect(this->pRoomWidget, sword, swordTile, fallTime));
+				if (this->pRoomWidget->pRoom->IsValidColRow(player.wSwordX, player.wSwordY)) {
+					const CCoord sword(player.wSwordX, player.wSwordY);
+					const vector<UINT> swordTile(1, wSwordTI);
+					this->pRoomWidget->AddMLayerEffect(
+							new CTrapdoorFallEffect(this->pRoomWidget, sword, swordTile, fallTime));
+				}
 			}
 		}
 	}
@@ -2830,7 +2844,6 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	this->pRoomWidget->DrawOverheadLayer(this->pRoomWidget->pRoomSnapshotSurface);
 	this->pRoomWidget->DrawGhostOverheadCharacters(this->pRoomWidget->pRoomSnapshotSurface, false);
 	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
-	this->pFaceWidget->SetIsDeathAnimation(true);
 
 	const bool bFade = g_pTheBM->bAlpha;
 	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
@@ -2839,7 +2852,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const CMonster *pHalph = NULL;
 	CMonster *pNPCBeethro = bNPCBeethroDied ? this->pCurrentGame->pRoom->GetNPCBeethro(true) : NULL;
 	if (bCriticalNPCDied) {
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetDying(true, Mood_Nervous);
 		const CEntity *pEntity = this->pCurrentGame->GetDyingEntity();
 		if (pEntity) {
 			const CMonster *pMonster = dynamic_cast<const CMonster*>(pEntity);
@@ -2847,12 +2860,12 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				PlayDeathSound(pMonster->GetIdentity());
 		}
 	} else if (bHalphDied) {
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetDying(true, Mood_Nervous);
 		pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
 				CueEvents.GetFirstPrivateData(CID_HalphDied));
 		PlaySpeakerSoundEffect(pHalph->GetIdentity() == M_HALPH ? SEID_HALPHDIE : SEID_HALPH2_DIE);
 	} else {
-		this->pFaceWidget->SetMood(Mood_Dying);
+		this->pFaceWidget->SetDying(true, Mood_Dying);
 		const UINT wAppearance = bNPCBeethroDied ? pNPCBeethro->GetIdentity() : player.wAppearance;
 		PlayDeathSound(wAppearance);
 
@@ -3060,10 +3073,10 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		this->pRoomWidget->DirtyRoom();	//remove fading
 	} else {
 		ClearSpeech();
-		this->pFaceWidget->SetMood(Mood_Normal);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 	}
 
-	this->pFaceWidget->SetIsDeathAnimation(false);
+	this->pFaceWidget->SetDying(false);
 
 	return cmd_response;
 }
@@ -3843,16 +3856,29 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const UINT wO = IsValidOrientation(pMonster->wKillInfo) ?
 				pMonster->wKillInfo : NO_ORIENTATION;
 		CMoveCoord coord(pMonster->wX,pMonster->wY,wO);
-		AddDamageEffect(pMonster->GetIdentity(), coord);
+		// Mission-critical NPCs should get the generic death sound, as they all have a personalized scream
+		const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+		AddDamageEffect(pMonster->GetIdentity(), coord, pCharacter && pCharacter->IsMissionCritical());
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Stun);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-		const CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(pCoord->wX,pCoord->wY);
-		const bool bPlayer = this->pCurrentGame->swordsman.wX == pCoord->wX && this->pCurrentGame->swordsman.wY == pCoord->wY;
-		if (bPlayer || (pMonster && pMonster->IsAlive() && pMonster->IsStunned()))
-			this->pRoomWidget->AddMLayerEffect(new CStunEffect(this->pRoomWidget, *pCoord));
+		const CStunTarget *pStunTarget = DYN_CAST(const CStunTarget*, const CAttachableObject*, pObj);
+
+		if (pStunTarget->bIsPlayerStunned)
+			pRoomWidget->AddMLayerEffect(new CStunEffect(
+				pRoomWidget,
+				this->pCurrentGame->swordsman.wX,
+				this->pCurrentGame->swordsman.wY,
+				pStunTarget->stunDuration
+			));
+		else if (pStunTarget->pStunnedMonster && pStunTarget->pStunnedMonster->IsAlive())
+			pRoomWidget->AddMLayerEffect(new CStunEffect(
+				pRoomWidget,
+				pStunTarget->pStunnedMonster->wX,
+				pStunTarget->pStunnedMonster->wY,
+				pStunTarget->stunDuration
+			));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
@@ -3958,8 +3984,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 				if (pCoord->wValue2 != WT_Off) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
-					if (swordTile)
-						fallingTiles[ROOMCOORD(pCoord->wX + nGetOX(pCoord->wO), pCoord->wY + nGetOY(pCoord->wO))].push_back(swordTile);
+					if (swordTile) {
+						const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
+						const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
+						if (this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
+							fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
+					}
 				}
 			}
 			else if (bIsSerpentTile(pCoord->wValue))
@@ -4660,20 +4690,20 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	}
 
 	//Priority of player moods
-	ShowPlayerFace();
+	UpdatePlayerFace();
 	if (CueEvents.HasOccurred(CID_SwordsmanAfraid))
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Nervous);
 	else if (CueEvents.HasOccurred(CID_SwordsmanAggressive))
-		this->pFaceWidget->SetMood(Mood_Aggressive);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Aggressive);
 	else if (CueEvents.HasOccurred(CID_SwordsmanNormal))
-		this->pFaceWidget->SetMood(Mood_Normal);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
 
-	if (CueEvents.HasOccurred(CID_RoomConquerPending))  //priority of temporary moods
+	if (CueEvents.HasOccurred(CID_RoomConquerPending))
 	{
 		if (this->pRoomWidget->subtitles.empty()) {
 			UINT eClearID = GetPlayerClearSEID();
 			if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
-			this->pFaceWidget->SetMoodToSoundEffect(Mood_Happy, SEID(eClearID));
+			this->pFaceWidget->SetMoodToSoundEffect(FaceWidgetLayer::PlayerRole, Mood_Happy, SEID(eClearID));
 		}
 	}
 	else if (CueEvents.HasOccurred(CID_MonsterDiedFromStab))
@@ -4691,12 +4721,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 		if (bPlayerStabbed)
-			this->pFaceWidget->SetMood(Mood_Strike,250);
+			this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Strike, 250);
 	}
 	else if (CueEvents.HasOccurred(CID_Scared))
-		this->pFaceWidget->SetMood(Mood_Nervous,250);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Nervous, 250);
 	else if (CueEvents.HasOccurred(CID_HitObstacle))
-		this->pFaceWidget->SetMood(Mood_Aggressive,250);
+		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Aggressive, 250);
 
 	//Music cues.
 	if (CueEvents.HasOccurred(CID_SetMusic))
@@ -4887,6 +4917,8 @@ UINT CGameScreen::GetPlayerClearSEID() const
 			eSoundID = SEID_STALWART_CLEAR; break;
 		case M_STALWART2:
 			eSoundID = SEID_SOLDIER_CLEAR; break;
+		case M_NONE:
+			eSoundID = SEID_NONE; break;
 		default: eSoundID = SEID_MON_CLEAR; break;
 	}
 	return eSoundID;
@@ -5509,7 +5541,7 @@ void CGameScreen::ProcessSpeech()
 		this->dwNextSpeech = 0;
 
 		//Return to showing player again.
-		ShowPlayerFace(true);
+		this->pFaceWidget->SetSpeaker(false);
 		return;
 	}
 
@@ -5670,30 +5702,25 @@ bool CGameScreen::ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand)
 	HoldCharacter *pCustomChar = NULL;
 	if (speaker >= CUSTOM_CHARACTER_FIRST && speaker != M_NONE)
 		pCustomChar = this->pCurrentGame->pHold->GetCharacter(speaker);
+	else if (speaker == Speaker_Player) {
+		SPEAKER ePlayerSpeaker = Speaker_Beethro;
+		ResolvePlayerFace(ePlayerSpeaker, &pCustomChar);
+		speaker = ePlayerSpeaker;
+	}
 
 	if (speaker >= Speaker_Count && !pCustomChar) //indicates a dangling reference
 		pSpeech->wCharacter = Speaker_None;
 	if (pSpeech->wCharacter == Speaker_None)
 	{
 		//Just show player if no speaker is being shown.
-		ShowPlayerFace(true);
-	} else if (speaker == Speaker_Player) {
-		this->pFaceWidget->SetMood((MOOD)pSpeech->wMood, 0, true);
-		ShowPlayerFace(false,true);
+		this->pFaceWidget->SetSpeaker(false);
 	} else {
 		//Show who is speaking.
-		this->pFaceWidget->SetMood((MOOD)pSpeech->wMood, 0, true);
 		if (pSpeech->wCharacter != Speaker_Custom && pSpeech->wCharacter != Speaker_Self)
 		{
-			if (pCustomChar && pCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pCustomChar->dwDataID_Avatar);
-			} else {
-				if (pCustomChar)
-					speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
-				this->pFaceWidget->SetCharacter((SPEAKER)speaker, true);
-			}
+			if (pCustomChar)
+				speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
+			this->pFaceWidget->SetSpeaker(true, (SPEAKER)speaker, pCustomChar, (MOOD)pSpeech->wMood);
 		} else {
 			//Determine who is speaking.  Show their face, if applicable.
 			HoldCharacter *pRemoteCustomChar = NULL;
@@ -5704,24 +5731,14 @@ bool CGameScreen::ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand)
 				pRemoteCustomChar = this->pCurrentGame->pHold->GetCharacter(
 						pRemoteCharacter->wLogicalIdentity);
 			}
-			if (pRemoteCustomChar && pRemoteCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pRemoteCustomChar->dwDataID_Avatar);
-			} else {
-				UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
-				if (wIdentity == M_EYE_ACTIVE)
-					wIdentity = M_EYE;       //map to same type
+			UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
+			if (wIdentity == M_EYE_ACTIVE)
+				wIdentity = M_EYE;       //map to same type
 
-				wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
-				if (wIdentity != Speaker_None)
-					this->pFaceWidget->SetCharacter((SPEAKER)wIdentity, true);
+			wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
+			if (wIdentity != Speaker_None) {
+				this->pFaceWidget->SetSpeaker(true, (SPEAKER)wIdentity, pRemoteCustomChar, (MOOD)pSpeech->wMood);
 			}
-		}
-		if (this->pFaceWidget->ResolveFace() == FF_Default)
-		{
-			//Face doesn't exist; show player face in stead of default face
-			ShowPlayerFace(true);
 		}
 	}
 	return true;
@@ -6047,32 +6064,19 @@ void CGameScreen::ShowLockIcon(const bool bShow)
 }
 
 //*****************************************************************************
-void CGameScreen::ShowPlayerFace(
-//Show the face of the role the player is in.
-//
-//Params:
-	const bool bOverrideLock, //[default=false]
-	const bool bLockMood) //[default=false]
+void CGameScreen::UpdatePlayerFace()
+// Refresh player face to match reality
 {
 	if (!this->pCurrentGame)
 		return;
+
+	HoldCharacter* pPlayerHoldCharacter = NULL;
 
 	//Handle custom character images specially.
 	UINT dwCharID = this->pCurrentGame->swordsman.wIdentity;
 	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
 	{
-		HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(dwCharID);
-		if (pChar && pChar->dwDataID_Avatar)
-		{
-			//Show custom character image.
-			if (bLockMood || bOverrideLock || (this->pFaceWidget->GetImageID() != pChar->dwDataID_Avatar &&
-					!this->pFaceWidget->IsMoodLocked()))
-				this->pFaceWidget->SetImage(pChar->dwDataID_Avatar);
-			return;
-		}
-		//otherwise show character's functional image below
-		if (pChar)
-			dwCharID = pChar->wType;
+		pPlayerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
 	}
 
 	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
@@ -6083,22 +6087,52 @@ void CGameScreen::ShowPlayerFace(
 		if (pNPCBeethro)
 			switch(pNPCBeethro->GetIdentity())
 			{
-				case M_BEETHRO:
-					player = Speaker_Beethro;
 				case M_GUNTHRO:
 					player = Speaker_Gunthro;
+					break;
+				case M_BEETHRO:
 				default:
 					player = Speaker_Beethro;
+					break;
 			}
 	}
 
-	//Show player face when forced.
-	//Otherwise, only show it when the widget is not locked.
-	if (bLockMood || bOverrideLock || (this->pFaceWidget->GetCharacter() != player &&
-			!this->pFaceWidget->IsMoodLocked()))
+	this->pFaceWidget->SetSleeping(false);
+	this->pFaceWidget->SetCharacter(FaceWidgetLayer::PlayerRole, player, pPlayerHoldCharacter);
+}
+
+//*****************************************************************************
+void CGameScreen::ResolvePlayerFace(
+	SPEAKER& pSpeaker, //(out) player's speaker
+	HoldCharacter** playerHoldCharacter) //(out) custom player character if
+// Refresh player face to match reality
+{
+	if (!this->pCurrentGame)
+		return;
+
+	//Handle custom character images specially.
+	UINT dwCharID = this->pCurrentGame->swordsman.wIdentity;
+	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
 	{
-		this->pFaceWidget->SetCharacter(player, bLockMood);
-		if (!bLockMood) this->pFaceWidget->SetMood(Mood_Normal);
+		*playerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
+	}
+
+	pSpeaker = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (pSpeaker == Speaker_None)
+	{
+		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.
+		CMonster* pNPCBeethro = this->pCurrentGame->pRoom->GetNPCBeethro();
+		if (pNPCBeethro)
+			switch (pNPCBeethro->GetIdentity())
+			{
+			case M_GUNTHRO:
+				pSpeaker = Speaker_Gunthro;
+				break;
+			case M_BEETHRO:
+			default:
+				pSpeaker = Speaker_Beethro;
+				break;
+			}
 	}
 }
 
@@ -6335,22 +6369,30 @@ bool CGameScreen::UploadDemoPolling()
 	//Ensure last request was completed before another upload is initiated.
 	if (this->wUploadingDemoHandle)
 	{
-		if (g_pTheNet->GetStatus(this->wUploadingDemoHandle) >= 0)
+		const int status = g_pTheNet->GetStatus(this->wUploadingDemoHandle);
+		if (status >= 0)
 		{
 			//Get ranking.
 			CNetResult* pBuffer = g_pTheNet->GetResults(this->wUploadingDemoHandle);
 			if (pBuffer && pBuffer->pJson)
 			{
 				//Get demo ranking.
+				const string customRank = pBuffer->pJson->get("Custom", "").asString();
 				const int nRanking = pBuffer->pJson->get("Place", 0).asInt();
 				const bool bTie = pBuffer->pJson->get("Tie", false).asBool();
-				if (nRanking && this->pRoomWidget)
+				if ((customRank != "" || nRanking) && this->pRoomWidget)
 				{
 					//Demo ranked on hi-score list -- give feedback to user.
-					WSTRING wStr = PrintRank(nRanking, bTie);
-					wStr += wszExclamation;
-					if (nRanking == 1 && !bTie)
+					WSTRING wStr;
+					if (customRank != "") {
+						AsciiToUnicode(customRank, wStr);
+					}
+					else {
+						wStr = PrintRank(nRanking, bTie);
 						wStr += wszExclamation;
+						if (nRanking == 1 && !bTie)
+							wStr += wszExclamation;
+					}
 					this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
 							this->pRoomWidget, wStr.c_str(), -300));	//show at top of room
 				}
@@ -6372,6 +6414,19 @@ bool CGameScreen::UploadDemoPolling()
 					} //else the demo was deleted before the response was received
 				}
 				delete pBuffer;
+			} else {
+				//Fail gracefully from server-related errors.
+				const long responseCode = CInternet::GetErrorResponseCode(this->wUploadingDemoHandle);
+				if (responseCode >= 300) {
+					//Remove saved game from the upload queue.
+					//(It can be manually uploaded later from the Settings Screen.)
+					DEMO_UPLOAD* pDemoInfo = CCurrentGame::demosForUpload.front();
+					delete pDemoInfo;
+					CCurrentGame::demosForUpload.pop();
+
+					SetCursor();
+					ShowOkMessage(MID_CaravelServerError);
+				}
 			}
 			this->dwUploadingDemo = this->wUploadingDemoHandle = 0;
 		}

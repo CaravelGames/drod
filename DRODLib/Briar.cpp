@@ -280,8 +280,8 @@ void CBriars::expand(
 					break;
 
 					case T_LIGHT:
-						this->pRoom->SetTParam(tile->wX, tile->wY, 0);
-						CueEvents.Add(CID_LightToggled); // Technically removed but this will force regenerating static lighting 
+						this->pRoom->SetTParam(wX, wY, 0);
+						CueEvents.Add(CID_LightToggled); // This will force static lighting regeneration
 						break;
 
 					//Briar passes over and covers everything else.  Including orbs.

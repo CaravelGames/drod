@@ -421,7 +421,7 @@ const
 	// If target is ahead or behind the serpent, keep moving toward it.
 	// Otherwise, switch between favoring horizontal or vertical movement
 	// every five turns.
-	if (CanFindSwordsman()) 
+	if (this->pCurrentGame->bBrainSensesSwordsman || CanFindSwordsman())
 	{
 		//Is swordsman in front of or behind serpent?
 		if (!oX)

@@ -2278,6 +2278,7 @@ void CCurrentGame::ProcessCommand(
 
 	//Reset relative movement for the current turn.
 	UpdatePrevPlatformCoords();
+	this->pRoom->ClearPushInfo();
 
 //	const UINT dwStart = GetTicks();
 	
@@ -2794,11 +2795,7 @@ void CCurrentGame::InitiateCombat(
 {
 	ASSERT(pMonster);
 
-	if (pMonster->IsPiece())
-	{
-		CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pPiece->pMonster;
-	}
+	pMonster = pMonster->GetOwningMonster();
 
 	//Combat begins if this tile of the monster is vulnerable.
 	if (!pMonster->IsDamageableAt(wX,wY))
@@ -3414,11 +3411,7 @@ void CCurrentGame::ProcessSwordHit(
 			//don't allow critical character kill on room entrance
 			(this->wTurnNo || !this->pRoom->IsMonsterOfTypeAt(M_HALPH, wSX, wSY, true)))
 	{
-		if (pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		if (!pDouble)
 		{
@@ -4490,102 +4483,6 @@ void CCurrentGame::DeleteLeakyCueEvents(CCueEvents &CueEvents)
 				pObj = CueEvents.GetNextPrivateData())
 			delete pObj;
 }
-
-//*****************************************************************************
-/*
-void CCurrentGame::DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType)
-//Drink potion, begin double placement and init double cursor position.
-{
-   this->pPlayer->wPlacingDoubleType=wDoubleType;
-   this->pPlayer->wDoubleCursorX=this->pPlayer->wX;
-   this->pPlayer->wDoubleCursorY=this->pPlayer->wY;
-   this->pRoom->Plot(this->pPlayer->wX, this->pPlayer->wY, T_EMPTY);
-	CueEvents.Add(CID_DrankPotion);
-}
-
-//-****************************************************************************
-void CCurrentGame::FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents)
-//Fegundo has exploded.  Remove it and replace it with ashes.
-{
-	const UINT wX = pMonster->wX;
-	const UINT wY = pMonster->wY;
-	if (pMonster->bAlive) //if a resulting bomb explosion did not also kill the fegundo
-	{
-		this->pRoom->KillMonster(pMonster, CueEvents);
-
-		//Add ashes if room square doesn't forbid it.
-		const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
-		switch (wOTile)
-		{
-			case T_PIT: case T_PIT_IMAGE:
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY,
-					S, M_OFFSET + M_FEGUNDOASHES), true);
-			break;
-			case T_WATER:
-				CueEvents.Add(CID_Splash, new CCoord(wX,wY), true);
-			break;
-			default:
-				CMonster *pAshes = this->pRoom->AddNewMonster(M_FEGUNDOASHES,wX,wY);
-				pAshes->bIsFirstTurn = true;
-				if (wOTile == T_PRESSPLATE)
-					this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
-			break;
-		}
-	}
-}
-
-//-****************************************************************************
-UINT CCurrentGame::FindLastCheckpointSave(
-//Play back stored commands to change the game state.
-//Assumes that the room has been freshly loaded.
-//
-//Params:
-	const UINT wSearchUntilTurn) //(in) search until this turn no.
-//
-//Returns:
-//Turn of last checkpoint save made in this room, or 0 if none.
-{
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(wSearchUntilTurn <= this->Commands.Count());
-
-	//If there are no commands, we're at the beginning of the room - return 0
-	if (this->Commands.Empty()) return 0;
-
-	//While processing the command list, I don't want to take any actions that
-	//will modify the command list.
-	FreezeCommands();
-
-//	UINT wLastCheckpointSave = 0;
-
-	CDbCommands::const_iterator comIter = this->Commands.GetFirst();
-	CCueEvents CueEvents;
-	UINT wCommandI, wX=(UINT)-1, wY=(UINT)-1;
-	for (wCommandI = 0; wCommandI < wSearchUntilTurn-1; ++wCommandI)
-	{
-		ASSERT(comIter != this->Commands.end());
-		
-		const int nCommand = comIter->bytCommand;
-		if (bIsComplexCommand(nCommand))	//handle multi-part commands here
-			VERIFY(this->Commands.GetData(wX,wY));
-		ProcessCommand(nCommand, CueEvents, wX, wY);
-		if (CueEvents.HasOccurred(CID_CheckpointActivated))
-			wLastCheckpointSave = wCommandI+1;
-
-		//Check for unexpected game states that indicate commands are invalid.
-		//Note: these should never happen, since we're examining the current game in play.
-		ASSERT(this->bIsGameActive);
-		ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied));  //player shouldn't have died
-		ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom));
-
-		comIter = this->Commands.GetNext();
-	}
-
-	//Allow modification of command list again.
-	UnfreezeCommands();
-
-	return wLastCheckpointSave;
-}
-*/
 
 //*****************************************************************************
 bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)

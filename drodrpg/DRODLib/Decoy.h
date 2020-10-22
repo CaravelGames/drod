@@ -39,10 +39,8 @@ public:
 	CDecoy(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CDecoy);
 
-//	virtual bool BrainAffects() const {return false;}
-//	virtual bool IsAggressive() const {return false;}
-//	virtual bool IsFriendly() const {return true;}
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual SwordType GetWeaponType() const { return SwordType::WoodenBlade; }
 };
 	
 #endif //...#ifndef DECOY_H

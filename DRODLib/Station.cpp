@@ -164,6 +164,13 @@ bool CStation::UpdateTurn(const UINT wTurnNo)
 	return bRes;
 }
 
+//******************************************************************************
+void CStation::UpdateType()
+// Updates the type of the station to its tile's T parameter
+{
+	this->wType = pRoom->GetTParam(wX, wY);
+}
+
 //
 //Private methods
 //

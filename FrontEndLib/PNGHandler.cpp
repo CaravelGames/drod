@@ -172,8 +172,8 @@ CS_error:
 	if (surface && !colorkey)
 	{
 		SetColorKey(surface, SDL_TRUE,
-			SDL_MapRGB(surface->format, trans_values->red,
-				trans_values->green, trans_values->blue));
+			SDL_MapRGB(surface->format, Uint8(trans_values->red),
+				Uint8(trans_values->green), Uint8(trans_values->blue)));
 		SDL_SetSurfaceRLE(surface, 1);
 	}
 

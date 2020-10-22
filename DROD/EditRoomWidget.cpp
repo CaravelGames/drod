@@ -233,7 +233,7 @@ void CEditRoomWidget::AddGentryiiSegmentEffect(const CMonster* pPlottingMonster)
 		const bool bPlotOverMonsterLayer = overwritable_coords.has(wX, wY) ||
 				(!this->pRoom->GetMonsterAtSquare(wX,wY) &&
 				!this->pRoom->DoesGentryiiPreventDiagonal(wPrevX, wPrevY, wX, wY));
-		if (bPlotOverMonsterLayer && IsSafePlacement(T_GENTRYII,wX,wY))
+		if (bPlotOverMonsterLayer && IsSafePlacement(T_GENTRYII_CHAIN,wX,wY))
 		{
 			if (wTileNo != DONT_USE)
 				AddLastLayerEffect(new CTransTileEffect(this, *it, wTileNo));
@@ -743,10 +743,12 @@ const
 	if (wTileLayer == LAYER_MONSTER && wSelectedObject != T_NOMONSTER)
 	{
 		//Monster can't overwrite a monster of a different type.
-		if (!bAllowSelf && pMonster)
-			if (pMonster->wType != wSelectedObject - TILE_COUNT ||
-				 pMonster->wType == M_CHARACTER) //character can't overwrite itself
+		if (!bAllowSelf && pMonster) {
+			const UINT wNormalizedType = wSelectedObject == T_GENTRYII_CHAIN ? T_GENTRYII : wSelectedObject;
+			if (pMonster->wType != wNormalizedType - TILE_COUNT ||
+				pMonster->wType == M_CHARACTER) //character can't overwrite itself
 				return false;
+		}
 	} else {
 		//Universal placement rules:
 		//1. "Empty" tiles can be placed on anything to erase them.
@@ -1192,7 +1194,9 @@ const
 		case T_SEEP:
 			//Wall movement types
 			if (bSwordsmanAt) return false;
-			if (bIsTarOrFluff(wTileNo[1])) return false;
+			if (bIsTLayerObstacle(wTileNo[1])) return false;
+			if (bIsTLayerCoveringItem(wTileNo[1])) return false;
+			if (bIsBeacon(wTileNo[1])) return false;
 			return bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsDoor(wTileNo[0]);
 
 		case T_WATERSKIPPER:
@@ -1214,19 +1218,25 @@ const
 			//Can go on any o- and t-layer tiles.
 
 		case T_GENTRYII:
+		case T_GENTRYII_CHAIN:
+		{
 			if (bSwordsmanAt) return false;
 			//Can't go on other monsters.
 			if (pMonster && pMonster->wType != M_GENTRYII)
 				return false;
+			//Only chains can be placed on walls
+			const bool bAllowWall = wSelectedObject == T_GENTRYII_CHAIN
+				? bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])
+				: false;
 			return (bIsFloor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
-					bIsDoor(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsWall(wTileNo[0]) ||
-					bIsPlatform(wTileNo[0]) || bIsShallowWater(wTileNo[0]) ||
-					bIsTunnel(wTileNo[0])) &&
-					!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
-							wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT ||
-							bIsBeacon(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]));
-
+				bIsDoor(wTileNo[0]) || bAllowWall ||
+				bIsPlatform(wTileNo[0]) || bIsShallowWater(wTileNo[0]) ||
+				bIsTunnel(wTileNo[0])) &&
+				!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
+					wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION ||
+					bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT ||
+					bIsBeacon(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]));
+		}
 		case T_SWORDSMAN:
 		{
 			//copied from above

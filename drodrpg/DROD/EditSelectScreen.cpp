@@ -2406,6 +2406,7 @@ void CEditSelectScreen::RenameHold()
 	{
 		if (!ModifyHold())
 			return;
+
 		this->pSelectedHold->NameText = wstr.c_str();
 		this->pSelectedHold->Update();
 		this->pHoldListBoxWidget->SetSelectedItemText(wstr.c_str());
@@ -2425,6 +2426,7 @@ void CEditSelectScreen::RenameLevel()
 	{
 		if (!ModifyHold())
 			return;
+
 		this->pSelectedLevel->NameText = wstr.c_str();
 		this->pSelectedLevel->Update();
 		this->pLevelListBoxWidget->SetSelectedItemText(wstr.c_str());

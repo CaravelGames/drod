@@ -65,15 +65,24 @@ using std::string;
 
 //Assertion-reporting macros.  Avoid simply calling ASSERT(false) because after changes to source code,
 //the file and line# may not be sufficient to track the location in current source of the assertion.  Use
-//either ASSERT(expression) or ASSERTP(false, "Description of error.").
+//either ASSERT(expression) or ASSERT(!"Description of error.").
+#if defined(CARAVELBUILD)
+#	if defined(WIN32)
+#		define __FILENAME__ (strrchr("\\" __FILE__, '\\') + 1) //strip path
+#	else
+#		define __FILENAME__ (strrchr("/" __FILE__, '/') + 1)
+#	endif
+#else
+#	define __FILENAME__ (__FILE__)
+#endif
 #define _ASSERT_VOID_CAST(exp)   static_cast<void>(exp)
 #ifdef _DEBUG
 # if defined(WIN32) && !defined(__GNUC__)
-#   define ASSERT(exp)          _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILE__,__LINE__,#exp) )
-#   define ASSERTP(exp, desc)   _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILE__,__LINE__,(desc)) )
+#   define ASSERT(exp)          _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILENAME__,__LINE__,#exp) )
+#   define ASSERTP(exp, desc)   _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILENAME__,__LINE__,(desc)) )
 # else
-#   define ASSERT(exp)          do { if (!(exp)) { AssertErr(__FILE__,__LINE__,#exp); MY_BREAKPOINT(); }} while (0)
-#   define ASSERTP(exp, desc)   do { if (!(exp)) { AssertErr(__FILE__,__LINE__,(desc)); MY_BREAKPOINT(); }} while (0)
+#   define ASSERT(exp)          do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,#exp); MY_BREAKPOINT(); }} while (0)
+#   define ASSERTP(exp, desc)   do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,(desc)); MY_BREAKPOINT(); }} while (0)
 # endif
 #else
 #   define ASSERT(exp)
@@ -100,7 +109,7 @@ using std::string;
 
 #ifdef _DEBUG
 #  define DYN_CAST(totype,fromtype,source) \
-	DynCastAssert<totype,fromtype>(source, __FILE__, __LINE__)
+	DynCastAssert<totype,fromtype>(source, __FILENAME__, __LINE__)
 #else
 #  define DYN_CAST(totype,fromtype,source) \
 	dynamic_cast<totype>(source)
@@ -109,7 +118,7 @@ using std::string;
 //Use to assert on a statement that should execute in retail as well as debug builds.
 #ifdef _DEBUG
 #  define VERIFY(exp) \
-		do { if (!(exp)) { AssertErr(__FILE__, __LINE__,#exp); MY_BREAKPOINT(); }} while (0)
+		do { if (!(exp)) { AssertErr(__FILENAME__, __LINE__,#exp); MY_BREAKPOINT(); }} while (0)
 #else
 #  define VERIFY(exp) exp
 #endif   

@@ -276,11 +276,7 @@ void CBriars::process(
 			CMonster *pMonster = room.GetMonsterAtSquare(wX, wY);
 			if (pMonster)
 			{
-				if (pMonster->IsPiece())
-				{
-					CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-					pMonster = pPiece->pMonster;
-				}
+				pMonster = pMonster->GetOwningMonster();
 				switch (pMonster->wType)
 				{
 					//Serpents stop the briar (acting as a retaining wall).

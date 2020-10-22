@@ -870,6 +870,16 @@ const
 }
 
 //*****************************************************************************
+const CMonster* CMonster::GetOwningMonsterConst() const {
+	if (IsPiece()) {
+		const CMonsterPiece* pPiece = DYN_CAST(const CMonsterPiece*, const CMonster*, this);
+		ASSERT(pPiece->pMonster);
+		return pPiece->pMonster;
+	}
+	return this;
+}
+
+//*****************************************************************************
 bool CMonster::IsCombatable() const
 //Returns: whether player can fight this monster (if ATK stat is sufficient, of course)
 {

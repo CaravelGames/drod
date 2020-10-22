@@ -34,7 +34,7 @@ class CRoomWidget;
 class CStunEffect : public CAnimatedTileEffect
 {
 public:
-	CStunEffect(CWidget *pSetWidget, const CMoveCoord &SetCoord);
+	CStunEffect(CWidget *pSetWidget, const UINT stunX, const UINT stunY, const UINT stunDuration);
 
 	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 

@@ -151,12 +151,12 @@ void CGentryii::MoveGentryii(UINT destX, UINT destY, CCueEvents& CueEvents)
 
 		if (bThisMoved || bLastMoved)
 		{
-			if (wLastX1 != pPiece->wX && wLastY1 != pPiece->wY)
+			if (wLastX1 != pPiece->wX || wLastY1 != pPiece->wY)
 			{
 				updateTiles.insert(wLastX1,pPiece->wY);
 				updateTiles.insert(pPiece->wX,wLastY1);
 			}
-			if (wLastX2 != dest.first && wLastY1 != dest.second)
+			if (wLastX2 != dest.first || wLastY1 != dest.second)
 			{
 				updateTiles.insert(wLastX2,dest.second);
 				updateTiles.insert(dest.first,wLastY2);

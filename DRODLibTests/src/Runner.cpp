@@ -6,6 +6,7 @@
 #include "catch.hpp"
 
 CCurrentGame* Runner::currentGame = NULL;
+CCueEvents Runner::lastCueEvents;
 UINT Runner::wLastErrorLogSize;
 char* Runner::pErrorLogPath;
 
@@ -32,21 +33,40 @@ CCurrentGame* Runner::GetCurrentGame() {
 	return Runner::currentGame;
 }
 
+CCueEvents& Runner::GetLastCueEvents() {
+	return Runner::lastCueEvents;
+}
+
 void Runner::ExecuteCommand(const UINT command, const UINT repeats){
 	CCueEvents CueEvents;
 
 	for (UINT i = 0; i < repeats; ++i){
+		CueEvents.Clear();
 		Runner::currentGame->ProcessCommand(command, CueEvents);
 	}
+	Runner::lastCueEvents.SetMembers(CueEvents);
 }
 
 void Runner::ExecuteCommand(const UINT command, CCueEvents &CueEvents){
 	Runner::currentGame->ProcessCommand(command, CueEvents);
+	Runner::lastCueEvents.SetMembers(CueEvents);
 }
 
 void Runner::PlaceDouble(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
 	REQUIRE(Runner::currentGame->swordsman.wPlacingDoubleType);
 	Runner::currentGame->ProcessCommand(CMD_DOUBLE, CueEvents, wX, wY);
+	Runner::lastCueEvents.SetMembers(CueEvents);
+}
+
+void Runner::ClickClone(const UINT wX, const UINT wY) {
+	CCueEvents CueEvents;
+	ClickClone(wX, wY, CueEvents);
+}
+
+void Runner::ClickClone(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
+	REQUIRE(!Runner::currentGame->swordsman.wPlacingDoubleType);
+	REQUIRE(Runner::currentGame->pRoom->GetMonsterTypeAt(wX, wY) == M_CLONE);
+	Runner::currentGame->ProcessCommand(CMD_CLONE, CueEvents, wX, wY);
 }
 
 UINT Runner::GetErrorLogSize(){

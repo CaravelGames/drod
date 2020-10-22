@@ -36,13 +36,14 @@ class CTemporalMoveEffect : public CAnimatedTileEffect
 {
 public:
 	CTemporalMoveEffect(CWidget *pSetWidget,
-		const CMoveCoord &SetCoord, const UINT wTI, const UINT type=ETEMPORALMOVE);
+		const CMoveCoord &SetCoord, const UINT wTI, const bool isBump, const UINT type=ETEMPORALMOVE);
 
 	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 
 private:
 	UINT startX, startY;
 	int deltaX, deltaY;
+	bool isBump;
 
 	Uint32 startDelay, endDelay;
 

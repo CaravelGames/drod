@@ -1089,3 +1089,14 @@ bool CSlayer::CanBodyKillTarget(
 
 	return true;
 }
+
+//*****************************************************************************
+// Pushed slayer extends wisp when necessary
+void CSlayer::PushInDirection(int dx, int dy, bool bStun, CCueEvents& CueEvents)
+{
+	CArmedMonster::PushInDirection(dx, dy, bStun, CueEvents);
+
+	if (!this->Pieces.empty()) {
+		this->Pieces.push_front(new CMonsterPiece(this, 0, this->wX - dx, this->wY - dy));
+	}
+}
