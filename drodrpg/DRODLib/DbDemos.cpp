@@ -1126,19 +1126,13 @@ const
 		}
 		wEndTurn = pGame->Commands.Count() - 1;
 	}
-//	pGame->SetAutoSaveOptions(ASO_NONE); //No auto-saving for playback.
 
-	//Check for room conquered cue event which could have occurred on first
-	//step into room.
-//	bool bWasRoomConquered = CueEvents.HasOccurred(CID_ConquerRoom);
-	
 	//While processing the command list, I don't want to take any actions that
 	//will modify the command list.
 	pGame->FreezeCommands();
 
 	//Play from turn 0 to ending turn of demo.
 	bool bDidPlayerDie = false;
-//	bool bDidHalphDie = false;
 	bool bDidPlayerLeaveRoom = false, bDidPlayerExitLevel = false;
 	CDbCommands::const_iterator comIter = pGame->Commands.GetFirst();
 	UINT wTurnNo, wX=(UINT)-1, wY=(UINT)-1;
@@ -1159,11 +1153,6 @@ const
 		//Collect statistics.
 		ASSERT(!bDidPlayerDie);
 		bDidPlayerDie = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
-/*
-		bDidHalphDie = CueEvents.HasOccurred(CID_HalphDied);
-		if (!bWasRoomConquered)
-			bWasRoomConquered = CueEvents.HasOccurred(CID_ConquerRoom);
-*/
 	
 		//Check for player leaving room or game inactive.
 		bDidPlayerLeaveRoom = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom),
@@ -1172,13 +1161,7 @@ const
 		{
 			if (wTurnNo < wEndTurn)
 				bSuccess = false;
-/*
-			//Checksums won't match if this room's flags aren't reset to the entrance state.
-			if (bWasRoomConquered) 
-				pGame->ConqueredRooms -= pGame->pRoom->dwRoomID;
-			if (pGame->IsNewRoom())
-				pGame->ExploredRooms -= pGame->pRoom->dwRoomID;
-*/
+
 			if (CueEvents.HasOccurred(CID_ExitLevelPending) || CueEvents.HasOccurred(CID_WinGame))
 				bDidPlayerExitLevel = true;
 			break;
@@ -1202,7 +1185,6 @@ const
 //	DemoStats.Add(DS_MonsterCount, new CAttachableWrapper<UINT>(pGame->pRoom->wMonsterCount), true);
 //	DemoStats.Add(DS_MonsterKills, new CAttachableWrapper<UINT>(pGame->wMonsterKills), true);
 	DemoStats.Add(DS_DidPlayerExitLevel, new CAttachableWrapper<bool>(bDidPlayerExitLevel), true);
-//	DemoStats.Add(DS_DidHalphDie, new CAttachableWrapper<bool>(bDidHalphDie), true);
 	DemoStats.Add(DS_GameTurnCount, new CAttachableWrapper<UINT>(pGame->wPlayerTurn), true);
 
 	//Compare checksum if it was specified.
@@ -1332,130 +1314,20 @@ const
 	const bool bDidPlayerLeaveRoom = GetDemoStatBool(DemoStats, DS_DidPlayerLeaveRoom);
 //	const UINT wMonsterCount =       GetDemoStatUint(DemoStats, DS_MonsterCount);
 	const bool bDidPlayerExitLevel = GetDemoStatBool(DemoStats, DS_DidPlayerExitLevel);
-/*
-	const bool bWasRoomConquered = GetDemoStatBool(DemoStats, DS_WasRoomConquered);   //currently unused
-	const UINT wMonsterKills =       GetDemoStatUint(DemoStats, DS_MonsterKills);
-	const bool bDidHalphDie =        GetDemoStatBool(DemoStats, DS_DidHalphDie);
 
-	//Get the initial state of the room.
-	CCueEvents Ignored;
-	CCurrentGame *pBeforeGame = g_pTheDB->GetSavedCurrentGame(this->dwSavedGameID, Ignored, true,
-			true); //don't save anything to DB during playback
-	const UINT wBeforeMonsterKills = pBeforeGame->wMonsterKills;
-	const UINT wMonstersAtStart = pBeforeGame->pRoom->wMonsterCount;
-	delete pBeforeGame;
-
-	//Monsters killed during the demo.
-	const UINT wMonstersSlain = wMonsterKills - wBeforeMonsterKills;
-*/
-
-	//Beethro dies.
+	//Player dies.
 	if (bDidPlayerDie)
 	{
 		if (wProcessedTurnCount < 50)
 			wstrText += g_pTheDB->GetMessageText(MID_DemoDescKilled1);
-		else
-		{
-/*
-			if (wMonstersSlain < 1)
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescKilled2);
-			else if (wMonstersSlain == 1)
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescKilled3);
-			else
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescKilled4);
-*/
-		}
 		wstrText += wszSpace;
 		wstrText += wszSpace;
 		return;
 	}
 
-/*
-	if (bDidHalphDie)
-	{
-		wstrText += g_pTheDB->GetMessageText(MID_DemoDescHalphKilled);
-		wstrText += wszSpace;
-		wstrText += wszSpace;
-	}
-
-	//
-	//Beethro didn't die.
-	//
-
-	//Beethro conquered the room.
-	if (wMonstersAtStart && wMonstersSlain && wMonsterCount == 0)
-	{
-		if (wMonstersSlain == 1)
-		{
-			wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers1);
-			if (wProcessedTurnCount < 200)
-			{
-				wstrText += wszComma;
-				wstrText += wszSpace;
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers2);
-			}
-			else if (wProcessedTurnCount > 500)
-			{
-				wstrText += wszSpace;
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers3);
-			}
-			else
-				wstrText += wszPeriod;
-		}
-		else if (wMonstersSlain < 10)
-			wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers4);
-		else if (wMonstersSlain < 20)
-			wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers5);
-		else
-			wstrText += g_pTheDB->GetMessageText(MID_DemoDescConquers6);
-		wstrText += wszSpace;
-		wstrText += wszSpace;
-
-		if (bDidPlayerLeaveRoom)
-		{
-			if (bDidPlayerExitLevel)
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescExits1);
-			else
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescLeaves1);
-			wstrText += wszSpace;
-			wstrText += wszSpace;
-		}
-
-		if (scoreTokenTurn)
-		{
-			WCHAR temp[10];
-			wstrText += g_pTheDB->GetMessageText(MID_DemoDescScoreToken);
-			wstrText += wszSpace;
-			wstrText += _itoW(scoreTokenTurn, temp, 10);
-			wstrText += wszPeriod;
-			wstrText += wszSpace;
-			wstrText += wszSpace;
-		}
-		return;
-	}
-*/
-
-	//
-	//Beethro has not conquered the room (or the room started empty).
-	//
-
-	//Beethro left the room.
+	//Player left the room.
 	if (bDidPlayerLeaveRoom)
 	{
-/*
-		if (wMonsterCount == 0 || wMonstersAtStart == 0)
-		{
-			if (bDidPlayerExitLevel)
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescExits2);
-			else
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescLeaves2);
-		} else {
-			if (bDidPlayerExitLevel)
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescExits3);
-			else
-				wstrText += g_pTheDB->GetMessageText(MID_DemoDescLeaves3);
-		}
-*/
 		if (bDidPlayerExitLevel)
 			wstrText += g_pTheDB->GetMessageText(MID_DemoDescExits2);
 		else
@@ -1465,7 +1337,7 @@ const
 		return;
 	}
 	
-	//Beethro didn't leave the room or conquer it.
+	//Player didn't leave the room or conquer it.
 	if (wProcessedTurnCount < 200)
 		wstrText += g_pTheDB->GetMessageText(MID_DemoDescLoiters1);
 	else
