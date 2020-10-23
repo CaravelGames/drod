@@ -30,6 +30,8 @@
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Exception.h>
 
+#include <algorithm>
+
 //Source coords and dimensions within parts surface.
 const int X_SLIDER = 294;
 const int Y_SLIDER = 46;

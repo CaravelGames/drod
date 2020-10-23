@@ -155,7 +155,7 @@ void CCreditsScreen::SetForActivateStart()
 #	define A_FACEIMAGE(eSpeaker) { \
 	SDL_Surface *pFaceSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, CX_FACE, CY_FACE, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0); \
 	this->pFaceWidget->SetDestSurface(pFaceSurface); \
-	this->pFaceWidget->SetCharacter(FaceWidgetLayer::PlayerRole, eSpeaker, NULL); \
+	this->pFaceWidget->SetCharacter(PlayerRole, eSpeaker, NULL); \
 	this->pFaceWidget->Paint(); \
 	CImageWidget *pImage = new CImageWidget(0, (this->pScrollingText->GetW()-CX_FACE)/2, 0, pFaceSurface); \
 	this->pScrollingText->Add(pImage); }

@@ -969,7 +969,7 @@ bool CGameScreen::SetForActivate()
 		this->pRoomWidget->ShowVarUpdates(false);
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
 	SetSignTextToCurrentRoom();
-	this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	SynchScroll();
 	PaintClock(true);
 
@@ -2648,7 +2648,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 
 	HideScroll();
 	this->pFaceWidget->SetReading(false);
-	this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Happy);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Happy);
 	this->pRoomWidget->AllowSleep(false);
 
 	//Show the screen after first arriving here.
@@ -2674,7 +2674,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 					eNextScreen = LevelExit_OnKeydown(event.key);
 					if (eNextScreen != SCR_Game)
 					{
-						this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+						this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 						g_pTheSound->StopSong();
 						if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 							this->pRoomWidget->ShowPlayer();
@@ -2685,7 +2685,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				break;
 
 				case SDL_MOUSEBUTTONUP:	//not DOWN, so mouse up doesn't exit next screen immediately too
-					this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+					this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 					g_pTheSound->StopSong();
 					if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 						this->pRoomWidget->ShowPlayer();
@@ -2723,7 +2723,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				this->pRoomWidget->Paint();
 
 				//Beethro's thinking about the next level now.
-				this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+				this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 			}
 			dwLastStep = dwNow;
 		}
@@ -3073,7 +3073,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		this->pRoomWidget->DirtyRoom();	//remove fading
 	} else {
 		ClearSpeech();
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	}
 
 	this->pFaceWidget->SetDying(false);
@@ -3985,8 +3985,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				if (pCoord->wValue2 != WT_Off) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
 					if (swordTile) {
-						const INT wSwordX = pCoord->wX + nGetOX(pCoord->wO);
-						const INT wSwordY = pCoord->wY + nGetOY(pCoord->wO);
+						const int wSwordX = pCoord->wX + nGetOX(pCoord->wO);
+						const int wSwordY = pCoord->wY + nGetOY(pCoord->wO);
 						if (this->pRoomWidget->pRoom->IsValidColRow(wSwordX, wSwordY))
 							fallingTiles[ROOMCOORD(wSwordX, wSwordY)].push_back(swordTile);
 					}
@@ -4692,18 +4692,18 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	//Priority of player moods
 	UpdatePlayerFace();
 	if (CueEvents.HasOccurred(CID_SwordsmanAfraid))
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Nervous);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous);
 	else if (CueEvents.HasOccurred(CID_SwordsmanAggressive))
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Aggressive);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive);
 	else if (CueEvents.HasOccurred(CID_SwordsmanNormal))
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Normal);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 
 	if (CueEvents.HasOccurred(CID_RoomConquerPending))
 	{
 		if (this->pRoomWidget->subtitles.empty()) {
 			UINT eClearID = GetPlayerClearSEID();
 			if (eClearID == (UINT)SEID_NONE) eClearID = SEID_CLEAR;
-			this->pFaceWidget->SetMoodToSoundEffect(FaceWidgetLayer::PlayerRole, Mood_Happy, SEID(eClearID));
+			this->pFaceWidget->SetMoodToSoundEffect(PlayerRole, Mood_Happy, SEID(eClearID));
 		}
 	}
 	else if (CueEvents.HasOccurred(CID_MonsterDiedFromStab))
@@ -4721,12 +4721,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 		if (bPlayerStabbed)
-			this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Strike, 250);
+			this->pFaceWidget->SetMood(PlayerRole, Mood_Strike, 250);
 	}
 	else if (CueEvents.HasOccurred(CID_Scared))
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Nervous, 250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous, 250);
 	else if (CueEvents.HasOccurred(CID_HitObstacle))
-		this->pFaceWidget->SetMood(FaceWidgetLayer::PlayerRole, Mood_Aggressive, 250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive, 250);
 
 	//Music cues.
 	if (CueEvents.HasOccurred(CID_SetMusic))
@@ -6098,7 +6098,7 @@ void CGameScreen::UpdatePlayerFace()
 	}
 
 	this->pFaceWidget->SetSleeping(false);
-	this->pFaceWidget->SetCharacter(FaceWidgetLayer::PlayerRole, player, pPlayerHoldCharacter);
+	this->pFaceWidget->SetCharacter(PlayerRole, player, pPlayerHoldCharacter);
 }
 
 //*****************************************************************************
