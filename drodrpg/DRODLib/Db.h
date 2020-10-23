@@ -89,6 +89,9 @@ public:
 			PlayerStats& ps);
 	bool        ValidateMoveSequence(const UINT holdID, const CStretchyBuffer& moves,
 			WSTRING& scoreCheckpointName, PlayerStats& ps);
+	bool        ValidateMoveSequenceCheckCueEvents(
+			CCueEvents& CueEvents, CCurrentGame* pGame, const UINT command,
+			bool& bGood, WSTRING& scoreCheckpointName, PlayerStats& ps) const;
 
 	//Use these members to access data directly.  Requires more knowledge of
 	//the database.
