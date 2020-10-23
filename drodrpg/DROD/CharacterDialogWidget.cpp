@@ -3232,7 +3232,6 @@ const
 		break;
 		case CCharacterCommand::CC_AnswerOption:
 		{
-			const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, command.x);
 			WSTRING wstrGoto = this->pActionListBox->GetTextForKey(CCharacterCommand::CC_GoTo);
 			CDbSpeech *pSpeech = command.pSpeech;
 			ASSERT(pSpeech);
@@ -3247,19 +3246,24 @@ const
 			wstr += wszSpace;
 			wstr += wstrGoto;
 			wstr += wszSpace;
-			wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+			AppendGotoDestination(wstr, commands, command);
 		}
 		break;
+		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_GotoIf:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
 		{
-			const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, command.x);
-			wstr += wszQuote;
-			wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
-			wstr += wszQuote;
+			if ((int)command.x < 0) {
+				AppendGotoDestination(wstr, commands, command);
+			}
+			else {
+				wstr += wszQuote;
+				AppendGotoDestination(wstr, commands, command);
+				wstr += wszQuote;
+			}
 		}
 		break;
 
@@ -3407,7 +3411,9 @@ const
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_IfElse:
+		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_Return:
 		break;
 
 		default: break;
@@ -3471,6 +3477,9 @@ const
 				bIfCondition = true;
 				++wNestDepth; //indent inside of if block
 			break;
+			case CCharacterCommand::CC_IfElseIf:
+				bIfCondition = true;
+			break;
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestDepth)
 					--wNestDepth;
@@ -3486,6 +3495,7 @@ const
 	{
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_IfElse:
+		case CCharacterCommand::CC_IfElseIf:
 			if (wNestDepth)
 				--wNestDepth;
 			else
@@ -3505,6 +3515,7 @@ const
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_Equipment:
 		case CCharacterCommand::CC_FlushSpeech:
+		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
@@ -3518,6 +3529,7 @@ const
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_Return:
 			if (bIfCondition)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -3576,6 +3588,31 @@ const
 	return wstr;
 }
 
+void CCharacterDialogWidget::AppendGotoDestination(WSTRING& wstr,
+	const COMMANDPTR_VECTOR& commands, const CCharacterCommand& pCommand
+) const
+{
+	int label = pCommand.x;
+	if (label < 0) {
+		switch (label) {
+		case ScriptFlag::GotoSmartType::PreviousIf:
+			wstr += g_pTheDB->GetMessageText(MID_PreviousIf);
+		break;
+		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			wstr += g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip);
+		break;
+		default:
+			wstr += wszQuestionMark;
+		break;
+		}
+
+		return;
+	}
+
+	const CCharacterCommand* pGotoCommand = GetCommandWithLabel(commands, label);
+	wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+}
+
 //*****************************************************************************
 void CCharacterDialogWidget::PopulateCommandListBox()
 //Add all usable script commands to list.
@@ -3597,6 +3634,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EachDefend, g_pTheDB->GetMessageText(MID_EachDefend));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EachUse, g_pTheDB->GetMessageText(MID_EachUse));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIf, g_pTheDB->GetMessageText(MID_IfElseIf));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EndScript, g_pTheDB->GetMessageText(MID_EndScript));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EndScriptOnExit, g_pTheDB->GetMessageText(MID_EndScriptOnExit));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Equipment, g_pTheDB->GetMessageText(MID_Equipment));
@@ -3604,6 +3642,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_FlushSpeech, g_pTheDB->GetMessageText(MID_FlushSpeech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GameEffect, g_pTheDB->GetMessageText(MID_VisualEffect));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_GoSub, g_pTheDB->GetMessageText(MID_GoSub));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
@@ -3615,6 +3654,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_PlayVideo, g_pTheDB->GetMessageText(MID_PlayVideo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerAppearance, g_pTheDB->GetMessageText(MID_SetPlayerAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Question, g_pTheDB->GetMessageText(MID_Question));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
@@ -3932,6 +3972,9 @@ void CCharacterDialogWidget::PopulateGotoLabelList(const COMMANDPTR_VECTOR& comm
 	this->pGotoLabelListBox->Clear();
 	this->wIncrementedLabel = 0;
 
+	this->pGotoLabelListBox->AddItem(ScriptFlag::GotoSmartType::PreviousIf, g_pTheDB->GetMessageText(MID_PreviousIf));
+	this->pGotoLabelListBox->AddItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition, g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
+
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
 		CCharacterCommand *pCommand = commands[wIndex];
@@ -4210,6 +4253,7 @@ void CCharacterDialogWidget::prepareForwardReferences(const COMMANDPTR_VECTOR& n
 		CCharacterCommand& c = *(*cIter);
 		switch (c.command)
 		{
+			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			case CCharacterCommand::CC_AnswerOption:
 			case CCharacterCommand::CC_EachAttack:
@@ -4236,6 +4280,7 @@ void CCharacterDialogWidget::resolveForwardReferences(const COMMANDPTR_VECTOR& n
 		CCharacterCommand& c = *(*cIter);
 		switch (c.command)
 		{
+			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			case CCharacterCommand::CC_AnswerOption:
 			case CCharacterCommand::CC_EachAttack:
@@ -4389,7 +4434,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		EQUIPMENT,
 		ITEMS,
 		NEWENTITY,
-		EFFECT
+		EFFECT,
+		NO_WIDGETS,         //CC_IfElseIf
+		NO_WIDGETS,         //CC_Return
+		GOTOLIST            //CC_GoSub
 	};
 
 	static const UINT NUM_LABELS = 24;
@@ -4487,7 +4535,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,
 		NO_LABELS,
 		NEWENTITY_L,
-		EFFECT_L
+		EFFECT_L,
+		NO_LABELS,          //CC_IfElseIf
+		NO_LABELS,          //CC_Return
+		NO_LABELS           //CC_GoSub
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -4862,6 +4913,7 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_Label:
 		pListBox->SetItemColorAtLine(line, DarkGreen);
 		break;
+	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
@@ -4869,10 +4921,12 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_AnswerOption:
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
+	case CCharacterCommand::CC_Return:
 		pListBox->SetItemColorAtLine(line, Maroon);
 		break;
 	case CCharacterCommand::CC_If:
 	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 		pListBox->SetItemColorAtLine(line, DarkBlue);
 		break;
@@ -5209,6 +5263,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			AddCommand();
 		break;
 
+		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
@@ -5376,7 +5431,9 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_IfElse:
+		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_Return:
 			AddCommand();
 		break;
 
@@ -5555,6 +5612,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pGotoLabelListBox->SelectItem(this->pCommand->x);
 		}
 		break;
+		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
@@ -5653,8 +5711,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_IfElse:
+		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_WaitForNoBuilding:
+		case CCharacterCommand::CC_Return:
 			break;
 
 		//Deprecated commands.
@@ -5911,11 +5971,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_EndScriptOnExit:
 	case CCharacterCommand::CC_If:
 	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForDefeat:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+	case CCharacterCommand::CC_Return:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -6069,6 +6131,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		pCommand->label = pText+pos;
 	break;
 
+	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
@@ -6373,11 +6436,13 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_EndScriptOnExit:
 	case CCharacterCommand::CC_If:
 	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForDefeat:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+	case CCharacterCommand::CC_Return:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -6503,13 +6568,13 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += c.label;
 	break;
 
+	case CCharacterCommand::CC_GoSub:
 	case CCharacterCommand::CC_GoTo:
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
 	case CCharacterCommand::CC_EachUse:
 	{
-		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
-		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 
@@ -6520,8 +6585,7 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += pSpeech ? (const WCHAR*)(pSpeech->MessageText) : wszQuestionMark;
 		wstr += wszQuote;
 		wstr += wszComma;
-		const CCharacterCommand *pGotoCommand = GetCommandWithLabel(commands, c.x);
-		wstr += pGotoCommand ? pGotoCommand->label : wszQuestionMark;
+		AppendGotoDestination(wstr, commands, c);
 	}
 	break;
 

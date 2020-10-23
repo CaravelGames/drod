@@ -2289,17 +2289,31 @@ void CCharacter::Process(
 				//A comment or destination marker for a GoTo command.
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			{
 				//Continue executing script commands from marked jump point.
 				//Will continue script if jump point is invalid.
 				const int wNextIndex = GetIndexOfCommandWithLabel(command.x);
-				if (wNextIndex != NO_LABEL)
+				this->bParseIfElseAsCondition = false;
+				if (wNextIndex != NO_LABEL) {
+					if (command.command == CCharacterCommand::CC_GoSub)
+						this->jumpStack.push_back(this->wCurrentCommandIndex + 1);
 					this->wCurrentCommandIndex = wNextIndex;
-				else
+				} else {
 					++this->wCurrentCommandIndex; //invalid jump -- just play next command
+				}
 				bProcessNextCommand = true;
 			}
+			continue;   //don't increment wCurrentCommandIndex again
+			case CCharacterCommand::CC_Return:
+				if (this->jumpStack.empty()) {
+					this->wCurrentCommandIndex = this->commands.size(); //done with script execution
+				} else {
+					this->wCurrentCommandIndex = this->jumpStack.back();
+					this->jumpStack.pop_back();
+				}
+				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
 
 			case CCharacterCommand::CC_Speech:
@@ -2727,9 +2741,11 @@ void CCharacter::Process(
 				++this->wCurrentCommandIndex;
 				this->wJumpLabel = this->wCurrentCommandIndex + 1;
 				this->bIfBlock = true;
+				this->bParseIfElseAsCondition = false;
 				bProcessNextCommand = true;
 			continue;   //perform the jump check below next iteration
 			case CCharacterCommand::CC_IfElse:
+			case CCharacterCommand::CC_IfElseIf:
 			{
 				//Marks the beginning of a code block executed when an CC_If condition was not satisfied.
 				//Note that reaching this command indicates an If (true) block has successfully
@@ -2739,11 +2755,24 @@ void CCharacter::Process(
 				//then it will effective function as an If-false and skip the next block.
 				this->bIfBlock = true; //this will skip the subsequent code block
 				bProcessNextCommand = true;
+
+				// Are we supposed to parse this ElseIf as a condition 
+				if (command.command == CCharacterCommand::CC_IfElseIf && this->bParseIfElseAsCondition) {
+					if (bExecuteNoMoveCommands)
+					{
+						goto Finish;
+					}
+
+					++this->wCurrentCommandIndex;
+					this->wJumpLabel = this->wCurrentCommandIndex + 1;
+					continue;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_IfEnd:
 				//Ends a conditional If or IfElse block.
 				bProcessNextCommand = true;
+				this->bParseIfElseAsCondition = false;
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
@@ -3420,9 +3449,13 @@ void CCharacter::FailedIfCondition()
 {
 	ASSERT(this->bIfBlock);
 
+	this->bIfBlock = false;
+	this->bParseIfElseAsCondition = false;
+
 	//Scan until the end of the If block is encountered.
 	//This could be indicated by either an IfElse or IfEnd command.
 	UINT wNestingDepth = 0;
+	const bool wSkipToIfEnd = this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false;
 	bool bScanning = true;
 	do
 	{
@@ -3436,9 +3469,16 @@ void CCharacter::FailedIfCondition()
 				++wNestingDepth;  //entering a nested If block
 			break;
 			case CCharacterCommand::CC_IfElse:
-				if (wNestingDepth == 0)
+				if (!wSkipToIfEnd && wNestingDepth == 0)
 					bScanning = false;  //found the If command's matching Else block
 			break;
+			case CCharacterCommand::CC_IfElseIf:
+				if (!wSkipToIfEnd && wNestingDepth == 0) {
+					bScanning = false;
+					this->bIfBlock = true;
+					this->wJumpLabel = this->wCurrentCommandIndex + 2;
+				}
+				break;
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestingDepth-- == 0)	//exiting an If block
 					bScanning = false;  //found the end of the If block (no Else was found in between)
@@ -3447,8 +3487,6 @@ void CCharacter::FailedIfCondition()
 		}
 		++this->wCurrentCommandIndex;
 	} while (bScanning);
-
-	this->bIfBlock = false;
 }
 
 //*****************************************************************************
@@ -3542,8 +3580,17 @@ bool CCharacter::OnAnswer(
 		//Primitive yes/no answer given.
 		if (this->bIfBlock)
 		{
-			if (nCommand != CMD_YES)
+			if (nCommand != CMD_YES) {
 				FailedIfCondition(); //skip if block
+				// If we are entering else if, make sure we set proper variables for it to be handled correctly
+				if (this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false)
+				{
+					--this->wCurrentCommandIndex;
+					this->bIfBlock = false;
+					this->wJumpLabel = 0;
+					this->bParseIfElseAsCondition = true;
+				}
+			}
 			else
 			{
 				//Enter if block.
@@ -4697,17 +4744,101 @@ void CCharacter::Disappear()
 }
 
 //*****************************************************************************
-int CCharacter::GetIndexOfCommandWithLabel(const UINT label) const
+int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 //Returns: index of command with specified label, or NO_LABEL if none
 {
-	if (label)
-		for (UINT wIndex=this->commands.size(); wIndex--; )
+	if (label > 0) {
+		for (UINT wIndex = this->commands.size(); wIndex--; )
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-					label == command.x)
+				label == command.x)
 				return wIndex;
 		}
+	} else if (label < 0) {
+		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
+		switch (eGotoType) {
+			case ScriptFlag::GotoSmartType::PreviousIf:
+				return GetIndexOfPreviousIf(true);
+			case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			{
+				int wIndex = GetIndexOfNextElse(false);
+				if (wIndex != NO_LABEL) {
+					if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
+						return wIndex + 2;
+
+					return wIndex + 1;
+				}
+			}
+			break;
+			default:
+				return NO_LABEL;
+		}
+	}
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+//Return: Index of the if or else if command at the beginning of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex > 0) {
+		--wCommandIndex;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			if (wNestingDepth-- == 0)
+				return wCommandIndex; // Found start of if block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				return wCommandIndex; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		}
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the else or else if command at the end of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		case CCharacterCommand::CC_IfElse:
+			if (wNestingDepth == 0)
+				return wCommandIndex; // Found start of else block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				return wCommandIndex; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			if (wNestingDepth > 0)
+				wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
 	return NO_LABEL;
 }
 

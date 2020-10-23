@@ -160,6 +160,11 @@ namespace ScriptFlag
 		Enable=4,        //this equipment type is (re)enabled
 		QueryStatus=5    //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
 	};
+
+	enum GotoSmartType {
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
+	};
 };
 
 class CDbSpeech;
@@ -240,6 +245,9 @@ public:
 		CC_WaitForItem,         //Wait for game element (flags) to exist in rect (x,y,w,h).
 		CC_GenerateEntity,      //Generates a new entity of type h in the room at (x,y) with orientation w.
 		CC_GameEffect,          //Cues the front end to generate a graphic+sound effect (w,h,flags) at (x,y).
+		CC_IfElseIf,            //Else combined with if to reduce code nesting
+		CC_Return,              //Return to just after the previous CC_GoSub command executed.
+		CC_GoSub,               //Jumps script execution to the indicated label.
 		CC_Count
 	};
 

@@ -373,8 +373,8 @@ continue executing script commands from a different location in the script.</p>
       block of one or more script commands, based on a condition you specify in
       the next script command, which must be a query. If the query is
       immediately satisfied, then the script commands that follow after will be
-      executed.  An <a href="#ifend"><b>If End</b></a> or
-      <a href="#else"><b>Else</b></a> command indicates the end of the optional
+      executed.  An <a href="#ifend"><b>If End</b></a>,
+      <a href="#else"><b>Else</b></a> or <a href="#else-if"><b>Else if</b></a> command indicates the end of the optional
       code block. If the following query is not true, the script will continue
       after the following the next <a href="#else"><b>Else</b></a> or
       <a href="#ifend"><b>If End</b></a> command that marks the end of the
@@ -387,6 +387,7 @@ continue executing script commands from a different location in the script.</p>
       <b>Else</b> commands in conditional blocks are optional, but they must
       always follow somewhere after an <a href="#if"><b>If ...</b></a> to be
       meaningful.</li>
+  <li><a name="else-if"><b>Else if</b></a> can optionally be used instead of <a href="#else"><b>Else</b></a> to avoid nesting script commands. It works exactly the same as nesting an <a href="#if"><b>If ...</b></a> <a href=  "#ifend"><b>If End</b></a> block inside an <a href="#else"><b>Else</b></a></li>
   <li><a name="ifend"><b>If End</b></a> - Marks the end of
       <a href="#if"><b>If ...</b></a> and <a href="#else"><b>Else</b></a> blocks.<br />
       <a name="condnotes">Notes:</a>
@@ -419,6 +420,8 @@ continue executing script commands from a different location in the script.</p>
       sequence of commands over and over. Use a <a href="#wait"><b>Wait 0</b></a>
       command as the last statement of a loop that is to be executed once each
       turn.</li>
+  <li><a name="gosub"><b>Gosub</b></a> - Similar to "Go to", it continues execution from the indicated label. Used in conjunction with "Return" for more modular scripting.</li>
+  <li><a name="return"><b>Return</b></a> - Continue executing commands from the most recent "Gosub" command executed. When multiple Gosub commands are executed, then multiple Return commands will jump back to these in order from most to least recent.</li>
   <li><a name="endonexit"><b>End on room exit</b></a> - Removes the NPC for the
       rest of the current game when the room is exited.
 	  Hint: use this command at the start of a script to have the NPC execute

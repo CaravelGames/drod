@@ -186,11 +186,14 @@ public:
 	bool  bAttacked;        //only one behavior-based attack per turn is allowed
 	ScriptFlag::EquipmentType equipType;//what type of inventory I represent
 	MovementIQ movementIQ;  //movement behavior
+	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
 
 private:
 	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);
 	void Disappear();
-	int  GetIndexOfCommandWithLabel(const UINT label) const;
+	int  GetIndexOfCommandWithLabel(const int label) const;
+	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
@@ -259,6 +262,7 @@ private:
 	bool bIfBlock;
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	UINT wLastSpeechLineNumber; //used during language import
+	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 
 	//Predefined vars.
 	UINT color, sword; //cosmetic details

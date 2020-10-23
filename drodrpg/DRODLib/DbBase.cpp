@@ -688,6 +688,11 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarMyItemATKMult: strText = "_MyItemATKMult"; break;
 		case MID_VarMyItemDEFMult: strText = "_MyItemDEFMult"; break;
 		case MID_VarMyItemGRMult: strText = "_MyItemGRMult"; break;
+		case MID_IfElseIf: strText = "Else If"; break;
+		case MID_ReturnCommand: strText = "Return"; break;
+		case MID_GoSub: strText = "GoSub"; break;
+		case MID_PreviousIf: strText = "<Previous If>"; break;
+		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
