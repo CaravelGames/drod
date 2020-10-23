@@ -2509,12 +2509,8 @@ void CEditRoomScreen::OnBetweenEvents()
 
 			switch (wObjectNo)
 			{
-/*
-				case T_ORB:
+				//case T_ORB:
 				case T_PRESSPLATE:
-					RequestToolTip(MID_RotateToChangeType);
-				break;
-*/
 				case T_STAIRS: case T_STAIRS_UP:
 				case T_TAR: case T_MUD: case T_GEL:
 //				case T_PIT: case T_WATER:
@@ -6621,16 +6617,16 @@ void CEditRoomScreen::RotateClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
+*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				case OT_TOGGLE: this->wSelPlateType = OT_ONEUSE; break;
-				case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
+				case OT_TOGGLE: this->wSelPlateType = OT_NORMAL; break;
+				//case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
-*/
 		case T_TOKEN:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid token type.
@@ -6741,16 +6737,17 @@ void CEditRoomScreen::RotateCounterClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
+*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
-				case OT_NORMAL: this->wSelPlateType = OT_ONEUSE; break;
-				case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
+				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
+				//case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
 				case OT_TOGGLE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
-*/
+
 		case T_TOKEN:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid token type.
