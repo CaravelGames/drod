@@ -3582,7 +3582,7 @@ bool CCharacter::OnAnswer(
 		{
 			if (nCommand != CMD_YES) {
 				FailedIfCondition(); //skip if block
-				// If we are entering else if, make sure we set proper variables for it to be handled correclty
+				// If we are entering else if, make sure we set proper variables for it to be handled correctly
 				if (this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false)
 				{
 					--this->wCurrentCommandIndex;
@@ -4758,23 +4758,21 @@ int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 	} else if (label < 0) {
 		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
 		switch (eGotoType) {
-		case ScriptFlag::GotoSmartType::PreviousIf:
-			return GetIndexOfPreviousIf(true);
-		break;
-		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
-		{
-			int wIndex = GetIndexOfNextElse(false);
-			if (wIndex != NO_LABEL) {
-				if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
-					return wIndex + 2;
+			case ScriptFlag::GotoSmartType::PreviousIf:
+				return GetIndexOfPreviousIf(true);
+			case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			{
+				int wIndex = GetIndexOfNextElse(false);
+				if (wIndex != NO_LABEL) {
+					if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
+						return wIndex + 2;
 
-				return wIndex + 1;
+					return wIndex + 1;
+				}
 			}
-		}
-		break;
-		default:
-			return NO_LABEL;
-		break;
+			break;
+			default:
+				return NO_LABEL;
 		}
 	}
 	return NO_LABEL;

@@ -3597,12 +3597,13 @@ void CCharacterDialogWidget::AppendGotoDestination(WSTRING& wstr,
 		switch (label) {
 		case ScriptFlag::GotoSmartType::PreviousIf:
 			wstr += g_pTheDB->GetMessageText(MID_PreviousIf);
-			break;
+		break;
 		case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
 			wstr += g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip);
-			break;
+		break;
 		default:
 			wstr += wszQuestionMark;
+		break;
 		}
 
 		return;
