@@ -1690,6 +1690,19 @@ void CDbRoom::RecalcStationPaths()
 */
 
 //*****************************************************************************
+const RoomObject* CDbRoom::GetPushedObjectAt(const UINT wX, const UINT wY) const
+{
+	for (set<const RoomObject*>::const_iterator it = this->pushed_objects.begin();
+		it != this->pushed_objects.end(); it++)
+	{
+		const RoomObject& obj = **it;
+		if (obj.wX == wX && obj.wY == wY)
+			return *it;
+	}
+	return NULL;
+}
+
+//*****************************************************************************
 void CDbRoom::ReevalBriarNear(
 //Alert briar structures that room geometry has changed at (x,y).
 //
@@ -2564,113 +2577,10 @@ const
 	if (pMonster &&
 			!this->pCurrentGame->pPlayer->IsInvisible()) //invisible player can step through monsters
 		return true;
-/*
-	{
-		if (pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
-		if (!this->pCurrentGame->pPlayer->CanStepOnMonsters())
-			return true; //some roles can't step on monsters
-
-		if (pMonster->IsLongMonster())
-			return true; //can't ever step on a large monster
-
-		//These monsters can't be stepped on
-		switch (pMonster->wType)
-		{
-			case M_WUBBA:
-			case M_ROCKGOLEM:
-			case M_FEGUNDO:
-				return true;
-			case M_CHARACTER:
-			{
-				//Is NPC invincible?
-				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->GetImperative() == ScriptFlag::Invulnerable)
-					return true;
-			}
-			break;
-			default: break;
-		}
-	}
-*/
-
-/*
-	//Does a monster have a sword in the square?
-	for (int nJ=-1; nJ<=1; ++nJ) //O(9) search
-		for (int nI=-1; nI<=1; ++nI)
-			if (nI || nJ)
-			{
-				CMonster *pMonster = GetMonsterAtSquare(wX+nI, wY+nJ);
-				if (pMonster && pMonster->HasSwordAt(wX, wY))
-				{
-					//If so, player may step here only if able to damage the monster.
-					//Note that when the monster's turn is processed, it will get to hit immediately.
-					ASSERT(this->pCurrentGame);
-					CCombat combat(this->pCurrentGame, pMonster, false);
-					if (!combat.PlayerCanHarmMonster(pMonster))
-						return true;
-				}
-			}
-*/
 
 	//No obstacle.
 	return false;
 }
-
-//*****************************************************************************
-/*
-bool CDbRoom::DoesSquareContainDoublePlacementObstacle(
-//Does a square contain an obstacle to player-double placement?
-//
-//Params:
-	const UINT wX, const UINT wY)    //(in)   Destination square to check.
-//
-//Returns:
-//True if it does, false if not.
-const
-{
-	ASSERT(IsValidColRow(wX, wY));
-
-	//Is there a monster in the square?
-	if (GetMonsterAtSquare(wX, wY) != NULL)
-		return true;
-
-	//Look for t-square obstacle.
-	UINT wTileNo = GetTSquare(wX, wY);
-	if (!(wTileNo == T_EMPTY || wTileNo == T_FUSE || wTileNo == T_TOKEN || wTileNo == T_KEY || bIsEquipment(wTileNo)))
-		return true;
-
-	if (bIsArrow(GetFSquare(wX, wY)))
-		return true;
-
-	//Look for o-square obstacle.
-	//Can't be placed on trapdoors or open yellow doors (backwards compatibility).
-	wTileNo = GetOSquare(wX, wY);
-	if (bIsTrapdoor(wTileNo) || !(bIsFloor(wTileNo) || bIsPlatform(wTileNo) ||
-			(bIsOpenDoor(wTileNo) && wTileNo != T_DOOR_YO)))
-		return true;
-
-	//Is the swordsman in the square?
-	if (this->pCurrentGame->IsPlayerAt(wX, wY))
-		return true;
-
-	//Is the swordsman's sword in the square?
-	if (this->pCurrentGame->pPlayer->HasSword() &&
-			this->pCurrentGame->pPlayer->wSwordX == wX &&
-			this->pCurrentGame->pPlayer->wSwordY == wY)
-		return true;
-
-	//Is a monster sword in the square?
-	if (IsMonsterSwordAt(wX, wY))
-		return true;
-
-	//No obstacle.
-	return false;
-}
-*/
 
 //*****************************************************************************
 bool CDbRoom::DoesSquarePreventDiagonal(
@@ -3095,12 +3005,7 @@ bool CDbRoom::KillMonsterAtSquare(
 {
 	CMonster *pMonster = GetMonsterAtSquare(wX, wY);
 	if (!pMonster) return false;
-	if (pMonster->IsPiece())
-	{
-		CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pPiece->pMonster;
-		ASSERT(pMonster);
-	}
+	pMonster = pMonster->GetOwningMonster();
 
 	const bool bRemoved = KillMonster(pMonster, CueEvents, bForce);
 
@@ -3464,8 +3369,6 @@ const
 		{
 			pMonster = *pMonsters;
 			if (pMonster && pMonster->IsAlive() && (!(
-//					bIsBeethroDouble(pMonster->wType) ||
-//					pMonster->wType == M_HALPH ||
 					pMonster->wType == M_CHARACTER)) &&
 					(bConsiderPieces || !pMonster->IsPiece()))
 				return true;
@@ -4181,17 +4084,17 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 			if (bIsWater(wOSquare))
 				CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
 			else
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 		break;
 		case T_TAR: case T_MUD: case T_GEL:
 			RemoveStabbedTar(wX, wY, CueEvents);
-			CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+			CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 		break;
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			if (bIsPit(wOSquare)) //remains on top of water without falling
 			{
 				Plot(wX, wY, T_EMPTY);
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY, NO_ORIENTATION, wTSquare), true);
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY, NO_ORIENTATION, wTSquare, 0), true);
 			}
 		break;
 		default: break; //nothing else falls
@@ -4215,115 +4118,142 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		return; //water-based monsters don't die in water
 
 	//Handle large monsters specially based on type.
-	if (pMonster->IsPiece())
-	{
-		CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pPiece->pMonster;
-	}
-	if (pMonster->IsLongMonster())
-	{
-		if (pMonster->wType == M_ROCKGIANT)
-		{
-			//Show all pieces falling.
-			UINT count=1; //provide temporary tile numbering
-			for (list<CMonsterPiece*>::iterator piece = pMonster->Pieces.begin();
-					piece != pMonster->Pieces.end(); ++piece, ++count)
-			{
-				CMonsterPiece *pPiece = (*piece);
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
-										pPiece->wX, pPiece->wY,
-										count*MONSTER_PIECE_OFFSET + pMonster->wO, //special encoding for monster piece
-										M_OFFSET + pMonster->wType), true);
-			}
-		} else {
-			ASSERT(bIsSerpent(pMonster->wType));
-			//Serpent dies if its head is over pit/water.
-			const UINT wOTileAtHead = GetOSquare(pMonster->wX, pMonster->wY);
-			const bool bFallsInPit = bIsPit(wOTileAtHead);
-			if (wOTileAtHead == T_WATER)
-			{
-				CueEvents.Add(CID_MonsterPieceStabbed, new CMoveCoord(
-						pMonster->wX, pMonster->wY, S), true);
-			} else if (bFallsInPit) {
-				for (list<CMonsterPiece*>::iterator piece = pMonster->Pieces.begin();
-						piece != pMonster->Pieces.end(); ++piece)
-				{
-					if (bIsPit(GetOSquare((*piece)->wX, (*piece)->wY)))
-						CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
-								(*piece)->wX, (*piece)->wY, pMonster->wType,
-								(*piece)->wTileNo), true);
-				}
-			} else {
-				//Serpent head is on solid ground.
-				//Break off the tail at the first point where there is no ground.
-				CSerpent *pSerpent = DYN_CAST(CSerpent*, CMonster*, pMonster);
-				bool bSerpentDiedFromTruncation = false;
-				pSerpent->OrderPieces(); //for following iteration to work properly
-				for (list<CMonsterPiece*>::iterator piece = pMonster->Pieces.begin();
-						piece != pMonster->Pieces.end(); ++piece)
-				{
-					const UINT wPX = (*piece)->wX, wPY = (*piece)->wY;
-					const UINT wOTile = GetOSquare(wPX, wPY);
-					if (bIsPit(wOTile) || wOTile == T_WATER)
-					{
-						//Break off this tile and everything thereafter.
-
-						//Show falling effect for all pieces breaking off.
-						while (piece != pMonster->Pieces.end())
-						{
-							CMonsterPiece& pPiece = *(*piece);
-							if (bIsPit(GetOSquare(pPiece.wX, pPiece.wY)))
-								CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(
-										pPiece.wX, pPiece.wY, pMonster->wType,
-										pPiece.wTileNo), true);
-							++piece;
-						}
-
-						//Shorten tail to just past this point.
-						while (pSerpent->tailX != wPX || pSerpent->tailY != wPY)
-						{
-							if (pSerpent->ShortenTail(CueEvents))
-								bSerpentDiedFromTruncation = true;
-						}
-						if (pSerpent->ShortenTail(CueEvents))
-							bSerpentDiedFromTruncation = true;
-
-						break; //no more pieces left to check after this point
-					}
-				}
-				if (bSerpentDiedFromTruncation)
-				{
-					//Kill serpent, but don't show it falling.
-					KillMonster(pMonster, CueEvents);
-//					this->pCurrentGame->TallyKill();  //counts as a kill
-				}
-				return; //don't need the fall/kill processing below
-			}
-		}
-	}
+	pMonster = pMonster->GetOwningMonster();
+	if (LargeMonsterFalls(pMonster, wX, wY, CueEvents))
+		return;
 
 	//Non-flying monster falls and dies.
-	if (wOSquare == T_WATER)
+	AddFallingMonsterEvent(CueEvents, pMonster, wOSquare);
+
+	KillMonster(pMonster, CueEvents);
+//	this->pCurrentGame->TallyKill();  //counts as a kill
+}
+
+//*****************************************************************************
+bool CDbRoom::AddFallingMonsterEvent(
+	CCueEvents& CueEvents, CMonster* pMonster, const UINT wOSquare)
+	const
+{
+	if (wOSquare == T_WATER) {
 		CueEvents.Add(CID_Splash, new CCoord(pMonster->wX, pMonster->wY), true);
-	else
-	{
+		return true;
+	}
+
+	if (bIsPit(wOSquare)) {
 		UINT id = pMonster->GetResolvedIdentity();
-		//Some monsters have orientation.
-		UINT wO = pMonster->HasOrientation() ? pMonster->wO : NO_ORIENTATION;
+
+		//Brain and nest characters can have an orientation, which we don't want
+		UINT wO = (id == M_BRAIN || id == M_SKIPPERNEST) ? NO_ORIENTATION : pMonster->wO;
 
 		//Use custom monster type for characters.
 		if (pMonster->wType == M_CHARACTER)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			id = pCharacter->wLogicalIdentity;
 		}
 
-		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(pMonster->wX, pMonster->wY,
-				wO, M_OFFSET + id), true);
+		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(pMonster->wX, pMonster->wY,
+			wO, M_OFFSET + id, pMonster->HasSword() ? pMonster->GetWeaponType() : NoSword), true);
+		return true;
 	}
 
-	KillMonster(pMonster, CueEvents);
-//	this->pCurrentGame->TallyKill();  //counts as a kill
+	return false;
+}
+
+//*****************************************************************************
+bool CDbRoom::LargeMonsterFalls(CMonster*& pMonster, const UINT wX, const UINT wY, CCueEvents& CueEvents)
+//Handles special falling logic for monsters occupying more than one tile
+//
+//Returns: whether done processing fall logic for large monster
+{
+	ASSERT(pMonster);
+	if (!pMonster->IsLongMonster())
+		return false;
+
+	if (pMonster->wType == M_ROCKGIANT)
+	{
+		//Show all pieces falling.
+		UINT count = 1; //provide temporary tile numbering
+		for (list<CMonsterPiece*>::iterator piece = pMonster->Pieces.begin();
+			piece != pMonster->Pieces.end(); ++piece, ++count)
+		{
+			CMonsterPiece* pPiece = (*piece);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+				pPiece->wX, pPiece->wY,
+				count * MONSTER_PIECE_OFFSET + pMonster->wO, //special encoding for monster piece
+				M_OFFSET + pMonster->wType, 0), true);
+		}
+		return false; //more fall processing to do by caller
+	}
+
+	ASSERT(bIsSerpent(pMonster->wType));
+	//Serpent dies if its head is over pit/water.
+	const UINT wOTileAtHead = GetOSquare(pMonster->wX, pMonster->wY);
+	if (wOTileAtHead == T_WATER)
+	{
+		CueEvents.Add(CID_MonsterPieceStabbed, new CMoveCoord(
+			pMonster->wX, pMonster->wY, S), true);
+		return false; //more fall processing to do by caller
+	}
+
+	const bool bFallsInPit = bIsPit(wOTileAtHead);
+	if (bFallsInPit) {
+		for (list<CMonsterPiece*>::iterator pieceIt = pMonster->Pieces.begin();
+			pieceIt != pMonster->Pieces.end(); ++pieceIt)
+		{
+			const CMonsterPiece& piece = **pieceIt;
+			if (bIsPit(GetOSquare(piece.wX, piece.wY)))
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+					piece.wX, piece.wY, pMonster->wType,
+					piece.wTileNo, 0), true);
+		}
+		return false; //more fall processing to do by caller
+	}
+
+	//Serpent head is on solid ground.
+	//Break off the tail at the first point where there is no ground.
+	bool bSerpentDiedFromTruncation = false;
+
+	CSerpent* pSerpent = DYN_CAST(CSerpent*, CMonster*, pMonster);	
+	pSerpent->OrderPieces(); //for following iteration to work properly
+
+	for (list<CMonsterPiece*>::iterator piece = pMonster->Pieces.begin();
+		piece != pMonster->Pieces.end(); ++piece)
+	{
+		const UINT wPX = (*piece)->wX, wPY = (*piece)->wY;
+		const UINT wOTile = GetOSquare(wPX, wPY);
+		if (!(bIsPit(wOTile) || wOTile == T_WATER))
+			continue;
+
+		//Break off this tile and everything thereafter.
+
+		//Show falling effect for all pieces breaking off.
+		while (piece != pMonster->Pieces.end())
+		{
+			CMonsterPiece& pPiece = *(*piece);
+			if (bIsPit(GetOSquare(pPiece.wX, pPiece.wY)))
+				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
+					pPiece.wX, pPiece.wY, pMonster->wType,
+					pPiece.wTileNo, 0), true);
+			++piece;
+		}
+
+		//Shorten tail to just past this point.
+		while (pSerpent->tailX != wPX || pSerpent->tailY != wPY)
+		{
+			if (pSerpent->ShortenTail(CueEvents))
+				bSerpentDiedFromTruncation = true;
+		}
+		if (pSerpent->ShortenTail(CueEvents))
+			bSerpentDiedFromTruncation = true;
+	}
+	if (bSerpentDiedFromTruncation)
+	{
+		//Kill serpent, but don't show it falling.
+		KillMonster(pMonster, CueEvents);
+		//this->pCurrentGame->TallyKill();  //counts as a kill
+	}
+	return true; //don't need the fall/kill processing done by caller
 }
 
 //*****************************************************************************
@@ -4822,20 +4752,30 @@ void CDbRoom::PushObject(
 		return;
 		default: break;
 	}
-	switch (GetTSquare(wDestX, wDestY))
+
+	const UINT oldTTile = GetTSquare(wDestX, wDestY);
+	switch (oldTTile)
 	{
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			CueEvents.Add(CID_Splash, new CCoord(wDestX, wDestY), true);
 		return;
 		default:
 			//Keep track of item covered up
-			if (TILE_LAYER[wTile] == 1 && GetTSquare(wDestX, wDestY) != T_EMPTY)
-				this->coveredTSquares.Add(wDestX, wDestY, GetTSquare(wDestX, wDestY));
+			if (TILE_LAYER[wTile] == 1 && oldTTile != T_EMPTY)
+				this->coveredTSquares.Add(wDestX, wDestY, oldTTile);
 
 			Plot(wDestX, wDestY, wTile);
 			if (GetOSquare(wDestX, wDestY) == T_PRESSPLATE)
 				ActivateOrb(wDestX, wDestY, CueEvents, OAT_PressurePlate);
-		return;
+
+			//Persist the pushed object's data,
+			//so it can be globally referenced for the duration of turn processing.
+			RoomObject* pObj = new RoomObject(wDestX, wDestY, wTile);
+			pObj->wPrevX = wSrcX;
+			pObj->wPrevY = wSrcY;
+			this->pushed_objects.insert(pObj);
+			
+			break;
 	}
 }
 
@@ -5676,82 +5616,6 @@ void CDbRoom::GetLevelPositionDescription_English(
 }
 
 //*****************************************************************************
-/*
-void CDbRoom::DeletePathMaps()
-//Deletes all existing PathMaps.
-{
-	for (int n=0; n<NumMovementTypes; ++n)
-	{
-		delete pPathMap[n];
-		pPathMap[n] = NULL;
-	}
-}
-
-//-****************************************************************************
-bool CDbRoom::DoesSquareContainPathMapObstacle(
-//Does a square contain an obstacle for the pathmap.  The CPathMap class can
-//use different obstacle rules; this routine just defines the obstacle rules
-//for the CDbRoom's pathmap member.
-//
-//Params:
-	const UINT wX, const UINT wY, //(in)   Square to evaluate.
-	const MovementType eMovement) //(in)  Type of movement ability to consider
-//
-//Returns:
-//True if it does for the given movement ability type, false if not.
-const
-{
-	//O-square obstacle?
-	const UINT wOSquare = GetOSquare(wX, wY);
-	switch (eMovement)
-	{
-		case GROUND:
-			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare)))
-				return true;
-			break;
-		case AIR:
-			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare)))
-				switch (wOSquare)
-				{
-					case T_PIT: case T_PIT_IMAGE:
-					case T_WATER:
-						break;  //can fly over these
-					default:
-						return true;   //all others are automatically obstacles
-				}
-			break;
-		case WALL:
-			if (!(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare)))
-				return true;
-			break;
-		case WATER:
-			if (!bIsWater(wOSquare))
-				return true;
-			break;
-		default: ASSERT(!"Unsupported pathmap movement type"); break;
-	}
-
-	//F-square obstacle?
-	if (bIsArrow(GetFSquare(wX, wY)))
-		return true;
-
-	//T-square obstacle?
-	const UINT wTSquare = GetTSquare(wX, wY);
-	if (!(wTSquare == T_EMPTY || wTSquare == T_FUSE || wTSquare == T_TOKEN || wTSquare == T_KEY || bIsEquipment(wTSquare)))
-		return true;
-
-	//Serpent body tiles (backwards compatibility) and inactive monsters are
-	//considered pathmap obstacles.
-	CMonster *pMonster = GetMonsterAtSquare(wX, wY);
-	if (pMonster && ((bIsSerpent(pMonster->wType) && pMonster->IsPiece()) ||
-			!pMonster->IsAlive()))
-		return true;
-
-	return false;
-}
-*/
-
-//*****************************************************************************
 void CDbRoom::OpenDoor(
 //Opens a door.
 //
@@ -5961,11 +5825,24 @@ void CDbRoom::Clear()
 	this->deletedSpeechIDs.clear();
 	this->deletedDataIDs.clear();
 
+	ClearPushInfo();
+
 /*
 	//These should have been cleared by the calls above.
 	ASSERT(this->Decoys.empty());
 	ASSERT(this->stalwarts.empty());
 */
+}
+
+//*****************************************************************************
+void CDbRoom::ClearPushInfo()
+{
+	for (set<const RoomObject*>::const_iterator it = this->pushed_objects.begin();
+		it != this->pushed_objects.end(); it++)
+	{
+		delete *it;
+	}
+	this->pushed_objects.clear();
 }
 
 //*****************************************************************************

@@ -159,9 +159,50 @@
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp">
       <Filter>Tests\Monsters</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp"
+	  <Filter>Tests\Scripting</Filter>
+	</ClCompile>
     <ClCompile Include="src\tests\Scripting\SmartGotoLabels.cpp">
       <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\SquadHorn.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Clone.cpp">
+      <Filter>Tests\Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\SoldierHorn.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\GreenGate.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingMirrors.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp">
+      <Filter>Tests\Player\Bugs</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Aumtlich\DoubleGaze.cpp">
+      <Filter>Tests\Monsters\Aumtlich</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Elements\PowderKeg.cpp">
+      <Filter>Tests\Elements</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\DisarmedArmedMonsters.cpp">
+      <Filter>Tests\Monsters\ArmedMonsters</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

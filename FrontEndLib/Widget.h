@@ -372,7 +372,7 @@ public:
 	UINT        GetW() const {return this->w;}
 	UINT        GetH() const {return this->h;}
 
-	virtual void   Hide(const bool /*bPaint*/ = true) {this->bIsVisible = false;}
+	virtual void   Hide(const bool bPaint = true);
 	void        HideChildren();
 	bool        IsActive() const {return IsEnabled() && IsVisible();}
 	bool        IsEnabled() const {return bIsEnabled;}
@@ -381,7 +381,7 @@ public:
 	bool        IsInsideOfRect(const int nX, const int nY, const UINT wW,
 			const UINT wH) const;
 	bool        IsLoaded() const {return this->bIsLoaded;}
-	bool        IsVisible() const {return this->bIsVisible;}
+	bool        IsVisible(const bool bInParent = false) const;
 	virtual void   Move(const int nSetX, const int nSetY);
 	void        MoveChildren(const int dx, const int dy);
 	bool        OverlapsRect(const int nX, const int nY, const UINT wW,
@@ -398,7 +398,7 @@ public:
 	void        ScrollAbsolute(const int nScrollX, const int nScrollY);
 	void        SetHeight(const UINT wHeight);
 	void        SetWidth(const UINT wWidth);
-	void        Show(const bool bFlag=true) {this->bIsVisible = bFlag;}
+	void        Show(const bool bFlag = true);
 	void        ShowChildren();
 	static WCHAR TranslateUnicodeKeysym(const SDL_Keysym& keysym, const bool bConsiderCaps=true);
 	static void  TranslateUnicodeKeysym(WCHAR& wc, const SDL_Keycode sym, const bool bCaps);

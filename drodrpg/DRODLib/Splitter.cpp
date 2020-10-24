@@ -109,11 +109,8 @@ bool CSplitter::IsOpenMove(const int dx, const int dy) const
 	{
 		const CMonsterPiece& mpiece = *(*piece);
 		pMonster = room.GetMonsterAtSquare(mpiece.wX + dx, mpiece.wY + dy);
-		if (pMonster && pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, (CMonster*)pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		if (pMonster)
+			pMonster = pMonster->GetOwningMonsterConst();
 		if (DoesArrowPreventMovement(mpiece.wX, mpiece.wY, dx, dy) ||
 				room.DoesSquarePreventDiagonal(mpiece.wX, mpiece.wY, dx, dy))
 			return false;

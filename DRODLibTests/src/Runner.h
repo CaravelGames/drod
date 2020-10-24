@@ -15,17 +15,21 @@ public:
 	static void ExecuteCommand(const UINT command, const UINT repeats = 1);
 	static void ExecuteCommand(const UINT command, CCueEvents &CueEvents);
 	static void PlaceDouble(const UINT wX, const UINT wY, CCueEvents& CueEvents);
+	static void ClickClone(const UINT wX, const UINT wY);
+	static void ClickClone(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	static UINT GetNewAssertsCount();
 
 	static CTemporalClone* GetTemporalClone(UINT indexOfClone = 0);
 
 	static void InitializeDatPath();
 	static CCurrentGame* GetCurrentGame();
+	static CCueEvents& GetLastCueEvents();
 
 private:
 	static char *pErrorLogPath;
 	static UINT GetErrorLogSize();
 	static CCurrentGame* currentGame;
+	static CCueEvents lastCueEvents;
 	static CDbRoom* GetRoom();
 	static UINT wLastErrorLogSize;
 };

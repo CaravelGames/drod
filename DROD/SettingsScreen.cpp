@@ -593,6 +593,10 @@ CSettingsScreen::CSettingsScreen()
 			CX_ENVIRONMENTAL_LABEL, CY_ENVIRONMENTAL_LABEL, F_Small, g_pTheDB->GetMessageText(MID_EnvironmentalEffects)) );
 	pSliderWidget = new CSliderWidget(TAG_ENVIRONMENT, X_ENVIRONMENTAL, Y_ENVIRONMENTAL,
 			CX_ENVIRONMENTAL, CY_ENVIRONMENTAL, 1, 1 + Metadata::GetInt(MetaKey::MAX_EYE_CANDY));
+	pSliderWidget->SetDrawTickMarks(true);
+	pSliderWidget->pBiggerTicks.push_back(4);
+	pSliderWidget->pBiggerTicks.push_back(8);
+	pSliderWidget->pBiggerTicks.push_back(12);
 	pGraphicsFrame->AddWidget(pSliderWidget);
 
 	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_TARSTUFFALPHA_LABEL, Y_TARSTUFFALPHA_LABEL,
@@ -1671,7 +1675,6 @@ void CSettingsScreen::UploadScores()
 	bool bContinue = true;
 
 	//Part I.  Upload explored+conquered rooms and holds.
-	CDb db;
 	string exploredRoomsTexts;
 	CIDSet::const_iterator id;
 	for (id = holdIds.begin(); id != holdIds.end(); ++id)
@@ -1693,13 +1696,28 @@ void CSettingsScreen::UploadScores()
 	if (!bContinue) goto Done;
 
 	//Part II.  Upload demos.
-	{
-	//Scanning demos can take a very long time.
-	//Mark which demos are processed so only new demo records are uploaded next time.
+	UploadUnsubmittedDemos(dwPlayerID);
 
+	CDrodScreen::Callbackf(1.0f);
+
+	g_pTheDB->Commit();
+
+Done:
+	g_pTheDB->SetHoldID(dwCurrentHoldID);
+	ExportCleanup();
+	Paint();
+}
+
+//************************************************************************************
+void CSettingsScreen::UploadUnsubmittedDemos(const UINT dwPlayerID)
+//Scanning demos can take a very long time.
+//Mark which demos are processed so only new demo records are uploaded next time.
+{
 	//Get all player's demos.
+	CDb db;
 	db.Demos.FilterByPlayer(dwPlayerID);
-	CIDSet demoIDs, uploadedDemoIDs, allDemoIDs = db.Demos.GetIDs();
+	db.SavedGames.FindHiddens(true);
+	CIDSet demoIDs, allDemoIDs = db.Demos.GetIDs();
 
 	//Upload all demos if requested.
 	bool bFullScoreUpload = false;
@@ -1708,20 +1726,18 @@ void CSettingsScreen::UploadScores()
 	if (f.GetGameProfileString(INISection::Customizing, "FullScoreUpload", str))
 		bFullScoreUpload = atoi(str.c_str()) != 0;
 
-	UINT wCount=0;
+	UINT wCount = 0;
 	CIDSet::const_iterator demo;
+	std::map<UINT, CIDSet> demoIDhandles;
 	for (demo = allDemoIDs.begin(); demo != allDemoIDs.end(); ++demo)
 	{
-		if (!bContinue)
-			break;
-
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
+		CDbDemo* pDemo = db.Demos.GetByID(*demo);
 		ASSERT(pDemo);
 		if (!pDemo) continue;
 
 		//We are searching for victory demos, so don't upload death demos.
 		const bool bSkip = pDemo->IsFlagSet(CDbDemo::Death) ||
-				(pDemo->IsFlagSet(CDbDemo::TestedForUpload) && !bFullScoreUpload);
+			(pDemo->IsFlagSet(CDbDemo::TestedForUpload) && !bFullScoreUpload);
 		delete pDemo;
 		if (bSkip)
 			continue;
@@ -1733,51 +1749,83 @@ void CSettingsScreen::UploadScores()
 			string text;
 			if (CDbXML::ExportXML(V_Demos, demoIDs, text, (UINT)-1)) //no multi-room demos
 			{
-				g_pTheNet->UploadDemos(text);
-				uploadedDemoIDs += demoIDs;
+				const UINT handle = g_pTheNet->UploadDemos(text);
+				if (handle) {
+					demoIDhandles[handle] = demoIDs;
+				}
 				demoIDs.clear();
-				CDrodScreen::Callbackf((float)wCount / (float)allDemoIDs.size());
+				CDrodScreen::Callbackf((float)wCount / (float)(allDemoIDs.size() * 2)); //[0-50%]
 				g_pTheDB->Commit(); //keep saved key current
 			}
 		}
 
 		if (PollForInterrupt())
-			bContinue = false;
+			break;
 	}
 	if (!demoIDs.empty())
 	{
 		string text;
 		if (CDbXML::ExportXML(V_Demos, demoIDs, text, (UINT)-1)) //no multi-room demos
 		{
-			g_pTheNet->UploadDemos(text);
-			uploadedDemoIDs += demoIDs;
+			const UINT handle = g_pTheNet->UploadDemos(text);
+			if (handle) {
+				demoIDhandles[handle] = demoIDs;
+			}
+			CDrodScreen::Callbackf((float)wCount / (float)(allDemoIDs.size() * 2));
 		}
 	}
 
-	//Now flag all uploaded demos.
-	for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
+	//Confirm server has responded to receiving the score submissions.
+	bool bAllConfirmed = true;
+	for (std::map<UINT, CIDSet>::const_iterator it = demoIDhandles.begin(); it != demoIDhandles.end(); it++)
 	{
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
-		ASSERT(pDemo);
-		pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
-		pDemo->Update();
-		delete pDemo;
+		const UINT handle = it->first;
+		const CIDSet demoIDs = it->second;
+
+		const UINT MAX_TRIES = 200; //200 * 50ms = 10s total wait time for each response
+		UINT tries;
+		for (tries = 0; tries < MAX_TRIES; ++tries)
+		{
+			const int status = g_pTheNet->GetStatus(handle);
+			if (status < 0)
+			{
+				SDL_Delay(50);
+				continue;
+			}
+
+			CNetResult* pBuffer = g_pTheNet->GetResults(handle);
+			if (pBuffer) {
+				delete pBuffer;
+
+				//Now flag all uploaded demos.
+				for (demo = demoIDs.begin(); demo != demoIDs.end(); ++demo)
+				{
+					CDbDemo* pDemo = db.Demos.GetByID(*demo);
+					ASSERT(pDemo);
+					pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
+					pDemo->Update();
+					delete pDemo;
+				}
+			} else {
+				//server did not respond with a confirmation
+				bAllConfirmed = false;
+			}
+			break;
+		}
+		if (tries == MAX_TRIES)
+			bAllConfirmed = false;
+
+		wCount += demoIDs.size();
+		CDrodScreen::Callbackf((float)wCount / (float)(allDemoIDs.size() * 2)); //[50-100%]
 	}
 
-	//Player scores on CaravelNet are now current.
-	this->pCurrentPlayer->Settings.SetVar(Settings::CNetProgressIsOld, (BYTE)0);
-	CDrodScreen::Callbackf(1.0f);
+	if (bAllConfirmed) {
+		//Player scores on CaravelNet are now current.
+		this->pCurrentPlayer->Settings.SetVar(Settings::CNetProgressIsOld, (BYTE)0);
 
-	if (bFullScoreUpload) //reset after completing operation
-		f.WriteGameProfileString(INISection::Customizing, "FullScoreUpload", "0");
-
-	g_pTheDB->Commit();
+		if (bFullScoreUpload) //reset after completing operation
+			f.WriteGameProfileString(INISection::Customizing, "FullScoreUpload", "0");
 	}
-
-Done:
-	g_pTheDB->SetHoldID(dwCurrentHoldID);
-	ExportCleanup();
-	Paint();
 }
 
 //************************************************************************************

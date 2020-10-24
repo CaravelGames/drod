@@ -89,6 +89,26 @@ const WCHAR wszPTag[] = { We('<'),We('p'),We('>'), We(0) };
 static char buffer[WCHAR_INTERNAL_BUFFER];
 
 //*****************************************************************************
+void SanitizeSingleLineString(WSTRING &wstr)
+//Remove any unwanted characters from a single-line string. Currently strips:
+// * both newline characters
+// * horizontal tab
+// Ultimately if one day we can define the list of allowed characters we can convert it to a whitelist
+{
+	wstr.erase(std::remove(wstr.begin(), wstr.end(), '\n'), wstr.end());
+	wstr.erase(std::remove(wstr.begin(), wstr.end(), '\r'), wstr.end());
+	wstr.erase(std::remove(wstr.begin(), wstr.end(), '\t'), wstr.end());
+}
+
+//*****************************************************************************
+void SanitizeMultiLineString(WSTRING &wstr)
+//Remove any unwanted characters from a multi-line string. Currently strips:
+// * horizontal tab
+{
+	wstr.erase(std::remove(wstr.begin(), wstr.end(), '\t'), wstr.end());
+}
+
+//*****************************************************************************
 void AsciiToUnicode(const char *psz, WSTRING &wstr)
 {
 	WCHAR *pwczConvertBuffer = new WCHAR[strlen(psz) + 1];

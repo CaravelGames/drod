@@ -27,6 +27,7 @@ public:
 	static void LinkOrb(const UINT wOrbX, const UINT wOrbY, const UINT wDoorX, const UINT wDoorY, const OrbAgentType eLinkType);
 	static void Plot(const UINT tileType, const UINT wX, const UINT wY);
 	static void PlotToken(const RoomTokenType tokenType, const UINT wX, const UINT wY);
+	static void PlotStation(const UINT wX, const UINT wY, const UINT stationType);
 	static void PlotRect(const UINT tileType, const UINT startX, const UINT startY, const UINT endX, const UINT endY);
 
 private:

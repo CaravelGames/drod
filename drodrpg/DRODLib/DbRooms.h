@@ -50,304 +50,13 @@
 #include "PlayerStats.h"
 //#include "Station.h"
 #include "TileMask.h"
+#include "RoomData.h"
 
 #include <BackEndLib/CoordIndex.h>
 #include <BackEndLib/CoordSet.h>
 #include <BackEndLib/CoordStack.h>
 
 #include <list>
-
-#define NO_EXIT  static_cast<UINT>(-1)
-
-//******************************************************************************************
-//What type of object is activating an orb.
-enum OrbActivationType
-{
-	OAT_Player = 0,
-	OAT_Monster = 1,
-	OAT_Item = 2,
-	OAT_ScriptOrb = 3,
-	OAT_PressurePlate = 4,
-	OAT_PressurePlateUp = 5,
-	OAT_ScriptPlate = 6
-};
-
-//Orb agent types.
-enum OrbAgentType
-{
-	OA_NULL = 0,
-	OA_TOGGLE = 1,
-	OA_OPEN = 2,
-	OA_CLOSE = 3,
-	OA_COUNT
-};
-
-//Orb/pressure plate types.
-enum OrbType
-{
-	OT_NORMAL = 0,
-	OT_ONEUSE = 1,
-	OT_TOGGLE = 2,
-	OT_BROKEN = 3,
-	OT_COUNT
-};
-
-static inline bool bIsValidOrbAgentType(const OrbAgentType action)
-{return action > OA_NULL && action < OA_COUNT;}
-static inline bool bIsValidOrbType(const OrbType type)
-{return type >= OT_NORMAL && type < OT_COUNT;}
-
-static inline OrbAgentType operator--(OrbAgentType &d) { return d=static_cast<OrbAgentType>(d-1);}
-static inline OrbAgentType operator--(OrbAgentType &d, int) { OrbAgentType const t=d; --d; return t; }
-static inline OrbAgentType operator++(OrbAgentType &d) { return d=static_cast<OrbAgentType>(d+1);}
-static inline OrbAgentType operator++(OrbAgentType &d, int) { OrbAgentType const t=d; ++d; return t; }
-
-class COrbAgentData : public CCoord
-{
-public:
-	COrbAgentData() : CCoord(0,0), action(OA_NULL)
-	{ }
-	COrbAgentData(const UINT wX, const UINT wY, const OrbAgentType action)
-		: CCoord(wX, wY), action(action) { }
-	COrbAgentData(const COrbAgentData* src)
-		: CCoord(src->wX, src->wY), action(src->action) { }
-
-	OrbAgentType   action;
-};
-
-//******************************************************************************************
-class COrbData : public CCoord
-{
-public:
-	COrbData()
-		: CCoord(0,0), eType(OT_NORMAL), bActive(false)
-	{ }
-	~COrbData()
-	{
-		ClearAgents();
-	}
-
-	COrbData(const UINT wX, const UINT wY)
-		: CCoord(wX, wY), eType(OT_NORMAL), bActive(false) { }
-	COrbData(const COrbData &Src) : CCoord() {SetMembers(Src);}
-	COrbData &operator= (const COrbData &Src)
-	{
-		SetMembers(Src);
-		return *this;
-	}
-	void ClearAgents()
-	{
-		UINT wIndex=this->agents.size();
-		while (wIndex--)
-			delete this->agents[wIndex];
-		this->agents.clear();
-	}
-
-	COrbAgentData* AddAgent(const UINT wX, const UINT wY, const OrbAgentType action)
-	{
-		ASSERT(bIsValidOrbAgentType(action));
-		COrbAgentData *pNewAgent = new COrbAgentData(wX, wY, action);
-		this->agents.push_back(pNewAgent);
-		return pNewAgent;
-	}
-
-	void AddAgent(COrbAgentData *pAgent)
-	{
-		this->agents.push_back(pAgent);
-	}
-
-	bool DeleteAgent(COrbAgentData* const pOrbAgent)
-	{
-		ASSERT(pOrbAgent);
-		UINT wAgentI;
-		for (wAgentI=this->agents.size(); wAgentI--; )
-			if (pOrbAgent == this->agents[wAgentI])
-			{
-				//Found it.  Remove agent (replace with last one).
-				delete this->agents[wAgentI];
-				this->agents[wAgentI] = this->agents[this->agents.size()-1];
-				this->agents.pop_back();
-				return true;
-			}
-		return false;  //didn't find it
-	}
-
-	COrbAgentData* GetAgentAt(const UINT wX, const UINT wY) const
-	{
-		for (UINT wAgentI=0; wAgentI<this->agents.size(); ++wAgentI)
-			if (wX == this->agents[wAgentI]->wX && wY == this->agents[wAgentI]->wY)
-				return this->agents[wAgentI];
-
-		return NULL;   //didn't find it
-	}
-
-	vector<COrbAgentData*>  agents;
-	OrbType eType;
-
-	//for pressure plates
-	bool bActive;    //currently depressed
-	CCoordSet tiles; //coords comprising the pressure plate
-
-private:
-	void SetMembers(const COrbData &Src)
-	{
-		ClearAgents();
-		this->wX = Src.wX;
-		this->wY = Src.wY;
-		this->eType = Src.eType;
-		this->bActive = Src.bActive;
-		this->tiles = Src.tiles;
-		for (UINT wAgentI=0; wAgentI < Src.agents.size(); ++wAgentI)
-			this->agents.push_back(new COrbAgentData(Src.agents[wAgentI]));
-	}
-};
-
-//******************************************************************************************
-class CScrollData : public CCoord
-{
-public:
-	CScrollData() : CCoord(0,0)
-	{ }
-
-	CScrollData(CScrollData &Src) : CCoord() {SetMembers(Src);}
-	CScrollData& operator= (CScrollData &Src)
-	{
-		SetMembers(Src);
-		return *this;
-	}
-
-	CDbMessageText ScrollText;
-
-private:
-	void SetMembers(CScrollData &Src)
-	{
-		wX = Src.wX;
-		wY = Src.wY;
-		ScrollText = (const WCHAR*)Src.ScrollText;
-	}
-};
-
-//******************************************************************************************
-class CExitData
-{
-public:
-	CExitData()
-		: dwEntranceID(0), wLeft(0), wRight(0), wTop(0), wBottom(0)
-	{ }
-	CExitData(const UINT dwEntranceID, const UINT wLeft, const UINT wRight,
-			const UINT wTop, const UINT wBottom)
-		: dwEntranceID(dwEntranceID), wLeft(wLeft), wRight(wRight), wTop(wTop), wBottom(wBottom)
-	{ }
-	UINT       dwEntranceID;
-	UINT        wLeft, wRight, wTop, wBottom;
-};
-
-//******************************************************************************************
-//Types of room tokens.
-enum RoomTokenType
-{
-	RotateArrowsCW=0,
-	RotateArrowsCCW=1,
-	SwitchTarMud=2,
-	SwitchTarGel=3,
-	SwitchGelMud=4,
-	TarTranslucent=5,
-	SwordDisarm=6,
-//	PowerTarget=7,
-//	PersistentCitizenMovement=8,
-	RoomTokenCount
-};
-
-//Types of door keys.
-enum KeyType
-{
-	YellowKey=0,
-	GreenKey=1,
-	BlueKey=2,
-	SkeletonKey=3,
-	KeyCount
-};
-
-//Types of swords.
-enum SwordType
-{
-	NoSword=0,
-	WoodenBlade=1,
-	ShortSword=2,
-	GoblinSword=3,
-	LongSword=4,
-	HookSword=5,
-	ReallyBigSword=6,
-	LuckySword=7,
-	SerpentSword=8,
-	BriarSword=9,
-	WeaponSlot=10,  //allows placing the held weapon at this location
-	SwordCount
-};
-
-enum ShieldType
-{
-	NoShield=0,
-	WoodenShield=1,
-	BronzeShield=2,
-	SteelShield=3,
-	KiteShield=4,
-	OremiteShield=5,
-	ArmorSlot=6,
-	ShieldCount,
-	ShieldSwordOffset=8 //Backwards-compatibility: Don't change this value.
-			//Shields originally were indexed immediately after swords in the
-			//same enumeration. This is the offset value for transforming the
-			//original shield values into the current values.
-};
-
-enum AccessoryType
-{
-	NoAccessory=0,
-	GrapplingHook=1,
-	WaterBoots=2,
-	InvisibilityPotion=3,
-	SpeedPotion=4,
-	HandBomb=5,
-	PickAxe=6,
-	WarpToken=7,
-	PortableOrb=8,
-	LuckyGold=9,
-	WallWalking=10,
-	XPDoubler=11,
-	AccessorySlot=12,
-	AccessoryCount,
-
-	AccessoryShieldOffset=5 //Backwards-compatibility: Don't change this value.
-			//Accessories originally were indexed immediately after shields in the
-			//same enumeration. This is the offset value for transforming the
-			//original accessory values into the current values.
-};
-
-static inline bool bIsValidStandardWeapon(const UINT t){return t<WeaponSlot;}
-static inline bool bIsValidStandardShield(const UINT t){return t<ArmorSlot;}
-static inline bool bIsValidStandardAccessory(const UINT t){return t<AccessorySlot;}
-
-//******************************************************************************************
-//Environmental weather conditions.
-//Currently, this is completely aesthetic, not affecting game logic in any way.
-struct Weather
-{
-	void clear() {
-		bOutside = bLightning = bClouds = bSunshine = bSkipLightfade = false;
-		wFog = wLight = wSnow = 0;
-		sky.resize(0);
-	}
-	bool bOutside;		//area is located outside
-	bool bLightning;	//lightning flashes
-	bool bClouds;     //overhead clouds are shown
-	bool bSunshine;   //shadows from overhead clouds are cast onto ground
-	bool bSkipLightfade;  //skip room light crossfade on room transition
-	UINT wFog;        //mist/fog rolls through room
-	UINT wLight;      //room's ambient light level
-	UINT wSnow;       //rate of snowfall
-	WSTRING sky;      //name of sky image (if non-default)
-};
 
 //******************************************************************************************
 class CCharacter;
@@ -594,6 +303,8 @@ public:
 	bool           KillMonster(CMonster *pMonster, CCueEvents &CueEvents, const bool bForce=false);
 	bool           KillMonsterAtSquare(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const bool bForce=false);
+	bool           AddFallingMonsterEvent(CCueEvents& CueEvents, CMonster* pMonster, const UINT wOSquare) const;
+	bool           LargeMonsterFalls(CMonster*& pMonster, const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           LightFuse(CCueEvents &CueEvents, const UINT wCol, const UINT wRow,
 			const bool bDelayProcessing=true);
 	void           LinkMonster(CMonster *pMonster, const bool bInRoom=true);
@@ -685,11 +396,17 @@ public:
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);
 
+	//scope: used while processing the current turn
+	const RoomObject* GetPushedObjectAt(const UINT wX, const UINT wY) const;
+
 private:
+	set<const RoomObject*> pushed_objects; //a simplified implementation of pushed objects to facilitate mirror movement animation
+
 	enum tartype {oldtar, newtar, notar};
 
 	void           AddPlatformPiece(const UINT wX, const UINT wY, CCoordIndex &plots);
 	void           Clear();
+	void           ClearPushInfo();
 	void           CloseDoor(const UINT wX, const UINT wY);
 //	void           DeletePathMaps();
 	CMonster*      FindLongMonster(const UINT wX, const UINT wY,

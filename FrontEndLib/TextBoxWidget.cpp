@@ -189,6 +189,8 @@ void CTextBoxWidget::HandleKeyDown(
 					WSTRING insert;
 					if (CClipboard::GetString(insert))
 					{
+						SanitizeText(insert);
+
 						if (HasSelection())
 							DeleteSelected();
 						WSTRING curText = GetText();
@@ -859,12 +861,18 @@ void CTextBoxWidget::DrawCursor(
 //******************************************************************************
 void CTextBoxWidget::TypeCharacters(const WCHAR* wcs, size_t length)
 {
+	WSTRING inputText(wcs);
+
+	SanitizeText(inputText);
+	length = inputText.length();
+
 	WSTRING curText = GetText();
 	const UINT wCursorPos = this->wCursorIndex;
 	if (HasSelection())
 		DeleteSelected(); //replace selection with typed char
 	bool ok = false;
-	for (size_t i = 0; i < length && (ok = InsertAtCursor(wcs[i])); ++i) {}
+	
+	for (size_t i = 0; i < length && (ok = InsertAtCursor(inputText[i])); ++i) {}
 	if (ok)
 	{
 		ClearSelection();
@@ -913,4 +921,10 @@ void CTextBoxWidget::undo()
 	//Call OnSelectChange() notifier.
 	CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
 	if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
+}
+
+//******************************************************************************
+void CTextBoxWidget::SanitizeText(WSTRING &text)
+{
+	SanitizeSingleLineString(text);
 }

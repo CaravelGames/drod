@@ -2509,12 +2509,8 @@ void CEditRoomScreen::OnBetweenEvents()
 
 			switch (wObjectNo)
 			{
-/*
-				case T_ORB:
+				//case T_ORB:
 				case T_PRESSPLATE:
-					RequestToolTip(MID_RotateToChangeType);
-				break;
-*/
 				case T_STAIRS: case T_STAIRS_UP:
 				case T_TAR: case T_MUD: case T_GEL:
 //				case T_PIT: case T_WATER:
@@ -3505,9 +3501,7 @@ void CEditRoomScreen::EditObjects()
 		//Get parent object.
 		if (pMonster->IsPiece())
 		{
-			//Get the monster that this piece belongs to.
-			CMonsterPiece *pMPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pMPiece->pMonster;
+			pMonster = pMonster->GetOwningMonster();
 			ASSERT(pMonster);
 		}
 
@@ -4574,13 +4568,7 @@ void CEditRoomScreen::PasteRegion(
 							//actually part of the source monster, and will be moved accordingly.
 							if (pOldMonster)
 							{
-								if (pOldMonster->IsPiece())
-								{
-									//Get parent monster.
-									CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*,
-											CMonster*, pOldMonster);
-									pOldMonster = pPiece->pMonster;
-								}
+								pOldMonster = pOldMonster->GetOwningMonster();
 
 								if (pOldMonster->IsLongMonster())
 									break; //not the same long monster -- don't overwrite
@@ -4605,13 +4593,7 @@ void CEditRoomScreen::PasteRegion(
 										wX+wDeltaX, wY+wDeltaY);
 								if (pMonsterAtDest)
 								{
-									if (pMonsterAtDest->IsPiece())
-									{
-										//Get parent monster.
-										CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*,
-												CMonster*, pMonsterAtDest);
-										pMonsterAtDest = pPiece->pMonster;
-									}
+									pMonsterAtDest = pMonsterAtDest->GetOwningMonster();
 									if (pMonsterAtDest->IsLongMonster())
 									{
 										bInRegion = false;
@@ -4686,9 +4668,9 @@ void CEditRoomScreen::PasteRegion(
 							pNewMonster = room.AddNewMonster(
 									pMonster->wType, xDest, yDest);
 							pNewMonster->wO = pMonster->wO;
-							if (bEntityHasSword(pMonster->wType))
+							if (bEntityHasSword(pNewMonster->wType))
 							{
-								CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pMonster);
+								CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pNewMonster);
 								if (this->pRoom->IsValidColRow(pDouble->GetSwordX(),pDouble->GetSwordY()))
 									this->pRoomWidget->swords.Add(pDouble->GetSwordX(),pDouble->GetSwordY());
 							}
@@ -6381,9 +6363,7 @@ bool CEditRoomScreen::RemoveMonster(
 
 	if (pMonster->IsPiece())
 	{
-		//Get the monster that this piece belongs to.
-		CMonsterPiece *pMPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pMPiece->pMonster;
+		pMonster = pMonster->GetOwningMonster();
 		ASSERT(pMonster);
 	}
 
@@ -6502,11 +6482,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 				{
 					//Confirm monster deletion if it's not (a part of) a long monster
 					//being edited right now.
-					if (pMonster->IsPiece())
-					{
-						CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-						pMonster = pPiece->pMonster;
-					}
+					pMonster = pMonster->GetOwningMonster();
 					if (pMonster != this->pLongMonster)
 					{
 						const bool bTarstuffMother = bIsMother(pMonster->wType);
@@ -6641,16 +6617,16 @@ void CEditRoomScreen::RotateClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
+*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				case OT_TOGGLE: this->wSelPlateType = OT_ONEUSE; break;
-				case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
+				case OT_TOGGLE: this->wSelPlateType = OT_NORMAL; break;
+				//case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
-*/
 		case T_TOKEN:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid token type.
@@ -6761,16 +6737,17 @@ void CEditRoomScreen::RotateCounterClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
+*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
-				case OT_NORMAL: this->wSelPlateType = OT_ONEUSE; break;
-				case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
+				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
+				//case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
 				case OT_TOGGLE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
-*/
+
 		case T_TOKEN:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid token type.

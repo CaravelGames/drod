@@ -82,7 +82,11 @@ bool CScreen::bAllowFullScreen = true;  //allow full screen mode by default
 bool CScreen::bAllowWindowed = true;    //allow windowed mode by default too
 SDL_Rect CScreen::WindowTargetRect = { 0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN };
 double CScreen::WindowScaleFactor = 1;
- 
+
+Uint32 CScreen::dwCurrentTicks = 0;
+Uint32 CScreen::dwLastRenderTicks = 0;
+Uint32 CScreen::dwPresentsCount = 0;
+
 UINT CScreen::MIDReallyQuit = 0;
 UINT CScreen::MIDOverwriteFilePrompt = 0;
 
@@ -157,6 +161,8 @@ void PresentFrame()
 	SDL_RenderClear(renderer); // clear border, if any
 	SDL_RenderCopy(renderer, GetWindowTexture(m_pWindow), NULL, &CScreen::WindowTargetRect);
 	SDL_RenderPresent(renderer);
+	CScreen::dwLastRenderTicks = SDL_GetTicks();
+	++CScreen::dwPresentsCount;
 }
 
 void PresentRect(SDL_Surface *shadow, const SDL_Rect *rect_in)

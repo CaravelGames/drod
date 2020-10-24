@@ -39,10 +39,13 @@ UINT CInternet::nHandles = 1;
 CURL* CInternet::pHandle = NULL;
 string CInternet::strCookies;
 map<UINT, CInternet_Thread_Info*> CInternet::threadInfo;
+map<UINT, CInternet_Thread_Info*> CInternet::erroredThreads;
 std::vector<CInternet_Thread_Info*> CInternet::ignoredThreads;
 std::vector<CURL*> CInternet::usedHandles;
 string CInternet::userAgent;
 CIDSet CInternet::canceledHandles;
+
+const long HTTP_STATUS_UPPERBOUND = 1000; //beyond http status codes range
 
 bool bQuitNow = false;
 
@@ -158,6 +161,14 @@ void CInternet::Deinit()
 	}
 	CInternet::threadInfo.clear();
 
+	for (std::map<UINT, CInternet_Thread_Info*>::const_iterator iter = CInternet::erroredThreads.begin();
+		iter != CInternet::erroredThreads.end(); ++iter)
+	{
+		CInternet_Thread_Info* pInfo = iter->second;
+		delete pInfo;
+	}
+	CInternet::erroredThreads.clear();
+
 	for (i=0; i<CInternet::usedHandles.size(); ++i)
 		curl_easy_cleanup(CInternet::usedHandles[i]);
 	CInternet::usedHandles.clear();
@@ -211,6 +222,20 @@ UINT CInternet::GetBytesCompleted(const UINT handle)
 	return (UINT)found->second->bytesComplete;
 }
 
+//*****************************************************************************
+//Returns: response code of an errored request, or -1 handle on not found
+long CInternet::GetErrorResponseCode(const UINT handle)
+{
+	std::map<UINT, CInternet_Thread_Info*>::iterator found = CInternet::erroredThreads.find(handle);
+	if (found == CInternet::erroredThreads.end()) {
+		return -1;
+	}
+	const CInternet_Thread_Info& info = *(found->second);
+	if (info.eRetVal != CURLE_OK)
+		return HTTP_STATUS_UPPERBOUND + info.eRetVal;
+
+	return info.responseCode;
+}
 
 //*****************************************************************************
 CStretchyBuffer* CInternet::GetResults(const UINT handle, const bool bSkipClean)
@@ -240,9 +265,9 @@ files.AppendErrorLog(NEWLINE);
 	if (!bSuccess) {
 		files.AppendErrorLog("GetResults bSuccess = false! #");
 		files.AppendErrorLog(itoa(handle, buffer, 10));
-		files.AppendErrorLog("(");
+		files.AppendErrorLog("(handle=");
 		files.AppendErrorLog(itoa(pInfo->eRetVal, buffer, 10));
-		files.AppendErrorLog(", ");
+		files.AppendErrorLog(", responseCode=");
 		files.AppendErrorLog(itoa(pInfo->responseCode, buffer, 10));
 		files.AppendErrorLog(")");
 		files.AppendErrorLog(NEWLINE);
@@ -252,14 +277,20 @@ files.AppendErrorLog(NEWLINE);
 	int status;
 	ASSERT(pInfo->pThread);
 	SDL_WaitThread(pInfo->pThread, &status);	//SDL 1.2.7 bug: must call this after thread procedure completes to avoid memory leaks/hangs
-	delete pInfo;
+	pInfo->pThread = NULL;
+	if (!bSuccess) {
+		pInfo->pBuffer = NULL;
+		CInternet::erroredThreads[handle] = pInfo; //store indefinitely for later checks/forensics
+	} else {
+		delete pInfo;
+	}
 	CInternet::threadInfo.erase(found);
 
 	if (bSuccess) {
 #ifdef DEBUG_CINTERNET
-	files.AppendErrorLog("GetResults #");
-	files.AppendErrorLog(itoa(handle, buffer, 10));
-	files.AppendErrorLog(NEWLINE);
+		files.AppendErrorLog("GetResults #");
+		files.AppendErrorLog(itoa(handle, buffer, 10));
+		files.AppendErrorLog(NEWLINE);
 #endif
 
 /*

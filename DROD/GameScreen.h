@@ -128,7 +128,7 @@ protected:
 private:
 	void           AddBloodEffect(const CMoveCoord& coord, const UINT wAppearance);
 	void           AddComboEffect(CCueEvents& CueEvents);
-	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord);
+	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, const bool bIsCriticalNpc = false);
 	void           AddRoomStatsDialog();
 	void           AmbientSoundSetup();
 	void           ApplyPlayerSettings();
@@ -175,7 +175,8 @@ private:
 	void           ShowBigMap();
 	void           ShowDemosForRoom(const UINT roomID);
 	void           ShowLockIcon(const bool bShow=true);
-	void           ShowPlayerFace(const bool bOverrideLock=false, const bool bLockMood=false);
+	void           UpdatePlayerFace();
+	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter **playerHoldCharacter);
 	void           ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents);
 	void           ShowRoomTemporarily(const UINT roomID);
 	void           ShowSpeechLog();
