@@ -39,7 +39,6 @@
 #include <BackEndLib/StretchyBuffer.h>
 #include <BackEndLib/Ports.h>
 
-#include <zlib.h>
 #include <cstdio>
 
 const char gzID[] = "\x1f\x8b";
@@ -58,6 +57,9 @@ vector <VIEWTYPE> CDbXML::dbRecordTypes;
 vector <bool>  CDbXML::SaveRecord;
 vector <VIEWPROPTYPE> CDbXML::vpCurrentType;
 CAttachableObject* pCallbackObject = NULL;
+
+
+streamingOutParams CDbXML::streamingOut;
 
 //Local vars
 XML_Parser parser = NULL;
@@ -91,6 +93,21 @@ void InitTokens()
 	if (propMap.empty())
 		for (int pType=P_First; pType<P_Count; ++pType)
 			propMap[string(propTypeStr[pType])] = pType;
+}
+
+//If buffer has more data than indicated amount, flush it to the file.
+bool streamingOutParams::flush(const ULONG minSizeThreshold) //[default=0]
+{
+	if (pOutBuffer) {
+		const ULONG srcLen = (ULONG)(pOutBuffer->size() * sizeof(char));
+		if (!srcLen || srcLen < minSizeThreshold)
+			return true;
+
+		const ULONG bytesWritten = gzwrite(*this->pGzf, (const BYTE*)pOutBuffer->c_str(), (unsigned int)srcLen);
+		pOutBuffer->erase(0, bytesWritten);
+		return bytesWritten == srcLen;
+	}
+	return true; //no-op
 }
 
 //
@@ -227,6 +244,8 @@ void CDbXML::PerformCallback(long val) {
 void CDbXML::PerformCallbackf(float fVal) {
 	if (pCallbackObject)
 		pCallbackObject->Callbackf(fVal);
+
+	const bool successIgnored = CDbXML::streamingOut.flush(10 * 1024*1024); //10 MB
 }
 void CDbXML::PerformCallbackText(const WCHAR* wpText) {
 	if (pCallbackObject)
@@ -1911,23 +1930,31 @@ bool CDbXML::ExportXML(
 	BYTE *dest = NULL;
 	uLongf destLen = 0;
 	{
-		string text; //only in scope until compressed
-		if (!ExportXML(vType, primaryKeys, text))
-			return false;
-		g_pTheDB->Close(); //reset memory used by DB during export lookups
-		g_pTheDB->Open();
-
 		// Compress the data in gzip format (previously, zlib format w/ stretchy buffer encoding).
-		const ULONG srcLen = (ULONG)(text.size() * sizeof(char));
 #ifdef WIN32
 		gzFile gzf = gzopen_w(wszFilename, "wb");
 #else
 		const string filename = UnicodeToUTF8(wszFilename);
 		gzFile gzf = gzopen(filename.c_str(), "wb");
 #endif
-		const ULONG bytesWritten = gzwrite(gzf, (const BYTE*)text.c_str(), (unsigned int)srcLen);
+
+		string text; //only in scope until compressed
+		CDbXML::streamingOut.set(&text, &gzf);
+		if (!ExportXML(vType, primaryKeys, text))
+		{
+			CDbXML::streamingOut.reset();
+			return false;
+		}
+		g_pTheDB->Close(); //reset memory used by DB during export lookups
+		g_pTheDB->Open();
+
+		const bool success = CDbXML::streamingOut.flush();
+	
 		const int closeval = gzclose(gzf);
-		bRes = bytesWritten == srcLen && closeval == 0;
+
+		CDbXML::streamingOut.reset();
+
+		bRes = success && closeval == 0;
 	}
 
 	return bRes;
