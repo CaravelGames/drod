@@ -111,7 +111,18 @@ bool CPendingPlotEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapse
 
 			wDrawWidth = this->wDrawEndX - this->wDrawStartX;
 			wDrawHeight = this->wDrawEndY - this->wDrawStartY;
-		break;
+			
+			this->dirtyRects.push_back(MAKE_SDL_RECT(
+				this->OwnerRect.x + this->wDrawStartX * CBitmapManager::CX_TILE,
+				this->OwnerRect.y + this->wDrawStartY * CBitmapManager::CY_TILE,
+				CBitmapManager::CX_TILE, CBitmapManager::CY_TILE
+			));
+			this->dirtyRects.push_back(MAKE_SDL_RECT(
+				this->OwnerRect.x + this->wDrawEndX * CBitmapManager::CX_TILE,
+				this->OwnerRect.y + this->wDrawEndY * CBitmapManager::CY_TILE,
+				CBitmapManager::CX_TILE, CBitmapManager::CY_TILE
+			));
+		return true; // Return intended, Swordsman has its own dirty rect setup logic
 		case T_ROCKGIANT: //always show only whole large monsters
 			if ((wDrawWidth % 2) != 0) {
 				++this->wDrawEndX;

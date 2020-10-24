@@ -70,15 +70,6 @@ CBloodInWallEffect::CBloodInWallEffect(
 }
 
 //********************************************************************************
-bool CBloodInWallEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
-{
-	if (!MoveParticles(wDeltaTime)) 
-		return false;
-
-	return true;
-}
-
-//********************************************************************************
 void CBloodInWallEffect::Draw(SDL_Surface& pDestSurface)
 {
 	Uint8 nOpacity;

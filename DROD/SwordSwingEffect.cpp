@@ -44,6 +44,7 @@ CSwordSwingEffect::CSwordSwingEffect(
 	: CEffect(pSetWidget, EffectDuration, ESWORDSWING)
 	, wO(wO)
 	, weaponType(weaponType)
+	, nOpacity(255), wTileNo(TI_TEMPTY)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 

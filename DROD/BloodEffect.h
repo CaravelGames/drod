@@ -46,7 +46,6 @@ public:
 	virtual bool HitsObstacle(const CDbRoom *pRoom, const PARTICLE &particle) const;
 
 protected:
-	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& pDestSurface);
 };
 

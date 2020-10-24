@@ -44,8 +44,8 @@ public:
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& pDestSurface);
-	        void DrawTile(const UINT wTileImageNo, SDL_Surface& pDestSurface, const Uint8 nOpacity=255);
-	        void ShadeTile(const SURFACECOLOR &Color, SDL_Surface& pDestSurface);
+	void DrawTile(const UINT wTileImageNo, SDL_Surface& pDestSurface, const Uint8 nOpacity=255);
+	void ShadeTile(const SURFACECOLOR &Color, SDL_Surface& pDestSurface);
 
 	UINT	 wTileNo;
 	bool     bUseLightLevel;

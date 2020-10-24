@@ -56,7 +56,7 @@ bool CSteamEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 		: 255;
 
 	this->wDrawY = this->nInitialDrawY - int(GetElapsedFraction() * float(CDrodBitmapManager::CY_TILE / 2));
-	this->wDrawClipY = this->wDrawY < this->screenRect.y ? this->screenRect.y - this->wDrawY : 0;
+	this->wDrawClipY = this->wDrawY < UINT(this->screenRect.y) ? this->screenRect.y - this->wDrawY : 0;
 	this->wDrawY += this->wDrawClipY;
 
 	UpdateFrame();

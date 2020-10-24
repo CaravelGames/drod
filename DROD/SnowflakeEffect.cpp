@@ -71,7 +71,7 @@ bool CSnowflakeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	//Downward drift movement pattern.
 	//Snowflake appears to move slower as it falls down.
 	static const Uint32 dwBuffer = dwDuration / 4;
-	const float fMultiplier = (50 * wDeltaTime) / (float)(dwBuffer + wDeltaTime);
+	const float fMultiplier = (50 * wDeltaTime) / (float)(dwBuffer + dwTimeElapsed);
 	this->fY += fMultiplier;   //float downward
 	this->fX += fMultiplier * CSnowflakeEffect::fXDrift;	//wind blows sideways
 
@@ -81,6 +81,8 @@ bool CSnowflakeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	this->nOpacity = g_pTheBM->bAlpha
 		? (BYTE)(GetRemainingFraction() * this->fOpacity * 255.0)
 		: 255;
+
+	return true;
 }
 
 //*****************************************************************************
@@ -119,7 +121,7 @@ void CSnowflakeEffect::UpdateFrame(float elapsedFraction)
 		{7, 5, 4, 3}
 	};
 
-	UINT wSpriteNo = elapsedFraction * NUM_SPRITES;
+	UINT wSpriteNo = UINT(elapsedFraction * NUM_SPRITES);
 	ASSERT(wSpriteNo < NUM_SPRITES);
 
 	this->wTileNo = SpriteNum[this->wType][wSpriteNo];

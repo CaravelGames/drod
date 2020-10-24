@@ -36,7 +36,7 @@ CEffect::CEffect(CWidget *pSetOwnerWidget, const UINT dwDuration, const UINT eTy
 	, eEffectType(eType)
 	, bRequestRetainOnClear(false)
 	, fOpacity(1.0)
-	, dwTimeElapsed()
+	, dwTimeElapsed(0)
 	, dwDuration(dwDuration)
 //Constructor.
 {
@@ -49,7 +49,7 @@ bool CEffect::Update(
 {
 	this->dwTimeElapsed += wDeltaTime;
 
-	if (this->dwTimeElapsed > this->dwDuration)
+	if (this->dwTimeElapsed >= this->dwDuration)
 		return false;
 
 	return this->Update(wDeltaTime, this->dwTimeElapsed);
@@ -60,7 +60,8 @@ void CEffect::Draw(
 	SDL_Surface* pDestSurface) //(in) Surface on which to draw the effect, defaults to owner widget's destination surface
 //Return: the time elapsed since effect started.
 {
-	pDestSurface = pDestSurface ? pDestSurface : GetDestSurface();
+	if (pDestSurface)
+		pDestSurface = GetDestSurface();
 	
 	ASSERT(pDestSurface);
 	if (pDestSurface)

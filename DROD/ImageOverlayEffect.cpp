@@ -90,7 +90,7 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, bPrepareAlteredImage(false)
 	, x(0), y(0)
 	, drawX(0), drawY(0)
-	, alpha(255)
+	, alpha(255), drawAlpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
 	, index(UINT(-1))
@@ -99,6 +99,8 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, pRoomWidget(NULL)
 	, turnNo(turnNo)
 	, instanceID(0)
+	, drawSourceRect(MAKE_SDL_RECT(0, 0, 0, 0))
+	, drawDestinationRect(MAKE_SDL_RECT(0, 0, 0, 0))
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -128,9 +130,10 @@ void CImageOverlayEffect::InitParams()
 {
 	this->x = 0;
 	this->y = 0;
+	this->alpha = 255;
 	this->drawX = 0;
 	this->drawY = 0;
-	this->alpha = 255;
+	this->drawAlpha = 255;
 	this->angle = 0;
 	this->jitter = 0;
 	this->scale = ORIGINAL_SCALE;
@@ -170,8 +173,9 @@ void CImageOverlayEffect::PrepareDrawProperties()
 
 	this->pOwnerWidget->GetRect(this->drawDestinationRect);
 
-	SDL_Surface* pSrcSurface;
-	int display_x = this->x, display_y = this->y;
+	this->drawX = this->x;
+	this->drawY = this->y;
+	this->drawSourceRect = this->sourceClipRect;
 
 	if (this->pAlteredSurface) {
 		SDL_Surface* pSrcSurface = this->pAlteredSurface;
@@ -183,8 +187,8 @@ void CImageOverlayEffect::PrepareDrawProperties()
 			this->drawSourceRect.h = pSrcSurface->h;
 		else if (this->drawSourceRect.h > pSrcSurface->h)
 			this->drawSourceRect.h = pSrcSurface->h;
-		display_x += (int(this->pImageSurface->w) - pSrcSurface->w) / 2; //keep centered
-		display_y += (int(this->pImageSurface->h) - pSrcSurface->h) / 2; //keep centered
+		this->drawX += (int(this->pImageSurface->w) - pSrcSurface->w) / 2; //keep centered
+		this->drawY += (int(this->pImageSurface->h) - pSrcSurface->h) / 2; //keep centered
 	}
 	else {
 		SDL_Surface* pSrcSurface = this->pImageSurface;
@@ -198,23 +202,23 @@ void CImageOverlayEffect::PrepareDrawProperties()
 
 	if (IsImageDrawn())
 		this->dirtyRects[0] = this->drawDestinationRect;
-	else
+	else {
 		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
+		this->drawDestinationRect.w = 0;
+		this->drawDestinationRect.h = 0;
+	}
 }
 
 void CImageOverlayEffect::Draw(SDL_Surface& pDestSurface)
 {
-	this->pOwnerWidget->GetRect(this->drawDestinationRect);
-
 	SDL_Surface* pSrcSurface;
-	int display_x = this->x, display_y = this->y;
 
 	if (this->pAlteredSurface)
 		pSrcSurface = this->pAlteredSurface;
 	else
 		pSrcSurface = this->pImageSurface;
 
-	if (IsImageDrawn()) {
+	if (this->drawDestinationRect.w > 0 && this->drawDestinationRect.h > 0) {
 		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
 		if (bSurfaceAlpha) {
 			EnableSurfaceBlending(pSrcSurface, this->drawAlpha);
@@ -334,7 +338,7 @@ Uint32 CImageOverlayEffect::UpdateCommand(
 	const Uint32 dwConsumedTime = min(executionState.remainingTime, wRemainingTime);
 	executionState.remainingTime -= dwConsumedTime;
 
-	const float t = 1.0 - (float(executionState.remainingTime) / float(executionState.duration));
+	const float t = 1.0f - (float(executionState.remainingTime) / float(executionState.duration));
 	switch (command.type) {
 		case ImageOverlayCommand::FadeToAlpha:
 		{

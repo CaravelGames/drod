@@ -77,4 +77,6 @@ bool CStunEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	this->wTileNo = FRAME[frame];
 
 	ASSERT(frame < NUM_FRAMES);
+
+	return true;
 }

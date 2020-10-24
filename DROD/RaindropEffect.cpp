@@ -72,8 +72,8 @@ CRaindropEffect::CRaindropEffect(
 	SDL_Rect rect = {
 		static_cast<Sint16>(this->fX), 
 		static_cast<Sint16>(this->fY), 
-		this->wDrawXSize,
-		this->wDrawYSize
+		int(this->wDrawXSize),
+		int(this->wDrawYSize)
 	};
 	this->dirtyRects.push_back(rect);
 

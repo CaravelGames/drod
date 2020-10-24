@@ -103,6 +103,8 @@ bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 		return true;
 
 	this->dirtyRects[0] = this->blitRect;
+
+	return true;
 }
 
 //********************************************************************************

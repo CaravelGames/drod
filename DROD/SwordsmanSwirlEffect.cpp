@@ -160,7 +160,7 @@ bool CSwordsmanSwirlEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeEla
 //********************************************************************************
 void CSwordsmanSwirlEffect::Draw(SDL_Surface& pDestSurface)
 {
-	for (int i = 0; i < this->drawSwirls.size(); ++i) {
+	for (UINT i = 0; i < this->drawSwirls.size(); ++i) {
 		CMoveCoordEx swirl = this->drawSwirls.at(i);
 
 		g_pTheBM->BlitTileImagePart(wSwirlImageNo[swirl.wValue], swirl.wX, swirl.wY,

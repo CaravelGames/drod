@@ -69,7 +69,7 @@ void CAumtlichGazeEffect::SharedStateUpdate(const UINT wDeltaTime)
 	static Uint32 lastUpdatePresentCount = 0;
 
 	// Already updated this frame
-	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
+	if (lastUpdatePresentCount == CScreen::dwPresentsCount)
 		return;
 
 	UINT dwTimeElapsed = wDeltaTime / 2; // Run this effect at half speed
@@ -97,6 +97,8 @@ void CAumtlichGazeEffect::SharedStateUpdate(const UINT wDeltaTime)
 		else
 			CAumtlichGazeEffect::brightness -= timeElapsed;
 	}
+
+	lastUpdatePresentCount = CScreen::dwPresentsCount;
 }
 
 //********************************************************************************

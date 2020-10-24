@@ -146,6 +146,7 @@ bool CParticleExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTime
 	if (!MoveParticles(min(MAX_TIME_STEP, wDeltaTime)))
 		return false;
 
+	return true;
 }
 //********************************************************************************
 void CParticleExplosionEffect::Draw(SDL_Surface& pDestSurface)
