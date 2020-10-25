@@ -154,7 +154,7 @@ void CVarMonitorEffect::Draw(SDL_Surface& pDestSurface)
 
 	} else {
 		ASSERT(this->pTextSurface);
-		g_pTheBM->SetSurfaceAlpha(this->pTextSurface, this->nOpacity);
+		EnableSurfaceBlending(this->pTextSurface, this->nOpacity);
 
 		SDL_Rect rect = MAKE_SDL_RECT(this->x, this->y, this->pTextSurface->w, this->pTextSurface->h);
 		SDL_BlitSurface(this->pTextSurface, NULL, &pDestSurface, &rect);

@@ -44,8 +44,7 @@ protected:
 	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:
-	void PlotSwordsman(const UINT wStartX, const UINT wStartY, const UINT wEndX,
-			const UINT wEndY, SDL_Surface& pDestSurface);
+	void PlotSwordsman(const UINT wSwordsmanX, const UINT wSwordsmanY, const UINT wSwordX, const UINT wSwordY, SDL_Surface& pDestSurface);
 	void PlotTile(const UINT wX, const UINT wY, const UINT wObjectNo,
 			const UINT wTileNo, SDL_Surface& pDestSurface);
 

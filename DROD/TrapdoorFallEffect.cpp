@@ -123,6 +123,7 @@ bool CTrapdoorFallEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	{
 		//trapdoor is completely occluded this frame
 		this->dirtyRects[0].h = 0;
+		this->nOpacity = 0;
 		return true;
 	}
 
@@ -157,6 +158,9 @@ bool CTrapdoorFallEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 //********************************************************************************
 void CTrapdoorFallEffect::Draw(SDL_Surface& pDestSurface)
 {
+	if (this->nOpacity == 0)
+		return;
+
 	if (this->nOpacity < 255)
 		EnableSurfaceBlending(this->pSurface, this->nOpacity);
 

@@ -52,7 +52,6 @@ bool CWadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	this->wTileNo = FRAME[frame];
 
 	//Effect fades as it progresses.
-	static const float fMultiplier = 255.0f / float(this->dwDuration);
 	this->nOpacity = static_cast<Uint8>(GetRemainingFraction() * 255);
 
 	return true;

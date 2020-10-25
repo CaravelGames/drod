@@ -6671,7 +6671,7 @@ void CRoomWidget::DrawMonster(
 					else if (this->bRequestEvilEyeGaze) {
 						//Show eye beams with vision power-up.
 						AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-								pMonster->wY,pMonster->wO, 0));
+								pMonster->wY,pMonster->wO, (UINT)-1));
 					}
 				}
 				break;

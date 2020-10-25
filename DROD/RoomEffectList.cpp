@@ -93,7 +93,7 @@ const
 		if (rect.y < 0) {rect.h += rect.y; rect.y = 0;}
 		if ((rect.x + (Sint16)rect.w <= 0) || (rect.y + (Sint16)rect.h <= 0) ||
 				(rect.x >= (int)this->pOwnerWidget->GetW()) ||
-				(rect.y >= (int)this->pOwnerWidget->GetH())) return;
+				(rect.y >= (int)this->pOwnerWidget->GetH())) continue;
 		if (rect.x + rect.w > static_cast<int>(this->pOwnerWidget->GetW()))
 			{rect.w = this->pOwnerWidget->GetW() - rect.x;}
 		if (rect.y + rect.h > static_cast<int>(this->pOwnerWidget->GetH()))

@@ -98,11 +98,14 @@ private:
 	UINT              eFontType;
 	UINT              wDisplayLines;
 	UINT              maxWidth;
+	Uint32            dwTextDuration; // Part of the whole duration before fade out starts
 	Uint32            dwFadeDuration;
 
 	SDL_Surface *  pTextSurface;
 	SURFACECOLOR   BGColor;
 	Uint8          opacity;
+
+	Uint8          drawOpacity;
 };
 
 #endif //#ifndef SUBTITLEEFFECT_H

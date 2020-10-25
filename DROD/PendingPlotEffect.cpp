@@ -124,11 +124,11 @@ bool CPendingPlotEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapse
 			));
 		return true; // Return intended, Swordsman has its own dirty rect setup logic
 		case T_ROCKGIANT: //always show only whole large monsters
-			if ((wDrawWidth % 2) != 0) {
+			if (wDrawWidth % 2 != 1) {
 				++this->wDrawEndX;
 				++wDrawWidth;
 			}
-			if ((wDrawHeight % 2) != 0) {
+			if (wDrawHeight % 2 != 1) {
 				++this->wDrawEndY;
 				++wDrawHeight;
 			}

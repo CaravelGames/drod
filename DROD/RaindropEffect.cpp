@@ -84,7 +84,7 @@ CRaindropEffect::CRaindropEffect(
 //*****************************************************************************
 bool CRaindropEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (TryToCreateSplash())
+	if (TryToEndWithSplash())
 		return false;
 
 	UpdateWind();
@@ -103,7 +103,7 @@ bool CRaindropEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-bool CRaindropEffect::TryToCreateSplash()
+bool CRaindropEffect::TryToEndWithSplash()
 {
 	if (this->fY >= this->fGoalY) {
 		//Create a splash where raindrop hits water.
@@ -129,11 +129,7 @@ bool CRaindropEffect::TryToCreateSplash()
 //*****************************************************************************
 void CRaindropEffect::UpdateWind() 
 {
-	static Uint32 lastUpdatePresentCount = 0;
-
-	// Already updated this frame
-	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
-		return;
+	// The more raindrops there are the more drastic wind changes - strange but intended
 
 	static const float fMaxDrift = 0.5f;
 

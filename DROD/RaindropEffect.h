@@ -38,7 +38,7 @@ public:
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
-	bool TryToCreateSplash();
+	bool TryToEndWithSplash();
 	virtual void Draw(SDL_Surface& pDestSurface);
 
 private:

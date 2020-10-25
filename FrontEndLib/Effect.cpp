@@ -60,7 +60,7 @@ void CEffect::Draw(
 	SDL_Surface* pDestSurface) //(in) Surface on which to draw the effect, defaults to owner widget's destination surface
 //Return: the time elapsed since effect started.
 {
-	if (pDestSurface)
+	if (!pDestSurface)
 		pDestSurface = GetDestSurface();
 	
 	ASSERT(pDestSurface);

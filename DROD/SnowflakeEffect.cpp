@@ -67,6 +67,7 @@ CSnowflakeEffect::CSnowflakeEffect(
 bool CSnowflakeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	UpdateWind();
+	UpdateFrame(GetElapsedFraction());
 
 	//Downward drift movement pattern.
 	//Snowflake appears to move slower as it falls down.
@@ -88,11 +89,7 @@ bool CSnowflakeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //*****************************************************************************
 void CSnowflakeEffect::UpdateWind()
 {
-	static Uint32 lastUpdatePresentCount = 0;
-
-	// Already updated this frame
-	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
-		return;
+	// The more snowflakes there are the more drastic wind changes - strange but intended
 
 	//Sideways wind movement.
 	//Wind changes gradually.  Occasionally, velocity changes sharply.

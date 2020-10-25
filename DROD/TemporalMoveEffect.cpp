@@ -34,6 +34,7 @@
 const Uint32 START_DELAY = 500;
 const Uint32 DISPLAY_DURATION = 750;
 const Uint32 END_DELAY = 500;
+const Uint32 TOTAL_DURATION = START_DELAY + DISPLAY_DURATION + END_DELAY;
 
 //********************************************************************************
 CTemporalMoveEffect::CTemporalMoveEffect(
@@ -43,7 +44,7 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	const bool isBump,
 	const UINT type)
 	: CAnimatedTileEffect(pSetWidget, CCoord(SetCoord.wX,SetCoord.wY),
-			DISPLAY_DURATION, wTI, true, type)
+		TOTAL_DURATION, wTI, true, type)
 	, startDelay(START_DELAY)
 	, endDelay(END_DELAY)
 	, isBump(isBump)
@@ -73,15 +74,17 @@ bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	if (!pGame || pGame->wTurnNo != this->wValidTurn)
 		return false;
 
-	if (dwTimeElapsed < this->startDelay || dwTimeElapsed >= this->startDelay + this->dwDuration) {
+	const UINT animationElapsed = dwTimeElapsed - this->startDelay;
+	if (animationElapsed >= DISPLAY_DURATION) {
 		//Effect persists for a while, to prevent new one from being created right away.
 		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
+		this->nOpacity = 0;
 
 		const Uint32 totalDuration = this->startDelay + this->dwDuration + this->endDelay;
 		return dwTimeElapsed < totalDuration;
 	}
 
-	const float elapsedFraction = (dwTimeElapsed - this->startDelay) / float(this->dwDuration);
+	const float elapsedFraction = animationElapsed / float(DISPLAY_DURATION);
 	const float transparencyPercent = elapsedFraction > 0.5f
 		? (elapsedFraction - 0.5f) * 2
 		: 0;
@@ -99,8 +102,10 @@ bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	SDL_Rect WidgetRect = MAKE_SDL_RECT(0, 0, 0, 0);
 	this->pRoomWidget->GetRect(WidgetRect);
 
-	if (!CWidget::ClipRectToRect(this->blitRect, WidgetRect))
+	if (!CWidget::ClipRectToRect(this->blitRect, WidgetRect)) {
+		this->nOpacity = 0;
 		return true;
+	}
 
 	this->dirtyRects[0] = this->blitRect;
 
@@ -110,10 +115,11 @@ bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 //********************************************************************************
 void CTemporalMoveEffect::Draw(SDL_Surface& pDestSurface)
 {
-	g_pTheBM->BlitTileImagePart(
-		this->wTileNo, 
-		this->blitRect.x, this->blitRect.y,
-		this->blitRect.x - this->wDrawX, this->blitRect.y - this->wDrawY, 
-		this->blitRect.w, this->blitRect.h,
-		&pDestSurface, this->bUseLightLevel, this->nOpacity);
+	if (this->nOpacity > 0)
+		g_pTheBM->BlitTileImagePart(
+			this->wTileNo,
+			this->blitRect.x, this->blitRect.y,
+			this->blitRect.x - this->wDrawX, this->blitRect.y - this->wDrawY,
+			this->blitRect.w, this->blitRect.h,
+			&pDestSurface, this->bUseLightLevel, this->nOpacity);
 }

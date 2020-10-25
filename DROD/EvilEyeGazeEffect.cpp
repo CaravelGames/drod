@@ -39,7 +39,7 @@ CEvilEyeGazeEffect::CEvilEyeGazeEffect(
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const UINT wX, const UINT wY, const UINT wO,    //(in)   Eye's location.
 	const Uint32 dwDuration) //effect duration (0 = indefinite)
-	: CEffect(pSetWidget, dwDuration, dwDuration ? EGENERIC : EEVILEYEGAZE)
+	: CEffect(pSetWidget, dwDuration, dwDuration != (UINT)-1 ? EGENERIC : EEVILEYEGAZE)
 	, wX(wX)
 	, wY(wY)
 	, dwDuration(dwDuration)

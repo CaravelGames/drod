@@ -46,10 +46,8 @@ bool CFadeTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	const Uint32 dwFullOpacityTime = this->dwDuration / 4;
 	const Uint32 dwFadeTime = this->dwDuration - dwFullOpacityTime;
 	const float fMultiplier = 255.0f / (float)dwFadeTime;
-	const float fadeFraction = (dwTimeElapsed - dwFullOpacityTime) / float(dwFadeTime);
-
 	this->nOpacity = dwTimeElapsed > dwFullOpacityTime ?
-		static_cast<Uint8>(255 * fadeFraction) :
+		static_cast<Uint8>((dwFadeTime - (dwTimeElapsed - dwFullOpacityTime)) * fMultiplier) :
 		255;
 
 	return true;

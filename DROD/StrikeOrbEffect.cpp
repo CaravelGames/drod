@@ -129,8 +129,6 @@ bool CStrikeOrbEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //********************************************************************************
 void CStrikeOrbEffect::Draw(SDL_Surface& pDestSurface)
 {
-	this->dirtyRects.clear();  //Reset dirty regions.
-
 	//Draw activated orb tile.
 	if (bDrawOrb)
 	    g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, &pDestSurface, false);
