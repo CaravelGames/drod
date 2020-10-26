@@ -98,7 +98,9 @@ int intBounds(const float fVal)
 	if (fVal >= INT_MAX)
 		return INT_MAX; //upper bounds check
 
-	return int(fVal);
+	const int val = int(fVal);
+	const int rounding = (fVal - val) > 0.999f ? 1 : 0; //account for floating point imprecision
+	return val + rounding;
 }
 
 //*****************************************************************************
@@ -113,7 +115,9 @@ UINT UINTBounds(const float fVal)
 	if (fVal >= UINT_MAX)
 		return UINT_MAX; //upper bounds check
 
-	return UINT(fVal);
+	const UINT val = UINT(fVal);
+	const UINT rounding = (fVal - val) > 0.999f ? 1 : 0; //account for floating point imprecision
+	return val + rounding;
 }
 
 //*****************************************************************************
