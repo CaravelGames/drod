@@ -47,8 +47,8 @@ bool CShadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //********************************************************************************
-void CShadeEffect::Draw(SDL_Surface& pDestSurface)
+void CShadeEffect::Draw(SDL_Surface& destSurface)
 {
 	//Add shading to tile.
-	ShadeTile(this->Color, pDestSurface);
+	ShadeTile(this->Color, destSurface);
 }

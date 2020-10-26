@@ -245,7 +245,7 @@ bool CFloatTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CFloatTextEffect::Draw(SDL_Surface& pDestSurface)
+void CFloatTextEffect::Draw(SDL_Surface& destSurface)
 {
 	//Clip to owner widget.
 	this->drawRect = MAKE_SDL_RECT(this->fX, this->fY,
@@ -260,13 +260,13 @@ void CFloatTextEffect::Draw(SDL_Surface& pDestSurface)
 	const Uint8 nOpacity = dwOpacity >= 255 ? 255 : dwOpacity;
 
 	//Blit.
-	SDL_SetClipRect(&pDestSurface, &this->clipRect);
+	SDL_SetClipRect(&destSurface, &this->clipRect);
 	if (this->bPerPixelTransparency) {
-		g_pTheBM->BlitAlphaSurfaceWithTransparency(SrcRect, this->pTextSurface, this->drawRect, &pDestSurface, this->nOpacity);
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(SrcRect, this->pTextSurface, this->drawRect, &destSurface, this->nOpacity);
 	} else {
-		g_pTheBM->BlitSurface(this->pTextSurface, &SrcRect, &pDestSurface, &this->drawRect, this->nOpacity);
+		g_pTheBM->BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &this->drawRect, this->nOpacity);
 	}
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, NULL);
 
 	//Dirty screen area.
 	ASSERT(this->dirtyRects.size() == 1);

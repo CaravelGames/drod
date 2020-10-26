@@ -87,14 +87,14 @@ bool CBumpObstacleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	return true;
 }
 //********************************************************************************
-void CBumpObstacleEffect::Draw(SDL_Surface& pDestSurface)
+void CBumpObstacleEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, this->src.w, this->src.h);
 
 	//Blit the bumped area.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(&pDestSurface, &ClipRect);
-	SDL_BlitSurface(this->pEraseSurface, &EraseRect, &pDestSurface, &this->dest);
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, &ClipRect);
+	SDL_BlitSurface(this->pEraseSurface, &EraseRect, &destSurface, &this->dest);
+	SDL_SetClipRect(&destSurface, NULL);
 }

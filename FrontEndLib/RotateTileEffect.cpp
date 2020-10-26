@@ -97,7 +97,7 @@ bool CRotateTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 }
 
 //*****************************************************************************
-void CRotateTileEffect::Draw(SDL_Surface& pDestSurface)
+void CRotateTileEffect::Draw(SDL_Surface& destSurface)
 {
 	//Draw rotated surface.
 	SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pRotatedSurface->w, this->pRotatedSurface->h);
@@ -105,9 +105,9 @@ void CRotateTileEffect::Draw(SDL_Surface& pDestSurface)
 	//Clip to parent rect.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(&pDestSurface, &ClipRect);
-	g_pTheBM->BlitSurface(this->pRotatedSurface, &src, &pDestSurface, &this->drawRect, this->nOpacity);
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, &ClipRect);
+	g_pTheBM->BlitSurface(this->pRotatedSurface, &src, &destSurface, &this->drawRect, this->nOpacity);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

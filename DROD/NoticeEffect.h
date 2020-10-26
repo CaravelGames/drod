@@ -54,7 +54,7 @@ public:
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 
 	void           PrepWidget(const WCHAR* pTitle, const WCHAR* pText);
 	virtual void   SetLocation(const Uint32 dwTimeElapsed);

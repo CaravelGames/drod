@@ -113,7 +113,7 @@ bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 }
 
 //********************************************************************************
-void CTemporalMoveEffect::Draw(SDL_Surface& pDestSurface)
+void CTemporalMoveEffect::Draw(SDL_Surface& destSurface)
 {
 	if (this->nOpacity > 0)
 		g_pTheBM->BlitTileImagePart(
@@ -121,5 +121,5 @@ void CTemporalMoveEffect::Draw(SDL_Surface& pDestSurface)
 			this->blitRect.x, this->blitRect.y,
 			this->blitRect.x - this->wDrawX, this->blitRect.y - this->wDrawY,
 			this->blitRect.w, this->blitRect.h,
-			&pDestSurface, this->bUseLightLevel, this->nOpacity);
+			&destSurface, this->bUseLightLevel, this->nOpacity);
 }

@@ -83,17 +83,17 @@ bool CSwordSwingEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 	return true;
 }
 //********************************************************************************
-void CSwordSwingEffect::Draw(SDL_Surface& pDestSurface)
+void CSwordSwingEffect::Draw(SDL_Surface& destSurface)
 {
 	//Clip screen surface to owner widget in case effect goes outside.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(&pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
 
-	g_pTheBM->BlitTileImage(this->wTileNo, this->wX, this->wY, &pDestSurface, true, this->nOpacity);
+	g_pTheBM->BlitTileImage(this->wTileNo, this->wX, this->wY, &destSurface, true, this->nOpacity);
 
 	//Unclip screen surface.
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 void CSwordSwingEffect::CalculateFrame()

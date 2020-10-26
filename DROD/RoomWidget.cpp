@@ -2364,21 +2364,19 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-	// @FIXME-FREEZING
 	this->pOLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 	DrawPlatforms(pSurface);
-	// @FIXME-FREEZING
 	this->pTLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(this->pCurrentGame->swordsman, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-	// @FIXME-FREEZING
+
 	this->pMLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
-	// @FIXME-FREEZING
+	
 	this->pLastLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
@@ -2780,12 +2778,9 @@ void CRoomWidget::RenderRoomInPlay(
 		//a. Effects that go on top of room image, under monsters/swordsman.
 		RenderFogInPit(pDestSurface);
 
-
-		// @FIXME-FREEZING
 		this->pOLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 		DrawPlatforms(pDestSurface);
 		
-		// @FIXME-FREEZING
 		this->pTLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface); 
 
 		//b. Draw monsters (not killing player).
@@ -2793,7 +2788,6 @@ void CRoomWidget::RenderRoomInPlay(
 				bIsPlacingDouble || bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/swordsman.
-		// @FIXME-FREEZING
 		this->pMLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 
 		//d. Double placement effects:

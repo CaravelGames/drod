@@ -69,7 +69,7 @@ bool CGridEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	return true;
 }
 //********************************************************************************
-void CGridEffect::Draw(SDL_Surface& pDestSurface)
+void CGridEffect::Draw(SDL_Surface& destSurface)
 //Returns: true if effect should continue, or false if effect is done.
 {
 	static const int gridThickness = 1;
@@ -84,8 +84,8 @@ void CGridEffect::Draw(SDL_Surface& pDestSurface)
 		UINT xPixel = OwnerRect.x;
 		for (UINT wX=0; wX<room.wRoomCols; ++wX, xPixel += CBitmapManager::CX_TILE) {
 			//Single pixel width edges
-			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, 0, CBitmapManager::CX_TILE, gridThickness, &pDestSurface, false, 128);
-			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, gridThickness, gridThickness, CBitmapManager::CY_TILE-gridThickness, &pDestSurface, false, 128);
+			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, 0, CBitmapManager::CX_TILE, gridThickness, &destSurface, false, 128);
+			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, gridThickness, gridThickness, CBitmapManager::CY_TILE-gridThickness, &destSurface, false, 128);
 		}
 	}
 }

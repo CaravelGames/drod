@@ -118,7 +118,7 @@ bool CAumtlichGazeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 }
 
 //********************************************************************************
-void CAumtlichGazeEffect::Draw(SDL_Surface& pDestSurface)
+void CAumtlichGazeEffect::Draw(SDL_Surface& destSurface)
 //Draw the effect.
 {
 	if (CAumtlichGazeEffect::brightness == 0)
@@ -127,17 +127,17 @@ void CAumtlichGazeEffect::Draw(SDL_Surface& pDestSurface)
 	//Clip screen surface to widget because beams will go all over the place.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(&pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
 
 	//Draw beam.
 	for (UINT wIndex=this->coords.size(); wIndex--; )
 	{
 		CMoveCoord& coord = this->coords[wIndex];
-		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, &pDestSurface, false, CAumtlichGazeEffect::brightness);
+		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, &destSurface, false, CAumtlichGazeEffect::brightness);
 	}
 
 	//Unclip screen surface.
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

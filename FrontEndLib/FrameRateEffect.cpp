@@ -66,11 +66,11 @@ bool CFrameRateEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	return true;
 }
 //*****************************************************************************
-void CFrameRateEffect::Draw(SDL_Surface& pDestSurface)
+void CFrameRateEffect::Draw(SDL_Surface& destSurface)
 {
 	ASSERT(this->pTextSurface);
 	SDL_Rect rect = MAKE_SDL_RECT(this->x, this->y, this->pTextSurface->w, this->pTextSurface->h);
-	SDL_BlitSurface(this->pTextSurface, NULL, &pDestSurface, &rect);
+	SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &rect);
 }
 
 //*****************************************************************************

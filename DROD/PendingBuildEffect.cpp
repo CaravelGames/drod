@@ -83,10 +83,10 @@ bool CPendingBuildEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	return true;
 }
 //*****************************************************************************
-void CPendingBuildEffect::Draw(SDL_Surface& pDestSurface)
+void CPendingBuildEffect::Draw(SDL_Surface& destSurface)
 {
 	ASSERT(this->dirtyRects.size() == 1);
 	g_pTheBM->BlitTileImage(this->wTileImageNo,
 			this->dirtyRects[0].x, this->dirtyRects[0].y,
-			&pDestSurface, false, this->nOpacity);
+			&destSurface, false, this->nOpacity);
 }

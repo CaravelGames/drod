@@ -158,7 +158,7 @@ void CRaindropEffect::CalculateFrameProperties()
 }
 
 //*****************************************************************************
-void CRaindropEffect::Draw(SDL_Surface& pDestSurface)
+void CRaindropEffect::Draw(SDL_Surface& destSurface)
 {
 	//Particle shrinks.
 	static const UINT SpriteNum[RAIN_TYPES] = {TI_RAIN1, TI_RAIN2};
@@ -172,7 +172,7 @@ void CRaindropEffect::Draw(SDL_Surface& pDestSurface)
 			wX < this->screenRect.x + this->screenRect.w - wXSize &&
 			wY < this->screenRect.y + this->screenRect.h - wYSize)
 		g_pTheBM->BlitTileImagePart(SpriteNum[this->wType], wX, wY,
-				0, 0, wXSize, wYSize, &pDestSurface, true, Uint8(255 * this->fOpacity));
+				0, 0, wXSize, wYSize, &destSurface, true, Uint8(255 * this->fOpacity));
 
 }
 

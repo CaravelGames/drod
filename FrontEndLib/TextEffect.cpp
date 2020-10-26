@@ -92,20 +92,20 @@ bool CTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //********************************************************************************
-void CTextEffect::Draw(SDL_Surface& pDestSurface)
+void CTextEffect::Draw(SDL_Surface& destSurface)
 //Draws text in the middle of the parent widget.
 {
 	if (this->nOpacity > 0) {
 		if (this->bPerPixelTransparency) {
 			SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pTextSurface->w, this->pTextSurface->h);
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(src, this->pTextSurface, this->drawRect, &pDestSurface, this->nOpacity);
+			g_pTheBM->BlitAlphaSurfaceWithTransparency(src, this->pTextSurface, this->drawRect, &destSurface, this->nOpacity);
 		} else {
 			if (g_pTheBM->bAlpha) {
 				EnableSurfaceBlending(this->pTextSurface, nOpacity);
 			} else {
 				DisableSurfaceBlending(this->pTextSurface); //Remove transparency.
 			}
-			SDL_BlitSurface(this->pTextSurface, NULL, &pDestSurface, &this->drawRect);
+			SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &this->drawRect);
 		}
 	}
 }

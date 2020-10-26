@@ -145,7 +145,7 @@ void CVarMonitorEffect::UpdateOpacity(const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CVarMonitorEffect::Draw(SDL_Surface& pDestSurface)
+void CVarMonitorEffect::Draw(SDL_Surface& destSurface)
 {
 
 	ASSERT(this->dirtyRects.size() == 1);
@@ -157,7 +157,7 @@ void CVarMonitorEffect::Draw(SDL_Surface& pDestSurface)
 		EnableSurfaceBlending(this->pTextSurface, this->nOpacity);
 
 		SDL_Rect rect = MAKE_SDL_RECT(this->x, this->y, this->pTextSurface->w, this->pTextSurface->h);
-		SDL_BlitSurface(this->pTextSurface, NULL, &pDestSurface, &rect);
+		SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &rect);
 
 	}
 }

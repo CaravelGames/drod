@@ -169,7 +169,7 @@ bool CMovingTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 }
 
 //********************************************************************************
-void CMovingTileEffect::Draw(SDL_Surface& pDestSurface)
+void CMovingTileEffect::Draw(SDL_Surface& destSurface)
 {
 	//Draw part of image within parent area.
 	if (this->bDrawEffect)
@@ -177,5 +177,5 @@ void CMovingTileEffect::Draw(SDL_Surface& pDestSurface)
 			this->wX + this->drawRect.x, this->wY + this->drawRect.y,
 			this->drawRect.x, this->drawRect.y,
 			this->drawRect.w, this->drawRect.h,
-			&pDestSurface, this->bUseLightLevel);
+			&destSurface, this->bUseLightLevel);
 }

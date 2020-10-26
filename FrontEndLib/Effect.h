@@ -123,7 +123,7 @@ public:
 
 protected:
 	virtual bool   Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed) = 0;
-	virtual void   Draw(SDL_Surface& pDestSurface) = 0;
+	virtual void   Draw(SDL_Surface& destSurface) = 0;
 	SDL_Surface *  GetDestSurface() {return this->pOwnerWidget->GetDestSurface();}
 
 	CWidget *      pOwnerWidget;

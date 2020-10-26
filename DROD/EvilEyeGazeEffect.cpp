@@ -130,7 +130,7 @@ void CEvilEyeGazeEffect::DrawNewBeam()
 }
 
 //********************************************************************************
-void CEvilEyeGazeEffect::Draw(SDL_Surface& pDestSurface)
+void CEvilEyeGazeEffect::Draw(SDL_Surface& destSurface)
 //Draw the effect.
 //
 //Returns:
@@ -142,6 +142,6 @@ void CEvilEyeGazeEffect::Draw(SDL_Surface& pDestSurface)
 	{
 		const int destX = this->pRoomWidget->GetX() + coord->wX * CBitmapManager::CX_TILE;
 		const int destY = this->pRoomWidget->GetY() + coord->wY * CBitmapManager::CY_TILE;
-		g_pTheBM->BlitTileImage(this->wTileNo, destX, destY, &pDestSurface, false, this->opacity);
+		g_pTheBM->BlitTileImage(this->wTileNo, destX, destY, &destSurface, false, this->opacity);
 	}
 }

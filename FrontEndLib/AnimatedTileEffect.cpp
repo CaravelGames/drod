@@ -64,9 +64,9 @@ bool CAnimatedTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 }
 
 //********************************************************************************
-void CAnimatedTileEffect::Draw(SDL_Surface& pDestSurface)
+void CAnimatedTileEffect::Draw(SDL_Surface& destSurface)
 {
-	DrawTile(this->wTileNo, pDestSurface, this->nOpacity);
+	DrawTile(this->wTileNo, destSurface, this->nOpacity);
 }
 
 //********************************************************************************
@@ -75,10 +75,10 @@ void CAnimatedTileEffect::DrawTile(
 //
 //Params:
 	const UINT wTileImageNo,   //(in) Tile to draw.
-	SDL_Surface& pDestSurface, //(in)
+	SDL_Surface& destSurface, //(in)
 	const Uint8 nOpacity)      //(in) Level of opacity (default = 255)
 {
-	g_pTheBM->BlitTileImage(wTileImageNo, this->wX, this->wY, &pDestSurface,
+	g_pTheBM->BlitTileImage(wTileImageNo, this->wX, this->wY, &destSurface,
 			this->bUseLightLevel, nOpacity);
 }
 
@@ -86,7 +86,7 @@ void CAnimatedTileEffect::DrawTile(
 void CAnimatedTileEffect::ShadeTile(
 //Add shading to my location.
 	const SURFACECOLOR &Color, //(in) 
-	SDL_Surface& pDestSurface) //(in)
+	SDL_Surface& destSurface) //(in)
 {
-	g_pTheBM->ShadeTile(this->wX, this->wY, Color, &pDestSurface);
+	g_pTheBM->ShadeTile(this->wX, this->wY, Color, &destSurface);
 }

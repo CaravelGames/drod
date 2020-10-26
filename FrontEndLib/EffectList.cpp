@@ -196,7 +196,7 @@ void CEffectList::DrawEffects(
 }
 
 //*****************************************************************************
-//Mostly a copy of DrawEffects.
+//Draws a single effect
 bool CEffectList::DrawEffect(
 	CEffect* pEffect,          //(in) Effect to draw
 	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn

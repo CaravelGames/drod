@@ -2556,7 +2556,7 @@ void CEditSelectScreen::PopulateHoldListBox()
 #ifdef ENABLE_CHEATS
 				false
 #else
-				false//!g_pTheDB->Holds.PlayerCanEditHold(pHold->dwHoldID)
+				!g_pTheDB->Holds.PlayerCanEditHold(pHold->dwHoldID)
 #endif
 			);
 

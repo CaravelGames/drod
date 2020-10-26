@@ -65,7 +65,7 @@ bool CFlashShadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 }
 
 //********************************************************************************
-void CFlashShadeEffect::Draw(SDL_Surface& pDestSurface)
+void CFlashShadeEffect::Draw(SDL_Surface& destSurface)
 {
 	const float fMult = static_cast<float>(this->brightness) / 255.0f;
 	SURFACECOLOR flashColor;
@@ -74,5 +74,5 @@ void CFlashShadeEffect::Draw(SDL_Surface& pDestSurface)
 	flashColor.byt3 = static_cast<Uint8>(fMult * static_cast<float>(this->Color.byt3));
 
 	//Add flashing shading to tile.
-	ShadeTile(flashColor, pDestSurface);
+	ShadeTile(flashColor, destSurface);
 }

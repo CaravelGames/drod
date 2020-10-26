@@ -118,7 +118,7 @@ bool CVerminEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	return true;
 }
 //*****************************************************************************
-void CVerminEffect::Draw(SDL_Surface& pDestSurface)
+void CVerminEffect::Draw(SDL_Surface& destSurface)
 {
 	for (UINT wIndex = this->vermin.size(); wIndex--; )
 	{
@@ -128,7 +128,7 @@ void CVerminEffect::Draw(SDL_Surface& pDestSurface)
 			continue;
 
 		g_pTheBM->BlitTileImagePart(v.wTileNo, static_cast<UINT>(v.fX), static_cast<UINT>(v.fY),
-			0, 0, v.wSize, v.wSize, &pDestSurface, true);
+			0, 0, v.wSize, v.wSize, &destSurface, true);
 	}
 }
 

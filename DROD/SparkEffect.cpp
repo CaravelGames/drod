@@ -64,7 +64,7 @@ bool CSparkEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //********************************************************************************
-void CSparkEffect::Draw(SDL_Surface& pDestSurface)
+void CSparkEffect::Draw(SDL_Surface& destSurface)
 {
 	Uint8 nOpacity;
 	const Uint8 STEPSIZE = 255 / this->wParticleMinDuration;
@@ -79,15 +79,15 @@ void CSparkEffect::Draw(SDL_Surface& pDestSurface)
 		{
 			case 0:
 				g_pTheBM->BlitTileImagePart(TI_SPARK_1, ROUND(p.x),
-						ROUND(p.y), 0, 0, 4, 4, &pDestSurface, false, nOpacity);
+						ROUND(p.y), 0, 0, 4, 4, &destSurface, false, nOpacity);
 				break;
 			case 1:
 				g_pTheBM->BlitTileImagePart(TI_SPARK_2, ROUND(p.x),
-						ROUND(p.y), 0, 0, 3, 3, &pDestSurface, false, nOpacity);
+						ROUND(p.y), 0, 0, 3, 3, &destSurface, false, nOpacity);
 				break;
 			case 2:
 				g_pTheBM->BlitTileImagePart(TI_SPARK_3, ROUND(p.x),
-						ROUND(p.y), 0, 0, 2, 2, &pDestSurface, false, nOpacity);
+						ROUND(p.y), 0, 0, 2, 2, &destSurface, false, nOpacity);
 				break;
 		}
 	}

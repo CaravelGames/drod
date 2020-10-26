@@ -357,13 +357,13 @@ bool CSubtitleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CSubtitleEffect::Draw(SDL_Surface& pDestSurface)
+void CSubtitleEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect SrcRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
 	if (g_pTheBM->bAlpha)
 		EnableSurfaceBlending(this->pTextSurface, this->drawOpacity);
-	SDL_BlitSurface(this->pTextSurface, &SrcRect, &pDestSurface, &ScreenRect);
+	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
 }
 
 //*****************************************************************************

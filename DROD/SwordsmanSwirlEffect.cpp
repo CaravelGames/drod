@@ -158,12 +158,12 @@ bool CSwordsmanSwirlEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeEla
 	return true;
 }
 //********************************************************************************
-void CSwordsmanSwirlEffect::Draw(SDL_Surface& pDestSurface)
+void CSwordsmanSwirlEffect::Draw(SDL_Surface& destSurface)
 {
 	for (UINT i = 0; i < this->drawSwirls.size(); ++i) {
 		CMoveCoordEx swirl = this->drawSwirls.at(i);
 
 		g_pTheBM->BlitTileImagePart(wSwirlImageNo[swirl.wValue], swirl.wX, swirl.wY,
-			0, 0, swirl.wO, swirl.wO, &pDestSurface, false, this->nOpacity);
+			0, 0, swirl.wO, swirl.wO, &destSurface, false, this->nOpacity);
 	}
 }

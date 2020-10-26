@@ -68,7 +68,7 @@ bool CSteamEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CSteamEffect::Draw(SDL_Surface& pDestSurface)
+void CSteamEffect::Draw(SDL_Surface& destSurface)
 {
 	//Float upward half a tile.
 	const float fPercent = dwTimeElapsed / float(dwDuration);
@@ -80,7 +80,7 @@ void CSteamEffect::Draw(SDL_Surface& pDestSurface)
 			this->wDrawX, this->wDrawY,
 			0, this->wDrawY,
 			CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE - this->wDrawY,
-			&pDestSurface, false, this->nDrawOpacity);
+			&destSurface, false, this->nDrawOpacity);
 }
 
 void CSteamEffect::UpdateFrame()

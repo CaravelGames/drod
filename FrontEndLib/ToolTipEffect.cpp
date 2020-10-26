@@ -141,9 +141,9 @@ bool CToolTipEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CToolTipEffect::Draw(SDL_Surface& pDestSurface)
+void CToolTipEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect ToolTipRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
-	SDL_BlitSurface(this->pToolTipSurface, &ToolTipRect, &pDestSurface, &ScreenRect);
+	SDL_BlitSurface(this->pToolTipSurface, &ToolTipRect, &destSurface, &ScreenRect);
 }

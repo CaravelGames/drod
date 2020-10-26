@@ -78,13 +78,13 @@ bool CFloatEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //*****************************************************************************
-void CFloatEffect::Draw(SDL_Surface& pDestSurface)
+void CFloatEffect::Draw(SDL_Surface& destSurface)
 {
 	if (!OutOfBounds())
 		g_pTheBM->BlitTileImagePart(this->wTileNo, 
 			static_cast<UINT>(this->fX), static_cast<UINT>(this->fY), 
 			0, 0, this->wXSize, this->wYSize,
-			&pDestSurface, false, this->nOpacity);
+			&destSurface, false, this->nOpacity);
 }
 
 //*****************************************************************************

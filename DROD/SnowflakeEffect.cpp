@@ -131,7 +131,7 @@ void CSnowflakeEffect::UpdateFrame(float elapsedFraction)
 }
 
 //*****************************************************************************
-void CSnowflakeEffect::Draw(SDL_Surface& pDestSurface)
+void CSnowflakeEffect::Draw(SDL_Surface& destSurface)
 {
 	const UINT wX = static_cast<UINT>(this->fX), wY = static_cast<UINT>(this->fY);
 	const UINT wSize = this->wDrawSize;
@@ -143,7 +143,7 @@ void CSnowflakeEffect::Draw(SDL_Surface& pDestSurface)
 			this->wTileNo, 
 			wX, wY,
 			0, 0, wSize, wSize, 
-			&pDestSurface, true, nOpacity);
+			&destSurface, true, nOpacity);
 }
 
 //*****************************************************************************

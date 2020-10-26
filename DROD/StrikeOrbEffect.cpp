@@ -127,16 +127,16 @@ bool CStrikeOrbEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 }
 
 //********************************************************************************
-void CStrikeOrbEffect::Draw(SDL_Surface& pDestSurface)
+void CStrikeOrbEffect::Draw(SDL_Surface& destSurface)
 {
 	//Draw activated orb tile.
 	if (bDrawOrb)
-	    g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, &pDestSurface, false);
+	    g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, &destSurface, false);
 
 	//Clip screen surface to widget because bolt segments will go all over the place.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(&pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
 
 	//Set transparency level: bolt fades out over life of effect.
 	if (g_pTheBM->bAlpha)
@@ -146,12 +146,12 @@ void CStrikeOrbEffect::Draw(SDL_Surface& pDestSurface)
 	for (UINT wBoltI = this->drawBolts.size(); wBoltI--; )
 	{
 		const BOLT_SEGMENTS* boltSegments = this->drawBolts[wBoltI];
-		DrawBolt(*(this->drawBolts.at(wBoltI)), *this->pPartsSurface, pDestSurface);
+		DrawBolt(*(this->drawBolts.at(wBoltI)), *this->pPartsSurface, destSurface);
 	}
 
 	//Remove transparency level.
 	DisableSurfaceBlending(this->pPartsSurface);
 
 	//Unclip screen surface.
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, NULL);
 }

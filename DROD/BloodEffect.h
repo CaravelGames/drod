@@ -46,7 +46,7 @@ public:
 	virtual bool HitsObstacle(const CDbRoom *pRoom, const PARTICLE &particle) const;
 
 protected:
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 };
 
 #endif //...#ifndef BLOODEFFECT_H

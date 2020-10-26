@@ -91,16 +91,16 @@ bool CScaleTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	return true;
 }
 //*****************************************************************************
-void CScaleTileEffect::Draw(SDL_Surface& pDestSurface)
+void CScaleTileEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pScaledSurface->w, this->pScaledSurface->h);
 
 	//Clip to parent rect.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(&pDestSurface, &ClipRect);
-	g_pTheBM->BlitSurface(this->pScaledSurface, &src, &pDestSurface, &this->drawRect, this->nOpacity);
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, &ClipRect);
+	g_pTheBM->BlitSurface(this->pScaledSurface, &src, &destSurface, &this->drawRect, this->nOpacity);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

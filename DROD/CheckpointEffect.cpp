@@ -48,7 +48,7 @@ bool CCheckpointEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 }
 
 //********************************************************************************
-void CCheckpointEffect::Draw(SDL_Surface& pDestSurface)
+void CCheckpointEffect::Draw(SDL_Surface& destSurface)
 {
 	//Draw lit up checkpoint.
 	static const Uint32 dwFullOpacityTime = 500;
@@ -57,5 +57,5 @@ void CCheckpointEffect::Draw(SDL_Surface& pDestSurface)
 	Uint8 opacity = dwTimeElapsed > dwFullOpacityTime ?
 			static_cast<Uint8>((dwFadeTime-(dwTimeElapsed -dwFullOpacityTime)) * fMultiplier) :
 			255;
-	DrawTile(this->wTileNo, pDestSurface, opacity);
+	DrawTile(this->wTileNo, destSurface, opacity);
 }

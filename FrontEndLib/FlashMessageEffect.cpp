@@ -134,7 +134,7 @@ void CFlashMessageEffect::UpdateOpacity(const Uint32& dwTimeElapsed)
 }
 
 //********************************************************************************
-void CFlashMessageEffect::Draw(SDL_Surface& pDestSurface)
+void CFlashMessageEffect::Draw(SDL_Surface& destSurface)
 //Draws a pulsing message in the middle of the parent widget.
 {
 	SDL_Surface *pSurfaceToDraw = this->pTextSurface;
@@ -157,7 +157,7 @@ void CFlashMessageEffect::Draw(SDL_Surface& pDestSurface)
 		else
 			EnableSurfaceBlending(pSurfaceToDraw, this->nOpacity);
 
-	SDL_BlitSurface(pSurfaceToDraw, NULL, &pDestSurface, &this->drawRect);
+	SDL_BlitSurface(pSurfaceToDraw, NULL, &destSurface, &this->drawRect);
 
 	if (pScaledSurface)
 		SDL_FreeSurface(pScaledSurface);

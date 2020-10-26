@@ -39,7 +39,7 @@ public:
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	bool OutOfBounds() const;

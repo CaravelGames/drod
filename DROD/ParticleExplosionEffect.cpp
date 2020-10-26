@@ -149,7 +149,7 @@ bool CParticleExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTime
 	return true;
 }
 //********************************************************************************
-void CParticleExplosionEffect::Draw(SDL_Surface& pDestSurface)
+void CParticleExplosionEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Surface *pRotatedSurface = NULL;
 	for (int nIndex=wParticleCount; nIndex--; )
@@ -182,13 +182,13 @@ void CParticleExplosionEffect::Draw(SDL_Surface& pDestSurface)
 			{
 				//Unrotated particle.
 				g_pTheBM->BlitTileImagePart(wTileNo, ROUND(p.x),
-						ROUND(p.y), 0, 0, dimX, dimY, &pDestSurface, true);
+						ROUND(p.y), 0, 0, dimX, dimY, &destSurface, true);
 			} else {
 				//Blit rotated particle.
 				dimX = pRotatedSurface->w, dimY = pRotatedSurface->h;
 				SDL_Rect src = MAKE_SDL_RECT(0, 0, dimX, dimY);
 				SDL_Rect dest = MAKE_SDL_RECT(ROUND(p.x), ROUND(p.y), dimX, dimY);
-				g_pTheDBM->BlitSurface(pRotatedSurface, &src, &pDestSurface, &dest);
+				g_pTheDBM->BlitSurface(pRotatedSurface, &src, &destSurface, &dest);
 
 				//Darken sprite.
 				if (dest.w && dest.h)
@@ -198,7 +198,7 @@ void CParticleExplosionEffect::Draw(SDL_Surface& pDestSurface)
 					src.w = dest.w; //update to blitted area
 					src.h = dest.h;
 					g_pTheDBM->DarkenWithMask(pRotatedSurface, src,
-							&pDestSurface, dest, CBitmapManager::fLightLevel, true);
+							&destSurface, dest, CBitmapManager::fLightLevel, true);
 				}
 
 				SDL_FreeSurface(pRotatedSurface);

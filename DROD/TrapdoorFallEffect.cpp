@@ -156,7 +156,7 @@ bool CTrapdoorFallEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 }
 
 //********************************************************************************
-void CTrapdoorFallEffect::Draw(SDL_Surface& pDestSurface)
+void CTrapdoorFallEffect::Draw(SDL_Surface& destSurface)
 {
 	if (this->nOpacity == 0)
 		return;
@@ -164,5 +164,5 @@ void CTrapdoorFallEffect::Draw(SDL_Surface& pDestSurface)
 	if (this->nOpacity < 255)
 		EnableSurfaceBlending(this->pSurface, this->nOpacity);
 
-	SDL_BlitSurface(this->pSurface, &(this->drawSourceRect), &pDestSurface, &(this->drawDestinationRect));
+	SDL_BlitSurface(this->pSurface, &(this->drawSourceRect), &destSurface, &(this->drawDestinationRect));
 }

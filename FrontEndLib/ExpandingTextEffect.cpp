@@ -84,7 +84,7 @@ bool CExpandingTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElap
 
 //********************************************************************************
 //Draws an expanding fading text message at the specified offset in the parent widget.
-void CExpandingTextEffect::Draw(SDL_Surface& pDestSurface)
+void CExpandingTextEffect::Draw(SDL_Surface& destSurface)
 {
 	Uint8 *pSrcPixel = (Uint8*)this->pTextSurface->pixels;
 	SDL_Surface *pScaledSurface = g_pTheBM->ScaleSurface(this->pTextSurface, pSrcPixel,
@@ -97,7 +97,7 @@ void CExpandingTextEffect::Draw(SDL_Surface& pDestSurface)
 	if (this->nOpacity < 255)
 		EnableSurfaceBlending(pScaledSurface, this->nOpacity);
 
-	SDL_BlitSurface(pScaledSurface, NULL, &pDestSurface, &this->drawRect);
+	SDL_BlitSurface(pScaledSurface, NULL, &destSurface, &this->drawRect);
 
 	SDL_FreeSurface(pScaledSurface);
 }

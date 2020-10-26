@@ -43,7 +43,7 @@ public:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 protected:
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	SDL_Rect src, dest;

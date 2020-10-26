@@ -162,14 +162,14 @@ bool CNoticeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	return true;
 }
 //*****************************************************************************
-void CNoticeEffect::Draw(SDL_Surface& pDestSurface)
+void CNoticeEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect SrcRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
 
-	SDL_SetClipRect(&pDestSurface, &this->screenRect);
-	SDL_BlitSurface(this->pNoticeSurface, &SrcRect, &pDestSurface, &ScreenRect);
-	SDL_SetClipRect(&pDestSurface, NULL);
+	SDL_SetClipRect(&destSurface, &this->screenRect);
+	SDL_BlitSurface(this->pNoticeSurface, &SrcRect, &destSurface, &ScreenRect);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

@@ -209,7 +209,7 @@ void CImageOverlayEffect::PrepareDrawProperties()
 	}
 }
 
-void CImageOverlayEffect::Draw(SDL_Surface& pDestSurface)
+void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Surface* pSrcSurface;
 
@@ -222,11 +222,11 @@ void CImageOverlayEffect::Draw(SDL_Surface& pDestSurface)
 		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
 		if (bSurfaceAlpha) {
 			EnableSurfaceBlending(pSrcSurface, this->drawAlpha);
-			SDL_BlitSurface(pSrcSurface, &this->drawSourceRect, &pDestSurface, &this->drawDestinationRect);
+			SDL_BlitSurface(pSrcSurface, &this->drawSourceRect, &destSurface, &this->drawDestinationRect);
 			DisableSurfaceBlending(pSrcSurface);
 		}
 		else {
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &pDestSurface, this->drawAlpha);
+			g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
 		}
 	}
 }

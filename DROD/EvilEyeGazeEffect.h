@@ -48,7 +48,7 @@ public:
 	void DrawNewBeam();
 
 protected:
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 
 	UINT        wX, wY, wTileNo;
 	int         dx, dy;

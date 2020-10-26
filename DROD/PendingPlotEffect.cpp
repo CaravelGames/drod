@@ -146,12 +146,12 @@ bool CPendingPlotEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapse
 }
 
 //*****************************************************************************
-void CPendingPlotEffect::Draw(SDL_Surface& pDestSurface)
+void CPendingPlotEffect::Draw(SDL_Surface& destSurface)
 {
 	switch (this->wObjectNo)
 	{
 		case T_SWORDSMAN:
-			PlotSwordsman(this->wDrawStartX, this->wDrawStartY, this->wDrawEndX, this->wDrawEndY, pDestSurface);
+			PlotSwordsman(this->wDrawStartX, this->wDrawStartY, this->wDrawEndX, this->wDrawEndY, destSurface);
 		break;
 		default:
 		{
@@ -162,7 +162,7 @@ void CPendingPlotEffect::Draw(SDL_Surface& pDestSurface)
 					wTileNo = this->pwTileImageNo[
 							((wY - this->wDrawStartY) % this->wYSize) * this->wXSize +
 							(wX - this->wDrawStartX) % this->wXSize];
-					PlotTile(wX, wY, this->wObjectNo, wTileNo, pDestSurface);
+					PlotTile(wX, wY, this->wObjectNo, wTileNo, destSurface);
 				}
 		}
 		break;
@@ -175,7 +175,7 @@ void CPendingPlotEffect::PlotSwordsman(
 //
 //Params:
 	const UINT wStartX, const UINT wStartY, const UINT wEndX, const UINT wEndY,
-	SDL_Surface& pDestSurface)
+	SDL_Surface& destSurface)
 {
 	static const UINT SMAN_TI[9] = {
 		TI_SMAN_YNW, TI_SMAN_YN, TI_SMAN_YNE,
@@ -185,24 +185,24 @@ void CPendingPlotEffect::PlotSwordsman(
 		TI_SWORD_YNW, TI_SWORD_YN, TI_SWORD_YNE,
 		TI_SWORD_YW, TI_TEMPTY, TI_SWORD_YE,
 		TI_SWORD_YSW, TI_SWORD_YS, TI_SWORD_YSE};
-	PlotTile(wStartX, wStartY, T_SWORDSMAN, SMAN_TI[this->wO], pDestSurface);
-	PlotTile(wEndX, wEndY, T_EMPTY, SWORD_TI[this->wO], pDestSurface);
+	PlotTile(wStartX, wStartY, T_SWORDSMAN, SMAN_TI[this->wO], destSurface);
+	PlotTile(wEndX, wEndY, T_EMPTY, SWORD_TI[this->wO], destSurface);
 }
 
 //*****************************************************************************
 void CPendingPlotEffect::PlotTile(
 	const UINT wX, const UINT wY, const UINT wObjectNo, const UINT wTileNo,
-	SDL_Surface& pDestSurface) //(in)
+	SDL_Surface& destSurface) //(in)
 {
 	SDL_Rect dest = MAKE_SDL_RECT(this->OwnerRect.x + wX * CBitmapManager::CX_TILE,
 			this->OwnerRect.y + wY * CBitmapManager::CY_TILE,
 			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	if (pRoomWidget->IsSafePlacement(wObjectNo,wX,wY,NO_ORIENTATION,wObjectNo==T_SWORDSMAN))
 	{
-		g_pTheBM->BlitTileImage(wTileNo, dest.x, dest.y, &pDestSurface, false, this->nOpacity);
+		g_pTheBM->BlitTileImage(wTileNo, dest.x, dest.y, &destSurface, false, this->nOpacity);
 	} else if (wX * CBitmapManager::CX_TILE < (UINT)this->OwnerRect.w && wY *
 				CBitmapManager::CY_TILE < (UINT)this->OwnerRect.h)
 	{
-		g_pTheBM->ShadeTile(dest.x, dest.y, Red, &pDestSurface);
+		g_pTheBM->ShadeTile(dest.x, dest.y, Red, &destSurface);
 	}
 }

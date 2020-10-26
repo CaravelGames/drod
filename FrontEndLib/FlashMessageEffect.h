@@ -56,7 +56,7 @@ protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	void ScaleText(const Uint32& dwTimeElapsed, UINT& scaled_w, UINT& scaled_h);
 	void UpdateOpacity(const Uint32& dwTimeElapsed);
-	virtual void Draw(SDL_Surface& pDestSurface);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	void FreeTextSurface();
