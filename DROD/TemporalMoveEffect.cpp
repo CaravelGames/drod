@@ -29,6 +29,7 @@
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/GameConstants.h"
 #include <FrontEndLib/BitmapManager.h>
+#include <FrontEndLib/Colors.h>
 
 const Uint32 START_DELAY = 500;
 const Uint32 DISPLAY_DURATION = 750;
@@ -39,11 +40,13 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
 	const CMoveCoord &SetCoord, //(in)   tile location
 	const UINT wTI,
+	const bool isBump,
 	const UINT type)
 	: CAnimatedTileEffect(pSetWidget, CCoord(SetCoord.wX,SetCoord.wY),
 			DISPLAY_DURATION, wTI, true, type)
 	, startDelay(START_DELAY)
 	, endDelay(END_DELAY)
+	, isBump(isBump)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -85,16 +88,32 @@ bool CTemporalMoveEffect::Draw(SDL_Surface* pDestSurface)
 		pDestSurface = GetDestSurface();
 
 	const float percent = (dwElapsed - this->startDelay) / float(this->dwDuration);
-	const Uint8 opacity = static_cast<Uint8>(255 * (1.0f-percent));
+	const float transparencyPercent = percent > 0.5f
+		? (percent - 0.5f) * 2
+		: 0;
+	const float positionPercent = (this->isBump && percent > 0.5)
+		? 1 - percent // Bump commands should look differently
+		: percent;
 
-	const UINT wThisX = this->startX + int(deltaX * percent);
-	const UINT wThisY = this->startY + int(deltaY * percent);
+	const Uint8 opacity = static_cast<Uint8>(255 * (1.0f- transparencyPercent));
 
-	g_pTheBM->BlitTileImage(this->wTileNo, wThisX, wThisY,
-			pDestSurface, this->bUseLightLevel, opacity);
+	const UINT wThisX = this->startX + int(deltaX * positionPercent);
+	const UINT wThisY = this->startY + int(deltaY * positionPercent);
+	
+	SDL_Rect BlitRect = MAKE_SDL_RECT(wThisX, wThisY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	SDL_Rect WidgetRect = MAKE_SDL_RECT(0, 0, 0, 0);
+	this->pRoomWidget->GetRect(WidgetRect);
+	if (!CWidget::ClipRectToRect(BlitRect, WidgetRect))
+		return true;
 
-	SDL_Rect clipRect = MAKE_SDL_RECT(wThisX, wThisY,
-			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	g_pTheBM->BlitTileImagePart(
+		this->wTileNo, 
+		BlitRect.x, BlitRect.y,
+		BlitRect.x - wThisX, BlitRect.y - wThisY, BlitRect.w, BlitRect.h,
+		pDestSurface, this->bUseLightLevel, opacity);
+
+	SDL_Rect clipRect = MAKE_SDL_RECT(BlitRect.x, BlitRect.y,
+		BlitRect.w, BlitRect.h);
 	this->dirtyRects[0] = clipRect;
 
 	//Continue effect.

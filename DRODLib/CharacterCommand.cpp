@@ -57,6 +57,9 @@ void CCharacterCommand::swap(CCharacterCommand &that) {
 SPEAKER getSpeakerType(const MONSTERTYPE eType)
 //Return: corresponding speaker enumeration for monster type, if supported.
 {
+	if (eType > CUSTOM_CHARACTER_FIRST)
+		return Speaker_HoldCharacter;
+
 	switch (eType)
 	{
 		//Character monster psuedo-types.

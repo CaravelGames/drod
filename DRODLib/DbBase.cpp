@@ -788,6 +788,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_OrbWaitCracked: strText = "Orb (cracked)"; break;
 	case MID_OrbWaitBroken: strText = "Orb (broken)"; break;
 	case MID_DemoDescConquerToken: strText = "The player touches a Conquer token on turn"; break;
+	case MID_CaravelServerError: strText = "There was an error contacting the Caravel server."; break;
 	case MID_WaitForWeapon: strText = "Wait for Weapon"; break;
 	case MID_Behavior: strText = "Behavior"; break;
 	case MID_ActivateToken: strText = "Activate Tokens"; break;

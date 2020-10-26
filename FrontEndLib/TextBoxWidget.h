@@ -72,6 +72,7 @@ public:
 	bool           InsertAtCursor(const WCHAR c, const bool bSetCursorIndex=true);
 	bool           IsEmpty() const;
 	virtual void   Paint(bool bUpdateRect = true);
+	virtual void   SanitizeText(WSTRING &text);
 	void           SetDigitsOnly(const bool bAccept = true)
 			{this->bDigitsOnly = bAccept;}
 	void           SetFilenameSafe(const bool bFlag = true)

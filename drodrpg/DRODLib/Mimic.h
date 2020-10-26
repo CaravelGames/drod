@@ -39,11 +39,9 @@ public:
 	CMimic(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CMimic);
 
-//	virtual bool BrainAffects() const {return false;}
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
-//	virtual bool IsAggressive() const {return false;}
-//	virtual bool IsFriendly() const {return true;}
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual SwordType GetWeaponType() const { return SwordType::LongSword; }
 };
 	
 #endif //...#ifndef MIMIC_H

@@ -34,6 +34,9 @@
 #include "../DRODLib/DbRooms.h"
 #include <math.h>
 
+UINT CVerminEffect::dwMaxDuration = 3000;
+UINT CVerminEffect::dwDurationSway = 1000;
+
 //*****************************************************************************
 CVerminEffect::CVerminEffect(
 //Constructor.
@@ -61,6 +64,7 @@ CVerminEffect::CVerminEffect(
 		v.fX = static_cast<float>(nX);
 		v.fY = static_cast<float>(nY);
 		v.fAngle = fRAND(TWOPI);
+		v.duration = float(CVerminEffect::dwMaxDuration) - RAND(CVerminEffect::dwDurationSway);
 		v.acceleration = (VERMIN::ACCELERATION)RAND(VERMIN::NUM_ACCELERATIONS);
 		v.wTileNo = bSlayer ? TI_SLAYERDEBRIS : RAND(2) == 0 ? TI_VERMIN_1 : TI_VERMIN_2;
 		v.wSize = bSlayer ? 8 : v.wTileNo == TI_VERMIN_1 ? 6 : 4;
@@ -82,9 +86,10 @@ bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
 {
 	if (!pDestSurface) pDestSurface = GetDestSurface();
   
-	//Update real position in real time.
-	static const Uint32 dwMaxDuration = 3000;
-	if (TimeElapsed() > dwMaxDuration) return false;
+	const Uint32 timeElapsed = TimeElapsed();
+	if (timeElapsed > CVerminEffect::dwMaxDuration)
+		return false;
+
 	const Uint32 dwNow = SDL_GetTicks();
 	Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
 			dwNow - this->dwTimeOfLastMove;
@@ -97,18 +102,21 @@ bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
 	for (UINT wIndex=this->vermin.size(); wIndex--; )
 	{
 		VERMIN& v = this->vermin[wIndex];
+
 		if (!v.bActive)
-		{
-			//Don't need to dirty anything for inactive vermin.
-			this->dirtyRects[wIndex].w = this->dirtyRects[wIndex].h = 0;
+			continue;
+
+		if (timeElapsed > v.duration) {
+			MarkVerminInactive(wIndex);
 			continue;
 		}
+
 		v.fX += static_cast<float>(cos(v.fAngle)) * fMultiplier;
 		v.fY += static_cast<float>(sin(v.fAngle)) * fMultiplier;
 
 		if (OutOfBounds(v) || HitsObstacle(pRoom, v))
 		{
-			v.bActive = false;
+			MarkVerminInactive(wIndex);
 			continue;
 		}
 
@@ -123,6 +131,15 @@ bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
 	}
 
 	return true;
+}
+
+//*****************************************************************************
+void CVerminEffect::MarkVerminInactive(const UINT wIndex)
+{
+	this->vermin[wIndex].bActive = false;
+
+	//Don't need to dirty anything for inactive vermin.
+	this->dirtyRects[wIndex].w = this->dirtyRects[wIndex].h = 0;
 }
 
 //*****************************************************************************

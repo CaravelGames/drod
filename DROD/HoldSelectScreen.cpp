@@ -1982,6 +1982,7 @@ void CHoldSelectScreen::UploadHoldScores()
 	CDb db;
 	db.Demos.FilterByPlayer(dwPlayerID);
 	db.Demos.FilterByHold(dwHoldID);
+	db.Demos.FindHiddens(true);
 	CIDSet uploadedDemoIDs, allDemoIDs = db.Demos.GetIDs();
 
 	//We are searching for victory demos, so don't upload death demos.
@@ -1999,17 +2000,41 @@ void CHoldSelectScreen::UploadHoldScores()
 	{
 		string text;
 		if (CDbXML::ExportXML(V_Demos, uploadedDemoIDs, text, (UINT)-1)) //no multi-room demos
-			g_pTheNet->UploadDemos(text);
-	}
+		{
+			const UINT handle = g_pTheNet->UploadDemos(text);
+			if (handle)
+			{
+				const UINT MAX_TRIES = 200; //200 * 50ms = 10s total wait time for each response
+				UINT tries;
+				for (tries = 0; tries < MAX_TRIES; ++tries)
+				{
+					const int status = g_pTheNet->GetStatus(handle);
+					if (status < 0)
+					{
+						SDL_Delay(50);
+						continue;
+					}
 
-	//Now flag all uploaded demos.
-	for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
-	{
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
-		ASSERT(pDemo);
-		pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
-		pDemo->Update();
-		delete pDemo;
+					CNetResult* pBuffer = g_pTheNet->GetResults(handle);
+					if (pBuffer) {
+						delete pBuffer;
+
+						//Now flag all uploaded demos.
+						for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
+						{
+							CDbDemo* pDemo = db.Demos.GetByID(*demo);
+							ASSERT(pDemo);
+							pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
+							pDemo->Update();
+							delete pDemo;
+						}
+					} else {
+						ShowOkMessage(MID_CaravelServerError);
+					}
+					break;
+				}
+			}
+		}
 	}
 
 	CDrodScreen::Callbackf(1.0f);

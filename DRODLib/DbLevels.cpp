@@ -334,6 +334,7 @@ void CDbLevels::GetRoomsExplored(
 	{
 		pSavedGame = db.SavedGames.GetByID(*iter);
 		ASSERT(pSavedGame);
+		ASSERT(pSavedGame->dwPlayerID == dwPlayerID);
 		if (bConquered)
 		{
 			pSavedGame->ConqueredRooms.intersect(roomsInLevel);

@@ -1086,3 +1086,9 @@ UINT CTextBox2DWidget::MoveViewUp(const UINT wNumLines)   //[default=1]
 	this->nSelectEndY += wNumMoved*wLineOfTextH;
 	return wNumMoved;
 }
+
+//******************************************************************************
+void CTextBox2DWidget::SanitizeText(WSTRING &text)
+{
+	SanitizeMultiLineString(text);
+}

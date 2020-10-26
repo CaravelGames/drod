@@ -74,6 +74,7 @@ public:
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	void     PopulateList(const DATATYPE datatype=Entrances);
 	void     PopulateListBoxFromGlobalVars(const PlayerStats& st);
+	void     PopulateListBoxFromHoldVars(CCurrentGame* pGame);
 	void     PrepareToPopulateList(const DATATYPE datatype=Entrances);
 
 	void     SelectItem(const UINT dwTagNo);

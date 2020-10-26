@@ -32,7 +32,7 @@ string ScriptVars::getVarName(const Predefined var)
 
 	init(); //ensure texts are populated
 
-	const UINT index = -1 - FirstPredefinedVar;
+	const UINT index = -var - 1;
 	ASSERT(index < PredefinedVarCount);
 	return midTexts[index];
 }

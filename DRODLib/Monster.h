@@ -100,6 +100,8 @@ enum MovementType {
 	GROUND_AND_SHALLOW_WATER,
 	GROUND_FORCE,
 	GROUND_AND_SHALLOW_WATER_FORCE,
+	AIR_FORCE,
+	WATER_FORCE,
 	NumMovementTypes
 };
 
@@ -131,7 +133,28 @@ static inline bool bMovementSupportsPartialObstacles (MovementType movement)
 //Returns true if the movement type supports pathmapping over partial obstacles such as
 //arrows and orthosquares.  Also doesn't treat potions and horns as obstacles.
 {
-	return movement == GROUND_FORCE || movement == GROUND_AND_SHALLOW_WATER_FORCE;
+	return movement == GROUND_FORCE
+		|| movement == GROUND_AND_SHALLOW_WATER_FORCE
+		|| movement == AIR_FORCE
+		|| movement == WATER_FORCE;
+}
+
+static inline MovementType GetHornMovementType(MovementType movement)
+{
+	switch (movement) {
+		case AIR:
+			return AIR_FORCE;
+
+		case WATER:
+			return WATER_FORCE;
+
+		case GROUND:
+			return GROUND_FORCE;
+
+		case GROUND_AND_SHALLOW_WATER:
+		default:
+			return GROUND_AND_SHALLOW_WATER_FORCE;
+	}
 }
 
 //******************************************************************************************
@@ -141,6 +164,22 @@ static inline bool bMovementSupportsPartialObstacles (MovementType movement)
 #define IMPLEMENT_CLONE_REPLICATE(CBase, CDerived) \
 	IMPLEMENT_CLONE(CBase, CDerived) \
 	virtual CBase* Replicate() const { return Clone(); }
+
+class CMonster;
+class CStunTarget : public CAttachableObject
+{
+public:
+	CStunTarget(const CMonster* pStunnedMonster, const UINT stunDuration, const bool bIsPlayerStunned = false)
+		: CAttachableObject(),
+		pStunnedMonster(pStunnedMonster),
+		stunDuration(stunDuration),
+		bIsPlayerStunned(bIsPlayerStunned)
+	{}
+
+	const CMonster* pStunnedMonster;
+	const UINT stunDuration;
+	const bool bIsPlayerStunned;
+};
 
 class CEntity : public CMoveCoord
 {
@@ -308,6 +347,7 @@ public:
 	bool          bNewStun; //whether monster stun was inflicted this turn
 	bool          bPushedThisTurn; //whether monster was pushed this turn
 	bool          bWaitedOnHotFloorLastTurn; //for hasteable playerdoubles
+	bool          bSafeToDelete;
 
 	CDbPackedVars ExtraVars;
 	MonsterPieces Pieces;  //when monster fills more than one square

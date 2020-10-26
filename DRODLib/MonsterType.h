@@ -138,6 +138,13 @@ static inline bool bIsStalwart(const UINT mt){
 	}
 }
 
+static inline UINT bEntityBaseIdentity(const UINT identity) {
+	switch (identity) {
+		case M_EYE_ACTIVE: return M_EYE;
+		default: return identity;
+	}
+}
+
 //Any sworded monster type.
 static inline bool bEntityHasSword(const UINT mt) {
 	switch (mt)

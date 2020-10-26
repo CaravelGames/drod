@@ -179,7 +179,7 @@ public:
 	virtual UINT SendChatText(const vector<SendData>&, const int, const UINT);
 	virtual UINT UploadDemo(const CNetRoom&, const WSTRING&, const string&,
 			const UINT, const UINT, const UINT);
-	virtual bool UploadDemos(const string& text);
+	virtual UINT UploadDemos(const string& text);
 	virtual bool UploadExploredRooms(const string& buffer);
 	virtual bool UploadExploredRoom(const CNetRoom& room);
 	virtual UINT UploadChallengeDemo(const CNetRoom&, const string&) {return 0;}

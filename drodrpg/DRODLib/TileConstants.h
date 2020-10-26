@@ -171,6 +171,8 @@ static inline bool bIsPit(const UINT t) {return t==T_PIT || t==T_PIT_IMAGE;}
 
 static inline bool bIsWater(const UINT t) {return t==T_WATER;}
 
+static inline bool bIsSheatheAffecting(const UINT t) { return t == T_GOO; }
+
 static inline bool bIsArrow(const UINT t) {return t>=T_ARROW_N && t<=T_ARROW_NW;}
 
 static inline bool bIsHealth(const UINT t) {

@@ -2852,6 +2852,10 @@
 				RelativePath=".\Platform.h"
 				>
 			</File>
+			<File
+				RelativePath=".\RoomData.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\VTune\DRODLib.vpj"

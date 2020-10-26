@@ -442,6 +442,7 @@ void CRestoreScreen::OnClick(
 			//For currently selected hold.
 			this->pLevelListBoxWidget->SelectItem(
 					this->pCurrentRestoreGame->pHold->dwLevelID);
+			GetLevelStats(this->pCurrentRestoreGame->pHold->dwLevelID);
 			ChooseLevelStart(this->pCurrentRestoreGame->pHold->dwLevelID);
 			Paint();
 		}

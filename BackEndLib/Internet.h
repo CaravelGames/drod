@@ -72,6 +72,7 @@ public:
 	static string GetCookies() { return CInternet::strCookies; }
 	static curl_httppost* GetFormPost();
 	static curl_httppost* GetFormEnd();
+	static long GetErrorResponseCode(const UINT handle);
 	static CStretchyBuffer* GetResults(const UINT handle, const bool bSkipClean=false);
 	static int GetStatus(const UINT handle);
 	static bool HttpGet(const string& strUrl, Json::Value& json, UINT* handle=NULL);
@@ -93,6 +94,7 @@ private:
 	static bool bInit;
 
 	static std::map<UINT, CInternet_Thread_Info*> threadInfo;
+	static std::map<UINT, CInternet_Thread_Info*> erroredThreads;
 	static std::vector<CInternet_Thread_Info*> ignoredThreads;
 	static CIDSet canceledHandles;
 };

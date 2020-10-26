@@ -109,6 +109,7 @@ CMonster::CMonster(
 	, bWaitedOnHotFloorLastTurn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
+	, bSafeToDelete(true)
 {
 	if (pSetCurrentGame)
 		SetCurrentGame(pSetCurrentGame);
@@ -320,7 +321,7 @@ void CMonster::Stun(CCueEvents &CueEvents, UINT val) //[default=1]
 		this->stunned = val;
 
 	if (val)
-		CueEvents.Add(CID_Stun, new CMoveCoord(this->wX, this->wY, val), true);
+		CueEvents.Add(CID_Stun, new CStunTarget(this, val), true);
 }
 
 //*****************************************************************************
@@ -568,9 +569,17 @@ CheckMonster:
 		const int dx = (int)wCol - (int)this->wX;
 		const int dy = (int)wRow - (int)this->wY;
 
-		if (pMonster->wType != M_FLUFFBABY && !this->CanDaggerStep(pMonster, false) && !pMonster->IsAttackableTarget() &&
-			(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
-
+		if (
+			pMonster->wType != M_FLUFFBABY // Fluff babies can be stepped on regardless of anything
+			&& !this->CanDaggerStep(pMonster, false)
+			// Even when attackable, body-attack-invulnerable targets just can't be killed by a body-attack
+			&& (!pMonster->IsAttackableTarget() || !bIsVulnerableToBodyAttack(pMonster->GetIdentity()))
+			&& ( // If object is pushable AND cannot be pushed
+				!this->CanPushObjects()
+				|| !pMonster->IsPushableByBody()
+				|| !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy)
+			)
+		){
 			if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle())
 				return true;
 		}
@@ -2147,16 +2156,19 @@ void CMonster::Move(
 			switch (pMonster->wType)
 			{
 			case M_CHARACTER:
+			{
+				const bool bCanStrike = bIsStalwart(pMonster->GetIdentity()) ||
+					this->CanDaggerStep(pMonster, false);
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
-					bIsStalwart(pMonster->GetIdentity()) ||
-					pMonster->IsAttackableTarget());
-				if (pMonster->IsAttackableTarget() && !bIsSmitemaster(pMonster->GetIdentity()))
+					bCanStrike);
+				if (bCanStrike)
 				{
 					pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
 					room.KillMonster(pMonster, *pCueEvents, false, this); //will return false if it's a critical NPC
 					pMonster->SetKillInfo(GetOrientation(this->wX, this->wY, wDestX, wDestY));
 				}
+			}
 				break;
 			case M_STALWART: case M_STALWART2:
 				pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);

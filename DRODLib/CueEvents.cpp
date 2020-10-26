@@ -70,6 +70,33 @@ const CUEEVENT_ID CIDA_MonsterStabbed[3] = {
 //
 
 //***************************************************************************************
+void CCueEvents::SetMembers(const CCueEvents& Src)
+//Sets members to value of other CCueEvents, but all data becomes unattached
+{
+	this->Clear();
+
+	//Copy all data
+
+	this->wEventCount = Src.wEventCount;
+	this->wNextPrivateDataIndex = Src.wNextPrivateDataIndex;
+	this->wNextCID = Src.wNextCID;
+
+	for (UINT wCID=CUEEVENT_COUNT; wCID--; )
+	{
+		this->barrIsCIDSet[wCID] = Src.barrIsCIDSet[wCID];
+
+		vector<CID_PRIVDATA_NODE>::const_iterator pSeek = Src.CIDPrivateData[wCID].begin();
+		while (pSeek != Src.CIDPrivateData[wCID].end())
+		{
+			ASSERT(pSeek->pvPrivateData);
+
+			this->CIDPrivateData[wCID].push_back(CID_PRIVDATA_NODE(false, pSeek->pvPrivateData));
+			++pSeek;
+		}
+	}
+}
+
+//***************************************************************************************
 void CCueEvents::Clear()
 //Frees resources and resets members.
 {
