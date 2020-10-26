@@ -272,6 +272,9 @@ void CWeatherDialogWidget::SetWidgetStates()
 {
 	ASSERT(this->pRoom);
 
+	// Draw before setting widgets state, as some of them may cache what's drawn underneath them
+	this->RequestPaint(true);
+
 	COptionButtonWidget *pOptionButton;
 	CSliderWidget *pSliderWidget;
 
