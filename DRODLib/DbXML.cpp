@@ -1136,8 +1136,11 @@ void CDbXML::VerifySavedGames()
 	float fNumRecords;
 	UINT wCount;
 	UINT dwTime;
+	WCHAR temp[10];
+	UINT holdCount = 1;
+	const UINT numHolds = info.localHoldIDs.size();
 	for (CIDSet::const_iterator hold=info.localHoldIDs.begin();
-			hold!=info.localHoldIDs.end(); ++hold)
+			hold!=info.localHoldIDs.end(); ++hold, ++holdCount)
 	{
 		//Process data for one hold.
 		bool bMarkedBroken = false;
@@ -1156,8 +1159,17 @@ void CDbXML::VerifySavedGames()
 			{
 				CDbHold *pHold = db.Holds.GetByID(*hold, true);
 				ASSERT(pHold);
-				wstr = wstrHoldName = (const WCHAR*)pHold->NameText;
+				wstrHoldName = (const WCHAR*)pHold->NameText;
 				delete pHold;
+
+				wstr = wszLeftParen;
+				wstr += _itoW(holdCount, temp, 10);
+				wstr += wszForwardSlash;
+				wstr += _itoW(numHolds, temp, 10);
+				wstr += wszRightParen;
+				wstr += wszSpace;
+
+				wstr += wstrHoldName;
 				wstr += wszColon;
 				wstr += wszCRLF;
 				wstr += db.GetMessageText(MID_VerifyingDemos);
@@ -1246,7 +1258,15 @@ void CDbXML::VerifySavedGames()
 				wstrHoldName = (const WCHAR*)pHold->NameText;
 				delete pHold;
 			}
-			wstr = wstrHoldName;
+
+			wstr = wszLeftParen;
+			wstr += _itoW(holdCount, temp, 10);
+			wstr += wszForwardSlash;
+			wstr += _itoW(numHolds, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+
+			wstr += wstrHoldName;
 			wstr += wszColon;
 			wstr += wszCRLF;
 			wstr += db.GetMessageText(MID_VerifyingSavedGames);
@@ -1404,9 +1424,14 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 		switch (err)
 		{
 			case Z_BUF_ERROR:
-				//This wasn't enough memory to decode the data to,
-				//so double the buffer size.
-				s_decodedSize *= 2;
+				//This wasn't enough memory to decode the data to.
+				if (s_decodedSize < 30000000) {
+					//...so double the buffer size.
+					s_decodedSize *= 2;
+				} else {
+					//...now try incrementally larger amounts (to attempt to avoid OOM issues, esp. due to 32-bit address fragmentation).
+					s_decodedSize += 10000000;
+				}
 				delete[] s_decodedBuf;
 				s_decodedBuf = NULL;
 				try {
