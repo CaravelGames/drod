@@ -1385,13 +1385,19 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 			if (err == Z_OK) {
 				err = inflateReset2(&d_stream, MAX_WBITS | 16); //gzip format; use MAX_WBITS for zlib format and -MAX_WBITS for deflate format
 				err = inflate(&d_stream, Z_FINISH); //uncompress entire buffer
-				if (err == Z_STREAM_END) { //all data was decompressed into the buffer
-					err = inflateEnd(&d_stream);
-					if (err == Z_OK)
-						s_decodedSize = d_stream.total_out;
-				} else if (err == Z_OK) { //only partial data was uncompressed
-					err = inflateEnd(&d_stream);
-					err = Z_BUF_ERROR; //get more memory to inflate entire buffer
+				switch (err) {
+					case Z_STREAM_END: //all data was decompressed into the buffer
+						err = inflateEnd(&d_stream);
+						if (err == Z_OK)
+							s_decodedSize = d_stream.total_out;
+						break;
+					case Z_OK: //only partial data was uncompressed
+						inflateEnd(&d_stream);
+						err = Z_BUF_ERROR; //get more memory to inflate entire buffer
+						break;
+					default:
+						inflateEnd(&d_stream);
+						break;
 				}
 			}
 		}
@@ -1402,11 +1408,11 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 				//so double the buffer size.
 				s_decodedSize *= 2;
 				delete[] s_decodedBuf;
+				s_decodedBuf = NULL;
 				try {
 					s_decodedBuf = new BYTE[s_decodedSize+1]; //allow null-termination
 				}
 				catch (std::bad_alloc&) {
-					s_decodedBuf = NULL;
 					s_decodedSize = 0;
 					return MID_NoMoreMemory;
 				}
