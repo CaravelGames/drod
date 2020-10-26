@@ -41,7 +41,8 @@
 
 #include <cstdio>
 
-const char gzID[] = "\x1f\x8b";
+const char gzID[] = "\x1f\x8b"; //gzip file header id
+const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
 
 //Literals used to query and store values for Hold Characters in the packed vars object.
 #define scriptIDstr "ScriptID"
@@ -96,11 +97,11 @@ void InitTokens()
 }
 
 //If buffer has more data than indicated amount, flush it to the file.
-bool streamingOutParams::flush(const ULONG minSizeThreshold) //[default=0]
+bool streamingOutParams::flush(const ULONG maxSizeThreshold) //[default=0]
 {
 	if (pOutBuffer) {
 		const ULONG srcLen = (ULONG)(pOutBuffer->size() * sizeof(char));
-		if (!srcLen || srcLen < minSizeThreshold)
+		if (!srcLen || srcLen < maxSizeThreshold)
 			return true;
 
 		const ULONG bytesWritten = gzwrite(*this->pGzf, (const BYTE*)pOutBuffer->c_str(), (unsigned int)srcLen);
@@ -245,7 +246,7 @@ void CDbXML::PerformCallbackf(float fVal) {
 	if (pCallbackObject)
 		pCallbackObject->Callbackf(fVal);
 
-	const bool successIgnored = CDbXML::streamingOut.flush(10 * 1024*1024); //10 MB
+	const bool successIgnored = CDbXML::streamingOut.flush(EXPORT_MAX_SIZE_THRESHOLD);
 }
 void CDbXML::PerformCallbackText(const WCHAR* wpText) {
 	if (pCallbackObject)

@@ -76,7 +76,7 @@ struct streamingOutParams
 		pOutBuffer = str;
 		pGzf = gzf;
 	}
-	bool flush(const ULONG minSizeThreshold = 0);
+	bool flush(const ULONG maxSizeThreshold = 0);
 
 	string* pOutBuffer;
 	gzFile* pGzf;
