@@ -158,7 +158,8 @@ namespace ScriptFlag
 		BriarImmune = 19,
 		AdderImmune = 20,
 		PuffImmune = 21,
-		ActivatePlates = 22
+		ActivatePlates = 22,
+		PushMonsters = 23
 	};
 
 	enum DisplayFilter

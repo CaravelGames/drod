@@ -2148,7 +2148,7 @@ void CMonster::Move(
 	{
 		ASSERT(pCueEvents);
 
-		if (pMonster->IsPushableByBody() && this->CanPushObjects()){
+		if (pMonster->IsPushableByBody() && this->CanPushMonsters()){
 			pMonster->PushInDirection(sgn(wDestX - this->wX), sgn(wDestY - this->wY), false, *pCueEvents);
 		}
 		else 

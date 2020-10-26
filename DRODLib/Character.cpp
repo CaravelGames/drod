@@ -3410,6 +3410,12 @@ bool CCharacter::CanPushObjects() const {
 }
 
 //*****************************************************************************
+bool CCharacter::CanPushMonsters() const
+{
+	return (behaviorFlags.count(ScriptFlag::PushMonsters) == 1);
+}
+
+//*****************************************************************************
 bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
@@ -4420,7 +4426,7 @@ const
 
 			if (pMonster->wType != M_FLUFFBABY && 
 				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster)) &&
-				(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
+				(!this->CanPushMonsters() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
 				return true;
 			}
 		}
@@ -4759,6 +4765,7 @@ void CCharacter::SetCurrentGame(
 			break;
 			case M_CONSTRUCT:
 				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
+				behaviorFlags.insert(ScriptFlag::PushMonsters);
 			break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 				behaviorFlags.insert(ScriptFlag::HotTileImmune);
@@ -4777,6 +4784,7 @@ void CCharacter::SetCurrentGame(
 	{
 		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
 		behaviorFlags.insert(ScriptFlag::Behavior::PushObjects);
+		behaviorFlags.insert(ScriptFlag::PushMonsters);
 		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
 	}
 
