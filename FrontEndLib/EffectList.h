@@ -45,7 +45,9 @@ public:
 	bool           ContainsEffect(CEffect *pEffect) const;
 	bool           ContainsEffectOfType(const UINT eEffectType) const;
 	bool           ContainsEffectOfTypeAt(const UINT eEffectType, const UINT wX, const UINT wY) const;
-	void           DrawEffects(
+	void           UpdateEffects(const bool bUpdateScreen=false, const UINT eUpdatedType = (UINT)-1);
+	void           DrawEffects(SDL_Surface *pDestSurface=NULL, const UINT eDrawnType = (UINT)-1);
+	void           UpdateAndDrawEffects(
 			const bool bUpdateScreen=false,
 			SDL_Surface *pDestSurface=NULL,
 			const UINT eDrawnType = (UINT)-1);
@@ -59,7 +61,8 @@ public:
 	list<CEffect *> Effects;
 
 protected:
-	bool DrawEffect(CEffect *pEffect, const bool bUpdateScreen, SDL_Surface* pDestSurface);
+	bool UpdateEffect(CEffect* pEffect, const bool bUpdateScreen);
+	void DrawEffect(CEffect* pEffect, SDL_Surface* pDestSurface);
 
 	CWidget *   pOwnerWidget;
 	CScreen *   pOwnerScreen;

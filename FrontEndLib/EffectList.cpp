@@ -166,13 +166,12 @@ const
 }
 
 //*****************************************************************************
-void CEffectList::DrawEffects(
+void CEffectList::UpdateEffects(
 //Draws list of effects.
 //
 //Params:
 	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn
                                //[default = false]
-	SDL_Surface *pDestSurface, //(in) where to draw effects (default = NULL)
 	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
 	                           //[default = -1] - Draw all effect types
 {
@@ -187,7 +186,7 @@ void CEffectList::DrawEffects(
 		if (eDrawnType != DRAW_ALL_EFFECTS_TYPE && pEffect->GetEffectType() != eDrawnType)
 			continue;
 
-		if (!DrawEffect(pEffect, bUpdateScreen, pDestSurface))
+		if (!UpdateEffect(pEffect, bUpdateScreen))
 			bRepaintScreen = true;
 	}
 
@@ -196,15 +195,53 @@ void CEffectList::DrawEffects(
 }
 
 //*****************************************************************************
-//Draws a single effect
-bool CEffectList::DrawEffect(
-	CEffect* pEffect,          //(in) Effect to draw
+void CEffectList::DrawEffects(
+//Draws list of effects.
+//
+//Params:
+	SDL_Surface* pDestSurface, //(in) where to draw effects (default = NULL)
+	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
+							   //[default = -1] - Draw all effect types
+{
+	list<CEffect*>::const_iterator iSeek = this->Effects.begin();
+
+	bool bRepaintScreen = false;
+	while (iSeek != this->Effects.end())
+	{
+		CEffect* pEffect = *iSeek;
+		++iSeek;
+
+		if (eDrawnType != DRAW_ALL_EFFECTS_TYPE && pEffect->GetEffectType() != eDrawnType)
+			continue;
+
+		DrawEffect(pEffect, pDestSurface);
+	}
+}
+
+//*****************************************************************************
+void CEffectList::UpdateAndDrawEffects(
+//Draws list of effects.
+//
+//Params:
 	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn
 							   //[default = false]
-	SDL_Surface* pDestSurface) //(in) where to draw effects (default = NULL)
+	SDL_Surface* pDestSurface, //(in) where to draw effects (default = NULL)
+	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
+							   //[default = -1] - Draw all effect types
+{
+	UpdateEffects(bUpdateScreen, eDrawnType);
+	DrawEffects(pDestSurface, eDrawnType);
+}
+
+//*****************************************************************************
+//Updates a single effect
+bool CEffectList::UpdateEffect(
+	CEffect* pEffect,          //(in) Effect to draw
+	const bool bUpdateScreen)  //(in) Whether screen is updated where effects are drawn
+							   //[default = false]
 // Returns: true if the effect is still running, false if it's finished
 {
-	
+
 	ASSERT(pEffect);
 
 	UINT wDeltaTime = this->bIsFrozen
@@ -217,7 +254,6 @@ bool CEffectList::DrawEffect(
 
 	if (bDoesEffectRemain)
 	{
-		pEffect->Draw(pDestSurface);
 		if (bUpdateScreen && this->pOwnerScreen)
 			for (UINT wIndex = pEffect->dirtyRects.size(); wIndex--; )
 				this->pOwnerScreen->UpdateRect(pEffect->dirtyRects[wIndex]);
@@ -229,6 +265,18 @@ bool CEffectList::DrawEffect(
 	}
 
 	return bDoesEffectRemain;
+}
+
+//*****************************************************************************
+//Draws a single effect
+void CEffectList::DrawEffect(
+	CEffect* pEffect,          //(in) Effect to draw
+	SDL_Surface* pDestSurface) //(in) where to draw effects (default = NULL)
+// Returns: true if the effect is still running, false if it's finished
+{
+	
+	ASSERT(pEffect);
+	pEffect->Draw(pDestSurface);
 }
 
 //*****************************************************************************

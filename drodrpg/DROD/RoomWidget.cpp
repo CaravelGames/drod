@@ -2854,18 +2854,18 @@ void CRoomWidget::RenderRoomInPlay(
 	{
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pOLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 		DrawPlatforms(pDestSurface);
 
 		//a. Effects that go on top of room image, under monsters/player.
-		this->pTLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pTLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 
 		//b. Draw monsters (not killing player).
 		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, //bIsPlacingDouble ||
 				bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/player.
-		this->pMLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pMLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 	}
 }
 
@@ -4210,11 +4210,11 @@ void CRoomWidget::Paint(
 			//3a. Draw effects that go on top of room image, under monsters/player.
 			RenderFogInPit(pDestSurface);
 
-			this->pOLayerEffects->DrawEffects();
+			this->pOLayerEffects->UpdateAndDrawEffects();
 			this->pOLayerEffects->DirtyTiles();
 			DrawPlatforms(pDestSurface, false, bMoveAnimationInProgress);
 
-			this->pTLayerEffects->DrawEffects();
+			this->pTLayerEffects->UpdateAndDrawEffects();
 			this->pTLayerEffects->DirtyTiles();
 
 			//3b. Repaint monsters.
@@ -4239,7 +4239,7 @@ void CRoomWidget::Paint(
 			DrawMonsterKillingPlayer(pDestSurface);
 
 		//5a. Draw effects that go on top of monsters/player.
-		this->pMLayerEffects->DrawEffects();
+		this->pMLayerEffects->UpdateAndDrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 	}
 
@@ -4250,7 +4250,7 @@ void CRoomWidget::Paint(
 		RenderEnvironment(pDestSurface);
 
 	//7. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->DrawEffects();
+	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	//Last turn/movement should be drawn completely now.

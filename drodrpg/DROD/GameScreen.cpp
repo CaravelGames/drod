@@ -4709,7 +4709,7 @@ void CGameScreen::HandleEventsForHoldExit()
 		//Animate every so often.
 		if (dwNow - dwLastAnimate > 90)
 		{
-			this->pRoomWidget->pLastLayerEffects->DrawEffects();
+			this->pRoomWidget->pLastLayerEffects->UpdateAndDrawEffects();
 			g_pTheBM->UpdateScreen(GetWidgetScreenSurface());
 			dwLastAnimate = dwNow;
 		}

@@ -2364,20 +2364,20 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-	this->pOLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pOLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
 	DrawPlatforms(pSurface);
-	this->pTLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pTLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(this->pCurrentGame->swordsman, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
 
-	this->pMLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pMLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
 	
-	this->pLastLayerEffects->DrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
 
@@ -2778,17 +2778,17 @@ void CRoomWidget::RenderRoomInPlay(
 		//a. Effects that go on top of room image, under monsters/swordsman.
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
+		this->pOLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 		DrawPlatforms(pDestSurface);
 		
-		this->pTLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface); 
+		this->pTLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 
 		//b. Draw monsters (not killing player).
 		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface,
 				bIsPlacingDouble || bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
+		this->pMLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
 
 		//d. Double placement effects:
 		//Make room black-and-white, and draw (unmoving) swordsman on top.
@@ -4480,11 +4480,11 @@ void CRoomWidget::Paint(
 			//3a. Draw effects that go on top of room image, under monsters/swordsman.
 			RenderFogInPit(pDestSurface);
 
-			this->pOLayerEffects->DrawEffects();
+			this->pOLayerEffects->UpdateAndDrawEffects();
 			this->pOLayerEffects->DirtyTiles();
 			DrawPlatforms(pDestSurface, false, bMoveAnimationInProgress);
 
-			this->pTLayerEffects->DrawEffects();
+			this->pTLayerEffects->UpdateAndDrawEffects();
 			this->pTLayerEffects->DirtyTiles();
 
 			//3b. Repaint monsters.
@@ -4501,7 +4501,7 @@ void CRoomWidget::Paint(
 		} else {
 			//Add certain images as static during death animation
 
-			this->pOLayerEffects->DrawEffects(false, NULL, EIMAGEOVERLAY);
+			this->pOLayerEffects->UpdateAndDrawEffects(false, NULL, EIMAGEOVERLAY);
 			this->pOLayerEffects->DirtyTiles();
 		}
 
@@ -4526,7 +4526,7 @@ void CRoomWidget::Paint(
 		//DebugDraw_MarkedTiles(pDestSurface);
 
 		//5a. Draw effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects();
+		this->pMLayerEffects->UpdateAndDrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 
 		if (bPlayerIsAlive) {
@@ -4552,7 +4552,7 @@ void CRoomWidget::Paint(
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pDestSurface);
 
 	//10. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->DrawEffects();
+	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	RemoveEffectsQueuedForRemoval();

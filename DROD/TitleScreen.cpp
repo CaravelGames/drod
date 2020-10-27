@@ -1620,7 +1620,7 @@ void CTitleScreen::RedrawMapArea(const bool bAlwaysRedraw)	//[default=true]
 		//If the screen won't be updated by caller...
 		PaintChildren();
 
-		this->pEffects->DrawEffects();
+		this->pEffects->UpdateAndDrawEffects();
 
 		//Update the map area here.
 		SDL_Rect wholeDest = {X_MAP_JTRH, Y_MAP_JTRH, wFramedMapWidth, wFramedMapHeight};
@@ -1739,7 +1739,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 	AnimateCaravelLogo(pDestSurface);
 
-	this->pEffects->DrawEffects(!bAlpha);
+	this->pEffects->UpdateAndDrawEffects(!bAlpha);
 
 	if (this->pStatusDialog->IsVisible())
 		this->pStatusDialog->Paint();
