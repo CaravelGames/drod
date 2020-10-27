@@ -39,8 +39,10 @@
 #include <BackEndLib/StretchyBuffer.h>
 #include <BackEndLib/Ports.h>
 
-#include <zlib.h>
 #include <cstdio>
+
+const char gzID[] = "\x1f\x8b"; //gzip file header id
+const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
 
 //Literals used to query and store values for Hold Characters in the packed vars object.
 #define scriptIDstr "ScriptID"
@@ -56,6 +58,9 @@ vector <VIEWTYPE> CDbXML::dbRecordTypes;
 vector <bool>  CDbXML::SaveRecord;
 vector <VIEWPROPTYPE> CDbXML::vpCurrentType;
 CAttachableObject* pCallbackObject = NULL;
+
+
+streamingOutParams CDbXML::streamingOut;
 
 //Local vars
 XML_Parser parser = NULL;
@@ -89,6 +94,21 @@ void InitTokens()
 	if (propMap.empty())
 		for (int pType=P_First; pType<P_Count; ++pType)
 			propMap[string(propTypeStr[pType])] = pType;
+}
+
+//If buffer has more data than indicated amount, flush it to the file.
+bool streamingOutParams::flush(const ULONG maxSizeThreshold) //[default=0]
+{
+	if (pOutBuffer) {
+		const ULONG srcLen = (ULONG)(pOutBuffer->size() * sizeof(char));
+		if (!srcLen || srcLen < maxSizeThreshold)
+			return true;
+
+		const ULONG bytesWritten = gzwrite(*this->pGzf, (const BYTE*)pOutBuffer->c_str(), (unsigned int)srcLen);
+		pOutBuffer->erase(0, bytesWritten);
+		return bytesWritten == srcLen;
+	}
+	return true; //no-op
 }
 
 //
@@ -225,6 +245,8 @@ void CDbXML::PerformCallback(long val) {
 void CDbXML::PerformCallbackf(float fVal) {
 	if (pCallbackObject)
 		pCallbackObject->Callbackf(fVal);
+
+	const bool successIgnored = CDbXML::streamingOut.flush(EXPORT_MAX_SIZE_THRESHOLD);
 }
 void CDbXML::PerformCallbackText(const WCHAR* wpText) {
 	if (pCallbackObject)
@@ -1115,8 +1137,11 @@ void CDbXML::VerifySavedGames()
 	float fNumRecords;
 	UINT wCount;
 	UINT dwTime;
+	WCHAR temp[10];
+	UINT holdCount = 1;
+	const UINT numHolds = info.localHoldIDs.size();
 	for (CIDSet::const_iterator hold=info.localHoldIDs.begin();
-			hold!=info.localHoldIDs.end(); ++hold)
+			hold!=info.localHoldIDs.end(); ++hold, ++holdCount)
 	{
 		//Process data for one hold.
 		bool bMarkedBroken = false;
@@ -1135,8 +1160,17 @@ void CDbXML::VerifySavedGames()
 			{
 				CDbHold *pHold = db.Holds.GetByID(*hold, true);
 				ASSERT(pHold);
-				wstr = wstrHoldName = (const WCHAR*)pHold->NameText;
+				wstrHoldName = (const WCHAR*)pHold->NameText;
 				delete pHold;
+
+				wstr = wszLeftParen;
+				wstr += _itoW(holdCount, temp, 10);
+				wstr += wszForwardSlash;
+				wstr += _itoW(numHolds, temp, 10);
+				wstr += wszRightParen;
+				wstr += wszSpace;
+
+				wstr += wstrHoldName;
 				wstr += wszColon;
 				wstr += wszCRLF;
 				wstr += db.GetMessageText(MID_VerifyingDemos);
@@ -1225,7 +1259,15 @@ void CDbXML::VerifySavedGames()
 				wstrHoldName = (const WCHAR*)pHold->NameText;
 				delete pHold;
 			}
-			wstr = wstrHoldName;
+
+			wstr = wszLeftParen;
+			wstr += _itoW(holdCount, temp, 10);
+			wstr += wszForwardSlash;
+			wstr += _itoW(numHolds, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+
+			wstr += wstrHoldName;
 			wstr += wszColon;
 			wstr += wszCRLF;
 			wstr += db.GetMessageText(MID_VerifyingSavedGames);
@@ -1322,10 +1364,14 @@ void CDbXML::CleanUp()
 }
 
 MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
+//buffer: may be either in zlib or gzip formats; uncompress accordingly
+//
 //Post-conditions: on successful completion,
 //  s_buf and s_decodedBuf are set to the uncompressed buffer
 //  s_decodedSize is the size of the uncompressed buffer
 {
+	const bool bGzip = !strncmp((char*)buffer, gzID, 2);
+
 	ASSERT(size);
 	s_decodedSize = static_cast<ULONG>(size * 1.6);  //start with a reasonably-sized buffer
 	try {
@@ -1337,21 +1383,62 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 		return MID_NoMoreMemory;
 	}
 	ASSERT(s_decodedBuf);
-	int res;
+	int err;
 	do {
-		res = uncompress(s_decodedBuf, &s_decodedSize, (BYTE*)buffer, size);
-		switch (res)
+		//Attempt to uncompress data into a single buffer, preallocated to a heuristic size.
+		//If the size is insufficient, realloc at a larger size and retry.
+		if (!bGzip) {
+			//zlib format
+			err = uncompress(s_decodedBuf, &s_decodedSize, buffer, size);
+		} else {
+			//gzip format
+			z_stream d_stream; // gzip decompression stream
+			d_stream.zalloc = (alloc_func)0;
+			d_stream.zfree = (free_func)0;
+			d_stream.opaque = (voidpf)0;
+
+			d_stream.next_in  = buffer;
+			d_stream.avail_in = size;
+			d_stream.next_out = s_decodedBuf; // pointer to the resulting uncompressed data buffer
+			d_stream.avail_out = s_decodedSize; // size of the uncompressed data buffer
+
+			err = inflateInit(&d_stream);
+			if (err == Z_OK) {
+				err = inflateReset2(&d_stream, MAX_WBITS | 16); //gzip format; use MAX_WBITS for zlib format and -MAX_WBITS for deflate format
+				err = inflate(&d_stream, Z_FINISH); //uncompress entire buffer
+				switch (err) {
+					case Z_STREAM_END: //all data was decompressed into the buffer
+						err = inflateEnd(&d_stream);
+						if (err == Z_OK)
+							s_decodedSize = d_stream.total_out;
+						break;
+					case Z_OK: //only partial data was uncompressed
+						inflateEnd(&d_stream);
+						err = Z_BUF_ERROR; //get more memory to inflate entire buffer
+						break;
+					default:
+						inflateEnd(&d_stream);
+						break;
+				}
+			}
+		}
+		switch (err)
 		{
 			case Z_BUF_ERROR:
-				//This wasn't enough memory to decode the data to,
-				//so double the buffer size.
-				s_decodedSize *= 2;
+				//This wasn't enough memory to decode the data to.
+				if (s_decodedSize < 30000000) {
+					//...so double the buffer size.
+					s_decodedSize *= 2;
+				} else {
+					//...now try incrementally larger amounts (to attempt to avoid OOM issues, esp. due to 32-bit address fragmentation).
+					s_decodedSize += 10000000;
+				}
 				delete[] s_decodedBuf;
+				s_decodedBuf = NULL;
 				try {
 					s_decodedBuf = new BYTE[s_decodedSize+1]; //allow null-termination
 				}
 				catch (std::bad_alloc&) {
-					s_decodedBuf = NULL;
 					s_decodedSize = 0;
 					return MID_NoMoreMemory;
 				}
@@ -1359,6 +1446,8 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 				break;
 
 			case Z_DATA_ERROR:
+			case Z_STREAM_ERROR:
+			case Z_VERSION_ERROR:
 				delete[] s_decodedBuf;
 				s_decodedBuf = NULL;
 				s_decodedSize = 0;
@@ -1370,7 +1459,7 @@ MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
 				s_decodedSize = 0;
 				return MID_NoMoreMemory;
 		}
-	} while (res != Z_OK);  //success
+	} while (err != Z_OK);  //success
 
 	//Null-terminate text-string.
 	s_buf = (char*)s_decodedBuf;
@@ -1427,15 +1516,24 @@ MESSAGE_ID CDbXML::ImportXML(
 		s_decodedBuf = buffer.GetCopy();
 		s_buf = (char*)s_decodedBuf;
 	} else {
-		//Encoded + compressed buffer -- decode and uncompress.
-		buffer.Decode();
+		//Compressed data -- uncompress into buffer.
+		BYTE* bytes = (BYTE*)buffer;
 
-		const MESSAGE_ID result = Uncompress((BYTE*)buffer, buffer.Size());
+		if (strncmp((char*)bytes, gzID, 2) != 0) {
+			//Not gzip format -- decode encoded zib buffer.
+			buffer.Decode(); //in-place decoding; 'bytes' remains current
+		}
+
+		const MESSAGE_ID result = Uncompress(bytes, buffer.Size());
 		if (result != MID_Success) {
 			info.ImportStatus = result;
 			return result;
 		}
 	}
+
+	ASSERT(s_buf);
+	ASSERT(s_decodedSize);
+	ASSERT(s_decodedBuf);
 
 	buffer.Clear(); //don't need any more
 
@@ -1864,40 +1962,32 @@ bool CDbXML::ExportXML(
 	BYTE *dest = NULL;
 	uLongf destLen = 0;
 	{
+		// Compress the data in gzip format (previously, zlib format w/ stretchy buffer encoding).
+#ifdef WIN32
+		gzFile gzf = gzopen_w(wszFilename, "wb");
+#else
+		const string filename = UnicodeToUTF8(wszFilename);
+		gzFile gzf = gzopen(filename.c_str(), "wb");
+#endif
+
 		string text; //only in scope until compressed
+		CDbXML::streamingOut.set(&text, &gzf);
 		if (!ExportXML(vType, primaryKeys, text))
+		{
+			CDbXML::streamingOut.reset();
 			return false;
+		}
 		g_pTheDB->Close(); //reset memory used by DB during export lookups
 		g_pTheDB->Open();
 
-		// Compress the data.  Output to specified file.
-		const ULONG srcLen = (ULONG)(text.size() * sizeof(char));
-		const uLongf max_size_needed = compressBound(srcLen);
-		const uLongf min_size_to_attempt = max_size_needed / 10;
+		const bool success = CDbXML::streamingOut.flush();
+	
+		const int closeval = gzclose(gzf);
 
-		destLen = max_size_needed;
-		do {
-			try {
-				dest = new BYTE[destLen];
-			}
-			catch (std::bad_alloc&) {
-				//try again with smaller buffer
-				destLen = uLongf(destLen * 0.9f);
-			}
-		} while (!dest && destLen > min_size_to_attempt);
-		if (!dest)
-			return false;
+		CDbXML::streamingOut.reset();
 
-		const int res = compress(dest, &destLen, (const BYTE*)text.c_str(), srcLen);
-		bRes = res == Z_OK;
+		bRes = success && closeval == 0;
 	}
-	if (bRes)
-	{
-		CStretchyBuffer buffer(dest, destLen); //no terminating null
-		buffer.Encode();
-		bRes = CFiles::WriteBufferToFile(wszFilename,buffer);
-	}
-	delete[] dest;
 
 	return bRes;
 }

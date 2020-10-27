@@ -121,7 +121,7 @@ void CSubtitleEffect::FollowCoord(CMoveCoord *const pCoord, const bool bAttached
 //*****************************************************************************
 long CSubtitleEffect::GetDrawSequence() const
 {
-	return std::numeric_limits<long>::max(); //draw last
+	return (std::numeric_limits<long>::max)(); //draw last
 }
 
 //*****************************************************************************
