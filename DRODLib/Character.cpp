@@ -3416,6 +3416,36 @@ bool CCharacter::CanPushMonsters() const
 }
 
 //*****************************************************************************
+bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
+{
+	UINT wTileNo = this->pCurrentGame->pRoom->GetOSquare(wX, wY);
+
+	if (bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo))
+		return true;
+
+	// If the character is immune to "fatal pushes", only allow it to pushed
+	// to tiles that won't cause it to fall
+	bool bOnlySafe = (behaviorFlags.count(ScriptFlag::FatalPushImmune) == 1);
+
+	if (!bOnlySafe) {
+		// We don't care that these tiles might be deadly
+		return bIsPit(wTileNo) || bIsWater(wTileNo);
+	}
+
+	if (bIsPit(wTileNo) && (IsFlying()))
+		return true;
+
+	if (bIsDeepWater(wTileNo) && (IsSwimming() || IsFlying()))
+		return true;
+
+	if (bIsShallowWater(wTileNo) &&
+		(CanWadeInShallowWater() || IsSwimming() || IsFlying()))
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))

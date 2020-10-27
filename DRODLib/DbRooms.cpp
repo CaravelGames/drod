@@ -2581,6 +2581,11 @@ const
 			if (!(CanPushOntoOTile(wToX, wToY) && tile != T_HOT))
 				return false;
 		}
+		case M_CHARACTER: {
+			const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+			if (!pCharacter->CanPushOntoOTileAt(wToX, wToY))
+				return false;
+		}
 		default:
 			if (!CanPushOntoOTile(wToX, wToY))
 				return false;
