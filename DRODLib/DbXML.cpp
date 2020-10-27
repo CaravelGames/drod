@@ -43,6 +43,7 @@
 
 const char gzID[] = "\x1f\x8b"; //gzip file header id
 const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
+const int XML_PARSER_BUFF_SIZE = 128 * 1024; //uncompressed buffer chunk size for import
 
 //Literals used to query and store values for Hold Characters in the packed vars object.
 #define scriptIDstr "ScriptID"
@@ -66,10 +67,6 @@ streamingOutParams CDbXML::streamingOut;
 XML_Parser parser = NULL;
 bool bImportComplete = false;
 
-BYTE *s_decodedBuf = NULL;
-char *s_buf = NULL;
-uLongf s_decodedSize = 0;
-
 const char szDRODVersion[] = "Version";
 static const char szDRODHeaderInfo[] = "Info";
 
@@ -80,6 +77,210 @@ struct roomSet {
 typedef map<string,int> StringMap;
 StringMap::iterator tokenIter;
 StringMap viewMap, viewPropMap, propMap;
+
+//*****************************************************************************
+//This structure is used to provide data to the XML parser for iterative parsing.
+//It supports incremental uncompression from a buffer of compressed data (zlib/gzip).
+struct ImportBuffer
+{
+	ImportBuffer()
+		: compressedBuffer(NULL), compressedSize(0)
+		, uncompressedBuffer(NULL), uncompressedSize(0)
+		, buf(NULL)
+		, totalParseSize(0)
+		, d_stream(NULL)
+	{ }
+	~ImportBuffer() { clear(); }
+
+	void clear()
+	{
+		delete[] compressedBuffer;
+		compressedBuffer = NULL;
+		compressedSize = 0;
+
+		delete[] uncompressedBuffer;
+		uncompressedBuffer = NULL;
+		uncompressedSize = 0;
+
+		buf = NULL;
+
+		totalParseSize = 0;
+
+		closeStream();
+
+		ASSERT(isReset());
+	}
+	void closeStream()
+	{
+		if (d_stream)
+			inflateEnd(d_stream);
+		d_stream = NULL;
+	}
+	//Returns: true if object is clear
+	bool isReset() const
+	{
+		if (compressedBuffer)
+			return false;
+		if (compressedSize)
+			return false;
+		if (uncompressedBuffer)
+			return false;
+		if (uncompressedSize)
+			return false;
+		if (buf)
+			return false;
+		if (totalParseSize)
+			return false;
+		if (d_stream)
+			return false;
+
+		return true;
+	}
+	//Returns: true if object is ready to use for parsing
+	bool isPopulated() const
+	{
+		//compressedBuffer and compressedSize are optional
+		if (!uncompressedBuffer)
+			return false;
+		if (!uncompressedSize)
+			return false;
+		if (!buf)
+			return false;
+		//d_stream use is optional
+
+		return true;
+	}
+
+	//Call once to allocate a buffer of (size+1) for uncompressing data.
+	//Returns: whether buffer was allocated.
+	bool allocUncompressionBuffer()
+	{
+		ASSERT(!uncompressedBuffer);
+		const int size = XML_PARSER_BUFF_SIZE; //implementation expects buffer of this size
+
+		try {
+			uncompressedBuffer = new BYTE[size+1]; //allow null-termination
+		}
+		catch (std::bad_alloc&) {
+			uncompressedBuffer = NULL;
+			return false;
+		}
+		ASSERT(uncompressedBuffer);
+
+		uncompressedBuffer[size] = '\0'; //Null-terminate text string so it's readable if we want to look at it
+
+		buf = (char*)uncompressedBuffer; //Point 'buf' at where data to parse will be written during uncompression
+
+		return true;
+	}
+
+	//Call once to make an internal copy of compressed data.
+	//The copy will be used for incremental uncompression.
+	bool copyCompressedData(const BYTE* buffer, const UINT size)
+	{
+		ASSERT(!compressedBuffer);
+		ASSERT(!compressedSize);
+
+		ASSERT(buffer);
+		ASSERT(size);
+
+		try {
+			compressedBuffer = new BYTE[size];
+		}
+		catch (std::bad_alloc&) {
+			compressedBuffer = NULL;
+			return false;
+		}
+
+		memcpy(compressedBuffer, buffer, size);
+		compressedSize = size;
+		return true;
+	}
+
+	//Call this once when data to parse is already uncompressed
+	//and no memory needs to be allocated for uncompression.
+	void passthruUncompressedData(const string& text)
+	{
+		ASSERT(isReset());
+
+		buf = const_cast<char*>(text.c_str());
+		totalParseSize = uncompressedSize = text.size();
+
+		uncompressedBuffer = new BYTE[1]; //dummy data, will be freed on clear
+	}
+
+	//Call to begin decompression of 'compressedBuffer'.
+	//
+	//Returns: MID indicating status of operation (e.g., MID_Success)
+	UINT initStream()
+	{
+		ASSERT(!d_stream);
+
+		z_stream* ds = new z_stream; // decompression stream (gzip/zlib format)
+		ds->zalloc = (alloc_func)0;
+		ds->zfree = (free_func)0;
+		ds->opaque = (voidpf)0;
+
+		int err = inflateInit(ds);
+		if (err == Z_OK) {
+			//gzip format: MAX_WBITS | 16
+			//zlib format: MAX_WBITS
+			//deflate format: -MAX_WBITS
+			const bool bGzip = !strncmp((char*)this->compressedBuffer, gzID, 2);
+			const int windowBits = bGzip ? MAX_WBITS | 16 : MAX_WBITS;
+			err = inflateReset2(ds, windowBits);
+		}
+		if (err != Z_OK) {
+			delete ds;
+			return MID_OutOfMemory;
+		}
+
+		ds->next_in = compressedBuffer; // all compressed data are in the input buffer
+		ds->avail_in = compressedSize;  // total size of data to uncompress
+		d_stream = ds;
+
+		return uncompressChunk(); //prepare first chunk of uncompressed data
+	}
+
+	//Call to uncompress another chunk of data.
+	//Returns: MID indicating success or failure
+	UINT uncompressChunk()
+	{
+		ASSERT(d_stream);
+
+		d_stream->next_out = uncompressedBuffer; // pointer to the resulting uncompressed data buffer
+		d_stream->avail_out = XML_PARSER_BUFF_SIZE;        // size of the uncompressed data buffer
+
+		const int err = inflate(d_stream, Z_SYNC_FLUSH); //fill output buffer as much as possible
+		switch (err) {
+			case Z_STREAM_END: //all data was decompressed into the buffer
+			case Z_OK: //partial data was decompressed
+				uncompressedSize = (XML_PARSER_BUFF_SIZE - d_stream->avail_out); //amount of data made available to parse
+				return MID_Success;
+			case Z_MEM_ERROR:
+				return MID_NoMoreMemory;
+			case Z_BUF_ERROR:
+			case Z_DATA_ERROR:
+			case Z_STREAM_ERROR:
+			case Z_VERSION_ERROR:
+			default: //unknown error -- assume failure
+				return MID_FileCorrupted;
+		}
+	}
+
+	BYTE* compressedBuffer;   //copy of compressed data; free on completion
+	uLongf compressedSize;    //size of uncompressed data
+
+	BYTE* uncompressedBuffer; //allocated to store uncompressed data
+	uLongf uncompressedSize;  //amount of data available to parse
+
+	char* buf;                //pointer to data to parse; points to uncompressedBuffer when uncompressing data, otherwise points elsewhere
+
+	uLongf totalParseSize;    //indicates size of all data being parsed (e.g., size of the uncompressed version of what's in compressedBuffer)
+
+	z_stream* d_stream;       //if set, used to stream chunks of uncompressed data
+};
+ImportBuffer importBuf;
 
 //*****************************************************************************
 void InitTokens()
@@ -135,8 +336,6 @@ void CDbXML::AddRowsForPendingRecords()
 	g_pTheDB->Demos.EnsureEmptyRows(CDbXML::info.nDemos);
 	g_pTheDB->Players.EnsureEmptyRows(CDbXML::info.nPlayers);
 	g_pTheDB->SavedGames.EnsureEmptyRows(CDbXML::info.nSavedGames);
-
-	CDbXML::info.bPreparsed = true;
 }
 
 //*****************************************************************************
@@ -260,14 +459,18 @@ void CDbXML::TallyElement(
 //
 //Tally XML start tags.
 //
+//That is, it is called to count the number of records of each object type that
+//are encounted in the XML data payload.
+//This number of records will later be pre-allocated for each object type.
+//
 //Params:
 	void* /*userData*/, const char *name, const char ** /*atts*/)
 {
 	//Use callback for progress indicator, etc.
 	if (pCallbackObject)
 	{
-		ASSERT(s_decodedSize);
-		const float fProgress = XML_GetCurrentByteIndex(parser) / (float)(s_decodedSize);
+		const uLongf sizeEstimate = importBuf.compressedSize * 15; //heuristic to show a reasonable prediction on the progress bar
+		const float fProgress = XML_GetCurrentByteIndex(parser) / (float)(sizeEstimate);
 		PerformCallbackf(fProgress);
 	}
 
@@ -294,6 +497,13 @@ void CDbXML::StartElement(
 //
 //Process XML start tag, and attributes.
 //
+//This method is used to populate fields of new database records via the
+//polymorphic SetProperty call, defined in each DB sub-class.
+//The 'info' object is used to identify record GUIDs, remap foreign keys,
+//merge imported data into any pre-existing records, and resolve semantic collisions
+//of any pre-existing records, potentially overwriting pre-existing records
+//with the field values being imported here.
+//
 //Params:
 	void* /*userData*/, const char *name, const char **atts)
 {
@@ -307,9 +517,9 @@ void CDbXML::StartElement(
 	const bool bLanguageMod = info.typeBeingImported == CImportInfo::LanguageMod;
 	if (pCallbackObject)
 	{
-		ASSERT(s_decodedSize);
+		ASSERT(importBuf.totalParseSize);
 		const float fEndPercent = bLanguageMod ? 1.00f : 0.50f;
-		float fProgress = (XML_GetCurrentByteIndex(parser) / (float)(s_decodedSize)) * fEndPercent;
+		float fProgress = (XML_GetCurrentByteIndex(parser) / (float)(importBuf.totalParseSize)) * fEndPercent;
 		if (fProgress > fEndPercent) fProgress = fEndPercent;
 		PerformCallbackf(fProgress);
 	}
@@ -425,6 +635,14 @@ void CDbXML::EndElement(
 //Expat callback function
 //
 //Process XML end tag.
+//
+//This method is reached when the parser completes reading of all field values
+//and sub-tables (subviews) that will be written into a database record.
+//At this point, the new record is staged for saving to the database
+//via the Update() call.
+//
+//If an unrecoverable error is encountered at any point in the import process,
+//all (pending) database updates made here will be rolled back instead of committed.
 //
 //Params:
 	void* /*userData*/, const char* name)
@@ -1082,14 +1300,12 @@ void CDbXML::ImportSavedGames()
 	const CImportInfo::ImportType importType = info.typeBeingImported;
 	const MESSAGE_ID importState = info.ImportStatus;
 	info.typeBeingImported = CImportInfo::Demo;
-	VERIFY(ImportXML(info.exportedDemos.c_str(), info.exportedDemos.size())
-			== MID_ImportSuccessful);
+	VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
 	info.exportedDemos.resize(0);
 
 	info.ImportStatus = importState; //ignore import state changes in saved game restoration
 	info.typeBeingImported = CImportInfo::SavedGame;
-	VERIFY(ImportXML(info.exportedSavedGames.c_str(), info.exportedSavedGames.size())
-			== MID_ImportSuccessful);
+	VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
 	info.exportedSavedGames.resize(0);
 
 	info.typeBeingImported = importType;
@@ -1354,118 +1570,40 @@ void CDbXML::VerifySavedGames()
 //*****************************************************************************
 void CDbXML::CleanUp()
 {
-	delete[] s_decodedBuf;
-	s_decodedBuf = NULL;
-	s_buf = NULL;
-	s_decodedSize = 0;
+	importBuf.clear();
 
 	info.Clear(true);
 	pCallbackObject = NULL; //release hook
 }
 
-MESSAGE_ID CDbXML::Uncompress(BYTE* buffer, UINT size)
-//buffer: may be either in zlib or gzip formats; uncompress accordingly
+//Makes a copy of input data and initiates uncompression
 //
-//Post-conditions: on successful completion,
-//  s_buf and s_decodedBuf are set to the uncompressed buffer
-//  s_decodedSize is the size of the uncompressed buffer
+//Post-conditions: on successful completion, importBuf.isPopulated() is true
+//  and ready to begin handing off data to the XML parser
+MESSAGE_ID CDbXML::Uncompress(
+	BYTE* buffer, //(in) may be either in zlib or gzip formats
+	UINT size)    //(in) size of compressed data in buffer
 {
-	const bool bGzip = !strncmp((char*)buffer, gzID, 2);
+	ASSERT(importBuf.isReset());
 
-	ASSERT(size);
-	s_decodedSize = static_cast<ULONG>(size * 1.6);  //start with a reasonably-sized buffer
-	try {
-		s_decodedBuf = new BYTE[s_decodedSize+1]; //allow null-termination
-	}
-	catch (std::bad_alloc&) {
-		s_decodedBuf = NULL;
-		s_decodedSize = 0;
+	//Allocate a buffer for uncompressing data into
+	if (!importBuf.allocUncompressionBuffer())
+		return MID_NoMoreMemory;
+
+	//Copy input for iterative uncompression during parsing
+	if (!importBuf.copyCompressedData(buffer, size))
+	{
+		importBuf.clear();
 		return MID_NoMoreMemory;
 	}
-	ASSERT(s_decodedBuf);
-	int err;
-	do {
-		//Attempt to uncompress data into a single buffer, preallocated to a heuristic size.
-		//If the size is insufficient, realloc at a larger size and retry.
-		if (!bGzip) {
-			//zlib format
-			err = uncompress(s_decodedBuf, &s_decodedSize, buffer, size);
-		} else {
-			//gzip format
-			z_stream d_stream; // gzip decompression stream
-			d_stream.zalloc = (alloc_func)0;
-			d_stream.zfree = (free_func)0;
-			d_stream.opaque = (voidpf)0;
 
-			d_stream.next_in  = buffer;
-			d_stream.avail_in = size;
-			d_stream.next_out = s_decodedBuf; // pointer to the resulting uncompressed data buffer
-			d_stream.avail_out = s_decodedSize; // size of the uncompressed data buffer
+	const UINT mid = importBuf.initStream();
+	if (mid == MID_Success) {
+		importBuf.totalParseSize += importBuf.uncompressedSize;
+		ASSERT(importBuf.isPopulated());
+	}
 
-			err = inflateInit(&d_stream);
-			if (err == Z_OK) {
-				err = inflateReset2(&d_stream, MAX_WBITS | 16); //gzip format; use MAX_WBITS for zlib format and -MAX_WBITS for deflate format
-				err = inflate(&d_stream, Z_FINISH); //uncompress entire buffer
-				switch (err) {
-					case Z_STREAM_END: //all data was decompressed into the buffer
-						err = inflateEnd(&d_stream);
-						if (err == Z_OK)
-							s_decodedSize = d_stream.total_out;
-						break;
-					case Z_OK: //only partial data was uncompressed
-						inflateEnd(&d_stream);
-						err = Z_BUF_ERROR; //get more memory to inflate entire buffer
-						break;
-					default:
-						inflateEnd(&d_stream);
-						break;
-				}
-			}
-		}
-		switch (err)
-		{
-			case Z_BUF_ERROR:
-				//This wasn't enough memory to decode the data to.
-				if (s_decodedSize < 30000000) {
-					//...so double the buffer size.
-					s_decodedSize *= 2;
-				} else {
-					//...now try incrementally larger amounts (to attempt to avoid OOM issues, esp. due to 32-bit address fragmentation).
-					s_decodedSize += 10000000;
-				}
-				delete[] s_decodedBuf;
-				s_decodedBuf = NULL;
-				try {
-					s_decodedBuf = new BYTE[s_decodedSize+1]; //allow null-termination
-				}
-				catch (std::bad_alloc&) {
-					s_decodedSize = 0;
-					return MID_NoMoreMemory;
-				}
-				ASSERT(s_decodedBuf);
-				break;
-
-			case Z_DATA_ERROR:
-			case Z_STREAM_ERROR:
-			case Z_VERSION_ERROR:
-				delete[] s_decodedBuf;
-				s_decodedBuf = NULL;
-				s_decodedSize = 0;
-				return MID_FileCorrupted;
-
-			case Z_MEM_ERROR:
-				delete[] s_decodedBuf;
-				s_decodedBuf = NULL;
-				s_decodedSize = 0;
-				return MID_NoMoreMemory;
-		}
-	} while (err != Z_OK);  //success
-
-	//Null-terminate text-string.
-	s_buf = (char*)s_decodedBuf;
-	s_buf[s_decodedSize] = '\0';
-
-	return MID_Success;
+	return mid;
 }
 
 //*****************************************************************************
@@ -1504,23 +1642,20 @@ MESSAGE_ID CDbXML::ImportXML(
 	CStretchyBuffer &buffer,   //(in/out) buffer of XML text -> cleared buffer
 	const CImportInfo::ImportType type)		//(in)	Type of data being imported
 {
-	ASSERT(!s_decodedBuf);
-	ASSERT(!s_buf);
-	ASSERT(!s_decodedSize);
+	ASSERT(importBuf.isReset());
 
 	if (type == CImportInfo::LanguageMod)
 	{
 		//Plain text buffer.
-		s_decodedSize = buffer.Size();
+		importBuf.totalParseSize = importBuf.uncompressedSize = buffer.Size();
 		buffer += (BYTE)0; //null-terminate
-		s_decodedBuf = buffer.GetCopy();
-		s_buf = (char*)s_decodedBuf;
+		importBuf.uncompressedBuffer = buffer.GetCopy();
+		importBuf.buf = (char*)importBuf.uncompressedBuffer;
 	} else {
 		//Compressed data -- uncompress into buffer.
 		BYTE* bytes = (BYTE*)buffer;
-
 		if (strncmp((char*)bytes, gzID, 2) != 0) {
-			//Not gzip format -- decode encoded zib buffer.
+			//Prior zlib format, not gzip -- decode encoded zlib buffer.
 			buffer.Decode(); //in-place decoding; 'bytes' remains current
 		}
 
@@ -1531,9 +1666,7 @@ MESSAGE_ID CDbXML::ImportXML(
 		}
 	}
 
-	ASSERT(s_buf);
-	ASSERT(s_decodedSize);
-	ASSERT(s_decodedBuf);
+	ASSERT(importBuf.isPopulated());
 
 	buffer.Clear(); //don't need any more
 
@@ -1544,23 +1677,22 @@ MESSAGE_ID CDbXML::ImportXML(
 }
 
 //*****************************************************************************
+//Call to import an xml payload (possibly compressed) of the indated record type
+//
+//Used to retrieve data from the server.
 MESSAGE_ID CDbXML::ImportXMLRaw(
 	const string& xml,
 	const CImportInfo::ImportType type,
-	const bool bUncompress) //[default=false]
+	const bool bUncompress) //whether xml is compressed [default=false]
 {
-	ASSERT(!s_decodedBuf);
-	ASSERT(!s_buf);
-	ASSERT(!s_decodedSize);
+	ASSERT(importBuf.isReset());
 
 	if (bUncompress) {
-		const MESSAGE_ID result = Uncompress((BYTE*)xml.c_str(), xml.size());
+		const MESSAGE_ID result = Uncompress((BYTE*)xml.c_str(), xml.size()); //makes an internal copy of xml for uncompression
 		if (result != MID_Success)
 			return result;
 	} else {
-		s_decodedSize = xml.size();
-		s_buf = const_cast<char*>(xml.c_str());
-		s_decodedBuf = new BYTE[1]; //dummy data, will be freed by CleanUp
+		importBuf.passthruUncompressedData(xml);
 	}
 
 	CDbXML::info.typeBeingImported = type;
@@ -1569,13 +1701,18 @@ MESSAGE_ID CDbXML::ImportXMLRaw(
 }
 
 //*****************************************************************************
+MESSAGE_ID CDbXML::ImportXML(
+	const string& xml)
+{
+	ImportBuffer b;
+	b.passthruUncompressedData(xml);
+	return ImportXML(&b);
+}
+
+//*****************************************************************************
 MESSAGE_ID CDbXML::ImportXML()
 {
-	ASSERT(s_decodedBuf);
-	ASSERT(s_buf);
-	ASSERT(s_decodedSize);
-
-	info.ImportStatus = ImportXML(s_buf, s_decodedSize);
+	info.ImportStatus = ImportXML(&importBuf);
 
 	//Clean up.
 	//If an import is interrupted in the middle by a request for user input,
@@ -1592,7 +1729,7 @@ MESSAGE_ID CDbXML::ImportXML(
 //Import an XML file into one or more tables (see above method for notes).
 //
 //Params:
-	const char *buf, const UINT size)  //(in) buffer of XML text
+	ImportBuffer* pBuffer)  //(in) buffer of XML text
 {
 	//IMPORT XML FORMAT
 	//
@@ -1680,7 +1817,56 @@ MESSAGE_ID CDbXML::ImportXML(
 
 	LOGCONTEXT("CDbXML::ImportXML");
 
-	//Ensure everything is reset.
+	ASSERT(pBuffer);
+	if (!pBuffer->uncompressedSize)
+		return MID_ImportSuccessful;   //nothing to import
+	ASSERT(pBuffer->isPopulated());
+
+	Import_Init();
+
+	BEGIN_DBREFCOUNT_CHECK;
+	try
+	{
+		//Parser init.
+		InitTokens();
+
+		//Free any parsing job that had started and been interrupted.
+		if (parser)
+			XML_ParserFree(parser);
+
+		parser = XML_ParserCreate(NULL);
+
+		//First pass through data
+		Import_TallyRecords(pBuffer);
+
+		//Second pass through data
+		PerformCallback(MID_ImportingData);
+		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+
+		importBuf.closeStream();
+		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
+
+		Import_ParseRecords(pBuffer);
+
+		//Free parser.
+		XML_ParserFree(parser);
+		parser = NULL;
+
+		Import_Resolve();
+	}	//try
+	catch (CException&)
+	{
+		return MID_FileCorrupted;
+	}
+	END_DBREFCOUNT_CHECK;
+
+	return info.ImportStatus;
+}
+
+//*****************************************************************************
+//Ensure everything used for import is reset and ready.
+void CDbXML::Import_Init()
+{
 	ASSERT(dbRecordStack.empty());
 	ASSERT(dbImportedRecordIDs.empty());
 	ASSERT(dbRecordTypes.empty());
@@ -1693,83 +1879,105 @@ MESSAGE_ID CDbXML::ImportXML(
 		info.dwPlayerImportedID = info.dwHoldImportedID = info.dwDemoImportedID = 0;
 		info.roomStyles.clear();
 	}
-	if (!size)
-		return MID_ImportSuccessful;   //nothing to import
 	CDbRoom::ResetForImport();
-	ASSERT(buf);
 	bImportComplete = false;
+}
 
-	BEGIN_DBREFCOUNT_CHECK;
-	try
+//*****************************************************************************
+//Pre-parse the XML payload.
+//Determine the upper limit of how many new records will be added to the DB
+//and add empty rows for them now to minimize memory address fragmentation during import.
+void CDbXML::Import_TallyRecords(
+	ImportBuffer* pBuffer)  //(in) buffer of XML text
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
+	ASSERT(pBuffer);
+
+	if (CDbXML::info.bPreparsed ||
+		CDbXML::info.typeBeingImported == CImportInfo::LanguageMod) //only adding text records
+		return;
+
+	PerformCallback(MID_ImportTallying);
+	//This callback method is invoked by the XML parser for each record
+	//encountered in the data payload.
+	//It is used to tally the number of records existing of each type.
+	//See the functions's comments for more detail.
+	XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
+
+	//Parse the XML in chunks to keep memory overhead low.
+	while (info.ImportStatus == MID_ImportSuccessful)
 	{
-
-	//Parser init.
-	InitTokens();
-	//Free any parsing job that had started and been interrupted.
-	if (parser) XML_ParserFree(parser);
-	parser = XML_ParserCreate(NULL);
-
-	//Parse the XML in chunks to reduce memory overhead.
-	static const int BUFF_SIZE = 512*1024;
-	UINT bufIndex = 0;
-
-	//Pre-parse: determine upper limit of how many new records will be added to DB
-	//and add empty rows for them now to avoid memory fragmentation during import.
-	if (!CDbXML::info.bPreparsed &&
-			CDbXML::info.typeBeingImported != CImportInfo::LanguageMod) //only adding text records
-	{
-		PerformCallback(MID_ImportTallying);
-		XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
-		while (info.ImportStatus == MID_ImportSuccessful)
+		//Allocate (next) buffer for parsing.
+		void *buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
+		if (!buff)
 		{
-			//Allocate buffer for parsing.
-			void *buff = XML_GetBuffer(parser, BUFF_SIZE);
-			if (!buff)
-			{
-				info.ImportStatus=MID_NoMoreMemory;
+			info.ImportStatus=MID_NoMoreMemory;
+			break;
+		}
+
+		const int bytesRead = pBuffer->uncompressedSize;
+		ASSERT(bytesRead >= 0);
+		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
+		memcpy(buff, pBuffer->buf, bytesRead);
+
+		//Parse data chunk.
+		if (XML_ParseBuffer(parser, bytesRead, bytesRead == 0) == XML_STATUS_ERROR)
+		{
+			//Some problem occurred.
+			info.ImportStatus=MID_FileCorrupted;
+
+			char errorStr[256];
+			_snprintf(errorStr, 256,
+				"Import Parse Error: %s at line %u:%u\n",
+				XML_ErrorString(XML_GetErrorCode(parser)),
+				(UINT)XML_GetCurrentLineNumber(parser),
+				(UINT)XML_GetCurrentColumnNumber(parser));
+			CFiles Files;
+			Files.AppendErrorLog((char *)errorStr);
+		}
+
+		if (bytesRead == 0) //done
+		{
+			AddRowsForPendingRecords();
+			CDbXML::info.bPreparsed = true;
+			break;
+		}
+
+		//Get next chunk of data to parse.
+		if (pBuffer->d_stream) {
+			//uncompress more data until input is exhausted
+			const UINT mid = pBuffer->uncompressChunk();
+			if (mid != MID_Success) {
+				info.ImportStatus = mid;
 				break;
 			}
 
-			//Get next chunk of data to parse.
-			const int bytesRead = bufIndex + BUFF_SIZE <= size ? BUFF_SIZE : size - bufIndex;
-			memcpy(buff, buf + bufIndex, bytesRead);
-			bufIndex += bytesRead;
-			ASSERT(bytesRead >= 0);
-
-			//Parse data chunk.
-			if (XML_ParseBuffer(parser, bytesRead, bytesRead == 0) == XML_STATUS_ERROR)
-			{
-				//Some problem occurred.
-				info.ImportStatus=MID_FileCorrupted;
-
-				char errorStr[256];
-				_snprintf(errorStr, 256,
-						"Import Parse Error: %s at line %u:%u\n",
-						XML_ErrorString(XML_GetErrorCode(parser)),
-						(UINT)XML_GetCurrentLineNumber(parser),
-						(UINT)XML_GetCurrentColumnNumber(parser));
-				CFiles Files;
-				Files.AppendErrorLog((char *)errorStr);
-			}
-
-			if (bytesRead == 0) //done
-			{
-				AddRowsForPendingRecords();
-				break;
-			}
+			pBuffer->totalParseSize += pBuffer->uncompressedSize; //sum during first data pass
 		}
 	}
+}
 
-	//Parse.
-	PerformCallback(MID_ImportingData);
-	VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+//*****************************************************************************
+//Parse the XML data payload, populating database records and staging them
+//for commit at the end of parsing.
+void CDbXML::Import_ParseRecords(
+	ImportBuffer* pBuffer)
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
+					
+	//These callback methods are invoked as XML records and attributes are parsed.
+	//Internal database records will be constructed incrementally as these
+	//values are read in. The 'EndElement' callback is used to indicate the
+	//completion of parsing a record, at which point it is staged for write
+	//to the database.  Read their in-place comments for more detail.
 	XML_SetElementHandler(parser, CDbXMLStartElementCDecl, CDbXMLEndElementCDecl);
+
 	CDb::FreezeTimeStamps(true);
-	bufIndex = 0;
+
 	while (ContinueImport())
 	{
 		//Allocate buffer for parsing.
-		void *buff = XML_GetBuffer(parser, BUFF_SIZE);
+		void *buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
 		if (!buff) {
 			if (!bImportComplete)
 				info.ImportStatus=MID_NoMoreMemory;
@@ -1777,10 +1985,10 @@ MESSAGE_ID CDbXML::ImportXML(
 		}
 
 		//Get next chunk of data to parse.
-		const int bytesRead = bufIndex + BUFF_SIZE <= size ? BUFF_SIZE : size - bufIndex;
-		memcpy(buff, buf + bufIndex, bytesRead);
-		bufIndex += bytesRead;
+		const int bytesRead = pBuffer->uncompressedSize;
 		ASSERT(bytesRead >= 0);
+		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
+		memcpy(buff, pBuffer->buf, bytesRead);
 
 		//Parse data chunk.
 		if (XML_ParseBuffer(parser, bytesRead, bytesRead == 0) == XML_STATUS_ERROR)
@@ -1792,23 +2000,38 @@ MESSAGE_ID CDbXML::ImportXML(
 
 			char errorStr[256];
 			_snprintf(errorStr, 256,
-					"Import Parse Error: %s at line %u:%u\n",
-					XML_ErrorString(XML_GetErrorCode(parser)),
-					(UINT)XML_GetCurrentLineNumber(parser),
-					(UINT)XML_GetCurrentColumnNumber(parser));
+				"Import Parse Error: %s at line %u:%u\n",
+				XML_ErrorString(XML_GetErrorCode(parser)),
+				(UINT)XML_GetCurrentLineNumber(parser),
+				(UINT)XML_GetCurrentColumnNumber(parser));
 			CFiles Files;
 			Files.AppendErrorLog((char *)errorStr);
 		}
 
 		if (bytesRead == 0)
 			break; //done
+
+		if (pBuffer->d_stream) {
+			//uncompress more data until input is exhausted
+			const UINT mid = pBuffer->uncompressChunk();
+			if (mid != MID_Success) {
+				info.ImportStatus = mid;
+				break;
+			}
+		}
 	}
+
 	CDb::FreezeTimeStamps(false);
+}
 
-	//Free parser.
-	XML_ParserFree(parser);
-	parser = NULL;
-
+//*****************************************************************************
+//Following parsing of the import data payload,
+//assess what happened, resolve pending foreign key updates,
+//verify data integrity and freshness,
+//integrate new data with pre-existing data, as appropriate,
+//and tear down and reset all parsing structures.
+void CDbXML::Import_Resolve()
+{
 	//Confirm something was actually imported.  If not, mention this.
 	if (ContinueImport() && !info.bImportingSavedGames)
 		switch (info.typeBeingImported)
@@ -1844,11 +2067,11 @@ MESSAGE_ID CDbXML::ImportXML(
 				if (info.dwPlayerImportedID)
 					g_pTheDB->SavedGames.MergePlayerTotals(info.dwPlayerImportedID);
 				if (info.localHoldIDs.size() > 0 &&
-						bSavedGamesUpdated &&	//only check saved game records if some
-													//records were actually saved to DB
-						//don't verify after both demo and saved game re-import:
-						//only do it once both types are imported
-						(!info.bImportingSavedGames || info.typeBeingImported == CImportInfo::SavedGame))
+					bSavedGamesUpdated &&	//only check saved game records if some
+											//records were actually saved to DB
+											//don't verify after both demo and saved game re-import:
+											//only do it once both types are imported
+					(!info.bImportingSavedGames || info.typeBeingImported == CImportInfo::SavedGame))
 					VerifySavedGames(); //performs internal Commits
 
 				g_pTheDB->Commit();
@@ -1861,7 +2084,7 @@ MESSAGE_ID CDbXML::ImportXML(
 		bImportComplete = true; //Import is impossible or ignored -- won't perform another pass
 		g_pTheDB->Rollback(); //remove records added since last commit
 
-		//Free any remaining DB objects.
+							  //Free any remaining DB objects.
 		UINT wIndex;
 		for (wIndex=dbRecordStack.size(); wIndex--; )
 			delete dbRecordStack[wIndex];
@@ -1907,15 +2130,6 @@ MESSAGE_ID CDbXML::ImportXML(
 	}
 
 	info.Clear(!bImportComplete || info.bImportingSavedGames);
-
-	}	//try
-	catch (CException&)
-	{
-		return MID_FileCorrupted;
-	}
-	END_DBREFCOUNT_CHECK;
-
-	return info.ImportStatus;
 }
 
 //*****************************************************************************
@@ -2099,10 +2313,19 @@ string CDbXML::getXMLfooter()
 }
 
 //*****************************************************************************
+//This is the core routine for exporting records from the database.
+//The records are converted to a text string, which is typically written to
+//a compressed file on disk.
+//
+//The ImportXML methods can then be called to load and create new records
+//from an export file.  These methods read the file, uncompress, then parse
+//the exported text records. For each record, the respective SetProperty methods
+//in the DB sub-classes will be invoked to parse and populate all relevant
+//columns for DB records.
 bool CDbXML::ExportXMLRecords(
-	CDbRefs& dbRefs,
-	const CIDSet& primaryKeys,
-	string &text)
+	CDbRefs& dbRefs, //(in) indicates record type to export
+	const CIDSet& primaryKeys, //(in) primary keys of records to export
+	string &text) //(out) text string contained exported data
 {
 	const VIEWTYPE vType = dbRefs.vTypeBeingExported;
 
