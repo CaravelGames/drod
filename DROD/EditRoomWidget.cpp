@@ -1370,7 +1370,7 @@ void CEditRoomWidget::Paint(
 
 	//1c. Render dynamic stuff that shows over the static room image.
 	RenderFogInPit(pDestSurface);
-	DrawPlatforms(pDestSurface, true);
+	DrawTLayer(pDestSurface, true);
 
 	//2. Draw effects that go on top of room image, under monsters/swordsman.
 	this->pTLayerEffects->UpdateAndDrawEffects();
