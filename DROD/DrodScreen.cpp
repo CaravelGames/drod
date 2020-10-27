@@ -2044,9 +2044,11 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 	switch (result)
 	{
 		case MID_OverwriteHoldPrompt:
-			CDbXML::info.bReplaceOldHolds = true; break;
+			CDbXML::info.bReplaceOldHolds = true;
+			break;
 		case MID_OverwritePlayerPrompt:
-			CDbXML::info.bReplaceOldPlayers = true; break;
+			CDbXML::info.bReplaceOldPlayers = true;
+			break;
 		case MID_DowngradeHoldPrompt:
 			CDbXML::info.bReplaceOldHolds = true;
 			CDbXML::info.bAllowHoldDowngrade = true;
@@ -2054,7 +2056,7 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 		default: ASSERT(!"Handle this case"); break;
 	}
 	CDbXML::SetCallback(this);
-	result = CDbXML::ImportXML();
+	result = CDbXML::ImportXML(); //restart import process with the above override flag(s) set
 	return true;
 }
 
