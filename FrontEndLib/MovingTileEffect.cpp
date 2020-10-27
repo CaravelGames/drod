@@ -160,8 +160,11 @@ bool CMovingTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed
 	ASSERT(this->pOwnerWidget);
 	SDL_Rect OwnerRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	this->pOwnerWidget->GetRect(OwnerRect);
-	if (!CWidget::GetBlitRectFromClipRect(this->wX, this->wY, OwnerRect, this->drawRect))
+	this->drawRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	if (!CWidget::GetBlitRectFromClipRect(this->wX, this->wY, OwnerRect, this->drawRect)) {
+		this->bDrawEffect = false;
 		return !bEndEffect;
+	}
 
 	this->bDrawEffect = !bEndEffect;
 

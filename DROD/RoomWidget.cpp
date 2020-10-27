@@ -9696,6 +9696,7 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
 }
 
+//*****************************************************************************
 void CRoomWidget::SetEffectsFrozen(const bool bIsFrozen)
 // Updates frozen status of all effects layers. Frozen effects do not continue their animation and are suspended, waiting
 {

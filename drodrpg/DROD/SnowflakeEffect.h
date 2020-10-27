@@ -35,15 +35,24 @@ class CSnowflakeEffect : public CEffect
 public:
 	CSnowflakeEffect(CWidget *pSetWidget);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+	void UpdateWind();
 
 private:
+	void UpdateFrame(float elapsedFraction);
 	bool OutOfBounds() const;
 
 	float fX, fY;         //real position
 	static float fXDrift; //delta
 	UINT wType;
 	SDL_Rect screenRect;
+
+	Uint8 nOpacity;
+	UINT wTileNo;
+	UINT wDrawSize;
 };
 
 #endif   //...#ifndef SNOWFLAKEEFFECT_H
