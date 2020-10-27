@@ -46,7 +46,7 @@ if DepsToBuild == "all":
 		'expat-2.1.0',
 		'fmodapi-375-win',
 		'jpeg-6b',
-		'json-0.6.2-rc2',
+		'json-0.6.0-rc2',
 		'libogg-1.3.0',
 		'libtheora-1.1.1',
 		'libvorbis-1.3.3',
@@ -174,7 +174,7 @@ dependencies = {
 			'jpeg-6b/jpeglib/Release/jpeglib.lib': 'Release'
 		}
 	},
-	'json-0.6.2-rc2': {
+	'json-0.6.0-rc2': {
 		# Release build had to have assembly generation removed from lib_json
 		'urls': ['http://cdn.retrocade.net/jsoncpp-src-0.6.0-rc2.zip'],
 		'builds': [
