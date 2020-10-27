@@ -136,6 +136,10 @@ private:
 	static CDbBase * GetNewRecord(const VIEWTYPE vType);
 
 	static MESSAGE_ID ImportXML(const char *buf, const UINT size);
+	static void Import_Init();
+	static void Import_TallyRecords(const char* buf, const UINT size);
+	static void Import_ParseRecords(const char* buf, const UINT size);
+	static void Import_Resolve();
 
 	static VIEWTYPE ParseViewType(const char *str);
 	static VIEWPROPTYPE ParseViewpropType(const char *str);

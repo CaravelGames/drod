@@ -43,6 +43,7 @@
 
 const char gzID[] = "\x1f\x8b"; //gzip file header id
 const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
+const int XML_PARSER_BUFF_SIZE = 512*1024;
 
 //Literals used to query and store values for Hold Characters in the packed vars object.
 #define scriptIDstr "ScriptID"
@@ -260,6 +261,10 @@ void CDbXML::TallyElement(
 //
 //Tally XML start tags.
 //
+//That is, it is called to count the number of records of each object type that
+//are encounted in the XML data payload.
+//This number of records will later be pre-allocated for each object type.
+//
 //Params:
 	void* /*userData*/, const char *name, const char ** /*atts*/)
 {
@@ -293,6 +298,13 @@ void CDbXML::StartElement(
 //Expat callback function
 //
 //Process XML start tag, and attributes.
+//
+//This method is used to populate fields of new database records via the
+//polymorphic SetProperty call, defined in each DB sub-class.
+//The 'info' object is used to identify record GUIDs, remap foreign keys,
+//merge imported data into any pre-existing records, and resolve semantic collisions
+//of any pre-existing records, potentially overwriting pre-existing records
+//with the field values being imported here.
 //
 //Params:
 	void* /*userData*/, const char *name, const char **atts)
@@ -425,6 +437,14 @@ void CDbXML::EndElement(
 //Expat callback function
 //
 //Process XML end tag.
+//
+//This method is reached when the parser completes reading of all field values
+//and sub-tables (subviews) that will be written into a database record.
+//At this point, the new record is staged for saving to the database
+//via the Update() call.
+//
+//If an unrecoverable error is encountered at any point in the import process,
+//all (pending) database updates made here will be rolled back instead of committed.
 //
 //Params:
 	void* /*userData*/, const char* name)
@@ -1680,7 +1700,49 @@ MESSAGE_ID CDbXML::ImportXML(
 
 	LOGCONTEXT("CDbXML::ImportXML");
 
-	//Ensure everything is reset.
+	ASSERT(buf);
+	if (!size)
+		return MID_ImportSuccessful;   //nothing to import
+
+	Import_Init();
+
+	BEGIN_DBREFCOUNT_CHECK;
+	try
+	{
+		//Parser init.
+		InitTokens();
+
+		//Free any parsing job that had started and been interrupted.
+		if (parser) XML_ParserFree(parser);
+
+		parser = XML_ParserCreate(NULL);
+
+		Import_TallyRecords(buf, size);
+
+		PerformCallback(MID_ImportingData);
+		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+
+		Import_ParseRecords(buf, size);
+
+		//Free parser.
+		XML_ParserFree(parser);
+		parser = NULL;
+
+		Import_Resolve();
+	}	//try
+	catch (CException&)
+	{
+		return MID_FileCorrupted;
+	}
+	END_DBREFCOUNT_CHECK;
+
+	return info.ImportStatus;
+}
+
+//*****************************************************************************
+//Ensure everything used for import is reset and ready.
+void CDbXML::Import_Init()
+{
 	ASSERT(dbRecordStack.empty());
 	ASSERT(dbImportedRecordIDs.empty());
 	ASSERT(dbRecordTypes.empty());
@@ -1693,37 +1755,36 @@ MESSAGE_ID CDbXML::ImportXML(
 		info.dwPlayerImportedID = info.dwHoldImportedID = info.dwDemoImportedID = 0;
 		info.roomStyles.clear();
 	}
-	if (!size)
-		return MID_ImportSuccessful;   //nothing to import
 	CDbRoom::ResetForImport();
-	ASSERT(buf);
 	bImportComplete = false;
+}
 
-	BEGIN_DBREFCOUNT_CHECK;
-	try
-	{
-
-	//Parser init.
-	InitTokens();
-	//Free any parsing job that had started and been interrupted.
-	if (parser) XML_ParserFree(parser);
-	parser = XML_ParserCreate(NULL);
+//*****************************************************************************
+//Pre-parse the XML payload.
+//Determine the upper limit of how many new records will be added to the DB
+//and add empty rows for them now to minimize memory address fragmentation during import.
+void CDbXML::Import_TallyRecords(
+	const char *buf, const UINT size)  //(in) buffer of XML text
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
 
 	//Parse the XML in chunks to reduce memory overhead.
-	static const int BUFF_SIZE = 512*1024;
 	UINT bufIndex = 0;
 
-	//Pre-parse: determine upper limit of how many new records will be added to DB
-	//and add empty rows for them now to avoid memory fragmentation during import.
 	if (!CDbXML::info.bPreparsed &&
-			CDbXML::info.typeBeingImported != CImportInfo::LanguageMod) //only adding text records
+		CDbXML::info.typeBeingImported != CImportInfo::LanguageMod) //only adding text records
 	{
 		PerformCallback(MID_ImportTallying);
+		//This callback method is invoked by the XML parser for each record
+		//encountered in the data payload.
+		//It is used to tally the number of records existing of each type.
+		//See the functions's comments for more detail.
 		XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
+
 		while (info.ImportStatus == MID_ImportSuccessful)
 		{
 			//Allocate buffer for parsing.
-			void *buff = XML_GetBuffer(parser, BUFF_SIZE);
+			void *buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
 			if (!buff)
 			{
 				info.ImportStatus=MID_NoMoreMemory;
@@ -1731,7 +1792,7 @@ MESSAGE_ID CDbXML::ImportXML(
 			}
 
 			//Get next chunk of data to parse.
-			const int bytesRead = bufIndex + BUFF_SIZE <= size ? BUFF_SIZE : size - bufIndex;
+			const int bytesRead = bufIndex + XML_PARSER_BUFF_SIZE <= size ? XML_PARSER_BUFF_SIZE : size - bufIndex;
 			memcpy(buff, buf + bufIndex, bytesRead);
 			bufIndex += bytesRead;
 			ASSERT(bytesRead >= 0);
@@ -1744,10 +1805,10 @@ MESSAGE_ID CDbXML::ImportXML(
 
 				char errorStr[256];
 				_snprintf(errorStr, 256,
-						"Import Parse Error: %s at line %u:%u\n",
-						XML_ErrorString(XML_GetErrorCode(parser)),
-						(UINT)XML_GetCurrentLineNumber(parser),
-						(UINT)XML_GetCurrentColumnNumber(parser));
+					"Import Parse Error: %s at line %u:%u\n",
+					XML_ErrorString(XML_GetErrorCode(parser)),
+					(UINT)XML_GetCurrentLineNumber(parser),
+					(UINT)XML_GetCurrentColumnNumber(parser));
 				CFiles Files;
 				Files.AppendErrorLog((char *)errorStr);
 			}
@@ -1759,17 +1820,29 @@ MESSAGE_ID CDbXML::ImportXML(
 			}
 		}
 	}
+}
 
-	//Parse.
-	PerformCallback(MID_ImportingData);
-	VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+//*****************************************************************************
+//Parse the XML data payload, populating database records and staging them
+//for commit at the end of parsing.
+void CDbXML::Import_ParseRecords(
+	const char* buf, const UINT size)
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
+					
+	//These callback methods are invoked as XML records and attributes are parsed.
+	//Internal database records will be constructed incrementally as these
+	//values are read in. The 'EndElement' callback is used to indicate the
+	//completion of parsing a record, at which point it is staged for write
+	//to the database.  Read their in-place comments for more detail.
 	XML_SetElementHandler(parser, CDbXMLStartElementCDecl, CDbXMLEndElementCDecl);
+
 	CDb::FreezeTimeStamps(true);
-	bufIndex = 0;
+	UINT bufIndex = 0;
 	while (ContinueImport())
 	{
 		//Allocate buffer for parsing.
-		void *buff = XML_GetBuffer(parser, BUFF_SIZE);
+		void *buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
 		if (!buff) {
 			if (!bImportComplete)
 				info.ImportStatus=MID_NoMoreMemory;
@@ -1777,7 +1850,7 @@ MESSAGE_ID CDbXML::ImportXML(
 		}
 
 		//Get next chunk of data to parse.
-		const int bytesRead = bufIndex + BUFF_SIZE <= size ? BUFF_SIZE : size - bufIndex;
+		const int bytesRead = bufIndex + XML_PARSER_BUFF_SIZE <= size ? XML_PARSER_BUFF_SIZE : size - bufIndex;
 		memcpy(buff, buf + bufIndex, bytesRead);
 		bufIndex += bytesRead;
 		ASSERT(bytesRead >= 0);
@@ -1792,10 +1865,10 @@ MESSAGE_ID CDbXML::ImportXML(
 
 			char errorStr[256];
 			_snprintf(errorStr, 256,
-					"Import Parse Error: %s at line %u:%u\n",
-					XML_ErrorString(XML_GetErrorCode(parser)),
-					(UINT)XML_GetCurrentLineNumber(parser),
-					(UINT)XML_GetCurrentColumnNumber(parser));
+				"Import Parse Error: %s at line %u:%u\n",
+				XML_ErrorString(XML_GetErrorCode(parser)),
+				(UINT)XML_GetCurrentLineNumber(parser),
+				(UINT)XML_GetCurrentColumnNumber(parser));
 			CFiles Files;
 			Files.AppendErrorLog((char *)errorStr);
 		}
@@ -1803,12 +1876,18 @@ MESSAGE_ID CDbXML::ImportXML(
 		if (bytesRead == 0)
 			break; //done
 	}
+
 	CDb::FreezeTimeStamps(false);
+}
 
-	//Free parser.
-	XML_ParserFree(parser);
-	parser = NULL;
-
+//*****************************************************************************
+//Following parsing of the import data payload,
+//assess what happened, resolve pending foreign key updates,
+//verify data integrity and freshness,
+//integrate new data with pre-existing data, as appropriate,
+//and tear down and reset all parsing structures.
+void CDbXML::Import_Resolve()
+{
 	//Confirm something was actually imported.  If not, mention this.
 	if (ContinueImport() && !info.bImportingSavedGames)
 		switch (info.typeBeingImported)
@@ -1844,11 +1923,11 @@ MESSAGE_ID CDbXML::ImportXML(
 				if (info.dwPlayerImportedID)
 					g_pTheDB->SavedGames.MergePlayerTotals(info.dwPlayerImportedID);
 				if (info.localHoldIDs.size() > 0 &&
-						bSavedGamesUpdated &&	//only check saved game records if some
-													//records were actually saved to DB
-						//don't verify after both demo and saved game re-import:
-						//only do it once both types are imported
-						(!info.bImportingSavedGames || info.typeBeingImported == CImportInfo::SavedGame))
+					bSavedGamesUpdated &&	//only check saved game records if some
+											//records were actually saved to DB
+											//don't verify after both demo and saved game re-import:
+											//only do it once both types are imported
+					(!info.bImportingSavedGames || info.typeBeingImported == CImportInfo::SavedGame))
 					VerifySavedGames(); //performs internal Commits
 
 				g_pTheDB->Commit();
@@ -1861,7 +1940,7 @@ MESSAGE_ID CDbXML::ImportXML(
 		bImportComplete = true; //Import is impossible or ignored -- won't perform another pass
 		g_pTheDB->Rollback(); //remove records added since last commit
 
-		//Free any remaining DB objects.
+							  //Free any remaining DB objects.
 		UINT wIndex;
 		for (wIndex=dbRecordStack.size(); wIndex--; )
 			delete dbRecordStack[wIndex];
@@ -1907,15 +1986,6 @@ MESSAGE_ID CDbXML::ImportXML(
 	}
 
 	info.Clear(!bImportComplete || info.bImportingSavedGames);
-
-	}	//try
-	catch (CException&)
-	{
-		return MID_FileCorrupted;
-	}
-	END_DBREFCOUNT_CHECK;
-
-	return info.ImportStatus;
 }
 
 //*****************************************************************************
@@ -2099,10 +2169,19 @@ string CDbXML::getXMLfooter()
 }
 
 //*****************************************************************************
+//This is the core routine for exporting records from the database.
+//The records are converted to a text string, which is typically written to
+//a compressed file on disk.
+//
+//The ImportXML methods can then be called to load and create new records
+//from an export file.  These methods read the file, uncompress, then parse
+//the exported text records. For each record, the respective SetProperty methods
+//in the DB sub-classes will be invoked to parse and populate all relevant
+//columns for DB records.
 bool CDbXML::ExportXMLRecords(
-	CDbRefs& dbRefs,
-	const CIDSet& primaryKeys,
-	string &text)
+	CDbRefs& dbRefs, //(in) indicates record type to export
+	const CIDSet& primaryKeys, //(in) primary keys of records to export
+	string &text) //(out) text string contained exported data
 {
 	const VIEWTYPE vType = dbRefs.vTypeBeingExported;
 
