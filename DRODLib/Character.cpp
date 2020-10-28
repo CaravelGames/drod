@@ -2640,6 +2640,12 @@ void CCharacter::Process(
 						this->bNPCPathmapObstacle = false;
 						bChangeImperative = false;
 					break;
+					case ScriptFlag::Friendly:
+						this->bFriendly = true;
+					break;
+					case ScriptFlag::Unfriendly:
+						this->bFriendly = false;
+					break;
 					default: break;
 				}
 				if (bChangeImperative)

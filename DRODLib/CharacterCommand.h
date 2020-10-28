@@ -131,7 +131,9 @@ namespace ScriptFlag
 		InvisibleInspectable=30,   // Causes disappeared characters to be included when right clicking in the room
 		InvisibleNotInspectable=31,
 		InvisibleCountMoveOrder = 32,   // Causes disappeared characters to be counted when displaying move order on right click
-		InvisibleNotCountMoveOrder = 33
+		InvisibleNotCountMoveOrder = 33,
+		Friendly = 34, // the character becomes 'friendly'. Allies will avoid stabbing it, and killing it won't break stealth.
+		Unfriendly = 35 // the character becomes 'unfriendly'. Allies will stab it, and killing it will break stealth.
 	};
 
 	enum Behavior
