@@ -175,6 +175,7 @@ private:
 	void           SendAchievement(const string& achievement);
 	bool           ShouldShowLevelStart();
 	void           ShowBigMap();
+	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           ShowDemosForRoom(const UINT roomID);
 	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();

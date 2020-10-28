@@ -6097,6 +6097,26 @@ void CGameScreen::ShowLockIcon(const bool bShow)
 }
 
 //*****************************************************************************
+void CGameScreen::ShowChatHistory(CEntranceSelectDialogWidget* pBox)
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	CDrodScreen::ShowChatHistory(pBox);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+}
+
+//*****************************************************************************
 void CGameScreen::UpdatePlayerFace()
 // Refresh player face to match reality
 {
