@@ -458,6 +458,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPlayTesting(false)
 	, bRoomClearedOnce(false)
 	, bSkipCutScene(false)
+	, bIsDialogDisplayed(false)
 
 	, fPos(NULL)
 
@@ -1104,13 +1105,39 @@ void CGameScreen::OnWindowEvent(const SDL_WindowEvent &wevent)
 }
 
 //*****************************************************************************
+void CGameScreen::OnWindowEvent_GetFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_GetFocus();
+
+	this->pCurrentGame->UpdateTime();
+	if (!this->dwTimeMinimized)
+		this->dwTimeMinimized = SDL_GetTicks();
+
+	if (this->bIsDialogDisplayed)
+		g_pTheSound->PauseSounds();
+}
+
+//*****************************************************************************
+void CGameScreen::OnWindowEvent_LoseFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_LoseFocus();
+
+	if (this->dwTimeMinimized)
+	{
+		if (this->dwNextSpeech)
+			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+		this->dwTimeMinimized = 0;
+	}
+}
+
+//*****************************************************************************
 void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
 	
-	// Effects should not animate when game is not focused
-	this->pRoomWidget->SetEffectsFrozen(!CBitmapManager::bGameHasFocus);
+	// Effects should not animate when game is not focused or a dialog is displayed
+	this->pRoomWidget->SetEffectsFrozen(!WindowHasFocus() || this->bIsDialogDisplayed);
 
 	if (this->bShowingBigMap)
 		return;
@@ -6158,6 +6185,12 @@ void CGameScreen::ShowSpeechLog()
 	this->pSpeechBox->PopulateList(CEntranceSelectDialogWidget::Speech);
 	this->pSpeechBox->SelectItem(0);
 
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	UINT dwItemID=0;
 	int playingChannel=-1;
 	do {
@@ -6183,6 +6216,17 @@ void CGameScreen::ShowSpeechLog()
 			}
 		}
 	} while (dwItemID != 0);
+
+	if (playingChannel >= 0)
+		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
 
 	Paint();
 }

@@ -103,7 +103,9 @@ protected:
 	virtual void   OnBetweenEvents();
 	virtual void   OnDeactivate();
 	virtual void   OnSelectChange(const UINT dwTagNo);
-	virtual void   OnWindowEvent(const SDL_WindowEvent &wevent);
+	virtual void   OnWindowEvent(const SDL_WindowEvent& wevent);
+	virtual void   OnWindowEvent_GetFocus();
+	virtual void   OnWindowEvent_LoseFocus();
 	virtual void   Paint(bool bUpdateRect=true);
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
@@ -200,6 +202,7 @@ private:
 	bool        bNeedToProcessDelayedQuestions;
 	bool        bShowingBigMap;
 	bool        bShowingCutScene;
+	bool        bIsDialogDisplayed;
 
 	bool        bAutoUndoOnDeath;
 
