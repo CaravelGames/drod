@@ -61,6 +61,7 @@ UINT CBitmapManager::BYTES_PER_PIXEL = 4;
 bool CBitmapManager::bAlpha = true;
 BYTE CBitmapManager::eyeCandy = 1;
 float CBitmapManager::fLightLevel = 1.0f;
+bool CBitmapManager::bGameHasFocus = true;
 
 Uint8 CBitmapManager::TransColor[3] = {192,192,192};	//(r,g,b) color that signifies transparent pixels: default=192-gray
 
