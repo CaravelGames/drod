@@ -44,15 +44,8 @@ CFlashShadeEffect::CFlashShadeEffect(
 }
 
 //********************************************************************************
-bool CFlashShadeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.  Never ends.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CFlashShadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
 	//Determine brightness of shade.
 	if (this->bMakeBrighter)
 	{
@@ -60,12 +53,20 @@ bool CFlashShadeEffect::Draw(SDL_Surface* pDestSurface)
 			this->bMakeBrighter = false;
 		else
 			this->brightness += this->flashSpeed;
-	} else {
+	}
+	else {
 		if (this->brightness <= this->flashSpeed)
 			this->bMakeBrighter = true;
 		else
 			this->brightness -= this->flashSpeed;
 	}
+
+	return true;
+}
+
+//********************************************************************************
+void CFlashShadeEffect::Draw(SDL_Surface& destSurface)
+{
 	const float fMult = static_cast<float>(this->brightness) / 255.0f;
 	SURFACECOLOR flashColor;
 	flashColor.byt1 = static_cast<Uint8>(fMult * static_cast<float>(this->Color.byt1));
@@ -73,8 +74,5 @@ bool CFlashShadeEffect::Draw(SDL_Surface* pDestSurface)
 	flashColor.byt3 = static_cast<Uint8>(fMult * static_cast<float>(this->Color.byt3));
 
 	//Add flashing shading to tile.
-	ShadeTile(flashColor, pDestSurface);
-
-	//Continue effect.
-	return true;
+	ShadeTile(flashColor, destSurface);
 }

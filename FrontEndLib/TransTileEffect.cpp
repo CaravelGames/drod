@@ -26,10 +26,9 @@
 
 #include "TransTileEffect.h"
 #include "BitmapManager.h"
+#include "Screen.h"
 
 #include <BackEndLib/Assert.h>
-
-UINT CTransTileEffect::wInstances = 0;
 
 //********************************************************************************
 CTransTileEffect::CTransTileEffect(
@@ -41,51 +40,43 @@ CTransTileEffect::CTransTileEffect(
 	const UINT wTileImageNo,   //(in)   Tile to display.
 	const bool bUseLightLevel)
 	: CAnimatedTileEffect(pSetWidget,SetCoord,0,wTileImageNo,bUseLightLevel,EFFECTLIB::ETRANSTILE)
+	, nOpacity(255)
 {
-	this->bFirst = (wInstances == 0);
-	++wInstances;
 }
 
 //********************************************************************************
-CTransTileEffect::~CTransTileEffect()
-//Destructor.
+bool CTransTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	--wInstances;
+	this->nOpacity = UpdateStaticState();
+
+	return true;
 }
 
 //********************************************************************************
-bool CTransTileEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+Uint8 CTransTileEffect::UpdateStaticState()
 {
-	//Change level of transparency.
 	static const unsigned char MIN_OPACITY = 32;
 	static const unsigned char MAX_OPACITY = 192;
-	static unsigned char nOpacity = MIN_OPACITY; //If we have multiple effects, we'll
-	static bool bRising = true;   //want them synched, so we'll maintain a static var.
-	if (this->bFirst)
+	static unsigned char nOpacity = MIN_OPACITY;
+	static bool bRising = true;
+	static Uint32 lastUpdatePresentCount = 0;
+
+	// Already updated this frame
+	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
+		return nOpacity;
+
+	//Value is modified by only one of the instances.
+	if (bRising)
 	{
-		//Value is modified by only one of the instances.
-		if (bRising)
-		{
-			nOpacity += 3;
-			if (nOpacity > MAX_OPACITY)
-				bRising = false;
-		} else {
-			nOpacity -= 3;
-			if (nOpacity < MIN_OPACITY)
-				bRising = true;
-		}
+		nOpacity += 3;
+		if (nOpacity > MAX_OPACITY)
+			bRising = false;
+	}
+	else {
+		nOpacity -= 3;
+		if (nOpacity < MIN_OPACITY)
+			bRising = true;
 	}
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	//Draw tile.
-	DrawTile(this->wTileNo, pDestSurface, nOpacity);
-
-	//Continue effect.
-	return true;
+	return nOpacity;
 }

@@ -511,7 +511,7 @@ void CScreen::OnBetweenEvents()
 	this->bShowTip = (bTimeToShowTip && !this->bShowingTip && !this->MouseDraggingInWidget());
 
 	//Draw effects onto screen.
-	this->pEffects->DrawEffects(true);
+	this->pEffects->UpdateAndDrawEffects(true);
 }
 
 //*****************************************************************************
@@ -732,7 +732,7 @@ void CScreen::Paint(
 
 	PaintChildren();
 
-	this->pEffects->DrawEffects(true, false, pScreenSurface);
+	this->pEffects->UpdateAndDrawEffects(true, pScreenSurface);
 
 	if (bUpdateRect) UpdateRect();
 }

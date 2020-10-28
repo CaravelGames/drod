@@ -30,7 +30,21 @@
 #include "BitmapManager.h"
 #include <vector>
 
-void DrawBolt(int xBegin, int yBegin, int xEnd, int yEnd, const UINT DISPLAY_SIZE,
-		SDL_Surface *pPartsSurface, SDL_Surface *pDestSurface, vector<SDL_Rect>& dirtyRects);  
+
+struct BoltSegment {
+	BoltSegment(SDL_Rect* pSourceRect, SDL_Rect destRect)
+		: pSourceRect(pSourceRect), destRect(destRect)
+	{}
+
+	SDL_Rect* pSourceRect; // Not owned by this struct
+	SDL_Rect destRect;
+};
+
+typedef std::vector<BoltSegment> BOLT_SEGMENTS;
+
+void GenerateBolt(int xBegin, int yBegin, int xEnd, int yEnd, const UINT DISPLAY_SIZE, BOLT_SEGMENTS& drawSegments, vector<SDL_Rect>& dirtyRects);
+void DrawBolt(BOLT_SEGMENTS& segments, SDL_Surface& pPartsSurface, SDL_Surface& pDestSurface);
+
+void DrawBolt(int xBegin, int yBegin, int xEnd, int yEnd, const UINT DISPLAY_SIZE, SDL_Surface* pPartsSurface, SDL_Surface* pDestSurface, vector<SDL_Rect>& dirtyRects);
 
 #endif //...#ifndef BOLT_H

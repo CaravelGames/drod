@@ -27,6 +27,7 @@
 #include "PuffExplosionEffect.h"
 #include "DrodBitmapManager.h"
 
+const Uint32 EffectDuration = 750; //ms
 //*****************************************************************************
 CPuffExplosionEffect::CPuffExplosionEffect(
 //Constructor.
@@ -34,52 +35,27 @@ CPuffExplosionEffect::CPuffExplosionEffect(
 //Params:
 	CWidget *pSetWidget,   //(in) Should be a room widget.
 	const CCoord &origin)  //(in) Location and initial direction of movement.
-	: CEffect(pSetWidget, EPUFFEXPLOSION)
+	: CAnimatedTileEffect(pSetWidget, origin, EffectDuration, 0, false, EPUFFEXPLOSION)
 {
-	pSetWidget->GetRect(this->screenRect);
-
-	this->nX = this->screenRect.x + origin.wX*CBitmapManager::CX_TILE;
-	this->nY = this->screenRect.y + origin.wY*CBitmapManager::CY_TILE;
-
-	//Bounding box is always of these dimensions.
-	SDL_Rect rect = MAKE_SDL_RECT(this->nX, this->nY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
-	this->dirtyRects.push_back(rect);
 }
 
 //*****************************************************************************
-bool CPuffExplosionEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CPuffExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	static const Uint32 dwDuration = 750; //ms
-	const Uint32 dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed > dwDuration)
-		return false;
-
-	//Draw animated dissipating cloud.
-	const float fPercent = dwTimeElapsed / float(dwDuration);
 	static const UINT NUM_FRAMES = 6;
-	const UINT frame = UINT(fPercent * NUM_FRAMES);
+
 	static const UINT FRAME[NUM_FRAMES] = {
 		TI_FLUFF_EXP1, TI_FLUFF_EXP2, TI_FLUFF_EXP3,
-		TI_FLUFF_EXP4, TI_FLUFF_EXP5, TI_FLUFF_EXP6};
-	const UINT wTile = FRAME[frame < NUM_FRAMES ? frame : NUM_FRAMES-1];
+		TI_FLUFF_EXP4, TI_FLUFF_EXP5, TI_FLUFF_EXP6
+	};
+
+	const UINT frame = UINT(GetElapsedFraction() * NUM_FRAMES);
+	this->wTileNo = FRAME[frame < NUM_FRAMES ? frame : NUM_FRAMES - 1];
 
 	//Fade out.
-	const BYTE nOpacity = g_pTheBM->bAlpha ?
-			(BYTE)((1.0 - dwTimeElapsed/(float)dwDuration) * 255.0) : 255;
-	g_pTheBM->BlitTileImagePart(wTile, this->nX, this->nY,
-			0, 0, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE,
-			pDestSurface, false, nOpacity);
-
-	//Update bounding box position.
-	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0].x = this->nX;
-	this->dirtyRects[0].y = this->nY;
+	this->nOpacity = g_pTheBM->bAlpha 
+		? (BYTE)(GetRemainingFraction() * 255.0) 
+		: 255;
 
 	return true;
 }

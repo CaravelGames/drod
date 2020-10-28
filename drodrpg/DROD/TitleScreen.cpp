@@ -1009,7 +1009,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		g_pTheDBM->fLightLevel = fDarkFactor;
 		addParticle();
 		updateParticles(pDestSurface, nMouseX, nMouseY);
-		verminEffects.DrawEffects(false, false, pDestSurface);
+		verminEffects.UpdateAndDrawEffects(false, pDestSurface);
 	
 		//Light mask centered on mouse cursor.
 		//Bounded random walk for light jitter.
@@ -1046,7 +1046,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 	PaintChildren();
 
-	this->pEffects->DrawEffects(!bAlpha);
+	this->pEffects->UpdateAndDrawEffects(!bAlpha);
 
 	if (this->pStatusDialog->IsVisible())
 		this->pStatusDialog->Paint();

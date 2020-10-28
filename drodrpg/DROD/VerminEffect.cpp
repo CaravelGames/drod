@@ -46,7 +46,7 @@ CVerminEffect::CVerminEffect(
 	const CMoveCoord &origin,  //(in) Location and initial direction of movement.
 	const UINT wNumVermin,     //(in) [default=5]
 	const bool bSlayer)			//(in) [default=false]
-	: CEffect(pSetWidget, EVERMIN)
+	: CEffect(pSetWidget, CVerminEffect::dwMaxDuration, EVERMIN)
 	, bSlayer(bSlayer)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -77,42 +77,29 @@ CVerminEffect::CVerminEffect(
 	}
 }
 
+
 //*****************************************************************************
-bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CVerminEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-  
-	const Uint32 timeElapsed = TimeElapsed();
-	if (timeElapsed > CVerminEffect::dwMaxDuration)
-		return false;
+	const float fMultiplier = min(wDeltaTime, 50) / 8.0f;
 
-	const Uint32 dwNow = SDL_GetTicks();
-	Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	this->dwTimeOfLastMove = dwNow;
-	const float fMultiplier = (dwFrameTime < 50 ? dwFrameTime : 50) / 8.0f;
-
-	const CDbRoom *pRoom = this->pRoomWidget->GetCurrentGame()->pRoom;
+	const CDbRoom* pRoom = this->pRoomWidget->GetCurrentGame()->pRoom;
 	ASSERT(pRoom);
 
-	for (UINT wIndex=this->vermin.size(); wIndex--; )
+	for (UINT wIndex = this->vermin.size(); wIndex--; )
 	{
 		VERMIN& v = this->vermin[wIndex];
 
 		if (!v.bActive)
 			continue;
 
-		if (timeElapsed > v.duration) {
+		if (dwTimeElapsed > v.duration) {
 			MarkVerminInactive(wIndex);
 			continue;
 		}
 
-		v.fX += static_cast<float>(cos(v.fAngle)) * fMultiplier;
-		v.fY += static_cast<float>(sin(v.fAngle)) * fMultiplier;
+		v.fX += cos(v.fAngle) * fMultiplier;
+		v.fY += sin(v.fAngle) * fMultiplier;
 
 		if (OutOfBounds(v) || HitsObstacle(pRoom, v))
 		{
@@ -122,15 +109,26 @@ bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
 
 		UpdateDirection(v);
 
-		g_pTheBM->BlitTileImagePart(v.wTileNo, static_cast<UINT>(v.fX), static_cast<UINT>(v.fY),
-											 0, 0, v.wSize, v.wSize, pDestSurface, true);
-
 		//Update bounding box position.
 		this->dirtyRects[wIndex].x = static_cast<Sint16>(v.fX);
 		this->dirtyRects[wIndex].y = static_cast<Sint16>(v.fY);
 	}
 
 	return true;
+}
+//*****************************************************************************
+void CVerminEffect::Draw(SDL_Surface& destSurface)
+{
+	for (UINT wIndex = this->vermin.size(); wIndex--; )
+	{
+		VERMIN& v = this->vermin[wIndex];
+
+		if (!v.bActive)
+			continue;
+
+		g_pTheBM->BlitTileImagePart(v.wTileNo, static_cast<UINT>(v.fX), static_cast<UINT>(v.fY),
+			0, 0, v.wSize, v.wSize, &destSurface, true);
+	}
 }
 
 //*****************************************************************************

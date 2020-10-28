@@ -70,16 +70,8 @@ CBloodInWallEffect::CBloodInWallEffect(
 }
 
 //********************************************************************************
-bool CBloodInWallEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+void CBloodInWallEffect::Draw(SDL_Surface& destSurface)
 {
-	if (!MoveParticles()) return false;
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	Uint8 nOpacity;
 	const Uint8 STEPSIZE = 255 / this->wParticleMinDuration;
 
@@ -94,14 +86,12 @@ bool CBloodInWallEffect::Draw(SDL_Surface* pDestSurface)
 			nOpacity = 255 - (this->wParticleMinDuration - p.wDurationLeft) * STEPSIZE;
 			if (p.type)
 				g_pTheBM->BlitTileImagePart(TI_BLOOD_G_2, ROUND(p.x),
-						ROUND(p.y), 0, 0, 6, 6, pDestSurface, true, nOpacity);
+						ROUND(p.y), 0, 0, 6, 6, &destSurface, true, nOpacity);
 			else
 				g_pTheBM->BlitTileImagePart(TI_BLOOD_G_1, ROUND(p.x),
-						ROUND(p.y), 0, 0, 4, 4, pDestSurface, true, nOpacity);
+						ROUND(p.y), 0, 0, 4, 4, &destSurface, true, nOpacity);
 		}
 	}
-
-	return true;
 }
 
 //*****************************************************************************

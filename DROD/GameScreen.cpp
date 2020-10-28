@@ -1033,6 +1033,9 @@ bool CGameScreen::SetForActivate()
 	//Eat existing events since early key presses could cause unexpected player movement.
 	ClearEvents();
 
+	//Prevent any effects from animating during a transition
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	//If the game says to go to a different screen, then don't stay on this screen.
 	return eNextScreen == SCR_Game;
 }
@@ -1105,6 +1108,8 @@ void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
+
+	this->pRoomWidget->SetEffectsFrozen(false);
 
 	if (this->bShowingBigMap)
 		return;
@@ -2617,7 +2622,7 @@ void CGameScreen::HandleEventsForHoldExit()
 		//Animate every so often.
 		if (dwNow - dwLastAnimate > 90)
 		{
-			this->pRoomWidget->pLastLayerEffects->DrawEffects();
+			this->pRoomWidget->pLastLayerEffects->UpdateAndDrawEffects();
 			g_pTheBM->UpdateScreen(GetWidgetScreenSurface());
 			dwLastAnimate = dwNow;
 		}

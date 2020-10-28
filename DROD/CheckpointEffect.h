@@ -35,7 +35,9 @@ class CCheckpointEffect : public CAnimatedTileEffect
 public:
 	CCheckpointEffect(CWidget *pSetWidget, const CCoord &SetCoord);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 };
 
 #endif //...#ifndef CHECKPOINTEFFECT_H

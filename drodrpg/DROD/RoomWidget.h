@@ -321,6 +321,7 @@ public:
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
 	void           SetAnimateMoves(const bool bAnimate) {this->bAnimateMoves = bAnimate;}
+	void           SetEffectsFrozen(const bool bIsFrozen);
 	void           SetMoveDuration(const UINT dwDuration) {this->dwMoveDuration = dwDuration;}
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}

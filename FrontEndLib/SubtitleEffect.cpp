@@ -40,10 +40,13 @@ const UINT wBorder = 2; //border buffer (pixels)
 const UINT widthBuffer = (wBorder+1)*2; //how much width is unavailable for text rendering
 
 const Uint32 dwWaitForNewText = 200; //ms -- additional time to show effect past duration until it beings to fade
+const UINT FADE_DURATION = 500;
+const UINT DEFAULT_OPACITY = 225; // 88%
 
 //
 //Public methods.
 //
+
 
 //*****************************************************************************
 CSubtitleEffect::CSubtitleEffect(
@@ -55,11 +58,11 @@ CSubtitleEffect::CSubtitleEffect(
 	const WCHAR *pwczSetText,           //(in)   Text that label will display.
 	const SDL_Color& FGColor,           //(in)   FG color of text line
 	const SURFACECOLOR& BGColor,        //(in)   BG color of text area
-	const Uint32 dwDuration,            //(in)   Time till fade, 0 = indefinite [2000ms]
+	const Uint32 dwTextDuration,            //(in)   Time till fade, 0 = indefinite [2000ms]
 	const UINT wDisplayLines,           //(in)   Lines to display [default = 3]
 	const UINT eSetFontType,            //(in)   [F_Small]
 	const UINT maxWidth)
-	: CEffect(pSetWidget,EFFECTLIB::ESUBTITLE)
+	: CEffect(pSetWidget, dwTextDuration + dwWaitForNewText + FADE_DURATION, EFFECTLIB::ESUBTITLE)
 	, bAttachedCoord(false)
 	, pCoord(pCoord)
 	, pSubtitles(NULL)
@@ -67,10 +70,11 @@ CSubtitleEffect::CSubtitleEffect(
 	, eFontType(eSetFontType)
 	, wDisplayLines(wDisplayLines)
 	, maxWidth(maxWidth)
-	, dwWhenEnabled(0), dwDuration(dwDuration), dwFadeDuration(500) //ms
+	, dwTextDuration(dwTextDuration)
+	, dwFadeDuration(FADE_DURATION) //ms
 	, pTextSurface(NULL)
 	, BGColor(BGColor)
-	, opacity(225)	//88%
+	, opacity(DEFAULT_OPACITY)
 {
 	ASSERT(this->pOwnerWidget);
 
@@ -209,7 +213,8 @@ void CSubtitleEffect::PrepWidget()
 	if (g_pTheBM->bAlpha)
 		SetAlpha(this->opacity);
 
-	this->dwWhenEnabled = SDL_GetTicks();
+	// Reset elapsed time otherwise the effect will end early
+	this->dwTimeElapsed = 0;
 }
 
 //*****************************************************************************
@@ -270,8 +275,13 @@ void CSubtitleEffect::AddTextLine(const WCHAR* pwczSetText, const Uint32 dwDurat
 	ASSERT(this->texts.size() == this->wDisplayLines);
 	if (!WCSlen(pwczSetText)) return;
 
-	//Find whether there are any empty lines to place text.
 	UINT wIndex;
+	// If text is sufficiently faded out, just replace the existing textbox
+	if (this->drawOpacity < this->opacity * 0.5f)
+		for (wIndex = 0; wIndex < this->wDisplayLines; ++wIndex)
+			this->texts[wIndex].text = wszEmpty;
+
+	//Find whether there are any empty lines to place text.
 	for (wIndex=0; wIndex<this->wDisplayLines; ++wIndex)
 		if (this->texts[wIndex].text.empty())
 			break;
@@ -285,7 +295,8 @@ void CSubtitleEffect::AddTextLine(const WCHAR* pwczSetText, const Uint32 dwDurat
 	this->texts[wIndex].text = pwczSetText;
 	this->texts[wIndex].color = color;
 
-	this->dwDuration = dwDuration;
+	this->dwTextDuration = dwDuration;
+	this->dwDuration = dwDuration + FADE_DURATION + dwWaitForNewText;
 
 	const UINT prevH = this->h;
 
@@ -319,42 +330,40 @@ void CSubtitleEffect::SetToText(const WCHAR* pwczSetText, const Uint32 dwDuratio
 	PrepWidget();
 }
 
+
 //*****************************************************************************
-bool CSubtitleEffect::Draw(SDL_Surface* pDestSurface)
+bool CSubtitleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	//Exit when there's no text to be drawn.
 	if (!this->texts.size()) return false;
 	if (this->texts[0].text.empty())
 		return false;
 
-	const Uint32 dwTimeSinceLastText = SDL_GetTicks() - this->dwWhenEnabled;
-	if (this->dwDuration && dwTimeSinceLastText > this->dwDuration + dwWaitForNewText)
+	this->drawOpacity = this->opacity;
+
+	if (this->dwDuration != (UINT)-1 && dwTimeElapsed > this->dwTextDuration + dwWaitForNewText)
 	{
-		//Start fading out text.
-		if (dwTimeSinceLastText >= this->dwDuration + this->dwFadeDuration)
-		{
-			RemoveFromSubtitles();
-			return false;
-		}
 		if (g_pTheBM->bAlpha)
 		{
-			const float fFadePerMS = this->opacity / float(this->dwFadeDuration);
-			const Uint8 opacity = this->opacity - (Uint8)((dwTimeSinceLastText-this->dwDuration) * fFadePerMS);
-			ASSERT(opacity <= this->opacity);
-			EnableSurfaceBlending(this->pTextSurface, opacity);
+			const float fadeRemainingFraction = 1 - (dwTimeElapsed - this->dwTextDuration - dwWaitForNewText) / float(this->dwFadeDuration);
+			this->drawOpacity = Uint8(this->opacity * fadeRemainingFraction);
+			ASSERT(this->drawOpacity <= this->opacity);
 		}
 	}
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
 	SetLocation();
 
+	return true;
+}
+
+//*****************************************************************************
+void CSubtitleEffect::Draw(SDL_Surface& destSurface)
+{
 	SDL_Rect SrcRect = MAKE_SDL_RECT(0, 0, this->w, this->h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
-	SDL_BlitSurface(this->pTextSurface, &SrcRect, pDestSurface, &ScreenRect);
-
-	return true;
+	if (g_pTheBM->bAlpha)
+		EnableSurfaceBlending(this->pTextSurface, this->drawOpacity);
+	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
 }
 
 //*****************************************************************************
@@ -364,8 +373,7 @@ Uint32 CSubtitleEffect::GetDisplayTimeRemaining() const
 	if (!this->dwDuration)
 		return Uint32(-1); //effect is displaying indefinitely
 
-	const Uint32 dwTimeSinceLastText = SDL_GetTicks() - this->dwWhenEnabled;
-	return this->dwDuration + dwWaitForNewText - dwTimeSinceLastText;
+	return this->dwDuration + dwWaitForNewText - this->dwTimeElapsed;
 }
 
 //*****************************************************************************

@@ -30,7 +30,9 @@
 #include "TileImageConstants.h"
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/DbRooms.h"
+
 #include <FrontEndLib/BitmapManager.h>
+#include <FrontEndLib/Screen.h>
 
 //All instanced rain drops have a similar horizontal drift (wind)
 float CRaindropEffect::fXDrift = 0.0;
@@ -44,9 +46,11 @@ CRaindropEffect::CRaindropEffect(
 //Params:
 	CWidget *pSetWidget,       //(in) parent widget
 	bool bHasted)
-	: CEffect(pSetWidget, ERAINDROP)
+	: CEffect(pSetWidget, (UINT)-1, ERAINDROP)
 	, bHasted(bHasted)
 	, pRoomWidget(NULL)
+	, wDrawXSize(0)
+	, wDrawYSize(0)
 {
 	if (pSetWidget->GetType() == WT_Room)
 		this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
@@ -59,30 +63,51 @@ CRaindropEffect::CRaindropEffect(
 	this->fX = static_cast<float>(nX);
 	this->fY = static_cast<float>(nY);
 	this->fGoalY = this->fY + RAND(this->screenRect.h) + 100; //have raindrops disappear slightly below screen center, on average
-	this->dwTimeOfLastMove = this->dwTimeStarted = SDL_GetTicks();
 
 	this->wType = RAND(RAIN_TYPES);
 
+	CalculateFrameProperties();
+
 	//There is always one dirty rect.
-	SDL_Rect rect = {static_cast<Sint16>(this->fX), static_cast<Sint16>(this->fY), 0, 0};
+	SDL_Rect rect = {
+		static_cast<Sint16>(this->fX), 
+		static_cast<Sint16>(this->fY), 
+		int(this->wDrawXSize),
+		int(this->wDrawYSize)
+	};
 	this->dirtyRects.push_back(rect);
 
 	RequestRetainOnClear(); //this effect doesn't depend on room state
 }
 
-//*****************************************************************************
-bool CRaindropEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
-{
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
 
+//*****************************************************************************
+bool CRaindropEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+{
+	if (TryToEndWithSplash())
+		return false;
+
+	UpdateWind();
+
+	const float fMultiplier = float((this->bHasted ? 0.5f : 1.0f) * wDeltaTime);
+	this->fX += fMultiplier * CRaindropEffect::fXDrift;	//wind blows sideways
+	this->fY += fMultiplier;
+
+	this->dirtyRects[0].x = static_cast<Sint16>(this->fX);
+	this->dirtyRects[0].y = static_cast<Sint16>(this->fY);
+
+	if (OutOfBounds())
+		return false;
+
+	return true;
+}
+
+//*****************************************************************************
+bool CRaindropEffect::TryToEndWithSplash()
+{
 	if (this->fY >= this->fGoalY) {
 		//Create a splash where raindrop hits water.
-		const CDbRoom *pRoom = this->pRoomWidget ? this->pRoomWidget->GetCurrentGame()->pRoom : NULL;
+		const CDbRoom* pRoom = this->pRoomWidget ? this->pRoomWidget->GetCurrentGame()->pRoom : NULL;
 		if (pRoom) {
 			const CCoord coord(
 				(Sint16(this->fX) - this->screenRect.x) / CBitmapManager::CX_TILE,
@@ -94,72 +119,61 @@ bool CRaindropEffect::Draw(SDL_Surface* pDestSurface)
 				}
 			}
 		}
-	
-		return false;
+
+		return true;
 	}
+	
+	return false;
+}
 
-	//Update real position in real time.
-	const Uint32 dwNow = SDL_GetTicks();
-	Uint32 dwFrameTimeMS = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	if (dwFrameTimeMS > 500) //arbitrary threshold to identify when effects are frozen
-		dwFrameTimeMS = 1;
-	this->dwTimeOfLastMove = dwNow;
-  
-	//Downward fall movement pattern.
-	const float fMultiplier = float((this->bHasted ? 0.5f : 1.0f) * dwFrameTimeMS);
-	this->fY += fMultiplier;
+//*****************************************************************************
+void CRaindropEffect::UpdateWind() 
+{
+	// The more raindrops there are the more drastic wind changes - strange but intended
 
-	//Sideways wind movement.
-	//Wind changes gradually.  Occasionally, velocity changes sharply.
 	static const float fMaxDrift = 0.5f;
+
 	if (RAND(20000) == 0)
 		CRaindropEffect::fXDrift += fRAND_MID(0.15f);
 	else
 		CRaindropEffect::fXDrift += fRAND_MID(0.001f);
+
 	if (CRaindropEffect::fXDrift < -fMaxDrift)
 		CRaindropEffect::fXDrift = -fMaxDrift;
 	else if (CRaindropEffect::fXDrift > fMaxDrift)
 		CRaindropEffect::fXDrift = fMaxDrift;
 	else
 		CRaindropEffect::fXDrift *= 0.9999f;
-	this->fX += fMultiplier * CRaindropEffect::fXDrift;	//wind blows sideways
+}
 
-	if (OutOfBounds())
-		return false;
-
+void CRaindropEffect::CalculateFrameProperties()
+{
 	//Particle shrinks.
-	static const UINT NUM_SPRITES = 1;        //Sprites in animation
-	static const UINT SpriteNum[RAIN_TYPES][NUM_SPRITES] = {
-		{TI_RAIN1}, {TI_RAIN2}
-	};
-	static const UINT XSpriteSize[RAIN_TYPES][NUM_SPRITES] = {
-		{3}, {2}
-	};
-	static const UINT YSpriteSize[RAIN_TYPES][NUM_SPRITES] = {
-		{14}, {10}
-	};
-	const UINT wSpriteNo = 0;
-	ASSERT(wSpriteNo < NUM_SPRITES);
+	static const UINT SpriteNum[RAIN_TYPES] = { TI_RAIN1, TI_RAIN2 };
+	static const UINT XSpriteSize[RAIN_TYPES] = { 3, 2 };
+	static const UINT YSpriteSize[RAIN_TYPES] = { 14, 10 };
 
-	//Blit if in bounds.
-	const UINT wX = static_cast<UINT>(this->fX), wY = static_cast<UINT>(this->fY);
-	const UINT wXSize = XSpriteSize[this->wType][wSpriteNo];
-	const UINT wYSize = YSpriteSize[this->wType][wSpriteNo];
+	this->wDrawXSize = XSpriteSize[this->wType];
+	this->wDrawYSize = YSpriteSize[this->wType];
+}
+
+//*****************************************************************************
+void CRaindropEffect::Draw(SDL_Surface& destSurface)
+{
+	//Particle shrinks.
+	static const UINT SpriteNum[RAIN_TYPES] = {TI_RAIN1, TI_RAIN2};
+	
+	const UINT wX = static_cast<UINT>(this->fX);
+	const UINT wY = static_cast<UINT>(this->fY);
+	const UINT wXSize = this->wDrawXSize;
+	const UINT wYSize = this->wDrawYSize;
+
 	if (wX >= (UINT)this->screenRect.x && wY >= (UINT)this->screenRect.y &&
-				wX < this->screenRect.x + this->screenRect.w - wXSize &&
-				wY < this->screenRect.y + this->screenRect.h - wYSize)
-		g_pTheBM->BlitTileImagePart(SpriteNum[this->wType][wSpriteNo], wX, wY,
-				0, 0, wXSize, wYSize, pDestSurface, true, Uint8(255 * this->fOpacity));
+			wX < this->screenRect.x + this->screenRect.w - wXSize &&
+			wY < this->screenRect.y + this->screenRect.h - wYSize)
+		g_pTheBM->BlitTileImagePart(SpriteNum[this->wType], wX, wY,
+				0, 0, wXSize, wYSize, &destSurface, true, Uint8(255 * this->fOpacity));
 
-	//Update bounding box position.
-	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0].x = static_cast<Sint16>(this->fX);
-	this->dirtyRects[0].y = static_cast<Sint16>(this->fY);
-	this->dirtyRects[0].w = wXSize;
-	this->dirtyRects[0].h = wYSize;
-
-	return true;
 }
 
 //*****************************************************************************

@@ -58,7 +58,9 @@ public:
 	CVerminEffect(CWidget *pSetWidget, const CMoveCoord &origin,
 		const UINT wNumVermin=5, const bool bSlayer=false);
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	void MarkVerminInactive(const UINT wIndex);

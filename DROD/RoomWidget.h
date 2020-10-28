@@ -330,15 +330,16 @@ public:
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
-	void           RenderRoomTileObjects(const UINT wX, const UINT wY,
+	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
-			const float fDark, const bool bAddLight, const bool bAddLightLayers,
-			const bool bEditor, const bool bPitPlatformTiles=false);
+			const float fDark, const bool bAddLight,
+			const bool bEditor);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
 	void           SetAnimateMoves(const bool bAnimate) {this->bAnimateMoves = bAnimate;}
+	void           SetEffectsFrozen(const bool bIsFrozen);
 	void           SetMoveDuration(const UINT dwDuration) {this->dwMoveDuration = dwDuration;}
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	void           SetOpacityForEffectsOfType(const EffectType eEffectType, float fOpacity);
@@ -438,7 +439,7 @@ protected:
 	void           DrawMonsterKilling(CCoord* pCoord, SDL_Surface *pDestSurface);
 	void           DrawMonsterKillingAt(CCoord* pCoord, SDL_Surface *pDestSurface);
 	void           DrawOverheadLayer(SDL_Surface *pDestSurface);
-	void           DrawPlatforms(SDL_Surface *pDestSurface, const bool bEditor=false, const bool bMoveInProgress=false);
+	void           DrawTLayer(SDL_Surface *pDestSurface, const bool bEditor=false, const bool bMoveInProgress=false);
 	void           DrawPlayer(const CSwordsman &swordsman,
 			SDL_Surface *pDestSurface);
 	bool           DrawRaised(const UINT wTileNo) const {
@@ -456,7 +457,9 @@ protected:
 	void     DrawTileEdges(const UINT wX, const UINT wY,
 			const TileImages* pTI, SDL_Surface *pDestSurface);
 
-	void           DrawTileImage(const TileImageBlitParams& blit, SDL_Surface *pDestSurface);
+	void           DrawTileImage(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
+	void           DrawTileImageWithoutLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
+	void           DrawTileLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect);
 
 	CEntity*       GetLightholder() const;
@@ -478,7 +481,7 @@ protected:
 	void           RemoveHighlight();
 	void           RenderFogInPit(SDL_Surface *pDestSurface=NULL);
 	void           RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2);
-	void           RenderRoomItemsOnTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
+	void           DrawTLayerTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
 			const float fLightLevel, const bool bAddLight, const bool bEditor);
 	void           SepiaTile(SDL_Surface *pDestSurface, int wCol, int wRow);
 	virtual bool	SkyWillShow() const;

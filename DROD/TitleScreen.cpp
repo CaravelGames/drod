@@ -1620,7 +1620,7 @@ void CTitleScreen::RedrawMapArea(const bool bAlwaysRedraw)	//[default=true]
 		//If the screen won't be updated by caller...
 		PaintChildren();
 
-		this->pEffects->DrawEffects();
+		this->pEffects->UpdateAndDrawEffects();
 
 		//Update the map area here.
 		SDL_Rect wholeDest = {X_MAP_JTRH, Y_MAP_JTRH, wFramedMapWidth, wFramedMapHeight};
@@ -1709,7 +1709,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 				g_pTheDBM->fLightLevel = this->fDarkFactor;
 				addParticle();
 				updateParticles(pDestSurface, nMouseX, nMouseY);
-				verminEffects.DrawEffects(false, false, pDestSurface);
+				verminEffects.UpdateAndDrawEffects(false, pDestSurface);
 
 				DrawLightMask(pDestSurface, nMouseX, nMouseY, 1.0f/this->fDarkFactor + 0.002f * RAND(100));
 			}
@@ -1739,7 +1739,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 	AnimateCaravelLogo(pDestSurface);
 
-	this->pEffects->DrawEffects(!bAlpha);
+	this->pEffects->UpdateAndDrawEffects(!bAlpha);
 
 	if (this->pStatusDialog->IsVisible())
 		this->pStatusDialog->Paint();
