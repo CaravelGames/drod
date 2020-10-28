@@ -501,7 +501,7 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="imp-invisible-dont-include-move-order"><b>Invisible don't include move order</b></a>: Reverses the above to original behavior - this NPC when invisible will not be included when counting movement order and if it's inspectable the movement order will not be displayed when right clicking on its tile.</li>
 	<li><a name="imp-not-pushable"><b>Not pushable</b></a>: Makes this NPC resistant to any kind of pushing, even with weapons which naturally allow pushing (eg. staff).</li>
 	<li><a name="imp-default-pushable-behavior"><b>Default pushable behavior</b></a>: Resets the pushability of the NPC to the default behavior.</li>
-	<li><a name="imp-pushable-by-body"><b>Pushable by body</b></a>: Makes the NPC pushable by the body of the player, mimics, constructs and human-role characters (if a given entity is able to push mirrors it will also be able to push an NPC with this imperative). Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
+	<li><a name="imp-pushable-by-body"><b>Pushable by body</b></a>: Makes the NPC pushable by the body of the player, mimics, constructs and charatcers with the <a href="#beh-push-monsters">Push Monsters</a> behavior. Regular, non-NPC guards, stalwarts, slayers and soldiers can't push mirrors and thus won't be able to push an NPC with this imperative. The same goes for all monsters except constructs which can push mirrors.</li>
 	<li><a name="imp-pushable-by-weapon"><b>Pushable by weapon</b></a>: Makes the NPC pushable by any weapon effectively making it invulnerable to weapon attacks. It won't be able to push the NPC wielding dagger because dagger doesn't occupy a physical space. All other forms of attack still kill the NPC, including adders eating them, explosions, spike and fire traps.</li>
     <li><a name="imp-stunnable"><b>Stunnable</b></a>: Weapon pushes will stun this NPC.</li>
 	<li><a name="imp-not-stunnable"><b>Not stunnable</b></a>: Weapon pushes will not stun this NPC, but it will not move on the turn it was pushed (unless it was pushed after it already moved).</li>
@@ -511,9 +511,11 @@ continue executing script commands from a different location in the script.</p>
 </a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors.</p>
 <ol>
 	<li><a name ="beh-activate-token"><u>Activate Tokens</u></a>: The NPC will activate architectural tokens when it moves onto them, other than Temporal Split Points.</li>
+	<li><a name ="beh-activate-plates"><u>Activate Pressure Plates</u></a>: The NPC will press pressure when it moves onto them, and will hold down pressure plates while on them.</li>
 	<li><a name="beh-drop-trapdoor"><u>Drops Trapdoors</u></a>: The NPC will drop trapdoors and melt thin ice.</li>
 	<li><a name="beh-drop-trapdoor-armed"><u>Drop Trapdoors When Armed</u></a>: The NPC will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
 	<li><a name="beh-push-objects"><u>Push Objects</u></a>: The NPC can push objects such as Mirrors and Powder Kegs.</li>
+	<li><a name="beh-push-monsters"><u>Push Objects</u></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
 	<li><a name="beh-move-platform"><u>Move Platforms and Rafts</u></a>: The NPC can push platforms and rafts by moving against their sides.</li>
 	<li><a name="beh-monster-attackable"><u>Can Be Attacked By Monsters</u></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
 	<li><a name="beh-puff-target"><u>Puff Target</u></a>: Puffs will treat the NPC as a target. This does not affect the NPC's vunerability to puffs.</li>
@@ -529,6 +531,7 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="beh-briar-immune"><u>Briar Immunity</u></a>: Briar cannot grow onto and kill the NPC.</li>
 	<li><a name="beh-adder-immune"><u>Adder Immunity</u></a>: Adders cannot eat the NPC.</li>
 	<li><a name="beh-puff-immune"><u>Puff Immunity</u></a>: The NPC cannot be killed by puffs, either from Puffs moving onto them, or due to the NPC moving onto a Puff. This does not affect whether the NPC attracts Puffs.</li>
+	<li><a name="beh-fatal-push-immune"><u>Push to Fall Immunity</u></a>: The NPC cannot be pushed onto pit or water tiles if this would kill them. The NPC can still be pushed into other potentially dangerous tiles, such as active fire traps.</li>
 </ol>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
