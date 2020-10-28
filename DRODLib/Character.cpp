@@ -154,6 +154,7 @@ CCharacter::CCharacter(
 	, bStunnable(true)
 	, bBrainPathmapObstacle(false), bNPCPathmapObstacle(true)
 	, bWeaponOverride(false)
+	, bFriendly(true)
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
 
@@ -2479,6 +2480,7 @@ void CCharacter::Process(
 				{
 					case ScriptFlag::Safe:
 						this->bSafeToPlayer = true;
+						this->bFriendly = true;
 						bChangeImperative = false;
 					break;
 					case ScriptFlag::SwordSafeToPlayer:
@@ -2491,6 +2493,7 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::Deadly:
 						this->bSafeToPlayer = this->bSwordSafeToPlayer = false;
+						this->bFriendly = false;
 						bChangeImperative = false;
 					break;
 					case ScriptFlag::DieSpecial:
@@ -3614,10 +3617,7 @@ bool CCharacter::IsFlying() const
 bool CCharacter::IsFriendly() const
 //Returns: whether character is friendly to the player
 {
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_HALPH || identity == M_HALPH2 ||
-			bIsStalwart(identity) ||
-			this->bSafeToPlayer;
+	return this->bFriendly;
 }
 
 //*****************************************************************************
@@ -4801,6 +4801,7 @@ void CCharacter::SetCurrentGame(
 			case M_TEMPORALCLONE:
 			case M_HALPH: case M_HALPH2:
 				SetImperative(ScriptFlag::MissionCritical);
+				bFriendly = true;
 			break;
 			case M_CONSTRUCT:
 				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
@@ -4814,6 +4815,10 @@ void CCharacter::SetCurrentGame(
 	}
 
 	const UINT wResolvedIdentity = GetResolvedIdentity();
+
+	if (bIsStalwart(wResolvedIdentity)) {
+		bFriendly = true;
+	}
 
 	if (bIsBeethroDouble(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
