@@ -2007,7 +2007,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp to reflected room coord.
 			const UINT reflectX = this->pRoom->wRoomCols - this->pPlayer->wX - 1;
 			const UINT reflectY = this->pRoom->wRoomRows - this->pPlayer->wY - 1;
-			bMoved = SetPlayer(reflectX, reflectY);
+			TeleportPlayer(reflectX, reflectY, CueEvents);
+			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		}
 		break;
@@ -2016,7 +2017,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp ahead two tiles in the direction faced.
 			const UINT destX = this->pPlayer->wX + nGetOX(this->pPlayer->wO) * 2;
 			const UINT destY = this->pPlayer->wY + nGetOY(this->pPlayer->wO) * 2;
-			bMoved = SetPlayer(destX, destY);
+			TeleportPlayer(destX, destY, CueEvents);
+			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		}
 		break;
