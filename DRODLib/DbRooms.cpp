@@ -5531,7 +5531,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 		{
 			//Get coord index with all swords for quick evaluation.
 			CCoordIndex babies(this->wRoomCols, this->wRoomRows), SwordCoords;
-			GetSwordCoords(SwordCoords);
+			GetSwordCoords(SwordCoords, true);
 
 			//Tar takes precedence over mud, and mud over gel,
 			//but all grow simultaneously if possible,
