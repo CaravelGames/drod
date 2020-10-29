@@ -207,6 +207,9 @@
     <ClCompile Include="src\tests\Scripting\Behavior\PushingBehaviors.cpp">
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivatePlates.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
