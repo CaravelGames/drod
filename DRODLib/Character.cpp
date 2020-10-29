@@ -3423,7 +3423,7 @@ bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
 	if (bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo))
 		return true;
 
-	// If the character is immune to "fatal pushes", only allow it to pushed
+	// If the character is immune to "fatal pushes", only allow it to be pushed
 	// to tiles that won't cause it to fall
 	bool bOnlySafe = (behaviorFlags.count(ScriptFlag::FatalPushImmune) == 1);
 
