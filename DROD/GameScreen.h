@@ -188,6 +188,7 @@ private:
 	void           SynchScroll();
 	void           ToggleBigMap();
 	void           UndoMove();
+	void           UpdateEffectsFreeze();
 	void           UpdateUIAfterRoomRestart();
 	void           UpdateUIAfterMoveUndo();
 	void           UpdateScroll();

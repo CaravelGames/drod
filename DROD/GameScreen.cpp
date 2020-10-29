@@ -1135,9 +1135,8 @@ void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
-	
-	// Effects should not animate when game is not focused or a dialog is displayed
-	this->pRoomWidget->SetEffectsFrozen(!WindowHasFocus() || this->bIsDialogDisplayed);
+
+	UpdateEffectsFreeze();
 
 	if (this->bShowingBigMap)
 		return;
@@ -6430,6 +6429,19 @@ void CGameScreen::UpdateSound()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateEffectsFreeze()
+{
+	const bool bIsPlacingDouble = this->pCurrentGame && this->pCurrentGame->swordsman.wPlacingDoubleType != 0;
+
+	bool bFreezeEffects =
+		!WindowHasFocus()
+		|| this->bIsDialogDisplayed
+		|| bIsPlacingDouble;
+
+	this->pRoomWidget->SetEffectsFrozen(bFreezeEffects);
+}
+
+//*****************************************************************************
 bool CGameScreen::UploadDemoPolling()
 //As the current game queues victory demos for upload, process them here.
 //As results are received,
@@ -6615,6 +6627,7 @@ void CGameScreen::UploadPlayerProgressToCloud(const UINT holdID)
 	}
 }
 
+//*****************************************************************************
 void CGameScreen::SendAchievement(const string& achievement)
 {
 #ifdef STEAMBUILD
