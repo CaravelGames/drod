@@ -1108,8 +1108,9 @@ void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
-
-	this->pRoomWidget->SetEffectsFrozen(false);
+	
+	// Effects should not animate when game is not focused
+	this->pRoomWidget->SetEffectsFrozen(!CBitmapManager::bGameHasFocus);
 
 	if (this->bShowingBigMap)
 		return;
