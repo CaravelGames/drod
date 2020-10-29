@@ -435,20 +435,11 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 	switch (wevent.event)
 	{
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			CBitmapManager::bGameHasFocus = true;
-			g_pTheSound->Unmute();
-			g_pTheSound->UnpauseSounds();
-			ClearEvents();  // !!! do we still need this?
+			OnWindowEvent_GetFocus();
 			break;
 
 		case SDL_WINDOWEVENT_FOCUS_LOST:
-			CBitmapManager::bGameHasFocus = false;
-			//Disable sound/music when app is inactive.
-			if (!g_pTheSound->bNoFocusPlaysMusic)
-				g_pTheSound->Mute();
-			else
-				g_pTheSound->PauseSounds();
-			ClearEvents();  // !!! do we still need this?
+			OnWindowEvent_LoseFocus();
 			break;
 
 		case SDL_WINDOWEVENT_EXPOSED:
@@ -468,6 +459,27 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 
 		default: break;
 	}
+}
+
+//*****************************************************************************
+void CEventHandlerWidget::OnWindowEvent_GetFocus()
+{
+	CBitmapManager::bGameHasFocus = true;
+	g_pTheSound->Unmute();
+	g_pTheSound->UnpauseSounds();
+	ClearEvents();  // !!! do we still need this?
+}
+
+//*****************************************************************************
+void CEventHandlerWidget::OnWindowEvent_LoseFocus()
+{
+	CBitmapManager::bGameHasFocus = false;
+	//Disable sound/music when app is inactive.
+	if (!g_pTheSound->bNoFocusPlaysMusic)
+		g_pTheSound->Mute();
+	else
+		g_pTheSound->PauseSounds();
+	ClearEvents();  // !!! do we still need this?
 }
 
 //**********************************************************************************

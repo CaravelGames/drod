@@ -2208,6 +2208,7 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 		const CImageOverlay *pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
 
 		if (pImageOverlay->loopsForever()) {
+			// These effects were already added to `persistingImageOverlays`
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
 			continue;
@@ -2219,6 +2220,7 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
+			continue;
 		}
 
 		pObj = CueEvents.GetNextPrivateData();
