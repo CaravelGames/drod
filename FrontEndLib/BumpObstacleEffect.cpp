@@ -76,25 +76,47 @@ CBumpObstacleEffect::~CBumpObstacleEffect()
 //********************************************************************************
 bool CBumpObstacleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, this->src.w, this->src.h);
-	if (!this->pEraseSurface)
-	{
+	if (!this->pEraseSurface) {
 		this->pEraseSurface = g_pTheBM->ConvertSurface(SDL_CreateRGBSurface(
-			SDL_SWSURFACE, EraseRect.w, EraseRect.h, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0));
-		SDL_BlitSurface(GetDestSurface(), &this->src, this->pEraseSurface, &EraseRect);
+			SDL_SWSURFACE, this->src.w, this->src.h, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0));
 	}
-
 	return true;
 }
 //********************************************************************************
 void CBumpObstacleEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, this->src.w, this->src.h);
+	SDL_Rect DestRect = this->dest;
+	SDL_BlitSurface(&destSurface, &this->src, this->pEraseSurface, &EraseRect);
 
 	//Blit the bumped area.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
+
+	// Manually clip West and North edges of the room, because otherwise the effect will just not
+	// draw if bumping against Row/Col 0 - don't know why but that's how it works
+	if (DestRect.x < ClipRect.x) {
+		const int delta = ClipRect.x - DestRect.x;
+		if (delta >= DestRect.w || delta >= EraseRect.w)
+			return; // Nothing would be drawn in this case
+		
+		DestRect.x += delta;
+		DestRect.w -= delta;
+		EraseRect.x += delta;
+		EraseRect.w -= delta;
+	}
+	if (DestRect.y < ClipRect.y) {
+		const int delta = ClipRect.y - DestRect.y;
+		if (delta >= DestRect.h || delta >= EraseRect.h)
+			return; // Nothing would be drawn in this case
+
+		DestRect.y += delta;
+		DestRect.h -= delta;
+		EraseRect.y += delta;
+		EraseRect.h -= delta;
+	}
+
 	SDL_SetClipRect(&destSurface, &ClipRect);
-	SDL_BlitSurface(this->pEraseSurface, &EraseRect, &destSurface, &this->dest);
+	SDL_BlitSurface(this->pEraseSurface, &EraseRect, &destSurface, &DestRect);
 	SDL_SetClipRect(&destSurface, NULL);
 }
