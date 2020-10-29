@@ -159,9 +159,9 @@
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp">
       <Filter>Tests\Monsters</Filter>
     </ClCompile>
-    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp"
-	  <Filter>Tests\Scripting</Filter>
-	</ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Scripting\SmartGotoLabels.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
