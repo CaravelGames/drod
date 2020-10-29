@@ -5149,6 +5149,9 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		//This is done instead of calling ClearEvent so the occurred flag isn't reset.
 		CueEvents.Remove(cid, pObj);
 
+		// Redraw the whole screen after each video to ensure there are no artifacts left anywhere
+		Paint(false);
+
 		//The next item is now the first item.
 		pObj = CueEvents.GetFirstPrivateData(cid);
 	}
