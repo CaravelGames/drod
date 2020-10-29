@@ -5143,14 +5143,14 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		{
 			this->pRoomWidget->AllowSleep(false);
 			PlayVideo(dwDataID, int(pDataVals->wX), int(pDataVals->wY));
+
+			// Redraw the whole screen after each video to ensure there are no artifacts left anywhere
+			Paint(false);
 		}
 
 		//Don't reprocess these events if this method is called again.
 		//This is done instead of calling ClearEvent so the occurred flag isn't reset.
 		CueEvents.Remove(cid, pObj);
-
-		// Redraw the whole screen after each video to ensure there are no artifacts left anywhere
-		Paint(false);
 
 		//The next item is now the first item.
 		pObj = CueEvents.GetFirstPrivateData(cid);
