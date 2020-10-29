@@ -2367,18 +2367,18 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 
 	RenderFogInPit(pSurface);
 	DrawTLayer(pSurface);
-	this->pTLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(this->pCurrentGame->swordsman, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
 
-	this->pMLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
 	
-	this->pLastLayerEffects->UpdateAndDrawEffects(false, pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
 
@@ -2773,43 +2773,20 @@ void CRoomWidget::RenderRoomInPlay(
 	RenderRoom(wCol, wRow, wWidth, wHeight, false);
 
 	//3. When action is frozen, draw the following here.
-	if (((!this->bWasPlacingDouble || this->bAllDirty) && bIsPlacingDouble)
-			|| bPlayerIsDying)
+	if (bPlayerIsDying)
 	{
 		//a. Effects that go on top of room image, under monsters/swordsman.
 		RenderFogInPit(pDestSurface);
 
 		DrawTLayer(pDestSurface);
 		
-		this->pTLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
+		this->pTLayerEffects->DrawEffects( bPlayerIsDying ? NULL : pDestSurface);
 
 		//b. Draw monsters (not killing player).
-		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface,
-				bIsPlacingDouble || bPlayerIsDying);
+		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);
-
-		//d. Double placement effects:
-		//Make room black-and-white, and draw (unmoving) swordsman on top.
-		if (bIsPlacingDouble && !bPlayerIsDying)
-		{
-			if (player.wPlacingDoubleType == M_DECOY)
-			{
-				CCoordIndex coords(this->pRoom->wRoomCols,this->pRoom->wRoomRows);
-				for (list<CPlayerDouble*>::const_iterator decoy=this->pRoom->Decoys.begin();
-						decoy!=this->pRoom->Decoys.end(); ++decoy)
-					DrawInvisibilityRange((*decoy)->wX, (*decoy)->wY, pDestSurface, &coords);
-			}
-
-			BAndWRect(pDestSurface, this->wShowCol, this->wShowRow);
-
-			ASSERT(this->bShowingPlayer);
-			DrawPlayer(player, pDestSurface);
-
-			DrawOverheadLayer(pDestSurface);
-			DrawGhostOverheadCharacters(pDestSurface, false);
-		}
+		this->pMLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
 	}
 
 	this->bWasPlacingDouble = bIsPlacingDouble;
@@ -4371,6 +4348,7 @@ void CRoomWidget::Paint(
 	this->dwCurrentDuration += this->dwTimeSinceLastFrame;
 	dwLastFrame = dwNow;
 
+	const CSwordsman* player = this->pCurrentGame ? &(this->pCurrentGame->swordsman) : NULL;
 	const bool bIsPlacingDouble = this->pCurrentGame ? this->pCurrentGame->swordsman.wPlacingDoubleType != 0 : false;
 	this->dwMovementStepsLeft = this->dwCurrentDuration >= this->dwMoveDuration || bIsPlacingDouble ? 0 :
 		(CX_TILE - (this->dwCurrentDuration * CX_TILE / this->dwMoveDuration));
@@ -4405,6 +4383,9 @@ void CRoomWidget::Paint(
 	// O-Layers need to be updated and dirtied before O-Layer is drawn to ensure lighting is correctly applied for
 	// pieces of the effects that enter a new tile
 	this->pOLayerEffects->UpdateEffects();
+	this->pMLayerEffects->UpdateEffects();
+	this->pTLayerEffects->UpdateEffects();
+	this->pLastLayerEffects->UpdateEffects();
 	this->pOLayerEffects->DirtyTiles();
 
 	if (this->bRenderRoom || this->bRenderPlayerLight)
@@ -4449,18 +4430,7 @@ void CRoomWidget::Paint(
 
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
-	if (bIsPlacingDouble && bPlayerIsAlive)
 	{
-		//Draw player double placement cursor only.
-		//(The action is frozen and nothing else gets drawn.)
-		DrawDoubleCursor(this->pCurrentGame->swordsman.wDoubleCursorX,
-				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
-		if (this->pCurrentGame->swordsman.wPlacingDoubleType == M_DECOY)
-		{
-			DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
-				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
-		}
-	} else {
 		//When action is not frozen, draw the following:
 		if (bPlayerIsAlive)
 		{
@@ -4469,7 +4439,7 @@ void CRoomWidget::Paint(
 
 			DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
 
-			this->pTLayerEffects->UpdateAndDrawEffects();
+			this->pTLayerEffects->DrawEffects();
 			this->pTLayerEffects->DirtyTiles();
 
 			//3b. Repaint monsters.
@@ -4486,12 +4456,12 @@ void CRoomWidget::Paint(
 		} else {
 			//Add certain images as static during death animation
 
-			this->pOLayerEffects->UpdateAndDrawEffects(false, NULL, EIMAGEOVERLAY);
+			this->pOLayerEffects->DrawEffects(NULL, EIMAGEOVERLAY);
 			this->pOLayerEffects->DirtyTiles();
 		}
 
 		//4. Draw player.
-		if (this->bShowingPlayer)
+		if (this->bShowingPlayer && !bIsPlacingDouble)
 			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
 
 		//5. If monster is killing swordsman, draw it on top.
@@ -4511,10 +4481,36 @@ void CRoomWidget::Paint(
 		//DebugDraw_MarkedTiles(pDestSurface);
 
 		//5a. Draw effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->UpdateAndDrawEffects();
+		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 
-		if (bPlayerIsAlive) {
+
+		if (player && bIsPlacingDouble && bPlayerIsAlive)
+		{
+			if (player->wPlacingDoubleType == M_DECOY)
+			{
+				CCoordIndex coords(this->pRoom->wRoomCols, this->pRoom->wRoomRows);
+				for (list<CPlayerDouble*>::const_iterator decoy = this->pRoom->Decoys.begin();
+					decoy != this->pRoom->Decoys.end(); ++decoy)
+					DrawInvisibilityRange((*decoy)->wX, (*decoy)->wY, pDestSurface, &coords);
+			}
+
+			BAndWRect(pDestSurface, this->wShowCol, this->wShowRow);
+
+			ASSERT(this->bShowingPlayer);
+			DrawPlayer(*player, pDestSurface);
+
+			DrawOverheadLayer(pDestSurface);
+			DrawGhostOverheadCharacters(pDestSurface, false);
+
+			DrawDoubleCursor(this->pCurrentGame->swordsman.wDoubleCursorX,
+				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
+			if (this->pCurrentGame->swordsman.wPlacingDoubleType == M_DECOY)
+			{
+				DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
+					this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
+			}
+		} else if (bPlayerIsAlive) {
 			//6. Draw overhead layer.
 			DrawOverheadLayer(pDestSurface);
 
@@ -4537,7 +4533,7 @@ void CRoomWidget::Paint(
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pDestSurface);
 
 	//10. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->UpdateAndDrawEffects();
+	this->pLastLayerEffects->DrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	RemoveEffectsQueuedForRemoval();
