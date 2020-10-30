@@ -137,6 +137,12 @@ char windowTitle[] = "DROD RPG BETA - DO NOT DISTRIBUTE (buggy releases make us 
 char windowTitle[] = "DROD RPG: Tendry's Tale";
 #endif
 
+#ifdef WIN32
+//On Windows, support selecting whether to create and find the user's Data directory
+//in their userspace or in a common location (e.g., "ProgramData")
+bool bWindowsDataFilesInUserSpecificDir = false;
+#endif
+
 //This is a filename that will probably exist in this specific game only.
 static const WCHAR wszUniqueResFile[] = {
     We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('1'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
@@ -168,6 +174,16 @@ int main(int argc, char *argv[])
 
 	InitMetadata();
 
+#ifdef WIN32
+#	ifdef STEAMBUILD
+	bWindowsDataFilesInUserSpecificDir = true;
+	//Note that for Windows Steam users with non-ASCII characters in their Windows username,
+	//Metakit won't open such filepaths.
+	//Setting this flag back to false below should allow the game to run
+	//with the other directory location.
+#	endif
+#endif
+
 	//command line arguments
 	bool bNoFullscreen = false, bNoSound = false, bIsDemo = false;
 	for (int nArgNo=0; nArgNo < argc; ++nArgNo) {
@@ -180,7 +196,13 @@ int main(int argc, char *argv[])
 			bIsDemo = true;
 			Metadata::Set(MetaKey::DEMO, "1");
 		}
-		//else: more command line arg processing occurs below
+#ifdef WIN32
+		else if (!strncmp(arg, "commondatadir=", 14)) {
+			const UINT val = convertToUINT(arg + 14);
+			bWindowsDataFilesInUserSpecificDir = val == 0 ? true : false;
+		}
+#endif
+ //else: more command line arg processing occurs below
 	}
 
 # if defined(__linux__) || defined(__FreeBSD__)
@@ -222,6 +244,10 @@ int main(int argc, char *argv[])
 	playerDataSubDirs.push_back("Music");
 	playerDataSubDirs.push_back("Sounds");
 	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
+
+#ifdef WIN32
+	CFiles::bWindowsDataFilesInUserSpecificDir = bWindowsDataFilesInUserSpecificDir;
+#endif
 
 	m_pFiles = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, bIsDemo);
 	if (CFiles::bad_data_path_file) {

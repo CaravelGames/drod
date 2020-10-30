@@ -184,6 +184,10 @@ public:
 
 	static bool bad_data_path_file;
 
+#ifdef WIN32
+	static bool bWindowsDataFilesInUserSpecificDir;
+#endif
+
 private:
 	void                 DeinitClass();
 	void                 GetDatPathFromDataPathDotTxt();

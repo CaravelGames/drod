@@ -96,6 +96,7 @@ WSTRING CFiles::wstrHomePath;
 #ifdef WIN32
 bool CFiles::bDrives[NUMDRIVES];
 bool CFiles::bDrivesChecked = false;
+bool CFiles::bWindowsDataFilesInUserSpecificDir = true;
 #endif
 
 #ifdef USE_XDG_BASEDIR_SPEC
@@ -375,18 +376,13 @@ static bool GetNormalizedPathEnv (
 // endif defined __linux__ || defined __FreeBSD__ || defined __APPLE__
 #else
 
-WSTRING GetUserspacePath()
+WSTRING GetUserspacePath(bool bUserSpecificDir)
+//User-specific dir: %USERPROFILE%\My Documents
+//Otherwise, get path for non-user specific, non-roaming data (e.g., "ProgramData").
 {
 	WSTRING prodPath;
 	TCHAR szPath[MAX_PATH];
-#ifdef STEAMBUILD
-	//%USERPROFILE%\My Documents
-	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 0, szPath)))
-#else
-	// Get path for non-user specific, non-roaming data.
-	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
-#endif
-	{
+	if (SUCCEEDED(SHGetFolderPath(NULL, bUserSpecificDir ? CSIDL_PERSONAL : CSIDL_COMMON_APPDATA, NULL, 0, szPath))) {
 		prodPath = szPath;
 	}
 	return prodPath;
@@ -1094,7 +1090,7 @@ void CFiles::SetupHomePath()
 # endif
 
 #else
-	CFiles::wstrHomePath = GetUserspacePath();
+	CFiles::wstrHomePath = GetUserspacePath(CFiles::bWindowsDataFilesInUserSpecificDir);
 #endif
 
 	if (!CFiles::wstrHomePath.empty()) {
