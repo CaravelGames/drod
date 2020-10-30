@@ -2,7 +2,7 @@
 #include "../../../CAssert.h"
 
 static void TestUnsafePushPrevented(const UINT identity, const UINT tileType) {
-	std:string name = 
+	string name =
 		"Character with identity #" + 
 		std::to_string(identity) + 
 		" should not be pushed to tile #" + 
@@ -22,7 +22,7 @@ static void TestUnsafePushPrevented(const UINT identity, const UINT tileType) {
 }
 
 static void TestSafePushAllowed(const UINT identity, const UINT tileType) {
-	std:string name =
+	string name =
 		"Character with identity #" +
 		std::to_string(identity) +
 		" should be pushed to tile #" +
