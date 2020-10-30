@@ -1379,12 +1379,14 @@ void CDbXML::VerifySavedGames()
 				wstrHoldName = (const WCHAR*)pHold->NameText;
 				delete pHold;
 
-				wstr = wszLeftParen;
-				wstr += _itoW(holdCount, temp, 10);
-				wstr += wszForwardSlash;
-				wstr += _itoW(numHolds, temp, 10);
-				wstr += wszRightParen;
-				wstr += wszSpace;
+				if (numHolds > 1) {
+					wstr += wszLeftParen;
+					wstr += _itoW(holdCount, temp, 10);
+					wstr += wszForwardSlash;
+					wstr += _itoW(numHolds, temp, 10);
+					wstr += wszRightParen;
+					wstr += wszSpace;
+				}
 
 				wstr += wstrHoldName;
 				wstr += wszColon;
@@ -1476,12 +1478,15 @@ void CDbXML::VerifySavedGames()
 				delete pHold;
 			}
 
-			wstr = wszLeftParen;
-			wstr += _itoW(holdCount, temp, 10);
-			wstr += wszForwardSlash;
-			wstr += _itoW(numHolds, temp, 10);
-			wstr += wszRightParen;
-			wstr += wszSpace;
+			wstr.clear();
+			if (numHolds > 1) {
+				wstr += wszLeftParen;
+				wstr += _itoW(holdCount, temp, 10);
+				wstr += wszForwardSlash;
+				wstr += _itoW(numHolds, temp, 10);
+				wstr += wszRightParen;
+				wstr += wszSpace;
+			}
 
 			wstr += wstrHoldName;
 			wstr += wszColon;
