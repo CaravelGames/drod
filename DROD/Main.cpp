@@ -146,6 +146,12 @@ char windowTitle[] = GAMETITLE " BETA - DO NOT DISTRIBUTE (buggy releases make u
 char windowTitle[] = GAMETITLE;
 #endif
 
+#ifdef WIN32
+//On Windows, support selecting whether to create and find the user's Data directory
+//in their userspace or in a common location (e.g., "ProgramData")
+bool bWindowsDataFilesInUserSpecificDir = false;
+#endif
+
 //This is a filename that will probably exist in this specific game only.
 static const WCHAR wszUniqueResFile[] = {
 #ifdef STEAMBUILD_TSS_APP
@@ -182,6 +188,16 @@ int main(int argc, char *argv[])
 
 	InitMetadata();
 
+#ifdef WIN32
+#	ifdef STEAMBUILD
+	bWindowsDataFilesInUserSpecificDir = true;
+	//Note that for Windows Steam users with non-ASCII characters in their Windows username,
+	//Metakit won't open such filepaths.
+	//Setting this flag back to false below should allow the game to run
+	//with the other directory location.
+#	endif
+#endif
+
 	//command line arguments
 	bool bNoFullscreen = false, bNoSound = false, bIsDemo = false;
 	for (int nArgNo=0; nArgNo < argc; ++nArgNo) {
@@ -198,6 +214,11 @@ int main(int argc, char *argv[])
 			Metadata::Set(MetaKey::EMBEDMEDIA, "1");
 #else
 			return 2;
+#endif
+#ifdef WIN32
+		} else if (!strncmp(arg, "commondatadir=", 14)) {
+			const UINT val = convertToUINT(arg + 14);
+			bWindowsDataFilesInUserSpecificDir = val == 0 ? true : false;
 #endif
 		} else if (!strncmp(arg, "datafilenum=", 12)) { //active in Steam build only
 			if (!CDbBase::SetCreateDataFileNum(convertToUINT(arg+12)))
@@ -247,6 +268,10 @@ int main(int argc, char *argv[])
 	playerDataSubDirs.push_back("Music");
 	playerDataSubDirs.push_back("Sounds");
 	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
+
+#ifdef WIN32
+	CFiles::bWindowsDataFilesInUserSpecificDir = bWindowsDataFilesInUserSpecificDir;
+#endif
 
 	const WCHAR* gameName = wszDROD;
 #ifdef STEAMBUILD_TSS_APP
