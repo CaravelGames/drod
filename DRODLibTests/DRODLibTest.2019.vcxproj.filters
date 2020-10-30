@@ -216,6 +216,9 @@
     <ClCompile Include="src\tests\Scripting\Behavior\ActivateTokens.cpp">
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\MovePlatforms.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
