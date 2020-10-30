@@ -27,6 +27,7 @@
 #include "BuildUtil.h"
 #include "CurrentGame.h"
 #include "PlayerDouble.h"
+#include "OrbUtil.h"
 
 //*****************************************************************************
 bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
@@ -104,6 +105,9 @@ UINT BuildUtil::BuildTilesAt(
 
 			}
 	}
+
+	if (bIsYellowDoor(tile))
+		OrbUtil::MergeYellowDoorConnectionsInArea(room, px, py, endX - px, endY - py);
 
 	return builtTiles;
 }

@@ -195,6 +195,9 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\DisarmedArmedMonsters.cpp">
       <Filter>Tests\Monsters\ArmedMonsters</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
