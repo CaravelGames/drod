@@ -4327,7 +4327,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 }
 
 //*****************************************************************************
-void CCharacter::SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) //(in/out)
+void CCharacter::SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) //(out)
 const
 //Packs NPC state info.
 {
@@ -4472,6 +4472,16 @@ void CCharacter::Delete()
 }
 
 //*****************************************************************************
+void CCharacter::PackExtraVars(
+	const bool bSaveScript) //whether to save the NPC script in packed vars
+{
+	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
+	if (bSaveScript) {
+		SaveCommands(this->ExtraVars, this->commands);
+	}
+}
+
+//*****************************************************************************
 void CCharacter::Save(
 //Places monster object member vars into database view.
 //
@@ -4479,11 +4489,7 @@ void CCharacter::Save(
 	const c4_RowRef &MonsterRowRef,     //(in/out) Open view to fill.
 	const bool bSaveScript) //whether to save the NPC script in packed vars [default=true]
 {
-	//Pack vars.
-	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
-	if (bSaveScript) {
-		SaveCommands(this->ExtraVars, this->commands);
-	}
+	PackExtraVars(bSaveScript);
 
 	CMonster::Save(MonsterRowRef);
 }
