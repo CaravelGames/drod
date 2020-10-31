@@ -98,8 +98,8 @@ bool CVerminEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 			continue;
 		}
 
-		v.fX += cos(v.fAngle) * fMultiplier;
-		v.fY += sin(v.fAngle) * fMultiplier;
+		v.fX += static_cast<float>(cos(v.fAngle)) * fMultiplier;
+		v.fY += static_cast<float>(sin(v.fAngle)) * fMultiplier;
 
 		if (OutOfBounds(v) || HitsObstacle(pRoom, v))
 		{
