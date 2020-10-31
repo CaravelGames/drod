@@ -466,6 +466,7 @@ void CDbRooms::ExportXML(
 		while (pMonster)
 		{
 			ASSERT(pRoom->IsValidColRow(pMonster->wX, pMonster->wY));
+			pMonster->SetExtraVarsForExport();
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
 		}
