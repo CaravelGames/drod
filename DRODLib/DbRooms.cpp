@@ -9636,7 +9636,7 @@ void CDbRoom::ConvertUnstableTar(
 	const UINT wSX = this->pCurrentGame ? this->pCurrentGame->swordsman.wX : (UINT)-1;
 	const UINT wSY = this->pCurrentGame ? this->pCurrentGame->swordsman.wY : (UINT)-1;
 	CCoordIndex swordCoords;
-	GetSwordCoords(swordCoords);
+	GetSwordCoords(swordCoords, true);
 
 	UINT wX, wY;
 	while (NewBabies.PopBottom(wX,wY)) //process as queue
