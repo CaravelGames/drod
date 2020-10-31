@@ -6513,8 +6513,11 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pBlockedSwordHit = NULL;
 
 	//Process the swordsman's movement onto the first square.
-	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported)
+	bool bProcessedPlayerWait = false;
+	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported) {
 		ProcessPlayer(CMD_WAIT, CueEvents);
+		bProcessedPlayerWait = true;
+	}
 
 	//Init NPCs and sworded entities after initial room state checks and modifications are performed.
 	this->bExecuteNoMoveCommands = true;
@@ -6531,8 +6534,11 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 		this->Commands.Clear();
 
 	//Player should always be visible if no cut scene is playing.
-	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
+	if (!this->pPlayer->IsInRoom() && !this->dwCutScene) {
 		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
+		if (!bProcessedPlayerWait)
+			ProcessPlayer(CMD_WAIT, CueEvents);
+	}
 
 	//Player should never die on entering room.
 	ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied),CIDA_PlayerDied));
