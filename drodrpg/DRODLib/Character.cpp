@@ -2333,15 +2333,14 @@ void CCharacter::Process(
 					case ScriptFlag::Die:
 						//Stop script execution whether visible or not.
 						bProcessNextCommand = false;
-						if (bExecuteNoMoveCommands)
+						if (pGame->wPlayerTurn == 0)
 							return; //wait until first move to display death
 
 						this->wCurrentCommandIndex = this->commands.size();
 						if (this->bVisible)
 						{
 							//NPC dies.
-							if (!bExecuteNoMoveCommands)
-								CueEvents.Add(CID_MonsterDiedFromStab, this);
+							CueEvents.Add(CID_MonsterDiedFromStab, this);
 
 							CCueEvents Ignored;
 							SetKillInfo(NO_ORIENTATION); //center stab effect
