@@ -7776,9 +7776,8 @@ void CRoomWidget::DrawArmedMonster(
 		TileImageBlitParams::setDisplayArea(0, y_bottom, CX_TILE, CY_TILE - y_bottom);
 	}
 
-	// Transparent armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
-	if (blit.nOpacity < 255)
-		this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->wX, pArmedMonster->wY)].dirty = 1;
+	// Armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->wX, pArmedMonster->wY)].dirty = 1;
 
 	DrawTileImage(blit, pDestSurface);
 
@@ -7791,7 +7790,7 @@ void CRoomWidget::DrawArmedMonster(
 		DrawSwordFor(pArmedMonster, weaponBlit, pDestSurface);
 
 		// The same for the sword, want to avoid flickering
-		if (blit.nOpacity < 255 && IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
+		if (IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
 			this->pTileImages[this->pRoom->ARRAYINDEX(weaponBlit.wCol, weaponBlit.wRow)].dirty = 1;
 	}
 
