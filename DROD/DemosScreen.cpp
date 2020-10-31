@@ -642,6 +642,8 @@ void CDemosScreen::DeleteDemo()
 	if (dwRet != TAG_YES)
 		return;
 	
+	const UINT dwPlayerID = g_pTheDB->GetPlayerID();
+
 	bool bAsk = true;
 	for (CIDSet::const_iterator demo = demoIDs.begin();
 			demo != demoIDs.end(); ++demo)
@@ -668,9 +670,9 @@ void CDemosScreen::DeleteDemo()
 				bAsk = false;
 			}
 
-			//Hide demo only if its state represents a completed challenge.
+			//Hide demo only if its state represents a completed challenge for the active player.
 			bool bHideDemo = false;
-			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge)) {
+			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge) && pDemo->GetAuthorID() == dwPlayerID) {
 				bHideDemo = true;
 				pDemo->bIsHidden = true;
 				pDemo->Update();
