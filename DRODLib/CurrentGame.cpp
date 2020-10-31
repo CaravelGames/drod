@@ -6892,7 +6892,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pRoom->SetRoomEntryState(CueEvents, bWasLevelComplete, IsCurrentLevelComplete(),
 			bWasRoomConquered, wMonsterCountAtStart);
 
-	if (!this->swordsman.IsInRoom() && !bSwordsmanOutsideRoom)
+	if (!this->swordsman.IsInRoom() && !this->bSwordsmanOutsideRoom)
 		SetPlayerRole(M_BEETHRO, CueEvents); //place player in room now as default (Beethro)
 
 	//Init NPCs after initial room state checks and modifications are performed.
