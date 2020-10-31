@@ -174,9 +174,10 @@ MESSAGE_ID CDbSavedGameMove::SetProperty(
 			break;
 		case P_Commands:
 		{
-			BYTE *data;
+			BYTE *data = NULL;
 			const UINT size = Base64::decode(str,data);
-			this->MoveSequence.Set(data, size);
+			if (size)
+				this->MoveSequence.Set(data, size);
 			delete[] data;
 		}
 		break;
