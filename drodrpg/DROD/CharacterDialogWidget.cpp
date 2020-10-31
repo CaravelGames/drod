@@ -3752,6 +3752,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_MonsterPieceStabbed, g_pTheDB->GetMessageText(MID_MonsterPieceStabbed));
 	this->pEventListBox->AddItem(CID_MudBabyFormed, g_pTheDB->GetMessageText(MID_MudBabyFormed));
 //	this->pEventListBox->AddItem(CID_MudGrew, g_pTheDB->GetMessageText(MID_MudGrew));
+	this->pEventListBox->AddItem(CID_NPC_Defeated, g_pTheDB->GetMessageText(MID_NPCDefeated));
 	this->pEventListBox->AddItem(CID_NPCKilled, g_pTheDB->GetMessageText(MID_NPCKilled));
 	this->pEventListBox->AddItem(CID_ObjectBuilt, g_pTheDB->GetMessageText(MID_ObjectBuilt));
 	this->pEventListBox->AddItem(CID_ObjectFell, g_pTheDB->GetMessageText(MID_ObjectFell));
