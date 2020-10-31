@@ -221,7 +221,7 @@ void PresentRect(SDL_Surface *shadow, const SDL_Rect *rect_in)
 
 	if (tpitch == shadow->pitch && !rect.x && rect.w == shadow->w)
 	{
-		memcpy(tpixels, (char*)shadow->pixels + rect.y * shadow->pitch, tpitch * (rect.h - 1) + rect.w);
+		memcpy(tpixels, (char*)shadow->pixels + rect.y * shadow->pitch, tpitch * (rect.h - rect.y));
 	}
 	else
 	{
