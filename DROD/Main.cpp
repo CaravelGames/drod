@@ -190,11 +190,12 @@ int main(int argc, char *argv[])
 
 #ifdef WIN32
 #	ifdef STEAMBUILD
-	bWindowsDataFilesInUserSpecificDir = true;
+	//Steam default: place player data files in a user-specific location.
 	//Note that for Windows Steam users with non-ASCII characters in their Windows username,
-	//Metakit won't open such filepaths.
-	//Setting this flag back to false below should allow the game to run
-	//with the other directory location.
+	//Metakit won't open such filepaths, so we will have to keep the common location default in this case.
+	const WSTRING userpath = CFiles::GetUserspacePath(true);
+	if (!userpath.empty() && IsAllPrintableASCIIchars(userpath))
+		bWindowsDataFilesInUserSpecificDir = true;
 #	endif
 #endif
 

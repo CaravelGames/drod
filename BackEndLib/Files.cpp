@@ -376,7 +376,7 @@ static bool GetNormalizedPathEnv (
 // endif defined __linux__ || defined __FreeBSD__ || defined __APPLE__
 #else
 
-WSTRING GetUserspacePath(bool bUserSpecificDir)
+WSTRING CFiles::GetUserspacePath(bool bUserSpecificDir)
 //User-specific dir: %USERPROFILE%\My Documents
 //Otherwise, get path for non-user specific, non-roaming data (e.g., "ProgramData").
 {
@@ -1090,7 +1090,7 @@ void CFiles::SetupHomePath()
 # endif
 
 #else
-	CFiles::wstrHomePath = GetUserspacePath(CFiles::bWindowsDataFilesInUserSpecificDir);
+	CFiles::wstrHomePath = CFiles::GetUserspacePath(CFiles::bWindowsDataFilesInUserSpecificDir);
 #endif
 
 	if (!CFiles::wstrHomePath.empty()) {
