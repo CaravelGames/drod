@@ -82,7 +82,7 @@ CVerminEffect::CVerminEffect(
 //*****************************************************************************
 bool CVerminEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const float fMultiplier = min(wDeltaTime, 50) / 8.0f;
+	const float fMultiplier = min(wDeltaTime, 50U) / 8.0f;
 
 	const CDbRoom* pRoom = this->pRoomWidget->GetCurrentGame()->pRoom;
 	ASSERT(pRoom);

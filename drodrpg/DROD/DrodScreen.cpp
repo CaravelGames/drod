@@ -990,10 +990,12 @@ void CDrodScreen::EditGlobalVars(
 
 			if (vType == UVT_int) {
 				int iVarValue = stats.GetVar(varName, (int)0);
-				wstrValue = std::to_wstring(iVarValue);
+				std::basic_stringstream<WCHAR_t> stream;
+				stream << iVarValue;
+				wstrValue = stream.str();
 			}
 			else {
-				wstrValue = stats.GetVar(varName, L"0");
+				wstrValue = stats.GetVar(varName, WS("0"));
 			}
 
 			const UINT tagNo = ShowTextInputMessage(MID_ChangeVarValuePrompt,
