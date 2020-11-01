@@ -518,7 +518,7 @@
       <Project>{7105881e-2da6-4044-8ec7-2691f24b296a}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\DROD\drod.2019.vcxproj">
+    <ProjectReference Include="..\DROD\DROD.2019.vcxproj">
       <Project>{3fdf4563-c819-4e05-8958-e3d652c5b432}</Project>
     </ProjectReference>
   </ItemGroup>
