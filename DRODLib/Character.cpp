@@ -612,6 +612,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 				command->x = (UINT)(-((int)command->x));
 			break;
 			case CCharacterCommand::CC_GenerateEntity:
+			case CCharacterCommand::CC_PushTile:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 				if (IsValidOrientation(command->w))
 					command->w = nGetO(-nGetOX(command->w),nGetOY(command->w));
@@ -672,6 +673,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			break;
 
 			case CCharacterCommand::CC_GenerateEntity:
+			case CCharacterCommand::CC_PushTile:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 				if (IsValidOrientation(command->w))
 					command->w = nGetO(nGetOX(command->w),-nGetOY(command->w));
@@ -1998,6 +2000,13 @@ void CCharacter::Process(
 					default:
 					break;
 				}
+			}
+			break;
+			case CCharacterCommand::CC_PushTile:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+				WeaponStab push(px, py, pw, WeaponType::WT_Staff);
+				pGame->ProcessScriptedPush(push, CueEvents, this);
 			}
 			break;
 
