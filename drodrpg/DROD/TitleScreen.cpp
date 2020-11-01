@@ -1081,7 +1081,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = "http://forum.caravelgames.com/gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	newsQuery += UnicodeToAscii(wszVersionReleaseNumber);
+	newsQuery += UnicodeToUTF8(wszVersionReleaseNumber);
 #ifdef BETA
 	newsQuery += "-BETA-";
 	newsQuery += __DATE__;

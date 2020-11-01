@@ -174,15 +174,9 @@ int main(int argc, char *argv[])
 
 	InitMetadata();
 
-#ifdef WIN32
-#	ifdef STEAMBUILD
+#ifdef STEAMBUILD
 	//Steam default: place player data files in a user-specific location.
-	//Note that for Windows Steam users with non-ASCII characters in their Windows username,
-	//Metakit won't open such filepaths, so we will have to keep the common location default in this case.
-	const WSTRING userpath = CFiles::GetUserspacePath(true);
-	if (!userpath.empty() && IsAllPrintableASCIIchars(userpath))
-		bWindowsDataFilesInUserSpecificDir = true;
-#	endif
+	bWindowsDataFilesInUserSpecificDir = true;
 #endif
 
 	//command line arguments
@@ -1396,7 +1390,7 @@ bool IsAppAlreadyRunning()
 	tmp += dotpid;
 	const UINT lflen = tmp.length();
 	if (!(lockfile = new char[lflen + 1])) return true;
-	UnicodeToAscii(tmp, lockfile);
+	UnicodeToUTF8(tmp, lockfile);
 
 	// Try opening an existing lockfile first
 	FILE *fp = fopen(lockfile, "r");

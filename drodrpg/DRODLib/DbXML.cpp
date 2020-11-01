@@ -1395,7 +1395,7 @@ MESSAGE_ID CDbXML::ImportXML(
 			wstrLogFilename += wstrLog;
 
 			info.userMessages += wszCRLF;
-			string strLog = UnicodeToAscii(info.userMessages);
+			string strLog = UnicodeToUTF8(info.userMessages);
 			CStretchyBuffer text(strLog);
 			if (f.WriteBufferToFile(wstrLogFilename.c_str(), text, true))
 				info.userMessages.resize(0);

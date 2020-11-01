@@ -278,7 +278,7 @@ WSTRING CDbHolds::ExportSpeech(const UINT dwHoldID, const bool /*bCoords*/) cons
 				wstr += wszColon;
 				wstr += c.charNameText;
 
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendUserLog(str.c_str());
@@ -365,7 +365,7 @@ WSTRING CDbHolds::ExportSpeech(const UINT dwHoldID, const bool /*bCoords*/) cons
 							wstr += wszColon;
 							pRoom->GetLevelPositionDescription(wstr, true);
 
-							string str = UnicodeToAscii(wstr);
+							string str = UnicodeToUTF8(wstr);
 							str += "\n";
 							CFiles f;
 							f.AppendUserLog(str.c_str());

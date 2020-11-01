@@ -204,7 +204,7 @@ bool TranslateColorText(const WSTRING& colorText, CCharacterCommand *pCommand)
 	if (colorText.length() != LENGTH)
 		return false;
 
-	const string color = UnicodeToAscii(colorText);
+	const string color = UnicodeToUTF8(colorText);
 	for (size_t i=0; i<LENGTH; ++i) {
 		const char c = tolower(color[i]);
 		if (!isalnum(c) || c > 'f')

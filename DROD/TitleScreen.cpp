@@ -1877,7 +1877,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = CNetInterface::cNetBaseURL + "gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	const string ver = UnicodeToAscii(wszVersionReleaseNumber);
+	const string ver = UnicodeToUTF8(wszVersionReleaseNumber);
 	newsQuery += ver;
 #ifdef BETA
 	newsQuery += "-BETA-";

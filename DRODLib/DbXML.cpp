@@ -2127,7 +2127,7 @@ void CDbXML::Import_Resolve()
 			wstrLogFilename += wstrLog;
 
 			info.userMessages += wszCRLF;
-			const string strLog = UnicodeToAscii(info.userMessages);
+			const string strLog = UnicodeToUTF8(info.userMessages);
 			const CStretchyBuffer text(strLog);
 			if (f.WriteBufferToFile(wstrLogFilename.c_str(), text, true))
 				info.userMessages.resize(0);

@@ -192,7 +192,7 @@ void CSellScreen2::Version2ScreenSetup()
 		f.WriteGameProfileString(INISection::Startup, ini_key.c_str(), cExitScreenNum);
 
 		//Load this background screen.
-		this->imageFilenames.push_back(UnicodeToAscii(wScrName));
+		this->imageFilenames.push_back(UnicodeToUTF8(wScrName));
 	} else {
 		//Just show a default screen when images are missing.
 		this->imageFilenames.push_back(string("Background"));

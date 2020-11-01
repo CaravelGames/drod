@@ -1052,7 +1052,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 #undef MACROMATCH
 
 	//Parse "section:key[=value]".
-	string str = UnicodeToAscii(pText+index);
+	string str = UnicodeToUTF8(pText+index);
 	char *pStr = (char*)str.c_str();
 	string originalStr = pStr;
 	char *pSection = strtok(pStr, ":");

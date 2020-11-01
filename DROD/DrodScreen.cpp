@@ -1295,7 +1295,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 #undef MACROMATCH
 
 	//Parse "section:key[=value]".
-	const string str = UnicodeToAscii(pText+index);
+	const string str = UnicodeToUTF8(pText+index);
 	char *pStr = (char*)str.c_str();
 	string originalStr = pStr;
 	char *pSection = strtok(pStr, ":");
@@ -2248,7 +2248,7 @@ void CDrodScreen::ImportMedia()
 	wstrLogFilename += CFiles::wGameName;
 	wstrLogFilename += wstrLog;
 
-#define LOG_TEXT(wtext) { string strLog = UnicodeToAscii(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
+#define LOG_TEXT(wtext) { string strLog = UnicodeToUTF8(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
 
 	//Default: if official hold is the demo version, include selected demo styles only. Otherwise include all of them.
 	CDbHold::HoldStatus status = GetInstalledOfficialHold();

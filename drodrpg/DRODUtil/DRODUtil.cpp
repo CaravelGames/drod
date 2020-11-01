@@ -258,10 +258,10 @@ void PrintHeader()
 #else
 	WSTRING wstrTemp = wszDefaultPath;
 	char pszDefaultPath[wstrTemp.length()];
-	UnicodeToAscii(wstrTemp, pszDefaultPath);
+	UnicodeToUTF8(wstrTemp, pszDefaultPath);
 	wstrTemp = g_szarrVersions[GetDefaultVersion()];
 	char pszVersion[wstrTemp.length()];
-	UnicodeToAscii(wstrTemp, pszVersion);
+	UnicodeToUTF8(wstrTemp, pszVersion);
 	printf("Default path is %s.\r\n"
 		"Default version is %s.\r\n"
 		"-------------------------------------------------------------------------------\r\n",

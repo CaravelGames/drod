@@ -453,7 +453,7 @@ void CRoomScreen::GrabNewNotices(CRoomWidget* pRoomWidget)
 		if (pButton) {
 			// Increment the number on the button
 			WSTRING wstr = pButton->GetCaption();
-			string str = UnicodeToAscii(wstr);
+			string str = UnicodeToUTF8(wstr);
 			int num;
 			sscanf(str.c_str(), "%d", &num);
 			num++;

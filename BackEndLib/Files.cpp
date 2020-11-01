@@ -243,7 +243,7 @@ bool CFiles::MakeDirectory(const WCHAR *pwzPath)
 	if (CFiles::WindowsCanBrowseUnicode())
 		ret = _wmkdir(pwzPath);
 	else {
-		const string path = UnicodeToAscii(pwzPath);
+		const string path = UnicodeToUTF8(pwzPath);
 		ret = _mkdir(path.c_str());
 	}
 	if (ret == 0)
@@ -678,7 +678,7 @@ void CFiles::AppendLog(
 				strTime += "FIRST LOG IN SESSION ";
 				bFirstLog = false;
 			}
-			strTime += UnicodeToAscii(wstrTime);
+			strTime += UnicodeToUTF8(wstrTime);
 			strTime += " ***" NEWLINE;
 			fwrite(strTime.c_str(), 1, strTime.size(), pFile);
 		}
@@ -721,18 +721,18 @@ bool CFiles::WriteGameProfileString(
 bool CFiles::WriteGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, const char *pszValue)
 {
-	char pszKey[256];
-	UnicodeToAscii(pwszKey, pszKey);
-	gameIni.WriteString(pszSection, pszKey, pszValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	gameIni.WriteString(pszSection, key.c_str(), pszValue);
 	return true;
 }
 
 bool CFiles::WriteGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, const list<WSTRING>& wstrValue)
 {
-	char pszKey[256];
-	UnicodeToAscii(pwszKey, pszKey);
-	gameIni.WriteString(pszSection, pszKey, wstrValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	gameIni.WriteString(pszSection, key.c_str(), wstrValue);
 	return true;
 }
 
@@ -777,9 +777,9 @@ bool CFiles::GetGameProfileString(
 bool CFiles::GetGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, list<WSTRING>& strValue)
 {
-	char pszKey[1024];
-	UnicodeToAscii(pwszKey, pszKey);
-	return gameIni.GetString(pszSection, pszKey, strValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	return gameIni.GetString(pszSection, key.c_str(), strValue);
 }
 
 //******************************************************************************
@@ -1661,7 +1661,7 @@ bool CFiles::IsValidPath(const WCHAR *pwzPath)
 		return (_waccess(wstrDirPath.c_str(), 4) == 0);
 	}
 
-	const string aDirPath = UnicodeToAscii(wstrDirPath);
+	const string aDirPath = UnicodeToUTF8(wstrDirPath);
 	const bool bValidPath = (_access(aDirPath.c_str(), 4) == 0);
 	return bValidPath;
 #else
@@ -1696,7 +1696,7 @@ bool CFiles::GetDirectoryList(
 		long hFile;
 
 		//Find first sub-dir in current directory.
-		string sFileFilter = UnicodeToAscii(wszFilepath);
+		string sFileFilter = UnicodeToUTF8(wszFilepath);
 		sFileFilter += "\\*";
 
 		if ((hFile = _findfirst(sFileFilter.c_str(), &filedata )) == -1L) {
@@ -1813,9 +1813,9 @@ bool CFiles::GetFileList(
 		long hFile;
 
 		//Find first sub-dir in current directory.
-		string sFileFilter = UnicodeToAscii(wszFilepath);
+		string sFileFilter = UnicodeToUTF8(wszFilepath);
 		sFileFilter += "\\*.";
-		sFileFilter += UnicodeToAscii(mask);
+		sFileFilter += UnicodeToUTF8(mask);
 		if ((hFile = _findfirst(sFileFilter.c_str(), &filedata)) == -1L) {
 			 return (errno == ENOENT); //No files in current directory - fail only if it's not ENOENT
 		}

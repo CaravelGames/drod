@@ -58,8 +58,8 @@ static void OptionError (
 	wprintf(L"The \"-%s\" option %s.\n", pwczOpt, wstrErr.c_str());
 #else
 	WSTRING wstrOpt = pwczOpt;
-	const string opt = UnicodeToAscii(wstrOpt);
-	const string err = UnicodeToAscii(wstrErr);
+	const string opt = UnicodeToUTF8(wstrOpt);
+	const string err = UnicodeToUTF8(wstrErr);
 	printf("The \"-%s\" option %s.\n", opt.c_str(), err.c_str());
 #endif
 }

@@ -44,11 +44,7 @@
 #error Platform unknown!  Does this platform support 16-bit Unicode?
 #endif
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #define USE_UTF8_PATHS
-#else
-#undef USE_UTF8_PATHS
-#endif
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #define USE_XDG_BASEDIR_SPEC
@@ -120,11 +116,11 @@ public:
 	static bool          RenameFile(const WCHAR *wszOldFilepath, const WCHAR *wszNewFilepath);
 	static bool          RenameFile(const char *szOldFilepath, const char *szNewFilepath);
 #ifdef USE_UTF8_PATHS
-	static bool          UnicodeToCPath(const WCHAR *pwszFilepath, std::string &str) { UnicodeToUTF8(pwszFilepath, str); return true; }
+	static void          UnicodeToCPath(const WCHAR *pwszFilepath, std::string &str) { UnicodeToUTF8(pwszFilepath, str); }
 #else
-	static bool          UnicodeToCPath(const WCHAR *pwszFilepath, std::string &str) { return UnicodeToAscii(pwszFilepath, str); }
+	static void          UnicodeToCPath(const WCHAR *pwszFilepath, std::string &str) { UnicodeToAscii(pwszFilepath, str); }
 #endif
-	static bool          UnicodeToCPath(const WSTRING &wstrFilepath, std::string &str) { return UnicodeToCPath(wstrFilepath.c_str(), str); }
+	static void          UnicodeToCPath(const WSTRING &wstrFilepath, std::string &str) { UnicodeToCPath(wstrFilepath.c_str(), str); }
 	static std::string   UnicodeToCPath(const WCHAR *pwszFilepath) { std::string result; UnicodeToCPath(pwszFilepath, result); return result; }
 	static std::string   UnicodeToCPath(const WSTRING& wstrFilepath) { std::string result; UnicodeToCPath(wstrFilepath, result); return result; }
 	static bool          WriteBufferToFile(const WCHAR *pwzFilepath, const CStretchyBuffer &Buffer, const bool bAppend=false);

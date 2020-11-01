@@ -914,7 +914,7 @@ int CCharacter::parseExpression(
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str = UnicodeToAscii(pwStr + index);
+			string str = UnicodeToUTF8(pwStr + index);
 			str += ": Parse error (bad symbol)";
 			f.AppendErrorLog(str.c_str());
 			return val;
@@ -994,7 +994,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str = UnicodeToAscii(pwStr);
+			string str = UnicodeToUTF8(pwStr);
 			str += ": Parse error (missing close parenthesis)";
 			f.AppendErrorLog(str.c_str());
 		}
@@ -1018,7 +1018,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 				++index;
 
 			CFiles f;
-			string str = UnicodeToAscii(pwStr);
+			string str = UnicodeToUTF8(pwStr);
 			str += ": Parse error (invalid var name)";
 			f.AppendErrorLog(str.c_str());
 
@@ -1073,7 +1073,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 
 	//Invalid identifier
 	CFiles f;
-	string str = UnicodeToAscii(pwStr + index);
+	string str = UnicodeToUTF8(pwStr + index);
 	str += ": Parse error (invalid var name)";
 	f.AppendErrorLog(str.c_str());
 
@@ -3033,7 +3033,7 @@ void CCharacter::Process(
 			this->wCurrentCommandIndex = this->commands.size();
 
 			WSTRING wstr = pGame->AbbrevRoomLocation();
-			string str = UnicodeToAscii(wstr);
+			string str = UnicodeToUTF8(wstr);
 			str += ": Character script is in an infinite loop" NEWLINE;
 
 			CFiles f;

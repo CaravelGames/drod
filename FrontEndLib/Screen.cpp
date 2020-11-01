@@ -818,7 +818,7 @@ void CScreen::SaveSnapshot(
 		{
 			static const WCHAR bmpExt[] = {We('.'),We('b'),We('m'),We('p'),We(0)};
 			name += bmpExt;
-			const string str = UnicodeToAscii(name);
+			const string str = UnicodeToUTF8(name);
 			SDL_SaveBMP(pSurface, str.c_str());
 		}
 		break;

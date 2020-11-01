@@ -120,7 +120,7 @@ bool CUtil::IsPathValid(
 	bIsValid = !_wstat(pszPath, &buf) ? (buf.st_mode & _S_IFDIR) != 0 : false;
 #else
 	const WSTRING wstrPath = pszPath;
-	const string szPath = UnicodeToAscii(wstrPath);
+	const string szPath = UnicodeToUTF8(wstrPath);
 	struct stat buf;
 	bIsValid = !stat(szPath, &buf) ? S_ISDIR(buf.st_mode) : false;
 #endif

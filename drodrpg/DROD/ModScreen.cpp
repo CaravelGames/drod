@@ -380,14 +380,14 @@ void CModScreen::DeleteSelectedMods()
 				g_pTheDB->Data.Delete(*id);
 
 		//Remove style entry from INI also.
-		string styleName = UnicodeToAscii(wModName.c_str());
+		string styleName = UnicodeToUTF8(wModName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, INIKey::Style, styleName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 
 		//Delete style skies entry, if exists.
 		wModName += wszSpace;
 		wModName += wszSKIES;
-		styleName = UnicodeToAscii(wModName.c_str());
+		styleName = UnicodeToUTF8(wModName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 	}
 

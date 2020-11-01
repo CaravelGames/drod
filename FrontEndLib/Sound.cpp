@@ -985,7 +985,7 @@ SOUNDSTREAM* CSound::LoadSongStream(const WSTRING& wstrSongFilepath, UINT mode)
 	WideCharToMultiByte(CP_ACP, 0, wstrSongFilepath.c_str(), -1, sANSI, 512, NULL, NULL);
 #else
 	char sANSI[wstrSongFilepath.length() + 1];
-	UnicodeToAscii(wstrSongFilepath.c_str(), sANSI);  // FIXME
+	UnicodeToUTF8(wstrSongFilepath.c_str(), sANSI);
 #endif
 
 	SOUNDSTREAM *pStream = NULL;
