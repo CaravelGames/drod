@@ -180,6 +180,7 @@ public:
 	WSTRING  AbbrevRoomLocation();
 	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
+	bool     AreBeaconsIgnored() const;
 	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 			const bool bUseCurrentTurnNo=true);
 	void     Clear(const bool bNewGame=true);
