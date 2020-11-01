@@ -382,6 +382,7 @@
     <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingMirrors.cpp" />
