@@ -127,8 +127,8 @@ libs=(
 	${TOPDIR}/DROD
 	${TOPDIR}/DRODLib
 	${TOPDIR}/CaravelNet
-	${TOPDIR}/../FrontEndLib
-	${TOPDIR}/../BackEndLib
+	${TOPDIR}/FrontEndLib
+	${TOPDIR}/BackEndLib
 )
 
 gen_rules () {
@@ -152,7 +152,7 @@ optflags = -std=c++11 $archflags $buildflags -g
 cflags = $optflags -pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized
 ldflags = $optflags $linkflags -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
 
-revision = $$(hg id -n)
+revision = $$(git rev-parse --short HEAD)
 debugsuffix = -${arch}-${revision}.dbg
 
 rule cxx
@@ -202,9 +202,9 @@ vcprojs=()
 gen_lib_build () {
 	local path="$1"
 	local lib=$(basename "$path")
-	local vcproj="$path/$lib.vcproj"
+	local vcproj="$path/$lib.2019.vcxproj"
 	vcprojs+=($vcproj)
-	local files=($(grep 'RelativePath=.*\.cpp' "$vcproj" | sed 's,^.*RelativePath="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
+	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
 	local objs=()
 	for file in ${files[@]}; do
 		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"
