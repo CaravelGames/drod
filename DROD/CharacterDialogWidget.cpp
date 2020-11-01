@@ -1403,7 +1403,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 			for (UINT mood=0; mood<SONG_MOOD_COUNT; ++mood)
 			{
 				WSTRING wstrMoodText;
-				AsciiToUnicode(moodText[mood], wstrMoodText);
+				UTF8ToUnicode(moodText[mood], wstrMoodText);
 				WSTRING wstr = *style + wstrMoodText;
 				this->pMusicListBox->AddItem(wCount++, wstr.c_str());
 			}

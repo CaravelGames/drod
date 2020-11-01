@@ -4970,7 +4970,7 @@ void CCharacter::Upgrade2_0CommandTo3_0(CCharacterCommand& command, COMMAND_VECT
 					default: break; //don't change others
 				}
 				if (!songName.empty()) {
-					AsciiToUnicode(songName.c_str(), command.label);
+					UTF8ToUnicode(songName.c_str(), command.label);
 					command.x = 0;
 				}
 			}

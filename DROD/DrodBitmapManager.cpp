@@ -391,7 +391,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 
 		//Last images in list override first ones.
 		bool bFoundImage = false;
-		AsciiToUnicode(textureTileNames[wI], wstrCurrentName);
+		UTF8ToUnicode(textureTileNames[wI], wstrCurrentName);
 		for (rStr = tiles.rbegin(); rStr != tiles.rend(); ++rStr)
 			if (LoadTexture(wI, *rStr + wstrCurrentName))
 			{
@@ -406,7 +406,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 			{
 				//Water tiles require a bit more work
 				bFoundImage = false;
-				AsciiToUnicode(textureTileNames[wI == DEEP_MOSAIC ? PIT_MOSAIC : FLOOR_DIRT], wstrCurrentName);
+				UTF8ToUnicode(textureTileNames[wI == DEEP_MOSAIC ? PIT_MOSAIC : FLOOR_DIRT], wstrCurrentName);
 				for (rStr = tiles.rbegin(); rStr != tiles.rend(); ++rStr)
 					if (LoadTexture(wI, *rStr + wstrCurrentName))
 					{
@@ -429,7 +429,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 						bUseBaseStyle = true;
 					}
 
-					AsciiToUnicode(textureTileNames[wI], wstrCurrentName);
+					UTF8ToUnicode(textureTileNames[wI], wstrCurrentName);
 					wstrFilename += wstrCurrentName;
 					bFoundImage = LoadTexture(wI, wstrFilename);
 					if (!bFoundImage)
@@ -438,7 +438,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 							wstrFilename = styleFilename.front();
 						else
 							wstrFilename = wszDefaultStyleName;
-						AsciiToUnicode(textureTileNames[wI == DEEP_MOSAIC ? PIT_MOSAIC : FLOOR_DIRT], wstrCurrentName);
+						UTF8ToUnicode(textureTileNames[wI == DEEP_MOSAIC ? PIT_MOSAIC : FLOOR_DIRT], wstrCurrentName);
 						wstrFilename += wstrCurrentName;
 						//If this fails, then we've exhausted all alternatives to show this texture.
 						//Abort instead.

@@ -6470,7 +6470,7 @@ bool CGameScreen::UploadDemoPolling()
 					//Demo ranked on hi-score list -- give feedback to user.
 					WSTRING wStr;
 					if (customRank != "") {
-						AsciiToUnicode(customRank, wStr);
+						UTF8ToUnicode(customRank, wStr);
 					}
 					else {
 						wStr = PrintRank(nRanking, bTie);

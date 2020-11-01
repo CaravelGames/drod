@@ -124,7 +124,7 @@ void CSellScreen2::Version2ScreenSetup()
 
 	const string imageSuffix = GetImageSuffix();
 	WSTRING wstrImageSuffix;
-	AsciiToUnicode(imageSuffix.c_str(), wstrImageSuffix);
+	UTF8ToUnicode(imageSuffix.c_str(), wstrImageSuffix);
 
 	const string INI_KEY = "ExitScreenNum";
 	const string ini_key = INI_KEY + imageSuffix;

@@ -1113,7 +1113,7 @@ void CFiles::SetupHomePathSubDirs()
 				it!=CFiles::playerDataSubDirs.end(); ++it) {
 			WSTRING subdir;
 			const char firstch = (*it)[0];
-			AsciiToUnicode(&(it->c_str()[(firstch == '+' || firstch == '-') ? 1 : 0]), subdir);
+			UTF8ToUnicode(&(it->c_str()[(firstch == '+' || firstch == '-') ? 1 : 0]), subdir);
 			const WSTRING subdirpath = datapath + wszSlash + subdir;
 			CreatePathIfInvalid(subdirpath.c_str());
 			if (firstch == '+')
@@ -1706,7 +1706,7 @@ bool CFiles::GetDirectoryList(
 		{
 			//Don't display the current directory (i.e., ".").
 			if (filedata.attrib & _A_SUBDIR && strcmp(".", filedata.name)) {
-				AsciiToUnicode(filedata.name, wbuffer);
+				UTF8ToUnicode(filedata.name, wbuffer);
 				wstrDirs.insert(wbuffer);
 			}
 
@@ -1714,7 +1714,7 @@ bool CFiles::GetDirectoryList(
 			while (_findnext( hFile, &filedata ) == 0)
 			{
 				if (filedata.attrib & _A_SUBDIR) {
-					AsciiToUnicode(filedata.name, wbuffer);
+					UTF8ToUnicode(filedata.name, wbuffer);
 					wstrDirs.insert(wbuffer);
 			  }
 			}
@@ -1823,7 +1823,7 @@ bool CFiles::GetFileList(
 		{
 			if (!(filedata.attrib & _A_SUBDIR || filedata.attrib & _A_SYSTEM ||
 				filedata.attrib & _A_HIDDEN)) {
-				AsciiToUnicode(filedata.name, wbuffer);
+				UTF8ToUnicode(filedata.name, wbuffer);
 				wstrFiles.insert(wbuffer);
 			}
 
@@ -1832,7 +1832,7 @@ bool CFiles::GetFileList(
 			{
 				if (!(filedata.attrib & _A_SUBDIR || filedata.attrib & _A_SYSTEM ||
 					filedata.attrib & _A_HIDDEN)) {
-					AsciiToUnicode(filedata.name, wbuffer);
+					UTF8ToUnicode(filedata.name, wbuffer);
 					wstrFiles.insert(wbuffer);
 				}
 			}

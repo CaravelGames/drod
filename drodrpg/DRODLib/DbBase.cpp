@@ -680,7 +680,7 @@ const WCHAR* CDbBase::GetMessageText(
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
 	{
 		static WSTRING wstrText;
-		AsciiToUnicode(strText.c_str(), wstrText);
+		UTF8ToUnicode(strText.c_str(), wstrText);
 		if (pdwLen) *pdwLen = wstrText.length();
 		return wstrText.c_str();
 	}

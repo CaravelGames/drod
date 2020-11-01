@@ -8464,7 +8464,7 @@ bool CGameScreen::UploadDemoPolling()
 					const char *pwczRank = (char*)(BYTE*)*pBuffer;
 					if (strlen(pwczRank) > 0) {
 						WSTRING wStr;
-						AsciiToUnicode(pwczRank, wStr);
+						UTF8ToUnicode(pwczRank, wStr);
 						this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
 								this->pRoomWidget, wStr.c_str(), -300, 3000));	//show at top of room for 3s
 					}

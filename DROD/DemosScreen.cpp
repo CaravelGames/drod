@@ -1548,7 +1548,7 @@ void CDemosScreen::GetCNetDemos(CNetResult* pResults)
 				pDemo->wNumMoves = demos[i].get("numMoves", 0).asUInt();
 				pDemo->wTimeElapsed = demos[i].get("realTime", 0).asUInt();
 				pDemo->wTimeReceived = demos[i].get("time", 0).asUInt();
-				AsciiToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
+				UTF8ToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
 				Base64::decode(demos[i].get("playerName", "").asString(), pDemo->playerName);
 				pDemo->wCreated = demos[i].get("createdTime", 0).asUInt();
 

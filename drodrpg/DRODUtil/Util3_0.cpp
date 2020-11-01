@@ -633,7 +633,7 @@ const
 			WSTRING wstrUNIFilepath = pwzSrcPath;
 			wstrUNIFilepath += wszSlash;
 			WSTRING wstrFilename;
-			AsciiToUnicode(pDir->d_name, wstrFilename);
+			UTF8ToUnicode(pDir->d_name, wstrFilename);
 			wstrUNIFilepath += wstrFilename;
 #endif
 

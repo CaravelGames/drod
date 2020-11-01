@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 	for (int i = argc; i--; )
 	{
 		WSTRING wstrTemp;
-		AsciiToUnicode(argv[i], wstrTemp);
+		UTF8ToUnicode(argv[i], wstrTemp);
 		Wargv[i] = new WCHAR[wstrTemp.length()+1];
 		WCScpy(Wargv[i], wstrTemp.c_str());
 	}

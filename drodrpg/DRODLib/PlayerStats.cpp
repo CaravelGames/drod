@@ -182,7 +182,7 @@ WSTRING ScriptVars::getVarNameW(const Predefined var)
 	const string varName = getVarName(var);
 
 	WSTRING wstr;
-	AsciiToUnicode(varName, wstr);
+	UTF8ToUnicode(varName, wstr);
 	return wstr;
 }
 

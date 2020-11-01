@@ -984,7 +984,7 @@ UINT CScreen::ShowMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 
@@ -1070,7 +1070,7 @@ void CScreen::ShowStatusMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 	CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*,

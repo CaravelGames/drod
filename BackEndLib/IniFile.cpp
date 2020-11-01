@@ -147,7 +147,7 @@ bool CIniSection::GetString(
 	WSTRING wstr;
 	for (list<string>::const_iterator iStr = strs.begin(); iStr != strs.end(); ++iStr)
 	{
-		AsciiToUnicode(iStr->c_str(), wstr);
+		UTF8ToUnicode(iStr->c_str(), wstr);
 		wstrBuffer.push_back(wstr);
 	}
 	return true;

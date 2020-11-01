@@ -384,7 +384,7 @@ int main(int argc, char *argv[])
 				//Queue files for import.
 				if (strstr(argv[nArgNo],"."))
 				{
-					AsciiToUnicode(argv[nArgNo], wstrFilename);
+					UTF8ToUnicode(argv[nArgNo], wstrFilename);
 					CDrodScreen::importFiles.push_back(wstrFilename);
 				}
 				//Export language texts to file specified after option flag.
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
 				{
 					if (nArgNo+1 < argc)
 					{
-						AsciiToUnicode(argv[++nArgNo], wstrFilename);
+						UTF8ToUnicode(argv[++nArgNo], wstrFilename);
 						g_pTheDB->ExportTexts(wstrFilename.c_str());
 					}
 				}
@@ -401,7 +401,7 @@ int main(int argc, char *argv[])
 				{
 					if (nArgNo+1 < argc)
 					{
-						AsciiToUnicode(argv[++nArgNo], wstrFilename);
+						UTF8ToUnicode(argv[++nArgNo], wstrFilename);
 #ifdef WIN32
 						g_pTheDB->ImportTexts(wstrFilename.c_str());
 #elif defined(__linux__) || defined(__FreeBSD__)
@@ -1174,43 +1174,43 @@ void DisplayInitErrorMessage(
 		switch (dwMessageID)
 		{
 			case MID_DatMissing:
-				AsciiToUnicode("Couldn't find DROD data.  This problem might be corrected by "
+				UTF8ToUnicode("Couldn't find DROD data.  This problem might be corrected by "
 						"reinstalling DROD.", wstrMessage);
 			break;
 
 			case MID_DatNoAccess:
-				AsciiToUnicode("Couldn't access DROD data.  If you are running DROD from a networked "
+				UTF8ToUnicode("Couldn't access DROD data.  If you are running DROD from a networked "
 						"location, this could be a cause of the problem.  It's also possible that another "
 						"application is trying to access DROD data at the same time; you may wish to "
 						"retry running DROD after other applications have been closed.", wstrMessage);
 			break;
 
 			case MID_DatCorrupted_NoBackup:
-				 AsciiToUnicode("Your DROD data was corrupted due to an error.  DROD tried to restore "
+				UTF8ToUnicode("Your DROD data was corrupted due to an error.  DROD tried to restore "
 							"from the last good copy of the data, but the operation failed.  I recommend "
 							"reinstalling DROD, but unfortunately, you will lose all your data.", wstrMessage);
 			break;
 
 			case MID_DatCorrupted_Restored:
-				 AsciiToUnicode("Your DROD data was corrupted due to an error, so it was necessary to "
+				UTF8ToUnicode("Your DROD data was corrupted due to an error, so it was necessary to "
 							"restore from the last good copy of the data. Unfortunately, you've lost saved "
 							"games and other changes from your last session.", wstrMessage);
 			break;
 
 			case MID_CouldNotOpenDB:
-				AsciiToUnicode("Couldn't open DROD data.  This points to corruption of a required "
+				UTF8ToUnicode("Couldn't open DROD data.  This points to corruption of a required "
 						"DROD file.  This problem might be corrected by reinstalling DROD.",
 						wstrMessage);
 			break;
 
 			case MID_MemPerformanceWarning:
-				 AsciiToUnicode("DROD should run without any problems, but its performance may be improved "
+				UTF8ToUnicode("DROD should run without any problems, but its performance may be improved "
 							"by freeing memory on your system.  If there are any open applications you can "
 							"close, this would help.", wstrMessage);
 			break;
 
 			case MID_MemLowWarning:
-				 AsciiToUnicode("Your system is running a little low on memory.  DROD will probably run "
+				UTF8ToUnicode("Your system is running a little low on memory.  DROD will probably run "
 							"without problems, but if other applications are started while DROD is running, "
 							"you might see some crashes.  To avoid this kind of thing and get better "
 							"performance from DROD, you could close other applications that are now open.",
@@ -1218,27 +1218,27 @@ void DisplayInitErrorMessage(
 			break;
 
 			case MID_MemLowExitNeeded:
-				 AsciiToUnicode("There is not enough memory to run DROD.  It might help to close other "
+				UTF8ToUnicode("There is not enough memory to run DROD.  It might help to close other "
 							"applications that are now open, and try running DROD again.  DROD will now exit.",
 							wstrMessage);
 			break;
 
 			case MID_AppConfigError:
-				 AsciiToUnicode("This version of DROD has disabled itself.  Go to www.caravelgames.com for support.",
+				UTF8ToUnicode("This version of DROD has disabled itself.  Go to www.caravelgames.com for support.",
 							wstrMessage);
 			break;
 
 			case MID_DRODIsAlreadyRunning:
-				AsciiToUnicode("DROD is already running.", wstrMessage);
+				UTF8ToUnicode("DROD is already running.", wstrMessage);
 			break;
 
 			case MID_DataPathDotTextFileIsInvalid:
-				AsciiToUnicode("The information in DataPath.txt is invalid.", wstrMessage);
+				UTF8ToUnicode("The information in DataPath.txt is invalid.", wstrMessage);
 			break;
 
 			default:
 			{
-				AsciiToUnicode("An unexpected error occurred, and DROD was not able to retrieve a "
+				UTF8ToUnicode("An unexpected error occurred, and DROD was not able to retrieve a "
 						"description of the problem.  This problem might be corrected by "
 						"reinstalling DROD." NEWLINE
 						"Error=", wstrMessage);
@@ -1259,7 +1259,7 @@ void DisplayInitErrorMessage(
 //Win32: UCS-2, GTK/Linux: UTF-8
 #ifdef WIN32
 	WSTRING wstrTitle;
-#define SETTITLE(x,y) AsciiToUnicode(x, wstrTitle)
+#define SETTITLE(x,y) UTF8ToUnicode(x, wstrTitle)
 #define MSG_WARNING
 #define MSG_ERROR
 #else
@@ -1571,7 +1571,7 @@ void GetAppPath(
         char szPathBuffer[MAX_PATH+1];
         if (GetModuleFileNameA(NULL, szPathBuffer, MAX_PATH))
         {
-            AsciiToUnicode(szPathBuffer, wstrAppPath);
+			UTF8ToUnicode(szPathBuffer, wstrAppPath);
             return;
         }
     }

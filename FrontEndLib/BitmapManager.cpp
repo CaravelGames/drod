@@ -2961,7 +2961,7 @@ SDL_Surface * CBitmapManager::GetBitmapSurface(
 	ASSERT(strlen(pszName) <= MAXLEN_BITMAPNAME);
 
 	WSTRING wstr;
-	AsciiToUnicode(pszName, wstr);
+	UTF8ToUnicode(pszName, wstr);
 	LOADEDBITMAP *pBitmap = FindLoadedBitmap(wstr.c_str());
 	if (pBitmap)   //Found it--increment ref count.
 	{
@@ -3000,7 +3000,7 @@ void CBitmapManager::ReleaseBitmapSurface(
 	ASSERT(strlen(pszName) <= MAXLEN_BITMAPNAME);
 
 	WSTRING wstr;
-	AsciiToUnicode(pszName, wstr);
+	UTF8ToUnicode(pszName, wstr);
 	LOADEDBITMAP *pBitmap = FindLoadedBitmap(wstr.c_str());
 
 	ASSERT(pBitmap);

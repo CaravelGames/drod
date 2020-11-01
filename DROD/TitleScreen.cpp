@@ -1176,7 +1176,7 @@ bool CTitleScreen::PollForNews()
 
 		delete pBuffer;
 
-		AsciiToUnicode(strFromWeb.c_str(), this->wstrNewsText);
+		UTF8ToUnicode(strFromWeb.c_str(), this->wstrNewsText);
 		SetNewsText();
 
 		//Wait to query hold list until no delay will be incurred.

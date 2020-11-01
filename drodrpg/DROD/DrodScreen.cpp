@@ -1080,7 +1080,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 				}
 				//Display current/new setting for key.
 				WSTRING wstr;
-				AsciiToUnicode(originalStr.c_str(), wstr);
+				UTF8ToUnicode(originalStr.c_str(), wstr);
 				DisplayChatText(wstr, Black);
 				return true;
 			} else {
@@ -1095,7 +1095,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 					//Display inputted setting for key.
 					WSTRING wstr;
-					AsciiToUnicode(originalStr.c_str(), wstr);
+					UTF8ToUnicode(originalStr.c_str(), wstr);
 					DisplayChatText(wstr, Black);
 					return true;
 				}
@@ -1105,7 +1105,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 	//Not recognized.
 	WSTRING orig, wstr = g_pTheDB->GetMessageText(MID_UnrecognizedConsoleCommand);
-	AsciiToUnicode(originalStr.c_str(), orig);
+	UTF8ToUnicode(originalStr.c_str(), orig);
 	wstr += wszColon;
 	wstr += wszSpace;
 	wstr += orig;
@@ -1665,7 +1665,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 
@@ -1804,7 +1804,7 @@ void CDrodScreen::ImportHoldMedia()
 				else if (wI <= TEXTURE_COUNT + NUM_GRAPHICS_FILES)
 				{
 					//Graphics files to be embedded.
-					AsciiToUnicode(graphicFilename[wI - TEXTURE_COUNT - 1], wstrImportFile);
+					UTF8ToUnicode(graphicFilename[wI - TEXTURE_COUNT - 1], wstrImportFile);
 				} else {
 					//Demo/registered exit screens.  Import one kind or the other.
 					if (wStylesToExport > 1) //no sell screens in full version
@@ -1826,7 +1826,7 @@ void CDrodScreen::ImportHoldMedia()
 			} else {
 				//Room style image files.
 				WSTRING wstr;
-				AsciiToUnicode(textureTileNames[wI], wstr);
+				UTF8ToUnicode(textureTileNames[wI], wstr);
 				wstrImportFile += wstr;
 			}
 
@@ -1913,7 +1913,7 @@ void CDrodScreen::ImportHoldMedia()
 			{
 				//Get song list for this mood from INI
 				WSTRING wMoodText;
-				AsciiToUnicode(moodText[wI], wMoodText);
+				UTF8ToUnicode(moodText[wI], wMoodText);
 				WSTRING wstrSongmood = styleName + wMoodText;
 				f.GetGameProfileString(INISection::Songs, wstrSongmood.c_str(), songlist);
 			}
@@ -2124,7 +2124,7 @@ bool CDrodScreen::IsStyleOnDisk(
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 

@@ -447,7 +447,7 @@ const
 			}
 
 			dwSpeakerTextID = getSpeakerNameText(wChar, color);
-			AsciiToUnicode(color.c_str(), wstrColor);
+			UTF8ToUnicode(color.c_str(), wstrColor);
 
 			//Indicate which lines don't have (and need) a sound bite.
 			if (!(command.pSpeech->dwDataID || command.pSpeech->dwDelay == 1))
