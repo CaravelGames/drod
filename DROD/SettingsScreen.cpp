@@ -876,7 +876,7 @@ void CSettingsScreen::OnKeyDown(
 		case TAG_VOICES_VOLUME:
 		case TAG_SOUNDEFF_VOLUME:
 		{
-			const SDL_MouseButtonEvent fakeButton;
+			SDL_MouseButtonEvent fakeButton;
 			OnDragUp(dwTagNo, fakeButton);
 		}
 		break;
