@@ -870,6 +870,18 @@ void CSettingsScreen::OnKeyDown(
 		default: break;
 	}
 
+	switch (dwTagNo)
+	{
+		case TAG_MUSIC_VOLUME:
+		case TAG_VOICES_VOLUME:
+		case TAG_SOUNDEFF_VOLUME:
+		{
+			const SDL_MouseButtonEvent fakeButton;
+			OnDragUp(dwTagNo, fakeButton);
+		}
+		break;
+	}
+
 	SetWidgetStates();
 }
 
@@ -1065,6 +1077,7 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 				GetWidget(dwTagNo));
 			g_pTheSound->SetSoundEffectsVolume(pSliderWidget->GetValue());
+			g_pTheSound->StopSoundEffect(SEID_ORBHIT);
 			g_pTheSound->PlaySoundEffect(SEID_ORBHIT); //play sample sound
 		break;
 
@@ -1083,6 +1096,7 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			g_pTheSound->SetVoicesVolume(pSliderWidget->GetValue());
 			const int nSoundVolume = g_pTheSound->GetSoundVolume();
 			g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
+			g_pTheSound->StopSoundEffect(SEID_HALPHFOLLOWING);
 			g_pTheSound->PlaySoundEffect(SEID_HALPHFOLLOWING); //play sample sound
 			g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 		}
