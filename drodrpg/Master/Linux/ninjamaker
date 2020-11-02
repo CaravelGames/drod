@@ -6,6 +6,7 @@ die () {
 }
 
 cpucount=$(grep processor /proc/cpuinfo | wc -l)
+steamworks_sdk="${STEAMWORKS_SDK:-}"
 
 args=("$@")
 declare -A options
@@ -20,12 +21,14 @@ declare -A distflags
 distflags=(
 	[custom]=""
 	[caravel]="-DCARAVELBUILD"
+	[steam]="-DCARAVELBUILD -DSTEAMBUILD -I${steamworks_sdk}/public/steam"
 )
 
 declare -A distlinkflags
 distlinkflags=(
 	[custom]=""
 	[caravel]=""
+	[steam]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32 -lsteam_api"
 )
 
 declare -A buildflags
@@ -81,7 +84,7 @@ if [[ ${#args[@]} > 0 ]]; then
 				-no-static)
 					options[${arg//-}]=true
 					;;
-				-caravel|-custom)
+				-caravel|-custom|-steam)
 					options[dist]=${arg/-}
 					;;
 				-debug|-debugsan|-dev|-release|-beta)
@@ -103,6 +106,9 @@ if [[ ${#args[@]} > 0 ]]; then
 		fi
 	done
 fi
+if [[ "${options[dist]}" == "steam" && -z "${steamworks_sdk}" ]]; then
+	die "steam build selected, but \$STEAMWORKS_SDK isn't set"
+fi
 if [[ -z ${options[name]} ]]; then
 	NAME=${options[dist]}.${options[build]}.${options[arch]}
 else
@@ -111,7 +117,7 @@ fi
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
-SDL_CONFIG="$EXEC sdl-config"
+SDL2_CONFIG="$EXEC sdl2-config"
 PKG_CONFIG="$EXEC pkg-config"
 
 declare -a libs
@@ -178,9 +184,9 @@ X
 		ilibs+=($BUILDDIR/$(basename $dir).a)
 	done
 	cat <<X
-includes = ${idirs[@]} $(${SDL_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
-staticlibs = $(${PKG_CONFIG} --libs-only-L SDL_mixer SDL_ttf theora vorbisfile vorbis ogg) -lSDL_mixer -lSDL_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
-dynamiclibs = $(${SDL_CONFIG} --libs) -lrt -ldl
+includes = ${idirs[@]} $(${SDL2_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
+staticlibs = $(${PKG_CONFIG} --libs-only-L SDL2_mixer SDL2_ttf theora vorbisfile vorbis ogg) -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
+dynamiclibs = $(${SDL2_CONFIG} --libs) -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
 X
 	if ${options[nostatic]}; then

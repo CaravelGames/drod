@@ -618,7 +618,7 @@ bool CDrodSound::LoadMusicFileLists()
 		{
 			CFiles f;
 			f.AppendErrorLog("A song sequence wasn't listed. Check whether ");
-			const string filepath = UnicodeToAscii(
+			const string filepath = UnicodeToUTF8(
 					this->SongListArray[eSongID].empty() ? wszQuestionMark :
 					this->SongListArray[eSongID].front());
 			f.AppendErrorLog(filepath.c_str());

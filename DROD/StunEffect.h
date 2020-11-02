@@ -36,7 +36,9 @@ class CStunEffect : public CAnimatedTileEffect
 public:
 	CStunEffect(CWidget *pSetWidget, const UINT stunX, const UINT stunY, const UINT stunDuration);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 private:
 	UINT wExpiresOnTurn;   //game turns this effect applies to

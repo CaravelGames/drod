@@ -37,7 +37,9 @@ public:
 	CPendingBuildEffect(CWidget *pSetWidget, const UINT wTileImageNo,
 			const UINT wX, const UINT wY, const bool bModOpacity);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	SDL_Rect OwnerRect;

@@ -378,7 +378,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 	{
 		//Last images in list override first ones.
 		bool bFoundImage = false;
-		AsciiToUnicode(textureTileNames[wI], wstrCurrentName);
+		UTF8ToUnicode(textureTileNames[wI], wstrCurrentName);
 		for (rStr = tiles.rbegin(); rStr != tiles.rend(); ++rStr)
 			if (LoadTexture(wI, *rStr + wstrCurrentName))
 			{

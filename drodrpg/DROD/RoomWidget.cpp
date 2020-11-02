@@ -47,6 +47,7 @@
 
 #include <FrontEndLib/Bolt.h>
 #include <FrontEndLib/Fade.h>
+#include <FrontEndLib/FadeTileEffect.h>
 #include <FrontEndLib/FrameRateEffect.h>
 #include <FrontEndLib/Pan.h>
 #include <FrontEndLib/ShadeEffect.h>
@@ -542,7 +543,7 @@ void CRoomWidget::AddStrikeOrbEffect(
 {
 	if (bDrawOrb)
 		AddTLayerEffect(
-			new CAnimatedTileEffect(this, SetOrbData, 220, TI_ORB_L, false, EORBHIT));
+			new CFadeTileEffect(this, SetOrbData, TI_ORB_L, 220));
 	AddMLayerEffect(
 		new CStrikeOrbEffect(this, SetOrbData, this->images[BOLTS_SURFACE], false));
 }
@@ -761,41 +762,6 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 
 		PlacePlayerLightAt(pixel_x, pixel_y);
 	}
-/*
-	else if (Button.button == SDL_BUTTON_LEFT)
-	{
-		//Interface for mouse-inputted commands.
-
-		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wX,wY);
-		if (pMonster)
-			switch (pMonster->wType)
-			{
-				case M_CLONE:
-				{
-					//Switching to a clone.
-					CScreen *pScreen = DYN_CAST(CScreen*, CWidget*, this->pParent);
-					CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*, pScreen);
-					pGameScreen->ProcessCommand(CMD_CLONE, wX, wY);
-				}
-				return;
-				default: break;
-			}
-		else
-		if (this->pCurrentGame->swordsman.wPlacingDoubleType)
-		{
-			//Placing a double.
-			CScreen *pScreen = dynamic_cast<CScreen*>(this->pParent);
-			//Allow placing a double with the mouse during an active game session,
-			//but not during a demo playback or in a miniroom replay, etc.
-			if (pScreen && pScreen->GetScreenType() == SCR_Game)
-			{
-				CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*, pScreen);
-				pGameScreen->ProcessCommand(CMD_DOUBLE, wX, wY);
-			}
-			return;
-		}
-	}
-*/
 }
 
 //*****************************************************************************
@@ -818,44 +784,6 @@ void CRoomWidget::HighlightSelectedTile()
 		found->second->SetToText(NULL, 1);
 
 	ASSERT(this->pCurrentGame);
-/*
-		switch (pMonster->wType)
-		{
-			case M_DECOY:
-				DrawInvisibilityRange(wX, wY, NULL);
-			return;
-
-			case M_EYE:
-			{
-				CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
-				if (!pEye->IsAggressive())	//show effect if eye is not active
-					AddLastLayerEffect(new CEvilEyeGazeEffect(this,wX,wY,pMonster->wO, 2000));
-				RemoveHighlight(); //Don't re-highlight every turn.
-			}
-			return;
-
-			case M_GELMOTHER:
-			{
-				CCoordSet tiles;
-				this->pRoom->GetTarConnectedComponent(wX,wY, tiles);
-				for (CCoordSet::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile)
-					AddShadeEffect(tile->wX, tile->wY, PaleYellow);
-			}
-			return;
-
-			case M_CITIZEN:
-			{
-				//Show citizen's current destination.
-				CCitizen *pCitizen = DYN_CAST(CCitizen*, CMonster*, pMonster);
-				UINT wDestX, wDestY;
-				if (pCitizen->GetGoal(wDestX,wDestY))
-					AddShadeEffect(wDestX, wDestY, PaleYellow);
-			}
-			return;
-			default: break;
-		}
-	}
-*/
 
 	const UINT tTile = this->pRoom->GetTSquare(wX,wY);
 	switch (tTile)
@@ -2365,6 +2293,8 @@ void CRoomWidget::FadeToLightLevel(
 		AddPlayerLight(IsPlayerLightRendered());
 		DirtyRoom();
 		UpdateDrawSquareInfo();
+
+		SetEffectsFrozen(true);
 		RenderRoomInPlay(this->wShowCol, this->wShowRow);
 		SDL_BlitSurface(this->pRoomSnapshotSurface, &rect, pNewRoomSurface, &tempRect);
 
@@ -2395,6 +2325,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Done.
 		SDL_FreeSurface(pOldRoomSurface);
 		SDL_FreeSurface(pNewRoomSurface);
+		SetEffectsFrozen(false);
 	}
 }
 
@@ -2453,6 +2384,9 @@ void CRoomWidget::ShowRoomTransition(
 		Paint();
 		return;
 	}
+
+	// We don't want effects to lose "animation" time while the transition happens
+	SetEffectsFrozen(true);
 
 	//Show a smooth transition between rooms.
 	PanDirection panDirection = PanNorth;
@@ -2594,10 +2528,13 @@ void CRoomWidget::ShowRoomTransition(
 				//Done panning.
 				SDL_FreeSurface(pOldRoomSurface);
 				SDL_FreeSurface(pNewRoomSurface);
-				return;
+				break;
 			}
 		}
 	}
+
+	// And now the effects can continue
+	SetEffectsFrozen(false);
 }
 
 //*****************************************************************************
@@ -2845,43 +2782,19 @@ void CRoomWidget::RenderRoomInPlay(
 	{
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pOLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 		DrawPlatforms(pDestSurface);
 
 		//a. Effects that go on top of room image, under monsters/player.
-		this->pTLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pTLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 
 		//b. Draw monsters (not killing player).
 		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, //bIsPlacingDouble ||
 				bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/player.
-		this->pMLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
-
-/*
-		//d. Double placement effects:
-		//Make room black-and-white, and draw (unmoving) swordsman on top.
-		if (bIsPlacingDouble && !bPlayerIsDying)
-		{
-			if (player.wPlacingDoubleType == M_DECOY)
-			{
-				CCoordIndex coords(this->pRoom->wRoomCols,this->pRoom->wRoomRows);
-				for (list<CPlayerDouble*>::const_iterator decoy=this->pRoom->Decoys.begin();
-						decoy!=this->pRoom->Decoys.end(); ++decoy)
-					DrawInvisibilityRange((*decoy)->wX, (*decoy)->wY, pDestSurface, &coords);
-			}
-
-			BAndWRect(pDestSurface, this->wShowCol, this->wShowRow);
-
-			ASSERT(this->bShowingPlayer);
-			DrawPlayer(player, pDestSurface);
-		}
-*/
+		this->pMLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
 	}
-/*
-	this->bWasPlacingDouble = bIsPlacingDouble;
-	this->bWasInvisible = bIsInvisible;
-*/
 }
 
 //*****************************************************************************
@@ -4225,11 +4138,11 @@ void CRoomWidget::Paint(
 			//3a. Draw effects that go on top of room image, under monsters/player.
 			RenderFogInPit(pDestSurface);
 
-			this->pOLayerEffects->DrawEffects();
+			this->pOLayerEffects->UpdateAndDrawEffects();
 			this->pOLayerEffects->DirtyTiles();
 			DrawPlatforms(pDestSurface, false, bMoveAnimationInProgress);
 
-			this->pTLayerEffects->DrawEffects();
+			this->pTLayerEffects->UpdateAndDrawEffects();
 			this->pTLayerEffects->DirtyTiles();
 
 			//3b. Repaint monsters.
@@ -4254,7 +4167,7 @@ void CRoomWidget::Paint(
 			DrawMonsterKillingPlayer(pDestSurface);
 
 		//5a. Draw effects that go on top of monsters/player.
-		this->pMLayerEffects->DrawEffects();
+		this->pMLayerEffects->UpdateAndDrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 	}
 
@@ -4265,7 +4178,7 @@ void CRoomWidget::Paint(
 		RenderEnvironment(pDestSurface);
 
 	//7. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->DrawEffects();
+	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	//Last turn/movement should be drawn completely now.
@@ -6961,9 +6874,8 @@ void CRoomWidget::DrawDouble(
 	blit.nAddColor = pDouble->getColor();
 	blit.nOpacity = nOpacity;
 
-	// Transparent armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
-	if (blit.nOpacity < 255)
-		this->pTileImages[this->pRoom->ARRAYINDEX(pDouble->wX, pDouble->wY)].dirty = 1;
+	// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	this->pTileImages[this->pRoom->ARRAYINDEX(pDouble->wX, pDouble->wY)].dirty = 1;
 
 	DrawTileImage(blit, pDestSurface);
 
@@ -6975,7 +6887,7 @@ void CRoomWidget::DrawDouble(
 		DrawSwordFor(pDouble, pDouble->wType, weaponBlit, pDestSurface);
 
 		// The same for the sword, want to avoid flickering
-		if (blit.nOpacity < 255 && IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
+		if (IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
 			this->pTileImages[this->pRoom->ARRAYINDEX(weaponBlit.wCol, weaponBlit.wRow)].dirty = 1;
 	}
 
@@ -8619,4 +8531,14 @@ bool CRoomWidget::SetupDrawSquareInfo()
 	this->bAllDirty = true;
 
 	return true;
+}
+
+//*****************************************************************************
+void CRoomWidget::SetEffectsFrozen(const bool bIsFrozen)
+// Updates frozen status of all effects layers. Frozen effects do not continue their animation and are suspended, waiting
+{
+	this->pLastLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pMLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pOLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pTLayerEffects->SetEffectsFrozen(bIsFrozen);
 }

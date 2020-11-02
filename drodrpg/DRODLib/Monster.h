@@ -257,6 +257,7 @@ public:
 	virtual void  Save(const c4_RowRef &MonsterRowRef, const bool bSaveScript=true);
 	void          Say(MESSAGE_ID eMessageID, CCueEvents &CueEvents) const;
 	virtual void  SetCurrentGame(const CCurrentGame *pSetCurrentGame);
+	virtual void  SetExtraVarsForExport() { } //monsters typically do not write any extra vars
 	void          SetHP();
 	void          SetKillInfo(const UINT wKillDirection);
 	virtual void  SetMembers(const CDbPackedVars& vars);

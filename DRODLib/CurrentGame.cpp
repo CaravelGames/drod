@@ -960,7 +960,7 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 
 		//Get var name.
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		const string varName = UnicodeToAscii(this->pHold->GetVarName(wVarID));
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
 
 		const bool bInteger = pVar->eType == UVT_int;
 		VarMapInfo info;
@@ -1027,9 +1027,17 @@ bool CCurrentGame::IsCurrentRoomPendingConquer() const
 {
 	// See WasRoomConqueredOnThisVisit() for more details
 	if (this->bWasRoomConqueredAtTurnStart && this->bIsLeavingLevel)
-		return true;
+		return !IsCurrentRoomConquered();
 
 	 return IsCurrentRoomPendingExit() && !this->pRoom->IsBeaconActive();
+}
+
+//*****************************************************************************
+bool CCurrentGame::AreBeaconsIgnored() const
+//Returns: whether there are any circumstances causing the beacons to be ignored when determing if room is being conquered right now
+{
+
+	return this->bWasRoomConqueredAtTurnStart && this->bIsLeavingLevel;
 }
 
 //*****************************************************************************
@@ -1957,8 +1965,8 @@ void CCurrentGame::ProcessCommand(
 	if (!this->dwCutScene)
 		ResetCutSceneStartTurn();
 
-	this->bWasRoomConqueredAtTurnStart = false; // Must set to false before the next line
-	this->bWasRoomConqueredAtTurnStart = WasRoomConqueredOnThisVisit();
+	this->bWasRoomConqueredAtTurnStart = !this->pRoom->IsBeaconActive()
+		&& (IsCurrentRoomPendingExit() || IsCurrentRoomConquered());
 
 	this->swordsman.bHasTeleported = false;
 
@@ -4742,7 +4750,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
 	if (wSummonType != M_CLONE)
-		eMovement = MovementType::GROUND_AND_SHALLOW_WATER_FORCE;
+		eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
 	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
@@ -6336,7 +6344,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		if (this->pRoom->bIsSecret)
 			UpdateHoldMastery(CueEvents);
 	} else {
-		if (this->pRoom->IsBeaconActive())
+		if (this->pRoom->IsBeaconActive() && !this->bWasRoomConqueredAtTurnStart)
 		{
 			CDbSavedGame::ConqueredRooms -= this->pRoom->dwRoomID;
 		}
@@ -6892,7 +6900,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pRoom->SetRoomEntryState(CueEvents, bWasLevelComplete, IsCurrentLevelComplete(),
 			bWasRoomConquered, wMonsterCountAtStart);
 
-	if (!this->swordsman.IsInRoom() && !bSwordsmanOutsideRoom)
+	if (!this->swordsman.IsInRoom() && !this->bSwordsmanOutsideRoom)
 		SetPlayerRole(M_BEETHRO, CueEvents); //place player in room now as default (Beethro)
 
 	//Init NPCs after initial room state checks and modifications are performed.
@@ -7258,6 +7266,13 @@ void CCurrentGame::TallyKill()
 }
 
 //*****************************************************************************
+bool cloneComparator::operator() (const CClone *a, const CClone *b) const
+//Compare clones by wCreationIndex
+{
+    return a->wCreationIndex < b->wCreationIndex;
+}
+
+//*****************************************************************************
 bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 //Switch player and clone's positions.
 {
@@ -7309,9 +7324,7 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 			this->pRoom->UnlinkMonster(pClone);
 			pMonster = pMonster->pNext;
 		}
-		std::sort(clones.begin(), clones.end(), [](CClone *a, CClone *b) {
-			return a->wCreationIndex < b->wCreationIndex;
-		});
+		std::sort(clones.begin(), clones.end(), cloneComparator());
 
 		for (vector<CClone*>::const_iterator iter = clones.begin(); iter != clones.end(); ++iter)
 			this->pRoom->LinkMonster(*iter, false);
@@ -7417,15 +7430,14 @@ const
 	// Level exit can be triggered by a scripting command and it's not fun for the player to be told right at this
 	// time that the room was actually not conquered, because something in the room caused that to be.
 	// Therefore we just assume that Go to level entrance keeps the room solved if it was solved when the turn started
-	if (this->bWasRoomConqueredAtTurnStart)
-		return true;
-
-	if (this->pRoom->wMonsterCount)
-		return false;     //Room is still in an unconquered state.
-	if (this->pRoom->bHasConquerToken && this->conquerTokenTurn == NO_CONQUER_TOKEN_TURN)
-		return false;  //none of the room's conquer tokens were touched
-	if (this->pRoom->IsBeaconActive())
-		return false;  //An active beacon reseeds the room
+	if (!this->bWasRoomConqueredAtTurnStart || !this->bIsLeavingLevel) {
+		if (this->pRoom->wMonsterCount)
+			return false;     //Room is still in an unconquered state.
+		if (this->pRoom->bHasConquerToken && this->conquerTokenTurn == NO_CONQUER_TOKEN_TURN)
+			return false;  //none of the room's conquer tokens were touched
+		if (this->pRoom->IsBeaconActive())
+			return false;  //An active beacon reseeds the room
+	}
 
 	//No monsters left in the room.
 	return !IsCurrentRoomConquered() ||

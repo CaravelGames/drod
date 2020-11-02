@@ -159,6 +159,7 @@ public:
 	static void    SaveSpeech(const COMMAND_VECTOR& commands);
 	static void    SaveSpeech(const COMMANDPTR_VECTOR& commands);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
+	virtual void   SetExtraVarsForExport() { PackExtraVars(true); } //include config params and script
 	void           SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) const;
 	virtual void   SetMembers(const CDbPackedVars& vars);
 	virtual void   Delete();
@@ -199,6 +200,8 @@ private:
 			CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
+
+	void PackExtraVars(const bool bSaveScript);
 
 	bool setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 

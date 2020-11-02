@@ -26,31 +26,68 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "Effect.h"
+#include "Screen.h"
 #include <BackEndLib/Assert.h>
 
 //*****************************************************************************
-CEffect::CEffect(CWidget *pSetOwnerWidget, const UINT eType)
+CEffect::CEffect(CWidget *pSetOwnerWidget, const UINT dwDuration, const UINT eType)
 	: pOwnerWidget(pSetOwnerWidget)
-	, dwTimeStarted(0), dwTimeOfLastMove(0)
+	, dwTimeOfLastMove(CScreen::dwLastRenderTicks)
 	, eEffectType(eType)
 	, bRequestRetainOnClear(false)
 	, fOpacity(1.0)
+	, dwTimeElapsed(0)
+	, dwDuration(dwDuration)
 //Constructor.
 {
 	ASSERT(pSetOwnerWidget);
 }
 
 //*****************************************************************************
-Uint32 CEffect::TimeElapsed()
+bool CEffect::Update(
+	const UINT wDeltaTime)     //(in) Time between this and last draw, can be 0 to just draw the effect as-is without any state update
+{
+	this->dwTimeElapsed += wDeltaTime;
+
+	if (this->dwTimeElapsed >= this->dwDuration)
+		return false;
+
+	return this->Update(wDeltaTime, this->dwTimeElapsed);
+}
+
+//*****************************************************************************
+void CEffect::Draw(
+	SDL_Surface* pDestSurface) //(in) Surface on which to draw the effect, defaults to owner widget's destination surface
 //Return: the time elapsed since effect started.
 {
-	const Uint32 dwNow = SDL_GetTicks();
-	if (!this->dwTimeStarted)
-	{
-		//Effect starts now.
-		this->dwTimeStarted = this->dwTimeOfLastMove = dwNow;
-		return 0;
-	}
-	ASSERT(dwNow >= this->dwTimeStarted);
-	return dwNow - this->dwTimeStarted;
+	if (!pDestSurface)
+		pDestSurface = GetDestSurface();
+	
+	ASSERT(pDestSurface);
+	if (pDestSurface)
+		Draw(*pDestSurface);
+}
+
+//*****************************************************************************
+float CEffect::GetElapsedFraction() const
+//Return: the fraction of the duration that has already elapsed
+{
+	const float fraction = this->dwDuration > 0
+		? float(this->dwTimeElapsed) / float(this->dwDuration)
+		: 1.0f;
+
+	if (fraction < 0)
+		return 0.0f;
+	
+	if (fraction > 1)
+		return 1.0f;
+
+	return fraction;
+}
+
+//*****************************************************************************
+float CEffect::GetRemainingFraction() const
+//Return: the fraction of the duration that is left
+{
+	return 1 - GetElapsedFraction();
 }

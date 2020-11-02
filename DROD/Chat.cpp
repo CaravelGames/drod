@@ -657,7 +657,7 @@ bool Interface::Parse(Json::Value *pChat)
 		Data *c = new Data;
 		c->bAFK = user.get("AFK", false).asBool();
 		string str = user.get("Name", "").asString();
-		AsciiToUnicode(str.c_str(), c->sender);
+		UTF8ToUnicode(str.c_str(), c->sender);
 		c->chatID = user.get("ID", 0).asUInt();
 		this->users.push_back(c);
 	}
@@ -684,14 +684,14 @@ bool Interface::Parse(Json::Value *pChat)
 
 			c->opType = text.get("OpType", Op_Received).asUInt();
 			c->timestamp = text.get("Time", 0).asUInt();
-			AsciiToUnicode(text.get("Sender", "Unknown").asString(), c->sender);
+			UTF8ToUnicode(text.get("Sender", "Unknown").asString(), c->sender);
 
 			if (text.isMember("Receiver")) {
 				// Private message.  Receiver is an array of strings.
 				const Json::Value& receiver = text["Receiver"];
 				for (unsigned int j = 0; j < receiver.size(); j++) {
 					WSTRING username;
-					AsciiToUnicode(receiver[j].asString(), username);
+					UTF8ToUnicode(receiver[j].asString(), username);
 					c->whisperedUsers.push_back(username);
 				}
 			}

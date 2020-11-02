@@ -515,7 +515,7 @@ MESSAGE_ID CDbBase::Open(
 		//Open the databases.
 		//Metakit has performance issues when working with Unicode filenames.
 		//So, we will ignore the WCHAR filenames and open the DB the fast and memory efficient way.
-		string filename = UnicodeToAscii(wstrMainDatPath);
+		string filename = UnicodeToUTF8(wstrMainDatPath);
 		int writeFlag =
 #ifdef DEV_BUILD
 		1; //save explicitly to this file only (when not creating another pack)
@@ -528,17 +528,17 @@ MESSAGE_ID CDbBase::Open(
 			throw MID_CouldNotOpenDB;
 
 #ifndef DEV_BUILD
-		UnicodeToAscii(wstrDataDatPath, filename);
+		UnicodeToUTF8(wstrDataDatPath, filename);
 		m_pDataStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrHoldDatPath, filename);
+		UnicodeToUTF8(wstrHoldDatPath, filename);
 		m_pHoldStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrPlayerDatPath, filename);
+		UnicodeToUTF8(wstrPlayerDatPath, filename);
 		m_pPlayerStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrSaveDatPath, filename);
+		UnicodeToUTF8(wstrSaveDatPath, filename);
 		m_pSaveStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrSaveMoveDatPath, filename);
+		UnicodeToUTF8(wstrSaveMoveDatPath, filename);
 		m_pSaveMoveStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrTextDatPath, filename);
+		UnicodeToUTF8(wstrTextDatPath, filename);
 		m_pTextStorage = new c4_Storage(filename.c_str(), 1);
 		if (!m_pDataStorage || !m_pHoldStorage ||
 				!m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
@@ -594,7 +594,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 //Creates a new, blank database file with support for all record types.
 //Returns: true if operation succeeded, else false
 {
-	const string filepath = UnicodeToAscii(wstrFilepath);
+	const string filepath = UnicodeToUTF8(wstrFilepath);
 
 	c4_Storage newStorage(filepath.c_str(), true); //create file on disk
 	if (!CFiles::DoesFileExist(wstrFilepath.c_str()))
@@ -602,7 +602,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 #ifdef HAS_UNICODE
 		printf("FAILED--Was not able to create %S." NEWLINE, wstrFilepath.c_str());
 #else
-		const string path = UnicodeToAscii(wstrFilepath);
+		const string path = UnicodeToUTF8(wstrFilepath);
 		printf("FAILED--Was not able to create %s." NEWLINE, path.c_str());
 #endif
 		return false;
@@ -693,12 +693,13 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GoSub: strText = "GoSub"; break;
 		case MID_PreviousIf: strText = "<Previous If>"; break;
 		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
+		case MID_NPCDefeated: strText = "NPC defeated"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
 	{
 		static WSTRING wstrText;
-		AsciiToUnicode(strText.c_str(), wstrText);
+		UTF8ToUnicode(strText.c_str(), wstrText);
 		if (pdwLen) *pdwLen = wstrText.length();
 		return wstrText.c_str();
 	}

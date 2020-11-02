@@ -36,7 +36,8 @@ public:
 	CFadeTileEffect(CWidget *pSetWidget, const CCoord &SetCoord,
 			const UINT tile, const UINT duration=2000);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif //...#ifndef FADETILEEFFECT_H

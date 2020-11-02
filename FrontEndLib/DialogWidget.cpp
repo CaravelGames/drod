@@ -434,3 +434,33 @@ void CDialogWidget::CheckTextBox()
 		pOKButton->RequestPaint();
 	}
 }
+
+
+//*****************************************************************************
+void CDialogWidget::OnWindowEvent_GetFocus()
+{
+	// As a rule, dialogs appear as part of a screen, and the screen may need to do special handling
+	// when focus is restored/lost, so just pass the responsibility to them
+	ASSERT(this->pParent);
+	CEventHandlerWidget* pParent = dynamic_cast<CEventHandlerWidget*>(this->pParent);
+	if (pParent)
+		pParent->OnWindowEvent_GetFocus();
+	else {
+		ASSERT(!"Dialogs should always exist as a child of CEventHandlerWidget, will fallback!");
+		CEventHandlerWidget::OnWindowEvent_GetFocus();
+	}
+}
+
+//*****************************************************************************
+void CDialogWidget::OnWindowEvent_LoseFocus()
+{
+	// See OnWindowEvent_GetFocus() for explanation
+	ASSERT(this->pParent);
+	CEventHandlerWidget* pParent = dynamic_cast<CEventHandlerWidget*>(this->pParent);
+	if (pParent)
+		pParent->OnWindowEvent_LoseFocus();
+	else {
+		ASSERT(!"Dialogs should always exist as a child of CEventHandlerWidget, will fallback!");
+		CEventHandlerWidget::OnWindowEvent_LoseFocus();
+	}
+}

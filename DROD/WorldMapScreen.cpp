@@ -72,7 +72,7 @@ void CWorldMapScreen::Paint(
 {
 	PaintChildren();
 	
-	this->pEffects->DrawEffects();
+	this->pEffects->UpdateAndDrawEffects();
 
 	if (bUpdateRect) UpdateRect();
 }

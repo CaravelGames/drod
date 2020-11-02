@@ -1264,7 +1264,7 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 
 	//When there is no current game, then show everything fully.
 	if (this->pCurrentGame) {
-		if (bRoomIsCurrentRoom && pRoom->IsBeaconActive()) {
+		if (bRoomIsCurrentRoom && pRoom->IsBeaconActive() && !this->pCurrentGame->AreBeaconsIgnored()) {
 			bConquered = false;
 		} else {
 			bConquered = this->pCurrentGame->IsRoomAtCoordsConquered(pRoom->dwRoomX, pRoom->dwRoomY);

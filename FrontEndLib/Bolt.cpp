@@ -34,16 +34,15 @@
 #define ABS(x)  ( ((x) < 0) ? -(x) : (x) )
 
 //********************************************************************************
-void DrawBolt(
+void GenerateBolt(
 //Draw an energy bolt from one point to another.
 //
 //Params:
 	int xBegin, int yBegin,    //(in)   Starting point.
 	int xEnd, int yEnd,        //(in)   Ending point.
 	const UINT DISPLAY_SIZE,   //(in)   Max dimension of screen area (in tiles)
-	SDL_Surface *pPartsSurface,   //(in)   Surface containing parts needed to draw bolt.
-	SDL_Surface *pDestSurface, //(in)   Surface to draw bolt to.
-	vector<SDL_Rect>& dirtyRects)  //(out) where blits occurred
+	BOLT_SEGMENTS &drawSegments,   //(out) storage for the segments that can be passed to DrawBolt()
+	vector<SDL_Rect>& dirtyRects)  //(out) where blits will occur
 {
 	static SDL_Rect Long0_180 = {1, 55, 30, 4};
 	static SDL_Rect Long22_202 = {40, 5, 28, 14};
@@ -137,13 +136,13 @@ void DrawBolt(
 	if (static_cast<UINT>(rand()) > USE_LARGE_SPARKLE_THRESHOLD)
 	{
 		SDL_Rect Dest = MAKE_SDL_RECT(xSparkle, ySparkle, BigSparkle.w, BigSparkle.h);
-		SDL_BlitSurface(pPartsSurface, &BigSparkle, pDestSurface, &Dest);
+		drawSegments.push_back(BoltSegment(&BigSparkle, Dest));
 		dirtyRects.push_back(Dest);
 	}
 	else
 	{
 		SDL_Rect Dest = MAKE_SDL_RECT(xSparkle, ySparkle, SmallSparkle.w, SmallSparkle.h);
-		SDL_BlitSurface(pPartsSurface, &SmallSparkle, pDestSurface, &Dest);
+		drawSegments.push_back(BoltSegment(&SmallSparkle, Dest));
 		dirtyRects.push_back(Dest);
 	}
 
@@ -264,8 +263,7 @@ void DrawBolt(
 					y - arrLongSegments[eMoveDir].dySrc,
 					arrLongSegments[eMoveDir].pSrcRect->w,
 					arrLongSegments[eMoveDir].pSrcRect->h);
-			SDL_BlitSurface(pPartsSurface, arrLongSegments[eMoveDir].pSrcRect,
-					pDestSurface, &Dest);
+			drawSegments.push_back(BoltSegment(arrLongSegments[eMoveDir].pSrcRect, Dest));
 			dirtyRects.push_back(Dest);
 
 			//Update bolt position.
@@ -279,8 +277,7 @@ void DrawBolt(
 					y - arrShortSegments[eMoveDir].dySrc,
 					arrShortSegments[eMoveDir].pSrcRect->w,
 					arrShortSegments[eMoveDir].pSrcRect->h);
-			SDL_BlitSurface(pPartsSurface, arrShortSegments[eMoveDir].pSrcRect,
-					pDestSurface, &Dest);
+			drawSegments.push_back(BoltSegment(arrShortSegments[eMoveDir].pSrcRect, Dest));
 			dirtyRects.push_back(Dest);
 
 			//Update bolt position.
@@ -294,16 +291,32 @@ void DrawBolt(
 		if (static_cast<UINT>(rand()) > USE_LARGE_SPARKLE_THRESHOLD)
 		{
 			SDL_Rect Dest = MAKE_SDL_RECT(xSparkle, ySparkle, BigSparkle.w, BigSparkle.h);
-			SDL_BlitSurface(pPartsSurface, &BigSparkle, pDestSurface, &Dest);
+			drawSegments.push_back(BoltSegment(&BigSparkle, Dest));
 			dirtyRects.push_back(Dest);
 		}
 		else
 		{
 			SDL_Rect Dest = MAKE_SDL_RECT(xSparkle, ySparkle, SmallSparkle.w, SmallSparkle.h);
-			SDL_BlitSurface(pPartsSurface, &SmallSparkle, pDestSurface, &Dest);
+			drawSegments.push_back(BoltSegment(&SmallSparkle, Dest));
 			dirtyRects.push_back(Dest);
 		}
 
 		dblDistToEnd = sqrt(static_cast<double>((x - xEnd) * (x - xEnd) + (y - yEnd) * (y - yEnd)));
 	} //...while bolt position is not very close to destination.
+}
+
+void DrawBolt(BOLT_SEGMENTS &segments, SDL_Surface& pPartsSurface, SDL_Surface& pDestSurface)
+{
+	for (UINT i = 0; i < segments.size(); ++i)
+	{
+		BoltSegment segment = segments.at(i);
+		SDL_BlitSurface(&pPartsSurface, segment.pSourceRect, &pDestSurface, &(segment.destRect));
+	}
+}
+
+void DrawBolt(int xBegin, int yBegin, int xEnd, int yEnd, const UINT DISPLAY_SIZE, SDL_Surface* pPartsSurface, SDL_Surface* pDestSurface, vector<SDL_Rect>& dirtyRects)
+{
+	BOLT_SEGMENTS boltSegments;
+	GenerateBolt(xBegin, yBegin, xEnd, yEnd, DISPLAY_SIZE, boltSegments, dirtyRects);
+	DrawBolt(boltSegments, *pPartsSurface, *pDestSurface);
 }

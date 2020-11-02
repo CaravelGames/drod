@@ -29,18 +29,16 @@
 
 #include "DrodEffect.h"
 #include <BackEndLib/Coord.h>
+#include <FrontEndLib/AnimatedTileEffect.h>
 
 //*****************************************************************************
-class CPuffExplosionEffect : public CEffect
+class CPuffExplosionEffect : public CAnimatedTileEffect
 {
 public:
 	CPuffExplosionEffect(CWidget *pSetWidget, const CCoord &origin);
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
-
-private:
-	int nX, nY;
-	SDL_Rect screenRect;
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif   //...#ifndef PUFFEXPLOSIONEFFECT_H

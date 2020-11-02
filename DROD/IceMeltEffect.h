@@ -35,7 +35,8 @@ class CIceMeltEffect : public CAnimatedTileEffect
 public:
 	CIceMeltEffect(CWidget *pSetWidget, const CCoord &SetCoord, const UINT duration=500);
 
-	virtual bool Draw(SDL_Surface* pDestSurface);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif //...#ifndef ICEMELTEFFECT_H

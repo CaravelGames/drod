@@ -1370,10 +1370,10 @@ void CEditRoomWidget::Paint(
 
 	//1c. Render dynamic stuff that shows over the static room image.
 	RenderFogInPit(pDestSurface);
-	DrawPlatforms(pDestSurface, true);
+	DrawTLayer(pDestSurface, true);
 
 	//2. Draw effects that go on top of room image, under monsters/swordsman.
-	this->pTLayerEffects->DrawEffects();
+	this->pTLayerEffects->UpdateAndDrawEffects();
 	this->pTLayerEffects->DirtyTiles();
 
 	//3. Repaint monsters.
@@ -1390,14 +1390,14 @@ void CEditRoomWidget::Paint(
 	DrawLevelEntrances(pDestSurface);
 
 	//5. Draw effects that go on top monsters/swordsman.
-	this->pMLayerEffects->DrawEffects();
+	this->pMLayerEffects->UpdateAndDrawEffects();
 	this->pMLayerEffects->DirtyTiles();
 
 	//6. Overhead layer.
 	DrawOverheadLayer(pDestSurface);
 
 	//7. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->DrawEffects();
+	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	//Orb/door editing: show lightning from orb/door to mouse cursor.

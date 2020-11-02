@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AnimatedTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Bolt.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="BumpObstacleEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="BitmapManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="ButtonWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="DialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Effect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectList.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="EventHandlerWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ExpandingTextEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FadeTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FileDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="FocusWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="FontManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="FlashMessageEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FlashShadeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FloatEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FloatTextEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameRateEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="HTMLWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="HyperLinkWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="JpegHandler.cpp">
+      <Filter>Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="LabelWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ListBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="MarqueeWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="MenuWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="MovingTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectMenuWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="OptionButtonWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="PNGHandler.cpp">
+      <Filter>Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="ProgressBarWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ScalerWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Screen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenManager.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="ScrollableWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ScrollingTextWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="SliderWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Sound.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="RotateTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ScaleTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SubtitleEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TabbedMenuWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="TextBox2DWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="TextBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="TextEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TheoraPlayer.cpp">
+      <Filter>Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="TilesWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ToolTipEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TransTileEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Widget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Colors.cpp">
+      <Filter>Gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="Fade.cpp">
+      <Filter>Gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="Inset.cpp">
+      <Filter>Gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="Outline.cpp">
+      <Filter>Gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="Pan.cpp">
+      <Filter>Gfx</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AnimatedTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Bolt.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="BumpObstacleEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="BitmapManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="ButtonWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="DialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Effect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectList.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandlerWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ExpandingTextEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FadeTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FileDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="FocusWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="FontManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="FlashMessageEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FlashShadeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatTextEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameRateEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="HTMLWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="HyperLinkWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="JpegHandler.h">
+      <Filter>Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="LabelWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ListBoxWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="MarqueeWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="MenuWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="MovingTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectMenuWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="OptionButtonWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="PNGHandler.h">
+      <Filter>Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgressBarWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ScalerWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Screen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="ScreenManager.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="ScrollableWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ScrollingTextWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="SliderWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Sound.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="RotateTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ScaleTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SubtitleEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="TabbedMenuWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="TextBox2DWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="TextBoxWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="TextEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="TheoraPlayer.h">
+      <Filter>Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="TilesWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="TransTileEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ToolTipEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Widget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Colors.h">
+      <Filter>Gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="Fade.h">
+      <Filter>Gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="Inset.h">
+      <Filter>Gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="Outline.h">
+      <Filter>Gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="Pan.h">
+      <Filter>Gfx</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{5708dc1b-b258-4628-88a0-336aa76bbce3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets">
+      <UniqueIdentifier>{f1455c70-bbda-43a4-83da-4d18de8c2c94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="General">
+      <UniqueIdentifier>{1a985130-5f2e-4c0b-bf5a-7428b336075b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Screens">
+      <UniqueIdentifier>{6ca4772b-8355-453e-a4a8-61d9f8a4ebaa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Formats">
+      <UniqueIdentifier>{50a4fcda-22fc-4665-b202-54f813cbba90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Gfx">
+      <UniqueIdentifier>{eaea173d-cb0f-4550-b87e-964489b4168f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

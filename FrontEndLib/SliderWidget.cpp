@@ -30,6 +30,8 @@
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Exception.h>
 
+#include <algorithm>
+
 //Source coords and dimensions within parts surface.
 const int X_SLIDER = 294;
 const int Y_SLIDER = 46;
@@ -116,6 +118,9 @@ void CSliderWidget::Paint(
 {
 	ASSERT(static_cast<UINT>(this->w) >= CX_SLIDER);
 	ASSERT(static_cast<UINT>(this->y) >= CX_SLIDER);
+
+	if (!IsVisible(true))
+		return; // Invisible widgets should not be drawn
 
 	//Drawing code below needs to be modified to accept offsets.  Until then,
 	//this widget can't be offset.

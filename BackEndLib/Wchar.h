@@ -129,6 +129,8 @@ WSTRING  filenameFilter(const WSTRING &wstr);
 WSTRING  filterFirstLettersAndNumbers(const WSTRING &wstr);
 WSTRING  filterUpperCase(const WSTRING &wstr);
 WCHAR* getFilenameFromPath(const WCHAR *wstrFilepath);
+bool IsAllPrintableASCIIchars(const std::string& str);
+bool IsAllPrintableASCIIchars(const WSTRING& wstr);
 bool isWInteger(const WCHAR* wcz);
 bool isInteger(const char* pcz);
 

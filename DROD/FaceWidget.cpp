@@ -895,6 +895,9 @@ void CFaceWidget::PaintFace(
 void CFaceWidget::HandleAnimate()
 //Handle animation of the widget.
 {
+	if (!CBitmapManager::bGameHasFocus)
+		return; // Beethro's face animating while everything else is static is really creepy
+
 	const Face* face = GetActiveFace();
 	const Uint32 dwNow = SDL_GetTicks();
 
