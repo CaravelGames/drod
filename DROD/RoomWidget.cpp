@@ -4433,7 +4433,7 @@ void CRoomWidget::Paint(
 			PopulateBuildMarkerEffects(room);
 
 		if (this->fDeathFadeOpacity > 0)
-			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, this->fDeathFadeOpacity, pDestSurface);
+			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, 1.0f - this->fDeathFadeOpacity, pDestSurface);
 
 		//4. Draw player.
 		if (this->bShowingPlayer && !bIsPlacingDouble)
@@ -7318,7 +7318,7 @@ void CRoomWidget::DrawOverheadLayer(SDL_Surface *pDestSurface)
 					src.y = nI % wHeight;
 
 					if (this->fDeathFadeOpacity > 0)
-						EnableSurfaceBlending(pTileTexture, 255 * this->fDeathFadeOpacity);
+						EnableSurfaceBlending(pTileTexture, 255 * (1 - this->fDeathFadeOpacity));
 					SDL_BlitSurface(pTileTexture, &src, pDestSurface, &dest);
 					if (this->fDeathFadeOpacity > 0)
 						DisableSurfaceBlending(pTileTexture);
