@@ -47,12 +47,13 @@ const char szUserspaceFolder[] = "DRODRPG";
 const UINT VERSION_NUMBER = 406; //data format version -- increment when exported data format changes
 const UINT NEXT_VERSION_NUMBER = 500;
 
+#define DROD_VERSION_REVISION alpha.2020-10-30
 #ifdef DROD_VERSION_REVISION
 // (the WS macro requires c++11 or windows)
-const WCHAR wszVersionReleaseNumber[] = WS("1.2.7.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
+const WCHAR wszVersionReleaseNumber[] = WS("1.2.8.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('1'),We('.'),We('2'),We('.'),We('7'),We('.'),We('3'),We('3'),We('0'),We(0)   // 1.2.7.* -- full version number plus build number
+	We('1'),We('.'),We('2'),We('.'),We('8'),We('.'),We('3'),We('3'),We('0'),We(0)   // 1.2.7.* -- full version number plus build number
 };
 #endif
 
@@ -92,7 +93,7 @@ namespace InputCommands
 
 	DCMD getCommandIDByVarName(const WSTRING& wtext)
 	{
-		const string text = UnicodeToAscii(wtext);
+		const string text = UnicodeToUTF8(wtext);
 
 		static const char COMMAND_PREFIX[] = "_CMD_";
 		static const size_t prefix_len = strlen(COMMAND_PREFIX);

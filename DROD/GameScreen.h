@@ -109,7 +109,8 @@ protected:
 	virtual void   Paint(bool bUpdateRect=true);
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
-			const bool bUseVoiceVolume=false, float frequencyMultiplier=1.0f);
+			const bool bUseVoiceVolume=false, float frequencyMultiplier=1.0f,
+			float volumeMultiplier = 1.0f);
 	SCREENTYPE     ProcessCommand(const int nCommand, const bool bMacro=false);
 	bool           ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           ProcessFuseBurningEvents(CCueEvents& CueEvents);
