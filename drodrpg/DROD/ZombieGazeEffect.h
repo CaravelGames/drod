@@ -41,22 +41,24 @@ class CZombieGazeEffect : public CEffect
 public:
 	CZombieGazeEffect(CWidget *pSetWidget, const CMonster *pZombie);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 	CMoveCoord endCoord;
 
 protected:
-	void PrepareBeam();
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+	void         PrepareBeam(const CMonster *pZombie);
 
 	CMoveCoord  origin;
 	UINT        wValidTurn;   //game turn this gaze is valid for
-	const CMonster* pZombie;
-
 	std::vector<CMoveCoord> coords;
 
 	CRoomWidget *  pRoomWidget;
 
-	static Uint32 dwLastDraw;  //to synchronize all zombie gazes
+private:
+	static void SharedStateUpdate(const UINT wDeltaTime);
+
+	static Uint8 brightness;
 };
 
 #endif //...#ifndef ZOMBIEGAZEEFFECT_H

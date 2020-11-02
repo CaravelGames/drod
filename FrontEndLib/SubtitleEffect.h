@@ -62,7 +62,6 @@ public:
 	void           AddToSubtitles(SUBTITLES &subtitles);
 	void           RemoveFromSubtitles();
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
 	void           FollowCoord(CMoveCoord *const pCoord, const bool bAttachedCoord=false);
 	Uint32         GetDisplayTimeRemaining() const;
 	virtual long   GetDrawSequence() const;
@@ -81,6 +80,11 @@ public:
 
 	bool           bAttachedCoord;   //whether pCoord should be deleted on destruction
 
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
 private:
 	void           PrepWidget();
 	void           SetLocation();
@@ -94,11 +98,14 @@ private:
 	UINT              eFontType;
 	UINT              wDisplayLines;
 	UINT              maxWidth;
-	Uint32            dwWhenEnabled, dwDuration, dwFadeDuration;
+	Uint32            dwTextDuration; // Part of the whole duration before fade out starts
+	Uint32            dwFadeDuration;
 
 	SDL_Surface *  pTextSurface;
 	SURFACECOLOR   BGColor;
 	Uint8          opacity;
+
+	Uint8          drawOpacity;
 };
 
 #endif //#ifndef SUBTITLEEFFECT_H

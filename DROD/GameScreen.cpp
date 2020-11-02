@@ -458,6 +458,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPlayTesting(false)
 	, bRoomClearedOnce(false)
 	, bSkipCutScene(false)
+	, bIsDialogDisplayed(false)
 
 	, fPos(NULL)
 
@@ -908,7 +909,7 @@ void CGameScreen::LogHoldVars()
 	wstrPos += wszColon;
 	this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrPos, true);
 	wstrPos += wszColon;
-	const string strPos = UnicodeToAscii(wstrPos);
+	const string strPos = UnicodeToUTF8(wstrPos);
 
 	string str = "Game vars ";
 	str += strPos;
@@ -926,7 +927,7 @@ void CGameScreen::LogHoldVars()
 			bFirst = false;
 		}
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		str += UnicodeToAscii(this->pCurrentGame->pHold->GetVarName(wVarID));
+		str += UnicodeToUTF8(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
 		if (bInteger)
@@ -935,7 +936,7 @@ void CGameScreen::LogHoldVars()
 			str += _itoa(nVal, temp, 10);
 		} else {
 			const WSTRING wstr = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), wszEmpty);
-			str += UnicodeToAscii(wstr);
+			str += UnicodeToUTF8(wstr);
 		}
 		str += NEWLINE;
 	}
@@ -1033,6 +1034,9 @@ bool CGameScreen::SetForActivate()
 	//Eat existing events since early key presses could cause unexpected player movement.
 	ClearEvents();
 
+	//Prevent any effects from animating during a transition
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	//If the game says to go to a different screen, then don't stay on this screen.
 	return eNextScreen == SCR_Game;
 }
@@ -1101,10 +1105,38 @@ void CGameScreen::OnWindowEvent(const SDL_WindowEvent &wevent)
 }
 
 //*****************************************************************************
+void CGameScreen::OnWindowEvent_GetFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_GetFocus();
+
+	this->pCurrentGame->UpdateTime();
+	if (!this->dwTimeMinimized)
+		this->dwTimeMinimized = SDL_GetTicks();
+
+	if (this->bIsDialogDisplayed)
+		g_pTheSound->PauseSounds();
+}
+
+//*****************************************************************************
+void CGameScreen::OnWindowEvent_LoseFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_LoseFocus();
+
+	if (this->dwTimeMinimized)
+	{
+		if (this->dwNextSpeech)
+			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+		this->dwTimeMinimized = 0;
+	}
+}
+
+//*****************************************************************************
 void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
+
+	UpdateEffectsFreeze();
 
 	if (this->bShowingBigMap)
 		return;
@@ -2617,7 +2649,7 @@ void CGameScreen::HandleEventsForHoldExit()
 		//Animate every so often.
 		if (dwNow - dwLastAnimate > 90)
 		{
-			this->pRoomWidget->pLastLayerEffects->DrawEffects();
+			this->pRoomWidget->pLastLayerEffects->UpdateAndDrawEffects();
 			g_pTheBM->UpdateScreen(GetWidgetScreenSurface());
 			dwLastAnimate = dwNow;
 		}
@@ -3407,6 +3439,27 @@ SCREENTYPE CGameScreen::ProcessCommand(
 }
 
 //*****************************************************************************
+//Orb sound frequency changes subtly based on room location. Range: 0.95 to 1.05x
+float getOrbFrequencyMult(const UINT x, const UINT y)
+{
+	return 0.95f + (0.1f * (x + y) /
+		(CDrodBitmapManager::CDrodBitmapManager::DISPLAY_COLS +
+		 CDrodBitmapManager::CDrodBitmapManager::DISPLAY_ROWS - 1));
+}
+
+//When multiple instances of a sound play at once around the room, the sound can be very loud.
+//Reducing the volume of the sounds will keep from overwhelming the player's speakers.
+//
+//Returns: percent to reduce sfx based on the number of sounds that are going to play
+float getVolumeMultiplier(const UINT count)
+{
+	if (!count)
+		return 1.0f;
+
+	return 1.0f / min(count, CSound::CHANNEL_COUNT / 4); //heuristic to make it sound good
+}
+
+//*****************************************************************************
 SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 //Process cue events list to create effects that should occur before
 //room is drawn.
@@ -3423,6 +3476,10 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->pRoomWidget->ResetJitter(); //call before a new turn begins
 
 	const CSwordsman& player = this->pCurrentGame->swordsman;
+
+	CCoord tile;
+	float volumeMultiplier;
+	float frequencyMult;
 
 	//Remember for later if player left room (dying, level exit, room exit,
 	//win game) because room reloading actions will erase cue events.
@@ -3764,17 +3821,20 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		{
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			//If player hits orb, center sound on player for nicer effect.
+			frequencyMult = getOrbFrequencyMult(pOrbData->wX, pOrbData->wY);
 			if (player.IsWeaponAt(pOrbData->wX, pOrbData->wY))
 			{
-				this->fPos[0] = static_cast<float>(player.wX);
-				this->fPos[1] = static_cast<float>(player.wY);
+				tile.wX = player.wX;
+				tile.wY = player.wY;
 			} else {
-				this->fPos[0] = static_cast<float>(pOrbData->wX);
-				this->fPos[1] = static_cast<float>(pOrbData->wY);
+				tile.wX = pOrbData->wX;
+				tile.wY = pOrbData->wY;
 			}
+			this->fPos[0] = static_cast<float>(tile.wX);
+			this->fPos[1] = static_cast<float>(tile.wY);
 			const UINT eSoundID = pOrbData->eType == OT_BROKEN ?
 					SEID_ORBBROKE : SEID_ORBHIT;
-			PlaySoundEffect(eSoundID, this->fPos);
+			PlaySoundEffect(eSoundID, this->fPos, NULL, false, frequencyMult);
 			this->pRoomWidget->AddStrikeOrbEffect(*pOrbData);
 			pObj = CueEvents.GetNextPrivateData();
 		}
@@ -4062,6 +4122,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_CrumblyWallDestroyed));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CrumblyWallDestroyed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -4069,13 +4130,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		//If player stabs monster, center sound on player for nicer effect.
 		if (this->pCurrentGame->IsPlayerWeaponAt(pCoord->wX, pCoord->wY))
 		{
-			this->fPos[0] = static_cast<float>(player.wX);
-			this->fPos[1] = static_cast<float>(player.wY);
+			tile.wX = player.wX;
+			tile.wY = player.wY;
 		} else {
-			this->fPos[0] = static_cast<float>(pCoord->wX);
-			this->fPos[1] = static_cast<float>(pCoord->wY);
+			tile = *pCoord;
 		}
-		PlaySoundEffect(SEID_BREAKWALL, this->fPos);
+		this->fPos[0] = static_cast<float>(tile.wX);
+		this->fPos[1] = static_cast<float>(tile.wY);
+		PlaySoundEffect(SEID_BREAKWALL, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(5), GetParticleSpeed(4)));
@@ -4110,19 +4172,27 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_OrbActivated))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivated);
-		if (!pObj)
+		if (!pObj) {
 			PlaySoundEffect(SEID_ORBHITQUIET);   //just play sound
-		else while (pObj)
-		{
-			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
-			this->fPos[0] = static_cast<float>(pOrbData->wX);
-			this->fPos[1] = static_cast<float>(pOrbData->wY);
-			PlaySoundEffect(pOrbData->eType == OT_BROKEN ?
-					SEID_ORBBROKE : SEID_ORBHITQUIET, this->fPos);
-			this->pRoomWidget->AddStrikeOrbEffect(*pOrbData);
-			pObj = CueEvents.GetNextPrivateData();
+		} else {
+			set<int> seids;
+			while (pObj)
+			{
+				const COrbData* pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
+				const int seid = pOrbData->eType == OT_BROKEN ? SEID_ORBBROKE : SEID_ORBHITQUIET;
+				if (!seids.count(seid)) { //play each sound type at most once
+					seids.insert(seid);
+					this->fPos[0] = static_cast<float>(pOrbData->wX);
+					this->fPos[1] = static_cast<float>(pOrbData->wY);
+					frequencyMult = getOrbFrequencyMult(pOrbData->wX, pOrbData->wY);
+					PlaySoundEffect(seid, this->fPos, NULL, false, frequencyMult);
+				}
+				this->pRoomWidget->AddStrikeOrbEffect(*pOrbData);
+				pObj = CueEvents.GetNextPrivateData();
+			}
 		}
 	}
+
 	for (pObj = CueEvents.GetFirstPrivateData(CID_OrbDamaged);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -4131,66 +4201,86 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->fPos[1] = static_cast<float>(pOrbData->wY);
 		PlaySoundEffect(SEID_ORBBROKE, this->fPos);
 	}
+
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_MirrorShattered));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MirrorShattered);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		if (this->pCurrentGame->IsPlayerWeaponAt(pCoord->wX, pCoord->wY))
 		{
-			this->fPos[0] = static_cast<float>(player.wX);
-			this->fPos[1] = static_cast<float>(player.wY);
+			tile.wX = player.wX;
+			tile.wY = player.wY;
 		} else {
-			this->fPos[0] = static_cast<float>(pCoord->wX);
-			this->fPos[1] = static_cast<float>(pCoord->wY);
+			tile = *pCoord;
 		}
-		PlaySoundEffect(SEID_SHATTER, this->fPos);
+		this->fPos[0] = static_cast<float>(tile.wX);
+		this->fPos[1] = static_cast<float>(tile.wY);
+		frequencyMult = 0.9f + (0.2f * (RAND(3)+RAND(3)) / 4.0f); //triangle distribution around mean
+		PlaySoundEffect(SEID_SHATTER, this->fPos, NULL, false, frequencyMult, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(7), GetParticleSpeed(4))); //!!ShatteringGlass effect
 	}
+
 	if (CueEvents.HasOccurred(CID_BombExploded))
 	{
 		UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded);
 		UINT wRandMax = 25 + (25 * g_pTheBM->eyeCandy);
 
+		vector<CCoord> tiles;
 		pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
 		while (pObj)
 		{
 			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
 			if (RAND(wRandMod) < wRandMax)
 			{
-				CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
+				const CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
 				this->pRoomWidget->AddTLayerEffect(
 						new CDebrisEffect(this->pRoomWidget, moveCoord, 3,
 								GetEffectDuration(7), GetParticleSpeed(4)));
-				this->fPos[0] = static_cast<float>(pCoord->wX);
-				this->fPos[1] = static_cast<float>(pCoord->wY);
-				PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos);
+				tiles.push_back(*pCoord);
 			}
 			pObj = CueEvents.GetNextPrivateData();
+		}
+
+		volumeMultiplier = getVolumeMultiplier(tiles.size());
+		for (vector<CCoord>::const_iterator it=tiles.begin(); it!=tiles.end(); it++) {
+			this->fPos[0] = static_cast<float>(it->wX);
+			this->fPos[1] = static_cast<float>(it->wY);
+			PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		}
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivatedByDouble))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivatedByDouble);
-		if (!pObj)
+		if (!pObj) {
 			PlaySoundEffect(SEID_ORBHITQUIET);   //just play sound
-		else while (pObj)
-		{
-			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
-			this->fPos[0] = static_cast<float>(pOrbData->wX);
-			this->fPos[1] = static_cast<float>(pOrbData->wY);
-			const bool bOrb = this->pCurrentGame->pRoom->GetTSquare(
+		} else {
+			set<int> seids;
+			while (pObj)
+			{
+				const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
+				const bool bOrb = this->pCurrentGame->pRoom->GetTSquare(
 					pOrbData->wX, pOrbData->wY) == T_ORB; //as opposed to a pressure plate
-			PlaySoundEffect(bOrb ?
-					(pOrbData->eType == OT_BROKEN ? SEID_ORBBROKE : SEID_ORBHITQUIET) :
-					SEID_PRESSPLATE, this->fPos);
-			this->pRoomWidget->AddStrikeOrbEffect(*pOrbData, bOrb);
-			pObj = CueEvents.GetNextPrivateData();
+				const int seid = bOrb ? (pOrbData->eType == OT_BROKEN ? SEID_ORBBROKE : SEID_ORBHITQUIET)
+					: SEID_PRESSPLATE;
+				if (!seids.count(seid)) { //play each sound type at most once
+					seids.insert(seid);
+					this->fPos[0] = static_cast<float>(pOrbData->wX);
+					this->fPos[1] = static_cast<float>(pOrbData->wY);
+					PlaySoundEffect(seid, this->fPos);
+				}
+				this->pRoomWidget->AddStrikeOrbEffect(*pOrbData, bOrb);
+				pObj = CueEvents.GetNextPrivateData();
+			}
 		}
 	}
+
 	if (CueEvents.HasOccurred(CID_TarstuffDestroyed))
 	{
+		volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_TarstuffDestroyed));
+
 		//Green/clean map room might need to be reverted back to red
 		//if tar was hit and tar babies were created in a clean room.
 		//This can be accomplished by redrawing the room whenever tar
@@ -4199,37 +4289,40 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 		{
 			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
-			//If player stabs tar, center sound on player for nicer effect.
+			//If player performed stab, center sound on player for nicer effect.
+			CCoord tile;
 			if (this->pCurrentGame->IsPlayerWeaponAt(pCoord->wX, pCoord->wY))
 			{
-				this->fPos[0] = static_cast<float>(player.wX);
-				this->fPos[1] = static_cast<float>(player.wY);
+				tile.wX = player.wX;
+				tile.wY = player.wY;
 			} else {
-				this->fPos[0] = static_cast<float>(pCoord->wX);
-				this->fPos[1] = static_cast<float>(pCoord->wY);
+				tile = *pCoord;
 			}
+			this->fPos[0] = static_cast<float>(tile.wX);
+			this->fPos[1] = static_cast<float>(tile.wY);
+			frequencyMult = 1.0f;
 			switch (pCoord->wValue)
 			{
 				case T_TAR:
-					PlaySoundEffect(SEID_STABTAR, this->fPos);
 					this->pRoomWidget->AddTLayerEffect(
 							new CTarStabEffect(this->pRoomWidget, *pCoord,
 									GetEffectDuration(7), GetParticleSpeed(4)));
 				break;
 				case T_MUD:
-					PlaySoundEffect(SEID_STABTAR, this->fPos);
+					frequencyMult = 1.1f;
 					this->pRoomWidget->AddTLayerEffect(
 							new CMudStabEffect(this->pRoomWidget, *pCoord,
 									GetEffectDuration(7), GetParticleSpeed(4)));
 				break;
 				case T_GEL:
-					PlaySoundEffect(SEID_STABTAR, this->fPos);
+					frequencyMult = 0.9f;
 					this->pRoomWidget->AddTLayerEffect(
 							new CGelStabEffect(this->pRoomWidget, *pCoord,
 									GetEffectDuration(7), GetParticleSpeed(4)));
 				break;
 				default: ASSERT(!"Invalid tar type"); break;
 			}
+			PlaySoundEffect(SEID_STABTAR, this->fPos, NULL, false, frequencyMult, volumeMultiplier);
 		}
 
 		//When tarstuff babies are created in a clean room, change the music style.
@@ -4306,6 +4399,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			PlaySoundEffect(SEID_FIRETRAP_START);
 	}
 	if (CueEvents.HasOccurred(CID_Firetrap)) {
+		//play one instance
 		if (!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP) &&
 			!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP_START))
 			PlaySoundEffect(SEID_FIRETRAP);
@@ -4342,23 +4436,27 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		CMoveCoord coord(pMonster->wX,pMonster->wY,pMonster->wO);
 		AddDamageEffect(pMonster->GetIdentity(), coord);
 	}
+
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_EvilEyeWoke));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_EvilEyeWoke);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pCoord->wX);
 		this->fPos[1] = static_cast<float>(pCoord->wY);
-		PlaySoundEffect(SEID_EVILEYEWOKE, this->fPos);
+		PlaySoundEffect(SEID_EVILEYEWOKE, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		this->pRoomWidget->AddMLayerEffect(new CEvilEyeGazeEffect(
 				this->pRoomWidget,pCoord->wX,pCoord->wY,pCoord->wO, 500));
 	}
+
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_MonsterBurned));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MonsterBurned);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CMoveCoord *pMoveCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pMoveCoord->wX);
 		this->fPos[1] = static_cast<float>(pMoveCoord->wY);
-		PlaySoundEffect(SEID_SIZZLE, this->fPos);
+		PlaySoundEffect(SEID_SIZZLE, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		this->pRoomWidget->AddMLayerEffect(
 				new CSteamEffect(this->pRoomWidget, *pMoveCoord));
 	}
@@ -4390,18 +4488,21 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->pRoomWidget->AddMLayerEffect(
 				new CSteamEffect(this->pRoomWidget, *pMonster));
 	}
+
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_Splash));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Splash);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pCoord->wX);
 		this->fPos[1] = static_cast<float>(pCoord->wY);
-		PlaySoundEffect(SEID_SPLASH, this->fPos);
+		PlaySoundEffect(SEID_SPLASH, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		const UINT oTile = this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY);
 		if (bIsWater(oTile) || bIsSteppingStone(oTile))
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
 	}
+
 	UINT count=0;
 	static const UINT MAX_WADE_SOUNDS = 3;
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Wade);
@@ -5110,6 +5211,9 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		{
 			this->pRoomWidget->AllowSleep(false);
 			PlayVideo(dwDataID, int(pDataVals->wX), int(pDataVals->wY));
+
+			// Redraw the whole screen after each video to ensure there are no artifacts left anywhere
+			Paint(true);
 		}
 
 		//Don't reprocess these events if this method is called again.
@@ -5406,8 +5510,9 @@ void CGameScreen::PlaySoundEffect(
 //Wrapper function to set the frequency multiplier for sound effects
 //based on game context.
 	const UINT eSEID, float* pos, float* vel, //default=[NULL,NULL]
-	const bool bUseVoiceVolume,
-	float frequencyMultiplier)
+	const bool bUseVoiceVolume, //[default=false]
+	float frequencyMultiplier,  //[default=1.0]
+	float volumeMultiplier)     //[default=1.0]
 {
 	//Special contexts where sounds are played back differently for effect.
 	if (this->pCurrentGame)
@@ -5428,7 +5533,7 @@ void CGameScreen::PlaySoundEffect(
 		}
 	}
 
-	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier);
+	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier, volumeMultiplier);
 }
 
 //*****************************************************************************
@@ -6064,6 +6169,26 @@ void CGameScreen::ShowLockIcon(const bool bShow)
 }
 
 //*****************************************************************************
+void CGameScreen::ShowChatHistory(CEntranceSelectDialogWidget* pBox)
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	CDrodScreen::ShowChatHistory(pBox);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+}
+
+//*****************************************************************************
 void CGameScreen::UpdatePlayerFace()
 // Refresh player face to match reality
 {
@@ -6152,6 +6277,12 @@ void CGameScreen::ShowSpeechLog()
 	this->pSpeechBox->PopulateList(CEntranceSelectDialogWidget::Speech);
 	this->pSpeechBox->SelectItem(0);
 
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	UINT dwItemID=0;
 	int playingChannel=-1;
 	do {
@@ -6177,6 +6308,17 @@ void CGameScreen::ShowSpeechLog()
 			}
 		}
 	} while (dwItemID != 0);
+
+	if (playingChannel >= 0)
+		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
 
 	Paint();
 }
@@ -6357,6 +6499,19 @@ void CGameScreen::UpdateSound()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateEffectsFreeze()
+{
+	const bool bIsPlacingDouble = this->pCurrentGame && this->pCurrentGame->swordsman.wPlacingDoubleType != 0;
+
+	bool bFreezeEffects =
+		!WindowHasFocus()
+		|| this->bIsDialogDisplayed
+		|| bIsPlacingDouble;
+
+	this->pRoomWidget->SetEffectsFrozen(bFreezeEffects);
+}
+
+//*****************************************************************************
 bool CGameScreen::UploadDemoPolling()
 //As the current game queues victory demos for upload, process them here.
 //As results are received,
@@ -6385,7 +6540,7 @@ bool CGameScreen::UploadDemoPolling()
 					//Demo ranked on hi-score list -- give feedback to user.
 					WSTRING wStr;
 					if (customRank != "") {
-						AsciiToUnicode(customRank, wStr);
+						UTF8ToUnicode(customRank, wStr);
 					}
 					else {
 						wStr = PrintRank(nRanking, bTie);
@@ -6542,6 +6697,7 @@ void CGameScreen::UploadPlayerProgressToCloud(const UINT holdID)
 	}
 }
 
+//*****************************************************************************
 void CGameScreen::SendAchievement(const string& achievement)
 {
 #ifdef STEAMBUILD

@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="General">
+      <UniqueIdentifier>{f7bbcaab-ee13-49bd-97cf-8fadce1ae8e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DRODIncludes">
+      <UniqueIdentifier>{967b0ddf-7974-4e27-9b56-11ccb1b90354}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RoomModel">
+      <UniqueIdentifier>{2abfcd46-8ebc-4b62-ae47-d4059a40dabf}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DRODUtil.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="OptionList.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Util3_0.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\BloodEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\DrodBitmapManager.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\EditRoomWidget.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\FaceWidget.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\MapWidget.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\ParticleExplosionEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\PendingPlotEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\RoomEffectList.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\RoomWidget.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\SnowflakeEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\SparkEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\StrikeOrbEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\TileImageCalcs.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\VarMonitorEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\ZombieGazeEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\BoundingBox.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Color.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Light.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Point.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Rectangle.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Scene.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Drod\Sphere.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OptionList.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Util3_0.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScreenDummy.h">
+      <Filter>DRODIncludes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\MapWidget.h">
+      <Filter>DRODIncludes</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\BoundingBox.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Color.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Light.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Point.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Rectangle.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Scene.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Drod\Sphere.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

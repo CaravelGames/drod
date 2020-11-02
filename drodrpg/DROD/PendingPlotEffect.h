@@ -39,16 +39,17 @@ public:
 			const UINT* wTileImageNo, const UINT wXSize=1, const UINT wYSize=1,
 			const UINT wO=NO_ORIENTATION);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	void PlotStaircase(const UINT wStartX, const UINT wStartY,
 			const UINT wEndX, const UINT wEndY, const UINT wStairType,
-			SDL_Surface* pDestSurface);
-	void PlotSwordsman(const UINT wStartX, const UINT wStartY, const UINT wEndX,
-			const UINT wEndY, SDL_Surface* pDestSurface);
+			SDL_Surface& pDestSurface);
+	void PlotSwordsman(const UINT wSwordsmanX, const UINT wSwordsmanY, SDL_Surface& pDestSurface);
 	void PlotTile(const UINT wX, const UINT wY, const UINT wObjectNo,
-			const UINT wTileNo, SDL_Surface* pDestSurface);
+			const UINT wTileNo, SDL_Surface& pDestSurface);
 
 	SDL_Rect OwnerRect;
 	CEditRoomWidget *pRoomWidget;
@@ -57,6 +58,10 @@ private:
 	UINT     wObjectNo, wXSize, wYSize, wO;
 	static unsigned char nOpacity;
 	static bool bRising;
+
+	// Used only for drawing, set by update
+	UINT wDrawStartX, wDrawStartY;
+	UINT wDrawEndX, wDrawEndY;
 };
 
 #endif //...#ifndef PENDINGPLOTEFFECT_H

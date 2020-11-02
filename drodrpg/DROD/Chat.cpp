@@ -671,7 +671,7 @@ void Interface::StartElement(
 				c->timestamp = convertToUINT(str);
 				break;
 			case Sender:
-				AsciiToUnicode(str, c->sender);
+				UTF8ToUnicode(str, c->sender);
 				break;
 			case Text:
 				Base64::decode(str, c->text);
@@ -685,7 +685,7 @@ void Interface::StartElement(
 				do {
 					if (str)
 					{
-						AsciiToUnicode(str, username);
+						UTF8ToUnicode(str, username);
 						c->whisperedUsers.push_back(username);
 					}
 				}

@@ -35,7 +35,7 @@ class CExplosionEffect : public CAnimatedTileEffect
 public:
 	CExplosionEffect(CWidget *pSetWidget, const CCoord &SetCoord, const UINT duration=500);
 
-	virtual bool Draw(SDL_Surface* pDestSurface);
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif //...#ifndef EXPLOSIONEFFECT_H

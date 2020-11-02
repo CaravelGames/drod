@@ -111,7 +111,7 @@ UINT calcDisplayTime(CClockWidget::ClockState state, UINT wGameTime, bool halfSt
 	if (state >= CClockWidget::CS_ExplicitHalfTimeStart && state < CClockWidget::CS_ExplicitHalfTimeEnd)
 		return UINT(state) - CClockWidget::CS_ExplicitHalfTimeStart;
 	if (state == CClockWidget::CS_ShowBackwards) {
-		static const int maxval = (std::numeric_limits<int>::max() / TIME_INCREMENTS) * TIME_INCREMENTS;
+		static const int maxval = ((std::numeric_limits<int>::max)() / TIME_INCREMENTS) * TIME_INCREMENTS;
 		wGameTime = static_cast<UINT>(maxval - int(wGameTime));
 		if (halfStep)
 			--wGameTime; //show half step backwards

@@ -1176,7 +1176,7 @@ bool CTitleScreen::PollForNews()
 
 		delete pBuffer;
 
-		AsciiToUnicode(strFromWeb.c_str(), this->wstrNewsText);
+		UTF8ToUnicode(strFromWeb.c_str(), this->wstrNewsText);
 		SetNewsText();
 
 		//Wait to query hold list until no delay will be incurred.
@@ -1620,7 +1620,7 @@ void CTitleScreen::RedrawMapArea(const bool bAlwaysRedraw)	//[default=true]
 		//If the screen won't be updated by caller...
 		PaintChildren();
 
-		this->pEffects->DrawEffects();
+		this->pEffects->UpdateAndDrawEffects();
 
 		//Update the map area here.
 		SDL_Rect wholeDest = {X_MAP_JTRH, Y_MAP_JTRH, wFramedMapWidth, wFramedMapHeight};
@@ -1709,7 +1709,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 				g_pTheDBM->fLightLevel = this->fDarkFactor;
 				addParticle();
 				updateParticles(pDestSurface, nMouseX, nMouseY);
-				verminEffects.DrawEffects(false, false, pDestSurface);
+				verminEffects.UpdateAndDrawEffects(false, pDestSurface);
 
 				DrawLightMask(pDestSurface, nMouseX, nMouseY, 1.0f/this->fDarkFactor + 0.002f * RAND(100));
 			}
@@ -1739,7 +1739,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 	AnimateCaravelLogo(pDestSurface);
 
-	this->pEffects->DrawEffects(!bAlpha);
+	this->pEffects->UpdateAndDrawEffects(!bAlpha);
 
 	if (this->pStatusDialog->IsVisible())
 		this->pStatusDialog->Paint();
@@ -1877,7 +1877,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = CNetInterface::cNetBaseURL + "gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	const string ver = UnicodeToAscii(wszVersionReleaseNumber);
+	const string ver = UnicodeToUTF8(wszVersionReleaseNumber);
 	newsQuery += ver;
 #ifdef BETA
 	newsQuery += "-BETA-";

@@ -42,39 +42,22 @@ CSpikeEffect::CSpikeEffect(
 }
 
 //********************************************************************************
-bool CSpikeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CSpikeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const UINT dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw animation.
 	static const UINT frames = 6;
-	const float fPercent = (this->dwDuration - dwTimeElapsed) / float(this->dwDuration + 1);
-	ASSERT(fPercent >= 0.0);
-	ASSERT(fPercent < 1.0);
 
-	UINT wTile;
-	const UINT frame = UINT(fPercent * frames);
+	const UINT frame = UINT(GetElapsedFraction() * frames);
 	switch (frame) {
-		case 0: case 5:
-			wTile = TI_FLOOR_SPIKES_UP1; break;
-		case 1: case 4:
-			wTile = TI_FLOOR_SPIKES_UP2; break;
-		case 2: case 3:
-			wTile = TI_FLOOR_SPIKES_UP3; break;
-		default:
-			ASSERT(!"Unsupported spikes frame");
-			break;
+	case 0: case 5:
+		this->wTileNo = TI_FLOOR_SPIKES_UP1; break;
+	case 1: case 4:
+		this->wTileNo = TI_FLOOR_SPIKES_UP2; break;
+	case 2: case 3:
+		this->wTileNo = TI_FLOOR_SPIKES_UP3; break;
+	default:
+		ASSERT(!"Unsupported spikes frame");
+		break;
 	}
-	DrawTile(wTile, pDestSurface);
 
-	//Continue effect.
 	return true;
 }

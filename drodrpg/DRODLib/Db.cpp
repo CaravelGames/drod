@@ -429,6 +429,9 @@ const
 
 	if (bDidPlayerLeaveRoom)
 	{
+		if (CueEvents.HasOccurred(CID_WinGame))
+			return false; //count as valid play sequence to end of game (even if more play moves exist)
+						  
 		//Whenever the player leaves the room,
 		//the current command should be an end room marker.
 		if (command != CMD_EXITROOM)
@@ -436,9 +439,6 @@ const
 			bGood = false; //validation failed
 			return false;
 		}
-
-		if (CueEvents.HasOccurred(CID_WinGame))
-			return false; //valid play sequence to end of game (even if more play moves exist)
 	}
 
 	return true;

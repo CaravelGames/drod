@@ -1395,22 +1395,22 @@ void CHoldSelectScreen::SetCNetHoldDesc(CNetMedia *pHoldData)
 	WSTRING holdRating = g_pTheDB->GetMessageText(MID_Difficulty);
 	WSTRING temp;
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->difficulty.c_str(), temp);
+	UTF8ToUnicode(pHoldData->difficulty.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Rating);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->rating.c_str(), temp);
+	UTF8ToUnicode(pHoldData->rating.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Votes);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->numVotes.c_str(), temp);
+	UTF8ToUnicode(pHoldData->numVotes.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_FileSize);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->filesize.c_str(), temp);
+	UTF8ToUnicode(pHoldData->filesize.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Version);
@@ -1555,7 +1555,7 @@ void CHoldSelectScreen::SetHoldRatingLabel(const UINT dwTagNo)
 	str += ".";
 	str += _itoa(wVal%10, temp, 10);
 	WSTRING wstr;
-	AsciiToUnicode(str.c_str(), wstr);
+	UTF8ToUnicode(str.c_str(), wstr);
 	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(
 			dwTagNo == TAG_RATEDIFFICULTY ? TAG_DIFFNUM_LABEL : TAG_OVERALLNUM_LABEL));
 	pLabel->SetText(wstr.c_str());

@@ -1938,6 +1938,7 @@ void CDbSavedGames::ExportXML(
 		CMonster *pMonster = pSavedGame->pMonsterListAtRoomStart;
 		while (pMonster)
 		{
+			//CDbSavedGame::LoadMonster sets ExtraVars; don't call SetExtraVarsForExport here
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
 		}

@@ -246,6 +246,7 @@ public:
 	static BYTE eyeCandy;	//hint for whether graphic-intensive effects should be enabled
 	static float fLightLevel; //darken some blits to this level
 	static Uint8 TransColor[3]; //the transparent pixel color key
+	static bool bGameHasFocus; //whether the game window is focused
 
 protected:
 	bool        DoesTileImageContainTransparentPixels(const UINT wTileImageNo);

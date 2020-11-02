@@ -36,11 +36,10 @@
 
 //*****************************************************************************
 CVarMonitorEffect::CVarMonitorEffect(CWidget *pSetWidget)
-	: CEffect(pSetWidget, EVARMONITOR)
+	: CEffect(pSetWidget, (UINT)-1, EVARMONITOR)
 	, x(pOwnerWidget->GetX())
 	, y(pOwnerWidget->GetY())
 	, lastTurn((UINT)-1)
-	, lastUpdate(SDL_GetTicks())
 	, pTextSurface(NULL)
 //Constructor.
 {
@@ -91,7 +90,7 @@ void CVarMonitorEffect::SetTextForNewTurn()
 			//Print changed var names and values.
 			WSTRING temp;
 			const char *pVarName = var->c_str();
-			AsciiToUnicode(pVarName, temp);
+			UTF8ToUnicode(pVarName, temp);
 			char *varID = pGame->pHold->getVarAccessToken(temp.c_str());
 			newText += temp;
 			newText += wszSpace;
@@ -115,45 +114,52 @@ void CVarMonitorEffect::SetTextForNewTurn()
 	}
 
 	this->lastTurn = turn;
+	this->dwTimeElapsed = 0;
 }
 
 //*****************************************************************************
-bool CVarMonitorEffect::Draw(SDL_Surface* pDestSurface)
-//Calc the text and put it on the screen.
-//
-//Returns: True (display indefinitely)
+bool CVarMonitorEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	SetTextForNewTurn();
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
 	//Fade out after a while.
-	Uint8 opacity = 255;
-	if (g_pTheBM->bAlpha) {
-		static const UINT timeToFadeBegin = 2000, timeToFadeEnd = 3000; //ms
-		const Uint32 timeSinceLastUpdate = SDL_GetTicks() - this->lastUpdate;
-		if (timeSinceLastUpdate > timeToFadeBegin)
-			opacity = timeSinceLastUpdate >= timeToFadeEnd ? 0 :
-			(timeToFadeEnd - timeSinceLastUpdate)*255 / (timeToFadeEnd - timeToFadeBegin);
-	}
+	UpdateOpacity(dwTimeElapsed);
+
+	this->dirtyRects[0].w = this->pTextSurface->w;
+	this->dirtyRects[0].h = this->pTextSurface->h;
+
+	return true;
+}
+
+//*****************************************************************************
+void CVarMonitorEffect::UpdateOpacity(const Uint32 dwTimeElapsed)
+{
+	static const UINT timeToFadeBegin = 2000, timeToFadeEnd = 3000; //ms
+
+	this->nOpacity = 255;
+	if (dwTimeElapsed > timeToFadeEnd)
+		this->nOpacity = 0;
+
+	else if (g_pTheBM->bAlpha && dwTimeElapsed > timeToFadeBegin)
+		this->nOpacity = (timeToFadeEnd - dwTimeElapsed) * 255 / (timeToFadeEnd - timeToFadeBegin);
+}
+
+//*****************************************************************************
+void CVarMonitorEffect::Draw(SDL_Surface& destSurface)
+{
 
 	ASSERT(this->dirtyRects.size() == 1);
-	if (!opacity) {
-		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
+	if (!this->nOpacity) {
+		this->dirtyRects[0].w = 0;
+
 	} else {
 		ASSERT(this->pTextSurface);
-		g_pTheBM->SetSurfaceAlpha(this->pTextSurface, opacity);
+		EnableSurfaceBlending(this->pTextSurface, this->nOpacity);
 
 		SDL_Rect rect = MAKE_SDL_RECT(this->x, this->y, this->pTextSurface->w, this->pTextSurface->h);
-		SDL_BlitSurface(this->pTextSurface, NULL, pDestSurface, &rect);
+		SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &rect);
 
-		this->dirtyRects[0].w = rect.w;
-		this->dirtyRects[0].h = rect.h;
 	}
-
-	//Effect will last forever.
-	return true;
 }
 
 //*****************************************************************************
@@ -182,5 +188,5 @@ void CVarMonitorEffect::SetText(const WCHAR* pText)
 	g_pTheFM->DrawTextToRect(F_FrameRate, text,
 			0, 0, w, h, this->pTextSurface);
 
-	this->lastUpdate = SDL_GetTicks();
+	this->dwTimeElapsed = 0;
 }

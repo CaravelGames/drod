@@ -40,13 +40,15 @@ public:
 			const UINT duration, const float fScaleRate);
 	~CScaleTileEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	void SetOpacity(const BYTE opacity) {this->nOpacity = opacity;}
 	void SetScaleSize(const int nWidth, const int nHeight);
 	void SetTile(const UINT tileNo);
 
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
 private:
-	UINT  dwDuration;
 	UINT  tileNo;
 	SDL_Rect srcRect; //area of src tile to scale
 	int   xCenter, yCenter;
@@ -55,6 +57,8 @@ private:
 
 	SDL_Surface *pSrcSurface, *pScaledSurface;
 	Uint8 *pSrcPixel; //origin pixel in source surface to rotate
+
+	SDL_Rect drawRect;
 };
 
 #endif //...#ifndef SCALETILEEFFECT_H

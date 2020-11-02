@@ -61,6 +61,7 @@ UINT CBitmapManager::BYTES_PER_PIXEL = 4;
 bool CBitmapManager::bAlpha = true;
 BYTE CBitmapManager::eyeCandy = 1;
 float CBitmapManager::fLightLevel = 1.0f;
+bool CBitmapManager::bGameHasFocus = true;
 
 Uint8 CBitmapManager::TransColor[3] = {192,192,192};	//(r,g,b) color that signifies transparent pixels: default=192-gray
 
@@ -2960,7 +2961,7 @@ SDL_Surface * CBitmapManager::GetBitmapSurface(
 	ASSERT(strlen(pszName) <= MAXLEN_BITMAPNAME);
 
 	WSTRING wstr;
-	AsciiToUnicode(pszName, wstr);
+	UTF8ToUnicode(pszName, wstr);
 	LOADEDBITMAP *pBitmap = FindLoadedBitmap(wstr.c_str());
 	if (pBitmap)   //Found it--increment ref count.
 	{
@@ -2999,7 +3000,7 @@ void CBitmapManager::ReleaseBitmapSurface(
 	ASSERT(strlen(pszName) <= MAXLEN_BITMAPNAME);
 
 	WSTRING wstr;
-	AsciiToUnicode(pszName, wstr);
+	UTF8ToUnicode(pszName, wstr);
 	LOADEDBITMAP *pBitmap = FindLoadedBitmap(wstr.c_str());
 
 	ASSERT(pBitmap);

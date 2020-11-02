@@ -2020,7 +2020,7 @@ void CGameScreen::LogHoldVars()
 	wstrPos += wszColon;
 	this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrPos, true);
 	wstrPos += wszColon;
-	string strPos = UnicodeToAscii(wstrPos);
+	string strPos = UnicodeToUTF8(wstrPos);
 
 	string str = "Game vars ";
 	str += strPos;
@@ -2040,7 +2040,7 @@ void CGameScreen::LogHoldVars()
 			bFirst = false;
 		}
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		str += UnicodeToAscii(this->pCurrentGame->pHold->GetVarName(wVarID));
+		str += UnicodeToUTF8(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
 		if (bInteger)
@@ -2049,7 +2049,7 @@ void CGameScreen::LogHoldVars()
 			str += _itoa(nVal, temp, 10);
 		} else {
 			const WSTRING wstr = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), wszEmpty);
-			str += UnicodeToAscii(wstr);
+			str += UnicodeToUTF8(wstr);
 		}
 		str += NEWLINE;
 	}
@@ -4709,7 +4709,7 @@ void CGameScreen::HandleEventsForHoldExit()
 		//Animate every so often.
 		if (dwNow - dwLastAnimate > 90)
 		{
-			this->pRoomWidget->pLastLayerEffects->DrawEffects();
+			this->pRoomWidget->pLastLayerEffects->UpdateAndDrawEffects();
 			g_pTheBM->UpdateScreen(GetWidgetScreenSurface());
 			dwLastAnimate = dwNow;
 		}
@@ -7122,6 +7122,9 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		{
 			this->pRoomWidget->AllowSleep(false);
 			PlayVideo(dwDataID, int(pDataVals->wX), int(pDataVals->wY));
+
+			// Redraw the whole screen after each video to ensure there are no artifacts left anywhere
+			Paint(true);
 		}
 
 		//Don't reprocess these events if this method is called again.
@@ -8461,7 +8464,7 @@ bool CGameScreen::UploadDemoPolling()
 					const char *pwczRank = (char*)(BYTE*)*pBuffer;
 					if (strlen(pwczRank) > 0) {
 						WSTRING wStr;
-						AsciiToUnicode(pwczRank, wStr);
+						UTF8ToUnicode(pwczRank, wStr);
 						this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
 								this->pRoomWidget, wStr.c_str(), -300, 3000));	//show at top of room for 3s
 					}
