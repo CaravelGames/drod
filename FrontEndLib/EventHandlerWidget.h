@@ -205,6 +205,12 @@ public:
 	//Called when the window received an event, including losing/gaining
 	//focus, minimizing/restoring, and mouse entering/leaving window.
 
+	virtual void   OnWindowEvent_GetFocus();
+	//Called when window receives focus
+
+	virtual void   OnWindowEvent_LoseFocus();
+	//Called when window loses focus
+
 protected:
 	friend class CScreenManager;
 	friend class CWidget;

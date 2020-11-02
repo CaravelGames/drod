@@ -47,11 +47,13 @@ CPendingPlotEffect::CPendingPlotEffect(
 	const UINT wXSize, const UINT wYSize,  //(in) Dimensions of object being displayed
 											//[default = 1x1]
 	const UINT wO)                //(in)   Orientation of object [default = NO_OREINTATION]
-	: CEffect(pSetWidget, EPENDINGPLOT)
+	: CEffect(pSetWidget, (UINT)-1, EPENDINGPLOT)
 	, pwTileImageNo(pwTileImageNo)
 	, wObjectNo(wObjectNo)
 	, wXSize(wXSize), wYSize(wYSize)
 	, wO(wO)
+	, wDrawStartX(0), wDrawStartY(0)
+	, wDrawEndX(0), wDrawEndY(0)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	ASSERT(this->wXSize && this->wYSize);
@@ -66,13 +68,8 @@ CPendingPlotEffect::CPendingPlotEffect(
 }
 
 //*****************************************************************************
-bool CPendingPlotEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CPendingPlotEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
 	this->dirtyRects.clear();
 
 	//Change level of transparency.
@@ -81,63 +78,88 @@ bool CPendingPlotEffect::Draw(SDL_Surface* pDestSurface)
 		this->nOpacity += 4;
 		if (this->nOpacity > MAX_OPACITY)
 			this->bRising = false;
-	} else {
+	}
+	else {
 		this->nOpacity -= 4;
 		if (this->nOpacity < MIN_OPACITY)
 			this->bRising = true;
 	}
 
-	//Draw transparent tiles in region specified in the room widget.
-	UINT wStartX = this->pRoomWidget->wMidX;
-	UINT wStartY = this->pRoomWidget->wMidY;
-	UINT wEndX = this->pRoomWidget->wEndX;
-	UINT wEndY = this->pRoomWidget->wEndY;
-	//Show at least one full object of specified type.
-	if (wEndX - pRoomWidget->wMidX + 1 < this->wXSize)
-		wEndX = pRoomWidget->wMidX + this->wXSize - 1;
-	if (wEndY - pRoomWidget->wMidY + 1 < this->wYSize)
-		wEndY = pRoomWidget->wMidY + this->wYSize - 1;
+	this->wDrawStartX = this->pRoomWidget->wMidX;
+	this->wDrawStartY = this->pRoomWidget->wMidY;
+	this->wDrawEndX = this->pRoomWidget->wEndX;
+	this->wDrawEndY = this->pRoomWidget->wEndY;
 
-	//Stairs and tunnels have a special appearance.
+	//Show at least one full object of specified type.
+	if (this->wDrawEndX - pRoomWidget->wMidX + 1 < this->wXSize)
+		this->wDrawEndX = pRoomWidget->wMidX + this->wXSize - 1;
+	if (this->wDrawEndY - pRoomWidget->wMidY + 1 < this->wYSize)
+		this->wDrawEndY = pRoomWidget->wMidY + this->wYSize - 1;
+
+	UINT wDrawWidth = this->wDrawEndX - this->wDrawStartX;
+	UINT wDrawHeight = this->wDrawEndY - this->wDrawStartY;
+
+
 	switch (this->wObjectNo)
 	{
-		case T_STAIRS:
-		case T_STAIRS_UP:
-			PlotStaircase(wStartX,wStartY, wEndX,wEndY, this->wObjectNo, pDestSurface);
+	case T_SWORDSMAN:
+		//Room entrance has special calculation
+		this->wDrawStartX = this->pRoomWidget->wEndX;
+		this->wDrawStartY = this->pRoomWidget->wEndY;
+		this->wDrawEndX = this->wDrawStartX;
+		this->wDrawEndY = this->wDrawStartY;
+
+		wDrawWidth = this->wDrawEndX - this->wDrawStartX;
+		wDrawHeight = this->wDrawEndY - this->wDrawStartY;
 		break;
-		case T_SWORDSMAN:
-		{
-			//Objects w/ swords must calc the coords specially.
-			wStartX = this->pRoomWidget->wEndX;
-			wStartY = this->pRoomWidget->wEndY;
-			wEndX = wStartX + nGetOX(this->wO);
-			wEndY = wStartY + nGetOY(this->wO);
-			PlotSwordsman(wStartX,wStartY, wEndX,wEndY, pDestSurface);
+	case T_ROCKGIANT: //always show only whole large monsters
+		if (wDrawWidth % 2 != 1) {
+			++this->wDrawEndX;
+			++wDrawWidth;
 		}
-		break;
-		case T_ROCKGIANT: //always show only whole large monsters
-			if (((wEndX - wStartX + 1) % 2) != 0)
-				++wEndX;
-			if (((wEndY - wStartY + 1) % 2) != 0)
-				++wEndY;
-		//NO BREAK
-		default:
-		{
-			UINT wX, wY, wTileNo;
-			for (wY=wStartY; wY<=wEndY; ++wY)
-				for (wX=wStartX; wX<=wEndX; ++wX)
-				{
-					wTileNo = this->pwTileImageNo[
-							((wY - wStartY) % this->wYSize) * this->wXSize +
-							(wX - wStartX) % this->wXSize];
-					PlotTile(wX, wY, this->wObjectNo, wTileNo, pDestSurface);
-				}
+		if (wDrawHeight % 2 != 1) {
+			++this->wDrawEndY;
+			++wDrawHeight;
 		}
 		break;
 	}
 
-	//Continue effect.
+	this->dirtyRects.push_back(MAKE_SDL_RECT(
+		this->OwnerRect.x + this->wDrawStartX * CBitmapManager::CX_TILE,
+		this->OwnerRect.y + this->wDrawStartY * CBitmapManager::CY_TILE,
+		(wDrawWidth + 1) * CBitmapManager::CX_TILE,
+		(wDrawHeight + 1) * CBitmapManager::CY_TILE
+	));
+
 	return true;
+}
+
+//*****************************************************************************
+void CPendingPlotEffect::Draw(SDL_Surface& destSurface)
+{
+	switch (this->wObjectNo)
+	{
+	case T_SWORDSMAN:
+		PlotSwordsman(this->wDrawStartX, this->wDrawStartY, destSurface);
+		break;
+	case T_STAIRS:
+	case T_STAIRS_UP:
+		PlotStaircase(this->wDrawStartX, this->wDrawStartY, this->wDrawEndX, this->wDrawEndY, this->wObjectNo, destSurface);
+		break;
+	default:
+	{
+		UINT wX, wY, wTileNo;
+		for (wY = this->wDrawStartY; wY <= this->wDrawEndY; ++wY)
+			for (wX = this->wDrawStartX; wX <= this->wDrawEndX; ++wX)
+			{
+				wTileNo = this->pwTileImageNo[
+					((wY - this->wDrawStartY) % this->wYSize) * this->wXSize +
+						(wX - this->wDrawStartX) % this->wXSize];
+				PlotTile(wX, wY, this->wObjectNo, wTileNo, destSurface);
+			}
+	}
+	break;
+	}
 }
 
 //*****************************************************************************
@@ -148,7 +170,7 @@ void CPendingPlotEffect::PlotStaircase(
 //Params:
 	const UINT wStartX, const UINT wStartY, const UINT wEndX, const UINT wEndY,
 	const UINT wStairType,     //(in)
-	SDL_Surface* pDestSurface) //(in)
+	SDL_Surface& destSurface) //(in)
 {
 	ASSERT(bIsStairs(wStairType));
 	const UINT wBaseY = wStairType == T_STAIRS ? wEndY : wStartY;
@@ -166,51 +188,41 @@ void CPendingPlotEffect::PlotStaircase(
 				wObjectNo = wStairType;
 
 			wTileNo = (bIsWall(wObjectNo) ? TI_WALL : TI_STAIRS);
-			PlotTile(wX, wY, wObjectNo, wTileNo, pDestSurface);
+			PlotTile(wX, wY, wObjectNo, wTileNo, destSurface);
 		}
 }
 
 //*****************************************************************************
 void CPendingPlotEffect::PlotSwordsman(
-//Draw swordsman and sword.
+//Draw swordsman
 //
 //Params:
-	const UINT wStartX, const UINT wStartY, const UINT /*wEndX*/, const UINT /*wEndY*/,
-	SDL_Surface* pDestSurface)
+	const UINT wSwordsmanX, const UINT wSwordsmanY, SDL_Surface& destSurface)
 {
 	//Unarmed default player type (stalwart).
 	static const UINT SMAN_TI[9] = {
 		TI_STALWART_UNW, TI_STALWART_UN, TI_STALWART_UNE,
 		TI_STALWART_UW,  TI_TEMPTY,      TI_STALWART_UE,
 		TI_STALWART_USW, TI_STALWART_US, TI_STALWART_USE};
-	PlotTile(wStartX, wStartY, T_SWORDSMAN, SMAN_TI[this->wO], pDestSurface);
-/*
-	static const UINT SWORD_TI[9] = {
-		TI_SWORD_YNW, TI_SWORD_YN, TI_SWORD_YNE,
-		TI_SWORD_YW, TI_TEMPTY, TI_SWORD_YE,
-		TI_SWORD_YSW, TI_SWORD_YS, TI_SWORD_YSE};
-	PlotTile(wEndX, wEndY, T_EMPTY, SWORD_TI[this->wO], pDestSurface);
-*/
+	PlotTile(wSwordsmanX, wSwordsmanY, T_SWORDSMAN, SMAN_TI[this->wO], destSurface);
 }
 
 //*****************************************************************************
 void CPendingPlotEffect::PlotTile(
 	const UINT wX, const UINT wY, const UINT wObjectNo, const UINT wTileNo,
-	SDL_Surface* pDestSurface) //(in)
+	SDL_Surface& destSurface) //(in)
 {
-	ASSERT(pDestSurface);
-
 	SDL_Rect dest = MAKE_SDL_RECT(this->OwnerRect.x + wX * CBitmapManager::CX_TILE,
 			this->OwnerRect.y + wY * CBitmapManager::CY_TILE,
 			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	if (pRoomWidget->IsSafePlacement(wObjectNo,wX,wY,NO_ORIENTATION,wObjectNo==T_SWORDSMAN))
 	{
-		g_pTheBM->BlitTileImage(wTileNo, dest.x, dest.y, pDestSurface, false, this->nOpacity);
+		g_pTheBM->BlitTileImage(wTileNo, dest.x, dest.y, &destSurface, false, this->nOpacity);
 		this->dirtyRects.push_back(dest);
 	} else if (wX * CBitmapManager::CX_TILE < (UINT)this->OwnerRect.w && wY *
 				CBitmapManager::CY_TILE < (UINT)this->OwnerRect.h)
 	{
-		g_pTheBM->ShadeTile(dest.x, dest.y, Red, pDestSurface);
+		g_pTheBM->ShadeTile(dest.x, dest.y, Red, &destSurface);
 		this->dirtyRects.push_back(dest);
 	}
 }

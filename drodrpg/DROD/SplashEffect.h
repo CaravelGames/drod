@@ -35,7 +35,9 @@ class CSplashEffect : public CAnimatedTileEffect
 public:
 	CSplashEffect(CWidget *pSetWidget, const CCoord &SetCoord);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif   //...#ifndef SPLASHEFFECT_H

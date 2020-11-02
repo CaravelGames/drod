@@ -37,37 +37,24 @@ CIceMeltEffect::CIceMeltEffect(
 	const UINT duration) //[default=500]
 	: CAnimatedTileEffect(pSetWidget,SetCoord,duration,0,true)
 {
+	this->nOpacity = THIN_ICE_OPACITY;
 }
 
 //********************************************************************************
-bool CIceMeltEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CIceMeltEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const UINT dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw shrinking ice.
-	const float fPercent = (this->dwDuration - dwTimeElapsed) / (float)this->dwDuration;
-	ASSERT(fPercent >= 0.0);
-	ASSERT(fPercent <= 1.0);
-	UINT wTile = TI_THINICE;
+	const float fPercent = GetRemainingFraction();
+	
 	if (fPercent < 0.20)
-		wTile = TI_ICEMELT_4;
+		this->wTileNo = TI_ICEMELT_4;
 	else if (fPercent < 0.40)
-		wTile = TI_ICEMELT_3;
+		this->wTileNo = TI_ICEMELT_3;
 	else if (fPercent < 0.60)
-		wTile = TI_ICEMELT_2;
+		this->wTileNo = TI_ICEMELT_2;
 	else if (fPercent < 0.80)
-		wTile = TI_ICEMELT_1;
+		this->wTileNo = TI_ICEMELT_1;
+	else
+		this->wTileNo = TI_THINICE;
 
-	DrawTile(wTile, pDestSurface, THIN_ICE_OPACITY);
-
-	//Continue effect.
 	return true;
 }

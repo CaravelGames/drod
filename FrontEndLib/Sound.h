@@ -147,8 +147,9 @@ public:
 	bool        PlayNextSong();
 	bool        PlaySong(const UINT nSongID);
 	bool        PlaySong(list<WSTRING>* pSonglist);
-	void PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
-			const bool bUseVoiceVolume=false, const float frequencyMultiplier=1.0);
+	void        PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
+			const bool bUseVoiceVolume=false, const float frequencyMultiplier=1.0f,
+			const float fVolumeMultiplier = 1.0f);
 	int         PlaySoundEffect(const CStretchyBuffer& sound, const bool bLoop=false,
 			float* pos=NULL, float* vel=NULL, const bool bUseVoiceVolume=false);
 	int         PlayVoice(const CStretchyBuffer& sound);
@@ -200,7 +201,7 @@ public:
 	void        Update(float *fPos, float *fDir, float *fVel);
 	void        Update(const int nChannel, float *fPos=NULL, float *fVel=NULL,
 			const UINT eSEID=static_cast<UINT>(SOUNDLIB::SEID_NONE),
-			const bool bUseVoiceVolume=false);
+			const bool bUseVoiceVolume=false, const float fVolumeMultiplier=1.0f);
 	void        UpdateMusic();
 	bool			 VerifySound(const CStretchyBuffer &buffer) const;
 	bool        WaitForSoundEffectsToStop(const UINT dwMaxWaitTime = 3000L) const;

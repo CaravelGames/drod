@@ -89,7 +89,7 @@ namespace InputCommands
 
 	DCMD getCommandIDByVarName(const WSTRING& wtext)
 	{
-		const string text = UnicodeToAscii(wtext);
+		const string text = UnicodeToUTF8(wtext);
 
 		static const char COMMAND_PREFIX[] = "_CMD_";
 		static const size_t prefix_len = strlen(COMMAND_PREFIX);

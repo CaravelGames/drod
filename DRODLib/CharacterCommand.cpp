@@ -292,7 +292,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 	if (wtext.empty())
 		return true;
 
-	const string text = UnicodeToAscii(wtext);
+	const string text = UnicodeToUTF8(wtext);
 	const UINT textLength = text.length();
 	const char *pText = (const char*)text.c_str();
 	UINT pos=0;

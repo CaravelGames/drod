@@ -47,10 +47,9 @@ CFlashMessageEffect::CFlashMessageEffect(
 	const int yOffset,		//(in)  Offset from center of parent, in pixels [default=0]
 	const Uint32 wDuration, //(in)  How long to display (in milliseconds) [default=3000]
 	const Uint32 fadeTime)  //fade out time at end of duration [default=1000]
-	: CEffect(pSetWidget)
+	: CEffect(pSetWidget, wDuration, EFFECTLIB::EGENERIC)
 	, pTextSurface(NULL)
 	, yOffset(yOffset)
-	, wDuration(wDuration)
 	, fadeTime(fadeTime)
 	, movement(true)
 	, bSlowExpansion(false)
@@ -59,7 +58,6 @@ CFlashMessageEffect::CFlashMessageEffect(
 {
 	ASSERT(pSetWidget->GetType() == WT_Room || pSetWidget->GetType() == WT_Screen);
 	ASSERT(text);
-	ASSERT(wDuration);
 
 	pSetWidget->GetRect(this->screenRect);
 	this->dirtyRects.push_back(this->screenRect);
@@ -76,43 +74,12 @@ CFlashMessageEffect::~CFlashMessageEffect()
 }
 
 //********************************************************************************
-bool CFlashMessageEffect::Draw(SDL_Surface* pDestSurface)
-//Draws a pulsing message in the middle of the parent widget.
+bool CFlashMessageEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	//End after duration has elapsed.
-	const Uint32 elapsed = TimeElapsed();
-	if (elapsed >= this->wDuration)
-		return false;
-
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
 	UINT scaled_w = this->base_size.w;
 	UINT scaled_h = this->base_size.h;
-	SDL_Surface *pSurfaceToDraw = this->pTextSurface;
-	SDL_Surface *pScaledSurface = NULL;
-	if (this->movement)
-	{
-		float size_delta;
-		if (this->bSlowExpansion) {
-			size_delta = (1.0f - max_scale_factor) + (2.0f*max_scale_factor * elapsed / float(this->wDuration));
-		} else {
-			//Pulse text size.
-			static const float cycle = 1000.0f; //ms
-			size_delta = 1.0f + (max_scale_factor * float(sin(TWOPI * elapsed / cycle)));
-		}
-		scaled_w = UINT(size_delta * scaled_w);
-		scaled_h = UINT(size_delta * scaled_h);
 
-		//Scale.
-		Uint8 *pSrcPixel = (Uint8*)this->pTextSurface->pixels;
-		pScaledSurface = g_pTheBM->ScaleSurface(this->pTextSurface, pSrcPixel,
-				this->base_size.w, this->base_size.h,
-				scaled_w, scaled_h);
-		if (!pScaledSurface)
-			return false;
-		pSurfaceToDraw = pScaledSurface;
-	}
+	ScaleText(dwTimeElapsed, scaled_w, scaled_h);
 
 	//Center text in widget.
 	const UINT xDraw = (this->screenRect.w - scaled_w) / 2;
@@ -120,38 +87,80 @@ bool CFlashMessageEffect::Draw(SDL_Surface* pDestSurface)
 
 	//Specify area of effect.
 	ASSERT(this->dirtyRects.size() == 1);
-	SDL_Rect rect = MAKE_SDL_RECT(this->screenRect.x + xDraw, this->screenRect.y + yDraw,
-			scaled_w, scaled_h);
-	this->dirtyRects[0] = rect;
+	this->drawRect = MAKE_SDL_RECT(this->screenRect.x + xDraw, this->screenRect.y + yDraw,
+		scaled_w, scaled_h);
+	this->dirtyRects[0] = this->drawRect;
 
+	UpdateOpacity(dwTimeElapsed);
+
+	return true;
+}
+
+void CFlashMessageEffect::ScaleText(const Uint32& dwTimeElapsed, UINT& scaled_w, UINT& scaled_h)
+{
+	if (this->movement)
+	{
+		float size_delta;
+		if (this->bSlowExpansion) {
+			size_delta = (1.0f - max_scale_factor) + (2.0f * max_scale_factor * dwTimeElapsed / float(this->dwDuration));
+		}
+		else {
+			//Pulse text size.
+			static const float cycle = 1000.0f; //ms
+			size_delta = 1.0f + (max_scale_factor * float(sin(TWOPI * dwTimeElapsed / cycle)));
+		}
+		scaled_w = UINT(size_delta * scaled_w);
+		scaled_h = UINT(size_delta * scaled_h);
+	}
+}
+
+void CFlashMessageEffect::UpdateOpacity(const Uint32& dwTimeElapsed)
+{
+	this->nOpacity = 255;
 	if (g_pTheBM->bAlpha) {
-		Uint8 opacity = 255;
 		static const Uint32 FADE_IN_DURATION = 500; //ms
-		if (elapsed < FADE_IN_DURATION) {
-			opacity = (Uint8)(255 * elapsed / FADE_IN_DURATION);
-		} else {
-			const Uint32 time_left = this->wDuration - elapsed;
+		if (dwTimeElapsed < FADE_IN_DURATION) {
+			this->nOpacity = (Uint8)(255 * dwTimeElapsed / FADE_IN_DURATION);
+		}
+		else {
+			const Uint32 time_left = this->dwDuration - dwTimeElapsed;
 			if (time_left < this->fadeTime) {
 				static const Uint8 start_opacity = 255;
 				const float fFadePerMS = start_opacity / float(this->fadeTime);
-				opacity = (Uint8)(time_left * fFadePerMS);
-			}
-		}
-		if (opacity < 255) {
-			if (this->bBlendedFontRender) {
-				g_pTheBM->SetSurfaceAlpha(pSurfaceToDraw, opacity);
-			} else {
-				EnableSurfaceBlending(pSurfaceToDraw, opacity);
+				this->nOpacity = (Uint8)(time_left * fFadePerMS);
 			}
 		}
 	}
+}
 
-	SDL_BlitSurface(pSurfaceToDraw, NULL, pDestSurface, &rect);
+//********************************************************************************
+void CFlashMessageEffect::Draw(SDL_Surface& destSurface)
+//Draws a pulsing message in the middle of the parent widget.
+{
+	SDL_Surface *pSurfaceToDraw = this->pTextSurface;
+	SDL_Surface *pScaledSurface = NULL;
+	if (this->movement)
+	{
+		//Scale.
+		Uint8 *pSrcPixel = (Uint8*)this->pTextSurface->pixels;
+		pScaledSurface = g_pTheBM->ScaleSurface(this->pTextSurface, pSrcPixel,
+				this->base_size.w, this->base_size.h,
+				this->drawRect.w, this->drawRect.h);
+		if (!pScaledSurface)
+			return;
+		pSurfaceToDraw = pScaledSurface;
+	}
+
+	if (this->nOpacity < 255)
+		if (this->bBlendedFontRender)
+			g_pTheBM->SetSurfaceAlpha(pSurfaceToDraw, this->nOpacity);
+		else
+			EnableSurfaceBlending(pSurfaceToDraw, this->nOpacity);
+
+	SDL_BlitSurface(pSurfaceToDraw, NULL, &destSurface, &this->drawRect);
 
 	if (pScaledSurface)
 		SDL_FreeSurface(pScaledSurface);
-
-	return true;
 }
 
 //********************************************************************************

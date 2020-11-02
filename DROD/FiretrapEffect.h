@@ -35,7 +35,8 @@ class CFiretrapEffect : public CAnimatedTileEffect
 public:
 	CFiretrapEffect(CWidget *pSetWidget, const CCoord &SetCoord, const UINT duration=300);
 
-	virtual bool Draw(SDL_Surface* pDestSurface);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 };
 
 #endif //...#ifndef FIRETRAPEFFECT_H

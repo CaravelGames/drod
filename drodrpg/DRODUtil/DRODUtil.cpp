@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
 	for (int i = argc; i--; )
 	{
 		WSTRING wstrTemp;
-		AsciiToUnicode(argv[i], wstrTemp);
+		UTF8ToUnicode(argv[i], wstrTemp);
 		Wargv[i] = new WCHAR[wstrTemp.length()+1];
 		WCScpy(Wargv[i], wstrTemp.c_str());
 	}
@@ -258,10 +258,10 @@ void PrintHeader()
 #else
 	WSTRING wstrTemp = wszDefaultPath;
 	char pszDefaultPath[wstrTemp.length()];
-	UnicodeToAscii(wstrTemp, pszDefaultPath);
+	UnicodeToUTF8(wstrTemp, pszDefaultPath);
 	wstrTemp = g_szarrVersions[GetDefaultVersion()];
 	char pszVersion[wstrTemp.length()];
-	UnicodeToAscii(wstrTemp, pszVersion);
+	UnicodeToUTF8(wstrTemp, pszVersion);
 	printf("Default path is %s.\r\n"
 		"Default version is %s.\r\n"
 		"-------------------------------------------------------------------------------\r\n",

@@ -44,7 +44,7 @@ CPendingBuildEffect::CPendingBuildEffect(
 	const UINT wTileImageNo,    //(in)   Tile to display.
 	const UINT wX, const UINT wY,
 	const bool bModOpacity)     //(in) whether this instance changes the static opacity
-	: CEffect(pSetWidget, EPENDINGBUILD)
+	: CEffect(pSetWidget, (UINT)-1, EPENDINGBUILD)
 	, wX(wX), wY(wY)
 	, wTileImageNo(wTileImageNo)
 	, bModOpacity(bModOpacity)
@@ -62,14 +62,8 @@ CPendingBuildEffect::CPendingBuildEffect(
 }
 
 //*****************************************************************************
-bool CPendingBuildEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CPendingBuildEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	if (this->bModOpacity)
 	{
 		//Change level of transparency.
@@ -78,19 +72,21 @@ bool CPendingBuildEffect::Draw(SDL_Surface* pDestSurface)
 			this->nOpacity += OPACITY_INCREMENT;
 			if (this->nOpacity > MAX_OPACITY)
 				this->bRising = false;
-		} else {
+		}
+		else {
 			this->nOpacity -= OPACITY_INCREMENT;
 			if (this->nOpacity < MIN_OPACITY)
 				this->bRising = true;
 		}
 	}
 
-	//Draw transparent tile.
+	return true;
+}
+//*****************************************************************************
+void CPendingBuildEffect::Draw(SDL_Surface& destSurface)
+{
 	ASSERT(this->dirtyRects.size() == 1);
 	g_pTheBM->BlitTileImage(this->wTileImageNo,
 			this->dirtyRects[0].x, this->dirtyRects[0].y,
-			pDestSurface, false, this->nOpacity);
-
-	//Continue effect.
-	return true;
+			&destSurface, false, this->nOpacity);
 }

@@ -36,7 +36,7 @@ CTrapdoorFallEffect::CTrapdoorFallEffect(
 	const CCoord &SetCoord,    //(in) Location of falling trapdoor.
 	const vector<UINT>& tiles, //(in) Tiles to show falling down (layered on top of one another)
 	const UINT tileFallTime)  //(in) time to fall down one tile [default=130ms]
-	: CEffect(pSetWidget)
+	: CEffect(pSetWidget, (UINT) -1, EFFECTLIB::EGENERIC)
 	, pSurface(NULL)
 	, wCol(SetCoord.wX)
 	, wRow(SetCoord.wY)
@@ -65,6 +65,7 @@ CTrapdoorFallEffect::CTrapdoorFallEffect(
 			bTransparent = false;
 			break;
 		}
+
 	if (bTransparent)
 	{
 		static const Uint32 TranspColor = SDL_MapRGB(this->pSurface->format,
@@ -77,8 +78,9 @@ CTrapdoorFallEffect::CTrapdoorFallEffect(
 		g_pTheBM->BlitTileImage(*tile, 0, 0, this->pSurface, true);
 
 	//Specify area of effect.
-	SDL_Rect rect = MAKE_SDL_RECT(this->xTrapdoor, this->yTrapdoor, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
-	this->dirtyRects.push_back(rect);
+	this->drawSourceRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	this->drawDestinationRect = MAKE_SDL_RECT(this->xTrapdoor, this->yTrapdoor, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	this->dirtyRects.push_back(this->drawDestinationRect);
 }
 
 //********************************************************************************
@@ -89,75 +91,78 @@ CTrapdoorFallEffect::~CTrapdoorFallEffect()
 }
 
 //********************************************************************************
-bool CTrapdoorFallEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CTrapdoorFallEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	ASSERT(this->dirtyRects.size() == 1);
-	if (!this->pSurface) return false;
+	if (!this->pSurface)
+		return false;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-	const UINT dwTimeElapsed = TimeElapsed();
-	const float fyOffset = dwTimeElapsed / float(this->tileFallTime);   //ms per tile falling
+	const float yFloatTileOffset = dwTimeElapsed / float(this->tileFallTime);   //ms per tile falling
 
 	//Determine whether object has fallen to bottom of pit.
 	const UINT wPitHeight = (UINT)g_pTheDBM->pTextures[PITSIDE_MOSAIC]->h; //in pixels
-	const int yOffset = static_cast<int>(fyOffset * CBitmapManager::CY_TILE);
-	if (yOffset >= (int)wPitHeight)
+	const int yPixelOffset = static_cast<int>(yFloatTileOffset * CBitmapManager::CY_TILE);
+	if (yPixelOffset >= (int)wPitHeight)
 		return false;
 
-	const UINT wCurY = this->wRow + UINT(fyOffset);
-	if (wCurY >= this->pRoom->wRoomRows)
+	const UINT yTilePos = this->wRow + UINT(yFloatTileOffset);
+	if (yTilePos >= this->pRoom->wRoomRows)
 		return false;  //trapdoor fell off south end of room
 
 	//Determine whether to display object still falling.
-	const UINT wOSquare = this->pRoom->GetOSquare(this->wCol, wCurY);
+	const UINT wOSquare = this->pRoom->GetOSquare(this->wCol, yTilePos);
 
 	//Object fell behind something solid and will never reappear.
-	if (!(bIsPit(wOSquare) || wOSquare==T_TRAPDOOR || wOSquare==T_PLATFORM_P || bIsBridge(wOSquare)))
+	if (!(bIsPit(wOSquare) || wOSquare == T_TRAPDOOR || wOSquare == T_PLATFORM_P || bIsBridge(wOSquare)))
 		return false;
 
 	//Clip object if it is occluded.
 	const bool bClipTop = !bIsPit(wOSquare);
-	const bool bClipBottom = (wCurY+1 >= this->pRoom->wRoomRows) ||
-			!bIsPit(this->pRoom->GetOSquare(this->wCol, wCurY+1));
+	const bool bClipBottom = (yTilePos + 1 >= this->pRoom->wRoomRows) ||
+		!bIsPit(this->pRoom->GetOSquare(this->wCol, yTilePos + 1));
 	if (bClipTop && bClipBottom)
 	{
 		//trapdoor is completely occluded this frame
-		static const SDL_Rect emptyRect = {0,0,0,0};
-		this->dirtyRects[0] = emptyRect;
+		this->dirtyRects[0].h = 0;
+		this->nOpacity = 0;
 		return true;
 	}
 
 	//Object fades as it falls.
-	const BYTE nOpacity = g_pTheBM->bAlpha ? (BYTE)((1.0 - yOffset / float(wPitHeight)) * 255.0) : 255;
+	this->nOpacity = g_pTheBM->bAlpha ? (BYTE)((1.0 - yPixelOffset / float(wPitHeight)) * 255.0) : 255;
 
 	//Calculate clipping needed as it falls behind objects.
-	const int yPos = this->yTrapdoor + yOffset;
-	SDL_Rect clipRect = MAKE_SDL_RECT(this->xTrapdoor, yPos,
-			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
-	if (bClipTop || bClipBottom)
+	const int yPixelPos = this->yTrapdoor + yPixelOffset;
+	this->drawSourceRect.y = 0;
+	this->drawSourceRect.h = CBitmapManager::CY_TILE;
+	this->drawDestinationRect.y = yPixelPos;
+	this->drawDestinationRect.h = CBitmapManager::CY_TILE;
+
+	if (bClipTop)
 	{
-		if (bClipTop)
-		{
-			const UINT yClipOffset = CBitmapManager::CY_TILE - yOffset % CBitmapManager::CY_TILE;
-			clipRect.y += yClipOffset;
-			clipRect.h -= yClipOffset;
-		} else {
-			ASSERT(bClipBottom);
-			clipRect.h -= yOffset % CBitmapManager::CY_TILE;
-		}
+		const UINT yClipOffset = CBitmapManager::CY_TILE - yPixelOffset % CBitmapManager::CY_TILE;
+		this->drawSourceRect.y = yClipOffset;
+		this->drawDestinationRect.y += yClipOffset;
+		this->drawDestinationRect.h -= yClipOffset;
+	}
+	else if (bClipBottom) {
+		this->drawDestinationRect.h -= yPixelOffset % CBitmapManager::CY_TILE;
+		this->drawSourceRect.h = this->drawDestinationRect.h;
 	}
 
-	if (nOpacity < 255)
-		EnableSurfaceBlending(this->pSurface, nOpacity);
-	SDL_Rect src = MAKE_SDL_RECT(0, clipRect.y - yPos, CBitmapManager::CX_TILE, clipRect.h);
-	SDL_BlitSurface(this->pSurface, &src, pDestSurface, &clipRect);
+	this->dirtyRects[0].y = this->drawDestinationRect.y;
+	this->dirtyRects[0].h = this->drawDestinationRect.h;
 
-	this->dirtyRects[0] = clipRect;
-
-	//Object is still falling.  Continue effect.
 	return true;
+}
+
+//********************************************************************************
+void CTrapdoorFallEffect::Draw(SDL_Surface& destSurface)
+{
+	if (this->nOpacity == 0)
+		return;
+
+	if (this->nOpacity < 255)
+		EnableSurfaceBlending(this->pSurface, this->nOpacity);
+
+	SDL_BlitSurface(this->pSurface, &(this->drawSourceRect), &destSurface, &(this->drawDestinationRect));
 }

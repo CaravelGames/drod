@@ -711,7 +711,7 @@ bool CTitleScreen::PollForNews()
 
 		delete pBuffer;
 
-		AsciiToUnicode(strFromWeb.c_str(), this->wstrNewsText);
+		UTF8ToUnicode(strFromWeb.c_str(), this->wstrNewsText);
 		SetNewsText();
 
 		//Wait to query hold list until no delay will be incurred.
@@ -1009,7 +1009,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		g_pTheDBM->fLightLevel = fDarkFactor;
 		addParticle();
 		updateParticles(pDestSurface, nMouseX, nMouseY);
-		verminEffects.DrawEffects(false, false, pDestSurface);
+		verminEffects.UpdateAndDrawEffects(false, pDestSurface);
 	
 		//Light mask centered on mouse cursor.
 		//Bounded random walk for light jitter.
@@ -1046,7 +1046,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 	PaintChildren();
 
-	this->pEffects->DrawEffects(!bAlpha);
+	this->pEffects->UpdateAndDrawEffects(!bAlpha);
 
 	if (this->pStatusDialog->IsVisible())
 		this->pStatusDialog->Paint();
@@ -1081,7 +1081,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = "http://forum.caravelgames.com/gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	newsQuery += UnicodeToAscii(wszVersionReleaseNumber);
+	newsQuery += UnicodeToUTF8(wszVersionReleaseNumber);
 #ifdef BETA
 	newsQuery += "-BETA-";
 	newsQuery += __DATE__;

@@ -27,6 +27,7 @@
 #include "MovingTileEffect.h"
 #include "BitmapManager.h"
 #include <BackEndLib/Assert.h>
+#include <FrontEndLib/Screen.h>
 
 #include <math.h>
 
@@ -46,6 +47,7 @@ CMovingTileEffect::CMovingTileEffect(
 	, behavior(Accelerating)
 	, fSpeed(fSpeed)
 	, bEndEffectAtDestination(true)
+	, bDrawEffect(true)
 {
 	ASSERT(fSpeed > 0.0);
 
@@ -54,6 +56,8 @@ CMovingTileEffect::CMovingTileEffect(
 
 	this->wMoveToX = DestCoord.wX;
 	this->wMoveToY = DestCoord.wY;
+
+	this->drawRect = MAKE_SDL_RECT(this->fX, this->fY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 }
 
 //*****************************************************************************
@@ -76,7 +80,7 @@ void CMovingTileEffect::MoveTo(
 }
 
 //********************************************************************************
-bool CMovingTileEffect::UpdateLocation()
+bool CMovingTileEffect::UpdateLocation(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Move effect to a different location, if specified.
 //
 //Returns: whether already at destination
@@ -93,19 +97,19 @@ bool CMovingTileEffect::UpdateLocation()
 		this->fY = float(this->wY);
 	} else {
 		//Move according to indicated speed.
-		const Uint32 dwNow = SDL_GetTicks();
+		const Uint32 dwNow = CScreen::dwLastRenderTicks;
 		int deltaTime;
 		switch (this->behavior)
 		{
 			case Accelerating:
-				deltaTime = TimeElapsed();
+				deltaTime = dwTimeElapsed;
 			break;
 			case UniformSpeed:
 			default:
-				deltaTime = dwNow - this->dwTimeOfLastMove;
+				deltaTime = wDeltaTime;
 			break;
 		}
-		this->dwTimeOfLastMove = dwNow;
+		
 		if (deltaTime <= 0)
 			deltaTime = 1;
 
@@ -147,35 +151,34 @@ bool CMovingTileEffect::UpdateLocation()
 }
 
 //********************************************************************************
-bool CMovingTileEffect::Draw(SDL_Surface* pDestSurface)
+bool CMovingTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Draw a tile, moving it to the indicated destination.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
 {
-	if (TimeElapsed() >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	const bool bEndEffect = UpdateLocation() && this->bEndEffectAtDestination;
+	const bool bEndEffect = UpdateLocation(wDeltaTime, dwTimeElapsed) && this->bEndEffectAtDestination;
 
 	//Make sure effect is drawn only within parent widget bounds.
 	ASSERT(this->pOwnerWidget);
-	SDL_Rect OwnerRect, BlitRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	SDL_Rect OwnerRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	this->pOwnerWidget->GetRect(OwnerRect);
-	if (!CWidget::GetBlitRectFromClipRect(this->wX, this->wY, OwnerRect, BlitRect))
+	this->drawRect = MAKE_SDL_RECT(0, 0, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	if (!CWidget::GetBlitRectFromClipRect(this->wX, this->wY, OwnerRect, this->drawRect)) {
+		this->bDrawEffect = false;
 		return !bEndEffect;
-
-	if (!bEndEffect)
-	{
-		//Draw part of image within parent area.
-		g_pTheBM->BlitTileImagePart(this->wTileNo,
-				this->wX + BlitRect.x, this->wY + BlitRect.y,
-				BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
-				pDestSurface, this->bUseLightLevel);
 	}
 
+	this->bDrawEffect = !bEndEffect;
+
 	return true;
+}
+
+//********************************************************************************
+void CMovingTileEffect::Draw(SDL_Surface& destSurface)
+{
+	//Draw part of image within parent area.
+	if (this->bDrawEffect)
+		g_pTheBM->BlitTileImagePart(this->wTileNo,
+			this->wX + this->drawRect.x, this->wY + this->drawRect.y,
+			this->drawRect.x, this->drawRect.y,
+			this->drawRect.w, this->drawRect.h,
+			&destSurface, this->bUseLightLevel);
 }

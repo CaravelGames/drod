@@ -139,7 +139,7 @@ protected:
 	UINT          SelectFiles(WSTRING& filePath, vector<WSTRING>& fileName,
 			const MESSAGE_ID messagePromptID, const UINT extensionTypes);
 	SCREENTYPE    SelectSellScreen() const;
-	void          ShowChatHistory(CEntranceSelectDialogWidget *pBox);
+	virtual void  ShowChatHistory(CEntranceSelectDialogWidget *pBox);
 	UINT          ShowGetCloudPlayerDialog();
 	UINT          ShowOkMessage(const MESSAGE_ID dwMessageID);
 	UINT          ShowOkMessage(const WCHAR *pwczText);

@@ -41,8 +41,7 @@ CRotateTileEffect::CRotateTileEffect(
 	const float fInitialAngleDeg, //initial rotation angle (degrees)
 	const float fRotationRateDeg,    //rate of rotation (degrees)
 	const UINT duration)    //display duration
-	: CEffect(pSetWidget, EFFECTLIB::EROTATETILE)
-	, dwDuration(duration)
+	: CEffect(pSetWidget, duration, EFFECTLIB::EROTATETILE)
 	, tileNo(UINT(-1))
 	, xCenter(xCenter), yCenter(yCenter)
 	, nOpacity(255)
@@ -55,6 +54,8 @@ CRotateTileEffect::CRotateTileEffect(
 	//Area of effect.
 	SDL_Rect rect = {0, 0, 0, 0};
 	this->dirtyRects.push_back(rect);
+
+	this->drawRect = MAKE_SDL_RECT(0, 0, 0, 0);
 }
 
 //*****************************************************************************
@@ -66,21 +67,13 @@ CRotateTileEffect::~CRotateTileEffect()
 }
 
 //*****************************************************************************
-bool CRotateTileEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CRotateTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
 	//If object is rotating with time, update image.
 	if (this->fRotationRate != 0.0f)
 	{
 		//Determine current angle of rotation.
-		const float fAngle = this->fInitialAngle + (this->fRotationRate * dwElapsed / 1000);
+		const float fAngle = this->fInitialAngle + (this->fRotationRate * dwTimeElapsed / 1000);
 
 		//Only re-render if change in rotation is sufficient so that
 		//the different would be perceivable (speed optimization).
@@ -91,26 +84,30 @@ bool CRotateTileEffect::Draw(SDL_Surface* pDestSurface)
 	if (!this->pRotatedSurface)
 		return false;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	//Draw rotated surface.
+	this->drawRect = MAKE_SDL_RECT(this->xCenter - this->pRotatedSurface->w / 2,
+		this->yCenter - this->pRotatedSurface->h / 2,
+		this->pRotatedSurface->w, this->pRotatedSurface->h);
 
+	ASSERT(this->dirtyRects.size() == 1);
+	this->dirtyRects[0] = this->drawRect;
+
+	//Continue effect.
+	return true;
+}
+
+//*****************************************************************************
+void CRotateTileEffect::Draw(SDL_Surface& destSurface)
+{
 	//Draw rotated surface.
 	SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pRotatedSurface->w, this->pRotatedSurface->h);
-	SDL_Rect dest = MAKE_SDL_RECT(this->xCenter - this->pRotatedSurface->w/2,
-			this->yCenter - this->pRotatedSurface->h/2,
-			this->pRotatedSurface->w, this->pRotatedSurface->h);
 
 	//Clip to parent rect.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(pDestSurface, &ClipRect);
-	g_pTheBM->BlitSurface(this->pRotatedSurface, &src, pDestSurface, &dest, nOpacity);
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0] = dest;
-
-	//Continue effect.
-	return true;
+	SDL_SetClipRect(&destSurface, &ClipRect);
+	g_pTheBM->BlitSurface(this->pRotatedSurface, &src, &destSurface, &this->drawRect, this->nOpacity);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

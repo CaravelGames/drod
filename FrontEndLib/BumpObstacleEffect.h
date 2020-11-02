@@ -31,6 +31,8 @@
 #include "Widget.h"
 #include <BackEndLib/Types.h>
 
+#define BUMP_OBSTACLE_EFFECT_DURATION 200
+
 //****************************************************************************************
 class CBumpObstacleEffect : public CEffect
 {
@@ -38,7 +40,10 @@ public:
 	CBumpObstacleEffect(CWidget *pSetWidget, UINT wSetCol, UINT wSetRow, UINT wSetBumpO);
 	~CBumpObstacleEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+
+protected:
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	SDL_Rect src, dest;
