@@ -63,7 +63,8 @@ enum EffectType
 	EVARMONITOR,      //variable monitor
 	ESTEAM,           //rising steam/smoke puff
 	ESPLASH,          //water splash
-	ECHATTEXT         //CaravelNet chat text display
+	ECHATTEXT,        //CaravelNet chat text display
+	ERAINDROP         //a falling rain drop
 };
 
 //*****************************************************************************

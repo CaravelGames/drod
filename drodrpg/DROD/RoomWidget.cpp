@@ -32,6 +32,7 @@
 #include "GameScreen.h"
 
 #include "PendingBuildEffect.h"
+#include "RaindropEffect.h"
 #include "RoomEffectList.h"
 #include "SnowflakeEffect.h"
 #include "SparkEffect.h"
@@ -311,6 +312,7 @@ CRoomWidget::CRoomWidget(
 	, fCloudAngle(0)
 	, bSunlight(false)
 	, wSnow(0)
+	, rain(0)
 	, bSkipLightfade(false)
 	, pSkyImage(NULL)
 
@@ -1894,7 +1896,7 @@ void CRoomWidget::GetWeather()
 		//No weather effects on lower graphics modes.
 		this->bOutside = this->bSkyVisible = this->bLightning = this->bClouds =
 				this->bSunlight = this->bSkipLightfade = this->bFog = false;
-		this->cFogLayer = this->wSnow = 0;
+		this->cFogLayer = this->wSnow = this->rain = 0;
 		return;
 	}
 
@@ -1926,6 +1928,9 @@ void CRoomWidget::GetWeather()
 	ASSERT(this->wSnow < SNOW_INCREMENTS);
 
 	this->sky = this->pRoom->weather.sky;
+
+	this->rain = this->pRoom->weather.rain;
+	ASSERT(this->rain < RAIN_INCREMENTS);
 }
 
 //*****************************************************************************
@@ -4229,17 +4234,22 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 	if (!IsWeatherRendered())
 		return;	//disabled
 
+	bool bHasted = false;
+	if (this->pCurrentGame)
+	{
+		const CSwordsman& player = *this->pCurrentGame->pPlayer;
+		bHasted = player.IsHasted();
+	}
+
 	//Add a new snowflake to the room every ~X frames.
 	if (this->wSnow && RAND(SNOW_INCREMENTS-1) < this->wSnow &&
 			this->w && this->y) //hack: snowflakes draw on room edges during transition -- this should stop it
 		AddMLayerEffect(new CSnowflakeEffect(this));
 
-/*
 	//Add a new raindrop to the room every ~X frames.
-	if (this->rain && RAND(RAIN_INCREMENTS-1) < this->rain && !bIsPlacingDouble &&
-			this->w && this->y) //hack: rain draws on room edges during transition -- this should stop it
+	if (this->rain && RAND(RAIN_INCREMENTS - 1) < this->rain &&
+		this->w && this->y) //hack: rain draws on room edges during transition -- this should stop it
 		AddMLayerEffect(new CRaindropEffect(this, bHasted));
-*/
 
 	if (!(this->dwLightning || this->bFog || this->bClouds || this->bSunlight))
 		return;	//Nothing else to do.

@@ -533,6 +533,7 @@ protected:
 	float					fCloudAngle;      //direction of wind
 	bool              bSunlight;        //shining through clouds onto ground
 	UINT              wSnow;            //snowflakes are falling (0 = off)
+	UINT              rain;             //rain drops are falling (0 = off)
 	bool              bSkipLightfade;   //whether light crossfade is skipped
 	WSTRING           sky;              //non-default sky image
 	queue<UINT>       playThunder;      //when to play a thunder sound
