@@ -55,16 +55,12 @@ void CRoomEffectList::Clear(
 		delete pEffect;
 	}
 	this->Effects = retained;
-	this->dwTimeEffectsWereFrozen = 0;
 }
 
 //*****************************************************************************
 void CRoomEffectList::DirtyTiles() const
 //Dirties room tiles within the effects' area of effect.
 {
-	//If no effects in this list are being drawn, then no tiles need to be dirtied.
-	if (this->dwTimeEffectsWereFrozen) return;
-
 	for (list<CEffect *>::const_iterator iSeek = this->Effects.begin();
 		iSeek != this->Effects.end(); ++iSeek)
 			DirtyTilesForRects((*iSeek)->dirtyRects);
@@ -94,7 +90,7 @@ const
 		if (rect.y < 0) {rect.h += rect.y; rect.y = 0;}
 		if ((rect.x + (Sint16)rect.w <= 0) || (rect.y + (Sint16)rect.h <= 0) ||
 				(rect.x >= (int)this->pOwnerWidget->GetW()) ||
-				(rect.y >= (int)this->pOwnerWidget->GetH())) return;
+				(rect.y >= (int)this->pOwnerWidget->GetH())) continue;
 		if (rect.x + rect.w > static_cast<int>(this->pOwnerWidget->GetW()))
 			{rect.w = this->pOwnerWidget->GetW() - rect.x;}
 		if (rect.y + rect.h > static_cast<int>(this->pOwnerWidget->GetH()))

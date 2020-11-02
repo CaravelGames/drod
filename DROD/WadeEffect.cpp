@@ -27,6 +27,8 @@
 #include "WadeEffect.h"
 #include "TileImageConstants.h"
 
+const UINT EffectDuration = 250;
+
 //********************************************************************************
 CWadeEffect::CWadeEffect(
 //Constructor.
@@ -34,34 +36,23 @@ CWadeEffect::CWadeEffect(
 //Params:
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
 	const CCoord &SetCoord)
-	: CAnimatedTileEffect(pSetWidget,SetCoord,250,TI_WADE1,true)
+	: CAnimatedTileEffect(pSetWidget,SetCoord,EffectDuration,TI_WADE1,true)
 {
 }
 
 //********************************************************************************
-bool CWadeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CWadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration) return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw animated splash.
-	const float fPercent = dwElapsed / float(dwDuration);
+	const float fPercent = dwTimeElapsed / float(dwDuration);
 	static const UINT NUM_FRAMES = 3;
 	static const UINT FRAME[NUM_FRAMES] = {TI_WADE1, TI_WADE2, TI_WADE3};
-	const UINT frame = UINT(fPercent * NUM_FRAMES);
+	const UINT frame = UINT(GetElapsedFraction() * NUM_FRAMES);
 	ASSERT(frame < NUM_FRAMES);
 
-	//Effect fades as it progresses.
-	static const float fMultiplier = 255.0f / float(this->dwDuration);
-	const Uint8 opacity = static_cast<Uint8>((this->dwDuration-dwElapsed) * fMultiplier);
-	DrawTile(FRAME[frame], pDestSurface, opacity);
+	this->wTileNo = FRAME[frame];
 
-	//Continue effect.
+	//Effect fades as it progresses.
+	this->nOpacity = static_cast<Uint8>(GetRemainingFraction() * 255);
+
 	return true;
 }

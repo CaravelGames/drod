@@ -38,18 +38,19 @@ public:
 		const UINT dwDuration, const UINT wTileNo, const bool bUseLightLevel,
 		const UINT eType=EFFECTLIB::EGENERIC);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	UINT GetX() const {return this->wX;}
 	UINT GetY() const {return this->wY;}
 
 protected:
-	void DrawTile(const UINT wTileImageNo, SDL_Surface* pDestSurface, const Uint8 nOpacity=255);
-	void ShadeTile(const SURFACECOLOR &Color, SDL_Surface* pDestSurface);
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+	void DrawTile(const UINT wTileImageNo, SDL_Surface& destSurface, const Uint8 nOpacity=255);
+	void ShadeTile(const SURFACECOLOR &Color, SDL_Surface& destSurface);
 
-	UINT     dwDuration;
-	UINT		wTileNo;
+	UINT	 wTileNo;
 	bool     bUseLightLevel;
 
+	Uint8    nOpacity;
 	UINT     wX, wY;
 };
 

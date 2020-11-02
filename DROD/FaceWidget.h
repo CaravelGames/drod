@@ -159,7 +159,7 @@ struct Face {
 	Face(FaceWidgetLayer eLayer) :
 		eLayer(eLayer),
 		pHoldCharacter(NULL), eCharacter(Speaker_Beethro), dwImageID(0), eMoodSEID(SEID_NONE),
-		eMood(MOOD::Mood_Normal), ePrevMood(MOOD::Mood_Normal), dwMoodUntil(0),
+		eMood(Mood_Normal), ePrevMood(Mood_Normal), dwMoodUntil(0),
 		bIsActive(false), bIsReading(false), bIsSleeping(false), bIsBlinking(false),
 		bIsDrawn(false)
 	{}

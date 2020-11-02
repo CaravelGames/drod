@@ -74,6 +74,7 @@
 #  pragma warning(disable:4786)
 #endif
 
+#include "Clone.h"
 #include "CurrentGameRecords.h"
 #include "DemoRecInfo.h"
 #include "DbSavedGames.h"
@@ -147,6 +148,10 @@ struct RoomCompletionData
 	bool bConquerTokenNeedsActivating;
 };
 
+struct cloneComparator {
+    bool operator() (const CClone *a, const CClone *b) const;
+};
+
 //*******************************************************************************
 class CCharacter;
 class CDb;
@@ -175,6 +180,7 @@ public:
 	WSTRING  AbbrevRoomLocation();
 	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
+	bool     AreBeaconsIgnored() const;
 	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 			const bool bUseCurrentTurnNo=true);
 	void     Clear(const bool bNewGame=true);

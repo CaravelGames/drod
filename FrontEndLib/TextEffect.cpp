@@ -45,12 +45,13 @@ CTextEffect::CTextEffect(
 	const Uint32 dwDuration, //(in)  How long to display (in milliseconds) [default = 0, means display indefinitely]
 	const bool bFadeOut,     //(in)  If true, specifies to fade out instead of fade in [default=false]
 	const bool bPerPixelTransparency)
-	: CEffect(pSetWidget,EFFECTLIB::ETEXT)
+	: CEffect(pSetWidget, dwDuration, EFFECTLIB::ETEXT)
 	, pTextSurface(NULL)
 	, dwDuration(dwDuration)
 	, dwFadeIn(dwFadeIn)
 	, bFadeOut(bFadeOut)
 	, bPerPixelTransparency(bPerPixelTransparency)
+	, nOpacity(255)
 {
 	pSetWidget->GetRect(this->screenRect);
 	this->dirtyRects.push_back(this->screenRect);
@@ -60,6 +61,8 @@ CTextEffect::CTextEffect(
 	//Center text in widget by default.
 	Move((this->screenRect.w - this->dirtyRects[0].w) / 2,
 			(this->screenRect.h - this->dirtyRects[0].h) / 2);
+
+	this->drawRect = MAKE_SDL_RECT(0, 0, 0, 0);
 }
 
 //********************************************************************************
@@ -69,43 +72,42 @@ CTextEffect::~CTextEffect()
 }
 
 //********************************************************************************
-bool CTextEffect::Draw(SDL_Surface* pDestSurface)
+bool CTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Draws text in the middle of the parent widget.
 {
-	//End after duration has elapsed.
-	const Uint32 dwElapsed = TimeElapsed();
-	if (this->dwDuration && dwElapsed > this->dwDuration)
-		return false;
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Specify area of effect.
 	ASSERT(this->dirtyRects.size() == 1);
-	SDL_Rect rect = MAKE_SDL_RECT(this->screenRect.x + this->nX, this->screenRect.y + this->nY,
-			this->dirtyRects[0].w, this->dirtyRects[0].h);
-	this->dirtyRects[0] = rect;
+	this->drawRect = MAKE_SDL_RECT(this->screenRect.x + this->nX, this->screenRect.y + this->nY,
+		this->dirtyRects[0].w, this->dirtyRects[0].h);
+	this->dirtyRects[0] = this->drawRect;
 
 	//Fade text in.
 	const Uint32 dwOpacity = static_cast<Uint32>(255.0 *
-			(this->bFadeOut ?
-					(dwElapsed < this->dwFadeIn ? 1.0 : 1.0 - (dwElapsed - this->dwFadeIn) / float(this->dwDuration - this->dwFadeIn)) :
-					this->dwFadeIn ? dwElapsed / (float)this->dwFadeIn : 1.0));
-	const Uint8 nOpacity = dwOpacity >= 255 ? 255 : dwOpacity;
-	if (nOpacity > 0) {
+		(this->bFadeOut ?
+			(dwTimeElapsed < this->dwFadeIn ? 1.0 : 1.0 - (dwTimeElapsed - this->dwFadeIn) / float(this->dwDuration - this->dwFadeIn)) :
+			this->dwFadeIn ? dwTimeElapsed / (float)this->dwFadeIn : 1.0));
+	this->nOpacity = dwOpacity >= 255 ? 255 : dwOpacity;
+
+	return true;
+}
+
+//********************************************************************************
+void CTextEffect::Draw(SDL_Surface& destSurface)
+//Draws text in the middle of the parent widget.
+{
+	if (this->nOpacity > 0) {
 		if (this->bPerPixelTransparency) {
 			SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pTextSurface->w, this->pTextSurface->h);
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(src, this->pTextSurface, rect, pDestSurface, nOpacity);
+			g_pTheBM->BlitAlphaSurfaceWithTransparency(src, this->pTextSurface, this->drawRect, &destSurface, this->nOpacity);
 		} else {
 			if (g_pTheBM->bAlpha) {
 				EnableSurfaceBlending(this->pTextSurface, nOpacity);
 			} else {
 				DisableSurfaceBlending(this->pTextSurface); //Remove transparency.
 			}
-			SDL_BlitSurface(this->pTextSurface, NULL, pDestSurface, &rect);
+			SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &this->drawRect);
 		}
 	}
-
-	return true;
 }
 
 //********************************************************************************

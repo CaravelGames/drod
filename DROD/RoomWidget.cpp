@@ -52,6 +52,7 @@
 
 #include <FrontEndLib/Bolt.h>
 #include <FrontEndLib/Fade.h>
+#include <FrontEndLib/FadeTileEffect.h>
 #include <FrontEndLib/FrameRateEffect.h>
 #include <FrontEndLib/Pan.h>
 #include <FrontEndLib/ShadeEffect.h>
@@ -687,7 +688,7 @@ void CRoomWidget::AddStrikeOrbEffect(
 {
 	if (bDrawOrb)
 		AddTLayerEffect(
-			new CAnimatedTileEffect(this, SetOrbData, 220, TI_ORB_L, false, EORBHIT));
+			new CFadeTileEffect(this, SetOrbData, TI_ORB_L, 220));
 	AddMLayerEffect(
 		new CStrikeOrbEffect(this, SetOrbData, this->images[BOLTS_SURFACE], false));
 }
@@ -2208,6 +2209,7 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 		const CImageOverlay *pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
 
 		if (pImageOverlay->loopsForever()) {
+			// These effects were already added to `persistingImageOverlays`
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
 			continue;
@@ -2219,6 +2221,7 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
+			continue;
 		}
 
 		pObj = CueEvents.GetNextPrivateData();
@@ -2321,6 +2324,8 @@ void CRoomWidget::FadeToLightLevel(
 		AddPlayerLight(IsPlayerLightRendered());
 		DirtyRoom();
 		UpdateDrawSquareInfo();
+
+		SetEffectsFrozen(true);
 		RenderRoomInPlay(this->wShowCol, this->wShowRow);
 		SDL_BlitSurface(this->pRoomSnapshotSurface, &rect, pNewRoomSurface, &tempRect);
 
@@ -2352,6 +2357,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Done.
 		SDL_FreeSurface(pOldRoomSurface);
 		SDL_FreeSurface(pNewRoomSurface);
+		SetEffectsFrozen(false);
 	}
 }
 
@@ -2361,18 +2367,19 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-	this->pOLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
-	DrawPlatforms(pSurface);
-	this->pTLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	DrawTLayer(pSurface);
+	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(this->pCurrentGame->swordsman, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-	this->pMLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+
+	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
-	this->pLastLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+	
+	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
 
@@ -2410,6 +2417,9 @@ void CRoomWidget::ShowRoomTransition(
 		Paint();
 		return;
 	}
+
+	// We don't want effects to lose "animation" time while the transition happens
+	SetEffectsFrozen(true);
 
 	//Show a smooth transition between rooms.
 	PanDirection panDirection = PanNorth;
@@ -2486,10 +2496,13 @@ void CRoomWidget::ShowRoomTransition(
 				//Done panning.
 				SDL_FreeSurface(pOldRoomSurface);
 				SDL_FreeSurface(pNewRoomSurface);
-				return;
+				break;
 			}
 		}
 	}
+
+	// And now the effects can continue
+	SetEffectsFrozen(false);
 }
 
 //*****************************************************************************
@@ -2761,44 +2774,20 @@ void CRoomWidget::RenderRoomInPlay(
 	RenderRoom(wCol, wRow, wWidth, wHeight, false);
 
 	//3. When action is frozen, draw the following here.
-	if (((!this->bWasPlacingDouble || this->bAllDirty) && bIsPlacingDouble)
-			|| bPlayerIsDying)
+	if (bPlayerIsDying)
 	{
 		//a. Effects that go on top of room image, under monsters/swordsman.
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
-		DrawPlatforms(pDestSurface);
-
-		this->pTLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		DrawTLayer(pDestSurface);
+		
+		this->pTLayerEffects->DrawEffects( bPlayerIsDying ? NULL : pDestSurface);
 
 		//b. Draw monsters (not killing player).
-		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface,
-				bIsPlacingDouble || bPlayerIsDying);
+		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects(false, true, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
-
-		//d. Double placement effects:
-		//Make room black-and-white, and draw (unmoving) swordsman on top.
-		if (bIsPlacingDouble && !bPlayerIsDying)
-		{
-			if (player.wPlacingDoubleType == M_DECOY)
-			{
-				CCoordIndex coords(this->pRoom->wRoomCols,this->pRoom->wRoomRows);
-				for (list<CPlayerDouble*>::const_iterator decoy=this->pRoom->Decoys.begin();
-						decoy!=this->pRoom->Decoys.end(); ++decoy)
-					DrawInvisibilityRange((*decoy)->wX, (*decoy)->wY, pDestSurface, &coords);
-			}
-
-			BAndWRect(pDestSurface, this->wShowCol, this->wShowRow);
-
-			ASSERT(this->bShowingPlayer);
-			DrawPlayer(player, pDestSurface);
-
-			DrawOverheadLayer(pDestSurface);
-			DrawGhostOverheadCharacters(pDestSurface, false);
-		}
+		this->pMLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
 	}
 
 	this->bWasPlacingDouble = bIsPlacingDouble;
@@ -4116,8 +4105,6 @@ OLayerDone:
 						if (bIsSteppingStone(wOTileNo))
 						{
 							DrawRoomTile(TI_STEP_STONE);
-							if (bAddLightLayers)
-								AddLightInterp(pDestSurface, wX, wY, psL, fDark, TI_STEP_STONE);
 						}
 						if (bIsThinIce(wOTileNo))
 						{
@@ -4125,20 +4112,8 @@ OLayerDone:
 							DrawTransparentRoomTile(wTileImageNo,THIN_ICE_OPACITY);
 						}
 
-						//6. Add dark+light to o-layer after everything else is ddrawn.
-						if (bAddLight)
-						{
-							AddLightInterp(pDestSurface, wX, wY, psL, fDark);
-							bAddLightLayers = true;
-						}
+						// All lighting is applied when drawing T-Layer
 					}
-				}
-
-				//Draw dark on pit tiles
-				if (bAddLight) {
-					const bool bIsPitTile = (bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P);
-					if (bIsPitTile)
-						AddDark(fDark);
 				}
 			}
 
@@ -4156,7 +4131,7 @@ OLayerDone:
 }
 
 //*****************************************************************************
-void CRoomWidget::RenderRoomTileObjects(
+void CRoomWidget::DrawTLayerTile(
 //Render objects above the o-layer for a room tile onto a surface.
 //
 //Params:
@@ -4168,9 +4143,7 @@ void CRoomWidget::RenderRoomTileObjects(
 	LIGHTTYPE *psL,
 	const float fDark,
 	const bool bAddLight,
-	const bool bAddLightLayers,
-	const bool bEditor,
-	const bool bPitPlatformTiles) //when set to true [default=false], darken only item masks, not entire tile.  Overrided by bAddLightLayers.
+	const bool bEditor)
 {
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
@@ -4179,7 +4152,7 @@ void CRoomWidget::RenderRoomTileObjects(
 	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
-	if (bAddLight && bIsPitTile && !bPitPlatformTiles)
+	if (bAddLight && bIsPitTile && wOTileNo != T_PLATFORM_P)
 		AddDark(fDark);
 
 	bool bTar = bIsTarOrFluff(wTTileNo);
@@ -4192,7 +4165,7 @@ void CRoomWidget::RenderRoomTileObjects(
 	if (bIsCheckpoint)
 	{
 		DrawRoomTile(TI_CHECKPOINT);
-		if (bAddLightLayers || (bIsPitTile && bAddLight))
+		if (bIsPitTile && bAddLight)
 			AddLightInterp(pDestSurface, wX, wY, psL, fDark, TI_CHECKPOINT);
 	}
 
@@ -4200,14 +4173,14 @@ void CRoomWidget::RenderRoomTileObjects(
 	if (ti.f != TI_TEMPTY)
 	{
 		DrawRoomTile(ti.f);
-		if (bAddLightLayers || (bIsPitTile && bAddLight))
+		if (bIsPitTile && bAddLight)
 			AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.f);
 	}
 
 	//4a. Draw covered item.
 	if (ti.tCovered != TI_TEMPTY) {
 		DrawRoomTile(ti.tCovered);
-		if (bAddLightLayers || (bIsPitTile && bAddLight))
+		if (bIsPitTile && bAddLight)
 			AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.tCovered);
 	}
 
@@ -4249,7 +4222,7 @@ void CRoomWidget::RenderRoomTileObjects(
 			default: DrawRoomTile(ti.t); break;
 		}
 		if (!bIsMoving) //Moving object's light is applied while it is drawn
-			if (bAddLightLayers || (bIsPitTile && bAddLight))
+			if (bIsPitTile && bAddLight)
 				AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.t);
 	}
 
@@ -4276,15 +4249,13 @@ void CRoomWidget::RenderRoomTileObjects(
 						CastsWallShadow(this->pRoom->GetOSquare(wX - wXPos, wY - wYPos)))
 				{
 					DrawRoomTile(ti.t);
-					if (bAddLightLayers)
-						AddLightInterp(pDestSurface, wX, wY, psL, fDark, ti.t);
 				}
 			}
 		}
 
 		//6. Room lighting to light everything on this tile.
 		//Pits were handled prior to this
-		if (bAddLight && !bAddLightLayers)
+		if (bAddLight)
 			AddLightInterp(pDestSurface, wX, wY, psL, fDark);
 	}
 
@@ -4378,6 +4349,7 @@ void CRoomWidget::Paint(
 	this->dwCurrentDuration += this->dwTimeSinceLastFrame;
 	dwLastFrame = dwNow;
 
+	const CSwordsman* player = this->pCurrentGame ? &(this->pCurrentGame->swordsman) : NULL;
 	const bool bIsPlacingDouble = this->pCurrentGame ? this->pCurrentGame->swordsman.wPlacingDoubleType != 0 : false;
 	this->dwMovementStepsLeft = this->dwCurrentDuration >= this->dwMoveDuration || bIsPlacingDouble ? 0 :
 		(CX_TILE - (this->dwCurrentDuration * CX_TILE / this->dwMoveDuration));
@@ -4408,6 +4380,14 @@ void CRoomWidget::Paint(
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
+
+	// O-Layers need to be updated and dirtied before O-Layer is drawn to ensure lighting is correctly applied for
+	// pieces of the effects that enter a new tile
+	this->pOLayerEffects->UpdateEffects();
+	this->pMLayerEffects->UpdateEffects();
+	this->pTLayerEffects->UpdateEffects();
+	this->pLastLayerEffects->UpdateEffects();
+	this->pOLayerEffects->DirtyTiles();
 
 	if (this->bRenderRoom || this->bRenderPlayerLight)
 	{
@@ -4451,27 +4431,14 @@ void CRoomWidget::Paint(
 
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
-	if (bIsPlacingDouble && bPlayerIsAlive)
 	{
-		//Draw player double placement cursor only.
-		//(The action is frozen and nothing else gets drawn.)
-		DrawDoubleCursor(this->pCurrentGame->swordsman.wDoubleCursorX,
-				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
-		if (this->pCurrentGame->swordsman.wPlacingDoubleType == M_DECOY)
-		{
-			DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
-				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
-		}
-	} else {
 		//When action is not frozen, draw the following:
 		if (bPlayerIsAlive)
 		{
 			//3a. Draw effects that go on top of room image, under monsters/swordsman.
 			RenderFogInPit(pDestSurface);
 
-			this->pOLayerEffects->DrawEffects();
-			this->pOLayerEffects->DirtyTiles();
-			DrawPlatforms(pDestSurface, false, bMoveAnimationInProgress);
+			DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
 
 			this->pTLayerEffects->DrawEffects();
 			this->pTLayerEffects->DirtyTiles();
@@ -4489,12 +4456,13 @@ void CRoomWidget::Paint(
 			PopulateBuildMarkerEffects(room);
 		} else {
 			//Add certain images as static during death animation
-			this->pOLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY);
+
+			this->pOLayerEffects->DrawEffects(NULL, EIMAGEOVERLAY);
 			this->pOLayerEffects->DirtyTiles();
 		}
 
 		//4. Draw player.
-		if (this->bShowingPlayer)
+		if (this->bShowingPlayer && !bIsPlacingDouble)
 			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
 
 		//5. If monster is killing swordsman, draw it on top.
@@ -4517,7 +4485,33 @@ void CRoomWidget::Paint(
 		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 
-		if (bPlayerIsAlive) {
+
+		if (player && bIsPlacingDouble && bPlayerIsAlive)
+		{
+			if (player->wPlacingDoubleType == M_DECOY)
+			{
+				CCoordIndex coords(this->pRoom->wRoomCols, this->pRoom->wRoomRows);
+				for (list<CPlayerDouble*>::const_iterator decoy = this->pRoom->Decoys.begin();
+					decoy != this->pRoom->Decoys.end(); ++decoy)
+					DrawInvisibilityRange((*decoy)->wX, (*decoy)->wY, pDestSurface, &coords);
+			}
+
+			BAndWRect(pDestSurface, this->wShowCol, this->wShowRow);
+
+			ASSERT(this->bShowingPlayer);
+			DrawPlayer(*player, pDestSurface);
+
+			DrawOverheadLayer(pDestSurface);
+			DrawGhostOverheadCharacters(pDestSurface, false);
+
+			DrawDoubleCursor(this->pCurrentGame->swordsman.wDoubleCursorX,
+				this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
+			if (this->pCurrentGame->swordsman.wPlacingDoubleType == M_DECOY)
+			{
+				DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
+					this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
+			}
+		} else if (bPlayerIsAlive) {
 			//6. Draw overhead layer.
 			DrawOverheadLayer(pDestSurface);
 
@@ -6077,7 +6071,7 @@ bool CRoomWidget::DisplayMonster(const CMonster* pMonster, const CharacterDispla
 }
 
 //*****************************************************************************
-void CRoomWidget::DrawPlatforms(
+void CRoomWidget::DrawTLayer(
 //Draws platforms in the room.
 	SDL_Surface *pDestSurface,
 	const bool bEditor,           //(in) [default=false]
@@ -6089,6 +6083,13 @@ void CRoomWidget::DrawPlatforms(
 	const bool bAddLight = IsLightingRendered();
 
 	CCoordIndex tilesDrawn(this->pRoom->wRoomCols, this->pRoom->wRoomRows);
+	vector<TileImageBlitParams> lightingBlits;
+
+	// This is a hack to work around the fact that tiles are generally drawn with room's light level
+	// But because we can have image overlays, we need to apply the darkness during the lighting pass
+	// after the effects are drawn
+	const float fOldLightLevel = CBitmapManager::fLightLevel;
+	CBitmapManager::fLightLevel = 1.0;
 
 	//Render each platform.
 	ASSERT(this->pRoom);
@@ -6123,12 +6124,15 @@ void CRoomWidget::DrawPlatforms(
 				UINT wTileImageNo = GetTileImageForTileNo(oTile);
 				if (wTileImageNo == CALC_NEEDED)
 				{
+					
 					wTileImageNo = CalcTileImageFor(this->pRoom, oTile, wX, wY);
 					TileImageBlitParams blit(wX, wY, wTileImageNo, wXOffset, wYOffset,
 						bPlatformAnimating); // || wXOffset || wYOffset); -- only needed if platform has jitter independent of movement animation
 					if (oTile == T_PLATFORM_W)
 						blit.bCastShadowsOnTop = false;
-					DrawTileImage(blit, pDestSurface);
+					else // Platforms over water have their lighting applied when drawing T-Layer items
+						lightingBlits.push_back(blit);
+					DrawTileImageWithoutLight(blit, pDestSurface);
 					tilesDrawn.Add(wX,wY);
 					//tiles being moved off of need to have items redrawn too
 					tilesDrawn.Add(wX - platform.xDelta, wY - platform.yDelta);
@@ -6143,12 +6147,34 @@ void CRoomWidget::DrawPlatforms(
 		}
 	}
 
- 	//Re-render room items located on top of each platform tile.
-	RenderRoomItemsOnTiles(tilesDrawn, pDestSurface, fLightLevel, bAddLight, bEditor);
+	this->pOLayerEffects->DrawEffects();
+
+	CBitmapManager::fLightLevel = fOldLightLevel;
+
+	//Apply lighting to platforms
+	for (vector<TileImageBlitParams>::iterator iter = lightingBlits.begin();
+		iter != lightingBlits.end(); ++iter)
+	{
+		TileImageBlitParams& blit = *iter;
+		// Shading is not animated to avoid inconsistent visual artifacts
+		blit.wXOffset = 0;
+		blit.wYOffset = 0;
+		g_pTheBM->DarkenRect(
+			this->x + blit.wCol * CX_TILE,
+			this->y + blit.wRow * CY_TILE,
+			CX_TILE,
+			CY_TILE,
+			CBitmapManager::fLightLevel,
+			pDestSurface
+		);
+		DrawTileLight(blit, pDestSurface);
+	}
+
+	DrawTLayerTiles(tilesDrawn, pDestSurface, fLightLevel, bAddLight, bEditor);
 }
 
 //*****************************************************************************
-void CRoomWidget::RenderRoomItemsOnTiles(
+void CRoomWidget::DrawTLayerTiles(
 	const CCoordIndex& tiles, SDL_Surface *pDestSurface,
 	const float fLightLevel, const bool bAddLight, const bool bEditor)
 {
@@ -6166,18 +6192,6 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 			{
 				//Get tile-specific info.
 				UINT wOTileNo = this->pRoom->GetOSquare(wX, wY);
-				const bool bWater = bIsWater(wOTileNo) || bIsThinIce(wOTileNo) || wOTileNo == T_PLATFORM_W || bIsSteppingStone(wOTileNo);
-
-				bool bAddLightLayers = bWater; //over water...
-				//...or on water's edge
-				if (bIsPlainFloor(wOTileNo) || wOTileNo == T_GOO)
-				{
-					const UINT wWaterMask = CalcTileImageForWater(this->pRoom, wX, wY, T_WATER);
-					if (wWaterMask != TI_WATER_NSWE)
-						bAddLightLayers = true;
-				}
-
-				const bool bPitPlatformTiles = !bAddLightLayers;
 
 				//Determine this tile's darkness.
 				float fDark = fLightLevel;
@@ -6194,9 +6208,9 @@ void CRoomWidget::RenderRoomItemsOnTiles(
 
 				LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + tileIndex * wLightValuesPerTile;
 
-				RenderRoomTileObjects(wX, wY, nX, nY, pDestSurface,
+				DrawTLayerTile(wX, wY, nX, nY, pDestSurface,
 						wOTileNo, this->pTileImages[tileIndex], psL,
-						fDark, bAddLight, bAddLightLayers, bEditor, bPitPlatformTiles);
+						fDark, bAddLight, bEditor);
 
 				if (tiles.Exists(wX, wY))
 					this->pTileImages[tileIndex].dirty = 1;
@@ -6653,7 +6667,7 @@ void CRoomWidget::DrawMonster(
 					else if (this->bRequestEvilEyeGaze) {
 						//Show eye beams with vision power-up.
 						AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-								pMonster->wY,pMonster->wO, 0));
+								pMonster->wY,pMonster->wO, (UINT)-1));
 					}
 				}
 				break;
@@ -6899,6 +6913,22 @@ void CRoomWidget::DrawTileImage(
 	const TileImageBlitParams& blit,
 	SDL_Surface *pDestSurface)    //(in)   Surface to draw to.
 {
+	DrawTileImageWithoutLight(blit, pDestSurface);
+
+	//Set to proper light level.
+	DrawTileLight(blit, pDestSurface);
+}
+
+
+//*****************************************************************************
+void CRoomWidget::DrawTileImageWithoutLight(
+//Blits a tile graphic to a specified room position.
+//Dirties tiles covered by this blit.
+//
+//Params:
+	const TileImageBlitParams& blit,
+	SDL_Surface *pDestSurface)    //(in)   Surface to draw to.
+{
 	if (blit.wTileImageNo == TI_TEMPTY)
 		return; //Wasteful to make this call for empty blit.
 
@@ -6946,6 +6976,61 @@ void CRoomWidget::DrawTileImage(
 				1.0f+lightMap[0][blit.nAddColor], 1.0f+lightMap[1][blit.nAddColor], 1.0f+lightMap[2][blit.nAddColor],
 				blit.wTileImageNo, BlitRect.x, BlitRect.y);
 
+	if (!blit.bDirtyTiles)
+	{
+		//The 'monster' flag indicates that something was drawn here, and that
+		//at the latest the tile should be repainted next turn.
+		if (IS_COLROW_IN_DISP(wCol, wRow))
+			this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].monster = 1;
+	}
+	else {
+		//Dirty tiles covered by blit.
+		DirtyTilesForSpriteAt(nRoomPixelX + BlitRect.x, nRoomPixelY + BlitRect.y, BlitRect.w, BlitRect.h);
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::DrawTileLight(
+//Blits tile lighting on specific position
+//
+//Params:
+	const TileImageBlitParams& blit,
+	SDL_Surface *pDestSurface)    //(in)   Surface to draw to.
+{
+	if (blit.wTileImageNo == TI_TEMPTY)
+		return; //Wasteful to make this call for empty blit.
+
+	const UINT wCol = blit.wCol;
+	const UINT wRow = blit.wRow;
+
+	bool bClipped = blit.bClipped;
+	ASSERT(IS_COLROW_IN_DISP(wCol, wRow) || bClipped);
+
+	//Determine pixel positions.
+	const int nRoomPixelX = (CX_TILE * wCol) + blit.wXOffset;
+	int nRoomPixelY = (CY_TILE * wRow) + blit.wYOffset;
+	if (blit.bDrawRaised)
+	{
+		nRoomPixelY -= CY_RAISED;
+		if (wRow == 0)
+			bClipped = true;
+	}
+	int nPixelX = this->x + nRoomPixelX;
+	int nPixelY = this->y + nRoomPixelY;
+
+	SDL_Rect BlitRect = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
+	if (bClipped && !ClipTileArea(nPixelX, nPixelY, BlitRect))
+		return;
+
+	ASSERT(BlitRect.w <= CX_TILE);
+	ASSERT(BlitRect.h <= CY_TILE);
+
+	if (!TileImageBlitParams::CropRectToTileDisplayArea(BlitRect))
+		return;
+
+	nPixelX += BlitRect.x;
+	nPixelY += BlitRect.y;
+
 	//Set to proper light level.
 	if (IsLightingRendered() && this->pRoom->IsValidColRow(wCol, wRow))
 	{
@@ -6992,17 +7077,6 @@ void CRoomWidget::DrawTileImage(
 				}
 			}
 		}
-	}
-
-	if (!blit.bDirtyTiles)
-	{
-		//The 'monster' flag indicates that something was drawn here, and that
-		//at the latest the tile should be repainted next turn.
-		if (IS_COLROW_IN_DISP(wCol, wRow))
-			this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].monster = 1;
-	} else {
-		//Dirty tiles covered by blit.
-		DirtyTilesForSpriteAt(nRoomPixelX + BlitRect.x, nRoomPixelY + BlitRect.y, BlitRect.w, BlitRect.h);
 	}
 }
 
@@ -7151,6 +7225,7 @@ void CRoomWidget::DrawBoltInRoom(
 	GetRect(RoomRect);
 	SDL_SetClipRect(pDestSurface, &RoomRect);
 	vector<SDL_Rect> dirtyRects;
+
 	DrawBolt(xS, yS, xC, yC, CDrodBitmapManager::DISPLAY_COLS,
 			this->images[BOLTS_SURFACE], pDestSurface, dirtyRects);
 	this->pLastLayerEffects->DirtyTilesForRects(dirtyRects);
@@ -7702,9 +7777,8 @@ void CRoomWidget::DrawArmedMonster(
 		TileImageBlitParams::setDisplayArea(0, y_bottom, CX_TILE, CY_TILE - y_bottom);
 	}
 
-	// Transparent armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
-	if (blit.nOpacity < 255)
-		this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->wX, pArmedMonster->wY)].dirty = 1;
+	// Armed monsters must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	this->pTileImages[this->pRoom->ARRAYINDEX(pArmedMonster->wX, pArmedMonster->wY)].dirty = 1;
 
 	DrawTileImage(blit, pDestSurface);
 
@@ -7717,7 +7791,7 @@ void CRoomWidget::DrawArmedMonster(
 		DrawSwordFor(pArmedMonster, weaponBlit, pDestSurface);
 
 		// The same for the sword, want to avoid flickering
-		if (blit.nOpacity < 255 && IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
+		if (IS_COLROW_IN_DISP(weaponBlit.wCol, weaponBlit.wRow))
 			this->pTileImages[this->pRoom->ARRAYINDEX(weaponBlit.wCol, weaponBlit.wRow)].dirty = 1;
 	}
 
@@ -9663,24 +9737,34 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	room.InitRoomStats();
 	CCoordStack bombs, powder_kegs;
 	switch (tTile) {
-		case T_BOMB: bombs.Push(x,y); break;
-		case T_POWDER_KEG: powder_kegs.Push(x,y); break;
-		default: break;
+	case T_BOMB: bombs.Push(x, y); break;
+	case T_POWDER_KEG: powder_kegs.Push(x, y); break;
+	default: break;
 	}
 	room.DoExplode(CueEvents, bombs, powder_kegs);
 
 	CCoordSet coords;
-	const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+	const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
 		CueEvents.GetFirstPrivateData(CID_Explosion));
 	while (pCoord)
 	{
 		coords.insert(pCoord->wX, pCoord->wY);
 		pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-				CueEvents.GetNextPrivateData());
+			CueEvents.GetNextPrivateData());
 	}
-	static const SURFACECOLOR ExpColor = {224, 160, 0};
-	for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
+	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
+	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+//*****************************************************************************
+void CRoomWidget::SetEffectsFrozen(const bool bIsFrozen)
+// Updates frozen status of all effects layers. Frozen effects do not continue their animation and are suspended, waiting
+{
+	this->pLastLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pMLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pOLayerEffects->SetEffectsFrozen(bIsFrozen);
+	this->pTLayerEffects->SetEffectsFrozen(bIsFrozen);
 }
 
 //*****************************************************************************

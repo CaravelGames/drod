@@ -36,6 +36,7 @@
 #include "../Texts/MIDs.h"
 
 #include <expat.h>
+#include <zlib.h>
 
 #include <map>
 #include <vector>
@@ -60,7 +61,29 @@ struct DEMO_UPLOAD
 	CDbDemo::DemoFlag flag;
 };
 
+struct streamingOutParams
+{
+	streamingOutParams()
+		: pOutBuffer(NULL)
+		, pGzf(NULL)
+	{ }
+	void reset() {
+		pOutBuffer = NULL;
+		pGzf = NULL;
+	}
+	void set(string* str, gzFile* gzf)
+	{
+		pOutBuffer = str;
+		pGzf = gzf;
+	}
+	bool flush(const ULONG maxSizeThreshold = 0);
+
+	string* pOutBuffer;
+	gzFile* pGzf;
+};
+
 //*****************************************************************************
+struct ImportBuffer;
 class CDbXML : public CDb
 {
 public:
@@ -70,6 +93,7 @@ public:
 	static void CleanUp();
 	static MESSAGE_ID ImportXML(const WCHAR *pszFilename, const CImportInfo::ImportType type);
 	static MESSAGE_ID ImportXML(CStretchyBuffer &buffer, const CImportInfo::ImportType type);
+	static MESSAGE_ID ImportXML(const string& xml);
 	static MESSAGE_ID ImportXMLRaw(const string& buf, const CImportInfo::ImportType type, const bool bUncompress=false);
 	static MESSAGE_ID ImportXML();	//continue import already in progress
 	static bool ExportXML(const VIEWTYPE vType,
@@ -113,7 +137,11 @@ private:
 
 	static CDbBase * GetNewRecord(const VIEWTYPE vType);
 
-	static MESSAGE_ID ImportXML(const char *buf, const UINT size);
+	static MESSAGE_ID ImportXML(ImportBuffer* pBuffer);
+	static void Import_Init();
+	static void Import_TallyRecords(ImportBuffer* pBuffer);
+	static void Import_ParseRecords(ImportBuffer* pBuffer);
+	static void Import_Resolve();
 
 	static VIEWTYPE ParseViewType(const char *str);
 	static VIEWPROPTYPE ParseViewpropType(const char *str);
@@ -129,6 +157,8 @@ private:
 	static vector <VIEWTYPE> dbRecordTypes;   //record types
 	static vector <VIEWPROPTYPE> vpCurrentType;  //stack of viewprops being parsed
 	static vector <bool>  SaveRecord;   //whether record should be saved to the DB
+
+	static streamingOutParams streamingOut;
 };
 
 #endif //...#ifndef DBMXL_H

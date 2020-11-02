@@ -35,10 +35,11 @@ class CShadeEffect : public CAnimatedTileEffect
 public:
 	CShadeEffect(CWidget *pSetWidget, const CCoord &SetCoord,
 			const SURFACECOLOR &Color);
-
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+	
 
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 	SURFACECOLOR Color;
 };
 

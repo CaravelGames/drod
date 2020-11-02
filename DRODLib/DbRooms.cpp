@@ -811,7 +811,7 @@ void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 				wstr += wszColon;
 				pRoom->GetLevelPositionDescription(wstr, true);
 
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendUserLog(str.c_str());
@@ -5531,7 +5531,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 		{
 			//Get coord index with all swords for quick evaluation.
 			CCoordIndex babies(this->wRoomCols, this->wRoomRows), SwordCoords;
-			GetSwordCoords(SwordCoords);
+			GetSwordCoords(SwordCoords, true);
 
 			//Tar takes precedence over mud, and mud over gel,
 			//but all grow simultaneously if possible,
@@ -9636,7 +9636,7 @@ void CDbRoom::ConvertUnstableTar(
 	const UINT wSX = this->pCurrentGame ? this->pCurrentGame->swordsman.wX : (UINT)-1;
 	const UINT wSY = this->pCurrentGame ? this->pCurrentGame->swordsman.wY : (UINT)-1;
 	CCoordIndex swordCoords;
-	GetSwordCoords(swordCoords);
+	GetSwordCoords(swordCoords, true);
 
 	UINT wX, wY;
 	while (NewBabies.PopBottom(wX,wY)) //process as queue

@@ -58,7 +58,7 @@ void CBrowserScreen::SetPageToLoad(const char* wszPageName)
 	if (!wszPageName)
 		m_wstrPageToLoad = wszEmpty;
 	else
-		AsciiToUnicode(wszPageName, m_wstrPageToLoad);
+		UTF8ToUnicode(wszPageName, m_wstrPageToLoad);
 }
 
 //******************************************************************************

@@ -36,11 +36,20 @@ class CSteamEffect : public CEffect
 public:
 	CSteamEffect(CWidget *pSetWidget, const CCoord &origin);
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+	void UpdateFrame();
 
 private:
-	int nX, nY;
 	SDL_Rect screenRect;
+
+	UINT nInitialDrawY;
+	UINT wDrawX, wDrawY;
+	UINT wDrawClipY;     //Amount of pixesl from the top of the sprite to not draw because they're outside room bounds
+	UINT wDrawTile;
+	Uint8 nDrawOpacity;
 };
 
 #endif   //...#ifndef STEAMEFFECT_H

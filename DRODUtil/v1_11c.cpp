@@ -94,7 +94,7 @@ bool GetDemoFile(
 	HFILE hfileDMO = _wopen(pszDMOFilepath, _O_RDONLY | _O_BINARY);
 #else
 	WSTRING wstrDMOFilepath = pszDMOFilepath;
-	const string szDMOFilepath = UnicodeToAscii(wstrDMOFilepath);
+	const string szDMOFilepath = UnicodeToUTF8(wstrDMOFilepath);
 	HFILE hfileDMO = open(szDMOFilepath.c_str(), O_RDONLY);
 #endif
 	if (hfileDMO == HFILE_ERROR)

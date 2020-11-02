@@ -466,6 +466,7 @@ void CDbRooms::ExportXML(
 		while (pMonster)
 		{
 			ASSERT(pRoom->IsValidColRow(pMonster->wX, pMonster->wY));
+			pMonster->SetExtraVarsForExport();
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
 		}
@@ -774,7 +775,7 @@ void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 				wstr += wszColon;
 
 				pRoom->GetLevelPositionDescription(wstr, true);
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendErrorLog(str.c_str());
@@ -4284,23 +4285,25 @@ void CDbRoom::PreprocessMonsters(CCueEvents& CueEvents)
 {
 	SetSwordsSheathed();
 
-	CMonster *pMonster;
-	for (pMonster = this->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
+	CMonster *pMonster, *pNextMonster;
+	for (pMonster = this->pFirstMonster; pMonster != NULL; pMonster = pNextMonster)
 	{
+		pNextMonster = pMonster->pNext; //cache link in case monster is unlinked below
+
 		if (!pMonster->bIsFirstTurn && //don't process entities generated during preprocessing
 				pMonster->wType == M_CHARACTER)
 		{
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			pCharacter->Process(CMD_WAIT, CueEvents);
+
+			if (pCharacter->bGlobal)
+			{
+				//Remove NPC object to global script list.
+				this->UnlinkMonster(pCharacter);
+
+				this->pCurrentGame->appendToGlobalMonsterList(pCharacter);
+			}
 		}
-/*
-		else if (pMonster->wType == M_SPIDER)
-		{
-			//Spiders far from player always start invisible.
-			CSpider *pSpider = DYN_CAST(CSpider*, CMonster*, pMonster);
-			pSpider->SetVisibility();
-		}
-*/
 	}
 }
 
@@ -4679,38 +4682,14 @@ void CDbRoom::ProcessExplosionSquare(
 						pCharacter->Defeat();
 				}
 				break;
-/*
-				case M_FEGUNDOASHES:
-					//Don't destroy ashes on the same turn they are created.
-					if (pMonster->bIsFirstTurn)
-						bVulnerable = false;
-				break;
-				case M_FEGUNDO:
-					bRebirthFegundo = true;
-				break;
-*/
 				default: break;
 			}
 			if (bVulnerable)
 			{
-//				UINT wNewX = pMonster->wX, wNewY = pMonster->wY;
-
 				KillMonster(pMonster, CueEvents);
 /*
 				if (this->pCurrentGame)
 					this->pCurrentGame->TallyKill(); //counts as a kill
-
-				if (bRebirthFegundo)
-				{
-					const UINT wOTile = GetOSquare(wNewX, wNewY);
-					if (!bIsPit(wOTile) && !bIsWater(wOTile))
-					{
-						CMonster *pAshes = AddNewMonster(M_FEGUNDOASHES, wNewX, wNewY);
-						pAshes->bIsFirstTurn = true;
-						if (wOTile == T_PRESSPLATE)
-							ActivateOrb(wNewX, wNewY, CueEvents, OAT_PressurePlate);
-					}
-				}
 */
 			}
 		}

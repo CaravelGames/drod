@@ -171,15 +171,15 @@ MovementType CSwordsman::GetMovementType() const
 	switch (this->wAppearance)
 	{
 		case M_SEEP:
-			return MovementType::WALL;
+			return WALL;
 		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
-			return MovementType::AIR;
+			return AIR;
 		case M_WATERSKIPPER:
-			return MovementType::WATER;
+			return WATER;
 		default:
 			return this->GetWaterTraversalState(this->wAppearance) == WTrv_NoEntry
-				? MovementType::GROUND
-				: MovementType::GROUND_AND_SHALLOW_WATER;
+				? GROUND
+				: GROUND_AND_SHALLOW_WATER;
 	}
 }
 

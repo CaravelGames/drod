@@ -10,7 +10,7 @@ In this document you will find a list of extra steps I had to take to compile DR
 Library versions used:
 * Metakit 2.4.9.7
 * SDL2 2.0.12
-* SDL2_mixer 2.0.4
+* SDL2_mixer 2.0.4 (I had to remove the `-fvisibility=hidden` flag from the Makefile to enable a build where the vorbis libs are explicitly linkable in the resulting .dylib. Without this change the SDL2_mixer library would always look for the vorbis libs on the host system instead of the ones bundled with DROD)
 * SDL2_TTF 2.0.13 (2.0.15 did not work for me, as the included FreeType version needs a version of libpng that is incompatible with the version used in DROD)
 * FreeType 2.4.12 (same version as used in SDL_TTF)
 * Expat 2.0.1

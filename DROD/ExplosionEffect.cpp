@@ -41,32 +41,19 @@ CExplosionEffect::CExplosionEffect(
 }
 
 //********************************************************************************
-bool CExplosionEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const UINT dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Draw shrinking explosion.
-	const float fPercent = (this->dwDuration - dwTimeElapsed) / (float)this->dwDuration;
-	ASSERT(fPercent >= 0.0);
-	ASSERT(fPercent <= 1.0);
-	UINT wTile = TI_EXPLOSION_1;
-	if (fPercent < 0.30)
-		wTile = TI_EXPLOSION_4;
-	else if (fPercent < 0.55)
-		wTile = TI_EXPLOSION_3;
-	else if (fPercent < 0.80)
-		wTile = TI_EXPLOSION_2;
+	const float elapsedFraction = GetRemainingFraction();
 
-	DrawTile(wTile, pDestSurface);
+	if (elapsedFraction < 0.30)
+		this->wTileNo = TI_EXPLOSION_4;
+	else if (elapsedFraction < 0.55)
+		this->wTileNo = TI_EXPLOSION_3;
+	else if (elapsedFraction < 0.80)
+		this->wTileNo = TI_EXPLOSION_2;
+	else
+		this->wTileNo = TI_EXPLOSION_1;
 
-	//Continue effect.
 	return true;
 }

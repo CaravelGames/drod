@@ -39,10 +39,10 @@ CAnimatedTileEffect::CAnimatedTileEffect(
 	const UINT wTileNo,		//(in)   Tile to draw.
 	const bool bUseLightLevel, //(in) whether to draw at light level specified in bitmap manager
 	const UINT eType) //(in)  Type of effect [default=EFFECTLIB::EGENERIC]
-	: CEffect(pSetWidget,eType)
-	, dwDuration(dwDuration)
+	: CEffect(pSetWidget, dwDuration, eType)
 	, wTileNo(wTileNo)
 	, bUseLightLevel(bUseLightLevel)
+	, nOpacity(255)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 
@@ -58,21 +58,15 @@ CAnimatedTileEffect::CAnimatedTileEffect(
 }
 
 //********************************************************************************
-bool CAnimatedTileEffect::Draw(SDL_Surface* pDestSurface)
-//Draw a tile for the indicated duration.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CAnimatedTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (TimeElapsed() >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	DrawTile(this->wTileNo, pDestSurface);
-
 	return true;
+}
+
+//********************************************************************************
+void CAnimatedTileEffect::Draw(SDL_Surface& destSurface)
+{
+	DrawTile(this->wTileNo, destSurface, this->nOpacity);
 }
 
 //********************************************************************************
@@ -81,11 +75,10 @@ void CAnimatedTileEffect::DrawTile(
 //
 //Params:
 	const UINT wTileImageNo,   //(in) Tile to draw.
-	SDL_Surface* pDestSurface, //(in)
+	SDL_Surface& destSurface, //(in)
 	const Uint8 nOpacity)      //(in) Level of opacity (default = 255)
 {
-	ASSERT(pDestSurface);
-	g_pTheBM->BlitTileImage(wTileImageNo, this->wX, this->wY, pDestSurface,
+	g_pTheBM->BlitTileImage(wTileImageNo, this->wX, this->wY, &destSurface,
 			this->bUseLightLevel, nOpacity);
 }
 
@@ -93,8 +86,7 @@ void CAnimatedTileEffect::DrawTile(
 void CAnimatedTileEffect::ShadeTile(
 //Add shading to my location.
 	const SURFACECOLOR &Color, //(in) 
-	SDL_Surface* pDestSurface) //(in)
+	SDL_Surface& destSurface) //(in)
 {
-	ASSERT(pDestSurface);
-	g_pTheBM->ShadeTile(this->wX, this->wY, Color, pDestSurface);
+	g_pTheBM->ShadeTile(this->wX, this->wY, Color, &destSurface);
 }

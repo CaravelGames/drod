@@ -56,16 +56,18 @@ const UINT wSwirlImageNo[NUM_SWIRL_OBJECTS] = {
 		TI_SWIRLDOT_5,
 		TI_SWIRLDOT_5};
 
-#define NOT_DEFINED (static_cast<UINT>(-1))
+#define NOT_DEFINED UINT(-1)
+const Uint32 EffectDuration = NUM_REVOLUTIONS * MS_PER_REVOLUTION + NUM_SWIRL_OBJECTS * MS_PER_OBJECT;
+
 
 //********************************************************************************
 CSwordsmanSwirlEffect::CSwordsmanSwirlEffect(
 //Constructor.
 //
 //Params:
-	CWidget *pSetWidget,    //(in)   Should be a room widget.
-	CCurrentGame *pCurrentGame)   //(in) to track the swordsman's position
-	: CEffect(pSetWidget, ESWIRL)
+	CWidget *pSetWidget,                //(in) Should be a room widget.
+	const CCurrentGame *pCurrentGame)   //(in) to track the swordsman's position
+	: CEffect(pSetWidget, EffectDuration, ESWIRL)
 	, pCurrentGame(pCurrentGame)
 	, wOldX(NOT_DEFINED), wOldY(NOT_DEFINED)
 {
@@ -80,31 +82,25 @@ CSwordsmanSwirlEffect::CSwordsmanSwirlEffect(
 //Constructor.
 //
 //Params:
-	CWidget *pSetWidget, //(in) Should be a room widget.
+	CWidget* pSetWidget, //(in) Should be a room widget.
 	CCoord coord)        //(in) static position
-	: CEffect(pSetWidget, ESWIRL)
+	: CEffect(pSetWidget, EffectDuration, ESWIRL)
 	, pCurrentGame(NULL)
 	, wOldX(NOT_DEFINED), wOldY(NOT_DEFINED)
 	, staticCenter(coord)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	SDL_Rect rect = {0,0,0,0};
-	this->dirtyRects.push_back(rect);   
+	this->dirtyRects.push_back(rect);
 }
 
 //********************************************************************************
-bool CSwordsmanSwirlEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//Flashes circle around the swordsman at his current position.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CSwordsmanSwirlEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	static const Uint32 dwDuration = NUM_REVOLUTIONS*MS_PER_REVOLUTION + NUM_SWIRL_OBJECTS*MS_PER_OBJECT;
-	const Uint32 dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed > dwDuration) return false;  //effect done
+	//Swirl gradually fades out.
+	this->nOpacity = g_pTheBM->bAlpha ? 255 - ((dwTimeElapsed * 255) / dwDuration) : 255;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	this->drawSwirls.clear();
 
 	//Center effect on player's position.
 	UINT wSX, wSY;
@@ -112,16 +108,14 @@ bool CSwordsmanSwirlEffect::Draw(SDL_Surface* pDestSurface)
 	this->pOwnerWidget->GetRect(OwnerRect);
 	if (this->pCurrentGame)
 	{
-		const bool bPlayerVisible = this->pCurrentGame->pPlayer->IsInRoom();
-		if (!bPlayerVisible)
-		{
-			//Player is not in the room.  Don't show effect.
-			return false;
-		}
-		CMoveCoord *pCoord = this->pCurrentGame->pPlayer;
-		wSX = pCoord->wX;
-		wSY = pCoord->wY;
-	} else {
+		if (!this->pCurrentGame->pPlayer->IsInRoom())
+			return false; //Player is not in the room.  Don't show effect.
+
+		
+		wSX = this->pCurrentGame->pPlayer->wX;
+		wSY = this->pCurrentGame->pPlayer->wY;
+	}
+	else {
 		//Remain at this position.
 		wSX = this->staticCenter.wX;
 		wSY = this->staticCenter.wY;
@@ -153,8 +147,7 @@ bool CSwordsmanSwirlEffect::Draw(SDL_Surface* pDestSurface)
 	double radius, theta;
 	UINT wX, wY, wSize;
 	const UINT rMaxPosition=NUM_REVOLUTIONS*MS_PER_REVOLUTION;
-	//Swirl gradually fades out.
-	const Uint8 nOpacity = g_pTheBM->bAlpha ? 255 - ((dwTimeElapsed * 255) / dwDuration) : 255;
+	
 	const double thetaFactor = twoPi/(MS_PER_REVOLUTION+1.0);
 	const double radiusFactor = MAX_RADIUS/(rMaxPosition+1.0);
 	for (UINT nIndex=0; nIndex<NUM_SWIRL_OBJECTS; ++nIndex)
@@ -172,8 +165,7 @@ bool CSwordsmanSwirlEffect::Draw(SDL_Surface* pDestSurface)
 				wX < OwnerRect.x + OwnerRect.w - wSize &&
 				wY < OwnerRect.y + OwnerRect.h - wSize)
 		{
-			g_pTheBM->BlitTileImagePart(wSwirlImageNo[nIndex], wX, wY,
-					0, 0, wSize, wSize, pDestSurface, false, nOpacity);
+			this->drawSwirls.push_back(CMoveCoordEx(wX, wY, wSize, nIndex));
 
 			//Update bounding box of area of effect.
 			if (static_cast<int>(wX) < this->dirtyRects[0].x)
@@ -190,4 +182,14 @@ bool CSwordsmanSwirlEffect::Draw(SDL_Surface* pDestSurface)
 	this->dirtyRects[0].h = yMax - this->dirtyRects[0].y;
 
 	return true;
+}
+//********************************************************************************
+void CSwordsmanSwirlEffect::Draw(SDL_Surface& destSurface)
+{
+	for (UINT i = 0; i < this->drawSwirls.size(); ++i) {
+		CMoveCoordEx swirl = this->drawSwirls.at(i);
+
+		g_pTheBM->BlitTileImagePart(wSwirlImageNo[swirl.wValue], swirl.wX, swirl.wY,
+			0, 0, swirl.wO, swirl.wO, &destSurface, false, this->nOpacity);
+	}
 }

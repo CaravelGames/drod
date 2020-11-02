@@ -36,11 +36,19 @@ class CSwordSwingEffect : public CEffect
 public:
 	CSwordSwingEffect(CWidget *pSetWidget, const CCoord &SetCoord, const UINT wO);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+
+private:
+	void CalculateFrame();
+
 	UINT    dwDuration;
 	UINT     wX, wY, wO;
+
+	Uint8 nOpacity;
+	UINT wTileNo;
 };
 
 #endif //...#ifndef SWORDSWINGEFFECT_H

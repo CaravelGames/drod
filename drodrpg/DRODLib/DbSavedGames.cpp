@@ -1706,65 +1706,6 @@ void CDbSavedGames::DeleteForRoom(
 		db.SavedGames.Delete(*iter);
 }
 
-//*******************************************************************************
-/*
-void CDbSavedGames::VerifyForRoom(
-//Verifies all saved games records (and demos) for the specified room.
-//Truncates unplayable commands.
-//
-//Params:
-		const UINT dwRoomID)   //(in)  Room's saved games to delete.
-{
-	//Test demos and their saved games...
-	CDb db;
-	CIDList DemoStats;
-	CIDSet ids = CDb::getDemosInRoom(dwRoomID);
-	CIDSet::const_iterator iter;
-	for (iter = ids.begin(); iter != ids.end(); ++iter)
-	{
-		CDbDemo *pDemo = db.Demos.GetByID(*iter);
-		ASSERT(pDemo);
-		if (!pDemo->Test(DemoStats))
-			db.Demos.Delete(*iter);
-		else
-		{
-			//Mark whether these demos result in victory or death.
-			const bool bDeath = GetDemoStatBool(DemoStats, DS_DidPlayerDie);
-//					GetDemoStatBool(DemoStats, DS_DidHalphDie);
-			const bool bVictory = false;//GetDemoStatBool(DemoStats, DS_WasRoomConquered);
-			if (pDemo->IsFlagSet(CDbDemo::Victory) != bVictory ||
-					pDemo->IsFlagSet(CDbDemo::Death) != bDeath)
-			{
-				pDemo->SetFlag(CDbDemo::Victory, bVictory);
-				pDemo->SetFlag(CDbDemo::Death, bDeath);
-				pDemo->Update();
-			}
-		}
-		delete pDemo;
-	}
-
-	//...and then saved games w/o demos.
-	CCueEvents Ignored;
-	CCurrentGame *pCurrentGame;
-	ids = CDb::getSavedGamesInRoom(dwRoomID);
-	for (iter = ids.begin(); iter != ids.end(); ++iter)
-	{
-		pCurrentGame = db.GetSavedCurrentGame(*iter, Ignored, true);
-		ASSERT(pCurrentGame);
-		if (!pCurrentGame)
-		{
-			//Saved game can't even be loaded -- data was corrupted?
-			db.SavedGames.Delete(*iter);
-		} else {
-			if (!pCurrentGame->PlayCommands(
-					pCurrentGame->Commands.Count(), Ignored, true))
-				pCurrentGame->Update(); //truncate commands that can't be played back
-			delete pCurrentGame;
-		}
-	}
-}
-*/
-
 //*****************************************************************************
 void CDbSavedGames::ExportXML(
 //Returns: string containing XML text describing saved game with this ID
@@ -1997,6 +1938,7 @@ void CDbSavedGames::ExportXML(
 		CMonster *pMonster = pSavedGame->pMonsterListAtRoomStart;
 		while (pMonster)
 		{
+			//CDbSavedGame::LoadMonster sets ExtraVars; don't call SetExtraVarsForExport here
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
 		}

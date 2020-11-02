@@ -278,7 +278,7 @@ WSTRING CDbHolds::ExportSpeech(const UINT dwHoldID, const bool /*bCoords*/) cons
 				wstr += wszColon;
 				wstr += c.charNameText;
 
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendUserLog(str.c_str());
@@ -365,7 +365,7 @@ WSTRING CDbHolds::ExportSpeech(const UINT dwHoldID, const bool /*bCoords*/) cons
 							wstr += wszColon;
 							pRoom->GetLevelPositionDescription(wstr, true);
 
-							string str = UnicodeToAscii(wstr);
+							string str = UnicodeToUTF8(wstr);
 							str += "\n";
 							CFiles f;
 							f.AppendUserLog(str.c_str());
@@ -508,7 +508,7 @@ const
 			}
 
 			dwSpeakerTextID = getSpeakerNameText(wChar, color);
-			AsciiToUnicode(color.c_str(), wstrColor);
+			UTF8ToUnicode(color.c_str(), wstrColor);
 
 			//Indicate which lines don't have (and need) a sound bite.
 			if (!(command.pSpeech->dwDataID || command.pSpeech->dwDelay == 1))
@@ -2645,7 +2645,7 @@ char* CDbHold::getVarAccessToken(const char* pName) const
 {
 	ASSERT(pName);
 	WSTRING wstr;
-	AsciiToUnicode(pName, wstr);
+	UTF8ToUnicode(pName, wstr);
 	return getVarAccessToken(wstr.c_str());
 }
 
