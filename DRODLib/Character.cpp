@@ -3410,6 +3410,42 @@ bool CCharacter::CanPushObjects() const {
 }
 
 //*****************************************************************************
+bool CCharacter::CanPushMonsters() const
+{
+	return (behaviorFlags.count(ScriptFlag::PushMonsters) == 1);
+}
+
+//*****************************************************************************
+bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
+{
+	UINT wTileNo = this->pCurrentGame->pRoom->GetOSquare(wX, wY);
+
+	if (bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo))
+		return true;
+
+	// If the character is immune to "fatal pushes", only allow it to be pushed
+	// to tiles that won't cause it to fall
+	bool bOnlySafe = (behaviorFlags.count(ScriptFlag::FatalPushImmune) == 1);
+
+	if (!bOnlySafe) {
+		// We don't care that these tiles might be deadly
+		return bIsPit(wTileNo) || bIsWater(wTileNo);
+	}
+
+	if (bIsPit(wTileNo) && (IsFlying()))
+		return true;
+
+	if (bIsDeepWater(wTileNo) && (IsSwimming() || IsFlying()))
+		return true;
+
+	if (bIsShallowWater(wTileNo) &&
+		(CanWadeInShallowWater() || IsSwimming() || IsFlying()))
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
@@ -4420,7 +4456,7 @@ const
 
 			if (pMonster->wType != M_FLUFFBABY && 
 				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster)) &&
-				(!this->CanPushObjects() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
+				(!this->CanPushMonsters() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
 				return true;
 			}
 		}
@@ -4759,6 +4795,7 @@ void CCharacter::SetCurrentGame(
 			break;
 			case M_CONSTRUCT:
 				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
+				behaviorFlags.insert(ScriptFlag::PushMonsters);
 			break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 				behaviorFlags.insert(ScriptFlag::HotTileImmune);
@@ -4777,7 +4814,12 @@ void CCharacter::SetCurrentGame(
 	{
 		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
 		behaviorFlags.insert(ScriptFlag::Behavior::PushObjects);
+		behaviorFlags.insert(ScriptFlag::PushMonsters);
 		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
+	}
+
+	if (!this->IsFlying() && this->GetIdentity() != M_SEEP) {
+		behaviorFlags.insert(ScriptFlag::ActivatePlates);
 	}
 
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {

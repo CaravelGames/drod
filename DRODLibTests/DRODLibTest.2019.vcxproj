@@ -381,6 +381,12 @@
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
     <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivatePlates.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivateTokens.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\DamageImmunity.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\DropTrapdoors.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\MovePlatforms.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\PushingBehaviors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp" />

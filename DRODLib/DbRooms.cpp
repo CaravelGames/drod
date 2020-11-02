@@ -2581,6 +2581,11 @@ const
 			if (!(CanPushOntoOTile(wToX, wToY) && tile != T_HOT))
 				return false;
 		}
+		case M_CHARACTER: {
+			const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+			if (!pCharacter->CanPushOntoOTileAt(wToX, wToY))
+				return false;
+		}
 		default:
 			if (!CanPushOntoOTile(wToX, wToY))
 				return false;
@@ -5658,7 +5663,7 @@ void CDbRoom::ResetUnloadedPressurePlates(CCueEvents &CueEvents)
 			{
 				//These objects can depress a pressure plate.
 				CMonster *pMonster = GetMonsterAtSquare(tile->wX,tile->wY);
-				if (pMonster && !(pMonster->IsFlying() || pMonster->wType == M_SEEP))
+				if (pMonster && pMonster->CanPressPressurePlates())
 					bEmpty = false;
 				else if (PressurePlateIsDepressedBy(GetTSquare(tile->wX,tile->wY)))
 					bEmpty = false;

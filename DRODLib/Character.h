@@ -92,8 +92,10 @@ public:
 	virtual CMonster* Replicate() const;
 
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
-	virtual bool   CanPressPressurePlates() const { return !this->IsFlying() && this->GetIdentity() != M_SEEP; }
+	virtual bool   CanPressPressurePlates() const { return behaviorFlags.count(ScriptFlag::ActivatePlates) == 1; }
 	virtual bool   CanPushObjects() const;
+	virtual bool   CanPushMonsters() const;
+	bool           CanPushOntoOTileAt(UINT wX, UINT wY) const;
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);

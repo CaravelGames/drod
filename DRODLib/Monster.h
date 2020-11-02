@@ -226,6 +226,7 @@ public:
 	virtual bool  CanFindSwordsman() const;
 	virtual bool  CanHideInShallowWater() const {return false;}
 	virtual bool  CanPushObjects() const { return false; }
+	virtual bool  CanPushMonsters() const { return CanPushObjects(); }
 	virtual bool  CanPressPressurePlates() const { return !this->IsFlying(); }
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
 	virtual bool  CanWadeInShallowWater() const { return this->eMovement == GROUND_AND_SHALLOW_WATER; }
