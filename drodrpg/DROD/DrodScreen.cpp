@@ -1385,8 +1385,12 @@ bool CDrodScreen::ExportSelectFile(
 MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 //Returns: a text MID for the specified export format version #
 {
-	if (wVersion >= 401 && wVersion < NEXT_VERSION_NUMBER)
+	if (wVersion >= 401 && wVersion < 406)
 		return MID_DROD_RPG1;   //1.0
+	if (wVersion == 406)
+		return MID_DROD_RPG1_2; //1.1/1.2
+	if (wVersion >= 407 && wVersion < NEXT_VERSION_NUMBER)
+		return MID_DROD_RPG1_3; //1.3
 	return MID_DROD_UnsupportedVersion; //???
 }
 

@@ -1493,10 +1493,12 @@ void CHoldSelectScreen::SetHoldFilter()
 			} else if (!bLocalHold)	{
 				//Color-code holds on CaravelNet by game version.
 				static const SDL_Color DarkGold = {114, 85, 2, 0};
-				if (h.version < 406) //RPG 1.2
+				if (h.version < 406) //RPG pre-1.2
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkGold);
-				else if (h.version < NEXT_VERSION_NUMBER) //before unknown version
+				else if (h.version < 407) //1.2
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkBlue);
+				else if (h.version < NEXT_VERSION_NUMBER) //1.3, before unknown version
+					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkGreen);
 				else //not supported by this engine version
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkBrown);
 			}
