@@ -560,6 +560,7 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 
 	//Animate widgets and call between events handler if interval has elapsed.
 	if (!this->bPaused &&
+		!IsDeactivating() &&
 		dwNow - this->dwLastOnBetweenEventsCall > this->dwBetweenEventsInterval)
 	{
 		//Animate widgets.
