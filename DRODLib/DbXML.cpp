@@ -2181,6 +2181,9 @@ bool CDbXML::ExportXML(
 	BYTE *dest = NULL;
 	uLongf destLen = 0;
 	{
+		string text; //only in scope until compressed
+
+#ifdef DROD_VERSION_5_2 //new export file format, not readable in previous game builds -- remove this guard for 5.2
 		// Compress the data in gzip format (previously, zlib format w/ stretchy buffer encoding).
 #ifdef WIN32
 		gzFile gzf = gzopen_w(wszFilename, "wb");
@@ -2189,7 +2192,6 @@ bool CDbXML::ExportXML(
 		gzFile gzf = gzopen(filename.c_str(), "wb");
 #endif
 
-		string text; //only in scope until compressed
 		CDbXML::streamingOut.set(&text, &gzf);
 		if (!ExportXML(vType, primaryKeys, text))
 		{
@@ -2200,13 +2202,49 @@ bool CDbXML::ExportXML(
 		g_pTheDB->Open();
 
 		const bool success = CDbXML::streamingOut.flush();
-	
+
 		const int closeval = gzclose(gzf);
 
 		CDbXML::streamingOut.reset();
 
 		bRes = success && closeval == 0;
 	}
+#else //pre 5.2 -- delete this section's code when moving to 5.2
+		if (!ExportXML(vType, primaryKeys, text))
+			return false;
+
+		g_pTheDB->Close(); //reset memory used by DB during export lookups
+		g_pTheDB->Open();
+
+		// Compress the data.  Output to specified file.
+		const ULONG srcLen = (ULONG)(text.size() * sizeof(char));
+		const uLongf max_size_needed = compressBound(srcLen);
+		const uLongf min_size_to_attempt = max_size_needed / 10;
+
+		destLen = max_size_needed;
+		do {
+			try {
+				dest = new BYTE[destLen];
+			}
+			catch (std::bad_alloc&) {
+				//try again with smaller buffer
+				destLen = uLongf(destLen * 0.9f);
+			}
+		} while (!dest && destLen > min_size_to_attempt);
+		if (!dest)
+			return false;
+
+		const int res = compress(dest, &destLen, (const BYTE*)text.c_str(), srcLen);
+		bRes = res == Z_OK;
+	}
+	if (bRes)
+	{
+		CStretchyBuffer buffer(dest, destLen); //no terminating null
+		buffer.Encode();
+		bRes = CFiles::WriteBufferToFile(wszFilename, buffer);
+	}
+	delete[] dest;
+#endif
 
 	return bRes;
 }
