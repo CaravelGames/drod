@@ -367,6 +367,7 @@ CRoomWidget::CRoomWidget(
 
 	, CX_TILE(CBitmapManager::CX_TILE), CY_TILE(CBitmapManager::CY_TILE)
 
+	, fDeathFadeOpacity(0)
 	, time_of_last_weather_render(0)
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
@@ -2753,10 +2754,6 @@ void CRoomWidget::RenderRoomInPlay(
 	if (bStateChanged)
 		this->bAllDirty = true;
 
-	ASSERT(this->pRoomSnapshotSurface);
-	SDL_Surface *pDestSurface = this->pRoomSnapshotSurface;  //draw to here
-	ASSERT(!SDL_MUSTLOCK(pDestSurface));   //Don't need to lock this surface.
-
 	//1. Apply current light calculations.
 	if (this->bRenderPlayerLight) //render player light when flagged
 	{
@@ -2771,23 +2768,6 @@ void CRoomWidget::RenderRoomInPlay(
 
 	//2. Draw o- and t-layers.
 	RenderRoom(wCol, wRow, wWidth, wHeight, false);
-
-	//3. When action is frozen, draw the following here.
-	if (bPlayerIsDying)
-	{
-		//a. Effects that go on top of room image, under monsters/swordsman.
-		RenderFogInPit(pDestSurface);
-
-		DrawTLayer(pDestSurface);
-		
-		this->pTLayerEffects->DrawEffects( bPlayerIsDying ? NULL : pDestSurface);
-
-		//b. Draw monsters (not killing player).
-		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, bPlayerIsDying);
-
-		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
-	}
 
 	this->bWasPlacingDouble = bIsPlacingDouble;
 	this->bWasInvisible = bIsInvisible;
@@ -4431,34 +4411,29 @@ void CRoomWidget::Paint(
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
 	{
-		//When action is not frozen, draw the following:
-		if (bPlayerIsAlive)
+		//3a. Draw effects that go on top of room image, under monsters/swordsman.
+		RenderFogInPit(pDestSurface);
+
+		DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
+
+		this->pTLayerEffects->DrawEffects();
+		this->pTLayerEffects->DirtyTiles();
+
+		//3b. Repaint monsters.
+		if (this->bAllDirty || monstersAreAnimated)
 		{
-			//3a. Draw effects that go on top of room image, under monsters/swordsman.
-			RenderFogInPit(pDestSurface);
-
-			DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
-
-			this->pTLayerEffects->DrawEffects();
-			this->pTLayerEffects->DirtyTiles();
-
-			//3b. Repaint monsters.
-			if (this->bAllDirty || monstersAreAnimated)
-			{
-				//Draw monsters (that aren't killing swordsman).
-				DrawMonsters(room.pFirstMonster, pDestSurface, false,
-					monstersAreAnimated);
-			} else {
-				RedrawMonsters(pDestSurface);
-			}
-
-			PopulateBuildMarkerEffects(room);
+			//Draw monsters (that aren't killing swordsman).
+			DrawMonsters(room.pFirstMonster, pDestSurface, false,
+				monstersAreAnimated);
 		} else {
-			//Add certain images as static during death animation
-
-			this->pOLayerEffects->DrawEffects(NULL, EIMAGEOVERLAY);
-			this->pOLayerEffects->DirtyTiles();
+			RedrawMonsters(pDestSurface);
 		}
+
+		if (bPlayerIsAlive)
+			PopulateBuildMarkerEffects(room);
+
+		if (this->fDeathFadeOpacity > 0)
+			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, this->fDeathFadeOpacity, pDestSurface);
 
 		//4. Draw player.
 		if (this->bShowingPlayer && !bIsPlacingDouble)
@@ -4510,7 +4485,7 @@ void CRoomWidget::Paint(
 				DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
 					this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
 			}
-		} else if (bPlayerIsAlive) {
+		} else {
 			//6. Draw overhead layer.
 			DrawOverheadLayer(pDestSurface);
 
@@ -7342,7 +7317,11 @@ void CRoomWidget::DrawOverheadLayer(SDL_Surface *pDestSurface)
 						nI += wHeight;
 					src.y = nI % wHeight;
 
+					if (this->fDeathFadeOpacity > 0)
+						EnableSurfaceBlending(pTileTexture, 255 * this->fDeathFadeOpacity);
 					SDL_BlitSurface(pTileTexture, &src, pDestSurface, &dest);
+					if (this->fDeathFadeOpacity > 0)
+						DisableSurfaceBlending(pTileTexture);
 				}
 			}
 		}

@@ -55,7 +55,8 @@ public:
 	CEffect*       GetEffectOfType(const UINT eEffectType) const;
 	SDL_Rect       GetBoundingBoxForEffectsOfType(const UINT eEffectType) const;
 	virtual void   RemoveEffectsOfType(const UINT eEffectType);
-	void           SetOpacityForEffectsOfType(const UINT eEffectType, float fOpacity) const;
+	void           SetOpacityForEffects(const float fOpacity) const;
+	void           SetOpacityForEffectsOfType(const UINT eEffectType, const float fOpacity) const;
 	void           SetEffectsFrozen(const bool bIsFrozen);
 
 	list<CEffect *> Effects;

@@ -339,6 +339,7 @@ public:
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
 	void           SetAnimateMoves(const bool bAnimate) {this->bAnimateMoves = bAnimate;}
+	void           SetDeathFadeOpacity(const float opacity) { this->fDeathFadeOpacity = opacity;  }
 	void           SetEffectsFrozen(const bool bIsFrozen);
 	void           SetMoveDuration(const UINT dwDuration) {this->dwMoveDuration = dwDuration;}
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
@@ -643,6 +644,7 @@ private:
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
 
+	float          fDeathFadeOpacity;
 	Uint32         time_of_last_weather_render;
 	int            redrawingRowForWeather;
 	bool           need_to_update_room_weather;
