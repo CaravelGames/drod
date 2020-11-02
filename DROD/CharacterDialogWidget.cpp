@@ -4327,6 +4327,8 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 	this->pImperativeListBox->AddItem(ScriptFlag::Safe, g_pTheDB->GetMessageText(MID_Safe));
 	this->pImperativeListBox->AddItem(ScriptFlag::SwordSafeToPlayer, g_pTheDB->GetMessageText(MID_SwordSafeToPlayer));
 	this->pImperativeListBox->AddItem(ScriptFlag::Deadly, g_pTheDB->GetMessageText(MID_Deadly));
+	this->pImperativeListBox->AddItem(ScriptFlag::Friendly, g_pTheDB->GetMessageText(MID_Friendly));
+	this->pImperativeListBox->AddItem(ScriptFlag::Unfriendly, g_pTheDB->GetMessageText(MID_Unfriendly));
 	this->pImperativeListBox->AddItem(ScriptFlag::Die, g_pTheDB->GetMessageText(MID_Die));
 	this->pImperativeListBox->AddItem(ScriptFlag::DieSpecial, g_pTheDB->GetMessageText(MID_DieSpecial));
 	this->pImperativeListBox->AddItem(ScriptFlag::EndWhenKilled, g_pTheDB->GetMessageText(MID_EndWhenKilled));

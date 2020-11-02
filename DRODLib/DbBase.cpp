@@ -820,10 +820,12 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_VarRoomY: strText = "_RoomY"; break;
 	case MID_PreviousIf: strText = "<Previous If>"; break;
 	case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
-	case MID_ActivatePlates: strText = "Activate Pressure Plates";
-	case MID_PushMonsters: strText = "Push Monsters";
-	case MID_FatalPushImmune: strText = "Push to Fall Immunity";
-	case MID_PushTile: strText = "Push Tile";
+	case MID_ActivatePlates: strText = "Activate Pressure Plates"; break;
+	case MID_PushMonsters: strText = "Push Monsters"; break;
+	case MID_FatalPushImmune: strText = "Push to Fall Immunity"; break;
+	case MID_PushTile: strText = "Push Tile"; break;
+	case MID_Friendly: strText = "Friendly"; break;
+	case MID_Unfriendly: strText = "Unfriendly"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
