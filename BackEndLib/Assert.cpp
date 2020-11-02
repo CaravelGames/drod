@@ -45,7 +45,7 @@ bool bLogErrors = true;
 void OutputDebugStringA(const char *pszMessage)
 // Outputs a string to stderr (Non-WIN32 only)
 {
-	const string gameName = UnicodeToAscii(CFiles::wGameName);
+	const string gameName = UnicodeToUTF8(CFiles::wGameName);
 	fprintf(stderr, "%s: %s", gameName.c_str(), pszMessage);
 }
 #endif

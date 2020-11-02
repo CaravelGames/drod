@@ -960,7 +960,7 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 
 		//Get var name.
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		const string varName = UnicodeToAscii(this->pHold->GetVarName(wVarID));
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
 
 		const bool bInteger = pVar->eType == UVT_int;
 		VarMapInfo info;

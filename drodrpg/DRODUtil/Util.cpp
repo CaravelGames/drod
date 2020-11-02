@@ -121,7 +121,7 @@ bool CUtil::IsPathValid(
 	WSTRING wstrPath = pszPath;
 	char *szPath = new char[wstrPath.length()+1];
 	struct stat buf;
-	UnicodeToAscii(wstrPath, szPath);
+	UnicodeToUTF8(wstrPath, szPath);
 	bIsValid = !stat(szPath, &buf) ? S_ISDIR(buf.st_mode) : false;
 	delete[] szPath;
 #endif

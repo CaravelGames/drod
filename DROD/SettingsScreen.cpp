@@ -876,7 +876,7 @@ void CSettingsScreen::OnKeyDown(
 		case TAG_VOICES_VOLUME:
 		case TAG_SOUNDEFF_VOLUME:
 		{
-			const SDL_MouseButtonEvent fakeButton;
+			SDL_MouseButtonEvent fakeButton;
 			OnDragUp(dwTagNo, fakeButton);
 		}
 		break;
@@ -1012,7 +1012,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			const string str = UnicodeToAscii(pCaravelNetNameWidget->GetText());
+			const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
 			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
 			if (!wCaravelNetRequest) {
 				ShowOkMessage(MID_CaravelNetUnreachable);

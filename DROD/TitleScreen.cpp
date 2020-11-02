@@ -1176,7 +1176,7 @@ bool CTitleScreen::PollForNews()
 
 		delete pBuffer;
 
-		AsciiToUnicode(strFromWeb.c_str(), this->wstrNewsText);
+		UTF8ToUnicode(strFromWeb.c_str(), this->wstrNewsText);
 		SetNewsText();
 
 		//Wait to query hold list until no delay will be incurred.
@@ -1877,7 +1877,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = CNetInterface::cNetBaseURL + "gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	const string ver = UnicodeToAscii(wszVersionReleaseNumber);
+	const string ver = UnicodeToUTF8(wszVersionReleaseNumber);
 	newsQuery += ver;
 #ifdef BETA
 	newsQuery += "-BETA-";

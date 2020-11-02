@@ -229,6 +229,9 @@
     <ClCompile Include="Seep.cpp">
       <Filter>Monsters</Filter>
     </ClCompile>
+    <ClCompile Include="OrbUtil.cpp">
+      <Filter>GameInfo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Architect.h">
@@ -485,6 +488,9 @@
     </ClInclude>
     <ClInclude Include="Seep.h">
       <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbUtil.h">
+      <Filter>GameInfo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -131,7 +131,7 @@ void CRoomScreen::SetMusicStyle(
 	switch (wMood)
 	{
 		case SONG_AMBIENT: case SONG_ATTACK: case SONG_PUZZLE: case SONG_EXIT: case SONG_EDITOR:
-			AsciiToUnicode(moodText[wMood], wMoodText);
+			UTF8ToUnicode(moodText[wMood], wMoodText);
 		break;
 		default: ASSERT(!"Invalid style mood"); break;
 	}
@@ -148,7 +148,7 @@ void CRoomScreen::SetMusicStyle(
 	} else {
 		//Play default music when a graphics style is present, but music is not.
 		static WSTRING wstrDemoDefaultMusic;
-		AsciiToUnicode(demoDefaultMusic.c_str(), wstrDemoDefaultMusic);
+		UTF8ToUnicode(demoDefaultMusic.c_str(), wstrDemoDefaultMusic);
 		if (WCScmp(style.c_str(), wstrDemoDefaultMusic.c_str()) != 0)
 			SetMusicStyle(wstrDemoDefaultMusic, wMood, fadeDuration);
 	}
@@ -453,7 +453,7 @@ void CRoomScreen::GrabNewNotices(CRoomWidget* pRoomWidget)
 		if (pButton) {
 			// Increment the number on the button
 			WSTRING wstr = pButton->GetCaption();
-			string str = UnicodeToAscii(wstr);
+			string str = UnicodeToUTF8(wstr);
 			int num;
 			sscanf(str.c_str(), "%d", &num);
 			num++;
@@ -464,7 +464,7 @@ void CRoomScreen::GrabNewNotices(CRoomWidget* pRoomWidget)
 				sprintf(buffer, "%d", num);
 				str = buffer;
 			}
-			AsciiToUnicode(str, wstr);
+			UTF8ToUnicode(str, wstr);
 			pButton->SetCaption(wstr.c_str());
 			pButton->RequestPaint();
 		}

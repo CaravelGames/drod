@@ -818,7 +818,7 @@ void CScreen::SaveSnapshot(
 		{
 			static const WCHAR bmpExt[] = {We('.'),We('b'),We('m'),We('p'),We(0)};
 			name += bmpExt;
-			const string str = UnicodeToAscii(name);
+			const string str = UnicodeToUTF8(name);
 			SDL_SaveBMP(pSurface, str.c_str());
 		}
 		break;
@@ -984,7 +984,7 @@ UINT CScreen::ShowMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 
@@ -1070,7 +1070,7 @@ void CScreen::ShowStatusMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 	CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*,

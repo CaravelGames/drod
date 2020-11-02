@@ -608,7 +608,7 @@ bool CHTMLWidget::Parse(
 //		ConvertCyrillicEncodedXMLToUTF8(text);
 #endif
 
-		AsciiToUnicode(errorStr, this->wstrStatus);
+		UTF8ToUnicode(errorStr, this->wstrStatus);
 
 		bResult = false;
 	}

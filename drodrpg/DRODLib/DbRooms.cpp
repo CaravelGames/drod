@@ -775,7 +775,7 @@ void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 				wstr += wszColon;
 
 				pRoom->GetLevelPositionDescription(wstr, true);
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendErrorLog(str.c_str());

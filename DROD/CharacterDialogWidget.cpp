@@ -204,7 +204,7 @@ bool TranslateColorText(const WSTRING& colorText, CCharacterCommand *pCommand)
 	if (colorText.length() != LENGTH)
 		return false;
 
-	const string color = UnicodeToAscii(colorText);
+	const string color = UnicodeToUTF8(colorText);
 	for (size_t i=0; i<LENGTH; ++i) {
 		const char c = tolower(color[i]);
 		if (!isalnum(c) || c > 'f')
@@ -1403,7 +1403,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 			for (UINT mood=0; mood<SONG_MOOD_COUNT; ++mood)
 			{
 				WSTRING wstrMoodText;
-				AsciiToUnicode(moodText[mood], wstrMoodText);
+				UTF8ToUnicode(moodText[mood], wstrMoodText);
 				WSTRING wstr = *style + wstrMoodText;
 				this->pMusicListBox->AddItem(wCount++, wstr.c_str());
 			}

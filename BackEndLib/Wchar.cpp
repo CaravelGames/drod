@@ -487,7 +487,8 @@ bool IsAllPrintableASCIIchars(const string& str)
 bool IsAllPrintableASCIIchars(const WSTRING& wstr)
 {
 	for (WSTRING::const_iterator it = wstr.begin(); it != wstr.end(); it++) {
-		if (!::iswprint(*it))
+		const WCHAR wc = (WCHAR)*it;
+		if (!::iswprint(wc))
 			return false;
 	}
 	return true;

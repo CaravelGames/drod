@@ -711,7 +711,7 @@ bool CTitleScreen::PollForNews()
 
 		delete pBuffer;
 
-		AsciiToUnicode(strFromWeb.c_str(), this->wstrNewsText);
+		UTF8ToUnicode(strFromWeb.c_str(), this->wstrNewsText);
 		SetNewsText();
 
 		//Wait to query hold list until no delay will be incurred.
@@ -1081,7 +1081,7 @@ void CTitleScreen::RequestNews()
 	string newsQuery = "http://forum.caravelgames.com/gamenews.php?game=";
 	newsQuery += szDROD;
 	newsQuery += "&version=";
-	newsQuery += UnicodeToAscii(wszVersionReleaseNumber);
+	newsQuery += UnicodeToUTF8(wszVersionReleaseNumber);
 #ifdef BETA
 	newsQuery += "-BETA-";
 	newsQuery += __DATE__;

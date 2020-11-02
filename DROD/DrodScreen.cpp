@@ -1295,7 +1295,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 #undef MACROMATCH
 
 	//Parse "section:key[=value]".
-	const string str = UnicodeToAscii(pText+index);
+	const string str = UnicodeToUTF8(pText+index);
 	char *pStr = (char*)str.c_str();
 	string originalStr = pStr;
 	char *pSection = strtok(pStr, ":");
@@ -1323,7 +1323,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 				}
 				//Display current/new setting for key.
 				WSTRING wstr;
-				AsciiToUnicode(originalStr.c_str(), wstr);
+				UTF8ToUnicode(originalStr.c_str(), wstr);
 				DisplayChatText(wstr, Black);
 				return true;
 			} else {
@@ -1338,7 +1338,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 					//Display inputted setting for key.
 					WSTRING wstr;
-					AsciiToUnicode(originalStr.c_str(), wstr);
+					UTF8ToUnicode(originalStr.c_str(), wstr);
 					DisplayChatText(wstr, Black);
 					return true;
 				}
@@ -1348,7 +1348,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 	//Not recognized.
 	WSTRING orig, wstr = g_pTheDB->GetMessageText(MID_UnrecognizedConsoleCommand);
-	AsciiToUnicode(originalStr.c_str(), orig);
+	UTF8ToUnicode(originalStr.c_str(), orig);
 	wstr += wszColon;
 	wstr += wszSpace;
 	wstr += orig;
@@ -2173,7 +2173,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 
@@ -2248,7 +2248,7 @@ void CDrodScreen::ImportMedia()
 	wstrLogFilename += CFiles::wGameName;
 	wstrLogFilename += wstrLog;
 
-#define LOG_TEXT(wtext) { string strLog = UnicodeToAscii(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
+#define LOG_TEXT(wtext) { string strLog = UnicodeToUTF8(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
 
 	//Default: if official hold is the demo version, include selected demo styles only. Otherwise include all of them.
 	CDbHold::HoldStatus status = GetInstalledOfficialHold();
@@ -2364,14 +2364,14 @@ void CDrodScreen::ImportMedia()
 				} else {
 					//Graphics files to be embedded.
 					const UINT image_index = wI - (TEXTURE_COUNT + 1);
-					AsciiToUnicode(graphicFilename[image_index], wstrImportFile);
+					UTF8ToUnicode(graphicFilename[image_index], wstrImportFile);
 				}
 			} else if (wI == FLOOR_IMAGE) {
 				wstrImportFile += wszTILES;	//skip FLOOR_IMAGE texture: load 'tiles' images now
 			} else {
 				//Room style image files.
 				WSTRING wstr;
-				AsciiToUnicode(textureTileNames[wI], wstr);
+				UTF8ToUnicode(textureTileNames[wI], wstr);
 				wstrImportFile += wstr;
 			}
 
@@ -2468,7 +2468,7 @@ void CDrodScreen::ImportMedia()
 				{
 					//Get song list for this mood from INI
 					WSTRING wMoodText;
-					AsciiToUnicode(moodText[wI], wMoodText);
+					UTF8ToUnicode(moodText[wI], wMoodText);
 					WSTRING wstrSongmood = styleName + wMoodText;
 					f.GetGameProfileString(INISection::Songs, wstrSongmood.c_str(), songlist);
 				} else {
@@ -2680,7 +2680,7 @@ bool CDrodScreen::IsStyleOnDisk(
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 

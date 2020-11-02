@@ -90,7 +90,7 @@ void CVarMonitorEffect::SetTextForNewTurn()
 			//Print changed var names and values.
 			WSTRING temp;
 			const char *pVarName = var->c_str();
-			AsciiToUnicode(pVarName, temp);
+			UTF8ToUnicode(pVarName, temp);
 			char *varID = pGame->pHold->getVarAccessToken(temp.c_str());
 			newText += temp;
 			newText += wszSpace;
