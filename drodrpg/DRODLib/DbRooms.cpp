@@ -9012,6 +9012,7 @@ void CDbRoom::SetExtraVarsFromMembers()
 	v.SetVar(WEATHER_LIGHT, w.wLight);
 	v.SetVar(WEATHER_SNOW, w.wSnow);
 	v.SetVar(WEATHER_SKY, w.sky.c_str());
+	v.SetVar(WEATHER_RAIN, w.rain);
 }
 
 //*****************************************************************************
@@ -9030,6 +9031,7 @@ void CDbRoom::SetMembersFromExtraVars()
 	w.wLight = v.GetVar(WEATHER_LIGHT, UINT(0));
 	w.wSnow = v.GetVar(WEATHER_SNOW, UINT(0));
 	w.sky = v.GetVar(WEATHER_SKY, wszEmpty);
+	w.rain = v.GetVar(WEATHER_RAIN, UINT(0));
 }
 
 //*****************************************************************************

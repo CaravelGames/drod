@@ -295,7 +295,7 @@ struct Weather
 {
 	void clear() {
 		bOutside = bLightning = bClouds = bSunshine = bSkipLightfade = false;
-		wFog = wLight = wSnow = 0;
+		wFog = wLight = wSnow = rain = 0;
 		sky.resize(0);
 	}
 	bool bOutside;		//area is located outside
@@ -307,6 +307,7 @@ struct Weather
 	UINT wLight;      //room's ambient light level
 	UINT wSnow;       //rate of snowfall
 	WSTRING sky;      //name of sky image (if non-default)
+	UINT rain;        //rate of rainfall (0=none)
 };
 
 //******************************************************************************************

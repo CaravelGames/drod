@@ -2312,8 +2312,13 @@
 #define TI_STALWART_UW    2140
 #define TI_STALWART_UNW   2141
 
+#define TI_RAIN1          2142
+#define TI_RAIN2          2143
+#define TI_WADE1          2144
+#define TI_WADE2          2145
+#define TI_WADE3          2146
 
-static const UINT TI_COUNT = 2142;
+static const UINT TI_COUNT = 2147;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

@@ -5062,6 +5062,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 				//Fade out effects drawn on the top layer of the room.
 				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ESNOWFLAKE, 1.0f-fFade);
+				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ERAINDROP, 1.0f-fFade);
 			}
 			this->pRoomWidget->DirtyRoom();  //repaint whole room each fade
 			dwLastFade = dwNow;

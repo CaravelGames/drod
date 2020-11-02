@@ -569,6 +569,7 @@
     <ClCompile Include="PendingBuildEffect.cpp" />
     <ClCompile Include="PendingPlotEffect.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="RaindropEffect.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="RestoreScreen.cpp" />
     <ClCompile Include="RoomEffectList.cpp" />
@@ -592,6 +593,7 @@
     <ClCompile Include="TrapdoorFallEffect.cpp" />
     <ClCompile Include="VarMonitorEffect.cpp" />
     <ClCompile Include="VerminEffect.cpp" />
+    <ClCompile Include="WadeEffect.cpp" />
     <ClCompile Include="WeatherDialogWidget.cpp" />
     <ClCompile Include="WinStartScreen.cpp" />
     <ClCompile Include="ZombieGazeEffect.cpp" />
@@ -633,6 +635,7 @@
     <ClInclude Include="PendingBuildEffect.h" />
     <ClInclude Include="PendingPlotEffect.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="RaindropEffect.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="RestoreScreen.h" />
     <ClInclude Include="RoomEffectList.h" />
@@ -658,6 +661,7 @@
     <ClInclude Include="TrapdoorFallEffect.h" />
     <ClInclude Include="VarMonitorEffect.h" />
     <ClInclude Include="VerminEffect.h" />
+    <ClInclude Include="WadeEffect.h" />
     <ClInclude Include="WeatherDialogWidget.h" />
     <ClInclude Include="WinStartScreen.h" />
     <ClInclude Include="ZombieGazeEffect.h" />

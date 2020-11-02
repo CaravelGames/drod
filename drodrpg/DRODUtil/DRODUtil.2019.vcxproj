@@ -477,6 +477,7 @@
     <ClCompile Include="..\Drod\ParticleExplosionEffect.cpp" />
     <ClCompile Include="..\Drod\PendingPlotEffect.cpp" />
     <ClCompile Include="..\Drod\Point.cpp" />
+    <ClCompile Include="..\DROD\RaindropEffect.cpp" />
     <ClCompile Include="..\Drod\Rectangle.cpp" />
     <ClCompile Include="..\Drod\RoomEffectList.cpp" />
     <ClCompile Include="..\Drod\RoomWidget.cpp" />
@@ -487,6 +488,7 @@
     <ClCompile Include="..\Drod\StrikeOrbEffect.cpp" />
     <ClCompile Include="..\Drod\TileImageCalcs.cpp" />
     <ClCompile Include="..\DROD\VarMonitorEffect.cpp" />
+    <ClCompile Include="..\DROD\WadeEffect.cpp" />
     <ClCompile Include="..\Drod\ZombieGazeEffect.cpp" />
     <ClCompile Include="DRODUtil.cpp" />
     <ClCompile Include="OptionList.cpp" />

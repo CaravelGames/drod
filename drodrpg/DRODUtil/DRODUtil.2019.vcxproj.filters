@@ -90,6 +90,12 @@
     <ClCompile Include="..\Drod\Sphere.cpp">
       <Filter>RoomModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\DROD\RaindropEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\WadeEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OptionList.h">

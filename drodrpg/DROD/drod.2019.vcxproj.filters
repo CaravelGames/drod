@@ -208,6 +208,12 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>RoomModel</Filter>
     </ClCompile>
+    <ClCompile Include="RaindropEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="WadeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -401,6 +407,12 @@
     </ClInclude>
     <ClInclude Include="Sphere.h">
       <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="RaindropEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="WadeEffect.h">
+      <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
