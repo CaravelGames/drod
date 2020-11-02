@@ -321,7 +321,7 @@ public:
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveOLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveTLayerEffectsOfType(const EffectType eEffectType);
-	void				RenderEnvironment(SDL_Surface *pDestSurface=NULL);
+	void	       RenderEnvironment(SDL_Surface *pDestSurface=NULL);
 	void           RenderRoom(int wCol=0, int wRow=0,
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS,
 			const bool bEditor=true);

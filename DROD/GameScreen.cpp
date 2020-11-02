@@ -3080,8 +3080,6 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			break;
 	}
 	
-	this->pRoomWidget->preventDrawing = true;
-
 	this->pRoomWidget->SetDeathFadeOpacity(0);
 	this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(1);
 	this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(1);

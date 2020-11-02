@@ -4356,6 +4356,10 @@ void CRoomWidget::Paint(
 		return; //once the room has been rendered out of play, there's nothing else to render
 	}
 
+	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
+	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation everything must be made dirty
+		this->bAllDirty = true;
+
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
@@ -4375,7 +4379,6 @@ void CRoomWidget::Paint(
 	}
 
 	//1d. Animate monster frames.
-	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
 	if (!bIsPlacingDouble && bPlayerIsAlive)
 		AnimateMonsters();
 
@@ -4501,8 +4504,7 @@ void CRoomWidget::Paint(
 	ReduceJitter();
 
 	//8. Environmental effects
-	if (bPlayerIsAlive)
-		RenderEnvironment(pDestSurface);
+	RenderEnvironment(pDestSurface);
 
 	//9. Display filter.
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pDestSurface);
@@ -4690,15 +4692,19 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 		bIsPlacingDouble = player.wPlacingDoubleType != 0;
 	}
 
-	//Add a new snowflake to the room every ~X frames.
-	if (this->wSnow && RAND(SNOW_INCREMENTS-1) < this->wSnow &&
+	// Prevent creating new snowflakes/raindrobs when they couldn't animate and disappear, to prevent
+	// game crashing/lagging, looking weird
+	if (!this->pMLayerEffects->GetEffectsFrozen()) {
+		//Add a new snowflake to the room every ~X frames.
+		if (this->wSnow && RAND(SNOW_INCREMENTS - 1) < this->wSnow &&
 			this->w && this->y) //hack: snowflakes draw on room edges during transition -- this should stop it
-		AddMLayerEffect(new CSnowflakeEffect(this));
+			AddMLayerEffect(new CSnowflakeEffect(this));
 
-	//Add a new raindrop to the room every ~X frames.
-	if (this->rain && RAND(RAIN_INCREMENTS-1) < this->rain && !bIsPlacingDouble &&
+		//Add a new raindrop to the room every ~X frames.
+		if (this->rain && RAND(RAIN_INCREMENTS - 1) < this->rain && !bIsPlacingDouble &&
 			this->w && this->y) //hack: rain draws on room edges during transition -- this should stop it
-		AddMLayerEffect(new CRaindropEffect(this, bHasted));
+			AddMLayerEffect(new CRaindropEffect(this, bHasted));
+	}
 
 	if (!(this->dwLightning || this->bFog || this->bClouds || this->bSunlight))
 		return;	//Nothing else to do.
