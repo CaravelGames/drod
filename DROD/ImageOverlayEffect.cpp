@@ -243,6 +243,11 @@ bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
 	// For infinite loop protection
 	const UINT wInitialIndex = this->index;
 
+	if (this->index == (UINT)-1) {
+		++this->index;
+		StartNextCommand();
+	}
+
 	// do{} is used because on the first draw wDeltaTime will be 0, and we still want non time-based commands to happen
 	do {
 		Uint32 dwConsumedTime = UpdateCommand(this->commands[this->index], this->executionState, dwRemainingTime);
