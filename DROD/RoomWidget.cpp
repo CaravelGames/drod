@@ -52,6 +52,7 @@
 
 #include <FrontEndLib/Bolt.h>
 #include <FrontEndLib/Fade.h>
+#include <FrontEndLib/FadeTileEffect.h>
 #include <FrontEndLib/FrameRateEffect.h>
 #include <FrontEndLib/Pan.h>
 #include <FrontEndLib/ShadeEffect.h>
@@ -687,7 +688,7 @@ void CRoomWidget::AddStrikeOrbEffect(
 {
 	if (bDrawOrb)
 		AddTLayerEffect(
-			new CAnimatedTileEffect(this, SetOrbData, 220, TI_ORB_L, false, EORBHIT));
+			new CFadeTileEffect(this, SetOrbData, TI_ORB_L, 220));
 	AddMLayerEffect(
 		new CStrikeOrbEffect(this, SetOrbData, this->images[BOLTS_SURFACE], false));
 }
