@@ -2076,8 +2076,10 @@ MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 		return MID_DROD_TCB3_3; //3.3
 	if (wVersion >= 323 && wVersion <= 400)
 		return MID_DROD_FnM;    //4.0
-	if (wVersion >= 500 && wVersion < NEXT_VERSION_NUMBER)
-		return MID_DROD_TSS;    //5.0
+	if (wVersion >= 500 && wVersion < 509)
+		return MID_DROD_TSS;    //5.0, 5.1
+	if (wVersion >= 509 && wVersion < NEXT_VERSION_NUMBER)
+		return MID_DROD_TSS5_2; //5.2
 	return MID_DROD_UnsupportedVersion; //???
 }
 
