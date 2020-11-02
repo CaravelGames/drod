@@ -2642,6 +2642,16 @@ void CCurrentGame::ProcessWeaponPush(
 	WeaponPushback(push, pushX, pushY, eActivationType, CueEvents, pArmedMonster);
 }
 
+//***************************************************************************************
+void CCurrentGame::ProcessScriptedPush(
+	const WeaponStab& push,
+	CCueEvents& CueEvents,
+	CCharacter* pCharacter
+)
+{
+	ProcessWeaponPush(push, 0, 0, OrbActivationType::OAT_Monster, CueEvents, pCharacter);
+}
+
 //*****************************************************************************
 bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 // Returns true if the player has been moved

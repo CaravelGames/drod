@@ -265,6 +265,7 @@ public:
 	void     ProcessPlayerWeapon(int dx, int dy, CCueEvents& CueEvents);
 	void     ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
 			const bool bWasOnSameScroll, const bool bPlayerMove = true, const bool bPlayerTeleported = false);
+	void     ProcessScriptedPush(const WeaponStab& push, CCueEvents& CueEvents, CCharacter* pCharacter);
 	void     ProcessWeaponHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			CArmedMonster *pArmedMonster = NULL);
 	void     QueryCheckpoint(CCueEvents& CueEvents, const UINT wX, const UINT wY) const;

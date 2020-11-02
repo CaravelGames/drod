@@ -823,6 +823,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_ActivatePlates: strText = "Activate Pressure Plates";
 	case MID_PushMonsters: strText = "Push Monsters";
 	case MID_FatalPushImmune: strText = "Push to Fall Immunity";
+	case MID_PushTile: strText = "Push Tile";
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

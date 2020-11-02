@@ -3331,6 +3331,15 @@ const
 			wstr += wszSpace;
 			wstr += this->pAttackTileListBox->GetTextForKey(command.flags);
 		break;
+		case CCharacterCommand::CC_PushTile:
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+			wstr += this->pDirectionListBox2->GetTextForKey(command.w);
+		break;
 		case CCharacterCommand::CC_MoveRel:
 			wstr += wszLeftParen;
 			wstr += _itoW((int)command.x, temp, 10);
@@ -4419,6 +4428,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveRel, g_pTheDB->GetMessageText(MID_MoveRel));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveTo, g_pTheDB->GetMessageText(MID_MoveTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_PlayVideo, g_pTheDB->GetMessageText(MID_PlayVideo));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_PushTile, g_pTheDB->GetMessageText(MID_PushTile));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Question, g_pTheDB->GetMessageText(MID_Question));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
@@ -5161,6 +5171,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT FACE_TOWARDS[] = { TAG_ONOFFLISTBOX, TAG_WAITFLAGSLISTBOX, 0 };
 	static const UINT NATURAL_TARGET[] = { TAG_NATURAL_TARGET_TYPES, 0 };
 	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
+	static const UINT PUSH_TILE[] =     { TAG_DIRECTIONLISTBOX2, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5248,7 +5259,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,          //CC_GetEntityDirection
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,            //CC_BEHAVIOR
-		MONSTER_REMAINS     //CC_WaitForRemains
+		MONSTER_REMAINS,    //CC_WaitForRemains
+		PUSH_TILE           //CC_PushTile
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5287,6 +5299,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT INPUT_L[] =        {TAG_INPUTLABEL, 0};
 	static const UINT IMAGE_OVERLAY_L[] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT FACE_TOWARDS_L[] = { TAG_SINGLESTEP2, 0 };
+	static const UINT PUSH_TILE_L[] =    { TAG_DIRECTIONLABEL2, 0 };
+
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,          //CC_Appear
@@ -5374,7 +5388,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,           //CC_GetEntityDirection
 		NO_LABELS,			//CC_WaitForWeapon
 		NO_LABELS,          //CC_Behavior
-		NO_LABELS           //CC_WaitForRemains
+		NO_LABELS,          //CC_WaitForRemains
+		PUSH_TILE_L         //CC_PushTile
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5779,6 +5794,10 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_AttackTile:
 			this->pCommand->flags = this->pAttackTileListBox->GetSelectedItem();
+			QueryXY();
+		break;
+		case CCharacterCommand::CC_PushTile:
+			this->pCommand->w = this->pDirectionListBox2->GetSelectedItem();
 			QueryXY();
 		break;
 
@@ -6476,6 +6495,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pAttackTileListBox->SelectItem(this->pCommand->flags);
 		break;
 
+		case CCharacterCommand::CC_PushTile:
+			this->pDirectionListBox2->SelectItem(this->pCommand->w);
+			break;
+
 		case CCharacterCommand::CC_LevelEntrance:
 			this->pOnOffListBox->SelectItem(this->pCommand->y);
 		break;
@@ -7127,6 +7150,15 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseMandatoryOption(pCommand->flags,this->pAttackTileListBox,bFound);
 	break;
 
+	case CCharacterCommand::CC_PushTile:
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseMandatoryOption(pCommand->w, this->pDirectionListBox2, bFound);
+	break;
+
 	case CCharacterCommand::CC_WaitForDoorTo:
 		parseMandatoryOption(pCommand->w,this->pOpenCloseListBox,bFound);
 		skipComma;
@@ -7773,6 +7805,12 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		wstr += this->pAttackTileListBox->GetTextForKey(c.flags);
+	break;
+
+	case CCharacterCommand::CC_PushTile:
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		wstr += this->pDirectionListBox2->GetTextForKey(c.w);
 	break;
 
 	case CCharacterCommand::CC_WaitForDoorTo:
