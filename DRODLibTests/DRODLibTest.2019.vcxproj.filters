@@ -220,6 +220,9 @@
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Scripting\Behavior\DropTrapdoors.cpp" />
+    <ClCompile Include="src\tests\Scripting\PushTile.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
