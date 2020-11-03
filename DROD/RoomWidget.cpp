@@ -4435,16 +4435,9 @@ void CRoomWidget::Paint(
 		if (bPlayerIsAlive)
 			PopulateBuildMarkerEffects(room);
 
-		if (this->fDeathFadeOpacity > 0)
-			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, 1.0f - this->fDeathFadeOpacity, pDestSurface);
-
 		//4. Draw player.
-		if (this->bShowingPlayer && !bIsPlacingDouble)
+		if (this->bShowingPlayer && !bIsPlacingDouble && bPlayerIsAlive) // Dying player is rendered later
 			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
-
-		//5. If monster is killing swordsman, draw it on top.
-		if (!bPlayerIsAlive)
-			DrawMonsterKillingPlayer(pDestSurface);
 
 		//X. Debug draws, comment out when you want them to be visible
 		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND);
@@ -4458,10 +4451,9 @@ void CRoomWidget::Paint(
 		//DebugDraw_Pathmap(pDestSurface, MovementType::WATER_FORCE);
 		//DebugDraw_MarkedTiles(pDestSurface);
 
-		//5a. Draw effects that go on top of monsters/swordsman.
+		//5. Draw effects that go on top of monsters/swordsman.
 		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
-
 
 		if (player && bIsPlacingDouble && bPlayerIsAlive)
 		{
@@ -4514,6 +4506,20 @@ void CRoomWidget::Paint(
 	this->pLastLayerEffects->DirtyTiles();
 
 	RemoveEffectsQueuedForRemoval();
+
+	// When player is dying draw a fade effect on top of everything, and simultaneously fade in
+	// player and killing monsters on top of the fade
+	if (!bPlayerIsAlive) {
+		if (this->fDeathFadeOpacity > 0)
+			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, 1.0f - this->fDeathFadeOpacity, pDestSurface);
+
+		if (this->bShowingPlayer)
+			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
+
+		if (!bPlayerIsAlive)
+			DrawMonsterKillingPlayer(pDestSurface);
+	}
+
 
 	//Last turn/movement should be drawn completely now.
 	this->bFinishLastMovementNow = false;
@@ -7323,11 +7329,7 @@ void CRoomWidget::DrawOverheadLayer(SDL_Surface *pDestSurface)
 						nI += wHeight;
 					src.y = nI % wHeight;
 
-					if (this->fDeathFadeOpacity > 0)
-						EnableSurfaceBlending(pTileTexture, 255 * (1 - this->fDeathFadeOpacity));
 					SDL_BlitSurface(pTileTexture, &src, pDestSurface, &dest);
-					if (this->fDeathFadeOpacity > 0)
-						DisableSurfaceBlending(pTileTexture);
 				}
 			}
 		}
