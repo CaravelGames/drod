@@ -368,6 +368,7 @@ CRoomWidget::CRoomWidget(
 
 	, CX_TILE(CBitmapManager::CX_TILE), CY_TILE(CBitmapManager::CY_TILE)
 
+	, fDeathFadeOpacity(0)
 	, time_of_last_weather_render(0)
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
@@ -2754,10 +2755,6 @@ void CRoomWidget::RenderRoomInPlay(
 	if (bStateChanged)
 		this->bAllDirty = true;
 
-	ASSERT(this->pRoomSnapshotSurface);
-	SDL_Surface *pDestSurface = this->pRoomSnapshotSurface;  //draw to here
-	ASSERT(!SDL_MUSTLOCK(pDestSurface));   //Don't need to lock this surface.
-
 	//1. Apply current light calculations.
 	if (this->bRenderPlayerLight) //render player light when flagged
 	{
@@ -2772,23 +2769,6 @@ void CRoomWidget::RenderRoomInPlay(
 
 	//2. Draw o- and t-layers.
 	RenderRoom(wCol, wRow, wWidth, wHeight, false);
-
-	//3. When action is frozen, draw the following here.
-	if (bPlayerIsDying)
-	{
-		//a. Effects that go on top of room image, under monsters/swordsman.
-		RenderFogInPit(pDestSurface);
-
-		DrawTLayer(pDestSurface);
-		
-		this->pTLayerEffects->DrawEffects( bPlayerIsDying ? NULL : pDestSurface);
-
-		//b. Draw monsters (not killing player).
-		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, bPlayerIsDying);
-
-		//c. Effects that go on top of monsters/swordsman.
-		this->pMLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
-	}
 
 	this->bWasPlacingDouble = bIsPlacingDouble;
 	this->bWasInvisible = bIsInvisible;
@@ -4377,6 +4357,10 @@ void CRoomWidget::Paint(
 		return; //once the room has been rendered out of play, there's nothing else to render
 	}
 
+	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
+	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation everything must be made dirty
+		this->bAllDirty = true;
+
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
@@ -4396,7 +4380,6 @@ void CRoomWidget::Paint(
 	}
 
 	//1d. Animate monster frames.
-	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
 	if (!bIsPlacingDouble && bPlayerIsAlive)
 		AnimateMonsters();
 
@@ -4432,42 +4415,30 @@ void CRoomWidget::Paint(
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
 	{
-		//When action is not frozen, draw the following:
-		if (bPlayerIsAlive)
+		//3a. Draw effects that go on top of room image, under monsters/swordsman.
+		RenderFogInPit(pDestSurface);
+
+		DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
+
+		this->pTLayerEffects->DrawEffects();
+		this->pTLayerEffects->DirtyTiles();
+
+		//3b. Repaint monsters.
+		if (this->bAllDirty || monstersAreAnimated)
 		{
-			//3a. Draw effects that go on top of room image, under monsters/swordsman.
-			RenderFogInPit(pDestSurface);
-
-			DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
-
-			this->pTLayerEffects->DrawEffects();
-			this->pTLayerEffects->DirtyTiles();
-
-			//3b. Repaint monsters.
-			if (this->bAllDirty || monstersAreAnimated)
-			{
-				//Draw monsters (that aren't killing swordsman).
-				DrawMonsters(room.pFirstMonster, pDestSurface, false,
-					monstersAreAnimated);
-			} else {
-				RedrawMonsters(pDestSurface);
-			}
-
-			PopulateBuildMarkerEffects(room);
+			//Draw monsters (that aren't killing swordsman).
+			DrawMonsters(room.pFirstMonster, pDestSurface, false,
+				monstersAreAnimated);
 		} else {
-			//Add certain images as static during death animation
-
-			this->pOLayerEffects->DrawEffects(NULL, EIMAGEOVERLAY);
-			this->pOLayerEffects->DirtyTiles();
+			RedrawMonsters(pDestSurface);
 		}
 
-		//4. Draw player.
-		if (this->bShowingPlayer && !bIsPlacingDouble)
-			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
+		if (bPlayerIsAlive)
+			PopulateBuildMarkerEffects(room);
 
-		//5. If monster is killing swordsman, draw it on top.
-		if (!bPlayerIsAlive)
-			DrawMonsterKillingPlayer(pDestSurface);
+		//4. Draw player.
+		if (this->bShowingPlayer && !bIsPlacingDouble && bPlayerIsAlive) // Dying player is rendered later
+			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
 
 		//X. Debug draws, comment out when you want them to be visible
 		//DebugDraw_Pathmap(pDestSurface, MovementType::GROUND);
@@ -4481,10 +4452,9 @@ void CRoomWidget::Paint(
 		//DebugDraw_Pathmap(pDestSurface, MovementType::WATER_FORCE);
 		//DebugDraw_MarkedTiles(pDestSurface);
 
-		//5a. Draw effects that go on top of monsters/swordsman.
+		//5. Draw effects that go on top of monsters/swordsman.
 		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
-
 
 		if (player && bIsPlacingDouble && bPlayerIsAlive)
 		{
@@ -4511,7 +4481,7 @@ void CRoomWidget::Paint(
 				DrawInvisibilityRange(this->pCurrentGame->swordsman.wDoubleCursorX,
 					this->pCurrentGame->swordsman.wDoubleCursorY, pDestSurface);
 			}
-		} else if (bPlayerIsAlive) {
+		} else {
 			//6. Draw overhead layer.
 			DrawOverheadLayer(pDestSurface);
 
@@ -4527,8 +4497,7 @@ void CRoomWidget::Paint(
 	ReduceJitter();
 
 	//8. Environmental effects
-	if (bPlayerIsAlive)
-		RenderEnvironment(pDestSurface);
+	RenderEnvironment(pDestSurface);
 
 	//9. Display filter.
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pDestSurface);
@@ -4538,6 +4507,20 @@ void CRoomWidget::Paint(
 	this->pLastLayerEffects->DirtyTiles();
 
 	RemoveEffectsQueuedForRemoval();
+
+	// When player is dying draw a fade effect on top of everything, and simultaneously fade in
+	// player and killing monsters on top of the fade
+	if (!bPlayerIsAlive) {
+		if (this->fDeathFadeOpacity > 0)
+			g_pTheBM->DarkenRect(this->x, this->y, this->w, this->h, 1.0f - this->fDeathFadeOpacity, pDestSurface);
+
+		if (this->bShowingPlayer)
+			DrawPlayer(this->pCurrentGame->swordsman, pDestSurface);
+
+		if (!bPlayerIsAlive)
+			DrawMonsterKillingPlayer(pDestSurface);
+	}
+
 
 	//Last turn/movement should be drawn completely now.
 	this->bFinishLastMovementNow = false;
@@ -4716,15 +4699,19 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 		bIsPlacingDouble = player.wPlacingDoubleType != 0;
 	}
 
-	//Add a new snowflake to the room every ~X frames.
-	if (this->wSnow && RAND(SNOW_INCREMENTS-1) < this->wSnow &&
+	// Prevent creating new snowflakes/raindrobs when they couldn't animate and disappear, to prevent
+	// game crashing/lagging, looking weird
+	if (!this->pMLayerEffects->GetEffectsFrozen()) {
+		//Add a new snowflake to the room every ~X frames.
+		if (this->wSnow && RAND(SNOW_INCREMENTS - 1) < this->wSnow &&
 			this->w && this->y) //hack: snowflakes draw on room edges during transition -- this should stop it
-		AddMLayerEffect(new CSnowflakeEffect(this));
+			AddMLayerEffect(new CSnowflakeEffect(this));
 
-	//Add a new raindrop to the room every ~X frames.
-	if (this->rain && RAND(RAIN_INCREMENTS-1) < this->rain && !bIsPlacingDouble &&
+		//Add a new raindrop to the room every ~X frames.
+		if (this->rain && RAND(RAIN_INCREMENTS - 1) < this->rain && !bIsPlacingDouble &&
 			this->w && this->y) //hack: rain draws on room edges during transition -- this should stop it
-		AddMLayerEffect(new CRaindropEffect(this, bHasted));
+			AddMLayerEffect(new CRaindropEffect(this, bHasted));
+	}
 
 	if (!(this->dwLightning || this->bFog || this->bClouds || this->bSunlight))
 		return;	//Nothing else to do.
