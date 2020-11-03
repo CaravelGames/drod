@@ -56,6 +56,8 @@
 #include <BackEndLib/Browser.h>
 #include <BackEndLib/Files.h>
 
+#include <sstream>
+
 #ifdef DEV_BUILD //comment out to embed media to .dats
 #	define EMBED_STYLES
 #endif

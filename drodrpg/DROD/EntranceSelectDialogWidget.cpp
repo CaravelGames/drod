@@ -45,6 +45,8 @@
 #include "../DRODLib/DbHolds.h"
 #include "../Texts/MIDs.h"
 
+#include <sstream>
+
 //NOTE: tag #'s should not conflict with other widgets on screen
 const UINT TAG_ENTRANCES_LISTBOX = 898;
 const UINT TAG_DELETE = 897;
