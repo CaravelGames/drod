@@ -66,6 +66,18 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		AssertMonsterType(11, 10, M_GUARD);
 	}
 
+	SECTION("Guard with a dagger will kill-step vulnerable characters (even if role that normally can't be stepped on)") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(11, 10, S, M_CITIZEN);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Imperative, ScriptFlag::Vulnerable);
+
+		CCurrentGame* game = Runner::StartGame(13, 10, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertEvent(CID_MonsterDiedFromStab);
+		AssertMonsterType(11, 10, M_GUARD);
+	}
+
 	SECTION("Guard with a dagger will walk around invulnerable (naturally) characters") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
 		RoomBuilder::AddVisibleCharacter(11, 10, S, M_CITIZEN);

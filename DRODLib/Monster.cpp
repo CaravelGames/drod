@@ -2159,7 +2159,7 @@ void CMonster::Move(
 			case M_CHARACTER:
 			{
 				const bool bCanStrike = bIsStalwart(pMonster->GetIdentity()) ||
-					this->CanDaggerStep(pMonster->GetIdentity(), false);
+					this->CanDaggerStep(pMonster->wType, false);
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
 					bCanStrike);
