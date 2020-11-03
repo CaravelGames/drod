@@ -209,7 +209,7 @@ void CTestDb::InitializeEntrance()
 void CTestDb::RegenerateRoom(){
 	if (Setting_SaveTestLevels){
 		WSTRING buffer;
-		AsciiToUnicode(CTestDb::currentTestCaseName->c_str(), buffer);
+		UTF8ToUnicode(CTestDb::currentTestCaseName->c_str(), buffer);
 		level->NameText = buffer.c_str();
 		level->NameText.Update();
 		
@@ -244,7 +244,7 @@ void CTestDb::GetAppPath(
 	if (len && len != -1)
 	{
 		exepath[len] = 0;
-		AsciiToUnicode(exepath, wstrAppPath);
+		UTF8ToUnicode(exepath, wstrAppPath);
 		return;
 	}
 #elif defined(WIN32)
@@ -259,17 +259,17 @@ void CTestDb::GetAppPath(
 		char szPathBuffer[MAX_PATH + 1];
 		if (GetModuleFileNameA(NULL, szPathBuffer, MAX_PATH))
 		{
-			AsciiToUnicode(szPathBuffer, wstrAppPath);
+			UTF8ToUnicode(szPathBuffer, wstrAppPath);
 			return;
 		}
 	}
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 	char fullPathBuffer[PATH_MAX];
 	realpath(pszArg0, fullPathBuffer);
-	AsciiToUnicode(fullPathBuffer, wstrAppPath);
+	UTF8ToUnicode(fullPathBuffer, wstrAppPath);
 	return;
 #endif
 
 	//Fallback solution--use the command-line argument.
-	AsciiToUnicode(pszArg0, wstrAppPath);
+	UTF8ToUnicode(pszArg0, wstrAppPath);
 }

@@ -7342,9 +7342,9 @@ static const char szLanguage[LanguageCount][4] = {"",
 LANGUAGE Language::Get(const WCHAR* pwStr)
 //Returns: language enum corresponding to full name
 {
-	char pStr[256];
-	UnicodeToAscii(pwStr, pStr);
-	return Get(pStr);
+	string str;
+	UnicodeToUTF8(pwStr, str);
+	return Get(str.c_str());
 }
 
 LANGUAGE Language::Get(const char* pStr)

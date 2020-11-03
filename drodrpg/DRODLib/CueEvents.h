@@ -233,13 +233,8 @@ enum CUEEVENT_ID
 	//Private data: CMonsterMessage *pMonsterMessage (one or more)
 	CID_MonsterSpoke,
 
-	//The 'Neather has exited the room.  Used by ProcessMonsters() to delete
-	//CNeather and CCharacter monsters.
-	//
-	//Private data: CMonster* (one or more)
-
 	//When player jumps a hole.
-	CID_Jump, //CID_MonsterExitsRoom,
+	CID_Jump,
 
 	//The swordsman exited the room by walking across one of its four borders.  The
 	//new room is not loaded now.  The ProcessCommand() caller may load the new room

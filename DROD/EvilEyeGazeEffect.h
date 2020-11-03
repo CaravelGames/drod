@@ -39,15 +39,24 @@ public:
 	CEvilEyeGazeEffect(CWidget *pSetWidget, const UINT wX, const UINT wY, const UINT wO,
 			const Uint32 dwDuration);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+
+	void DirtyOldBeamTiles();
+
+	void UpdateOpacity(const Uint32& dwTimeElapsed);
+
+	void DrawNewBeam();
 
 protected:
+	virtual void Draw(SDL_Surface& destSurface);
+
 	UINT        wX, wY, wTileNo;
 	int         dx, dy;
+	Uint8       opacity;
 	const Uint32 dwDuration;
 
 	CRoomWidget *  pRoomWidget;
-	CCoordSet   lastGazeTiles;
+	CCoordSet   gazeTiles;
 };
 
 #endif //...#ifndef EVILEYEGAZEEFFECT_H

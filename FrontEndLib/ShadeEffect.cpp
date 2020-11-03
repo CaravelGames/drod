@@ -34,24 +34,21 @@ CShadeEffect::CShadeEffect(
 	CWidget *pSetWidget,       //(in)   Should be a room widget.
 	const CCoord &SetCoord,    //(in)   Location of checkpoint.
 	const SURFACECOLOR &Color) //(in)   Color to shade with.
-	: CAnimatedTileEffect(pSetWidget,SetCoord,0,0,false,EFFECTLIB::ESHADE)
+	: CAnimatedTileEffect(pSetWidget,SetCoord,(UINT)-1,0,false,EFFECTLIB::ESHADE)
 	, Color(Color)
 {
 }
 
+
 //********************************************************************************
-bool CShadeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.  Never ends.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CShadeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	//Add shading to tile.
-	ShadeTile(this->Color, pDestSurface);
-
-	//Continue effect.
 	return true;
+}
+
+//********************************************************************************
+void CShadeEffect::Draw(SDL_Surface& destSurface)
+{
+	//Add shading to tile.
+	ShadeTile(this->Color, destSurface);
 }

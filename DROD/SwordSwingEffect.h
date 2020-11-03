@@ -37,12 +37,20 @@ public:
 	CSwordSwingEffect(CWidget *pSetWidget, const CCoord &SetCoord, const UINT wO,
 		const UINT weaponType);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+
+private:
+	void CalculateFrame();
+
 	UINT    dwDuration;
 	UINT    wX, wY, wO;
 	UINT    weaponType;
+
+	Uint8 nOpacity;
+	UINT wTileNo;
 };
 
 #endif //...#ifndef SWORDSWINGEFFECT_H

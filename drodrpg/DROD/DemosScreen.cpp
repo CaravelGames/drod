@@ -1609,7 +1609,7 @@ void CDemosScreen::StartElement(
 				pDemo->wTimeReceived = convertToUINT(str);
 				break;
 			case UserName:
-				AsciiToUnicode(str, pDemo->userName);
+				UTF8ToUnicode(str, pDemo->userName);
 				break;
 			case PlayerName:
 				Base64::decode(str, pDemo->playerName);

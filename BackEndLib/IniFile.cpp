@@ -147,7 +147,7 @@ bool CIniSection::GetString(
 	WSTRING wstr;
 	for (list<string>::const_iterator iStr = strs.begin(); iStr != strs.end(); ++iStr)
 	{
-		AsciiToUnicode(iStr->c_str(), wstr);
+		UTF8ToUnicode(iStr->c_str(), wstr);
 		wstrBuffer.push_back(wstr);
 	}
 	return true;
@@ -178,7 +178,7 @@ void CIniSection::WriteString(
 	for (list<WSTRING>::const_iterator iStr = wstrValue.begin();
 			iStr != wstrValue.end(); ++iStr)
 	{
-		texts.push_back(UnicodeToAscii(iStr->c_str()));
+		texts.push_back(UnicodeToUTF8(iStr->c_str()));
 	}
 }
 
@@ -407,7 +407,7 @@ bool CIniFile::LoadText(
 //**********************************************
 bool CIniFile::LoadText(const WSTRING& wstrText, const bool bOverwrite, const bool bAddDuplicates)
 {
-	return LoadText(UnicodeToAscii(wstrText), bOverwrite, bAddDuplicates);
+	return LoadText(UnicodeToUTF8(wstrText), bOverwrite, bAddDuplicates);
 }
 
 //******************************************************************************

@@ -44,7 +44,6 @@ public:
 			const UINT eSetFontType=FONTLIB::F_Small);
 	virtual ~CToolTipEffect();
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
 	virtual long   GetDrawSequence() const {return 1000L;}   //draw last
 
 	UINT           GetFontType() const {return this->eFontType;}
@@ -52,6 +51,11 @@ public:
 	void           SetDuration(const Uint32 dwDuration)
 			{this->dwDuration = dwDuration;}
 	void           SetText(const WCHAR *pwczSetText, bool bResizeToFit=false);
+	
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	UINT           x, y, w, h;
@@ -59,7 +63,6 @@ private:
 	UINT           eFontType;
 
 	SDL_Surface *  pToolTipSurface;
-	Uint32         dwWhenEnabled, dwDuration;
 };
 
 #endif //#ifndef TOOLTIPEFFECT_H

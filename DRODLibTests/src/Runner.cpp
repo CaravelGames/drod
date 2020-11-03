@@ -107,7 +107,7 @@ void Runner::InitializeDatPath(){
 	wstrDatPathTxt += wstrExtension;
 
 	pErrorLogPath = new char[wstrDatPathTxt.length() * 2];
-	UnicodeToAscii(wstrDatPathTxt.c_str(), pErrorLogPath);
+	UnicodeToUTF8(wstrDatPathTxt.c_str(), pErrorLogPath);
 }
 
 CDbRoom* Runner::GetRoom(){

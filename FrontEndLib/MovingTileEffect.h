@@ -37,7 +37,6 @@ public:
 		const CCoord &DestCoord, const float fSpeed, const bool bUseLightLevel=false,
 		const UINT eType=EFFECTLIB::EGENERIC);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 	void MoveTo(const UINT wX, const UINT wY, const float fSpeed=0.0,
 			const bool bEndEffectAtDestination=false);
 
@@ -49,12 +48,18 @@ public:
 	Behavior behavior;
 
 protected:
-	bool UpdateLocation();
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
+	bool UpdateLocation(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 	//Move effect to a different location.
 	UINT     wMoveToX, wMoveToY;
 	float    fX, fY, fSpeed;
 	bool     bEndEffectAtDestination;
+
+	SDL_Rect drawRect;
+	bool     bDrawEffect;
 };
 
 #endif //...#ifndef MOVINGTILEEFFECT_H

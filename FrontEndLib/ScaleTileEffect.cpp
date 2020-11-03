@@ -38,8 +38,7 @@ CScaleTileEffect::CScaleTileEffect(
 	const UINT tile,        //tile to display
 	const UINT duration,    //display duration
 	const float fScaleRate)
-	: CEffect(pSetWidget, EFFECTLIB::ESCALETILE)
-	, dwDuration(duration)
+	: CEffect(pSetWidget, duration, EFFECTLIB::ESCALETILE)
 	, tileNo(UINT(-1))
 	, xCenter(xCenter), yCenter(yCenter)
 	, nOpacity(255)
@@ -62,54 +61,46 @@ CScaleTileEffect::~CScaleTileEffect()
 }
 
 //*****************************************************************************
-bool CScaleTileEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CScaleTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
 	//If object is scaling with time, update image.
 	if (this->fScaleRate != 0.0f)
 	{
 		//Determine current scale factor.
-		const float fScale = this->fScaleRate * dwElapsed / 1000;
+		const float fScale = this->fScaleRate * dwTimeElapsed / 1000;
 		const int nWidth = int(this->srcRect.w + fScale); //!!weird math -- fix
 		const int nHeight = int(this->srcRect.h + fScale);
 
 		//Only re-render if change in scaling is sufficient so that
 		//the different would be perceptible (speed optimization).
 		if (abs(this->srcRect.w - nWidth) >= 1 ||
-			 abs(this->srcRect.h - nHeight) >= 1)
+			abs(this->srcRect.h - nHeight) >= 1)
 			SetScaleSize(nWidth, nHeight);
 	}
 
 	if (!this->pScaledSurface)
 		return false;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	this->drawRect = MAKE_SDL_RECT(this->xCenter - this->pScaledSurface->w / 2,
+		this->yCenter - this->pScaledSurface->h / 2,
+		this->pScaledSurface->w, this->pScaledSurface->h);
 
-	//Draw scaled surface.
+	ASSERT(this->dirtyRects.size() == 1);
+	this->dirtyRects[0] = this->drawRect;
+
+	return true;
+}
+//*****************************************************************************
+void CScaleTileEffect::Draw(SDL_Surface& destSurface)
+{
 	SDL_Rect src = MAKE_SDL_RECT(0, 0, this->pScaledSurface->w, this->pScaledSurface->h);
-	SDL_Rect dest = MAKE_SDL_RECT(this->xCenter - this->pScaledSurface->w/2,
-			this->yCenter - this->pScaledSurface->h/2,
-			this->pScaledSurface->w, this->pScaledSurface->h);
 
 	//Clip to parent rect.
 	SDL_Rect ClipRect;
 	this->pOwnerWidget->GetRect(ClipRect);
-	SDL_SetClipRect(pDestSurface, &ClipRect);
-	g_pTheBM->BlitSurface(this->pScaledSurface, &src, pDestSurface, &dest, nOpacity);
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0] = dest;
-
-	//Continue effect.
-	return true;
+	SDL_SetClipRect(&destSurface, &ClipRect);
+	g_pTheBM->BlitSurface(this->pScaledSurface, &src, &destSurface, &this->drawRect, this->nOpacity);
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************

@@ -42,43 +42,24 @@ CFiretrapEffect::CFiretrapEffect(
 }
 
 //********************************************************************************
-bool CFiretrapEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CFiretrapEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const UINT dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw animation.
 	static const UINT frames = 9;
-	const float fPercent = (this->dwDuration - dwTimeElapsed) / float(this->dwDuration + 1);
-	ASSERT(fPercent >= 0.0);
-	ASSERT(fPercent < 1.0);
 
-	UINT wTile;
-	const UINT frame = UINT(fPercent * frames);
+	const UINT frame = UINT(GetRemainingFraction() * frames);
 	switch (frame % 3) {
-		case 0:
-			wTile = TI_FIRETRAP_UP1; break;
-		case 1:
-			wTile = TI_FIRETRAP_UP2; break;
-		case 2:
-			wTile = TI_FIRETRAP_UP3; break;
-		default:
-			ASSERT(!"Unsupported firetrap frame");
-			break;
+	case 0:
+		this->wTileNo = TI_FIRETRAP_UP1; break;
+	case 1:
+		this->wTileNo = TI_FIRETRAP_UP2; break;
+	case 2:
+		this->wTileNo = TI_FIRETRAP_UP3; break;
+	default:
+		ASSERT(!"Unsupported firetrap frame");
+		break;
 	}
 
-	//Fade out.
-	const BYTE nOpacity = g_pTheBM->bAlpha ? (BYTE)(fPercent * 255.0) : 255;
+	this->nOpacity = g_pTheBM->bAlpha ? (BYTE)(GetRemainingFraction() * 255.0) : 255;
 
-	DrawTile(wTile, pDestSurface, nOpacity);
-
-	//Continue effect.
 	return true;
 }

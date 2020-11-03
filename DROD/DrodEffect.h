@@ -29,22 +29,25 @@
 #define DRODEFFECT_H
 
 #include <FrontEndLib/Effect.h>
+#include <FrontEndLib/EffectList.h>
 
 //Set of all DROD effects that need to be kept track of (for deleting early, for example).
 //Add other effects here as needed.
 enum EffectType
 {
-	EGENERIC=EFFECTLIB::EGENERIC,       //generic effect
-	ESHADE=EFFECTLIB::ESHADE,           //square highlighting
-	ETRANSTILE=EFFECTLIB::ETRANSTILE,      //transparent tiles
-	EFRAMERATE=EFFECTLIB::EFRAMERATE,      //frame rate effect
-	ETOOLTIP=EFFECTLIB::ETOOLTIP,       //tool tip
-	ESUBTITLE=EFFECTLIB::ESUBTITLE,     //scrolling text box
-	EBUMPOBSTACLE=EFFECTLIB::EBUMPOBSTACLE,   //player bumps into obstacle
-	EFLASHSHADE=EFFECTLIB::EFLASHSHADE, //flashing square highlighting
-	EFLOAT=EFFECTLIB::EFLOAT,  //floating tile graphic
-	EFLOATTEXT=EFFECTLIB::EFLOATTEXT, //floating text
-	ETEXT=EFFECTLIB::ETEXT,    //text
+	EALL = DRAW_ALL_EFFECTS_TYPE, // Special flag used by EffectList to render every effect
+
+	EGENERIC      = EFFECTLIB::EGENERIC,      //generic effect
+	ESHADE        = EFFECTLIB::ESHADE,        //square highlighting
+	ETRANSTILE    = EFFECTLIB::ETRANSTILE,    //transparent tiles
+	EFRAMERATE    = EFFECTLIB::EFRAMERATE,    //frame rate effect
+	ETOOLTIP      = EFFECTLIB::ETOOLTIP,      //tool tip
+	ESUBTITLE     = EFFECTLIB::ESUBTITLE,     //scrolling text box
+	EBUMPOBSTACLE = EFFECTLIB::EBUMPOBSTACLE, //player bumps into obstacle
+	EFLASHSHADE   = EFFECTLIB::EFLASHSHADE,   //flashing square highlighting
+	EFLOAT        = EFFECTLIB::EFLOAT,        //floating tile graphic
+	EFLOATTEXT    = EFFECTLIB::EFLOATTEXT,    //floating text
+	ETEXT         = EFFECTLIB::ETEXT,         //text
 	EPENDINGPLOT,     //selecting room area for plot in editor
 	EORBHIT,          //strike orb effect
 	ESPARK,           //fuse spark effect

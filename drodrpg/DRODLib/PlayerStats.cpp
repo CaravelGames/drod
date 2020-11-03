@@ -182,7 +182,7 @@ WSTRING ScriptVars::getVarNameW(const Predefined var)
 	const string varName = getVarName(var);
 
 	WSTRING wstr;
-	AsciiToUnicode(varName, wstr);
+	UTF8ToUnicode(varName, wstr);
 	return wstr;
 }
 
@@ -199,7 +199,7 @@ void ScriptVars::init()
 			//Get user-readable form of var.
 			ASSERT(index < PredefinedVarCount);
 			const WCHAR *pText = g_pTheDB->GetMessageText(predefinedVarMIDs[index]);
-			midTexts[index] = UnicodeToAscii(pText);
+			midTexts[index] = UnicodeToUTF8(pText);
 		}
 		ASSERT(!midTexts[0].empty());
 	}
@@ -209,7 +209,7 @@ void ScriptVars::init()
 Predefined ScriptVars::parsePredefinedVar(const WSTRING& wstr)
 //Returns: the enumeration for this variable name, or P_NoVar if not recognized
 {
-	const string str = UnicodeToAscii(wstr);
+	const string str = UnicodeToUTF8(wstr);
 	return parsePredefinedVar(str);
 }
 

@@ -30,6 +30,8 @@
 #include "../DRODLib/GameConstants.h"
 #include <FrontEndLib/BitmapManager.h>
 
+const UINT EffectDuration = 250;
+
 //********************************************************************************
 CSwordSwingEffect::CSwordSwingEffect(
 //Constructor.
@@ -38,8 +40,9 @@ CSwordSwingEffect::CSwordSwingEffect(
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
 	const CCoord &SetCoord,    //(in)   Location of axis of rotation.
 	const UINT wO)
-	: CEffect(pSetWidget,ESWORDSWING)
+	: CEffect(pSetWidget, EffectDuration, ESWORDSWING)
 	, wO(wO)
+	, nOpacity(255), wTileNo(TI_TEMPTY)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 
@@ -66,44 +69,39 @@ CSwordSwingEffect::CSwordSwingEffect(
 	SDL_Rect rect = MAKE_SDL_RECT(this->wX, this->wY,
 			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	this->dirtyRects.push_back(rect);
+
+	CalculateFrame();
 }
 
 //********************************************************************************
-bool CSwordSwingEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns: True if effect should continue, or false if effect is done.
+bool CSwordSwingEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	static const Uint32 dwDuration = 250;	//ms
+	this->nOpacity = static_cast<Uint8>(GetRemainingFraction() * 255);
 
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= dwDuration) return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw lit up checkpoint.
-	static const float fMultiplier = 255.0f / (float)dwDuration;
-	const Uint8 opacity = static_cast<Uint8>((dwDuration-dwElapsed) * fMultiplier);
-
+	return true;
+}
+//********************************************************************************
+void CSwordSwingEffect::Draw(SDL_Surface& destSurface)
+{
 	//Clip screen surface to owner widget in case effect goes outside.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
 
-	//Draw tile graphic.
+	g_pTheBM->BlitTileImage(this->wTileNo, this->wX, this->wY, &destSurface, true, this->nOpacity);
+
+	//Unclip screen surface.
+	SDL_SetClipRect(&destSurface, NULL);
+}
+
+void CSwordSwingEffect::CalculateFrame()
+{
 	ASSERT(IsValidOrientation(this->wO));
 	ASSERT(this->wO != NO_ORIENTATION);
 	static const UINT tiles[ORIENTATION_COUNT] = {
-		TI_ROTATE_NW_N, TI_ROTATE_N_NE, TI_ROTATE_NE_E, TI_ROTATE_W_NW,
-		TI_TEMPTY,	//don't use
-		TI_ROTATE_E_SE, TI_ROTATE_SW_W, TI_ROTATE_S_SW, TI_ROTATE_SE_S 
+		TI_ROTATE_NW_N, TI_ROTATE_N_NE, TI_ROTATE_NE_E,
+		TI_ROTATE_W_NW, TI_TEMPTY,	    TI_ROTATE_E_SE,
+		TI_ROTATE_SW_W, TI_ROTATE_S_SW, TI_ROTATE_SE_S
 	};
-	g_pTheBM->BlitTileImage(tiles[this->wO], this->wX, this->wY, pDestSurface,
-			true, opacity);
-
-	//Unclip screen surface.
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	//Continue effect.
-	return true;
+	this->wTileNo = tiles[this->wO];
 }

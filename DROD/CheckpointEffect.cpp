@@ -39,26 +39,23 @@ CCheckpointEffect::CCheckpointEffect(
 }
 
 //********************************************************************************
-bool CCheckpointEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CCheckpointEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration) return false; //Effect is done.
+	if (dwTimeElapsed >= this->dwDuration) 
+		return false; //Effect is done.
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	return true;
+}
 
+//********************************************************************************
+void CCheckpointEffect::Draw(SDL_Surface& destSurface)
+{
 	//Draw lit up checkpoint.
 	static const Uint32 dwFullOpacityTime = 500;
 	static const Uint32 dwFadeTime = this->dwDuration - dwFullOpacityTime;
 	static const float fMultiplier = 255.0f / (float)dwFadeTime;
-	Uint8 opacity = dwElapsed > dwFullOpacityTime ?
-			static_cast<Uint8>((dwFadeTime-(dwElapsed-dwFullOpacityTime)) * fMultiplier) :
+	Uint8 opacity = dwTimeElapsed > dwFullOpacityTime ?
+			static_cast<Uint8>((dwFadeTime-(dwTimeElapsed -dwFullOpacityTime)) * fMultiplier) :
 			255;
-	DrawTile(this->wTileNo, pDestSurface, opacity);
-
-	//Continue effect.
-	return true;
+	DrawTile(this->wTileNo, destSurface, opacity);
 }

@@ -177,7 +177,7 @@ void CSellScreenTCB::OnBetweenEvents()
 			ProcessEvents(this->cueEvents);
 
 		//Draw effects onto screen.
-		this->pEffects->DrawEffects(true);
+		this->pEffects->UpdateAndDrawEffects(true);
 	}
 }
 

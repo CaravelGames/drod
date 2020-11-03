@@ -380,14 +380,14 @@ void CModScreen::DeleteSelectedMods()
 				g_pTheDB->Data.Delete(*id);
 
 		//Remove style entry from INI also.
-		string styleName = UnicodeToAscii(wModName.c_str());
+		string styleName = UnicodeToUTF8(wModName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, INIKey::Style, styleName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 
 		//Delete style skies entry, if exists.
 		wModName += wszSpace;
 		wModName += wszSKIES;
-		styleName = UnicodeToAscii(wModName.c_str());
+		styleName = UnicodeToUTF8(wModName.c_str());
 		f.DeleteINIEntry(INISection::Graphics, styleName.c_str(), NULL);
 	}
 
@@ -834,17 +834,17 @@ void CModScreen::SetCNetModDesc(CNetMedia *pData)
 
 	WSTRING temp, rating = g_pTheDB->GetMessageText(MID_Rating);
 	rating += wszSpace;
-	AsciiToUnicode(pData->rating.c_str(), temp);
+	UTF8ToUnicode(pData->rating.c_str(), temp);
 	rating += temp;
 	rating += wszCRLF;
 	rating += g_pTheDB->GetMessageText(MID_Votes);
 	rating += wszSpace;
-	AsciiToUnicode(pData->numVotes.c_str(), temp);
+	UTF8ToUnicode(pData->numVotes.c_str(), temp);
 	rating += temp;
 	rating += wszCRLF;
 	rating += g_pTheDB->GetMessageText(MID_FileSize);
 	rating += wszSpace;
-	AsciiToUnicode(pData->filesize.c_str(), temp);
+	UTF8ToUnicode(pData->filesize.c_str(), temp);
 	rating += temp;
 	rating += wszCRLF;
 	rating += g_pTheDB->GetMessageText(MID_Version);
@@ -947,7 +947,7 @@ void CModScreen::SetRatingLabel(const UINT dwTagNo)
 	str += ".";
 	str += _itoa(wVal%10, temp, 10);
 	WSTRING wstr;
-	AsciiToUnicode(str.c_str(), wstr);
+	UTF8ToUnicode(str.c_str(), wstr);
 	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_RATINGNUM_LABEL));
 	pLabel->SetText(wstr.c_str());
 }

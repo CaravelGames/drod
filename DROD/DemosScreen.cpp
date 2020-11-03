@@ -642,6 +642,8 @@ void CDemosScreen::DeleteDemo()
 	if (dwRet != TAG_YES)
 		return;
 	
+	const UINT dwPlayerID = g_pTheDB->GetPlayerID();
+
 	bool bAsk = true;
 	for (CIDSet::const_iterator demo = demoIDs.begin();
 			demo != demoIDs.end(); ++demo)
@@ -668,9 +670,9 @@ void CDemosScreen::DeleteDemo()
 				bAsk = false;
 			}
 
-			//Hide demo only if its state represents a completed challenge.
+			//Hide demo only if its state represents a completed challenge for the active player.
 			bool bHideDemo = false;
-			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge)) {
+			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge) && pDemo->GetAuthorID() == dwPlayerID) {
 				bHideDemo = true;
 				pDemo->bIsHidden = true;
 				pDemo->Update();
@@ -1546,7 +1548,7 @@ void CDemosScreen::GetCNetDemos(CNetResult* pResults)
 				pDemo->wNumMoves = demos[i].get("numMoves", 0).asUInt();
 				pDemo->wTimeElapsed = demos[i].get("realTime", 0).asUInt();
 				pDemo->wTimeReceived = demos[i].get("time", 0).asUInt();
-				AsciiToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
+				UTF8ToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
 				Base64::decode(demos[i].get("playerName", "").asString(), pDemo->playerName);
 				pDemo->wCreated = demos[i].get("createdTime", 0).asUInt();
 

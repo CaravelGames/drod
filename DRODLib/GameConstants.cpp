@@ -43,15 +43,16 @@ const char szDROD_VER[] = "5_0";
 const WCHAR wszDROD_VER[] = { We('5'),We('_'),We('0'),We(0) };
 const char szUserspaceFolder[] = "DROD 5";
 
-const UINT VERSION_NUMBER = 508; //data format version -- increment whenever export format changes
+const UINT VERSION_NUMBER = 509; //5.2 data format version -- increment whenever export format changes
 const UINT NEXT_VERSION_NUMBER = 600;
 
+//#define DROD_VERSION_REVISION alpha-2020-11-02
 #ifdef DROD_VERSION_REVISION
 // (the WS macro requires c++11 or windows)
-const WCHAR wszVersionReleaseNumber[] = WS("5.1.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
+const WCHAR wszVersionReleaseNumber[] = WS("5.2.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('5'),We('.'),We('1'),We('.'),We('0'),We('.'),We('6'),We('5'),We('4'),We('5'),We(0)   // 5.1.0.*
+	We('5'),We('.'),We('2'),We('.'),We('0'),We('.'),We('2'),We('7'),We('7'),We(0)   // 5.2.0.*
 };
 #endif
 
@@ -88,7 +89,7 @@ namespace InputCommands
 
 	DCMD getCommandIDByVarName(const WSTRING& wtext)
 	{
-		const string text = UnicodeToAscii(wtext);
+		const string text = UnicodeToUTF8(wtext);
 
 		static const char COMMAND_PREFIX[] = "_CMD_";
 		static const size_t prefix_len = strlen(COMMAND_PREFIX);

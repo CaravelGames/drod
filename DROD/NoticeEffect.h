@@ -48,15 +48,16 @@ public:
 		const UINT wYOffset=0, const UINT eType=ETEXTNOTICE);
 	virtual ~CNoticeEffect();
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
-
 	void           SetAlpha(const Uint8 opacity);
 
 	virtual long   GetDrawSequence() const {return 1000L;}   //draw last
 
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
 	void           PrepWidget(const WCHAR* pTitle, const WCHAR* pText);
-	virtual void   SetLocation();
+	virtual void   SetLocation(const Uint32 dwTimeElapsed);
 
 	UINT              wYOffset;
 	UINT              eFontType;
@@ -65,7 +66,7 @@ protected:
 	UINT              w, h;
 	UINT              wDisplayLines;
 	UINT              maxWidth;
-	Uint32            dwStartTime, dwDuration;
+	Uint32            dwDuration;
 
 	enum EState {
 		NS_Init,
@@ -97,7 +98,7 @@ public:
 	void           RemoveFromNotices();
 
 private:
-	virtual void   SetLocation();
+	virtual void   SetLocation(const Uint32 dwTimeElapsed);
 
 	NOTICES &notices; //set of notice effects maintained by my parent
 };

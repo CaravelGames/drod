@@ -37,7 +37,7 @@
 CGridEffect::CGridEffect(
 //Params:
 	CWidget *pSetWidget)    //(in)   Should be a room widget.
-	: CEffect(pSetWidget, EGRID)
+	: CEffect(pSetWidget, (UINT)-1, EGRID)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -50,36 +50,42 @@ CGridEffect::CGridEffect(
 }
 
 //********************************************************************************
-bool CGridEffect::Draw(SDL_Surface* pDestSurface)
+bool CGridEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Returns: true if effect should continue, or false if effect is done.
 {
 	ASSERT(this->dirtyRects.size() == 1);
-
-	const CDbRoom *pRoom = this->pRoomWidget->GetRoom();
+	
+	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
 	if (!pRoom)
-	{
 		this->dirtyRects[0].w = 0;
-		return true;
+
+	else {
+		SDL_Rect OwnerRect;
+		this->pOwnerWidget->GetRect(OwnerRect);
+
+		this->dirtyRects[0].w = OwnerRect.w;
 	}
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	return true;
+}
+//********************************************************************************
+void CGridEffect::Draw(SDL_Surface& destSurface)
+//Returns: true if effect should continue, or false if effect is done.
+{
+	static const int gridThickness = 1;
 
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
 
+	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
 	const CDbRoom &room = *pRoom;
 	UINT yPixel = OwnerRect.y;
 	for (UINT wY=0; wY<room.wRoomRows; ++wY, yPixel += CBitmapManager::CY_TILE) {
 		UINT xPixel = OwnerRect.x;
 		for (UINT wX=0; wX<room.wRoomCols; ++wX, xPixel += CBitmapManager::CX_TILE) {
 			//Single pixel width edges
-			static const int size = 1;
-			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, 0, CBitmapManager::CX_TILE, size, pDestSurface, false, 128);
-			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, size, size, CBitmapManager::CY_TILE-size, pDestSurface, false, 128);
+			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, 0, CBitmapManager::CX_TILE, gridThickness, &destSurface, false, 128);
+			g_pTheBM->BlitTileImagePart(TI_GRID_OVERLAY, xPixel, yPixel, 0, gridThickness, gridThickness, CBitmapManager::CY_TILE-gridThickness, &destSurface, false, 128);
 		}
 	}
-
-	this->dirtyRects[0].w = OwnerRect.w;
-
-	return true;
 }

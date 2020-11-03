@@ -106,24 +106,30 @@ class CEffect
 friend class CEffectList;  //to access dwTimeStarted
 
 public:
-	CEffect(CWidget *pSetOwnerWidget, const UINT eType=EFFECTLIB::EGENERIC);
+	CEffect(CWidget *pSetOwnerWidget, const UINT dwDuration, const UINT eType);
 	virtual ~CEffect() { }
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL) = 0;
+	void           Draw(SDL_Surface* pDestSurface=NULL);
 	virtual long   GetDrawSequence() const {return 0;}
 	UINT           GetEffectType() const {return this->eEffectType;}
+	float          GetElapsedFraction() const;
+	float          GetRemainingFraction() const;
 	void           RequestRetainOnClear(const bool bVal=true) {this->bRequestRetainOnClear = bVal;}
 	bool           RequestsRetainOnClear() const {return this->bRequestRetainOnClear;}
 	void           SetOpacity(float fOpacity) {this->fOpacity = fOpacity;}
+	bool           Update(const UINT wDeltaTime); // Updates the state of the effect without drawing it
+
 	vector<SDL_Rect>  dirtyRects; //bounding boxes covered by effect this frame
 
 protected:
-	Uint32         TimeElapsed();
+	virtual bool   Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed) = 0;
+	virtual void   Draw(SDL_Surface& destSurface) = 0;
 	SDL_Surface *  GetDestSurface() {return this->pOwnerWidget->GetDestSurface();}
 
 	CWidget *      pOwnerWidget;
 
-	Uint32         dwTimeStarted;
+	UINT           dwDuration;
+	Uint32         dwTimeElapsed;
 	Uint32         dwTimeOfLastMove; //last time effect was drawn
 
 	UINT           eEffectType;   //can't finalize as enumeration yet

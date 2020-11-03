@@ -1,0 +1,142 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="DRODUtil.cpp" />
+    <ClCompile Include="OptionList.cpp" />
+    <ClCompile Include="Util.cpp" />
+    <ClCompile Include="Util1_5.cpp" />
+    <ClCompile Include="Util1_6.cpp" />
+    <ClCompile Include="Util2_0.cpp" />
+    <ClCompile Include="Util3_0.cpp" />
+    <ClCompile Include="v1_11c.cpp" />
+    <ClCompile Include="..\DROD\AumtlichGazeEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\BloodEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\BoundingBox.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Color.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\DrodBitmapManager.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\EditRoomWidget.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\EvilEyeGazeEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\FaceWidget.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\GridEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Light.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\MapWidget.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\ParticleExplosionEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\PendingBuildEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\PendingPlotEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Point.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\RaindropEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Rectangle.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\RoomDrawStatsEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\RoomEffectList.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\RoomWidget.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Scene.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\SnowflakeEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\SparkEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\Sphere.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\StrikeOrbEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\TemporalMoveEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\TileImageCalcs.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\WadeEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\VarMonitorEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameScreenDummy.h" />
+    <ClInclude Include="OptionList.h" />
+    <ClInclude Include="Util.h" />
+    <ClInclude Include="Util1_5.h" />
+    <ClInclude Include="Util1_6.h" />
+    <ClInclude Include="Util2_0.h" />
+    <ClInclude Include="Util3_0.h" />
+    <ClInclude Include="v1_11c.h" />
+    <ClInclude Include="..\DROD\BoundingBox.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Color.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Light.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\MapWidget.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Point.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Rectangle.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Scene.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\Sphere.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="DRODRefs">
+      <UniqueIdentifier>{229dd713-e181-4acc-82cd-b981e9196911}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

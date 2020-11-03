@@ -96,6 +96,7 @@ WSTRING CFiles::wstrHomePath;
 #ifdef WIN32
 bool CFiles::bDrives[NUMDRIVES];
 bool CFiles::bDrivesChecked = false;
+bool CFiles::bWindowsDataFilesInUserSpecificDir = true;
 #endif
 
 #ifdef USE_XDG_BASEDIR_SPEC
@@ -242,7 +243,7 @@ bool CFiles::MakeDirectory(const WCHAR *pwzPath)
 	if (CFiles::WindowsCanBrowseUnicode())
 		ret = _wmkdir(pwzPath);
 	else {
-		const string path = UnicodeToAscii(pwzPath);
+		const string path = UnicodeToUTF8(pwzPath);
 		ret = _mkdir(path.c_str());
 	}
 	if (ret == 0)
@@ -375,18 +376,13 @@ static bool GetNormalizedPathEnv (
 // endif defined __linux__ || defined __FreeBSD__ || defined __APPLE__
 #else
 
-WSTRING GetUserspacePath()
+WSTRING CFiles::GetUserspacePath(bool bUserSpecificDir)
+//User-specific dir: %USERPROFILE%\My Documents
+//Otherwise, get path for non-user specific, non-roaming data (e.g., "ProgramData").
 {
 	WSTRING prodPath;
 	TCHAR szPath[MAX_PATH];
-#ifdef STEAMBUILD
-	//%USERPROFILE%\My Documents
-	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, 0, szPath)))
-#else
-	// Get path for non-user specific, non-roaming data.
-	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, szPath)))
-#endif
-	{
+	if (SUCCEEDED(SHGetFolderPath(NULL, bUserSpecificDir ? CSIDL_PERSONAL : CSIDL_COMMON_APPDATA, NULL, 0, szPath))) {
 		prodPath = szPath;
 	}
 	return prodPath;
@@ -682,7 +678,7 @@ void CFiles::AppendLog(
 				strTime += "FIRST LOG IN SESSION ";
 				bFirstLog = false;
 			}
-			strTime += UnicodeToAscii(wstrTime);
+			strTime += UnicodeToUTF8(wstrTime);
 			strTime += " ***" NEWLINE;
 			fwrite(strTime.c_str(), 1, strTime.size(), pFile);
 		}
@@ -725,18 +721,18 @@ bool CFiles::WriteGameProfileString(
 bool CFiles::WriteGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, const char *pszValue)
 {
-	char pszKey[256];
-	UnicodeToAscii(pwszKey, pszKey);
-	gameIni.WriteString(pszSection, pszKey, pszValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	gameIni.WriteString(pszSection, key.c_str(), pszValue);
 	return true;
 }
 
 bool CFiles::WriteGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, const list<WSTRING>& wstrValue)
 {
-	char pszKey[256];
-	UnicodeToAscii(pwszKey, pszKey);
-	gameIni.WriteString(pszSection, pszKey, wstrValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	gameIni.WriteString(pszSection, key.c_str(), wstrValue);
 	return true;
 }
 
@@ -781,9 +777,9 @@ bool CFiles::GetGameProfileString(
 bool CFiles::GetGameProfileString(
 	const char *pszSection, const WCHAR* pwszKey, list<WSTRING>& strValue)
 {
-	char pszKey[1024];
-	UnicodeToAscii(pwszKey, pszKey);
-	return gameIni.GetString(pszSection, pszKey, strValue);
+	string key;
+	UnicodeToUTF8(pwszKey, key);
+	return gameIni.GetString(pszSection, key.c_str(), strValue);
 }
 
 //******************************************************************************
@@ -1094,7 +1090,7 @@ void CFiles::SetupHomePath()
 # endif
 
 #else
-	CFiles::wstrHomePath = GetUserspacePath();
+	CFiles::wstrHomePath = CFiles::GetUserspacePath(CFiles::bWindowsDataFilesInUserSpecificDir);
 #endif
 
 	if (!CFiles::wstrHomePath.empty()) {
@@ -1117,7 +1113,7 @@ void CFiles::SetupHomePathSubDirs()
 				it!=CFiles::playerDataSubDirs.end(); ++it) {
 			WSTRING subdir;
 			const char firstch = (*it)[0];
-			AsciiToUnicode(&(it->c_str()[(firstch == '+' || firstch == '-') ? 1 : 0]), subdir);
+			UTF8ToUnicode(&(it->c_str()[(firstch == '+' || firstch == '-') ? 1 : 0]), subdir);
 			const WSTRING subdirpath = datapath + wszSlash + subdir;
 			CreatePathIfInvalid(subdirpath.c_str());
 			if (firstch == '+')
@@ -1665,7 +1661,7 @@ bool CFiles::IsValidPath(const WCHAR *pwzPath)
 		return (_waccess(wstrDirPath.c_str(), 4) == 0);
 	}
 
-	const string aDirPath = UnicodeToAscii(wstrDirPath);
+	const string aDirPath = UnicodeToUTF8(wstrDirPath);
 	const bool bValidPath = (_access(aDirPath.c_str(), 4) == 0);
 	return bValidPath;
 #else
@@ -1700,7 +1696,7 @@ bool CFiles::GetDirectoryList(
 		long hFile;
 
 		//Find first sub-dir in current directory.
-		string sFileFilter = UnicodeToAscii(wszFilepath);
+		string sFileFilter = UnicodeToUTF8(wszFilepath);
 		sFileFilter += "\\*";
 
 		if ((hFile = _findfirst(sFileFilter.c_str(), &filedata )) == -1L) {
@@ -1710,7 +1706,7 @@ bool CFiles::GetDirectoryList(
 		{
 			//Don't display the current directory (i.e., ".").
 			if (filedata.attrib & _A_SUBDIR && strcmp(".", filedata.name)) {
-				AsciiToUnicode(filedata.name, wbuffer);
+				UTF8ToUnicode(filedata.name, wbuffer);
 				wstrDirs.insert(wbuffer);
 			}
 
@@ -1718,7 +1714,7 @@ bool CFiles::GetDirectoryList(
 			while (_findnext( hFile, &filedata ) == 0)
 			{
 				if (filedata.attrib & _A_SUBDIR) {
-					AsciiToUnicode(filedata.name, wbuffer);
+					UTF8ToUnicode(filedata.name, wbuffer);
 					wstrDirs.insert(wbuffer);
 			  }
 			}
@@ -1817,9 +1813,9 @@ bool CFiles::GetFileList(
 		long hFile;
 
 		//Find first sub-dir in current directory.
-		string sFileFilter = UnicodeToAscii(wszFilepath);
+		string sFileFilter = UnicodeToUTF8(wszFilepath);
 		sFileFilter += "\\*.";
-		sFileFilter += UnicodeToAscii(mask);
+		sFileFilter += UnicodeToUTF8(mask);
 		if ((hFile = _findfirst(sFileFilter.c_str(), &filedata)) == -1L) {
 			 return (errno == ENOENT); //No files in current directory - fail only if it's not ENOENT
 		}
@@ -1827,7 +1823,7 @@ bool CFiles::GetFileList(
 		{
 			if (!(filedata.attrib & _A_SUBDIR || filedata.attrib & _A_SYSTEM ||
 				filedata.attrib & _A_HIDDEN)) {
-				AsciiToUnicode(filedata.name, wbuffer);
+				UTF8ToUnicode(filedata.name, wbuffer);
 				wstrFiles.insert(wbuffer);
 			}
 
@@ -1836,7 +1832,7 @@ bool CFiles::GetFileList(
 			{
 				if (!(filedata.attrib & _A_SUBDIR || filedata.attrib & _A_SYSTEM ||
 					filedata.attrib & _A_HIDDEN)) {
-					AsciiToUnicode(filedata.name, wbuffer);
+					UTF8ToUnicode(filedata.name, wbuffer);
 					wstrFiles.insert(wbuffer);
 				}
 			}

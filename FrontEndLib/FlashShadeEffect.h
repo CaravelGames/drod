@@ -36,9 +36,10 @@ public:
 	CFlashShadeEffect(CWidget *pSetWidget, const CCoord &SetCoord,
 			const SURFACECOLOR &Color, const Uint8 flashSpeed=1);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
-
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
 	bool bMakeBrighter;
 	Uint8 brightness;
 	Uint8 flashSpeed;
