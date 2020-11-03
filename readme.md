@@ -22,15 +22,16 @@ Workspace files for Microsoft Visual Studio 6.0 and Visual Studio 2002 are also 
 
 ##### Linux builds
 
-scons and makefile files for Linux are included in Master/Linux.
+Ninja generator and build files for Linux are included in Master/Linux. cd to Master/Linux and run './ninjamaker' then './build' or './build -clean' for clean rebuild.
 
-cd to Master/Linux and run 'scons -h' to see build options.
-Options are passed to scons as 'option=value' (without the quotes), separated by spaces.
-For example, if you wanted to build DROD with FMOD audio for amd64/x86-64 (which wouldn't work since FMOD 3.x doesn't exist for amd64, but hey, let's ignore such trifling details), you would do:
+When debugging build issues edit the build file from 'ninja -k 0' to 'ninja -k N' so ninja stops building after N jobs fail.
 
-`scons audio=fmod arch=amd64`
-
-The dist option should be left at the default (none).
+>Options are passed to scons as 'option=value' (without the quotes), separated by spaces.
+>For example, if you wanted to build DROD with FMOD audio for amd64/x86-64 (which wouldn't work since >FMOD 3.x doesn't exist for amd64, but hey, let's ignore such trifling details), you would do:
+>
+>`scons audio=fmod arch=amd64`
+>
+>The dist option should be left at the default (none).
 
 
 ##### Mac builds
@@ -51,7 +52,7 @@ To build a 64-bit binary, run "make custom" (etc.)
 
 ### To use SDL_mixer instead of FMOD:
 
-Add `-lSDL_mixer` to the link flags (LDFLAGS_* in `Master/Linux/Confi`g) and either (1) add `-DUSE_SDL_MIXER` flag to the C++ flags (i.e., CXXFLAGS_* in Config) -- this will require a clean recompile, since the dependency system doesn't detect command-line changes yet; or (2) add `#define USE_SDL_MIXER` to the top of `FrontEndLib/Sound.h` -- this will make the dependency system pick up the change, so a normal recompile is sufficient.
+Add `-lSDL_mixer` to the link flags (staticlibs in `Master/Linux/ninjamaker`) and either (1) add `-DUSE_SDL_MIXER` flag to the C++ flags (i.e., config in ninjamaker) -- this will require a clean recompile, since the dependency system doesn't detect command-line changes yet; or (2) add `#define USE_SDL_MIXER` to the top of `FrontEndLib/Sound.h` -- this will make the dependency system pick up the change, so a normal recompile is sufficient.
 
 ### Including content media
 

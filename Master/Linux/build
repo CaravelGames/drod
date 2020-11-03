@@ -4,5 +4,5 @@ if [[ $1 = -clean ]]; then
 	rm -rf builds/*
 fi
 for i in build.*.ninja; do
-	ninja -f "$i"
+	ninja -k 0 -f "$i"
 done

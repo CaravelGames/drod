@@ -533,9 +533,11 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGam
 
 		if (vType == UVT_int) {
 			int iVarValue = stats.GetVar(varName, (int)0);
-			wVarValue = std::to_wstring(iVarValue);
+			std::basic_stringstream<WCHAR_t> stream;
+			stream << iVarValue;
+			wVarValue = stream.str();
 		} else {
-			wVarValue = stats.GetVar(varName, L"0");
+			wVarValue = stats.GetVar(varName, WS("0"));
 		}
 
 		WSTRING wstr = var->varNameText.c_str();
