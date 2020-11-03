@@ -1591,12 +1591,17 @@ void CEditRoomWidget::DrawMonsters(
 	SDL_Surface *pDestSurface,
 	const bool bMoveInProgress)   //
 {
+	vector<CMonster*> drawnMonsters;
 	CMonster *pMonster = pMonsterList;
 	while (pMonster)
 	{
+		drawnMonsters.push_back(pMonster);
+
 		DrawMonster(pMonster, this->pRoom, pDestSurface, bMoveInProgress);
 		pMonster = pMonster->pNext;
 	}
+
+	DrawSwordsFor(drawnMonsters, pDestSurface);
 }
 
 //******************************************************************************
