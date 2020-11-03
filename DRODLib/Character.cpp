@@ -2492,9 +2492,13 @@ void CCharacter::Process(
 						bChangeImperative = false;
 					break;
 					case ScriptFlag::Deadly:
+					{
 						this->bSafeToPlayer = this->bSwordSafeToPlayer = false;
-						this->bFriendly = false;
 						bChangeImperative = false;
+						const UINT identity = GetResolvedIdentity();
+						if(!(identity == M_HALPH || identity == M_HALPH2 ||	bIsStalwart(identity)))
+							this->bFriendly = false;
+					}
 					break;
 					case ScriptFlag::DieSpecial:
 						bChangeImperative = !HasSpecialDeath();
