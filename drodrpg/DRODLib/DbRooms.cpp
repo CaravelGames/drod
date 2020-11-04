@@ -7867,7 +7867,7 @@ void CDbRoom::Plot(
 		{
 			this->pszOSquares[wSquareIndex] = static_cast<unsigned char>(wTileNo);
 //			RecalcStationPaths();
-			this->bridges.plotted(wX,wY,wTileNo);
+			this->bridges.Plotted(wX,wY,wTileNo);
 			this->PlotsMade.insert(wX,wY);
 			this->geometryChanges.insert(wX,wY);  //always assume changes to o-layer affect room geometry for easier maintenance
 
@@ -9177,7 +9177,7 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 			{
 				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
 				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
-				this->bridges.addBridge(wX, wY);
+				this->bridges.HandleBridgeAdded(wX, wY);
 			}
 			break;
 		}
