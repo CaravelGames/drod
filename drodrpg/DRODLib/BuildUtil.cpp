@@ -123,7 +123,7 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 		for (UINT y = py; y <= endY; ++y)
 			for (UINT x = px; x <= endX; ++x) {
 				//When o-layer changes, refresh bridge supports.
-				room.bridges.built(x, y, room.GetOSquare(x, y));
+				room.bridges.HandleTileBuilt(x, y, room.GetOSquare(x, y));
 			}
 	}
 

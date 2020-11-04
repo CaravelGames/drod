@@ -88,7 +88,8 @@ public:
 	//call this constructor first to init the class
 	CFiles(const WCHAR *wszSetAppPath,
 				const WCHAR *wszSetGameName, const WCHAR *wszSetGameVer,
-				const bool bIsDemo = false, const bool confirm_resource_file = true);
+				const bool bIsDemo = false, const bool confirm_resource_file = true,
+				const bool bIsRunningTests = false);
 	CFiles(); //may call this one after the class has been inited
 	~CFiles();
 
@@ -200,7 +201,7 @@ private:
 #endif
 	void                 InitClass(const WCHAR *pszSetAppPath,
 			const WCHAR *wszSetGameName, const WCHAR *wszSetGameVer, const bool bIsDemo,
-			const bool confirm_resource_file);
+			const bool confirm_resource_file, const bool bIsRunningTests);
 	static bool          InitINI();
 	static void          SetupHomePath();
 	static void          SetupHomePathSubDirs();
@@ -225,6 +226,7 @@ private:
 	static CIniFile gameIni;
 	static bool bInitedIni;
 	static bool bIsDemo;
+	static bool bIsRunningTests;
 
 #ifdef WIN32
 #define NUMDRIVES (26)
