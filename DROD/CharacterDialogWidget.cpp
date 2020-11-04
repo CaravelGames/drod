@@ -423,7 +423,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, defaultScriptCustomCharID(0)
 {
 	static const UINT CX_TITLE = 240;
-	static const UINT CY_TITLE = 30;
+	static const UINT CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 
@@ -682,7 +682,7 @@ void CCharacterDialogWidget::AddCharacterDialog()
 	static const UINT CX_CHAR_DIALOG = 820;
 	static const UINT CY_CHAR_DIALOG = 650;
 
-	static const UINT CY_TITLE = 30;
+	static const UINT CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int Y_TITLE = CY_SPACE;
 
 	static const int X_TEXTLABEL = CX_SPACE;
@@ -914,7 +914,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_TITLE = 250;
 	static const UINT CX_ACTIONLISTBOX = 245;
 #endif
-	static const UINT CY_TITLE = 30;
+	static const UINT CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_COMMAND_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 
@@ -1906,7 +1906,7 @@ void CCharacterDialogWidget::AddScriptDialog()
 	static const UINT CY_SCRIPT_DIALOG = 630;
 
 	static const UINT CX_TITLE = 240;
-	static const UINT CY_TITLE = 30;
+	static const UINT CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_SCRIPT_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 

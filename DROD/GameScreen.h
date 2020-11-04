@@ -29,6 +29,8 @@
 #define GAMESCREEN_H
 
 #include "RoomScreen.h"
+#include "PuzzleModeOptionsDialogWidget.h"
+#include "PuzzleModeOptions.h"
 
 #include "../DRODLib/CurrentGame.h"
 #include <BackEndLib/Types.h>
@@ -181,6 +183,7 @@ private:
 	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();
 	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter **playerHoldCharacter);
+	void           ShowPuzzleModeOptions();
 	void           ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents);
 	void           ShowRoomTemporarily(const UINT roomID);
 	void           ShowSpeechLog();
@@ -213,6 +216,7 @@ private:
 	CClockWidget  *pClockWidget;
 	CDialogWidget *pMenuDialog;
 	CEntranceSelectDialogWidget *pSpeechBox;
+	CPuzzleModeOptionsDialogWidget *pPuzzleModeOptionsDialog;
 	CMapWidget *pBigMapWidget;
 
 	//Speech.

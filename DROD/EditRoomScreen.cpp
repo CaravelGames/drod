@@ -993,7 +993,7 @@ void CEditRoomScreen::AddChatDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 30;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const int X_CHATOPTION = X_HEADER;
 	static const int Y_CHATOPTION = Y_HEADER + CY_HEADER + CY_STANDARD_OPTIONBUTTON + CY_SPACE;

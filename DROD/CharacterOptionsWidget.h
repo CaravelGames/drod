@@ -33,6 +33,7 @@
 #include "EditRoomScreen.h"
 #include <FrontEndLib/DialogWidget.h>
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/LabelWidget.h>
 
 #include "../Texts/MIDs.h"
 #include "../DRODLib/Db.h"
@@ -62,7 +63,7 @@ private:
 	static const int CY_DIALOG = 420;
 
 	static const int CX_TITLE = 200;
-	static const int CY_TITLE = 30;
+	static const int CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 

@@ -72,8 +72,8 @@ CBrowserScreen::CBrowserScreen ()
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
 	static const UINT CX_TITLE = w - 2 * CX_SPACE;
-	static const UINT CY_TITLE = 50;
-	static const UINT CY_TITLE_SPACE = 12;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+	static const UINT CY_TITLE_SPACE = 16;
 	static const int X_TITLE = CX_SPACE;
 	static const int Y_TITLE = CY_TITLE_SPACE;
 

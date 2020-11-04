@@ -78,6 +78,20 @@ namespace Settings
 	DEF(UndoLevel);
 	DEF(Voices);
 	DEF(VoicesVolume);
+
+	DEF(PuzzleMode_VisibilityEyeBeams);
+	DEF(PuzzleMode_VisibilityReverseEyeBeams);
+	DEF(PuzzleMode_VisibilityBrokenWalls);
+	DEF(PuzzleMode_VisibilitySecretWalls);
+	DEF(PuzzleMode_VisibilitySpiders);
+
+	DEF(PuzzleMode_VisibilityHideAnimations);
+	DEF(PuzzleMode_VisibilityHideBuildMarkers);
+	DEF(PuzzleMode_VisibilityHideLighting);
+	DEF(PuzzleMode_VisibilityHideWeather);
+
+	DEF(PuzzleMode_GridOpacity);
+	DEF(PuzzleMode_GridStyle);
 }
 
 #undef DEF

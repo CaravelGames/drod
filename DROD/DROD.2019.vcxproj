@@ -665,6 +665,7 @@
     <ClCompile Include="PendingPlotEffect.cpp" />
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="PuffExplosionEffect.cpp" />
+    <ClCompile Include="PuzzleModeOptionsDialogWidget.cpp" />
     <ClCompile Include="RaindropEffect.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="RestoreScreen.cpp" />
@@ -748,6 +749,8 @@
     <ClInclude Include="PendingPlotEffect.h" />
     <ClInclude Include="Point.h" />
     <ClInclude Include="PuffExplosionEffect.h" />
+    <ClInclude Include="PuzzleModeOptions.h" />
+    <ClInclude Include="PuzzleModeOptionsDialogWidget.h" />
     <ClInclude Include="RaindropEffect.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="RestoreScreen.h" />
