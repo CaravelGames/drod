@@ -8,7 +8,7 @@
 CCurrentGame* Runner::currentGame = NULL;
 CCueEvents Runner::lastCueEvents;
 UINT Runner::wLastErrorLogSize;
-char* Runner::pErrorLogPath;
+string Runner::pErrorLogPath;
 
 CCurrentGame* Runner::StartGame(const UINT playerX, const UINT playerY, const UINT playerO){
 	Runner::wLastErrorLogSize = GetErrorLogSize();
@@ -71,7 +71,7 @@ void Runner::ClickClone(const UINT wX, const UINT wY, CCueEvents& CueEvents) {
 
 UINT Runner::GetErrorLogSize(){
 	struct stat st;
-	if (stat(pErrorLogPath, &st) == 0)
+	if (stat(pErrorLogPath.c_str(), &st) == 0)
 		return st.st_size;
 	else
 		return 0;
@@ -106,7 +106,6 @@ void Runner::InitializeDatPath(){
 	wstrDatPathTxt += CFiles::wGameName;
 	wstrDatPathTxt += wstrExtension;
 
-	pErrorLogPath = new char[wstrDatPathTxt.length() * 2];
 	UnicodeToUTF8(wstrDatPathTxt.c_str(), pErrorLogPath);
 }
 
