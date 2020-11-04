@@ -1216,7 +1216,6 @@ bool CEditRoomScreen::SetForActivate()
 		const bool bShowChats = settings.GetVar(Settings::EnableChatInGame, false);
 		const bool bReceiveWhispersOnly = settings.GetVar(Settings::ReceiveWhispersOnlyInGame, false);
 		const bool bAutoUndoOnDeath = settings.GetVar(Settings::AutoUndoOnDeath, false);
-		const UINT dwLastNotice = settings.GetVar(Settings::LastNotice, 0);
 
 		delete pCurPlayer;
 
@@ -1233,8 +1232,7 @@ bool CEditRoomScreen::SetForActivate()
 			bPuzzleMode != baseSettings.GetVar(Settings::PuzzleMode, false) ||
 			bShowChats != baseSettings.GetVar(Settings::EnableChatInGame, false) ||
 			bReceiveWhispersOnly != baseSettings.GetVar(Settings::ReceiveWhispersOnlyInGame, false) ||
-			bAutoUndoOnDeath != baseSettings.GetVar(Settings::AutoUndoOnDeath, false) ||
-			dwLastNotice != baseSettings.GetVar(Settings::LastNotice, 0u);
+			bAutoUndoOnDeath != baseSettings.GetVar(Settings::AutoUndoOnDeath, false);
 
 		if (bChangedSettings)
 		{
@@ -1243,7 +1241,6 @@ bool CEditRoomScreen::SetForActivate()
 			baseSettings.SetVar(Settings::EnableChatInGame, bShowChats);
 			baseSettings.SetVar(Settings::ReceiveWhispersOnlyInGame, bReceiveWhispersOnly);
 			baseSettings.SetVar(Settings::AutoUndoOnDeath, bAutoUndoOnDeath);
-			baseSettings.SetVar(Settings::LastNotice, dwLastNotice);
 			pCurPlayer->Update();
 		}
 		delete pCurPlayer;
