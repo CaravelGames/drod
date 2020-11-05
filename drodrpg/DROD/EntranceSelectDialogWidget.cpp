@@ -45,6 +45,8 @@
 #include "../DRODLib/DbHolds.h"
 #include "../Texts/MIDs.h"
 
+#include <sstream>
+
 //NOTE: tag #'s should not conflict with other widgets on screen
 const UINT TAG_ENTRANCES_LISTBOX = 898;
 const UINT TAG_DELETE = 897;
@@ -533,9 +535,11 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGam
 
 		if (vType == UVT_int) {
 			int iVarValue = stats.GetVar(varName, (int)0);
-			wVarValue = std::to_wstring(iVarValue);
+			std::basic_stringstream<WCHAR_t> stream;
+			stream << iVarValue;
+			wVarValue = stream.str();
 		} else {
-			wVarValue = stats.GetVar(varName, L"0");
+			wVarValue = stats.GetVar(varName, WS("0"));
 		}
 
 		WSTRING wstr = var->varNameText.c_str();

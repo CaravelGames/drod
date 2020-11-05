@@ -49,8 +49,14 @@ CBridge::CBridge()
 }
 
 //*****************************************************************************
-void CBridge::addBridge(const UINT wX, const UINT wY)
-//Add bridge piece and its connected component.
+void CBridge::HandleBridgeAdded(const UINT wX, const UINT wY)
+// DO NOT USE OUTSIDE THIS CLASS!
+// Should only be called in CDbRooms::InitRoomStats(), when called with a coordinate that points
+// to an already stored bridge component will duplicate it!
+
+// This function builds the component for a given bridge tile or does nothing if the tile
+// is not a bridge
+
 {
 	ASSERT(this->pRoom);
 	CCoordSet tiles, supportTiles;
@@ -69,7 +75,7 @@ void CBridge::addBridge(const UINT wX, const UINT wY)
 			if (!this->pRoom->IsValidColRow(wAX,wAY))
 				continue;
 			const UINT wOTile = this->pRoom->GetOSquare(wAX,wAY);
-			if (!supports(wOTile))
+			if (!DoesTileSupportBridges(wOTile))
 				continue;
 			if (bIsFallingTile(wOTile))
 			{
@@ -92,74 +98,69 @@ void CBridge::addBridge(const UINT wX, const UINT wY)
 }
 
 //*****************************************************************************
-void CBridge::built(const UINT wX, const UINT wY, const UINT wTileNo)
-//New tile was built at (x,y).
-//Any adjacent bridge components will need to be reevaluated.
+void CBridge::HandleTileBuilt(const UINT wX, const UINT wY, const UINT wTileNo)
+//New tile was built at (x,y) and any adjacent bridge components will need to be reevaluated.
+// This function will do the following:
+// 1. Calculate which bridges were affected by this tile being built
+// 2. Undo dropping of any affected bridges
+// 3. Rebuild their components
 {
 	//Wasteful to call for non o-layer tiles.
 	ASSERT(this->pRoom->GetOSquare(wX,wY) == wTileNo);
 
 	this->ignoredTiles.clear(); //reset to recalc bridges here
 
-	vector<UINT> recalc;  //index of affected bridges in bridge list
-
-	//Compile set of bridge tiles adjacent to built tile.
-	CCoordSet adjBridges;
+	//1. Compile set of bridge tiles adjacent to built tile.
+	CCoordSet adjacentBridges;
 	if (bIsBridge(wTileNo))
-		adjBridges.insert(wX, wY);
+		adjacentBridges.insert(wX, wY);
+
 	for (UINT i=NUM_NEIGHBORS; i--; )
 	{
 		const UINT wAX = wX + dx[i], wAY = wY + dy[i];
 		if (this->pRoom->IsValidColRow(wAX,wAY))
 			if (bIsBridge(this->pRoom->GetOSquare(wAX,wAY)))
-				adjBridges.insert(wAX, wAY);
+				adjacentBridges.insert(wAX, wAY);
 	}
 
-	//Determine which active bridges are affected.
-	UINT wIndex;
-	for (wIndex=this->bridges.size(); wIndex--; ) //perform in reverse order
+	//2. Determine which active bridges are affected - also undo dropping of affected bridges
+	UINT wBridgeIndex;
+	CCoordSet recalcBridgeTiles(adjacentBridges);
+	CIDSet eraseBridgeIndexSet;
+	for (wBridgeIndex=this->bridges.size(); wBridgeIndex--; ) //perform in reverse order
 	{
-		//Ignore any bridges that are already falling.
-		bool bDropping = false;
-		for (UINT wBridgeI=this->droppingBridges.size(); wBridgeI--; )
-			if (this->droppingBridges[wBridgeI] == wIndex)
-			{
-				bDropping = true;
-				break;
-			}
-		if (bDropping)
-		{
-			this->ignoredTiles += this->bridges[wIndex]; //don't re-add these bridge tiles below
-			continue;
-		}
-
 		//If this bridge contains or is adjacent to the altered tile,
 		//then it must be reevaluated for stability.
-		CCoordSet& tiles = this->bridges[wIndex];
-		if (tiles.has(wX, wY))
-			recalc.push_back(wIndex);
+		CCoordSet& bridgeTiles = this->bridges[wBridgeIndex];
+		bool bRecalculate = false;
+		if (bridgeTiles.has(wX, wY))
+			bRecalculate = true;
 		else
-			for (CCoordSet::const_iterator tile=adjBridges.begin(); tile!=adjBridges.end(); ++tile)
+			for (CCoordSet::const_iterator tile=adjacentBridges.begin(); tile!=adjacentBridges.end(); ++tile)
 			{
-				if (tiles.has(*tile))
+				if (bridgeTiles.has(*tile))
 				{
 					//Redo this bridge.
-					recalc.push_back(wIndex);
+					bRecalculate = true;
 					break;
 				}
 			}
+
+		if (bRecalculate) {
+			// If an affected bridge was dropping undo the dropping so it can be potentially resupported again
+			for (UINT wBridgeI = this->droppingBridges.size(); wBridgeI--; )
+				if (this->droppingBridges[wBridgeI] == wBridgeIndex)
+				{
+					this->droppingBridges.erase(this->droppingBridges.begin() + wBridgeI);
+					break;
+				}
+
+			recalcBridgeTiles += bridgeTiles;
+			eraseBridgeIndexSet += wBridgeIndex;
+		}
 	}
 
-	//Remove unstable bridges needing recalculation.
-	CCoordSet recalcBridgeTiles(adjBridges);
-	CIDSet eraseBridgeIndexSet;
-	for (wIndex=recalc.size(); wIndex--; )
-	{
-		const UINT wBridgeI = recalc[wIndex]; //index of bridge to recalc
-		recalcBridgeTiles += this->bridges[wBridgeI];
-		eraseBridgeIndexSet += wBridgeI;
-	}
-
+	//3. Erase bridges
 	//Bridge indices must be removed in reverse order to be valid.
 	for (CIDSet::const_reverse_iterator id = eraseBridgeIndexSet.rbegin();
 			id != eraseBridgeIndexSet.rend(); ++id)
@@ -177,14 +178,14 @@ void CBridge::built(const UINT wX, const UINT wY, const UINT wTileNo)
 		}
 	}
 	
-	//Recompute these bridge tiles.
+	//4. Recompute these bridge tiles.
 	CCoordSet::const_iterator tile;
 	for (tile=recalcBridgeTiles.begin(); tile!=recalcBridgeTiles.end(); ++tile)
-		addBridge(tile->wX, tile->wY);
+		HandleBridgeAdded(tile->wX, tile->wY);
 }
 
 //*****************************************************************************
-void CBridge::clear()
+void CBridge::Clear()
 //Reset data members.
 {
 	this->pRoom = NULL;
@@ -195,13 +196,14 @@ void CBridge::clear()
 }
 
 //*****************************************************************************
-void CBridge::plotted(const UINT wX, const UINT wY, const UINT wTileNo)
-//Room tile has changed.  Check whether this affects any bridge supports.
+void CBridge::Plotted(const UINT wX, const UINT wY, const UINT wTileNo)
+// Non-bridge tile has changed, remove it from supports where necessary
+// and mark a bridge as falling if it has no supports left.
 {
-	if (supports(wTileNo))
+	if (DoesTileSupportBridges(wTileNo))
 		return; //this tile doesn't affect any bridge supports
 	if (bIsBridge(wTileNo))
-		return; //rely on CBridge::built function to determine falling
+		return; //rely on CBridge::HandleTileBuilt function to determine falling
 
 	//Check each bridge's set of supporting tiles for membership.
 	vector<CCoordSet>::iterator tiles;
@@ -220,7 +222,7 @@ void CBridge::plotted(const UINT wX, const UINT wY, const UINT wTileNo)
 }
 
 //*****************************************************************************
-void CBridge::process(CCueEvents &CueEvents)
+void CBridge::Process(CCueEvents &CueEvents)
 //Process any relevant changes that have occurred to bridges.
 //
 //Returns: whether any bridges are falling
@@ -246,7 +248,7 @@ void CBridge::process(CCueEvents &CueEvents)
 	{
 		const UINT wIndex = *index;
 		ASSERT(this->bridgeSupports[wIndex].empty());
-		drop(CueEvents, this->bridges[wIndex]);
+		DropBridgeTiles(CueEvents, this->bridges[wIndex]);
 
 		//Remove data structures for dropped bridge.
 		this->bridges.erase(this->bridges.begin() + wIndex);
@@ -256,7 +258,7 @@ void CBridge::process(CCueEvents &CueEvents)
 }
 
 //*****************************************************************************
-void CBridge::setMembersForRoom(const CBridge& src, CDbRoom* pRoom)
+void CBridge::SetMembersForRoom(const CBridge& src, CDbRoom* pRoom)
 //Deep member copy.
 {
 	this->pRoom = pRoom;
@@ -268,10 +270,10 @@ void CBridge::setMembersForRoom(const CBridge& src, CDbRoom* pRoom)
 }
 
 //*****************************************************************************
-void CBridge::setRoom(CDbRoom *pRoom)
+void CBridge::SetRoom(CDbRoom *pRoom)
 //Initializes for use in a room.
 {
-	clear();
+	Clear();
 	this->pRoom = pRoom;
 }
 
@@ -280,7 +282,7 @@ void CBridge::setRoom(CDbRoom *pRoom)
 //
 
 //*****************************************************************************
-void CBridge::drop(CCueEvents &CueEvents, const CCoordSet& tiles)
+void CBridge::DropBridgeTiles(CCueEvents &CueEvents, const CCoordSet& tiles)
 //Drop the specified bridge.
 {
 	ASSERT(this->pRoom);
@@ -345,10 +347,21 @@ void CBridge::drop(CCueEvents &CueEvents, const CCoordSet& tiles)
 }
 
 //*****************************************************************************
-bool CBridge::supports(const UINT wTile) const
+bool CBridge::DoesTileSupportBridges(const UINT wTile) const
 //Returns: whether this tile supports a bridge
 {
 	//These tiles do not support a bridge.
 	return !(bIsBridge(wTile) || bIsPit(wTile) || bIsWater(wTile) ||
 			bIsSteppingStone(wTile) || bIsPlatform(wTile));
+}
+
+//*****************************************************************************
+bool CBridge::IsBridgeDropping(const UINT wBridgeIndex) const
+// Return: true if the given bridge index is falling
+{
+	for (UINT wBridgeI = this->droppingBridges.size(); wBridgeI--; )
+		if (this->droppingBridges[wBridgeI] == wBridgeIndex)
+			return true;
+
+	return false;
 }
