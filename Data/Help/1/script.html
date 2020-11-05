@@ -471,6 +471,10 @@ continue executing script commands from a different location in the script.</p>
       this NPC won't harm the player.</li>
     <li><a name="impdeadly"><b>Deadly</b></a>: Allows the NPC to step on the
       player and kill him.  Also makes sword hits deadly to the player (default).</li>
+    <li><a name="imp-friendly"><b>Friendly</b></a>: Marks the NPC as "friendly". Killing it will not break stealth, and Stalwarts and Soldiers will avoid stabbing the NPC. 
+	An NPC that is set as <a href="impsafe">Safe</a> is automatically set to be friendly.</li>
+    <li><a name="imp-unfriendly"><b>Unfriendly</b></a>:  Marks the NPC as "unfriendly". Killing it will break stealth, and Stalwarts and Soldiers may stab the NPC. 
+	An NPC that is set as <a href="impdeadly">Deadly</a> is automatically set to be unfriendly.</li>
     <li><a name="impdie"><b>Die</b></a>: Makes the NPC die with a blood splatter.</li>
     <li><a name="impdiespecial"><b>Die special</b></a>: Makes the NPC perform a
       monster-specific death sequence, if applicable.  Currently, this command

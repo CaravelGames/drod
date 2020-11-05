@@ -288,6 +288,7 @@ private:
 	bool bInvisibleCountsMoveOrder;  // Whether the character is counted for calculating move order while not part of the room
 	bool bBrainPathmapObstacle, bNPCPathmapObstacle;
 	bool bWeaponOverride;   //Whether P_MONSTER_WEAPON now overrides the NPCs default properties
+	bool bFriendly;
 	MovementIQ movementIQ;  //movement behavior
 	UINT worldMapID;        //the world map that "world map *" script commands will operate on
 
