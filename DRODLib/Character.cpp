@@ -4836,10 +4836,10 @@ void CCharacter::SetCurrentGame(
 
 	if (bIsHuman(wResolvedIdentity))
 	{
-		behaviorFlags.insert(ScriptFlag::Behavior::ActivateTokens);
-		behaviorFlags.insert(ScriptFlag::Behavior::PushObjects);
+		behaviorFlags.insert(ScriptFlag::ActivateTokens);
+		behaviorFlags.insert(ScriptFlag::PushObjects);
 		behaviorFlags.insert(ScriptFlag::PushMonsters);
-		behaviorFlags.insert(ScriptFlag::Behavior::MovePlatforms);
+		behaviorFlags.insert(ScriptFlag::MovePlatforms);
 	}
 
 	if (!this->IsFlying() && this->GetIdentity() != M_SEEP) {
@@ -4848,7 +4848,7 @@ void CCharacter::SetCurrentGame(
 
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
 		//These types can be attacked and killed by default.
-		behaviorFlags.insert(ScriptFlag::Behavior::MonsterAttackable);
+		behaviorFlags.insert(ScriptFlag::MonsterAttackable);
 	}	else if (wResolvedIdentity == M_CLONE || wResolvedIdentity == M_TEMPORALCLONE) {
 		behaviorFlags.insert(ScriptFlag::MonsterTargetIfPlayerIs);
 	}
