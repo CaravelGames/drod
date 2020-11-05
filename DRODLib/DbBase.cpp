@@ -796,6 +796,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_DropTrapdoorsArmed: strText = "Drop Trapdoors When Armed"; break;
 	case MID_PushObjects: strText = "Push Objects"; break;
 	case MID_MovePlatforms: strText = "Move Platforms and Rafts"; break;
+	case MID_MonsterTarget: strText = "Monster Target"; break;
 	case MID_CanBeMonsterAttacked: strText = "Can Be Attacked By Monsters"; break;
 	case MID_PuffTarget: strText = "Puff Target"; break;
 	case MID_SwordDamageImmune: strText = "Sword Damage Immunity"; break;
