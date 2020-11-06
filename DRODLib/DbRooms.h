@@ -302,7 +302,7 @@ public:
 			const bool bIgnoreDagger = false, const bool bIgnoreNonCuts = false, CMonster *pIgnore=NULL) const;
 	CMonster*      GetMonsterAtSquare(const UINT wX, const UINT wY) const;
 	const CMonster* GetOwningMonsterOnSquare(const UINT wX, const UINT wY) const;
-	CMonster*      GetMonsterOfType(const UINT wType) const;
+	CMonster*      GetMonsterOfType(const UINT wType, const bool bIgnoreCharacterAppearance = false) const;
 	UINT           GetMonsterTypeAt(const UINT wX, const UINT wY,
 			const bool bConsiderNPCIdentity=false, const bool bOnlyLiveMonsters=true) const;
 	bool           GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementType eMovement, UINT &wEX, UINT &wEY);

@@ -2930,12 +2930,14 @@ bool CDbRoom::DoesSquareContainTeleportationObstacle(
 CMonster* CDbRoom::FindNextClone()
 //Returns: pointer to next monster of type M_CLONE, else NULL if none
 {
-	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE));
+	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE, true));
 	CMonster* pMonster = pFirstClone;
-	while (pMonster && pMonster->wType == M_CLONE) {
-		CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
-		if (pClone->wCreationIndex > this->wLastCloneIndex) {
-			return pClone;
+	while (pMonster && pMonster->wProcessSequence == SPD_PDOUBLE) {
+		if (pMonster->wType == M_CLONE) {
+			CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			if (pClone->wCreationIndex > this->wLastCloneIndex) {
+				return pClone;
+			}
 		}
 
 		pMonster = pMonster->pNext;
@@ -3578,7 +3580,7 @@ const CMonster* CDbRoom::GetOwningMonsterOnSquare(const UINT wX, const UINT wY) 
 }
 
 //*****************************************************************************
-CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
+CMonster* CDbRoom::GetMonsterOfType(const UINT wType, const bool bIgnoreCharacterAppearance) const
 //Returns: first monster of specified type in monster list, or NULL if none
 {
 	CMonster *pMonster = this->pFirstMonster;
@@ -3592,7 +3594,9 @@ CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			if (pCharacter->IsVisible()) //Character must be in room to count.
 			{
-				if (wType == M_CHARACTER || pCharacter->GetIdentity() == wType)
+				if (wType == M_CHARACTER)
+					return pMonster;
+				else if (pCharacter->GetIdentity() == wType && !bIgnoreCharacterAppearance)
 					return pMonster;
 			}
 		}
