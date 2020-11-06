@@ -97,6 +97,7 @@ protected:
 	UINT          dwDeactivateValue;
 
 private:
+	CEventHandlerWidget* FindEventHandlerParent() const;
 	UINT          dwReqTextField;   //when a text box is present as a child
 	bool           bListBoxDoubleClickReturns;
 	SDL_Rect       centerRect;
