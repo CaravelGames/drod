@@ -118,7 +118,7 @@ public:
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
-	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior); };
+	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior) == 1; };
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
