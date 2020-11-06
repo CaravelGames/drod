@@ -48,6 +48,8 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	, startDelay(START_DELAY)
 	, endDelay(END_DELAY)
 	, isBump(isBump)
+	, nOpacity(0)
+	, wDrawX(0), wDrawY(0)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -61,6 +63,8 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	this->startY = this->wY;
 	this->deltaX = nGetOX(SetCoord.wO) * CBitmapManager::CX_TILE;
 	this->deltaY = nGetOY(SetCoord.wO) * CBitmapManager::CY_TILE;
+
+	this->blitRect = MAKE_SDL_RECT(this->wX, this->wY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 }
 
 //********************************************************************************

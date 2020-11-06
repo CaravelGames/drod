@@ -2067,18 +2067,6 @@ void CRoomWidget::ProcessCueEventsBeforeRoomDraw(const CCueEvents &CueEvents)
 }
 
 //*****************************************************************************
-void CRoomWidget::PutTLayerEffectsOnMLayer()
-//During death sequence, only m-layer effects show up.
-//This places all effects in the o- and t-layers at the beginning of the m-layer (to be drawn first).
-{
-	this->pMLayerEffects->Effects.insert(this->pMLayerEffects->Effects.begin(), this->pTLayerEffects->Effects.begin(), this->pTLayerEffects->Effects.end());
-	this->pTLayerEffects->Effects.clear();
-
-	this->pMLayerEffects->Effects.insert(this->pMLayerEffects->Effects.begin(), this->pOLayerEffects->Effects.begin(), this->pOLayerEffects->Effects.end());
-	this->pOLayerEffects->Effects.clear();
-}
-
-//*****************************************************************************
 void CRoomWidget::SetMoveCountText()
 {
 	if (!this->bShowMoveCount || !this->pCurrentGame)
@@ -4381,8 +4369,8 @@ void CRoomWidget::Paint(
 	// O-Layers need to be updated and dirtied before O-Layer is drawn to ensure lighting is correctly applied for
 	// pieces of the effects that enter a new tile
 	this->pOLayerEffects->UpdateEffects();
-	this->pMLayerEffects->UpdateEffects();
 	this->pTLayerEffects->UpdateEffects();
+	this->pMLayerEffects->UpdateEffects();
 	this->pLastLayerEffects->UpdateEffects();
 	this->pOLayerEffects->DirtyTiles();
 
@@ -4541,6 +4529,8 @@ void CRoomWidget::Paint(
 
 	//If any widgets are attached to this one, draw them now.
 	PaintChildren();
+
+	this->pOLayerEffects->DirtyTiles();
 
 	//7. Show changes on screen.
 	if (bUpdateRect)
@@ -7622,6 +7612,7 @@ void CRoomWidget::DrawCharacter(
 	if (bHasSword) {
 		blit.wCol = wSX;
 		blit.wRow = wSY;
+		blit.nAddColor = NO_COLOR_INDEX;
 		DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
 	}
 }

@@ -236,6 +236,9 @@ class CScalerWidget;
 class CScreenManager;
 class CWidget : public CAttachableObject
 {
+public:
+	CWidget* GetParent() const { return this->pParent; }
+
 protected:
 	friend class CEffectList;
 	friend class CEventHandlerWidget;
