@@ -149,7 +149,7 @@ struct RoomCompletionData
 };
 
 struct cloneComparator {
-    bool operator() (const CClone *a, const CClone *b) const;
+    bool operator() (const CMoveCoordEx &a, const CMoveCoordEx &b) const;
 };
 
 //*******************************************************************************
