@@ -7599,6 +7599,7 @@ void CRoomWidget::DrawCharacter(
 	if (bHasSword) {
 		blit.wCol = wSX;
 		blit.wRow = wSY;
+		blit.nAddColor = NO_COLOR_INDEX;
 		DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
 	}
 }
