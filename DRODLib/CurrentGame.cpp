@@ -7293,10 +7293,10 @@ void CCurrentGame::TallyKill()
 }
 
 //*****************************************************************************
-bool cloneComparator::operator() (const CClone *a, const CClone *b) const
+bool cloneComparator::operator() (const CMoveCoordEx &a, const CMoveCoordEx &b) const
 //Compare clones by wCreationIndex
 {
-    return a->wCreationIndex < b->wCreationIndex;
+    return a.wValue < b.wValue;
 }
 
 //*****************************************************************************
@@ -7341,20 +7341,41 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 	if (this->swordsman.IsTarget())
 		this->pRoom->SetPathMapsTarget(wX,wY);
 
-	// Sort the clones by creationIndex and relink them in the room
+	// Sort the clones by creationIndex and reposition them
+	// We do the weird positiong swapping instead of unlink/relink to preserve movement order
+	// of every other monster
 	{
 		std::vector<CClone*> clones;
-		pMonster = this->pRoom->GetMonsterOfType(M_CLONE);
-		while (pMonster && pMonster->wType == M_CLONE) {
-			pClone = DYN_CAST(CClone*, CMonster*, pMonster);
-			clones.push_back(pClone);
-			this->pRoom->UnlinkMonster(pClone);
+		pMonster = this->pRoom->GetMonsterOfType(M_CLONE, true);
+		while (pMonster && pMonster->wProcessSequence == SPD_PDOUBLE) {
+			if (pMonster->wType == M_CLONE) {
+				pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+				clones.push_back(pClone);
+				this->pRoom->RemoveMonsterFromTileArray(pClone);
+			}
 			pMonster = pMonster->pNext;
 		}
-		std::sort(clones.begin(), clones.end(), cloneComparator());
 
-		for (vector<CClone*>::const_iterator iter = clones.begin(); iter != clones.end(); ++iter)
-			this->pRoom->LinkMonster(*iter, false);
+		std::vector<CMoveCoordEx> sortedClones;
+		for (UINT i = 0; i < clones.size(); ++i) {
+			CClone* clone = clones[i];
+			sortedClones.push_back(CMoveCoordEx(clone->wX, clone->wY, clone->wO, clone->wCreationIndex));
+		}
+
+		std::sort(sortedClones.begin(), sortedClones.end(), cloneComparator());
+
+		ASSERT(sortedClones.size() == clones.size());
+		for (UINT i = 0; i < clones.size(); ++i) {
+			CClone* existingClone = clones[i];
+			CMoveCoordEx sortedClone = sortedClones[i];
+
+			existingClone->wPrevX = existingClone->wX = sortedClone.wX;
+			existingClone->wPrevY = existingClone->wY = sortedClone.wY;
+			existingClone->wPrevO = existingClone->wO = sortedClone.wO;
+			existingClone->wCreationIndex = sortedClone.wValue;
+
+			this->pRoom->SetMonsterSquare(existingClone);
+		}
 
 	}
 

@@ -45,6 +45,7 @@ CStrikeOrbEffect::CStrikeOrbEffect(
 	SDL_Surface *pSetPartsSurface,   //(in)   Preloaded surface containing bolt parts.
 	const bool bSetDrawOrb)          //(in)   True if the orb should be drawn
 	: CEffect(pSetWidget, StrikeOrbEffectDuration, EORBHIT)
+	, bSuppressDraw(false)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	ASSERT(pSetPartsSurface);
@@ -102,9 +103,12 @@ CStrikeOrbEffect::~CStrikeOrbEffect()
 bool CStrikeOrbEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	this->dirtyRects.clear();  //Reset dirty regions.
+	this->bSuppressDraw = false;
 
-	if (this->eOrbType == OT_BROKEN && RAND(5) != 0)
+	if (this->bDrawOrb && this->eOrbType == OT_BROKEN && RAND(5) != 0) {
+		this->bSuppressDraw = true;
 		return true; //flicker when broken
+	}
 
 	if (bDrawOrb)
 		this->dirtyRects.push_back(MAKE_SDL_RECT(this->wOrbX, this->wOrbY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE));
@@ -129,6 +133,9 @@ bool CStrikeOrbEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //********************************************************************************
 void CStrikeOrbEffect::Draw(SDL_Surface& destSurface)
 {
+	if (this->bSuppressDraw)
+		return;
+
 	//Draw activated orb tile.
 	if (bDrawOrb)
 	    g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, &destSurface, false);

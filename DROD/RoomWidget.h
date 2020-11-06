@@ -310,7 +310,6 @@ public:
 			const UINT wH, const bool bUpdateRect = true);
 	bool           PlayerLightTurnedOff() const;
 	void           ProcessCueEventsBeforeRoomDraw(const CCueEvents &CueEvents);
-	void           PutTLayerEffectsOnMLayer();
 
 	void           QueueRemoveLayerEffectsOfType(const EffectType eEffectType, int layer) {
 		queued_layer_effect_type_removal.insert(make_pair(eEffectType, layer)); }

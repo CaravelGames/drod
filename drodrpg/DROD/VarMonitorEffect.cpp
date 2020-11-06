@@ -114,7 +114,6 @@ void CVarMonitorEffect::SetTextForNewTurn()
 	}
 
 	this->lastTurn = turn;
-	this->dwTimeElapsed = 0;
 }
 
 //*****************************************************************************
