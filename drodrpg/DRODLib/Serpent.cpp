@@ -237,7 +237,7 @@ const
 			wLookTileNo==T_FUSE ||
 			wLookTileNo==T_KEY ||
 			bIsEquipment(wLookTileNo) ||
-			wLookTileNo==T_MAP ||
+			bIsMap(wLookTileNo) ||
 			wLookTileNo==T_TOKEN
 			//should have T_SCROLL and ARROWs also, but they were left out of
 			//Webfoot/Caravel DROD (vv. 1.0 -- 1.6) since the serpent pieces were 

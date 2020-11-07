@@ -412,7 +412,7 @@ enum CUEEVENT_ID
 
 	//Player obtained a level map.
 	//
-	//Private data: NONE
+	//Private data: UINT (map tile type)
 	CID_LevelMap,
 
 	//Red gates were toggled.
@@ -587,7 +587,7 @@ enum CUEEVENT_ID
 
 	//An object was built.
 	//
-	//Private data: UINT (one or more)
+	//Private data: CMoveCoord* (one or more)
 	CID_ObjectBuilt,
 
 	//Signal to play a video: at (x,y) with dataID==wO.

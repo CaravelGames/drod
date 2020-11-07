@@ -5591,7 +5591,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		CWidget *pMapWidget = GetWidget(TAG_MAP);
 		if (pMapWidget)
 		{
-			const UINT tMapTile = GetTileImageForTileNo(T_MAP);
+			const CAttachableWrapper<UINT>* pMapType =
+				DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+					CueEvents.GetFirstPrivateData(CID_LevelMap));
+
+			const UINT tMapTile = GetTileImageForTileNo(pMapType ? pMapType->data : T_MAP);
 			ASSERT(tMapTile != CALC_NEEDED);
 			CMovingTileEffect *pEffect = new CMovingTileEffect(this->pRoomWidget,
 					tMapTile, CCoord(player.wX, player.wY),

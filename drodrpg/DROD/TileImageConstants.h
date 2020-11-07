@@ -2318,7 +2318,9 @@
 #define TI_WADE2          2145
 #define TI_WADE3          2146
 
-static const UINT TI_COUNT = 2147;
+#define TI_MAP_DETAIL     2147
+
+static const UINT TI_COUNT = 2148;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

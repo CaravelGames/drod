@@ -184,7 +184,7 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-			wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
+			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
 			wTTile == T_TOKEN || bIsTar(wTTile))
 			break;
 		//No other item can be built over.
@@ -261,7 +261,7 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-			wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
+			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
 			wTTile == T_TOKEN || bIsTar(wTTile))
 		{
 			if (TILE_LAYER[newTile] == LAYER_TRANSPARENT && bIsTar(wTTile) && newTile != wTTile) {

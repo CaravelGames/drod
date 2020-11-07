@@ -1963,8 +1963,10 @@ void CCharacter::Process(
 						command.x, pGame->pLevel->dwLevelID*100 + command.y);
 				if (roomID)
 				{
-					pGame->AddRoomToMap(roomID, command.w != 0);
-					CueEvents.Add(CID_LevelMap);
+					const bool bMarkExplored = command.w != 0;
+					pGame->AddRoomToMap(roomID, bMarkExplored);
+					CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
+							bMarkExplored ? T_MAP_DETAIL : T_MAP));
 				}
 				bProcessNextCommand = true;
 			}

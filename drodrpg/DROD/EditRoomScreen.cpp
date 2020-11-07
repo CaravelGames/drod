@@ -221,6 +221,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_SHIELD1},                                      //T_SHIELD
 	{TI_HEALTH_SM},                                    //T_HEALTH_SM
 	{TI_ACCESSORY1},                                   //T_ACCESSORY
+	{TI_MAP_DETAIL},                                   //T_MAP_DETAIL
 
 	//monsters
 	{TI_ROACH_S},
@@ -349,7 +350,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	1, //T_LIGHT         74
 	0, //T_HOT           75
 	0, //T_GEL           76
-	0, //T_MAP           77
+	1, //T_MAP           77
 	0, //T_PRESSPLATE    78
 	0, //T_BRIDGE        79
 	0, //T_BRIDGE_H      80
@@ -364,6 +365,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	1, //T_SHIELD        89
 	0, //T_HEALTH_SM     90
 	1, //T_ACCESSORY     91
+	1, //T_MAP_DETAIL    92
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -423,7 +425,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1,
+	1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -443,7 +445,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1,
+	1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -537,13 +539,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 22;
+const UINT numTLayerEntries = 23;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_DEF_UP, T_ATK_UP,
-	T_MAP, T_KEY, T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG,
+	T_MAP, T_MAP_DETAIL, T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG,
 	T_SCROLL, T_BOMB, T_FUSE, T_TOKEN, T_OBSTACLE,
 	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_MIRROR
+	T_TAR, T_MIRROR, T_KEY
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -5182,7 +5184,7 @@ void CEditRoomScreen::PlotObjects()
 				case T_DEF_UP:	case T_ATK_UP:
 					g_pTheSound->PlaySoundEffect(SEID_POTION);
 					break;
-				case T_MAP:
+				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
 				case T_SCROLL:
 				{

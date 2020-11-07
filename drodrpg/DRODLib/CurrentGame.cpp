@@ -5815,11 +5815,13 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	break;
 
 	case T_MAP:
+	case T_MAP_DETAIL:
 	{
 		//Level map.
 		//Mark all non-secret rooms in level on map.
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
-		roomsInLevel -= GetExploredRooms(true); //ignore rooms already marked
+		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
+		roomsInLevel -= GetExploredRooms(!bShowDetail); //non-detailed map ignores rooms already marked
 		roomsInLevel -= room.dwRoomID;  //ignore current room
 		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
 			roomIter != roomsInLevel.end(); ++roomIter)
@@ -5827,13 +5829,13 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 			const UINT roomID = *roomIter;
 			if (!CDbRoom::IsSecret(roomID))
 			{
-				ASSERT(!getExploredRoom(roomID));
-				AddRoomToMap(roomID);
+				ASSERT(!getExploredRoom(roomID) || bShowDetail);
+				AddRoomToMap(roomID, bShowDetail);
 			}
 		}
 
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_LevelMap);
+		CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
