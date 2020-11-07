@@ -264,7 +264,7 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pDoorLocation (one)
 	CID_BumpedLockedDoor,
 
-	//Swordsman drank (speed/invisibility) potion.
+	//Player consumed a speed/invisibility potion.
 	//
 	//Private data: NONE
 	CID_DrankPotion,
@@ -624,6 +624,21 @@ enum CUEEVENT_ID
 	//
 	//Private data: NONE
 	CID_ReceivedEquipment,
+
+	//Player received ATK gem.
+	//
+	//Private data: NONE
+	CID_ReceivedATK,
+
+	//Player received DEF gem.
+	//
+	//Private data: NONE
+	CID_ReceivedDEF,
+
+	//Player received HP elixir.
+	//
+	//Private data: NONE
+	CID_ReceivedHP,
 
 	//End of enumeration typedef.
 	CUEEVENT_COUNT

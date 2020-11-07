@@ -656,10 +656,11 @@ const WCHAR* CDbBase::GetMessageText(
 {
 #ifdef PATCH
 	//Hard-code message texts that won't be in the pre-packaged .dat file when patching an older version.
-	//Add new message texts here in future patches.
+	//Add new message texts here as they are added in minor version bumps.
 	string strText;
 	switch (eMessageID)
 	{
+		//TODO 1.3: remove all of these when building barebones and release build dat files
 		case MID_DoubleXP: strText = "Double REP"; break;
 		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
 		case MID_EquipQueryStatus: strText = "Status"; break;
@@ -694,6 +695,12 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PreviousIf: strText = "<Previous If>"; break;
 		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
+		case MID_Rain: strText = "Rain"; break;
+		case MID_LevelMapDetail: strText = "Level map (detailed)"; break;
+		case MID_DrankPotion: strText = "Player drank speed/invisibility potion"; break;
+		case MID_ReceivedATK: strText = "Received ATK"; break;
+		case MID_ReceivedDEF: strText = "Received DEF"; break;
+		case MID_ReceivedHP: strText = "Received HP"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

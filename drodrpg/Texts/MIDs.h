@@ -1461,6 +1461,10 @@ enum MID_CONSTANT {
   MID_GoSub = 1500,
   MID_PreviousIf = 1501,
   MID_NextElseOrElseIfSkip = 1502,
+  MID_DrankPotion = 1615,
+  MID_ReceivedATK = 1616,
+  MID_ReceivedDEF = 1617,
+  MID_ReceivedHP = 1618,
 
   //Messages from Stats.uni:
   MID_VarHP = 1503,

@@ -3694,6 +3694,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_BumpedLockedDoor, g_pTheDB->GetMessageText(MID_BumpedLockedDoor));
 	this->pEventListBox->AddItem(CID_CrumblyWallDestroyed, g_pTheDB->GetMessageText(MID_CrumblyWallDestroyed));
 	this->pEventListBox->AddItem(CID_CutBriar, g_pTheDB->GetMessageText(MID_CutBriar));
+	this->pEventListBox->AddItem(CID_DrankPotion, g_pTheDB->GetMessageText(MID_DrankPotion));
 	this->pEventListBox->AddItem(CID_EvilEyeWoke, g_pTheDB->GetMessageText(MID_EvilEyeWoke));
 	this->pEventListBox->AddItem(CID_FuseBurning, g_pTheDB->GetMessageText(MID_FuseBurning));
 	this->pEventListBox->AddItem(CID_GelBabyFormed, g_pTheDB->GetMessageText(MID_GelBabyFormed));
@@ -3724,7 +3725,10 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_PlayerBurned, g_pTheDB->GetMessageText(MID_PlayerBurned));
 	this->pEventListBox->AddItem(CID_PressurePlate, g_pTheDB->GetMessageText(MID_PressurePlateActivated));
 	this->pEventListBox->AddItem(CID_PressurePlateReleased, g_pTheDB->GetMessageText(MID_PressurePlateReleased));
+	this->pEventListBox->AddItem(CID_ReceivedATK, g_pTheDB->GetMessageText(MID_ReceivedATK));
+	this->pEventListBox->AddItem(CID_ReceivedDEF, g_pTheDB->GetMessageText(MID_ReceivedDEF));
 	this->pEventListBox->AddItem(CID_ReceivedEquipment, g_pTheDB->GetMessageText(MID_ReceivedEquipment));
+	this->pEventListBox->AddItem(CID_ReceivedHP, g_pTheDB->GetMessageText(MID_ReceivedHP));
 	this->pEventListBox->AddItem(CID_ReceivedKey, g_pTheDB->GetMessageText(MID_ReceivedKey));
 	this->pEventListBox->AddItem(CID_Scared, g_pTheDB->GetMessageText(MID_Scared));
 	this->pEventListBox->AddItem(CID_SnakeDiedFromTruncation, g_pTheDB->GetMessageText(MID_SnakeDiedFromTruncation));
