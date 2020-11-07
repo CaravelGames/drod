@@ -92,7 +92,7 @@ public:
 	virtual CMonster* Replicate() const;
 
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
-	virtual bool   CanPressPressurePlates() const { return behaviorFlags.count(ScriptFlag::ActivatePlates) == 1; }
+	virtual bool   CanPressPressurePlates() const { return HasBehavior(ScriptFlag::ActivatePlates); }
 	virtual bool   CanPushObjects() const;
 	virtual bool   CanPushMonsters() const;
 	bool           CanPushOntoOTileAt(UINT wX, UINT wY) const;
@@ -118,6 +118,7 @@ public:
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
+	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior) == 1; };
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
@@ -138,12 +139,12 @@ public:
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
 
-	bool           IsAdderImmune() const { return behaviorFlags.count(ScriptFlag::AdderImmune) == 1; }
+	bool           IsAdderImmune() const { return HasBehavior(ScriptFlag::AdderImmune); }
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
-	bool           IsBriarImmune() const { return behaviorFlags.count(ScriptFlag::BriarImmune) == 1; }
-	bool           IsExplosionImmune() const {return behaviorFlags.count(ScriptFlag::ExplosionImmune) == 1;}
+	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
+	bool           IsExplosionImmune() const {return HasBehavior(ScriptFlag::ExplosionImmune); }
 	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
@@ -157,7 +158,7 @@ public:
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
-	bool           IsPuffImmune() const { return behaviorFlags.count(ScriptFlag::PuffImmune) == 1; }
+	bool           IsPuffImmune() const { return HasBehavior(ScriptFlag::PuffImmune); }
 	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;

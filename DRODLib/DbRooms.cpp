@@ -11035,7 +11035,7 @@ void CDbRoom::SetPressurePlatesState()
 			}
 			break;
 		}
-		if (!(pMonster->IsFlying() || pMonster->wType == M_SEEP))
+		if (pMonster->CanPressPressurePlates())
 		{
 			COrbData *pPlate = GetPressurePlateAtCoords(pMonster->wX, pMonster->wY);
 			if (pPlate)
