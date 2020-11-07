@@ -5569,13 +5569,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 	if (CueEvents.HasOccurred(CID_DrankPotion))
 		g_pTheSound->PlaySoundEffect(SEID_POTION);
-/*
-	if (CueEvents.HasOccurred(CID_DoublePlaced))
-	{
-		g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-		this->pRoomWidget->RenderRoomInPlay(); //remove double placement effect
-	}
-*/
+	if (CueEvents.HasOccurred(CID_ReceivedATK))
+		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX
+	if (CueEvents.HasOccurred(CID_ReceivedDEF))
+		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX
+	if (CueEvents.HasOccurred(CID_ReceivedHP))
+		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX?
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
@@ -6120,12 +6119,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 
 	//Remove old sparks before drawing the current ones.
-/*	if (//Leave sparks burning while double is being placed.
-		(!player.wPlacingDoubleType ||
-				CueEvents.HasOccurred(CID_DrankPotion)) &&
-				!CueEvents.HasOccurred(CID_DoublePlaced))
-*/
-		this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);
+	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);
 
 	//Spark rendering must come both before and after room is drawn so it will
 	//show up correctly both on room entrance and  in double-placing freeze frame.

@@ -5692,7 +5692,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		incintValueWithBounds(p.st.ATK, atk);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedATK);
 	}
 	break;
 
@@ -5702,7 +5702,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		incintValueWithBounds(p.st.DEF, def);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedDEF);
 	}
 	break;
 
@@ -5717,19 +5717,9 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_HEAL, heal), true);
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedHP);
 	}
 	break;
-
-	/*
-			case T_POTION_SP:  //Speed potion.
-				{
-					++p.st.speedPotions;
-					room.Plot(p.wX, p.wY, T_EMPTY);
-					CueEvents.Add(CID_DrankPotion);
-				}
-			break;
-	*/
 
 	case T_FUSE:
 		//Light the fuse.
