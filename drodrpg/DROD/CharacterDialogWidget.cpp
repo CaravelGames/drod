@@ -3889,7 +3889,8 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_HEALTH_SM, g_pTheDB->GetMessageText(MID_SmallHealth));
 	pListBox->AddItem(T_DEF_UP, g_pTheDB->GetMessageText(MID_DefenseUp));
 	pListBox->AddItem(T_ATK_UP, g_pTheDB->GetMessageText(MID_AttackUp));
-	pListBox->AddItem(T_MAP, g_pTheDB->GetMessageText(MID_Station));
+	pListBox->AddItem(T_MAP, g_pTheDB->GetMessageText(MID_LevelMap));
+	pListBox->AddItem(T_MAP_DETAIL, g_pTheDB->GetMessageText(MID_LevelMapDetail));
 	pListBox->AddItem(TV_KEY_Y, g_pTheDB->GetMessageText(MID_YellowKey));
 	pListBox->AddItem(TV_KEY_G, g_pTheDB->GetMessageText(MID_GreenKey));
 	pListBox->AddItem(TV_KEY_B, g_pTheDB->GetMessageText(MID_BlueKey));

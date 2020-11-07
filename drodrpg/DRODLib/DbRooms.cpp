@@ -2485,7 +2485,7 @@ const
 	UINT wTileNo = GetTSquare(wX, wY);
 	if (!(wTileNo == T_EMPTY ||
 			wTileNo == T_FUSE || wTileNo == T_SCROLL || wTileNo == T_TOKEN ||
-			wTileNo == T_MAP || wTileNo == T_KEY || bIsEquipment(wTileNo)))
+			bIsMap(wTileNo) || wTileNo == T_KEY || bIsEquipment(wTileNo)))
 		return false;
 
 	//Look for f-square obstacle.
@@ -2713,7 +2713,7 @@ bool CDbRoom::HasGrabbableItems() const
 		switch (this->pszTSquares[i])
 		{
 			//Health, power-ups, keys, map.
-			case T_MAP:
+			case T_MAP: case T_MAP_DETAIL:
 			case T_ATK_UP: case T_DEF_UP:
 			case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 			case T_KEY:
@@ -4073,7 +4073,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 			if (!bTrapdoorFell)
 				break;
 			//else fall through...
-		case T_MAP:
+		case T_MAP: case T_MAP_DETAIL:
 		case T_BOMB: case T_ORB:
 		case T_SCROLL:
 		case T_ATK_UP: case T_DEF_UP:

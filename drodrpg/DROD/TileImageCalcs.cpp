@@ -1497,7 +1497,7 @@ UINT GetTileImageForTileNo(
 		TI_ALT,           //T_FLOOR_ALT
 		TI_MONEYDOOR,     //T_DOOR_MONEY
 		CALC_NEEDED,      //T_MUD
-      TI_STAIRSUP,      //T_STAIRS_UP
+		TI_STAIRSUP,      //T_STAIRS_UP
 		CALC_NEEDED,      //T_WALL_H
 		TI_TUNNEL_E,      //T_TUNNEL_E
 		TI_TUNNEL_W,      //T_TUNNEL_W
@@ -1527,7 +1527,8 @@ UINT GetTileImageForTileNo(
 		TI_MONEYDOOR_O,   //T_DOOR_MONEYO
 		CALC_NEEDED,      //T_SHIELD
 		TI_HEALTH_SM,     //T_HEALTH_SM
-		CALC_NEEDED       //T_ACCESSORY
+		CALC_NEEDED,      //T_ACCESSORY
+		TI_MAP_DETAIL     //T_MAP_DETAIL
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));

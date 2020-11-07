@@ -113,7 +113,7 @@
 #define T_TUNNEL_E      63
 #define T_TUNNEL_W      64
 #define T_FLOOR_IMAGE   65 //user-defined image
-#define T_WALL2         66	//alternate solid wall
+#define T_WALL2         66 //alternate solid wall
 #define T_WATER         67
 #define T_DOOR_GO       68 //Monster/Green Open
 #define T_DOOR_CO       69 //Blue/Exit Open
@@ -121,10 +121,10 @@
 #define T_DOOR_BO       71 //Black Open
 #define T_TRAPDOOR2     72 //trapdoor over water
 #define T_GOO           73
-#define T_LIGHT         74	//light source
+#define T_LIGHT         74 //light source
 #define T_HOT           75 //hot tile
 #define T_GEL           76 //gel (tarstuff)
-#define T_MAP           77 //level map
+#define T_MAP           77 //level map (room locations only)
 #define T_PRESSPLATE    78 //pressure plate
 #define T_BRIDGE        79 //bridge
 #define T_BRIDGE_H      80 //bridge (horizontal)
@@ -139,8 +139,9 @@
 #define T_SHIELD        89 //shield
 #define T_HEALTH_SM     90 //Health (small)
 #define T_ACCESSORY     91 //accessory
+#define T_MAP_DETAIL    92 //level map (full room reveal, as if explored)
 
-#define TILE_COUNT     (92) //Number of tile constants from above list.
+#define TILE_COUNT     (93) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -187,7 +188,7 @@ static inline bool bIsHealth(const UINT t) {
 static inline bool bIsPowerUp(const UINT t) {
 	switch (t)
 	{
-		case T_MAP:
+		case T_MAP: case T_MAP_DETAIL:
 		case T_ATK_UP: case T_DEF_UP:
 		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 			return true;
@@ -220,6 +221,8 @@ static inline bool bIsElevatedTile(const UINT t) {
 }
 
 static inline bool bIsEquipment(const UINT t) {return t==T_SWORD || t==T_SHIELD || t==T_ACCESSORY;}
+
+static inline bool bIsMap(const UINT t) { return t == T_MAP || t == T_MAP_DETAIL; }
 
 //Obstacle parameter bit format: <Top edge>:1 <Left edge>:1 <64 possible obstacle types>:6
 #define OBSTACLE_TOP (0x80)
@@ -439,6 +442,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_SHIELD        89
 	LAYER_TRANSPARENT, //T_HEALTH_SM     90
 	LAYER_TRANSPARENT, //T_ACCESSORY     91
+	LAYER_TRANSPARENT, //T_MAP_DETAIL    92
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -553,17 +557,17 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Tunnel_W,     //T_TUNNEL_W      64
 	MID_FloorImage,   //T_FLOOR_IMAGE   65
 	MID_Wall2,        //T_WALL2         66
-	MID_Water,			//T_WATER         67
+	MID_Water,        //T_WATER         67
 	MID_OpenGreenDoor,//T_DOOR_GO       68
 	MID_OpenBlueDoor, //T_DOOR_CO       69
 	MID_OpenRedDoor,  //T_DOOR_RO       70
 	MID_OpenBlackDoor,//T_DOOR_BO       71
 	MID_Trapdoor2,    //T_TRAPDOOR2     72
-	MID_Goo,			   //T_GOO           73
+	MID_Goo,          //T_GOO           73
 	MID_Light,        //T_LIGHT         74
 	MID_Hot,          //T_HOT           75
-	MID_Gel,	         //T_GEL           76
-	MID_Station,      //T_MAP           77
+	MID_Gel,	      //T_GEL           76
+	MID_LevelMap,     //T_MAP           77
 	MID_PressurePlate,//T_PRESSPLATE    78
 	MID_Bridge,       //T_BRIDGE        79
 	MID_Bridge_H,     //T_BRIDGE_H      80
@@ -578,6 +582,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Shield1,      //T_SHIELD        89
 	MID_SmallHealth,  //T_HEALTH_SM     90
 	MID_Accessory1,   //T_ACCESSORY     91
+	MID_LevelMapDetail, //T_MAP_DETAIL  92
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

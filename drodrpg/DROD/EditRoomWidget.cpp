@@ -712,7 +712,7 @@ const
 
 		wTile = wTileLayer == LAYER_TRANSPARENT ? wSelectedObject : wTileNo[LAYER_TRANSPARENT];
 		if (bIsTar(wTile) || wTile == T_ORB || wTile == T_BOMB ||
-				bIsBriar(wTile) || wTile == T_MAP)
+				bIsBriar(wTile) || bIsMap(wTile))
 			return false;
 		if (pMonster || (wSelectedObject == T_SWORDSMAN && !bAllowSelf))
 			return false;
@@ -897,7 +897,7 @@ const
 		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
 		case T_DEF_UP:	case T_ATK_UP:
 		case T_SCROLL:
-		case T_MAP:
+		case T_MAP: case T_MAP_DETAIL:
 			//Not on monsters that use/affect the t-layer.
 			if (bIsMother(wTileNo[2])) return false;
 			//Can't go on things player never steps on.
