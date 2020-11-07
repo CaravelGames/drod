@@ -3183,6 +3183,12 @@ bool CDbRoom::KillMonster(
 			}
 			//else: don't decrement monster count.
 
+			// Is this character a monster enemy?
+			if (pCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
+				pCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+				RemoveMonsterEnemy(pMonster);
+			}
+
 			//Does character script complete when monster is killed?
 			if (pCharacter->EndsWhenKilled())
 				this->pCurrentGame->ScriptCompleted(pCharacter);
@@ -3320,6 +3326,15 @@ void CDbRoom::RemoveMonsterFromTileArray(CMonster* pMonster)
 void CDbRoom::RemoveMonsterDuringPlayWithoutEffect(CMonster* pMonster)
 {
 	switch (pMonster->wType) {
+		case M_CHARACTER:
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			// Is this character a monster enemy?
+			if (pCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
+				pCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+				RemoveMonsterEnemy(pMonster);
+			}
+		}
 		case M_STALWART: case M_STALWART2:
 		case M_TEMPORALCLONE:
 			RemoveMonsterEnemy(pMonster);
@@ -8273,6 +8288,16 @@ void CDbRoom::ClearMonsters(
 			RemoveMonsterFromLayer(pDelete);
 			switch (pDelete->wType)
 			{
+				case M_CHARACTER:
+				{
+					CCharacter* pDeleteCharacter = DYN_CAST(CCharacter*, CMonster*, pDelete);
+					// Is this character a monster enemy?
+					if (pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
+						pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+						RemoveMonsterEnemy(pDelete);
+					}
+				}
+				break;
 				case M_STALWART: case M_STALWART2:
 				case M_TEMPORALCLONE:
 					RemoveMonsterEnemy(pDelete);
