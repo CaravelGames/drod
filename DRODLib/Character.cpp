@@ -2646,9 +2646,11 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::Friendly:
 						this->bFriendly = true;
+						bChangeImperative = false;
 					break;
 					case ScriptFlag::Unfriendly:
 						this->bFriendly = false;
+						bChangeImperative = false;
 					break;
 					default: break;
 				}
