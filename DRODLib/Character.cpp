@@ -2685,20 +2685,37 @@ void CCharacter::Process(
 
 				if (activate) {
 					behaviorFlags.insert(eBehavior);
-					if (eBehavior == ScriptFlag::MonsterTarget ||
-						eBehavior == ScriptFlag::MonsterTargetIfPlayerIs) {
-						// For simplicity, just add this NPC to the list of monster enemies
-						room.monsterEnemies.push_back(this);
+					// some behaviors need to update other locations
+					switch (eBehavior) {
+						case ScriptFlag::MonsterTarget:
+							// For simplicity, just add this NPC to the list of monster enemies
+							if(!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+								room.monsterEnemies.push_back(this);
+						break;
+						case ScriptFlag::MonsterTargetIfPlayerIs:
+							// For simplicity, just add this NPC to the list of monster enemies
+							if (!HasBehavior(ScriptFlag::MonsterTarget))
+								room.monsterEnemies.push_back(this);
+						break;
+						default: break;
 					}
 				} else {
 					behaviorFlags.erase(eBehavior);
-					if (eBehavior == ScriptFlag::BriarImmune) {
-						// This NPC can no longer plot briars, so act as if a tile was plotted.
-						room.briars.plotted(this->wX, this->wY, T_EMPTY);
-					} else if (eBehavior == ScriptFlag::MonsterTarget ||
-						eBehavior == ScriptFlag::MonsterTargetIfPlayerIs) {
-						// For simplicity, just remove this NPC from the list of monster enemies
-						room.monsterEnemies.remove(this);
+					// some behaviors need to update other locations
+					switch (eBehavior) {
+						case ScriptFlag::BriarImmune:
+							// This NPC can no longer block briars, so act as if a tile was plotted.
+							room.briars.plotted(this->wX, this->wY, T_EMPTY);
+						break;
+						case ScriptFlag::MonsterTarget:
+							if (!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+								room.monsterEnemies.remove(this);
+						break;
+						case ScriptFlag::MonsterTargetIfPlayerIs:
+							if (!HasBehavior(ScriptFlag::MonsterTarget))
+								room.monsterEnemies.remove(this);
+						break;
+						default: break;
 					}
 				}
 
