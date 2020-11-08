@@ -3888,11 +3888,16 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_MUD, g_pTheDB->GetMessageText(MID_Mud));
 	pListBox->AddItem(T_TAR, g_pTheDB->GetMessageText(MID_Tar));
 	pListBox->AddItem(T_MIRROR, g_pTheDB->GetMessageText(MID_Mirror));
+	pListBox->AddItem(T_HEALTH_HUGE, g_pTheDB->GetMessageText(MID_HugeHealth));
 	pListBox->AddItem(T_HEALTH_BIG, g_pTheDB->GetMessageText(MID_LargeHealth));
 	pListBox->AddItem(T_HEALTH_MED, g_pTheDB->GetMessageText(MID_MediumHealth));
 	pListBox->AddItem(T_HEALTH_SM, g_pTheDB->GetMessageText(MID_SmallHealth));
-	pListBox->AddItem(T_DEF_UP, g_pTheDB->GetMessageText(MID_DefenseUp));
 	pListBox->AddItem(T_ATK_UP, g_pTheDB->GetMessageText(MID_AttackUp));
+	pListBox->AddItem(T_ATK_UP3, g_pTheDB->GetMessageText(MID_AttackUp3));
+	pListBox->AddItem(T_ATK_UP10, g_pTheDB->GetMessageText(MID_AttackUp10));
+	pListBox->AddItem(T_DEF_UP, g_pTheDB->GetMessageText(MID_DefenseUp));
+	pListBox->AddItem(T_DEF_UP3, g_pTheDB->GetMessageText(MID_DefenseUp3));
+	pListBox->AddItem(T_DEF_UP10, g_pTheDB->GetMessageText(MID_DefenseUp10));
 	pListBox->AddItem(T_MAP, g_pTheDB->GetMessageText(MID_LevelMap));
 	pListBox->AddItem(T_MAP_DETAIL, g_pTheDB->GetMessageText(MID_LevelMapDetail));
 	pListBox->AddItem(TV_KEY_Y, g_pTheDB->GetMessageText(MID_YellowKey));

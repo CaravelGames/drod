@@ -2319,8 +2319,13 @@
 #define TI_WADE3          2146
 
 #define TI_MAP_DETAIL     2147
+#define TI_HEALTH_HUGE    2148
+#define TI_ATK_UP3        2149
+#define TI_ATK_UP10       2150
+#define TI_DEF_UP3        2151
+#define TI_DEF_UP10       2152
 
-static const UINT TI_COUNT = 2148;
+static const UINT TI_COUNT = 2153;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

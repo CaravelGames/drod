@@ -140,8 +140,13 @@
 #define T_HEALTH_SM     90 //Health (small)
 #define T_ACCESSORY     91 //accessory
 #define T_MAP_DETAIL    92 //level map (full room reveal, as if explored)
+#define T_HEALTH_HUGE   93 //Health (huge)
+#define T_ATK_UP3       94 //Attack up 3
+#define T_ATK_UP10      95 //Attack up 10
+#define T_DEF_UP3       96 //Defense up 3
+#define T_DEF_UP10      97 //Defense up 10
 
-#define TILE_COUNT     (93) //Number of tile constants from above list.
+#define TILE_COUNT     (98) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -177,20 +182,16 @@ static inline bool bIsSheatheAffecting(const UINT t) { return t == T_GOO; }
 static inline bool bIsArrow(const UINT t) {return t>=T_ARROW_N && t<=T_ARROW_NW;}
 
 static inline bool bIsHealth(const UINT t) {
-	switch (t)
-	{
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			return true;
-		default: return false;
-	}
+	return t == T_HEALTH_HUGE || t == T_HEALTH_BIG || t == T_HEALTH_MED || t == T_HEALTH_SM;
 }
 
 static inline bool bIsPowerUp(const UINT t) {
 	switch (t)
 	{
 		case T_MAP: case T_MAP_DETAIL:
-		case T_ATK_UP: case T_DEF_UP:
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 			return true;
 		default: return false;
 	}
@@ -223,6 +224,10 @@ static inline bool bIsElevatedTile(const UINT t) {
 static inline bool bIsEquipment(const UINT t) {return t==T_SWORD || t==T_SHIELD || t==T_ACCESSORY;}
 
 static inline bool bIsMap(const UINT t) { return t == T_MAP || t == T_MAP_DETAIL; }
+
+static inline bool bIsATKUp(const UINT t) { return t == T_ATK_UP || t == T_ATK_UP3 || t == T_ATK_UP10; }
+
+static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_UP3 || t == T_DEF_UP10; }
 
 //Obstacle parameter bit format: <Top edge>:1 <Left edge>:1 <64 possible obstacle types>:6
 #define OBSTACLE_TOP (0x80)
@@ -443,6 +448,11 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_HEALTH_SM     90
 	LAYER_TRANSPARENT, //T_ACCESSORY     91
 	LAYER_TRANSPARENT, //T_MAP_DETAIL    92
+	LAYER_TRANSPARENT, //T_HEALTH_HUGE   93
+	LAYER_TRANSPARENT, //T_ATK_UP3       94
+	LAYER_TRANSPARENT, //T_ATK_UP10      95
+	LAYER_TRANSPARENT, //T_DEF_UP3       96
+	LAYER_TRANSPARENT, //T_DEF_UP10      97
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -583,6 +593,11 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_SmallHealth,  //T_HEALTH_SM     90
 	MID_Accessory1,   //T_ACCESSORY     91
 	MID_LevelMapDetail, //T_MAP_DETAIL  92
+	MID_HugeHealth,   //T_HEALTH_HUGE   93
+	MID_AttackUp3,    //T_ATK_UP3       94
+	MID_AttackUp10,   //T_ATK_UP10      95
+	MID_DefenseUp3,   //T_DEF_UP3       96
+	MID_DefenseUp10,  //T_DEF_UP10      97
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

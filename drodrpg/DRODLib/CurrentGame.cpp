@@ -2882,13 +2882,13 @@ int CCurrentGame::getItemAmount(const UINT item) const
 	float fMult = GetTotalStatModifier(ScriptVars::ItemAll); //may be negative
 	switch (item)
 	{
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
+		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 			fMult *= GetTotalStatModifier(ScriptVars::ItemHP);
 		break;
-		case T_ATK_UP:
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 			fMult *= GetTotalStatModifier(ScriptVars::ItemATK);
 		break;
-		case T_DEF_UP:
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 			fMult *= GetTotalStatModifier(ScriptVars::ItemDEF);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
@@ -5686,7 +5686,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	//Check for t-layer items player can step onto and use.
 	switch (wNewTSquare)
 	{
-	case T_ATK_UP:
+	case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 	{
 		const int atk = getItemAmount(wNewTSquare);
 		incintValueWithBounds(p.st.ATK, atk);
@@ -5696,7 +5696,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	}
 	break;
 
-	case T_DEF_UP:
+	case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 	{
 		const int def = getItemAmount(wNewTSquare);
 		incintValueWithBounds(p.st.DEF, def);
@@ -5706,7 +5706,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	}
 	break;
 
-	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
+	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 	{
 		const int heal = getItemAmount(wNewTSquare);
 		if (heal < 0)

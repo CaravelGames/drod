@@ -89,6 +89,10 @@ enum MapColor
 	MAP_PALEYELLOW,
 
 	MAP_WHITE,
+	MAP_WHITE1,
+	MAP_WHITE2,
+	MAP_WHITE3,
+	MAP_WHITEYELLOW,
 
 	MAP_COLOR_COUNT
 };
@@ -1006,14 +1010,18 @@ void CMapWidget::InitMapColors()
 	m_arrColor[MAP_LTMAGENTA] =GetSurfaceColor(this->pMapSurface, 255,0,  255);
 	m_arrColor[MAP_YELLOW] =   GetSurfaceColor(this->pMapSurface, 255,255,0);
 	m_arrColor[MAP_LTYELLOW] = GetSurfaceColor(this->pMapSurface, 255,255,128);
-	m_arrColor[MAP_PALEYELLOW]=GetSurfaceColor(this->pMapSurface, 255,255,164);
+	m_arrColor[MAP_PALEYELLOW] = GetSurfaceColor(this->pMapSurface, 255, 255, 164);
 
 	m_arrColor[MAP_PALEBLUE] = GetSurfaceColor(this->pMapSurface, 200,200,255);
 	m_arrColor[MAP_PALERED] =  GetSurfaceColor(this->pMapSurface, 255,200,200);
 	m_arrColor[MAP_PALEGREEN] =GetSurfaceColor(this->pMapSurface, 200,255,200);
 	m_arrColor[MAP_PALECYAN] = GetSurfaceColor(this->pMapSurface, 164,255,255);
 
-	m_arrColor[MAP_WHITE] =    GetSurfaceColor(this->pMapSurface, 255,255,255);
+	m_arrColor[MAP_WHITE] =  GetSurfaceColor(this->pMapSurface, 255, 255, 255);
+	m_arrColor[MAP_WHITE1] = GetSurfaceColor(this->pMapSurface, 240, 240, 240);
+	m_arrColor[MAP_WHITE2] = GetSurfaceColor(this->pMapSurface, 225, 225, 225);
+	m_arrColor[MAP_WHITE3] = GetSurfaceColor(this->pMapSurface, 210, 210, 210);
+	m_arrColor[MAP_WHITEYELLOW] = GetSurfaceColor(this->pMapSurface, 255, 255, 200);
 }
 
 //*****************************************************************************
@@ -1505,10 +1513,22 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_BOMB:
 //		case T_STATION:
 			return m_arrColor[MAP_LTGRAY];
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-		case T_ATK_UP: case T_DEF_UP:
-		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
+		case T_HEALTH_SM:
+			return m_arrColor[MAP_WHITE3];
+		case T_HEALTH_MED:
+		case T_ATK_UP:
+		case T_DEF_UP:
+			return m_arrColor[MAP_WHITE2];
+		case T_HEALTH_BIG:
+		case T_ATK_UP3:
+		case T_DEF_UP3:
+			return m_arrColor[MAP_WHITE1];
+		case T_HEALTH_HUGE:
+		case T_ATK_UP10:
+		case T_DEF_UP10:
 			return m_arrColor[MAP_WHITE];
+		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
+			return m_arrColor[MAP_WHITEYELLOW];
 	}
 
 	switch (wOpaqueTile)

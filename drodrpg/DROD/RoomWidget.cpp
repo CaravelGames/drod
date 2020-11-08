@@ -1150,21 +1150,25 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		//Show item values.
 		switch (tTile)
 		{
-			case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-			case T_DEF_UP:	case T_ATK_UP:
+			case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+			case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+			case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 			{
-				CDbLevel *pLevel = this->pCurrentGame ? NULL :
-						g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
-				wstr += wszSpace;
 				int val;
-				if (this->pCurrentGame)
+				if (this->pCurrentGame) {
 					val = this->pCurrentGame->getItemAmount(tTile);
-				else
+				} else {
+					CDbLevel* pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
 					val = (int)(pLevel->getItemAmount(tTile));
+					delete pLevel;
+				}
+
+				wstr += wszSpace;
+				wstr += wszLeftParen;
 				if (val >= 0)
 					wstr += wszPlus;
 				wstr += _itoW(val, temp, 10);
-				delete pLevel;
+				wstr += wszRightParen;
 			}
 			break;
 			case T_BOMB:
