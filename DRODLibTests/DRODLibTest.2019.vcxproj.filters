@@ -234,6 +234,9 @@
     <ClCompile Include="src\tests\Scripting\Behavior\MonsterTarget.cpp">
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\NPCBeethro.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
