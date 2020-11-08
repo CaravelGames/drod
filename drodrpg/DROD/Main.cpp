@@ -1900,40 +1900,11 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "WomanOof", "Cf_oof1.ogg;Cf_oof2.ogg");
 	AddIfMissing(INISection::Waves, "WomanScared", "Cf_scared1.ogg;Cf_scared2.ogg");
 
-/*
-	AddIfMissing(INISection::Waves, "CitizenClear", "CitizenClear1.ogg;CitizenClear2.ogg;CitizenClear3.ogg");
-	AddIfMissing(INISection::Waves, "CitizenHi", "CitizenHi1.ogg;CitizenHi2.ogg;CitizenHi3.ogg");
-
-	AddIfMissing(INISection::Waves, "GoblinClear", "GoblinClear1.ogg");
-	AddIfMissing(INISection::Waves, "GoblinHi", "GoblinHi1.ogg;GoblinHi2.ogg;GoblinHi3.ogg;GoblinHi4.ogg");
-
-	AddIfMissing(INISection::Waves, "MonsterClear", "hiss.ogg");
-
-	AddIfMissing(INISection::Waves, "RockClear", "RockClear1.ogg");
-	AddIfMissing(INISection::Waves, "RockHi", "RockHi1.ogg;RockHi2.ogg");
-
-	AddIfMissing(INISection::Waves, "WomanClear", "WomanClear1.ogg");
-	AddIfMissing(INISection::Waves, "WomanHi", "WomanHi1.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "HalphCantOpen", "HalphDoorBlocked1.ogg;HalphDoorBlocked2.ogg");
-	AddIfMissing(INISection::Waves, "HalphEntered", "heya unk.ogg;here i am again.ogg;what did i miss.ogg;im back.ogg;whats going on.ogg;oh hey there you are.ogg");
-	AddIfMissing(INISection::Waves, "HalphFollowing", "HalphFollow1.ogg;HalphFollow2.ogg");
-	AddIfMissing(INISection::Waves, "HalphHurryUp", "HalphHurryUp1.ogg;HalphHurryUp2.ogg");
-	AddIfMissing(INISection::Waves, "HalphInterrupted", "now i cant get there.ogg;hey im blocked.ogg");
-	AddIfMissing(INISection::Waves, "HalphStriking", "HalphGetDoor1.ogg;HalphGetDoor2.ogg");
-	AddIfMissing(INISection::Waves, "HalphWaiting", "HalphWait1.ogg;HalphWait2.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "NLaughing", "NeatherLaugh1.ogg;NeatherLaugh2.ogg;NeatherLaugh3.ogg");
-	AddIfMissing(INISection::Waves, "SlayerCombat", "i am unassailable.ogg;come closer and strike.ogg;cut me if you can.ogg;i will give you the hook.ogg;prepare for your removal.ogg;ah this maneuver.ogg;careful the hook is sharp.ogg;slaying time.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "SlayerEnterFar", "keep running delver.ogg;the wisp will find you.ogg;wait there ill be along.ogg");
-	AddIfMissing(INISection::Waves, "SlayerEnterNear", "ready for the hook.ogg;the empire commands.ogg;ah there you are.ogg");
-*/
-
 	AddIfMissing(INISection::Waves, "SlayerKill", "laughing.ogg;a textbook delver mistake.ogg;finally how could i.ogg;the job is done.ogg");
+
+	AddIfMissing(INISection::Waves, "ATKPickup", "atk pickup.ogg");
+	AddIfMissing(INISection::Waves, "DEFPickup", "def pickup.ogg");
+	AddIfMissing(INISection::Waves, "HPPickup", "hp pickup.ogg");
 
 	AddIfMissing(INISection::Waves, "AreaClear", "areaclear.ogg");
 	AddIfMissing(INISection::Waves, "Bomb", "explosion.ogg");

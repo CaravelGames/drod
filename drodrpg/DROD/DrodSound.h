@@ -134,9 +134,12 @@ enum SEID
 	SEID_THUNDER,
 	SEID_BRIAR_BREAK,
 	SEID_AUTOSAVE,
+	SEID_ATK_PICKUP,
+	SEID_DEF_PICKUP,
+	SEID_HP_PICKUP,
 
 	//Grouped sound effects -- may only play one at a time -- designated private channels.
-	//Channel n+1--Beethro's voice.
+	//Channel n+1--Tendry's voice.
 	SEID_OOF,
 	SEID_SCARED,
 	SEID_DIE,
@@ -182,37 +185,7 @@ enum SEID
 	SEID_WOM_SCARED,
 
 	SEID_WUBBA,
-/*
-	SEID_CIT_CLEAR,  //citizen (male)
-	SEID_CIT_HI,
 
-	SEID_GOB_CLEAR,  //goblin
-	SEID_GOB_HI,
-
-	SEID_MON_CLEAR,  //monster (generic)
-
-	SEID_ROCK_CLEAR, //rock golem
-	SEID_ROCK_DIE,
-	SEID_ROCK_HI,
-
-	SEID_WOM_CLEAR,  //woman
-	SEID_WOM_HI,
-
-	//Channel n+2--'Neather's/Slayer's voice.
-	SEID_NLAUGHING,
-	SEID_SLAYERCOMBAT,
-	SEID_SLAYERENTERNEAR,
-	SEID_SLAYERENTERFAR,
-
-   //Channel n+3--Halph's voice.
-   SEID_HALPHFOLLOWING,
-   SEID_HALPHWAITING,
-   SEID_HALPHSTRIKING,
-   SEID_HALPHCANTOPEN,
-   SEID_HALPHENTERED,
-   SEID_HALPHINTERRUPTED,
-   SEID_HALPHHURRYUP,
-*/
 	//Channel n+2--Slayer's voice.
 	SEID_SLAYERKILL,
 

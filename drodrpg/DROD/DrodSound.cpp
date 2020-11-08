@@ -120,23 +120,6 @@ const
 		case SEID_WOM_OOF:   strKeyName="WomanOof"; break;
 		case SEID_WOM_SCARED:   strKeyName="WomanScared"; break;
 
-/*
-		case SEID_CIT_CLEAR:   strKeyName="CitizenClear"; break;
-		case SEID_CIT_HI:   strKeyName="CitizenHi"; break;
-
-		case SEID_GOB_CLEAR:   strKeyName="GoblinClear"; break;
-		case SEID_GOB_HI:   strKeyName="GoblinHi"; break;
-
-		case SEID_MON_CLEAR: strKeyName="MonsterClear"; break;
-
-		case SEID_ROCK_CLEAR:   strKeyName="RockClear"; break;
-		case SEID_ROCK_OOF:   strKeyName="RockOof"; break;
-		case SEID_ROCK_HI:   strKeyName="RockHi"; break;
-
-		case SEID_WOM_CLEAR:   strKeyName="WomanClear"; break;
-		case SEID_WOM_HI:   strKeyName="WomanHi"; break;
-*/
-
 		case SEID_AREACLEAR: strKeyName="AreaClear"; break;
 		case SEID_AUTOSAVE: strKeyName="Autosave"; break;
 		case SEID_BREAKWALL: strKeyName="BreakWall"; break;
@@ -148,26 +131,6 @@ const
 		case SEID_FALLING:  strKeyName="Falling"; break;
 		case SEID_FROZEN:  strKeyName="Frozen"; break;
 
-/*
-		case SEID_SLAYERENTERNEAR: strKeyName="SlayerEnterNear"; break;
-		case SEID_SLAYERENTERFAR:  strKeyName="SlayerEnterFar"; break;
-		case SEID_SLAYERCOMBAT:    strKeyName="SlayerCombat"; break;
-*/
-
-/*
-		case SEID_HALPHCANTOPEN: strKeyName = "HalphCantOpen"; break;
-		case SEID_HALPHENTERED:  strKeyName = "HalphEntered"; break;
-		case SEID_HALPHFOLLOWING: strKeyName="HalphFollowing"; break;
-		case SEID_HALPHHURRYUP:  strKeyName = "HalphHurryUp"; break;
-		case SEID_HALPHINTERRUPTED:  strKeyName = "HalphInterrupted"; break;
-		case SEID_HALPHSTRIKING:strKeyName = "HalphStriking"; break;
-		case SEID_HALPHWAITING: strKeyName="HalphWaiting"; break;
-*/
-/*
-		case SEID_NLAUGHING: strKeyName="NLaughing"; break;
-*/
-
-
 		case SEID_SLAYERKILL:      strKeyName="SlayerKill"; break;
 
 		case SEID_HIT:  strKeyName="Hit"; break;
@@ -177,6 +140,10 @@ const
 		case SEID_LEVELCOMPLETE:   strKeyName = "LevelComplete"; break;
 		case SEID_MIMIC:     strKeyName="Mimic"; break;
 		case SEID_MONSTERATTACK:  strKeyName="MonsterAttack"; break;
+
+		case SEID_ATK_PICKUP: strKeyName = "ATKPickup"; break;
+		case SEID_DEF_PICKUP: strKeyName = "DEFPickup"; break;
+		case SEID_HP_PICKUP: strKeyName = "HPPickup"; break;
 
 		case SEID_ORBBROKE:  strKeyName="OrbBroke"; break;
 		case SEID_ORBHIT:    strKeyName="OrbHit"; break;
@@ -362,6 +329,9 @@ bool CDrodSound::LoadSoundEffects()
 #  define SHARED_CHANNEL_SOUNDEFFECT(s) \
 	LoadSoundEffect((s), true, true, SEID_NONE)
 
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ATK_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_DEF_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_HP_PICKUP );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_AREACLEAR );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_AUTOSAVE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BOMBEXPLODE );
