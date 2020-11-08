@@ -3665,8 +3665,8 @@ bool CCharacter::IsMonsterTarget() const
 	}
 
 	const UINT identity = GetIdentity();
-	//Clones are only targets if the player is
-	if (identity == M_CLONE || identity == M_TEMPORALCLONE)
+	//Only a target if the player is
+	if (HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
 	{
 		if (!this->pCurrentGame)
 			return true;
@@ -3675,7 +3675,8 @@ bool CCharacter::IsMonsterTarget() const
 			return true;
 		return player.IsTarget();
 	}
-	return bIsMonsterTarget(identity);
+
+	return false;
 }
 
 //*****************************************************************************
