@@ -174,6 +174,7 @@ private:
 	void     SetDestinationEntrance(const UINT wX1, const UINT wY1,
 			const UINT wX2, const UINT wY2);
 	void     SetGlobalVarDefaults(const PlayerStats& st);
+	void     SetItemLabelText(const UINT wObject);
 	void     SetLightLevel();
 	void     SetMenuItem(const UINT wObject, const UINT wNewTile);
 	void     SetOrbAgentsForDoor(const UINT wX, const UINT wY);

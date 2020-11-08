@@ -2710,16 +2710,10 @@ bool CDbRoom::HasGrabbableItems() const
 {
 	for (UINT i=CalcRoomArea(); i--; )
 	{
-		switch (this->pszTSquares[i])
-		{
-			//Health, power-ups, keys, map.
-			case T_MAP: case T_MAP_DETAIL:
-			case T_ATK_UP: case T_DEF_UP:
-			case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			case T_KEY:
-				return true;
-			default: break;
-		}
+		const char t = this->pszTSquares[i];
+		//Health, power-ups, keys, map.
+		if (bIsPowerUp(t) || t == T_KEY)
+			return true;
 	}
 
 	return false;
@@ -4076,8 +4070,9 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		case T_MAP: case T_MAP_DETAIL:
 		case T_BOMB: case T_ORB:
 		case T_SCROLL:
-		case T_ATK_UP: case T_DEF_UP:
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 		case T_MIRROR:
 		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 		case T_KEY:
@@ -5380,13 +5375,13 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 					}
 				}
 				break;
-				case T_ATK_UP:
+				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 					stats.ATK += pLevel->getItemAmount(tTile);
 				break;
-				case T_DEF_UP:
+				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 					stats.DEF += pLevel->getItemAmount(tTile);
 				break;
-				case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
+				case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 					stats.HP += pLevel->getItemAmount(tTile);
 				break;
 

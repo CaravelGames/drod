@@ -696,11 +696,18 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
 		case MID_Rain: strText = "Rain"; break;
-		case MID_LevelMapDetail: strText = "Level map (detailed)"; break;
+		case MID_LevelMapDetail: strText = "Level Map (detailed)"; break;
 		case MID_DrankPotion: strText = "Player drank speed/invisibility potion"; break;
 		case MID_ReceivedATK: strText = "Received ATK"; break;
 		case MID_ReceivedDEF: strText = "Received DEF"; break;
 		case MID_ReceivedHP: strText = "Received HP"; break;
+		case MID_HugeHealth: strText = "Huge health"; break;
+		case MID_DefenseUp: strText = "Small Shield gem"; break;
+		case MID_DefenseUp3: strText = "Medium Shield gem"; break;
+		case MID_DefenseUp10: strText = "Large Shield gem"; break;
+		case MID_AttackUp: strText = "Small Power gem"; break;
+		case MID_AttackUp3: strText = "Medium Power gem"; break;
+		case MID_AttackUp10: strText = "Large Power gem"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

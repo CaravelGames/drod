@@ -617,6 +617,11 @@ UINT CDbLevel::getItemAmount(const UINT item) const
 {
 	switch (item)
 	{
+		case T_HEALTH_HUGE:
+		{
+			static const UINT healFactor = 1000;
+			return healFactor * this->dwMultiplier;
+		}
 		case T_HEALTH_BIG:
 		{
 			static const UINT healFactor = 200;
@@ -632,16 +637,39 @@ UINT CDbLevel::getItemAmount(const UINT item) const
 			static const UINT healFactor = 15;
 			return healFactor * this->dwMultiplier;
 		}
+
 		case T_ATK_UP:
 		{
 			static const UINT atkFactor = 1;
 			return atkFactor * this->dwMultiplier;
 		}
+		case T_ATK_UP3:
+		{
+			static const UINT atkFactor = 3;
+			return atkFactor * this->dwMultiplier;
+		}
+		case T_ATK_UP10:
+		{
+			static const UINT atkFactor = 10;
+			return atkFactor * this->dwMultiplier;
+		}
+
 		case T_DEF_UP:
 		{
 			static const UINT defFactor = 1;
 			return defFactor * this->dwMultiplier;
 		}
+		case T_DEF_UP3:
+		{
+			static const UINT defFactor = 3;
+			return defFactor * this->dwMultiplier;
+		}
+		case T_DEF_UP10:
+		{
+			static const UINT defFactor = 10;
+			return defFactor * this->dwMultiplier;
+		}
+
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
 		{
 			static const UINT costFactor = 10;

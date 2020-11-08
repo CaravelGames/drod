@@ -222,6 +222,11 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_HEALTH_SM},                                    //T_HEALTH_SM
 	{TI_ACCESSORY1},                                   //T_ACCESSORY
 	{TI_MAP_DETAIL},                                   //T_MAP_DETAIL
+	{TI_HEALTH_HUGE},                                  //T_HEALTH_HUGE
+	{TI_ATK_UP3},                                      //T_ATK_UP3
+	{TI_ATK_UP10},                                     //T_ATK_UP10
+	{TI_DEF_UP3},                                      //T_DEF_UP3
+	{TI_DEF_UP10},                                     //T_DEF_UP10
 
 	//monsters
 	{TI_ROACH_S},
@@ -366,6 +371,11 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_HEALTH_SM     90
 	1, //T_ACCESSORY     91
 	1, //T_MAP_DETAIL    92
+	0, //T_HEALTH_HUGE   93
+	0, //T_ATK_UP3       94
+	0, //T_ATK_UP10      95
+	0, //T_DEF_UP3       96
+	0, //T_DEF_UP10      97
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -425,7 +435,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -445,7 +455,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -539,13 +549,14 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 23;
+const UINT numTLayerEntries = 28;
 const UINT tLayerEntries[numTLayerEntries] = {
-	T_SWORD, T_SHIELD, T_ACCESSORY, T_DEF_UP, T_ATK_UP,
-	T_MAP, T_MAP_DETAIL, T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG,
-	T_SCROLL, T_BOMB, T_FUSE, T_TOKEN, T_OBSTACLE,
+	T_SWORD, T_SHIELD, T_ACCESSORY, T_MAP, T_MAP_DETAIL,
+	T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG, T_HEALTH_HUGE, T_KEY,
+	T_DEF_UP, T_DEF_UP3, T_DEF_UP10, T_FUSE, T_BOMB,
+	T_ATK_UP, T_ATK_UP3, T_ATK_UP10, T_SCROLL, T_MIRROR,
 	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_MIRROR, T_KEY
+	T_TAR, T_TOKEN, T_OBSTACLE
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -735,7 +746,7 @@ CEditRoomScreen::CEditRoomScreen()
 	static const UINT CY_HELP = 32;
 
 	static const int X_OBSMENU = X_OBJECTMENU + CX_OBJECTMENU + 2;
-	const int Y_OBSMENU = Y_ROOM + (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+	const int Y_OBSMENU = Y_ROOM + (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
 	const UINT CX_OBSMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 8; //8x4
 	const UINT CY_OBSMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
 
@@ -1180,6 +1191,7 @@ bool CEditRoomScreen::SetForActivate()
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
 	this->bRoomDirty = false;
 	SetLightLevel();
+	SetItemLabelText(this->wSelectedObject);
 
 	//If returning from play-testing, delete the temp player.
 	if (this->dwTestPlayerID)
@@ -5180,12 +5192,18 @@ void CEditRoomScreen::PlotObjects()
 				case T_WATER:
 					g_pTheSound->PlaySoundEffect(SEID_SPLASH); break;
 
-				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-				case T_DEF_UP:	case T_ATK_UP:
-					g_pTheSound->PlaySoundEffect(SEID_POTION);
+				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+					g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP);
+					break;
+				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+					g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP);
+					break;
+				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+					g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
 					break;
 				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
+
 				case T_SCROLL:
 				{
 					g_pTheSound->PlaySoundEffect(SEID_READ);
@@ -6936,6 +6954,14 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 	if (int(wObject) < 0)
 		return;
 
+	SetItemLabelText(wObject);
+}
+
+//*****************************************************************************
+void CEditRoomScreen::SetItemLabelText(const UINT wObject)
+//Sets text on editor item menu.
+//Provides context-sensitive information where useful.
+{
 	UINT wMID = 0;
 	switch (wObject)
 	{
@@ -6967,9 +6993,18 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 	if (wMID)
 	{
 		WSTRING wstr = g_pTheDB->GetMessageText(wMID);
-		if (IsMonsterTileNo(wObject))
+		WCHAR temp[16];
+		if (bIsHealth(wObject) || bIsATKUp(wObject) || bIsDEFUp(wObject)) {
+			const int val = (int)(this->pLevel->getItemAmount(wObject));
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			if (val >= 0)
+				wstr += wszPlus;
+			wstr += _itoW(val, temp, 10);
+			wstr += wszRightParen;
+		}
+		else if (IsMonsterTileNo(wObject))
 		{
-			WCHAR temp[16];
 			wstr += wszCRLF;
 			wstr += _itoW(MON_HP[wObject - M_OFFSET],temp,10);
 			wstr += wszSpace;

@@ -1528,7 +1528,12 @@ UINT GetTileImageForTileNo(
 		CALC_NEEDED,      //T_SHIELD
 		TI_HEALTH_SM,     //T_HEALTH_SM
 		CALC_NEEDED,      //T_ACCESSORY
-		TI_MAP_DETAIL     //T_MAP_DETAIL
+		TI_MAP_DETAIL,    //T_MAP_DETAIL
+		TI_HEALTH_HUGE,   //T_HEALTH_HUGE
+		TI_ATK_UP3,       //T_ATK_UP3
+		TI_ATK_UP10,      //T_ATK_UP10
+		TI_DEF_UP3,       //T_DEF_UP3
+		TI_DEF_UP10       //T_DEF_UP10
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));

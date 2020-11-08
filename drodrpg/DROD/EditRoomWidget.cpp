@@ -894,8 +894,9 @@ const
 		case T_FUSE:
 			//Not on monsters that use/affect the t-layer.
 			return !bIsMother(wTileNo[2]);
-		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-		case T_DEF_UP:	case T_ATK_UP:
+		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_SCROLL:
 		case T_MAP: case T_MAP_DETAIL:
 			//Not on monsters that use/affect the t-layer.
