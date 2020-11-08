@@ -5360,11 +5360,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 		{
 			SwirlEffect(); //must call after ProcessCueEventsBeforeRoomDraw()
 			ProcessSpeechCues(this->sCueEvents); //start showing speech at room start
-/*
-		} else if (nCommand == CMD_CLONE) {
-			SwirlEffect();
-			g_pTheSound->PlaySoundEffect(SEID_POTION);
-*/
 		}
 
 		//Option to log vars each time a new room is entered.
@@ -5570,11 +5565,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_DrankPotion))
 		g_pTheSound->PlaySoundEffect(SEID_POTION);
 	if (CueEvents.HasOccurred(CID_ReceivedATK))
-		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX
+		g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP);
 	if (CueEvents.HasOccurred(CID_ReceivedDEF))
-		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX
+		g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP);
 	if (CueEvents.HasOccurred(CID_ReceivedHP))
-		g_pTheSound->PlaySoundEffect(SEID_POTION); //TOFIX?
+		g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
