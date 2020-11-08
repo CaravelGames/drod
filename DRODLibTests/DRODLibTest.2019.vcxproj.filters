@@ -231,6 +231,9 @@
     <ClCompile Include="src\tests\Scripting\ImperativeFriendly.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\MonsterTarget.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
