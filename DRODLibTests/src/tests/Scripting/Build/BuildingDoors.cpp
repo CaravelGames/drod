@@ -221,7 +221,32 @@ TEST_CASE("Scripting: Building doors", "[game]") {
 			AssertHasOrbConnection(9, 10, 10, 12, OA_TOGGLE);
 			AssertHasOrbConnection(9, 10, 11, 12, OA_CLOSE);
 		}
+
 	}
+
+
+	SECTION("REGRESSION (door merging): Swapped X/Y iteration when merging doors (iterated StartX/StartY to EndY/EndX)") {
+		RoomBuilder::ClearRoom();
+
+		RoomBuilder::Plot(T_DOOR_Y, 10, 3);
+		RoomBuilder::Plot(T_DOOR_Y, 10, 5);
+		RoomBuilder::Plot(T_ORB, 10, 10);
+
+		RoomBuilder::AddOrbDataToTile(10, 10);
+
+		RoomBuilder::LinkOrb(10, 10, 10, 3, OA_OPEN);
+		RoomBuilder::LinkOrb(10, 10, 10, 5, OA_CLOSE);
+
+		CCharacter* pCharacter = RoomBuilder::AddCharacter(1, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Build, 10, 4, 0, 0, T_DOOR_Y);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 12, N);
+		Runner::ExecuteCommand(CMD_N, 1);
+
+		AsserOrbConnectionsCount(1);
+		AssertHasOrbConnection(10, 3, 10, 10, OA_TOGGLE);
+	}
+
 
 	SECTION("Removing doors splits their connections evenly") {
 		// ..Y..

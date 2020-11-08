@@ -26,22 +26,25 @@
 
 #include "OrbUtil.h"
 
-void GetOrbConnections(
-// Finds all of the orbs that connect to a door
+void GetOrbConnectionsForMerging(
+// Finds all of the orbs that connect to a door that require merging (have more than 1 connection between the door and the orb)
 	const CDbRoom& room,           // (in) Room which has the orbs data
-	const CCoordSet& doorCoords,   // (in) Tiles of the door for which orb connections are retrieving
-	vector<COrbData*>& outOrbData) // (out) Vector of the orbs that have a connectin to the door
+	const CCoordSet& doorCoords,   // (in) Tiles of the door for which orb connections are checked
+	vector<COrbData*>& outOrbData) // (out) Vector of the orbs that require merging
 {
-
 	for (UINT orb = 0; orb < room.orbs.size(); ++orb)
 	{
 		COrbData* pData = room.orbs[orb];
+		UINT agentsCount = 0;
 		for (UINT agent = 0; agent < pData->agents.size(); ++agent)
 		{
 			COrbAgentData* pAgentData = pData->agents[agent];
 			if (doorCoords.has(pAgentData->wX, pAgentData->wY))
-			{
+				++agentsCount;
+			
+			if (agentsCount > 1) {
 				outOrbData.push_back(pData);
+				break; // Break here so we don't add the same orb twice
 			}
 		}
 	}
@@ -59,6 +62,8 @@ void MergeOrbConnections(
 	bool bHasClose = false;
 	bool bHasToggle = false;
 
+	OrbAgentType targetAction = OA_NULL;
+
 	//1. Gather information - find if there is a connection of specific type
 	for (UINT agent = 0; agent < pOrbData->agents.size(); ++agent)
 	{
@@ -66,22 +71,12 @@ void MergeOrbConnections(
 		if (!doorCoords.has(pAgentData->wX, pAgentData->wY))
 			continue;
 
-		if (pAgentData->action == OA_OPEN)
-			bHasOpen = true;
-		else if (pAgentData->action == OA_CLOSE)
-			bHasClose = true;
-		else if (pAgentData->action == OA_TOGGLE)
-			bHasToggle = true;
+		if (targetAction == OA_NULL)
+			targetAction = pAgentData->action;
+		else if (targetAction != pAgentData->action)
+			targetAction = OA_TOGGLE;
 	}
-
-	OrbAgentType targetAction = OA_NULL;
-	if (bHasToggle || (bHasOpen && bHasClose))
-		targetAction = OA_TOGGLE;
-	else if (bHasOpen)
-		targetAction = OA_OPEN;
-	else if (bHasClose)
-		targetAction = OA_CLOSE;
-
+	
 	if (targetAction == OA_NULL) // Nothing to merge
 		return;
 
@@ -122,8 +117,8 @@ void OrbUtil::MergeYellowDoorConnectionsInArea(
 
 	vector<COrbData*> orbData;
 
-	for (UINT y = wX; y <= endY; ++y) {
-		for (UINT x = wY; x <= endX; ++x) {
+	for (UINT x = wX; x <= endX; ++x) {
+		for (UINT y = wY; y <= endY; ++y) {
 			if (mergedDoorCoords.has(x, y))
 				continue;
 
@@ -135,7 +130,7 @@ void OrbUtil::MergeYellowDoorConnectionsInArea(
 			mergedDoorCoords += doorCoords;
 
 			orbData.clear();
-			GetOrbConnections(room, doorCoords, orbData);
+			GetOrbConnectionsForMerging(room, doorCoords, orbData);
 
 			for (UINT i = 0; i < orbData.size(); i++)
 				MergeOrbConnections(doorCoords, orbData[i]);
