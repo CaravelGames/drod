@@ -3494,6 +3494,12 @@ bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
 }
 
 //*****************************************************************************
+bool CCharacter::CanBeNPCBeethro() const
+{
+	return IsVisible() && bIsSmitemaster(this->wIdentity) && HasBehavior(ScriptFlag::CanBeNPCBeethro);
+}
+
+//*****************************************************************************
 bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
@@ -4876,6 +4882,11 @@ void CCharacter::SetCurrentGame(
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
 		//These types can be attacked and killed by default.
 		behaviorFlags.insert(ScriptFlag::MonsterAttackable);
+	}
+
+	if (bIsSmitemaster(wIdentity)) {
+		// By default, all Beethro and Gunthro NPCs can be the NPC Beethro
+		behaviorFlags.insert(ScriptFlag::CanBeNPCBeethro);
 	}
 
 	if (bCanFluffTrack(wResolvedIdentity)) {

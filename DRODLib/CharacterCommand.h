@@ -162,7 +162,8 @@ namespace ScriptFlag
 		PuffImmune = 21,
 		ActivatePlates = 22,
 		PushMonsters = 23,
-		FatalPushImmune = 24
+		FatalPushImmune = 24,
+		CanBeNPCBeethro = 25
 	};
 
 	enum DisplayFilter

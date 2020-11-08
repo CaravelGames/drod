@@ -3700,7 +3700,7 @@ CMonster* CDbRoom::GetNPCBeethro(bool bDeadOnly) const
 				{
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 					ASSERT(pCharacter);
-					if (pCharacter && bIsSmitemaster(pCharacter->GetIdentity()) && pCharacter->IsVisible())
+					if (pCharacter && pCharacter->CanBeNPCBeethro())
 						return pMonster;
 				}
 				break;
