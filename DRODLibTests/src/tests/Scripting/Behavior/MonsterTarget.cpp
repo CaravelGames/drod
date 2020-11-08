@@ -86,4 +86,14 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 		CHECK(pGame->pRoom->GetMonsterOfType(M_EYE)->IsAggressive());
 		AssertMonster(6, 10);
 	}
+
+	SECTION("Test monster kills attackable non-target on way to target") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterAttackable, 1);
+		RoomBuilder::AddMonster(M_ROACH, 9, 10);
+
+		CCurrentGame* pGame = Runner::StartGame(12, 10, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertMonsterType(10, 10, M_ROACH);
+	}
 }
