@@ -523,6 +523,8 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="beh-push-monsters"><b>Push Objects</b></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
 	<li><a name="beh-move-platform"><b>Move Platforms and Rafts</b></a>: The NPC can push platforms and rafts by moving against their sides.</li>
 	<li><a name="beh-monster-attackable"><b>Can Be Attacked By Monsters</b></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
+	<li><a name="beh-monster-target"><b>Monsters Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vunerability to monsters.</li>
+	<li><a name="beh-monster-target-if-player"><b>Monsters Target If Player Is</b></a>: Monsters other than Puffs will treat the NPC as a target as long as the player is a monster target. Otherwise, monsters will ignore this character. This does not affect the NPC's vunerability to monsters.</li>
 	<li><a name="beh-puff-target"><b>Puff Target</b></a>: Puffs will treat the NPC as a target. This does not affect the NPC's vunerability to puffs.</li>
 	<li><a name="beh-sword-immune"><b>Sword Damage Immunity</b></a>: Attack from swords will not kill the NPC.</li>
 	<li><a name="beh-pickaxe-immune"><b>Pickaxe Damage Immunity</b></a>: Attack from pickaxes will not kill the NPC. The NPC can still be pushed by pickaxes</li>
