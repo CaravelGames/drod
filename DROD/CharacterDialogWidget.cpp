@@ -4386,6 +4386,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AdderImmune, g_pTheDB->GetMessageText(MID_AdderImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FatalPushImmune, g_pTheDB->GetMessageText(MID_FatalPushImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::CanBeNPCBeethro, g_pTheDB->GetMessageText(MID_CanBeNPCBeethro));
 	this->pImperativeListBox->SelectLine(0);
 }
 

@@ -829,6 +829,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_DROD_TSS5_2: strText = "DROD 5.2"; break;
 	case MID_Friendly: strText = "Friendly"; break;
 	case MID_Unfriendly: strText = "Unfriendly"; break;
+	case MID_CanBeNPCBeethro: strText = "Can Be NPC Beethro"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
