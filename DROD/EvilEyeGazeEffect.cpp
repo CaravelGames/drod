@@ -76,6 +76,7 @@ bool CEvilEyeGazeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapse
 	return true;
 }
 
+//********************************************************************************
 void CEvilEyeGazeEffect::DirtyOldBeamTiles()
 {
 	static SDL_Rect Dest = MAKE_SDL_RECT(0, 0, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);

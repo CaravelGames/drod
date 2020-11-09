@@ -159,9 +159,8 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
 
-	static const UINT CY_TITLE = 50;
-	static const UINT CY_TITLE_SPACE = 12;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	static const UINT CX_OKAY_BUTTON = 110;
 	static const UINT CY_OKAY_BUTTON = CY_STANDARD_BUTTON;
@@ -178,7 +177,7 @@ CSettingsScreen::CSettingsScreen()
 
 	//Menu
 	const int X_TABBEDMENU = CX_SPACE * 2;
-	const int Y_TABBEDMENU = Y_TITLE + CY_TITLE + CY_TITLE_SPACE;
+	const int Y_TABBEDMENU = Y_TITLE + CY_TITLE + Y_TITLE;
 	const UINT CX_TABBEDMENU = this->w - X_TABBEDMENU * 2;
 	const UINT CY_TABBEDMENU = Y_OKAY_BUTTON - Y_TABBEDMENU - CY_SPACE * 2;
 

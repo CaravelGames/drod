@@ -200,9 +200,8 @@ CEditSelectScreen::CEditSelectScreen()
 	//Title bar
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
-	static const UINT CY_TITLE = 50;
-	static const UINT CY_TITLE_SPACE = 15;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	//Buttons
 #ifdef RUSSIAN_BUILD

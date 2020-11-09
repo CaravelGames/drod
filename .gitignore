@@ -79,7 +79,11 @@ drodrpg/DRODUtil/Release-Temp/
 **/*.exe
 **/*.vcxproj.user
 **/*.vcxproj.filters
+!drod/drod.2019.vcxproj.filters
+!DRODLib/DRODLib.2019.vcxproj.filters
 !DRODLibTests/DRODLibTest.2019.vcxproj.filters
+!BackEndLib/BackEndLib.2019.vcxproj.filters
+!FrontEndLib/FrontEndLib.2019.vcxproj.filters
 **/*.suo
 **/*.sdf
 **/*.opensdf

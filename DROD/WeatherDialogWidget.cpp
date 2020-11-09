@@ -77,7 +77,7 @@ CWeatherDialogWidget::CWeatherDialogWidget(
 	, pRoom(NULL)
 {
 	static const UINT CX_TITLE = 240;
-	static const UINT CY_TITLE = 30;
+	static const UINT CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 
