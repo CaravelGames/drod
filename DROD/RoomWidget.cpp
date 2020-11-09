@@ -7024,6 +7024,16 @@ void CRoomWidget::DrawTileImageWithoutLight(
 				1.0f+lightMap[0][blit.nAddColor], 1.0f+lightMap[1][blit.nAddColor], 1.0f+lightMap[2][blit.nAddColor],
 				blit.wTileImageNo, BlitRect.x, BlitRect.y);
 
+	if (blit.nCustomColor != -1) {
+		float fR, fG, fB;
+		TranslateMonsterColor(blit.nCustomColor, fR, fG, fB);
+
+		g_pTheBM->LightenRectWithTileMask(pDestSurface, nPixelX, nPixelY,
+			BlitRect.w, BlitRect.h,
+			fR, fG, fB,
+			blit.wTileImageNo, BlitRect.x, BlitRect.y);
+	}
+
 	if (!blit.bDirtyTiles)
 	{
 		//The 'monster' flag indicates that something was drawn here, and that
@@ -7663,6 +7673,7 @@ void CRoomWidget::DrawCharacter(
 	//Draw character.
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress, bDrawRaised);
 	blit.nOpacity = nOpacity;
+	blit.nCustomColor = pCharacter->nColor;
 	blit.nAddColor = nAddColor;
 	DrawTileImage(blit, pDestSurface);
 
@@ -9804,6 +9815,24 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
 	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+//*****************************************************************************
+void CRoomWidget::TranslateMonsterColor(
+	//Converts a single specially-formatted color value to rgb values
+	//
+	//Params:
+	const int nColor,
+	float& fR, float& fG, float& fB) //Out: rgb tinting values
+{
+	if (nColor < 0)
+		fR = fG = fB = 1.0f;
+	else {
+		//nColor consists of three two-digit pairs: RRGGBB, where a value of "50" is normal.
+		fR = (nColor % 1000000) / 500000.0f;
+		fG = (nColor % 10000) / 5000.0f;
+		fB = (nColor % 100) / 50.0f;
+	}
 }
 
 //*****************************************************************************

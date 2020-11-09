@@ -194,6 +194,7 @@ struct TileImageBlitParams {
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
 		, appliedDarkness(0.75)
+		, nCustomColor(-1)
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -211,6 +212,7 @@ struct TileImageBlitParams {
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
+	int nCustomColor;
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
@@ -358,6 +360,7 @@ public:
 	void           ToggleMoveCount();
 	void           TogglePuzzleMode();
 	void           ToggleVarDisplay();
+	static void    TranslateMonsterColor(const int nColor, float& fR, float& fG, float& fB);
 	void           UnloadCurrentGame();
 	void           UpdateFromCurrentGame(const bool bForceReload=false);
 	void           UpdateFromPlots(const CCoordSet *pSet, const CCoordSet *pGeometryChanges);

@@ -76,6 +76,7 @@
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 
 #define DefaultCustomCharacterName wszEmpty
+#define NoCustomColor -1
 
 enum CharacterDisplayMode {
 	CDM_Normal,
@@ -224,6 +225,9 @@ public:
 	CIDSet answerOptions;   //optional answers supplied to a Question command
 	bool  bPlayerTouchedMe; //player bumped into this NPC this turn
 	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
+	
+	int nColor;
+
 
 private:
 	void BuildMarker(const CCharacterCommand& command);

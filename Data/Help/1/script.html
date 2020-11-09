@@ -547,7 +547,6 @@ continue executing script commands from a different location in the script.</p>
       &nbsp;&nbsp;&nbsp;some optional commands here<br />
       <b>If End</b>
   </li>
-  <br />
   <li><a name="twocodebranch">Two code branches:</a><br />
       <b>If ...</b><br />
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition&gt;<br />
@@ -556,7 +555,6 @@ continue executing script commands from a different location in the script.</p>
       &nbsp;&nbsp;&nbsp;some other commands here<br />
       <b>If End</b>
   </li>
-  <br />
   <li><a name="nestedbranches">Nested branches:</a><br />
       <b>If ...</b><br />
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;condition&gt;<br />
@@ -590,9 +588,18 @@ Label "Loop"<br />
 
 <p><a name="predefined-script-vars"><b>Predefined script vars</b></a></p>
 <p>There are a number of predefined script vars that begin with an underscore.
-You may select these in variable commands to examine or set certain game states.
+You may select these in variable commands to examine or set certain game states.</p>
 <ul>
 	<li><b>_MyWeapon</b> - Sets the weapon wielded by the NPC.</li>
+	<li>
+	<b>_MyColor</b> - Additional tint applied to the character. When the value is -1 (default) no color is applied, otherwise the format is a 6-digit number RRGGBB, where RR is the value for Red tint, GG for Green and BB for Blue. Value of 50 for given color is normal, lesser than 50 will reduce the color, larger than 50 will add the color. Some examples:
+	<ul>
+		<li><b>505050</b> - No color change</li>
+		<li><b>FFFFFF</b> - Twice as bright</li>
+		<li><b>005000</b> - Red and green will be removed</li>
+		<li><b>FF5050</b> - WIll be more red than before</li>
+	</ul>
+	</li>
 	<li><b>_MyX</b> and <b>_MyY</b> - X and Y position of the NPC. Please keep in mind that the change is instanteous, if you need to modify the position in both axes use 'Teleport to' instead, otherwise you risk creating problematic situation when the NPC teleports first in one axis and then in the other.</li>
 	<li><b>_MyO</b> - NPC's current <a href="#valuesorientation">orientation</a>.</li>
 	<li><b>_MyName</b> - Name of this NPC. Used for right-click inspecting and for speech log.</li>
