@@ -2689,10 +2689,10 @@ void CCharacter::Process(
 					switch (eBehavior) {
 						case ScriptFlag::MonsterTarget:
 							// For simplicity, just add this NPC to the list of monster enemies
-							if (!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+							if (!HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
 								room.monsterEnemies.push_back(this);
 						break;
-						case ScriptFlag::MonsterTargetIfPlayerIs:
+						case ScriptFlag::MonsterTargetWhenPlayerIsTarget:
 							// For simplicity, just add this NPC to the list of monster enemies
 							if (!HasBehavior(ScriptFlag::MonsterTarget))
 								room.monsterEnemies.push_back(this);
@@ -2708,10 +2708,10 @@ void CCharacter::Process(
 							room.briars.plotted(this->wX, this->wY, T_EMPTY);
 						break;
 						case ScriptFlag::MonsterTarget:
-							if (!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+							if (!HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
 								room.monsterEnemies.remove(this);
 						break;
-						case ScriptFlag::MonsterTargetIfPlayerIs:
+						case ScriptFlag::MonsterTargetWhenPlayerIsTarget:
 							if (!HasBehavior(ScriptFlag::MonsterTarget))
 								room.monsterEnemies.remove(this);
 						break;
@@ -3672,7 +3672,7 @@ bool CCharacter::IsMonsterTarget() const
 
 	const UINT identity = GetIdentity();
 	//Only a target if the player is
-	if (HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+	if (HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
 	{
 		if (!this->pCurrentGame)
 			return true;

@@ -3185,7 +3185,7 @@ bool CDbRoom::KillMonster(
 
 			// Is this character a monster enemy?
 			if (pCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
-				pCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+				pCharacter->HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget)) {
 				RemoveMonsterEnemy(pMonster);
 			}
 
@@ -3331,7 +3331,7 @@ void CDbRoom::RemoveMonsterDuringPlayWithoutEffect(CMonster* pMonster)
 			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			// Is this character a monster enemy?
 			if (pCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
-				pCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+				pCharacter->HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget)) {
 				RemoveMonsterEnemy(pMonster);
 			}
 		}
@@ -8293,7 +8293,7 @@ void CDbRoom::ClearMonsters(
 					CCharacter* pDeleteCharacter = DYN_CAST(CCharacter*, CMonster*, pDelete);
 					// Is this character a monster enemy?
 					if (pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
-						pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs)) {
+						pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget)) {
 						RemoveMonsterEnemy(pDelete);
 					}
 				}

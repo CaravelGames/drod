@@ -1709,7 +1709,7 @@ enum MID_CONSTANT {
   MID_MovePlatforms = 1911,
   MID_CanBeMonsterAttacked = 1913,
   MID_MonsterTarget = 1912,
-  MID_MonsterTargetIfPlayerIs = 1914,
+  MID_MonsterTargetWhenPlayerIsTarget = 1914,
   MID_AllyTarget = 1915,
   MID_PuffTarget = 1916,
   MID_SwordDamageImmune = 1917,

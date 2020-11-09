@@ -145,7 +145,7 @@ namespace ScriptFlag
 		MovePlatforms = 4,
 		MonsterAttackable = 5,
 		MonsterTarget = 6,
-		MonsterTargetIfPlayerIs = 7,
+		MonsterTargetWhenPlayerIsTarget = 7,
 		AllyTarget = 8,
 		PuffTarget = 9,
 		SwordDamageImmune = 10,

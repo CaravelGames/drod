@@ -48,7 +48,7 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 	}
 
 	SECTION("Test monster is not attracted to conditional character target until stealth is broken") {
-		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTargetIfPlayerIs, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTargetWhenPlayerIsTarget, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_SetPlayerStealth, Stealth_On);
 		RoomBuilder::AddMonster(M_ROACH, 1, 3);
 		RoomBuilder::AddMonster(M_ROACH, 8, 10);
@@ -67,7 +67,7 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 	}
 
 	SECTION("Test Eye does not see conditional character target until stealth is broken") {
-		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTargetIfPlayerIs, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTargetWhenPlayerIsTarget, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_SetPlayerStealth, Stealth_On);
 		RoomBuilder::AddMonster(M_ROACH, 1, 3);
 		RoomBuilder::AddMonster(M_EYE, 5, 10, E);
