@@ -1521,7 +1521,7 @@ void CGameScreen::OnKeyDown(
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Check for a game command.
-	int nCommand = GetCommandForKeysym(Key.keysym.sym);
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 	bool bMacro = (Key.keysym.mod & KMOD_CTRL) != 0; //two-move combo activation
 
 	//Battle key indicates performing the reverse of the last movement command.
@@ -1557,13 +1557,131 @@ void CGameScreen::OnKeyDown(
 			if ((Key.keysym.mod & KMOD_CTRL) != 0)
 				nCommand = CMD_RESTART_PARTIAL;
 			if ((Key.keysym.mod & KMOD_ALT) != 0)
-				nCommand = CMD_RESTART_FULL;
+				nCommand = CMD_RESTART_FULL;	
 		break;
 		case CMD_CLONE:
 			bMacro = false;
 		break;
+
+		case CMD_EXTRA_LOCK_ROOM:
+			this->pCurrentGame->bRoomExitLocked = !this->pCurrentGame->bRoomExitLocked;
+			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bRoomExitLocked ?
+				SEID_WISP : SEID_CHECKPOINT);
+			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
+		break;
+		
+		case CMD_EXTRA_QUICK_DEMO_RECORD:
+		{
+			if (this->bPlayTesting) break;
+			if (!this->pCurrentGame->wTurnNo) break;
+			//Save a demo for the current room from entrance up to the present turn.
+			WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
+			const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
+				wstrDescription);
+			if (dwTagNo == TAG_OK)
+			{
+				this->pCurrentGame->BeginDemoRecording((wstrDescription.size() == 0) ?
+					wszEmpty : wstrDescription.c_str(), false);
+				ShowOkMessage(this->pCurrentGame->EndDemoRecording() ?
+					MID_DemoSaved : MID_DemoNotSaved);
+				PaintSign();
+			}
+		}
+		break;
+
+		case CMD_EXTRA_TOGGLE_DEMO_RECORD:
+		{
+			if (this->bPlayTesting) break;
+			if (this->pCurrentGame->IsDemoRecording())
+			{
+				//End recording and save demo.
+				const UINT dwTagNo = this->pCurrentGame->EndDemoRecording();
+				UpdateSign();
+
+				if (!dwTagNo)
+					ShowOkMessage(MID_DemoNotSaved);
+				else if (dwTagNo != TAG_ESCAPE)
+					ShowOkMessage(MID_DemoSaved);
+			}
+			else
+			{
+				WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
+				const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
+					wstrDescription);
+				if (dwTagNo == TAG_OK)
+				{
+					this->pCurrentGame->BeginDemoRecording((wstrDescription.size() == 0) ?
+						wszEmpty : wstrDescription.c_str());
+
+					//Repaint sign to show new recording status.
+					UpdateSign();
+				}
+			}
+		}
+		break;
+		case CMD_EXTRA_STATS:
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			OpenStatsBox();
+		break;
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pSpeechBox);
+		break;
+		case CMD_EXTRA_WATCH_DEMOS:
+			ASSERT(this->pCurrentGame);
+			ASSERT(this->pCurrentGame->pRoom);
+			ShowDemosForRoom(this->pCurrentGame->pRoom->dwRoomID);
+		break;
+		case CMD_EXTRA_SAVE_ROOM_IMAGE:
+		{
+			SDL_Surface *pRoomSurface = SDL_CreateRGBSurface(
+				SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
+				g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
+			if (!pRoomSurface) break;
+			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
+				this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
+			SaveSurface(pRoomSurface);
+			SDL_FreeSurface(pRoomSurface);
+		}
+		break;
+		case CMD_EXTRA_PUZZLE_MODE_OPTIONS:
+			ShowPuzzleModeOptions();
+			this->pRoomWidget->ShowPuzzleMode(true);
+		break;
+		case CMD_EXTRA_TOGGLE_PUZZLE_MODE:
+			g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			this->pRoomWidget->TogglePuzzleMode();
+			this->pRoomWidget->DirtyRoom();
+		break;
+		case CMD_EXTRA_SKIP_SPEECH:
+			if (this->pCurrentGame && this->pCurrentGame->IsCutScenePlaying()) {
+				if (this->bSkipCutScene)
+				{
+					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
+					//Keep looping ambient sounds
+					ClearSpeech(true, true);
+				}
+				else {
+					this->bSkipCutScene = true; //run cutscene quickly to its conclusion
+					this->pCurrentGame->dwCutScene = 1;
+				}
+			}
+			else {
+				//Clear all speech and subtitles of any sort.
+				//Keep looping ambient sounds
+				ClearSpeech(true, true);
+				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
+			}
+		break;
+		case CMD_EXTRA_TOGGLE_TURN_COUNT:
+			this->pRoomWidget->ToggleMoveCount();
+		break;
+		case CMD_EXTRA_SHOW_HELP:
+			GotoHelpPage();
+		break;
 	}
-	if (nCommand != CMD_UNSPECIFIED)
+	if (!bIsVirtualCommand(nCommand) && nCommand != CMD_UNSPECIFIED)
 	{
 		//Hide mouse cursor while playing.
 		HideCursor();
@@ -1584,13 +1702,12 @@ void CGameScreen::OnKeyDown(
 		}
 	}
 
+	if (nCommand) // We handled one of the mapped commands, do nothing else here
+		return;
+
 	//Check for other keys.
 	switch (Key.keysym.sym)
 	{
-		case SDLK_F1:
-			GotoHelpPage();
-		break;
-
 		case SDLK_F2:
 			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
 				GoToScreen(SCR_Settings);
@@ -1599,138 +1716,12 @@ void CGameScreen::OnKeyDown(
 			}
 		return;
 
-		case SDLK_F4:
-#if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:
-#endif
-		if ((Key.keysym.mod & (KMOD_CTRL | KMOD_ALT)) == 0)
-		{
-			if (this->bPlayTesting) break;
-			if (!this->pCurrentGame->wTurnNo) break;
-			//Save a demo for the current room from entrance up to the present turn.
-			WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
-			const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
-					wstrDescription);
-			if (dwTagNo == TAG_OK)
-			{
-				this->pCurrentGame->BeginDemoRecording( (wstrDescription.size()==0) ?
-						wszEmpty : wstrDescription.c_str(), false);
-				ShowOkMessage(this->pCurrentGame->EndDemoRecording() ?
-						MID_DemoSaved : MID_DemoNotSaved);
-				PaintSign();
-			}
-		}
-		break;
-
-		case SDLK_F5:
-			if (this->bPlayTesting) break;
-			if (this->pCurrentGame->IsDemoRecording())
-			{
-				//End recording and save demo.
-				const UINT dwTagNo = this->pCurrentGame->EndDemoRecording();
-				UpdateSign();
-
-				if (!dwTagNo)
-					ShowOkMessage(MID_DemoNotSaved);
-				else if (dwTagNo != TAG_ESCAPE)
-					ShowOkMessage(MID_DemoSaved);
-			}
-			else
-			{
-				WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
-				const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
-						wstrDescription);
-				if (dwTagNo == TAG_OK)
-				{
-					this->pCurrentGame->BeginDemoRecording( (wstrDescription.size()==0) ?
-							wszEmpty : wstrDescription.c_str() );
-
-					//Repaint sign to show new recording status.
-					UpdateSign();
-				}
-			}
-		break;
-
-		//Room demos displayed will be of active room in current game.
-		case SDLK_F6:
-			ASSERT(this->pCurrentGame);
-			ASSERT(this->pCurrentGame->pRoom);
-			ShowDemosForRoom(this->pCurrentGame->pRoom->dwRoomID);
-		break;
-
-		//Room screenshot.
-		case SDLK_F11:
-		if (Key.keysym.mod & KMOD_CTRL)
-		{
-			SDL_Surface *pRoomSurface = SDL_CreateRGBSurface(
-					SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
-					g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
-			if (!pRoomSurface) break;
-			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
-					this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
-			SaveSurface(pRoomSurface);
-			SDL_FreeSurface(pRoomSurface);
-		}
-		break;
-
-		//Show room/game stats.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				OpenStatsBox();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pSpeechBox);
-			}
-		break;
-
-		//Toggle room lock.
-		case SDLK_LSHIFT: case SDLK_RSHIFT:
-			this->pCurrentGame->bRoomExitLocked = !this->pCurrentGame->bRoomExitLocked;
-			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bRoomExitLocked ?
-					SEID_WISP : SEID_CHECKPOINT);
-			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
-		break;
-
-		//Skip cutscene/clear playing speech.
-		case SDLK_SPACE:
-		{
-			if (this->pCurrentGame && this->pCurrentGame->IsCutScenePlaying()) {
-				if (this->bSkipCutScene)
-				{
-					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
-					//Keep looping ambient sounds
-					ClearSpeech(true, true);
-				} else {
-					this->bSkipCutScene = true; //run cutscene quickly to its conclusion
-					this->pCurrentGame->dwCutScene = 1;
-				}
-			} else {
-				//Clear all speech and subtitles of any sort.
-				//Keep looping ambient sounds
-				ClearSpeech(true, true);
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
-			}
-		}
-		break;
-
 		//display modes
 		case SDLK_F3:
 			if (Key.keysym.mod & KMOD_CTRL) {
 				//Force full style reload.
 				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
 				this->pRoomWidget->UpdateFromCurrentGame(true);
-			} else if (Key.keysym.mod & KMOD_LALT) {
-				ShowPuzzleModeOptions();
-				this->pRoomWidget->ShowPuzzleMode(true);
-
-			} else {
-				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-				this->pRoomWidget->TogglePuzzleMode();
-				this->pRoomWidget->DirtyRoom();
 			}
 		break;
 		//Persistent move count display / Frame rate / Game var output.
@@ -1747,8 +1738,6 @@ void CGameScreen::OnKeyDown(
 					this->pRoomWidget->ToggleVarDisplay();
 			} else if (Key.keysym.mod & KMOD_ALT) {
 				this->pRoomWidget->ToggleFrameRate();
-			} else {
-				this->pRoomWidget->ToggleMoveCount();
 			}
 		break;
 
@@ -2989,7 +2978,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				case SDL_KEYDOWN:
 				{
 					const SDL_Keysym& keysym = event.key.keysym;
-					int nCommand = GetCommandForKeysym(keysym.sym);
+					int nCommand = GetCommandForInputKey(keysym.sym);
 					switch (nCommand) {
 						case CMD_RESTART:
 							if ((keysym.mod & KMOD_CTRL) != 0)

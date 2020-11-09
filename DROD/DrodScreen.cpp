@@ -56,6 +56,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/GameConstants.h"
 #include "../DRODLib/SettingsKeys.h"
 
 #include <FrontEndLib/ButtonWidget.h>
@@ -2635,6 +2636,15 @@ void CDrodScreen::EnablePlayerSettings(
 	//Increment number of play sessions.
 	pPlayer->Settings.SetVar(Settings::PlaySessions, pPlayer->Settings.GetVar(Settings::PlaySessions, UINT(0)) + 1);
 	pPlayer->Update();
+
+	CScreen::inputKeyFullScreen = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_ToggleFullScreen)->settingName,
+		(InputKey)SDLK_F10
+	);
+	CScreen::inputKeyScreenshot = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_Screenshot)->settingName,
+		(InputKey)SDLK_F11
+	);
 
 	//RepeatRate and UndoLevel are queried in CGameScreen::ApplyPlayerSettings().
 

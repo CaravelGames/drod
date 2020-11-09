@@ -478,6 +478,7 @@
     <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="Gentryii.cpp" />
+    <ClCompile Include="I18N.cpp" />
     <ClCompile Include="OrbUtil.cpp" />
     <ClCompile Include="Seep.cpp" />
     <ClCompile Include="Goblin.cpp" />
@@ -522,6 +523,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Texts\MIDs.h" />
+    <ClInclude Include="I18N.h" />
     <ClInclude Include="OrbUtil.h" />
     <ClInclude Include="Waterskipper.h" />
     <ClInclude Include="WaterskipperNest.h" />

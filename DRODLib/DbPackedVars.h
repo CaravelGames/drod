@@ -67,9 +67,10 @@ enum UNPACKEDVARTYPE
     UVT_deprecated_uchar,
     UVT_uint,
     UVT_wchar_string,
-	 UVT_byte_buffer,
-	 UVT_bool,
-    UVT_unknown
+    UVT_byte_buffer,
+    UVT_bool,
+    UVT_unknown,
+    UVT_long_long_int,
 };
 
 struct UNPACKEDVAR
@@ -126,7 +127,8 @@ public:
 	UINT        GetVar(const char *pszVarName, UINT wNotFoundValue = 0) const;
 	char        GetVar(const char *pszVarName, char cNotFoundValue = 0) const;
 	BYTE        GetVar(const char *pszVarName, BYTE ucNotFoundValue = 0) const;
-	bool        GetVar(const char *pszVarName, bool ucNotFoundValue = false) const;
+	bool        GetVar(const char* pszVarName, bool ucNotFoundValue = false) const;
+	int64_t     GetVar(const char* pszVarName, int64_t ucNotFoundValue = 0) const;
 
 	UNPACKEDVARTYPE GetVarType(const char *pszVarName) const;
 	UINT       GetVarValueSize(const char *pszVarName) const;
@@ -182,6 +184,10 @@ public:
 		return (BYTE *) SetVar(pszVarName, (const void *) &ucValue, 1, UVT_byte);
 	}
 	bool*         SetVar(const char *pszVarName, bool bValue);
+	int64_t *     SetVar(const char* pszVarName, int64_t value)
+	{
+		return (int64_t*) SetVar(pszVarName, (const void*)&value, sizeof(int64_t), UVT_long_long_int);
+	}
 
 private:
 	UNPACKEDVARTYPE	Get1_6VarType(const char *pszVarName) const;

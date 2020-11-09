@@ -499,7 +499,6 @@
     <ClCompile Include="ImageWidget.cpp" />
     <ClCompile Include="Inset.cpp" />
     <ClCompile Include="JpegHandler.cpp" />
-    <ClCompile Include="KeypressDialogWidget.cpp" />
     <ClCompile Include="LabelWidget.cpp" />
     <ClCompile Include="ListBoxWidget.cpp" />
     <ClCompile Include="MarqueeWidget.cpp" />
@@ -560,7 +559,6 @@
     <ClInclude Include="ImageWidget.h" />
     <ClInclude Include="Inset.h" />
     <ClInclude Include="JpegHandler.h" />
-    <ClInclude Include="KeypressDialogWidget.h" />
     <ClInclude Include="LabelWidget.h" />
     <ClInclude Include="ListBoxWidget.h" />
     <ClInclude Include="MarqueeWidget.h" />

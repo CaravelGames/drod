@@ -549,6 +549,7 @@
     <ClCompile Include="Heap.cpp" />
     <ClCompile Include="IDList.cpp" />
     <ClCompile Include="IniFile.cpp" />
+    <ClCompile Include="InputKey.cpp" />
     <ClCompile Include="Internet.cpp" />
     <ClCompile Include="MessageIDs.cpp" />
     <ClCompile Include="Metadata.cpp" />
@@ -578,6 +579,7 @@
     <ClInclude Include="IDList.h" />
     <ClInclude Include="IDSet.h" />
     <ClInclude Include="IniFile.h" />
+    <ClInclude Include="InputKey.h" />
     <ClInclude Include="Internet.h" />
     <ClInclude Include="MessageIDs.h" />
     <ClInclude Include="Metadata.h" />

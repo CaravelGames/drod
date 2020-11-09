@@ -244,6 +244,9 @@
     <ClCompile Include="PuzzleModeOptionsDialogWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AumtlichGazeEffect.h">
@@ -500,6 +503,9 @@
     </ClInclude>
     <ClInclude Include="PuzzleModeOptions.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
