@@ -841,6 +841,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_PuzzleModeOption_ShowEyeBeams: strText = "Show Evil Eye beams"; break;
 	case MID_PuzzleModeOption_ShowEyeBeamsReverse: strText = "Show Evil Eye beams (reverse)"; break;
 	case MID_PuzzleModeOption_ShowSpiders: strText = "Show Spiders"; break;
+	case MID_VarMonsterColor: strText = "_MyColor"; break;
 
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;

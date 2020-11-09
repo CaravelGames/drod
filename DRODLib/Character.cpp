@@ -157,6 +157,7 @@ CCharacter::CCharacter(
 	, bFriendly(true)
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
+	, nColor(-1)
 
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
@@ -378,6 +379,9 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 				return WT_Off;
 			return this->weaponType;
 
+		case (UINT)ScriptVars::P_MONSTER_COLOR:
+			return this->nColor;
+
 		//Room position.
 		case (UINT)ScriptVars::P_MONSTER_X:
 			return this->wX;
@@ -463,6 +467,9 @@ void CCharacter::setPredefinedVarInt(
 			SetWeaponSheathed();
 		break;
 
+		case (UINT)ScriptVars::P_MONSTER_COLOR:
+			this->nColor = val;
+		break;
 		//Room position.
 		case (UINT)ScriptVars::P_MONSTER_X:
 		{

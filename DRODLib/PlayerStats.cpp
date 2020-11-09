@@ -9,7 +9,8 @@ using namespace ScriptVars;
 //Symbols of predefined in-game variables. - Must be in the same order as Predefined enum
 const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMonsterWeapon,
-	0, 0,
+	0,
+	MID_VarMonsterColor,
 	MID_VarX, MID_VarY, MID_VarO,
 	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO,
 	0, 0,

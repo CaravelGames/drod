@@ -1744,6 +1744,7 @@ enum MID_CONSTANT {
   MID_PushTile = 1945,
 
   //Messages from Stats.uni:
+  MID_VarMonsterColor = 1963,
   MID_VarMonsterWeapon = 1810,
   MID_VarMonsterX = 1448,
   MID_VarMonsterY = 1449,
