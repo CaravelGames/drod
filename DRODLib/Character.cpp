@@ -2689,7 +2689,7 @@ void CCharacter::Process(
 					switch (eBehavior) {
 						case ScriptFlag::MonsterTarget:
 							// For simplicity, just add this NPC to the list of monster enemies
-							if(!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
+							if (!HasBehavior(ScriptFlag::MonsterTargetIfPlayerIs))
 								room.monsterEnemies.push_back(this);
 						break;
 						case ScriptFlag::MonsterTargetIfPlayerIs:

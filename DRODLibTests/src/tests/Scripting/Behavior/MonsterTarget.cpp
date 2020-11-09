@@ -21,7 +21,7 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 		AssertMonsterType(10, 10, M_CHARACTER);
 	}
 
-	SECTION("Test monster will kill vunerable character target") {
+	SECTION("Test monster will kill vulnerable character target") {
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTarget, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterAttackable, 1);
 		RoomBuilder::AddMonster(M_ROACH, 9, 10);
