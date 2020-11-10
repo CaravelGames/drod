@@ -3495,6 +3495,12 @@ bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
 
 //*****************************************************************************
 bool CCharacter::CanBeNPCBeethro() const
+// Returns if this character can be chosen as the "NPC Beethro"
+// When the player is not a valid monster target, monsters may select the first
+// character in the monster list with a Beethro or Gunthro appearance to be a target.
+// To be selected, the character must be visible, have a smitemaster identity,
+// and have the CanBeNPCBeethro behavior flag. By default, all smitemaster appearances
+// have this flag, but the user may remove it.
 {
 	return IsVisible() && bIsSmitemaster(this->wIdentity) && HasBehavior(ScriptFlag::CanBeNPCBeethro);
 }
