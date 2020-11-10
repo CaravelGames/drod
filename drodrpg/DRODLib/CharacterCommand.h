@@ -177,6 +177,7 @@ public:
 	CCharacterCommand& operator=(const CCharacterCommand& that);
 	void swap(CCharacterCommand &that);
 
+	//DO NOT rearrange (i.e., reassign values given to these commands).
 	enum CharCommand
 	{
 		CC_Appear=0,            //Appear at current square.
@@ -248,6 +249,7 @@ public:
 		CC_IfElseIf,            //Else combined with if to reduce code nesting
 		CC_Return,              //Return to just after the previous CC_GoSub command executed.
 		CC_GoSub,               //Jumps script execution to the indicated label.
+		CC_EachVictory,         //Goto label X each time an enemy is defeated.
 		CC_Count
 	};
 

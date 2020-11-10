@@ -2802,6 +2802,8 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
 
+			ProcessAfterVictory(CueEvents);
+
 			//If more monsters are queued for fighting,
 			//they will be fought automatically the next time this method is called.
 		}
@@ -2865,6 +2867,32 @@ void CCurrentGame::ProcessMonsterDefeat(
 
 	//Each time a monster is fought, briar roots expand.
 	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+void CCurrentGame::ProcessAfterVictory(CCueEvents& CueEvents)
+//When a monster is defeated in combat, jump scripts to set victory label.
+{
+	//Room scripts
+	CMonster* pMonster;
+	for (pMonster = this->pRoom->pFirstMonster; pMonster; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ProcessAfterVictory(CueEvents);
+		}
+	}
+
+	//Global scripts, including custom equipment
+	for (pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ProcessAfterVictory(CueEvents);
+		}
+	}
 }
 
 //*****************************************************************************
