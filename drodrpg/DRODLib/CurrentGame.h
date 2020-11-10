@@ -296,6 +296,7 @@ public:
 	bool     MayUseItem(const UINT type) const;
 	bool     PlayCommands(const UINT wCommandCount, CCueEvents &CueEvents,
 			const bool bTruncateInvalidCommands=false);
+	void     ProcessAfterVictory(CCueEvents& CueEvents);
 	void     ProcessCommand(int nCommand, CCueEvents &CueEvents,
 			const UINT wX=(UINT)-1, const UINT wY=(UINT)-1);
 	void     ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents);

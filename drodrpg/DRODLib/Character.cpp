@@ -60,6 +60,7 @@ const UINT MAX_ANSWERS = 9;
 #define EachAttackStr "EachAttack"
 #define EachDefendStr "EachDefend"
 #define EachUseStr "EachUse"
+#define EachVictoryStr "EachVictory"
 
 #define ColorStr "Color"
 #define ParamXStr "XParam"
@@ -227,6 +228,7 @@ CCharacter::CCharacter(
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
 	, eachAttackLabelIndex(NO_LABEL), eachDefendLabelIndex(NO_LABEL), eachUseLabelIndex(NO_LABEL)
+	, eachVictoryLabelIndex(NO_LABEL)
 	, wLastSpeechLineNumber(0)
 
 	, color(0), sword(NPC_DEFAULT_SWORD)
@@ -2615,6 +2617,12 @@ void CCharacter::Process(
 				this->eachUseLabelIndex = GetIndexOfCommandWithLabel(command.x);
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_EachVictory:
+				//Goto label X each time combat victory occurs.
+				this->eachVictoryLabelIndex = GetIndexOfCommandWithLabel(command.x);
+				bProcessNextCommand = true;
+			break;
+
 			case CCharacterCommand::CC_Equipment:
 			{
 				//Give/take player equipment type X, defined by hold custom charID Y.
@@ -3435,13 +3443,24 @@ bool CCharacter::ProcessAfterUse(CCueEvents &CueEvents)
 {
 	if (this->eachUseLabelIndex != NO_LABEL)
 	{
-		//Goto this label and process special commands.
+		//Goto this label and process commands.
 		this->wCurrentCommandIndex = this->eachUseLabelIndex+1; //start past label
-		const CCoord oldPos(*this);
 		Process(CMD_WAIT, CueEvents);
 	}
 
 	return true;
+}
+
+//*****************************************************************************
+void CCharacter::ProcessAfterVictory(CCueEvents& CueEvents)
+//Go to the specified label and execute a script turn.
+{
+	if (this->eachVictoryLabelIndex != NO_LABEL)
+	{
+		//Goto this label and process commands.
+		this->wCurrentCommandIndex = this->eachVictoryLabelIndex + 1; //start past label
+		Process(CMD_WAIT, CueEvents);
+	}
 }
 
 //*****************************************************************************
@@ -4166,6 +4185,7 @@ void CCharacter::RestartScript()
 	this->wExitingRoomO = NO_ORIENTATION;
 
 	this->eachAttackLabelIndex = this->eachDefendLabelIndex = this->eachUseLabelIndex = NO_LABEL;
+	this->eachVictoryLabelIndex = NO_LABEL;
 
 	this->bVulnerable = true;
 	this->bMissionCritical = false;
@@ -4450,6 +4470,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->eachAttackLabelIndex = vars.GetVar(EachAttackStr, this->eachAttackLabelIndex);
 	this->eachDefendLabelIndex = vars.GetVar(EachDefendStr, this->eachDefendLabelIndex);
 	this->eachUseLabelIndex = vars.GetVar(EachUseStr, this->eachUseLabelIndex);
+	this->eachVictoryLabelIndex = vars.GetVar(EachVictoryStr, this->eachVictoryLabelIndex);
 
 	//Imperatives.
 	this->bVulnerable = vars.GetVar(VulnerableStr, this->bVulnerable);
@@ -4540,6 +4561,8 @@ const
 		vars.SetVar(EachDefendStr, this->eachDefendLabelIndex);
 	if (this->eachUseLabelIndex != NO_LABEL)
 		vars.SetVar(EachUseStr, this->eachUseLabelIndex);
+	if (this->eachVictoryLabelIndex != NO_LABEL)
+		vars.SetVar(EachVictoryStr, this->eachVictoryLabelIndex);
 
 	//Imperatives.
 	if (!this->bVulnerable)

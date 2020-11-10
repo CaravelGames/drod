@@ -145,6 +145,7 @@ public:
 	void           ProcessAfterDefeat(CCueEvents &CueEvents);
 	virtual bool   ProcessAfterDefend(CCueEvents &CueEvents);
 	virtual bool   ProcessAfterUse(CCueEvents &CueEvents);
+	void           ProcessAfterVictory(CCueEvents &CueEvents);
 
 	virtual void   ReflectX(CDbRoom *pRoom);
 	virtual void   ReflectY(CDbRoom *pRoom);
@@ -264,6 +265,7 @@ private:
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
+	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
 	UINT wLastSpeechLineNumber; //used during language import
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 

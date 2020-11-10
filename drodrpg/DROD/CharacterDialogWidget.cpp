@@ -3255,6 +3255,7 @@ const
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
 		{
 			if ((int)command.x < 0) {
 				AppendGotoDestination(wstr, commands, command);
@@ -3511,6 +3512,7 @@ const
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_Equipment:
@@ -3633,6 +3635,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EachAttack, g_pTheDB->GetMessageText(MID_EachAttack));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EachDefend, g_pTheDB->GetMessageText(MID_EachDefend));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EachUse, g_pTheDB->GetMessageText(MID_EachUse));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_EachVictory, g_pTheDB->GetMessageText(MID_EachVictory));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIf, g_pTheDB->GetMessageText(MID_IfElseIf));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EndScript, g_pTheDB->GetMessageText(MID_EndScript));
@@ -4270,6 +4273,7 @@ void CCharacterDialogWidget::prepareForwardReferences(const COMMANDPTR_VECTOR& n
 			case CCharacterCommand::CC_EachAttack:
 			case CCharacterCommand::CC_EachDefend:
 			case CCharacterCommand::CC_EachUse:
+			case CCharacterCommand::CC_EachVictory:
 				c.label = this->pGotoLabelListBox->GetTextForKey(c.x);
 				if (!c.label.empty()) //if label ID is valid, replace ID with this text
 					c.x = 0;
@@ -4297,6 +4301,7 @@ void CCharacterDialogWidget::resolveForwardReferences(const COMMANDPTR_VECTOR& n
 			case CCharacterCommand::CC_EachAttack:
 			case CCharacterCommand::CC_EachDefend:
 			case CCharacterCommand::CC_EachUse:
+			case CCharacterCommand::CC_EachVictory:
 			{
 				UINT tempIndex = 0;
 				bool bFound;
@@ -4448,7 +4453,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		EFFECT,
 		NO_WIDGETS,         //CC_IfElseIf
 		NO_WIDGETS,         //CC_Return
-		GOTOLIST            //CC_GoSub
+		GOTOLIST,           //CC_GoSub
+		GOTOLIST            //CC_EachVictory
 	};
 
 	static const UINT NUM_LABELS = 24;
@@ -4549,7 +4555,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		EFFECT_L,
 		NO_LABELS,          //CC_IfElseIf
 		NO_LABELS,          //CC_Return
-		NO_LABELS           //CC_GoSub
+		NO_LABELS,          //CC_GoSub
+		NO_LABELS           //CC_EachVictory
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -4929,6 +4936,7 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
 	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_EachVictory:
 	case CCharacterCommand::CC_AnswerOption:
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
@@ -5279,6 +5287,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
 			this->pCommand->x = this->pGotoLabelListBox->GetSelectedItem();
 			if (this->pCommand->x)
 				AddCommand();
@@ -5628,6 +5637,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
 			this->pGotoLabelListBox->SelectItem(this->pCommand->x);
 		break;
 
@@ -6147,6 +6157,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
 	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_EachVictory:
 		pCommand->label = pText+pos;
 		//Caller must look up label ID.
 	break;
@@ -6584,6 +6595,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_EachAttack:
 	case CCharacterCommand::CC_EachDefend:
 	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_EachVictory:
 	{
 		AppendGotoDestination(wstr, commands, c);
 	}

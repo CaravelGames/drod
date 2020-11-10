@@ -1196,6 +1196,7 @@ enum MID_CONSTANT {
   MID_EachAttack = 1230,
   MID_EachDefend = 1231,
   MID_EachUse = 1232,
+  MID_EachVictory = 1624,
   MID_Disappear = 1233,
   MID_TurnIntoMonster = 1234,
   MID_EndScript = 1235,
