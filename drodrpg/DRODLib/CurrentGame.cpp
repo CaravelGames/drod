@@ -6145,9 +6145,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 	
 	room.mapMarker = pExpRoom->mapMarker;
 
-	pExpRoom->bSave = true; //previewed room now included in save data
+	const bool bWasRoomPreview = !pExpRoom->bSave;
+	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly)
+	if (pExpRoom->bMapOnly || bWasRoomPreview)
 	{
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
