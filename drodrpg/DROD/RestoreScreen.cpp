@@ -497,9 +497,6 @@ bool CRestoreScreen::SetWidgets()
 void CRestoreScreen::ShowSave()
 //Show information pertaining to this saved game.
 {
-	if (this->pCurrentRestoreGame)
-		this->pCurrentRestoreGame->AddRoomsPreviouslyExploredByPlayerToMap();
-
 	UpdateWidgets();
 
 	//Update level and room location label.
