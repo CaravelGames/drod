@@ -138,6 +138,8 @@ const UINT TAG_CHATUSERS = 1038;
 const UINT TAG_SIGN_AREA = 1039;
 // 1040-1042 used
 
+const UINT TAG_PUZZLE_MODE_OPTIONS = 1054;
+
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
 const UINT CX_SPACE = 12;
@@ -448,6 +450,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, pClockWidget(NULL)
 	, pMenuDialog(NULL)
 	, pSpeechBox(NULL)
+	, pPuzzleModeOptionsDialog(NULL)
 	, pBigMapWidget(NULL)
 
 	, dwNextSpeech(0)
@@ -596,8 +599,17 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		AddWidget(this->pSpeechBox);
 		this->pSpeechBox->Move(
 			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSpeechBox->GetW()) / 2,
-			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSpeechBox->GetH()) / 2);   //center over room widget
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSpeechBox->GetH()) / 2);
 		this->pSpeechBox->Hide();
+
+		//Puzzle mode options
+		this->pPuzzleModeOptionsDialog = new CPuzzleModeOptionsDialogWidget(0L);
+		AddWidget(this->pPuzzleModeOptionsDialog);
+		this->pPuzzleModeOptionsDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pPuzzleModeOptionsDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pPuzzleModeOptionsDialog->GetH()) / 2);
+		this->pPuzzleModeOptionsDialog->Hide();
+
 
 		//Pop-up map.
 		CScrollableWidget *pScrollingMap = new CScrollableWidget(TAG_BIGMAPCONTAINER, 0, 0,
@@ -637,7 +649,7 @@ void CGameScreen::AddRoomStatsDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 36;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const UINT CY_TEXT_LABEL = 40;
 	static const int X_TEXT_LABEL = 5;
@@ -1711,6 +1723,10 @@ void CGameScreen::OnKeyDown(
 				//Force full style reload.
 				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
 				this->pRoomWidget->UpdateFromCurrentGame(true);
+			} else if (Key.keysym.mod & KMOD_LALT) {
+				ShowPuzzleModeOptions();
+				this->pRoomWidget->ShowPuzzleMode(true);
+
 			} else {
 				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 				this->pRoomWidget->TogglePuzzleMode();
@@ -2020,6 +2036,8 @@ void CGameScreen::ApplyPlayerSettings()
 	//Set the keysym-to-command map from player settings.
 	CDbPackedVars &settings = pCurrentPlayer->Settings;
 	InitKeysymToCommandMap(settings);
+
+	this->pRoomWidget->SetPuzzleModeOptions(PuzzleModeOptions(settings));
 
 	//Set room widget to either show checkpoints or not.
 	this->pRoomWidget->ShowCheckpoints(
@@ -6299,6 +6317,31 @@ void CGameScreen::ShowSpeechLog()
 
 	if (playingChannel >= 0)
 		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+
+	Paint();
+}
+
+//*****************************************************************************
+void CGameScreen::ShowPuzzleModeOptions()
+//Pop up a dialog box that contains options for the puzzle mode
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	ShowCursor();
+	this->pPuzzleModeOptionsDialog->Display();
+	ApplyPlayerSettings();
 
 	// We compute remaining speech time and replace it instead of just calculating the time the dialog
 	// was visible because dwNextSpeech can also be updated by focus changes

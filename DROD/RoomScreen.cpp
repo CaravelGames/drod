@@ -368,7 +368,7 @@ void CRoomScreen::AddNoticesDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 36;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const UINT CX_SPACE = 12;
 	static const UINT CY_SPACE = 12;

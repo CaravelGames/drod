@@ -43,7 +43,7 @@ namespace ScriptVars
 		P_NoVar  =  0,
 		P_MONSTER_WEAPON = -1,
 		//P_SWORD = -2,
-		//P_MONSTER_COLOR = -3,
+		P_MONSTER_COLOR = -3,
 		P_PLAYER_X = -4,
 		P_PLAYER_Y = -5,
 		P_PLAYER_O = -6,

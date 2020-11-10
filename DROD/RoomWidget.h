@@ -37,6 +37,7 @@
 #include "TileImageCalcs.h"
 #include "Light.h"
 #include "Scene.h"
+#include "PuzzleModeOptions.h"
 #include <FrontEndLib/Widget.h>
 #include <FrontEndLib/SubtitleEffect.h>
 #include "NoticeEffect.h"
@@ -193,6 +194,7 @@ struct TileImageBlitParams {
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
 		, appliedDarkness(0.75)
+		, nCustomColor(-1)
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -210,6 +212,7 @@ struct TileImageBlitParams {
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
+	int nCustomColor;
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
@@ -344,6 +347,7 @@ public:
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	void           SetOpacityForEffectsOfType(const EffectType eEffectType, float fOpacity);
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
+	void           SetPuzzleModeOptions(const PuzzleModeOptions &puzzleModeOptions);
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
 	void           ShowRoomTransition(const UINT wExitOrientation, CCueEvents& CueEvents);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
@@ -356,6 +360,7 @@ public:
 	void           ToggleMoveCount();
 	void           TogglePuzzleMode();
 	void           ToggleVarDisplay();
+	static void    TranslateMonsterColor(const int nColor, float& fR, float& fG, float& fB);
 	void           UnloadCurrentGame();
 	void           UpdateFromCurrentGame(const bool bForceReload=false);
 	void           UpdateFromPlots(const CCoordSet *pSet, const CCoordSet *pGeometryChanges);
@@ -536,6 +541,8 @@ protected:
 	bool              bShowFrameRate, bShowMoveCount, bShowVarUpdates, bShowPuzzleMode;
 	bool              bAddNEffect;   //for 'Neather striking orb
 	bool              bRequestEvilEyeGaze; //for vision power-up
+	bool              bRequestTranslucentTar;
+	bool              bRequestSpiderVisibility;
 	Uint8             ghostOpacity;
 	int               temporalCloneEffectHeight;
 	UINT              wHighlightX, wHighlightY; //user highlight position
@@ -643,12 +650,13 @@ private:
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
 
-	float          fDeathFadeOpacity;
-	Uint32         time_of_last_weather_render;
-	int            redrawingRowForWeather;
-	bool           need_to_update_room_weather;
+	PuzzleModeOptions puzzleModeOptions;
+	float             fDeathFadeOpacity;
+	Uint32            time_of_last_weather_render;
+	int               redrawingRowForWeather;
+	bool              need_to_update_room_weather;
 
-	Uint32         time_of_last_sky_move;
+	Uint32            time_of_last_sky_move;
 
 	multimap<EffectType, int> queued_layer_effect_type_removal;
 };

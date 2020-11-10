@@ -1331,7 +1331,7 @@ void CRoomWidget::ClearEffects(
 
 	//If these effects were removed, then reset their display flags.
 	if (!bKeepInfoTexts)
-		this->bShowFrameRate = this->bShowMoveCount = this->bShowVarUpdates = this->bShowPuzzleMode = false;
+		this->puzzleModeOptions.bIsEnabled = this->bShowFrameRate = this->bShowMoveCount = this->bShowVarUpdates = this->bShowPuzzleMode = false;
 }
 
 //*****************************************************************************
@@ -1864,7 +1864,7 @@ CEntity* CRoomWidget::GetLightholder() const
 bool CRoomWidget::IsLightingRendered() const
 //Returns: whether light level effects should be rendered
 {
-	return g_pTheBM->bAlpha;
+	return g_pTheBM->bAlpha && !this->puzzleModeOptions.GetHideLighting();
 }
 
 //*****************************************************************************
@@ -2128,24 +2128,58 @@ void CRoomWidget::ShowMoveCount(const bool bVal)
 	}
 }
 
+
+//*****************************************************************************
+void CRoomWidget::SetPuzzleModeOptions(const PuzzleModeOptions &puzzleModeOptions)
+//Enables puzzle mode (display for easier puzzle solving).
+{
+	this->puzzleModeOptions = puzzleModeOptions;
+	this->puzzleModeOptions.bIsEnabled = this->bShowPuzzleMode;
+
+	if (this->bShowPuzzleMode) {
+		// If puzzle mode is currently active we need to turn it off and on again to refresh it fully
+		TogglePuzzleMode();
+		TogglePuzzleMode();
+	}
+}
 //*****************************************************************************
 void CRoomWidget::ShowPuzzleMode(const bool bVal)
 //Enables puzzle mode (display for easier puzzle solving).
 {
 	if (this->bShowPuzzleMode == bVal)
 		return;
+	
+	this->RerenderRoom();
 	this->bShowPuzzleMode = bVal;
+	this->bRenderPlayerLight = true;
+	this->bRenderRoomLight = true;
+	this->puzzleModeOptions.bIsEnabled = this->bShowPuzzleMode;
 
 	if (bVal)
 	{
-		CGridEffect *pEffect = new CGridEffect(this);
-		pEffect->RequestRetainOnClear(true);
-		AddLastLayerEffect(pEffect);
+		if (this->puzzleModeOptions.GetShowGrid()) {
+			CGridEffect* pEffect = new CGridEffect(this, this->puzzleModeOptions.wGridStyle, this->puzzleModeOptions.uGridOpacity);
+			pEffect->RequestRetainOnClear(true);
+			AddLastLayerEffect(pEffect);
+		}
+
+		if (this->puzzleModeOptions.GetHideLighting())
+			this->wDark = 0;
+
+		if (this->puzzleModeOptions.GetHideWeather()) {
+			RemoveMLayerEffectsOfType(ESNOWFLAKE);
+			RemoveMLayerEffectsOfType(ERAINDROP);
+		}
 	} else {
 		this->pLastLayerEffects->RemoveEffectsOfType(EGRID);
+
+		this->wDark = this->pRoom->weather.wLight;
 	}
 
+	g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
+
 	BetterVisionQuery();
+	UpdateDrawSquareInfo();
 }
 
 //*****************************************************************************
@@ -3611,6 +3645,8 @@ void CRoomWidget::RenderRoom(
 		water[(wX-1)][(wY)] == T_SHALLOW_WATER || water[(wX+1)][(wY)] == T_SHALLOW_WATER ||\
 		water[(wX)][(wY-1)] == T_SHALLOW_WATER || water[(wX)][(wY+1)] == T_SHALLOW_WATER)))
 
+	static const SURFACECOLOR SecretWallHighlightColor = { 128, 255, 255 };
+
 	BoundsCheckRect(wCol,wRow,wWidth,wHeight);
 	const UINT wRowOffset = this->pRoom->wRoomCols - wWidth;
 	const UINT wLightRowOffset = wRowOffset * wLightValuesPerTile;
@@ -3669,7 +3705,7 @@ void CRoomWidget::RenderRoom(
 						(wOTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->bHoldCompleted);
 				bTar = bIsTarOrFluff(wTTileNo);
 				bTIsTransparent = (bTar && bEditor);
-				bTIsTranslucent = bTar && IsShowingBetterVision();
+				bTIsTranslucent = bTar && this->bRequestTranslucentTar;
 				bAddLightLayers = false;
 
 				//Determine this tile's darkness.
@@ -3688,6 +3724,14 @@ void CRoomWidget::RenderRoom(
 				if (!bMosaicTile && !bTransparentOTile)
 				{
 					DrawRoomTile(pTI->o);
+
+					wTileNo = bTransparentOTile ?
+						this->pRoom->coveredOSquares.GetAt(wX, wY) : wOTileNo;
+
+					if (wOTileNo == T_WALL_B && this->puzzleModeOptions.GetShowBrokenWalls())
+						ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
+					else if (wOTileNo == T_WALL_H && this->puzzleModeOptions.GetShowSecretWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
 
 					//In cases where doors are 2x2 tiles or thicker, draw filler to
 					//remove the dimple on the edge.
@@ -3831,8 +3875,14 @@ void CRoomWidget::RenderRoom(
 										pDestSurface, false, 196);
 							else
 								DrawTransparentRoomTile(TI_WALL_H, 196);
-						}
+						} else if (this->puzzleModeOptions.GetShowSecretWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
 					break;
+
+					case T_WALL_B:
+						if (this->puzzleModeOptions.GetShowBrokenWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
+						break;
 
 					case T_WALL_M:
 					case T_WALL_WIN:
@@ -4138,7 +4188,7 @@ void CRoomWidget::DrawTLayerTile(
 
 	bool bTar = bIsTarOrFluff(wTTileNo);
 	bool bTIsTransparent = (bTar && bEditor);
-	bool bTIsTranslucent = bTar && (IsShowingBetterVision() || g_pTheDBM->tarstuffAlpha != 255);
+	bool bTIsTranslucent = bTar && (this->bRequestTranslucentTar || g_pTheDBM->tarstuffAlpha != 255);
 
 	//2b. Add checkpoints on top of o-layer.
 	const bool bIsCheckpoint = (this->bShowCheckpoints || bEditor) &&
@@ -4250,7 +4300,7 @@ void CRoomWidget::DrawTLayerTile(
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
 			static const Uint8 TRANSLUCENT_ALPHA = 166;
-			Uint8 tar_alpha = IsShowingBetterVision() ? TRANSLUCENT_ALPHA : 255;
+			Uint8 tar_alpha = this->bRequestTranslucentTar ? TRANSLUCENT_ALPHA : 255;
 			if (g_pTheDBM->tarstuffAlpha < tar_alpha) {
 				tar_alpha = g_pTheDBM->tarstuffAlpha;
 			}
@@ -4601,6 +4651,10 @@ void CRoomWidget::PaintClipped(int /*nX*/, int /*nY*/, UINT /*wW*/, UINT /*wH*/,
 void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 {
 	this->pMLayerEffects->RemoveEffectsOfType(EPENDINGBUILD);
+
+	if (this->puzzleModeOptions.GetHideBuildMarkers())
+		return;
+
 	if (!room.building.empty())
 	{
 		bool bFirst = true;
@@ -4691,7 +4745,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 {
 	static float fBrilliance = 1.0;	//lightning
 
-	if (!IsWeatherRendered())
+	if (!IsWeatherRendered() || this->puzzleModeOptions.GetHideWeather())
 		return;
 
 	bool bHasted = false, bIsPlacingDouble = false;
@@ -6313,9 +6367,6 @@ void CRoomWidget::DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surf
 //*****************************************************************************
 bool CRoomWidget::IsShowingBetterVision() const
 {
-	if (this->bShowPuzzleMode)
-		return true;
-
 	return this->pRoom && this->pRoom->bBetterVision;
 }
 
@@ -6338,7 +6389,8 @@ bool CRoomWidget::NeedsSwordRedrawing(const CMonster *pMonster) const
 void CRoomWidget::AnimateMonsters()
 //Randomly change monsters' animation frame.
 {
-	if (!this->bAnimateMoves) return;
+	if (!this->bAnimateMoves || this->puzzleModeOptions.GetHideAnimations())
+		return;
 
 	//Animate monsters in real time.
 	const Uint32 dwNow=SDL_GetTicks();
@@ -6475,7 +6527,9 @@ void CRoomWidget::BetterVisionQuery()
 //Display visual effects for vision power up.
 {
 	//Evil eye gazes are seen.
-	this->bRequestEvilEyeGaze = IsShowingBetterVision();
+	this->bRequestEvilEyeGaze = IsShowingBetterVision() || this->puzzleModeOptions.GetShowEvilEyeBeams();
+	this->bRequestSpiderVisibility = IsShowingBetterVision() || this->puzzleModeOptions.GetShowSpiders();
+	this->bRequestTranslucentTar = IsShowingBetterVision() || this->puzzleModeOptions.bIsEnabled;
 
 	//Remove old persistent evil eye gazes.
 	//Note that normal wake up gaze effects are displayed on the m-layer,
@@ -6628,7 +6682,7 @@ void CRoomWidget::DrawMonster(
 					opacity = PUFF_OPACITY;
 				break;
 				case M_SPIDER:
-					if (IsShowingBetterVision()) {
+					if (this->bRequestSpiderVisibility) {
 						//display, even when invisible
 					} else if (this->pCurrentGame) {
 						const CSpider *pSpider = DYN_CAST(const CSpider*, const CMonster*, pMonster);
@@ -6654,10 +6708,14 @@ void CRoomWidget::DrawMonster(
 					const CEvilEye *pEye = DYN_CAST(const CEvilEye*, const CMonster*, pMonster);
 					if (pEye->IsAggressive())
 						wTileImageNo = GetTileImageForEntity(M_EYE_ACTIVE, pMonster->wO, animFrame);
-					else if (this->bRequestEvilEyeGaze) {
-						//Show eye beams with vision power-up.
-						AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-								pMonster->wY,pMonster->wO, (UINT)-1));
+					else {
+						if (this->bRequestEvilEyeGaze) // Vision token or puzzle mode can show it
+							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
+								pMonster->wY, pMonster->wO, (UINT)-1));
+						
+						if (this->puzzleModeOptions.GetShowReverseEvilEyeBeams())
+							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
+								pMonster->wY, nGetReverseO(pMonster->wO), (UINT)-1));
 					}
 				}
 				break;
@@ -6965,6 +7023,16 @@ void CRoomWidget::DrawTileImageWithoutLight(
 				BlitRect.w, BlitRect.h,
 				1.0f+lightMap[0][blit.nAddColor], 1.0f+lightMap[1][blit.nAddColor], 1.0f+lightMap[2][blit.nAddColor],
 				blit.wTileImageNo, BlitRect.x, BlitRect.y);
+
+	if (blit.nCustomColor != -1) {
+		float fR, fG, fB;
+		TranslateMonsterColor(blit.nCustomColor, fR, fG, fB);
+
+		g_pTheBM->LightenRectWithTileMask(pDestSurface, nPixelX, nPixelY,
+			BlitRect.w, BlitRect.h,
+			fR, fG, fB,
+			blit.wTileImageNo, BlitRect.x, BlitRect.y);
+	}
 
 	if (!blit.bDirtyTiles)
 	{
@@ -7605,6 +7673,7 @@ void CRoomWidget::DrawCharacter(
 	//Draw character.
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress, bDrawRaised);
 	blit.nOpacity = nOpacity;
+	blit.nCustomColor = pCharacter->nColor;
 	blit.nAddColor = nAddColor;
 	DrawTileImage(blit, pDestSurface);
 
@@ -9746,6 +9815,24 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
 	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+//*****************************************************************************
+void CRoomWidget::TranslateMonsterColor(
+	//Converts a single specially-formatted color value to rgb values
+	//
+	//Params:
+	const int nColor,
+	float& fR, float& fG, float& fB) //Out: rgb tinting values
+{
+	if (nColor < 0)
+		fR = fG = fB = 1.0f;
+	else {
+		//nColor consists of three two-digit pairs: RRGGBB, where a value of "50" is normal.
+		fR = (nColor % 1000000) / 500000.0f;
+		fG = (nColor % 10000) / 5000.0f;
+		fB = (nColor % 100) / 50.0f;
+	}
 }
 
 //*****************************************************************************

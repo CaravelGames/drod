@@ -100,7 +100,7 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 
 	static const UINT CX_SPACE = 8;
 	static const UINT CY_SPACE = 8;
-	static const UINT CY_TITLE = 52;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 	static const UINT CY_TITLE_SPACE = 14;
 	static const int Y_TITLE = CY_TITLE_SPACE;
 

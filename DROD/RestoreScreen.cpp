@@ -106,19 +106,17 @@ CRestoreScreen::CRestoreScreen()
 
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
-	static const UINT CY_TITLE = 50;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 
 #ifdef RUSSIAN_BUILD
 	static const UINT CX_RESTORE_BUTTON = 140;
 	static const UINT CX_ROOM_START = 160;
-	static const UINT CY_TITLE_SPACE = 12;
+	static const int Y_TITLE = 12;
 #else
 	static const UINT CX_RESTORE_BUTTON = 110;
 	static const UINT CX_ROOM_START = 130;
-	static const UINT CY_TITLE_SPACE = 15;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 #endif
-
-	static const int Y_TITLE = CY_TITLE_SPACE;
 
 	static const UINT CY_RESTORE_BUTTON = CY_STANDARD_BUTTON;
 	static const UINT CX_CANCEL_BUTTON = 110;
@@ -134,7 +132,7 @@ CRestoreScreen::CRestoreScreen()
 
 	//Mini-room widget has strict proportions and its dimensions will define 
 	//placement of most everything else.
-	static const int Y_CHOOSE_POS_LABEL = Y_TITLE + CY_TITLE + CY_TITLE_SPACE;
+	static const int Y_CHOOSE_POS_LABEL = Y_TITLE + CY_TITLE + Y_TITLE;
 	static const UINT CY_CHOOSE_POS_LABEL = CY_STANDARD_BUTTON;
 	static const int Y_POSITION_LABEL = Y_CHOOSE_POS_LABEL + CY_CHOOSE_POS_LABEL;
 	static const UINT CY_POSITION_LABEL = 25;

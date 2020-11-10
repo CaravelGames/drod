@@ -925,6 +925,7 @@ const
 	 dwLastMessageID = 0;
 
 	 //Read file into buffer.
+	 std::set<UINT> usedMids;
 	 CStretchyBuffer buf;
 	 CFiles files;
 	 if (!files.ReadFileIntoBuffer(pwzMIDFilepath, buf)) {
@@ -979,6 +980,11 @@ const
 		  //Add element.
 		  string strName = szName;
 		  UINT dwValue = convertToUINT(szValue);
+		  if (usedMids.find(dwValue) != usedMids.end()) {
+			  printf("Duplicate MID value found in key '%s' (value %u)", strName.c_str(), dwValue);
+			  throw false;
+		  }
+		  usedMids.insert(dwValue);
 		  AssignedMIDs[strName] = dwValue;
 
 		  //If this is the largest MID value, remember it.
