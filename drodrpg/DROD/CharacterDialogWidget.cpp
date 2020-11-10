@@ -2553,7 +2553,7 @@ void CCharacterDialogWidget::DeleteCommands(
 	ASSERT(nSelectedLine >= 0);
 	UINT wTopLine = pActiveCommandList->GetTopLineNumber();
 
-	CIDSet lines = pActiveCommandList->GetSelectedLineNumbers();
+	const CIDSet lines = pActiveCommandList->GetSelectedLineNumbers();
 	for (CIDSet::const_reverse_iterator line = lines.rbegin(); line != lines.rend(); ++line)
 	{
 		const UINT wLine = *line;
@@ -2562,7 +2562,6 @@ void CCharacterDialogWidget::DeleteCommands(
 		COMMANDPTR_VECTOR::iterator iter = commands.begin() + wLine;
 		ASSERT(iter != commands.end());
 		commands.erase(iter);
-		pActiveCommandList->RemoveItem(pCommand);
 		if (pCommand->command == CCharacterCommand::CC_Label)
 			this->pGotoLabelListBox->RemoveItem(pCommand->x);
 		if (pCommand->pSpeech)
@@ -2577,6 +2576,7 @@ void CCharacterDialogWidget::DeleteCommands(
 		}
 		delete pCommand;
 	}
+	pActiveCommandList->RemoveItems(lines);
 
 	PopulateCommandDescriptions(pActiveCommandList, commands);	//refresh script
 	const UINT wLines = pActiveCommandList->GetItemCount();

@@ -1000,6 +1000,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPersistentEventsDrawn(false)
 	, bNeedToProcessDelayedQuestions(false)
 	, bShowingBigMap(false), bShowingCutScene(false), bShowingTempRoom(false)
+	, bIsDialogDisplayed(false)
 	, bDisableMouseMovement(false), bNoMoveByCurrentMouseClick(false)
 	, wCombatTickSpeed(DEFAULT_COMBAT_TICK), wThisCombatTickSpeed(DEFAULT_COMBAT_TICK)
 	, wMoveDestX(NO_DESTINATION), wMoveDestY(NO_DESTINATION)
@@ -1021,7 +1022,6 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPlayTesting(false)
 //	, bRoomClearedOnce(false)
 	, wUndoToTurn(0)
-//	, bHoldConquered(false)
 
 	, fPos(NULL)
 
@@ -2095,10 +2095,38 @@ void CGameScreen::OnWindowEvent(const SDL_WindowEvent &wevent)
 }
 
 //*****************************************************************************
+void CGameScreen::OnWindowEvent_GetFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_GetFocus();
+
+	this->pCurrentGame->UpdateTime();
+	if (!this->dwTimeMinimized)
+		this->dwTimeMinimized = SDL_GetTicks();
+
+	if (this->bIsDialogDisplayed)
+		g_pTheSound->PauseSounds();
+}
+
+//*****************************************************************************
+void CGameScreen::OnWindowEvent_LoseFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_LoseFocus();
+
+	if (this->dwTimeMinimized)
+	{
+		if (this->dwNextSpeech)
+			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+		this->dwTimeMinimized = 0;
+	}
+}
+
+//*****************************************************************************
 void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
+
+	UpdateEffectsFreeze();
 
 	if (this->bShowingBigMap || this->bShowingTempRoom)
 		return;
@@ -4891,6 +4919,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied);
 //			|| (!bPlayerDied && !bNPCBeethroDied && player.wAppearance != M_BEETHRO);
 
+	ProcessFuseBurningEvents(CueEvents);
+
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
 		this->pRoomWidget->HidePlayer();
@@ -4916,21 +4946,10 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	//Show the screen after first arriving here.
 	this->pFaceWidget->SetReading(false);
-	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);	//stop showing where bombs were
 //	this->pRoomWidget->RemoveMLayerEffectsOfType(EPENDINGBUILD); //stop showing where pending building was
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(EEVILEYEGAZE);
 	this->pRoomWidget->RemoveHighlight();
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(ESHADE); //remove user tile highlight
-	this->pRoomWidget->PutTLayerEffectsOnMLayer();	//keep showing whatever effects were showing
 	this->pRoomWidget->AllowSleep(false);
 	this->pRoomWidget->Paint();
-
-	//Prepare room for fade out.
-	this->pRoomWidget->RenderRoomInPlay();
-	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
-
-	const bool bFade = g_pTheBM->bAlpha;
-	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
 
 	bool bNonMonsterDeath = false;
 //	CMonster *pNPCBeethro = bNPCBeethroDied ? this->pCurrentGame->pRoom->GetNPCBeethro() : NULL;
@@ -5035,7 +5054,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		const Uint32 dwNow = SDL_GetTicks();
 
 		//Sword wobbles around.
-		if (bPlayerSwordWobblesAround && dwNow - dwLastSwordWobble > 50)
+		if (bPlayerSwordWobblesAround && dwNow - dwLastSwordWobble > 100)
 		{
 /*
 			if (pNPCBeethro)
@@ -5053,17 +5072,16 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		}
 
 		//Fade to black.
-		if (dwNow - dwLastFade > 100 && g_pTheBM->bAlpha)
+		if (g_pTheBM->bAlpha && dwStart)
 		{
-			if (bFade)
-			{
-				const float fFade = (dwNow - dwStart) / (float)dwDeathDuration;
-				pFade->IncrementFade(fFade);
+			const float durationFraction = min(1, (dwNow - dwStart) / (float)dwDeathDuration);
+			const float remainingFraction = 1 - durationFraction;
 
-				//Fade out effects drawn on the top layer of the room.
-				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ESNOWFLAKE, 1.0f-fFade);
-			}
+			this->pRoomWidget->SetDeathFadeOpacity(durationFraction);
+			this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(remainingFraction);
+			this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(remainingFraction);
 			this->pRoomWidget->DirtyRoom();  //repaint whole room each fade
+
 			dwLastFade = dwNow;
 		}
 
@@ -5114,7 +5132,10 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		if (dwNow - dwStart > dwDeathDuration || bUndoDeath)
 			break;
 	}
-	delete pFade;
+	
+	this->pRoomWidget->SetDeathFadeOpacity(0);
+	this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(1);
+	this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(1);
 	this->pCurrentGame->pPlayer->SetOrientation(wOrigO);	//restore value
 
 	if (bPlayerFellInPit)
@@ -8094,6 +8115,26 @@ Loop:
 }
 
 //*****************************************************************************
+void CGameScreen::ShowChatHistory(CEntranceSelectDialogWidget* pBox)
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	CDrodScreen::ShowChatHistory(pBox);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+}
+
+//*****************************************************************************
 /*
 void CGameScreen::ShowLockIcon(const bool bShow)
 //Show hide persistent lock icon.
@@ -8198,6 +8239,12 @@ void CGameScreen::ShowSpeechLog()
 	this->pSpeechBox->PopulateList(CEntranceSelectDialogWidget::Speech);
 	this->pSpeechBox->SelectItem(0);
 
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	UINT dwItemID=0;
 	int playingChannel=-1;
 	do {
@@ -8223,6 +8270,17 @@ void CGameScreen::ShowSpeechLog()
 			}
 		}
 	} while (dwItemID != 0);
+
+	if (playingChannel >= 0)
+		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
 
 	Paint();
 }
@@ -8424,6 +8482,14 @@ void CGameScreen::UpdateSound()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateEffectsFreeze()
+{
+	bool bFreezeEffects = !WindowHasFocus() || this->bIsDialogDisplayed;
+
+	this->pRoomWidget->SetEffectsFrozen(bFreezeEffects);
+}
+
+//*****************************************************************************
 bool CGameScreen::UploadDemoPolling()
 //As the current game queues scores for upload, process them here.
 //As results are received, display them onscreen.
@@ -8609,6 +8675,7 @@ void CGameScreen::WaitToUploadDemos()
 	}
 }
 
+//*****************************************************************************
 void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
 {
 #ifdef STEAMBUILD
