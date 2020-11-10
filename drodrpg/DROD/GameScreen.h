@@ -191,6 +191,7 @@ private:
 	void           TakeStepTowardQuickExit();
 	void           ToggleBigMap();
 	void           UndoMove();
+	void           UpdateEffectsFreeze();
 	void           UpdateSound();
 	bool           UploadDemoPolling();
 	void				UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);

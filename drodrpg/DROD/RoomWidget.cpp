@@ -2335,18 +2335,18 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-//	this->pOLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+//	this->pOLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 	DrawPlatforms(pSurface);
-//	this->pTLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+//	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(*this->pCurrentGame->pPlayer, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-//	this->pMLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+//	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 //	DrawOverheadLayer(pSurface);
 //	DrawGhostOverheadCharacters(pSurface, false);
-//	this->pLastLayerEffects->DrawEffectsOfType(EIMAGEOVERLAY, false, true, pSurface);
+//	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	RenderEnvironment(pSurface);
 
@@ -2750,11 +2750,8 @@ void CRoomWidget::RenderRoomInPlay(
 //	const CSwordsman& player = *this->pCurrentGame->pPlayer;
 
 	//Check for state changes that will affect entire room.
-//	const bool bIsPlacingDouble = player.wPlacingDoubleType != 0;
-//	const bool bIsInvisible = !player.bIsVisible;
 	const bool bPlayerIsDying = this->pCurrentGame->IsPlayerDying();
 	const bool bStateChanged = bPlayerIsDying;
-		// || (this->bWasPlacingDouble != bIsPlacingDouble) || (this->bWasInvisible && !bIsInvisible);
 	if (bStateChanged)
 		this->bAllDirty = true;
 
@@ -2778,22 +2775,21 @@ void CRoomWidget::RenderRoomInPlay(
 	RenderRoom(wCol, wRow, wWidth, wHeight, false);
 
 	//3. When action is frozen, draw the following here.
-	if (bStateChanged) //((!this->bWasPlacingDouble || this->bAllDirty) && bIsPlacingDouble) || bPlayerIsDying)
+	if (bPlayerIsDying)
 	{
 		RenderFogInPit(pDestSurface);
 
-		this->pOLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pOLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
 		DrawPlatforms(pDestSurface);
 
 		//a. Effects that go on top of room image, under monsters/player.
-		this->pTLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pTLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
 
 		//b. Draw monsters (not killing player).
-		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, //bIsPlacingDouble ||
-				bPlayerIsDying);
+		DrawMonsters(this->pRoom->pFirstMonster, pDestSurface, bPlayerIsDying);
 
 		//c. Effects that go on top of monsters/player.
-		this->pMLayerEffects->UpdateAndDrawEffects(false, bPlayerIsDying ? NULL : pDestSurface);   //freeze effects
+		this->pMLayerEffects->DrawEffects(bPlayerIsDying ? NULL : pDestSurface);
 	}
 }
 
@@ -4075,6 +4071,14 @@ void CRoomWidget::Paint(
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
 
+	// O-Layer effects need to be updated and dirtied before O-Layer is drawn to ensure lighting is correctly applied for
+	// pieces of the effects that enter a new tile
+	this->pOLayerEffects->UpdateEffects();
+	this->pMLayerEffects->UpdateEffects();
+	this->pTLayerEffects->UpdateEffects();
+	this->pLastLayerEffects->UpdateEffects();
+	this->pOLayerEffects->DirtyTiles();
+
 	if (this->bRenderRoom || this->bRenderPlayerLight)
 	{
 		RenderRoomInPlay(this->wShowCol, this->wShowRow);
@@ -4117,20 +4121,6 @@ void CRoomWidget::Paint(
 
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
-/*
-	if (bIsPlacingDouble && bPlayerIsAlive)
-	{
-		//Draw player double placement cursor only.
-		//(The action is frozen and nothing else gets drawn.)
-		DrawDoubleCursor(this->pCurrentGame->pPlayer->wDoubleCursorX,
-				this->pCurrentGame->pPlayer->wDoubleCursorY, pDestSurface);
-		if (this->pCurrentGame->pPlayer->wPlacingDoubleType == M_DECOY && bHighQuality)
-		{
-			DrawInvisibilityRange(this->pCurrentGame->pPlayer->wDoubleCursorX,
-				this->pCurrentGame->pPlayer->wDoubleCursorY, pDestSurface);
-		}
-	} else
-*/
 	{
 		//When action is not frozen, draw the following:
 		if (bPlayerIsAlive)
@@ -4142,7 +4132,7 @@ void CRoomWidget::Paint(
 			this->pOLayerEffects->DirtyTiles();
 			DrawPlatforms(pDestSurface, false, bMoveAnimationInProgress);
 
-			this->pTLayerEffects->UpdateAndDrawEffects();
+			this->pTLayerEffects->DrawEffects();
 			this->pTLayerEffects->DirtyTiles();
 
 			//3b. Repaint monsters.
@@ -4156,6 +4146,14 @@ void CRoomWidget::Paint(
 			}
 
 			//PopulateBuildMarkerEffects(room);
+/*
+		} else {
+			//Add certain images as static during death animation
+
+			this->pOLayerEffects->UpdateAndDrawEffects(false, NULL, EIMAGEOVERLAY);
+			this->pOLayerEffects->DrawEffects(NULL, EIMAGEOVERLAY);
+			this->pOLayerEffects->DirtyTiles();
+*/
 		}
 
 		//4. Draw player.
@@ -4167,7 +4165,7 @@ void CRoomWidget::Paint(
 			DrawMonsterKillingPlayer(pDestSurface);
 
 		//5a. Draw effects that go on top of monsters/player.
-		this->pMLayerEffects->UpdateAndDrawEffects();
+		this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
 	}
 
@@ -4178,7 +4176,7 @@ void CRoomWidget::Paint(
 		RenderEnvironment(pDestSurface);
 
 	//7. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->UpdateAndDrawEffects();
+	this->pLastLayerEffects->DrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	//Last turn/movement should be drawn completely now.

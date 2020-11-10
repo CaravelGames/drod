@@ -2126,8 +2126,7 @@ void CGameScreen::OnBetweenEvents()
 {
 	UploadDemoPolling();
 
-	// Effects should not animate when game is not focused or a dialog is displayed
-	this->pRoomWidget->SetEffectsFrozen(!WindowHasFocus() || this->bIsDialogDisplayed);
+	UpdateEffectsFreeze();
 
 	if (this->bShowingBigMap || this->bShowingTempRoom)
 		return;
@@ -8490,6 +8489,14 @@ void CGameScreen::UpdateSound()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateEffectsFreeze()
+{
+	bool bFreezeEffects = !WindowHasFocus() || this->bIsDialogDisplayed;
+
+	this->pRoomWidget->SetEffectsFrozen(bFreezeEffects);
+}
+
+//*****************************************************************************
 bool CGameScreen::UploadDemoPolling()
 //As the current game queues scores for upload, process them here.
 //As results are received, display them onscreen.
@@ -8675,6 +8682,7 @@ void CGameScreen::WaitToUploadDemos()
 	}
 }
 
+//*****************************************************************************
 void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
 {
 #ifdef STEAMBUILD
