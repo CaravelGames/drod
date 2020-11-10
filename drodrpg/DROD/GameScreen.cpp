@@ -752,8 +752,6 @@ bool CGameScreen::LoadSavedGame(
 	if (!this->pCurrentGame)
 		return false;
 
-	this->pCurrentGame->AddRoomsPreviouslyExploredByPlayerToMap();
-
 	this->bPlayTesting = false;
 	this->wUndoToTurn = this->pCurrentGame->wTurnNo;
 //	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();

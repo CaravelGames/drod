@@ -1656,17 +1656,18 @@ bool CCurrentGame::LoadFromSavedGame(
 	//Put room in correct beginning state and get cue events for the 
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
-	if (bAtRoomStart)
+
+	AddRoomsPreviouslyExploredByPlayerToMap(); //for front-end, to display preview of rooms explored in other play sessions
+
+	//Cue events coming from first step into the room.
+	SetMembersAfterRoomLoad(CueEvents, false);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+	if (!bAtRoomStart)
 	{
-		//Cue events come from first step into the room.
-		SetMembersAfterRoomLoad(CueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(CueEvents);
-	} else {
-		//Cue events come from processing of last command below.
 		//Ignore cue events from first step into the room.
-		CCueEvents IgnoredCueEvents;
-		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
+		CueEvents.Clear();
+
+		//Instead, populate cue events coming from processing of last command below.
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
