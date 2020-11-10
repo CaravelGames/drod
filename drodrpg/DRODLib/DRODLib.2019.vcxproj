@@ -428,6 +428,7 @@
     <ClCompile Include="MonsterMessage.cpp" />
     <ClCompile Include="MonsterPiece.cpp" />
     <ClCompile Include="NetInterface.cpp" />
+    <ClCompile Include="OrbUtil.cpp" />
     <ClCompile Include="PathMap.cpp" />
     <ClCompile Include="Phoenix.cpp" />
     <ClCompile Include="PhoenixAshes.cpp" />
@@ -504,6 +505,7 @@
     <ClInclude Include="MonsterPiece.h" />
     <ClInclude Include="MonsterTypes.h" />
     <ClInclude Include="NetInterface.h" />
+    <ClInclude Include="OrbUtil.h" />
     <ClInclude Include="PathMap.h" />
     <ClInclude Include="Phoenix.h" />
     <ClInclude Include="PhoenixAshes.h" />
