@@ -1066,8 +1066,8 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			g_pTheSound->SetVoicesVolume(pSliderWidget->GetValue());
 			const int nSoundVolume = g_pTheSound->GetSoundVolume();
 			g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-			g_pTheSound->StopSoundEffect(SEID_DIE);
-			g_pTheSound->PlaySoundEffect(SEID_DIE); //play sample sound
+			g_pTheSound->StopSoundEffect(SEID_STALWART_DIE);
+			g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE); //play sample sound
 			g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 		}
 		break;
@@ -1261,7 +1261,7 @@ void CSettingsScreen::SynchOption(const UINT dwTagNo)
 			{
 				const int nSoundVolume = g_pTheSound->GetSoundVolume();
 				g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-				g_pTheSound->PlaySoundEffect(SEID_DIE, NULL, NULL, true); //play sample sound
+				g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE, NULL, NULL, true); //play sample sound
 				g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 			}
 		break;
