@@ -4370,6 +4370,8 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PushMonsters, g_pTheDB->GetMessageText(MID_PushMonsters));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MovePlatforms, g_pTheDB->GetMessageText(MID_MovePlatforms));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterAttackable, g_pTheDB->GetMessageText(MID_CanBeMonsterAttacked));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterTarget, g_pTheDB->GetMessageText(MID_MonsterTarget));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterTargetWhenPlayerIsTarget, g_pTheDB->GetMessageText(MID_MonsterTargetWhenPlayerIsTarget));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
@@ -4384,6 +4386,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AdderImmune, g_pTheDB->GetMessageText(MID_AdderImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FatalPushImmune, g_pTheDB->GetMessageText(MID_FatalPushImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::CanBeNPCBeethro, g_pTheDB->GetMessageText(MID_CanBeNPCBeethro));
 	this->pImperativeListBox->SelectLine(0);
 }
 

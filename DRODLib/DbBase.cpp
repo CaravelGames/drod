@@ -796,6 +796,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_DropTrapdoorsArmed: strText = "Drop Trapdoors When Armed"; break;
 	case MID_PushObjects: strText = "Push Objects"; break;
 	case MID_MovePlatforms: strText = "Move Platforms and Rafts"; break;
+	case MID_MonsterTarget: strText = "Monster Target"; break;
+	case MID_MonsterTargetWhenPlayerIsTarget: strText = "Monster Target When Player Is Target"; break;
 	case MID_CanBeMonsterAttacked: strText = "Can Be Attacked By Monsters"; break;
 	case MID_PuffTarget: strText = "Puff Target"; break;
 	case MID_SwordDamageImmune: strText = "Sword Damage Immunity"; break;
@@ -842,7 +844,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_PuzzleModeOption_ShowEyeBeamsReverse: strText = "Show Evil Eye beams (reverse)"; break;
 	case MID_PuzzleModeOption_ShowSpiders: strText = "Show Spiders"; break;
 	case MID_VarMonsterColor: strText = "_MyColor"; break;
-
+	case MID_CanBeNPCBeethro: strText = "Can Be NPC Beethro"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

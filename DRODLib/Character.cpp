@@ -2694,11 +2694,37 @@ void CCharacter::Process(
 
 				if (activate) {
 					behaviorFlags.insert(eBehavior);
+					// some behaviors need to update other locations
+					switch (eBehavior) {
+						case ScriptFlag::MonsterTarget:
+							// For simplicity, just add this NPC to the list of monster enemies
+							if (!HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
+								room.monsterEnemies.push_back(this);
+						break;
+						case ScriptFlag::MonsterTargetWhenPlayerIsTarget:
+							// For simplicity, just add this NPC to the list of monster enemies
+							if (!HasBehavior(ScriptFlag::MonsterTarget))
+								room.monsterEnemies.push_back(this);
+						break;
+						default: break;
+					}
 				} else {
 					behaviorFlags.erase(eBehavior);
-					if (eBehavior == ScriptFlag::BriarImmune) {
-						// This NPC can no longer plot briars, so act as if a tile was plotted.
-						room.briars.plotted(this->wX, this->wY, T_EMPTY);
+					// some behaviors need to update other locations
+					switch (eBehavior) {
+						case ScriptFlag::BriarImmune:
+							// This NPC can no longer block briars, so act as if a tile was plotted.
+							room.briars.plotted(this->wX, this->wY, T_EMPTY);
+						break;
+						case ScriptFlag::MonsterTarget:
+							if (!HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
+								room.monsterEnemies.remove(this);
+						break;
+						case ScriptFlag::MonsterTargetWhenPlayerIsTarget:
+							if (!HasBehavior(ScriptFlag::MonsterTarget))
+								room.monsterEnemies.remove(this);
+						break;
+						default: break;
 					}
 				}
 
@@ -3477,6 +3503,18 @@ bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
 }
 
 //*****************************************************************************
+bool CCharacter::CanBeNPCBeethro() const
+// Returns if this character can be chosen as the "NPC Beethro"
+// When the player is not a valid monster target, monsters may select the first
+// character in the monster list with a Beethro or Gunthro appearance to be a target.
+// To be selected, the character must be visible, have a smitemaster identity,
+// and have the CanBeNPCBeethro behavior flag. By default, all smitemaster appearances
+// have this flag, but the user may remove it.
+{
+	return IsVisible() && bIsSmitemaster(this->wIdentity) && HasBehavior(ScriptFlag::CanBeNPCBeethro);
+}
+
+//*****************************************************************************
 bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
@@ -3648,8 +3686,8 @@ bool CCharacter::IsMonsterTarget() const
 	}
 
 	const UINT identity = GetIdentity();
-	//Clones are only targets if the player is
-	if (identity == M_CLONE || identity == M_TEMPORALCLONE)
+	//Only a target if the player is
+	if (HasBehavior(ScriptFlag::MonsterTargetWhenPlayerIsTarget))
 	{
 		if (!this->pCurrentGame)
 			return true;
@@ -3658,7 +3696,8 @@ bool CCharacter::IsMonsterTarget() const
 			return true;
 		return player.IsTarget();
 	}
-	return bIsMonsterTarget(identity);
+
+	return false;
 }
 
 //*****************************************************************************
@@ -4858,8 +4897,11 @@ void CCharacter::SetCurrentGame(
 	if (bIsSmitemaster(wResolvedIdentity) || bIsStalwart(wResolvedIdentity)) {
 		//These types can be attacked and killed by default.
 		behaviorFlags.insert(ScriptFlag::MonsterAttackable);
-	}	else if (wResolvedIdentity == M_CLONE || wResolvedIdentity == M_TEMPORALCLONE) {
-		behaviorFlags.insert(ScriptFlag::MonsterTargetIfPlayerIs);
+	}
+
+	if (bIsSmitemaster(wIdentity)) {
+		// By default, all Beethro and Gunthro NPCs can be the NPC Beethro
+		behaviorFlags.insert(ScriptFlag::CanBeNPCBeethro);
 	}
 
 	if (bCanFluffTrack(wResolvedIdentity)) {

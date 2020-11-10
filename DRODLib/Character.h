@@ -92,6 +92,7 @@ public:
 	IMPLEMENT_CLONE(CMonster, CCharacter);
 	virtual CMonster* Replicate() const;
 
+	bool           CanBeNPCBeethro() const;
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
 	virtual bool   CanPressPressurePlates() const { return HasBehavior(ScriptFlag::ActivatePlates); }
 	virtual bool   CanPushObjects() const;
@@ -167,7 +168,7 @@ public:
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
 	virtual bool   IsSwimming() const;
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
-	virtual bool   IsTarget() const { return this->IsVisible() && this->IsMonsterTarget(); }
+	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const bool bExpectCloseParen=false);

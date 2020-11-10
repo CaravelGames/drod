@@ -145,7 +145,7 @@ namespace ScriptFlag
 		MovePlatforms = 4,
 		MonsterAttackable = 5,
 		MonsterTarget = 6,
-		MonsterTargetIfPlayerIs = 7,
+		MonsterTargetWhenPlayerIsTarget = 7,
 		AllyTarget = 8,
 		PuffTarget = 9,
 		SwordDamageImmune = 10,
@@ -162,7 +162,8 @@ namespace ScriptFlag
 		PuffImmune = 21,
 		ActivatePlates = 22,
 		PushMonsters = 23,
-		FatalPushImmune = 24
+		FatalPushImmune = 24,
+		CanBeNPCBeethro = 25
 	};
 
 	enum DisplayFilter
