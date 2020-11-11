@@ -782,8 +782,6 @@ bool CGameScreen::LoadNewGame(
 	this->pCurrentGame = g_pTheDB->GetNewCurrentGame(dwHoldID, this->sCueEvents);
 	if (!this->pCurrentGame) return false;
 
-	this->pCurrentGame->AddRoomsPreviouslyExploredByPlayerToMap();
-
 	//Set current game for widgets.
 	if (!this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame) ||
 			!this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame))
@@ -5215,6 +5213,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
 */
 			const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
+			const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
 
 			delete g_pPredictedCombat;
 			g_pPredictedCombat = NULL;
@@ -5226,10 +5225,13 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 			//Refresh map.
 			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			if (nowMappedRooms.size() != mappedRooms.size())
+			if (nowMappedRooms.size() != mappedRooms.size() ||
+				roomPreviews.containsAny(mappedRooms)) //preview state could have changed for these rooms
+			{
 				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-			else
+			} else {
 				this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
+			}
 			this->pMapWidget->RequestPaint();
 
 			SetSignTextToCurrentRoom();
@@ -8356,6 +8358,7 @@ void CGameScreen::UndoMove()
 
 	const CIDSet exploredRooms = this->pCurrentGame->GetExploredRooms();
 	const CIDSet mappedRooms = this->pCurrentGame->GetMappedRooms();
+	const CIDSet previewedRooms = this->pCurrentGame->GetPreviouslyExploredRooms();
 
 	//If undo to turn is set to the current turn,
 	//then just undo one turn.
@@ -8423,8 +8426,11 @@ void CGameScreen::UndoMove()
 	//Refresh map if something changed by undoing.
 	const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
 	const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
-	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms)
+	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms ||
+		previewedRooms.containsAny(exploredRooms)) //these may have changed
+	{
 		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+	}
 
 	SetGameAmbience(true);
 	AmbientSoundSetup();
