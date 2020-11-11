@@ -78,7 +78,6 @@ protected:
 
 	virtual void   HandleMouseDown(const SDL_MouseButtonEvent &Button);
 	virtual void   HandleKeyDown(const SDL_KeyboardEvent &Key);
-	void           SetDarkenedRooms();
  
 private:
 	void MergeHoldData(CDbHold *pHold, CDbRoom *pRoom, ENTRANCE_VECTOR& entrances,
@@ -88,8 +87,6 @@ private:
 			const bool bDarkened,
 			const bool bSecret,
 			const bool bHasMonsters, const bool bHasItems, const bool bHasClosedDoors);
-//			const bool bRoomConquered,	const bool bLevelComplete,
-//			const bool bRoomRequired, const bool bPendingExit);
 	UINT           GetRoomShowHeight() const;
 	UINT           GetRoomShowWidth() const;
 	inline Uint8 *    GetRoomStart(const UINT dwRoomX, const UINT dwRoomY);
@@ -98,13 +95,13 @@ private:
 	bool           IsAdjacentToValidRoom(const UINT dwRoomX, const UINT dwRoomY);
 	inline void       LockMapSurface();
 	void           MarkEntrancesAsNotMain(CDbHold *pHold, CIDSet &entranceIDs) const;
+	void           SetNoDetailRooms();
 	inline void       UnlockMapSurface();
 	void           UpdateMapSurface(const bool bRefreshSelectedRoom = false);
 
 	UINT             dwLevelID;
 	CIDSet               ExploredRooms, MappedRooms;
-//	CIDSet               ConqueredRooms;
-	CIDSet               DarkenedRooms;
+	CIDSet               NoDetailRooms, PreviewedRooms;
 	bool              bIsLevelComplete;
 
 	const CCurrentGame * pCurrentGame;  //to show map of a game in progress
@@ -118,7 +115,6 @@ private:
 	UINT              wLastSrcX, wLastSrcY;
 	UINT              wBorderW, wBorderH;
 	bool              bScrollHorizontal, bScrollVertical;
-//	bool              bPendingExitDrawn;
 	UINT              sizeMultiplier; //to show room areas larger
 
 	bool              bEditing;   //whether level editor is being used
