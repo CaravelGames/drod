@@ -3282,9 +3282,7 @@ void CCurrentGame::ProcessSwordHit(
 
 	//Did sword hit a monster?
 	CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wSX, wSY);
-	if (pMonster && //Yes.
-			//don't allow critical character kill on room entrance
-			(this->wTurnNo || !this->pRoom->IsMonsterOfTypeAt(M_HALPH, wSX, wSY, true)))
+	if (pMonster)
 	{
 		pMonster = pMonster->GetOwningMonster();
 
