@@ -302,6 +302,7 @@ public:
 	void     ProcessMonsterDefeat(CCueEvents& CueEvents,
 			CMonster* pDefeatedMonster, const UINT wSX, const UINT wSY,
 			const UINT wSwordMovement);
+	void     ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents);
 	void     ProcessMoveFreeScripts(CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessScripts(int nCommand, CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessSwordHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
