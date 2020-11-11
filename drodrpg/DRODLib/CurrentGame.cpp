@@ -2736,10 +2736,19 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 				//This fight was performed to remove this tarstuff tile.
 				this->simulSwordHits.push_back(CMoveCoord(this->pCombat->wX, this->pCombat->wY, NO_ORIENTATION));
 
-				//Reset the tarstuff mother's HP back to full to allow attacking another tile.
-				ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
-				ASSERT(!pDefeatedMonster->getHP());
-				pDefeatedMonster->SetHP();
+				if (pDefeatedMonster->wType == M_CHARACTER)
+				{
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+					pCharacter->Defeat();
+					ProcessNPCDefeat(pCharacter, CueEvents);
+					//NPC script is responsible for what happens after tarstuff defeat,
+					//e.g., resetting HP for subsequent tarstuff battles.
+				} else {
+					//Reset the tarstuff mother's HP back to full to allow attacking another tile.
+					ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
+					ASSERT(!pDefeatedMonster->getHP());
+					pDefeatedMonster->SetHP();
+				}
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
@@ -2793,20 +2802,27 @@ void CCurrentGame::ProcessMonsterDefeat(
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 		}
 	} else {
-		//If an NPC is defeated but not killed, execute any script commands
-		//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+		//An (NPC) enemy is defeated but not killed.
 		if (pDefeatedMonster->wType == M_CHARACTER)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
-			this->bExecuteNoMoveCommands = true;
-			pCharacter->ProcessAfterDefeat(CueEvents);
-			this->bExecuteNoMoveCommands = false;
-			CueEvents.Add(CID_NPC_Defeated, pDefeatedMonster);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+			ProcessNPCDefeat(pCharacter, CueEvents);
 		}
 	}
 
 	//Each time a monster is fought, briar roots expand.
 	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+//When an NPC is defeated but not killed, execute any script commands
+//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents)
+{
+	this->bExecuteNoMoveCommands = true;
+	pDefeatedNPC->ProcessAfterDefeat(CueEvents);
+	this->bExecuteNoMoveCommands = false;
+	CueEvents.Add(CID_NPC_Defeated, pDefeatedNPC);
 }
 
 //*****************************************************************************
@@ -3347,9 +3363,10 @@ void CCurrentGame::ProcessSwordHit(
 				//then it is considered a part of the mother,
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
+				//Alternative logic applies to NPCs acting as mothers.
 				CMonster *pMother = NULL;
 
-				//Currently applies to player or mimics only.
+				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
 					pMother = this->pRoom->GetMotherConnectedToTarTile(wSX, wSY);
 				if (pMother && !IsFighting(pMother))
@@ -3364,7 +3381,7 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_BOMB:
-		   //Explode bomb immediately (could damage player).
+			//Explode bomb immediately (could damage player).
 			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
 			{
 				CCoordStack bomb(wSX, wSY);
