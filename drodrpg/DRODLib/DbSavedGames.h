@@ -170,6 +170,8 @@ public:
 protected:
 	void     Clear(const bool bNewGame=true);
 	void     ClearDeadMonsters();
+	vector<ExploredRoom*> GetCopyOfExploredRooms(const vector<ExploredRoom*>& rooms);
+	void     ReplaceExploredRooms(vector<ExploredRoom*>& rooms);
 
 private:
 	void     DeleteExploredRooms();

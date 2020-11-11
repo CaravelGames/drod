@@ -1542,9 +1542,7 @@ bool CDbSavedGame::SetMembers(
 
 	//object members
 	DeleteExploredRooms();
-	for (vector<ExploredRoom*>::const_iterator room=Src.ExploredRooms.begin();
-			room!=Src.ExploredRooms.end(); ++room)
-		this->ExploredRooms.push_back(new ExploredRoom(*(*room)));
+	this->ExploredRooms = GetCopyOfExploredRooms(Src.ExploredRooms);
 
 	//Monster data
 	deleteMonsterList(this->pMonsterList);
@@ -1564,6 +1562,26 @@ bool CDbSavedGame::SetMembers(
 	this->checksumStr = Src.checksumStr;
 
 	return true;
+}
+
+//*******************************************************************************
+//Returns: a vector of pointers to a deep copy of explored room objects
+vector<ExploredRoom*> CDbSavedGame::GetCopyOfExploredRooms(const vector<ExploredRoom*>& rooms)
+{
+	vector<ExploredRoom*> duplicate;
+	for (vector<ExploredRoom*>::const_iterator room = rooms.begin();
+		room != rooms.end(); ++room)
+		duplicate.push_back(new ExploredRoom(*(*room)));
+	return duplicate;
+}
+
+//Reassigns pointers in source object.
+//'rooms' is cleared to preclude caller destroying transferred objects
+void CDbSavedGame::ReplaceExploredRooms(vector<ExploredRoom*>& rooms) //(in/out) objects are reassigned
+{
+	DeleteExploredRooms();
+	this->ExploredRooms = rooms;
+	rooms.clear();
 }
 
 //
