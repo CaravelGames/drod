@@ -553,8 +553,12 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	//Otherwise, we must store the state that game was in on room entrance,
 	//so when moves for the current room are replayed, the current state is recreated.
 	CDbPackedVars _stats = this->stats;
-	if (!bScoreSubmission)
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+	if (!bScoreSubmission) {
 		this->stats = this->statsAtRoomStart;
+	}
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	if (eSaveType == ST_Autosave)
 	{
@@ -571,6 +575,7 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	Update();
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -3585,6 +3590,8 @@ void CCurrentGame::QuickSave()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
 	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
 		this->PreviouslyExploredRooms);
@@ -3613,6 +3620,7 @@ void CCurrentGame::QuickSave()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -3633,7 +3641,11 @@ void CCurrentGame::SaveToContinue()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	WSTRING locText;
 	locText += this->pLevel->NameText;
@@ -3660,6 +3672,7 @@ void CCurrentGame::SaveToContinue()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 
 	/*
 	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
@@ -3691,85 +3704,7 @@ void CCurrentGame::SaveToEndHold()
 	Update();
 }
 
-//*****************************************************************************
 /*
-void CCurrentGame::SaveToLevelBegin()
-//Saves the current game to the level-begin slot for this level.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of level entry room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_LevelBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this level?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByLevelBegin(
-			this->pRoom->dwLevelID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
-//-****************************************************************************
-void CCurrentGame::SaveToRoomBegin()
-//Saves the current game to the begin-room slot for this room.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_RoomBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this room?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByRoomBegin(
-			this->pRoom->dwRoomID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
 //-****************************************************************************
 void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
 //Set the amount of move calculation time to elapse between game state snapshots.
