@@ -40,9 +40,6 @@ protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 private:
-	bool bFirst;
-	Uint8 nOpacity;
-
 	static Uint8 UpdateStaticState();
 };
 
