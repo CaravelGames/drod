@@ -1656,17 +1656,18 @@ bool CCurrentGame::LoadFromSavedGame(
 	//Put room in correct beginning state and get cue events for the 
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
-	if (bAtRoomStart)
+
+	AddRoomsPreviouslyExploredByPlayerToMap(); //for front-end, to display preview of rooms explored in other play sessions
+
+	//Cue events coming from first step into the room.
+	SetMembersAfterRoomLoad(CueEvents, false);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+	if (!bAtRoomStart)
 	{
-		//Cue events come from first step into the room.
-		SetMembersAfterRoomLoad(CueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(CueEvents);
-	} else {
-		//Cue events come from processing of last command below.
 		//Ignore cue events from first step into the room.
-		CCueEvents IgnoredCueEvents;
-		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
+		CueEvents.Clear();
+
+		//Instead, populate cue events coming from processing of last command below.
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
@@ -2735,10 +2736,19 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 				//This fight was performed to remove this tarstuff tile.
 				this->simulSwordHits.push_back(CMoveCoord(this->pCombat->wX, this->pCombat->wY, NO_ORIENTATION));
 
-				//Reset the tarstuff mother's HP back to full to allow attacking another tile.
-				ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
-				ASSERT(!pDefeatedMonster->getHP());
-				pDefeatedMonster->SetHP();
+				if (pDefeatedMonster->wType == M_CHARACTER)
+				{
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+					pCharacter->Defeat();
+					ProcessNPCDefeat(pCharacter, CueEvents);
+					//NPC script is responsible for what happens after tarstuff defeat,
+					//e.g., resetting HP for subsequent tarstuff battles.
+				} else {
+					//Reset the tarstuff mother's HP back to full to allow attacking another tile.
+					ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
+					ASSERT(!pDefeatedMonster->getHP());
+					pDefeatedMonster->SetHP();
+				}
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
@@ -2792,20 +2802,27 @@ void CCurrentGame::ProcessMonsterDefeat(
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 		}
 	} else {
-		//If an NPC is defeated but not killed, execute any script commands
-		//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+		//An (NPC) enemy is defeated but not killed.
 		if (pDefeatedMonster->wType == M_CHARACTER)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
-			this->bExecuteNoMoveCommands = true;
-			pCharacter->ProcessAfterDefeat(CueEvents);
-			this->bExecuteNoMoveCommands = false;
-			CueEvents.Add(CID_NPC_Defeated, pDefeatedMonster);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+			ProcessNPCDefeat(pCharacter, CueEvents);
 		}
 	}
 
 	//Each time a monster is fought, briar roots expand.
 	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+//When an NPC is defeated but not killed, execute any script commands
+//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents)
+{
+	this->bExecuteNoMoveCommands = true;
+	pDefeatedNPC->ProcessAfterDefeat(CueEvents);
+	this->bExecuteNoMoveCommands = false;
+	CueEvents.Add(CID_NPC_Defeated, pDefeatedNPC);
 }
 
 //*****************************************************************************
@@ -3265,9 +3282,7 @@ void CCurrentGame::ProcessSwordHit(
 
 	//Did sword hit a monster?
 	CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wSX, wSY);
-	if (pMonster && //Yes.
-			//don't allow critical character kill on room entrance
-			(this->wTurnNo || !this->pRoom->IsMonsterOfTypeAt(M_HALPH, wSX, wSY, true)))
+	if (pMonster)
 	{
 		pMonster = pMonster->GetOwningMonster();
 
@@ -3346,9 +3361,10 @@ void CCurrentGame::ProcessSwordHit(
 				//then it is considered a part of the mother,
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
+				//Alternative logic applies to NPCs acting as mothers.
 				CMonster *pMother = NULL;
 
-				//Currently applies to player or mimics only.
+				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
 					pMother = this->pRoom->GetMotherConnectedToTarTile(wSX, wSY);
 				if (pMother && !IsFighting(pMother))
@@ -3363,7 +3379,7 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_BOMB:
-		   //Explode bomb immediately (could damage player).
+			//Explode bomb immediately (could damage player).
 			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
 			{
 				CCoordStack bomb(wSX, wSY);
@@ -6145,9 +6161,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 	
 	room.mapMarker = pExpRoom->mapMarker;
 
-	pExpRoom->bSave = true; //previewed room now included in save data
+	const bool bWasRoomPreview = !pExpRoom->bSave;
+	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly)
+	if (pExpRoom->bMapOnly || bWasRoomPreview)
 	{
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.

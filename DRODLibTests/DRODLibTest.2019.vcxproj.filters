@@ -228,6 +228,9 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Imperative_Vulnerable_Invulnerable.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Scripting\ImperativeFriendly.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>

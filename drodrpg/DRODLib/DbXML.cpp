@@ -694,53 +694,6 @@ bool CDbXML::UpdateLocalIDs()
 						case ST_Unknown:
 							bSkipRecord = true;	//these types always get skipped
 						break;
-/*
-						case ST_LevelBegin:
-						{
-							const UINT dwLevelID = CDbRooms::GetLevelIDForRoom(pSavedGame->dwRoomID);
-							if (!dwLevelID) {bSkipRecord = true; break;}
-							const UINT dwSavedGameID = g_pTheDB->SavedGames.FindByLevelBegin(dwLevelID);
-							if (dwSavedGameID && dwSavedGameID != pSavedGame->dwSavedGameID)
-								bSkipRecord = true;	//a saved game already exists here -- skip
-						}
-						break;
-						case ST_RoomBegin:
-						{
-							const UINT dwSavedGameID = g_pTheDB->
-									SavedGames.FindByRoomBegin(pSavedGame->dwRoomID);
-							if (dwSavedGameID && dwSavedGameID != pSavedGame->dwSavedGameID)
-								bSkipRecord = true;	//a saved game already exists here -- skip
-						}
-						break;
-						case ST_Checkpoint:
-						{
-							const UINT dwSavedGameID = g_pTheDB->
-									SavedGames.FindByCheckpoint(pSavedGame->dwRoomID,
-									pSavedGame->wCheckpointX, pSavedGame->wCheckpointY);
-							if (dwSavedGameID && dwSavedGameID != pSavedGame->dwSavedGameID)
-								bSkipRecord = true;	//a saved game already exists here -- skip
-							else
-							{
-								//Verify saved game's integrity for current room version.
-								CCueEvents Ignored;
-								CCurrentGame *pCurrentGame = g_pTheDB->GetSavedCurrentGame(
-										dwSavedGameID, Ignored, true,
-										true); //don't save to DB during playback
-								if (!pCurrentGame)
-								{
-									//Saved game can't even be loaded -- it was probably recorded in
-									//a room that no longer exists.
-									bSkipRecord = true;
-								} else {
-									if (!pCurrentGame->PlayCommands(
-											pCurrentGame->Commands.Count(), Ignored, true))
-										pCurrentGame->Update(); //truncate commands that can't be played back
-									delete pCurrentGame;
-								}
-							}
-						}
-						break;
-*/
 						case ST_Demo:		//when importing a player over itself, import demo saves as usual
 						{
 							const UINT dwSavedGameID = CDbSavedGames::GetSavedGameID(

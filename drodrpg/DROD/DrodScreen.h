@@ -118,7 +118,7 @@ protected:
 			const UINT extensionTypes);
 	UINT          SelectFiles(WSTRING& filePath, vector<WSTRING>& fileName,
 			const MESSAGE_ID messagePromptID, const UINT extensionTypes);
-	void          ShowChatHistory(CEntranceSelectDialogWidget *pBox);
+	virtual void  ShowChatHistory(CEntranceSelectDialogWidget *pBox);
 	UINT          ShowOkMessage(const MESSAGE_ID dwMessageID);
 	UINT          ShowOkMessage(const WCHAR *pwczText);
 	void           ShowStatusMessage(const MESSAGE_ID dwMessageID);
