@@ -68,6 +68,9 @@ void CZombieGazeEffect::SharedStateUpdate(const UINT wDeltaTime)
 	static bool bMakeBrighter = false;
 	static Uint32 lastUpdatePresentCount = 0;
 
+	if (wDeltaTime == 0)
+		CZombieGazeEffect::brightness = 255;
+
 	// Already updated this frame
 	if (lastUpdatePresentCount == CScreen::dwPresentsCount)
 		return;
