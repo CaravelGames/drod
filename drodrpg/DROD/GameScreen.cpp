@@ -3077,13 +3077,13 @@ void CGameScreen::PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEv
 	switch (wAppearance)
 	{
 		case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_OOF; break;
-		case M_NEATHER: eSoundID = SEID_NEATHER_OOF; break;
+		case M_NEATHER:
+		case M_HALPH: eSoundID = SEID_HALPH_OOF; break;
 		case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_OOF; break;
 		case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
 			eSoundID = SEID_TAR_OOF; break;
 		case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_OOF; break;
-		case M_HALPH: eSoundID = SEID_HALPH_OOF; break;
 		case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 		case M_CITIZEN1: case M_CITIZEN2:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
@@ -3533,7 +3533,8 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 				{
 					case M_CLONE: case M_DECOY: case M_MIMIC:
 					case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_HI; break;
-					case M_NEATHER: eSoundID = SEID_NLAUGHING; break;
+					case M_NEATHER:
+					case M_HALPH: eSoundID = SEID_HALPHENTERED; break;
 					case M_EYE: case M_MADEYE: eSoundID = SEID_EVILEYEWOKE; break;
 					case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_HI; break;
 					case M_TARBABY: case M_MUDBABY: case M_GELBABY:
@@ -3546,7 +3547,6 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 					case M_ROCKGOLEM: case M_ROCKGIANT:
 						eSoundID = SEID_ROCK_HI; break;
 					case M_WUBBA: eSoundID = SEID_WUBBA; break;
-					case M_HALPH: eSoundID = SEID_HALPHENTERED; break;
 					case M_SLAYER: eSoundID = SEID_SLAYERCOMBAT; break;
 					case M_ROACH: case M_QROACH: case M_WWING: case M_REGG:
 					case M_SERPENT: case M_SPIDER: case M_SERPENTG: case M_SERPENTB:
@@ -4957,7 +4957,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		switch (player.wAppearance)
 		{
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_DIE; break;
-			case M_NEATHER: eSoundID = SEID_NEATHER_SCARED; break;
+			case M_NEATHER:
+			case M_HALPH: eSoundID = SEID_HALPH_DIE; break;
 			case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_DIE; break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 			case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
@@ -4972,7 +4973,6 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				eSoundID = SEID_WOM_DIE; break;
 			case M_STALWART: eSoundID = SEID_STALWART_DIE; break;
 			case M_WUBBA: eSoundID = SEID_WUBBA; break;
-			case M_HALPH: eSoundID = SEID_HALPH_DIE; break;
 			case M_SLAYER: eSoundID = SEID_SLAYERDIE; break;
 			default: eSoundID = SEID_MON_OOF; break;
 		}
@@ -5485,13 +5485,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		switch (player.wAppearance)
 		{
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_SCARED; break;
-			case M_NEATHER: eSoundID = SEID_NEATHER_SCARED; break;
+			case M_NEATHER:
+			case M_HALPH: eSoundID = SEID_HALPH_SCARED; break;
 			case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_SCARED; break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 			case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
 				eSoundID = SEID_TAR_SCARED; break;
 			case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_SCARED; break;
-			case M_HALPH: eSoundID = SEID_HALPH_SCARED; break;
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
@@ -5509,44 +5509,6 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			PlaySoundEffect(eSoundID);
 	}
 
-/*
-	else if (CueEvents.HasOccurred(CID_AllMonstersKilled))
-	{
-		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
-		this->pMapWidget->RequestPaint();
-		if (!CueEvents.HasOccurred(CID_MonsterExitsRoom)) //Beethro isn't happy about the 'Neather getting away.
-		{
-			//Beethro won't laugh multiple times if room is cleared repeatedly.
-//			if (!this->bRoomClearedOnce)
-			{
-//				this->bRoomClearedOnce = true;
-				UINT eSoundID = SEID_NONE;
-				switch (player.wAppearance)
-				{
-					case M_CLONE: case M_DECOY: case M_MIMIC:
-					case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_CLEAR; break;
-					case M_NEATHER: eSoundID = SEID_NLAUGHING; break;
-					case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_CLEAR; break;
-					case M_TARBABY: case M_MUDBABY: case M_GELBABY:
-					case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
-						eSoundID = SEID_SPLAT; break;
-					case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_CLEAR; break;
-					case M_CITIZEN1: case M_CITIZEN2: case M_GUARD: case M_STALWART:
-					case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-					case M_CITIZEN: eSoundID = SEID_CIT_CLEAR; break;
-					case M_WUBBA: eSoundID = SEID_WUBBA; break;
-					case M_NEGOTIATOR: case M_INSTRUCTOR:
-					case M_CITIZEN3: case M_CITIZEN4:
-						eSoundID = SEID_WOM_CLEAR; break;
-					case M_HALPH: case M_SLAYER: break;
-					default: eSoundID = SEID_MON_CLEAR; break;
-				}
-				if (eSoundID != (UINT)SEID_NONE)
-					PlaySoundEffect(eSoundID);
-			}
-		}
-	}
-*/
 	if (CueEvents.HasOccurred(CID_SwordsmanTired))
 	{
 		if (bIsHuman(player.wAppearance))
