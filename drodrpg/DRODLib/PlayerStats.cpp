@@ -8,28 +8,33 @@ using namespace ScriptVars;
 
 //*****************************************************************************
 //Shorter forms of the user-visible natural language var names.
-//Used to pack and unpack the vars into a CDbPackedVars object.
+//Used to pack and unpack the global game vars into a CDbPackedVars object.
+//DO NOT CHANGE these names
 const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 {
 	"_HP", "_ATK", "_DEF", "_GOLD",
 	"_YKEY", "_GKEY", "_BKEY",
 	"_SWORD", "_SHIELD", "_SPEED",
-	"_MyHP", "_MyATK", "_MyDEF", "_MyGOLD", "_MyColor",
+	"", "", "", "", "", //unused here: //"_MyHP", "_MyATK", "_MyDEF", "_MyGOLD", "_MyColor",
 	"_XP",
 	"_MonHPMult", "_MonATKMult", "_MonDEFMult", "_MonGRMult",
-	"_ItemMult", "_MySword", "_SKEY",
-	"_X", "_Y", "_O",
-	"_MyX", "_MyY", "_MyO",
-	"_ACCESSORY", "_MyXP", "_MonXPMult",
+	"_ItemMult", "", //"_MySword",
+	"_SKEY",
+	"", "", "", //"_X", "_Y", "_O",
+	"", "", "", //"_MyX", "_MyY", "_MyO",
+	"_ACCESSORY", "", //"_MyXP",
+	"_MonXPMult",
 	"_ItemHPMult", "_ItemATKMult", "_ItemDEFMult", "_ItemGRMult",
 	"_TotalMoves", "_TotalTime",
-	"_MyScriptX", "_MyScriptY", "_MyScriptW", "_MyScriptH", "_MyScriptF",
+	"", "", "", "", "", //"_MyScriptX", "_MyScriptY", "_MyScriptW", "_MyScriptH", "_MyScriptF",
 	"_HotTile", "_Explosion",
 	"_PRID", "_PX", "_PY", "_PO", //prior location before level entrance warp
-	"_EN_HP", "_EN_ATK", "_EN_DEF", "_EN_GOLD", "_EN_XP", //enemy
-	"_WeaponATK", "_WeaponDEF", "_WeaponGR", //equipment
-	"_ArmorATK", "_ArmorDEF", "_ArmorGR",
-	"_AccessATK", "_AccessDEF", "_AccessGR"
+	"", "", "", "", "", //"_EN_HP", "_EN_ATK", "_EN_DEF", "_EN_GOLD", "_EN_XP", //enemy
+	"", "", "", //"_WeaponATK", "_WeaponDEF", "_WeaponGR", //equipment
+	"", "", "", //"_ArmorATK", "_ArmorDEF", "_ArmorGR",
+	"", "", "", //"_AccessATK", "_AccessDEF", "_AccessGR",
+	"", "", "", "", "", //"_MyMonsterHPMult", "_RoomATKMult", "_RoomDEFMult", "_RoomGRMult", "_RoomXPMult",
+	"", "", "", "", "" //"_RoomHPMult", "_RoomATKMult", "_RoomDEFMult", "_RoomGRMult", "_RoomXPMult"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -323,11 +328,28 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 }
 
 //***************************************************************************************
+//Returns: true if i corresponds to a case that is used in Pack/Unpack below
+bool PlayerStats::IsGlobalStatIndex(UINT i)
+{
+	return
+		i < 10 ||
+		(i >= 15 && i <= 20) ||
+		i == 22 ||
+		i == 29 ||
+		(i >= 31 && i <= 37) ||
+		(i >= 43 && i <= 48)
+		;
+}
+
+//***************************************************************************************
 void PlayerStats::Pack(CDbPackedVars& stats)
-//Writes player RPG stats to the stats buffer.
+//Writes player (and global) RPG stats to the stats buffer.
 {
 	for (UINT i=PredefinedVarCount; i--; )
 	{
+		if (!IsGlobalStatIndex(i))
+			continue; //these values are not player/global stats
+
 		UINT val;
 		switch (i)
 		{
@@ -372,39 +394,28 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 47: val = this->priorY; break;
 			case 48: val = this->priorO; break;
 
-			case 10: case 11: case 12: case 13: case 14:
-			case 21: case 30:
-			case 38: case 39: case 40: case 41: case 42: //monster vars, not player stats
-			case 23: case 24: case 25: case 26: case 27: case 28: break; //monster and player coords
-			case 49: case 50: case 51: case 52: case 53: //enemy stats
-			case 54: case 55: case 56: //equipment
-			case 57: case 58: case 59: case 60: case 61: case 62:
-			case 63: case 64: case 65: case 66: case 67: // local monster stat modifiers
-			case 68: case 69: case 70: case 71: case 72: // local item value modifiers
-				break;
-
-			default: ASSERT(!"Bad var"); break;
+			default:
+				ASSERT(!"Not a global var index");
+				val = UINT(0); //should not be written
+			break;
 		}
 
-		if ((i >= 10 && i <= 14) || i == 21 || (i >= 23 && i <= 28) || i == 30 || (i >= 38 && i <= 42) ||
-			 (i >= 49 && i <= 72))
-			continue; //these are not player stats
-
+		ASSERT(predefinedVarTexts[i][0] != 0); //not empty string
 		stats.SetVar(predefinedVarTexts[i], val);
 	}
 }
 
 //***************************************************************************************
 void PlayerStats::Unpack(CDbPackedVars& stats)
-//Reads player RPG stats from the stats buffer.
+//Reads player (and global) RPG stats from the stats buffer.
 {
 	for (UINT i=PredefinedVarCount; i--; )
 	{
-		if ((i >= 10 && i <= 14) || i == 21 || (i >= 23 && i <= 28) || i == 30 || (i >= 38 && i <= 42) ||
-			 (i >= 49 && i <= 72))
-			continue; //these are not player stats
+		if (!IsGlobalStatIndex(i))
+			continue; //these values are not player/global stats
 
-		UINT val = stats.GetVar(predefinedVarTexts[i], UINT(0));
+		ASSERT(predefinedVarTexts[i][0] != 0); //not empty string
+		const UINT val = stats.GetVar(predefinedVarTexts[i], UINT(0));
 		switch (i)
 		{
 			//These case values correspond to the ordering of values in the 'Predefined' enumeration,
@@ -447,18 +458,6 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 46: this->priorX = val; break;
 			case 47: this->priorY = val; break;
 			case 48: this->priorO = val; break;
-
-			case 10: case 11: case 12: case 13: case 14:
-			case 21: case 30:
-			case 38: case 39: case 40: case 41: case 42: //monster vars, not player stats
-			case 23: case 24: case 25: case 26: case 27: case 28: break; //monster and player coords
-			case 49: case 50: case 51: case 52: case 53: //enemy stats
-			case 54: case 55: case 56: //equipment
-			case 57: case 58: case 59: case 60: case 61: case 62:
-			case 63: case 64: case 65: case 66: case 67: // local monster stat modifiers
-			case 68: case 69: case 70: case 71: case 72: // local item value modifiers
-				ASSERT(!"Case should be skipped above");
-				break;
 
 			default: ASSERT(!"Bad var"); break;
 		}

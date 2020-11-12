@@ -50,6 +50,7 @@ namespace ScriptVars
 	};
 
 	//Predefined global and relative game state vars, accessed through these key values.
+	//DO NOT CHANGE
 	enum Predefined
 	{
 		P_NoVar  =  0,
@@ -155,9 +156,6 @@ public:
 	PlayerStats() {clear();}
 	virtual ~PlayerStats() {}
 
-	void Pack(CDbPackedVars& stats);
-	void Unpack(CDbPackedVars& stats);
-
 	virtual void clear() {
 		HP = 0;
 		ATK = DEF = 0;
@@ -178,6 +176,10 @@ public:
 	}
 	UINT getVar(const ScriptVars::Predefined var) const;
 	void setVar(const ScriptVars::Predefined var, const UINT val);
+
+	static bool IsGlobalStatIndex(UINT i);
+	void Pack(CDbPackedVars& stats);
+	void Unpack(CDbPackedVars& stats);
 
 //protected:
 	UINT HP;
