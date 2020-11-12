@@ -35,7 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>drod</ProjectName>
+    <ProjectName>DROD</ProjectName>
     <ProjectGuid>{3FDF4563-C819-4E05-8958-E3D652C5B432}</ProjectGuid>
     <RootNamespace>drod</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>

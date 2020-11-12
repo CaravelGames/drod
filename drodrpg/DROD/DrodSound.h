@@ -162,8 +162,8 @@ enum SEID
 
 	SEID_MON_OOF,    //monster (generic)
 
-	SEID_NEATHER_SCARED, //'Neather
-	SEID_NEATHER_OOF,
+//	SEID_NEATHER_SCARED, //'Neather
+//	SEID_NEATHER_OOF,
 
 	SEID_ROCK_DIE,   //rock golem
 	SEID_ROCK_OOF,

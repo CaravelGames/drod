@@ -1277,7 +1277,7 @@ void CEditRoomScreen::ClickRoom()
 		case ES_LONGMONSTER:
 		{
 			//Place a long monster segment if there are no obstacles in the way.
-			PlotType plot = PlotMonsterSegment();
+			const PlotType plot = PlotLongMonsterSegment();
 			switch (plot)
 			{
 				case PLOT_NOTHING:
@@ -2652,8 +2652,10 @@ void CEditRoomScreen::OnMouseMotion(
 		switch (this->eState)
 		{
 			case ES_LONGMONSTER:
+			{
+				const UINT monster_type = this->wSelectedObject - M_OFFSET;
 				//Plot pending long monster segment.
-				if (!bIsSerpent(this->wSelectedObject - M_OFFSET))
+				if (!bIsSerpent(monster_type))
 				{
 					//Remove part of monster placed so far.
 					if (this->pLongMonster)
@@ -2664,13 +2666,13 @@ void CEditRoomScreen::OnMouseMotion(
 				}
 
 				//Keep monster type synchronized with the current (valid) menu choice.
-				if (this->pLongMonster && this->pLongMonster->wType != this->wSelectedObject - M_OFFSET)
+				if (this->pLongMonster && this->pLongMonster->wType != monster_type)
 				{
-					this->pLongMonster->wType = this->wSelectedObject - M_OFFSET;
+					this->pLongMonster->wType = monster_type;
 					this->pRoomWidget->DirtyRoom();
 				}
-				this->pRoomWidget->AddMonsterSegmentEffect(this->wSelectedObject -
-						M_OFFSET);
+				this->pRoomWidget->AddMonsterSegmentEffect(this->pLongMonster, monster_type);
+			}
 			break;
 			case ES_PASTING:
 				HighlightPendingPaste();
@@ -2718,7 +2720,8 @@ void CEditRoomScreen::OnMouseUp(
 {
 	//Any plotting is now finished.
 	this->pRoomWidget->RemoveLastLayerEffectsOfType(EPENDINGPLOT);
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
+	if (this->eState != ES_LONGMONSTER) //possibly starting to place serpent
+		this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
 }
 
 //*****************************************************************************
@@ -3468,61 +3471,19 @@ void CEditRoomScreen::EditObjects()
 	this->pRoomWidget->IsLevelStartAt(wX, wY, bSwordsmanAt, bSwordAt);
 	if (bSwordsmanAt)
 	{
-		//Edit the level entrance.
-		CEntranceData *pEntrance = this->pHold->GetEntranceAt(this->pRoom->dwRoomID, wX, wY);
-		ASSERT(pEntrance);
-		WSTRING wstrDescription = static_cast<WSTRING>(pEntrance->DescriptionText);
-		bool bMainEntrance = pEntrance->bIsMainEntrance;
-
-		if (!EditLevelEntrance(wstrDescription, bMainEntrance, pEntrance->eShowDescription))
-			return;
-
-		Changing(Hold); //add current hold entrances state to undo list
-
-		//Level entrance orientation changed?
-		const bool bChangedEntranceOrientation = pEntrance->wO != this->wO &&
-				this->wSelectedObject == T_SWORDSMAN; //only rotate when entrance is selected
-		if (bChangedEntranceOrientation)
-		{
-			pEntrance->wO = this->wO;
-			GetLevelEntrancesInRoom();
-		}
-
-		if (!pEntrance->bIsMainEntrance && bMainEntrance)
-		{
-			//This entrance is now the new main level entrance.
-			CEntranceData *pOldMainEntrance = this->pHold->GetMainEntranceForLevel(
-					this->pRoom->dwLevelID);
-			ASSERT(pOldMainEntrance);
-			if (pOldMainEntrance)
-				pOldMainEntrance->bIsMainEntrance = false;
-			pEntrance->bIsMainEntrance = true;
-
-			this->pLevel->SetNewStartingRoomID(this->pRoom->dwRoomID);
-
-			//Update sign to reflect new room coords origin (before anything is saved).
-			SetSignTextToCurrentRoom(true);
-			PaintSign();
-			UpdateRect();
-		}
-		pEntrance->DescriptionText = wstrDescription.c_str();
+		EditLevelEntrance(wX, wY);
 		return;
 	}
 
 	//Edit a monster.
 	if (pMonster && this->pTabbedMenu->GetSelectedTab() == MONSTER_TAB)
 	{
-		//Get parent object.
-		if (pMonster->IsPiece())
-		{
-			pMonster = pMonster->GetOwningMonster();
-			ASSERT(pMonster);
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		//Is a serpent here?
-		if (bIsSerpent(pMonster->wType))
+		if (pMonster->IsLongMonster())
 		{
-			EditLongMonster(pMonster);
+			EditSerpent(pMonster);
 			return;
 		}
 
@@ -3659,6 +3620,51 @@ void CEditRoomScreen::EditObjects()
 }
 
 //*****************************************************************************
+void CEditRoomScreen::EditLevelEntrance(const UINT wX, const UINT wY)
+{
+	CEntranceData* pEntrance = this->pHold->GetEntranceAt(this->pRoom->dwRoomID, wX, wY);
+	ASSERT(pEntrance);
+	WSTRING wstrDescription = static_cast<WSTRING>(pEntrance->DescriptionText);
+	bool bMainEntrance = pEntrance->bIsMainEntrance;
+	CEntranceData::DescriptionDisplay showDescription = pEntrance->eShowDescription;
+
+	if (!EditLevelEntrance(wstrDescription, bMainEntrance, showDescription))
+		return;
+
+	Changing(Hold); //add current hold entrances state to undo list
+
+	pEntrance->eShowDescription = showDescription;
+
+	//Level entrance orientation changed?
+	const bool bChangedEntranceOrientation = pEntrance->wO != this->wO &&
+		this->wSelectedObject == T_SWORDSMAN; //only rotate when entrance is selected
+	if (bChangedEntranceOrientation)
+	{
+		pEntrance->wO = this->wO;
+		GetLevelEntrancesInRoom();
+	}
+
+	if (!pEntrance->bIsMainEntrance && bMainEntrance)
+	{
+		//This entrance is now the new main level entrance.
+		CEntranceData* pOldMainEntrance = this->pHold->GetMainEntranceForLevel(
+			this->pRoom->dwLevelID);
+		ASSERT(pOldMainEntrance);
+		if (pOldMainEntrance)
+			pOldMainEntrance->bIsMainEntrance = false;
+		pEntrance->bIsMainEntrance = true;
+
+		this->pLevel->SetNewStartingRoomID(this->pRoom->dwRoomID);
+
+		//Update sign to reflect new room coords origin (before anything is saved).
+		SetSignTextToCurrentRoom(true);
+		PaintSign();
+		UpdateRect();
+	}
+	pEntrance->DescriptionText = wstrDescription.c_str();
+}
+
+//*****************************************************************************
 void CEditRoomScreen::EditOrbAgents(const UINT wX, const UINT wY)
 //Edit door agents for an orb or pressure plate.
 {
@@ -3736,7 +3742,7 @@ bool CEditRoomScreen::EditLevelEntrance(
 }
 
 //*****************************************************************************
-void CEditRoomScreen::EditLongMonster(CMonster* pMonster)
+void CEditRoomScreen::EditSerpent(CMonster* pMonster)
 //Resume editing this serpent.
 {
 	ASSERT(pMonster);
@@ -3768,7 +3774,7 @@ void CEditRoomScreen::EditLongMonster(CMonster* pMonster)
 		default: ASSERT(!"Bad serpent tile."); return;
 	}
 	this->pRoomWidget->monsterSegment.wDirection = wDirection;
-	PlotLastMonsterSegment(wTailX,wTailY,wTailDirection);
+	PlotLastSerpentSegment(wTailX,wTailY,wTailDirection);
 	//don't need to set bHorizontal, wEX and wEY
 	this->pLongMonster = pMonster;
 	Changing();
@@ -4242,7 +4248,7 @@ void CEditRoomScreen::EraseRegion()
 					case M_SERPENT: case M_SERPENTG: case M_SERPENTB:
 					{
 						bool bInRegion = true;
-						list<CMonsterPiece*>::iterator piece;
+						MonsterPieces::iterator piece;
 						for (piece = pMonster->Pieces.begin();
 								piece != pMonster->Pieces.end(); ++piece)
 						{
@@ -4746,7 +4752,7 @@ DonePasting:
 }
 
 //*****************************************************************************
-void CEditRoomScreen::PlotLastMonsterSegment(
+void CEditRoomScreen::PlotLastSerpentSegment(
 //Follow tail until serpent turns.
 //
 //Params:
@@ -4791,16 +4797,21 @@ void CEditRoomScreen::PlotLastMonsterSegment(
 }
 
 //*****************************************************************************
-PlotType CEditRoomScreen::PlotMonsterSegment()
+PlotType CEditRoomScreen::PlotLongMonsterSegment()
 //Plot pieces along a monster segment (look in the room widget for location).
 //
 //Returns: whether plot was successful.
 {
-	UINT wX, wY, wTileNo;
+	const UINT m_type = GetSelectedObject();
+
+	CEditRoomWidget *pRW = this->pRoomWidget;
+	const UINT wDirection = pRW->monsterSegment.wDirection;
+
+	bool bHeadPlotted = false, bTailPlotted = false, bSegmentPlotted = false;
+	UINT wNextStartX = 0, wNextStartY = 0;
 
 	//Only plot tiles in a horizontal or vertical direction.
 	//Determine which way to do it.
-	CEditRoomWidget *pRW = this->pRoomWidget;
 	const bool bHorizontal = pRW->monsterSegment.bHorizontal;
 	const UINT wMinX = (bHorizontal ? min(pRW->monsterSegment.wSX,
 			pRW->monsterSegment.wEX) : pRW->monsterSegment.wSX);
@@ -4810,15 +4821,15 @@ PlotType CEditRoomScreen::PlotMonsterSegment()
 			pRW->monsterSegment.wEX) : wMinX);
 	const UINT wMaxY = (bHorizontal ? wMinY : max(pRW->monsterSegment.wSY,
 			pRW->monsterSegment.wEY));
-	const UINT wDirection = pRW->monsterSegment.wDirection;
+
+	UINT wX, wY;
 
 	//Make sure plotting is legal on all spots.
 	for (wY=wMinY; wY<=wMaxY; ++wY)
 		for (wX=wMinX; wX<=wMaxX; ++wX)
-			if (!pRW->IsSafePlacement(this->wSelectedObject,wX,wY))
+			if (!pRW->IsSafePlacement(m_type,wX,wY))
 				return PLOT_NOTHING;
 
-	bool bHeadPlotted = false, bTailPlotted = false, bSegmentPlotted = false;
 	//Plot head first.
 	//Necessary in order to have a pointer to the monster
 	//when placing the segments.
@@ -4837,16 +4848,15 @@ PlotType CEditRoomScreen::PlotMonsterSegment()
 					ASSERT(pMonster->IsLongMonster());
 					pMonster->wO = wDirection;
 				} else {
-					PlotObjectAt(wX, wY, this->wSelectedObject, wDirection);
+					PlotObjectAt(wX, wY, m_type, wDirection);
 				}
 			}
 
-	UINT wNextStartX = 0, wNextStartY = 0, wTailTileNo = T_EMPTY;
-	bool bTail; //whether monster tail is being plotted
+	UINT wTileNo;
+	UINT wTailTileNo = T_EMPTY;
 	for (wY=wMinY; wY<=wMaxY; ++wY)
 		for (wX=wMinX; wX<=wMaxX; ++wX)
 		{
-			bTail = false;
 			//Calculate tile to plot.
 			if (wX == pRW->monsterSegment.wHeadX &&
 					wY == pRW->monsterSegment.wHeadY)
@@ -4874,7 +4884,7 @@ PlotType CEditRoomScreen::PlotMonsterSegment()
 			{
 				wTileNo = this->pRoomWidget->GetSerpentTailTile(wX,wY,wDirection,
 						false);
-				bTail = bTailPlotted = true;
+				bTailPlotted = true;
 
 				//Plot next segment from this point.
 				wNextStartX = wX;
@@ -4911,7 +4921,7 @@ PlotType CEditRoomScreen::PlotMonsterSegment()
 			case T_SNKT_W: wLastSegmentDirection = E; break;
 			default: ASSERT(!"Bad serpent tail tile."); break;
 		}
-		PlotLastMonsterSegment(wNextStartX,wNextStartY,wLastSegmentDirection);
+		PlotLastSerpentSegment(wNextStartX,wNextStartY,wLastSegmentDirection);
 	} else {
 		//Only a head was placed -- stop now.
 		if (bHeadPlotted) return PLOT_HEAD;
@@ -4926,14 +4936,15 @@ PlotType CEditRoomScreen::PlotMonsterSegment()
 void CEditRoomScreen::PlotObjects()
 //Plot objects in a rectangular area.
 {
-	UINT wX, wY;
-
 	if (!this->pRoomWidget->bMouseInBounds) return;
 
+	UINT wX, wY;
+	const UINT wPlottedObject = GetSelectedObject();
+
 	//Place objects larger than one square.
-	if (SinglePlacement[this->wSelectedObject])
+	if (SinglePlacement[wPlottedObject])
 	{
-		switch (this->wSelectedObject)
+		switch (wPlottedObject)
 		{
 			//Monsters
 			case T_TARMOTHER:
@@ -4945,12 +4956,13 @@ void CEditRoomScreen::PlotObjects()
 			case T_SERPENT:
 			case T_SERPENTG:
 			case T_SERPENTB:
+			{
 				//Can a serpent be placed here?
-				if (!this->pRoomWidget->IsSafePlacement(this->wSelectedObject,
+				if (!this->pRoomWidget->IsSafePlacement(wPlottedObject,
 						this->pRoomWidget->wStartX, this->pRoomWidget->wStartY))
 				{
 					//Edit whatever is already here.
-               EditObjects();
+					EditObjects();
 					return;
 				}
 
@@ -4962,19 +4974,24 @@ void CEditRoomScreen::PlotObjects()
 				this->pRoomWidget->monsterSegment.wHeadY =
 						this->pRoomWidget->monsterSegment.wSY =
 						this->pRoomWidget->wStartY;
-				this->pRoomWidget->monsterSegment.wType = this->wSelectedObject-M_OFFSET;
+
+				const UINT monster_type = wPlottedObject - M_OFFSET;
+				this->pRoomWidget->monsterSegment.wType = monster_type;
 
 				this->pRoomWidget->ResetPlot();  //no monster pieces placed yet
 
 				Changing();
 				VERIFY(SetState(ES_LONGMONSTER));
+
+				this->pRoomWidget->AddMonsterSegmentEffect(this->pLongMonster, monster_type);
+			}
 			return;
 
 			case T_CHARACTER:
 			{
 				wX = this->pRoomWidget->wStartX;
 				wY = this->pRoomWidget->wStartY;
-				if (!this->pRoomWidget->IsSafePlacement(this->wSelectedObject, wX, wY))
+				if (!this->pRoomWidget->IsSafePlacement(wPlottedObject, wX, wY))
 				{
 					//Edit whatever is already here.
 					EditObjects();
@@ -5024,11 +5041,11 @@ void CEditRoomScreen::PlotObjects()
 			//Placing level start position.
 			case T_SWORDSMAN:
 			{
-				if (!this->pRoomWidget->IsSafePlacement(this->wSelectedObject,
+				if (!this->pRoomWidget->IsSafePlacement(wPlottedObject,
 						this->pRoomWidget->wEndX, this->pRoomWidget->wEndY, this->wO))
 				{
 					//Edit whatever is already here.
-               EditObjects();
+					EditObjects();
 					return;
 				}
 
@@ -5085,40 +5102,25 @@ void CEditRoomScreen::PlotObjects()
 		//If something is already on these squares, edit it.
 		for (wY=this->pRoomWidget->wStartY; wY<=this->pRoomWidget->wEndY; ++wY)
 			for (wX=this->pRoomWidget->wStartX; wX<=this->pRoomWidget->wEndX; ++wX)
-				if (!this->pRoomWidget->IsSafePlacement(this->wSelectedObject, wX, wY))
+				if (!this->pRoomWidget->IsSafePlacement(wPlottedObject, wX, wY))
 				{
 					EditObjects();
 					return;
 				}
 	}
 
-	switch (this->wSelectedObject)
+	switch (wPlottedObject)
 	{
 	case T_STAIRS:
 	case T_STAIRS_UP:
 		//Staircase is plotted specially.
-		PlotStaircase(this->wSelectedObject);
+		PlotStaircase(wPlottedObject);
 		break;
 
-/*
-	case T_HALPH:
-	case T_SLAYER:
-		//Enforce either placement along room edge, or one placement in mid-room.
-		if (this->pRoomWidget->wStartY < this->pRoom->wRoomRows-1 &&
-			 this->pRoomWidget->wEndY > 0 &&
-			 this->pRoomWidget->wStartX < this->pRoom->wRoomCols-1 &&
-			 this->pRoomWidget->wEndX > 0)
-		{
-			//Mid-room inclusion -- constrain to single placement.
-			this->pRoomWidget->wEndY = this->pRoomWidget->wStartY;
-			this->pRoomWidget->wEndX = this->pRoomWidget->wStartX;
-		}
-	//NO BREAK
-*/
 	default:
 	{
 		//When custom images are being edited, this could affect the hold as well.
-		const Change changeType = bIsCustomImageTile(this->wSelectedObject) ? RoomAndHold : Room;
+		const Change changeType = bIsCustomImageTile(wPlottedObject) ? RoomAndHold : Room;
 		Changing(changeType);
 
 		bool bSomethingPlotted = false;
@@ -5127,17 +5129,17 @@ void CEditRoomScreen::PlotObjects()
 		//Place selected object at each square.
 		for (wY=this->pRoomWidget->wStartY; wY<=this->pRoomWidget->wEndY; ++wY)
 			for (wX=this->pRoomWidget->wStartX; wX<=this->pRoomWidget->wEndX; ++wX)
-				if (PlotObjectAt(wX,wY,this->wSelectedObject,this->wO))
+				if (PlotObjectAt(wX, wY, wPlottedObject, this->wO))
 					bSomethingPlotted = true;
 
 		//Play sound effect.  Customize object.
 		if (!bSomethingPlotted)
 		{
 			RemoveChange();
-			if (this->wSelectedObject != T_EMPTY)
+			if (wPlottedObject != T_EMPTY)
 				EditObjects();
 		} else {
-			switch (this->wSelectedObject)
+			switch (wPlottedObject)
 			{
 				case T_FLOOR: case T_FLOOR_M:
 				case T_FLOOR_ROAD: case T_FLOOR_GRASS:
@@ -5183,7 +5185,7 @@ void CEditRoomScreen::PlotObjects()
 				case T_DOOR_C: case T_DOOR_CO:
 				case T_DOOR_R: case T_DOOR_RO:
 				case T_DOOR_B: case T_DOOR_BO:
-					RepairDoors(this->wSelectedObject);
+					RepairDoors(wPlottedObject);
 					//no break
 				case T_DOOR_MONEY:
 					g_pTheSound->PlaySoundEffect(SEID_DOOROPEN); break;
@@ -5311,13 +5313,13 @@ void CEditRoomScreen::PlotObjects()
 			}
 
 			//Refresh room stats or covered tiles when needed.
-			if (bIsBriar(this->wSelectedObject) || this->wSelectedObject == T_TOKEN)
+			if (bIsBriar(wPlottedObject) || wPlottedObject == T_TOKEN)
 			{
 				this->pRoom->InitRoomStats();
-				if (bIsBriar(this->wSelectedObject))
+				if (bIsBriar(wPlottedObject))
 					this->pRoom->briars.setBriarTilesLife();
 			}
-			else if (TILE_LAYER[this->wSelectedObject] == 0)
+			else if (TILE_LAYER[wPlottedObject] == 0)
 			{
 				//Redefine current connected components, like platforms,
 				//and synch coveredOTiles.
@@ -5720,13 +5722,7 @@ void CEditRoomScreen::EraseObjects()
 	if ((SDL_GetModState() & KMOD_SHIFT) == 0)
 		EraseObjects(wLayer, bSomethingPlotted, bSomethingDeleted);
 	else {
-		//Erase objects from ALL room layers.
-		const UINT originalSelectedObject = this->wSelectedObject;
-		for (UINT layer=0; layer<=3; ++layer)
-			EraseObjects(layer, bSomethingPlotted, bSomethingDeleted);
-		this->wSelectedObject = T_WALLLIGHT;
-		EraseObjects(0, bSomethingPlotted, bSomethingDeleted);
-		this->wSelectedObject = originalSelectedObject;
+		EraseObjectsOnAllLayers(bSomethingPlotted, bSomethingDeleted);
 	}
 
 	//Update room info if something changed.
@@ -5830,6 +5826,20 @@ void CEditRoomScreen::EraseObjects(
 				break;
 			}
 		}
+
+	this->wSelectedObject = originalSelectedObject;
+}
+
+//*****************************************************************************
+void CEditRoomScreen::EraseObjectsOnAllLayers(bool& bSomethingPlotted, bool& bSomethingDeleted)
+{
+	const UINT originalSelectedObject = this->wSelectedObject;
+
+	for (UINT layer = 0; layer <= 3; ++layer)
+		EraseObjects(layer, bSomethingPlotted, bSomethingDeleted);
+
+	this->wSelectedObject = T_WALLLIGHT;
+	EraseObjects(0, bSomethingPlotted, bSomethingDeleted);
 
 	this->wSelectedObject = originalSelectedObject;
 }
@@ -6381,11 +6391,7 @@ bool CEditRoomScreen::RemoveMonster(
 {
 	ASSERT(pMonster);
 
-	if (pMonster->IsPiece())
-	{
-		pMonster = pMonster->GetOwningMonster();
-		ASSERT(pMonster);
-	}
+	pMonster = pMonster->GetOwningMonster();
 
 	//Mark character speech commands for removal from DB.
 	if (pMonster->wType == M_CHARACTER)
@@ -6942,6 +6948,16 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 {
 	if (this->wSelectedObject != wObject)
 	{
+		// Finish long-monster placement, otherwise we will lose our changes...
+		if (this->eState == ES_LONGMONSTER) {
+			const bool bIsOldTileSerpent = (this->wSelectedObject == T_SERPENT || this->wSelectedObject == T_SERPENTB || this->wSelectedObject == T_SERPENTG);
+			const bool bIsNewTileSerpent = (wObject == T_SERPENT || wObject == T_SERPENTB || wObject == T_SERPENTG);
+
+			// ... but changing serpent type will not make us lose changes so do nothing
+			if (!bIsOldTileSerpent || !bIsNewTileSerpent)
+				VERIFY(SetState(ES_PLACING));
+		}
+
 		RemoveToolTip();
 		this->dwLastMouseMove = SDL_GetTicks();
 
@@ -7031,6 +7047,13 @@ void CEditRoomScreen::SetItemLabelText(const UINT wObject)
 		//Flag to refresh item text at the proper time.
 		this->bPaintItemText = true;
 	}
+}
+
+//*****************************************************************************
+UINT CEditRoomScreen::GetSelectedObject() const
+//Returns the value of wSelectedObject
+{
+	return this->wSelectedObject;
 }
 
 //*****************************************************************************

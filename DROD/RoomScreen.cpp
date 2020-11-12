@@ -444,11 +444,6 @@ void CRoomScreen::GrabNewNotices(CRoomWidget* pRoomWidget)
 		CCaravelNetNoticeEffect *pEffect = new CCaravelNetNoticeEffect(pRoomWidget, *i, pRoomWidget->notices);
 		pRoomWidget->AddLastLayerEffect(pEffect);
 
-		CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-		pCurrentPlayer->Settings.SetVar(Settings::LastNotice, this->dwLastNotice);
-		pCurrentPlayer->Update();
-		delete pCurrentPlayer;
-
 		CButtonWidget* pButton = dynamic_cast<CButtonWidget*>(this->GetWidget(TAG_OPEN_NOTICES));
 		if (pButton) {
 			// Increment the number on the button

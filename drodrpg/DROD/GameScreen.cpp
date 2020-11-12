@@ -752,8 +752,6 @@ bool CGameScreen::LoadSavedGame(
 	if (!this->pCurrentGame)
 		return false;
 
-	this->pCurrentGame->AddRoomsPreviouslyExploredByPlayerToMap();
-
 	this->bPlayTesting = false;
 	this->wUndoToTurn = this->pCurrentGame->wTurnNo;
 //	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
@@ -783,8 +781,6 @@ bool CGameScreen::LoadNewGame(
 	ClearSpeech(true);
 	this->pCurrentGame = g_pTheDB->GetNewCurrentGame(dwHoldID, this->sCueEvents);
 	if (!this->pCurrentGame) return false;
-
-	this->pCurrentGame->AddRoomsPreviouslyExploredByPlayerToMap();
 
 	//Set current game for widgets.
 	if (!this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame) ||
@@ -1000,6 +996,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPersistentEventsDrawn(false)
 	, bNeedToProcessDelayedQuestions(false)
 	, bShowingBigMap(false), bShowingCutScene(false), bShowingTempRoom(false)
+	, bIsDialogDisplayed(false)
 	, bDisableMouseMovement(false), bNoMoveByCurrentMouseClick(false)
 	, wCombatTickSpeed(DEFAULT_COMBAT_TICK), wThisCombatTickSpeed(DEFAULT_COMBAT_TICK)
 	, wMoveDestX(NO_DESTINATION), wMoveDestY(NO_DESTINATION)
@@ -1021,7 +1018,6 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPlayTesting(false)
 //	, bRoomClearedOnce(false)
 	, wUndoToTurn(0)
-//	, bHoldConquered(false)
 
 	, fPos(NULL)
 
@@ -2095,10 +2091,38 @@ void CGameScreen::OnWindowEvent(const SDL_WindowEvent &wevent)
 }
 
 //*****************************************************************************
+void CGameScreen::OnWindowEvent_GetFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_GetFocus();
+
+	this->pCurrentGame->UpdateTime();
+	if (!this->dwTimeMinimized)
+		this->dwTimeMinimized = SDL_GetTicks();
+
+	if (this->bIsDialogDisplayed)
+		g_pTheSound->PauseSounds();
+}
+
+//*****************************************************************************
+void CGameScreen::OnWindowEvent_LoseFocus()
+{
+	CEventHandlerWidget::OnWindowEvent_LoseFocus();
+
+	if (this->dwTimeMinimized)
+	{
+		if (this->dwNextSpeech)
+			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+		this->dwTimeMinimized = 0;
+	}
+}
+
+//*****************************************************************************
 void CGameScreen::OnBetweenEvents()
 //Called between frames.
 {
 	UploadDemoPolling();
+
+	UpdateEffectsFreeze();
 
 	if (this->bShowingBigMap || this->bShowingTempRoom)
 		return;
@@ -3053,13 +3077,13 @@ void CGameScreen::PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEv
 	switch (wAppearance)
 	{
 		case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_OOF; break;
-		case M_NEATHER: eSoundID = SEID_NEATHER_OOF; break;
+		case M_NEATHER:
+		case M_HALPH: eSoundID = SEID_HALPH_OOF; break;
 		case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_OOF; break;
 		case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
 			eSoundID = SEID_TAR_OOF; break;
 		case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_OOF; break;
-		case M_HALPH: eSoundID = SEID_HALPH_OOF; break;
 		case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 		case M_CITIZEN1: case M_CITIZEN2:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
@@ -3509,7 +3533,8 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 				{
 					case M_CLONE: case M_DECOY: case M_MIMIC:
 					case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_HI; break;
-					case M_NEATHER: eSoundID = SEID_NLAUGHING; break;
+					case M_NEATHER:
+					case M_HALPH: eSoundID = SEID_HALPHENTERED; break;
 					case M_EYE: case M_MADEYE: eSoundID = SEID_EVILEYEWOKE; break;
 					case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_HI; break;
 					case M_TARBABY: case M_MUDBABY: case M_GELBABY:
@@ -3522,7 +3547,6 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 					case M_ROCKGOLEM: case M_ROCKGIANT:
 						eSoundID = SEID_ROCK_HI; break;
 					case M_WUBBA: eSoundID = SEID_WUBBA; break;
-					case M_HALPH: eSoundID = SEID_HALPHENTERED; break;
 					case M_SLAYER: eSoundID = SEID_SLAYERCOMBAT; break;
 					case M_ROACH: case M_QROACH: case M_WWING: case M_REGG:
 					case M_SERPENT: case M_SPIDER: case M_SERPENTG: case M_SERPENTB:
@@ -4891,6 +4915,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied);
 //			|| (!bPlayerDied && !bNPCBeethroDied && player.wAppearance != M_BEETHRO);
 
+	ProcessFuseBurningEvents(CueEvents);
+
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
 		this->pRoomWidget->HidePlayer();
@@ -4916,21 +4942,10 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	//Show the screen after first arriving here.
 	this->pFaceWidget->SetReading(false);
-	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);	//stop showing where bombs were
 //	this->pRoomWidget->RemoveMLayerEffectsOfType(EPENDINGBUILD); //stop showing where pending building was
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(EEVILEYEGAZE);
 	this->pRoomWidget->RemoveHighlight();
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(ESHADE); //remove user tile highlight
-	this->pRoomWidget->PutTLayerEffectsOnMLayer();	//keep showing whatever effects were showing
 	this->pRoomWidget->AllowSleep(false);
 	this->pRoomWidget->Paint();
-
-	//Prepare room for fade out.
-	this->pRoomWidget->RenderRoomInPlay();
-	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
-
-	const bool bFade = g_pTheBM->bAlpha;
-	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
 
 	bool bNonMonsterDeath = false;
 //	CMonster *pNPCBeethro = bNPCBeethroDied ? this->pCurrentGame->pRoom->GetNPCBeethro() : NULL;
@@ -4942,7 +4957,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		switch (player.wAppearance)
 		{
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_DIE; break;
-			case M_NEATHER: eSoundID = SEID_NEATHER_SCARED; break;
+			case M_NEATHER:
+			case M_HALPH: eSoundID = SEID_HALPH_DIE; break;
 			case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_DIE; break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 			case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
@@ -4957,7 +4973,6 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				eSoundID = SEID_WOM_DIE; break;
 			case M_STALWART: eSoundID = SEID_STALWART_DIE; break;
 			case M_WUBBA: eSoundID = SEID_WUBBA; break;
-			case M_HALPH: eSoundID = SEID_HALPH_DIE; break;
 			case M_SLAYER: eSoundID = SEID_SLAYERDIE; break;
 			default: eSoundID = SEID_MON_OOF; break;
 		}
@@ -5035,7 +5050,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		const Uint32 dwNow = SDL_GetTicks();
 
 		//Sword wobbles around.
-		if (bPlayerSwordWobblesAround && dwNow - dwLastSwordWobble > 50)
+		if (bPlayerSwordWobblesAround && dwNow - dwLastSwordWobble > 100)
 		{
 /*
 			if (pNPCBeethro)
@@ -5053,18 +5068,16 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		}
 
 		//Fade to black.
-		if (dwNow - dwLastFade > 100 && g_pTheBM->bAlpha)
+		if (g_pTheBM->bAlpha && dwStart)
 		{
-			if (bFade)
-			{
-				const float fFade = (dwNow - dwStart) / (float)dwDeathDuration;
-				pFade->IncrementFade(fFade);
+			const float durationFraction = min(1, (dwNow - dwStart) / (float)dwDeathDuration);
+			const float remainingFraction = 1 - durationFraction;
 
-				//Fade out effects drawn on the top layer of the room.
-				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ESNOWFLAKE, 1.0f-fFade);
-				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ERAINDROP, 1.0f-fFade);
-			}
+			this->pRoomWidget->SetDeathFadeOpacity(durationFraction);
+			this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(remainingFraction);
+			this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(remainingFraction);
 			this->pRoomWidget->DirtyRoom();  //repaint whole room each fade
+
 			dwLastFade = dwNow;
 		}
 
@@ -5115,7 +5128,10 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		if (dwNow - dwStart > dwDeathDuration || bUndoDeath)
 			break;
 	}
-	delete pFade;
+	
+	this->pRoomWidget->SetDeathFadeOpacity(0);
+	this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(1);
+	this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(1);
 	this->pCurrentGame->pPlayer->SetOrientation(wOrigO);	//restore value
 
 	if (bPlayerFellInPit)
@@ -5197,6 +5213,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
 */
 			const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
+			const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
 
 			delete g_pPredictedCombat;
 			g_pPredictedCombat = NULL;
@@ -5208,10 +5225,13 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 			//Refresh map.
 			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			if (nowMappedRooms.size() != mappedRooms.size())
+			if (nowMappedRooms.size() != mappedRooms.size() ||
+				roomPreviews.containsAny(mappedRooms)) //preview state could have changed for these rooms
+			{
 				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-			else
+			} else {
 				this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
+			}
 			this->pMapWidget->RequestPaint();
 
 			SetSignTextToCurrentRoom();
@@ -5460,13 +5480,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		switch (player.wAppearance)
 		{
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_SCARED; break;
-			case M_NEATHER: eSoundID = SEID_NEATHER_SCARED; break;
+			case M_NEATHER:
+			case M_HALPH: eSoundID = SEID_HALPH_SCARED; break;
 			case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_SCARED; break;
 			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 			case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
 				eSoundID = SEID_TAR_SCARED; break;
 			case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_SCARED; break;
-			case M_HALPH: eSoundID = SEID_HALPH_SCARED; break;
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
@@ -5484,44 +5504,6 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			PlaySoundEffect(eSoundID);
 	}
 
-/*
-	else if (CueEvents.HasOccurred(CID_AllMonstersKilled))
-	{
-		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
-		this->pMapWidget->RequestPaint();
-		if (!CueEvents.HasOccurred(CID_MonsterExitsRoom)) //Beethro isn't happy about the 'Neather getting away.
-		{
-			//Beethro won't laugh multiple times if room is cleared repeatedly.
-//			if (!this->bRoomClearedOnce)
-			{
-//				this->bRoomClearedOnce = true;
-				UINT eSoundID = SEID_NONE;
-				switch (player.wAppearance)
-				{
-					case M_CLONE: case M_DECOY: case M_MIMIC:
-					case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: eSoundID = SEID_CLEAR; break;
-					case M_NEATHER: eSoundID = SEID_NLAUGHING; break;
-					case M_GOBLIN:	case M_GOBLINKING: eSoundID = SEID_GOB_CLEAR; break;
-					case M_TARBABY: case M_MUDBABY: case M_GELBABY:
-					case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
-						eSoundID = SEID_SPLAT; break;
-					case M_ROCKGOLEM: case M_ROCKGIANT: eSoundID = SEID_ROCK_CLEAR; break;
-					case M_CITIZEN1: case M_CITIZEN2: case M_GUARD: case M_STALWART:
-					case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-					case M_CITIZEN: eSoundID = SEID_CIT_CLEAR; break;
-					case M_WUBBA: eSoundID = SEID_WUBBA; break;
-					case M_NEGOTIATOR: case M_INSTRUCTOR:
-					case M_CITIZEN3: case M_CITIZEN4:
-						eSoundID = SEID_WOM_CLEAR; break;
-					case M_HALPH: case M_SLAYER: break;
-					default: eSoundID = SEID_MON_CLEAR; break;
-				}
-				if (eSoundID != (UINT)SEID_NONE)
-					PlaySoundEffect(eSoundID);
-			}
-		}
-	}
-*/
 	if (CueEvents.HasOccurred(CID_SwordsmanTired))
 	{
 		if (bIsHuman(player.wAppearance))
@@ -8088,6 +8070,26 @@ Loop:
 }
 
 //*****************************************************************************
+void CGameScreen::ShowChatHistory(CEntranceSelectDialogWidget* pBox)
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	CDrodScreen::ShowChatHistory(pBox);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+}
+
+//*****************************************************************************
 /*
 void CGameScreen::ShowLockIcon(const bool bShow)
 //Show hide persistent lock icon.
@@ -8192,6 +8194,12 @@ void CGameScreen::ShowSpeechLog()
 	this->pSpeechBox->PopulateList(CEntranceSelectDialogWidget::Speech);
 	this->pSpeechBox->SelectItem(0);
 
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	UINT dwItemID=0;
 	int playingChannel=-1;
 	do {
@@ -8217,6 +8225,17 @@ void CGameScreen::ShowSpeechLog()
 			}
 		}
 	} while (dwItemID != 0);
+
+	if (playingChannel >= 0)
+		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
 
 	Paint();
 }
@@ -8294,6 +8313,7 @@ void CGameScreen::UndoMove()
 
 	const CIDSet exploredRooms = this->pCurrentGame->GetExploredRooms();
 	const CIDSet mappedRooms = this->pCurrentGame->GetMappedRooms();
+	const CIDSet previewedRooms = this->pCurrentGame->GetPreviouslyExploredRooms();
 
 	//If undo to turn is set to the current turn,
 	//then just undo one turn.
@@ -8361,8 +8381,11 @@ void CGameScreen::UndoMove()
 	//Refresh map if something changed by undoing.
 	const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
 	const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
-	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms)
+	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms ||
+		previewedRooms.containsAny(exploredRooms)) //these may have changed
+	{
 		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+	}
 
 	SetGameAmbience(true);
 	AmbientSoundSetup();
@@ -8415,6 +8438,14 @@ void CGameScreen::UpdateSound()
 		}
 	}
 	this->ambientChannels = continuing;
+}
+
+//*****************************************************************************
+void CGameScreen::UpdateEffectsFreeze()
+{
+	bool bFreezeEffects = !WindowHasFocus() || this->bIsDialogDisplayed;
+
+	this->pRoomWidget->SetEffectsFrozen(bFreezeEffects);
 }
 
 //*****************************************************************************
@@ -8603,6 +8634,7 @@ void CGameScreen::WaitToUploadDemos()
 	}
 }
 
+//*****************************************************************************
 void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
 {
 #ifdef STEAMBUILD

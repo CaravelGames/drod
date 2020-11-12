@@ -225,6 +225,9 @@
     <ClCompile Include="BuildUtil.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="OrbUtil.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h">
@@ -453,6 +456,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="RoomData.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbUtil.h">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>

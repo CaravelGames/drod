@@ -836,19 +836,15 @@ void CSettingsScreen::OnKeyDown(
 			SynchScreenSizeWidget();
 		break;
 
+		case SDLK_LEFT: case SDLK_RIGHT:
+		case SDLK_HOME: case SDLK_END:
+		case SDLK_KP_4: case SDLK_KP_6: case SDLK_KP_7: case SDLK_KP_1:
+			if (dwTagNo == TAG_MUSIC_VOLUME || dwTagNo == TAG_VOICES_VOLUME || dwTagNo == TAG_SOUNDEFF_VOLUME) {
+				SDL_MouseButtonEvent fakeButton;
+				OnDragUp(dwTagNo, fakeButton);
+			}
+			break;
 		default: break;
-	}
-
-	switch (dwTagNo)
-	{
-	case TAG_MUSIC_VOLUME:
-	case TAG_VOICES_VOLUME:
-	case TAG_SOUNDEFF_VOLUME:
-	{
-		SDL_MouseButtonEvent fakeButton;
-		OnDragUp(dwTagNo, fakeButton);
-	}
-	break;
 	}
 
 	SetWidgetStates();
@@ -1070,8 +1066,8 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			g_pTheSound->SetVoicesVolume(pSliderWidget->GetValue());
 			const int nSoundVolume = g_pTheSound->GetSoundVolume();
 			g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-			g_pTheSound->StopSoundEffect(SEID_DIE);
-			g_pTheSound->PlaySoundEffect(SEID_DIE); //play sample sound
+			g_pTheSound->StopSoundEffect(SEID_STALWART_DIE);
+			g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE); //play sample sound
 			g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 		}
 		break;
@@ -1265,7 +1261,7 @@ void CSettingsScreen::SynchOption(const UINT dwTagNo)
 			{
 				const int nSoundVolume = g_pTheSound->GetSoundVolume();
 				g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-				g_pTheSound->PlaySoundEffect(SEID_DIE, NULL, NULL, true); //play sample sound
+				g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE, NULL, NULL, true); //play sample sound
 				g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 			}
 		break;

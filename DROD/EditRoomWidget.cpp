@@ -346,7 +346,7 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 
 			if (IsSafePlacement(wMonsterType + M_OFFSET,wX,wY))
 			{
-				CCoord coord(wX,wY);
+				const CCoord coord(wX,wY);
 				AddLastLayerEffect(new CTransTileEffect(this, coord, wTileNo));
 				if (bHead && !bSegment)
 					AddShadeEffect(wX,wY,Red); //can't plot only the head
@@ -1591,12 +1591,17 @@ void CEditRoomWidget::DrawMonsters(
 	SDL_Surface *pDestSurface,
 	const bool bMoveInProgress)   //
 {
+	vector<CMonster*> drawnMonsters;
 	CMonster *pMonster = pMonsterList;
 	while (pMonster)
 	{
+		drawnMonsters.push_back(pMonster);
+
 		DrawMonster(pMonster, this->pRoom, pDestSurface, bMoveInProgress);
 		pMonster = pMonster->pNext;
 	}
+
+	DrawSwordsFor(drawnMonsters, pDestSurface);
 }
 
 //******************************************************************************

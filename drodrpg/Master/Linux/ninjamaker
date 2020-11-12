@@ -33,9 +33,9 @@ distlinkflags=(
 
 declare -A buildflags
 buildflags=(
-	[debug]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS"
-	[debugsan]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
-	[dev]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
+	[debug]="-Og -D_DEBUG -DENABLE_BREAKPOINTS"
+	[debugsan]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
+	[dev]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
 	[release]="-O2 -DNDEBUG -flto"
 	[beta]="-O2 -DNDEBUG -DBETA -flto"
 )
@@ -43,7 +43,7 @@ buildflags=(
 declare -A linkflags
 linkflags=(
 	[debug]=""
-	[debugsan]="-fsanitize=address -fsanitize=undefined -static-libasan -static-libubsan"
+	[debugsan]="-fsanitize=address -fsanitize=undefined" #-static-libasan -static-libubsan"
 	[dev]=""
 	[release]="-flto=${cpucount}"
 	[beta]="-flto=${cpucount}"
@@ -150,7 +150,7 @@ optflags = -std=c++11 $archflags $buildflags -g
 cflags = $optflags -pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized
 ldflags = $optflags $linkflags -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
 
-revision = $$(hg id -n)
+revision = $$(git rev-parse --short HEAD)
 debugsuffix = -${arch}-${revision}.dbg
 
 rule cxx
@@ -200,9 +200,9 @@ vcprojs=()
 gen_lib_build () {
 	local path="$1"
 	local lib=$(basename "$path")
-	local vcproj="$path/$lib.vcproj"
+	local vcproj="$path/$lib.2019.vcxproj"
 	vcprojs+=($vcproj)
-	local files=($(grep 'RelativePath=.*\.cpp' "$vcproj" | sed 's,^.*RelativePath="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
+	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
 	local objs=()
 	for file in ${files[@]}; do
 		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"

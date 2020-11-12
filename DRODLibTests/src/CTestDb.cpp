@@ -40,6 +40,7 @@ void CTestDb::Init(int argc, char* const argv[])
 	CTestDb::InitializeLevel();
 	CTestDb::InitializeRoom();
 	CTestDb::InitializeEntrance();
+	CTestDb::db->Commit();
 }
 
 void CTestDb::Teardown()
@@ -48,6 +49,7 @@ void CTestDb::Teardown()
 	CTestDb::db->Levels.Delete(CTestDb::globalLevelID);
 	CTestDb::db->Holds.Delete(CTestDb::globalHoldID);
 	CTestDb::db->Players.Delete(CTestDb::globalPlayerID, false);
+	CTestDb::db->Commit();
 }
 
 CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UINT playerO){
@@ -88,7 +90,7 @@ void CTestDb::InitializeCFiles(char* const argv[]){
 	playerDataSubDirs.push_back("Music");
 	playerDataSubDirs.push_back("Sounds");
 	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
-	CTestDb::files = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, false);
+	CTestDb::files = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, false, true, true);
 	if (CFiles::bad_data_path_file) {
 		throw 1;
 	}
@@ -226,6 +228,7 @@ void CTestDb::RegenerateRoom(){
 
 	InitializeRoom();
 	InitializeEntrance();
+	CTestDb::db->Commit();
 }
 
 void CTestDb::GetAppPath(

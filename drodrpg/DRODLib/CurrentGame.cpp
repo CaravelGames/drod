@@ -379,8 +379,10 @@ void CCurrentGame::AddRoomToMap(
 	const bool bSaveRoom) //Whether to flag including this room in save data [default=true]
 {
 	ExploredRoom *pExpRoom = getExploredRoom(roomID);
+	bool bWasRoomPreview = false;
 	if (pExpRoom)
 	{
+		bWasRoomPreview = !pExpRoom->bSave;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
 	} else {
 		pExpRoom = new ExploredRoom();
@@ -392,7 +394,7 @@ void CCurrentGame::AddRoomToMap(
 
 	//Room marked only on the map becomes fully visible (as if explored) if bMarkRoomVisible is set.
 	ASSERT(pExpRoom);
-	if (bMarkRoomVisible && pExpRoom->bMapOnly)
+	if (bMarkRoomVisible && (pExpRoom->bMapOnly || bWasRoomPreview))
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
 		if (pRoom)
@@ -610,8 +612,12 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	//Otherwise, we must store the state that game was in on room entrance,
 	//so when moves for the current room are replayed, the current state is recreated.
 	CDbPackedVars _stats = this->stats;
-	if (!bScoreSubmission)
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+	if (!bScoreSubmission) {
 		this->stats = this->statsAtRoomStart;
+	}
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	if (eSaveType == ST_Autosave)
 	{
@@ -628,6 +634,7 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	Update();
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -744,6 +751,8 @@ void CCurrentGame::Clear(
 	this->pCombat = NULL;
 	this->pBlockedSwordHit = NULL;
 	this->bQuickCombat = false;
+
+	this->PreviouslyExploredRooms.clear();
 }
 
 //*****************************************************************************
@@ -845,6 +854,8 @@ void CCurrentGame::ExitCurrentRoom()
 
 	//Save info for room being exited.
 	SaveExploredRoomData(*this->pRoom);
+
+	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
 }
 
 //*****************************************************************************
@@ -1448,6 +1459,9 @@ bool CCurrentGame::LoadFromHold(
 
 	this->wVersionNo = VERSION_NUMBER;
 	this->checksumStr = g_pTheNet->GetChecksum(this, 1);
+
+	AddRoomsPreviouslyExploredByPlayerToMap();
+
 /*
 	//Save to level-begin and room-begin slots.
 	//ATTN: Do this before SetMembersAfterRoomLoad changes anything.
@@ -1715,17 +1729,18 @@ bool CCurrentGame::LoadFromSavedGame(
 	//Put room in correct beginning state and get cue events for the 
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
-	if (bAtRoomStart)
-	{
-		//Cue events come from first step into the room.
+
+	AddRoomsPreviouslyExploredByPlayerToMap();
+
+	//Cue events coming from first step into the room.
 		SetMembersAfterRoomLoad(CueEvents, false);
 		ProcessCommand_EndOfTurnEventHandling(CueEvents);
-	} else {
-		//Cue events come from processing of last command below.
+	if (!bAtRoomStart)
+	{
 		//Ignore cue events from first step into the room.
-		CCueEvents IgnoredCueEvents;
-		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
+		CueEvents.Clear();
+
+		//Instead, populate cue events coming from processing of last command below.
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
@@ -2794,10 +2809,19 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 				//This fight was performed to remove this tarstuff tile.
 				this->simulSwordHits.push_back(CMoveCoord(this->pCombat->wX, this->pCombat->wY, NO_ORIENTATION));
 
+				if (pDefeatedMonster->wType == M_CHARACTER)
+				{
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+					pCharacter->Defeat();
+					ProcessNPCDefeat(pCharacter, CueEvents);
+					//NPC script is responsible for what happens after tarstuff defeat,
+					//e.g., resetting HP for subsequent tarstuff battles.
+				} else {
 				//Reset the tarstuff mother's HP back to full to allow attacking another tile.
 				ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
 				ASSERT(!pDefeatedMonster->getHP());
 				pDefeatedMonster->SetHP();
+				}
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
@@ -2834,18 +2858,11 @@ void CCurrentGame::ProcessMonsterDefeat(
 
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 
-			switch (pDefeatedMonster->wType)
-			{
-				case M_MUDMOTHER:
-				case M_TARMOTHER:
-				case M_GELMOTHER:
 					//Tarstuff tile should be removed at end of combat.
-					if (bIsTar(this->pRoom->GetTSquare(wSX, wSY))
-							) //always remove this tar tile when defeated //&& this->pRoom->StabTar(wSX, wSY, CueEvents, false))
+			//Tarstuff under a killed enemy is always removed, even if the tarstuff would otherwise remain stable.
+			if (bIsTar(this->pRoom->GetTSquare(wSX, wSY)))
 						this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
-				break;
 			}
-		}
 		else if (CueEvents.HasOccurredWith(CID_SnakeDiedFromTruncation, pDefeatedMonster))
 		{
 			ASSERT(bIsSerpent(pDefeatedMonster->wType));
@@ -2853,20 +2870,27 @@ void CCurrentGame::ProcessMonsterDefeat(
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 		}
 	} else {
-		//If an NPC is defeated but not killed, execute any script commands
-		//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+		//An (NPC) enemy is defeated but not killed.
 		if (pDefeatedMonster->wType == M_CHARACTER)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
-			this->bExecuteNoMoveCommands = true;
-			pCharacter->ProcessAfterDefeat(CueEvents);
-			this->bExecuteNoMoveCommands = false;
-			CueEvents.Add(CID_NPC_Defeated, pDefeatedMonster);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+			ProcessNPCDefeat(pCharacter, CueEvents);
 		}
 	}
 
 	//Each time a monster is fought, briar roots expand.
 	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+//When an NPC is defeated but not killed, execute any script commands
+//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents)
+{
+	this->bExecuteNoMoveCommands = true;
+	pDefeatedNPC->ProcessAfterDefeat(CueEvents);
+	this->bExecuteNoMoveCommands = false;
+	CueEvents.Add(CID_NPC_Defeated, pDefeatedNPC);
 }
 
 //*****************************************************************************
@@ -3352,9 +3376,7 @@ void CCurrentGame::ProcessSwordHit(
 
 	//Did sword hit a monster?
 	CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wSX, wSY);
-	if (pMonster && //Yes.
-			//don't allow critical character kill on room entrance
-			(this->wTurnNo || !this->pRoom->IsMonsterOfTypeAt(M_HALPH, wSX, wSY, true)))
+	if (pMonster)
 	{
 		pMonster = pMonster->GetOwningMonster();
 
@@ -3433,9 +3455,10 @@ void CCurrentGame::ProcessSwordHit(
 				//then it is considered a part of the mother,
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
+				//Alternative logic applies to NPCs acting as mothers.
 				CMonster *pMother = NULL;
 
-				//Currently applies to player or mimics only.
+				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
 					pMother = this->pRoom->GetMotherConnectedToTarTile(wSX, wSY);
 				if (pMother && !IsFighting(pMother))
@@ -3647,7 +3670,11 @@ void CCurrentGame::QuickSave()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	WSTRING locText;
 	locText += this->pLevel->NameText;
@@ -3673,6 +3700,7 @@ void CCurrentGame::QuickSave()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -3693,7 +3721,11 @@ void CCurrentGame::SaveToContinue()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	WSTRING locText;
 	locText += this->pLevel->NameText;
@@ -3720,6 +3752,7 @@ void CCurrentGame::SaveToContinue()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 
 	/*
 	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
@@ -3751,85 +3784,7 @@ void CCurrentGame::SaveToEndHold()
 	Update();
 }
 
-//*****************************************************************************
 /*
-void CCurrentGame::SaveToLevelBegin()
-//Saves the current game to the level-begin slot for this level.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of level entry room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_LevelBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this level?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByLevelBegin(
-			this->pRoom->dwLevelID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
-//-****************************************************************************
-void CCurrentGame::SaveToRoomBegin()
-//Saves the current game to the begin-room slot for this room.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_RoomBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this room?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByRoomBegin(
-			this->pRoom->dwRoomID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
 //-****************************************************************************
 void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
 //Set the amount of move calculation time to elapse between game state snapshots.
@@ -4287,6 +4242,8 @@ void CCurrentGame::AddCompletedScripts()
 }
 
 //*****************************************************************************
+//For front-end, to display a preview of rooms explored in other play sessions
+//Called when a game is begun or loaded to populate this list for reference during play
 void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
 	UINT playerID, const bool bMakeRoomsVisible) //[default=0, true]
 {
@@ -4297,10 +4254,11 @@ void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
 			return;
 	}
 
-	CIDSet roomsExplored;
-	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, roomsExplored);
-	roomsExplored -= this->dwRoomID;
-	for (CIDSet::const_iterator it=roomsExplored.begin(); it!=roomsExplored.end(); ++it)
+	//May be a compute-intensive call, so cache results in member var
+	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, this->PreviouslyExploredRooms);
+	this->PreviouslyExploredRooms -= this->dwRoomID; //don't need to include the player's current room for preview
+
+	for (CIDSet::const_iterator it=this->PreviouslyExploredRooms.begin(); it!=this->PreviouslyExploredRooms.end(); ++it)
 	{
 		AddRoomToMap(*it, bMakeRoomsVisible, false);
 	}
@@ -6224,9 +6182,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 	
 	room.mapMarker = pExpRoom->mapMarker;
 
-	pExpRoom->bSave = true; //previewed room now included in save data
+	const bool bWasRoomPreview = !pExpRoom->bSave;
+	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly)
+	if (pExpRoom->bMapOnly || bWasRoomPreview)
 	{
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
@@ -6485,6 +6444,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->dwComputationTime = Src.dwComputationTime;
 	this->dwComputationTimePerSnapshot = Src.dwComputationTimePerSnapshot;
 */
+	this->PreviouslyExploredRooms = Src.PreviouslyExploredRooms;
 }
 
 //***************************************************************************************
@@ -6758,7 +6718,9 @@ void CCurrentGame::SetPlayerToRoomStart()
 //	this->checkpointTurns.clear();
 	this->CompletedScriptsPending.clear();
 	this->stats = this->statsAtRoomStart;
-	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart);
+
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+			this->PreviouslyExploredRooms);
 
 	//Prepare vars for recording saved games.
 	this->bIsGameActive = true;

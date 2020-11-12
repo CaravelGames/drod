@@ -99,9 +99,9 @@ void MergeOrbConnections(
 }
 
 //*****************************************************************************
-void OrbUtil::MergeYellowDoorConnectionsInArea(
+void OrbUtil::MergeDoorConnectionsInArea(
 // Merges orb connections at the specified area to ensure there are no conflicts
-// This will check every yellow door in the area and ensure there are no duplicate agents in the same orb/plate
+// This will check every door in the area and ensure there are no duplicate agents in the same orb/plate
 // And if there are, they'll be merged. If agent action conflicts appear, they'll merge to a Toggle
 	CDbRoom& room,             //(in) Room affected
 	UINT wX, UINT wY,          //(in) Area start
@@ -122,11 +122,12 @@ void OrbUtil::MergeYellowDoorConnectionsInArea(
 			if (mergedDoorCoords.has(x, y))
 				continue;
 
-			if (!bIsYellowDoor(room.GetOSquare(x, y)))
+			const UINT oTile = room.GetOSquare(x, y);
+			if (!bIsDoor(oTile))
 				continue;
 
 			CCoordSet doorCoords;
-			room.GetAllYellowDoorSquares(x, y, doorCoords);
+			room.GetAllDoorSquares(x, y, doorCoords, oTile);
 			mergedDoorCoords += doorCoords;
 
 			orbData.clear();

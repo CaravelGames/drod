@@ -2930,12 +2930,14 @@ bool CDbRoom::DoesSquareContainTeleportationObstacle(
 CMonster* CDbRoom::FindNextClone()
 //Returns: pointer to next monster of type M_CLONE, else NULL if none
 {
-	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE));
+	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE, true));
 	CMonster* pMonster = pFirstClone;
-	while (pMonster && pMonster->wType == M_CLONE) {
-		CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
-		if (pClone->wCreationIndex > this->wLastCloneIndex) {
-			return pClone;
+	while (pMonster && pMonster->wProcessSequence == SPD_PDOUBLE) {
+		if (pMonster->wType == M_CLONE) {
+			CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			if (pClone->wCreationIndex > this->wLastCloneIndex) {
+				return pClone;
+			}
 		}
 
 		pMonster = pMonster->pNext;
@@ -3578,7 +3580,7 @@ const CMonster* CDbRoom::GetOwningMonsterOnSquare(const UINT wX, const UINT wY) 
 }
 
 //*****************************************************************************
-CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
+CMonster* CDbRoom::GetMonsterOfType(const UINT wType, const bool bIgnoreCharacterAppearance) const
 //Returns: first monster of specified type in monster list, or NULL if none
 {
 	CMonster *pMonster = this->pFirstMonster;
@@ -3592,7 +3594,9 @@ CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			if (pCharacter->IsVisible()) //Character must be in room to count.
 			{
-				if (wType == M_CHARACTER || pCharacter->GetIdentity() == wType)
+				if (wType == M_CHARACTER)
+					return pMonster;
+				else if (pCharacter->GetIdentity() == wType && !bIgnoreCharacterAppearance)
 					return pMonster;
 			}
 		}
@@ -4632,11 +4636,11 @@ void CDbRoom::ProcessPuffAttack(
 	{
 		case T_WATER:
 			Plot(wX, wY, T_THINICE);
-			this->bridges.built(wX,wY,T_THINICE);
+			this->bridges.HandleTileBuilt(wX,wY,T_THINICE);
 		break;
 		case T_SHALLOW_WATER:
 			Plot(wX, wY, T_THINICE_SH);
-			this->bridges.built(wX,wY,T_THINICE_SH);
+			this->bridges.HandleTileBuilt(wX,wY,T_THINICE_SH);
 		break;
 	}
 
@@ -5505,7 +5509,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 //A prioritized list of general room changes that are checked each game turn.
 {
 	//Bridges fall before anything else happens.
-	this->bridges.process(CueEvents);
+	this->bridges.Process(CueEvents);
 
 	if (CueEvents.HasOccurred(CID_EvilEyeWoke))
 		this->bTarWasStabbed = true;	//indicates room has entered a "dangerous" state
@@ -7586,7 +7590,7 @@ void CDbRoom::Clear()
 
 	this->ExtraVars.Clear();
 	this->weather.clear();
-	this->bridges.clear();
+	this->bridges.Clear();
 	this->building.clear();
 	this->floorSpikes.clear();
 	this->fluffVents.clear();
@@ -10790,7 +10794,7 @@ void CDbRoom::ReplaceOLayerTile(
 	const UINT wX, const UINT wY,
 	const UINT wTileNo)
 {
-	this->bridges.plotted(wX,wY,wTileNo);
+	this->bridges.Plotted(wX,wY,wTileNo);
 
 	//Maintain sets of uncommon tiles that have a periodic effect
 	if (wTileNo == T_FLOOR_SPIKES) {
@@ -11792,7 +11796,7 @@ bool CDbRoom::SetMembers(
 		this->coveredOSquares = Src.coveredOSquares;
 		this->bTarWasStabbed = Src.bTarWasStabbed;
 		this->bGreenDoorsOpened = Src.bGreenDoorsOpened;
-		this->bridges.setMembersForRoom(Src.bridges, this);
+		this->bridges.SetMembersForRoom(Src.bridges, this);
 		this->building.setMembers(Src.building);
 		this->floorSpikes = Src.floorSpikes;
 		this->fluffVents = Src.fluffVents;
@@ -12032,7 +12036,7 @@ void CDbRoom::InitRoomStats()
 	this->bCheckForHoldMastery = false;
 	this->briars.clear();
 	this->briars.setRoom(this); //call after clear()
-	this->bridges.setRoom(this);
+	this->bridges.SetRoom(this);
 	this->building.init(this->wRoomCols, this->wRoomRows);
 	ClearPlatforms();
 	this->floorSpikes.clear();
@@ -12104,7 +12108,7 @@ void CDbRoom::InitRoomStats()
 				const UINT index = pszSeek - this->pszOSquares;
 				const UINT wX = index % this->wRoomCols;
 				const UINT wY = index / this->wRoomCols;
-				this->bridges.addBridge(wX, wY);
+				this->bridges.HandleBridgeAdded(wX, wY);
 			}
 			break;
 

@@ -1883,8 +1883,8 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "HalphOof", "H2_oof1.ogg;H2_oof2.ogg");
 	AddIfMissing(INISection::Waves, "HalphScared", "H2_scared1.ogg;H2_scared2.ogg");
 	AddIfMissing(INISection::Waves, "MonsterOof", "hiss_short.ogg");
-	AddIfMissing(INISection::Waves, "NFrustrated", "NeatherMad.ogg");
-	AddIfMissing(INISection::Waves, "NScared", "NeatherScared2.ogg;NeatherScared3.ogg");
+//	AddIfMissing(INISection::Waves, "NFrustrated", "NeatherMad.ogg");
+//	AddIfMissing(INISection::Waves, "NScared", "NeatherScared2.ogg;NeatherScared3.ogg");
 	AddIfMissing(INISection::Waves, "RockDie", "RG_die1.ogg;RG_die2.ogg");
 	AddIfMissing(INISection::Waves, "RockOof", "RG_oof1.ogg;RG_oof2.ogg");
 	AddIfMissing(INISection::Waves, "RockScared", "RG_scared1.ogg;RG_scared2.ogg");

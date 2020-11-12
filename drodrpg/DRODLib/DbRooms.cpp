@@ -2774,6 +2774,7 @@ const
 //*****************************************************************************
 void CDbRoom::FixUnstableTar(CCueEvents &CueEvents)
 //Remove unstable tarstuff.
+//Tarstuff remains under any monster situated on a tarstuff tile
 {
 	bool bStable;
 	UINT wX, wY, wTTile;
@@ -2786,8 +2787,8 @@ void CDbRoom::FixUnstableTar(CCueEvents &CueEvents)
 				if (bIsTar(wTTile) && !IsTarStableAt(wX,wY,wTTile))
 				{
 					CMonster *pMonster = GetMonsterAtSquare(wX,wY);
-					if (pMonster && bIsMother(pMonster->wType))
-						continue; //allow unstable tarstuff to remain under a mother
+					if (pMonster)
+						continue; //allow unstable tarstuff to remain under a mother (or any monster on tar)
 					DestroyTar(wX, wY, CueEvents);
 					bStable = false;
 				}
@@ -6915,6 +6916,8 @@ CMonster* CDbRoom::GetMotherConnectedToTarTile(const UINT wX, const UINT wY) con
 //Calculates whether tarstuff at (x,y) is part of a tarstuff component
 //connected to a mother.
 //
+//Any monster on the tarstuff counts as a mother for this 
+//
 //Returns: if the specified tile is connected to a mother by tarstuff,
 // return a pointer to the mother, otherwise NULL
 {
@@ -7121,9 +7124,13 @@ const
 
 //*****************************************************************************
 void CDbRoom::RemoveStabbedTar(
-//Removes tar found in a square in response to the tar being stabbed.  Adjacent
-//tar squares may change into tar babies as a result.  Does not check that stab
+//Removes tarstuff found in a square in response to the tar being stabbed.  Adjacent
+//tarstuff squares may change into tar babies as a result.  Does not check that stab
 //is directed at a vulnerable tar square.
+//
+//Any mother on an otherwise unstable tarstuff tile maintains the tarstuff underneath it.
+//
+//Any monster on tarstuff counts as a mother for this check.
 //
 //Params:
 	const UINT wX, const UINT wY, //(in)  Square containing tar to remove.
@@ -7155,7 +7162,7 @@ recompute:
 					(GetTSquare(i, j) != wTarType) ||
 
 					//...tar that's marked for baby conversion...
-					NewBabies.IsMember(i, j))
+					this->NewBabies.IsMember(i, j))
 				continue;
 
 			//Get the orthogonal squares once for speed.
@@ -7195,7 +7202,7 @@ recompute:
 
 			//If there is not a tarstuff mother here, tarstuff breaks.
 			CMonster *pMonster = GetMonsterAtSquare(i,j);
-			if (!pMonster || !bIsMother(pMonster->wType))
+			if (!pMonster) //any monster counts as a mother for this check
 			{
 				//Mark tar for baby conversion
 				if (!NewBabies.IsMember(i, j))
@@ -7223,7 +7230,7 @@ void CDbRoom::ConvertUnstableTar(
 	GetSwordCoords(swordCoords);
 
 	UINT wX, wY;
-	while (NewBabies.PopBottom(wX,wY)) //process as queue
+	while (this->NewBabies.PopBottom(wX,wY)) //process as queue
 	{
 		const UINT wTarType = GetTSquare(wX,wY);
 		if (bIsTar(wTarType))
@@ -7270,7 +7277,7 @@ void CDbRoom::ConvertUnstableTar(
 		}
 	}
 	
-	NewBabies.Clear();
+	this->NewBabies.Clear();
 }
 
 //*****************************************************************************
@@ -7885,7 +7892,7 @@ void CDbRoom::Plot(
 		{
 			this->pszOSquares[wSquareIndex] = static_cast<unsigned char>(wTileNo);
 //			RecalcStationPaths();
-			this->bridges.plotted(wX,wY,wTileNo);
+			this->bridges.Plotted(wX,wY,wTileNo);
 			this->PlotsMade.insert(wX,wY);
 			this->geometryChanges.insert(wX,wY);  //always assume changes to o-layer affect room geometry for easier maintenance
 
@@ -9197,7 +9204,7 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 			{
 				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
 				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
-				this->bridges.addBridge(wX, wY);
+				this->bridges.HandleBridgeAdded(wX, wY);
 			}
 			break;
 		}

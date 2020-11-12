@@ -78,8 +78,8 @@ void CSteamEffect::Draw(SDL_Surface& destSurface)
 	//Fade out.
 	g_pTheBM->BlitTileImagePart(this->wDrawTile, 
 			this->wDrawX, this->wDrawY,
-			0, this->wDrawY,
-			CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE - this->wDrawY,
+			0, this->wDrawClipY,
+			CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE - this->wDrawClipY,
 			&destSurface, false, this->nDrawOpacity);
 }
 
