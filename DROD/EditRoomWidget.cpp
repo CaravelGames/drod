@@ -346,7 +346,7 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 
 			if (IsSafePlacement(wMonsterType + M_OFFSET,wX,wY))
 			{
-				CCoord coord(wX,wY);
+				const CCoord coord(wX,wY);
 				AddLastLayerEffect(new CTransTileEffect(this, coord, wTileNo));
 				if (bHead && !bSegment)
 					AddShadeEffect(wX,wY,Red); //can't plot only the head
