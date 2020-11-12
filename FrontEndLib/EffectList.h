@@ -52,10 +52,12 @@ public:
 			SDL_Surface *pDestSurface=NULL,
 			const UINT eDrawnType = (UINT)-1);
 	void           EraseEffects(SDL_Surface* pBackground, const SDL_Rect& rect, const bool bUpdate=false);
+	bool           GetEffectsFrozen() const { return this->bIsFrozen; }
 	CEffect*       GetEffectOfType(const UINT eEffectType) const;
 	SDL_Rect       GetBoundingBoxForEffectsOfType(const UINT eEffectType) const;
 	virtual void   RemoveEffectsOfType(const UINT eEffectType);
-	void           SetOpacityForEffectsOfType(const UINT eEffectType, float fOpacity) const;
+	void           SetOpacityForEffects(const float fOpacity) const;
+	void           SetOpacityForEffectsOfType(const UINT eEffectType, const float fOpacity) const;
 	void           SetEffectsFrozen(const bool bIsFrozen);
 
 	list<CEffect *> Effects;

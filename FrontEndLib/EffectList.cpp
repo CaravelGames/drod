@@ -362,6 +362,16 @@ SDL_Rect CEffectList::GetBoundingBoxForEffectsOfType(const UINT eEffectType) con
 }
 
 //*****************************************************************************
+void CEffectList::SetOpacityForEffects(const float fOpacity) const
+{
+	for (list<CEffect*>::const_iterator iSeek = this->Effects.begin();
+		iSeek != this->Effects.end(); ++iSeek)
+	{
+		(*iSeek)->SetOpacity(fOpacity);
+	}
+}
+
+//*****************************************************************************
 void CEffectList::SetOpacityForEffectsOfType(const UINT eEffectType, float fOpacity) const
 {
 	for (list<CEffect *>::const_iterator iSeek = this->Effects.begin();

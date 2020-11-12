@@ -867,19 +867,15 @@ void CSettingsScreen::OnKeyDown(
 			SynchScreenSizeWidget();
 		break;
 
-		default: break;
-	}
-
-	switch (dwTagNo)
-	{
-		case TAG_MUSIC_VOLUME:
-		case TAG_VOICES_VOLUME:
-		case TAG_SOUNDEFF_VOLUME:
-		{
-			SDL_MouseButtonEvent fakeButton;
-			OnDragUp(dwTagNo, fakeButton);
-		}
+		case SDLK_LEFT: case SDLK_RIGHT:
+		case SDLK_HOME: case SDLK_END:
+		case SDLK_KP_4: case SDLK_KP_6: case SDLK_KP_7: case SDLK_KP_1:
+			if (dwTagNo == TAG_MUSIC_VOLUME || dwTagNo == TAG_VOICES_VOLUME || dwTagNo == TAG_SOUNDEFF_VOLUME) {
+				SDL_MouseButtonEvent fakeButton;
+				OnDragUp(dwTagNo, fakeButton);
+			}
 		break;
+		default: break;
 	}
 
 	SetWidgetStates();

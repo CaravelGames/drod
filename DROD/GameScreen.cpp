@@ -2836,6 +2836,8 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	// And we want image events to be rendered too
 	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
+
+	ProcessFuseBurningEvents(CueEvents);
 	
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
@@ -2862,23 +2864,10 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	//Show the screen after first arriving here.
 	this->pFaceWidget->SetReading(false);
-	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);	//stop showing where bombs were
 	this->pRoomWidget->RemoveMLayerEffectsOfType(EPENDINGBUILD); //stop showing where pending building was
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(EEVILEYEGAZE);
 	this->pRoomWidget->RemoveHighlight();
-	this->pRoomWidget->RemoveLastLayerEffectsOfType(ESHADE); //remove user tile highlight
-	this->pRoomWidget->PutTLayerEffectsOnMLayer();	//keep showing whatever effects were showing
 	this->pRoomWidget->AllowSleep(false);
 	this->pRoomWidget->Paint();
-
-	//Prepare room for fade out.
-	this->pRoomWidget->RenderRoomInPlay();
-	this->pRoomWidget->DrawOverheadLayer(this->pRoomWidget->pRoomSnapshotSurface);
-	this->pRoomWidget->DrawGhostOverheadCharacters(this->pRoomWidget->pRoomSnapshotSurface, false);
-	this->pRoomWidget->RenderEnvironment(this->pRoomWidget->pRoomSnapshotSurface);
-
-	const bool bFade = g_pTheBM->bAlpha;
-	CFade *pFade = bFade ? new CFade(this->pRoomWidget->pRoomSnapshotSurface,NULL) : NULL;
 
 	bool bNonMonsterDeath = false;
 	const CMonster *pHalph = NULL;
@@ -3029,17 +3018,16 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		}
 
 		//Fade to black.
-		if (dwNow - dwLastFade > 100 && g_pTheBM->bAlpha)
+		if (g_pTheBM->bAlpha && dwStart)
 		{
-			if (bFade)
-			{
-				const float fFade = (dwNow - dwStart) / (float)dwDeathDuration;
-				pFade->IncrementFade(fFade);
-				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ESNOWFLAKE, 1.0f-fFade);
-				this->pRoomWidget->SetOpacityForMLayerEffectsOfType(ERAINDROP, 1.0f-fFade);
-				this->pRoomWidget->SetOpacityForEffectsOfType(EIMAGEOVERLAY, 1.0f-fFade);
-			}
+			const float durationFraction = min(1, (dwNow - dwStart) / (float)dwDeathDuration);
+			const float remainingFraction = 1 - durationFraction;
+
+			this->pRoomWidget->SetDeathFadeOpacity(durationFraction);
+			this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(remainingFraction);
+			this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(remainingFraction);
 			this->pRoomWidget->DirtyRoom();  //repaint whole room each fade
+			
 			dwLastFade = dwNow;
 		}
 
@@ -3091,7 +3079,10 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		if (dwNow - dwStart > dwDeathDuration)
 			break;
 	}
-	delete pFade;
+	
+	this->pRoomWidget->SetDeathFadeOpacity(0);
+	this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(1);
+	this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(1);
 	this->pCurrentGame->swordsman.SetOrientation(wOrigO);	//restore value
 
 	if (bPlayerFellInPit)
@@ -4598,9 +4589,6 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 		CueEvents.Clear();	//clear after death sequence (whether move is undone or not)
 		//but before room restart so speech on room start can be retained
-
-		// Image overlay opacity must be restored, otherwise they'll keep their opacity while playing until they are regenerated
-		this->pRoomWidget->SetOpacityForEffectsOfType(EIMAGEOVERLAY, 1.0f);
 
 		ASSERT(!this->pCurrentGame->bIsGameActive || bUndoDeath);
 		if (GetScreenType() == SCR_Demo)

@@ -211,7 +211,6 @@ public:
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
 	void AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
-	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID=0, const bool bMakeRoomsVisible=true);
 	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
@@ -252,6 +251,7 @@ public:
 	static int getPredefinedWeaponPower(const UINT type);
 	int      getShieldPower(const UINT type) const;
 	int      getWeaponPower(const UINT type) const;
+	CIDSet   GetPreviouslyExploredRooms() const { return PreviouslyExploredRooms; }
 	WSTRING  GetScrollTextAt(const UINT wX, const UINT wY);
 	UINT     GetRoomExitDirection(const UINT wMoveO) const;
 	UINT     GetScore() const;
@@ -305,6 +305,7 @@ public:
 	void     ProcessMonsterDefeat(CCueEvents& CueEvents,
 			CMonster* pDefeatedMonster, const UINT wSX, const UINT wSY,
 			const UINT wSwordMovement);
+	void     ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents);
 	void     ProcessMoveFreeScripts(CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessScripts(int nCommand, CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessSwordHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
@@ -475,6 +476,9 @@ private:
 	UINT dwComputationTime; //time required to process game moves up to this point
 	UINT dwComputationTimePerSnapshot; //real movement computation time between game state snapshots
 */
+
+	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0, const bool bMakeRoomsVisible = true);
+	CIDSet   PreviouslyExploredRooms; //cache values
 };
 
 #endif //...#ifndef CURRENTGAME_H

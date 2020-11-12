@@ -97,16 +97,18 @@ private:
 	bool     DeleteLevelEntrance(const UINT wX, const UINT wY);
 	void     DisplayChatDialog();
 //	void     DrawHalphSlayerEntrances();
+	void     EditLevelEntrance(const UINT wX, const UINT wY);
 	bool     EditLevelEntrance(WSTRING &wstrDescription, bool &bMainEntrance,
 			CEntranceData::DescriptionDisplay &eShowEntranceDesc);
-	void     EditLongMonster(CMonster* pMonster);
 	void     EditObjects();
 	void     EditOrbAgents(const UINT wX, const UINT wY);
 	bool     EditScrollText(const UINT wX, const UINT wY);
+	void     EditSerpent(CMonster* pMonster);
 	bool     EraseAndPlot(const UINT wX, const UINT wY, const UINT wObjectToPlot,
 			const bool bFixImmediately=true);
 	void     EraseObjects();
-   void     EraseObjects(const UINT wLayer, bool& bSomethingPlotted, bool& bSomethingDeleted);
+	void     EraseObjects(const UINT wLayer, bool& bSomethingPlotted, bool& bSomethingDeleted);
+	void     EraseObjectsOnAllLayers(bool& bSomethingPlotted, bool& bSomethingDeleted);
 	void     EraseRegion();
    COrbAgentData* FindOrbAgentFor(const UINT wX, const UINT wY, COrbData* pOrb);
 	COrbAgentData* FindOrbAgentFor(COrbData* pOrb, CCoordSet &doorCoords);
@@ -121,6 +123,7 @@ private:
 	const UINT*    GetTileImageForMonsterType(const UINT wType, const UINT wO,
 			const UINT wAnimFrame) const;
 	void     GetGlobalVarDefaults(PlayerStats& st);
+	UINT     GetSelectedObject() const;
 	void     HighlightPendingPaste();
 	void     IncrementMenuSelection(const bool bForward=true);
 
@@ -133,7 +136,7 @@ private:
 
 	virtual void   OnBetweenEvents();
 	virtual void   OnClick(const UINT dwTagNo);
-   virtual void   OnDeactivate();
+	virtual void   OnDeactivate();
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
@@ -146,9 +149,9 @@ private:
 	void     PaintHighlights();
 
 	void     PasteRegion(const UINT wX, const UINT wY);
-	void     PlotLastMonsterSegment(const UINT wTailX, const UINT wTailY,
+	void     PlotLastSerpentSegment(const UINT wTailX, const UINT wTailY,
 			const UINT wDirection);
-	PlotType    PlotMonsterSegment();
+	PlotType    PlotLongMonsterSegment();
 	void     PlotObjects();
 	bool     PlotObjectAt(const UINT wX, const UINT wY, const UINT wObject,
 			const UINT wO);

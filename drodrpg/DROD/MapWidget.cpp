@@ -219,7 +219,7 @@ void CMapWidget::GetVisibleMapRect(SDL_Rect &rect) const
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
 		const bool bIncludeRoom = this->bEditing ||
-				this->DarkenedRooms.has(*iter) ||
+				this->NoDetailRooms.has(*iter) ||
 				this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
 
 		if (bIncludeRoom)
@@ -773,23 +773,18 @@ void CMapWidget::RefreshRoom(const UINT roomID, const UINT mapMarker) //[default
 //
 
 //*****************************************************************************
-void CMapWidget::SetDarkenedRooms()
-//Set rooms that will appear as darkened (meaning they are marked on map, but not explored).
+void CMapWidget::SetNoDetailRooms()
+//Set rooms that will appear as marked on the map, but show no detail because they are not explored.
 {
 	if (!this->pCurrentGame)
 	{
-		this->DarkenedRooms.clear();
+		this->NoDetailRooms.clear();
 	} else {
 		//Get all rooms marked on map, minus explored rooms.
-		this->DarkenedRooms = this->pCurrentGame->GetMappedRooms();
-		this->DarkenedRooms.intersect(CDb::getRoomsInLevel(this->pCurrentGame->pLevel->dwLevelID));
-		this->DarkenedRooms -= this->pCurrentGame->GetExploredRooms();
+		this->NoDetailRooms = this->pCurrentGame->GetMappedRooms();
+		this->NoDetailRooms.intersect(CDb::getRoomsInLevel(this->pCurrentGame->pLevel->dwLevelID));
+		this->NoDetailRooms -= this->pCurrentGame->GetExploredRooms();
 	}
-/*
-	LoadMapSurface();
-	//Select the current room.
-	SelectRoom(this->pCurrentGame->pRoom->dwRoomX, this->pCurrentGame->pRoom->dwRoomY);
-*/
 }
 
 //*****************************************************************************
@@ -925,7 +920,7 @@ bool CMapWidget::SelectRoomIfValid(
 	{
 		//Has it been explored?
 		if (this->bEditing || this->ExploredRooms.has(dwRoomID) ||
-				this->DarkenedRooms.has(dwRoomID)) //Yes.
+				this->NoDetailRooms.has(dwRoomID)) //Yes.
 		{
 			//Select the room.
 			SelectRoom(dwRoomX, dwRoomY);
@@ -1050,7 +1045,7 @@ bool CMapWidget::LoadMapSurface(
 		return true;
 	}
 
-	CIDSet roomIDs = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
+	const CIDSet roomIDs = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
 	if (roomIDs.empty())
 	{
 		//No rooms to display.
@@ -1060,7 +1055,8 @@ bool CMapWidget::LoadMapSurface(
 		return true;
 	}
 
-	SetDarkenedRooms();
+	SetNoDetailRooms();
+	this->PreviewedRooms.clear();
 
 	//Load every room in the current level.
 	bool bFirstRoom = true;
@@ -1071,7 +1067,7 @@ bool CMapWidget::LoadMapSurface(
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
 		const bool bIncludeRoom = this->bEditing ||
-				this->DarkenedRooms.has(*iter) ||
+				this->NoDetailRooms.has(*iter) ||
 				this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
 
 		if (!bInScrollWindow || bIncludeRoom)
@@ -1230,64 +1226,31 @@ void CMapWidget::UpdateMapSurface(const bool /*bRefreshSelectedRoom*/)	//[defaul
 		return;
 	}
 
-	SetDarkenedRooms();
-
-/*
-	//See if all the current game conquered rooms are shown in map.
-	ASSERT(this->pCurrentGame->pRoom);
-	if (this->pCurrentGame->ConqueredRooms.size() != 
-			this->ConqueredRooms.size())
-	{
-		for (CIDSet::const_iterator iter=this->pCurrentGame->ConqueredRooms.begin();
-				iter != this->pCurrentGame->ConqueredRooms.end(); ++iter)
-		{
-			if (!this->ConqueredRooms.has(*iter))
-			{
-				//A new conquered room to update my map with.
-				this->ConqueredRooms += *iter;
-				if (this->pCurrentGame->pRoom->dwRoomID == *iter)
-					bDrawCurrentRoom = true;
-				else
-				{
-					//Load the room in.
-					CDbRoom *pTempRoom = g_pTheDB->Rooms.GetByID(*iter, true);
-					if (pTempRoom)
-					{
-						pTempRoom->LoadTiles();
-						DrawMapSurfaceFromRoom(pTempRoom);
-						delete pTempRoom;
-					}
-					else
-						ASSERT(!"Failed to retrieve room");
-				}
-			}
-		}
-	} //...if conquered room list sizes don't match.
-*/
+	SetNoDetailRooms();
 
 	//See if all the current game explored rooms are shown in map.
 	CIDSet explRooms = this->pCurrentGame->GetExploredRooms();
 	const CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pCurrentGame->pLevel->dwLevelID);
 	explRooms.intersect(roomsInLevel);
 	explRooms += this->pCurrentGame->dwRoomID;
-	if (explRooms.size() != this->ExploredRooms.size())
+	if (explRooms.size() != this->ExploredRooms.size() ||
+		this->PreviewedRooms.containsAny(explRooms)) //these might need refreshing
 	{
 		for (CIDSet::const_iterator iter=explRooms.begin();
 				iter != explRooms.end(); ++iter)
 		{
-			if (!this->ExploredRooms.has(*iter))
+			const UINT roomID = *iter;
+			if (!this->ExploredRooms.has(roomID) || this->PreviewedRooms.has(roomID))
 			{
-				//A new explored room to update my map with.
-				this->ExploredRooms += *iter;
+				//A new explored room to update the map with.
+				this->ExploredRooms += roomID;
+				this->PreviewedRooms -= roomID;
 
-				//Draw the room if it isn't in the conquered list (already drawn above).
-//				if (!this->ConqueredRooms.has(*iter))
-				{
-					if (this->pCurrentGame->pRoom->dwRoomID == *iter)
-						bDrawCurrentRoom = true;
-					else
-						RefreshRoom(*iter);
-				}             
+				//Redraw the room
+				if (this->pCurrentGame->pRoom->dwRoomID == roomID)
+					bDrawCurrentRoom = true;
+				else
+					RefreshRoom(*iter);
 			}
 		}
 	}
@@ -1309,29 +1272,6 @@ void CMapWidget::UpdateMapSurface(const bool /*bRefreshSelectedRoom*/)	//[defaul
 	}
 
 	//Room being left should not be redrawn.
-/*
-	//Used to force redraw of the room just left before a new room is selected.
-	//This is done to ensure it is shown in its original state, and not the
-	//state the room was in when it was left.
-	if (bRefreshSelectedRoom)
-	{
-		CDbRoom *pSelectedRoom = g_pTheDB->Rooms.GetByCoords(
-				this->dwLevelID, this->dwSelectedRoomX, this->dwSelectedRoomY);
-		if (pSelectedRoom)
-		{
-			DrawMapSurfaceFromRoom(pSelectedRoom);
-			delete pSelectedRoom;
-		}
-	}
-
-	//Need to redraw the current room if an exit is pending.
-	const bool bPendingExit = (this->pCurrentGame ?
-			this->pCurrentGame->IsCurrentRoomPendingExit() : false);
-	if (bPendingExit != this->bPendingExitDrawn) {
-		bDrawCurrentRoom = true;
-		this->bPendingExitDrawn = bPendingExit;
-	}
-*/
 
 	//New room is the current room.
 	if (bDrawCurrentRoom)
@@ -1354,23 +1294,15 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 
 	//Get variables that affect how map pixels are set.
 	//When there is no current game, then show everything fully.
-/*
-	const bool bConquered = (this->pCurrentGame ? this->pCurrentGame->
-			IsRoomAtCoordsConquered(pRoom->dwRoomX, pRoom->dwRoomY) : true);
-*/
 	ExploredRoom *pExpRoom = this->pCurrentGame ? this->pCurrentGame->getExploredRoom(pRoom->dwRoomID) : NULL;
-	const bool bDarkened = pExpRoom && !pExpRoom->bSave;
 
-	const bool bNoDetails = !bDarkened && this->DarkenedRooms.has(pRoom->dwRoomID);
+	//Room previews are shown distinctly on the map
+	const bool bRoomPreview = pExpRoom && !pExpRoom->bSave;
+	if (bRoomPreview)
+		this->PreviewedRooms += pRoom->dwRoomID;
 
-/*
-	const bool bCompleted = (this->pCurrentGame ? this->pCurrentGame->
-			IsCurrentLevelComplete() : false);
-	const bool bPendingExit = (this->pCurrentGame ?
-			pRoom->dwRoomID == this->pCurrentGame->pRoom->dwRoomID &&   //only applies to current room
-			this->pCurrentGame->IsCurrentRoomPendingExit() : false);
-	const bool bRoomRequired = pRoom->bIsRequired;
-*/
+	const bool bNoDetails = !bRoomPreview && this->NoDetailRooms.has(pRoom->dwRoomID);
+
 	const bool bSecret = pRoom->bIsSecret;
 
 	//Map markers override default room coloring.
@@ -1428,8 +1360,7 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 					color = GetMapColorFromTile(
 					(unsigned char) pRoom->pszOSquares[roomTileIndex],
 					(unsigned char) pRoom->pszTSquares[roomTileIndex],
-	//				bConquered, bCompleted,
-					bDarkened,
+					bRoomPreview,
 					bSecret, bHasMonsters, bHasItems, bHasClosedDoors);//, bRoomRequired, bPendingExit);
 
 					//Tint pixel with map marker color, if specified.
@@ -1492,12 +1423,6 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 	const bool bHasMonsters,
 	const bool bHasItems,
 	const bool bHasClosedDoors
-/*
-	const bool bRoomConquered, 
-	const bool bLevelComplete,
-	const bool bPendingExit
-	const bool bRoomRequired
-*/
 	)
 {
 	switch (wTransparentTile)

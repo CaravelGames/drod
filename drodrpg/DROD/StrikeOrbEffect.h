@@ -63,6 +63,7 @@ private:
 
 	Uint8 nOpacity;
 	vector<BOLT_SEGMENTS*> drawBolts;
+	bool bSuppressDraw;
 
 	SDL_Surface *  pPartsSurface;
 };

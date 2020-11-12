@@ -146,7 +146,8 @@ public:
 	void      ReloadMonsterList(CMonster *pAlternateMonsterList=NULL);
 	void      removeGlobalScriptForEquipment(const UINT type);
 	void      removeGlobalScripts(const CIDSet& completedScripts);
-	void      RemoveMappedRoomsNotIn(const CIDSet exploredRoomIDs, const CIDSet mappedRoomIDs);
+	void      RemoveMappedRoomsNotIn(const CIDSet& exploredRoomIDs, const CIDSet& mappedRoomIDs,
+			const CIDSet& roomPreviewIDs);
 	void      SetMonsterListAtRoomStart();
 	void      setMonstersCurrentGame(CCurrentGame* pCurrentGame);
 	vector<ExploredRoom*> ExploredRooms;
@@ -169,6 +170,8 @@ public:
 protected:
 	void     Clear(const bool bNewGame=true);
 	void     ClearDeadMonsters();
+	vector<ExploredRoom*> GetCopyOfExploredRooms(const vector<ExploredRoom*>& rooms);
+	void     ReplaceExploredRooms(vector<ExploredRoom*>& rooms);
 
 private:
 	void     DeleteExploredRooms();

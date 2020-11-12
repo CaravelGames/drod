@@ -310,7 +310,6 @@ public:
 			const UINT wH, const bool bUpdateRect = true);
 	bool           PlayerLightTurnedOff() const;
 	void           ProcessCueEventsBeforeRoomDraw(const CCueEvents &CueEvents);
-	void           PutTLayerEffectsOnMLayer();
 
 	void           QueueRemoveLayerEffectsOfType(const EffectType eEffectType, int layer) {
 		queued_layer_effect_type_removal.insert(make_pair(eEffectType, layer)); }
@@ -321,7 +320,7 @@ public:
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveOLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveTLayerEffectsOfType(const EffectType eEffectType);
-	void				RenderEnvironment(SDL_Surface *pDestSurface=NULL);
+	void	       RenderEnvironment(SDL_Surface *pDestSurface=NULL);
 	void           RenderRoom(int wCol=0, int wRow=0,
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS,
 			const bool bEditor=true);
@@ -339,6 +338,7 @@ public:
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
 	void           SetAnimateMoves(const bool bAnimate) {this->bAnimateMoves = bAnimate;}
+	void           SetDeathFadeOpacity(const float opacity) { this->fDeathFadeOpacity = opacity;  }
 	void           SetEffectsFrozen(const bool bIsFrozen);
 	void           SetMoveDuration(const UINT dwDuration) {this->dwMoveDuration = dwDuration;}
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
@@ -643,6 +643,7 @@ private:
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
 
+	float          fDeathFadeOpacity;
 	Uint32         time_of_last_weather_render;
 	int            redrawingRowForWeather;
 	bool           need_to_update_room_weather;

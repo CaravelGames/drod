@@ -386,9 +386,16 @@ bool CSwordsman::Move(
 {
 	const bool bMoved = !(this->wX == wSetX && this->wY == wSetY);
 
-	//Set new swordsman coords.
-	this->wPrevX = this->wX;
-	this->wPrevY = this->wY;
+	//Set new player coords.
+	if (this->wIdentity == M_NONE)
+	{
+		this->wPrevX = wSetX;
+		this->wPrevY = wSetY;
+	}
+	else {
+		this->wPrevX = this->wX;
+		this->wPrevY = this->wY;
+	}
 	this->wPrevO = this->wO;
 	this->wX = wSetX;
 	this->wY = wSetY;

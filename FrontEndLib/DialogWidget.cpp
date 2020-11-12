@@ -442,25 +442,38 @@ void CDialogWidget::OnWindowEvent_GetFocus()
 	// As a rule, dialogs appear as part of a screen, and the screen may need to do special handling
 	// when focus is restored/lost, so just pass the responsibility to them
 	ASSERT(this->pParent);
-	CEventHandlerWidget* pParent = dynamic_cast<CEventHandlerWidget*>(this->pParent);
+	CEventHandlerWidget* pParent = FindEventHandlerParent();
 	if (pParent)
 		pParent->OnWindowEvent_GetFocus();
-	else {
-		ASSERT(!"Dialogs should always exist as a child of CEventHandlerWidget, will fallback!");
+	else
 		CEventHandlerWidget::OnWindowEvent_GetFocus();
-	}
 }
 
 //*****************************************************************************
 void CDialogWidget::OnWindowEvent_LoseFocus()
 {
 	// See OnWindowEvent_GetFocus() for explanation
-	ASSERT(this->pParent);
-	CEventHandlerWidget* pParent = dynamic_cast<CEventHandlerWidget*>(this->pParent);
+	CEventHandlerWidget* pParent = FindEventHandlerParent();
 	if (pParent)
 		pParent->OnWindowEvent_LoseFocus();
-	else {
-		ASSERT(!"Dialogs should always exist as a child of CEventHandlerWidget, will fallback!");
+	else
 		CEventHandlerWidget::OnWindowEvent_LoseFocus();
+}
+
+//*****************************************************************************
+CEventHandlerWidget* CDialogWidget::FindEventHandlerParent() const
+{
+	ASSERT(this->pParent);
+	CWidget* pParent = this->pParent;
+
+	while (pParent) {
+		CEventHandlerWidget* pEventHandlerParent = dynamic_cast<CEventHandlerWidget*>(pParent);
+		if (pEventHandlerParent)
+			return pEventHandlerParent;
+
+		pParent = pParent->GetParent();
 	}
+
+	ASSERT(!"Dialogs should always exist as a child of CEventHandlerWidget, will fallback!");
+	return NULL;
 }

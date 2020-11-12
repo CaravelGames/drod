@@ -39,8 +39,7 @@ CTransTileEffect::CTransTileEffect(
 	const CCoord &SetCoord,    //(in)   Location of checkpoint.
 	const UINT wTileImageNo,   //(in)   Tile to display.
 	const bool bUseLightLevel)
-	: CAnimatedTileEffect(pSetWidget,SetCoord,0,wTileImageNo,bUseLightLevel,EFFECTLIB::ETRANSTILE)
-	, nOpacity(255)
+	: CAnimatedTileEffect(pSetWidget,SetCoord,(UINT)-1,wTileImageNo,bUseLightLevel,EFFECTLIB::ETRANSTILE)
 {
 }
 

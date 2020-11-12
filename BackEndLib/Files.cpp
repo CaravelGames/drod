@@ -90,6 +90,7 @@ UINT CFiles::dwRefCount = 0;
 CIniFile CFiles::gameIni;
 bool CFiles::bInitedIni = false;
 bool CFiles::bIsDemo = false;
+bool CFiles::bIsRunningTests = false;
 bool CFiles::bad_data_path_file = false;
 WSTRING CFiles::wstrHomePath;
 
@@ -109,6 +110,7 @@ static const WCHAR wszDat[] = {We('.'),We('d'),We('a'),We('t'),We(0)};
 static const WCHAR wszData[] = {We('D'),We('a'),We('t'),We('a'),We(0)};
 static const WCHAR wszDataPathDotTxt[] = {We('D'),We('a'),We('t'),We('a'),We('P'),We('a'),We('t'),We('h'),We('.'),We('t'),We('x'),We('t'),We(0)};
 static const WCHAR wszDemo[] = {We('-'),We('d'),We('e'),We('m'),We('o'),We(0)};
+static const WCHAR wszTests[] = { We('-'),We('t'),We('e'),We('s'),We('t'),We('s'),We(0) };
 static const WCHAR wszCompanyName[] = {We('C'),We('a'),We('r'),We('a'),We('v'),We('e'),We('l'),We(' '),We('G'),We('a'),We('m'),We('e'),We('s'),We(0)}; // "Caravel Games"
 
 vector<string> CFiles::datFiles;
@@ -170,7 +172,8 @@ CFiles::CFiles(
 	const WCHAR *wszSetGameName,  //(in) base name of game
 	const WCHAR *wszSetGameVer,   //(in) game major version -- for finding resource files or paths
 	const bool bIsDemo,           //(in) whether we should be looking for files for a demo version or not [default=false]
-	const bool confirm_resource_file)
+	const bool confirm_resource_file,
+	const bool bIsRunningTests)   //(in) set to true by test runner to ensure it uses its own dat files
 {
 	ASSERT(this->dwRefCount == 0);
 
@@ -178,7 +181,7 @@ CFiles::CFiles(
 	ASSERT(wszSetGameName != NULL);
 	ASSERT(wszSetGameVer != NULL);
 
-	InitClass(wszSetAppPath, wszSetGameName, wszSetGameVer, bIsDemo, confirm_resource_file);
+	InitClass(wszSetAppPath, wszSetGameName, wszSetGameVer, bIsDemo, confirm_resource_file, bIsRunningTests);
 
 	++this->dwRefCount;
 }
@@ -400,6 +403,10 @@ const WSTRING CFiles::GetGameConfPath() {
 		+ CFiles::wGameName + wszHyphen	+ CFiles::wGameVer;
 	if (CFiles::bIsDemo)
 		path += CFiles::wszDemo;
+	
+	if (CFiles::bIsRunningTests)
+		path += wszTests;
+
 	return path;
 }
 
@@ -974,13 +981,15 @@ void CFiles::InitClass(
 	const WCHAR *wszSetGameName,     //(in)
 	const WCHAR *wszSetGameVer,      //(in)
 	const bool bIsDemo,              //(in)
-	const bool confirm_resource_file)
+	const bool confirm_resource_file,
+	const bool bIsRunningTests)
 {
 	ASSERT(wszSetAppPath);
 	ASSERT(wszSetGameName);
 	ASSERT(wszSetGameVer);
 
 	CFiles::bIsDemo = bIsDemo;
+	CFiles::bIsRunningTests = bIsRunningTests;
 
 	CFiles::wCompanyName = wszCompanyName;
 
