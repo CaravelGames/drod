@@ -5217,18 +5217,12 @@ float CDbRoom::GetStatModifierFromCharacters(ScriptVars::StatModifiers statType)
 {
 	float fMult = 1.0f;
 
-	CMonster* pMonster = this->pFirstMonster;
-	while (pMonster)
+	for (CMonster* pMonster = this->pFirstMonster; pMonster; pMonster = pMonster->pNext)
 	{
-		if (pMonster->wType != M_CHARACTER) {
-			pMonster = pMonster->pNext;
-			continue;
+		if (pMonster->wType == M_CHARACTER) {
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			fMult *= pCharacter->GetStatModifier(statType);
 		}
-
-		CCharacter* pCharacer = DYN_CAST(CCharacter*, CMonster*, pMonster);
-		fMult *= pCharacer->GetStatModifier(statType);
-
-		pMonster = pMonster->pNext;
 	}
 
 	return fMult;
