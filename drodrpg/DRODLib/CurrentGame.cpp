@@ -2797,17 +2797,10 @@ void CCurrentGame::ProcessMonsterDefeat(
 
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 
-			switch (pDefeatedMonster->wType)
-			{
-				case M_MUDMOTHER:
-				case M_TARMOTHER:
-				case M_GELMOTHER:
-					//Tarstuff tile should be removed at end of combat.
-					if (bIsTar(this->pRoom->GetTSquare(wSX, wSY))
-							) //always remove this tar tile when defeated //&& this->pRoom->StabTar(wSX, wSY, CueEvents, false))
-						this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
-				break;
-			}
+			//Tarstuff tile should be removed at end of combat.
+			//Tarstuff under a killed enemy is always removed, even if the tarstuff would otherwise remain stable.
+			if (bIsTar(this->pRoom->GetTSquare(wSX, wSY)))
+				this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
 		}
 		else if (CueEvents.HasOccurredWith(CID_SnakeDiedFromTruncation, pDefeatedMonster))
 		{
