@@ -2858,8 +2858,13 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_SetNPCAppearance:
 			{
 				//Sets this NPC to look like entity X.
+				UINT wPreviousIdentity = this->wIdentity;
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
+				// When the underlying identity is changed, update default behaviors
+				if (wIdentity != wPreviousIdentity) {
+					SetDefaultBehaviors();
+				}
 				bProcessNextCommand = true;
 			}
 			break;
