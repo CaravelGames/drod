@@ -1512,7 +1512,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pOnOffListBox3->SelectLine(0);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_KEEPBEHAVIOR_LABEL, ONOFFLISTBOX4_X, Y_DIRECTIONLABEL,
-		CX_DIRECTIONLABEL, CY_DIRECTIONLABEL, F_Small, L"Keep Behaviors"));
+		CX_DIRECTIONLABEL, CY_DIRECTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_KeepBehaviors)));
 	this->pOnOffListBox4 = new CListBoxWidget(TAG_ONOFFLISTBOX4,
 		ONOFFLISTBOX4_X, Y_ONOFFLISTBOX, CX_ONOFFLISTBOX, CY_ONOFFLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pOnOffListBox4);
@@ -4038,7 +4038,7 @@ const
 			if (command.y)
 			{
 				wstr += wszSpace;
-				wstr += L"Keep Behaviors";
+				wstr += g_pTheDB->GetMessageText(MID_KeepBehaviors);
 			}
 		}
 		break;
