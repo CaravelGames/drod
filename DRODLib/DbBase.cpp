@@ -873,6 +873,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_Command_Editor_SetOverheadImage: strText = "Set Overhead Image"; break;
 	case MID_Command_Editor_PrevLevel: strText = "Go to Prev Level"; break;
 	case MID_Command_Editor_NextLevel: strText = "Go to Next Level"; break;
+	case MID_OverwritingMacroKeyError: strText = "You can't map to this key because command '%1' uses the same key but without any modifiers."; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

@@ -42,11 +42,10 @@
 
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/I18N.h"
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
-
-#include <DRODLib/I18N.h>
 
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
@@ -1139,54 +1138,54 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 	const KeyDefinition *keyDefinition = GetKeyDefinition(eCommand);
 	currentKey = this->pCurrentPlayer->Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
 
-	if (GetCommandKeyRedefinition(eCommand, currentKey, newKey, !DoesCommandUseModifiers(eCommand)))
+	if (!GetCommandKeyRedefinition(eCommand, currentKey, newKey, !DoesCommandUseModifiers(eCommand)))
 	{
-		if (newKey == currentKey)
-			return;
-
-		// If we are changing a command that does not support modifiers, and provide a key with
-		// modifiers, make sure we don't use the same base key as any of the commands
-		// that have modifiers-variants built-in, eg. ctrl+move
-		if (!DoesCommandUseModifiers(eCommand) && (InputKey)ReadInputKey(newKey) != newKey)
-		{
-			const KeyDefinition *pOverwrittenKey = GetOverwrittenModifiableKey(newKey, eCommand);
-
-			if (pOverwrittenKey) {
-				WSTRING str = L"You can't map to this key because command '";
-				str.append(g_pTheDB->GetMessageText(pOverwrittenKey->commandMID));
-				str.append(L"' uses the same key but without any modifiers.");
-				ShowOkMessage(str.c_str());
-				return;
-			}
-		}
-		
-		//Overwritten key commands set to undefined.
-		for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
-		{
-			const KeyDefinition *clearedKeyDefinition = GetKeyDefinition(nCommand);
-			const InputKey currentKey = this->pCurrentPlayer->Settings.GetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
-			const bool bOverwrite = currentKey == newKey
-				|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
-
-			if (bOverwrite)
-			{
-				this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
-				UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
-			}
-		}
-
-		//Update current player settings for this command to newKey.
-		this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, newKey);
-
-		//Update label of command that was changed.
-		UpdateCommandKeyLabel(newKey, eCommand);
-
-		Paint();
-	}
-	else {
 		OnQuit();
 		return;
 	}
+	if (newKey == currentKey)
+		return;
+
+	// If we are changing a command that does not support modifiers, and provide a key with
+	// modifiers, make sure we don't use the same base key as any of the commands
+	// that have modifiers-variants built-in, eg. ctrl+move
+	if (!DoesCommandUseModifiers(eCommand) && (InputKey)ReadInputKey(newKey) != newKey)
+	{
+		const KeyDefinition *pOverwrittenKey = GetOverwrittenModifiableKey(newKey, eCommand);
+
+		if (pOverwrittenKey) {
+			WSTRING str = WCSReplace(
+				g_pTheDB->GetMessageText(MID_OverwritingMacroKeyError),
+				L"%1",
+				g_pTheDB->GetMessageText(pOverwrittenKey->commandMID)
+			);
+			ShowOkMessage(str.c_str());
+			return;
+		}
+	}
+		
+	//Overwritten key commands set to undefined.
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		const KeyDefinition *clearedKeyDefinition = GetKeyDefinition(nCommand);
+		const InputKey currentKey = this->pCurrentPlayer->Settings.GetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+		const bool bOverwrite = currentKey == newKey
+			|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
+
+		if (bOverwrite)
+		{
+			this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+			UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
+		}
+	}
+
+	//Update current player settings for this command to newKey.
+	this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, newKey);
+
+	//Update label of command that was changed.
+	UpdateCommandKeyLabel(newKey, eCommand);
+
+	Paint();
 }
 
 //************************************************************************************

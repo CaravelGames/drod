@@ -27,9 +27,6 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
 
-#include <map>
-#include <unordered_map>
-
 #include <BackEndLib/InputKey.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Types.h>
@@ -40,6 +37,7 @@
 #include "../Texts/MIDs.h"
 
 #include <SDL.h>
+#include <unordered_map>
 
 //Global app parameters.
 extern const char szCompanyName[];

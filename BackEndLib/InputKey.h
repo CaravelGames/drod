@@ -35,9 +35,9 @@
 
 typedef int64_t InputKey;
 
-extern InputKey    BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl);
-extern InputKey    BuildInputKey(SDL_KeyboardEvent keyEvent);
-extern SDL_Keycode ReadInputKey(InputKey inputKey);
-extern void        ReadInputKey(InputKey inputKey, SDL_Keycode &keycode, bool &isShift, bool &isAlt, bool &isCtrl);
+extern const InputKey    BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl);
+extern const InputKey    BuildInputKey(SDL_KeyboardEvent keyEvent);
+extern const SDL_Keycode ReadInputKey(InputKey inputKey);
+extern void              ReadInputKey(InputKey inputKey, SDL_Keycode &keycode, bool &isShift, bool &isAlt, bool &isCtrl);
 
 #endif //...#ifndef _INPUTKEY_H

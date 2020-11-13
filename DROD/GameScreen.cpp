@@ -1557,7 +1557,7 @@ void CGameScreen::OnKeyDown(
 			if ((Key.keysym.mod & KMOD_CTRL) != 0)
 				nCommand = CMD_RESTART_PARTIAL;
 			if ((Key.keysym.mod & KMOD_ALT) != 0)
-				nCommand = CMD_RESTART_FULL;	
+				nCommand = CMD_RESTART_FULL;
 		break;
 		case CMD_CLONE:
 			bMacro = false;

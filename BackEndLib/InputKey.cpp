@@ -26,35 +26,30 @@
 
 #include "InputKey.h"
 
-
-#include <SDL_syswm.h>
-#include <SDL_events.h>
-#include <BackEndLib/Types.h>
-
 const int64_t ShiftBit = int64_t(1) << 63;
 const int64_t AltBit = int64_t(1) << 62;
 const int64_t CtrlBit = int64_t(1) << 61;
 const int64_t KeycodeBitmask = 0x2FFFFFFFFFFFFFFF;
 
-InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl)
+const InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl)
 {
 	if (keycode == SDLK_LSHIFT || keycode == SDLK_RSHIFT)
 		return ShiftBit;
 
-	else if (keycode == SDLK_LALT || keycode == SDLK_RALT) 
+	if (keycode == SDLK_LALT || keycode == SDLK_RALT)
 		return AltBit;
 	
-	else if (keycode == SDLK_LCTRL || keycode == SDLK_RCTRL)
+	if (keycode == SDLK_LCTRL || keycode == SDLK_RCTRL)
 		return CtrlBit;
 	
-	else
-		return int64_t(keycode)
-			| (isShift ? ShiftBit : 0)
-			| (isAlt ? AltBit : 0)
-			| (isCtrl ? CtrlBit : 0);
+	
+	return int64_t(keycode)
+		| (isShift ? ShiftBit : 0)
+		| (isAlt ? AltBit : 0)
+		| (isCtrl ? CtrlBit : 0);
 }
 
-InputKey BuildInputKey(SDL_KeyboardEvent keyEvent)
+const InputKey BuildInputKey(SDL_KeyboardEvent keyEvent)
 {
 	return BuildInputKey(
 		keyEvent.keysym.sym,
@@ -72,7 +67,7 @@ void ReadInputKey(InputKey inputKey, SDL_Keycode& keycode, bool& isShift, bool& 
 	isCtrl = inputKey & CtrlBit;
 }
 
-SDL_Keycode ReadInputKey(InputKey inputKey)
+const SDL_Keycode ReadInputKey(InputKey inputKey)
 {
 	return static_cast<SDL_Keycode>(inputKey & KeycodeBitmask);
 }
