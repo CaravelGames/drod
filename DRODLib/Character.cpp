@@ -2862,7 +2862,7 @@ void CCharacter::Process(
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
 				// When the underlying identity is changed, update default behaviors
-				if (wIdentity != wPreviousIdentity) {
+				if (!command.y && wIdentity != wPreviousIdentity) {
 					SetDefaultBehaviors();
 				}
 				bProcessNextCommand = true;
