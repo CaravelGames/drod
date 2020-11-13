@@ -729,6 +729,10 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 					case (UINT)ScriptVars::P_ITEM_GR_MULT:
 					case (UINT)ScriptVars::P_HOTTILE:
 					case (UINT)ScriptVars::P_EXPLOSION:
+					case (UINT)ScriptVars::P_MUD_SPAWN:
+					case (UINT)ScriptVars::P_TAR_SPAWN:
+					case (UINT)ScriptVars::P_GEL_SPAWN:
+					case (UINT)ScriptVars::P_QUEEN_SPAWN:
 						//display nothing
 					break;
 

@@ -1541,6 +1541,10 @@ enum MID_CONSTANT {
   MID_VarAccessoryATK = 1623,
   MID_VarAccessoryDEF = 1624,
   MID_VarAccessoryGR = 1625,
+  MID_VarMudSpawn = 1784,
+  MID_VarTarSpawn = 1785,
+  MID_VarGelSpawn = 1786,
+  MID_VarQueenSpawn = 1787,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

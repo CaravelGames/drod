@@ -709,6 +709,10 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_AttackUp3: strText = "Medium Power gem"; break;
 		case MID_AttackUp10: strText = "Large Power gem"; break;
 		case MID_EachVictory: strText = "Each victory"; break;
+		case MID_VarMudSpawn: strText = "_MudSpawn"; break;
+		case MID_VarTarSpawn: strText = "_TarSpawn"; break;
+		case MID_VarGelSpawn: strText = "_GelSpawn"; break;
+		case MID_VarQueenSpawn: strText = "_QueenSpawn"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
