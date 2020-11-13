@@ -127,7 +127,11 @@ namespace ScriptVars
 		P_SCRIPT_ITEM_ATK_MULT = -71,
 		P_SCRIPT_ITEM_DEF_MULT = -72,
 		P_SCRIPT_ITEM_GR_MULT = -73,
-		FirstPredefinedVar = P_SCRIPT_ITEM_GR_MULT, //set this to the last var in the enumeration
+		P_MUD_SPAWN = -74,
+		P_TAR_SPAWN = -75,
+		P_GEL_SPAWN = -76,
+		P_QUEEN_SPAWN = -77,
+		FirstPredefinedVar = P_QUEEN_SPAWN, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -143,7 +147,7 @@ namespace ScriptVars
 	extern string midTexts[PredefinedVarCount];
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=26;
+	static const UINT numGlobals=30;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -168,6 +172,7 @@ public:
 		hotTileVal = explosionVal = 0;
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
+		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = UINT(-1); //negative indicates default
 	}
 
 	UINT getVar(const WSTRING& wstr) const
@@ -197,6 +202,8 @@ public:
 
 	//Prior location before level warp.
 	UINT priorRoomID, priorX, priorY, priorO;
+
+	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID;
 };
 
 //More stats used for various tally operations.

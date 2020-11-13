@@ -47,11 +47,13 @@ void CRoachQueen::Process(
 							//sound or graphical effects.
 {
 	//Shall we lay an egg?
+	const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
+
 	if ((CueEvents.HasOccurred(CID_MonsterEngaged) && //lay an egg any time player fights a different monster
 				this->pCurrentGame->pCombat != NULL &&   //fighting someone...
 				!this->pCurrentGame->IsFighting(this) && //...not me
 				this->pCurrentGame->pCombat->PlayerCanHarmMonster(this->pCurrentGame->pCombat->pMonster) && //doesn't count if player engages a monster that is too shielded
-				this->pCurrentGame->pCombat->pMonster->wType != M_REGG) //don't lay more eggs when eggs are killed
+				this->pCurrentGame->pCombat->pMonster->wType != spawnID) //don't lay more eggs when eggs are killed
 		)
 	{
 		UINT wSX, wSY;
@@ -113,11 +115,8 @@ void CRoachQueen::Process(
 		//Lay eggs and check for them being laid on pressure plates.
 		for (CCoordSet::const_iterator egg=eggs.begin(); egg!=eggs.end(); ++egg)
 		{
-			CMonster *m = room.AddNewMonster(M_REGG, egg->wX, egg->wY);
-			m->bIsFirstTurn = true;
-
-			if (room.GetOSquare(egg->wX, egg->wY) == T_PRESSPLATE)
-				room.ActivateOrb(egg->wX, egg->wY, CueEvents, OAT_PressurePlate);
+			CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
+					CueEvents, spawnID, egg->wX, egg->wY, S);
 		}
 	}
 }

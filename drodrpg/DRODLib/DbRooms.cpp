@@ -7212,14 +7212,15 @@ recompute:
 
 //*****************************************************************************
 void CDbRoom::ConvertUnstableTar(
-//Transforms marked unstable tar in babyOrder into new babies.
+//Transforms marked unstable tarstuff in babyOrder into new babies.
 //
 //Params:
 	CCueEvents &CueEvents,        //(out) May receive cue events.
 	const bool bDelayBabyMoves)   //(in)  Whether babies can move immediately when processed [default=false]
 {
-	const UINT wSX = this->pCurrentGame ? this->pCurrentGame->pPlayer->wX : (UINT)-1;
-	const UINT wSY = this->pCurrentGame ? this->pCurrentGame->pPlayer->wY : (UINT)-1;
+	ASSERT(this->pCurrentGame);
+	const UINT wSX = this->pCurrentGame->pPlayer->wX;
+	const UINT wSY = this->pCurrentGame->pPlayer->wY;
 	CCoordIndex swordCoords;
 	GetSwordCoords(swordCoords);
 
@@ -7244,28 +7245,32 @@ void CDbRoom::ConvertUnstableTar(
 				if (!(swordCoords.Exists(wX,wY) || bIsStairs(wOSquare) || bIsPit(wOSquare) ||
 						bIsWater(wOSquare) || (wX == wSX && wY == wSY)))
 				{
-					//Spawn a tarbaby.
+					//Spawn a tarbaby or variant.
+					UINT monsterID;
 					CMonster *m = NULL;
+					const UINT wO = nGetO(sgn(wSX - wX), sgn(wSY - wY));
 					switch (wTarType)
 					{
 						case T_TAR:
-							m = AddNewMonster(M_TARBABY,wX,wY);
-							CueEvents.Add(CID_TarBabyFormed, m);
+							monsterID = this->pCurrentGame->getSpawnID(M_TARBABY);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							if (m)
+								CueEvents.Add(CID_TarBabyFormed, m);
 							break;
 						case T_MUD:
-							m = AddNewMonster(M_MUDBABY,wX,wY);
-							CueEvents.Add(CID_MudBabyFormed, m);
+							monsterID = this->pCurrentGame->getSpawnID(M_MUDBABY);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							if (m)
+								CueEvents.Add(CID_MudBabyFormed, m);
 							break;
 						case T_GEL:
-							m = AddNewMonster(M_GELBABY,wX,wY);
-							CueEvents.Add(CID_GelBabyFormed, m);
+							monsterID = this->pCurrentGame->getSpawnID(M_GELBABY);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							if (m)
+								CueEvents.Add(CID_GelBabyFormed, m);
 							break;
 						default: ASSERT(!"Bad tar type"); continue;
 					}
-					if (this->pCurrentGame)
-						m->SetCurrentGame(this->pCurrentGame);
-					m->bIsFirstTurn = bDelayBabyMoves;
-					m->SetOrientation(sgn(wSX - wX), sgn(wSY - wY));
 				}
 			}
 		}

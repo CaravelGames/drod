@@ -209,7 +209,7 @@ public:
 	WSTRING  AbbrevRoomLocation();
 	void     activateCustomEquipment(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
-	void AddNewEntity(CCueEvents& CueEvents, const UINT identity,
+	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
 	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
@@ -241,6 +241,7 @@ public:
 	float    GetGlobalStatModifier(ScriptVars::StatModifiers statType) const;
 	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
+	UINT     getSpawnID(UINT defaultMonsterID) const;
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);

@@ -8,33 +8,38 @@ using namespace ScriptVars;
 
 //*****************************************************************************
 //Shorter forms of the user-visible natural language var names.
-//Used to pack and unpack the global game vars into a CDbPackedVars object.
+//Used as keys to pack and unpack the global game vars into a CDbPackedVars object
+//  (see Pack/Unpack methods below).
+//Add key names here when adding a new global game var that needs to be saved.
 //DO NOT CHANGE these names
 const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 {
 	"_HP", "_ATK", "_DEF", "_GOLD",
 	"_YKEY", "_GKEY", "_BKEY",
 	"_SWORD", "_SHIELD", "_SPEED",
-	"", "", "", "", "", //unused here: //"_MyHP", "_MyATK", "_MyDEF", "_MyGOLD", "_MyColor",
+	"", "", "", "", "", //predefined local vars are unused here: "_MyHP", "_MyATK", "_MyDEF", "_MyGOLD", "_MyColor", etc.
 	"_XP",
 	"_MonHPMult", "_MonATKMult", "_MonDEFMult", "_MonGRMult",
-	"_ItemMult", "", //"_MySword",
+	"_ItemMult",
+	"",
 	"_SKEY",
-	"", "", "", //"_X", "_Y", "_O",
-	"", "", "", //"_MyX", "_MyY", "_MyO",
-	"_ACCESSORY", "", //"_MyXP",
+	"", "", "",
+	"", "", "",
+	"_ACCESSORY",
+	"",
 	"_MonXPMult",
 	"_ItemHPMult", "_ItemATKMult", "_ItemDEFMult", "_ItemGRMult",
 	"_TotalMoves", "_TotalTime",
-	"", "", "", "", "", //"_MyScriptX", "_MyScriptY", "_MyScriptW", "_MyScriptH", "_MyScriptF",
+	"", "", "", "", "",
 	"_HotTile", "_Explosion",
 	"_PRID", "_PX", "_PY", "_PO", //prior location before level entrance warp
-	"", "", "", "", "", //"_EN_HP", "_EN_ATK", "_EN_DEF", "_EN_GOLD", "_EN_XP", //enemy
-	"", "", "", //"_WeaponATK", "_WeaponDEF", "_WeaponGR", //equipment
-	"", "", "", //"_ArmorATK", "_ArmorDEF", "_ArmorGR",
-	"", "", "", //"_AccessATK", "_AccessDEF", "_AccessGR",
-	"", "", "", "", "", //"_MyMonsterHPMult", "_RoomATKMult", "_RoomDEFMult", "_RoomGRMult", "_RoomXPMult",
-	"", "", "", "", "" //"_RoomHPMult", "_RoomATKMult", "_RoomDEFMult", "_RoomGRMult", "_RoomXPMult"
+	"", "", "", "", "",
+	"", "", "",
+	"", "", "",
+	"", "", "",
+	"", "", "", "", "",
+	"", "", "", "", "",
+	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -59,7 +64,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarArmorATK, MID_VarArmorDEF, MID_VarArmorGR,
 	MID_VarAccessoryATK, MID_VarAccessoryDEF, MID_VarAccessoryGR,
 	MID_VarMyMonsterHPMult, MID_VarMyMonsterATKMult, MID_VarMyMonsterDEFMult, MID_VarMyMonsterGRMult, MID_VarMyMonsterXPMult,
-	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult
+	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
+	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -92,7 +98,11 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_HOTTILE,
 	P_EXPLOSION,
 	P_TOTALMOVES,
-	P_TOTALTIME
+	P_TOTALTIME,
+	P_MUD_SPAWN,
+	P_TAR_SPAWN,
+	P_GEL_SPAWN,
+	P_QUEEN_SPAWN
 };
 
 //The MIDs for the global var subset.
@@ -128,7 +138,12 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[44],
 
 	predefinedVarMIDs[36], //tally stats
-	predefinedVarMIDs[37]
+	predefinedVarMIDs[37],
+
+	predefinedVarMIDs[73], //monster spawn IDs
+	predefinedVarMIDs[74],
+	predefinedVarMIDs[75],
+	predefinedVarMIDs[76]
 };
 
 //Match the global var texts in 'globalVarMIDs' to their short form texts in
@@ -165,7 +180,13 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[44],
 
 	predefinedVarTexts[36], //tally stats
-	predefinedVarTexts[37]
+	predefinedVarTexts[37],
+
+	predefinedVarTexts[73], //monster spawn IDs
+	predefinedVarTexts[74],
+	predefinedVarTexts[75],
+	predefinedVarTexts[76]
+
 };
 
 //*****************************************************************************
@@ -279,6 +300,11 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_TOTALMOVES: return this->totalMoves;
 		case P_TOTALTIME: return this->totalTime;
 
+		case P_MUD_SPAWN: return this->mudSpawnID;
+		case P_TAR_SPAWN: return this->tarSpawnID;
+		case P_GEL_SPAWN: return this->gelSpawnID;
+		case P_QUEEN_SPAWN: return this->queenSpawnID;
+
 		case P_NoVar:
 		default: return 0;
 	}
@@ -291,10 +317,10 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 	switch (var)
 	{
 		case P_HP: this->HP = val; break;
-		case P_ATK: this->ATK = val; break;
-		case P_DEF: this->DEF = val; break;
-		case P_GOLD: this->GOLD = val; break;
-		case P_XP: this->XP = val; break;
+		case P_ATK: this->ATK = int(val); break;
+		case P_DEF: this->DEF = int(val); break;
+		case P_GOLD: this->GOLD = int(val); break;
+		case P_XP: this->XP = int(val); break;
 		case P_YKEY: this->yellowKeys = val; break;
 		case P_GKEY: this->greenKeys = val; break;
 		case P_BKEY: this->blueKeys = val; break;
@@ -322,13 +348,18 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_TOTALMOVES: this->totalMoves = val; break;
 		case P_TOTALTIME: this->totalTime = val; break;
 
+		case P_MUD_SPAWN: this->mudSpawnID = int(val); break;
+		case P_TAR_SPAWN: this->tarSpawnID = int(val); break;
+		case P_GEL_SPAWN: this->gelSpawnID = int(val); break;
+		case P_QUEEN_SPAWN: this->queenSpawnID = int(val); break;
+
 		case P_NoVar:
 		default: break;
 	}
 }
 
 //***************************************************************************************
-//Returns: true if i corresponds to a case that is used in Pack/Unpack below
+//Returns: true if index corresponds to a case that is used in Pack/Unpack below
 bool PlayerStats::IsGlobalStatIndex(UINT i)
 {
 	return
@@ -337,7 +368,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		i == 22 ||
 		i == 29 ||
 		(i >= 31 && i <= 37) ||
-		(i >= 43 && i <= 48)
+		(i >= 43 && i <= 48) ||
+		(i >= 73 && i <= 76)
 		;
 }
 
@@ -356,10 +388,10 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			//These case values correspond to the ordering of values in the 'Predefined' enumeration,
 			//and not the (negative) enumeration values themselves.
 			case 0: val = this->HP; break;
-			case 1: val = this->ATK; break;
-			case 2: val = this->DEF; break;
-			case 3: val = this->GOLD; break;
-			case 15: val = this->XP; break;
+			case 1: val = UINT(this->ATK); break;
+			case 2: val = UINT(this->DEF); break;
+			case 3: val = UINT(this->GOLD); break;
+			case 15: val = UINT(this->XP); break;
 
 			case 4: val = this->yellowKeys; break;
 			case 5: val = this->greenKeys; break;
@@ -394,6 +426,11 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 47: val = this->priorY; break;
 			case 48: val = this->priorO; break;
 
+			case 73: val = UINT(this->mudSpawnID); break;
+			case 74: val = UINT(this->tarSpawnID); break;
+			case 75: val = UINT(this->gelSpawnID); break;
+			case 76: val = UINT(this->queenSpawnID); break;
+
 			default:
 				ASSERT(!"Not a global var index");
 				val = UINT(0); //should not be written
@@ -415,16 +452,19 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			continue; //these values are not player/global stats
 
 		ASSERT(predefinedVarTexts[i][0] != 0); //not empty string
-		const UINT val = stats.GetVar(predefinedVarTexts[i], UINT(0));
+		UINT defaultVal = 0;
+		if (73 <= i && i <= 76)
+			defaultVal = UINT(-1);
+		const UINT val = stats.GetVar(predefinedVarTexts[i], defaultVal);
 		switch (i)
 		{
 			//These case values correspond to the ordering of values in the 'Predefined' enumeration,
 			//and not the (negative) enumeration values themselves.
 			case 0: this->HP = val; break;
-			case 1: this->ATK = val; break;
-			case 2: this->DEF = val; break;
-			case 3: this->GOLD = val; break;
-			case 15: this->XP = val; break;
+			case 1: this->ATK = int(val); break;
+			case 2: this->DEF = int(val); break;
+			case 3: this->GOLD = int(val); break;
+			case 15: this->XP = int(val); break;
 
 			case 4: this->yellowKeys = val; break;
 			case 5: this->greenKeys = val; break;
@@ -458,6 +498,11 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 46: this->priorX = val; break;
 			case 47: this->priorY = val; break;
 			case 48: this->priorO = val; break;
+
+			case 73: this->mudSpawnID = int(val); break;
+			case 74: this->tarSpawnID = int(val); break;
+			case 75: this->gelSpawnID = int(val); break;
+			case 76: this->queenSpawnID = int(val); break;
 
 			default: ASSERT(!"Bad var"); break;
 		}
