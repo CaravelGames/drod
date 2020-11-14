@@ -7237,13 +7237,13 @@ void CRoomWidget::CastLightOnTile(
 			{
 				tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] = L_Dark;
 				return;
-			} else {
-				const bool bHoriz = abs_dx > abs_dy;
-				if (tileLight[MAX_LIGHT_DISTANCE + (bHoriz?closerDX:dx)][MAX_LIGHT_DISTANCE + (bHoriz?dy:closerDY)] == L_Dark)
-				{
-					tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] = L_Dark;
-					return;
-				}
+			}
+
+			const bool bHoriz = abs_dx > abs_dy;
+			if (tileLight[MAX_LIGHT_DISTANCE + (bHoriz?closerDX:dx)][MAX_LIGHT_DISTANCE + (bHoriz?dy:closerDY)] == L_Dark)
+			{
+				tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] = L_Dark;
+				return;
 			}
 		}
 	}
@@ -7299,7 +7299,7 @@ void CRoomWidget::CastLightOnTile(
 		{
 			//Tile partially or completely obstructs light.
 			tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] =
-					bNorthernWall && dy > 0 ? L_Partial : L_Dark;
+					bNorthernWall && dy >= 0 ? L_Partial : L_Dark;
 			return;
 		}
 
