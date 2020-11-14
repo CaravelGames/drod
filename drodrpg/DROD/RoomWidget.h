@@ -380,7 +380,7 @@ protected:
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           BlitDirtyRoomTiles(const bool bMoveMade);
 
-	void           CastLightOnTile(const UINT wX, const UINT wY,
+	void           CastLightOnTile(const UINT wX, const UINT wY, const float fLightSourceZTileElev,
 			const PointLightObject& light, const bool bGeometry=true);
 	void           ClearLights();
 	void           DarkenRect(SDL_Surface *pDestSurface,

@@ -7191,7 +7191,8 @@ void CRoomWidget::DrawSerpentBody(
 //The amount of light cast onto this tile is noted, to propagate this information
 //to subsequent tiles processed further along this direction from the source.
 void CRoomWidget::CastLightOnTile(
-	const UINT wX, const UINT wY,    //(in) square to place light effect
+	const UINT wX, const UINT wY,    //(in) tile to place light effect
+	const float fLightSourceZTileElev, //(in) Z-elevation of tile that light source is on
 	const PointLightObject& light,   //(in) light source
 	const bool bGeometry)     //if true (default), take room geometry into account, otherwise ignore
 {
@@ -7253,7 +7254,7 @@ void CRoomWidget::CastLightOnTile(
 		}
 	}
 
-	const float fElevAtLight = bGeometry ? getTileElev(this->pRoom->GetOSquare(nSX,nSY)) : 0;
+	const float fElevAtLight = bGeometry ? fLightSourceZTileElev : 0.0f;
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
 	float fElev = getTileElev(wOTile);
 
@@ -7799,7 +7800,9 @@ void CRoomWidget::modelVertTileface(
 //and then casting shadow rays to each tile of the area to determine where light
 //shines and where shadow falls.
 void CRoomWidget::PropagateLight(
-	const float fSX, const float fSY, const float fZ, const UINT tParam,
+	const float fSX, const float fSY,
+	const float fZ, //elevation of tile light source is on
+	const UINT tParam,
 	const bool bCenterOnTile) //[default=true]
 {
 	if (bLightOff(tParam))
@@ -7820,7 +7823,7 @@ void CRoomWidget::PropagateLight(
 	ASSERT(this->pRoom->IsValidColRow(nSX,nSY));
 
 	PointLightObject light(
-			Point(fX, fY, max(0.0f,fZ)+0.9f), //never in pit, and close to ceiling
+			Point(fX, fY, max(0.0f, fZ) + 0.9f), //never in pit, and close to ceiling
 			Color(lightMap[0][wLightColor], lightMap[1][wLightColor], lightMap[2][wLightColor]),
 			Color()); //falloff unused
 
@@ -7829,7 +7832,7 @@ void CRoomWidget::PropagateLight(
 	light.fMaxDistance = (float)nMaxDistance + 0.3f; //vertical component
 
 	//The light source's tile itself.
-	CastLightOnTile(nSX, nSY, light);
+	CastLightOnTile(nSX, nSY, fZ, light);
 
 	//Cast light outward to the maximum range.
 	//Process one quadrant at a time in order to maintain a compact area model.
@@ -7840,39 +7843,39 @@ void CRoomWidget::PropagateLight(
 		//1st. Axial.
 		const int x = nSX - dist;
 		const int y = nSY - dist;
-		CastLightOnTile(x, nSY, light);
-		CastLightOnTile(nSX, y, light);
+		CastLightOnTile(x, nSY, fZ, light);
+		CastLightOnTile(nSX, y, fZ, light);
 		//2nd. Diagonal.
 		for (rad=1; rad<dist; ++rad) {
-			CastLightOnTile(x, nSY - rad, light);
-			CastLightOnTile(nSX - rad, y, light);
+			CastLightOnTile(x, nSY - rad, fZ, light);
+			CastLightOnTile(nSX - rad, y, fZ, light);
 		}
 		//3rd. Corner.
-		CastLightOnTile(x, y, light);
+		CastLightOnTile(x, y, fZ, light);
 	}
 	//NE quadrant
 	RenderRoomModel(nSX, nSY, nSX + nMaxDistance, nSY - nMaxDistance);
 	for (dist=1; dist<=nMaxDistance; ++dist) {
 		const int x = nSX + dist;
 		const int y = nSY - dist;
-		CastLightOnTile(x, nSY, light);
+		CastLightOnTile(x, nSY, fZ, light);
 		for (rad=1; rad<dist; ++rad) {
-			CastLightOnTile(x, nSY - rad, light);
-			CastLightOnTile(nSX + rad, y, light);
+			CastLightOnTile(x, nSY - rad, fZ, light);
+			CastLightOnTile(nSX + rad, y, fZ, light);
 		}
-		CastLightOnTile(x, y, light);
+		CastLightOnTile(x, y, fZ, light);
 	}
 	//SW quadrant
 	RenderRoomModel(nSX, nSY, nSX - nMaxDistance, nSY + nMaxDistance);
 	for (dist=1; dist<=nMaxDistance; ++dist) {
 		const int x = nSX - dist;
 		const int y = nSY + dist;
-		CastLightOnTile(nSX, y, light);
+		CastLightOnTile(nSX, y, fZ, light);
 		for (rad=1; rad<dist; ++rad) {
-			CastLightOnTile(x, nSY + rad, light);
-			CastLightOnTile(nSX - rad, y, light);
+			CastLightOnTile(x, nSY + rad, fZ, light);
+			CastLightOnTile(nSX - rad, y, fZ, light);
 		}
-		CastLightOnTile(x, y, light);
+		CastLightOnTile(x, y, fZ, light);
 	}
 	//SE quadrant
 	RenderRoomModel(nSX, nSY, nSX + nMaxDistance, nSY + nMaxDistance);
@@ -7880,10 +7883,10 @@ void CRoomWidget::PropagateLight(
 		const int x = nSX + dist;
 		const int y = nSY + dist;
 		for (rad=1; rad<dist; ++rad) {
-			CastLightOnTile(x, nSY + rad, light);
-			CastLightOnTile(nSX + rad, y, light);
+			CastLightOnTile(x, nSY + rad, fZ, light);
+			CastLightOnTile(nSX + rad, y, fZ, light);
 		}
-		CastLightOnTile(x, y, light);
+		CastLightOnTile(x, y, fZ, light);
 	}
 }
 
@@ -7916,7 +7919,7 @@ void CRoomWidget::PropagateLightNoModel(const int nSX, const int nSY, const UINT
 	int nXdist, nYdist;
 	for (nYdist=-nMaxDistance; nYdist<=nMaxDistance; ++nYdist)
 		for (nXdist=-nMaxDistance; nXdist<=nMaxDistance; ++nXdist)
-			CastLightOnTile(nSX + nXdist, nSY + nYdist, light, false);
+			CastLightOnTile(nSX + nXdist, nSY + nYdist, fZ, light, false);
 }
 
 //*****************************************************************************
