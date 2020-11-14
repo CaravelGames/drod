@@ -200,6 +200,8 @@ struct TileImageBlitParams {
 						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
+typedef map<ROOMCOORD, vector<TileMask> > t_PitMasks;
+
 //******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
@@ -317,7 +319,7 @@ public:
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
-			const bool bEditor);
+			const bool bEditor, const vector<TileMask>* pPitMasks=NULL);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
@@ -449,7 +451,8 @@ protected:
 	void           ReduceJitter();
 	void           RemoveHighlight();
 	void           RenderFogInPit(SDL_Surface *pDestSurface=NULL);
-	void           DrawTLayerTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
+	void           DrawTLayerTiles(const CCoordIndex& tiles, const t_PitMasks& pitMasks,
+			SDL_Surface *pDestSurface,
 			const float fLightLevel, const bool bAddLight, const bool bEditor);
 	void           RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2);
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
@@ -556,6 +559,8 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
+
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           CropAddLightParams(const SDL_Rect* crop,
 		UINT& x, UINT& y, UINT& w, UINT& h,

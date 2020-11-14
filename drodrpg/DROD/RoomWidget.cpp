@@ -3841,16 +3841,22 @@ void CRoomWidget::DrawTLayerTile(
 	LIGHTTYPE *psL,
 	const float fDark,
 	const bool bAddLight,
-	const bool bEditor)
+	const bool bEditor,
+	const vector<TileMask>* pPitMasks)
 {
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
 
-	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
-	if (bAddLight && bIsPitTile && wOTileNo != T_PLATFORM_P) {
-		AddDark(fDark);
+	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
+	if (bAddLight && bIsPitTile) {
+		if (pPitMasks) {
+			//Mask out moving platform tiles when drawing darkness on pits.
+			g_pTheBM->DarkenTileWithMultiTileMask(*pPitMasks, nX, nY, CX_TILE, CY_TILE, pDestSurface, fDark);
+		} else if (bIsPit(wOTileNo)) {
+			AddDark(fDark);
+		}
 	}
 
 	bool bTar = bIsTar(wTTileNo);
@@ -5577,25 +5583,89 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 	CBitmapManager::fLightLevel = fOldLightLevel;
 
 	//Apply lighting to pit platforms
+	//
+	//Maintain record of where moving platform tile light+shadow has been applied.
+	//When pit darkness is applied, do not draw it on any of these regions.
+	t_PitMasks pitMasks;
 	for (vector<TileImageBlitParams>::iterator iter = lightingBlits.begin();
 		iter != lightingBlits.end(); ++iter)
 	{
-		TileImageBlitParams& blit = *iter;
-		// Shading is not animated to avoid inconsistent visual artifacts
-		blit.wXOffset = 0;
-		blit.wYOffset = 0;
-		g_pTheBM->DarkenRect(this->x + blit.wCol * CX_TILE, this->y + blit.wRow * CY_TILE,
+		const TileImageBlitParams& blit = *iter;
+		//Shade platform according to overall room light level.
+		g_pTheBM->DarkenRect(this->x + blit.wCol * CX_TILE + blit.wXOffset,
+			this->y + blit.wRow * CY_TILE + blit.wYOffset,
 			CX_TILE, CY_TILE, CBitmapManager::fLightLevel, pDestSurface);
+
+		//Apply overhead darkness and lightmap.
 		DrawTileLight(blit, pDestSurface);
+
+		if (bAddLight)
+			AddPlatformPitMasks(blit, pitMasks);
 	}
 
 	//Re-render room items located on top of each platform tile.
-	DrawTLayerTiles(tilesDrawn, pDestSurface, fLightLevel, bAddLight, bEditor);
+	DrawTLayerTiles(tilesDrawn, pitMasks, pDestSurface, fLightLevel, bAddLight, bEditor);
+}
+
+//*****************************************************************************
+void CRoomWidget::AddPlatformPitMasks(
+	const TileImageBlitParams& blit,
+	t_PitMasks& pitMasks) //(in/out)
+{
+	if (!blit.wXOffset && !blit.wYOffset)
+		return; //no masking needed
+
+	//Pit under moving platform is partially occluded.
+	//Track either two or four pit tiles that this platform tile is occluding.
+	pitMasks[ROOMCOORD(blit.wCol, blit.wRow)].push_back(
+		TileMask(blit.wTileImageNo, blit.wXOffset, blit.wYOffset));
+
+	if (blit.wXOffset) {
+		if (int(blit.wXOffset) < 0) { //moving from left
+			pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow)].push_back(
+				TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), blit.wYOffset));
+		} else { //moving from right
+			pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow)].push_back(
+				TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, blit.wYOffset));
+		}
+
+		if (blit.wYOffset) {
+			if (int(blit.wXOffset) < 0) { //moving from left
+				if (int(blit.wYOffset) < 0) { //moving from above
+					pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow - 1)].push_back(
+						TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), CY_TILE + int(blit.wYOffset)));
+				} else { //moving from below
+					pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow + 1)].push_back(
+						TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), int(blit.wYOffset) - CY_TILE));
+				}
+			} else { //moving from right
+				if (int(blit.wYOffset) < 0) { //moving from above
+					pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow - 1)].push_back(
+						TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, CY_TILE + int(blit.wYOffset)));
+				} else { //moving from below
+					pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow + 1)].push_back(
+						TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, int(blit.wYOffset) - CY_TILE));
+				}
+			}
+		}
+	}
+
+	if (blit.wYOffset) {
+		if (int(blit.wYOffset) < 0) { //moving from above
+			pitMasks[ROOMCOORD(blit.wCol, blit.wRow - 1)].push_back(
+				TileMask(blit.wTileImageNo, blit.wXOffset, CY_TILE + int(blit.wYOffset)));
+		} else { //moving from below
+			pitMasks[ROOMCOORD(blit.wCol, blit.wRow + 1)].push_back(
+				TileMask(blit.wTileImageNo, blit.wXOffset, int(blit.wYOffset) - CY_TILE));
+		}
+	}
 }
 
 //*****************************************************************************
 void CRoomWidget::DrawTLayerTiles(
-	const CCoordIndex& tiles, SDL_Surface *pDestSurface,
+	const CCoordIndex& tiles,
+	const t_PitMasks& pitMasks,
+	SDL_Surface *pDestSurface,
 	const float fLightLevel, const bool bAddLight, const bool bEditor)
 {
 	const UINT wStartPos = this->wShowRow * this->pRoom->wRoomCols + this->wShowCol;
@@ -5622,9 +5692,15 @@ void CRoomWidget::DrawTLayerTiles(
 
 				LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + tileIndex * wLightValuesPerTile;
 
+				const vector<TileMask>* pPitMasks = NULL;
+				if (bAddLight) {
+					t_PitMasks::const_iterator it = pitMasks.find(ROOMCOORD(wX, wY));
+					if (it != pitMasks.end())
+						pPitMasks = &(it->second);
+				}
 				DrawTLayerTile(wX, wY, nX, nY, pDestSurface,
 						wOTileNo, this->pTileImages[tileIndex], psL,
-						fDark, bAddLight, bEditor);
+						fDark, bAddLight, bEditor, pPitMasks);
 
 				if (tiles.Exists(wX, wY))
 					this->pTileImages[tileIndex].dirty = 1;
