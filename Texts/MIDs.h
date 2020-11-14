@@ -1772,6 +1772,7 @@ enum MID_CONSTANT {
   MID_PreviousIf = 1940,
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,
+  MID_KeepBehaviors = 1994,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

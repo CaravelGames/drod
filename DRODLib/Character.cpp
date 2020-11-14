@@ -2858,8 +2858,13 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_SetNPCAppearance:
 			{
 				//Sets this NPC to look like entity X.
+				UINT wPreviousIdentity = this->wIdentity;
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
+				// When the underlying identity is changed, update default behaviors
+				if (!command.y && wIdentity != wPreviousIdentity) {
+					SetDefaultBehaviors();
+				}
 				bProcessNextCommand = true;
 			}
 			break;
@@ -4847,12 +4852,7 @@ void CCharacter::SetCurrentGame(
 		{
 			case M_CITIZEN: case M_ARCHITECT:
 			case M_WUBBA:
-				behaviorFlags.insert(ScriptFlag::SwordDamageImmune);
-				behaviorFlags.insert(ScriptFlag::SpearDamageImmune);
-				behaviorFlags.insert(ScriptFlag::PickaxeDamageImmune);
-				behaviorFlags.insert(ScriptFlag::DaggerDamageImmune);
-				behaviorFlags.insert(ScriptFlag::CaberDamageImmune);
-				behaviorFlags.insert(ScriptFlag::FloorSpikeImmune);
+				SetImperative(ScriptFlag::Invulnerable);
 			break;
 			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: case M_GUNTHRO:
 			case M_CLONE:
@@ -4861,18 +4861,42 @@ void CCharacter::SetCurrentGame(
 				SetImperative(ScriptFlag::MissionCritical);
 				bFriendly = true;
 			break;
-			case M_CONSTRUCT:
-				behaviorFlags.insert(ScriptFlag::DropTrapdoors);
-				behaviorFlags.insert(ScriptFlag::PushMonsters);
-			break;
-			case M_TARBABY: case M_MUDBABY: case M_GELBABY:
-				behaviorFlags.insert(ScriptFlag::HotTileImmune);
-			break;
 			default: break;
 		}
+
+		SetDefaultBehaviors();
 	}
 
+	//If this NPC is a custom character with no script,
+	//then use the default script for this custom character type.
+	if (this->pCustomChar && this->commands.empty())
+		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+
+	//Global scripts started without commands should be flagged as done
+	//and removed on room exit
+	if (this->bGlobal && this->commands.empty())
+		this->bScriptDone = true;
+}
+
+//*****************************************************************************
+// Certain character types have default behaviors.
+void CCharacter::SetDefaultBehaviors()
+{
 	const UINT wResolvedIdentity = GetResolvedIdentity();
+	behaviorFlags.clear();
+
+	if (wResolvedIdentity == M_CONSTRUCT) {
+		// Character construct can drop trapdoors and push pushable monsters by default
+		// But it can't push objects by default
+		behaviorFlags.insert(ScriptFlag::DropTrapdoors);
+		behaviorFlags.insert(ScriptFlag::PushMonsters);
+	}
+
+	if (bIsMonsterTarstuff(wResolvedIdentity))
+	{
+		// Tarstuff monsters are immune to hot tiles by default
+		behaviorFlags.insert(ScriptFlag::HotTileImmune);
+	}
 
 	if (bIsStalwart(wResolvedIdentity)) {
 		bFriendly = true;
@@ -4882,8 +4906,7 @@ void CCharacter::SetCurrentGame(
 		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
 	}
 
-	if (bIsHuman(wResolvedIdentity))
-	{
+	if (bIsHuman(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::ActivateTokens);
 		behaviorFlags.insert(ScriptFlag::PushObjects);
 		behaviorFlags.insert(ScriptFlag::PushMonsters);
@@ -4910,16 +4933,6 @@ void CCharacter::SetCurrentGame(
 	if (!bCanFluffKill(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffImmune);
 	}
-
-	//If this NPC is a custom character with no script,
-	//then use the default script for this custom character type.
-	if (this->pCustomChar && this->commands.empty())
-		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
-
-	//Global scripts started without commands should be flagged as done
-	//and removed on room exit
-	if (this->bGlobal && this->commands.empty())
-		this->bScriptDone = true;
 }
 
 //*****************************************************************************

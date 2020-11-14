@@ -178,7 +178,7 @@ private:
 	CListBoxWidget *pDefaultScriptCommandsListBox;
 	CRenameDialogWidget *pScriptDialog;
 	CListBoxWidget *pDirectionListBox2, *pDirectionListBox3;
-	CListBoxWidget *pOnOffListBox3;
+	CListBoxWidget *pOnOffListBox3, * pOnOffListBox4;
 	CListBoxWidget *pVisualEffectsListBox;
 	CListBoxWidget *pActionListBox;
 	CListBoxWidget *pEventListBox;

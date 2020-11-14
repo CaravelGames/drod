@@ -173,6 +173,8 @@ const UINT TAG_IMAGEOVERLAYTEXT = 890;
 const UINT TAG_WEAPON_LISTBOX2 = 883;
 const UINT TAG_BEHAVIOR_LISTBOX = 882;
 const UINT TAG_REMAINS_LISTBOX = 881;
+const UINT TAG_ONOFFLISTBOX4 = 880;
+const UINT TAG_KEEPBEHAVIOR_LABEL = 879;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -395,7 +397,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pDefaultScriptCommandsListBox(NULL)
 	, pScriptDialog(NULL)
 	, pDirectionListBox2(NULL), pDirectionListBox3(NULL)
-	, pOnOffListBox3(NULL)
+	, pOnOffListBox3(NULL), pOnOffListBox4(NULL)
 	, pVisualEffectsListBox(NULL)
 	, pActionListBox(NULL), pEventListBox(NULL)
 	, pSpeakerListBox(NULL), pMoodListBox(NULL)
@@ -1165,6 +1167,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_GRAPHICLISTBOX2 = 250;
 	static const UINT CY_GRAPHICLISTBOX2 = CY_ACTIONLISTBOX;
 
+	static const int ONOFFLISTBOX4_X = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
+
 	static const int X_GLOBALSCRIPTLISTBOX = X_GRAPHICLISTBOX2;
 	static const int Y_GLOBALSCRIPTLISTBOX = Y_GRAPHICLISTBOX2;
 	static const UINT CX_GLOBALSCRIPTLISTBOX = CX_GRAPHICLISTBOX2;
@@ -1506,6 +1510,15 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pOnOffListBox3->AddItem(0, g_pTheDB->GetMessageText(MID_Off));
 	this->pOnOffListBox3->AddItem(1, g_pTheDB->GetMessageText(MID_On));
 	this->pOnOffListBox3->SelectLine(0);
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_KEEPBEHAVIOR_LABEL, ONOFFLISTBOX4_X, Y_DIRECTIONLABEL,
+		CX_DIRECTIONLABEL, CY_DIRECTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_KeepBehaviors)));
+	this->pOnOffListBox4 = new CListBoxWidget(TAG_ONOFFLISTBOX4,
+		ONOFFLISTBOX4_X, Y_ONOFFLISTBOX, CX_ONOFFLISTBOX, CY_ONOFFLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pOnOffListBox4);
+	this->pOnOffListBox4->AddItem(0, g_pTheDB->GetMessageText(MID_Off));
+	this->pOnOffListBox4->AddItem(1, g_pTheDB->GetMessageText(MID_On));
+	this->pOnOffListBox4->SelectLine(0);
 
 	//Stealth list box.
 	this->pStealthListBox = new CListBoxWidget(TAG_STEALTHLISTBOX,
@@ -4022,6 +4035,11 @@ const
 		{
 			WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(command.x);
 			wstr += charName.length() ? charName : wszQuestionMark;
+			if (command.y)
+			{
+				wstr += wszSpace;
+				wstr += g_pTheDB->GetMessageText(MID_KeepBehaviors);
+			}
 		}
 		break;
 
@@ -5116,7 +5134,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 52;
+	static const UINT NUM_WIDGETS = 53;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5133,7 +5151,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_WEAPON_LISTBOX, TAG_ATTACKTILE,
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
-		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX
+		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
+		TAG_ONOFFLISTBOX4
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5152,6 +5171,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT VARSET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0};
 	static const UINT VARGET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0};
 	static const UINT GRAPHIC[] =       {TAG_GRAPHICLISTBOX3, 0};
+	static const UINT NPC_GRAPHIC[] =   {TAG_GRAPHICLISTBOX3, TAG_ONOFFLISTBOX4, 0};
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
 	static const UINT IMPERATIVE[] =    {TAG_IMPERATIVELISTBOX, 0};
@@ -5229,7 +5249,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		XY,                 //CC_PlayVideo
 		ORIENTATION,        //CC_WaitForPlayerToMove
 		NO_WIDGETS,         //CC_WaitForPlayerToTouchMe
-		GRAPHIC,            //CC_SetNPCAppearance
+		NPC_GRAPHIC,        //CC_SetNPCAppearance
 		WATERTRAVEL,        //CC_SetWaterTraversal
 		GLOBALSCRIPT,       //CC_StartGlobalScript
 		WAIT_FOR_ITEMS,     //CC_WaitForItem
@@ -5269,7 +5289,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		PUSH_TILE           //CC_PushTile
 	};
 
-	static const UINT NUM_LABELS = 29;
+	static const UINT NUM_LABELS = 30;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -5278,7 +5298,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL,
 		TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL, TAG_COLOR_LABEL, TAG_INPUTLABEL,
-		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2
+		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2, TAG_KEEPBEHAVIOR_LABEL
 	};
 
 	static const UINT NO_LABELS[] =      {0};
@@ -5306,6 +5326,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMAGE_OVERLAY_L[] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT FACE_TOWARDS_L[] = { TAG_SINGLESTEP2, 0 };
 	static const UINT PUSH_TILE_L[] =    { TAG_DIRECTIONLABEL2, 0 };
+	static const UINT NPC_GRAPHIC_L[] =    { TAG_KEEPBEHAVIOR_LABEL, 0 };
 
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
@@ -5358,7 +5379,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		XY_L,               //CC_PlayVideo
 		ORIENTATION_L,      //CC_WaitForPlayerToMove
 		NO_LABELS,          //CC_WaitForPlayerToTouchMe
-		NO_LABELS,          //CC_SetNPCAppearance
+		NPC_GRAPHIC_L,      //CC_SetNPCAppearance
 		NO_LABELS,          //CC_SetWaterTraversal
 		NO_LABELS,          //CC_StartGlobalScript
 		NO_LABELS,          //CC_WaitForItem
@@ -6280,6 +6301,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_SetNPCAppearance:
 			this->pCommand->x = this->pAddCommandGraphicListBox->GetSelectedItem();
+			this->pCommand->y = this->pOnOffListBox4->GetSelectedItem();
 			AddCommand();
 		break;
 
@@ -6757,6 +6779,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 		case CCharacterCommand::CC_SetNPCAppearance:
 			this->pAddCommandGraphicListBox->SelectItem(this->pCommand->x);
+			this->pOnOffListBox4->SelectItem(this->pCommand->y);
 		break;
 
 		case CCharacterCommand::CC_SetPlayerWeapon:
@@ -7489,6 +7512,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 	case CCharacterCommand::CC_SetNPCAppearance:
 		parseMandatoryOption(pCommand->x, this->pAddCommandGraphicListBox, bFound);
+		parseNumber(pCommand->y);
 	break;
 
 	case CCharacterCommand::CC_SetPlayerWeapon:
@@ -8094,6 +8118,8 @@ WSTRING CCharacterDialogWidget::toText(
 	{
 		const WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(c.x);
 		wstr += charName.length() ? charName : wszQuestionMark;
+		wstr += wszSpace;
+		concatNum(c.y);
 	}
 	break;
 
