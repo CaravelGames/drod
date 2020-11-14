@@ -200,6 +200,8 @@ struct TileImageBlitParams {
 						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
+typedef map<ROOMCOORD, vector<TweeningTileMask> > t_PitMasks;
+
 //******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
@@ -247,7 +249,8 @@ public:
 	void           DisplaySubtitle(const WCHAR *pText, const UINT wX, const UINT wY,
 			const bool bReplace);
 	void           DontAnimateMove();
-	void           DrawTLayer(SDL_Surface *pDestSurface, const bool bEditor=false, const bool bMoveInProgress=false);
+	void           DrawPlatformsAndTLayer(SDL_Surface *pDestSurface,
+			const bool bEditor=false, const bool bMoveInProgress=false);
 	virtual void   DrawMonsters(CMonster *const pMonsterList,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=false);
@@ -316,7 +319,7 @@ public:
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
-			const bool bEditor);
+			const bool bEditor, const vector<TweeningTileMask>* pPitPlatformMasks=NULL);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
@@ -377,7 +380,7 @@ protected:
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           BlitDirtyRoomTiles(const bool bMoveMade);
 
-	void           CastLightOnTile(const UINT wX, const UINT wY,
+	void           CastLightOnTile(const UINT wX, const UINT wY, const float fLightSourceZTileElev,
 			const PointLightObject& light, const bool bGeometry=true);
 	void           ClearLights();
 	void           DarkenRect(SDL_Surface *pDestSurface,
@@ -448,7 +451,8 @@ protected:
 	void           ReduceJitter();
 	void           RemoveHighlight();
 	void           RenderFogInPit(SDL_Surface *pDestSurface=NULL);
-	void           DrawTLayerTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
+	void           DrawTLayerTiles(const CCoordIndex& tiles, const t_PitMasks& pitMasks,
+			SDL_Surface *pDestSurface,
 			const float fLightLevel, const bool bAddLight, const bool bEditor);
 	void           RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2);
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
@@ -555,6 +559,8 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
+
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           CropAddLightParams(const SDL_Rect* crop,
 		UINT& x, UINT& y, UINT& w, UINT& h,
@@ -562,9 +568,12 @@ private:
 		LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
 
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
+
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 
-	void           PropagateLight(const float fSX, const float fSY, const UINT tParam, const bool bCenterOnTile=true);			
+	void           PropagateLight(const float fSX, const float fSY, const float fZ,
+			const UINT tParam, const bool bCenterOnTile=true);			
 	void           PropagateLightNoModel(const int nSX, const int nSY, const UINT tParam);
 
 	void           PlacePlayerLightAt(int pixel_x, int pixel_y);
