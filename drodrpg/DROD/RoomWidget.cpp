@@ -2796,7 +2796,9 @@ void CRoomWidget::RenderPlayerLight()
 		{
 			static const UINT wCursorLightRadius = 3;
 			static const UINT wLightParam = (wCursorLightRadius-1)*NUM_LIGHT_TYPES+0; //white light
-			PropagateLight(this->cursorLight.first, this->cursorLight.second, wLightParam, false);
+			const float fZ = getTileElev(this->pRoom->GetOSquareWithGuessing(
+					int(this->cursorLight.first + 0.5f), int(this->cursorLight.second + 0.5f)));
+			PropagateLight(this->cursorLight.first, this->cursorLight.second, fZ, wLightParam, false);
 		}
 	}
 
@@ -2856,11 +2858,14 @@ void CRoomWidget::PropagatePlayerLight()
 	if (pEntity)
 	{
 		float fxPos = float(pEntity->wX), fyPos = float(pEntity->wY);
+		float fZ = getTileElev(this->pRoom->GetOSquare(pEntity->wX, pEntity->wY));
 		if (this->dwMovementStepsLeft && ShowShadowCastingAnimation())
 		{
+			//interpolate between previous and current locations and tile heights
 			const float animation_coeff = 1.0f - (this->dwCurrentDuration / float(this->dwMoveDuration));
 			fxPos += int(pEntity->wPrevX - pEntity->wX) * animation_coeff;
 			fyPos += int(pEntity->wPrevY - pEntity->wY) * animation_coeff;
+			fZ += (getTileElev(this->pRoom->GetOSquare(pEntity->wPrevX, pEntity->wPrevY)) - fZ) * animation_coeff;
 		}
 
 		//Properties of player light.
@@ -2869,7 +2874,7 @@ void CRoomWidget::PropagatePlayerLight()
 
 		this->pActiveLightedTiles = &this->lightedPlayerTiles;
 		this->lightMaps.pActiveLight = this->lightMaps.psPlayerLight;
-		PropagateLight(fxPos, fyPos, wLightParam);
+		PropagateLight(fxPos, fyPos, fZ, wLightParam);
 
 		this->wLastPlayerLightX = pEntity->wX;
 		this->wLastPlayerLightY = pEntity->wY;
@@ -7330,11 +7335,11 @@ void CRoomWidget::CastLightOnTile(
 	if (bGeometry && bFullyLit && !bCenter)
 	{
 		//Light shining completely above walls is not occluded.
-		if (!(fElevAtLight > 0.0 && fElev > 0.0))
+		if (!(light.location.z() > 1.0 && fElev > 0.0))
 		{
 			//If light is shining down from a wall-top to a lower tile, then
 			//the wall will partially occlude the light.
-			if (fElevAtLight > 0.0 && fElev <= 0.0)
+			if (light.location.z() > 1.0 && fElev <= 0.0)
 			{
 				bFullyLit = false;
 				bPartialOcclusion = true;
@@ -7745,9 +7750,11 @@ float CRoomWidget::getTileElev(const UINT wOTile) const
 
 		case T_WALL: case T_WALL2:	case T_WALL_IMAGE:
 		case T_WALL_B: case T_WALL_H:
+			return 1.0f;
+
 		case T_DOOR_MONEY:
 		case T_DOOR_Y:	case T_DOOR_G:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
-			return 1.0f;
+			return 0.75f;
 
 		case T_WATER:
 		case T_PLATFORM_W:
@@ -7792,7 +7799,7 @@ void CRoomWidget::modelVertTileface(
 //and then casting shadow rays to each tile of the area to determine where light
 //shines and where shadow falls.
 void CRoomWidget::PropagateLight(
-	const float fSX, const float fSY, const UINT tParam,
+	const float fSX, const float fSY, const float fZ, const UINT tParam,
 	const bool bCenterOnTile) //[default=true]
 {
 	if (bLightOff(tParam))
@@ -7811,8 +7818,6 @@ void CRoomWidget::PropagateLight(
 	const int nSX = int(fX);
 	const int nSY = int(fY);
 	ASSERT(this->pRoom->IsValidColRow(nSX,nSY));
-
-	const float fZ = getTileElev(this->pRoom->GetOSquare(nSX, nSY));
 
 	PointLightObject light(
 			Point(fX, fY, max(0.0f,fZ)+0.9f), //never in pit, and close to ceiling
@@ -8529,8 +8534,10 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 			//T-layer lights and wall lights are handled here.
 			if (bRenderLights)
 			{
-				if (bIsLight(tTile))
-					PropagateLight(float(wCol), float(wRow), this->pRoom->GetTParam(wCol, wRow));
+				if (bIsLight(tTile)) {
+					const float fZ = getTileElev(*pucO);
+					PropagateLight(float(wCol), float(wRow), fZ, this->pRoom->GetTParam(wCol, wRow));
+				}
 
 				wLightVal = this->pRoom->tileLights.GetAt(wCol, wRow);
 				if (bIsWallLightValue(wLightVal))

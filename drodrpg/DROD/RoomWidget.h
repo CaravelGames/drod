@@ -572,7 +572,8 @@ private:
 
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 
-	void           PropagateLight(const float fSX, const float fSY, const UINT tParam, const bool bCenterOnTile=true);			
+	void           PropagateLight(const float fSX, const float fSY, const float fZ,
+			const UINT tParam, const bool bCenterOnTile=true);			
 	void           PropagateLightNoModel(const int nSX, const int nSY, const UINT tParam);
 
 	void           PlacePlayerLightAt(int pixel_x, int pixel_y);
