@@ -114,6 +114,7 @@ namespace SCREENLIB {
 #include "EffectList.h"
 #include "ScreenManager.h"
 
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/StretchyBuffer.h>
 #include <BackEndLib/Wchar.h>
@@ -157,6 +158,9 @@ public:
 	static Uint32 dwCurrentTicks; // SDL_GetTicks() value during the start of handling of the current frame
 	static Uint32 dwLastRenderTicks; // SDL_GetTicks() value during the last present frame call
 	static Uint32 dwPresentsCount; // Count of how many times SDL presented a frame to a window
+
+	static InputKey inputKeyFullScreen;
+	static InputKey inputKeyScreenshot;
 
 protected:
 	friend class CScreenManager;

@@ -38,23 +38,24 @@ CLabelWidget::CLabelWidget(
 //Constructor.
 //
 //Params:
-	const UINT dwSetTagNo,                //(in)   Required params for CWidget
-	const int nSetX, const int nSetY,               //    constructor.
-	const UINT wSetW, const UINT wSetH,             //
+	const UINT dwSetTagNo,              //(in)   Required params for CWidget constructor
+	const int nSetX, const int nSetY,   //
+	const UINT wSetW, const UINT wSetH, //
 	const UINT eSetFontType,            //(in)   Font to use for text.
 	const WCHAR *pwczSetText,           //(in)   Text that label will display.
-	const bool bResizeToFit,                  //(in)   If true, widget height will
-											//    change to match height of
-											//    rendered text.  Default is
-											//    false.  See comments in
-											//    SetText().
+	const bool bResizeToFit,            //(in)   If true, widget height will
+	                                    //    change to match height of
+	                                    //    rendered text.  Default is
+	                                    //    false.  See comments in
+	                                    //    SetText().
 	const UINT wFirstIndent,            //(in)   Indentation of the first line [default=0]
-	const WIDGETTYPE eType,       //[default=WT_Label]
-	const bool bCacheRendering,   //[default=false]
-	const int y_font_offset)
+	const WIDGETTYPE eType,             //[default=WT_Label]
+	const bool bCacheRendering,         //[default=false]
+	const int y_font_offset)            //[default=-6]
 	: CWidget(eType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, eFontType(eSetFontType)
 	, eTextAlign(TA_Left)
+	, eTextVAlign(TA_VTop)
 	, bClickable(false)
 	, bCacheRendering(bCacheRendering)
 	, pRenderedText(NULL)
@@ -172,6 +173,12 @@ void CLabelWidget::Paint(
 	{
 		int nOffsetX, nOffsetY;
 		GetScrollOffset(nOffsetX, nOffsetY);
+
+		if (this->eTextVAlign == TA_VCenter) {
+			UINT textW, textH;
+			this->GetTextWidthHeight(textW, textH);
+			nOffsetY += (int(this->h) - int(textH)) / 2;
+		}
 
 		UINT wLineOffsetX = 0;
 

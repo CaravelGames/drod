@@ -87,6 +87,9 @@ Uint32 CScreen::dwCurrentTicks = 0;
 Uint32 CScreen::dwLastRenderTicks = 0;
 Uint32 CScreen::dwPresentsCount = 0;
 
+InputKey CScreen::inputKeyFullScreen = SDLK_F10;
+InputKey CScreen::inputKeyScreenshot = SDLK_F11;
+
 UINT CScreen::MIDReallyQuit = 0;
 UINT CScreen::MIDOverwriteFilePrompt = 0;
 
@@ -396,18 +399,19 @@ void CScreen::OnKeyDown(
 	const UINT /*dwTagNo*/,         //(in)   Widget that event applied to.
 	const SDL_KeyboardEvent &Key) //(in)   Event.
 {
+	const InputKey inputKey = BuildInputKey(Key);
+
+	if (inputKey == CScreen::inputKeyFullScreen)
+		ToggleScreenSize();
+	
+	else if (inputKey == CScreen::inputKeyScreenshot)
+		SaveSurface();
+
 	switch (Key.keysym.sym)
 	{
 		case SDLK_RETURN:
 			if (Key.keysym.mod & KMOD_ALT && !GetHotkeyTag(Key.keysym))
-				//going to next case
-		case SDLK_F10:
-			ToggleScreenSize();
-		break;
-
-		case SDLK_F11:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-				SaveSurface();
+				ToggleScreenSize();
 		break;
 
 		case SDLK_F4:

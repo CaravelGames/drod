@@ -17,32 +17,23 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005
- * Caravel Software. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
+ * 1997, 2000, 2001, 2002, 2005, 2020 Caravel Software. All Rights Reserved.
+ *
+ * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
-//This is just a CDialog that has been changed so that it deactivates when a 
-//keydown event is received.
+// Set of utilities for working with internationalization
 
-#ifndef KEYPRESSDIALOGWIDGET_H
-#define KEYPRESSDIALOGWIDGET_H
+#ifndef I18N_H
+#define I18N_H
 
-#include "DialogWidget.h"
+#include "GameConstants.h"
+#include "Db.h"
 
-#include <SDL.h>
+namespace I18N {
+	extern WSTRING DescribeInputKey(const InputKey key);
+}
 
-class CKeypressDialogWidget : public CDialogWidget
-{
-public:
-	CKeypressDialogWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW, UINT wSetH);
-
-	SDL_Keycode    GetKey(void) const {return this->Key;}
-
-private:
-	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
-
-	SDL_Keycode    Key;
-};
-
-#endif
+#endif //...#ifndef I18N_H

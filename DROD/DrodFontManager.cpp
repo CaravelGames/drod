@@ -225,6 +225,12 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_Small].BackColor = LightBrown;
 	this->LoadedFonts[F_Small].bAntiAlias = true;
 
+	this->LoadedFonts[F_SettingsKeymaps].pTTFFont = pFont;
+	this->LoadedFonts[F_SettingsKeymaps].wLineSkipHeight = 18;
+	this->LoadedFonts[F_SettingsKeymaps].wSpaceWidth = 3;
+	this->LoadedFonts[F_SettingsKeymaps].BackColor = LightBrown;
+	this->LoadedFonts[F_SettingsKeymaps].bAntiAlias = true;
+
 	//Load header font.
 	pFont = GetFont(wstrFontFilepath, wHeaderPoint, TTF_STYLE_BOLD);
 	if (!pFont) return false;

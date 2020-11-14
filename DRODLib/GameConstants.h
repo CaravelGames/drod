@@ -27,13 +27,17 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
 
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Types.h>
 #include <BackEndLib/UtilFuncs.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
 
+#include "../Texts/MIDs.h"
+
 #include <SDL.h>
+#include <unordered_map>
 
 //Global app parameters.
 extern const char szCompanyName[];
@@ -87,6 +91,34 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_BUMP_NW (COMMAND_COUNT+10)
 #define CMD_ESCAPE (COMMAND_COUNT+11) // Used only in front end for tracking wish to exit game
 
+// Access hooks for front end options
+#define CMD_EXTRA_LOCK_ROOM (COMMAND_COUNT+12)
+#define CMD_EXTRA_SKIP_SPEECH (COMMAND_COUNT+13)
+#define CMD_EXTRA_TOGGLE_PUZZLE_MODE (COMMAND_COUNT+14)
+#define CMD_EXTRA_TOGGLE_FULL_SCREEN (COMMAND_COUNT+15)
+#define CMD_EXTRA_SCREENSHOT (COMMAND_COUNT+16)
+#define CMD_EXTRA_SAVE_ROOM_IMAGE (COMMAND_COUNT+17)
+#define CMD_EXTRA_STATS (COMMAND_COUNT+18)
+#define CMD_EXTRA_CHAT_HISTORY (COMMAND_COUNT+19)
+#define CMD_EXTRA_PUZZLE_MODE_OPTIONS (COMMAND_COUNT+20)
+#define CMD_EXTRA_TOGGLE_TURN_COUNT (COMMAND_COUNT+21)
+#define CMD_EXTRA_QUICK_DEMO_RECORD (COMMAND_COUNT+22)
+#define CMD_EXTRA_TOGGLE_DEMO_RECORD (COMMAND_COUNT+23)
+#define CMD_EXTRA_WATCH_DEMOS (COMMAND_COUNT+24)
+#define CMD_EXTRA_EDITOR_CUT (COMMAND_COUNT+25)
+#define CMD_EXTRA_EDITOR_COPY (COMMAND_COUNT+26)
+#define CMD_EXTRA_EDITOR_PASTE (COMMAND_COUNT+27)
+#define CMD_EXTRA_EDITOR_UNDO (COMMAND_COUNT+28)
+#define CMD_EXTRA_EDITOR_REDO (COMMAND_COUNT+29)
+#define CMD_EXTRA_EDITOR_PLAYTEST_ROOM (COMMAND_COUNT+30)
+#define CMD_EXTRA_EDITOR_REFLECT_X (COMMAND_COUNT+31)
+#define CMD_EXTRA_EDITOR_REFLECT_Y (COMMAND_COUNT+32)
+#define CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE (COMMAND_COUNT+33)
+#define CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE (COMMAND_COUNT+34)
+#define CMD_EXTRA_EDITOR_PREV_LEVEL (COMMAND_COUNT+35)
+#define CMD_EXTRA_EDITOR_NEXT_LEVEL (COMMAND_COUNT+36)
+#define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+37)
+
 //Sword orientation.
 //TODO make an enum?
 static const UINT NW = 0;
@@ -103,6 +135,35 @@ static const UINT ORIENTATION_COUNT = 9;
 //******************************************************************************************
 namespace InputCommands
 {
+	const InputKey UseDesktopKey = 0;
+
+	class KeyDefinition {
+	public:
+		KeyDefinition(const UINT eCommand,
+			const char *settingName,
+			MID_CONSTANT commandMID,
+			const InputKey defaultKeyDesktop,
+			const InputKey defaultKeyNotebook = UseDesktopKey)
+			: eCommand(eCommand),
+			settingName(settingName),
+			commandMID(commandMID),
+			defaultKeyDesktop(defaultKeyDesktop),
+			defaultKeyNotebook(defaultKeyNotebook == UseDesktopKey ? defaultKeyDesktop : defaultKeyNotebook)
+		{}
+
+		const InputKey GetDefaultKey(const UINT wKeyboardMode) const
+		{
+			return wKeyboardMode == 1 ? this->defaultKeyNotebook : this->defaultKeyDesktop;
+		}
+
+		const UINT eCommand;
+
+		const InputKey defaultKeyDesktop;
+		const InputKey defaultKeyNotebook;
+		const char *settingName;
+		const MID_CONSTANT commandMID;
+	};
+	
 	enum DCMD
 	{
 		DCMD_NW = 0,
@@ -121,14 +182,50 @@ namespace InputCommands
 		DCMD_Battle,
 		DCMD_Command,
 		DCMD_CloneSwitch,
+		
+		// Below are keymaps which are not commands but other actions in the game
+		// Toggles/actions
+		DCMD_LockRoom,
+		DCMD_SkipSpeech,
+		DCMD_TogglePuzzleMode,
+		DCMD_ToggleFullScreen,
+		DCMD_Screenshot,
+		DCMD_SaveRoomImage,
+
+		// Dialogs/screens
+		DCMD_Stats,
+		DCMD_ChatHistory,
+		DCMD_PuzzleModeOptions,
+		DCMD_ToggleTurnCount,
+		DCMD_QuickDemoRecord,
+		DCMD_ToggleDemoRecord,
+		DCMD_WatchDemos,
+		DCMD_ShowHelp,
+		
+		// Editor
+		DCMD_Editor_Cut,
+		DCMD_Editor_Copy,
+		DCMD_Editor_Paste,
+		DCMD_Editor_Undo,
+		DCMD_Editor_Redo,
+		DCMD_Editor_PlaytestRoom,
+		DCMD_Editor_ReflectX,
+		DCMD_Editor_ReflectY,
+		DCMD_Editor_SetFloorImage,
+		DCMD_Editor_SetOverheadImage,
+		DCMD_Editor_PrevLevel,
+		DCMD_Editor_NextLevel,
 
 		DCMD_Count,
-		DCMD_NotFound=DCMD_Count
+		DCMD_NotFound=DCMD_Count,
+		DCMD_ExtraKeys=DCMD_LockRoom
 	};
-	extern const char *COMMANDNAME_ARRAY[DCMD_Count];
-	extern const UINT COMMAND_MIDS[DCMD_Count];
+	
+	extern const std::unordered_map<DCMD, KeyDefinition*> COMMAND_MAP;
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
+	extern const KeyDefinition *GetKeyDefinition(const UINT nCommand);
+	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }
@@ -160,6 +257,11 @@ enum RoomTokenType
 };
 
 //******************************************************************************************
+static inline bool bIsVirtualCommand(const int command)
+{
+	return command > COMMAND_COUNT;
+}
+
 static inline bool bIsMovementCommand(const int command)
 {
 	switch (command)
