@@ -2123,7 +2123,7 @@ void CBitmapManager::DarkenTileWithMask(
 void CBitmapManager::DarkenTileWithMultiTileMask(
 //Set pixel intensities to fraction of original, using indicated set of tiles as an inverse mask.
 //That is, only darken pixels where all masking tiles are transparent.
-	const vector<TileMask>& masks,
+	const vector<TweeningTileMask>& masks,
 	const UINT x, const UINT y, const UINT w, const UINT h, //surface area to update
 	SDL_Surface *pDestSurface, const float fLightPercent)
 {
@@ -2161,7 +2161,7 @@ void CBitmapManager::DarkenTileWithMultiTileMask(
 	vector<MaskSurface> maskSurfaces;
 	UINT i;
 	for (i = 0; i < masks.size(); ++i) {
-		const TileMask& mask = masks[i];
+		const TweeningTileMask& mask = masks[i];
 		MaskSurface maskSurface;
 		SDL_Surface* pSurface = GetTileSurface(mask.tile);
 		ASSERT(pSurface);

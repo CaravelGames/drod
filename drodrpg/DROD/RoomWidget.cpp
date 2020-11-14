@@ -3847,7 +3847,7 @@ void CRoomWidget::DrawTLayerTile(
 	const float fDark,
 	const bool bAddLight,
 	const bool bEditor,
-	const vector<TileMask>* pPitMasks)
+	const vector<TweeningTileMask>* pPitPlatformMasks)
 {
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
@@ -3856,9 +3856,10 @@ void CRoomWidget::DrawTLayerTile(
 	//Deal with darkening the pit tile now.
 	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
 	if (bAddLight && bIsPitTile) {
-		if (pPitMasks) {
+		if (pPitPlatformMasks) {
 			//Mask out moving platform tiles when drawing darkness on pits.
-			g_pTheBM->DarkenTileWithMultiTileMask(*pPitMasks, nX, nY, CX_TILE, CY_TILE, pDestSurface, fDark);
+			//That is, preclude darkness from being drawn twice on moving platform tiles.
+			g_pTheBM->DarkenTileWithMultiTileMask(*pPitPlatformMasks, nX, nY, CX_TILE, CY_TILE, pDestSurface, fDark);
 		} else if (bIsPit(wOTileNo)) {
 			AddDark(fDark);
 		}
@@ -5623,33 +5624,33 @@ void CRoomWidget::AddPlatformPitMasks(
 	//Pit under moving platform is partially occluded.
 	//Track either two or four pit tiles that this platform tile is occluding.
 	pitMasks[ROOMCOORD(blit.wCol, blit.wRow)].push_back(
-		TileMask(blit.wTileImageNo, blit.wXOffset, blit.wYOffset));
+		TweeningTileMask(blit.wTileImageNo, blit.wXOffset, blit.wYOffset));
 
 	if (blit.wXOffset) {
 		if (int(blit.wXOffset) < 0) { //moving from left
 			pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow)].push_back(
-				TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), blit.wYOffset));
+				TweeningTileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), blit.wYOffset));
 		} else { //moving from right
 			pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow)].push_back(
-				TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, blit.wYOffset));
+				TweeningTileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, blit.wYOffset));
 		}
 
 		if (blit.wYOffset) {
 			if (int(blit.wXOffset) < 0) { //moving from left
 				if (int(blit.wYOffset) < 0) { //moving from above
 					pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow - 1)].push_back(
-						TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), CY_TILE + int(blit.wYOffset)));
+						TweeningTileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), CY_TILE + int(blit.wYOffset)));
 				} else { //moving from below
 					pitMasks[ROOMCOORD(blit.wCol - 1, blit.wRow + 1)].push_back(
-						TileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), int(blit.wYOffset) - CY_TILE));
+						TweeningTileMask(blit.wTileImageNo, CX_TILE + int(blit.wXOffset), int(blit.wYOffset) - CY_TILE));
 				}
 			} else { //moving from right
 				if (int(blit.wYOffset) < 0) { //moving from above
 					pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow - 1)].push_back(
-						TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, CY_TILE + int(blit.wYOffset)));
+						TweeningTileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, CY_TILE + int(blit.wYOffset)));
 				} else { //moving from below
 					pitMasks[ROOMCOORD(blit.wCol + 1, blit.wRow + 1)].push_back(
-						TileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, int(blit.wYOffset) - CY_TILE));
+						TweeningTileMask(blit.wTileImageNo, int(blit.wXOffset) - CX_TILE, int(blit.wYOffset) - CY_TILE));
 				}
 			}
 		}
@@ -5658,10 +5659,10 @@ void CRoomWidget::AddPlatformPitMasks(
 	if (blit.wYOffset) {
 		if (int(blit.wYOffset) < 0) { //moving from above
 			pitMasks[ROOMCOORD(blit.wCol, blit.wRow - 1)].push_back(
-				TileMask(blit.wTileImageNo, blit.wXOffset, CY_TILE + int(blit.wYOffset)));
+				TweeningTileMask(blit.wTileImageNo, blit.wXOffset, CY_TILE + int(blit.wYOffset)));
 		} else { //moving from below
 			pitMasks[ROOMCOORD(blit.wCol, blit.wRow + 1)].push_back(
-				TileMask(blit.wTileImageNo, blit.wXOffset, int(blit.wYOffset) - CY_TILE));
+				TweeningTileMask(blit.wTileImageNo, blit.wXOffset, int(blit.wYOffset) - CY_TILE));
 		}
 	}
 }
@@ -5697,7 +5698,7 @@ void CRoomWidget::DrawTLayerTiles(
 
 				LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + tileIndex * wLightValuesPerTile;
 
-				const vector<TileMask>* pPitMasks = NULL;
+				const vector<TweeningTileMask>* pPitMasks = NULL;
 				if (bAddLight) {
 					t_PitMasks::const_iterator it = pitMasks.find(ROOMCOORD(wX, wY));
 					if (it != pitMasks.end())

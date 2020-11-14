@@ -200,7 +200,7 @@ struct TileImageBlitParams {
 						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
-typedef map<ROOMCOORD, vector<TileMask> > t_PitMasks;
+typedef map<ROOMCOORD, vector<TweeningTileMask> > t_PitMasks;
 
 //******************************************************************************
 class CCurrentGame;
@@ -319,7 +319,7 @@ public:
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
-			const bool bEditor, const vector<TileMask>* pPitMasks=NULL);
+			const bool bEditor, const vector<TweeningTileMask>* pPitPlatformMasks=NULL);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
