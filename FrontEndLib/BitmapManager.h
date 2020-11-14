@@ -68,6 +68,15 @@ struct CustomTiles
 	UINT wTileStartNo;     //starting number of these custom tiles
 };
 
+struct TileMask
+{
+	TileMask(UINT tile, int xOffset, int yOffset)
+		: tile(tile), xOffset(xOffset), yOffset(yOffset)
+	{ }
+	UINT tile;
+	int xOffset, yOffset; //tile location offset from top-left origin
+};
+
 //DataIDs to find custom tile data that the bitmap manager may use
 typedef std::map<UINT,CustomTiles> CustomTileMap;
 
@@ -134,6 +143,9 @@ public:
 	void        DarkenTileWithMask(const UINT wTIMask, const UINT wXOffset, const UINT wYOffset,
 			const UINT x, const UINT y, const UINT w, const UINT h,
 			SDL_Surface *pDestSurface, const float fLightPercent);
+	void CBitmapManager::DarkenTileWithMultiTileMask(const vector<TileMask>& masks,
+			const UINT x, const UINT y, const UINT w, const UINT h,
+			SDL_Surface* pDestSurface, const float fLightPercent);
 	void        DarkenWithMask(SDL_Surface *pMaskSurface, SDL_Rect src,
 			SDL_Surface *pDestSurface, SDL_Rect dest, const float fLightFactor,
 			const bool bUseColorKeyMask=false);
