@@ -247,7 +247,8 @@ public:
 	void           DisplaySubtitle(const WCHAR *pText, const UINT wX, const UINT wY,
 			const bool bReplace);
 	void           DontAnimateMove();
-	void           DrawTLayer(SDL_Surface *pDestSurface, const bool bEditor=false, const bool bMoveInProgress=false);
+	void           DrawPlatformsAndTLayer(SDL_Surface *pDestSurface,
+			const bool bEditor=false, const bool bMoveInProgress=false);
 	virtual void   DrawMonsters(CMonster *const pMonsterList,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=false);
@@ -561,6 +562,8 @@ private:
 		UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
 		LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
+
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
 
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 

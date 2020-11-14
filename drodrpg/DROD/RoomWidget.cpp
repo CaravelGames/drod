@@ -2336,7 +2336,7 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	ASSERT(this->pRoom);
 
 	RenderFogInPit(pSurface);
-	DrawTLayer(pSurface);
+	DrawPlatformsAndTLayer(pSurface);
 //	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
@@ -3064,13 +3064,7 @@ const
   		if (!this->pRoom->IsValidColRow(wNX, wNY)) continue;
 
 		//Calculate dark
-		const UINT val = this->pRoom->tileLights.GetAt(wNX, wNY);
-		float fDark = 1.0f;
-		if (bIsDarkTileValue(val))
-		{
-			ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-			fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
-		}
+		const float fDark = GetOverheadDarknessAt(wNX, wNY) * blit.appliedDarkness;
 		const float dark_value = fDark/256.0f; //div by 256 instead of 255 for speed optimization
 		const bool add_darkness = fDark < 1.0f;
 
@@ -3421,6 +3415,18 @@ bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest
 }
 
 //*****************************************************************************
+float CRoomWidget::GetOverheadDarknessAt(const UINT wX, const UINT wY) const
+{
+	const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
+	if (bIsDarkTileValue(darkVal))
+	{
+		ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
+		return darkMap[darkVal - LIGHT_OFF - 1];
+	}
+	return 1.0f;
+}
+
+//*****************************************************************************
 UINT CRoomWidget::GetTextureIndexForTile(const UINT tileNo, const bool bForceBaseImage) const
 //Returns: the texture index that corresponds to this room tile
 {
@@ -3532,13 +3538,7 @@ void CRoomWidget::RenderRoom(
 				bAddLightLayers = false;
 
 				//Determine this tile's darkness.
-				fDark = fLightLevel;
-				const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
-				if (bIsDarkTileValue(darkVal))
-				{
-					ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-					fDark *= darkMap[darkVal - LIGHT_OFF - 1];
-				}
+				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
 
 				//1. Draw opaque (floor) layer.
 				const bool bWater = bIsWater(wOTileNo) || wOTileNo == T_PLATFORM_W;
@@ -3830,6 +3830,7 @@ OLayerDone:
 //*****************************************************************************
 void CRoomWidget::DrawTLayerTile(
 //Render objects above the o-layer for a room tile onto a surface.
+//Applies light and darkness effects (if requested).
 //
 //Params:
 	const UINT wX, const UINT wY,
@@ -3845,12 +3846,12 @@ void CRoomWidget::DrawTLayerTile(
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
 
-	bool bIsMoving = false;
 	const bool bIsPitTile = bIsPit(wOTileNo) || wOTileNo == T_PLATFORM_P;
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
-	if (bAddLight && bIsPitTile && wOTileNo != T_PLATFORM_P)
+	if (bAddLight && bIsPitTile && wOTileNo != T_PLATFORM_P) {
 		AddDark(fDark);
+	}
 
 	bool bTar = bIsTar(wTTileNo);
 	bool bTIsTransparent = bTar && bEditor;
@@ -3865,6 +3866,7 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	//4. Draw transparent (item) layer.
+	bool bIsMoving = false;
 	if (ti.t != TI_TEMPTY && !bTar)
 	{
 		switch (wTTileNo)
@@ -4098,7 +4100,7 @@ void CRoomWidget::Paint(
 	//3a. Draw effects that go on top of room image, under monsters/player.
 	RenderFogInPit(pDestSurface);
 
-	DrawTLayer(pDestSurface, false, bMoveAnimationInProgress);
+	DrawPlatformsAndTLayer(pDestSurface, false, bMoveAnimationInProgress);
 
 	this->pTLayerEffects->DrawEffects();
 	this->pTLayerEffects->DirtyTiles();
@@ -4306,13 +4308,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 							//Fog with uniform alpha.
 
 							//When darkness is added to a tile with fog, show fog that much more faintly.
-							const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
-							float fDark = 1.0f;
-							if (bIsDarkTileValue(darkVal))
-							{
-								ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-								fDark = darkMap[darkVal - LIGHT_OFF - 1];
-							}
+							const float fDark = GetOverheadDarknessAt(wX, wY);
 							const Uint8 opacity = Uint8(MIN_FOG_OPACITY * fDark);
 							if (opacity) {
 								SDL_Rect src = MAKE_SDL_RECT((int)(wXOffset + wX * CX_TILE), (int)(wYOffset + wY * CY_TILE), CX_TILE, CY_TILE);
@@ -4399,13 +4395,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 
 					//Fog with uniform alpha.
 					//When darkness is added to a tile with fog, show fog that much more faintly.
-					const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
-					float fDark = 1.0f;
-					if (bIsDarkTileValue(darkVal))
-					{
-						ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-						fDark = darkMap[darkVal - LIGHT_OFF - 1];
-					}
+					const float fDark = GetOverheadDarknessAt(wX, wY);
 					const Uint8 opacity = Uint8(MIN_FOG_OPACITY * fDark);
 					if (opacity) {
 						SDL_Rect src = MAKE_SDL_RECT((int)(wXOffset + wXDest), (int)(wYOffset + wYDest), CX_TILE, CY_TILE);
@@ -4500,15 +4490,7 @@ void CRoomWidget::RenderFogInPit(SDL_Surface *pDestSurface) //[default=NULL]
 					}
 
 					//When darkness is added to a tile with fog, show fog that much more faintly.
-					const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
-					float fDark = 1.0f;
-					if (bIsDarkTileValue(darkVal))
-					{
-						ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-						fDark = darkMap[darkVal - LIGHT_OFF - 1];
-					}
-
-
+					const float fDark = GetOverheadDarknessAt(wX, wY);
 					if (wPitHeight >= wMaxPitHeight)
 					{
 						//Fog with uniform alpha.
@@ -5511,7 +5493,7 @@ void CRoomWidget::DrawDamagedMonsterSwords(SDL_Surface *pDestSurface)
 }
 
 //*****************************************************************************
-void CRoomWidget::DrawTLayer(
+void CRoomWidget::DrawPlatformsAndTLayer(
 //Draws platforms in the room (including anything on top of them).
 	SDL_Surface *pDestSurface,
 	const bool bEditor,           //(in) [default=false] 
@@ -5553,24 +5535,28 @@ void CRoomWidget::DrawTLayer(
 		platform.GetTiles(tiles);
 
 		//Redraw tiles needing to be repainted.
-		for (CCoordSet::const_iterator tileIter = tiles.begin();
-				tileIter != tiles.end(); ++tileIter)
+		CCoordSet::const_iterator tileIter;
+		for (tileIter = tiles.begin(); tileIter != tiles.end(); ++tileIter)
 		{
 			UINT wX = tileIter->wX, wY = tileIter->wY;
 			const TileImages& ti = this->pTileImages[this->pRoom->ARRAYINDEX(wX,wY)];
 			if (bRedrawAll || ti.damaged)
 			{
-				const UINT oTile = pRoom->GetOSquare(wX, wY);
+				const UINT oTile = this->pRoom->GetOSquare(wX, wY);
 				UINT wTileImageNo = GetTileImageForTileNo(oTile);
 				if (wTileImageNo == CALC_NEEDED)
 				{
 					wTileImageNo = CalcTileImageFor(this->pRoom, oTile, wX, wY);
 					TileImageBlitParams blit(wX, wY, wTileImageNo, wXOffset, wYOffset,
 						bPlatformAnimating); // || wXOffset || wYOffset); -- only needed if platform has jitter independent of movement animation
-					if (oTile == T_PLATFORM_W)
+					if (oTile == T_PLATFORM_W) {
 						blit.bCastShadowsOnTop = false;
-					else // Platforms over water have their lighting applied when drawing T-Layer items
+						// Platforms over water have their lighting applied when drawing T-Layer items
+					} else {
+						//Platform over pit.
+						//Add shadow and light on platform after the platform and o-layer effects are drawn.
 						lightingBlits.push_back(blit);
+					}
 					DrawTileImageWithoutLight(blit, pDestSurface);
 					tilesDrawn.Add(wX,wY);
 					//tiles being moved off of need to have items redrawn too
@@ -5590,7 +5576,7 @@ void CRoomWidget::DrawTLayer(
 
 	CBitmapManager::fLightLevel = fOldLightLevel;
 
-	//Apply lighting to platforms
+	//Apply lighting to pit platforms
 	for (vector<TileImageBlitParams>::iterator iter = lightingBlits.begin();
 		iter != lightingBlits.end(); ++iter)
 	{
@@ -5628,13 +5614,7 @@ void CRoomWidget::DrawTLayerTiles(
 				UINT wOTileNo = this->pRoom->GetOSquare(wX, wY);
 
 				//Determine this tile's darkness.
-				float fDark = fLightLevel;
-				const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
-				if (bIsDarkTileValue(darkVal))
-				{
-					ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-					fDark *= darkMap[darkVal - LIGHT_OFF - 1];
-				}
+				const float fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
 
 				int nX = this->x + wX * CX_TILE;
 				int nY = this->y + wY * CY_TILE;
@@ -6344,13 +6324,7 @@ void CRoomWidget::DrawTileLight(
 		}
 		else {
 			//Add dark to sprite.
-			const UINT val = this->pRoom->tileLights.GetAt(wCol, wRow);
-			float fDark = 1.0f;
-			if (bIsDarkTileValue(val))
-			{
-				ASSERT(val - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-				fDark = darkMap[(UINT)((val - LIGHT_OFF - 1) * blit.appliedDarkness)];
-			}
+			const float fDark = GetOverheadDarknessAt(wCol, wRow) * blit.appliedDarkness;
 
 			//Add light to sprite.
 			if (this->pRoom->tileLights.Exists(wCol,wRow) ||
@@ -6601,7 +6575,7 @@ void CRoomWidget::DrawPlayer(
 
 	//Make sure display orientation is correct for role appearance.
 	UINT wDisplayO, wSwordO = swordsman.wO;
-	switch (swordsman.wAppearance)
+	switch (int(swordsman.wAppearance))
 	{
 		case M_NONE: return; //Don't show anything if player is not being shown.
 		case M_BRAIN: case M_SKIPPERNEST: wDisplayO = NO_ORIENTATION; break;
@@ -6762,7 +6736,7 @@ bool CRoomWidget::GetPlayerDisplayTiles(
 const
 {
 	//Make sure display orientation is correct for role appearance.
-	switch (swordsman.wAppearance)
+	switch (int(swordsman.wAppearance))
 	{
 		case M_NONE: return false; //Don't show anything if player is not being shown.
 		case M_BRAIN: case M_SKIPPERNEST: wO = NO_ORIENTATION; break;
@@ -7310,12 +7284,9 @@ void CRoomWidget::CastLightOnTile(
 
 	//Light intensity.
 	float fFullLight = fMaxLightIntensity[this->wDark];
-	const UINT lightTileVal = this->pRoom->tileLights.GetAt(wX, wY);
-	if (bIsDarkTileValue(lightTileVal)) //shine brighter in specially marked dark tiles
-	{
-		ASSERT(lightTileVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-		fFullLight /= darkMap[lightTileVal - LIGHT_OFF - 1];
-	}
+	const float fDark = GetOverheadDarknessAt(wX, wY);
+	if (fDark > 0.0f)
+		fFullLight /= fDark;
 	const float fMin = fFullLight / (1.1f * light.fMaxDistance);
 
 	//Supersample the tile.
