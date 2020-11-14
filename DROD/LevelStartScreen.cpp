@@ -267,7 +267,7 @@ void CLevelStartScreen::OnKeyDown(
 			CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_Game));
 			ASSERT(pGameScreen);
-			const int nCommand = pGameScreen->GetCommandForKeysym(Key.keysym.sym);
+			const int nCommand = pGameScreen->GetCommandForInputKey(Key.keysym.sym);
 			if (nCommand >= CMD_N && nCommand <= CMD_WAIT)
 				break;
 

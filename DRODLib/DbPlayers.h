@@ -91,6 +91,7 @@ public:
 	//GUID fields.  Don't modify these fields externally.
 	CDbMessageText OriginalNameText;
 	CDate       Created, LastUpdated;
+	static void ConvertInputSettings(CDbPackedVars &settings);
 
 private:
 	CIDSet      GetLocalIDs();

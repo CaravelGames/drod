@@ -76,6 +76,7 @@ enum FONTTYPE
 	F_TitleMarqueeActiveHyperlink,
 	F_ExpandText,
 	F_WorldMapLevel,
+	F_SettingsKeymaps,
 
 	F_Last
 };

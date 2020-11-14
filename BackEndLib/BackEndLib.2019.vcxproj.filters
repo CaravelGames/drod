@@ -22,6 +22,7 @@
     <ClCompile Include="StretchyBuffer.cpp" />
     <ClCompile Include="SysTimer.cpp" />
     <ClCompile Include="Wchar.cpp" />
+    <ClCompile Include="InputKey.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assert.h" />
@@ -54,5 +55,6 @@
     <ClInclude Include="Types.h" />
     <ClInclude Include="UtilFuncs.h" />
     <ClInclude Include="Wchar.h" />
+    <ClInclude Include="InputKey.h" />
   </ItemGroup>
 </Project>

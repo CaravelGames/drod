@@ -37,9 +37,13 @@
 
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Base64.h>
+#include <BackEndLib/Files.h>
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/Ports.h>
+#include <BackEndLib/InputKey.h>
+
+using namespace InputCommands;
 
 //
 //CDbPlayers public methods.
@@ -450,6 +454,7 @@ CDbPackedVars CDbPlayers::GetSettings(const UINT dwPlayerID)
 	if (dwPlayerRowI == ROW_NO_MATCH) {ASSERT(!"Bad player ID."); return settings;}
 
 	settings = p_Settings(PlayersView[dwPlayerRowI]);
+	CDbPlayer::ConvertInputSettings(settings);
 	return settings;
 }
 
@@ -554,6 +559,7 @@ bool CDbPlayer::Load(
 		Clear();
 		return false;
 	}
+	ConvertInputSettings(this->Settings);
 	return true;
 }
 
@@ -1052,4 +1058,42 @@ bool CDbPlayer::UpdateNew()
 	delete[] pbytChallengesBytes;
 
 	return true;
+}
+
+
+//*****************************************************************************
+void CDbPlayer::ConvertInputSettings(CDbPackedVars& settings)
+// 5.2 changed how key inputs are stored from UINT32 to INT64, so that modifier key flags can also
+// be stored for a key
+{
+	string strKeyboard;
+	UINT wKeyboardMode = 0;	//whether to use desktop or laptop keyboard laout
+	if (CFiles::GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
+	{
+		wKeyboardMode = atoi(strKeyboard.c_str());
+		if (wKeyboardMode > 1) wKeyboardMode = 0;	//invalid setting
+	}
+
+	for (int i = 0; i < InputCommands::DCMD_Count; ++i)
+	{
+		const KeyDefinition *keyDefinition = GetKeyDefinition(i);
+		
+		if (!settings.DoesVarExist(keyDefinition->settingName))
+			continue;
+		
+		const UNPACKEDVARTYPE varType = settings.GetVarType(keyDefinition->settingName);
+		if (varType == UVT_int) {
+			InputKey oldKey = settings.GetVar(keyDefinition->settingName, SDLK_UNKNOWN);
+			
+			// Convert old SDL1 mappings
+			const bool bInvalidSDL1mapping = oldKey >= 128 && oldKey <= 323;
+			if (bInvalidSDL1mapping)
+				oldKey = keyDefinition->GetDefaultKey(wKeyboardMode);
+
+			InputKey newType = InputKey(oldKey);
+			settings.SetVar(keyDefinition->settingName, newType);
+		}
+
+		ASSERT(settings.GetVarType(keyDefinition->settingName) == UVT_long_long_int);
+	}
 }
