@@ -4,14 +4,14 @@
     <Filter Include="General">
       <UniqueIdentifier>{0ae9b5a3-7245-4ed0-828a-3a24f1131473}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Data Access">
-      <UniqueIdentifier>{3a5dc181-7d1b-4b97-adb3-fafd26ba5e7c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Monsters">
       <UniqueIdentifier>{39b0cbdc-87e4-4d06-bc1b-d972ee5c4f25}</UniqueIdentifier>
     </Filter>
     <Filter Include="Items">
       <UniqueIdentifier>{865244a3-8907-4a15-8585-a1b8905b9db9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DBs">
+      <UniqueIdentifier>{3a5dc181-7d1b-4b97-adb3-fafd26ba5e7c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -37,58 +37,58 @@
       <Filter>General</Filter>
     </ClCompile>
     <ClCompile Include="Db.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbBase.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbCommands.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbData.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbDemos.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbHolds.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbLevels.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbMessageText.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbPackedVars.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbPlayers.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbRefs.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbRooms.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbSavedGameMoves.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbSavedGames.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbSpeech.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="DbXML.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="EntranceData.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="ImportInfo.cpp">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClCompile>
     <ClCompile Include="Ant.cpp">
       <Filter>Monsters</Filter>
@@ -255,67 +255,67 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="Db.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbBase.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbCommands.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbData.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbDemos.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbHolds.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbLevels.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbMessageText.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbPackedVars.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbPlayers.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DBProps.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbRefs.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbRooms.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbSavedGameMoves.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbSavedGames.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbSpeech.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbVDInterface.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="DbXML.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="EntranceData.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="HoldRecords.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="ImportInfo.h">
-      <Filter>Data Access</Filter>
+      <Filter>DBs</Filter>
     </ClInclude>
     <ClInclude Include="Ant.h">
       <Filter>Monsters</Filter>
