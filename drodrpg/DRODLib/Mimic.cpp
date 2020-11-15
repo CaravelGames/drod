@@ -98,14 +98,15 @@ const
 		switch (wLookTileNo)
 		{
 			case T_MIRROR:
+			case T_CRATE: 
 			{
 				const int dx = (int)wCol - (int)this->wX;
 				const int dy = (int)wRow - (int)this->wY;
 				if (room.CanPushTo(wCol, wRow, wCol + dx, wRow + dy))
-					break; //mirror is not an obstacle
+					break; //not an obstacle
 			}
 			//NO BREAK
-			default:	return true;
+			default: return true;
 		}
 	}
 
@@ -236,10 +237,10 @@ void CMimic::Process(
 */
 			//Process any and all of these item interactions.
 			UINT tTile = room.GetTSquare(this->wX, this->wY);
-			if (tTile==T_MIRROR)
+			if (tTile==T_MIRROR || tTile==T_CRATE)
 			{
 				room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
-				tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the mirror
+				tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object
 			}
 			if (tTile==T_TOKEN)
 				const_cast<CCurrentGame*>(this->pCurrentGame)->ActivateTokenAt(this->wX, this->wY);

@@ -2324,8 +2324,9 @@
 #define TI_ATK_UP10       2150
 #define TI_DEF_UP3        2151
 #define TI_DEF_UP10       2152
+#define TI_CRATE          2153
 
-static const UINT TI_COUNT = 2153;
+static const UINT TI_COUNT = 2154;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

@@ -286,6 +286,7 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 				case T_BOMB:
 					return false;
 				case T_MIRROR:
+				case T_CRATE:
 					if (!this->bIntraRoomPath)
 						return false;
 					break;
@@ -356,7 +357,7 @@ const
 		if (bIsTrapdoor(wLookTileNo))
 			return false;
 		if (bIsPowerUp(wLookTileNo) || bIsEquipment(wLookTileNo) ||
-				wLookTileNo == T_KEY || wLookTileNo == T_MIRROR)
+				wLookTileNo == T_KEY || wLookTileNo == T_MIRROR || wLookTileNo == T_CRATE)
 			return false;
 
 		//Accessory-specific paths.

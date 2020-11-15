@@ -125,7 +125,7 @@ public:
 protected:
 	virtual  ~CEditRoomWidget();
 
-	virtual void   DrawCharacter(CCharacter *pCharacter, const bool bDrawRaised,
+	virtual void   DrawCharacter(CCharacter *pCharacter, const float fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	virtual bool   DrawingSwordFor(const CMonster *pMonster) const;
 
