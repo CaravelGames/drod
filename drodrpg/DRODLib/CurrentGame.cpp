@@ -5125,6 +5125,8 @@ CheckTLayer:
 				goto CheckMonsterLayer;
 			}
 		break;
+		case T_CRATE:
+			bNotAnObstacle = true;
 		default:
 			goto CheckMonsterLayer;
 		break;
@@ -5326,21 +5328,19 @@ void CCurrentGame::ProcessPlayer(
 */
 
 	//Check for obstacles in destination square.
+	const bool bPrevTileIsElevated = bIsElevatedTile(wOTileNo);
 	if (room.DoesSquareContainPlayerObstacle(
-			wOldX + dx, wOldY + dy, wMoveO, bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+			wOldX + dx, wOldY + dy, wMoveO, bPrevTileIsElevated))
 	{
 		//There is an obstacle on the destination square,
 		//but it might need special handling or queries.
 		//Check each layer for an object that gets handled specially.
-		const UINT wNewOTile = room.GetOSquare(wOldX + dx,
-				wOldY + dy);
-		const UINT wNewFTile = room.GetFSquare(wOldX + dx,
-				wOldY + dy);
-		const UINT wNewTTile = room.GetTSquare(wOldX + dx,
-				wOldY + dy);
+		const UINT wNewOTile = room.GetOSquare(wOldX + dx, wOldY + dy);
+		const UINT wNewFTile = room.GetFSquare(wOldX + dx, wOldY + dy);
+		const UINT wNewTTile = room.GetTSquare(wOldX + dx, wOldY + dy);
 		CMonster *pMonster = room.GetMonsterAtSquare(
 				wOldX + dx, wOldY + dy);
-		bool bNotAnObstacle=false, bPushingMirror=false;
+		bool bNotAnObstacle=false, bPushingTLayerObject=false;
 
 		//If a monster is on the destination tile, player fights it,
 		//even if player won't be able to move onto that tile once the monster is gone.
@@ -5394,7 +5394,7 @@ CheckOLayer:
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+						bPrevTileIsElevated))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5423,7 +5423,7 @@ CheckOLayer:
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+						bPrevTileIsElevated))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5436,16 +5436,18 @@ CheckOLayer:
 			case T_DOOR_Y:
 			case T_DOOR_C: case T_DOOR_G:
 			case T_DOOR_MONEY:
-				//When adjacent a door, player may knock on it to open it.
-				if (!bIsElevatedTile(wOTileNo))
+				//When adjacent a door, and not standing on a crate,
+				//player may knock on it to open it.
+				if (!bIsElevatedTile(wOTileNo) && wTTileNo != T_CRATE)
 				{
 					if (KnockOnDoor(CueEvents, wOldX + dx, wOldY + dy))
 						break;
 				}
 			//NO BREAK
 			case T_DOOR_B: case T_DOOR_R:
-				//Player may walk on doors when standing on them, but is not allowed to knock from above.
-				if (bIsElevatedTile(wOTileNo))
+				//Player may walk on doors when standing on them, or from a crate,
+				//but is not allowed to knock from this position.
+				if (bIsElevatedTile(wOTileNo) || wTTileNo == T_CRATE)
 				{
 					bNotAnObstacle = true;
 					goto CheckFLayer;
@@ -5506,17 +5508,39 @@ CheckFLayer:
 			break;
 
 			case T_MIRROR:
+			case T_CRATE:
 			{
-				//Player ran into mirror.  Push if possible.
+				//Player ran into pushable object.  Push if possible.
 				const UINT destX = wOldX + dx, destY = wOldY + dy;
 				if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 						room.GetOSquare(destX, destY),
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))) &&
-							room.CanPushTo(destX, destY, destX + dx, destY + dy))
+						bPrevTileIsElevated))
 				{
-					//Push, if monster layer doesn't have an obstacle too.
-					bPushingMirror = bNotAnObstacle = true;
-					goto CheckMonsterLayer;
+					if (room.CanPushTo(destX, destY, destX + dx, destY + dy))
+					{
+						//Push, if monster layer doesn't have an obstacle too.
+						bNotAnObstacle = true;
+						switch (wNewTTile) {
+							case T_MIRROR:
+								bPushingTLayerObject = true;
+								break;
+							case T_CRATE:
+								//If stepping onto pushable crate from above, don't push it.
+								//Otherwise do push it.  Can push along top of door.
+								if (!bPrevTileIsElevated || bIsDoor(wNewOTile))
+									bPushingTLayerObject = true;
+								break;
+							default: ASSERT(!"Incomplete logic");
+								break;
+						}
+						goto CheckMonsterLayer;
+					}
+					if (wNewTTile == T_CRATE) {
+						//Cannot push in this instance,
+						//but can move onto if monster layer doesn't have an obstacle
+						bNotAnObstacle = true;
+						goto CheckMonsterLayer;
+					}
 				}
 				//Can't push.
 				CueEvents.Add(CID_HitObstacle,
@@ -5552,8 +5576,8 @@ CheckMonsterLayer:
 				if (bMovingPlatform)
 					room.MovePlatform(wOldX, wOldY, nFirstO);
 
-				//If mirror is being pushed, can do it now.
-				if (bPushingMirror)
+				//If pushable object is being pushed, can do it now.
+				if (bPushingTLayerObject)
 					room.PushObject(wOldX + dx, wOldY + dy,
 							wOldX + dx*2, wOldY + dy*2, CueEvents);
 
@@ -6530,6 +6554,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 		const UINT tTile = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 		if (tTile == T_BOMB || tTile == T_MIRROR)
 			this->pRoom->Plot(this->pPlayer->wX, this->pPlayer->wY, T_EMPTY);
+		//T_CRATE: Player starts on top of crate
 
 		//Remove any monster here.
 		this->pRoom->KillMonsterAtSquare(this->pPlayer->wX, this->pPlayer->wY, CueEvents);

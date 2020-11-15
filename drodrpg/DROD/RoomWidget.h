@@ -167,18 +167,8 @@ struct LightMaps
 
 //******************************************************************************
 struct TileImageBlitParams {
-	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset = 0, UINT yOffset = 0, bool dirtyTiles = false, bool drawRaised = false)
-		: wCol(col), wRow(row)
-		, wTileImageNo(tile)
-		, wXOffset(xOffset), wYOffset(yOffset)
-		, bDirtyTiles(dirtyTiles)
-		, bDrawRaised(drawRaised)
-		, nOpacity(255)
-		, bClipped(false)
-		, nAddColor(-1)
-		, bCastShadowsOnTop(true)
-		, appliedDarkness(0.75)
-	{ }
+	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset = 0, UINT yOffset = 0,
+		bool dirtyTiles = false, float raisedFactor = 0.0f);
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
 	static inline bool CropRectToTileDisplayArea(SDL_Rect& BlitRect);
@@ -187,11 +177,13 @@ struct TileImageBlitParams {
 	static bool crop_display;
 	static SDL_Rect display_area;
 
+	int getRaisedPixels() const;
+
 	UINT wCol, wRow;
 	UINT wTileImageNo;
 	UINT wXOffset, wYOffset;
 	bool bDirtyTiles;
-	bool bDrawRaised;
+	float raisedFactor;
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
@@ -400,21 +392,19 @@ protected:
 	void           DrawDamagedMonsterSwords(SDL_Surface *pDestSurface);
 	void           DrawInvisibilityRange(const int nX, const int nY,
 			SDL_Surface *pDestSurface, CCoordIndex *pCoordIndex=NULL, const int nRange=DEFAULT_SMELL_RANGE);
-	virtual void   DrawCharacter(CCharacter *pCharacter, const bool bDrawRaised,
+	virtual void   DrawCharacter(CCharacter *pCharacter, const float fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	virtual bool   DrawingSwordFor(const CMonster* /*pMonster*/) const { return true; }
-//	void           DrawCitizen(CCitizen *pCitizen, const bool bDrawRaised,
-//			SDL_Surface *pDestSurface, const bool bMoveInProgress);
-	void           DrawDouble(const CPlayerDouble *pDouble, const bool bDrawRaised,
+	void           DrawDouble(const CPlayerDouble *pDouble, const float  fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress, const Uint8 nOpacity=255);
-//	void           DrawDoubleCursor(const UINT wCol, const UINT wRow, SDL_Surface *pDestSurface);
 	void           DrawMonster(CMonster *const pMonster, CDbRoom *const pRoom,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=true, const bool bDrawPieces=true);
 	void           DrawMonsterKillingPlayer(SDL_Surface *pDestSurface);
 	void           DrawPlayer(const CSwordsman &swordsman, SDL_Surface *pDestSurface);
-	bool           DrawRaised(const UINT wTileNo) const {return bIsElevatedTile(wTileNo);}
-	void           DrawRockGiant(const CMonster *pMonster,	const bool bDrawRaised,
+	float          DrawRaisedOnTiles(const UINT wOTileNo, const UINT wTTileNo) const;
+	float          DrawRaised(const UINT wX, const UINT wY) const;
+	void           DrawRockGiant(const CMonster *pMonster,	const float fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	void           DrawSerpentBody(CMonster *pMonster, SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	void           DrawSwordFor(const CMonster* pMonster, const UINT wType,
@@ -551,7 +541,6 @@ protected:
 	UINT              wLastTurn;  //turn # at last frame
 	UINT              wLastOrientation; //direction swords were pointing last turn
 	UINT              wLastX, wLastY;   //position of player last turn
-	bool              bLastRaised;      //was player raised last turn
 
 	int               CX_TILE, CY_TILE;
 

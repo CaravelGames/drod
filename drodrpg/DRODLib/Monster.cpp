@@ -2195,6 +2195,7 @@ bool CMonster::GetNextGaze(
 		case T_BOMB:
 		case T_OBSTACLE:
 		case T_MIRROR:
+		case T_CRATE:
 		case T_ORB:
 			//These objects stop gaze.
 			return false;

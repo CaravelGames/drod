@@ -2560,7 +2560,8 @@ const
 	//Look for t-square obstacle.
 	UINT wTileNo = GetTSquare(wX, wY);
 	if ( !(wTileNo == T_EMPTY || wTileNo==T_SCROLL || bIsPowerUp(wTileNo) ||
-			wTileNo == T_FUSE || wTileNo == T_TOKEN || wTileNo == T_KEY || bIsEquipment(wTileNo)))
+			wTileNo == T_FUSE || wTileNo == T_TOKEN || wTileNo == T_KEY ||
+			bIsEquipment(wTileNo)))
 		return true;
 
 	if (bIsArrowObstacle(GetFSquare(wX, wY), wO))
@@ -3810,6 +3811,7 @@ void CDbRoom::BurnFuses(
 			break;
 			case T_EMPTY:
 			case T_MIRROR:  //mirrors can be pushed onto burning fuses to put them out
+			case T_CRATE:
 			case T_BRIAR_LIVE: //can grow onto a burning fuse
 				//do nothing
 			break;
@@ -4075,6 +4077,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 		case T_MIRROR:
+		case T_CRATE:
 		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 		case T_KEY:
 			Plot(wX, wY, T_EMPTY);
@@ -4309,7 +4312,7 @@ bool CDbRoom::PressurePlateIsDepressedBy(const UINT item)
 {
 	switch (item)
 	{
-		case T_BOMB: case T_MIRROR:
+		case T_BOMB: case T_MIRROR: case T_CRATE:
 		case T_TAR: case T_MUD: case T_GEL:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			return true;
@@ -4625,6 +4628,7 @@ void CDbRoom::ProcessExplosionSquare(
 		break;
 		case T_BRIAR_DEAD: case T_BRIAR_LIVE: //Flow tiles are destroyed.
 		case T_MIRROR:  //shattered
+		case T_CRATE:
 		case T_KEY:
 			Plot(wX,wY,T_EMPTY);
 		break;

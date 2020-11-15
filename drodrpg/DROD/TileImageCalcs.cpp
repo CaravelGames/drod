@@ -1533,7 +1533,8 @@ UINT GetTileImageForTileNo(
 		TI_ATK_UP3,       //T_ATK_UP3
 		TI_ATK_UP10,      //T_ATK_UP10
 		TI_DEF_UP3,       //T_DEF_UP3
-		TI_DEF_UP10       //T_DEF_UP10
+		TI_DEF_UP10,      //T_DEF_UP10
+		TI_CRATE          //T_CRATE
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));

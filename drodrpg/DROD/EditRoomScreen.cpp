@@ -227,6 +227,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_ATK_UP10},                                     //T_ATK_UP10
 	{TI_DEF_UP3},                                      //T_DEF_UP3
 	{TI_DEF_UP10},                                     //T_DEF_UP10
+	{TI_CRATE},                                        //T_CRATE
 
 	//monsters
 	{TI_ROACH_S},
@@ -376,6 +377,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ATK_UP10      95
 	0, //T_DEF_UP3       96
 	0, //T_DEF_UP10      97
+	0, //T_CRATE         98
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -436,6 +438,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
+	1,
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -456,6 +459,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
+	1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -549,14 +553,14 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 28;
+const UINT numTLayerEntries = 29;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_MAP, T_MAP_DETAIL,
 	T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG, T_HEALTH_HUGE, T_KEY,
 	T_DEF_UP, T_DEF_UP3, T_DEF_UP10, T_FUSE, T_BOMB,
 	T_ATK_UP, T_ATK_UP3, T_ATK_UP10, T_SCROLL, T_MIRROR,
 	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_TOKEN, T_OBSTACLE
+	T_TAR, T_CRATE, T_TOKEN, T_OBSTACLE
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -4440,7 +4444,7 @@ void CEditRoomScreen::PasteRegion(
 				if (pOldMonster && (pOldMonster->IsLongMonster() || pOldMonster->IsPiece()))
 				{
 					if (wSrcTile == T_ORB || bIsTar(wSrcTile) || wSrcTile == T_BOMB ||
-							bIsBriar(wSrcTile) || wSrcTile == T_MIRROR ||
+							bIsBriar(wSrcTile) || wSrcTile == T_MIRROR || wSrcTile == T_CRATE ||
 							wSrcTile == T_LIGHT) // || wSrcTile == T_STATION)
 						bPasteAllowed = false;
 				}
@@ -5176,7 +5180,7 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR); break;
 
 				case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
-				case T_MIRROR: case T_TOKEN:
+				case T_MIRROR: case T_TOKEN: case T_CRATE:
 				case T_LIGHT:
 				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR); break;

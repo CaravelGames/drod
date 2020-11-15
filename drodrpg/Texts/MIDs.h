@@ -292,6 +292,7 @@ enum MID_CONSTANT {
   MID_DefenseUp = 1427,
   MID_DefenseUp3 = 1751,
   MID_DefenseUp10 = 1752,
+  MID_Crate = 1788,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,

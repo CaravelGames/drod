@@ -880,7 +880,8 @@ const
 						bIsWater(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
-			//Only on floor, open doors or platforms.
+		case T_CRATE:
+			//Only on floor, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
@@ -1015,7 +1016,8 @@ const
 					bIsPit(wTileNo[0]) || bIsWater(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR);// || wTileNo[1] == T_STATION);
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
+							wTileNo[1] == T_CRATE );// || wTileNo[1] == T_STATION);
 
 		case T_SEEP:
 			//Wall movement types
@@ -1031,7 +1033,8 @@ const
 					((bIsFloor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE || //wTileNo[1] == T_STATION ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR));
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
+							wTileNo[1] == T_CRATE));
 
 		case T_CHARACTER:
 			//Can't go on monsters.
@@ -1277,7 +1280,7 @@ void CEditRoomWidget::DrawCharacter(
 //
 //Params:
 	CCharacter *pCharacter,    //(in)   Pointer to CCharacter monster.
-	const bool bDrawRaised,    //(in)   Draw Character raised above floor?
+	const float fRaised,    //(in)   Draw Character raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
 	const bool /*bMoveInProgress*/)
 {
@@ -1302,7 +1305,7 @@ void CEditRoomWidget::DrawCharacter(
 
 		//Draw character.
 		const Uint8 opacity = pCharacter->IsVisible() ? 255 : 128;
-		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, bDrawRaised);
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, fRaised);
 		blit.nOpacity = opacity;
 		blit.nAddColor = pCharacter->getColor();
 		DrawTileImage(blit, pDestSurface);
@@ -1317,7 +1320,7 @@ void CEditRoomWidget::DrawCharacter(
 	} else {
 		//Draw generic NPC image.
 		const UINT wTileImageNo = GetTileImageForEntity(pCharacter->wType, pCharacter->wO, wFrameIndex);
-		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, wIdentity != M_NONE ? bDrawRaised : false);
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, wIdentity != M_NONE ? fRaised : 0.0f);
 		if (bAlt && !pCharacter->IsVisible())
 			blit.nOpacity = 128;
 		DrawTileImage(blit, pDestSurface);
