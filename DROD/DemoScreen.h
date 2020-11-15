@@ -36,8 +36,9 @@
 class CDemoScreen : public CGameScreen
 {
 public:
-	bool     LoadDemoGame(const UINT dwDemoID);
-	void     SetReplayOptions(bool bChangeSpeed);
+	virtual int GetCommandForInputKey(const InputKey inputKey) const;
+	bool        LoadDemoGame(const UINT dwDemoID);
+	void        SetReplayOptions(bool bChangeSpeed);
 
 protected:
 	friend class CDrodScreenManager;
@@ -45,22 +46,31 @@ protected:
 	CDemoScreen();
 	virtual ~CDemoScreen();
 
+	virtual int    HandleEventsForPlayerDeath(CCueEvents &CueEvents);
 	virtual bool   SetForActivate();
+	virtual void   SetSignTextToCurrentRoom();
 
 private:
+	void           AdvanceTurn();
+	void           GoToTurn();
+	void           GoToTurn(const UINT wTargetTurnNo);
+	void           GoToTurn(const float fDemoPositionFraction);
+	bool           IsAtDemoEnd();
+
+	UINT           GetCurrentTurn() const { return CGameScreen::pCurrentGame->wTurnNo; }
+
 	virtual void   OnBetweenEvents();
 	virtual void   OnDeactivate();
 	virtual void   OnKeyDown(const UINT dwTagNo,
 			const SDL_KeyboardEvent &KeyboardEvent);
-	virtual void   OnMouseUp(const UINT dwTagNo,
-			const SDL_MouseButtonEvent &Button);
 
 	CDbCommands::const_iterator  currentCommandIter;
-	UINT       dwNextCommandTime;
+
+	UINT           dwNextCommandTime;
 	CDbDemo *      pDemo;
 
 	bool           bBeforeFirstTurn;
-	bool           bCanChangeSpeed;
+	bool           bCanInteract;
 	bool           bPaused;
 	bool           bPauseNextMove;
 	UINT           dwSavedMoveDuration;

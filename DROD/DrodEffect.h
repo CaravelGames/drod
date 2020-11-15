@@ -48,6 +48,7 @@ enum EffectType
 	EFLOAT        = EFFECTLIB::EFLOAT,        //floating tile graphic
 	EFLOATTEXT    = EFFECTLIB::EFLOATTEXT,    //floating text
 	ETEXT         = EFFECTLIB::ETEXT,         //text
+	EFLASHTEXT    = EFFECTLIB::EFLASHTEXT,    //Flashing text message (Secret room/exit level/mastery)
 	EPENDINGPLOT,     //selecting room area for plot in editor
 	EORBHIT,          //strike orb effect
 	ESPARK,           //fuse spark effect
@@ -72,7 +73,7 @@ enum EffectType
 	EGRID,            //grid overlay
 	ETEXTNOTICE,      //text notice
 	ECNETNOTICE,      //caravelnet notice
-	EROOMDRAWSTATS
+	EROOMDRAWSTATS,
 };
 
 //*****************************************************************************

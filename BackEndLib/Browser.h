@@ -24,9 +24,9 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef BROWSER_H
-#define BROWSER_H
+#ifndef _BROWSER_H
+#define _BROWSER_H
 
 bool OpenExtBrowser(const char *pszURI);
 
-#endif //...#ifndef BROWSER_H
+#endif //...#ifndef _BROWSER_H

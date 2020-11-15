@@ -55,8 +55,8 @@ class CRoomScreen : public CDrodScreen
 {
 public:
 	static void    SetMusicStyle(WSTRING style, const UINT wMood, const UINT fadeDuration=3000);
-	void	AddNoticesDialog();
-	int     GetCommandForInputKey(const InputKey& inputKey) const;
+	void	       AddNoticesDialog();
+	virtual int    GetCommandForInputKey(const InputKey inputKey) const;
 
 protected:
 	friend class CScreenManager;

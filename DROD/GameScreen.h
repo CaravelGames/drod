@@ -123,7 +123,10 @@ protected:
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 	//These are called by CDemoScreen.
-	void           SetSignTextToCurrentRoom();
+	virtual int    HandleEventsForPlayerDeath(CCueEvents &CueEvents);
+	virtual void   SetSignTextToCurrentRoom();
+	void           ShowPuzzleModeOptions();
+	void           UpdateSign();
 
 	//These are accessed by CDemoScreen.
 	CCurrentGame * pCurrentGame;
@@ -151,7 +154,6 @@ private:
 	void           GotoHelpPage();
 	void           HandleEventsForHoldExit();
 	SCREENTYPE     HandleEventsForLevelExit();
-	int            HandleEventsForPlayerDeath(CCueEvents &CueEvents);
 	void           HideBigMap();
 	SCREENTYPE     LevelExit_OnKeydown(const SDL_KeyboardEvent &KeyboardEvent);
 	void           LogHoldVars();
@@ -183,7 +185,6 @@ private:
 	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();
 	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter **playerHoldCharacter);
-	void           ShowPuzzleModeOptions();
 	void           ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents);
 	void           ShowRoomTemporarily(const UINT roomID);
 	void           ShowSpeechLog();
@@ -196,7 +197,6 @@ private:
 	void           UpdateUIAfterRoomRestart();
 	void           UpdateUIAfterMoveUndo();
 	void           UpdateScroll();
-	void           UpdateSign();
 	void           UpdateSound();
 	bool           UploadDemoPolling();
 	void           UploadPlayerProgressToCloud(const UINT holdID);

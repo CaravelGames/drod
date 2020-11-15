@@ -47,7 +47,7 @@ CFlashMessageEffect::CFlashMessageEffect(
 	const int yOffset,		//(in)  Offset from center of parent, in pixels [default=0]
 	const Uint32 wDuration, //(in)  How long to display (in milliseconds) [default=3000]
 	const Uint32 fadeTime)  //fade out time at end of duration [default=1000]
-	: CEffect(pSetWidget, wDuration, EFFECTLIB::EGENERIC)
+	: CEffect(pSetWidget, wDuration, EFFECTLIB::EFLASHTEXT)
 	, pTextSurface(NULL)
 	, yOffset(yOffset)
 	, fadeTime(fadeTime)

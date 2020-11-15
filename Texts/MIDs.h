@@ -336,6 +336,11 @@ enum MID_CONSTANT {
   MID_DeleteChildDemosPrompt = 233,
   MID_NoDemosToExport = 1270,
   MID_DeleteAllHoldDemosPrompt = 1271,
+  MID_GotoDemoMovePrompt = 1995,
+  MID_DemoEnded = 1996,
+  MID_DemoEndedEarly = 1997,
+  MID_DemoMoveNumberSuffix = 1998,
+  MID_DemoHelp = 1999,
 
   //Messages from EditScreens.uni:
   MID_Editor = 234,

@@ -622,6 +622,7 @@
   <ItemGroup>
     <ClCompile Include="BloodEffect.cpp" />
     <ClCompile Include="BoundingBox.cpp" />
+    <ClCompile Include="HtmlDialogWidget.cpp" />
     <ClCompile Include="BrowserScreen.cpp" />
     <ClCompile Include="CharacterDialogWidget.cpp" />
     <ClCompile Include="CharacterOptionsWidget.cpp" />
@@ -706,6 +707,7 @@
   <ItemGroup>
     <ClInclude Include="BloodEffect.h" />
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="HtmlDialogWidget.h" />
     <ClInclude Include="BrowserScreen.h" />
     <ClInclude Include="CharacterDialogWidget.h" />
     <ClInclude Include="CharacterOptionsWidget.h" />
