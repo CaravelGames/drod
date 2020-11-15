@@ -2101,7 +2101,7 @@ void CRoomWidget::ShowMoveCount(const bool bVal)
 	if (bVal)
 	{
 		CTextEffect *pMoveCount = new CTextEffect(this, wszEmpty, FONTLIB::F_FrameRate,
-				0, 0, false, true);
+				0, (UINT)-1, false, true);
 		pMoveCount->RequestRetainOnClear(true);
 		pMoveCount->Move(0,0);
 		AddLastLayerEffect(pMoveCount);
