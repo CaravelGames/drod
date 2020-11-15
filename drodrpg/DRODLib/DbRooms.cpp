@@ -4723,8 +4723,8 @@ void CDbRoom::PushObject(
 	switch (GetOSquare(wDestX, wDestY))
 	{
 		case T_PIT: case T_PIT_IMAGE:
-			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wDestX, wDestY,
-					NO_ORIENTATION, wTile), true);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wDestX, wDestY,
+					NO_ORIENTATION, wTile, 0), true);
 		return;
 		case T_WATER:
 			CueEvents.Add(CID_Splash, new CCoord(wDestX, wDestY), true);

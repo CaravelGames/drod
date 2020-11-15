@@ -7266,10 +7266,10 @@ void CCurrentGame::TallyKill()
 }
 
 //*****************************************************************************
-bool cloneComparator::operator() (const CMoveCoordEx &a, const CMoveCoordEx &b) const
+bool cloneComparator::operator() (const CClone *a, const CClone *b) const
 //Compare clones by wCreationIndex
 {
-    return a.wValue < b.wValue;
+    return a->wCreationIndex < b->wCreationIndex;
 }
 
 //*****************************************************************************
@@ -7329,27 +7329,40 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 			pMonster = pMonster->pNext;
 		}
 
-		std::vector<CMoveCoordEx> sortedClones;
+		std::vector<CClone*> sortedClones;
 		for (UINT i = 0; i < clones.size(); ++i) {
-			CClone* clone = clones[i];
-			sortedClones.push_back(CMoveCoordEx(clone->wX, clone->wY, clone->wO, clone->wCreationIndex));
+			CClone *clone = clones[i];
+			CClone *cloneCopy = DYN_CAST(CClone*, CMonster*, clone->Clone());
+			sortedClones.push_back(cloneCopy);
 		}
 
 		std::sort(sortedClones.begin(), sortedClones.end(), cloneComparator());
 
 		ASSERT(sortedClones.size() == clones.size());
 		for (UINT i = 0; i < clones.size(); ++i) {
-			CClone* existingClone = clones[i];
-			CMoveCoordEx sortedClone = sortedClones[i];
+			CClone *existingClone = clones[i];
+			CClone *sortedClone = sortedClones[i];
 
-			existingClone->wPrevX = existingClone->wX = sortedClone.wX;
-			existingClone->wPrevY = existingClone->wY = sortedClone.wY;
-			existingClone->wPrevO = existingClone->wO = sortedClone.wO;
-			existingClone->wCreationIndex = sortedClone.wValue;
+			// This unfortunately has to be updated each time a new property is added to
+			// CClone or any of its parent classes, which state is important
+			existingClone->wPrevX = existingClone->wX = sortedClone->wX;
+			existingClone->wPrevY = existingClone->wY = sortedClone->wY;
+			existingClone->wPrevO = existingClone->wO = sortedClone->wO;
+			existingClone->wCreationIndex = sortedClone->wCreationIndex;
+			existingClone->bPushedThisTurn = sortedClone->bPushedThisTurn;
+			existingClone->bWaitedOnHotFloorLastTurn = sortedClone->bWaitedOnHotFloorLastTurn;
+			existingClone->stunned = sortedClone->stunned;
+			existingClone->bNewStun = sortedClone->bNewStun;
+			existingClone->weaponType = sortedClone->weaponType;
+			existingClone->bWeaponSheathed = sortedClone->bWeaponSheathed;
+			existingClone->bNoWeapon = sortedClone->bNoWeapon;
+			existingClone->wSwordMovement = sortedClone->wSwordMovement;
+			existingClone->bFrozen = sortedClone->bFrozen;
 
 			this->pRoom->SetMonsterSquare(existingClone);
-		}
 
+			delete sortedClone;
+		}
 	}
 
 	//Currently, this command can happen without anything else changing.
