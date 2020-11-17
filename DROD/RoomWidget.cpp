@@ -8934,7 +8934,10 @@ void CRoomWidget::LowPassLightFilter(
 const
 {
 	//Low-pass filter.
-	static const UINT FILTER[9] = {0,5,0, 5,12,5, 0,5,0}; //kernel
+	static const UINT FILTER[9] = {
+		0,5,0,
+		5,12,5,
+		0,5,0}; //kernel
 	static const UINT FILTER_SUM = 32; //sum to a power of two for speed
 	static const UINT OFFSET[9] = { //address offset to these locations in another tile
 		0,LIGHT_SPT*LIGHT_BPP,0,
@@ -8949,7 +8952,7 @@ const
 		for (i=0; i<LIGHT_SPT; ++i)
 		{
 			//Process one light pixel.
-			for (k=3; k--; )
+			for (k=3; k--; ) //one color channel each iteration
 			{
 				UINT dwSum = *pSrc * FILTER[4];  //center
 				//left+right
@@ -8957,7 +8960,7 @@ const
 				{
 					case 0:
 						//mix in adjacent tile if not at edge, otherwise use the center (i.e. current) value
-						dwSum += bLeft ? *(pSrc-OFFSET[3]) * FILTER[3] : *pSrc;
+						dwSum += (bLeft ? *(pSrc-OFFSET[3]) : *pSrc) * FILTER[3];
 						dwSum += *(pSrc+LIGHT_BPP) * FILTER[5];
 					break;
 					default:
@@ -8966,14 +8969,14 @@ const
 					break;
 					case LIGHT_SPT-1:
 						dwSum += *(pSrc-LIGHT_BPP) * FILTER[3];
-						dwSum += bRight ? *(pSrc+OFFSET[5]) * FILTER[5] : *pSrc;
+						dwSum += (bRight ? *(pSrc+OFFSET[5]) : *pSrc) * FILTER[5];
 					break;
 				}
 				//up+down
 				switch (j)
 				{
 					case 0:
-						dwSum += bUp ? *(pSrc-OFFSET[1]-wVertOffset) * FILTER[1] : *pSrc;
+						dwSum += (bUp ? *(pSrc-OFFSET[1]-wVertOffset) : *pSrc) * FILTER[1];
 						dwSum += *(pSrc+LIGHT_BPP*LIGHT_SPT) * FILTER[7];
 					break;
 					default:
@@ -8982,7 +8985,7 @@ const
 					break;
 					case LIGHT_SPT-1:
 						dwSum += *(pSrc-LIGHT_BPP*LIGHT_SPT) * FILTER[1];
-						dwSum += bDown ? *(pSrc+OFFSET[7]+wVertOffset) * FILTER[7] : *pSrc;
+						dwSum += (bDown ? *(pSrc+OFFSET[7]+wVertOffset) : *pSrc) * FILTER[7];
 					break;
 				}
 
