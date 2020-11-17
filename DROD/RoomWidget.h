@@ -83,7 +83,7 @@ struct EDGES {
 	UINT wPitX, wPitY, wPitRemaining;	//pit edge rendering info
 };
 
-typedef USHORT LIGHTTYPE; //used to used a light value
+typedef USHORT LIGHTTYPE; //represents a light value on one color channel
 
 struct TileImages
 {
@@ -463,7 +463,7 @@ protected:
 	void           DrawTileImage(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           DrawTileImageWithoutLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           DrawTileLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
-	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect);
+	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect) const;
 
 	CEntity*       GetLightholder() const;
 	UINT           GetSwordTileFor(const CMonster *pMonster, const UINT wO, const UINT wType) const;
@@ -609,6 +609,7 @@ private:
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface *pDestSurface);
 
 	void           CropAddLightParams(const SDL_Rect* crop,
+		const SDL_Rect& roomEdgeClip,
 	 	UINT& x, UINT& y, UINT& w, UINT& h,
 		UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
 		LIGHTTYPE*& sRGBIntensity) const;
