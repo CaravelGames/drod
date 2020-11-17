@@ -148,10 +148,11 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 };
 
 //Light resolution.
-#define LIGHT_SPT (13)	//light samples per tile (NxN)
-#define LIGHT_SPT_MINUSONE (LIGHT_SPT-1)	//light samples per tile (NxN)
+#define LIGHT_SPT (13)	//light samples per tile in each dimension (NxN)
+#define LIGHT_SPT_MINUSONE (LIGHT_SPT-1)	//light cells per tile in each dimension (NxN)
 #define LIGHT_BPP (3)   //RGB
-const UINT wLightValuesPerTile = LIGHT_SPT*LIGHT_SPT*LIGHT_BPP;	//NxN RGB
+const UINT wLightValuesPerTileRow = LIGHT_SPT * LIGHT_BPP;
+const UINT wLightValuesPerTile = LIGHT_SPT * wLightValuesPerTileRow;	//NxN RGB
 const UINT wLightBytesPerTile = wLightValuesPerTile * sizeof(LIGHTTYPE);
 const UINT wLightCellSize[LIGHT_SPT_MINUSONE] = {4,3,4,4,3,4,3,4,4,3,4,4};	//pixels in each sub-tile light cell
 const UINT wLightCellPos[LIGHT_SPT_MINUSONE] = {0,4,7,11,15,18,22,25,29,33,36,40}; //offset of each sub-tile light cell
@@ -2944,19 +2945,18 @@ const
 	{
 		for (i=0; i<LIGHT_SPT_MINUSONE; ++i)
 		{
-			static const UINT wRowBytes = LIGHT_SPT*LIGHT_BPP;
 			wSum = wR[0] = sRGBIntensity[0];
 			wSum += wG[0] = sRGBIntensity[1];
 			wSum += wB[0] = sRGBIntensity[2];
 			wSum += wR[1] = sRGBIntensity[3];
 			wSum += wG[1] = sRGBIntensity[4];
 			wSum += wB[1] = sRGBIntensity[5];
-			wSum += wR[2] = sRGBIntensity[0+wRowBytes];
-			wSum += wG[2] = sRGBIntensity[1+wRowBytes];
-			wSum += wB[2] = sRGBIntensity[2+wRowBytes];
-			wSum += wR[3] = sRGBIntensity[3+wRowBytes];
-			wSum += wG[3] = sRGBIntensity[4+wRowBytes];
-			wSum += wB[3] = sRGBIntensity[5+wRowBytes];
+			wSum += wR[2] = sRGBIntensity[0+wLightValuesPerTileRow];
+			wSum += wG[2] = sRGBIntensity[1+wLightValuesPerTileRow];
+			wSum += wB[2] = sRGBIntensity[2+wLightValuesPerTileRow];
+			wSum += wR[3] = sRGBIntensity[3+wLightValuesPerTileRow];
+			wSum += wG[3] = sRGBIntensity[4+wLightValuesPerTileRow];
+			wSum += wB[3] = sRGBIntensity[5+wLightValuesPerTileRow];
 			if (!wSum)
 			{
 				//There is no light to add here.
@@ -3181,10 +3181,12 @@ const
 					}
 
 					//Average values of four corners for lighting this sub-tile rectangle.
-					static const UINT wRowBytes = LIGHT_SPT*LIGHT_BPP;
-					wSum = wR = (sRGBIntensity[0] + sRGBIntensity[3] + sRGBIntensity[0+wRowBytes] + sRGBIntensity[3+wRowBytes]) / 4;
-					wSum += wG = (sRGBIntensity[1] + sRGBIntensity[4] + sRGBIntensity[1+wRowBytes] + sRGBIntensity[4+wRowBytes]) / 4;
-					wSum += wB = (sRGBIntensity[2] + sRGBIntensity[5] + sRGBIntensity[2+wRowBytes] + sRGBIntensity[5+wRowBytes]) / 4;
+					wSum = wR = (sRGBIntensity[0] + sRGBIntensity[3] +
+							sRGBIntensity[0+wLightValuesPerTileRow] + sRGBIntensity[3+wLightValuesPerTileRow]) / 4;
+					wSum += wG = (sRGBIntensity[1] + sRGBIntensity[4] +
+							sRGBIntensity[1+wLightValuesPerTileRow] + sRGBIntensity[4+wLightValuesPerTileRow]) / 4;
+					wSum += wB = (sRGBIntensity[2] + sRGBIntensity[5] +
+							sRGBIntensity[2+wLightValuesPerTileRow] + sRGBIntensity[5+wLightValuesPerTileRow]) / 4;
 					if (!wSum)
 					{
 						//There is no light to add here.
@@ -3243,42 +3245,104 @@ void CRoomWidget::AddLight(
 //
 //Params:
 	SDL_Surface *pDestSurface,		//(in) dest surface
-	const UINT wXPos, const UINT wYPos,	//(in) pixel position
+	const UINT wXPos, const UINT wYPos,	//(in) pixel position on surface to apply tile lighting at
 	LIGHTTYPE* sRGBIntensity,	//(in) what % of light to add
 	const float fDark,      //(in) darkness multiplier also being added to tile
 	const UINT wTileMask,	//(in) tile mask
 	const Uint8 opacity,    //adding light to a transparent object? [default=255]
-	SDL_Rect* crop) //if not NULL, defines a sub-tile crop area [default=NULL]
+	SDL_Rect* crop) //if not NULL, defines a relative sub-tile crop region [default=NULL]
 const
 {
 	if (!CropTileBlitToRoomBounds(crop, wXPos, wYPos))
 		return;
 
+	//Determine which sides of cropping area are being clipped by being flush against the room boundaries.
+	//Set values to 1 to indicate that side was clipped, otherwise 0.
+	SDL_Rect atRoomEdge = { 0, 0, 0, 0 };
+	if (crop) {
+		atRoomEdge.x = (int(wXPos) + crop->x <= this->x) ? 1 : 0;
+		atRoomEdge.y = (int(wYPos) + crop->y <= this->y) ? 1 : 0;
+		atRoomEdge.w = (wXPos + crop->w >= this->x + this->w) ? 1 : 0;
+		atRoomEdge.h = (wYPos + crop->h >= this->y + this->h) ? 1 : 0;
+	}
+
 	const float dark_value = fDark / 256.0f; //div by 256 instead of 255 for speed optimization
 	const bool add_darkness = fDark < 1.0f;
 
-	UINT x, y, w, h;
+	//The below 2-D loop iterates over the sub-sampled tile light and shadow values.
+	//Apply clipping to the loop range where necessary.
+	UINT xClip, yClip, wClip, hClip;
 	UINT iStart, jStart, iEnd, jEnd;
-	CropAddLightParams(crop, x, y, w, h, iStart, jStart, iEnd, jEnd, sRGBIntensity);
+	CropAddLightParams(crop, atRoomEdge, xClip, yClip, wClip, hClip, iStart, jStart, iEnd, jEnd, sRGBIntensity);
 
-	//TODO: currently, the below doesn't respect the exact edging for the crop rect
-	//      It makes a neat lighting effect for temporal clones, but should probably be fixed.
-	//      Method: where x,y,w,h parameters are used below, ensure they are cropped
+	UINT wXOffset, wYOffset, wWidth, wHeight; //relative coordinates of a sub-tile light cell within the tile, i.e., values in [0,CX_TILE], etc.
+	UINT wX, wY; //pixel location to draw a sub-tile light cell
 
 	const float fMax = 3 * (1.0f + (fMaxLightIntensity[this->wDark] * opacity / 255)); //optimization
 	float R, G, B;
 	UINT wR, wG, wB;
-	UINT wXOffset, wYOffset, wSum;
+
+	//Interpolate (i.e., average the corners) lighting for each sub-tile light cell.
+	//Apply uniform light and shadow value to the pixels in the cell.
 	UINT i,j;	//sub-tile lighting
-	for (j=0; j<LIGHT_SPT_MINUSONE; ++j)
+	for (j = jStart; j < jEnd; ++j, sRGBIntensity += LIGHT_BPP * (
+			(LIGHT_SPT - iEnd) + //advance pointer past rest of this row
+			iStart) //and also advance to where to start on the next row
+		)
 	{
-		for (i=0; i<LIGHT_SPT_MINUSONE; ++i)
+		wYOffset = wLightCellPos[j];
+		wHeight = wLightCellSize[j];
+
+		//Clipping
+		if (crop) {
+			if (wYOffset < yClip) {
+				const UINT delta = yClip - wYOffset;
+				if (delta >= wHeight)
+					continue; //nothing remains of this sub-tile row after clipping
+				wHeight -= delta;
+				wYOffset = yClip;
+			}
+			if (wYOffset + wHeight > yClip + hClip) {
+				const UINT delta = wYOffset + wHeight - (yClip + hClip);
+				if (delta >= wHeight)
+					continue;
+				wHeight -= delta;
+			}
+		}
+
+		wY = wYPos + wYOffset;
+
+		for (i = iStart; i < iEnd; ++i, sRGBIntensity += LIGHT_BPP) //advance to next sub-tile RGB value
 		{
+			wXOffset = wLightCellPos[i];
+			wWidth = wLightCellSize[i];
+
+			//Clipping
+			if (crop) {
+				if (wXOffset < xClip) {
+					const UINT delta = xClip - wXOffset;
+					if (delta >= wWidth)
+						continue; //nothing remains of this sub-tile cell after clipping
+					wWidth -= delta;
+					wXOffset = xClip;
+				}
+				if (wXOffset + wWidth > xClip + wClip) {
+					const UINT delta = wXOffset + wWidth - (xClip + wClip);
+					if (delta >= wWidth)
+						continue;
+					wWidth -= delta;
+				}
+			}
+
+			wX = wXPos + wXOffset;
+
 			//Average values of four corners for lighting this sub-tile rectangle.
-			static const UINT wRowBytes = LIGHT_SPT*LIGHT_BPP;
-			wSum = wR = (sRGBIntensity[0] + sRGBIntensity[3] + sRGBIntensity[0+wRowBytes] + sRGBIntensity[3+wRowBytes]) / 4;
-			wSum += wG = (sRGBIntensity[1] + sRGBIntensity[4] + sRGBIntensity[1+wRowBytes] + sRGBIntensity[4+wRowBytes]) / 4;
-			wSum += wB = (sRGBIntensity[2] + sRGBIntensity[5] + sRGBIntensity[2+wRowBytes] + sRGBIntensity[5+wRowBytes]) / 4;
+			UINT wSum = wR = (sRGBIntensity[0] + sRGBIntensity[3] +
+					sRGBIntensity[0+wLightValuesPerTileRow] + sRGBIntensity[3+wLightValuesPerTileRow]) / 4;
+			wSum += wG = (sRGBIntensity[1] + sRGBIntensity[4] +
+					sRGBIntensity[1+wLightValuesPerTileRow] + sRGBIntensity[4+wLightValuesPerTileRow]) / 4;
+			wSum += wB = (sRGBIntensity[2] + sRGBIntensity[5] +
+					sRGBIntensity[2+wLightValuesPerTileRow] + sRGBIntensity[5+wLightValuesPerTileRow]) / 4;
 			if (!wSum)
 			{
 				//There is no light to add here.
@@ -3286,15 +3350,14 @@ const
 				if (add_darkness)
 				{
 					if (wTileMask == TI_UNSPECIFIED)
-						g_pTheDBM->DarkenRect(wXPos + wLightCellPos[i], wYPos + wLightCellPos[j],
-								wLightCellSize[i], wLightCellSize[j], fDark, pDestSurface);
+						g_pTheDBM->DarkenRect(wX, wY,
+								wWidth, wHeight, fDark, pDestSurface);
 					else
-						g_pTheDBM->DarkenTileWithMask(wTileMask, wLightCellPos[i], wLightCellPos[j],
-								wXPos + wLightCellPos[i], wYPos + wLightCellPos[j],
-								wLightCellSize[i], wLightCellSize[j], pDestSurface, fDark);
+						g_pTheDBM->DarkenTileWithMask(wTileMask, wXOffset, wYOffset,
+								wX, wY,
+								wWidth, wHeight, pDestSurface, fDark);
 				}
 
-				sRGBIntensity += LIGHT_BPP;
 				continue;
 			}
 
@@ -3313,40 +3376,43 @@ const
 				B *= fNormalize;
 			}
 
-			wXOffset = wLightCellPos[i]; //optimization
-			wYOffset = wLightCellPos[j];
-			g_pTheBM->LightenRectWithTileMask(pDestSurface, wXPos + wXOffset, wYPos + wYOffset,
-					wLightCellSize[i], wLightCellSize[j],
+			g_pTheBM->LightenRectWithTileMask(pDestSurface, wX, wY,
+					wWidth, wHeight,
 #if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
 					B, G, R,
 #else
 					R, G, B,
 #endif
 					wTileMask, wXOffset, wYOffset);
-
-			sRGBIntensity += LIGHT_BPP; //get next sub-tile RGB value
 		}
-		sRGBIntensity += LIGHT_BPP; //finish row
 	}
 }
 
 //*****************************************************************************
-void CRoomWidget::CropAddLightParams(const SDL_Rect* crop,
-	UINT& x, UINT& y, UINT& w, UINT& h,
-	UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
-	LIGHTTYPE*& sRGBIntensity)
+//Outputs a relative region within a tile to apply lighting.
+//By default, this is the entire tile area.
+//When a cropping region is provided, apply it to restrict the region to be lighted.
+void CRoomWidget::CropAddLightParams(
+	const SDL_Rect* crop, //If not NULL, indicates the rectangular region of the tile to apply lighting to
+	const SDL_Rect& roomEdgeClip, //non-zero values indicates 'crop' was clipped against that side of the room
+	UINT& x, UINT& y, UINT& w, UINT& h, //(out)
+	UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd, //(out)
+	LIGHTTYPE*& sRGBIntensity) //(out) relative offset for the starting address of sub-tile light map memory to apply
 	const
 {
-	x = y = 0;
-	w = CX_TILE;
-	h = CY_TILE;
-
+	//Sub-tile light cell range to apply lighting from.
+	//Defaults to entire tile.
 	iStart = jStart = 0;
 	iEnd = LIGHT_SPT_MINUSONE;
 	jEnd = LIGHT_SPT_MINUSONE;
 
-	if (!crop)
+	if (!crop) {
+		//Apply lighting to full tile.
+		x = y = 0;
+		w = CX_TILE;
+		h = CY_TILE;
 		return;
+	}
 
 	x = crop->x;
 	y = crop->y;
@@ -3358,7 +3424,7 @@ void CRoomWidget::CropAddLightParams(const SDL_Rect* crop,
 	ASSERT(x + w <= UINT(CX_TILE));
 	ASSERT(y + h <= UINT(CY_TILE));
 
-	//Start at light cell containing (x,y)
+	//Within the room, start at light cell containing (x,y) and end at (x+w,y+h).
 	while (iStart < iEnd - 1 && wLightCellPos[iStart + 1] <= x)
 		++iStart;
 	while (jStart < jEnd - 1 && wLightCellPos[jStart + 1] <= y)
@@ -3368,20 +3434,42 @@ void CRoomWidget::CropAddLightParams(const SDL_Rect* crop,
 	while (jEnd > jStart + 1 && wLightCellPos[jEnd - 1] > y + h)
 		--jEnd;
 
-	sRGBIntensity += jStart * LIGHT_SPT * LIGHT_BPP;
-	sRGBIntensity += iStart * LIGHT_BPP;
+	//However, when clipping to room boundaries, the lighting at the room's edge
+	//needs to be applied rather than the interior lighting of the tile.
+	//To do this, for example, when x is clipped (i.e., increased)
+	//due to the blit being slightly outside the left side of the room:
+	//rather than reading from the lightmap at iStart (which is often non-zero
+	//in that case, and thereby would apply the lighting from the right side of
+	//the room's leftmost tile, which would look wrong), apply the lighting
+	//at the left edge of the tile, i.e., where the room edge is.
+
+	if (!roomEdgeClip.y) {
+		if (!roomEdgeClip.h) {
+			sRGBIntensity += jStart * wLightValuesPerTileRow; //standard in-room case
+		} else {
+			sRGBIntensity += (LIGHT_SPT_MINUSONE - jEnd) * wLightValuesPerTileRow; //use lighting at bottom of tile
+		}
+	} //else: use lighting at top of tile
+
+	if (!roomEdgeClip.x) {
+		if (!roomEdgeClip.w) {
+			sRGBIntensity += iStart * LIGHT_BPP; //standard in-room case
+		} else {
+			sRGBIntensity += (LIGHT_SPT_MINUSONE - iEnd) * LIGHT_BPP; //use lighting on right side of tile
+		}
+	} //else: use lighting on left side of tile
 }
 
 //*****************************************************************************
+//Provides a clipping rectangle if needed, and one was not provided
 bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const
 {
-	const int xCropDelta = this->x - dest_x;
-	const int yCropDelta = this->y - dest_y;
-	const int wCropDelta = dest_x - (this->x + this->w - CX_TILE);
-	const int hCropDelta = dest_y - (this->y + this->h - CY_TILE);
-	if (xCropDelta > 0 || yCropDelta > 0 ||
-		wCropDelta > 0 || hCropDelta > 0)
+	if (dest_x < this->x ||
+		dest_y < this->y ||
+		dest_x + int(CX_TILE) > (this->x + int(this->w)) ||
+		dest_y + int(CY_TILE) > (this->y + int(this->h)))
 	{
+		//Blitting a tile at indicated location would not be entirely within room -- crop to room region.
 		if (!crop) {
 			static SDL_Rect local_crop;
 			local_crop.x = local_crop.y = 0;
@@ -3390,30 +3478,7 @@ bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest
 			crop = &local_crop;
 		}
 
-		if (xCropDelta > 0) {
-			if (xCropDelta >= crop->w)
-				return false; //nothing left to render
-
-			crop->w -= xCropDelta;
-			crop->x += xCropDelta;
-		}
-		if (yCropDelta > 0) {
-			if (yCropDelta >= crop->h)
-				return false;
-
-			crop->h -= yCropDelta;
-			crop->y += yCropDelta;
-		}
-		if (wCropDelta > 0) {
-			if (wCropDelta >= crop->w)
-				return false;
-			crop->w -= wCropDelta;
-		}
-		if (hCropDelta > 0) {
-			if (hCropDelta >= crop->h)
-				return false;
-			crop->h -= hCropDelta;
-		}
+		return ClipTileArea(dest_x, dest_y, *crop);
 	}
 
 	return true;
@@ -6312,6 +6377,10 @@ void CRoomWidget::DrawTileImageWithoutLight(
 
 	nPixelX += BlitRect.x;
 	nPixelY += BlitRect.y;
+	ASSERT(nPixelX >= this->x); //after cropping, blit should be placed inside room
+	ASSERT(nPixelY >= this->y);
+	ASSERT(nPixelX + BlitRect.w <= this->x + int(this->w));
+	ASSERT(nPixelY + BlitRect.h <= this->y + int(this->h));
 
 	//Draw sprite.
 	g_pTheDBM->BlitTileImagePart(blit.wTileImageNo,
@@ -6347,19 +6416,19 @@ void CRoomWidget::DrawTileLight(
 	if (blit.wTileImageNo == TI_TEMPTY)
 		return; //Wasteful to make this call for empty blit.
 
-	const UINT wCol = blit.wCol;
-	const UINT wRow = blit.wRow;
+	if (!IsLightingRendered())
+		return;
 
 	bool bClipped = blit.bClipped;
-	ASSERT(IS_COLROW_IN_DISP(wCol, wRow) || bClipped);
+	ASSERT(IS_COLROW_IN_DISP(blit.wCol, blit.wRow) || bClipped);
 
 	//Determine pixel positions.
-	const int nRoomPixelX = (CX_TILE * wCol) + blit.wXOffset;
-	int nRoomPixelY = (CY_TILE * wRow) + blit.wYOffset;
+	const int nRoomPixelX = (CX_TILE * blit.wCol) + blit.wXOffset;
+	int nRoomPixelY = (CY_TILE * blit.wRow) + blit.wYOffset;
 	if (blit.bDrawRaised)
 	{
 		nRoomPixelY -= CY_RAISED;
-		if (wRow == 0)
+		if (blit.wRow == 0)
 			bClipped = true;
 	}
 	int nPixelX = this->x + nRoomPixelX;
@@ -6377,47 +6446,64 @@ void CRoomWidget::DrawTileLight(
 
 	nPixelX += BlitRect.x;
 	nPixelY += BlitRect.y;
+	ASSERT(nPixelX >= this->x); //after cropping, blit should be placed inside room
+	ASSERT(nPixelY >= this->y);
+	ASSERT(nPixelX + BlitRect.w <= this->x + int(this->w));
+	ASSERT(nPixelY + BlitRect.h <= this->y + int(this->h));
 
-	//Set to proper light level.
-	if (IsLightingRendered() && this->pRoom->IsValidColRow(wCol, wRow))
+	const bool bMoving = blit.wXOffset || blit.wYOffset;
+
+	int nCol = int(blit.wCol);
+	int nRow = int(blit.wRow);
+	if (!this->pRoom->IsValidColRow(nCol, nRow)) {
+		if (!bMoving || !bClipped)
+			return;
+
+		//When sprite is moving into/out of room,
+		//use the lighting on the tile being moved into/out of for illumination
+		nCol += sgn(blit.wXOffset);
+		nRow += sgn(blit.wYOffset);
+		if (!this->pRoom->IsValidColRow(nCol, nRow)) //can happen when moving across a room corner
+			this->pRoom->SnapCoordsOutsideOfRoomToEdge(nCol, nRow);
+	}
+
+	SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;
+
+	//Add cast shadows to sprite.
+	if (blit.bCastShadowsOnTop && !blit.bDrawRaised)
 	{
-		const bool bMoving = blit.wXOffset || blit.wYOffset;
-
-		SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;
-
-		//Add cast shadows to sprite.
-		if (blit.bCastShadowsOnTop && !blit.bDrawRaised)
+		if (!bMoving)
 		{
-			if (!bMoving)
-			{
-				const vector<UINT> &shadows = this->pTileImages[this->pRoom->ARRAYINDEX(wCol,wRow)].shadowMasks;
-				if (!shadows.empty())
-					g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
-						blit.wTileImageNo, nPixelX, nPixelY, pDestSurface, pCropRect);
-			}
-			else if (!pCropRect) { //routine doesn't support cropping
-				BlitTileShadowsOnMovingSprite(blit, pDestSurface);
-			}
+			const vector<UINT> &shadows = this->pTileImages[this->pRoom->ARRAYINDEX(nCol,nRow)].shadowMasks;
+			if (!shadows.empty())
+				g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
+					blit.wTileImageNo, nPixelX, nPixelY, pDestSurface, pCropRect);
 		}
+		else if (!pCropRect) { //routine doesn't support cropping
+			BlitTileShadowsOnMovingSprite(blit, pDestSurface);
+		}
+	}
 
-		if (bMoving && !pCropRect)
+	//Apply lighting.
+	if (bMoving && !pCropRect)
+	{
+		AddLightOffset(pDestSurface, blit);
+	}
+	else {
+		//Add dark to sprite.
+		const float fDark = GetOverheadDarknessAt(nCol, nRow) * blit.appliedDarkness;
+
+		//Add light to sprite.
+		if (this->pRoom->tileLights.Exists(nCol,nRow) ||
+				this->lightedRoomTiles.has(nCol,nRow) || this->lightedPlayerTiles.has(nCol,nRow))
 		{
-			AddLightOffset(pDestSurface, blit);
-		}
-		else {
-			//Add dark to sprite.
-			const float fDark = GetOverheadDarknessAt(wCol, wRow) * blit.appliedDarkness;
-
-			//Add light to sprite.
-			if (this->pRoom->tileLights.Exists(wCol,wRow) ||
-					this->lightedRoomTiles.has(wCol,wRow) || this->lightedPlayerTiles.has(wCol,wRow))
-			{
-				LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (wRow * this->pRoom->wRoomCols + wCol) * wLightValuesPerTile;
-				if (bMoving) {
-					AddLight(pDestSurface, nPixelX - BlitRect.x, nPixelY - BlitRect.y, psL, fDark, blit.wTileImageNo, blit.nOpacity, pCropRect); //faster lighting when moving
-				} else {
-					AddLightInterp(pDestSurface, wCol, wRow, psL, fDark, blit.wTileImageNo, blit.nOpacity, blit.bDrawRaised ? -int(CY_RAISED) : 0, pCropRect);
-				}
+			LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (nRow * this->pRoom->wRoomCols + nCol) * wLightValuesPerTile;
+			if (bMoving) {
+				AddLight(pDestSurface, nPixelX - BlitRect.x, nPixelY - BlitRect.y, psL, fDark,
+						blit.wTileImageNo, blit.nOpacity, pCropRect); //faster lighting when moving
+			} else {
+				AddLightInterp(pDestSurface, nCol, nRow, psL, fDark, blit.wTileImageNo,
+						blit.nOpacity, blit.bDrawRaised ? -int(CY_RAISED) : 0, pCropRect);
 			}
 		}
 	}
@@ -6504,17 +6590,20 @@ void CRoomWidget::BlitTileShadowsOnMovingSprite(
 bool CRoomWidget::ClipTileArea(
 	int nPixelX, int nPixelY,
 	SDL_Rect& BlitRect) //(in/out)
+const
 {
 	//Calculate what part of tile is showing.
 	SDL_Rect ClipRect;
 	GetRect(ClipRect);
 	if (nPixelX < ClipRect.x)
 	{
+		const int origX = BlitRect.x;
 		BlitRect.x = ClipRect.x - nPixelX;
 		ASSERT(BlitRect.x > 0);
-		if (BlitRect.x >= BlitRect.w)
+		const int delta = BlitRect.x - origX;
+		if (delta >= BlitRect.w)
 			return false; //completely outside rect
-		BlitRect.w -= BlitRect.x;
+		BlitRect.w -= delta; //trim width by amount x is brought in
 	}
 	else if (nPixelX + (int)BlitRect.w >= ClipRect.x + (int)ClipRect.w)
 	{
@@ -6524,11 +6613,13 @@ bool CRoomWidget::ClipTileArea(
 	}
 	if (nPixelY < ClipRect.y)
 	{
+		const int origY = BlitRect.y;
 		BlitRect.y = ClipRect.y - nPixelY;
 		ASSERT(BlitRect.y > 0);
-		if (BlitRect.y >= BlitRect.h)
+		const int delta = BlitRect.y - origY;
+		if (delta >= BlitRect.h)
 			return false; //completely outside rect
-		BlitRect.h -= BlitRect.y;
+		BlitRect.h -= delta; //trim height by amount y is brought in
 	}
 	else if (nPixelY + (int)BlitRect.h >= ClipRect.y + (int)ClipRect.h)
 	{
