@@ -3748,7 +3748,7 @@ void CRoomWidget::RenderRoom(
 	const bool bAddLight = IsLightingRendered();
 
 	bool bMosaicTile, bTransparentOTile, bTar, bNorthernWall,
-			bTIsTransparent, bTIsTranslucent, bAddLightLayers;
+			bTIsTransparent, bTIsTranslucent;
 	bool bBlitCustomTextureTile = false;
 	UINT wTextureIndex;
 	UINT wTileNo, wOTileNo, wTTileNo;
@@ -3779,7 +3779,6 @@ void CRoomWidget::RenderRoom(
 				bTar = bIsTarOrFluff(wTTileNo);
 				bTIsTransparent = (bTar && bEditor);
 				bTIsTranslucent = bTar && IsShowingBetterVision();
-				bAddLightLayers = false;
 
 				//Determine this tile's darkness.
 				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);

@@ -3572,7 +3572,7 @@ void CRoomWidget::RenderRoom(
 	float fDark;
 	const bool bAddLight = IsLightingRendered();
 
-	bool bMosaicTile, bTransparentOTile, bNorthernWall, bAddLightLayers;
+	bool bMosaicTile, bTransparentOTile, bNorthernWall;
 	bool bBlitCustomTextureTile = false;
 	UINT wTextureIndex;
 	UINT wTileNo, wOTileNo, wTTileNo;
@@ -3599,7 +3599,6 @@ void CRoomWidget::RenderRoom(
 					bMosaicTile = true;
 				bTransparentOTile = wOTileNo == T_GOO || wOTileNo == T_FLOOR_IMAGE;
 //						|| (wOTileNo == T_WALL_M && this->pCurrentGame && this->pCurrentGame->bHoldMastered);
-				bAddLightLayers = false;
 
 				//Determine this tile's darkness.
 				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
@@ -3842,13 +3841,6 @@ OLayerDone:
 							else
 								g_pTheBM->BlitTileWithTileMask(wWaterMask, wRefWallTile,
 										dest, pDestSurface, 128);
-						}
-
-						//4. Add dark+light to o-layer before sky reflection is rendered.
-						if (bAddLight)
-						{
-							AddLightInterp(pDestSurface, wX, wY, psL, fDark);
-							bAddLightLayers = true;
 						}
 
 						//5. Draw sky/water bottom.
