@@ -180,6 +180,8 @@ struct LightMaps
 	UINT bufferSize;
 };
 
+typedef map<ROOMCOORD, vector<TweeningTileMask> > t_PitMasks;
+
 //******************************************************************************
 struct TileImageBlitParams {
 	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset=0, UINT yOffset=0, bool dirtyTiles=false, bool drawRaised=false)
@@ -333,7 +335,7 @@ public:
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
-			const bool bEditor);
+			const bool bEditor, const vector<TweeningTileMask>* pPitPlatformMasks = NULL);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
@@ -395,7 +397,7 @@ protected:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           BandWTile(SDL_Surface *pDestSurface, int wCol, int wRow);
 	void           BlitDirtyRoomTiles(const bool bMoveMade);
-	void           CastLightOnTile(const UINT wX, const UINT wY,
+	void           CastLightOnTile(const UINT wX, const UINT wY, const float fLightSourceZTileElev,
 			const PointLightObject& light, const bool bGeometry=true);
 	void           ClearLights();
 	void           DarkenRect(SDL_Surface *pDestSurface,
@@ -439,7 +441,8 @@ protected:
 	void           DrawMonsterKilling(CCoord* pCoord, SDL_Surface *pDestSurface);
 	void           DrawMonsterKillingAt(CCoord* pCoord, SDL_Surface *pDestSurface);
 	void           DrawOverheadLayer(SDL_Surface *pDestSurface);
-	void           DrawTLayer(SDL_Surface *pDestSurface, const bool bEditor=false, const bool bMoveInProgress=false);
+	void           DrawPlatformsAndTLayer(SDL_Surface *pDestSurface,
+			const bool bEditor=false, const bool bMoveInProgress=false);
 	void           DrawPlayer(const CSwordsman &swordsman,
 			SDL_Surface *pDestSurface);
 	bool           DrawRaised(const UINT wTileNo) const {
@@ -481,7 +484,8 @@ protected:
 	void           RemoveHighlight();
 	void           RenderFogInPit(SDL_Surface *pDestSurface=NULL);
 	void           RenderRoomModel(const int nX1, const int nY1, const int nX2, const int nY2);
-	void           DrawTLayerTiles(const CCoordIndex& tiles, SDL_Surface *pDestSurface,
+	void           DrawTLayerTiles(const CCoordIndex& tiles, const t_PitMasks& pitMasks,
+			SDL_Surface *pDestSurface,
 			const float fLightLevel, const bool bAddLight, const bool bEditor);
 	void           SepiaTile(SDL_Surface *pDestSurface, int wCol, int wRow);
 	virtual bool	SkyWillShow() const;
@@ -595,6 +599,7 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
 	void           AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, const UINT frame);
 	inline void    ApplyDisplayFilter(int displayFilter, SDL_Surface* pDestSurface, UINT wX, UINT wY);
 	void           ApplyDisplayFilterToRoom(int displayFilter, SDL_Surface *pDestSurface);
@@ -618,7 +623,9 @@ private:
 
 	CRoomEffectList* GetEffectListForLayer(const int layer) const;
 
-	bool GetPlayerDisplayTiles(const CSwordsman &swordsman,
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
+
+	bool           GetPlayerDisplayTiles(const CSwordsman &swordsman,
 			UINT& wO, UINT& wFrame, UINT& wSManTI, UINT& wSwordTI) const;
 
 	bool           IsPersistentEffectPlaying(CEffectList* pEffectList, const UINT instanceID) const;
@@ -626,7 +633,8 @@ private:
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 	void           PopulateBuildMarkerEffects(const CDbRoom& room);
 
-	void           PropagateLight(const float fSX, const float fSY, const UINT tParam, const bool bCenterOnTile=true,
+	void           PropagateLight(const float fSX, const float fSY, const float fZ,
+			const UINT tParam, const bool bCenterOnTile=true,
 			const Point& direction=Point(0.0f,0.0f,0.0f));
 	void           PropagateLightNoModel(const int nSX, const int nSY, const UINT tParam);
 

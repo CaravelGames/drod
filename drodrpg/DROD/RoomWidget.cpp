@@ -7460,7 +7460,7 @@ void CRoomWidget::CastLightOnTile(
 	float fFullLight = fMaxLightIntensity[this->wDark];
 	const float fDark = GetOverheadDarknessAt(wX, wY);
 	if (fDark > 0.0f)
-		fFullLight /= fDark;
+		fFullLight /= fDark; //shine brighter in specially marked dark tiles
 	const float fMin = fFullLight / (1.1f * light.fMaxDistance);
 
 	//Supersample the tile.
