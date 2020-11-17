@@ -5070,7 +5070,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		//Fade to black.
 		if (g_pTheBM->bAlpha && dwStart)
 		{
-			const float durationFraction = min(1, (dwNow - dwStart) / (float)dwDeathDuration);
+			const float durationFraction = min(1.0f, (dwNow - dwStart) / (float)dwDeathDuration);
 			const float remainingFraction = 1 - durationFraction;
 
 			this->pRoomWidget->SetDeathFadeOpacity(durationFraction);

@@ -246,7 +246,7 @@ public:
 	CMonster*      GetNPCBeethro() const;
 	COrbData*      GetOrbAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetOSquare(const UINT wX, const UINT wY) const;
-	UINT           GetOSquareWithGuessing(const int nX, const int nY) const;
+	UINT           GetOSquareWithGuessing(int nX, int nY) const;
 	COrbData*      GetPressurePlateAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetPrimaryKey() const {return this->dwRoomID;}
 	void           getStats(RoomStats& stats, const CDbLevel *pLevel) const;
@@ -259,7 +259,7 @@ public:
 			CCoordSet& tiles, const bool bAddAdjOnly=false) const;
 	UINT           GetTSquare(const UINT wX, const UINT wY) const;
 	UINT           GetTParam(const UINT wX, const UINT wY) const;
-	UINT           GetTSquareWithGuessing(const int nX, const int nY) const;
+	UINT           GetTSquareWithGuessing(int nX, int nY) const;
 	bool           HasClosedDoors() const;
 	bool           HasCombatableMonsters() const;
 	bool           HasGrabbableItems() const;
@@ -366,6 +366,7 @@ public:
 	void           SetPressurePlatesState();
 	void           SetSwordsSheathed();
 	void           SetTParam(const UINT wX, const UINT wY, const UINT value);
+	void           ClampCoordsToRoom(int& nX, int& nY) const;
 
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,
