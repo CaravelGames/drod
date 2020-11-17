@@ -4975,7 +4975,7 @@ const
 }
 
 //*****************************************************************************
-void CDbRoom::SnapCoordsOutsideOfRoomToEdge(int& nX, int& nY) const
+void CDbRoom::ClampCoordsToRoom(int& nX, int& nY) const
 {
 	if (nX < 0)
 		nX = 0;
@@ -4995,7 +4995,7 @@ UINT CDbRoom::GetOSquareWithGuessing(
 //will be used.
 	 int nX, int nY) const
 {
-	SnapCoordsOutsideOfRoomToEdge(nX, nY);
+	ClampCoordsToRoom(nX, nY);
 	return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nX,nY)]);
 }
 
@@ -5006,7 +5006,7 @@ UINT CDbRoom::GetTSquareWithGuessing(
 //will be used.
 	 int nX, int nY) const
 {
-	SnapCoordsOutsideOfRoomToEdge(nX, nY);
+	ClampCoordsToRoom(nX, nY);
 	return (UINT) (unsigned char) (this->pszTSquares[ARRAYINDEX(nX,nY)]);
 }
 

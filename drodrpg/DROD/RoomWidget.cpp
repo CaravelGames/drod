@@ -6464,7 +6464,7 @@ void CRoomWidget::DrawTileLight(
 		nCol += sgn(blit.wXOffset);
 		nRow += sgn(blit.wYOffset);
 		if (!this->pRoom->IsValidColRow(nCol, nRow)) //can happen when moving across a room corner
-			this->pRoom->SnapCoordsOutsideOfRoomToEdge(nCol, nRow);
+			this->pRoom->ClampCoordsToRoom(nCol, nRow);
 	}
 
 	SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;

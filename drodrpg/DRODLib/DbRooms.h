@@ -366,7 +366,7 @@ public:
 	void           SetPressurePlatesState();
 	void           SetSwordsSheathed();
 	void           SetTParam(const UINT wX, const UINT wY, const UINT value);
-	void           SnapCoordsOutsideOfRoomToEdge(int& nX, int& nY) const;
+	void           ClampCoordsToRoom(int& nX, int& nY) const;
 
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,
