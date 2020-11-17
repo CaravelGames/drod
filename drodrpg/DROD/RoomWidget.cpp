@@ -2920,6 +2920,9 @@ const
 	}
 */
 
+	const int xPixel = this->x + wX * CX_TILE;
+	const int yPixel = this->y + wY * CY_TILE;
+
 	if (!(this->pRoom->tileLights.Exists(wX,wY) ||
 			this->lightedRoomTiles.has(wX,wY) || this->lightedPlayerTiles.has(wX,wY)))
 	{
@@ -2927,17 +2930,17 @@ const
 		if (fDark < 1.0)
 		{
 			if (wTileMask == TI_UNSPECIFIED)
-				g_pTheDBM->DarkenTile(this->x + wX*CX_TILE, this->y + wY*CY_TILE, fDark, pDestSurface);
+				g_pTheDBM->DarkenTile(xPixel, yPixel, fDark, pDestSurface);
 			else
 				g_pTheDBM->DarkenTileWithMask(wTileMask, 0, 0,
-					this->x + wX*CX_TILE, this->y + wY*CY_TILE, CX_TILE, CY_TILE, pDestSurface, fDark);
+					xPixel, yPixel, CX_TILE, CY_TILE, pDestSurface, fDark);
 		}
 		return; 
 	}
 
 	UINT wMax = 3 * (UINT(fMaxLightIntensity[this->wDark] * opacity) + 256); //optimization
 
-	const UINT wXPos = this->x + wX*CX_TILE, wYPos = this->y + wY*CY_TILE + yRaised;
+	const UINT wXPos = xPixel, wYPos = yPixel + yRaised;
 	UINT wR[4], wG[4], wB[4];
 	UINT wXOffset, wYOffset, wSum;
 	UINT i,j,k;	//sub-tile lighting
@@ -3030,11 +3033,11 @@ const
 
 	const UINT yRaised = blit.bDrawRaised ? -int(CY_RAISED) : 0;
 
-	const UINT wXPos = this->x + blit.wCol * CX_TILE + blit.wXOffset;
-	const UINT wYPos = this->y + blit.wRow * CY_TILE + blit.wYOffset + yRaised;
-
-	const UINT xIndex = blit.wCol * CX_TILE + blit.wXOffset;
+	const UINT xIndex = blit.wCol * CX_TILE + blit.wXOffset; //blit position relative to room origin
 	const UINT yIndex = blit.wRow * CY_TILE + blit.wYOffset;
+	const UINT wXPos = this->x + xIndex;
+	const UINT wYPos = this->y + yIndex + yRaised;
+
 	const UINT wOX    = xIndex / CX_TILE;
 	const UINT wOY    = yIndex / CY_TILE;
 	const UINT wOXOff = xIndex % CX_TILE;
@@ -3081,15 +3084,6 @@ const
 //          wNX/wNY is what we're using to calculate light
 //          wNXPos/wNYPos is the offset of wXPos/wYPos for us to draw.
 //          w/h is the width and height of this quadrant
-//
-//Light resolution.
-//#define LIGHT_SPT (8)	//light samples per tile (NxN)
-//#define LIGHT_SPT_MINUSONE (LIGHT_SPT-1)	//light samples per tile (NxN)
-//#define LIGHT_BPP (3)   //RGB
-//const UINT wLightValuesPerTile = LIGHT_SPT*LIGHT_SPT*LIGHT_BPP;	//NxN RGB
-//const UINT wLightCellSize[LIGHT_SPT_MINUSONE] = {4,3,4,4,3,4,3,4,4,3,4,4};	//pixels in each sub-tile light cell
-//const UINT wLightCellPos[LIGHT_SPT_MINUSONE] = {0,4,7,11,15,18,22,25,29,33,36,40}; //offset of each sub-tile light cell
-
 
 			float R, G, B;
 			UINT wR, wG, wB;
@@ -7460,7 +7454,7 @@ void CRoomWidget::CastLightOnTile(
 	float fFullLight = fMaxLightIntensity[this->wDark];
 	const float fDark = GetOverheadDarknessAt(wX, wY);
 	if (fDark > 0.0f)
-		fFullLight /= fDark;
+		fFullLight /= fDark; //shine brighter in specially marked dark tiles
 	const float fMin = fFullLight / (1.1f * light.fMaxDistance);
 
 	//Supersample the tile.
@@ -7763,7 +7757,10 @@ void CRoomWidget::LowPassLightFilter(
 const
 {
 	//Low-pass filter.
-	static const UINT FILTER[9] = {0,5,0, 5,12,5, 0,5,0}; //kernel
+	static const UINT FILTER[9] = {
+		0,5,0,
+		5,12,5,
+		0,5,0}; //kernel
 	static const UINT FILTER_SUM = 32; //sum to a power of two for speed
 	static const UINT OFFSET[9] = { //address offset to these locations in another tile
 		0,LIGHT_SPT*LIGHT_BPP,0,
@@ -7778,7 +7775,7 @@ const
 		for (i=0; i<LIGHT_SPT; ++i)
 		{
 			//Process one light pixel.
-			for (k=3; k--; )
+			for (k=3; k--; ) //one color channel each iteration
 			{
 				UINT dwSum = *pSrc * FILTER[4];  //center
 				//left+right
@@ -7786,7 +7783,7 @@ const
 				{
 					case 0:
 						//mix in adjacent tile if not at edge, otherwise use the center (i.e. current) value
-						dwSum += bLeft ? *(pSrc-OFFSET[3]) * FILTER[3] : *pSrc;
+						dwSum += (bLeft ? *(pSrc - OFFSET[3]) : *pSrc) * FILTER[3];
 						dwSum += *(pSrc+LIGHT_BPP) * FILTER[5];
 					break;
 					default:
@@ -7795,14 +7792,14 @@ const
 					break;
 					case LIGHT_SPT-1:
 						dwSum += *(pSrc-LIGHT_BPP) * FILTER[3];
-						dwSum += bRight ? *(pSrc+OFFSET[5]) * FILTER[5] : *pSrc;
+						dwSum += (bRight ? *(pSrc + OFFSET[5]) : *pSrc) * FILTER[5];
 					break;
 				}
 				//up+down
 				switch (j)
 				{
 					case 0:
-						dwSum += bUp ? *(pSrc-OFFSET[1]-wVertOffset) * FILTER[1] : *pSrc;
+						dwSum += (bUp ? *(pSrc - OFFSET[1] - wVertOffset) : *pSrc) * FILTER[1];
 						dwSum += *(pSrc+LIGHT_BPP*LIGHT_SPT) * FILTER[7];
 					break;
 					default:
@@ -7811,7 +7808,7 @@ const
 					break;
 					case LIGHT_SPT-1:
 						dwSum += *(pSrc-LIGHT_BPP*LIGHT_SPT) * FILTER[1];
-						dwSum += bDown ? *(pSrc+OFFSET[7]+wVertOffset) * FILTER[7] : *pSrc;
+						dwSum += (bDown ? *(pSrc + OFFSET[7] + wVertOffset) : *pSrc) * FILTER[7];
 					break;
 				}
 
