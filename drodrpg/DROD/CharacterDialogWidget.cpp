@@ -4625,6 +4625,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 			this->pAddCommandDialog->GetWidget(TAG_SOUNDNAME_LABEL));
 	ASSERT(pSoundName);
 	pSoundName->SetText(this->pSound ? this->pSound->DataNameText.c_str() : wszEmpty);
+
+	//Prevent smart labels being used in Each Event commands
+	UpdateSmartGotoList(
+		!CCharacterCommand::IsEachEventCommand((CCharacterCommand::CharCommand)dwSelectedItem));
 }
 
 //*****************************************************************************
@@ -5851,6 +5855,25 @@ void CCharacterDialogWidget::UpdateCharacter()
 	ClearPasteBuffer();
 	this->pCharacter = NULL;
 	this->pCommand = NULL;
+}
+
+void CCharacterDialogWidget::UpdateSmartGotoList(bool bActivate)
+{
+	if (bActivate) {
+		if (this->pGotoLabelListBox->GetLineWithKey(ScriptFlag::GotoSmartType::PreviousIf) == -1)
+			this->pGotoLabelListBox->AddItem(
+				ScriptFlag::GotoSmartType::PreviousIf,
+				g_pTheDB->GetMessageText(MID_PreviousIf));
+		
+		if (this->pGotoLabelListBox->GetLineWithKey(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition) == -1)
+			this->pGotoLabelListBox->AddItem(
+				ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition,
+				g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
+	}
+	else {
+		this->pGotoLabelListBox->RemoveItem(ScriptFlag::GotoSmartType::PreviousIf);
+		this->pGotoLabelListBox->RemoveItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition);
+	}
 }
 
 //

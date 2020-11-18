@@ -161,6 +161,7 @@ private:
 	void  SetWidgetsFromCommandParameters();
 	void  TestSound();
 	void  UpdateCharacter();
+	void  UpdateSmartGotoList(bool bActivate);
 
 	//For text editing of script commands.
 	CCharacterCommand* fromText(WSTRING text);
