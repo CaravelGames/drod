@@ -962,7 +962,7 @@ void CHoldSelectScreen::OnBetweenEvents()
 		this->pSelCNetHold = NULL;
 		PopulateHoldListBox();
 
-		UINT caravelNetSelectHoldId = (UINT)g_pTheNet->GetDownloadHold();
+		UINT caravelNetSelectHoldId = g_pTheNet->GetDownloadHold();
 		if (caravelNetSelectHoldId != 0) {
 			// User got here from a CaravelNet new/update hold notice.  Find the hold and select it.
 			this->pHoldListBoxWidget->SelectItem(caravelNetSelectHoldId);
