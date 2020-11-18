@@ -73,7 +73,7 @@ protected:
 	void     ShowScroll() {this->bIsScrollVisible = true; PaintScroll();}
 	void     OpenNoticesBox(CRoomWidget *pRoomWidget);
 	void     GrabNewNotices(CRoomWidget *pRoomWidget);
-	const void UpdateNoticesButton();
+	void     UpdateNoticesButton();
 
 	//These are accessed by CDemoScreen.
 	CMapWidget *      pMapWidget;

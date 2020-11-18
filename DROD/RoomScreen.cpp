@@ -475,7 +475,7 @@ void CRoomScreen::OpenNoticesBox(CRoomWidget* pRoomWidget)
 }
 
 //*****************************************************************************
-const void CRoomScreen::UpdateNoticesButton()
+void CRoomScreen::UpdateNoticesButton()
 {
 	const int num = this->notices.size();
 	CButtonWidget* pButton = dynamic_cast<CButtonWidget*>(this->GetWidget(TAG_OPEN_NOTICES));
@@ -492,7 +492,6 @@ const void CRoomScreen::UpdateNoticesButton()
 	UTF8ToUnicode(label, wLabel);
 	pButton->SetCaption(wLabel.c_str());
 	pButton->RequestPaint();
-
 }
 
 //*****************************************************************************

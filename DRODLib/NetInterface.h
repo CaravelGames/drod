@@ -222,8 +222,8 @@ public:
 	// Notices
 	virtual void SetLastNotice(const UINT /*dwNoticeID*/) {}
 	virtual void QueryNotices(vector<CNetNotice> &/*notices*/, UINT /*typeMask*/, UINT /*lastId*/) const {}
-	virtual void SetDownloadHold(const int /*dwServerHoldId*/) {}
-	virtual int GetDownloadHold() const { return 0; }
+	virtual void SetDownloadHold(const UINT /*dwServerHoldId*/) {}
+	virtual UINT GetDownloadHold() const { return 0; }
 
 	int getIndexForName(const WCHAR* pName, const MediaType mediaType=MT_Hold);
 
