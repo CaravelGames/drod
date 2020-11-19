@@ -139,8 +139,9 @@ public:
 	WSTRING title;	// "Hold updated", "#1 score beaten", etc.
 	WSTRING text;	// Specifics for the notice.  What hold, what room, what is the URL for, etc.
 	// URL
-	WSTRING url;	// Only relevant for NOTICE_GENERICURL
+	string url;		// Only relevant for NOTICE_GENERICURL
 	// HOLD/ROOM
+	int dwServerHoldId;
 	CNetRoom room;	// Used for hold specific and room specific notices
 	// CLOUD
 	UINT dwCloudId;	// The given ID should be downloaded and imported.
@@ -221,6 +222,8 @@ public:
 	// Notices
 	virtual void SetLastNotice(const UINT /*dwNoticeID*/) {}
 	virtual void QueryNotices(vector<CNetNotice> &/*notices*/, UINT /*typeMask*/, UINT /*lastId*/) const {}
+	virtual void SetDownloadHold(const UINT /*dwServerHoldId*/) {}
+	virtual UINT GetDownloadHold() const { return 0; }
 
 	int getIndexForName(const WCHAR* pName, const MediaType mediaType=MT_Hold);
 
