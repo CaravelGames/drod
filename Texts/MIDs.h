@@ -604,6 +604,11 @@ enum MID_CONSTANT {
   MID_TemporalSplitToken = 1888,
   MID_TemporalSplitUsed = 1761,
   MID_FiretrapOn = 1762,
+  MID_ErrorCannotReplaceWithDifferentExistingFile = 2000,
+  MID_ReplaceMediaWithAnother = 2001,
+  MID_ReplaceFileButton = 2002,
+  MID_FilePendingDeletionSuffix = 2003,
+  MID_Undelete = 2004,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,

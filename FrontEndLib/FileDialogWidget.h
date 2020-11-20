@@ -77,7 +77,7 @@ private:
 
 	void     GoToDirectory();
 
-	CLabelWidget *pPromptLabel;
+	CLabelWidget *pHeaderLabel;
 	CListBoxWidget *pDirListBoxWidget, *pFileListBoxWidget, *pExtensionListBoxWidget;
 	CTextBoxWidget *pFilenameTextBox;
 	COptionButtonWidget *pShowHiddenOptionWidget;

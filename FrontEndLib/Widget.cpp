@@ -573,9 +573,24 @@ void CWidget::SetHeight(const UINT wHeight)
 	Resize(this->w, wHeight);
 }
 
+//***************************************************************************
 void CWidget::SetWidth(const UINT wWidth)
 {
 	Resize(wWidth, this->h);
+}
+
+//***************************************************************************
+void CWidget::SetRelativeX(const UINT wX)
+// Updates the X position of the widget relative to its parent, if any
+{
+	Move(wX, this->GetRelativeY());
+}
+
+//***************************************************************************
+void CWidget::SetRelativeY(const UINT wY)
+// Updates the Y position of the widget relative to its parent, if any
+{
+	Move(this->GetRelativeX(), wY);
 }
 
 //***************************************************************************

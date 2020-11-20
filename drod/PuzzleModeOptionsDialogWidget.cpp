@@ -73,7 +73,7 @@ CPuzzleModeOptionsDialogWidget::CPuzzleModeOptionsDialogWidget(
 	//Params:
 	const UINT dwSetTagNo, const int nSetX, const int nSetY) //(in)   Required params for CWidget constructor.
 	: CDialogWidget(dwSetTagNo, nSetX, nSetY, CX_DIALOG, CY_DIALOG, false)   //double-click on list box disables
-	, pPromptLabel(NULL)
+	, pHeaderLabel(NULL)
 {
 	
 	static const UINT HALF_W = (CX_DIALOG - CX_SPACE * 3) / 2;
@@ -180,10 +180,10 @@ CPuzzleModeOptionsDialogWidget::CPuzzleModeOptionsDialogWidget(
 	CFrameWidget* pFrameWidget = NULL;
 	COptionButtonWidget* pOptionWidget = NULL;
 
-	this->pPromptLabel = new CLabelWidget(0L, HEADER_X, HEADER_Y, HEADER_W, HEADER_H,
+	this->pHeaderLabel = new CLabelWidget(0L, HEADER_X, HEADER_Y, HEADER_W, HEADER_H,
 		F_Header, g_pTheDB->GetMessageText(MID_PuzzleModeOption_Header));
-	this->pPromptLabel->SetAlign(CLabelWidget::TA_CenterGroup);
-	AddWidget(this->pPromptLabel);
+	this->pHeaderLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	AddWidget(this->pHeaderLabel);
 
 	
 	{ // GRID STYLE

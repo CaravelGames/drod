@@ -2679,17 +2679,19 @@ void CCharacterDialogWidget::AddSound()
 {
 	//If a sound is already loaded, mark it for deletion.
 	bool bDeletingSound = this->pSound != NULL;
+
+	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen *, CScreen *,
+		g_pTheSM->GetScreen(SCR_EditRoom));
+
+	ASSERT(pEditRoomScreen);
+	ASSERT(pEditRoomScreen->pRoom);
+
 	if (this->pCommand)
 	{
 		CDbSpeech *pSpeech = this->pCommand->pSpeech;
 		if (this->bEditingCommand && pSpeech && pSpeech->GetSound())
 		{
 			bDeletingSound = true;
-			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-					g_pTheSM->GetScreen(SCR_EditRoom));
-			ASSERT(pEditRoomScreen);
-			ASSERT(pEditRoomScreen->pRoom);
-			pEditRoomScreen->pRoom->MarkDataForDeletion(pSpeech->GetSound());
 			ASSERT(pSpeech->GetSound() == this->pSound);
 			pSpeech->SetSound(NULL);   //deletes this->pSound
 			this->pSound = NULL;
@@ -2697,73 +2699,22 @@ void CCharacterDialogWidget::AddSound()
 			//Delete any newly-loaded sound.
 		}
 	}
+
 	delete this->pSound;
 	this->pSound = NULL;
-	if (bDeletingSound) { SetActionWidgetStates(); Paint(); return; }
-
-	//Get sound import path.
-	CFiles Files;
-	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	WSTRING wstrImportPath = pCurrentPlayer ? pCurrentPlayer->Settings.GetVar(Settings::ImportSoundPath,
-			Files.GetDatPath().c_str()) : Files.GetDatPath();
-
-	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-			g_pTheSM->GetScreen(SCR_EditRoom));
-	ASSERT(pEditRoomScreen);
-	WSTRING wstrImportFile;
-	const UINT dwTagNo = pEditRoomScreen->SelectFile(wstrImportPath,
-			wstrImportFile, MID_ImportSound, false, EXT_OGG | EXT_WAV);
-	if (dwTagNo == TAG_OK)
-	{
-		//Update the path in player settings, so next time dialog
-		//comes up it will have the same path.
-		if (pCurrentPlayer)
-		{
-			pCurrentPlayer->Settings.SetVar(Settings::ImportSoundPath, wstrImportPath.c_str());
-			pCurrentPlayer->Update();
-		}
-
-		//Load sound effect.
-		const bool bNewSound = !this->pSound;
-		if (bNewSound)
-			this->pSound = g_pTheDB->Data.GetNew();
-		CStretchyBuffer data;
-		if (Files.ReadFileIntoBuffer(wstrImportFile.c_str(),
-				data, true))
-		{
-			if (g_pTheSound->VerifySound(data))
-			{
-				//Replace loaded sound, here and in DB on room save.
-				this->pSound->data.Clear();
-				this->pSound->data.Set((const BYTE*)data,data.Size());
-				this->pSound->DataNameText = getFilenameFromPath(wstrImportFile.c_str());
-				this->pSound->dwHoldID = pEditRoomScreen->pHold->dwHoldID;
-				//Don't need to distinguish between WAV and OGG formats, since
-				//CSound is able to figure it out by itself.
-				//Hence, we just give it an ID for a format type that is known to be a sound format.
-				this->pSound->wDataFormat = DATA_OGG;
-				//Play sound as confirmation.
-				g_pTheSound->PlayVoice(this->pSound->data);
-			} else {
-				//Not a valid sound file.
-				pEditRoomScreen->ShowOkMessage(MID_FileNotValid);
-				if (bNewSound)
-				{
-					delete this->pSound;
-					this->pSound = NULL;
-				}
-			}
-		} else {
-			pEditRoomScreen->ShowOkMessage(MID_FileNotFound);
-			//Leave existing sound data intact if a replacement was unsuccessfully loaded.
-			if (bNewSound)
-			{
-				delete this->pSound;
-				this->pSound = NULL;
-			}
-		}
+	if (bDeletingSound) { 
+		SetActionWidgetStates(); 
+		Paint(); 
+		return; 
 	}
-	delete pCurrentPlayer;
+
+	const UINT dwSoundId = pEditRoomScreen->SelectMediaID(0, CSelectMediaDialogWidget::Sounds);
+
+	if (dwSoundId)
+	{
+		this->pSound = g_pTheDB->Data.GetByID(dwSoundId);
+		g_pTheSound->PlayVoice(this->pSound->data);
+	}
 
 	SetActionWidgetStates();
 	if (this->pParent) this->pParent->Paint();   //refresh screen
@@ -5769,6 +5720,14 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		this->pCommand->w = this->pCommand->h = 0;
 		this->pCommand->flags = 0;
 		this->pCommand->label.resize(0);
+
+		if (this->pCommand->pSpeech && this->pSound == this->pCommand->pSpeech->GetSound()) {
+			delete this->pCommand->pSpeech;
+			this->pSound = NULL;
+		} else
+			delete this->pCommand->pSpeech;
+
+		this->pCommand->pSpeech = NULL;
 	}
 
 	CCharacterCommand::CharCommand c = this->pCommand->command;
@@ -6055,7 +6014,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->label = wszEmpty;
 			if ((int)this->pCommand->x == SONGID_CUSTOM)
 			{
-				const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->y, CEntranceSelectDialogWidget::Sounds);
+				const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->y, CSelectMediaDialogWidget::Sounds);
 				if (dwVal) {
 					this->pCommand->y = dwVal;
 				} else {
@@ -6216,7 +6175,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			UINT dwMedia = 0;
 			if (dwFlag != ScriptFlag::WMI_OFF)
 			{
-				dwMedia = pEditRoomScreen->SelectMediaID(this->pCommand->h, CEntranceSelectDialogWidget::Images);
+				dwMedia = pEditRoomScreen->SelectMediaID(this->pCommand->h, CSelectMediaDialogWidget::Images);
 				if (!dwMedia) {
 					//Don't add the command.
 					RollbackCommand();
@@ -6332,7 +6291,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 				g_pTheSM->GetScreen(SCR_EditRoom));
 
-			const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Sounds);
+			const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Sounds);
 			this->pCommand->w = dwVal;
 			this->pCommand->h = this->pOnOffListBox->GetSelectedItem();
 			if (c == CCharacterCommand::CC_AmbientSound)
@@ -6347,7 +6306,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 				g_pTheSM->GetScreen(SCR_EditRoom));
 
-			const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Videos);
+			const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Videos);
 			if (dwVal)
 			{
 				CTextBoxWidget *pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -6383,7 +6342,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				//No image required.
 				this->pCommand->w = 0;
 			} else {
-				const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Images);
+				const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Images);
 				if (!dwVal) {
 					//Don't add the command.
 					RollbackCommand();

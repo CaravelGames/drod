@@ -372,6 +372,8 @@ public:
 			const WIDGETTYPE eWidgetType) const;
 	int         GetX() const {return this->x;}
 	int         GetY() const {return this->y;}
+	int         GetRelativeX() const { return this->x - (this->pParent ? this->pParent->x : 0); }
+	int         GetRelativeY() const { return this->y - (this->pParent ? this->pParent->y : 0); }
 	UINT        GetW() const {return this->w;}
 	UINT        GetH() const {return this->h;}
 
@@ -401,6 +403,8 @@ public:
 	void        ScrollAbsolute(const int nScrollX, const int nScrollY);
 	void        SetHeight(const UINT wHeight);
 	void        SetWidth(const UINT wWidth);
+	void        SetRelativeX(const UINT wX);
+	void        SetRelativeY(const UINT wY);
 	void        Show(const bool bFlag = true);
 	void        ShowChildren();
 	static WCHAR TranslateUnicodeKeysym(const SDL_Keysym& keysym, const bool bConsiderCaps=true);

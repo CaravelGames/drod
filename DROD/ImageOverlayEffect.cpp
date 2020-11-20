@@ -243,6 +243,9 @@ bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
 	// For infinite loop protection
 	const UINT wInitialIndex = this->index;
 
+	if (this->commands.size() == 0)
+		return false; // If there are no commands to run then just finish the effect
+
 	if (this->index == (UINT)-1) {
 		++this->index;
 		StartNextCommand();

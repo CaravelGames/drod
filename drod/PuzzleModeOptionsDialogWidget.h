@@ -50,7 +50,7 @@ public:
 	virtual bool   SetForActivate();
 
 private:
-	CLabelWidget* pPromptLabel;
+	CLabelWidget* pHeaderLabel;
 };
 
 #endif   //PUZZLEMODEOPTIONSDIALOGWIDGET_H

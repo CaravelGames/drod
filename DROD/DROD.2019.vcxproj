@@ -622,6 +622,7 @@
   <ItemGroup>
     <ClCompile Include="BloodEffect.cpp" />
     <ClCompile Include="BoundingBox.cpp" />
+    <ClCompile Include="DrodDialogs.cpp" />
     <ClCompile Include="HtmlDialogWidget.cpp" />
     <ClCompile Include="BrowserScreen.cpp" />
     <ClCompile Include="CharacterDialogWidget.cpp" />
@@ -676,6 +677,7 @@
     <ClCompile Include="RoomScreen.cpp" />
     <ClCompile Include="RoomWidget.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SelectMediaDialogWidget.cpp" />
     <ClCompile Include="SelectPlayerScreen.cpp" />
     <ClCompile Include="SellScreen.cpp" />
     <ClCompile Include="SellScreenTCB.cpp" />
@@ -707,6 +709,7 @@
   <ItemGroup>
     <ClInclude Include="BloodEffect.h" />
     <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="DrodDialogs.h" />
     <ClInclude Include="HtmlDialogWidget.h" />
     <ClInclude Include="BrowserScreen.h" />
     <ClInclude Include="CharacterDialogWidget.h" />
@@ -764,6 +767,7 @@
     <ClInclude Include="RoomWidget.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SelectMediaDialogWidget.h" />
     <ClInclude Include="SelectPlayerScreen.h" />
     <ClInclude Include="SellScreen.h" />
     <ClInclude Include="SellScreenTCB.h" />
