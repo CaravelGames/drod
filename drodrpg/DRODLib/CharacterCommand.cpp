@@ -9,6 +9,10 @@
 
 const UINT NPC_DEFAULT_SWORD = UINT(-1);
 
+//*****************************************************************************
+CColorText::~CColorText() { delete pText; }
+
+//*****************************************************************************
 CCharacterCommand::CCharacterCommand()
 	: command((CharCommand)0)
 	, x(0), y(0), w(0), h(0), flags(0), pSpeech(NULL)

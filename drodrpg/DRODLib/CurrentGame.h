@@ -383,7 +383,10 @@ public:
 	vector<CCharacterCommand*> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 //	PlayerStats playerStatsAtRoomStart;
-	MusicData music; //for front end
+
+	//Front-end effects.
+	MusicData music;
+	WSTRING  customRoomLocationText;
 
 	//Internet.
 //	static queue<DEMO_UPLOAD*> demosForUpload;

@@ -455,6 +455,7 @@
     <ClCompile Include="Zombie.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Texts\MIDs.h" />
     <ClInclude Include="Ant.h" />
     <ClInclude Include="AntHill.h" />
     <ClInclude Include="BlueSerpent.h" />

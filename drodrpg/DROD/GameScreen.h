@@ -174,6 +174,7 @@ private:
 	void				ProcessSpeechCues(CCueEvents& CueEvents);
 	bool           ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand);
 	void           ReattachRetainedSubtitles();
+	void           RestartRoom(int nCommand, CCueEvents& CueEvents);
 	void           ScoreCheckpoint(const WCHAR* pScoreIDText);
 	void           SendAchievement(const char* achievement, const UINT dwScore=0);
 	void           ShowBigMap();
@@ -192,9 +193,13 @@ private:
 	void           ToggleBigMap();
 	void           UndoMove();
 	void           UpdateEffectsFreeze();
+	void           UpdateScroll();
+	void           UpdateSign();
 	void           UpdateSound();
+	void           UpdateUIAfterRoomRestart(const bool bReloadEntireMap=false);
+	void           UpdateUIAfterMoveUndo(bool bReloadEntireMap=false);
 	bool           UploadDemoPolling();
-	void				UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);
+	void           UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);
 	void           WaitToUploadDemos();
 
 	bool        bShowLevelStartBeforeActivate;

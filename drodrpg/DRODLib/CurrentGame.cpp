@@ -738,6 +738,7 @@ void CCurrentGame::Clear(
 //	memset(&(this->DemoRecInfo), 0, sizeof(this->DemoRecInfo));
 
 	this->UnansweredQuestions.clear();
+	this->customRoomLocationText.clear();
 
 /*
 	this->bRoomExitLocked = false;
@@ -6412,6 +6413,8 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	}
 	this->music = Src.music;
 
+	this->customRoomLocationText = Src.customRoomLocationText;
+
 	//Combat.
 	this->bQuickCombat = Src.bQuickCombat;
 	this->pCombat = NULL;
@@ -6572,6 +6575,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Remove any monster messages left unprocessed.
 	this->UnansweredQuestions.clear();
+
+	this->customRoomLocationText.clear();
 
 	this->pRoom->KillSeepOutsideWall(CueEvents); //remove before any doors change
 

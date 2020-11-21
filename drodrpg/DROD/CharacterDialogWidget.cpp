@@ -113,6 +113,8 @@ const UINT TAG_VARCOMPLIST = 935;
 const UINT TAG_VARNAMETEXTLABEL = 934;
 const UINT TAG_VARVALUELABEL = 933;
 const UINT TAG_VARVALUE = 932;
+const UINT TAG_TEXT2 = 931;
+const UINT TAG_COLOR_LABEL = 930;
 
 const UINT TAG_GRAPHICLISTBOX2 = 929;
 const UINT TAG_ITEMLISTBOX = 928;
@@ -164,6 +166,47 @@ void stripTrailingWhitespace(WSTRING& text)
 
 	while (textLength && iswspace(text[textLength-1]))
 		text.resize(--textLength);
+}
+
+//******************************************************************************
+bool TranslateColorText(const WSTRING& colorText, CCharacterCommand* pCommand)
+{
+	pCommand->h = 0;
+
+	ASSERT(pCommand);
+
+	static const size_t LENGTH = 6;
+	if (colorText.length() != LENGTH)
+		return false;
+
+	const string color = UnicodeToUTF8(colorText);
+	for (size_t i = 0; i < LENGTH; ++i) {
+		const char c = tolower(color[i]);
+		if (!isalnum(c) || c > 'f')
+			return false;
+	}
+
+	string part = color.substr(0, 2);
+	pCommand->x = (UINT)strtol(part.c_str(), NULL, 16);
+	part = color.substr(2, 2);
+	pCommand->y = (UINT)strtol(part.c_str(), NULL, 16);
+	part = color.substr(4, 2);
+	pCommand->w = (UINT)strtol(part.c_str(), NULL, 16);
+
+	pCommand->h = 1; //valid color
+
+	return true;
+}
+
+//******************************************************************************
+WSTRING SetColorText(UINT r, UINT g, UINT b)
+{
+	char temp[7];
+	sprintf(temp, "%02X%02X%02X", int(r) & 0xff, int(g) & 0xff, int(b) & 0xff);
+
+	WSTRING colorText;
+	AsciiToUnicode(temp, colorText);
+	return colorText;
 }
 
 //******************************************************************************
@@ -796,12 +839,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_TITLE = (CX_COMMAND_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 
+	static const UINT CY_LABEL = 30;
+
 	static const UINT CX_ACTIONLISTBOX = 245;
 	static const UINT CY_ACTIONLISTBOX = 13*22 + 4; //13 items
 	static const int X_ACTIONLABEL = CX_SPACE;
 	static const int Y_ACTIONLABEL = Y_TITLE + CY_TITLE;
 	static const UINT CX_ACTIONLABEL = 70;
-	static const UINT CY_ACTIONLABEL = 30;
+	static const UINT CY_ACTIONLABEL = CY_LABEL;
 	static const int X_ACTIONLISTBOX = X_ACTIONLABEL;
 	static const int Y_ACTIONLISTBOX = Y_ACTIONLABEL + CY_ACTIONLABEL;
 
@@ -810,14 +855,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_EVENTLABEL = X_ACTIONLISTBOX + CX_ACTIONLISTBOX + CX_SPACE;
 	static const int Y_EVENTLABEL = Y_ACTIONLABEL;
 	static const UINT CX_EVENTLABEL = CX_EVENTLISTBOX;
-	static const UINT CY_EVENTLABEL = 30;
+	static const UINT CY_EVENTLABEL = CY_LABEL;
 	static const int X_EVENTLISTBOX = X_EVENTLABEL;
 	static const int Y_EVENTLISTBOX = Y_EVENTLABEL + CY_EVENTLABEL;
 
 	static const int X_WAITLABEL = X_EVENTLISTBOX;
 	static const int Y_WAITLABEL = Y_ACTIONLABEL;
 	static const UINT CX_WAITLABEL = 130;
-	static const UINT CY_WAITLABEL = 30;
+	static const UINT CY_WAITLABEL = CY_LABEL;
 	static const int X_WAIT = X_WAITLABEL;
 	static const int Y_WAIT = Y_WAITLABEL + CY_WAITLABEL;
 	static const UINT CX_WAIT = 60;
@@ -826,7 +871,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_TEXTLABEL = X_WAITLABEL;
 	static const int Y_TEXTLABEL = Y_ACTIONLABEL;
 	static const UINT CX_TEXTLABEL = CX_WAITLABEL;
-	static const UINT CY_TEXTLABEL = CY_WAITLABEL;
+	static const UINT CY_TEXTLABEL = CY_LABEL;
 	static const int X_TEXT = X_TEXTLABEL;
 	static const int Y_TEXT = Y_TEXTLABEL + CY_TEXTLABEL;
 	static const UINT CX_TEXT = CX_COMMAND_DIALOG - X_TEXT - CX_SPACE*2;
@@ -845,10 +890,19 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int CX_SOUNDNAMELABEL = CX_COMMAND_DIALOG - X_SOUNDNAMELABEL - CX_SPACE;
 	static const UINT CY_SOUNDNAMELABEL = CY_TEXT;
 
+	static const int X_COLOR_LABEL = X_TEXTLABEL;
+	static const int Y_COLOR_LABEL = Y_TEXT + CY_WAIT + CY_SPACE;
+	static const UINT CX_COLOR_LABEL = 150;
+	static const UINT CY_COLOR_LABEL = CY_LABEL;
+	static const int X_TEXT2 = X_COLOR_LABEL;
+	static const int Y_TEXT2 = Y_COLOR_LABEL + CY_COLOR_LABEL;
+	static const UINT CX_TEXT2 = 100;
+	static const UINT CY_TEXT2 = CY_WAIT;
+
 	static const int X_DELAYLABEL = X_WAITLABEL;
 	static const int Y_DELAYLABEL = Y_ADDSOUND + CY_ADDSOUND + CY_SPACE;
 	static const UINT CX_DELAYLABEL = CX_WAITLABEL;
-	static const UINT CY_DELAYLABEL = CY_WAITLABEL;
+	static const UINT CY_DELAYLABEL = CY_LABEL;
 	static const int X_DELAY = X_DELAYLABEL;
 	static const int Y_DELAY = Y_DELAYLABEL + CY_DELAYLABEL;
 	static const UINT CX_DELAY = 60;
@@ -858,7 +912,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_SPEAKERLABEL = X_WAITLABEL + CX_WAITLABEL + CX_SPACE;
 	static const int Y_SPEAKERLABEL = Y_DELAYLABEL;
 	static const UINT CX_SPEAKERLABEL = CX_SPEAKERLISTBOX;
-	static const UINT CY_SPEAKERLABEL = CY_WAITLABEL;
+	static const UINT CY_SPEAKERLABEL = CY_LABEL;
 	static const int X_SPEAKERLISTBOX = X_SPEAKERLABEL;
 	static const int Y_SPEAKERLISTBOX = Y_SPEAKERLABEL + CY_SPEAKERLABEL;
 	static const UINT CY_SPEAKERLISTBOX = 8*22 + 4;
@@ -867,7 +921,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_MOODLABEL = X_SPEAKERLABEL + CX_SPEAKERLABEL + CX_SPACE;
 	static const int Y_MOODLABEL = Y_DELAYLABEL;
 	static const UINT CX_MOODLABEL = CX_MOODLISTBOX;
-	static const UINT CY_MOODLABEL = CY_WAITLABEL;
+	static const UINT CY_MOODLABEL = CY_LABEL;
 	static const int X_MOODLISTBOX = X_MOODLABEL;
 	static const int Y_MOODLISTBOX = Y_MOODLABEL + CY_MOODLABEL;
 	static const UINT CY_MOODLISTBOX = 5*22 + 4;
@@ -927,7 +981,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_GOTOLABEL = X_WAITLABEL;
 	static const int Y_GOTOLABEL = Y_WAITLABEL;
 	static const UINT CX_GOTOLABEL = CX_WAITLABEL;
-	static const UINT CY_GOTOLABEL = CY_WAITLABEL;
+	static const UINT CY_GOTOLABEL = CY_LABEL;
 	static const int X_GOTOLABELTEXT = X_DELAYLABEL;
 	static const int Y_GOTOLABELTEXT = Y_GOTOLABEL + CY_GOTOLABEL;
 	static const UINT CX_GOTOLABELTEXT = CX_TEXT;
@@ -941,22 +995,22 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_DISPLAYSPEECHLABEL = X_WAITLABEL;
 	static const int Y_DISPLAYSPEECHLABEL = Y_WAITLABEL;
 	static const UINT CX_DISPLAYSPEECHLABEL = CX_WAITLABEL;
-	static const UINT CY_DISPLAYSPEECHLABEL = CY_WAITLABEL;
+	static const UINT CY_DISPLAYSPEECHLABEL = CY_LABEL;
 
 	static const int X_NOTURNINGLABEL = X_ONOFFLISTBOX;
 	static const int Y_NOTURNINGLABEL = Y_WAITLABEL;
 	static const UINT CX_NOTURNINGLABEL = CX_WAITLABEL;
-	static const UINT CY_NOTURNINGLABEL = CY_WAITLABEL;
+	static const UINT CY_NOTURNINGLABEL = CY_LABEL;
 
 	static const int X_SINGLESTEPLABEL = X_ONOFFLISTBOX2;
 	static const int Y_SINGLESTEPLABEL = Y_WAITLABEL;
 	static const UINT CX_SINGLESTEPLABEL = CX_WAITLABEL;
-	static const UINT CY_SINGLESTEPLABEL = CY_WAITLABEL;
+	static const UINT CY_SINGLESTEPLABEL = CY_LABEL;
 
 	static const int X_SKIPENTRANCE = X_ONOFFLISTBOX;
 	static const int Y_SKIPENTRANCE = Y_WAITLABEL;
 	static const UINT CX_SKIPENTRANCE = 200;
-	static const UINT CY_SKIPENTRANCE = CY_WAITLABEL;
+	static const UINT CY_SKIPENTRANCE = CY_LABEL;
 
 	static const UINT CX_MUSICLISTBOX = 450;
 	static const int X_MUSICLABEL = X_DELAYLABEL;
@@ -976,7 +1030,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_VARTEXTLABEL = X_WAITLABEL;
 	static const int Y_VARTEXTLABEL = Y_WAITLABEL;
 	static const UINT CX_VARTEXTLABEL = 170;
-	static const UINT CY_VARTEXTLABEL = CY_WAITLABEL;
+	static const UINT CY_VARTEXTLABEL = CY_LABEL;
 
 	static const UINT CX_VARLISTBOX = 280;
 	static const UINT CY_VARLISTBOX = 11*22 + 4; //11 items
@@ -1004,7 +1058,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int CY_VARCOMPLIST = 4*22 + 4;
 
 	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
-	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
+	static const UINT CY_VARVALUELABEL = CY_LABEL;
 	static const int Y_VARVALUELABEL = Y_VAROPLIST;
 	static const UINT CX_VARVALUELABEL = 90;
 
@@ -1040,12 +1094,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_CUTSCENELABEL = X_WAITLABEL;
 	static const int Y_CUTSCENELABEL = Y_WAITLABEL;
 	static const UINT CX_CUTSCENELABEL = 200;
-	static const UINT CY_CUTSCENELABEL = CY_WAITLABEL;
+	static const UINT CY_CUTSCENELABEL = CY_LABEL;
 
 	static const int X_MOVERELXLABEL = X_SINGLESTEPLABEL + CX_SINGLESTEPLABEL;
 	static const int Y_MOVERELXLABEL = Y_WAITLABEL;
 	static const UINT CX_MOVERELXLABEL = CX_WAITLABEL;
-	static const UINT CY_MOVERELXLABEL = CY_WAITLABEL;
+	static const UINT CY_MOVERELXLABEL = CY_LABEL;
 
 	static const int X_MOVERELX = X_MOVERELXLABEL;
 	static const int Y_MOVERELX = Y_MOVERELXLABEL + CY_MOVERELXLABEL;
@@ -1055,7 +1109,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_MOVERELYLABEL = X_MOVERELXLABEL + CX_MOVERELXLABEL;
 	static const int Y_MOVERELYLABEL = Y_WAITLABEL;
 	static const UINT CX_MOVERELYLABEL = CX_WAITLABEL;
-	static const UINT CY_MOVERELYLABEL = CY_WAITLABEL;
+	static const UINT CY_MOVERELYLABEL = CY_LABEL;
 
 	static const int X_MOVERELY = X_MOVERELYLABEL;
 	static const int Y_MOVERELY = Y_MOVERELYLABEL + CY_MOVERELYLABEL;
@@ -1065,7 +1119,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_LOOPSOUND = X_WAITLABEL;
 	static const int Y_LOOPSOUND = Y_WAITLABEL;
 	static const UINT CX_LOOPSOUND = 200;
-	static const UINT CY_LOOPSOUND = CY_WAITLABEL;
+	static const UINT CY_LOOPSOUND = CY_LABEL;
 
 	static const int X_EFFECTLISTBOX = X_DIRECTIONLISTBOX3 + CX_DIRECTIONLISTBOX3 + CX_SPACE;
 	static const int Y_EFFECTLISTBOX = Y_ITEMLISTBOX;
@@ -1075,7 +1129,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_SOUNDEFFECTLABEL = X_DIRECTIONLISTBOX3;
 	static const int Y_SOUNDEFFECTLABEL = Y_DIRECTIONLISTBOX3 + CY_DIRECTIONLISTBOX3 + CY_SPACE/2;
 	static const UINT CX_SOUNDEFFECTLABEL = CX_DIRECTIONLISTBOX3;
-	static const UINT CY_SOUNDEFFECTLABEL = CY_WAITLABEL;
+	static const UINT CY_SOUNDEFFECTLABEL = CY_LABEL;
 
 	static const int X_ONOFFLISTBOX3 = X_ONOFFLISTBOX;
 	static const int Y_ONOFFLISTBOX3 = Y_SOUNDEFFECTLABEL + CY_SOUNDEFFECTLABEL;
@@ -1519,6 +1573,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_SOUNDEFFECTLABEL,
 			X_SOUNDEFFECTLABEL, Y_SOUNDEFFECTLABEL, CX_SOUNDEFFECTLABEL, CY_SOUNDEFFECTLABEL,
 			F_Small, g_pTheDB->GetMessageText(MID_SoundEffect)));
+
+	//Color text
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_COLOR_LABEL, X_COLOR_LABEL,
+		Y_COLOR_LABEL, CX_COLOR_LABEL, CY_COLOR_LABEL, F_Small,
+		g_pTheDB->GetMessageText(MID_ScriptColor)));
+	CTextBoxWidget* pText2 = new CTextBoxWidget(TAG_TEXT2, X_TEXT2, Y_TEXT2,
+		CX_TEXT2, CY_TEXT2, 6);
+	this->pAddCommandDialog->AddWidget(pText2);
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3218,7 +3280,18 @@ const
 			wstr += command.label;
 			wstr += wszQuote;
 		break;
+		case CCharacterCommand::CC_FlashingText:
+			if (command.h) {
+				wstr += _itoW((int)command.x, temp, 16); //hex
+				wstr += wszComma;
+				wstr += _itoW((int)command.y, temp, 16);
+				wstr += wszComma;
+				wstr += _itoW((int)command.w, temp, 16);
+				wstr += wszSpace;
+			}
+		//no break
 		case CCharacterCommand::CC_Question:
+		case CCharacterCommand::CC_RoomLocationText:
 		{
 			CDbSpeech *pSpeech = command.pSpeech;
 			ASSERT(pSpeech);
@@ -3642,6 +3715,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_EndScriptOnExit, g_pTheDB->GetMessageText(MID_EndScriptOnExit));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Equipment, g_pTheDB->GetMessageText(MID_Equipment));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_FaceDirection, g_pTheDB->GetMessageText(MID_FaceDirection));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_FlashingText, g_pTheDB->GetMessageText(MID_FlashingMessage));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_FlushSpeech, g_pTheDB->GetMessageText(MID_FlushSpeech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GameEffect, g_pTheDB->GetMessageText(MID_VisualEffect));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
@@ -3658,6 +3732,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerAppearance, g_pTheDB->GetMessageText(MID_SetPlayerAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Question, g_pTheDB->GetMessageText(MID_Question));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
@@ -4353,7 +4428,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 35;
+	static const UINT NUM_WIDGETS = 36;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4365,7 +4440,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_ITEMLISTBOX, TAG_BEHAVIORLISTBOX,
 		TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX,
 		TAG_DIRECTIONLISTBOX2,
-		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3
+		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
+		TAG_TEXT2
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -4375,6 +4451,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT ORIENTATION[] = { TAG_DIRECTIONLISTBOX, 0 };
  	static const UINT ONOFF[] =       { TAG_ONOFFLISTBOX, 0 };
 	static const UINT OPENCLOSE[] =   { TAG_OPENCLOSELISTBOX, 0 };
+	static const UINT TEXTBOX[] =     { TAG_GOTOLABELTEXT, 0 };
+	static const UINT TEXT_AND_COLOR[] = { TAG_GOTOLABELTEXT, TAG_TEXT2, 0 };
 	static const UINT GOTO[] =        { TAG_GOTOLABELTEXT, 0 };
 	static const UINT GOTOLIST[] =    { TAG_GOTOLABELLISTBOX, 0 };
 	static const UINT MUSIC[] =       { TAG_MUSICLISTBOX, 0 };
@@ -4460,17 +4538,20 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_IfElseIf
 		NO_WIDGETS,         //CC_Return
 		GOTOLIST,           //CC_GoSub
-		GOTOLIST            //CC_EachVictory
+		GOTOLIST,           //CC_EachVictory
+		TEXTBOX,            //CC_RoomLocationText
+		TEXT_AND_COLOR      //CC_FlashingText
 	};
 
-	static const UINT NUM_LABELS = 24;
+	static const UINT NUM_LABELS = 25;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
 		TAG_GOTOLABEL, TAG_DISPLAYSPEECHLABEL, TAG_MUSICLABEL, TAG_NOTURNING,
 		TAG_SINGLESTEP, TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, TAG_CUTSCENELABEL,
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
-		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL
+		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
+		TAG_COLOR_LABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -4479,6 +4560,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WAITABS_L[NUM_LABELS] =      { TAG_WAITABSLABEL, 0 };
 	static const UINT SPEECH_L[NUM_LABELS] =       { TAG_DELAYLABEL, TAG_SPEAKERLABEL, TAG_MOODLABEL, TAG_TEXTLABEL,TAG_SOUNDNAME_LABEL, 0 };
 	static const UINT TEXT_L[NUM_LABELS] =         { TAG_TEXTLABEL, 0 };
+	static const UINT TEXT_AND_COLOR_L[] =         { TAG_TEXTLABEL, TAG_COLOR_LABEL, 0 };
 	static const UINT ORIENTATION_L[NUM_LABELS] =  { TAG_DIRECTIONLABEL, 0 };
 	static const UINT GOTO_L[NUM_LABELS] =         { TAG_GOTOLABEL, 0 };
 	static const UINT DISPSPEECH_L[NUM_LABELS] =   { TAG_DISPLAYSPEECHLABEL, 0};
@@ -4562,7 +4644,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_IfElseIf
 		NO_LABELS,          //CC_Return
 		NO_LABELS,          //CC_GoSub
-		NO_LABELS           //CC_EachVictory
+		NO_LABELS,          //CC_EachVictory
+		TEXT_L,             //CC_RoomLocationText
+		TEXT_AND_COLOR_L    //CC_FlashingText
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5291,8 +5375,18 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			}
 		break;
 
+		case CCharacterCommand::CC_FlashingText:
+		{
+			CTextBoxWidget* pLabelText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_TEXT2));
+
+			const WCHAR* pColorText = pLabelText->GetText();
+			TranslateColorText(WSTRING(pColorText), this->pCommand);
+		}
+		//no break
 		case CCharacterCommand::CC_Question:
-			{
+		case CCharacterCommand::CC_RoomLocationText:
+		{
 				CTextBoxWidget *pLabelText = DYN_CAST(CTextBoxWidget*, CWidget*,
 						this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
 				ASSERT(pLabelText);
@@ -5632,7 +5726,21 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			pGotoLabel->SetText(this->pCommand->label.c_str());
 		}
 		break;
+		case CCharacterCommand::CC_FlashingText:
+		{
+			CTextBoxWidget* pLabelText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_TEXT2));
+			if (!this->pCommand->h) {
+				pLabelText->SetText(wszEmpty);
+			}
+			else {
+				WSTRING colorText = SetColorText(this->pCommand->x, this->pCommand->y, this->pCommand->w);
+				pLabelText->SetText(colorText.c_str());
+			}
+		}
+		//no break
 		case CCharacterCommand::CC_Question:
+		case CCharacterCommand::CC_RoomLocationText:
 		{
 			CTextBoxWidget *pQuestionText = DYN_CAST(CTextBoxWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
@@ -5963,6 +6071,14 @@ bool getTextToLastQuote(const WCHAR* pText, UINT& pos, WSTRING& foundText)
 }
 
 //*****************************************************************************
+bool getTextUpTo(const WCHAR* pText, UINT& pos, WCHAR c)
+{
+	while (pText[pos] && pText[pos] != c)
+		++pos;
+	return pText[pos] == c;
+}
+
+//*****************************************************************************
 CCharacterCommand* CCharacterDialogWidget::fromText(
 //Parses a line of text into a command.
 //
@@ -6224,7 +6340,35 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_FlashingText:
+		skipWhitespace;
+		//Optional text color in parentheses.
+		if (pText[pos] != W_t('(')) {
+			pCommand->h = 0;
+		}
+		else {
+			++pos; skipWhitespace;
+
+			const UINT start = pos;
+			if (!getTextUpTo(pText, pos, W_t(')'))) {
+				delete pCommand;
+				return NULL;
+			}
+			const UINT end = pos;
+
+			WSTRING color = pText + start;
+			color.resize(end - start);
+			if (!TranslateColorText(color, pCommand)) {
+				delete pCommand;
+				return NULL;
+			}
+			pos = end;
+			skipRightParen;
+			skipComma;
+		}
+	//no break
 	case CCharacterCommand::CC_Question:
+	case CCharacterCommand::CC_RoomLocationText:
 	{
 		ASSERT(!pCommand->pSpeech);
 		pCommand->pSpeech = g_pTheDB->Speech.GetNew();
@@ -6652,7 +6796,16 @@ WSTRING CCharacterDialogWidget::toText(
 	}
 	break;
 
+	case CCharacterCommand::CC_FlashingText:
+		if (c.h) {
+			wstr += wszLeftParen;
+			wstr += SetColorText(c.x, c.y, c.w);
+			wstr += wszRightParen;
+			wstr += wszComma;
+		}
+	//no break
 	case CCharacterCommand::CC_Question:
+	case CCharacterCommand::CC_RoomLocationText:
 	{
 		CDbSpeech *pSpeech = c.pSpeech;
 		wstr += pSpeech ? (const WCHAR*)pSpeech->MessageText : wszQuestionMark;

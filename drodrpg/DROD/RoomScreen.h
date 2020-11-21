@@ -77,6 +77,7 @@ protected:
 	CRoomScreen(const SCREENTYPE eSetType);
 	virtual ~CRoomScreen() { }
 
+	SDL_Rect& GetEntireSignRect() const;
 	SDL_Keycode GetKeysymForCommand(const UINT wCommand) const;
 	void     HideScroll() {this->bIsScrollVisible = false;}
 	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
