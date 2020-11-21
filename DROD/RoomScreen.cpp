@@ -344,12 +344,12 @@ void CRoomScreen::InitKeysymToCommandMap(
 		this->InputKeyToCommandMap[inputKey] = keyDefinition->eCommand;
 
 		if (DoesCommandUseModifiers((DCMD)wIndex)) // Support for macros
-			this->InputKeyToCommandMap[BuildInputKey(inputKey, false, false, true)] = keyDefinition->eCommand;
+			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(inputKey), false, false, true)] = keyDefinition->eCommand;
 	}
 }
 
 //*****************************************************************************
-int CRoomScreen::GetCommandForInputKey(const InputKey& inputKey) const
+int CRoomScreen::GetCommandForInputKey(const InputKey inputKey) const
 {
 	std::map<InputKey,int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
 	if (it != this->InputKeyToCommandMap.end())

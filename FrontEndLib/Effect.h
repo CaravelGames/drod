@@ -95,7 +95,8 @@ namespace EFFECTLIB
 		ETEXT,            //text
 		EFADETILE,        //fading tile
 		EROTATETILE,      //rotating tile
-		ESCALETILE        //scaled tile
+		ESCALETILE,       //scaled tile
+		EFLASHTEXT        //Flashing text message (Secret room/exit level/mastery)
 	};
 };
 

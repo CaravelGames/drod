@@ -365,7 +365,7 @@ public:
 	void        GetRect(SDL_Rect &rect) const
 			{rect.x = this->x; rect.y = this->y; rect.w = this->w; rect.h = this->h;}
 	void        GetRectContainingChildren(SDL_Rect &ChildContainerRect) const;
-	UINT       GetTagNo() const {return this->dwTagNo;}
+	UINT        GetTagNo() const {return this->dwTagNo;}
 	WIDGETTYPE  GetType() const {return this->eType;}
 	CWidget *   GetWidget(const UINT dwTagNo, const bool bFindVisibleOnly=false);
 	virtual CWidget * GetWidgetContainingCoords(const int nX, const int nY,
@@ -405,6 +405,12 @@ public:
 	void        ShowChildren();
 	static WCHAR TranslateUnicodeKeysym(const SDL_Keysym& keysym, const bool bConsiderCaps=true);
 	static void  TranslateUnicodeKeysym(WCHAR& wc, const SDL_Keycode sym, const bool bCaps);
+
+	template<typename TWidget>
+	TWidget *GetWidget(const UINT dwTagNo, const bool bFindVisibleOnly = false) {
+		return dynamic_cast<TWidget *>(GetWidget(dwTagNo, bFindVisibleOnly));
+		//return DYN_CAST(TWidget *, CWidget *, GetWidget(dwFindTagNo, bFindVisibleOnly));
+	}
 
 	//SDL helper functions that act on screen surface.
 	void        DrawCol(int nX, int nY, UINT wH,

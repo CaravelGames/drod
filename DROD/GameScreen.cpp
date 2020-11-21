@@ -2801,7 +2801,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 //Note that the On*() handlers are not going to be called by CEventHandlerWidget's
 //Activate() loop until after this method exits.  Events must be handled here.
 //
-//Returns: player command response to death, or CMD_WAIT (default)
+//Returns: player command response to death
 {
 	static const Uint32 dwDeathDuration = 2000;
 
@@ -2815,7 +2815,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const CSwordsman& player = this->pCurrentGame->swordsman;
 	const UINT wOrigO = player.wO;	//save value for demo record
 	bool bSwordSwingsClockwise = true;
-	int cmd_response = CMD_WAIT;
+	int cmd_response = CMD_UNSPECIFIED;
 
 	const bool bHalphDied = CueEvents.HasOccurred(CID_HalphDied);
 	const bool bPlayerFellInPit = CueEvents.HasOccurred(CID_PlayerFellIntoPit);
@@ -3095,8 +3095,11 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
-	if (cmd_response == CMD_WAIT && this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
-		cmd_response = CMD_UNDO;
+	if (cmd_response == CMD_UNSPECIFIED)
+		if (this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
+			cmd_response = CMD_UNDO;
+		else
+			cmd_response = CMD_RESTART;
 
 	if (cmd_response == CMD_UNDO)
 	{
@@ -4601,7 +4604,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		if (GetScreenType() == SCR_Demo)
 			return eNextScreen;	//stop showing demo on death
 
-		if (!bUndoDeath)
+		if (cmd_response == CMD_RESTART)
 		{
 			//Create demo/End demo recording if game is now inactive.
 			if (this->pCurrentGame->IsDemoRecording())  //End a demo that is recording.

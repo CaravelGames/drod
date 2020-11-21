@@ -247,6 +247,9 @@
     <ClCompile Include="KeypressDialogWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="HtmlDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AumtlichGazeEffect.h">
@@ -505,6 +508,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="HtmlDialogWidget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
