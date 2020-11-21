@@ -4974,22 +4974,28 @@ const
 }
 
 //*****************************************************************************
+void CDbRoom::ClampCoordsToRoom(int& nX, int& nY) const
+{
+	if (nX < 0)
+		nX = 0;
+	else if ((UINT)nX >= this->wRoomCols)
+		nX = this->wRoomCols - 1;
+
+	if (nY < 0)
+		nY = 0;
+	else if ((UINT)nY >= this->wRoomRows)
+		nY = this->wRoomRows - 1;
+}
+
+//*****************************************************************************
 UINT CDbRoom::GetOSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square 
 //will be used.
-	 const int nX, const int nY) const
+	 int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0) 
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-	 return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nUseX,nUseY)]);
+	ClampCoordsToRoom(nX, nY);
+	return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nX,nY)]);
 }
 
 //*****************************************************************************
@@ -4997,18 +5003,10 @@ UINT CDbRoom::GetTSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square 
 //will be used.
-	 const int nX, const int nY) const
+	 int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0) 
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-	 return (UINT) (unsigned char) (this->pszTSquares[ARRAYINDEX(nUseX,nUseY)]);
+	ClampCoordsToRoom(nX, nY);
+	return (UINT) (unsigned char) (this->pszTSquares[ARRAYINDEX(nX,nY)]);
 }
 
 //*****************************************************************************

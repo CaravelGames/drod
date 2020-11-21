@@ -958,9 +958,18 @@ void CHoldSelectScreen::OnBetweenEvents()
 		// Done downloading the list.
 		CScreen::HideStatusMessage();
 		this->bDownloadList = false;
-		PopulateHoldListBox();
 
 		this->pSelCNetHold = NULL;
+		PopulateHoldListBox();
+
+		UINT caravelNetSelectHoldId = g_pTheNet->GetDownloadHold();
+		if (caravelNetSelectHoldId != 0) {
+			// User got here from a CaravelNet new/update hold notice.  Find the hold and select it.
+			this->pHoldListBoxWidget->SelectItem(caravelNetSelectHoldId);
+			g_pTheNet->SetDownloadHold(0);
+		}
+
+
 		SetHoldDesc();
 		Paint();
 	}
@@ -1619,6 +1628,7 @@ void CHoldSelectScreen::SetHoldFilter()
 		if (pESS->GetPrevHoldID())
 			dwSelectHoldID = pESS->GetPrevHoldID();
 	}
+
 	this->pHoldListBoxWidget->SelectItem(dwSelectHoldID);
 
 	this->pHoldListBoxWidget->RequestPaint();
