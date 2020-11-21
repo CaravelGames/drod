@@ -43,6 +43,7 @@
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
 #include <BackEndLib/Wchar.h>
+#include <BackEndLib/Browser.h>
 
 #define BG_SURFACE      (0)
 #define PARTS_SURFACE   (1)
@@ -427,11 +428,70 @@ void CRoomScreen::AddNoticesDialog()
 void CRoomScreen::OpenNoticesBox(CRoomWidget* pRoomWidget)
 {
 	this->pNoticesDialog->SetBetweenEventsHandler(GetEventHandlerWidget()); //keep updating room effects
-	const UINT returnTag = this->pNoticesDialog->Display(false);
+	UINT returnTag = 0;
+	do {
+		if (returnTag == TAG_NOTICESDELETE) {
+			UINT selected = this->pNoticesList->GetSelectedItem();
+			this->pNoticesList->RemoveItem(selected);
+			this->notices.erase(this->notices.find(selected));
+		}
+		returnTag = this->pNoticesDialog->Display(false);
+		this->UpdateNoticesButton();
+
+	} while (returnTag == TAG_NOTICESDELETE);
+
+	switch (returnTag) {
+	case TAG_NOTICESNOTICE:
+		// This button should go to whatever the notice was about. 
+		UINT selected = this->pNoticesList->GetSelectedItem();
+		std::map<UINT, CNetNotice>::const_iterator item = this->notices.find(selected);
+		if (item != this->notices.end()) {
+			// Found it!
+			switch (item->second.type) {
+			case NOTICE_NEWHOLD:
+			case NOTICE_UPDATEDHOLD:
+				// go to the hold select screen so the user can update it
+				g_pTheNet->SetDownloadHold(item->second.dwServerHoldId);
+				GoToScreen(SCR_HoldSelect);
+				break;
+
+			case NOTICE_GENERICURL:
+				// open a web browser to the specified URL
+				OpenExtBrowser(item->second.url.c_str());
+				break;
+
+			case NOTICE_ROOMSPECIFIC:
+				// Go to the hold/level/room specified.  
+				break;
+			}
+		}
+		break;
+	}
+
 	this->pNoticesDialog->SetBetweenEventsHandler(NULL);
 
 	pRoomWidget->DirtyRoom();
 	pRoomWidget->Paint();
+}
+
+//*****************************************************************************
+void CRoomScreen::UpdateNoticesButton()
+{
+	const int num = this->notices.size();
+	CButtonWidget* pButton = dynamic_cast<CButtonWidget*>(this->GetWidget(TAG_OPEN_NOTICES));
+	string label;
+	WSTRING wLabel;
+	if (num >= 10) {
+		label = "...";
+	}
+	else {
+		char buffer[5];
+		sprintf(buffer, "%d", num);
+		label = buffer;
+	}
+	UTF8ToUnicode(label, wLabel);
+	pButton->SetCaption(wLabel.c_str());
+	pButton->RequestPaint();
 }
 
 //*****************************************************************************
@@ -443,28 +503,9 @@ void CRoomScreen::GrabNewNotices(CRoomWidget* pRoomWidget)
 		this->dwLastNotice = i->id;
 		CCaravelNetNoticeEffect *pEffect = new CCaravelNetNoticeEffect(pRoomWidget, *i, pRoomWidget->notices);
 		pRoomWidget->AddLastLayerEffect(pEffect);
-
-		CButtonWidget* pButton = dynamic_cast<CButtonWidget*>(this->GetWidget(TAG_OPEN_NOTICES));
-		if (pButton) {
-			// Increment the number on the button
-			WSTRING wstr = pButton->GetCaption();
-			string str = UnicodeToUTF8(wstr);
-			int num;
-			sscanf(str.c_str(), "%d", &num);
-			num++;
-			if (num >= 10) {
-				str = "...";
-			} else {
-				char buffer[5];
-				sprintf(buffer, "%d", num);
-				str = buffer;
-			}
-			UTF8ToUnicode(str, wstr);
-			pButton->SetCaption(wstr.c_str());
-			pButton->RequestPaint();
-		}
-
 		this->pNoticesList->AddItem(i->id, i->text.c_str());
-		this->pNoticesList->SelectLine(0);
+		this->notices[i->id] = *i;
+
 	}
+	this->UpdateNoticesButton();
 }

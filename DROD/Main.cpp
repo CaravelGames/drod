@@ -472,10 +472,11 @@ int main(int argc, char *argv[])
 			const bool bFullscreen = !CScreen::bAllowWindowed || (!bNoFullscreen && s.GetVar(Settings::Fullscreen, false));
 			if (bFullscreen)
 			{
-				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				CScreen::SetFullScreenStatic(true);
 			}
 			else
 			{
+				CScreen::SetFullScreenStatic(false);
 #ifndef __linux__  //This doesn't work well on X11. The window manager handles it anyway.
 				int nX, nY, nW, nH;
 				CScreen::GetScreenSize(nW, nH);
@@ -652,6 +653,22 @@ MESSAGE_ID Init(
 
 	//Set up INI entries once the DB can be accessed.
 	RepairMissingINIKeys(CDrodScreen::IsGameFullVersion());
+
+	{
+		string strIniValue;
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::AllowWindowResizing, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bAllowWindowResizing = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMinimize, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bMinimizeOnFullScreen = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMode, strIniValue)) {
+			int mode = atoi(strIniValue.c_str());
+			if (mode >= 0 && mode <= 2) {
+				CScreen::eFullScreenMode = SCREENLIB::FULLSCREENMODE(mode);
+			}
+		}
+	}
 
 	//Init the internet interface.
 	ASSERT(!g_pTheNet);
@@ -1019,7 +1036,7 @@ void DeinitGraphics()
 	if (SDL_Window *window = GetMainWindow())
 	{
 		if (CScreen::bAllowWindowed)
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 
 		if (SDL_Texture *texture = GetWindowTexture(window))
 			SDL_DestroyTexture(texture);
@@ -1316,7 +1333,7 @@ void DisplayInitErrorMessage(
 		if ((SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP))
 				&& CScreen::bAllowWindowed)
 		{
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 			CScreen::SetWindowCentered();
 			PresentRect();
 		}
@@ -1855,11 +1872,14 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	if (!m_pFiles->GetGameProfileString((section), (key), temp)) \
 		m_pFiles->WriteGameProfileString((section), (key), (value))
 
+	AddIfMissing(INISection::Customizing, INIKey::AllowWindowResizing, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AlwaysFullBlit, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
 	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "400");
 	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMinimize, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMode, "0");
 	AddIfMissing(INISection::Customizing, INIKey::LogVars, "0");
 	AddIfMissing(INISection::Customizing, INIKey::MaxDelayForUndo, "500");
 	AddIfMissing(INISection::Customizing, INIKey::QuickPlayerExport, "0");

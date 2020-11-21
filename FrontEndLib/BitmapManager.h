@@ -147,7 +147,7 @@ public:
 	void        DarkenTileWithMask(const UINT wTIMask, const UINT wXOffset, const UINT wYOffset,
 			const UINT x, const UINT y, const UINT w, const UINT h,
 			SDL_Surface *pDestSurface, const float fLightPercent);
-	void CBitmapManager::DarkenTileWithMultiTileMask(const vector<TweeningTileMask>& masks,
+	void        DarkenTileWithMultiTileMask(const vector<TweeningTileMask>& masks,
 			const UINT x, const UINT y, const UINT w, const UINT h,
 			SDL_Surface* pDestSurface, const float fLightPercent);
 	void        DarkenWithMask(SDL_Surface *pMaskSurface, SDL_Rect src,

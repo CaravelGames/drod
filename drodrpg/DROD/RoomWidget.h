@@ -81,7 +81,7 @@ struct TileImages
 	BYTE monster : 1;    //monster piece is on this tile
 };
 
-typedef USHORT LIGHTTYPE; //used to used a light value
+typedef USHORT LIGHTTYPE; //represents a light value on one color channel
 
 struct LightMaps
 {
@@ -423,7 +423,7 @@ protected:
 	void           DrawTileImage(const TileImageBlitParams& blit, SDL_Surface *pDestSurface);
 	void           DrawTileImageWithoutLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           DrawTileLight(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
-	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect);
+	bool           ClipTileArea(int nPixelX, int nPixelY, SDL_Rect& BlitRect) const;
 
 	CEntity*       GetLightholder() const;
 	bool           GetPlayerDisplayTiles(const CSwordsman &swordsman,
@@ -553,9 +553,10 @@ private:
 
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
 	void           CropAddLightParams(const SDL_Rect* crop,
-		UINT& x, UINT& y, UINT& w, UINT& h,
-		UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
-		LIGHTTYPE*& sRGBIntensity) const;
+			const SDL_Rect& roomEdgeClip,
+			UINT& x, UINT& y, UINT& w, UINT& h,
+			UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
+			LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
 
 	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
