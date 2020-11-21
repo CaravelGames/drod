@@ -6408,8 +6408,6 @@ void CGameScreen::UndoMove()
 		{
 			//Don't show a long delay between last move and next move in the recorded demo.
 			this->pCurrentGame->Commands.ResetTimeOfLastAdd();
-		} else {
-			UpdateSign();
 		}
 	}
 
