@@ -4368,32 +4368,32 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3
 	};
 
-	static const bool NO_WIDGETS[NUM_WIDGETS] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool WAIT[NUM_WIDGETS] =        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool CUEEVENT[NUM_WIDGETS] =    {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool SPEECH[NUM_WIDGETS] =      {0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool ORIENTATION[NUM_WIDGETS] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool ONOFF[NUM_WIDGETS] =       {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool OPENCLOSE[NUM_WIDGETS] =   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool GOTO[NUM_WIDGETS] =        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool GOTOLIST[NUM_WIDGETS] =    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool MUSIC[NUM_WIDGETS] =       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool MOVE[NUM_WIDGETS] =        {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool WAITFLAGS[NUM_WIDGETS] =   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool VARSET[NUM_WIDGETS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool VARGET[NUM_WIDGETS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool GRAPHIC[NUM_WIDGETS] =     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool MOVEREL[NUM_WIDGETS] =     {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool IMPERATIVE[NUM_WIDGETS] =  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool ANSWER[NUM_WIDGETS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool ITEMS[NUM_WIDGETS] =       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool XY[NUM_WIDGETS] =          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
- 	static const bool BEHAVIOR[NUM_WIDGETS] =    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0};
-	static const bool EQUIPMENT[NUM_WIDGETS] =   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0};
-	static const bool NEWENTITY[NUM_WIDGETS] =   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
-	static const bool EFFECT[NUM_WIDGETS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1};
+	static const UINT NO_WIDGETS[] =  {0};
+	static const UINT WAIT[] =        { TAG_WAIT, 0 };
+	static const UINT CUEEVENT[] =    { TAG_EVENTLISTBOX, 0 };
+	static const UINT SPEECH[] =      { TAG_DELAY, TAG_SPEECHTEXT, TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, 0 };
+	static const UINT ORIENTATION[] = { TAG_DIRECTIONLISTBOX, 0 };
+ 	static const UINT ONOFF[] =       { TAG_ONOFFLISTBOX, 0 };
+	static const UINT OPENCLOSE[] =   { TAG_OPENCLOSELISTBOX, 0 };
+	static const UINT GOTO[] =        { TAG_GOTOLABELTEXT, 0 };
+	static const UINT GOTOLIST[] =    { TAG_GOTOLABELLISTBOX, 0 };
+	static const UINT MUSIC[] =       { TAG_MUSICLISTBOX, 0 };
+ 	static const UINT MOVE[] =        { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_WAITFLAGSLISTBOX, 0};
+ 	static const UINT WAITFLAGS[] =   { TAG_WAITFLAGSLISTBOX, 0};
+ 	static const UINT VARSET[] =      { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0 };
+ 	static const UINT VARGET[] =      { TAG_GOTOLABELTEXT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0 };
+	static const UINT GRAPHIC[] =     { TAG_GRAPHICLISTBOX2, 0 };
+ 	static const UINT MOVEREL[] =     { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0 };
+ 	static const UINT IMPERATIVE[] =  { TAG_IMPERATIVELISTBOX, 0 };
+	static const UINT ANSWER[] =      { TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0 };
+	static const UINT ITEMS[] =       { TAG_ITEMLISTBOX, 0 };
+ 	static const UINT XY[] =          { TAG_MOVERELX, TAG_MOVERELY, 0};
+ 	static const UINT BEHAVIOR[] =    { TAG_BEHAVIORLISTBOX, 0 };
+	static const UINT EQUIPMENT[] =   { TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX, 0};
+	static const UINT NEWENTITY[] =   { TAG_GRAPHICLISTBOX2, TAG_DIRECTIONLISTBOX2, 0 };
+	static const UINT EFFECT[] =      { TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3, 0 };
 
-	static const bool* activeWidgets[CCharacterCommand::CC_Count] = {
+	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
 		NO_WIDGETS,
 		MOVE,
@@ -4473,29 +4473,29 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL
 	};
 
-	static const bool NO_LABELS[NUM_LABELS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool CUEEVENT_L[NUM_LABELS] =     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool WAIT_L[NUM_LABELS] =         {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool WAITABS_L[NUM_LABELS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0};
-	static const bool SPEECH_L[NUM_LABELS] =       {0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool TEXT_L[NUM_LABELS] =         {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool ORIENTATION_L[NUM_LABELS] =  {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool GOTO_L[NUM_LABELS] =         {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool DISPSPEECH_L[NUM_LABELS] =   {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool MUSIC_L[NUM_LABELS] =        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool MOVE_L[NUM_LABELS] =         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool VARSET_L[NUM_LABELS] =       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool VARGET_L[NUM_LABELS] =       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool CUTSCENE_L[NUM_LABELS] =     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0};
-	static const bool MOVEREL_L[NUM_LABELS] =      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
-	static const bool LOOPSOUND_L[NUM_LABELS] =    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0};
-	static const bool XY_L[NUM_LABELS] =           {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0};
-	static const bool SKIPENTRANCE_L[NUM_LABELS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0};
-	static const bool NEWENTITY_L[NUM_LABELS] =    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0};
-	static const bool EFFECT_L[NUM_LABELS] =       {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
-	static const bool MAP_L[NUM_LABELS] =          {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+	static const UINT NO_LABELS[NUM_LABELS] =      {0};
+	static const UINT CUEEVENT_L[NUM_LABELS] =     { TAG_EVENTLABEL, 0 };
+	static const UINT WAIT_L[NUM_LABELS] =         { TAG_WAITLABEL, 0 };
+	static const UINT WAITABS_L[NUM_LABELS] =      { TAG_WAITABSLABEL, 0 };
+	static const UINT SPEECH_L[NUM_LABELS] =       { TAG_DELAYLABEL, TAG_SPEAKERLABEL, TAG_MOODLABEL, TAG_TEXTLABEL,TAG_SOUNDNAME_LABEL, 0 };
+	static const UINT TEXT_L[NUM_LABELS] =         { TAG_TEXTLABEL, 0 };
+	static const UINT ORIENTATION_L[NUM_LABELS] =  { TAG_DIRECTIONLABEL, 0 };
+	static const UINT GOTO_L[NUM_LABELS] =         { TAG_GOTOLABEL, 0 };
+	static const UINT DISPSPEECH_L[NUM_LABELS] =   { TAG_DISPLAYSPEECHLABEL, 0};
+	static const UINT MUSIC_L[NUM_LABELS] =        { TAG_MUSICLABEL, 0 };
+	static const UINT MOVE_L[NUM_LABELS] =         { TAG_NOTURNING,	TAG_SINGLESTEP, 0};
+	static const UINT VARSET_L[NUM_LABELS] =       { TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, 0};
+	static const UINT VARGET_L[NUM_LABELS] =       { TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, 0};
+	static const UINT CUTSCENE_L[NUM_LABELS] =     { TAG_CUTSCENELABEL, 0 };
+	static const UINT MOVEREL_L[NUM_LABELS] =      { TAG_NOTURNING, TAG_SINGLESTEP, TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, 0 };
+	static const UINT LOOPSOUND_L[NUM_LABELS] =    { TAG_LOOPSOUND, 0 };
+	static const UINT XY_L[NUM_LABELS] =           { TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, 0 };
+	static const UINT SKIPENTRANCE_L[NUM_LABELS] = { TAG_SKIPENTRANCELABEL, 0 };
+	static const UINT NEWENTITY_L[NUM_LABELS] =    { TAG_DIRECTIONLABEL2, 0 };
+	static const UINT EFFECT_L[NUM_LABELS] =       { TAG_SOUNDEFFECTLABEL, 0 };
+	static const UINT MAP_L[NUM_LABELS] =          { TAG_ROOMREVEALLABEL, 0 };
 
-	static const bool* activeLabels[CCharacterCommand::CC_Count] = {
+	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
 		NO_LABELS,
 		MOVE_L,
@@ -4592,13 +4592,24 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	{
 		CWidget *pWidget = this->pAddCommandDialog->GetWidget(widgetTag[wIndex]);
 		ASSERT(pWidget);
-		pWidget->Show(activeWidgets[dwSelectedItem][wIndex]);
+		pWidget->Hide();
 	}
+	for (const UINT* widgets = activeWidgets[dwSelectedItem]; *widgets; ++widgets) {
+		CWidget* pWidget = this->pAddCommandDialog->GetWidget(*widgets);
+		ASSERT(pWidget);
+		pWidget->Show();
+	}
+
 	for (wIndex=0; wIndex<NUM_LABELS; ++wIndex)
 	{
 		CWidget *pWidget = this->pAddCommandDialog->GetWidget(labelTag[wIndex]);
 		ASSERT(pWidget);
-		pWidget->Show(activeLabels[dwSelectedItem][wIndex]);
+		pWidget->Hide();
+	}
+	for (const UINT* labels = activeLabels[dwSelectedItem]; *labels; ++labels) {
+		CWidget* pWidget = this->pAddCommandDialog->GetWidget(*labels);
+		ASSERT(pWidget);
+		pWidget->Show();
 	}
 
 	//Set name of loaded sound file, if any.
@@ -4614,6 +4625,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 			this->pAddCommandDialog->GetWidget(TAG_SOUNDNAME_LABEL));
 	ASSERT(pSoundName);
 	pSoundName->SetText(this->pSound ? this->pSound->DataNameText.c_str() : wszEmpty);
+
+	//Prevent smart labels being used in Each Event commands
+	UpdateSmartGotoList(
+		!CCharacterCommand::IsEachEventCommand((CCharacterCommand::CharCommand)dwSelectedItem));
 }
 
 //*****************************************************************************
@@ -5840,6 +5855,25 @@ void CCharacterDialogWidget::UpdateCharacter()
 	ClearPasteBuffer();
 	this->pCharacter = NULL;
 	this->pCommand = NULL;
+}
+
+void CCharacterDialogWidget::UpdateSmartGotoList(bool bActivate)
+{
+	if (bActivate) {
+		if (this->pGotoLabelListBox->GetLineWithKey(ScriptFlag::GotoSmartType::PreviousIf) == -1)
+			this->pGotoLabelListBox->AddItem(
+				ScriptFlag::GotoSmartType::PreviousIf,
+				g_pTheDB->GetMessageText(MID_PreviousIf));
+		
+		if (this->pGotoLabelListBox->GetLineWithKey(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition) == -1)
+			this->pGotoLabelListBox->AddItem(
+				ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition,
+				g_pTheDB->GetMessageText(MID_NextElseOrElseIfSkip));
+	}
+	else {
+		this->pGotoLabelListBox->RemoveItem(ScriptFlag::GotoSmartType::PreviousIf);
+		this->pGotoLabelListBox->RemoveItem(ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition);
+	}
 }
 
 //

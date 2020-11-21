@@ -257,6 +257,8 @@ public:
 	UINT x, y, w, h, flags;
 	WSTRING label;    //goto identifier
 	CDbSpeech *pSpeech;
+
+	static bool IsEachEventCommand(CharCommand command);
 };
 
 typedef std::vector<CCharacterCommand> COMMAND_VECTOR;

@@ -45,6 +45,22 @@ void CCharacterCommand::swap(CCharacterCommand &that) {
 }
 
 //*****************************************************************************
+bool CCharacterCommand::IsEachEventCommand(CharCommand command)
+{
+	switch (command) {
+		case CCharacterCommand::CC_EachAttack:
+		case CCharacterCommand::CC_EachDefend:
+		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
+			return true;
+		default:
+			return false;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool addWithClamp(int& val, const int operand)
 //Multiplies two integers, ensuring the product doesn't overflow.
 //
