@@ -41,6 +41,21 @@
 #define BG_SURFACE      (0)
 #define PARTS_SURFACE   (1)
 
+static const UINT CX_LEFT_SIGN = 65;
+static const UINT CX_MIDDLE_SIGN = 36;
+static const UINT CX_RIGHT_SIGN = 68;
+static const UINT CY_SIGN = 36;
+static const int X_LEFT_SIGN_SRC = 1;
+static const int X_MIDDLE_SIGN_SRC = 69;
+static const int X_RIGHT_SIGN_SRC = 118;
+static const int Y_SIGN_SRC = 384;
+static const int X_SIGN = 163 + 44 * 3;
+static const int Y_SIGN = 2;
+static const UINT CX_SIGN = 1018 - X_SIGN;
+static SDL_Rect LeftSignSource = { X_LEFT_SIGN_SRC, Y_SIGN_SRC, CX_LEFT_SIGN, CY_SIGN };
+static SDL_Rect MiddleSignSource = { X_MIDDLE_SIGN_SRC, Y_SIGN_SRC, CX_MIDDLE_SIGN, CY_SIGN };
+static SDL_Rect RightSignSource = { X_RIGHT_SIGN_SRC, Y_SIGN_SRC, CX_RIGHT_SIGN, CY_SIGN };
+
 //*****************************************************************************
 CRoomScreen::CRoomScreen(
 //Base constructor.
@@ -301,24 +316,18 @@ void CRoomScreen::PaintScroll(const bool bUpdateRect) //[default=true]
 }
 
 //*****************************************************************************
+SDL_Rect& CRoomScreen::GetEntireSignRect() const
+{
+	static SDL_Rect EntireSign = { X_SIGN, Y_SIGN, CX_SIGN, CY_SIGN };
+
+	return EntireSign;
+}
+
+//*****************************************************************************
 void CRoomScreen::PaintSign()
 //Paint the sign.
 {
-	static const UINT CX_LEFT_SIGN = 65;
-	static const UINT CX_MIDDLE_SIGN = 36;
-	static const UINT CX_RIGHT_SIGN = 68;
-	static const UINT CY_SIGN = 36;
-	static const int X_LEFT_SIGN_SRC = 1;
-	static const int X_MIDDLE_SIGN_SRC = 69;
-	static const int X_RIGHT_SIGN_SRC = 118;
-	static const int Y_SIGN_SRC = 384;
-	static const int X_SIGN = 163 + 44*3;
-	static const int Y_SIGN = 2;
-	static const UINT CX_SIGN = 1018 - X_SIGN;
-	static SDL_Rect LeftSignSource = {X_LEFT_SIGN_SRC, Y_SIGN_SRC, CX_LEFT_SIGN, CY_SIGN};
-	static SDL_Rect MiddleSignSource = {X_MIDDLE_SIGN_SRC, Y_SIGN_SRC, CX_MIDDLE_SIGN, CY_SIGN};
-	static SDL_Rect RightSignSource = {X_RIGHT_SIGN_SRC, Y_SIGN_SRC, CX_RIGHT_SIGN, CY_SIGN};
-	static SDL_Rect EntireSign = {X_SIGN, Y_SIGN, CX_SIGN, CY_SIGN};
+	SDL_Rect& EntireSign = GetEntireSignRect();
 
 	ASSERT(this->images[BG_SURFACE]);
 	ASSERT(this->images[PARTS_SURFACE]);

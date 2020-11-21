@@ -127,6 +127,7 @@ const UINT TAG_CHATENABLE = 1035;
 const UINT TAG_CHATWHISPERSONLY = 1036;
 const UINT TAG_CHATINPUT = 1037;
 const UINT TAG_CHATUSERS = 1038;
+const UINT TAG_SIGN_AREA = 1039;
 
 const UINT TAG_UNDO = 1040;
 const UINT TAG_ROT_CW = 1041;
@@ -1177,6 +1178,12 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel->SetClickable(true);
 		AddWidget(pLabel);
 */
+		const SDL_Rect& EntireSign = GetEntireSignRect();
+		CLabelWidget *pLabel = new CLabelWidget(TAG_SIGN_AREA,
+			EntireSign.x, EntireSign.y, EntireSign.w, EntireSign.h, F_Button, wszEmpty);
+		pLabel->SetClickable(true);
+		AddWidget(pLabel);
+
 		CButtonWidget *pButton;
 		pButton = new CButtonWidget(TAG_ESC, X_ESC, Y_ESC, CX_ESC, CY_ESC,
 				g_pTheDB->GetMessageText(MID_EscMenu));
@@ -1235,7 +1242,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		this->pMenuDialog->Hide();
 		AddWidget(this->pMenuDialog);
 
-		CLabelWidget *pLabel = new CLabelWidget(TAG_MENUPROMPT, X_TEXT, Y_TEXT,
+		pLabel = new CLabelWidget(TAG_MENUPROMPT, X_TEXT, Y_TEXT,
 				CX_TEXT, CY_TEXT, FONTLIB::F_Message, wszEmpty);
 		this->pMenuDialog->AddWidget(pLabel);
 
@@ -1734,7 +1741,7 @@ void CGameScreen::DrawCurrentTurn()
 	this->pFaceWidget->Paint();
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 	this->pMapWidget->RequestPaint();
-	SynchScroll();
+	UpdateScroll();
 	PaintClock();
 
 	RedrawStats(this->pCurrentGame->pCombat, true);
@@ -2180,8 +2187,7 @@ void CGameScreen::OnBetweenEvents()
 		if ((this->pCurrentGame->dwCutScene != 0) != this->bShowingCutScene)
 		{
 			this->bShowingCutScene = (this->pCurrentGame->dwCutScene != 0);
-			SetSignTextToCurrentRoom();
-			PaintSign();
+			UpdateSign();
 		}
 
 		//Combat must be resolved before any questions can be answered.
@@ -2530,6 +2536,22 @@ void CGameScreen::OnClick(
 			ClickOnEquipment(CMD_USE_ACCESSORY, RightMouseButton());
 		return;
 
+		case TAG_SIGN_AREA:
+			//When custom room location text is displayed,
+			//clicking on it will display a tooltip with the standard room location text.
+			if (this->pCurrentGame && !this->pCurrentGame->customRoomLocationText.empty())
+			{
+				ASSERT(this->pCurrentGame->pRoom);
+
+				WSTRING wstrSignText = (const WCHAR*)this->pCurrentGame->pLevel->NameText;
+				wstrSignText += wszColon;
+				wstrSignText += wszSpace;
+				this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
+
+				ShowToolTip(wstrSignText.c_str());
+			}
+			break;
+
 		default: break;
 	}
 }
@@ -2773,8 +2795,7 @@ void CGameScreen::OnKeyDown(
 			{
 				//End recording and save demo.
 				const UINT dwTagNo = this->pCurrentGame->EndDemoRecording();
-				SetSignTextToCurrentRoom();
-				PaintSign();
+				UpdateSign();
 
 				if (!dwTagNo)
 					ShowOkMessage(MID_DemoNotSaved);
@@ -2792,8 +2813,7 @@ void CGameScreen::OnKeyDown(
 							wszEmpty : wstrDescription.c_str() );
 
 					//Repaint sign to show new recording status.
-					SetSignTextToCurrentRoom();
-					PaintSign();
+					UpdateSign();
 				}
 			}
 		break;
@@ -2955,6 +2975,11 @@ void CGameScreen::OnMouseDown(
 		case TAG_UNDO:
 		case TAG_LOAD:	case TAG_SAVE:
 		case TAG_ROT_CW: case TAG_ROT_CCW:
+		break;
+
+		case TAG_SIGN_AREA:
+			if (this->pCurrentGame && !this->pCurrentGame->customRoomLocationText.empty())
+				this->bNoMoveByCurrentMouseClick = true;
 		break;
 
 		default:
@@ -3285,21 +3310,26 @@ bool CGameScreen::SetForActivate()
 void CGameScreen::SetSignTextToCurrentRoom()
 //Set sign text to description of current room and repaint it.
 {
-	static const WCHAR wszSignSep[] = { We(':'),We(' '),We(0) };
-	WSTRING wstrSignText;
+	ASSERT(this->pCurrentGame);
 
-	wstrSignText += (const WCHAR *)this->pCurrentGame->pLevel->NameText;
+	WSTRING wstrSignText = this->pCurrentGame->customRoomLocationText;
+	if (wstrSignText.empty()) {
+		wstrSignText = (const WCHAR*)this->pCurrentGame->pLevel->NameText;
+	}
 	if (this->bShowingCutScene)
 	{
 		wstrSignText += wszSpace;
 		wstrSignText += (const WCHAR *) CDbMessageText(MID_PlayingCutScene);
 		this->signColor = Red;
 	} else {
-		ASSERT(this->pCurrentGame);
-		ASSERT(this->pCurrentGame->pRoom);
-		wstrSignText += wszSignSep;
-		this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
 		this->signColor = Black;
+
+		if (this->pCurrentGame->customRoomLocationText.empty()) {
+			ASSERT(this->pCurrentGame->pRoom);
+			wstrSignText += wszColon;
+			wstrSignText += wszSpace;
+			this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
+		}
 	}
 
 /*
@@ -4312,6 +4342,19 @@ void CGameScreen::TakeStepTowardQuickExit()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateSign()
+{
+	SetSignTextToCurrentRoom();
+	PaintSign();
+}
+
+void CGameScreen::UpdateScroll()
+{
+	SynchScroll();
+	PaintScroll();
+}
+
+//*****************************************************************************
 SCREENTYPE CGameScreen::LevelExit_OnKeydown(
 //Handles SDL_KEYDOWN events for the game screen when exiting level.
 //
@@ -5201,53 +5244,12 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	switch (nCommand)
 	{
 		case CMD_RESTART: //case CMD_RESTART_PARTIAL: case CMD_RESTART_FULL:
-		{
-			//Restart the room.
-/*
 			//Rewind moves to previous checkpoints or restart the room.
-			if (nCommand == CMD_RESTART_FULL)
-				this->pCurrentGame->RestartRoom(this->sCueEvents);
-			else if (nCommand == CMD_RESTART_PARTIAL)
-				this->pCurrentGame->RestartRoomFromLastDifferentCheckpoint(this->sCueEvents);
-			else
-				this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
-*/
-			const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
-
-			delete g_pPredictedCombat;
-			g_pPredictedCombat = NULL;
-
-			this->pCurrentGame->RestartRoom(this->sCueEvents);
-
-			this->pRoomWidget->RenderRoomLighting();
-			this->pRoomWidget->ResetForPaint();
-
-			//Refresh map.
-			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			if (nowMappedRooms.size() != mappedRooms.size() ||
-				roomPreviews.containsAny(mappedRooms)) //preview state could have changed for these rooms
-			{
-				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-			} else {
-				this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
-			}
-			this->pMapWidget->RequestPaint();
-
-			SetSignTextToCurrentRoom();
-			PaintSign();
-			this->pRoomWidget->ClearEffects();
-			StopAmbientSounds();
-			ClearSpeech();
 			g_pTheSound->StopAllSoundEffects(); //stop any game sounds that were playing
-			SetGameAmbience(true);
-			AmbientSoundSetup(); //determine what sounds should be playing now
-			SwirlEffect();
-//			this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
-			this->wUndoToTurn = this->pCurrentGame->wTurnNo;
+			RestartRoom(nCommand, this->sCueEvents);
+
 			if (GetScreenType() == SCR_Demo)
 				return SCR_Game; //can skip everything below
-		}
 		break;
 
 		case CMD_UNDO:
@@ -6236,8 +6238,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		//but before room restart so speech on room start can be retained
 
 		//Repaint the sign in case demo recording ended.
-		SetSignTextToCurrentRoom();
-		PaintSign();
+		UpdateSign();
 
 		ASSERT(!(this->pCurrentGame->bIsGameActive && bDeathNotUndone));
 		if (GetScreenType() == SCR_Demo)
@@ -6253,8 +6254,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					CFiles f;
 					f.AppendErrorLog("Failed to save a demo when recording ended.\r\n");
 				}
-				SetSignTextToCurrentRoom();
-				PaintSign();
+				UpdateSign();
 			}
 */
 /*
@@ -6284,7 +6284,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			if (nowMappedRooms.size() != mappedRooms.size())
 				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
 		}
-		SynchScroll();
+		UpdateScroll();
 		RedrawStats(this->pCurrentGame->pCombat, true);
 		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 		this->pMapWidget->RequestPaint();
@@ -6333,8 +6333,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pMapWidget->UpdateFromCurrentGame();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 			this->pMapWidget->RequestPaint();
-			SetSignTextToCurrentRoom();
-			PaintSign();
+			UpdateSign();
 			StopAmbientSounds();
 			ClearSpeech();
 			SetGameAmbience(true);
@@ -6396,6 +6395,23 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 
 	//Allow handling either before or after room is drawn.
 	ProcessMovieEvents(CueEvents);
+
+	//ensure texts aren't on top of each other
+	int numFlashingTexts = CueEvents.GetOccurrenceCount(CID_FlashingMessage);
+/*
+	if (bLevelComplete)
+		++numFlashingTexts;
+	if (bSecretFound)
+		++numFlashingTexts;
+	if (bHoldMastered)
+		++numFlashingTexts;
+*/
+	static const int CY_FLASHING_TEXT = 50;
+	int yFlashingTextOffset = (-numFlashingTexts / 2) * CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MAX = int(this->pRoomWidget->GetH()) / 2 - CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MIN = -Y_FLASHING_TEXT_MAX + CY_FLASHING_TEXT; //leave space at top for score ranking
+	if (yFlashingTextOffset < Y_FLASHING_TEXT_MIN)
+		yFlashingTextOffset = Y_FLASHING_TEXT_MIN;
 
 	if (CueEvents.HasOccurred(CID_InvalidAttackMove))
 	{
@@ -6579,6 +6595,27 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	if (CueEvents.HasOccurred(CID_Swordfight))
 		g_pTheSound->PlaySoundEffect(SEID_SWORDS);
 
+	if (CueEvents.HasOccurred(CID_RoomLocationTextUpdate))
+		UpdateSign();
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FlashingMessage);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		if (yFlashingTextOffset > Y_FLASHING_TEXT_MAX)
+			break; //no room to display
+
+		const CColorText* pColorText = DYN_CAST(const CColorText*, const CAttachableObject*, pObj);
+		const CDbMessageText* pText = pColorText->pText;
+		ASSERT((const WCHAR*)(*pText));
+		CFlashMessageEffect* pFlashText = new CFlashMessageEffect(
+			this->pRoomWidget, (const WCHAR*)(*pText), yFlashingTextOffset, 2000, 500);
+		pFlashText->SlowExpansion();
+		if (pColorText->customColor)
+			pFlashText->SetColor(pColorText->r, pColorText->g, pColorText->b);
+		this->pRoomWidget->AddLastLayerEffect(pFlashText);
+		yFlashingTextOffset += CY_FLASHING_TEXT;
+	}
+
 	//Process both before and after room is drawn.
 	if (!this->bPersistentEventsDrawn)
 		ProcessFuseBurningEvents(CueEvents);
@@ -6730,10 +6767,8 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom,
 					this->pCurrentGame->pRoom->mapMarker);
 			this->pMapWidget->RequestPaint();
-			SetSignTextToCurrentRoom();
-			PaintSign();
-			SynchScroll();
-			PaintScroll();
+			UpdateSign();
+			UpdateScroll();
 			UpdateSound();
 			ProcessSpeechCues(CueEvents);
 			PaintClock(true);
@@ -7588,6 +7623,64 @@ void CGameScreen::ReattachRetainedSubtitles()
 }
 
 //*****************************************************************************
+void CGameScreen::RestartRoom(int nCommand, CCueEvents& CueEvents)
+{
+	/*
+		//Rewind moves to previous checkpoints or restart the room.
+		if (nCommand == CMD_RESTART_FULL)
+			this->pCurrentGame->RestartRoom(this->sCueEvents);
+		else if (nCommand == CMD_RESTART_PARTIAL)
+			this->pCurrentGame->RestartRoomFromLastDifferentCheckpoint(this->sCueEvents);
+		else
+			this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
+	*/
+	const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
+	const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
+
+	delete g_pPredictedCombat;
+	g_pPredictedCombat = NULL;
+
+	this->pCurrentGame->RestartRoom(this->sCueEvents);
+
+	//	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
+	this->wUndoToTurn = this->pCurrentGame->wTurnNo;
+
+	bool bReloadEntireMap = roomPreviews.containsAny(mappedRooms); //preview state could have changed for these rooms
+	if (!bReloadEntireMap) {
+		const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
+		if (nowMappedRooms.size() != mappedRooms.size())
+			bReloadEntireMap = true;
+	}
+		
+	UpdateUIAfterRoomRestart(bReloadEntireMap);
+}
+
+void CGameScreen::UpdateUIAfterRoomRestart(const bool bReloadEntireMap) //[default=false]
+{
+	ClearSpeech();
+
+	StopAmbientSounds();
+	g_pTheSound->StopAllSoundEffects(); //stop any game sounds that were playing
+	SetGameAmbience(true);
+	AmbientSoundSetup(); //determine what sounds should be playing now
+
+	this->pRoomWidget->ClearEffects();
+	this->pRoomWidget->RenderRoomLighting();
+	this->pRoomWidget->ResetForPaint();
+
+	if (bReloadEntireMap) {
+		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+	} else {
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
+	}
+	this->pMapWidget->RequestPaint();
+
+	UpdateSign();
+
+	SwirlEffect();
+}
+
+//*****************************************************************************
 void CGameScreen::RetainSubtitleCleanup(const bool bVal) //[default=false]
 //After a move has been undone and currently playing speech and subtitles
 //have been successfully retained, unmark subtitle effects from being
@@ -7963,7 +8056,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 	this->pRoomWidget->Show();
 	this->pRoomWidget->LoadRoomImages();
 	this->pRoomWidget->UpdateFromCurrentGame();
-	SetSignTextToCurrentRoom();
+	UpdateSign();
 	Paint();
 
 	//Show a new room?
@@ -8354,10 +8447,6 @@ void CGameScreen::UndoMove()
 		this->pCurrentGame->UndoCommand(this->sCueEvents);
 	}
 
-	this->pRoomWidget->pRoom = this->pCurrentGame->pRoom; //synch
-	StopAmbientSounds();
-	ClearSpeech(false);  //retain speech that started before the previous turn
-
 /*
 	//Refresh game screen display info.
 	if (bRecordingDemo)
@@ -8366,24 +8455,37 @@ void CGameScreen::UndoMove()
 		{
 			//Don't show a long delay between last move and next move in the recorded demo.
 			this->pCurrentGame->Commands.ResetTimeOfLastAdd();
-		} else {
-			//Remove recording text.
-			SetSignTextToCurrentRoom();
-			PaintSign();
 		}
 	}
 */
+
+	//Refresh map if something changed by undoing.
+	bool bReloadEntireMap = previewedRooms.containsAny(exploredRooms); //these may have changed
+	if (!bReloadEntireMap) {
+		const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
+		const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
+		if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms)
+			bReloadEntireMap = true;
+	}
+
+	UpdateUIAfterMoveUndo(bReloadEntireMap);
+}
+
+void CGameScreen::UpdateUIAfterMoveUndo(bool bReloadEntireMap) //[default=false]
+{
+	this->pRoomWidget->pRoom = this->pCurrentGame->pRoom; //synch
+
+	StopAmbientSounds();
+	ClearSpeech(false);  //retain speech that started before the previous turn
+
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
 
+	UpdateSign();
+
 	ReattachRetainedSubtitles(); //after clearing effects, rejoin subtitles to current room objects
 
-	//Refresh map if something changed by undoing.
-	const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
-	const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
-	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms ||
-		previewedRooms.containsAny(exploredRooms)) //these may have changed
-	{
+	if (bReloadEntireMap) {
 		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
 	}
 

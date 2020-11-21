@@ -250,6 +250,8 @@ public:
 		CC_Return,              //Return to just after the previous CC_GoSub command executed.
 		CC_GoSub,               //Jumps script execution to the indicated label.
 		CC_EachVictory,         //Goto label X each time an enemy is defeated.
+		CC_RoomLocationText,    //Sets the room location text for the current room.
+		CC_FlashingText,        //Flashes a large message onscreen.  Use hex code RRGGBB color (x,y,w) when h is set.
 		CC_Count
 	};
 
@@ -259,6 +261,23 @@ public:
 	CDbSpeech *pSpeech;
 
 	static bool IsEachEventCommand(CharCommand command);
+};
+
+class CDbMessageText;
+class CColorText : public CAttachableObject
+{
+public:
+	CColorText(CDbMessageText* pText, int r, int g, int b, int customColor)
+		: CAttachableObject()
+		, pText(pText)
+		, r(r), g(g), b(b)
+		, customColor(customColor)
+	{ }
+	~CColorText();
+
+	CDbMessageText* pText;
+	int r, g, b;
+	int customColor;
 };
 
 typedef std::vector<CCharacterCommand> COMMAND_VECTOR;

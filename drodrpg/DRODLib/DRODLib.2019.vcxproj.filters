@@ -461,6 +461,7 @@
     <ClInclude Include="OrbUtil.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="..\Texts\MIDs.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VTune\DRODLib.vpj" />

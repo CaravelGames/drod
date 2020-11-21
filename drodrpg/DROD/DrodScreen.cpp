@@ -47,7 +47,9 @@
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/SettingsKeys.h"
+
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/FlashMessageEffect.h>
 #include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/ProgressBarWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
@@ -213,6 +215,14 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (!pRoomWidget)
 		return;
 	ASSERT(pGame);
+
+	const int numFlashingTexts = CueEvents.GetOccurrenceCount(CID_FlashingMessage);
+	static const int CY_FLASHING_TEXT = 50;
+	int yFlashingTextOffset = (-numFlashingTexts / 2) * CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MAX = int(pRoomWidget->GetH()) / 2 - CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MIN = -Y_FLASHING_TEXT_MAX + CY_FLASHING_TEXT; //leave space at top for score ranking
+	if (yFlashingTextOffset < Y_FLASHING_TEXT_MIN)
+		yFlashingTextOffset = Y_FLASHING_TEXT_MIN;
 
 	const CAttachableObject *pObj;
 
@@ -505,6 +515,24 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	{
 		const CMonster *pMonster = DYN_CAST(const CMonster*, const CAttachableObject*, pObj);
 		pRoomWidget->AddZombieGazeEffect(pMonster);
+	}
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FlashingMessage);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		if (yFlashingTextOffset > Y_FLASHING_TEXT_MAX)
+			break; //no room to display
+
+		const CColorText* pColorText = DYN_CAST(const CColorText*, const CAttachableObject*, pObj);
+		const CDbMessageText* pText = pColorText->pText;
+		ASSERT((const WCHAR*)(*pText));
+		CFlashMessageEffect* pFlashText = new CFlashMessageEffect(
+			pRoomWidget, (const WCHAR*)(*pText), yFlashingTextOffset, 2000, 500);
+		pFlashText->SlowExpansion();
+		if (pColorText->customColor)
+			pFlashText->SetColor(pColorText->r, pColorText->g, pColorText->b);
+		pRoomWidget->AddLastLayerEffect(pFlashText);
+		yFlashingTextOffset += CY_FLASHING_TEXT;
 	}
 
 	const bool bLightToggled = CueEvents.HasOccurred(CID_LightToggled);

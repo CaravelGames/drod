@@ -2715,7 +2715,33 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_RoomLocationText:
+			{
+				//Sets the room location text.
+				CDbSpeech* pSpeech = command.pSpeech;
+				ASSERT(pSpeech);
+				pGame->customRoomLocationText = pGame->ExpandText((const WCHAR*)pSpeech->MessageText, this);
+				CueEvents.Add(CID_RoomLocationTextUpdate);
 
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_FlashingText:
+			{
+				//Flashes a large message onscreen.  Use hex code RRGGBB color (x,y,w) when h is set.
+				getCommandRect(command, px, py, pw, ph);
+
+				CDbSpeech* pSpeech = command.pSpeech;
+				ASSERT(pSpeech);
+				const WSTRING text = pGame->ExpandText((const WCHAR*)pSpeech->MessageText, this);
+				CDbMessageText* pText = new CDbMessageText();
+				*pText = text.c_str();
+				CColorText* pColorText = new CColorText(pText, px, py, pw, ph);
+				CueEvents.Add(CID_FlashingMessage, pColorText, true);
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
 				//Defines a scoring point with identifier 'label'.

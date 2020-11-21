@@ -640,6 +640,16 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_ReceivedHP,
 
+	//Change to custom room location text.
+	//
+	//Private data: NONE
+	CID_RoomLocationTextUpdate,
+
+	//Change to custom room location text.
+	//
+	//Private data: CColorText* (one or more)
+	CID_FlashingMessage,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

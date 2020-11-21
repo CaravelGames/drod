@@ -1472,6 +1472,9 @@ enum MID_CONSTANT {
   MID_ReceivedATK = 1770,
   MID_ReceivedDEF = 1771,
   MID_ReceivedHP = 1772,
+  MID_RoomLocationText = 1789,
+  MID_FlashingMessage = 1790,
+  MID_ScriptColor = 1791,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
