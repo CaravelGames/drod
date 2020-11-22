@@ -185,6 +185,8 @@ private:
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
+	CTextBoxWidget* pSpeechText;
+	CListBoxWidget *pStatListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

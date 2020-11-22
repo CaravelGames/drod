@@ -165,6 +165,14 @@ namespace ScriptFlag
 		PreviousIf = -1,
 		NextElseOrElseIfSkipCondition = -2
 	};
+
+	enum StatType {
+		HP = 0,
+		ATK = 1,
+		DEF = 2,
+		GOLD = 3,
+		XP = 4
+	};
 };
 
 class CDbSpeech;
@@ -252,6 +260,7 @@ public:
 		CC_EachVictory,         //Goto label X each time an enemy is defeated.
 		CC_RoomLocationText,    //Sets the room location text for the current room.
 		CC_FlashingText,        //Flashes a large message onscreen.  Use hex code RRGGBB color (x,y,w) when h is set.
+		CC_SetMonsterVar,       //Sets monster at (x,y) attribute(w) to value (h).
 		CC_Count
 	};
 

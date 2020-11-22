@@ -1475,6 +1475,9 @@ enum MID_CONSTANT {
   MID_RoomLocationText = 1789,
   MID_FlashingMessage = 1790,
   MID_ScriptColor = 1791,
+  MID_SetMonsterVar = 1792,
+  MID_To = 1793,
+  MID_ValueOrExpression = 1794,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
