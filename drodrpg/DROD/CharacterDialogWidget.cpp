@@ -83,6 +83,8 @@ const UINT TAG_EQUIPMENTTYPE_LISTBOX = 968;
 const UINT TAG_CUSTOMNPC_LISTBOX = 967;
 const UINT TAG_EQUIPTRANS_LISTBOX = 966;
 const UINT TAG_DIRECTIONLISTBOX2 = 965;
+const UINT TAG_STATLISTBOX = 964;
+const UINT TAG_VALUE_OR_EXPRESSION = 963;
 
 const UINT TAG_EVENTLABEL = 959;
 const UINT TAG_WAITLABEL = 958;
@@ -372,6 +374,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pEquipmentTypesListBox(NULL), pCustomNPCListBox(NULL), pEquipTransListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
+	, pSpeechText(NULL)
+	, pStatListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1134,6 +1138,13 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_ONOFFLISTBOX3 = X_ONOFFLISTBOX;
 	static const int Y_ONOFFLISTBOX3 = Y_SOUNDEFFECTLABEL + CY_SOUNDEFFECTLABEL;
 
+	static const int X_STATLISTBOX = X_ONOFFLISTBOX;
+	static const int Y_STATLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE * 2;
+	static const UINT CX_STATLISTBOX = 200;
+	static const UINT CY_STATLISTBOX = 5 * 22 + 4;
+
+	static const UINT CX_VALUE_OR_EXPRESSION_LABEL = 300;
+
 	ASSERT(!this->pAddCommandDialog);
 	this->pAddCommandDialog = new CRenameDialogWidget(0L, -80, GetY() + (GetH()-CY_COMMAND_DIALOG)/2,
 			CX_COMMAND_DIALOG, CY_COMMAND_DIALOG);
@@ -1186,9 +1197,9 @@ void CCharacterDialogWidget::AddCommandDialog()
 	//Speech dialog.
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_TEXTLABEL, X_TEXTLABEL,
 			Y_TEXTLABEL, CX_TEXTLABEL, CY_TEXTLABEL, F_Small, g_pTheDB->GetMessageText(MID_DialogText)));
-	CTextBoxWidget *pDialogue = new CTextBoxWidget(TAG_SPEECHTEXT, X_TEXT, Y_TEXT,
+	this->pSpeechText = new CTextBoxWidget(TAG_SPEECHTEXT, X_TEXT, Y_TEXT,
 			CX_TEXT, CY_TEXT, 1024);
-	this->pAddCommandDialog->AddWidget(pDialogue);
+	this->pAddCommandDialog->AddWidget(this->pSpeechText);
 
 	//Sound clip.
 	CButtonWidget *pAddSoundButton = new CButtonWidget(TAG_ADDSOUND, X_ADDSOUND,
@@ -1581,6 +1592,20 @@ void CCharacterDialogWidget::AddCommandDialog()
 	CTextBoxWidget* pText2 = new CTextBoxWidget(TAG_TEXT2, X_TEXT2, Y_TEXT2,
 		CX_TEXT2, CY_TEXT2, 6);
 	this->pAddCommandDialog->AddWidget(pText2);
+
+	//Stat list box.
+	this->pStatListBox = new CListBoxWidget(TAG_STATLISTBOX,
+		X_STATLISTBOX, Y_STATLISTBOX, CX_STATLISTBOX, CY_STATLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pStatListBox);
+	this->pStatListBox->AddItem(ScriptFlag::HP, g_pTheDB->GetMessageText(MID_MonsterHP));
+	this->pStatListBox->AddItem(ScriptFlag::ATK, g_pTheDB->GetMessageText(MID_ATKStat));
+	this->pStatListBox->AddItem(ScriptFlag::DEF, g_pTheDB->GetMessageText(MID_DEFStat));
+	this->pStatListBox->AddItem(ScriptFlag::GOLD, g_pTheDB->GetMessageText(MID_GRStat));
+	this->pStatListBox->AddItem(ScriptFlag::XP, g_pTheDB->GetMessageText(MID_XPStat));
+	this->pStatListBox->SelectLine(0);
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VALUE_OR_EXPRESSION, X_TEXTLABEL,
+		Y_TEXTLABEL, CX_VALUE_OR_EXPRESSION_LABEL, CY_TEXTLABEL, F_Small, g_pTheDB->GetMessageText(MID_ValueOrExpression)));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3475,6 +3500,28 @@ const
 				wstr += g_pTheDB->GetMessageText(MID_Off);
 		break;
 
+		case CCharacterCommand::CC_SetMonsterVar:
+		{
+			WSTRING statName = this->pStatListBox->GetTextForKey(command.w);
+			wstr += statName.length() ? statName : wszQuestionMark;
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_To);
+			wstr += wszSpace;
+			if (!command.label.empty())
+				wstr += command.label;
+			else
+				wstr += _itoW(command.h, temp, 10);
+		}
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -3734,6 +3781,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerSword, g_pTheDB->GetMessageText(MID_SetPlayerSword));
@@ -4428,7 +4476,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 36;
+	static const UINT NUM_WIDGETS = 37;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4441,7 +4489,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX,
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
-		TAG_TEXT2
+		TAG_TEXT2, TAG_STATLISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -4470,6 +4518,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT EQUIPMENT[] =   { TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX, 0};
 	static const UINT NEWENTITY[] =   { TAG_GRAPHICLISTBOX2, TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT EFFECT[] =      { TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3, 0 };
+	static const UINT STATSET[] =     { TAG_STATLISTBOX, TAG_SPEECHTEXT, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -4540,10 +4589,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		GOTOLIST,           //CC_GoSub
 		GOTOLIST,           //CC_EachVictory
 		TEXTBOX,            //CC_RoomLocationText
-		TEXT_AND_COLOR      //CC_FlashingText
+		TEXT_AND_COLOR,     //CC_FlashingText
+		STATSET             //CC_SetMonsterVar
 	};
 
-	static const UINT NUM_LABELS = 25;
+	static const UINT NUM_LABELS = 26;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -4551,7 +4601,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_SINGLESTEP, TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, TAG_CUTSCENELABEL,
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
-		TAG_COLOR_LABEL
+		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -4576,6 +4626,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT NEWENTITY_L[NUM_LABELS] =    { TAG_DIRECTIONLABEL2, 0 };
 	static const UINT EFFECT_L[NUM_LABELS] =       { TAG_SOUNDEFFECTLABEL, 0 };
 	static const UINT MAP_L[NUM_LABELS] =          { TAG_ROOMREVEALLABEL, 0 };
+	static const UINT STAT_L[NUM_LABELS] =         { TAG_VALUE_OR_EXPRESSION, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -4646,7 +4697,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_GoSub
 		NO_LABELS,          //CC_EachVictory
 		TEXT_L,             //CC_RoomLocationText
-		TEXT_AND_COLOR_L    //CC_FlashingText
+		TEXT_AND_COLOR_L,   //CC_FlashingText
+		STAT_L              //CC_SetMonsterVar
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -4656,10 +4708,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		CListBoxWidget *pFlags = DYN_CAST(CListBoxWidget*, CWidget*,
 				this->pAddCommandDialog->GetWidget(TAG_WAITFLAGSLISTBOX));
 		pFlags->DeselectAll();
-		CTextBoxWidget *pDialogue = DYN_CAST(CTextBoxWidget*, CWidget*,
-				this->pAddCommandDialog->GetWidget(TAG_SPEECHTEXT));
-		pDialogue->SetText(wszEmpty);
-		pDialogue = DYN_CAST(CTextBoxWidget*, CWidget*,
+		this->pSpeechText->SetText(wszEmpty);
+		CTextBoxWidget* pDialogue = DYN_CAST(CTextBoxWidget*, CWidget*,
 				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
 		pDialogue->SetText(wszEmpty);
 		CListBoxWidget *pMood = DYN_CAST(CListBoxWidget*, CWidget*,
@@ -5196,9 +5246,6 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			CListBoxWidget *pMood = DYN_CAST(CListBoxWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_MOODLISTBOX));
 			ASSERT(pMood);
-			CTextBoxWidget *pDialogue = DYN_CAST(CTextBoxWidget*, CWidget*,
-					this->pAddCommandDialog->GetWidget(TAG_SPEECHTEXT));
-			ASSERT(pDialogue);
 
 			if (!this->pCommand->pSpeech)
 				this->pCommand->pSpeech = g_pTheDB->Speech.GetNew();
@@ -5206,8 +5253,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->pSpeech->wCharacter = this->pSpeakerListBox->GetSelectedItem();
 			this->pCommand->pSpeech->wMood = pMood->GetSelectedItem();
 			const bool bTextWasModified = this->bEditingCommand && WCScmp(
-					(const WCHAR*)this->pCommand->pSpeech->MessageText, pDialogue->GetText()) != 0;
-			this->pCommand->pSpeech->MessageText = pDialogue->GetText();
+					(const WCHAR*)this->pCommand->pSpeech->MessageText, this->pSpeechText->GetText()) != 0;
+			this->pCommand->pSpeech->MessageText = this->pSpeechText->GetText();
 
 			//Import sound clip, if desired.
 			if (this->pSound)
@@ -5476,6 +5523,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 					this->pCommand->w = _Wtoi(pOperandText);
 					this->pCommand->label.resize(0);
 				} else {
+					this->pCommand->w = 0;
 					this->pCommand->label = pOperandText;
 				}
 			}
@@ -5494,6 +5542,26 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->w = this->pDirectionListBox2->GetSelectedItem();
 			this->pCommand->h = this->pPlayerGraphicListBox->GetSelectedItem();
 			QueryXY();
+		break;
+
+		case CCharacterCommand::CC_SetMonsterVar:
+		{
+			const WCHAR* pOperandText = this->pSpeechText->GetText();
+			ASSERT(pOperandText);
+
+			//Is operand just a number or is it a more complex expression?
+			if (isWInteger(pOperandText))
+			{
+				this->pCommand->h = _Wtoi(pOperandText);
+				this->pCommand->label.resize(0);
+			} else {
+				this->pCommand->h = 0;
+				this->pCommand->label = pOperandText;
+			}
+
+			this->pCommand->w = this->pStatListBox->GetSelectedItem();
+			QueryXY();
+		}
 		break;
 
 		case CCharacterCommand::CC_CutScene:
@@ -5680,9 +5748,6 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			CTextBoxWidget *pDelay = DYN_CAST(CTextBoxWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_DELAY));
 			ASSERT(pDelay);
-			CTextBoxWidget *pDialogue = DYN_CAST(CTextBoxWidget*, CWidget*,
-					this->pAddCommandDialog->GetWidget(TAG_SPEECHTEXT));
-			ASSERT(pDialogue);
 
 			CDbSpeech *pSpeech = this->pCommand->pSpeech;
 			ASSERT(pSpeech);
@@ -5691,7 +5756,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 				pDelay->SetText(_itoW(pSpeech->dwDelay, temp, 10));
 				this->pSpeakerListBox->SelectItem(pSpeech->wCharacter);
 				this->pMoodListBox->SelectItem(pSpeech->wMood);
-				pDialogue->SetText((const WCHAR*)pSpeech->MessageText);
+				this->pSpeechText->SetText((const WCHAR*)pSpeech->MessageText);
 
 				this->pSound = (CDbDatum*)pSpeech->GetSound(); //loads sound clip from DB
 			}
@@ -5816,6 +5881,18 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_GenerateEntity:
 			this->pDirectionListBox2->SelectItem(this->pCommand->w);
 			this->pPlayerGraphicListBox->SelectItem(this->pCommand->h);
+		break;
+
+		case CCharacterCommand::CC_SetMonsterVar:
+		{
+			this->pStatListBox->SelectItem(this->pCommand->w);
+
+			//Expression or an integer.
+			if (!this->pCommand->label.empty())
+				this->pSpeechText->SetText(this->pCommand->label.c_str());
+			else
+				this->pSpeechText->SetText(_itoW(this->pCommand->h, temp, 10));
+		}
 		break;
 
 		case CCharacterCommand::CC_CutScene:
@@ -6405,6 +6482,17 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseMandatoryOption(pCommand->w,this->pDirectionListBox2,bFound);
 	break;
 
+	case CCharacterCommand::CC_SetMonsterVar:
+		parseMandatoryOption(pCommand->w, this->pStatListBox, bFound);
+		skipComma;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+		if (isWInteger(pText + pos))
+			pCommand->w = _Wtoi(pText + pos); //get number
+		else
+			pCommand->label = pText + pos; //get text expression
+	break;
+
 	case CCharacterCommand::CC_SetMusic:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
@@ -6844,6 +6932,20 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		wstr += this->pDirectionListBox2->GetTextForKey(c.w);
+	}
+	break;
+
+	case CCharacterCommand::CC_SetMonsterVar:
+	{
+		WSTRING statName = this->pStatListBox->GetTextForKey(c.w);
+		wstr += statName.length() ? statName : wszQuestionMark;
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		if (!c.label.empty())
+			wstr += c.label;
+		else
+			concatNum(c.h);
 	}
 	break;
 

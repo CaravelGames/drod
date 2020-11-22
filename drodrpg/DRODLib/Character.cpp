@@ -824,6 +824,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_Speech:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -875,6 +876,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_Speech:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -927,6 +929,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_ActivateItemAt:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
@@ -2698,6 +2701,37 @@ void CCharacter::Process(
 
 				bProcessNextCommand = true;
 			}
+			break;
+
+			case CCharacterCommand::CC_SetMonsterVar:
+				//Sets monster at (x,y) attribute(w) to value (h).
+				//No effects accompany this command.
+				//It's intended to operate invisibly.
+				{
+					getCommandRect(command, px, py, pw, ph);
+
+					CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+					if (pMonster) {
+						int nValue = int(ph); //expect an integer value by default
+						if (!nValue && !command.label.empty())
+						{
+							//Operand is not just an integer, but a text expression.
+							UINT index = 0;
+							nValue = parseExpression(command.label.c_str(), index, pGame, this);
+						}
+						const UINT value = UINT(nValue > 0 ? nValue : 0); //support only non-negative values
+
+						switch (pw) {
+							case ScriptFlag::HP: pMonster->HP = max(1, value); break; //cannot kill monster via this command
+							case ScriptFlag::ATK: pMonster->ATK = value; break;
+							case ScriptFlag::DEF: pMonster->DEF = value; break;
+							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
+							case ScriptFlag::XP: pMonster->XP = value; break;
+							default: break; //do nothing
+						}
+					}
+				}
+				bProcessNextCommand = true;
 			break;
 
 			case CCharacterCommand::CC_GameEffect:

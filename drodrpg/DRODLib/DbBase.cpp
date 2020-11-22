@@ -717,6 +717,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_RoomLocationText: strText = "Room location text"; break;
 		case MID_FlashingMessage: strText = "Flashing message"; break;
 		case MID_ScriptColor: strText = "Color(hex: rrggbb)"; break;
+		case MID_SetMonsterVar: strText = "Set monster var"; break;
+		case MID_To: strText = "to"; break;
+		case MID_ValueOrExpression: strText = "Value or expression"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
