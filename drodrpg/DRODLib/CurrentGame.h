@@ -368,9 +368,9 @@ public:
 //	bool     bBrainSensesSwordsman;
 //	UINT     wLastCheckpointX, wLastCheckpointY;
 //	vector<UINT> checkpointTurns; //turn #s a checkpoint was activated
-	UINT    dwStartTime;   //keeps track of real play time elapsed
+	UINT     dwStartTime;   //keeps track of real play time elapsed
 //	bool     bHoldMastered; //whether player has mastered hold being played
-	UINT    dwCutScene;    //if set, play cut scene moves at specified rate
+	UINT     dwCutScene;    //if set, play cut scene moves at specified rate
 	bool     bContinueCutScene;
 //	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
@@ -465,6 +465,7 @@ private:
 //	UINT    dwAutoSaveOptions;
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 
+	bool     bRoomDisplayOnly; //indicates player is not in room and no player interaction should be processed
 	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	bool     bValidatingPlayback; //for streamlining parts of the playback process
 

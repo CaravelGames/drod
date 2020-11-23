@@ -161,6 +161,7 @@ CCurrentGame::CCurrentGame()
 	, pCombat(NULL)
 //	, pSnapshotGame(NULL)
 	, pPendingPriorLocation(NULL)
+	, bRoomDisplayOnly(false)
 	, bNoSaves(false) // Clear() does not set this
 	, bValidatingPlayback(false)
 {
@@ -5041,6 +5042,8 @@ void CCurrentGame::ProcessPlayer(
 							//    be aware of by looking at the modified game
 							//    data on return.
 {
+	ASSERT(!this->bRoomDisplayOnly);
+
 	CSwordsman& p = *this->pPlayer; //shorthand
 	bool bMoved = false;
 	const UINT wOldX = p.wX;
@@ -6358,6 +6361,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 
 //	this->dwAutoSaveOptions = Src.dwAutoSaveOptions;
 	this->CompletedScriptsPending = Src.CompletedScriptsPending;
+	this->bRoomDisplayOnly = Src.bRoomDisplayOnly;
 	this->bNoSaves = Src.bNoSaves;
 	this->bValidatingPlayback = Src.bValidatingPlayback;
 
@@ -6493,8 +6497,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	if (bResetCommands && !this->Commands.IsFrozen())
 		this->Commands.Clear();
 
-	//Player should always be visible if no cut scene is playing.
-	if (!this->pPlayer->IsInRoom() && !this->dwCutScene) {
+	//Player should always be visible if no cut scene is playing during normal play.
+	if (!this->pPlayer->IsInRoom() && !this->dwCutScene && !this->bRoomDisplayOnly) {
 		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
 		if (!bProcessedPlayerWait)
 			ProcessPlayer(CMD_WAIT, CueEvents);
@@ -7253,7 +7257,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 			pPlayer->Update();
 		}
 	}
-   delete pPlayer;
+	delete pPlayer;
 	return this->dwSavedGameID;
 }
 
@@ -7261,6 +7265,8 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 //Returns: whether prep operation succeeded
 bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 {
+	this->bRoomDisplayOnly = true;
+
 	SaveExploredRoomData(*this->pRoom); //so current room can be viewed while panning the map
 
 	this->pPlayer->wIdentity = this->pPlayer->wAppearance = M_NONE; //not in room
