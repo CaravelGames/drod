@@ -1472,7 +1472,9 @@ bool IsAppAlreadyRunning()
 	tmp += dotpid;
 	const UINT lflen = tmp.length();
 	if (!(lockfile = new char[lflen + 1])) return true;
-	UnicodeToUTF8(tmp, lockfile);
+	string lockfileString;
+	UnicodeToUTF8(tmp, lockfileString);
+	strcpy(lockfile, lockfileString.c_str());
 
 	// Try opening an existing lockfile first
 	FILE *fp = fopen(lockfile, "r");
