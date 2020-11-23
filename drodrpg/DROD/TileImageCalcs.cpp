@@ -1588,8 +1588,8 @@ UINT CalcTileImageFor(
 			switch (pOrb->eType)
 			{
 				case OT_NORMAL: return TI_ORB_D;
-//				case OT_ONEUSE: return TI_ORB_CRACKING; //not used in RPG
-//				case OT_BROKEN: return TI_ORB_CRACKED;
+				case OT_ONEUSE: return TI_ORB_CRACKING;
+				case OT_BROKEN: return TI_ORB_CRACKED;
 				default: ASSERT(!"Unexpected orb type."); break;
 			}
 		}

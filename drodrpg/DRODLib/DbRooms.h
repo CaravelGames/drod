@@ -151,6 +151,8 @@ public:
 
 	//Uniform way of accessing 2D information in 1D array (column-major).
 	inline UINT    ARRAYINDEX(const UINT x, const UINT y) const {return (y * this->wRoomCols) + x;}
+	inline UINT    ROOMINDEX_TO_X(const UINT index) const { return index % this->wRoomCols; }
+	inline UINT    ROOMINDEX_TO_Y(const UINT index) const { return index / this->wRoomCols; }
 
 	void           ActivateOrb(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const OrbActivationType eActivationType);
@@ -430,7 +432,7 @@ private:
 	bool           NewTarWouldBeStable(const vector<tartype> &addedTar, const UINT tx, const UINT ty);
 	void           ObstacleFill(CCoordIndex& obstacles);
 	void           OpenDoor(const UINT wX, const UINT wY);
-	c4_Bytes *     PackSquares() const;
+	c4_Bytes *     PackSquares(const bool bSaveGameData=false) const;
 	c4_Bytes *     PackTileLights() const;
 	void           ReevalBriarNear(const UINT wX, const UINT wY, const UINT wTileNo);
 	void           ReflectSquare(const bool bHoriz, UINT &wSquare) const;

@@ -6637,7 +6637,6 @@ void CEditRoomScreen::RotateClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6647,7 +6646,6 @@ void CEditRoomScreen::RotateClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
@@ -6757,7 +6755,6 @@ void CEditRoomScreen::RotateCounterClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6767,7 +6764,6 @@ void CEditRoomScreen::RotateCounterClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
@@ -7886,8 +7882,8 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			switch (this->wSelOrbType)
 			{
 				case OT_NORMAL: wTileI = TI_ORB_D; break;
-//				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break; //not used in RPG
-//				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;  //not used in RPG
+				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break;
+				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;
 				default: ASSERT(!"Bad orb type"); break;
 			}
 			pObjectMenu->SetObjectTiles(wTile, 1, 1, &wTileI);

@@ -650,6 +650,11 @@ enum CUEEVENT_ID
 	//Private data: CColorText* (one or more)
 	CID_FlashingMessage,
 
+	//An orb was damaged (and not activated).
+	//
+	//Private data: COrbData *pOrbData (none, one or more)
+	CID_OrbDamaged,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

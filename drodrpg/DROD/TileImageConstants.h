@@ -2326,7 +2326,10 @@
 #define TI_DEF_UP10       2152
 #define TI_CRATE          2153
 
-static const UINT TI_COUNT = 2154;
+#define TI_ORB_CRACKING   2154
+#define TI_ORB_CRACKED    2155
+
+static const UINT TI_COUNT = 2156;
 
 static inline bool bIsBriarTI(const UINT ti)
 {
