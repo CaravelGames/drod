@@ -5250,6 +5250,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 					this->pCommand->w = _Wtoi(pOperandText);
 					this->pCommand->label.resize(0);
 				} else {
+					this->pCommand->w = 0;
 					this->pCommand->label = pOperandText;
 				}
 			}
