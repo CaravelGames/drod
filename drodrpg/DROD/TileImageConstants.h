@@ -2329,7 +2329,57 @@
 #define TI_ORB_CRACKING   2154
 #define TI_ORB_CRACKED    2155
 
-static const UINT TI_COUNT = 2156;
+//Full One Use PP Tiles
+#define TI_PPB            2156
+#define TI_PPB_E          2157
+#define TI_PPB_WE         2158
+#define TI_PPB_W          2159
+#define TI_PPB_S          2160
+#define TI_PPB_SE         2161
+#define TI_PPB_SWE        2162
+#define TI_PPB_SW         2163
+#define TI_PPB_NS         2164
+#define TI_PPB_NSE        2165
+#define TI_PPB_NSWE       2166
+#define TI_PPB_NSW        2167
+#define TI_PPB_N          2168
+#define TI_PPB_NE         2169
+#define TI_PPB_NWE        2170
+#define TI_PPB_NW         2171
+#define TI_PPB_CSE        2172
+#define TI_PPB_CSWE       2173
+#define TI_PPB_CSW        2174
+#define TI_PPB_CS         2175
+#define TI_PPB_CNSE       2176
+#define TI_PPB_CNSWE      2177
+#define TI_PPB_CNSW       2178
+#define TI_PPB_CNS        2179
+#define TI_PPB_CNE        2180
+#define TI_PPB_CNWE       2181
+#define TI_PPB_CNW        2182
+#define TI_PPB_CN         2183
+#define TI_PPB_CE         2184
+#define TI_PPB_CWE        2185
+#define TI_PPB_CW         2186
+#define TI_PPB_C          2187
+#define TI_PPB_DSE        2188
+#define TI_PPB_DSWE       2189
+#define TI_PPB_DSW        2190
+#define TI_PPB_DS         2191
+#define TI_PPB_DNSE       2192
+#define TI_PPB_DNSWE      2193
+#define TI_PPB_DNSW       2194
+#define TI_PPB_DNS        2195
+#define TI_PPB_DNE        2196
+#define TI_PPB_DNWE       2197
+#define TI_PPB_DNW        2198
+#define TI_PPB_DN         2199
+#define TI_PPB_DE         2200
+#define TI_PPB_DWE        2201
+#define TI_PPB_DW         2202
+#define TI_PPB_D          2203
+
+static const UINT TI_COUNT = 2204;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

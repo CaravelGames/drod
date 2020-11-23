@@ -6006,6 +6006,18 @@ bool CDbRoom::UnpackSquares(
 		ASSERT(numTiles); //having a run-length of zero is wasteful
 		ASSERT(pWriteO + numTiles <= pStopOWriting);
 		tileNo = *(pRead++);
+
+		if (tileNo == T_PRESSPLATE_BROKEN_VIRTUAL) {
+			//When loading data for a saved game, extract alternative orb type from t-param value
+			tileNo = T_PRESSPLATE; //don't keep value around; was only used to load pressure plate state
+
+			const UINT index = pWriteO - this->pszOSquares;
+			COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(index), ROOMINDEX_TO_Y(index));
+			if (pOrb) {
+				pOrb->eType = OT_BROKEN;
+			}
+		}
+
 		ASSERT (tileNo < TILE_COUNT); //all tile types should be recognized
 		while (numTiles--)
 			*(pWriteO++) = tileNo;
@@ -8233,6 +8245,15 @@ c4_Bytes* CDbRoom::PackSquares(
 	{
 		square = this->pszOSquares[dwSquareI];
 		ASSERT(square != T_EMPTY);
+
+		if (bSaveGameData) {
+			//Mark current type of pressure plate as special tile type.
+			if (square == T_PRESSPLATE) {
+				const COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(dwSquareI), ROOMINDEX_TO_Y(dwSquareI));
+				if (pOrb && pOrb->eType == OT_BROKEN)
+					square = T_PRESSPLATE_BROKEN_VIRTUAL;
+			}
+		}
 
 		if (square == lastSquare && count < 255) //a char can store max run length of 255
 			++count;

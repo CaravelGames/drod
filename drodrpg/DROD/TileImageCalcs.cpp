@@ -1711,7 +1711,7 @@ UINT CalcTileImageForFourNeighborCC(
 		// ?.?   12    ?#?      13    ? ?      14    ?#?      15
 		// #X#         #X#            #X#            #X#
 		// ?.?         ?.?            ?#?            ?#?
-	static const UINT TYPES = 14;
+	static const UINT TYPES = 17;
 	static const UINT TileImages[TYPES][16] = {
 	{
 		TI_DOOR_Y,     TI_DOOR_YN,    TI_DOOR_YS,    TI_DOOR_YNS,
@@ -1783,6 +1783,21 @@ UINT CalcTileImageForFourNeighborCC(
 		TI_PPT_CW,    TI_PPT_CNW,   TI_PPT_CSW,   TI_PPT_CNSW,
 		TI_PPT_CE,    TI_PPT_CNE,   TI_PPT_CSE,   TI_PPT_CNSE,
 		TI_PPT_CWE,   TI_PPT_CNWE,  TI_PPT_CSWE,  TI_PPT_CNSWE
+	},{
+		TI_PPB,      TI_PPB_N,    TI_PPB_S,    TI_PPB_NS,
+		TI_PPB_W,    TI_PPB_NW,   TI_PPB_SW,   TI_PPB_NSW,
+		TI_PPB_E,    TI_PPB_NE,   TI_PPB_SE,   TI_PPB_NSE,
+		TI_PPB_WE,   TI_PPB_NWE,  TI_PPB_SWE,  TI_PPB_NSWE
+	},{
+		TI_PPB_C,     TI_PPB_CN,    TI_PPB_CS,    TI_PPB_CNS,
+		TI_PPB_CW,    TI_PPB_CNW,   TI_PPB_CSW,   TI_PPB_CNSW,
+		TI_PPB_CE,    TI_PPB_CNE,   TI_PPB_CSE,   TI_PPB_CNSE,
+		TI_PPB_CWE,   TI_PPB_CNWE,  TI_PPB_CSWE,  TI_PPB_CNSWE
+	},{
+		TI_PPB_D,     TI_PPB_DN,    TI_PPB_DS,    TI_PPB_DNS,
+		TI_PPB_DW,    TI_PPB_DNW,   TI_PPB_DSW,   TI_PPB_DNSW,
+		TI_PPB_DE,    TI_PPB_DNE,   TI_PPB_DSE,   TI_PPB_DNSE,
+		TI_PPB_DWE,   TI_PPB_DNWE,  TI_PPB_DSWE,  TI_PPB_DNSWE
 	}};
 
 	ASSERT(wCalcCode < 16);
@@ -1807,12 +1822,14 @@ UINT CalcTileImageForFourNeighborCC(
 				wItemType = 10;
 			else
 			{
-/*
-				if (pPlate->eType == OT_ONEUSE) //not used in RPG
-					return TI_PP_BROKE1;
+				if (pPlate->eType == OT_ONEUSE)
+				{
+					wItemType = pPlate->bActive ? 16 : 14; break;
+				}
 				if (pPlate->eType == OT_BROKEN)
-					return TI_PP_BROKE2;
-*/
+				{
+					wItemType = 15; break;
+				}
 				if (pPlate->bActive)
 				{
 					wItemType = pPlate->eType == OT_TOGGLE ? 13 : 11;

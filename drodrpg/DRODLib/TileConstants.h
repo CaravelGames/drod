@@ -146,8 +146,9 @@
 #define T_DEF_UP3       96 //Defense up 3
 #define T_DEF_UP10      97 //Defense up 10
 #define T_CRATE         98
+#define T_PRESSPLATE_BROKEN_VIRTUAL 99 //virtual tile: only used to represent broken plate in saved game data
 
-#define TILE_COUNT     (99) //Number of tile constants from above list.
+#define TILE_COUNT     (100) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -455,6 +456,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_DEF_UP3       96
 	LAYER_TRANSPARENT, //T_DEF_UP10      97
 	LAYER_TRANSPARENT, //T_CRATE         98
+	LAYER_OPAQUE, //T_PRESSPLATE_BROKEN_VIRTUAL 99
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -601,6 +603,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_DefenseUp3,   //T_DEF_UP3       96
 	MID_DefenseUp10,  //T_DEF_UP10      97
 	MID_Crate,        //T_CRATE         98
+	0,                //T_PRESSPLATE_BROKEN_VIRTUAL 99
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1
