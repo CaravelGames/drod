@@ -393,7 +393,7 @@ UINT CSelectMediaDialogWidget::ImportFile(
 		if (dwSelectFileResult != TAG_OK)
 			break;
 
-		//3. Update the path in player settings, so next time dialog comes up it will have the same path.
+		//2. Update the path in player settings, so next time dialog comes up it will have the same path.
 		if (pCurrentPlayer)
 		{
 			pCurrentPlayer->Settings.SetVar(pathSetting, wstrImportPath.c_str());
@@ -455,7 +455,7 @@ UINT CSelectMediaDialogWidget::ImportFile(
 				break;
 		}
 
-		// 5. Import the file
+		// 6. Import the file
 		CDbDatum *pDatum;
 		if (wReplacedMediaId)
 			pDatum = db.Data.GetByID(wReplacedMediaId);

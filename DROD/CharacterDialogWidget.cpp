@@ -5721,12 +5721,10 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		this->pCommand->flags = 0;
 		this->pCommand->label.resize(0);
 
-		if (this->pCommand->pSpeech && this->pSound == this->pCommand->pSpeech->GetSound()) {
-			delete this->pCommand->pSpeech;
+		if (this->pCommand->pSpeech && this->pSound == this->pCommand->pSpeech->GetSound())
 			this->pSound = NULL;
-		} else
-			delete this->pCommand->pSpeech;
 
+		delete this->pCommand->pSpeech;
 		this->pCommand->pSpeech = NULL;
 	}
 
