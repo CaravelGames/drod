@@ -113,7 +113,7 @@ using std::string;
 static const HANDLE hDrodWindowProp = (HANDLE)0x44525047;  //DRPG
 #endif
 #if defined(__linux__) || defined __FreeBSD__ || defined(__APPLE__)
-static char *lockfile = NULL;
+static string lockfileString;
 #endif
 
 #define APP_PROP "DrodProp"
@@ -254,8 +254,6 @@ int main(int argc, char *argv[])
 	if (IsAppAlreadyRunning()) {
 		DisplayInitErrorMessage(MID_DRODIsAlreadyRunning);
 		delete m_pFiles;
-		if (lockfile)
-			delete[] lockfile;
 #	if defined(__FreeBSD__) || defined(__linux__)
 		Dyn::UnloadX11();
 #	endif
@@ -910,7 +908,7 @@ sdl_error:
 		FILE *fp;
 		SDL_SysWMinfo Info;
 		SDL_VERSION(&Info.version);
-		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfile, "ab")))
+		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfileString.c_str(), "ab")))
 		{
 			fprintf(fp, ":%x:", (UINT)Info.info.x11.window);
 			fclose(fp);
@@ -1341,9 +1339,8 @@ BOOL CALLBACK DetectDrodWindow(HWND hwnd, LPARAM lParam)
 // atexit callback
 void DeleteLockFile()
 {
-	ASSERT(lockfile);
-	unlink(lockfile);
-	delete[] lockfile;
+	ASSERT(!lockfileString.empty());
+	unlink(lockfileString.c_str());
 }
 #endif
 
@@ -1405,12 +1402,10 @@ bool IsAppAlreadyRunning()
 	tmp += wszDROD;
 	WCHAR dotpid[] = {We('.'),We('p'),We('i'),We('d'),We(0)};
 	tmp += dotpid;
-	const UINT lflen = tmp.length();
-	if (!(lockfile = new char[lflen + 1])) return true;
-	UnicodeToUTF8(tmp, lockfile);
+	UnicodeToUTF8(tmp, lockfileString);
 
 	// Try opening an existing lockfile first
-	FILE *fp = fopen(lockfile, "r");
+	FILE *fp = fopen(lockfileString.c_str(), "r");
 	if (fp)
 	{
 		UINT i, wid = 0;
@@ -1454,25 +1449,27 @@ bool IsAppAlreadyRunning()
 		}
 
 		// Corrupt lockfile or nonexistant pid; ignore it
-		unlink(lockfile);
+		unlink(lockfileString.c_str());
 	}
 
 	// Create a new lockfile
+	const int lflen = lockfileString.size();
 	char tmplockfile[lflen + 64];
-	strcpy(tmplockfile, lockfile);
+	strcpy(tmplockfile, lockfileString.c_str());
 	sprintf(tmplockfile + lflen, "%u", getpid());
 	fp = fopen(tmplockfile, "w");
 	if (!fp || fwrite(tmplockfile + lflen,
 			strlen(tmplockfile + lflen) * sizeof(char), 1, fp) != 1)
 	{
-		if (fp) fclose(fp);
+		if (fp)
+			fclose(fp);
 		fprintf(stderr, "Couldn't create lock file, check permissions (%s).\n", tmplockfile);
 		return true;
 	}
 	fclose(fp);
 
 	// Atomic write operation
-	if (link(tmplockfile, lockfile))
+	if (link(tmplockfile, lockfileString.c_str()))
 	{
 		struct stat st;
 		if (stat(tmplockfile, &st) || st.st_nlink != 2)
