@@ -2196,7 +2196,6 @@ bool CMonster::GetNextGaze(
 		case T_OBSTACLE:
 		case T_MIRROR:
 		case T_CRATE:
-		case T_ORB:
 			//These objects stop gaze.
 			return false;
 		case T_FUSE:
@@ -2204,6 +2203,28 @@ bool CMonster::GetNextGaze(
 			if (pCaster)
 				pRoom->LightFuse(CueEvents, cx, cy,	false); //Light it right away next turn.
 			break;
+		case T_ORB:
+			//Gaze damages cracked orbs.
+			if (pCaster)
+			{
+				COrbData* pOrb = pRoom->GetOrbAtCoords(cx, cy);
+				if (!pOrb)
+					pOrb = pRoom->AddOrbToSquare(cx, cy); //add record to track orb state if not present
+				if (pOrb->eType == OT_BROKEN)
+				{
+					pRoom->Plot(cx, cy, T_EMPTY); //broken orb is destroyed
+					CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(cx, cy, NO_ORIENTATION), true);
+					break; //gaze continues
+				}
+				else if (pOrb->eType == OT_ONEUSE)
+				{
+					pOrb->eType = OT_BROKEN;
+					CueEvents.Add(CID_OrbDamaged, pOrb);
+					pRoom->Plot(CCoordSet(cx, cy));
+					//gaze is blocked
+				}
+			}
+		return false;
 		default: break;
 	}
 

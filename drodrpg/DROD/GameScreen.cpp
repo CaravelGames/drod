@@ -5983,16 +5983,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
-/*
 	for (pObj = CueEvents.GetFirstPrivateData(CID_OrbDamaged);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		COrbData *pOrbData = DYN_CAST(COrbData*, CAttachableObject*, pObj);
+		const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pOrbData->wX);
 		this->fPos[1] = static_cast<float>(pOrbData->wY);
 		g_pTheSound->PlaySoundEffect(SEID_ORBBROKE, this->fPos);
 	}
-*/
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MirrorShattered);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{

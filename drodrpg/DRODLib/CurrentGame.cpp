@@ -6275,7 +6275,7 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 	pExpRoom->mapMarker = room.mapMarker;
 
 	//Save room state.
-	c4_Bytes *pBytes = room.PackSquares();
+	c4_Bytes *pBytes = room.PackSquares(true);
 	pExpRoom->SquaresBytes = c4_Bytes(pBytes->Contents(), pBytes->Size(), true);
 	delete pBytes;
 

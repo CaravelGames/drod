@@ -6006,6 +6006,18 @@ bool CDbRoom::UnpackSquares(
 		ASSERT(numTiles); //having a run-length of zero is wasteful
 		ASSERT(pWriteO + numTiles <= pStopOWriting);
 		tileNo = *(pRead++);
+
+		if (tileNo == T_PRESSPLATE_BROKEN_VIRTUAL) {
+			//When loading data for a saved game, extract alternative orb type from t-param value
+			tileNo = T_PRESSPLATE; //don't keep value around; was only used to load pressure plate state
+
+			const UINT index = pWriteO - this->pszOSquares;
+			COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(index), ROOMINDEX_TO_Y(index));
+			if (pOrb) {
+				pOrb->eType = OT_BROKEN;
+			}
+		}
+
 		ASSERT (tileNo < TILE_COUNT); //all tile types should be recognized
 		while (numTiles--)
 			*(pWriteO++) = tileNo;
@@ -6047,6 +6059,17 @@ bool CDbRoom::UnpackSquares(
 			param = readBpUINT(pRead);
 		else
 			param = *(pRead++); //unpack a BYTE into a UINT
+
+		if (tileNo == T_ORB && param != 0) {
+			//When loading data for a saved game, extract alternative orb type from t-param value
+			const UINT index = pWriteT - this->pszTSquares;
+			COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(index), ROOMINDEX_TO_Y(index));
+			if (pOrb) {
+				pOrb->eType = OrbType(param);
+				param = 0; //don't keep value around; was only used to load orb state
+			}
+		}
+
 		while (numTiles--)
 		{
 			*(pWriteT++) = tileNo;
@@ -7516,6 +7539,8 @@ void CDbRoom::ActivateOrb(
 	CCueEvents &CueEvents,     //(in/out) Appends cue events to list.
 	const OrbActivationType eActivationType)     //(in) what activated the orb
 {
+	const bool bBreakOrb = true; //are there any use cases to set to false?
+
 	//Get the orb and its agent instructions.
 	COrbData *pOrb;
 	const bool bPressurePlate =
@@ -7556,14 +7581,18 @@ void CDbRoom::ActivateOrb(
 			this->PlotsMade.insert(tile->wX,tile->wY);
 	}
 
-	if (pOrb && (pOrb->eType == OT_BROKEN || (!bPressurePlate && pOrb->eType == OT_ONEUSE)))
+	if (pOrb && pOrb->eType == OT_BROKEN)
 	{
-		//Broken orb shatters when activated
-//Now one-use orb also shatters when used.
 		ASSERT(!bPressurePlate);
-		Plot(wX, wY, T_EMPTY);
-		CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
-//		return; 
+		if (bBreakOrb)
+		{
+			//Broken orb shatters when activated
+			Plot(wX, wY, T_EMPTY);
+			CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
+		} else {
+			CueEvents.Add(CID_OrbDamaged, pOrb);
+		}
+		return;
 	}
 
 	//Add cue event even if there's no info for this orb in the DB.
@@ -7600,7 +7629,8 @@ void CDbRoom::ActivateOrb(
 			break;
 	}
 
-	if (bAttached) return;  //No orb information -- nothing to do.
+	if (bAttached)
+		return;  //No orb information -- nothing to do.
 
 	//For each agent in orb...
 	const UINT wNumAgents = pOrb->agents.size();
@@ -7638,10 +7668,12 @@ void CDbRoom::ActivateOrb(
 		}
 	}
 
-	if (pOrb->eType == OT_ONEUSE) //one-use type...
+	if ((bBreakOrb || bPressurePlate) && pOrb->eType == OT_ONEUSE) //one-use type...
 	{
 		pOrb->eType = OT_BROKEN;   //...no longer works now
-		this->PlotsMade.insert(wX,wY);
+		if (!bPressurePlate)
+			CueEvents.Add(CID_OrbDamaged, pOrb);
+		this->PlotsMade.insert(wX, wY);
 	}
 }
 
@@ -8185,10 +8217,12 @@ bool CDbRoom::IsDoorOpen(
 }
 
 //*****************************************************************************
-c4_Bytes* CDbRoom::PackSquares() const
 //Saves room squares from member vars of object into database (version 2.0+).
 //
 //Returns: pointer to record to be saved into database (must be deleted by caller).
+c4_Bytes* CDbRoom::PackSquares(
+	const bool bSaveGameData //if set [default=false], populate with augmented data about room state for saved game record
+) const
 {
 	const UINT dwSquareCount = CalcRoomArea();
 	ASSERT(dwSquareCount);
@@ -8211,6 +8245,15 @@ c4_Bytes* CDbRoom::PackSquares() const
 	{
 		square = this->pszOSquares[dwSquareI];
 		ASSERT(square != T_EMPTY);
+
+		if (bSaveGameData) {
+			//Mark current type of pressure plate as special tile type.
+			if (square == T_PRESSPLATE) {
+				const COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(dwSquareI), ROOMINDEX_TO_Y(dwSquareI));
+				if (pOrb && pOrb->eType == OT_BROKEN)
+					square = T_PRESSPLATE_BROKEN_VIRTUAL;
+			}
+		}
 
 		if (square == lastSquare && count < 255) //a char can store max run length of 255
 			++count;
@@ -8263,6 +8306,16 @@ c4_Bytes* CDbRoom::PackSquares() const
 	{
 		square = this->pszTSquares[dwSquareI];
 		param = this->pszTParams[dwSquareI];
+
+		if (bSaveGameData) {
+			//Mark current type of orb in t-param value.
+			if (square == T_ORB) {
+				COrbData* pOrb = GetOrbAtCoords(ROOMINDEX_TO_X(dwSquareI), ROOMINDEX_TO_Y(dwSquareI));
+				if (pOrb) {
+					param = pOrb->eType;
+				}
+			}
+		}
 
 		if (square == lastSquare && param == lastParam &&
 				count < 255) //a char can store max run length of 255

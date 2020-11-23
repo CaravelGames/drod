@@ -228,6 +228,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DEF_UP3},                                      //T_DEF_UP3
 	{TI_DEF_UP10},                                     //T_DEF_UP10
 	{TI_CRATE},                                        //T_CRATE
+	{DONT_USE},                                        //T_PRESSPLATE_BROKEN_VIRTUAL
 
 	//monsters
 	{TI_ROACH_S},
@@ -378,6 +379,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_DEF_UP3       96
 	0, //T_DEF_UP10      97
 	0, //T_CRATE         98
+	0, //T_PRESSPLATE_BROKEN_VIRTUAL 99
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -439,6 +441,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
 	1,
+	0, //unused
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -460,6 +463,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
 	1,
+	0, //unused
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -1821,6 +1825,7 @@ const
 		{TI_MUD_NSEW},
 		{TI_WALL_H},
 		{TI_GEL_NSEW},
+		{TI_PPB},
 		{TI_PPT}
 	};
 
@@ -1842,8 +1847,8 @@ const
 			case T_PRESSPLATE:
 				switch (this->wSelPlateType)
 				{
-//					case OT_ONEUSE: return Tiles[12]; //not used in RPG
-					case OT_TOGGLE: return Tiles[11];
+					case OT_ONEUSE: return Tiles[11];
+					case OT_TOGGLE: return Tiles[12];
 					default: return MenuDisplayTiles[T_PRESSPLATE];
 				}
 			break;
@@ -6637,7 +6642,6 @@ void CEditRoomScreen::RotateClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6647,13 +6651,12 @@ void CEditRoomScreen::RotateClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				case OT_TOGGLE: this->wSelPlateType = OT_NORMAL; break;
-				//case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
+				case OT_TOGGLE: this->wSelPlateType = OT_ONEUSE; break;
+				case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
@@ -6757,7 +6760,6 @@ void CEditRoomScreen::RotateCounterClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6767,12 +6769,11 @@ void CEditRoomScreen::RotateCounterClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
-				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				//case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
+				case OT_NORMAL: this->wSelPlateType = OT_ONEUSE; break;
+				case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
 				case OT_TOGGLE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
@@ -7886,8 +7887,8 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			switch (this->wSelOrbType)
 			{
 				case OT_NORMAL: wTileI = TI_ORB_D; break;
-//				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break; //not used in RPG
-//				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;  //not used in RPG
+				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break;
+				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;
 				default: ASSERT(!"Bad orb type"); break;
 			}
 			pObjectMenu->SetObjectTiles(wTile, 1, 1, &wTileI);
@@ -7899,7 +7900,7 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: wTileI = TI_PP; break;
-//				case OT_ONEUSE: wTileI = TI_PP_BROKE1; break;	//not used in RPG
+				case OT_ONEUSE: wTileI = TI_PPB; break;
 				case OT_TOGGLE: wTileI = TI_PPT; break;
 				default: ASSERT(!"Bad plate type"); break;
 			}

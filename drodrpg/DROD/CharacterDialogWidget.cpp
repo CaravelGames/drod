@@ -3846,7 +3846,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_OrbActivatedByPlayer, g_pTheDB->GetMessageText(MID_PlayerHitsOrb));
 	this->pEventListBox->AddItem(CID_OrbActivated, g_pTheDB->GetMessageText(MID_ItemHitsOrb));
 	this->pEventListBox->AddItem(CID_OrbActivatedByDouble, g_pTheDB->GetMessageText(MID_MonsterHitsOrb));
-//	this->pEventListBox->AddItem(CID_OrbDamaged, g_pTheDB->GetMessageText(MID_OrbDamaged));
+	this->pEventListBox->AddItem(CID_OrbDamaged, g_pTheDB->GetMessageText(MID_OrbDamaged));
 //	this->pEventListBox->AddItem(CID_PlayerFrozen, g_pTheDB->GetMessageText(MID_PlayerFrozen));
 	this->pEventListBox->AddItem(CID_PlayerBurned, g_pTheDB->GetMessageText(MID_PlayerBurned));
 	this->pEventListBox->AddItem(CID_PressurePlate, g_pTheDB->GetMessageText(MID_PressurePlateActivated));
