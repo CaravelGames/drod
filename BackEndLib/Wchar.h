@@ -35,6 +35,8 @@
 #include "PortsBase.h"
 #include "Types.h"  //need BYTE, UINT
 
+#include <vector>
+
 #define STRFY(x) #x
 #define STRFY_EXPAND(x) STRFY(x)
 
@@ -90,6 +92,7 @@ void SanitizeSingleLineString(WSTRING& wstr);
 void SanitizeMultiLineString(WSTRING& wstr);
 void AsciiToUnicode(const char *psz, WSTRING &wstr);
 void AsciiToUnicode(const std::string& str, WSTRING &wstr);
+const WSTRING AsciiToUnicode(const char *psz);
 void CTextToUnicode(const char *psz, WSTRING &wstr);
 bool UnicodeToAscii(const WSTRING& wstr, char *psz);
 bool UnicodeToAscii(const WSTRING& wstr, std::string &str);
@@ -156,5 +159,9 @@ void     fputWs(const WCHAR* wsz, FILE* pFile);
 
 std::string strReplace(std::string const &source, std::string const &from, std::string const &to);
 WSTRING WCSReplace(WSTRING const &source, WSTRING const &from, WSTRING const &to);
+WSTRING WCSToLower(WSTRING const &source);
+const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimiter);
+bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles);
+
 
 #endif

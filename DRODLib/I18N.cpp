@@ -34,6 +34,13 @@ namespace I18N {
 	//************************************************************************************
 	WSTRING DescribeInputKey(const InputKey key)
 	{
+		static WSTRING ShiftShort = AsciiToUnicode("Sh+");
+		static WSTRING ShiftLong = AsciiToUnicode("Shift ");
+		static WSTRING CtrlShort = AsciiToUnicode("Ct+");
+		static WSTRING CtrlLong = AsciiToUnicode("Ctrl ");
+		static WSTRING AltShort = AsciiToUnicode("ALt+");
+		static WSTRING AltLong = AsciiToUnicode("Alt ");
+
 		if (key == SDLK_UNKNOWN)
 			return g_pTheDB->GetMessageText(MID_UNKNOWN);
 
@@ -48,15 +55,15 @@ namespace I18N {
 		std::wstringstream str;
 
 		if (bIsShift) {
-			str << (wModifierCount > 1 && bHasNonModifier ? L"Sh+" : L"Shift ");
+			str << (wModifierCount > 1 && bHasNonModifier ? ShiftShort : ShiftLong);
 		}
 
 		if (bIsCtrl) {
-			str << (wModifierCount > 1 && bHasNonModifier ? L"Ct+" : L"Ctrl ");
+			str << (wModifierCount > 1 && bHasNonModifier ? CtrlShort : CtrlLong);
 		}
 
 		if (bIsAlt) {
-			str << (wModifierCount > 1 && bHasNonModifier ? L"Alt+" : L"Alt ");
+			str << (wModifierCount > 1 && bHasNonModifier ? AltShort : AltLong);
 		}
 
 		if (keyCode != SDLK_UNKNOWN)

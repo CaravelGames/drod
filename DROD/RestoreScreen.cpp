@@ -235,6 +235,7 @@ CRestoreScreen::CRestoreScreen()
 	this->pLevelListBoxWidget = new CListBoxWidget(TAG_LEVEL_LBOX,
 			X_LEVEL_LBOX, Y_LEVEL_LBOX, CX_LEVEL_LBOX, CY_LEVEL_LBOX);
 	AddWidget(this->pLevelListBoxWidget);
+	this->pLevelListBoxWidget->SetAllowFiltering(true);
 
 	//Room selection area.
 	AddWidget(new CLabelWidget(TAG_CHOOSE_ROOM_LABEL, X_CHOOSE_ROOM_LABEL, Y_CHOOSE_ROOM_LABEL, 

@@ -453,6 +453,7 @@ CEditSelectScreen::CEditSelectScreen()
 			X_HOLD_LBOX, Y_HOLD_LBOX, CX_HOLD_LBOX, CY_HOLD_LBOX, true);
 	AddWidget(this->pHoldListBoxWidget);
 	this->pHoldListBoxWidget->IgnoreLeadingArticlesInSort();
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
 
 	//Hold buttons.
 	pButton = new CButtonWidget(TAG_COPY_HOLD, X_COPY_HOLD, Y_COPY_HOLD,

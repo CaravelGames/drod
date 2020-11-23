@@ -881,9 +881,12 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_DemoMoveNumberSuffix: strText = "(Demo move %now%/%total%)"; break;
 	case MID_ErrorCannotReplaceWithDifferentExistingFile: strText = "You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted."; break;
 	case MID_ReplaceMediaWithAnother: strText = "This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated."; break;
+	case MID_SettingsTabKeymap1: strText = "Keymap 1"; break;
+	case MID_SettingsTabKeymap2: strText = "Keymap 2"; break;
 	case MID_ReplaceFileButton: strText = "Replace"; break;
 	case MID_FilePendingDeletionSuffix: strText = "(Pending deletion)"; break;
 	case MID_Undelete: strText = "Undelete"; break;
+	case MID_ListboxFilter: strText = "Filter"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

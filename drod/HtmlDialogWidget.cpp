@@ -78,7 +78,7 @@ CHtmlDialogWidget::CHtmlDialogWidget(const UINT dwTagNo, const UINT wWidth, cons
 	// Widgets
 	{
 		this->pTitle = new CLabelWidget(0,
-			TITLE_X, TITLE_Y, TITLE_W, TITLE_H, F_Header, L"Help:");
+			TITLE_X, TITLE_Y, TITLE_W, TITLE_H, F_Header, g_pTheDB->GetMessageText(MID_Help));
 		this->pTitle->SetAlign(CLabelWidget::TA_CenterGroup);
 		AddWidget(this->pTitle);
 	}
