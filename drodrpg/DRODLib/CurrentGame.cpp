@@ -1144,6 +1144,13 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 
 	switch (varIndex)
 	{
+		case (UINT)ScriptVars::P_PLAYER_X:
+			return player.wX;
+		case (UINT)ScriptVars::P_PLAYER_Y:
+			return player.wY;
+		case (UINT)ScriptVars::P_PLAYER_O:
+			return player.wO;
+
 		//Combat enemy stats.
 		case (UINT)ScriptVars::P_ENEMY_HP:
 		case (UINT)ScriptVars::P_ENEMY_ATK:
