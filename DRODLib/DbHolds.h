@@ -138,7 +138,7 @@ public:
 	bool        SetDataIDForWorldMap(const UINT worldMapID, const UINT dataID);
 	bool        SetDisplayTypeForWorldMap(const UINT worldMapID, HoldWorldMap::DisplayType type);
 	bool        SetOrderIndexForWorldMap(const UINT worldMapID, const UINT orderIndex);
-
+	void        UnmarkDataForDeletion(const UINT dataID);
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,
 			CImportInfo &info);

@@ -51,6 +51,7 @@ class CDbHold;
 class CProgressBarWidget;
 class CRoomWidget;
 class CCurrentGame;
+class CDrodDialogs;
 struct VisualEffectInfo;
 class CDrodScreen : public CScreen
 {
@@ -67,10 +68,9 @@ public:
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
 	static bool    IsGameFullVersion();
 
-	UINT           PublicShowOkMessage(const MESSAGE_ID dwMessageID) {return ShowOkMessage(dwMessageID);}
-	void           PublicShowStatusMessage(const MESSAGE_ID dwMessageID) {ShowStatusMessage(dwMessageID);}
-	UINT           PublicShowYesNoMessage(const MESSAGE_ID dwMessageID) {return ShowYesNoMessage(dwMessageID);}
 	void           PublicHideProgressWidget();
+
+	bool           ValidateVideo(CStretchyBuffer &buffer) { return PlayVideoBuffer(buffer, NULL); }
 
 	static vector<WSTRING> importFiles;
 	WSTRING        callbackContext; //set to provide more contextual callback messages to user
@@ -78,6 +78,7 @@ public:
 	static UINT    EntrancesInFullVersion();
 
 protected:
+friend class CDrodDialogs;
 	void     AddCloudDialog();
 	void     AddDamageEffect(CRoomWidget* pRoomWidget, const CCurrentGame* pGame,
 			const UINT monsterType, const CMoveCoord& coord);

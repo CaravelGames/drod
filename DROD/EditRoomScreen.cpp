@@ -702,7 +702,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, pHold(NULL), pLevel(NULL), pRoom(NULL)
 	, pRoomWidget(NULL), pTabbedMenu(NULL)
 	, pCharacterDialog(NULL)
-	, pEntranceBox(NULL), pLevelEntranceDialog(NULL)
+	, pEntranceBox(NULL), pLevelEntranceDialog(NULL), pSelectMediaDialog(NULL)
 
 	, wSelectedObject(static_cast<UINT>(-1))
 	, wSelectedObjectSave(static_cast<UINT>(-1))
@@ -959,12 +959,24 @@ CEditRoomScreen::CEditRoomScreen()
 	AddWidget(pLabel);
 
 	//Level list dialog box.
-	this->pEntranceBox = new CEntranceSelectDialogWidget(0L);
-	AddWidget(this->pEntranceBox);
-	this->pEntranceBox->Move(
-		X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pEntranceBox->GetW()) / 2,
-		Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pEntranceBox->GetH()) / 2);   //center over room widget
-	this->pEntranceBox->Hide();
+	{
+		this->pEntranceBox = new CEntranceSelectDialogWidget(0L);
+		AddWidget(this->pEntranceBox);
+		this->pEntranceBox->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pEntranceBox->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pEntranceBox->GetH()) / 2);   //center over room widget
+		this->pEntranceBox->Hide();
+	}
+
+	// Select media dialog
+	{
+		this->pSelectMediaDialog = new CSelectMediaDialogWidget(0L);
+		AddWidget(this->pSelectMediaDialog);
+		this->pSelectMediaDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSelectMediaDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSelectMediaDialog->GetH()) / 2);   //center over room widget
+		this->pSelectMediaDialog->Hide();
+	}
 
 	//Character monster customization box.
 	this->pCharacterDialog = new CCharacterDialogWidget(0L);
@@ -1739,42 +1751,16 @@ void CEditRoomScreen::GetCustomImageID(
 	if (this->pHold->dwPlayerID != g_pTheDB->GetPlayerID() && !SaveRoomToDB())
 		return;
 
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = roomDataID;
-		eButton = SelectListID(
-				this->pEntranceBox, this->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
+	this->pSelectMediaDialog->SetForDisplay(MID_ImageSelectPrompt, this->pHold, CSelectMediaDialogWidget::Images);
+	this->pSelectMediaDialog->SelectItem(roomDataID);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return;
+	}
 
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			//It's safe if other rooms remain set to this old image ID.
-			//They will now show the default texture.
-			if (dwDataID)
-				this->pHold->MarkDataForDeletion(dwDataID);
-			roomDataID = 0;
-			this->pRoomWidget->LoadRoomImages();
-			this->pRoomWidget->Paint();
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
+	roomDataID = this->pSelectMediaDialog->GetSelectedItem();
 
 	Changing();
-
-	if (dwDataID) {
-		roomDataID = dwDataID;   //selected image from DB
-	} else {
-		//Load new image from disk.
-		const UINT dwID = ImportHoldImage(this->pHold->dwHoldID, EXT_JPEG | EXT_PNG);
-		if (dwID)
-			roomDataID = dwID;
-		goto SelectImage;	//return to image select menu
-	}
 
 	if (!bReselect)
 	{
@@ -3364,60 +3350,32 @@ void CEditRoomScreen::PopulateItemMenus()
 UINT CEditRoomScreen::SelectMediaID(
 //UI for importing, deleting and selecting media data belonging to this hold.
 //
+//Returns: a new value or 0 if nothing was changed
+//
 //Params:
-	const UINT dwDefault, //default selected value
-	const CEntranceSelectDialogWidget::DATATYPE eType) //media type
+	const UINT dwSelectedValue,                     //(in) currently selected value
+	const CSelectMediaDialogWidget::DATATYPE eType) //media type
 {
 	MESSAGE_ID midPrompt = 0;
 	switch (eType)
 	{
-		case CEntranceSelectDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
-		case CEntranceSelectDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
-		case CEntranceSelectDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
+		case CSelectMediaDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
+		case CSelectMediaDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
+		case CSelectMediaDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
 		default: ASSERT(!"UI for this media type not implemented"); return 0;
 	}
-	ASSERT(midPrompt);
 
+	ASSERT(midPrompt);
 	ASSERT(this->pHold);
 
-	UINT dwVal;
-	bool bDeletedDefault = false;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwVal = (bDeletedDefault ? 0 : dwDefault);
-		eButton = SelectListID(this->pEntranceBox, this->pHold,
-				dwVal, midPrompt, eType);
-
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this media object from the database and make another selection.
-			//It's okay if other references to this object remain set to this old record ID.
-			//They will robustly default to do nothing.
-			this->pHold->MarkDataForDeletion(dwVal);
-			if (dwVal == dwDefault)
-				bDeletedDefault = true;
-		}
-	} while (eButton == CEntranceSelectDialogWidget::Delete);
-
-	const bool bSelected = eButton == CEntranceSelectDialogWidget::OK;
-	if (bSelected && !dwVal)
-	{
-		//Import media from disk into this hold.
-		switch (eType)
-		{
-			case CEntranceSelectDialogWidget::Images:
-				dwVal = ImportHoldImage(this->pHold->dwHoldID, EXT_JPEG | EXT_PNG);
-			break;
-			case CEntranceSelectDialogWidget::Sounds:
-				dwVal = ImportHoldSound();
-			break;
-			case CEntranceSelectDialogWidget::Videos:
-				dwVal = ImportHoldVideo();
-			break;
-			default: break;
-		}
+	this->pSelectMediaDialog->SetForDisplay(midPrompt, this->pHold, eType);
+	this->pSelectMediaDialog->SelectItem(dwSelectedValue);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return 0;
 	}
-	return bSelected ? dwVal : 0;
+
+	return this->pSelectMediaDialog->GetSelectedItem();
 }
 
 //*****************************************************************************
@@ -3700,7 +3658,7 @@ bool CEditRoomScreen::EditLevelEntrance(
 		switch (dwTagNo)
 		{
 			case TAG_LEVELENTRANCEAUDIO:
-				newDataID = SelectMediaID(newDataID, CEntranceSelectDialogWidget::Sounds);
+				newDataID = SelectMediaID(newDataID, CSelectMediaDialogWidget::Sounds);
 			break;
 			default:
 				bLoop = false;

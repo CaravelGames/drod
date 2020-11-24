@@ -17,40 +17,42 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005, 2020
+ * Portions created by the Initial Developer are Copyright (C) 2002, 2005
  * Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
  * Mike Rimer (mrimer)
- * Maurycy Zarzycki (skell)
  *
  * ***** END LICENSE BLOCK ***** */
 
- //This is a CDialog that has been augmented to show a list of level entrances.
+#ifndef _DRODDIALOGS_H
+#define _DRODDIALOGS_H
 
-#ifndef PUZZLEMODEOPTIONSDIALOGWIDGET_H
-#define PUZZLEMODEOPTIONSDIALOGWIDGET_H
 
-#include <FrontEndLib/DialogWidget.h>
-#include <set>
+#include "DrodScreen.h"
+#include "DrodScreenManager.h"
+#include "EditRoomScreen.h"
 
-class CDbHold;
-class CEntranceData;
-class CLabelWidget;
-class CListBoxWidget;
-class CCurrentGame;
-class CPuzzleModeOptionsDialogWidget : public CDialogWidget
-{
+extern CDrodDialogs *g_pTheDialogs;
+
+class CDrodDialogs {
 public:
-	CPuzzleModeOptionsDialogWidget(const UINT dwSetTagNo, const int nSetX = 0,
-		const int nSetY = 0);
+	CDrodDialogs() {}
 
-	virtual void   OnClick(const UINT dwTagNo);
-	virtual void   OnDeactivate();
-	virtual bool   SetForActivate();
+	void  HideStatusMessage();
+
+	UINT SelectFile(WSTRING &filePath, WSTRING &fileName,
+		const MESSAGE_ID messagePromptID, const bool bWrite,
+		const UINT extensionTypes);
+
+	UINT  ShowOkMessage(const MESSAGE_ID dwMessageID);
+	UINT  ShowOkMessage(const WCHAR *pwczText);
+	void  ShowStatusMessage(const MESSAGE_ID dwMessageID);
+	UINT  ShowYesNoMessage(const WCHAR *pwczText, const MESSAGE_ID dwYesButtonText = MID_Yes, const MESSAGE_ID dwNoButtonText = MID_No);
+
 
 private:
-	CLabelWidget* pHeaderLabel;
+	CEditRoomScreen *GetEditRoomScreen() const;
 };
 
-#endif   //PUZZLEMODEOPTIONSDIALOGWIDGET_H
+#endif //...#ifndef _DRODDIALOGS_H

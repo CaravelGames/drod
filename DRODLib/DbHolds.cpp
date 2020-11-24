@@ -3070,6 +3070,14 @@ void CDbHold::MarkDataForDeletion(const UINT dataID)
 }
 
 //*****************************************************************************
+void CDbHold::UnmarkDataForDeletion(const UINT dataID)
+//Keep track of data IDs so that data object is deleted if Update is called.
+{
+	if (dataID)
+		this->deletedDataIDs.erase(std::remove(this->deletedDataIDs.begin(), this->deletedDataIDs.end(), dataID), this->deletedDataIDs.end());
+}
+
+//*****************************************************************************
 void CDbHold::MarkSpeechForDeletion(
 //Keep track of speech IDs so that speech object is deleted if Update is called.
 //

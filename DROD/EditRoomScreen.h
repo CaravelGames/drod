@@ -30,6 +30,7 @@
 
 #include "RoomScreen.h"
 #include "EditRoomWidget.h"
+#include "SelectMediaDialogWidget.h"
 #include "../DRODLib/DbRooms.h"
 #include <BackEndLib/CoordSet.h>
 
@@ -67,7 +68,7 @@ public:
 	UINT     GetSavePlayerID() const {return this->dwSavePlayerID;}
 	UINT     GetTestPlayerID() const {return this->dwTestPlayerID;}
 
-	UINT  SelectMediaID(const UINT dwDefault, const CEntranceSelectDialogWidget::DATATYPE eType);
+	UINT     SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
 
 protected:
 	friend class CDrodScreenManager;
@@ -116,8 +117,7 @@ private:
 	CObjectMenuWidget*   GetActiveMenu();
 	void           ForceFullStyleReload();
 
-	void     GetCustomImageID(UINT& roomDataID, UINT& imageStartX, UINT& imageStartY,
-			const bool bReselect);
+	void     GetCustomImageID(UINT& roomDataID, UINT& imageStartX, UINT& imageStartY, const bool bReselect);
 	void           GetFloorImageID(const bool bReselect=false);
 	void           GetOverheadImageID(const bool bReselect=false);
 
@@ -205,11 +205,14 @@ private:
 	CDbRoom *         pRoom;
 	vector<CMoveCoord*> LevelEntrances;  //level entrances in the current room
 
-	CEditRoomWidget * pRoomWidget;
+	CEditRoomWidget *   pRoomWidget;
 	CTabbedMenuWidget * pTabbedMenu;
-	CCharacterDialogWidget *pCharacterDialog;
+
+	CCharacterDialogWidget *      pCharacterDialog;
 	CEntranceSelectDialogWidget * pEntranceBox;     //choose from list of levels
-	CDialogWidget *pLevelEntranceDialog; //for defining level entrances
+	CSelectMediaDialogWidget *    pSelectMediaDialog;
+	CDialogWidget *               pLevelEntranceDialog; //for defining level entrances
+
 	UINT              wSelectedObject;  //object selected for placement
 	UINT              wSelectedObjectSave; //object selected, while
 														//something else is being placed

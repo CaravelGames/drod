@@ -3037,7 +3037,7 @@ UINT CDrodScreen::ShowYesNoMessage(
 	} else {
 		//Resize width to fit text.
 		g_pTheFM->GetTextWidthHeight(F_Button, pText, wTextW, wTextH);
-		pButton->SetWidth(wTextW + CX_SPACE);
+		pButton->SetWidth(wTextW + CX_SPACE * 2);
 	}
 	pButton->SetCaption(pText);
 	pButton->SetHotkeyFromText(pText);
@@ -3052,7 +3052,7 @@ UINT CDrodScreen::ShowYesNoMessage(
 	} else {
 		//Resize width to fit text.
 		g_pTheFM->GetTextWidthHeight(F_Button, pText, wTextW, wTextH);
-		pButton->SetWidth(wTextW + CX_SPACE);
+		pButton->SetWidth(wTextW + CX_SPACE * 2);
 	}
 	pButton->SetCaption(pText);
 	pButton->SetHotkeyFromText(pText);

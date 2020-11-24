@@ -1432,9 +1432,6 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	int index = 1;
 	while (pMonster)
 	{
-		if (pMonster->wX != wX || pMonster->wY != wY)
-			goto SkipDescribingMonster;
-
 		const CCharacter *pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 		bool bCharacterName = false;
 		bool bShowMoveOrder = pMonster->IsVisible();
@@ -1444,6 +1441,9 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			}
 
 			bShowMoveOrder = bShowMoveOrder || pCharacter->IsInvisibleCountMoveOrder();
+
+			if (pMonster->wX != wX || pMonster->wY != wY)
+				goto SkipDescribingMonster;
 
 			if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
 				wstr += wszCRLF;
@@ -1472,6 +1472,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 				}
 			}
 		}
+
+		if (pMonster->wX != wX || pMonster->wY != wY)
+			goto SkipDescribingMonster;
+
 		if (!bCharacterName) {
 			mid = getMIDForMonster(pMonster->wType);
 			AppendLine(mid);
