@@ -232,6 +232,7 @@ public:
 //	UINT     EndDemoRecording();
 	bool     equipmentBlocksGaze(const UINT type) const;
 	bool     ExecutingNoMoveCommands() const {return this->bExecuteNoMoveCommands;}
+	int      EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params);
 	WSTRING  ExpandText(const WCHAR* wText, CCharacter *pCharacter=NULL);
 	void     FreezeCommands();
 //	UINT     GetAutoSaveOptions() const {return this->dwAutoSaveOptions;}

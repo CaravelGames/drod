@@ -42,6 +42,7 @@
 #include <BackEndLib/Ports.h>
 #include <BackEndLib/Files.h>
 
+//*****************************************************************************
 #define NO_LABEL (-1)
 
 #define NO_OVERRIDE (UINT(-9999))
@@ -123,9 +124,19 @@ const UINT MAX_ANSWERS = 9;
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
+//*****************************************************************************
 inline bool isVarCharValid(WCHAR wc)
 {
 	return iswalnum(wc) || wc == W_t('_');
+}
+
+void LogParseError(const WCHAR* pwStr, const char* message)
+{
+	CFiles f;
+	string str = UnicodeToUTF8(pwStr);
+	str += ": ";
+	str += message;
+	f.AppendErrorLog(str.c_str());
 }
 
 //*****************************************************************************
@@ -1053,7 +1064,7 @@ bool CCharacter::IsValidExpression(
 //
 //Params:
 	const WCHAR *pwStr, UINT& index, CDbHold *pHold,
-	const bool bExpectCloseParen) //[default=false] whether a close paren should mark the end of this (nested) expression
+	const char closingChar) //[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
 {
 	ASSERT(pwStr);
 	ASSERT(pHold);
@@ -1071,8 +1082,8 @@ bool CCharacter::IsValidExpression(
 		//Parse another term.
 		if (pwStr[index] == W_t('+') || pwStr[index] == W_t('-'))
 			++index;
-		else if (bExpectCloseParen && pwStr[index] == W_t(')')) //closing nested expression
-			return true; //caller will parse the close paren
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
+			return true; //caller will parse the closing character
 		else
 			return false; //invalid symbol between terms
 
@@ -1109,6 +1120,9 @@ bool CCharacter::IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 }
 
 //*****************************************************************************
+//
+// factor = var | number | "(" expression ")" | primitive "(" comma-separated expressions as input parameters ")"
+//
 bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 //Returns: whether a factor in an expression is valid
 {
@@ -1118,7 +1132,7 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 	if (pwStr[index] == W_t('('))
 	{
 		++index;
-		if (!IsValidExpression(pwStr, index, pHold, true)) //recursive call
+		if (!IsValidExpression(pwStr, index, pHold, ')')) //recursive call
 			return false;
 		if (pwStr[index] != W_t(')')) //should be parsing the close parenthesis at this point
 			return false; //missing close parenthesis
@@ -1149,7 +1163,9 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		while (isVarCharValid(pwStr[endIndex]))
 			++endIndex;
 
-		WSTRING wVarName(pwStr + index, endIndex - index);
+		const WSTRING wVarName(pwStr + index, endIndex - index);
+
+		//Continue parsing after identifier
 		index = endIndex;
 
 		//Is it a predefined var?
@@ -1161,6 +1177,11 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		if (pHold->GetVarID(wVarName.c_str()))
 			return true;
 
+		//Is it a function primitive?
+		ScriptVars::PrimitiveType ePrimitive = ScriptVars::parsePrimitive(wVarName);
+		if (ePrimitive != ScriptVars::NoPrimitive)
+			return IsValidPrimitiveParameters(ePrimitive, pwStr, index, pHold);
+
 		//Unrecognized identifier.
 		return false;
 	}
@@ -1170,18 +1191,60 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 }
 
 //*****************************************************************************
+bool CCharacter::IsValidPrimitiveParameters(
+	ScriptVars::PrimitiveType ePrimitive,
+	const WCHAR* pwStr, UINT& index, CDbHold* pHold)
+{
+	SKIP_WHITESPACE(pwStr, index);
+
+	//Parse arguments surrounded by parens
+	if (pwStr[index] != W_t('('))
+		return false;
+	++index;
+
+	SKIP_WHITESPACE(pwStr, index);
+
+	UINT numArgs = 0;
+	if (pwStr[index] != W_t(')'))
+	{
+		UINT lookaheadIndex = index;
+		while (IsValidExpression(pwStr, lookaheadIndex, pHold, ',')) //recursive call
+		{
+			index = lookaheadIndex;
+			if (pwStr[index] != W_t(','))
+				return false;
+
+			++index;
+			++numArgs;
+			lookaheadIndex = index;
+		}
+
+		//no more commas; parse final argument
+		if (!IsValidExpression(pwStr, index, pHold, ')')) //recursive call
+			return false;
+		++numArgs;
+	}
+
+	if (pwStr[index] != W_t(')')) //should be parsing the close parenthesis at this point
+		return false; //missing close parenthesis
+	++index;
+
+	//Confirm correct parameter count for this primitive
+	if (numArgs != ScriptVars::getPrimitiveRequiredParameters(ePrimitive))
+		return false;
+
+	return true;
+}
+
+//*****************************************************************************
 int CCharacter::parseExpression(
 //Parse and evaluate a simple nested expression for the grammar
 //
 // expression = ["+"|"-"] term {("+"|"-") term}
 //
-// term = factor {("*"|"/"|"%") factor}
-//
-// factor = var | number | "(" expression ")" 
-//
 //Params:
 	const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC, //[default=NULL]
-	const bool bExpectCloseParen) //[default=false] whether a close paren should mark the end of this (nested) expression
+	const char closingChar) //[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
 {
 	ASSERT(pwStr);
 	ASSERT(pGame);
@@ -1213,15 +1276,12 @@ int CCharacter::parseExpression(
 			bAdd = false;
 			++index;
 		}
-		else if (bExpectCloseParen && pwStr[index] == W_t(')')) //closing nested expression
-			return val; //caller will parse the close paren
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
+			return val; //caller will parse the closing character
 		else
 		{
 			//parse error -- return the current value
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr + index);
-			str += ": Parse error (bad symbol)";
-			f.AppendErrorLog(str.c_str());
+			LogParseError(pwStr + index, "Parse error (bad symbol)");
 			return val;
 		}
 
@@ -1233,8 +1293,11 @@ int CCharacter::parseExpression(
 }
 
 //*****************************************************************************
-int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
 //Parse and evaluate a term in an expression.
+//
+// term = factor {("*"|"/"|"%") factor}
+//
+int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
 {
 	int val = parseFactor(pwStr, index, pGame, pNPC);
 
@@ -1282,56 +1345,63 @@ int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, 
 }
 
 //*****************************************************************************
+int CCharacter::parseNestedExpression(const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC)
+//Parse and evaluate a nested expression.
+{
+	ASSERT(pwStr[index] == W_t('('));
+	++index; //pass left paren
+
+	int val = parseExpression(pwStr, index, pGame, pNPC, ')'); //recursive call
+	SKIP_WHITESPACE(pwStr, index);
+	if (pwStr[index] == W_t(')'))
+		++index;
+	else
+	{
+		//parse error -- return the current value
+		LogParseError(pwStr, "Parse error (missing close parenthesis)");
+	}
+	return val;
+}
+
+//*****************************************************************************
+int CCharacter::parseNumber(const WCHAR* pwStr, UINT& index)
+{
+	ASSERT(iswdigit(pwStr[index]));
+
+	const int val = _Wtoi(pwStr + index);
+
+	//Parse past digits.
+	++index;
+	while (iswdigit(pwStr[index]))
+		++index;
+
+	if (iswalpha(pwStr[index])) //i.e. of form <digits><alphas>
+	{
+		//Invalid var name -- skip to end of it and return zero value.
+		while (isVarCharValid(pwStr[index]))
+			++index;
+
+		LogParseError(pwStr, "Parse error (invalid var name)");
+
+		return 0;
+	}
+
+	return val;
+}
+
+//*****************************************************************************
 int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
-//Parse and evaluate a term in an expression.
+//Parse and evaluate a factor in an expression.
 {
 	SKIP_WHITESPACE(pwStr, index);
 
 	//A nested expression?
 	if (pwStr[index] == W_t('('))
-	{
-		++index;
-		int val = parseExpression(pwStr, index, pGame, pNPC, true); //recursive call
-		SKIP_WHITESPACE(pwStr, index);
-		if (pwStr[index] == W_t(')'))
-			++index;
-		else
-		{
-			//parse error -- return the current value
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr);
-			str += ": Parse error (missing close parenthesis)";
-			f.AppendErrorLog(str.c_str());
-		}
-		return val;
-	}
+		return parseNestedExpression(pwStr, index, pGame, pNPC);
 
 	//Number?
 	if (iswdigit(pwStr[index]))
-	{
-		int val = _Wtoi(pwStr + index);
-
-		//Parse past digits.
-		++index;
-		while (iswdigit(pwStr[index]))
-			++index;
-
-		if (iswalpha(pwStr[index])) //i.e. of form <digits><alphas>
-		{
-			//Invalid var name -- skip to end of it and return zero value.
-			while (isVarCharValid(pwStr[index]))
-				++index;
-
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr);
-			str += ": Parse error (invalid var name)";
-			f.AppendErrorLog(str.c_str());
-
-			return 0;
-		}
-
-		return val;
-	}
+		return parseNumber(pwStr, index);
 
 	//Variable identifier?
 	if (pwStr[index] == W_t('_') || iswalpha(pwStr[index])) //valid first char
@@ -1341,35 +1411,86 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		while (isVarCharValid(pwStr[endIndex]))
 			++endIndex;
 
-		WSTRING wVarName(pwStr + index, endIndex - index);
+		const WSTRING wVarName(pwStr + index, endIndex - index);
+
+		//Continue parsing after identifier
 		index = endIndex;
 
 		//Is it a predefined var?
-		int val = 0;
 		const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wVarName);
 		if (eVar != ScriptVars::P_NoVar)
 		{
 			if (pNPC)
-				val = int(pNPC->getPredefinedVar(eVar));
-			else
-				val = pGame->getVar(eVar);
-		} else {
-			//Is it a local hold var?
-			char *varName = pGame->pHold->getVarAccessToken(wVarName.c_str());
+				return int(pNPC->getPredefinedVar(eVar));
+
+			return pGame->getVar(eVar);
+		}
+
+		//Is it a local hold var?
+		if (pGame->pHold->GetVarID(wVarName.c_str())) {
+			char* varName = pGame->pHold->getVarAccessToken(wVarName.c_str());
 			const UNPACKEDVARTYPE vType = pGame->stats.GetVarType(varName);
 			if (vType == UVT_int || vType == UVT_unknown) //valid int type
-				val = pGame->stats.GetVar(varName, (int)0);
-			//else: unrecognized identifier -- just return a zero value
+			{
+				return pGame->stats.GetVar(varName, (int)0);
+			}
 		}
-		return val;
+
+		//Is it a function primitive?
+		ScriptVars::PrimitiveType ePrimitive = ScriptVars::parsePrimitive(wVarName);
+		if (ePrimitive != ScriptVars::NoPrimitive)
+			return parsePrimitive(ePrimitive, pwStr, index, pGame, pNPC);
+
+		//else: unrecognized identifier -- just return a zero value below
 	}
 
 	//Invalid identifier
-	CFiles f;
-	string str = UnicodeToUTF8(pwStr + index);
-	str += ": Parse error (invalid var name)";
-	f.AppendErrorLog(str.c_str());
+	LogParseError(pwStr, "Parse error(invalid var name)");
 
+	return 0;
+}
+
+//*****************************************************************************
+//Parses and evaluates a primitive function call in the context of the game object.
+//
+//Returns: calculated value from call to primitive
+int CCharacter::parsePrimitive(
+	ScriptVars::PrimitiveType ePrimitive,
+	const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC)
+{
+	SKIP_WHITESPACE(pwStr, index);
+
+	ASSERT(pwStr[index] == W_t('('));
+	++index; //pass left paren
+
+	SKIP_WHITESPACE(pwStr, index);
+
+	vector<int> params;
+
+	if (pwStr[index] != W_t(')')) {
+		UINT lookaheadIndex = index;
+		while (IsValidExpression(pwStr, lookaheadIndex, pGame->pHold, ',')) //recursive call
+		{
+			params.push_back(parseExpression(pwStr, index, pGame, pNPC, ',')); //recursive call
+			ASSERT(pwStr[index] == W_t(','));
+			++index;
+			lookaheadIndex = index;
+		}
+
+		//no more commas; parse final argument
+		params.push_back(parseExpression(pwStr, index, pGame, pNPC, ')')); //recursive call
+	}
+
+	if (pwStr[index] == W_t(')')) {
+		++index;
+	} else {
+		LogParseError(pwStr, "Parse error in primitive parameter list (missing close parenthesis)");
+	}
+
+	if (params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive))
+		return pGame->EvalPrimitive(ePrimitive, params);
+
+	LogParseError(pwStr, "Parse error in primitive parameter list (incorrect argument count)");
 	return 0;
 }
 

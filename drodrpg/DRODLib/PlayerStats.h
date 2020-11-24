@@ -135,16 +135,44 @@ namespace ScriptVars
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
+	//Predefined functions (that take a set of arguments to calculate a value)
+	//
+	//To add new primitives, add a new enumeration here and in the following locations:
+	// primitiveNames
+	// getPrimitiveRequiredParameters
+	// CCurrentGame::EvalPrimitive
+	enum PrimitiveType {
+		NoPrimitive = -1,
+		P_Abs,       //x --> abs(x)
+		P_Min,       //(x,y) --> min(x,y)
+		P_Max,       //(x,y) --> max(x,y)
+		P_Orient,    //(dx,dy) --> o
+		P_OrientX,   //o --> dx
+		P_OrientY,   //o --> dy
+		P_RotateCW,  //o --> cw(o)
+		P_RotateCCW, //o --> ccw(o)
+		P_Dist0,     //L-infinity norm
+		P_Dist1,     //L-1 norm (Manhattan distance)
+		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_EnemyStat, //(x,y,stat) --> stat value of enemy at (x,y)
+		PrimitiveCount
+	};
+
 	void init();
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 
+	PrimitiveType parsePrimitive(const string& str);
+	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
+	PrimitiveType parsePrimitive(const WSTRING& wstr);
+
 	//All predefined vars.
 	extern const char predefinedVarTexts[PredefinedVarCount][13];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
 	static const UINT numGlobals=30;
