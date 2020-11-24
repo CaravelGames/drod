@@ -190,6 +190,12 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 };
 
 //*****************************************************************************
+const char ScriptVars::primitiveNames[PrimitiveCount][11] =
+{
+	"_EnemySTAT"
+};
+
+//*****************************************************************************
 string ScriptVars::getVarName(const Predefined var)
 //Returns: pointer to the name of this pre-defined var, or empty string if no match
 {
@@ -260,6 +266,32 @@ Predefined ScriptVars::parsePredefinedVar(const string& str)
 			return Predefined(i);
 	}
 	return P_NoVar;
+}
+
+//*****************************************************************************
+PrimitiveType ScriptVars::parsePrimitive(const WSTRING& wstr)
+{
+	const string str = UnicodeToUTF8(wstr);
+	return parsePrimitive(str);
+}
+
+PrimitiveType ScriptVars::parsePrimitive(const string& str)
+{
+	for (int i = 0; i < PrimitiveCount; ++i) {
+		if (!strncmp(str.c_str(), primitiveNames[i], strlen(primitiveNames[i])))
+			return PrimitiveType(i);
+	}
+	return NoPrimitive;
+}
+
+//Returns: the number of parameter arguments each primitive function requires
+UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
+{
+	switch (eType)
+	{
+		case EnemySTAT: return 3;
+	}
+	return 0;
 }
 
 //*****************************************************************************

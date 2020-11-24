@@ -248,6 +248,8 @@ interacts with its environment.</p>
       Whenever a script changes a hold variable, you will be notified onscreen.
       This only works while playtesting, playing a hold you authored, or playing
       a CaravelNet hold in beta.</li>
+  <li><a name="setmonstervar"><b>Set monster var</b></a> - Modify a
+	  stat value of a monster at a specific room location.</li>
   <li><a name="eachattack"><b>Each attack</b></a> - Each time the NPC attacks,
       jump the script to the indicated <a href="#label">Label</a>.</li>
   <li><a name="eachdefend"><b>Each defend</b></a> - Each time the NPC is hit,
@@ -820,6 +822,19 @@ as play progresses.  Others are altered solely through script commands.
   These vars reference the stat values of the player's current equipment.
   When predefined equipment is carried, its values may be queried but not
   altered.
+</p>
+
+<p><a name="predefinedvars"><b>Function primitives</b></a> - Predefined
+  functions may be inserted anywhere a variable is referenced. The function will
+  return a value given the current game context.  These are useful to apply in a variable expression.
+</p>
+<p><a name="enemystat">* <b>_EnemySTAT(x,y,stat)</b> - Returns the stat value of the
+  enemy at room location (x,y).  If no enemy is at the current location, the result
+  is zero.<br />
+  Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP<br />
+  <i>Hint:</i> Use within the value expression of <i>Set monster var</i> to make
+  relative offsets to an enemy's stats.<br />
+  <i>Example to reduce HP of the enemy at room position (10,10) by 1:</i> Set monster var HP,10,10,_EnemySTAT(10, 10, 0) - 1
 </p>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>

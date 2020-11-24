@@ -135,16 +135,33 @@ namespace ScriptVars
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
+	//Predefined functions (that take a set of arguments to calculate a value)
+	//
+	//To add new primitives, add a new enumeration here and in the following locations:
+	// primitiveNames
+	// getPrimitiveRequiredParameters
+	// CCurrentGame::EvalPrimitive
+	enum PrimitiveType {
+		NoPrimitive = -1,
+		EnemySTAT = 0,
+		PrimitiveCount 
+	};
+
 	void init();
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 
+	PrimitiveType parsePrimitive(const string& str);
+	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
+	PrimitiveType parsePrimitive(const WSTRING& wstr);
+
 	//All predefined vars.
 	extern const char predefinedVarTexts[PredefinedVarCount][13];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern const char primitiveNames[PrimitiveCount][11];
 
 	//Global game var subset quick reference.
 	static const UINT numGlobals=30;

@@ -860,6 +860,32 @@ void CCurrentGame::ExitCurrentRoom()
 	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
 }
 
+//***************************************************************************************
+//Evaluate a calculated function in context of the current game
+int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params)
+{
+	ASSERT(params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive));
+
+	switch (ePrimitive) {
+		case ScriptVars::EnemySTAT:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				switch (params[2]) {
+					case ScriptFlag::HP: return pMonster->HP;
+					case ScriptFlag::ATK: return pMonster->ATK;
+					case ScriptFlag::DEF: return pMonster->DEF;
+					case ScriptFlag::GOLD: return pMonster->GOLD;
+					case ScriptFlag::XP: return pMonster->XP;
+				}
+			}
+		}
+		break;
+	}
+
+	return 0;
+}
+
 //*****************************************************************************
 WSTRING CCurrentGame::ExpandText(
 //Translate escape sequences embedded in text string to literal values.
