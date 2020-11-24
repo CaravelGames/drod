@@ -867,7 +867,52 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 	ASSERT(params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive));
 
 	switch (ePrimitive) {
-		case ScriptVars::EnemySTAT:
+		case ScriptVars::P_Abs:
+			return abs(params[0]);
+		case ScriptVars::P_Orient:
+		{
+			const int dx = sgn(params[0]);
+			const int dy = sgn(params[1]);
+			return nGetO(dx, dy);
+		}
+		case ScriptVars::P_OrientX:
+		case ScriptVars::P_OrientY:
+		case ScriptVars::P_RotateCW:
+		case ScriptVars::P_RotateCCW:
+		{
+			const int o = params[0];
+			if (!IsValidOrientation(o))
+				return o;
+			switch (ePrimitive) {
+				case ScriptVars::P_OrientX: return nGetOX(o);
+				case ScriptVars::P_OrientY: return nGetOY(o);
+				case ScriptVars::P_RotateCW: return nNextCO(o);
+				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+			}
+		}
+		case ScriptVars::P_Min:
+			return min(params[0], params[1]);
+		case ScriptVars::P_Max:
+			return max(params[0], params[1]);
+		case ScriptVars::P_Dist0: //L-infinity norm
+		{
+			const int deltaX = abs(params[2] - params[0]);
+			const int deltaY = abs(params[3] - params[1]);
+			return max(deltaX, deltaY);
+		}
+		case ScriptVars::P_Dist1: //L-1 norm (Manhattan distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return abs(deltaX) + abs(deltaY);
+		}
+		case ScriptVars::P_Dist2: //L-2 norm (Euclidean distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
+		}
+		case ScriptVars::P_EnemyStat:
 		{
 			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
 			if (pMonster) {

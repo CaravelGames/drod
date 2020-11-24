@@ -143,8 +143,19 @@ namespace ScriptVars
 	// CCurrentGame::EvalPrimitive
 	enum PrimitiveType {
 		NoPrimitive = -1,
-		EnemySTAT = 0,
-		PrimitiveCount 
+		P_Abs,       //x --> abs(x)
+		P_Min,       //(x,y) --> min(x,y)
+		P_Max,       //(x,y) --> max(x,y)
+		P_Orient,    //(dx,dy) --> o
+		P_OrientX,   //o --> dx
+		P_OrientY,   //o --> dy
+		P_RotateCW,  //o --> cw(o)
+		P_RotateCCW, //o --> ccw(o)
+		P_Dist0,     //L-infinity norm
+		P_Dist1,     //L-1 norm (Manhattan distance)
+		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_EnemyStat, //(x,y,stat) --> stat value of enemy at (x,y)
+		PrimitiveCount
 	};
 
 	void init();
@@ -161,7 +172,7 @@ namespace ScriptVars
 	extern const char predefinedVarTexts[PredefinedVarCount][13];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
-	extern const char primitiveNames[PrimitiveCount][11];
+	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
 	static const UINT numGlobals=30;

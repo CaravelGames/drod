@@ -592,6 +592,8 @@ predefined variables that may be set and queried with the
 <a href="#setvar">Set var</a> and <a href="#waitvar">Wait until var</a> commands.
 Some of these variables are tied to game state and are updated automatically
 as play progresses.  Others are altered solely through script commands.
+These variables may be referenced in script expressions.
+The variable names are case-insensitive.
 <br /><br />
 <table>
   <tr>
@@ -824,17 +826,32 @@ as play progresses.  Others are altered solely through script commands.
   altered.
 </p>
 
-<p><a name="predefinedvars"><b>Function primitives</b></a> - Predefined
+<p><a name="functions"><b>Function primitives</b></a> - Predefined
   functions may be inserted anywhere a variable is referenced. The function will
-  return a value given the current game context.  These are useful to apply in a variable expression.
+  return a value based on the input parameters and current game context, where applicable.
+  Functions are useful to apply in variable expressions.
+  All inputs must either be integer values or an expression that resolves to an integer value.
+  All outputs are likewise integers.
+  Function names are case-insensitive.
 </p>
-<p><a name="enemystat">* <b>_EnemySTAT(x,y,stat)</b> - Returns the stat value of the
+<p><a name="abs">* <b>_abs(x)</b> - Returns the absolute value of x</p>
+<p><a name="min">* <b>_min(x,y)</b> - Returns the lesser of two values</p>
+<p><a name="max">* <b>_max(x,y)</b> - Returns the greater of two values</p>
+<p><a name="orient">* <b>_orient(dx,dy)</b> - Returns an orientation id (0-8), given x,y directional offsets</p>
+<p><a name="ox">* <b>_ox(o)</b> - Given an orientation id (0-8), returns its x component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="oy">* <b>_oy(o)</b> - Given an orientation id (0-8), returns its y component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotatecw">* <b>_rotateCW(o)</b> - Given an orientation id (0-8), returns the id of the orientation in a clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotateccw">* <b>_rotateCCW(o)</b> - Given an orientation id (0-8), returns the id of the orientation in a counter-clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="dist0">* <b>_dist0(x1,y1,x2,y2)</b> - Returns the L-infinity norm (max axial distance) between two 2-D coordinates.</p>
+<p><a name="dist1">* <b>_dist1(x1,y1,x2,y2)</b> - Returns the L-1 norm (Manhattan distance) between two 2-D coordinates.</p>
+<p><a name="dist2">* <b>_dist2(x1,y1,x2,y2)</b> - Returns the L-2 norm (Euclidean distance) between two 2-D coordinates.</p>
+<p><a name="enemystat">* <b>_EnemyStat(x,y,stat)</b> - Returns the stat value of the
   enemy at room location (x,y).  If no enemy is at the current location, the result
   is zero.<br />
   Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP<br />
   <i>Hint:</i> Use within the value expression of <i>Set monster var</i> to make
   relative offsets to an enemy's stats.<br />
-  <i>Example to reduce HP of the enemy at room position (10,10) by 1:</i> Set monster var HP,10,10,_EnemySTAT(10, 10, 0) - 1
+  <i>Example to reduce HP of the enemy at room position (10,10) by 1:</i> Set monster var HP,10,10,_EnemyStat(10, 10, 0) - 1
 </p>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>

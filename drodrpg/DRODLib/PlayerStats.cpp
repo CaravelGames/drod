@@ -190,9 +190,21 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 };
 
 //*****************************************************************************
+// Values are not case sensitive; caps added here for readability
 const char ScriptVars::primitiveNames[PrimitiveCount][11] =
 {
-	"_EnemySTAT"
+	"_abs",
+	"_min",
+	"_max",
+	"_orient",
+	"_ox",
+	"_oy",
+	"_rotateCW",
+	"_rotateCCW",
+	"_dist0",
+	"_dist1",
+	"_dist2",
+	"_EnemyStat"
 };
 
 //*****************************************************************************
@@ -278,7 +290,7 @@ PrimitiveType ScriptVars::parsePrimitive(const WSTRING& wstr)
 PrimitiveType ScriptVars::parsePrimitive(const string& str)
 {
 	for (int i = 0; i < PrimitiveCount; ++i) {
-		if (!strncmp(str.c_str(), primitiveNames[i], strlen(primitiveNames[i])))
+		if (!_stricmp(str.c_str(), primitiveNames[i]))
 			return PrimitiveType(i);
 	}
 	return NoPrimitive;
@@ -289,7 +301,22 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 {
 	switch (eType)
 	{
-		case EnemySTAT: return 3;
+		case P_Abs:
+		case P_OrientX:
+		case P_OrientY:
+		case P_RotateCW:
+		case P_RotateCCW:
+			return 1;
+		case P_Min:
+		case P_Max:
+		case P_Orient:
+			return 2;
+		case P_EnemyStat:
+			return 3;
+		case P_Dist0:
+		case P_Dist1:
+		case P_Dist2:
+			return 4;
 	}
 	return 0;
 }
