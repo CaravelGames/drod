@@ -38,6 +38,17 @@ using namespace std;
 
 WSTRING CListBoxWidget::wstrFilterWord;
 
+
+#ifdef RUSSIAN_BUILD
+const int TEXT_DRAW_Y_OFFSET = -1; //Because this particular font is a tiny bit too far down.
+#else
+const int TEXT_DRAW_Y_OFFSET = -5; //Because this particular font is always too far down.
+#endif
+
+const UINT ITEM_LEFT_PADDING = 2;
+
+
+
 //
 //Public methods.
 //
@@ -893,14 +904,6 @@ void CListBoxWidget::Paint(
 	//this widget can't be offset.
 	ASSERT(!IsScrollOffset());
 
-	static const UINT CX_ITEM_INDENT = 2;
-
-#ifdef RUSSIAN_BUILD
-	static const int DY_TEXT = -1; //Because this particular font is a tiny bit too far down.
-#else
-	static const int DY_TEXT = -5; //Because this particular font is always too far down.
-#endif
-
 	//Draw inset area where text appears.
 	SDL_Surface *pDestSurface = GetDestSurface();
 	DrawInset(this->x, this->y, this->w, this->h, this->images[0],
@@ -917,70 +920,99 @@ void CListBoxWidget::Paint(
 
 	//Draw item text.
 	const UINT wStopLineNo = this->wTopLineNo + this->wDisplayLineCount;
-	const int xDraw = this->x + CX_INSET_BORDER + CX_ITEM_INDENT;
-	int yDraw = this->ItemsRect.y = this->y + CY_INSET_BORDER;
-	const UINT cxDraw = this->w - (CX_INSET_BORDER * 2) - CX_ITEM_INDENT -
-			(bDrawScrollBar * CX_UP);
 	for (UINT wLineNo = this->wTopLineNo;
 			wLineNo < wStopLineNo && iListItem != items.end();
 			++wLineNo, ++iListItem)
 	{
-		ASSERT(yDraw < static_cast<int>(this->y + this->h - CY_INSET_BORDER));
-
-		//If this is selected item, draw solid rect underneath.
-		SDL_Rect ItemRect = MAKE_SDL_RECT(xDraw - CX_ITEM_INDENT, yDraw,
-				cxDraw + CX_ITEM_INDENT, CY_LBOX_ITEM);
-		if (this->selectedLines.has(wLineNo))
-		{
-			const SURFACECOLOR BackColor =
-					GetSurfaceColor(pDestSurface, 190, 181, 165);
-			DrawFilledRect(ItemRect, BackColor, pDestSurface);
-		}
-
-		//Draw text for one item.
-		const UINT eDrawFont = this->selectedLines.has(wLineNo) ?
-				FONTLIB::F_SelectedListBoxItem : FONTLIB::F_ListBoxItem;
-		SDL_Color origColor = g_pTheFM->GetFontColor(eDrawFont);
-		if ((*iListItem)->bGrayed)  //whether text is shown grayed out
-		{
-			g_pTheFM->SetFontColor(eDrawFont, Gray);
-		} else {
-			g_pTheFM->SetFontColor(eDrawFont, (*iListItem)->color);
-		}
-		//Draw selected line text.
-		g_pTheFM->DrawTextXY(eDrawFont, (*iListItem)->text.c_str(), pDestSurface,
-				xDraw, yDraw + DY_TEXT, cxDraw, (int)CY_LBOX_ITEM - DY_TEXT);
-		g_pTheFM->SetFontColor(eDrawFont, origColor);
-
-		//Draw focus box (cursor).
-		const bool bCursorOnLine = wLineNo == this->wCursorLine;
-		if (bCursorOnLine && IsSelected())
-		{
-			const SURFACECOLOR FocusColor =
-					GetSurfaceColor(pDestSurface, RGB_FOCUS);
-			DrawRect(ItemRect,FocusColor,pDestSurface);
-		}
-		yDraw += CY_LBOX_ITEM;
+		Paint_Line(wLineNo, wLineNo - this->wTopLineNo, **iListItem);
 	}
 
-	if (this->wstrActiveFilter.size() > 0) {
+	this->ItemsRect.y = this->y + CY_INSET_BORDER;
+
+	if (this->wstrActiveFilter.size() > 0)
+	{
+		int drawX, drawY;
+		UINT drawWidth, drawHeight;
+		GetLineDrawCoords(0, drawX, drawY, drawWidth, drawHeight);
+
+		drawX = this->x + 10;
+		drawY = this->y + TEXT_DRAW_Y_OFFSET + this->h - CY_LBOX_ITEM - 1;
+
 		const SURFACECOLOR FilterSeparatorColor = GetSurfaceColor(GetDestSurface(), 102, 102, 102);
 		
-		const UINT wTextY = this->y + DY_TEXT + this->h - CY_LBOX_ITEM - 1;
 		WSTRING message = this->wstrFilterWord;
 		message += wszColon;
 		message += wszSpace;
 		message += this->wstrActiveFilter;
-		DrawRow(this->x, wTextY + 3, cxDraw, FilterSeparatorColor, pDestSurface);
+		DrawRow(this->x, drawY + 3, drawWidth, FilterSeparatorColor, pDestSurface);
 		g_pTheFM->DrawTextXY(FONTLIB::F_ListBoxItem, message.c_str(), pDestSurface,
-			this->x + 10, wTextY,
-			cxDraw - 20, (int)CY_LBOX_ITEM - DY_TEXT);
+			drawX, drawY,
+			drawWidth - 20, (int)CY_LBOX_ITEM - TEXT_DRAW_Y_OFFSET);
 
 	}
 
 	//PaintChildren();
 	ASSERT(this->Children.empty()); //list box doesn't have children
 	if (bUpdateRect) UpdateRect();
+}
+
+//******************************************************************************
+void CListBoxWidget::Paint_Line(
+	const UINT wListItemNumber,
+	const UINT wDrawLineNumber,
+	const LBOX_ITEM &listItem)
+{
+	SDL_Surface *pDestSurface = GetDestSurface();
+
+	bool bIsSelected = this->selectedLines.has(wListItemNumber);
+
+	int drawX, drawY;
+	UINT drawWidth, drawHeight;
+	GetLineDrawCoords(wDrawLineNumber, drawX, drawY, drawWidth, drawHeight);
+
+	ASSERT(drawY < static_cast<int>(this->y + this->h - CY_INSET_BORDER));
+
+	//If this is selected item, draw solid rect underneath.
+	if (bIsSelected)
+	{
+		SDL_Rect ItemRect = MAKE_SDL_RECT(
+			drawX - ITEM_LEFT_PADDING, drawY,
+			drawWidth + ITEM_LEFT_PADDING, drawHeight
+		);
+
+		const SURFACECOLOR BackColor = GetSurfaceColor(pDestSurface, 190, 181, 165);
+		DrawFilledRect(ItemRect, BackColor, pDestSurface);
+	}
+
+	const UINT eDrawFont = bIsSelected
+		? FONTLIB::F_SelectedListBoxItem
+		: FONTLIB::F_ListBoxItem;
+	SDL_Color origColor = g_pTheFM->GetFontColor(eDrawFont);
+
+	//whether text is shown grayed out
+	if (listItem.bGrayed)
+		g_pTheFM->SetFontColor(eDrawFont, Gray);
+	else
+		g_pTheFM->SetFontColor(eDrawFont, listItem.color);
+
+	//Draw selected line text.
+	g_pTheFM->DrawTextXY(eDrawFont, listItem.text.c_str(), pDestSurface,
+		drawX, drawY + TEXT_DRAW_Y_OFFSET, drawWidth, (int)drawHeight - TEXT_DRAW_Y_OFFSET);
+	g_pTheFM->SetFontColor(eDrawFont, origColor);
+
+	//Draw focus box (cursor).
+	const bool bCursorOnLine = (wListItemNumber == this->wCursorLine);
+	if (bCursorOnLine && IsSelected())
+	{
+		SDL_Rect ItemRect = MAKE_SDL_RECT(
+			drawX - ITEM_LEFT_PADDING, drawY,
+			drawWidth + ITEM_LEFT_PADDING, drawHeight
+		);
+
+		const SURFACECOLOR FocusColor =
+			GetSurfaceColor(pDestSurface, RGB_FOCUS);
+		DrawRect(ItemRect, FocusColor, pDestSurface);
+	}
 }
 
 //******************************************************************************
@@ -1024,6 +1056,18 @@ void CListBoxWidget::SetItemText(const UINT dwKey, const WCHAR *pwczSetText)
 			return;
 		}
 	}
+}
+
+//******************************************************************************
+void CListBoxWidget::SetItemTextAtLine(const UINT index, const WCHAR *pwczSetText)
+//Updates the text description of the item at the specific line.
+{
+	ASSERT(pwczSetText);
+
+	if (index >= this->filteredItems.size())
+		return;
+
+	this->filteredItems[index]->text = pwczSetText;
 }
 
 //******************************************************************************
@@ -1252,6 +1296,17 @@ void CListBoxWidget::UpdateFilter(WSTRING wstrFilter)
 }
 
 //******************************************************************************
+void CListBoxWidget::GetLineDrawCoords(const UINT wLineNumber, int &drawX, int &drawY, UINT &drawWidth, UINT &drawHeight)
+{
+	const bool bDrawScrollBar = (this->filteredItems.size() > this->wDisplayLineCount);
+
+	drawX = this->x + CX_INSET_BORDER + ITEM_LEFT_PADDING;
+	drawY = this->y + CY_INSET_BORDER + wLineNumber * CY_LBOX_ITEM;
+	drawWidth = this->w - (CX_INSET_BORDER * 2) - ITEM_LEFT_PADDING - (bDrawScrollBar * CX_UP);
+	drawHeight = CY_LBOX_ITEM;
+}
+
+//******************************************************************************
 void CListBoxWidget::HandleMouseDown(
 //Handles a mouse down event.
 //
@@ -1346,6 +1401,9 @@ void CListBoxWidget::HandleDrag(
 	} else {
 		this->wCursorLine = this->wDraggingLineNo;
 	}
+
+	UpdateFilter(WSTRING());
+	RequestPaint();
 }
 
 //******************************************************************************
