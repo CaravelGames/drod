@@ -39,7 +39,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"", "", "",
 	"", "", "", "", "",
 	"", "", "", "", "",
-	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn"
+	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn",
+	""
 };
 
 //Message texts corresponding to the above short var texts.
@@ -65,7 +66,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarAccessoryATK, MID_VarAccessoryDEF, MID_VarAccessoryGR,
 	MID_VarMyMonsterHPMult, MID_VarMyMonsterATKMult, MID_VarMyMonsterDEFMult, MID_VarMyMonsterGRMult, MID_VarMyMonsterXPMult,
 	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
-	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn
+	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
+	MID_VarMonsterName
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -249,6 +251,12 @@ void ScriptVars::init()
 		}
 		ASSERT(!midTexts[0].empty());
 	}
+}
+
+//*****************************************************************************
+bool ScriptVars::IsStringVar(Predefined val)
+{
+	return val == P_MONSTER_NAME;
 }
 
 //*****************************************************************************

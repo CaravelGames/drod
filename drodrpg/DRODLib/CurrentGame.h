@@ -106,6 +106,22 @@ class CDbLevel;
 class CDbHold;
 
 //*******************************************************************************
+class CCharacterCommand;
+struct SpeechLog
+{
+	SpeechLog(WSTRING customName, CCharacterCommand* pSpeechCommand) {
+		this->customName = customName;
+		this->pSpeechCommand = pSpeechCommand;
+	}
+	SpeechLog(CCharacterCommand* pSpeechCommand) {
+		this->pSpeechCommand = pSpeechCommand;
+	}
+
+	WSTRING customName;
+	CCharacterCommand* pSpeechCommand;
+};
+
+//*******************************************************************************
 /*
 //Type used for grouping all the demo recording vars together.
 struct DEMO_REC_INFO
@@ -184,7 +200,6 @@ struct TarstuffStab {
 //*******************************************************************************
 class CCombat;
 class CDb;
-class CCharacterCommand;
 class CFiredCharacterCommand;
 class CSwordsman;
 //struct DEMO_UPLOAD;
@@ -243,6 +258,7 @@ public:
 	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
 	UINT     getSpawnID(UINT defaultMonsterID) const;
+	WSTRING  getStringVar(const UINT varIndex) const;
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
@@ -381,7 +397,7 @@ public:
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
 	CIDSet   roomsExploredAtRoomStart, roomsMappedAtRoomStart;
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
-	vector<CCharacterCommand*> roomSpeech; //speech played up to this moment in the current room
+	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 //	PlayerStats playerStatsAtRoomStart;
 

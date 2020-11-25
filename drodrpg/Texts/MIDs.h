@@ -1505,6 +1505,7 @@ enum MID_CONSTANT {
   MID_VarMonsterX = 1558,
   MID_VarMonsterY = 1559,
   MID_VarMonsterO = 1560,
+  MID_VarMonsterName = 1795,
   MID_VarMonsterParamX = 1593,
   MID_VarMonsterParamY = 1594,
   MID_VarMonsterParamW = 1595,

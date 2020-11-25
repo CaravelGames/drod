@@ -1787,16 +1787,23 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 	} else {
 		//Get NPC type name.
 		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-		if (IsValidMonsterType(pCharacter->wLogicalIdentity))
-			wstr += g_pTheDB->GetMessageText(TILE_MID[pCharacter->wLogicalIdentity + M_OFFSET]);
-		else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST)
-		{
+		bool bCharacterName = false;
+		if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+			bCharacterName = true;
+			wstr += pCharacter->GetCustomName();
+		} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+			//Show custom character name.
+			ASSERT(this->pCurrentGame->pHold);
 			HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(pCharacter->wLogicalIdentity);
-			if (pCustomChar)
+			if (pCustomChar) {
+				bCharacterName = true;
 				wstr += pCustomChar->charNameText;
-			else //custom character type was deleted, and this NPC's type left dangling
+			} else {
+				//custom character type was deleted, and this NPC's type left dangling
 				wstr += wszQuestionMark;
+			}
 		} else {
+			bCharacterName = true;
 			ASSERT(pCharacter->wIdentity >= CHARACTER_FIRST);
 			UINT eMID = MID_UNKNOWN;
 			switch (pCharacter->wIdentity)
@@ -1814,6 +1821,11 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				default: ASSERT(!"Unrecognized character"); break;
 			}
 			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
+		}
+
+		if (!bCharacterName) {
+			if (IsValidMonsterType(pCharacter->wLogicalIdentity))
+				wstr += g_pTheDB->GetMessageText(TILE_MID[pCharacter->wLogicalIdentity + M_OFFSET]);
 		}
 	}
 	return wstr;
