@@ -559,6 +559,8 @@ bool CHoldSelectScreen::SetForActivate()
 	PopulateHoldListBox();
 	SetHoldDesc();
 
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
+
 	//Never return to the win screen (for rating a hold).  Yank it out of the return list so
 	//that we go back to the title screen instead.
 	if (g_pTheSM->GetReturnScreenType() == SCR_WinStart)

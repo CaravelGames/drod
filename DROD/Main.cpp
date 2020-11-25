@@ -41,6 +41,7 @@
 #include "DrodSound.h"
 #include "GameScreen.h"
 
+#include <FrontEndLib/ListBoxWidget.h> // To init i18n
 #include <FrontEndLib/ImageWidget.h>
 
 #include "../DRODLib/Db.h"
@@ -681,6 +682,9 @@ MESSAGE_ID Init(
 #endif
 
 	srand(int(time(NULL)));
+
+	// Init FrontendLocalization
+	CListBoxWidget::wstrFilterWord = g_pTheDB->GetMessageText(MID_ListboxFilter);
 
 	//Success.
 	return bRestoredFromCorruption ? MID_DatCorrupted_Restored :

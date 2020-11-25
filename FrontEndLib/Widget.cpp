@@ -88,6 +88,7 @@ CWidget::CWidget(
 	, eType(eSetType)
 
 	, pSurface(NULL)  //Destination surface is the screen.
+	, bIsPreventingEventBubbling(false)
 {
 	//Check for reserved tag usage.
 	ASSERT(!IS_RESERVED_TAG(dwSetTagNo));
@@ -432,6 +433,14 @@ void CWidget::PaintChildren(
 						ChildClipRect.w, ChildClipRect.h, bUpdateRects);
 		}
 	}
+}
+
+//*****************************************************************************
+void CWidget::PreventEventBubbling(const bool bPrevent)
+// Set to true in event handlers to prevent current event being called on parent
+// Important! Currently only supported by HandleKeyDown
+{
+	this->bIsPreventingEventBubbling = bPrevent;
 }
 
 //*****************************************************************************

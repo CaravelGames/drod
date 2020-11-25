@@ -178,8 +178,8 @@ CSettingsScreen::CSettingsScreen()
 			Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 4, CY_MENU_TAB, BG_COLOR);
 	pTabbedMenu->SetTabText(PERSONAL_TAB, g_pTheDB->GetMessageText(MID_Settings));
 	pTabbedMenu->SetTabText(GAS_TAB, g_pTheDB->GetMessageText(MID_GraphicsAndSound));
-	pTabbedMenu->SetTabText(KEYMAP_1_TAB, L"Keymap 1"); //@MID-FIX
-	pTabbedMenu->SetTabText(KEYMAP_2_TAB, L"Keymap 2");
+	pTabbedMenu->SetTabText(KEYMAP_1_TAB, g_pTheDB->GetMessageText(MID_SettingsTabKeymap1));
+	pTabbedMenu->SetTabText(KEYMAP_2_TAB, g_pTheDB->GetMessageText(MID_SettingsTabKeymap2));
 	pTabbedMenu->SetBGImage("Background", 128);
 	AddWidget(pTabbedMenu);
 
@@ -1156,7 +1156,7 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 		if (pOverwrittenKey) {
 			WSTRING str = WCSReplace(
 				g_pTheDB->GetMessageText(MID_OverwritingMacroKeyError),
-				L"%1",
+				AsciiToUnicode("%1"),
 				g_pTheDB->GetMessageText(pOverwrittenKey->commandMID)
 			);
 			ShowOkMessage(str.c_str());

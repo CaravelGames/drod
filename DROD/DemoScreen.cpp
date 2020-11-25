@@ -421,7 +421,7 @@ void CDemoScreen::GoToTurn()
 {
 	WCHAR temp[10];
 	WSTRING message = g_pTheDB->GetMessageText(MID_GotoDemoMovePrompt);
-	message = WCSReplace(message, L"%end%", _itoW(this->pDemo->wEndTurnNo - this->pDemo->wBeginTurnNo, temp, 10, 10));
+	message = WCSReplace(message, AsciiToUnicode("%end%"), _itoW(this->pDemo->wEndTurnNo - this->pDemo->wBeginTurnNo, temp, 10, 10));
 
 	CScreen::TextInputDialogOptions options(
 		message.c_str(),
@@ -609,8 +609,8 @@ void CDemoScreen::SetSignTextToCurrentRoom()
 
 		WCHAR temp[10];
 		WSTRING suffix = g_pTheDB->GetMessageText(MID_DemoMoveNumberSuffix);
-		suffix = WCSReplace(suffix, L"%now%", _itoW(wMoveNow, temp, 10, 10));
-		suffix = WCSReplace(suffix, L"%total%", _itoW(wMovesTotal, temp, 10, 10));
+		suffix = WCSReplace(suffix, AsciiToUnicode("%now%"), _itoW(wMoveNow, temp, 10, 10));
+		suffix = WCSReplace(suffix, AsciiToUnicode("%total%"), _itoW(wMovesTotal, temp, 10, 10));
 
 		this->wstrSignText += suffix;
 	}

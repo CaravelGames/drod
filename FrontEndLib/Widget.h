@@ -276,6 +276,7 @@ protected:
 	virtual bool         Load();
 	bool        LoadChildren();
 	void        PaintChildren(bool bUpdateRects = false);
+	void        PreventEventBubbling(const bool bPrevent = true);
 	void        RemoveAllHotkeys();
 	void        RemoveHotkey(const UINT tag);
 	void        SetParent(CWidget *const pSetParent);
@@ -321,7 +322,7 @@ protected:
 	//Called when the widget has the focus and a key is pressed.  Should return
 	//true if this widget is generally affected by key down events, or false if
 	//not.
-	virtual void   HandleKeyDown(const SDL_KeyboardEvent &/*Key*/) { }
+	virtual void HandleKeyDown(const SDL_KeyboardEvent &/*Key*/) { }
 
 	//Called when the widget has the focus and a key is released.
 	virtual void   HandleKeyUp(const SDL_KeyboardEvent &/*Key*/) { }
@@ -446,6 +447,8 @@ public:
 private:
 	void        DrawRectClipped(const SDL_Rect &rect, const SURFACECOLOR &Color,
 			SDL_Surface *pDestSurface);
+
+	bool bIsPreventingEventBubbling;
 };
 
 typedef std::list<CWidget *>::const_iterator WIDGET_ITERATOR;

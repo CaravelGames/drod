@@ -4326,6 +4326,7 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool /*bDefaultScri
 	this->pImperativeListBox->AddItem(ScriptFlag::Stunnable, g_pTheDB->GetMessageText(MID_NPCStunnable));
 	this->pImperativeListBox->AddItem(ScriptFlag::NotStunnable, g_pTheDB->GetMessageText(MID_NPCNotStunnable));
 	this->pImperativeListBox->SelectLine(0);
+	this->pImperativeListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4356,7 +4357,8 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::FatalPushImmune, g_pTheDB->GetMessageText(MID_FatalPushImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::CanBeNPCBeethro, g_pTheDB->GetMessageText(MID_CanBeNPCBeethro));
-	this->pImperativeListBox->SelectLine(0);
+	this->pBehaviorListBox->SelectLine(0);
+	this->pBehaviorListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4447,6 +4449,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
 
 	this->pActionListBox->SelectLine(0);
+	this->pActionListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4515,7 +4518,9 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
 	this->pEventListBox->AddItem(CID_WispOnPlayer, g_pTheDB->GetMessageText(MID_WispOnPlayer));
 	this->pEventListBox->AddItem(CID_WubbaStabbed, g_pTheDB->GetMessageText(MID_WubbaStabbed));
+	
 	this->pEventListBox->SelectLine(0);
+	this->pEventListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4659,6 +4664,8 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	pListBox->AddItem(T_WALL_H, g_pTheDB->GetMessageText(MID_SecretWall));
 	pListBox->AddItem(T_WATER, g_pTheDB->GetMessageText(MID_Water));
 	pListBox->AddItem(T_WALL_IMAGE, g_pTheDB->GetMessageText(MID_WallImage));
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4693,6 +4700,8 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 		const UINT graphic = graphics[i];
 		pListBox->AddItem(graphic, g_pTheDB->GetMessageText(getMIDForMonster(graphic)));
 	}
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4743,6 +4752,8 @@ void CCharacterDialogWidget::PopulateCharacterList(CListBoxWidget *pListBox)
 		HoldCharacter *pChar = *ch;
 		pListBox->AddItem(pChar->dwCharID, pChar->charNameText.c_str());
 	}
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4767,6 +4778,8 @@ void CCharacterDialogWidget::PopulateGotoLabelList(const COMMANDPTR_VECTOR& comm
 				this->wIncrementedLabel = pCommand->x;
 		}
 	}
+
+	this->pGotoLabelListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4806,6 +4819,10 @@ void CCharacterDialogWidget::PopulateMainGraphicList()
 
 	ASSERT(this->pSpeakerListBox);
 	PopulateSpeakerList(this->pSpeakerListBox);
+
+	this->pGraphicListBox->SetAllowFiltering(true);
+	this->pPlayerGraphicListBox->SetAllowFiltering(true);
+	this->pSpeakerListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************

@@ -41,9 +41,9 @@ public:
 	virtual void   Hide(const bool bPaint = true);
 	virtual bool   IsFocusable() const {return this->bFocusingAllowed;}
 	bool  IsSelected() const {return this->bSelected;}
-	void  Select(const bool bPaint = true);
+	virtual void  Select(const bool bPaint = true);
 	void  SetFocusAllowed(const bool bVal = true);
-	void  Unselect(const bool bPaint = true);
+	virtual void  Unselect(const bool bPaint = true);
 	
 private:
 	bool  bSelected;
