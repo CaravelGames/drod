@@ -69,6 +69,7 @@
 #include "../DRODLib/FluffBaby.h"
 #include "../DRODLib/Gentryii.h"
 #include "../DRODLib/GameConstants.h"
+#include "../DRODLib/Halph.h"
 #include "../DRODLib/PlayerDouble.h"
 #include "../DRODLib/Monster.h"
 #include "../DRODLib/MonsterPiece.h"
@@ -1075,6 +1076,22 @@ void CRoomWidget::HighlightSelectedTile()
 				UINT wDestX, wDestY;
 				if (pPuff->GetGoal(wDestX,wDestY))
 					AddShadeEffect(wDestX, wDestY, PaleYellow);
+				bRemoveHighlightNextTurn = false;
+			}
+			break;
+
+			case M_HALPH: case M_HALPH2:
+			{
+				static const SURFACECOLOR Orange = { 255, 165, 0 };
+				//Show Halph's stored path
+				const CHalph* pHalph = DYN_CAST(const CHalph*, const CMonster*, pMonster);
+				for (UINT wPathIndex = 0; wPathIndex < pHalph->GetStoredPath().GetSize(); ++wPathIndex)
+				{
+					UINT wX, wY;
+					pHalph->GetStoredPath().GetAt(wPathIndex, wX, wY);
+					ASSERT(this->pRoom->IsValidColRow(wX, wY));
+					AddShadeEffect(wX, wY, Orange);
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
