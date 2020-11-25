@@ -706,9 +706,9 @@ void CCurrentGame::Clear(
 	this->pPendingPriorLocation = NULL;
 
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	this->music.clear();
 
@@ -963,17 +963,22 @@ WSTRING CCurrentGame::ExpandText(
 				} else {
 					//Resolve var name.
 					WCHAR wIntText[20];
+					//Is it a predefined var?
 					const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wEscapeStr);
 					InputCommands::DCMD reserved_lookup_id;
 					if (eVar != ScriptVars::P_NoVar)
 					{
-						//Is it a predefined var?
-						UINT val;
-						if (pCharacter)
-							val = pCharacter->getPredefinedVar(eVar);
-						else
-							val = getVar(eVar);
-						wStr += _itoW(int(val), wIntText, 10);
+						//Yes.
+						if (pCharacter) {
+							wStr += pCharacter->getPredefinedVar(eVar);
+						} else {
+							if (ScriptVars::IsStringVar(eVar)) {
+								wStr += getStringVar(eVar);
+							} else {
+								const UINT val = getVar(eVar);
+								wStr += _itoW(int(val), wIntText, 10);
+							}
+						}
 					} else if ((reserved_lookup_id = InputCommands::getCommandIDByVarName(wEscapeStr)) < InputCommands::DCMD_Count) {
 						//Is it a player input button?
 						wStr += getTextForInputCommandKey(reserved_lookup_id);
@@ -2284,6 +2289,20 @@ bool CCurrentGame::PlayCommands(
 
 	//Successful return if I processed all the commands.
 	return wCommandI == wCommandCount;
+}
+
+//*****************************************************************************
+WSTRING CCurrentGame::getStringVar(const UINT varIndex) const
+{
+	return WSTRING();
+/*
+	switch (varIndex) {
+		case (UINT)ScriptVars::P_LEVELNAME:
+			return WSTRING(this->pLevel->NameText);
+		default:
+			return WSTRING();
+	}
+*/
 }
 
 //*****************************************************************************
@@ -4440,14 +4459,27 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 	pObj = CueEvents.GetFirstPrivateData(CID_Speech);
 	while (pObj)
 	{
+		static const UINT MAX_SPEECH_HISTORY = 100;
 		const CFiredCharacterCommand *pCmd = DYN_CAST(const CFiredCharacterCommand*,
 				const CAttachableObject*, pObj);
 		if (!pCmd->bFlush) //Ignore flush commands.
 		{
+			if (this->roomSpeech.size() >= MAX_SPEECH_HISTORY)
+			{
+				//Pop first item from speech sequence.
+				delete this->roomSpeech[0].pSpeechCommand;
+				const UINT sizeMinusOne = this->roomSpeech.size() - 1;
+				for (UINT i = 0; i < sizeMinusOne; ++i)
+					this->roomSpeech[i] = this->roomSpeech[i + 1];
+				this->roomSpeech.pop_back();
+			}
+
 			CCharacterCommand *pCommand = new CCharacterCommand(*(pCmd->pCommand));
 			ASSERT(pCommand->pSpeech);
 			pCommand->pSpeech->MessageText = pCmd->text.c_str(); //get interpolated text
 			UINT& characterType = pCommand->pSpeech->wCharacter;
+			WSTRING customName = DefaultCustomCharacterName;
+
 			if (characterType == Speaker_Self)
 			{
 				//Resolve now because there won't be any hook to the executing NPC later.
@@ -4457,6 +4489,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				//Convert to the speaker type.
 				if (characterType < CUSTOM_CHARACTER_FIRST)
 					characterType = getSpeakerType(MONSTERTYPE(characterType));
+
+				customName = pCharacter->GetCustomName();
 			}
 			else if (characterType == Speaker_Player)
 			{
@@ -4467,8 +4501,24 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				if (wPlayerIdentity >= CUSTOM_CHARACTER_FIRST)
 					characterType = wPlayerIdentity;
 			}
+			else if (characterType == Speaker_Custom)
+			{
+				ASSERT(this->pRoom->IsValidColRow(pCommand->x, pCommand->y));
+				CMonster* pMonster = this->pRoom->GetMonsterAtSquare(
+					pCommand->x, pCommand->y);
+				if (pMonster)
+				{
+					if (pMonster->wType == M_CHARACTER) {
+						CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
-			this->roomSpeech.push_back(pCommand);
+						customName = pCharacter->GetCustomName();
+					}
+
+					characterType = getSpeakerType(MONSTERTYPE(pMonster->GetResolvedIdentity()));
+				}
+			}
+
+			this->roomSpeech.push_back(SpeechLog(customName, pCommand));
 		}
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -6473,14 +6523,14 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->ambientSounds = Src.ambientSounds;
 
 	//Speech log.
-	vector<CCharacterCommand*>::const_iterator iter;
+	vector<SpeechLog>::const_iterator iter;
 	for (iter = this->roomSpeech.begin();	iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	for (iter = Src.roomSpeech.begin();	iter != Src.roomSpeech.end(); ++iter)
 	{
-		CCharacterCommand& c = *(*iter);
-		this->roomSpeech.push_back(new CCharacterCommand(c));
+		CCharacterCommand& c = *iter->pSpeechCommand;
+		this->roomSpeech.push_back(SpeechLog(iter->customName, new CCharacterCommand(c)));
 	}
 	this->music = Src.music;
 
@@ -6721,9 +6771,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Reset ambient sounds and speech.
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	//Get sounds+speech queued on room entrance.

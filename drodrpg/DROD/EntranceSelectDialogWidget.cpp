@@ -393,10 +393,11 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 			//Speech history.
 			this->pListBoxWidget->SortAlphabetically(false);
 			ASSERT(this->pCurrentGame);
-			vector<CCharacterCommand*>& speech = this->pCurrentGame->roomSpeech;
+			vector<SpeechLog>& speech = this->pCurrentGame->roomSpeech;
 			for (UINT wIndex=0; wIndex<speech.size(); ++wIndex)
 			{
-				CDbSpeech *pSpeech = speech[wIndex]->pSpeech;
+				CCharacterCommand* pCommand = speech[wIndex].pSpeechCommand;
+				CDbSpeech* pSpeech = pCommand->pSpeech;
 				ASSERT(pSpeech);
 
 				//Get speaker name.
@@ -411,13 +412,15 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 				string colorUnused;
 				const UINT dwSpeakerTextID = getSpeakerNameText(characterType, colorUnused);
 				WSTRING charText;
-				if (pCustomChar)
+				if (speech[wIndex].customName != DefaultCustomCharacterName) {
+					charText = speech[wIndex].customName;
+				} else if (pCustomChar) {
 					charText = pCustomChar->charNameText.c_str();
-				else if (dwSpeakerTextID == MID_Custom)
+				} else if (dwSpeakerTextID == MID_Custom)
 				{
 					//Monster at (x,y) is speaking.
 					CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(
-							speech[wIndex]->x, speech[wIndex]->y);
+							pCommand->x, pCommand->y);
 					if (pMonster)
 					{
 						UINT customIdentity = pMonster->GetIdentity();
@@ -440,9 +443,9 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 						//No valid entity here.  Just display (x,y) coordinates.
 						WCHAR temp[16];
 						charText += wszLeftParen;
-						charText += _itow(speech[wIndex]->x, temp, 10);
+						charText += _itow(pCommand->x, temp, 10);
 						charText += wszComma;
-						charText += _itow(speech[wIndex]->y, temp, 10);
+						charText += _itow(pCommand->y, temp, 10);
 						charText += wszRightParen;
 					}
 				}

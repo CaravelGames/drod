@@ -55,6 +55,8 @@
 #include <vector>
 using std::vector;
 
+#define DefaultCustomCharacterName wszEmpty
+
 struct HoldCharacter;
 class CDbHold;
 class CCharacter : public CPlayerDouble
@@ -101,6 +103,7 @@ public:
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
 	virtual UINT   getSword() const;
 
+	WSTRING        GetCustomName() const { return this->customName; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -110,7 +113,9 @@ public:
 	void           getCommandXY(const CCharacterCommand& command,
 			UINT& x, UINT& y) const;
 
-	UINT  getPredefinedVar(const UINT varIndex) const;
+	WSTRING getPredefinedVar(const UINT varIndex) const;
+	UINT getPredefinedVarInt(const UINT varIndex) const;
+	WSTRING getPredefinedVarString(const UINT varIndex) const;
 
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAggressive() const {return false;}
@@ -214,7 +219,9 @@ private:
 
 	void PackExtraVars(const bool bSaveScript);
 
-	bool setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
+	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 
 	void SyncCustomCharacterData(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
 	static void SyncCustomCharacterData(UINT& wLogicalIdentity, const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
@@ -276,7 +283,11 @@ private:
 	bool bIfBlock;
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
+
+	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
+
 	UINT wLastSpeechLineNumber; //used during language import
+
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 
 	//Predefined vars.

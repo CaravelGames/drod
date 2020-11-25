@@ -63,6 +63,8 @@ const UINT MAX_ANSWERS = 9;
 #define EachUseStr "EachUse"
 #define EachVictoryStr "EachVictory"
 
+#define CustomNameStr "Name"
+
 #define ColorStr "Color"
 #define ParamXStr "XParam"
 #define ParamYStr "YParam"
@@ -398,7 +400,22 @@ void CCharacter::ChangeHoldForCommands(
 }
 
 //*****************************************************************************
-UINT CCharacter::getPredefinedVar(const UINT varIndex) const
+WSTRING CCharacter::getPredefinedVar(const UINT varIndex) const
+{
+	WSTRING wstr;
+	if (ScriptVars::IsStringVar(ScriptVars::Predefined(varIndex))) {
+		wstr = getPredefinedVarString(varIndex);
+	}
+	else {
+		WCHAR wIntText[20];
+		const UINT val = getPredefinedVarInt(varIndex);
+		wstr = _itoW(int(val), wIntText, 10);
+	}
+	return wstr;
+}
+
+//*****************************************************************************
+UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 //Returns: the value of the predefined var with this relative index
 {
 	ASSERT(this->pCurrentGame);
@@ -481,7 +498,23 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 }
 
 //*****************************************************************************
-bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
+WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
+//Returns: the value of the predefined var with this relative index
+{
+	ASSERT(this->pCurrentGame);
+	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
+	switch (varIndex)
+	{
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+			return this->customName;
+		default:
+			ASSERT(!"getPredefinedStringVar val not supported");
+			return WSTRING();
+	}
+}
+
+//*****************************************************************************
+bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
 //Returns: false if command cannot be allowed to execute (e.g., killing player on turn 0), otherwise true
 {
@@ -804,6 +837,23 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		break;
 	}
 	return true;
+}
+
+//*****************************************************************************
+void CCharacter::setPredefinedVarString(
+	const UINT varIndex, const WSTRING val,
+	CCueEvents& CueEvents)
+	//Sets the value of the predefined var with this relative index to the specified value
+{
+//	CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+
+	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
+	switch (varIndex)
+	{
+	case (UINT)ScriptVars::P_MONSTER_NAME:
+		this->customName = val;
+		break;
+	}
 }
 
 //*****************************************************************************
@@ -1420,10 +1470,12 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wVarName);
 		if (eVar != ScriptVars::P_NoVar)
 		{
-			if (pNPC)
-				return int(pNPC->getPredefinedVar(eVar));
+			if (!ScriptVars::IsStringVar(eVar)) {
+				if (pNPC)
+					return int(pNPC->getPredefinedVarInt(eVar));
 
-			return pGame->getVar(eVar);
+				return pGame->getVar(eVar);
+			}
 		}
 
 		//Is it a local hold var?
@@ -2989,99 +3041,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_VarSet:
 			{
 				//Sets var X (operation Y) W, e.g. X += 5
-
-				//Get variable.
-				CDbPackedVars& stats = pGame->stats;
-				char varID[10], varName[11] = "v";
-				UNPACKEDVARTYPE vType = UVT_int;
-
-				const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
-				int predefinedVarVal;
-				bool bValidInt = true;
-				if (!bPredefinedVar)
-				{
-					//Get local hold var.
-					_itoa(command.x, varID, 10);
-					strcat(varName, varID);
-
-					//Enforce basic type checking.
-					vType = stats.GetVarType(varName);
-					bValidInt = vType == UVT_int || vType == UVT_unknown;
-				} else {
-					predefinedVarVal = int(getPredefinedVar(command.x));
-				}
-
-				const bool bSetNumber = !(command.y == ScriptVars::AssignText ||
-						command.y == ScriptVars::AppendText);
-
-				int operand = int(command.w); //expect an integer value by default
-				if (!operand && !command.label.empty() && bSetNumber)
-				{
-					//Operand is not just an integer, but a text expression.
-					UINT index=0;
-					operand = parseExpression(command.label.c_str(), index, pGame, this);
-				}
-
-				int x=0;
-
-				switch (command.y)
-				{
-					case ScriptVars::Assign:
-						x = operand;
-					break;
-					case ScriptVars::Inc:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						addWithClamp(x, operand);
-					break;
-					case ScriptVars::Dec:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						addWithClamp(x, -operand);
-					break;
-					case ScriptVars::MultiplyBy:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						multWithClamp(x, operand);
-					break;
-					case ScriptVars::DivideBy:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						if (operand)
-							x /= operand;
-					break;
-					case ScriptVars::Mod:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						if (operand)
-							x = x % operand;
-					break;
-
-					case ScriptVars::AssignText:
-					{
-						WSTRING text = pGame->ExpandText(command.label.c_str());
-						stats.SetVar(varName, text.c_str());
-					}
-					break;
-					case ScriptVars::AppendText:
-					{
-						WSTRING text = stats.GetVar(varName, wszEmpty);
-						text += pGame->ExpandText(command.label.c_str());
-						stats.SetVar(varName, text.c_str());
-					}
-					break;
-					default: break;
-				}
-				if (bSetNumber)
-				{
-					if (bPredefinedVar) {
-						if (!setPredefinedVar(command.x, x, CueEvents)) {
-							STOP_COMMAND;
-						}
-					} else {
-						stats.SetVar(varName, x);
-					}
-				}
+				SetVariable(command, pGame, CueEvents);
 
 				//When a var is set, this might get it out of an otherwise infinite loop.
 				++wVarSets;
@@ -3268,6 +3228,113 @@ Finish:
 }
 
 //*****************************************************************************
+void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
+{
+	const UINT varIndex = command.x;
+
+	//Get variable.
+	CDbPackedVars& stats = pGame->stats;
+	char varID[10], varName[11] = "v";
+	UNPACKEDVARTYPE vType = UVT_int;
+
+	const bool bPredefinedVar = varIndex >= UINT(ScriptVars::FirstPredefinedVar);
+	int predefinedVarVal = 0;
+	WSTRING predefinedVarValStr;
+	bool bValidInt = true;
+	if (bPredefinedVar) {
+		if (ScriptVars::IsStringVar(ScriptVars::Predefined(varIndex))) {
+			predefinedVarValStr = getPredefinedVarString(varIndex);
+		} else {
+			predefinedVarVal = int(getPredefinedVarInt(varIndex));
+		}
+	} else {
+		//Get local hold var.
+		_itoa(varIndex, varID, 10);
+		strcat(varName, varID);
+
+		//Enforce basic type checking.
+		vType = stats.GetVarType(varName);
+		bValidInt = vType == UVT_int || vType == UVT_unknown;
+	}
+
+	const bool bSetNumber = !(command.y == ScriptVars::AssignText ||
+		command.y == ScriptVars::AppendText);
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty() && bSetNumber)
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	int x = 0;
+
+	switch (command.y)
+	{
+	case ScriptVars::Assign:
+		x = operand;
+		break;
+	case ScriptVars::Inc:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		addWithClamp(x, operand);
+		break;
+	case ScriptVars::Dec:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		addWithClamp(x, -operand);
+		break;
+	case ScriptVars::MultiplyBy:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		multWithClamp(x, operand);
+		break;
+	case ScriptVars::DivideBy:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		if (operand)
+			x /= operand;
+		break;
+	case ScriptVars::Mod:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		if (operand)
+			x = x % operand;
+		break;
+
+	case ScriptVars::AssignText:
+	{
+		const WSTRING text = pGame->ExpandText(command.label.c_str());
+		if (bPredefinedVar)
+			setPredefinedVarString(varIndex, text, CueEvents);
+		else
+			stats.SetVar(varName, text.c_str());
+	}
+	break;
+	case ScriptVars::AppendText:
+	{
+		WSTRING text = stats.GetVar(varName, wszEmpty);
+		text += pGame->ExpandText(command.label.c_str());
+		if (bPredefinedVar)
+			setPredefinedVarString(varIndex, text, CueEvents);
+		else
+			stats.SetVar(varName, text.c_str());
+	}
+	break;
+	default: break;
+	}
+	if (bSetNumber)
+	{
+		if (bPredefinedVar) {
+			setPredefinedVarInt(command.x, x, CueEvents);
+		} else {
+			stats.SetVar(varName, x);
+		}
+	}
+}
+
+//*****************************************************************************
 bool CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents)
 //Build the specified game element (flags) in rect (x,y,w,h).
 {
@@ -3410,20 +3477,22 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 	return false;
 }
 
-
+//******************************************************************************************
 bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
 {
+	const UINT varIndex = command.x;
+
 	//Get variable.
 	CDbPackedVars& stats = pGame->stats;
 	char varID[10], varName[11] = "v";
 	UNPACKEDVARTYPE vType = UVT_int;
 
-	const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
+	const bool bPredefinedVar = varIndex >= UINT(ScriptVars::FirstPredefinedVar);
 	bool bValidInt = true;
 	if (!bPredefinedVar)
 	{
 		//Get local hold var.
-		_itoa(command.x, varID, 10);
+		_itoa(varIndex, varID, 10);
 		strcat(varName, varID);
 
 		//Enforce basic type checking.
@@ -3441,9 +3510,13 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* 
 
 	int x = 0;
 	const bool bNumber = bValidInt && command.y != ScriptVars::EqualsText;
-	if (bNumber)
-		x = (bPredefinedVar ? int(getPredefinedVar(command.x))
-			: stats.GetVar(varName, (int)0));
+	if (bNumber) {
+		if (bPredefinedVar) {
+			x = int(getPredefinedVarInt(varIndex));
+		} else {
+			x = stats.GetVar(varName, (int)0);
+		}
+	}
 
 	switch (command.y)
 	{
@@ -4658,6 +4731,8 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->eachUseLabelIndex = vars.GetVar(EachUseStr, this->eachUseLabelIndex);
 	this->eachVictoryLabelIndex = vars.GetVar(EachVictoryStr, this->eachVictoryLabelIndex);
 
+	this->customName = vars.GetVar(CustomNameStr, this->customName.c_str());
+
 	//Imperatives.
 	this->bVulnerable = vars.GetVar(VulnerableStr, this->bVulnerable);
 	this->bMissionCritical = vars.GetVar(MissionCriticalStr, this->bMissionCritical);
@@ -4749,6 +4824,9 @@ const
 		vars.SetVar(EachUseStr, this->eachUseLabelIndex);
 	if (this->eachVictoryLabelIndex != NO_LABEL)
 		vars.SetVar(EachVictoryStr, this->eachVictoryLabelIndex);
+
+	if (!this->customName.empty())
+		vars.SetVar(CustomNameStr, this->customName.c_str());
 
 	//Imperatives.
 	if (!this->bVulnerable)

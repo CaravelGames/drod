@@ -131,7 +131,8 @@ namespace ScriptVars
 		P_TAR_SPAWN = -75,
 		P_GEL_SPAWN = -76,
 		P_QUEEN_SPAWN = -77,
-		FirstPredefinedVar = P_QUEEN_SPAWN, //set this to the last var in the enumeration
+		P_MONSTER_NAME = -78,
+		FirstPredefinedVar = P_MONSTER_NAME, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -161,6 +162,7 @@ namespace ScriptVars
 	void init();
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
+	bool IsStringVar(Predefined val);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 

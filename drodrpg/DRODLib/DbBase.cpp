@@ -720,6 +720,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SetMonsterVar: strText = "Set monster var"; break;
 		case MID_To: strText = "to"; break;
 		case MID_ValueOrExpression: strText = "Value or expression"; break;
+		case MID_VarMonsterName: strText = "_MyName"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
