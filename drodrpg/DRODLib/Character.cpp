@@ -2782,6 +2782,15 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_SetMovementType:
+			{
+				//Set movement type X
+				bProcessNextCommand = true;
+
+				const MovementType eNewMovementType = (MovementType)command.x;
+				this->eMovement = eNewMovementType;
+			}
+
 			case CCharacterCommand::CC_EachAttack:
 				//Goto label X each time I attack (i.e. hit the player).
 				this->eachAttackLabelIndex = GetIndexOfCommandWithLabel(command.x);
