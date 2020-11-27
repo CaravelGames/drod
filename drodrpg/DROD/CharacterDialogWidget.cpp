@@ -85,6 +85,7 @@ const UINT TAG_EQUIPTRANS_LISTBOX = 966;
 const UINT TAG_DIRECTIONLISTBOX2 = 965;
 const UINT TAG_STATLISTBOX = 964;
 const UINT TAG_VALUE_OR_EXPRESSION = 963;
+const UINT TAG_MOVETYPELISTBOX = 962;
 
 const UINT TAG_EVENTLABEL = 959;
 const UINT TAG_WAITLABEL = 958;
@@ -376,6 +377,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pCharNameText(NULL), pCharListBox(NULL)
 	, pSpeechText(NULL)
 	, pStatListBox(NULL)
+	, pMovementTypeListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1143,6 +1145,9 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_STATLISTBOX = 200;
 	static const UINT CY_STATLISTBOX = 5 * 22 + 4;
 
+	static const UINT CX_MOVETYPELISTBOX = 200;
+	static const UINT CY_MOVETYPELISTBOX = 4 * 22 + 4;
+
 	static const UINT CX_VALUE_OR_EXPRESSION_LABEL = 300;
 
 	ASSERT(!this->pAddCommandDialog);
@@ -1606,6 +1611,16 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VALUE_OR_EXPRESSION, X_TEXTLABEL,
 		Y_TEXTLABEL, CX_VALUE_OR_EXPRESSION_LABEL, CY_TEXTLABEL, F_Small, g_pTheDB->GetMessageText(MID_ValueOrExpression)));
+
+	//Movement type list box
+	this->pMovementTypeListBox = new CListBoxWidget(TAG_MOVETYPELISTBOX,
+		X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_MOVETYPELISTBOX, CY_MOVETYPELISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pMovementTypeListBox);
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Floor));
+	this->pMovementTypeListBox->AddItem(MovementType::WATER, g_pTheDB->GetMessageText(MID_Water));
+	this->pMovementTypeListBox->AddItem(MovementType::WALL, g_pTheDB->GetMessageText(MID_Wall));
+	this->pMovementTypeListBox->AddItem(MovementType::AIR, L"Air");
+	this->pStatListBox->SelectLine(0);
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3522,6 +3537,10 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_SetMovementType:
+			wstr += this->pMovementTypeListBox->GetTextForKey(command.x);
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -3781,6 +3800,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, L"Set Movement Type");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
@@ -4477,7 +4497,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 37;
+	static const UINT NUM_WIDGETS = 38;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4490,7 +4510,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX,
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
-		TAG_TEXT2, TAG_STATLISTBOX
+		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -4520,6 +4540,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT NEWENTITY[] =   { TAG_GRAPHICLISTBOX2, TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT EFFECT[] =      { TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3, 0 };
 	static const UINT STATSET[] =     { TAG_STATLISTBOX, TAG_SPEECHTEXT, 0 };
+	static const UINT MOVETYPE[] =    { TAG_MOVETYPELISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -4591,7 +4612,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		GOTOLIST,           //CC_EachVictory
 		TEXTBOX,            //CC_RoomLocationText
 		TEXT_AND_COLOR,     //CC_FlashingText
-		STATSET             //CC_SetMonsterVar
+		STATSET,            //CC_SetMonsterVar
+		MOVETYPE            //CC_SetMovementType
 	};
 
 	static const UINT NUM_LABELS = 26;
@@ -4699,7 +4721,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_EachVictory
 		TEXT_L,             //CC_RoomLocationText
 		TEXT_AND_COLOR_L,   //CC_FlashingText
-		STAT_L              //CC_SetMonsterVar
+		STAT_L,             //CC_SetMonsterVar
+		NO_LABELS           //CC_SetMovementType
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5565,6 +5588,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_SetMovementType:
+			this->pCommand->x = this->pMovementTypeListBox->GetSelectedItem();
+			AddCommand();
+		break;
+
 		case CCharacterCommand::CC_CutScene:
 		{
 			CTextBoxWidget *pDelay = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -5894,6 +5922,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			else
 				this->pSpeechText->SetText(_itoW(this->pCommand->h, temp, 10));
 		}
+		break;
+
+		case CCharacterCommand::CC_SetMovementType:
+			this->pMovementTypeListBox->SelectItem(this->pCommand->x);
 		break;
 
 		case CCharacterCommand::CC_CutScene:
@@ -6494,6 +6526,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			pCommand->label = pText + pos; //get text expression
 	break;
 
+	case CCharacterCommand::CC_SetMovementType:
+		parseMandatoryOption(pCommand->x, this->pMovementTypeListBox, bFound);
+	break;
+
 	case CCharacterCommand::CC_SetMusic:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
@@ -6948,6 +6984,10 @@ WSTRING CCharacterDialogWidget::toText(
 		else
 			concatNum(c.h);
 	}
+	break;
+
+	case CCharacterCommand::CC_SetMovementType:
+		wstr += this->pMovementTypeListBox->GetTextForKey(c.x);
 	break;
 
 	case CCharacterCommand::CC_SetMusic:
