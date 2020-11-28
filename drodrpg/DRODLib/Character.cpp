@@ -3089,6 +3089,7 @@ void CCharacter::Process(
 				//Sets this NPC to look like entity X.
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
+				SetDefaultMovementType();
 				bProcessNextCommand = true;
 			}
 			break;
@@ -4509,10 +4510,40 @@ void CCharacter::SetCurrentGame(
 	//Check for a custom character.
 	ResolveLogicalIdentity(this->pCurrentGame ? this->pCurrentGame->pHold : NULL);
 
+	//Set the movement type
+	SetDefaultMovementType();
+
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
 	if (this->pCustomChar && this->commands.empty())
 		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultMovementType()
+//Sets the character's eMovement to the appropriate type for it's identity
+{
+	switch (GetResolvedIdentity())
+	{
+		//These types can move through wall.
+		case M_SEEP:
+			eMovement = MovementType::WALL;
+		break;
+
+		//Flying types may also move over pits.
+		case M_WWING: case M_FEGUNDO:
+			eMovement = MovementType::AIR;
+		break;
+
+		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
+			eMovement = MovementType::WATER;
+		break;
+
+		default:
+			eMovement = MovementType::GROUND;
+		break;
+	}
 }
 
 //*****************************************************************************
