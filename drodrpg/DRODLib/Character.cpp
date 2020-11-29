@@ -3827,28 +3827,12 @@ bool CCharacter::IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const
 }
 
 //*****************************************************************************
-bool CCharacter::IsFlying() const
-//Returns: whether character is flying
-{
-	const UINT identity = GetResolvedIdentity();
-	return bIsEntityFlying(identity);
-}
-
-//*****************************************************************************
 bool CCharacter::IsFriendly() const
 //Returns: whether character is friendly to the player
 {
 //	const UINT identity = GetResolvedIdentity();
 	return //identity == M_HALPH || identity == M_STALWART ||
 			this->bSafeToPlayer;
-}
-
-//*****************************************************************************
-bool CCharacter::IsSwimming() const
-//Returns: whether character is swimming
-{
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_WATERSKIPPER;
 }
 
 //*****************************************************************************
@@ -4316,12 +4300,12 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
-	switch (GetResolvedIdentity())
+	switch (eMovement)
 	{
 		//These types can move through wall.
 		//NOTE: For greater scripting flexibility, these types will also be allowed
 		//to perform normal movement.
-		case M_SEEP:
+		case MovementType::WALL:
 		{
 			return CMonster::IsTileObstacle(wTileNo) &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
@@ -4329,12 +4313,11 @@ const
 		}
 
 		//Flying types may also move over pits.
-		case M_WWING: case M_FEGUNDO:
+		case MovementType::AIR:
 			return CMonster::IsTileObstacle(wTileNo) &&
 					!bIsWater(wTileNo) && !bIsPit(wTileNo);
 
-		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
+		case MovementType::WATER:
 			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
 
 		default:	return CMonster::IsTileObstacle(wTileNo);
