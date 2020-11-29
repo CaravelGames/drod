@@ -1478,6 +1478,9 @@ enum MID_CONSTANT {
   MID_SetMonsterVar = 1792,
   MID_To = 1793,
   MID_ValueOrExpression = 1794,
+  MID_SetMovementType = 1796,
+  MID_Ground = 1797,
+  MID_Air = 1798,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

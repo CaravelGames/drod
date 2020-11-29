@@ -1616,10 +1616,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMovementTypeListBox = new CListBoxWidget(TAG_MOVETYPELISTBOX,
 		X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_MOVETYPELISTBOX, CY_MOVETYPELISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pMovementTypeListBox);
-	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Floor));
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Ground));
 	this->pMovementTypeListBox->AddItem(MovementType::WATER, g_pTheDB->GetMessageText(MID_Water));
 	this->pMovementTypeListBox->AddItem(MovementType::WALL, g_pTheDB->GetMessageText(MID_Wall));
-	this->pMovementTypeListBox->AddItem(MovementType::AIR, L"Air");
+	this->pMovementTypeListBox->AddItem(MovementType::AIR, g_pTheDB->GetMessageText(MID_Air));
 	this->pStatListBox->SelectLine(0);
 
 	//OK/cancel buttons.
@@ -3800,7 +3800,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, L"Set Movement Type");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
