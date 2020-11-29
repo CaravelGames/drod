@@ -7074,9 +7074,12 @@ void CRoomWidget::DrawCharacter(
 
 	AddJitterOffset(pCharacter->wX, pCharacter->wY, wXOffset, wYOffset);
 
+	//Characters with wall movement type are not raised
+	float fRaisedFactor = (pCharacter->eMovement == WALL) ? 0.0f : fRaised;
+
 	//Draw character.
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset,
-			bMoveInProgress || wXOffset || wYOffset, fRaised);
+			bMoveInProgress || wXOffset || wYOffset, fRaisedFactor);
 	blit.nAddColor = pCharacter->getColor();
 	DrawTileImage(blit, pDestSurface);
 
