@@ -2731,6 +2731,14 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetMovementType:
+			{
+				//Set movement type X
+				bProcessNextCommand = true;
+
+				const MovementType eNewMovementType = (MovementType)command.x;
+				this->eMovement = eNewMovementType;
+			}
 			case CCharacterCommand::CC_TurnIntoMonster:
 				TurnIntoMonster(CueEvents);
 			break;
