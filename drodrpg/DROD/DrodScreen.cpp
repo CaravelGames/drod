@@ -774,6 +774,27 @@ WSTRING CDrodScreen::getStatsText(
 }
 
 //*****************************************************************************
+void appendDoorStatsLine(WSTRING& wstr, UINT mid, UINT closed, UINT open)
+{
+	if (closed || open)
+	{
+		WCHAR num[16];
+
+		wstr += wszCRLF;
+		wstr += g_pTheDB->GetMessageText(mid);
+		wstr += wszColon;
+		wstr += wszSpace;
+		wstr += _itoW(closed, num, 10);
+		if (open) {
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(open, num, 10);
+			wstr += wszRightParen;
+		}
+	}
+}
+
+//*****************************************************************************
 WSTRING CDrodScreen::getStatsText(
 //Print stats as text.
 //
@@ -810,38 +831,12 @@ WSTRING CDrodScreen::getStatsText(
 		wstr += _itoW(st.secrets, num, 10);
 	}
 
-	if (st.yellowDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_YellowDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.yellowDoors, num, 10);
-	}
-	if (st.greenDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_GreenDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.greenDoors, num, 10);
-	}
-	if (st.blueDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_BlueDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.blueDoors, num, 10);
-	}
-	if (st.moneyDoorCost)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_MoneyDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.moneyDoorCost, num, 10);
-	}
+	appendDoorStatsLine(wstr, MID_YellowDoor, st.yellowDoors, st.openYellowDoors);
+	appendDoorStatsLine(wstr, MID_GreenDoor, st.greenDoors, st.openGreenDoors);
+	appendDoorStatsLine(wstr, MID_BlueDoor, st.blueDoors, st.openBlueDoors);
+	appendDoorStatsLine(wstr, MID_MoneyDoor, st.moneyDoorCost, st.openMoneyDoorCost);
+	appendDoorStatsLine(wstr, MID_RedDoor, st.redDoors, st.openRedDoors);
+	appendDoorStatsLine(wstr, MID_BlackDoor, st.blackDoors, st.openBlackDoors);
 
 	return wstr;
 }
@@ -985,7 +980,7 @@ void CDrodScreen::EditGlobalVars(
 				//Protect against certain dangerous states.
 				switch (itemID)
 				{
-					case (UINT)ScriptVars::P_HP:
+					case (int)ScriptVars::P_HP:
 						if (int(newVal) < 1)
 							newVal = 1; //constrain HP to preserve life
 					break;

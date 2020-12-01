@@ -162,6 +162,14 @@ SOURCE=.\NetInterface.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\OrbUtil.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\OrbUtil.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\PlayerStats.cpp
 # End Source File
 # Begin Source File
