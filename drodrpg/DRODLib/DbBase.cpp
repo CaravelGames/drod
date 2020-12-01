@@ -721,7 +721,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_To: strText = "to"; break;
 		case MID_ValueOrExpression: strText = "Value or expression"; break;
 		case MID_VarMonsterName: strText = "_MyName"; break;
-		case MID_SetMovementType: strText = "Set Movement Type"; break;
+		case MID_SetMovementType: strText = "Set movement type"; break;
 		case MID_Ground: strText = "Ground"; break;
 		case MID_Air: strText = "Air"; break;
 		default: break;
