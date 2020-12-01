@@ -3209,7 +3209,7 @@ const
   		if (!this->pRoom->IsValidColRow(wNX, wNY)) continue;
 
 		//Calculate dark
-		const float fDark = GetOverheadDarknessAt(wNX, wNY) * blit.appliedDarkness;
+		const float fDark = GetOverheadDarknessAt(wNX, wNY, blit.appliedDarkness);
 		const float dark_value = fDark/256.0f; //div by 256 instead of 255 for speed optimization
 		const bool add_darkness = fDark < 1.0f;
 
@@ -3619,13 +3619,16 @@ bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest
 }
 
 //*****************************************************************************
-float CRoomWidget::GetOverheadDarknessAt(const UINT wX, const UINT wY) const
+float CRoomWidget::GetOverheadDarknessAt(const UINT wX, const UINT wY,
+	const float fIntensity) //[default=1.0] input a value <1 to reduce the amount of darkening applied
+const
 {
 	const UINT darkVal = this->pRoom->tileLights.GetAt(wX, wY);
 	if (bIsDarkTileValue(darkVal))
 	{
 		ASSERT(darkVal - LIGHT_OFF - 1 < NUM_DARK_TYPES);
-		return darkMap[darkVal - LIGHT_OFF - 1];
+		ASSERT(0.0f <= fIntensity && fIntensity <= 1.0f);
+		return darkMap[UINT((darkVal - LIGHT_OFF - 1) * fIntensity)];
 	}
 	return 1.0f;
 }
@@ -6399,7 +6402,7 @@ void CRoomWidget::DrawTLayerTiles(
 		const UINT wXOffset = (pObj->wPrevX - coord.wX) * this->dwMovementStepsLeft;
 		const UINT wYOffset = (pObj->wPrevY - coord.wY) * this->dwMovementStepsLeft;
 		TileImageBlitParams blit(coord.wX, coord.wY, tileImage, wXOffset, wYOffset, true);
-		blit.appliedDarkness = 1;
+		blit.appliedDarkness = 1; //apply lighting the same as for stationary room tiles and objects
 		DrawTileImage(blit, pDestSurface);
 		//Absolutely required, otherwise on slow repeat speed a quick undo followed by
 		// action can cause an object to disappear, because its first blit will be entirely
@@ -7247,7 +7250,7 @@ void CRoomWidget::DrawTileLight(
 		AddLightOffset(pDestSurface, blit);
 	} else {
 		//Add dark to sprite.
-		const float fDark = GetOverheadDarknessAt(nCol, nRow) * blit.appliedDarkness;
+		const float fDark = GetOverheadDarknessAt(nCol, nRow, blit.appliedDarkness);
 
 		//Add light to sprite.
 		if (this->pRoom->tileLights.Exists(nCol, nRow) ||

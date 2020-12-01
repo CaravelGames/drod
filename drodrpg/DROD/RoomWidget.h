@@ -177,7 +177,7 @@ struct TileImageBlitParams {
 		, bClipped(false)
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
-		, appliedDarkness(0.75)
+		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -569,7 +569,7 @@ private:
 			LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
 
-	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY, const float fIntensity=1.0f) const;
 
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 
