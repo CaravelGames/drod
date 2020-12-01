@@ -175,6 +175,7 @@ const UINT TAG_BEHAVIOR_LISTBOX = 882;
 const UINT TAG_REMAINS_LISTBOX = 881;
 const UINT TAG_ONOFFLISTBOX4 = 880;
 const UINT TAG_KEEPBEHAVIOR_LABEL = 879;
+const UINT TAG_MOVETYPELISTBOX = 878;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -415,6 +416,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pWeaponListBox(NULL)
 	, pWeaponFlagsListBox(NULL)
 	, pAttackTileListBox(NULL)
+	, pMovementTypeListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1251,6 +1253,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_ATTACKTILE_LISTBOX = 120;
 	static const UINT CY_ATTACKTILE_LISTBOX = 4*LIST_LINE_HEIGHT + 4;
 
+	static const UINT MOVETYPELISTBOX_X = X_IMPERATIVELISTBOX;
+	static const UINT MOVETYPELISTBOX_Y = Y_IMPERATIVELISTBOX;
+	static const UINT MOVETYPELISTBOX_CX = 200;
+	static const UINT MOVETYPELISTBOX_CY = 5 * LIST_LINE_HEIGHT + 4;
+
 	//World map input.
 	static const int X_XCOORDLABEL = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
 	static const int Y_XCOORDLABEL = Y_WAITLABEL;
@@ -1659,6 +1666,16 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_DISPLAYSPEECHLABEL, Y_DISPLAYSPEECHLABEL,
 			CX_DISPLAYSPEECHLABEL, CY_DISPLAYSPEECHLABEL,
 			F_Small, g_pTheDB->GetMessageText(MID_DisplaySpeech)));
+
+	//Movement types
+	this->pMovementTypeListBox = new CListBoxWidget(TAG_MOVETYPELISTBOX,
+		MOVETYPELISTBOX_X, MOVETYPELISTBOX_Y, MOVETYPELISTBOX_CX, MOVETYPELISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(pMovementTypeListBox);
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Floor));
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND_AND_SHALLOW_WATER, g_pTheDB->GetMessageText(MID_ShallowWater));
+	this->pMovementTypeListBox->AddItem(MovementType::WATER, g_pTheDB->GetMessageText(MID_Water));
+	this->pMovementTypeListBox->AddItem(MovementType::WALL, g_pTheDB->GetMessageText(MID_Wall));
+	this->pMovementTypeListBox->AddItem(MovementType::AIR, L"Air");
 
 	//Open/close selection.
 	this->pOpenCloseListBox = new CListBoxWidget(TAG_OPENCLOSELISTBOX,
@@ -3744,6 +3761,10 @@ const
 			wstr += this->pOnOffListBox3->GetTextForKey(command.y);
 		break;
 
+		case CCharacterCommand::CC_SetMovementType:
+			wstr += this->pMovementTypeListBox->GetTextForKey(command.x);
+		break;
+
 		case CCharacterCommand::CC_SetMusic:
 			if (command.label.size())
 				wstr += command.label;
@@ -4409,6 +4430,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, L"Set movement type");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerAppearance, g_pTheDB->GetMessageText(MID_SetPlayerAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerStealth, g_pTheDB->GetMessageText(MID_SetPlayerStealth));
@@ -5102,7 +5124,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 53;
+	static const UINT NUM_WIDGETS = 54;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5120,7 +5142,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
-		TAG_ONOFFLISTBOX4
+		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5166,6 +5188,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT NATURAL_TARGET[] = { TAG_NATURAL_TARGET_TYPES, 0 };
 	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
 	static const UINT PUSH_TILE[] =     { TAG_DIRECTIONLISTBOX2, 0 };
+	static const UINT MOVETYPE[] = { TAG_MOVETYPELISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5254,7 +5277,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WEAPONS2,          //CC_WaitForWeapon
 		BEHAVIOR,            //CC_BEHAVIOR
 		MONSTER_REMAINS,    //CC_WaitForRemains
-		PUSH_TILE           //CC_PushTile
+		PUSH_TILE,          //CC_PushTile
+		MOVETYPE            //CC_SetMovementType
 	};
 
 	static const UINT NUM_LABELS = 30;
@@ -5384,7 +5408,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,			//CC_WaitForWeapon
 		NO_LABELS,          //CC_Behavior
 		NO_LABELS,          //CC_WaitForRemains
-		PUSH_TILE_L         //CC_PushTile
+		PUSH_TILE_L,        //CC_PushTile
+		NO_LABELS           //CC_SetMovementType
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5921,7 +5946,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->x = this->pBehaviorListBox->GetSelectedItem();
 			this->pCommand->y = this->pOnOffListBox3->GetSelectedItem();
 			AddCommand();
-			break;
+		break;
+
+		case CCharacterCommand::CC_SetMovementType:
+			this->pCommand->x = this->pMovementTypeListBox->GetSelectedItem();
+			AddCommand();
+		break;
 
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pCommand->x = this->pStealthListBox->GetSelectedItem();
@@ -6614,7 +6644,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_Behavior:
 			this->pBehaviorListBox->SelectItem(this->pCommand->x);
 			this->pOnOffListBox3->SelectItem(this->pCommand->y);
-			break;
+		break;
+
+		case CCharacterCommand::CC_SetMovementType:
+			this->pMovementTypeListBox->SelectItem(this->pCommand->x);
+		break;
 
 		case CCharacterCommand::CC_SetPlayerStealth:
 			this->pStealthListBox->SelectItem(this->pCommand->x);
@@ -7142,6 +7176,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->x);
 		skipComma;
 		parseMandatoryOption(pCommand->y, this->pDirectionListBox3, bFound);
+	break;
+
+	case CCharacterCommand::CC_SetMovementType:
+		parseMandatoryOption(pCommand->x, this->pMovementTypeListBox, bFound);
 	break;
 
 	case CCharacterCommand::CC_AttackTile:
@@ -7793,6 +7831,10 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_Behavior:
 		concatNumWithComma(c.x);
 		wstr += this->pDirectionListBox3->GetTextForKey(c.y);
+	break;
+
+	case CCharacterCommand::CC_SetMovementType:
+		wstr += this->pMovementTypeListBox->GetTextForKey(c.x);
 	break;
 
 	case CCharacterCommand::CC_ActivateItemAt:
