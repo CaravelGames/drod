@@ -194,7 +194,7 @@ struct TileImageBlitParams {
 		, bClipped(false)
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
-		, appliedDarkness(0.75)
+		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -624,7 +624,7 @@ private:
 
 	CRoomEffectList* GetEffectListForLayer(const int layer) const;
 
-	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY, const float fIntensity=1.0f) const;
 
 	bool           GetPlayerDisplayTiles(const CSwordsman &swordsman,
 			UINT& wO, UINT& wFrame, UINT& wSManTI, UINT& wSwordTI) const;

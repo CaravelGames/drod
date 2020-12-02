@@ -695,6 +695,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PreviousIf: strText = "<Previous If>"; break;
 		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
+		case MID_QuickPathNotAvailable: strText = "No known path is available."; break;
 		case MID_Rain: strText = "Rain"; break;
 		case MID_LevelMapDetail: strText = "Level Map (detailed)"; break;
 		case MID_DrankPotion: strText = "Player drank speed/invisibility potion"; break;
