@@ -2739,6 +2739,7 @@ void CCharacter::Process(
 				const MovementType eNewMovementType = (MovementType)command.x;
 				this->eMovement = eNewMovementType;
 			}
+			break;
 			case CCharacterCommand::CC_TurnIntoMonster:
 				TurnIntoMonster(CueEvents);
 			break;
