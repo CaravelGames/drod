@@ -2790,6 +2790,7 @@ void CCharacter::Process(
 				const MovementType eNewMovementType = (MovementType)command.x;
 				this->eMovement = eNewMovementType;
 			}
+			break;
 
 			case CCharacterCommand::CC_EachAttack:
 				//Goto label X each time I attack (i.e. hit the player).
@@ -4504,7 +4505,7 @@ void CCharacter::SetCurrentGame(
 
 //*****************************************************************************
 void CCharacter::SetDefaultMovementType()
-//Sets the character's eMovement to the appropriate type for it's identity
+//Sets the character's eMovement to the appropriate type for its identity
 {
 	switch (GetResolvedIdentity())
 	{
@@ -4519,7 +4520,6 @@ void CCharacter::SetDefaultMovementType()
 		break;
 
 		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
 			eMovement = MovementType::WATER;
 		break;
 
