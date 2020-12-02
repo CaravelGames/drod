@@ -2873,6 +2873,7 @@ void CCharacter::Process(
 				// When the underlying identity is changed, update default behaviors
 				if (!command.y && wIdentity != wPreviousIdentity) {
 					SetDefaultBehaviors();
+					SetDefaultMovementType();
 				}
 				bProcessNextCommand = true;
 			}
@@ -4874,6 +4875,7 @@ void CCharacter::SetCurrentGame(
 		}
 
 		SetDefaultBehaviors();
+		SetDefaultMovementType();
 	}
 
 	//If this NPC is a custom character with no script,
@@ -4941,6 +4943,31 @@ void CCharacter::SetDefaultBehaviors()
 	}
 	if (!bCanFluffKill(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffImmune);
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultMovementType()
+//Sets the character's eMovement to the appropriate type for its identity
+{
+	switch (GetResolvedIdentity()) {
+		//These types can move through wall.
+	case M_SEEP:
+		eMovement = MovementType::WALL;
+	break;
+
+	//These types can also move over pits.
+	case M_WWING: case M_FEGUNDO:
+		eMovement = MovementType::AIR;
+	break;
+
+	case M_WATERSKIPPER:
+	case M_SKIPPERNEST:
+		eMovement = MovementType::WATER;
+	break;
+
+	default:
+		eMovement = MovementType::GROUND_AND_SHALLOW_WATER;
 	}
 }
 
