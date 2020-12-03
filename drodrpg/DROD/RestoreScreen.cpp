@@ -48,6 +48,7 @@ const UINT TAG_ROOM_WIDGET = 1012;
 const UINT TAG_STATS_LABEL = 1013;
 
 const UINT TAG_SAVE_LBOX = 1020;
+const UINT TAG_SORT_LBOX = 1021;
 
 const UINT TAG_HOLD_EXPLORED = 1030;
 const UINT TAG_HOLD_SECRETS = 1031;
@@ -57,6 +58,13 @@ const UINT TAG_CANCEL = 1092;
 const UINT TAG_HELP = 1093;
 const UINT TAG_EXPORT = 1094;
 const UINT TAG_IMPORT = 1095;
+const UINT TAG_RENAME = 1096;
+
+enum GameSort
+{
+	GS_CHRONO,
+	GS_ALPHA
+};
 
 //
 //Protected methods.
@@ -67,6 +75,7 @@ CRestoreScreen::CRestoreScreen()
 	: CDrodScreen(SCR_Restore)
 	, dwSelectedSavedGameID(0L), dwLastGameID(0L)
 //	, wConqueredRooms(0)
+	, gameSort(GS_CHRONO)
 	, bHoldConquered(false), bResetWidgets(true)
 	, pCurrentRestoreGame(NULL)
 	, pRoomWidget(NULL)
@@ -81,7 +90,9 @@ CRestoreScreen::CRestoreScreen()
 
 	static const UINT CX_SPACE = 12;
 	static const UINT CY_SPACE = 12;
-	static const UINT CY_TITLE = 50;
+	static const UINT CY_BUTTON = CY_STANDARD_BUTTON;
+
+	static const UINT CY_TITLE = 52;
 	static const UINT CY_TITLE_SPACE = 15;
 	static const int Y_TITLE = CY_TITLE_SPACE;
 
@@ -93,7 +104,7 @@ CRestoreScreen::CRestoreScreen()
 	static const int Y_POSITION_LABEL = Y_STATS_LABEL + CY_STATS_LABEL + CY_SPACE;
 	static const UINT CY_POSITION_LABEL = 25;
 	static const int Y_MINIROOM = Y_POSITION_LABEL + CY_POSITION_LABEL;
-	const UINT CY_MINIROOM = this->h - Y_MINIROOM - CY_STANDARD_BUTTON - CY_SPACE * 2 - 6;
+	const UINT CY_MINIROOM = this->h - Y_MINIROOM - CY_BUTTON - CY_SPACE * 2 - 6;
 	//Width of mini-room must be proportional to regular room display.
 	static const UINT CX_MINIROOM = CY_MINIROOM * CDrodBitmapManager::CX_ROOM /
 			CDrodBitmapManager::CY_ROOM;
@@ -105,18 +116,21 @@ CRestoreScreen::CRestoreScreen()
 	static const UINT CX_POSITION_LABEL = CX_MINIROOM;
 
 	//Buttons.
-	static const UINT CX_RESTORE_BUTTON = 105;
-	static const UINT CX_CANCEL_BUTTON = 105;
-	static const UINT CX_EXPORT_BUTTON = 105;
-	static const UINT CX_IMPORT_BUTTON = 105;
-	static const UINT CX_HELP_BUTTON = 90;
+	static const UINT CX_RESTORE_BUTTON = 90;
+	static const UINT CX_RENAME_BUTTON = 90;
+	static const UINT CX_CANCEL_BUTTON = 85;
+	static const UINT CX_EXPORT_BUTTON = 90;
+	static const UINT CX_IMPORT_BUTTON = 90;
+	static const UINT CX_HELP_BUTTON = 80;
 	const int X_RESTORE_BUTTON = X_MINIROOM;
-	static const int X_EXPORT_BUTTON = X_RESTORE_BUTTON + CX_RESTORE_BUTTON + CX_SPACE;
-	static const int X_IMPORT_BUTTON = X_EXPORT_BUTTON + CX_EXPORT_BUTTON + CX_SPACE;
-	const int X_HELP_BUTTON = X_IMPORT_BUTTON + CX_IMPORT_BUTTON + CX_SPACE;
-	const int X_CANCEL_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE;
-	static const UINT CY_RESTORE_BUTTON = CY_STANDARD_BUTTON;
+	const int X_RENAME_BUTTON = X_RESTORE_BUTTON + CX_RESTORE_BUTTON + CX_SPACE/2;
+	static const int X_EXPORT_BUTTON = X_RENAME_BUTTON + CX_RENAME_BUTTON + CX_SPACE/2;
+	static const int X_IMPORT_BUTTON = X_EXPORT_BUTTON + CX_EXPORT_BUTTON + CX_SPACE/2;
+	const int X_HELP_BUTTON = X_IMPORT_BUTTON + CX_IMPORT_BUTTON + CX_SPACE/2;
+	const int X_CANCEL_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE/2;
+	static const UINT CY_RESTORE_BUTTON = CY_BUTTON;
 	const int Y_RESTORE_BUTTON = this->h - CY_SPACE - CY_RESTORE_BUTTON;
+	const int Y_RENAME_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_CANCEL_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_EXPORT_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_IMPORT_BUTTON = Y_RESTORE_BUTTON;
@@ -126,13 +140,23 @@ CRestoreScreen::CRestoreScreen()
 	const UINT CX_MAP = this->w - CX_SPACE - CX_MINIROOM - CX_SPACE - CX_SPACE;
 
 	static const int X_CHOOSE_SAVE_LABEL = CX_SPACE;
-	static const int Y_CHOOSE_SAVE_LABEL = Y_STATS_LABEL;
+	static const int Y_CHOOSE_SAVE_LABEL = Y_TITLE + CY_TITLE + 22;
 	static const UINT CX_CHOOSE_SAVE_LABEL = CX_MAP;
-	static const UINT CY_CHOOSE_SAVE_LABEL = CY_STANDARD_BUTTON;
+	static const UINT CY_CHOOSE_SAVE_LABEL = CY_BUTTON;
 	static const int X_SAVE_LBOX = X_CHOOSE_SAVE_LABEL;
 	static const int Y_SAVE_LBOX = Y_CHOOSE_SAVE_LABEL + CY_CHOOSE_SAVE_LABEL + 1;
 	static const UINT CX_SAVE_LBOX = CX_MAP;
 	static const UINT CY_SAVE_LBOX = 13*22 + 4; //13 items;
+
+	static const UINT CX_SORT_LIST = 60;
+	static const UINT CY_SORT_LIST = 2*22 + 4; // 53;
+	static const int X_SORT_LIST = X_SAVE_LBOX + CX_SAVE_LBOX - CX_SORT_LIST;
+	static const int Y_SORT_LIST = Y_TITLE + CY_TITLE;
+
+	static const UINT CX_SORT_LABEL = 60;
+	static const int X_SORT_LABEL = X_SORT_LIST - CX_SORT_LABEL;
+	static const int Y_SORT_LABEL = Y_SORT_LIST;
+	static const UINT CY_SORT_LABEL = CY_BUTTON;
 
 	static const int X_MAP = CX_SPACE;
 	const int Y_MAP = Y_SAVE_LBOX + CY_SAVE_LBOX + CY_SPACE;
@@ -165,21 +189,25 @@ CRestoreScreen::CRestoreScreen()
 			CX_RESTORE_BUTTON, CY_RESTORE_BUTTON, g_pTheDB->GetMessageText(MID_Restore));
 	AddWidget(pButton);
 
+	pButton = new CButtonWidget(TAG_RENAME, X_RENAME_BUTTON, Y_RENAME_BUTTON,
+		CX_RENAME_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Rename));
+	AddWidget(pButton);
+
 	pButton = new CButtonWidget(TAG_EXPORT, X_EXPORT_BUTTON, Y_EXPORT_BUTTON,
-			CX_EXPORT_BUTTON, CY_STANDARD_BUTTON, g_pTheDB->GetMessageText(MID_Export));
+			CX_EXPORT_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Export));
 	AddWidget(pButton);
 
 	pButton = new CButtonWidget(TAG_IMPORT, X_IMPORT_BUTTON, Y_IMPORT_BUTTON,
-			CX_IMPORT_BUTTON, CY_STANDARD_BUTTON, g_pTheDB->GetMessageText(MID_Import));
+			CX_IMPORT_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Import));
 	AddWidget(pButton);
 
 	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON, 
-			CX_HELP_BUTTON, CY_STANDARD_BUTTON, g_pTheDB->GetMessageText(MID_Help));
+			CX_HELP_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Help));
 	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
 
 	pButton = new CButtonWidget(TAG_CANCEL, X_CANCEL_BUTTON, Y_CANCEL_BUTTON,
-			CX_CANCEL_BUTTON, CY_STANDARD_BUTTON, g_pTheDB->GetMessageText(MID_Cancel));
+			CX_CANCEL_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Cancel));
 	AddWidget(pButton);
 
 	//Saved game selection area.
@@ -190,6 +218,16 @@ CRestoreScreen::CRestoreScreen()
 			X_SAVE_LBOX, Y_SAVE_LBOX, CX_SAVE_LBOX, CY_SAVE_LBOX,
 			false, false, true);
 	AddWidget(this->pSaveListBoxWidget);
+
+	//Save game sort list box.
+	AddWidget(new CLabelWidget(0L, X_SORT_LABEL, Y_SORT_LABEL, CX_SORT_LABEL,
+		CY_SORT_LABEL, F_Small, g_pTheDB->GetMessageText(MID_SaveGameSort)));
+	CListBoxWidget* pSortList = new CListBoxWidget(TAG_SORT_LBOX,
+		X_SORT_LIST, Y_SORT_LIST, CX_SORT_LIST, CY_SORT_LIST);
+	pSortList->AddItem(GS_CHRONO, g_pTheDB->GetMessageText(MID_GameSortChronological));
+	pSortList->AddItem(GS_ALPHA, g_pTheDB->GetMessageText(MID_GameSortAlphabetical));
+	pSortList->SelectLine(0);
+	AddWidget(pSortList);
 
 	//Level map.
 	CScrollableWidget *pScrollingMap = new CScrollableWidget(0, X_MAP, Y_MAP,
@@ -285,6 +323,10 @@ void CRestoreScreen::OnClick(
 			RestoreGame();
 		break;
 
+		case TAG_RENAME:
+			RenameSaveGame(this->pSaveListBoxWidget->GetSelectedItem());
+		break;
+
 		case TAG_EXPORT:
 		{
 			CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
@@ -302,6 +344,7 @@ void CRestoreScreen::OnClick(
 			if (CDbXML::WasImportSuccessful() && !importedSavedGameIDs.empty())
 			{
 				//Synch widgets.
+				GetSaves();
 				PopulateListBoxFromSavedGames();
 
 				//Select imported saves.
@@ -309,10 +352,10 @@ void CRestoreScreen::OnClick(
 				{
 					SelectFirstWidget();
 					const UINT listedID = this->pSaveListBoxWidget->HasAnyKey(importedSavedGameIDs);
-					{
-						this->pSaveListBoxWidget->SelectItems(importedSavedGameIDs);
-						ChooseSavedGame(listedID);
-					}
+
+					this->pSaveListBoxWidget->SelectItems(importedSavedGameIDs);
+					ChooseSavedGame(listedID);
+
 					Paint();
 				}
 				ShowOkMessage(MID_ImportSuccessful);
@@ -420,6 +463,17 @@ void CRestoreScreen::OnSelectChange(
 			ChooseSavedGame(this->pSaveListBoxWidget->GetSelectedItem());
 			Paint();
 		break;
+		case TAG_SORT_LBOX:
+		{
+			CListBoxWidget* pSortList = DYN_CAST(CListBoxWidget*, CWidget*, GetWidget(TAG_SORT_LBOX));
+			this->gameSort = pSortList->GetSelectedItem();
+
+			PopulateListBoxFromSavedGames();
+			if (this->dwSelectedSavedGameID)
+				this->pSaveListBoxWidget->SelectItem(this->dwSelectedSavedGameID);
+			Paint();
+		}
+		break;
 		default: break;
 	}
 }
@@ -457,6 +511,7 @@ bool CRestoreScreen::SetWidgets()
 //True if successful, false if not.
 {
 	//Update level selection list box.
+	GetSaves();
 	PopulateListBoxFromSavedGames();
 
 	//Delete any existing current game for this screen.
@@ -482,6 +537,8 @@ bool CRestoreScreen::SetWidgets()
 			return false;
 		this->pCurrentRestoreGame->SaveToContinue();
 		this->dwSelectedSavedGameID = this->pCurrentRestoreGame->dwSavedGameID;
+
+		GetSaves();
 		PopulateListBoxFromSavedGames();
 	}
 
@@ -629,6 +686,67 @@ void CRestoreScreen::Paint(
 }
 
 //*****************************************************************************
+void CRestoreScreen::GetSaves()
+{
+	this->saves.clear();
+
+	//Active hold.
+	const UINT holdID = g_pTheDB->GetHoldID();
+	if (!holdID) { ASSERT(!"Failed to retrieve hold."); return; } //Probably corrupted DB.
+
+	//Get set of all player's saved games in this hold.
+	CDb db;
+	db.SavedGames.FilterByHold(holdID);
+	db.SavedGames.FilterByPlayer(g_pTheDB->GetPlayerID());
+	db.SavedGames.FindHiddens(true);
+	const CIDSet savedGameIDs = db.SavedGames.GetIDs();
+
+	this->saves = db.SavedGames.GetSaveInfo(savedGameIDs);
+
+	//Also maintain flag tracking whether hold has been conquered.
+	this->bHoldConquered = (g_pTheDB->SavedGames.FindByEndHold(holdID) != 0);
+}
+
+//*****************************************************************************
+//Return: an ordering of saved games, according to 'gameSort' strategy
+SORTED_SAVES CRestoreScreen::GetSortedSaves() const
+{
+	map<UINT, UINT> idSort; //id -> position
+	if (this->gameSort == GS_ALPHA) {
+		//Build map of sorted save names to ids.
+		multimap<WSTRING, UINT, WSTRINGicmp> saveNames;
+		for (vector<SAVE_INFO>::const_iterator it = this->saves.begin(); it != this->saves.end(); ++it) {
+			saveNames.insert(std::make_pair(it->name, it->saveID));
+		}
+
+		//Provide the position of each save ID.
+		UINT count = 0;
+		for (multimap<WSTRING, UINT>::const_iterator it2 = saveNames.begin(); it2 != saveNames.end(); ++it2) {
+			idSort[it2->second] = count++;
+		}
+	}
+
+	SORTED_SAVES sortedSaves;
+	for (vector<SAVE_INFO>::const_iterator it = this->saves.begin(); it != this->saves.end(); ++it) {
+		const SAVE_INFO& save = *it;
+
+		UINT sortVal;
+		switch (this->gameSort) {
+			case GS_ALPHA:
+				sortVal = idSort[save.saveID];
+				break;
+			case GS_CHRONO:
+			default:
+				sortVal = UINT(-1) - save.timestamp; //newest first
+				break;
+		}
+
+		sortedSaves.insert(std::make_pair(sortVal, save));
+	}
+	return sortedSaves;
+}
+
+//*****************************************************************************
 void CRestoreScreen::PopulateListBoxFromSavedGames()
 //Put saved games for this player into list box.
 //Determine whether this hold has been completed.
@@ -637,25 +755,11 @@ void CRestoreScreen::PopulateListBoxFromSavedGames()
 
 	this->pSaveListBoxWidget->Clear();
 
-	//Get the hold.
-	const UINT holdID = g_pTheDB->GetHoldID();
-	if (!holdID) {ASSERT(!"Failed to retrieve hold."); return;} //Probably corrupted DB.
-
-	//Is hold conquered?
-	this->bHoldConquered = (g_pTheDB->SavedGames.FindByEndHold(holdID) != 0);
-
-	//Get set of all player's saved games in this hold.
-	CDb db;
-	db.SavedGames.FilterByHold(holdID);
-	db.SavedGames.FilterByPlayer(g_pTheDB->GetPlayerID());
-	db.SavedGames.FindHiddens(true);
-	CIDSet savedGameIDs = db.SavedGames.GetIDs();
-	SORTED_SAVES sortedSaves = db.SavedGames.GetSortedSaveInfo(savedGameIDs);
-
-	//Display saved games in sorted order (newest first).
-	for (SORTED_SAVES::reverse_iterator saveIter = sortedSaves.rbegin(); saveIter != sortedSaves.rend(); ++saveIter)
+	//Display saved games in sorted order.
+	const SORTED_SAVES sortedSaves = GetSortedSaves();
+	for (SORTED_SAVES::const_iterator saveIter = sortedSaves.begin(); saveIter != sortedSaves.end(); ++saveIter)
 	{
-		SAVE_INFO save = saveIter->second;
+		const SAVE_INFO& save = saveIter->second;
 		WSTRING saveText;
 		if (!save.bCanValidate) //notify pre-1.1 players that their saved games can't be validated
 		{
@@ -715,6 +819,33 @@ void CRestoreScreen::PopulateListBoxFromSavedGames()
 }
 
 //*****************************************************************************
+void CRestoreScreen::RenameSaveGame(const UINT saveID)
+//User renames currently selected level.
+{
+	if (!saveID) return;
+
+	WSTRING wstr = wszQuestionMark;
+	for (vector<SAVE_INFO>::const_iterator it = this->saves.begin(); it != this->saves.end(); ++it)
+	{
+		if (it->saveID == saveID) {
+			wstr = it->name;
+			break;
+		}
+	}
+
+	const UINT dwAnswerTagNo = ShowTextInputMessage(MID_DescribeSave, wstr);
+	if (dwAnswerTagNo == TAG_OK)
+	{
+		if (CDbSavedGames::RenameSavedGame(saveID, wstr)) {
+			GetSaves();
+			PopulateListBoxFromSavedGames();
+			this->pSaveListBoxWidget->SelectItem(this->dwSelectedSavedGameID);
+			Paint();
+		}
+	}
+}
+
+//*****************************************************************************
 void CRestoreScreen::RestoreGame()
 {
 	if (!this->dwSelectedSavedGameID)
@@ -729,4 +860,3 @@ void CRestoreScreen::RestoreGame()
 	else
 		GoToScreen(SCR_Game);
 }
-
