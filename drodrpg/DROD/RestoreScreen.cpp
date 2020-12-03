@@ -257,7 +257,7 @@ bool CRestoreScreen::SetForActivate()
 		if (!SetWidgets())
 			return false;
 
-		SelectFirstWidget(false);
+		SelectWidget(TAG_SAVE_LBOX);
 	}
 
 	return true;
