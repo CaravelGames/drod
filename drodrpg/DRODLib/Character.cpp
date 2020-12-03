@@ -4520,6 +4520,7 @@ void CCharacter::SetDefaultMovementType()
 		break;
 
 		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
 			eMovement = MovementType::WATER;
 		break;
 
