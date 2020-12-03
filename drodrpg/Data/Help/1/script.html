@@ -88,6 +88,14 @@ functions.</p>
 <ol>
   <li><a name="setappearance"><b>Set appearance</b></a> - Changes the NPC's
       "Graphic" and default properties to the specified entity type.</li>
+  <li><a name="setmovement"><b>Set Movement Type</b></a> - Changes which tiles the NPC can move on. The options are:
+  <ol>
+	<li><b>Ground</b> - Normal movement behavior. The NPC cannot cross tiles that block normal movement.</li>
+	<li><b>Water</b> - The NPC can move over water tiles in additional to normal floor tiles. Additionally, the NPC will not drown if dropped into water.</li>
+	<li><b>Wall</b> - The NPC can move through wall and doors tiles in additional to crossing normal floor tiles.</li>
+	<li><b>Air</b> - The NPC can move over all non-wall and non-door tiles. Additionally, it is not effect by damaging tiles, and cannot be killed by being dropped into water or into pits.</li>
+  </ol>
+  </li>
   <li><a name="turnintomonster"><b>Turn into monster</b></a> - Turns the NPC
       into a regular monster of the type indicated by its graphic.  This ends
       script execution immediately and the NPC is permanently replaced by a
@@ -834,18 +842,18 @@ The variable names are case-insensitive.
   All outputs are likewise integers.
   Function names are case-insensitive.
 </p>
-<p><a name="abs">* <b>_abs(x)</b> - Returns the absolute value of x</p>
-<p><a name="min">* <b>_min(x,y)</b> - Returns the lesser of two values</p>
-<p><a name="max">* <b>_max(x,y)</b> - Returns the greater of two values</p>
-<p><a name="orient">* <b>_orient(dx,dy)</b> - Returns an orientation id (0-8), given x,y directional offsets</p>
-<p><a name="ox">* <b>_ox(o)</b> - Given an orientation id (0-8), returns its x component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
-<p><a name="oy">* <b>_oy(o)</b> - Given an orientation id (0-8), returns its y component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
-<p><a name="rotatecw">* <b>_rotateCW(o)</b> - Given an orientation id (0-8), returns the id of the orientation in a clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
-<p><a name="rotateccw">* <b>_rotateCCW(o)</b> - Given an orientation id (0-8), returns the id of the orientation in a counter-clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
-<p><a name="dist0">* <b>_dist0(x1,y1,x2,y2)</b> - Returns the L-infinity norm (max axial distance) between two 2-D coordinates.</p>
-<p><a name="dist1">* <b>_dist1(x1,y1,x2,y2)</b> - Returns the L-1 norm (Manhattan distance) between two 2-D coordinates.</p>
-<p><a name="dist2">* <b>_dist2(x1,y1,x2,y2)</b> - Returns the L-2 norm (Euclidean distance) between two 2-D coordinates.</p>
-<p><a name="enemystat">* <b>_EnemyStat(x,y,stat)</b> - Returns the stat value of the
+<p><a name="abs">* <b>_abs(x)</b></a> - Returns the absolute value of x</p>
+<p><a name="min">* <b>_min(x,y)</b></a> - Returns the lesser of two values</p>
+<p><a name="max">* <b>_max(x,y)</b></a> - Returns the greater of two values</p>
+<p><a name="orient">* <b>_orient(dx,dy)</b></a> - Returns an orientation id (0-8), given x,y directional offsets</p>
+<p><a name="ox">* <b>_ox(o)</b></a> - Given an orientation id (0-8), returns its x component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="oy">* <b>_oy(o)</b></a> - Given an orientation id (0-8), returns its y component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotatecw">* <b>_rotateCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotateccw">* <b>_rotateCCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a counter-clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="dist0">* <b>_dist0(x1,y1,x2,y2)</b></a> - Returns the L-infinity norm (max axial distance) between two 2-D coordinates.</p>
+<p><a name="dist1">* <b>_dist1(x1,y1,x2,y2)</b></a> - Returns the L-1 norm (Manhattan distance) between two 2-D coordinates.</p>
+<p><a name="dist2">* <b>_dist2(x1,y1,x2,y2)</b></a> - Returns the L-2 norm (Euclidean distance) between two 2-D coordinates.</p>
+<p><a name="enemystat">* <b>_EnemyStat(x,y,stat)</b></a> - Returns the stat value of the
   enemy at room location (x,y).  If no enemy is at the current location, the result
   is zero.<br />
   Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP<br />

@@ -725,6 +725,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SaveGameSort: strText = "Sort by"; break;
 		case MID_GameSortChronological: strText = "Time"; break;
 		case MID_GameSortAlphabetical: strText = "Name"; break;
+		case MID_SetMovementType: strText = "Set movement type"; break;
+		case MID_Ground: strText = "Ground"; break;
+		case MID_Air: strText = "Air"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

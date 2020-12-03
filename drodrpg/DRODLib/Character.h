@@ -121,7 +121,6 @@ public:
 	virtual bool   IsAggressive() const {return false;}
 	virtual bool   IsCombatable() const;
 	virtual bool   IsDamageableAt(const UINT wX, const UINT wY) const;
-	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}
 	bool           IsLuckyGR() const {return this->bLuckyGR;}
@@ -130,7 +129,6 @@ public:
 	virtual bool   IsMissionCritical() const {return this->bMissionCritical;}
 	bool           IsRestartScriptOnRoomEntrance() const {return this->bRestartScriptOnRoomEntrance;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
-	virtual bool   IsSwimming() const;
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 
@@ -219,6 +217,7 @@ private:
 
 	void PackExtraVars(const bool bSaveScript);
 
+	void SetDefaultMovementType();
 	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);

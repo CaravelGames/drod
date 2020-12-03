@@ -2775,6 +2775,16 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_SetMovementType:
+			{
+				//Set movement type X
+				bProcessNextCommand = true;
+
+				const MovementType eNewMovementType = (MovementType)command.x;
+				this->eMovement = eNewMovementType;
+			}
+			break;
+
 			case CCharacterCommand::CC_EachAttack:
 				//Goto label X each time I attack (i.e. hit the player).
 				this->eachAttackLabelIndex = GetIndexOfCommandWithLabel(command.x);
@@ -3073,6 +3083,7 @@ void CCharacter::Process(
 				//Sets this NPC to look like entity X.
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
+				SetDefaultMovementType();
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3810,28 +3821,12 @@ bool CCharacter::IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const
 }
 
 //*****************************************************************************
-bool CCharacter::IsFlying() const
-//Returns: whether character is flying
-{
-	const UINT identity = GetResolvedIdentity();
-	return bIsEntityFlying(identity);
-}
-
-//*****************************************************************************
 bool CCharacter::IsFriendly() const
 //Returns: whether character is friendly to the player
 {
 //	const UINT identity = GetResolvedIdentity();
 	return //identity == M_HALPH || identity == M_STALWART ||
 			this->bSafeToPlayer;
-}
-
-//*****************************************************************************
-bool CCharacter::IsSwimming() const
-//Returns: whether character is swimming
-{
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_WATERSKIPPER;
 }
 
 //*****************************************************************************
@@ -4299,12 +4294,12 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
-	switch (GetResolvedIdentity())
+	switch (eMovement)
 	{
 		//These types can move through wall.
 		//NOTE: For greater scripting flexibility, these types will also be allowed
 		//to perform normal movement.
-		case M_SEEP:
+		case MovementType::WALL:
 		{
 			return CMonster::IsTileObstacle(wTileNo) &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
@@ -4312,12 +4307,11 @@ const
 		}
 
 		//Flying types may also move over pits.
-		case M_WWING: case M_FEGUNDO:
+		case MovementType::AIR:
 			return CMonster::IsTileObstacle(wTileNo) &&
 					!bIsWater(wTileNo) && !bIsPit(wTileNo);
 
-		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
+		case MovementType::WATER:
 			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
 
 		default:	return CMonster::IsTileObstacle(wTileNo);
@@ -4493,10 +4487,40 @@ void CCharacter::SetCurrentGame(
 	//Check for a custom character.
 	ResolveLogicalIdentity(this->pCurrentGame ? this->pCurrentGame->pHold : NULL);
 
+	//Set the movement type
+	SetDefaultMovementType();
+
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
 	if (this->pCustomChar && this->commands.empty())
 		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultMovementType()
+//Sets the character's eMovement to the appropriate type for its identity
+{
+	switch (GetResolvedIdentity())
+	{
+		//These types can move through wall.
+		case M_SEEP:
+			eMovement = MovementType::WALL;
+		break;
+
+		//Flying types may also move over pits.
+		case M_WWING: case M_FEGUNDO:
+			eMovement = MovementType::AIR;
+		break;
+
+		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
+			eMovement = MovementType::WATER;
+		break;
+
+		default:
+			eMovement = MovementType::GROUND;
+		break;
+	}
 }
 
 //*****************************************************************************
