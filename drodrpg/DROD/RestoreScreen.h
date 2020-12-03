@@ -61,11 +61,17 @@ private:
 	void     ShowSaveStats();
 	void     UpdateWidgets();
 
+	void     GetSaves();
+	SORTED_SAVES GetSortedSaves() const;
+
+	vector<SAVE_INFO> saves;
+
 	UINT       dwSelectedSavedGameID;
 	UINT       dwLastGameID;
-//	UINT        wConqueredRooms;
-	bool        bHoldConquered;
-	bool        bResetWidgets;      //on screen activation
+//	UINT       wConqueredRooms;
+	UINT       gameSort;
+	bool       bHoldConquered;
+	bool       bResetWidgets;      //on screen activation
 
 	CCurrentGame   *pCurrentRestoreGame;
 	CRoomWidget    *pRoomWidget;

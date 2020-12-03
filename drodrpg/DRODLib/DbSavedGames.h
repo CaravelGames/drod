@@ -232,7 +232,7 @@ public:
 	static UINT GetPlayerIDofSavedGame(const UINT dwSavedGameID);
 	static UINT GetRoomIDofSavedGame(const UINT dwSavedGameID);
 	static UINT GetSavedGameID(const UINT dwRoomID, const CDate& Created, const UINT dwPlayerID);
-	static SORTED_SAVES GetSortedSaveInfo(const CIDSet& savedGameIDs);
+	static vector<SAVE_INFO> GetSaveInfo(const CIDSet& savedGameIDs);
 	static UINT GetScore(const PlayerStats& st);
 	static SAVETYPE GetType(const UINT savedGameID);
 

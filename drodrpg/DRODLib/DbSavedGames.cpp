@@ -2602,10 +2602,10 @@ CIDSet CDbSavedGames::GetExploredRooms(const UINT savedGameID)
 }
 
 //*****************************************************************************
-SORTED_SAVES CDbSavedGames::GetSortedSaveInfo(const CIDSet& savedGameIDs)
-//Returns: a set of sorted saved game info structs
+vector<SAVE_INFO> CDbSavedGames::GetSaveInfo(const CIDSet& savedGameIDs)
+//Returns: a vector of saved game info structs
 {
-	SORTED_SAVES sortedSaves;
+	vector<SAVE_INFO> saves;
 	c4_View SavedGamesView;
 	CDbPackedVars stats;
 
@@ -2632,10 +2632,10 @@ SORTED_SAVES CDbSavedGames::GetSortedSaveInfo(const CIDSet& savedGameIDs)
 		if (!save.bCanValidate)
 			save.bCanValidate = g_pTheDB->SavedGameMoves.Exists(savedGameID);
 
-		sortedSaves.insert(std::make_pair(save.timestamp, save));
+		saves.push_back(save);
 	}
 
-	return sortedSaves;
+	return saves;
 }
 
 //*****************************************************************************
