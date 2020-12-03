@@ -695,6 +695,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PreviousIf: strText = "<Previous If>"; break;
 		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
+		case MID_QuickPathNotAvailable: strText = "No known path is available."; break;
 		case MID_Rain: strText = "Rain"; break;
 		case MID_LevelMapDetail: strText = "Level Map (detailed)"; break;
 		case MID_DrankPotion: strText = "Player drank speed/invisibility potion"; break;
@@ -721,6 +722,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_To: strText = "to"; break;
 		case MID_ValueOrExpression: strText = "Value or expression"; break;
 		case MID_VarMonsterName: strText = "_MyName"; break;
+		case MID_SaveGameSort: strText = "Sort by"; break;
+		case MID_GameSortChronological: strText = "Time"; break;
+		case MID_GameSortAlphabetical: strText = "Name"; break;
 		case MID_SetMovementType: strText = "Set movement type"; break;
 		case MID_Ground: strText = "Ground"; break;
 		case MID_Air: strText = "Air"; break;

@@ -1021,6 +1021,9 @@ enum MID_CONSTANT {
   MID_ContinueSave = 1442,
   MID_Quicksave = 1443,
   MID_DeleteSavedGamesPrompt = 1444,
+  MID_SaveGameSort = 1796,
+  MID_GameSortChronological = 1797,
+  MID_GameSortAlphabetical = 1798,
 
   //Messages from SelectScreens.uni:
   MID_HoldManagementTitle = 1207,
@@ -1478,9 +1481,9 @@ enum MID_CONSTANT {
   MID_SetMonsterVar = 1792,
   MID_To = 1793,
   MID_ValueOrExpression = 1794,
-  MID_SetMovementType = 1796,
-  MID_Ground = 1797,
-  MID_Air = 1798,
+  MID_SetMovementType = 1799,
+  MID_Ground = 1800,
+  MID_Air = 1801,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

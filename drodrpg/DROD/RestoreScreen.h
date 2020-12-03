@@ -55,17 +55,24 @@ private:
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
 	void     PopulateListBoxFromSavedGames();
+	void     RenameSaveGame(const UINT saveID);
 	void     RestoreGame();
 	bool     SetWidgets();
 	void     ShowSave();
 	void     ShowSaveStats();
 	void     UpdateWidgets();
 
+	void     GetSaves();
+	SORTED_SAVES GetSortedSaves() const;
+
+	vector<SAVE_INFO> saves;
+
 	UINT       dwSelectedSavedGameID;
 	UINT       dwLastGameID;
-//	UINT        wConqueredRooms;
-	bool        bHoldConquered;
-	bool        bResetWidgets;      //on screen activation
+//	UINT       wConqueredRooms;
+	UINT       gameSort;
+	bool       bHoldConquered;
+	bool       bResetWidgets;      //on screen activation
 
 	CCurrentGame   *pCurrentRestoreGame;
 	CRoomWidget    *pRoomWidget;

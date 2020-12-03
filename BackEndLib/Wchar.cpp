@@ -475,25 +475,6 @@ bool charFilenameSafe(const WCHAR wc)
 		lwc == ' ' || lwc == '-' || lwc == '_';
 }
 
-bool IsAllPrintableASCIIchars(const string& str)
-{
-	for (string::const_iterator it = str.begin(); it != str.end(); it++) {
-		if (!::isprint(*it))
-			return false;
-	}
-	return true;
-}
-
-bool IsAllPrintableASCIIchars(const WSTRING& wstr)
-{
-	for (WSTRING::const_iterator it = wstr.begin(); it != wstr.end(); it++) {
-		const WCHAR wc = (WCHAR)*it;
-		if (!::iswprint(wc))
-			return false;
-	}
-	return true;
-}
-
 //*****************************************************************************
 WSTRING filenameFilter(const WSTRING &wstr)
 //Returns: input string with all characters, unusable in filenames, removed

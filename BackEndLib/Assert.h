@@ -35,6 +35,7 @@
 #endif
 
 #include <string>
+#include <cstring>
 using std::string;
 
 #ifndef DONT_RELEASE_WITH_DEBUG_INFO

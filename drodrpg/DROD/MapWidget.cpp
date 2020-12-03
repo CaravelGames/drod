@@ -48,6 +48,8 @@ enum MapColor
 {
 	MAP_BACKGROUND,
 	MAP_LTBACKGROUND,
+	MAP_GRIDLINE,
+
 	MAP_FLOOR,
 	MAP_GOO,
 	MAP_STAIRS,
@@ -972,6 +974,8 @@ void CMapWidget::InitMapColors()
 	//Get surface-writable bytes for the colors used for map pixels.
 	m_arrColor[MAP_BACKGROUND] = GetSurfaceColor(this->pMapSurface, 102, 51, 51);
 	m_arrColor[MAP_LTBACKGROUND] = GetSurfaceColor(this->pMapSurface, 150, 100, 100);
+	m_arrColor[MAP_GRIDLINE] = GetSurfaceColor(this->pMapSurface, 128, 64, 64);
+
 	m_arrColor[MAP_FLOOR] =    GetSurfaceColor(this->pMapSurface, 229, 229, 229);
 	m_arrColor[MAP_GOO] =      GetSurfaceColor(this->pMapSurface, 0, 192, 0);
 	m_arrColor[MAP_STAIRS] =   GetSurfaceColor(this->pMapSurface, 210, 210, 100);
@@ -1059,10 +1063,11 @@ bool CMapWidget::LoadMapSurface(
 	this->PreviewedRooms.clear();
 
 	//Load every room in the current level.
-	bool bFirstRoom = true;
+	bool bFirstRoom = true, bFirstIncluded = true;
 	list<CDbRoom *> DrawRooms;
 	vector<UINT> mapMarkers;
 	list<CDbRoom *>::const_iterator iSeek;
+	UINT includedLeft, includedRight, includedTop, includedBottom;
 	for (CIDSet::const_iterator iter=roomIDs.begin(); iter != roomIDs.end(); ++iter)
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
@@ -1117,19 +1122,31 @@ bool CMapWidget::LoadMapSurface(
 			//Keep the rooms that have been explored in a list.
 			DrawRooms.push_back(pRoom);
 			mapMarkers.push_back(mapMarker);
+
+			if (bFirstIncluded) {
+				includedLeft = includedRight = pRoom->dwRoomX;
+				includedBottom = includedTop = pRoom->dwRoomY;
+				bFirstIncluded = false;
+			} else {
+				includedLeft = min(pRoom->dwRoomX, includedLeft);
+				includedRight = max(pRoom->dwRoomX, includedRight);
+				includedTop = min(pRoom->dwRoomY, includedTop);
+				includedBottom = max(pRoom->dwRoomY, includedBottom);
+			}
 		}
 	}
 
+	const UINT horizRooms = this->dwRightRoomX - this->dwLeftRoomX + 1;
+	const UINT vertRooms = this->dwBottomRoomY - this->dwTopRoomY + 1;
+
 	//Currently, a room's y-coordinate contains a pseudo-level encoding in its 100s place.
 	//Therefore, a level's rooms should not have y-coords that overflow into to the next level's room coords.
-	ASSERT(this->dwBottomRoomY - this->dwTopRoomY + 1 <= 100);
+	ASSERT(vertRooms <= 100);
 
 	//Determine dimensions of map for level and border size.  Border is so 
 	//that I can scroll map to edge rooms without worrying about the display.
-	const UINT wMapW = GetRoomShowWidth() *
-			(this->dwRightRoomX - this->dwLeftRoomX + 1) + 2;
-	const UINT wMapH = GetRoomShowHeight() *
-			(this->dwBottomRoomY - this->dwTopRoomY + 1) + 2;
+	const UINT wMapW = GetRoomShowWidth() * horizRooms + 2;
+	const UINT wMapH = GetRoomShowHeight() * vertRooms + 2;
 	if (bInScrollWindow)
 	{
 		this->bScrollHorizontal = this->bScrollVertical = false;
@@ -1185,18 +1202,9 @@ bool CMapWidget::LoadMapSurface(
 	if (bInScrollWindow)
 		CWidget::Resize(this->pMapSurface->w, this->pMapSurface->h);
 
-	//Fill map surface with background color.
-#ifdef GAME_RENDERING_OFFSET
-	SDL_FillRect(this->pMapSurface,NULL,SDL_MapRGB(
-			this->pMapSurface->format,
-			m_arrColor[MAP_BACKGROUND].byt1,
-			m_arrColor[MAP_BACKGROUND].byt2,
-			m_arrColor[MAP_BACKGROUND].byt3
-	));
-#else
-	SDL_FillRect(this->pMapSurface,NULL,m_arrColor[MAP_BACKGROUND].byt3 << 16 |
-			m_arrColor[MAP_BACKGROUND].byt2 << 8 | m_arrColor[MAP_BACKGROUND].byt1);
-#endif
+	DrawBackground();
+
+	DrawGridlines(includedLeft, includedRight, includedTop, includedBottom);
 
 	//Draw each room onto the map.
 	{
@@ -1213,6 +1221,41 @@ Cleanup:
 }
 
 //*****************************************************************************
+void CMapWidget::DrawBackground()
+{
+	//Fill map surface with background color.
+#ifdef GAME_RENDERING_OFFSET
+	SDL_FillRect(this->pMapSurface, NULL, SDL_MapRGB(
+		this->pMapSurface->format,
+		m_arrColor[MAP_BACKGROUND].byt1,
+		m_arrColor[MAP_BACKGROUND].byt2,
+		m_arrColor[MAP_BACKGROUND].byt3
+	));
+#else
+	SDL_FillRect(this->pMapSurface, NULL, m_arrColor[MAP_BACKGROUND].byt3 << 16 |
+		m_arrColor[MAP_BACKGROUND].byt2 << 8 | m_arrColor[MAP_BACKGROUND].byt1);
+#endif
+}
+
+//*****************************************************************************
+//Draw gridlines onto map background spanning included room coord rectangle.
+void CMapWidget::DrawGridlines(UINT includedLeft, UINT includedRight, UINT includedTop, UINT includedBottom)
+{
+	const UINT gridWidth = GetRoomShowWidth() * (includedRight - includedLeft + 1);
+	const UINT gridHeight = GetRoomShowHeight() * (includedBottom - includedTop + 1);
+	const UINT gridTop = this->wBorderH + GetRoomShowHeight() * (includedTop - this->dwTopRoomY);
+	const UINT gridLeft = this->wBorderW + GetRoomShowWidth() * (includedLeft - this->dwLeftRoomX);
+	for (UINT i = includedLeft - this->dwLeftRoomX; i <= includedRight - this->dwLeftRoomX + 1; ++i) {
+		DrawCol(this->wBorderW + i * GetRoomShowWidth(), gridTop, gridHeight,
+			m_arrColor[MAP_GRIDLINE], this->pMapSurface);
+	}
+	for (UINT j = includedTop - this->dwTopRoomY; j <= includedBottom - this->dwTopRoomY + 1; ++j) {
+		DrawRow(gridLeft, this->wBorderH + j * GetRoomShowHeight(), gridWidth,
+			m_arrColor[MAP_GRIDLINE], this->pMapSurface);
+	}
+}
+
+//*****************************************************************************
 void CMapWidget::UpdateMapSurface(const bool /*bRefreshSelectedRoom*/)	//[default=false]
 //Updates map surface with any differences between map and current game.
 {
@@ -1226,24 +1269,35 @@ void CMapWidget::UpdateMapSurface(const bool /*bRefreshSelectedRoom*/)	//[defaul
 		return;
 	}
 
-	SetNoDetailRooms();
-
-	//See if all the current game explored rooms are shown in map.
-	CIDSet explRooms = this->pCurrentGame->GetExploredRooms();
+	//Check whether the current game explored rooms match what is shown on the map.
 	const CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pCurrentGame->pLevel->dwLevelID);
+
+	CIDSet explRooms = this->pCurrentGame->GetExploredRooms();
 	explRooms.intersect(roomsInLevel);
 	explRooms += this->pCurrentGame->dwRoomID;
-	if (explRooms.size() != this->ExploredRooms.size() ||
-		this->PreviewedRooms.containsAny(explRooms)) //these might need refreshing
+
+	CIDSet mappedRooms = this->pCurrentGame->GetMappedRooms();
+	mappedRooms -= explRooms; //only consider rooms that are not explored
+	mappedRooms.intersect(roomsInLevel);
+
+	if (explRooms != this->ExploredRooms || mappedRooms != this->MappedRooms)
+	{
+		//Redraw the entire map to update the dimensions of the background grid.
+		LoadFromCurrentGame(this->pCurrentGame);
+		return;
+	}
+
+	SetNoDetailRooms();
+
+	if (this->PreviewedRooms.containsAny(explRooms)) //these might need refreshing
 	{
 		for (CIDSet::const_iterator iter=explRooms.begin();
 				iter != explRooms.end(); ++iter)
 		{
 			const UINT roomID = *iter;
-			if (!this->ExploredRooms.has(roomID) || this->PreviewedRooms.has(roomID))
+			if (this->PreviewedRooms.has(roomID))
 			{
-				//A new explored room to update the map with.
-				this->ExploredRooms += roomID;
+				//Previewed room is now explored.
 				this->PreviewedRooms -= roomID;
 
 				//Redraw the room
@@ -1253,22 +1307,6 @@ void CMapWidget::UpdateMapSurface(const bool /*bRefreshSelectedRoom*/)	//[defaul
 					RefreshRoom(*iter);
 			}
 		}
-	}
-
-	//Update the set of rooms map, but not explored, on the map.
-	CIDSet mappedRooms = this->pCurrentGame->GetMappedRooms();
-	mappedRooms -= explRooms; //only consider rooms that are not explored
-	mappedRooms.intersect(roomsInLevel);
-	if (mappedRooms.size() != this->MappedRooms.size())
-	{
-		for (CIDSet::const_iterator iter=mappedRooms.begin();
-				iter != mappedRooms.end(); ++iter)
-		{
-			//Current game room should not be unexplored.
-			ASSERT(this->pCurrentGame->pRoom->dwRoomID != *iter);
-			RefreshRoom(*iter);
-		}
-		this->MappedRooms = mappedRooms;
 	}
 
 	//Room being left should not be redrawn.

@@ -8131,6 +8131,8 @@ void CGameScreen::ShowRoomTemporarily(UINT roomID)
 	if (!roomID)
 		return;
 
+	RemoveToolTip();
+
 Loop:
 	CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
 	*pTempGame = *this->pCurrentGame;

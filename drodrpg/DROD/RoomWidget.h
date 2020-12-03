@@ -559,7 +559,7 @@ private:
 			LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
 
-	float          GetOverheadDarknessAt(const UINT wX, const UINT wY) const;
+	float          GetOverheadDarknessAt(const UINT wX, const UINT wY, const float fIntensity=1.0f) const;
 
 	bool           NeedsSwordRedrawing(const CMonster *pMonster) const;
 
