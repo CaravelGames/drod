@@ -58,6 +58,7 @@ const UINT TAG_CANCEL = 1092;
 const UINT TAG_HELP = 1093;
 const UINT TAG_EXPORT = 1094;
 const UINT TAG_IMPORT = 1095;
+const UINT TAG_RENAME = 1096;
 
 enum GameSort
 {
@@ -115,18 +116,21 @@ CRestoreScreen::CRestoreScreen()
 	static const UINT CX_POSITION_LABEL = CX_MINIROOM;
 
 	//Buttons.
-	static const UINT CX_RESTORE_BUTTON = 105;
-	static const UINT CX_CANCEL_BUTTON = 105;
-	static const UINT CX_EXPORT_BUTTON = 105;
-	static const UINT CX_IMPORT_BUTTON = 105;
-	static const UINT CX_HELP_BUTTON = 90;
+	static const UINT CX_RESTORE_BUTTON = 90;
+	static const UINT CX_RENAME_BUTTON = 90;
+	static const UINT CX_CANCEL_BUTTON = 85;
+	static const UINT CX_EXPORT_BUTTON = 90;
+	static const UINT CX_IMPORT_BUTTON = 90;
+	static const UINT CX_HELP_BUTTON = 80;
 	const int X_RESTORE_BUTTON = X_MINIROOM;
-	static const int X_EXPORT_BUTTON = X_RESTORE_BUTTON + CX_RESTORE_BUTTON + CX_SPACE;
-	static const int X_IMPORT_BUTTON = X_EXPORT_BUTTON + CX_EXPORT_BUTTON + CX_SPACE;
-	const int X_HELP_BUTTON = X_IMPORT_BUTTON + CX_IMPORT_BUTTON + CX_SPACE;
-	const int X_CANCEL_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE;
+	const int X_RENAME_BUTTON = X_RESTORE_BUTTON + CX_RESTORE_BUTTON + CX_SPACE/2;
+	static const int X_EXPORT_BUTTON = X_RENAME_BUTTON + CX_RENAME_BUTTON + CX_SPACE/2;
+	static const int X_IMPORT_BUTTON = X_EXPORT_BUTTON + CX_EXPORT_BUTTON + CX_SPACE/2;
+	const int X_HELP_BUTTON = X_IMPORT_BUTTON + CX_IMPORT_BUTTON + CX_SPACE/2;
+	const int X_CANCEL_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE/2;
 	static const UINT CY_RESTORE_BUTTON = CY_BUTTON;
 	const int Y_RESTORE_BUTTON = this->h - CY_SPACE - CY_RESTORE_BUTTON;
+	const int Y_RENAME_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_CANCEL_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_EXPORT_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_IMPORT_BUTTON = Y_RESTORE_BUTTON;
@@ -183,6 +187,10 @@ CRestoreScreen::CRestoreScreen()
 	//Restore, cancel and help buttons.
 	pButton = new CButtonWidget(TAG_RESTORE, X_RESTORE_BUTTON, Y_RESTORE_BUTTON, 
 			CX_RESTORE_BUTTON, CY_RESTORE_BUTTON, g_pTheDB->GetMessageText(MID_Restore));
+	AddWidget(pButton);
+
+	pButton = new CButtonWidget(TAG_RENAME, X_RENAME_BUTTON, Y_RENAME_BUTTON,
+		CX_RENAME_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Rename));
 	AddWidget(pButton);
 
 	pButton = new CButtonWidget(TAG_EXPORT, X_EXPORT_BUTTON, Y_EXPORT_BUTTON,
@@ -313,6 +321,10 @@ void CRestoreScreen::OnClick(
 
 		case TAG_RESTORE:
 			RestoreGame();
+		break;
+
+		case TAG_RENAME:
+			RenameSaveGame(this->pSaveListBoxWidget->GetSelectedItem());
 		break;
 
 		case TAG_EXPORT:
@@ -807,6 +819,33 @@ void CRestoreScreen::PopulateListBoxFromSavedGames()
 }
 
 //*****************************************************************************
+void CRestoreScreen::RenameSaveGame(const UINT saveID)
+//User renames currently selected level.
+{
+	if (!saveID) return;
+
+	WSTRING wstr = wszQuestionMark;
+	for (vector<SAVE_INFO>::const_iterator it = this->saves.begin(); it != this->saves.end(); ++it)
+	{
+		if (it->saveID == saveID) {
+			wstr = it->name;
+			break;
+		}
+	}
+
+	const UINT dwAnswerTagNo = ShowTextInputMessage(MID_DescribeSave, wstr);
+	if (dwAnswerTagNo == TAG_OK)
+	{
+		if (CDbSavedGames::RenameSavedGame(saveID, wstr)) {
+			GetSaves();
+			PopulateListBoxFromSavedGames();
+			this->pSaveListBoxWidget->SelectItem(this->dwSelectedSavedGameID);
+			Paint();
+		}
+	}
+}
+
+//*****************************************************************************
 void CRestoreScreen::RestoreGame()
 {
 	if (!this->dwSelectedSavedGameID)
@@ -821,4 +860,3 @@ void CRestoreScreen::RestoreGame()
 	else
 		GoToScreen(SCR_Game);
 }
-

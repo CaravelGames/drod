@@ -55,6 +55,7 @@ private:
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
 	void     PopulateListBoxFromSavedGames();
+	void     RenameSaveGame(const UINT saveID);
 	void     RestoreGame();
 	bool     SetWidgets();
 	void     ShowSave();

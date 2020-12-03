@@ -2639,6 +2639,31 @@ vector<SAVE_INFO> CDbSavedGames::GetSaveInfo(const CIDSet& savedGameIDs)
 }
 
 //*****************************************************************************
+bool CDbSavedGames::RenameSavedGame(const UINT savedGameID, const WSTRING& name)
+{
+	c4_View SavedGamesView;
+	const UINT dwSavedGameI = LookupRowByPrimaryKey(savedGameID,
+		V_SavedGames, SavedGamesView);
+	if (dwSavedGameI == ROW_NO_MATCH)
+		return false;
+	c4_RowRef row = SavedGamesView[dwSavedGameI];
+
+	CDbPackedVars stats;
+	stats = p_Stats(row);
+	stats.SetVar(szSavename, name.c_str());
+
+	//Get stats into a buffer that can be written to db.
+	UINT dwStatsSize;
+	BYTE* pbytStatsBytes = stats.GetPackedBuffer(dwStatsSize);
+	if (!pbytStatsBytes)
+		return false;
+	c4_Bytes StatsBytes(pbytStatsBytes, dwStatsSize);
+	p_Stats(row) = StatsBytes;
+
+	return true;
+}
+
+//*****************************************************************************
 SAVETYPE CDbSavedGames::GetType(const UINT savedGameID)
 //Returns: type of saved game for saved game with specified ID
 {

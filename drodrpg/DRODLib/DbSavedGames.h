@@ -236,7 +236,8 @@ public:
 	static UINT GetScore(const PlayerStats& st);
 	static SAVETYPE GetType(const UINT savedGameID);
 
-   UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);
+	static bool RenameSavedGame(const UINT savedGameID, const WSTRING& name);
+	UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);
 	void       UpdatePlayerTallies(const CImportInfo& info);
 
 private:
