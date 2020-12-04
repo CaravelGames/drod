@@ -3678,14 +3678,6 @@ bool CCharacter::IsBrainPathmapObstacle() const
 }
 
 //*****************************************************************************
-bool CCharacter::IsFlying() const
-//Returns: whether character is flying
-{
-	const UINT identity = GetResolvedIdentity();
-	return bIsEntityFlying(identity);
-}
-
-//*****************************************************************************
 bool CCharacter::IsFriendly() const
 //Returns: whether character is friendly to the player
 {
@@ -3733,14 +3725,6 @@ bool CCharacter::IsPushableByWeaponAttack() const
 //Returns: whether character is pushable by body
 {
 	return this->bPushableByWeapon;
-}
-
-//*****************************************************************************
-bool CCharacter::IsSwimming() const
-//Returns: whether character is swimming
-{
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_WATERSKIPPER || identity == M_SKIPPERNEST;
 }
 
 //*****************************************************************************
@@ -4660,12 +4644,12 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
-	switch (GetResolvedIdentity())
+	switch (eMovement)
 	{
 		//These types can move through wall.
 		//NOTE: For greater scripting flexibility, these types will also be allowed
 		//to perform normal movement.
-		case M_SEEP:
+		case MovementType::WALL:
 		{
 			return CMonster::IsTileObstacle(wTileNo) &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
@@ -4673,11 +4657,10 @@ const
 		}
 
 		//These types can also move over pits.
-		case M_WWING: case M_FEGUNDO:
+		case MovementType::AIR:
 			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo) && !bIsPit(wTileNo);
 
-		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
+		case MovementType::WATER:
 			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
 			
 		default:	return CMonster::IsTileObstacle(wTileNo);
@@ -4952,22 +4935,22 @@ void CCharacter::SetDefaultMovementType()
 {
 	switch (GetResolvedIdentity()) {
 		//These types can move through wall.
-	case M_SEEP:
-		eMovement = MovementType::WALL;
-	break;
+		case M_SEEP:
+			eMovement = MovementType::WALL;
+		break;
 
-	//These types can also move over pits.
-	case M_WWING: case M_FEGUNDO:
-		eMovement = MovementType::AIR;
-	break;
+		//These types can also move over pits.
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
+			eMovement = MovementType::AIR;
+		break;
 
-	case M_WATERSKIPPER:
-	case M_SKIPPERNEST:
-		eMovement = MovementType::WATER;
-	break;
+		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
+			eMovement = MovementType::WATER;
+		break;
 
-	default:
-		eMovement = MovementType::GROUND_AND_SHALLOW_WATER;
+		default:
+			eMovement = MovementType::GROUND_AND_SHALLOW_WATER;
 	}
 }
 
