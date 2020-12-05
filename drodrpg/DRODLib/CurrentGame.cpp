@@ -339,10 +339,6 @@ CMonster* CCurrentGame::AddNewEntity(
 	}
 	this->pRoom->LinkMonster(pNew, bVisible);
 
-	//Affect tile being placed on.
-	if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && !pCharacter->IsFlying())
-		this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
-
 	//Set up the NPC's properties by running the default script.
 	//Guard against creating new scripted entities that immediately
 	//create new scripted entities, ad infinitum.
@@ -367,6 +363,10 @@ CMonster* CCurrentGame::AddNewEntity(
 
 		SetExecuteNoMoveCommands(bExec);
 	}
+
+	//Affect tile being placed on.
+	if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && !pCharacter->IsFlying())
+		this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
 
 	return pNew;
 }
@@ -6735,9 +6735,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 */
 	}
 
-	//Mark which pressure plates are depressed on entrance.
-	this->pRoom->SetPressurePlatesState();
-
 	//No combat should be occurring at this point.
 	delete this->pCombat;
 	this->pCombat = NULL;
@@ -6755,6 +6752,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	ProcessScripts(CMD_WAIT, CueEvents, CDbSavedGame::pMonsterList);
 	this->pRoom->PreprocessMonsters(CueEvents);
 	this->bExecuteNoMoveCommands = false;
+
+	//Mark which pressure plates are depressed on entrance.
+	this->pRoom->SetPressurePlatesState();
 
 	ProcessSimultaneousSwordHits(CueEvents);  //destroy simultaneously-stabbed tar
 	this->pRoom->KillSeepOutsideWall(CueEvents); //check again if doors have changed
