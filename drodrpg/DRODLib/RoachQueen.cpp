@@ -31,10 +31,40 @@
 
 #include "RoachQueen.h"
 #include "Combat.h"
+#include "Character.h"
 
 //
 //Public methods.
 //
+
+//*****************************************************************************************
+//Returns: whether an egg should be spawned this turn
+bool CRoachQueen::IsSpawnEggTriggered(const CCueEvents& CueEvents) const
+{
+	//lay an egg any time player fights a monster...
+	if (!CueEvents.HasOccurred(CID_MonsterEngaged))
+		return false;
+
+	if (this->pCurrentGame->pCombat == NULL)    //...fighting someone...
+		return false;
+
+	if (this->pCurrentGame->IsFighting(this)) //...but not me...
+		return false;
+
+	const CMonster* pCombatEnemy = this->pCurrentGame->pCombat->pMonster;
+	if (!this->pCurrentGame->pCombat->PlayerCanHarmMonster(pCombatEnemy)) //doesn't count if player engages a monster that is too shielded
+		return false;
+
+	//don't lay more eggs when eggs are killed
+	const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
+
+	const UINT enemyType = pCombatEnemy->wType;
+	if (enemyType != M_CHARACTER)
+		return enemyType != spawnID;
+
+	const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pCombatEnemy);
+	return pCharacter->wLogicalIdentity != spawnID;
+}
 
 //*****************************************************************************************
 void CRoachQueen::Process(
@@ -46,15 +76,8 @@ void CRoachQueen::Process(
 							//with codes indicating events that happened that may correspond to
 							//sound or graphical effects.
 {
-	//Shall we lay an egg?
-	const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
-
-	if ((CueEvents.HasOccurred(CID_MonsterEngaged) && //lay an egg any time player fights a different monster
-				this->pCurrentGame->pCombat != NULL &&   //fighting someone...
-				!this->pCurrentGame->IsFighting(this) && //...not me
-				this->pCurrentGame->pCombat->PlayerCanHarmMonster(this->pCurrentGame->pCombat->pMonster) && //doesn't count if player engages a monster that is too shielded
-				this->pCurrentGame->pCombat->pMonster->wType != spawnID) //don't lay more eggs when eggs are killed
-		)
+	//Shall queen lay an egg?
+	if (IsSpawnEggTriggered(CueEvents))
 	{
 		UINT wSX, wSY;
 		if (!GetTarget(wSX,wSY))
@@ -113,6 +136,7 @@ void CRoachQueen::Process(
 		}
 
 		//Lay eggs and check for them being laid on pressure plates.
+		const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
 		for (CCoordSet::const_iterator egg=eggs.begin(); egg!=eggs.end(); ++egg)
 		{
 			CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(

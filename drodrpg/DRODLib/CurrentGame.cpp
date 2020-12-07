@@ -3252,7 +3252,7 @@ int CCurrentGame::getWeaponPower(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsFighting(CMonster* pMonster) const
+bool CCurrentGame::IsFighting(const CMonster* pMonster) const
 //Returns: whether the indicated entity is engaged in combat
 {
 	return this->pCombat && this->pCombat->IsFighting(pMonster);
@@ -3450,7 +3450,7 @@ bool CCurrentGame::IsShieldMetal(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
+bool CCurrentGame::IsSwordStrongAgainst(const CMonster* pMonster) const
 //Returns: whether the player's sword is strong against this monster
 {
 	const UINT sword = this->pPlayer->st.sword;
@@ -3470,7 +3470,7 @@ bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const
+bool CCurrentGame::IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const
 //Returns: whether the player has an item that is strong against this monster
 {
 	CCharacter* pCharacter = getCustomEquipment(type);

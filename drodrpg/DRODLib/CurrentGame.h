@@ -284,7 +284,7 @@ public:
 	bool     IsCurrentRoomExplored(const bool bConsiderCurrentRoom=true) const;
 //	bool     IsDemoRecording() const {return this->bIsDemoRecording;}
 	bool     IsEquipmentValid(const UINT id, const UINT type);
-	bool     IsFighting(CMonster* pMonster) const;
+	bool     IsFighting(const CMonster* pMonster) const;
 	bool     IsLuckyGRItem(const UINT type) const;
 	bool     IsLuckyXPItem(const UINT type) const;
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
@@ -297,8 +297,8 @@ public:
 	bool     IsPlayerSwordDisabled() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
-	bool     IsSwordStrongAgainst(CMonster* pMonster) const;
-	bool     IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const;
+	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;
+	bool     IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const;
 	bool     IsValidatingPlayback() const {return this->bValidatingPlayback;}
 	bool     LoadFromHold(const UINT dwHoldID, CCueEvents &CueEvents);
 	bool     LoadFromLevelEntrance(const UINT dwHoldID, const UINT dwEntranceID,
