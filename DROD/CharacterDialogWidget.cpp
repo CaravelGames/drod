@@ -1255,7 +1255,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const UINT MOVETYPELISTBOX_X = X_IMPERATIVELISTBOX;
 	static const UINT MOVETYPELISTBOX_Y = Y_IMPERATIVELISTBOX;
-	static const UINT MOVETYPELISTBOX_CX = 200;
+	static const UINT MOVETYPELISTBOX_CX = 220;
 	static const UINT MOVETYPELISTBOX_CY = 5 * LIST_LINE_HEIGHT + 4;
 
 	//World map input.
@@ -1671,11 +1671,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMovementTypeListBox = new CListBoxWidget(TAG_MOVETYPELISTBOX,
 		MOVETYPELISTBOX_X, MOVETYPELISTBOX_Y, MOVETYPELISTBOX_CX, MOVETYPELISTBOX_CY);
 	this->pAddCommandDialog->AddWidget(pMovementTypeListBox);
-	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Floor));
-	this->pMovementTypeListBox->AddItem(MovementType::GROUND_AND_SHALLOW_WATER, g_pTheDB->GetMessageText(MID_ShallowWater));
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Ground));
+	this->pMovementTypeListBox->AddItem(MovementType::GROUND_AND_SHALLOW_WATER, g_pTheDB->GetMessageText(MID_GroundAndShallow));
 	this->pMovementTypeListBox->AddItem(MovementType::WATER, g_pTheDB->GetMessageText(MID_Water));
 	this->pMovementTypeListBox->AddItem(MovementType::WALL, g_pTheDB->GetMessageText(MID_Wall));
-	this->pMovementTypeListBox->AddItem(MovementType::AIR, L"Air");
+	this->pMovementTypeListBox->AddItem(MovementType::AIR, g_pTheDB->GetMessageText(MID_Air));
 
 	//Open/close selection.
 	this->pOpenCloseListBox = new CListBoxWidget(TAG_OPENCLOSELISTBOX,
@@ -4430,7 +4430,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, L"Set movement type");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerAppearance, g_pTheDB->GetMessageText(MID_SetPlayerAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerStealth, g_pTheDB->GetMessageText(MID_SetPlayerStealth));

@@ -1786,6 +1786,10 @@ enum MID_CONSTANT {
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,
   MID_KeepBehaviors = 1994,
+  MID_SetMovementType = 2008,
+  MID_Ground = 2009,
+  MID_GroundAndShallow = 2010,
+  MID_Air = 2011,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
