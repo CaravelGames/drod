@@ -225,7 +225,7 @@ public:
 	void     activateCustomEquipment(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
 	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
-			const UINT wX, const UINT wY, const UINT wO);
+			const UINT wX, const UINT wY, const UINT wO, const bool bMakeCharacterVisible=false);
 	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
@@ -284,7 +284,7 @@ public:
 	bool     IsCurrentRoomExplored(const bool bConsiderCurrentRoom=true) const;
 //	bool     IsDemoRecording() const {return this->bIsDemoRecording;}
 	bool     IsEquipmentValid(const UINT id, const UINT type);
-	bool     IsFighting(CMonster* pMonster) const;
+	bool     IsFighting(const CMonster* pMonster) const;
 	bool     IsLuckyGRItem(const UINT type) const;
 	bool     IsLuckyXPItem(const UINT type) const;
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
@@ -297,8 +297,8 @@ public:
 	bool     IsPlayerSwordDisabled() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
-	bool     IsSwordStrongAgainst(CMonster* pMonster) const;
-	bool     IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const;
+	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;
+	bool     IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const;
 	bool     IsValidatingPlayback() const {return this->bValidatingPlayback;}
 	bool     LoadFromHold(const UINT dwHoldID, CCueEvents &CueEvents);
 	bool     LoadFromLevelEntrance(const UINT dwHoldID, const UINT dwEntranceID,

@@ -396,7 +396,7 @@ bool CCombat::IsCurrent() const
 }
 
 //*****************************************************************************
-bool CCombat::IsFighting(CMonster* pMonster) const
+bool CCombat::IsFighting(const CMonster* pMonster) const
 //Returns: whether this monster is queued for fighting
 {
 	if (this->pMonster == pMonster)
@@ -418,7 +418,7 @@ UINT CCombat::MonsterATKDoubles(const CCurrentGame* pGame)
 }
 
 //*****************************************************************************
-bool CCombat::PlayerDoesStrongHit(CMonster* pMonster) const
+bool CCombat::PlayerDoesStrongHit(const CMonster* pMonster) const
 //Returns: whether player does x2 ATK against this monster
 {
 	ASSERT(pMonster);
@@ -919,7 +919,7 @@ int CCombat::GetExpectedDamage()
 }
 
 //*****************************************************************************
-bool CCombat::PlayerCanHarmMonster(CMonster *pMonster) const
+bool CCombat::PlayerCanHarmMonster(const CMonster *pMonster) const
 //Returns: whether player has the power to harm this monster
 {
 	ASSERT(pMonster);

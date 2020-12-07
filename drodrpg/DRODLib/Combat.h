@@ -109,15 +109,15 @@ public:
 
 	void InitMonsterStats(const bool bCombatStart=true);
 	bool IsCurrent() const;
-	bool IsFighting(CMonster* pMonster) const;
+	bool IsFighting(const CMonster* pMonster) const;
 	void MonsterAttacksPlayerOnce(CCueEvents& CueEvents);
 	bool MonsterCanHarmPlayer(CMonster *pMonster) const;
 	static UINT MonsterATKDoubles(const CCurrentGame* pGame);
 	bool PlayerAttacksFirst(const bool bPlayerHitWithWeapon) const;
-	bool PlayerCanHarmMonster(CMonster *pMonster) const;
+	bool PlayerCanHarmMonster(const CMonster *pMonster) const;
 	bool PlayerCanHarmQueuedMonster() const;
 	CMonster* PlayerCantHarmAQueuedMonster() const;
-	bool PlayerDoesStrongHit(CMonster* pMonster) const;
+	bool PlayerDoesStrongHit(const CMonster* pMonster) const;
 	bool QueueMonster(CMonster* pMonster, const bool bPlayerHitsFirst,
 			const UINT wFromX, const UINT wFromY,
 			const UINT wX, const UINT wY,

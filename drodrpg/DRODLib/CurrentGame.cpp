@@ -274,7 +274,8 @@ CMonster* CCurrentGame::AddNewEntity(
 //
 //Params:
 	CCueEvents& CueEvents,
-	const UINT identity, const UINT wX, const UINT wY, const UINT wO)
+	const UINT identity, const UINT wX, const UINT wY, const UINT wO,
+	const bool bMakeCharacterVisible) //[default=false]
 {
 	if (!IsValidOrientation(wO))
 		return NULL; //invalid
@@ -319,6 +320,9 @@ CMonster* CCurrentGame::AddNewEntity(
 	pCharacter->wLogicalIdentity = identity;
 	pCharacter->SetCurrentGame(this); //will assign the default script for custom NPCs
 	pCharacter->dwScriptID = getNewScriptID();
+
+	if (bMakeCharacterVisible)
+		pCharacter->bVisible = true;
 
 	//Place in room if visible.
 	bool bVisible = pCharacter->IsVisible();
@@ -3248,7 +3252,7 @@ int CCurrentGame::getWeaponPower(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsFighting(CMonster* pMonster) const
+bool CCurrentGame::IsFighting(const CMonster* pMonster) const
 //Returns: whether the indicated entity is engaged in combat
 {
 	return this->pCombat && this->pCombat->IsFighting(pMonster);
@@ -3446,7 +3450,7 @@ bool CCurrentGame::IsShieldMetal(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
+bool CCurrentGame::IsSwordStrongAgainst(const CMonster* pMonster) const
 //Returns: whether the player's sword is strong against this monster
 {
 	const UINT sword = this->pPlayer->st.sword;
@@ -3466,7 +3470,7 @@ bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const
+bool CCurrentGame::IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const
 //Returns: whether the player has an item that is strong against this monster
 {
 	CCharacter* pCharacter = getCustomEquipment(type);
@@ -5983,7 +5987,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		//Mark all non-secret rooms in level on map.
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
 		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
-		roomsInLevel -= GetExploredRooms(!bShowDetail); //non-detailed map ignores rooms already marked
+		roomsInLevel -= GetExploredRooms(!bShowDetail, !bShowDetail); //non-detailed map ignores rooms already marked
 		roomsInLevel -= room.dwRoomID;  //ignore current room
 		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
 			roomIter != roomsInLevel.end(); ++roomIter)

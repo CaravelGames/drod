@@ -137,7 +137,7 @@ public:
 	void      appendToGlobalMonsterList(CMonster *pMonster);
 	CCharacter* getCustomEquipment(const UINT type) const;
 	ExploredRoom* getExploredRoom(const UINT roomID) const;
-	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false) const;
+	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false, const bool bIncludeNoSavedAlso=true) const;
 	CIDSet    GetMappedRooms() const {return GetExploredRooms(true);}
 	bool      IsRoomExplored(const UINT roomID, const bool bConsiderCurrentRoom=true) const;
 	void      LoadExploredRooms(const c4_View& ExploredRoomsView);

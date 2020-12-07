@@ -7278,19 +7278,19 @@ void CDbRoom::ConvertUnstableTar(
 					{
 						case T_TAR:
 							monsterID = this->pCurrentGame->getSpawnID(M_TARBABY);
-							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO, true);
 							if (m)
 								CueEvents.Add(CID_TarBabyFormed, m);
 							break;
 						case T_MUD:
 							monsterID = this->pCurrentGame->getSpawnID(M_MUDBABY);
-							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO, true);
 							if (m)
 								CueEvents.Add(CID_MudBabyFormed, m);
 							break;
 						case T_GEL:
 							monsterID = this->pCurrentGame->getSpawnID(M_GELBABY);
-							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO);
+							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO, true);
 							if (m)
 								CueEvents.Add(CID_GelBabyFormed, m);
 							break;
