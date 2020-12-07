@@ -1061,7 +1061,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_VARCOMPLIST = X_VARADD;
 	static const int Y_VARCOMPLIST = Y_VAROPLIST;
 	static const int CX_VARCOMPLIST = CX_VAROPLIST;
-	static const int CY_VARCOMPLIST = 4*22 + 4;
+	static const int CY_VARCOMPLIST = 7*22 + 4;
 
 	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
 	static const UINT CY_VARVALUELABEL = CY_LABEL;
