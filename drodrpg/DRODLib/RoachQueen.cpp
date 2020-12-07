@@ -116,7 +116,7 @@ void CRoachQueen::Process(
 		for (CCoordSet::const_iterator egg=eggs.begin(); egg!=eggs.end(); ++egg)
 		{
 			CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
-					CueEvents, spawnID, egg->wX, egg->wY, S);
+					CueEvents, spawnID, egg->wX, egg->wY, S, true);
 		}
 	}
 }

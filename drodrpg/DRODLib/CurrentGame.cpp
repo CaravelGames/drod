@@ -274,7 +274,8 @@ CMonster* CCurrentGame::AddNewEntity(
 //
 //Params:
 	CCueEvents& CueEvents,
-	const UINT identity, const UINT wX, const UINT wY, const UINT wO)
+	const UINT identity, const UINT wX, const UINT wY, const UINT wO,
+	const bool bMakeCharacterVisible) //[default=false]
 {
 	if (!IsValidOrientation(wO))
 		return NULL; //invalid
@@ -319,6 +320,9 @@ CMonster* CCurrentGame::AddNewEntity(
 	pCharacter->wLogicalIdentity = identity;
 	pCharacter->SetCurrentGame(this); //will assign the default script for custom NPCs
 	pCharacter->dwScriptID = getNewScriptID();
+
+	if (bMakeCharacterVisible)
+		pCharacter->bVisible = true;
 
 	//Place in room if visible.
 	bool bVisible = pCharacter->IsVisible();
