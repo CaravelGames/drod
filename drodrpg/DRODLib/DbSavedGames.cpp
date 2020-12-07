@@ -217,15 +217,22 @@ ExploredRoom* CDbSavedGame::getExploredRoom(const UINT roomID) const
 }
 
 //*******************************************************************************
-CIDSet CDbSavedGame::GetExploredRooms(const bool bMapOnlyAlso) const //[default=false]
-//Returns: roomIDs that have been explored by player (not just marked on map)
+//Returns: roomIDs that have been explored by player
+//           with optional filters of rooms that are not saved or only marked on the map
+CIDSet CDbSavedGame::GetExploredRooms(
+	const bool bMapOnlyAlso, //[default=false] include rooms just marked on map
+	const bool bIncludeNoSavedAlso) //[default=true] include rooms marked to not save (aka previews)
+const
 {
 	CIDSet rooms;
-	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
-			room != this->ExploredRooms.end(); ++room)
+	for (vector<ExploredRoom*>::const_iterator roomIt = this->ExploredRooms.begin();
+			roomIt != this->ExploredRooms.end(); ++roomIt)
 	{
-		if (bMapOnlyAlso || !((*room)->bMapOnly))
-			rooms += (*room)->roomID;
+		const ExploredRoom& room = *(*roomIt);
+		const bool bMapOnlyFilter = bMapOnlyAlso || !room.bMapOnly;
+		const bool bNoSaveFilter = bIncludeNoSavedAlso || room.bSave;
+		if (bMapOnlyFilter && bNoSaveFilter)
+			rooms += room.roomID;
 	}
 	return rooms;
 }

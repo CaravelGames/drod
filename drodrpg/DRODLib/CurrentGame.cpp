@@ -5987,7 +5987,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		//Mark all non-secret rooms in level on map.
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
 		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
-		roomsInLevel -= GetExploredRooms(!bShowDetail); //non-detailed map ignores rooms already marked
+		roomsInLevel -= GetExploredRooms(!bShowDetail, !bShowDetail); //non-detailed map ignores rooms already marked
 		roomsInLevel -= room.dwRoomID;  //ignore current room
 		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
 			roomIter != roomsInLevel.end(); ++roomIter)
