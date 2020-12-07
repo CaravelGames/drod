@@ -122,7 +122,7 @@ const UINT MAX_ANSWERS = 9;
 #define DropTrapdoorsStr "DropTrapdoors"
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
-
+#define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -4488,7 +4488,8 @@ void CCharacter::SetCurrentGame(
 	ResolveLogicalIdentity(this->pCurrentGame ? this->pCurrentGame->pHold : NULL);
 
 	//Set the movement type
-	SetDefaultMovementType();
+	if(bIsFirstTurn)
+		SetDefaultMovementType();
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
@@ -4784,6 +4785,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDropTrapdoors = vars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
+	this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
 	this->color = vars.GetVar(ColorStr, this->color);
@@ -4910,6 +4912,8 @@ const
 		vars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	if (this->bPushObjects)
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
+	if (this->eMovement)
+		vars.SetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
 	if (this->color)
