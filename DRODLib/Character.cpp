@@ -4644,6 +4644,12 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
+	// With the Restricted Movement behavior, characters cannot perform normal
+	// movement if their movement types prevent it.
+	if (HasBehavior(ScriptFlag::RestrictedMovement)) {
+		return CMonster::IsTileObstacle(wTileNo);
+	}
+
 	// All the things a character can step onto
 	bool bIsObstacle = !(
 		wTileNo == T_EMPTY ||
