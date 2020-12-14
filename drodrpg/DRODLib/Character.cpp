@@ -4294,6 +4294,23 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
+	//All the things characters can step on
+	bool bIsObstacle = !(wTileNo == T_EMPTY ||
+		bIsFloor(wTileNo) ||
+		bIsOpenDoor(wTileNo) ||
+		bIsArrow(wTileNo) ||
+		bIsPlatform(wTileNo) ||
+		wTileNo == T_NODIAGONAL ||
+		wTileNo == T_SCROLL ||
+		wTileNo == T_FUSE ||
+		wTileNo == T_TOKEN ||
+		wTileNo == T_KEY ||
+		bIsPowerUp(wTileNo) ||
+		bIsEquipment(wTileNo) ||
+		bIsStairs(wTileNo) ||
+		bIsTunnel(wTileNo)
+	);
+
 	switch (eMovement)
 	{
 		//These types can move through wall.
@@ -4301,18 +4318,18 @@ const
 		//to perform normal movement.
 		case MovementType::WALL:
 		{
-			return CMonster::IsTileObstacle(wTileNo) &&
+			return bIsObstacle &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
 			//i.e. tile is considered an obstacle only when it blocks both movement types
 		}
 
 		//Flying types may also move over pits.
 		case MovementType::AIR:
-			return CMonster::IsTileObstacle(wTileNo) &&
+			return bIsObstacle &&
 					!bIsWater(wTileNo) && !bIsPit(wTileNo);
 
 		case MovementType::WATER:
-			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
+			return bIsObstacle && !bIsWater(wTileNo);
 
 		default:	return CMonster::IsTileObstacle(wTileNo);
 	}
