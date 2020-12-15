@@ -4661,6 +4661,7 @@ const
 		wTileNo == T_SCROLL ||
 		wTileNo == T_FUSE ||
 		wTileNo == T_TOKEN ||
+		wTileNo == T_SHALLOW_WATER ||
 		bIsStairs(wTileNo) ||
 		bIsTunnel(wTileNo)
 	);
