@@ -231,6 +231,7 @@ public:
 	virtual bool  IsOpenMove(const int dx, const int dy) const;
 	virtual bool  IsOpenMove(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	virtual bool  IsPiece() const {return false;}
+	bool          IsSpawnEggTriggered(const CCueEvents& CueEvents) const;
 	virtual bool  IsSwimming() const {return this->eMovement == WATER;}
 	virtual bool  IsTileObstacle(const UINT wTileNo) const;
 	virtual bool  IsVisible() const {return true;}
@@ -262,6 +263,7 @@ public:
 	void          SetKillInfo(const UINT wKillDirection);
 	virtual void  SetMembers(const CDbPackedVars& vars);
 	void          SetOrientation(const int dxFirst, const int dyFirst);
+	void          SpawnEgg(CCueEvents& CueEvents);
 	virtual bool  TurnToFacePlayerWhenFighting() const {return false;}
 	void          UpdateGaze(CCueEvents &CueEvents);
 

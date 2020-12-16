@@ -45,8 +45,6 @@ public:
 			int &dx, int &dy, const MovementIQ movementIQ=SmartDiagonalOnly) const;
 */
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
-
-	bool IsSpawnEggTriggered(const CCueEvents& CueEvents) const;
 };
 
 #endif //...#ifndef ROACHQUEEN_H
