@@ -132,7 +132,8 @@ namespace ScriptVars
 		P_GEL_SPAWN = -76,
 		P_QUEEN_SPAWN = -77,
 		P_MONSTER_NAME = -78,
-		FirstPredefinedVar = P_MONSTER_NAME, //set this to the last var in the enumeration
+		P_SCRIPT_MONSTER_SPAWN = - 79,
+		FirstPredefinedVar = P_SCRIPT_MONSTER_SPAWN, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

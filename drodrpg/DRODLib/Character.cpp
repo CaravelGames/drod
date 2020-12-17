@@ -484,6 +484,9 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			return this->itemGRmult;
 
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			return this->wSpawnType;
 
 		//Hidden global values
 		case (UINT)ScriptVars::P_TOTALTIME:
@@ -637,6 +640,11 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 		break;
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			this->itemGRmult = val;
+		break;
+
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			this->wSpawnType = val;
 		break;
 
 		//Combat enemy stats.
@@ -3792,7 +3800,7 @@ UINT CCharacter::GetResolvedIdentity() const
 
 UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
 {
-	if (this->wSpawnType > -1) {
+	if (this->wSpawnType >= 0) {
 		return this->wSpawnType;
 	}
 
