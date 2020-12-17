@@ -276,6 +276,7 @@ private:
 	bool bDropTrapdoors;       //stepping off a trapdoor drops it
 	bool bMoveIntoSwords;      //can move onto swords instead of being blocked by them
 	bool bPushObjects;         //can push movable objects
+	bool bSpawnEggs;           //will spawn eggs in reaction to combats
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

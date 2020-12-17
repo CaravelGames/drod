@@ -122,6 +122,7 @@ const UINT MAX_ANSWERS = 9;
 #define DropTrapdoorsStr "DropTrapdoors"
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
+#define SpawnEggsStr "SpawnEggs"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -235,7 +236,7 @@ CCharacter::CCharacter(
 	, bSerpentWeakness(false)
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
-	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false)
+	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2685,7 +2686,7 @@ void CCharacter::Process(
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast =
-						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects =
+						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2766,6 +2767,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::PushObjects:
 						this->bPushObjects = true;
+					break;
+					case ScriptFlag::SpawnEggs:
+						this->bSpawnEggs = true;
 					break;
 
 					default:
@@ -3209,6 +3213,9 @@ Finish:
 			FaceTarget();
 		if (this->bFaceAwayFromTarget)
 			FaceAwayFromTarget();
+
+		if (this->bSpawnEggs && this->IsSpawnEggTriggered(CueEvents))
+			SpawnEgg(CueEvents);
 
 		if (this->bAttackAdjacent && !this->bAttacked)
 		{
@@ -4802,6 +4809,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDropTrapdoors = vars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
+	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
 	this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
@@ -4929,6 +4937,8 @@ const
 		vars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	if (this->bPushObjects)
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
+	if (this->bSpawnEggs)
+		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
