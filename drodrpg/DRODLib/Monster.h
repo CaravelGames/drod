@@ -198,6 +198,7 @@ public:
 	inline CMonster* GetOwningMonster() { return const_cast<CMonster*>(GetOwningMonsterConst()); }
 	CCoordStack*  GetPathToGoal() {return &this->pathToDest;}
 	virtual UINT  GetResolvedIdentity() const {return GetIdentity();}
+	virtual UINT  GetSpawnType(UINT defaultMonsterID) const;
 	bool          GetSwordCoords(UINT& wX, UINT& wY) const;
 	virtual SwordType GetWeaponType() const { return SwordType::NoSword; }
 	bool          GetTarget(UINT &wX, UINT &wY);

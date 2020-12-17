@@ -979,7 +979,7 @@ bool CMonster::IsSpawnEggTriggered(const CCueEvents& CueEvents) const
 		return false;
 
 	//don't lay more eggs when eggs are killed
-	const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
+	const UINT spawnID = GetSpawnType(M_REGG);
 
 	const UINT enemyType = pCombatEnemy->wType;
 	if (enemyType != M_CHARACTER)
@@ -1051,7 +1051,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 	}
 
 	//Lay eggs and check for them being laid on pressure plates.
-	const UINT spawnID = this->pCurrentGame->getSpawnID(M_REGG);
+	const UINT spawnID = GetSpawnType(M_REGG);
 	for (CCoordSet::const_iterator egg = eggs.begin(); egg != eggs.end(); ++egg)
 	{
 		CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
@@ -1060,6 +1060,11 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 			m->wO = NO_ORIENTATION;
 		}
 	}
+}
+
+UINT CMonster::GetSpawnType(UINT defaultMonsterID) const
+{
+	return this->pCurrentGame->getSpawnID(M_REGG);
 }
 
 //*****************************************************************************

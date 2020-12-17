@@ -84,6 +84,8 @@ const UINT MAX_ANSWERS = 9;
 #define ItemDEFMultStr "ItemDEFMultiplier"
 #define ItemGRMultStr "ItemGRMultiplier"
 
+#define SpawnTypeStr "SpawnType"
+
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
 #define YRelStr "YRel"
@@ -249,6 +251,7 @@ CCharacter::CCharacter(
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
 	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
 	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
+	, wSpawnType(-1)
 {
 }
 
@@ -3787,6 +3790,15 @@ UINT CCharacter::GetResolvedIdentity() const
 	return wIdentity;
 }
 
+UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
+{
+	if (this->wSpawnType > -1) {
+		return this->wSpawnType;
+	}
+
+	return CMonster::GetSpawnType(defaultMonsterID);
+}
+
 //*****************************************************************************
 float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 //Returns: the NPC's local modifier value for the given type
@@ -4833,6 +4845,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
 	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
 	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
+
+	//Spawn type
+	this->wSpawnType = vars.GetVar(SpawnTypeStr, this->wSpawnType);
 }
 
 //*****************************************************************************
@@ -4980,6 +4995,10 @@ const
 		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
 	if (this->itemGRmult != 100)
 		vars.SetVar(ItemGRMultStr, this->itemGRmult);
+
+	// Spawn type
+	if (this->wSpawnType != -1)
+		vars.SetVar(SpawnTypeStr, this->wSpawnType);
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 
