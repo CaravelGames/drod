@@ -1431,6 +1431,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::BeamAttack, g_pTheDB->GetMessageText(MID_BehaviorBeamAttack));
 	this->pBehaviorListBox->AddItem(ScriptFlag::BeamBlock, g_pTheDB->GetMessageText(MID_BehaviorBeamBlock));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SurprisedFromBehind, g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind));
+	this->pBehaviorListBox->AddItem(ScriptFlag::SpawnEggs, g_pTheDB->GetMessageText(MID_SpawnEggs));
 	this->pBehaviorListBox->AddItem(ScriptFlag::GoblinWeakness, g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SerpentWeakness, g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Metal, g_pTheDB->GetMessageText(MID_BehaviorMetal));
