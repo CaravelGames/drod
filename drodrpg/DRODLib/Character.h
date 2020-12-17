@@ -74,6 +74,7 @@ public:
 	virtual bool   CanAttackFirst() const {return this->bAttackFirst;}
 	virtual bool   CanAttackLast() const {return this->bAttackLast;}
 	virtual bool   CanCutBriar() const {return this->bBriar;}
+	virtual bool   CanSpawnEggs() const {return this->bSpawnEggs;}
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
