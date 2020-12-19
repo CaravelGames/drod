@@ -2733,11 +2733,19 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_SetMovementType:
 			{
-				//Set movement type X
-				bProcessNextCommand = true;
-
 				const MovementType eNewMovementType = (MovementType)command.x;
-				this->eMovement = eNewMovementType;
+
+				if (this->bIfBlock)
+				{
+					//When used with if, check if movement type equals X
+					if (this->eMovement != eNewMovementType)
+						STOP_COMMAND;
+				}	else {
+					//Set movement type X
+					this->eMovement = eNewMovementType;
+				}
+
+				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_TurnIntoMonster:
