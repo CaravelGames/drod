@@ -1,3 +1,4 @@
+#include "catch.hpp"
 #include "CTestDb.h"
 
 #include "../../DRODLib/Db.h"
@@ -25,11 +26,13 @@ UINT CTestDb::globalPlayerID = UINT(-1);
 UINT CTestDb::globalHoldID = UINT(-1);
 UINT CTestDb::globalLevelID = UINT(-1);
 UINT CTestDb::globalRoomID = UINT(-1);
+const std::string *CTestDb::currentTestCaseName = NULL;
 
 bool Setting_SaveTestLevels = false;
 
 void CTestDb::Init(int argc, char* const argv[])
 {
+
 	CTestDb::InitializeCFiles(argv);
 	CTestDb::InitializeDb();
 	CTestDb::InitializePlayer();
@@ -37,6 +40,7 @@ void CTestDb::Init(int argc, char* const argv[])
 	CTestDb::InitializeLevel();
 	CTestDb::InitializeRoom();
 	CTestDb::InitializeEntrance();
+	CTestDb::db->Commit();
 }
 
 void CTestDb::Teardown()
@@ -45,6 +49,7 @@ void CTestDb::Teardown()
 	CTestDb::db->Levels.Delete(CTestDb::globalLevelID);
 	CTestDb::db->Holds.Delete(CTestDb::globalHoldID);
 	CTestDb::db->Players.Delete(CTestDb::globalPlayerID, false);
+	CTestDb::db->Commit();
 }
 
 CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UINT playerO){
@@ -85,7 +90,7 @@ void CTestDb::InitializeCFiles(char* const argv[]){
 	playerDataSubDirs.push_back("Music");
 	playerDataSubDirs.push_back("Sounds");
 	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
-	CTestDb::files = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, false);
+	CTestDb::files = new CFiles(wstrPath.c_str(), wszDROD, wszDROD_VER, false, true, true);
 	if (CFiles::bad_data_path_file) {
 		throw 1;
 	}
@@ -205,6 +210,11 @@ void CTestDb::InitializeEntrance()
 
 void CTestDb::RegenerateRoom(){
 	if (Setting_SaveTestLevels){
+		WSTRING buffer;
+		UTF8ToUnicode(CTestDb::currentTestCaseName->c_str(), buffer);
+		level->NameText = buffer.c_str();
+		level->NameText.Update();
+		
 		room->Update();
 		level->Update();
 		hold->Update();
@@ -218,6 +228,7 @@ void CTestDb::RegenerateRoom(){
 
 	InitializeRoom();
 	InitializeEntrance();
+	CTestDb::db->Commit();
 }
 
 void CTestDb::GetAppPath(
@@ -236,7 +247,7 @@ void CTestDb::GetAppPath(
 	if (len && len != -1)
 	{
 		exepath[len] = 0;
-		AsciiToUnicode(exepath, wstrAppPath);
+		UTF8ToUnicode(exepath, wstrAppPath);
 		return;
 	}
 #elif defined(WIN32)
@@ -251,17 +262,17 @@ void CTestDb::GetAppPath(
 		char szPathBuffer[MAX_PATH + 1];
 		if (GetModuleFileNameA(NULL, szPathBuffer, MAX_PATH))
 		{
-			AsciiToUnicode(szPathBuffer, wstrAppPath);
+			UTF8ToUnicode(szPathBuffer, wstrAppPath);
 			return;
 		}
 	}
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 	char fullPathBuffer[PATH_MAX];
 	realpath(pszArg0, fullPathBuffer);
-	AsciiToUnicode(fullPathBuffer, wstrAppPath);
+	UTF8ToUnicode(fullPathBuffer, wstrAppPath);
 	return;
 #endif
 
 	//Fallback solution--use the command-line argument.
-	AsciiToUnicode(pszArg0, wstrAppPath);
+	UTF8ToUnicode(pszArg0, wstrAppPath);
 }

@@ -15,12 +15,15 @@ namespace INISection
 
 namespace INIKey
 {
+	DEF(AllowWindowResizing);
 	DEF(AlwaysFullBlit);
 	DEF(AutoLogin);
 	DEF(CrossfadeDuration);
 	DEF(ExportSpeech);
 	DEF(ExportText);
 	DEF(FullScoreUpload);
+	DEF(FullScreenMinimize);
+	DEF(FullScreenMode);
 	DEF(Keyboard);
 	DEF(Language);
 	DEF(LastNews);

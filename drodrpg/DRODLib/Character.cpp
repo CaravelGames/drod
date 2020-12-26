@@ -373,7 +373,6 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 //Returns: the value of the predefined var with this relative index
 {
 	ASSERT(this->pCurrentGame);
-	const CSwordsman& player = *(this->pCurrentGame->pPlayer);
 	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
 	switch (varIndex)
 	{
@@ -393,12 +392,6 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 			return this->sword;
 
 		//Room position.
-		case (UINT)ScriptVars::P_PLAYER_X:
-			return player.wX;
-		case (UINT)ScriptVars::P_PLAYER_Y:
-			return player.wY;
-		case (UINT)ScriptVars::P_PLAYER_O:
-			return player.wO;
 		case (UINT)ScriptVars::P_MONSTER_X:
 			return this->wX;
 		case (UINT)ScriptVars::P_MONSTER_Y:
@@ -1137,7 +1130,7 @@ int CCharacter::parseExpression(
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str = UnicodeToAscii(pwStr + index);
+			string str = UnicodeToUTF8(pwStr + index);
 			str += ": Parse error (bad symbol)";
 			f.AppendErrorLog(str.c_str());
 			return val;
@@ -1217,7 +1210,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		{
 			//parse error -- return the current value
 			CFiles f;
-			string str = UnicodeToAscii(pwStr);
+			string str = UnicodeToUTF8(pwStr);
 			str += ": Parse error (missing close parenthesis)";
 			f.AppendErrorLog(str.c_str());
 		}
@@ -1241,7 +1234,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 				++index;
 
 			CFiles f;
-			string str = UnicodeToAscii(pwStr);
+			string str = UnicodeToUTF8(pwStr);
 			str += ": Parse error (invalid var name)";
 			f.AppendErrorLog(str.c_str());
 
@@ -1284,7 +1277,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 
 	//Invalid identifier
 	CFiles f;
-	string str = UnicodeToAscii(pwStr + index);
+	string str = UnicodeToUTF8(pwStr + index);
 	str += ": Parse error (invalid var name)";
 	f.AppendErrorLog(str.c_str());
 
@@ -2333,15 +2326,14 @@ void CCharacter::Process(
 					case ScriptFlag::Die:
 						//Stop script execution whether visible or not.
 						bProcessNextCommand = false;
-						if (bExecuteNoMoveCommands)
+						if (pGame->wPlayerTurn == 0)
 							return; //wait until first move to display death
 
 						this->wCurrentCommandIndex = this->commands.size();
 						if (this->bVisible)
 						{
 							//NPC dies.
-							if (!bExecuteNoMoveCommands)
-								CueEvents.Add(CID_MonsterDiedFromStab, this);
+							CueEvents.Add(CID_MonsterDiedFromStab, this);
 
 							CCueEvents Ignored;
 							SetKillInfo(NO_ORIENTATION); //center stab effect
@@ -4327,7 +4319,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 }
 
 //*****************************************************************************
-void CCharacter::SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) //(in/out)
+void CCharacter::SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) //(out)
 const
 //Packs NPC state info.
 {
@@ -4472,6 +4464,16 @@ void CCharacter::Delete()
 }
 
 //*****************************************************************************
+void CCharacter::PackExtraVars(
+	const bool bSaveScript) //whether to save the NPC script in packed vars
+{
+	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
+	if (bSaveScript) {
+		SaveCommands(this->ExtraVars, this->commands);
+	}
+}
+
+//*****************************************************************************
 void CCharacter::Save(
 //Places monster object member vars into database view.
 //
@@ -4479,11 +4481,7 @@ void CCharacter::Save(
 	const c4_RowRef &MonsterRowRef,     //(in/out) Open view to fill.
 	const bool bSaveScript) //whether to save the NPC script in packed vars [default=true]
 {
-	//Pack vars.
-	SetExtraVarsFromMembersWithoutScript(this->ExtraVars);
-	if (bSaveScript) {
-		SaveCommands(this->ExtraVars, this->commands);
-	}
+	PackExtraVars(bSaveScript);
 
 	CMonster::Save(MonsterRowRef);
 }

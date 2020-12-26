@@ -59,9 +59,9 @@ static void OptionError (
 #else
 	WSTRING wstrOpt = pwczOpt;
 	char *pszOpt = new char[wstrOpt.length()];
-	UnicodeToAscii(wstrOpt, pszOpt);
+	UnicodeToUTF8(wstrOpt, pszOpt);
 	char *pszErr = new char[wstrErr.length()];
-	UnicodeToAscii(wstrErr, pszErr);
+	UnicodeToUTF8(wstrErr, pszErr);
 	printf("The \"-%s\" option %s.\n", pszOpt, pszErr);
 	delete[] pszOpt;
 	delete[] pszErr;

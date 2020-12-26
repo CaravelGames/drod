@@ -40,27 +40,15 @@ CFadeTileEffect::CFadeTileEffect(
 }
 
 //*****************************************************************************
-bool CFadeTileEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CFadeTileEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration)
-		return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
 	//Draw lit up checkpoint.
-	const Uint32 dwFullOpacityTime = this->dwDuration/4;
+	const Uint32 dwFullOpacityTime = this->dwDuration / 4;
 	const Uint32 dwFadeTime = this->dwDuration - dwFullOpacityTime;
 	const float fMultiplier = 255.0f / (float)dwFadeTime;
-	const Uint8 opacity = dwElapsed > dwFullOpacityTime ?
-			static_cast<Uint8>((dwFadeTime-(dwElapsed-dwFullOpacityTime)) * fMultiplier) :
-			255;
-	DrawTile(this->wTileNo, pDestSurface, opacity);
+	this->nOpacity = dwTimeElapsed > dwFullOpacityTime ?
+		static_cast<Uint8>((dwFadeTime - (dwTimeElapsed - dwFullOpacityTime)) * fMultiplier) :
+		255;
 
-	//Continue effect.
 	return true;
 }

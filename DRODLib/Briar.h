@@ -87,11 +87,16 @@ private:
 	friend class CBriar;
 	CDbRoom     *pRoom;
 	std::list<CBriar*> briars;   //sources in the room
-	CCoordIndex_T<USHORT>  briarIndices;  //quick access to which component is at what tile
-	std::vector<CCoordSet> briarComponents, briarEdge; //connected components
-	std::vector<CoordPair> connectedBriars;     //tile pairs where two components connect
+	CCoordIndex_T<USHORT>  briarIndices;    //quick access to which component is at what tile
+	std::vector<CCoordSet> briarComponents; //connected components
+	std::vector<CCoordSet> briarEdge;       //connected components
+	std::vector<CoordPair> connectedBriars; //tile pairs where two components connect
+	
 	CCoordSet pressurePlates;  //set of pressure plate tiles depressed on a turn
-	bool bRecalc;              //indicates components must be reconstructed
+	CCoordSet pendingRootRemovals;  //Brair roots that are pending removal
+
+	bool      bRecalc;         //indicates components must be reconstructed
+	bool      bIsProcessing;   // Whether currently in the middle of briar processing
 };
 
 #endif //...#ifndef BRIAR_H

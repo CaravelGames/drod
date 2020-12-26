@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Assert.cpp" />
+    <ClCompile Include="AttachableObject.cpp" />
+    <ClCompile Include="Base64.cpp" />
+    <ClCompile Include="Browser.cpp" />
+    <ClCompile Include="Clipboard.cpp" />
+    <ClCompile Include="Coord.cpp" />
+    <ClCompile Include="Date.cpp" />
+    <ClCompile Include="Dyn.cpp" />
+    <ClCompile Include="Files.cpp" />
+    <ClCompile Include="GameStream.cpp" />
+    <ClCompile Include="Heap.cpp" />
+    <ClCompile Include="IDList.cpp" />
+    <ClCompile Include="IniFile.cpp" />
+    <ClCompile Include="Internet.cpp" />
+    <ClCompile Include="MessageIDs.cpp" />
+    <ClCompile Include="Metadata.cpp" />
+    <ClCompile Include="Ports.cpp" />
+    <ClCompile Include="PostData.cpp" />
+    <ClCompile Include="StretchyBuffer.cpp" />
+    <ClCompile Include="SysTimer.cpp" />
+    <ClCompile Include="Wchar.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Assert.h" />
+    <ClInclude Include="AttachableObject.h" />
+    <ClInclude Include="Base64.h" />
+    <ClInclude Include="Browser.h" />
+    <ClInclude Include="CharTraits.h" />
+    <ClInclude Include="Clipboard.h" />
+    <ClInclude Include="Coord.h" />
+    <ClInclude Include="CoordIndex.h" />
+    <ClInclude Include="CoordSet.h" />
+    <ClInclude Include="CoordStack.h" />
+    <ClInclude Include="Date.h" />
+    <ClInclude Include="Dyn.h" />
+    <ClInclude Include="Exception.h" />
+    <ClInclude Include="Files.h" />
+    <ClInclude Include="GameStream.h" />
+    <ClInclude Include="Heap.h" />
+    <ClInclude Include="IDList.h" />
+    <ClInclude Include="IDSet.h" />
+    <ClInclude Include="IniFile.h" />
+    <ClInclude Include="Internet.h" />
+    <ClInclude Include="MessageIDs.h" />
+    <ClInclude Include="Metadata.h" />
+    <ClInclude Include="Ports.h" />
+    <ClInclude Include="PortsBase.h" />
+    <ClInclude Include="PostData.h" />
+    <ClInclude Include="StretchyBuffer.h" />
+    <ClInclude Include="SysTimer.h" />
+    <ClInclude Include="Types.h" />
+    <ClInclude Include="UtilFuncs.h" />
+    <ClInclude Include="Wchar.h" />
+  </ItemGroup>
+</Project>

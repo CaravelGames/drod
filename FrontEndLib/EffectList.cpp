@@ -38,7 +38,7 @@ using namespace std;
 CEffectList::CEffectList(CWidget *pOwnerWidget)
 	: pOwnerWidget(pOwnerWidget)
 	, pOwnerScreen(NULL)
-	, dwTimeEffectsWereFrozen(0L)
+	, bIsFrozen(false)
 {
 	if (pOwnerWidget && pOwnerWidget->eType == WT_Screen)
 		this->pOwnerScreen = DYN_CAST(CScreen*, CWidget*, pOwnerWidget);
@@ -110,7 +110,7 @@ void CEffectList::Clear(
 		delete pEffect;
 	}
 	this->Effects = retained;
-	this->dwTimeEffectsWereFrozen = 0;
+	this->bIsFrozen = false;
 }
 
 //*****************************************************************************
@@ -166,108 +166,117 @@ const
 }
 
 //*****************************************************************************
-void CEffectList::DrawEffects(
+void CEffectList::UpdateEffects(
 //Draws list of effects.
-//If freezing effects, save time they are frozen to preserve their frame #.
-//When unfreezing, update their start time to now.
 //
 //Params:
 	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn
-                              //[default = false]
-	const bool bFreezeEffects, //(in) Whether effects are frozen after this draw.
-										//[default = false]
-	SDL_Surface *pDestSurface) //(in) where to draw effects (default = NULL)
+                               //[default = false]
+	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
+	                           //[default = -1] - Draw all effect types
 {
 	list<CEffect *>::const_iterator iSeek = this->Effects.begin();
+
 	bool bRepaintScreen = false;
 	while (iSeek != this->Effects.end())
 	{
 		CEffect *pEffect = *iSeek;
-		ASSERT(pEffect);
-		//Each iteration draws one effect.
-		if (!bFreezeEffects && this->dwTimeEffectsWereFrozen &&
-				pEffect->dwTimeStarted <= this->dwTimeEffectsWereFrozen)
-		{
-			//Unfreeze effect where it left off.
-			if (pEffect->dwTimeStarted) //only update time for effects that have drawn at least once
-			{
-				const Uint32 dwTimeOffset = SDL_GetTicks() - this->dwTimeEffectsWereFrozen;
-				pEffect->dwTimeStarted += dwTimeOffset;
-				pEffect->dwTimeOfLastMove += dwTimeOffset;
-			}
-		}
-
 		++iSeek;
-		if (pEffect->Draw(pDestSurface))
-		{
-			if (bUpdateScreen && this->pOwnerScreen)
-				for (UINT wIndex=pEffect->dirtyRects.size(); wIndex--; )
-					this->pOwnerScreen->UpdateRect(pEffect->dirtyRects[wIndex]);
-		} else {
-			//Effect is finished--remove from list.
-			bRepaintScreen = true; //parent display needs refreshing to erase finished effect
-			this->Effects.remove(pEffect);
-			delete pEffect;
-		}
+
+		if (eDrawnType != DRAW_ALL_EFFECTS_TYPE && pEffect->GetEffectType() != eDrawnType)
+			continue;
+
+		if (!UpdateEffect(pEffect, bUpdateScreen))
+			bRepaintScreen = true;
 	}
+
 	if (bRepaintScreen && this->pOwnerScreen)
 		this->pOwnerScreen->RequestPaint();  //refresh area of removed effects
-
-	this->dwTimeEffectsWereFrozen = (bFreezeEffects ? SDL_GetTicks() : 0L);
 }
 
 //*****************************************************************************
-//Mostly a copy of DrawEffects.
-void CEffectList::DrawEffectsOfType(
-	const UINT eEffectType,
-	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn
-                              //[default = false]
-	const bool bFreezeEffects, //(in) Whether effects are frozen after this draw.
-										//[default = false]
-	SDL_Surface *pDestSurface) //(in) where to draw effects (default = NULL)
+void CEffectList::DrawEffects(
+//Draws list of effects.
+//
+//Params:
+	SDL_Surface* pDestSurface, //(in) where to draw effects (default = NULL)
+	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
+							   //[default = -1] - Draw all effect types
 {
-	list<CEffect *>::const_iterator iSeek = this->Effects.begin();
+	list<CEffect*>::const_iterator iSeek = this->Effects.begin();
+
 	bool bRepaintScreen = false;
 	while (iSeek != this->Effects.end())
 	{
-		CEffect *pEffect = *iSeek;
-		ASSERT(pEffect);
-
-		if (eEffectType != pEffect->GetEffectType()) {
-			++iSeek;
-			continue;
-		}
-
-		//Each iteration draws one effect.
-		if (!bFreezeEffects && this->dwTimeEffectsWereFrozen &&
-				pEffect->dwTimeStarted <= this->dwTimeEffectsWereFrozen)
-		{
-			//Unfreeze effect where it left off.
-			if (pEffect->dwTimeStarted) //only update time for effects that have drawn at least once
-			{
-				const Uint32 dwTimeOffset = SDL_GetTicks() - this->dwTimeEffectsWereFrozen;
-				pEffect->dwTimeStarted += dwTimeOffset;
-				pEffect->dwTimeOfLastMove += dwTimeOffset;
-			}
-		}
-
+		CEffect* pEffect = *iSeek;
 		++iSeek;
-		if (pEffect->Draw(pDestSurface))
-		{
-			if (bUpdateScreen && this->pOwnerScreen)
-				for (UINT wIndex=pEffect->dirtyRects.size(); wIndex--; )
-					this->pOwnerScreen->UpdateRect(pEffect->dirtyRects[wIndex]);
-		} else {
-			//Effect is finished--remove from list.
-			bRepaintScreen = true; //parent display needs refreshing to erase finished effect
-			this->Effects.remove(pEffect);
-			delete pEffect;
-		}
-	}
-	if (bRepaintScreen && this->pOwnerScreen)
-		this->pOwnerScreen->RequestPaint();  //refresh area of removed effects
 
-	this->dwTimeEffectsWereFrozen = (bFreezeEffects ? SDL_GetTicks() : 0L);
+		if (eDrawnType != DRAW_ALL_EFFECTS_TYPE && pEffect->GetEffectType() != eDrawnType)
+			continue;
+
+		DrawEffect(pEffect, pDestSurface);
+	}
+}
+
+//*****************************************************************************
+void CEffectList::UpdateAndDrawEffects(
+//Draws list of effects.
+//
+//Params:
+	const bool bUpdateScreen,  //(in) Whether screen is updated where effects are drawn
+							   //[default = false]
+	SDL_Surface* pDestSurface, //(in) where to draw effects (default = NULL)
+	const UINT eDrawnType)     //(in) When given effect type will only draw effects of that type
+							   //[default = -1] - Draw all effect types
+{
+	UpdateEffects(bUpdateScreen, eDrawnType);
+	DrawEffects(pDestSurface, eDrawnType);
+}
+
+//*****************************************************************************
+//Updates a single effect
+bool CEffectList::UpdateEffect(
+	CEffect* pEffect,          //(in) Effect to draw
+	const bool bUpdateScreen)  //(in) Whether screen is updated where effects are drawn
+							   //[default = false]
+// Returns: true if the effect is still running, false if it's finished
+{
+
+	ASSERT(pEffect);
+
+	UINT wDeltaTime = this->bIsFrozen
+		? 0
+		: CScreen::dwLastRenderTicks - pEffect->dwTimeOfLastMove;
+
+	const bool bDoesEffectRemain = pEffect->Update(wDeltaTime);
+	if (!this->bIsFrozen)
+		pEffect->dwTimeOfLastMove = CScreen::dwLastRenderTicks;
+
+	if (bDoesEffectRemain)
+	{
+		if (bUpdateScreen && this->pOwnerScreen)
+			for (UINT wIndex = pEffect->dirtyRects.size(); wIndex--; )
+				this->pOwnerScreen->UpdateRect(pEffect->dirtyRects[wIndex]);
+	}
+	else {
+		//Effect is finished--remove from list.
+		this->Effects.remove(pEffect);
+		delete pEffect;
+	}
+
+	return bDoesEffectRemain;
+}
+
+//*****************************************************************************
+//Draws a single effect
+void CEffectList::DrawEffect(
+	CEffect* pEffect,          //(in) Effect to draw
+	SDL_Surface* pDestSurface) //(in) where to draw effects (default = NULL)
+// Returns: true if the effect is still running, false if it's finished
+{
+	
+	ASSERT(pEffect);
+	pEffect->Draw(pDestSurface);
 }
 
 //*****************************************************************************
@@ -353,6 +362,16 @@ SDL_Rect CEffectList::GetBoundingBoxForEffectsOfType(const UINT eEffectType) con
 }
 
 //*****************************************************************************
+void CEffectList::SetOpacityForEffects(const float fOpacity) const
+{
+	for (list<CEffect*>::const_iterator iSeek = this->Effects.begin();
+		iSeek != this->Effects.end(); ++iSeek)
+	{
+		(*iSeek)->SetOpacity(fOpacity);
+	}
+}
+
+//*****************************************************************************
 void CEffectList::SetOpacityForEffectsOfType(const UINT eEffectType, float fOpacity) const
 {
 	for (list<CEffect *>::const_iterator iSeek = this->Effects.begin();
@@ -396,4 +415,25 @@ void CEffectList::RemoveEffectsOfType(
 
 	if (bRepaint)
 		this->pOwnerWidget->RequestPaint();
+}
+
+//*****************************************************************************
+void CEffectList::SetEffectsFrozen(const bool bIsFrozen)
+	//Sets whether the effects should animate or just render statically
+	//When set to on, all effects will run with 0 delta time
+	//When set to off, all effects will have their internal state changed so that
+	// the next Draw() call will run with 0 delta, but will continue to execute
+	// as normal afterwards
+{
+	if (bIsFrozen == this->bIsFrozen)
+		return;
+
+	this->bIsFrozen = bIsFrozen;
+
+	if (!this->bIsFrozen) {
+		// Unfreeze the effects, resetting their last render time to current time
+		// so that next draw call assumes only 0 or 1 frames has passed since they were last drawn
+		for (list<CEffect*>::const_iterator iSeek = this->Effects.begin(); iSeek != this->Effects.end(); ++iSeek)
+			(*iSeek)->dwTimeOfLastMove = CScreen::dwLastRenderTicks;
+	}
 }

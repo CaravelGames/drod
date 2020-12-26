@@ -26,6 +26,8 @@
 
 #include "BuildUtil.h"
 #include "CurrentGame.h"
+#include "PlayerDouble.h"
+#include "OrbUtil.h"
 
 //*****************************************************************************
 bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
@@ -67,39 +69,59 @@ bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 }
 
 //*****************************************************************************
-void BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, const UINT pw, const UINT ph, const bool bAllowSame, CCueEvents& CueEvents)
+UINT BuildUtil::BuildTilesAt(
+// Builds the provided tile in the room at given area. Area is cropped to fit room size, and if the rectangle falls fully outside
+// the room boundaries the functin does nothing
+	CDbRoom& room,                //(in) Room affected
+	const UINT tile,              //(in) Tile to be built, supports virtual tile IDs
+	UINT px, UINT py,             //(in) Position to build at
+	const UINT pw, const UINT ph, //(in) Build rectangle dimensions (use 0, 0 to build a single tile)
+	const bool bAllowSame,        //(in) Whether building the same tile is treated as a successful build or not
+	CCueEvents& CueEvents)
+// Returns: the number of tiles that were modified
 {
 	if (!bIsValidBuildTile(tile))
-		return;
+		return 0;
 
 	UINT endX = px + pw;
 	UINT endY = py + ph;
 
 	if (!room.CropRegion(px, py, endX, endY))
-		return;
+		return 0;
 
 	const UINT baseTile = bConvertFakeElement(tile);
 
-	for (UINT y = py; y <= endY; ++y) {
+	UINT builtTiles = 0;
+	for (UINT y = py; y <= endY; ++y)
 		for (UINT x = px; x <= endX; ++x)
-		{
-			BuildUtil::BuildAnyTile(room, baseTile, tile, x, y, bAllowSame, CueEvents);
-		}
+			if (BuildUtil::BuildAnyTile(room, baseTile, tile, x, y, bAllowSame, CueEvents))
+				++builtTiles;
+
+	if (TILE_LAYER[baseTile] == LAYER_OPAQUE) {
+		for (UINT y = py; y <= endY; ++y)
+			for (UINT x = px; x <= endX; ++x) {
+				//When o-layer changes, refresh bridge supports.
+				room.bridges.HandleTileBuilt(x, y, room.GetOSquare(x, y));
+			}
 	}
+
+	if (bIsYellowDoor(tile))
+		OrbUtil::MergeYellowDoorConnectionsInArea(room, px, py, endX - px, endY - py);
+
+	return builtTiles;
 }
 
 //*****************************************************************************
-bool BuildUtil::BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
+bool BuildUtil::BuildTileAt(
+// Builds a single tile at given position. If the position is outside room boundaries, does nothing and returns false.
+// Internally uses BuildTilesAt() with 0,0 width and height
+	CDbRoom& room,              	//(in) Room affected
+	const UINT tile,            	//(in) Tile to be built, supports virtual tile IDs
+	const UINT x, const UINT y, 	//(in) Position to build at
+	const bool bAllowSame, 			//(in) Whether building the same tile is treated as a successful build or not
+	CCueEvents& CueEvents)
 {
-	if (!bIsValidBuildTile(tile))
-		return false;
-
-	if (x >= room.wRoomCols || y >= room.wRoomRows)
-		return false; //build area is completely out of room bounds -- do nothing
-
-	const UINT baseTile = bConvertFakeElement(tile);
-
-	return BuildUtil::BuildAnyTile(room, baseTile, tile, x, y, bAllowSame, CueEvents);
+	return BuildTilesAt(room, tile, x, y, 0, 0, bAllowSame, CueEvents) > 0;
 }
 
 //*****************************************************************************
@@ -154,6 +176,10 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 				if (wTTile == T_EMPTY || bIsCombustibleItem(wTTile) ||
 						bIsTLayerCoveringItem(wTTile) ||
 						bIsPotion(wTTile) || bIsBriar(wTTile))
+					break;
+
+				// Allow covering Tlayer tiles
+				if (bIsTLayerCoveringItem(baseTile) && bIsTLayerCoverableItem(wTTile))
 					break;
 
 				//No other item can be built over.
@@ -265,7 +291,14 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 	{
 		//If the build tile would fill a square, the tile must be vacant now.
 		CMonster *pMonster = room.GetMonsterAtSquare(x, y);
-		if (pMonster || (pCurrentGame->swordsman.wX == x &&
+		// Allow building walls on top of Gentryii chain
+		const bool bIsGentryiiChainBuildable = pMonster
+			&& pMonster->wType == M_GENTRYII
+			&& pMonster->IsPiece()
+			&& (bIsWall(baseTile) || bIsCrumblyWall(baseTile));
+
+		const bool bMonsterBlocksBuild = pMonster && !bIsGentryiiChainBuildable;
+		if (bMonsterBlocksBuild || (pCurrentGame->swordsman.wX == x &&
 			pCurrentGame->swordsman.wY == y))
 		{
 			//Build tile is occupied and invalid.
@@ -323,12 +356,20 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		} else if (wOldTTile == T_BRIAR_LIVE && baseTile == T_BRIAR_DEAD) {
 			//this case isn't handled in briars.plotted() via room plot below
 			room.briars.forceRecalc();
+		} else if (baseTile == T_STATION) {
+			room.stations.push_back(new CStation(x, y, &room));
 		}
 	}
 
-	//When water or doors are plotted (or overwritted), redraw edges.
+	//When water, ice or doors are plotted (or overwritten), redraw edges.
 	//WARNING: Where plots are needed is front-end implementation dependent.
-	if (bIsWater(baseTile) || bIsWater(wOldOTile) || bIsDoor(wOldOTile) || bIsDoor(baseTile))
+	if (
+		bIsWater(baseTile)
+		|| bIsWater(wOldOTile)
+		|| bIsThinIce(baseTile)
+		|| bIsThinIce(wOldOTile)
+		|| bIsDoor(wOldOTile)
+		|| bIsDoor(baseTile))
 	{
 		CCoordSet plots;
 		for (int nJ = -1; nJ <= 1; ++nJ){
@@ -465,10 +506,15 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 
 	CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
 	
-	//When o-layer changes, refresh bridge supports.
 	if (wLayer == LAYER_OPAQUE) {
-		const UINT newTile = (bIsShallowWater(baseTile) && bIsSteppingStone(room.GetOSquare(x, y))) ? T_STEP_STONE : baseTile;
-		room.bridges.built(x, y, newTile);
+		// Building/removing tiles that (can) affect weapon sheathing should refresh it immediately
+		if (bIsSheatheAffecting(wOldOTile) || bIsSheatheAffecting(baseTile)) {
+			CArmedMonster* pArmedMonster = dynamic_cast<CArmedMonster*>(room.GetMonsterAtSquare(x, y));
+
+			if (pArmedMonster) {
+				pArmedMonster->SetWeaponSheathed();
+			}
+		}
 	}
 
 	if (room.building.get(x, y))

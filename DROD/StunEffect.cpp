@@ -32,10 +32,12 @@
 
 //********************************************************************************
 CStunEffect::CStunEffect(
-	CWidget *pSetWidget,    //(in)   Should be a room widget.
-	const CMoveCoord &SetCoord) //(in)   tile location
-	: CAnimatedTileEffect(pSetWidget,CCoord(SetCoord.wX,SetCoord.wY),
-			0,TI_STUN1,false,ESTUN)
+	CWidget *pSetWidget,            //(in)   Should be a room widget.
+	const UINT stunX,
+	const UINT stunY,
+	const UINT stunDuration)    //(in)   stun duration
+	: CAnimatedTileEffect(pSetWidget,CCoord(stunX, stunY),
+			(UINT)-1,TI_STUN1,false,ESTUN)
 	, fading(false)
 {
 	ASSERT(pSetWidget);
@@ -45,7 +47,7 @@ CStunEffect::CStunEffect(
 	ASSERT(pRoom);
 	ASSERT(!pRoom || pRoom->GetCurrentGame());
 
-	UINT turnDuration = SetCoord.wO;
+	UINT turnDuration = stunDuration;
 	ASSERT(turnDuration > 0);
 	if (turnDuration == 1) {
 		//effect lasts for turn that just passed only -- show as temporary effect that expires next turn
@@ -58,40 +60,23 @@ CStunEffect::CStunEffect(
 }
 
 //********************************************************************************
-bool CStunEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CStunEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
 	if (wTurnNow >= this->wExpiresOnTurn)
 		return false;
 
-	const Uint32 dwElapsed = TimeElapsed();
-	if (this->dwDuration && dwElapsed > this->dwDuration)
-		return false;
+	if (this->fading)
+		this->nOpacity = static_cast<Uint8>(255.0 * GetRemainingFraction());
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	//Draw looping animation.
 	static const Uint32 framerate = 125; //ms
 
 	static const UINT NUM_FRAMES = 4;
-	static const UINT FRAME[NUM_FRAMES] = {
-		TI_STUN1, TI_STUN2, TI_STUN3, TI_STUN4};
-	const UINT frame = (dwElapsed / framerate) % NUM_FRAMES;
+	static const UINT FRAME[NUM_FRAMES] = { TI_STUN1, TI_STUN2, TI_STUN3, TI_STUN4 };
+	const UINT frame = (dwTimeElapsed / framerate) % NUM_FRAMES;
+	this->wTileNo = FRAME[frame];
+
 	ASSERT(frame < NUM_FRAMES);
 
-	Uint8 opacity = 255;
-	if (this->fading) {
-		const float fMultiplier = 196.0f / float(this->dwDuration);
-		opacity = static_cast<Uint8>((this->dwDuration-dwElapsed) * fMultiplier);
-	}
-
-	DrawTile(FRAME[frame], pDestSurface, opacity);
-
-	//Continue effect.
 	return true;
 }

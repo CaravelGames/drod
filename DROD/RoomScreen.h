@@ -73,6 +73,7 @@ protected:
 	void     ShowScroll() {this->bIsScrollVisible = true; PaintScroll();}
 	void     OpenNoticesBox(CRoomWidget *pRoomWidget);
 	void     GrabNewNotices(CRoomWidget *pRoomWidget);
+	void     UpdateNoticesButton();
 
 	//These are accessed by CDemoScreen.
 	CMapWidget *      pMapWidget;
@@ -83,6 +84,8 @@ protected:
 
 	WSTRING           wstrSignText;
 	SDL_Color         signColor;    //color of text on sign
+
+	std::map<UINT, CNetNotice> notices;
 
 	bool              bIsScrollVisible;
 

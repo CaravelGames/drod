@@ -101,6 +101,8 @@ protected:
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   OnWindowEvent(const SDL_WindowEvent &wevent);
+	virtual void   OnWindowEvent_GetFocus();
+	virtual void   OnWindowEvent_LoseFocus();
 	virtual void   Paint(bool bUpdateRect=true);
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEvents);
@@ -175,6 +177,7 @@ private:
 	void           ScoreCheckpoint(const WCHAR* pScoreIDText);
 	void           SendAchievement(const char* achievement, const UINT dwScore=0);
 	void           ShowBigMap();
+	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           showStat(const UINT eType, const int delta, CEntity *pEntity, UINT& count);
 //	void           ShowLockIcon(const bool bShow=true);
 	void           ShowPlayerFace(const bool bOverrideLock=false);
@@ -188,6 +191,7 @@ private:
 	void           TakeStepTowardQuickExit();
 	void           ToggleBigMap();
 	void           UndoMove();
+	void           UpdateEffectsFreeze();
 	void           UpdateSound();
 	bool           UploadDemoPolling();
 	void				UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);
@@ -199,6 +203,7 @@ private:
 	bool        bShowingBigMap;
 	bool        bShowingCutScene;
 	bool        bShowingTempRoom;
+	bool        bIsDialogDisplayed;
 	bool        bDisableMouseMovement; //don't accept mouse movement commands
 	bool        bNoMoveByCurrentMouseClick; //until mouse is clicked again
 	UINT        wCombatTickSpeed, wThisCombatTickSpeed;

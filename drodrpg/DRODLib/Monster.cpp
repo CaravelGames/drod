@@ -566,18 +566,6 @@ void CMonster::ExportXML(string &str) const
 	str += PROPTAG(P_O);
 	ASSERT(IsValidOrientation(this->wO));
 	str += INT32TOSTR(this->wO);
-/*
-	if (this->bIsFirstTurn)
-	{
-		str += PROPTAG(P_IsFirstTurn);
-		str += INT32TOSTR(this->bIsFirstTurn);
-	}
-	if (this->wProcessSequence != DEFAULT_PROCESS_SEQUENCE)
-	{
-		str += PROPTAG(P_ProcessSequence);
-		str += INT32TOSTR(this->wProcessSequence);
-	}
-*/
 
 	UINT dwBufferSize;
 	BYTE *pExtraVars = this->ExtraVars.GetPackedBuffer(dwBufferSize);
@@ -867,6 +855,16 @@ const
 		}
 	}
 	return nMin;
+}
+
+//*****************************************************************************
+const CMonster* CMonster::GetOwningMonsterConst() const {
+	if (IsPiece()) {
+		const CMonsterPiece* pPiece = DYN_CAST(const CMonsterPiece*, const CMonster*, this);
+		ASSERT(pPiece->pMonster);
+		return pPiece->pMonster;
+	}
+	return this;
 }
 
 //*****************************************************************************

@@ -56,6 +56,8 @@
 #include <BackEndLib/Browser.h>
 #include <BackEndLib/Files.h>
 
+#include <sstream>
+
 #ifdef DEV_BUILD //comment out to embed media to .dats
 #	define EMBED_STYLES
 #endif
@@ -322,7 +324,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 		while (pObj)
 		{
 			//Show object as it falls.
-			const CMoveCoordEx *pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			const CMoveCoordEx2 *pCoord = DYN_CAST(const CMoveCoordEx2*, const CAttachableObject*, pObj);
 			
 			UINT wTileNo;
 			if (pCoord->wValue >= M_OFFSET)
@@ -744,6 +746,27 @@ WSTRING CDrodScreen::getStatsText(
 }
 
 //*****************************************************************************
+void appendDoorStatsLine(WSTRING& wstr, UINT mid, UINT closed, UINT open)
+{
+	if (closed || open)
+	{
+		WCHAR num[16];
+
+		wstr += wszCRLF;
+		wstr += g_pTheDB->GetMessageText(mid);
+		wstr += wszColon;
+		wstr += wszSpace;
+		wstr += _itoW(closed, num, 10);
+		if (open) {
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(open, num, 10);
+			wstr += wszRightParen;
+		}
+	}
+}
+
+//*****************************************************************************
 WSTRING CDrodScreen::getStatsText(
 //Print stats as text.
 //
@@ -780,38 +803,12 @@ WSTRING CDrodScreen::getStatsText(
 		wstr += _itoW(st.secrets, num, 10);
 	}
 
-	if (st.yellowDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_YellowDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.yellowDoors, num, 10);
-	}
-	if (st.greenDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_GreenDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.greenDoors, num, 10);
-	}
-	if (st.blueDoors)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_BlueDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.blueDoors, num, 10);
-	}
-	if (st.moneyDoorCost)
-	{
-		wstr += wszCRLF;
-		wstr += g_pTheDB->GetMessageText(MID_MoneyDoor);
-		wstr += wszColon;
-		wstr += wszSpace;
-		wstr += _itoW(st.moneyDoorCost, num, 10);
-	}
+	appendDoorStatsLine(wstr, MID_YellowDoor, st.yellowDoors, st.openYellowDoors);
+	appendDoorStatsLine(wstr, MID_GreenDoor, st.greenDoors, st.openGreenDoors);
+	appendDoorStatsLine(wstr, MID_BlueDoor, st.blueDoors, st.openBlueDoors);
+	appendDoorStatsLine(wstr, MID_MoneyDoor, st.moneyDoorCost, st.openMoneyDoorCost);
+	appendDoorStatsLine(wstr, MID_RedDoor, st.redDoors, st.openRedDoors);
+	appendDoorStatsLine(wstr, MID_BlackDoor, st.blackDoors, st.openBlackDoors);
 
 	return wstr;
 }
@@ -929,16 +926,19 @@ void CDrodScreen::EditGlobalVars(
 	pListBox->SetPrompt(MID_GameVarsTitle);
 	pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
 	pListBox->PopulateListBoxFromGlobalVars(*st);
+	if (pGame) {
+		pListBox->PopulateListBoxFromHoldVars(pGame);
+	}
 	pListBox->SelectItem(0);
 
 	SetCursor();
 
-	UINT itemID=0;
+	int itemID=0;
 	do {
 		const CEntranceSelectDialogWidget::BUTTONTYPE eButton =
 				(CEntranceSelectDialogWidget::BUTTONTYPE)pListBox->Display();
 		itemID = eButton == CEntranceSelectDialogWidget::OK ? pListBox->GetSelectedItem() : 0;
-		if (itemID)
+		if (itemID < 0)
 		{
 			//Change this variable's value.
 			WCHAR temp[16];
@@ -952,7 +952,7 @@ void CDrodScreen::EditGlobalVars(
 				//Protect against certain dangerous states.
 				switch (itemID)
 				{
-					case (UINT)ScriptVars::P_HP:
+					case (int)ScriptVars::P_HP:
 						if (int(newVal) < 1)
 							newVal = 1; //constrain HP to preserve life
 					break;
@@ -969,6 +969,51 @@ void CDrodScreen::EditGlobalVars(
 				//Update value in widget list.
 				pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
 				pListBox->PopulateListBoxFromGlobalVars(*st);
+				if (pGame) {
+					pListBox->PopulateListBoxFromHoldVars(pGame);
+				}
+				pListBox->SelectItem(itemID);
+			}
+		} else if (itemID > 0 && pGame) {
+			CDbPackedVars& stats = pGame->stats;
+			char varID[10], varName[11] = "v";
+			//Get local hold var.
+			_itoa(itemID, varID, 10);
+			strcat(varName, varID);
+
+			UNPACKEDVARTYPE vType;
+			WSTRING wstrValue;
+			vType = stats.GetVarType(varName);
+
+			if (vType == UVT_int) {
+				int iVarValue = stats.GetVar(varName, (int)0);
+				std::basic_stringstream<WCHAR_t> stream;
+				stream << iVarValue;
+				wstrValue = stream.str();
+			}
+			else {
+				wstrValue = stats.GetVar(varName, WS("0"));
+			}
+
+			const UINT tagNo = ShowTextInputMessage(MID_ChangeVarValuePrompt,
+				wstrValue);
+			if (tagNo == TAG_OK)
+			{
+				// Hold variables can be strings or integers
+				if (isWInteger(wstrValue.c_str())) {
+					int varValue = _Wtoi(wstrValue.c_str());
+					stats.SetVar(varName, varValue);
+				}
+				else {
+					stats.SetVar(varName, wstrValue.c_str());
+				}
+
+				//Update value in widget list.
+				pListBox->PrepareToPopulateList(CEntranceSelectDialogWidget::GlobalVars);
+				pListBox->PopulateListBoxFromGlobalVars(*st);
+				if (pGame) {
+					pListBox->PopulateListBoxFromHoldVars(pGame);
+				}
 				pListBox->SelectItem(itemID);
 			}
 		}
@@ -1006,7 +1051,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 #undef MACROMATCH
 
 	//Parse "section:key[=value]".
-	string str = UnicodeToAscii(pText+index);
+	string str = UnicodeToUTF8(pText+index);
 	char *pStr = (char*)str.c_str();
 	string originalStr = pStr;
 	char *pSection = strtok(pStr, ":");
@@ -1034,7 +1079,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 				}
 				//Display current/new setting for key.
 				WSTRING wstr;
-				AsciiToUnicode(originalStr.c_str(), wstr);
+				UTF8ToUnicode(originalStr.c_str(), wstr);
 				DisplayChatText(wstr, Black);
 				return true;
 			} else {
@@ -1049,7 +1094,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 					//Display inputted setting for key.
 					WSTRING wstr;
-					AsciiToUnicode(originalStr.c_str(), wstr);
+					UTF8ToUnicode(originalStr.c_str(), wstr);
 					DisplayChatText(wstr, Black);
 					return true;
 				}
@@ -1059,7 +1104,7 @@ bool CDrodScreen::ParseConsoleCommand(const WCHAR *pText)
 
 	//Not recognized.
 	WSTRING orig, wstr = g_pTheDB->GetMessageText(MID_UnrecognizedConsoleCommand);
-	AsciiToUnicode(originalStr.c_str(), orig);
+	UTF8ToUnicode(originalStr.c_str(), orig);
 	wstr += wszColon;
 	wstr += wszSpace;
 	wstr += orig;
@@ -1619,7 +1664,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 
@@ -1758,7 +1803,7 @@ void CDrodScreen::ImportHoldMedia()
 				else if (wI <= TEXTURE_COUNT + NUM_GRAPHICS_FILES)
 				{
 					//Graphics files to be embedded.
-					AsciiToUnicode(graphicFilename[wI - TEXTURE_COUNT - 1], wstrImportFile);
+					UTF8ToUnicode(graphicFilename[wI - TEXTURE_COUNT - 1], wstrImportFile);
 				} else {
 					//Demo/registered exit screens.  Import one kind or the other.
 					if (wStylesToExport > 1) //no sell screens in full version
@@ -1780,7 +1825,7 @@ void CDrodScreen::ImportHoldMedia()
 			} else {
 				//Room style image files.
 				WSTRING wstr;
-				AsciiToUnicode(textureTileNames[wI], wstr);
+				UTF8ToUnicode(textureTileNames[wI], wstr);
 				wstrImportFile += wstr;
 			}
 
@@ -1867,7 +1912,7 @@ void CDrodScreen::ImportHoldMedia()
 			{
 				//Get song list for this mood from INI
 				WSTRING wMoodText;
-				AsciiToUnicode(moodText[wI], wMoodText);
+				UTF8ToUnicode(moodText[wI], wMoodText);
 				WSTRING wstrSongmood = styleName + wMoodText;
 				f.GetGameProfileString(INISection::Songs, wstrSongmood.c_str(), songlist);
 			}
@@ -2078,7 +2123,7 @@ bool CDrodScreen::IsStyleOnDisk(
 		} else {
 			//Style textures.
 			WSTRING wstr;
-			AsciiToUnicode(textureTileNames[wI], wstr);
+			UTF8ToUnicode(textureTileNames[wI], wstr);
 			wstrFile += wstr;
 		}
 

@@ -59,7 +59,7 @@ public:
 	}
 
 	inline bool empty() const {return this->data.empty();}
-	inline int size() const {return this->data.size();}
+	inline UINT size() const {return this->data.size();}
 
 	inline bool erase(const UINT wX, const UINT wY)
 	{
@@ -114,6 +114,10 @@ public:
 	{
 		clear();
 		return operator+=(that);		
+	}
+	CCoordSet& operator+=(const CCoord& coord) {
+		insert(coord);
+		return *this;
 	}
 	CCoordSet& operator+=(const CCoordIndex& coordIndex)
 	//Adds all instances of coords in 'coordIndex' to this.

@@ -31,7 +31,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>drod</ProjectName>
+    <ProjectName>DROD</ProjectName>
     <ProjectGuid>{3FDF4563-C819-4E05-8958-E3D652C5B432}</ProjectGuid>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -116,49 +116,49 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamDebug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;..\..\Deps\steam-sdk\public\steam;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CaravelRelease|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;..\..\Deps\steam-sdk\public\steam;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='BuildDats|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Russian|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\..\Deps\Include;$(IncludePath)</IncludePath>
     <LibraryPath>..\..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -193,6 +193,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -249,6 +250,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;CARAVELBUILD;STEAMBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -304,6 +306,7 @@
       <CompileAs>Default</CompileAs>
       <BrowseInformationFile />
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -355,6 +358,7 @@
       <BrowseInformationFile>
       </BrowseInformationFile>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -407,6 +411,7 @@
       <CompileAs>Default</CompileAs>
       <BrowseInformationFile />
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;STEAMBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -457,6 +462,7 @@
       <CompileAs>Default</CompileAs>
       <BrowseInformationFile />
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -506,6 +512,7 @@
       <CompileAs>Default</CompileAs>
       <BrowseInformationFile />
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>

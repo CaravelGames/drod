@@ -980,19 +980,14 @@ bool CSound::PlayNextSong()
 SOUNDSTREAM* CSound::LoadSongStream(const WSTRING& wstrSongFilepath, UINT mode)
 {
 	//Convert Unicode filename for use with FMOD.
-#ifdef WIN32
-	char sANSI[512];
-	WideCharToMultiByte(CP_ACP, 0, wstrSongFilepath.c_str(), -1, sANSI, 512, NULL, NULL);
-#else
-	char sANSI[wstrSongFilepath.length() + 1];
-	UnicodeToAscii(wstrSongFilepath.c_str(), sANSI);  // FIXME
-#endif
+	string sANSI;
+	UnicodeToUTF8(wstrSongFilepath, sANSI);
 
 	SOUNDSTREAM *pStream = NULL;
 #ifdef USE_SDL_MIXER
-	this->pSongStream = pStream = Mix_LoadMUS(sANSI);
+	this->pSongStream = pStream = Mix_LoadMUS(sANSI.c_str());
 #else //FMOD
-	pStream = FSOUND_Stream_Open(sANSI, mode, 0, 0);
+	pStream = FSOUND_Stream_Open(sANSI.c_str(), mode, 0, 0);
 	if (!pStream)
 	{
 		//Probably file for loading stream isn't available.
@@ -1231,7 +1226,8 @@ void CSound::PlaySoundEffect(
 	float* pos, float* vel, //(in) 3D sound info (default = NULL)
 	const bool bUseVoiceVolume,	//(in) whether to use voice volume instead of
 											//sound effect volume [default=false]
-	const float frequencyMultiplier) //(in) for changing the playback frequency [default=1.0]
+	const float frequencyMultiplier, //(in) for changing the playback frequency [default=1.0]
+	const float fVolumeMultiplier)   //(in) multiplicative factor [default=1.0]
 {
 #ifndef WITHOUT_SOUND
 	//Return successful without doing anything if sound effects have been disabled.
@@ -1259,7 +1255,7 @@ void CSound::PlaySoundEffect(
 		this->ChannelSoundEffects[nChannel] = eSEID;
 
 		//Set sound's positional/volume info.
-		Update(nChannel, pos, vel, eSEID, bUseVoiceVolume);
+		Update(nChannel, pos, vel, eSEID, bUseVoiceVolume, fVolumeMultiplier);
 	}
 #endif
 }
@@ -1796,8 +1792,9 @@ void CSound::Update(
 //Params:
 	const int nChannel,
 	float *fPos, float *fVel, const UINT eSEID,	//[default=NULL,NULL,SEID_NONE]
-	const bool bUseVoiceVolume)	//(in) whether to use voice volume instead of
+	const bool bUseVoiceVolume,	//(in) whether to use voice volume instead of
 											//sound effect volume [default=false]
+	const float fVolumeMultiplier) //(in) multiplicative factor [default=1.0]
 {
 #ifndef WITHOUT_SOUND
 #ifndef USE_SDL_MIXER
@@ -1871,7 +1868,8 @@ void CSound::Update(
 			//Volume has linear fall-off based on existing in a roughly 2D world.
 			ASSERT(fDistToSound > 0.0);
 			const int nVol = static_cast<int>((bUseVoiceVolume ?
-					this->nVoiceVolume : this->nSoundVolume) * fMin / fDistToSound);
+					this->nVoiceVolume : this->nSoundVolume) *
+					fVolumeMultiplier * fMin / fDistToSound);
 			ASSERT(nVol >= 0);
 			ASSERT(nVol <= 255);
 #ifdef USE_SDL_MIXER

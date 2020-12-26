@@ -52,7 +52,7 @@ CParticleExplosionEffect::CParticleExplosionEffect(
 											//so effect lasts indefinitely [default=false]
 	const bool bFromEdge,         //(in) particles originate from tile's edge, not center
 	const EffectType eType)       //[default = EGENERIC]
-	: CEffect(pSetWidget, eType)
+	: CEffect(pSetWidget, (UINT)-1, eType)
 	, origin(MoveCoord)
 	, wParticleTypes(wParticleTypes)
 	, wParticleMinDuration(wParticleMinDuration)
@@ -143,20 +143,20 @@ CParticleExplosionEffect::~CParticleExplosionEffect()
 }
 
 //********************************************************************************
-bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CParticleExplosionEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!MoveParticles())
+	static const Uint32 MAX_TIME_STEP = 100; //at least 10fps
+
+	if (!MoveParticles(min(MAX_TIME_STEP, wDeltaTime)))
 		return false;
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
-	SDL_Surface *pRotatedSurface = NULL;
-	for (int nIndex=wParticleCount; nIndex--; )
+	return true;
+}
+//********************************************************************************
+void CParticleExplosionEffect::Draw(SDL_Surface& destSurface)
+{
+	SDL_Surface* pRotatedSurface = NULL;
+	for (int nIndex = wParticleCount; nIndex--; )
 	{
 		PARTICLE& p = this->parrParticles[nIndex];
 
@@ -170,8 +170,8 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 			if (p.rotation != 0.0f)
 			{
 				//Draw tile rotated to its exact angle.
-				SDL_Surface *pSrcSurface = g_pTheDBM->GetTileSurface(wTileNo);
-				Uint8 *pSrcPixel = g_pTheDBM->GetTileSurfacePixel(wTileNo);
+				SDL_Surface* pSrcSurface = g_pTheDBM->GetTileSurface(wTileNo);
+				Uint8* pSrcPixel = g_pTheDBM->GetTileSurfacePixel(wTileNo);
 
 				//Set to transparent tile colorkey.
 				const UINT wSurfaceIndex = g_pTheDBM->GetTileSurfaceNumber(wTileNo);
@@ -179,20 +179,21 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 
 				//Rotate.
 				pRotatedSurface = g_pTheDBM->RotateSurface(pSrcSurface, pSrcPixel,
-						dimX, dimY, p.rotation * RADS_TO_DEGREES);
+					dimX, dimY, p.rotation * RADS_TO_DEGREES);
 			}
 
 			if (!pRotatedSurface)
 			{
 				//Unrotated particle.
 				g_pTheBM->BlitTileImagePart(wTileNo, ROUND(p.x),
-						ROUND(p.y), 0, 0, dimX, dimY, pDestSurface, true);
-			} else {
+					ROUND(p.y), 0, 0, dimX, dimY, &destSurface, true);
+			}
+			else {
 				//Blit rotated particle.
 				dimX = pRotatedSurface->w, dimY = pRotatedSurface->h;
 				SDL_Rect src = MAKE_SDL_RECT(0, 0, dimX, dimY);
 				SDL_Rect dest = MAKE_SDL_RECT(ROUND(p.x), ROUND(p.y), dimX, dimY);
-				g_pTheDBM->BlitSurface(pRotatedSurface, &src, pDestSurface, &dest);
+				g_pTheDBM->BlitSurface(pRotatedSurface, &src, &destSurface, &dest);
 
 				//Darken sprite.
 				if (dest.w && dest.h)
@@ -202,7 +203,7 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 					src.w = dest.w; //update to blitted area
 					src.h = dest.h;
 					g_pTheDBM->DarkenWithMask(pRotatedSurface, src,
-							pDestSurface, dest, CBitmapManager::fLightLevel, true);
+						&destSurface, dest, CBitmapManager::fLightLevel, true);
 				}
 
 				SDL_FreeSurface(pRotatedSurface);
@@ -210,8 +211,6 @@ bool CParticleExplosionEffect::Draw(SDL_Surface* pDestSurface)
 			}
 		}
 	}
-
-	return true;
 }
 
 //*****************************************************************************
@@ -223,7 +222,7 @@ void CParticleExplosionEffect::InitParticles()
 }
 
 //*****************************************************************************
-bool CParticleExplosionEffect::MoveParticles()
+bool CParticleExplosionEffect::MoveParticles(const UINT wDeltaTime)
 //Updates positions of all the particles.
 //Invalidates particles having left the valid display area.
 //

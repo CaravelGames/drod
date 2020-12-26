@@ -552,11 +552,14 @@ void CDbSavedGame::removeGlobalScripts(const CIDSet& completedScripts)
 }
 
 //*****************************************************************************
-void CDbSavedGame::RemoveMappedRoomsNotIn(const CIDSet exploredRoomIDs, const CIDSet mappedRoomIDs)
+void CDbSavedGame::RemoveMappedRoomsNotIn(
 //Remove any room objects in this->ExploredRooms that are not contained in mappedRoomIDs,
 //which is a superset of exploredRoomIDs.
 //Any rooms that were previously explored, but now are only mapped,
 //are reverted to "bMapOnly" status.
+//Explored rooms are also reverted to non-saved room previews where applicable.
+	const CIDSet& exploredRoomIDs, const CIDSet& mappedRoomIDs,
+	const CIDSet& roomPreviewIDs) //rooms to display on the map, but not to write to a saved game
 {
 	ASSERT(mappedRoomIDs.contains(exploredRoomIDs)); //superset
 
@@ -568,11 +571,12 @@ void CDbSavedGame::RemoveMappedRoomsNotIn(const CIDSet exploredRoomIDs, const CI
 		const UINT roomID = pRoom->roomID;
 		if (!mappedRoomIDs.has(roomID))
 		{
-			//This room was added to the map since entering the current room
-			if (pRoom->bSave) {
+			//This room was added to the map since entering the current room -- take it back off
+			if (pRoom->bSave && !roomPreviewIDs.has(roomID)) {
 				delete pRoom; //room shouldn't be included in any list
 			} else {
 				//Persist map display of non-saved rooms
+				pRoom->bSave = false;
 				retainedRooms.push_back(pRoom);
 			}
 			continue;
@@ -1538,9 +1542,7 @@ bool CDbSavedGame::SetMembers(
 
 	//object members
 	DeleteExploredRooms();
-	for (vector<ExploredRoom*>::const_iterator room=Src.ExploredRooms.begin();
-			room!=Src.ExploredRooms.end(); ++room)
-		this->ExploredRooms.push_back(new ExploredRoom(*(*room)));
+	this->ExploredRooms = GetCopyOfExploredRooms(Src.ExploredRooms);
 
 	//Monster data
 	deleteMonsterList(this->pMonsterList);
@@ -1560,6 +1562,26 @@ bool CDbSavedGame::SetMembers(
 	this->checksumStr = Src.checksumStr;
 
 	return true;
+}
+
+//*******************************************************************************
+//Returns: a vector of pointers to a deep copy of explored room objects
+vector<ExploredRoom*> CDbSavedGame::GetCopyOfExploredRooms(const vector<ExploredRoom*>& rooms)
+{
+	vector<ExploredRoom*> duplicate;
+	for (vector<ExploredRoom*>::const_iterator room = rooms.begin();
+		room != rooms.end(); ++room)
+		duplicate.push_back(new ExploredRoom(*(*room)));
+	return duplicate;
+}
+
+//Reassigns pointers in source object.
+//'rooms' is cleared to preclude caller destroying transferred objects
+void CDbSavedGame::ReplaceExploredRooms(vector<ExploredRoom*>& rooms) //(in/out) objects are reassigned
+{
+	DeleteExploredRooms();
+	this->ExploredRooms = rooms;
+	rooms.clear();
 }
 
 //
@@ -1705,65 +1727,6 @@ void CDbSavedGames::DeleteForRoom(
 	for (iter = ids.begin(); iter != ids.end(); ++iter)
 		db.SavedGames.Delete(*iter);
 }
-
-//*******************************************************************************
-/*
-void CDbSavedGames::VerifyForRoom(
-//Verifies all saved games records (and demos) for the specified room.
-//Truncates unplayable commands.
-//
-//Params:
-		const UINT dwRoomID)   //(in)  Room's saved games to delete.
-{
-	//Test demos and their saved games...
-	CDb db;
-	CIDList DemoStats;
-	CIDSet ids = CDb::getDemosInRoom(dwRoomID);
-	CIDSet::const_iterator iter;
-	for (iter = ids.begin(); iter != ids.end(); ++iter)
-	{
-		CDbDemo *pDemo = db.Demos.GetByID(*iter);
-		ASSERT(pDemo);
-		if (!pDemo->Test(DemoStats))
-			db.Demos.Delete(*iter);
-		else
-		{
-			//Mark whether these demos result in victory or death.
-			const bool bDeath = GetDemoStatBool(DemoStats, DS_DidPlayerDie);
-//					GetDemoStatBool(DemoStats, DS_DidHalphDie);
-			const bool bVictory = false;//GetDemoStatBool(DemoStats, DS_WasRoomConquered);
-			if (pDemo->IsFlagSet(CDbDemo::Victory) != bVictory ||
-					pDemo->IsFlagSet(CDbDemo::Death) != bDeath)
-			{
-				pDemo->SetFlag(CDbDemo::Victory, bVictory);
-				pDemo->SetFlag(CDbDemo::Death, bDeath);
-				pDemo->Update();
-			}
-		}
-		delete pDemo;
-	}
-
-	//...and then saved games w/o demos.
-	CCueEvents Ignored;
-	CCurrentGame *pCurrentGame;
-	ids = CDb::getSavedGamesInRoom(dwRoomID);
-	for (iter = ids.begin(); iter != ids.end(); ++iter)
-	{
-		pCurrentGame = db.GetSavedCurrentGame(*iter, Ignored, true);
-		ASSERT(pCurrentGame);
-		if (!pCurrentGame)
-		{
-			//Saved game can't even be loaded -- data was corrupted?
-			db.SavedGames.Delete(*iter);
-		} else {
-			if (!pCurrentGame->PlayCommands(
-					pCurrentGame->Commands.Count(), Ignored, true))
-				pCurrentGame->Update(); //truncate commands that can't be played back
-			delete pCurrentGame;
-		}
-	}
-}
-*/
 
 //*****************************************************************************
 void CDbSavedGames::ExportXML(
@@ -1997,6 +1960,7 @@ void CDbSavedGames::ExportXML(
 		CMonster *pMonster = pSavedGame->pMonsterListAtRoomStart;
 		while (pMonster)
 		{
+			//CDbSavedGame::LoadMonster sets ExtraVars; don't call SetExtraVarsForExport here
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
 		}

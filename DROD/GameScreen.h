@@ -103,11 +103,14 @@ protected:
 	virtual void   OnBetweenEvents();
 	virtual void   OnDeactivate();
 	virtual void   OnSelectChange(const UINT dwTagNo);
-	virtual void   OnWindowEvent(const SDL_WindowEvent &wevent);
+	virtual void   OnWindowEvent(const SDL_WindowEvent& wevent);
+	virtual void   OnWindowEvent_GetFocus();
+	virtual void   OnWindowEvent_LoseFocus();
 	virtual void   Paint(bool bUpdateRect=true);
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
-			const bool bUseVoiceVolume=false, float frequencyMultiplier=1.0f);
+			const bool bUseVoiceVolume=false, float frequencyMultiplier=1.0f,
+			float volumeMultiplier = 1.0f);
 	SCREENTYPE     ProcessCommand(const int nCommand, const bool bMacro=false);
 	bool           ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           ProcessFuseBurningEvents(CCueEvents& CueEvents);
@@ -128,7 +131,7 @@ protected:
 private:
 	void           AddBloodEffect(const CMoveCoord& coord, const UINT wAppearance);
 	void           AddComboEffect(CCueEvents& CueEvents);
-	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord);
+	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, const bool bIsCriticalNpc = false);
 	void           AddRoomStatsDialog();
 	void           AmbientSoundSetup();
 	void           ApplyPlayerSettings();
@@ -173,9 +176,11 @@ private:
 	void           SendAchievement(const string& achievement);
 	bool           ShouldShowLevelStart();
 	void           ShowBigMap();
+	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           ShowDemosForRoom(const UINT roomID);
 	void           ShowLockIcon(const bool bShow=true);
-	void           ShowPlayerFace(const bool bOverrideLock=false, const bool bLockMood=false);
+	void           UpdatePlayerFace();
+	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter **playerHoldCharacter);
 	void           ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents);
 	void           ShowRoomTemporarily(const UINT roomID);
 	void           ShowSpeechLog();
@@ -184,6 +189,7 @@ private:
 	void           SynchScroll();
 	void           ToggleBigMap();
 	void           UndoMove();
+	void           UpdateEffectsFreeze();
 	void           UpdateUIAfterRoomRestart();
 	void           UpdateUIAfterMoveUndo();
 	void           UpdateScroll();
@@ -199,6 +205,7 @@ private:
 	bool        bNeedToProcessDelayedQuestions;
 	bool        bShowingBigMap;
 	bool        bShowingCutScene;
+	bool        bIsDialogDisplayed;
 
 	bool        bAutoUndoOnDeath;
 

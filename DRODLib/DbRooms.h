@@ -136,7 +136,7 @@ public:
 	bool           bPersistentCitizenMovement; //citizen movement algorithm
 	bool           bHasConquerToken;   //whether a Conquer token is in the room
 	bool           bHasActiveBeacon;   //whether a Seeding Beacon has reseeded the room
-	CMonster      *pLastClone;       //last clone queried
+	UINT           wLastCloneIndex; //Creation index of the last clone selected, to preserve processing sequence
 
 
 	CPathMap *     pPathMap[NumMovementTypes];
@@ -175,7 +175,7 @@ public:
 	bool           AddOrb(COrbData *pOrb);
 	COrbData *     AddOrbToSquare(const UINT wX, const UINT wY);
 	bool           AddPressurePlateTiles(COrbData* pPlate);
-	bool           AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents);
+	bool           AddNewGlobalScript(const UINT dwCharID, const bool bProcessMove, CCueEvents &CueEvents);
 	void           AddRunningGlobalScripts(CCueEvents &CueEvents);
 	bool           AddScroll(CScrollData *pScroll);
 	bool           AddExit(CExitData *pExit);
@@ -205,7 +205,7 @@ public:
 	void           ChangeTiles(const RoomTokenType tType);
 	void           CharactersCheckForCueEvents(CCueEvents &CueEvents);
 	void           CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEvents, bool bTrapdoorFell=false);
-	void           ClearDeadMonsters();
+	void           ClearDeadMonsters(bool bOnlySafe = false);
 	void           ClearDeadRoomObjects();
 	void           ClearMonsters(const bool bRetainNonConquerableMonsters=false);
 	void           ClearPlatforms();
@@ -302,7 +302,7 @@ public:
 			const bool bIgnoreDagger = false, const bool bIgnoreNonCuts = false, CMonster *pIgnore=NULL) const;
 	CMonster*      GetMonsterAtSquare(const UINT wX, const UINT wY) const;
 	const CMonster* GetOwningMonsterOnSquare(const UINT wX, const UINT wY) const;
-	CMonster*      GetMonsterOfType(const UINT wType) const;
+	CMonster*      GetMonsterOfType(const UINT wType, const bool bIgnoreCharacterAppearance = false) const;
 	UINT           GetMonsterTypeAt(const UINT wX, const UINT wY,
 			const bool bConsiderNPCIdentity=false, const bool bOnlyLiveMonsters=true) const;
 	bool           GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementType eMovement, UINT &wEX, UINT &wEY);
@@ -324,8 +324,9 @@ public:
 	const RoomObject* GetTObject(const UINT wX, const UINT wY) const { return GetTObject(ARRAYINDEX(wX, wY)); }
 	UINT           GetTParam(const UINT wX, const UINT wY) const;
 	UINT           GetTParam(const UINT index) const;
-	UINT           GetOSquareWithGuessing(const int nX, const int nY) const;
-	UINT           GetTSquareWithGuessing(const int nX, const int nY) const;
+	void           ClampCoordsToRoom(int& nX, int& nY) const;
+	UINT           GetOSquareWithGuessing(int nX, int nY) const;
+	UINT           GetTSquareWithGuessing(int nX, int nY) const;
 	CEntity*       GetSpeaker(const UINT wType, const bool bConsiderBaseType=false);
 	CPlatform*     GetPlatformAt(const UINT wX, const UINT wY) const;
 	void           GetTarConnectedComponent(const UINT wX, const UINT wY,
@@ -374,6 +375,7 @@ public:
 			const bool bForce=false, const CEntity* pKillingEntity=NULL);
 	bool           KillMonsterAtSquare(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const bool bForce=false);
+	void           KillInvisibleCharacter(CCharacter* pCharacter);
 	void           LightFuse(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LightFuseEnd(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LinkMonster(CMonster *pMonster, const bool bInRoom=true, const bool bReverseRule=false);
@@ -476,6 +478,10 @@ public:
 	set<const RoomObject*> pushed_objects;
 	set<const CMonster*> pushed_monsters;
 	bool pushed_player;
+
+	// Var used for debugging, clear tile positions at a convenient spot, then add tile positions
+	// here and uncomment DebugDraw_MarkedTiles() in CRoomWidget
+	static CCoordSet debugMarkedTiles;
 
 private:
 	enum tartype {oldtar, newtar, notar};

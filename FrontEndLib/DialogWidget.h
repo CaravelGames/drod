@@ -91,10 +91,13 @@ protected:
 	virtual void      OnTextInput(const UINT dwTagNo, const SDL_TextInputEvent &text);
 	virtual void      OnSelectChange(const UINT dwTagNo);
 	virtual bool      OnQuit();
+	virtual void      OnWindowEvent_GetFocus();
+	virtual void      OnWindowEvent_LoseFocus();
 
 	UINT          dwDeactivateValue;
 
 private:
+	CEventHandlerWidget* FindEventHandlerParent() const;
 	UINT          dwReqTextField;   //when a text box is present as a child
 	bool           bListBoxDoubleClickReturns;
 	SDL_Rect       centerRect;

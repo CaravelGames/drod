@@ -35,6 +35,8 @@
 #include "PortsBase.h"
 #include "Types.h"  //need BYTE, UINT
 
+#include <cstring>
+
 #define STRFY(x) #x
 #define STRFY_EXPAND(x) STRFY(x)
 
@@ -86,6 +88,8 @@ extern const WCHAR wszAmpersand[], wszAsterisk[], wszOpenAngle[], wszCloseAngle[
 extern const WCHAR wszHtml[], wszEndHtml[], wszBody[], wszEndBody[], wszHeader[],
 	wszEndHeader[], wszBTag[], wszEndBTag[], wszITag[], wszEndITag[], wszPTag[];
 
+void SanitizeSingleLineString(WSTRING& wstr);
+void SanitizeMultiLineString(WSTRING& wstr);
 void AsciiToUnicode(const char *psz, WSTRING &wstr);
 void AsciiToUnicode(const std::string& str, WSTRING &wstr);
 void CTextToUnicode(const char *psz, WSTRING &wstr);
@@ -104,6 +108,10 @@ static inline std::string UnicodeToUTF8(const WCHAR* pwsz)
 		{ std::string result; UnicodeToUTF8(pwsz, result); return result; }
 static inline std::string UnicodeToUTF8(const WSTRING& wstr)
 		{ std::string result; UnicodeToUTF8(wstr, result); return result; }
+static inline void UnicodeToUTF8(const WCHAR* pwsz, char* cstr)
+		{ std::string str; UnicodeToUTF8(pwsz, str); strcpy(cstr, str.c_str()); }
+static inline void UnicodeToUTF8(const WSTRING& wstr, char* cstr)
+		{ UnicodeToUTF8(wstr.c_str(), cstr); }
 
 unsigned int UTF8ToUCS4Char(const char **ppsz);
 void UTF8ToAscii(const char* s, const UINT len, std::string &str);

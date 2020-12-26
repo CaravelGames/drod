@@ -322,56 +322,18 @@ bool CDb::ValidateMoveSequence(
 			break;
 		}
 
-		//Check for relevant cue events at this point.
-
-		//Did player die?
-		const bool bDidPlayerDie = CueEvents.HasAnyOccurred(
-				IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
-		if (bDidPlayerDie)
-		{
-			bGood = false; //validation failed
+		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, command, bGood, scoreCheckpointName, ps))
 			break;
-		}
 
-		//Check for a score checkpoint.
-		if (CueEvents.HasOccurred(CID_ScoreCheckpoint))
+		if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom))
 		{
-			//Output name of score checkpoint and player stats at that checkpoint.
-			const CDbMessageText *pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*,
-					CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint));
-			ASSERT((const WCHAR*)(*pScoreIDText));
-			scoreCheckpointName = (const WCHAR*)(*pScoreIDText);
-			ps = pGame->pPlayer->st;
-
-			//Alter stats to match how they are scored.
-			ps.ATK = pGame->getPlayerATK();
-			ps.DEF = pGame->getPlayerDEF();
-		}
-
-		//Was room exited?
-		const bool bDidPlayerLeaveRoom = CueEvents.HasAnyOccurred(
-				IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
-
-		if (bDidPlayerLeaveRoom)
-		{
-			//Whenever the player leaves the room,
-			//the current command should be an end room marker.
-			if (command != CMD_EXITROOM)
-			{
-				bGood = false; //validation failed
-				break;
-			}
-
-			if (CueEvents.HasOccurred(CID_WinGame))
-				break; //valid play sequence to end of game (even if more play moves exist)
-
 			//Load new level, if needed.
 			if (CueEvents.HasOccurred(CID_ExitLevelPending))
 			{
 				const CCoord *pExitInfo =
 						DYN_CAST(const CCoord*, const CAttachableObject*,
 						CueEvents.GetFirstPrivateData(CID_ExitLevelPending));
-				UINT dwEntranceID = pExitInfo->wX;
+				const UINT dwEntranceID = pExitInfo->wX;
 
 				CueEvents.Clear();
 				pGame->UnfreezeCommands(); //must be done before loading
@@ -419,9 +381,67 @@ bool CDb::ValidateMoveSequence(
 		pGame->ProcessCommand(command, CueEvents, wX, wY);
 	}
 
+	//Resolve any combat initiated on final move
+	while (bGood && pGame->InCombat())
+	{
+		CueEvents.Clear();
+		pGame->ProcessCommand(CMD_ADVANCE_COMBAT, CueEvents);
+		if (!ValidateMoveSequenceCheckCueEvents(CueEvents, pGame, CMD_ADVANCE_COMBAT, bGood, scoreCheckpointName, ps))
+			break;
+	}
+
 	delete pGame;
 
 	return bGood;
+}
+
+//Returns: true if play continues, false if ended
+bool CDb::ValidateMoveSequenceCheckCueEvents(
+	CCueEvents& CueEvents, CCurrentGame* pGame, const UINT command,
+	bool& bGood, WSTRING& scoreCheckpointName, PlayerStats& ps) //(out)
+const
+{
+	const bool bPlayerDied = CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
+	if (bPlayerDied)
+	{
+		bGood = false; //validation failed
+		return false;
+	}
+
+	//Check for a score checkpoint.
+	if (CueEvents.HasOccurred(CID_ScoreCheckpoint))
+	{
+		//Output name of score checkpoint and player stats at that checkpoint.
+		const CDbMessageText *pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*,
+			CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint));
+		ASSERT((const WCHAR*)(*pScoreIDText));
+		scoreCheckpointName = (const WCHAR*)(*pScoreIDText);
+		ps = pGame->pPlayer->st;
+
+		//Alter stats to match how they are scored.
+		ps.ATK = pGame->getPlayerATK();
+		ps.DEF = pGame->getPlayerDEF();
+	}
+
+	//Was room exited?
+	const bool bDidPlayerLeaveRoom = CueEvents.HasAnyOccurred(
+		IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
+
+	if (bDidPlayerLeaveRoom)
+	{
+		if (CueEvents.HasOccurred(CID_WinGame))
+			return false; //count as valid play sequence to end of game (even if more play moves exist)
+						  
+		//Whenever the player leaves the room,
+		//the current command should be an end room marker.
+		if (command != CMD_EXITROOM)
+		{
+			bGood = false; //validation failed
+			return false;
+		}
+	}
+
+	return true;
 }
 
 //*****************************************************************************

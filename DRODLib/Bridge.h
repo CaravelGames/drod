@@ -26,6 +26,28 @@
 
 //Class for handling bridge element game logic.
 
+/*
+Poor man's guide to understanding bridges.
+
+Bridges are grouped into components which all fall together and have common supports. Supports
+are only tiles which can be conceivably removed - trapdoors, thin ice et cetera.
+Bridges which have permanent supports (eg. floor) are not added to the list of components, they're
+treated as regular floor.
+
+There are 4 main operation that happen on bridges:
+1. Processing - Process() runs at the end of every turn, will trigger the falling of bridges that
+  are marked to fall
+2. Building a tile - HandleTileBuilt(), will take a tile coordinate and regenerate any bridges that are on that
+  position or next to it.
+  a) Called when Build command builds an O-Layer tile.
+  b) Or when thin ice is formed
+3. Generating bridge components - HandleBridgeAdded(), will take a bridge coordinate and make a bridge component out of it:
+  a) It's called when room is first loaded to initially populate the bridge components
+  b) Is called from CBridge::HandleTileBuilt() to regenerate components
+4. Handling dropped supports - Plotted(), will remove supports and mark the bridge as dropping
+
+*/
+
 #ifndef BRIDGE_H
 #define BRIDGE_H
 
@@ -41,24 +63,26 @@ class CBridge
 {
 public:
 	CBridge();
-	void addBridge(const UINT wX, const UINT wY);
-	void built(const UINT wX, const UINT wY, const UINT wTileNo);
-	void clear();
-	void plotted(const UINT wX, const UINT wY, const UINT wTileNo);
-	void process(CCueEvents &CueEvents);
-	void setMembersForRoom(const CBridge& src, CDbRoom* pRoom);
-	void setRoom(CDbRoom *pRoom);
+	void Clear();
+	void HandleBridgeAdded(const UINT wX, const UINT wY);
+	void HandleTileBuilt(const UINT wX, const UINT wY, const UINT wTileNo);
+	void Plotted(const UINT wX, const UINT wY, const UINT wTileNo);
+	void Process(CCueEvents &CueEvents);
+	void SetMembersForRoom(const CBridge& src, CDbRoom* pRoom);
+	void SetRoom(CDbRoom *pRoom);
 
 private:
-	void drop(CCueEvents &CueEvents, const CCoordSet& tiles);
-	bool supports(const UINT wTile) const;
+	void DropBridgeTiles(CCueEvents &CueEvents, const CCoordSet& tiles);
+	bool DoesTileSupportBridges(const UINT wTile) const;
+
+	bool IsBridgeDropping(const UINT wBridgeIndex) const;
 
 	CDbRoom *pRoom;
 
-	std::vector<CCoordSet> bridges; //connected components
-	std::vector<CCoordSet> bridgeSupports; //tile sets
-	CCoordSet ignoredTiles;
-	vector<UINT> droppingBridges;
+	std::vector<CCoordSet> bridges; // Each entry is a list of bridge tiles that form a connected components. bridgeSupports must have the same length.
+	std::vector<CCoordSet> bridgeSupports; // Each entry is a list of non-bridge tiles which support the bridge of the same index and prevent it from falling
+	CCoordSet ignoredTiles; // Used to avoid recalculating the same bridge over and over again while calling HandleBridgeAdded repeatedly
+	vector<UINT> droppingBridges; // Vector of bridge component indexes which are meant to fall
 
 	static CTileMask bridgeMask;
 };

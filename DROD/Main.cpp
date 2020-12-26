@@ -112,7 +112,7 @@ using std::string;
 static const HANDLE hDrodWindowProp = (HANDLE)0x54535321;  //TSS!
 #endif
 #if defined(__linux__) || defined __FreeBSD__ || defined(__APPLE__)
-static char *lockfile = NULL;
+static string lockfileString;
 #endif
 
 #define APP_PROP "DrodProp"
@@ -144,6 +144,12 @@ char windowTitle[] = GAMETITLE " BETA - DO NOT DISTRIBUTE (buggy releases make u
 #	endif
 #else
 char windowTitle[] = GAMETITLE;
+#endif
+
+#ifdef WIN32
+//On Windows, support selecting whether to create and find the user's Data directory
+//in their userspace or in a common location (e.g., "ProgramData")
+bool bWindowsDataFilesInUserSpecificDir = false;
 #endif
 
 //This is a filename that will probably exist in this specific game only.
@@ -182,6 +188,11 @@ int main(int argc, char *argv[])
 
 	InitMetadata();
 
+#ifdef STEAMBUILD
+	//Steam default: place player data files in a user-specific location.
+	bWindowsDataFilesInUserSpecificDir = true;
+#endif
+
 	//command line arguments
 	bool bNoFullscreen = false, bNoSound = false, bIsDemo = false;
 	for (int nArgNo=0; nArgNo < argc; ++nArgNo) {
@@ -198,6 +209,11 @@ int main(int argc, char *argv[])
 			Metadata::Set(MetaKey::EMBEDMEDIA, "1");
 #else
 			return 2;
+#endif
+#ifdef WIN32
+		} else if (!strncmp(arg, "commondatadir=", 14)) {
+			const UINT val = convertToUINT(arg + 14);
+			bWindowsDataFilesInUserSpecificDir = val == 0 ? true : false;
 #endif
 		} else if (!strncmp(arg, "datafilenum=", 12)) { //active in Steam build only
 			if (!CDbBase::SetCreateDataFileNum(convertToUINT(arg+12)))
@@ -248,6 +264,10 @@ int main(int argc, char *argv[])
 	playerDataSubDirs.push_back("Sounds");
 	CFiles::InitAppVars(wszUniqueResFile, datFiles, playerDataSubDirs);
 
+#ifdef WIN32
+	CFiles::bWindowsDataFilesInUserSpecificDir = bWindowsDataFilesInUserSpecificDir;
+#endif
+
 	const WCHAR* gameName = wszDROD;
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
@@ -263,8 +283,6 @@ int main(int argc, char *argv[])
 	if (IsAppAlreadyRunning()) {
 		DisplayInitErrorMessage(MID_DRODIsAlreadyRunning);
 		delete m_pFiles;
-		if (lockfile)
-			delete[] lockfile;
 #	if defined(__FreeBSD__) || defined(__linux__)
 		Dyn::UnloadX11();
 #	endif
@@ -364,7 +382,7 @@ int main(int argc, char *argv[])
 				//Queue files for import.
 				if (strstr(argv[nArgNo],"."))
 				{
-					AsciiToUnicode(argv[nArgNo], wstrFilename);
+					UTF8ToUnicode(argv[nArgNo], wstrFilename);
 					CDrodScreen::importFiles.push_back(wstrFilename);
 				}
 				//Export language texts to file specified after option flag.
@@ -372,7 +390,7 @@ int main(int argc, char *argv[])
 				{
 					if (nArgNo+1 < argc)
 					{
-						AsciiToUnicode(argv[++nArgNo], wstrFilename);
+						UTF8ToUnicode(argv[++nArgNo], wstrFilename);
 						g_pTheDB->ExportTexts(wstrFilename.c_str());
 					}
 				}
@@ -381,7 +399,7 @@ int main(int argc, char *argv[])
 				{
 					if (nArgNo+1 < argc)
 					{
-						AsciiToUnicode(argv[++nArgNo], wstrFilename);
+						UTF8ToUnicode(argv[++nArgNo], wstrFilename);
 #ifdef WIN32
 						g_pTheDB->ImportTexts(wstrFilename.c_str());
 #elif defined(__linux__) || defined(__FreeBSD__)
@@ -452,10 +470,11 @@ int main(int argc, char *argv[])
 			const bool bFullscreen = !CScreen::bAllowWindowed || (!bNoFullscreen && s.GetVar(Settings::Fullscreen, false));
 			if (bFullscreen)
 			{
-				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				CScreen::SetFullScreenStatic(true);
 			}
 			else
 			{
+				CScreen::SetFullScreenStatic(false);
 #ifndef __linux__  //This doesn't work well on X11. The window manager handles it anyway.
 				int nX, nY, nW, nH;
 				CScreen::GetScreenSize(nW, nH);
@@ -632,6 +651,22 @@ MESSAGE_ID Init(
 
 	//Set up INI entries once the DB can be accessed.
 	RepairMissingINIKeys(CDrodScreen::IsGameFullVersion());
+
+	{
+		string strIniValue;
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::AllowWindowResizing, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bAllowWindowResizing = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMinimize, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bMinimizeOnFullScreen = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMode, strIniValue)) {
+			int mode = atoi(strIniValue.c_str());
+			if (mode >= 0 && mode <= 2) {
+				CScreen::eFullScreenMode = SCREENLIB::FULLSCREENMODE(mode);
+			}
+		}
+	}
 
 	//Init the internet interface.
 	ASSERT(!g_pTheNet);
@@ -919,7 +954,7 @@ sdl_error:
 		FILE *fp;
 		SDL_SysWMinfo Info;
 		SDL_VERSION(&Info.version);
-		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfile, "ab")))
+		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfileString.c_str(), "ab")))
 		{
 			fprintf(fp, ":%x:", (UINT)Info.info.x11.window);
 			fclose(fp);
@@ -999,7 +1034,7 @@ void DeinitGraphics()
 	if (SDL_Window *window = GetMainWindow())
 	{
 		if (CScreen::bAllowWindowed)
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 
 		if (SDL_Texture *texture = GetWindowTexture(window))
 			SDL_DestroyTexture(texture);
@@ -1154,43 +1189,43 @@ void DisplayInitErrorMessage(
 		switch (dwMessageID)
 		{
 			case MID_DatMissing:
-				AsciiToUnicode("Couldn't find DROD data.  This problem might be corrected by "
+				UTF8ToUnicode("Couldn't find DROD data.  This problem might be corrected by "
 						"reinstalling DROD.", wstrMessage);
 			break;
 
 			case MID_DatNoAccess:
-				AsciiToUnicode("Couldn't access DROD data.  If you are running DROD from a networked "
+				UTF8ToUnicode("Couldn't access DROD data.  If you are running DROD from a networked "
 						"location, this could be a cause of the problem.  It's also possible that another "
 						"application is trying to access DROD data at the same time; you may wish to "
 						"retry running DROD after other applications have been closed.", wstrMessage);
 			break;
 
 			case MID_DatCorrupted_NoBackup:
-				 AsciiToUnicode("Your DROD data was corrupted due to an error.  DROD tried to restore "
+				UTF8ToUnicode("Your DROD data was corrupted due to an error.  DROD tried to restore "
 							"from the last good copy of the data, but the operation failed.  I recommend "
 							"reinstalling DROD, but unfortunately, you will lose all your data.", wstrMessage);
 			break;
 
 			case MID_DatCorrupted_Restored:
-				 AsciiToUnicode("Your DROD data was corrupted due to an error, so it was necessary to "
+				UTF8ToUnicode("Your DROD data was corrupted due to an error, so it was necessary to "
 							"restore from the last good copy of the data. Unfortunately, you've lost saved "
 							"games and other changes from your last session.", wstrMessage);
 			break;
 
 			case MID_CouldNotOpenDB:
-				AsciiToUnicode("Couldn't open DROD data.  This points to corruption of a required "
+				UTF8ToUnicode("Couldn't open DROD data.  This points to corruption of a required "
 						"DROD file.  This problem might be corrected by reinstalling DROD.",
 						wstrMessage);
 			break;
 
 			case MID_MemPerformanceWarning:
-				 AsciiToUnicode("DROD should run without any problems, but its performance may be improved "
+				UTF8ToUnicode("DROD should run without any problems, but its performance may be improved "
 							"by freeing memory on your system.  If there are any open applications you can "
 							"close, this would help.", wstrMessage);
 			break;
 
 			case MID_MemLowWarning:
-				 AsciiToUnicode("Your system is running a little low on memory.  DROD will probably run "
+				UTF8ToUnicode("Your system is running a little low on memory.  DROD will probably run "
 							"without problems, but if other applications are started while DROD is running, "
 							"you might see some crashes.  To avoid this kind of thing and get better "
 							"performance from DROD, you could close other applications that are now open.",
@@ -1198,27 +1233,27 @@ void DisplayInitErrorMessage(
 			break;
 
 			case MID_MemLowExitNeeded:
-				 AsciiToUnicode("There is not enough memory to run DROD.  It might help to close other "
+				UTF8ToUnicode("There is not enough memory to run DROD.  It might help to close other "
 							"applications that are now open, and try running DROD again.  DROD will now exit.",
 							wstrMessage);
 			break;
 
 			case MID_AppConfigError:
-				 AsciiToUnicode("This version of DROD has disabled itself.  Go to www.caravelgames.com for support.",
+				UTF8ToUnicode("This version of DROD has disabled itself.  Go to www.caravelgames.com for support.",
 							wstrMessage);
 			break;
 
 			case MID_DRODIsAlreadyRunning:
-				AsciiToUnicode("DROD is already running.", wstrMessage);
+				UTF8ToUnicode("DROD is already running.", wstrMessage);
 			break;
 
 			case MID_DataPathDotTextFileIsInvalid:
-				AsciiToUnicode("The information in DataPath.txt is invalid.", wstrMessage);
+				UTF8ToUnicode("The information in DataPath.txt is invalid.", wstrMessage);
 			break;
 
 			default:
 			{
-				AsciiToUnicode("An unexpected error occurred, and DROD was not able to retrieve a "
+				UTF8ToUnicode("An unexpected error occurred, and DROD was not able to retrieve a "
 						"description of the problem.  This problem might be corrected by "
 						"reinstalling DROD." NEWLINE
 						"Error=", wstrMessage);
@@ -1239,7 +1274,7 @@ void DisplayInitErrorMessage(
 //Win32: UCS-2, GTK/Linux: UTF-8
 #ifdef WIN32
 	WSTRING wstrTitle;
-#define SETTITLE(x,y) AsciiToUnicode(x, wstrTitle)
+#define SETTITLE(x,y) UTF8ToUnicode(x, wstrTitle)
 #define MSG_WARNING
 #define MSG_ERROR
 #else
@@ -1296,7 +1331,7 @@ void DisplayInitErrorMessage(
 		if ((SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP))
 				&& CScreen::bAllowWindowed)
 		{
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 			CScreen::SetWindowCentered();
 			PresentRect();
 		}
@@ -1369,9 +1404,8 @@ BOOL CALLBACK DetectDrodWindow(HWND hwnd, LPARAM lParam)
 // atexit callback
 void DeleteLockFile()
 {
-	ASSERT(lockfile);
-	unlink(lockfile);
-	delete[] lockfile;
+	ASSERT(!lockfileString.empty());
+	unlink(lockfileString.c_str());
 }
 #endif
 
@@ -1433,12 +1467,10 @@ bool IsAppAlreadyRunning()
 	tmp += wszSlash;
 	tmp += wszDROD;
 	tmp += dotpid;
-	const UINT lflen = tmp.length();
-	if (!(lockfile = new char[lflen + 1])) return true;
-	UnicodeToAscii(tmp, lockfile);
+	UnicodeToUTF8(tmp, lockfileString);
 
 	// Try opening an existing lockfile first
-	FILE *fp = fopen(lockfile, "r");
+	FILE *fp = fopen(lockfileString.c_str(), "r");
 	if (fp)
 	{
 		UINT i, wid = 0;
@@ -1482,25 +1514,27 @@ bool IsAppAlreadyRunning()
 		}
 
 		// Corrupt lockfile or nonexistant pid; ignore it
-		unlink(lockfile);
+		unlink(lockfileString.c_str());
 	}
 
 	// Create a new lockfile
+	const UINT lflen = lockfileString.size();
 	char tmplockfile[lflen + 64];
-	strcpy(tmplockfile, lockfile);
+	strcpy(tmplockfile, lockfileString.c_str());
 	sprintf(tmplockfile + lflen, "%u", getpid());
 	fp = fopen(tmplockfile, "w");
 	if (!fp || fwrite(tmplockfile + lflen,
 			strlen(tmplockfile + lflen) * sizeof(char), 1, fp) != 1)
 	{
-		if (fp) fclose(fp);
+		if (fp)
+			fclose(fp);
 		fprintf(stderr, "Couldn't create lock file, check permissions (%s).\n", tmplockfile);
 		return true;
 	}
 	fclose(fp);
 
 	// Atomic write operation
-	if (link(tmplockfile, lockfile))
+	if (link(tmplockfile, lockfileString.c_str()))
 	{
 		struct stat st;
 		if (stat(tmplockfile, &st) || st.st_nlink != 2)
@@ -1551,7 +1585,7 @@ void GetAppPath(
         char szPathBuffer[MAX_PATH+1];
         if (GetModuleFileNameA(NULL, szPathBuffer, MAX_PATH))
         {
-            AsciiToUnicode(szPathBuffer, wstrAppPath);
+			UTF8ToUnicode(szPathBuffer, wstrAppPath);
             return;
         }
     }
@@ -1835,11 +1869,14 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	if (!m_pFiles->GetGameProfileString((section), (key), temp)) \
 		m_pFiles->WriteGameProfileString((section), (key), (value))
 
+	AddIfMissing(INISection::Customizing, INIKey::AllowWindowResizing, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AlwaysFullBlit, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
 	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "400");
 	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMinimize, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMode, "0");
 	AddIfMissing(INISection::Customizing, INIKey::LogVars, "0");
 	AddIfMissing(INISection::Customizing, INIKey::MaxDelayForUndo, "500");
 	AddIfMissing(INISection::Customizing, INIKey::QuickPlayerExport, "0");

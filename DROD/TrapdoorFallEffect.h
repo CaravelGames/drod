@@ -41,8 +41,11 @@ public:
 			const UINT tileFallTime=130);
 	~CTrapdoorFallEffect();
 
-	virtual bool   Draw(SDL_Surface* pDestSurface);
 	virtual long   GetDrawSequence() const {return 1L + this->wRow;}
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	SDL_Surface *pSurface;
@@ -50,6 +53,12 @@ private:
 	int         xTrapdoor, yTrapdoor;
 	UINT     wCol, wRow;
 	UINT tileFallTime;
+
+	UINT wDrawX, wDrawY;
+	bool bClipTop, bClipBottom;
+	Uint8 nOpacity;
+	SDL_Rect drawSourceRect;
+	SDL_Rect drawDestinationRect;
 };
 
 #endif //...#ifndef TRAPDOORFALLEFFECT_H

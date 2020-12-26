@@ -41,6 +41,7 @@ public:
 
 	virtual bool CanAttackFirst() const {return true;}
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual SwordType GetWeaponType() const { return SwordType::HookSword; }
 };
 
 #endif //...#ifndef SLAYER_H

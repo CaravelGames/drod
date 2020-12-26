@@ -33,6 +33,8 @@
 #include "../DRODLib/CurrentGame.h"
 #include <BackEndLib/Assert.h>
 
+const UINT StrikeOrbEffectDuration = 220;
+
 //********************************************************************************
 CStrikeOrbEffect::CStrikeOrbEffect(
 //Constructor.
@@ -42,7 +44,8 @@ CStrikeOrbEffect::CStrikeOrbEffect(
 	const COrbData &SetOrbData,      //(in)   Orb being struck.
 	SDL_Surface *pSetPartsSurface,   //(in)   Preloaded surface containing bolt parts.
 	const bool bSetDrawOrb)          //(in)   True if the orb should be drawn
-	: CEffect(pSetWidget, EORBHIT)
+	: CEffect(pSetWidget, StrikeOrbEffectDuration, EORBHIT)
+	, bSuppressDraw(false)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	ASSERT(pSetPartsSurface);
@@ -82,63 +85,80 @@ CStrikeOrbEffect::CStrikeOrbEffect(
 		bolt.xEnd = OwnerRect.x + pAgent->wX * CBitmapManager::CX_TILE + CX_TILE_HALF;
 		bolt.yEnd = OwnerRect.y + pAgent->wY * CBitmapManager::CY_TILE + CY_TILE_HALF;
 		this->bolts.push_back(bolt);
+		this->drawBolts.push_back(new BOLT_SEGMENTS());
 	}
 }
 
 //********************************************************************************
-bool CStrikeOrbEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+CStrikeOrbEffect::~CStrikeOrbEffect()
 {
-	static const UINT dwDuration = 220; //ms
-	const UINT dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed >= dwDuration)
-		return false;  //Effect is done.
+	for (UINT wBoltI = this->bolts.size(); wBoltI--; )
+	{
+		delete this->drawBolts[wBoltI];
+	}
+	this->bolts.clear();
+}
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
+//********************************************************************************
+bool CStrikeOrbEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+{
 	this->dirtyRects.clear();  //Reset dirty regions.
+	this->bSuppressDraw = false;
 
-	if (this->eOrbType == OT_BROKEN && RAND(5) != 0)
+	if (this->bDrawOrb && this->eOrbType == OT_BROKEN && RAND(5) != 0) {
+		this->bSuppressDraw = true;
 		return true; //flicker when broken
+	}
 
-	//Draw activated orb tile.
 	if (bDrawOrb)
-	{
-	   g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, pDestSurface, false);
-		SDL_Rect rect = MAKE_SDL_RECT(this->wOrbX,this->wOrbY,CBitmapManager::CX_TILE,CBitmapManager::CY_TILE);
-		this->dirtyRects.push_back(rect);
-	}
+		this->dirtyRects.push_back(MAKE_SDL_RECT(this->wOrbX, this->wOrbY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE));
 
-	//Clip screen surface to widget because bolt segments will go all over the place.
-	SDL_Rect OwnerRect;
-	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(pDestSurface, &OwnerRect);
-
-	//Set transparency level: bolt fades out over life of effect.
 	if (g_pTheBM->bAlpha)
-	{
-		const Uint8 nOpacity = (Uint8)(255.0 * (dwDuration - dwTimeElapsed) / (float)dwDuration);
-		EnableSurfaceBlending(this->pPartsSurface, nOpacity);
-	}
+		this->nOpacity = (Uint8)(GetRemainingFraction() * 255.0);
+
 
 	//Draw energy bolts.
 	for (UINT wBoltI = this->bolts.size(); wBoltI--; )
 	{
 		const BOLT& bolt = this->bolts[wBoltI];
-		DrawBolt(bolt.xBegin, bolt.yBegin, bolt.xEnd, bolt.yEnd,
-				CDrodBitmapManager::DISPLAY_COLS,
-				this->pPartsSurface, pDestSurface, this->dirtyRects);
+		BOLT_SEGMENTS* segments = this->drawBolts[wBoltI];
+		segments->clear();
+		GenerateBolt(bolt.xBegin, bolt.yBegin, bolt.xEnd, bolt.yEnd,
+			CDrodBitmapManager::DISPLAY_COLS, *segments, this->dirtyRects);
+	}
+
+	return true;
+}
+
+//********************************************************************************
+void CStrikeOrbEffect::Draw(SDL_Surface& destSurface)
+{
+	if (this->bSuppressDraw)
+		return;
+
+	//Draw activated orb tile.
+	if (bDrawOrb)
+	    g_pTheBM->BlitTileImage(TI_ORB_L, this->wOrbX, this->wOrbY, &destSurface, false);
+
+	//Clip screen surface to widget because bolt segments will go all over the place.
+	SDL_Rect OwnerRect;
+	this->pOwnerWidget->GetRect(OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
+
+	//Set transparency level: bolt fades out over life of effect.
+	if (g_pTheBM->bAlpha)
+		EnableSurfaceBlending(this->pPartsSurface, this->nOpacity);
+
+	//Draw energy bolts.
+	for (UINT wBoltI = this->drawBolts.size(); wBoltI--; )
+	{
+		const BOLT_SEGMENTS* boltSegments = this->drawBolts[wBoltI];
+		DrawBolt(*(this->drawBolts.at(wBoltI)), *this->pPartsSurface, destSurface);
 	}
 
 	//Remove transparency level.
-	DisableSurfaceBlending(this->pPartsSurface);   //not needed
+	DisableSurfaceBlending(this->pPartsSurface);
 
 	//Unclip screen surface.
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	//Continue effect.
-	return true;
+	SDL_SetClipRect(&destSurface, NULL);
 }

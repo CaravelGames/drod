@@ -691,7 +691,7 @@ enum CUEEVENT_ID
 
 	//Stun effect.
 	//
-	//Private data: CMoveCoord *pSquare (one or more)
+	//Private data: CStunTarget *pStunTarget (one or more)
 	CID_Stun,
 
 	//A tile of briar was cut with a weapon.
@@ -887,6 +887,8 @@ class CCueEvents
 public:
 	CCueEvents() {Zero();}
 	virtual ~CCueEvents() {Clear();}
+
+	void SetMembers(const CCueEvents& Src);
 
 	void     Add(const CUEEVENT_ID eCID, const CAttachableObject *pvPrivateData = NULL, const bool bIsAttached=false);
 	void     Clear();

@@ -107,6 +107,12 @@ namespace SCREENLIB {
 		CUR_Wait = 1,
 		CUR_Internet = 2
 	};
+
+	enum FULLSCREENMODE {
+		REAL_BORDERLESS = 0,
+		FAUX_BORDERLESS = 1,
+		LEGACY = 2
+	};
 }
 
 #include "EventHandlerWidget.h"
@@ -141,8 +147,10 @@ public:
 	static void    GetScreenSize(int &nW, int &nH);
 	static void    GetWindowPos(int &nX, int &nY);
 	static void    InitMIDs(const UINT wQUIT, const UINT wOverwrite);
+	static bool    IsFullScreen();
 	static void    SaveSnapshot(SDL_Surface* pSurface, const WSTRING &fileName, DataFormat format=DATA_JPG);
 	static void    SetCursor(const UINT cursorType=SCREENLIB::CUR_Select);
+	static void    SetFullScreenStatic(const bool bSetFull);
 	void           SetUpdateRectAfterMessage(const bool bVal=true) {this->bUpdateRectAfterMessage = bVal;}
 	static void    SetWindowCentered();
 	static void    SetWindowPos(const int nSetX, const int nSetY);
@@ -150,9 +158,18 @@ public:
 	static int     CX_SCREEN, CY_SCREEN;   //logical screen dimensions
 	static bool    bAllowFullScreen;
 	static bool    bAllowWindowed;
+	static bool    bAllowWindowResizing;
 
 	static SDL_Rect WindowTargetRect;      //position of logical screen in physical window
 	static double   WindowScaleFactor;
+
+	static SCREENLIB::FULLSCREENMODE eFullScreenMode;
+
+	// Whether to force-minimize when losing focus on fullscreen, to avoid it never minimizing on its own
+	static bool   bMinimizeOnFullScreen;
+	static Uint32 dwCurrentTicks; // SDL_GetTicks() value during the start of handling of the current frame
+	static Uint32 dwLastRenderTicks; // SDL_GetTicks() value during the last present frame call
+	static Uint32 dwPresentsCount; // Count of how many times SDL presented a frame to a window
 
 protected:
 	friend class CScreenManager;
@@ -166,7 +183,6 @@ protected:
 	void           HideCursor();
 	void           HideStatusMessage();
 	bool           IsCursorVisible() const;
-	bool           IsFullScreen() const;
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void   OnMouseDown(const UINT dwTagNo,
 			const SDL_MouseButtonEvent &Button);
@@ -225,6 +241,7 @@ private:
 	UINT              eType;
 	UINT              eDestScreenType;
 	bool              bUpdateRectAfterMessage; //whether to repaint the screen immediately after a message is closed
+	static bool       bIsFauxFullscreenOn;
 };
 
 // XXX maybe not the best place to put this.. make a window class?

@@ -147,6 +147,7 @@ private:
 	void  SetActionWidgetStates();
 	void  SetAnimationSpeed();
 	void  SetCharacterWidgetStates();
+	void  SetCommandColor(CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command);
 	void  SetCommandParametersFromWidgets(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  SetCustomImage();
 	void  SetCustomGraphic();

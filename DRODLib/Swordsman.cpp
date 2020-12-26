@@ -165,6 +165,25 @@ UINT CSwordsman::GetWaterTraversalState(UINT wRole) const
 }
 
 //*****************************************************************************
+MovementType CSwordsman::GetMovementType() const
+//Returns: the movement type that best applies to player's current configuration of appearance and water traversal
+{
+	switch (this->wAppearance)
+	{
+		case M_SEEP:
+			return WALL;
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
+			return AIR;
+		case M_WATERSKIPPER:
+			return WATER;
+		default:
+			return this->GetWaterTraversalState(this->wAppearance) == WTrv_NoEntry
+				? GROUND
+				: GROUND_AND_SHALLOW_WATER;
+	}
+}
+
+//*****************************************************************************
 bool CSwordsman::IsAt(UINT wX, UINT wY) const
 {
 	return IsInRoom() && wX == this->wX && wY == this->wY;

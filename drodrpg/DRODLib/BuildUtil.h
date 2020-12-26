@@ -39,7 +39,7 @@ public:
 	static bool bIsValidBuildTile(const UINT wTileNo);
 
 	static bool BuildTilesAt(CDbRoom& room, const UINT tile, UINT x, UINT y, const UINT w, const UINT h, const bool bAllowSame, CCueEvents& CueEvents);
-//	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+	static bool BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame);
 
 private:

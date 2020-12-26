@@ -1,0 +1,416 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="General">
+      <UniqueIdentifier>{22ad4374-2d8d-4556-935d-62e9fe8d3cfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Screens">
+      <UniqueIdentifier>{46844cfc-60d1-4cf3-a404-f19c607ea85e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Widgets">
+      <UniqueIdentifier>{557c7927-af99-461a-ae56-0fd8dccdeeda}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{ff57d931-f0fc-446b-aa31-2674c0858127}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{9ca13fa7-33f0-4226-9e28-449b1a6da53a}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+    <Filter Include="RoomModel">
+      <UniqueIdentifier>{8b7a2f10-6070-484e-a4dc-d99731cb3e7b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Chat.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodBitmapManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodFontManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodScreenManager.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodSound.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="TileImageCalcs.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="BrowserScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="ChatScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CreditsScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="DemosScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="EditRoomScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="EditSelectScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="GameScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="HoldSelectScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelStartScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="ModScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="NewPlayerScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="RestoreScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectPlayerScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="SellScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="WinStartScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="ClockWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodFileDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="EditRoomWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="EntranceSelectDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="FaceWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="MapWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="WeatherDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="BloodEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DebrisEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ExplosionEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleExplosionEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="PendingBuildEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="PendingPlotEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="RoomEffectList.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SnowflakeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SparkEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SplashEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SteamEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="StrikeOrbEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SwordsmanSwirlEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="SwordSwingEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TarStabEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TrapdoorFallEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="VarMonitorEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="VerminEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ZombieGazeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Rectangle.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>RoomModel</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Chat.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodBitmapManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodFontManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodScreenManager.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodSound.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TileImageCalcs.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TileImageConstants.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="BrowserScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="ChatScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="CreditsScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="DemosScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="EditRoomScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="EditSelectScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="HoldSelectScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelStartScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="ModScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="NewPlayerScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="RestoreScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectPlayerScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="SellScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="TitleScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="WinStartScreen.h">
+      <Filter>Screens</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="ClockWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodFileDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="EditRoomWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="EntranceSelectDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="FaceWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="MapWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="WeatherDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="BloodEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DebrisEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ExplosionEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleExplosionEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="PendingBuildEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="PendingPlotEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomEffectList.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SnowflakeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SparkEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SplashEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SteamEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="StrikeOrbEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SwordsmanSwirlEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="SwordSwingEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="TarStabEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="TrapdoorFallEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="VarMonitorEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="VerminEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ZombieGazeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Rectangle.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneObject.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>RoomModel</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Res\DROD.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DROD.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

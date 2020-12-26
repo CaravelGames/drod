@@ -27,6 +27,8 @@
 #include "SteamEffect.h"
 #include "DrodBitmapManager.h"
 
+const UINT SteamEffectDuration = 1000;
+
 //*****************************************************************************
 CSteamEffect::CSteamEffect(
 //Constructor.
@@ -34,58 +36,60 @@ CSteamEffect::CSteamEffect(
 //Params:
 	CWidget *pSetWidget,   //(in) Should be a room widget.
 	const CCoord &origin)  //(in) Location and initial direction of movement.
-	: CEffect(pSetWidget, ESTEAM)
+	: CEffect(pSetWidget, SteamEffectDuration, ESTEAM)
 {
 	pSetWidget->GetRect(this->screenRect);
 
-	this->nX = this->screenRect.x + origin.wX*CBitmapManager::CX_TILE;
-	this->nY = this->screenRect.y + origin.wY*CBitmapManager::CY_TILE;
+	this->wDrawX = this->screenRect.x + origin.wX * CBitmapManager::CX_TILE;
+	this->nInitialDrawY = this->screenRect.y + origin.wY * CBitmapManager::CY_TILE;
 
 	//Bounding box is always of these dimensions.
-	SDL_Rect rect = MAKE_SDL_RECT(this->nX, this->nY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
+	SDL_Rect rect = MAKE_SDL_RECT(this->wDrawX, this->nInitialDrawY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 	this->dirtyRects.push_back(rect);
 }
 
 //*****************************************************************************
-bool CSteamEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CSteamEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	this->nDrawOpacity = g_pTheBM->bAlpha 
+		? (Uint8)(GetRemainingFraction() * 255.0) 
+		: 255;
 
-	static const Uint32 dwDuration = 1000; //ms
-	const Uint32 dwTimeElapsed = TimeElapsed();
-	if (dwTimeElapsed > dwDuration)
-		return false;
+	this->wDrawY = this->nInitialDrawY - int(GetElapsedFraction() * float(CDrodBitmapManager::CY_TILE / 2));
+	this->wDrawClipY = this->wDrawY < UINT(this->screenRect.y) ? this->screenRect.y - this->wDrawY : 0;
+	this->wDrawY += this->wDrawClipY;
 
-	//Float upward half a tile.
-	const float fPercent = dwTimeElapsed / float(dwDuration);
-	const int yPos = this->nY - int(fPercent * float(CDrodBitmapManager::CY_TILE/2));
+	UpdateFrame();
 
-	//Ensure effect stays within parent widget's bounds.
-	const int yClip = yPos < this->screenRect.y ? this->screenRect.y - yPos : 0;
-
-	//Draw animated dissipating cloud.
-	ASSERT(fPercent <= 1.0);
-	static const UINT NUM_FRAMES = 8;
-	const UINT frame = UINT(fPercent * NUM_FRAMES);
-	static const UINT FRAME[NUM_FRAMES] = {TI_SMOKE1, TI_SMOKE2, TI_SMOKE3,
-		TI_SMOKE4, TI_SMOKE5, TI_SMOKE6, TI_SMOKE7, TI_SMOKE8};
-	UINT wTile = FRAME[frame < NUM_FRAMES ? frame : NUM_FRAMES-1];
-
-	//Fade out.
-	const BYTE nOpacity = g_pTheBM->bAlpha ?
-			(BYTE)((1.0 - dwTimeElapsed/(float)dwDuration) * 255.0) : 255;
-	g_pTheBM->BlitTileImagePart(wTile, this->nX, yPos + yClip,
-			0, yClip, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE - yClip,
-			pDestSurface, false, nOpacity);
-
-	//Update bounding box position.
 	ASSERT(this->dirtyRects.size() == 1);
-	this->dirtyRects[0].x = this->nX;
-	this->dirtyRects[0].y = yPos;
+	this->dirtyRects[0].y = this->wDrawY;
 
 	return true;
+}
+
+//*****************************************************************************
+void CSteamEffect::Draw(SDL_Surface& destSurface)
+{
+	//Float upward half a tile.
+	const float fPercent = dwTimeElapsed / float(dwDuration);
+
+	//Ensure effect stays within parent widget's bounds.
+
+	//Fade out.
+	g_pTheBM->BlitTileImagePart(this->wDrawTile, 
+			this->wDrawX, this->wDrawY,
+			0, this->wDrawClipY,
+			CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE - this->wDrawClipY,
+			&destSurface, false, this->nDrawOpacity);
+}
+
+void CSteamEffect::UpdateFrame()
+{
+	static const UINT NUM_FRAMES = 8;
+	const UINT frame = UINT(GetElapsedFraction() * NUM_FRAMES);
+	static const UINT FRAME[NUM_FRAMES] = { 
+		TI_SMOKE1, TI_SMOKE2, TI_SMOKE3, TI_SMOKE4,
+		TI_SMOKE5, TI_SMOKE6, TI_SMOKE7, TI_SMOKE8 };
+
+	this->wDrawTile = FRAME[frame < NUM_FRAMES ? frame : NUM_FRAMES - 1];
 }

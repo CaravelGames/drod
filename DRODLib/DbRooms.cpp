@@ -32,12 +32,14 @@
 #include "DbRooms.h"
 
 #include "Aumtlich.h"
+#include "Clone.h"
 #include "Construct.h"
 #include "CurrentGame.h"
 #include "Db.h"
 #include "DbData.h"
 #include "DbProps.h"
 #include "Character.h"
+#include "EvilEye.h"
 #include "Gentryii.h"
 #include "MonsterPiece.h"
 #include "PlayerDouble.h"
@@ -73,6 +75,8 @@ ROOMCOORD      importCheckpoint;
 #define WEATHER_SNOW "snow"
 #define WEATHER_SKY "sky"
 #define WEATHER_RAIN "rain"
+
+CCoordSet CDbRoom::debugMarkedTiles;
 
 //
 //CDbRooms public methods.
@@ -807,7 +811,7 @@ void CDbRooms::LogRoomsWithItem(const UINT wTile, const UINT wParam)
 				wstr += wszColon;
 				pRoom->GetLevelPositionDescription(wstr, true);
 
-				string str = UnicodeToAscii(wstr);
+				string str = UnicodeToUTF8(wstr);
 				str += "\n";
 				CFiles f;
 				f.AppendUserLog(str.c_str());
@@ -2222,7 +2226,7 @@ void CDbRoom::ResetMonsterFirstTurnFlags()
 }
 
 //*****************************************************************************
-bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents)
+bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, const bool bProcessMove, CCueEvents &CueEvents)
 //Create a new global script character at (0,0)
 //
 //Returns: True if successful, false if not.
@@ -2258,10 +2262,12 @@ bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, CCueEvents &CueEvents)
 	//Make sure that the current list of Global Scripts includes this ID
 	this->pCurrentGame->GlobalScriptsRunning += dwCharID;
 
-	const bool bExec = this->pCurrentGame->ExecutingNoMoveCommands();
-	this->pCurrentGame->SetExecuteNoMoveCommands();
-	pCharacter->Process(CMD_WAIT, CueEvents);
-	this->pCurrentGame->SetExecuteNoMoveCommands(bExec);
+	if (bProcessMove) {
+		const bool bExec = this->pCurrentGame->ExecutingNoMoveCommands();
+		this->pCurrentGame->SetExecuteNoMoveCommands();
+		pCharacter->Process(CMD_WAIT, CueEvents);
+		this->pCurrentGame->SetExecuteNoMoveCommands(bExec);
+	}
 
 	return true;
 }
@@ -2277,7 +2283,7 @@ void CDbRoom::AddRunningGlobalScripts(CCueEvents &CueEvents)
 
 	for (CIDSet::const_iterator c = this->pCurrentGame->GlobalScriptsRunning.begin();
 			c != this->pCurrentGame->GlobalScriptsRunning.end(); ++c)
-		if (!AddNewGlobalScript(*c, CueEvents))
+		if (!AddNewGlobalScript(*c, false, CueEvents))
 			BrokenGlobalScripts += *c;
 
 	this->pCurrentGame->GlobalScriptsRunning -= BrokenGlobalScripts;
@@ -2924,30 +2930,20 @@ bool CDbRoom::DoesSquareContainTeleportationObstacle(
 CMonster* CDbRoom::FindNextClone()
 //Returns: pointer to next monster of type M_CLONE, else NULL if none
 {
-	ASSERT(!this->pLastClone || this->pLastClone->IsAlive());
-
-	CMonster *pMonster = this->pLastClone; //keep track of last one returned
-	if (!pMonster)
-		pMonster = this->pFirstMonster;
-	else {
-		pMonster = pMonster->pNext; //start looking after this monster
-		if (!pMonster)
-			pMonster = this->pFirstMonster;
-	}
-
-	while (pMonster)
-	{
-		if (pMonster->wType == M_CLONE)
-			break; //found next clone
+	CClone* pFirstClone = DYN_CAST(CClone*, CMonster*, GetMonsterOfType(M_CLONE, true));
+	CMonster* pMonster = pFirstClone;
+	while (pMonster && pMonster->wProcessSequence == SPD_PDOUBLE) {
+		if (pMonster->wType == M_CLONE) {
+			CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+			if (pClone->wCreationIndex > this->wLastCloneIndex) {
+				return pClone;
+			}
+		}
 
 		pMonster = pMonster->pNext;
-		if (pMonster == this->pLastClone)
-			break; //only one clone is in the monster list -- return it again
-		if (!pMonster)
-			pMonster = this->pFirstMonster;
 	}
 
-	return pMonster;
+	return pFirstClone;
 }
 
 //*****************************************************************************
@@ -3264,6 +3260,23 @@ bool CDbRoom::KillMonster(
 }
 
 //*****************************************************************************
+void CDbRoom::KillInvisibleCharacter(
+	//Kills an invisible character
+	//
+	//Params:
+	CCharacter* pCharacter) //(in) Character to be removed
+{
+	ASSERT(pCharacter);
+	ASSERT(!pCharacter->IsVisible());
+	ASSERT(pCharacter->IsAlive());
+
+	UnlinkMonster(pCharacter);
+	this->DeadMonsters.push_back(pCharacter);
+
+	pCharacter->bAlive = false;
+}
+
+//*****************************************************************************
 bool CDbRoom::KillMonsterAtSquare(
 //Kills a monster in a specified square.
 //Supports monsters occupying multiple squares.
@@ -3511,6 +3524,13 @@ void CDbRoom::LinkMonster(
 			else
 				this->monsterEnemies.push_back(DYN_CAST(CPlayerDouble*, CMonster*, pMonster));
 		break;
+		case M_CLONE:
+		{
+			CClone* pClone = dynamic_cast<CClone*>(pMonster); // Not using DYN_CAST intentionally to avoid assertion errors
+			if (pClone != NULL) //This may happen during import, when the room is created only to be stored in the database, ignore
+				pClone->CalculateCreationIndex(this);
+			break;
+		}
 		default: break;
 	}
 
@@ -3560,7 +3580,7 @@ const CMonster* CDbRoom::GetOwningMonsterOnSquare(const UINT wX, const UINT wY) 
 }
 
 //*****************************************************************************
-CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
+CMonster* CDbRoom::GetMonsterOfType(const UINT wType, const bool bIgnoreCharacterAppearance) const
 //Returns: first monster of specified type in monster list, or NULL if none
 {
 	CMonster *pMonster = this->pFirstMonster;
@@ -3574,7 +3594,9 @@ CMonster* CDbRoom::GetMonsterOfType(const UINT wType) const
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			if (pCharacter->IsVisible()) //Character must be in room to count.
 			{
-				if (wType == M_CHARACTER || pCharacter->GetIdentity() == wType)
+				if (wType == M_CHARACTER)
+					return pMonster;
+				else if (pCharacter->GetIdentity() == wType && !bIgnoreCharacterAppearance)
 					return pMonster;
 			}
 		}
@@ -3618,7 +3640,10 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	//As pathmap targets are updated, we should make sure that only the new maps for Horn Blowing are used
 	//Ideally, GetNearestEntranceTo should use its own pathmap storage rather than the global one leading
 	//  to the player, but for now, this works.
-	ASSERT(eMovement == GROUND_FORCE || eMovement == GROUND_AND_SHALLOW_WATER_FORCE);
+	ASSERT(eMovement == GROUND_FORCE
+		|| eMovement == GROUND_AND_SHALLOW_WATER_FORCE
+		|| eMovement == AIR_FORCE
+		|| eMovement == WATER_FORCE);
 
 	if (!this->pPathMap[eMovement])
 		CreatePathMap(wX, wY, eMovement);
@@ -3770,6 +3795,8 @@ const
 	//Check each square for a monster (or monster piece).
 	CMonster **pMonsters;
 
+	const UINT wBaseType = bEntityBaseIdentity(wType);
+
 	ASSERT(wRight < this->wRoomCols && wBottom < this->wRoomRows);
 	for (UINT y=wTop; y<=wBottom; ++y)
 	{
@@ -3778,8 +3805,20 @@ const
 		{
 			if (*pMonsters && (*pMonsters)->IsAlive())
 			{
-				if ((*pMonsters)->wType == wType)
-					return true;
+				if ((*pMonsters)->wType == wBaseType) {
+					if (wBaseType == wType)
+						return true;
+
+					switch(wType) {
+						case M_EYE_ACTIVE:
+						{
+							const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, (*pMonsters));
+							if (pEvilEye->IsAggressive())
+								return true;
+						}
+					}
+				}
+
 				if ((*pMonsters)->wType == M_CHARACTER && bConsiderNPCIdentity)
 				{
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, *pMonsters);
@@ -4080,6 +4119,7 @@ void CDbRoom::ActivateToken(
 					{
 						CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pMonster);
 						pDouble->bNoWeapon = this->pCurrentGame->swordsman.bNoWeapon;
+						pDouble->SetWeaponSheathed();
 					}
 					break;
 					default: break;
@@ -4406,7 +4446,7 @@ void CDbRoom::BurnFuseEvents(CCueEvents &CueEvents)
 	{
 		const UINT wX = fuse->wX;
 		const UINT wY = fuse->wY;
-		const UINT wTileNo = GetTSquare(wX,wY);
+		const UINT wTileNo = GetBottomTSquare(wX,wY);
 		ASSERT(bIsCombustibleItem(wTileNo) || wTileNo==T_EMPTY);
 		if (bIsCombustibleItem(wTileNo))
 		{
@@ -4596,11 +4636,11 @@ void CDbRoom::ProcessPuffAttack(
 	{
 		case T_WATER:
 			Plot(wX, wY, T_THINICE);
-			this->bridges.built(wX,wY,T_THINICE);
+			this->bridges.HandleTileBuilt(wX,wY,T_THINICE);
 		break;
 		case T_SHALLOW_WATER:
 			Plot(wX, wY, T_THINICE_SH);
-			this->bridges.built(wX,wY,T_THINICE_SH);
+			this->bridges.HandleTileBuilt(wX,wY,T_THINICE_SH);
 		break;
 	}
 
@@ -5221,7 +5261,7 @@ const
 		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
 			pMonster->wX, pMonster->wY, wO, 
 			M_OFFSET + id, 
-			pMonster->HasSword() ? pMonster->GetWeaponType() : WT_Off
+			pMonster->HasSword() ? pMonster->GetWeaponType() : (UINT)WT_Off
 		), true);
 		return true;
 	}
@@ -5374,13 +5414,13 @@ UINT CDbRoom::GentryiiFallsInPit(
 			UINT wO = nGetO(int(piece.wX - wPrevX), int(piece.wY - wPrevY)) + ORIENTATION_COUNT;
 
 			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
-					piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
+					piece.wX, piece.wY, wO, T_GENTRYII, (UINT)WT_Off), true);
 
 			MonsterPieces::const_iterator nextPiece = pieceIt;
 			if (++nextPiece != pieces_end) {
 				wO = nGetO(int(piece.wX - (*nextPiece)->wX), int(piece.wY - (*nextPiece)->wY)) + ORIENTATION_COUNT;
 				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
-						piece.wX, piece.wY, wO, T_GENTRYII, 0), true);
+						piece.wX, piece.wY, wO, T_GENTRYII, (UINT)WT_Off), true);
 			}
 		}
 
@@ -5469,7 +5509,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 //A prioritized list of general room changes that are checked each game turn.
 {
 	//Bridges fall before anything else happens.
-	this->bridges.process(CueEvents);
+	this->bridges.Process(CueEvents);
 
 	if (CueEvents.HasOccurred(CID_EvilEyeWoke))
 		this->bTarWasStabbed = true;	//indicates room has entered a "dangerous" state
@@ -5495,7 +5535,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 		{
 			//Get coord index with all swords for quick evaluation.
 			CCoordIndex babies(this->wRoomCols, this->wRoomRows), SwordCoords;
-			GetSwordCoords(SwordCoords);
+			GetSwordCoords(SwordCoords, true);
 
 			//Tar takes precedence over mud, and mud over gel,
 			//but all grow simultaneously if possible,
@@ -5620,7 +5660,7 @@ void CDbRoom::ExpandExplosion(
 	const UINT wBombX, const UINT wBombY,  //(in) source of explosion
 	const UINT wX, const UINT wY, //(in) square to place explosion
 	CCoordStack& bombs,        //(in/out) bombs to be exploded
-	CCoordStack& powder_kegs,  //(in/out) bombs to be exploded
+	CCoordStack& powder_kegs,  //(in/out) powder kegs to be exploded
 	CCoordSet& explosion,      //(in/out) tiles needed to be destroyed/activated
 	const CCoordIndex& caberCoords,   //(in) list of tiles containing cabers and their directions
 	const UINT radius)
@@ -6540,22 +6580,28 @@ void CDbRoom::RemoveCoveredTLayerItem(const UINT wSX, const UINT wSY)
 }
 
 //*****************************************************************************
+void CDbRoom::ClampCoordsToRoom(int& nX, int& nY) const
+{
+	if (nX < 0)
+		nX = 0;
+	else if ((UINT)nX >= this->wRoomCols)
+		nX = this->wRoomCols - 1;
+
+	if (nY < 0)
+		nY = 0;
+	else if ((UINT)nY >= this->wRoomRows)
+		nY = this->wRoomRows - 1;
+}
+
+//*****************************************************************************
 UINT CDbRoom::GetOSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square
 //will be used.
-	 const int nX, const int nY) const
+	 int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0)
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-	 return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nUseX,nUseY)]);
+	ClampCoordsToRoom(nX, nY);
+	return (UINT)(unsigned char)(this->pszOSquares[ARRAYINDEX(nX, nY)]);
 }
 
 //*****************************************************************************
@@ -6563,19 +6609,10 @@ UINT CDbRoom::GetTSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square
 //will be used.
-	 const int nX, const int nY) const
+	int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0)
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-
-	 return GetTSquare(nUseX,nUseY);
+	ClampCoordsToRoom(nX, nY);
+	return GetTSquare(nX, nY);
 }
 
 //*****************************************************************************
@@ -7214,6 +7251,7 @@ const
 				return DMASK_ALL;
 			break;
 		case AIR:
+		case AIR_FORCE:
 			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare)))
 				switch (wOSquare)
 				{
@@ -7229,6 +7267,7 @@ const
 				return DMASK_ALL;
 			break;
 		case WATER:
+		case WATER_FORCE:
 			if (!bIsWater(wOSquare))
 				return DMASK_ALL;
 			break;
@@ -7548,7 +7587,7 @@ void CDbRoom::Clear()
 
 	this->ExtraVars.Clear();
 	this->weather.clear();
-	this->bridges.clear();
+	this->bridges.Clear();
 	this->building.clear();
 	this->floorSpikes.clear();
 	this->fluffVents.clear();
@@ -7556,7 +7595,7 @@ void CDbRoom::Clear()
 
 	this->bCheckForHoldCompletion = this->bCheckForHoldMastery = false;
 	this->bTarWasStabbed = this->bGreenDoorsOpened = false;
-	this->pLastClone = NULL;
+	this->wLastCloneIndex = 0;
 
 	DeletePathMaps();
 
@@ -8217,16 +8256,38 @@ void CDbRoom::RemoveMonsterFromLayer(CMonster *pMonster)
 }
 
 //*****************************************************************************
-void CDbRoom::ClearDeadMonsters()
+void CDbRoom::ClearDeadMonsters(
+	bool bOnlySafe) //(in) When true will only delete monsters that are marked as safe to delete
 //Frees memory and resets members for dead monster list.
 {
-	for (list<CMonster *>::const_iterator iSeek = this->DeadMonsters.begin();
+	if (bOnlySafe) {
+		// Not the most elegant solution but I think that as long as the loop's logic is this simple
+		// it's fine to leave it as-is
+		list<CMonster*> KeptDeadMonsters;
+		for (list<CMonster*>::const_iterator iSeek = this->DeadMonsters.begin();
+			iSeek != this->DeadMonsters.end(); ++iSeek)
+		{
+			CMonster *pDelete = *iSeek;
+			ASSERT(pDelete);
+			if (pDelete->bSafeToDelete)
+				delete pDelete;
+			else
+				KeptDeadMonsters.push_back(pDelete);
+		}
+
+		this->DeadMonsters.clear();
+		this->DeadMonsters.insert(this->DeadMonsters.end(), KeptDeadMonsters.begin(), KeptDeadMonsters.end());
+		return;
+	}
+
+	for (list<CMonster*>::const_iterator iSeek = this->DeadMonsters.begin();
 		iSeek != this->DeadMonsters.end(); ++iSeek)
 	{
 		CMonster *pDelete = *iSeek;
 		ASSERT(pDelete);
 		delete pDelete;
 	}
+	
 	this->DeadMonsters.clear();
 }
 
@@ -9576,7 +9637,7 @@ void CDbRoom::ConvertUnstableTar(
 	const UINT wSX = this->pCurrentGame ? this->pCurrentGame->swordsman.wX : (UINT)-1;
 	const UINT wSY = this->pCurrentGame ? this->pCurrentGame->swordsman.wY : (UINT)-1;
 	CCoordIndex swordCoords;
-	GetSwordCoords(swordCoords);
+	GetSwordCoords(swordCoords, true);
 
 	UINT wX, wY;
 	while (NewBabies.PopBottom(wX,wY)) //process as queue
@@ -9699,6 +9760,12 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 	const CUEEVENT_ID eGrowth1 = bTar ? CID_TarGrew : CID_MudGrew;
 	const CUEEVENT_ID eGrowth2 = bGel ? CID_GelGrew : CID_MudGrew;
 
+	//If player is in a tar role, switch player role. Must do it before processing monsters so
+	//that temporal clone movement type can be set correctly from player
+	const int nSwappedPlayerType = SwapTarstuffRoles(this->pCurrentGame->swordsman.wAppearance, bTar, bMud, bGel);
+	if (nSwappedPlayerType >= 0)
+		this->pCurrentGame->SetPlayerRole(nSwappedPlayerType, CueEvents);
+
 	UINT wX, wY;
 	CCueEvents Ignored;
 	for (wY=0; wY<this->wRoomRows; ++wY)
@@ -9729,6 +9796,7 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 						}
 
 						pTemporalClone->wIdentity = pTemporalClone->wAppearance = nType;
+						pTemporalClone->SetMovementType();
 
 					}
 
@@ -9790,11 +9858,6 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 		CueEvents.ClearEvent(eGrowth1);
 	if (CueEvents.HasOccurred(eGrowth2) && CueEvents.GetOccurrenceCount(eGrowth2) == 0)
 		CueEvents.ClearEvent(eGrowth2);
-
-	//If player is in a tar role, switch player role.
-	const int nSwappedPlayerType = SwapTarstuffRoles(this->pCurrentGame->swordsman.wAppearance, bTar, bMud, bGel);
-	if (nSwappedPlayerType >= 0)
-		this->pCurrentGame->SetPlayerRole(nSwappedPlayerType, CueEvents);
 }
 
 //*****************************************************************************
@@ -10728,7 +10791,7 @@ void CDbRoom::ReplaceOLayerTile(
 	const UINT wX, const UINT wY,
 	const UINT wTileNo)
 {
-	this->bridges.plotted(wX,wY,wTileNo);
+	this->bridges.Plotted(wX,wY,wTileNo);
 
 	//Maintain sets of uncommon tiles that have a periodic effect
 	if (wTileNo == T_FLOOR_SPIKES) {
@@ -10818,12 +10881,19 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 	{
 		ASSERT(tObj);
 		tObj->remove_top();
-	} else if (bUnderObject && bIsTLayerCoveringItem(oldTile) &&
+	}
+	else if (bUnderObject && bIsTLayerCoveringItem(oldTile) &&
 		(wTileNo == T_SCROLL || wTileNo == T_FUSE || wTileNo == T_TOKEN))
 	{
 		bReplacedCoveringItem = false;
 		ASSERT(tObj);
 		tObj->place_under(wTileNo);
+
+	} else if (bIsTLayerCoveringItem(wTileNo) && bIsTLayerCoverableItem(oldTile)) {
+		// Cover coverables
+		tObj = SetTLayer(wX, wY, wTileNo);
+		tObj->place_under(oldTile);
+
 	} else {
 		tObj = SetTLayer(wX,wY,wTileNo);
 	}
@@ -11700,13 +11770,9 @@ bool CDbRoom::SetMembers(
 
 		//In-game state information.
 		this->PlotsMade = Src.PlotsMade;
+		this->wLastCloneIndex = Src.wLastCloneIndex;
 		//	this->geometryChanges = Src.geometryChanges; //temporary front-end only info not needed
 		//	this->disabledLights = Src.disabledLights;
-		if (Src.pLastClone)
-		{
-			this->pLastClone = this->pMonsterSquares[ARRAYINDEX(Src.pLastClone->wX,Src.pLastClone->wY)];
-			ASSERT(this->pLastClone);
-		}
 		for (wIndex=NumMovementTypes; wIndex--; )
 			if (Src.pPathMap[wIndex])
 				this->pPathMap[wIndex] = new CPathMap(*(Src.pPathMap[wIndex]));
@@ -11727,7 +11793,7 @@ bool CDbRoom::SetMembers(
 		this->coveredOSquares = Src.coveredOSquares;
 		this->bTarWasStabbed = Src.bTarWasStabbed;
 		this->bGreenDoorsOpened = Src.bGreenDoorsOpened;
-		this->bridges.setMembersForRoom(Src.bridges, this);
+		this->bridges.SetMembersForRoom(Src.bridges, this);
 		this->building.setMembers(Src.building);
 		this->floorSpikes = Src.floorSpikes;
 		this->fluffVents = Src.fluffVents;
@@ -11967,7 +12033,7 @@ void CDbRoom::InitRoomStats()
 	this->bCheckForHoldMastery = false;
 	this->briars.clear();
 	this->briars.setRoom(this); //call after clear()
-	this->bridges.setRoom(this);
+	this->bridges.SetRoom(this);
 	this->building.init(this->wRoomCols, this->wRoomRows);
 	ClearPlatforms();
 	this->floorSpikes.clear();
@@ -12039,7 +12105,7 @@ void CDbRoom::InitRoomStats()
 				const UINT index = pszSeek - this->pszOSquares;
 				const UINT wX = index % this->wRoomCols;
 				const UINT wY = index / this->wRoomCols;
-				this->bridges.addBridge(wX, wY);
+				this->bridges.HandleBridgeAdded(wX, wY);
 			}
 			break;
 

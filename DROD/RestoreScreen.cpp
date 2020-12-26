@@ -442,6 +442,7 @@ void CRestoreScreen::OnClick(
 			//For currently selected hold.
 			this->pLevelListBoxWidget->SelectItem(
 					this->pCurrentRestoreGame->pHold->dwLevelID);
+			GetLevelStats(this->pCurrentRestoreGame->pHold->dwLevelID);
 			ChooseLevelStart(this->pCurrentRestoreGame->pHold->dwLevelID);
 			Paint();
 		}
@@ -1227,7 +1228,7 @@ void CRestoreScreen::UpdateStatsLabel(CCurrentGame& game)
 	std::ostringstream str;
 	str << " " << game.ConqueredRooms.size() << " / " << game.ExploredRooms.size();
 	WSTRING wstr = g_pTheDB->GetMessageText(MID_TotalRoomStats), wtemp;
-	AsciiToUnicode(str.str().c_str(), wtemp);
+	UTF8ToUnicode(str.str().c_str(), wtemp);
 	wstr += wtemp;
 	
 	pStatsLabel->SetText(wstr.c_str());

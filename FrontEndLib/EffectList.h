@@ -30,6 +30,8 @@
 
 #include "Effect.h"
 
+#define DRAW_ALL_EFFECTS_TYPE (UINT)-1
+
 //****************************************************************************************
 class CScreen;
 class CEffectList
@@ -43,24 +45,31 @@ public:
 	bool           ContainsEffect(CEffect *pEffect) const;
 	bool           ContainsEffectOfType(const UINT eEffectType) const;
 	bool           ContainsEffectOfTypeAt(const UINT eEffectType, const UINT wX, const UINT wY) const;
-	void           DrawEffects(const bool bUpdateScreen=false,
-			const bool bFreezeEffects=false, SDL_Surface *pDestSurface=NULL);
-	void           DrawEffectsOfType(const UINT eEffectType, const bool bUpdateScreen=false,
-			const bool bFreezeEffects=false, SDL_Surface *pDestSurface=NULL);
+	void           UpdateEffects(const bool bUpdateScreen=false, const UINT eUpdatedType = (UINT)-1);
+	void           DrawEffects(SDL_Surface *pDestSurface=NULL, const UINT eDrawnType = (UINT)-1);
+	void           UpdateAndDrawEffects(
+			const bool bUpdateScreen=false,
+			SDL_Surface *pDestSurface=NULL,
+			const UINT eDrawnType = (UINT)-1);
 	void           EraseEffects(SDL_Surface* pBackground, const SDL_Rect& rect, const bool bUpdate=false);
+	bool           GetEffectsFrozen() const { return this->bIsFrozen; }
 	CEffect*       GetEffectOfType(const UINT eEffectType) const;
 	SDL_Rect       GetBoundingBoxForEffectsOfType(const UINT eEffectType) const;
 	virtual void   RemoveEffectsOfType(const UINT eEffectType);
-	void           SetOpacityForEffectsOfType(const UINT eEffectType, float fOpacity) const;
+	void           SetOpacityForEffects(const float fOpacity) const;
+	void           SetOpacityForEffectsOfType(const UINT eEffectType, const float fOpacity) const;
+	void           SetEffectsFrozen(const bool bIsFrozen);
 
 	list<CEffect *> Effects;
 
 protected:
+	bool UpdateEffect(CEffect* pEffect, const bool bUpdateScreen);
+	void DrawEffect(CEffect* pEffect, SDL_Surface* pDestSurface);
+
 	CWidget *   pOwnerWidget;
 	CScreen *   pOwnerScreen;
 
-	//Save time when effects are temporarily stopped
-	Uint32         dwTimeEffectsWereFrozen;
+	bool       bIsFrozen;
 };
 
 #endif //...#ifndef EFFECTLIST_H

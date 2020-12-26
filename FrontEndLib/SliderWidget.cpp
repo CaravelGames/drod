@@ -30,6 +30,8 @@
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Exception.h>
 
+#include <algorithm>
+
 //Source coords and dimensions within parts surface.
 const int X_SLIDER = 294;
 const int Y_SLIDER = 46;
@@ -56,7 +58,9 @@ CSliderWidget::CSliderWidget(
 	, bWasSliderDrawn(false)
 	, bFocusRegionsSaved(false)
 	, pEraseSurface(NULL)
+	, bDrawTickMarks(false)
 {
+	this->pBiggerTicks = std::vector<UINT>();
 	this->imageFilenames.push_back(string("Dialog"));
 
 	this->pFocusSurface[0] = this->pFocusSurface[1] = NULL;
@@ -115,12 +119,17 @@ void CSliderWidget::Paint(
 	ASSERT(static_cast<UINT>(this->w) >= CX_SLIDER);
 	ASSERT(static_cast<UINT>(this->y) >= CX_SLIDER);
 
+	if (!IsVisible(true))
+		return; // Invisible widgets should not be drawn
+
 	//Drawing code below needs to be modified to accept offsets.  Until then,
 	//this widget can't be offset.
 	ASSERT(!IsScrollOffset());
 
 	static SDL_Rect SliderRect = MAKE_SDL_RECT(X_SLIDER, Y_SLIDER, CX_SLIDER, CY_SLIDER);
 	static SDL_Rect EraseRect = MAKE_SDL_RECT(0, 0, CX_SLIDER, CY_SLIDER);
+	static UINT TickMarkSmall = 7;
+	static UINT TickMarkBig = 17;
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(0, 0, CX_SLIDER, CY_SLIDER);
 	SDL_Rect FocusScreenRect = MAKE_SDL_RECT(this->x + 1, 0, this->w-2, 1);
 	SDL_Rect FocusRect = MAKE_SDL_RECT(0, 0, this->w-2, 1);
@@ -153,13 +162,38 @@ void CSliderWidget::Paint(
 	}
 
 	//Draw the line that slider travels over.
-	DrawCol(this->x, this->y, this->h, Dark);
-	DrawCol(this->x + 1, this->y, this->h, Light);
-	DrawCol(this->x + this->w - 2, this->y, this->h, Dark);
-	DrawCol(this->x + this->w - 1, this->y, this->h, Light);
 	int yLine = this->y + this->h / 2;
-	DrawRow(this->x + 1, yLine - 1, this->w - 2, Dark);
+	DrawCol(this->x + 1, this->y, this->h, Light);
+	DrawCol(this->x + this->w - 1, this->y, this->h, Light);
 	DrawRow(this->x + 1, yLine, this->w - 2, Light);
+
+	// <X position of tick, height of tick>
+	std::vector< std::pair<UINT, UINT> > ticks;
+	ticks.reserve(this->bytTickMarks);
+
+	if (this->bDrawTickMarks && this->bytTickMarks > 0) {
+		for (BYTE i = 0; i < this->bytTickMarks; i += 1) {
+			ticks.push_back(std::make_pair(
+				this->x + (this->w * i / this->bytTickMarks) + SliderRect.w / 2,
+				std::find(this->pBiggerTicks.begin(), this->pBiggerTicks.end(), i) != this->pBiggerTicks.end()
+				? TickMarkBig : TickMarkSmall
+			));
+		}
+	}
+
+	for (BYTE i = 0; i < ticks.size(); i++) {
+		std::pair<UINT, UINT> lineData = ticks[i];
+		DrawCol(lineData.first + 1, this->y + (this->h - lineData.second) / 2, lineData.second, Light);
+	}
+
+	DrawCol(this->x, this->y, this->h, Dark);
+	DrawCol(this->x + this->w - 2, this->y, this->h, Dark);
+	DrawRow(this->x + 1, yLine - 1, this->w - 2, Dark);
+
+	for (BYTE i = 0; i < ticks.size(); i++) {
+		std::pair<UINT, UINT> lineData = ticks[i];
+		DrawCol(lineData.first, this->y + (this->h - lineData.second) / 2, lineData.second, Dark);
+	}
 
 	//Calculate where to put slider.
 	float fSlider;
@@ -200,6 +234,11 @@ void CSliderWidget::Paint(
 
 	if (bUpdateRect) UpdateRect();
 }
+//******************************************************************************
+void CSliderWidget::SetDrawTickMarks(const bool bDrawTickMarks)
+{
+	this->bDrawTickMarks = bDrawTickMarks;
+}
 
 //******************************************************************************
 void CSliderWidget::SetValue(
@@ -208,8 +247,18 @@ void CSliderWidget::SetValue(
 //Params:
 	const BYTE bytSetValue) //(in)   New value.
 {
+	const UINT oldValue = this->bytValue;
 	this->bytValue = (this->bytTickMarks && bytSetValue >= this->bytTickMarks) ?
 		this->bytTickMarks-1 : bytSetValue;
+
+	if (this->bytValue != oldValue)
+	{
+		//Call OnSelectChange() notifier.
+		CEventHandlerWidget* pEventHandler = GetEventHandlerWidget();
+		if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
+	}
+
+	RequestPaint();
 }
 
 //
@@ -250,15 +299,13 @@ void CSliderWidget::HandleKeyDown(
 {
 	const SDL_Keycode key = KeyboardEvent.keysym.sym;
 	const BYTE incAmount = this->bytTickMarks ? (BYTE)1 : (BYTE)8;
+	const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks - 1 : 255;
 
 	switch (key)
 	{
 		case SDLK_HOME:  case SDLK_KP_7:
 			if (this->bytValue > 0)
-			{
-				this->bytValue = 0;
-				RequestPaint();
-			}
+				SetValue(0);
 		break;
 		case SDLK_LEFT: case SDLK_KP_4:
 			//slide left
@@ -266,45 +313,33 @@ void CSliderWidget::HandleKeyDown(
 			{
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{  //all the way to left
-					this->bytValue = 0;
+					SetValue(0);
 				} else {
 					if (this->bytValue < incAmount)
-						this->bytValue = 0;
+						SetValue(0);
 					else
-						this->bytValue -= incAmount;
+						SetValue(this->bytValue - incAmount);
 				}
-				RequestPaint();
 			}
 		break;
 
 		case SDLK_RIGHT: case SDLK_KP_6:
-		{
 			//slide right
-			const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks-1 : 255;
 			if (this->bytValue < bytMaxValue)
 			{
 				if (KeyboardEvent.keysym.mod & KMOD_CTRL)
 				{  //all the way to right
-					this->bytValue = bytMaxValue;
+					SetValue(bytMaxValue);
 				} else {
 					if (this->bytValue > bytMaxValue - incAmount)
-						this->bytValue = bytMaxValue;
+						SetValue(bytMaxValue);
 					else
-						this->bytValue += incAmount;
+						SetValue(this->bytValue + incAmount);
 				}
-				RequestPaint();
 			}
-		}
 		break;
 		case SDLK_END: case SDLK_KP_1:
-		{
-			const BYTE bytMaxValue = this->bytTickMarks ? this->bytTickMarks-1 : 255;
-			if (this->bytValue < bytMaxValue)
-			{
-				this->bytValue = bytMaxValue;
-				RequestPaint();
-			}
-		}
+			SetValue(bytMaxValue);
 		break;
 		default: break;
 	}

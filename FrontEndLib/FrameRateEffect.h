@@ -35,12 +35,13 @@ class CFrameRateEffect : public CEffect
 public:
 	CFrameRateEffect(CWidget *pSetWidget, const UINT eType=EFFECTLIB::EFRAMERATE);
 	virtual ~CFrameRateEffect();
-	
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
 
 protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
+
 	virtual void PrepDisplay();
-	void SetText(const WCHAR* pText);
+	void         SetText(const WCHAR* pText);
 
 	int      x, y;
 	UINT dwLastDrawTime;

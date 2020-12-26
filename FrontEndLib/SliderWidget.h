@@ -43,6 +43,9 @@ class CSliderWidget : public CFocusWidget
 		inline BYTE    GetValue() const {return this->bytValue;}
 		virtual void   Paint(bool bUpdateRect = true);
 		void           SetValue(const BYTE bytSetValue);
+		void           SetDrawTickMarks(const bool bDrawTickMarks);
+
+		std::vector<UINT> pBiggerTicks; // Values of ticks that should be drawn bigger when bDrawTickMarks is true
 
 	protected:
 		virtual void   HandleDrag(const SDL_MouseMotionEvent &Motion);
@@ -55,6 +58,8 @@ class CSliderWidget : public CFocusWidget
 
 		BYTE           bytValue, bytPrevValue;
 		BYTE           bytTickMarks;	//# of tick increments (0 = off)
+		bool           bDrawTickMarks; //Whether to draw small vertical lines for each tick value
+
 		bool           bWasSliderDrawn;
 		bool           bFocusRegionsSaved;
 		SDL_Surface *     pEraseSurface;

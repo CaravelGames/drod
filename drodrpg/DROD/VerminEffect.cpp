@@ -34,6 +34,9 @@
 #include "../DRODLib/DbRooms.h"
 #include <math.h>
 
+UINT CVerminEffect::dwMaxDuration = 3000;
+UINT CVerminEffect::dwDurationSway = 1000;
+
 //*****************************************************************************
 CVerminEffect::CVerminEffect(
 //Constructor.
@@ -43,7 +46,7 @@ CVerminEffect::CVerminEffect(
 	const CMoveCoord &origin,  //(in) Location and initial direction of movement.
 	const UINT wNumVermin,     //(in) [default=5]
 	const bool bSlayer)			//(in) [default=false]
-	: CEffect(pSetWidget, EVERMIN)
+	: CEffect(pSetWidget, CVerminEffect::dwMaxDuration, EVERMIN)
 	, bSlayer(bSlayer)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -61,6 +64,7 @@ CVerminEffect::CVerminEffect(
 		v.fX = static_cast<float>(nX);
 		v.fY = static_cast<float>(nY);
 		v.fAngle = fRAND(TWOPI);
+		v.duration = float(CVerminEffect::dwMaxDuration) - RAND(CVerminEffect::dwDurationSway);
 		v.acceleration = (VERMIN::ACCELERATION)RAND(VERMIN::NUM_ACCELERATIONS);
 		v.wTileNo = bSlayer ? TI_SLAYERDEBRIS : RAND(2) == 0 ? TI_VERMIN_1 : TI_VERMIN_2;
 		v.wSize = bSlayer ? 8 : v.wTileNo == TI_VERMIN_1 ? 6 : 4;
@@ -73,49 +77,37 @@ CVerminEffect::CVerminEffect(
 	}
 }
 
-//*****************************************************************************
-bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
-{
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-  
-	//Update real position in real time.
-	static const Uint32 dwMaxDuration = 3000;
-	if (TimeElapsed() > dwMaxDuration) return false;
-	const Uint32 dwNow = SDL_GetTicks();
-	Uint32 dwFrameTime = dwNow <= this->dwTimeOfLastMove ? 1 :
-			dwNow - this->dwTimeOfLastMove;
-	this->dwTimeOfLastMove = dwNow;
-	const float fMultiplier = (dwFrameTime < 50 ? dwFrameTime : 50) / 8.0f;
 
-	const CDbRoom *pRoom = this->pRoomWidget->GetCurrentGame()->pRoom;
+//*****************************************************************************
+bool CVerminEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+{
+	const float fMultiplier = min(wDeltaTime, 50U) / 8.0f;
+
+	const CDbRoom* pRoom = this->pRoomWidget->GetCurrentGame()->pRoom;
 	ASSERT(pRoom);
 
-	for (UINT wIndex=this->vermin.size(); wIndex--; )
+	for (UINT wIndex = this->vermin.size(); wIndex--; )
 	{
 		VERMIN& v = this->vermin[wIndex];
+
 		if (!v.bActive)
-		{
-			//Don't need to dirty anything for inactive vermin.
-			this->dirtyRects[wIndex].w = this->dirtyRects[wIndex].h = 0;
+			continue;
+
+		if (dwTimeElapsed > v.duration) {
+			MarkVerminInactive(wIndex);
 			continue;
 		}
+
 		v.fX += static_cast<float>(cos(v.fAngle)) * fMultiplier;
 		v.fY += static_cast<float>(sin(v.fAngle)) * fMultiplier;
 
 		if (OutOfBounds(v) || HitsObstacle(pRoom, v))
 		{
-			v.bActive = false;
+			MarkVerminInactive(wIndex);
 			continue;
 		}
 
 		UpdateDirection(v);
-
-		g_pTheBM->BlitTileImagePart(v.wTileNo, static_cast<UINT>(v.fX), static_cast<UINT>(v.fY),
-											 0, 0, v.wSize, v.wSize, pDestSurface, true);
 
 		//Update bounding box position.
 		this->dirtyRects[wIndex].x = static_cast<Sint16>(v.fX);
@@ -123,6 +115,29 @@ bool CVerminEffect::Draw(SDL_Surface* pDestSurface)
 	}
 
 	return true;
+}
+//*****************************************************************************
+void CVerminEffect::Draw(SDL_Surface& destSurface)
+{
+	for (UINT wIndex = this->vermin.size(); wIndex--; )
+	{
+		VERMIN& v = this->vermin[wIndex];
+
+		if (!v.bActive)
+			continue;
+
+		g_pTheBM->BlitTileImagePart(v.wTileNo, static_cast<UINT>(v.fX), static_cast<UINT>(v.fY),
+			0, 0, v.wSize, v.wSize, &destSurface, true);
+	}
+}
+
+//*****************************************************************************
+void CVerminEffect::MarkVerminInactive(const UINT wIndex)
+{
+	this->vermin[wIndex].bActive = false;
+
+	//Don't need to dirty anything for inactive vermin.
+	this->dirtyRects[wIndex].w = this->dirtyRects[wIndex].h = 0;
 }
 
 //*****************************************************************************

@@ -660,6 +660,36 @@ bool CListBoxWidget::RemoveItem(const void* pKey)
 	return bRemoved;
 }
 
+bool CListBoxWidget::RemoveItems(const CIDSet& keys)
+{
+	//Find the line corresponding to the key.
+	bool bRemoved = false;
+	UINT wIndex = 0;
+
+	CIDSet remainingSelectedKeys = GetSelectedItems();
+	for (vector<LBOX_ITEM*>::iterator iSeek = this->Items.begin();
+		iSeek != this->Items.end(); ++iSeek, ++wIndex)
+	{
+		wIndex++;
+
+		if (keys.has((*iSeek)->dwKey)) {
+			this->Items.erase(iSeek);
+			bRemoved = true;
+			if (this->wCursorLine > wIndex)
+				--this->wCursorLine;
+
+			wIndex--;
+		}
+	}
+	this->selectedLines.clear();
+	SelectItems(remainingSelectedKeys);
+
+	//Recalc areas of widget since they may have changed.
+	CalcAreas();
+
+	return bRemoved;
+}
+
 //******************************************************************************
 void CListBoxWidget::SelectAllLines()
 //Selects all lines.

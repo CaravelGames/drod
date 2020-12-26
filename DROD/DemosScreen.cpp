@@ -642,6 +642,8 @@ void CDemosScreen::DeleteDemo()
 	if (dwRet != TAG_YES)
 		return;
 	
+	const UINT dwPlayerID = g_pTheDB->GetPlayerID();
+
 	bool bAsk = true;
 	for (CIDSet::const_iterator demo = demoIDs.begin();
 			demo != demoIDs.end(); ++demo)
@@ -668,9 +670,9 @@ void CDemosScreen::DeleteDemo()
 				bAsk = false;
 			}
 
-			//Hide demo only if its state represents a completed challenge.
+			//Hide demo only if its state represents a completed challenge for the active player.
 			bool bHideDemo = false;
-			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge)) {
+			if (pDemo->IsFlagSet(CDbDemo::CompletedChallenge) && pDemo->GetAuthorID() == dwPlayerID) {
 				bHideDemo = true;
 				pDemo->bIsHidden = true;
 				pDemo->Update();
@@ -1490,15 +1492,15 @@ void CDemosScreen::UploadSelectedDemo()
 		ShowStatusMessage(MID_Exporting);
 
 		string text;
-		bool bSuccess = false;
+		UINT handle = 0;
 		if (CDbXML::ExportXML(V_Demos, uploadDemoIDs, text, UINT(-1))) //no multi-room demos
 		{
 			SetCursor(CUR_Internet);
-			bSuccess = g_pTheNet->UploadDemos(text);
+			handle = g_pTheNet->UploadDemos(text);
 		}
 		HideStatusMessage();
 		SetCursor();
-		ShowOkMessage(bSuccess ? MID_ScoresUploaded : MID_ScoresNotUploaded);
+		ShowOkMessage(handle > 0 ? MID_ScoresUploaded : MID_ScoresNotUploaded);
 	}
 }
 
@@ -1546,7 +1548,7 @@ void CDemosScreen::GetCNetDemos(CNetResult* pResults)
 				pDemo->wNumMoves = demos[i].get("numMoves", 0).asUInt();
 				pDemo->wTimeElapsed = demos[i].get("realTime", 0).asUInt();
 				pDemo->wTimeReceived = demos[i].get("time", 0).asUInt();
-				AsciiToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
+				UTF8ToUnicode(demos[i].get("user", "Unknown").asString().c_str(), pDemo->userName);
 				Base64::decode(demos[i].get("playerName", "").asString(), pDemo->playerName);
 				pDemo->wCreated = demos[i].get("createdTime", 0).asUInt();
 

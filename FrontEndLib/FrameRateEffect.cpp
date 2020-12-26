@@ -36,10 +36,9 @@
 
 //*****************************************************************************
 CFrameRateEffect::CFrameRateEffect(CWidget *pSetWidget, const UINT eType)
-	: CEffect(pSetWidget,eType)
+	: CEffect(pSetWidget, (UINT)-1, eType)
 	, x(pOwnerWidget->GetX())
 	, y(pOwnerWidget->GetY())
-	, dwLastDrawTime(SDL_GetTicks())
 	, wFrameCount(0)
 	, pTextSurface(NULL)
 //Constructor.
@@ -60,23 +59,18 @@ CFrameRateEffect::~CFrameRateEffect()
 }
 
 //*****************************************************************************
-bool CFrameRateEffect::Draw(SDL_Surface* pDestSurface)
-//Calc the frame rate and put it on the screen.
-//
-//Returns:
-//True.
+bool CFrameRateEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	PrepDisplay();
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
-
+	return true;
+}
+//*****************************************************************************
+void CFrameRateEffect::Draw(SDL_Surface& destSurface)
+{
 	ASSERT(this->pTextSurface);
 	SDL_Rect rect = MAKE_SDL_RECT(this->x, this->y, this->pTextSurface->w, this->pTextSurface->h);
-	SDL_BlitSurface(this->pTextSurface, NULL, pDestSurface, &rect);
-
-	//Effect will last forever.
-	return true;
+	SDL_BlitSurface(this->pTextSurface, NULL, &destSurface, &rect);
 }
 
 //*****************************************************************************

@@ -39,8 +39,8 @@ public:
 	CGuard(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CGuard);
 	
-//	virtual bool IsOpenMove(const int dx, const int dy) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
+	virtual SwordType GetWeaponType() const { return SwordType::ShortSword; }
 };
 
 #endif //...#ifndef GUARD_H

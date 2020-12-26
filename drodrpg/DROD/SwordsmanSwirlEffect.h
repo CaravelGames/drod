@@ -30,19 +30,25 @@
 #include "DrodEffect.h"
 #include <BackEndLib/Coord.h>
 
+
 class CCurrentGame;
 class CSwordsmanSwirlEffect : public CEffect
 {
 public:
-	CSwordsmanSwirlEffect(CWidget *pSetWidget, CCurrentGame *pCurrentGame);
+	CSwordsmanSwirlEffect(CWidget *pSetWidget, const CCurrentGame *pCurrentGame);
 	CSwordsmanSwirlEffect(CWidget *pSetWidget, CCoord coord);
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
-	CCurrentGame *pCurrentGame;
+	const CCurrentGame *pCurrentGame;
 	UINT wOldX, wOldY;
 	CCoord staticCenter;
+
+	Uint8 nOpacity;
+	std::vector<CMoveCoordEx> drawSwirls; //wO = width & height, wValue=frame
 };
 
 #endif //...#ifndef SWORDSMANSWIRLEFFECT_H

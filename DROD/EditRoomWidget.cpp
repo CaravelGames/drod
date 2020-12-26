@@ -233,7 +233,7 @@ void CEditRoomWidget::AddGentryiiSegmentEffect(const CMonster* pPlottingMonster)
 		const bool bPlotOverMonsterLayer = overwritable_coords.has(wX, wY) ||
 				(!this->pRoom->GetMonsterAtSquare(wX,wY) &&
 				!this->pRoom->DoesGentryiiPreventDiagonal(wPrevX, wPrevY, wX, wY));
-		if (bPlotOverMonsterLayer && IsSafePlacement(T_GENTRYII,wX,wY))
+		if (bPlotOverMonsterLayer && IsSafePlacement(T_GENTRYII_CHAIN,wX,wY))
 		{
 			if (wTileNo != DONT_USE)
 				AddLastLayerEffect(new CTransTileEffect(this, *it, wTileNo));
@@ -346,7 +346,7 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 
 			if (IsSafePlacement(wMonsterType + M_OFFSET,wX,wY))
 			{
-				CCoord coord(wX,wY);
+				const CCoord coord(wX,wY);
 				AddLastLayerEffect(new CTransTileEffect(this, coord, wTileNo));
 				if (bHead && !bSegment)
 					AddShadeEffect(wX,wY,Red); //can't plot only the head
@@ -743,10 +743,12 @@ const
 	if (wTileLayer == LAYER_MONSTER && wSelectedObject != T_NOMONSTER)
 	{
 		//Monster can't overwrite a monster of a different type.
-		if (!bAllowSelf && pMonster)
-			if (pMonster->wType != wSelectedObject - TILE_COUNT ||
-				 pMonster->wType == M_CHARACTER) //character can't overwrite itself
+		if (!bAllowSelf && pMonster) {
+			const UINT wNormalizedType = wSelectedObject == T_GENTRYII_CHAIN ? T_GENTRYII : wSelectedObject;
+			if (pMonster->wType != wNormalizedType - TILE_COUNT ||
+				pMonster->wType == M_CHARACTER) //character can't overwrite itself
 				return false;
+		}
 	} else {
 		//Universal placement rules:
 		//1. "Empty" tiles can be placed on anything to erase them.
@@ -1192,7 +1194,9 @@ const
 		case T_SEEP:
 			//Wall movement types
 			if (bSwordsmanAt) return false;
-			if (bIsTarOrFluff(wTileNo[1])) return false;
+			if (bIsTLayerObstacle(wTileNo[1])) return false;
+			if (bIsTLayerCoveringItem(wTileNo[1])) return false;
+			if (bIsBeacon(wTileNo[1])) return false;
 			return bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsDoor(wTileNo[0]);
 
 		case T_WATERSKIPPER:
@@ -1214,19 +1218,25 @@ const
 			//Can go on any o- and t-layer tiles.
 
 		case T_GENTRYII:
+		case T_GENTRYII_CHAIN:
+		{
 			if (bSwordsmanAt) return false;
 			//Can't go on other monsters.
 			if (pMonster && pMonster->wType != M_GENTRYII)
 				return false;
+			//Only chains can be placed on walls
+			const bool bAllowWall = wSelectedObject == T_GENTRYII_CHAIN
+				? bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])
+				: false;
 			return (bIsFloor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
-					bIsDoor(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsWall(wTileNo[0]) ||
-					bIsPlatform(wTileNo[0]) || bIsShallowWater(wTileNo[0]) ||
-					bIsTunnel(wTileNo[0])) &&
-					!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
-							wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT ||
-							bIsBeacon(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]));
-
+				bIsDoor(wTileNo[0]) || bAllowWall ||
+				bIsPlatform(wTileNo[0]) || bIsShallowWater(wTileNo[0]) ||
+				bIsTunnel(wTileNo[0])) &&
+				!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
+					wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION ||
+					bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT ||
+					bIsBeacon(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]));
+		}
 		case T_SWORDSMAN:
 		{
 			//copied from above
@@ -1360,10 +1370,10 @@ void CEditRoomWidget::Paint(
 
 	//1c. Render dynamic stuff that shows over the static room image.
 	RenderFogInPit(pDestSurface);
-	DrawPlatforms(pDestSurface, true);
+	DrawPlatformsAndTLayer(pDestSurface, true);
 
 	//2. Draw effects that go on top of room image, under monsters/swordsman.
-	this->pTLayerEffects->DrawEffects();
+	this->pTLayerEffects->UpdateAndDrawEffects();
 	this->pTLayerEffects->DirtyTiles();
 
 	//3. Repaint monsters.
@@ -1380,14 +1390,14 @@ void CEditRoomWidget::Paint(
 	DrawLevelEntrances(pDestSurface);
 
 	//5. Draw effects that go on top monsters/swordsman.
-	this->pMLayerEffects->DrawEffects();
+	this->pMLayerEffects->UpdateAndDrawEffects();
 	this->pMLayerEffects->DirtyTiles();
 
 	//6. Overhead layer.
 	DrawOverheadLayer(pDestSurface);
 
 	//7. Draw effects that go on top of everything else drawn in the room.
-	this->pLastLayerEffects->DrawEffects();
+	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
 	//Orb/door editing: show lightning from orb/door to mouse cursor.
@@ -1581,12 +1591,17 @@ void CEditRoomWidget::DrawMonsters(
 	SDL_Surface *pDestSurface,
 	const bool bMoveInProgress)   //
 {
+	vector<CMonster*> drawnMonsters;
 	CMonster *pMonster = pMonsterList;
 	while (pMonster)
 	{
+		drawnMonsters.push_back(pMonster);
+
 		DrawMonster(pMonster, this->pRoom, pDestSurface, bMoveInProgress);
 		pMonster = pMonster->pNext;
 	}
+
+	DrawSwordsFor(drawnMonsters, pDestSurface);
 }
 
 //******************************************************************************

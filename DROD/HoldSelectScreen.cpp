@@ -958,9 +958,18 @@ void CHoldSelectScreen::OnBetweenEvents()
 		// Done downloading the list.
 		CScreen::HideStatusMessage();
 		this->bDownloadList = false;
-		PopulateHoldListBox();
 
 		this->pSelCNetHold = NULL;
+		PopulateHoldListBox();
+
+		UINT caravelNetSelectHoldId = g_pTheNet->GetDownloadHold();
+		if (caravelNetSelectHoldId != 0) {
+			// User got here from a CaravelNet new/update hold notice.  Find the hold and select it.
+			this->pHoldListBoxWidget->SelectItem(caravelNetSelectHoldId);
+			g_pTheNet->SetDownloadHold(0);
+		}
+
+
 		SetHoldDesc();
 		Paint();
 	}
@@ -1395,22 +1404,22 @@ void CHoldSelectScreen::SetCNetHoldDesc(CNetMedia *pHoldData)
 	WSTRING holdRating = g_pTheDB->GetMessageText(MID_Difficulty);
 	WSTRING temp;
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->difficulty.c_str(), temp);
+	UTF8ToUnicode(pHoldData->difficulty.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Rating);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->rating.c_str(), temp);
+	UTF8ToUnicode(pHoldData->rating.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Votes);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->numVotes.c_str(), temp);
+	UTF8ToUnicode(pHoldData->numVotes.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_FileSize);
 	holdRating += wszSpace;
-	AsciiToUnicode(pHoldData->filesize.c_str(), temp);
+	UTF8ToUnicode(pHoldData->filesize.c_str(), temp);
 	holdRating += temp;
 	holdRating += wszCRLF;
 	holdRating += g_pTheDB->GetMessageText(MID_Version);
@@ -1555,7 +1564,7 @@ void CHoldSelectScreen::SetHoldRatingLabel(const UINT dwTagNo)
 	str += ".";
 	str += _itoa(wVal%10, temp, 10);
 	WSTRING wstr;
-	AsciiToUnicode(str.c_str(), wstr);
+	UTF8ToUnicode(str.c_str(), wstr);
 	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(
 			dwTagNo == TAG_RATEDIFFICULTY ? TAG_DIFFNUM_LABEL : TAG_OVERALLNUM_LABEL));
 	pLabel->SetText(wstr.c_str());
@@ -1619,6 +1628,7 @@ void CHoldSelectScreen::SetHoldFilter()
 		if (pESS->GetPrevHoldID())
 			dwSelectHoldID = pESS->GetPrevHoldID();
 	}
+
 	this->pHoldListBoxWidget->SelectItem(dwSelectHoldID);
 
 	this->pHoldListBoxWidget->RequestPaint();
@@ -1982,6 +1992,7 @@ void CHoldSelectScreen::UploadHoldScores()
 	CDb db;
 	db.Demos.FilterByPlayer(dwPlayerID);
 	db.Demos.FilterByHold(dwHoldID);
+	db.Demos.FindHiddens(true);
 	CIDSet uploadedDemoIDs, allDemoIDs = db.Demos.GetIDs();
 
 	//We are searching for victory demos, so don't upload death demos.
@@ -1999,17 +2010,41 @@ void CHoldSelectScreen::UploadHoldScores()
 	{
 		string text;
 		if (CDbXML::ExportXML(V_Demos, uploadedDemoIDs, text, (UINT)-1)) //no multi-room demos
-			g_pTheNet->UploadDemos(text);
-	}
+		{
+			const UINT handle = g_pTheNet->UploadDemos(text);
+			if (handle)
+			{
+				const UINT MAX_TRIES = 200; //200 * 50ms = 10s total wait time for each response
+				UINT tries;
+				for (tries = 0; tries < MAX_TRIES; ++tries)
+				{
+					const int status = g_pTheNet->GetStatus(handle);
+					if (status < 0)
+					{
+						SDL_Delay(50);
+						continue;
+					}
 
-	//Now flag all uploaded demos.
-	for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
-	{
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
-		ASSERT(pDemo);
-		pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
-		pDemo->Update();
-		delete pDemo;
+					CNetResult* pBuffer = g_pTheNet->GetResults(handle);
+					if (pBuffer) {
+						delete pBuffer;
+
+						//Now flag all uploaded demos.
+						for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
+						{
+							CDbDemo* pDemo = db.Demos.GetByID(*demo);
+							ASSERT(pDemo);
+							pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
+							pDemo->Update();
+							delete pDemo;
+						}
+					} else {
+						ShowOkMessage(MID_CaravelServerError);
+					}
+					break;
+				}
+			}
+		}
 	}
 
 	CDrodScreen::Callbackf(1.0f);

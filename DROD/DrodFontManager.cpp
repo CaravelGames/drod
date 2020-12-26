@@ -261,6 +261,7 @@ bool CDrodFontManager::LoadFonts()
 	GetWordWidth(F_ButtonWhite, wszSpace, wSpaceWidth);
 	this->LoadedFonts[F_ButtonWhite].wSpaceWidth = wSpaceWidth;
 	this->LoadedFonts[F_ButtonWhite].ForeColor = White;
+	this->LoadedFonts[F_ButtonWhite].bAntiAlias = true;
 
 	//Load disabled button font.
 	pFont = GetFont(wstrFontFilepath, 21);

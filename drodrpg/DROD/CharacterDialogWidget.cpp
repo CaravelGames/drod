@@ -1075,6 +1075,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 			CX_ACTIONLABEL, CY_ACTIONLABEL, F_Small, g_pTheDB->GetMessageText(MID_Action)));
 	this->pActionListBox = new CListBoxWidget(TAG_ACTIONLISTBOX,
 			X_ACTIONLISTBOX, Y_ACTIONLISTBOX, CX_ACTIONLISTBOX, CY_ACTIONLISTBOX);
+	this->pActionListBox->SetHotkeyItemSelection(true);
+	this->pActionListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pActionListBox);
 	PopulateCommandListBox();
 
@@ -1176,7 +1178,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 			for (UINT mood=0; mood<SONG_MOOD_COUNT; ++mood)
 			{
 				WSTRING wstrMoodText;
-				AsciiToUnicode(moodText[mood], wstrMoodText);
+				UTF8ToUnicode(moodText[mood], wstrMoodText);
 				WSTRING wstr = *style + wstrMoodText;
 				this->pMusicListBox->AddItem(wCount++, wstr.c_str());
 			}
@@ -1267,6 +1269,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox = new CListBoxWidget(TAG_VISUALEFFECTS_LISTBOX,
 			X_EFFECTLISTBOX, Y_EFFECTLISTBOX, CX_EFFECTLISTBOX, CY_EFFECTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pVisualEffectsListBox);
+	this->pVisualEffectsListBox->SetHotkeyItemSelection(true);
+	this->pVisualEffectsListBox->SortAlphabetically(true);
 	this->pVisualEffectsListBox->AddItem(VET_BLOODSPLAT, g_pTheDB->GetMessageText(MID_BloodSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_MUDSPLAT, g_pTheDB->GetMessageText(MID_MudSplatterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_TARSPLAT, g_pTheDB->GetMessageText(MID_TarSplatterEffect));
@@ -1293,6 +1297,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_ITEMLISTBOX,
 			X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pBuildItemsListBox);
+	this->pBuildItemsListBox->SortAlphabetically(true);
+	this->pBuildItemsListBox->SetHotkeyItemSelection(true);
 	this->pBuildItemsListBox->AddItem(T_FLOOR, g_pTheDB->GetMessageText(MID_Floor));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_M, g_pTheDB->GetMessageText(MID_FloorMosaic));
 	this->pBuildItemsListBox->AddItem(T_FLOOR_ROAD, g_pTheDB->GetMessageText(MID_FloorRoad));
@@ -2324,6 +2330,7 @@ void CCharacterDialogWidget::AddCommand()
 		nSelectedLine = pActiveCommandListBox->AddItemPointer(pCommand,
 				wszEmpty,	//real text added below
 				false, nSelectedLine+1);
+		SetCommandColor(pActiveCommandListBox, nSelectedLine, pCommand->command);
 	}
 
 	AddLabel(pCommand);
@@ -2546,7 +2553,7 @@ void CCharacterDialogWidget::DeleteCommands(
 	ASSERT(nSelectedLine >= 0);
 	UINT wTopLine = pActiveCommandList->GetTopLineNumber();
 
-	CIDSet lines = pActiveCommandList->GetSelectedLineNumbers();
+	const CIDSet lines = pActiveCommandList->GetSelectedLineNumbers();
 	for (CIDSet::const_reverse_iterator line = lines.rbegin(); line != lines.rend(); ++line)
 	{
 		const UINT wLine = *line;
@@ -2555,7 +2562,6 @@ void CCharacterDialogWidget::DeleteCommands(
 		COMMANDPTR_VECTOR::iterator iter = commands.begin() + wLine;
 		ASSERT(iter != commands.end());
 		commands.erase(iter);
-		pActiveCommandList->RemoveItem(pCommand);
 		if (pCommand->command == CCharacterCommand::CC_Label)
 			this->pGotoLabelListBox->RemoveItem(pCommand->x);
 		if (pCommand->pSpeech)
@@ -2570,6 +2576,7 @@ void CCharacterDialogWidget::DeleteCommands(
 		}
 		delete pCommand;
 	}
+	pActiveCommandList->RemoveItems(lines);
 
 	PopulateCommandDescriptions(pActiveCommandList, commands);	//refresh script
 	const UINT wLines = pActiveCommandList->GetItemCount();
@@ -3569,26 +3576,28 @@ const
 		case CCharacterCommand::CC_AmbientSound:
 		case CCharacterCommand::CC_AmbientSoundAt:
 		case CCharacterCommand::CC_Autosave:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_EndScript:
-		case CCharacterCommand::CC_EndScriptOnExit:
-		case CCharacterCommand::CC_FlushSpeech:
-		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_EachAttack:
 		case CCharacterCommand::CC_EachDefend:
 		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EndScript:
+		case CCharacterCommand::CC_EndScriptOnExit:
+		case CCharacterCommand::CC_Equipment:
+		case CCharacterCommand::CC_FlushSpeech:
+		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Label:
 		case CCharacterCommand::CC_LevelEntrance:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_ScoreCheckpoint:
 		case CCharacterCommand::CC_SetMusic:
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
-		case CCharacterCommand::CC_Equipment:
 			if (bIfCondition)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -3743,6 +3752,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_MonsterPieceStabbed, g_pTheDB->GetMessageText(MID_MonsterPieceStabbed));
 	this->pEventListBox->AddItem(CID_MudBabyFormed, g_pTheDB->GetMessageText(MID_MudBabyFormed));
 //	this->pEventListBox->AddItem(CID_MudGrew, g_pTheDB->GetMessageText(MID_MudGrew));
+	this->pEventListBox->AddItem(CID_NPC_Defeated, g_pTheDB->GetMessageText(MID_NPCDefeated));
 	this->pEventListBox->AddItem(CID_NPCKilled, g_pTheDB->GetMessageText(MID_NPCKilled));
 	this->pEventListBox->AddItem(CID_ObjectBuilt, g_pTheDB->GetMessageText(MID_ObjectBuilt));
 	this->pEventListBox->AddItem(CID_ObjectFell, g_pTheDB->GetMessageText(MID_ObjectFell));
@@ -3864,8 +3874,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 	for (UINT wIndex=0; wIndex<commands.size(); ++wIndex)
 	{
 		CCharacterCommand *pCommand = commands[wIndex];
-		pCommandList->AddItemPointer(pCommand,
+		const UINT insertedIndex = pCommandList->AddItemPointer(pCommand,
 				GetCommandDesc(commands, pCommand).c_str());
+		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
 	if (commands.size())
 		pCommandList->SelectLine(0);
@@ -4808,6 +4819,38 @@ void CCharacterDialogWidget::SetCharacterWidgetStates()
 }
 
 //*****************************************************************************
+void CCharacterDialogWidget::SetCommandColor(
+	CListBoxWidget* pListBox, int line, CCharacterCommand::CharCommand command)
+{
+	switch (command) {
+	case CCharacterCommand::CC_Label:
+		pListBox->SetItemColorAtLine(line, DarkGreen);
+		break;
+	case CCharacterCommand::CC_GoTo:
+	case CCharacterCommand::CC_EachAttack:
+	case CCharacterCommand::CC_EachDefend:
+	case CCharacterCommand::CC_EachUse:
+	case CCharacterCommand::CC_AnswerOption:
+	case CCharacterCommand::CC_EndScript:
+	case CCharacterCommand::CC_EndScriptOnExit:
+		pListBox->SetItemColorAtLine(line, Maroon);
+		break;
+	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfElse:
+	case CCharacterCommand::CC_IfEnd:
+		pListBox->SetItemColorAtLine(line, DarkBlue);
+		break;
+	case CCharacterCommand::CC_VarSet:
+		pListBox->SetItemColorAtLine(line, FullRed);
+		break;
+	case CCharacterCommand::CC_Wait:
+		pListBox->SetItemColorAtLine(line, DarkGray);
+		break;
+	default: break;
+	}
+}
+
+//*****************************************************************************
 void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 //Set command parameters according to widget values.
 //
@@ -5207,6 +5250,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 					this->pCommand->w = _Wtoi(pOperandText);
 					this->pCommand->label.resize(0);
 				} else {
+					this->pCommand->w = 0;
 					this->pCommand->label = pOperandText;
 				}
 			}

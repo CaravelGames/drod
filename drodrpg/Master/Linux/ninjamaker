@@ -6,6 +6,7 @@ die () {
 }
 
 cpucount=$(grep processor /proc/cpuinfo | wc -l)
+steamworks_sdk="${STEAMWORKS_SDK:-}"
 
 args=("$@")
 declare -A options
@@ -20,19 +21,21 @@ declare -A distflags
 distflags=(
 	[custom]=""
 	[caravel]="-DCARAVELBUILD"
+	[steam]="-DCARAVELBUILD -DSTEAMBUILD -I${steamworks_sdk}/public/steam"
 )
 
 declare -A distlinkflags
 distlinkflags=(
 	[custom]=""
 	[caravel]=""
+	[steam]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32 -lsteam_api"
 )
 
 declare -A buildflags
 buildflags=(
-	[debug]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS"
-	[debugsan]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
-	[dev]="-O2 -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
+	[debug]="-Og -D_DEBUG -DENABLE_BREAKPOINTS"
+	[debugsan]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -fsanitize=address -fsanitize=undefined"
+	[dev]="-Og -D_DEBUG -DENABLE_BREAKPOINTS -DDEV_BUILD"
 	[release]="-O2 -DNDEBUG -flto"
 	[beta]="-O2 -DNDEBUG -DBETA -flto"
 )
@@ -40,7 +43,7 @@ buildflags=(
 declare -A linkflags
 linkflags=(
 	[debug]=""
-	[debugsan]="-fsanitize=address -fsanitize=undefined -static-libasan -static-libubsan"
+	[debugsan]="-fsanitize=address -fsanitize=undefined" #-static-libasan -static-libubsan"
 	[dev]=""
 	[release]="-flto=${cpucount}"
 	[beta]="-flto=${cpucount}"
@@ -81,7 +84,7 @@ if [[ ${#args[@]} > 0 ]]; then
 				-no-static)
 					options[${arg//-}]=true
 					;;
-				-caravel|-custom)
+				-caravel|-custom|-steam)
 					options[dist]=${arg/-}
 					;;
 				-debug|-debugsan|-dev|-release|-beta)
@@ -103,6 +106,9 @@ if [[ ${#args[@]} > 0 ]]; then
 		fi
 	done
 fi
+if [[ "${options[dist]}" == "steam" && -z "${steamworks_sdk}" ]]; then
+	die "steam build selected, but \$STEAMWORKS_SDK isn't set"
+fi
 if [[ -z ${options[name]} ]]; then
 	NAME=${options[dist]}.${options[build]}.${options[arch]}
 else
@@ -111,7 +117,7 @@ fi
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
-SDL_CONFIG="$EXEC sdl-config"
+SDL2_CONFIG="$EXEC sdl2-config"
 PKG_CONFIG="$EXEC pkg-config"
 
 declare -a libs
@@ -144,7 +150,7 @@ optflags = -std=c++11 $archflags $buildflags -g
 cflags = $optflags -pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized
 ldflags = $optflags $linkflags -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
 
-revision = $$(hg id -n)
+revision = $$(git rev-parse --short HEAD)
 debugsuffix = -${arch}-${revision}.dbg
 
 rule cxx
@@ -178,9 +184,9 @@ X
 		ilibs+=($BUILDDIR/$(basename $dir).a)
 	done
 	cat <<X
-includes = ${idirs[@]} $(${SDL_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
-staticlibs = $(${PKG_CONFIG} --libs-only-L SDL_mixer SDL_ttf theora vorbisfile vorbis ogg) -lSDL_mixer -lSDL_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
-dynamiclibs = $(${SDL_CONFIG} --libs) -lrt -ldl
+includes = ${idirs[@]} $(${SDL2_CONFIG} --cflags) $(${PKG_CONFIG} --cflags theora vorbisfile vorbis ogg libpng libcurl expat jsoncpp zlib)
+staticlibs = $(${PKG_CONFIG} --libs-only-L SDL2_mixer SDL2_ttf theora vorbisfile vorbis ogg) -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 $(${PKG_CONFIG} --libs freetype2 libpng libcurl expat jsoncpp zlib)
+dynamiclibs = $(${SDL2_CONFIG} --libs) -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
 X
 	if ${options[nostatic]}; then
@@ -194,9 +200,9 @@ vcprojs=()
 gen_lib_build () {
 	local path="$1"
 	local lib=$(basename "$path")
-	local vcproj="$path/$lib.vcproj"
+	local vcproj="$path/$lib.2019.vcxproj"
 	vcprojs+=($vcproj)
-	local files=($(grep 'RelativePath=.*\.cpp' "$vcproj" | sed 's,^.*RelativePath="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
+	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
 	local objs=()
 	for file in ${files[@]}; do
 		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"

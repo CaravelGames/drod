@@ -540,7 +540,7 @@ MESSAGE_ID CDbBase::Open(
 		//Open the databases.
 		//Metakit has performance issues when working with Unicode filenames.
 		//So, we will ignore the WCHAR filenames and open the DB the fast and memory efficient way.
-		string filename = UnicodeToAscii(wstrMainDatPath.c_str());
+		string filename = UnicodeToUTF8(wstrMainDatPath.c_str());
 
 		int writeFlag =
 #ifdef DEV_BUILD
@@ -562,15 +562,15 @@ MESSAGE_ID CDbBase::Open(
 #endif
 
 #ifndef DEV_BUILD
-		UnicodeToAscii(wstrDataDatPath, filename);
+		UnicodeToUTF8(wstrDataDatPath, filename);
 		m_pDataStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrHoldDatPath, filename);
+		UnicodeToUTF8(wstrHoldDatPath, filename);
 		m_pHoldStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrPlayerDatPath, filename);
+		UnicodeToUTF8(wstrPlayerDatPath, filename);
 		m_pPlayerStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrSaveDatPath, filename);
+		UnicodeToUTF8(wstrSaveDatPath, filename);
 		m_pSaveStorage = new c4_Storage(filename.c_str(), 1);
-		UnicodeToAscii(wstrTextDatPath, filename);
+		UnicodeToUTF8(wstrTextDatPath, filename);
 		m_pTextStorage = new c4_Storage(filename.c_str(), 1);
 
 		if (!m_pDataStorage || !m_pHoldStorage || !m_pPlayerStorage || !m_pSaveStorage || !m_pTextStorage)
@@ -610,7 +610,7 @@ bool CDbBase::CreateContentFile(const WSTRING& wFilename, UINT num)
 			&& !CreateDatabase(wAdditionalDataFilepath, GetStartIDForDLC(num)))
 		return false;
 
-	const string filepath = UnicodeToAscii(wAdditionalDataFilepath);
+	const string filepath = UnicodeToUTF8(wAdditionalDataFilepath);
 	c4_Storage *pStaticStorage = new c4_Storage(filepath.c_str(), 1);
 	if (!pStaticStorage)
 		throw MID_CouldNotOpenDB;
@@ -630,10 +630,10 @@ void CDbBase::OpenStaticContentFiles(const WSTRING& wstrResPath)
 		const WSTRING wPath = wstrResPath + wszSlash;
 		const WSTRING wBasename = CDbBase::BaseResourceFilename() + wszUnderscore;
 		//See note in CDbBase::Open() regarding Metakit ASCII filename handling
-		const string resPath = UnicodeToAscii(wPath);
-		const string basename = UnicodeToAscii(wBasename);
+		const string resPath = UnicodeToUTF8(wPath);
+		const string basename = UnicodeToUTF8(wBasename);
 		for (vector<WSTRING>::const_iterator fileIt=dataFiles.begin(); fileIt!=dataFiles.end(); ++fileIt) {
-			const string filename = UnicodeToAscii(*fileIt);
+			const string filename = UnicodeToUTF8(*fileIt);
 			if (!filename.compare(0, basename.size(), basename)) {
 				const int storageFileNum = convertToInt(filename.c_str() + basename.size());
 				if (storageFileNum > 0 && UINT(storageFileNum) != CDbBase::creatingStaticDataFileNum) {
@@ -687,7 +687,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 //Creates a new, blank database file with support for all record types.
 //Returns: true if operation succeeded, else false
 {
-	const string filepath = UnicodeToAscii(wstrFilepath);
+	const string filepath = UnicodeToUTF8(wstrFilepath);
 
 	c4_Storage newStorage(filepath.c_str(), true); //create file on disk
 	if (!CFiles::DoesFileExist(wstrFilepath.c_str()))
@@ -695,7 +695,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 #ifdef HAS_UNICODE
 		printf("FAILED--Was not able to create %S." NEWLINE, wstrFilepath.c_str());
 #else
-		const string path = UnicodeToAscii(wstrFilepath);
+		const string path = UnicodeToUTF8(wstrFilepath);
 		printf("FAILED--Was not able to create %s." NEWLINE, path.c_str());
 #endif
 		return false;
@@ -788,6 +788,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_OrbWaitCracked: strText = "Orb (cracked)"; break;
 	case MID_OrbWaitBroken: strText = "Orb (broken)"; break;
 	case MID_DemoDescConquerToken: strText = "The player touches a Conquer token on turn"; break;
+	case MID_CaravelServerError: strText = "There was an error contacting the Caravel server."; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
@@ -795,7 +796,7 @@ const WCHAR* CDbBase::GetMessageText(
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
 	{
 		static WSTRING wstrText;
-		AsciiToUnicode(strText.c_str(), wstrText);
+		UTF8ToUnicode(strText.c_str(), wstrText);
 		if (pdwLen) *pdwLen = wstrText.length();
 		return wstrText.c_str();
 	}

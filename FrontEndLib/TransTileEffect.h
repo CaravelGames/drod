@@ -35,13 +35,12 @@ class CTransTileEffect : public CAnimatedTileEffect
 public:
 	CTransTileEffect(CWidget *pSetWidget, const CCoord &SetCoord,
 			const UINT wTileImageNo, const bool bUseLightLevel=false);
-	virtual ~CTransTileEffect();
 
-	virtual bool Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 private:
-	bool bFirst;
-	static UINT wInstances;
+	static Uint8 UpdateStaticState();
 };
 
 #endif //...#ifndef TRANSTILEEFFECT_H

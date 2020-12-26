@@ -29,21 +29,27 @@
 #include "../DRODLib/CurrentGame.h"
 #include "../DRODLib/GameConstants.h"
 #include <FrontEndLib/BitmapManager.h>
+#include <FrontEndLib/Colors.h>
 
 const Uint32 START_DELAY = 500;
 const Uint32 DISPLAY_DURATION = 750;
 const Uint32 END_DELAY = 500;
+const Uint32 TOTAL_DURATION = START_DELAY + DISPLAY_DURATION + END_DELAY;
 
 //********************************************************************************
 CTemporalMoveEffect::CTemporalMoveEffect(
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
 	const CMoveCoord &SetCoord, //(in)   tile location
 	const UINT wTI,
+	const bool isBump,
 	const UINT type)
 	: CAnimatedTileEffect(pSetWidget, CCoord(SetCoord.wX,SetCoord.wY),
-			DISPLAY_DURATION, wTI, true, type)
+		TOTAL_DURATION, wTI, true, type)
 	, startDelay(START_DELAY)
 	, endDelay(END_DELAY)
+	, isBump(isBump)
+	, nOpacity(0)
+	, wDrawX(0), wDrawY(0)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -57,46 +63,67 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	this->startY = this->wY;
 	this->deltaX = nGetOX(SetCoord.wO) * CBitmapManager::CX_TILE;
 	this->deltaY = nGetOY(SetCoord.wO) * CBitmapManager::CY_TILE;
+
+	this->blitRect = MAKE_SDL_RECT(this->wX, this->wY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 }
 
 //********************************************************************************
-bool CTemporalMoveEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const CDbRoom *pRoom = this->pRoomWidget->GetRoom();
-	if (!pRoom) return false;
-	const CCurrentGame *pGame = pRoom->GetCurrentGame();
+	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+	if (!pRoom) 
+		return false;
+
+	const CCurrentGame* pGame = pRoom->GetCurrentGame();
 	if (!pGame || pGame->wTurnNo != this->wValidTurn)
 		return false;
 
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed < this->startDelay || dwElapsed >= this->startDelay + this->dwDuration) {
+	const UINT animationElapsed = dwTimeElapsed - this->startDelay;
+	if (animationElapsed >= DISPLAY_DURATION) {
 		//Effect persists for a while, to prevent new one from being created right away.
 		this->dirtyRects[0].w = this->dirtyRects[0].h = 0;
+		this->nOpacity = 0;
 
 		const Uint32 totalDuration = this->startDelay + this->dwDuration + this->endDelay;
-		return dwElapsed < totalDuration;
+		return dwTimeElapsed < totalDuration;
 	}
 
-	if (!pDestSurface)
-		pDestSurface = GetDestSurface();
+	const float elapsedFraction = animationElapsed / float(DISPLAY_DURATION);
+	const float transparencyPercent = elapsedFraction > 0.5f
+		? (elapsedFraction - 0.5f) * 2
+		: 0;
+	const float positionPercent = (this->isBump && elapsedFraction > 0.5)
+		? 1 - elapsedFraction // Bump commands should look differently
+		: elapsedFraction;
 
-	const float percent = (dwElapsed - this->startDelay) / float(this->dwDuration);
-	const Uint8 opacity = static_cast<Uint8>(255 * (1.0f-percent));
+	this->nOpacity = static_cast<Uint8>(255 * (1.0f - transparencyPercent));
 
-	const UINT wThisX = this->startX + int(deltaX * percent);
-	const UINT wThisY = this->startY + int(deltaY * percent);
+	this->wDrawX = this->startX + int(deltaX * positionPercent);
+	this->wDrawY = this->startY + int(deltaY * positionPercent);
 
-	g_pTheBM->BlitTileImage(this->wTileNo, wThisX, wThisY,
-			pDestSurface, this->bUseLightLevel, opacity);
+	this->blitRect = MAKE_SDL_RECT(this->wDrawX, this->wDrawY, CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 
-	SDL_Rect clipRect = MAKE_SDL_RECT(wThisX, wThisY,
-			CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
-	this->dirtyRects[0] = clipRect;
+	SDL_Rect WidgetRect = MAKE_SDL_RECT(0, 0, 0, 0);
+	this->pRoomWidget->GetRect(WidgetRect);
 
-	//Continue effect.
+	if (!CWidget::ClipRectToRect(this->blitRect, WidgetRect)) {
+		this->nOpacity = 0;
+		return true;
+	}
+
+	this->dirtyRects[0] = this->blitRect;
+
 	return true;
+}
+
+//********************************************************************************
+void CTemporalMoveEffect::Draw(SDL_Surface& destSurface)
+{
+	if (this->nOpacity > 0)
+		g_pTheBM->BlitTileImagePart(
+			this->wTileNo,
+			this->blitRect.x, this->blitRect.y,
+			this->blitRect.x - this->wDrawX, this->blitRect.y - this->wDrawY,
+			this->blitRect.w, this->blitRect.h,
+			&destSurface, this->bUseLightLevel, this->nOpacity);
 }

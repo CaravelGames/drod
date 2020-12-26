@@ -46,7 +46,7 @@ public:
 	static std::string GetString(const std::string &key) {
 		MetadataMap::const_iterator it = map.find(key);
 		if (it != map.end())
-			return UnicodeToAscii(it->second);
+			return UnicodeToUTF8(it->second);
 
 		ASSERT(!"Unrecognized metadata key");
 		static std::string default_val;

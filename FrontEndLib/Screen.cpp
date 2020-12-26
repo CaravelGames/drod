@@ -78,11 +78,19 @@ const int FRAME_BUFFER = 5;
 
 int CScreen::CX_SCREEN = 1024;
 int CScreen::CY_SCREEN = 768;
-bool CScreen::bAllowFullScreen = true;  //allow full screen mode by default
-bool CScreen::bAllowWindowed = true;    //allow windowed mode by default too
+bool CScreen::bAllowFullScreen = true;
+bool CScreen::bAllowWindowed = true;
+bool CScreen::bAllowWindowResizing = false;
+bool CScreen::bMinimizeOnFullScreen = false;
+SCREENLIB::FULLSCREENMODE CScreen::eFullScreenMode = SCREENLIB::REAL_BORDERLESS;
 SDL_Rect CScreen::WindowTargetRect = { 0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN };
 double CScreen::WindowScaleFactor = 1;
- 
+
+Uint32 CScreen::dwCurrentTicks = 0;
+Uint32 CScreen::dwLastRenderTicks = 0;
+Uint32 CScreen::dwPresentsCount = 0;
+bool CScreen::bIsFauxFullscreenOn = false;
+
 UINT CScreen::MIDReallyQuit = 0;
 UINT CScreen::MIDOverwriteFilePrompt = 0;
 
@@ -157,6 +165,8 @@ void PresentFrame()
 	SDL_RenderClear(renderer); // clear border, if any
 	SDL_RenderCopy(renderer, GetWindowTexture(m_pWindow), NULL, &CScreen::WindowTargetRect);
 	SDL_RenderPresent(renderer);
+	CScreen::dwLastRenderTicks = SDL_GetTicks();
+	++CScreen::dwPresentsCount;
 }
 
 void PresentRect(SDL_Surface *shadow, const SDL_Rect *rect_in)
@@ -215,7 +225,7 @@ void PresentRect(SDL_Surface *shadow, const SDL_Rect *rect_in)
 
 	if (tpitch == shadow->pitch && !rect.x && rect.w == shadow->w)
 	{
-		memcpy(tpixels, (char*)shadow->pixels + rect.y * shadow->pitch, tpitch * (rect.h - 1) + rect.w);
+		memcpy(tpixels, (char*)shadow->pixels + rect.y * shadow->pitch, tpitch * (rect.h - rect.y));
 	}
 	else
 	{
@@ -505,7 +515,7 @@ void CScreen::OnBetweenEvents()
 	this->bShowTip = (bTimeToShowTip && !this->bShowingTip && !this->MouseDraggingInWidget());
 
 	//Draw effects onto screen.
-	this->pEffects->DrawEffects(true);
+	this->pEffects->UpdateAndDrawEffects(true);
 }
 
 //*****************************************************************************
@@ -543,8 +553,11 @@ bool CScreen::IsCursorVisible() const {return m_bIsCursorVisible;}
 
 //*****************************************************************************
 //Returns: whether display mode is full screen
-bool CScreen::IsFullScreen() const
+bool CScreen::IsFullScreen()
 {
+	if (CScreen::eFullScreenMode == SCREENLIB::FAUX_BORDERLESS) {
+		return CScreen::bIsFauxFullscreenOn;
+	}
 	return (SDL_GetWindowFlags(GetMainWindow()) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
@@ -555,18 +568,67 @@ void CScreen::SetFullScreen(
 //Params:
 	const bool bSetFull) //(in) true = Fullscreen; false = windowed
 {
+	SetFullScreenStatic(bSetFull);
+
+	//On some systems, must refresh the screen.
+	Paint();
+	UpdateRect();
+}
+
+//*****************************************************************************
+void CScreen::SetFullScreenStatic (
+	//Sets this screen and all future screens to display fullscreen/windowed.
+	//
+	//Params:
+	const bool bSetFull) //(in) true = Fullscreen; false = windowed
+{
 	if (!(bSetFull ? CScreen::bAllowFullScreen : CScreen::bAllowWindowed))
 		return;
 
-	if (!IsLocked() && (bSetFull != IsFullScreen()))
+	if (!GetWidgetScreenSurface()->locked && (bSetFull != IsFullScreen()))
 	{
 		// XXX we need SDL_WINDOW_FULLSCREEN_DESKTOP on linux. SDL_WINDOW_FULLSCREEN may be better on windows?
 		// (_DESKTOP should preserve aspect ratio better though)
-		SDL_SetWindowFullscreen(GetMainWindow(), bSetFull ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+		if (bSetFull) {
+			SDL_SetWindowResizable(GetMainWindow(), SDL_FALSE);
 
-		//On some systems, must refresh the screen.
-		Paint();
-		UpdateRect();
+			switch (CScreen::eFullScreenMode) {
+			case SCREENLIB::REAL_BORDERLESS:
+				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				break;
+
+			case SCREENLIB::FAUX_BORDERLESS:
+			{
+				SDL_Rect bounds;
+				int displayIndex;
+				SDL_Window *mainWindow = GetMainWindow(&displayIndex);
+				SDL_GetDisplayBounds(displayIndex, &bounds);
+
+				SetWindowPos(bounds.x, bounds.y);
+				SDL_SetWindowSize(mainWindow, bounds.w, bounds.h);
+				SDL_SetWindowResizable(mainWindow, SDL_FALSE);
+				SDL_SetWindowBordered(mainWindow, SDL_FALSE);
+
+				CScreen::bIsFauxFullscreenOn = true;
+			}
+			break;
+			case SCREENLIB::LEGACY:
+				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN);
+				break;
+			}
+		}
+		else {
+			CScreen::bIsFauxFullscreenOn = false;
+
+			if (CScreen::eFullScreenMode == SCREENLIB::FAUX_BORDERLESS) {
+				SDL_SetWindowSize(GetMainWindow(), CX_SCREEN, CY_SCREEN);
+				SDL_SetWindowBordered(GetMainWindow(), SDL_TRUE);
+			}
+
+			SDL_SetWindowFullscreen(GetMainWindow(), 0);
+			SDL_SetWindowResizable(GetMainWindow(), (SDL_bool)CScreen::bAllowWindowResizing);
+			SetWindowCentered();
+		}
 
 		if (!bSetFull)
 		{
@@ -575,12 +637,11 @@ void CScreen::SetFullScreen(
 			CScreen::GetWindowPos(nX, nY);
 			CScreen::GetScreenSize(nW, nH);
 			if (nX < -CScreen::CX_SCREEN || nY < -CScreen::CY_SCREEN ||
-					nX >= nW || nY >= nH)
+				nX >= nW || nY >= nH)
 				SetWindowCentered();
 		}
 	}
 }
-
 //*****************************************************************************
 void CScreen::GetScreenSize(int &nW, int &nH)
 {
@@ -726,7 +787,7 @@ void CScreen::Paint(
 
 	PaintChildren();
 
-	this->pEffects->DrawEffects(true, false, pScreenSurface);
+	this->pEffects->UpdateAndDrawEffects(true, pScreenSurface);
 
 	if (bUpdateRect) UpdateRect();
 }
@@ -812,7 +873,7 @@ void CScreen::SaveSnapshot(
 		{
 			static const WCHAR bmpExt[] = {We('.'),We('b'),We('m'),We('p'),We(0)};
 			name += bmpExt;
-			const string str = UnicodeToAscii(name);
+			const string str = UnicodeToUTF8(name);
 			SDL_SaveBMP(pSurface, str.c_str());
 		}
 		break;
@@ -978,7 +1039,7 @@ UINT CScreen::ShowMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 
@@ -1064,7 +1125,7 @@ void CScreen::ShowStatusMessage(
 	if (!pwczMessage)
 	{
 		WSTRING wstrErr;
-		AsciiToUnicode("Error: Could not retrieve message.", wstrErr);
+		UTF8ToUnicode("Error: Could not retrieve message.", wstrErr);
 		pwczMessage = wstrErr.c_str();
 	}
 	CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*,

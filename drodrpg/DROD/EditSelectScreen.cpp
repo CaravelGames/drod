@@ -2274,6 +2274,10 @@ bool CEditSelectScreen::PasteLevel()
 	if (!pNewLevel)
 		return false;
 
+	//This is not needed in the new hold, it'll be reassigned anyway
+	pNewLevel->dwLevelIndex = 0;
+	pNewLevel->dwOrderIndex = 0;
+
 	const UINT newLevelID = pNewLevel->dwLevelID;
 	ASSERT(newLevelID != 0);
 
@@ -2406,6 +2410,7 @@ void CEditSelectScreen::RenameHold()
 	{
 		if (!ModifyHold())
 			return;
+
 		this->pSelectedHold->NameText = wstr.c_str();
 		this->pSelectedHold->Update();
 		this->pHoldListBoxWidget->SetSelectedItemText(wstr.c_str());
@@ -2425,6 +2430,7 @@ void CEditSelectScreen::RenameLevel()
 	{
 		if (!ModifyHold())
 			return;
+
 		this->pSelectedLevel->NameText = wstr.c_str();
 		this->pSelectedLevel->Update();
 		this->pLevelListBoxWidget->SetSelectedItemText(wstr.c_str());

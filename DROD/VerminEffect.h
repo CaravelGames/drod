@@ -33,6 +33,7 @@
 struct VERMIN
 {
 	float fX, fY, fAngle;   //position, direction (in radians)
+	float duration;         //how long the vermin will be alive
 	enum ACCELERATION
 	{
 		HardLeft=0,
@@ -57,9 +58,12 @@ public:
 	CVerminEffect(CWidget *pSetWidget, const CMoveCoord &origin,
 		const UINT wNumVermin=5, const bool bSlayer=false);
 
-	virtual bool   Draw(SDL_Surface* pDestSurface=NULL);
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	virtual void Draw(SDL_Surface& destSurface);
 
 private:
+	void MarkVerminInactive(const UINT wIndex);
 	bool OutOfBounds(const VERMIN &v) const;
 	bool HitsObstacle(const CDbRoom *pRoom, const VERMIN &v) const;
 	void UpdateDirection(VERMIN &v);
@@ -68,6 +72,9 @@ private:
 	CRoomWidget *pRoomWidget;
 	SDL_Rect screenRect;
 	bool bSlayer;	//slayer pieces
+
+	static UINT dwMaxDuration;
+	static UINT dwDurationSway; // By how much to spread the max duration of each vermin
 };
 
 #endif   //...#ifndef CVERMINEFFECT_H

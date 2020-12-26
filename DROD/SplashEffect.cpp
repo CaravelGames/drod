@@ -39,30 +39,19 @@ CSplashEffect::CSplashEffect(
 }
 
 //********************************************************************************
-bool CSplashEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
-//
-//Returns:
-//True if effect should continue, or false if effect is done.
+bool CSplashEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const Uint32 dwElapsed = TimeElapsed();
-	if (dwElapsed >= this->dwDuration) return false; //Effect is done.
-
-	if (!pDestSurface) pDestSurface = GetDestSurface();
-
-	//Draw animated splash.
-	const float fPercent = dwElapsed / float(dwDuration);
 	static const UINT NUM_FRAMES = 6;
-	static const UINT FRAME[NUM_FRAMES] = {TI_SPLASH1, TI_SPLASH2, TI_SPLASH3,
+	static const UINT FRAME[NUM_FRAMES] = { 
+		TI_SPLASH1, TI_SPLASH2, TI_SPLASH3,
 		TI_SPLASH4, TI_SPLASH5, TI_SPLASH6};
-	const UINT frame = UINT(fPercent * NUM_FRAMES);
+
+	const UINT frame = UINT(GetElapsedFraction() * NUM_FRAMES);
 	ASSERT(frame < NUM_FRAMES);
+	this->wTileNo = FRAME[frame];
 
 	//Effect fades as it progresses.
-	const float fMultiplier = 255.0f / float(this->dwDuration);
-	const Uint8 opacity = static_cast<Uint8>((this->dwDuration-dwElapsed) * fMultiplier);
-	DrawTile(FRAME[frame], pDestSurface, opacity);
+	this->nOpacity = static_cast<Uint8>(GetRemainingFraction() * 255.0);
 
-	//Continue effect.
 	return true;
 }

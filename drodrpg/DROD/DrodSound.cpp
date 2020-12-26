@@ -104,8 +104,8 @@ const
 		case SEID_HALPH_OOF:    strKeyName="HalphOof"; break;
 		case SEID_HALPH_SCARED: strKeyName="HalphScared"; break;
 		case SEID_MON_OOF: strKeyName="MonsterOof"; break;
-		case SEID_NEATHER_OOF:  strKeyName="NFrustrated"; break;
-		case SEID_NEATHER_SCARED: strKeyName="NScared"; break;
+//		case SEID_NEATHER_OOF:  strKeyName="NFrustrated"; break;
+//		case SEID_NEATHER_SCARED: strKeyName="NScared"; break;
 		case SEID_ROCK_DIE:   strKeyName="RockDie"; break;
 		case SEID_ROCK_SCARED:   strKeyName="RockScared"; break;
 		case SEID_SLAYERDIE:  strKeyName="SlayerDie"; break;
@@ -310,8 +310,8 @@ bool CDrodSound::LoadSoundEffects()
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_HALPH_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_HALPH_SCARED, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_MON_OOF, true );
-	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_NEATHER_OOF, true );
-	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_NEATHER_SCARED, true );
+//	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_NEATHER_OOF, true );
+//	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_NEATHER_SCARED, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ROCK_DIE, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ROCK_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ROCK_SCARED, true );
@@ -450,7 +450,7 @@ bool CDrodSound::LoadMusicFileLists()
 		{
 			CFiles f;
 			f.AppendErrorLog("A song sequence wasn't listed. Check whether ");
-			const string filepath = UnicodeToAscii(this->SongListArray[eSongID].empty() ?
+			const string filepath = UnicodeToUTF8(this->SongListArray[eSongID].empty() ?
 					wszQuestionMark : this->SongListArray[eSongID].front());
 			f.AppendErrorLog(filepath.c_str());
 			f.AppendErrorLog(" is a valid filename." NEWLINE);

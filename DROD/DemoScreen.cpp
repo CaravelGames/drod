@@ -244,20 +244,26 @@ void CDemoScreen::OnKeyDown(
 
 		//Back one move.
 		case SDLK_KP_4: case SDLK_LEFT:
+		{
 			if (!this->bCanChangeSpeed) break;
 			if (CGameScreen::pCurrentGame->wTurnNo <= this->pDemo->wBeginTurnNo)
 				break; //can't go before beginning of demo
+
+			const bool bWasLightTurnedThisTurn = this->sCueEvents.HasOccurred(CID_LightToggled);
 
 			//Move command sequence back one move.
 			CGameScreen::pCurrentGame->Commands.Unfreeze();
 			CGameScreen::pCurrentGame->SetTurn(CGameScreen::pCurrentGame->wTurnNo - 1, this->sCueEvents);
 			CGameScreen::ClearSpeech();
 			CGameScreen::pCurrentGame->Commands.Freeze();
+			if (bWasLightTurnedThisTurn)
+				this->sCueEvents.Add(CID_LightToggled); // Needed for the lights to be recalculated
 			this->currentCommandIter = CGameScreen::pCurrentGame->Commands.Get(CGameScreen::pCurrentGame->wTurnNo);
 			DrawCurrentTurn();
 
 			this->bPaused = false;
 			this->bPauseNextMove = true;
+		}
 		break;
 
 		//Forward one move.

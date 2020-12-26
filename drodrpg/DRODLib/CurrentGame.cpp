@@ -98,7 +98,9 @@ int intBounds(const float fVal)
 	if (fVal >= INT_MAX)
 		return INT_MAX; //upper bounds check
 
-	return int(fVal);
+	const int val = int(fVal);
+	const int rounding = (fVal - val) > 0.999f ? 1 : 0; //account for floating point imprecision
+	return val + rounding;
 }
 
 //*****************************************************************************
@@ -113,7 +115,9 @@ UINT UINTBounds(const float fVal)
 	if (fVal >= UINT_MAX)
 		return UINT_MAX; //upper bounds check
 
-	return UINT(fVal);
+	const UINT val = UINT(fVal);
+	const UINT rounding = (fVal - val) > 0.999f ? 1 : 0; //account for floating point imprecision
+	return val + rounding;
 }
 
 //*****************************************************************************
@@ -157,6 +161,7 @@ CCurrentGame::CCurrentGame()
 	, pCombat(NULL)
 //	, pSnapshotGame(NULL)
 	, pPendingPriorLocation(NULL)
+	, bRoomDisplayOnly(false)
 	, bNoSaves(false) // Clear() does not set this
 	, bValidatingPlayback(false)
 {
@@ -375,8 +380,10 @@ void CCurrentGame::AddRoomToMap(
 	const bool bSaveRoom) //Whether to flag including this room in save data [default=true]
 {
 	ExploredRoom *pExpRoom = getExploredRoom(roomID);
+	bool bWasRoomPreview = false;
 	if (pExpRoom)
 	{
+		bWasRoomPreview = !pExpRoom->bSave;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
 	} else {
 		pExpRoom = new ExploredRoom();
@@ -388,7 +395,7 @@ void CCurrentGame::AddRoomToMap(
 
 	//Room marked only on the map becomes fully visible (as if explored) if bMarkRoomVisible is set.
 	ASSERT(pExpRoom);
-	if (bMarkRoomVisible && pExpRoom->bMapOnly)
+	if (bMarkRoomVisible && (pExpRoom->bMapOnly || bWasRoomPreview))
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
 		if (pRoom)
@@ -547,8 +554,12 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	//Otherwise, we must store the state that game was in on room entrance,
 	//so when moves for the current room are replayed, the current state is recreated.
 	CDbPackedVars _stats = this->stats;
-	if (!bScoreSubmission)
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+	if (!bScoreSubmission) {
 		this->stats = this->statsAtRoomStart;
+	}
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	if (eSaveType == ST_Autosave)
 	{
@@ -565,6 +576,7 @@ void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 	Update();
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -681,6 +693,8 @@ void CCurrentGame::Clear(
 	this->pCombat = NULL;
 	this->pBlockedSwordHit = NULL;
 	this->bQuickCombat = false;
+
+	this->PreviouslyExploredRooms.clear();
 }
 
 //*****************************************************************************
@@ -782,6 +796,8 @@ void CCurrentGame::ExitCurrentRoom()
 
 	//Save info for room being exited.
 	SaveExploredRoomData(*this->pRoom);
+
+	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
 }
 
 //*****************************************************************************
@@ -1128,6 +1144,13 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 
 	switch (varIndex)
 	{
+		case (UINT)ScriptVars::P_PLAYER_X:
+			return player.wX;
+		case (UINT)ScriptVars::P_PLAYER_Y:
+			return player.wY;
+		case (UINT)ScriptVars::P_PLAYER_O:
+			return player.wO;
+
 		//Combat enemy stats.
 		case (UINT)ScriptVars::P_ENEMY_HP:
 		case (UINT)ScriptVars::P_ENEMY_ATK:
@@ -1208,7 +1231,7 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 
 		//Get var name.
 		const UINT wVarID = atoi(pVar->name.c_str() + 1); //skip the "v"
-		const string varName = UnicodeToAscii(this->pHold->GetVarName(wVarID));
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
 
 		const bool bInteger = pVar->eType == UVT_int;
 		VarMapInfo info;
@@ -1385,6 +1408,9 @@ bool CCurrentGame::LoadFromHold(
 
 	this->wVersionNo = VERSION_NUMBER;
 	this->checksumStr = g_pTheNet->GetChecksum(this, 1);
+
+	AddRoomsPreviouslyExploredByPlayerToMap();
+
 /*
 	//Save to level-begin and room-begin slots.
 	//ATTN: Do this before SetMembersAfterRoomLoad changes anything.
@@ -1652,17 +1678,18 @@ bool CCurrentGame::LoadFromSavedGame(
 	//Put room in correct beginning state and get cue events for the 
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
-	if (bAtRoomStart)
+
+	AddRoomsPreviouslyExploredByPlayerToMap();
+
+	//Cue events coming from first step into the room.
+	SetMembersAfterRoomLoad(CueEvents, false);
+	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+	if (!bAtRoomStart)
 	{
-		//Cue events come from first step into the room.
-		SetMembersAfterRoomLoad(CueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(CueEvents);
-	} else {
-		//Cue events come from processing of last command below.
 		//Ignore cue events from first step into the room.
-		CCueEvents IgnoredCueEvents;
-		SetMembersAfterRoomLoad(IgnoredCueEvents, false);
-		ProcessCommand_EndOfTurnEventHandling(IgnoredCueEvents);
+		CueEvents.Clear();
+
+		//Instead, populate cue events coming from processing of last command below.
 
 		//Play through any commands from the saved game.
 		//Truncate any commands that cannot be played back.
@@ -2003,7 +2030,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp to reflected room coord.
 			const UINT reflectX = this->pRoom->wRoomCols - this->pPlayer->wX - 1;
 			const UINT reflectY = this->pRoom->wRoomRows - this->pPlayer->wY - 1;
-			bMoved = SetPlayer(reflectX, reflectY);
+			TeleportPlayer(reflectX, reflectY, CueEvents);
+			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		}
 		break;
@@ -2012,7 +2040,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp ahead two tiles in the direction faced.
 			const UINT destX = this->pPlayer->wX + nGetOX(this->pPlayer->wO) * 2;
 			const UINT destY = this->pPlayer->wY + nGetOY(this->pPlayer->wO) * 2;
-			bMoved = SetPlayer(destX, destY);
+			TeleportPlayer(destX, destY, CueEvents);
+			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
 		}
 		break;
@@ -2219,6 +2248,7 @@ void CCurrentGame::ProcessCommand(
 
 	//Reset relative movement for the current turn.
 	UpdatePrevPlatformCoords();
+	this->pRoom->ClearPushInfo();
 
 //	const UINT dwStart = GetTicks();
 	
@@ -2326,20 +2356,6 @@ void CCurrentGame::ProcessCommand(
 		ASSERT(this->pPlayer->st.totalMoves > 0);
 	}
 
-/*
-	//Switch to another clone.
-	if (nCommand == CMD_CLONE)
-	{
-		//Only allow when not in process of placing a double.
-		if (!this->pPlayer->wPlacingDoubleType)
-		{
-			SwitchToCloneAt(wX,wY);
-			this->pRoom->ProcessTurn(CueEvents, false);
-		}
-		return;
-	}
-*/
-
 //	const UINT wOriginalMonsterCount = this->pRoom->wMonsterCount;
 	this->bContinueCutScene = false;
 	const bool bInCombat = InCombat();
@@ -2364,170 +2380,133 @@ void CCurrentGame::ProcessCommand(
 			this->pRoom->ProcessTurn(CueEvents, false);
 		}
 	} else {
-/*
-		if (this->pPlayer->wPlacingDoubleType)
-			ProcessDoublePlacement(nCommand, CueEvents, wX, wY);
-		else
-*/
+		ASSERT(!bIsComplexCommand(nCommand));
+
+		if (bInCombat)
 		{
-			ASSERT(!bIsComplexCommand(nCommand));
+			AdvanceCombat(CueEvents);
 
-			if (bInCombat)
+			//Only logic that doesn't depend on how many rounds a combat
+			//might be fought may be executed on this turn.
+			if (!this->simulSwordHits.empty())
 			{
-				AdvanceCombat(CueEvents);
-
-				//Only logic that doesn't depend on how many rounds a combat
-				//might be fought may be executed on this turn.
-				if (!this->simulSwordHits.empty())
-				{
-					//Destroy tar tile stabbed and defeated in combat.
-					ProcessSimultaneousSwordHits(CueEvents);
-				}
-
-				//Calling this will handle releasing any pressure plate previously
-				//held down by the deceased or shortened monster.
-				if (CueEvents.HasOccurred(CID_MonsterDiedFromStab) ||
-						CueEvents.HasOccurred(CID_SnakeDiedFromTruncation) ||
-						CueEvents.HasOccurred(CID_MonsterPieceStabbed) ||
-						CueEvents.HasOccurred(CID_NPC_Defeated) ||
-						!InCombat()) //e.g., on conclusion of consecutive no-damage hits
-					this->pRoom->ProcessTurn(CueEvents, false);
-
-				//WARNING -- Can't process NPC scripts during combat rounds, because if
-				//a quick combat is executed, combat will only take one round instead
-				//of several.  Any game logic that might play out differently
-				//depending on how many advance combat commands are executed is forbidden.
-				//
-				//NPC scripts can execute move-free commands to catch events of the battle.
-				//ProcessMoveFreeScripts(CueEvents, this->pRoom->pFirstMonster);
-
-				//However, if we're in a scripted cut scene, let it continue once combat is done.
-				if (this->dwCutScene)
-					this->bContinueCutScene = true;
-			} else {
-				//No combat should be occurring at this point.
-				ASSERT(!InCombat());
-				delete this->pCombat;
-				this->pCombat = NULL;
-				this->pBlockedSwordHit = NULL;
-
-				//These flags are reset for monster behavior at the start of each "real" turn before the player moves.
-				this->pRoom->ResetTurnFlags();
-
-				//Player takes a turn when in the room.
-				++this->wPlayerTurn;    //do first -- increment even when CIDA_PlayerLeftRoom and before demo is saved
-				if (this->pPlayer->IsInRoom())
-					ProcessPlayer(nCommand, CueEvents);
+				//Destroy tar tile stabbed and defeated in combat.
+				ProcessSimultaneousSwordHits(CueEvents);
 			}
 
-/*
-			//If player tried to exit room when locked, then unwind the move in
-			//progress as if it didn't happen, except for receiving the exit locked event.
-			if (CueEvents.HasOccurred(CID_RoomExitLocked))
-			{
-				//Room exit should never be locked during move playback.
-				ASSERT(!this->Commands.IsFrozen());
+			//Calling this will handle releasing any pressure plate previously
+			//held down by the deceased or shortened monster.
+			if (CueEvents.HasOccurred(CID_MonsterDiedFromStab) ||
+					CueEvents.HasOccurred(CID_SnakeDiedFromTruncation) ||
+					CueEvents.HasOccurred(CID_MonsterPieceStabbed) ||
+					CueEvents.HasOccurred(CID_NPC_Defeated) ||
+					!InCombat()) //e.g., on conclusion of consecutive no-damage hits
+				this->pRoom->ProcessTurn(CueEvents, false);
 
-				//It should be impossible for player to exit a room during a cutscene.
-				ASSERT(!this->dwCutScene);
+			//WARNING -- Can't process NPC scripts during combat rounds, because if
+			//a quick combat is executed, combat will only take one round instead
+			//of several.  Any game logic that might play out differently
+			//depending on how many advance combat commands are executed is forbidden.
+			//
+			//NPC scripts can execute move-free commands to catch events of the battle.
+			//ProcessMoveFreeScripts(CueEvents, this->pRoom->pFirstMonster);
 
-				//Undo move counts.
-				ASSERT(this->wPlayerTurn);
-				--this->wPlayerTurn;
-				ASSERT(this->wTurnNo);
-				--this->wTurnNo;
+			//However, if we're in a scripted cut scene, let it continue once combat is done.
+			if (this->dwCutScene)
+				this->bContinueCutScene = true;
+		} else {
+			//No combat should be occurring at this point.
+			ASSERT(!InCombat());
+			delete this->pCombat;
+			this->pCombat = NULL;
+			this->pBlockedSwordHit = NULL;
 
-//				ASSERT(this->pPlayer->st.totalMoves);
-//				--this->pPlayer->st.totalMoves;
-				if (!this->Commands.IsFrozen())
-					this->Commands.RemoveLast();
+			//These flags are reset for monster behavior at the start of each "real" turn before the player moves.
+			this->pRoom->ResetTurnFlags();
 
+			//Player takes a turn when in the room.
+			++this->wPlayerTurn;    //do first -- increment even when CIDA_PlayerLeftRoom and before demo is saved
+			if (this->pPlayer->IsInRoom())
+				ProcessPlayer(nCommand, CueEvents);
+		}
+
+		if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom))
+		{
+			//If play in room stopped, then room processing won't take place
+			//and outstanding data must be cleaned up here.
+			CPlatform::clearFallTiles();
+			this->simulSwordHits.clear();
+			this->possibleTarStabs.clear();
+			UpdatePrevCoords(); //monsters are no longer moving from previous position
+		}
+		else if (nCommand != CMD_ADVANCE_COMBAT)
+		{
+			//After player's turn, everything else in room takes a turn.
+			this->bHalfTurn = this->pPlayer->IsHasted() && !this->bHalfTurn;
+
+			ProcessMonsters(nCommand, CueEvents);
+
+			//If a monster caused a room exit, then process nothing else for the current turn.
+			if (CueEvents.HasOccurred(CID_ExitRoom))
 				return;
-			}
-*/
 
-			if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom))
+			//Check for stuff falling as a result of monster moves now.
+			if (CPlatform::fallTilesPending())
+				CPlatform::checkForFalling(this->pRoom, CueEvents);
+
+			ProcessSimultaneousSwordHits(CueEvents);  //destroy simultaneously-stabbed tar
+
+			this->pRoom->ProcessTurn(CueEvents, !this->bHalfTurn);
+
+			//If goo temporarily took away sword, but then something covered it up
+			//and sword came back, process a sword hit now.
+			//NOTE: It won't be synched with other sword hits, but that's the way it goes.
+			if (bEntityHasSword(this->pPlayer->GetIdentity()) && !this->pPlayer->HasSword())
 			{
-				//If play in room stopped, then room processing won't take place
-				//and outstanding data must be cleaned up here.
-				CPlatform::clearFallTiles();
-				this->simulSwordHits.clear();
-				this->possibleTarStabs.clear();
-				UpdatePrevCoords(); //monsters are no longer moving from previous position
-			}
-			else if (nCommand != CMD_ADVANCE_COMBAT)
-			{
-				//After player's turn, everything else in room takes a turn.
-				this->bHalfTurn = this->pPlayer->IsHasted() && !this->bHalfTurn;
-
-				ProcessMonsters(nCommand, CueEvents);
-
-				//Run global scripts.
-				ProcessScripts(nCommand, CueEvents, CDbSavedGame::pMonsterList);
-
-				//If a monster caused a room exit, then process nothing else for the current turn.
-				if (CueEvents.HasOccurred(CID_ExitRoom))
-					return;
-
-				//Check for stuff falling as a result of monster moves now.
-				if (CPlatform::fallTilesPending())
-					CPlatform::checkForFalling(this->pRoom, CueEvents);
-
-				ProcessSimultaneousSwordHits(CueEvents);  //destroy simultaneously-stabbed tar
-
-				this->pRoom->ProcessTurn(CueEvents, !this->bHalfTurn);
-
-				//If goo temporarily took away sword, but then something covered it up
-				//and sword came back, process a sword hit now.
-				//NOTE: It won't be synched with other sword hits, but that's the way it goes.
-				if (bEntityHasSword(this->pPlayer->GetIdentity()) && !this->pPlayer->HasSword())
+				SetPlayerSwordSheathed();
+				if (this->pPlayer->HasSword())
 				{
-					SetPlayerSwordSheathed();
-					if (this->pPlayer->HasSword())
-					{
-						const UINT wSX = this->pPlayer->GetSwordX();
-						const UINT wSY = this->pPlayer->GetSwordY();
-						ProcessSwordHit(wSX, wSY, CueEvents);
-						ProcessSimultaneousSwordHits(CueEvents);
+					const UINT wSX = this->pPlayer->GetSwordX();
+					const UINT wSY = this->pPlayer->GetSwordY();
+					ProcessSwordHit(wSX, wSY, CueEvents);
+					ProcessSimultaneousSwordHits(CueEvents);
 
-						//In case sword hit changed something, must check room stuff again.
-						this->pRoom->ProcessTurn(CueEvents, false);
-					}
-				}
-
-				//If monster being dueled to destroy tarstuff has somehow been killed this turn (e.g., by explosion)
-				//and there is no other monster to fight on the tarstuff,
-				//then the stabbed tarstuff needs to be removed at this point.
-				bool bRemovedTarstuff = false;
-				for (vector<TarstuffStab>::const_iterator it=this->possibleTarStabs.begin();
-						it!=possibleTarStabs.end(); ++it)
-				{
-					const CMoveCoord& stabCoord = it->moveCoord;
-					if (!it->pTarstuffMonster->IsAlive())
-					{
-						CMonster *pMother = this->pRoom->GetMotherConnectedToTarTile(stabCoord.wX, stabCoord.wY);
-						if (pMother) {
-							//Start a fight with a remaining live mother.
-							delete this->pCombat;
-							this->pCombat = NULL;
-							InitiateCombat(CueEvents, pMother, true, 0, 0, stabCoord.wX, stabCoord.wY, true);
-						} else {
-							if (this->pRoom->StabTar(stabCoord.wX, stabCoord.wY, CueEvents, true, stabCoord.wO))
-								bRemovedTarstuff = true;
-						}
-					}
-				}
-				this->possibleTarStabs.clear();
-				if (bRemovedTarstuff) //Sword hit changed something, so must check room stuff again.
+					//In case sword hit changed something, must check room stuff again.
 					this->pRoom->ProcessTurn(CueEvents, false);
-
-				SetPlayerMood(CueEvents);
+				}
 			}
+
+			//If monster being dueled to destroy tarstuff has somehow been killed this turn (e.g., by explosion)
+			//and there is no other monster to fight on the tarstuff,
+			//then the stabbed tarstuff needs to be removed at this point.
+			bool bRemovedTarstuff = false;
+			for (vector<TarstuffStab>::const_iterator it=this->possibleTarStabs.begin();
+					it!=possibleTarStabs.end(); ++it)
+			{
+				const CMoveCoord& stabCoord = it->moveCoord;
+				if (!it->pTarstuffMonster->IsAlive())
+				{
+					CMonster *pMother = this->pRoom->GetMotherConnectedToTarTile(stabCoord.wX, stabCoord.wY);
+					if (pMother) {
+						//Start a fight with a remaining live mother.
+						delete this->pCombat;
+						this->pCombat = NULL;
+						InitiateCombat(CueEvents, pMother, true, 0, 0, stabCoord.wX, stabCoord.wY, true);
+					} else {
+						if (this->pRoom->StabTar(stabCoord.wX, stabCoord.wY, CueEvents, true, stabCoord.wO))
+							bRemovedTarstuff = true;
+					}
+				}
+			}
+			this->possibleTarStabs.clear();
+			if (bRemovedTarstuff) //Sword hit changed something, so must check room stuff again.
+				this->pRoom->ProcessTurn(CueEvents, false);
+
+			SetPlayerMood(CueEvents);
 		}
 	}
 
 	ProcessCommand_EndOfTurnEventHandling(CueEvents);
-
 
 	if (!CueEvents.HasOccurred(CID_ExitRoom)) //on exit, this will have already been handled for the new room
 		AmbientSoundTracking(CueEvents);
@@ -2607,35 +2586,6 @@ void CCurrentGame::ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents) 
 		//		Manual and automatic recording of death demos handled in front end.
 	}
 
-	/*
-		if (bIsMovementCommand(nCommand))
-			QueryCheckpoint(CueEvents, this->pPlayer->wX, this->pPlayer->wY);
-		if (CueEvents.HasOccurred(CID_CheckpointActivated))
-		{
-			CCoord *pCoord = DYN_CAST(CCoord*, CAttachableObject*,
-					CueEvents.GetFirstPrivateData(CID_CheckpointActivated));
-			ASSERT(pCoord);
-			this->wLastCheckpointX = pCoord->wX;
-			this->wLastCheckpointY = pCoord->wY;
-
-			this->checkpointTurns.push_back(this->wTurnNo);
-			//If player is still alive after checkpoint was stepped on:
-			if (!this->Commands.IsFrozen() && this->bIsGameActive)
-				SaveToCheckpoint();
-		} else {
-			//If checkpoint wasn't touched this turn, allow saving to it starting next turn.
-			if (this->pRoom->IsValidColRow(this->wLastCheckpointX, this->wLastCheckpointY) &&
-					(this->wLastCheckpointX != this->pPlayer->wX ||
-						this->wLastCheckpointY != this->pPlayer->wY) &&
-					!this->pRoom->IsMonsterOfTypeAt(M_MIMIC, this->wLastCheckpointX, this->wLastCheckpointY))
-				this->wLastCheckpointX = this->wLastCheckpointY = static_cast<UINT>(-1);
-		}
-		//If there were monsters, but not any more, then remove green doors.
-		if (CueEvents.HasOccurred(CID_AllMonstersKilled) && !this->pRoom->bGreenDoorsOpened)
-			if (ToggleGreenDoors())
-				//Adding this event with true flag indicates green doors toggled?
-				CueEvents.Add(CID_AllMonstersKilled, new CAttachableWrapper<bool>(true), true);
-	*/
 	//Return cue event for plots if any plots were made.  This check needs
 	//to go after any code that could call pRoom->Plot().
 	if (this->pRoom->PlotsMade.size())
@@ -2660,16 +2610,6 @@ void CCurrentGame::ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents) 
 	//Player should always be visible while cut scene is not playing.
 	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
 		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
-
-/*
-	//Update path maps to NPC Beethro.
-	if (this->pPlayer->wAppearance != M_BEETHRO)
-	{
-		UINT wSX, wSY;
-		if (GetSwordsman(wSX, wSY))
-			this->pRoom->SetPathMapsTarget(wSX, wSY);
-	}
-*/
 }
 
 //*****************************************************************************
@@ -2692,6 +2632,7 @@ void CCurrentGame::ProcessScripts(int nCommand, CCueEvents& CueEvents, CMonster*
 		{
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			pMonster->Process(nCommand, CueEvents);
+
 			if (pCharacter->bScriptDone)
 				this->CompletedScriptsPending += pCharacter->dwScriptID;
 		}
@@ -2735,11 +2676,7 @@ void CCurrentGame::InitiateCombat(
 {
 	ASSERT(pMonster);
 
-	if (pMonster->IsPiece())
-	{
-		CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-		pMonster = pPiece->pMonster;
-	}
+	pMonster = pMonster->GetOwningMonster();
 
 	//Combat begins if this tile of the monster is vulnerable.
 	if (!pMonster->IsDamageableAt(wX,wY))
@@ -2821,10 +2758,19 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 				//This fight was performed to remove this tarstuff tile.
 				this->simulSwordHits.push_back(CMoveCoord(this->pCombat->wX, this->pCombat->wY, NO_ORIENTATION));
 
-				//Reset the tarstuff mother's HP back to full to allow attacking another tile.
-				ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
-				ASSERT(!pDefeatedMonster->getHP());
-				pDefeatedMonster->SetHP();
+				if (pDefeatedMonster->wType == M_CHARACTER)
+				{
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+					pCharacter->Defeat();
+					ProcessNPCDefeat(pCharacter, CueEvents);
+					//NPC script is responsible for what happens after tarstuff defeat,
+					//e.g., resetting HP for subsequent tarstuff battles.
+				} else {
+					//Reset the tarstuff mother's HP back to full to allow attacking another tile.
+					ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
+					ASSERT(!pDefeatedMonster->getHP());
+					pDefeatedMonster->SetHP();
+				}
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
@@ -2859,17 +2805,10 @@ void CCurrentGame::ProcessMonsterDefeat(
 
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 
-			switch (pDefeatedMonster->wType)
-			{
-				case M_MUDMOTHER:
-				case M_TARMOTHER:
-				case M_GELMOTHER:
-					//Tarstuff tile should be removed at end of combat.
-					if (bIsTar(this->pRoom->GetTSquare(wSX, wSY))
-							) //always remove this tar tile when defeated //&& this->pRoom->StabTar(wSX, wSY, CueEvents, false))
-						this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
-				break;
-			}
+			//Tarstuff tile should be removed at end of combat.
+			//Tarstuff under a killed enemy is always removed, even if the tarstuff would otherwise remain stable.
+			if (bIsTar(this->pRoom->GetTSquare(wSX, wSY)))
+				this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
 		}
 		else if (CueEvents.HasOccurredWith(CID_SnakeDiedFromTruncation, pDefeatedMonster))
 		{
@@ -2878,20 +2817,27 @@ void CCurrentGame::ProcessMonsterDefeat(
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 		}
 	} else {
-		//If an NPC is defeated but not killed, execute any script commands
-		//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+		//An (NPC) enemy is defeated but not killed.
 		if (pDefeatedMonster->wType == M_CHARACTER)
 		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
-			this->bExecuteNoMoveCommands = true;
-			pCharacter->ProcessAfterDefeat(CueEvents);
-			this->bExecuteNoMoveCommands = false;
-			CueEvents.Add(CID_NPC_Defeated, pDefeatedMonster);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pDefeatedMonster);
+			ProcessNPCDefeat(pCharacter, CueEvents);
 		}
 	}
 
 	//Each time a monster is fought, briar roots expand.
 	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+//When an NPC is defeated but not killed, execute any script commands
+//dealing with processing the NPC's defeat immediately (on this turn, not the next).
+void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents)
+{
+	this->bExecuteNoMoveCommands = true;
+	pDefeatedNPC->ProcessAfterDefeat(CueEvents);
+	this->bExecuteNoMoveCommands = false;
+	CueEvents.Add(CID_NPC_Defeated, pDefeatedNPC);
 }
 
 //*****************************************************************************
@@ -3351,15 +3297,9 @@ void CCurrentGame::ProcessSwordHit(
 
 	//Did sword hit a monster?
 	CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wSX, wSY);
-	if (pMonster && //Yes.
-			//don't allow critical character kill on room entrance
-			(this->wTurnNo || !this->pRoom->IsMonsterOfTypeAt(M_HALPH, wSX, wSY, true)))
+	if (pMonster)
 	{
-		if (pMonster->IsPiece())
-		{
-			CMonsterPiece *pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
-			pMonster = pPiece->pMonster;
-		}
+		pMonster = pMonster->GetOwningMonster();
 
 		if (!pDouble)
 		{
@@ -3436,9 +3376,10 @@ void CCurrentGame::ProcessSwordHit(
 				//then it is considered a part of the mother,
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
+				//Alternative logic applies to NPCs acting as mothers.
 				CMonster *pMother = NULL;
 
-				//Currently applies to player or mimics only.
+				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
 					pMother = this->pRoom->GetMotherConnectedToTarTile(wSX, wSY);
 				if (pMother && !IsFighting(pMother))
@@ -3453,7 +3394,7 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_BOMB:
-		   //Explode bomb immediately (could damage player).
+			//Explode bomb immediately (could damage player).
 			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
 			{
 				CCoordStack bomb(wSX, wSY);
@@ -3650,7 +3591,11 @@ void CCurrentGame::QuickSave()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	WSTRING locText;
 	locText += this->pLevel->NameText;
@@ -3676,6 +3621,7 @@ void CCurrentGame::QuickSave()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 }
 
 //*****************************************************************************
@@ -3696,7 +3642,11 @@ void CCurrentGame::SaveToContinue()
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
+	vector<ExploredRoom*> _exploredRooms = GetCopyOfExploredRooms(this->ExploredRooms);
+
 	this->stats = this->statsAtRoomStart;
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+		this->PreviouslyExploredRooms);
 
 	WSTRING locText;
 	locText += this->pLevel->NameText;
@@ -3723,6 +3673,7 @@ void CCurrentGame::SaveToContinue()
 	delete pPlayer;
 
 	this->stats = _stats; //revert
+	ReplaceExploredRooms(_exploredRooms);
 
 	/*
 	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
@@ -3754,85 +3705,7 @@ void CCurrentGame::SaveToEndHold()
 	Update();
 }
 
-//*****************************************************************************
 /*
-void CCurrentGame::SaveToLevelBegin()
-//Saves the current game to the level-begin slot for this level.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of level entry room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_LevelBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this level?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByLevelBegin(
-			this->pRoom->dwLevelID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
-//-****************************************************************************
-void CCurrentGame::SaveToRoomBegin()
-//Saves the current game to the begin-room slot for this room.
-{
-	//It is not valid to save the current game when it is inactive.
-	ASSERT(this->bIsGameActive);
-
-	if (this->bNoSaves)
-		return;
-
-	//Swordsman should be at beginning of room.
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(this->pPlayer->wX == this->wStartRoomX);
-	ASSERT(this->pPlayer->wY == this->wStartRoomY);
-	ASSERT(this->pPlayer->wO == this->wStartRoomO);
-	ASSERT(this->pRoom->dwRoomID == this->dwRoomID);
-	ASSERT(this->pPlayer->wIdentity == this->wStartRoomAppearance);
-	ASSERT(this->pPlayer->bSwordOff == this->bStartRoomSwordOff);
-	...new equipment disabled stats
-
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	CDbPackedVars _stats = this->stats; //must retain what state game was in on entrance
-	this->stats = this->statsAtRoomStart;
-
-	this->eType = ST_RoomBegin;
-	this->wVersionNo = VERSION_NUMBER;
-	this->bIsHidden = false;
-
-	//Is there already a saved game for this room?
-	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByRoomBegin(
-			this->pRoom->dwRoomID);
-	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
-	Update();
-
-	this->stats = _stats;
-	PostSave(bConqueredOnEntrance, bExploredOnEntrance);
-}
-
 //-****************************************************************************
 void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
 //Set the amount of move calculation time to elapse between game state snapshots.
@@ -4290,6 +4163,8 @@ void CCurrentGame::AddCompletedScripts()
 }
 
 //*****************************************************************************
+//For front-end, to display a preview of rooms explored in other play sessions
+//Called when a game is begun or loaded to populate this list for reference during play
 void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
 	UINT playerID, const bool bMakeRoomsVisible) //[default=0, true]
 {
@@ -4300,10 +4175,11 @@ void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
 			return;
 	}
 
-	CIDSet roomsExplored;
-	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, roomsExplored);
-	roomsExplored -= this->dwRoomID;
-	for (CIDSet::const_iterator it=roomsExplored.begin(); it!=roomsExplored.end(); ++it)
+	//May be a compute-intensive call, so cache results in member var
+	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, this->PreviouslyExploredRooms);
+	this->PreviouslyExploredRooms -= this->dwRoomID; //don't need to include the player's current room for preview
+
+	for (CIDSet::const_iterator it=this->PreviouslyExploredRooms.begin(); it!=this->PreviouslyExploredRooms.end(); ++it)
 	{
 		AddRoomToMap(*it, bMakeRoomsVisible, false);
 	}
@@ -4431,102 +4307,6 @@ void CCurrentGame::DeleteLeakyCueEvents(CCueEvents &CueEvents)
 				pObj = CueEvents.GetNextPrivateData())
 			delete pObj;
 }
-
-//*****************************************************************************
-/*
-void CCurrentGame::DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType)
-//Drink potion, begin double placement and init double cursor position.
-{
-   this->pPlayer->wPlacingDoubleType=wDoubleType;
-   this->pPlayer->wDoubleCursorX=this->pPlayer->wX;
-   this->pPlayer->wDoubleCursorY=this->pPlayer->wY;
-   this->pRoom->Plot(this->pPlayer->wX, this->pPlayer->wY, T_EMPTY);
-	CueEvents.Add(CID_DrankPotion);
-}
-
-//-****************************************************************************
-void CCurrentGame::FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents)
-//Fegundo has exploded.  Remove it and replace it with ashes.
-{
-	const UINT wX = pMonster->wX;
-	const UINT wY = pMonster->wY;
-	if (pMonster->bAlive) //if a resulting bomb explosion did not also kill the fegundo
-	{
-		this->pRoom->KillMonster(pMonster, CueEvents);
-
-		//Add ashes if room square doesn't forbid it.
-		const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
-		switch (wOTile)
-		{
-			case T_PIT: case T_PIT_IMAGE:
-				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wX, wY,
-					S, M_OFFSET + M_FEGUNDOASHES), true);
-			break;
-			case T_WATER:
-				CueEvents.Add(CID_Splash, new CCoord(wX,wY), true);
-			break;
-			default:
-				CMonster *pAshes = this->pRoom->AddNewMonster(M_FEGUNDOASHES,wX,wY);
-				pAshes->bIsFirstTurn = true;
-				if (wOTile == T_PRESSPLATE)
-					this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
-			break;
-		}
-	}
-}
-
-//-****************************************************************************
-UINT CCurrentGame::FindLastCheckpointSave(
-//Play back stored commands to change the game state.
-//Assumes that the room has been freshly loaded.
-//
-//Params:
-	const UINT wSearchUntilTurn) //(in) search until this turn no.
-//
-//Returns:
-//Turn of last checkpoint save made in this room, or 0 if none.
-{
-	ASSERT(this->wTurnNo == 0);
-	ASSERT(wSearchUntilTurn <= this->Commands.Count());
-
-	//If there are no commands, we're at the beginning of the room - return 0
-	if (this->Commands.Empty()) return 0;
-
-	//While processing the command list, I don't want to take any actions that
-	//will modify the command list.
-	FreezeCommands();
-
-//	UINT wLastCheckpointSave = 0;
-
-	CDbCommands::const_iterator comIter = this->Commands.GetFirst();
-	CCueEvents CueEvents;
-	UINT wCommandI, wX=(UINT)-1, wY=(UINT)-1;
-	for (wCommandI = 0; wCommandI < wSearchUntilTurn-1; ++wCommandI)
-	{
-		ASSERT(comIter != this->Commands.end());
-		
-		const int nCommand = comIter->bytCommand;
-		if (bIsComplexCommand(nCommand))	//handle multi-part commands here
-			VERIFY(this->Commands.GetData(wX,wY));
-		ProcessCommand(nCommand, CueEvents, wX, wY);
-		if (CueEvents.HasOccurred(CID_CheckpointActivated))
-			wLastCheckpointSave = wCommandI+1;
-
-		//Check for unexpected game states that indicate commands are invalid.
-		//Note: these should never happen, since we're examining the current game in play.
-		ASSERT(this->bIsGameActive);
-		ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied));  //player shouldn't have died
-		ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom));
-
-		comIter = this->Commands.GetNext();
-	}
-
-	//Allow modification of command list again.
-	UnfreezeCommands();
-
-	return wLastCheckpointSave;
-}
-*/
 
 //*****************************************************************************
 bool CCurrentGame::KnockOnDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
@@ -4868,26 +4648,17 @@ bool CCurrentGame::LoadAdjoiningRoom(
 //***************************************************************************************
 void CCurrentGame::ProcessMonsters(
 //Processes all the monsters in the current room.
+//Then process global scripts and insert NPCs that became global.
 //
 //Params:
-	int nLastCommand,    //(in)      Last swordsman command.
+	int nLastCommand,    //(in)      Last player command.
 	CCueEvents &CueEvents)  //(in/out)  List of events that can be handled by caller.
 {
-	CMonster *pMonster, *pNextMonster;
-//	UINT wX, wY, wO;
-
 	if (!this->bHalfTurn)
 	{
 		//Increment the spawn cycle counter.
 		++this->wSpawnCycleCount;
 	}
-
-/*
-	PreprocessMonsters(CueEvents);
-
-	//Brains don't affect monster movement in this game.
-	this->bBrainSensesSwordsman = false; //this->pRoom->BrainSensesSwordsman();
-*/
 
 	//Since player and mimic movement is practically synched,
 	//wait until all mimics have moved, possibly moving platforms, before
@@ -4895,6 +4666,8 @@ void CCurrentGame::ProcessMonsters(
 	bool bMimicsMoved = this->pRoom->platforms.empty(); //for platform
 
 	//Each iteration processes one monster.
+	vector<CCharacter*> newGlobalScripts;
+	CMonster *pMonster, *pNextMonster;
 	for (pMonster = this->pRoom->pFirstMonster; pMonster != NULL; pMonster = pNextMonster)
 	{
 		//No more monsters should move, including processing NPC scripts, if
@@ -4939,11 +4712,7 @@ void CCurrentGame::ProcessMonsters(
 					{
 						pNextMonster = pMonster->pNext;
 						this->pRoom->KillMonster(pMonster, CueEvents);
-/*
-						TallyKill();
-						if (pMonster->wType == M_ROCKGIANT)
-							CSplitter::Shatter(CueEvents, this, pMonster->wX, pMonster->wY);
-*/
+//						TallyKill();
 						continue;	//extra processing below gets skipped on death
 					}
 				}
@@ -4951,17 +4720,6 @@ void CCurrentGame::ProcessMonsters(
 				//Handle monsters that perform specific functions on half-turns.
 				switch (pMonster->wType)
 				{
-/*
-					case M_EYE:
-					{
-						//Do evil eyes wake up?
-						CMoveCoord *pCoord;
-						int nOX, nOY;
-						CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
-						pEye->WakeupCheck(CueEvents, pCoord, nOX, nOY);
-					}
-					break;
-*/
 					case M_CHARACTER:
 					{
 						//Character commands that don't expend a turn processed.
@@ -4974,7 +4732,7 @@ void CCurrentGame::ProcessMonsters(
 				}
 			}
 
-			//Remember the next monster now, because this monster may be dead and
+			//Remember the next monster now, because this monster may be dead or made global and
 			//removed from the monster list in the next block.
 			pNextMonster = pMonster->pNext;
 
@@ -5022,29 +4780,12 @@ void CCurrentGame::ProcessMonsters(
 							pNextMonster = pMonster->pNext;
 						}
 					}
-/* empty block
-					if (pCharacter->bReplaced)
-					{
-						//Character "reverted" to the monster matching its appearance.
-						CMonster *pMonster = this->pRoom->GetMonsterAtSquare(
-								pCharacter->wX, pCharacter->wY);
-						ASSERT(pMonster);
 
-						//The new monster might require changes to room state (e.g. pathmapping).
-//				      this->pRoom->CreatePathMaps();
-
-/-*
-						if (CueEvents.HasOccurredWith(CID_FegundoToAsh, pMonster))
-							FegundoToAsh(pMonster, CueEvents);
-* /
-					}
-*/
 					if (pCharacter->bGlobal)
 					{
 						//Remove NPC object to global script list.
 						this->pRoom->UnlinkMonster(pCharacter);
-
-						appendToGlobalMonsterList(pCharacter);
+						newGlobalScripts.push_back(pCharacter);
 					}
 
 					//If this NPC has fired an exit level event, then room data have
@@ -5067,39 +4808,17 @@ void CCurrentGame::ProcessMonsters(
 //						TallyKill();  //counts as a kill
 					}
 				break;
-/*
-				case M_REGG:
-					if (CueEvents.HasOccurredWith(CID_EggHatched, pMonster))
-					{
-						// Spawn a roach AFTER egg has been removed.
-						wX = pMonster->wX;
-						wY = pMonster->wY;
-						this->pRoom->KillMonster(pMonster, CueEvents);
-						CMonster *m = this->pRoom->AddNewMonster(M_ROACH,wX,wY);
-						m->bIsFirstTurn = true;
-					}
-				break;
-				case M_FEGUNDO:
-					if (CueEvents.HasOccurredWith(CID_FegundoToAsh, pMonster))
-						FegundoToAsh(pMonster, CueEvents);
-				break;
-				case M_FEGUNDOASHES:
-					if (CueEvents.HasOccurredWith(CID_AshToFegundo, pMonster))
-					{
-						// Spawn a fegundo AFTER ash has been removed.
-						wX = pMonster->wX;
-						wY = pMonster->wY;
-						wO = this->pPlayer->wO;
-						this->pRoom->KillMonster(pMonster, CueEvents);
-						CMonster *m = this->pRoom->AddNewMonster(M_FEGUNDO,wX,wY);
-						m->SetOrientation(nGetOX(wO), nGetOY(wO));
-						m->bIsFirstTurn = true;
-					}
-				break;
-*/
 			}
 		}
 	}
+
+	//Run global scripts.
+	ProcessScripts(nLastCommand, CueEvents, CDbSavedGame::pMonsterList);
+
+	//Done after ProcessScripts so these are only processed once this turn.
+	for (vector<CCharacter*>::const_iterator it = newGlobalScripts.begin();
+			it != newGlobalScripts.end(); it++)
+		appendToGlobalMonsterList(*it);
 }
 
 //***************************************************************************************
@@ -5330,6 +5049,8 @@ void CCurrentGame::ProcessPlayer(
 							//    be aware of by looking at the modified game
 							//    data on return.
 {
+	ASSERT(!this->bRoomDisplayOnly);
+
 	CSwordsman& p = *this->pPlayer; //shorthand
 	bool bMoved = false;
 	const UINT wOldX = p.wX;
@@ -6392,9 +6113,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 	
 	room.mapMarker = pExpRoom->mapMarker;
 
-	pExpRoom->bSave = true; //previewed room now included in save data
+	const bool bWasRoomPreview = !pExpRoom->bSave;
+	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly)
+	if (pExpRoom->bMapOnly || bWasRoomPreview)
 	{
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
@@ -6646,6 +6368,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 
 //	this->dwAutoSaveOptions = Src.dwAutoSaveOptions;
 	this->CompletedScriptsPending = Src.CompletedScriptsPending;
+	this->bRoomDisplayOnly = Src.bRoomDisplayOnly;
 	this->bNoSaves = Src.bNoSaves;
 	this->bValidatingPlayback = Src.bValidatingPlayback;
 
@@ -6653,6 +6376,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->dwComputationTime = Src.dwComputationTime;
 	this->dwComputationTimePerSnapshot = Src.dwComputationTimePerSnapshot;
 */
+	this->PreviouslyExploredRooms = Src.PreviouslyExploredRooms;
 }
 
 //***************************************************************************************
@@ -6684,17 +6408,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	this->dwPlayerID = g_pTheDB->GetPlayerID();
 
-/*
-	//Update demo recording information.
-	this->DemoRecInfo.wBeginTurnNo = 0;
-*/
-
-/*
-	//Level is considered already complete (skipping CID_CompleteLevel) only
-	//if the level isn't being entered for the first time.
-	const bool bWasLevelComplete = IsCurrentLevelComplete() && !CDbSavedGame::ExploredRooms.empty();
-*/
-
 	//Has this room been previously explored?
 	this->bIsNewRoom = !IsCurrentRoomExplored(false);
 /*
@@ -6719,41 +6432,13 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 		const UINT tTile = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 		if (tTile == T_BOMB || tTile == T_MIRROR)
 			this->pRoom->Plot(this->pPlayer->wX, this->pPlayer->wY, T_EMPTY);
-//		CCueEvents Ignored; //don't receive cues if this monster is not really there
 
 		//Remove any monster here.
 		this->pRoom->KillMonsterAtSquare(this->pPlayer->wX, this->pPlayer->wY, CueEvents);
 	}
 
-/*
-	//See if room is already conquered.
-	if (bWasRoomConquered)
-	{
-		ToggleGreenDoors();
-		this->pRoom->ClearMonsters(true);
-		wMonsterCountAtStart = 0;
-	}
-	//Not conquered, but if no monsters in it then add to conquered list immediately.
-	else if (!wMonsterCountAtStart)
-	{
-		CueEvents.Add(CID_ConquerRoom);
-		ToggleGreenDoors();
-		this->pRoom->ClearMonsters(true); //remove monsters that only show in unconquered rooms
-		SetCurrentRoomConquered();
-
-		//When restoring game to the the first-time entry of a clean room,
-		//ensure this flag is set to allow resaving victory demo on room exit.
-		this->bIsNewRoom = true;
-	}
-	else {
-*/
 	//Clear first turn status on new room monsters.
 	this->pRoom->ResetMonsterFirstTurnFlags();
-/*
-	}
-
-	this->pRoom->SetHalphSlayerEntrance();
-*/
 
 // Shouldn't have to be done since persistent room state is maintained.
 //	this->pRoom->RemoveFinishedCharacters();
@@ -6766,15 +6451,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->UnansweredQuestions.clear();
 
 	this->pRoom->KillSeepOutsideWall(CueEvents); //remove before any doors change
-
-/*
-	//Remove blue doors if level is complete.
-	if (IsCurrentLevelComplete()) 
-	{
-		if (!bWasLevelComplete) CueEvents.Add(CID_CompleteLevel);
-		this->pRoom->ToggleTiles(T_DOOR_C, T_DOOR_CO); //blue/exit door
-	}
-*/
 
 	//Flag if secret room entered.
 	if (this->bIsNewRoom && this->pRoom->bIsSecret)
@@ -6799,7 +6475,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 */
 	}
 
-
 	//Mark which pressure plates are depressed on entrance.
 	this->pRoom->SetPressurePlatesState();
 
@@ -6809,8 +6484,11 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pBlockedSwordHit = NULL;
 
 	//Process the swordsman's movement onto the first square.
-	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported)
+	bool bProcessedPlayerWait = false;
+	if (this->pPlayer->IsInRoom() && !this->pPlayer->bHasTeleported) {
 		ProcessPlayer(CMD_WAIT, CueEvents);
+		bProcessedPlayerWait = true;
+	}
 
 	//Init NPCs and sworded entities after initial room state checks and modifications are performed.
 	this->bExecuteNoMoveCommands = true;
@@ -6822,27 +6500,16 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pRoom->KillSeepOutsideWall(CueEvents); //check again if doors have changed
 	SetPlayerMood(CueEvents);
 	this->pRoom->ResetMonsterFirstTurnFlags();
-/*
-	//Check whether swordsman's first step left room without monsters.
-	if (!this->pRoom->wMonsterCount && wMonsterCountAtStart)
-	{
-		//if so, remove green door
-		ToggleGreenDoors();
-		//Don't mark room conquered until player exits the room.
-	}
-*/
 
 	if (bResetCommands && !this->Commands.IsFrozen())
 		this->Commands.Clear();
 
-	//Player should always be visible if no cut scene is playing.
-	if (!this->pPlayer->IsInRoom() && !this->dwCutScene)
+	//Player should always be visible if no cut scene is playing during normal play.
+	if (!this->pPlayer->IsInRoom() && !this->dwCutScene && !this->bRoomDisplayOnly) {
 		SetPlayerRole(defaultPlayerType()); //place player in room now as default type
-
-/*
-	//Setup PathMap to player for monsters that require it.
-	this->pRoom->CreatePathMaps();
-*/
+		if (!bProcessedPlayerWait)
+			ProcessPlayer(CMD_WAIT, CueEvents);
+	}
 
 	//Player should never die on entering room.
 	ASSERT(!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied),CIDA_PlayerDied));
@@ -6983,7 +6650,9 @@ void CCurrentGame::SetPlayerToRoomStart()
 //	this->checkpointTurns.clear();
 	this->CompletedScriptsPending.clear();
 	this->stats = this->statsAtRoomStart;
-	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart);
+
+	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
+			this->PreviouslyExploredRooms);
 
 	//Prepare vars for recording saved games.
 	this->bIsGameActive = true;
@@ -7595,7 +7264,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 			pPlayer->Update();
 		}
 	}
-   delete pPlayer;
+	delete pPlayer;
 	return this->dwSavedGameID;
 }
 
@@ -7603,6 +7272,8 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 //Returns: whether prep operation succeeded
 bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 {
+	this->bRoomDisplayOnly = true;
+
 	SaveExploredRoomData(*this->pRoom); //so current room can be viewed while panning the map
 
 	this->pPlayer->wIdentity = this->pPlayer->wAppearance = M_NONE; //not in room
@@ -7631,133 +7302,3 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 
 	return true;
 }
-
-//***************************************************************************************
-/*
-UINT CCurrentGame::WriteCurrentRoomDemo(
-//Update database with demo information for current room.
-//
-//Note: Logic for updating demo descriptions in this method depends on this method
-//being the only updater of demo descriptions.
-//
-//Params:
-	DEMO_REC_INFO &dri,  //(in/out)  Receives with members set with info needed to
-						//       record the demo.  Returns with with values that
-						//       can be used in a subsequent call for a multi-room 
-						//       demo.
-	const bool bHidden,     //(in)      Make the demo hidden?  Default is false.
-	const bool bAppendRoomLocation)  //(in) Add room location to description (default = true)
-//
-//Returns:
-//DemoID of new Demos record.
-{
-	ASSERT(dri.dwDescriptionMessageID);
-	if (this->wTurnNo == dri.wBeginTurnNo) //could happen if room was exited immediately on entrance
-		return 0;
-	if (this->bNoSaves)
-		return 0;
-
-	//Save the current game to a new slot.
-	this->dwSavedGameID = 0L;
-	this->eType = ST_Demo;
-	this->bIsHidden = true;
-	PackData(this->stats);
-	Update();
-	ASSERT(this->dwSavedGameID);
-
-	//Get a new demo and set its properties.
-	CDbDemo *pDemo = new CDbDemo;
-	pDemo->bIsHidden = bHidden;
-	pDemo->dwSavedGameID = this->dwSavedGameID;
-	pDemo->wBeginTurnNo = dri.wBeginTurnNo;
-	pDemo->wEndTurnNo = this->wTurnNo - 1;
-	pDemo->dwFlags = dri.dwFlags;
-
-	//Prepend room position to non-empty (player viewable) demo descriptions.
-	const WCHAR *pText = g_pTheDB->GetMessageText(dri.dwDescriptionMessageID);
-	WSTRING descText;
-	if (bAppendRoomLocation && !dri.dwPrevDemoID)
-	{
-		descText = AbbrevRoomLocation();
-		descText += wszColon;
-		descText += wszSpace;
-	}
-	descText += pText;
-	pDemo->DescriptionText = descText.c_str();
-
-	if (dri.dwPrevDemoID)
-	{
-		WSTRING wstrNewDescription = (const WCHAR *)pDemo->DescriptionText;
-		if (dri.dwPrevDemoID == dri.dwFirstDemoID) //2nd demo.
-		{
-			WSTRING wTmp;
-			AsciiToUnicode( " (2)", wTmp );
-			wstrNewDescription += wTmp;
-		}
-		else //3rd or later demo.
-		{
-			//Parse number from description text.
-			WSTRING wstrNum;
-			WSTRING::iterator iNumStart = wstrNewDescription.end();
-			WSTRING::iterator iNumStop = wstrNewDescription.end();
-			WSTRING wTmp;
-			AsciiToUnicode("()", wTmp);
-			WSTRING::iterator iSeek;
-			for (iSeek = wstrNewDescription.end() - 1; iSeek != wstrNewDescription.begin(); --iSeek)
-			{
-				if ((WCHAR)*iSeek == wTmp[1]) {iNumStop = iSeek; continue;}
-				if ((WCHAR)*iSeek == wTmp[0]) {iNumStart = iSeek + 1; break;}
-			}
-			for (iSeek = iNumStart; iSeek != iNumStop; ++iSeek)
-				wstrNum += *iSeek;
-			int nNum = _Wtoi(wstrNum.c_str());
-
-			//Parsing error or previous call didn't append "(n)".
-			ASSERT(nNum != 0);
-			ASSERT((iNumStart != wstrNewDescription.end()) &&
-					   (iNumStop != wstrNewDescription.end()));
-
-			//Concat new description with incremented number.
-			WCHAR wczNewNum[7];
-			_itoW(nNum + 1, wczNewNum, 10);
-			wstrNewDescription.replace(iNumStart, iNumStop, wczNewNum);
-		}
-		pDemo->DescriptionText = wstrNewDescription.c_str();
-		dri.dwDescriptionMessageID = pDemo->DescriptionText.UpdateText();
-	}
-	pDemo->dwChecksum = GetChecksum();
-
-	//Update the demo.
-	pDemo->Update();
-	const UINT dwNewDemoID = pDemo->dwDemoID;
-	delete pDemo;
-	ASSERT(dwNewDemoID);
-
-	//If recording began in a previous room, update the demo record for that room
-	//so that its NextDemoID field will point to this new demo record.
-	if (dri.dwPrevDemoID)
-	{
-		CDbDemo *pPrevDemo = g_pTheDB->Demos.GetByID(dri.dwPrevDemoID);
-		ASSERT(pPrevDemo); //If fires, then probably a bad value in dwPrevDemoID.
-		ASSERT(pPrevDemo->dwNextDemoID == 0L);
-		pPrevDemo->dwNextDemoID = dwNewDemoID;
-		if (pPrevDemo->dwDemoID == dri.dwFirstDemoID) //First demo.
-		{
-			//Add "(1)" to description to indicate multi-room demo.
-			WSTRING wstrNewDescription = (const WCHAR *)pPrevDemo->DescriptionText;
-			WSTRING wTmp;
-			AsciiToUnicode(" (1)", wTmp);
-			wstrNewDescription += wTmp;
-			pPrevDemo->DescriptionText = wstrNewDescription.c_str();
-		}
-		pPrevDemo->Update();
-		delete pPrevDemo;
-	}
-
-	//If no first demo ID is stored already then this is it.
-	if (!dri.dwFirstDemoID)
-		dri.dwFirstDemoID = dwNewDemoID;
-
-	return dwNewDemoID;
-}
-*/

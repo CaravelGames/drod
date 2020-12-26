@@ -836,6 +836,14 @@ void CSettingsScreen::OnKeyDown(
 			SynchScreenSizeWidget();
 		break;
 
+		case SDLK_LEFT: case SDLK_RIGHT:
+		case SDLK_HOME: case SDLK_END:
+		case SDLK_KP_4: case SDLK_KP_6: case SDLK_KP_7: case SDLK_KP_1:
+			if (dwTagNo == TAG_MUSIC_VOLUME || dwTagNo == TAG_VOICES_VOLUME || dwTagNo == TAG_SOUNDEFF_VOLUME) {
+				SDL_MouseButtonEvent fakeButton;
+				OnDragUp(dwTagNo, fakeButton);
+			}
+			break;
 		default: break;
 	}
 
@@ -971,7 +979,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			const string str = UnicodeToAscii(pCaravelNetNameWidget->GetText());
+			const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
 			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
 			if (!wCaravelNetRequest) {
 				ShowOkMessage(MID_CaravelNetUnreachable);
@@ -1039,6 +1047,7 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 				GetWidget(dwTagNo));
 			g_pTheSound->SetSoundEffectsVolume(pSliderWidget->GetValue());
+			g_pTheSound->StopSoundEffect(SEID_ORBHIT);
 			g_pTheSound->PlaySoundEffect(SEID_ORBHIT); //play sample sound
 		break;
 
@@ -1057,7 +1066,8 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			g_pTheSound->SetVoicesVolume(pSliderWidget->GetValue());
 			const int nSoundVolume = g_pTheSound->GetSoundVolume();
 			g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-			g_pTheSound->PlaySoundEffect(SEID_DIE); //play sample sound
+			g_pTheSound->StopSoundEffect(SEID_STALWART_DIE);
+			g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE); //play sample sound
 			g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 		}
 		break;
@@ -1251,7 +1261,7 @@ void CSettingsScreen::SynchOption(const UINT dwTagNo)
 			{
 				const int nSoundVolume = g_pTheSound->GetSoundVolume();
 				g_pTheSound->SetSoundEffectsVolume(g_pTheSound->GetVoiceVolume());
-				g_pTheSound->PlaySoundEffect(SEID_DIE, NULL, NULL, true); //play sample sound
+				g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE, NULL, NULL, true); //play sample sound
 				g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
 			}
 		break;
@@ -1600,7 +1610,6 @@ void CSettingsScreen::UploadScores()
 	bool bContinue = true;
 
 	//Part I.  Upload explored+conquered rooms and holds.
-	CDb db;
 	string exploredRoomsTexts;
 	CIDSet::const_iterator id;
 	for (id = holdIds.begin(); id != holdIds.end(); ++id)
@@ -1623,99 +1632,38 @@ void CSettingsScreen::UploadScores()
 
 /*
 	//Part II.  Upload demos.
-	{
-	//Scanning demos can take a very long time.
-	//Mark which demos are processed so only new demo records are uploaded next time.
-
-	//Get all player's demos.
-	db.Demos.FilterByPlayer(dwPlayerID);
-	CIDSet demoIDs, uploadedDemoIDs, allDemoIDs = db.Demos.GetIDs();
-
-	//Upload all demos if requested.
-	bool bFullScoreUpload = false;
-	CFiles f;
-	string str;
-	if (f.GetGameProfileString(INISection::Customizing, INIKey::FullScoreUpload, str))
-		bFullScoreUpload = atoi(str.c_str()) != 0;
-
-	UINT wCount=0;
-	CIDSet::const_iterator demo;
-	for (demo = allDemoIDs.begin(); demo != allDemoIDs.end(); ++demo)
-	{
-		if (!bContinue)
-			break;
-
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
-		ASSERT(pDemo);
-		if (!pDemo) continue;
-
-		//We are searching for victory demos, so don't upload death demos.
-		const bool bSkip = pDemo->IsFlagSet(CDbDemo::Death) ||
-				(pDemo->IsFlagSet(CDbDemo::TestedForUpload) && !bFullScoreUpload);
-		delete pDemo;
-		if (bSkip)
-			continue;
-
-		demoIDs += *demo;
-
-		if ((++wCount % 100) == 0) //avoid large uploads
-		{
-			string text;
-			if (CDbXML::ExportXML(V_Demos, demoIDs, text, (UINT)-1)) //no multi-room demos
-			{
-				g_pTheNet->UploadDemos(text);
-				uploadedDemoIDs += demoIDs;
-				demoIDs.clear();
-				CDrodScreen::Callbackf((float)wCount / (float)allDemoIDs.size());
-				g_pTheDB->Commit(); //keep saved key current
-			}
-		}
-
-		if (PollForInterrupt())
-			bContinue = false;
-	}
-	if (!demoIDs.empty())
-	{
-		string text;
-		if (CDbXML::ExportXML(V_Demos, demoIDs, text, (UINT)-1)) //no multi-room demos
-		{
-			g_pTheNet->UploadDemos(text);
-			uploadedDemoIDs += demoIDs;
-		}
-	}
-
-	//Now flag all uploaded demos.
-	for (demo = uploadedDemoIDs.begin(); demo != uploadedDemoIDs.end(); ++demo)
-	{
-		CDbDemo *pDemo = db.Demos.GetByID(*demo);
-		ASSERT(pDemo);
-		pDemo->SetFlag(CDbDemo::TestedForUpload); //don't submit this demo next time
-		pDemo->Update();
-		delete pDemo;
-	}
-
-	if (bFullScoreUpload) //reset after completing operation
-		f.WriteGameProfileString(INISection::Customizing, INIKey::FullScoreUpload, "0");
-
-	g_pTheDB->Commit();
-	}
+	...
 */
 
 	//Part III.  Upload score checkpoints.
-	{
-	//Unsent score checkpoint records are uploaded and then deleted.
+	UploadScoreCheckpointSaves(dwPlayerID);
+	CDrodScreen::Callbackf(1.0f);
 
+	g_pTheDB->Commit();
+
+Done:
+	g_pTheDB->SetHoldID(dwCurrentHoldID);
+	SetCursor();
+	this->pProgressWidget->Hide();
+	HideStatusMessage();
+	Paint();
+}
+
+//************************************************************************************
+void CSettingsScreen::UploadScoreCheckpointSaves(const UINT dwPlayerID)
+//Unsent score checkpoint saved game records are uploaded and then deleted on confirmation the server received them.
+{
 	//Get all player's saved games.
+	CDb db;
 	db.SavedGames.FilterByPlayer(dwPlayerID);
+	db.SavedGames.FindHiddens(true);
 	CIDSet allSavedGameIDs = db.SavedGames.GetIDs();
 
-	UINT wCount=0;
+	UINT wCount = 0;
 	CIDSet::const_iterator savedGame;
+	std::map<UINT, UINT> savedGameIDhandles;
 	for (savedGame = allSavedGameIDs.begin(); savedGame != allSavedGameIDs.end(); ++savedGame, ++wCount)
 	{
-		if (!bContinue)
-			break;
-
 		//Only upload for score checkpoints.
 		const UINT savedGameID = *savedGame;
 		if (g_pTheDB->SavedGames.GetType(savedGameID) != ST_ScoreCheckpoint)
@@ -1725,38 +1673,67 @@ void CSettingsScreen::UploadScores()
 		string text;
 		if (CDbXML::ExportXML(V_SavedGames, ids, text, ST_ScoreCheckpoint))
 		{
-			CDbSavedGame *pSavedGame = g_pTheDB->SavedGames.GetByID(savedGameID);
+			CDbSavedGame* pSavedGame = g_pTheDB->SavedGames.GetByID(savedGameID);
 			ASSERT(pSavedGame);
 
 			PlayerStats ps;
 			ps.Unpack(pSavedGame->stats);
 			const UINT score = CDbSavedGames::GetScore(ps);
 
-			if (g_pTheNet->UploadScore(text, pSavedGame->stats.GetVar(szSavename, wszEmpty), score))
-				g_pTheDB->SavedGames.Delete(savedGameID); //may now discard this record
+			const UINT wUploadingScoreHandle = g_pTheNet->UploadScore(text, pSavedGame->stats.GetVar(szSavename, wszEmpty), score);
 			delete pSavedGame;
-			g_pTheDB->Commit(); //keep saved key current
+
+			if (wUploadingScoreHandle) {
+				savedGameIDhandles[wUploadingScoreHandle] = savedGameID;
+			}
 		}
 
-		CDrodScreen::Callbackf((float)wCount / (float)allSavedGameIDs.size());
+		CDrodScreen::Callbackf(0.1f + 0.9f * ((float)wCount / (float)(allSavedGameIDs.size() * 2))); //[10-55%]
 
 		if (PollForInterrupt())
-			bContinue = false;
+			break;
 	}
 
-	//Player scores on CaravelNet are now current.
-	this->pCurrentPlayer->Settings.SetVar(playerScoresOld, false);
-	CDrodScreen::Callbackf(1.0f);
+	//Confirm server has responded to receiving the score submissions.
+	bool bAllConfirmed = true;
+	for (std::map<UINT, UINT>::const_iterator it = savedGameIDhandles.begin(); it != savedGameIDhandles.end(); it++, ++wCount)
+	{
+		const UINT wUploadingScoreHandle = it->first;
+		const UINT savedGameID = it->second;
 
-	g_pTheDB->Commit();
+		const UINT MAX_TRIES = 200; //200 * 50ms = 10s total wait time for each response
+		UINT tries;
+		for (tries = 0; tries < MAX_TRIES; ++tries)
+		{
+			const int status = g_pTheNet->GetStatus(wUploadingScoreHandle);
+			if (status < 0)
+			{
+				SDL_Delay(50);
+				continue;
+			}
+
+			CStretchyBuffer* pBuffer = g_pTheNet->GetResults(wUploadingScoreHandle);
+			if (pBuffer) {
+				delete pBuffer;
+				g_pTheDB->SavedGames.Delete(savedGameID); //may now discard this record
+				g_pTheDB->Commit(); //keep saved key current
+			}
+			else {
+				//server did not respond with a score confirmation
+				bAllConfirmed = false;
+			}
+			break;
+		}
+		if (tries == MAX_TRIES)
+			bAllConfirmed = false;
+
+		CDrodScreen::Callbackf(0.1f + 0.9f * ((float)wCount / (float)(allSavedGameIDs.size() * 2))); //[55-100%]
 	}
 
-Done:
-	g_pTheDB->SetHoldID(dwCurrentHoldID);
-	SetCursor();
-	this->pProgressWidget->Hide();
-	HideStatusMessage();
-	Paint();
+	if (bAllConfirmed) {
+		//Player scores on CaravelNet are now current.
+		this->pCurrentPlayer->Settings.SetVar(playerScoresOld, false);
+	}
 }
 
 //************************************************************************************

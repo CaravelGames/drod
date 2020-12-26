@@ -13,6 +13,10 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="SteamBuildDats|Win32">
+      <Configuration>SteamBuildDats</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectName>DRODLibTests</ProjectName>
@@ -22,6 +26,12 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
@@ -46,6 +56,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='CaravelRelease|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
@@ -61,7 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -70,7 +84,16 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
+    <GenerateManifest>true</GenerateManifest>
+    <TargetName>DRODLibTests</TargetName>
+    <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\Deps\Library\Release;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
+    <OutDir>$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)-Temp\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -79,7 +102,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CaravelRelease|Win32'">
     <OutDir>$(Configuration)\</OutDir>
     <IntDir>$(Configuration)-Temp\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <GenerateManifest>true</GenerateManifest>
     <TargetName>DRODLibTests</TargetName>
     <IncludePath>..\Deps\Include;$(IncludePath)</IncludePath>
@@ -118,6 +141,7 @@
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <PreprocessToFile>false</PreprocessToFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;USE_LOGCONTEXT;ENABLE_CHEATS;WIN32;_WINDOWS;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -171,6 +195,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -178,13 +203,69 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;mk4vc70s.lib;libcurl_imp.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/DRODLibTests.exe</OutputFile>
+      <OutputFile>$(OutDir)/DRODLibTests.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
       <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+      <Profile>false</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='SteamBuildDats|Win32'">
+    <BuildLog>
+      <Path>
+      </Path>
+    </BuildLog>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/drod.tlb</TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>C:\Projects\Personal\C++\DROD;..\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;UNICODE;_CRT_SECURE_NO_DEPRECATE;CARAVELBUILD;PATCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BrowseInformation>
+      </BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;mk4vc70s.lib;libcurl_imp.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)/DRODLibTests.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
       <Profile>false</Profile>
     </Link>
@@ -225,6 +306,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <OmitDefaultLibName>true</OmitDefaultLibName>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;CARAVELBUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -232,7 +314,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>libtheora_static.lib;libvorbisfile_static.lib;libvorbis_static.lib;libogg_static.lib;mk4vc70s.lib;libcurl_imp.lib;jpeglib.lib;libpng.lib;fmodvc.lib;sdl2.lib;sdl2main.lib;SDL2_ttf.lib;zlib.lib;libexpat.lib;ws2_32.lib;json_vc71_libmt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/DRODLibTests.exe</OutputFile>
+      <OutputFile>$(OutDir)/DRODLibTests.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -260,7 +342,12 @@
     <ClCompile Include="src\tests\Crashes\DisablingProcessedFiretrapCrash.cpp" />
     <ClCompile Include="src\tests\Elements\Briars.cpp" />
     <ClCompile Include="src\tests\Elements\Bridges.cpp" />
+    <ClCompile Include="src\tests\Elements\PowderKeg.cpp" />
+    <ClCompile Include="src\tests\Elements\SoldierHorn.cpp" />
+    <ClCompile Include="src\tests\Elements\SquadHorn.cpp" />
+    <ClCompile Include="src\tests\Elements\GreenGate.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\BeingKilledByMonsters.cpp" />
+    <ClCompile Include="src\tests\Monsters\ArmedMonsters\DisarmedArmedMonsters.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\MovingIntoPuffs.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedGuards.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\RearmedSlayers.cpp" />
@@ -268,7 +355,9 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StalwartsAttackWithDagger.cpp" />
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\StrikingWhenStunned.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\CrackedOrbs.cpp" />
+    <ClCompile Include="src\tests\Monsters\Aumtlich\DoubleGaze.cpp" />
     <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp" />
+    <ClCompile Include="src\tests\Monsters\Clone.cpp" />
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />
@@ -288,17 +377,25 @@
     <ClCompile Include="src\tests\Player\Bugs\PushedPlayerKilledByHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushingMonstersOnHotTiles.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushNPCOnBlockingTile.cpp" />
+    <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstCaber.cpp" />
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
     <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingKegs.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingMirrors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingOrbs.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
     <ClCompile Include="src\tests\Scripting\Imperative_BrainPathmapObstacle.cpp" />
+    <ClCompile Include="src\tests\Scripting\Imperative_Vulnerable_Invulnerable.cpp" />
+    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp" />
     <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp" />

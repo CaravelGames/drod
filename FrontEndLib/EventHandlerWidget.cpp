@@ -207,6 +207,7 @@ void CEventHandlerWidget::Activate()
 	while (!this->bDeactivate)
 	{
 		//Process one frame.
+		CScreen::dwCurrentTicks = SDL_GetTicks();
 
 		//Get any events waiting in the queue.
 		while (!this->bDeactivate && PollEvent(&event))
@@ -434,18 +435,11 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 	switch (wevent.event)
 	{
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			g_pTheSound->Unmute();
-			g_pTheSound->UnpauseSounds();
-			ClearEvents();  // !!! do we still need this?
+			OnWindowEvent_GetFocus();
 			break;
 
 		case SDL_WINDOWEVENT_FOCUS_LOST:
-			//Disable sound/music when app is inactive.
-			if (!g_pTheSound->bNoFocusPlaysMusic)
-				g_pTheSound->Mute();
-			else
-				g_pTheSound->PauseSounds();
-			ClearEvents();  // !!! do we still need this?
+			OnWindowEvent_LoseFocus();
 			break;
 
 		case SDL_WINDOWEVENT_EXPOSED:
@@ -465,6 +459,30 @@ void CEventHandlerWidget::OnWindowEvent(const SDL_WindowEvent &wevent)
 
 		default: break;
 	}
+}
+
+//*****************************************************************************
+void CEventHandlerWidget::OnWindowEvent_GetFocus()
+{
+	CBitmapManager::bGameHasFocus = true;
+	g_pTheSound->Unmute();
+	g_pTheSound->UnpauseSounds();
+	ClearEvents();  // !!! do we still need this?
+}
+
+//*****************************************************************************
+void CEventHandlerWidget::OnWindowEvent_LoseFocus()
+{
+	if (CScreen::IsFullScreen() && CScreen::bMinimizeOnFullScreen)
+		SDL_MinimizeWindow(GetMainWindow());
+
+	CBitmapManager::bGameHasFocus = false;
+	//Disable sound/music when app is inactive.
+	if (!g_pTheSound->bNoFocusPlaysMusic)
+		g_pTheSound->Mute();
+	else
+		g_pTheSound->PauseSounds();
+	ClearEvents();  // !!! do we still need this?
 }
 
 //**********************************************************************************
@@ -545,6 +563,7 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 
 	//Animate widgets and call between events handler if interval has elapsed.
 	if (!this->bPaused &&
+		!IsDeactivating() &&
 		dwNow - this->dwLastOnBetweenEventsCall > this->dwBetweenEventsInterval)
 	{
 		//Animate widgets.

@@ -135,6 +135,7 @@ bool CBriar::process()
 CBriars::CBriars()
 	: pRoom(NULL)
 	, bRecalc(false)
+	, bIsProcessing(false)
 {
 }
 
@@ -280,8 +281,8 @@ void CBriars::expand(
 					break;
 
 					case T_LIGHT:
-						this->pRoom->SetTParam(tile->wX, tile->wY, 0);
-						CueEvents.Add(CID_LightToggled); // Technically removed but this will force regenerating static lighting 
+						this->pRoom->SetTParam(wX, wY, 0);
+						CueEvents.Add(CID_LightToggled); // This will force static lighting regeneration
 						break;
 
 					//Briar passes over and covers everything else.  Including orbs.
@@ -628,6 +629,9 @@ void CBriars::process(
 		return;
 
 	ASSERT(this->pRoom);
+	ASSERT(!this->bIsProcessing);
+	
+	this->bIsProcessing = true;
 
 	//Preprocessing.
 	list<CBriar*>::iterator briar;
@@ -784,6 +788,13 @@ void CBriars::process(
 		}
 	} while (true); //repeat until all briars are done
 
+	this->bIsProcessing = false;
+
+	for (CCoordSet::const_iterator it = this->pendingRootRemovals.begin(); it != this->pendingRootRemovals.end(); ++it)
+		removeSource(it->wX, it->wY);
+
+	this->pendingRootRemovals.clear();
+
 	if (!powder_kegs.IsEmpty()) {
 		CCoordStack no_bombs;
 		pRoom->DoExplode(CueEvents, no_bombs, powder_kegs);
@@ -799,12 +810,21 @@ void CBriars::process(
 		this->pRoom->ActivateOrb(plate->wX, plate->wY, CueEvents, OAT_PressurePlate);
 	}
 	this->pressurePlates.clear();
+
 }
 
 //*****************************************************************************
 void CBriars::removeSource(const UINT wX, const UINT wY)
 //Removes briar root at (x,y).
 {
+	// If in the middle of briar root processing remove the root at the end of processing to avoid
+	// the process accessing deleted briar root's memory and crashing the game
+	if (this->bIsProcessing)
+	{
+		this->pendingRootRemovals.insert(wX, wY);
+		return;
+	}
+
 	list<CBriar*>::iterator briar;
 	for (briar = this->briars.begin(); briar != this->briars.end(); ++briar)
 	{

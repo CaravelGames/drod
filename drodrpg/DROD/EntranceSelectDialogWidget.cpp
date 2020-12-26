@@ -45,6 +45,8 @@
 #include "../DRODLib/DbHolds.h"
 #include "../Texts/MIDs.h"
 
+#include <sstream>
+
 //NOTE: tag #'s should not conflict with other widgets on screen
 const UINT TAG_ENTRANCES_LISTBOX = 898;
 const UINT TAG_DELETE = 897;
@@ -512,6 +514,40 @@ void CEntranceSelectDialogWidget::PopulateListBoxFromGlobalVars(const PlayerStat
 		wstr += wszSpace;
 		wstr += _itoW((int)(st.getVar(ScriptVars::globals[i])), temp, 10);
 		this->pListBoxWidget->AddItem(ScriptVars::globals[i], wstr.c_str());
+	}
+}
+
+//*****************************************************************************
+void CEntranceSelectDialogWidget::PopulateListBoxFromHoldVars(CCurrentGame* pGame)
+{
+	CDbPackedVars& stats = pGame->stats;
+
+	for (vector<HoldVar>::const_iterator var = pGame->pHold->vars.begin();
+		var != pGame->pHold->vars.end(); ++var) {
+		char varID[10], varName[11] = "v";
+		//Get local hold var.
+		_itoa(var->dwVarID, varID, 10);
+		strcat(varName, varID);
+
+		UNPACKEDVARTYPE vType;
+		WSTRING wVarValue;
+		vType = stats.GetVarType(varName);
+
+		if (vType == UVT_int) {
+			int iVarValue = stats.GetVar(varName, (int)0);
+			std::basic_stringstream<WCHAR_t> stream;
+			stream << iVarValue;
+			wVarValue = stream.str();
+		} else {
+			wVarValue = stats.GetVar(varName, WS("0"));
+		}
+
+		WSTRING wstr = var->varNameText.c_str();
+		wstr += wszSpace;
+		wstr += wszEqual;
+		wstr += wszSpace;
+		wstr += wVarValue;
+		this->pListBoxWidget->AddItem(var->dwVarID, wstr.c_str());
 	}
 }
 

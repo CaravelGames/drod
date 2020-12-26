@@ -26,6 +26,8 @@
 
 #include "BuildUtil.h"
 #include "CurrentGame.h"
+#include "PlayerDouble.h"
+#include "OrbUtil.h"
 
 //*****************************************************************************
 bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
@@ -65,6 +67,12 @@ bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 	default:
 		return true;
 	}
+}
+
+//*****************************************************************************
+bool BuildUtil::BuildTileAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents)
+{
+	return BuildTilesAt(room, tile, x, y, 0, 0, bAllowSame, CueEvents);
 }
 
 //*****************************************************************************
@@ -111,6 +119,18 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 			}
 		}
 	}
+
+	if (TILE_LAYER[tile] == LAYER_OPAQUE) {
+		for (UINT y = py; y <= endY; ++y)
+			for (UINT x = px; x <= endX; ++x) {
+				//When o-layer changes, refresh bridge supports.
+				room.bridges.HandleTileBuilt(x, y, room.GetOSquare(x, y));
+			}
+	}
+
+	if (bIsDoor(tile))
+		OrbUtil::MergeDoorConnectionsInArea(room, px, py, endX - px, endY - py);
+
 	return true;
 }
 
@@ -384,10 +404,16 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 		room.ConvertUnstableTar(CueEvents);
 	}
 
+	if (wLayer == LAYER_OPAQUE) {
+		// Building/removing tiles that (can) affect weapon sheathing should refresh it immediately
+		if (bIsSheatheAffecting(wOldOTile) || bIsSheatheAffecting(tile)) {
+			CPlayerDouble* pDouble = dynamic_cast<CPlayerDouble*>(room.GetMonsterAtSquare(x, y));
 
-	//When o-layer changes, refresh bridge supports.
-	if (wLayer == LAYER_OPAQUE)
-		room.bridges.built(x, y, tile);
+			if (pDouble) {
+				pDouble->SetSwordSheathed();
+			}
+		}
+	}
 
 	CueEvents.Add(CID_ObjectBuilt, new CMoveCoord(x, y, tile), true);
 

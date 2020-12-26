@@ -211,7 +211,6 @@ public:
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
 	void AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
-	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID=0, const bool bMakeRoomsVisible=true);
 	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
@@ -250,6 +249,7 @@ public:
 	static int getPredefinedWeaponPower(const UINT type);
 	int      getShieldPower(const UINT type) const;
 	int      getWeaponPower(const UINT type) const;
+	CIDSet   GetPreviouslyExploredRooms() const { return PreviouslyExploredRooms; }
 	WSTRING  GetScrollTextAt(const UINT wX, const UINT wY);
 	UINT     GetRoomExitDirection(const UINT wMoveO) const;
 	UINT     GetScore() const;
@@ -302,6 +302,7 @@ public:
 	void     ProcessMonsterDefeat(CCueEvents& CueEvents,
 			CMonster* pDefeatedMonster, const UINT wSX, const UINT wSY,
 			const UINT wSwordMovement);
+	void     ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents);
 	void     ProcessMoveFreeScripts(CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessScripts(int nCommand, CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessSwordHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
@@ -367,9 +368,9 @@ public:
 //	bool     bBrainSensesSwordsman;
 //	UINT     wLastCheckpointX, wLastCheckpointY;
 //	vector<UINT> checkpointTurns; //turn #s a checkpoint was activated
-	UINT    dwStartTime;   //keeps track of real play time elapsed
+	UINT     dwStartTime;   //keeps track of real play time elapsed
 //	bool     bHoldMastered; //whether player has mastered hold being played
-	UINT    dwCutScene;    //if set, play cut scene moves at specified rate
+	UINT     dwCutScene;    //if set, play cut scene moves at specified rate
 	bool     bContinueCutScene;
 //	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
@@ -464,6 +465,7 @@ private:
 //	UINT    dwAutoSaveOptions;
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 
+	bool     bRoomDisplayOnly; //indicates player is not in room and no player interaction should be processed
 	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	bool     bValidatingPlayback; //for streamlining parts of the playback process
 
@@ -472,6 +474,9 @@ private:
 	UINT dwComputationTime; //time required to process game moves up to this point
 	UINT dwComputationTimePerSnapshot; //real movement computation time between game state snapshots
 */
+
+	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0, const bool bMakeRoomsVisible = true);
+	CIDSet   PreviouslyExploredRooms; //cache values
 };
 
 #endif //...#ifndef CURRENTGAME_H

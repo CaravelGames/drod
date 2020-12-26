@@ -74,6 +74,7 @@
 #  pragma warning(disable:4786)
 #endif
 
+#include "Clone.h"
 #include "CurrentGameRecords.h"
 #include "DemoRecInfo.h"
 #include "DbSavedGames.h"
@@ -137,6 +138,20 @@ struct MusicData
 	WSTRING songlistKey;
 };
 
+struct RoomCompletionData
+{
+	RoomCompletionData(UINT wOriginalMonsterCount, bool bConquerTokenNeedsActivating)
+		: wOriginalMonsterCount(wOriginalMonsterCount),
+		bConquerTokenNeedsActivating(bConquerTokenNeedsActivating) {}
+
+	UINT wOriginalMonsterCount;
+	bool bConquerTokenNeedsActivating;
+};
+
+struct cloneComparator {
+    bool operator() (const CClone *a, const CClone *b) const;
+};
+
 //*******************************************************************************
 class CCharacter;
 class CDb;
@@ -163,8 +178,9 @@ public:
 	}
 
 	WSTRING  AbbrevRoomLocation();
-	void     AddNewEntity(CCueEvents& CueEvents, const UINT identity,
+	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO);
+	bool     AreBeaconsIgnored() const;
 	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 			const bool bUseCurrentTurnNo=true);
 	void     Clear(const bool bNewGame=true);
@@ -305,6 +321,7 @@ public:
 	//Game state vars
 	bool     bSwordsmanOutsideRoom;
 	bool     bIsDemoRecording;
+	bool     bIsLeavingLevel;
 	bool     bIsGameActive;
 	UINT     wTurnNo;
 	UINT     wPlayerTurn;      //player move #
@@ -377,6 +394,7 @@ private:
 	void     ProcessMonsters(int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents);
+	void     ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents);
 	void     ProcessPlayer(const int nCommand, CCueEvents &CueEvents);
 	void     ProcessPlayer_HandleLeaveLevel(CCueEvents &CueEvents,
 			const LevelExit& exit=LevelExit(), const bool bSkipEntranceDisplay=false);
@@ -443,6 +461,7 @@ private:
 	UINT     dwAutoSaveOptions;
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
+	bool     bWasRoomConqueredAtTurnStart;
 
 	CCurrentGame *pSnapshotGame; //for optimized room rewinds
 	UINT dwComputationTime; //time required to process game moves up to this point

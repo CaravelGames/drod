@@ -257,7 +257,7 @@ bool CRestoreScreen::SetForActivate()
 		if (!SetWidgets())
 			return false;
 
-		SelectFirstWidget(false);
+		SelectWidget(TAG_SAVE_LBOX);
 	}
 
 	return true;
@@ -497,9 +497,6 @@ bool CRestoreScreen::SetWidgets()
 void CRestoreScreen::ShowSave()
 //Show information pertaining to this saved game.
 {
-	if (this->pCurrentRestoreGame)
-		this->pCurrentRestoreGame->AddRoomsPreviouslyExploredByPlayerToMap();
-
 	UpdateWidgets();
 
 	//Update level and room location label.

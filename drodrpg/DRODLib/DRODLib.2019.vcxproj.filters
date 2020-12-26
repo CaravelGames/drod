@@ -1,0 +1,468 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="General">
+      <UniqueIdentifier>{0ae9b5a3-7245-4ed0-828a-3a24f1131473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Monsters">
+      <UniqueIdentifier>{39b0cbdc-87e4-4d06-bc1b-d972ee5c4f25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Items">
+      <UniqueIdentifier>{865244a3-8907-4a15-8585-a1b8905b9db9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DBs">
+      <UniqueIdentifier>{3a5dc181-7d1b-4b97-adb3-fafd26ba5e7c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Combat.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="CueEvents.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="CurrentGame.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="GameConstants.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="NetInterface.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerStats.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Swordsman.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="Db.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbBase.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbCommands.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbData.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbDemos.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbHolds.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbLevels.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbMessageText.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbPackedVars.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbPlayers.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbRefs.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbRooms.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbSavedGameMoves.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbSavedGames.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbSpeech.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="DbXML.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="EntranceData.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="ImportInfo.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="Ant.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="AntHill.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="BlueSerpent.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Brain.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Character.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterCommand.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Citizen.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Clone.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Decoy.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="EvilEye.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Goblin.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="GreenSerpent.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Guard.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Halph.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Mimic.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterFactory.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterMessage.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterPiece.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Phoenix.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="PhoenixAshes.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerDouble.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="RedSerpent.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Roach.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="RoachEgg.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="RoachQueen.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="RockGiant.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Seep.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Serpent.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Slayer.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Spider.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Splitter.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Stalwart.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="TarBaby.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="TarMother.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="WraithWing.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Wubba.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Zombie.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="Briar.cpp">
+      <Filter>Items</Filter>
+    </ClCompile>
+    <ClCompile Include="Bridge.cpp">
+      <Filter>Items</Filter>
+    </ClCompile>
+    <ClCompile Include="Building.cpp">
+      <Filter>Items</Filter>
+    </ClCompile>
+    <ClCompile Include="PathMap.cpp">
+      <Filter>Items</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform.cpp">
+      <Filter>Items</Filter>
+    </ClCompile>
+    <ClCompile Include="SettingsKeys.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildUtil.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="OrbUtil.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Combat.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CueEvents.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CurrentGame.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="GameConstants.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="NetInterface.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStats.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Swordsman.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TileConstants.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="Db.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbBase.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbCommands.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbData.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbDemos.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbHolds.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbLevels.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbMessageText.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbPackedVars.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbPlayers.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DBProps.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbRefs.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbRooms.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbSavedGameMoves.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbSavedGames.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbSpeech.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbVDInterface.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="DbXML.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="EntranceData.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="HoldRecords.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="ImportInfo.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="Ant.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="AntHill.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="BlueSerpent.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Brain.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Character.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterCommand.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Citizen.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Clone.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Decoy.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="EvilEye.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Goblin.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="GreenSerpent.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Guard.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Halph.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Mimic.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterFactory.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterMessage.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterPiece.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterTypes.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Phoenix.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="PhoenixAshes.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerDouble.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="RedSerpent.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Roach.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="RoachEgg.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="RoachQueen.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="RockGiant.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Seep.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Serpent.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Slayer.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Spider.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Splitter.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Stalwart.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="TarBaby.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="TarMother.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Wraithwing.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Wubba.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Zombie.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="Briar.h">
+      <Filter>Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Bridge.h">
+      <Filter>Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Building.h">
+      <Filter>Items</Filter>
+    </ClInclude>
+    <ClInclude Include="PathMap.h">
+      <Filter>Items</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>Items</Filter>
+    </ClInclude>
+    <ClInclude Include="SettingsKeys.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildUtil.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="RoomData.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="OrbUtil.h">
+      <Filter>General</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="VTune\DRODLib.vpj" />
+  </ItemGroup>
+</Project>

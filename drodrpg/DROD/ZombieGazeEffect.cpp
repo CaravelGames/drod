@@ -31,9 +31,9 @@
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/Zombie.h"
 #include <BackEndLib/Assert.h>
+#include <FrontEndLib/Screen.h>
 
-Uint32 CZombieGazeEffect::dwLastDraw = 0;
-
+Uint8 CZombieGazeEffect::brightness = 255;
 
 //********************************************************************************
 CZombieGazeEffect::CZombieGazeEffect(
@@ -42,8 +42,7 @@ CZombieGazeEffect::CZombieGazeEffect(
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const CMonster *pZombie)      //(in)   Zombie emitting gaze.
-	: CEffect(pSetWidget, EGAZE)
-	, pZombie(pZombie)
+	: CEffect(pSetWidget, (UINT) -1, EGAZE)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -59,12 +58,55 @@ CZombieGazeEffect::CZombieGazeEffect(
 	this->origin.wO = pZombie->wO;
 
 	//Prepare beam effect.
-	PrepareBeam();
+	PrepareBeam(pZombie);
 }
 
 //********************************************************************************
-bool CZombieGazeEffect::Draw(SDL_Surface* pDestSurface)
-//Draw the effect.
+void CZombieGazeEffect::SharedStateUpdate(const UINT wDeltaTime)
+//Updates the state for this effect shared by all instances
+{
+	static bool bMakeBrighter = false;
+	static Uint32 lastUpdatePresentCount = 0;
+
+	if (wDeltaTime == 0)
+		CZombieGazeEffect::brightness = 255;
+
+	// Already updated this frame
+	if (lastUpdatePresentCount == CScreen::dwPresentsCount)
+		return;
+
+	UINT dwTimeElapsed = wDeltaTime / 2; // Run this effect at half speed
+
+	if (dwTimeElapsed > 255)
+		dwTimeElapsed = 255;
+
+	const Uint8 timeElapsed = static_cast<Uint8>(dwTimeElapsed);
+	if (bMakeBrighter)
+	{
+		if (CZombieGazeEffect::brightness >= 255 - timeElapsed)
+		{
+			CZombieGazeEffect::brightness = 255;
+			bMakeBrighter = false;
+		}
+		else
+			CZombieGazeEffect::brightness += timeElapsed;
+	}
+	else {
+		if (CZombieGazeEffect::brightness <= timeElapsed)
+		{
+			CZombieGazeEffect::brightness = 0;
+			bMakeBrighter = true;
+		}
+		else
+			CZombieGazeEffect::brightness -= timeElapsed;
+	}
+
+	lastUpdatePresentCount = CScreen::dwPresentsCount;
+}
+
+//********************************************************************************
+bool CZombieGazeEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+//Updates the effect state & dirty rects
 //
 //Returns:
 //True if effect should continue, or false if effect is done.
@@ -72,64 +114,37 @@ bool CZombieGazeEffect::Draw(SDL_Surface* pDestSurface)
 	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
 	if (wTurnNow != this->wValidTurn)
 		return false;
-	if (!this->pZombie->bAlive)
-		return false;
 
-	if (!pDestSurface) pDestSurface = GetDestSurface();
+	CZombieGazeEffect::SharedStateUpdate(wDeltaTime);
 
-	//Set transparency level: beam strobes.
-	static Uint8 brightness = 255;
-	if (g_pTheBM->bAlpha)
-	{
-		static bool bMakeBrighter = false;
-		const Uint32 dwNow = SDL_GetTicks();
-		UINT dwTimeElapsed = dwNow - CZombieGazeEffect::dwLastDraw;
-		dwTimeElapsed /= 2; //half-speed
-		CZombieGazeEffect::dwLastDraw = dwNow;
-		if (dwTimeElapsed > 255)
-			dwTimeElapsed = 255;
-		const Uint8 timeElapsed = static_cast<Uint8>(dwTimeElapsed);
-		if (bMakeBrighter)
-		{
-			if (brightness >= 255 - timeElapsed)
-			{
-				brightness = 255;
-				bMakeBrighter = false;
-			} else
-				brightness += timeElapsed;
-		} else {
-			if (brightness <= timeElapsed)
-			{
-				brightness = 0;
-				bMakeBrighter = true;
-				return true;  //nothing to draw this frame
-			}
-			else
-				brightness -= timeElapsed;
-		}
-	}
+	return true;
+}
+
+//********************************************************************************
+void CZombieGazeEffect::Draw(SDL_Surface& destSurface)
+//Draw the effect.
+{
+	if (CZombieGazeEffect::brightness == 0)
+		return; // Nothing to draw this frame
 
 	//Clip screen surface to widget because beams will go all over the place.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(pDestSurface, &OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
 
 	//Draw beam.
 	for (UINT wIndex=this->coords.size(); wIndex--; )
 	{
 		CMoveCoord& coord = this->coords[wIndex];
-		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, pDestSurface, false, brightness);
+		g_pTheBM->BlitTileImage(coord.wO, coord.wX, coord.wY, &destSurface, false, CZombieGazeEffect::brightness);
 	}
 
 	//Unclip screen surface.
-	SDL_SetClipRect(pDestSurface, NULL);
-
-	//Continue effect.
-	return true;
+	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************
-void CZombieGazeEffect::PrepareBeam()
+void CZombieGazeEffect::PrepareBeam(const CMonster *pMonster)
 {
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
 	ASSERT(pRoom);
@@ -165,7 +180,7 @@ void CZombieGazeEffect::PrepareBeam()
 				case E: case W: wTileNo = TI_ZGAZE_EW;	break;
 				case NW: case SE: wTileNo = TI_ZGAZE_NWSE; break;
 				case NE: case SW: wTileNo = TI_ZGAZE_NESW; break;
-				default:	ASSERT(!"Bad gaze orientation"); break;
+				default:        ASSERT(!"Bad gaze orientation"); break;
 			}
 			this->coords.push_back(CMoveCoord(destX, destY, wTileNo));
 			SDL_Rect Dest = MAKE_SDL_RECT(destX, destY, CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);
