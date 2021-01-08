@@ -138,7 +138,8 @@ namespace ScriptFlag
 		PushObjects=21,         //can push movable objects
 		LuckyXP=22,             //x2 XP from fights
 		AttackLast=23,          //I always attack last in combat
-		BeamBlock=24            //blocks beam attacks
+		BeamBlock=24,           //blocks beam attacks
+		SpawnEggs=25,           //will spawn eggs in reaction to combats
 	};
 
 	//Inventory and global script types.

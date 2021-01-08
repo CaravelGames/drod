@@ -1431,6 +1431,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::BeamAttack, g_pTheDB->GetMessageText(MID_BehaviorBeamAttack));
 	this->pBehaviorListBox->AddItem(ScriptFlag::BeamBlock, g_pTheDB->GetMessageText(MID_BehaviorBeamBlock));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SurprisedFromBehind, g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind));
+	this->pBehaviorListBox->AddItem(ScriptFlag::SpawnEggs, g_pTheDB->GetMessageText(MID_SpawnEggs));
 	this->pBehaviorListBox->AddItem(ScriptFlag::GoblinWeakness, g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SerpentWeakness, g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Metal, g_pTheDB->GetMessageText(MID_BehaviorMetal));
@@ -4289,6 +4290,8 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_DEF_MULT, g_pTheDB->GetMessageText(MID_VarMonsterDEFMult));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_GOLD_MULT, g_pTheDB->GetMessageText(MID_VarMonsterGRMult));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_XP_MULT, g_pTheDB->GetMessageText(MID_VarMonsterXPMult));
+
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_SPAWN, g_pTheDB->GetMessageText(MID_VarMySpawn));
 
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_MULT, g_pTheDB->GetMessageText(MID_VarItemMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_HP_MULT, g_pTheDB->GetMessageText(MID_VarItemHPMult));

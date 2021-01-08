@@ -728,6 +728,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SetMovementType: strText = "Set movement type"; break;
 		case MID_Ground: strText = "Ground"; break;
 		case MID_Air: strText = "Air"; break;
+		case MID_SpawnEggs: strText = "Spawn Eggs"; break;
+		case MID_VarMySpawn: strText = "_MySpawn"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

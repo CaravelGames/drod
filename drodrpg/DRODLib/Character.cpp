@@ -84,6 +84,8 @@ const UINT MAX_ANSWERS = 9;
 #define ItemDEFMultStr "ItemDEFMultiplier"
 #define ItemGRMultStr "ItemGRMultiplier"
 
+#define SpawnTypeStr "SpawnType"
+
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
 #define YRelStr "YRel"
@@ -122,6 +124,7 @@ const UINT MAX_ANSWERS = 9;
 #define DropTrapdoorsStr "DropTrapdoors"
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
+#define SpawnEggsStr "SpawnEggs"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -235,7 +238,7 @@ CCharacter::CCharacter(
 	, bSerpentWeakness(false)
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
-	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false)
+	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -248,6 +251,7 @@ CCharacter::CCharacter(
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
 	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
 	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
+	, wSpawnType(-1)
 {
 }
 
@@ -480,6 +484,9 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			return this->itemGRmult;
 
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			return this->wSpawnType;
 
 		//Hidden global values
 		case (UINT)ScriptVars::P_TOTALTIME:
@@ -633,6 +640,11 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 		break;
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			this->itemGRmult = val;
+		break;
+
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			this->wSpawnType = val;
 		break;
 
 		//Combat enemy stats.
@@ -2685,7 +2697,7 @@ void CCharacter::Process(
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast =
-						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects =
+						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2766,6 +2778,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::PushObjects:
 						this->bPushObjects = true;
+					break;
+					case ScriptFlag::SpawnEggs:
+						this->bSpawnEggs = true;
 					break;
 
 					default:
@@ -3209,6 +3224,9 @@ Finish:
 			FaceTarget();
 		if (this->bFaceAwayFromTarget)
 			FaceAwayFromTarget();
+
+		if (this->bSpawnEggs && this->IsSpawnEggTriggered(CueEvents))
+			SpawnEgg(CueEvents);
 
 		if (this->bAttackAdjacent && !this->bAttacked)
 		{
@@ -3778,6 +3796,15 @@ UINT CCharacter::GetResolvedIdentity() const
 {
 	UINT wIdentity = GetIdentity();
 	return wIdentity;
+}
+
+UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
+{
+	if (this->wSpawnType >= 0) {
+		return this->wSpawnType;
+	}
+
+	return CMonster::GetSpawnType(defaultMonsterID);
 }
 
 //*****************************************************************************
@@ -4802,6 +4829,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDropTrapdoors = vars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
+	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
 	this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
@@ -4825,6 +4853,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
 	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
 	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
+
+	//Spawn type
+	this->wSpawnType = vars.GetVar(SpawnTypeStr, this->wSpawnType);
 }
 
 //*****************************************************************************
@@ -4929,6 +4960,8 @@ const
 		vars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	if (this->bPushObjects)
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
+	if (this->bSpawnEggs)
+		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
@@ -4970,6 +5003,10 @@ const
 		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
 	if (this->itemGRmult != 100)
 		vars.SetVar(ItemGRMultStr, this->itemGRmult);
+
+	// Spawn type
+	if (this->wSpawnType != -1)
+		vars.SetVar(SpawnTypeStr, this->wSpawnType);
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 

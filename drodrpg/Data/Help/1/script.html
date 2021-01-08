@@ -534,10 +534,14 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  Attack(<a href="#attack">*</a>) whenever the player is adjacent the NPC.</li>
   <li><a name="be_beam"><u>Beam attack</u></a>:
 	  NPC emits a beam that halves the player's health on contact.</li>
+  <li><a name="be_beam_block"><u>Beam blocker</u></a>:
+      Embues custom equipment with the ability to block beam attacks. Swords will prevent beams passing through them, shields protect from beams the player is facing, and accessories will protect from beams in all directions.</li>
   <li><a name="be_surprised"><u>Surprised from behind</u></a>:
 	  If the player attacks a monster with this attribute from behind,
 	  the NPC loses its first attack turn.  For equipment, it gives the player's
 	  first hit x2 ATK when hitting the monster first from behind.</li>
+  <li><a name="be_spawn_eggs"><u>Spawn Eggs</u></a>:
+      NPC will generate roach eggs or another monster type when the player engages another monster in combat. The type of monster generated can be controlled by the <b>_MySpawn</b> and <b>_QueenSpawn variables</b>.</li>  
   <li><a name="be_goblin"><u>Goblin Weakness</u></a>:
 	  NPC is weak to goblin blades (i.e. player gets x2 ATK).
 	  Embues custom weapons with goblin blade attribute.</li>
@@ -692,6 +696,8 @@ The variable names are case-insensitive.
     <td>_GelSpawn</td><td>global gel spawn entity ID(<a href="#gelspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
     <td>_QueenSpawn</td><td>global roach queen spawn entity ID(<a href="#queenspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_MySpawn</td><td>local NPC spawn entity ID(<a href="#queenspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
     <td><b>Player stats</b></td><td></td><td></td><td></td>
   </tr><tr>

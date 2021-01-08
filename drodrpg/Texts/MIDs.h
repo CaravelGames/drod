@@ -1484,6 +1484,7 @@ enum MID_CONSTANT {
   MID_SetMovementType = 1799,
   MID_Ground = 1800,
   MID_Air = 1801,
+  MID_SpawnEggs = 1802,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
@@ -1559,6 +1560,7 @@ enum MID_CONSTANT {
   MID_VarTarSpawn = 1785,
   MID_VarGelSpawn = 1786,
   MID_VarQueenSpawn = 1787,
+  MID_VarMySpawn = 1803,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

@@ -74,6 +74,7 @@ public:
 	virtual bool   CanAttackFirst() const {return this->bAttackFirst;}
 	virtual bool   CanAttackLast() const {return this->bAttackLast;}
 	virtual bool   CanCutBriar() const {return this->bBriar;}
+	virtual bool   CanSpawnEggs() const {return this->bSpawnEggs;}
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
@@ -92,6 +93,7 @@ public:
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
+	virtual UINT   GetSpawnType(UINT defaultMonsterID) const;
 	float          GetStatModifier(ScriptVars::StatModifiers statType) const;
 	bool           HasSpecialDeath() const;
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
@@ -276,6 +278,7 @@ private:
 	bool bDropTrapdoors;       //stepping off a trapdoor drops it
 	bool bMoveIntoSwords;      //can move onto swords instead of being blocked by them
 	bool bPushObjects;         //can push movable objects
+	bool bSpawnEggs;           //will spawn eggs in reaction to combats
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
@@ -294,6 +297,7 @@ private:
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
+	int wSpawnType; // type of monster to spawm when spawning eggs
 };
 
 //*****************************************************************************

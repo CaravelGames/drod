@@ -1672,6 +1672,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackAdj = pMonster->wType == M_WATERSKIPPER || pMonster->wType == M_SEEP;
 	bool bAttackInFront = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
+	bool bSpawnEggs = pMonster->wType == M_QROACH;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -1679,6 +1680,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		bAttackAdj |= pCharacter->AttacksWhenAdjacent();
 		bAttackInFront |= pCharacter->AttacksInFront();
 		bAttackInFrontWhenBack |= pCharacter->AttacksInFrontWhenBackTurned();
+		bSpawnEggs |= pCharacter->CanSpawnEggs();
 	}
 
 	if (pMonster->HasRayGun())
@@ -1750,13 +1752,21 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
 		++count;
 	}
+	if (bSpawnEggs) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
+		++count;
+	}
 
 	//Unique.
 	UINT mid=0;
 	switch (pMonster->wType)
 	{
 		case M_MIMIC: mid = MID_MimicAbility; break;
-		case M_QROACH: mid = MID_RoachQueenAbility; break;
 		case M_WATERSKIPPER: mid = MID_WaterSkipperAbility; break;
 		case M_SEEP: mid = MID_SeepAbility; break;
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER: mid = MID_TarMotherAbility; break;
