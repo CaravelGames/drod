@@ -163,7 +163,8 @@ namespace ScriptFlag
 		ActivatePlates = 22,
 		PushMonsters = 23,
 		FatalPushImmune = 24,
-		CanBeNPCBeethro = 25
+		CanBeNPCBeethro = 25,
+		RestrictedMovement = 26
 	};
 
 	enum DisplayFilter
@@ -321,6 +322,7 @@ public:
 		CC_Behavior,			// Set behavior X on or off.
 		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
 		CC_PushTile,            //Push object or entity at (x,y) in direction (w)
+		CC_SetMovementType,     //Sets the character's movement type to X.
 
 		CC_Count
 	};

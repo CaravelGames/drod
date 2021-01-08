@@ -1763,6 +1763,7 @@ enum MID_CONSTANT {
   MID_PushObjects = 1910,
   MID_PushMonsters = 1943,
   MID_MovePlatforms = 1911,
+  MID_RestrictedMovement = 2012,
   MID_CanBeMonsterAttacked = 1913,
   MID_MonsterTarget = 1912,
   MID_MonsterTargetWhenPlayerIsTarget = 1914,
@@ -1786,6 +1787,10 @@ enum MID_CONSTANT {
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,
   MID_KeepBehaviors = 1994,
+  MID_SetMovementType = 2008,
+  MID_Ground = 2009,
+  MID_GroundAndShallow = 2010,
+  MID_Air = 2011,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

@@ -2731,6 +2731,23 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetMovementType:
+			{
+				const MovementType eNewMovementType = (MovementType)command.x;
+
+				if (this->bIfBlock)
+				{
+					//When used with if, check if movement type equals X
+					if (this->eMovement != eNewMovementType)
+						STOP_COMMAND;
+				}	else {
+					//Set movement type X
+					this->eMovement = eNewMovementType;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_TurnIntoMonster:
 				TurnIntoMonster(CueEvents);
 			break;
@@ -2864,6 +2881,7 @@ void CCharacter::Process(
 				// When the underlying identity is changed, update default behaviors
 				if (!command.y && wIdentity != wPreviousIdentity) {
 					SetDefaultBehaviors();
+					SetDefaultMovementType();
 				}
 				bProcessNextCommand = true;
 			}
@@ -3668,14 +3686,6 @@ bool CCharacter::IsBrainPathmapObstacle() const
 }
 
 //*****************************************************************************
-bool CCharacter::IsFlying() const
-//Returns: whether character is flying
-{
-	const UINT identity = GetResolvedIdentity();
-	return bIsEntityFlying(identity);
-}
-
-//*****************************************************************************
 bool CCharacter::IsFriendly() const
 //Returns: whether character is friendly to the player
 {
@@ -3723,14 +3733,6 @@ bool CCharacter::IsPushableByWeaponAttack() const
 //Returns: whether character is pushable by body
 {
 	return this->bPushableByWeapon;
-}
-
-//*****************************************************************************
-bool CCharacter::IsSwimming() const
-//Returns: whether character is swimming
-{
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_WATERSKIPPER || identity == M_SKIPPERNEST;
 }
 
 //*****************************************************************************
@@ -4650,25 +4652,46 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
-	switch (GetResolvedIdentity())
+	// With the Restricted Movement behavior, characters cannot perform normal
+	// movement if their movement types prevent it.
+	if (HasBehavior(ScriptFlag::RestrictedMovement)) {
+		return CMonster::IsTileObstacle(wTileNo);
+	}
+
+	// All the things a character can step onto
+	bool bIsObstacle = !(
+		wTileNo == T_EMPTY ||
+		bIsFloor(wTileNo) ||
+		bIsOpenDoor(wTileNo) ||
+		bIsAnyArrow(wTileNo) ||
+		bIsPlatform(wTileNo) ||
+		wTileNo == T_NODIAGONAL ||
+		wTileNo == T_SCROLL ||
+		wTileNo == T_FUSE ||
+		wTileNo == T_TOKEN ||
+		wTileNo == T_SHALLOW_WATER ||
+		bIsStairs(wTileNo) ||
+		bIsTunnel(wTileNo)
+	);
+
+	switch (eMovement)
 	{
 		//These types can move through wall.
 		//NOTE: For greater scripting flexibility, these types will also be allowed
 		//to perform normal movement.
-		case M_SEEP:
+		case MovementType::WALL:
 		{
-			return CMonster::IsTileObstacle(wTileNo) &&
+			return bIsObstacle &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
 			//i.e. tile is considered an obstacle only when it blocks both movement types
 		}
 
 		//These types can also move over pits.
-		case M_WWING: case M_FEGUNDO:
-			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo) && !bIsPit(wTileNo);
+		case MovementType::AIR:
+			return bIsObstacle && !bIsWater(wTileNo) && !bIsPit(wTileNo);
 
-		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
-			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
+		case MovementType::WATER:
+			return bIsObstacle && !bIsWater(wTileNo);
 			
 		default:	return CMonster::IsTileObstacle(wTileNo);
 	}
@@ -4865,6 +4888,7 @@ void CCharacter::SetCurrentGame(
 		}
 
 		SetDefaultBehaviors();
+		SetDefaultMovementType();
 	}
 
 	//If this NPC is a custom character with no script,
@@ -4932,6 +4956,31 @@ void CCharacter::SetDefaultBehaviors()
 	}
 	if (!bCanFluffKill(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffImmune);
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultMovementType()
+//Sets the character's eMovement to the appropriate type for its identity
+{
+	switch (GetResolvedIdentity()) {
+		//These types can move through wall.
+		case M_SEEP:
+			eMovement = MovementType::WALL;
+		break;
+
+		//These types can also move over pits.
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
+			eMovement = MovementType::AIR;
+		break;
+
+		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
+			eMovement = MovementType::WATER;
+		break;
+
+		default:
+			eMovement = MovementType::GROUND_AND_SHALLOW_WATER;
 	}
 }
 

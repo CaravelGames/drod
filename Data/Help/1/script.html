@@ -96,6 +96,16 @@ designate.  There are four general classes of script commands, as follows:</p>
   <ol>
     <li><a name="setappearance"><b>Set appearance</b>
       </a> - Changes the NPC's "Graphic" and default properties to the specified entity type.</li>
+      <li><a name="set-movement"><b>Set movement type</b></a> - Changes which tiles the NPC can move on. By default, an NPC with a movement type that would normally prevent it from moving over "ground" tiles can still move other these tiles. By using the <a href="#beh-restricted-movement">Restricted Movement</a> behavior, this can be prevented. The options are:
+      <ol>
+	    <li><b>Ground</b> - Normal movement behavior. The NPC cannot cross tiles that block normal movement, including shallow water.</li>
+	    <li><b>Ground and Shallow Water</b> - Like <b>Ground</b>, except that the NPC can wade in shallow water, and will not drown if dropped into shallow water.</li>
+	    <li><b>Water</b> - The NPC can move over both types of water tile. Additionally, the NPC will not drown if dropped into water. If the NPC has the <a href="#beh-restricted-movement">Restricted Movement</a> behavior, the NPC cannot move over non-water tiles.</li>
+	    <li><b>Wall</b> - The NPC can move through wall and doors tiles.  If the NPC has the <a href="#beh-restricted-movement">Restricted Movement</a> behavior, the NPC cannot move over any other tiles.</li>
+	    <li><b>Air</b> - The NPC can move over all non-wall and non-door tiles. Additionally, it is not damaged by Hot Tiles or Floor Spikes, and cannot be killed by being dropped into water or into pits.</li>
+      </ol>
+	  Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will change the movement type to that appearance's default movement type unless the <b>Keep Behaviors</b> option is set to on.
+    </li>
     <li><a name="turnintomonster"><b>Turn into monster</b>
       </a> - Turns the NPC into a regular monster of the type indicated by its graphic.
       This ends script execution immediately and the NPC is permanently replaced by a regular monster.</li>
@@ -513,7 +523,7 @@ continue executing script commands from a different location in the script.</p>
   </ul>
 
 <p><a name="behaviorlist"><b>Behaviors</b>
-</a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors. Some NPC types will have behaviors set by default. Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will reset behaviors to that appearance's default behaviors.</p>
+</a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors. Some NPC types will have behaviors set by default. Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will reset behaviors to that appearance's default behaviors unless the <b>Keep Behaviors</b> option is set to on.</p>
 <ol>
 	<li><a name ="beh-activate-token"><b>Activate Tokens</b></a>: The NPC will activate architectural tokens when it moves onto them, other than Temporal Split Points.</li>
 	<li><a name ="beh-activate-plates"><b>Activate Pressure Plates</b></a>: The NPC will press pressure when it moves onto them, and will hold down pressure plates while on them.</li>
@@ -522,6 +532,7 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="beh-push-objects"><b>Push Objects</b></a>: The NPC can push objects such as Mirrors and Powder Kegs.</li>
 	<li><a name="beh-push-monsters"><b>Push Objects</b></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
 	<li><a name="beh-move-platform"><b>Move Platforms and Rafts</b></a>: The NPC can push platforms and rafts by moving against their sides.</li>
+	<li><a name="beh-restricted-movement"><b>Restricted Movement</b></a>: The NPC can only move onto tiles it's movement type would normally allow movement onto. See <a href="#set-movement">Set movement type</a> for details.</li>
 	<li><a name="beh-monster-attackable"><b>Can Be Attacked By Monsters</b></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
 	<li><a name="beh-monster-target"><b>Monster Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to monsters.</li>
 	<li><a name="beh-monster-target-if-player"><b>Monster Target When Player Is Target</b></a>: Monsters other than Puffs will treat the NPC as a target as long as the player is a monster target. Otherwise, monsters will ignore this character. This does not affect the NPC's vulnerability to monsters.</li>

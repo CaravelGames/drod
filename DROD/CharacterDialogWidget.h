@@ -199,6 +199,7 @@ private:
 	CListBoxWidget *pWorldMapImageFlagListBox;
 	CListBoxWidget *pWeaponListBox, *pWeaponFlagsListBox;
 	CListBoxWidget *pAttackTileListBox;
+	CListBoxWidget *pMovementTypeListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

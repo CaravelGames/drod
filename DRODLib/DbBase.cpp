@@ -887,6 +887,11 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_FilePendingDeletionSuffix: strText = "(Pending deletion)"; break;
 	case MID_Undelete: strText = "Undelete"; break;
 	case MID_ListboxFilter: strText = "Filter"; break;
+	case MID_SetMovementType: strText = "Set movement type"; break;
+	case MID_Ground: strText = "Ground"; break;
+	case MID_GroundAndShallow: strText = "Ground and Shallow Water"; break;
+	case MID_Air: strText = "Air"; break;
+	case MID_RestrictedMovement: strText = "Restricted Movement"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

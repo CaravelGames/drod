@@ -147,7 +147,6 @@ public:
 	virtual bool   IsBrainPathmapObstacle() const;
 	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
 	bool           IsExplosionImmune() const {return HasBehavior(ScriptFlag::ExplosionImmune); }
-	virtual bool   IsFlying() const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
@@ -166,7 +165,6 @@ public:
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
-	virtual bool   IsSwimming() const;
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
@@ -250,6 +248,7 @@ private:
 	bool TurnsSlowly() const;
 
 	void SetDefaultBehaviors();
+	void SetDefaultMovementType();
 	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
