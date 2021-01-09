@@ -1813,9 +1813,8 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				//custom character type was deleted, and this NPC's type left dangling
 				wstr += wszQuestionMark;
 			}
-		} else {
+		} else if (pCharacter->wIdentity >= CHARACTER_FIRST) {
 			bCharacterName = true;
-			ASSERT(pCharacter->wIdentity >= CHARACTER_FIRST);
 			UINT eMID = MID_UNKNOWN;
 			switch (pCharacter->wIdentity)
 			{
