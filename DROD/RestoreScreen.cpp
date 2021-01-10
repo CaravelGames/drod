@@ -1112,7 +1112,10 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 		if (!rooms.empty()) {
 			const UINT roomID = rooms.begin()->first;
 #ifndef ENABLE_CHEATS
-			if (exploredRoomIDs.has(roomID))
+			CDbPlayer *pPlayer = g_pTheDB->GetCurrentPlayer();
+			CDbHold* pHold = this->pCurrentRestoreGame->pHold;
+			bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
+			if (exploredRoomIDs.has(roomID) || bIsAuthor)
 #endif
 			{
 				ASSERT(roomID);
