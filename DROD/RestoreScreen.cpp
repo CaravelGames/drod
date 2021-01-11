@@ -1099,6 +1099,15 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 		const UINT savedGameID = db.SavedGames.FindByType(ST_PlayerTotal, g_pTheDB->GetPlayerID(), false);
 		exploredRoomIDs = db.SavedGames.GetExploredRooms(savedGameID); //roomIDs for all holds
 	}
+
+#ifndef ENABLE_CHEATS
+	// Check hold authorship
+	// Not required if cheats are active
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	CDbHold* pHold = this->pCurrentRestoreGame->pHold;
+	bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
+	delete pPlayer;
+#endif
 	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->challengeVarMap.begin();
 			vars != this->challengeVarMap.end(); ++vars)
 	{
@@ -1112,9 +1121,6 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 		if (!rooms.empty()) {
 			const UINT roomID = rooms.begin()->first;
 #ifndef ENABLE_CHEATS
-			CDbPlayer *pPlayer = g_pTheDB->GetCurrentPlayer();
-			CDbHold* pHold = this->pCurrentRestoreGame->pHold;
-			bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
 			if (exploredRoomIDs.has(roomID) || bIsAuthor)
 #endif
 			{
