@@ -187,6 +187,14 @@ protected:
 	{}
 
 public:
+	//For compiling the location of scripts that reference variables.
+	typedef map<UINT, CCoordIndex> VARROOMS;
+	struct VAR_LOCATIONS {
+		VARROOMS rooms;
+		set<WSTRING> characterNames;
+	};
+	typedef map<WSTRING, VAR_LOCATIONS> VARCOORDMAP;
+
 	virtual void      Delete(const UINT dwHoldID);
 	virtual bool      Exists(const UINT dwID) const;
 	void					ExportRoomHeader(WSTRING& roomText, CDbLevel *pLevel,
@@ -206,16 +214,27 @@ public:
 	void        GetRooms(const UINT dwHoldID, HoldStats& stats) const;
 	static void GetRoomsExplored(const UINT dwHoldID, const UINT dwPlayerID,
 			CIDSet& rooms);
+	static CIDSet GetScriptCommandRefs(const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);
+	static void GetScriptCommandRefsForRoom(const UINT roomID,
+		const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);
 	WSTRING     GetScriptSpeechText(const COMMAND_VECTOR& commands,
 			CDbHold *pHold, CCharacter *pCharacter, WSTRING& roomText,
 			CDbLevel *pLevel, CDbRoom *pRoom, ENTRANCE_VECTOR& entrancesIgnored) const;
 	UINT        GetSecretsDone(HoldStats& stats, const UINT dwHoldID,	const UINT dwPlayerID) const;
 	static UINT GetHoldIDWithStatus(const CDbHold::HoldStatus status);
 	bool        IsHoldMastered(const UINT dwHoldID, const UINT playerID) const;
-	void        LogScriptVarRefs(const UINT holdID);
+	void        LogScriptVarRefs(const UINT holdID, const bool bScorepoints = false);
 	bool        PlayerCanEditHold(const UINT dwHoldID) const;
 
 	static UINT deletingHoldID; //ID of hold in process of being deleted
+
+private:
+	static void AddScriptVarRef(VARCOORDMAP& varMap, const WCHAR* varName,
+		const CDbRoom* pRoom, const CCharacter* pCharacter, const WSTRING& characterName);
+	static void CheckForVarRefs(const CCharacterCommand& c, const bool bScorepoints, VARCOORDMAP& varMap,
+		const CDbHold* pHold, const CDbRoom* pRoom, const CCharacter* pCharacter,
+		const WSTRING& characterName);
+	static WSTRING GetTextForVarMap(const VARCOORDMAP& varMap);
 };
 
 #endif //...#ifndef DBHOLDS_H

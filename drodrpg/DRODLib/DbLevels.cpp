@@ -269,6 +269,23 @@ UINT CDbLevels::GetHoldIDForLevel(const UINT dwLevelID)
 }
 
 //*****************************************************************************
+WSTRING CDbLevels::GetLevelName(const UINT levelID)
+{
+	WSTRING name;
+
+	c4_View LevelsView;
+	const UINT dwLevelI = LookupRowByPrimaryKey(levelID, V_Levels, LevelsView);
+	if (dwLevelI != ROW_NO_MATCH) {
+		c4_RowRef row = LevelsView[dwLevelI];
+
+		CDbMessageText NameText((UINT)p_NameMessageID(row));
+		name = (const WCHAR*)NameText;
+	}
+
+	return name;
+}
+
+//*****************************************************************************
 void CDbLevels::GetRoomsExplored(
 //OUT: Compiled lists of room IDs, one being the all the rooms in the level,
 //and the second the subset of these rooms having been explored
