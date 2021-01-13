@@ -214,6 +214,7 @@ public:
 	void        GetRooms(const UINT dwHoldID, HoldStats& stats) const;
 	static void GetRoomsExplored(const UINT dwHoldID, const UINT dwPlayerID,
 			CIDSet& rooms);
+	static void   GetScriptScorepointRefs(const CDbHold* pHold, VARCOORDMAP& varMap, CIDSet& roomIDs);
 	static CIDSet GetScriptCommandRefs(const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);
 	static void GetScriptCommandRefsForRoom(const UINT roomID,
 		const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);

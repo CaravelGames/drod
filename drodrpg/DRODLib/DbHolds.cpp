@@ -1245,6 +1245,15 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID, const bool bScorepoints)
 	CClipboard::SetString(text);
 }
 
+//*****************************************************************************
+void CDbHolds::GetScriptScorepointRefs(
+	const CDbHold* pHold,
+	VARCOORDMAP& varMap, CIDSet& roomIDs) //(out)
+{
+	roomIDs = GetScriptCommandRefs(pHold, true, varMap);
+	//caller needs to scan these roomIDs
+}
+
 CIDSet CDbHolds::GetScriptCommandRefs(
 	const CDbHold* pHold, const bool bChallenges,
 	VARCOORDMAP& varMap) //(out)

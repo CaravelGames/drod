@@ -49,12 +49,15 @@ protected:
 private:
 	void     ChooseSavedGame(const UINT dwSavedGameID);
 	void     ClearState();
+	void     DisplayScorepointsDialog();
+	void     InitScorepointQuery();
 	virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
 	void     PopulateListBoxFromSavedGames();
+	void     PopulateScorepoints(CListBoxWidget* pListBoxWidget);
 	void     RenameSaveGame(const UINT saveID);
 	void     RestoreGame();
 	bool     SetWidgets();
@@ -79,6 +82,13 @@ private:
 	CScalerWidget  *pScaledRoomWidget;
 	CMapWidget     *pMapWidget;
 	CListBoxWidget *pSaveListBoxWidget;
+	CDialogWidget* pScorepointsDialog;
+	CListBoxWidget* pScorepointsListBox;
+
+	//optimization for compiling challenges and completion
+	CIDSet      scorepointDemoIDs, scorepointScanRoomIDs;
+	set<WSTRING> completedScorepoints;
+	CDbHolds::VARCOORDMAP scorepointVarMap;
 };
 
 #endif //...#ifndef RESTORESCREEN_H
