@@ -917,16 +917,11 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 	}
 	this->scorepointScanRoomIDs.clear();
 
-	CIDSet exploredRoomIDs;
 	if (this->scorepointVarMap.empty()) {
 		pListBoxWidget->AddItem(0, g_pTheDB->GetMessageText(MID_None), true);
 	}
-	else {
-		CDb db;
-		const UINT savedGameID = db.SavedGames.FindByType(ST_PlayerTotal, g_pTheDB->GetPlayerID(), false);
-		exploredRoomIDs = db.SavedGames.GetExploredRooms(savedGameID); //roomIDs for all holds
-	}
 
+	CDb db;
 	pListBoxWidget->SelectLine(0);
 
 	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->scorepointVarMap.begin();
@@ -934,7 +929,8 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 	{
 		//Display info for this variable.
 		WSTRING scorepointName = vars->first;
-		pListBoxWidget->AddItem(0, scorepointName.c_str());
+		bool hasScore = (db.SavedGames.FindByName(ST_ScoreCheckpoint, scorepointName) != 0);
+		pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
 	}
 }
 
