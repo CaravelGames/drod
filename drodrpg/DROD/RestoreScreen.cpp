@@ -275,7 +275,7 @@ CRestoreScreen::CRestoreScreen()
 
 	//Scorepoints button and dialog
 	pButton = new CButtonWidget(TAG_SCOREPOINTS, X_SCOREPOINT_BUTTON, Y_SCOREPOINT_BUTTON,
-		CX_SCOREPOINT_BUTTON, CY_BUTTON, L"Scorepoints");
+		CX_SCOREPOINT_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Scorepoints));
 	AddWidget(pButton);
 
 	const UINT CX_SCOREPOINTS_DIALOG = 510;
@@ -305,7 +305,7 @@ CRestoreScreen::CRestoreScreen()
 
 	CLabelWidget* pLabel = new CLabelWidget(0, CX_SPACE, Y_SCOREPOINTS_TITLE,
 		CX_SCOREPOINTS_DIALOG - 2 * CX_SPACE, CY_SCOREPOINTS_TITLE,
-		FONTLIB::F_Message, L"Scorepoints Acquired");
+		FONTLIB::F_Message, g_pTheDB->GetMessageText(MID_Scorepoints));
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	this->pScorepointsDialog->AddWidget(pLabel);
 

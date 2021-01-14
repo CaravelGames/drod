@@ -730,6 +730,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Air: strText = "Air"; break;
 		case MID_SpawnEggs: strText = "Spawn Eggs"; break;
 		case MID_VarMySpawn: strText = "_MySpawn"; break;
+		case MID_Scorepoints: strText = "Scorepoints"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

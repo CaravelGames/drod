@@ -1024,6 +1024,7 @@ enum MID_CONSTANT {
   MID_SaveGameSort = 1796,
   MID_GameSortChronological = 1797,
   MID_GameSortAlphabetical = 1798,
+  MID_Scorepoints = 1804,
 
   //Messages from SelectScreens.uni:
   MID_HoldManagementTitle = 1207,
