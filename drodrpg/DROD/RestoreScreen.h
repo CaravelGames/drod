@@ -86,8 +86,7 @@ private:
 	CListBoxWidget* pScorepointsListBox;
 
 	//optimization for compiling challenges and completion
-	CIDSet      scorepointDemoIDs, scorepointScanRoomIDs;
-	set<WSTRING> completedScorepoints;
+	CIDSet scorepointScanRoomIDs;
 	CDbHolds::VARCOORDMAP scorepointVarMap;
 };
 

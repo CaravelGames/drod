@@ -924,13 +924,29 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 	CDb db;
 	pListBoxWidget->SelectLine(0);
 
+#ifndef ENABLE_CHEATS
+	// Check hold authorship
+	// Not required if cheats are active
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	CDbHold* pHold = this->pCurrentRestoreGame->pHold;
+	bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
+	delete pPlayer;
+#endif
+
 	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->scorepointVarMap.begin();
 		vars != this->scorepointVarMap.end(); ++vars)
 	{
 		//Display info for this variable.
 		WSTRING scorepointName = vars->first;
 		bool hasScore = (db.SavedGames.FindByName(ST_ScoreCheckpoint, scorepointName) != 0);
-		pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
+#ifndef ENABLE_CHEATS
+		if (!(hasScore || bIsAuthor)) {
+			pListBoxWidget->AddItem(0, L"???", !hasScore);
+		}	else
+#endif
+		{
+			pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
+		}
 	}
 }
 
