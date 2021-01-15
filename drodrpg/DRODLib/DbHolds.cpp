@@ -63,14 +63,6 @@ bool IsCopyableSavedGame(SAVETYPE type)
 	}
 }
 
-//For compiling the location of scripts that reference variables.
-struct VARCOORDELEM {
-	UINT roomID;
-	CCoordIndex coords;
-};
-typedef vector<VARCOORDELEM> VARROOMS;
-typedef map<WSTRING, VARROOMS> VARCOORDMAP;
-
 //
 //CDbHolds public methods.
 //
@@ -1185,161 +1177,234 @@ bool CDbHolds::IsHoldMastered(const UINT dwHoldID, const UINT playerID) const
 }
 
 //*****************************************************************************
-void AddScriptVarRef(
+void CDbHolds::AddScriptVarRef(
 //Adds the location of this variable reference to the varmap.
 //
 //Params:
-	VARCOORDMAP& varMap, const WCHAR* varName, const UINT roomID,
-	const UINT roomCols, const UINT roomRows, const UINT x, const UINT y)
+	VARCOORDMAP& varMap, const WCHAR* varName,
+	const CDbRoom* pRoom, const CCharacter* pCharacter,
+	const WSTRING& characterName)
 {
 	if (!varName)
 		varName = wszEmpty; //unrecognized variable reference
-	WSTRING wstrVarName(varName);
+	const WSTRING wstrVarName(varName);
 
 	VARCOORDMAP::iterator var = varMap.find(wstrVarName);
 	if (var == varMap.end())
 	{
 		//First instance of var.
-		varMap[wstrVarName] = VARROOMS();
+		varMap[wstrVarName] = VAR_LOCATIONS();
 		var = varMap.find(wstrVarName);
 		ASSERT(var != varMap.end());
 	}
+	VAR_LOCATIONS& locations = var->second;
 
-	VARROOMS& rooms = var->second;
-	UINT i;
-	for (i=0; i<rooms.size(); ++i)
-		if (rooms[i].roomID == roomID)
-			break;
-	if (i == rooms.size())
-	{
-		//First instance of var in this room.
-		VARCOORDELEM elem;
-		elem.roomID = roomID;
-		rooms.push_back(elem);
-		rooms.back().coords.Init(roomCols, roomRows);
+	if (pRoom) {
+		ASSERT(pCharacter);
+		const UINT roomID = pRoom->dwRoomID;
+		const UINT roomCols = pRoom->wRoomCols;
+		const UINT roomRows = pRoom->wRoomRows;
+		const UINT x = pCharacter->wX;
+		const UINT y = pCharacter->wY;
+
+		VARROOMS& rooms = locations.rooms;
+		VARROOMS::iterator it = rooms.find(roomID);
+		if (it == rooms.end()) {
+			//First instance of var in this room.
+			rooms[roomID] = CCoordIndex(roomCols, roomRows);
+			it = rooms.find(roomID);
+		}
+
+		//Tally the times this var is referenced in this script.
+		CCoordIndex& coords = it->second;
+		coords.Add(x, y, coords.GetAt(x, y) + 1);
 	}
-
-	//Tally the times this var is referenced in this script.
-	VARCOORDELEM& elem = rooms[i];
-	ASSERT(elem.roomID == roomID);
-	elem.coords.Add(x,y, elem.coords.GetAt(x,y)+1);
+	else {
+		ASSERT(!characterName.empty());
+		locations.characterNames.insert(characterName);
+	}
 }
 
 //*****************************************************************************
-void CDbHolds::LogScriptVarRefs(const UINT holdID)
+void CDbHolds::LogScriptVarRefs(const UINT holdID, const bool bScorepoints)
 //Output a log of all vars used in the hold.
 {
 	ASSERT(IsOpen());
 
-	CDbHold *pHold = GetByID(holdID);
+	CDbHold* pHold = GetByID(holdID);
 	if (!pHold)
 		return;
 
+	VARCOORDMAP varMap;
+	const CIDSet roomIDs = GetScriptCommandRefs(pHold, bScorepoints, varMap);
+	for (CIDSet::const_iterator roomIt = roomIDs.begin(); roomIt != roomIDs.end(); ++roomIt)
+		GetScriptCommandRefsForRoom(*roomIt, pHold, bScorepoints, varMap);
+	delete pHold;
+
+	const WSTRING text = GetTextForVarMap(varMap);
+	CClipboard::SetString(text);
+}
+
+//*****************************************************************************
+void CDbHolds::GetScriptScorepointRefs(
+	const CDbHold* pHold,
+	VARCOORDMAP& varMap, CIDSet& roomIDs) //(out)
+{
+	roomIDs = GetScriptCommandRefs(pHold, true, varMap);
+	//caller needs to scan these roomIDs
+}
+
+CIDSet CDbHolds::GetScriptCommandRefs(
+	const CDbHold* pHold, const bool bChallenges,
+	VARCOORDMAP& varMap) //(out)
+{
+	//Default scripts.
+	for (vector<HoldCharacter*>::const_iterator character = pHold->characters.begin();
+		character != pHold->characters.end(); ++character)
+	{
+		HoldCharacter* c = *character;
+		COMMAND_VECTOR commands;
+		CCharacter::LoadCommands(c->ExtraVars, commands);
+		for (UINT i = 0; i < commands.size(); ++i)
+			CheckForVarRefs(commands[i], bChallenges, varMap, pHold, NULL, NULL, c->charNameText);
+	}
+
 	//Order levels in hold.
 	SORTED_LEVELS levels;
-	CIDSet levelsInHold = CDb::getLevelsInHold(holdID);
+	CIDSet levelsInHold = CDb::getLevelsInHold(pHold->dwHoldID);
 	for (CIDSet::const_iterator levelID = levelsInHold.begin(); levelID != levelsInHold.end(); ++levelID)
 	{
-		CDbLevel *pLevel = g_pTheDB->Levels.GetByID(*levelID);
+		CDbLevel* pLevel = g_pTheDB->Levels.GetByID(*levelID);
 		ASSERT(pLevel);
 		levels.insert(pLevel);
 	}
 
-	VARCOORDMAP varMap;
+	CIDSet roomIDs;
 	for (SORTED_LEVELS::const_iterator level = levels.begin(); level != levels.end(); ++level)
 	{
-		CDbLevel *pLevel = *level;
-		CIDSet roomIDs = CDb::getRoomsInLevel(pLevel->dwLevelID);
-		for (CIDSet::const_iterator id=roomIDs.begin(); id!=roomIDs.end(); ++id)
-		{
-			//Scan a room for var references.
-			const UINT roomID = *id;
-			CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
-			ASSERT(pRoom);
+		CDbLevel* pLevel = *level;
+		const CIDSet levelRoomIDs = CDb::getRoomsInLevel(pLevel->dwLevelID);
 
-			for (CMonster *pMonster = pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
-			{
-				if (pMonster->wType != M_CHARACTER)
-					continue;
+		//Caller needs to scan these rooms for IDs
+		roomIDs += levelRoomIDs;
 
-				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				for (UINT i=0; i<pCharacter->commands.size(); ++i)
-				{
-					const CCharacterCommand& c = pCharacter->commands[i];
-					switch (c.command)
-					{
-						case CCharacterCommand::CC_VarSet:
-						case CCharacterCommand::CC_WaitForVar:
-						{
-							WSTRING varName;
-							if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
-							{
-								varName = ScriptVars::getVarNameW(ScriptVars::Predefined(c.x));
-							} else {
-								varName = pHold->GetVarName(c.x);
-							}
-							AddScriptVarRef(varMap, varName.c_str(), roomID, pRoom->wRoomCols,
-									pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-
-							if (c.command == CCharacterCommand::CC_VarSet)
-							{
-								switch (c.y)
-								{
-									case ScriptVars::Assign:
-									case ScriptVars::Inc:
-									case ScriptVars::Dec:
-									case ScriptVars::MultiplyBy:
-									case ScriptVars::DivideBy:
-									case ScriptVars::Mod:
-										//Search for a variable name in the operand.
-										if (!c.label.empty())
-										{
-											//parse expression
-											ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
-											if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
-											{
-												//Mark reference to variable.
-												AddScriptVarRef(varMap, c.label.c_str(), roomID, pRoom->wRoomCols,
-														pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-											}
-										}
-									break;
-									default: break;
-								}
-							} else {
-								switch (c.y)
-								{
-									case ScriptVars::Equals:
-									case ScriptVars::Greater:
-									case ScriptVars::Less:
-										//Search for a variable name in the operand.
-										if (!c.label.empty())
-										{
-											//parse expression
-											ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
-											if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
-											{
-												//Mark reference to variable.
-												AddScriptVarRef(varMap, c.label.c_str(), roomID, pRoom->wRoomCols,
-														pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-											}
-										}
-									break;
-									default: break;
-								}
-							}
-						}
-						break;
-						default: break;
-					}
-				}
-			}
-			delete pRoom;
-		}
 		delete pLevel;
 	}
-	delete pHold;
+	return roomIDs;
+}
 
+//*****************************************************************************
+void CDbHolds::GetScriptCommandRefsForRoom(const UINT roomID,
+	const CDbHold* pHold, const bool bChallenges,
+	VARCOORDMAP& varMap) //(out)
+{
+	CDbRoom* pRoom = g_pTheDB->Rooms.GetByID(roomID);
+	if (!pRoom)
+		return;
+
+	const WSTRING noName;
+	for (CMonster* pMonster = pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType != M_CHARACTER)
+			continue;
+
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		for (UINT i = 0; i < pCharacter->commands.size(); ++i)
+			CheckForVarRefs(pCharacter->commands[i], bChallenges, varMap, pHold, pRoom, pCharacter, noName);
+	}
+	delete pRoom;
+}
+
+//*****************************************************************************
+void CDbHolds::CheckForVarRefs(
+	const CCharacterCommand& c, const bool bScorepoints,
+	VARCOORDMAP& varMap, //(in/out)
+	const CDbHold* pHold,
+	const CDbRoom* pRoom, const CCharacter* pCharacter,
+	const WSTRING& characterName)
+{
+	switch (c.command)
+	{
+	case CCharacterCommand::CC_ScoreCheckpoint:
+		if (bScorepoints)
+			AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+		break;
+	case CCharacterCommand::CC_VarSet:
+	case CCharacterCommand::CC_WaitForVar:
+	{
+		if (bScorepoints)
+			break;
+
+		const WCHAR* pVarName;
+		WSTRING wstr;
+		if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+		{
+			wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(c.x));
+			pVarName = wstr.c_str();
+		}
+		else {
+			pVarName = pHold->GetVarName(c.x);
+		}
+
+		AddScriptVarRef(varMap, pVarName, pRoom, pCharacter, characterName);
+
+		if (c.command == CCharacterCommand::CC_VarSet)
+		{
+			switch (c.y)
+			{
+			case ScriptVars::Assign:
+			case ScriptVars::Inc:
+			case ScriptVars::Dec:
+			case ScriptVars::MultiplyBy:
+			case ScriptVars::DivideBy:
+			case ScriptVars::Mod:
+				//Search for a variable name in the operand.
+				if (!c.label.empty())
+				{
+					//parse expression
+					ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+					if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+					{
+						//Mark reference to variable.
+						AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+					}
+				}
+				break;
+			default: break;
+			}
+		}
+		else {
+			switch (c.y)
+			{
+			case ScriptVars::Equals:
+			case ScriptVars::Greater:
+			case ScriptVars::GreaterThanOrEqual:
+			case ScriptVars::Less:
+			case ScriptVars::LessThanOrEqual:
+				//Search for a variable name in the operand.
+				if (!c.label.empty())
+				{
+					//parse expression
+					ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+					if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+					{
+						//Mark reference to variable.
+						AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+					}
+				}
+				break;
+			default: break;
+			}
+		}
+	}
+	break;
+	default: break;
+	}
+}
+
+//*****************************************************************************
+WSTRING CDbHolds::GetTextForVarMap(const VARCOORDMAP& varMap)
+{
 	WSTRING text;
 	for (VARCOORDMAP::const_iterator vars = varMap.begin(); vars != varMap.end(); ++vars)
 	{
@@ -1349,22 +1414,28 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 		text += wszCRLF;
 
 		//Print location of all references to this variable.
-		const VARROOMS& rooms = vars->second;
-		for (UINT i=0; i<rooms.size(); ++i)
+		const VAR_LOCATIONS& locations = vars->second;
+		for (set<WSTRING>::const_iterator strIt = locations.characterNames.begin();
+			strIt != locations.characterNames.end(); ++strIt)
 		{
-			const VARCOORDELEM& room = rooms[i];
-			const UINT roomID = room.roomID;
-			CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID, true);
+			text += *strIt;
+			text += wszCRLF;
+		}
+
+		const VARROOMS& rooms = locations.rooms;
+		for (VARROOMS::const_iterator it = rooms.begin(); it != rooms.end(); ++it)
+		{
+			const UINT roomID = it->first;
+			const CCoordIndex& coords = it->second;
+			ASSERT(roomID);
+			CDbRoom* pRoom = g_pTheDB->Rooms.GetByID(roomID, true);
 			ASSERT(pRoom);
-			CDbLevel *pLevel = g_pTheDB->Levels.GetByID(pRoom->dwLevelID);
-			ASSERT(pLevel);
 
 			//Level name.
 			text += wszSpace;
-			text += pLevel->NameText;
+			text += CDbLevels::GetLevelName(pRoom->dwLevelID);
 			text += wszColon;
 			text += wszSpace;
-			delete pLevel;
 
 			//Room name.
 			pRoom->GetLevelPositionDescription(text, true);
@@ -1372,10 +1443,10 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 			delete pRoom;
 
 			//All positions in room where var is referenced.
-			for (UINT y=0; y<room.coords.GetRows(); ++y)
-				for (UINT x=0; x<room.coords.GetCols(); ++x)
+			for (UINT y = 0; y < coords.GetRows(); ++y)
+				for (UINT x = 0; x < coords.GetCols(); ++x)
 				{
-					const UINT num = room.coords.GetAt(x,y);
+					const UINT num = coords.GetAt(x, y);
 					if (num)
 					{
 						WCHAR temp[10];
@@ -1397,8 +1468,7 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 		}
 		text += wszCRLF;
 	}
-
-	CClipboard::SetString(text);
+	return text;
 }
 
 //*****************************************************************************

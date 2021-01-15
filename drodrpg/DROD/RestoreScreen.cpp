@@ -59,6 +59,8 @@ const UINT TAG_HELP = 1093;
 const UINT TAG_EXPORT = 1094;
 const UINT TAG_IMPORT = 1095;
 const UINT TAG_RENAME = 1096;
+const UINT TAG_SCOREPOINTS = 1097;
+const UINT TAG_SCOREPOINTS_LIST = 1098;
 
 enum GameSort
 {
@@ -82,6 +84,8 @@ CRestoreScreen::CRestoreScreen()
 	, pScaledRoomWidget(NULL)
 	, pMapWidget(NULL)
 	, pSaveListBoxWidget(NULL)
+	, pScorepointsDialog(NULL)
+	, pScorepointsListBox(NULL)
 //Constructor.
 {
 	SetKeyRepeat(66);
@@ -122,12 +126,14 @@ CRestoreScreen::CRestoreScreen()
 	static const UINT CX_EXPORT_BUTTON = 90;
 	static const UINT CX_IMPORT_BUTTON = 90;
 	static const UINT CX_HELP_BUTTON = 80;
+	static const UINT CX_SCOREPOINT_BUTTON = 100;
 	const int X_RESTORE_BUTTON = X_MINIROOM;
 	const int X_RENAME_BUTTON = X_RESTORE_BUTTON + CX_RESTORE_BUTTON + CX_SPACE/2;
 	static const int X_EXPORT_BUTTON = X_RENAME_BUTTON + CX_RENAME_BUTTON + CX_SPACE/2;
 	static const int X_IMPORT_BUTTON = X_EXPORT_BUTTON + CX_EXPORT_BUTTON + CX_SPACE/2;
 	const int X_HELP_BUTTON = X_IMPORT_BUTTON + CX_IMPORT_BUTTON + CX_SPACE/2;
 	const int X_CANCEL_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE/2;
+	const int X_SCOREPOINT_BUTTON = X_RESTORE_BUTTON - CX_SCOREPOINT_BUTTON - CX_SPACE / 2;
 	static const UINT CY_RESTORE_BUTTON = CY_BUTTON;
 	const int Y_RESTORE_BUTTON = this->h - CY_SPACE - CY_RESTORE_BUTTON;
 	const int Y_RENAME_BUTTON = Y_RESTORE_BUTTON;
@@ -135,6 +141,7 @@ CRestoreScreen::CRestoreScreen()
 	const int Y_EXPORT_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_IMPORT_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_HELP_BUTTON = Y_RESTORE_BUTTON;
+	const int Y_SCOREPOINT_BUTTON = Y_RESTORE_BUTTON;
 
 	//Saved games list.
 	const UINT CX_MAP = this->w - CX_SPACE - CX_MINIROOM - CX_SPACE - CX_SPACE;
@@ -265,6 +272,50 @@ CRestoreScreen::CRestoreScreen()
 			CDrodBitmapManager::CY_ROOM);
 	this->pRoomWidget->SetAnimateMoves(false);
 	this->pScaledRoomWidget->AddScaledWidget(this->pRoomWidget);
+
+	//Scorepoints button and dialog
+	pButton = new CButtonWidget(TAG_SCOREPOINTS, X_SCOREPOINT_BUTTON, Y_SCOREPOINT_BUTTON,
+		CX_SCOREPOINT_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_Scorepoints));
+	AddWidget(pButton);
+
+	const UINT CX_SCOREPOINTS_DIALOG = 510;
+	const UINT CY_SCOREPOINTS_DIALOG = 510;
+
+	const int CX_SCOREPOINTS_OKAY = 100;
+	static const UINT CY_SCOREPOINTS_OKAY = CY_STANDARD_BUTTON;
+	static const int X_SCOREPOINTS_OKAY = (CX_SCOREPOINTS_DIALOG - CX_SCOREPOINTS_OKAY) / 2;
+	static const int Y_SCOREPOINTS_OKAY = CY_SCOREPOINTS_DIALOG - CY_SCOREPOINTS_OKAY - CY_SPACE - 5;
+
+	this->pScorepointsDialog = new CDialogWidget(0L, 0, 0, CX_SCOREPOINTS_DIALOG, CY_SCOREPOINTS_DIALOG);
+	this->pScorepointsDialog->Hide();
+	AddWidget(this->pScorepointsDialog);
+	this->pScorepointsDialog->Center();
+
+	pButton = new CButtonWidget(TAG_OK,
+		X_SCOREPOINTS_OKAY, Y_SCOREPOINTS_OKAY,
+		CX_SCOREPOINTS_OKAY, CY_SCOREPOINTS_OKAY, g_pTheDB->GetMessageText(MID_Okay));
+	this->pScorepointsDialog->AddWidget(pButton);
+
+	const int Y_SCOREPOINTS_TITLE = CY_SPACE;
+	const UINT CY_SCOREPOINTS_TITLE = 35;
+	const int X_SCOREPOINTS_FRAME = CX_SPACE + 5;
+	const int Y_SCOREPOINTS_FRAME = Y_SCOREPOINTS_TITLE + CY_SCOREPOINTS_TITLE + CY_SPACE;
+	const UINT CX_SCOREPOINTS_FRAME = CY_SCOREPOINTS_DIALOG - 2 * X_SCOREPOINTS_FRAME;
+	const UINT CY_SCOREPOINTS_FRAME = Y_SCOREPOINTS_OKAY - Y_SCOREPOINTS_FRAME - CY_SPACE;
+
+	CLabelWidget* pLabel = new CLabelWidget(0, CX_SPACE, Y_SCOREPOINTS_TITLE,
+		CX_SCOREPOINTS_DIALOG - 2 * CX_SPACE, CY_SCOREPOINTS_TITLE,
+		FONTLIB::F_Message, g_pTheDB->GetMessageText(MID_Scorepoints));
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	this->pScorepointsDialog->AddWidget(pLabel);
+
+	CFrameWidget* pFrame = new CFrameWidget(0, X_SCOREPOINTS_FRAME, Y_SCOREPOINTS_FRAME,
+		CX_SCOREPOINTS_FRAME, CY_SCOREPOINTS_FRAME, NULL);
+	this->pScorepointsDialog->AddWidget(pFrame);
+
+	this->pScorepointsListBox = new CListBoxWidget(TAG_SCOREPOINTS_LIST, CX_SPACE, CY_SPACE,
+		CX_SCOREPOINTS_FRAME - 2 * CX_SPACE, CY_SCOREPOINTS_FRAME - 2 * CY_SPACE);
+	pFrame->AddWidget(this->pScorepointsListBox);
 }
 
 //*****************************************************************************
@@ -272,6 +323,25 @@ void CRestoreScreen::ClearState()
 {
 	delete this->pCurrentRestoreGame;
 	this->pCurrentRestoreGame = NULL;
+}
+
+void CRestoreScreen::InitScorepointQuery()
+{
+	//Prep set of rooms to begin querying incrementally for challenge data.
+	this->scorepointScanRoomIDs.clear();
+	this->scorepointVarMap.clear();
+
+	const UINT holdID = g_pTheDB->GetHoldID();
+	CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID);
+	if (pHold) {
+		CDbHolds::GetScriptScorepointRefs(pHold, this->scorepointVarMap, this->scorepointScanRoomIDs);
+		delete pHold;
+	}
+
+	//CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	//ASSERT(pPlayer);
+	//this->completedScorepoints = pPlayer->challenges.get(holdID);
+	//delete pPlayer;
 }
 
 //******************************************************************************
@@ -369,6 +439,11 @@ void CRestoreScreen::OnClick(
 			GoToScreen(SCR_Browser);
 
 			this->bResetWidgets = false;	//keep current room active on return
+		break;
+
+		case TAG_SCOREPOINTS:
+			DisplayScorepointsDialog();
+			Paint();
 		break;
 
 		default:
@@ -502,6 +577,17 @@ void CRestoreScreen::ChooseSavedGame(
 	ShowSave();
 }
 
+void CRestoreScreen::DisplayScorepointsDialog()
+{
+	if (this->pScorepointsListBox->IsEmpty()) {
+		SetCursor(CUR_Wait);
+		PopulateScorepoints(this->pScorepointsListBox);
+		SetCursor();
+	}
+
+	this->pScorepointsDialog->Display();
+}
+
 //*****************************************************************************
 bool CRestoreScreen::SetWidgets()
 //Set up widgets and data used by them when user first arrives at restore
@@ -517,6 +603,8 @@ bool CRestoreScreen::SetWidgets()
 	//Delete any existing current game for this screen.
 	delete this->pCurrentRestoreGame;
 	this->pCurrentRestoreGame = NULL;
+
+	this->pScorepointsListBox->Clear();
 
 	//Load current room and level from game screen if it has a game loaded.
 	CCueEvents Ignored;
@@ -546,6 +634,7 @@ bool CRestoreScreen::SetWidgets()
 	this->pSaveListBoxWidget->SelectLine(0);
 
 	ShowSave();
+	InitScorepointQuery();
 
 	return true;
 }
@@ -815,6 +904,49 @@ void CRestoreScreen::PopulateListBoxFromSavedGames()
 		const UINT lineNo = this->pSaveListBoxWidget->AddItem(save.saveID, saveText.c_str());
 		if (pColor)
 			this->pSaveListBoxWidget->SetItemColorAtLine(lineNo, *pColor);
+	}
+}
+
+void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
+{
+	//Complete scanning any remaining rooms for scorepoints.
+	for (CIDSet::const_iterator roomIt = this->scorepointScanRoomIDs.begin();
+		roomIt != this->scorepointScanRoomIDs.end(); ++roomIt)
+	{
+		CDbHolds::GetScriptCommandRefsForRoom(*roomIt, NULL, true, this->scorepointVarMap);
+	}
+	this->scorepointScanRoomIDs.clear();
+
+	if (this->scorepointVarMap.empty()) {
+		pListBoxWidget->AddItem(0, g_pTheDB->GetMessageText(MID_None), true);
+	}
+
+	CDb db;
+	pListBoxWidget->SelectLine(0);
+
+#ifndef ENABLE_CHEATS
+	// Check hold authorship
+	// Not required if cheats are active
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	CDbHold* pHold = this->pCurrentRestoreGame->pHold;
+	bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
+	delete pPlayer;
+#endif
+
+	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->scorepointVarMap.begin();
+		vars != this->scorepointVarMap.end(); ++vars)
+	{
+		//Display info for this variable.
+		WSTRING scorepointName = vars->first;
+		bool hasScore = (db.SavedGames.FindByName(ST_ScoreCheckpoint, scorepointName) != 0);
+#ifndef ENABLE_CHEATS
+		if (!(hasScore || bIsAuthor)) {
+			pListBoxWidget->AddItem(0, L"???", !hasScore);
+		}	else
+#endif
+		{
+			pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
+		}
 	}
 }
 
