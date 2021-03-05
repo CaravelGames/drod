@@ -169,9 +169,13 @@ public:
 	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
-	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const bool bExpectCloseParen=false);
+
+	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
 	static bool    IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
+	static bool    IsValidPrimitiveParameters(ScriptVars::PrimitiveType ePrimitive,
+		const WCHAR* pwStr, UINT& index, CDbHold* pHold);
+
 	virtual bool   IsVisible() const {return this->bVisible;}
 	bool           JumpToCommandWithLabel(const WCHAR *pText);
 	bool           JumpToCommandWithLabel(const UINT num);
@@ -179,9 +183,15 @@ public:
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);
 	virtual bool   OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/=-1, const UINT /*wY*/=-1, WeaponType weaponType=WT_Sword);
-	static int     parseExpression(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC=NULL, const bool bExpectCloseParen=false);
+
+	static int     parseExpression(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC=NULL, const char closingChar=0);
+	static int     parseNestedExpression(const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC);
+	static int     parseNumber(const WCHAR* pwStr, UINT& index);
 	static int     parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC);
 	static int     parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC);
+	static int     parsePrimitive(ScriptVars::PrimitiveType ePrimitive,
+		const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC);
+
 	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
 	virtual void   PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEvents);
 
