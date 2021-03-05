@@ -552,6 +552,26 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="beh-fatal-push-immune"><b>Push to Fall Immunity</b></a>: The NPC cannot be pushed onto pit or water tiles if this would kill them. The NPC can still be pushed into other potentially dangerous tiles, such as active fire traps.</li>
 </ol>
 
+<p><a name="functions"><b>Function primitives</b></a> - Predefined
+  functions may be inserted anywhere a variable is referenced. The function will
+  return a value based on the input parameters and current game context, where applicable.
+  Functions are useful to apply in variable expressions.
+  All inputs must either be integer values or an expression that resolves to an integer value.
+  All outputs are likewise integers.
+  Function names are case-insensitive.
+</p>
+<p><a name="abs">* <b>_abs(x)</b></a> - Returns the absolute value of x</p>
+<p><a name="min">* <b>_min(x,y)</b></a> - Returns the lesser of two values</p>
+<p><a name="max">* <b>_max(x,y)</b></a> - Returns the greater of two values</p>
+<p><a name="orient">* <b>_orient(dx,dy)</b></a> - Returns an orientation id (0-8), given x,y directional offsets</p>
+<p><a name="ox">* <b>_ox(o)</b></a> - Given an orientation id (0-8), returns its x component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="oy">* <b>_oy(o)</b></a> - Given an orientation id (0-8), returns its y component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotatecw">* <b>_rotateCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotateccw">* <b>_rotateCCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a counter-clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="dist0">* <b>_dist0(x1,y1,x2,y2)</b></a> - Returns the L-infinity norm (max axial distance) between two 2-D coordinates.</p>
+<p><a name="dist1">* <b>_dist1(x1,y1,x2,y2)</b></a> - Returns the L-1 norm (Manhattan distance) between two 2-D coordinates.</p>
+<p><a name="dist2">* <b>_dist2(x1,y1,x2,y2)</b></a> - Returns the L-2 norm (Euclidean distance) between two 2-D coordinates.</p>
+
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
 <ol>
   <li><a name="singlecodebranch">A single code branch:</a><br />
