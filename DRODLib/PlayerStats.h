@@ -93,6 +93,7 @@ namespace ScriptVars
 		P_Dist0,     //L-infinity norm
 		P_Dist1,     //L-1 norm (Manhattan distance)
 		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
 		PrimitiveCount
 	};
 

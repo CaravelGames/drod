@@ -560,6 +560,11 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const int deltaY = params[3] - params[1];
 			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
 		}
+		case ScriptVars::P_ArrowDir:
+		{
+			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
+			return getForceArrowDirection(tile);
+		}
 		break;
 	}
 

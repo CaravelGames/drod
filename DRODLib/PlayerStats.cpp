@@ -38,7 +38,8 @@ const char ScriptVars::primitiveNames[PrimitiveCount][11] =
 	"_rotateCCW",
 	"_dist0",
 	"_dist1",
-	"_dist2"
+	"_dist2",
+	"_ArrowDir"
 };
 
 //*****************************************************************************
@@ -96,8 +97,8 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_Min:
 		case P_Max:
 		case P_Orient:
+		case P_ArrowDir:
 			return 2;
-			//return 3;
 		case P_Dist0:
 		case P_Dist1:
 		case P_Dist2:
