@@ -565,6 +565,23 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
 			return getForceArrowDirection(tile);
 		}
+		case ScriptVars::P_RoomTile:
+		{
+			switch (params[2]) {
+				case 0: return this->pRoom->GetOSquare(params[0], params[1]);
+				case 1: return this->pRoom->GetFSquare(params[0], params[1]);
+				case 2: return this->pRoom->GetTSquare(params[0], params[1]);
+				default: return 0;
+			}
+		}
+		case ScriptVars::P_MonsterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				return pMonster->wType;
+			}
+			return -1;
+		}
 		break;
 	}
 
