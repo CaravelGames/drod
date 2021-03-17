@@ -538,6 +538,25 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 				case ScriptVars::P_RotateCCW: return nNextCCO(o);
 			}
 		}
+		case ScriptVars::P_RotateDist:
+		{
+			UINT wO1 = params[0];
+			UINT wO2 = params[1];
+			UINT wTurns = 0;
+
+			if (!(IsValidOrientation(wO1) && IsValidOrientation(wO2)) ||
+				wO1 == NO_ORIENTATION || wO2 == NO_ORIENTATION) {
+				return 0;
+			}
+
+			while (wO1 != wO2) {
+				wO1 = nNextCO(wO1);
+				++wTurns;
+				ASSERT(wTurns < 8);
+			}
+
+			return wTurns <= 4 ? wTurns : 8 - wTurns;
+		}
 		case ScriptVars::P_Min:
 			return min(params[0], params[1]);
 		case ScriptVars::P_Max:

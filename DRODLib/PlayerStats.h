@@ -90,6 +90,7 @@ namespace ScriptVars
 		P_OrientY,   //o --> dy
 		P_RotateCW,  //o --> cw(o)
 		P_RotateCCW, //o --> ccw(o)
+		P_RotateDist,//(o1, o2) --> number of turns between the two
 		P_Dist0,     //L-infinity norm
 		P_Dist1,     //L-1 norm (Manhattan distance)
 		P_Dist2,     //L-2 norm (Euclidean distance)
