@@ -523,6 +523,19 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const int dy = sgn(params[1]);
 			return nGetO(dx, dy);
 		}
+		case ScriptVars::P_Facing:
+		{
+			int dx = params[0];
+			int dy = params[1];
+			//If one of the four compass directions is more direct than a diagonal,
+			//snap to it.
+			const int absDx = abs(dx), absDy = abs(dy);
+			if (absDx > 2 * absDy)
+				dy = 0;
+			else if (absDy > 2 * absDx)
+				dx = 0;
+			return nGetO(sgn(dx), sgn(dy));
+		}
 		case ScriptVars::P_OrientX:
 		case ScriptVars::P_OrientY:
 		case ScriptVars::P_RotateCW:

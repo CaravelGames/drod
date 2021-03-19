@@ -86,6 +86,7 @@ namespace ScriptVars
 		P_Min,       //(x,y) --> min(x,y)
 		P_Max,       //(x,y) --> max(x,y)
 		P_Orient,    //(dx,dy) --> o
+		P_Facing,    //(dx,dy) --> o
 		P_OrientX,   //o --> dx
 		P_OrientY,   //o --> dy
 		P_RotateCW,  //o --> cw(o)

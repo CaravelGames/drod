@@ -32,6 +32,7 @@ const char ScriptVars::primitiveNames[PrimitiveCount][13] =
 	"_min",
 	"_max",
 	"_orient",
+	"_facing",
 	"_ox",
 	"_oy",
 	"_rotateCW",
@@ -100,6 +101,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_Min:
 		case P_Max:
 		case P_Orient:
+		case P_Facing:
 		case P_RotateDist:
 		case P_ArrowDir:
 		case P_MonsterType:

@@ -130,6 +130,22 @@ TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
 		TestParsedValue(noOrientCW, NO_ORIENTATION, pGame, pCharacter);
 		TestParsedValue(noOrientCCW, NO_ORIENTATION, pGame, pCharacter);
 
+		// Facing
+		wstring facingExpression(L"_facing(2,2)");
+		wstring facingExpression2(L"_facing(0,-3)");
+		wstring facingExpression3(L"_facing(1,5)");
+		wstring facingExpression4(L"_facing(0,0)");
+
+		TestValidity(facingExpression, pHold);
+		TestValidity(facingExpression2, pHold);
+		TestValidity(facingExpression3, pHold);
+		TestValidity(facingExpression4, pHold);
+
+		TestParsedValue(facingExpression, SE, pGame, pCharacter);
+		TestParsedValue(facingExpression2, N, pGame, pCharacter);
+		TestParsedValue(facingExpression3, S, pGame, pCharacter);
+		TestParsedValue(facingExpression4, NO_ORIENTATION, pGame, pCharacter);
+
 		// Rotation distance
 		wstring rotationDist(L"_rotateDist(2,6)");
 		wstring rotationDist2(L"_rotateDist(1,3)");
