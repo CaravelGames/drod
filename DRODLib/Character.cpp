@@ -4613,6 +4613,16 @@ bool CCharacter::IsOpenMove(const int dx, const int dy) const
 }
 
 //*****************************************************************************
+bool CCharacter::IsPlayerAllyTarget() const
+// Returns: whether Stalwart/Soldiers should treat this character as a target
+{
+	if (!IsVisible())
+		return false;
+
+	return HasBehavior(ScriptFlag::AllyTarget);
+}
+
+//*****************************************************************************
 bool CCharacter::IsPuffTarget() const
 // Returns: whether Puff monsters should treat this character as a target
 {

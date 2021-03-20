@@ -976,7 +976,7 @@ bool CMonster::FindOptimalPathToClosestMonster(
 			if (!wGoalDistance)
 			{
 				CMonster *pMonster = curGameRoom.GetMonsterAtSquare(wNewX, wNewY);
-				if (pMonster && monsterTypes.has(pMonster->wType) && pMonster->IsAlive())
+				if (pMonster && monsterTypes.has(pMonster->wType) && pMonster->IsPlayerAllyTarget())
 				{
 					//Goal found.
 					wGoalDistance = wCostPlusOne;
