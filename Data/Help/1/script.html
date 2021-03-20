@@ -530,12 +530,13 @@ continue executing script commands from a different location in the script.</p>
 	<li><a name="beh-drop-trapdoor"><b>Drops Trapdoors</b></a>: The NPC will drop trapdoors and melt thin ice.</li>
 	<li><a name="beh-drop-trapdoor-armed"><b>Drop Trapdoors When Armed</b></a>: The NPC will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
 	<li><a name="beh-push-objects"><b>Push Objects</b></a>: The NPC can push objects such as Mirrors and Powder Kegs.</li>
-	<li><a name="beh-push-monsters"><b>Push Objects</b></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
+	<li><a name="beh-push-monsters"><b>Push Monsters</b></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
 	<li><a name="beh-move-platform"><b>Move Platforms and Rafts</b></a>: The NPC can push platforms and rafts by moving against their sides.</li>
 	<li><a name="beh-restricted-movement"><b>Restricted Movement</b></a>: The NPC can only move onto tiles it's movement type would normally allow movement onto. See <a href="#set-movement">Set movement type</a> for details.</li>
 	<li><a name="beh-monster-attackable"><b>Can Be Attacked By Monsters</b></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
 	<li><a name="beh-monster-target"><b>Monster Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to monsters.</li>
 	<li><a name="beh-monster-target-if-player"><b>Monster Target When Player Is Target</b></a>: Monsters other than Puffs will treat the NPC as a target as long as the player is a monster target. Otherwise, monsters will ignore this character. This does not affect the NPC's vulnerability to monsters.</li>
+	<li><a name="beh-ally-target"><b>Ally Target</b></a>: Stalwarts and Soldiers will treat the NPC as a target. However, they will avoid stabbing the NPC if it is <a href="#imp-friendly">Friendly</a>.</li>
 	<li><a name="beh-puff-target"><b>Puff Target</b></a>: Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to puffs.</li>
 	<li><a name="beh-sword-immune"><b>Sword Damage Immunity</b></a>: Attack from swords will not kill the NPC.</li>
 	<li><a name="beh-pickaxe-immune"><b>Pickaxe Damage Immunity</b></a>: Attack from pickaxes will not kill the NPC. The NPC can still be pushed by pickaxes</li>
