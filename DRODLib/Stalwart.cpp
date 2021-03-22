@@ -217,7 +217,7 @@ bool CStalwart::GetGoal(UINT& wX, UINT& wY)
 	const CMonster *pMonster = this->pCurrentGame->pRoom->pFirstMonster;
 	while (pMonster)
 	{
-		if (CStalwart::typesToAttack.has(pMonster->GetIdentity()))
+		if (CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget())
 			break;  //There is a monster to kill.
 		pMonster = pMonster->pNext;
 	}
