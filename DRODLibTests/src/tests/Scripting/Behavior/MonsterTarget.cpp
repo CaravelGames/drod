@@ -96,4 +96,29 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 
 		AssertMonsterType(10, 10, M_ROACH);
 	}
+
+	SECTION("Test Stalwart kills unfriendly target") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Imperative, ScriptFlag::Unfriendly);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::AllyTarget, 1);
+		RoomBuilder::AddMonster(M_STALWART, 8, 10, E);
+
+		CCurrentGame* pGame = Runner::StartGame(1, 1);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		// Stalwart should move and kill target
+		AssertMonsterType(9, 10, M_STALWART);
+		AssertNoMonster(10, 10);
+	}
+
+	SECTION("Test Stalwart moves to but does not kill friendly target") {
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::AllyTarget, 1);
+		RoomBuilder::AddMonster(M_STALWART, 8, 9, SE);
+
+		CCurrentGame* pGame = Runner::StartGame(1, 1);
+		Runner::ExecuteCommand(CMD_WAIT, 2);
+
+		// Stalwart should move but not kill target
+		AssertMonsterType(9, 10, M_STALWART);
+		AssertMonsterType(10, 10, M_CHARACTER);
+	}
 }
