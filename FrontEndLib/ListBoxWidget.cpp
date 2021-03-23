@@ -1338,6 +1338,7 @@ void CListBoxWidget::HandleDrag(
 		this->Items[this->wDraggingLineNo] = this->Items[this->wCursorLine];
 		this->Items[this->wCursorLine] = pItem;
 		this->wDraggingLineNo = this->wCursorLine;
+		this->filteredItems = this->Items;
 
 		SelectLine(this->wCursorLine);
 
