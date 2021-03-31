@@ -1039,8 +1039,16 @@ void CRoomWidget::HighlightSelectedTile()
 				//Show citizen's current destination.
 				const CCitizen *pCitizen = DYN_CAST(const CCitizen*, const CMonster*, pMonster);
 				UINT wDestX, wDestY;
-				if (pCitizen->GetGoal(wDestX,wDestY))
+				if (pCitizen->GetGoal(wDestX, wDestY)) {
 					AddShadeEffect(wDestX, wDestY, PaleYellow);
+					for (UINT wPathIndex = 0; wPathIndex < pCitizen->GetStoredPath().GetSize(); ++wPathIndex)
+					{
+						UINT wX, wY;
+						pCitizen->GetStoredPath().GetAt(wPathIndex, wX, wY);
+						ASSERT(this->pRoom->IsValidColRow(wX, wY));
+						AddShadeEffect(wX, wY, PaleYellow);
+					}
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
@@ -1050,8 +1058,15 @@ void CRoomWidget::HighlightSelectedTile()
 				//Show stalwart's current target.
 				CStalwart *pStalwart = DYN_CAST(CStalwart*, CMonster*, const_cast<CMonster*>(pMonster));
 				UINT wDestX, wDestY;
-				if (!pStalwart->bFrozen && pStalwart->GetGoal(wDestX,wDestY))
-					AddShadeEffect(wDestX, wDestY, PaleYellow);
+				if (!pStalwart->bFrozen && pStalwart->GetGoal(wDestX, wDestY)) {
+					for (UINT wPathIndex = 0; wPathIndex < pStalwart->GetStoredPath().GetSize(); ++wPathIndex)
+					{
+						UINT wX, wY;
+						pStalwart->GetStoredPath().GetAt(wPathIndex, wX, wY);
+						ASSERT(this->pRoom->IsValidColRow(wX, wY));
+						AddShadeEffect(wX, wY, PaleYellow);
+					}
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
