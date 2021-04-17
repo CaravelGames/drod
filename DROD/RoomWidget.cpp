@@ -1170,6 +1170,26 @@ void CRoomWidget::HighlightSelectedTile()
 			bRemoveHighlightNextTurn = false;
 		}
 		break;
+		case T_HORN_SQUAD:
+		{
+			MovementType eMovement = GetHornMovementType(this->pCurrentGame->swordsman.GetMovementType());
+			UINT goalX, goalY;
+			if (this->pRoom->GetNearestEntranceTo(wX, wY, eMovement, goalX, goalY)) {
+				AddShadeEffect(goalX, goalY, PaleYellow);
+				bRemoveHighlightNextTurn = false;
+			}
+		}
+		break;
+		case T_HORN_SOLDIER:
+		{
+			UINT goalX, goalY;
+			if (this->pRoom->GetNearestEntranceTo(wX, wY, GROUND_AND_SHALLOW_WATER_FORCE, goalX, goalY)) {
+				SURFACECOLOR Blue = { 120, 120, 255 };
+				AddShadeEffect(goalX, goalY, Blue);
+				bRemoveHighlightNextTurn = false;
+			}
+		}
+		break;
 		default: break;
 	}
 
