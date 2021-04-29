@@ -57,9 +57,6 @@ UINT CBuilding::get(const UINT wX, const UINT wY) const
 void CBuilding::plot(const UINT wX, const UINT wY, const UINT wTile)
 //Set build tile at (x,y) to specified tile.
 {
-	//Only supported in immediate building at this time
-	if (bIsFakeTokenType(wTile)) return;
-
 	switch (wTile) {
 		case T_REMOVE_BUILD_MARKER:
 			remove(wX,wY);
