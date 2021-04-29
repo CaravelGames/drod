@@ -4428,24 +4428,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 		pListBox->AddItem(T_SCROLL, g_pTheDB->GetMessageText(MID_Scroll));
 		pListBox->AddItem(T_STAIRS, g_pTheDB->GetMessageText(MID_Stairs));
 		pListBox->AddItem(T_STAIRS_UP, g_pTheDB->GetMessageText(MID_StairsUp));
-		pListBox->AddItem(T_TOKEN_CONQUER, g_pTheDB->GetMessageText(MID_TokenConquer));
-		pListBox->AddItem(T_TOKEN_DISARM, g_pTheDB->GetMessageText(MID_TokenSwordDisarm));
-		pListBox->AddItem(T_TOKEN_PERSISTENTMOVE, g_pTheDB->GetMessageText(MID_TokenCitizen));
-		pListBox->AddItem(T_TOKEN_POWER, g_pTheDB->GetMessageText(MID_TokenPowerTarget));
-		pListBox->AddItem(T_TOKEN_ROTATECCW, g_pTheDB->GetMessageText(MID_TokenRotateCCW));
-		pListBox->AddItem(T_TOKEN_ROTATECW, g_pTheDB->GetMessageText(MID_Token));
-		pListBox->AddItem(T_TOKEN_SWITCH_GELMUD, g_pTheDB->GetMessageText(MID_TokenGelMud));
-		pListBox->AddItem(T_TOKEN_SWITCH_TARGEL, g_pTheDB->GetMessageText(MID_TokenTarGel));
-		pListBox->AddItem(T_TOKEN_SWITCH_TARMUD, g_pTheDB->GetMessageText(MID_TokenTarMud));
-		pListBox->AddItem(T_TOKEN_TSPLIT, g_pTheDB->GetMessageText(MID_TemporalSplitToken));
 		pListBox->AddItem(T_TOKEN_TSPLIT_USED, g_pTheDB->GetMessageText(MID_TemporalSplitUsed));
-		pListBox->AddItem(T_TOKEN_VISION, g_pTheDB->GetMessageText(MID_TokenTranslucentTar));
-		pListBox->AddItem(T_TOKEN_WPCABER, g_pTheDB->GetMessageText(MID_TokenCaber));
-		pListBox->AddItem(T_TOKEN_WPDAGGER, g_pTheDB->GetMessageText(MID_TokenDagger));
-		pListBox->AddItem(T_TOKEN_WPPICKAXE, g_pTheDB->GetMessageText(MID_TokenPickaxe));
-		pListBox->AddItem(T_TOKEN_WPSPEAR, g_pTheDB->GetMessageText(MID_TokenSpear));
-		pListBox->AddItem(T_TOKEN_WPSTAFF, g_pTheDB->GetMessageText(MID_TokenStaff));
-		pListBox->AddItem(T_TOKEN_WPSWORD, g_pTheDB->GetMessageText(MID_TokenSword));
 		pListBox->AddItem(T_WALLLIGHT, g_pTheDB->GetMessageText(MID_WallLight));
 	}
 
@@ -4523,6 +4506,23 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	pListBox->AddItem(T_TAR, g_pTheDB->GetMessageText(MID_Tar));
 	pListBox->AddItem(T_THINICE, g_pTheDB->GetMessageText(MID_ThinIce));
 	pListBox->AddItem(T_THINICE_SH, g_pTheDB->GetMessageText(MID_ThinIce2));
+	pListBox->AddItem(T_TOKEN_CONQUER, g_pTheDB->GetMessageText(MID_TokenConquer));
+	pListBox->AddItem(T_TOKEN_DISARM, g_pTheDB->GetMessageText(MID_TokenSwordDisarm));
+	pListBox->AddItem(T_TOKEN_PERSISTENTMOVE, g_pTheDB->GetMessageText(MID_TokenCitizen));
+	pListBox->AddItem(T_TOKEN_POWER, g_pTheDB->GetMessageText(MID_TokenPowerTarget));
+	pListBox->AddItem(T_TOKEN_ROTATECCW, g_pTheDB->GetMessageText(MID_TokenRotateCCW));
+	pListBox->AddItem(T_TOKEN_ROTATECW, g_pTheDB->GetMessageText(MID_Token));
+	pListBox->AddItem(T_TOKEN_SWITCH_GELMUD, g_pTheDB->GetMessageText(MID_TokenGelMud));
+	pListBox->AddItem(T_TOKEN_SWITCH_TARGEL, g_pTheDB->GetMessageText(MID_TokenTarGel));
+	pListBox->AddItem(T_TOKEN_SWITCH_TARMUD, g_pTheDB->GetMessageText(MID_TokenTarMud));
+	pListBox->AddItem(T_TOKEN_TSPLIT, g_pTheDB->GetMessageText(MID_TemporalSplitToken));
+	pListBox->AddItem(T_TOKEN_VISION, g_pTheDB->GetMessageText(MID_TokenTranslucentTar));
+	pListBox->AddItem(T_TOKEN_WPCABER, g_pTheDB->GetMessageText(MID_TokenCaber));
+	pListBox->AddItem(T_TOKEN_WPDAGGER, g_pTheDB->GetMessageText(MID_TokenDagger));
+	pListBox->AddItem(T_TOKEN_WPPICKAXE, g_pTheDB->GetMessageText(MID_TokenPickaxe));
+	pListBox->AddItem(T_TOKEN_WPSPEAR, g_pTheDB->GetMessageText(MID_TokenSpear));
+	pListBox->AddItem(T_TOKEN_WPSTAFF, g_pTheDB->GetMessageText(MID_TokenStaff));
+	pListBox->AddItem(T_TOKEN_WPSWORD, g_pTheDB->GetMessageText(MID_TokenSword));
 	pListBox->AddItem(T_TRAPDOOR, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(T_TRAPDOOR2, g_pTheDB->GetMessageText(MID_Trapdoor2));
 	pListBox->AddItem(T_TUNNEL_E, g_pTheDB->GetMessageText(MID_Tunnel_E));
