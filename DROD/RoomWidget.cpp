@@ -4800,6 +4800,8 @@ void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 						case T_BRIAR_SOURCE: wTileNo = TI_BRIARROOT; break;
 						default: wTileNo = GetTileImageForTileNo(wTile); break;
 					}
+					if (bIsFakeTokenType(wTile))
+						wTileNo = CalcTileImageForToken(ConvertFakeTokenType(wTile));
 					if (wTileNo == CALC_NEEDED)
 						wTileNo = CalcTileImageFor(&room, wTile, wX, wY);
 					if (wTileNo != CALC_NEEDED)
