@@ -1625,7 +1625,14 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	//Build marker.
 	if (this->pRoom->building.get(wX,wY))
 	{
-		mid = getBuildMarkerTileMID(this->pRoom->building.get(wX,wY) - 1);
+		UINT wBuildTile = this->pRoom->building.get(wX, wY) - 1;
+
+		if (bIsFakeTokenType(wBuildTile)) {
+			mid = GetTokenMID(ConvertFakeTokenType(wBuildTile));
+		}	else {
+			mid = getBuildMarkerTileMID(wBuildTile);
+		}
+
 		if (mid)
 		{
 			wstr += wszCRLF;
