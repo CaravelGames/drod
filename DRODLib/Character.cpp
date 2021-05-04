@@ -833,7 +833,7 @@ bool CCharacter::IsValidExpression(
 //
 //Params:
 	const WCHAR *pwStr, UINT& index, CDbHold *pHold,
-	const char closingChar) ////[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
+	const char closingChar) //[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
 {
 	ASSERT(pwStr);
 	ASSERT(pHold);
@@ -851,7 +851,7 @@ bool CCharacter::IsValidExpression(
 		//Parse another term.
 		if (pwStr[index] == W_t('+') || pwStr[index] == W_t('-'))
 			++index;
-		else if (closingChar && pwStr[index] == closingChar) //closing nested expression
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
 			return true; //caller will parse the close paren
 		else
 			return false; //invalid symbol between terms
@@ -1054,7 +1054,7 @@ int CCharacter::parseExpression(
 			bAdd = false;
 			++index;
 		}
-		else if (closingChar && pwStr[index] == closingChar) //closing nested expression
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
 			return val; //caller will parse the closing char
 		else
 		{
