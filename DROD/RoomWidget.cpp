@@ -1041,10 +1041,11 @@ void CRoomWidget::HighlightSelectedTile()
 				UINT wDestX, wDestY;
 				if (pCitizen->GetGoal(wDestX, wDestY)) {
 					AddShadeEffect(wDestX, wDestY, PaleYellow);
-					for (UINT wPathIndex = 0; wPathIndex < pCitizen->GetStoredPath().GetSize(); ++wPathIndex)
+					CCoordStack citizenPath = pCitizen->GetStoredPath();
+					for (UINT wPathIndex = 0; wPathIndex < citizenPath.GetSize(); ++wPathIndex)
 					{
 						UINT wX, wY;
-						pCitizen->GetStoredPath().GetAt(wPathIndex, wX, wY);
+						citizenPath.GetAt(wPathIndex, wX, wY);
 						ASSERT(this->pRoom->IsValidColRow(wX, wY));
 						AddShadeEffect(wX, wY, PaleYellow);
 					}
@@ -1059,10 +1060,11 @@ void CRoomWidget::HighlightSelectedTile()
 				CStalwart *pStalwart = DYN_CAST(CStalwart*, CMonster*, const_cast<CMonster*>(pMonster));
 				UINT wDestX, wDestY;
 				if (!pStalwart->bFrozen && pStalwart->GetGoal(wDestX, wDestY)) {
-					for (UINT wPathIndex = 0; wPathIndex < pStalwart->GetStoredPath().GetSize(); ++wPathIndex)
+					CCoordStack stalwartPath = pStalwart->GetStoredPath();
+					for (UINT wPathIndex = 0; wPathIndex < stalwartPath.GetSize(); ++wPathIndex)
 					{
 						UINT wX, wY;
-						pStalwart->GetStoredPath().GetAt(wPathIndex, wX, wY);
+						stalwartPath.GetAt(wPathIndex, wX, wY);
 						ASSERT(this->pRoom->IsValidColRow(wX, wY));
 						AddShadeEffect(wX, wY, PaleYellow);
 					}
@@ -1101,10 +1103,11 @@ void CRoomWidget::HighlightSelectedTile()
 				static const SURFACECOLOR Orange = { 255, 165, 0 };
 				//Show Halph's stored path
 				const CHalph* pHalph = DYN_CAST(const CHalph*, const CMonster*, pMonster);
-				for (UINT wPathIndex = 0; wPathIndex < pHalph->GetStoredPath().GetSize(); ++wPathIndex)
+				CCoordStack halphPath = pHalph->GetStoredPath();
+				for (UINT wPathIndex = 0; wPathIndex < halphPath.GetSize(); ++wPathIndex)
 				{
 					UINT wX, wY;
-					pHalph->GetStoredPath().GetAt(wPathIndex, wX, wY);
+					halphPath.GetAt(wPathIndex, wX, wY);
 					ASSERT(this->pRoom->IsValidColRow(wX, wY));
 					AddShadeEffect(wX, wY, Orange);
 				}
