@@ -26,6 +26,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "CharacterDialogWidget.h"
+#include "CommandListBoxWidget.h"
 #include "DrodBitmapManager.h"
 #include "DrodFontManager.h"
 #include "EditRoomScreen.h"
@@ -190,6 +191,9 @@ const UINT LIST_LINE_HEIGHT = 22;
 const SURFACECOLOR PaleRed = {255, 192, 192};
 
 std::map<UINT, UINT> CCharacterDialogWidget::speechLengthCache;
+const UINT CCharacterDialogWidget::INDENT_PREFIX_SIZE = 8;
+const UINT CCharacterDialogWidget::INDENT_TAB_SIZE = 3;
+const UINT CCharacterDialogWidget::INDENT_IF_CONDITION_SIZE = 5;
 
 #define NOT_FOUND (UINT(-1))
 
@@ -495,8 +499,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 
 	AddWidget(new CLabelWidget(0L, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
-	this->pCommandsListBox = new CListBoxWidget(TAG_COMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
-			CX_COMMANDS, CY_COMMANDS, false, true, true);
+	this->pCommandsListBox = new CCommandListBoxWidget(TAG_COMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
+			CX_COMMANDS, CY_COMMANDS);
 	AddWidget(this->pCommandsListBox);
 
 	//Appearance (character/tile graphic).
@@ -2479,7 +2483,7 @@ void CCharacterDialogWidget::OnKeyDown(
 						line!=selectedLines.end(); ++line)
 				{
 					if (*line < pCommands->size())
-						wstrCommandsText += toText(*pCommands, (*pCommands)[*line]);
+						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], *line);
 				}
 				if (!wstrCommandsText.empty())
 					g_pTheSound->PlaySoundEffect(SEID_POTION);
@@ -3244,8 +3248,6 @@ WSTRING CCharacterDialogWidget::GetCommandDesc(
 const
 {
 	WSTRING wstr;
-
-	wstr += GetPrettyPrinting(commands, pCommand, 6, 3); //indent the If conditions considerably
 
 	//Call language-specific version of method.
 	switch (Language::GetLanguage())
@@ -4087,158 +4089,176 @@ WSTRING CCharacterDialogWidget::GetDataName(const UINT dwID) const
 }
 
 //*****************************************************************************
-WSTRING CCharacterDialogWidget::GetPrettyPrinting(
-//Add indenting to clarify the code flow.
-//
-//Params:
-	const COMMANDPTR_VECTOR& commands,
-	CCharacterCommand* pCommand,
-	const UINT ifIndent, const UINT tabSize)
-const
+UINT CCharacterDialogWidget::ExtractCommandIndent(const UINT wCommandIndex) const
+//Extracts command's indent size from the command listbox text
 {
-	ASSERT(pCommand);
+	WSTRING wstr = this->pCommandsListBox->GetTextAtLine(wCommandIndex);
 
+	UINT i = 0;
+	for (; i < wstr.size(); ++i)
+	{
+		if (!iswspace(wstr.at(i)))
+			break;
+	}
+
+	return i;
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &commands)
+{
 	WSTRING wstr;
 
-	//Determine indentation for command.
-	if (pCommand->command == CCharacterCommand::CC_Label)  //labels always have indent 0
-		return wstr;
+	UINT wNestDepth = 0, wIndent = INDENT_PREFIX_SIZE;  //insert past labels
 
-	UINT wNestDepth = 0, wIndent = 2;  //insert past labels
-
-	bool bIfCondition = false;
+	UINT index = 0;
+	bool bLastWasIfCondition = false;
 	for (COMMANDPTR_VECTOR::const_iterator command = commands.begin();
-			(*command) != pCommand && command != commands.end(); ++command)
+		command != commands.end(); ++command, ++index)
 	{
-		bIfCondition = false;
-		switch ((*command)->command)
+		wstr.clear();
+		CCharacterCommand *pCommand = *command;
+		bool bIsIfCondition = false;
+		bool bUndoOneDepth = false;
+		bool bIsLabel = false;
+		switch (pCommand->command)
 		{
 			case CCharacterCommand::CC_If:
-				bIfCondition = true;
+				bIsIfCondition = true;
 				++wNestDepth; //indent inside of if block
-			break;
+				bUndoOneDepth = true;
+				break;
 			case CCharacterCommand::CC_IfElseIf:
-				bIfCondition = true;
-			break;
+				bIsIfCondition = true;
+				break;
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestDepth)
 					--wNestDepth;
 				else
 					wstr += wszExclamation;	//superfluous IfEnd
-			break;
+				break;
 			default: break;
 		}
-	}
 
-	//Unnest If block markers.
-	switch (pCommand->command)
-	{
-		case CCharacterCommand::CC_IfEnd:
-		case CCharacterCommand::CC_IfElse:
-		case CCharacterCommand::CC_IfElseIf:
-			if (wNestDepth)
-				--wNestDepth;
-			else
-				wstr += wszExclamation;	//superfluous IfEnd
-		//no break
-		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_MoveTo:
-		case CCharacterCommand::CC_MoveRel:
-		case CCharacterCommand::CC_EndScript:
-		case CCharacterCommand::CC_EndScriptOnExit:
-		case CCharacterCommand::CC_FlushSpeech:
-		case CCharacterCommand::CC_GoSub:
-		case CCharacterCommand::CC_GoTo:
-		case CCharacterCommand::CC_If:
-		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Behavior:
-		case CCharacterCommand::CC_Label:
-		case CCharacterCommand::CC_LevelEntrance:
-		case CCharacterCommand::CC_SetMusic:
-		case CCharacterCommand::CC_Speech:
-		case CCharacterCommand::CC_TurnIntoMonster:
-		case CCharacterCommand::CC_PlayerEquipsWeapon:
-		case CCharacterCommand::CC_SetPlayerStealth:
-		case CCharacterCommand::CC_SetWaterTraversal:
-		case CCharacterCommand::CC_StartGlobalScript:
-		case CCharacterCommand::CC_AnswerOption:
-		case CCharacterCommand::CC_AmbientSound:
-		case CCharacterCommand::CC_AmbientSoundAt:
-		case CCharacterCommand::CC_PlayVideo:
-		case CCharacterCommand::CC_WorldMapSelect:
-		case CCharacterCommand::CC_WorldMapMusic:
-		case CCharacterCommand::CC_WorldMapIcon:
-		case CCharacterCommand::CC_WorldMapImage:
-		case CCharacterCommand::CC_ChallengeCompleted:
-		case CCharacterCommand::CC_Return:
-			if (bIfCondition)
-				wstr += wszQuestionMark;	//questionable If condition
-		break;
-
-		case CCharacterCommand::CC_ImageOverlay:
-			if (bIfCondition)
-				wstr += wszQuestionMark;	//questionable If condition
-			if (pCommand->label.empty()) {
-				wstr += wszExclamation;
-			} else {
-				vector<ImageOverlayCommand> temp;
-				if (!CImageOverlay::parse(pCommand->label, temp))
-					wstr += wszExclamation;
-			}
-		break;
-
-		case CCharacterCommand::CC_VarSet:
-			if (bIfCondition)
-				wstr += wszQuestionMark;	//questionable If condition
-		//no break
-		case CCharacterCommand::CC_WaitForVar:
+		//Unnest If block markers.
+		switch (pCommand->command)
 		{
-			//Verify integrity of hold var refs.
-			switch (pCommand->y)
+			case CCharacterCommand::CC_IfElse:
+			case CCharacterCommand::CC_IfElseIf:
+				if (wNestDepth)
+					bUndoOneDepth = true;
+				else
+					wstr += wszExclamation;	//superfluous IfEnd
+			//no break
+			case CCharacterCommand::CC_IfEnd:
+			case CCharacterCommand::CC_Disappear:
+			case CCharacterCommand::CC_MoveTo:
+			case CCharacterCommand::CC_MoveRel:
+			case CCharacterCommand::CC_EndScript:
+			case CCharacterCommand::CC_EndScriptOnExit:
+			case CCharacterCommand::CC_FlushSpeech:
+			case CCharacterCommand::CC_GoSub:
+			case CCharacterCommand::CC_GoTo:
+			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_Imperative:
+			case CCharacterCommand::CC_Behavior:
+			case CCharacterCommand::CC_LevelEntrance:
+			case CCharacterCommand::CC_SetMusic:
+			case CCharacterCommand::CC_Speech:
+			case CCharacterCommand::CC_TurnIntoMonster:
+			case CCharacterCommand::CC_PlayerEquipsWeapon:
+			case CCharacterCommand::CC_SetPlayerStealth:
+			case CCharacterCommand::CC_SetWaterTraversal:
+			case CCharacterCommand::CC_StartGlobalScript:
+			case CCharacterCommand::CC_AnswerOption:
+			case CCharacterCommand::CC_AmbientSound:
+			case CCharacterCommand::CC_AmbientSoundAt:
+			case CCharacterCommand::CC_PlayVideo:
+			case CCharacterCommand::CC_WorldMapSelect:
+			case CCharacterCommand::CC_WorldMapMusic:
+			case CCharacterCommand::CC_WorldMapIcon:
+			case CCharacterCommand::CC_WorldMapImage:
+			case CCharacterCommand::CC_ChallengeCompleted:
+			case CCharacterCommand::CC_Return:
+				if (bLastWasIfCondition)
+					wstr += wszQuestionMark;	//questionable If condition
+				break;
+			case CCharacterCommand::CC_Label:
+				bIsLabel = true;
+				if (bLastWasIfCondition)
+					wstr += wszQuestionMark;	//questionable If condition
+				break;
+			case CCharacterCommand::CC_ImageOverlay:
+				if (bLastWasIfCondition)
+					wstr += wszQuestionMark;	//questionable If condition
+				if (pCommand->label.empty()) {
+					wstr += wszExclamation;
+				}
+				else {
+					vector<ImageOverlayCommand> temp;
+					if (!CImageOverlay::parse(pCommand->label, temp))
+						wstr += wszExclamation;
+				}
+				break;
+
+			case CCharacterCommand::CC_VarSet:
+				if (bLastWasIfCondition)
+					wstr += wszQuestionMark;	//questionable If condition
+			//no break
+			case CCharacterCommand::CC_WaitForVar:
 			{
+				//Verify integrity of hold var refs.
+				switch (pCommand->y)
+				{
 				case ScriptVars::AppendText:
 				case ScriptVars::AssignText:
-				break;
+					break;
 				default:
 					if (!pCommand->label.empty()) //an expression is used as an operand
 					{
-						CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-								g_pTheSM->GetScreen(SCR_EditRoom));
+						CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen *, CScreen *,
+							g_pTheSM->GetScreen(SCR_EditRoom));
 						ASSERT(pEditRoomScreen);
 						ASSERT(pEditRoomScreen->pHold);
-						UINT index=0;
+						UINT index = 0;
 						if (!CCharacter::IsValidExpression(pCommand->label.c_str(), index, pEditRoomScreen->pHold))
 							wstr += wszAsterisk; //expression is not valid
 					}
-				break;
+					break;
+				}
 			}
+			break;
+
+			//Deprecated commands.
+			case CCharacterCommand::CC_GotoIf:
+			case CCharacterCommand::CC_WaitForHalph:
+			case CCharacterCommand::CC_WaitForNotHalph:
+			case CCharacterCommand::CC_WaitForMonster:
+			case CCharacterCommand::CC_WaitForNotMonster:
+			case CCharacterCommand::CC_WaitForCharacter:
+			case CCharacterCommand::CC_WaitForNotCharacter:
+				wstr += wszAsterisk;
+				break;
+			default: break;
 		}
-		break;
 
-		//Deprecated commands.
-		case CCharacterCommand::CC_GotoIf:
-		case CCharacterCommand::CC_WaitForHalph:
-		case CCharacterCommand::CC_WaitForNotHalph:
-		case CCharacterCommand::CC_WaitForMonster:
-		case CCharacterCommand::CC_WaitForNotMonster:
-		case CCharacterCommand::CC_WaitForCharacter:
-		case CCharacterCommand::CC_WaitForNotCharacter:
-			wstr += wszAsterisk;
-		break;
-		default: break;
+		UINT wFinalIndent = wNestDepth * INDENT_TAB_SIZE;
+		if (bIsLabel)
+			wFinalIndent = 0;
+
+		else if (bLastWasIfCondition)
+			wFinalIndent += INDENT_IF_CONDITION_SIZE;
+
+		else if (bUndoOneDepth)
+			wFinalIndent -= INDENT_TAB_SIZE;
+
+		wstr.insert(wstr.begin(), bIsLabel ? wIndent - 2 : wIndent, W_t(' '));
+		wstr.insert(wstr.end(), wFinalIndent, W_t(' '));
+		wstr += this->pCommandsListBox->GetTextAtLine(index);
+		this->pCommandsListBox->SetItemTextAtLine(index, wstr.c_str());
+
+		bLastWasIfCondition = bIsIfCondition;
 	}
-
-	if (bIfCondition)
-	{
-		wIndent += ifIndent;
-		if (bIfCondition)
-			if (wNestDepth)  //...but don't include If indentation in the code block
-				--wNestDepth;
-	}
-
-	wstr.insert(wstr.end(), wIndent + wNestDepth*tabSize, W_t(' '));
-
-	return wstr;
 }
 
 //*****************************************************************************
@@ -4755,6 +4775,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 				GetCommandDesc(commands, pCommand).c_str());
 		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
+	
+	PrettyPrintCommands(commands);
+
 	if (commands.size())
 		pCommandList->SelectLine(0);
 }
@@ -7787,7 +7810,8 @@ WSTRING CCharacterDialogWidget::toText(
 //
 //Params:
 	const COMMANDPTR_VECTOR& commands,
-	CCharacterCommand* pCommand)   //Command to parse
+	CCharacterCommand* pCommand,       //Command to parse
+	const UINT wCommandIndex)          //Index of the command
 {
 #define concatNum(n) wstr += _itoW(n,temp,10)
 #define concatNumWithComma(n) concatNum(n); wstr += wszComma;
@@ -7801,7 +7825,8 @@ WSTRING CCharacterDialogWidget::toText(
 	if (wstrCommandName.empty())
 		return wstr;
 
-	wstr += GetPrettyPrinting(commands, pCommand, 6, 3);
+	UINT indent = ExtractCommandIndent(wCommandIndex);
+	wstr.insert(wstr.end(), indent - INDENT_PREFIX_SIZE + 2, W_t(' '));
 	wstr += wstrCommandName;
 	wstr += wszSpace;
 

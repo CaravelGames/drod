@@ -256,6 +256,9 @@
     <ClCompile Include="DrodDialogs.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="CommandListBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AumtlichGazeEffect.h">
@@ -524,6 +527,9 @@
     </ClInclude>
     <ClInclude Include="DrodDialogs.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListBoxWidget.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
