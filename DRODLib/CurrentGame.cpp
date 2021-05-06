@@ -605,6 +605,21 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 }
 
 //*****************************************************************************
+bool CCurrentGame::GetNearestEntranceForHorn(
+	UINT wHornX, UINT wHornY, UINT wSummonType, UINT& wX, UINT& wY
+)
+// Find the nearest room edge tile for horn-summoned entity.
+// Returns true if an edge is found, and outputs the location to (wX, wY).
+// If no room edge can be reached from the horn tile, return false.
+{
+	MovementType eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
+	if (wSummonType == M_CLONE)
+		eMovement = GetHornMovementType(this->swordsman.GetMovementType());
+
+	return this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY);
+}
+
+//*****************************************************************************
 UINT CCurrentGame::GetNextImageOverlayID()
 {
 	return imageOverlayNextID++;
@@ -4748,10 +4763,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	ResetPendingTemporalSplit(CueEvents);
 
-	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
-	if (wSummonType != M_CLONE)
-		eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
-	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
+	if (!GetNearestEntranceForHorn(wHornX, wHornY, wSummonType, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
 	} else {
