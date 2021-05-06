@@ -201,6 +201,7 @@ public:
 	static void DiffVarValues(const VARMAP& vars1, const VARMAP& vars2, set<VarNameType>& diff);
 	UINT     EndDemoRecording();
 	bool     ExecutingNoMoveCommands() const {return this->bExecuteNoMoveCommands;}
+	int EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params);
 	WSTRING  ExpandText(const WCHAR* wText, CCharacter *pCharacter=NULL);
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	void     FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents);

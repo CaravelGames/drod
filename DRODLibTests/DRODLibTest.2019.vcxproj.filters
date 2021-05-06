@@ -243,6 +243,9 @@
     <ClCompile Include="src\tests\Scripting\Behavior\SetMovementType.cpp">
       <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\PrimitiveFunctions.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

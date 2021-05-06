@@ -333,6 +333,21 @@ static inline UINT getToggledForceArrow(const UINT t) {
 	}
 }
 
+static inline UINT getForceArrowDirection(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return NE;
+		case T_ARROW_E:  return E;
+		case T_ARROW_SE: return SE;
+		case T_ARROW_S:  return S;
+		case T_ARROW_SW: return SW;
+		case T_ARROW_W:  return W;
+		case T_ARROW_NW: return NW;
+		case T_ARROW_N:  return N;
+
+		default: return NO_ORIENTATION;
+	}
+}
+
 static inline bool bIsPotion(const UINT t) {
 	switch (t)
 	{

@@ -25,6 +25,28 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
 
 //*****************************************************************************
+// Values are not case sensitive; caps added here for readability
+const char ScriptVars::primitiveNames[PrimitiveCount][13] =
+{
+	"_abs",
+	"_min",
+	"_max",
+	"_orient",
+	"_facing",
+	"_ox",
+	"_oy",
+	"_rotateCW",
+	"_rotateCCW",
+	"_rotateDist",
+	"_dist0",
+	"_dist1",
+	"_dist2",
+	"_ArrowDir",
+	"_RoomTile",
+	"_MonsterType"
+};
+
+//*****************************************************************************
 string ScriptVars::getVarName(const Predefined var)
 //Returns: pointer to the name of this pre-defined var, or empty string if no match
 {
@@ -47,6 +69,51 @@ WSTRING ScriptVars::getVarNameW(const Predefined var)
 	WSTRING wstr;
 	UTF8ToUnicode(varName.c_str(), wstr);
 	return wstr;
+}
+
+//*****************************************************************************
+PrimitiveType ScriptVars::parsePrimitive(const WSTRING& wstr)
+{
+	const string str = UnicodeToUTF8(wstr);
+	return parsePrimitive(str);
+}
+
+PrimitiveType ScriptVars::parsePrimitive(const string& str)
+{
+	for (int i = 0; i < PrimitiveCount; ++i) {
+		if (!_stricmp(str.c_str(), primitiveNames[i]))
+			return PrimitiveType(i);
+	}
+	return NoPrimitive;
+}
+
+//Returns: the number of parameter arguments each primitive function requires
+UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
+{
+	switch (eType)
+	{
+		case P_Abs:
+		case P_OrientX:
+		case P_OrientY:
+		case P_RotateCW:
+		case P_RotateCCW:
+			return 1;
+		case P_Min:
+		case P_Max:
+		case P_Orient:
+		case P_Facing:
+		case P_RotateDist:
+		case P_ArrowDir:
+		case P_MonsterType:
+			return 2;
+		case P_RoomTile:
+			return 3;
+		case P_Dist0:
+		case P_Dist1:
+		case P_Dist2:
+			return 4;
+	}
+	return 0;
 }
 
 //*****************************************************************************

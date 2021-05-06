@@ -74,6 +74,33 @@ namespace ScriptVars
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
+	//Predefined functions (that take a set of arguments to calculate a value)
+	//
+	//To add new primitives, add a new enumeration here and in the following locations:
+	// primitiveNames
+	// getPrimitiveRequiredParameters
+	// CCurrentGame::EvalPrimitive
+	enum PrimitiveType {
+		NoPrimitive = -1,
+		P_Abs,       //x --> abs(x)
+		P_Min,       //(x,y) --> min(x,y)
+		P_Max,       //(x,y) --> max(x,y)
+		P_Orient,    //(dx,dy) --> o
+		P_Facing,    //(dx,dy) --> o
+		P_OrientX,   //o --> dx
+		P_OrientY,   //o --> dy
+		P_RotateCW,  //o --> cw(o)
+		P_RotateCCW, //o --> ccw(o)
+		P_RotateDist,//(o1, o2) --> number of turns between the two
+		P_Dist0,     //L-infinity norm
+		P_Dist1,     //L-1 norm (Manhattan distance)
+		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
+		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
+		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
+		PrimitiveCount
+	};
+
 	void init();
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
@@ -81,12 +108,17 @@ namespace ScriptVars
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 
+	PrimitiveType parsePrimitive(const string& str);
+	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
+	PrimitiveType parsePrimitive(const WSTRING& wstr);
+
 	bool IsCharacterLocalVar(const WSTRING& wstr);
 	bool IsCharacterLocalVar(const WCHAR* wstr);
 
 	//All predefined vars.
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern const char primitiveNames[PrimitiveCount][13]; //expand buffer size as needed
 };
 
 //Stats used for various tally operations.

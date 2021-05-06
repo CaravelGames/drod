@@ -508,6 +508,118 @@ UINT CCurrentGame::EndDemoRecording()
 }
 
 
+//***************************************************************************************
+//Evaluate a calculated function in context of the current game
+int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params)
+{
+	ASSERT(params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive));
+
+	switch (ePrimitive) {
+		case ScriptVars::P_Abs:
+			return abs(params[0]);
+		case ScriptVars::P_Orient:
+		{
+			const int dx = sgn(params[0]);
+			const int dy = sgn(params[1]);
+			return nGetO(dx, dy);
+		}
+		case ScriptVars::P_Facing:
+		{
+			int dx = params[0];
+			int dy = params[1];
+			//If one of the four compass directions is more direct than a diagonal,
+			//snap to it.
+			const int absDx = abs(dx), absDy = abs(dy);
+			if (absDx > 2 * absDy)
+				dy = 0;
+			else if (absDy > 2 * absDx)
+				dx = 0;
+			return nGetO(sgn(dx), sgn(dy));
+		}
+		case ScriptVars::P_OrientX:
+		case ScriptVars::P_OrientY:
+		case ScriptVars::P_RotateCW:
+		case ScriptVars::P_RotateCCW:
+		{
+			const int o = params[0];
+			if (!IsValidOrientation(o))
+				return o;
+			switch (ePrimitive) {
+				case ScriptVars::P_OrientX: return nGetOX(o);
+				case ScriptVars::P_OrientY: return nGetOY(o);
+				case ScriptVars::P_RotateCW: return nNextCO(o);
+				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+			}
+		}
+		case ScriptVars::P_RotateDist:
+		{
+			UINT wO1 = params[0];
+			UINT wO2 = params[1];
+			UINT wTurns = 0;
+
+			if (!(IsValidOrientation(wO1) && IsValidOrientation(wO2)) ||
+				wO1 == NO_ORIENTATION || wO2 == NO_ORIENTATION) {
+				return 0;
+			}
+
+			while (wO1 != wO2) {
+				wO1 = nNextCO(wO1);
+				++wTurns;
+				ASSERT(wTurns < 8);
+			}
+
+			return wTurns <= 4 ? wTurns : 8 - wTurns;
+		}
+		case ScriptVars::P_Min:
+			return min(params[0], params[1]);
+		case ScriptVars::P_Max:
+			return max(params[0], params[1]);
+		case ScriptVars::P_Dist0: //L-infinity norm
+		{
+			const int deltaX = abs(params[2] - params[0]);
+			const int deltaY = abs(params[3] - params[1]);
+			return max(deltaX, deltaY);
+		}
+		case ScriptVars::P_Dist1: //L-1 norm (Manhattan distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return abs(deltaX) + abs(deltaY);
+		}
+		case ScriptVars::P_Dist2: //L-2 norm (Euclidean distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
+		}
+		case ScriptVars::P_ArrowDir:
+		{
+			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
+			return getForceArrowDirection(tile);
+		}
+		case ScriptVars::P_RoomTile:
+		{
+			switch (params[2]) {
+				case 0: return this->pRoom->GetOSquare(params[0], params[1]);
+				case 1: return this->pRoom->GetFSquare(params[0], params[1]);
+				case 2: return this->pRoom->GetTSquare(params[0], params[1]);
+				default: return 0;
+			}
+		}
+		case ScriptVars::P_MonsterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				return pMonster->wType;
+			}
+			return -1;
+		}
+		break;
+	}
+
+	return 0;
+}
+
 //*****************************************************************************
 WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 	CCharacter *pCharacter) //character, to query its local vars [default=NULL]
