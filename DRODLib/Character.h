@@ -159,6 +159,7 @@ public:
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	virtual bool   IsPlayerAllyTarget() const;
 	bool           IsPuffImmune() const { return HasBehavior(ScriptFlag::PuffImmune); }
 	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;

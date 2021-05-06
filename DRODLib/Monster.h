@@ -295,6 +295,7 @@ public:
 	virtual bool  IsOpenMove(const int dx, const int dy) const;
 	virtual bool  IsOpenMove(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	virtual bool  IsPiece() const {return false;}
+	virtual bool  IsPlayerAllyTarget() const { return IsAlive(); }
 	virtual bool  IsPushableByBody() const { return false; }
 	virtual bool  IsPushableByWeaponAttack() const { return false; }
 	virtual bool  IsSwimming() const {return this->eMovement == WATER;}
