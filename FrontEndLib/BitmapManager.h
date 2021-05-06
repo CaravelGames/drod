@@ -68,6 +68,19 @@ struct CustomTiles
 	UINT wTileStartNo;     //starting number of these custom tiles
 };
 
+//Used to mask out (could be either to intersect or subtract, depending on use case)
+//the region of a moving tile image from a surface location being modified.
+//In other words, this mask indicates where to either include or exclude a rendering operation,
+//relative to a destination surface region.
+struct TweeningTileMask
+{
+	TweeningTileMask(UINT tile, int xOffset, int yOffset)
+		: tile(tile), xOffset(xOffset), yOffset(yOffset)
+	{ }
+	UINT tile;
+	int xOffset, yOffset; //relative tile location offset from top-left origin of the area this mask is being applied to
+};
+
 //DataIDs to find custom tile data that the bitmap manager may use
 typedef std::map<UINT,CustomTiles> CustomTileMap;
 
@@ -134,6 +147,9 @@ public:
 	void        DarkenTileWithMask(const UINT wTIMask, const UINT wXOffset, const UINT wYOffset,
 			const UINT x, const UINT y, const UINT w, const UINT h,
 			SDL_Surface *pDestSurface, const float fLightPercent);
+	void        DarkenTileWithMultiTileMask(const vector<TweeningTileMask>& masks,
+			const UINT x, const UINT y, const UINT w, const UINT h,
+			SDL_Surface* pDestSurface, const float fLightPercent);
 	void        DarkenWithMask(SDL_Surface *pMaskSurface, SDL_Rect src,
 			SDL_Surface *pDestSurface, SDL_Rect dest, const float fLightFactor,
 			const bool bUseColorKeyMask=false);

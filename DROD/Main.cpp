@@ -114,7 +114,7 @@ using std::string;
 static const HANDLE hDrodWindowProp = (HANDLE)0x54535321;  //TSS!
 #endif
 #if defined(__linux__) || defined __FreeBSD__ || defined(__APPLE__)
-static char *lockfile = NULL;
+static string lockfileString;
 #endif
 
 #define APP_PROP "DrodProp"
@@ -285,8 +285,6 @@ int main(int argc, char *argv[])
 	if (IsAppAlreadyRunning()) {
 		DisplayInitErrorMessage(MID_DRODIsAlreadyRunning);
 		delete m_pFiles;
-		if (lockfile)
-			delete[] lockfile;
 #	if defined(__FreeBSD__) || defined(__linux__)
 		Dyn::UnloadX11();
 #	endif
@@ -474,10 +472,11 @@ int main(int argc, char *argv[])
 			const bool bFullscreen = !CScreen::bAllowWindowed || (!bNoFullscreen && s.GetVar(Settings::Fullscreen, false));
 			if (bFullscreen)
 			{
-				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				CScreen::SetFullScreenStatic(true);
 			}
 			else
 			{
+				CScreen::SetFullScreenStatic(false);
 #ifndef __linux__  //This doesn't work well on X11. The window manager handles it anyway.
 				int nX, nY, nW, nH;
 				CScreen::GetScreenSize(nW, nH);
@@ -654,6 +653,22 @@ MESSAGE_ID Init(
 
 	//Set up INI entries once the DB can be accessed.
 	RepairMissingINIKeys(CDrodScreen::IsGameFullVersion());
+
+	{
+		string strIniValue;
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::AllowWindowResizing, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bAllowWindowResizing = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMinimize, strIniValue) && atoi(strIniValue.c_str()) == 1)
+			CScreen::bMinimizeOnFullScreen = true;
+
+		if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::FullScreenMode, strIniValue)) {
+			int mode = atoi(strIniValue.c_str());
+			if (mode >= 0 && mode <= 2) {
+				CScreen::eFullScreenMode = SCREENLIB::FULLSCREENMODE(mode);
+			}
+		}
+	}
 
 	//Init the internet interface.
 	ASSERT(!g_pTheNet);
@@ -944,7 +959,7 @@ sdl_error:
 		FILE *fp;
 		SDL_SysWMinfo Info;
 		SDL_VERSION(&Info.version);
-		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfile, "ab")))
+		if (SDL_GetWindowWMInfo(window.get(), &Info) && Info.subsystem == SDL_SYSWM_X11 && (fp = fopen(lockfileString.c_str(), "ab")))
 		{
 			fprintf(fp, ":%x:", (UINT)Info.info.x11.window);
 			fclose(fp);
@@ -1025,7 +1040,7 @@ void DeinitGraphics()
 	if (SDL_Window *window = GetMainWindow())
 	{
 		if (CScreen::bAllowWindowed)
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 
 		if (SDL_Texture *texture = GetWindowTexture(window))
 			SDL_DestroyTexture(texture);
@@ -1322,7 +1337,7 @@ void DisplayInitErrorMessage(
 		if ((SDL_GetWindowFlags(window) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP))
 				&& CScreen::bAllowWindowed)
 		{
-			SDL_SetWindowFullscreen(window, 0);
+			CScreen::SetFullScreenStatic(false);
 			CScreen::SetWindowCentered();
 			PresentRect();
 		}
@@ -1395,9 +1410,8 @@ BOOL CALLBACK DetectDrodWindow(HWND hwnd, LPARAM lParam)
 // atexit callback
 void DeleteLockFile()
 {
-	ASSERT(lockfile);
-	unlink(lockfile);
-	delete[] lockfile;
+	ASSERT(!lockfileString.empty());
+	unlink(lockfileString.c_str());
 }
 #endif
 
@@ -1459,12 +1473,10 @@ bool IsAppAlreadyRunning()
 	tmp += wszSlash;
 	tmp += wszDROD;
 	tmp += dotpid;
-	const UINT lflen = tmp.length();
-	if (!(lockfile = new char[lflen + 1])) return true;
-	UnicodeToUTF8(tmp, lockfile);
+	UnicodeToUTF8(tmp, lockfileString);
 
 	// Try opening an existing lockfile first
-	FILE *fp = fopen(lockfile, "r");
+	FILE *fp = fopen(lockfileString.c_str(), "r");
 	if (fp)
 	{
 		UINT i, wid = 0;
@@ -1508,25 +1520,27 @@ bool IsAppAlreadyRunning()
 		}
 
 		// Corrupt lockfile or nonexistant pid; ignore it
-		unlink(lockfile);
+		unlink(lockfileString.c_str());
 	}
 
 	// Create a new lockfile
+	const UINT lflen = lockfileString.size();
 	char tmplockfile[lflen + 64];
-	strcpy(tmplockfile, lockfile);
+	strcpy(tmplockfile, lockfileString.c_str());
 	sprintf(tmplockfile + lflen, "%u", getpid());
 	fp = fopen(tmplockfile, "w");
 	if (!fp || fwrite(tmplockfile + lflen,
 			strlen(tmplockfile + lflen) * sizeof(char), 1, fp) != 1)
 	{
-		if (fp) fclose(fp);
+		if (fp)
+			fclose(fp);
 		fprintf(stderr, "Couldn't create lock file, check permissions (%s).\n", tmplockfile);
 		return true;
 	}
 	fclose(fp);
 
 	// Atomic write operation
-	if (link(tmplockfile, lockfile))
+	if (link(tmplockfile, lockfileString.c_str()))
 	{
 		struct stat st;
 		if (stat(tmplockfile, &st) || st.st_nlink != 2)
@@ -1861,11 +1875,14 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	if (!m_pFiles->GetGameProfileString((section), (key), temp)) \
 		m_pFiles->WriteGameProfileString((section), (key), (value))
 
+	AddIfMissing(INISection::Customizing, INIKey::AllowWindowResizing, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AlwaysFullBlit, "0");
 	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
 	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "400");
 	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMinimize, "0");
+	AddIfMissing(INISection::Customizing, INIKey::FullScreenMode, "0");
 	AddIfMissing(INISection::Customizing, INIKey::LogVars, "0");
 	AddIfMissing(INISection::Customizing, INIKey::MaxDelayForUndo, "500");
 	AddIfMissing(INISection::Customizing, INIKey::QuickPlayerExport, "0");

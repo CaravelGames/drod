@@ -78,14 +78,18 @@ const int FRAME_BUFFER = 5;
 
 int CScreen::CX_SCREEN = 1024;
 int CScreen::CY_SCREEN = 768;
-bool CScreen::bAllowFullScreen = true;  //allow full screen mode by default
-bool CScreen::bAllowWindowed = true;    //allow windowed mode by default too
+bool CScreen::bAllowFullScreen = true;
+bool CScreen::bAllowWindowed = true;
+bool CScreen::bAllowWindowResizing = false;
+bool CScreen::bMinimizeOnFullScreen = false;
+SCREENLIB::FULLSCREENMODE CScreen::eFullScreenMode = SCREENLIB::REAL_BORDERLESS;
 SDL_Rect CScreen::WindowTargetRect = { 0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN };
 double CScreen::WindowScaleFactor = 1;
 
 Uint32 CScreen::dwCurrentTicks = 0;
 Uint32 CScreen::dwLastRenderTicks = 0;
 Uint32 CScreen::dwPresentsCount = 0;
+bool CScreen::bIsFauxFullscreenOn = false;
 
 InputKey CScreen::inputKeyFullScreen = SDLK_F10;
 InputKey CScreen::inputKeyScreenshot = SDLK_F11;
@@ -553,8 +557,11 @@ bool CScreen::IsCursorVisible() const {return m_bIsCursorVisible;}
 
 //*****************************************************************************
 //Returns: whether display mode is full screen
-bool CScreen::IsFullScreen() const
+bool CScreen::IsFullScreen()
 {
+	if (CScreen::eFullScreenMode == SCREENLIB::FAUX_BORDERLESS) {
+		return CScreen::bIsFauxFullscreenOn;
+	}
 	return (SDL_GetWindowFlags(GetMainWindow()) & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0;
 }
 
@@ -565,18 +572,67 @@ void CScreen::SetFullScreen(
 //Params:
 	const bool bSetFull) //(in) true = Fullscreen; false = windowed
 {
+	SetFullScreenStatic(bSetFull);
+
+	//On some systems, must refresh the screen.
+	Paint();
+	UpdateRect();
+}
+
+//*****************************************************************************
+void CScreen::SetFullScreenStatic (
+	//Sets this screen and all future screens to display fullscreen/windowed.
+	//
+	//Params:
+	const bool bSetFull) //(in) true = Fullscreen; false = windowed
+{
 	if (!(bSetFull ? CScreen::bAllowFullScreen : CScreen::bAllowWindowed))
 		return;
 
-	if (!IsLocked() && (bSetFull != IsFullScreen()))
+	if (!GetWidgetScreenSurface()->locked && (bSetFull != IsFullScreen()))
 	{
 		// XXX we need SDL_WINDOW_FULLSCREEN_DESKTOP on linux. SDL_WINDOW_FULLSCREEN may be better on windows?
 		// (_DESKTOP should preserve aspect ratio better though)
-		SDL_SetWindowFullscreen(GetMainWindow(), bSetFull ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+		if (bSetFull) {
+			SDL_SetWindowResizable(GetMainWindow(), SDL_FALSE);
 
-		//On some systems, must refresh the screen.
-		Paint();
-		UpdateRect();
+			switch (CScreen::eFullScreenMode) {
+			case SCREENLIB::REAL_BORDERLESS:
+				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN_DESKTOP);
+				break;
+
+			case SCREENLIB::FAUX_BORDERLESS:
+			{
+				SDL_Rect bounds;
+				int displayIndex;
+				SDL_Window *mainWindow = GetMainWindow(&displayIndex);
+				SDL_GetDisplayBounds(displayIndex, &bounds);
+
+				SetWindowPos(bounds.x, bounds.y);
+				SDL_SetWindowSize(mainWindow, bounds.w, bounds.h);
+				SDL_SetWindowResizable(mainWindow, SDL_FALSE);
+				SDL_SetWindowBordered(mainWindow, SDL_FALSE);
+
+				CScreen::bIsFauxFullscreenOn = true;
+			}
+			break;
+			case SCREENLIB::LEGACY:
+				SDL_SetWindowFullscreen(GetMainWindow(), SDL_WINDOW_FULLSCREEN);
+				break;
+			}
+		}
+		else {
+			CScreen::bIsFauxFullscreenOn = false;
+
+			if (CScreen::eFullScreenMode == SCREENLIB::FAUX_BORDERLESS) {
+				SDL_SetWindowSize(GetMainWindow(), CX_SCREEN, CY_SCREEN);
+				SDL_SetWindowBordered(GetMainWindow(), SDL_TRUE);
+			}
+
+			SDL_SetWindowFullscreen(GetMainWindow(), 0);
+			SDL_SetWindowResizable(GetMainWindow(), (SDL_bool)CScreen::bAllowWindowResizing);
+			SetWindowCentered();
+		}
 
 		if (!bSetFull)
 		{
@@ -585,12 +641,11 @@ void CScreen::SetFullScreen(
 			CScreen::GetWindowPos(nX, nY);
 			CScreen::GetScreenSize(nW, nH);
 			if (nX < -CScreen::CX_SCREEN || nY < -CScreen::CY_SCREEN ||
-					nX >= nW || nY >= nH)
+				nX >= nW || nY >= nH)
 				SetWindowCentered();
 		}
 	}
 }
-
 //*****************************************************************************
 void CScreen::GetScreenSize(int &nW, int &nH)
 {

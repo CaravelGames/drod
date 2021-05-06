@@ -35,6 +35,7 @@
 #include "PortsBase.h"
 #include "Types.h"  //need BYTE, UINT
 
+#include <cstring>
 #include <vector>
 
 #define STRFY(x) #x
@@ -109,6 +110,10 @@ static inline std::string UnicodeToUTF8(const WCHAR* pwsz)
 		{ std::string result; UnicodeToUTF8(pwsz, result); return result; }
 static inline std::string UnicodeToUTF8(const WSTRING& wstr)
 		{ std::string result; UnicodeToUTF8(wstr, result); return result; }
+static inline void UnicodeToUTF8(const WCHAR* pwsz, char* cstr)
+		{ std::string str; UnicodeToUTF8(pwsz, str); strcpy(cstr, str.c_str()); }
+static inline void UnicodeToUTF8(const WSTRING& wstr, char* cstr)
+		{ UnicodeToUTF8(wstr.c_str(), cstr); }
 
 unsigned int UTF8ToUCS4Char(const char **ppsz);
 void UTF8ToAscii(const char* s, const UINT len, std::string &str);
@@ -132,8 +137,6 @@ WSTRING  filenameFilter(const WSTRING &wstr);
 WSTRING  filterFirstLettersAndNumbers(const WSTRING &wstr);
 WSTRING  filterUpperCase(const WSTRING &wstr);
 WCHAR* getFilenameFromPath(const WCHAR *wstrFilepath);
-bool IsAllPrintableASCIIchars(const std::string& str);
-bool IsAllPrintableASCIIchars(const WSTRING& wstr);
 bool isWInteger(const WCHAR* wcz);
 bool isInteger(const char* pcz);
 

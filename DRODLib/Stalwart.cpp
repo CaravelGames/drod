@@ -96,7 +96,7 @@ const
 	//No monsters can ever be stepped on unless you have a dagger
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster && pMonster->wType != M_FLUFFBABY){
-		if (!CStalwart::typesToAttack.has(pMonster->wType))
+		if (!(CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget()))
 			return true;
 		else if (!this->CanDaggerStep(pMonster))
 			return true;
@@ -200,8 +200,13 @@ bool CStalwart::IsSafeToStab(const UINT wFromX, const UINT wFromY, const UINT wS
 
 	//Don't stab a friendly monster.
 	CMonster *pMonster = room.GetMonsterAtSquare(wSX, wSY);
-	if (pMonster && pMonster->IsAlive() && pMonster->IsFriendly() &&
-			pMonster != static_cast<const CMonster*>(this)) //impossible to stab self -- ignore this case
+	
+	if (pMonster
+			&& pMonster->IsAlive()
+			&& pMonster->IsFriendly()
+			&& pMonster->wType != M_FEGUNDO //Fegundos are invulnerable to sword stabs so stalwarts are free to stab them
+			&& pMonster->wType != M_FEGUNDOASHES //Fegundos are vulnerable but historically Stalwarts do not avoid them
+			&& pMonster != static_cast<const CMonster*>(this)) //impossible to stab self -- ignore this case
 		return false;
 
 	return true;

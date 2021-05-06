@@ -980,19 +980,14 @@ bool CSound::PlayNextSong()
 SOUNDSTREAM* CSound::LoadSongStream(const WSTRING& wstrSongFilepath, UINT mode)
 {
 	//Convert Unicode filename for use with FMOD.
-#ifdef WIN32
-	char sANSI[512];
-	WideCharToMultiByte(CP_ACP, 0, wstrSongFilepath.c_str(), -1, sANSI, 512, NULL, NULL);
-#else
-	char sANSI[wstrSongFilepath.length() + 1];
-	UnicodeToUTF8(wstrSongFilepath.c_str(), sANSI);
-#endif
+	string sANSI;
+	UnicodeToUTF8(wstrSongFilepath, sANSI);
 
 	SOUNDSTREAM *pStream = NULL;
 #ifdef USE_SDL_MIXER
-	this->pSongStream = pStream = Mix_LoadMUS(sANSI);
+	this->pSongStream = pStream = Mix_LoadMUS(sANSI.c_str());
 #else //FMOD
-	pStream = FSOUND_Stream_Open(sANSI, mode, 0, 0);
+	pStream = FSOUND_Stream_Open(sANSI.c_str(), mode, 0, 0);
 	if (!pStream)
 	{
 		//Probably file for loading stream isn't available.

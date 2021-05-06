@@ -475,6 +475,9 @@ void CEventHandlerWidget::OnWindowEvent_GetFocus()
 //*****************************************************************************
 void CEventHandlerWidget::OnWindowEvent_LoseFocus()
 {
+	if (CScreen::IsFullScreen() && CScreen::bMinimizeOnFullScreen)
+		SDL_MinimizeWindow(GetMainWindow());
+
 	CBitmapManager::bGameHasFocus = false;
 	//Disable sound/music when app is inactive.
 	if (!g_pTheSound->bNoFocusPlaysMusic)

@@ -1121,12 +1121,12 @@ void CGameScreen::OnWindowEvent_GetFocus()
 {
 	CEventHandlerWidget::OnWindowEvent_GetFocus();
 
-	this->pCurrentGame->UpdateTime();
-	if (!this->dwTimeMinimized)
-		this->dwTimeMinimized = SDL_GetTicks();
-
-	if (this->bIsDialogDisplayed)
-		g_pTheSound->PauseSounds();
+	if (this->dwTimeMinimized)
+	{
+		if (this->dwNextSpeech)
+			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
+		this->dwTimeMinimized = 0;
+	}
 }
 
 //*****************************************************************************
@@ -1134,12 +1134,12 @@ void CGameScreen::OnWindowEvent_LoseFocus()
 {
 	CEventHandlerWidget::OnWindowEvent_LoseFocus();
 
-	if (this->dwTimeMinimized)
-	{
-		if (this->dwNextSpeech)
-			this->dwNextSpeech += SDL_GetTicks() - this->dwTimeMinimized;
-		this->dwTimeMinimized = 0;
-	}
+	this->pCurrentGame->UpdateTime();
+	if (!this->dwTimeMinimized)
+		this->dwTimeMinimized = SDL_GetTicks();
+
+	if (this->bIsDialogDisplayed)
+		g_pTheSound->PauseSounds();
 }
 
 //*****************************************************************************
@@ -3027,7 +3027,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		//Fade to black.
 		if (g_pTheBM->bAlpha && dwStart)
 		{
-			const float durationFraction = min(1, (dwNow - dwStart) / (float)dwDeathDuration);
+			const float durationFraction = min(1.0f, (dwNow - dwStart) / (float)dwDeathDuration);
 			const float remainingFraction = 1 - durationFraction;
 
 			this->pRoomWidget->SetDeathFadeOpacity(durationFraction);

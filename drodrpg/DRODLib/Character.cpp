@@ -373,7 +373,6 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 //Returns: the value of the predefined var with this relative index
 {
 	ASSERT(this->pCurrentGame);
-	const CSwordsman& player = *(this->pCurrentGame->pPlayer);
 	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
 	switch (varIndex)
 	{
@@ -393,12 +392,6 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 			return this->sword;
 
 		//Room position.
-		case (UINT)ScriptVars::P_PLAYER_X:
-			return player.wX;
-		case (UINT)ScriptVars::P_PLAYER_Y:
-			return player.wY;
-		case (UINT)ScriptVars::P_PLAYER_O:
-			return player.wO;
 		case (UINT)ScriptVars::P_MONSTER_X:
 			return this->wX;
 		case (UINT)ScriptVars::P_MONSTER_Y:

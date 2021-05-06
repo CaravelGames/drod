@@ -125,6 +125,7 @@ private:
 	const UINT*    GetTileImageForMonsterType(const UINT wType, const UINT wO,
 			const UINT wAnimFrame) const;
 	UINT     getRotatedTile(UINT wObject, bool bCW) const;
+	UINT     GetSelectedObject() const;
 	void     HighlightPendingPaste();
 	UINT     ImportHoldSound();
 	UINT     ImportHoldVideo();
@@ -141,7 +142,7 @@ private:
 	
 	virtual void   OnBetweenEvents();
 	virtual void   OnClick(const UINT dwTagNo);
-   virtual void   OnDeactivate();
+	virtual void   OnDeactivate();
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
 	virtual void   OnMouseMotion(const UINT dwTagNo, const SDL_MouseMotionEvent &Motion);
@@ -193,7 +194,6 @@ private:
 	void     ShowErrors();
 	void     ShowPlot();
 	bool     ToggleMenuItem(const UINT wObject, const bool bCW=true);
-	UINT     GetSelectedObject();
 	void     UndoCommand(const bool bUndo);
 	void     UniquePlacement(const UINT wX, const UINT wY, const MONSTERTYPE eType);
 	void     UnloadPlaytestSession();
