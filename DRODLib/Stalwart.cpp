@@ -96,7 +96,7 @@ const
 	//No monsters can ever be stepped on unless you have a dagger
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster && pMonster->wType != M_FLUFFBABY){
-		if (!CStalwart::typesToAttack.has(pMonster->wType))
+		if (!(CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget()))
 			return true;
 		else if (!this->CanDaggerStep(pMonster))
 			return true;
