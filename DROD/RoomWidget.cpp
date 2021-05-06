@@ -1623,7 +1623,14 @@ SkipDescribingMonster:
 	//Build marker.
 	if (this->pRoom->building.get(wX,wY))
 	{
-		mid = getBuildMarkerTileMID(this->pRoom->building.get(wX,wY) - 1);
+		UINT wBuildTile = this->pRoom->building.get(wX, wY) - 1;
+
+		if (bIsFakeTokenType(wBuildTile)) {
+			mid = GetTokenMID(ConvertFakeTokenType(wBuildTile));
+		}	else {
+			mid = getBuildMarkerTileMID(wBuildTile);
+		}
+
 		if (mid)
 		{
 			wstr += wszCRLF;
@@ -4718,6 +4725,8 @@ void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 						case T_BRIAR_SOURCE: wTileNo = TI_BRIARROOT; break;
 						default: wTileNo = GetTileImageForTileNo(wTile); break;
 					}
+					if (bIsFakeTokenType(wTile))
+						wTileNo = CalcTileImageForToken(ConvertFakeTokenType(wTile));
 					if (wTileNo == CALC_NEEDED)
 						wTileNo = CalcTileImageFor(&room, wTile, wX, wY);
 					if (wTileNo != CALC_NEEDED)
