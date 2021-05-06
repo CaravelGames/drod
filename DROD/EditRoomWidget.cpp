@@ -346,7 +346,7 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 
 			if (IsSafePlacement(wMonsterType + M_OFFSET,wX,wY))
 			{
-				CCoord coord(wX,wY);
+				const CCoord coord(wX,wY);
 				AddLastLayerEffect(new CTransTileEffect(this, coord, wTileNo));
 				if (bHead && !bSegment)
 					AddShadeEffect(wX,wY,Red); //can't plot only the head
@@ -1370,7 +1370,7 @@ void CEditRoomWidget::Paint(
 
 	//1c. Render dynamic stuff that shows over the static room image.
 	RenderFogInPit(pDestSurface);
-	DrawTLayer(pDestSurface, true);
+	DrawPlatformsAndTLayer(pDestSurface, true);
 
 	//2. Draw effects that go on top of room image, under monsters/swordsman.
 	this->pTLayerEffects->UpdateAndDrawEffects();

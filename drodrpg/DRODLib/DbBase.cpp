@@ -675,6 +675,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MoneyDoorLocked: strText = "Money door locked"; break;
 		case MID_CaravelServerError: strText = "There was an error contacting the Caravel server."; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
+		case MID_QuickPathNotAvailable: strText = "No known path is available."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

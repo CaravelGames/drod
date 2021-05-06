@@ -163,7 +163,7 @@ struct RoomCompletionData
 };
 
 struct cloneComparator {
-    bool operator() (const CMoveCoordEx &a, const CMoveCoordEx &b) const;
+    bool operator() (const CClone *a, const CClone *b) const;
 };
 
 //*******************************************************************************
@@ -213,6 +213,7 @@ public:
 	const CEntity* GetKillingEntity() const {return this->pKillingEntity;}
 	void     GetLevelStats(CDbLevel *pLevel);
 	MusicData GetMusic() const { return music; }
+	bool     GetNearestEntranceForHorn(UINT wHornX, UINT wHornY, UINT wSummonType, UINT& wX, UINT& wY);
 	UINT     GetNextImageOverlayID();
 	UINT     GetRoomExitDirection(const UINT wMoveO) const;
 	WSTRING  GetScrollTextAt(const UINT wX, const UINT wY);

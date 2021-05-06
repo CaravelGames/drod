@@ -324,8 +324,9 @@ public:
 	const RoomObject* GetTObject(const UINT wX, const UINT wY) const { return GetTObject(ARRAYINDEX(wX, wY)); }
 	UINT           GetTParam(const UINT wX, const UINT wY) const;
 	UINT           GetTParam(const UINT index) const;
-	UINT           GetOSquareWithGuessing(const int nX, const int nY) const;
-	UINT           GetTSquareWithGuessing(const int nX, const int nY) const;
+	void           ClampCoordsToRoom(int& nX, int& nY) const;
+	UINT           GetOSquareWithGuessing(int nX, int nY) const;
+	UINT           GetTSquareWithGuessing(int nX, int nY) const;
 	CEntity*       GetSpeaker(const UINT wType, const bool bConsiderBaseType=false);
 	CPlatform*     GetPlatformAt(const UINT wX, const UINT wY) const;
 	void           GetTarConnectedComponent(const UINT wX, const UINT wY,

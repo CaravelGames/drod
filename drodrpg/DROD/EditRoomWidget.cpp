@@ -223,22 +223,27 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 //Add an effect to display a long monster segment to room.
 //
 //Params:
+	const CMonster* pPlottingMonster,
 	const UINT wMonsterType)         //(in)   Monster to be placed.
 {
-	UINT wX, wY, wTileNo;
-
-   //only long monsters
-	ASSERT(wMonsterType == M_SERPENT || wMonsterType == M_SERPENTG || wMonsterType == M_SERPENTB);
+	//only long monsters
+	ASSERT(bIsSerpent(wMonsterType));
 	this->monsterSegment.wType = wMonsterType;
 
 	this->pLastLayerEffects->RemoveEffectsOfType(ETRANSTILE);
 	this->pLastLayerEffects->RemoveEffectsOfType(ESHADE);
 
 	//Save segment start and end.
-	const UINT wSX = this->monsterSegment.wSX;
-	const UINT wSY = this->monsterSegment.wSY;
 	this->monsterSegment.wEX = this->wEndX;
 	this->monsterSegment.wEY = this->wEndY;
+/*
+	if (wMonsterType == M_GENTRYII) {
+		AddGentryiiSegmentEffect(pPlottingMonster);
+		return;
+	}
+*/
+	const UINT wSX = this->monsterSegment.wSX;
+	const UINT wSY = this->monsterSegment.wSY;
 
 	//Only show tiles in a horizontal or vertical direction.
 	//Determine which way to display.
@@ -257,16 +262,16 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 			(this->wEndX > wSX ? W : E) :
 			(this->wEndY > wSY ? N : S));
 	const bool bSegment = (wMaxY != wMinY || wMaxX != wMinX);
-	bool bHead;
 
 	//Calculate new pending tail position.
 	this->monsterSegment.wTailX = (bHorizontal ? this->wEndX : wMinX);
 	this->monsterSegment.wTailY = (bHorizontal ? wMinY : this->wEndY);
 
+	UINT wX, wY, wTileNo;
 	for (wY=wMinY; wY<=wMaxY; ++wY)
 		for (wX=wMinX; wX<=wMaxX; ++wX)
 		{
-			bHead = false;
+			bool bHead = false;
 			//Calculate tile to display.
 			if (wX == wSX && wY == wSY)
 			{
@@ -300,14 +305,14 @@ void CEditRoomWidget::AddMonsterSegmentEffect(
 
 			if (IsSafePlacement(wMonsterType + M_OFFSET,wX,wY))
 			{
-				CCoord coord(wX,wY);
+				const CCoord coord(wX,wY);
 				AddLastLayerEffect(new CTransTileEffect(this, coord, wTileNo));
 				if (bHead && !bSegment)
 					AddShadeEffect(wX,wY,Red); //can't plot only the head
-			}
-			else
+			} else {
 				//Obstacle there -- can't place.
 				AddShadeEffect(wX,wY,Red);
+			}
 		}
 }
 
@@ -1166,7 +1171,7 @@ void CEditRoomWidget::Paint(
 
 	//1c. Render dynamic stuff that shows over the static room image.
 	RenderFogInPit(pDestSurface);
-	DrawTLayer(pDestSurface, true);
+	DrawPlatformsAndTLayer(pDestSurface, true);
 
 	//2. Draw effects that go on top of room image, under monsters/swordsman.
 	this->pTLayerEffects->UpdateAndDrawEffects();

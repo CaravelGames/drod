@@ -1999,7 +1999,7 @@ void CBitmapManager::DarkenRect(
 			//Each iteration modifies one pixel.
 			while (pSeek != pEndOfRow)
 			{
-				//Set pixel intensity to % of original.
+				//Set pixel intensity to zero.
 				pSeek[0] = pSeek[1] = pSeek[2] = 0;
 				pSeek += wBPP;
 			}
@@ -2017,7 +2017,7 @@ void CBitmapManager::DarkenRect(
 			//Each iteration modifies one pixel.
 			while (pSeek != pEndOfRow)
 			{
-				//Set pixel intensity to % of original.
+				//Set pixel intensity to half.
 				pSeek[0] /= 2;
 				pSeek[1] /= 2;
 				pSeek[2] /= 2;
@@ -2026,6 +2026,7 @@ void CBitmapManager::DarkenRect(
 			pSeek += dwRowOffset;
 		}
 	} else {
+		//Set pixel intensity to % of original.
 		const UINT dark = static_cast<UINT>(fLightPercent / g_DarkenStepIncrement);
 		const Uint8 *const pDarken = g_darkenCalc[dark];
 		while (pSeek != pStop)
@@ -2049,7 +2050,7 @@ void CBitmapManager::DarkenRect(
 
 //**********************************************************************************
 void CBitmapManager::DarkenTileWithMask(
-//Set pixel intensities to faction of original, using indicated tile as a mask.
+//Set pixel intensities to fraction of original, using indicated tile as a mask.
 	const UINT wTIMask, const UINT wXOffset, const UINT wYOffset,	//(in) mask
 	const UINT x, const UINT y, const UINT w, const UINT h,
 	SDL_Surface *pDestSurface, const float fLightPercent)
@@ -2113,6 +2114,132 @@ void CBitmapManager::DarkenTileWithMask(
 		}
 		pSeek += dwRowOffset;
 		pMask += dwMaskRowOffset;
+	}
+
+	if (SDL_MUSTLOCK(pDestSurface)) SDL_UnlockSurface(pDestSurface);
+}
+
+//**********************************************************************************
+void CBitmapManager::DarkenTileWithMultiTileMask(
+//Set pixel intensities to fraction of original, using indicated set of tiles as an inverse mask.
+//That is, only darken pixels where all masking tiles are transparent.
+	const vector<TweeningTileMask>& masks,
+	const UINT x, const UINT y, const UINT w, const UINT h, //surface area to update
+	SDL_Surface *pDestSurface, const float fLightPercent)
+{
+	//Do nothing for invalid range values.
+	if (fLightPercent >= 1.0)
+		return;
+	if (fLightPercent < 0.0)
+		return;
+
+	ASSERT(w <= CX_TILE);
+	ASSERT(h <= CY_TILE);
+
+	if (SDL_MUSTLOCK(pDestSurface))
+		if (SDL_LockSurface(pDestSurface) < 0)
+		{
+			ASSERT(!"DarkenTileWithMask::Lock surface failed.");
+			return;
+		}
+
+	const UINT wBPP = pDestSurface->format->BytesPerPixel;
+	ASSERT(wBPP == BYTES_PER_PIXEL);
+	const UINT wPixelByteNo = y * pDestSurface->pitch + (x * wBPP);
+	const UINT dwRowWidth = w * wBPP;
+	const UINT dwRowOffset = pDestSurface->pitch - dwRowWidth;
+
+	struct MaskSurface {
+		SDL_Surface* pSurface;
+		UINT x, y; //destination pixel position that this mask will begin to be considered at
+		UINT x2, y2;
+		UINT BPP, rowOffset;
+		Uint8* pixel;
+	};
+
+	//Convert input mask data into format ready to evaluate.
+	vector<MaskSurface> maskSurfaces;
+	UINT i;
+	for (i = 0; i < masks.size(); ++i) {
+		const TweeningTileMask& mask = masks[i];
+		MaskSurface maskSurface;
+		SDL_Surface* pSurface = GetTileSurface(mask.tile);
+		ASSERT(pSurface);
+		maskSurface.pSurface = pSurface;
+		maskSurface.BPP = pSurface->format->BytesPerPixel;
+
+		//Start at top-left pixel in overlapping region
+		const UINT x0 = mask.xOffset < 0 ? -mask.xOffset : 0;
+		const UINT y0 = mask.yOffset < 0 ? -mask.yOffset : 0;
+		maskSurface.pixel = GetTileSurfacePixel(mask.tile, x0, y0) + PIXEL_FUDGE_FACTOR;
+
+		//Calculate region overlapping with destination
+		maskSurface.x = mask.xOffset > 0 ? mask.xOffset : 0;
+		maskSurface.y = mask.yOffset > 0 ? mask.yOffset : 0;
+		const UINT width = min(w, mask.xOffset < 0 ? CX_TILE + mask.xOffset : CX_TILE - mask.xOffset);
+		maskSurface.x2 = maskSurface.x + width;
+		const UINT height = mask.yOffset < 0 ? CY_TILE + mask.yOffset : CY_TILE - mask.yOffset;
+		maskSurface.y2 = maskSurface.y + height;
+		ASSERT(maskSurface.y2 <= h); //check we won't run past the end of the mask tile
+
+		//Skip past the non-overlapping width at the end of each row
+		maskSurface.rowOffset = pSurface->pitch - (width * maskSurface.BPP);
+
+		maskSurfaces.push_back(maskSurface);
+	}
+
+#if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
+	ASSERT(pDestSurface->format->Rmask == 0xff0000);
+	ASSERT(pDestSurface->format->Gmask == 0x00ff00);
+	ASSERT(pDestSurface->format->Bmask == 0x0000ff);
+	ASSERT(pMaskSurface->format->Rmask == 0xff0000);
+	ASSERT(pMaskSurface->format->Gmask == 0x00ff00);
+	ASSERT(pMaskSurface->format->Bmask == 0x0000ff);
+#endif
+	Uint8 *pSeek = (Uint8 *)pDestSurface->pixels + wPixelByteNo + PIXEL_FUDGE_FACTOR;
+	Uint8 *const pStop = pSeek + (h * pDestSurface->pitch);
+
+	const UINT dark = static_cast<UINT>(fLightPercent / g_DarkenStepIncrement);
+	const Uint8 *const pDarken = g_darkenCalc[dark];
+	for (UINT y = 0; pSeek != pStop; ++y)
+	{
+		ASSERT(pSeek < pStop);
+		Uint8 *const pEndOfRow = pSeek + dwRowWidth;
+
+		//Each iteration modifies one pixel.
+		for (UINT x = 0; pSeek != pEndOfRow; ++x)
+		{
+			//Skip pixels where any tile mask is not transparent.
+			bool draw = true;
+			for (i = 0; i < maskSurfaces.size(); ++i) {
+				MaskSurface& maskSurface = maskSurfaces[i];
+				if (x >= maskSurface.x && y >= maskSurface.y &&
+					x < maskSurface.x2 && y < maskSurface.y2) {
+					if (maskSurface.pixel[0] != TransColor[0] ||
+						maskSurface.pixel[1] != TransColor[1] ||
+						maskSurface.pixel[2] != TransColor[2])
+						draw = false;
+					maskSurface.pixel += maskSurface.BPP;
+				} //otherwise: ignore this mask until x/y position has been reached on this row/col
+			}
+			if (draw)
+			{
+				//Darken pixel.
+				pSeek[0] = pDarken[pSeek[0]];
+				pSeek[1] = pDarken[pSeek[1]];
+				pSeek[2] = pDarken[pSeek[2]];
+			}
+
+			pSeek += wBPP;
+		}
+
+		//Advance to next row
+		pSeek += dwRowOffset;
+		for (i = 0; i < maskSurfaces.size(); ++i) {
+			MaskSurface& maskSurface = maskSurfaces[i];
+			if (y >= maskSurface.y)
+				maskSurface.pixel += maskSurface.rowOffset;
+		}
 	}
 
 	if (SDL_MUSTLOCK(pDestSurface)) SDL_UnlockSurface(pDestSurface);

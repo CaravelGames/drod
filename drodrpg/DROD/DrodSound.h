@@ -159,8 +159,8 @@ enum SEID
 
 	SEID_MON_OOF,    //monster (generic)
 
-	SEID_NEATHER_SCARED, //'Neather
-	SEID_NEATHER_OOF,
+//	SEID_NEATHER_SCARED, //'Neather
+//	SEID_NEATHER_OOF,
 
 	SEID_ROCK_DIE,   //rock golem
 	SEID_ROCK_OOF,
@@ -197,21 +197,6 @@ enum SEID
 
 	SEID_WOM_CLEAR,  //woman
 	SEID_WOM_HI,
-
-	//Channel n+2--'Neather's/Slayer's voice.
-	SEID_NLAUGHING,
-	SEID_SLAYERCOMBAT,
-	SEID_SLAYERENTERNEAR,
-	SEID_SLAYERENTERFAR,
-
-   //Channel n+3--Halph's voice.
-   SEID_HALPHFOLLOWING,
-   SEID_HALPHWAITING,
-   SEID_HALPHSTRIKING,
-   SEID_HALPHCANTOPEN,
-   SEID_HALPHENTERED,
-   SEID_HALPHINTERRUPTED,
-   SEID_HALPHHURRYUP,
 */
 	//Channel n+2--Slayer's voice.
 	SEID_SLAYERKILL,

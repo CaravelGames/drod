@@ -68,7 +68,7 @@ public:
 	bool           AddOrbEffect(COrbAgentData *pOrbAgent);
 	void           AddOrbAgentToolTip(const UINT wX, const UINT wY,
 			const UINT wAgentType);
-	void           AddMonsterSegmentEffect(const UINT wMonsterType);
+	void           AddMonsterSegmentEffect(const CMonster* pPlottingMonster, const UINT wMonsterType);
 	void           AddPendingPasteEffect(const UINT wX1, const UINT wY1,
 			const UINT wXSize, const UINT wYSize, const SURFACECOLOR& color,
 			const bool bEraseOldShading);

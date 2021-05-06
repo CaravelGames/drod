@@ -273,6 +273,7 @@ public:
 	virtual UINT  GetProcessSequence() const;
 	virtual UINT  GetResolvedIdentity() const {return GetIdentity();}
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;
+	virtual CCoordStack GetStoredPath() const { return this->pathToDest; }
 	bool          GetSwordCoords(UINT& wX, UINT& wY) const;
 	virtual WeaponType GetWeaponType() const { return WT_Sword; }
 	bool          GetTarget(UINT &wX, UINT &wY, const bool bConsiderDecoys=true);

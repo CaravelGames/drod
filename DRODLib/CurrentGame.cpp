@@ -718,6 +718,21 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 }
 
 //*****************************************************************************
+bool CCurrentGame::GetNearestEntranceForHorn(
+	UINT wHornX, UINT wHornY, UINT wSummonType, UINT& wX, UINT& wY
+)
+// Find the nearest room edge tile for horn-summoned entity.
+// Returns true if an edge is found, and outputs the location to (wX, wY).
+// If no room edge can be reached from the horn tile, return false.
+{
+	MovementType eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
+	if (wSummonType == M_CLONE)
+		eMovement = GetHornMovementType(this->swordsman.GetMovementType());
+
+	return this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY);
+}
+
+//*****************************************************************************
 UINT CCurrentGame::GetNextImageOverlayID()
 {
 	return imageOverlayNextID++;
@@ -4889,10 +4904,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	ResetPendingTemporalSplit(CueEvents);
 
-	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
-	if (wSummonType != M_CLONE)
-		eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
-	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
+	if (!GetNearestEntranceForHorn(wHornX, wHornY, wSummonType, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
 	} else {
@@ -7407,10 +7419,10 @@ void CCurrentGame::TallyKill()
 }
 
 //*****************************************************************************
-bool cloneComparator::operator() (const CMoveCoordEx &a, const CMoveCoordEx &b) const
+bool cloneComparator::operator() (const CClone *a, const CClone *b) const
 //Compare clones by wCreationIndex
 {
-    return a.wValue < b.wValue;
+    return a->wCreationIndex < b->wCreationIndex;
 }
 
 //*****************************************************************************
@@ -7470,27 +7482,40 @@ bool CCurrentGame::SwitchToCloneAt(const UINT wX, const UINT wY)
 			pMonster = pMonster->pNext;
 		}
 
-		std::vector<CMoveCoordEx> sortedClones;
+		std::vector<CClone*> sortedClones;
 		for (UINT i = 0; i < clones.size(); ++i) {
-			CClone* clone = clones[i];
-			sortedClones.push_back(CMoveCoordEx(clone->wX, clone->wY, clone->wO, clone->wCreationIndex));
+			CClone *clone = clones[i];
+			CClone *cloneCopy = DYN_CAST(CClone*, CMonster*, clone->Clone());
+			sortedClones.push_back(cloneCopy);
 		}
 
 		std::sort(sortedClones.begin(), sortedClones.end(), cloneComparator());
 
 		ASSERT(sortedClones.size() == clones.size());
 		for (UINT i = 0; i < clones.size(); ++i) {
-			CClone* existingClone = clones[i];
-			CMoveCoordEx sortedClone = sortedClones[i];
+			CClone *existingClone = clones[i];
+			CClone *sortedClone = sortedClones[i];
 
-			existingClone->wPrevX = existingClone->wX = sortedClone.wX;
-			existingClone->wPrevY = existingClone->wY = sortedClone.wY;
-			existingClone->wPrevO = existingClone->wO = sortedClone.wO;
-			existingClone->wCreationIndex = sortedClone.wValue;
+			// This unfortunately has to be updated each time a new property is added to
+			// CClone or any of its parent classes, which state is important
+			existingClone->wPrevX = existingClone->wX = sortedClone->wX;
+			existingClone->wPrevY = existingClone->wY = sortedClone->wY;
+			existingClone->wPrevO = existingClone->wO = sortedClone->wO;
+			existingClone->wCreationIndex = sortedClone->wCreationIndex;
+			existingClone->bPushedThisTurn = sortedClone->bPushedThisTurn;
+			existingClone->bWaitedOnHotFloorLastTurn = sortedClone->bWaitedOnHotFloorLastTurn;
+			existingClone->stunned = sortedClone->stunned;
+			existingClone->bNewStun = sortedClone->bNewStun;
+			existingClone->weaponType = sortedClone->weaponType;
+			existingClone->bWeaponSheathed = sortedClone->bWeaponSheathed;
+			existingClone->bNoWeapon = sortedClone->bNoWeapon;
+			existingClone->wSwordMovement = sortedClone->wSwordMovement;
+			existingClone->bFrozen = sortedClone->bFrozen;
 
 			this->pRoom->SetMonsterSquare(existingClone);
-		}
 
+			delete sortedClone;
+		}
 	}
 
 	//Currently, this command can happen without anything else changing.

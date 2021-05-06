@@ -5130,10 +5130,11 @@ PlotType CEditRoomScreen::PlotLongMonsterSegment()
 void CEditRoomScreen::PlotObjects()
 //Plot objects in a rectangular area.
 {
+	if (!this->pRoomWidget->bMouseInBounds)
+		return;
+
 	UINT wX, wY;
 	const UINT wPlottedObject = GetSelectedObject();
-
-	if (!this->pRoomWidget->bMouseInBounds) return;
 
 	//Place objects larger than one square.
 	if (SinglePlacement[wPlottedObject])
@@ -7123,7 +7124,7 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 }
 
 //*****************************************************************************
-UINT CEditRoomScreen::GetSelectedObject()
+UINT CEditRoomScreen::GetSelectedObject() const
 //Returns the value of wSelectedObject, but also takes Shallow Water
 //type into account
 {

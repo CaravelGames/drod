@@ -2780,6 +2780,7 @@ const
 //*****************************************************************************
 void CDbRoom::FixUnstableTar(CCueEvents &CueEvents)
 //Remove unstable tarstuff.
+//Tarstuff remains under any monster situated on a tarstuff tile
 {
 	bool bStable;
 	UINT wX, wY, wTTile;
@@ -2792,8 +2793,8 @@ void CDbRoom::FixUnstableTar(CCueEvents &CueEvents)
 				if (bIsTar(wTTile) && !IsTarStableAt(wX,wY,wTTile))
 				{
 					CMonster *pMonster = GetMonsterAtSquare(wX,wY);
-					if (pMonster && bIsMother(pMonster->wType))
-						continue; //allow unstable tarstuff to remain under a mother
+					if (pMonster)
+						continue; //allow unstable tarstuff to remain under a mother (or any monster on tar)
 					DestroyTar(wX, wY, CueEvents);
 					bStable = false;
 				}
@@ -4723,8 +4724,8 @@ void CDbRoom::PushObject(
 	switch (GetOSquare(wDestX, wDestY))
 	{
 		case T_PIT: case T_PIT_IMAGE:
-			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx(wDestX, wDestY,
-					NO_ORIENTATION, wTile), true);
+			CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wDestX, wDestY,
+					NO_ORIENTATION, wTile, 0), true);
 		return;
 		case T_WATER:
 			CueEvents.Add(CID_Splash, new CCoord(wDestX, wDestY), true);
@@ -4974,22 +4975,28 @@ const
 }
 
 //*****************************************************************************
+void CDbRoom::ClampCoordsToRoom(int& nX, int& nY) const
+{
+	if (nX < 0)
+		nX = 0;
+	else if ((UINT)nX >= this->wRoomCols)
+		nX = this->wRoomCols - 1;
+
+	if (nY < 0)
+		nY = 0;
+	else if ((UINT)nY >= this->wRoomRows)
+		nY = this->wRoomRows - 1;
+}
+
+//*****************************************************************************
 UINT CDbRoom::GetOSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square 
 //will be used.
-	 const int nX, const int nY) const
+	 int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0) 
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-	 return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nUseX,nUseY)]);
+	ClampCoordsToRoom(nX, nY);
+	return (UINT) (unsigned char) (this->pszOSquares[ARRAYINDEX(nX,nY)]);
 }
 
 //*****************************************************************************
@@ -4997,18 +5004,10 @@ UINT CDbRoom::GetTSquareWithGuessing(
 //Get tile# for a square on the opaque layer.  If col/row is out-of-bounds then
 //a "guess" will be made--the tile of whichever square is closest to the OOB square 
 //will be used.
-	 const int nX, const int nY) const
+	 int nX, int nY) const
 {
-	 int nUseX = nX, nUseY = nY;
-	 if (nUseX < 0) 
-		  nUseX = 0;
-	 else if ((UINT)nUseX >= this->wRoomCols)
-		  nUseX = this->wRoomCols - 1;
-	 if (nUseY < 0)
-		  nUseY = 0;
-	 else if ((UINT)nUseY >= this->wRoomRows)
-		  nUseY = this->wRoomRows - 1;
-	 return (UINT) (unsigned char) (this->pszTSquares[ARRAYINDEX(nUseX,nUseY)]);
+	ClampCoordsToRoom(nX, nY);
+	return (UINT) (unsigned char) (this->pszTSquares[ARRAYINDEX(nX,nY)]);
 }
 
 //*****************************************************************************
@@ -6897,6 +6896,8 @@ CMonster* CDbRoom::GetMotherConnectedToTarTile(const UINT wX, const UINT wY) con
 //Calculates whether tarstuff at (x,y) is part of a tarstuff component
 //connected to a mother.
 //
+//Any monster on the tarstuff counts as a mother for this 
+//
 //Returns: if the specified tile is connected to a mother by tarstuff,
 // return a pointer to the mother, otherwise NULL
 {
@@ -7103,9 +7104,13 @@ const
 
 //*****************************************************************************
 void CDbRoom::RemoveStabbedTar(
-//Removes tar found in a square in response to the tar being stabbed.  Adjacent
-//tar squares may change into tar babies as a result.  Does not check that stab
+//Removes tarstuff found in a square in response to the tar being stabbed.  Adjacent
+//tarstuff squares may change into tar babies as a result.  Does not check that stab
 //is directed at a vulnerable tar square.
+//
+//Any mother on an otherwise unstable tarstuff tile maintains the tarstuff underneath it.
+//
+//Any monster on tarstuff counts as a mother for this check.
 //
 //Params:
 	const UINT wX, const UINT wY, //(in)  Square containing tar to remove.
@@ -7137,7 +7142,7 @@ recompute:
 					(GetTSquare(i, j) != wTarType) ||
 
 					//...tar that's marked for baby conversion...
-					NewBabies.IsMember(i, j))
+					this->NewBabies.IsMember(i, j))
 				continue;
 
 			//Get the orthogonal squares once for speed.
@@ -7177,7 +7182,7 @@ recompute:
 
 			//If there is not a tarstuff mother here, tarstuff breaks.
 			CMonster *pMonster = GetMonsterAtSquare(i,j);
-			if (!pMonster || !bIsMother(pMonster->wType))
+			if (!pMonster) //any monster counts as a mother for this check
 			{
 				//Mark tar for baby conversion
 				if (!NewBabies.IsMember(i, j))
@@ -7205,7 +7210,7 @@ void CDbRoom::ConvertUnstableTar(
 	GetSwordCoords(swordCoords);
 
 	UINT wX, wY;
-	while (NewBabies.PopBottom(wX,wY)) //process as queue
+	while (this->NewBabies.PopBottom(wX,wY)) //process as queue
 	{
 		const UINT wTarType = GetTSquare(wX,wY);
 		if (bIsTar(wTarType))
@@ -7252,7 +7257,7 @@ void CDbRoom::ConvertUnstableTar(
 		}
 	}
 	
-	NewBabies.Clear();
+	this->NewBabies.Clear();
 }
 
 //*****************************************************************************
