@@ -43,6 +43,7 @@
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
 #include "GameScreen.h"
+#include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/ImageWidget.h>
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
@@ -653,6 +654,9 @@ MESSAGE_ID Init(
 #endif
 
 	srand(int(time(NULL)));
+
+	// Init FrontendLocalization
+	CListBoxWidget::wstrFilterWord = g_pTheDB->GetMessageText(MID_ListboxFilter);
 
 	//Success.
 	return (bRestoredFromCorruption) ? MID_DatCorrupted_Restored : MID_Success;

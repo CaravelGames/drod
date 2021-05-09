@@ -55,6 +55,7 @@ enum MID_CONSTANT {
   MID_ApplyToRoom = 1389,
   MID_ApplyToLevel = 1390,
   MID_GoToForum = 1722,
+  MID_ListboxFilter = 1805,
 
   //Messages from ChatScreen.uni:
   MID_ChatTitle = 1450,
