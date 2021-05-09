@@ -120,6 +120,7 @@ public:
 	bool           SelectLineStartingWith(const WCHAR wc);
 	bool           SelectLineWithText(const WCHAR* pText);
 	void           SelectMultipleItems(const bool bVal);
+	void           SetAllowFiltering(const bool bVal) { this->bAllowFiltering = bVal; }
 	void           SetHotkeyItemSelection(const bool bVal=true) {this->bHotkeyItemSelection = bVal;}
 	void           SetItemColor(const UINT dwKey, const SDL_Color& color);
 	void           SetItemColorAtLine(const UINT index, const SDL_Color& color);
@@ -130,6 +131,9 @@ public:
 	void           SetTopLineNumber(const UINT wSetTopLine);
 	void           SortAlphabetically(const bool bVal) {this->bSortAlphabetically = bVal;}
 	void           UnsetCursorLine() { this->wCursorLine = static_cast<UINT>(-1); }
+	virtual void   Unselect(const bool bPaint = true);
+
+	static WSTRING wstrFilterWord; // Text prefixing the filter-input preview
 
 protected:
 	virtual void   HandleDrag(const SDL_MouseMotionEvent &MouseMotionEvent);
@@ -163,11 +167,17 @@ protected:
 	bool           bRearrangable;    //can rearrange choices in list
 	UINT           wDraggingLineNo;  //this line # is being moved in the list
 	bool           bRearranged;      //choices were rearranged on mouse drag
+	bool           bAllowFiltering;  //Allow filtering by typing text
+	WSTRING        wstrActiveFilter;
 
 private:
 	UINT           AddItem_Insert(LBOX_ITEM *pNew, const bool bGrayed,
 			const int nInsertAt, const bool bGrayLast);
+	bool           IsValidFilterCharacter(const WCHAR character);
 	WSTRING        StripLeadingArticle(const WSTRING& text);
+	void           UpdateFilter(WSTRING wstrFilter);
+
+	vector<LBOX_ITEM *> filteredItems;
 };
 
 #endif //#ifndef LISTBOXWIDGET_H
