@@ -1988,8 +1988,8 @@ void CCharacterDialogWidget::AddScriptDialog()
 
 	this->pScriptDialog->AddWidget(new CLabelWidget(0, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
-	this->pDefaultScriptCommandsListBox = new CListBoxWidget(TAG_DEFAULTCOMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
-			CX_COMMANDS, CY_COMMANDS, false, true, true);
+	this->pDefaultScriptCommandsListBox = new CCommandListBoxWidget(TAG_DEFAULTCOMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
+			CX_COMMANDS, CY_COMMANDS);
 	this->pScriptDialog->AddWidget(this->pDefaultScriptCommandsListBox);
 
 	//OK button.
@@ -2483,7 +2483,7 @@ void CCharacterDialogWidget::OnKeyDown(
 						line!=selectedLines.end(); ++line)
 				{
 					if (*line < pCommands->size())
-						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], *line);
+						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], pActiveCommandList, *line);
 				}
 				if (!wstrCommandsText.empty())
 					g_pTheSound->PlaySoundEffect(SEID_POTION);
@@ -4089,10 +4089,12 @@ WSTRING CCharacterDialogWidget::GetDataName(const UINT dwID) const
 }
 
 //*****************************************************************************
-UINT CCharacterDialogWidget::ExtractCommandIndent(const UINT wCommandIndex) const
+UINT CCharacterDialogWidget::ExtractCommandIndent(
+	const CListBoxWidget* pCommandList,
+	const UINT wCommandIndex) const
 //Extracts command's indent size from the command listbox text
 {
-	WSTRING wstr = this->pCommandsListBox->GetTextAtLine(wCommandIndex);
+	WSTRING wstr = pCommandList->GetTextAtLine(wCommandIndex);
 
 	UINT i = 0;
 	for (; i < wstr.size(); ++i)
@@ -4105,7 +4107,7 @@ UINT CCharacterDialogWidget::ExtractCommandIndent(const UINT wCommandIndex) cons
 }
 
 //*****************************************************************************
-void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &commands)
+void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR &commands)
 {
 	WSTRING wstr;
 
@@ -4254,8 +4256,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &comman
 
 		wstr.insert(wstr.begin(), bIsLabel ? wIndent - 2 : wIndent, W_t(' '));
 		wstr.insert(wstr.end(), wFinalIndent, W_t(' '));
-		wstr += this->pCommandsListBox->GetTextAtLine(index);
-		this->pCommandsListBox->SetItemTextAtLine(index, wstr.c_str());
+		wstr += pCommandList->GetTextAtLine(index);
+		pCommandList->SetItemTextAtLine(index, wstr.c_str());
 
 		bLastWasIfCondition = bIsIfCondition;
 	}
@@ -4776,7 +4778,7 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
 	
-	PrettyPrintCommands(commands);
+	PrettyPrintCommands(pCommandList, commands);
 
 	if (commands.size())
 		pCommandList->SelectLine(0);
@@ -7811,6 +7813,7 @@ WSTRING CCharacterDialogWidget::toText(
 //Params:
 	const COMMANDPTR_VECTOR& commands,
 	CCharacterCommand* pCommand,       //Command to parse
+	const CListBoxWidget* pCommandList, //Command list to get string from
 	const UINT wCommandIndex)          //Index of the command
 {
 #define concatNum(n) wstr += _itoW(n,temp,10)
@@ -7825,7 +7828,7 @@ WSTRING CCharacterDialogWidget::toText(
 	if (wstrCommandName.empty())
 		return wstr;
 
-	UINT indent = ExtractCommandIndent(wCommandIndex);
+	UINT indent = ExtractCommandIndent(pCommandList, wCommandIndex);
 	wstr.insert(wstr.end(), indent - INDENT_PREFIX_SIZE + 2, W_t(' '));
 	wstr += wstrCommandName;
 	wstr += wszSpace;
