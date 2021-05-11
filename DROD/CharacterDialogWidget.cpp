@@ -4046,6 +4046,7 @@ const
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_WaitForCleanRoom:
 		case CCharacterCommand::CC_WaitForCleanLevel:
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
@@ -4166,6 +4167,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &comman
 			case CCharacterCommand::CC_SetMusic:
 			case CCharacterCommand::CC_Speech:
 			case CCharacterCommand::CC_TurnIntoMonster:
+			case CCharacterCommand::CC_ReplaceWithDefault:
 			case CCharacterCommand::CC_PlayerEquipsWeapon:
 			case CCharacterCommand::CC_SetPlayerStealth:
 			case CCharacterCommand::CC_SetWaterTraversal:
@@ -4464,6 +4466,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportPlayerTo, g_pTheDB->GetMessageText(MID_TeleportPlayerTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, L"Replace with Default Script");
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanLevel, g_pTheDB->GetMessageText(MID_WaitForCleanLevel));
@@ -5099,6 +5102,7 @@ void CCharacterDialogWidget::SetCommandColor(
 		case CCharacterCommand::CC_AnswerOption:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 			pListBox->SetItemColorAtLine(line, Maroon);
 		break;
 		case CCharacterCommand::CC_If:
@@ -5303,7 +5307,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		BEHAVIOR,            //CC_BEHAVIOR
 		MONSTER_REMAINS,    //CC_WaitForRemains
 		PUSH_TILE,          //CC_PushTile
-		MOVETYPE            //CC_SetMovementType
+		MOVETYPE,           //CC_SetMovementType
+		NO_WIDGETS          //CC_ReplaceWithDefault
 	};
 
 	static const UINT NUM_LABELS = 30;
@@ -5434,7 +5439,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_Behavior
 		NO_LABELS,          //CC_WaitForRemains
 		PUSH_TILE_L,        //CC_PushTile
-		NO_LABELS           //CC_SetMovementType
+		NO_LABELS,          //CC_SetMovementType
+		NO_LABELS           //CC_ReplaceWithDefault
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6454,6 +6460,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_WaitForCleanRoom:
 		case CCharacterCommand::CC_WaitForCleanLevel:
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
@@ -6871,6 +6878,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_ActivateItemAt:
 		case CCharacterCommand::CC_DestroyTrapdoor:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_IfElse:
@@ -7170,6 +7178,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
+	case CCharacterCommand::CC_ReplaceWithDefault:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForCleanLevel:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
@@ -7841,6 +7850,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
+	case CCharacterCommand::CC_ReplaceWithDefault:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForCleanLevel:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
