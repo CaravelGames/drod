@@ -2990,6 +2990,29 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_VarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				getCommandXY(command, wX, wY);
+
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster* ,pMonster);
+					if (pCharacter) {
+						// Transfer var set information to a tempory command.
+						CCharacterCommand setCommand;
+						setCommand.x = command.w;
+						setCommand.y = command.h;
+						setCommand.w = command.flags;
+						setCommand.label = command.label;
+						pCharacter->SetVariable(setCommand, pGame, CueEvents);
+					}
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{

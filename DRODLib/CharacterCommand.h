@@ -324,6 +324,7 @@ public:
 		CC_PushTile,            //Push object or entity at (x,y) in direction (w)
 		CC_SetMovementType,     //Sets the character's movement type to X.
 		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
+		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y)
 
 		CC_Count
 	};
