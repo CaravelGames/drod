@@ -3939,12 +3939,24 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_VarSetAt:
+		{
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+		}
+		// no break
 		case CCharacterCommand::CC_VarSet:
 		{
-			const WCHAR *wszVarName = this->pVarListBox->GetTextForKey(command.x);
+			UINT varId = command.command == CCharacterCommand::CC_VarSetAt ? command.w : command.x;
+			UINT operation = command.command == CCharacterCommand::CC_VarSetAt ? command.h : command.y;
+			const WCHAR *wszVarName = this->pVarListBox->GetTextForKey(varId);
 			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 			wstr += wszSpace;
-			switch (command.y)
+			switch (operation)
 			{
 				case ScriptVars::AppendText: wstr += wszPlus; //no break
 				case ScriptVars::Assign:
@@ -3957,7 +3969,7 @@ const
 				default: wstr += wszQuestionMark; break;
 			}
 			wstr += wszSpace;
-			switch (command.y)
+			switch (operation)
 			{
 				case ScriptVars::AppendText:
 				case ScriptVars::AssignText:
@@ -3968,6 +3980,8 @@ const
 				default:
 					if (!command.label.empty())
 						wstr += command.label;
+					else if (command.command == CCharacterCommand::CC_VarSetAt)
+						wstr += _itoW(command.flags, temp, 10);
 					else
 						wstr += _itoW(command.w, temp, 10);
 				break;
@@ -4204,13 +4218,15 @@ void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &comman
 				break;
 
 			case CCharacterCommand::CC_VarSet:
+			case CCharacterCommand::CC_VarSetAt:
 				if (bLastWasIfCondition)
 					wstr += wszQuestionMark;	//questionable If condition
 			//no break
 			case CCharacterCommand::CC_WaitForVar:
 			{
 				//Verify integrity of hold var refs.
-				switch (pCommand->y)
+				UINT operation = pCommand->command == CCharacterCommand::CC_VarSetAt ? pCommand->h : pCommand->y;
+				switch (operation)
 				{
 				case ScriptVars::AppendText:
 				case ScriptVars::AssignText:
@@ -4461,6 +4477,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerWeapon, g_pTheDB->GetMessageText(MID_SetPlayerWeapon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, L"Set var at");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_StartGlobalScript, g_pTheDB->GetMessageText(MID_StartGlobalScript));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));
@@ -5112,6 +5129,7 @@ void CCharacterDialogWidget::SetCommandColor(
 			pListBox->SetItemColorAtLine(line, DarkBlue);
 		break;
 		case CCharacterCommand::CC_VarSet:
+		case CCharacterCommand::CC_VarSetAt:
 			pListBox->SetItemColorAtLine(line, FullRed);
 		break;
 		case CCharacterCommand::CC_Wait: 
@@ -5308,7 +5326,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		MONSTER_REMAINS,    //CC_WaitForRemains
 		PUSH_TILE,          //CC_PushTile
 		MOVETYPE,           //CC_SetMovementType
-		NO_WIDGETS          //CC_ReplaceWithDefault
+		NO_WIDGETS,         //CC_ReplaceWithDefault
+		VARSET,             //CC_VarSetAt
 	};
 
 	static const UINT NUM_LABELS = 30;
@@ -5440,7 +5459,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForRemains
 		PUSH_TILE_L,        //CC_PushTile
 		NO_LABELS,          //CC_SetMovementType
-		NO_LABELS           //CC_ReplaceWithDefault
+		NO_LABELS,          //CC_ReplaceWithDefault
+		VARSET_L,           //CC_VarSetAt 
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6282,6 +6302,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_VarSet:
+		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
 		{
 			this->pCommand->x = this->pVarListBox->GetSelectedItem();
@@ -6326,7 +6347,16 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				}
 			}
 
-			AddCommand();
+			// Move data so that target tile of VarSetAt is in x,y fields
+			if (c == CCharacterCommand::CC_VarSetAt) {
+				this->pCommand->flags = this->pCommand->w;
+				this->pCommand->w = this->pCommand->x;
+				this->pCommand->h = this->pCommand->y;
+				QueryXY();
+			}
+			else {
+				AddCommand();
+			}
 		}
 		break;
 
@@ -6771,11 +6801,18 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_VarSet:
+		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
 		{
-			this->pVarListBox->SelectItem(this->pCommand->x);
+			if (c == CCharacterCommand::CC_VarSetAt)
+				this->pVarListBox->SelectItem(this->pCommand->w);
+			else
+				this->pVarListBox->SelectItem(this->pCommand->x);
+
 			if (c == CCharacterCommand::CC_VarSet)
 				this->pVarOpListBox->SelectItem(this->pCommand->y);
+			else if (c == CCharacterCommand::CC_VarSetAt)
+				this->pVarOpListBox->SelectItem(this->pCommand->h);
 			else
 				this->pVarCompListBox->SelectItem(this->pCommand->y);
 
@@ -6790,6 +6827,9 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 				(c == CCharacterCommand::CC_VarSet &&
 					(this->pCommand->y == ScriptVars::AssignText ||
 					this->pCommand->y == ScriptVars::AppendText)) ||
+				(c == CCharacterCommand::CC_VarSetAt &&
+					(this->pCommand->h == ScriptVars::AssignText ||
+						this->pCommand->h == ScriptVars::AppendText)) ||
 				(c == CCharacterCommand::CC_WaitForVar &&
 					this->pCommand->y == ScriptVars::EqualsText);
 			if (bTextVar)
@@ -6799,6 +6839,8 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			} else {
 				if (!this->pCommand->label.empty())
 					pVarOperand->SetText(this->pCommand->label.c_str());
+				else if (c == CCharacterCommand::CC_VarSetAt)
+					pVarOperand->SetText(_itoW(this->pCommand->flags, temp, 10));
 				else
 					pVarOperand->SetText(_itoW(this->pCommand->w, temp, 10));
 				pVarText->SetText(wszEmpty);
@@ -7637,6 +7679,12 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_VarSetAt:
+	{
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+	}
+	// no break
 	case CCharacterCommand::CC_VarSet:
 	{
 		//Var name is all text between outermost quotes.
@@ -7650,16 +7698,21 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		}
 
 		UINT tempIndex = 0;
-		pCommand->x = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		UINT varId = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
 		if (!bFound)
 		{
-			pCommand->x = AddVar(varName.c_str());
-			if (!pCommand->x)
+			varId = AddVar(varName.c_str());
+			if (!varId)
 			{
 				delete pCommand;
 				return NULL;
 			}
 		}
+
+		if (pCommand->command == CCharacterCommand::CC_VarSetAt)
+			pCommand->w = varId;
+		else
+			pCommand->x = varId;
 
 		skipWhitespace;
 		if (pos >= textLength)
@@ -7668,22 +7721,28 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			return NULL;
 		}
 		const char varOperator = char(WCv(pText[pos]));
+		UINT operation;
 		++pos;
 		switch (varOperator)
 		{
 			default: //robust default for bad operator char
-			case '=': pCommand->y = ScriptVars::Assign; break;
-			case '+': pCommand->y = ScriptVars::Inc; break;
-			case '-': pCommand->y = ScriptVars::Dec; break;
-			case '*': pCommand->y = ScriptVars::MultiplyBy; break;
-			case '/': pCommand->y = ScriptVars::DivideBy; break;
-			case '%': pCommand->y = ScriptVars::Mod; break;
-			case ':': pCommand->y = ScriptVars::AssignText; break;
-			case ';': pCommand->y = ScriptVars::AppendText; break;
+			case '=': operation = ScriptVars::Assign; break;
+			case '+': operation = ScriptVars::Inc; break;
+			case '-': operation = ScriptVars::Dec; break;
+			case '*': operation = ScriptVars::MultiplyBy; break;
+			case '/': operation = ScriptVars::DivideBy; break;
+			case '%': operation = ScriptVars::Mod; break;
+			case ':': operation = ScriptVars::AssignText; break;
+			case ';': operation = ScriptVars::AppendText; break;
 		}
 
+		if (pCommand->command == CCharacterCommand::CC_VarSetAt)
+			pCommand->h = operation;
+		else
+			pCommand->y = operation;
+
 		skipWhitespace;
-		switch (pCommand->y)
+		switch (operation)
 		{
 			case ScriptVars::AppendText:
 			case ScriptVars::AssignText:
@@ -7691,8 +7750,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			break;
 			default:
 			{
-				if (isWInteger(pText + pos))
-					pCommand->w = _Wtoi(pText + pos); //get number
+				if (isWInteger(pText + pos)) {
+					//get number
+					if (pCommand->command == CCharacterCommand::CC_VarSetAt)
+						pCommand->flags = _Wtoi(pText + pos);
+					else
+						pCommand->w = _Wtoi(pText + pos);
+				}
 				else
 					pCommand->label = pText + pos; //get text expression
 			}
@@ -8276,14 +8340,22 @@ WSTRING CCharacterDialogWidget::toText(
 	}
 	break;
 
+	case CCharacterCommand::CC_VarSetAt:
+	{
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+	}
+	// no break
 	case CCharacterCommand::CC_VarSet:
 	{
-		const WCHAR *wszVarName = this->pVarListBox->GetTextForKey(c.x);
+		UINT varId = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+		UINT operation = c.command == CCharacterCommand::CC_VarSetAt ? c.h : c.y;
+		const WCHAR *wszVarName = this->pVarListBox->GetTextForKey(varId);
 		wstr += wszQuote;
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
 		wstr += wszSpace;
-		switch (c.y)
+		switch (operation)
 		{
 			case ScriptVars::Assign: wstr += wszEqual; break;
 			case ScriptVars::Inc: wstr += wszPlus; break;
@@ -8296,7 +8368,7 @@ WSTRING CCharacterDialogWidget::toText(
 			default: wstr += wszQuestionMark; break;
 		}
 		wstr += wszSpace;
-		switch (c.y)
+		switch (operation)
 		{
 			case ScriptVars::AppendText:
 			case ScriptVars::AssignText:
@@ -8305,6 +8377,8 @@ WSTRING CCharacterDialogWidget::toText(
 			default:
 				if (!c.label.empty())
 					wstr += c.label;
+				else if (c.command == CCharacterCommand::CC_VarSetAt)
+					concatNum(c.flags);
 				else
 					concatNum(c.w);
 			break;
