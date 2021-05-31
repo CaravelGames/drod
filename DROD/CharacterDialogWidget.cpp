@@ -4466,7 +4466,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportPlayerTo, g_pTheDB->GetMessageText(MID_TeleportPlayerTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, L"Replace with Default Script");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, g_pTheDB->GetMessageText(MID_ReplaceWithDefault));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanLevel, g_pTheDB->GetMessageText(MID_WaitForCleanLevel));
