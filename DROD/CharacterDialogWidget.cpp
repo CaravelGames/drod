@@ -4218,10 +4218,10 @@ void CCharacterDialogWidget::PrettyPrintCommands(const COMMANDPTR_VECTOR &comman
 				break;
 
 			case CCharacterCommand::CC_VarSet:
-			case CCharacterCommand::CC_VarSetAt:
 				if (bLastWasIfCondition)
 					wstr += wszQuestionMark;	//questionable If condition
 			//no break
+			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForVar:
 			{
 				//Verify integrity of hold var refs.

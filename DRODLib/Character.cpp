@@ -2996,6 +2996,7 @@ void CCharacter::Process(
 			{
 				//Remotely set local variable w (with operation h) of NPC at (x,y)
 				UINT wX, wY;
+				bool success = false;
 				getCommandXY(command, wX, wY);
 
 				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
@@ -3009,7 +3010,14 @@ void CCharacter::Process(
 						setCommand.w = command.flags;
 						setCommand.label = command.label;
 						pCharacter->SetVariable(setCommand, pGame, CueEvents);
+						success = true;
 					}
+				}
+
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
 				}
 
 				bProcessNextCommand = true;
