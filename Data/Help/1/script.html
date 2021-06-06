@@ -266,6 +266,8 @@ interacts with its environment.</p>
       from the hold and all NPC scripts that use it, not just from this
       particular script.<br />
 </li>
+  <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, it's local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> conidtion. The condition is statified if the command successfully invokes a variable assingment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
+  </li>
   <li><a name="setshallowwatertraversal"><b>Set shallow water traversal</b>
     </a> - Sets how and under what conditions the player interacts with shallow water terrain.</li>
   <li><a name="gameeffect"><b>Game effect</b>
