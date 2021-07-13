@@ -32,6 +32,7 @@
 #include "Ports.h"  // for towlower, iswspace
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
 //Some common small strings.  Larger strings are localizable and should be kept in database.
 const WCHAR wszAmpersand[] =    { We('&'),We(0) };
@@ -128,6 +129,13 @@ void AsciiToUnicode(const char *psz, WSTRING &wstr)
 //*****************************************************************************
 void AsciiToUnicode(const std::string &str, WSTRING &wstr) {
 	AsciiToUnicode(str.c_str(), wstr);
+}
+
+//*****************************************************************************
+const WSTRING AsciiToUnicode(const char *psz) {
+	WSTRING res;
+	AsciiToUnicode(psz, res);
+	return res;
 }
 
 //******************************************************************************
@@ -865,4 +873,46 @@ WSTRING WCSReplace(
 		result += source.substr(processed, loc-processed)+to;
 		processed = loc + from.size();
 	}
+}
+
+//*****************************************************************************
+WSTRING WCSToLower(WSTRING const &source)
+//Converts WSTRING to lowercase
+{
+	WSTRING lowercased;
+	lowercased.reserve(source.size());
+	for (WSTRING::const_iterator it = source.begin(); it != source.end(); ++it)
+		lowercased += towlower(*it);
+
+	return lowercased;
+}
+
+//*****************************************************************************
+const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimiter)
+// Explodes a string into pieces
+// Adapted from: https://stackoverflow.com/a/12967010
+{
+	std::vector<WSTRING> result;
+	std::wistringstream iss(source);
+
+	for (WSTRING token; std::getline(iss, token, delimiter); )
+	{
+		if (!token.empty())
+			result.push_back(token);
+	}
+
+	return result;
+}
+
+//*****************************************************************************
+bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles)
+// Returns true if haystack contains every string in needle, even if they overlap
+{
+	for (std::vector<WSTRING>::const_iterator iter = needles.begin(); iter < needles.end(); ++iter)
+	{
+		if (haystack.find(*iter) == WSTRING::npos)
+			return false;
+	}
+
+	return true;
 }

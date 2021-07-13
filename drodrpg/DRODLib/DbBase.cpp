@@ -731,6 +731,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SpawnEggs: strText = "Spawn Eggs"; break;
 		case MID_VarMySpawn: strText = "_MySpawn"; break;
 		case MID_Scorepoints: strText = "Scorepoints"; break;
+		case MID_ListboxFilter: strText = "Filter"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

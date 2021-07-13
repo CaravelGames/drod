@@ -282,6 +282,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	this->pHoldListBoxWidget->SetHotkeyItemSelection(true);
 	this->pHoldListBoxWidget->IgnoreLeadingArticlesInSort();
 	AddWidget(this->pHoldListBoxWidget);
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
 	//Used for storing hold info.  Not added to the screen as a child widget.
 	this->pFullHoldList = new CListBoxWidget(0, X_HOLDLISTBOX, Y_HOLDLISTBOX,
 			CX_HOLDLISTBOX, CY_HOLDLISTBOX, true, false, true);

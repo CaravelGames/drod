@@ -1253,6 +1253,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMusicListBox->AddItem(SONGID_SEASIDE, g_pTheDB->GetMessageText(MID_MusicSeaside));
 	this->pMusicListBox->AddItem(SONGID_SERPENTS, g_pTheDB->GetMessageText(MID_MusicSerpents));
 	this->pMusicListBox->AddItem(SONGID_SLAYER, g_pTheDB->GetMessageText(MID_MusicSlayer));
+	this->pMusicListBox->SetAllowFiltering(true);
 
 	CFiles f;
 	list<WSTRING> styles;
@@ -1378,6 +1379,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_STRONGHIT, g_pTheDB->GetMessageText(MID_StrongHitEffect));
 	this->pVisualEffectsListBox->AddItem(VET_EQUIP, g_pTheDB->GetMessageText(MID_EquipEffect));
 	this->pVisualEffectsListBox->SelectLine(0);
+	this->pVisualEffectsListBox->SetAllowFiltering(true);
 
 	//Build items.
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_ITEMLISTBOX,
@@ -3825,6 +3827,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
 	this->pActionListBox->SelectLine(0);
+	this->pActionListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -3891,6 +3894,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_KnockOpenedDoor, g_pTheDB->GetMessageText(MID_KnockOpenedDoor));
 	this->pEventListBox->AddItem(CID_DoorLocked, g_pTheDB->GetMessageText(MID_DoorLocked));
 	this->pEventListBox->SelectLine(0);
+	this->pEventListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -3940,6 +3944,8 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 	pListBox->AddItem(M_STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
 
 	pListBox->AddItem(M_NONE, g_pTheDB->GetMessageText(MID_None));
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -3971,6 +3977,7 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool bDefaultScript
 //	this->pImperativeListBox->AddItem(ScriptFlag::DirectBeelining, g_pTheDB->GetMessageText(MID_DirectBeelining));
 //	this->pImperativeListBox->AddItem(ScriptFlag::FlexibleBeelining, g_pTheDB->GetMessageText(MID_FlexibleBeelining));
 	this->pImperativeListBox->SelectLine(0);
+	this->pImperativeListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4083,6 +4090,8 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(TV_EXPLOSION, g_pTheDB->GetMessageText(MID_Explosion));
 	pListBox->AddItem(T_EMPTY_F, g_pTheDB->GetMessageText(MID_RemoveFLayerItem));
 	pListBox->AddItem(T_EMPTY, g_pTheDB->GetMessageText(MID_RemoveItem));
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4122,6 +4131,8 @@ void CCharacterDialogWidget::PopulateCharacterList(CListBoxWidget *pListBox)
 		HoldCharacter *pChar = *ch;
 		pListBox->AddItem(pChar->dwCharID, pChar->charNameText.c_str());
 	}
+
+	pListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4146,6 +4157,8 @@ void CCharacterDialogWidget::PopulateGotoLabelList(const COMMANDPTR_VECTOR& comm
 				this->wIncrementedLabel = pCommand->x;
 		}
 	}
+
+	this->pGotoLabelListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -4179,6 +4192,10 @@ void CCharacterDialogWidget::PopulateMainGraphicList()
 
 	ASSERT(this->pSpeakerListBox);
 	PopulateSpeakerList(this->pSpeakerListBox);
+
+	this->pGraphicListBox->SetAllowFiltering(true);
+	this->pPlayerGraphicListBox->SetAllowFiltering(true);
+	this->pSpeakerListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************

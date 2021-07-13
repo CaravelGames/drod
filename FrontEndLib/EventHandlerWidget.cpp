@@ -672,6 +672,13 @@ void CEventHandlerWidget::Activate_HandleKeyDown(
 					if (IsDeactivating())
 						return;  //if widget became inactive after key, stop handling event
 					
+
+					if (pSelectedWidget->bIsPreventingEventBubbling)
+					{ // If widget wants to trap the event then stop handling it
+						pSelectedWidget->bIsPreventingEventBubbling = false;
+						return;
+					}
+
 					//If selected widget doesn't accept text entry then hotkey
 					//without ALT can be used for any widget.
 					//If selected widget does accept text entry, it can use the Enter
@@ -1029,18 +1036,17 @@ bool CEventHandlerWidget::SelectPrevWidget(
 	CWidget *pWidget;
 	if (iSeek != this->FocusList.begin())
 	{
-		--iSeek;
-		do
+		while (iSeek != this->FocusList.begin())
 		{
+			--iSeek;
+
 			pWidget = *iSeek;
 			if (pWidget && pWidget->IsSelectable(!bPaint))
 			{
 				ChangeSelection(iSeek, bPaint);
 				return true;
 			}
-			--iSeek;
 		}
-		while (iSeek != this->FocusList.begin());
 	}
 
 	//Search for next selectable widget from end of focus list.
