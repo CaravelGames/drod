@@ -2999,6 +2999,22 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_ReplaceWithDefault:
+				//Replace the script with the character's default script if possible.
+				//Nothing will happen for non-custom characters.
+				if (this->pCustomChar) {
+					this->commands.clear();
+					this->wCurrentCommandIndex = 0;
+					wTurnCount = 0;
+					++wVarSets; //Count as setting a variable for loop avoidence
+					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+				}	else {
+					// Index does not automatically increment after this command is executed
+					++this->wCurrentCommandIndex;
+				}
+				bProcessNextCommand = true;
+			break;
+
 			case CCharacterCommand::CC_If:
 				//Begin a conditional block if the next command is satisfied.
 				//If it is not satisfied, the code block will be skipped.
@@ -3172,7 +3188,7 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		if (this->wCurrentCommandIndex < this->commands.size())
+		if (this->wCurrentCommandIndex < this->commands.size() && command.command != CCharacterCommand::CC_ReplaceWithDefault)
 			++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative

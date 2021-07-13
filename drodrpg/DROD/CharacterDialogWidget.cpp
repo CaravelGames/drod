@@ -3548,6 +3548,7 @@ const
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_WaitForCleanRoom:
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 		case CCharacterCommand::CC_WaitForDefeat:
@@ -3673,6 +3674,7 @@ const
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_Return:
 			if (bIfCondition)
 				wstr += wszQuestionMark;	//questionable If condition
@@ -3811,6 +3813,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, L"Replace with Default");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_WaitTurns));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForDefeat, g_pTheDB->GetMessageText(MID_WaitForDefeat));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForDoorTo, g_pTheDB->GetMessageText(MID_WaitForDoorTo));
@@ -4633,7 +4636,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TEXTBOX,            //CC_RoomLocationText
 		TEXT_AND_COLOR,     //CC_FlashingText
 		STATSET,            //CC_SetMonsterVar
-		MOVETYPE            //CC_SetMovementType
+		MOVETYPE,           //CC_SetMovementType
+		NO_WIDGETS          //CC_ReplaceWithDefault
 	};
 
 	static const UINT NUM_LABELS = 26;
@@ -4742,7 +4746,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TEXT_L,             //CC_RoomLocationText
 		TEXT_AND_COLOR_L,   //CC_FlashingText
 		STAT_L,             //CC_SetMonsterVar
-		NO_LABELS           //CC_SetMovementType
+		NO_LABELS,          //CC_SetMovementType
+		NO_LABELS           //CC_ReplaceWithDefault
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5139,6 +5144,7 @@ void CCharacterDialogWidget::SetCommandColor(
 	case CCharacterCommand::CC_AnswerOption:
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
+	case CCharacterCommand::CC_ReplaceWithDefault:
 	case CCharacterCommand::CC_Return:
 		pListBox->SetItemColorAtLine(line, Maroon);
 		break;
@@ -5677,6 +5683,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_WaitForCleanRoom:
 		case CCharacterCommand::CC_WaitForDefeat:
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
@@ -5988,6 +5995,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 		case CCharacterCommand::CC_ActivateItemAt:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_IfElse:
@@ -6281,6 +6289,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
+	case CCharacterCommand::CC_ReplaceWithDefault:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForDefeat:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
@@ -6790,6 +6799,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_IfElseIf:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
+	case CCharacterCommand::CC_ReplaceWithDefault:
 	case CCharacterCommand::CC_WaitForCleanRoom:
 	case CCharacterCommand::CC_WaitForDefeat:
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
