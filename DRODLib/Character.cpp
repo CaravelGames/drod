@@ -2896,6 +2896,9 @@ void CCharacter::Process(
 					wTurnCount = 0;
 					++wVarSets; //Count as setting a variable for loop avoidence
 					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+				}	else {
+					// Index does not automatically increment after this command is executed
+					++this->wCurrentCommandIndex;
 				}
 				bProcessNextCommand = true;
 			break;
@@ -3438,7 +3441,8 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		++this->wCurrentCommandIndex;
+		if (command.command != CCharacterCommand::CC_ReplaceWithDefault)
+			++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative
 		//movement destination for the next relative movement command.
