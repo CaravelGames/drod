@@ -7243,9 +7243,8 @@ void CDbRoom::ConvertUnstableTar(
 	CCueEvents &CueEvents,        //(out) May receive cue events.
 	const bool bDelayBabyMoves)   //(in)  Whether babies can move immediately when processed [default=false]
 {
-	ASSERT(this->pCurrentGame);
-	const UINT wSX = this->pCurrentGame->pPlayer->wX;
-	const UINT wSY = this->pCurrentGame->pPlayer->wY;
+	const UINT wSX = this->pCurrentGame ? this->pCurrentGame->pPlayer->wX : (UINT)-1;
+	const UINT wSY = this->pCurrentGame ? this->pCurrentGame->pPlayer->wY : (UINT)-1;
 	CCoordIndex swordCoords;
 	GetSwordCoords(swordCoords);
 
