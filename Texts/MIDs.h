@@ -1791,6 +1791,7 @@ enum MID_CONSTANT {
   MID_Ground = 2009,
   MID_GroundAndShallow = 2010,
   MID_Air = 2011,
+  MID_ReplaceWithDefault = 2013,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
