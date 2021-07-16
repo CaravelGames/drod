@@ -3011,6 +3011,10 @@ void CCharacter::Process(
 						setCommand.label = command.label;
 						pCharacter->SetVariable(setCommand, pGame, CueEvents);
 						success = true;
+
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
 					}
 				}
 
