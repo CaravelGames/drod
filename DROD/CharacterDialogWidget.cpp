@@ -6313,15 +6313,18 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				break;
 			}
 			this->pCommand->y =
-				c == CCharacterCommand::CC_VarSet ?
-					this->pVarOpListBox->GetSelectedItem() :
-					this->pVarCompListBox->GetSelectedItem();
+				c == CCharacterCommand::CC_WaitForVar ?
+					this->pVarCompListBox->GetSelectedItem() :
+					this->pVarOpListBox->GetSelectedItem();
 			this->pCommand->w = 0; //default
 
 			const bool bTextVar =
 				(c == CCharacterCommand::CC_VarSet &&
 					(this->pCommand->y == ScriptVars::AssignText ||
 					this->pCommand->y == ScriptVars::AppendText)) ||
+				(c == CCharacterCommand::CC_VarSetAt &&
+					(this->pCommand->h == ScriptVars::AssignText ||
+						this->pCommand->h == ScriptVars::AppendText)) ||
 				(c == CCharacterCommand::CC_WaitForVar &&
 					this->pCommand->y == ScriptVars::EqualsText);
 			if (bTextVar)
