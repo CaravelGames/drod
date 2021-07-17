@@ -108,6 +108,7 @@ functions.</p>
 	  turn.  Also used to define certain attributes of the NPC's abilities
 	  (see <a href="#behaviorlist">Behaviors</a>).  Compatible behaviors
 	  may be combined.</li>
+  <li><a name="replacewithdefault"><b>Replace with Default Script</b></a> - If the NPC is a custom NPC type, replaces the script content with that NPC type's default script. That script will then begin executing. Has no effect when used in an NPC with a pre-defined type.</li>
 </ol>
 
 <p><a name="interaction"><b>3.&nbsp;&nbsp;Interaction</b></a> - How the NPC
@@ -256,6 +257,8 @@ interacts with its environment.</p>
       Whenever a script changes a hold variable, you will be notified onscreen.
       This only works while playtesting, playing a hold you authored, or playing
       a CaravelNet hold in beta.</li>
+  <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, it's local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> conidtion. The condition is statified if the command successfully invokes a variable assingment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
+  </li>
   <li><a name="setmonstervar"><b>Set monster var</b></a> - Modify a
 	  stat value of a monster at a specific room location.</li>
   <li><a name="eachattack"><b>Each attack</b></a> - Each time the NPC attacks,
