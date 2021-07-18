@@ -674,7 +674,12 @@ void CFaceWidget::Paint(
 		//Draw special image, if set.
 		if (this->pImage)
 		{
-			SDL_Rect Src = MAKE_SDL_RECT(0, 0, this->w, this->h);
+			int srcX = 0;
+
+			if (this->pImage->w >= this->w * (this->eMood + 1))
+				srcX = this->w * this->eMood;
+
+			SDL_Rect Src = MAKE_SDL_RECT(srcX, 0, this->w, this->h);
 			SDL_BlitSurface(this->pImage, &Src, pDestSurface, &Dest);
 		} else {
 			//Bounds check -- just revert to default if this face frame is not loaded.
