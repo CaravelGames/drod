@@ -211,6 +211,8 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 	ASSERT(pText);
 
 	if (commandMap.empty()) {
+		commandMap[string("addx")] = ImageOverlayCommand::AddX;
+		commandMap[string("addy")] = ImageOverlayCommand::AddY;
 		commandMap[string("cancelall")] = ImageOverlayCommand::CancelAll;
 		commandMap[string("cancellayer")] = ImageOverlayCommand::CancelLayer;
 		commandMap[string("center")] = ImageOverlayCommand::Center;

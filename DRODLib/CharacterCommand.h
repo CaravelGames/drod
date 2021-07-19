@@ -369,6 +369,8 @@ struct ImageOverlayCommand
 	static const int NO_LAYERS;
 
 	enum IOC {
+		AddX,
+		AddY,
 		CancelAll,
 		CancelLayer,
 		Center,

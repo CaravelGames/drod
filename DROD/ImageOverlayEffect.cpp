@@ -446,6 +446,13 @@ void CImageOverlayEffect::StartNextCommand()
 		// Do nothing, these are handled externally
 		return;
 
+	case ImageOverlayCommand::AddX:
+		this->x += val;
+		break;
+	case ImageOverlayCommand::AddY:
+		this->y += val;
+		break;
+
 	case ImageOverlayCommand::Center:
 		this->x = (int(this->pRoomWidget->GetW()) - int(this->pImageSurface->w)) / 2;
 		this->y = (int(this->pRoomWidget->GetH()) - int(this->pImageSurface->h)) / 2;
@@ -733,6 +740,8 @@ bool CImageOverlayEffect::IsTurnBasedCommand(const ImageOverlayCommand::IOC comm
 
 bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC commandType) const {
 	switch (commandType) {
+		case ImageOverlayCommand::AddX:
+		case ImageOverlayCommand::AddY:
 		case ImageOverlayCommand::CancelAll:
 		case ImageOverlayCommand::CancelLayer:
 		case ImageOverlayCommand::Center:
