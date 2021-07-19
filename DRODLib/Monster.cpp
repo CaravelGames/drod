@@ -699,14 +699,13 @@ bool CMonster::ConfirmPath()
 	{
 		this->pathToDest.GetAt(wIndex, wX, wY);
 
-		// Backwards compatibility hack: if a path resides on monster's current position it should
-		// theorethically regenerate the path, but that could potentially break too many demos
-		// at this point. We can't run DoesSquareContainObstacle() either, because it will (correctly)
-		// ASSERT if given monster's current coords. So we just skip that one specific check.
+		// Backwards compatibility hack: if a path resides on monster's current position,
+		// regenerate the path. Previously, it would run DoesSquareContainObstacle() at the monster's
+		// position, which would assert, then return that an obstacle was found.
 
 		const bool bIsCurrentMonsterTile = wX == this->wX && wY == this->wY;
 
-		if (!bIsCurrentMonsterTile && DoesSquareContainObstacle(wX, wY))
+		if (bIsCurrentMonsterTile || DoesSquareContainObstacle(wX, wY))
 		{
 			bPathOpen = false;
 			break;
