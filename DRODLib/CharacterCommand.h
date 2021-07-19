@@ -376,6 +376,7 @@ struct ImageOverlayCommand
 		Center,
 		DisplayDuration,
 		DisplayRect,
+		DisplayRectModify,
 		DisplaySize,
 		FadeToAlpha,
 		Grow,
