@@ -423,7 +423,7 @@ private:
 			const OrbActivationType eActivationType, CCueEvents &CueEvents, CArmedMonster *pArmedMonster = NULL);
 	bool     PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents);
 	bool     RemoveInvalidCommand(const CCueEvents& CueEvents);
-	void     RemoveClearedImageOverlays(const int clearLayers);
+	void     RemoveClearedImageOverlays(const int clearLayers, const int clearGroup = ImageOverlayCommand::NO_GROUP);
 	void     ResetCutSceneStartTurn() { cutSceneStartTurn = -1; }
 	void     ResetPendingTemporalSplit(CCueEvents& CueEvents);
 	void     ResetTemporalSplitQueuingIfInvalid(CCueEvents& CueEvents);

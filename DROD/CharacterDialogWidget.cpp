@@ -6416,7 +6416,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->label = pText->GetText();
 
 			CImageOverlay tempImage(this->pCommand->label, 0, 0);
-			if (tempImage.clearsImageOverlays() != ImageOverlayCommand::NO_LAYERS) {
+			if (tempImage.clearsImageOverlays() != ImageOverlayCommand::NO_LAYERS ||
+					tempImage.clearsImageOverlayGroup() != ImageOverlayCommand::NO_GROUP) {
 				//No image required.
 				this->pCommand->w = 0;
 			} else {

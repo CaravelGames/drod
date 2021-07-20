@@ -11,6 +11,8 @@ const int ImageOverlayCommand::NO_LOOP_MAX = -1;
 const int ImageOverlayCommand::DEFAULT_LAYER = 3; //last layer
 const int ImageOverlayCommand::ALL_LAYERS = -2;
 const int ImageOverlayCommand::NO_LAYERS = -3;
+const int ImageOverlayCommand::DEFAULT_GROUP = 0;
+const int ImageOverlayCommand::NO_GROUP = -1;
 
 //*****************************************************************************
 CColorText::~CColorText() { delete pText; }
@@ -214,6 +216,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("addx")] = ImageOverlayCommand::AddX;
 		commandMap[string("addy")] = ImageOverlayCommand::AddY;
 		commandMap[string("cancelall")] = ImageOverlayCommand::CancelAll;
+		commandMap[string("cancelgroup")] = ImageOverlayCommand::CancelGroup;
 		commandMap[string("cancellayer")] = ImageOverlayCommand::CancelLayer;
 		commandMap[string("center")] = ImageOverlayCommand::Center;
 		commandMap[string("display ")] = ImageOverlayCommand::DisplayDuration;
@@ -223,6 +226,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("displaysize")] = ImageOverlayCommand::DisplaySize;
 		commandMap[string("displayturns")] = ImageOverlayCommand::TurnDuration;
 		commandMap[string("fadetoalpha")] = ImageOverlayCommand::FadeToAlpha;
+		commandMap[string("group")] = ImageOverlayCommand::Group;
 		commandMap[string("grow")] = ImageOverlayCommand::Grow;
 		commandMap[string("jitter")] = ImageOverlayCommand::Jitter;
 		commandMap[string("layer")] = ImageOverlayCommand::Layer;
@@ -373,6 +377,19 @@ int CImageOverlay::clearsImageOverlays() const
 	return ImageOverlayCommand::NO_LAYERS;
 }
 
+int CImageOverlay::clearsImageOverlayGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelGroup)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_GROUP;
+}
+
 int CImageOverlay::getLayer() const
 {
 	for (ImageOverlayCommands::const_iterator it=commands.begin();
@@ -384,6 +401,19 @@ int CImageOverlay::getLayer() const
 	}
 
 	return ImageOverlayCommand::DEFAULT_LAYER;
+}
+
+int CImageOverlay::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
 }
 
 bool CImageOverlay::loopsForever() const

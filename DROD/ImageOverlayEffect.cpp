@@ -143,6 +143,19 @@ void CImageOverlayEffect::InitParams()
 	this->parallelCommands.clear();
 }
 
+int CImageOverlayEffect::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
 bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	if (!this->pImageSurface)
@@ -441,7 +454,9 @@ void CImageOverlayEffect::StartNextCommand()
 	int val = command.val[0];
 	switch (curCommand) {
 	case ImageOverlayCommand::CancelAll:
+	case ImageOverlayCommand::CancelGroup:
 	case ImageOverlayCommand::CancelLayer:
+	case ImageOverlayCommand::Group:
 	case ImageOverlayCommand::Layer:
 		// Do nothing, these are handled externally
 		return;
@@ -749,6 +764,7 @@ bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC comman
 		case ImageOverlayCommand::AddX:
 		case ImageOverlayCommand::AddY:
 		case ImageOverlayCommand::CancelAll:
+		case ImageOverlayCommand::CancelGroup:
 		case ImageOverlayCommand::CancelLayer:
 		case ImageOverlayCommand::Center:
 		case ImageOverlayCommand::DisplayRect:

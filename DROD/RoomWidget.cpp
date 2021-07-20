@@ -2319,13 +2319,23 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 		}
 
 		//Don't wait for additional images to be added to the room widget before clearing effects.
+		bool bClearedEffect = false;
 		const int clearsLayer = pImageOverlay->clearsImageOverlays();
 		if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
 			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
-			continue;
+			bClearedEffect = true;
 		}
+
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+			RemoveGroupEffects(clearsGroup);
+			bClearedEffect = true;
+		}
+
+		if (bClearedEffect)
+			continue;
 
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -4796,6 +4806,18 @@ void CRoomWidget::RemoveEffectsQueuedForRemoval()
 	}
 
 	this->queued_layer_effect_type_removal.clear();
+}
+
+void CRoomWidget::RemoveGroupEffects(int clearGroup)
+{
+	ASSERT(this->pOLayerEffects);
+	this->pOLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pTLayerEffects);
+	this->pTLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pMLayerEffects);
+	this->pMLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pLastLayerEffects);
+	this->pLastLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
 }
 
 //*****************************************************************************

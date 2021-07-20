@@ -72,6 +72,8 @@ public:
 	UINT getInstanceID() const { return instanceID; }
 	UINT getStartTurn() const { return turnNo; }
 
+	int getGroup() const;
+
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);

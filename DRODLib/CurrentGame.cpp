@@ -7326,16 +7326,18 @@ void CCurrentGame::StashPersistingEvents(CCueEvents& CueEvents)
 		if (pImageOverlay->loopsForever())
 			this->persistingImageOverlays.push_back(*pImageOverlay);
 		const int clearLayer = pImageOverlay->clearsImageOverlays();
-		RemoveClearedImageOverlays(clearLayer);
+		const int clearGroup = pImageOverlay->clearsImageOverlayGroup();
+		RemoveClearedImageOverlays(clearLayer, clearGroup);
 
 		pObj = CueEvents.GetNextPrivateData();
 	}
 }
 
 //*****************************************************************************
-void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
+void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers, const int clearGroup)
 {
-	if (clearLayers == ImageOverlayCommand::NO_LAYERS)
+	if (clearLayers == ImageOverlayCommand::NO_LAYERS && 
+			clearGroup == ImageOverlayCommand::NO_GROUP)
 		return;
 
 	if (clearLayers == ImageOverlayCommand::ALL_LAYERS) {
@@ -7349,7 +7351,7 @@ void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
 			imageIt!=this->persistingImageOverlays.end(); ++imageIt)
 	{
 		const CImageOverlay& image = *imageIt;
-		if (clearLayers != image.getLayer())
+		if (clearLayers != image.getLayer() && clearGroup != image.getGroup())
 			keptImages.push_back(image);
 	}
 
