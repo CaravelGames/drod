@@ -79,7 +79,7 @@ namespace InputCommands
 		keyDefinitions[DCMD_Undo] = new KeyDefinition(CMD_UNDO, "Undo", MID_UndoMove, SDLK_BACKSPACE);
 		keyDefinitions[DCMD_Battle] = new KeyDefinition(CMD_BATTLE_KEY, "Battle", MID_BattleKey, SDLK_KP_PLUS, SDLK_0);
 		keyDefinitions[DCMD_Command] = new KeyDefinition(CMD_EXEC_COMMAND, "UseCommand", MID_UseCommandKey, SDLK_KP_PERIOD);
-		keyDefinitions[DCMD_CloneSwitch] = new KeyDefinition(CMD_RESTART, "CloneSwitch", MID_CloneSwitch, SDLK_TAB);
+		keyDefinitions[DCMD_CloneSwitch] = new KeyDefinition(CMD_CLONE, "CloneSwitch", MID_CloneSwitch, SDLK_TAB);
 		keyDefinitions[DCMD_LockRoom] = new KeyDefinition(CMD_EXTRA_LOCK_ROOM, "Key_LockRoom", MID_Command_LockRoom, BuildInputKey(0, true, false, false));
 		keyDefinitions[DCMD_SkipSpeech] = new KeyDefinition(CMD_EXTRA_SKIP_SPEECH, "Key_SkipSpeech", MID_Command_SkipSpeech, SDLK_SPACE);
 		keyDefinitions[DCMD_TogglePuzzleMode] = new KeyDefinition(CMD_EXTRA_TOGGLE_PUZZLE_MODE, "Key_TogglePuzzleMode", MID_Command_TogglePuzzleMode, SDLK_F3);
