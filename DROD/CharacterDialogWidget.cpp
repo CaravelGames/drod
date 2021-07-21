@@ -1897,6 +1897,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Explode, g_pTheDB->GetMessageText(MID_AttackTileExplosion));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Damage, g_pTheDB->GetMessageText(MID_AttackTileDamage));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Kill, g_pTheDB->GetMessageText(MID_AttackTileKill));
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Remove, g_pTheDB->GetMessageText(MID_VarRemove));
 	this->pAttackTileListBox->SelectLine(0);
 
 	//Color text

@@ -2128,6 +2128,18 @@ void CCharacter::Process(
 						}
 					}
 					break;
+					case ScriptFlag::AT_Remove:
+					{
+						CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+						if (pMonster)
+						{
+							pMonster = pMonster->GetOwningMonster();
+							room.RemoveMonsterDuringPlayWithoutEffect(pMonster);
+							if (bIsMother(pMonster->wType))
+								room.FixUnstableTar(CueEvents);
+						}
+					}
+					break;
 					default:
 					break;
 				}
