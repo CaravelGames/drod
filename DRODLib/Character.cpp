@@ -2140,6 +2140,17 @@ void CCharacter::Process(
 						}
 					}
 					break;
+					case ScriptFlag::AT_OneTurnStun:
+					case ScriptFlag::AT_TwoTurnStun:
+					{
+						CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+						if (pMonster)
+						{
+							UINT stunDuration = pflags == ScriptFlag::AT_TwoTurnStun ? 2 : 1;
+							pMonster->Stun(CueEvents, stunDuration);
+						}
+					}
+					break;
 					default:
 					break;
 				}

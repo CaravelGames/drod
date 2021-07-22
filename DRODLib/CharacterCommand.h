@@ -182,7 +182,9 @@ namespace ScriptFlag
 		AT_Explode=1,
 		AT_Damage=2,
 		AT_Kill=3,
-		AT_Remove=4
+		AT_Remove=4,
+		AT_OneTurnStun=5,
+		AT_TwoTurnStun=6
 	};
 
 	enum TargettingType

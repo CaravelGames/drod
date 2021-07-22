@@ -1254,8 +1254,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const int X_ATTACKTILE_LISTBOX = X_EVENTLISTBOX;
 	static const int Y_ATTACKTILE_LISTBOX = Y_ACTIONLISTBOX;
-	static const UINT CX_ATTACKTILE_LISTBOX = 120;
-	static const UINT CY_ATTACKTILE_LISTBOX = 4*LIST_LINE_HEIGHT + 4;
+	static const UINT CX_ATTACKTILE_LISTBOX = 125;
+	static const UINT CY_ATTACKTILE_LISTBOX = 7*LIST_LINE_HEIGHT + 4;
 
 	static const UINT MOVETYPELISTBOX_X = X_IMPERATIVELISTBOX;
 	static const UINT MOVETYPELISTBOX_Y = Y_IMPERATIVELISTBOX;
@@ -1898,6 +1898,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Damage, g_pTheDB->GetMessageText(MID_AttackTileDamage));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Kill, g_pTheDB->GetMessageText(MID_AttackTileKill));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Remove, g_pTheDB->GetMessageText(MID_VarRemove));
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_OneTurnStun, L"One-turn Stun");
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_TwoTurnStun, L"Two-turn Stun");
 	this->pAttackTileListBox->SelectLine(0);
 
 	//Color text
