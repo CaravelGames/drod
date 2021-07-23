@@ -1,4 +1,4 @@
-// $Id: FaceWidget.cpp 10112 2012-04-22 05:35:32Z mrimer $
+// $Id$
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1
@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005, 2007
+ * Portions created by the Initial Developer are Copyright (C) 2002, 2005
  * Caravel Software. All Rights Reserved.
  *
  * Contributor(s): Mike Rimer (mrimer)
@@ -38,14 +38,6 @@ static const UINT FACES_IN_ROW = 7;
 #define yFace(ff) ( CY_FACE_PAD + ((ff) / FACES_IN_ROW) * (CY_FACE + CY_FACE_PAD) )
 #define xFace(ff) ( CX_FACE_PAD + ((ff) % FACES_IN_ROW) * (CX_FACE + CX_FACE_PAD) )
 
-#ifndef POINT
-struct POINT
-{
-	 long  x;
-	 long  y;
-};
-#endif
-
 //Locations of eye masks in the faces bitmap.  An eye mask defines the area a
 //pupil can move within and the parts of that area in which the pupil's pixel
 //will be visible.
@@ -62,7 +54,7 @@ static SDL_Rect m_EyeMaskRectArray[Mood_Count] =
 
 //Offset from the top-left of the face widget to point where the top-left of the eye
 //mask corresponds.
-static const POINT m_EyeMaskOffsetArray[Mood_Count] =
+static const CFaceWidget::POINT m_EyeMaskOffsetArray[Mood_Count] =
 {
 	{46, 35},           //Normal
 	{46, 35},           //Aggressive
@@ -75,7 +67,7 @@ static const POINT m_EyeMaskOffsetArray[Mood_Count] =
 
 //Offset from the top-left of the eye mask to the center of the left pupil.
 //Right pupil offset can be found from this by adding CX_BETWEEN_PUPILS.
-static const POINT m_LeftPupilOffsetArray[Mood_Count] =
+static const CFaceWidget::POINT m_LeftPupilOffsetArray[Mood_Count] =
 {
 	{9, 11}, //Normal
 	{9, 11}, //Aggressive
@@ -90,6 +82,7 @@ static const POINT m_LeftPupilOffsetArray[Mood_Count] =
 static const UINT CX_BETWEEN_PUPILS = 36;
 static const int X_PUPIL = 266;
 static const int Y_PUPIL = 662;
+
 static const UINT CX_PUPIL = 6;
 static const UINT CY_PUPIL = 6;
 static const UINT CX_PUPIL_HALF = (CX_PUPIL / 2);
@@ -110,18 +103,16 @@ CFaceWidget::CFaceWidget(
 	const int nSetX, const int nSetY,               //    constructor.
 	const UINT wSetW, const UINT wSetH)             //
 	: CWidget((WIDGETTYPE)WT_Face, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
-	, eSpeaker(Speaker_Default)
-	, eMood(Mood_Normal), ePrevMood(Mood_Normal)
-	, dwDelayMood(0), dwStartDelayMood(0)
-	, bMoodDrawn(false), bIsReading(false), bIsBlinking(false), bIsSleeping(false)
-	, bDoBlink(false)
-	, eMoodSEID(SEID_NONE)
-	, bMoodLocked(false)
 	, nPupilX(0), nPupilY(0), nPupilTargetX(0), nPupilTargetY(0)
 	, dwLastFrame(0), bAlwaysPaintFull(false)
-	, pImage(NULL), dwImageID(0)
+	, pImage(NULL)
+	, facePlayer(Face(PlayerRole))
+	, faceSpeaker(Face(Speaker))
+	, faceDying(Face(Death))
 {
 	this->imageFilenames.push_back(string("Faces"));
+
+	this->facePlayer.bIsActive = true;
 }
 
 //****************************************************************************
@@ -133,12 +124,51 @@ CFaceWidget::~CFaceWidget()
 }
 
 //****************************************************************************
-bool CFaceWidget::IsSpeakerAnimated() const
+SDL_Rect* CFaceWidget::getEyeMask() {
+	const Face* face = GetActiveFace();
+	return m_EyeMaskRectArray + face->eMood;
+}
+
+const CFaceWidget::POINT* CFaceWidget::getEyeMaskOffset() {
+	const Face* face = GetActiveFace();
+	return m_EyeMaskOffsetArray + face->eMood;
+}
+
+UINT CFaceWidget::getBetweenPupils() {
+	return CX_BETWEEN_PUPILS;
+}
+
+Face* CFaceWidget::GetFace(const FaceWidgetLayer layer) {
+	switch (layer) {
+		case Speaker: return &faceSpeaker;
+		case Death: return &faceDying;
+		case PlayerRole:
+		default:
+			return &facePlayer;
+	}
+}
+
+const FaceWidgetLayer CFaceWidget::GetActiveLayer() const{
+	if (faceSpeaker.bIsActive)
+		return faceSpeaker.eLayer;
+
+	if (faceDying.bIsActive)
+		return faceDying.eLayer;
+
+	return facePlayer.eLayer;
+}
+
+Face* CFaceWidget::GetActiveFace() {
+	return GetFace(GetActiveLayer());
+}
+
+//****************************************************************************
+bool CFaceWidget::IsSpeakerAnimated(const Face* face) const
 //Returns: whether current character face is animated
 {
-	const SPEAKER speaker = GetCharacter();
-	return (speaker == Speaker_Beethro || speaker == Speaker_Clone ||
-			speaker == Speaker_BeethroInDisguise) && !this->dwImageID;
+	const SPEAKER eSpeaker = face->eCharacter;
+	return (eSpeaker == Speaker_Beethro ||
+			eSpeaker == Speaker_Clone || eSpeaker == Speaker_BeethroInDisguise) && !face->dwImageID;
 }
 
 //****************************************************************************
@@ -146,46 +176,34 @@ void CFaceWidget::SetCharacter(
 //Sets the character face shown.
 //
 //Params:
+    const FaceWidgetLayer eLayer, //(in) layer on which the character is set
 	const SPEAKER eSpeaker,    //(in) speaker to display
-	const bool bLockMood)      //(in) whether to disallow changing mood
+	const HoldCharacter* pHoldCharacter) //(in) hold character if speaker is a custom character
 {
 	ASSERT(eSpeaker < Speaker_Count);
-	this->eSpeaker = eSpeaker;
-	this->bMoodLocked = bLockMood;
-	this->bMoodDrawn = false;
+	Face* face = GetFace(eLayer);
+	ASSERT(face);
+	face->eCharacter = eSpeaker;
+	face->pHoldCharacter = pHoldCharacter;
+	face->dwImageID = pHoldCharacter
+		? pHoldCharacter->dwDataID_Avatar
+		: 0;
+	face->bIsDrawn = false;
 
-	this->pImage = NULL; //stop showing custom image
-	this->dwImageID = 0;
-}
-
-//****************************************************************************
-void CFaceWidget::SetImage(const UINT dwDataID)
-//Sets the face widget to indicated image in DB.
-{
-	if (!dwDataID)
-		return;
-
-	if (dwDataID == this->dwImageID)
-		return; //image is already being displayed
-
-	//Is image already loaded into face widget?
-	SDL_Surface *pSurface;
-	SurfaceMap::iterator id = this->faceImages.find(dwDataID);
-	if (id != this->faceImages.end())
-		pSurface = id->second;
-	else
-	{
-		//No -- load image into face widget.
-		pSurface = g_pTheDBM->LoadImageSurface(dwDataID);
-		if (pSurface)
-			this->faceImages[dwDataID] = pSurface;
+	if (face->dwImageID) {
+		const UINT dwDataID = face->dwImageID;
+		SDL_Surface* pSurface;
+		SurfaceMap::iterator id = this->faceImages.find(dwDataID);
+		if (id != this->faceImages.end())
+			pSurface = id->second;
+		else
+		{
+			//No -- load image into face widget.
+			pSurface = g_pTheDBM->LoadImageSurface(dwDataID);
+			if (pSurface)
+				this->faceImages[dwDataID] = pSurface;
+		}
 	}
-
-	//Show image.
-	this->pImage = pSurface;
-	this->dwImageID = dwDataID;
-	this->bMoodLocked = true;
-	this->bMoodDrawn = false;
 }
 
 //****************************************************************************
@@ -193,24 +211,31 @@ void CFaceWidget::SetMood(
 //Sets the mood state of the face.
 //
 //Params:
+	const FaceWidgetLayer eLayer, //(in) Layer to modify
 	const MOOD eSetMood,       //(in) Mood to show
-	const Uint32 lDelay,       //(in) Amount of time in msecs to pass before mood reverts to previous. [default=0 ms]
-	const bool bOverrideLock)  //(in) [default=false]
+	const Uint32 lDelay)       //(in) Amount of time in msecs to pass before mood reverts to previous. [default=0 ms]
 {
-	if (this->bMoodLocked && !bOverrideLock) return;
+	Face* face = GetFace(eLayer);
 
-	if ((this->ePrevMood != eSetMood) && !this->dwDelayMood) //keep track of previous mood for temporary changes in expression
-		this->ePrevMood = this->eMood;   //only keep track of previous mood if it isn't a temporary one
+	const bool bHasTemporaryMood = face->eMoodSEID != SEID_NONE || face->dwMoodUntil > 0;
 
-	if (this->eMood != eSetMood)
-	{
-		//Mood has changed.
-		this->eMood = eSetMood;
-		this->bMoodDrawn = false;  //haven't drawn new mood yet
+	// No temporary mood and the new mood is the same to the old? No need to do anything
+	if (!bHasTemporaryMood && eSetMood == face->eMood)
+		return;
+
+	if (lDelay) {
+		if (face->eMoodSEID != SEID_NONE) // Sound-based temporary mood takes priority, do nothing
+			return;
+
+		face->dwMoodUntil = SDL_GetTicks() + lDelay;
 	}
 
-	SetMoodDelay(lDelay);
-	this->bIsSleeping = false;
+	if (!bHasTemporaryMood)
+		face->ePrevMood = face->eMood;
+
+	face->eMood = eSetMood;
+	face->bIsDrawn = false;
+	face->bIsSleeping = false;
 }
 
 //*****************************************************************************
@@ -218,45 +243,78 @@ void CFaceWidget::SetMoodToSoundEffect(
 //Sets mood state of the face.  Mood will last until a sound effect finishes playing.
 //
 //Params:
+	const FaceWidgetLayer eLayer, //(in) Layer to modify
 	MOOD eSetMood,    //(in)   Mood to show.
 	SEID eUntilSEID)  //(in)   Sound effect to show mood during.
 {
 	ASSERT(eUntilSEID > SEID_NONE && eUntilSEID < SEID_COUNT);
 
-	this->eMoodSEID = eUntilSEID;
-	if (this->eMood != eSetMood)
-	{
-		//Mood has changed.
-		this->ePrevMood = this->eMood;  //keep track of previous mood
-		this->eMood = eSetMood;
-		this->bMoodDrawn = false;  //haven't drawn new mood yet
+	Face* face = GetFace(eLayer);
+
+	const bool bHasTemporaryMood = face->eMoodSEID != SEID_NONE || face->dwMoodUntil > 0;
+	face->eMoodSEID = eUntilSEID;
+
+	// No temporary mood and the new mood is the same to the old? No need to do anything
+	if (!bHasTemporaryMood && eSetMood == face->eMood)
+		return;
+
+	if (!bHasTemporaryMood)
+		face->ePrevMood = face->eMood;
+
+	face->eMood = eSetMood;
+	face->bIsDrawn = false;
+	face->bIsSleeping = false;
+}
+
+//****************************************************************************
+void CFaceWidget::SetDying(const bool bIsDying, MOOD eDyingMood)
+{
+	// Faces with less priority must redraw when this face ever ends
+	facePlayer.bIsDrawn = false;
+	faceSpeaker.bIsDrawn = false;
+
+	faceDying.bIsActive = bIsDying;
+	faceDying.pHoldCharacter = NULL;
+
+	if (bIsDying) {
+		faceDying.eMood = eDyingMood;
+		faceDying.eCharacter = facePlayer.eCharacter;
+		faceDying.dwImageID = facePlayer.dwImageID;
+		faceDying.bIsDrawn = false;
 	}
 }
 
-//*****************************************************************************
-void CFaceWidget::SetMoodDelay(
-//Changes mood for a specified amount of time.
-//
-//Accepts:
-  const Uint32 dwDelay)          //(in) Amount of time in msecs to pass before mood reverts to previous.
+//****************************************************************************
+void CFaceWidget::SetSpeaker(
+	const bool bIsSpeaking,
+	const SPEAKER eSpeaker,
+	const HoldCharacter* pHoldCharacter,
+	MOOD eSpeakingMood)
 {
-	this->dwDelayMood = dwDelay;
-	this->dwStartDelayMood = SDL_GetTicks();
+	// Faces with less priority must redraw when this face ever ends
+	facePlayer.bIsDrawn = false;
+
+	faceSpeaker.bIsActive = bIsSpeaking;
+	faceSpeaker.pHoldCharacter = NULL;
+
+	if (bIsSpeaking) {
+		SetCharacter(Speaker, eSpeaker, pHoldCharacter);
+		SetMood(Speaker, eSpeakingMood);
+	}
 }
 
 //****************************************************************************
 void CFaceWidget::SetReading(const bool bReading)
 {
-	this->bIsReading = bReading;
+	facePlayer.bIsReading = bReading;
 }
 
 //****************************************************************************
-void CFaceWidget::SetSleeping()
+void CFaceWidget::SetSleeping(const bool bIsSleeping)
 {
-	SetMood(Mood_Talking);
-	this->bIsSleeping = true;
-	this->bIsBlinking = true;
-	this->bMoodDrawn = false;
+	facePlayer.bIsSleeping = bIsSleeping;
+	facePlayer.bIsBlinking = bIsSleeping;
+	facePlayer.bIsDrawn = false;
 }
 
 //****************************************************************************
@@ -265,35 +323,36 @@ void CFaceWidget::DrawPupils()
 {
 	SDL_Surface *pDestSurface = LockDestSurface();
 
+	const Face* face = GetActiveFace();
 	//Draw left pupil.
 	const UINT CX_LEFT_PUPIL_OFFSET =
-		m_LeftPupilOffsetArray[this->eMood].x - CX_PUPIL_HALF + this->nPupilX;
+		m_LeftPupilOffsetArray[face->eMood].x - CX_PUPIL_HALF + this->nPupilX;
 	const UINT CY_PUPIL_OFFSET =
-		m_LeftPupilOffsetArray[this->eMood].y - CY_PUPIL_HALF + this->nPupilY;
+		m_LeftPupilOffsetArray[face->eMood].y - CY_PUPIL_HALF + this->nPupilY;
 
 	DrawPupils_DrawOnePupil(pDestSurface,
 
 		//Destination coords at which to draw left pupil.
-		this->x + m_EyeMaskOffsetArray[this->eMood].x + CX_LEFT_PUPIL_OFFSET,
-		this->y + m_EyeMaskOffsetArray[this->eMood].y + CY_PUPIL_OFFSET,
+		this->x + getEyeMaskOffset()->x + CX_LEFT_PUPIL_OFFSET,
+		this->y + getEyeMaskOffset()->y + CY_PUPIL_OFFSET,
 
 		//Coords to area of eye mask that corresponds to dest coords.
-		m_EyeMaskRectArray[this->eMood].x + CX_LEFT_PUPIL_OFFSET,
-		m_EyeMaskRectArray[this->eMood].y + CY_PUPIL_OFFSET
+		getEyeMask()->x + CX_LEFT_PUPIL_OFFSET,
+		getEyeMask()->y + CY_PUPIL_OFFSET
 	);
 
 	//Draw right pupil.
-	const UINT CX_RIGHT_PUPIL_OFFSET = CX_LEFT_PUPIL_OFFSET + CX_BETWEEN_PUPILS;
+	const UINT CX_RIGHT_PUPIL_OFFSET = CX_LEFT_PUPIL_OFFSET + getBetweenPupils();
 
 	DrawPupils_DrawOnePupil(pDestSurface,
 
 		//Destination coords at which to draw right pupil.
-		this->x + m_EyeMaskOffsetArray[this->eMood].x + CX_RIGHT_PUPIL_OFFSET,
-		this->y + m_EyeMaskOffsetArray[this->eMood].y + CY_PUPIL_OFFSET,
+		this->x + getEyeMaskOffset()->x + CX_RIGHT_PUPIL_OFFSET,
+		this->y + getEyeMaskOffset()->y + CY_PUPIL_OFFSET,
 
 		//Coords to area of eye mask that corresponds to dest coords.
-		m_EyeMaskRectArray[this->eMood].x + CX_RIGHT_PUPIL_OFFSET,
-		m_EyeMaskRectArray[this->eMood].y + CY_PUPIL_OFFSET
+		getEyeMask()->x + CX_RIGHT_PUPIL_OFFSET,
+		getEyeMask()->y + CY_PUPIL_OFFSET
 	);
 
 	UnlockDestSurface();
@@ -307,7 +366,6 @@ void CFaceWidget::DrawPupils_DrawOnePupil(
 	SDL_Surface *pDestSurface,       //(in)   Already-locked surface.
 	const int nDestX, const int nDestY, //(in)   Dest coords.
 	const int nMaskX, const int nMaskY) //(in)   Mask coords.
-const
 {
 	//I am going to copy pixels from a source surface to a dest surface.
 	//The source surface contains the pupil image.  A mask surface contains
@@ -336,6 +394,8 @@ const
 	ASSERT(pDestSurface->format->Gmask == 0x00ff00);
 	ASSERT(pDestSurface->format->Bmask == 0x0000ff);
 #endif
+
+	const Face* face = GetActiveFace();
 
 	//Set pixel pointers to starting locations.
 	Uint8 *pMaskPixel = static_cast<Uint8 *>(pSrcSurface->pixels) +
@@ -376,7 +436,7 @@ const
 		pDestPixel += DEST_ROW_OFFSET;
 
 	//All the pixel copying happens here.  For performance, I'm using minimal loops.
-	for (UINT i=CY_PUPIL; i--; )
+	for (UINT i= CY_PUPIL; i--; )
 	{
 		COPYPIXEL   COPYPIXEL   COPYPIXEL   COPYPIXEL   COPYPIXEL   COPYLASTPIXEL
 	}
@@ -392,14 +452,15 @@ void CFaceWidget::MovePupils(
 //Params:
 	const UINT wLookAtX, const UINT wLookAtY) //optional screen position to look at [default=(-1,-1)]
 {
-	static const int xRightBound = CX_PUPIL - 1;
-	static const int xLeftBound = -xRightBound;
-	const int yBottomBound =
-			(m_EyeMaskRectArray[this->eMood].h - CY_PUPIL - CY_PUPIL) / 2;
+	Face* face = GetActiveFace();
+	int xRightBound = CX_PUPIL - 1;
+	int xLeftBound = -xRightBound;
+	int yBottomBound = (getEyeMask()->h - CY_PUPIL - CY_PUPIL) / 2;
 	int yTopBound = -yBottomBound;
-	if (this->eMood == Mood_Nervous)
+
+	if (face->eMood == Mood_Nervous)
 		yTopBound += 2; //Nervous mood has big eye corners that pupils can disappear into.
-	if (this->eMood == Mood_Happy)
+	if (face->eMood == Mood_Happy)
 		yTopBound += 1; //Happy mood--same thing, but corners are a little smaller.
 
 	ASSERT(xRightBound >= xLeftBound);
@@ -409,12 +470,12 @@ void CFaceWidget::MovePupils(
 	bool bTarget = false;
 	if (wLookAtX != (UINT)-1 && wLookAtY != (UINT)-1)
 	{
-		this->nPupilX = (int)wLookAtX - (this->x + m_EyeMaskOffsetArray[this->eMood].x + CX_BETWEEN_PUPILS/2);
-		this->nPupilY = (int)wLookAtY - (this->y + m_EyeMaskOffsetArray[this->eMood].y + CY_PUPIL/2);
+		this->nPupilX = (int)wLookAtX - (this->x + getEyeMaskOffset()->x + getBetweenPupils()/2);
+		this->nPupilY = (int)wLookAtY - (this->y + getEyeMaskOffset()->y + CY_PUPIL/2);
 		bTarget = true;
 	}
 
-	if (this->bIsReading)
+	if (face->bIsReading)
 	{
 		//Scroll eyes across as if reading.
 		if (--(this->nPupilX) < xLeftBound)
@@ -423,7 +484,7 @@ void CFaceWidget::MovePupils(
 	}
 	else
 	{
-		switch (this->eMood)
+		switch (face->eMood)
 		{
 			case Mood_Dying:
 			case Mood_Strike:
@@ -436,7 +497,7 @@ void CFaceWidget::MovePupils(
 				//Figure out the relaxation level.  Higher value means
 				//that the pupils are less likely to move around.
 				int nRelaxationLevel;
-				switch (this->eMood)
+				switch (face->eMood)
 				{
 					case Mood_Happy: case Mood_Talking: nRelaxationLevel = 6; break;
 					case Mood_Aggressive: case Mood_Nervous: nRelaxationLevel = 0; break;
@@ -507,33 +568,37 @@ void CFaceWidget::PaintClipped(
 }
 
 //*****************************************************************************
-FACE_FRAME CFaceWidget::ResolveFace()
+FACE_FRAME CFaceWidget::ResolveFaceFrame(Face *face)
 {
 	//Figure out what face frame to use.
 	//Select src image based on this->eSpeaker.
+	ASSERT(face);
 
 	FACE_FRAME eFrame = FF_Normal;
-	switch (this->eSpeaker)
+	if (face->dwImageID)
+		return eFrame;
+
+	switch (face->eCharacter)
 	{
 		case Speaker_Clone:
 		case Speaker_Beethro:
 		case Speaker_BeethroInDisguise:
-		switch (this->eMood)
+		switch (face->eMood)
 		{
 			case Mood_Normal:
-				eFrame = this->bIsBlinking ? FF_Normal_Blinking : FF_Normal;
+				eFrame = face->bIsBlinking ? FF_Normal_Blinking : FF_Normal;
 			break;
 			case Mood_Aggressive:
-				eFrame = this->bIsBlinking ? FF_Aggressive_Blinking : FF_Aggressive;
+				eFrame = face->bIsBlinking ? FF_Aggressive_Blinking : FF_Aggressive;
 			break;
 			case Mood_Nervous:
-				eFrame = this->bIsBlinking ? FF_Nervous_Blinking : FF_Nervous;
+				eFrame = face->bIsBlinking ? FF_Nervous_Blinking : FF_Nervous;
 			break;
 			case Mood_Happy:
-				eFrame = this->bIsBlinking ? FF_Happy_Blinking : FF_Happy;
+				eFrame = face->bIsBlinking ? FF_Happy_Blinking : FF_Happy;
 			break;
 			case Mood_Talking:
-				eFrame = this->bIsBlinking ? FF_Talking_Blinking : FF_Talking;
+				eFrame = face->bIsBlinking ? FF_Talking_Blinking : FF_Talking;
 			break;
 			case Mood_Strike:
 				eFrame = FF_Striking;
@@ -632,9 +697,9 @@ void CFaceWidget::Paint(
 //
 //Params:
 	bool bUpdateRect)             //(in)   If true (default) and destination
-										//    surface is the screen, the screen
-										//    will be immediately updated in
-										//    the widget's rect.
+								  //       surface is the screen, the screen
+								  //       will be immediately updated in
+								  //       the widget's rect.
 {
 	//Drawing code below needs to be modified to accept offsets.  Until then,
 	//this widget can't be offset.
@@ -643,52 +708,51 @@ void CFaceWidget::Paint(
 	//Make things easy and insist on standard width and height.
 	ASSERT(this->w == CX_FACE && this->h == CY_FACE);
 
-	SDL_Surface *pDestSurface = GetDestSurface();
-	SDL_Rect Dest = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
+	PaintFace(GetActiveFace());
 
-	const bool bWasBlinking = this->bIsBlinking;
-	if (!this->bIsSleeping)
-	{
-		if (this->bIsBlinking)
-			this->bIsBlinking = false;
-		else
-		{
-			if (this->eMood == Mood_Strike || this->eMood == Mood_Dying)
-				this->bIsBlinking = false; //No blinking in these moods.
-			else
-				this->bIsBlinking = this->bDoBlink || ((rand() % 20) == 0);
-		}
-	}
-	this->bDoBlink = false;
+	if (bUpdateRect) UpdateRect();
+}
+
+//******************************************************************************
+void CFaceWidget::PaintFace(
+	//Paint the provided face
+	//Params:
+	Face* face
+) {
+	SDL_Surface* pDestSurface = GetDestSurface();
+	SDL_Rect Dest = MAKE_SDL_RECT(this->x, this->y, this->w, this->h);
 
 	//Figure out what face frame to use.
 	//Select src image based on this->eSpeaker.
-	FACE_FRAME eFrame = ResolveFace();
+	FACE_FRAME eFrame = ResolveFaceFrame(face);
 
 	//Blit entire face frame if needed.
-	const bool bDrawPupils = IsSpeakerAnimated() && !this->bIsBlinking;
-	if (this->bAlwaysPaintFull ||
-			!this->bMoodDrawn || this->bIsBlinking != bWasBlinking ||
-			this->eMood == Mood_Dying)
+	const bool bDrawPupils = IsSpeakerAnimated(face) && !face->bIsBlinking;
+	if (
+		this->bAlwaysPaintFull
+		|| !face->bIsDrawn
+		|| face->eMood == Mood_Dying) // For simplicity always animate death
 	{
 		//Draw special image, if set.
-		if (this->pImage)
+		if (face->dwImageID)
 		{
+			SDL_Surface* faceImage = this->faceImages[face->dwImageID];
 			int srcX = 0;
 
-			if (this->pImage->w >= this->w * (this->eMood + 1))
-				srcX = this->w * this->eMood;
+			if (faceImage->w >= this->w * (face->eMood + 1))
+				srcX = this->w * face->eMood;
 
 			SDL_Rect Src = MAKE_SDL_RECT(srcX, 0, this->w, this->h);
-			SDL_BlitSurface(this->pImage, &Src, pDestSurface, &Dest);
-		} else {
+			SDL_BlitSurface(faceImage, &Src, pDestSurface, &Dest);
+		}
+		else {
 			//Bounds check -- just revert to default if this face frame is not loaded.
 			if (eFrame == FF_Default || yFace(eFrame) >= (UINT)this->images[0]->h)
 			{
-				if (this->eSpeaker != Speaker_Default)
+				if (face->eCharacter != Speaker_Default)
 				{
-					this->eSpeaker = Speaker_Default;
-					Paint(bUpdateRect);
+					face->eCharacter = Speaker_Default;
+					PaintFace(face);
 				}
 				return;
 			}
@@ -697,7 +761,7 @@ void CFaceWidget::Paint(
 			SDL_BlitSurface(this->images[0], &Src, pDestSurface, &Dest);
 		}
 
-		this->bMoodDrawn = true;
+		face->bIsDrawn = true;
 	}
 	else if (bDrawPupils)
 	{
@@ -705,33 +769,21 @@ void CFaceWidget::Paint(
 		//So I will first blit the eye mask area to the dest surface on which
 		//the pupils will be drawn below.  This is how the current pupils
 		//are "erased".
-		SDL_Rect EyeMaskSrc = {static_cast<Sint16>(xFace(eFrame) + m_EyeMaskOffsetArray[this->eMood].x),
-			static_cast<Sint16>(yFace(eFrame) + m_EyeMaskOffsetArray[this->eMood].y),
-			m_EyeMaskRectArray[this->eMood].w, m_EyeMaskRectArray[this->eMood].h};
-		SDL_Rect EyeMaskDest = {static_cast<Sint16>(this->x + m_EyeMaskOffsetArray[this->eMood].x),
-			static_cast<Sint16>(this->y + m_EyeMaskOffsetArray[this->eMood].y),
-			EyeMaskSrc.w, EyeMaskSrc.h};
+		SDL_Rect EyeMaskSrc = { static_cast<Sint16>(xFace(eFrame) + getEyeMaskOffset()->x),
+			static_cast<Sint16>(yFace(eFrame) + getEyeMaskOffset()->y),
+			getEyeMask()->w, getEyeMask()->h };
+		SDL_Rect EyeMaskDest = { static_cast<Sint16>(this->x + getEyeMaskOffset()->x),
+			static_cast<Sint16>(this->y + getEyeMaskOffset()->y),
+			EyeMaskSrc.w, EyeMaskSrc.h };
 		SDL_BlitSurface(this->images[0], &EyeMaskSrc, pDestSurface, &EyeMaskDest);
 	}
 
 	//Draw the pupils if needed.
 	if (bDrawPupils)
 	{
-		//Move pupils over time.
-		static const Uint32 dwPupilFrameLength = 200;	//ms
-		const Uint32 dwNow = SDL_GetTicks();
-		if (dwNow - this->dwLastFrame > dwPupilFrameLength)
-		{
-			MovePupils();
-			this->dwLastFrame = dwNow;
-		}
-
 		DrawPupils();
 	}
-
-	if (bUpdateRect) UpdateRect();
 }
-
 //
 //Protected methods.
 //
@@ -740,59 +792,100 @@ void CFaceWidget::Paint(
 void CFaceWidget::HandleAnimate()
 //Handle animation of the widget.
 {
+	if (!CBitmapManager::bGameHasFocus)
+		return; // Beethro's face animating while everything else is static is really creepy
+
+	const Face* face = GetActiveFace();
 	const Uint32 dwNow = SDL_GetTicks();
 
-	//After timing of a temporary face is done (i.e., happy for a moment after
-	//a monster kill) go back to previous mood
-	if (  (this->eMood != this->ePrevMood) && (
-
-			//Check for specified time elapsed.
-			(this->dwDelayMood > 0 &&
-			dwNow - this->dwStartDelayMood > this->dwDelayMood) ||
-
-			//Check for sound effect finished.
-			(this->eMoodSEID != SEID_NONE &&
-			!g_pTheSound->IsSoundEffectPlaying(this->eMoodSEID))
-		))
-	{
-		//Set members so that face will be redrawn below in new mood.
-		this->eMood = this->ePrevMood;
-		this->eMoodSEID = SEID_NONE;
-		this->dwDelayMood = 0;
-		this->bMoodDrawn = false;
-	}
+	static const Uint32 dwFrameLength = 200;	//ms
+	const bool bFrameEnded = dwNow - this->dwLastFrame > dwFrameLength;
+	const bool bForceDraw = !GetActiveFace()->bIsDrawn;
 
 	//Animate widget 
 	//Animation frame rate is slower (probably) than screen animation rate.
-	static const Uint32 dwFrameLength = 200;	//ms
-	if (!this->bMoodDrawn ||
-		(IsSpeakerAnimated() && dwNow - this->dwLastFrame > dwFrameLength))
+	if (bForceDraw || bFrameEnded)
 	{
+		// Blinking should always take one animation frame to ensure it looks decent
+		if (bFrameEnded && (rand() % 20) == 0) {
+			this->bDoBlink = true;
+		}
+
+		HandleAnimateFace(&facePlayer);
+		HandleAnimateFace(&faceSpeaker);
+		HandleAnimateFace(&faceDying);
+		MovePupils();
+
+		faceDying.bIsBlinking = false; // Never blink on death
+
+		if (bFrameEnded) {
+			this->bDoBlink = false;
+			this->dwLastFrame = dwNow;
+		}
+
 		RequestPaint(true);
-		this->dwLastFrame = dwNow;
 	}
+}
+
+//******************************************************************************
+void CFaceWidget::HandleAnimateFace(Face* face)
+//Handle animation of the widget.
+{
+	const Uint32 dwNow = SDL_GetTicks();
+
+	const bool bHasMoodTimedOut = face->dwMoodUntil > 0 && dwNow > face->dwMoodUntil;
+	const bool bHasMoodSoundFinished = face->eMoodSEID != SEID_NONE && !g_pTheSound->IsSoundEffectPlaying(face->eMoodSEID);
+
+	//After timing of a temporary face is done (i.e., happy for a moment after
+	//a monster kill) go back to previous mood
+	if (bHasMoodTimedOut || bHasMoodSoundFinished)
+	{
+		// Only redraw mood if the old mood was different from the temporary one
+		if (face->eMood != face->ePrevMood)
+			face->bIsDrawn = false;
+
+		//Cleanup all timing data
+		face->eMood = face->ePrevMood;
+		face->eMoodSEID = SEID_NONE;
+		face->dwMoodUntil = 0;
+	}
+
+	const bool bWasBlinking = face->bIsBlinking;
+	if (!face->bIsSleeping)
+	{
+		if (face->bIsBlinking)
+			face->bIsBlinking = false;
+		else if (face->eMood == Mood_Strike || face->eMood == Mood_Dying)
+			face->bIsBlinking = false; //No blinking in these moods.
+		else
+			face->bIsBlinking = this->bDoBlink;
+	}
+
+	if (bWasBlinking != face->bIsBlinking)
+		face->bIsDrawn = false;
 }
 
 //*****************************************************************************
 void CFaceWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 {
-	const long nLeft = this->x + m_EyeMaskOffsetArray[this->eMood].x -
-			(m_EyeMaskRectArray[this->eMood].w - CX_BETWEEN_PUPILS)/2;
-	const long nTop = this->y + m_EyeMaskOffsetArray[this->eMood].y;
-	if (Button.y >= nTop && Button.y <= nTop + m_EyeMaskRectArray[this->eMood].h &&
-		 Button.x >= nLeft && Button.x <= nLeft + m_EyeMaskRectArray[this->eMood].w)
+	const long nLeft = this->x + getEyeMaskOffset()->x -
+			(getEyeMask()->w - getBetweenPupils())/2;
+	const long nTop = this->y + getEyeMaskOffset()->y;
+	if (Button.y >= nTop && Button.y <= nTop + getEyeMask()->h &&
+		 Button.x >= nLeft && Button.x <= nLeft + getEyeMask()->w)
 	{
 		//Clicking on eyes makes face blink.
 		this->bDoBlink = true;
 	} else {
+		Face* face = GetActiveFace();
 		//Briefly show a random mood.
-		if (!this->bIsSleeping)
+		if (!face->bIsSleeping)
 		{
 			MOOD eMood;
 			do {
 				eMood = (MOOD)(rand()%Mood_Count);
-			} while (eMood == this->eMood);
-			SetMood(eMood, 300);
+			} while (eMood == face->eMood);
+			SetMood(face->eLayer, eMood, 300);
 			RequestPaint();
 		}
 	}
