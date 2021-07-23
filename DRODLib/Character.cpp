@@ -2151,6 +2151,15 @@ void CCharacter::Process(
 						}
 					}
 					break;
+					case ScriptFlag::AT_FloorSpikes:
+					case ScriptFlag::AT_Firetrap:
+					{
+						WeaponType type = pflags == ScriptFlag::AT_FloorSpikes ?
+							WT_FloorSpikes : WT_Firetrap;
+						WeaponStab stab(px, py, NO_ORIENTATION, type);
+						pGame->StabRoomTile(stab, CueEvents);
+					}
+					break;
 					default:
 					break;
 				}
