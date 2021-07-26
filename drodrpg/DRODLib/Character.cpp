@@ -891,6 +891,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -943,6 +944,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -2999,6 +3001,22 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_ReplaceWithDefault:
+				//Replace the script with the character's default script if possible.
+				//Nothing will happen for non-custom characters.
+				if (this->pCustomChar) {
+					this->commands.clear();
+					this->wCurrentCommandIndex = 0;
+					wTurnCount = 0;
+					++wVarSets; //Count as setting a variable for loop avoidence
+					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+				}	else {
+					// Index does not automatically increment after this command is executed
+					++this->wCurrentCommandIndex;
+				}
+				bProcessNextCommand = true;
+			break;
+
 			case CCharacterCommand::CC_If:
 				//Begin a conditional block if the next command is satisfied.
 				//If it is not satisfied, the code block will be skipped.
@@ -3073,6 +3091,41 @@ void CCharacter::Process(
 				//Wait until var X (comparison Y) W, e.g. X >= 5
 				if (!DoesVarSatisfy(command, pGame))
 					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_VarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				bool success = false;
+				getCommandXY(command, wX, wY);
+
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter) {
+						// Transfer var set information to a temporary command.
+						CCharacterCommand setCommand;
+						setCommand.x = command.w;
+						setCommand.y = command.h;
+						setCommand.w = command.flags;
+						setCommand.label = command.label;
+						pCharacter->SetVariable(setCommand, pGame, CueEvents);
+						success = true;
+
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
+					}
+				}
+
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
+				}
 
 				bProcessNextCommand = true;
 			}
@@ -3172,7 +3225,7 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		if (this->wCurrentCommandIndex < this->commands.size())
+		if (this->wCurrentCommandIndex < this->commands.size() && command.command != CCharacterCommand::CC_ReplaceWithDefault)
 			++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative

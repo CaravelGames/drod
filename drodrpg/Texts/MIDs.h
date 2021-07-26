@@ -1487,6 +1487,8 @@ enum MID_CONSTANT {
   MID_Ground = 1800,
   MID_Air = 1801,
   MID_SpawnEggs = 1802,
+  MID_ReplaceWithDefault = 1806,
+  MID_VarSetAt = 1807,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
