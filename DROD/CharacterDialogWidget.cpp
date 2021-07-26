@@ -1254,7 +1254,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const int X_ATTACKTILE_LISTBOX = X_EVENTLISTBOX;
 	static const int Y_ATTACKTILE_LISTBOX = Y_ACTIONLISTBOX;
-	static const UINT CX_ATTACKTILE_LISTBOX = 125;
+	static const UINT CX_ATTACKTILE_LISTBOX = 132;
 	static const UINT CY_ATTACKTILE_LISTBOX = 9*LIST_LINE_HEIGHT + 4;
 
 	static const UINT MOVETYPELISTBOX_X = X_IMPERATIVELISTBOX;
@@ -1894,14 +1894,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_ATTACKTILE_LISTBOX, Y_ATTACKTILE_LISTBOX, CX_ATTACKTILE_LISTBOX, CY_ATTACKTILE_LISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pAttackTileListBox);
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Stab, g_pTheDB->GetMessageText(MID_AttackTileStab));
-	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Explode, g_pTheDB->GetMessageText(MID_AttackTileExplosion));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_FloorSpikes, g_pTheDB->GetMessageText(MID_FloorSpikes));
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Explode, g_pTheDB->GetMessageText(MID_AttackTileExplosion));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Firetrap, g_pTheDB->GetMessageText(MID_Firetrap));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Damage, g_pTheDB->GetMessageText(MID_AttackTileDamage));
 	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Kill, g_pTheDB->GetMessageText(MID_AttackTileKill));
-	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Remove, g_pTheDB->GetMessageText(MID_VarRemove));
-	this->pAttackTileListBox->AddItem(ScriptFlag::AT_OneTurnStun, L"One-turn Stun");
-	this->pAttackTileListBox->AddItem(ScriptFlag::AT_TwoTurnStun, L"Two-turn Stun");
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_Remove, g_pTheDB->GetMessageText(MID_AttackTileRemove));
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_OneTurnStun, g_pTheDB->GetMessageText(MID_AttackTileOneTurnStun));
+	this->pAttackTileListBox->AddItem(ScriptFlag::AT_TwoTurnStun, g_pTheDB->GetMessageText(MID_AttackTileTwoTurnStun));
 	this->pAttackTileListBox->SelectLine(0);
 
 	//Color text

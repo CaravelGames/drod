@@ -895,6 +895,9 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_RestrictedMovement: strText = "Restricted Movement"; break;
 	case MID_ReplaceWithDefault: strText = "Replace with Default Script"; break;
 	case MID_VarSetAt: strText = "Set var at"; break;
+	case MID_AttackTileRemove: strText = "Remove Monster"; break;
+	case MID_AttackTileOneTurnStun: strText = "One-turn stun"; break;
+	case MID_AttackTileTwoTurnStun: strText = "Two-turn stun"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
