@@ -691,6 +691,7 @@
     <ClCompile Include="SteamEffect.cpp" />
     <ClCompile Include="StrikeOrbEffect.cpp" />
     <ClCompile Include="StunEffect.cpp" />
+    <ClCompile Include="SwirlEffect.cpp" />
     <ClCompile Include="SwordsmanSwirlEffect.cpp" />
     <ClCompile Include="SwordSwingEffect.cpp" />
     <ClCompile Include="TarStabEffect.cpp" />
@@ -782,6 +783,7 @@
     <ClInclude Include="SteamEffect.h" />
     <ClInclude Include="StrikeOrbEffect.h" />
     <ClInclude Include="StunEffect.h" />
+    <ClInclude Include="SwirlEffect.h" />
     <ClInclude Include="SwordsmanSwirlEffect.h" />
     <ClInclude Include="SwordSwingEffect.h" />
     <ClInclude Include="TarStabEffect.h" />
