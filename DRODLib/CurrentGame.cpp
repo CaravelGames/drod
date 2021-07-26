@@ -5485,7 +5485,8 @@ void CCurrentGame::PreprocessMonsters(
 	this->swordsman.wAppearance = M_BEETHRO; //this type of player
 	bool bIgnored;
 	const bool bClosed = room.DoesSquareContainPlayerObstacle(wX, wY, wO, bIgnored) ||
-			IsPlayerAt(wX, wY) || IsPlayerWeaponAt(wX, wY);
+		room.DoesOrthoSquarePreventDiagonal(wX, wY, nOX, nOY) || room.GetOSquare(wX, wY) == T_FIRETRAP_ON ||
+		room.IsMonsterOfTypeAt(M_FLUFFBABY, wX, wY) || IsPlayerAt(wX, wY) || IsPlayerWeaponAt(wX, wY);
 	this->swordsman.wAppearance = wAppearance;
 	if (bClosed)
 		return;  //No.
