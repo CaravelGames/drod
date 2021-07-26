@@ -181,7 +181,8 @@ private:
 	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           showStat(const UINT eType, const int delta, CEntity *pEntity, UINT& count);
 //	void           ShowLockIcon(const bool bShow=true);
-	void           ShowPlayerFace(const bool bOverrideLock=false);
+	void           UpdatePlayerFace();
+	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter** playerHoldCharacter);
 	UINT           ShowRoom(CDbRoom *pRoom);
 	void           ShowRoomCoords(CDbRoom *pRoom);
 	void           ShowRoomTemporarily(UINT roomID);

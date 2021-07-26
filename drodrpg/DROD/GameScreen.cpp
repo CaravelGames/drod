@@ -1684,7 +1684,7 @@ void CGameScreen::ClearSpeech(const bool bForceClearAll) //[default=false]
 			g_pTheSound->FreeSoundDump();
 
 		//Show player when no one is speaking.
-		ShowPlayerFace(true);
+		this->pFaceWidget->SetSpeaker(false);
 	}
 
 	SetGameAmbience();
@@ -3216,7 +3216,7 @@ bool CGameScreen::SetForActivate()
 		this->pRoomWidget->ShowVarUpdates(false);
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 	SetSignTextToCurrentRoom();
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	SynchScroll();
 	PaintClock(true);
 
@@ -4810,7 +4810,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 
 	HideScroll();
 	this->pFaceWidget->SetReading(false);
-	this->pFaceWidget->SetMood(Mood_Happy);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Happy);
 	this->pRoomWidget->AllowSleep(false);
 
 	//Show the screen after first arriving here.
@@ -4878,7 +4878,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				this->pRoomWidget->Paint();
 
 				//Player is thinking about the next level now.
-				this->pFaceWidget->SetMood(Mood_Normal);
+				this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 			}
 			dwLastStep = dwNow;
 		}
@@ -4905,7 +4905,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 	}
 
 Done:
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	g_pTheSound->StopSong();
 	if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 		this->pRoomWidget->ShowPlayer();
@@ -4985,6 +4985,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	//Show the screen after first arriving here.
 	this->pFaceWidget->SetReading(false);
+	UpdatePlayerFace();
 //	this->pRoomWidget->RemoveMLayerEffectsOfType(EPENDINGBUILD); //stop showing where pending building was
 	this->pRoomWidget->RemoveHighlight();
 	this->pRoomWidget->AllowSleep(false);
@@ -4993,9 +4994,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	bool bNonMonsterDeath = false;
 //	CMonster *pNPCBeethro = bNPCBeethroDied ? this->pCurrentGame->pRoom->GetNPCBeethro() : NULL;
 	if (bCriticalNPCDied)
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetDying(true, Mood_Nervous);
 	else {
-		this->pFaceWidget->SetMood(Mood_Dying);
+		this->pFaceWidget->SetDying(true, Mood_Dying);
 		UINT eSoundID;
 		switch (player.wAppearance)
 		{
@@ -5189,7 +5190,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	StopAmbientSounds();
 	ClearSpeech();
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
+	this->pFaceWidget->SetDying(false);
 	return true;
 }
 
@@ -6478,13 +6480,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 //				, bLevelComplete ? 50 : 0));	//ensure texts aren't on top of each other
 	}
 	//Priority of player moods
-	ShowPlayerFace();
+	UpdatePlayerFace();
 	if (CueEvents.HasOccurred(CID_SwordsmanAfraid))
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous);
 	else if (CueEvents.HasOccurred(CID_SwordsmanAggressive))
-		this->pFaceWidget->SetMood(Mood_Aggressive);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive);
 	else if (CueEvents.HasOccurred(CID_SwordsmanNormal))
-		this->pFaceWidget->SetMood(Mood_Normal);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 
 /*
 	if (CueEvents.HasOccurred(CID_AllMonstersKilled))  //priority of temporary moods
@@ -6513,13 +6515,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 */
 	}
 	else if (CueEvents.HasOccurred(CID_Scared))
-		this->pFaceWidget->SetMood(Mood_Nervous,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous,250);
 	else if (CueEvents.HasOccurred(CID_HitObstacle))
-		this->pFaceWidget->SetMood(Mood_Aggressive,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive,250);
 
 	if (CueEvents.HasOccurred(CID_PlayerOnWaterEdge))
 	{
-		this->pFaceWidget->SetMood(Mood_Nervous,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous,250);
 		g_pTheSound->PlaySoundEffect(SEID_WATERSTEP);
 	}
 
@@ -7359,7 +7361,7 @@ void CGameScreen::ProcessSpeech()
 		this->dwNextSpeech = 0;
 
 		//Return to showing player again.
-		ShowPlayerFace(true);
+		this->pFaceWidget->SetSpeaker(false);
 		return;
 	}
 
@@ -7521,59 +7523,48 @@ bool CGameScreen::ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand)
 	UINT speaker = pSpeech->wCharacter;
 
 	//Show custom speaker, if set.
-	HoldCharacter *pCustomChar = NULL;
+	HoldCharacter* pCustomChar = NULL;
 	if (speaker >= CUSTOM_CHARACTER_FIRST && speaker != M_NONE)
 		pCustomChar = this->pCurrentGame->pHold->GetCharacter(speaker);
+	else if (speaker == Speaker_Player) {
+		SPEAKER ePlayerSpeaker = Speaker_Beethro;
+		ResolvePlayerFace(ePlayerSpeaker, &pCustomChar);
+		speaker = ePlayerSpeaker;
+	}
 
 	if (speaker >= Speaker_Count && !pCustomChar) //indicates a dangling reference
-		speaker = Speaker_None;
-	if (speaker == Speaker_None || //Just show player if no speaker is being shown.
-			speaker == Speaker_Player)
+		pSpeech->wCharacter = Speaker_None;
+	if (pSpeech->wCharacter == Speaker_None)
 	{
-		ShowPlayerFace(true);
-	} else {
+		//Just show player if no speaker is being shown.
+		this->pFaceWidget->SetSpeaker(false);
+	}
+	else {
 		//Show who is speaking.
-		this->pFaceWidget->SetMood((MOOD)pSpeech->wMood, 0, true);
-		if (speaker != Speaker_Custom && speaker != Speaker_Self)
+		if (pSpeech->wCharacter != Speaker_Custom && pSpeech->wCharacter != Speaker_Self)
 		{
-			if (pCustomChar && pCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pCustomChar->dwDataID_Avatar);
-			} else {
-				if (pCustomChar)
-					speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
-				this->pFaceWidget->SetCharacter((SPEAKER)speaker, true);
-			}
-		} else {
+			if (pCustomChar)
+				speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
+			this->pFaceWidget->SetSpeaker(true, (SPEAKER)speaker, pCustomChar, (MOOD)pSpeech->wMood);
+		}
+		else {
 			//Determine who is speaking.  Show their face, if applicable.
-			HoldCharacter *pRemoteCustomChar = NULL;
+			HoldCharacter* pRemoteCustomChar = NULL;
 			if (pCommand->pSpeakingEntity->wType == M_CHARACTER) //another custom speaker?
 			{
-				CCharacter *pRemoteCharacter = DYN_CAST(CCharacter*, CMonster*,
-						pCommand->pSpeakingEntity);
+				CCharacter* pRemoteCharacter = DYN_CAST(CCharacter*, CMonster*,
+					pCommand->pSpeakingEntity);
 				pRemoteCustomChar = this->pCurrentGame->pHold->GetCharacter(
-						pRemoteCharacter->wLogicalIdentity);
+					pRemoteCharacter->wLogicalIdentity);
 			}
-			if (pRemoteCustomChar && pRemoteCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pRemoteCustomChar->dwDataID_Avatar);
-			} else {
-				UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
-/*				if (wIdentity == M_EYE_ACTIVE)
-					wIdentity = M_EYE;       //map to same type
-*/
-
-				wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
-				if (wIdentity != Speaker_None)
-					this->pFaceWidget->SetCharacter((SPEAKER)wIdentity, true);
+			UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
+			/*if (wIdentity == M_EYE_ACTIVE)
+				wIdentity = M_EYE;       //map to same type
+			*/
+			wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
+			if (wIdentity != Speaker_None) {
+				this->pFaceWidget->SetSpeaker(true, (SPEAKER)wIdentity, pRemoteCustomChar, (MOOD)pSpeech->wMood);
 			}
-		}
-		if (this->pFaceWidget->ResolveFace() == FF_Default)
-		{
-			//Face doesn't exist; show player face instead of default face
-			ShowPlayerFace(true);
 		}
 	}
 	return true;
@@ -8201,8 +8192,40 @@ void CGameScreen::ShowLockIcon(const bool bShow)
 */
 
 //*****************************************************************************
-void CGameScreen::ShowPlayerFace(const bool bOverrideLock) //[default=false]
-//Show the face of the role the player is in.
+void CGameScreen::UpdatePlayerFace()
+// Refresh player face to match reality
+{
+	if (!this->pCurrentGame)
+		return;
+
+	HoldCharacter* pPlayerHoldCharacter = NULL;
+
+	//Handle custom character images specially.
+	UINT dwCharID = this->pCurrentGame->pPlayer->wIdentity;
+	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
+	{
+		pPlayerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
+	}
+
+	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (player == Speaker_None)
+	{
+		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.
+		CMonster* pNPCBeethro = this->pCurrentGame->pRoom->GetNPCBeethro();
+		if (pNPCBeethro) {
+			player = Speaker_Beethro;
+		}
+	}
+
+	this->pFaceWidget->SetSleeping(false);
+	this->pFaceWidget->SetCharacter(PlayerRole, player, pPlayerHoldCharacter);
+}
+
+//*****************************************************************************
+void CGameScreen::ResolvePlayerFace(
+	SPEAKER& pSpeaker, //(out) player's speaker
+	HoldCharacter** playerHoldCharacter) //(out) custom player character if
+// Refresh player face to match reality
 {
 	if (!this->pCurrentGame)
 		return;
@@ -8211,63 +8234,17 @@ void CGameScreen::ShowPlayerFace(const bool bOverrideLock) //[default=false]
 	UINT dwCharID = this->pCurrentGame->pPlayer->wIdentity;
 	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
 	{
-		HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(dwCharID);
-		if (pChar && pChar->dwDataID_Avatar)
-		{
-			//Show custom character image.
-			if (bOverrideLock || (this->pFaceWidget->GetImageID() != pChar->dwDataID_Avatar &&
-					!this->pFaceWidget->IsMoodLocked()))
-				this->pFaceWidget->SetImage(pChar->dwDataID_Avatar);
-			return;
-		}
-		//otherwise show character's functional image below
-		if (pChar)
-			dwCharID = pChar->wType;
+		*playerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
 	}
 
-	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
-	if (player == Speaker_None)
+	pSpeaker = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (pSpeaker == Speaker_None)
 	{
-		//If player is not in the room, show the face of the first visible NPC.
-		CMonster *pMonster = this->pCurrentGame->pRoom->pFirstMonster;
-		while (pMonster)
-		{
-			if (pMonster->wType == M_CHARACTER)
-			{
-				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->IsVisible())
-				{
-					dwCharID = pCharacter->wLogicalIdentity;
-					if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
-					{
-						HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(dwCharID);
-						if (pChar && pChar->dwDataID_Avatar)
-						{
-							//Show custom character image.
-							if (bOverrideLock || (this->pFaceWidget->GetImageID() != pChar->dwDataID_Avatar &&
-									!this->pFaceWidget->IsMoodLocked()))
-								this->pFaceWidget->SetImage(pChar->dwDataID_Avatar);
-							return;
-						}
-						//otherwise show character's functional image below
-						if (pChar)
-							dwCharID = pChar->wType;
-					}
-					player = getSpeakerType(MONSTERTYPE(dwCharID));
-					break;
-				}
-			}
-			pMonster = pMonster->pNext;
+		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.
+		CMonster* pNPCBeethro = this->pCurrentGame->pRoom->GetNPCBeethro();
+		if (pNPCBeethro) {
+			pSpeaker = Speaker_Beethro;
 		}
-	}
-
-	//Show player face when forced.
-	//Otherwise, only show it when the widget is not locked.
-	if (bOverrideLock || (this->pFaceWidget->GetCharacter() != player &&
-			!this->pFaceWidget->IsMoodLocked()))
-	{
-		this->pFaceWidget->SetCharacter(player, false);
-		this->pFaceWidget->SetMood(Mood_Normal);
 	}
 }
 
