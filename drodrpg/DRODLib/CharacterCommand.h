@@ -264,7 +264,7 @@ public:
 		CC_SetMonsterVar,       //Sets monster at (x,y) attribute(w) to value (h).
 		CC_SetMovementType,     //Sets the NPC's movement type to X.
 		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
-		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y)
+		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
 		CC_Count
 	};
 

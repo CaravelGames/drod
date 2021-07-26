@@ -3106,7 +3106,7 @@ void CCharacter::Process(
 				if (pMonster) {
 					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 					if (pCharacter) {
-						// Transfer var set information to a tempory command.
+						// Transfer var set information to a temporary command.
 						CCharacterCommand setCommand;
 						setCommand.x = command.w;
 						setCommand.y = command.h;
