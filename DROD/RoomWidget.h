@@ -320,6 +320,7 @@ public:
 		queued_layer_effect_type_removal.insert(make_pair(eEffectType, layer)); }
 
 	void           RedrawMonsters(SDL_Surface* pDestSurface);
+	void           RemoveGroupEffects(int clearGroup);
 	void           RemoveLayerEffects(const EffectType eEffectType, int layer);
 	void           RemoveLastLayerEffectsOfType(const EffectType eEffectType, const bool bForceClearAll=true);
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);

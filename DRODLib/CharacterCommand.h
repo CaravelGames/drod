@@ -367,15 +367,22 @@ struct ImageOverlayCommand
 	static const int DEFAULT_LAYER;
 	static const int ALL_LAYERS;
 	static const int NO_LAYERS;
+	static const int DEFAULT_GROUP;
+	static const int NO_GROUP;
 
 	enum IOC {
+		AddX,
+		AddY,
 		CancelAll,
+		CancelGroup,
 		CancelLayer,
 		Center,
 		DisplayDuration,
 		DisplayRect,
+		DisplayRectModify,
 		DisplaySize,
 		FadeToAlpha,
+		Group,
 		Grow,
 		Jitter,
 		Layer,
@@ -425,7 +432,9 @@ public:
 	static bool parse(const WSTRING& wtext, ImageOverlayCommands& commands);
 
 	int getLayer() const;
+	int getGroup() const;
 	int clearsImageOverlays() const;
+	int clearsImageOverlayGroup() const;
 	bool loopsForever() const;
 
 	ImageOverlayCommands commands;

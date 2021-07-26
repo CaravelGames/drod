@@ -706,14 +706,19 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 <p><a name="image-overlay-commands"><b>Image overlay commands</b></a></p>
   In addition to selecting an image for display with the "Image overlay" command, you must provide a simple set of commands to define how the image will be displayed in-game.  The list of supported (case-insensitive) commands for use in an Image Overlay script is as follows:<br />
 <br />
+<b>AddX (pixels)</b> -- shifts the image's X coordinate. Positive values shift to the right, negative values shift to the left.<br />
+<b>AddY (pixels)</b> -- shifts the image's Y coordinate. Positive values shift downwards, negative values shift upwards.<br />
 <b>CancelAll</b> -- remove all currently displaying image overlay effects. This command is typically run singly.<br />
+<b>CancelGroup (group #)</b> -- remove image overlay effects in the specified display group (0 or greater)<br />
 <b>CancelLayer (layer #)</b> -- remove image overlay effects on the specified display layer (0 through 3)<br />
 <b>Center</b> -- center the image within the room area<br />
 <b>Display (ms)</b> -- display the image in its current form for the specified duration<br />
 <b>DisplayRect (x) (y) (w) (h)</b> -- show this region of the source image<br />
+<b>DisplayRectModify (delta x) (delta y) (delta w) (delta h)</b> -- modifies the display region for the source image<br />
 <b>DisplaySize (w) (h)</b> -- show this amount of the source image, in pixels<br />
 <b>DisplayTurns (# turns)</b> -- display the image in its current form for the indicated number of game turns<br />
 <b>(p)FadeToAlpha (alpha) (ms)</b> -- transition the image from its current alpha value to the indicated value over the specified time interval<br />
+<b>Group (group #)</b> -- assign the effect to the given display group (0 or greater). Overlays without a Group command are assigned to Group #0. Only the first instance of this command in a script is executed.<br />
 <b>(p)Grow (percent of original) (ms)</b> -- scale the image by the indicated amount over the specified time interval<br />
 <b>(p)Jitter (pixels) (ms)</b> -- randomly shake the image off-center up to the indicated range for the specified time interval<br />
 <b>Layer (layer)</b> -- place the effect on the indicated display layer (0 through 3, generally corresponding to the menu tabs used for placing game elements in the room editor). Only the first instance of this command in a script is executed.<br />

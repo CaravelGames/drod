@@ -952,11 +952,18 @@ void CDrodScreen::ProcessImageEvents(
 
 		//Don't wait for additional images to be added to the room widget before clearing effects.
 		const int clearsLayer = pImageOverlay->clearsImageOverlays();
-		if (clearsLayer == ImageOverlayCommand::NO_LAYERS) {
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsLayer == ImageOverlayCommand::NO_LAYERS &&
+				clearsGroup == ImageOverlayCommand::NO_GROUP) {
 			CImageOverlayEffect *pEffect = new CImageOverlayEffect(pRoomWidget, pImageOverlay, currentTurn, dwNow);
 			pRoomWidget->AddLayerEffect(pEffect, pImageOverlay->getLayer());
 		} else {
-			pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+				pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			}
+			if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+				pRoomWidget->RemoveGroupEffects(clearsGroup);
+			}
 		}
 
 		//Don't reprocess these events if this method is called again.

@@ -143,6 +143,19 @@ void CImageOverlayEffect::InitParams()
 	this->parallelCommands.clear();
 }
 
+int CImageOverlayEffect::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
 bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	if (!this->pImageSurface)
@@ -441,10 +454,19 @@ void CImageOverlayEffect::StartNextCommand()
 	int val = command.val[0];
 	switch (curCommand) {
 	case ImageOverlayCommand::CancelAll:
+	case ImageOverlayCommand::CancelGroup:
 	case ImageOverlayCommand::CancelLayer:
+	case ImageOverlayCommand::Group:
 	case ImageOverlayCommand::Layer:
 		// Do nothing, these are handled externally
 		return;
+
+	case ImageOverlayCommand::AddX:
+		this->x += val;
+		break;
+	case ImageOverlayCommand::AddY:
+		this->y += val;
+		break;
 
 	case ImageOverlayCommand::Center:
 		this->x = (int(this->pRoomWidget->GetW()) - int(this->pImageSurface->w)) / 2;
@@ -461,6 +483,12 @@ void CImageOverlayEffect::StartNextCommand()
 		this->sourceClipRect.w = min(max(0, command.val[2]), this->pImageSurface->w);
 		this->sourceClipRect.h = min(max(0, command.val[3]), this->pImageSurface->h);
 		break;
+
+	case ImageOverlayCommand::DisplayRectModify:
+		this->sourceClipRect.x = max(0, this->sourceClipRect.x + val);
+		this->sourceClipRect.y = max(0, this->sourceClipRect.y + command.val[1]);
+		this->sourceClipRect.w = min(max(0, this->sourceClipRect.w + command.val[2]), this->pImageSurface->w);
+		this->sourceClipRect.h = min(max(0, this->sourceClipRect.h + command.val[3]), this->pImageSurface->h);
 
 	case ImageOverlayCommand::DisplaySize:
 		this->sourceClipRect.w = min(max(0, val), this->pImageSurface->w);
@@ -733,10 +761,14 @@ bool CImageOverlayEffect::IsTurnBasedCommand(const ImageOverlayCommand::IOC comm
 
 bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC commandType) const {
 	switch (commandType) {
+		case ImageOverlayCommand::AddX:
+		case ImageOverlayCommand::AddY:
 		case ImageOverlayCommand::CancelAll:
+		case ImageOverlayCommand::CancelGroup:
 		case ImageOverlayCommand::CancelLayer:
 		case ImageOverlayCommand::Center:
 		case ImageOverlayCommand::DisplayRect:
+		case ImageOverlayCommand::DisplayRectModify:
 		case ImageOverlayCommand::DisplaySize:
 		case ImageOverlayCommand::Rotate:
 		case ImageOverlayCommand::Scale:
