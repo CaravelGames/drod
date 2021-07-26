@@ -2896,7 +2896,7 @@ void CCharacter::Process(
 					wTurnCount = 0;
 					++wVarSets; //Count as setting a variable for loop avoidence
 					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
-				}	else {
+				} else {
 					// Index does not automatically increment after this command is executed
 					++this->wCurrentCommandIndex;
 				}
