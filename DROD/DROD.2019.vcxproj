@@ -697,6 +697,7 @@
     <ClCompile Include="TarStabEffect.cpp" />
     <ClCompile Include="TemporalMoveEffect.cpp" />
     <ClCompile Include="TileImageCalcs.cpp" />
+    <ClCompile Include="TileSwirlEffect.cpp" />
     <ClCompile Include="TitleScreen.cpp" />
     <ClCompile Include="TrapdoorFallEffect.cpp" />
     <ClCompile Include="VarMonitorEffect.cpp" />
@@ -790,6 +791,7 @@
     <ClInclude Include="TemporalMoveEffect.h" />
     <ClInclude Include="TileImageCalcs.h" />
     <ClInclude Include="TileImageConstants.h" />
+    <ClInclude Include="TileSwirlEffect.h" />
     <ClInclude Include="TitleScreen.h" />
     <ClInclude Include="TrapdoorFallEffect.h" />
     <ClInclude Include="VarMonitorEffect.h" />

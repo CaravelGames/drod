@@ -74,6 +74,7 @@ enum EffectType
 	ETEXTNOTICE,      //text notice
 	ECNETNOTICE,      //caravelnet notice
 	EROOMDRAWSTATS,
+	ETILESWIRL,       //tile swirl effect
 };
 
 //*****************************************************************************
@@ -100,7 +101,8 @@ enum VisualEffectType
 	VET_PUFFEXPLOSION=17,
 	VET_FIRETRAP=18,
 	VET_ICEMELT=19,
-	VET_PUFFSPLAT=20
+	VET_PUFFSPLAT=20,
+	VET_TILESWIRL=21
 };
 
 #endif //...#ifndef DRODEFFECT_H

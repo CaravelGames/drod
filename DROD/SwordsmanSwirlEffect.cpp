@@ -53,8 +53,6 @@ bool CSwordsmanSwirlEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeEla
 	//Swirl gradually fades out.
 	this->nOpacity = g_pTheBM->bAlpha ? 255 - ((dwTimeElapsed * 255) / dwDuration) : 255;
 
-	this->drawSwirls.clear();
-
 	//Center effect on player's position.
 	SDL_Rect OwnerRect;
 	this->pOwnerWidget->GetRect(OwnerRect);

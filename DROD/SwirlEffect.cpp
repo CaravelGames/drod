@@ -82,6 +82,9 @@ void CSwirlEffect::Draw(SDL_Surface& destSurface)
 //********************************************************************************
 void CSwirlEffect::CalculateSwirl(UINT wXCenter, UINT wYCenter)
 {
+  //Clear old swirls
+  this->drawSwirls.clear();
+
   //Reset area of effect.
   SDL_Rect OwnerRect;
   this->pOwnerWidget->GetRect(OwnerRect);
