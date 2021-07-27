@@ -1568,7 +1568,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_EXPLOSION, g_pTheDB->GetMessageText(MID_ExplosionEffect));
 	this->pVisualEffectsListBox->AddItem(VET_SPLASH, g_pTheDB->GetMessageText(MID_SplashEffect));
 	this->pVisualEffectsListBox->AddItem(VET_STEAM, g_pTheDB->GetMessageText(MID_SteamEffect));
-	this->pVisualEffectsListBox->AddItem(VET_SWIRL, g_pTheDB->GetMessageText(MID_SwirlEffect));
+	this->pVisualEffectsListBox->AddItem(VET_SWIRL, g_pTheDB->GetMessageText(MID_PlayerSwirlEffect));
+	this->pVisualEffectsListBox->AddItem(VET_TILESWIRL, g_pTheDB->GetMessageText(MID_SwirlEffect));
 	this->pVisualEffectsListBox->AddItem(VET_VERMIN, g_pTheDB->GetMessageText(MID_VerminEffect));
 	this->pVisualEffectsListBox->AddItem(VET_BOLT, g_pTheDB->GetMessageText(MID_BoltEffect));
 	this->pVisualEffectsListBox->AddItem(VET_JITTER, g_pTheDB->GetMessageText(MID_JitterEffect));

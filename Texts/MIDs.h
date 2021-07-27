@@ -1663,6 +1663,7 @@ enum MID_CONSTANT {
   MID_SplashEffect = 1432,
   MID_SteamEffect = 1433,
   MID_SwirlEffect = 1434,
+  MID_PlayerSwirlEffect = 2018,
   MID_VerminEffect = 1435,
   MID_BoltEffect = 1436,
   MID_NPCCustomTileSizeWarning = 1442,
