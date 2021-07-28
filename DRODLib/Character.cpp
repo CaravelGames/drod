@@ -2128,6 +2128,38 @@ void CCharacter::Process(
 						}
 					}
 					break;
+					case ScriptFlag::AT_Remove:
+					{
+						CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+						if (pMonster)
+						{
+							pMonster = pMonster->GetOwningMonster();
+							room.RemoveMonsterDuringPlayWithoutEffect(pMonster);
+							if (bIsMother(pMonster->wType))
+								room.FixUnstableTar(CueEvents);
+						}
+					}
+					break;
+					case ScriptFlag::AT_OneTurnStun:
+					case ScriptFlag::AT_TwoTurnStun:
+					{
+						CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+						if (pMonster)
+						{
+							UINT stunDuration = pflags == ScriptFlag::AT_TwoTurnStun ? 2 : 1;
+							pMonster->Stun(CueEvents, stunDuration);
+						}
+					}
+					break;
+					case ScriptFlag::AT_FloorSpikes:
+					case ScriptFlag::AT_Firetrap:
+					{
+						WeaponType type = pflags == ScriptFlag::AT_FloorSpikes ?
+							WT_FloorSpikes : WT_Firetrap;
+						WeaponStab stab(px, py, NO_ORIENTATION, type);
+						pGame->StabRoomTile(stab, CueEvents);
+					}
+					break;
 					default:
 					break;
 				}
