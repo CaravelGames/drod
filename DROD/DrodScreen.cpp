@@ -48,6 +48,7 @@
 #include "SwordSwingEffect.h"
 #include "SwordsmanSwirlEffect.h"
 #include "TarStabEffect.h"
+#include "TileSwirlEffect.h"
 #include "TrapdoorFallEffect.h"
 #include "VerminEffect.h"
 #include "WadeEffect.h"
@@ -398,6 +399,10 @@ void CDrodScreen::AddVisualEffect(const VisualEffectInfo* pEffect, CRoomWidget* 
 			pRoomWidget->AddMLayerEffect(
 				new CFluffStabEffect(pRoomWidget, coord,
 					GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 2)));
+		break;
+		case VET_TILESWIRL:
+			pRoomWidget->AddMLayerEffect(
+				new CTileSwirlEffect(pRoomWidget, coord));
 		break;
 		default: break; //do nothing
 	}

@@ -17,32 +17,29 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005
- * Caravel Software. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
+ * 1997, 2000, 2001, 2002, 2005, 2020, 2021 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Mike Rimer (mrimer)
+ * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef SWORDSMANSWIRLEFFECT_H
-#define SWORDSMANSWIRLEFFECT_H
+#ifndef TILESWIRLEFFECT_H
+#define TILESWIRLEFFECT_H
 
 #include "SwirlEffect.h"
 #include <BackEndLib/Coord.h>
 
-
-class CCurrentGame;
-class CSwordsmanSwirlEffect : public CSwirlEffect
+class CTileSwirlEffect : public CSwirlEffect
 {
 public:
-	CSwordsmanSwirlEffect(CWidget *pSetWidget, const CCurrentGame *pCurrentGame);
+  CTileSwirlEffect(CWidget* pSetWidget, const CMoveCoord& SetCoord);
 
 protected:
-	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+  virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 private:
-	const CCurrentGame *pCurrentGame;
-	UINT wOldX, wOldY;
+  CMoveCoord m_tilePosition;
 };
 
-#endif //...#ifndef SWORDSMANSWIRLEFFECT_H
+#endif //...#ifndef TILESWIRLEFFECT_H

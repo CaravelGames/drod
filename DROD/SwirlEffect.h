@@ -17,32 +17,31 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005
- * Caravel Software. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
+ * 1997, 2000, 2001, 2002, 2005, 2020, 2021 Caravel Software. All Rights Reserved.
  *
- * Contributor(s): Mike Rimer (mrimer)
+ * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef SWORDSMANSWIRLEFFECT_H
-#define SWORDSMANSWIRLEFFECT_H
+#ifndef SWIRLEFFECT_H
+#define SWIRLEFFECT_H
 
-#include "SwirlEffect.h"
+#include "DrodEffect.h"
 #include <BackEndLib/Coord.h>
 
-
-class CCurrentGame;
-class CSwordsmanSwirlEffect : public CSwirlEffect
-{
+class CSwirlEffect : public CEffect {
 public:
-	CSwordsmanSwirlEffect(CWidget *pSetWidget, const CCurrentGame *pCurrentGame);
+  CSwirlEffect(CWidget* pSetWidget, const UINT eType);
 
 protected:
-	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+  virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed) = 0;
+  virtual void Draw(SDL_Surface& destSurface);
 
-private:
-	const CCurrentGame *pCurrentGame;
-	UINT wOldX, wOldY;
+  virtual void CalculateSwirl(UINT wXCenter, UINT wYCenter);
+
+  Uint8 nOpacity;
+  std::vector<CMoveCoordEx> drawSwirls; //wO = width & height, wValue=frame
 };
 
-#endif //...#ifndef SWORDSMANSWIRLEFFECT_H
+#endif
