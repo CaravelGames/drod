@@ -201,6 +201,9 @@
     <ClCompile Include="src\tests\Scripting\Imperative_Vulnerable_Invulnerable.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Slayer\SlayerPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Slayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
