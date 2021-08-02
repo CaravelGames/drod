@@ -204,6 +204,9 @@
     <ClCompile Include="src\tests\Monsters\Slayer\SlayerPuffObstacle.cpp">
       <Filter>Tests\Monsters\Slayer</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Stalwart\StalwartPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Stalwart</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -290,6 +293,9 @@
     </Filter>
     <Filter Include="Tests\Player\TurnZero">
       <UniqueIdentifier>{2d45dc5d-441e-4fb0-93b4-569dc83b1979}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Stalwart">
+      <UniqueIdentifier>{5f0faa9f-73ce-4137-9df8-b762d2cf44c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
