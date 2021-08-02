@@ -547,7 +547,10 @@ float CCurrentGame::GetTotalStatModifier(ScriptVars::StatModifiers statType) con
 //It is the product of the global, NPC and equipment modifiers
 {
 	float fMult = GetGlobalStatModifier(statType);
-	fMult *= pRoom->GetStatModifierFromCharacters(statType);
+
+	if (pRoom) {
+		fMult *= pRoom->GetStatModifierFromCharacters(statType);
+	}
 
 	const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
 	if (pWeapon) {
