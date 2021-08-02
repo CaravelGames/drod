@@ -207,6 +207,9 @@
     <ClCompile Include="src\tests\Monsters\Stalwart\StalwartPuffObstacle.cpp">
       <Filter>Tests\Monsters\Stalwart</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Citizen\CitizenPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Citizen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -296,6 +299,9 @@
     </Filter>
     <Filter Include="Tests\Monsters\Stalwart">
       <UniqueIdentifier>{5f0faa9f-73ce-4137-9df8-b762d2cf44c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Citizen">
+      <UniqueIdentifier>{a00dd17e-8a89-4284-9021-3658d01bf3ac}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
