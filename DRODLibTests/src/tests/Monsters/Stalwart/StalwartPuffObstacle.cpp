@@ -13,9 +13,8 @@ TEST_CASE("Stalwart interaction with puffs", "[game][stalwart][puff]") {
 		RoomBuilder::AddMonster(M_FLUFFBABY, 10, 11);
 		RoomBuilder::AddMonster(M_STALWART, 10, 15, N);
 
-		CCueEvents CueEvents;
 		Runner::StartGame(5, 5, S);
-		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+		Runner::ExecuteCommand(CMD_WAIT);
 
 		//Stalwart should not move, and should not have a path to a monster
 		pRoom = Runner::GetCurrentGame()->GetRoom();
