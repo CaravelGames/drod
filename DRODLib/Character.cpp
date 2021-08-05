@@ -3260,6 +3260,34 @@ void CCharacter::Process(
 			break;
 
 
+			case CCharacterCommand::CC_SetDarkness:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				//clamp pflag to lighting type range
+				pflags = max(0, min(pflags, NUM_DARK_TYPES));
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Add(x, y, LIGHT_OFF + pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
 			case CCharacterCommand::CC_WaitForHalph:

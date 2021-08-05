@@ -4125,6 +4125,24 @@ const
 				wstr += g_pTheDB->GetMessageText(MID_Off);
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+			wstr += _itoW(command.flags, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -4605,6 +4623,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapMusic, g_pTheDB->GetMessageText(MID_WorldMapMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, L"Set Ceiling Darkness");
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
@@ -5434,7 +5454,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitAnd
 		NO_WIDGETS,         //CC_LogicalWaitOr
 		NO_WIDGETS,         //CC_LogicalWaitXOR
-		NO_WIDGETS	        //CC_LogicalWaitEnd
+		NO_WIDGETS,	        //CC_LogicalWaitEnd
+		WAIT                //CC_SetDarkness
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5573,7 +5594,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitAnd
 		NO_LABELS,          //CC_LogicalWaitOr
 		NO_LABELS,          //CC_LogicalWaitXOR
-		NO_LABELS           //CC_LogicalWaitEnd
+		NO_LABELS,          //CC_LogicalWaitEnd
+		NO_LABELS           //CC_SetDarkness
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6619,6 +6641,17 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			UINT wDarkness = _Wtoi(pDarkLevel->GetText());
+			this->pCommand->flags = max(0, min(wDarkness, NUM_DARK_TYPES));
+			QueryRect();
+		}
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -7047,6 +7080,15 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			CTextBox2DWidget *pText = DYN_CAST(CTextBox2DWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_IMAGEOVERLAYTEXT));
 			pText->SetText(this->pCommand->label.c_str());
+		}
+		break;
+
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			pDarkLevel->SetText(_itoW(this->pCommand->flags, temp, 10));
 		}
 		break;
 
@@ -8027,6 +8069,19 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		pCommand->label = pText+pos;
 	break;
 
+	case CCharacterCommand::CC_SetDarkness:
+		parseNumber(pCommand->flags);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+
 	default: ASSERT(!"Unrecognized script command"); break;
 	}
 
@@ -8613,6 +8668,14 @@ WSTRING CCharacterDialogWidget::toText(
 			break;
 		}
 	}
+	break;
+
+	case CCharacterCommand::CC_SetDarkness:
+		concatNumWithComma(c.flags);
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
 	break;
 
 	default: ASSERT(!"Bad command"); break;

@@ -336,6 +336,7 @@ public:
 		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
 		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
 		CC_LogicalWaitEnd,      //Ends a logical wait block.
+		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
 
 		CC_Count
 	};
