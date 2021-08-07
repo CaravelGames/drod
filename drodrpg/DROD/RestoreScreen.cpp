@@ -156,7 +156,7 @@ CRestoreScreen::CRestoreScreen()
 	static const UINT CY_SAVE_LBOX = 13*22 + 4; //13 items;
 
 	static const UINT CX_SORT_LIST = 60;
-	static const UINT CY_SORT_LIST = 2*22 + 4; // 53;
+	static const UINT CY_SORT_LIST = 2*22 + 9; // 53;
 	static const int X_SORT_LIST = X_SAVE_LBOX + CX_SAVE_LBOX - CX_SORT_LIST;
 	static const int Y_SORT_LIST = Y_TITLE + CY_TITLE;
 
