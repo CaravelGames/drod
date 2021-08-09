@@ -1039,8 +1039,17 @@ void CRoomWidget::HighlightSelectedTile()
 				//Show citizen's current destination.
 				const CCitizen *pCitizen = DYN_CAST(const CCitizen*, const CMonster*, pMonster);
 				UINT wDestX, wDestY;
-				if (pCitizen->GetGoal(wDestX,wDestY))
+				if (pCitizen->GetGoal(wDestX, wDestY)) {
 					AddShadeEffect(wDestX, wDestY, PaleYellow);
+					CCoordStack citizenPath = pCitizen->GetStoredPath();
+					for (UINT wPathIndex = 0; wPathIndex < citizenPath.GetSize(); ++wPathIndex)
+					{
+						UINT wX, wY;
+						citizenPath.GetAt(wPathIndex, wX, wY);
+						ASSERT(this->pRoom->IsValidColRow(wX, wY));
+						AddShadeEffect(wX, wY, PaleYellow);
+					}
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
@@ -1050,8 +1059,16 @@ void CRoomWidget::HighlightSelectedTile()
 				//Show stalwart's current target.
 				CStalwart *pStalwart = DYN_CAST(CStalwart*, CMonster*, const_cast<CMonster*>(pMonster));
 				UINT wDestX, wDestY;
-				if (!pStalwart->bFrozen && pStalwart->GetGoal(wDestX,wDestY))
-					AddShadeEffect(wDestX, wDestY, PaleYellow);
+				if (!pStalwart->bFrozen && pStalwart->GetGoal(wDestX, wDestY)) {
+					CCoordStack stalwartPath = pStalwart->GetStoredPath();
+					for (UINT wPathIndex = 0; wPathIndex < stalwartPath.GetSize(); ++wPathIndex)
+					{
+						UINT wX, wY;
+						stalwartPath.GetAt(wPathIndex, wX, wY);
+						ASSERT(this->pRoom->IsValidColRow(wX, wY));
+						AddShadeEffect(wX, wY, PaleYellow);
+					}
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
@@ -1086,10 +1103,11 @@ void CRoomWidget::HighlightSelectedTile()
 				static const SURFACECOLOR Orange = { 255, 165, 0 };
 				//Show Halph's stored path
 				const CHalph* pHalph = DYN_CAST(const CHalph*, const CMonster*, pMonster);
-				for (UINT wPathIndex = 0; wPathIndex < pHalph->GetStoredPath().GetSize(); ++wPathIndex)
+				CCoordStack halphPath = pHalph->GetStoredPath();
+				for (UINT wPathIndex = 0; wPathIndex < halphPath.GetSize(); ++wPathIndex)
 				{
 					UINT wX, wY;
-					pHalph->GetStoredPath().GetAt(wPathIndex, wX, wY);
+					halphPath.GetAt(wPathIndex, wX, wY);
 					ASSERT(this->pRoom->IsValidColRow(wX, wY));
 					AddShadeEffect(wX, wY, Orange);
 				}
@@ -1153,6 +1171,25 @@ void CRoomWidget::HighlightSelectedTile()
 			for (CCoordSet::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile)
 				AddShadeEffect(tile->wX, tile->wY, PaleYellow);
 			bRemoveHighlightNextTurn = false;
+		}
+		break;
+		case T_HORN_SQUAD:
+		{
+			UINT goalX, goalY;
+			if (this->pCurrentGame->GetNearestEntranceForHorn(wX, wY, M_CLONE, goalX, goalY)) {
+				AddShadeEffect(goalX, goalY, PaleYellow);
+				bRemoveHighlightNextTurn = false;
+			}
+		}
+		break;
+		case T_HORN_SOLDIER:
+		{
+			UINT goalX, goalY;
+			if (this->pCurrentGame->GetNearestEntranceForHorn(wX, wY, M_STALWART2, goalX, goalY)) {
+				SURFACECOLOR Blue = { 120, 120, 255 };
+				AddShadeEffect(goalX, goalY, Blue);
+				bRemoveHighlightNextTurn = false;
+			}
 		}
 		break;
 		default: break;

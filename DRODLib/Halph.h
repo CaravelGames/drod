@@ -48,7 +48,6 @@ public:
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
 	bool GetPathTo(CCueEvents &CueEvents, const CCoordSet &adjDests, const CCoordSet *pDirectDests=NULL);
-	virtual CCoordStack GetStoredPath() const { return this->pathToDest; }
 	virtual bool IsAggressive() const {return false;}
 	virtual bool IsFriendly() const {return true;}
 	bool IsOpeningDoorAt(const CCoordSet& doorSquares) const;

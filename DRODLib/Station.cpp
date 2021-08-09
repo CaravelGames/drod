@@ -78,7 +78,7 @@ UINT CStation::GetDirectionFrom(const UINT wX, const UINT wY) const
 		wDist = this->distance.GetAt(wXDest, wYDest);
 		bool bMonsterObstacle = false;
 		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wXDest, wYDest);
-		if (pMonster && pMonster->wType != M_FLUFFBABY)
+		if (pMonster)
 			bMonsterObstacle = true;
 		if (this->pRoom->DoesGentryiiPreventDiagonal(wX, wY, wXDest, wYDest))
 			bMonsterObstacle = true;
