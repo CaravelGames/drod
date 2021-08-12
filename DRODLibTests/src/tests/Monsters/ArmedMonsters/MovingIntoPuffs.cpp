@@ -23,27 +23,8 @@ static void DoPushingTest(const UINT type, const char* title){
 	}
 }
 
-static void DoSteppingTest(const UINT type, const char* title){
-	SECTION(title){
-		RoomBuilder::Plot(T_ORB, 10, 10);
-		RoomBuilder::AddMonster(M_FLUFFBABY, 10, 11, NO_ORIENTATION);
-		RoomBuilder::AddMonster(M_BRAIN, 10, 6, NO_ORIENTATION);
-		RoomBuilder::AddMonster(type, 10, 12, N);
-
-		CCueEvents CueEvents;
-		Runner::StartGame(10, 5, N);
-		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
-		REQUIRE(CueEvents.HasOccurred(CID_OrbActivatedByDouble));
-	}
-}
-
 TEST_CASE("Armed monsters entering puff tile", "[game]") {
 	RoomBuilder::ClearRoom();
-
-	
-	DoSteppingTest(M_GUARD, "Guard stepping into puff should stab the tile beyond it");
-	DoSteppingTest(M_STALWART, "Stalwart stepping into puff should stab the tile beyond it");
-	DoSteppingTest(M_STALWART2, "Soldier stepping into puff should stab the tile beyond it");
 
 	DoPushingTest(M_GUARD, "Guard pushed into puff should stab the tile beyond it");
 	DoPushingTest(M_SLAYER, "39th Slayer pushed into puff should stab the tile beyond it");
