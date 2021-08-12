@@ -213,6 +213,9 @@
     <ClCompile Include="src\tests\Monsters\Halph\HalphPuffObstacle.cpp">
       <Filter>Tests\Monsters\Halph</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Guard\GuardPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Guard</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -308,6 +311,9 @@
     </Filter>
     <Filter Include="Tests\Monsters\Halph">
       <UniqueIdentifier>{681440c9-dd10-4eb7-b280-0365d7a976f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Guard">
+      <UniqueIdentifier>{8693b0a4-8e13-462a-9adc-740ac9ecad17}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
