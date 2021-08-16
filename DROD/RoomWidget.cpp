@@ -4884,7 +4884,8 @@ void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 					--wTile; //convert from 1-based
 
 					//Display empty item as the o-tile below it.
-					if (wTile == T_EMPTY || wTile == T_EMPTY_F || wTile == T_REMOVE_FLOOR_ITEM) {
+					if (wTile == T_EMPTY || wTile == T_EMPTY_F || wTile == T_REMOVE_FLOOR_ITEM ||
+						wTile == T_EMPTY_TRANSPARENT || wTile == T_REMOVE_TRANSPARENT) {
 						wTile = room.GetOSquare(wX,wY);
 						bRemove = true;
 					}

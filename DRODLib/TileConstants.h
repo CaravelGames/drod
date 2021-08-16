@@ -880,6 +880,8 @@ static inline UINT getBuildMarkerTileMID(const UINT wTile){
 		case T_EMPTY: return MID_RemoveItem;
 		case T_REMOVE_FLOOR_ITEM: return MID_RemoveFloorLayer;
 		case T_EMPTY_F: return MID_RemoveFloorLayer;
+		case T_REMOVE_TRANSPARENT: return MID_RemoveTransparentLayer;
+		case T_EMPTY_TRANSPARENT: return MID_RemoveTransparentLayer;
 		case T_REMOVE_OVERHEAD_IMAGE: return MID_RemoveOverheadImage;
 		default: return TILE_MID[wTile];
 	}
