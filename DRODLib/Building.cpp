@@ -68,6 +68,10 @@ void CBuilding::plot(const UINT wX, const UINT wY, const UINT wTile)
 			this->tiles.Add(wX, wY, T_EMPTY_F + 1); //1-based
 			this->tileSet.insert(wX, wY);    //goal-finding optimization
 			break;
+		case T_REMOVE_TRANSPARENT:
+			this->tiles.Add(wX, wY, T_EMPTY_TRANSPARENT + 1); //1-based
+			this->tileSet.insert(wX, wY);    //goal-finding optimization
+			break;
 		default:
 			this->tiles.Add(wX,wY,wTile+1); //1-based
 			this->tileSet.insert(wX,wY);    //goal-finding optimization

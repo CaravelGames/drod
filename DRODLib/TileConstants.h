@@ -199,7 +199,8 @@ static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 #define T_PLATE_ON_OFF (UINT(-55))
 #define T_REMOVE_FLOOR_ITEM (UINT(-56))
 #define T_ORB_NORMAL (UINT(-57))
-#define LAST_FAKE_TILE_INDEX (UINT(-57))
+#define T_REMOVE_TRANSPARENT (UINT(-58))
+#define LAST_FAKE_TILE_INDEX (UINT(-58))
 
 static inline bool bIsFakeTokenType(const UINT t) { return t >= T_TOKEN_RESERVED_SPACE && t <= T_ACTIVETOKEN; }
 static inline bool bIsFakeOrbType(const UINT t) { return t == T_ORB_CRACKED || t == T_ORB_BROKEN || t == T_ORB_NORMAL; }
@@ -529,8 +530,9 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define T_NOMONSTER           (TOTAL_TILE_COUNT + 1)  //for erasing monsters only
 #define T_EMPTY_F             (TOTAL_TILE_COUNT + 2)  //for erasing f-layer objects only
 #define T_GENTRYII_CHAIN      (TOTAL_TILE_COUNT + 3)  //for having different placement rules than gentryii head
+#define T_EMPTY_TRANSPARENT   (TOTAL_TILE_COUNT + 4)  //for erasing t-layer objects only
 
-#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 4)
+#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 5)
 
 enum TILELAYERS {
 	LAYER_OPAQUE = 0,
@@ -703,7 +705,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
 	LAYER_FLOOR,   //T_EMPTY_F       TOTAL+2
-	LAYER_MONSTER  //T_NOMONSTER     TOTAL+3
+	LAYER_MONSTER, //T_NOMONSTER     TOTAL+3
+	LAYER_TRANSPARENT, //T_EMPTY_TRANSPARENT TOTAL+4
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
@@ -926,6 +929,9 @@ static inline UINT bConvertFakeElement(const UINT t) {
 	}
 	if (t == T_REMOVE_FLOOR_ITEM){
 		return T_EMPTY_F;
+	}
+	if (t == T_REMOVE_TRANSPARENT) {
+		return T_EMPTY_TRANSPARENT;
 	}
 	return t;
 }
