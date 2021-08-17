@@ -399,6 +399,7 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\RemovingTransparentObjects.cpp" />
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativeFriendly.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
