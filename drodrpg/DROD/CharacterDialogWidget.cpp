@@ -970,7 +970,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_EQUIPMENTTYPE_LISTBOX = Y_ONOFFLISTBOX;
 
 	static const UINT CX_EQUIPTRANS_LISTBOX = CX_EQUIPMENTTYPE_LISTBOX;
-	static const UINT CY_EQUIPTRANS_LISTBOX = 6*22 + 4; //6 slots
+	static const UINT CY_EQUIPTRANS_LISTBOX = 7*22 + 4; //7 slots
 	static const int X_EQUIPTRANS_LISTBOX = X_EQUIPMENTTYPE_LISTBOX;
 	static const int Y_EQUIPTRANS_LISTBOX = Y_EQUIPMENTTYPE_LISTBOX + CY_EQUIPMENTTYPE_LISTBOX + CY_SPACE;
 
@@ -1471,6 +1471,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pEquipTransListBox->AddItem(ScriptFlag::Disable, g_pTheDB->GetMessageText(MID_EquipDisable));
 	this->pEquipTransListBox->AddItem(ScriptFlag::Enable, g_pTheDB->GetMessageText(MID_EquipEnable));
 	this->pEquipTransListBox->AddItem(ScriptFlag::QueryStatus, g_pTheDB->GetMessageText(MID_EquipQueryStatus));
+	this->pEquipTransListBox->AddItem(ScriptFlag::Generate, g_pTheDB->GetMessageText(MID_EquipGenerate));
 	this->pEquipTransListBox->SelectLine(0);
 
 	this->pCustomNPCListBox = new CListBoxWidget(TAG_CUSTOMNPC_LISTBOX,
@@ -3298,7 +3299,7 @@ const
 			wstr += this->pEquipTransListBox->GetTextForKey(command.w);
 			wstr += wszSpace;
 			wstr += this->pEquipmentTypesListBox->GetTextForKey(command.x);
-			if (command.w == ScriptFlag::Trade)
+			if (command.w == ScriptFlag::Trade || command.w == ScriptFlag::Generate)
 			{
 				wstr += wszSpace;
 				WSTRING charName = this->pCustomNPCListBox->GetTextForKey(command.y);
@@ -5354,7 +5355,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->x = this->pEquipmentTypesListBox->GetSelectedItem();
 			this->pCommand->y = this->pCustomNPCListBox->GetSelectedItem();
 			this->pCommand->w = this->pEquipTransListBox->GetSelectedItem();
-			if (this->pCommand->w == ScriptFlag::Trade)
+			if (this->pCommand->w == ScriptFlag::Trade || this->pCommand->w == ScriptFlag::Generate)
 			{
 				if (this->pCommand->y)
 					AddCommand();
