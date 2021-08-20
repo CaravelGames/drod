@@ -1750,6 +1750,7 @@ enum MID_CONSTANT {
   MID_FluffDestroyed = 1807,
   MID_DestroyTrapdoor = 1820,
   MID_RemoveFloorLayer = 1887,
+  MID_RemoveTransparentLayer = 2019,
   MID_GetNaturalTarget = 1896,
   MID_TargetRegularMonster = 1893,
   MID_TargetBrainedMonster = 1894,

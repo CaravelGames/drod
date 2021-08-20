@@ -4605,6 +4605,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	if (bIsBuild || bIsBuildMarker){
 		pListBox->AddItem(T_EMPTY, g_pTheDB->GetMessageText(MID_RemoveItem));
 		pListBox->AddItem(T_REMOVE_FLOOR_ITEM, g_pTheDB->GetMessageText(MID_RemoveFloorLayer));
+		pListBox->AddItem(T_REMOVE_TRANSPARENT, g_pTheDB->GetMessageText(MID_RemoveTransparentLayer));
 	}
 
 	if (bIsBuild){

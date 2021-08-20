@@ -10768,7 +10768,8 @@ void CDbRoom::Plot(
 	CMonster *pMonster,  //(in) default=NULL
 	bool bUnderObject)   //(in) default=false
 {
-	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F || wTileNo == T_REMOVE_FLOOR_ITEM);
+	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F 
+		|| wTileNo == T_REMOVE_FLOOR_ITEM || wTileNo == T_EMPTY_TRANSPARENT);
 	ASSERT(IsValidColRow(wX, wY));
 
 	const UINT wSquareIndex = ARRAYINDEX(wX,wY);
@@ -10802,7 +10803,11 @@ void CDbRoom::Plot(
 			if (bGeometryChanging)
 				this->geometryChanges.insert(wX,wY);
 
-			ReplaceTLayerItem(wX, wY, wTileNo, bUnderObject);
+			if (wTileNo == T_EMPTY_TRANSPARENT || wTileNo == T_REMOVE_TRANSPARENT) {
+				ReplaceTLayerItem(wX, wY, T_EMPTY, bUnderObject);
+			}	else {
+				ReplaceTLayerItem(wX, wY, wTileNo, bUnderObject);
+			}
 
 			RecalcStationPaths();
 			this->PlotsMade.insert(wX,wY);
