@@ -360,6 +360,7 @@
     <ClCompile Include="src\tests\Monsters\Citizen\CitizenPuffObstacle.cpp" />
     <ClCompile Include="src\tests\Monsters\Clone.cpp" />
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp" />
+    <ClCompile Include="src\tests\Monsters\Guard\GuardPuffObstacle.cpp" />
     <ClCompile Include="src\tests\Monsters\Halph\HalphPuffObstacle.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffPushingArrowsOrthosquares.cpp" />
     <ClCompile Include="src\tests\Monsters\Puff\PuffTargetsVisibleClone.cpp" />

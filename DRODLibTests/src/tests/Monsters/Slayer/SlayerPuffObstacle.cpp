@@ -14,6 +14,7 @@ TEST_CASE("Slayer interaction with puffs", "[game][Slayer][puff]") {
 
 		Runner::StartGame(10, 12, S);
 		Runner::ExecuteCommand(CMD_WAIT);
+		CCueEvents CueEvents;
 
 		//Puff should prevent Slayer moving south and killing player
 		CHECK(!CueEvents.HasOccurred(CID_MonsterKilledPlayer));

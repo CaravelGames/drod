@@ -61,12 +61,13 @@ const
 	if (CMonster::DoesSquareContainObstacle(wCol, wRow))
 		return true;
 
-	//Can't move onto monsters except Fluff Babies -- even target ones.
+	//Can't move onto monsters -- even target ones.
 	CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(wCol, wRow);
 	if (pMonster){
-		if (pMonster->wType != M_FLUFFBABY && !CanDaggerStep(pMonster->wType))
+		if (!CanDaggerStep(pMonster->wType))
 			return true;
-		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2)
+		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 ||
+			  pMonster->wType == M_FLUFFBABY)
 			return true;
 		if (pMonster->wType == M_CHARACTER) {
 			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
