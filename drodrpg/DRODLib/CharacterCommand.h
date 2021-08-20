@@ -159,7 +159,8 @@ namespace ScriptFlag
 		Sell=2,          //sell current equipment for GR
 		Disable=3,       //this equipment type is disabled (as if the player had an empty slot)
 		Enable=4,        //this equipment type is (re)enabled
-		QueryStatus=5    //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
+		QueryStatus=5,   //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
+		Generate=6       //create this equipment at character position if possible
 	};
 
 	enum GotoSmartType {
@@ -274,6 +275,7 @@ public:
 	CDbSpeech *pSpeech;
 
 	static bool IsEachEventCommand(CharCommand command);
+	static bool IsRealEquipmentType(ScriptFlag::EquipmentType type);
 };
 
 class CDbMessageText;

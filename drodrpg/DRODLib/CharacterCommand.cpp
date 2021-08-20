@@ -65,6 +65,21 @@ bool CCharacterCommand::IsEachEventCommand(CharCommand command)
 }
 
 //*****************************************************************************
+bool CCharacterCommand::IsRealEquipmentType(ScriptFlag::EquipmentType type)
+{
+	switch (type) {
+	case ScriptFlag::Weapon:
+	case ScriptFlag::Armor:
+	case ScriptFlag::Accessory:
+		return true;
+	default:
+		return false;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool addWithClamp(int& val, const int operand)
 //Multiplies two integers, ensuring the product doesn't overflow.
 //

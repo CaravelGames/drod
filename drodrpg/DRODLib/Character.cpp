@@ -2863,6 +2863,22 @@ void CCharacter::Process(
 						if (!pGame->QueryInventoryStatus(command.x))
 							STOP_COMMAND;
 					break;
+					case ScriptFlag::Generate:
+						ScriptFlag::EquipmentType type = (ScriptFlag::EquipmentType)command.x;
+						if (CCharacterCommand::IsRealEquipmentType(type) &&
+							room.GetTSquare(this->wX, this->wY) == T_EMPTY) {
+							UINT slotTile = T_EMPTY;
+
+							switch (type) {
+								case ScriptFlag::Weapon: slotTile = T_SWORD; break;
+								case ScriptFlag::Armor: slotTile = T_SHIELD; break;
+								case ScriptFlag::Accessory: slotTile = T_ACCESSORY; break;
+							}
+
+							room.Plot(this->wX, this->wY, slotTile);
+							room.SetTParam(this->wX, this->wY, command.y);
+						}
+					break;
 				}
 			}
 			break;
