@@ -214,6 +214,9 @@
     <ClCompile Include="WadeEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="DamagePreviewEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -412,6 +415,9 @@
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="WadeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DamagePreviewEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>

@@ -517,6 +517,20 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_TitleMenuSelected].OutlineColor = Black;
 	this->LoadedFonts[F_TitleMenuSelected].wOutlineWidth = 2;
 
+	//Load damage preview font.
+	pFont = GetFont(wstrFont2Filepath, 14);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreview].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreview].wLineSkipHeight = GetFontHeight(F_DamagePreview);
+	this->LoadedFonts[F_DamagePreview].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreview].BackColor = Black;
+	this->LoadedFonts[F_DamagePreview].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreview].bOutline = true;
+	this->LoadedFonts[F_DamagePreview].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreview].wOutlineWidth = 1;
+	GetWordWidth(F_DamagePreview, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreview].wSpaceWidth = wSpaceWidth;
+
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG
 	for (UINT wFontI = 0; wFontI < F_Last; ++wFontI)

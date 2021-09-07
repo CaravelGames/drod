@@ -64,7 +64,8 @@ enum EffectType
 	ESTEAM,           //rising steam/smoke puff
 	ESPLASH,          //water splash
 	ECHATTEXT,        //CaravelNet chat text display
-	ERAINDROP         //a falling rain drop
+	ERAINDROP,        //a falling rain drop
+	EDAMAGEPREVIEW,   //hovering enemy damage display
 };
 
 //*****************************************************************************

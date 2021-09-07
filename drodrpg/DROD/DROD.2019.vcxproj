@@ -542,6 +542,7 @@
     <ClCompile Include="ClockWidget.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="CreditsScreen.cpp" />
+    <ClCompile Include="DamagePreviewEffect.cpp" />
     <ClCompile Include="DebrisEffect.cpp" />
     <ClCompile Include="DemoScreen.cpp" />
     <ClCompile Include="DemosScreen.cpp" />
@@ -608,6 +609,7 @@
     <ClInclude Include="ClockWidget.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="CreditsScreen.h" />
+    <ClInclude Include="DamagePreviewEffect.h" />
     <ClInclude Include="DebrisEffect.h" />
     <ClInclude Include="DemoScreen.h" />
     <ClInclude Include="DemosScreen.h" />

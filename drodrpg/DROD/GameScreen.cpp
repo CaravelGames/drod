@@ -4106,6 +4106,8 @@ void CGameScreen::ApplyPlayerSettings()
 
 	SetQuickCombat();
 
+	this->pRoomWidget->ShowDamagePreview(settings.GetVar(Settings::DamagePreview, true));
+
 /*
 	//Set times when saved games and demos are saved automatically.
 	if (!this->bPlayTesting)

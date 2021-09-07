@@ -49,6 +49,7 @@ namespace Settings
 	DEF(CNetProgressIsOld);
 	DEF(CombatRate);
 	DEF(ConnectToInternet);
+	DEF(DamagePreview);
 	DEF(DisableMouse);
 	DEF(DisplayCombos);
 	DEF(EnableChatInGame);
