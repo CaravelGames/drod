@@ -2421,7 +2421,8 @@ const
 	UINT wTileNo = GetTSquare(wX, wY);
 	if (!(wTileNo == T_EMPTY ||
 			wTileNo == T_FUSE || wTileNo == T_SCROLL || wTileNo == T_TOKEN ||
-			wTileNo == T_KEY || bIsPowerUp(wTileNo) || bIsEquipment(wTileNo)))
+			wTileNo == T_KEY || bIsPowerUp(wTileNo) || bIsEquipment(wTileNo) ||
+			wTileNo == T_CRATE))
 		return false;
 
 	//Look for f-square obstacle.
