@@ -5135,8 +5135,10 @@ bool CCurrentGame::CanPlayerMoveTo(const UINT wX, const UINT wY) const
 	if (room.DoesSquarePreventDiagonal(p.wX, p.wY, dx,dy))
 		return false;
 
-	//Player enters a tunnel.
 	const UINT wOTileNo = room.GetOSquare(p.wX, p.wY);
+	const UINT wTTileNo = room.GetTSquare(p.wX, p.wY);
+
+	//Player enters a tunnel.
 	if (bIsTunnel(wOTileNo)) // && p.IsTarget())
 	{
 		bool bEnteredTunnel = false;
@@ -5162,7 +5164,7 @@ bool CCurrentGame::CanPlayerMoveTo(const UINT wX, const UINT wY) const
 		return false;
 
 	if (!room.DoesSquareContainPlayerObstacle(wX, wY, wMoveO,
-			bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+			bIsElevatedTile(wOTileNo)))
 		return true;
 
 	//Specific obstacle types.
@@ -5195,7 +5197,8 @@ CheckOLayer:
 			//If player can jump a tile of pit, extend the movement direction.
 			if (p.CanJump(dx,dy) && room.CanJumpTo(
 					destX, destY, destX + dx, destY + dy,
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+					bIsElevatedTile(wOTileNo),
+					wTTileNo == T_CRATE))
 			{
 				bNotAnObstacle = true;
 				goto CheckTLayer;
@@ -5219,7 +5222,8 @@ CheckOLayer:
 			//If player can jump a tile of water, extend the movement direction.
 			if (p.CanJump(dx,dy) && room.CanJumpTo(
 					destX, destY, destX + dx, destY + dy,
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+					bIsElevatedTile(wOTileNo),
+					wTTileNo == T_CRATE))
 			{
 				bNotAnObstacle = true;
 				goto CheckTLayer;
@@ -5255,7 +5259,7 @@ CheckTLayer:
 		case T_MIRROR:
 			if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 					this->pRoom->GetOSquare(destX, destY),
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))) &&
+					bIsElevatedTile(wOTileNo)) &&
 						room.CanPushTo(destX, destY, destX + dx, destY + dy))
 			{
 				bNotAnObstacle = true;
@@ -5521,6 +5525,7 @@ CheckOLayer:
 		switch (wNewOTile)
 		{
 			case T_PIT: case T_PIT_IMAGE:
+			{
 				//If standing on a platform, check whether it can move.
 				if (wOTileNo == T_PLATFORM_P)
 					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
@@ -5530,10 +5535,11 @@ CheckOLayer:
 					}
 
 				//If player can jump a tile of pit, extend the movement direction.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bPrevTileIsElevated))
+						bPrevTileIsElevated, bPrevTileHasCrate))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5542,8 +5548,10 @@ CheckOLayer:
 				}
 
 				CueEvents.Add(CID_Scared);
+			}
 			break;
 			case T_WATER:
+			{
 				if (wOTileNo == T_PLATFORM_W)
 					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
 					{
@@ -5559,10 +5567,11 @@ CheckOLayer:
 				}
 
 				//If player can jump a tile of water, extend the movement direction.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bPrevTileIsElevated))
+						bPrevTileIsElevated, bPrevTileHasCrate))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5571,6 +5580,7 @@ CheckOLayer:
 				}
 
 				CueEvents.Add(CID_PlayerOnWaterEdge);
+			}
 			break;
 			case T_DOOR_Y:
 			case T_DOOR_C: case T_DOOR_G:
