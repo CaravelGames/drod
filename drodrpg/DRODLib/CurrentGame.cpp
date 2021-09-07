@@ -5650,6 +5650,7 @@ CheckFLayer:
 			case T_CRATE:
 			{
 				//Player ran into pushable object.  Push if possible.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				const UINT destX = wOldX + dx, destY = wOldY + dy;
 				if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 						room.GetOSquare(destX, destY),
@@ -5664,10 +5665,13 @@ CheckFLayer:
 								bPushingTLayerObject = true;
 								break;
 							case T_CRATE:
+								//Don't push a crate from atop another crate.
 								//If stepping onto pushable crate from above, don't push it.
 								//Otherwise do push it.  Can push along top of door.
-								if (!bPrevTileIsElevated || bIsDoor(wNewOTile))
-									bPushingTLayerObject = true;
+								if (!bPrevTileHasCrate) {
+									if (!bPrevTileIsElevated || bIsDoor(wNewOTile))
+										bPushingTLayerObject = true;
+								}
 								break;
 							default: ASSERT(!"Incomplete logic");
 								break;
