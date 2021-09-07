@@ -322,6 +322,7 @@ public:
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
+	void           ShowDamagePreview(const bool bVal = true) { this->bShowDamagePreview = bVal; }
 	void           ShowRoomTransition(const UINT wExitOrientation, const bool bShowPlayer = false);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
 	void           StopSleeping();
@@ -549,6 +550,8 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddDamagePreviews();
+
 	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
 
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
@@ -583,6 +586,8 @@ private:
 	bool           need_to_update_room_weather;
 
 	Uint32         time_of_last_sky_move;
+
+	bool           bShowDamagePreview;
 };
 
 #endif //#ifndef ROOMWIDGET_H

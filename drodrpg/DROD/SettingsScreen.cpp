@@ -106,6 +106,7 @@ const UINT TAG_SHOW_SUBTITLES = 1050;
 //const UINT TAG_TARSTUFF_TRANSPARENCY = 1051;
 //const UINT TAG_DISPLAY_COMBOS = 1052;
 const UINT TAG_NO_FOCUS_PLAYS_MUSIC = 1053;
+const UINT TAG_DAMAGEPREVIEW = 1054;
 
 /*
 const UINT TAG_SHOWCHECKPOINTS = 1055;
@@ -333,7 +334,7 @@ CSettingsScreen::CSettingsScreen()
 	static const int X_GRAPHICS_FRAME = X_PERSONAL_FRAME;
 	static const int Y_GRAPHICS_FRAME = Y_PERSONAL_FRAME;
 
-	static const UINT CX_USEFULLSCREEN = 200;
+	static const UINT CX_USEFULLSCREEN = 400;
 	static const UINT CY_USEFULLSCREEN = CY_STANDARD_OPTIONBUTTON;
 	static const int X_USEFULLSCREEN = CX_SPACE;
 	static const int Y_USEFULLSCREEN = CY_SPACE;
@@ -345,6 +346,10 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_ENVIRONMENTAL = Y_ALPHA + CY_ALPHA;
 	static const UINT CX_ENVIRONMENTAL = CX_ALPHA;
 	static const UINT CY_ENVIRONMENTAL = CY_STANDARD_OPTIONBUTTON;
+	static const int X_DAMAGEPREVIEW = X_ALPHA;
+	static const int Y_DAMAGEPREVIEW = Y_ENVIRONMENTAL + CY_ALPHA;
+	static const UINT CX_DAMAGEPREVIEW = CX_ALPHA;
+	static const UINT CY_DAMAGEPREVIEW = CY_STANDARD_OPTIONBUTTON;
 
 	static const int Y_GAMMA_LABEL = Y_USEFULLSCREEN;
 	static const UINT X_GAMMA_LABEL = X_USEFULLSCREEN + CX_USEFULLSCREEN - 10;
@@ -363,7 +368,7 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CY_GAMMA = CY_STANDARD_SLIDER;
 	static const int Y_GAMMA = Y_GAMMA_LABEL + CY_GAMMA_LABEL;
 
-	static const UINT CY_GRAPHICS_FRAME = Y_ENVIRONMENTAL + CY_ENVIRONMENTAL + CY_SPACE;
+	static const UINT CY_GRAPHICS_FRAME = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW + CY_SPACE;
 
 	//Sound
 	const UINT CX_SOUND_FRAME = CX_GRAPHICS_FRAME;
@@ -594,6 +599,10 @@ CSettingsScreen::CSettingsScreen()
 
 	pOptionButton = new COptionButtonWidget(TAG_ENVIRONMENT, X_ENVIRONMENTAL, Y_ENVIRONMENTAL,
 			CX_ENVIRONMENTAL, CY_ENVIRONMENTAL, g_pTheDB->GetMessageText(MID_EnvironmentalEffects), true);
+	pGraphicsFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_DAMAGEPREVIEW, X_DAMAGEPREVIEW, Y_DAMAGEPREVIEW,
+		CX_DAMAGEPREVIEW, CY_DAMAGEPREVIEW, g_pTheDB->GetMessageText(MID_DamagePreview), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
 
 /*
@@ -1322,6 +1331,9 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ENVIRONMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::EyeCandy, g_pTheBM->eyeCandy > 0));
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
+	pOptionButton->SetChecked(settings.GetVar(Settings::DamagePreview, true));
+
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
@@ -1447,6 +1459,9 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ENVIRONMENT));
 	settings.SetVar(Settings::EyeCandy, pOptionButton->IsChecked());
 	g_pTheBM->eyeCandy = pOptionButton->IsChecked() ? 1 : 0;
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
+	settings.SetVar(Settings::DamagePreview, pOptionButton->IsChecked());
 
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,

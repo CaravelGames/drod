@@ -1490,6 +1490,7 @@ enum MID_CONSTANT {
   MID_ReplaceWithDefault = 1806,
   MID_VarSetAt = 1807,
   MID_EquipGenerate = 1808,
+  MID_DamagePreview = 1809,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

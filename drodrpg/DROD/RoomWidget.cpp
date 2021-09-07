@@ -31,6 +31,7 @@
 #include "DrodScreen.h"
 #include "GameScreen.h"
 
+#include "DamagePreviewEffect.h"
 #include "PendingBuildEffect.h"
 #include "RaindropEffect.h"
 #include "RoomEffectList.h"
@@ -350,6 +351,8 @@ CRoomWidget::CRoomWidget(
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
 	, time_of_last_sky_move(0)
+
+	, bShowDamagePreview(false)
 {
 	this->imageFilenames.push_back(string("Bolts"));
 	this->imageFilenames.push_back(string("Fog1"));
@@ -370,6 +373,25 @@ CRoomWidget::CRoomWidget(
 	if (!this->pRoomSnapshotSurface) throw CException();
 
 	RemoveHighlight();
+}
+
+//*****************************************************************************
+void CRoomWidget::AddDamagePreviews()
+{
+	this->pLastLayerEffects->RemoveEffectsOfType(EDAMAGEPREVIEW);
+
+	if (!this->bShowDamagePreview)
+		return;
+
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL;
+			pMonster = pMonster->pNext)
+	{
+		if (pMonster->GetOwningMonster() != pMonster)
+			continue; //don't show damage preview on large monster segments
+
+		if (pMonster->IsCombatable())
+			AddLastLayerEffect(new CDamagePreviewEffect(this, pMonster));
+	}
 }
 
 //*****************************************************************************
@@ -2352,6 +2374,7 @@ void CRoomWidget::FadeToLightLevel(
 
 		//Render room objects.
 		this->x = this->y = 0;
+		AddDamagePreviews();
 		RenderRoomLayers(pNewRoomSurface);
 		this->x = rect.x;
 		this->y = rect.y;
@@ -2398,6 +2421,7 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 //	DrawOverheadLayer(pSurface);
 //	DrawGhostOverheadCharacters(pSurface, false);
 //	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EDAMAGEPREVIEW);
 
 	RenderEnvironment(pSurface);
 
@@ -4159,6 +4183,9 @@ void CRoomWidget::Paint(
 	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
 	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation, redraw entire room
 		this->bAllDirty = true;
+
+	if ((this->bAllDirty || bMoveMade) && bPlayerIsAlive)
+		AddDamagePreviews();
 
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
