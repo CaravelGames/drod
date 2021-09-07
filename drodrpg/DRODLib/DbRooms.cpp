@@ -2406,29 +2406,30 @@ const
 
 //*****************************************************************************
 bool CDbRoom::CanJumpTo(
-//Returns : Whether the destination room tile is free for the player to jump here
+//Returns: Whether the destination room tile is free for the player to jump here
 //
 //Params:
-		const UINT wFromX, const UINT wFromY,    //(in)   Source tile (i.e. middle tile of the two-tile jump)
-		const UINT wX, const UINT wY,    //(in)   Destination tile to check.
-		const bool bFromRaisedTile) //whether jumping from a raised tile
+	const UINT wFromX, const UINT wFromY,    //(in)   Source tile (i.e. middle tile of the two-tile jump)
+	const UINT wX, const UINT wY,    //(in)   Destination tile to check.
+	const bool bFromRaisedTile,      //whether jumping from a raised tile (e.g., atop a door)
+	const bool bFromCrate)           //whether jumping from atop a crate
 const
 {
 	if (!IsValidColRow(wX, wY))
 		return false;
 
 	//Look for t-square obstacle.
-	UINT wTileNo = GetTSquare(wX, wY);
-	if (!(wTileNo == T_EMPTY ||
-			wTileNo == T_FUSE || wTileNo == T_SCROLL || wTileNo == T_TOKEN ||
-			wTileNo == T_KEY || bIsPowerUp(wTileNo) || bIsEquipment(wTileNo) ||
-			wTileNo == T_CRATE))
+	const UINT wTTileNo = GetTSquare(wX, wY);
+	if (!(wTTileNo == T_EMPTY ||
+			wTTileNo == T_FUSE || wTTileNo == T_SCROLL || wTTileNo == T_TOKEN ||
+			wTTileNo == T_KEY || bIsPowerUp(wTTileNo) || bIsEquipment(wTTileNo) ||
+			wTTileNo == T_CRATE))
 		return false;
 
 	//Look for f-square obstacle.
 	for (UINT i=2; i--; )
 	{
-		wTileNo = i==0 ? GetFSquare(wX, wY) : GetFSquare(wFromX, wFromY);
+		const UINT wTileNo = i==0 ? GetFSquare(wX, wY) : GetFSquare(wFromX, wFromY);
 		switch (wTileNo)
 		{
 			case T_NODIAGONAL:
@@ -2446,12 +2447,20 @@ const
 	}
 
 	//Look for o-square obstacle.
-	wTileNo = GetOSquare(wX, wY);
+	const UINT wTileNo = GetOSquare(wX, wY);
 	if (!(bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo) ||
 			bIsTunnel(wTileNo)))
 	{
-		//Can jump from one raised tile to a closed door.
-		if (!(bFromRaisedTile && bIsDoor(wTileNo)))
+		//Can jump onto a closed door...
+		if (!bIsDoor(wTileNo))
+			return false;
+
+		//...from another raised tile or from a crate...
+		if (!(bFromRaisedTile || bFromCrate))
+			return false;
+
+		//...but not from a crate at floor level onto a crate atop a closed door.
+		if (!bFromRaisedTile && wTTileNo == T_CRATE)
 			return false;
 	}
 

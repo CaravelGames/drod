@@ -179,7 +179,8 @@ public:
 	bool           CanPushTo(const UINT wFromX, const UINT wFromY,
 			const UINT wX, const UINT wY) const;
 	bool           CanJumpTo(const UINT wFromX, const UINT wFromY,
-			const UINT wX, const UINT wY, const bool bFromRaisedTile) const;
+			const UINT wX, const UINT wY,
+			const bool bFromRaisedTile, const bool bFromCrate) const;
 	void           ChangeTiles(const RoomTokenType tType);
 	void           CharactersCheckForCueEvents(CCueEvents &CueEvents, CMonster* pMonsterList);
 	void           CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEvents, const bool bTrapdoorFell=false);
