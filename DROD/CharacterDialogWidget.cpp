@@ -3563,6 +3563,39 @@ const
 			wstr += wszRightParen;
 		}
 		break;
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			wstr += this->pMovementTypeListBox->GetTextForKey(command.w);
+			wstr += wszSpace;
+
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+
+			if (command.h || command.flags) {
+				wstr += wszComma;
+				wstr += wszSpace;
+				if (command.h) {
+					wstr += L"Ignore Weapons";
+				}	else if (command.flags) {
+					wstr += L"Ignore";
+				}
+				wstr += wszSpace;
+			}
+
+			UINT wBitfield = 1;
+			for (UINT wBits = 0; wBits < 32; ++wBits, wBitfield *= 2)
+			{
+				if ((command.flags & wBitfield) == wBitfield)
+				{
+					wstr += this->pIgnoreFlagsListBox->GetTextForKey(wBitfield);
+					wstr += wszSpace;
+				}
+			}
+		}
+		break;
 
 		case CCharacterCommand::CC_BuildMarker:
 			wstr += this->pBuildMarkerListBox->GetTextForKey(command.flags);
@@ -4531,6 +4564,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, L"Wait for open tile");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenMove, g_pTheDB->GetMessageText(MID_WaitForOpenMove));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToFace, g_pTheDB->GetMessageText(MID_WaitForPlayerToFace));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerInput, g_pTheDB->GetMessageText(MID_WaitForPlayerToInput));
@@ -5973,6 +6007,22 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			this->pCommand->w = this->pMovementTypeListBox->GetSelectedItem();
+			this->pCommand->h = this->pOnOffListBox3->GetSelectedItem();
+
+			//Add set bit-fields.
+			this->pCommand->flags = 0;
+			CIDSet flagSet = this->pIgnoreFlagsListBox->GetSelectedItems();
+			for (CIDSet::const_iterator flag = flagSet.begin();
+				flag != flagSet.end(); ++flag)
+				this->pCommand->flags += *flag;
+
+			QueryXY();
+		}
+		break;
+
 		case CCharacterCommand::CC_BuildMarker:
 			this->pCommand->flags = this->pBuildMarkerListBox->GetSelectedItem();
 			QueryRect();
@@ -6846,6 +6896,12 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pRemainsListBox->SelectItem(this->pCommand->flags);
 		break;
 
+		case CCharacterCommand::CC_WaitForOpenTile:
+			SetBitFlags();
+			this->pMovementTypeListBox->SelectItem(this->pCommand->w);
+			this->pOnOffListBox3->SelectItem(this->pCommand->h);
+		break;
+
 		case CCharacterCommand::CC_VarSet:
 		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
@@ -7038,6 +7094,7 @@ void CCharacterDialogWidget::SetBitFlags()
 	CCharacterCommand::CharCommand c = this->pCommand->command;
 	this->pWaitFlagsListBox->DeselectAll();
 	this->pWeaponFlagsListBox->DeselectAll();
+	this->pIgnoreFlagsListBox->DeselectAll();
 
 	UINT wBitfield = 1;
 	for (UINT wBits = 0; wBits<32; ++wBits, wBitfield *= 2)
@@ -7054,6 +7111,11 @@ void CCharacterDialogWidget::SetBitFlags()
 				case CCharacterCommand::CC_WaitForWeapon: 
 				{
 					this->pWeaponFlagsListBox->SelectItem(wBitfield, true);
+				}
+				break;
+				case CCharacterCommand::CC_WaitForOpenTile:
+				{
+					this->pIgnoreFlagsListBox->SelectItem(wBitfield, true);
 				}
 				break;
 				default: 
@@ -7439,6 +7501,24 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y);
+	}
+	break;
+
+	case CCharacterCommand::CC_WaitForOpenTile:
+	{
+		UINT flag;
+		do {
+			parseOption(flag, this->pIgnoreFlagsListBox, bFound);
+			if (bFound)
+				pCommand->flags |= flag;
+			skipWhitespace;
+		} while (bFound);
+
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+		parseNumber(pCommand->w); skipComma;
+		parseNumber(pCommand->h);
 	}
 	break;
 
@@ -8118,6 +8198,25 @@ WSTRING CCharacterDialogWidget::toText(
 		}
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
+	}
+	break;
+
+	case CCharacterCommand::CC_WaitForOpenTile:
+	{
+		UINT wBitfield = 1;
+		for (UINT wBits = 0; wBits < 32; ++wBits, wBitfield *= 2)
+		{
+			if ((c.flags & wBitfield) == wBitfield)
+			{
+				wstr += this->pIgnoreFlagsListBox->GetTextForKey(wBitfield);
+				wstr += wszSpace;
+			}
+		}
+
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.w);
+		concatNum(c.h);
 	}
 	break;
 
