@@ -177,6 +177,9 @@ const UINT TAG_REMAINS_LISTBOX = 881;
 const UINT TAG_ONOFFLISTBOX4 = 880;
 const UINT TAG_KEEPBEHAVIOR_LABEL = 879;
 const UINT TAG_MOVETYPELISTBOX = 878;
+const UINT TAG_IGNOREFLAGSLISTBOX = 877;
+const UINT TAG_IGNOREWEAPONS_LABEL = 876;
+const UINT TAG_IGNOREFLAGS_LABEL = 875;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -421,6 +424,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pWeaponFlagsListBox(NULL)
 	, pAttackTileListBox(NULL)
 	, pMovementTypeListBox(NULL)
+	, pIgnoreFlagsListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1262,6 +1266,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT MOVETYPELISTBOX_CX = 220;
 	static const UINT MOVETYPELISTBOX_CY = 5 * LIST_LINE_HEIGHT + 4;
 
+	static const UINT IGNOREFLAGSLISTBOX_X = MOVETYPELISTBOX_X + MOVETYPELISTBOX_CX + CX_SPACE;
+	static const UINT IGNOREFLAGSLISTBOX_Y = MOVETYPELISTBOX_Y;
+	static const UINT IGNOREFLAGSLISTBOX_CX = CX_WAITFLAGSLISTBOX;
+	static const UINT IGNOREFLAGSLISTBOX_CY = CY_WAITFLAGSLISTBOX;
+
 	//World map input.
 	static const int X_XCOORDLABEL = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
 	static const int Y_XCOORDLABEL = Y_WAITLABEL;
@@ -1594,6 +1603,26 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::BEETHRO, g_pTheDB->GetMessageText(MID_Beethro));
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
 	this->pWaitFlagsListBox->SelectLine(0);
+
+	this->pIgnoreFlagsListBox = new CListBoxWidget(TAG_IGNOREFLAGSLISTBOX,
+		IGNOREFLAGSLISTBOX_X, IGNOREFLAGSLISTBOX_Y, IGNOREFLAGSLISTBOX_CX, IGNOREFLAGSLISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(this->pIgnoreFlagsListBox);
+	this->pIgnoreFlagsListBox->SelectMultipleItems(true);
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::PLAYER, g_pTheDB->GetMessageText(MID_Player));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::PDOUBLE, g_pTheDB->GetMessageText(MID_PlayerDouble));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::NPC, g_pTheDB->GetMessageText(MID_NPC));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::SELF, g_pTheDB->GetMessageText(MID_Self));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::HALPH, g_pTheDB->GetMessageText(MID_Halph2));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::SLAYER, g_pTheDB->GetMessageText(MID_Slayer2));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::MONSTER, g_pTheDB->GetMessageText(MID_Monster));
+	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::PUFFBABY, g_pTheDB->GetMessageText(MID_FluffBaby));
+	this->pIgnoreFlagsListBox->SelectLine(0);
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREFLAGS_LABEL, IGNOREFLAGSLISTBOX_X, Y_WAITLABEL,
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, L"Ignore Entities"));
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, X_SOUNDEFFECTLABEL, X_SOUNDEFFECTLABEL,
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, L"Ignore Weapons"));
 
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_BUILDITEMLISTBOX,
 		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
@@ -5180,7 +5209,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 54;
+	static const UINT NUM_WIDGETS = 55;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5198,7 +5227,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
-		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX
+		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5245,6 +5274,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT MONSTER_REMAINS[] = { TAG_REMAINS_LISTBOX, 0 };
 	static const UINT PUSH_TILE[] =     { TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT MOVETYPE[] = { TAG_MOVETYPELISTBOX, 0 };
+	static const UINT OPENTILE[] = { TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_ONOFFLISTBOX3, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5337,9 +5367,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		MOVETYPE,           //CC_SetMovementType
 		NO_WIDGETS,         //CC_ReplaceWithDefault
 		VARSET,             //CC_VarSetAt
+		OPENTILE            //CC_WaitForOpenTile
 	};
 
-	static const UINT NUM_LABELS = 30;
+	static const UINT NUM_LABELS = 32;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -5348,7 +5379,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL,
 		TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL, TAG_COLOR_LABEL, TAG_INPUTLABEL,
-		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2, TAG_KEEPBEHAVIOR_LABEL
+		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2, TAG_KEEPBEHAVIOR_LABEL,
+		TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL
 	};
 
 	static const UINT NO_LABELS[] =      {0};
@@ -5376,8 +5408,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMAGE_OVERLAY_L[] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT FACE_TOWARDS_L[] = { TAG_SINGLESTEP2, 0 };
 	static const UINT PUSH_TILE_L[] =    { TAG_DIRECTIONLABEL2, 0 };
-	static const UINT NPC_GRAPHIC_L[] =    { TAG_KEEPBEHAVIOR_LABEL, 0 };
-
+	static const UINT NPC_GRAPHIC_L[] =  { TAG_KEEPBEHAVIOR_LABEL, 0 };
+	static const UINT OPEN_TILE_L[] =    { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,          //CC_Appear
@@ -5469,7 +5501,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		PUSH_TILE_L,        //CC_PushTile
 		NO_LABELS,          //CC_SetMovementType
 		NO_LABELS,          //CC_ReplaceWithDefault
-		VARSET_L,           //CC_VarSetAt 
+		VARSET_L,           //CC_VarSetAt
+		OPEN_TILE_L         //CC_WaitForOpenTile
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
