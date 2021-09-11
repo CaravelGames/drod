@@ -1617,12 +1617,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
 	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::MONSTER, g_pTheDB->GetMessageText(MID_Monster));
 	this->pIgnoreFlagsListBox->AddItem(ScriptFlag::PUFFBABY, g_pTheDB->GetMessageText(MID_FluffBaby));
-	this->pIgnoreFlagsListBox->SelectLine(0);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREFLAGS_LABEL, IGNOREFLAGSLISTBOX_X, Y_WAITLABEL,
-		CX_WAITLABEL, CY_WAITLABEL, F_Small, L"Ignore Entities"));
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_Ignore)));
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, X_SOUNDEFFECTLABEL, X_SOUNDEFFECTLABEL,
-		CX_WAITLABEL, CY_WAITLABEL, F_Small, L"Ignore Weapons"));
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_IgnoreWeapons)));
 
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_BUILDITEMLISTBOX,
 		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
@@ -3578,9 +3577,9 @@ const
 				wstr += wszComma;
 				wstr += wszSpace;
 				if (command.h) {
-					wstr += L"Ignore Weapons";
+					wstr += g_pTheDB->GetMessageText(MID_IgnoreWeapons);
 				}	else if (command.flags) {
-					wstr += L"Ignore";
+					wstr += g_pTheDB->GetMessageText(MID_Ignore);
 				}
 				wstr += wszSpace;
 			}
@@ -4564,7 +4563,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, L"Wait for open tile");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenMove, g_pTheDB->GetMessageText(MID_WaitForOpenMove));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToFace, g_pTheDB->GetMessageText(MID_WaitForPlayerToFace));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerInput, g_pTheDB->GetMessageText(MID_WaitForPlayerToInput));

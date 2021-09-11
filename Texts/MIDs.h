@@ -1798,6 +1798,9 @@ enum MID_CONSTANT {
   MID_Air = 2011,
   MID_ReplaceWithDefault = 2013,
   MID_VarSetAt = 2014,
+  MID_WaitForOpenTile = 2020,
+  MID_Ignore = 2021,
+  MID_IgnoreWeapons = 2022,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
