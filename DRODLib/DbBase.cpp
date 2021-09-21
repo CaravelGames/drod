@@ -900,6 +900,9 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_AttackTileTwoTurnStun: strText = "Two-turn stun"; break;
 	case MID_PlayerSwirlEffect: strText = "Player swirl"; break;
 	case MID_RemoveTransparentLayer: strText = "Remove transparent layer object"; break;
+	case MID_WaitForOpenTile: strText = "Wait for open tile"; break;
+	case MID_Ignore: strText = "Ignore"; break;
+	case MID_IgnoreWeapons: strText = "Ignore Weapons"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

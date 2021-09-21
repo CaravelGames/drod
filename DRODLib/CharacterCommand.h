@@ -94,6 +94,7 @@ namespace ScriptFlag
 	static const UINT SLAYER  = 0x00000040;
 	static const UINT BEETHRO = 0x00000080;
 	static const UINT STALWART= 0x00000100;
+	static const UINT PUFFBABY= 0x00000200;
 
 	//How killing NPC affects the game
 	enum Imperative
@@ -330,6 +331,7 @@ public:
 		CC_SetMovementType,     //Sets the character's movement type to X.
 		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
 		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
+		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
 
 		CC_Count
 	};

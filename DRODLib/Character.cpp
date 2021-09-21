@@ -605,6 +605,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_AttackTile:
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
+			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
@@ -670,6 +671,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_AttackTile:
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
+			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
@@ -3357,6 +3359,69 @@ void CCharacter::Process(
 				if (!this->IsOpenMove(nGetOX(px), nGetOY(px)))
 					STOP_COMMAND;
 				bProcessNextCommand = true;
+			break;
+			case CCharacterCommand::CC_WaitForOpenTile:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+				MovementType eOldMovement = eMovement;
+				eMovement = (MovementType)pw;
+
+				bool bBlocked = CMonster::IsTileObstacle(room.GetOSquare(px, py));
+				bBlocked |= CMonster::IsTileObstacle(room.GetFSquare(px, py));
+				bBlocked |= CMonster::IsTileObstacle(room.GetTSquare(px, py));
+
+				eMovement = eOldMovement;
+
+				// Check if non-dagger weapon blocks tile unless ignoring weapons
+				// NPC will not be blocked by its own weapon
+				bBlocked |= (!ph && (pCurrentGame->IsPlayerWeaponAt(px, py, true) || room.IsMonsterSwordAt(px, py, true, this)));
+
+				// Check if player blocks tile
+				bBlocked |= ((pflags & ScriptFlag::PLAYER) == 0 && player.IsInRoom() &&
+					player.wX == px && player.wY == py);
+
+				// Monster can block tile
+				// These checks are skipped if already blocked
+				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+				if (!bBlocked && pMonster && !(pMonster == this && (pflags & ScriptFlag::NPC) != 0)) {
+					// If a type if flagged to be ignored, it will be considered as blocking the tile
+					UINT wMonsterType = pMonster->wType;
+					switch (wMonsterType) {
+						case M_HALPH:
+						case M_HALPH2:
+							bBlocked |= ((pflags & ScriptFlag::HALPH) == 0);
+						break;
+						case M_CHARACTER:
+							bBlocked |= ((pflags & ScriptFlag::NPC) == 0);
+						break;
+						case M_MIMIC:
+						case M_DECOY:
+						case M_CLONE:
+						case M_TEMPORALCLONE:
+							bBlocked |= ((pflags & ScriptFlag::PDOUBLE) == 0);
+						break;
+						case M_SLAYER:
+						case M_SLAYER2:
+							bBlocked |= ((pflags & ScriptFlag::SLAYER) == 0);
+						break;
+						case M_STALWART:
+						case M_STALWART2:
+							bBlocked |= ((pflags & ScriptFlag::STALWART) == 0);
+						break;
+						case M_FLUFFBABY:
+							if ((pflags & ScriptFlag::PUFFBABY) != 0)
+								break;
+						// Fall through to default case if puff isn't excluded
+						default:
+							bBlocked |= ((pflags & ScriptFlag::MONSTER) == 0);
+						break;
+					}
+				}
+
+				if (bBlocked)
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
 			break;
 			case CCharacterCommand::CC_ChallengeCompleted:
 				//Indicates scripted requirements for an architect's challenge (text) have been satisfied.
