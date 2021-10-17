@@ -61,4 +61,14 @@ TEST_CASE("Puff player role", "[game]") {
 
 		REQUIRE(game->GetDyingEntity() == &(game->swordsman));
 	}
+
+	SECTION("Should die when moving onto hot tile") {
+		RoomBuilder::Plot(T_HOT, 10, 11);
+		CCurrentGame* game = Runner::StartGame(10, 10, N);
+
+		CCueEvents CueEvents;
+		Runner::ExecuteCommand(CMD_S, 1);
+
+		REQUIRE(game->GetDyingEntity() == &(game->swordsman));
+	}
 }
