@@ -2557,9 +2557,10 @@ bool CDbRoom::DoesSquareContainPlayerObstacle(
 //Does a square contain an obstacle to player movement?
 //
 //Params:
-		const UINT wX, const UINT wY,    //(in)   Destination square to check.
-		const UINT wO,          //(in)   Direction of movement onto square.
-		const bool bRaisedSrc)  //whether tile coming from is raised
+	const UINT wX, const UINT wY,    //(in)   Destination square to check.
+	const UINT wO,          //(in)   Direction of movement onto square.
+	const bool bRaisedSrc,  //whether tile coming from is raised
+	const bool bCrateSrc, const bool bAllowCrateClimbing) //set when allowing crate-climbing movements [default=false, false]
 //
 //Returns:
 //True if it does, false if not.
@@ -2568,11 +2569,17 @@ const
 	ASSERT(IsValidColRow(wX, wY));
 
 	//Look for t-square obstacle.
-	UINT wTileNo = GetTSquare(wX, wY);
-	if ( !(wTileNo == T_EMPTY || wTileNo==T_SCROLL || bIsPowerUp(wTileNo) ||
-			wTileNo == T_FUSE || wTileNo == T_TOKEN || wTileNo == T_KEY ||
-			bIsEquipment(wTileNo)))
-		return true;
+	const UINT wTTileNo = GetTSquare(wX, wY);
+	if ( !(wTTileNo == T_EMPTY || wTTileNo == T_SCROLL || bIsPowerUp(wTTileNo) ||
+			wTTileNo == T_FUSE || wTTileNo == T_TOKEN || wTTileNo == T_KEY ||
+			bIsEquipment(wTTileNo)))
+	{
+		if (wTTileNo == T_CRATE && bAllowCrateClimbing) {
+			//movement is allowed
+		} else {
+			return true;
+		}
+	}
 
 	if (bIsArrowObstacle(GetFSquare(wX, wY), wO))
 		return true;
@@ -2580,9 +2587,16 @@ const
 	//Look for o-square obstacle.
 	//What is considered an obstacle depends on the player role.
 	const UINT wAppearance = this->pCurrentGame->pPlayer->wAppearance;
-	wTileNo = GetOSquare(wX, wY);
-	if (!CanPlayerMoveOnThisElement(wAppearance, wTileNo, bRaisedSrc))
-		return true;
+	const UINT wOTileNo = GetOSquare(wX, wY);
+	if (!CanPlayerMoveOnThisElement(wAppearance, wOTileNo, bRaisedSrc)) {
+		if (bAllowCrateClimbing && bIsDoor(wOTileNo) && bCrateSrc) {
+			//allowed, if not from a crate at floor level onto a crate atop a closed door.
+			if (!bRaisedSrc && wTTileNo == T_CRATE)
+				return true;
+		} else {
+			return true;
+		}
+	}
 
 	//Is there a monster in the square?
 	CMonster *pMonster = GetMonsterAtSquare(wX, wY);

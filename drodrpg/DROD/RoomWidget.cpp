@@ -1620,38 +1620,42 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 		CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
 		const int damage = combat.GetExpectedDamage();
 		wstr += wszSpace;
-		if (damage < 0)
+		if (damage < 0) {
 			wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
-		else {
+		} else {
 			wstr += g_pTheDB->GetMessageText(MID_ExpectedDamage);
 			wstr += wszColon;
 			wstr += wszSpace;
 			if (damage >= INT_MAX) {
 				wstr += g_pTheDB->GetMessageText(MID_Death);
 			} else {
-				static const WCHAR multiplier[] = {We('x'),We(0)};
-				const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
-				const UINT monsterAttacks = combat.GetMonsterAttacksMade();
-				const UINT needATK = combat.GetProjectedPlayerATKIncreaseForFasterWin();
-
+				if (combat.IsExpectedDamageApproximate())
+					wstr += wszTilde;
 				wstr += _itoW(damage, temp, 10);
-				wstr += wszSpace;
-				wstr += wszLeftParen;
-				wstr += _itoW(enemySingleAttackDamage, temp, 10);
-				wstr += wszSpace;
-				wstr += multiplier;
-				wstr += wszSpace;
-				wstr += _itoW(monsterAttacks, temp, 10);
-				if (needATK) {
-					wstr += wszComma;
-					wstr += wszSpace;
-					wstr += wszPlus;
-					wstr += _itoW(needATK, temp, 10);
-					wstr += wszSpace;
-					wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
-				}
-				wstr += wszRightParen;
 			}
+
+			static const WCHAR multiplier[] = {We('x'),We(0)};
+			const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
+			const UINT monsterAttacks = combat.GetMonsterAttacksMade();
+			const UINT needATK = combat.IsExpectedDamageApproximate() ? 0 : //don't provide a false guess
+					combat.GetProjectedPlayerATKIncreaseForFasterWin();
+
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(enemySingleAttackDamage, temp, 10);
+			wstr += wszSpace;
+			wstr += multiplier;
+			wstr += wszSpace;
+			wstr += _itoW(monsterAttacks, temp, 10);
+			if (needATK) {
+				wstr += wszComma;
+				wstr += wszSpace;
+				wstr += wszPlus;
+				wstr += _itoW(needATK, temp, 10);
+				wstr += wszSpace;
+				wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
+			}
+			wstr += wszRightParen;
 		}
 
 		if (!bFull)

@@ -2039,7 +2039,8 @@ bool CCurrentGame::MayUseAccessory() const
 			ASSERT(room.IsValidColRow(reflectX, reflectY));
 			return !room.DoesSquareContainPlayerObstacle(
 					 reflectX, reflectY, NO_ORIENTATION,
-					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)));
+					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)),
+					 room.GetTSquare(p.wX, p.wY) == T_CRATE, true); //can climb onto crates, and from crates to doors
 		}
 		case WallWalking:
 		{
@@ -2058,8 +2059,9 @@ bool CCurrentGame::MayUseAccessory() const
 				return false;
 
 			return !room.DoesSquareContainPlayerObstacle(
-					 destX, destY, NO_ORIENTATION,
-					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)));
+				destX, destY, NO_ORIENTATION,
+				bIsElevatedTile(room.GetOSquare(p.wX, p.wY)),
+				room.GetTSquare(p.wX, p.wY) == T_CRATE, true); //can climb onto crates, and from crates to doors
 		}
 
 		case NoAccessory:
