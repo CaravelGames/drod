@@ -98,7 +98,7 @@ public:
 			const UINT wX=UINT(-1), const UINT wY=UINT(-1),
 			const bool bDefeatToStabTarTile=false);
 
-	bool Advance(CCueEvents& CueEvents, bool bQuickResolution);
+	bool Advance(CCueEvents& CueEvents, bool bQuickResolution, const UINT maxStrikesToPerform=0);
 
 	bool AttackIsFromBehindMonster(int &dx, int &dy) const;
 	int  GetExpectedDamage();
@@ -109,6 +109,7 @@ public:
 
 	void InitMonsterStats(const bool bCombatStart=true);
 	bool IsCurrent() const;
+	bool IsExpectedDamageApproximate() const { return bExpectedDamageIsApproximate; }
 	bool IsFighting(const CMonster* pMonster) const;
 	void MonsterAttacksPlayerOnce(CCueEvents& CueEvents);
 	bool MonsterCanHarmPlayer(CMonster *pMonster) const;
@@ -166,6 +167,8 @@ private:
 
 	int  getPlayerATK();
 	int  getPlayerDEF();
+
+	bool bExpectedDamageIsApproximate;
 };
 
 #endif //COMBAT_H

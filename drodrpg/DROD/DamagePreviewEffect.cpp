@@ -148,6 +148,9 @@ void CDamagePreviewEffect::PrepWidget()
 
 		WCHAR temp[16];
 
+		if (combat.IsExpectedDamageApproximate())
+			wstr += wszTilde;
+
 		//Magnitude conversion
 		if (damage > 999999) {
 			char czDamage[16];
@@ -163,9 +166,9 @@ void CDamagePreviewEffect::PrepWidget()
 			//append units
 			strcat(czDamage, "M");
 
-			UTF8ToUnicode(czDamage, wstr);
+			wstr += UTF8ToUnicode(czDamage);
 		} else {
-			wstr = _itoW(damage, temp, 10);
+			wstr += _itoW(damage, temp, 10);
 		}
 	}
 

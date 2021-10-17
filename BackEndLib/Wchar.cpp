@@ -68,6 +68,7 @@ const WCHAR wszSemicolon[] =    { We(';'),We(0) };
 const WCHAR wszSpace[] =        { We(' '),We(0) };
 const WCHAR wszUnderscore[] =   { We('_'),We(0) };
 const WCHAR wszZero[] =         { We('0'),We(0) };
+const WCHAR wszTilde[] =        { We('~'),We(0) };
 #ifdef WIN32
 const WCHAR wszSlash[] = { We('\\'),We(0) };
 #else
