@@ -211,7 +211,8 @@ public:
 			const MovementType eMovement) const;
 */
 	bool           DoesSquareContainPlayerObstacle(const UINT wX, const UINT wY,
-			const UINT wO, const bool bRaisedSrc) const;
+			const UINT wO, const bool bRaisedSrc,
+			const bool bCrateSrc=false, const bool bAllowCrateClimbing=false) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
