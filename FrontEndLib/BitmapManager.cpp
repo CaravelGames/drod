@@ -2149,14 +2149,6 @@ void CBitmapManager::DarkenTileWithMultiTileMask(
 	const UINT dwRowWidth = w * wBPP;
 	const UINT dwRowOffset = pDestSurface->pitch - dwRowWidth;
 
-	struct MaskSurface {
-		SDL_Surface* pSurface;
-		UINT x, y; //destination pixel position that this mask will begin to be considered at
-		UINT x2, y2;
-		UINT BPP, rowOffset;
-		Uint8* pixel;
-	};
-
 	//Convert input mask data into format ready to evaluate.
 	vector<MaskSurface> maskSurfaces;
 	UINT i;
