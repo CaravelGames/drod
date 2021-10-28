@@ -174,6 +174,28 @@ bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
 	return false;
 }
 
+//*****************************************************************************
+bool CClone::OnStabbed(CCueEvents& CueEvents, const UINT wX, const UINT wY, WeaponType weaponType)
+// Override for Clone, as some player roles can survive stabs.
+{
+	const UINT identity = GetIdentity();
+
+	if ((identity == M_WUBBA || identity == M_FLUFFBABY)
+		&& weaponType != WT_Firetrap) {
+		// Wubbas and Puffs can only be killed by Firetrap stabs.
+		return false;
+	}
+
+	if (identity == M_FEGUNDO) {
+		// Fegundoes are immune to all weapon types.
+		return false;
+	}
+
+	//Monster dies.
+	CueEvents.Add(CID_MonsterDiedFromStab, this);
+	return true;
+}
+
 //*****************************************************************************************
 void CClone::Process(
 //Process a clone for movement.
