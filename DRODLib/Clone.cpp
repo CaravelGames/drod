@@ -69,6 +69,14 @@ bool CClone::CanDropTrapdoor(const UINT oTile) const
 	return false;
 }
 
+//*****************************************************************************
+bool CClone::CanWadeInShallowWater() const
+//Returns: if the clone can wade. Clones wade if the player wade
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return player.CanWadeInShallowWater();
+}
+
 //*****************************************************************************************
 UINT CClone::GetIdentity() const
 //Returns: what the clone looks like
@@ -110,6 +118,14 @@ bool CClone::IsMonsterTarget() const
 
 	//Otherwise, clones are only targets if the player is
 	return player.IsTarget();
+}
+
+//*****************************************************************************
+bool CClone::IsSwimming() const
+//Returns: if the clone can swim. Clones swim if the player swims
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return player.GetMovementType() == MovementType::WATER;
 }
 
 //*****************************************************************************

@@ -42,9 +42,11 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CClone);
 
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
+  virtual bool CanWadeInShallowWater() const;
 	virtual UINT GetIdentity() const;
 	virtual bool IsFlying() const;
 	virtual bool IsMonsterTarget() const;
+  virtual bool IsSwimming() const;
 	virtual bool IsHiding() const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
