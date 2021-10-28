@@ -376,6 +376,7 @@
     <ClCompile Include="src\tests\PlayerRoles\ConstructPlayerRole.cpp" />
     <ClCompile Include="src\tests\PlayerRoles\FegundoPlayerRole.cpp" />
     <ClCompile Include="src\tests\PlayerRoles\PuffPlayerRole.cpp" />
+    <ClCompile Include="src\tests\PlayerRoles\WaterskipperPlayerRole.cpp" />
     <ClCompile Include="src\tests\PlayerRoles\WraithwingPlayerRole.cpp" />
     <ClCompile Include="src\tests\Player\Basic\BeethroVsPressurePlate.cpp" />
     <ClCompile Include="src\tests\Player\Basic\MoveBeethroInEmptyRoom.cpp" />

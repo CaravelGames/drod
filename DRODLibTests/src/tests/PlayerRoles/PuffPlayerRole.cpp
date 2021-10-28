@@ -1,6 +1,6 @@
 #include "../../test-include.hpp"
 
-TEST_CASE("Puff player role", "[game]") {
+TEST_CASE("Puff player role", "[game][puff][player][player role]") {
 	RoomBuilder::ClearRoom();
 
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
@@ -70,5 +70,17 @@ TEST_CASE("Puff player role", "[game]") {
 		Runner::ExecuteCommand(CMD_S, 1);
 
 		REQUIRE(game->GetDyingEntity() == &(game->swordsman));
+	}
+
+	SECTION("Puff clone pushed onto hot tile should be killed") {
+		RoomBuilder::Plot(T_HOT, 10, 9);
+		RoomBuilder::AddMonster(M_CLONE, 10, 10, N);
+		RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WT_Staff, 10, 12, N);
+
+		CCurrentGame* game = Runner::StartGame(15, 15, N);
+
+		Runner::ExecuteCommand(CMD_N);
+
+		REQUIRE(game->GetDyingEntity() == game->pRoom->GetMonsterAtSquare(10, 9));
 	}
 }
