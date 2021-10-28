@@ -149,6 +149,31 @@ bool CClone::IsHiding() const
 	return false;
 }
 
+//*****************************************************************************
+bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
+//Kill the Clone if it is on a tile that would kill its role.
+{
+	const UINT identity = GetIdentity();
+
+	if (!(identity == M_CONSTRUCT || identity == M_FLUFFBABY)) {
+		// Only Constructs and Puffs die from being on a specific tile.
+		return false;
+	}
+
+	CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+	const UINT dwTileNo = pGame->pRoom->GetOSquare(this->wX, this->wY);
+
+	if ((identity == M_CONSTRUCT && dwTileNo == T_GOO) ||
+		(identity == M_FLUFFBABY && dwTileNo == T_HOT)) {
+		pGame->pRoom->KillMonster(this, CueEvents);
+		SetKillInfo(NO_ORIENTATION); //center stab effect
+		CueEvents.Add(CID_MonsterDiedFromStab, this);
+		return true;
+	}
+
+	return false;
+}
+
 //*****************************************************************************************
 void CClone::Process(
 //Process a clone for movement.
@@ -159,6 +184,10 @@ void CClone::Process(
 							//with codes indicating events that happened that may correspond to
 							//sound or graphical effects.
 {
+	// Die if on deadly tile
+	if (KillIfOnDeadlyTile(CueEvents))
+		return;
+
 	//Light any fuse stood on.
 	if (this->pCurrentGame->swordsman.CanLightFuses())
 		this->pCurrentGame->pRoom->LightFuseEnd(CueEvents, this->wX, this->wY);

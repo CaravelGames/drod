@@ -48,6 +48,7 @@ public:
 	virtual bool IsMonsterTarget() const;
   virtual bool IsSwimming() const;
 	virtual bool IsHiding() const;
+  bool KillIfOnDeadlyTile(CCueEvents& CueEvents);
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
 	virtual bool SetWeaponSheathed();
