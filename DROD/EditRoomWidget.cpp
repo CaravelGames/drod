@@ -1162,6 +1162,7 @@ const
 				return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0])
 						|| (bIsShallowWater(wTileNo[0]) && wSelectedObject != T_HALPH)) &&
 						!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
 						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]));
 			}
 
