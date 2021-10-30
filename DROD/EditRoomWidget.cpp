@@ -890,8 +890,8 @@ const
 				return true;
 			break;
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_RO: case T_DOOR_CO: case T_DOOR_BO:
-			//Open doors can't have orbs, relay stations or beacons on them, but can have tar.
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
+			//Open doors can't have orbs, lights, relay stations or beacons on them, but can have tar.
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_LIGHT || wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTarOrFluff(wTileNo[1]) || bIsBriar(wTileNo[1]))
 				return true;
@@ -934,7 +934,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_M:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Walls/Doors can't have orbs on them, but can have tar.
 			if (bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) return false;
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_POWDER_KEG ||
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_POWDER_KEG || wTileNo[1] == T_LIGHT ||
 					wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
