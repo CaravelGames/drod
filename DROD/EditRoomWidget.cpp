@@ -1019,7 +1019,7 @@ const
 			//Light -- only on floor, walls, pit.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsWater(wTileNo[0]) ||
-					 bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) &&
+					 bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
 					!pMonster;
 		case T_OBSTACLE:
 			//Obstacles -- Can't have monsters on them.
