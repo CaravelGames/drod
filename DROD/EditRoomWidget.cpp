@@ -934,7 +934,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_M:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Walls/Doors can't have orbs on them, but can have tar.
 			if (bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) return false;
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_POWDER_KEG || wTileNo[1] == T_LIGHT ||
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_LIGHT ||
 					wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
