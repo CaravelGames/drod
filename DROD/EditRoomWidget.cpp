@@ -908,7 +908,6 @@ const
 		case T_WALL:
 		case T_WALL2:
 		case T_WALL_IMAGE:
-			if (bIsPotion(wTileNo[1])) return false;
 			if (bIsWall(wTileNo[0])) return true;
 			// FALL-THROUGH
 		case T_WALL_B:
@@ -924,7 +923,7 @@ const
 		case T_WALL_M:
 		case T_WALL_WIN:
 			if (bIsBriar(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]) ||
-					bIsPotion(wTileNo[1]) || wTileNo[1] == T_FLUFF)
+					wTileNo[1] == T_FLUFF)
 				return false;
 			if (wTileNo[2] != T_NOMONSTER && wTileNo[2] != M_SEEP &&
 					wTileNo[2] != M_GENTRYII &&
@@ -1035,7 +1034,7 @@ const
 			//Not on monsters that use/affect the t-layer.
 			if (bIsMother(wTileNo[2])) return false;
 			//Can't go on things player never steps on.
-			return !(bIsWall(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsDeepWater(wTileNo[0]) ||
+			return !(bIsPit(wTileNo[0]) || bIsDeepWater(wTileNo[0]) ||
 					bIsStairs(wTileNo[0]));
 		case T_TOKEN:
 			//Not on stairs or monsters that use/affect the t-layer.
