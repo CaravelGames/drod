@@ -830,7 +830,7 @@ const
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_PLATFORM_W: case T_PLATFORM_P:
 		case T_TRAPDOOR: case T_TRAPDOOR2:
-		case T_THINICE: case T_THINICE_SH:
+		case T_THINICE: case T_THINICE_SH: case T_STEP_STONE:
 		case T_GOO: case T_HOT:
 		case T_FLOOR_SPIKES: case T_FLUFFVENT:
 		case T_FIRETRAP: case T_FIRETRAP_ON:
@@ -868,7 +868,7 @@ const
 						wTileNo[1] == T_FLUFF || wTileNo[1] == T_TOKEN || bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER ||
 					bIsEntityFlying(wTileNo[2]) || bIsEntitySwimming(wTileNo[2]));
-		case T_SHALLOW_WATER: case T_STEP_STONE:
+		case T_SHALLOW_WATER:
 			//Shallow Water -- flying+water+wading monsters can be on it.
 			if (bIsShallowWater(wTileNo[0]) || bIsSteppingStone(wTileNo[0]))
 				return true;
@@ -1003,7 +1003,7 @@ const
 						bIsPlatform(wTileNo[0]) || wTileNo[0] == T_PRESSPLATE ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
 						wTileNo[0] == T_FLOOR_SPIKES || wTileNo[0] == T_FLUFFVENT ||
-						bIsFiretrap(wTileNo[0]) ||
+						wTileNo[0] == T_STEP_STONE || bIsFiretrap(wTileNo[0]) ||
 						bIsWater(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
