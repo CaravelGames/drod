@@ -1011,7 +1011,7 @@ const
 			//Only on floor, walls, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || (bIsWall(wTileNo[0]) && wTileNo[0] != T_WALL_M && wTileNo[0] != T_WALL_WIN) ||
-						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
+						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_GOO) &&
 						(!pMonster || wTileNo[2] == M_CHARACTER);
