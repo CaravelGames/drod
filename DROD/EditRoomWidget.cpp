@@ -908,6 +908,7 @@ const
 		case T_WALL:
 		case T_WALL2:
 		case T_WALL_IMAGE:
+			if (bIsPotion(wTileNo[1])) return false;
 			if (bIsWall(wTileNo[0])) return true;
 			// FALL-THROUGH
 		case T_WALL_B:
@@ -923,7 +924,7 @@ const
 		case T_WALL_M:
 		case T_WALL_WIN:
 			if (bIsBriar(wTileNo[1]) || bIsTLayerCoveringItem(wTileNo[1]) ||
-					wTileNo[1] == T_FLUFF)
+					bIsPotion(wTileNo[1]) || wTileNo[1] == T_FLUFF)
 				return false;
 			if (wTileNo[2] != T_NOMONSTER && wTileNo[2] != M_SEEP &&
 					wTileNo[2] != M_GENTRYII &&
