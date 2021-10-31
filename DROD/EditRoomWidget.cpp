@@ -1005,7 +1005,7 @@ const
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
 						wTileNo[0] == T_FLOOR_SPIKES || wTileNo[0] == T_FLUFFVENT ||
 						wTileNo[0] == T_STEP_STONE || bIsFiretrap(wTileNo[0]) ||
-						bIsWater(wTileNo[0])) &&
+						bIsWater(wTileNo[0]) || bIsTunnel(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_POWDER_KEG:
@@ -1019,7 +1019,7 @@ const
 		case T_LIGHT:
 			//Light -- only on floor, walls, pit.
 			return !bSwordsmanAt &&
-					(bIsFloor(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsWater(wTileNo[0]) ||
+					(bIsFloor(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsWater(wTileNo[0]) || bIsTunnel(wTileNo[0]) ||
 					 bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
 					!pMonster;
 		case T_OBSTACLE:
