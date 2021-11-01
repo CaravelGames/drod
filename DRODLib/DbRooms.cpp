@@ -3643,7 +3643,8 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	ASSERT(eMovement == GROUND_FORCE
 		|| eMovement == GROUND_AND_SHALLOW_WATER_FORCE
 		|| eMovement == AIR_FORCE
-		|| eMovement == WATER_FORCE);
+		|| eMovement == WATER_FORCE
+		|| eMovement == WALL_FORCE);
 
 	if (!this->pPathMap[eMovement])
 		CreatePathMap(wX, wY, eMovement);
@@ -7263,6 +7264,7 @@ const
 				}
 			break;
 		case WALL:
+		case WALL_FORCE:
 			if (!(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare)))
 				return DMASK_ALL;
 			break;
