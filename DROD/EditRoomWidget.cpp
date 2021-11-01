@@ -1177,7 +1177,7 @@ const
 			//Can enter on crumbly wall or tar, since player entered there and
 			//must have already cleaned the square.
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
-					bIsCrumblyWall(wTileNo[0]) || (bIsShallowWater(wTileNo[0]) && wSelectedObject != T_HALPH)) &&
+					bIsCrumblyWall(wTileNo[0]) || bIsShallowWater(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || wTileNo[1] == T_BOMB || wTileNo[1] == T_OBSTACLE ||
 					wTileNo[1] == T_STATION || bIsBeacon(wTileNo[0]));
 
