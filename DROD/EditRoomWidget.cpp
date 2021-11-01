@@ -1178,7 +1178,7 @@ const
 			//must have already cleaned the square.
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 					bIsCrumblyWall(wTileNo[0]) || (bIsShallowWater(wTileNo[0]) && wSelectedObject != T_HALPH)) &&
-					!(wTileNo[1] == T_ORB || bIsExplodingItem(wTileNo[1]) || wTileNo[1] == T_OBSTACLE ||
+					!(wTileNo[1] == T_ORB || wTileNo[1] == T_BOMB || wTileNo[1] == T_OBSTACLE ||
 					wTileNo[1] == T_STATION || bIsBeacon(wTileNo[0]));
 
 		case T_WWING:
