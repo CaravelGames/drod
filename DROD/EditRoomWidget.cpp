@@ -800,7 +800,8 @@ const
 				if (wSelectedObject == T_SWORDSMAN && bAllowSelf)
 					break;
 				if (!(wSelectedObject == T_NOMONSTER || wSelectedObject == T_CHARACTER ||
-						bIsSerpentOrGentryii(wSelectedObject - M_OFFSET) || bIsSerpentTile(wSelectedObject)))
+						bIsSerpentOrGentryii(wSelectedObject - M_OFFSET) || bIsSerpentTile(wSelectedObject) ||
+						wSelectedObject == T_GENTRYII_CHAIN))
 					return false;
 				break;
 			default: ASSERT(!"Invalid layer"); break;
