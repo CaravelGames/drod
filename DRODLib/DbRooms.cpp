@@ -6315,10 +6315,12 @@ const
 	switch (t)
 	{
 		case T_ORB:
-		case T_TAR:	case T_MUD: case T_GEL:
+		case T_TAR:	case T_MUD: case T_GEL: case T_FLUFF:
 		case T_BOMB:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 		case T_OBSTACLE:
+		case T_LIGHT:
+		case T_STATION:
 		case T_BEACON: case T_BEACON_OFF:
 			return false;
 		default:
