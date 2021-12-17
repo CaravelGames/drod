@@ -240,6 +240,12 @@ void CGuard::ProcessDaggerMove(const UINT wTargetX, const UINT wTargetY, CCueEve
 			DoubleMove(CueEvents, dx, dy);
 			SetOrientation(dx, dy);
 		}
+		else if (!CArmedMonster::IsOpenMove(dx, dy) && IsSafeToStab(this->wX, this->wY, wNewOrientation))
+		{
+			// Perform "bump kill" if adjacent target is on a non-open tile
+			this->wO = wNewOrientation;
+			this->AttackTargetUnderWeapon(wX, wY, CueEvents);
+		}
 	}
 	else
 	{
