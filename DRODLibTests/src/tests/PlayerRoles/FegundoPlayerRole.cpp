@@ -1,6 +1,6 @@
 #include "../../test-include.hpp"
 
-TEST_CASE("Fegundo player role", "[game]") {
+TEST_CASE("Fegundo player role", "[game][fegundo][player][player role]") {
 	RoomBuilder::ClearRoom();
 
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
@@ -56,6 +56,17 @@ TEST_CASE("Fegundo player role", "[game]") {
 		Runner::ExecuteCommand(CMD_S, 2);
 		Runner::ExecuteCommand(CMD_CLONE);
 		Runner::ExecuteCommand(CMD_N);
+
+		REQUIRE(game->GetDyingEntity() == NULL);
+	}
+
+	SECTION("Fegundo clone should not be killed by fire trap") {
+		RoomBuilder::Plot(T_FIRETRAP_ON, 10, 12);
+		RoomBuilder::AddMonster(M_CLONE, 10, 12);
+
+		CCurrentGame* game = Runner::StartGame(10, 10, N);
+
+		Runner::ExecuteCommand(CMD_WAIT);
 
 		REQUIRE(game->GetDyingEntity() == NULL);
 	}

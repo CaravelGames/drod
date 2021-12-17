@@ -216,6 +216,9 @@
     <ClCompile Include="src\tests\Monsters\Guard\GuardPuffObstacle.cpp">
       <Filter>Tests\Monsters\Guard</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\WaterskipperPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

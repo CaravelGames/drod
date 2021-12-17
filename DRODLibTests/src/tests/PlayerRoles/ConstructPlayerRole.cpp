@@ -37,4 +37,16 @@ TEST_CASE("Construct player role", "[game][construct][player][player role]") {
 
 		REQUIRE(game->GetDyingEntity() == &(game->swordsman));
 	}
+
+	SECTION("Construct clone pushed onto oremites should be killed"){
+		RoomBuilder::Plot(T_GOO, 10, 9);
+		RoomBuilder::AddMonster(M_CLONE, 10, 10, N);
+		RoomBuilder::AddMonsterWithWeapon(M_MIMIC, WT_Staff, 10, 12, N);
+
+		CCurrentGame* game = Runner::StartGame(15, 15, N);
+
+		Runner::ExecuteCommand(CMD_N);
+
+		REQUIRE(game->GetDyingEntity() == game->pRoom->GetMonsterAtSquare(10,9));
+	}
 }
