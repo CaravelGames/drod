@@ -12,8 +12,8 @@ using namespace std;
 
 TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 	RoomBuilder::ClearRoom();
-	
-	SECTION("Guard with a dagger won't bother to turn around"){
+
+	SECTION("Guard with a dagger won't bother to turn around") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, W);
 
 		CCueEvents CueEvents;
@@ -21,8 +21,8 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
-	
-	SECTION("Guard with a dagger will body-kill player"){
+
+	SECTION("Guard with a dagger will body-kill player") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, W);
 
 		CCueEvents CueEvents;
@@ -30,8 +30,8 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
-	
-	SECTION("Guard with a dagger will not body-kill if that would blow a bomb"){
+
+	SECTION("Guard with a dagger will not body-kill if that would blow a bomb") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, W);
 		RoomBuilder::Plot(T_BOMB, 12, 10);
 
@@ -46,7 +46,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		RoomBuilder::AddMonster(M_BRAIN, 11, 10, S);
 
 		CCueEvents CueEvents;
-		CCurrentGame* game =  Runner::StartGame(13, 10, N);
+		CCurrentGame* game = Runner::StartGame(13, 10, N);
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 
 		CMonster* monster = game->pRoom->GetMonsterAtSquare(11, 10);
@@ -138,7 +138,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(monster->GetWeaponType() == WT_Sword);
 	}
 
-	SECTION("Guard with a caber on player will stay in place to kill the player"){
+	SECTION("Guard with a caber on player will stay in place to kill the player") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Caber, 10, 10, S);
 
 		CCueEvents CueEvents;
@@ -146,7 +146,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
-	SECTION("Guard with a staff on player will move forward"){
+	SECTION("Guard with a staff on player will move forward") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Staff, 10, 10, S);
 
 		CCueEvents CueEvents;
@@ -155,7 +155,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(pGame->swordsman.wX == 10);
 		REQUIRE(pGame->swordsman.wY == 12);
 	}
-	SECTION("Guard with a pick-axe on player will move forward"){
+	SECTION("Guard with a pick-axe on player will move forward") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Pickaxe, 10, 10, S);
 
 		CCueEvents CueEvents;
@@ -164,7 +164,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(pGame->swordsman.wX == 10);
 		REQUIRE(pGame->swordsman.wY == 12);
 	}
-	SECTION("Guard with a spear on player will move into player to kill"){
+	SECTION("Guard with a spear on player will move into player to kill") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Spear, 10, 10, S);
 
 		CCueEvents CueEvents;
@@ -172,8 +172,8 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
-	
-	SECTION("Guard with a spear on player will move into player to kill, even if bomb is one tile further because it won't be stabbed"){
+
+	SECTION("Guard with a spear on player will move into player to kill, even if bomb is one tile further because it won't be stabbed") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Spear, 10, 10, S);
 		RoomBuilder::Plot(T_BOMB, 10, 12);
 
@@ -182,8 +182,8 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(CueEvents.HasOccurred(CID_MonsterKilledPlayer));
 	}
-	
-	SECTION("Guard with a staff won't be afraid of attacking bombs"){
+
+	SECTION("Guard with a staff won't be afraid of attacking bombs") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Staff, 10, 10, S);
 		RoomBuilder::Plot(T_BOMB, 10, 12);
 
@@ -192,7 +192,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 11));
 	}
-	SECTION("Guard with a dagger will turn to face the direction they're moving"){
+	SECTION("Guard with a dagger will turn to face the direction they're moving") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, S);
 
 		CCueEvents CueEvents;
@@ -201,11 +201,11 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(11, 10));
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(11, 10)->wO == E);
 	}
-	SECTION("Guard with a dagger will turn to face the direction they tried to move"){
+	SECTION("Guard with a dagger will turn to face the direction they tried to move") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, S);
 		RoomBuilder::PlotRect(T_WALL, 9, 9, 11, 9);
 		RoomBuilder::PlotRect(T_WALL, 9, 10, 9, 10);
-		RoomBuilder::PlotRect(T_WALL, 11,10, 11, 10);
+		RoomBuilder::PlotRect(T_WALL, 11, 10, 11, 10);
 		RoomBuilder::PlotRect(T_WALL, 9, 11, 11, 11);
 
 		CCueEvents CueEvents;
@@ -214,11 +214,11 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10));
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10)->wO == E);
 	}
-	SECTION("Guard with a dagger will turn to face the direction they tried to move even NW"){
+	SECTION("Guard with a dagger will turn to face the direction they tried to move even NW") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, S);
 		RoomBuilder::PlotRect(T_WALL, 9, 9, 11, 9);
 		RoomBuilder::PlotRect(T_WALL, 9, 10, 9, 10);
-		RoomBuilder::PlotRect(T_WALL, 11,10, 11, 10);
+		RoomBuilder::PlotRect(T_WALL, 11, 10, 11, 10);
 		RoomBuilder::PlotRect(T_WALL, 9, 11, 11, 11);
 
 		CCueEvents CueEvents;
@@ -227,11 +227,11 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10));
 		REQUIRE(pGame->pRoom->GetMonsterAtSquare(10, 10)->wO == NW);
 	}
-	SECTION("Guard with a dagger will refuse to kill himself when closely surrounded by bombs"){
+	SECTION("Guard with a dagger will refuse to kill himself when closely surrounded by bombs") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, E);
 		RoomBuilder::PlotRect(T_BOMB, 9, 9, 11, 9);
 		RoomBuilder::PlotRect(T_BOMB, 9, 10, 9, 10);
-		RoomBuilder::PlotRect(T_BOMB, 12,10, 12, 10);
+		RoomBuilder::PlotRect(T_BOMB, 12, 10, 12, 10);
 		RoomBuilder::PlotRect(T_BOMB, 9, 11, 11, 11);
 
 		CCueEvents CueEvents;
@@ -239,7 +239,7 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
 		REQUIRE(!CueEvents.HasOccurred(CID_BombExploded));
 	}
-	SECTION("Guard with a staff will push a powder keg"){
+	SECTION("Guard with a staff will push a powder keg") {
 		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Staff, 10, 10, S);
 		RoomBuilder::Plot(T_POWDER_KEG, 10, 12);
 
@@ -265,5 +265,58 @@ TEST_CASE("Guards wielding different weapons", "[game][guard][weapon]") {
 		Runner::ExecuteCommand(CMD_WAIT);
 		AssertMonsterTypeO(10, 10, M_GUARD, S);
 		AssertMonsterType(10, 11, M_CHARACTER);
+	}
+
+	SECTION("Guard with a dagger can bump-kill from an arrow") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_STALWART, 11, 10, E);
+
+		RoomBuilder::Plot(T_ARROW_W, 10, 10);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 15, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoMonster(11, 10);
+		AssertMonsterTypeO(10, 10, M_GUARD, E);
+	}
+
+	SECTION("Guard with a dagger can bump-kill target on opposing arrow") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_STALWART, 11, 10, E);
+
+		RoomBuilder::Plot(T_ARROW_W, 11, 10);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 15, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoMonster(11, 10);
+		AssertMonsterTypeO(10, 10, M_GUARD, E);
+	}
+
+	SECTION("Guard with a dagger bump-kill not blocked by bomb beyond target") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_STALWART, 11, 10, SE);
+
+		RoomBuilder::Plot(T_ARROW_W, 11, 10);
+		RoomBuilder::Plot(T_BOMB, 12, 10);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 15, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoMonster(11, 10);
+		AssertMonsterTypeO(10, 10, M_GUARD, E);
+	}
+
+	SECTION("Guard with a dagger can bump-kill target on a wall") {
+		RoomBuilder::AddMonsterWithWeapon(M_GUARD, WT_Dagger, 10, 10, N);
+		RoomBuilder::AddMonster(M_STALWART, 11, 10, E);
+
+		RoomBuilder::Plot(T_WALL, 11, 10);
+
+		CCurrentGame* pGame = Runner::StartGame(10, 15, S);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		AssertNoMonster(11, 10);
+		AssertMonsterTypeO(10, 10, M_GUARD, E);
 	}
 }

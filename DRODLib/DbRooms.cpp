@@ -3106,6 +3106,12 @@ void CDbRoom::KillMonstersOnHazard(CCueEvents &CueEvents)
 				pConstruct->KillIfOnOremites(CueEvents);
 			}
 			break;
+			case M_CLONE:
+			{
+				CClone* pClone = DYN_CAST(CClone*, CMonster*, pMonster);
+				pClone->KillIfOnDeadlyTile(CueEvents);
+			}
+			break;
 			case M_TEMPORALCLONE:
 			{
 				CTemporalClone *pTemporalClone = DYN_CAST(CTemporalClone*, CMonster*, pMonster);
@@ -3665,7 +3671,8 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	ASSERT(eMovement == GROUND_FORCE
 		|| eMovement == GROUND_AND_SHALLOW_WATER_FORCE
 		|| eMovement == AIR_FORCE
-		|| eMovement == WATER_FORCE);
+		|| eMovement == WATER_FORCE
+		|| eMovement == WALL_FORCE);
 
 	if (!this->pPathMap[eMovement])
 		CreatePathMap(wX, wY, eMovement);
@@ -6372,10 +6379,12 @@ const
 	switch (t)
 	{
 		case T_ORB:
-		case T_TAR:	case T_MUD: case T_GEL:
+		case T_TAR:	case T_MUD: case T_GEL: case T_FLUFF:
 		case T_BOMB:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 		case T_OBSTACLE:
+		case T_LIGHT:
+		case T_STATION:
 		case T_BEACON: case T_BEACON_OFF:
 			return false;
 		default:
@@ -7326,6 +7335,7 @@ const
 				}
 			break;
 		case WALL:
+		case WALL_FORCE:
 			if (!(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare)))
 				return DMASK_ALL;
 			break;

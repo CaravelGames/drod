@@ -7308,7 +7308,7 @@ TERRAIN_TYPE terrainType(const UINT tile[4])
 	if (bIsWater(tile[0]))
 		return TT_WATER;
 
-	if (tile[1] == T_OBSTACLE || tile[1] == T_STATION || tile[1] == T_ORB ||
+	if (tile[1] == T_OBSTACLE || tile[1] == T_STATION || tile[1] == T_ORB || tile[1] == T_LIGHT ||
 			bIsBeacon(tile[1]) || bIsTarOrFluff(tile[1]) || bIsSerpentOrGentryii(tile[2]))
 		return TT_OBSTACLE;
 

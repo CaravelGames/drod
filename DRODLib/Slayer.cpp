@@ -373,7 +373,9 @@ const
 		if (pMonster)
 		{
 			//Don't step-kill guards or other slayers
-			if (pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 || pMonster->wType == M_GUARD)
+			//Stepping on puffs is also bad
+			if (pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 || pMonster->wType == M_GUARD ||
+					pMonster->wType == M_FLUFFBABY)
 				return true;
 		}
 
@@ -415,7 +417,7 @@ const
 		//stop the wisp from advancing.
 		if (pMonster->IsLongMonster() || pMonster->IsPiece() ||
 				bIsRockGolemType(pMonster->wType) || pMonster->wType == M_GUARD ||
-				pMonster->wType == M_CHARACTER ||
+				pMonster->wType == M_CHARACTER || pMonster->wType == M_FLUFFBABY ||
 				pMonster->wType == M_FEGUNDO || pMonster->wType == M_FEGUNDOASHES)
 			return true;
 	}

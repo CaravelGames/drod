@@ -61,12 +61,13 @@ const
 	if (CMonster::DoesSquareContainObstacle(wCol, wRow))
 		return true;
 
-	//Can't move onto monsters except Fluff Babies -- even target ones.
+	//Can't move onto monsters -- even target ones.
 	CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(wCol, wRow);
 	if (pMonster){
-		if (pMonster->wType != M_FLUFFBABY && !CanDaggerStep(pMonster))
+		if (!CanDaggerStep(pMonster))
 			return true;
-		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2)
+		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 ||
+			  pMonster->wType == M_FLUFFBABY)
 			return true;
 		if (pMonster->wType == M_CHARACTER) {
 			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
@@ -236,6 +237,12 @@ void CGuard::ProcessDaggerMove(const UINT wTargetX, const UINT wTargetY, CCueEve
 		{
 			DoubleMove(CueEvents, dx, dy);
 			SetOrientation(dx, dy);
+		}
+		else if (!CArmedMonster::IsOpenMove(dx, dy) && IsSafeToStab(this->wX, this->wY, wNewOrientation))
+		{
+			// Perform "bump kill" if adjacent target is on a non-open tile
+			this->wO = wNewOrientation;
+			this->AttackTargetUnderWeapon(wX, wY, CueEvents);
 		}
 	}
 	else

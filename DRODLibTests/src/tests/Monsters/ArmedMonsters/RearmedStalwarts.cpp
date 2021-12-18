@@ -1,4 +1,5 @@
 #include "../../../catch.hpp"
+#include "../../../CAssert.h"
 #include "../../../CTestDb.h"
 #include "../../../Runner.h"
 #include "../../../RoomBuilder.h"
@@ -166,6 +167,21 @@ TEST_CASE("Stalwarts wielding different weapons", "[game]") {
 		REQUIRE(!CueEvents.HasOccurred(CID_BombExploded));
 	}
 	
+	SECTION("Stalwart with a dagger bump-kill not blocked by bomb beyond target") {
+		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Dagger, 10, 10, W);
+		RoomBuilder::AddMonster(M_WATERSKIPPER, 11, 10, E);
+
+		RoomBuilder::Plot(T_WATER, 11, 10);
+		RoomBuilder::Plot(T_BOMB, 12, 10);
+
+		CCueEvents CueEvents;
+		CCurrentGame* pGame = Runner::StartGame(20, 20, S);
+		Runner::ExecuteCommand(CMD_WAIT, CueEvents);
+
+		AssertNoMonster(11, 10);
+		AssertMonsterTypeO(10, 10, M_STALWART, E);
+	}
+
 	SECTION("Stalwart with a staff will push a powder keg"){
 		RoomBuilder::AddMonsterWithWeapon(M_STALWART, WT_Staff, 10, 10, S);
 		RoomBuilder::AddMonster(M_BRAIN, 10, 20, NO_ORIENTATION);
