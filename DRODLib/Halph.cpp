@@ -476,7 +476,7 @@ const
 
 	//No monsters can ever be stepped on.
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
-	if (pMonster && pMonster->wType != M_FLUFFBABY)
+	if (pMonster)
 		return true;
 
 	//Some layer objects are obstacles.  Check for these.

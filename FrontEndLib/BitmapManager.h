@@ -68,6 +68,14 @@ struct CustomTiles
 	UINT wTileStartNo;     //starting number of these custom tiles
 };
 
+struct MaskSurface {
+	SDL_Surface* pSurface;
+	UINT x, y; //destination pixel position that this mask will begin to be considered at
+	UINT x2, y2;
+	UINT BPP, rowOffset;
+	Uint8* pixel;
+};
+
 //Used to mask out (could be either to intersect or subtract, depending on use case)
 //the region of a moving tile image from a surface location being modified.
 //In other words, this mask indicates where to either include or exclude a rendering operation,

@@ -800,7 +800,8 @@ const
 				if (wSelectedObject == T_SWORDSMAN && bAllowSelf)
 					break;
 				if (!(wSelectedObject == T_NOMONSTER || wSelectedObject == T_CHARACTER ||
-						bIsSerpentOrGentryii(wSelectedObject - M_OFFSET) || bIsSerpentTile(wSelectedObject)))
+						bIsSerpentOrGentryii(wSelectedObject - M_OFFSET) || bIsSerpentTile(wSelectedObject) ||
+						wSelectedObject == T_GENTRYII_CHAIN))
 					return false;
 				break;
 			default: ASSERT(!"Invalid layer"); break;
@@ -830,7 +831,7 @@ const
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_PLATFORM_W: case T_PLATFORM_P:
 		case T_TRAPDOOR: case T_TRAPDOOR2:
-		case T_THINICE: case T_THINICE_SH:
+		case T_THINICE: case T_THINICE_SH: case T_STEP_STONE:
 		case T_GOO: case T_HOT:
 		case T_FLOOR_SPIKES: case T_FLUFFVENT:
 		case T_FIRETRAP: case T_FIRETRAP_ON:
@@ -868,7 +869,7 @@ const
 						wTileNo[1] == T_FLUFF || wTileNo[1] == T_TOKEN || bIsBriar(wTileNo[1]) || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER ||
 					bIsEntityFlying(wTileNo[2]) || bIsEntitySwimming(wTileNo[2]));
-		case T_SHALLOW_WATER: case T_STEP_STONE:
+		case T_SHALLOW_WATER:
 			//Shallow Water -- flying+water+wading monsters can be on it.
 			if (bIsShallowWater(wTileNo[0]) || bIsSteppingStone(wTileNo[0]))
 				return true;
@@ -890,8 +891,8 @@ const
 				return true;
 			break;
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_RO: case T_DOOR_CO: case T_DOOR_BO:
-			//Open doors can't have orbs, relay stations or beacons on them, but can have tar.
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
+			//Open doors can't have orbs, lights, relay stations or beacons on them, but can have tar.
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_LIGHT || wTileNo[1] == T_STATION	|| bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTarOrFluff(wTileNo[1]) || bIsBriar(wTileNo[1]))
 				return true;
@@ -934,7 +935,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_M:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Walls/Doors can't have orbs on them, but can have tar.
 			if (bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) return false;
-			if (wTileNo[1] == T_ORB || wTileNo[1] == T_POWDER_KEG ||
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_LIGHT ||
 					wTileNo[1] == T_FLUFF || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]))
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
@@ -1003,23 +1004,23 @@ const
 						bIsPlatform(wTileNo[0]) || wTileNo[0] == T_PRESSPLATE ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
 						wTileNo[0] == T_FLOOR_SPIKES || wTileNo[0] == T_FLUFFVENT ||
-						bIsFiretrap(wTileNo[0]) ||
-						bIsWater(wTileNo[0])) &&
+						wTileNo[0] == T_STEP_STONE || bIsFiretrap(wTileNo[0]) ||
+						bIsWater(wTileNo[0]) || bIsTunnel(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_POWDER_KEG:
 			//Only on floor, walls, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || (bIsWall(wTileNo[0]) && wTileNo[0] != T_WALL_M && wTileNo[0] != T_WALL_WIN) ||
-						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
+						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_GOO) &&
 						(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_LIGHT:
 			//Light -- only on floor, walls, pit.
 			return !bSwordsmanAt &&
-					(bIsFloor(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsWater(wTileNo[0]) ||
-					 bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0])) &&
+					(bIsFloor(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsWater(wTileNo[0]) || bIsTunnel(wTileNo[0]) ||
+					 bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
 					!pMonster;
 		case T_OBSTACLE:
 			//Obstacles -- Can't have monsters on them.
@@ -1034,7 +1035,7 @@ const
 			//Not on monsters that use/affect the t-layer.
 			if (bIsMother(wTileNo[2])) return false;
 			//Can't go on things player never steps on.
-			return !(bIsWall(wTileNo[0]) || bIsPit(wTileNo[0]) || bIsDeepWater(wTileNo[0]) ||
+			return !(bIsPit(wTileNo[0]) || bIsDeepWater(wTileNo[0]) ||
 					bIsStairs(wTileNo[0]));
 		case T_TOKEN:
 			//Not on stairs or monsters that use/affect the t-layer.
@@ -1162,6 +1163,7 @@ const
 				return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0])
 						|| (bIsShallowWater(wTileNo[0]) && wSelectedObject != T_HALPH)) &&
 						!(wTileNo[1] == T_ORB || bIsTarOrFluff(wTileNo[1]) || bIsExplodingItem(wTileNo[1]) ||
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
 						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_STATION || bIsBeacon(wTileNo[1]));
 			}
 
@@ -1175,9 +1177,8 @@ const
 			//Can enter on crumbly wall or tar, since player entered there and
 			//must have already cleaned the square.
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
-					bIsCrumblyWall(wTileNo[0]) || (bIsShallowWater(wTileNo[0]) && wSelectedObject != T_HALPH)) &&
-					!(wTileNo[1] == T_ORB || bIsExplodingItem(wTileNo[1]) || wTileNo[1] == T_OBSTACLE ||
-					wTileNo[1] == T_STATION || bIsBeacon(wTileNo[0]));
+					bIsCrumblyWall(wTileNo[0]) || bIsShallowWater(wTileNo[0])) &&
+					!(wTileNo[1] == T_ORB || bIsTLayerObstacle(wTileNo[1]) || bIsBeacon(wTileNo[1]));
 
 		case T_WWING:
 		case T_FEGUNDO:

@@ -97,4 +97,24 @@ TEST_CASE("Squad Horn", "[game][elements]") {
 		RunTestCase(T_PIT, T_WATER, M_WATERSKIPPER, false);
 	}
 	
+	// Wall Entity
+	SECTION("Clone will not appear across floor for Seep") {
+		RunTestCase(T_FLOOR, T_WALL, M_SEEP, false);
+	}
+
+	SECTION("Clone will not appear across deep water for Seep") {
+		RunTestCase(T_WATER, T_WALL, M_SEEP, false);
+	}
+
+	SECTION("Clone will appear across walls for Seep") {
+		RunTestCase(T_WALL, T_WALL, M_SEEP, true);
+	}
+
+	SECTION("Clone will appear across closed yellow door for Seep") {
+		RunTestCase(T_DOOR_Y, T_WALL, M_SEEP, true);
+	}
+
+	SECTION("Clone will not appear across pits for Seep") {
+		RunTestCase(T_PIT, T_WALL, M_SEEP, false);
+	}
 }

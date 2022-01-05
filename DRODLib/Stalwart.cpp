@@ -95,7 +95,7 @@ const
 
 	//No monsters can ever be stepped on unless you have a dagger
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
-	if (pMonster && pMonster->wType != M_FLUFFBABY){
+	if (pMonster){
 		if (!(CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget()))
 			return true;
 		else if (!this->CanDaggerStep(pMonster))
@@ -369,19 +369,17 @@ void CStalwart::ProcessDaggerMove(const int dx, const int dy, CCueEvents& CueEve
 {
 	UINT wNewOrientation = nGetO(dx, dy);
 
-	if (IsSafeToStab(this->wX + dx, this->wY + dy, wNewOrientation)){
-		if (CArmedMonster::IsOpenMove(dx, dy)){
-			DoubleMove(CueEvents, dx, dy);
-			this->wSwordMovement = wNewOrientation;
-			this->wO = this->wSwordMovement;
-		} else {
-			if (IsSafeToStab(this->wX, this->wY, wNewOrientation) && !CMonster::IsOpenMove(dx, dy)){
-				this->wO = wNewOrientation;
-				CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
-				pGame->ProcessWeaponHit(this->wX + dx, this->wY + dy, CueEvents, this);
-			}
-		}
-
-		SetOrientation(dx, dy);
+	if (CArmedMonster::IsOpenMove(dx, dy) && IsSafeToStab(this->wX + dx, this->wY + dy, wNewOrientation)) {
+		DoubleMove(CueEvents, dx, dy);
+		this->wSwordMovement = wNewOrientation;
+		this->wO = this->wSwordMovement;
 	}
+	else if (!CMonster::IsOpenMove(dx, dy) && IsSafeToStab(this->wX, this->wY, wNewOrientation)) {
+		// Perform "bump kill" if adjacent target is on a non-open tile
+		this->wO = wNewOrientation;
+		CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+		pGame->ProcessWeaponHit(this->wX + dx, this->wY + dy, CueEvents, this);
+	}
+
+	SetOrientation(dx, dy);
 }

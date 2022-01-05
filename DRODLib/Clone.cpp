@@ -69,6 +69,14 @@ bool CClone::CanDropTrapdoor(const UINT oTile) const
 	return false;
 }
 
+//*****************************************************************************
+bool CClone::CanWadeInShallowWater() const
+//Returns: if the clone can wade. Clones wade if the player wade
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return player.CanWadeInShallowWater();
+}
+
 //*****************************************************************************************
 UINT CClone::GetIdentity() const
 //Returns: what the clone looks like
@@ -113,6 +121,14 @@ bool CClone::IsMonsterTarget() const
 }
 
 //*****************************************************************************
+bool CClone::IsSwimming() const
+//Returns: if the clone can swim. Clones swim if the player swims
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return player.GetMovementType() == MovementType::WATER;
+}
+
+//*****************************************************************************
 bool CClone::IsHiding() const
 //Returns: whether the clone is visible
 {
@@ -133,6 +149,53 @@ bool CClone::IsHiding() const
 	return false;
 }
 
+//*****************************************************************************
+bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
+//Kill the Clone if it is on a tile that would kill its role.
+{
+	const UINT identity = GetIdentity();
+
+	if (!(identity == M_CONSTRUCT || identity == M_FLUFFBABY)) {
+		// Only Constructs and Puffs die from being on a specific tile.
+		return false;
+	}
+
+	CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+	const UINT dwTileNo = pGame->pRoom->GetOSquare(this->wX, this->wY);
+
+	if ((identity == M_CONSTRUCT && dwTileNo == T_GOO) ||
+		(identity == M_FLUFFBABY && dwTileNo == T_HOT)) {
+		pGame->pRoom->KillMonster(this, CueEvents);
+		SetKillInfo(NO_ORIENTATION); //center stab effect
+		CueEvents.Add(CID_MonsterDiedFromStab, this);
+		return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CClone::OnStabbed(CCueEvents& CueEvents, const UINT wX, const UINT wY, WeaponType weaponType)
+// Override for Clone, as some player roles can survive stabs.
+{
+	const UINT identity = GetIdentity();
+
+	if ((identity == M_WUBBA || identity == M_FLUFFBABY)
+		&& weaponType != WT_Firetrap) {
+		// Wubbas and Puffs can only be killed by Firetrap stabs.
+		return false;
+	}
+
+	if (identity == M_FEGUNDO) {
+		// Fegundoes are immune to all weapon types.
+		return false;
+	}
+
+	//Monster dies.
+	CueEvents.Add(CID_MonsterDiedFromStab, this);
+	return true;
+}
+
 //*****************************************************************************************
 void CClone::Process(
 //Process a clone for movement.
@@ -143,6 +206,10 @@ void CClone::Process(
 							//with codes indicating events that happened that may correspond to
 							//sound or graphical effects.
 {
+	// Die if on deadly tile
+	if (KillIfOnDeadlyTile(CueEvents))
+		return;
+
 	//Light any fuse stood on.
 	if (this->pCurrentGame->swordsman.CanLightFuses())
 		this->pCurrentGame->pRoom->LightFuseEnd(CueEvents, this->wX, this->wY);
