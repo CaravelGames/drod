@@ -609,6 +609,7 @@ bool CDrodBitmapManager::LoadTileImages(
 	if (!pSrcSurface) return false;
 	ASSERT(pSrcSurface->w % CX_TILE == 0);
 	ASSERT(pSrcSurface->h % CY_TILE == 0);
+	DisableSurfaceBlending(pSrcSurface);
 	wCols = (pSrcSurface->w / CX_TILE);
 	wRows = (pSrcSurface->h / CY_TILE);
 	
