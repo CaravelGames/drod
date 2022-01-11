@@ -96,6 +96,9 @@
     <ClCompile Include="..\DROD\WadeEffect.cpp">
       <Filter>DRODIncludes</Filter>
     </ClCompile>
+    <ClCompile Include="..\DROD\DamagePreviewEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OptionList.h">
