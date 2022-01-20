@@ -91,6 +91,7 @@ public:
 	bool HasHeavyWeapon() const;
 	bool HasMetalWeapon() const;
 	bool HasWeapon() const;
+	bool HasWeaponType(WeaponType type) const;
 	WeaponType GetActiveWeapon() const;
 
 	//Sword position
