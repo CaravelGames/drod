@@ -4486,6 +4486,139 @@ void CCharacter::SetLocalVar(const WSTRING& varName, const WSTRING& val)
 }
 
 //*****************************************************************************
+//
+bool CCharacter::EvaluateConditionalCommand(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	const int nLastCommand,
+	CCueEvents& CueEvents
+)
+{
+	CDbRoom& room = *(pGame->pRoom);
+
+	switch (command.command) {
+		case CCharacterCommand::CC_WaitForCueEvent:
+		{
+			const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+			return CueEvents.HasOccurred(cid);
+		}
+		case CCharacterCommand::CC_WaitForRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& IsEntityAt(command, room, pGame->swordsman));
+		}
+		case CCharacterCommand::CC_WaitForNotRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityAt(command, room, pGame->swordsman));
+		}
+		case CCharacterCommand::CC_WaitForDoorTo:
+		{
+			return IsDoorStateAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForTurn:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return pGame->wSpawnCycleCount >= px;
+		}
+		case CCharacterCommand::CC_WaitForCleanRoom:
+		{
+			return room.bGreenDoorsOpened;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToFace:
+		{
+			return IsPlayerFacing(command, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_WaitForVar:
+		{
+			return DoesVarSatisfy(command, pGame);
+		}
+		case CCharacterCommand::CC_SetPlayerAppearance:
+		{
+			//As a condition, this acts as a query that is true when
+			//the player is in this role.
+			return pGame->swordsman.wIdentity != command.x;
+		}
+		case CCharacterCommand::CC_WaitForNoBuilding:
+		{
+			return !IsBuildMarkerAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToMove:
+		{
+			return DidPlayerMove(command, pGame->swordsman, nLastCommand);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+		{
+			if (pGame->swordsman.wX == this->wX && pGame->swordsman.wY == this->wY)
+				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
+
+			return this->bPlayerTouchedMe;
+		}
+		case CCharacterCommand::CC_WaitForItem:
+		{
+			return IsTileAt(command);
+		}
+		case CCharacterCommand::CC_SetPlayerWeapon:
+		{
+			//As a condition, this acts as a query that is true when the
+			//player's weapon state matches the specified parameter value.
+			UINT px;
+			getCommandX(command, px);
+			return pGame->swordsman.HasWeaponType((WeaponType)px);
+		}
+		case CCharacterCommand::CC_WaitForSomeoneToPushMe:
+		{
+			return this->bWasPushed;
+		}
+		case CCharacterCommand::CC_WaitForOpenMove:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return this->IsOpenMove(nGetOX(px), nGetOY(px));
+		}
+		case CCharacterCommand::CC_WaitForCleanLevel:
+		{
+			return pGame->IsCurrentLevelComplete();
+		}
+		case CCharacterCommand::CC_WaitForPlayerInput:
+		{
+			return DidPlayerInput(command, pGame->swordsman, nLastCommand, CueEvents);
+		}
+		case CCharacterCommand::CC_WaitForEntityType:
+		{
+			return IsEntityTypeAt(command, room, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_WaitForNotEntityType:
+		{
+			return !IsEntityTypeAt(command, room, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_WaitForWeapon:
+		{
+			return IsWeaponAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForRemains:
+		{
+			return IsMonsterRemainsAt(command, room);
+		}
+		case CCharacterCommand::CC_SetMovementType:
+		{
+			//As a condition, check if movement type equals X
+			return (this->eMovement != (MovementType)command.x);
+		}
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			return IsOpenTileAt(command, pGame);
+		}
+		default:
+		{
+			ASSERT(!"Bad Conditional Command");
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************
 bool CCharacter::HasSword() const
 //Returns: true when double has unsheathed sword
 {
