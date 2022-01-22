@@ -4538,7 +4538,7 @@ bool CCharacter::EvaluateConditionalCommand(
 		{
 			//As a condition, this acts as a query that is true when
 			//the player is in this role.
-			return pGame->swordsman.wIdentity != command.x;
+			return pGame->swordsman.wIdentity == command.x;
 		}
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		{
