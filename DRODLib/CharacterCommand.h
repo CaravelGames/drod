@@ -332,6 +332,10 @@ public:
 		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
 		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
 		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
+		CC_LogicalWaitAnd,      //Begins a logical wait block. Waits until all conditions are true.
+		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
+		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
+		CC_LogicalWaitEnd,      //Ends a logical wait block.
 
 		CC_Count
 	};
@@ -350,6 +354,20 @@ public:
 				return false;
 		}
 	}
+
+	bool IsLogicalWaitCommand() const {
+		switch (command) {
+			case CC_LogicalWaitAnd:
+			case CC_LogicalWaitOr:
+			case CC_LogicalWaitXOR:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	// Can the command be processed in a logical wait block?
+	bool IsLogicalWaitCondition() const;
 };
 
 class CDbMessageText;
