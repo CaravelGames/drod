@@ -265,12 +265,19 @@ private:
 	bool ConfirmPathWithNextMoveOpen();
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
+
 	bool EvaluateConditionalCommand(
 		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalAnd(
+		UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalOr(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalXOR(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+
 	ScriptFlag::Imperative GetImperative() const {return this->eImperative;}
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextLogicEnd() const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
