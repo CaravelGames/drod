@@ -277,7 +277,7 @@ private:
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
-	int  GetIndexOfNextLogicEnd() const;
+	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,

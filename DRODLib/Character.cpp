@@ -3235,7 +3235,7 @@ void CCharacter::Process(
 				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
 					STOP_COMMAND;
 
-				int wNextIndex = GetIndexOfNextLogicEnd();
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
 
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
@@ -3253,7 +3253,7 @@ void CCharacter::Process(
 				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
 					STOP_COMMAND;
 
-				int wNextIndex = GetIndexOfNextLogicEnd();
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
 
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
@@ -3271,7 +3271,7 @@ void CCharacter::Process(
 				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
 					STOP_COMMAND;
 
-				int wNextIndex = GetIndexOfNextLogicEnd();
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
 
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
@@ -4719,7 +4719,7 @@ bool CCharacter::EvaluateLogicalAnd(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd();
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
@@ -4780,7 +4780,7 @@ bool CCharacter::EvaluateLogicalOr(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd();
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
@@ -4842,7 +4842,7 @@ bool CCharacter::EvaluateLogicalXOR(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd();
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
@@ -6475,9 +6475,9 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 //*****************************************************************************
 // Return: Index of the Logic end command at the end of the block or NO_LABEL
 // if not in a block.
-int CCharacter::GetIndexOfNextLogicEnd() const
+int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
 {
-	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wCommandIndex = wStartIndex;
 	UINT wNestingDepth = 0;
 
 	while (wCommandIndex < this->commands.size()) {
@@ -6489,7 +6489,7 @@ int CCharacter::GetIndexOfNextLogicEnd() const
 				wNestingDepth++; // entering a nested logic block
 			break;
 			case CCharacterCommand::CC_LogicalWaitEnd:
-				if (wNestingDepth == 1) {
+				if (wNestingDepth == 0) {
 					return wCommandIndex; // Found end of logic block
 				}	else {
 					wNestingDepth--; // exiting a nested logic block
