@@ -903,6 +903,10 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_WaitForOpenTile: strText = "Wait for open tile"; break;
 	case MID_Ignore: strText = "Ignore"; break;
 	case MID_IgnoreWeapons: strText = "Ignore Weapons"; break;
+	case MID_LogicalWaitAnd: strText = "Logical Wait - And"; break;
+	case MID_LogicalWaitOr: strText = "Logical Wait - Or"; break;
+	case MID_LogicalWaitXOR: strText = "Logical Wait - Exclusive Or"; break;
+	case MID_LogicalWaitEnd: strText = "Logical Wait End"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

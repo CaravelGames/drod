@@ -1801,6 +1801,10 @@ enum MID_CONSTANT {
   MID_WaitForOpenTile = 2020,
   MID_Ignore = 2021,
   MID_IgnoreWeapons = 2022,
+  MID_LogicalWaitAnd = 2023,
+  MID_LogicalWaitOr = 2024,
+  MID_LogicalWaitXOR = 2025,
+  MID_LogicalWaitEnd = 2026,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

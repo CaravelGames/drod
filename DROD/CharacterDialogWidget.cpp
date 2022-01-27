@@ -4596,10 +4596,10 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, L"Logic Wait And");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, L"Logic Wait Or");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, L"Logic Wait Exclusive Or");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, L"Logic Wait End");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, g_pTheDB->GetMessageText(MID_LogicalWaitAnd));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, g_pTheDB->GetMessageText(MID_LogicalWaitEnd));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));

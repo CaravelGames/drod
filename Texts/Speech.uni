@@ -3201,3 +3201,19 @@ Ignore
 [MID_IgnoreWeapons]
 [eng]
 Ignore Weapons
+
+[MID_LogicalWaitAnd]
+[eng]
+Logical Wait - And
+
+[MID_LogicalWaitOr]
+[eng]
+Logical Wait - Or
+
+[MID_LogicalWaitXOR]
+[eng]
+Logical Wait - Exclusive Or
+
+[MID_LogicalWaitEnd]
+[eng]
+Logical Wait End
