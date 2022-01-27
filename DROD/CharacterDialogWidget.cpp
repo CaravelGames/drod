@@ -7101,8 +7101,8 @@ void CCharacterDialogWidget::SetBitFlags()
 		if ((this->pCommand->flags & wBitfield) == wBitfield) {
 			switch (c) 
 			{
-				case CCharacterCommand::CC_WaitForEntityType:
-				case CCharacterCommand::CC_WaitForNotEntityType:
+				case CCharacterCommand::CC_WaitForRect:
+				case CCharacterCommand::CC_WaitForNotRect:
 				{
 					this->pWaitFlagsListBox->SelectItem(wBitfield, true);
 				}
