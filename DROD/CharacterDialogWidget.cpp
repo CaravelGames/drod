@@ -193,6 +193,8 @@ const UINT LIST_LINE_HEIGHT = 22;
 
 const SURFACECOLOR PaleRed = {255, 192, 192};
 
+const SDL_Color MediumCyan = {0, 128, 128, 0};
+
 std::map<UINT, UINT> CCharacterDialogWidget::speechLengthCache;
 const UINT CCharacterDialogWidget::INDENT_PREFIX_SIZE = 8;
 const UINT CCharacterDialogWidget::INDENT_TAB_SIZE = 3;
@@ -4193,7 +4195,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 {
 	WSTRING wstr;
 
-	UINT wNestDepth = 0, wIndent = INDENT_PREFIX_SIZE;  //insert past labels
+	UINT wNestDepth = 0, wLogicNestDepth = 0, wIndent = INDENT_PREFIX_SIZE;  //insert past labels
 
 	UINT index = 0;
 	bool bLastWasIfCondition = false;
@@ -4220,6 +4222,18 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 					--wNestDepth;
 				else
 					wstr += wszExclamation;	//superfluous IfEnd
+				break;
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			case CCharacterCommand::CC_LogicalWaitOr:
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				++wLogicNestDepth; //indent inside of logic block
+				bUndoOneDepth = true;
+				break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				if (wLogicNestDepth)
+					--wLogicNestDepth;
+				else
+					wstr += wszExclamation;	//superfluous logic end
 				break;
 			default: break;
 		}
@@ -4265,16 +4279,16 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_WorldMapImage:
 			case CCharacterCommand::CC_ChallengeCompleted:
 			case CCharacterCommand::CC_Return:
-				if (bLastWasIfCondition)
+				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
 			case CCharacterCommand::CC_Label:
 				bIsLabel = true;
-				if (bLastWasIfCondition)
+				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
 			case CCharacterCommand::CC_ImageOverlay:
-				if (bLastWasIfCondition)
+				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				if (pCommand->label.empty()) {
 					wstr += wszExclamation;
@@ -4287,7 +4301,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 				break;
 
 			case CCharacterCommand::CC_VarSet:
-				if (bLastWasIfCondition)
+				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 			//no break
 			case CCharacterCommand::CC_VarSetAt:
@@ -4313,6 +4327,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 					}
 					break;
 				}
+				if (pCommand->command == CCharacterCommand::CC_VarSetAt && wLogicNestDepth)
+					wstr += wszQuestionMark; //questionable logic condition
 			}
 			break;
 
@@ -4326,14 +4342,17 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_WaitForNotCharacter:
 				wstr += wszAsterisk;
 				break;
-			default: break;
+			default:
+				if (wLogicNestDepth && !pCommand->IsAllowedInLogicBlock())
+					wstr += wszQuestionMark; //questionable logic condition
+			break;
 		}
 
-		UINT wFinalIndent = wNestDepth * INDENT_TAB_SIZE;
+		UINT wFinalIndent = (wNestDepth + wLogicNestDepth) * INDENT_TAB_SIZE;
 		if (bIsLabel)
 			wFinalIndent = 0;
 
-		else if (bLastWasIfCondition)
+		else if (bLastWasIfCondition && !pCommand->IsLogicalWaitCommand())
 			wFinalIndent += INDENT_IF_CONDITION_SIZE;
 
 		else if (bUndoOneDepth)
@@ -4576,6 +4595,11 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, L"Logic Wait And");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, L"Logic Wait Or");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, L"Logic Wait Exclusive Or");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, L"Logic Wait End");
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
@@ -5206,6 +5230,12 @@ void CCharacterDialogWidget::SetCommandColor(
 		case CCharacterCommand::CC_Wait: 
 			pListBox->SetItemColorAtLine(line, DarkGray);
 		break;
+		case CCharacterCommand::CC_LogicalWaitAnd:
+		case CCharacterCommand::CC_LogicalWaitOr:
+		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitEnd:
+			pListBox->SetItemColorAtLine(line, MediumCyan);
+		break;
 		default: break;
 	}
 }
@@ -5400,7 +5430,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		MOVETYPE,           //CC_SetMovementType
 		NO_WIDGETS,         //CC_ReplaceWithDefault
 		VARSET,             //CC_VarSetAt
-		OPENTILE            //CC_WaitForOpenTile
+		OPENTILE,           //CC_WaitForOpenTile
+		NO_WIDGETS,         //CC_LogicalWaitAnd
+		NO_WIDGETS,         //CC_LogicalWaitOr
+		NO_WIDGETS,         //CC_LogicalWaitXOR
+		NO_WIDGETS	        //CC_LogicalWaitEnd
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5535,7 +5569,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetMovementType
 		NO_LABELS,          //CC_ReplaceWithDefault
 		VARSET_L,           //CC_VarSetAt
-		OPEN_TILE_L         //CC_WaitForOpenTile
+		OPEN_TILE_L,        //CC_WaitForOpenTile
+		NO_LABELS,          //CC_LogicalWaitAnd
+		NO_LABELS,          //CC_LogicalWaitOr
+		NO_LABELS,          //CC_LogicalWaitXOR
+		NO_LABELS           //CC_LogicalWaitEnd
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6596,6 +6634,10 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
+		case CCharacterCommand::CC_LogicalWaitAnd:
+		case CCharacterCommand::CC_LogicalWaitOr:
+		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitEnd:
 			AddCommand();
 		break;
 
@@ -7030,6 +7072,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_GetEntityDirection:
+		case CCharacterCommand::CC_LogicalWaitAnd:
+		case CCharacterCommand::CC_LogicalWaitOr:
+		case CCharacterCommand::CC_LogicalWaitXOR:
+		case CCharacterCommand::CC_LogicalWaitEnd:
 			break;
 
 		//Deprecated commands.
@@ -7333,6 +7379,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 	case CCharacterCommand::CC_WaitForSomeoneToPushMe:
 	case CCharacterCommand::CC_Return:
+	case CCharacterCommand::CC_LogicalWaitAnd:
+	case CCharacterCommand::CC_LogicalWaitOr:
+	case CCharacterCommand::CC_LogicalWaitXOR:
+	case CCharacterCommand::CC_LogicalWaitEnd:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -8046,6 +8096,10 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 	case CCharacterCommand::CC_WaitForSomeoneToPushMe:
 	case CCharacterCommand::CC_Return:
+	case CCharacterCommand::CC_LogicalWaitAnd:
+	case CCharacterCommand::CC_LogicalWaitOr:
+	case CCharacterCommand::CC_LogicalWaitXOR:
+	case CCharacterCommand::CC_LogicalWaitEnd:
 	break;
 
 	case CCharacterCommand::CC_CutScene:

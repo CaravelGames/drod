@@ -368,6 +368,12 @@ public:
 
 	// Can the command be processed in a logical wait block?
 	bool IsLogicalWaitCondition() const;
+
+	// For front-end command formatting
+	bool IsAllowedInLogicBlock() const {
+		return command == CC_LogicalWaitEnd ||
+			IsLogicalWaitCommand() || IsLogicalWaitCondition();
+	}
 };
 
 class CDbMessageText;
