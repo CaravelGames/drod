@@ -1784,12 +1784,6 @@ void CCharacter::Process(
 				wDestX = px;
 				wDestY = py;
 
-				if (wDestX == this->wX && wDestY == this->wY)
-				{
-					bProcessNextCommand = true;
-					break;
-				}
-
 				if (!room.IsValidColRow(px, py))
 				{
 					bProcessNextCommand = true;
@@ -1841,6 +1835,12 @@ void CCharacter::Process(
 
 					wDestX = pDest->wX;
 					wDestY = pDest->wY;
+				}
+
+				if (wDestX == this->wX && wDestY == this->wY)
+				{
+					bProcessNextCommand = true;
+					break;
 				}
 
 				const UINT wO = this->GetOrientationFacingTarget(wDestX, wDestY);
