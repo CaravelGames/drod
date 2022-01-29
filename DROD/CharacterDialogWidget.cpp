@@ -7103,6 +7103,8 @@ void CCharacterDialogWidget::SetBitFlags()
 			{
 				case CCharacterCommand::CC_WaitForRect:
 				case CCharacterCommand::CC_WaitForNotRect:
+				case CCharacterCommand::CC_MoveTo:
+				case CCharacterCommand::CC_FaceTowards:
 				{
 					this->pWaitFlagsListBox->SelectItem(wBitfield, true);
 				}
