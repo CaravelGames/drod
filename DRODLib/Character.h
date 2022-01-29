@@ -126,6 +126,7 @@ public:
 
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
+	CCoord*        GetFaceTowardsTarget(UINT pflags, const CDbRoom& room, const CSwordsman& player) const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();

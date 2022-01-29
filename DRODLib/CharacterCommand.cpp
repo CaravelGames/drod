@@ -77,6 +77,7 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 		case CC_WaitForPlayerInput:
 		case CC_WaitForEntityType:
 		case CC_WaitForNotEntityType:
+		case CC_FaceTowards:
 		case CC_WaitForWeapon:
 		case CC_WaitForRemains:
 		case CC_SetMovementType:

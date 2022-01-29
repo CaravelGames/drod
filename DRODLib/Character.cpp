@@ -1793,43 +1793,8 @@ void CCharacter::Process(
 				if (pflags)
 				{
 					CCoord *pDest = NULL;
-					if ((pflags & ScriptFlag::PLAYER) != 0)
-						pDest = (CCoord*)&player;
-					else if ((pflags & ScriptFlag::HALPH) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_HALPH)))
-							pDest = room.GetMonsterOfType(M_HALPH2);
-					}
-					else if ((pflags & ScriptFlag::MONSTER) != 0)
-						pDest = room.pFirstMonster;
-					else if ((pflags & ScriptFlag::NPC) != 0)
-						pDest = room.GetMonsterOfType(M_CHARACTER);
-					else if ((pflags & ScriptFlag::PDOUBLE) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_MIMIC)))
-						if (!(pDest = room.GetMonsterOfType(M_DECOY)))
-						if (!(pDest = room.GetMonsterOfType(M_CLONE)))
-							pDest = room.GetMonsterOfType(M_TEMPORALCLONE);
-					}
-					else if ((pflags & ScriptFlag::SELF) != 0)
-						break; //always at this position by definition
-					else if ((pflags & ScriptFlag::SLAYER) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_SLAYER)))
-							pDest = room.GetMonsterOfType(M_SLAYER2);
-					}
-					else if ((pflags & ScriptFlag::BEETHRO) != 0)
-					{
-						if (bIsSmitemaster(player.wAppearance))
-							pDest = (CCoord*)&player;
-						else
-							pDest = room.GetNPCBeethro();
-					}
-					else if ((pflags & ScriptFlag::STALWART) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_STALWART)))
-							pDest = room.GetMonsterOfType(M_STALWART2);
-					}
+					pDest = GetFaceTowardsTarget(pflags, room, player);
+
 					if (!pDest)
 						STOP_COMMAND;
 
@@ -4332,6 +4297,56 @@ bool CCharacter::IsWeaponAt(
 }
 
 //*****************************************************************************
+CCoord* CCharacter::GetFaceTowardsTarget(
+	UINT pflags,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	CCoord* pDest = NULL;
+
+	if ((pflags & ScriptFlag::PLAYER) != 0)
+		pDest = (CCoord*)&player;
+	else if ((pflags & ScriptFlag::HALPH) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_HALPH)))
+			pDest = room.GetMonsterOfType(M_HALPH2);
+	}
+	else if ((pflags & ScriptFlag::MONSTER) != 0)
+		pDest = room.pFirstMonster;
+	else if ((pflags & ScriptFlag::NPC) != 0)
+		pDest = room.GetMonsterOfType(M_CHARACTER);
+	else if ((pflags & ScriptFlag::PDOUBLE) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_MIMIC)))
+			if (!(pDest = room.GetMonsterOfType(M_DECOY)))
+				if (!(pDest = room.GetMonsterOfType(M_CLONE)))
+					pDest = room.GetMonsterOfType(M_TEMPORALCLONE);
+	}
+	else if ((pflags & ScriptFlag::SELF) != 0)
+		pDest = (CCoord*)this; //always at this position by definition
+	else if ((pflags & ScriptFlag::SLAYER) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_SLAYER)))
+			pDest = room.GetMonsterOfType(M_SLAYER2);
+	}
+	else if ((pflags & ScriptFlag::BEETHRO) != 0)
+	{
+		if (bIsSmitemaster(player.wAppearance))
+			pDest = (CCoord*)&player;
+		else
+			pDest = room.GetNPCBeethro();
+	}
+	else if ((pflags & ScriptFlag::STALWART) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_STALWART)))
+			pDest = room.GetMonsterOfType(M_STALWART2);
+	}
+
+	return pDest;
+}
+
+//*****************************************************************************
 bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame)
 {
 	const UINT varIndex = command.x;
@@ -4652,6 +4667,25 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForNotEntityType:
 		{
 			return !IsEntityTypeAt(command, room, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_FaceTowards:
+		{
+			UINT px, py, pflags;
+			getCommandXYF(command, px, py, pflags);
+			if (!room.IsValidColRow(px, py))
+				return true;
+
+			CCoord* pDest = GetFaceTowardsTarget(pflags, room, pGame->swordsman);
+			if (pDest) {
+				px = pDest->wX;
+				py = pDest->wY;
+			}
+
+			if (px == this->wX && py == this->wY)
+				return true;
+
+			const UINT wO = this->GetOrientationFacingTarget(px, py);
+			return (wO == this->wO);
 		}
 		case CCharacterCommand::CC_WaitForWeapon:
 		{
