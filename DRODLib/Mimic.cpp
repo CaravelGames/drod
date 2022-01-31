@@ -49,6 +49,27 @@ CMimic::CMimic(const UINT wSetType, CCurrentGame *pSetCurrentGame, UINT processi
 	: CPlayerDouble(wSetType, pSetCurrentGame, GROUND_AND_SHALLOW_WATER, processingSequence)
 { }
 
+//*****************************************************************************************
+//Can this Mimic step onto (and thus kill) the player?
+bool CMimic::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
+{
+	if (!((HasSword() && GetWeaponType() == WT_Dagger) || bStepAttack))
+		return false;
+
+	//Check if player is invulnerable to "dagger stepping".
+	switch (player.wAppearance)
+	{
+		case M_WUBBA: case M_FEGUNDO:
+		case M_ROCKGOLEM: case M_CONSTRUCT:
+			return false;
+		case M_CITIZEN: case M_ARCHITECT:
+			if (!bStepAttack)
+				return false;
+		default:
+			return true;
+	}
+}
+
 //******************************************************************************************
 bool CMimic::DoesSquareContainObstacle(
 //Override for mimics.  Parts copied from CMonster::DoesSquareContainObstacle.
@@ -162,23 +183,8 @@ const
 	const CSwordsman& player = this->pCurrentGame->swordsman;
 	if (player.IsInRoom() && player.wX == wCol && player.wY == wRow)
 	{
-		if ((HasSword() && GetWeaponType() == WT_Dagger) || bStepAttack)
-		{
-			//Check if player is invulnerable to "dagger stepping".
-			switch(player.wAppearance)
-			{
-				case M_WUBBA: case M_FEGUNDO:
-				case M_ROCKGOLEM: case M_CONSTRUCT:
-					return true;
-				case M_CITIZEN: case M_ARCHITECT:
-					if (!bStepAttack)
-						return true;
-					break;
-				default: break;
-			}
-		} else {
+		if (!CanStepAttackPlayer(player, bStepAttack))
 			return true;
-		}
 	}
 	
 	//Check for player's sword at square.

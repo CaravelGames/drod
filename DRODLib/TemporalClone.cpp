@@ -58,6 +58,26 @@ bool CTemporalClone::CanDropTrapdoor(const UINT oTile) const
 	return false;
 }
 
+//*****************************************************************************************
+//Can this projection step onto (and thus kill) the player?
+bool CTemporalClone::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
+{
+	if (!((HasSword() && GetWeaponType() == WT_Dagger) || bStepAttack))
+		return false;
+
+	//Check if player is invulnerable to "dagger stepping".
+	switch (player.wAppearance)
+	{
+	case M_WUBBA: case M_FEGUNDO:
+		return false;
+	case M_CITIZEN: case M_ARCHITECT:
+		if (!bStepAttack)
+			return false;
+	default:
+		return true;
+	}
+}
+
 //*****************************************************************************
 bool CTemporalClone::CanLightFuses() const
 {
