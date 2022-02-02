@@ -634,6 +634,52 @@ bool CSlayer::CheckWispIntegrity()
 	return false;
 }
 
+//***************************************************************************************
+bool CSlayer::ConfirmGoal()
+//Checks whether our chosen orb or plate still exists.
+//
+//Returns: whether the orb or plate we were going to use at
+//   the end of our path is still available
+{
+	//A seeking slayer will always have a goal.
+	if (state == Seeking)
+		return true;
+
+	UINT wGoalX, wGoalY;
+	if (!this->pathToDest.Bottom(wGoalX, wGoalY))
+		return false; //There is no path?
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (room.GetOSquare(wGoalX, wGoalY) == T_PRESSPLATE) {
+		COrbData* pOrb = room.GetPressurePlateAtCoords(wGoalX, wGoalY);
+		//Reject activated one-use plate and remove from platesToDepress
+		if (pOrb->eType == OT_BROKEN) {
+			platesToDepress.erase(CCoord(wGoalX, wGoalY));
+			return false;
+		}
+		return true;
+	}
+
+	//Check if any valid orb is adjacent to goal
+	for (CCoordSet::const_iterator orb = this->orbsToHit.begin(); orb != this->orbsToHit.end(); ++orb) {
+		if (nDist(wGoalX, wGoalY, orb->wX, orb->wY) > 1) {
+			continue;
+		}
+
+		COrbData* pOrb = room.GetOrbAtCoords(orb->wX, orb->wY);
+		//Reject broken or missing orb and remove from orbsToHit
+		if (!pOrb || pOrb->eType == OT_BROKEN) {
+			orbsToHit.erase(*orb);
+			continue;
+		}
+		return true;
+	}
+
+	//If the orb or plate is gone, it's not available.
+	return false;
+}
+
 //*****************************************************************************************
 bool CSlayer::ExtendWisp(CCueEvents &CueEvents, const bool bMoveAllowed)   //[true]
 //The wisp grows one square towards target using brain-directed behavior.
@@ -941,7 +987,7 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 	}
 
 	//Confirm path to goal is still open.
-	if (!ConfirmPath())
+	if (!(ConfirmGoal() &&ConfirmPath()))
 	{
 		//If it's not, search for a new path to the goal.
 		bool bOrbPathFound = FindOptimalPathTo(this->wX, this->wY, this->orbsToHit, true);
