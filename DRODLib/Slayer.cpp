@@ -651,10 +651,10 @@ bool CSlayer::ConfirmGoal()
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
-	if (room.GetOSquare(wGoalX, wGoalY) == T_PRESSPLATE && platesToDepress.has(CCoord(wGoalX, wGoalY))) {
+	if (platesToDepress.has(CCoord(wGoalX, wGoalY))) {
 		COrbData* pOrb = room.GetPressurePlateAtCoords(wGoalX, wGoalY);
-		//Reject activated one-use plate and remove from platesToDepress
-		if (pOrb->eType == OT_BROKEN) {
+		//Reject activated one-use or missing plate and remove from platesToDepress
+		if (!pOrb || pOrb->eType == OT_BROKEN) {
 			platesToDepress.erase(CCoord(wGoalX, wGoalY));
 			return false;
 		}
