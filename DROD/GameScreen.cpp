@@ -5603,6 +5603,7 @@ void CGameScreen::PrepCustomSpeaker(CFiredCharacterCommand *pCmd)
 		{
 			//Attach speech to monster at this tile.
 			pCmd->pSpeakingEntity = pMonster;
+			pMonster->bSafeToDelete = false;
 		} else {
 			//No monster there -- create temporary pseudo-monster to attach to.
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pCmd->pExecutingNPC);
