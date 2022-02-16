@@ -3743,10 +3743,10 @@ bool CCharacter::IsEntityAt(
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_HALPH, true))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_HALPH2, true))
 			return true;
 	}
@@ -3757,7 +3757,7 @@ bool CCharacter::IsEntityAt(
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
-		else if (room.IsMonsterInRect(px, py,
+		if (room.IsMonsterInRect(px, py,
 			px + pw, py + ph))
 			return true;
 	}
@@ -3775,16 +3775,16 @@ bool CCharacter::IsEntityAt(
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_MIMIC))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_DECOY))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_CLONE))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_TEMPORALCLONE))
 			return true;
 	}
@@ -3800,10 +3800,10 @@ bool CCharacter::IsEntityAt(
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_SLAYER, true))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_SLAYER2, true))
 			return true;
 	}
@@ -3832,10 +3832,10 @@ bool CCharacter::IsEntityAt(
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_STALWART, true))
 			return true;
-		else if (room.IsMonsterInRectOfType(px, py,
+		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_STALWART2, true))
 			return true;
 	}
@@ -4128,7 +4128,7 @@ bool CCharacter::IsOpenTileAt(
 bool CCharacter::IsPlayerFacing(
 	const CCharacterCommand& command,
 	const CSwordsman& player
-)const
+) const
 {
 	if (!player.IsInRoom())
 		return false;
