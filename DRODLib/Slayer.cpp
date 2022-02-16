@@ -987,7 +987,7 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 	}
 
 	//Confirm path to goal is still open.
-	if (!(ConfirmGoal() &&ConfirmPath()))
+	if (!(ConfirmGoal() && ConfirmPath()))
 	{
 		//If it's not, search for a new path to the goal.
 		bool bOrbPathFound = FindOptimalPathTo(this->wX, this->wY, this->orbsToHit, true);
