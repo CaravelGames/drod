@@ -2929,12 +2929,18 @@ void CCharacter::Process(
 				if (this->pCustomChar) {
 					this->commands.clear();
 					this->wCurrentCommandIndex = 0;
+					this->wJumpLabel = 0;
+
+					this->bIfBlock = false;
+					this->bParseIfElseAsCondition = false;
+
 					wTurnCount = 0;
 					++wVarSets; //Count as setting a variable for loop avoidence
+
 					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
-				} else {
-					// Index does not automatically increment after this command is executed
-					++this->wCurrentCommandIndex;
+
+					bProcessNextCommand = true;
+					continue; //We don't want to increment the command index
 				}
 				bProcessNextCommand = true;
 			break;
@@ -3575,8 +3581,7 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		if (command.command != CCharacterCommand::CC_ReplaceWithDefault)
-			++this->wCurrentCommandIndex;
+		++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative
 		//movement destination for the next relative movement command.
@@ -5169,9 +5174,11 @@ void CCharacter::SetCurrentGame(
 			default: break;
 		}
 
-		SetDefaultBehaviors();
-		SetDefaultMovementType();
 	}
+
+	// Always set default behaviors and movement types
+	SetDefaultBehaviors();
+	SetDefaultMovementType();
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
