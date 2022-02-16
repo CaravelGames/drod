@@ -59,6 +59,7 @@ private:
 
 	void AdvanceAlongWisp(CCueEvents &CueEvents);
 	bool CheckWispIntegrity();
+	bool ConfirmGoal();
 	bool ExtendWisp(CCueEvents &CueEvents, const bool bMoveAllowed=true);
 	WISP GetWispAt(const UINT wX, const UINT wY);
 	const_WISP GetWispAt(const UINT wX, const UINT wY) const {
