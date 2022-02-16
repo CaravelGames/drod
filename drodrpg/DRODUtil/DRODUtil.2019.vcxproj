@@ -469,6 +469,7 @@
     <ClCompile Include="..\Drod\BloodEffect.cpp" />
     <ClCompile Include="..\Drod\BoundingBox.cpp" />
     <ClCompile Include="..\Drod\Color.cpp" />
+    <ClCompile Include="..\DROD\DamagePreviewEffect.cpp" />
     <ClCompile Include="..\Drod\DrodBitmapManager.cpp" />
     <ClCompile Include="..\Drod\EditRoomWidget.cpp" />
     <ClCompile Include="..\Drod\FaceWidget.cpp" />

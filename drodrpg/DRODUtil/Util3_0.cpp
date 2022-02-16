@@ -725,11 +725,16 @@ const
   CStretchyBuffer Source;
   if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
 
+  // Uni files are in UTF8, but they used to be in a wider format. Therefore, the code works on wide characters.
+  // So we will convert from UTF8 to Unicode, and extract from the converted string.
+  const char* pSource = (const char*)((const BYTE*)Source);
+  WSTRING wideSource = UTF8ToUnicode(pSource);
+
   const WCHAR wszNameTagStart[] = {{'M'},{'I'},{'D'},{'_'},{0}};
   char szNameTag[MAXLEN_NAMETAG + 1];
 
-  const WCHAR *pSeek = (const WCHAR *)((const BYTE *)Source);
-  const WCHAR *pStop = (const WCHAR *)((const BYTE *) pSeek + Source.Size());
+  const WCHAR* pSeek = wideSource.c_str();
+  const WCHAR* pStop = pSeek + wideSource.size();
   const WCHAR *pTagStart;
   UINT wTagLen;
   while (pSeek <= pStop)
