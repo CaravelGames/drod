@@ -3204,16 +3204,16 @@ Ignore Weapons
 
 [MID_LogicalWaitAnd]
 [eng]
-Logical Wait - And
+"Wait for All:
 
 [MID_LogicalWaitOr]
 [eng]
-Logical Wait - Or
+Wait for Any:
 
 [MID_LogicalWaitXOR]
 [eng]
-Logical Wait - Exclusive Or
+Wait for Exactly One:
 
 [MID_LogicalWaitEnd]
 [eng]
-Logical Wait End
+Wait for Conditions End
