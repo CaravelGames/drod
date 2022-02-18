@@ -84,7 +84,9 @@ enum CharacterDisplayMode {
 	CDM_GhostOverhead
 };
 
+class CSwordsman;
 struct HoldCharacter;
+
 class CCharacter : public CPlayerDouble
 {
 public:
@@ -104,6 +106,13 @@ public:
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	void           CriticalNPCDied(CCueEvents& CueEvents);
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
+	bool           DidPlayerInput(
+		const CCharacterCommand& command,
+		const CSwordsman& player,
+		const int nLastCommand,
+		CCueEvents& CueEvents
+	) const;
+	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 
 	bool           Display() const { return IsVisible() || IsGhostImage(); }
 	bool           DisplayGhostImage() const { return IsGhostImage() && !IsVisible(); }
@@ -117,6 +126,7 @@ public:
 
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
+	CCoord*        GetFaceTowardsTarget(UINT pflags, const CDbRoom& room, const CSwordsman& player) const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
@@ -133,6 +143,8 @@ public:
 			UINT& x) const;
 	void           getCommandXY(const CCharacterCommand& command,
 			UINT& x, UINT& y) const;
+	void           getCommandXYF(const CCharacterCommand& command,
+		UINT& x, UINT& y, UINT& f) const;
 
 	WSTRING getPredefinedVar(const UINT varIndex) const;
 	UINT getPredefinedVarInt(const UINT varIndex) const;
@@ -146,6 +158,11 @@ public:
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
 	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
+	bool           IsBuildMarkerAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	bool           IsMonsterRemainsAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityTypeAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	bool           IsExplosionImmune() const {return HasBehavior(ScriptFlag::ExplosionImmune); }
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
@@ -159,7 +176,9 @@ public:
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
 	virtual bool   IsPlayerAllyTarget() const;
+	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
 	bool           IsPuffImmune() const { return HasBehavior(ScriptFlag::PuffImmune); }
 	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
@@ -170,6 +189,7 @@ public:
 	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
+	bool           IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
@@ -178,6 +198,7 @@ public:
 		const WCHAR* pwStr, UINT& index, CDbHold* pHold);
 
 	virtual bool   IsVisible() const {return this->bVisible;}
+	bool           IsWeaponAt(const CCharacterCommand& command, const CCurrentGame* pGame) const;
 	bool           JumpToCommandWithLabel(const WCHAR *pText);
 	bool           JumpToCommandWithLabel(const UINT num);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
@@ -245,10 +266,19 @@ private:
 	bool ConfirmPathWithNextMoveOpen();
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
+
+	bool EvaluateConditionalCommand(
+		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalAnd(
+		UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalOr(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalXOR(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+
 	ScriptFlag::Imperative GetImperative() const {return this->eImperative;}
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,

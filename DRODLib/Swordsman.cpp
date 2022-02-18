@@ -394,6 +394,18 @@ bool CSwordsman::HasWeapon() const
 			!(this->bNoWeapon || this->bWeaponSheathed || this->bWeaponOff || this->bIsHiding);
 }
 
+bool CSwordsman::HasWeaponType(WeaponType type) const
+{
+	switch (type) {
+		case WT_Off:
+			return (this->bNoWeapon || this->bWeaponOff);
+		case WT_On:
+			return !this->bWeaponOff;
+		default:
+			return (type == this->localRoomWeaponType);
+	}
+}
+
 //*****************************************************************************
 WeaponType CSwordsman::GetActiveWeapon() const
 {

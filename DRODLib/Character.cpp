@@ -1784,12 +1784,6 @@ void CCharacter::Process(
 				wDestX = px;
 				wDestY = py;
 
-				if (wDestX == this->wX && wDestY == this->wY)
-				{
-					bProcessNextCommand = true;
-					break;
-				}
-
 				if (!room.IsValidColRow(px, py))
 				{
 					bProcessNextCommand = true;
@@ -1799,48 +1793,19 @@ void CCharacter::Process(
 				if (pflags)
 				{
 					CCoord *pDest = NULL;
-					if ((pflags & ScriptFlag::PLAYER) != 0)
-						pDest = (CCoord*)&player;
-					else if ((pflags & ScriptFlag::HALPH) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_HALPH)))
-							pDest = room.GetMonsterOfType(M_HALPH2);
-					}
-					else if ((pflags & ScriptFlag::MONSTER) != 0)
-						pDest = room.pFirstMonster;
-					else if ((pflags & ScriptFlag::NPC) != 0)
-						pDest = room.GetMonsterOfType(M_CHARACTER);
-					else if ((pflags & ScriptFlag::PDOUBLE) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_MIMIC)))
-						if (!(pDest = room.GetMonsterOfType(M_DECOY)))
-						if (!(pDest = room.GetMonsterOfType(M_CLONE)))
-							pDest = room.GetMonsterOfType(M_TEMPORALCLONE);
-					}
-					else if ((pflags & ScriptFlag::SELF) != 0)
-						break; //always at this position by definition
-					else if ((pflags & ScriptFlag::SLAYER) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_SLAYER)))
-							pDest = room.GetMonsterOfType(M_SLAYER2);
-					}
-					else if ((pflags & ScriptFlag::BEETHRO) != 0)
-					{
-						if (bIsSmitemaster(player.wAppearance))
-							pDest = (CCoord*)&player;
-						else
-							pDest = room.GetNPCBeethro();
-					}
-					else if ((pflags & ScriptFlag::STALWART) != 0)
-					{
-						if (!(pDest = room.GetMonsterOfType(M_STALWART)))
-							pDest = room.GetMonsterOfType(M_STALWART2);
-					}
+					pDest = GetFaceTowardsTarget(pflags, room, player);
+
 					if (!pDest)
 						STOP_COMMAND;
 
 					wDestX = pDest->wX;
 					wDestY = pDest->wY;
+				}
+
+				if (wDestX == this->wX && wDestY == this->wY)
+				{
+					bProcessNextCommand = true;
+					break;
 				}
 
 				const UINT wO = this->GetOrientationFacingTarget(wDestX, wDestY);
@@ -2210,163 +2175,51 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_WaitForRect:
-			case CCharacterCommand::CC_WaitForNotRect:
 			{
 				//Wait until a specified entity is in rect (x,y,w,h).
-				// -OR-
-				//Wait until NONE of the specified entities are in rect (x,y,w,h).
-				//
 				//Note that width and height are zero-indexed.
-				bool bFound = false;
-				getCommandParams(command, px, py, pw, ph, pflags);
-				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px+pw, py+ph))
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (!IsEntityAt(command, room, player))
 					STOP_COMMAND;
 
-				if (!bFound && (!pflags || (pflags & ScriptFlag::PLAYER) != 0))
-				{
-					//Check for player by default if no flags are selected.
-					if (player.IsInRoom() &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::HALPH) != 0)
-				{
-					if ((player.wAppearance == M_HALPH || player.wAppearance == M_HALPH2) &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_HALPH, true))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_HALPH2, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::MONSTER) != 0)
-				{
-					//excludes player doubles, friendly enemies, and NPCs
-					if (!bIsHuman(player.wAppearance) &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else if (room.IsMonsterInRect(px, py,
-							px + pw, py + ph))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::NPC) != 0)
-				{
-					//visible characters only
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CHARACTER))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::PDOUBLE) != 0)
-				{
-					//All player double types
-					if (bIsBeethroDouble(player.wAppearance) && !bIsSmitemaster(player.wAppearance) &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_MIMIC))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_DECOY))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CLONE))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_TEMPORALCLONE))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SELF) != 0)
-				{
-					if (this->wX >= px && this->wX <= px + pw &&
-							this->wY >= py && this->wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SLAYER) != 0)
-				{
-					if ((player.wAppearance == M_SLAYER || player.wAppearance == M_SLAYER2) &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_SLAYER, true))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_SLAYER2, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::BEETHRO) != 0)
-				{
-					//Check for Beethro (can detect NPC Beethros).
-					if (bIsSmitemaster(player.wAppearance))
-					{
-						if (player.wX >= px && player.wX <= px + pw &&
-								player.wY >= py && player.wY <= py + ph)
-							bFound = true;
-					}
-					CMonster *pNPCBeethro = pGame->pRoom->GetNPCBeethro();
-					if (pNPCBeethro)
-					{
-						const UINT wSX = pNPCBeethro->wX;
-						const UINT wSY = pNPCBeethro->wY;
-						if (wSX >= px && wSX <= px + pw &&
-								wSY >= py && wSY <= py + ph)
-							bFound = true;
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::STALWART) != 0)
-				{
-					if (bIsStalwart(player.wAppearance) &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_STALWART, true))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_STALWART2, true))
-						bFound = true;
-				}
-
-				if ((command.command == CCharacterCommand::CC_WaitForRect && !bFound) ||
-					 (command.command == CCharacterCommand::CC_WaitForNotRect && bFound))
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotRect:
+			{
+				//Wait until NONE of the specified entities are in rect (x,y,w,h).
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
 					STOP_COMMAND;
+				if (IsEntityAt(command, room, player))
+					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
 
 			case CCharacterCommand::CC_WaitForEntityType:
-			case CCharacterCommand::CC_WaitForNotEntityType:
 			{
 				//Wait until a specified entity type is in rect (x,y,w,h).
-				// -OR-
-				//Wait until NO specified entity type is in rect (x,y,w,h).
-				//
 				//Note that width and height are zero-indexed.
-				bool bFound = false;
-				getCommandParams(command, px, py, pw, ph, pflags);
-				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px+pw, py+ph))
+				if (!IsValidEntityWait(command, room))
 					STOP_COMMAND;
-				if (pflags == M_NONE)
+				if (!IsEntityTypeAt(command, room, player))
 					STOP_COMMAND;
 
-				if (player.wIdentity == pflags)
-				{
-					if (player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && room.IsMonsterInRectOfType(px, py, px + pw, py + ph, pflags, true, true))
-					bFound = true;
-
-				if ((command.command == CCharacterCommand::CC_WaitForEntityType && !bFound) ||
-					 (command.command == CCharacterCommand::CC_WaitForNotEntityType && bFound))
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotEntityType:
+			{
+				//Wait until NO specified entity type is in rect (x,y,w,h).
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
 					STOP_COMMAND;
+				if (IsEntityTypeAt(command, room, player))
+					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2374,21 +2227,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForRemains:
 			{
 				//Wait until a specified dead monster type is in rect (x,y,w,h).
-				bool bFound = false;
-				getCommandParams(command, px, py, pw, ph, pflags);
-				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+				if (!IsValidEntityWait(command, room))
 					STOP_COMMAND;
-				if (pflags == M_NONE)
-					STOP_COMMAND;
-
-				if (pflags == M_FEGUNDO) {
-					// Fegundo remains are their own monster type, so special handling is required
-					bFound = room.IsMonsterInRectOfType(px, py, px + pw, py + ph, M_FEGUNDOASHES);
-				} else {
-					bFound = room.IsMonsterRemainsInRectOfType(px, py, px + pw, py + ph, pflags);
-				}
-
-				if (!bFound)
+				if (!IsMonsterRemainsAt(command, room))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -2398,12 +2239,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForDoorTo:
 			{
 				//Wait for door at (x,y) to (w=close/open).
-				getCommandXY(command, px, py);
-				const UINT wTile = room.GetOSquare(px, py);
-				if (command.w==(UINT)OA_CLOSE && !bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't closed yet
-				if (command.w==(UINT)OA_OPEN && bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't opened yet
+				if (!IsDoorStateAt(command, room))
+					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2435,72 +2273,27 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
 				//Wait until player faces orientation X.
-				if (!player.IsInRoom())
+				if (!IsPlayerFacing(command, player))
 					STOP_COMMAND;
 
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (player.wO != nNextCO(player.wPrevO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (player.wO != nNextCCO(player.wPrevO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (player.wO != px)
-							STOP_COMMAND;
-					break;
-				}
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
 				//Wait until player moves in direction X.
-				if (!player.IsInRoom())
+				if (!DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
 
-				const bool bPlayerMoved = player.wX != player.wPrevX ||
-						player.wY != player.wPrevY;
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (player.wO != nNextCO(player.wPrevO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (player.wO != nNextCCO(player.wPrevO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (!bPlayerMoved || CSwordsman::GetSwordMovement( //conversion routine
-								nLastCommand, NO_ORIENTATION) != px)
-							STOP_COMMAND;
-					break;
-				}
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_WaitForPlayerInput:
 			{
 				//Waits for player to input command X
-				if (!player.IsInRoom())
+				if (!DidPlayerInput(command, player, nLastCommand, CueEvents))
 					STOP_COMMAND;
 
-				getCommandX(command, px);
-
-				//CMD_EXEC_COMMAND is translated to CMD_WAIT, so we need to kludge handling here
-				if (px == CMD_WAIT && CueEvents.HasOccurred(CID_CommandKeyPressed))
-					STOP_COMMAND;  //nLastCommand is a false "wait"
-				if (px == CMD_EXEC_COMMAND) {
-					if (!CueEvents.HasOccurred(CID_CommandKeyPressed)) //only way to detect
-						STOP_COMMAND;
-				} else if (px != (UINT)nLastCommand)
-					STOP_COMMAND;
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3122,27 +2915,16 @@ void CCharacter::Process(
 			{
 				getCommandX(command, px);
 
-				const bool bArm = px == (UINT)WT_Off || px == (UINT)WT_On;
 				if (this->bIfBlock)
 				{
 					//As an If condition, this acts as a query that is true when
 					//the player's weapon state matches the specified parameter value.
-					if (bArm) {
-						if (px == (UINT)WT_Off) {
-							if (!player.bWeaponOff && !player.bNoWeapon)
-								STOP_COMMAND;
-						} else {
-							if (player.bWeaponOff)
-								STOP_COMMAND;
-						}
-					} else {
-						if (px != (UINT)player.GetActiveWeapon())
-							STOP_COMMAND;
-					}
+					if (!player.HasWeaponType((WeaponType)px))
+						STOP_COMMAND;
 				} else {
 					//Sets the player weapon type to X (incl. on/off -- replaces CC_PlayerEquipsWeapon)
 					player.EquipWeapon(px);
-					if (bArm)
+					if (px == (UINT)WT_Off || px == (UINT)WT_On)
 						pGame->SetCloneWeaponsSheathed(); //synch clones
 				}
 				bProcessNextCommand = true;
@@ -3302,14 +3084,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForNoBuilding:
 			{
 				bool bFound = false;
-				//Wait until no build markers are queued in rect (x,y,w,h).
-				getCommandRect(command, px, py, pw, ph);
-				for (UINT y=py; !bFound && y <= py + ph; ++y)
-					for (UINT x=px; !bFound && x <= px + pw; ++x)
-						if (room.building.get(x,y))
-							bFound = true;
-				if (bFound)
+				if (IsBuildMarkerAt(command, room))
 					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3368,63 +3145,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForOpenTile:
 			{
-				getCommandParams(command, px, py, pw, ph, pflags);
-				MovementType eOldMovement = eMovement;
-				eMovement = (MovementType)pw;
-
-				bool bBlocked = CMonster::IsTileObstacle(room.GetOSquare(px, py));
-				bBlocked |= CMonster::IsTileObstacle(room.GetFSquare(px, py));
-				bBlocked |= CMonster::IsTileObstacle(room.GetTSquare(px, py));
-
-				eMovement = eOldMovement;
-
-				// Check if non-dagger weapon blocks tile unless ignoring weapons
-				// NPC will not be blocked by its own weapon
-				bBlocked |= (!ph && (pCurrentGame->IsPlayerWeaponAt(px, py, true) || room.IsMonsterSwordAt(px, py, true, this)));
-
-				// Check if player blocks tile
-				bBlocked |= ((pflags & ScriptFlag::PLAYER) == 0 && player.IsInRoom() &&
-					player.wX == px && player.wY == py);
-
-				// Monster can block tile
-				// These checks are skipped if already blocked
-				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
-				if (!bBlocked && pMonster && !(pMonster == this && (pflags & ScriptFlag::NPC) != 0)) {
-					// If a type if flagged to be ignored, it will be considered as blocking the tile
-					UINT wMonsterType = pMonster->wType;
-					switch (wMonsterType) {
-						case M_HALPH:
-						case M_HALPH2:
-							bBlocked |= ((pflags & ScriptFlag::HALPH) == 0);
-						break;
-						case M_CHARACTER:
-							bBlocked |= ((pflags & ScriptFlag::NPC) == 0);
-						break;
-						case M_MIMIC:
-						case M_DECOY:
-						case M_CLONE:
-						case M_TEMPORALCLONE:
-							bBlocked |= ((pflags & ScriptFlag::PDOUBLE) == 0);
-						break;
-						case M_SLAYER:
-						case M_SLAYER2:
-							bBlocked |= ((pflags & ScriptFlag::SLAYER) == 0);
-						break;
-						case M_STALWART:
-						case M_STALWART2:
-							bBlocked |= ((pflags & ScriptFlag::STALWART) == 0);
-						break;
-						case M_FLUFFBABY:
-							if ((pflags & ScriptFlag::PUFFBABY) != 0)
-								break;
-						// Fall through to default case if puff isn't excluded
-						default:
-							bBlocked |= ((pflags & ScriptFlag::MONSTER) == 0);
-						break;
-					}
-				}
-
-				if (bBlocked)
+				if (!IsOpenTileAt(command, pGame))
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			}
@@ -3472,100 +3193,72 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForWeapon:
 			{
-				getCommandParams(command, px, py, pw, ph, pflags);
-
-				bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
-				bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
-				bool bFound = false;
-
-				if (!(bPlayerWeapon || bMonsterWeapon))
-				{
-					STOP_COMMAND;
-				}
-
-				if (!pflags) {
-					bFound = true;
-				}
-
-				if (!bFound && (pflags & ScriptFlag::WEAPON_SWORD) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Sword);
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Pickaxe);
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::WEAPON_SPEAR) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Spear);
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::WEAPON_STAFF) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Staff);
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::WEAPON_DAGGER) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Dagger);
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::WEAPON_CABER) != 0)
-				{
-					if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
-					{
-						bFound = true;
-					}
-					else if (bMonsterWeapon)
-					{
-						bFound = room.IsMonsterWeaponTypeAt(px, py,
-							WT_Caber);
-					}
-				}
-
-				if (!bFound)
+				if (!IsWeaponAt(command, pGame))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
 			}
 			break;
+
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			{
+				//Wait until all conditions are true.
+				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitOr:
+			{
+				//Wait until at least one condition is true.
+				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitXOR:
+			{
+				//Wait until exactly one condition is true.
+				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				//Marks the end of a logical block. Has no other function.
+				bProcessNextCommand = true;
+			break;
+
 
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
@@ -4013,6 +3706,229 @@ bool CCharacter::IsPushableByWeaponAttack() const
 }
 
 //*****************************************************************************
+// Returns: if the command has a valid rect (x,y,w,h) and target entity (flags)
+bool CCharacter::IsValidEntityWait(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags == M_NONE)
+		return false;
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+		return false;
+
+	return true;
+}
+
+//*****************************************************************************
+//Returns: whether the specified game entity (flags) is in rect (x,y,w,h).
+bool CCharacter::IsEntityAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (!pflags || (pflags & ScriptFlag::PLAYER) != 0)
+	{
+		//Check for player by default if no flags are selected.
+		if (player.IsInRoom() &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+	}
+	if ((pflags & ScriptFlag::HALPH) != 0)
+	{
+		if ((player.wAppearance == M_HALPH || player.wAppearance == M_HALPH2) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_HALPH, true))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_HALPH2, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::MONSTER) != 0)
+	{
+		//excludes player doubles, friendly enemies, and NPCs
+		if (!bIsHuman(player.wAppearance) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRect(px, py,
+			px + pw, py + ph))
+			return true;
+	}
+	if ((pflags & ScriptFlag::NPC) != 0)
+	{
+		//visible characters only
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CHARACTER))
+			return true;
+	}
+	if ((pflags & ScriptFlag::PDOUBLE) != 0)
+	{
+		//All player double types
+		if (bIsBeethroDouble(player.wAppearance) && !bIsSmitemaster(player.wAppearance) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_MIMIC))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_DECOY))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CLONE))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_TEMPORALCLONE))
+			return true;
+	}
+	if ((pflags & ScriptFlag::SELF) != 0)
+	{
+		if (this->wX >= px && this->wX <= px + pw &&
+			this->wY >= py && this->wY <= py + ph)
+			return true;
+	}
+	if ((pflags & ScriptFlag::SLAYER) != 0)
+	{
+		if ((player.wAppearance == M_SLAYER || player.wAppearance == M_SLAYER2) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_SLAYER, true))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_SLAYER2, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::BEETHRO) != 0)
+	{
+		//Check for Beethro (can detect NPC Beethros).
+		if (bIsSmitemaster(player.wAppearance))
+		{
+			if (player.wX >= px && player.wX <= px + pw &&
+				player.wY >= py && player.wY <= py + ph)
+				return true;
+		}
+		CMonster* pNPCBeethro = room.GetNPCBeethro();
+		if (pNPCBeethro)
+		{
+			const UINT wSX = pNPCBeethro->wX;
+			const UINT wSY = pNPCBeethro->wY;
+			if (wSX >= px && wSX <= px + pw &&
+				wSY >= py && wSY <= py + ph)
+				return true;
+		}
+	}
+	if ((pflags & ScriptFlag::STALWART) != 0)
+	{
+		if (bIsStalwart(player.wAppearance) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_STALWART, true))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_STALWART2, true))
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+//Returns: whether the remains of a specified monster type (flags) is in rect (x,y,w,h).
+bool CCharacter::IsMonsterRemainsAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags == M_FEGUNDO) {
+		// Fegundo remains are their own monster type, so special handling is required
+		return room.IsMonsterInRectOfType(px, py, px + pw, py + ph, M_FEGUNDOASHES);
+	}	else {
+		return room.IsMonsterRemainsInRectOfType(px, py, px + pw, py + ph, pflags);
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+//Returns: whether the specified game entity type (flags) is in rect (x,y,w,h).
+bool CCharacter::IsEntityTypeAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (player.wIdentity == pflags)
+	{
+		if (player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+	}
+	if (room.IsMonsterInRectOfType(px, py, px + pw, py + ph, pflags, true, true))
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
+// Returns: if there is a build marker in rect (x,y,w,h)
+bool CCharacter::IsBuildMarkerAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph;  //command parameters
+	getCommandRect(command, px, py, pw, ph);
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			if (room.building.get(x, y))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+// Returns: if the tile at (x,y) has the given door state (w)
+bool CCharacter::IsDoorStateAt(
+	const CCharacterCommand& command, const CDbRoom& room
+) const
+{
+	UINT px, py;  //command parameters
+	getCommandXY(command, px, py);
+	const UINT wTile = room.GetOSquare(px, py);
+	if (command.w == (UINT)OA_CLOSE && !bIsDoor(wTile))
+		return false;  //door hasn't closed yet
+	if (command.w == (UINT)OA_OPEN && bIsDoor(wTile))
+		return false;  //door hasn't opened yet
+
+	return true;
+}
+
+//*****************************************************************************
 bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 //Returns: whether the specified game element (flags) is in rect (x,y,w,h).
 {
@@ -4134,6 +4050,305 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+//Returns: if the tile at (x,y) is open for the specified movement type (w)
+// Weapons (h) and entity types (flags) can be ignored.
+bool CCharacter::IsOpenTileAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame
+)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	CDbRoom& room = *(pGame->pRoom);
+
+	// For practical purposes, an invalid tile isn't open
+	if (!room.IsValidColRow(px, py))
+		return false;
+
+	MovementType eOldMovement = eMovement;
+	eMovement = (MovementType)pw;
+
+	bool bBlocked = CMonster::IsTileObstacle(room.GetOSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetFSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetTSquare(px, py));
+
+	eMovement = eOldMovement;
+
+	// Blocked by room tile
+	if (bBlocked)
+		return false;
+
+	// Check if non-dagger weapon blocks tile unless ignoring weapons
+	// NPC will not be blocked by its own weapon
+	if (!ph && (pCurrentGame->IsPlayerWeaponAt(px, py, true) || room.IsMonsterSwordAt(px, py, true, this)))
+		return false;
+
+	// Check if player blocks tile
+	const CSwordsman& player = pGame->swordsman;
+	if ((pflags & ScriptFlag::PLAYER) == 0 && player.IsInRoom() &&
+			player.wX == px && player.wY == py)
+		return false;
+
+	// Monster can block tile
+	// These checks are skipped if already blocked
+	CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+	if (pMonster && !(pMonster == this && (pflags & ScriptFlag::NPC) != 0)) {
+		// If a type if flagged to be ignored, it will be considered as blocking the tile
+		UINT wMonsterType = pMonster->wType;
+		switch (wMonsterType) {
+		case M_HALPH:
+		case M_HALPH2:
+			return ((pflags & ScriptFlag::HALPH) == 0);
+		case M_CHARACTER:
+			return ((pflags & ScriptFlag::NPC) == 0);
+		case M_MIMIC:
+		case M_DECOY:
+		case M_CLONE:
+		case M_TEMPORALCLONE:
+			return ((pflags & ScriptFlag::PDOUBLE) == 0);
+		case M_SLAYER:
+		case M_SLAYER2:
+			return ((pflags & ScriptFlag::SLAYER) == 0);
+		case M_STALWART:
+		case M_STALWART2:
+			return ((pflags & ScriptFlag::STALWART) == 0);
+		case M_FLUFFBABY:
+			if ((pflags & ScriptFlag::PUFFBABY) != 0)
+				break;
+			// Fall through to default case if puff isn't excluded
+		default:
+			return ((pflags & ScriptFlag::MONSTER) == 0);
+			break;
+		}
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+// Returns: is player facing the specified direction (x)
+bool CCharacter::IsPlayerFacing(
+	const CCharacterCommand& command,
+	const CSwordsman& player
+) const
+{
+	if (!player.IsInRoom())
+		return false;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+	switch (px)
+	{
+		case CMD_C:
+			return (player.wO == nNextCO(player.wPrevO));
+		case CMD_CC:
+			return (player.wO == nNextCCO(player.wPrevO));
+		default:
+			return (player.wO == px);
+	}
+}
+
+//*****************************************************************************
+// Returns: did the player input the specified command (x)
+bool CCharacter::DidPlayerInput(
+	const CCharacterCommand& command,
+	const CSwordsman& player,
+	const int nLastCommand,
+	CCueEvents& CueEvents
+) const
+{
+	if (!player.IsInRoom())
+		return false;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+
+	//CMD_EXEC_COMMAND is translated to CMD_WAIT, so we need to kludge handling here
+	if (px == CMD_WAIT && CueEvents.HasOccurred(CID_CommandKeyPressed))
+		return false;  //nLastCommand is a false "wait"
+	if (px == CMD_EXEC_COMMAND) {
+		return CueEvents.HasOccurred(CID_CommandKeyPressed); //only way to detect
+	}
+
+	return (px == (UINT)nLastCommand);
+}
+
+//*****************************************************************************
+// Returns: did the player move in the specified direction (x)
+bool CCharacter::DidPlayerMove(
+	const CCharacterCommand& command,
+	const CSwordsman& player,
+	const int nLastCommand
+) const
+{
+	if (!player.IsInRoom())
+		return false;
+
+	const bool bPlayerMoved = player.wX != player.wPrevX ||
+		player.wY != player.wPrevY;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+
+	switch (px)
+	{
+		case CMD_C:
+			return (player.wO == nNextCO(player.wPrevO));
+		case CMD_CC:
+			return (player.wO == nNextCCO(player.wPrevO));
+		default:
+			return (bPlayerMoved && CSwordsman::GetSwordMovement( //conversion routine
+				nLastCommand, NO_ORIENTATION) == px);
+	}
+}
+
+//*****************************************************************************
+// Returns: is there a weapon at the given tile (x,y)
+// Optionally, a specific set of weapons can be check for (flags)
+bool CCharacter::IsWeaponAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame
+) const
+{
+	UINT px, py, pflags;  //command parameters
+	getCommandXYF(command, px, py, pflags);
+
+	CDbRoom& room = *(pGame->pRoom);
+	const CSwordsman& player = pGame->swordsman;
+
+	bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
+	bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
+
+	if (!(bPlayerWeapon || bMonsterWeapon))
+	{
+		return false;
+	}
+
+	if (!pflags) {
+		return true;
+	}
+
+	if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Sword);
+		}
+	}
+	if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Pickaxe);
+		}
+	}
+	if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Spear);
+		}
+	}
+	if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Staff);
+		}
+	}
+	if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Dagger);
+		}
+	}
+	if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
+	{
+		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
+		{
+			return true;
+		}
+		else if (bMonsterWeapon)
+		{
+			return room.IsMonsterWeaponTypeAt(px, py,	WT_Caber);
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+CCoord* CCharacter::GetFaceTowardsTarget(
+	UINT pflags,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	CCoord* pDest = NULL;
+
+	if ((pflags & ScriptFlag::PLAYER) != 0)
+		pDest = (CCoord*)&player;
+	else if ((pflags & ScriptFlag::HALPH) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_HALPH)))
+			pDest = room.GetMonsterOfType(M_HALPH2);
+	}
+	else if ((pflags & ScriptFlag::MONSTER) != 0)
+		pDest = room.pFirstMonster;
+	else if ((pflags & ScriptFlag::NPC) != 0)
+		pDest = room.GetMonsterOfType(M_CHARACTER);
+	else if ((pflags & ScriptFlag::PDOUBLE) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_MIMIC)))
+			if (!(pDest = room.GetMonsterOfType(M_DECOY)))
+				if (!(pDest = room.GetMonsterOfType(M_CLONE)))
+					pDest = room.GetMonsterOfType(M_TEMPORALCLONE);
+	}
+	else if ((pflags & ScriptFlag::SELF) != 0)
+		pDest = (CCoord*)this; //always at this position by definition
+	else if ((pflags & ScriptFlag::SLAYER) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_SLAYER)))
+			pDest = room.GetMonsterOfType(M_SLAYER2);
+	}
+	else if ((pflags & ScriptFlag::BEETHRO) != 0)
+	{
+		if (bIsSmitemaster(player.wAppearance))
+			pDest = (CCoord*)&player;
+		else
+			pDest = room.GetNPCBeethro();
+	}
+	else if ((pflags & ScriptFlag::STALWART) != 0)
+	{
+		if (!(pDest = room.GetMonsterOfType(M_STALWART)))
+			pDest = room.GetMonsterOfType(M_STALWART2);
+	}
+
+	return pDest;
 }
 
 //*****************************************************************************
@@ -4348,6 +4563,350 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 void CCharacter::SetLocalVar(const WSTRING& varName, const WSTRING& val)
 {
 	this->localScriptVars[varName] = val;
+}
+
+//*****************************************************************************
+//
+bool CCharacter::EvaluateConditionalCommand(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	const int nLastCommand,
+	CCueEvents& CueEvents
+)
+{
+	CDbRoom& room = *(pGame->pRoom);
+
+	switch (command.command) {
+		case CCharacterCommand::CC_WaitForCueEvent:
+		{
+			const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+			return CueEvents.HasOccurred(cid);
+		}
+		case CCharacterCommand::CC_WaitForRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& IsEntityAt(command, room, pGame->swordsman));
+		}
+		case CCharacterCommand::CC_WaitForNotRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityAt(command, room, pGame->swordsman));
+		}
+		case CCharacterCommand::CC_WaitForDoorTo:
+		{
+			return IsDoorStateAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForTurn:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return pGame->wSpawnCycleCount >= px;
+		}
+		case CCharacterCommand::CC_WaitForCleanRoom:
+		{
+			return room.bGreenDoorsOpened;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToFace:
+		{
+			return IsPlayerFacing(command, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_WaitForVar:
+		{
+			return DoesVarSatisfy(command, pGame);
+		}
+		case CCharacterCommand::CC_SetPlayerAppearance:
+		{
+			//As a condition, this acts as a query that is true when
+			//the player is in this role.
+			return pGame->swordsman.wIdentity == command.x;
+		}
+		case CCharacterCommand::CC_WaitForNoBuilding:
+		{
+			return !IsBuildMarkerAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToMove:
+		{
+			return DidPlayerMove(command, pGame->swordsman, nLastCommand);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+		{
+			if (pGame->swordsman.wX == this->wX && pGame->swordsman.wY == this->wY)
+				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
+
+			return this->bPlayerTouchedMe;
+		}
+		case CCharacterCommand::CC_WaitForItem:
+		{
+			return IsTileAt(command);
+		}
+		case CCharacterCommand::CC_SetPlayerWeapon:
+		{
+			//As a condition, this acts as a query that is true when the
+			//player's weapon state matches the specified parameter value.
+			UINT px;
+			getCommandX(command, px);
+			return pGame->swordsman.HasWeaponType((WeaponType)px);
+		}
+		case CCharacterCommand::CC_WaitForSomeoneToPushMe:
+		{
+			return this->bWasPushed;
+		}
+		case CCharacterCommand::CC_WaitForOpenMove:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return this->IsOpenMove(nGetOX(px), nGetOY(px));
+		}
+		case CCharacterCommand::CC_WaitForCleanLevel:
+		{
+			return pGame->IsCurrentLevelComplete();
+		}
+		case CCharacterCommand::CC_WaitForPlayerInput:
+		{
+			return DidPlayerInput(command, pGame->swordsman, nLastCommand, CueEvents);
+		}
+		case CCharacterCommand::CC_WaitForEntityType:
+		{
+			return IsEntityTypeAt(command, room, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_WaitForNotEntityType:
+		{
+			return !IsEntityTypeAt(command, room, pGame->swordsman);
+		}
+		case CCharacterCommand::CC_FaceTowards:
+		{
+			UINT px, py, pflags;
+			getCommandXYF(command, px, py, pflags);
+			if (!room.IsValidColRow(px, py))
+				return true;
+
+			CCoord* pDest = GetFaceTowardsTarget(pflags, room, pGame->swordsman);
+			if (pDest) {
+				px = pDest->wX;
+				py = pDest->wY;
+			}
+
+			if (px == this->wX && py == this->wY)
+				return true;
+
+			const UINT wO = this->GetOrientationFacingTarget(px, py);
+			return (wO == this->wO);
+		}
+		case CCharacterCommand::CC_WaitForWeapon:
+		{
+			return IsWeaponAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForRemains:
+		{
+			return IsMonsterRemainsAt(command, room);
+		}
+		case CCharacterCommand::CC_SetMovementType:
+		{
+			//As a condition, check if movement type equals X
+			return (this->eMovement != (MovementType)command.x);
+		}
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			return IsOpenTileAt(command, pGame);
+		}
+		default:
+		{
+			ASSERT(!"Bad Conditional Command");
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to false, returns false. Otherwise,
+// returns true.
+bool CCharacter::EvaluateLogicalAnd(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitAnd);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (!EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (!EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (!EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return false;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to true.
+	return true;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to true, returns true. Otherwise,
+// returns false.
+bool CCharacter::EvaluateLogicalOr(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitOr);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return true;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to false.
+	return false;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If exactly one evaluates to true, return true, otherwise
+// returns false.
+bool CCharacter::EvaluateLogicalXOR(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitXOR);
+
+	bool bFound = false;
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		bool bLocalFound = false;
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+					bLocalFound =
+						EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents);
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					bLocalFound =
+						EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					bLocalFound =
+						EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			bLocalFound =
+				EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents);
+		}
+
+		if (bLocalFound) {
+			if (bFound) {
+				// More than one condition is true, so return false
+				return false;
+			}
+
+			bFound = true;
+		}
+
+		++wCommandIndex;
+	}
+
+	return bFound;
 }
 
 //*****************************************************************************
@@ -4879,6 +5438,17 @@ const
 {
 	x = (this->paramX == NO_OVERRIDE ? command.x : this->paramX);
 	y = (this->paramY == NO_OVERRIDE ? command.y : this->paramY);
+}
+
+//*****************************************************************************
+void CCharacter::getCommandXYF(
+//Outputs: the XY and flag values for this command
+	const CCharacterCommand& command, UINT& x, UINT& y, UINT& f)
+	const
+{
+	x = (this->paramX == NO_OVERRIDE ? command.x : this->paramX);
+	y = (this->paramY == NO_OVERRIDE ? command.y : this->paramY);
+	f = (this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
 }
 
 //*****************************************************************************
@@ -5934,6 +6504,37 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestingDepth > 0)
 					wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the Logic end command at the end of the block or NO_LABEL
+// if not in a block.
+int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
+{
+	UINT wCommandIndex = wStartIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			case CCharacterCommand::CC_LogicalWaitOr:
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				wNestingDepth++; // entering a nested logic block
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				if (wNestingDepth == 0) {
+					return wCommandIndex; // Found end of logic block
+				}	else {
+					wNestingDepth--; // exiting a nested logic block
+				}
 			break;
 		}
 

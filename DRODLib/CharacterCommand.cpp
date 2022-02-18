@@ -55,6 +55,39 @@ void CCharacterCommand::swap(CCharacterCommand &that) {
 	std::swap(pSpeech, that.pSpeech);
 }
 
+bool CCharacterCommand::IsLogicalWaitCondition() const {
+	switch (command) {
+		case CC_WaitForCueEvent:
+		case CC_WaitForRect:
+		case CC_WaitForNotRect:
+		case CC_WaitForDoorTo:
+		case CC_WaitForTurn:
+		case CC_WaitForCleanRoom:
+		case CC_WaitForPlayerToFace:
+		case CC_WaitForVar:
+		case CC_SetPlayerAppearance:
+		case CC_WaitForNoBuilding:
+		case CC_WaitForPlayerToMove:
+		case CC_WaitForPlayerToTouchMe:
+		case CC_WaitForItem:
+		case CC_SetPlayerWeapon:
+		case CC_WaitForSomeoneToPushMe:
+		case CC_WaitForOpenMove:
+		case CC_WaitForCleanLevel:
+		case CC_WaitForPlayerInput:
+		case CC_WaitForEntityType:
+		case CC_WaitForNotEntityType:
+		case CC_FaceTowards:
+		case CC_WaitForWeapon:
+		case CC_WaitForRemains:
+		case CC_SetMovementType:
+		case CC_WaitForOpenTile:
+			return true;
+		default:
+			return false;
+	}
+}
+
 //*****************************************************************************
 SPEAKER getSpeakerType(const MONSTERTYPE eType)
 //Return: corresponding speaker enumeration for monster type, if supported.
