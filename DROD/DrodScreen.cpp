@@ -2640,6 +2640,9 @@ void CDrodScreen::EnablePlayerSettings(
 #else
 	SetFullScreen(pPlayer->Settings.GetVar(Settings::Fullscreen, false));
 #endif
+
+	SetResizableScreen(pPlayer->Settings.GetVar(Settings::ResizableWindow, CScreen::bAllowWindowResizing));
+
 	g_pTheBM->bAlpha = pPlayer->Settings.GetVar(Settings::Alpha, true);
 	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne()));
 	g_pTheBM->eyeCandy = pPlayer->Settings.GetVar(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));

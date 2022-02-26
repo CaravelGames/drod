@@ -69,6 +69,7 @@ namespace Settings
 	DEF(PuzzleMode);
 	DEF(ReceiveWhispersOnlyInGame);
 	DEF(RepeatRate);
+	DEF(ResizableWindow);
 	DEF(ShowCheckpoints);
 	DEF(ShowDemosFromLevel);
 	DEF(ShowErrors);
