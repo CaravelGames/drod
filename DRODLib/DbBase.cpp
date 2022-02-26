@@ -907,6 +907,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_LogicalWaitOr: strText = "Wait for Any:"; break;
 	case MID_LogicalWaitXOR: strText = "Wait for Exactly One:"; break;
 	case MID_LogicalWaitEnd: strText = "Wait for Conditions End"; break;
+	case MID_ResizableWindow: strText = "Resizable Window"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

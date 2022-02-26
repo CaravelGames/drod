@@ -1374,6 +1374,7 @@ enum MID_CONSTANT {
   MID_UnlimitedUndo = 1757,
   MID_AutoUndoOnDeath = 1786,
   MID_ActivateCloudSync = 1794,
+  MID_ResizableWindow = 2027,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

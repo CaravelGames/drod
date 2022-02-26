@@ -552,7 +552,7 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 
 	pOptionButton = new COptionButtonWidget(TAG_RESIZABLE_SCREEN, X_USEFULLSCREEN,
 		Y_USEFULLSCREEN + 32, CX_USEFULLSCREEN, CY_USEFULLSCREEN,
-		L"Resizable Window", false);
+		g_pTheDB->GetMessageText(MID_ResizableWindow), false);
 	pGraphicsFrame->AddWidget(pOptionButton);
 	if (!CScreen::bAllowWindowed)
 		pOptionButton->Disable();
