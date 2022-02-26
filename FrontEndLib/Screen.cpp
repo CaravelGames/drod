@@ -659,6 +659,16 @@ void CScreen::GetScreenSize(int &nW, int &nH)
 }
 
 //*****************************************************************************
+void CScreen::SetResizableScreen(const bool bResizable)
+{
+	// Can't resize while fullscreen
+	if (IsFullScreen())
+		return;
+
+	SDL_SetWindowResizable(GetMainWindow(), (SDL_bool)bResizable);
+}
+
+//*****************************************************************************
 void CScreen::GetWindowPos(int &nX, int &nY)
 //OUT: windowed app position on screen
 {

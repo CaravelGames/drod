@@ -228,6 +228,7 @@ protected:
 	void           SetDestScreenType(const UINT eSet) {this->eDestScreenType = eSet;}
 	void           SetFullScreen(const bool bSetFull);
 	virtual bool   SetForActivate();
+	void           SetResizableScreen(const bool bResizable);
 	void           SetScreenType(const UINT eSetType) {this->eType = eSetType;}
 	void           ShowCursor();
 	UINT           ShowMessage(const WCHAR* pwczMessage);
