@@ -653,3 +653,7 @@ Auto undo on death
 [MID_ActivateCloudSync]
 [eng]
 Activate Cloud Sync
+
+[MID_ResizableWindow]
+[eng]
+Resizable Window

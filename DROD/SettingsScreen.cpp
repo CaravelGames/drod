@@ -113,6 +113,8 @@ const UINT TAG_HELP = 1092;
 
 const UINT TAG_MENU = 1093;
 
+const UINT TAG_RESIZABLE_SCREEN = 1094;
+
 static const UINT CX_SPACE = 10;
 static const UINT CY_SPACE = 10;
 
@@ -546,6 +548,13 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 		g_pTheDB->GetMessageText(MID_UseFullScreen), false);
 	pGraphicsFrame->AddWidget(pOptionButton);
 	if (!CScreen::bAllowFullScreen || !CScreen::bAllowWindowed)
+		pOptionButton->Disable();
+
+	pOptionButton = new COptionButtonWidget(TAG_RESIZABLE_SCREEN, X_USEFULLSCREEN,
+		Y_USEFULLSCREEN + 32, CX_USEFULLSCREEN, CY_USEFULLSCREEN,
+		g_pTheDB->GetMessageText(MID_ResizableWindow), false);
+	pGraphicsFrame->AddWidget(pOptionButton);
+	if (!CScreen::bAllowWindowed)
 		pOptionButton->Disable();
 
 	pOptionButton = new COptionButtonWidget(TAG_ALPHA, X_ALPHA, Y_ALPHA,
@@ -1355,6 +1364,7 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 	SETMISSING(Settings::Language, Language::English);
 	
 	SETMISSING(Settings::Fullscreen, IsFullScreen());
+	SETMISSING(Settings::ResizableWindow, CScreen::bAllowWindowResizing);
 	SETMISSING(Settings::Alpha, true);
 	SETMISSING(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne());
 	SETMISSING(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
@@ -1494,6 +1504,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton->SetChecked((CScreen::bAllowFullScreen && CScreen::bAllowWindowed) ?
 			settings.GetVar(Settings::Fullscreen, IsFullScreen()) :
 			IsFullScreen());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_RESIZABLE_SCREEN));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ResizableWindow, CScreen::bAllowWindowResizing));
+	pOptionButton->Enable(!IsFullScreen());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ALPHA));
 	pOptionButton->SetChecked(settings.GetVar(Settings::Alpha, g_pTheBM->bAlpha));
@@ -1635,6 +1649,11 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 			GetWidget(TAG_USE_FULLSCREEN));
 	settings.SetVar(Settings::Fullscreen, pOptionButton->IsChecked());
 	SetFullScreen(pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_RESIZABLE_SCREEN));
+	settings.SetVar(Settings::ResizableWindow, pOptionButton->IsChecked());
+	SetResizableScreen(pOptionButton->IsChecked());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ALPHA));
 	settings.SetVar(Settings::Alpha, pOptionButton->IsChecked());
