@@ -3288,6 +3288,34 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetCeilingLight:
+			{
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				if (!(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Add(x, y, pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				CueEvents.Add(CID_LightTilesChanged);
+			}
+			break;
 
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:

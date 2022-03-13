@@ -4126,6 +4126,7 @@ const
 		break;
 
 		case CCharacterCommand::CC_SetDarkness:
+		case CCharacterCommand::CC_SetCeilingLight:
 			wstr += _itoW(command.flags, temp, 10);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -4625,6 +4626,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, L"Set Ceiling Darkness");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, L"Set Ceiling Light");
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
@@ -5455,7 +5457,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitOr
 		NO_WIDGETS,         //CC_LogicalWaitXOR
 		NO_WIDGETS,	        //CC_LogicalWaitEnd
-		WAIT                //CC_SetDarkness
+		WAIT,               //CC_SetDarkness
+		WAIT                //CC_SetCeilingLight
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5595,7 +5598,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitOr
 		NO_LABELS,          //CC_LogicalWaitXOR
 		NO_LABELS,          //CC_LogicalWaitEnd
-		NO_LABELS           //CC_SetDarkness
+		NO_LABELS,          //CC_SetDarkness
+		NO_LABELS           //CC_SetCeilingLight
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6642,12 +6646,15 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_SetDarkness:
+		case CCharacterCommand::CC_SetCeilingLight:
 		{
 			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
 				this->pAddCommandDialog->GetWidget(TAG_WAIT));
 			ASSERT(pDarkLevel);
 			UINT wDarkness = _Wtoi(pDarkLevel->GetText());
-			this->pCommand->flags = max(0, min(wDarkness, NUM_DARK_TYPES));
+			UINT wMaxTypes = c == CCharacterCommand::CC_SetDarkness ?
+				NUM_DARK_TYPES : NUM_LIGHT_TYPES;
+			this->pCommand->flags = max(0, min(wDarkness, wMaxTypes));
 			QueryRect();
 		}
 		break;
@@ -7084,6 +7091,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_SetDarkness:
+		case CCharacterCommand::CC_SetCeilingLight:
 		{
 			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
 				this->pAddCommandDialog->GetWidget(TAG_WAIT));
@@ -8070,6 +8078,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_SetDarkness:
+	case CCharacterCommand::CC_SetCeilingLight:
 		parseNumber(pCommand->flags);
 		skipComma;
 		skipLeftParen;
@@ -8671,6 +8680,7 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_SetDarkness:
+	case CCharacterCommand::CC_SetCeilingLight:
 		concatNumWithComma(c.flags);
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
