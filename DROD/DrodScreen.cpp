@@ -833,8 +833,11 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	}
 
 	const bool bLightToggled = CueEvents.HasOccurred(CID_LightToggled);
-	if (bLightToggled)
+	const bool bLightTilesChanged = CueEvents.HasOccurred(CID_LightTilesChanged);
+	if (bLightToggled || bLightTilesChanged)
 		pRoomWidget->RenderRoomLighting();
+	if (bLightTilesChanged)
+		pRoomWidget->RerenderRoomCeilingLight();
 	pRoomWidget->AddPlayerLight();
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
 	{

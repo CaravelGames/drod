@@ -3284,6 +3284,7 @@ void CCharacter::Process(
 					}
 				}
 
+				CueEvents.Add(CID_LightTilesChanged);
 				bProcessNextCommand = true;
 			}
 			break;

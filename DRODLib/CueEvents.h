@@ -833,6 +833,11 @@ enum CUEEVENT_ID
 	//Private data: CMonster *pMonster
 	CID_MonsterExistenceCeased,
 
+	//A change has been made to the room's lighting tiles.
+	//
+	//Private data: NONE
+	CID_LightTilesChanged,
+
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider
 	//Make sure this is always the last CueEvent defined

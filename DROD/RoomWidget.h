@@ -334,6 +334,7 @@ public:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
+	void           RerenderRoomCeilingLight() { this->bCeilingLightsRendered = false; }
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
 	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,

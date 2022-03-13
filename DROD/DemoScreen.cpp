@@ -390,6 +390,7 @@ void CDemoScreen::GoToTurn(const UINT wTargetTurnNo)
 
 	} else if (wNewTurnNo < GetCurrentTurn()) {
 		const bool bWasLightTurnedThisTurn = this->sCueEvents.HasOccurred(CID_LightToggled);
+		const bool bWasLightTilesChangedThisTurn = this->sCueEvents.HasOccurred(CID_LightTilesChanged);
 
 		//Move command sequence back one move.
 		CGameScreen::pCurrentGame->Commands.Unfreeze();
@@ -398,6 +399,8 @@ void CDemoScreen::GoToTurn(const UINT wTargetTurnNo)
 		CGameScreen::pCurrentGame->Commands.Freeze();
 		if (bWasLightTurnedThisTurn)
 			this->sCueEvents.Add(CID_LightToggled); // Needed for the lights to be recalculated
+		if (bWasLightTilesChangedThisTurn)
+			this->sCueEvents.Add(CID_LightTilesChanged); // Needed for the lights to be recalculated
 
 	} else if (wNewTurnNo == GetCurrentTurn() + 1) {
 		AdvanceTurn();
