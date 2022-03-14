@@ -205,6 +205,27 @@ namespace ScriptFlag
 		NextElseOrElseIfSkipCondition = -2
 	};
 
+	enum LightColors
+	{
+		LC_None = 0,
+		LC_White = 1,
+		LC_Red = 2,
+		LC_Green = 3,
+		LC_Blue = 4,
+		LC_PaleRed = 5,
+		LC_PaleGreen = 6,
+		LC_PaleBlue = 7,
+		LC_Yellow = 8,
+		LC_Cyan = 9,
+		LC_Mauve = 10,
+		LC_Orange = 11,
+		LC_Pink = 12,
+		LC_Lime = 13,
+		LC_Turquoise = 14,
+		LC_Violet = 15,
+		LC_Azure = 16
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
