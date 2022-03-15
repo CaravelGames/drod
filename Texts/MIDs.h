@@ -70,6 +70,24 @@ enum MID_CONSTANT {
   MID_CNetNotConnected = 1342,
   MID_ChatHistory = 1346,
 
+  //Messages from Colors.uni:
+  MID_White = 2028,
+  MID_Red = 2029,
+  MID_Green = 2030,
+  MID_Blue = 2031,
+  MID_PaleRed = 2032,
+  MID_PaleGreen = 2033,
+  MID_PaleBlue = 2034,
+  MID_Yellow = 2035,
+  MID_Cyan = 2036,
+  MID_Mauve = 2037,
+  MID_Orange = 2038,
+  MID_Pink = 2039,
+  MID_Lime = 2040,
+  MID_Turquoise = 2041,
+  MID_Violet = 2042,
+  MID_Azure = 2043,
+
   //Messages from CreditsGatEB.uni:
   MID_CreditsIntro_GatEB = 1492,
   MID_ErikH_C_GatEB = 1493,
@@ -1806,6 +1824,9 @@ enum MID_CONSTANT {
   MID_LogicalWaitOr = 2024,
   MID_LogicalWaitXOR = 2025,
   MID_LogicalWaitEnd = 2026,
+  MID_SetDarkness = 2044,
+  MID_SetCeilingLight = 2045,
+  MID_SetWallLight = 2046,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

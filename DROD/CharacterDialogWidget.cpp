@@ -1962,22 +1962,22 @@ void CCharacterDialogWidget::AddCommandDialog()
 		COLORLISTBOX_X, COLORLISTBOX_Y, COLORLISTBOX_CX, COLORLISTBOX_CY);
 	this->pAddCommandDialog->AddWidget(pColorListBox);
 	this->pColorListBox->AddItem(ScriptFlag::LC_None, g_pTheDB->GetMessageText(MID_None));
-	this->pColorListBox->AddItem(ScriptFlag::LC_White, L"White");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Red, L"Red");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Green, L"Green");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Blue, L"Blue");
-	this->pColorListBox->AddItem(ScriptFlag::LC_PaleRed, L"Pale Red");
-	this->pColorListBox->AddItem(ScriptFlag::LC_PaleGreen, L"Pale Green");
-	this->pColorListBox->AddItem(ScriptFlag::LC_PaleBlue, L"Pale Blue");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Yellow, L"Yellow");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Cyan, L"Cyan");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Mauve, L"Mauve");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Orange, L"Orange");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Pink, L"Pink");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Lime, L"Lime");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, L"Turquoise");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, L"Violet");
-	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, L"Azure");
+	this->pColorListBox->AddItem(ScriptFlag::LC_White, g_pTheDB->GetMessageText(MID_White));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Red, g_pTheDB->GetMessageText(MID_Red));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Green, g_pTheDB->GetMessageText(MID_Green));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Blue, g_pTheDB->GetMessageText(MID_Blue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleRed, g_pTheDB->GetMessageText(MID_PaleRed));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleGreen, g_pTheDB->GetMessageText(MID_PaleGreen));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleBlue, g_pTheDB->GetMessageText(MID_PaleBlue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Yellow, g_pTheDB->GetMessageText(MID_Yellow));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Cyan, g_pTheDB->GetMessageText(MID_Cyan));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Mauve, g_pTheDB->GetMessageText(MID_Mauve));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Orange, g_pTheDB->GetMessageText(MID_Orange));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Pink, g_pTheDB->GetMessageText(MID_Pink));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Lime, g_pTheDB->GetMessageText(MID_Lime));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, g_pTheDB->GetMessageText(MID_Turquoise));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, g_pTheDB->GetMessageText(MID_Violet));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, g_pTheDB->GetMessageText(MID_Azure));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -4684,9 +4684,9 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapMusic, g_pTheDB->GetMessageText(MID_WorldMapMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
 
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, L"Set Ceiling Darkness");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, L"Set Ceiling Light");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, L"Set Wall Light");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, g_pTheDB->GetMessageText(MID_SetWallLight));
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
