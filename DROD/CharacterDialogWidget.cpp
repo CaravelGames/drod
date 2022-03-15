@@ -4188,6 +4188,20 @@ const
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
 		break;
+		case CCharacterCommand::CC_SetWallLight:
+			wstr += this->pColorListBox->GetTextForKey(command.flags);
+			wstr += wszComma;
+			wstr += wszSpace;
+			wstr += _itoW(command.w, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+		break;
 
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
@@ -4672,6 +4686,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, L"Set Ceiling Darkness");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, L"Set Ceiling Light");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, L"Set Wall Light");
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
@@ -5406,6 +5421,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT MOVETYPE[] = { TAG_MOVETYPELISTBOX, 0 };
 	static const UINT OPENTILE[] = { TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_ONOFFLISTBOX3, 0 };
 	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX };
+	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5504,7 +5520,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitXOR
 		NO_WIDGETS,	        //CC_LogicalWaitEnd
 		WAIT,               //CC_SetDarkness
-		CEILINGLIGHT        //CC_SetCeilingLight
+		CEILINGLIGHT,       //CC_SetCeilingLight
+		WALLLIGHT           //CC_SetWallLight
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5645,7 +5662,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitXOR
 		NO_LABELS,          //CC_LogicalWaitEnd
 		NO_LABELS,          //CC_SetDarkness
-		NO_LABELS           //CC_SetCeilingLight
+		NO_LABELS,          //CC_SetCeilingLight
+		NO_LABELS           //CC_SetWallLight
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6707,6 +6725,17 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			QueryRect();
 		}
 		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			UINT wLight = _Wtoi(pLightLevel->GetText());
+			this->pCommand->w = max(0, min(wLight, MAX_LIGHT_DISTANCE));
+			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
+			QueryXY();
+		}
+		break;
 
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
@@ -7149,6 +7178,15 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 		case CCharacterCommand::CC_SetCeilingLight:
 		{
+			this->pColorListBox->SelectItem(this->pCommand->flags);
+		}
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			pLightLevel->SetText(_itoW(this->pCommand->w, temp, 10));
 			this->pColorListBox->SelectItem(this->pCommand->flags);
 		}
 		break;
@@ -8154,6 +8192,16 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	break;
+	case CCharacterCommand::CC_SetWallLight:
+		parseMandatoryOption(pCommand->flags, this->pColorListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseNumber(pCommand->w);
+	break;
 
 	default: ASSERT(!"Unrecognized script command"); break;
 	}
@@ -8757,6 +8805,13 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);
 		concatNum(c.y + c.h);
+	break;
+	case CCharacterCommand::CC_SetWallLight:
+		wstr += this->pColorListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNum(c.w);
 	break;
 
 	default: ASSERT(!"Bad command"); break;

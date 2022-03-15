@@ -3316,6 +3316,28 @@ void CCharacter::Process(
 				CueEvents.Add(CID_LightTilesChanged);
 			}
 			break;
+			case CCharacterCommand::CC_SetWallLight: {
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+				pw = max(0, min(pw, MAX_LIGHT_DISTANCE));
+
+				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (pw == 0 || pflags == 0) {
+					//Remove tile light
+					room.tileLights.Remove(px, py);
+					room.ForceTileRedraw(px, py, false);
+				}	else {
+					UINT wLightParam = (pflags - 1);
+					wLightParam += (pw - 1) * NUM_LIGHT_TYPES;
+					room.tileLights.Add(px, py, WALL_LIGHT + wLightParam);
+					room.ForceTileRedraw(px, py, false);
+				}
+
+				CueEvents.Add(CID_LightTilesChanged);
+			}
+			break;
 
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:

@@ -359,6 +359,7 @@ public:
 		CC_LogicalWaitEnd,      //Ends a logical wait block.
 		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
 		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
+		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
 
 		CC_Count
 	};
