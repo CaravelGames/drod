@@ -4566,6 +4566,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->pRoomWidget->RerenderRoomCeilingLight();
 	this->pRoomWidget->AddPlayerLight();
 
+	//Update room weather as needed.
+	this->pRoomWidget->SyncWeather(CueEvents);
+
 	//
 	//Begin section where room load can occur.  If room load occurs then
 	//original cue events from command before room load will be discarded, and cue

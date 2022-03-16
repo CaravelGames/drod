@@ -839,6 +839,8 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (bLightTilesChanged)
 		pRoomWidget->RerenderRoomCeilingLight();
 	pRoomWidget->AddPlayerLight();
+	//Update room weather as needed.
+	pRoomWidget->SyncWeather(CueEvents);
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
 	{
 		//Do an update of tile image arrays.

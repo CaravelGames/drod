@@ -1854,6 +1854,49 @@ const
 }
 
 //*****************************************************************************
+void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
+//Update environmental conditions if they have changed.
+{
+	if (this->pCurrentGame->wTurnNo == 0)
+		return;
+
+	Weather roomWeather = this->pRoom->weather;
+
+	if (IsLightingRendered() && (this->wDark != roomWeather.wLight))
+	{
+		if (!roomWeather.bSkipLightfade) {
+			FadeToLightLevel(roomWeather.wLight, CueEvents);
+		}	else {
+			//Just show at new light level.
+			this->wDark = roomWeather.wLight;
+			ASSERT(this->wDark < LIGHT_LEVELS);
+			g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
+			ClearEffects();
+			UpdateFromCurrentGame();
+			ResetForPaint();
+			Paint();
+		}
+	}
+
+	if (!IsWeatherRendered())
+		return;
+
+	bool bWeatherSame = true;
+	bWeatherSame &= (this->cFogLayer == (BYTE)roomWeather.wFog);
+	bWeatherSame &= (this->wSnow == roomWeather.wSnow);
+	bWeatherSame &= (this->rain == roomWeather.rain);
+	bWeatherSame &= (this->bOutside == roomWeather.bOutside);
+	bWeatherSame &= (this->bLightning == roomWeather.bLightning);
+	bWeatherSame &= (this->bClouds == roomWeather.bClouds);
+	bWeatherSame &= (this->bSkipLightfade == roomWeather.bSkipLightfade);
+
+	if (bWeatherSame)
+		return;
+
+	GetWeather();
+}
+
+//*****************************************************************************
 void CRoomWidget::GetWeather()
 //Get environmental conditions from room data.
 {

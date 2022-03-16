@@ -360,6 +360,7 @@ public:
 	void           StopSleeping();
 	bool           SubtitlesHas(CSubtitleEffect *pEffect) const;
 	UINT           SwitchAnimationFrame(const UINT wCol, const UINT wRow);
+	void           SyncWeather(CCueEvents& CueEvents);
 	void           ToggleFrameRate();
 	void           ToggleMoveCount();
 	void           TogglePuzzleMode();
