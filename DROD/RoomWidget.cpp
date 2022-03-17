@@ -1894,6 +1894,7 @@ void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
 		return;
 
 	GetWeather();
+	LoadSkyImage(this->pRoom);
 }
 
 //*****************************************************************************
@@ -2104,52 +2105,61 @@ void CRoomWidget::LoadRoomImages()
 	this->bCeilingLightsRendered = false;
 
 	//Load sky image, if applicable.
-	if (this->bSkyVisible)
-	{
-		//Get name of sky image.  Look up default name for this style+light level if none specified.
-		WSTRING wstrSkyImageName = this->sky;
-		if (wstrSkyImageName.empty())
-		{
-			WSTRING style = pThisRoom->style;
-			g_pTheDBM->ConvertStyle(style);
-			style += wszSpace;
-			style += wszSKIES;
-			list<WSTRING> skies;
-			if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
-			{
-				//Sky images specified.  Choose the one closest to specified light level.
-				UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size()-1;
-				list<WSTRING>::const_iterator sky = skies.begin();
-				while (wSkyIndex--)
-					++sky;
-				wstrSkyImageName = *sky;
-			}
-		}
+	LoadSkyImage(pThisRoom);
+}
 
-		if (wstrSkyImageName.empty())
+//*****************************************************************************
+void CRoomWidget::LoadSkyImage(CDbRoom* pRoom)
+//Load sky image, if applicable.
+{
+	if (!this->bSkyVisible)
+		return;
+
+	//Get name of sky image.  Look up default name for this style+light level if none specified.
+	WSTRING wstrSkyImageName = this->sky;
+	if (wstrSkyImageName.empty())
+	{
+		WSTRING style = pRoom->style;
+		g_pTheDBM->ConvertStyle(style);
+		style += wszSpace;
+		style += wszSKIES;
+		list<WSTRING> skies;
+		if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
 		{
-			//No sky image listed.
+			//Sky images specified.  Choose the one closest to specified light level.
+			UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size() - 1;
+			list<WSTRING>::const_iterator sky = skies.begin();
+			while (wSkyIndex--)
+				++sky;
+			wstrSkyImageName = *sky;
+		}
+	}
+
+	if (wstrSkyImageName.empty())
+	{
+		//No sky image listed.
+		if (this->pSkyImage)
+		{
+			SDL_FreeSurface(this->pSkyImage);
+			this->pSkyImage = NULL;
+		}
+		this->wstrSkyImage.resize(0);
+	}
+	else
+	{
+		//If image name is different than the one already loaded, load new sky.
+		if (wstrSkyImageName.compare(this->wstrSkyImage))
+		{
 			if (this->pSkyImage)
-			{
 				SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = NULL;
-			}
-			this->wstrSkyImage.resize(0);
-		} else {
-			//If image name is different than the one already loaded, load new sky.
-			if (wstrSkyImageName.compare(this->wstrSkyImage))
+			this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
+			if (!this->pSkyImage)
+				this->wstrSkyImage = wszEmpty;
+			else
 			{
-				if (this->pSkyImage)
-					SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
-				if (!this->pSkyImage)
-					this->wstrSkyImage = wszEmpty;
-				else
-				{
-					ASSERT((UINT)this->pSkyImage->w == this->w);
-					ASSERT((UINT)this->pSkyImage->h == this->h);
-					this->wstrSkyImage = wstrSkyImageName;
-				}
+				ASSERT((UINT)this->pSkyImage->w == this->w);
+				ASSERT((UINT)this->pSkyImage->h == this->h);
+				this->wstrSkyImage = wstrSkyImageName;
 			}
 		}
 	}

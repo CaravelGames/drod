@@ -307,6 +307,7 @@ public:
 	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame, const bool bLoad=true);
 	bool           LoadFromRoom(CDbRoom *pRoom, const bool bLoad=true);
 	void           LoadRoomImages();
+	void           LoadSkyImage(CDbRoom* pRoom);
 
 	virtual void   HandleMouseMotion(const SDL_MouseMotionEvent &Motion);
 	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &Button);
