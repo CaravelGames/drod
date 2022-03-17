@@ -241,6 +241,13 @@ namespace ScriptFlag
 	static const UINT WEAPON_STAFF = 0x00000008; // Staff
 	static const UINT WEAPON_DAGGER = 0x00000010; // Dagger
 	static const UINT WEAPON_CABER = 0x00000020; // Caber
+
+	//Weather settings
+	static const UINT WEATHER_OUTSIDE = 0x00000001;
+	static const UINT WEATHER_LIGHTNING = 0x00000002;
+	static const UINT WEATHER_CLOUDS = 0x00000004;
+	static const UINT WEATHER_SUNSHINE = 0x00000008;
+	static const UINT WEATHER_SKIP_LIGHTFADE = 0x00000010;
 };
 
 class CDbSpeech;

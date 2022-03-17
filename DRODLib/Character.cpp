@@ -431,6 +431,11 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_PLAYERLIGHTTYPE:
 		case (UINT)ScriptVars::P_RETURN_X:
 		case (UINT)ScriptVars::P_RETURN_Y:
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		case (UINT)ScriptVars::P_ROOM_RAIN:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;
@@ -550,6 +555,11 @@ void CCharacter::setPredefinedVarInt(
 		case (UINT)ScriptVars::P_PLAYERLIGHTTYPE:
 		case (UINT)ScriptVars::P_RETURN_X:
 		case (UINT)ScriptVars::P_RETURN_Y:
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		case (UINT)ScriptVars::P_ROOM_RAIN:
 		default:
 			pGame->ProcessCommandSetVar(varIndex, val);
 		break;

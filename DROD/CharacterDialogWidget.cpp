@@ -5199,6 +5199,12 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_Y, g_pTheDB->GetMessageText(MID_VarReturnY));
 
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, L"_RoomWeather");
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, L"_RoomDarkness");
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_FOG, L"_RoomFog");
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_SNOW, L"_RoomSnow");
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_RAIN, L"_RoomRain");
+
 	this->pVarListBox->SortAlphabetically(true);
 }
 
