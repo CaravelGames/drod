@@ -1857,7 +1857,7 @@ const
 void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
 //Update environmental conditions if they have changed.
 {
-	if (this->pCurrentGame->wTurnNo == 0)
+	if (CueEvents.HasOccurred(CID_ExitRoom))
 		return;
 
 	Weather roomWeather = this->pRoom->weather;
