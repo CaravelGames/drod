@@ -3273,6 +3273,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_SetDarkness:
 			{
 				getCommandParams(command, px, py, pw, ph, pflags);
+				bool bCeilingLightChanged = false;
 
 				//clamp pflag to lighting type range
 				pflags = max(0, min(pflags, NUM_DARK_TYPES));
@@ -3281,6 +3282,7 @@ void CCharacter::Process(
 					//Remove tile lights
 					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
 						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
 							room.tileLights.Remove(x, y);
 							room.ForceTileRedraw(x, y, false);
 						}
@@ -3288,13 +3290,16 @@ void CCharacter::Process(
 				} else {
 					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
 						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
 							room.tileLights.Add(x, y, LIGHT_OFF + pflags);
 							room.ForceTileRedraw(x, y, false);
 						}
 					}
 				}
 
-				CueEvents.Add(CID_LightTilesChanged);
+				if (bCeilingLightChanged)
+					CueEvents.Add(CID_LightTilesChanged);
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3334,6 +3339,9 @@ void CCharacter::Process(
 				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
 					break;
 
+				if(bIsLightTileValue(room.tileLights.GetAt(px, py)))
+					CueEvents.Add(CID_LightTilesChanged);
+
 				if (pw == 0 || pflags == 0) {
 					//Remove tile light
 					room.tileLights.Remove(px, py);
@@ -3345,7 +3353,7 @@ void CCharacter::Process(
 					room.ForceTileRedraw(px, py, false);
 				}
 
-				CueEvents.Add(CID_LightTilesChanged);
+				CueEvents.Add(CID_LightToggled);
 			}
 			break;
 
