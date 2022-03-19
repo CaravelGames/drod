@@ -221,6 +221,45 @@ struct TileImageBlitParams {
 };
 
 //******************************************************************************
+//Class to record when changes to effects that require specific refreshing are made.
+//When the room goes "back in time", these effects can then be downdated.
+//It is assumed that adding a record means that any records in its future are now invalid
+class EffectChangeHistory {
+public:
+	EffectChangeHistory() = default;
+	~EffectChangeHistory() = default;
+
+	bool isAfterLatest(UINT turn) {
+		return turn > changeTurns.back();
+	}
+
+	//Remove all records after a given turn.
+	void removeAfter(UINT turn) {
+		while (!empty() && changeTurns.back() >= turn) {
+			changeTurns.pop_back();
+		}
+	}
+
+	//Add a new record. Any records from later turns are removed.
+	void add(UINT turn) {
+		removeAfter(turn);
+		changeTurns.push_back(turn);
+	}
+
+	void reset() {
+		changeTurns.clear();
+		changeTurns.push_back(0);
+	}
+
+	bool empty() {
+		return changeTurns.empty();
+	}
+
+private:
+	std::vector<UINT> changeTurns;
+};
+
+//******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
 class CArmedMonster;
@@ -335,7 +374,7 @@ public:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
-	void           RerenderRoomCeilingLight() { this->bCeilingLightsRendered = false; }
+	void           RerenderRoomCeilingLight(CCueEvents& CueEvents);
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
 	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,
@@ -662,6 +701,8 @@ private:
 
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
+
+	EffectChangeHistory ceilingLightChanges;
 
 	PuzzleModeOptions puzzleModeOptions;
 	float             fDeathFadeOpacity;

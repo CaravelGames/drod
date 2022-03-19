@@ -4559,12 +4559,10 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	//Update room lights as needed.
 	const bool bLightToggled = CueEvents.HasOccurred(CID_LightToggled);
-	const bool bLightTilesChanged = CueEvents.HasOccurred(CID_LightTilesChanged);
-	if (bLightToggled || bLightTilesChanged)
+	if (bLightToggled)
 		this->pRoomWidget->RenderRoomLighting();
-	if (bLightTilesChanged)
-		this->pRoomWidget->RerenderRoomCeilingLight();
 	this->pRoomWidget->AddPlayerLight();
+	this->pRoomWidget->RerenderRoomCeilingLight(CueEvents);
 
 	//Update room weather as needed.
 	this->pRoomWidget->SyncWeather(CueEvents);

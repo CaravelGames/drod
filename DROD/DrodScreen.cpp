@@ -833,12 +833,10 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	}
 
 	const bool bLightToggled = CueEvents.HasOccurred(CID_LightToggled);
-	const bool bLightTilesChanged = CueEvents.HasOccurred(CID_LightTilesChanged);
-	if (bLightToggled || bLightTilesChanged)
+	if (bLightToggled)
 		pRoomWidget->RenderRoomLighting();
-	if (bLightTilesChanged)
-		pRoomWidget->RerenderRoomCeilingLight();
 	pRoomWidget->AddPlayerLight();
+	pRoomWidget->RerenderRoomCeilingLight(CueEvents);
 	//Update room weather as needed.
 	pRoomWidget->SyncWeather(CueEvents);
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
