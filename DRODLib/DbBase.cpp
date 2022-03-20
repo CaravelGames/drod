@@ -924,9 +924,9 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_Turquoise: strText = "Turquoise"; break;
 	case MID_Violet: strText = "Violet"; break;
 	case MID_Azure: strText = "Azure"; break;
-	case MID_SetDarkness: strText = "Set Ceiling Darkness"; break;
-	case MID_SetCeilingLight: strText = "Set Ceiling Light"; break;
-	case MID_SetWallLight: strText = "Set Wall Light"; break;
+	case MID_SetDarkness: strText = "Set ceiling darkness"; break;
+	case MID_SetCeilingLight: strText = "Set ceiling light"; break;
+	case MID_SetWallLight: strText = "Set wall light"; break;
 	case MID_RoomWeather: strText = "_RoomWeather"; break;
 	case MID_RoomDarkness: strText = "_RoomDarkness"; break;
 	case MID_RoomFog: strText = "_RoomFog"; break;

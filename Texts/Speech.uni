@@ -3220,12 +3220,12 @@ Wait for Conditions End
 
 [MID_SetDarkness]
 [eng]
-Set Ceiling Darkness
+Set ceiling darkness
 
 [MID_SetCeilingLight]
 [eng]
-Set Ceiling Light
+Set ceiling light
 
 [MID_SetWallLight]
 [eng]
-Set Wall Light
+Set wall light
