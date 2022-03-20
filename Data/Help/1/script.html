@@ -14,6 +14,7 @@ designate.  There are four general classes of script commands, as follows:</p>
   <li><a href="#interaction">Interaction</a></li>
   <li><a href="#queries">Queries</a></li>
   <li><a href="#decision">Decision making</a></li>
+  <li><a href="#lighting">Lighting</a></li>
 </ol>
 <p>
 <a href="#usagenotes">Notes about using NPC scripts</a><br />
@@ -441,6 +442,12 @@ continue executing script commands from a different location in the script.</p>
       begin executing again from the beginning. Hint: use this command to stop
       the NPC from executing any more commands.</li>
 </ol>
+<p><a name="lighting"><b>6.&nbsp;&nbsp;Lighting</b></a> - The following commands can be used to alter the lighting layer of a room. Only one type of lighting can be present on a tile, so these commands will overwrite pre-existing tile lighting. Architects should be considerate to players, and not excessively change the lighting of a room during play.</p>
+<ol>
+  <li><a name="set-dark"><b>Set ceiling darkness</b></a> - Adds darkness to an area. Values between 1 and 32 inclusive will darken a tile, while a value of zero will remove lighting from the tile. Values outside of this range will be clamped to the valid range.</li>
+  <li><a name="set-light"><b>Set ceiling light</b></a> - Adds colored light to an area. Any of the 16 predefined colors can be used. Selecting 'none' will remove lighting from the tile.</li>
+  <li><a name="set-wall-light"><b>Set wall light</b></a> - Adds a wall light element to a tile, with the given intensity. Any of the 16 predefined colors can be used, with an intensity between 1 and 8 inclusive. Selecting 'none' or setting an intensity of zero will remove lighting from the tile.</li>
+</ol>
 
 <p><a name="usagenotes"><b>Notes about using NPC scripts</b></a></p>
 <ol>
@@ -664,7 +671,11 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
-	
+	<li><b>_RoomWeather</b> - <a href="#roomweathervars">See this section</a></li>
+	<li><b>_RoomDarkness</b> - Controls the <a href="weather.html">lighting level</a> of a room. Can be set between 0 (no darkness) to 6 (the highest level of darkness) inclusive. If the <a href="weather.html">Skip light crossfading</a> setting is not enabled, the room will perform a fade from the old light level to the new light level.</li>
+	<li><b>_RoomFog</b> - Controls the <a href="weather.html">fog height</a> in the room. Can be set between 0 and 3 inclusive.</li>
+	<li><b>_RoomSnow</b> - Controls the rate of snowfall. Can be set between 0 and 9 inclusive. At zero, no snow falls.</li>
+	<li><b>_RoomRain</b> - Controls the rate of rainfall. Can be set between 0 and 19 inclusive. At zero, no rain falls.</li>
 </ul>
 
 <p><a name="playerlightvars"><b>Player light vars</b></a></p>
@@ -685,6 +696,15 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 100-129: display specific time (0-29)<br />
 200-229: display specific half-tick (0-29)<br />
 <br/>
+
+<p><a name ="roomweathervars"></a><b>Room weather vars</b></p>
+<p><b>_RoomWeather</b> affects the <a href="weather.html">weather settings</a> in a room. It is bit map value of the settings, meaning it can contain multiple values created by just adding them. The supported values are:<br/>
+<b>1 (0x001)</b> - Outside<br/>
+<b>2 (0x002)</b> - Lightning<br/>
+<b>4 (0x004)</b> - Clouds overhead<br/>
+<b>8 (0x008)</b> - Cloud shadows<br/>
+<b>16 (0x010)</b> - Skip light crossfade<br/>
+</p>
 
 <p><a name="playerinputvars"><b>List of player command input variables</b></a></p>
   Predefined variable names may be provided in texts to output the player's current key binding for the respective command as text. To do this, provide a variable name of the form "$_CMD_&lt;key&gt;$", where &lt;key&gt; is one of the following:
@@ -786,6 +806,9 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td><b>Play Video</b></td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td><b>Set player weapon</b></td>    <td>Weapon</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Set ceiling darkness</b></td> <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Darkness level</td></tr>
+<tr><td><b>Set ceiling light</b></td>    <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Light color</td></tr>
+<tr><td><b>Set wall light</b></td>       <td>X</td>            <td>Y</td>             <td>Intensity</td>    <td></td>           <td>Light color</td></tr>
 <tr><td><b>Teleport Player</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>Teleport To</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>Wait</b></td>                 <td>Wait turns</td>   <td>Y</td>             <td> </td>            <td> </td>            <td> </td></tr>
