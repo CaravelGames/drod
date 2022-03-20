@@ -3562,6 +3562,12 @@ const
 			wstr += wszComma;
 			wstr += _itoW(command.y, temp, 10);
 			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
 		}
 		break;
 		case CCharacterCommand::CC_WaitForOpenTile:
@@ -6040,7 +6046,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				flag != flagSet.end(); ++flag)
 				this->pCommand->flags += *flag;
 
-			QueryXY();
+			QueryRect();
 		}
 		break;
 
@@ -7552,6 +7558,11 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	}
 	break;
 
@@ -8253,6 +8264,8 @@ WSTRING CCharacterDialogWidget::toText(
 		}
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
 	}
 	break;
 

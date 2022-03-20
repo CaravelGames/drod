@@ -4213,88 +4213,110 @@ bool CCharacter::IsWeaponAt(
 	const CCurrentGame* pGame
 ) const
 {
-	UINT px, py, pflags;  //command parameters
-	getCommandXYF(command, px, py, pflags);
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
 
 	CDbRoom& room = *(pGame->pRoom);
 	const CSwordsman& player = pGame->swordsman;
 
-	bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
-	bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
-
-	if (!(bPlayerWeapon || bMonsterWeapon))
-	{
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
 		return false;
-	}
 
-	if (!pflags) {
-		return true;
-	}
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
 
-	if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+	for (UINT y = py; y <= endY; ++y)
 	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+		for (UINT x = px; x <= endX; ++x)
 		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Sword);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Pickaxe);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Spear);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Staff);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Dagger);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Caber);
+			bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(x, y);
+			bool bMonsterWeapon = room.IsMonsterSwordAt(x, y);
+
+			if (!(bPlayerWeapon || bMonsterWeapon))
+			{
+				continue;
+			}
+
+			if (!pflags) {
+				return true;
+			}
+
+			if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Sword))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Pickaxe))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Spear))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Staff))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Dagger))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Caber))
+						return true;
+				}
+			}
 		}
 	}
 
