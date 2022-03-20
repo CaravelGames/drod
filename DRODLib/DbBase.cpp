@@ -927,6 +927,11 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_SetDarkness: strText = "Set Ceiling Darkness"; break;
 	case MID_SetCeilingLight: strText = "Set Ceiling Light"; break;
 	case MID_SetWallLight: strText = "Set Wall Light"; break;
+	case MID_RoomWeather: strText = "_RoomWeather"; break;
+	case MID_RoomDarkness: strText = "_RoomDarkness"; break;
+	case MID_RoomFog: strText = "_RoomFog"; break;
+	case MID_RoomSnow: strText = "_RoomSnow"; break;
+	case MID_RoomRain: strText = "_RoomRain"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

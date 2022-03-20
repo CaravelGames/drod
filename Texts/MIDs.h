@@ -1856,6 +1856,11 @@ enum MID_CONSTANT {
   MID_VarReturnX = 1889,
   MID_VarReturnY = 1890,
   MID_VarReturnF = 1891,
+  MID_RoomWeather = 2047,
+  MID_RoomDarkness = 2048,
+  MID_RoomFog = 2049,
+  MID_RoomSnow = 2050,
+  MID_RoomRain = 2051,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

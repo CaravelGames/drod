@@ -5199,11 +5199,11 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_Y, g_pTheDB->GetMessageText(MID_VarReturnY));
 
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, L"_RoomWeather");
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, L"_RoomDarkness");
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_FOG, L"_RoomFog");
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_SNOW, L"_RoomSnow");
-	this->pVarListBox->AddItem(ScriptVars::P_ROOM_RAIN, L"_RoomRain");
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, g_pTheDB->GetMessageText(MID_RoomWeather));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, g_pTheDB->GetMessageText(MID_RoomDarkness));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_FOG, g_pTheDB->GetMessageText(MID_RoomFog));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_SNOW, g_pTheDB->GetMessageText(MID_RoomSnow));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_RAIN, g_pTheDB->GetMessageText(MID_RoomRain));
 
 	this->pVarListBox->SortAlphabetically(true);
 }
