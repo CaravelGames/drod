@@ -4234,7 +4234,7 @@ bool CCharacter::IsWeaponAt(
 		for (UINT x = px; x <= endX; ++x)
 		{
 			bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(x, y);
-			bool bMonsterWeapon = room.IsMonsterSwordAt(x, y);
+			bool bMonsterWeapon = room.IsMonsterSwordAt(x, y, false, this);
 
 			if (!(bPlayerWeapon || bMonsterWeapon))
 			{
