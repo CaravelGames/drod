@@ -1581,6 +1581,12 @@ void CCharacter::Process(
 							if (!TurnsSlowly())
 								SetOrientation(dxFirst,dyFirst);
 						}
+						if (HasInstantMovement()) {
+							//Moving to a new tile might break infinite loop
+							++wVarSets;
+							wTurnCount = 0;
+							bProcessNextCommand = true;
+						}
 						break;
 					}
 					STOP_COMMAND;
@@ -1596,8 +1602,15 @@ void CCharacter::Process(
 						{
 							this->wSwordMovement = CSwordsman::GetSwordMovement(
 									this->wO == nNextCO(wOldO) ? CMD_C : CMD_CC, this->wO);
-							if (ph)  //single step?
+							if (ph) { //single step?
+								if (HasInstantMovement()) {
+									//Moving to a new tile might break infinite loop
+									++wVarSets;
+									wTurnCount = 0;
+									bProcessNextCommand = true;
+								}
 								break;
+							}
 							STOP_DONECOMMAND;
 						}
 					}
@@ -1616,8 +1629,15 @@ void CCharacter::Process(
 				}
 
 				//Repeat command until arrived at destination.
-				if (ph)  //single step?
+				if (ph) { //single step?
+					if (HasInstantMovement()) {
+						//Moving to a new tile might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 					break;
+				}
 				if (this->wX != px || this->wY != py)
 					STOP_DONECOMMAND;
 			}
@@ -1699,6 +1719,12 @@ void CCharacter::Process(
 								SetOrientation(dxFirst,dyFirst);
 						}
 						this->bMovingRelative = false;
+						if (HasInstantMovement()) {
+							//Moving to a new tile might break infinite loop
+							++wVarSets;
+							wTurnCount = 0;
+							bProcessNextCommand = true;
+						}
 						break;
 					}
 					STOP_COMMAND;
@@ -1717,6 +1743,12 @@ void CCharacter::Process(
 							if (ph)  //single step?
 							{
 								this->bMovingRelative = false;
+								if (HasInstantMovement()) {
+									//Moving to a new tile might break infinite loop
+									++wVarSets;
+									wTurnCount = 0;
+									bProcessNextCommand = true;
+								}
 								break;
 							}
 							STOP_DONECOMMAND;
@@ -1735,6 +1767,12 @@ void CCharacter::Process(
 				if (ph)  //single step?
 				{
 					this->bMovingRelative = false;
+					if (HasInstantMovement()) {
+						//Moving to a new tile might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 					break;
 				}
 				if (this->wX != this->wXRel || this->wY != this->wYRel)
@@ -1773,9 +1811,16 @@ void CCharacter::Process(
 					break;
 				}
 				SetWeaponSheathed();
-				if (!this->bVisible || //turning doesn't take time when not in room
-						wOldO == this->wO) //already facing this way
+				if (wOldO == this->wO) //already facing this way
 					bProcessNextCommand = true;
+				else if (!this->bVisible || //turning doesn't take time when not in room)
+					HasInstantMovement()) //gotta go fast
+				{
+					//Facing a direction might break infinite loop
+					++wVarSets;
+					wTurnCount = 0;
+					bProcessNextCommand = true;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_FaceTowards:
@@ -1842,8 +1887,14 @@ void CCharacter::Process(
 						SetWeaponSheathed();
 					}
 
-					if (!this->bVisible || wOldO == this->wO)
+					if (wOldO == this->wO)
 						bProcessNextCommand = true;
+					else if (!this->bVisible || HasInstantMovement()) {
+						//Facing a direction might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 				}
 			}
 			break;
