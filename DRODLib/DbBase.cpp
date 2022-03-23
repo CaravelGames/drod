@@ -932,6 +932,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_RoomFog: strText = "_RoomFog"; break;
 	case MID_RoomSnow: strText = "_RoomSnow"; break;
 	case MID_RoomRain: strText = "_RoomRain"; break;
+	case MID_InstantMovement: strText = "Instant Movement"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

@@ -3150,6 +3150,10 @@ Push to Fall Immunity
 [eng]
 Can Be NPC Beethro
 
+[MID_InstantMovement]
+[eng]
+Instant Movement
+
 [MID_PreviousIf]
 [eng]
 <Previous If>

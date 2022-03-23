@@ -1807,6 +1807,7 @@ enum MID_CONSTANT {
   MID_PuffImmune = 1929,
   MID_FatalPushImmune = 1944,
   MID_CanBeNPCBeethro = 1964,
+  MID_InstantMovement = 2052,
   MID_PreviousIf = 1940,
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,
