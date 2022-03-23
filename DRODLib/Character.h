@@ -144,6 +144,8 @@ public:
 			UINT& x) const;
 	void           getCommandXY(const CCharacterCommand& command,
 			UINT& x, UINT& y) const;
+	void           getCommandXYW(const CCharacterCommand& command,
+		UINT& x, UINT& y, UINT& w) const;
 	void           getCommandXYF(const CCharacterCommand& command,
 		UINT& x, UINT& y, UINT& f) const;
 

@@ -5589,6 +5589,17 @@ const
 }
 
 //*****************************************************************************
+void CCharacter::getCommandXYW(
+	//Outputs: the XYW values for this command
+	const CCharacterCommand& command, UINT& x, UINT& y, UINT& w)
+	const
+{
+	x = (this->paramX == NO_OVERRIDE ? command.x : this->paramX);
+	y = (this->paramY == NO_OVERRIDE ? command.y : this->paramY);
+	w = (this->paramW == NO_OVERRIDE ? command.w : this->paramW);
+}
+
+//*****************************************************************************
 void CCharacter::getCommandXYF(
 //Outputs: the XY and flag values for this command
 	const CCharacterCommand& command, UINT& x, UINT& y, UINT& f)
