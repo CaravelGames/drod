@@ -606,7 +606,6 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
@@ -619,6 +618,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
@@ -672,7 +672,6 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
@@ -685,6 +684,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
