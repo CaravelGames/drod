@@ -618,6 +618,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetEntityWeapon:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -684,6 +685,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetEntityWeapon:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -3018,6 +3020,31 @@ void CCharacter::Process(
 				}
 
 				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_SetEntityWeapon:
+			{
+				bProcessNextCommand = true;
+				getCommandXYW(command, px, py, pw);
+				WeaponType weapon = (WeaponType)pw;
+
+				if (!bIsRealWeapon(weapon))
+					break;
+
+				if (pGame->IsPlayerAt(px, py)) {
+					//Set temporary weapon
+					player.SetWeaponType(weapon, false);
+				} else {
+					CMonster* pMonster = pGame->pRoom->GetMonsterAtSquare(px, py);
+					if (!pMonster || !bEntityHasSword(pMonster->wType))
+						break;
+
+					CArmedMonster* pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+					if (!pArmedMonster)
+						break;
+
+					pArmedMonster->weaponType = weapon;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_WaitForItem:
