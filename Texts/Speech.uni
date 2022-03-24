@@ -3233,3 +3233,7 @@ Set ceiling light
 [MID_SetWallLight]
 [eng]
 Set wall light
+
+[MID_SetEntityWeapon]
+[eng]
+Set entity weapon
