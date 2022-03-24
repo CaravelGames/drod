@@ -204,7 +204,7 @@ private:
 	CListBoxWidget *pDisplayFilterListBox;
 	CListBoxWidget *pWorldMapIconFlagListBox;
 	CListBoxWidget *pWorldMapImageFlagListBox;
-	CListBoxWidget *pWeaponListBox, *pWeaponFlagsListBox;
+	CListBoxWidget *pWeaponListBox, *pWeaponListBox2, *pWeaponFlagsListBox;
 	CListBoxWidget *pAttackTileListBox;
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
