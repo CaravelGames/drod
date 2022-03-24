@@ -47,6 +47,11 @@ enum WeaponType
 	WT_NumWeapons
 };
 
+static inline bool bIsRealWeapon(const UINT wt)
+{
+	return wt >= WT_Sword && wt < WT_NumWeapons;
+}
+
 static inline bool bIsMetalWeapon(const UINT wt)
 {
 	return wt != WT_Staff;
