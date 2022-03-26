@@ -621,6 +621,22 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			return -1;
 		}
 		break;
+		case ScriptVars::P_EntityWeapon:
+		{
+			if (IsPlayerAt(params[0], params[1])) {
+				return this->swordsman.GetActiveWeapon();
+			}
+
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster || !bEntityHasSword(pMonster->wType))
+				return -1;
+
+			CArmedMonster* pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+			if (!pArmedMonster)
+				return -1;
+
+			return pArmedMonster->weaponType;
+		}
 	}
 
 	return 0;

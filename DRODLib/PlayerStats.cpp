@@ -26,7 +26,7 @@ string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
 
 //*****************************************************************************
 // Values are not case sensitive; caps added here for readability
-const char ScriptVars::primitiveNames[PrimitiveCount][13] =
+const char ScriptVars::primitiveNames[PrimitiveCount][14] =
 {
 	"_abs",
 	"_min",
@@ -43,7 +43,8 @@ const char ScriptVars::primitiveNames[PrimitiveCount][13] =
 	"_dist2",
 	"_ArrowDir",
 	"_RoomTile",
-	"_MonsterType"
+	"_MonsterType",
+	"_EntityWeapon"
 };
 
 //*****************************************************************************
@@ -105,6 +106,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_RotateDist:
 		case P_ArrowDir:
 		case P_MonsterType:
+		case P_EntityWeapon:
 			return 2;
 		case P_RoomTile:
 			return 3;
