@@ -284,6 +284,7 @@ private:
 	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
+	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
 	void RefreshBriars();

@@ -2926,6 +2926,14 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForExpression:
+			{
+				if (!IsExpressionSatisfied(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -4610,6 +4618,32 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *
 }
 
 //*****************************************************************************
+bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	int x = (int)command.x;
+	//operand is an expression
+	UINT index = 0;
+	int operand = parseExpression(command.label.c_str(), index, pGame, this);
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return x == operand;
+		case ScriptVars::Greater: return x > operand;
+		case ScriptVars::GreaterThanOrEqual: return x >= operand;
+		case ScriptVars::Less: return x < operand;
+		case ScriptVars::LessThanOrEqual: return x <= operand;
+		case ScriptVars::Inequal: return x != operand;
+		case ScriptVars::EqualsText:
+		{
+			ASSERT(!"Unsupported var operator for expression");
+			return false;
+		}
+	}
+	ASSERT(!"Unrecognized var operator");
+	return false;
+}
+
+//*****************************************************************************
 void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.x;
@@ -4883,6 +4917,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForOpenTile:
 		{
 			return IsOpenTileAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			return IsExpressionSatisfied(command, pGame);
 		}
 		default:
 		{

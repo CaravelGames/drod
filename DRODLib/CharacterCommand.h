@@ -369,6 +369,7 @@ public:
 		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
 		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
 		CC_SetEntityWeapon,     //Set weapon of non-player entity at (x,y) to weapon (w), including on/off
+		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
 
 		CC_Count
 	};
