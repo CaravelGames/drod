@@ -5426,8 +5426,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PUSH_TILE[] =     { TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT MOVETYPE[] = { TAG_MOVETYPELISTBOX, 0 };
 	static const UINT OPENTILE[] = { TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_ONOFFLISTBOX3, 0 };
-	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX };
-	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX };
+	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX, 0 };
+	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
