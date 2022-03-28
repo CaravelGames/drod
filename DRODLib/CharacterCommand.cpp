@@ -82,6 +82,7 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 		case CC_WaitForRemains:
 		case CC_SetMovementType:
 		case CC_WaitForOpenTile:
+		case CC_WaitForExpression:
 			return true;
 		default:
 			return false;
