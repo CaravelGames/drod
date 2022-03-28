@@ -182,6 +182,7 @@ const UINT TAG_IGNOREWEAPONS_LABEL = 876;
 const UINT TAG_IGNOREFLAGS_LABEL = 875;
 const UINT TAG_COLOR_LISTBOX = 874;
 const UINT TAG_WEAPON_LISTBOX2 = 873;
+const UINT TAG_VARCOMPLIST2 = 872;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -417,7 +418,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pStealthListBox(NULL), pWaterTraversalListBox(NULL), pGlobalScriptListBox(NULL)
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOpenCloseListBox(NULL)
 	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
-	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL)
+	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL), pVarCompListBox2(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
@@ -1829,6 +1830,18 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->AddItem(ScriptVars::LessThanOrEqual, g_pTheDB->GetMessageText(MID_VarLessThanOrEqual));
 	this->pVarCompListBox->AddItem(ScriptVars::Inequal, g_pTheDB->GetMessageText(MID_VarInequal));
 	this->pVarCompListBox->SelectLine(0);
+
+	this->pVarCompListBox2 = new CListBoxWidget(TAG_VARCOMPLIST2,
+		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST);
+	this->pAddCommandDialog->AddWidget(this->pVarCompListBox2);
+	this->pVarCompListBox2->AddHotkey(SDLK_RETURN, TAG_OK);
+	this->pVarCompListBox2->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
+	this->pVarCompListBox2->AddItem(ScriptVars::Greater, g_pTheDB->GetMessageText(MID_VarGreater));
+	this->pVarCompListBox2->AddItem(ScriptVars::GreaterThanOrEqual, g_pTheDB->GetMessageText(MID_VarGreaterThanOrEqual));
+	this->pVarCompListBox2->AddItem(ScriptVars::Less, g_pTheDB->GetMessageText(MID_VarLess));
+	this->pVarCompListBox2->AddItem(ScriptVars::LessThanOrEqual, g_pTheDB->GetMessageText(MID_VarLessThanOrEqual));
+	this->pVarCompListBox2->AddItem(ScriptVars::Inequal, g_pTheDB->GetMessageText(MID_VarInequal));
+	this->pVarCompListBox2->SelectLine(0);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VARVALUELABEL,
 			X_VARVALUELABEL, Y_VARVALUELABEL, CX_VARVALUELABEL, CY_VARVALUELABEL,
@@ -4136,6 +4149,16 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			wstr += command.label;
+			wstr += wszSpace;
+			AddOperatorSymbol(wstr, command.y);
+			wstr += wszSpace;
+			wstr += _itoW(command.x, temp, 10);
+		}
+		break;
+
 		case CCharacterCommand::CC_SetPlayerAppearance:
 		{
 			WSTRING charName = this->pPlayerGraphicListBox->GetTextForKey(command.x);
@@ -4670,6 +4693,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, L"Wait until expression");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_StartGlobalScript, g_pTheDB->GetMessageText(MID_StartGlobalScript));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));
@@ -5387,7 +5411,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 57;
+	static const UINT NUM_WIDGETS = 58;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5405,7 +5429,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_FLAGBOX, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
-		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2
+		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
+		TAG_VARCOMPLIST2
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5456,6 +5481,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT OPENTILE[] = { TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_ONOFFLISTBOX3, 0 };
 	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX };
 	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX };
+	static const UINT EXPRESSION[] = { TAG_VARNAMETEXTINPUT, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5556,7 +5582,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAIT,               //CC_SetDarkness
 		CEILINGLIGHT,       //CC_SetCeilingLight
 		WALLLIGHT,          //CC_SetWallLight
-		WEAPONS2            //CC_SetEntityWeapon
+		WEAPONS2,           //CC_SetEntityWeapon
+		EXPRESSION          //CC_WaitForExpression
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5599,6 +5626,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PUSH_TILE_L[] =    { TAG_DIRECTIONLABEL2, 0 };
 	static const UINT NPC_GRAPHIC_L[] =  { TAG_KEEPBEHAVIOR_LABEL, 0 };
 	static const UINT OPEN_TILE_L[] =    { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
+	static const UINT EXPRESSION_L[] =     { TAG_VARVALUELABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,          //CC_Appear
@@ -5699,7 +5727,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetDarkness
 		NO_LABELS,          //CC_SetCeilingLight
 		NO_LABELS,          //CC_SetWallLight
-		NO_LABELS           //CC_SetEntityWeapon
+		NO_LABELS,          //CC_SetEntityWeapon
+		EXPRESSION_L,       //CC_WaitForExpression
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6618,6 +6647,28 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			CTextBoxWidget* pAmount = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			ASSERT(pAmount);
+			const WCHAR* pAmountText = pAmount->GetText();
+			ASSERT(pAmountText);
+
+			this->pCommand->x = _Wtoi(pAmountText);
+			this->pCommand->y = this->pVarCompListBox2->GetSelectedItem();
+
+			this->pCommand->label;
+
+			CTextBoxWidget* pExpressionText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARNAMETEXTINPUT));
+			ASSERT(pExpressionText);
+			this->pCommand->label = pExpressionText->GetText();
+
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_SetPlayerAppearance:
 			this->pCommand->x = this->pPlayerGraphicListBox->GetSelectedItem();
 			AddCommand();
@@ -7147,6 +7198,20 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 					pVarOperand->SetText(_itoW(this->pCommand->w, temp, 10));
 				pVarText->SetText(wszEmpty);
 			}
+		}
+		break;
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			CTextBoxWidget* pAmount = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			ASSERT(pAmount);
+			pAmount->SetText(_itoW(this->pCommand->x, temp, 10));
+
+			this->pVarCompListBox2->SelectItem(this->pCommand->y);
+
+			CTextBoxWidget* pExpression = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARNAMETEXTINPUT));
+			pExpression->SetText(this->pCommand->label.c_str());
 		}
 		break;
 		case CCharacterCommand::CC_ChallengeCompleted:
@@ -8218,6 +8283,59 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_WaitForExpression:
+	{
+		parseChar('"');
+		WSTRING expression;
+		const bool bRes = getTextToLastQuote(pText, pos, expression);
+
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		pCommand->label = expression;
+		skipWhitespace;
+
+		const char varOperator = char(WCv(pText[pos]));
+		++pos;
+		const char varOperator2 = pos < textLength ? char(WCv(pText[pos])) : 0;
+		switch (varOperator)
+		{
+		default: //robust default for bad operator char
+		case '=': pCommand->y = ScriptVars::Equals; break;
+		case '>':
+			if (varOperator2 == '=') {
+				pCommand->y = ScriptVars::GreaterThanOrEqual;
+				++pos;
+			}
+			else {
+				pCommand->y = ScriptVars::Greater;
+			}
+			break;
+		case '<':
+			if (varOperator2 == '=') {
+				pCommand->y = ScriptVars::LessThanOrEqual;
+				++pos;
+			}
+			else {
+				pCommand->y = ScriptVars::Less;
+			}
+			break;
+		case '!':
+			if (varOperator2 == '=') {
+				pCommand->y = ScriptVars::Inequal;
+				++pos;
+			}
+			break;
+		}
+
+		skipWhitespace;
+		parseNumber(pCommand->x);
+	}
+	break;
+
 	case CCharacterCommand::CC_ChallengeCompleted:
 		pCommand->label = pText+pos;
 	break;
@@ -8852,6 +8970,18 @@ WSTRING CCharacterDialogWidget::toText(
 					concatNum(c.w);
 			break;
 		}
+	}
+	break;
+
+	case CCharacterCommand::CC_WaitForExpression:
+	{
+		wstr += wszQuote;
+		wstr += c.label.c_str();
+		wstr += wszQuote;
+		wstr += wszSpace;
+		AddOperatorSymbol(wstr, c.y);
+		wstr += wszSpace;
+		concatNum(c.x);
 	}
 	break;
 
