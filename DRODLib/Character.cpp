@@ -4620,19 +4620,19 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *
 //*****************************************************************************
 bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame)
 {
-	int x = (int)command.x;
+	int constant = (int)command.x;
 	//operand is an expression
 	UINT index = 0;
 	int operand = parseExpression(command.label.c_str(), index, pGame, this);
 
 	switch (command.y)
 	{
-		case ScriptVars::Equals: return x == operand;
-		case ScriptVars::Greater: return x > operand;
-		case ScriptVars::GreaterThanOrEqual: return x >= operand;
-		case ScriptVars::Less: return x < operand;
-		case ScriptVars::LessThanOrEqual: return x <= operand;
-		case ScriptVars::Inequal: return x != operand;
+		case ScriptVars::Equals: return operand == constant;
+		case ScriptVars::Greater: return operand > constant;
+		case ScriptVars::GreaterThanOrEqual: return operand >= constant;
+		case ScriptVars::Less: return operand < constant;
+		case ScriptVars::LessThanOrEqual: return operand <= constant;
+		case ScriptVars::Inequal: return operand != constant;
 		case ScriptVars::EqualsText:
 		{
 			ASSERT(!"Unsupported var operator for expression");
