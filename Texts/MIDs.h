@@ -1829,6 +1829,7 @@ enum MID_CONSTANT {
   MID_SetCeilingLight = 2045,
   MID_SetWallLight = 2046,
   MID_SetEntityWeapon = 2053,
+  MID_WaitForExpression = 2054,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

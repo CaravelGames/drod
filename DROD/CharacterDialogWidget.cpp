@@ -4693,7 +4693,6 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, L"Wait until expression");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_StartGlobalScript, g_pTheDB->GetMessageText(MID_StartGlobalScript));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));
@@ -4720,6 +4719,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForSomeoneToPushMe, g_pTheDB->GetMessageText(MID_WaitForSomeoneToPushMe));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForTurn, g_pTheDB->GetMessageText(MID_WaitForTurn));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, g_pTheDB->GetMessageText(MID_WaitForExpression));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotEntityType, g_pTheDB->GetMessageText(MID_WaitWhileEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
