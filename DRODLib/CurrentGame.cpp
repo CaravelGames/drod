@@ -1047,6 +1047,14 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			return this->pRoom->weather.wSnow;
 		case (UINT)ScriptVars::P_ROOM_RAIN:
 			return this->pRoom->weather.rain;
+		case (UINT)ScriptVars::P_SPAWNCYCLE:
+			return this->wSpawnCycleCount % TURNS_PER_CYCLE;
+		case (UINT)ScriptVars::P_SPAWNCYCLE_FAST:
+		{
+			UINT cycleTurn = this->wSpawnCycleCount % TURNS_PER_CYCLE;
+			cycleTurn *= 2;
+			return this->bHalfTurn ? cycleTurn + 1 : cycleTurn;
+		}
 		default:
 			return 0;
 	}

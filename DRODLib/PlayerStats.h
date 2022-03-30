@@ -75,7 +75,9 @@ namespace ScriptVars
 		P_ROOM_FOG = -32,
 		P_ROOM_SNOW = -33,
 		P_ROOM_RAIN = -34,
-		FirstPredefinedVar = P_ROOM_RAIN, //set this to the last var in the enumeration
+		P_SPAWNCYCLE = -35,
+		P_SPAWNCYCLE_FAST = -36,
+		FirstPredefinedVar = P_SPAWNCYCLE_FAST, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

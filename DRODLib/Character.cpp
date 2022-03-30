@@ -436,6 +436,8 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_ROOM_FOG:
 		case (UINT)ScriptVars::P_ROOM_SNOW:
 		case (UINT)ScriptVars::P_ROOM_RAIN:
+		case (UINT)ScriptVars::P_SPAWNCYCLE:
+		case (UINT)ScriptVars::P_SPAWNCYCLE_FAST:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;
