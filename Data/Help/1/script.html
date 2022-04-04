@@ -675,6 +675,8 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
+	<li><b>_SpawnCycle</b> - <u>Read only!</u> Gets the current turn in the spawn cycle, between 0 and 29.</li>
+	<li><b>_SpawnCycleFast</b> - <u>Read only!</u> Gets the current turn in the spawn cycle, between 0 and 59. Even values correspond to normal turns, while odd values correspond 'half turns' where the player is moving with a speed potion.</li>
 	<li><b>_RoomWeather</b> - <a href="#roomweathervars">See this section</a></li>
 	<li><b>_RoomDarkness</b> - Controls the <a href="weather.html">lighting level</a> of a room. Can be set between 0 (no darkness) to 6 (the highest level of darkness) inclusive. If the <a href="weather.html">Skip light crossfading</a> setting is not enabled, the room will perform a fade from the old light level to the new light level.</li>
 	<li><b>_RoomFog</b> - Controls the <a href="weather.html">fog height</a> in the room. Can be set between 0 and 3 inclusive.</li>
