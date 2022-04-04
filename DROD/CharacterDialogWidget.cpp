@@ -5239,8 +5239,8 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_X, g_pTheDB->GetMessageText(MID_VarOverheadImageX));
 	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_Y, g_pTheDB->GetMessageText(MID_VarOverheadImageY));
 
-	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, L"_SpawnCycle");
-	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, L"_SpawnCycleFast");
+	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycle));
+	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycleFast));
 
 	this->pVarListBox->AddItem(ScriptVars::P_THREATCLOCK, g_pTheDB->GetMessageText(MID_VarThreatClock));
 	this->pVarListBox->AddItem(ScriptVars::P_LEVELNAME, g_pTheDB->GetMessageText(MID_VarLevelName));

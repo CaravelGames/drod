@@ -935,6 +935,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_InstantMovement: strText = "Instant Movement"; break;
 	case MID_SetEntityWeapon: strText = "Set entity weapon"; break;
 	case MID_WaitForExpression: strText = "Wait until expression"; break;
+	case MID_SpawnCycle : strText = "_SpawnCycle"; break;
+	case MID_SpawnCycleFast: strText = "_SpawnCycleFast"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

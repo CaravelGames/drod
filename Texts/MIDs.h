@@ -1864,6 +1864,8 @@ enum MID_CONSTANT {
   MID_RoomFog = 2049,
   MID_RoomSnow = 2050,
   MID_RoomRain = 2051,
+  MID_SpawnCycle = 2055,
+  MID_SpawnCycleFast = 2056,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

@@ -126,3 +126,11 @@ _RoomSnow
 [MID_RoomRain]
 [eng]
 _RoomRain
+
+[MID_SpawnCycle]
+[eng]
+_SpawnCycle
+
+[MID_SpawnCycleFast]
+[eng]
+_SpawnCycleFast

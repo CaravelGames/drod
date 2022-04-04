@@ -20,7 +20,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarReturnX, MID_VarReturnY,
 	MID_VarMonsterName, 
 	MID_VarRoomX, MID_VarRoomY,
-	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain
+	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain,
+	MID_SpawnCycle, MID_SpawnCycleFast
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
