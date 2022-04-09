@@ -5681,6 +5681,10 @@ void CCharacter::getCommandXYF(
 bool CCharacter::IsOpenMove(const int dx, const int dy) const
 //Returns: whether move is possible, and player is not in the way
 {
+	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+		return true;
+	}
+
 	return CMonster::IsOpenMove(dx,dy) &&
 		(!this->bSafeToPlayer || !this->pCurrentGame->IsPlayerAt(this->wX+dx, this->wY+dy));
 }
@@ -6845,8 +6849,20 @@ void CCharacter::MoveCharacter(
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	const UINT wOTile = room.GetOSquare(this->wX, this->wY);
 	const bool bWasOnPlatform = bIsPlatform(wOTile);
+	UINT destX, destY;
 
-	Move(this->wX + dx, this->wY + dy, &CueEvents);
+	// Preform tunnel move if allowed, otherwise just make a step
+	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+		if (!this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
+			return;
+		}
+		CueEvents.Add(CID_Tunnel);
+	}	else {
+		destX = this->wX + dx;
+		destY = this->wY + dy;
+	}
+
+	Move(destX, destY, &CueEvents);
 	this->wSwordMovement = nGetO(dx,dy);
 	if (bFaceDirection){	//allow turning?
 		SetOrientation(dx, dy);	//character faces the direction it actually moves
@@ -6893,6 +6909,41 @@ void CCharacter::MoveCharacter(
 		room.UpdatePathMapAt(this->wX, this->wY);
 		room.UpdatePathMapAt(this->wX - dx, this->wY - dy);
 	}
+}
+
+//*****************************************************************************
+bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
+// Can the character enter a tunnel on its tile in the given direction.
+{
+	if (dx != 0 && dy != 0)	{
+		// No diagonal tunnels
+		return false;
+	}
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	const UINT wFTileNo = room.GetFSquare(this->wX, this->wY);
+	const UINT wMoveO = nGetO(dx, dy);
+
+	if (bIsArrowObstacle(wFTileNo, wMoveO)) {
+		// Can't move against arrow
+		return false;
+	}
+
+	const UINT wOTileNo = room.GetOSquare(this->wX, this->wY);
+	if (!bIsTunnel(wOTileNo)) {
+		return false;
+	}
+
+	switch (wOTileNo)
+	{
+		case T_TUNNEL_N: return wMoveO == N;
+		case T_TUNNEL_S: return wMoveO == S;
+		case T_TUNNEL_E: return wMoveO == E;
+		case T_TUNNEL_W: return wMoveO == W;
+		default: ASSERT(!"Unrecognized tunnel type"); return false;
+	}
+
+	return false;
 }
 
 //*****************************************************************************

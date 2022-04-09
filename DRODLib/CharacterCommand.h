@@ -166,7 +166,8 @@ namespace ScriptFlag
 		FatalPushImmune = 24,
 		CanBeNPCBeethro = 25,
 		RestrictedMovement = 26,
-		InstantMovement = 27
+		InstantMovement = 27,
+		UseTunnels = 28
 	};
 
 	enum DisplayFilter

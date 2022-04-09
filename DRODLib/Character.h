@@ -266,6 +266,7 @@ public:
 private:
 	void BuildMarker(const CCharacterCommand& command);
 	void BuildTiles(const CCharacterCommand& command, CCueEvents& CueEvents);
+	bool CanEnterTunnelInDirection(const int dx, const int dy) const;
 	bool ConfirmPathWithNextMoveOpen();
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
