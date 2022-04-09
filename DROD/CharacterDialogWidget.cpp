@@ -4612,6 +4612,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PushMonsters, g_pTheDB->GetMessageText(MID_PushMonsters));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MovePlatforms, g_pTheDB->GetMessageText(MID_MovePlatforms));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::UseTunnels, g_pTheDB->GetMessageText(MID_UseTunnels));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::RestrictedMovement, g_pTheDB->GetMessageText(MID_RestrictedMovement));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::InstantMovement, g_pTheDB->GetMessageText(MID_InstantMovement));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterAttackable, g_pTheDB->GetMessageText(MID_CanBeMonsterAttacked));
