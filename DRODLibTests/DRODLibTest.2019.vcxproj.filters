@@ -267,6 +267,9 @@
     <ClCompile Include="src\tests\Scripting\Build\RemovingTransparentObjects.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\InstantMovement.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

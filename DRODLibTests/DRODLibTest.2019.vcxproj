@@ -391,6 +391,7 @@
     <ClCompile Include="src\tests\Scripting\Behavior\ActivateTokens.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\DamageImmunity.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\DropTrapdoors.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\InstantMovement.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\MonsterTarget.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\MovePlatforms.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\NPCBeethro.cpp" />
