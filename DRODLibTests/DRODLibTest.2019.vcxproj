@@ -397,6 +397,7 @@
     <ClCompile Include="src\tests\Scripting\Behavior\NPCBeethro.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\PushingBehaviors.cpp" />
     <ClCompile Include="src\tests\Scripting\Behavior\SetMovementType.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\UseTunnels.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp" />
