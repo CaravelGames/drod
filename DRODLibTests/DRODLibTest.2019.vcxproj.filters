@@ -267,6 +267,9 @@
     <ClCompile Include="src\tests\Scripting\Build\RemovingTransparentObjects.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
