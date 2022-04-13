@@ -636,6 +636,11 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
+			case CCharacterCommand::CC_LinkOrb:
+				command->x = (pRoom->wRoomCols - 1) - command->x;
+				command->w = (pRoom->wRoomCols - 1) - command->w;
+			break;
+
 			case CCharacterCommand::CC_FaceDirection:
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			case CCharacterCommand::CC_WaitForPlayerToMove:
@@ -701,6 +706,11 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForRemains:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
+			break;
+
+			case CCharacterCommand::CC_LinkOrb:
+				command->y = (pRoom->wRoomCols - 1) - command->y;
+				command->h = (pRoom->wRoomCols - 1) - command->h;
 			break;
 
 			case CCharacterCommand::CC_FaceDirection:
@@ -3189,6 +3199,13 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_LinkOrb:
+			{
+				LinkOrb(command, room);
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_AmbientSound:
 				//Play sound with DataID w (0 stops ambient sounds).
 				//If h is set, loop indefinitely.
@@ -3637,6 +3654,63 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents& CueEve
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
+}
+
+//*****************************************************************************
+void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	OrbAgentType action = (OrbAgentType)pflags;
+
+	if (!(bIsValidOrbAgentType(action) || action == OA_NULL)) {
+		return;
+	}
+
+	UINT linkX, linkY;
+	COrbData* orb;
+
+	if (room.GetTSquare(px, py) == T_ORB) {
+		orb = room.GetOrbAtCoords(px, py);
+		linkX = pw;
+		linkY = ph;
+	}	else if (room.GetOSquare(px, py) == T_PRESSPLATE)	{
+		orb = room.GetPressurePlateAtCoords(px, py);
+		linkX = pw;
+		linkY = ph;
+	} else if(room.GetTSquare(pw, ph) == T_ORB) {
+		orb = room.GetOrbAtCoords(pw, ph);
+		linkX = px;
+		linkY = py;
+	}	else if (room.GetOSquare(pw, ph) == T_PRESSPLATE)	{
+		orb = room.GetPressurePlateAtCoords(pw, ph);
+		linkX = px;
+		linkY = py;
+	}	else {
+		// No orb or plate to link
+		return;
+	}
+
+	UINT linkO = room.GetOSquare(linkX, linkY);
+	UINT linkT = room.GetTSquare(linkX, linkY);
+	UINT linkF = room.GetFSquare(linkX, linkY);
+
+	if (!(bIsYellowDoor(linkO) || bIsFiretrap(linkO) ||
+		bIsLight(linkT) || bIsAnyArrow(linkF))) {
+		return;
+	}
+
+	COrbAgentData* orbAgent = orb->GetAgentAt(linkX, linkY);
+	if (orbAgent) {
+		if (pflags == OA_NULL) {
+			orb->DeleteAgent(orbAgent);
+			return;
+		}
+
+		orbAgent->action = action;
+	}	else if (action != OA_NULL) {
+		orb->AddAgent(linkX, linkY, action);
+	}
 }
 
 //*****************************************************************************
