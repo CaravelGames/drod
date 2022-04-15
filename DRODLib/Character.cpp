@@ -3674,18 +3674,30 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 		orb = room.GetOrbAtCoords(px, py);
 		linkX = pw;
 		linkY = ph;
+		if (!orb) {
+			orb = room.AddOrbToSquare(px, py);
+		}
 	}	else if (room.GetOSquare(px, py) == T_PRESSPLATE)	{
 		orb = room.GetPressurePlateAtCoords(px, py);
 		linkX = pw;
 		linkY = ph;
+		if (!orb) {
+			orb = room.AddOrbToSquare(px, py);
+		}
 	} else if(room.GetTSquare(pw, ph) == T_ORB) {
 		orb = room.GetOrbAtCoords(pw, ph);
 		linkX = px;
 		linkY = py;
+		if (!orb) {
+			orb = room.AddOrbToSquare(pw, ph);
+		}
 	}	else if (room.GetOSquare(pw, ph) == T_PRESSPLATE)	{
 		orb = room.GetPressurePlateAtCoords(pw, ph);
 		linkX = px;
 		linkY = py;
+		if (!orb) {
+			orb = room.AddOrbToSquare(pw, ph);
+		}
 	}	else {
 		// No orb or plate to link
 		return;
@@ -3701,12 +3713,23 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 	}
 
 	COrbAgentData* orbAgent = orb->GetAgentAt(linkX, linkY);
+	if (!orbAgent && bIsYellowDoor(linkO)) {
+		CCoordSet doorCoords;
+		UINT wDoorX, wDoorY;
+		room.GetAllYellowDoorSquares(linkX, linkY, doorCoords);
+		for (COrbAgentData* agent : orb->agents) {
+			if (doorCoords.has(agent->wX, agent->wY)) {
+				orbAgent = agent;
+				break;
+			}
+		}
+	}
+
 	if (orbAgent) {
 		if (pflags == OA_NULL) {
 			orb->DeleteAgent(orbAgent);
 			return;
 		}
-
 		orbAgent->action = action;
 	}	else if (action != OA_NULL) {
 		orb->AddAgent(linkX, linkY, action);
