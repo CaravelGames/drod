@@ -147,6 +147,7 @@ private:
 
 	void  QueryRect();
 	void  QueryXY();
+	void  QueryXYWH();
 
 	void  RefreshCustomCharacterList(CListBoxWidget *pListBox);
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
@@ -209,6 +210,7 @@ private:
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
 	CListBoxWidget* pColorListBox;
+	CListBoxWidget* pOrbAgentListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited
