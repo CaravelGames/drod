@@ -1640,6 +1640,25 @@ void CEditRoomScreen::ClickRoom()
 			Paint();
 		}
 		break;
+		case ES_GETSQUARES1:
+		{
+			this->wSelectedX = this->pRoomWidget->wEndX;
+			this->wSelectedY = this->pRoomWidget->wEndY;
+			VERIFY(SetState(ES_GETSQUARES2, true));
+			Paint();
+		}
+		break;
+		case ES_GETSQUARES2:
+		{
+			this->pCharacterDialog->FinishCommand(
+				this->wSelectedX, this->wSelectedY,
+				this->pRoomWidget->wEndX, this->pRoomWidget->wEndY
+			);
+			VERIFY(SetState(ES_PLACING));
+			this->pCharacterDialog->Display();
+			Paint();
+		}
+		break;
 
 		default: ASSERT(false); break;
 	}
@@ -2522,6 +2541,8 @@ void CEditRoomScreen::OnBetweenEvents()
 		break;
 
 		case ES_GETSQUARE:
+		case ES_GETSQUARES1:
+		case ES_GETSQUARES2:
 			RequestToolTip(MID_GetRoomSquareTip);
 			//Show room coords along with tooltip.
 			if (SDL_GetTicks() - this->dwLastMouseMove > 500) //ms
@@ -3137,7 +3158,8 @@ void CEditRoomScreen::OnMouseWheel(
 	}
 
 	//Don't display the active object in the region being selected or change the selection parameters.
-	if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT)
+	if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT ||
+			this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2)
 		return;
 
 	//Update room widget if a plot is occurring.
@@ -7169,6 +7191,13 @@ void CEditRoomScreen::SetSignTextToCurrentRoom(
 		break;
 	case ES_GETSQUARE:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomSquare);
+		break;
+	case ES_GETSQUARES1:
+	case ES_GETSQUARES2:
+		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomSquare);
+		wstrSignText += L" (";
+		wstrSignText += this->eState == ES_GETSQUARES1 ? L"1" : L"2";
+		wstrSignText += L"/2)";
 		break;
 	case ES_GETRECT:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomRect);
