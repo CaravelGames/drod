@@ -189,6 +189,7 @@ interacts with its environment.</p>
   <li><a name="build"><b>Build</b></a> - Instantly build the indicated object in
       the specified room region. You may also remove objects from the specified
       room layer.</li>
+  <li><a name="link-orb"><b>Link Orb</b></a> - Connects an orb or pressure plate to a yellow door, arrow or fire trap. Existing connections between the target objects will be overwritten. The <b>None</b> option can be used to completely remove the orb connection between two objects.</li>
   <li><a name="destroy-trapdoor"><b>Destroy trapdoor</b></a> - Causes a trapdoor
       at the indicated location to drop down.</li>
   <li><a name="gotoentrance"><b>Go to level entrance</b></a> - Sends the player
@@ -808,6 +809,7 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td><b>Get natural target</b></td>   <td>Target type</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>Goto lev. entrance</b></td>   <td></td>             <td>Skip e. screen</td><td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Link Orb</b></td>             <td>Target 1 X</td>   <td>Target 1 Y</td>   <td>Target 2 X</td>    <td>Target 2 Y</td>   <td>Connection type</td></tr>
 <tr><td><b>Move</b></td>                 <td>X Move</td>       <td>Y Move</td>        <td>Allow Turn.</td>  <td>Single Step</td>  <td></td></tr>
 <tr><td><b>Move to</b></td>              <td>Target X</td>     <td>Target Y</td>      <td>Allow Turn.</td>  <td>Single Step</td>  <td>Entity bitmap</td></tr>
 <tr><td><b>Play Video</b></td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
@@ -871,6 +873,13 @@ This is a bit map value, meaning it can contain multiple values created by just 
 <b>15</b> - Rock golem<br/>
 <b>26</b> - Fegundo<br/>
 <b>40</b> - Construct<br/>
+<br/>
+
+<b>Orb Connection type</b>: <br/>
+<b>0</b> - None<br/>
+<b>1</b> - Toggle<br/>
+<b>2</b> - Open<br/>
+<b>3</b> - Close<br/>
 <br/>
 
 <b>Weapon</b><br />
