@@ -3241,3 +3241,7 @@ Set entity weapon
 [MID_WaitForExpression]
 [eng]
 Wait until expression
+
+[MID_LinkOrb]
+[eng]
+Link Orb

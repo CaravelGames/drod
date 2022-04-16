@@ -938,6 +938,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_SpawnCycle : strText = "_SpawnCycle"; break;
 	case MID_SpawnCycleFast: strText = "_SpawnCycleFast"; break;
 	case MID_UseTunnels: strText = "Use Tunnels"; break;
+	case MID_LinkOrb: strText = "Link Orb"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
