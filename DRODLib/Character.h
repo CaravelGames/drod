@@ -162,6 +162,7 @@ public:
 	virtual bool   IsBrainPathmapObstacle() const;
 	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
 	bool           IsBuildMarkerAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsBuildMarkerTypeAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	bool           IsMonsterRemainsAt(const CCharacterCommand& command, const CDbRoom& room) const;

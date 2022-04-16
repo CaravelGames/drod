@@ -372,6 +372,9 @@ public:
 		CC_SetEntityWeapon,     //Set weapon of non-player entity at (x,y) to weapon (w), including on/off
 		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
 		CC_LinkOrb,             //Change orb/plate connection between (x,y) and (w,h) to agent type in flags
+		CC_WaitForBuilding,     //Wait until build markers are queued in rect (x,y,w,h).
+		CC_WaitForBuildType,    //Wait until build marker type specified in flags is queued in rect (x,y,w,h)
+		CC_WaitForNotBuildType, //Wait until no build marker type specified in flags is queued in rect (x,y,w,h)
 
 		CC_Count
 	};

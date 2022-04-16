@@ -633,6 +633,9 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_WaitForBuilding:
+			case CCharacterCommand::CC_WaitForBuildType:
+			case CCharacterCommand::CC_WaitForNotBuildType:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -705,6 +708,9 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_WaitForBuilding:
+			case CCharacterCommand::CC_WaitForBuildType:
+			case CCharacterCommand::CC_WaitForNotBuildType:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3198,6 +3204,31 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForBuilding:
+			{
+				bool bFound = false;
+				if (!IsBuildMarkerAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForBuildType:
+			{
+				if (!IsBuildMarkerTypeAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotBuildType:
+			{
+				if (IsBuildMarkerTypeAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_LinkOrb:
 			{
@@ -4194,6 +4225,26 @@ bool CCharacter::IsBuildMarkerAt(
 }
 
 //*****************************************************************************
+// Returns: if there is a build marker of type specific in flags in rect (x,y,w,h)
+bool CCharacter::IsBuildMarkerTypeAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, flags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, flags);
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			if (room.building.get(x, y) == (flags + 1)) //1-based
+				return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 // Returns: if the tile at (x,y) has the given door state (w)
 bool CCharacter::IsDoorStateAt(
 	const CCharacterCommand& command, const CDbRoom& room
@@ -5020,6 +5071,18 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForExpression:
 		{
 			return IsExpressionSatisfied(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForBuilding:
+		{
+			return IsBuildMarkerAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForBuildType:
+		{
+			return IsBuildMarkerTypeAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForNotBuildType:
+		{
+			return !IsBuildMarkerTypeAt(command, room);
 		}
 		default:
 		{
