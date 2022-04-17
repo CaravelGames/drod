@@ -354,9 +354,14 @@ the state of the room and wait indefinitely until certain events occur.</p>
       the player moves in the specified direction.</li>
   <li><a name="waitplayertouch"><b>Wait for player to touch me</b></a> - Waits
       until the player bumps into the NPC.</li>
+	  <li><a name="waitnobuildmarkers"><b>Wait for building markers</b></a> -
+      Waits until script-defined <a href="#buildmarker">building markers</a>
+      exist in the room region you specify.</li>
   <li><a name="waitnobuildmarkers"><b>Wait for no building markers</b></a> -
       Waits until no script-defined <a href="#buildmarker">building markers</a>
       exist in the room region you specify.</li>
+  <li><a name="wait-build-type"><b>Wait for build marker type</b></a> - Waits for the specified type of <a href="#buildmarker">building markers</a> are placed in the room region you specify.</li>
+  <li><a name="wait-build-type"><b>Wait while build marker type</b></a> - Waits until none of the specified type of <a href="#buildmarker">building markers</a> exist in the room region you specify</li>
   <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
       hold variable</a> meets the condition you specify.</li>
   <li><a name="wait-expression"><b>Wait until expression</b></a> - Waits until a given expression satisfies the condition you specify. In addition to hold variables, expressions can also use <a href="#functions">function primitives</a>. Expressions can only be compared to constant values.</li>
@@ -826,7 +831,9 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td><b>W. entity type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
 <tr><td><b>W. door</b></td>        <td>X</td>            <td>Y</td>             <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>W. item</b></td>        <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>W. build mark.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
 <tr><td><b>W. no build mark.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>W. b.m. type.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
 <tr><td><b>W. open move</b></td>         <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td><b>W. player to face</b></td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
