@@ -3551,6 +3551,7 @@ const
 		case CCharacterCommand::CC_WaitForNotCharacter:
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		case CCharacterCommand::CC_DestroyTrapdoor:
+		case CCharacterCommand::CC_WaitForBuilding:
 			wstr += g_pTheDB->GetMessageText(MID_At);
 			wstr += wszSpace;
 			wstr += wszLeftParen;
@@ -3670,6 +3671,8 @@ const
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
+		case CCharacterCommand::CC_WaitForBuildType:
+		case CCharacterCommand::CC_WaitForNotBuildType:
 			wstr += this->pBuildMarkerListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -4738,6 +4741,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetEntityWeapon, g_pTheDB->GetMessageText(MID_SetEntityWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuildType, L"Wait for build marker type");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotBuildType, L"Wait while build marker type");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanLevel, g_pTheDB->GetMessageText(MID_WaitForCleanLevel));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanRoom, g_pTheDB->GetMessageText(MID_WaitForCleanRoom));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForDoorTo, g_pTheDB->GetMessageText(MID_WaitForDoorTo));
@@ -4746,6 +4751,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuilding, L"Wait for building markers");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenMove, g_pTheDB->GetMessageText(MID_WaitForOpenMove));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToFace, g_pTheDB->GetMessageText(MID_WaitForPlayerToFace));
@@ -5636,7 +5642,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WALLLIGHT,          //CC_SetWallLight
 		WEAPONS2,           //CC_SetEntityWeapon
 		EXPRESSION,         //CC_WaitForExpression
-		ORBAGENTS           //CC_LinkOrb
+		ORBAGENTS,          //CC_LinkOrb
+		NO_WIDGETS,         //CC_WaitForBuilding
+		BUILD_MARKER_ITEMS, //CC_WaitForBuildType
+		BUILD_MARKER_ITEMS  //CC_WaitForNotBuildType
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5782,7 +5791,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetWallLight
 		NO_LABELS,          //CC_SetEntityWeapon
 		EXPRESSION_L,       //CC_WaitForExpression
-		NO_LABELS           //CC_LinkOrb
+		NO_LABELS,          //CC_LinkOrb
+		NO_LABELS,          //CC_WaitForBuilding
+		NO_LABELS,          //CC_WaitForBuildType
+		NO_LABELS           //CC_WaitForNotBuildType
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6270,6 +6282,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
+		case CCharacterCommand::CC_WaitForBuildType:
+		case CCharacterCommand::CC_WaitForNotBuildType:
 			this->pCommand->flags = this->pBuildMarkerListBox->GetSelectedItem();
 			QueryRect();
 			break;
@@ -6837,6 +6851,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		case CCharacterCommand::CC_DestroyTrapdoor:
+		case CCharacterCommand::CC_WaitForBuilding:
 			QueryRect();
 		break;
 
@@ -7019,6 +7034,8 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
+		case CCharacterCommand::CC_WaitForBuildType:
+		case CCharacterCommand::CC_WaitForNotBuildType:
 			this->pBuildMarkerListBox->SelectItem(this->pCommand->flags);
 			break;
 
@@ -7390,6 +7407,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
+		case CCharacterCommand::CC_WaitForBuilding:
 			break;
 
 		//Deprecated commands.
@@ -7817,6 +7835,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	//no break
 	case CCharacterCommand::CC_WaitForNoBuilding:
 	case CCharacterCommand::CC_DestroyTrapdoor:
+	case CCharacterCommand::CC_WaitForBuilding:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y);
@@ -7919,6 +7938,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_BuildMarker:
+	case CCharacterCommand::CC_WaitForBuildType:
+	case CCharacterCommand::CC_WaitForNotBuildType:
 		parseMandatoryOption(pCommand->flags, this->pBuildMarkerListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -8633,6 +8654,7 @@ WSTRING CCharacterDialogWidget::toText(
 	//no break
 	case CCharacterCommand::CC_WaitForNoBuilding:
 	case CCharacterCommand::CC_DestroyTrapdoor:
+	case CCharacterCommand::CC_WaitForBuilding:
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);
@@ -8719,6 +8741,8 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_BuildMarker:
+	case CCharacterCommand::CC_WaitForBuildType:
+	case CCharacterCommand::CC_WaitForNotBuildType:
 		wstr += this->pBuildMarkerListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);
