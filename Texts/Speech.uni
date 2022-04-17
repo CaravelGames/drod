@@ -3245,3 +3245,15 @@ Wait until expression
 [MID_LinkOrb]
 [eng]
 Link Orb
+
+[MID_WaitForBuilding]
+[eng]
+Wait for building marker
+
+[MID_WaitForBuildType]
+[eng]
+Wait for build marker type
+
+[MID_WaitForNotBuildType]
+[eng]
+Wait until build marker type

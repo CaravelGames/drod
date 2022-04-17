@@ -1832,6 +1832,9 @@ enum MID_CONSTANT {
   MID_SetEntityWeapon = 2053,
   MID_WaitForExpression = 2054,
   MID_LinkOrb = 2058,
+  MID_WaitForBuilding = 2059,
+  MID_WaitForBuildType = 2060,
+  MID_WaitForNotBuildType = 2061,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
