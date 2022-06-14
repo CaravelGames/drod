@@ -7344,6 +7344,9 @@ const
 			if (!bIsWater(wOSquare))
 				return DMASK_ALL;
 			break;
+		case GROUND_AND_SHALLOW_WATER_NO_OREMITES:
+			if (wOSquare == T_GOO)
+				return DMASK_ALL;
 		case GROUND_AND_SHALLOW_WATER:
 		case GROUND_AND_SHALLOW_WATER_FORCE:
 			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare) ||

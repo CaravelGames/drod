@@ -35,7 +35,7 @@ class CConstruct : public CRockGolem
 {
 public:
 	CConstruct(CCurrentGame *pSetCurrentGame = NULL)
-		: CRockGolem(pSetCurrentGame, M_CONSTRUCT)
+		: CRockGolem(pSetCurrentGame, M_CONSTRUCT, GROUND_AND_SHALLOW_WATER_NO_OREMITES)
 		, wTurnDisabled(0), bOremiteDamage(false)
 	{ }
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CConstruct);
