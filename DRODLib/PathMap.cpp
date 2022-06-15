@@ -116,6 +116,8 @@ void CPathMap::CalcPaths()
 				(this->bSupportPartialObstacles ? parent_square.eBlockedDirections : 0) |
 						square.eBlockedDirections) & rdirmask[nIndex]) != 0;
 
+			const bool bIsSemiObstacle = (!bIsObstacle && (square.eBlockedDirections & DMASK_SEMI));
+
 			//If this square is considered a valid candidate...
 			if (!bIsObstacle || this->dwPathThroughObstacleCost)
 			{
@@ -134,6 +136,9 @@ void CPathMap::CalcPaths()
 						//then leave it, but on re-entering an obstacle, the path cost
 						//will be set as though it never left the obstacle.
 						dwScore = (coord.wMoves+1) * (this->dwPathThroughObstacleCost + 1);
+				} else if (bIsSemiObstacle && parent_square.eBlockedDirections != DMASK_SEMI) {
+					//Penalize moving into "semi-obstacle" area
+					dwScore += 1000;
 				}
 				if (dwScore < square.dwTargetDist)
 				{
