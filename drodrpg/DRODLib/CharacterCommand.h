@@ -266,6 +266,7 @@ public:
 		CC_SetMovementType,     //Sets the NPC's movement type to X.
 		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
 		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
+		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
 		CC_Count
 	};
 

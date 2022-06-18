@@ -212,6 +212,7 @@ private:
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
+	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);

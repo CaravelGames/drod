@@ -3146,6 +3146,14 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForExpression:
+			{
+				if (!IsExpressionSatisfied(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -3627,6 +3635,32 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* 
 		}
 		break;
 		default: break;
+	}
+	ASSERT(!"Unrecognized var operator");
+	return false;
+}
+
+//*****************************************************************************
+bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	int constant = (int)command.x;
+	//operand is an expression
+	UINT index = 0;
+	int operand = parseExpression(command.label.c_str(), index, pGame, this);
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return operand == constant;
+		case ScriptVars::Greater: return operand > constant;
+		case ScriptVars::GreaterThanOrEqual: return operand >= constant;
+		case ScriptVars::Less: return operand < constant;
+		case ScriptVars::LessThanOrEqual: return operand <= constant;
+		case ScriptVars::Inequal: return operand != constant;
+		case ScriptVars::EqualsText:
+		{
+			ASSERT(!"Unsupported var operator for expression");
+			return false;
+		}
 	}
 	ASSERT(!"Unrecognized var operator");
 	return false;
