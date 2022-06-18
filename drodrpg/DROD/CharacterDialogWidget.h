@@ -181,7 +181,7 @@ private:
 	CListBoxWidget *pGotoLabelListBox;
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
-			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox;
+			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2;
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
