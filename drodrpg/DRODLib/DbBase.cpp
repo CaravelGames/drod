@@ -736,6 +736,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarSetAt: strText = "Set var at"; break;
 		case MID_EquipGenerate: strText = "Generate"; break;
 		case MID_DamagePreview: strText = "Combat damage preview"; break;
+		case MID_WaitForExpression: strText = "Wait until expression"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
