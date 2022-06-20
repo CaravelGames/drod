@@ -2209,7 +2209,7 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 			const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
 
-			TeleportPlayer(reflectX, reflectY, CueEvents);
+			TeleportPlayer(reflectX, reflectY, CueEvents, false);
 			this->pPlayer->st.accessory = NoAccessory;
 			ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
 
