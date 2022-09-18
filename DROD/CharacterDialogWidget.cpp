@@ -1472,6 +1472,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMoodListBox->AddItem(Mood_Aggressive, g_pTheDB->GetMessageText(MID_Aggressive));
 	this->pMoodListBox->AddItem(Mood_Nervous, g_pTheDB->GetMessageText(MID_Nervous));
 	this->pMoodListBox->AddItem(Mood_Strike, g_pTheDB->GetMessageText(MID_Striking));
+	this->pMoodListBox->AddItem(Mood_Dying, L"Dying");
+	this->pMoodListBox->AddItem(Mood_Talking, L"Talking");
 	this->pMoodListBox->SelectLine(0);
 
 	//Direction list box.
