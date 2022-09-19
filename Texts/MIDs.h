@@ -1835,6 +1835,8 @@ enum MID_CONSTANT {
   MID_WaitForBuilding = 2059,
   MID_WaitForBuildType = 2060,
   MID_WaitForNotBuildType = 2061,
+  MID_Dying = 2062,
+  MID_Talking = 2063,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

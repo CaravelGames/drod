@@ -3257,3 +3257,11 @@ Wait for build marker type
 [MID_WaitForNotBuildType]
 [eng]
 Wait until build marker type
+
+[MID_Dying]
+[eng]
+Dying
+
+[MID_Talking]
+[eng]
+Talking
