@@ -2214,121 +2214,28 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_WaitForRect:
-			case CCharacterCommand::CC_WaitForNotRect:
 			{
 				//Wait until a specified entity is in rect (x,y,w,h).
-				// -OR-
+				//
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (!IsEntityAt(command, room, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotRect:
+			{
 				//Wait until NONE of the specified entities are in rect (x,y,w,h).
 				//
 				//Note that width and height are zero-indexed.
-				bool bFound = false;
-				getCommandParams(command, px, py, pw, ph, pflags);
-				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px+pw, py+ph))
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (IsEntityAt(command, room, player))
 					STOP_COMMAND;
 
-				if (!bFound && (!pflags || (pflags & ScriptFlag::PLAYER) != 0))
-				{
-					//Check for player by default if no flags are selected.
-					if (
-						player.IsInRoom() &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::HALPH) != 0)
-				{
-					if (player.wAppearance == M_HALPH &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_HALPH, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::MONSTER) != 0)
-				{
-					//excludes NPCs
-					if (room.IsMonsterInRect(px, py,
-							px + pw, py + ph))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::NPC) != 0)
-				{
-					//visible characters only
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CHARACTER))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::PDOUBLE) != 0)
-				{
-					//All player double types
-					if (bIsBeethroDouble(player.wAppearance) && player.wAppearance != M_BEETHRO &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_MIMIC))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_DECOY))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CLONE))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SELF) != 0)
-				{
-					if (this->wX >= px && this->wX <= px + pw &&
-							this->wY >= py && this->wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SLAYER) != 0)
-				{
-					if (player.wAppearance == M_SLAYER &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_SLAYER, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::BEETHRO) != 0)
-				{
-					//Check for Beethro (can detect NPC Beethros).
-					if (player.wAppearance == M_BEETHRO)
-					{
-						if (player.wX >= px && player.wX <= px + pw &&
-								player.wY >= py && player.wY <= py + ph)
-							bFound = true;
-					}
-					CMonster *pNPCBeethro = pGame->pRoom->GetNPCBeethro();
-					if (pNPCBeethro)
-					{
-						const UINT wSX = pNPCBeethro->wX;
-						const UINT wSY = pNPCBeethro->wY;
-						if (wSX >= px && wSX <= px + pw &&
-								wSY >= py && wSY <= py + ph)
-							bFound = true;
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::STALWART) != 0)
-				{
-					if (player.wAppearance == M_STALWART &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_STALWART, true))
-						bFound = true;
-				}
-
-				if ((command.command == CCharacterCommand::CC_WaitForRect && !bFound) ||
-					 (command.command == CCharacterCommand::CC_WaitForNotRect && bFound))
-					STOP_COMMAND;
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2336,12 +2243,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForDoorTo:
 			{
 				//Wait for door at (x,y) to (w=close/open).
-				getCommandXY(command, px, py);
-				const UINT wTile = room.GetOSquare(px, py);
-				if (command.w==(UINT)OA_CLOSE && !bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't closed yet
-				if (command.w==(UINT)OA_OPEN && bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't opened yet
+				if (!IsDoorStateAt(command, room))
+					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2357,55 +2261,18 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
 				//Wait until player faces orientation X.
-				if (!player.IsInRoom())
+				if (!IsPlayerFacing(command, player))
 					STOP_COMMAND;
-				ASSERT(this->wLastSO != NO_ORIENTATION);
-				ASSERT(this->wSO != NO_ORIENTATION);
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (this->wSO != nNextCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (this->wSO != nNextCCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (this->wSO != px)
-							STOP_COMMAND;
-					break;
-				}
+
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
 				//Wait until player moves in direction X.
-				if (!player.IsInRoom())
+				if (!DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
-				ASSERT(this->wLastSO != NO_ORIENTATION);
-				ASSERT(this->wSO != NO_ORIENTATION);
-				const bool bPlayerMoved = player.wX != player.wPrevX ||
-						player.wY != player.wPrevY;
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (this->wSO != nNextCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (this->wSO != nNextCCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (!bPlayerMoved || CSwordsman::GetSwordMovement( //conversion routine
-								nLastCommand, NO_ORIENTATION) != px)
-							STOP_COMMAND;
-					break;
-				}
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3445,6 +3312,154 @@ bool CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEve
 }
 
 //*****************************************************************************
+// Returns: if the command has a valid rect (x,y,w,h) and target entity (flags)
+bool CCharacter::IsValidEntityWait(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags == M_NONE)
+		return false;
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+		return false;
+
+	return true;
+}
+
+//*****************************************************************************
+//Returns: whether the specified game entity (flags) is in rect (x,y,w,h).
+bool CCharacter::IsEntityAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (!pflags || (pflags & ScriptFlag::PLAYER) != 0)
+	{
+		//Check for player by default if no flags are selected.
+		if (player.IsInRoom() &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+	}
+	if ((pflags & ScriptFlag::HALPH) != 0)
+	{
+		if ((player.wAppearance == M_HALPH) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_HALPH, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::MONSTER) != 0)
+	{
+		//excludes player doubles, friendly enemies, and NPCs
+		if (!bIsHuman(player.wAppearance) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRect(px, py,
+			px + pw, py + ph))
+			return true;
+	}
+	if ((pflags & ScriptFlag::NPC) != 0)
+	{
+		//visible characters only
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CHARACTER))
+			return true;
+	}
+	if ((pflags & ScriptFlag::PDOUBLE) != 0)
+	{
+		//All player double types
+		if (bIsBeethroDouble(player.wAppearance) && !player.wAppearance != M_BEETHRO &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_MIMIC))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_DECOY))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CLONE))
+			return true;
+	}
+	if ((pflags & ScriptFlag::SELF) != 0)
+	{
+		if (this->wX >= px && this->wX <= px + pw &&
+			this->wY >= py && this->wY <= py + ph)
+			return true;
+	}
+	if ((pflags & ScriptFlag::SLAYER) != 0)
+	{
+		if ((player.wAppearance == M_SLAYER) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_SLAYER, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::BEETHRO) != 0)
+	{
+		//Check for Beethro (can detect NPC Beethros).
+		if (player.wAppearance == M_BEETHRO)
+		{
+			if (player.wX >= px && player.wX <= px + pw &&
+				player.wY >= py && player.wY <= py + ph)
+				return true;
+		}
+		CMonster* pNPCBeethro = room.GetNPCBeethro();
+		if (pNPCBeethro)
+		{
+			const UINT wSX = pNPCBeethro->wX;
+			const UINT wSY = pNPCBeethro->wY;
+			if (wSX >= px && wSX <= px + pw &&
+				wSY >= py && wSY <= py + ph)
+				return true;
+		}
+	}
+	if ((pflags & ScriptFlag::STALWART) != 0)
+	{
+		if (player.wAppearance == M_STALWART &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_STALWART, true))
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+// Returns: if the tile at (x,y) has the given door state (w)
+bool CCharacter::IsDoorStateAt(
+	const CCharacterCommand& command, const CDbRoom& room
+) const
+{
+	UINT px, py;  //command parameters
+	getCommandXY(command, px, py);
+	const UINT wTile = room.GetOSquare(px, py);
+	if (command.w == (UINT)OA_CLOSE && !bIsDoor(wTile))
+		return false;  //door hasn't closed yet
+	if (command.w == (UINT)OA_OPEN && bIsDoor(wTile))
+		return false;  //door hasn't opened yet
+
+	return true;
+}
+
+//*****************************************************************************
 bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvents) const
 //Returns: whether the specified game element (flags) is in rect (x,y,w,h).
 {
@@ -3574,6 +3589,58 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+// Returns: is player facing the specified direction (x)
+bool CCharacter::IsPlayerFacing(
+	const CCharacterCommand& command,
+	const CSwordsman& player
+) const
+{
+	if (!player.IsInRoom())
+		return false;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+	switch (px)
+	{
+	case CMD_C:
+		return (player.wO == nNextCO(player.wPrevO));
+	case CMD_CC:
+		return (player.wO == nNextCCO(player.wPrevO));
+	default:
+		return (player.wO == px);
+	}
+}
+
+//*****************************************************************************
+// Returns: did the player move in the specified direction (x)
+bool CCharacter::DidPlayerMove(
+	const CCharacterCommand& command,
+	const CSwordsman& player,
+	const int nLastCommand
+) const
+{
+	if (!player.IsInRoom())
+		return false;
+
+	const bool bPlayerMoved = player.wX != player.wPrevX ||
+		player.wY != player.wPrevY;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+
+	switch (px)
+	{
+	case CMD_C:
+		return (player.wO == nNextCO(player.wPrevO));
+	case CMD_CC:
+		return (player.wO == nNextCCO(player.wPrevO));
+	default:
+		return (bPlayerMoved && CSwordsman::GetSwordMovement( //conversion routine
+			nLastCommand, NO_ORIENTATION) == px);
+	}
 }
 
 //******************************************************************************************

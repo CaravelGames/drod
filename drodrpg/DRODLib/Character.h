@@ -57,6 +57,7 @@ using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
 
+class CSwordsman;
 struct HoldCharacter;
 class CDbHold;
 class CCharacter : public CPlayerDouble
@@ -80,6 +81,7 @@ public:
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	void           Defeat();
+	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
 
@@ -123,16 +125,20 @@ public:
 	virtual bool   IsAggressive() const {return false;}
 	virtual bool   IsCombatable() const;
 	virtual bool   IsDamageableAt(const UINT wX, const UINT wY) const;
+	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}
 	bool           IsLuckyGR() const {return this->bLuckyGR;}
 	bool           IsLuckyXP() const {return this->bLuckyXP;}
 	bool           IsMetal() const {return this->bMetal;}
 	virtual bool   IsMissionCritical() const {return this->bMissionCritical;}
+	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
 	bool           IsRestartScriptOnRoomEntrance() const {return this->bRestartScriptOnRoomEntrance;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
+	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
