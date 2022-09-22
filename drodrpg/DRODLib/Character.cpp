@@ -3100,6 +3100,65 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			{
+				//Wait until all conditions are true.
+				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitOr:
+			{
+				//Wait until at least one condition is true.
+				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitXOR:
+			{
+				//Wait until exactly one condition is true.
+				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
+					STOP_COMMAND;
+
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				//Marks the end of a logical block. Has no other function.
+				bProcessNextCommand = true;
+			break;
+
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
 			case CCharacterCommand::CC_WaitForCleanRoom:
@@ -3705,6 +3764,291 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* 
 	}
 	ASSERT(!"Unrecognized var operator");
 	return false;
+}
+
+//*****************************************************************************
+//
+bool CCharacter::EvaluateConditionalCommand(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	const int nLastCommand,
+	CCueEvents& CueEvents
+)
+{
+	CDbRoom& room = *(pGame->pRoom);
+
+	switch (command.command) {
+		case CCharacterCommand::CC_WaitForCueEvent:
+		{
+			const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+			return CueEvents.HasOccurred(cid);
+		}
+		case CCharacterCommand::CC_WaitForRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& IsEntityAt(command, room, *pGame->pPlayer));
+		}
+		case CCharacterCommand::CC_WaitForNotRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityAt(command, room, *pGame->pPlayer));
+		}
+		case CCharacterCommand::CC_WaitForDoorTo:
+		{
+			return IsDoorStateAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForTurn:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return pGame->wSpawnCycleCount >= px;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToFace:
+		{
+			return IsPlayerFacing(command, *pGame->pPlayer);
+		}
+		case CCharacterCommand::CC_WaitForVar:
+		{
+			return DoesVarSatisfy(command, pGame);
+		}
+		case CCharacterCommand::CC_SetPlayerAppearance:
+		{
+			//As a condition, this acts as a query that is true when
+			//the player is in this role.
+			return pGame->pPlayer->wIdentity == command.x;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToMove:
+		{
+			return DidPlayerMove(command, *pGame->pPlayer, nLastCommand);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+		{
+			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY)
+				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
+
+			return this->bPlayerTouchedMe;
+		}
+		case CCharacterCommand::CC_WaitForDefeat:
+		{
+			return this->bDefeated;
+		}
+		case CCharacterCommand::CC_WaitForItem:
+		{
+			return IsTileAt(command, CueEvents);
+		}
+		case CCharacterCommand::CC_WaitForOpenMove:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return this->IsOpenMove(nGetOX(px), nGetOY(px));
+		}
+		case CCharacterCommand::CC_SetMovementType:
+		{
+			//As a condition, check if movement type equals X
+			return (this->eMovement != (MovementType)command.x);
+		}
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			return IsExpressionSatisfied(command, pGame);
+		}
+		default:
+		{
+			ASSERT(!"Bad Conditional Command");
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to false, returns false. Otherwise,
+// returns true.
+bool CCharacter::EvaluateLogicalAnd(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitAnd);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (!EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (!EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (!EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return false;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to true.
+	return true;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to true, returns true. Otherwise,
+// returns false.
+bool CCharacter::EvaluateLogicalOr(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitOr);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return true;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to false.
+	return false;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If exactly one evaluates to true, return true, otherwise
+// returns false.
+bool CCharacter::EvaluateLogicalXOR(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitXOR);
+
+	bool bFound = false;
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		bool bLocalFound = false;
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+					bLocalFound =
+						EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents);
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					bLocalFound =
+						EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					bLocalFound =
+						EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			bLocalFound =
+				EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents);
+		}
+
+		if (bLocalFound) {
+			if (bFound) {
+				// More than one condition is true, so return false
+				return false;
+			}
+
+			bFound = true;
+		}
+
+		++wCommandIndex;
+	}
+
+	return bFound;
 }
 
 //*****************************************************************************
@@ -5372,6 +5716,38 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 		case CCharacterCommand::CC_IfEnd:
 			if (wNestingDepth > 0)
 				wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the Logic end command at the end of the block or NO_LABEL
+// if not in a block.
+int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
+{
+	UINT wCommandIndex = wStartIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			case CCharacterCommand::CC_LogicalWaitOr:
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				wNestingDepth++; // entering a nested logic block
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				if (wNestingDepth == 0) {
+					return wCommandIndex; // Found end of logic block
+				}
+				else {
+					wNestingDepth--; // exiting a nested logic block
+				}
 			break;
 		}
 

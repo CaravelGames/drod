@@ -85,6 +85,13 @@ public:
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
 
+	bool EvaluateConditionalCommand(
+		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalAnd(
+		UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalOr(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalXOR(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+
 	void   ExportText(CDbRefs &dbRefs, CStretchyBuffer& str);
 	static string ExportXMLSpeech(CDbRefs &dbRefs, const COMMAND_VECTOR& commands, const bool bRef=false);
 	MESSAGE_ID ImportSpeech(CImportInfo &info);
@@ -217,6 +224,7 @@ private:
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
 	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,

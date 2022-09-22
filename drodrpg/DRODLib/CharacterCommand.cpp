@@ -79,6 +79,31 @@ bool CCharacterCommand::IsRealEquipmentType(ScriptFlag::EquipmentType type)
 	return false;
 }
 
+bool CCharacterCommand::IsLogicalWaitCondition() const {
+	switch (command) {
+	case CC_WaitForCueEvent:
+	case CC_WaitForRect:
+	case CC_WaitForNotRect:
+	case CC_WaitForDoorTo:
+	case CC_WaitForTurn:
+	case CC_WaitForCleanRoom:
+	case CC_WaitForPlayerToFace:
+	case CC_WaitForVar:
+	case CC_SetPlayerAppearance:
+	case CC_WaitForNoBuilding:
+	case CC_WaitForPlayerToMove:
+	case CC_WaitForPlayerToTouchMe:
+	case CC_WaitForDefeat:
+	case CC_WaitForItem:
+	case CC_WaitForOpenMove:
+	case CC_SetMovementType:
+	case CC_WaitForExpression:
+		return true;
+	default:
+		return false;
+	}
+}
+
 //*****************************************************************************
 bool addWithClamp(int& val, const int operand)
 //Multiplies two integers, ensuring the product doesn't overflow.
