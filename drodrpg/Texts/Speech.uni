@@ -1303,3 +1303,19 @@ Generate
 [MID_WaitForExpression]
 [eng]
 Wait until expression
+
+[MID_LogicalWaitAnd]
+[eng]
+"Wait for All:
+
+[MID_LogicalWaitOr]
+[eng]
+Wait for Any:
+
+[MID_LogicalWaitXOR]
+[eng]
+Wait for Exactly One:
+
+[MID_LogicalWaitEnd]
+[eng]
+Wait for Conditions End

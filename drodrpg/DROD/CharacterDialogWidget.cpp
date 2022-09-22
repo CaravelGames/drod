@@ -3895,10 +3895,10 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, g_pTheDB->GetMessageText(MID_WaitForExpression));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, L"Logical And");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, L"Logical Or");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, L"Logical Xor");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, L"Logical End");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, g_pTheDB->GetMessageText(MID_LogicalWaitAnd));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, g_pTheDB->GetMessageText(MID_LogicalWaitEnd));
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
 }
