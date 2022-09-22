@@ -4813,7 +4813,7 @@ bool CCharacter::EvaluateLogicalOr(
 				case CCharacterCommand::CC_LogicalWaitXOR:
 				{
 					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
-						return false;
+						return true;
 				}
 				break;
 			}
