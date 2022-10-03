@@ -1958,6 +1958,10 @@ void CDbXML::Import_TallyRecords(
 			}
 
 			pBuffer->totalParseSize += pBuffer->uncompressedSize; //sum during first data pass
+		} else if (bImportComplete) {
+			//we aren't decompressing data and we hit an end tag
+			//therefore, we must not have anything else to parse
+			break;
 		}
 	}
 }
@@ -2023,6 +2027,10 @@ void CDbXML::Import_ParseRecords(
 				info.ImportStatus = mid;
 				break;
 			}
+		} else if (bImportComplete) {
+			//we aren't decompressing data and we hit an end tag
+			//therefore, we must not have anything else to parse
+			break;
 		}
 	}
 
