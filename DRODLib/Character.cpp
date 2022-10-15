@@ -169,6 +169,8 @@ CCharacter::CCharacter(
 	, bStunnable(true)
 	, bBrainPathmapObstacle(false), bNPCPathmapObstacle(true)
 	, bWeaponOverride(false)
+	, bInvisibleInspectable(false)
+	, bInvisibleCountsMoveOrder(false)
 	, bFriendly(true)
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
