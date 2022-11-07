@@ -3685,7 +3685,8 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	{
 		const SORTPOINT& p = *it;
 		if (GetMonsterAtSquare(p.wX, p.wY) != NULL || IsMonsterSwordAt(p.wX, p.wY)
-				|| this->pCurrentGame->IsPlayerWeaponAt(p.wX, p.wY))
+				|| this->pCurrentGame->IsPlayerWeaponAt(p.wX, p.wY) || this->pCurrentGame->IsPlayerAt(p.wX, p.wY)
+				|| bIsPotion(this->GetTSquare(p.wX, p.wY)))
 			continue;
 		wEX = p.wX;
 		wEY = p.wY;
@@ -7315,6 +7316,9 @@ const
 	if (wOSquare == T_FIRETRAP_ON)
 		return DMASK_ALL;
 
+	// Blocks movement, but can be pathed through expensively
+	bool bSemiObstacle = false;
+
 	switch (eMovement)
 	{
 		case GROUND:
@@ -7344,6 +7348,12 @@ const
 			if (!bIsWater(wOSquare))
 				return DMASK_ALL;
 			break;
+		case GROUND_AND_SHALLOW_WATER_NO_OREMITES:
+			if (wOSquare == T_GOO) {
+				bSemiObstacle = true;
+				break;
+			}
+		//no break
 		case GROUND_AND_SHALLOW_WATER:
 		case GROUND_AND_SHALLOW_WATER_FORCE:
 			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare) ||
@@ -7366,6 +7376,10 @@ const
 	}
 
 	UINT wBlockDir = DMASK_NONE;
+
+	if (bSemiObstacle)
+		wBlockDir |= DMASK_SEMI;
+
 	if (DoesGentryiiPreventDiagonal(wX,wY,wX-1,wY-1))
 		wBlockDir |= DMASK_NW;
 	if (DoesGentryiiPreventDiagonal(wX,wY,wX-1,wY+1))

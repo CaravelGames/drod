@@ -33,8 +33,12 @@
 class CRockGolem : public CMonster
 {
 public:
-	CRockGolem(CCurrentGame *pSetCurrentGame = NULL, UINT monsterType=M_ROCKGOLEM)
-		: CMonster(monsterType, pSetCurrentGame, GROUND_AND_SHALLOW_WATER), bBroken(false) {}
+	CRockGolem(
+		CCurrentGame *pSetCurrentGame = NULL,
+		UINT monsterType=M_ROCKGOLEM,
+		MovementType movementType=GROUND_AND_SHALLOW_WATER
+	)
+		: CMonster(monsterType, pSetCurrentGame, movementType), bBroken(false) {}
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CRockGolem);
 	
 	virtual bool CheckForDamage(CCueEvents& CueEvents);

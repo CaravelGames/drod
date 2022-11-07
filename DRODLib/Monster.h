@@ -103,6 +103,7 @@ enum MovementType {
 	AIR_FORCE,
 	WATER_FORCE,
 	WALL_FORCE,
+	GROUND_AND_SHALLOW_WATER_NO_OREMITES,
 	NumMovementTypes
 };
 
@@ -157,6 +158,7 @@ static inline MovementType GetHornMovementType(MovementType movement)
 			return GROUND_FORCE;
 
 		case GROUND_AND_SHALLOW_WATER:
+		case GROUND_AND_SHALLOW_WATER_NO_OREMITES:
 		default:
 			return GROUND_AND_SHALLOW_WATER_FORCE;
 	}

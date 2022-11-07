@@ -169,6 +169,8 @@ CCharacter::CCharacter(
 	, bStunnable(true)
 	, bBrainPathmapObstacle(false), bNPCPathmapObstacle(true)
 	, bWeaponOverride(false)
+	, bInvisibleInspectable(false)
+	, bInvisibleCountsMoveOrder(false)
 	, bFriendly(true)
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
@@ -272,12 +274,14 @@ void CCharacter::ChangeHoldForCommands(
 			{
 				case CCharacterCommand::CC_WaitForVar:
 				case CCharacterCommand::CC_VarSet:
+				case CCharacterCommand::CC_VarSetAt:
 				{
 					//Update var refs.
-					if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
 						break; //predefined var IDs remain the same
 
-					const WCHAR *pVarName = pOldHold->GetVarName(c.x);
+					const WCHAR *pVarName = pOldHold->GetVarName(wRef);
 					UINT uVarID = pNewHold->GetVarID(pVarName);
 					if (!uVarID && pVarName)
 					{
@@ -287,7 +291,11 @@ void CCharacter::ChangeHoldForCommands(
 					}
 					//Update the var ID to match the ID of the var with this
 					//name in the destination hold.
-					c.x = uVarID;
+					if (c.command == CCharacterCommand::CC_VarSetAt) {
+						c.w = uVarID;
+					} else {
+						c.x = uVarID;
+					}
 				}
 				break;
 				case CCharacterCommand::CC_AmbientSound:
@@ -618,7 +626,6 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_SetEntityWeapon:
 				command->x = (pRoom->wRoomCols-1) - command->x;
@@ -632,6 +639,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
@@ -693,7 +701,6 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_SetEntityWeapon:
 				command->y = (pRoom->wRoomRows-1) - command->y;
@@ -707,6 +714,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
@@ -4546,88 +4554,110 @@ bool CCharacter::IsWeaponAt(
 	const CCurrentGame* pGame
 ) const
 {
-	UINT px, py, pflags;  //command parameters
-	getCommandXYF(command, px, py, pflags);
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
 
 	CDbRoom& room = *(pGame->pRoom);
 	const CSwordsman& player = pGame->swordsman;
 
-	bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
-	bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
-
-	if (!(bPlayerWeapon || bMonsterWeapon))
-	{
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
 		return false;
-	}
 
-	if (!pflags) {
-		return true;
-	}
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
 
-	if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+	for (UINT y = py; y <= endY; ++y)
 	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+		for (UINT x = px; x <= endX; ++x)
 		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Sword);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Pickaxe);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Spear);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Staff);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Dagger);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Caber);
+			bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(x, y);
+			bool bMonsterWeapon = room.IsMonsterSwordAt(x, y, false, this);
+
+			if (!(bPlayerWeapon || bMonsterWeapon))
+			{
+				continue;
+			}
+
+			if (!pflags) {
+				return true;
+			}
+
+			if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Sword))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Pickaxe))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Spear))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Staff))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Dagger))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Caber))
+						return true;
+				}
+			}
 		}
 	}
 
@@ -5188,7 +5218,7 @@ bool CCharacter::EvaluateLogicalOr(
 				case CCharacterCommand::CC_LogicalWaitXOR:
 				{
 					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
-						return false;
+						return true;
 				}
 				break;
 			}

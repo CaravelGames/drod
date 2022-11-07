@@ -240,9 +240,10 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 			command = ConvertToBumpCommand(command);
 			applying_command = false;
 		} else {
+			CDbRoom* pRoom = this->pCurrentGame->pRoom;
 			bEnteredTunnel = this->pCurrentGame->PlayerEnteredTunnel(
-					this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY), nGetO(dx, dy), this->wIdentity) &&
-				!DoesArrowPreventMovement(this->wX, this->wY, dx, dy);
+					pRoom->GetOSquare(this->wX, this->wY), nGetO(dx, dy), this->wIdentity) &&
+				!bIsArrowObstacle(pRoom->GetFSquare(this->wX, this->wY), nGetO(dx, dy));
 			if (bEnteredTunnel) {
 				//If tunnel cannot be exited, then don't expend a turn.
 				UINT destX, destY;
