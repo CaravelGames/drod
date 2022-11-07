@@ -270,6 +270,9 @@
     <ClCompile Include="src\tests\Monsters\Construct\BrainedConstruct.cpp">
       <Filter>Tests\Monsters\Construct</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

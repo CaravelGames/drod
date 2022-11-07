@@ -70,7 +70,12 @@ namespace ScriptVars
 		P_MONSTER_NAME = -27,
 		P_ROOM_X = -28,
 		P_ROOM_Y = -29,
-		FirstPredefinedVar = P_ROOM_Y, //set this to the last var in the enumeration
+		P_ROOM_WEATHER = -30,
+		P_ROOM_DARKNESS = -31,
+		P_ROOM_FOG = -32,
+		P_ROOM_SNOW = -33,
+		P_ROOM_RAIN = -34,
+		FirstPredefinedVar = P_ROOM_RAIN, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

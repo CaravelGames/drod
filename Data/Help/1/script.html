@@ -14,6 +14,7 @@ designate.  There are four general classes of script commands, as follows:</p>
   <li><a href="#interaction">Interaction</a></li>
   <li><a href="#queries">Queries</a></li>
   <li><a href="#decision">Decision making</a></li>
+  <li><a href="#lighting">Lighting</a></li>
 </ol>
 <p>
 <a href="#usagenotes">Notes about using NPC scripts</a><br />
@@ -356,9 +357,9 @@ the state of the room and wait indefinitely until certain events occur.</p>
       exist in the room region you specify.</li>
   <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
       hold variable</a> meets the condition you specify.</li>
-  <li><a name="waitweapon"><b>Wait for Weapon</b></a> - Waits until a weapon is in the specified square. By default, this command
+  <li><a name="waitweapon"><b>Wait for Weapon</b></a> - Waits until a weapon is in the specified specified room region. By default, this command
       checks for any weapon, but specific weapons can be waited for instead. Hold &lt;Ctrl&gt; while clicking to select and unselect multiple
-      selections.</li>
+      selections. The NPC will not detect its own weapon with this command.</li>
   <li><a name="waitforitem"><b>Wait for item</b>
     </a> - Wait until the specified element is located in the marked room region.</li>
   <li><a name="logical-wait"><b>Multi-expression Waits</b></a> - Multi-expression wait commands are used to perform an atomic check on multiple conditions, i.e., as a single combined boolean query, which returns a single true or false value. Script execution halts at this point until the multiple conditions are met as specified. The expression block begins with <b>Wait for All</b>, <b>Wait for Any</b> or <b>Wait for Exactly One</b> command, and should end with a <b>Wait for Conditions End</b> command. An <b>All</b> block will wait until all subqueries are true, an <b>Any</b> block will wait until any subquery is true, and an <b>Exactly One</b> block will wait until exactly one subquery is true. Additionally, a multi-expression wait block can be used as a condition for an <a href="#if">if statement</a>. Multi-expression wait blocks can be nested if more complex logic is required. All "Wait for" commands can be used as subqueries, along with the <a href="#role">Set role</a>, <a href="#setplayerweapon">Set player weapon</a>, <a href="#face-towards-like-guard">Face towards like guard</a> and <a href="#set-movement">Set movement type</a> commands, which function as they do when used as an if condition.</li>
@@ -440,6 +441,12 @@ continue executing script commands from a different location in the script.</p>
       the room. If the room is restarted before exit, then the NPC script will
       begin executing again from the beginning. Hint: use this command to stop
       the NPC from executing any more commands.</li>
+</ol>
+<p><a name="lighting"><b>6.&nbsp;&nbsp;Lighting</b></a> - The following commands can be used to alter the lighting layer of a room. Only one type of lighting can be present on a tile, so these commands will overwrite pre-existing tile lighting. Architects should be considerate to players, and not excessively change the lighting of a room during play.</p>
+<ol>
+  <li><a name="set-dark"><b>Set ceiling darkness</b></a> - Adds darkness to an area. Values between 1 and 32 inclusive will darken a tile, while a value of zero will remove lighting from the tile. Values outside of this range will be clamped to the valid range.</li>
+  <li><a name="set-light"><b>Set ceiling light</b></a> - Adds colored light to an area. Any of the 16 predefined colors can be used. Selecting 'none' will remove lighting from the tile.</li>
+  <li><a name="set-wall-light"><b>Set wall light</b></a> - Adds a wall light element to a tile, with the given intensity. Any of the 16 predefined colors can be used, with an intensity between 1 and 8 inclusive. Selecting 'none' or setting an intensity of zero will remove lighting from the tile.</li>
 </ol>
 
 <p><a name="usagenotes"><b>Notes about using NPC scripts</b></a></p>
@@ -664,7 +671,11 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
-	
+	<li><b>_RoomWeather</b> - <a href="#roomweathervars">See this section</a></li>
+	<li><b>_RoomDarkness</b> - Controls the <a href="weather.html">lighting level</a> of a room. Can be set between 0 (no darkness) to 6 (the highest level of darkness) inclusive. If the <a href="weather.html">Skip light crossfading</a> setting is not enabled, the room will perform a fade from the old light level to the new light level.</li>
+	<li><b>_RoomFog</b> - Controls the <a href="weather.html">fog height</a> in the room. Can be set between 0 and 3 inclusive.</li>
+	<li><b>_RoomSnow</b> - Controls the rate of snowfall. Can be set between 0 and 9 inclusive. At zero, no snow falls.</li>
+	<li><b>_RoomRain</b> - Controls the rate of rainfall. Can be set between 0 and 19 inclusive. At zero, no rain falls.</li>
 </ul>
 
 <p><a name="playerlightvars"><b>Player light vars</b></a></p>
@@ -685,6 +696,15 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 100-129: display specific time (0-29)<br />
 200-229: display specific half-tick (0-29)<br />
 <br/>
+
+<p><a name ="roomweathervars"></a><b>Room weather vars</b></p>
+<p><b>_RoomWeather</b> affects the <a href="weather.html">weather settings</a> in a room. It is bit map value of the settings, meaning it can contain multiple values created by just adding them. The supported values are:<br/>
+<b>1 (0x001)</b> - Outside<br/>
+<b>2 (0x002)</b> - Lightning<br/>
+<b>4 (0x004)</b> - Clouds overhead<br/>
+<b>8 (0x008)</b> - Cloud shadows<br/>
+<b>16 (0x010)</b> - Skip light crossfade<br/>
+</p>
 
 <p><a name="playerinputvars"><b>List of player command input variables</b></a></p>
   Predefined variable names may be provided in texts to output the player's current key binding for the respective command as text. To do this, provide a variable name of the form "$_CMD_&lt;key&gt;$", where &lt;key&gt; is one of the following:
@@ -786,6 +806,9 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td><b>Play Video</b></td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
 <tr><td><b>Set player weapon</b></td>    <td>Weapon</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Set ceiling darkness</b></td> <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Darkness level</td></tr>
+<tr><td><b>Set ceiling light</b></td>    <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Light color</td></tr>
+<tr><td><b>Set wall light</b></td>       <td>X</td>            <td>Y</td>             <td>Intensity</td>    <td></td>           <td>Light color</td></tr>
 <tr><td><b>Teleport Player</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>Teleport To</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
 <tr><td><b>Wait</b></td>                 <td>Wait turns</td>   <td>Y</td>             <td> </td>            <td> </td>            <td> </td></tr>
@@ -803,7 +826,7 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td><b>W. remains</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Remains</td></tr>
 <tr><td><b>W. turn</b></td>        <td>Turn number</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><b>W. weapon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Weapon</td></tr>
+<tr><td><b>W. weapon</b></td>            <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Weapon</td></tr>
 <tr><td><b>W. while entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
 <tr><td><b>W. while ent. type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
 <tr><td><b>W.Map Tile Icon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Entity</td>       <td>Map display</td></tr>

@@ -425,6 +425,7 @@
     <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp" />
     <ClCompile Include="src\tests\TemporalToken\DoublePlacementPreventsRecording.cpp" />
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp" />
     <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp" />
   </ItemGroup>
   <ItemGroup>

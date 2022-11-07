@@ -431,6 +431,11 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_PLAYERLIGHTTYPE:
 		case (UINT)ScriptVars::P_RETURN_X:
 		case (UINT)ScriptVars::P_RETURN_Y:
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		case (UINT)ScriptVars::P_ROOM_RAIN:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;
@@ -550,6 +555,11 @@ void CCharacter::setPredefinedVarInt(
 		case (UINT)ScriptVars::P_PLAYERLIGHTTYPE:
 		case (UINT)ScriptVars::P_RETURN_X:
 		case (UINT)ScriptVars::P_RETURN_Y:
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		case (UINT)ScriptVars::P_ROOM_RAIN:
 		default:
 			pGame->ProcessCommandSetVar(varIndex, val);
 		break;
@@ -606,7 +616,6 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
@@ -619,6 +628,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
@@ -672,7 +682,6 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GetEntityDirection:
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
-			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_VarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
@@ -685,6 +694,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForItem:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
@@ -3260,6 +3270,93 @@ void CCharacter::Process(
 			break;
 
 
+			case CCharacterCommand::CC_SetDarkness:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+				bool bCeilingLightChanged = false;
+
+				//clamp pflag to lighting type range
+				pflags = max(0, min(pflags, NUM_DARK_TYPES));
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Add(x, y, LIGHT_OFF + pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				if (bCeilingLightChanged)
+					CueEvents.Add(CID_LightTilesChanged);
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_SetCeilingLight:
+			{
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				if (!(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Add(x, y, pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				CueEvents.Add(CID_LightTilesChanged);
+			}
+			break;
+			case CCharacterCommand::CC_SetWallLight: {
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+				pw = max(0, min(pw, MAX_LIGHT_DISTANCE));
+
+				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if(bIsLightTileValue(room.tileLights.GetAt(px, py)))
+					CueEvents.Add(CID_LightTilesChanged);
+
+				if (pw == 0 || pflags == 0) {
+					//Remove tile light
+					room.tileLights.Remove(px, py);
+					room.ForceTileRedraw(px, py, false);
+				}	else {
+					UINT wLightParam = (pflags - 1);
+					wLightParam += (pw - 1) * NUM_LIGHT_TYPES;
+					room.tileLights.Add(px, py, WALL_LIGHT + wLightParam);
+					room.ForceTileRedraw(px, py, false);
+				}
+
+				CueEvents.Add(CID_LightToggled);
+			}
+			break;
+
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
 			case CCharacterCommand::CC_WaitForHalph:
@@ -4213,88 +4310,110 @@ bool CCharacter::IsWeaponAt(
 	const CCurrentGame* pGame
 ) const
 {
-	UINT px, py, pflags;  //command parameters
-	getCommandXYF(command, px, py, pflags);
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
 
 	CDbRoom& room = *(pGame->pRoom);
 	const CSwordsman& player = pGame->swordsman;
 
-	bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(px, py);
-	bool bMonsterWeapon = room.IsMonsterSwordAt(px, py);
-
-	if (!(bPlayerWeapon || bMonsterWeapon))
-	{
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
 		return false;
-	}
 
-	if (!pflags) {
-		return true;
-	}
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
 
-	if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+	for (UINT y = py; y <= endY; ++y)
 	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+		for (UINT x = px; x <= endX; ++x)
 		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Sword);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Pickaxe);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Spear);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Staff);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Dagger);
-		}
-	}
-	if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
-	{
-		if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
-		{
-			return true;
-		}
-		else if (bMonsterWeapon)
-		{
-			return room.IsMonsterWeaponTypeAt(px, py,	WT_Caber);
+			bool bPlayerWeapon = this->pCurrentGame->IsPlayerWeaponAt(x, y);
+			bool bMonsterWeapon = room.IsMonsterSwordAt(x, y, false, this);
+
+			if (!(bPlayerWeapon || bMonsterWeapon))
+			{
+				continue;
+			}
+
+			if (!pflags) {
+				return true;
+			}
+
+			if ((pflags & ScriptFlag::WEAPON_SWORD) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Sword)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Sword))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_PICKAXE) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Pickaxe)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Pickaxe))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_SPEAR) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Spear)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Spear))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_STAFF) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Staff)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Staff))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_DAGGER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Dagger)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Dagger))
+						return true;
+				}
+			}
+			if ((pflags & ScriptFlag::WEAPON_CABER) != 0)
+			{
+				if (bPlayerWeapon && player.GetActiveWeapon() == WT_Caber)
+				{
+					return true;
+				}
+				else if (bMonsterWeapon)
+				{
+					if (room.IsMonsterWeaponTypeAt(px, py, WT_Caber))
+						return true;
+				}
+			}
 		}
 	}
 

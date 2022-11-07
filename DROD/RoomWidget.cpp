@@ -1854,6 +1854,50 @@ const
 }
 
 //*****************************************************************************
+void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
+//Update environmental conditions if they have changed.
+{
+	if (CueEvents.HasOccurred(CID_ExitRoom))
+		return;
+
+	Weather roomWeather = this->pRoom->weather;
+
+	if (IsLightingRendered() && (this->wDark != roomWeather.wLight))
+	{
+		if (!roomWeather.bSkipLightfade) {
+			FadeToLightLevel(roomWeather.wLight, CueEvents);
+		}	else {
+			//Just show at new light level.
+			this->wDark = roomWeather.wLight;
+			ASSERT(this->wDark < LIGHT_LEVELS);
+			g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
+			ClearEffects();
+			UpdateFromCurrentGame();
+			ResetForPaint();
+			Paint();
+		}
+	}
+
+	if (!IsWeatherRendered())
+		return;
+
+	bool bWeatherSame = true;
+	bWeatherSame &= (this->cFogLayer == (BYTE)roomWeather.wFog);
+	bWeatherSame &= (this->wSnow == roomWeather.wSnow);
+	bWeatherSame &= (this->rain == roomWeather.rain);
+	bWeatherSame &= (this->bOutside == roomWeather.bOutside);
+	bWeatherSame &= (this->bLightning == roomWeather.bLightning);
+	bWeatherSame &= (this->bClouds == roomWeather.bClouds);
+	bWeatherSame &= (this->bSkipLightfade == roomWeather.bSkipLightfade);
+
+	if (bWeatherSame)
+		return;
+
+	GetWeather();
+	LoadSkyImage(this->pRoom);
+}
+
+//*****************************************************************************
 void CRoomWidget::GetWeather()
 //Get environmental conditions from room data.
 {
@@ -2059,54 +2103,64 @@ void CRoomWidget::LoadRoomImages()
 	//Generate room model for lighting.
 	this->bRenderRoomLight = true;
 	this->bCeilingLightsRendered = false;
+	this->ceilingLightChanges.reset();
 
 	//Load sky image, if applicable.
-	if (this->bSkyVisible)
-	{
-		//Get name of sky image.  Look up default name for this style+light level if none specified.
-		WSTRING wstrSkyImageName = this->sky;
-		if (wstrSkyImageName.empty())
-		{
-			WSTRING style = pThisRoom->style;
-			g_pTheDBM->ConvertStyle(style);
-			style += wszSpace;
-			style += wszSKIES;
-			list<WSTRING> skies;
-			if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
-			{
-				//Sky images specified.  Choose the one closest to specified light level.
-				UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size()-1;
-				list<WSTRING>::const_iterator sky = skies.begin();
-				while (wSkyIndex--)
-					++sky;
-				wstrSkyImageName = *sky;
-			}
-		}
+	LoadSkyImage(pThisRoom);
+}
 
-		if (wstrSkyImageName.empty())
+//*****************************************************************************
+void CRoomWidget::LoadSkyImage(CDbRoom* pRoom)
+//Load sky image, if applicable.
+{
+	if (!this->bSkyVisible)
+		return;
+
+	//Get name of sky image.  Look up default name for this style+light level if none specified.
+	WSTRING wstrSkyImageName = this->sky;
+	if (wstrSkyImageName.empty())
+	{
+		WSTRING style = pRoom->style;
+		g_pTheDBM->ConvertStyle(style);
+		style += wszSpace;
+		style += wszSKIES;
+		list<WSTRING> skies;
+		if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
 		{
-			//No sky image listed.
+			//Sky images specified.  Choose the one closest to specified light level.
+			UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size() - 1;
+			list<WSTRING>::const_iterator sky = skies.begin();
+			while (wSkyIndex--)
+				++sky;
+			wstrSkyImageName = *sky;
+		}
+	}
+
+	if (wstrSkyImageName.empty())
+	{
+		//No sky image listed.
+		if (this->pSkyImage)
+		{
+			SDL_FreeSurface(this->pSkyImage);
+			this->pSkyImage = NULL;
+		}
+		this->wstrSkyImage.resize(0);
+	}
+	else
+	{
+		//If image name is different than the one already loaded, load new sky.
+		if (wstrSkyImageName.compare(this->wstrSkyImage))
+		{
 			if (this->pSkyImage)
-			{
 				SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = NULL;
-			}
-			this->wstrSkyImage.resize(0);
-		} else {
-			//If image name is different than the one already loaded, load new sky.
-			if (wstrSkyImageName.compare(this->wstrSkyImage))
+			this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
+			if (!this->pSkyImage)
+				this->wstrSkyImage = wszEmpty;
+			else
 			{
-				if (this->pSkyImage)
-					SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
-				if (!this->pSkyImage)
-					this->wstrSkyImage = wszEmpty;
-				else
-				{
-					ASSERT((UINT)this->pSkyImage->w == this->w);
-					ASSERT((UINT)this->pSkyImage->h == this->h);
-					this->wstrSkyImage = wstrSkyImageName;
-				}
+				ASSERT((UINT)this->pSkyImage->w == this->w);
+				ASSERT((UINT)this->pSkyImage->h == this->h);
+				this->wstrSkyImage = wstrSkyImageName;
 			}
 		}
 	}
@@ -2497,6 +2551,37 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	RenderEnvironment(pSurface);
 
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pSurface);
+}
+
+//*****************************************************************************
+void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
+{
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (CueEvents.HasOccurred(CID_ExitRoom) || this->ceilingLightChanges.empty()) {
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_LightTilesChanged)) {
+		this->ceilingLightChanges.add(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_ActivatedTemporalSplit)) {
+		UINT spawnTurn = this->pCurrentGame->wSpawnCycleCount + 1;
+		if (!ceilingLightChanges.isAfterLatest(spawnTurn)) {
+			this->bCeilingLightsRendered = false;
+			ProcessLightmap();
+			return;
+		}
+	}
+
+	if (!ceilingLightChanges.isAfterLatest(currentTurn + 1)) {
+		this->ceilingLightChanges.removeAfter(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+	}
 }
 
 //*****************************************************************************
