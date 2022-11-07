@@ -58,6 +58,7 @@
 #define DMASK_SW   0x20
 #define DMASK_W    0x40
 #define DMASK_NW   0x80
+#define DMASK_SEMI 0x16
 #define DMASK_ALL  0xff
 
 //Path map square that contains only information needed for determining paths.
