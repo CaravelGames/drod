@@ -205,6 +205,27 @@ namespace ScriptFlag
 		NextElseOrElseIfSkipCondition = -2
 	};
 
+	enum LightColors
+	{
+		LC_None = 0,
+		LC_White = 1,
+		LC_Red = 2,
+		LC_Green = 3,
+		LC_Blue = 4,
+		LC_PaleRed = 5,
+		LC_PaleGreen = 6,
+		LC_PaleBlue = 7,
+		LC_Yellow = 8,
+		LC_Cyan = 9,
+		LC_Mauve = 10,
+		LC_Orange = 11,
+		LC_Pink = 12,
+		LC_Lime = 13,
+		LC_Turquoise = 14,
+		LC_Violet = 15,
+		LC_Azure = 16
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
@@ -220,6 +241,13 @@ namespace ScriptFlag
 	static const UINT WEAPON_STAFF = 0x00000008; // Staff
 	static const UINT WEAPON_DAGGER = 0x00000010; // Dagger
 	static const UINT WEAPON_CABER = 0x00000020; // Caber
+
+	//Weather settings
+	static const UINT WEATHER_OUTSIDE = 0x00000001;
+	static const UINT WEATHER_LIGHTNING = 0x00000002;
+	static const UINT WEATHER_CLOUDS = 0x00000004;
+	static const UINT WEATHER_SUNSHINE = 0x00000008;
+	static const UINT WEATHER_SKIP_LIGHTFADE = 0x00000010;
 };
 
 class CDbSpeech;
@@ -336,6 +364,9 @@ public:
 		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
 		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
 		CC_LogicalWaitEnd,      //Ends a logical wait block.
+		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
+		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
+		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
 
 		CC_Count
 	};

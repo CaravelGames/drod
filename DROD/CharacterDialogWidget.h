@@ -208,6 +208,7 @@ private:
 	CListBoxWidget *pAttackTileListBox;
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
+	CListBoxWidget* pColorListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

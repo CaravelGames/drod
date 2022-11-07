@@ -68,6 +68,12 @@
 
 #define NO_CHECKPOINT (static_cast<UINT>(-1))
 
+//Max weather values. One less than defines in DROD/RoomWidget.h
+#define MAX_ROOM_LIGHT (6)
+#define MAX_ROOM_FOG (3)
+#define MAX_ROOM_SNOW (9)
+#define MAX_ROOM_RAIN (19)
+
 queue<DEMO_UPLOAD*> CCurrentGame::demosForUpload;
 
 //Game character/monster constant that speaker refers to
@@ -997,6 +1003,34 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			this->pRoom->GetPositionInLevel(dX, dY);
 			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
 		}
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		{
+			UINT retVal = 0;
+			if (this->pRoom->weather.bOutside)
+				retVal += ScriptFlag::WEATHER_OUTSIDE;
+
+			if (this->pRoom->weather.bLightning)
+				retVal += ScriptFlag::WEATHER_LIGHTNING;
+
+			if (this->pRoom->weather.bClouds)
+				retVal += ScriptFlag::WEATHER_CLOUDS;
+
+			if (this->pRoom->weather.bSunshine)
+				retVal += ScriptFlag::WEATHER_SUNSHINE;
+
+			if (this->pRoom->weather.bSkipLightfade)
+				retVal += ScriptFlag::WEATHER_SKIP_LIGHTFADE;
+
+			return retVal;
+		}
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+			return this->pRoom->weather.wLight;
+		case (UINT)ScriptVars::P_ROOM_FOG:
+			return this->pRoom->weather.wFog;
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+			return this->pRoom->weather.wSnow;
+		case (UINT)ScriptVars::P_ROOM_RAIN:
+			return this->pRoom->weather.rain;
 		default:
 			return 0;
 	}
@@ -1076,6 +1110,37 @@ void CCurrentGame::ProcessCommandSetVar(
 		break;
 		case (UINT)ScriptVars::P_RETURN_Y:
 			this->scriptReturnY = int(newVal);
+		break;
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+			this->pRoom->weather.bOutside = newVal & ScriptFlag::WEATHER_OUTSIDE;
+			this->pRoom->weather.bLightning = newVal & ScriptFlag::WEATHER_LIGHTNING;
+			this->pRoom->weather.bClouds = newVal & ScriptFlag::WEATHER_CLOUDS;
+			this->pRoom->weather.bSunshine = newVal & ScriptFlag::WEATHER_SUNSHINE;
+			this->pRoom->weather.bSkipLightfade = newVal & ScriptFlag::WEATHER_SKIP_LIGHTFADE;
+		break;
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		{
+			UINT wLight = max(0, min(newVal, MAX_ROOM_LIGHT));
+			this->pRoom->weather.wLight = wLight;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		{
+			UINT wFog = max(0, min(newVal, MAX_ROOM_FOG));
+			this->pRoom->weather.wFog = wFog;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		{
+			UINT wSnow = max(0, min(newVal, MAX_ROOM_SNOW));
+			this->pRoom->weather.wSnow = wSnow;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_RAIN:
+		{
+			UINT wRain = max(0, min(newVal, MAX_ROOM_RAIN));
+			this->pRoom->weather.rain = wRain;
+		}
 		break;
 		default:
 		break;

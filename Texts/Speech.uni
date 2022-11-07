@@ -3217,3 +3217,15 @@ Wait for Exactly One:
 [MID_LogicalWaitEnd]
 [eng]
 Wait for Conditions End
+
+[MID_SetDarkness]
+[eng]
+Set ceiling darkness
+
+[MID_SetCeilingLight]
+[eng]
+Set ceiling light
+
+[MID_SetWallLight]
+[eng]
+Set wall light

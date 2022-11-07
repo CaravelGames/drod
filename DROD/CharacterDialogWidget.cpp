@@ -180,6 +180,7 @@ const UINT TAG_MOVETYPELISTBOX = 878;
 const UINT TAG_IGNOREFLAGSLISTBOX = 877;
 const UINT TAG_IGNOREWEAPONS_LABEL = 876;
 const UINT TAG_IGNOREFLAGS_LABEL = 875;
+const UINT TAG_COLOR_LISTBOX = 874;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -427,6 +428,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pAttackTileListBox(NULL)
 	, pMovementTypeListBox(NULL)
 	, pIgnoreFlagsListBox(NULL)
+	, pColorListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1273,6 +1275,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT IGNOREFLAGSLISTBOX_CX = CX_WAITFLAGSLISTBOX;
 	static const UINT IGNOREFLAGSLISTBOX_CY = CY_WAITFLAGSLISTBOX;
 
+	static const UINT COLORLISTBOX_X = X_DIRECTIONLISTBOX2;
+	static const UINT COLORLISTBOX_Y = Y_DIRECTIONLISTBOX;
+	static const UINT COLORLISTBOX_CX = CX_DIRECTIONLISTBOX2;
+	static const UINT COLORLISTBOX_CY = 12 * LIST_LINE_HEIGHT + 4;
+
 	//World map input.
 	static const int X_XCOORDLABEL = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
 	static const int Y_XCOORDLABEL = Y_WAITLABEL;
@@ -1949,6 +1956,28 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandDialog->AddWidget(pLabelText);
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IMAGEOVERLAY_LABEL, X_IMAGELABEL, Y_IMAGELABEL,
 			CX_IMAGELABEL, CY_IMAGELABEL, F_Small, g_pTheDB->GetMessageText(MID_ImageOverlayStrategy)));
+
+	//Color selection
+	this->pColorListBox = new CListBoxWidget(TAG_COLOR_LISTBOX,
+		COLORLISTBOX_X, COLORLISTBOX_Y, COLORLISTBOX_CX, COLORLISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(pColorListBox);
+	this->pColorListBox->AddItem(ScriptFlag::LC_None, g_pTheDB->GetMessageText(MID_None));
+	this->pColorListBox->AddItem(ScriptFlag::LC_White, g_pTheDB->GetMessageText(MID_White));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Red, g_pTheDB->GetMessageText(MID_Red));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Green, g_pTheDB->GetMessageText(MID_Green));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Blue, g_pTheDB->GetMessageText(MID_Blue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleRed, g_pTheDB->GetMessageText(MID_PaleRed));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleGreen, g_pTheDB->GetMessageText(MID_PaleGreen));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleBlue, g_pTheDB->GetMessageText(MID_PaleBlue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Yellow, g_pTheDB->GetMessageText(MID_Yellow));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Cyan, g_pTheDB->GetMessageText(MID_Cyan));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Mauve, g_pTheDB->GetMessageText(MID_Mauve));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Orange, g_pTheDB->GetMessageText(MID_Orange));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Pink, g_pTheDB->GetMessageText(MID_Pink));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Lime, g_pTheDB->GetMessageText(MID_Lime));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, g_pTheDB->GetMessageText(MID_Turquoise));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, g_pTheDB->GetMessageText(MID_Violet));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, g_pTheDB->GetMessageText(MID_Azure));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -4125,6 +4154,55 @@ const
 				wstr += g_pTheDB->GetMessageText(MID_Off);
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+			wstr += _itoW(command.flags, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+			wstr += this->pColorListBox->GetTextForKey(command.flags);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+			wstr += this->pColorListBox->GetTextForKey(command.flags);
+			wstr += wszComma;
+			wstr += wszSpace;
+			wstr += _itoW(command.w, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -4605,6 +4683,10 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapMusic, g_pTheDB->GetMessageText(MID_WorldMapMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, g_pTheDB->GetMessageText(MID_SetWallLight));
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
@@ -5117,6 +5199,12 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_Y, g_pTheDB->GetMessageText(MID_VarReturnY));
 
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, g_pTheDB->GetMessageText(MID_RoomWeather));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, g_pTheDB->GetMessageText(MID_RoomDarkness));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_FOG, g_pTheDB->GetMessageText(MID_RoomFog));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_SNOW, g_pTheDB->GetMessageText(MID_RoomSnow));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_RAIN, g_pTheDB->GetMessageText(MID_RoomRain));
+
 	this->pVarListBox->SortAlphabetically(true);
 }
 
@@ -5272,7 +5360,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 55;
+	static const UINT NUM_WIDGETS = 56;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5290,7 +5378,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_TEXT2, TAG_INPUTLISTBOX, TAG_IMAGEOVERLAYTEXT,
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_LISTBOX2, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
-		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX
+		TAG_ONOFFLISTBOX4, TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5338,6 +5426,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT PUSH_TILE[] =     { TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT MOVETYPE[] = { TAG_MOVETYPELISTBOX, 0 };
 	static const UINT OPENTILE[] = { TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_ONOFFLISTBOX3, 0 };
+	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX, 0 };
+	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5434,7 +5524,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitAnd
 		NO_WIDGETS,         //CC_LogicalWaitOr
 		NO_WIDGETS,         //CC_LogicalWaitXOR
-		NO_WIDGETS	        //CC_LogicalWaitEnd
+		NO_WIDGETS,	        //CC_LogicalWaitEnd
+		WAIT,               //CC_SetDarkness
+		CEILINGLIGHT,       //CC_SetCeilingLight
+		WALLLIGHT           //CC_SetWallLight
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5573,7 +5666,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitAnd
 		NO_LABELS,          //CC_LogicalWaitOr
 		NO_LABELS,          //CC_LogicalWaitXOR
-		NO_LABELS           //CC_LogicalWaitEnd
+		NO_LABELS,          //CC_LogicalWaitEnd
+		NO_LABELS,          //CC_SetDarkness
+		NO_LABELS,          //CC_SetCeilingLight
+		NO_LABELS           //CC_SetWallLight
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6619,6 +6715,34 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			UINT wDarkness = _Wtoi(pDarkLevel->GetText());
+			this->pCommand->flags = max(0, min(wDarkness, NUM_DARK_TYPES));
+			QueryRect();
+		}
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+		{
+			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
+			QueryRect();
+		}
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			UINT wLight = _Wtoi(pLightLevel->GetText());
+			this->pCommand->w = max(0, min(wLight, MAX_LIGHT_DISTANCE));
+			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
+			QueryXY();
+		}
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -7047,6 +7171,29 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			CTextBox2DWidget *pText = DYN_CAST(CTextBox2DWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_IMAGEOVERLAYTEXT));
 			pText->SetText(this->pCommand->label.c_str());
+		}
+		break;
+
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			pDarkLevel->SetText(_itoW(this->pCommand->flags, temp, 10));
+		}
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+		{
+			this->pColorListBox->SelectItem(this->pCommand->flags);
+		}
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			pLightLevel->SetText(_itoW(this->pCommand->w, temp, 10));
+			this->pColorListBox->SelectItem(this->pCommand->flags);
 		}
 		break;
 
@@ -8027,6 +8174,41 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		pCommand->label = pText+pos;
 	break;
 
+	case CCharacterCommand::CC_SetDarkness:
+		parseNumber(pCommand->flags);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+	case CCharacterCommand::CC_SetCeilingLight:
+		parseMandatoryOption(pCommand->flags, this->pColorListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+	case CCharacterCommand::CC_SetWallLight:
+		parseMandatoryOption(pCommand->flags, this->pColorListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseNumber(pCommand->w);
+	break;
+
 	default: ASSERT(!"Unrecognized script command"); break;
 	}
 
@@ -8613,6 +8795,29 @@ WSTRING CCharacterDialogWidget::toText(
 			break;
 		}
 	}
+	break;
+
+	case CCharacterCommand::CC_SetDarkness:
+		concatNumWithComma(c.flags);
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+	case CCharacterCommand::CC_SetCeilingLight:
+		wstr += this->pColorListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+	case CCharacterCommand::CC_SetWallLight:
+		wstr += this->pColorListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNum(c.w);
 	break;
 
 	default: ASSERT(!"Bad command"); break;
