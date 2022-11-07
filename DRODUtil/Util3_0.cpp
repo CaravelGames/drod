@@ -728,6 +728,19 @@ const
 	const char* pSource = (const char*)((const BYTE*)Source);
 	WSTRING wideSource = UTF8ToUnicode(pSource);
 
+#ifdef WIN32
+	// We need crlf line ends, at least for Windows builds.
+	// This ensures we get them if the file has lr line ends
+	WSTRING::size_type pos = 0;
+	while ((pos = wideSource.find(L"\n", pos)) != string::npos)
+	{
+		if (wideSource.at(pos-1) != L'\r')
+			wideSource.insert(pos, L"\r");
+
+		pos++;
+	}
+#endif
+
   const WCHAR wszNameTagStart[] = {{'M'},{'I'},{'D'},{'_'},{0}};
   char szNameTag[MAXLEN_NAMETAG + 1];
 
