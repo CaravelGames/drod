@@ -348,7 +348,7 @@ public:
 	void     SellInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
 	void     SetExecuteNoMoveCommands(const bool bVal=true) {this->bExecuteNoMoveCommands = bVal;}
 	bool     SetPlayer(const UINT wSetX, const UINT wSetY);
-	void     TeleportPlayer(const UINT wSetX, const UINT wSetY, CCueEvents& CueEvents);
+	void     TeleportPlayer(const UINT wSetX, const UINT wSetY, CCueEvents& CueEvents, bool bProcess = true);
 	void     SetPlayerRole(const UINT wType);
 	bool     SetPlayerSwordSheathed();
 	void     SetTurn(UINT wSetTurnNo, CCueEvents &CueEvents);
