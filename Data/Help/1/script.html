@@ -357,9 +357,9 @@ the state of the room and wait indefinitely until certain events occur.</p>
       exist in the room region you specify.</li>
   <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
       hold variable</a> meets the condition you specify.</li>
-  <li><a name="waitweapon"><b>Wait for Weapon</b></a> - Waits until a weapon is in the specified square. By default, this command
+  <li><a name="waitweapon"><b>Wait for Weapon</b></a> - Waits until a weapon is in the specified specified room region. By default, this command
       checks for any weapon, but specific weapons can be waited for instead. Hold &lt;Ctrl&gt; while clicking to select and unselect multiple
-      selections.</li>
+      selections. The NPC will not detect its own weapon with this command.</li>
   <li><a name="waitforitem"><b>Wait for item</b>
     </a> - Wait until the specified element is located in the marked room region.</li>
   <li><a name="logical-wait"><b>Multi-expression Waits</b></a> - Multi-expression wait commands are used to perform an atomic check on multiple conditions, i.e., as a single combined boolean query, which returns a single true or false value. Script execution halts at this point until the multiple conditions are met as specified. The expression block begins with <b>Wait for All</b>, <b>Wait for Any</b> or <b>Wait for Exactly One</b> command, and should end with a <b>Wait for Conditions End</b> command. An <b>All</b> block will wait until all subqueries are true, an <b>Any</b> block will wait until any subquery is true, and an <b>Exactly One</b> block will wait until exactly one subquery is true. Additionally, a multi-expression wait block can be used as a condition for an <a href="#if">if statement</a>. Multi-expression wait blocks can be nested if more complex logic is required. All "Wait for" commands can be used as subqueries, along with the <a href="#role">Set role</a>, <a href="#setplayerweapon">Set player weapon</a>, <a href="#face-towards-like-guard">Face towards like guard</a> and <a href="#set-movement">Set movement type</a> commands, which function as they do when used as an if condition.</li>
@@ -826,7 +826,7 @@ Below is a table of all the ways this can be used:<br/>
 <tr><td><b>W. remains</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Remains</td></tr>
 <tr><td><b>W. turn</b></td>        <td>Turn number</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
 <tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
-<tr><td><b>W. weapon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Weapon</td></tr>
+<tr><td><b>W. weapon</b></td>            <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Weapon</td></tr>
 <tr><td><b>W. while entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
 <tr><td><b>W. while ent. type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
 <tr><td><b>W.Map Tile Icon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Entity</td>       <td>Map display</td></tr>
