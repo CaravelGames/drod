@@ -346,12 +346,14 @@ void CCharacter::ChangeHoldForCommands(
 			{
 				case CCharacterCommand::CC_WaitForVar:
 				case CCharacterCommand::CC_VarSet:
+				case CCharacterCommand::CC_VarSetAt:
 				{
 					//Update var refs.
-					if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
 						break; //predefined var IDs remain the same
 
-					const WCHAR *pVarName = pOldHold->GetVarName(c.x);
+					const WCHAR *pVarName = pOldHold->GetVarName(wRef);
 					UINT uVarID = pNewHold->GetVarID(pVarName);
 					if (!uVarID && pVarName)
 					{
@@ -361,7 +363,11 @@ void CCharacter::ChangeHoldForCommands(
 					}
 					//Update the var ID to match the ID of the var with this
 					//name in the destination hold.
-					c.x = uVarID;
+					if (c.command == CCharacterCommand::CC_VarSetAt) {
+						c.w = uVarID;
+					} else {
+						c.x = uVarID;
+					}
 				}
 				break;
 				case CCharacterCommand::CC_AmbientSound:
