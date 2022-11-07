@@ -3685,7 +3685,8 @@ bool CDbRoom::GetNearestEntranceTo(const UINT wX, const UINT wY, const MovementT
 	{
 		const SORTPOINT& p = *it;
 		if (GetMonsterAtSquare(p.wX, p.wY) != NULL || IsMonsterSwordAt(p.wX, p.wY)
-				|| this->pCurrentGame->IsPlayerWeaponAt(p.wX, p.wY))
+				|| this->pCurrentGame->IsPlayerWeaponAt(p.wX, p.wY) || this->pCurrentGame->IsPlayerAt(p.wX, p.wY)
+				|| bIsPotion(this->GetTSquare(p.wX, p.wY)))
 			continue;
 		wEX = p.wX;
 		wEY = p.wY;
