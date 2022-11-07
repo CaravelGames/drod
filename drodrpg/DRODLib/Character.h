@@ -57,6 +57,7 @@ using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
 
+class CSwordsman;
 struct HoldCharacter;
 class CDbHold;
 class CCharacter : public CPlayerDouble
@@ -80,8 +81,16 @@ public:
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	void           Defeat();
+	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
+
+	bool EvaluateConditionalCommand(
+		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalAnd(
+		UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalOr(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalXOR(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
 
 	void   ExportText(CDbRefs &dbRefs, CStretchyBuffer& str);
 	static string ExportXMLSpeech(CDbRefs &dbRefs, const COMMAND_VECTOR& commands, const bool bRef=false);
@@ -123,16 +132,20 @@ public:
 	virtual bool   IsAggressive() const {return false;}
 	virtual bool   IsCombatable() const;
 	virtual bool   IsDamageableAt(const UINT wX, const UINT wY) const;
+	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}
 	bool           IsLuckyGR() const {return this->bLuckyGR;}
 	bool           IsLuckyXP() const {return this->bLuckyXP;}
 	bool           IsMetal() const {return this->bMetal;}
 	virtual bool   IsMissionCritical() const {return this->bMissionCritical;}
+	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
 	bool           IsRestartScriptOnRoomEntrance() const {return this->bRestartScriptOnRoomEntrance;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
+	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
@@ -211,7 +224,9 @@ private:
 	int  GetIndexOfCommandWithLabel(const int label) const;
 	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
+	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);

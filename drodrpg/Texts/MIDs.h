@@ -1491,6 +1491,11 @@ enum MID_CONSTANT {
   MID_VarSetAt = 1807,
   MID_EquipGenerate = 1808,
   MID_DamagePreview = 1809,
+  MID_WaitForExpression = 1810,
+  MID_LogicalWaitAnd = 1811,
+  MID_LogicalWaitOr = 1812,
+  MID_LogicalWaitXOR = 1813,
+  MID_LogicalWaitEnd = 1814,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
