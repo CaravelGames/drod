@@ -245,7 +245,7 @@ public:
 	virtual bool  CanPushMonsters() const { return CanPushObjects(); }
 	virtual bool  CanPressPressurePlates() const { return !this->IsFlying(); }
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
-	virtual bool  CanWadeInShallowWater() const { return this->eMovement == GROUND_AND_SHALLOW_WATER; }
+	virtual bool  CanWadeInShallowWater() const;
 	virtual bool  CheckForDamage(CCueEvents& CueEvents);
 	void          Clear();
 	bool          ConfirmPath();
