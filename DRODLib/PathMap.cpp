@@ -53,7 +53,8 @@ CPathMap::CPathMap(
 	const UINT wCols, const UINT wRows,     //Size to initialize map to.
 	const UINT xTarget, const UINT yTarget, //[default: (-1,-1) = none]
 	const UINT dwPathThroughObstacleCost,   //[default=0]
-	const bool bSupportPartialObstacles     //[default=false]
+	const bool bSupportPartialObstacles,    //[default=false]
+	const bool bMakeSubPath                 //[default=false]
 	)
 	: wCols(wCols)
 	, wRows(wRows)
@@ -68,9 +69,18 @@ CPathMap::CPathMap(
 	for (wSquareI=wArea; wSquareI--; )
 		this->squares[wSquareI].eBlockedDirections = DMASK_NONE;
 
+	if (bMakeSubPath)
+		this->subPath = new CPathMap(*this);
+
 	//Get ready for path calculation if target is specified.
 	if (xTarget < wCols && yTarget < wRows)
 		Reset();
+}
+
+//**********************************************************************************
+CPathMap::~CPathMap()
+{
+	delete this->subPath;
 }
 
 //**********************************************************************************
@@ -294,6 +304,10 @@ void CPathMap::SetMembers(const CPathMap& Src)
 	this->bSupportPartialObstacles = Src.bSupportPartialObstacles;
 
 	this->dwPathThroughObstacleCost = Src.dwPathThroughObstacleCost;
+
+	if (Src.subPath) {
+		this->subPath = new CPathMap(*Src.subPath);
+	}
 }
 
 //*****************************************************************************
@@ -317,6 +331,11 @@ void CPathMap::SetSquare(
 		Reset();
 
 	square.eBlockedDirections = eBlockedDirections;
+
+	if (this->subPath) {
+		this->subPath->SetSquare(
+			wX, wY, eBlockedDirections == DMASK_SEMI ? DMASK_NONE : eBlockedDirections);
+	}
 }
 
 //**********************************************************************************
@@ -334,6 +353,9 @@ void CPathMap::SetTarget(
 		this->xTarget=xTarget;
 		this->yTarget=yTarget;
 		Reset();
+	}
+	if (this->subPath) {
+		this->subPath->SetTarget(xTarget, yTarget);
 	}
 }
 
