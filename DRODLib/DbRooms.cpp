@@ -2337,7 +2337,8 @@ void CDbRoom::CreatePathMap(
 		if (eMovement == WALL || eMovement == WATER) //allow for non-wall/water
 			dwPathThroughObstacleCost = 1000;         //squares to be in the path
 		this->pPathMap[eMovement] = new CPathMap(this->wRoomCols, this->wRoomRows,
-				wX, wY, dwPathThroughObstacleCost, bMovementSupportsPartialObstacles(eMovement));
+				wX, wY, dwPathThroughObstacleCost, bMovementSupportsPartialObstacles(eMovement),
+				bMovementNeedsSubPath(eMovement));
 	}
 	else
 		this->pPathMap[eMovement]->SetTarget(wX, wY);

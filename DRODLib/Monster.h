@@ -164,6 +164,15 @@ static inline MovementType GetHornMovementType(MovementType movement)
 	}
 }
 
+static inline bool bMovementNeedsSubPath(MovementType movement) {
+	switch (movement) {
+		case GROUND_AND_SHALLOW_WATER_NO_OREMITES:
+			return true;
+		default:
+			return false;
+	}
+}
+
 //******************************************************************************************
 //method used herein should be public
 #define IMPLEMENT_CLONE(CBase, CDerived) virtual CBase* Clone() const \
