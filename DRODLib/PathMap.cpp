@@ -146,9 +146,11 @@ void CPathMap::CalcPaths()
 						//then leave it, but on re-entering an obstacle, the path cost
 						//will be set as though it never left the obstacle.
 						dwScore = (coord.wMoves+1) * (this->dwPathThroughObstacleCost + 1);
-				} else if (bIsSemiObstacle && parent_square.eBlockedDirections != DMASK_SEMI) {
+				} else if (bIsSemiObstacle) {
 					//Penalize moving into "semi-obstacle" area
-					dwScore += 1000;
+					ASSERT(this->subPath);
+					const SQUARE& refSquare = this->subPath->GetSquare(wNewX, wNewY);
+					dwScore = refSquare.dwTargetDist * 1000;
 				}
 				if (dwScore < square.dwTargetDist)
 				{
