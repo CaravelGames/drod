@@ -3319,6 +3319,71 @@ void CCharacter::Process(
 					case(ScriptFlag::RegularMonster):
 						this->GetTarget(wX, wY, true);
 						break;
+					case ScriptFlag::BrainedMonster:
+					{
+						//Find the square the character would move to if it were a normal brained monster
+						//Some things will be able to prevent a brained move.
+						this->GetTarget(wX, wY, true);
+						int dx, dy, dxFirst, dyFirst;
+						CSwordsman& swordsman = pGame->swordsman;
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(swordsman.wX, swordsman.wY, this->eMovement);
+
+						//Brained move can't happen if player isn't target
+						bool doBrainMove = swordsman.IsTarget();
+						//Decoy overrides brain
+						doBrainMove &= !room.IsMonsterOfTypeAt(M_DECOY, wX, wY, true);
+
+						//The monster must be able to 'see' the player
+						doBrainMove &= (swordsman.IsVisible() || CanSmellObjectAt(swordsman.wX, swordsman.wY) || 
+							pGame->bBrainSensesSwordsman);
+
+						//C++ dark arts
+						doBrainMove &= GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						if (doBrainMove) {
+							//The monster can do a brain move, and there is one available
+							wX = this->wX + dx;
+							wY = this->wY + dy;
+							break;
+						}
+
+						//If it didn't happen, try a normal move.
+						bool pathmapping;
+						if (GetMovement(wX, wY, dx, dy, dxFirst, dyFirst, pathmapping, true)) {
+							//Open only pathmapping forbids movement
+							wX = this->wX;
+							wY = this->wY;
+						} else {
+							//Normal move for movement IQ
+							wX = this->wX + dx;
+							wY = this->wY + dy;
+						}
+					}
+					break;
+					case ScriptFlag::BestBrainTile:
+					{
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(pGame->swordsman.wX, pGame->swordsman.wY, this->eMovement);
+						int dx, dy, dxFirst, dyFirst;
+						dx = dy = 0;
+
+						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						wX = this->wX + dx;
+						wY = this->wY + dy;
+					}
+					break;
+					case ScriptFlag::BestBrainDirection:
+					{
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(pGame->swordsman.wX, pGame->swordsman.wY, this->eMovement);
+						int dx, dy, dxFirst, dyFirst;
+						dx = dy = 0;
+
+						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						wX = nGetO(dx, dy);
+						wY = nGetO(dxFirst, dyFirst);
+					}
+					break;
 				}
 				
 				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, wX);

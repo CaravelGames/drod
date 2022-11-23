@@ -196,9 +196,10 @@ namespace ScriptFlag
 	{
 		RegularMonster = 0,
 		BrainedMonster = 1,
-		Guard=2,
-		Puff=3,
-		Stalwart=4
+		BestBrainTile = 2,
+		BestBrainDirection=3,
+		Puff=4,
+		Stalwart=5
 	};
 
 	enum GotoSmartType
