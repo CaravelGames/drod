@@ -1773,6 +1773,8 @@ enum MID_CONSTANT {
   MID_GetNaturalTarget = 1896,
   MID_TargetRegularMonster = 1893,
   MID_TargetBrainedMonster = 1894,
+  MID_TargetBestBrainTile = 2064,
+  MID_TargetBestBrainDirection = 2065,
   MID_GetEntityDirection = 1897,
   MID_OrbWaitAny = 1900,
   MID_OrbWaitNormal = 1901,

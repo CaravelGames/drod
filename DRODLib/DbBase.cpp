@@ -944,6 +944,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_WaitForNotBuildType: strText = "Wait until build marker type"; break;
 	case MID_Dying: strText = "Dying"; break;
 	case MID_Talking: strText = "Talking"; break;
+	case MID_TargetBestBrainTile: strText = "Best brain tile"; break;
+	case MID_TargetBestBrainDirection: strText = "Best brain direction"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

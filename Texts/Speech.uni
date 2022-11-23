@@ -2918,6 +2918,14 @@ Regular monster
 [eng]
 Brained monster
 
+[MID_TargetBestBrainTile]
+[eng]
+Best brain tile
+
+[MID_TargetBestBrainDirection]
+[eng]
+Best brain direction
+
 [MID_GetEntityDirection]
 [eng]
 Get entity direction

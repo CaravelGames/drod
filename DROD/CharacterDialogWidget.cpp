@@ -1663,12 +1663,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pNaturalTargetTypesListBox = new CListBoxWidget(TAG_NATURAL_TARGET_TYPES,
 		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pNaturalTargetTypesListBox);
-	this->pNaturalTargetTypesListBox->SortAlphabetically(true);
 	this->pNaturalTargetTypesListBox->SetHotkeyItemSelection(true);
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::RegularMonster, g_pTheDB->GetMessageText(MID_TargetRegularMonster));
-	// @TODO: These four are commented out because they are not yet implemented because that would require heavy refactoring
-	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BrainedMonster, g_pTheDB->GetMessageText(MID_TargetBrainedMonster));
-	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Guard, g_pTheDB->GetMessageText(MID_Guard));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BrainedMonster, g_pTheDB->GetMessageText(MID_TargetBrainedMonster));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainTile, g_pTheDB->GetMessageText(MID_TargetBestBrainTile));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainDirection, g_pTheDB->GetMessageText(MID_TargetBestBrainDirection));
+	// @TODO: These two are commented out because they are not yet implemented because that would require heavy refactoring
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Puff, g_pTheDB->GetMessageText(MID_FluffBaby));
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Stalwart, g_pTheDB->GetMessageText(MID_Stalwart));
 	this->pNaturalTargetTypesListBox->SelectLine(0);
