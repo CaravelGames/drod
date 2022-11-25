@@ -612,6 +612,7 @@ Hint: Each layer corresponds to a tab in the editor's tile selection dialog.
 Hint: This can be used to compare the monsters in different tiles, or for providing a value for _MyScript injection.
 </p>
 <p><a name="entityweapon">* <b>_EntityWeapon(x,y)</b></a> - Returns the numeric weapon type of the monster or player at (x,y). The weapon type will be returned even if the entity is currently disarmed. If no weapon-using entity is present, -1 is returned.</p>
+<p><a name="brainscore">* <b>_BrainScore(x,y,t)</b></a> - Returns the distance the given tile is from the player, along a brained path, for the given <a href="#movement-types">movement type</a>. Tiles that cannot access the player return a value of -1.</p>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
 <ol>
@@ -782,6 +783,68 @@ setalpha 0 fadetoalpha 255 1000 display 2000 fadetoalpha 0 800<br />
 <br />
 The text supports variable interpolation, so you can have parameters like "$.ImageX$" in the text. Any part of the command text may be inserted in this fashion.<br />
 Certain commands with time duration, marked above, may be optionally prefixed with the letter "p".  This indicates that the command will not run to completion before any subsequent commands are executed, but rather will run in parallel with the next command. Multiple parallel commands may be executed concurrently.<br />
+
+<p><a name="movement-types"><b>Movement types</b></a></p>
+DROD Script supports several movement types, including ones not used by normal monsters. Below is a table of each movement type's numerical id, it's base movement, and if it supports partial obstacles. If a type supports partial obstacles, it can intelligently path through arrows and orthosquares.
+<br/>
+
+<table>
+  <tr>
+    <td width="50"><b>Id</b></td>
+    <td width="190"><b>Base movement</b></td>
+    <td width="120"><b>Partial obstacles</b></td>
+  </tr>
+  <tr>
+    <td>0</td>
+    <td>Ground</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>Air</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Wall</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Water</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Ground and Shallow Water</td>
+    <td>No</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td>Ground</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td>Ground and Shallow Water</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td>Air</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td>Water</td>
+    <td>Yes</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td>Wall</td>
+    <td>Yes</td>
+  </tr>
+</table>
 
 <p><a name="myscript-injection"><b>_MyScript variable injections</b></a></p>
 
