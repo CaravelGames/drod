@@ -106,6 +106,7 @@ namespace ScriptVars
 		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
 		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
 		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
+		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
 		PrimitiveCount
 	};
 

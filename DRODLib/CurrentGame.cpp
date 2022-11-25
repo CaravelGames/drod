@@ -637,6 +637,21 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 
 			return pArmedMonster->weaponType;
 		}
+		case ScriptVars::P_BrainScore:
+		{
+			int x = params[0];
+			int y = params[1];
+			MovementType movement = (MovementType)params[2];
+
+			if (!this->pRoom->IsValidColRow(x, y) || movement >= NumMovementTypes) {
+				return -1;
+			}
+
+			//Make sure pathmap exists
+			this->pRoom->CreatePathMap(this->swordsman.wX, this->swordsman.wY, movement);
+			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
+			return square.dwTargetDist;
+		}
 	}
 
 	return 0;
