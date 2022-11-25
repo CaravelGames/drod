@@ -3338,7 +3338,7 @@ void CCharacter::Process(
 						doBrainMove &= (swordsman.IsVisible() || CanSmellObjectAt(swordsman.wX, swordsman.wY) || 
 							pGame->bBrainSensesSwordsman);
 
-						//C++ dark arts
+						//If nothing is stopping a brained move, get the directions
 						doBrainMove &= GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
 						if (doBrainMove) {
 							//The monster can do a brain move, and there is one available
