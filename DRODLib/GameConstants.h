@@ -151,6 +151,12 @@ static const UINT SE = 8;
 static const UINT NO_ORIENTATION = 4;
 static const UINT ORIENTATION_COUNT = 9;
 
+//Max weather values.
+#define MAX_ROOM_LIGHT (6)
+#define MAX_ROOM_FOG (3)
+#define MAX_ROOM_SNOW (9)
+#define MAX_ROOM_RAIN (19)
+
 //******************************************************************************************
 namespace InputCommands
 {

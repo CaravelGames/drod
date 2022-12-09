@@ -50,10 +50,10 @@
 #include <BackEndLib/Types.h>
 
 //Range of weather parameters.
-#define LIGHT_LEVELS (7) //number of light levels
-#define FOG_INCREMENTS (4)
-#define SNOW_INCREMENTS (10)
-#define RAIN_INCREMENTS (20)
+#define LIGHT_LEVELS (MAX_ROOM_LIGHT + 1) //number of light levels
+#define FOG_INCREMENTS (MAX_ROOM_FOG + 1)
+#define SNOW_INCREMENTS (MAX_ROOM_SNOW + 1)
+#define RAIN_INCREMENTS (MAX_ROOM_RAIN + 1)
 extern const float fRoomLightLevel[LIGHT_LEVELS];
 extern const float lightMap[3][NUM_LIGHT_TYPES];
 extern const float darkMap[NUM_DARK_TYPES];

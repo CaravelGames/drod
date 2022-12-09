@@ -439,7 +439,7 @@ const
 	{
 		const SQUARE square = this->pCurrentGame->pRoom->pPathMap[this->eMovement]->
 				GetSquare(this->wX, this->wY);
-		if (square.eBlockedDirections != DMASK_ALL && square.dwTargetDist > 2 &&
+		if ((square.eBlockedDirections & DMASK_ALL) != DMASK_ALL && square.dwTargetDist > 2 &&
 				square.dwTargetDist != static_cast<UINT>(-1))
 		{
 			//Brain-directed "avoid-sword movement".
