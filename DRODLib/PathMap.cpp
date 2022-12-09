@@ -336,7 +336,7 @@ void CPathMap::SetSquare(
 
 	if (this->subPath) {
 		this->subPath->SetSquare(
-			wX, wY, eBlockedDirections == DMASK_SEMI ? DMASK_NONE : eBlockedDirections);
+			wX, wY, eBlockedDirections & DMASK_ALL);
 	}
 }
 
