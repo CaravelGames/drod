@@ -68,12 +68,6 @@
 
 #define NO_CHECKPOINT (static_cast<UINT>(-1))
 
-//Max weather values. One less than defines in DROD/RoomWidget.h
-#define MAX_ROOM_LIGHT (6)
-#define MAX_ROOM_FOG (3)
-#define MAX_ROOM_SNOW (9)
-#define MAX_ROOM_RAIN (19)
-
 queue<DEMO_UPLOAD*> CCurrentGame::demosForUpload;
 
 //Game character/monster constant that speaker refers to
