@@ -817,19 +817,10 @@ void CRoomWidget::HighlightSelectedTile()
 		break;
 	}
 
+	/* Currently no F-layer highlights
 	switch (this->pRoom->GetFSquare(wX,wY))
 	{
-		case T_NODIAGONAL:
-		{
-			for (UINT wY=this->pRoom->wRoomRows; wY--; )
-				for (UINT wX=this->pRoom->wRoomCols; wX--; )
-					if (this->pRoom->GetFSquare(wX,wY) == T_NODIAGONAL)
-						AddShadeEffect(wX, wY, PaleYellow);
-//			bRemoveHighlightNextTurn = false;
-		}
-		break;
-		default: break;
-	}
+	}*/
 
 	const UINT wOSquare = this->pRoom->GetOSquare(wX,wY);
 	switch (wOSquare)
