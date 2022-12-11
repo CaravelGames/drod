@@ -201,6 +201,24 @@
     <ClCompile Include="src\tests\Scripting\Imperative_Vulnerable_Invulnerable.cpp">
       <Filter>Tests\Scripting</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Slayer\SlayerPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Slayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Stalwart\StalwartPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Stalwart</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Citizen\CitizenPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Citizen</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Halph\HalphPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Halph</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Guard\GuardPuffObstacle.cpp">
+      <Filter>Tests\Monsters\Guard</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\PlayerRoles\WaterskipperPlayerRole.cpp">
+      <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />
@@ -287,6 +305,18 @@
     </Filter>
     <Filter Include="Tests\Player\TurnZero">
       <UniqueIdentifier>{2d45dc5d-441e-4fb0-93b4-569dc83b1979}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Stalwart">
+      <UniqueIdentifier>{5f0faa9f-73ce-4137-9df8-b762d2cf44c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Citizen">
+      <UniqueIdentifier>{a00dd17e-8a89-4284-9021-3658d01bf3ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Halph">
+      <UniqueIdentifier>{681440c9-dd10-4eb7-b280-0365d7a976f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Guard">
+      <UniqueIdentifier>{8693b0a4-8e13-462a-9adc-740ac9ecad17}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

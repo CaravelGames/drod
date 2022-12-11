@@ -52,7 +52,7 @@ const UINT NEXT_VERSION_NUMBER = 600;
 const WCHAR wszVersionReleaseNumber[] = WS("5.1.1.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('5'),We('.'),We('1'),We('.'),We('1'),We('.'),We('2'),We('7'),We('0'),We(0)   // 5.1.1.*
+	We('5'),We('.'),We('1'),We('.'),We('1'),We('.'),We('4'),We('0'),We('9'),We(0)   // 5.1.1.*
 };
 #endif
 

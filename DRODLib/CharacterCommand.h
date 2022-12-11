@@ -77,9 +77,7 @@ enum SPEAKER
 	Speaker_TemporalClone=57,
 	Speaker_FluffBaby=58,
 
-	Speaker_Count=59,
-
-	Speaker_HoldCharacter = static_cast<UINT>(-1)
+	Speaker_Count=59
 };
 
 //Flags bits.

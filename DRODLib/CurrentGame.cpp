@@ -605,6 +605,21 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 }
 
 //*****************************************************************************
+bool CCurrentGame::GetNearestEntranceForHorn(
+	UINT wHornX, UINT wHornY, UINT wSummonType, UINT& wX, UINT& wY
+)
+// Find the nearest room edge tile for horn-summoned entity.
+// Returns true if an edge is found, and outputs the location to (wX, wY).
+// If no room edge can be reached from the horn tile, return false.
+{
+	MovementType eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
+	if (wSummonType == M_CLONE)
+		eMovement = GetHornMovementType(this->swordsman.GetMovementType());
+
+	return this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY);
+}
+
+//*****************************************************************************
 UINT CCurrentGame::GetNextImageOverlayID()
 {
 	return imageOverlayNextID++;
@@ -2713,7 +2728,10 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 		if (this->swordsman.wAppearance == M_CONSTRUCT && pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY) == T_GOO && this->wTurnNo > 0){
 			SetDyingEntity(&this->swordsman);
 			CueEvents.Add(CID_PlayerEatenByOremites);
-		} else {
+		}	else if (this->swordsman.wAppearance == M_FLUFFBABY && pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY) == T_HOT && this->wTurnNo > 0) {
+			SetDyingEntity(&this->swordsman);
+			CueEvents.Add(CID_PlayerBurned);
+		}	else {
 			QueryCheckpoint(CueEvents, wDestX, wDestY);
 		}
 	}
@@ -4748,10 +4766,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 
 	ResetPendingTemporalSplit(CueEvents);
 
-	MovementType eMovement = GetHornMovementType(this->swordsman.GetMovementType());
-	if (wSummonType != M_CLONE)
-		eMovement = GROUND_AND_SHALLOW_WATER_FORCE;
-	if (!this->pRoom->GetNearestEntranceTo(wHornX, wHornY, eMovement, wX, wY))
+	if (!GetNearestEntranceForHorn(wHornX, wHornY, wSummonType, wX, wY))
 	{
 		CueEvents.Add(CID_HornFail);
 	} else {
@@ -6127,7 +6142,10 @@ MakeMove:
 			ProcessPlayer_HandleLeaveLevel(CueEvents);
 		break;
 		case T_HOT:
-			if (bStayedOnHotFloor && this->swordsman.wX == wStartingX && this->swordsman.wY == wStartingY)
+			if (this->wTurnNo > 0 && this->swordsman.wAppearance == M_FLUFFBABY) {
+				SetDyingEntity(&this->swordsman);
+				CueEvents.Add(CID_PlayerBurned);
+			}	else if (bStayedOnHotFloor && this->swordsman.wX == wStartingX && this->swordsman.wY == wStartingY)
 			{
 				//Player dies if on same hot tile two (non-hasted) turns in a row.
 				if ((!this->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn) &&

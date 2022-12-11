@@ -102,6 +102,7 @@ enum MovementType {
 	GROUND_AND_SHALLOW_WATER_FORCE,
 	AIR_FORCE,
 	WATER_FORCE,
+	WALL_FORCE,
 	NumMovementTypes
 };
 
@@ -136,7 +137,8 @@ static inline bool bMovementSupportsPartialObstacles (MovementType movement)
 	return movement == GROUND_FORCE
 		|| movement == GROUND_AND_SHALLOW_WATER_FORCE
 		|| movement == AIR_FORCE
-		|| movement == WATER_FORCE;
+		|| movement == WATER_FORCE
+		|| movement == WALL_FORCE;
 }
 
 static inline MovementType GetHornMovementType(MovementType movement)
@@ -144,6 +146,9 @@ static inline MovementType GetHornMovementType(MovementType movement)
 	switch (movement) {
 		case AIR:
 			return AIR_FORCE;
+
+		case WALL:
+			return WALL_FORCE;
 
 		case WATER:
 			return WATER_FORCE;
@@ -272,6 +277,7 @@ public:
 	virtual UINT  GetProcessSequence() const;
 	virtual UINT  GetResolvedIdentity() const {return GetIdentity();}
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;
+	virtual CCoordStack GetStoredPath() const { return this->pathToDest; }
 	bool          GetSwordCoords(UINT& wX, UINT& wY) const;
 	virtual WeaponType GetWeaponType() const { return WT_Sword; }
 	bool          GetTarget(UINT &wX, UINT &wY, const bool bConsiderDecoys=true);
