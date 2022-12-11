@@ -561,6 +561,10 @@ enum MID_CONSTANT {
   MID_RoomHasEnemies = 1730,
   MID_RoomHasClosedDoors = 1731,
   MID_ATKForFasterCombatWin = 1745,
+  MID_YKEYStatFull = 1824,
+  MID_GKEYStatFull = 1825,
+  MID_BKEYStatFull = 1826,
+  MID_SKEYStatFull = 1827,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,
@@ -1572,6 +1576,15 @@ enum MID_CONSTANT {
   MID_VarGelSpawn = 1786,
   MID_VarQueenSpawn = 1787,
   MID_VarMySpawn = 1803,
+  MID_VarScoreHP = 1815,
+  MID_VarScoreAtk = 1816,
+  MID_VarScoreDef = 1817,
+  MID_VarScoreYKey = 1818,
+  MID_VarScoreGKey = 1819,
+  MID_VarScoreBKey = 1820,
+  MID_VarScoreSKey = 1821,
+  MID_VarScoreGold = 1822,
+  MID_VarScoreXP = 1823,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

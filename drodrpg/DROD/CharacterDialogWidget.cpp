@@ -4444,6 +4444,16 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_GEL_SPAWN, g_pTheDB->GetMessageText(MID_VarGelSpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_QUEEN_SPAWN, g_pTheDB->GetMessageText(MID_VarQueenSpawn));
 
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_HP, g_pTheDB->GetMessageText(MID_VarScoreHP));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_ATK, g_pTheDB->GetMessageText(MID_VarScoreAtk));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_DEF, g_pTheDB->GetMessageText(MID_VarScoreDef));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_YKEY, g_pTheDB->GetMessageText(MID_VarScoreYKey));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_GKEY, g_pTheDB->GetMessageText(MID_VarScoreGKey));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_BKEY, g_pTheDB->GetMessageText(MID_VarScoreBKey));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_SKEY, g_pTheDB->GetMessageText(MID_VarScoreSKey));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_GOLD, g_pTheDB->GetMessageText(MID_VarScoreGold));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_XP, g_pTheDB->GetMessageText(MID_VarScoreXP));
+
 	this->pVarListBox->SortAlphabetically(true);
 }
 

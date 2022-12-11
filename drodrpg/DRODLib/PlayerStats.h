@@ -133,7 +133,16 @@ namespace ScriptVars
 		P_QUEEN_SPAWN = -77,
 		P_MONSTER_NAME = -78,
 		P_SCRIPT_MONSTER_SPAWN = - 79,
-		FirstPredefinedVar = P_SCRIPT_MONSTER_SPAWN, //set this to the last var in the enumeration
+		P_SCORE_HP = -80,
+		P_SCORE_ATK = -81,
+		P_SCORE_DEF = -82,
+		P_SCORE_YKEY = -83,
+		P_SCORE_GKEY = -84,
+		P_SCORE_BKEY = -85,
+		P_SCORE_SKEY = -86,
+		P_SCORE_GOLD = -87,
+		P_SCORE_XP = -88,
+		FirstPredefinedVar = P_SCORE_XP, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -178,7 +187,7 @@ namespace ScriptVars
 	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=30;
+	static const UINT numGlobals=39;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -204,6 +213,7 @@ public:
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
 		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = UINT(-1); //negative indicates default
+		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = 0;
 	}
 
 	UINT getVar(const WSTRING& wstr) const
@@ -235,6 +245,7 @@ public:
 	UINT priorRoomID, priorX, priorY, priorO;
 
 	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID;
+	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP;
 };
 
 //More stats used for various tally operations.

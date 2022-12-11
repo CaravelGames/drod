@@ -1439,7 +1439,7 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 	s.HP = 500;
 	s.ATK = 10;
 	s.DEF = 10;
-	s.GOLD = 0;
+	s.GOLD = s.XP = 0;
 	s.speed = 100;
 
 	s.yellowKeys = s.greenKeys = s.blueKeys = s.skeletonKeys = 0;
@@ -1457,6 +1457,14 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 	s.explosionVal = 100; //100% damage (kill)
 
 	s.totalMoves = s.totalTime = 0;
+
+	s.scoreHP = -40; //1 point per 40 HP
+	s.scoreATK = 5;
+	s.scoreDEF = 3;
+	s.scoreYellowKeys = 10;
+	s.scoreGreenKeys = 20;
+	s.scoreBlueKeys = s.scoreSkeletonKeys = 30;
+	s.scoreGOLD = s.scoreXP = 0;
 }
 
 //*****************************************************************************

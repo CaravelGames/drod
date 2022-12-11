@@ -234,6 +234,7 @@ public:
 	static UINT GetSavedGameID(const UINT dwRoomID, const CDate& Created, const UINT dwPlayerID);
 	static vector<SAVE_INFO> GetSaveInfo(const CIDSet& savedGameIDs);
 	static UINT GetScore(const PlayerStats& st);
+	static UINT CalculateStatScore(const int stat, const int scoreMultiplier);
 	static SAVETYPE GetType(const UINT savedGameID);
 
 	static bool RenameSavedGame(const UINT savedGameID, const WSTRING& name);

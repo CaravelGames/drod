@@ -741,6 +741,19 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_LogicalWaitOr: strText = "Wait for Any:"; break;
 		case MID_LogicalWaitXOR: strText = "Wait for Exactly One:"; break;
 		case MID_LogicalWaitEnd: strText = "Wait for Conditions End"; break;
+		case MID_VarScoreHP: strText = "_ScoreHP"; break;
+		case MID_VarScoreAtk: strText = "_ScoreATK"; break;
+		case MID_VarScoreDef: strText = "_ScoreDEF"; break;
+		case MID_VarScoreYKey: strText = "_ScoreYellowKeys"; break;
+		case MID_VarScoreGKey: strText = "_ScoreGreenKeys"; break;
+		case MID_VarScoreBKey: strText = "_ScoreBlueKeys"; break;
+		case MID_VarScoreSKey: strText = "_ScoreSkeletonKeys"; break;
+		case MID_VarScoreGold: strText = "_ScoreGR"; break;
+		case MID_VarScoreXP: strText = "_ScoreREP"; break;
+		case MID_YKEYStatFull: strText = "Yellow Keys"; break;
+		case MID_GKEYStatFull: strText = "Green Keys"; break;
+		case MID_BKEYStatFull: strText = "Blue Keys"; break;
+		case MID_SKEYStatFull: strText = "Skeleton Keys"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

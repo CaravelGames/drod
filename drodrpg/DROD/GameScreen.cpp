@@ -142,10 +142,12 @@ const UINT TAG_BATTLETEXT = 1052;
 const UINT TAG_BATTLEFRAME = 1053;
 const UINT TAG_BATTLEOK = 1054;
 
-const UINT TAG_SCORENAME = 1060;
-const UINT TAG_SCORE_OK = 1061;
-const UINT TAG_SCORETEXT = 1062;
-const UINT TAG_SCORETOTAL = 1063;
+const UINT TAG_SCOREDIALOG = 1060;
+const UINT TAG_SCORENAME = 1061;
+const UINT TAG_SCOREFRAME = 1062;
+const UINT TAG_SCORETEXT = 1063;
+const UINT TAG_SCORETOTAL = 1064;
+const UINT TAG_SCORE_OK = 1065;
 
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
@@ -1125,7 +1127,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	static const int X_OK1 = (CX_MESSAGE - CX_MESSAGE_BUTTON) / 2;
 
 	//Score dialog.
-	static const UINT CX_SCOREDIALOG = 400;
+	static const UINT CX_SCOREDIALOG = 600;
 	static const UINT CY_SCOREDIALOG = 320;
 
 	static const int Y_SCORENAME = 15;
@@ -1136,7 +1138,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 
 	static const int X_SCORETEXT = 15;
 	static const int Y_SCORETEXT = 15;
-	static const UINT CX_SCORETEXT = 300;
+	static const UINT CX_SCORETEXT = 500;
 	static const UINT CY_SCORETEXT = 140;
 
 //	static const int X_SCORETOTAL = X_SCORETEXT;
@@ -1301,7 +1303,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pFrame->AddWidget(pButton);
 
 		//Score checkpoint dialog.
-		this->pScoreDialog = new CDialogWidget(0L, 0, 0, CX_SCOREDIALOG, CY_SCOREDIALOG);
+		this->pScoreDialog = new CDialogWidget(TAG_SCOREDIALOG, 0, 0, CX_SCOREDIALOG, CY_SCOREDIALOG);
 		this->pScoreDialog->Hide();
 		this->pRoomWidget->AddWidget(this->pScoreDialog);
 
@@ -1311,7 +1313,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		this->pScoreDialog->AddWidget(pLabel);
 
-		pFrame = new CFrameWidget(0, CX_SPACE, Y_SCOREFRAME,
+		pFrame = new CFrameWidget(TAG_SCOREFRAME, CX_SPACE, Y_SCOREFRAME,
 				CX_SCOREFRAME, CY_SCOREFRAME, NULL);
 		this->pScoreDialog->AddWidget(pFrame);
 
@@ -1326,28 +1328,6 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 					F_ScoreTotal, wszEmpty);
 		pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		pFrame->AddWidget(pLabel);
-
-		/*
-		//Score info.
-		pFrame->AddWidget(
-				new CLabelWidget(0L, X_TEXT_LABEL, Y_MOVES, CX_TEXT_LABEL, CY_TEXT_LABEL,
-						F_Message, g_pTheDB->GetMessageText(MID_MovesMade)));
-		pFrame->AddWidget(
-				new CLabelWidget(0L, X_TEXT_LABEL, Y_KILLS, CX_TEXT_LABEL, CY_TEXT_LABEL,
-						F_Message, g_pTheDB->GetMessageText(MID_MonstersKilled)));
-
-		//Moves made and monsters killed in room.
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_MOVES, X_VALUE_LABEL, Y_MOVES, CX_VALUE_LABEL, CY_TEXT_LABEL,
-						F_Message, wszEmpty));
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_KILLS, X_VALUE_LABEL, Y_KILLS, CX_VALUE_LABEL, CY_TEXT_LABEL,
-						F_Message, wszEmpty));
-		//Current game stats.
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_GAMESTATS, X_TEXT_LABEL, Y_ROOMS, CX_TITLE, CY_ROOMS,
-						F_Message, wszEmpty));
-		*/
 
 		//Score buttons.
 		pButton = new CButtonWidget(TAG_SCORE_OK,
@@ -4544,7 +4524,8 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 {
 	WSTRING wstrLevelStats;
 
-	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwScore;
+	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwGOLD, dwXP;
+	UINT dwHPScore, dwATKScore, dwDEFScore, dwYKeysScore, dwGKeysScore, dwBKeysScore, dwSKeysScore, dwGOLDScore, dwXPScore, dwTotalScore;
 
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
@@ -4557,57 +4538,32 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 	dwGKeys = st.greenKeys;
 	dwBKeys = st.blueKeys;
 	dwSKeys = st.skeletonKeys;
-	dwScore = this->pCurrentGame->GetScore();
+	dwGOLD = st.GOLD;
+	dwXP = st.XP;
 
-	/*
-	wstrLevelStats = pScoreIDText;
-	wstrLevelStats += wszCRLF;
-	*/
+	dwHPScore = CDbSavedGames::CalculateStatScore(dwHP, st.scoreHP);
+	dwATKScore = CDbSavedGames::CalculateStatScore(dwATK, st.scoreATK);
+	dwDEFScore = CDbSavedGames::CalculateStatScore(dwDEF, st.scoreDEF);
+	dwGOLDScore = CDbSavedGames::CalculateStatScore(dwGOLD, st.scoreGOLD);
+	dwXPScore = CDbSavedGames::CalculateStatScore(dwXP, st.scoreXP);
+	dwYKeysScore = CDbSavedGames::CalculateStatScore(dwYKeys, st.scoreYellowKeys);
+	dwGKeysScore = CDbSavedGames::CalculateStatScore(dwGKeys, st.scoreGreenKeys);
+	dwBKeysScore = CDbSavedGames::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
+	dwSKeysScore = CDbSavedGames::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
+	dwTotalScore = this->pCurrentGame->GetScore();
+
 	WCHAR temp[16];
 
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_MonsterHP);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwHP, temp, 10);
-	wstrLevelStats += wszCRLF;
+	if (st.scoreHP != 0) wstrLevelStats += GetScoreCheckpointLine(MID_MonsterHP, dwHP, st.scoreHP, dwHPScore);
+	if (st.scoreATK != 0) wstrLevelStats += GetScoreCheckpointLine(MID_ATKStat, dwATK, st.scoreATK, dwATKScore);
+	if (st.scoreDEF != 0) wstrLevelStats += GetScoreCheckpointLine(MID_DEFStat, dwDEF, st.scoreDEF, dwDEFScore);
+	if (st.scoreGOLD != 0) wstrLevelStats += GetScoreCheckpointLine(MID_GRStat, dwGOLD, st.scoreGOLD, dwGOLDScore);
+	if (st.scoreXP != 0) wstrLevelStats += GetScoreCheckpointLine(MID_XPStat, dwXP, st.scoreXP, dwXPScore);
+	if (st.scoreYellowKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_YKEYStatFull, dwYKeys, st.scoreYellowKeys, dwYKeysScore);
+	if (st.scoreGreenKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_GKEYStatFull, dwGKeys, st.scoreGreenKeys, dwGKeysScore);
+	if (st.scoreBlueKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
+	if (st.scoreSkeletonKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
 
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_ATKStat);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwATK, temp, 10);
-	wstrLevelStats += wszCRLF;
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_DEFStat);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwDEF, temp, 10);
-	wstrLevelStats += wszCRLF;
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_Keys);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwYKeys, temp, 10);
-	wstrLevelStats += wszForwardSlash;
-	wstrLevelStats += _itoW(dwGKeys, temp, 10);
-	wstrLevelStats += wszForwardSlash;
-	wstrLevelStats += _itoW(dwBKeys, temp, 10);
-	if (dwSKeys)
-	{
-		wstrLevelStats += wszForwardSlash;
-		wstrLevelStats += _itoW(dwSKeys, temp, 10);
-	}
-	wstrLevelStats += wszCRLF;
-
-/*
-	if (st.XP)
-	{
-		wstrLevelStats += g_pTheDB->GetMessageText(MID_XPStat);
-		wstrLevelStats += wszColon;
-		wstrLevelStats += wszSpace;
-		wstrLevelStats += _itoW(st.XP, temp, 10);
-		wstrLevelStats += wszCRLF;
-	}
-*/
 /*
 	wstrLevelStats += wszCRLF;
 
@@ -4616,28 +4572,74 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 */
 
 	//Set texts.
-	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
-	pLabel->SetText(pScoreIDText);
+	CLabelWidget *pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
+	pNameLabel->SetText(pScoreIDText);
 
-	pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
-	pLabel->SetText(wstrLevelStats.c_str());
+	CLabelWidget *pTextLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
+	pTextLabel->SetText(wstrLevelStats.c_str());
+	SDL_Rect rect;
+	pTextLabel->GetRect(rect);
+	UINT wTextHeight, wIgnored;
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message, wstrLevelStats.c_str(), rect.w, wIgnored, wTextHeight);
+	pTextLabel->SetHeight(wTextHeight);
+
+	CLabelWidget* pTotalLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
+	pTotalLabel->Move(0, wTextHeight - CY_SPACE);
+
+	CDialogWidget* pDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_SCOREDIALOG));
+	CButtonWidget* pButton = DYN_CAST(CButtonWidget*, CWidget*, GetWidget(TAG_SCORE_OK));
+	static const UINT CX_OK_BUTTON = 100;
+	static const UINT CX_SCOREFRAME = pDialog->GetW() - CX_SPACE * 2;
+	const UINT wButtonY = wTextHeight + pTotalLabel->GetH() - CY_SPACE;
+	pButton->Move((CX_SCOREFRAME - CX_OK_BUTTON) / 2, wButtonY);
+
+	static const UINT FRAME_BUFFER = 3;
+	const UINT wTotalHeight = pNameLabel->GetH() + wTextHeight + pTotalLabel->GetH() + pButton->GetH() + FRAME_BUFFER * 2 + CY_SPACE * 2;
+	pDialog->SetHeight(wTotalHeight);
+
+	CWidget* pFrame = DYN_CAST(CWidget*, CWidget*, GetWidget(TAG_SCOREFRAME));
+	const UINT wFrameHeight = wTextHeight + pTotalLabel->GetH() + pButton->GetH();
+	pFrame->SetHeight(wFrameHeight);
 
 	wstrLevelStats = g_pTheDB->GetMessageText(MID_Score);
 	wstrLevelStats += wszSpace;
 	wstrLevelStats += wszEqual;
 	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwScore, temp, 10);
+	wstrLevelStats += _itoW(dwTotalScore, temp, 10);
 
-	pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
-	pLabel->SetText(wstrLevelStats.c_str());
+	pTotalLabel->SetText(wstrLevelStats.c_str());
 
-	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwScore);
+	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwTotalScore);
 
 	//Display.
 	SetCursor();
 	this->pScoreDialog->Center();
 	this->pScoreDialog->Display();
 	Paint();
+}
+
+//*****************************************************************************
+WSTRING CGameScreen::GetScoreCheckpointLine(const MID_CONSTANT statName, const UINT statAmount, const int scoreMultiplier, const UINT statScore)
+//Returns: A line for the score breakdown of a particular stat on the Score Checkpoint dialog
+{
+	WSTRING wstrText;
+	WCHAR temp[16];
+
+	wstrText += g_pTheDB->GetMessageText(statName);
+	wstrText += wszColon;
+	wstrText += wszSpace;
+	wstrText += _itoW(statAmount, temp, 10);
+	wstrText += wszSpace;
+	wstrText += scoreMultiplier < 0 ? wszForwardSlash : wszAsterisk;
+	wstrText += wszSpace;
+	wstrText += _itoW(abs(scoreMultiplier), temp, 10);
+	wstrText += wszSpace;
+	wstrText += wszEqual;
+	wstrText += wszSpace;
+	wstrText += _itoW(statScore, temp, 10);
+	wstrText += wszCRLF;
+
+	return wstrText;
 }
 
 //*****************************************************************************
