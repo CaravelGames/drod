@@ -3463,6 +3463,9 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 			count=0;
 			pTilesWidget->ClearTiles();
 			bDisplayedOnce = true;
+			if (!success) {
+				--riter;
+			}
 
 			pRoomWidget->DirtyRoom(); //temp room isn't auto-redrawn
 			pRoomWidget->Paint();
@@ -3495,14 +3498,25 @@ bool CGameScreen::AddMonsterStats(
 {
 	CDialogWidget* pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
+	CLabelWidget* pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
+
+	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
+	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+
+	if (!text.empty()) //determine text height
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
+
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+		newText.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
+
+	//If the resulting text will make the dialog to large, don't add it
+	if (wCurrentTextHeight + wNewTextHeight > CDrodBitmapManager::CY_ROOM - 60) {
+		return false;
+	}
 
 	//Add monster 2x2 display on left side of dialog, like is done in sidebar monster stats.
 	//Draw monster tiles at current text height.
-	CLabelWidget* pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
-	UINT wTextWidth = 0, wTextHeight = 0;
-	if (!text.empty()) //determine text height
-		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-			text.c_str(), pText->GetW(), wTextWidth, wTextHeight);
 	float r, g, b;
 	pRoomWidget->TranslateMonsterColor(pMonster->getColor(), r, g, b);
 	UINT tileNo = TI_UNSPECIFIED;
@@ -3517,13 +3531,13 @@ bool CGameScreen::AddMonsterStats(
 			const int xPixel = x * CDrodBitmapManager::CX_TILE +
 				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
 			pTilesWidget->AddTile(tileNo, xPixel,
-				wTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
+				wCurrentTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
 		}
 	}
 
 	if (!text.empty())
 		text += wszCRLF;
-	text += pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
+	text += newText;
 
 	return true;
 }
