@@ -3449,48 +3449,23 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 	for (std::multimap<UINT, CCoord>::reverse_iterator riter=damageFromMonsters.rbegin();
 			riter!=damageFromMonsters.rend(); ++riter)
 	{
-		//Add monster 2x2 display on left side of dialog, like is done in sidebar monster stats.
 		CMonster *pMonster = pRoom->GetMonsterAtSquare(
 				riter->second.wX, riter->second.wY);
 		ASSERT(pMonster);
 		pMonster = pMonster->GetOwningMonster();
-
-		//Draw monster tiles at current text height.
-		CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
-		UINT wTextWidth=0, wTextHeight=0;
-		if (!text.empty()) //determine text height
-			g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-					text.c_str(), pText->GetW(), wTextWidth, wTextHeight);
-		float r, g, b;
-		pRoomWidget->TranslateMonsterColor(pMonster->getColor(), r, g, b);
-		UINT tileNo = TI_UNSPECIFIED;
-		for (UINT i=2*2; i--; )
-		{
-			const UINT x = i % 2;
-			const UINT y = i / 2;
-			const bool bCentered = (x==0 && tileNo == TI_UNSPECIFIED);
-			tileNo = GetMonsterDisplayTile(pMonster, x, y);
-			if (tileNo != TI_UNSPECIFIED)
-			{
-				const int xPixel = x * CDrodBitmapManager::CX_TILE +
-						(bCentered ? CDrodBitmapManager::CX_TILE/2 : 0);
-				pTilesWidget->AddTile(tileNo, xPixel,
-						wTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
-			}
-		}
-
-		if (count)
-			text += wszCRLF;
-		text += pRoomWidget->GetMonsterInfo(riter->second.wX, riter->second.wY, true);
+		bool success = AddMonsterStats(pRoom, pRoomWidget, pMonster, text);
 
 		//Show full page of monster stats.
-		if (++count >= MAX_DISPLAY_TYPES)
+		if (++count >= MAX_DISPLAY_TYPES || !success)
 		{
 			ShowBattleDialog(text.c_str());
 			text.resize(0);
 			count=0;
 			pTilesWidget->ClearTiles();
 			bDisplayedOnce = true;
+			if (!success) {
+				--riter;
+			}
 
 			pRoomWidget->DirtyRoom(); //temp room isn't auto-redrawn
 			pRoomWidget->Paint();
@@ -3507,6 +3482,65 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 //
 //CGameScreen private methods.
 //
+
+//*****************************************************************************
+bool CGameScreen::AddMonsterStats(
+//Add the combat information for a given monster to a string, but only if the
+// resulting string fits within the allowed space.
+//
+//Params:
+	CDbRoom* pRoom, //current room
+	CRoomWidget* pRoomWidget, //the display widget for the room
+	CMonster* pMonster, //monster to display information for
+	WSTRING& text) //string to append to. may be non-empty.
+//
+//Returns: If the text was appended
+{
+	CDialogWidget* pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
+	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
+	CLabelWidget* pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
+
+	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
+	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+
+	if (!text.empty()) //determine text height
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
+
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+		newText.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
+
+	//If the resulting text will make the dialog to large, don't add it
+	if (wCurrentTextHeight + wNewTextHeight > CDrodBitmapManager::CY_ROOM - 60) {
+		return false;
+	}
+
+	//Add monster 2x2 display on left side of dialog, like is done in sidebar monster stats.
+	//Draw monster tiles at current text height.
+	float r, g, b;
+	pRoomWidget->TranslateMonsterColor(pMonster->getColor(), r, g, b);
+	UINT tileNo = TI_UNSPECIFIED;
+	for (UINT i = 2 * 2; i--; )
+	{
+		const UINT x = i % 2;
+		const UINT y = i / 2;
+		const bool bCentered = (x == 0 && tileNo == TI_UNSPECIFIED);
+		tileNo = GetMonsterDisplayTile(pMonster, x, y);
+		if (tileNo != TI_UNSPECIFIED)
+		{
+			const int xPixel = x * CDrodBitmapManager::CX_TILE +
+				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
+			pTilesWidget->AddTile(tileNo, xPixel,
+				wCurrentTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
+		}
+	}
+
+	if (!text.empty())
+		text += wszCRLF;
+	text += newText;
+
+	return true;
+}
 
 //******************************************************************************
 UINT CGameScreen::MarkMapRoom(const UINT roomID)
