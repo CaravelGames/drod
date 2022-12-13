@@ -39,8 +39,9 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"", "", "",
 	"", "", "", "", "",
 	"", "", "", "", "",
-	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn", "",
-	""
+	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn",
+	"", "",
+	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -67,7 +68,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMyMonsterHPMult, MID_VarMyMonsterATKMult, MID_VarMyMonsterDEFMult, MID_VarMyMonsterGRMult, MID_VarMyMonsterXPMult,
 	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
 	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
-	MID_VarMonsterName, MID_VarMySpawn
+	MID_VarMonsterName, MID_VarMySpawn,
+	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -104,7 +106,16 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_MUD_SPAWN,
 	P_TAR_SPAWN,
 	P_GEL_SPAWN,
-	P_QUEEN_SPAWN
+	P_QUEEN_SPAWN,
+	P_SCORE_HP,
+	P_SCORE_ATK,
+	P_SCORE_DEF,
+	P_SCORE_YKEY,
+	P_SCORE_GKEY,
+	P_SCORE_BKEY,
+	P_SCORE_SKEY,
+	P_SCORE_GOLD,
+	P_SCORE_XP
 };
 
 //The MIDs for the global var subset.
@@ -145,7 +156,17 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[73], //monster spawn IDs
 	predefinedVarMIDs[74],
 	predefinedVarMIDs[75],
-	predefinedVarMIDs[76]
+	predefinedVarMIDs[76],
+
+	predefinedVarMIDs[79], //score values
+	predefinedVarMIDs[80],
+	predefinedVarMIDs[81],
+	predefinedVarMIDs[82],
+	predefinedVarMIDs[83],
+	predefinedVarMIDs[84],
+	predefinedVarMIDs[85],
+	predefinedVarMIDs[86],
+	predefinedVarMIDs[87]
 };
 
 //Match the global var texts in 'globalVarMIDs' to their short form texts in
@@ -187,7 +208,17 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[73], //monster spawn IDs
 	predefinedVarTexts[74],
 	predefinedVarTexts[75],
-	predefinedVarTexts[76]
+	predefinedVarTexts[76],
+
+	predefinedVarTexts[79], //score values
+	predefinedVarTexts[80],
+	predefinedVarTexts[81],
+	predefinedVarTexts[82],
+	predefinedVarTexts[83],
+	predefinedVarTexts[84],
+	predefinedVarTexts[85],
+	predefinedVarTexts[86],
+	predefinedVarTexts[87]
 
 };
 
@@ -372,6 +403,16 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_GEL_SPAWN: return this->gelSpawnID;
 		case P_QUEEN_SPAWN: return this->queenSpawnID;
 
+		case P_SCORE_HP: return this->scoreHP;
+		case P_SCORE_ATK: return this->scoreATK;
+		case P_SCORE_DEF: return this->scoreDEF;
+		case P_SCORE_YKEY: return this->scoreYellowKeys;
+		case P_SCORE_GKEY: return this->scoreGreenKeys;
+		case P_SCORE_BKEY: return this->scoreBlueKeys;
+		case P_SCORE_SKEY: return this->scoreSkeletonKeys;
+		case P_SCORE_GOLD: return this->scoreGOLD;
+		case P_SCORE_XP: return this->scoreXP;
+
 		case P_NoVar:
 		default: return 0;
 	}
@@ -420,6 +461,16 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_GEL_SPAWN: this->gelSpawnID = int(val); break;
 		case P_QUEEN_SPAWN: this->queenSpawnID = int(val); break;
 
+		case P_SCORE_HP: this->scoreHP = int(val); break;
+		case P_SCORE_ATK: this->scoreATK = int(val); break;
+		case P_SCORE_DEF: this->scoreDEF = int(val); break;
+		case P_SCORE_YKEY: this->scoreYellowKeys = int(val); break;
+		case P_SCORE_GKEY: this->scoreGreenKeys = int(val); break;
+		case P_SCORE_BKEY: this->scoreBlueKeys = int(val); break;
+		case P_SCORE_SKEY: this->scoreSkeletonKeys = int(val); break;
+		case P_SCORE_GOLD: this->scoreGOLD = int(val); break;
+		case P_SCORE_XP: this->scoreXP = int(val); break;
+
 		case P_NoVar:
 		default: break;
 	}
@@ -436,7 +487,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		i == 29 ||
 		(i >= 31 && i <= 37) ||
 		(i >= 43 && i <= 48) ||
-		(i >= 73 && i <= 76)
+		(i >= 73 && i <= 76) ||
+		(i >= 79 && i <= 87)
 		;
 }
 
@@ -497,6 +549,16 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 74: val = UINT(this->tarSpawnID); break;
 			case 75: val = UINT(this->gelSpawnID); break;
 			case 76: val = UINT(this->queenSpawnID); break;
+
+			case 79: val = UINT(this->scoreHP); break;
+			case 80: val = UINT(this->scoreATK); break;
+			case 81: val = UINT(this->scoreDEF); break;
+			case 82: val = UINT(this->scoreYellowKeys); break;
+			case 83: val = UINT(this->scoreGreenKeys); break;
+			case 84: val = UINT(this->scoreBlueKeys); break;
+			case 85: val = UINT(this->scoreSkeletonKeys); break;
+			case 86: val = UINT(this->scoreGOLD); break;
+			case 87: val = UINT(this->scoreXP); break;
 
 			default:
 				ASSERT(!"Not a global var index");
@@ -570,6 +632,17 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 74: this->tarSpawnID = int(val); break;
 			case 75: this->gelSpawnID = int(val); break;
 			case 76: this->queenSpawnID = int(val); break;
+
+			case 79: this->scoreHP = int(val); break;
+			case 80: this->scoreATK = int(val); break;
+			case 81: this->scoreDEF = int(val); break;
+			case 82: this->scoreYellowKeys = int(val); break;
+			case 83: this->scoreGreenKeys = int(val); break;
+			case 84: this->scoreBlueKeys = int(val); break;
+			case 85: this->scoreSkeletonKeys = int(val); break;
+			case 86: this->scoreGOLD = int(val); break;
+			case 87: this->scoreXP = int(val); break;
+
 
 			default: ASSERT(!"Bad var"); break;
 		}

@@ -704,6 +704,24 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_MySpawn</td><td>local NPC spawn entity ID(<a href="#queenspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
+	<td>_ScoreHP</td><td>score value for each HP(<a href="#scorevars">*</a>)</td><td>-40</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreATK</td><td>score value for each ATK</td><td>5</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreDEF</td><td>score value for each DEF</td><td>3</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreYellowKeys</td><td>score value for each yellow key</td><td>10</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreGreenKeys</td><td>score value for each green key</td><td>20</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreBlueKeys</td><td>score value for each blue key</td><td>30</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreSkeletonKeys</td><td>score value for each skeleton key</td><td>30</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreGR</td><td>score value for each GR</td><td>0</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreREP</td><td>score value for each REP</td><td>0</td><td>-MAX,MAX</td>
+  </tr><tr>
     <td><b>Player stats</b></td><td></td><td></td><td></td>
   </tr><tr>
     <td>_HP</td><td>player's HP</td><td></td><td>0,MAX</td>
@@ -843,6 +861,15 @@ The variable names are case-insensitive.
   These vars reference the stat values of the player's current equipment.
   When predefined equipment is carried, its values may be queried but not
   altered.
+</p>
+<p><a name="scorevars"><b>*_ScoreHP, _ScoreATK, _ScoreDEF, _ScoreYellowKeys,
+  _ScoreGreenKeys, _ScoreBlueKeys, _ScoreSkeletonKeys, _ScoreGR, _ScoreREP</b></a> - 
+  These vars determine how much each of the player's resources is worth for scoring
+  at score checkpoints. A positive value will make each one worth that much.  A
+  negative value will divide your total by that amount, rounding down.  A value of 0
+  will cause it to not be listed on score checkpoints.  <b>Note:</b> Players can look
+  at their current score at any time by right-clicking on the player character, so you
+  should set these values at the earliest opportunity.
 </p>
 
 <p><a name="functions"><b>Function primitives</b></a> - Predefined

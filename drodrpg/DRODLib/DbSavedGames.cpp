@@ -2578,15 +2578,24 @@ UINT CDbSavedGames::GetScore(const PlayerStats& st)
 //Return: score for these player stats
 {
 	UINT dwScore = 0;
-	dwScore += st.HP / 40;
-	dwScore += st.ATK * 5;
-	dwScore += st.DEF * 3;
-	dwScore += st.yellowKeys * 10;
-	dwScore += st.greenKeys * 20;
-	dwScore += st.blueKeys * 30;
-	dwScore += st.skeletonKeys * 30;
+	dwScore += CalculateStatScore(st.HP, st.scoreHP);
+	dwScore += CalculateStatScore(st.ATK, st.scoreATK);
+	dwScore += CalculateStatScore(st.DEF, st.scoreDEF);
+	dwScore += CalculateStatScore(st.yellowKeys, st.scoreYellowKeys);
+	dwScore += CalculateStatScore(st.greenKeys, st.scoreGreenKeys);
+	dwScore += CalculateStatScore(st.blueKeys, st.scoreBlueKeys);
+	dwScore += CalculateStatScore(st.skeletonKeys, st.scoreSkeletonKeys);
+	dwScore += CalculateStatScore(st.GOLD, st.scoreGOLD);
+	dwScore += CalculateStatScore(st.XP, st.scoreXP);
 
 	return dwScore;
+}
+
+//*******************************************************************************
+UINT CDbSavedGames::CalculateStatScore(const int stat, const int scoreMultiplier)
+//Return: score for a particular stat
+{
+	return scoreMultiplier < 0 ? stat / abs(scoreMultiplier) : stat * scoreMultiplier;
 }
 
 //*****************************************************************************
