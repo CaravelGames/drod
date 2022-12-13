@@ -1050,6 +1050,10 @@ void CRoomWidget::HighlightSelectedTile()
 						AddShadeEffect(wX, wY, PaleYellow);
 					}
 				}
+				CCoordSet visitedStations = pCitizen->GetVisitedStations();
+				for (auto& visitedStation : visitedStations) {
+					AddShadeEffect(visitedStation.wX, visitedStation.wY, Red);
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;

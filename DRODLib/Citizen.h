@@ -49,6 +49,7 @@ public:
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual bool IsTileObstacle(const UINT wTileNo) const;
 	bool GetGoal(UINT& wX, UINT& wY) const;
+	CCoordSet GetVisitedStations() const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 	inline int StationType() const {return this->nStationType;}
 
