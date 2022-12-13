@@ -7195,9 +7195,12 @@ void CEditRoomScreen::SetSignTextToCurrentRoom(
 	case ES_GETSQUARES1:
 	case ES_GETSQUARES2:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomSquare);
-		wstrSignText += L" (";
-		wstrSignText += this->eState == ES_GETSQUARES1 ? L"1" : L"2";
-		wstrSignText += L"/2)";
+		wstrSignText += wszSpace;
+		wstrSignText += wszLeftParen;
+		wstrSignText += this->eState == ES_GETSQUARES1 ? wszOne : wszTwo;
+		wstrSignText += wszForwardSlash;
+		wstrSignText += wszTwo;
+		wstrSignText += wszRightParen;
 		break;
 	case ES_GETRECT:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomRect);
