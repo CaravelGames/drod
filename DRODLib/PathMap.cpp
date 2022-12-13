@@ -53,7 +53,8 @@ CPathMap::CPathMap(
 	const UINT wCols, const UINT wRows,     //Size to initialize map to.
 	const UINT xTarget, const UINT yTarget, //[default: (-1,-1) = none]
 	const UINT dwPathThroughObstacleCost,   //[default=0]
-	const bool bSupportPartialObstacles     //[default=false]
+	const bool bSupportPartialObstacles,    //[default=false]
+	const bool bMakeSubPath                 //[default=false]
 	)
 	: wCols(wCols)
 	, wRows(wRows)
@@ -68,9 +69,18 @@ CPathMap::CPathMap(
 	for (wSquareI=wArea; wSquareI--; )
 		this->squares[wSquareI].eBlockedDirections = DMASK_NONE;
 
+	if (bMakeSubPath)
+		this->subPath = new CPathMap(*this);
+
 	//Get ready for path calculation if target is specified.
 	if (xTarget < wCols && yTarget < wRows)
 		Reset();
+}
+
+//**********************************************************************************
+CPathMap::~CPathMap()
+{
+	delete this->subPath;
 }
 
 //**********************************************************************************
@@ -136,9 +146,11 @@ void CPathMap::CalcPaths()
 						//then leave it, but on re-entering an obstacle, the path cost
 						//will be set as though it never left the obstacle.
 						dwScore = (coord.wMoves+1) * (this->dwPathThroughObstacleCost + 1);
-				} else if (bIsSemiObstacle && parent_square.eBlockedDirections != DMASK_SEMI) {
+				} else if (bIsSemiObstacle) {
 					//Penalize moving into "semi-obstacle" area
-					dwScore += 1000;
+					ASSERT(this->subPath);
+					const SQUARE& refSquare = this->subPath->GetSquare(wNewX, wNewY);
+					dwScore = refSquare.dwTargetDist * 1000;
 				}
 				if (dwScore < square.dwTargetDist)
 				{
@@ -294,6 +306,10 @@ void CPathMap::SetMembers(const CPathMap& Src)
 	this->bSupportPartialObstacles = Src.bSupportPartialObstacles;
 
 	this->dwPathThroughObstacleCost = Src.dwPathThroughObstacleCost;
+
+	if (Src.subPath) {
+		this->subPath = new CPathMap(*Src.subPath);
+	}
 }
 
 //*****************************************************************************
@@ -317,6 +333,11 @@ void CPathMap::SetSquare(
 		Reset();
 
 	square.eBlockedDirections = eBlockedDirections;
+
+	if (this->subPath) {
+		this->subPath->SetSquare(
+			wX, wY, eBlockedDirections & DMASK_ALL);
+	}
 }
 
 //**********************************************************************************
@@ -334,6 +355,9 @@ void CPathMap::SetTarget(
 		this->xTarget=xTarget;
 		this->yTarget=yTarget;
 		Reset();
+	}
+	if (this->subPath) {
+		this->subPath->SetTarget(xTarget, yTarget);
 	}
 }
 

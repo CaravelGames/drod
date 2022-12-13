@@ -164,6 +164,15 @@ static inline MovementType GetHornMovementType(MovementType movement)
 	}
 }
 
+static inline bool bMovementNeedsSubPath(MovementType movement) {
+	switch (movement) {
+		case GROUND_AND_SHALLOW_WATER_NO_OREMITES:
+			return true;
+		default:
+			return false;
+	}
+}
+
 //******************************************************************************************
 //method used herein should be public
 #define IMPLEMENT_CLONE(CBase, CDerived) virtual CBase* Clone() const \
@@ -236,7 +245,7 @@ public:
 	virtual bool  CanPushMonsters() const { return CanPushObjects(); }
 	virtual bool  CanPressPressurePlates() const { return !this->IsFlying(); }
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
-	virtual bool  CanWadeInShallowWater() const { return this->eMovement == GROUND_AND_SHALLOW_WATER; }
+	virtual bool  CanWadeInShallowWater() const;
 	virtual bool  CheckForDamage(CCueEvents& CueEvents);
 	void          Clear();
 	bool          ConfirmPath();

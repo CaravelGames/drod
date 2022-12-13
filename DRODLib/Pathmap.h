@@ -98,12 +98,14 @@ public:
 	CPathMap(const UINT wCols, const UINT wRows,
 			const UINT xTarget=(UINT)-1, const UINT yTarget=(UINT)-1,
 			const UINT dwPathThroughObstacleCost=(UINT)-1,
-			const bool bSupportPartialObstacles=false);
+			const bool bSupportPartialObstacles=false,
+			const bool bMakeSubPath=false);
 	CPathMap(const CPathMap &Src) {SetMembers(Src);}
 	CPathMap &operator= (const CPathMap &Src) {
 		SetMembers(Src);
 		return *this;
 	}
+	~CPathMap();
 
 	void CalcPaths();
 	void GetDebugOutput(bool bShowDirection, bool bShowState, bool bShowDistance,
@@ -137,6 +139,10 @@ private:
 	//Support force arrows, orthosquares, etc. If false (default), these are
 	//treated as full obstacles.
 	bool bSupportPartialObstacles;
+
+	//Optional sub path to calculate secondary path values
+	//Currently only used for semi-obstacle scoring
+	CPathMap* subPath = NULL;
 };
 
 #endif //...#ifndef PATHMAP_H

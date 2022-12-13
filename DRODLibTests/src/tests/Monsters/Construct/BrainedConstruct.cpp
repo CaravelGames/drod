@@ -30,4 +30,29 @@ TEST_CASE("Brained Construct", "[game][construct][brain]") {
 		//Should move along non-oremite path
 		AssertMonsterType(5, 10, M_CONSTRUCT);
 	}
+
+	SECTION("Test Construct pathing with multiple oremite paths") {
+		RoomBuilder::PlotRect(T_WALL, 5, 5, 11, 11);
+		RoomBuilder::PlotRect(T_FLOOR, 7, 7, 9, 7);
+		RoomBuilder::PlotRect(T_FLOOR, 9, 7, 9, 9);
+		RoomBuilder::Plot(T_GOO, 5, 8);
+		RoomBuilder::Plot(T_FLOOR, 6, 8);
+		RoomBuilder::Plot(T_GOO, 8, 11);
+		RoomBuilder::Plot(T_FLOOR, 8, 10);
+
+		RoomBuilder::AddMonster(M_CONSTRUCT, 8, 8);
+		RoomBuilder::AddMonster(M_BRAIN, 1, 1);
+
+		CCurrentGame* game = Runner::StartGame(4, 11, E);
+		Runner::ExecuteCommand(CMD_WAIT, 3);
+
+		//Should move near oremites closest to player.
+		AssertMonsterType(6, 8, M_CONSTRUCT);
+
+		Runner::ExecuteCommand(CMD_SE);
+		Runner::ExecuteCommand(CMD_WAIT, 4);
+
+		//Should move near oremites closest to player.
+		AssertMonsterType(8, 10, M_CONSTRUCT);
+	}
 }

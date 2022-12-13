@@ -2037,6 +2037,15 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::CanWadeInShallowWater() const
+//Returns: If this monster can move onto shallow water tiles
+{
+	return this->eMovement == GROUND_AND_SHALLOW_WATER ||
+		this->eMovement == GROUND_AND_SHALLOW_WATER_FORCE ||
+		this->eMovement == GROUND_AND_SHALLOW_WATER_NO_OREMITES;
+}
+
+//*****************************************************************************
 bool CMonster::OnAnswer(
 //Overridable method for responding to an answer given by player to a question asked by the
 //monster.
