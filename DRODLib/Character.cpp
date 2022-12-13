@@ -3781,7 +3781,7 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 		if (!orb) {
 			orb = room.AddOrbToSquare(px, py);
 		}
-	}	else if (room.GetOSquare(px, py) == T_PRESSPLATE)	{
+	} else if (room.GetOSquare(px, py) == T_PRESSPLATE) {
 		orb = room.GetPressurePlateAtCoords(px, py);
 		linkX = pw;
 		linkY = ph;
@@ -3795,14 +3795,14 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 		if (!orb) {
 			orb = room.AddOrbToSquare(pw, ph);
 		}
-	}	else if (room.GetOSquare(pw, ph) == T_PRESSPLATE)	{
+	} else if (room.GetOSquare(pw, ph) == T_PRESSPLATE) {
 		orb = room.GetPressurePlateAtCoords(pw, ph);
 		linkX = px;
 		linkY = py;
 		if (!orb) {
 			orb = room.AddOrbToSquare(pw, ph);
 		}
-	}	else {
+	} else {
 		// No orb or plate to link
 		return;
 	}
@@ -3835,7 +3835,7 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 			return;
 		}
 		orbAgent->action = action;
-	}	else if (action != OA_NULL) {
+	} else if (action != OA_NULL) {
 		orb->AddAgent(linkX, linkY, action);
 	}
 }
