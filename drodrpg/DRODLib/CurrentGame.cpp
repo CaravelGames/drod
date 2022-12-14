@@ -3504,13 +3504,19 @@ bool CCurrentGame::IsSwordStrongAgainst(const CMonster* pMonster) const
 bool CCurrentGame::IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const
 //Returns: whether the player has an item that is strong against this monster
 {
-	CCharacter* pCharacter = getCustomEquipment(type);
-	if (pCharacter)
+	CCharacter* pEquipment = getCustomEquipment(type);
+	if (pEquipment)
 	{
-		if (pMonster->HasGoblinWeakness() && pCharacter->HasGoblinWeakness())
+		if (pMonster->HasGoblinWeakness() && pEquipment->HasGoblinWeakness())
 			return true;
-		if (pMonster->HasSerpentWeakness() && pCharacter->HasSerpentWeakness())
+		if (pMonster->HasSerpentWeakness() && pEquipment->HasSerpentWeakness())
 			return true;
+		if (pMonster->HasCustomWeakness() && pEquipment->HasCustomWeakness()) {
+			const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+			ASSERT(pCharacter);
+			if (pCharacter->GetCustomWeakness() == pEquipment->GetCustomWeakness())
+				return true;
+		}
 	}
 
 	return false;
