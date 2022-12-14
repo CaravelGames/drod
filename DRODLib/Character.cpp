@@ -444,6 +444,8 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_ROOM_FOG:
 		case (UINT)ScriptVars::P_ROOM_SNOW:
 		case (UINT)ScriptVars::P_ROOM_RAIN:
+		case (UINT)ScriptVars::P_SPAWNCYCLE:
+		case (UINT)ScriptVars::P_SPAWNCYCLE_FAST:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;
@@ -625,6 +627,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetEntityWeapon:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -638,7 +641,15 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_WaitForBuilding:
+			case CCharacterCommand::CC_WaitForBuildType:
+			case CCharacterCommand::CC_WaitForNotBuildType:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
+			break;
+
+			case CCharacterCommand::CC_LinkOrb:
+				command->x = (pRoom->wRoomCols - 1) - command->x;
+				command->w = (pRoom->wRoomCols - 1) - command->w;
 			break;
 
 			case CCharacterCommand::CC_FaceDirection:
@@ -691,6 +702,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetEntityWeapon:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -704,7 +716,15 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_WaitForBuilding:
+			case CCharacterCommand::CC_WaitForBuildType:
+			case CCharacterCommand::CC_WaitForNotBuildType:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
+			break;
+
+			case CCharacterCommand::CC_LinkOrb:
+				command->y = (pRoom->wRoomCols - 1) - command->y;
+				command->h = (pRoom->wRoomCols - 1) - command->h;
 			break;
 
 			case CCharacterCommand::CC_FaceDirection:
@@ -1589,6 +1609,12 @@ void CCharacter::Process(
 							if (!TurnsSlowly())
 								SetOrientation(dxFirst,dyFirst);
 						}
+						if (HasInstantMovement()) {
+							//Moving to a new tile might break infinite loop
+							++wVarSets;
+							wTurnCount = 0;
+							bProcessNextCommand = true;
+						}
 						break;
 					}
 					STOP_COMMAND;
@@ -1604,8 +1630,15 @@ void CCharacter::Process(
 						{
 							this->wSwordMovement = CSwordsman::GetSwordMovement(
 									this->wO == nNextCO(wOldO) ? CMD_C : CMD_CC, this->wO);
-							if (ph)  //single step?
+							if (ph) { //single step?
+								if (HasInstantMovement()) {
+									//Moving to a new tile might break infinite loop
+									++wVarSets;
+									wTurnCount = 0;
+									bProcessNextCommand = true;
+								}
 								break;
+							}
 							STOP_DONECOMMAND;
 						}
 					}
@@ -1624,8 +1657,15 @@ void CCharacter::Process(
 				}
 
 				//Repeat command until arrived at destination.
-				if (ph)  //single step?
+				if (ph) { //single step?
+					if (HasInstantMovement()) {
+						//Moving to a new tile might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 					break;
+				}
 				if (this->wX != px || this->wY != py)
 					STOP_DONECOMMAND;
 			}
@@ -1707,6 +1747,12 @@ void CCharacter::Process(
 								SetOrientation(dxFirst,dyFirst);
 						}
 						this->bMovingRelative = false;
+						if (HasInstantMovement()) {
+							//Moving to a new tile might break infinite loop
+							++wVarSets;
+							wTurnCount = 0;
+							bProcessNextCommand = true;
+						}
 						break;
 					}
 					STOP_COMMAND;
@@ -1725,6 +1771,12 @@ void CCharacter::Process(
 							if (ph)  //single step?
 							{
 								this->bMovingRelative = false;
+								if (HasInstantMovement()) {
+									//Moving to a new tile might break infinite loop
+									++wVarSets;
+									wTurnCount = 0;
+									bProcessNextCommand = true;
+								}
 								break;
 							}
 							STOP_DONECOMMAND;
@@ -1743,6 +1795,12 @@ void CCharacter::Process(
 				if (ph)  //single step?
 				{
 					this->bMovingRelative = false;
+					if (HasInstantMovement()) {
+						//Moving to a new tile might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 					break;
 				}
 				if (this->wX != this->wXRel || this->wY != this->wYRel)
@@ -1781,9 +1839,16 @@ void CCharacter::Process(
 					break;
 				}
 				SetWeaponSheathed();
-				if (!this->bVisible || //turning doesn't take time when not in room
-						wOldO == this->wO) //already facing this way
+				if (wOldO == this->wO) //already facing this way
 					bProcessNextCommand = true;
+				else if (!this->bVisible || //turning doesn't take time when not in room)
+					HasInstantMovement()) //gotta go fast
+				{
+					//Facing a direction might break infinite loop
+					++wVarSets;
+					wTurnCount = 0;
+					bProcessNextCommand = true;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_FaceTowards:
@@ -1850,8 +1915,14 @@ void CCharacter::Process(
 						SetWeaponSheathed();
 					}
 
-					if (!this->bVisible || wOldO == this->wO)
+					if (wOldO == this->wO)
 						bProcessNextCommand = true;
+					else if (!this->bVisible || HasInstantMovement()) {
+						//Facing a direction might break infinite loop
+						++wVarSets;
+						wTurnCount = 0;
+						bProcessNextCommand = true;
+					}
 				}
 			}
 			break;
@@ -2881,6 +2952,14 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForExpression:
+			{
+				if (!IsExpressionSatisfied(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -2975,6 +3054,31 @@ void CCharacter::Process(
 				}
 
 				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_SetEntityWeapon:
+			{
+				bProcessNextCommand = true;
+				getCommandXYW(command, px, py, pw);
+				WeaponType weapon = (WeaponType)pw;
+
+				if (!bIsRealWeapon(weapon))
+					break;
+
+				if (pGame->IsPlayerAt(px, py)) {
+					//Set temporary weapon
+					player.SetWeaponType(weapon, false);
+				} else {
+					CMonster* pMonster = pGame->pRoom->GetMonsterAtSquare(px, py);
+					if (!pMonster || !bEntityHasSword(pMonster->wType))
+						break;
+
+					CArmedMonster* pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+					if (!pArmedMonster)
+						break;
+
+					pArmedMonster->weaponType = weapon;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_WaitForItem:
@@ -3108,6 +3212,38 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForBuilding:
+			{
+				bool bFound = false;
+				if (!IsBuildMarkerAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForBuildType:
+			{
+				if (!IsBuildMarkerTypeAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotBuildType:
+			{
+				if (IsBuildMarkerTypeAt(command, room))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_LinkOrb:
+			{
+				LinkOrb(command, room);
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_AmbientSound:
 				//Play sound with DataID w (0 stops ambient sounds).
@@ -3183,6 +3319,71 @@ void CCharacter::Process(
 					case(ScriptFlag::RegularMonster):
 						this->GetTarget(wX, wY, true);
 						break;
+					case ScriptFlag::BrainedMonster:
+					{
+						//Find the square the character would move to if it were a normal brained monster
+						//Some things will be able to prevent a brained move.
+						this->GetTarget(wX, wY, true);
+						int dx, dy, dxFirst, dyFirst;
+						CSwordsman& swordsman = pGame->swordsman;
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(swordsman.wX, swordsman.wY, this->eMovement);
+
+						//Brained move can't happen if player isn't target
+						bool doBrainMove = swordsman.IsTarget();
+						//Decoy overrides brain
+						doBrainMove &= !room.IsMonsterOfTypeAt(M_DECOY, wX, wY, true);
+
+						//The monster must be able to 'see' the player
+						doBrainMove &= (swordsman.IsVisible() || CanSmellObjectAt(swordsman.wX, swordsman.wY) || 
+							pGame->bBrainSensesSwordsman);
+
+						//If nothing is stopping a brained move, get the directions
+						doBrainMove &= GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						if (doBrainMove) {
+							//The monster can do a brain move, and there is one available
+							wX = this->wX + dx;
+							wY = this->wY + dy;
+							break;
+						}
+
+						//If it didn't happen, try a normal move.
+						bool pathmapping;
+						if (GetMovement(wX, wY, dx, dy, dxFirst, dyFirst, pathmapping, true)) {
+							//Open only pathmapping forbids movement
+							wX = this->wX;
+							wY = this->wY;
+						} else {
+							//Normal move for movement IQ
+							wX = this->wX + dx;
+							wY = this->wY + dy;
+						}
+					}
+					break;
+					case ScriptFlag::BestBrainTile:
+					{
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(pGame->swordsman.wX, pGame->swordsman.wY, this->eMovement);
+						int dx, dy, dxFirst, dyFirst;
+						dx = dy = 0;
+
+						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						wX = this->wX + dx;
+						wY = this->wY + dy;
+					}
+					break;
+					case ScriptFlag::BestBrainDirection:
+					{
+						//Make sure pathmap is avaiable
+						room.CreatePathMap(pGame->swordsman.wX, pGame->swordsman.wY, this->eMovement);
+						int dx, dy, dxFirst, dyFirst;
+						dx = dy = 0;
+
+						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
+						wX = nGetO(dx, dy);
+						wY = nGetO(dxFirst, dyFirst);
+					}
+					break;
 				}
 				
 				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, wX);
@@ -3557,6 +3758,86 @@ void CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents& CueEve
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
+}
+
+//*****************************************************************************
+void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	OrbAgentType action = (OrbAgentType)pflags;
+
+	if (!(bIsValidOrbAgentType(action) || action == OA_NULL)) {
+		return;
+	}
+
+	UINT linkX, linkY;
+	COrbData* orb;
+
+	if (room.GetTSquare(px, py) == T_ORB) {
+		orb = room.GetOrbAtCoords(px, py);
+		linkX = pw;
+		linkY = ph;
+		if (!orb) {
+			orb = room.AddOrbToSquare(px, py);
+		}
+	} else if (room.GetOSquare(px, py) == T_PRESSPLATE) {
+		orb = room.GetPressurePlateAtCoords(px, py);
+		linkX = pw;
+		linkY = ph;
+		if (!orb) {
+			orb = room.AddOrbToSquare(px, py);
+		}
+	} else if(room.GetTSquare(pw, ph) == T_ORB) {
+		orb = room.GetOrbAtCoords(pw, ph);
+		linkX = px;
+		linkY = py;
+		if (!orb) {
+			orb = room.AddOrbToSquare(pw, ph);
+		}
+	} else if (room.GetOSquare(pw, ph) == T_PRESSPLATE) {
+		orb = room.GetPressurePlateAtCoords(pw, ph);
+		linkX = px;
+		linkY = py;
+		if (!orb) {
+			orb = room.AddOrbToSquare(pw, ph);
+		}
+	} else {
+		// No orb or plate to link
+		return;
+	}
+
+	UINT linkO = room.GetOSquare(linkX, linkY);
+	UINT linkT = room.GetTSquare(linkX, linkY);
+	UINT linkF = room.GetFSquare(linkX, linkY);
+
+	if (!(bIsYellowDoor(linkO) || bIsFiretrap(linkO) ||
+		bIsLight(linkT) || bIsAnyArrow(linkF))) {
+		return;
+	}
+
+	COrbAgentData* orbAgent = orb->GetAgentAt(linkX, linkY);
+	if (!orbAgent && bIsYellowDoor(linkO)) {
+		CCoordSet doorCoords;
+		UINT wDoorX, wDoorY;
+		room.GetAllYellowDoorSquares(linkX, linkY, doorCoords);
+		for (COrbAgentData* agent : orb->agents) {
+			if (doorCoords.has(agent->wX, agent->wY)) {
+				orbAgent = agent;
+				break;
+			}
+		}
+	}
+
+	if (orbAgent) {
+		if (pflags == OA_NULL) {
+			orb->DeleteAgent(orbAgent);
+			return;
+		}
+		orbAgent->action = action;
+	} else if (action != OA_NULL) {
+		orb->AddAgent(linkX, linkY, action);
+	}
 }
 
 //*****************************************************************************
@@ -4009,6 +4290,26 @@ bool CCharacter::IsBuildMarkerAt(
 	for (UINT y = py; y <= py + ph; ++y) {
 		for (UINT x = px; x <= px + pw; ++x) {
 			if (room.building.get(x, y))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+// Returns: if there is a build marker of type specific in flags in rect (x,y,w,h)
+bool CCharacter::IsBuildMarkerTypeAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, flags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, flags);
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			if (room.building.get(x, y) == (flags + 1)) //1-based
 				return true;
 		}
 	}
@@ -4562,6 +4863,32 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *
 }
 
 //*****************************************************************************
+bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	int constant = (int)command.x;
+	//operand is an expression
+	UINT index = 0;
+	int operand = parseExpression(command.label.c_str(), index, pGame, this);
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return operand == constant;
+		case ScriptVars::Greater: return operand > constant;
+		case ScriptVars::GreaterThanOrEqual: return operand >= constant;
+		case ScriptVars::Less: return operand < constant;
+		case ScriptVars::LessThanOrEqual: return operand <= constant;
+		case ScriptVars::Inequal: return operand != constant;
+		case ScriptVars::EqualsText:
+		{
+			ASSERT(!"Unsupported var operator for expression");
+			return false;
+		}
+	}
+	ASSERT(!"Unrecognized var operator");
+	return false;
+}
+
+//*****************************************************************************
 void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.x;
@@ -4835,6 +5162,22 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForOpenTile:
 		{
 			return IsOpenTileAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			return IsExpressionSatisfied(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForBuilding:
+		{
+			return IsBuildMarkerAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForBuildType:
+		{
+			return IsBuildMarkerTypeAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForNotBuildType:
+		{
+			return !IsBuildMarkerTypeAt(command, room);
 		}
 		default:
 		{
@@ -5568,6 +5911,17 @@ const
 }
 
 //*****************************************************************************
+void CCharacter::getCommandXYW(
+	//Outputs: the XYW values for this command
+	const CCharacterCommand& command, UINT& x, UINT& y, UINT& w)
+	const
+{
+	x = (this->paramX == NO_OVERRIDE ? command.x : this->paramX);
+	y = (this->paramY == NO_OVERRIDE ? command.y : this->paramY);
+	w = (this->paramW == NO_OVERRIDE ? command.w : this->paramW);
+}
+
+//*****************************************************************************
 void CCharacter::getCommandXYF(
 //Outputs: the XY and flag values for this command
 	const CCharacterCommand& command, UINT& x, UINT& y, UINT& f)
@@ -5582,6 +5936,10 @@ void CCharacter::getCommandXYF(
 bool CCharacter::IsOpenMove(const int dx, const int dy) const
 //Returns: whether move is possible, and player is not in the way
 {
+	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+		return true;
+	}
+
 	return CMonster::IsOpenMove(dx,dy) &&
 		(!this->bSafeToPlayer || !this->pCurrentGame->IsPlayerAt(this->wX+dx, this->wY+dy));
 }
@@ -6746,8 +7104,20 @@ void CCharacter::MoveCharacter(
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	const UINT wOTile = room.GetOSquare(this->wX, this->wY);
 	const bool bWasOnPlatform = bIsPlatform(wOTile);
+	UINT destX, destY;
 
-	Move(this->wX + dx, this->wY + dy, &CueEvents);
+	// Preform tunnel move if allowed, otherwise just make a step
+	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+		if (!this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
+			return;
+		}
+		CueEvents.Add(CID_Tunnel);
+	}	else {
+		destX = this->wX + dx;
+		destY = this->wY + dy;
+	}
+
+	Move(destX, destY, &CueEvents);
 	this->wSwordMovement = nGetO(dx,dy);
 	if (bFaceDirection){	//allow turning?
 		SetOrientation(dx, dy);	//character faces the direction it actually moves
@@ -6794,6 +7164,41 @@ void CCharacter::MoveCharacter(
 		room.UpdatePathMapAt(this->wX, this->wY);
 		room.UpdatePathMapAt(this->wX - dx, this->wY - dy);
 	}
+}
+
+//*****************************************************************************
+bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
+// Can the character enter a tunnel on its tile in the given direction.
+{
+	if (dx != 0 && dy != 0)	{
+		// No diagonal tunnels
+		return false;
+	}
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	const UINT wFTileNo = room.GetFSquare(this->wX, this->wY);
+	const UINT wMoveO = nGetO(dx, dy);
+
+	if (bIsArrowObstacle(wFTileNo, wMoveO)) {
+		// Can't move against arrow
+		return false;
+	}
+
+	const UINT wOTileNo = room.GetOSquare(this->wX, this->wY);
+	if (!bIsTunnel(wOTileNo)) {
+		return false;
+	}
+
+	switch (wOTileNo)
+	{
+		case T_TUNNEL_N: return wMoveO == N;
+		case T_TUNNEL_S: return wMoveO == S;
+		case T_TUNNEL_E: return wMoveO == E;
+		case T_TUNNEL_W: return wMoveO == W;
+		default: ASSERT(!"Unrecognized tunnel type"); return false;
+	}
+
+	return false;
 }
 
 //*****************************************************************************

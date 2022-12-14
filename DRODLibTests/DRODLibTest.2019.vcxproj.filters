@@ -273,6 +273,12 @@
     <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp">
       <Filter>Tests\TemporalToken</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\InstantMovement.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\UseTunnels.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\catch.hpp" />

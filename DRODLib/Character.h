@@ -131,6 +131,7 @@ public:
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
 	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior) == 1; };
+	bool           HasInstantMovement() const { return HasBehavior(ScriptFlag::Behavior::InstantMovement); }
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
@@ -143,6 +144,8 @@ public:
 			UINT& x) const;
 	void           getCommandXY(const CCharacterCommand& command,
 			UINT& x, UINT& y) const;
+	void           getCommandXYW(const CCharacterCommand& command,
+		UINT& x, UINT& y, UINT& w) const;
 	void           getCommandXYF(const CCharacterCommand& command,
 		UINT& x, UINT& y, UINT& f) const;
 
@@ -159,6 +162,7 @@ public:
 	virtual bool   IsBrainPathmapObstacle() const;
 	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
 	bool           IsBuildMarkerAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsBuildMarkerTypeAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	bool           IsMonsterRemainsAt(const CCharacterCommand& command, const CDbRoom& room) const;
@@ -263,6 +267,7 @@ public:
 private:
 	void BuildMarker(const CCharacterCommand& command);
 	void BuildTiles(const CCharacterCommand& command, CCueEvents& CueEvents);
+	bool CanEnterTunnelInDirection(const int dx, const int dy) const;
 	bool ConfirmPathWithNextMoveOpen();
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
@@ -281,6 +286,8 @@ private:
 	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
+	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
+	void LinkOrb(const CCharacterCommand& command, CDbRoom& room);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
 	void RefreshBriars();

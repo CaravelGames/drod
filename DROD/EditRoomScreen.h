@@ -242,6 +242,8 @@ private:
 	UINT              wLastEntranceSelected;  //for warping between levels
 	bool              bSelectingImageStart;
 
+	UINT              wSelectedX, wSelectedY; //for multi-square selection
+
 	//Room region duplication.
 	CDbRoom          *pCopyRoom;
 	UINT              wCopyX1, wCopyY1, wCopyX2, wCopyY2;

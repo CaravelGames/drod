@@ -615,6 +615,37 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			return -1;
 		}
 		break;
+		case ScriptVars::P_EntityWeapon:
+		{
+			if (IsPlayerAt(params[0], params[1])) {
+				return this->swordsman.GetActiveWeapon();
+			}
+
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster || !bEntityHasSword(pMonster->wType))
+				return -1;
+
+			CArmedMonster* pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+			if (!pArmedMonster)
+				return -1;
+
+			return pArmedMonster->weaponType;
+		}
+		case ScriptVars::P_BrainScore:
+		{
+			int x = params[0];
+			int y = params[1];
+			MovementType movement = (MovementType)params[2];
+
+			if (!this->pRoom->IsValidColRow(x, y) || movement >= NumMovementTypes) {
+				return -1;
+			}
+
+			//Make sure pathmap exists
+			this->pRoom->CreatePathMap(this->swordsman.wX, this->swordsman.wY, movement);
+			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
+			return square.dwTargetDist;
+		}
 	}
 
 	return 0;
@@ -1025,6 +1056,14 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			return this->pRoom->weather.wSnow;
 		case (UINT)ScriptVars::P_ROOM_RAIN:
 			return this->pRoom->weather.rain;
+		case (UINT)ScriptVars::P_SPAWNCYCLE:
+			return this->wSpawnCycleCount % TURNS_PER_CYCLE;
+		case (UINT)ScriptVars::P_SPAWNCYCLE_FAST:
+		{
+			UINT cycleTurn = this->wSpawnCycleCount % TURNS_PER_CYCLE;
+			cycleTurn *= 2;
+			return this->bHalfTurn ? cycleTurn + 1 : cycleTurn;
+		}
 		default:
 			return 0;
 	}

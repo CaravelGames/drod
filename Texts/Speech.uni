@@ -2918,6 +2918,14 @@ Regular monster
 [eng]
 Brained monster
 
+[MID_TargetBestBrainTile]
+[eng]
+Best brain tile
+
+[MID_TargetBestBrainDirection]
+[eng]
+Best brain direction
+
 [MID_GetEntityDirection]
 [eng]
 Get entity direction
@@ -3150,6 +3158,10 @@ Push to Fall Immunity
 [eng]
 Can Be NPC Beethro
 
+[MID_InstantMovement]
+[eng]
+Instant Movement
+
 [MID_PreviousIf]
 [eng]
 <Previous If>
@@ -3229,3 +3241,35 @@ Set ceiling light
 [MID_SetWallLight]
 [eng]
 Set wall light
+
+[MID_SetEntityWeapon]
+[eng]
+Set entity weapon
+
+[MID_WaitForExpression]
+[eng]
+Wait until expression
+
+[MID_LinkOrb]
+[eng]
+Link Orb
+
+[MID_WaitForBuilding]
+[eng]
+Wait for building marker
+
+[MID_WaitForBuildType]
+[eng]
+Wait for build marker type
+
+[MID_WaitForNotBuildType]
+[eng]
+Wait until build marker type
+
+[MID_Dying]
+[eng]
+Dying
+
+[MID_Talking]
+[eng]
+Talking

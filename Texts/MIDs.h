@@ -1773,6 +1773,8 @@ enum MID_CONSTANT {
   MID_GetNaturalTarget = 1896,
   MID_TargetRegularMonster = 1893,
   MID_TargetBrainedMonster = 1894,
+  MID_TargetBestBrainTile = 2064,
+  MID_TargetBestBrainDirection = 2065,
   MID_GetEntityDirection = 1897,
   MID_OrbWaitAny = 1900,
   MID_OrbWaitNormal = 1901,
@@ -1807,6 +1809,8 @@ enum MID_CONSTANT {
   MID_PuffImmune = 1929,
   MID_FatalPushImmune = 1944,
   MID_CanBeNPCBeethro = 1964,
+  MID_InstantMovement = 2052,
+  MID_UseTunnels = 2057,
   MID_PreviousIf = 1940,
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,
@@ -1827,6 +1831,14 @@ enum MID_CONSTANT {
   MID_SetDarkness = 2044,
   MID_SetCeilingLight = 2045,
   MID_SetWallLight = 2046,
+  MID_SetEntityWeapon = 2053,
+  MID_WaitForExpression = 2054,
+  MID_LinkOrb = 2058,
+  MID_WaitForBuilding = 2059,
+  MID_WaitForBuildType = 2060,
+  MID_WaitForNotBuildType = 2061,
+  MID_Dying = 2062,
+  MID_Talking = 2063,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
@@ -1861,6 +1873,8 @@ enum MID_CONSTANT {
   MID_RoomFog = 2049,
   MID_RoomSnow = 2050,
   MID_RoomRain = 2051,
+  MID_SpawnCycle = 2055,
+  MID_SpawnCycleFast = 2056,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

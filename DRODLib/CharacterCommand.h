@@ -165,7 +165,9 @@ namespace ScriptFlag
 		PushMonsters = 23,
 		FatalPushImmune = 24,
 		CanBeNPCBeethro = 25,
-		RestrictedMovement = 26
+		RestrictedMovement = 26,
+		InstantMovement = 27,
+		UseTunnels = 28
 	};
 
 	enum DisplayFilter
@@ -194,9 +196,10 @@ namespace ScriptFlag
 	{
 		RegularMonster = 0,
 		BrainedMonster = 1,
-		Guard=2,
-		Puff=3,
-		Stalwart=4
+		BestBrainTile = 2,
+		BestBrainDirection=3,
+		Puff=4,
+		Stalwart=5
 	};
 
 	enum GotoSmartType
@@ -367,6 +370,12 @@ public:
 		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
 		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
 		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
+		CC_SetEntityWeapon,     //Set weapon of non-player entity at (x,y) to weapon (w), including on/off
+		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
+		CC_LinkOrb,             //Change orb/plate connection between (x,y) and (w,h) to agent type in flags
+		CC_WaitForBuilding,     //Wait until build markers are queued in rect (x,y,w,h).
+		CC_WaitForBuildType,    //Wait until build marker type specified in flags is queued in rect (x,y,w,h)
+		CC_WaitForNotBuildType, //Wait until no build marker type specified in flags is queued in rect (x,y,w,h)
 
 		CC_Count
 	};

@@ -147,6 +147,7 @@ private:
 
 	void  QueryRect();
 	void  QueryXY();
+	void  QueryXYWH();
 
 	void  RefreshCustomCharacterList(CListBoxWidget *pListBox);
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
@@ -198,17 +199,18 @@ private:
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
-		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox;
+		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;
 	CListBoxWidget *pWorldMapIconFlagListBox;
 	CListBoxWidget *pWorldMapImageFlagListBox;
-	CListBoxWidget *pWeaponListBox, *pWeaponFlagsListBox;
+	CListBoxWidget *pWeaponListBox, *pWeaponListBox2, *pWeaponFlagsListBox;
 	CListBoxWidget *pAttackTileListBox;
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget *pIgnoreFlagsListBox;
 	CListBoxWidget* pColorListBox;
+	CListBoxWidget* pOrbAgentListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

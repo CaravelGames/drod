@@ -75,7 +75,9 @@ namespace ScriptVars
 		P_ROOM_FOG = -32,
 		P_ROOM_SNOW = -33,
 		P_ROOM_RAIN = -34,
-		FirstPredefinedVar = P_ROOM_RAIN, //set this to the last var in the enumeration
+		P_SPAWNCYCLE = -35,
+		P_SPAWNCYCLE_FAST = -36,
+		FirstPredefinedVar = P_SPAWNCYCLE_FAST, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -103,6 +105,8 @@ namespace ScriptVars
 		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
 		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
 		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
+		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
+		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
 		PrimitiveCount
 	};
 
@@ -123,7 +127,7 @@ namespace ScriptVars
 	//All predefined vars.
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
-	extern const char primitiveNames[PrimitiveCount][13]; //expand buffer size as needed
+	extern const char primitiveNames[PrimitiveCount][14]; //expand buffer size as needed
 };
 
 //Stats used for various tally operations.
