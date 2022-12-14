@@ -754,6 +754,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GKEYStatFull: strText = "Green Keys"; break;
 		case MID_BKEYStatFull: strText = "Blue Keys"; break;
 		case MID_SKEYStatFull: strText = "Skeleton Keys"; break;
+		case MID_VarMyWeakness: strText = "_MyWeakness"; break;
+		case MID_CustomWeakness: strText = "%s weakness"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

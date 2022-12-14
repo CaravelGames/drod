@@ -1319,3 +1319,7 @@ Wait for Exactly One:
 [MID_LogicalWaitEnd]
 [eng]
 Wait for Conditions End
+
+[MID_CustomWeakness]
+[eng]
+%s weakness

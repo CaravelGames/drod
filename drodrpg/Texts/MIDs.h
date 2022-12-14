@@ -1500,6 +1500,7 @@ enum MID_CONSTANT {
   MID_LogicalWaitOr = 1812,
   MID_LogicalWaitXOR = 1813,
   MID_LogicalWaitEnd = 1814,
+  MID_CustomWeakness = 1829,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
@@ -1585,6 +1586,7 @@ enum MID_CONSTANT {
   MID_VarScoreSKey = 1821,
   MID_VarScoreGold = 1822,
   MID_VarScoreXP = 1823,
+  MID_VarMyWeakness = 1828,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,
