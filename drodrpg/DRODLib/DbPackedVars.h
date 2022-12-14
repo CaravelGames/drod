@@ -116,7 +116,7 @@ public:
 	}
 
 	void        Clear();
-	bool        DoesVarExist(const char *pszVarName)
+	bool        DoesVarExist(const char *pszVarName) const
 	{
 		return FindVarByName(pszVarName)!=NULL;
 	}
