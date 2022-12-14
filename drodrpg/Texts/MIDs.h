@@ -1500,7 +1500,8 @@ enum MID_CONSTANT {
   MID_LogicalWaitOr = 1812,
   MID_LogicalWaitXOR = 1813,
   MID_LogicalWaitEnd = 1814,
-  MID_CustomWeakness = 1829,
+  MID_CustomAspect = 1829,
+  MID_StrongAgainstAspect = 1830,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

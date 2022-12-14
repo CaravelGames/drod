@@ -83,7 +83,8 @@ extern const WCHAR wszAmpersand[], wszAsterisk[], wszOpenAngle[], wszCloseAngle[
 	wszExclamation[], wszForwardSlash[], wszHyphen[], wszParentDir[],
 	wszPercent[], wszPeriod[], wszPoundSign[], wszPlus[], wszQuestionMark[], wszQuote[],
 	wszLeftBracket[], wszRightBracket[], wszLeftParen[], wszRightParen[],
-	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszTilde[];
+	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszTilde[],
+	wszStringToken[];
 
 //HTML formatting strings.
 extern const WCHAR wszHtml[], wszEndHtml[], wszBody[], wszEndBody[], wszHeader[],

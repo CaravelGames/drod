@@ -1320,6 +1320,10 @@ Wait for Exactly One:
 [eng]
 Wait for Conditions End
 
-[MID_CustomWeakness]
+[MID_CustomAspect]
 [eng]
-%s weakness
+%s aspect
+
+[MID_StrongAgainstAspect]
+[eng]
+Strong against %s
