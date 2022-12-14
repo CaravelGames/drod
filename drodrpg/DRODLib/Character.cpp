@@ -514,6 +514,8 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 	{
 		case (UINT)ScriptVars::P_MONSTER_NAME:
 			return this->customName;
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+			return this->customWeakness;
 		default:
 			ASSERT(!"getPredefinedStringVar val not supported");
 			return WSTRING();
@@ -873,6 +875,9 @@ void CCharacter::setPredefinedVarString(
 	{
 	case (UINT)ScriptVars::P_MONSTER_NAME:
 		this->customName = val;
+		break;
+	case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+		this->customWeakness = val;
 		break;
 	}
 }

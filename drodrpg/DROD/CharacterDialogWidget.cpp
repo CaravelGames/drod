@@ -4382,6 +4382,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_XP_MULT, g_pTheDB->GetMessageText(MID_VarMonsterXPMult));
 
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_SPAWN, g_pTheDB->GetMessageText(MID_VarMySpawn));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_CUSTOM_WEAKNESS, g_pTheDB->GetMessageText(MID_VarMyWeakness));
 
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_MULT, g_pTheDB->GetMessageText(MID_VarItemMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_HP_MULT, g_pTheDB->GetMessageText(MID_VarItemHPMult));
