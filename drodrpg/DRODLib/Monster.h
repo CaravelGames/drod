@@ -211,6 +211,7 @@ public:
 	virtual UINT  getSword() const;
 	virtual int   getXP() const; //may be negative
 
+	virtual bool  HasCustomWeakness() const {return false;}
 	virtual bool  HasGoblinWeakness() const {return false;}
 	virtual bool  HasNoEnemyDefense() const {return false;}
 	virtual bool  HasRayGun() const {return false;}
