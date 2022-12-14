@@ -5359,7 +5359,12 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
-	this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
+
+	if (vars.DoesVarExist(MovementTypeStr)) {
+		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
+	} else {
+		SetDefaultMovementType();
+	}
 
 	//Stats.
 	this->color = vars.GetVar(ColorStr, this->color);
