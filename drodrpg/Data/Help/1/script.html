@@ -869,9 +869,11 @@ The variable names are case-insensitive.
   These vars determine how much each of the player's resources is worth for scoring
   at score checkpoints. A positive value will make each one worth that much.  A
   negative value will divide your total by that amount, rounding down.  A value of 0
-  will cause it to not be listed on score checkpoints.  <b>Note:</b> Players can look
-  at their current score at any time by right-clicking on the player character, so you
-  should set these values at the earliest opportunity.
+  will cause it to not be listed on score checkpoints.  Each resource is capped at a
+  total score of 100 million, if you are likely to reach this cap, you should lower
+  your score multiplier.  <b>Note:</b> Players can look at their current score at any
+  time by right-clicking on the player character, so you should set these values at
+  the earliest opportunity.
 </p>
 
 <p><a name="functions"><b>Function primitives</b></a> - Predefined

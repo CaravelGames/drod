@@ -2595,6 +2595,15 @@ UINT CDbSavedGames::GetScore(const PlayerStats& st)
 UINT CDbSavedGames::CalculateStatScore(const int stat, const int scoreMultiplier)
 //Return: score for a particular stat
 {
+	const int scoreCap = 100000000;
+	if (scoreMultiplier != 0 && stat > scoreCap / scoreMultiplier) // stat * scoreMultiplier would go above cap
+	{
+		return scoreCap;
+	}
+	if (scoreMultiplier != 0 && stat < -scoreCap / scoreMultiplier) // stat * scoreMultiplier would go below negative cap
+	{
+		return -scoreCap;
+	}
 	return scoreMultiplier < 0 ? stat / abs(scoreMultiplier) : stat * scoreMultiplier;
 }
 
