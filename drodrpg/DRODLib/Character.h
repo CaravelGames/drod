@@ -99,11 +99,13 @@ public:
 
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
+	WSTRING        GetCustomWeakness() const { return this->customWeakness; };
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
 	virtual UINT   GetSpawnType(UINT defaultMonsterID) const;
 	float          GetStatModifier(ScriptVars::StatModifiers statType) const;
+	virtual bool   HasCustomWeakness() const { return !this->customWeakness.empty(); }
 	bool           HasSpecialDeath() const;
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
@@ -313,6 +315,7 @@ private:
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
 	int wSpawnType; // type of monster to spawm when spawning eggs
+	WSTRING customWeakness; // matching weakness does strong hit, empty means no custom weakness
 };
 
 //*****************************************************************************

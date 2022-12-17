@@ -1319,3 +1319,11 @@ Wait for Exactly One:
 [MID_LogicalWaitEnd]
 [eng]
 Wait for Conditions End
+
+[MID_CustomAspect]
+[eng]
+%s aspect
+
+[MID_StrongAgainstAspect]
+[eng]
+Strong against %s

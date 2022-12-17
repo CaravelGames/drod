@@ -293,3 +293,7 @@ _QueenSpawn
 [MID_VarMySpawn]
 [eng]
 _MySpawn
+
+[MID_VarMyWeakness]
+[eng]
+_MyWeakness

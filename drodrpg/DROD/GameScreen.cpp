@@ -1736,7 +1736,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 	int atk=0, def=0;
 	bool bMetal=false, bBeamBlock=false, bBriar=false, bLuckyGR=false,
 		bAttackFirst=false, bAttackLast=false, bBackstab=false, bNoEnemyDEF=false,
-		bGoblinWeakness=false, bSerpentWeakness=false, bLuckyXP=false;
+		bGoblinWeakness=false, bSerpentWeakness=false, bCustomWeakness=false, bLuckyXP=false;
 
 	CCharacter *pCharacter = NULL; //custom equipment
 	switch (eCommand)
@@ -1754,6 +1754,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					def = (int)pCharacter->getDEF();
 					bGoblinWeakness = pCharacter->HasGoblinWeakness();
 					bSerpentWeakness = pCharacter->HasSerpentWeakness();
+					bCustomWeakness = pCharacter->HasCustomWeakness();
 				}
 			}
 			bMetal = this->pCurrentGame->IsSwordMetal(st.sword);
@@ -1795,6 +1796,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					bBeamBlock = pCharacter->HasRayBlocking();
 					bGoblinWeakness = pCharacter->HasGoblinWeakness();
 					bSerpentWeakness = pCharacter->HasSerpentWeakness();
+					bCustomWeakness = pCharacter->HasCustomWeakness();
 				}
 			}
 			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Accessory);
@@ -1854,6 +1856,17 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 		if (bNeedCR)
 			text += wszCRLF;
 		text += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
+		bNeedCR = true;
+	}
+	if (bCustomWeakness)
+	{
+		if (bNeedCR)
+			text += wszCRLF;
+		text += WCSReplace(
+			g_pTheDB->GetMessageText(MID_StrongAgainstAspect),
+			wszStringToken,
+			pCharacter->GetCustomWeakness()
+		);
 		bNeedCR = true;
 	}
 	if (bBeamBlock)

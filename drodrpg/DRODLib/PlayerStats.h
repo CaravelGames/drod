@@ -142,7 +142,8 @@ namespace ScriptVars
 		P_SCORE_SKEY = -86,
 		P_SCORE_GOLD = -87,
 		P_SCORE_XP = -88,
-		FirstPredefinedVar = P_SCORE_XP, //set this to the last var in the enumeration
+		P_MONSTER_CUSTOM_WEAKNESS = -89,
+		FirstPredefinedVar = P_MONSTER_CUSTOM_WEAKNESS, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

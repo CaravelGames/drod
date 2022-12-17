@@ -41,7 +41,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"", "", "", "", "",
 	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn",
 	"", "",
-	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP"
+	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP",
+	""
 };
 
 //Message texts corresponding to the above short var texts.
@@ -69,7 +70,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
 	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
 	MID_VarMonsterName, MID_VarMySpawn,
-	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP
+	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP,
+	MID_VarMyWeakness
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call

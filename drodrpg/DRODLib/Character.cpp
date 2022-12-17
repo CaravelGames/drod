@@ -85,6 +85,7 @@ const UINT MAX_ANSWERS = 9;
 #define ItemGRMultStr "ItemGRMultiplier"
 
 #define SpawnTypeStr "SpawnType"
+#define WeaknessStr "Weakness"
 
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
@@ -513,6 +514,8 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 	{
 		case (UINT)ScriptVars::P_MONSTER_NAME:
 			return this->customName;
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+			return this->customWeakness;
 		default:
 			ASSERT(!"getPredefinedStringVar val not supported");
 			return WSTRING();
@@ -872,6 +875,9 @@ void CCharacter::setPredefinedVarString(
 	{
 	case (UINT)ScriptVars::P_MONSTER_NAME:
 		this->customName = val;
+		break;
+	case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+		this->customWeakness = val;
 		break;
 	}
 }
@@ -5390,6 +5396,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Spawn type
 	this->wSpawnType = vars.GetVar(SpawnTypeStr, this->wSpawnType);
+
+	//Custom weakness
+	this->customWeakness = vars.GetVar(WeaknessStr, this->customWeakness.c_str());
 }
 
 //*****************************************************************************
@@ -5541,6 +5550,10 @@ const
 	// Spawn type
 	if (this->wSpawnType != -1)
 		vars.SetVar(SpawnTypeStr, this->wSpawnType);
+
+	//Custom weakness
+	if (!this->customWeakness.empty())
+		vars.SetVar(WeaknessStr, this->customWeakness.c_str());
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 

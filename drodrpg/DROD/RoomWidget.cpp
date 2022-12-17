@@ -1690,6 +1690,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackInFront = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
+	bool bCustomWeakness = false;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -1698,6 +1699,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		bAttackInFront |= pCharacter->AttacksInFront();
 		bAttackInFrontWhenBack |= pCharacter->AttacksInFrontWhenBackTurned();
 		bSpawnEggs |= pCharacter->CanSpawnEggs();
+		bCustomWeakness = pCharacter->HasCustomWeakness();
 	}
 
 	if (pMonster->HasRayGun())
@@ -1776,6 +1778,21 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
+		++count;
+	}
+	if (bCustomWeakness) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+		wstr += WCSReplace(
+			g_pTheDB->GetMessageText(MID_CustomAspect),
+			wszStringToken,
+			pCharacter->GetCustomWeakness()
+		);
 		++count;
 	}
 
