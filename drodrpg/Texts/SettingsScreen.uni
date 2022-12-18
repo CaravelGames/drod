@@ -437,3 +437,7 @@ No focus plays music
 [MID_DamagePreview]
 [eng]
 Combat damage preview
+
+[MID_ShowScore]
+[eng]
+Show score
