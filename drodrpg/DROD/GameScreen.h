@@ -188,6 +188,7 @@ private:
 	UINT           ShowRoom(CDbRoom *pRoom);
 	void           ShowRoomCoords(CDbRoom *pRoom);
 	void           ShowRoomTemporarily(UINT roomID);
+	void           ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st);
 	void           ShowSpeechLog();
 	void           SwirlEffect();
 	void           SynchScroll();
