@@ -5306,7 +5306,8 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 	ASSERT(nCommand != CMD_UNSPECIFIED);
 	ASSERT(nCommand < COMMAND_COUNT || nCommand == CMD_ADVANCE_CUTSCENE ||
-			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY);
+			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY ||
+			nCommand == CMD_SCORE_KEY);
 	switch (nCommand)
 	{
 		case CMD_RESTART: //case CMD_RESTART_PARTIAL: case CMD_RESTART_FULL:
@@ -5330,6 +5331,12 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 		case CMD_BATTLE_KEY:
 			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
+		return SCR_Game;
+
+		case CMD_SCORE_KEY:
+			ASSERT(this->pCurrentGame);
+			ASSERT(this->pCurrentGame->pPlayer);
+			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
 		return SCR_Game;
 
 		default:

@@ -76,6 +76,7 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1) //access hook for front end call only
 #define CMD_BATTLE_KEY (COMMAND_COUNT+2)       //access hook for front end processing only
 #define CMD_ADVANCE_COMBAT (COMMAND_COUNT+3)   //access hook for front end call only
+#define CMD_SCORE_KEY (COMMAND_COUNT+4)   //access hook for front end call only
 
 //Sword orientation.
 static const UINT NW = 0;
