@@ -113,6 +113,7 @@ namespace InputCommands
 		DCMD_UseAccessory,
 		DCMD_Lock,
 		DCMD_Command,
+		DCMD_ShowScore,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count
