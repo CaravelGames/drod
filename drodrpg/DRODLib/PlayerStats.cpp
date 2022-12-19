@@ -318,7 +318,7 @@ UINT ScriptVars::getVarDefault(const ScriptVars::Predefined var)
 //*****************************************************************************
 bool ScriptVars::IsStringVar(Predefined val)
 {
-	return val == P_MONSTER_NAME;
+	return val == P_MONSTER_NAME || val == P_MONSTER_CUSTOM_WEAKNESS;
 }
 
 //*****************************************************************************
