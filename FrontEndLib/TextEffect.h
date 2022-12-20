@@ -53,6 +53,7 @@ public:
 	int		Y() const {return this->nY;}
 	void		Move(const int nX, const int nY);
 	void     SetText(const WCHAR *text, const UINT eFont);
+	virtual bool Update(const UINT wDeltaTime); // Updates the state of the effect without drawing it
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
