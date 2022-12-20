@@ -1909,6 +1909,9 @@ void CDbXML::Import_TallyRecords(
 	//See the functions's comments for more detail.
 	XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
 
+	//For keeping track of things
+	int totalBytesRead = 0;
+
 	//Parse the XML in chunks to keep memory overhead low.
 	while (info.ImportStatus == MID_ImportSuccessful)
 	{
@@ -1920,7 +1923,8 @@ void CDbXML::Import_TallyRecords(
 			break;
 		}
 
-		const int bytesRead = pBuffer->uncompressedSize;
+		const int bytesRead = min(pBuffer->uncompressedSize, XML_PARSER_BUFF_SIZE);
+		totalBytesRead += bytesRead;
 		ASSERT(bytesRead >= 0);
 		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
 		memcpy(buff, pBuffer->buf, bytesRead);
@@ -1962,6 +1966,9 @@ void CDbXML::Import_TallyRecords(
 			//we aren't decompressing data and we hit an end tag
 			//therefore, we must not have anything else to parse
 			break;
+		} else if (totalBytesRead < pBuffer->uncompressedSize) {
+			//We have some uncompressed buffer to read. Let's continue.
+			pBuffer->buf += bytesRead;
 		}
 	}
 }
@@ -1983,6 +1990,9 @@ void CDbXML::Import_ParseRecords(
 
 	CDb::FreezeTimeStamps(true);
 
+	//For keeping track of things
+	int totalBytesRead = 0;
+
 	while (ContinueImport())
 	{
 		//Allocate buffer for parsing.
@@ -1994,7 +2004,8 @@ void CDbXML::Import_ParseRecords(
 		}
 
 		//Get next chunk of data to parse.
-		const int bytesRead = pBuffer->uncompressedSize;
+		const int bytesRead = min(pBuffer->uncompressedSize, XML_PARSER_BUFF_SIZE);
+		totalBytesRead += bytesRead;
 		ASSERT(bytesRead >= 0);
 		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
 		memcpy(buff, pBuffer->buf, bytesRead);
@@ -2031,6 +2042,9 @@ void CDbXML::Import_ParseRecords(
 			//we aren't decompressing data and we hit an end tag
 			//therefore, we must not have anything else to parse
 			break;
+		} else if (totalBytesRead < pBuffer->uncompressedSize) {
+			//We have some uncompressed buffer to read. Let's continue.
+			pBuffer->buf += bytesRead;
 		}
 	}
 
