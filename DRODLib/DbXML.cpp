@@ -1910,7 +1910,7 @@ void CDbXML::Import_TallyRecords(
 	XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
 
 	//For keeping track of things
-	int totalBytesRead = 0;
+	uLongf totalBytesRead = 0;
 
 	//Parse the XML in chunks to keep memory overhead low.
 	while (info.ImportStatus == MID_ImportSuccessful)
@@ -1991,7 +1991,7 @@ void CDbXML::Import_ParseRecords(
 	CDb::FreezeTimeStamps(true);
 
 	//For keeping track of things
-	int totalBytesRead = 0;
+	uLongf totalBytesRead = 0;
 
 	while (ContinueImport())
 	{
