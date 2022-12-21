@@ -1706,12 +1706,48 @@ MESSAGE_ID CDbXML::ImportXMLRaw(
 }
 
 //*****************************************************************************
-MESSAGE_ID CDbXML::ImportXML(
-	const string& xml)
+//Import an XML file into one or more tables
+MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 {
-	ImportBuffer b;
-	b.passthruUncompressedData(xml);
-	return ImportXML(&b);
+	Import_Init();
+
+	BEGIN_DBREFCOUNT_CHECK;
+	try
+	{
+		//Parser init.
+		InitTokens();
+
+		//Free any parsing job that had started and been interrupted.
+		if (parser)
+			XML_ParserFree(parser);
+
+		parser = XML_ParserCreate(NULL);
+
+		//First pass through data
+		Import_TallyRecords(xml);
+
+		//Second pass through data
+		PerformCallback(MID_ImportingData);
+		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+
+		importBuf.closeStream();
+		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
+
+		Import_ParseRecords(xml);
+
+		//Free parser.
+		XML_ParserFree(parser);
+		parser = NULL;
+
+		Import_Resolve();
+	}	//try
+	catch (CException&)
+	{
+		return MID_FileCorrupted;
+	}
+	END_DBREFCOUNT_CHECK;
+
+	return info.ImportStatus;
 }
 
 //*****************************************************************************
