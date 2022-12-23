@@ -126,6 +126,7 @@ const UINT MAX_ANSWERS = 9;
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
 #define SpawnEggsStr "SpawnEggs"
+#define RemovesSwordStr "RemovesSword"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -240,6 +241,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
+	, bRemovesSword(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2586,7 +2588,7 @@ void CCharacter::Process(
 						this->bSurprisedFromBehind =
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
-						this->bAttackFirst = this->bAttackLast =
+						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
@@ -2671,6 +2673,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::SpawnEggs:
 						this->bSpawnEggs = true;
+					break;
+					case ScriptFlag::RemovesSword:
+						this->bRemovesSword = true;
 					break;
 
 					default:
@@ -5365,6 +5370,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
+	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -5505,6 +5511,8 @@ const
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
 	if (this->bSpawnEggs)
 		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
+	if (this->bRemovesSword)
+		vars.SetVar(RemovesSwordStr, this->bSpawnEggs);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

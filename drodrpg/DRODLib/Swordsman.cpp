@@ -483,6 +483,9 @@ bool CSwordsman::HasSword() const
 	if (this->st.sword == NoSword)
 		return false;
 
+	if (this->pCurrentGame->IsPlayerSwordRemoved())
+		return false;
+
 	return !IsSwordDisabled();
 }
 

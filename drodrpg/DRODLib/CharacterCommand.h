@@ -140,6 +140,7 @@ namespace ScriptFlag
 		AttackLast=23,          //I always attack last in combat
 		BeamBlock=24,           //blocks beam attacks
 		SpawnEggs=25,           //will spawn eggs in reaction to combats
+		RemovesSword=26,        //prevents player having sword when equipped
 	};
 
 	//Inventory and global script types.

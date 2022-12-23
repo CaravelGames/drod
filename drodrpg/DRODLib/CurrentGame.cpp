@@ -3323,6 +3323,22 @@ bool CCurrentGame::IsLuckyXPItem(const UINT type) const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsPlayerSwordRemoved() const
+{
+	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+	if (pCharacter && pCharacter->RemovesSword())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter && pCharacter->RemovesSword())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+	if (pCharacter && pCharacter->RemovesSword())
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::DoesPlayerAttackFirst() const
 //Returns: whether the player has an ability to attack first in combat.
 {
