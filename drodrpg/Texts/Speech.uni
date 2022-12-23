@@ -1327,3 +1327,7 @@ Wait for Conditions End
 [MID_StrongAgainstAspect]
 [eng]
 Strong against %s
+
+[MID_RemovesSword]
+[eng]
+Removes sword

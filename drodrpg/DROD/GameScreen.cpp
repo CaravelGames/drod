@@ -1735,7 +1735,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
 	int atk=0, def=0;
 	bool bMetal=false, bBeamBlock=false, bBriar=false, bLuckyGR=false,
-		bAttackFirst=false, bAttackLast=false, bBackstab=false, bNoEnemyDEF=false,
+		bAttackFirst=false, bAttackLast=false, bRemovesSword=false, bBackstab=false, bNoEnemyDEF=false,
 		bGoblinWeakness=false, bSerpentWeakness=false, bCustomWeakness=false, bLuckyXP=false;
 
 	CCharacter *pCharacter = NULL; //custom equipment
@@ -1811,6 +1811,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 		bAttackLast |= pCharacter->CanAttackLast();
 		bBackstab |= pCharacter->TurnToFacePlayerWhenFighting();
 		bNoEnemyDEF |= pCharacter->HasNoEnemyDefense();
+		bRemovesSword |= pCharacter->RemovesSword();
 	}
 
 	//Format as text.
@@ -1909,6 +1910,13 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 		if (bNeedCR)
 			text += wszCRLF;
 		text += g_pTheDB->GetMessageText(MID_AttackLast);
+		bNeedCR = true;
+	}
+	if (bRemovesSword)
+	{
+		if (bNeedCR)
+			text += wszCRLF;
+		text += g_pTheDB->GetMessageText(MID_RemovesSword);
 		bNeedCR = true;
 	}
 	if (bBackstab)

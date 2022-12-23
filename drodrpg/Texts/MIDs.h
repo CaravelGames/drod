@@ -1503,6 +1503,7 @@ enum MID_CONSTANT {
   MID_LogicalWaitEnd = 1814,
   MID_CustomAspect = 1829,
   MID_StrongAgainstAspect = 1830,
+  MID_RemovesSword = 1832,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
