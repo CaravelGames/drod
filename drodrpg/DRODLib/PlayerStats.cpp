@@ -70,7 +70,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
 	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
 	MID_VarMonsterName, MID_VarMySpawn,
-	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP,
+	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreSKey, MID_VarScoreGold, MID_VarScoreXP,
 	MID_VarMyWeakness
 };
 
