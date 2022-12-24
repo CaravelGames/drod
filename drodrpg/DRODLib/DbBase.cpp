@@ -759,6 +759,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_StrongAgainstAspect: strText = "Strong against %s"; break;
 		case MID_ShowScore: strText = "Show score"; break;
 		case MID_RemovesSword: strText = "Removes sword"; break;
+		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

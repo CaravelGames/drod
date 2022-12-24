@@ -42,6 +42,7 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"_MudSpawn", "_TarSpawn", "_GelSpawn", "_QueenSpawn",
 	"", "",
 	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP",
+	"",
 	""
 };
 
@@ -71,7 +72,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
 	MID_VarMonsterName, MID_VarMySpawn,
 	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP,
-	MID_VarMyWeakness
+	MID_VarMyWeakness,
+	MID_VarLevelMultiplier
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call

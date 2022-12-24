@@ -333,3 +333,7 @@ _ScoreREP
 [MID_VarMyWeakness]
 [eng]
 _MyWeakness
+
+[MID_VarLevelMultiplier]
+[eng]
+_LevelMultiplier

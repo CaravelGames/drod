@@ -823,6 +823,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_SPEED:
 					case (UINT)ScriptVars::P_TOTALMOVES:
 					case (UINT)ScriptVars::P_TOTALTIME:
+					case (UINT)ScriptVars::P_LEVEL_MULT:
 						//cannot alter
 					break;
 

@@ -1590,6 +1590,7 @@ enum MID_CONSTANT {
   MID_VarScoreGold = 1822,
   MID_VarScoreXP = 1823,
   MID_VarMyWeakness = 1828,
+  MID_VarLevelMultiplier = 1833,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

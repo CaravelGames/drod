@@ -1385,6 +1385,10 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 		}
 		return 0;
 
+		//Level information
+		case (UINT)ScriptVars::P_LEVEL_MULT:
+			return this->pLevel->dwMultiplier;
+
 		default:
 			return player.st.getVar(ScriptVars::Predefined(varIndex));
 	}
@@ -2382,6 +2386,7 @@ void CCurrentGame::ProcessCommandSetVar(
 		case (UINT)ScriptVars::P_SPEED:
 		case (UINT)ScriptVars::P_TOTALMOVES:
 		case (UINT)ScriptVars::P_TOTALTIME:
+		case (UINT)ScriptVars::P_LEVEL_MULT:
 			//cannot alter
 			return;
 	}
