@@ -337,3 +337,11 @@ _MyWeakness
 [MID_VarLevelMultiplier]
 [eng]
 _LevelMultiplier
+
+[MID_VarRoomX]
+[eng]
+_RoomX
+
+[MID_VarRoomY]
+[eng]
+_RoomY
