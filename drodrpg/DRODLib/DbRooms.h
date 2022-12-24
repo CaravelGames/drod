@@ -251,6 +251,7 @@ public:
 	COrbData*      GetOrbAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetOSquare(const UINT wX, const UINT wY) const;
 	UINT           GetOSquareWithGuessing(int nX, int nY) const;
+	void           GetPositionInLevel(int& dx, int& dy) const;
 	COrbData*      GetPressurePlateAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetPrimaryKey() const {return this->dwRoomID;}
 	float          GetStatModifierFromCharacters(ScriptVars::StatModifiers statType) const;

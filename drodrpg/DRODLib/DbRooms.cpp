@@ -5203,10 +5203,8 @@ void CDbRoom::GetLevelPositionDescription(
 										//desc. text (default=false)
 {
 	//calculate how far from entrance
-	UINT dwRoomX, dwRoomY; //level starting room coords
-	CDbLevels::GetStartingRoomCoords(this->dwLevelID, dwRoomX, dwRoomY);
-	const int dX = this->dwRoomX - dwRoomX;   //offset from starting room
-	const int dY = this->dwRoomY - dwRoomY;
+	int dX, dY;
+	GetPositionInLevel(dX, dY);
 
 	//Call language-specific version of method.
 	switch (Language::GetLanguage())
@@ -5221,6 +5219,16 @@ void CDbRoom::GetLevelPositionDescription(
 			GetLevelPositionDescription_English(wstrDescription, dX, dY, bAbbreviate);
 		break;
 	}
+}
+
+//*****************************************************************************
+void CDbRoom::GetPositionInLevel(int& dx, int& dy) const
+{
+	UINT dwRoomX, dwRoomY; //level starting room coords
+	CDbLevels::GetStartingRoomCoords(this->dwLevelID, dwRoomX, dwRoomY);
+
+	dx = this->dwRoomX - dwRoomX;   //offset from starting room
+	dy = this->dwRoomY - dwRoomY;
 }
 
 //*****************************************************************************
