@@ -39,7 +39,7 @@ DependenciesLibraries = DependenciesDir + "Library\\"
 DependenciesDlls = DependenciesDir + "Dll\\"
 ZlibUrl = 'http://www.zlib.net/fossils/zlib-1.2.11.tar.gz'
 LibOggName = 'libogg-1.3.0'
-SdlName = 'sdl2-2.0.12'
+SdlName = 'sdl2-2.26.1'
 
 if DepsToBuild == "all":
 	DepsToBuild = [
@@ -54,7 +54,7 @@ if DepsToBuild == "all":
 		'lpng-1512',
 		'metakit-2.4.9.7',
 		SdlName,
-		'sdl-ttf-2.0.14',
+		'sdl-ttf-2.20.1',
 		'zlib'
 	]
 
@@ -333,10 +333,10 @@ dependencies = {
 		}
 	},
 	SdlName: {
-		'urls': ['https://www.libsdl.org/release/SDL2-2.0.12.zip'],
+		'urls': ['https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.zip'],
 		'builds': [
 			{
-				'sln': 'sdl2-2.0.12/VisualC/SDL.sln',
+				'sln': 'sdl2-2.26.1/VisualC/SDL.sln',
 				'configs': [
 					['Debug', '/project', 'SDL2'],
 					['Release', '/project', 'SDL2'],
@@ -346,30 +346,29 @@ dependencies = {
 			}
 		],
 		'include': {
-			'SDL2-2.0.12/include': '' #Too many files to list them one by one
+			'SDL2-2.26.1/include': '' #Too many files to list them one by one
 		},
 		'libs': {
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.lib': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.lib': 'Release',
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2main.lib': 'Release'
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2.lib': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2.lib': 'Release',
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2main.lib': 'Release'
 		},
 		'dlls': {
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.dll': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.dll': 'Release'
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2.dll': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2.dll': 'Release'
 		}
 	},
-	'sdl-ttf-2.0.14': {
-		'urls': ['https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip'],
+	'sdl-ttf-2.20.1': {
+		'urls': ['https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip'],
 		'include': {
-			'SDL2_ttf-2.0.14/include': ''
+			'SDL2_ttf-2.20.1/include': ''
 		},
 		'libs': {
-			'SDL2_ttf-2.0.14/lib/x86/SDL2_ttf.lib': ['Debug', 'Release']
+			'SDL2_ttf-2.20.1/lib/x86/SDL2_ttf.lib': ['Debug', 'Release']
 		},
 		'dlls': {
-			'SDL2_ttf-2.0.14/lib/x86/SDL2_ttf.dll': ['Debug', 'Release'],
-			'SDL2_ttf-2.0.14/lib/x86/libfreetype-6.dll': ['Debug', 'Release']
+			'SDL2_ttf-2.20.1/lib/x86/SDL2_ttf.dll': ['Debug', 'Release']
 		}
 	},
 	'zlib': {
