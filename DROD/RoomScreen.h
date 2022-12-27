@@ -91,6 +91,7 @@ protected:
 
 private:
 	std::map<SDL_Keycode,int> KeysymToCommandMap;
+	std::map<SDL_Keycode, int> AlternativeKeysymToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H
