@@ -3,7 +3,9 @@ Deps/
 DepsSrc/
 
 # DROD Build Folders
+BackEndLib/Debug/
 BackEndLib/Debug-Temp/
+BackEndLib/Release/
 BackEndLib/Release-Temp/
 CaravelNet/Debug/
 CaravelNet/Debug-Temp/
@@ -41,7 +43,9 @@ DRODUtil/Release/
 DRODUtil/Release-Temp/
 DRODUtil/Steam/
 DRODUtil/Steam-Temp/
+FrontEndLib/Debug/
 FrontEndLib/Debug-Temp/
+FrontEndLib/Release/
 FrontEndLib/Release-Temp/
 Master/Linux/build.*
 Master/Linux/builds/
