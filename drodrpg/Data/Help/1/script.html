@@ -672,6 +672,8 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_MyMonsterREPMult</td><td>local monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
+    <td>_LevelMultiplier</td><td>current level's item stat multiplier(<a href="#levelmult">*</a>)</td><td></td><td></td>
+  </tr><tr>
     <td>_ItemMult</td><td>global item stat multiplier(<a href="#itemmult">*</a>)</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_ItemHPMult</td><td>global health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
@@ -755,6 +757,10 @@ The variable names are case-insensitive.
     <td>_Y</td><td>player's Y coordinate (room row)</td><td></td><td>0,15</td>
   </tr><tr>
     <td>_O</td><td>player's orientation (direction faced)</td><td></td><td>0,8</td>
+  </tr><tr>
+    <td>_RoomX</td><td>current room's X coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
+  </tr><tr>
+    <td>_RoomY</td><td>current room's Y coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
   </tr><tr>
     <td><b>Play info</b></td><td></td><td></td><td></td>
   </tr><tr>
@@ -848,6 +854,10 @@ The variable names are case-insensitive.
   and are available in global and local versions, and are applied when items are
   collected. If the total multiplier for an item is negative, collecting it will
   reduce the player's statistics.
+</p>
+<p><a name="levelmult"><b>*_LevelMultiplier</b></a> - This value contains the currents level's item multiplier, as set in the editor. It is a read-only value.
+</p>
+<p><a name="roompositionvars"><b>*_RoomX, _RoomY</b></a> - These values contain the X and Y position of the current room in the level. The entrance is at (0,0), with East and South being positive directions, and North and West being negative directions. These are read-only values.
 </p>
 <p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
   positive value, it indicates the percentage of HP the target will
