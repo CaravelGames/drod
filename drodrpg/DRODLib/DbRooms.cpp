@@ -3126,7 +3126,8 @@ CMonster* CDbRoom::AddNewMonster(
 	const UINT wMonsterType,      //(in)   One of M_* constants indicating
 							//    type of monster to create.
 	const UINT wX, const UINT wY, //(in) position of monster
-	const bool bInRoom) //monster is in room on player entrance [default=true]
+	const bool bInRoom, //monster is in room on player entrance [default=true]
+	const bool bLinkMonster) // whether to link the monster [default=true]
 //
 //Returns:
 //Pointer to new monster object.
@@ -3163,7 +3164,8 @@ CMonster* CDbRoom::AddNewMonster(
 	}
 */
 
-	LinkMonster(pNew, bInRoom);
+	if(bLinkMonster)
+		LinkMonster(pNew, bInRoom);
 
 	//Return pointer to the new monster.
 	return pNew;
@@ -6201,7 +6203,7 @@ CMonster* CDbRoom::LoadMonster(const c4_RowRef& row)
 	const UINT wMonsterType = p_Type(row);
 	const UINT wX = p_X(row), wY = p_Y(row);
 
-	CMonster *pNew = AddNewMonster((MONSTERTYPE)wMonsterType, wX, wY);
+	CMonster *pNew = AddNewMonster((MONSTERTYPE)wMonsterType, wX, wY, true, false);
 	if (!pNew) throw CException("CDbRoom::LoadMonster: Alloc failed");
 //	pNew->bIsFirstTurn = (p_IsFirstTurn(row) == 1);
 	pNew->wO = pNew->wPrevO = p_O(row);
@@ -6230,6 +6232,8 @@ CMonster* CDbRoom::LoadMonster(const c4_RowRef& row)
 		UINT wTempX, wTempY;
 		pSerpent->GetTail(wTempX, wTempY);
 	}
+
+	LinkMonster(pNew);
 
 	return pNew;
 }

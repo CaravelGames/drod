@@ -159,7 +159,7 @@ public:
 	void           ActivateToken(CCueEvents &CueEvents, const UINT wX, const UINT wY);
 //	void           AddDiagonalDoorAssociations();
 	CMonster *     AddNewMonster(const UINT wMonsterType, const UINT wX,
-			const UINT wY, const bool bInRoom=true);
+			const UINT wY, const bool bInRoom=true, const bool bLinkMonster=true);
 	bool           AddOrb(COrbData *pOrb);
 	COrbData *     AddOrbToSquare(const UINT wX, const UINT wY);
 	bool           AddPressurePlateTiles(COrbData* pPlate);
