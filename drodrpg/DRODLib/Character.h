@@ -56,6 +56,7 @@
 using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
+#define ParamProcessSequenceStr "ProcessSequenceParam"
 
 class CSwordsman;
 struct HoldCharacter;

@@ -4985,6 +4985,10 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 			if (this->pCustomChar)
 			{
 				this->wIdentity = this->pCustomChar->wType;
+
+				if (this->commands.empty()) {
+					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+				}
 			}
 			else
 				//When character has a dangling reference to a custom character definition
@@ -5389,6 +5393,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramW = vars.GetVar(ParamWStr, this->paramW);
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
+	this->wProcessSequence = vars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
 
 	//Modifiers
 	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
@@ -5534,6 +5539,8 @@ const
 		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		vars.SetVar(ParamFStr, this->paramF);
+	if (this->wProcessSequence != 9999)
+		vars.SetVar(ParamProcessSequenceStr, this->wProcessSequence);
 
 	// Modifiers
 	if (this->monsterHPmult != 100)

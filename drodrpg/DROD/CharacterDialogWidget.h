@@ -31,6 +31,7 @@
 #define CHARACTERDIALOGWIDGET_H
 
 #include "EntranceSelectDialogWidget.h"
+#include "CharacterOptionsWidget.h"
 #include "../DRODLib/Character.h"
 #include "../DRODLib/DbData.h"
 #include <FrontEndLib/DialogWidget.h>
@@ -171,6 +172,7 @@ private:
 	COptionButtonWidget *pIsVisibleButton;
 	CListBoxWidget *pCommandsListBox, *pDefaultScriptCommandsListBox;
 	CRenameDialogWidget *pAddCommandDialog, *pAddCharacterDialog, *pScriptDialog;
+	CCharacterOptionsDialog* pCharOptionsDialog;
 	CListBoxWidget *pActionListBox;
 	CListBoxWidget *pEventListBox;
 	CListBoxWidget *pSpeakerListBox;
