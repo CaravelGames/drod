@@ -454,7 +454,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	AddWidget(new CButtonWidget(TAG_DELETECOMMAND, X_DELETECOMMAND, Y_DELETECOMMAND,
 			CX_DELETECOMMAND, CY_DELETECOMMAND, g_pTheDB->GetMessageText(MID_DeleteCommand)));
 	AddWidget(new CButtonWidget(TAG_CHAROPTIONS, X_CHAROPTIONS, Y_CHAROPTIONS,
-		CX_CHAROPTIONS, CY_CHAROPTIONS, L"Options"));
+		CX_CHAROPTIONS, CY_CHAROPTIONS, g_pTheDB->GetMessageText(MID_CharOptions)));
 
 	AddWidget(new CLabelWidget(0L, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
@@ -1727,7 +1727,7 @@ void CCharacterDialogWidget::AddScriptDialog()
 	this->pScriptDialog->AddWidget(new CButtonWidget(TAG_DELETECOMMAND2, X_DELETECOMMAND, Y_DELETECOMMAND,
 			CX_DELETECOMMAND, CY_DELETECOMMAND, g_pTheDB->GetMessageText(MID_DeleteCommand)));
 	this->pScriptDialog->AddWidget(new CButtonWidget(TAG_CHAROPTIONS2, X_CHAROPTIONS, Y_CHAROPTIONS,
-		CX_CHAROPTIONS, CY_CHAROPTIONS, L"Options"));
+		CX_CHAROPTIONS, CY_CHAROPTIONS, g_pTheDB->GetMessageText(MID_CharOptions)));
 
 	this->pScriptDialog->AddWidget(new CLabelWidget(0, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));

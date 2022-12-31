@@ -1331,3 +1331,19 @@ Strong against %s
 [MID_RemovesSword]
 [eng]
 Removes sword
+
+[MID_CharOptionsTitle]
+[eng]
+Character Options
+
+[MID_CharOptions]
+[eng]
+Options
+
+[MID_ProcessingSequence]
+[eng]
+Processing Sequence:
+
+[MID_ProcessingSequenceDescription]
+[eng]
+Scripts with a lower processing sequence value will run before scripts with a higher value.

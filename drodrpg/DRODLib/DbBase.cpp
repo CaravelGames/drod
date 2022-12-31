@@ -762,6 +762,10 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;
 		case MID_VarRoomX: strText = "_RoomX"; break;
 		case MID_VarRoomY: strText = "_RoomY"; break;
+		case MID_CharOptionsTitle: strText = "Character Options"; break;
+		case MID_CharOptions: strText = "Options"; break;
+		case MID_ProcessingSequence: strText = "Processing sequence:"; break;
+		case MID_ProcessingSequenceDescription: strText = "Scripts with a lower processing sequence value will run before scripts with a higher value."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

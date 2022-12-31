@@ -47,13 +47,13 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 		g_pTheDB->GetMessageText(MID_Cancel)));
 
 	AddWidget(new CLabelWidget(0L, X_TITLE, Y_TITLE,
-		CX_TITLE, CY_TITLE, F_Header, L"Options"));
+		CX_TITLE, CY_TITLE, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
 	AddWidget(new CLabelWidget(0L, X_SEQUENCELABEL, Y_SEQUENCELABEL,
-		CX_SEQUENCELABEL, CY_SEQUENCELABEL, F_Small, L"Processing Sequence"));
+		CX_SEQUENCELABEL, CY_SEQUENCELABEL, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
 
 	AddWidget(new CLabelWidget(0L, X_SEQUENCEHELP, Y_SEQUENCEHELP,
-		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, L"Scripts with a lower processing sequence value will run before scripts with a higher value"));
+		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
 
 	this->pSequenceTextBox = new CTextBoxWidget(0L, X_SEQUENCETEXT, Y_SEQUENCETEXT,
 		CX_SEQUENCETEXT, CY_SEQUENCETEXT, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
