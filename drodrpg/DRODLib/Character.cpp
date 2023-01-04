@@ -86,6 +86,7 @@ const UINT MAX_ANSWERS = 9;
 
 #define SpawnTypeStr "SpawnType"
 #define WeaknessStr "Weakness"
+#define TooltipStr "Tooltip"
 
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
@@ -4341,6 +4342,13 @@ UINT CCharacter::GetResolvedIdentity() const
 	return wIdentity;
 }
 
+//*****************************************************************************
+//Returns: custom tooltips for the NPC, divided into a vector
+vector<WSTRING> CCharacter::GetCustomDescriptions() const
+{
+	return WCSExplode(this->customDescription, *wszSemicolon);
+}
+
 UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
 {
 	if (this->wSpawnType >= 0) {
@@ -5413,6 +5421,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Custom weakness
 	this->customWeakness = vars.GetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	this->customWeakness = vars.GetVar(TooltipStr, this->customDescription.c_str());
 }
 
 //*****************************************************************************
@@ -5572,6 +5583,10 @@ const
 	//Custom weakness
 	if (!this->customWeakness.empty())
 		vars.SetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	if (!this->customDescription.empty())
+		vars.SetVar(TooltipStr, this->customDescription.c_str());
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 

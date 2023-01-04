@@ -1690,7 +1690,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackInFront = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
-	bool bCustomWeakness = false;
+	bool bCustomWeakness = false, bCustomDescription = false;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -1700,6 +1700,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		bAttackInFrontWhenBack |= pCharacter->AttacksInFrontWhenBackTurned();
 		bSpawnEggs |= pCharacter->CanSpawnEggs();
 		bCustomWeakness = pCharacter->HasCustomWeakness();
+		bCustomDescription = pCharacter->HasCustomDescription();
 	}
 
 	if (pMonster->HasRayGun())
@@ -1794,6 +1795,23 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			pCharacter->GetCustomWeakness()
 		);
 		++count;
+	}
+	if (bCustomDescription) {
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
+
+		for (WSTRING& description : descriptions) {
+			if (description.empty()) continue;
+
+			if(count)
+			{
+				wstr += wszComma;
+				wstr += wszSpace;
+			}
+			wstr += description;
+			++count;
+		}
 	}
 
 	//Unique.
