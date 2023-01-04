@@ -146,7 +146,8 @@ namespace ScriptVars
 		P_LEVEL_MULT = -90,
 		P_ROOM_X = -91,
 		P_ROOM_Y = -92,
-		FirstPredefinedVar = P_ROOM_Y, //set this to the last var in the enumeration
+		P_MONSTER_CUSTOM_DESCRIPTION = -93,
+		FirstPredefinedVar = P_MONSTER_CUSTOM_DESCRIPTION, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

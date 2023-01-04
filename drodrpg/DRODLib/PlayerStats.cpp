@@ -43,7 +43,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"", "",
 	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP",
 	"",
-	"", "", ""
+	"", "", "",
+	""
 };
 
 //Message texts corresponding to the above short var texts.
@@ -73,7 +74,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMonsterName, MID_VarMySpawn,
 	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP,
 	MID_VarMyWeakness,
-	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY
+	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY,
+	MID_VarMyDescription
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -291,7 +293,16 @@ void ScriptVars::init()
 //*****************************************************************************
 bool ScriptVars::IsStringVar(Predefined val)
 {
-	return val == P_MONSTER_NAME;
+	switch (val) {
+		case P_MONSTER_NAME:
+		case P_MONSTER_CUSTOM_WEAKNESS:
+		case P_MONSTER_CUSTOM_DESCRIPTION:
+			return true;
+		default:
+			return false;
+	}
+
+	return false;
 }
 
 //*****************************************************************************

@@ -1597,6 +1597,7 @@ enum MID_CONSTANT {
   MID_VarLevelMultiplier = 1833,
   MID_VarRoomX = 1834,
   MID_VarRoomY = 1835,
+  MID_VarMyDescription = 1840,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

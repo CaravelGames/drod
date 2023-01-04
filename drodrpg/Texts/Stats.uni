@@ -345,3 +345,7 @@ _RoomX
 [MID_VarRoomY]
 [eng]
 _RoomY
+
+[MID_VarMyDescription]
+[eng]
+_MyDescription

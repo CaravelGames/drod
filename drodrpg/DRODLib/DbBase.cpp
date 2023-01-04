@@ -766,6 +766,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_CharOptions: strText = "Options"; break;
 		case MID_ProcessingSequence: strText = "Processing sequence:"; break;
 		case MID_ProcessingSequenceDescription: strText = "Scripts with a lower processing sequence value will run before scripts with a higher value."; break;
+		case MID_VarMyDescription: strText = "_MyDescription"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
