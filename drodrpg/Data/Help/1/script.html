@@ -633,6 +633,10 @@ The variable names are case-insensitive.
     <td>_MyColor</td><td>NPC's RGB modifier (<a href="#mycolor">*</a>)</td><td>505050</td><td>000000,999999</td>
   </tr><tr>
     <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
+	</tr><tr>
+    <td>_MyWeakness</td><td>NPC's custom weakness type (<a href="#myweakness">*</a>)</td><td></td><td>Text</td>
+  </tr><tr>
+    <td>_MyDescription</td><td>NPC's custom description (<a href="#mydescription">*</a>)</td><td></td><td>Text</td>
   </tr><tr>
     <td>_MyX</td><td>NPC's X coordinate (room column)</td><td></td><td>0,15</td>
   </tr><tr>
@@ -822,6 +826,8 @@ The variable names are case-insensitive.
   A value of 0 indicates no sword.
 </p>
 <p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if both _MyWeakness values are the same. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
+</p>
+<p><a name="mydescription"><b>*_MyDescription</b></a> - A custom description property that can be set for a monster or equipment. It will be displayed after any behavior descriptors that apply to the character. A semi-colon can be used to split the description into multiple descriptors that will be displayed separately.
 </p>
 <p><a name="paramoverride"><b>*_MyScriptX</b></a> - This and the other script
   command parameter overrides are used if variable parameters are required
