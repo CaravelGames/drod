@@ -87,7 +87,7 @@ public:
 		: wX(wX), wY(wY), wMoves(wMoves), dwScore(dwScore) { }
 	UINT wX, wY, wMoves;
 	UINT dwScore;
-	bool operator <(const SORTPOINT& rhs) const { return this->dwScore >= rhs.dwScore; }
+	bool operator <(const SORTPOINT& rhs) const { return this->dwScore > rhs.dwScore; }
 };
 typedef std::vector<SORTPOINT> SORTPOINTS;
 
