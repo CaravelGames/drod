@@ -464,8 +464,8 @@ bool CompareEntrances::operator()(const SORTPOINT& lhs, const SORTPOINT& rhs)
 	if (lhs.wY > rhs.wY)
 		return true;
 
-	if (lhs.wX > rhs.wX)
-		return true;
+	if (lhs.wY < rhs.wY)
+		return false;
 
-	return false;
+	return (lhs.wX > rhs.wX);
 }
