@@ -768,8 +768,10 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_Game));
 			ASSERT(pGameScreen);
-			if (pGameScreen->IsGameLoaded())
+			if (pGameScreen->IsGameLoaded()) {
+				if (ShowYesNoMessage(L"Really start a new game?") != TAG_YES) return SCR_Title;
 				pGameScreen->UnloadGame();
+			}
 			if (!pGameScreen->LoadNewGame(dwCurrentHoldID))
 			{
 				ShowOkMessage(MID_LoadGameFailed);
