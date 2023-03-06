@@ -66,6 +66,7 @@ namespace Settings
 	DEF(MoveCounter);
 	DEF(Music);
 	DEF(MusicVolume);
+	DEF(NewGamePrompt);
 	DEF(NoFocusPlaysMusic);
 	DEF(PlaySessions);
 	DEF(PuzzleMode);

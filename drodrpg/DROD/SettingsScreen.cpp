@@ -127,6 +127,8 @@ const UINT TAG_UPLOADSCORES = 1065;
 const UINT TAG_AUTOSAVE = 1070;
 const UINT TAG_ITEMTIPS = 1071;
 
+const UINT TAG_NEWGAMEPROMPT = 1072;
+
 //don't use values 1080-1089
 
 const UINT TAG_CANCEL = 1091;
@@ -269,6 +271,16 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CX_ITEMTIPS = CX_AUTOSAVE;
 	static const UINT CY_ITEMTIPS = CY_STANDARD_OPTIONBUTTON;
 	static const UINT CY_EDITOR_FRAME = Y_ITEMTIPS + CY_ITEMTIPS + CY_SPACE;
+
+	//New game frame and children
+	static const int X_NEWGAME_FRAME = X_EDITOR_FRAME;
+	static const int Y_NEWGAME_FRAME = Y_EDITOR_FRAME + CY_EDITOR_FRAME + 2*CY_SPACE;
+	static const UINT CX_NEWGAME_FRAME = CX_EDITOR_FRAME;
+	static const int X_NEWGAMEPROMPT = CX_SPACE;
+	static const int Y_NEWGAMEPROMPT = CY_SPACE;
+	static const UINT CX_NEWGAMEPROMPT = CX_NEWGAME_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
+	static const UINT CY_NEWGAMEPROMPT = CY_STANDARD_OPTIONBUTTON;
+	static const UINT CY_NEWGAME_FRAME = Y_NEWGAMEPROMPT + CY_NEWGAMEPROMPT + CY_SPACE;
 
 	//Game speed frame and children.
 	static const int X_SPECIAL_FRAME = X_PERSONAL_FRAME;
@@ -578,6 +590,15 @@ CSettingsScreen::CSettingsScreen()
 					g_pTheDB->GetMessageText(MID_ItemTips), true);
 	pEditorFrame->AddWidget(pOptionButton);
 
+	//New game frame
+	CFrameWidget* pNewGameFrame = new CFrameWidget(0L, X_NEWGAME_FRAME, Y_NEWGAME_FRAME,
+		CX_NEWGAME_FRAME, CY_NEWGAME_FRAME, L"New games");
+	pTabbedMenu->AddWidgetToTab(pNewGameFrame, PERSONAL_TAB);
+
+	pOptionButton = new COptionButtonWidget(TAG_NEWGAMEPROMPT, X_NEWGAMEPROMPT,
+		Y_NEWGAMEPROMPT, CX_NEWGAMEPROMPT, CY_NEWGAMEPROMPT,
+		L"Confirm new game", true);
+	pNewGameFrame->AddWidget(pOptionButton);
 
 	//Graphics and sound tab.
 
@@ -1402,6 +1423,11 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DisableMouse, false));
 
+	//New game settings.
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_NEWGAMEPROMPT));
+	pOptionButton->SetChecked(settings.GetVar(Settings::NewGamePrompt, true));
+
 	//Command settings.
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
@@ -1529,6 +1555,11 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	settings.SetVar(Settings::DisableMouse, pOptionButton->IsChecked());
+
+	//New game settings.
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_NEWGAMEPROMPT));
+	settings.SetVar(Settings::NewGamePrompt, pOptionButton->IsChecked());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.
