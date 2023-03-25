@@ -4577,6 +4577,10 @@ bool CCharacter::DidPlayerInput(
 		return false;  //nLastCommand is a false "wait"
 	if (px == CMD_EXEC_COMMAND) {
 		return CueEvents.HasOccurred(CID_CommandKeyPressed); //only way to detect
+	} else if (px == CMD_EXEC_COMMAND_TWO) {
+		return CueEvents.HasOccurred(CID_CommandKeyTwoPressed);
+	} else if (px == CMD_EXEC_COMMAND_THREE) {
+		return CueEvents.HasOccurred(CID_CommandKeyThreePressed);
 	}
 
 	return (px == (UINT)nLastCommand);

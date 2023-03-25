@@ -838,6 +838,16 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_LightTilesChanged,
 
+	//Second Command Key was used.
+	//
+	//Private data: NONE
+	CID_CommandKeyTwoPressed,
+
+	//Third Command Key was used.
+	//
+	//Private data: NONE
+	CID_CommandKeyThreePressed,
+
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider
 	//Make sure this is always the last CueEvent defined

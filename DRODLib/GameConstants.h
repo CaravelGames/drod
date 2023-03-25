@@ -78,7 +78,9 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_ANSWER    (22)
 #define CMD_EXEC_COMMAND (23)
 #define CMD_SETVAR    (24) //tracks vars altered through the playtest/cheat terminal popup
-#define COMMAND_COUNT (25)
+#define CMD_EXEC_COMMAND_TWO (25)
+#define CMD_EXEC_COMMAND_THREE (26)
+#define COMMAND_COUNT (27)
 #define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1) //access hook for front end call only
 #define CMD_BATTLE_KEY (COMMAND_COUNT+2)       //access hook for front end processing only
 #define CMD_BUMP_N (COMMAND_COUNT+3)           //bump commands for Temporal Splits only
