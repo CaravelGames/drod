@@ -1309,6 +1309,8 @@ enum MID_CONSTANT {
   MID_UndoMove = 926,
   MID_BattleKey = 1291,
   MID_UseCommandKey = 1409,
+  MID_UseCommandKeyTwo = 2066,
+  MID_UseCommandKeyThree = 2067,
   MID_RepeatRate = 927,
   MID_Slow = 928,
   MID_Fast = 929,
