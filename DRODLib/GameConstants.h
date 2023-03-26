@@ -208,6 +208,8 @@ namespace InputCommands
 		DCMD_Undo,
 		DCMD_Battle,
 		DCMD_Command,
+		DCMD_CommandTwo,
+		DCMD_CommandThree,
 		DCMD_CloneSwitch,
 		
 		// Below are keymaps which are not commands but other actions in the game
