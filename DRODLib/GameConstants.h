@@ -303,6 +303,18 @@ static inline bool bIsMovementCommand(const int command)
 	}
 }
 
+static inline bool bIsSpecialCommand(const int command)
+{
+	switch (command)
+	{
+		case CMD_EXEC_COMMAND:
+		case CMD_EXEC_COMMAND_TWO:
+		case CMD_EXEC_COMMAND_THREE:
+			return true;
+		default: return false;
+	}
+}
+
 //Returns: true when command requires extra data fields
 static inline bool bIsComplexCommand(const int command)
 {

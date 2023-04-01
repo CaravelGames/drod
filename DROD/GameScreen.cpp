@@ -1688,7 +1688,7 @@ void CGameScreen::OnKeyDown(
 
 		//Only allow inputting player movement commands when no cutscene is playing.
 		if (!this->pCurrentGame->IsCutScenePlaying() ||
-				(nCommand >= CMD_WAIT && nCommand != CMD_EXEC_COMMAND))
+				(nCommand >= CMD_WAIT && !bIsSpecialCommand(nCommand)))
 		{
 			SCREENTYPE eNextScreen = ProcessCommand(nCommand, bMacro);
 			if (eNextScreen != SCR_Game)

@@ -281,7 +281,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 	if (!bBumpCommand && (dx || dy))
 	{
 		ASSERT(nCommand != CMD_C && nCommand != CMD_CC && nCommand != CMD_WAIT
-				&& nCommand != CMD_EXEC_COMMAND);
+				&& !bIsSpecialCommand(nCommand));
 
 		//Before he moves, remember important square contents.
 		const UINT wOTile = room.GetOSquare(this->wX, this->wY);
