@@ -777,7 +777,11 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 	const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, 0);
+	InputKey inputKey = settings.GetVar(keyDefinition->settingName, (int64_t)0);
+
+	if (inputKey == SDLK_UNKNOWN) {
+		inputKey = keyDefinition->GetDefaultKey(settings.GetVar(INIKey::Keyboard, 0));
+	}
 
 	return I18N::DescribeInputKey(inputKey);
 }
