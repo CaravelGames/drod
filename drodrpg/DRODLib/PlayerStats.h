@@ -171,6 +171,7 @@ namespace ScriptVars
 	};
 
 	void init();
+	UINT getVarDefault(const ScriptVars::Predefined var);
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
 	bool IsStringVar(Predefined val);
