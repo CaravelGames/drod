@@ -72,7 +72,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMyItemMult, MID_VarMyItemHPMult, MID_VarMyItemATKMult, MID_VarMyItemDEFMult, MID_VarMyItemGRMult,
 	MID_VarMudSpawn, MID_VarTarSpawn, MID_VarGelSpawn, MID_VarQueenSpawn,
 	MID_VarMonsterName, MID_VarMySpawn,
-	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreGold, MID_VarScoreXP,
+	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreSKey, MID_VarScoreGold, MID_VarScoreXP,
 	MID_VarMyWeakness,
 	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY,
 	MID_VarMyDescription
@@ -288,6 +288,35 @@ void ScriptVars::init()
 		}
 		ASSERT(!midTexts[0].empty());
 	}
+}
+
+//*****************************************************************************
+UINT ScriptVars::getVarDefault(const ScriptVars::Predefined var)
+{
+	switch (var) {
+		case P_TAR_SPAWN:
+		case P_MUD_SPAWN:
+		case P_GEL_SPAWN:
+		case P_QUEEN_SPAWN:
+			return UINT(-1);
+		case P_SCORE_HP:
+			return UINT(-40);
+		case P_SCORE_ATK:
+			return 5;
+		case P_SCORE_DEF:
+			return 3;
+		case P_SCORE_YKEY:
+			return 10;
+		case P_SCORE_GKEY:
+			return 20;
+		case P_SCORE_BKEY:
+		case P_SCORE_SKEY:
+			return 30;
+		default:
+			return 0;
+	}
+
+	return 0;
 }
 
 //*****************************************************************************
@@ -596,9 +625,7 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			continue; //these values are not player/global stats
 
 		ASSERT(predefinedVarTexts[i][0] != 0); //not empty string
-		UINT defaultVal = 0;
-		if (73 <= i && i <= 76)
-			defaultVal = UINT(-1);
+		UINT defaultVal = getVarDefault(ScriptVars::Predefined(-(i+1)));
 		const UINT val = stats.GetVar(predefinedVarTexts[i], defaultVal);
 		switch (i)
 		{
