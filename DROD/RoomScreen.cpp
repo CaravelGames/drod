@@ -347,6 +347,37 @@ void CRoomScreen::InitKeysymToCommandMap(
 				COMMANDKEY_ARRAY[wKeyboard][wIndex]);
 		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
 		this->KeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : nKey] = commands[wIndex];
+
+		// Numlock being off can cause the numpad to be treated as different keys, but only the arrows for some reason
+		// So we store an alternative key map that flips arrow keys and some numpad keys so we can check for both
+		int altKey = nKey;
+		switch (nKey) {
+			case SDLK_KP_8:
+				altKey = SDLK_UP;
+				break;
+			case SDLK_KP_4:
+				altKey = SDLK_LEFT;
+				break;
+			case SDLK_KP_6:
+				altKey = SDLK_RIGHT;
+				break;
+			case SDLK_KP_2:
+				altKey = SDLK_DOWN;
+				break;
+			case SDLK_UP:
+				altKey = SDLK_KP_8;
+				break;
+			case SDLK_LEFT:
+				altKey = SDLK_KP_4;
+				break;
+			case SDLK_RIGHT:
+				altKey = SDLK_KP_6;
+				break;
+			case SDLK_DOWN:
+				altKey = SDLK_KP_2;
+				break;
+		}
+		this->AlternativeKeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : altKey] = commands[wIndex];
 	}
 }
 
@@ -356,6 +387,10 @@ int CRoomScreen::GetCommandForKeysym(const SDL_Keycode& sym) const
 	std::map<SDL_Keycode,int>::const_iterator it = this->KeysymToCommandMap.find(sym);
 	if (it != this->KeysymToCommandMap.end())
 		return it->second;
+
+	std::map<SDL_Keycode, int>::const_iterator itAlternative = this->AlternativeKeysymToCommandMap.find(sym);
+	if (itAlternative != this->AlternativeKeysymToCommandMap.end())
+		return itAlternative->second;
 
 	return CMD_UNSPECIFIED;
 }
