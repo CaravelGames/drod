@@ -114,6 +114,9 @@ SDL_Surface *CPNGHandler::CreateSurface(
 			NULL, my_error_exit, NULL);
 	if (!pPNG) return NULL;
 	png_infop pInfo = png_create_info_struct(pPNG);
+#if PNG_LIBPNG_VER >= 10603
+	png_set_option(pPNG, PNG_MAXIMUM_INFLATE_WINDOW, PNG_OPTION_ON);
+#endif
 
 	if (!pInfo || setjmp(png_jmpbuf(pPNG)))
 	{
