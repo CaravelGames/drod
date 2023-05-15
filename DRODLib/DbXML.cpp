@@ -1706,12 +1706,48 @@ MESSAGE_ID CDbXML::ImportXMLRaw(
 }
 
 //*****************************************************************************
-MESSAGE_ID CDbXML::ImportXML(
-	const string& xml)
+//Import an XML file into one or more tables
+MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 {
-	ImportBuffer b;
-	b.passthruUncompressedData(xml);
-	return ImportXML(&b);
+	Import_Init();
+
+	BEGIN_DBREFCOUNT_CHECK;
+	try
+	{
+		//Parser init.
+		InitTokens();
+
+		//Free any parsing job that had started and been interrupted.
+		if (parser)
+			XML_ParserFree(parser);
+
+		parser = XML_ParserCreate(NULL);
+
+		//First pass through data
+		Import_TallyRecords(xml);
+
+		//Second pass through data
+		PerformCallback(MID_ImportingData);
+		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
+
+		importBuf.closeStream();
+		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
+
+		Import_ParseRecords(xml);
+
+		//Free parser.
+		XML_ParserFree(parser);
+		parser = NULL;
+
+		Import_Resolve();
+	}	//try
+	catch (CException&)
+	{
+		return MID_FileCorrupted;
+	}
+	END_DBREFCOUNT_CHECK;
+
+	return info.ImportStatus;
 }
 
 //*****************************************************************************
@@ -1967,6 +2003,73 @@ void CDbXML::Import_TallyRecords(
 }
 
 //*****************************************************************************
+//Pre-parse the XML payload.
+//Determine the upper limit of how many new records will be added to the DB
+//and add empty rows for them now to minimize memory address fragmentation during import.
+void CDbXML::Import_TallyRecords(const string& xml) //[in] string containg xml to parse
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
+
+	if (CDbXML::info.bPreparsed ||
+		CDbXML::info.typeBeingImported == CImportInfo::LanguageMod) //only adding text records
+		return;
+
+	PerformCallback(MID_ImportTallying);
+	//This callback method is invoked by the XML parser for each record
+	//encountered in the data payload.
+	//It is used to tally the number of records existing of each type.
+	//See the functions's comments for more detail.
+	XML_SetElementHandler(parser, CDbXMLTallyElementCDecl, NULL);
+
+	const char* pXml = xml.c_str();
+	size_t remainingSize = xml.length();
+
+	//Parse the XML in chunks to keep memory overhead low.
+	while (info.ImportStatus == MID_ImportSuccessful)
+	{
+		//Allocate (next) buffer for parsing.
+		void* buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
+		if (!buff)
+		{
+			info.ImportStatus = MID_NoMoreMemory;
+			break;
+		}
+
+		const int bytesRead = min(remainingSize, XML_PARSER_BUFF_SIZE);
+		ASSERT(bytesRead >= 0);
+		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
+		memcpy(buff, pXml, bytesRead);
+
+		//Parse data chunk.
+		if (XML_ParseBuffer(parser, bytesRead, bytesRead == 0) == XML_STATUS_ERROR)
+		{
+			//Some problem occurred.
+			info.ImportStatus = MID_FileCorrupted;
+
+			char errorStr[256];
+			_snprintf(errorStr, 256,
+				"Import Parse Error: %s at line %u:%u\n",
+				XML_ErrorString(XML_GetErrorCode(parser)),
+				(UINT)XML_GetCurrentLineNumber(parser),
+				(UINT)XML_GetCurrentColumnNumber(parser));
+			CFiles Files;
+			Files.AppendErrorLog((char*)errorStr);
+		}
+
+		if (bytesRead == 0) //done
+		{
+			AddRowsForPendingRecords();
+			CDbXML::info.bPreparsed = true;
+			break;
+		}
+
+		//Advance pointer by amount of data that has been parsed
+		pXml += bytesRead;
+		remainingSize -= bytesRead;
+	}
+}
+
+//*****************************************************************************
 //Parse the XML data payload, populating database records and staging them
 //for commit at the end of parsing.
 void CDbXML::Import_ParseRecords(
@@ -2032,6 +2135,70 @@ void CDbXML::Import_ParseRecords(
 			//therefore, we must not have anything else to parse
 			break;
 		}
+	}
+
+	CDb::FreezeTimeStamps(false);
+}
+
+
+//*****************************************************************************
+//Parse the XML data payload, populating database records and staging them
+//for commit at the end of parsing.
+void CDbXML::Import_ParseRecords(const string& xml) //[in] string containg xml to parse
+{
+	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
+
+	//These callback methods are invoked as XML records and attributes are parsed.
+	//Internal database records will be constructed incrementally as these
+	//values are read in. The 'EndElement' callback is used to indicate the
+	//completion of parsing a record, at which point it is staged for write
+	//to the database.  Read their in-place comments for more detail.
+	XML_SetElementHandler(parser, CDbXMLStartElementCDecl, CDbXMLEndElementCDecl);
+
+	CDb::FreezeTimeStamps(true);
+
+	const char* pXml = xml.c_str();
+	size_t remainingSize = xml.length();
+
+	while (ContinueImport()) {
+		//Allocate buffer for parsing.
+		void* buff = XML_GetBuffer(parser, XML_PARSER_BUFF_SIZE);
+		if (!buff) {
+			if (!bImportComplete)
+				info.ImportStatus = MID_NoMoreMemory;
+			break;
+		}
+
+		//Get next chunk of data to parse.
+		const int bytesRead = min(remainingSize, XML_PARSER_BUFF_SIZE);
+		ASSERT(bytesRead >= 0);
+		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
+		memcpy(buff, pXml, bytesRead);
+
+		//Parse data chunk.
+		if (XML_ParseBuffer(parser, bytesRead, bytesRead == 0) == XML_STATUS_ERROR)
+		{
+			//Invalidate import only if data was corrupted somewhere before the end tag.
+			//If something afterwards happens to be wrong, just ignore it.
+			if (!bImportComplete)
+				info.ImportStatus = MID_FileCorrupted;
+
+			char errorStr[256];
+			_snprintf(errorStr, 256,
+				"Import Parse Error: %s at line %u:%u\n",
+				XML_ErrorString(XML_GetErrorCode(parser)),
+				(UINT)XML_GetCurrentLineNumber(parser),
+				(UINT)XML_GetCurrentColumnNumber(parser));
+			CFiles Files;
+			Files.AppendErrorLog((char*)errorStr);
+		}
+
+		if (bytesRead == 0)
+			break; //done
+
+		//Advance pointer by amount of data that has been parsed
+		pXml += bytesRead;
+		remainingSize -= bytesRead;
 	}
 
 	CDb::FreezeTimeStamps(false);
