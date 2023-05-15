@@ -4158,7 +4158,8 @@ const
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
+					// @FIXME - nDist is a temporary fix to prevent hard crashes
+					if (nDist(wCol, wRow, this->wX, this->wY) == 1 && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
 			return true;
