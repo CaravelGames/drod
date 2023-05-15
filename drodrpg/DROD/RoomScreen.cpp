@@ -445,7 +445,7 @@ void CRoomScreen::InitKeysymToCommandMap(
 		CMD_SW, CMD_S, CMD_SE,
 		CMD_C, CMD_CC, CMD_RESTART, CMD_UNDO,
 		CMD_BATTLE_KEY, CMD_USE_ACCESSORY,
-		CMD_LOCK, CMD_EXEC_COMMAND
+		CMD_LOCK, CMD_EXEC_COMMAND, CMD_SCORE_KEY
 	};
 
 	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex) {

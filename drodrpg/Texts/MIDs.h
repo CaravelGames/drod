@@ -1167,6 +1167,7 @@ enum MID_CONSTANT {
   MID_DefaultKeyCommandsPrompt = 1631,
   MID_DisableMouseMovement = 1735,
   MID_NoFocusPlaysMusic = 1746,
+  MID_ShowScore = 1831,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

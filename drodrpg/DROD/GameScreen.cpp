@@ -4567,7 +4567,29 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 
 //*****************************************************************************
 void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
-//Displays score checkpoint stats.
+//Displays score checkpoint stats and uploads the score.
+{
+	//Stats involved in score tallying.
+	ASSERT(this->pCurrentGame);
+	ASSERT(this->pCurrentGame->pPlayer);
+	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
+	UINT dwTotalScore = this->pCurrentGame->GetScore();
+
+/*
+	wstrLevelStats += wszCRLF;
+
+	this->pRoomWidget->AddLastLayerEffect(new CTextEffect(
+		this->pRoomWidget, wstrLevelStats.c_str(), F_Stats, 5000, 8000, true));
+*/
+
+	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwTotalScore);
+
+	//Display.
+	ShowScoreDialog(pScoreIDText, st);
+}
+
+void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
+//Displays score stats.
 {
 	WSTRING wstrLevelStats;
 
@@ -4576,8 +4598,6 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
-	ASSERT(this->pCurrentGame->pPlayer);
-	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
 	dwHP = st.HP;
 	dwATK = this->pCurrentGame->getPlayerATK();
 	dwDEF = this->pCurrentGame->getPlayerDEF();
@@ -4611,18 +4631,11 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 	if (st.scoreBlueKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
 	if (st.scoreSkeletonKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
 
-/*
-	wstrLevelStats += wszCRLF;
-
-	this->pRoomWidget->AddLastLayerEffect(new CTextEffect(
-		this->pRoomWidget, wstrLevelStats.c_str(), F_Stats, 5000, 8000, true));
-*/
-
 	//Set texts.
-	CLabelWidget *pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
-	pNameLabel->SetText(pScoreIDText);
+	CLabelWidget* pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
+	pNameLabel->SetText(pTitle.c_str());
 
-	CLabelWidget *pTextLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
+	CLabelWidget* pTextLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
 	pTextLabel->SetText(wstrLevelStats.c_str());
 	SDL_Rect rect;
 	pTextLabel->GetRect(rect);
@@ -4655,8 +4668,6 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 	wstrLevelStats += _itoW(dwTotalScore, temp, 10);
 
 	pTotalLabel->SetText(wstrLevelStats.c_str());
-
-	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwTotalScore);
 
 	//Display.
 	SetCursor();
@@ -5295,7 +5306,8 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 	ASSERT(nCommand != CMD_UNSPECIFIED);
 	ASSERT(nCommand < COMMAND_COUNT || nCommand == CMD_ADVANCE_CUTSCENE ||
-			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY);
+			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY ||
+			nCommand == CMD_SCORE_KEY);
 	switch (nCommand)
 	{
 		case CMD_RESTART: //case CMD_RESTART_PARTIAL: case CMD_RESTART_FULL:
@@ -5319,6 +5331,12 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 		case CMD_BATTLE_KEY:
 			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
+		return SCR_Game;
+
+		case CMD_SCORE_KEY:
+			ASSERT(this->pCurrentGame);
+			ASSERT(this->pCurrentGame->pPlayer);
+			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
 		return SCR_Game;
 
 		default:

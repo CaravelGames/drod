@@ -323,3 +323,19 @@ This room has closed doors.
 [MID_ATKForFasterCombatWin]
 [eng]
 ATK for faster win
+
+[MID_YKEYStatFull]
+[eng]
+Yellow Keys
+
+[MID_GKEYStatFull]
+[eng]
+Green Keys
+
+[MID_BKEYStatFull]
+[eng]
+Blue Keys
+
+[MID_SKEYStatFull]
+[eng]
+Skeleton Keys

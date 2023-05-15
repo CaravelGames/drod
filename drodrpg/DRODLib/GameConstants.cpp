@@ -79,7 +79,8 @@ namespace InputCommands
 		"Battle",
 		"UseAccessory", //UseWeapon and UseArmor commands are piggybacked
 		"Lock",
-		"UseCommand"
+		"UseCommand",
+		"ShowScore"
 	};
 
 	const UINT COMMAND_MIDS[DCMD_Count] = {
@@ -88,7 +89,7 @@ namespace InputCommands
 		MID_MoveSouthwest, MID_MoveSouth, MID_MoveSoutheast,
 		MID_SwingClockwise, MID_SwingCounterclockwise,
 		MID_RestartRoom, MID_UndoMove, MID_BattleKey, MID_UseAccessoryKey,
-		MID_LockCommand, MID_UseCommandKey
+		MID_LockCommand, MID_UseCommandKey, MID_ShowScore
 	};
 
 	DCMD getCommandIDByVarName(const WSTRING& wtext)
