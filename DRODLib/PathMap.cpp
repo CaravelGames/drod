@@ -191,7 +191,7 @@ void CPathMap::GetEntrances(
 	CalcPaths();
 	sortPoints.clear();
 
-	std::priority_queue<SORTPOINT> ecopy(this->entrySquares);
+	SortedEntrances ecopy(this->entrySquares);
 
 	while (!ecopy.empty())
 	{
@@ -448,4 +448,24 @@ const
 		//Append end of row CR/LF.
 		strOutput += NEWLINE;
 	}
+}
+
+//**************************************************************************************
+//Returns if a sortpoint is less than another, accounting for relative room position in
+//addition to tile score. If scores are equal, compare the y position, then x position.
+bool CompareEntrances::operator()(const SORTPOINT& lhs, const SORTPOINT& rhs)
+{
+	if (lhs < rhs)
+		return true;
+
+	if (rhs < lhs)
+		return false;
+
+	if (lhs.wY > rhs.wY)
+		return true;
+
+	if (lhs.wY < rhs.wY)
+		return false;
+
+	return (lhs.wX > rhs.wX);
 }
