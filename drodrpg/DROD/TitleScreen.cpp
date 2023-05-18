@@ -771,7 +771,8 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_Game));
 			ASSERT(pGameScreen);
-			if (pGameScreen->IsGameLoaded()) {
+			const UINT dwContinueID = g_pTheDB->SavedGames.FindByContinue();
+			if (pGameScreen->IsGameLoaded() || dwContinueID) {
 				if (!ConfirmNewGame()) return SCR_Title;
 				pGameScreen->UnloadGame();
 			}
