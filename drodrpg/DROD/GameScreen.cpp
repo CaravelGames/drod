@@ -532,7 +532,7 @@ void CGameScreen::RedrawStats(
 	WSTRING wstr;
 	for (i=0; i<numStats; ++i)
 	{
-		int val = 0;
+		int val = 0, val_percent = 0, val_mod = 0;
 		switch (i)
 		{
 			case 0: val = ps.HP; if (val < 0) val = 0; break;
@@ -552,11 +552,23 @@ void CGameScreen::RedrawStats(
 			case 14: val = ps.skeletonKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.skeletonKeys; break;
 			case 15: val = ps.XP; break;
 			case 16:
-				val = int(this->pCurrentGame->pLevel->dwMultiplier) * int(ps.itemMult) / 100;
+			{
+				val_percent = int(this->pCurrentGame->pLevel->dwMultiplier) * int(ps.itemMult);
+				val = val_percent / 100;
 				if (val > 99999)
 					val = 99999; //don't overwrite area
 				else if (val < -99999)
 					val = -99999;
+
+				//show two decimal places when values can fit
+				if (abs(val) < 1000) {
+					val_mod = abs(val_percent) % 100;
+
+					if (abs(val) >= 100) {
+						val_mod = (val_mod / 10) * 10; //truncate to one decimal digit
+					}
+				}
+			}
 			break;
 			default: break;
 		}
@@ -602,7 +614,22 @@ void CGameScreen::RedrawStats(
 			{
 				static const WCHAR multiplier[] = {We('x'),We(0)};
 				WSTRING text = multiplier;
-				text += _itoW(val, temp, 10);
+				if (val == 0 && val_percent < 0) {
+					text += wszHyphen; //minus sign
+					text += wszZero;
+				} else {
+					text += _itoW(val, temp, 10);
+				}
+				if (val_mod) {
+					text += wszPeriod;
+
+					if (val_mod < 10) {
+						text += wszZero; //leading zero
+					} else if (val_mod % 10 == 0) {
+						val_mod /= 10; //don't show trailing zero
+					}
+					text += _itoW(val_mod, temp, 10);
+				}
 				pLabel->SetText(text.c_str());
 			}
 			break;
