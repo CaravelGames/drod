@@ -1801,7 +1801,8 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		ASSERT(pCharacter);
 		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
 
-		for (WSTRING& description : descriptions) {
+		for (size_t i = 0; i < descriptions.size(); ++i) {
+			WSTRING description = descriptions[i];
 			if (description.empty()) continue;
 
 			if(count)
