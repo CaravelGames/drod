@@ -537,6 +537,7 @@
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="BrowserScreen.cpp" />
     <ClCompile Include="CharacterDialogWidget.cpp" />
+    <ClCompile Include="CharacterOptionsWidget.cpp" />
     <ClCompile Include="Chat.cpp" />
     <ClCompile Include="ChatScreen.cpp" />
     <ClCompile Include="ClockWidget.cpp" />
@@ -604,6 +605,7 @@
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="BrowserScreen.h" />
     <ClInclude Include="CharacterDialogWidget.h" />
+    <ClInclude Include="CharacterOptionsWidget.h" />
     <ClInclude Include="Chat.h" />
     <ClInclude Include="ChatScreen.h" />
     <ClInclude Include="ClockWidget.h" />

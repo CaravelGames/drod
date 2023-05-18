@@ -574,6 +574,8 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  protection against monsters with this attack ability.</li>
   <li><a name="be_attacklast"><u>Attack last</u></a>:
 	  Always attack last against the enemy.</li>
+  <li><a name="be_attacklast"><u>Removes sword</u></a>:
+	  A piece of equipment with this behavior will prevent the player from holding a sword, even if they have a weapon equipped. The player still benefits from the weapon's stat increases, and any other scripted effects it may have.</li>
   <li><a name="be_droptrapdoors"><u>Drop Trapdoors</u></a>:
 	  When moving off trapdoors, setting this causes them to drop.
 	  Otherwise, nothing happens (default).</li>
@@ -631,6 +633,10 @@ The variable names are case-insensitive.
     <td>_MyColor</td><td>NPC's RGB modifier (<a href="#mycolor">*</a>)</td><td>505050</td><td>000000,999999</td>
   </tr><tr>
     <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
+	</tr><tr>
+    <td>_MyWeakness</td><td>NPC's custom weakness type (<a href="#myweakness">*</a>)</td><td></td><td>Text</td>
+  </tr><tr>
+    <td>_MyDescription</td><td>NPC's custom description (<a href="#mydescription">*</a>)</td><td></td><td>Text</td>
   </tr><tr>
     <td>_MyX</td><td>NPC's X coordinate (room column)</td><td></td><td>0,15</td>
   </tr><tr>
@@ -669,6 +675,8 @@ The variable names are case-insensitive.
     <td>_MyMonsterGRMult</td><td>local monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_MyMonsterREPMult</td><td>local monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_LevelMultiplier</td><td>current level's item stat multiplier(<a href="#levelmult">*</a>)</td><td></td><td></td>
   </tr><tr>
     <td>_ItemMult</td><td>global item stat multiplier(<a href="#itemmult">*</a>)</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
@@ -754,6 +762,10 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_O</td><td>player's orientation (direction faced)</td><td></td><td>0,8</td>
   </tr><tr>
+    <td>_RoomX</td><td>current room's X coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
+  </tr><tr>
+    <td>_RoomY</td><td>current room's Y coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
+  </tr><tr>
     <td><b>Play info</b></td><td></td><td></td><td></td>
   </tr><tr>
     <td>_TotalMoves</td><td>total moves made by the player this game</td><td></td><td></td>
@@ -815,6 +827,8 @@ The variable names are case-insensitive.
 </p>
 <p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if both _MyWeakness values are the same. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
 </p>
+<p><a name="mydescription"><b>*_MyDescription</b></a> - A custom description property that can be set for a monster or equipment. It will be displayed after any behavior descriptors that apply to the character. A semi-colon can be used to split the description into multiple descriptors that will be displayed separately.
+</p>
 <p><a name="paramoverride"><b>*_MyScriptX</b></a> - This and the other script
   command parameter overrides are used if variable parameters are required
   for certain script commands instead of hard-coded values.
@@ -846,6 +860,10 @@ The variable names are case-insensitive.
   and are available in global and local versions, and are applied when items are
   collected. If the total multiplier for an item is negative, collecting it will
   reduce the player's statistics.
+</p>
+<p><a name="levelmult"><b>*_LevelMultiplier</b></a> - This value contains the currents level's item multiplier, as set in the editor. It is a read-only value.
+</p>
+<p><a name="roompositionvars"><b>*_RoomX, _RoomY</b></a> - These values contain the X and Y position of the current room in the level. The entrance is at (0,0), with East and South being positive directions, and North and West being negative directions. These are read-only values.
 </p>
 <p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
   positive value, it indicates the percentage of HP the target will

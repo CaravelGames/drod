@@ -1503,6 +1503,11 @@ enum MID_CONSTANT {
   MID_LogicalWaitEnd = 1814,
   MID_CustomAspect = 1829,
   MID_StrongAgainstAspect = 1830,
+  MID_RemovesSword = 1832,
+  MID_CharOptionsTitle = 1836,
+  MID_CharOptions = 1837,
+  MID_ProcessingSequence = 1838,
+  MID_ProcessingSequenceDescription = 1839,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
@@ -1589,6 +1594,10 @@ enum MID_CONSTANT {
   MID_VarScoreGold = 1822,
   MID_VarScoreXP = 1823,
   MID_VarMyWeakness = 1828,
+  MID_VarLevelMultiplier = 1833,
+  MID_VarRoomX = 1834,
+  MID_VarRoomY = 1835,
+  MID_VarMyDescription = 1840,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

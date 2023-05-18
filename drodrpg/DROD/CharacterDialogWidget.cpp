@@ -142,11 +142,13 @@ const UINT TAG_ANIMATESPEED = 908;
 const UINT TAG_EDITDEFAULTSCRIPT = 907;
 const UINT TAG_CUSTOM_NPCS = 906;
 const UINT TAG_CUSTOM_NPC_ID = 905;
+const UINT TAG_CHAROPTIONS = 904;
 
 const UINT TAG_ADDCOMMAND2 = 899;
 const UINT TAG_DELETECOMMAND2 = 898;
 const UINT TAG_DEFAULTCOMMANDSLISTBOX = 897;
 const UINT TAG_OK2 = 896;
+const UINT TAG_CHAROPTIONS2 = 895;
 
 const UINT TAG_VARCOMPLIST2 = 895;
 
@@ -156,6 +158,7 @@ const UINT CX_DIALOG = 688;
 const UINT CY_DIALOG = 688;
 
 const UINT CX_SPACE = 15;
+const UINT CX_UPPER_SPACE = 7;
 const UINT CY_SPACE = 10;
 
 const SURFACECOLOR PaleRed = {255, 192, 192};
@@ -368,6 +371,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, queryX(0), queryY(0), queryW(0), queryH(0)
 	, pGraphicListBox(NULL), pCommandsListBox(NULL), pDefaultScriptCommandsListBox(NULL)
 	, pAddCommandDialog(NULL), pAddCharacterDialog(NULL), pScriptDialog(NULL)
+	, pCharOptionsDialog(NULL)
 	, pActionListBox(NULL), pEventListBox(NULL)
 	, pSpeakerListBox(NULL), pMoodListBox(NULL)
 	, pVisualEffectsListBox(NULL)
@@ -406,13 +410,17 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	static const UINT CX_COMMANDS = CX_DIALOG - X_COMMANDS - CX_GRAPHICLISTBOX - CX_SPACE*2;
 	static const UINT CY_COMMANDS = 25*22 + 4;
 	static const UINT CX_ADDCOMMAND = 130;
-	static const int X_ADDCOMMAND = X_COMMANDS + CX_COMMANDS - CX_ADDCOMMAND - CX_SPACE;
+	static const int X_ADDCOMMAND = X_COMMANDS + CX_COMMANDS - CX_ADDCOMMAND - CX_UPPER_SPACE;
 	static const int Y_ADDCOMMAND = Y_COMMANDSLABEL - 4;
 	static const UINT CY_ADDCOMMAND = CY_STANDARD_BUTTON;
 	static const UINT CX_DELETECOMMAND = 150;
-	static const int X_DELETECOMMAND = X_ADDCOMMAND - CX_DELETECOMMAND - CX_SPACE;
+	static const int X_DELETECOMMAND = X_ADDCOMMAND - CX_DELETECOMMAND - CX_UPPER_SPACE;
 	static const int Y_DELETECOMMAND = Y_ADDCOMMAND;
 	static const UINT CY_DELETECOMMAND = CY_STANDARD_BUTTON;
+	static const UINT CX_CHAROPTIONS = 100;
+	static const int X_CHAROPTIONS = X_DELETECOMMAND - CX_CHAROPTIONS - CX_UPPER_SPACE;
+	static const int Y_CHAROPTIONS = Y_ADDCOMMAND;
+	static const UINT CY_CHAROPTIONS = CY_STANDARD_BUTTON;
 
 	static const int X_GRAPHICLABEL = CX_DIALOG - CX_GRAPHICLISTBOX - CX_SPACE;
 	static const int Y_GRAPHICLABEL = Y_ADDCOMMAND;
@@ -445,6 +453,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 			CX_ADDCOMMAND, CY_ADDCOMMAND, g_pTheDB->GetMessageText(MID_AddCommand)));
 	AddWidget(new CButtonWidget(TAG_DELETECOMMAND, X_DELETECOMMAND, Y_DELETECOMMAND,
 			CX_DELETECOMMAND, CY_DELETECOMMAND, g_pTheDB->GetMessageText(MID_DeleteCommand)));
+	AddWidget(new CButtonWidget(TAG_CHAROPTIONS, X_CHAROPTIONS, Y_CHAROPTIONS,
+		CX_CHAROPTIONS, CY_CHAROPTIONS, g_pTheDB->GetMessageText(MID_CharOptions)));
 
 	AddWidget(new CLabelWidget(0L, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
@@ -476,6 +486,13 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 			TAG_OK, X_OKBUTTON, Y_OKBUTTON, CX_BUTTON, CY_STANDARD_BUTTON,
 			g_pTheDB->GetMessageText(MID_Okay));
 	AddWidget(pButton);
+
+	//Options dialog
+	this->pCharOptionsDialog = new CCharacterOptionsDialog();
+
+	AddWidget(this->pCharOptionsDialog);
+	this->pCharOptionsDialog->Center();
+	this->pCharOptionsDialog->Hide();
 
 	AddCommandDialog();
 	AddCharacterDialog();
@@ -1446,6 +1463,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::NoEnemyDefense, g_pTheDB->GetMessageText(MID_NoEnemyDefense));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackFirst, g_pTheDB->GetMessageText(MID_AttackFirst));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackLast, g_pTheDB->GetMessageText(MID_AttackLast));
+	this->pBehaviorListBox->AddItem(ScriptFlag::RemovesSword, g_pTheDB->GetMessageText(MID_RemovesSword));
 	this->pBehaviorListBox->AddItem(ScriptFlag::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pBehaviorListBox->AddItem(ScriptFlag::MoveIntoSwords, g_pTheDB->GetMessageText(MID_MoveIntoSwords));
 	this->pBehaviorListBox->AddItem(ScriptFlag::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
@@ -1687,6 +1705,11 @@ void CCharacterDialogWidget::AddScriptDialog()
 	static const int Y_DELETECOMMAND = Y_ADDCOMMAND;
 	static const UINT CY_DELETECOMMAND = CY_STANDARD_BUTTON;
 
+	static const UINT CX_CHAROPTIONS = 100;
+	static const int X_CHAROPTIONS = X_DELETECOMMAND - CX_CHAROPTIONS - CX_SPACE;
+	static const int Y_CHAROPTIONS = Y_ADDCOMMAND;
+	static const UINT CY_CHAROPTIONS = CY_STANDARD_BUTTON;
+
 	static const UINT CX_BUTTON = 70;
 	static const int X_OKBUTTON = (CX_SCRIPT_DIALOG - (CX_BUTTON + CX_SPACE)) / 2;
 	static const int Y_OKBUTTON = CY_SCRIPT_DIALOG - CY_STANDARD_BUTTON - 15;
@@ -1703,6 +1726,8 @@ void CCharacterDialogWidget::AddScriptDialog()
 			CX_ADDCOMMAND, CY_ADDCOMMAND, g_pTheDB->GetMessageText(MID_AddCommand)));
 	this->pScriptDialog->AddWidget(new CButtonWidget(TAG_DELETECOMMAND2, X_DELETECOMMAND, Y_DELETECOMMAND,
 			CX_DELETECOMMAND, CY_DELETECOMMAND, g_pTheDB->GetMessageText(MID_DeleteCommand)));
+	this->pScriptDialog->AddWidget(new CButtonWidget(TAG_CHAROPTIONS2, X_CHAROPTIONS, Y_CHAROPTIONS,
+		CX_CHAROPTIONS, CY_CHAROPTIONS, g_pTheDB->GetMessageText(MID_CharOptions)));
 
 	this->pScriptDialog->AddWidget(new CLabelWidget(0, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
@@ -1863,6 +1888,20 @@ void CCharacterDialogWidget::OnClick(
 			this->pCharListBox->SelectItem(this->pCharacter->wLogicalIdentity);
 
 			EditCustomCharacters();
+		break;
+
+		case TAG_CHAROPTIONS:
+		{
+			this->pCharOptionsDialog->SetCharacter(this->pCharacter);
+			UINT dwTagNo = this->pCharOptionsDialog->Display();
+			this->pCharOptionsDialog->Hide();
+
+			if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
+				this->pCharacter->wProcessSequence = this->pCharOptionsDialog->GetProcessSequence();
+			}
+
+			Paint();
+		}
 		break;
 
 		case TAG_DELETECOMMAND:
@@ -2880,6 +2919,20 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 					delete this->pSound;
 					this->pSound = NULL;
 				}
+			}
+			break;
+
+			case TAG_CHAROPTIONS2:
+			{
+				this->pCharOptionsDialog->SetCharacter(pChar);
+				UINT dwTagNo = this->pCharOptionsDialog->Display();
+				this->pCharOptionsDialog->Hide();
+
+				if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
+					pChar->ExtraVars.SetVar(ParamProcessSequenceStr, this->pCharOptionsDialog->GetProcessSequence());
+				}
+
+				Paint();
 			}
 			break;
 
@@ -4383,6 +4436,7 @@ void CCharacterDialogWidget::PopulateVarList()
 
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_SPAWN, g_pTheDB->GetMessageText(MID_VarMySpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_CUSTOM_WEAKNESS, g_pTheDB->GetMessageText(MID_VarMyWeakness));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION, g_pTheDB->GetMessageText(MID_VarMyDescription));
 
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_MULT, g_pTheDB->GetMessageText(MID_VarItemMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_HP_MULT, g_pTheDB->GetMessageText(MID_VarItemHPMult));

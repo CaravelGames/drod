@@ -159,7 +159,7 @@ public:
 	void           ActivateToken(CCueEvents &CueEvents, const UINT wX, const UINT wY);
 //	void           AddDiagonalDoorAssociations();
 	CMonster *     AddNewMonster(const UINT wMonsterType, const UINT wX,
-			const UINT wY, const bool bInRoom=true);
+			const UINT wY, const bool bInRoom=true, const bool bLinkMonster=true);
 	bool           AddOrb(COrbData *pOrb);
 	COrbData *     AddOrbToSquare(const UINT wX, const UINT wY);
 	bool           AddPressurePlateTiles(COrbData* pPlate);
@@ -251,6 +251,7 @@ public:
 	COrbData*      GetOrbAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetOSquare(const UINT wX, const UINT wY) const;
 	UINT           GetOSquareWithGuessing(int nX, int nY) const;
+	void           GetPositionInLevel(int& dx, int& dy) const;
 	COrbData*      GetPressurePlateAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetPrimaryKey() const {return this->dwRoomID;}
 	float          GetStatModifierFromCharacters(ScriptVars::StatModifiers statType) const;

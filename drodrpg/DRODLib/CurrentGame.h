@@ -287,6 +287,7 @@ public:
 	bool     IsFighting(const CMonster* pMonster) const;
 	bool     IsLuckyGRItem(const UINT type) const;
 	bool     IsLuckyXPItem(const UINT type) const;
+	bool     IsPlayerSwordRemoved() const;
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
 	bool     IsPlayerAt(const UINT wX, const UINT wY) const;
 	bool     IsPlayerDying() const;

@@ -56,6 +56,7 @@
 using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
+#define ParamProcessSequenceStr "ProcessSequenceParam"
 
 class CSwordsman;
 struct HoldCharacter;
@@ -99,12 +100,14 @@ public:
 
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
+	vector<WSTRING> GetCustomDescriptions() const;
 	WSTRING        GetCustomWeakness() const { return this->customWeakness; };
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
 	virtual UINT   GetSpawnType(UINT defaultMonsterID) const;
 	float          GetStatModifier(ScriptVars::StatModifiers statType) const;
+	virtual bool   HasCustomDescription() const { return !this->customDescription.empty(); }
 	virtual bool   HasCustomWeakness() const { return !this->customWeakness.empty(); }
 	bool           HasSpecialDeath() const;
 	virtual bool   HasGoblinWeakness() const {return this->bGoblinWeakness;}
@@ -148,6 +151,7 @@ public:
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           RemovesSword() const {return this->bRemovesSword;}
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
@@ -296,6 +300,7 @@ private:
 	bool bMoveIntoSwords;      //can move onto swords instead of being blocked by them
 	bool bPushObjects;         //can push movable objects
 	bool bSpawnEggs;           //will spawn eggs in reaction to combats
+	bool bRemovesSword;        //prevents player having sword when equipped
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
@@ -316,6 +321,7 @@ private:
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
 	int wSpawnType; // type of monster to spawm when spawning eggs
 	WSTRING customWeakness; // matching weakness does strong hit, empty means no custom weakness
+	WSTRING customDescription; // additional monster information
 };
 
 //*****************************************************************************

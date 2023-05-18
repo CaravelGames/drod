@@ -758,6 +758,15 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_CustomAspect: strText = "%s aspect"; break;
 		case MID_StrongAgainstAspect: strText = "Strong against %s"; break;
 		case MID_ShowScore: strText = "Show score"; break;
+		case MID_RemovesSword: strText = "Removes sword"; break;
+		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;
+		case MID_VarRoomX: strText = "_RoomX"; break;
+		case MID_VarRoomY: strText = "_RoomY"; break;
+		case MID_CharOptionsTitle: strText = "Character Options"; break;
+		case MID_CharOptions: strText = "Options"; break;
+		case MID_ProcessingSequence: strText = "Processing sequence:"; break;
+		case MID_ProcessingSequenceDescription: strText = "Scripts with a lower processing sequence value will run before scripts with a higher value."; break;
+		case MID_VarMyDescription: strText = "_MyDescription"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

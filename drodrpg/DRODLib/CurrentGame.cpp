@@ -1385,6 +1385,17 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 		}
 		return 0;
 
+		//Level information
+		case (UINT)ScriptVars::P_LEVEL_MULT:
+			return this->pLevel->dwMultiplier;
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
+		{
+			int dX, dY;
+			this->pRoom->GetPositionInLevel(dX, dY);
+			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
+		}
+
 		default:
 			return player.st.getVar(ScriptVars::Predefined(varIndex));
 	}
@@ -2382,6 +2393,9 @@ void CCurrentGame::ProcessCommandSetVar(
 		case (UINT)ScriptVars::P_SPEED:
 		case (UINT)ScriptVars::P_TOTALMOVES:
 		case (UINT)ScriptVars::P_TOTALTIME:
+		case (UINT)ScriptVars::P_LEVEL_MULT:
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
 			//cannot alter
 			return;
 	}
@@ -3317,6 +3331,22 @@ bool CCurrentGame::IsLuckyXPItem(const UINT type) const
 
 	CCharacter* pCharacter = getCustomEquipment(type);
 	if (pCharacter && pCharacter->IsLuckyXP())
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerSwordRemoved() const
+{
+	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+	if (pCharacter && pCharacter->RemovesSword())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter && pCharacter->RemovesSword())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+	if (pCharacter && pCharacter->RemovesSword())
 		return true;
 
 	return false;

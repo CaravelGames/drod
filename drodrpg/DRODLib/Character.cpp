@@ -86,6 +86,7 @@ const UINT MAX_ANSWERS = 9;
 
 #define SpawnTypeStr "SpawnType"
 #define WeaknessStr "Weakness"
+#define TooltipStr "Tooltip"
 
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
@@ -126,6 +127,7 @@ const UINT MAX_ANSWERS = 9;
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
 #define SpawnEggsStr "SpawnEggs"
+#define RemovesSwordStr "RemovesSword"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -240,6 +242,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
+	, bRemovesSword(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -516,6 +519,8 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 			return this->customName;
 		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
 			return this->customWeakness;
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+			return this->customDescription;
 		default:
 			ASSERT(!"getPredefinedStringVar val not supported");
 			return WSTRING();
@@ -821,6 +826,9 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_SPEED:
 					case (UINT)ScriptVars::P_TOTALMOVES:
 					case (UINT)ScriptVars::P_TOTALTIME:
+					case (UINT)ScriptVars::P_LEVEL_MULT:
+					case (UINT)ScriptVars::P_ROOM_X:
+					case (UINT)ScriptVars::P_ROOM_Y:
 						//cannot alter
 					break;
 
@@ -878,6 +886,9 @@ void CCharacter::setPredefinedVarString(
 		break;
 	case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
 		this->customWeakness = val;
+		break;
+	case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+		this->customDescription = val;
 		break;
 	}
 }
@@ -2586,7 +2597,7 @@ void CCharacter::Process(
 						this->bSurprisedFromBehind =
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
-						this->bAttackFirst = this->bAttackLast =
+						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
@@ -2671,6 +2682,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::SpawnEggs:
 						this->bSpawnEggs = true;
+					break;
+					case ScriptFlag::RemovesSword:
+						this->bRemovesSword = true;
 					break;
 
 					default:
@@ -4333,6 +4347,13 @@ UINT CCharacter::GetResolvedIdentity() const
 	return wIdentity;
 }
 
+//*****************************************************************************
+//Returns: custom tooltips for the NPC, divided into a vector
+vector<WSTRING> CCharacter::GetCustomDescriptions() const
+{
+	return WCSExplode(this->customDescription, *wszSemicolon);
+}
+
 UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
 {
 	if (this->wSpawnType >= 0) {
@@ -4977,6 +4998,10 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 			if (this->pCustomChar)
 			{
 				this->wIdentity = this->pCustomChar->wType;
+
+				if (this->commands.empty()) {
+					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+				}
 			}
 			else
 				//When character has a dangling reference to a custom character definition
@@ -5365,6 +5390,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
+	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -5380,6 +5406,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramW = vars.GetVar(ParamWStr, this->paramW);
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
+	this->wProcessSequence = vars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
 
 	//Modifiers
 	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
@@ -5399,6 +5426,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Custom weakness
 	this->customWeakness = vars.GetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	this->customWeakness = vars.GetVar(TooltipStr, this->customDescription.c_str());
 }
 
 //*****************************************************************************
@@ -5505,6 +5535,8 @@ const
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
 	if (this->bSpawnEggs)
 		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
+	if (this->bRemovesSword)
+		vars.SetVar(RemovesSwordStr, this->bSpawnEggs);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
@@ -5523,6 +5555,8 @@ const
 		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		vars.SetVar(ParamFStr, this->paramF);
+	if (this->wProcessSequence != 9999)
+		vars.SetVar(ParamProcessSequenceStr, this->wProcessSequence);
 
 	// Modifiers
 	if (this->monsterHPmult != 100)
@@ -5554,6 +5588,10 @@ const
 	//Custom weakness
 	if (!this->customWeakness.empty())
 		vars.SetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	if (!this->customDescription.empty())
+		vars.SetVar(TooltipStr, this->customDescription.c_str());
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
 

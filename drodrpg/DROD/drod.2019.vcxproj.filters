@@ -217,6 +217,9 @@
     <ClCompile Include="DamagePreviewEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="CharacterOptionsWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -419,6 +422,9 @@
     </ClInclude>
     <ClInclude Include="DamagePreviewEffect.h">
       <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterOptionsWidget.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
