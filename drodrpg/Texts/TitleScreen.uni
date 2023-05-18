@@ -127,3 +127,7 @@ Your CaravelNet user key is invalid.  Go to the Settings Screen to request a new
 [MID_UnsentCaravelNetProgress]
 [eng]
 You have progress that hasn't been sent to CaravelNet.  Click "Submit My Scores" on the Settings Screen to send it.
+
+[MID_ReallyStartNewGame]
+[eng]
+Really start a new game?

@@ -941,7 +941,7 @@ bool CTitleScreen::ConfirmNewGame()
 	if (!this->bNewGamePrompt)
 		return true;
 
-	return (ShowYesNoMessage(L"Really start a new game?") == TAG_YES);
+	return (ShowYesNoMessage(g_pTheDB->GetMessageText(MID_ReallyStartNewGame)) == TAG_YES);
 }
 
 //*****************************************************************************

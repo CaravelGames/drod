@@ -592,12 +592,12 @@ CSettingsScreen::CSettingsScreen()
 
 	//New game frame
 	CFrameWidget* pNewGameFrame = new CFrameWidget(0L, X_NEWGAME_FRAME, Y_NEWGAME_FRAME,
-		CX_NEWGAME_FRAME, CY_NEWGAME_FRAME, L"New games");
+		CX_NEWGAME_FRAME, CY_NEWGAME_FRAME, g_pTheDB->GetMessageText(MID_NewGames));
 	pTabbedMenu->AddWidgetToTab(pNewGameFrame, PERSONAL_TAB);
 
 	pOptionButton = new COptionButtonWidget(TAG_NEWGAMEPROMPT, X_NEWGAMEPROMPT,
 		Y_NEWGAMEPROMPT, CX_NEWGAMEPROMPT, CY_NEWGAMEPROMPT,
-		L"Confirm new game", true);
+		g_pTheDB->GetMessageText(MID_ConfirmNewGame), true);
 	pNewGameFrame->AddWidget(pOptionButton);
 
 	//Graphics and sound tab.

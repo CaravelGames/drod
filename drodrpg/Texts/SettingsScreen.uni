@@ -441,3 +441,11 @@ Combat damage preview
 [MID_ShowScore]
 [eng]
 Show score
+
+[MID_NewGames]
+[eng]
+New games
+
+[MID_ConfirmNewGame]
+[eng]
+Confirm new game
