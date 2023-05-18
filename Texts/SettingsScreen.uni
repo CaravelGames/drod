@@ -132,6 +132,18 @@ Special Command
 [fra]
 Commande spéciale
 
+[MID_UseCommandKeyTwo]
+[eng]
+Special Command 2
+[fra]
+Commande spéciale 2
+
+[MID_UseCommandKeyThree]
+[eng]
+Special Command 3
+[fra]
+Commande spéciale 3
+
 [MID_RepeatRate]
 [eng]
 Repeat Rate

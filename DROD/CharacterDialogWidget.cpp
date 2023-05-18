@@ -1512,6 +1512,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pInputListBox->AddItem(CMD_C, g_pTheDB->GetMessageText(MID_Clockwise));
 	this->pInputListBox->AddItem(CMD_CC, g_pTheDB->GetMessageText(MID_CounterClockwise));
 	this->pInputListBox->AddItem(CMD_EXEC_COMMAND, g_pTheDB->GetMessageText(MID_UseCommandKey));
+	this->pInputListBox->AddItem(CMD_EXEC_COMMAND_TWO, g_pTheDB->GetMessageText(MID_UseCommandKeyTwo));
+	this->pInputListBox->AddItem(CMD_EXEC_COMMAND_THREE, g_pTheDB->GetMessageText(MID_UseCommandKeyThree));
 	this->pInputListBox->SelectLine(0);
 
 	//Direction list box #2.

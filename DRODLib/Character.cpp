@@ -4573,10 +4573,17 @@ bool CCharacter::DidPlayerInput(
 	getCommandX(command, px);
 
 	//CMD_EXEC_COMMAND is translated to CMD_WAIT, so we need to kludge handling here
-	if (px == CMD_WAIT && CueEvents.HasOccurred(CID_CommandKeyPressed))
+	CUEEVENT_ID commandEvents[3] = { CID_CommandKeyPressed, CID_CommandKeyTwoPressed, CID_CommandKeyThreePressed };
+	if (px == CMD_WAIT && CueEvents.HasAnyOccurred(3, commandEvents))
 		return false;  //nLastCommand is a false "wait"
 	if (px == CMD_EXEC_COMMAND) {
 		return CueEvents.HasOccurred(CID_CommandKeyPressed); //only way to detect
+	} 
+	if (px == CMD_EXEC_COMMAND_TWO) {
+		return CueEvents.HasOccurred(CID_CommandKeyTwoPressed);
+	} 
+	if (px == CMD_EXEC_COMMAND_THREE) {
+		return CueEvents.HasOccurred(CID_CommandKeyThreePressed);
 	}
 
 	return (px == (UINT)nLastCommand);

@@ -777,7 +777,11 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 	const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, 0);
+	InputKey inputKey = settings.GetVar(keyDefinition->settingName, (int64_t)0);
+
+	if (inputKey == SDLK_UNKNOWN) {
+		inputKey = keyDefinition->GetDefaultKey(settings.GetVar(INIKey::Keyboard, 0));
+	}
 
 	return I18N::DescribeInputKey(inputKey);
 }
@@ -2357,10 +2361,16 @@ void CCurrentGame::ProcessCommand(
 			if (bIsComplexCommand(nCommand))
 				return;
 
-			//If CMD Key was used, trigger the event
+			//If a CMD Key was used, trigger the event
 			if (nCommand == CMD_EXEC_COMMAND)
 			{
 				CueEvents.Add(CID_CommandKeyPressed);
+				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
+			} else if (nCommand == CMD_EXEC_COMMAND_TWO) {
+				CueEvents.Add(CID_CommandKeyTwoPressed);
+				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
+			} else if (nCommand == CMD_EXEC_COMMAND_THREE) {
+				CueEvents.Add(CID_CommandKeyThreePressed);
 				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
 			}
 
