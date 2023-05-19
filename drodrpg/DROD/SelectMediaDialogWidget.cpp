@@ -116,14 +116,14 @@ CSelectMediaDialogWidget::CSelectMediaDialogWidget(
 	{ // REPLACE button
 		pButton = new CButtonWidget(
 			TAG_REPLACE, BUTTON_REPLACE_X, BUTTON_Y, BUTTON_W, CY_STANDARD_BUTTON,
-			L"Replace");
+			g_pTheDB->GetMessageText(MID_ReplaceFileButton));
 		AddWidget(pButton);
 	}
 
 	{ // UNDELETE button
 		pButton = new CButtonWidget(
 			TAG_UNDELETE, BUTTON_UNDELETE_X, BUTTON_Y, BUTTON_W, CY_STANDARD_BUTTON,
-			L"Undelete");
+			g_pTheDB->GetMessageText(MID_Undelete));
 		AddWidget(pButton);
 	}
 
@@ -311,7 +311,7 @@ const WSTRING CSelectMediaDialogWidget::GetMediaName(const UINT wMediaId, CIDSet
 	WSTRING name = g_pTheDB->Data.GetNameFor(wMediaId);
 	if (deletedDataIDs->has(wMediaId)) {
 		name += L" ";
-		name += L"(Pending deletion)";
+		name += g_pTheDB->GetMessageText(MID_FilePendingDeletionSuffix);
 	}
 
 	return name.c_str();
@@ -407,7 +407,7 @@ UINT CSelectMediaDialogWidget::ImportFile(
 		// 3a. If we are already replacing a file, it's impossible
 		if (wExistingImageId && wReplacedMediaId && wExistingImageId != wReplacedMediaId) {
 			const CDbDatum *pReplacedFile = db.Data.GetByID(wReplacedMediaId);
-			WSTRING message = L"You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted.";
+			WSTRING message = g_pTheDB->GetMessageText(MID_ErrorCannotReplaceWithDifferentExistingFile);
 			message = WCSReplace(message, L"%fileBase%", pReplacedFile->DataNameText);
 			message = WCSReplace(message, L"%fileSelected%", filename);
 			delete pReplacedFile;
@@ -417,7 +417,7 @@ UINT CSelectMediaDialogWidget::ImportFile(
 
 		// 3b. If we are importing a new file, ask whether user wants to replace it
 		if (wExistingImageId && !wReplacedMediaId) {
-			WSTRING message = L"This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated.";
+			WSTRING message = g_pTheDB->GetMessageText(MID_ReplaceMediaWithAnother);
 			message = WCSReplace(message, L"%file%", filename);
 
 			if (g_pTheDialogs->ShowYesNoMessage(message.c_str(), MID_Rename, MID_Cancel) != TAG_YES)

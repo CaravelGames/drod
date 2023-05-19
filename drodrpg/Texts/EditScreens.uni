@@ -1229,3 +1229,23 @@ Accessory Slot
 [MID_Explosion]
 [eng]
 Explosion
+
+[MID_ErrorCannotReplaceWithDifferentExistingFile]
+[eng]
+You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted.
+
+[MID_ReplaceMediaWithAnother]
+[eng]
+This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated.
+
+[MID_ReplaceFileButton]
+[eng]
+Replace
+
+[MID_FilePendingDeletionSuffix]
+[eng]
+(Pending deletion)
+
+[MID_Undelete]
+[eng]
+Undelete
