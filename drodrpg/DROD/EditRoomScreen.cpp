@@ -685,7 +685,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, pHold(NULL), pLevel(NULL), pRoom(NULL)
 	, pRoomWidget(NULL), pTabbedMenu(NULL)
 	, pCharacterDialog(NULL)
-	, pEntranceBox(NULL), pLevelEntranceDialog(NULL)
+	, pEntranceBox(NULL), pLevelEntranceDialog(NULL), pSelectMediaDialog(NULL)
 
 	, wSelectedObject(static_cast<UINT>(-1))
 	, wSelectedObjectSave(static_cast<UINT>(-1))
@@ -992,6 +992,7 @@ CEditRoomScreen::CEditRoomScreen()
 
 	AddChatDialog();
 	AddLevelEntranceDialog();
+	AddMediaSelectionDialog();
 }
 
 //*****************************************************************************
@@ -1123,6 +1124,18 @@ void CEditRoomScreen::AddLevelEntranceDialog()
 			CX_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_OkayNoHotkey)));
 	this->pLevelEntranceDialog->AddWidget(new CButtonWidget(TAG_CANCEL_, X_CANCEL, Y_BUTTONS,
 			CX_BUTTON, CY_BUTTON, g_pTheDB->GetMessageText(MID_CancelNoHotkey)));
+}
+
+//*****************************************************************************
+void CEditRoomScreen::AddMediaSelectionDialog()
+//Dialog box for selecting and managing hold media.
+{
+		this->pSelectMediaDialog = new CSelectMediaDialogWidget(0L);
+		AddWidget(this->pSelectMediaDialog);
+		this->pSelectMediaDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSelectMediaDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSelectMediaDialog->GetH()) / 2);   //center over room widget
+		this->pSelectMediaDialog->Hide();
 }
 
 //*****************************************************************************
@@ -1696,44 +1709,16 @@ void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
 	if (this->pHold->dwPlayerID != g_pTheDB->GetPlayerID() && !SaveRoomToDB())
 		return;
 
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = this->pRoom->dwDataID;
-		eButton = SelectListID(
-				this->pEntranceBox, this->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
+	this->pSelectMediaDialog->SetForDisplay(MID_ImageSelectPrompt, this->pHold, CSelectMediaDialogWidget::Images);
+	this->pSelectMediaDialog->SelectItem(this->pRoom->dwDataID);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return;
+	}
 
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			//It's safe if other rooms remain set to this old image ID.
-			//They will now show the default floor mosaic.
-			if (dwDataID)
-				this->pHold->MarkDataForDeletion(dwDataID);
-
-			this->pRoom->dwDataID = 0;
-			this->pRoomWidget->LoadRoomImages();
-			this->pRoomWidget->Paint();
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
+	this->pRoom->dwDataID = this->pSelectMediaDialog->GetSelectedItem();
 
 	Changing();
-
-	if (dwDataID)
-		this->pRoom->dwDataID = dwDataID;   //selected image from DB
-	else
-	{
-		//Load new image from disk.
-		const UINT dwID = ImportHoldImage(EXT_JPEG | EXT_PNG);
-		if (dwID)
-			this->pRoom->dwDataID = dwID;
-		goto SelectImage;	//return to image select menu
-	}
 
 	if (!bReselect)
 	{

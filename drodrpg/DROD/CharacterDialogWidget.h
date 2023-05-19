@@ -30,8 +30,8 @@
 #ifndef CHARACTERDIALOGWIDGET_H
 #define CHARACTERDIALOGWIDGET_H
 
-#include "EntranceSelectDialogWidget.h"
 #include "CharacterOptionsWidget.h"
+#include "SelectMediaDialogWidget.h"
 #include "../DRODLib/Character.h"
 #include "../DRODLib/DbData.h"
 #include <FrontEndLib/DialogWidget.h>
@@ -145,7 +145,7 @@ private:
 
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 	void  SelectCharacter();
-	UINT  SelectMediaID(const UINT dwDefault, const CEntranceSelectDialogWidget::DATATYPE eType);
+	UINT  SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
 	void  SetBitFlags();
 	void  SetWidgetStates();
 	void  SetActionWidgetStates();
