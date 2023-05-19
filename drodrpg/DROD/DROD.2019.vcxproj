@@ -548,6 +548,7 @@
     <ClCompile Include="DemoScreen.cpp" />
     <ClCompile Include="DemosScreen.cpp" />
     <ClCompile Include="DrodBitmapManager.cpp" />
+    <ClCompile Include="DrodDialogs.cpp" />
     <ClCompile Include="DrodFileDialogWidget.cpp" />
     <ClCompile Include="DrodFontManager.cpp" />
     <ClCompile Include="DrodScreen.cpp" />
@@ -578,6 +579,7 @@
     <ClCompile Include="RoomScreen.cpp" />
     <ClCompile Include="RoomWidget.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SelectMediaDialogWidget.cpp" />
     <ClCompile Include="SelectPlayerScreen.cpp" />
     <ClCompile Include="SellScreen.cpp" />
     <ClCompile Include="SettingsScreen.cpp" />
@@ -616,6 +618,7 @@
     <ClInclude Include="DemoScreen.h" />
     <ClInclude Include="DemosScreen.h" />
     <ClInclude Include="DrodBitmapManager.h" />
+    <ClInclude Include="DrodDialogs.h" />
     <ClInclude Include="DrodEffect.h" />
     <ClInclude Include="DrodFileDialogWidget.h" />
     <ClInclude Include="DrodFontManager.h" />
@@ -647,6 +650,7 @@
     <ClInclude Include="RoomWidget.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SelectMediaDialogWidget.h" />
     <ClInclude Include="SelectPlayerScreen.h" />
     <ClInclude Include="SellScreen.h" />
     <ClInclude Include="SettingsScreen.h" />
