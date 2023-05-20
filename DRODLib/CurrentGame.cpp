@@ -615,6 +615,21 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			return -1;
 		}
 		break;
+		case ScriptVars::P_CharacterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return -1;
+			}
+
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (!pCharacter) {
+				return -1;
+			}
+
+			return pCharacter->wLogicalIdentity;
+		}
+		break;
 		case ScriptVars::P_EntityWeapon:
 		{
 			if (IsPlayerAt(params[0], params[1])) {

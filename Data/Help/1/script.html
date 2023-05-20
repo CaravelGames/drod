@@ -610,6 +610,9 @@ Hint: Each layer corresponds to a tab in the editor's tile selection dialog.
 <p><a name="monstertype">* <b>_MonsterType(x,y)</b></a> - Returns the numeric monster type of the monster at (x,y). If no monster is present on the tile, -1 is returned.<br/>
 Hint: This can be used to compare the monsters in different tiles, or for providing a value for _MyScript injection.
 </p>
+<p><a name="charactertype">* <b>_CharacterType(x,y)</b></a> - Returns the logical type of the scripted character at (x,y). If no character is present on the tile, -1 is returned.<br/>
+  Hint: This can be used to provide a value for _MyScript injection.
+</p>
 <p><a name="entityweapon">* <b>_EntityWeapon(x,y)</b></a> - Returns the numeric weapon type of the monster or player at (x,y). The weapon type will be returned even if the entity is currently disarmed. If no weapon-using entity is present, -1 is returned.</p>
 <p><a name="brainscore">* <b>_BrainScore(x,y,t)</b></a> - Returns the distance the given tile is from the player, along a brained path, for the given <a href="#movement-types">movement type</a>. Tiles that cannot access the player return a value of -1.</p>
 
