@@ -7349,6 +7349,10 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 	const bool bMud = wType1 == T_MUD || wType2 == T_MUD;
 	const bool bGel = wType1 == T_GEL || wType2 == T_GEL;
 
+	const int tarId = this->pCurrentGame->getSpawnID(M_TARBABY);
+	const int mudId = this->pCurrentGame->getSpawnID(M_MUDBABY);
+	const int gelId = this->pCurrentGame->getSpawnID(M_GELBABY);
+
 	UINT wX, wY;
 	CCueEvents Ignored;
 	for (wY=0; wY<this->wRoomRows; ++wY)
@@ -7364,18 +7368,10 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 			if (pMonster)
 			{
+				int mType = pMonster->GetLogicalIdentity();
 				int nType = -1;
-				switch (pMonster->wType)
+				switch (mType)
 				{
-					case M_TARBABY:
-						if (bTar) nType = bMud ? M_MUDBABY : M_GELBABY;
-					break;
-					case M_MUDBABY:
-						if (bMud) nType = bTar ? M_TARBABY : M_GELBABY;
-					break;
-					case M_GELBABY:
-						if (bGel) nType = bMud ? M_MUDBABY : M_TARBABY;
-					break;
 					case M_TARMOTHER:
 						if (bTar) nType = bMud ? M_MUDMOTHER : M_GELMOTHER;
 					break;
@@ -7385,12 +7381,37 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 					case M_GELMOTHER:
 						if (bGel) nType = bMud ? M_MUDMOTHER : M_TARMOTHER;
 					break;
-					default: break;
+					default: {
+						if (bTar && mType == tarId) {
+							nType = bMud ? mudId : gelId;
+						}
+						else if (bMud && mType == mudId) {
+							nType = bTar ? tarId : gelId;
+						}
+						else if (bGel && mType == gelId) {
+							nType = bMud ? mudId : tarId;
+						}
+					}
+					break;
 				}
-				if (nType != -1)
+				if (nType != -1 && (IsValidMonsterType(nType) || this->pCurrentGame->pHold->GetCharacter(nType)))
 				{
 					//Create new monster and insert in list where old monster was.
-					CMonster *pNew = mf.GetNewMonster((const MONSTERTYPE)nType);
+					CMonster* pNew;
+					if (IsValidMonsterType(nType)) {
+						pNew = mf.GetNewMonster((const MONSTERTYPE)nType);
+					}
+					else {
+						//hold character
+						pNew = mf.GetNewMonster(M_CHARACTER);
+						//Set up NPC info.
+						CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
+						pCharacter->wLogicalIdentity = nType;
+						pCharacter->SetCurrentGame(this->pCurrentGame); //will assign the default script for custom NPCs
+						pCharacter->dwScriptID = this->pCurrentGame->getNewScriptID();
+						pCharacter->bVisible = true;
+					}
+
 					pNew->wX = pNew->wPrevX = wX;
 					pNew->wY = pNew->wPrevY = wY;
 					pNew->wO = pNew->wPrevO = pMonster->wO;

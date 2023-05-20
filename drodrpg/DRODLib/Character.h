@@ -103,6 +103,7 @@ public:
 	vector<WSTRING> GetCustomDescriptions() const;
 	WSTRING        GetCustomWeakness() const { return this->customWeakness; };
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
+	virtual UINT   GetLogicalIdentity() const {return this->wLogicalIdentity;}
 	UINT           GetNextSpeechID();
 	virtual UINT   GetResolvedIdentity() const;
 	virtual UINT   GetSpawnType(UINT defaultMonsterID) const;
