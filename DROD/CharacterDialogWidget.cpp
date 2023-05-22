@@ -1145,10 +1145,20 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_VARTEXTLABEL = 190;
 	static const UINT CY_VARTEXTLABEL = CY_WAITLABEL;
 
+	static const int X_VARVALUELABEL = X_WAITLABEL;
+	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
+	static const int Y_VARVALUELABEL = Y_GOTOLABELTEXT + CY_GOTOLABELTEXT + CY_SPACE / 2;
+	static const UINT CX_VARVALUELABEL = 100;
+
+	static const int X_VARVALUE = X_VARVALUELABEL;
+	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
+	static const UINT CX_VARVALUE = CX_GOTOLABELTEXT;
+	static const UINT CY_VARVALUE = 30;
+
 	static const UINT CX_VARLISTBOX = 280;
 	static const UINT CY_VARLISTBOX = 18*LIST_LINE_HEIGHT+4;
 	static const int X_VARLISTBOX = X_EVENTLISTBOX;
-	static const int Y_VARLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE;
+	static const int Y_VARLISTBOX = Y_VARVALUE + CY_VARVALUE + CY_SPACE;
 
 	static const int X_VARADD = X_VARLISTBOX + CX_VARLISTBOX + CX_SPACE/2;
 	static const int Y_VARADD = Y_VARLISTBOX;
@@ -1169,16 +1179,6 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_VARCOMPLIST = Y_VAROPLIST;
 	static const int CX_VARCOMPLIST = CX_VAROPLIST;
 	static const int CY_VARCOMPLIST = 7*LIST_LINE_HEIGHT + 4;
-
-	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
-	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
-	static const int Y_VARVALUELABEL = Y_VAROPLIST;
-	static const UINT CX_VARVALUELABEL = 100;
-
-	static const int X_VARVALUE = X_VARVALUELABEL;
-	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
-	static const UINT CX_VARVALUE = 90;
-	static const UINT CY_VARVALUE = 30;
 
 	//Others
 	static const int X_GRAPHICLISTBOX2 = X_EVENTLISTBOX;
@@ -1851,7 +1851,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->SelectLine(0);
 
 	this->pVarCompListBox2 = new CListBoxWidget(TAG_VARCOMPLIST2,
-		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
+		X_VARVALUE, Y_VARLISTBOX, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
 	this->pAddCommandDialog->AddWidget(this->pVarCompListBox2);
 	this->pVarCompListBox2->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pVarCompListBox2->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
