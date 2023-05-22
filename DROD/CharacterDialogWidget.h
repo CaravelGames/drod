@@ -212,6 +212,8 @@ private:
 	CListBoxWidget* pColorListBox;
 	CListBoxWidget* pOrbAgentListBox;
 
+	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
+
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited
 			commandBuffer; //cut/copied commands for pasting

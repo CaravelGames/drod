@@ -922,8 +922,8 @@ void CCharacterDialogWidget::AddCommandDialog()
 //Create another dialog for entering a script command.
 //Separated from constructor for readability.
 {
-	static const UINT CY_COMMAND_DIALOG = 412;
-	static const UINT CY_ACTIONLISTBOX = 13*LIST_LINE_HEIGHT+4;
+	static const UINT CY_COMMAND_DIALOG = 650;
+	static const UINT CY_ACTIONLISTBOX = 23*LIST_LINE_HEIGHT+4;
 
 #ifdef RUSSIAN_BUILD
 	static const UINT CX_COMMAND_DIALOG = 795;
@@ -1027,7 +1027,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_SPEAKERLABEL = CY_WAITLABEL;
 	static const int X_SPEAKERLISTBOX = X_SPEAKERLABEL;
 	static const int Y_SPEAKERLISTBOX = Y_SPEAKERLABEL + CY_SPEAKERLABEL;
-	static const UINT CY_SPEAKERLISTBOX = 7*LIST_LINE_HEIGHT+4;
+	static const UINT CY_SPEAKERLISTBOX = 18*LIST_LINE_HEIGHT+4;
 
 	static const UINT CX_MOODLISTBOX = 100;
 	static const int X_MOODLABEL = X_SPEAKERLABEL + CX_SPEAKERLABEL + CX_SPACE;
@@ -1036,7 +1036,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_MOODLABEL = CY_WAITLABEL;
 	static const int X_MOODLISTBOX = X_MOODLABEL;
 	static const int Y_MOODLISTBOX = Y_MOODLABEL + CY_MOODLABEL;
-	static const UINT CY_MOODLISTBOX = 5*LIST_LINE_HEIGHT+4;
+	static const UINT CY_MOODLISTBOX = 7*LIST_LINE_HEIGHT+4;
 
 	static const UINT CX_BUTTON = 80;
 	static const int X_OKBUTTON = (CX_COMMAND_DIALOG - (CX_BUTTON + CX_SPACE) * 2) / 2;
@@ -1080,11 +1080,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_WATERTRAVERSALLISTBOX = Y_ONOFFLISTBOX;
 
 	static const UINT CX_IMPERATIVELISTBOX = 420;
-	static const UINT CY_IMPERATIVELISTBOX = 12*LIST_LINE_HEIGHT + 4;
+	static const UINT CY_IMPERATIVELISTBOX = CY_ACTIONLISTBOX;
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
 
-	static const UINT CY_BEHAVIORLISTBOX = 10 * LIST_LINE_HEIGHT + 4;
+	static const UINT CY_BEHAVIORLISTBOX = CY_ACTIONLISTBOX - 3 * LIST_LINE_HEIGHT;
 
 	static const UINT CX_OPENCLOSELISTBOX = 100;
 	static const UINT CY_OPENCLOSELISTBOX = 53;
@@ -1101,7 +1101,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_GOTOLABELTEXT = CY_WAIT;
 
 	static const UINT CX_GOTOLABELLISTBOX = CX_GOTOLABELTEXT;
-	static const UINT CY_GOTOLABELLISTBOX = 10*LIST_LINE_HEIGHT+4;
+	static const UINT CY_GOTOLABELLISTBOX = CY_ACTIONLISTBOX - 2* LIST_LINE_HEIGHT;
 	static const int X_GOTOLABELLISTBOX = X_EVENTLISTBOX;
 	static const int Y_GOTOLABELLISTBOX = Y_GOTOLABELTEXT + CY_GOTOLABELTEXT + CY_SPACE;
 
@@ -1146,7 +1146,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_VARTEXTLABEL = CY_WAITLABEL;
 
 	static const UINT CX_VARLISTBOX = 280;
-	static const UINT CY_VARLISTBOX = 10*LIST_LINE_HEIGHT+4;
+	static const UINT CY_VARLISTBOX = 18*LIST_LINE_HEIGHT+4;
 	static const int X_VARLISTBOX = X_EVENTLISTBOX;
 	static const int Y_VARLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE;
 
@@ -1168,7 +1168,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_VARCOMPLIST = X_VARADD;
 	static const int Y_VARCOMPLIST = Y_VAROPLIST;
 	static const int CX_VARCOMPLIST = CX_VAROPLIST;
-	static const int CY_VARCOMPLIST = 6*LIST_LINE_HEIGHT + 4;
+	static const int CY_VARCOMPLIST = 7*LIST_LINE_HEIGHT + 4;
 
 	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
 	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
@@ -1210,7 +1210,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_EFFECTLISTBOX = X_DIRECTIONLISTBOX3 + CX_DIRECTIONLISTBOX3 + CX_SPACE;
 	static const int Y_EFFECTLISTBOX = Y_GRAPHICLISTBOX2;
 	static const UINT CX_EFFECTLISTBOX = 200;
-	static const UINT CY_EFFECTLISTBOX = CY_ACTIONLISTBOX;
+	static const UINT CY_EFFECTLISTBOX = CY_ACTIONLISTBOX - LIST_LINE_HEIGHT;
 
 	static const int X_SOUNDEFFECTLABEL = X_DIRECTIONLISTBOX3;
 	static const int Y_SOUNDEFFECTLABEL = Y_DIRECTIONLISTBOX3 + CY_DIRECTIONLISTBOX3 + CY_SPACE/2;
@@ -1280,10 +1280,13 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT IGNOREFLAGSLISTBOX_CX = CX_WAITFLAGSLISTBOX;
 	static const UINT IGNOREFLAGSLISTBOX_CY = CY_WAITFLAGSLISTBOX;
 
+	static const UINT IGNOREWEAPONSLABEL_X = MOVETYPELISTBOX_X;
+	static const UINT IGNOREWEAPONSLABEL_Y = MOVETYPELISTBOX_Y + MOVETYPELISTBOX_CY + CY_SPACE;
+
 	static const UINT COLORLISTBOX_X = X_DIRECTIONLISTBOX2;
 	static const UINT COLORLISTBOX_Y = Y_DIRECTIONLISTBOX;
 	static const UINT COLORLISTBOX_CX = CX_DIRECTIONLISTBOX2;
-	static const UINT COLORLISTBOX_CY = 12 * LIST_LINE_HEIGHT + 4;
+	static const UINT COLORLISTBOX_CY = 17 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT ORBAGENTLISTBOX_X = X_ACTIONLISTBOX + CX_ACTIONLISTBOX + CX_SPACE;
 	static const UINT ORBAGENTLISTBOX_Y = Y_ACTIONLISTBOX;
@@ -1326,7 +1329,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_IMAGEOVERLAYTEXT = X_IMAGELABEL;
 	static const int Y_IMAGEOVERLAYTEXT = Y_IMAGELABEL + CY_IMAGELABEL;
 	static const UINT CX_IMAGEOVERLAYTEXT = CX_TEXT;
-	static const UINT CY_IMAGEOVERLAYTEXT = 284;
+	static const UINT CY_IMAGEOVERLAYTEXT = CY_ACTIONLISTBOX;
+
+	//Positions for on off box 3
+	onOffListBox3Positions.insert({ CCharacterCommand::CC_GameEffect, {X_ONOFFLISTBOX3, Y_ONOFFLISTBOX3} });
+	onOffListBox3Positions.insert({ CCharacterCommand::CC_Behavior, {X_ONOFFLISTBOX3, Y_IMPERATIVELISTBOX + CY_BEHAVIORLISTBOX + CY_SPACE} });
+	onOffListBox3Positions.insert({ CCharacterCommand::CC_WaitForOpenTile, {X_ONOFFLISTBOX3, IGNOREWEAPONSLABEL_Y + CY_WAITLABEL + CY_SPACE / 2} });
 
 	ASSERT(!this->pAddCommandDialog);
 
@@ -1643,7 +1651,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREFLAGS_LABEL, IGNOREFLAGSLISTBOX_X, Y_WAITLABEL,
 		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_Ignore)));
-	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, X_SOUNDEFFECTLABEL, X_SOUNDEFFECTLABEL,
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, IGNOREWEAPONSLABEL_X, IGNOREWEAPONSLABEL_Y,
 		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_IgnoreWeapons)));
 
 	this->pBuildItemsListBox = new CListBoxWidget(TAG_BUILDITEMLISTBOX,
@@ -1663,7 +1671,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildMarkerListBox->SelectLine(0);
 
 	this->pNaturalTargetTypesListBox = new CListBoxWidget(TAG_NATURAL_TARGET_TYPES,
-		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, 4 * LIST_LINE_HEIGHT + 4);
 	this->pAddCommandDialog->AddWidget(this->pNaturalTargetTypesListBox);
 	this->pNaturalTargetTypesListBox->SetHotkeyItemSelection(true);
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::RegularMonster, g_pTheDB->GetMessageText(MID_TargetRegularMonster));
@@ -1755,7 +1763,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWeaponListBox->SelectLine(0);
 
 	this->pWeaponListBox2 = new CListBoxWidget(TAG_WEAPON_LISTBOX2,
-		X_WEAPON_LISTBOX, Y_WEAPON_LISTBOX, CX_WEAPON_LISTBOX, CY_WEAPON_LISTBOX);
+		X_WEAPON_LISTBOX, Y_WEAPON_LISTBOX, CX_WEAPON_LISTBOX, CY_WEAPON_LISTBOX - 2 * LIST_LINE_HEIGHT);
 	this->pAddCommandDialog->AddWidget(this->pWeaponListBox2);
 	this->pWeaponListBox2->AddItem(WT_Sword, g_pTheDB->GetMessageText(MID_WeaponSword));
 	this->pWeaponListBox2->AddItem(WT_Pickaxe, g_pTheDB->GetMessageText(MID_WeaponPickaxe));
@@ -1843,7 +1851,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->SelectLine(0);
 
 	this->pVarCompListBox2 = new CListBoxWidget(TAG_VARCOMPLIST2,
-		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST);
+		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
 	this->pAddCommandDialog->AddWidget(this->pVarCompListBox2);
 	this->pVarCompListBox2->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pVarCompListBox2->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
@@ -5852,6 +5860,15 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		CWidget *pWidget = this->pAddCommandDialog->GetWidget(*labels);
 		ASSERT(pWidget);
 		pWidget->Show();
+	}
+
+	//Place on off box three, which can be in various places.
+	//This is preferable to adding more on off boxes
+	if (onOffListBox3Positions.count(dwSelectedItem) != 0) {
+		CWidget* pWidget = this->pAddCommandDialog->GetWidget(TAG_ONOFFLISTBOX3);
+		ASSERT(pWidget);
+		pair<UINT, UINT> position = onOffListBox3Positions[dwSelectedItem];
+		pWidget->Move(position.first, position.second);
 	}
 
 	//Set name of loaded sound file, if any.
