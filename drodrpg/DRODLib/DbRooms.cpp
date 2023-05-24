@@ -7353,6 +7353,13 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 	const int mudId = this->pCurrentGame->getSpawnID(M_MUDBABY);
 	const int gelId = this->pCurrentGame->getSpawnID(M_GELBABY);
 
+	//Don't try to swap from or to multi-tile monsters
+	if ((bTar && bIsLargeMonster(tarId)) ||
+		(bMud && bIsLargeMonster(mudId)) ||
+		(bGel && bIsLargeMonster(gelId))) {
+		return; 
+	}
+
 	UINT wX, wY;
 	CCueEvents Ignored;
 	for (wY=0; wY<this->wRoomRows; ++wY)
