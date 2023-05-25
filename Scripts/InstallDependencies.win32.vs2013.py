@@ -54,7 +54,7 @@ if DepsToBuild == "all":
 		'lpng-1512',
 		'metakit-2.4.9.7',
 		SdlName,
-		'sdl-ttf-2.20.1',
+		'sdl-ttf-2.0.14',
 		'zlib'
 	]
 
@@ -359,16 +359,17 @@ dependencies = {
 			'SDL2-2.26.1/VisualC/Win32/Release/SDL2.dll': 'Release'
 		}
 	},
-	'sdl-ttf-2.20.1': {
-		'urls': ['https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip'],
+	'sdl-ttf-2.0.14': {
+		'urls': ['https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip'],
 		'include': {
-			'SDL2_ttf-2.20.1/include': ''
+			'SDL2_ttf-2.0.14/include': ''
 		},
 		'libs': {
-			'SDL2_ttf-2.20.1/lib/x86/SDL2_ttf.lib': ['Debug', 'Release']
+			'SDL2_ttf-2.0.14/lib/x86/SDL2_ttf.lib': ['Debug', 'Release']
 		},
 		'dlls': {
-			'SDL2_ttf-2.20.1/lib/x86/SDL2_ttf.dll': ['Debug', 'Release']
+			'SDL2_ttf-2.0.14/lib/x86/SDL2_ttf.dll': ['Debug', 'Release'],
+			'SDL2_ttf-2.0.14/lib/x86/libfreetype-6.dll': ['Debug', 'Release']
 		}
 	},
 	'zlib': {
