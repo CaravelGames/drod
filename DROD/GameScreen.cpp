@@ -1553,7 +1553,7 @@ void CGameScreen::OnKeyDown(
 	}
 	if (nCommand != CMD_UNSPECIFIED)
 	{
-		if (nCommand == CMD_WAIT && bMacro && Key.repeat) {
+		if (nCommand == CMD_WAIT && bMacro && Key.repeat == 1) {
 			return;
 		}
 

@@ -543,7 +543,7 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 				//Call keydown and keyup handlers.
 				m_RepeatingKey.type = SDL_KEYDOWN;
 				m_RepeatingKey.state = SDL_PRESSED;
-				m_RepeatingKey.repeat = true;
+				m_RepeatingKey.repeat += 1;
 				if (pSelectedWidget)
 				{
 					pSelectedWidget->HandleKeyDown(m_RepeatingKey);
