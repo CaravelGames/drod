@@ -1553,6 +1553,10 @@ void CGameScreen::OnKeyDown(
 	}
 	if (nCommand != CMD_UNSPECIFIED)
 	{
+		if (nCommand == CMD_WAIT && bMacro && Key.repeat) {
+			return;
+		}
+
 		//Hide mouse cursor while playing.
 		HideCursor();
 
