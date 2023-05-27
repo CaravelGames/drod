@@ -5428,7 +5428,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->customWeakness = vars.GetVar(WeaknessStr, this->customWeakness.c_str());
 
 	//Custom tooltip
-	this->customWeakness = vars.GetVar(TooltipStr, this->customDescription.c_str());
+	this->customDescription = vars.GetVar(TooltipStr, this->customDescription.c_str());
 }
 
 //*****************************************************************************
