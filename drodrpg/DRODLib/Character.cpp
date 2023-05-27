@@ -722,6 +722,12 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 		}
 		break;
 
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+			//string vars
+		break;
+
 		//Stat modifications that may display the change as a special effect.
 		default:
 		{
