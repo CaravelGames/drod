@@ -286,7 +286,6 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 				case T_BOMB:
 					return false;
 				case T_MIRROR:
-				case T_CRATE:
 					if (!this->bIntraRoomPath)
 						return false;
 					break;
