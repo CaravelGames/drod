@@ -223,6 +223,7 @@ public:
 	void           AddLastLayerEffect(CEffect *pEffect);
 	void           AddMLayerEffect(CEffect *pEffect);
 	void           AddOLayerEffect(CEffect *pEffect);
+	bool           AddOrbEffect(COrbAgentData* pOrbAgent);
 	void           AddPlayerLight(const bool bAlwaysRefresh=false);
 	void           AddShadeEffect(const UINT wX, const UINT wY,
 			const SURFACECOLOR &Color);
@@ -561,6 +562,9 @@ private:
 			UINT& iStart, UINT& jStart, UINT& iEnd, UINT& jEnd,
 			LIGHTTYPE*& sRGBIntensity) const;
 	bool           CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest_y) const;
+
+	void           DisplayAgentsAffectingTiles(const CCoordSet& doorCoords);
+	void           DisplayDoorAgents(const UINT wX, const UINT wY, const UINT type);
 
 	float          GetOverheadDarknessAt(const UINT wX, const UINT wY, const float fIntensity=1.0f) const;
 
