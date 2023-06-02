@@ -126,6 +126,8 @@ static inline bool bIsGoblin(const UINT mt) {return mt == M_GOBLIN || mt == M_GO
 
 static inline bool bIsSerpent(const UINT mt) {return mt==M_SERPENT || mt==M_SERPENTG || mt==M_SERPENTB;}
 
+static inline bool bIsLargeMonster(const UINT mt) { return bIsSerpent(mt) || mt == M_ROCKGIANT; }
+
 static inline bool bMonsterHasDirection(const UINT mt) {
 	switch (mt)
 	{
