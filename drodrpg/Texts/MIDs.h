@@ -1168,6 +1168,8 @@ enum MID_CONSTANT {
   MID_DisableMouseMovement = 1735,
   MID_NoFocusPlaysMusic = 1746,
   MID_ShowScore = 1831,
+  MID_NewGames = 1841,
+  MID_ConfirmNewGame = 1842,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,
@@ -1635,6 +1637,7 @@ enum MID_CONSTANT {
   MID_ChatTip = 1468,
   MID_InvalidCaravelNetKey = 1195,
   MID_UnsentCaravelNetProgress = 1196,
+  MID_ReallyStartNewGame = 1843,
 
   //Messages from Weather.uni:
   MID_WeatherTitle = 1143,

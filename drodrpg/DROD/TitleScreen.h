@@ -71,6 +71,8 @@ protected:
 private:
 	void     Animate();
 
+	bool ConfirmNewGame();
+
 	void     RequestNews();
 	UINT    GetNextDemoID();
 	virtual void   Paint(bool bUpdateRect=true);
@@ -126,6 +128,9 @@ private:
 	//Graphics.
 	bool bPredarken;
 	bool bReloadGraphics;
+
+	//New game
+	bool bNewGamePrompt;
 };
 
 #endif //...#ifndef TITLESCREEN_H

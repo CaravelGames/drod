@@ -114,6 +114,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	, pMarqueeWidget(NULL)
 	, bWaitingForHoldlist(false)
 	, bPredarken(true), bReloadGraphics(false)
+	, bNewGamePrompt(true)
 //Constructor.
 {
 	string TitleBG;
@@ -265,6 +266,8 @@ bool CTitleScreen::SetForActivate()
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 	g_pTheSound->bNoFocusPlaysMusic = settings.GetVar(Settings::NoFocusPlaysMusic, false);
+
+	this->bNewGamePrompt = settings.GetVar(Settings::NewGamePrompt, true);
 
 	ASSERT(!this->bWaitingForHoldlist); //no previous transaction should be left uncompleted
 	if (g_pTheNet->IsEnabled()) //if CaravelNet connection hasn't been disabled
@@ -768,8 +771,11 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_Game));
 			ASSERT(pGameScreen);
-			if (pGameScreen->IsGameLoaded())
+			const UINT dwContinueID = g_pTheDB->SavedGames.FindByContinue();
+			if (pGameScreen->IsGameLoaded() || dwContinueID) {
+				if (!ConfirmNewGame()) return SCR_Title;
 				pGameScreen->UnloadGame();
+			}
 			if (!pGameScreen->LoadNewGame(dwCurrentHoldID))
 			{
 				ShowOkMessage(MID_LoadGameFailed);
@@ -926,6 +932,17 @@ void CTitleScreen::Animate()
 {
 	//Redraw the screen.
 	RedrawScreen();
+}
+
+//*****************************************************************************
+bool CTitleScreen::ConfirmNewGame()
+//Returns: If player really wants to start a new game
+{
+	//New game confirmation is disabled in player settings
+	if (!this->bNewGamePrompt)
+		return true;
+
+	return (ShowYesNoMessage(g_pTheDB->GetMessageText(MID_ReallyStartNewGame)) == TAG_YES);
 }
 
 //*****************************************************************************
