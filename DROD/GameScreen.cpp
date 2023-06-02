@@ -5603,6 +5603,7 @@ void CGameScreen::PrepCustomSpeaker(CFiredCharacterCommand *pCmd)
 		{
 			//Attach speech to monster at this tile.
 			pCmd->pSpeakingEntity = pMonster;
+			pMonster->bSafeToDelete = false;
 		} else {
 			//No monster there -- create temporary pseudo-monster to attach to.
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pCmd->pExecutingNPC);
@@ -6193,6 +6194,10 @@ void CGameScreen::UpdatePlayerFace()
 	}
 
 	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (pPlayerHoldCharacter) {
+		player = getSpeakerType(MONSTERTYPE(pPlayerHoldCharacter->wType));
+	}
+
 	if (player == Speaker_None)
 	{
 		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.

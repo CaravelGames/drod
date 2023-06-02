@@ -52,7 +52,7 @@ const UINT NEXT_VERSION_NUMBER = 600;
 const WCHAR wszVersionReleaseNumber[] = WS("5.1.1.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('5'),We('.'),We('1'),We('.'),We('1'),We('.'),We('2'),We('7'),We('0'),We(0)   // 5.1.1.*
+	We('5'),We('.'),We('1'),We('.'),We('1'),We('.'),We('4'),We('0'),We('9'),We(0)   // 5.1.1.*
 };
 #endif
 
@@ -124,6 +124,10 @@ namespace InputCommands
 			case SDLK_KP_9: return MID_KEY_KP9;
 			case SDLK_KP_0: return MID_KEY_KP0;
 			case SDLK_KP_PERIOD: return MID_KEY_KP_PERIOD;
+			case SDLK_LEFT: return MID_KEY_LEFT;
+			case SDLK_RIGHT: return MID_KEY_RIGHT;
+			case SDLK_UP: return MID_KEY_UP;
+			case SDLK_DOWN: return MID_KEY_DOWN;
 			default: return static_cast<MESSAGE_ID>((long) MID_UNKNOWN + nKey);
 		}
 	}

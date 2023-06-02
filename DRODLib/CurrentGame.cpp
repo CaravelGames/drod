@@ -2728,7 +2728,10 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 		if (this->swordsman.wAppearance == M_CONSTRUCT && pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY) == T_GOO && this->wTurnNo > 0){
 			SetDyingEntity(&this->swordsman);
 			CueEvents.Add(CID_PlayerEatenByOremites);
-		} else {
+		}	else if (this->swordsman.wAppearance == M_FLUFFBABY && pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY) == T_HOT && this->wTurnNo > 0) {
+			SetDyingEntity(&this->swordsman);
+			CueEvents.Add(CID_PlayerBurned);
+		}	else {
 			QueryCheckpoint(CueEvents, wDestX, wDestY);
 		}
 	}
@@ -6139,7 +6142,10 @@ MakeMove:
 			ProcessPlayer_HandleLeaveLevel(CueEvents);
 		break;
 		case T_HOT:
-			if (bStayedOnHotFloor && this->swordsman.wX == wStartingX && this->swordsman.wY == wStartingY)
+			if (this->wTurnNo > 0 && this->swordsman.wAppearance == M_FLUFFBABY) {
+				SetDyingEntity(&this->swordsman);
+				CueEvents.Add(CID_PlayerBurned);
+			}	else if (bStayedOnHotFloor && this->swordsman.wX == wStartingX && this->swordsman.wY == wStartingY)
 			{
 				//Player dies if on same hot tile two (non-hasted) turns in a row.
 				if ((!this->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn) &&

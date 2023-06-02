@@ -73,7 +73,7 @@ public:
 	UINT getIndexAt(const UINT wX, const UINT wY) const;
 	UINT getNumSourcesWithIndex(const UINT index) const;
 	void initLiveTiles();
-	void insert(const UINT wX, const UINT wY);
+	void insert(const UINT wX, const UINT wY, bool bConstructed = false);
 	void plotted(const UINT wX, const UINT wY, const UINT wTileNo);
 	void process(CCueEvents &CueEvents);
 	void removeSource(const UINT wX, const UINT wY);

@@ -522,10 +522,13 @@ void CBriars::initLiveTiles()
 }
 
 //*****************************************************************************
-void CBriars::insert(const UINT wX, const UINT wY)
+void CBriars::insert(const UINT wX, const UINT wY, bool bConstructed)
 //Add a briar root at (x,y)
+//If bConstructed if true, it is being added after the room has been initialized
 {
-	ASSERT(!this->briarIndices.Exists(wX,wY)); //this root should not have been processed yet
+	//this root should not have been processed yet
+	//but a root built via scripting can be placed on existing briar
+	ASSERT(!this->briarIndices.Exists(wX, wY) || bConstructed);
 
 	//Each briar root starts with its own separate connected component of briar tiles.
 	this->briarComponents.push_back(CCoordSet(wX, wY));
@@ -570,9 +573,13 @@ void CBriars::insert(const UINT wX, const UINT wY)
 		for (list<CBriar*>::iterator briar = this->briars.begin(); briar != this->briars.end(); ++briar)
 			if ((*briar)->wComponentIndex == wAdjIndex)
 				(*briar)->wComponentIndex = wIndex;
-		//Combine connected components.  Edges are still empty and can be ignored.
+		//Combine connected components. Edges can be ignored if empty.
 		this->briarComponents[wIndex-1] += this->briarComponents[wAdjIndex-1];
 		this->briarComponents[wAdjIndex-1].clear();
+		if (!this->briarEdge.empty()) {
+			this->briarEdge[wIndex - 1] += this->briarEdge[wAdjIndex - 1];
+			this->briarEdge[wAdjIndex - 1].clear();
+		}
 	}
 }
 
