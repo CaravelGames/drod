@@ -57,6 +57,7 @@ using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
 #define ParamProcessSequenceStr "ProcessSequenceParam"
+#define ColorStr "Color"
 
 class CSwordsman;
 struct HoldCharacter;
@@ -194,6 +195,7 @@ public:
 	static void    SaveCommands(CDbPackedVars& ExtraVars, const COMMANDPTR_VECTOR& commands);
 	static void    SaveSpeech(const COMMAND_VECTOR& commands);
 	static void    SaveSpeech(const COMMANDPTR_VECTOR& commands);
+	virtual void   SetColor(const UINT color) { this->color = color; }
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
 	virtual void   SetExtraVarsForExport() { PackExtraVars(true); } //include config params and script
 	void           SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) const;

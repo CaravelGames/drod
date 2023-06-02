@@ -45,10 +45,12 @@ public:
 
 	CCharacterOptionsDialog();
 
+	CTextBoxWidget *pColorTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
+	UINT GetColor();
 	UINT GetProcessSequence();
 
 protected:
@@ -59,17 +61,24 @@ private:
 	static const UINT SPACE_CX = 15;
 
 	static const int DIALOG_CX = 400;
-	static const int DIALOG_CY = 230;
+	static const int DIALOG_CY = 330;
 
 	static const int TITLE_CX = 200;
 	static const int TITLE_CY = 30;
 	static const int TITLE_X = (DIALOG_CX - TITLE_CX) / 2;
 	static const int TITLE_Y = SPACE_CY;
 
+	static const int COLORLABEL_CX = 150;
+	static const int COLORLABEL_X = SPACE_CX;
+	static const int COLORLABEL_Y = TITLE_Y + TITLE_CY + SPACE_CY;
+
+	static const int COLORTEXT_X = COLORLABEL_X + COLORLABEL_CX + SPACE_CX;
+	static const int COLORTEXT_Y = COLORLABEL_Y;
+
 	static const int SEQUENCELABEL_CX = 150;
 	static const int SEQUENCELABEL_CY = CY_STANDARD_BUTTON;
 	static const int SEQUENCELABEL_X = SPACE_CX;
-	static const int SEQUENCELABEL_Y = TITLE_Y + TITLE_CY + SPACE_CY;
+	static const int SEQUENCELABEL_Y = COLORLABEL_Y + TITLE_CY + SPACE_CY;
 
 	static const int SEQUENCEHELP_CX = 370;
 	static const int SEQUENCEHELP_CY = 270;
@@ -91,6 +100,7 @@ private:
 	static const int CANCEL_X = DIALOG_CX / 2 + SPACE_CX / 2;
 	static const int CANCEL_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
 
+	static const int COLOR_MAX_LENGTH = 6;
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
 

@@ -65,7 +65,6 @@ const UINT MAX_ANSWERS = 9;
 
 #define CustomNameStr "Name"
 
-#define ColorStr "Color"
 #define ParamXStr "XParam"
 #define ParamYStr "YParam"
 #define ParamWStr "WParam"
@@ -5007,6 +5006,7 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 
 				if (this->commands.empty()) {
 					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->wProcessSequence);
 				}
 			}
 			else

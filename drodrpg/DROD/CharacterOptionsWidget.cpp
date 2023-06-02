@@ -49,6 +49,16 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	AddWidget(new CLabelWidget(0L, TITLE_X, TITLE_Y,
 		TITLE_CX, TITLE_CY, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
+	AddWidget(new CLabelWidget(0L, COLORLABEL_X, COLORLABEL_Y,
+		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterColor)));
+
+	this->pColorTextBox = new CTextBoxWidget(0L, COLORTEXT_X, COLORTEXT_Y,
+		SEQUENCETEXT_CX, SEQUENCETEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+
+	this->pColorTextBox->SetDigitsOnly(true);
+	this->pColorTextBox->SetAllowNegative(false);
+	this->pColorTextBox->AddHotkey(SDLK_RETURN, TAG_SAVE);
+	AddWidget(this->pColorTextBox);
 
 	AddWidget(new CLabelWidget(0L, SEQUENCELABEL_X, SEQUENCELABEL_Y,
 		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
@@ -74,8 +84,10 @@ void CCharacterOptionsDialog::SetCharacter(
 	WCHAR temp[bufferLength];
 
 	_itoW(pCharacter->wProcessSequence, temp, 10, bufferLength);
-
 	this->pSequenceTextBox->SetText(temp);
+
+	_itoW(pCharacter->getColor(), temp, 10, bufferLength);
+	this->pColorTextBox->SetText(temp);
 }
 
 //*****************************************************************************
@@ -86,8 +98,15 @@ void CCharacterOptionsDialog::SetCharacter(
 	WCHAR temp[bufferLength];
 
 	_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, 9999), temp, 10, bufferLength);
-
 	this->pSequenceTextBox->SetText(temp);
+
+	_itoW(pCharacter->ExtraVars.GetVar(ColorStr, 0), temp, 10, bufferLength);
+	this->pColorTextBox->SetText(temp);
+}
+
+//*****************************************************************************
+UINT CCharacterOptionsDialog::GetColor(){
+	return (UINT)this->pColorTextBox->GetNumber();
 }
 
 //*****************************************************************************
