@@ -186,7 +186,7 @@ private:
 	CListBoxWidget *pDefaultScriptCommandsListBox;
 	CRenameDialogWidget *pScriptDialog;
 	CListBoxWidget *pDirectionListBox2, *pDirectionListBox3;
-	CListBoxWidget *pOnOffListBox3, * pOnOffListBox4;
+	CListBoxWidget *pOnOffListBox3;
 	CListBoxWidget *pVisualEffectsListBox;
 	CListBoxWidget *pActionListBox;
 	CListBoxWidget *pEventListBox;
@@ -211,6 +211,8 @@ private:
 	CListBoxWidget *pIgnoreFlagsListBox;
 	CListBoxWidget* pColorListBox;
 	CListBoxWidget* pOrbAgentListBox;
+
+	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited
