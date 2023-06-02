@@ -34,29 +34,30 @@
 CCharacterOptionsDialog::CCharacterOptionsDialog(
 //Constructor.
 )
-: CDialogWidget(0L, 0, 0, CCharacterOptionsDialog::CX_DIALOG, CCharacterOptionsDialog::CY_DIALOG, false)
+: CDialogWidget(0L, 0, 0, CCharacterOptionsDialog::DIALOG_CX, CCharacterOptionsDialog::DIALOG_CY, false)
 {
 	AddWidget(new CButtonWidget(TAG_SAVE,
-		X_SAVE, Y_SAVE,
-		CX_SAVE, CY_SAVE,
+		SAVE_X, SAVE_Y,
+		SAVE_CX, SAVE_CY,
 		g_pTheDB->GetMessageText(MID_Save)));
 
 	AddWidget(new CButtonWidget(CCharacterOptionsDialog::TAG_CANCEL,
-		CCharacterOptionsDialog::X_CANCEL, CCharacterOptionsDialog::Y_CANCEL,
-		CCharacterOptionsDialog::CX_CANCEL, CCharacterOptionsDialog::CY_CANCEL,
+		CCharacterOptionsDialog::CANCEL_X, CCharacterOptionsDialog::CANCEL_Y,
+		CCharacterOptionsDialog::CANCEL_CX, CCharacterOptionsDialog::CANCEL_CY,
 		g_pTheDB->GetMessageText(MID_Cancel)));
 
-	AddWidget(new CLabelWidget(0L, X_TITLE, Y_TITLE,
-		CX_TITLE, CY_TITLE, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
+	AddWidget(new CLabelWidget(0L, TITLE_X, TITLE_Y,
+		TITLE_CX, TITLE_CY, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
-	AddWidget(new CLabelWidget(0L, X_SEQUENCELABEL, Y_SEQUENCELABEL,
-		CX_SEQUENCELABEL, CY_SEQUENCELABEL, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
 
-	AddWidget(new CLabelWidget(0L, X_SEQUENCEHELP, Y_SEQUENCEHELP,
-		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
+	AddWidget(new CLabelWidget(0L, SEQUENCELABEL_X, SEQUENCELABEL_Y,
+		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
 
-	this->pSequenceTextBox = new CTextBoxWidget(0L, X_SEQUENCETEXT, Y_SEQUENCETEXT,
-		CX_SEQUENCETEXT, CY_SEQUENCETEXT, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
+	AddWidget(new CLabelWidget(0L, SEQUENCEHELP_X, SEQUENCEHELP_Y,
+		SEQUENCEHELP_CX, SEQUENCEHELP_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
+
+	this->pSequenceTextBox = new CTextBoxWidget(0L, SEQUENCETEXT_X, SEQUENCETEXT_Y,
+		SEQUENCETEXT_CX, SEQUENCETEXT_CY, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);

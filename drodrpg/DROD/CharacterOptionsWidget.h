@@ -55,41 +55,41 @@ protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 private:
-	static const UINT CY_SPACE = 15;
-	static const UINT CX_SPACE = 15;
+	static const UINT SPACE_CY = 15;
+	static const UINT SPACE_CX = 15;
 
-	static const int CX_DIALOG = 400;
-	static const int CY_DIALOG = 230;
+	static const int DIALOG_CX = 400;
+	static const int DIALOG_CY = 230;
 
-	static const int CX_TITLE = 200;
-	static const int CY_TITLE = 30;
-	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
-	static const int Y_TITLE = CY_SPACE;
+	static const int TITLE_CX = 200;
+	static const int TITLE_CY = 30;
+	static const int TITLE_X = (DIALOG_CX - TITLE_CX) / 2;
+	static const int TITLE_Y = SPACE_CY;
 
-	static const int CX_SEQUENCELABEL = 150;
-	static const int CY_SEQUENCELABEL = CY_STANDARD_BUTTON;
-	static const int X_SEQUENCELABEL = CX_SPACE;
-	static const int Y_SEQUENCELABEL = Y_TITLE + CY_TITLE + CY_SPACE;
+	static const int SEQUENCELABEL_CX = 150;
+	static const int SEQUENCELABEL_CY = CY_STANDARD_BUTTON;
+	static const int SEQUENCELABEL_X = SPACE_CX;
+	static const int SEQUENCELABEL_Y = TITLE_Y + TITLE_CY + SPACE_CY;
 
-	static const int CX_SEQUENCEHELP = 370;
-	static const int CY_SEQUENCEHELP = 270;
-	static const int X_SEQUENCEHELP = CX_SPACE;
-	static const int Y_SEQUENCEHELP = Y_SEQUENCELABEL + CY_SEQUENCELABEL + CY_SPACE;
+	static const int SEQUENCEHELP_CX = 370;
+	static const int SEQUENCEHELP_CY = 270;
+	static const int SEQUENCEHELP_X = SPACE_CX;
+	static const int SEQUENCEHELP_Y = SEQUENCELABEL_Y + SEQUENCELABEL_CY + SPACE_CY;
 
-	static const int CX_SEQUENCETEXT = 130;
-	static const int CY_SEQUENCETEXT = CY_STANDARD_BUTTON;
-	static const int X_SEQUENCETEXT = X_SEQUENCELABEL + CX_SEQUENCELABEL + CX_SPACE;
-	static const int Y_SEQUENCETEXT = Y_SEQUENCELABEL;
+	static const int SEQUENCETEXT_CX = 130;
+	static const int SEQUENCETEXT_CY = CY_STANDARD_BUTTON;
+	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + SEQUENCELABEL_CX + SPACE_CX;
+	static const int SEQUENCETEXT_Y = SEQUENCELABEL_Y;
 
-	static const int CX_SAVE = 100;
-	static const int CY_SAVE = CY_STANDARD_BUTTON;
-	static const int X_SAVE = CX_DIALOG / 2 - CX_SAVE - CX_SPACE / 2;
-	static const int Y_SAVE = CY_DIALOG - CY_SAVE - CY_SPACE;
+	static const int SAVE_CX = 100;
+	static const int SAVE_CY = CY_STANDARD_BUTTON;
+	static const int SAVE_X = DIALOG_CX / 2 - SAVE_CX - SPACE_CX / 2;
+	static const int SAVE_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
 
-	static const int CX_CANCEL = 100;
-	static const int CY_CANCEL = CY_STANDARD_BUTTON;
-	static const int X_CANCEL = CX_DIALOG / 2 + CX_SPACE / 2;
-	static const int Y_CANCEL = CY_DIALOG - CY_SAVE - CY_SPACE;
+	static const int CANCEL_CX = 100;
+	static const int CANCEL_CY = CY_STANDARD_BUTTON;
+	static const int CANCEL_X = DIALOG_CX / 2 + SPACE_CX / 2;
+	static const int CANCEL_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
 
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
