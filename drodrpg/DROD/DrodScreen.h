@@ -63,10 +63,14 @@ public:
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
 	static bool    IsGameFullVersion();
 
+	bool ValidateVideo(CStretchyBuffer& buffer) { return PlayVideoBuffer(buffer, NULL); }
+
 	static vector<WSTRING> importFiles;
 	WSTRING        callbackContext; //set to provide more contextual callback messages to user
 
 protected:
+	friend class CDrodDialogs;
+
 	void     AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 			const UINT monsterType, const CMoveCoord& coord);
 	void     AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget, CCurrentGame* pGame);

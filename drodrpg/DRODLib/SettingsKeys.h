@@ -58,6 +58,7 @@ namespace Settings
 	DEF(Fullscreen);
 	DEF(Gamma);
 	DEF(GEMI); //groupEditorMenuItems
+	DEF(ImportImagePath);
 	DEF(ImportSoundPath);
 	DEF(ImportVideoPath);
 	DEF(ItemTips);

@@ -30,6 +30,7 @@
 
 #include "RoomScreen.h"
 #include "EditRoomWidget.h"
+#include "SelectMediaDialogWidget.h"
 #include "../DRODLib/DbHolds.h"
 #include "../DRODLib/DbRooms.h"
 #include <BackEndLib/CoordSet.h>
@@ -86,6 +87,7 @@ protected:
 private:
 	void     AddChatDialog();
 	void     AddLevelEntranceDialog();
+	void     AddMediaSelectionDialog();
 	void     AddPlotEffect(const UINT wObjectNo);
 	UINT     AddRoom(const UINT dwRoomX, const UINT dwRoomY);
 	void     ApplyPlayerSettings();
@@ -203,6 +205,7 @@ private:
 	CTabbedMenuWidget * pTabbedMenu;
 	CCharacterDialogWidget *pCharacterDialog;
 	CEntranceSelectDialogWidget * pEntranceBox;     //choose from list of levels
+	CSelectMediaDialogWidget* pSelectMediaDialog;
 	CDialogWidget *pLevelEntranceDialog; //for defining level entrances
 	UINT              wSelectedObject;  //object selected for placement
 	UINT              wSelectedObjectSave; //object selected, while

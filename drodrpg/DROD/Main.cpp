@@ -39,6 +39,7 @@
 #include "DrodFileDialogWidget.h"
 #include "DrodFontManager.h"
 #include "DrodBitmapManager.h"
+#include "DrodDialogs.h"
 #include "DrodScreen.h"
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
@@ -932,6 +933,7 @@ sdl_error:
 	ASSERT(!g_pTheFM);
 	g_pTheDFM = new CDrodFontManager();
 	g_pTheFM = (CFontManager*)g_pTheDFM;
+	g_pTheDialogs = new CDrodDialogs();
 	if (!g_pTheFM) return MID_OutOfMemory;
 	ret = (MESSAGE_ID)g_pTheDFM->Init();
 	if (ret) return ret;

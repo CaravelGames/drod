@@ -423,6 +423,11 @@ enum MID_CONSTANT {
   MID_Accessory11 = 1499,
   MID_Accessory12 = 1636,
   MID_Explosion = 1582,
+  MID_ErrorCannotReplaceWithDifferentExistingFile = 1844,
+  MID_ReplaceMediaWithAnother = 1845,
+  MID_ReplaceFileButton = 1846,
+  MID_FilePendingDeletionSuffix = 1847,
+  MID_Undelete = 1848,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,

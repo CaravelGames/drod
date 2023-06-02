@@ -106,6 +106,7 @@ public:
 	bool        RenameVar(const UINT dwVarID, const WSTRING& newName);
 	bool        Repair();
 	bool        SaveCopyOfLevels(CDbHold *pHold, CImportInfo& info);
+	void        UnmarkDataForDeletion(const UINT dataID);
 
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,

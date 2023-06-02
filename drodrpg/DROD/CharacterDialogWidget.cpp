@@ -2449,17 +2449,13 @@ void CCharacterDialogWidget::AddSound()
 {
 	//If a sound is already loaded, mark it for deletion.
 	bool bDeletingSound = this->pSound != NULL;
+
 	if (this->pCommand)
 	{
 		CDbSpeech *pSpeech = this->pCommand->pSpeech;
 		if (this->bEditingCommand && pSpeech && pSpeech->GetSound())
 		{
 			bDeletingSound = true;
-			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-					g_pTheSM->GetScreen(SCR_EditRoom));
-			ASSERT(pEditRoomScreen);
-			ASSERT(pEditRoomScreen->pRoom);
-			pEditRoomScreen->pRoom->MarkDataForDeletion(pSpeech->GetSound());
 			ASSERT(pSpeech->GetSound() == this->pSound);
 			pSpeech->SetSound(NULL);   //deletes this->pSound
 			this->pSound = NULL;
@@ -2476,69 +2472,13 @@ void CCharacterDialogWidget::AddSound()
 		return;
 	}
 
-	//Get sound import path.
-	CFiles Files;
-	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	WSTRING wstrImportPath = pCurrentPlayer ? pCurrentPlayer->Settings.GetVar(Settings::ImportSoundPath,
-			Files.GetDatPath().c_str()) : Files.GetDatPath();
+	const UINT dwSoundId = SelectMediaID(0, CSelectMediaDialogWidget::Sounds);
 
-	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-			g_pTheSM->GetScreen(SCR_EditRoom));
-	ASSERT(pEditRoomScreen);
-	WSTRING wstrImportFile;
-	const UINT dwTagNo = pEditRoomScreen->SelectFile(wstrImportPath,
-			wstrImportFile, MID_ImportSound, false, EXT_OGG | EXT_WAV);
-	if (dwTagNo == TAG_OK)
+	if (dwSoundId)
 	{
-		//Update the path in player settings, so next time dialog
-		//comes up it will have the same path.
-		if (pCurrentPlayer)
-		{
-			pCurrentPlayer->Settings.SetVar(Settings::ImportSoundPath, wstrImportPath.c_str());
-			pCurrentPlayer->Update();
-		}
-
-		//Load sound effect.
-		const bool bNewSound = !this->pSound;
-		if (bNewSound)
-			this->pSound = g_pTheDB->Data.GetNew();
-		CStretchyBuffer data;
-		if (Files.ReadFileIntoBuffer(wstrImportFile.c_str(),
-				data, true))
-		{
-			if (g_pTheSound->VerifySound(data))
-			{
-				//Replace loaded sound, here and in DB on room save.
-				this->pSound->data.Clear();
-				this->pSound->data.Set((const BYTE*)data,data.Size());
-				this->pSound->DataNameText = getFilenameFromPath(wstrImportFile.c_str());
-				this->pSound->dwHoldID = pEditRoomScreen->pHold->dwHoldID;
-				//Don't need to distinguish between WAV and OGG formats, since
-				//CSound is able to figure it out by itself.
-				//Hence, we just give it an ID for a format type that is known to be a sound format.
-				this->pSound->wDataFormat = DATA_OGG;
-				//Play sound as confirmation.
-				g_pTheSound->PlayVoice(this->pSound->data);
-			} else {
-				//Not a valid sound file.
-				pEditRoomScreen->ShowOkMessage(MID_FileNotValid);
-				if (bNewSound)
-				{
-					delete this->pSound;
-					this->pSound = NULL;
-				}
-			}
-		} else {
-			pEditRoomScreen->ShowOkMessage(MID_FileNotFound);
-			//Leave existing sound data intact if a replacement was unsuccessfully loaded.
-			if (bNewSound)
-			{
-				delete this->pSound;
-				this->pSound = NULL;
-			}
-		}
+		this->pSound = g_pTheDB->Data.GetByID(dwSoundId);
+		g_pTheSound->PlayVoice(this->pSound->data);
 	}
-	delete pCurrentPlayer;
 
 	SetActionWidgetStates();
 	if (this->pParent)
@@ -4976,55 +4916,33 @@ UINT CCharacterDialogWidget::SelectMediaID(
 //UI for importing, deleting and selecting media data belonging to this hold.
 //
 //Params:
-	const UINT dwDefault, //default selected value
-	const CEntranceSelectDialogWidget::DATATYPE eType) //media type
+	const UINT dwSelectedValue, //default selected value
+	const CSelectMediaDialogWidget::DATATYPE eType) //media type
 {
 	MESSAGE_ID midPrompt = 0;
 	switch (eType)
 	{
-		case CEntranceSelectDialogWidget::Sounds:	midPrompt = MID_SoundSelectPrompt; break;
-		case CEntranceSelectDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
+		case CSelectMediaDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
+		case CSelectMediaDialogWidget::Sounds:	midPrompt = MID_SoundSelectPrompt; break;
+		case CSelectMediaDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
 		default: ASSERT(!"UI for this media type not implemented"); return 0;
 	}
 	ASSERT(midPrompt);
 
 	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 			g_pTheSM->GetScreen(SCR_EditRoom));
+	CSelectMediaDialogWidget* pSelectMediaDialog = pEditRoomScreen->pSelectMediaDialog;
+
 	ASSERT(pEditRoomScreen->pHold);
 
-	UINT dwVal;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwVal = dwDefault;
-		eButton = pEditRoomScreen->SelectListID(
-				pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
-				dwVal, midPrompt, eType);
-
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this media object from the database and make another selection.
-			//It's okay if other references to this object remain set to this old record ID.
-			//They will robustly default to do nothing.
-			pEditRoomScreen->pHold->MarkDataForDeletion(dwVal);
-		}
-	} while (eButton == CEntranceSelectDialogWidget::Delete);
-
-	const bool bSelected = eButton == CEntranceSelectDialogWidget::OK;
-	if (bSelected && !dwVal)
-	{
-		//Import media from disk into this hold.
-		switch (eType)
-		{
-			case CEntranceSelectDialogWidget::Sounds:
-				dwVal = pEditRoomScreen->ImportHoldSound();
-			break;
-			case CEntranceSelectDialogWidget::Videos:
-				dwVal = pEditRoomScreen->ImportHoldVideo();
-			break;
-			default: break;
-		}
+	pSelectMediaDialog->SetForDisplay(midPrompt, pEditRoomScreen->pHold, eType);
+	pSelectMediaDialog->SelectItem(dwSelectedValue);
+	if (pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return 0;
 	}
-	return bSelected ? dwVal : 0;
+
+	return pSelectMediaDialog->GetSelectedItem();
 }
 
 //*****************************************************************************
@@ -5353,6 +5271,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		this->pCommand->w = this->pCommand->h = 0;
 		this->pCommand->flags = 0;
 		this->pCommand->label.resize(0);
+
+		if (this->pCommand->pSpeech && this->pSound == this->pCommand->pSpeech->GetSound())
+			this->pSound = NULL;
+
+		delete this->pCommand->pSpeech;
+		this->pCommand->pSpeech = NULL;
 	}
 
 	switch (this->pCommand->command)
@@ -5529,7 +5453,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->label = wszEmpty;
 			if ((int)this->pCommand->x == SONGID_CUSTOM)
 			{
-				const UINT dwVal = SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Sounds);
+				const UINT dwVal = SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Sounds);
 				if (dwVal)
 					this->pCommand->w = dwVal;
 				else
@@ -5835,7 +5759,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_AmbientSound:
 		case CCharacterCommand::CC_AmbientSoundAt:
 		{
-			const UINT dwVal = SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Sounds);
+			const UINT dwVal = SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Sounds);
 			this->pCommand->w = dwVal;
 			this->pCommand->h = this->pOnOffListBox->GetSelectedItem();
 			if (this->pCommand->command == CCharacterCommand::CC_AmbientSound)
@@ -5847,7 +5771,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 		case CCharacterCommand::CC_PlayVideo:
 		{
-			const UINT dwVal = SelectMediaID(this->pCommand->w, CEntranceSelectDialogWidget::Videos);
+			const UINT dwVal = SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Videos);
 			if (dwVal)
 			{
 				CTextBoxWidget *pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
