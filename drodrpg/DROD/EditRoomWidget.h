@@ -122,6 +122,8 @@ public:
 	MonsterSegment monsterSegment;   //long monster being plotted
 	CCoordIndex    swords;           //double swords in room
 
+	bool           characterPreview; //automatic preview of scripted characters
+
 protected:
 	virtual  ~CEditRoomWidget();
 
