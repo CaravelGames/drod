@@ -67,7 +67,12 @@ private:
 	static const UINT SPACE_CX = 15;
 
 	static const int DIALOG_CX = 400;
-	static const int DIALOG_CY = 330;
+	static const int DIALOG_CY = 300;
+
+	static const int LABEL_CX = 150;
+	static const int LABEL_CY = CY_STANDARD_BUTTON;
+	static const int TEXT_CX = 150;
+	static const int TEXT_CY = CY_STANDARD_BUTTON;
 
 	static const int TITLE_CX = 200;
 	static const int TITLE_CY = 30;
@@ -91,19 +96,15 @@ private:
 	static const int SPEECHCOLORTEXTBLUE_X = SPEECHCOLORTEXTGREEN_X + SPEECHCOLORTEXT_CX + SPACE_CX/2;
 	static const int SPEECHCOLORTEXT_Y = SPEECHCOLORLABEL_Y;
 
-	static const int SEQUENCELABEL_CX = 150;
-	static const int SEQUENCELABEL_CY = CY_STANDARD_BUTTON;
 	static const int SEQUENCELABEL_X = SPACE_CX;
 	static const int SEQUENCELABEL_Y = SPEECHCOLORLABEL_Y + TITLE_CY + SPACE_CY;
 
 	static const int SEQUENCEHELP_CX = 370;
 	static const int SEQUENCEHELP_CY = 270;
 	static const int SEQUENCEHELP_X = SPACE_CX;
-	static const int SEQUENCEHELP_Y = SEQUENCELABEL_Y + SEQUENCELABEL_CY + SPACE_CY;
+	static const int SEQUENCEHELP_Y = SEQUENCELABEL_Y + LABEL_CY + SPACE_CY;
 
-	static const int SEQUENCETEXT_CX = 130;
-	static const int SEQUENCETEXT_CY = CY_STANDARD_BUTTON;
-	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + SEQUENCELABEL_CX + SPACE_CX;
+	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + LABEL_CX + SPACE_CX;
 	static const int SEQUENCETEXT_Y = SEQUENCELABEL_Y;
 
 	static const int SAVE_CX = 100;

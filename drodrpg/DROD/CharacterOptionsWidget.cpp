@@ -50,10 +50,10 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 		TITLE_CX, TITLE_CY, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
 	AddWidget(new CLabelWidget(0L, COLORLABEL_X, COLORLABEL_Y,
-		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterColor)));
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterColor)));
 
 	this->pColorTextBox = new CTextBoxWidget(0L, COLORTEXT_X, COLORTEXT_Y,
-		SEQUENCETEXT_CX, SEQUENCETEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
 
 	this->pColorTextBox->SetDigitsOnly(true);
 	this->pColorTextBox->SetAllowNegative(false);
@@ -61,14 +61,14 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	AddWidget(this->pColorTextBox);
 
 	AddWidget(new CLabelWidget(0L, SPEECHCOLORLABEL_X, SPEECHCOLORLABEL_Y,
-		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_CustomSpeechColor)));
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_CustomSpeechColor)));
 
 	this->pSpeechColorRedTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTRED_X, SPEECHCOLORTEXT_Y,
-		SPEECHCOLORTEXT_CX, SEQUENCETEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
 	this->pSpeechColorGreenTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTGREEN_X, SPEECHCOLORTEXT_Y,
-		SPEECHCOLORTEXT_CX, SEQUENCETEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
 	this->pSpeechColorBlueTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTBLUE_X, SPEECHCOLORTEXT_Y,
-		SPEECHCOLORTEXT_CX, SEQUENCETEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
 
 	this->pSpeechColorRedTextBox->SetDigitsOnly(true);
 	this->pSpeechColorGreenTextBox->SetDigitsOnly(true);
@@ -83,13 +83,13 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	AddWidget(this->pSpeechColorBlueTextBox);
 
 	AddWidget(new CLabelWidget(0L, SEQUENCELABEL_X, SEQUENCELABEL_Y,
-		SEQUENCELABEL_CX, SEQUENCELABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
 
 	AddWidget(new CLabelWidget(0L, SEQUENCEHELP_X, SEQUENCEHELP_Y,
 		SEQUENCEHELP_CX, SEQUENCEHELP_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
 
 	this->pSequenceTextBox = new CTextBoxWidget(0L, SEQUENCETEXT_X, SEQUENCETEXT_Y,
-		SEQUENCETEXT_CX, SEQUENCETEXT_CY, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
+		TEXT_CX, TEXT_CY, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);
