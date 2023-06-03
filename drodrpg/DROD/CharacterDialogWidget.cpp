@@ -4972,35 +4972,11 @@ void CCharacterDialogWidget::SetCustomImage()
 	ASSERT(pEditRoomScreen->pHold);
 
 	//Image management.
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = pChar->dwDataID_Avatar;
-		eButton = pEditRoomScreen->SelectListID(pEditRoomScreen->pEntranceBox,
-				pEditRoomScreen->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
-
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			pEditRoomScreen->pHold->MarkDataForDeletion(dwDataID);
-			pChar->dwDataID_Avatar = 0;
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
-
+	UINT dwDataID = pEditRoomScreen->SelectMediaID(pChar->dwDataID_Avatar, CSelectMediaDialogWidget::Images);
 	if (dwDataID)
 	{
 		//Set to selected image from DB.
 		pChar->dwDataID_Avatar = dwDataID;
-	} else {
-		const UINT dwID = pEditRoomScreen->ImportHoldImage(EXT_PNG | EXT_JPEG);
-		if (dwID)
-			pChar->dwDataID_Avatar = dwID;
-		goto SelectImage;	//return to image management
 	}
 
 	SetCharacterWidgetStates();
@@ -5020,26 +4996,7 @@ void CCharacterDialogWidget::SetCustomTiles()
 	ASSERT(pEditRoomScreen->pHold);
 
 	//Image management.
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = pChar->dwDataID_Tiles;
-		eButton = pEditRoomScreen->SelectListID(pEditRoomScreen->pEntranceBox,
-				pEditRoomScreen->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
-
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			pEditRoomScreen->pHold->MarkDataForDeletion(dwDataID);
-			pChar->dwDataID_Tiles = 0;
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
-
+	UINT dwDataID = pEditRoomScreen->SelectMediaID(pChar->dwDataID_Tiles, CSelectMediaDialogWidget::Images);
 	if (dwDataID)
 	{
 		//Set to selected image from DB.
@@ -5054,13 +5011,6 @@ SelectImage:
 			}
 			SDL_FreeSurface(pSurface);
 		}
-	} else {
-		const UINT dwID = pEditRoomScreen->ImportHoldImage(EXT_PNG);
-		if (dwID)
-		{
-			pChar->dwDataID_Tiles = dwID;
-		}
-		goto SelectImage;	//return to image management
 	}
 
 	SetCharacterWidgetStates();

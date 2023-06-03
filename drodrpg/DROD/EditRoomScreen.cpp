@@ -1698,6 +1698,38 @@ CObjectMenuWidget* CEditRoomScreen::GetActiveMenu()
 }
 
 //*****************************************************************************
+UINT CEditRoomScreen::SelectMediaID(
+//UI for importing, deleting and selecting media data belonging to this hold.
+//
+//Returns: a new value or 0 if nothing was changed
+//
+//Params:
+	const UINT dwSelectedValue,                     //(in) currently selected value
+	const CSelectMediaDialogWidget::DATATYPE eType) //media type
+{
+	MESSAGE_ID midPrompt = 0;
+	switch (eType)
+	{
+	case CSelectMediaDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
+	case CSelectMediaDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
+	case CSelectMediaDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
+	default: ASSERT(!"UI for this media type not implemented"); return 0;
+	}
+
+	ASSERT(midPrompt);
+	ASSERT(this->pHold);
+
+	this->pSelectMediaDialog->SetForDisplay(midPrompt, this->pHold, eType);
+	this->pSelectMediaDialog->SelectItem(dwSelectedValue);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return 0;
+	}
+
+	return this->pSelectMediaDialog->GetSelectedItem();
+}
+
+//*****************************************************************************
 void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
 //Select an image for display as this room's special floor mosaic, either from
 //the DB or from disk.
