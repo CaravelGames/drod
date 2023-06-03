@@ -58,6 +58,7 @@ using std::vector;
 #define DefaultCustomCharacterName wszEmpty
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 #define ColorStr "Color"
+#define ParamSpeechColorStr "SpeechColorParam"
 
 class CSwordsman;
 struct HoldCharacter;
@@ -122,6 +123,7 @@ public:
 	virtual UINT   getSword() const;
 
 	WSTRING        GetCustomName() const { return this->customName; }
+	UINT           GetCustomSpeechColor() const { return this->customSpeechColor; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -197,6 +199,7 @@ public:
 	static void    SaveSpeech(const COMMANDPTR_VECTOR& commands);
 	virtual void   SetColor(const UINT color) { this->color = color; }
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
+	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
 	virtual void   SetExtraVarsForExport() { PackExtraVars(true); } //include config params and script
 	void           SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) const;
 	virtual void   SetMembers(const CDbPackedVars& vars);
@@ -312,6 +315,8 @@ private:
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
 
 	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
+
+	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
 
 	UINT wLastSpeechLineNumber; //used during language import
 

@@ -1347,3 +1347,7 @@ Processing Sequence:
 [MID_ProcessingSequenceDescription]
 [eng]
 Scripts with a lower processing sequence value will run before scripts with a higher value.
+
+[MID_CustomSpeechColor]
+[eng]
+Speech Color (rgb)

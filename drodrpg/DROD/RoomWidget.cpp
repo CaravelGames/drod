@@ -671,20 +671,18 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 		color = SpeakerColor[getSpeakerType((MONSTERTYPE)wIdentity)];
 	}
 
-/*
-	//Background color for citizens matches their station-type color.
-	CCitizen *pCitizen = dynamic_cast<CCitizen*>(pCoord);
-	if (pCitizen)
+	//Check for custom speech color
+	CCharacter *pCharacter = dynamic_cast<CCharacter*>(pCoord);
+	if (pCharacter)
 	{
-		const int colorIndex = pCitizen->StationType();
-		if (colorIndex >= 0)
+		const int colorIndex = pCharacter->GetCustomSpeechColor();
+		if (colorIndex)
 		{
-			color.byt1 = Uint8((1.0 + lightMap[0][colorIndex]) * 127.5); //half-saturated
-			color.byt2 = Uint8((1.0 + lightMap[1][colorIndex]) * 127.5);
-			color.byt3 = Uint8((1.0 + lightMap[2][colorIndex]) * 127.5);
+			color.byt1 = Uint8((colorIndex >> 16) & 255);
+			color.byt2 = Uint8((colorIndex >> 8) & 255);
+			color.byt3 = Uint8(colorIndex & 255);
 		}
 	}
-*/
 
 	//Speaker text effect.
 	CSubtitleEffect *pSubtitle = new CSubtitleEffect(this, pCoord,
@@ -699,7 +697,6 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 
 	//If entity speaking is an invisible NPC script, then don't offset the speech
 	//coords to avoid drawing over the entity.
-	CCharacter *pCharacter = dynamic_cast<CCharacter*>(pCoord);
 	if (pCharacter)
 	{
 		if (!pCharacter->bVisible)

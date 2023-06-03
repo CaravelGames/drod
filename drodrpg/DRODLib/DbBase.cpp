@@ -775,6 +775,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ReplaceFileButton: strText = "Replace"; break;
 		case MID_FilePendingDeletionSuffix: strText = "(Pending deletion)"; break;
 		case MID_Undelete: strText = "Undelete"; break;
+		case MID_CustomSpeechColor: strText = "Speech Color (rgb)"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

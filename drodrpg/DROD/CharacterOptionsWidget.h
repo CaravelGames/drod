@@ -46,17 +46,23 @@ public:
 	CCharacterOptionsDialog();
 
 	CTextBoxWidget *pColorTextBox;
+	CTextBoxWidget *pSpeechColorRedTextBox;
+	CTextBoxWidget *pSpeechColorBlueTextBox;
+	CTextBoxWidget *pSpeechColorGreenTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
 	UINT GetColor();
+	UINT GetSpeechColor();
 	UINT GetProcessSequence();
 
 protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 private:
+	void SetSpeechColorTexts(UINT color);
+
 	static const UINT SPACE_CY = 15;
 	static const UINT SPACE_CX = 15;
 
@@ -75,10 +81,20 @@ private:
 	static const int COLORTEXT_X = COLORLABEL_X + COLORLABEL_CX + SPACE_CX;
 	static const int COLORTEXT_Y = COLORLABEL_Y;
 
+	static const int SPEECHCOLORLABEL_CX = 150;
+	static const int SPEECHCOLORLABEL_X = SPACE_CX;
+	static const int SPEECHCOLORLABEL_Y = COLORLABEL_Y + TITLE_CY + SPACE_CY;
+
+	static const int SPEECHCOLORTEXT_CX = 45;
+	static const int SPEECHCOLORTEXTRED_X = SPEECHCOLORLABEL_X + SPEECHCOLORLABEL_CX + SPACE_CX;
+	static const int SPEECHCOLORTEXTGREEN_X = SPEECHCOLORTEXTRED_X + SPEECHCOLORTEXT_CX + SPACE_CX/2;
+	static const int SPEECHCOLORTEXTBLUE_X = SPEECHCOLORTEXTGREEN_X + SPEECHCOLORTEXT_CX + SPACE_CX/2;
+	static const int SPEECHCOLORTEXT_Y = SPEECHCOLORLABEL_Y;
+
 	static const int SEQUENCELABEL_CX = 150;
 	static const int SEQUENCELABEL_CY = CY_STANDARD_BUTTON;
 	static const int SEQUENCELABEL_X = SPACE_CX;
-	static const int SEQUENCELABEL_Y = COLORLABEL_Y + TITLE_CY + SPACE_CY;
+	static const int SEQUENCELABEL_Y = SPEECHCOLORLABEL_Y + TITLE_CY + SPACE_CY;
 
 	static const int SEQUENCEHELP_CX = 370;
 	static const int SEQUENCEHELP_CY = 270;
@@ -101,6 +117,7 @@ private:
 	static const int CANCEL_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
 
 	static const int COLOR_MAX_LENGTH = 6;
+	static const int SPEECHCOLOR_MAX_LENGTH = 3;
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
 
