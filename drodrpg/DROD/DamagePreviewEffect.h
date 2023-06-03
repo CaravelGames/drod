@@ -34,28 +34,43 @@
 #include <vector>
 
 //****************************************************************************************
-class CMonster;
 class CRoomWidget;
-class CDamagePreviewEffect : public CEffect
+class CBonusPreviewEffect : public CEffect
 {
 public:
-	CDamagePreviewEffect(CWidget *pSetWidget, const CMonster *pMonster);
-	~CDamagePreviewEffect();
+	CBonusPreviewEffect(CWidget* pSetWidget, const UINT wX, const UINT wY, const int value);
+	virtual ~CBonusPreviewEffect();
 
 protected:
+	CBonusPreviewEffect(CWidget* pSetWidget);
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
 
-	UINT        wValidTurn;   //game turn this display is valid for
+	UINT         wX, wY;
+	UINT         wValidTurn;   //game turn this display is valid for
 
-	CRoomWidget *  pRoomWidget;
+	CRoomWidget* pRoomWidget;
+
+	SDL_Surface* pTextSurface;
+
+private:
+	void PrepWidgetForValue(const int value);
+};
+
+//****************************************************************************************
+class CMonster;
+class CDamagePreviewEffect : public CBonusPreviewEffect
+{
+public:
+	CDamagePreviewEffect(CWidget *pSetWidget, const CMonster *pMonster);
+
+protected:
+	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 
 private:
 	void PrepWidget();
 
 	CMonster* pMonster;
-
-	SDL_Surface* pTextSurface;
 };
 
 #endif //...#ifndef DAMAGEPREVIEWEFFECT_H

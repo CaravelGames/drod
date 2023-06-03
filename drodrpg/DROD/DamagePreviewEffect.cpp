@@ -36,19 +36,171 @@
 const int YOFFSET = 3;   //this font draws a bit too low
 
 //********************************************************************************
+CBonusPreviewEffect::CBonusPreviewEffect(
+	//Constructor.
+	//
+	//Params:
+	CWidget *pSetWidget,          //(in)   Should be a room widget.
+	const UINT wX, const UINT wY,
+	const int value)
+	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
+	, wX(wX), wY(wY)
+	, pTextSurface(NULL)
+{
+	ASSERT(pSetWidget);
+	ASSERT(pSetWidget->GetType() == WT_Room);
+
+	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
+	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
+	ASSERT(pRoom);
+	if (pRoom) {
+		CCurrentGame* pGame = pRoom->GetCurrentGame();
+		ASSERT(pGame);
+		this->wValidTurn = pGame->wTurnNo;
+
+		//Prepare effect.
+		PrepWidgetForValue(value);
+	} else {
+		this->wValidTurn = 0;
+	}
+}
+
+CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget)
+	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
+	, pTextSurface(NULL)
+{ }
+
+//********************************************************************************
+CBonusPreviewEffect::~CBonusPreviewEffect()
+{
+	if (this->pTextSurface)
+		SDL_FreeSurface(this->pTextSurface);
+}
+
+//********************************************************************************
+bool CBonusPreviewEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
+//Updates the effect state & dirty rects
+//
+//Returns:
+//True if effect should continue, or false if effect is done.
+{
+	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
+	return wTurnNow == this->wValidTurn;
+}
+
+//********************************************************************************
+void CBonusPreviewEffect::Draw(SDL_Surface& destSurface)
+//Draw the effect.
+{
+	//Clip screen surface to widget to prevent overrun.
+	SDL_Rect OwnerRect;
+	this->pOwnerWidget->GetRect(OwnerRect);
+	SDL_SetClipRect(&destSurface, &OwnerRect);
+
+	int destX = this->pRoomWidget->GetX() + this->wX * CBitmapManager::CX_TILE;
+	int destY = this->pRoomWidget->GetY() + this->wY * CBitmapManager::CY_TILE;
+
+	this->dirtyRects[0].x = destX;
+	this->dirtyRects[0].y = destY;
+
+	SDL_Rect SrcRect = MAKE_SDL_RECT(0, YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
+	SDL_Rect ScreenRect = MAKE_SDL_RECT(destX, destY, this->dirtyRects[0].w, this->dirtyRects[0].h);
+	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
+
+	//Unclip screen surface.
+	SDL_SetClipRect(&destSurface, NULL);
+}
+
+//*****************************************************************************
+void CBonusPreviewEffect::PrepWidgetForValue(const int value)
+{
+	CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+	ASSERT(pRoom);
+
+	CCurrentGame* pGame = pRoom->GetCurrentGame();
+	ASSERT(pGame);
+
+	WSTRING wstr;
+	if (value > 999999) {
+		//Magnitude conversion
+		char czValue[16];
+		sprintf(czValue, value < 100000000 ? "%.3f" : "%.1f", value / 1000000.f);
+
+		//trim trailing zeros
+		int len = strlen(czValue) - 1;
+		while (len && czValue[len] == '0')
+			czValue[len--] = '\0';
+		if (czValue[len] == '.')
+			czValue[len--] = '\0';
+
+		//append units
+		strcat(czValue, "M");
+
+		wstr += UTF8ToUnicode(czValue);
+	} else {
+		WCHAR temp[16];
+		wstr += _itoW(value, temp, 10);
+	}
+
+	static const UINT eFontType = F_DamagePreview;
+	static const UINT outlineWidth = 1;
+
+	UINT wLineW, wLineH;
+	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
+		CBitmapManager::CX_TILE * 2, wLineW, wLineH);
+
+	//Render text to internal surface to avoid re-rendering each frame.
+	if (this->pTextSurface)
+		SDL_FreeSurface(this->pTextSurface);
+	this->pTextSurface = CBitmapManager::ConvertSurface(
+		SDL_CreateRGBSurface(SDL_SWSURFACE, wLineW, wLineH, g_pTheBM->BITS_PER_PIXEL, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000));
+	ASSERT(this->pTextSurface);
+
+	const Uint32 bg_color = SDL_MapRGBA(this->pTextSurface->format, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+	SDL_FillRect(this->pTextSurface, NULL, bg_color);
+
+	//Determine color based on damage amount
+	SDL_Color damage = { 255, 0, 0 };
+	SDL_Color no_effect = { 220, 220, 220 };
+	SDL_Color bonus = { 64, 255, 255 };
+	SDL_Color color;
+	if (value < 0) {
+		color = damage;
+	} else if (value == 0) {
+		color = no_effect;
+	} else {
+		color = bonus;
+	}
+
+	const SDL_Color origColor = g_pTheFM->GetFontColor(eFontType);
+	g_pTheFM->SetFontColor(eFontType, color);
+
+	//Draw text (outlined, w/ anti-aliasing).
+	g_pTheFM->DrawTextToRect(eFontType, wstr.c_str(),
+		0, 0, wLineW, wLineH, this->pTextSurface);
+
+	g_pTheFM->SetFontColor(eFontType, origColor);
+
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - YOFFSET);
+	this->dirtyRects.push_back(Dest);
+}
+
+//********************************************************************************
 CDamagePreviewEffect::CDamagePreviewEffect(
 //Constructor.
 //
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const CMonster *pMonster)     //(in)   Enemy to display damage preview for.
-	: CEffect(pSetWidget, (UINT) -1, EDAMAGEPREVIEW)
+	: CBonusPreviewEffect(pSetWidget)
 	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
-	, pTextSurface(NULL)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	ASSERT(pMonster);
+
+	this->wX = this->pMonster->wX;
+	this->wY = this->pMonster->wY;
 
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
@@ -66,13 +218,6 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 }
 
 //********************************************************************************
-CDamagePreviewEffect::~CDamagePreviewEffect()
-{
-	if (this->pTextSurface)
-		SDL_FreeSurface(this->pTextSurface);
-}
-
-//********************************************************************************
 bool CDamagePreviewEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Updates the effect state & dirty rects
 //
@@ -87,35 +232,6 @@ bool CDamagePreviewEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElap
 		return false;
 
 	return true;
-}
-
-//********************************************************************************
-void CDamagePreviewEffect::Draw(SDL_Surface& destSurface)
-//Draw the effect.
-{
-	//Clip screen surface to widget to prevent overrun.
-	SDL_Rect OwnerRect;
-	this->pOwnerWidget->GetRect(OwnerRect);
-	SDL_SetClipRect(&destSurface, &OwnerRect);
-
-	ASSERT(this->pMonster);
-
-//	const bool bElevatedSource = bIsElevatedTile(
-//		pRoom->GetOSquare(this->pMonster->wX, this->pMonster->wY));
-
-	CCueEvents Ignored;
-	int destX = this->pRoomWidget->GetX() + this->pMonster->wX * CBitmapManager::CX_TILE;
-	int destY = this->pRoomWidget->GetY() + this->pMonster->wY * CBitmapManager::CY_TILE;
-
-	this->dirtyRects[0].x = destX;
-	this->dirtyRects[0].y = destY;
-
-	SDL_Rect SrcRect = MAKE_SDL_RECT(0, YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
-	SDL_Rect ScreenRect = MAKE_SDL_RECT(destX, destY, this->dirtyRects[0].w, this->dirtyRects[0].h);
-	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
-
-	//Unclip screen surface.
-	SDL_SetClipRect(&destSurface, NULL);
 }
 
 //*****************************************************************************
@@ -146,8 +262,6 @@ void CDamagePreviewEffect::PrepWidget()
 	} else {
 		ASSERT(damage >= 0);
 
-		WCHAR temp[16];
-
 		if (combat.IsExpectedDamageApproximate())
 			wstr += wszTilde;
 
@@ -168,6 +282,7 @@ void CDamagePreviewEffect::PrepWidget()
 
 			wstr += UTF8ToUnicode(czDamage);
 		} else {
+			WCHAR temp[16];
 			wstr += _itoW(damage, temp, 10);
 		}
 	}
