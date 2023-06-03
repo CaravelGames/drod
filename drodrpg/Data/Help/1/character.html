@@ -35,7 +35,12 @@ enters the room.  Otherwise, it will be invisible.  When an NPC is invisible, it
 script continues to play but it otherwise behaves as if it were not in the room.
 Hint: making a character with a "None" graphic visible will set it to the
 "Citizen 1" type.</p>
-<p><a name="charoptions"><b>Options</b></a> - Click to set the NPC's processing sequence, which controls the order of scripts running in a room. Scripts with lower processing sequence values run earlier, and scripts with higher values run later. This does not effect the order in which equipment scripts will be run.</p>
+<p><a name="charoptions"><b>Options</b></a> - Click to set the NPC's options:</p>
+<ul>
+  <li><b>_MyColor</b>, which allows the predefined <a href="script.html#mycolor">_MyColor</a> var to be set for the character. Setting it this way allows it to be used when displaying an NPC's in-game appearance in the editor.</li>
+  <li><b>Speech Color</b>, which controls the color of the character's speech subtitles. Each input takes a value of 0 to 255, and the three values are combined into a single RGB color value. If all inputs are zero, the default subtitle color will be used.</li>
+  <li><b>Processing sequence</b>, which controls the order of scripts running in a room. Scripts with lower processing sequence values run earlier, and scripts with higher values run later. This does not effect the order in which equipment scripts will be run.</li>
+</ul>
 <p><a name="addcommand"><b>Add Command</b></a> - Click to add another <a href="script.html">command</a>
 to the script.</p>
 <p><a name="deletecommand"><b>Delete Command</b></a> - Deletes the selected commands from the script.  Also
