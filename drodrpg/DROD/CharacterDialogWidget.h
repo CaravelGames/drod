@@ -80,6 +80,10 @@ public:
 
 	UINT queryX, queryY, queryW, queryH; //for querying the user for coord info
 
+	static const UINT INDENT_PREFIX_SIZE;
+	static const UINT INDENT_TAB_SIZE;
+	static const UINT INDENT_IF_CONDITION_SIZE;
+
 private:
 	void  AddCharacterDialog();
 	void  AddCommandDialog();
@@ -112,9 +116,8 @@ private:
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
 	WSTRING GetDataName(const UINT dwID) const;
-	WSTRING GetPrettyPrinting(const COMMANDPTR_VECTOR& commands,
-			CCharacterCommand* pCommand,
-			const UINT ifIndent, const UINT tabSize) const;
+	UINT    ExtractCommandIndent(const UINT wCommandIndex) const;
+	void    PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR& commands);
 	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
 		const CCharacterCommand& pCommand) const;
    virtual void   OnClick(const UINT dwTagNo);
@@ -166,7 +169,7 @@ private:
 
 	//For text editing of script commands.
 	CCharacterCommand* fromText(WSTRING text);
-	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand);
+	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand, const UINT wCommandIndex);
 
 	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox;
 	COptionButtonWidget *pIsVisibleButton;

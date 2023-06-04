@@ -226,6 +226,9 @@
     <ClCompile Include="CharacterOptionsWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="CommandListBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -436,6 +439,9 @@
       <Filter>Widgets</Filter>
     </ClInclude>
     <ClInclude Include="CharacterOptionsWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListBoxWidget.h">
       <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
