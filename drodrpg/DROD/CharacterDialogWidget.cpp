@@ -1060,10 +1060,20 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_VARTEXTLABEL = 170;
 	static const UINT CY_VARTEXTLABEL = CY_LABEL;
 
+	static const int X_VARVALUELABEL = X_WAITLABEL;
+	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
+	static const int Y_VARVALUELABEL = Y_GOTOLABELTEXT + CY_GOTOLABELTEXT + CY_SPACE / 2;
+	static const UINT CX_VARVALUELABEL = 90;
+
+	static const int X_VARVALUE = X_VARVALUELABEL;
+	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
+	static const UINT CX_VARVALUE = CX_GOTOLABELTEXT;
+	static const UINT CY_VARVALUE = 30;
+
 	static const UINT CX_VARLISTBOX = 280;
-	static const UINT CY_VARLISTBOX = 11* LIST_LINE_HEIGHT + 4; //11 items
+	static const UINT CY_VARLISTBOX = 18 * LIST_LINE_HEIGHT + 4; //18 items
 	static const int X_VARLISTBOX = X_EVENTLISTBOX;
-	static const int Y_VARLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE;
+	static const int Y_VARLISTBOX = Y_VARVALUE + CY_VARVALUE + CY_SPACE;
 
 	static const int X_VARADD = X_VARLISTBOX + CX_VARLISTBOX + CX_SPACE/2;
 	static const int Y_VARADD = Y_VARLISTBOX;
@@ -1084,16 +1094,6 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_VARCOMPLIST = Y_VAROPLIST;
 	static const int CX_VARCOMPLIST = CX_VAROPLIST;
 	static const int CY_VARCOMPLIST = 7* LIST_LINE_HEIGHT + 4;
-
-	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
-	static const UINT CY_VARVALUELABEL = CY_LABEL;
-	static const int Y_VARVALUELABEL = Y_VAROPLIST;
-	static const UINT CX_VARVALUELABEL = 90;
-
-	static const int X_VARVALUE = X_VARVALUELABEL;
-	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
-	static const UINT CX_VARVALUE = CX_VARVALUELABEL;
-	static const UINT CY_VARVALUE = 30;
 
 	static const int X_GRAPHICLISTBOX2 = X_EVENTLISTBOX;
 	static const int Y_GRAPHICLISTBOX2 = Y_ACTIONLISTBOX;
