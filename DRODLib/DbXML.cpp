@@ -1300,13 +1300,17 @@ void CDbXML::ImportSavedGames()
 	const CImportInfo::ImportType importType = info.typeBeingImported;
 	const MESSAGE_ID importState = info.ImportStatus;
 	info.typeBeingImported = CImportInfo::Demo;
-	VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
-	info.exportedDemos.resize(0);
+	if (info.exportedDemos.size()) {
+		VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
+		info.exportedDemos.resize(0);
+	}
 
 	info.ImportStatus = importState; //ignore import state changes in saved game restoration
 	info.typeBeingImported = CImportInfo::SavedGame;
-	VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
-	info.exportedSavedGames.resize(0);
+	if (info.exportedSavedGames.size()) {
+		VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
+		info.exportedSavedGames.resize(0);
+	}
 
 	info.typeBeingImported = importType;
 	info.ImportStatus = importState;
