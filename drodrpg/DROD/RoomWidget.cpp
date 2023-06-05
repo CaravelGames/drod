@@ -392,6 +392,36 @@ void CRoomWidget::AddDamagePreviews()
 		if (pMonster->IsCombatable())
 			AddLastLayerEffect(new CDamagePreviewEffect(this, pMonster));
 	}
+
+	//Add item stat effects
+	const UINT rows = this->pRoom->wRoomRows;
+	const UINT cols = this->pRoom->wRoomCols;
+	UINT wX, wY;
+	for (wY = 0; wY < rows; ++wY)
+	{
+		for (wX = 0; wX < cols; ++wX)
+		{
+			const UINT tTile = this->pRoom->GetTSquare(wX, wY);
+			switch (tTile)
+			{
+				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+				{
+					int val;
+					if (this->pCurrentGame) {
+						val = this->pCurrentGame->getItemAmount(tTile);
+					} else {
+						CDbLevel* pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
+						val = (int)(pLevel->getItemAmount(tTile));
+						delete pLevel;
+					}
+					AddLastLayerEffect(new CBonusPreviewEffect(this, wX, wY, val));
+				}
+				break;
+			}
+		}
+	}
 }
 
 //*****************************************************************************
