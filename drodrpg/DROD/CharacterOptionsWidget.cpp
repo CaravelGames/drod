@@ -34,29 +34,62 @@
 CCharacterOptionsDialog::CCharacterOptionsDialog(
 //Constructor.
 )
-: CDialogWidget(0L, 0, 0, CCharacterOptionsDialog::CX_DIALOG, CCharacterOptionsDialog::CY_DIALOG, false)
+: CDialogWidget(0L, 0, 0, CCharacterOptionsDialog::DIALOG_CX, CCharacterOptionsDialog::DIALOG_CY, false)
 {
 	AddWidget(new CButtonWidget(TAG_SAVE,
-		X_SAVE, Y_SAVE,
-		CX_SAVE, CY_SAVE,
+		SAVE_X, SAVE_Y,
+		SAVE_CX, SAVE_CY,
 		g_pTheDB->GetMessageText(MID_Save)));
 
 	AddWidget(new CButtonWidget(CCharacterOptionsDialog::TAG_CANCEL,
-		CCharacterOptionsDialog::X_CANCEL, CCharacterOptionsDialog::Y_CANCEL,
-		CCharacterOptionsDialog::CX_CANCEL, CCharacterOptionsDialog::CY_CANCEL,
+		CCharacterOptionsDialog::CANCEL_X, CCharacterOptionsDialog::CANCEL_Y,
+		CCharacterOptionsDialog::CANCEL_CX, CCharacterOptionsDialog::CANCEL_CY,
 		g_pTheDB->GetMessageText(MID_Cancel)));
 
-	AddWidget(new CLabelWidget(0L, X_TITLE, Y_TITLE,
-		CX_TITLE, CY_TITLE, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
+	AddWidget(new CLabelWidget(0L, TITLE_X, TITLE_Y,
+		TITLE_CX, TITLE_CY, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
-	AddWidget(new CLabelWidget(0L, X_SEQUENCELABEL, Y_SEQUENCELABEL,
-		CX_SEQUENCELABEL, CY_SEQUENCELABEL, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
+	AddWidget(new CLabelWidget(0L, COLORLABEL_X, COLORLABEL_Y,
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterColor)));
 
-	AddWidget(new CLabelWidget(0L, X_SEQUENCEHELP, Y_SEQUENCEHELP,
-		CX_SEQUENCEHELP, CY_SEQUENCEHELP, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
+	this->pColorTextBox = new CTextBoxWidget(0L, COLORTEXT_X, COLORTEXT_Y,
+		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
 
-	this->pSequenceTextBox = new CTextBoxWidget(0L, X_SEQUENCETEXT, Y_SEQUENCETEXT,
-		CX_SEQUENCETEXT, CY_SEQUENCETEXT, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
+	this->pColorTextBox->SetDigitsOnly(true);
+	this->pColorTextBox->SetAllowNegative(false);
+	this->pColorTextBox->AddHotkey(SDLK_RETURN, TAG_SAVE);
+	AddWidget(this->pColorTextBox);
+
+	AddWidget(new CLabelWidget(0L, SPEECHCOLORLABEL_X, SPEECHCOLORLABEL_Y,
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_CustomSpeechColor)));
+
+	this->pSpeechColorRedTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTRED_X, SPEECHCOLORTEXT_Y,
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+	this->pSpeechColorGreenTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTGREEN_X, SPEECHCOLORTEXT_Y,
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+	this->pSpeechColorBlueTextBox = new CTextBoxWidget(0L, SPEECHCOLORTEXTBLUE_X, SPEECHCOLORTEXT_Y,
+		SPEECHCOLORTEXT_CX, TEXT_CY, SPEECHCOLOR_MAX_LENGTH, TAG_OK);
+
+	this->pSpeechColorRedTextBox->SetDigitsOnly(true);
+	this->pSpeechColorGreenTextBox->SetDigitsOnly(true);
+	this->pSpeechColorBlueTextBox->SetDigitsOnly(true);
+
+	this->pSpeechColorRedTextBox->SetAllowNegative(false);
+	this->pSpeechColorGreenTextBox->SetAllowNegative(false);
+	this->pSpeechColorBlueTextBox->SetAllowNegative(false);
+
+	AddWidget(this->pSpeechColorRedTextBox);
+	AddWidget(this->pSpeechColorGreenTextBox);
+	AddWidget(this->pSpeechColorBlueTextBox);
+
+	AddWidget(new CLabelWidget(0L, SEQUENCELABEL_X, SEQUENCELABEL_Y,
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequence)));
+
+	AddWidget(new CLabelWidget(0L, SEQUENCEHELP_X, SEQUENCEHELP_Y,
+		SEQUENCEHELP_CX, SEQUENCEHELP_CY, F_Small, g_pTheDB->GetMessageText(MID_ProcessingSequenceDescription)));
+
+	this->pSequenceTextBox = new CTextBoxWidget(0L, SEQUENCETEXT_X, SEQUENCETEXT_Y,
+		TEXT_CX, TEXT_CY, PROCESSING_SEQUENCE_MAX_LENGTH, TAG_OK);
 
 	this->pSequenceTextBox->SetDigitsOnly(true);
 	this->pSequenceTextBox->SetAllowNegative(false);
@@ -73,8 +106,12 @@ void CCharacterOptionsDialog::SetCharacter(
 	WCHAR temp[bufferLength];
 
 	_itoW(pCharacter->wProcessSequence, temp, 10, bufferLength);
-
 	this->pSequenceTextBox->SetText(temp);
+
+	_itoW(pCharacter->getColor(), temp, 10, bufferLength);
+	this->pColorTextBox->SetText(temp);
+
+	SetSpeechColorTexts(pCharacter->GetCustomSpeechColor());
 }
 
 //*****************************************************************************
@@ -85,8 +122,47 @@ void CCharacterOptionsDialog::SetCharacter(
 	WCHAR temp[bufferLength];
 
 	_itoW(pCharacter->ExtraVars.GetVar(ParamProcessSequenceStr, 9999), temp, 10, bufferLength);
-
 	this->pSequenceTextBox->SetText(temp);
+
+	_itoW(pCharacter->ExtraVars.GetVar(ColorStr, 0), temp, 10, bufferLength);
+	this->pColorTextBox->SetText(temp);
+
+	SetSpeechColorTexts(pCharacter->ExtraVars.GetVar(ParamSpeechColorStr, 0));
+}
+
+//*****************************************************************************
+void CCharacterOptionsDialog::SetSpeechColorTexts(UINT color)
+{
+	UINT r = (color >> 16) & 255;
+	UINT g = (color >> 8) & 255;
+	UINT b = color & 255;
+
+	const UINT bufferLength = SPEECHCOLOR_MAX_LENGTH + 1; // Added space for null-termination
+	WCHAR temp[bufferLength];
+
+	_itoW(r, temp, 10, bufferLength);
+	this->pSpeechColorRedTextBox->SetText(temp);
+	_itoW(g, temp, 10, bufferLength);
+	this->pSpeechColorGreenTextBox->SetText(temp);
+	_itoW(b, temp, 10, bufferLength);
+	this->pSpeechColorBlueTextBox->SetText(temp);
+}
+
+//*****************************************************************************
+UINT CCharacterOptionsDialog::GetColor(){
+	return (UINT)this->pColorTextBox->GetNumber();
+}
+
+//*****************************************************************************
+UINT CCharacterOptionsDialog::GetSpeechColor()
+{
+	UINT r = min((UINT)this->pSpeechColorRedTextBox->GetNumber(), 255);
+	UINT g = min((UINT)this->pSpeechColorGreenTextBox->GetNumber(), 255);
+	UINT b = min((UINT)this->pSpeechColorBlueTextBox->GetNumber(), 255);
+
+	UINT value = (r << 16) + (g << 8) + b;
+
+	return value;
 }
 
 //*****************************************************************************

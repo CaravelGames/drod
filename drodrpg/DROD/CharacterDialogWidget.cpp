@@ -1898,6 +1898,8 @@ void CCharacterDialogWidget::OnClick(
 
 			if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
 				this->pCharacter->wProcessSequence = this->pCharOptionsDialog->GetProcessSequence();
+				this->pCharacter->SetColor(this->pCharOptionsDialog->GetColor());
+				this->pCharacter->SetCustomSpeechColor(this->pCharOptionsDialog->GetSpeechColor());
 			}
 
 			Paint();
@@ -2870,6 +2872,8 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 
 				if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
 					pChar->ExtraVars.SetVar(ParamProcessSequenceStr, this->pCharOptionsDialog->GetProcessSequence());
+					pChar->ExtraVars.SetVar(ColorStr, this->pCharOptionsDialog->GetColor());
+					pChar->ExtraVars.SetVar(ParamSpeechColorStr, this->pCharOptionsDialog->GetSpeechColor());
 				}
 
 				Paint();

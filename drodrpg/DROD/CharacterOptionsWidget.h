@@ -45,52 +45,80 @@ public:
 
 	CCharacterOptionsDialog();
 
+	CTextBoxWidget *pColorTextBox;
+	CTextBoxWidget *pSpeechColorRedTextBox;
+	CTextBoxWidget *pSpeechColorBlueTextBox;
+	CTextBoxWidget *pSpeechColorGreenTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
+	UINT GetColor();
+	UINT GetSpeechColor();
 	UINT GetProcessSequence();
 
 protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 private:
-	static const UINT CY_SPACE = 15;
-	static const UINT CX_SPACE = 15;
+	void SetSpeechColorTexts(UINT color);
 
-	static const int CX_DIALOG = 400;
-	static const int CY_DIALOG = 230;
+	static const UINT SPACE_CY = 15;
+	static const UINT SPACE_CX = 15;
 
-	static const int CX_TITLE = 200;
-	static const int CY_TITLE = 30;
-	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
-	static const int Y_TITLE = CY_SPACE;
+	static const int DIALOG_CX = 400;
+	static const int DIALOG_CY = 300;
 
-	static const int CX_SEQUENCELABEL = 150;
-	static const int CY_SEQUENCELABEL = CY_STANDARD_BUTTON;
-	static const int X_SEQUENCELABEL = CX_SPACE;
-	static const int Y_SEQUENCELABEL = Y_TITLE + CY_TITLE + CY_SPACE;
+	static const int LABEL_CX = 150;
+	static const int LABEL_CY = CY_STANDARD_BUTTON;
+	static const int TEXT_CX = 150;
+	static const int TEXT_CY = CY_STANDARD_BUTTON;
 
-	static const int CX_SEQUENCEHELP = 370;
-	static const int CY_SEQUENCEHELP = 270;
-	static const int X_SEQUENCEHELP = CX_SPACE;
-	static const int Y_SEQUENCEHELP = Y_SEQUENCELABEL + CY_SEQUENCELABEL + CY_SPACE;
+	static const int TITLE_CX = 200;
+	static const int TITLE_CY = 30;
+	static const int TITLE_X = (DIALOG_CX - TITLE_CX) / 2;
+	static const int TITLE_Y = SPACE_CY;
 
-	static const int CX_SEQUENCETEXT = 130;
-	static const int CY_SEQUENCETEXT = CY_STANDARD_BUTTON;
-	static const int X_SEQUENCETEXT = X_SEQUENCELABEL + CX_SEQUENCELABEL + CX_SPACE;
-	static const int Y_SEQUENCETEXT = Y_SEQUENCELABEL;
+	static const int COLORLABEL_CX = 150;
+	static const int COLORLABEL_X = SPACE_CX;
+	static const int COLORLABEL_Y = TITLE_Y + TITLE_CY + SPACE_CY;
 
-	static const int CX_SAVE = 100;
-	static const int CY_SAVE = CY_STANDARD_BUTTON;
-	static const int X_SAVE = CX_DIALOG / 2 - CX_SAVE - CX_SPACE / 2;
-	static const int Y_SAVE = CY_DIALOG - CY_SAVE - CY_SPACE;
+	static const int COLORTEXT_X = COLORLABEL_X + COLORLABEL_CX + SPACE_CX;
+	static const int COLORTEXT_Y = COLORLABEL_Y;
 
-	static const int CX_CANCEL = 100;
-	static const int CY_CANCEL = CY_STANDARD_BUTTON;
-	static const int X_CANCEL = CX_DIALOG / 2 + CX_SPACE / 2;
-	static const int Y_CANCEL = CY_DIALOG - CY_SAVE - CY_SPACE;
+	static const int SPEECHCOLORLABEL_CX = 150;
+	static const int SPEECHCOLORLABEL_X = SPACE_CX;
+	static const int SPEECHCOLORLABEL_Y = COLORLABEL_Y + TITLE_CY + SPACE_CY;
 
+	static const int SPEECHCOLORTEXT_CX = 45;
+	static const int SPEECHCOLORTEXTRED_X = SPEECHCOLORLABEL_X + SPEECHCOLORLABEL_CX + SPACE_CX;
+	static const int SPEECHCOLORTEXTGREEN_X = SPEECHCOLORTEXTRED_X + SPEECHCOLORTEXT_CX + SPACE_CX/2;
+	static const int SPEECHCOLORTEXTBLUE_X = SPEECHCOLORTEXTGREEN_X + SPEECHCOLORTEXT_CX + SPACE_CX/2;
+	static const int SPEECHCOLORTEXT_Y = SPEECHCOLORLABEL_Y;
+
+	static const int SEQUENCELABEL_X = SPACE_CX;
+	static const int SEQUENCELABEL_Y = SPEECHCOLORLABEL_Y + TITLE_CY + SPACE_CY;
+
+	static const int SEQUENCEHELP_CX = 370;
+	static const int SEQUENCEHELP_CY = 270;
+	static const int SEQUENCEHELP_X = SPACE_CX;
+	static const int SEQUENCEHELP_Y = SEQUENCELABEL_Y + LABEL_CY + SPACE_CY;
+
+	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + LABEL_CX + SPACE_CX;
+	static const int SEQUENCETEXT_Y = SEQUENCELABEL_Y;
+
+	static const int SAVE_CX = 100;
+	static const int SAVE_CY = CY_STANDARD_BUTTON;
+	static const int SAVE_X = DIALOG_CX / 2 - SAVE_CX - SPACE_CX / 2;
+	static const int SAVE_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
+
+	static const int CANCEL_CX = 100;
+	static const int CANCEL_CY = CY_STANDARD_BUTTON;
+	static const int CANCEL_X = DIALOG_CX / 2 + SPACE_CX / 2;
+	static const int CANCEL_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
+
+	static const int COLOR_MAX_LENGTH = 6;
+	static const int SPEECHCOLOR_MAX_LENGTH = 3;
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
 

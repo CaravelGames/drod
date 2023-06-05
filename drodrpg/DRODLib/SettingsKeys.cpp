@@ -43,6 +43,7 @@ namespace Settings
 	DEF(AutoSave);
 	DEF(AutoSaveOptions);
 	DEF(AutoUndoOnDeath);
+	DEF(CharacterPreview);
 	DEF(CloudActivated);
 	DEF(CloudHoldVersion);
 	DEF(CloudHoldDemosVersion);

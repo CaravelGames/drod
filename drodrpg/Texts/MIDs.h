@@ -1175,6 +1175,7 @@ enum MID_CONSTANT {
   MID_ShowScore = 1831,
   MID_NewGames = 1841,
   MID_ConfirmNewGame = 1842,
+  MID_AutoPreviewCharacters = 1850,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,
@@ -1515,6 +1516,7 @@ enum MID_CONSTANT {
   MID_CharOptions = 1837,
   MID_ProcessingSequence = 1838,
   MID_ProcessingSequenceDescription = 1839,
+  MID_CustomSpeechColor = 1849,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

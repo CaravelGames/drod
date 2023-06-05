@@ -65,7 +65,6 @@ const UINT MAX_ANSWERS = 9;
 
 #define CustomNameStr "Name"
 
-#define ColorStr "Color"
 #define ParamXStr "XParam"
 #define ParamYStr "YParam"
 #define ParamWStr "WParam"
@@ -249,6 +248,7 @@ CCharacter::CCharacter(
 	, bIfBlock(false)
 	, eachAttackLabelIndex(NO_LABEL), eachDefendLabelIndex(NO_LABEL), eachUseLabelIndex(NO_LABEL)
 	, eachVictoryLabelIndex(NO_LABEL)
+	, customSpeechColor(0)
 	, wLastSpeechLineNumber(0)
 
 	, color(0), sword(NPC_DEFAULT_SWORD)
@@ -5007,6 +5007,8 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 
 				if (this->commands.empty()) {
 					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->wProcessSequence);
+					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
 				}
 			}
 			else
@@ -5413,6 +5415,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
 	this->wProcessSequence = vars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+	this->customSpeechColor = vars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
 
 	//Modifiers
 	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
@@ -5563,6 +5566,8 @@ const
 		vars.SetVar(ParamFStr, this->paramF);
 	if (this->wProcessSequence != 9999)
 		vars.SetVar(ParamProcessSequenceStr, this->wProcessSequence);
+	if (this->customSpeechColor)
+		vars.SetVar(ParamSpeechColorStr, this->customSpeechColor);
 
 	// Modifiers
 	if (this->monsterHPmult != 100)

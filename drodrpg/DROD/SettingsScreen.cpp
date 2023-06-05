@@ -126,6 +126,7 @@ const UINT TAG_UPLOADSCORES = 1065;
 
 const UINT TAG_AUTOSAVE = 1070;
 const UINT TAG_ITEMTIPS = 1071;
+const UINT TAG_CHARACTERPREVIEW = 1073;
 
 const UINT TAG_NEWGAMEPROMPT = 1072;
 
@@ -270,7 +271,11 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_ITEMTIPS = Y_AUTOSAVE + CY_AUTOSAVE;
 	static const UINT CX_ITEMTIPS = CX_AUTOSAVE;
 	static const UINT CY_ITEMTIPS = CY_STANDARD_OPTIONBUTTON;
-	static const UINT CY_EDITOR_FRAME = Y_ITEMTIPS + CY_ITEMTIPS + CY_SPACE;
+	static const int X_CHARACTERPREVIEW = CX_SPACE;
+	static const int Y_CHARACTERPREVIEW = Y_ITEMTIPS + CY_AUTOSAVE;
+	static const UINT CX_CHARACTERPREVIEW = CX_AUTOSAVE;
+	static const UINT CY_CHARACTERPREVIEW = CY_STANDARD_OPTIONBUTTON;
+	static const UINT CY_EDITOR_FRAME = Y_CHARACTERPREVIEW + CY_CHARACTERPREVIEW + CY_SPACE;
 
 	//New game frame and children
 	static const int X_NEWGAME_FRAME = X_EDITOR_FRAME;
@@ -588,6 +593,11 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_ITEMTIPS, X_ITEMTIPS,
 					Y_ITEMTIPS, CX_ITEMTIPS, CY_ITEMTIPS,
 					g_pTheDB->GetMessageText(MID_ItemTips), true);
+	pEditorFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_CHARACTERPREVIEW, X_CHARACTERPREVIEW,
+		Y_CHARACTERPREVIEW, CX_CHARACTERPREVIEW, CY_CHARACTERPREVIEW,
+		g_pTheDB->GetMessageText(MID_AutoPreviewCharacters), false);
 	pEditorFrame->AddWidget(pOptionButton);
 
 	//New game frame
@@ -1420,6 +1430,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton->SetChecked(settings.GetVar(Settings::ItemTips, true));
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CHARACTERPREVIEW));
+	pOptionButton->SetChecked(settings.GetVar(Settings::CharacterPreview, false));
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DisableMouse, false));
 
@@ -1551,6 +1565,9 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ITEMTIPS));
 	settings.SetVar("ItemTips", pOptionButton->IsChecked());
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CHARACTERPREVIEW));
+	settings.SetVar(Settings::CharacterPreview, pOptionButton->IsChecked());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));

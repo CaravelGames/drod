@@ -2022,6 +2022,7 @@ void CEditRoomScreen::ApplyPlayerSettings()
 
 	//Set room editing options.
 	this->bAutoSave = pCurrentPlayer->Settings.GetVar(Settings::AutoSave, true);
+	this->pRoomWidget->characterPreview = pCurrentPlayer->Settings.GetVar(Settings::CharacterPreview, false);
 
 	COptionButtonWidget *pOptionButton = static_cast<COptionButtonWidget *>(
 			GetWidget(TAG_SHOWERRORS));
@@ -2963,6 +2964,9 @@ void CEditRoomScreen::OnKeyDown(
 		}
 		break;
 */
+		case SDLK_F6:
+			this->pRoomWidget->characterPreview = !this->pRoomWidget->characterPreview;
+		break;
 		case SDLK_F7:
 			if (!SetState(ES_PLACING)) break;
 			if (Key.keysym.mod & KMOD_CTRL)
