@@ -161,6 +161,8 @@ const UINT CX_SPACE = 15;
 const UINT CX_UPPER_SPACE = 7;
 const UINT CY_SPACE = 10;
 
+const UINT LIST_LINE_HEIGHT = 22;
+
 const SURFACECOLOR PaleRed = {255, 192, 192};
 
 const SDL_Color MediumCyan = { 0, 128, 128, 0 };
@@ -408,7 +410,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	static const int X_COMMANDS = X_COMMANDSLABEL;
 	static const int Y_COMMANDS = Y_COMMANDSLABEL + CY_COMMANDSLABEL;
 	static const UINT CX_COMMANDS = CX_DIALOG - X_COMMANDS - CX_GRAPHICLISTBOX - CX_SPACE*2;
-	static const UINT CY_COMMANDS = 25*22 + 4;
+	static const UINT CY_COMMANDS = 25 * LIST_LINE_HEIGHT + 4;
 	static const UINT CX_ADDCOMMAND = 130;
 	static const int X_ADDCOMMAND = X_COMMANDS + CX_COMMANDS - CX_ADDCOMMAND - CX_UPPER_SPACE;
 	static const int Y_ADDCOMMAND = Y_COMMANDSLABEL - 4;
@@ -434,7 +436,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 
 	static const int X_GRAPHICLISTBOX = X_GRAPHICLABEL;
 	static const int Y_GRAPHICLISTBOX = Y_CHARACTERS + CY_CHARACTERS + CY_SPACE;
-	static const UINT CY_GRAPHICLISTBOX = 23*22 + 4;
+	static const UINT CY_GRAPHICLISTBOX = 23 * LIST_LINE_HEIGHT + 4;
 
 	static const int X_ISVISIBLE = X_GRAPHICLABEL;
 	static const int Y_ISVISIBLE = Y_GRAPHICLISTBOX + CY_GRAPHICLISTBOX;
@@ -858,7 +860,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 //Separated from constructor for readability.
 {
 	static const UINT CX_COMMAND_DIALOG = 775;
-	static const UINT CY_COMMAND_DIALOG = 414;
+	static const UINT CY_COMMAND_DIALOG = 664;
 
 	static const UINT CX_TITLE = 250;
 	static const UINT CY_TITLE = 30;
@@ -868,7 +870,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_LABEL = 30;
 
 	static const UINT CX_ACTIONLISTBOX = 245;
-	static const UINT CY_ACTIONLISTBOX = 13*22 + 4; //13 items
+	static const UINT CY_ACTIONLISTBOX = 24 * LIST_LINE_HEIGHT + 4; //24 items
 	static const int X_ACTIONLABEL = CX_SPACE;
 	static const int Y_ACTIONLABEL = Y_TITLE + CY_TITLE;
 	static const UINT CX_ACTIONLABEL = 70;
@@ -941,7 +943,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_SPEAKERLABEL = CY_LABEL;
 	static const int X_SPEAKERLISTBOX = X_SPEAKERLABEL;
 	static const int Y_SPEAKERLISTBOX = Y_SPEAKERLABEL + CY_SPEAKERLABEL;
-	static const UINT CY_SPEAKERLISTBOX = 8*22 + 4;
+	static const UINT CY_SPEAKERLISTBOX = 18 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT CX_MOODLISTBOX = 100;
 	static const int X_MOODLABEL = X_SPEAKERLABEL + CX_SPEAKERLABEL + CX_SPACE;
@@ -950,7 +952,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_MOODLABEL = CY_LABEL;
 	static const int X_MOODLISTBOX = X_MOODLABEL;
 	static const int Y_MOODLISTBOX = Y_MOODLABEL + CY_MOODLABEL;
-	static const UINT CY_MOODLISTBOX = 5*22 + 4;
+	static const UINT CY_MOODLISTBOX = 5 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT CX_BUTTON = 70;
 	static const int X_OKBUTTON = (CX_COMMAND_DIALOG - (CX_BUTTON + CX_SPACE) * 2) / 2;
@@ -959,7 +961,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_CANCELBUTTON = Y_OKBUTTON;
 
 	static const UINT CX_DIRECTIONLISTBOX = 160;
-	static const UINT CY_DIRECTIONLISTBOX = 10*22 + 4;
+	static const UINT CY_DIRECTIONLISTBOX = 10 * LIST_LINE_HEIGHT + 4;
 	static const int X_DIRECTIONLABEL = X_EVENTLISTBOX;
 	static const int Y_DIRECTIONLABEL = Y_ACTIONLABEL;
 	static const UINT CX_DIRECTIONLABEL = CX_EVENTLISTBOX;
@@ -975,27 +977,27 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_ONOFFLISTBOX2 = X_ONOFFLISTBOX + CX_ONOFFLISTBOX + CX_SPACE;
 
 	static const UINT CX_IMPERATIVELISTBOX = 260;
-	static const UINT CY_IMPERATIVELISTBOX = 13*22 + 4; //13 slots
+	static const UINT CY_IMPERATIVELISTBOX = 15 * LIST_LINE_HEIGHT + 4; //15 slots
 	static const int X_IMPERATIVELISTBOX = X_ONOFFLISTBOX;
 	static const int Y_IMPERATIVELISTBOX = Y_ONOFFLISTBOX;
 
 	static const UINT CX_BEHAVIORLISTBOX = 280;
-	static const UINT CY_BEHAVIORLISTBOX = 13*22 + 4; //13 slots
+	static const UINT CY_BEHAVIORLISTBOX = CY_ACTIONLISTBOX;
 	static const int X_BEHAVIORLISTBOX = X_ONOFFLISTBOX;
 	static const int Y_BEHAVIORLISTBOX = Y_ONOFFLISTBOX;
 
 	static const UINT CX_EQUIPMENTTYPE_LISTBOX = 150;
-	static const UINT CY_EQUIPMENTTYPE_LISTBOX = 4*22 + 4; //4 slots
+	static const UINT CY_EQUIPMENTTYPE_LISTBOX = 4* LIST_LINE_HEIGHT + 4; //4 slots
 	static const int X_EQUIPMENTTYPE_LISTBOX = X_ONOFFLISTBOX;
 	static const int Y_EQUIPMENTTYPE_LISTBOX = Y_ONOFFLISTBOX;
 
 	static const UINT CX_EQUIPTRANS_LISTBOX = CX_EQUIPMENTTYPE_LISTBOX;
-	static const UINT CY_EQUIPTRANS_LISTBOX = 7*22 + 4; //7 slots
+	static const UINT CY_EQUIPTRANS_LISTBOX = 7* LIST_LINE_HEIGHT + 4; //7 slots
 	static const int X_EQUIPTRANS_LISTBOX = X_EQUIPMENTTYPE_LISTBOX;
 	static const int Y_EQUIPTRANS_LISTBOX = Y_EQUIPMENTTYPE_LISTBOX + CY_EQUIPMENTTYPE_LISTBOX + CY_SPACE;
 
 	static const UINT CX_CUSTOMNPC_LISTBOX = 250;
-	static const UINT CY_CUSTOMNPC_LISTBOX = 13*22 + 4; //13 slots
+	static const UINT CY_CUSTOMNPC_LISTBOX = CY_ACTIONLISTBOX;
 	static const int X_CUSTOMNPC_LISTBOX = X_EQUIPMENTTYPE_LISTBOX + CX_EQUIPMENTTYPE_LISTBOX + CX_SPACE;
 	static const int Y_CUSTOMNPC_LISTBOX = Y_ONOFFLISTBOX;
 
@@ -1014,7 +1016,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CY_GOTOLABELTEXT = CY_WAIT;
 
 	static const UINT CX_GOTOLABELLISTBOX = CX_GOTOLABELTEXT;
-	static const UINT CY_GOTOLABELLISTBOX = 11*22 + 4; //11 items
+	static const UINT CY_GOTOLABELLISTBOX = 22* LIST_LINE_HEIGHT + 4; //22 items
 	static const int X_GOTOLABELLISTBOX = X_EVENTLISTBOX;
 	static const int Y_GOTOLABELLISTBOX = Y_GOTOLABELTEXT + CY_GOTOLABELTEXT + CY_SPACE;
 
@@ -1050,7 +1052,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_WAITFLAGSLISTBOX = X_MUSICLISTBOX;
 	static const int Y_WAITFLAGSLISTBOX = Y_ONOFFLISTBOX + CY_ONOFFLISTBOX + CY_SPACE;
 	static const UINT CX_WAITFLAGSLISTBOX = 100;
-	static const UINT CY_WAITFLAGSLISTBOX = 9*22 + 4;
+	static const UINT CY_WAITFLAGSLISTBOX = 5* LIST_LINE_HEIGHT + 4;
 
 	//Widgets and for variable handling commands.
 	static const int X_VARTEXTLABEL = X_WAITLABEL;
@@ -1058,10 +1060,20 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_VARTEXTLABEL = 170;
 	static const UINT CY_VARTEXTLABEL = CY_LABEL;
 
+	static const int X_VARVALUELABEL = X_WAITLABEL;
+	static const UINT CY_VARVALUELABEL = CY_WAITLABEL;
+	static const int Y_VARVALUELABEL = Y_GOTOLABELTEXT + CY_GOTOLABELTEXT + CY_SPACE / 2;
+	static const UINT CX_VARVALUELABEL = 90;
+
+	static const int X_VARVALUE = X_VARVALUELABEL;
+	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
+	static const UINT CX_VARVALUE = CX_GOTOLABELTEXT;
+	static const UINT CY_VARVALUE = 30;
+
 	static const UINT CX_VARLISTBOX = 280;
-	static const UINT CY_VARLISTBOX = 11*22 + 4; //11 items
+	static const UINT CY_VARLISTBOX = 18 * LIST_LINE_HEIGHT + 4; //18 items
 	static const int X_VARLISTBOX = X_EVENTLISTBOX;
-	static const int Y_VARLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE;
+	static const int Y_VARLISTBOX = Y_VARVALUE + CY_VARVALUE + CY_SPACE;
 
 	static const int X_VARADD = X_VARLISTBOX + CX_VARLISTBOX + CX_SPACE/2;
 	static const int Y_VARADD = Y_VARLISTBOX;
@@ -1076,22 +1088,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_VAROPLIST = X_VARADD;
 	static const int Y_VAROPLIST = Y_VARREMOVE + CY_VARREMOVE + CY_SPACE;
 	static const int CX_VAROPLIST = 100;
-	static const int CY_VAROPLIST = 8*22 + 4;
+	static const int CY_VAROPLIST = 8* LIST_LINE_HEIGHT + 4;
 
 	static const int X_VARCOMPLIST = X_VARADD;
 	static const int Y_VARCOMPLIST = Y_VAROPLIST;
 	static const int CX_VARCOMPLIST = CX_VAROPLIST;
-	static const int CY_VARCOMPLIST = 7*22 + 4;
-
-	static const int X_VARVALUELABEL = X_VAROPLIST + CX_VAROPLIST + CX_SPACE/2;
-	static const UINT CY_VARVALUELABEL = CY_LABEL;
-	static const int Y_VARVALUELABEL = Y_VAROPLIST;
-	static const UINT CX_VARVALUELABEL = 90;
-
-	static const int X_VARVALUE = X_VARVALUELABEL;
-	static const int Y_VARVALUE = Y_VARVALUELABEL + CY_VARVALUELABEL;
-	static const UINT CX_VARVALUE = CX_VARVALUELABEL;
-	static const UINT CY_VARVALUE = 30;
+	static const int CY_VARCOMPLIST = 7* LIST_LINE_HEIGHT + 4;
 
 	static const int X_GRAPHICLISTBOX2 = X_EVENTLISTBOX;
 	static const int Y_GRAPHICLISTBOX2 = Y_ACTIONLISTBOX;
@@ -1110,7 +1112,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_DIRECTIONLISTBOX3 = X_DIRECTIONLISTBOX;
 	static const int Y_DIRECTIONLISTBOX3 = Y_DIRECTIONLISTBOX;
 	static const UINT CX_DIRECTIONLISTBOX3 = CX_DIRECTIONLISTBOX2;
-	static const UINT CY_DIRECTIONLISTBOX3 = 9*22 + 4;
+	static const UINT CY_DIRECTIONLISTBOX3 = 9* LIST_LINE_HEIGHT + 4;
 
 	static const int X_ITEMLISTBOX = X_GRAPHICLISTBOX2;
 	static const int Y_ITEMLISTBOX = Y_GRAPHICLISTBOX2;
@@ -1150,7 +1152,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_EFFECTLISTBOX = X_DIRECTIONLISTBOX3 + CX_DIRECTIONLISTBOX3 + CX_SPACE;
 	static const int Y_EFFECTLISTBOX = Y_ITEMLISTBOX;
 	static const UINT CX_EFFECTLISTBOX = 200;
-	static const UINT CY_EFFECTLISTBOX = CY_ACTIONLISTBOX;
+	static const UINT CY_EFFECTLISTBOX = 20* LIST_LINE_HEIGHT + 4;//20 items
 
 	static const int X_SOUNDEFFECTLABEL = X_DIRECTIONLISTBOX3;
 	static const int Y_SOUNDEFFECTLABEL = Y_DIRECTIONLISTBOX3 + CY_DIRECTIONLISTBOX3 + CY_SPACE/2;
@@ -1163,10 +1165,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_STATLISTBOX = X_ONOFFLISTBOX;
 	static const int Y_STATLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE * 2;
 	static const UINT CX_STATLISTBOX = 200;
-	static const UINT CY_STATLISTBOX = 5 * 22 + 4;
+	static const UINT CY_STATLISTBOX = 5 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT CX_MOVETYPELISTBOX = 200;
-	static const UINT CY_MOVETYPELISTBOX = 4 * 22 + 4;
+	static const UINT CY_MOVETYPELISTBOX = 4 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT CX_VALUE_OR_EXPRESSION_LABEL = 300;
 
@@ -1568,7 +1570,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->SelectLine(0);
 
 	this->pVarCompListBox2 = new CListBoxWidget(TAG_VARCOMPLIST2,
-		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST);
+		X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
 	this->pAddCommandDialog->AddWidget(this->pVarCompListBox2);
 	this->pVarCompListBox2->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pVarCompListBox2->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
