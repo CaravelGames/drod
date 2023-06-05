@@ -26,6 +26,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "CharacterDialogWidget.h"
+#include "CommandListBoxWidget.h"
 #include "DrodBitmapManager.h"
 #include "DrodFontManager.h"
 #include "EditRoomScreen.h"
@@ -167,6 +168,9 @@ const SURFACECOLOR PaleRed = {255, 192, 192};
 
 const SDL_Color MediumCyan = { 0, 128, 128, 0 };
 
+const UINT CCharacterDialogWidget::INDENT_PREFIX_SIZE = 8;
+const UINT CCharacterDialogWidget::INDENT_TAB_SIZE = 3;
+const UINT CCharacterDialogWidget::INDENT_IF_CONDITION_SIZE = 5;
 std::map<UINT, UINT> CCharacterDialogWidget::speechLengthCache;
 
 #define NOT_FOUND (UINT(-1))
@@ -460,8 +464,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 
 	AddWidget(new CLabelWidget(0L, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
-	this->pCommandsListBox = new CListBoxWidget(TAG_COMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
-			CX_COMMANDS, CY_COMMANDS, false, true, true);
+	this->pCommandsListBox = new CCommandListBoxWidget(TAG_COMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
+			CX_COMMANDS, CY_COMMANDS);
 	AddWidget(this->pCommandsListBox);
 
 	//Appearance (character/tile graphic).
@@ -1733,8 +1737,8 @@ void CCharacterDialogWidget::AddScriptDialog()
 
 	this->pScriptDialog->AddWidget(new CLabelWidget(0, X_COMMANDSLABEL, Y_COMMANDSLABEL,
 			CX_COMMANDSLABEL, CY_COMMANDSLABEL, F_Small, g_pTheDB->GetMessageText(MID_Commands)));
-	this->pDefaultScriptCommandsListBox = new CListBoxWidget(TAG_DEFAULTCOMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
-			CX_COMMANDS, CY_COMMANDS, false, true, true);
+	this->pDefaultScriptCommandsListBox = new CCommandListBoxWidget(TAG_DEFAULTCOMMANDSLISTBOX, X_COMMANDS, Y_COMMANDS,
+			CX_COMMANDS, CY_COMMANDS);
 	this->pScriptDialog->AddWidget(this->pDefaultScriptCommandsListBox);
 
 	//OK button.
@@ -2235,7 +2239,7 @@ void CCharacterDialogWidget::OnKeyDown(
 						line!=selectedLines.end(); ++line)
 				{
 					if (*line < pCommands->size())
-						wstrCommandsText += toText(*pCommands, (*pCommands)[*line]);
+						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], *line);
 				}
 				if (!wstrCommandsText.empty())
 					g_pTheSound->PlaySoundEffect(SEID_POTION);
@@ -2993,8 +2997,6 @@ const
 {
 	WSTRING wstr;
 
-	wstr += GetPrettyPrinting(commands, pCommand, 6, 3); //indent the If conditions considerably
-
 	//Call language-specific version of method.
 	switch (Language::GetLanguage())
 	{
@@ -3634,130 +3636,135 @@ WSTRING CCharacterDialogWidget::GetDataName(const UINT dwID) const
 }
 
 //*****************************************************************************
-WSTRING CCharacterDialogWidget::GetPrettyPrinting(
-//Add indenting to clarify the code flow.
-//
-//Params:
-	const COMMANDPTR_VECTOR& commands,
-	CCharacterCommand* pCommand,
-	const UINT ifIndent, const UINT tabSize)
-const
+UINT CCharacterDialogWidget::ExtractCommandIndent(const UINT wCommandIndex) const
+//Extracts command's indent size from the command listbox text
 {
-	ASSERT(pCommand);
+	WSTRING wstr = this->pCommandsListBox->GetTextAtLine(wCommandIndex);
 
-	WSTRING wstr;
-
-	//Determine indentation for command.
-	if (pCommand->command == CCharacterCommand::CC_Label)  //labels always have indent 0
-		return wstr;
-
-	UINT wNestDepth = 0, wLogicNestDepth = 0, wIndent = 2;  //insert past labels
-
-	bool bIfCondition = false;
-	for (COMMANDPTR_VECTOR::const_iterator command = commands.begin();
-			(*command) != pCommand && command != commands.end(); ++command)
+	UINT i = 0;
+	for (; i < wstr.size(); ++i)
 	{
-		bIfCondition = false;
-		switch ((*command)->command)
-		{
-			case CCharacterCommand::CC_If:
-				bIfCondition = true;
-				++wNestDepth; //indent inside of if block
+		if (!iswspace(wstr.at(i)))
 			break;
-			case CCharacterCommand::CC_IfElseIf:
-				bIfCondition = true;
-			break;
-			case CCharacterCommand::CC_IfEnd:
-				if (wNestDepth)
-					--wNestDepth;
-				else
-					wstr += wszExclamation;	//superfluous IfEnd
-			break;
-			case CCharacterCommand::CC_LogicalWaitAnd:
-			case CCharacterCommand::CC_LogicalWaitOr:
-			case CCharacterCommand::CC_LogicalWaitXOR:
-				++wLogicNestDepth; //indent inside of logic block
-			break;
-			case CCharacterCommand::CC_LogicalWaitEnd:
-				if (wLogicNestDepth)
-					--wLogicNestDepth;
-				else
-					wstr += wszExclamation;	//superfluous logic end
-			break;
-			default: break;
-		}
 	}
 
-	//Unnest If block markers.
-	switch (pCommand->command)
+	return i;
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR& commands)
+{
+	WSTRING wstr;
+
+	UINT wNestDepth = 0, wLogicNestDepth = 0, wIndent = INDENT_PREFIX_SIZE;  //insert past labels
+
+	UINT index = 0;
+	bool bLastWasIfCondition = false;
+	for (COMMANDPTR_VECTOR::const_iterator command = commands.begin();
+		command != commands.end(); ++command, ++index)
 	{
-		case CCharacterCommand::CC_IfEnd:
-		case CCharacterCommand::CC_IfElse:
+		wstr.clear();
+		CCharacterCommand* pCommand = *command;
+		bool bIsIfCondition = false;
+		bool bUndoOneDepth = false;
+		bool bIsLabel = false;
+		switch (pCommand->command)
+		{
+		case CCharacterCommand::CC_If:
+			bIsIfCondition = true;
+			++wNestDepth; //indent inside of if block
+			bUndoOneDepth = true;
+			break;
 		case CCharacterCommand::CC_IfElseIf:
+			bIsIfCondition = true;
+			break;
+		case CCharacterCommand::CC_IfEnd:
 			if (wNestDepth)
 				--wNestDepth;
 			else
 				wstr += wszExclamation;	//superfluous IfEnd
-		//no break
-		case CCharacterCommand::CC_AddRoomToMap:
-		case CCharacterCommand::CC_AnswerOption:
-		case CCharacterCommand::CC_AmbientSound:
-		case CCharacterCommand::CC_AmbientSoundAt:
-		case CCharacterCommand::CC_Autosave:
-		case CCharacterCommand::CC_Behavior:
+			break;
+		case CCharacterCommand::CC_LogicalWaitAnd:
+		case CCharacterCommand::CC_LogicalWaitOr:
+		case CCharacterCommand::CC_LogicalWaitXOR:
+			++wLogicNestDepth; //indent inside of logic block
+			bUndoOneDepth = true;
+			break;
+		case CCharacterCommand::CC_LogicalWaitEnd:
+			if (wLogicNestDepth)
+				--wLogicNestDepth;
+			else
+				wstr += wszExclamation;	//superfluous logic end
+			break;
+		default: break;
+		}
+
+		//Unnest If block markers.
+		switch (pCommand->command)
+		{
+		case CCharacterCommand::CC_IfElse:
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestDepth)
+				bUndoOneDepth = true;
+			else
+				wstr += wszExclamation;	//superfluous IfEnd
+			//no break
+		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_EachAttack:
-		case CCharacterCommand::CC_EachDefend:
-		case CCharacterCommand::CC_EachUse:
-		case CCharacterCommand::CC_EachVictory:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
-		case CCharacterCommand::CC_Equipment:
 		case CCharacterCommand::CC_FlushSpeech:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
 		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Label:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_LevelEntrance:
-		case CCharacterCommand::CC_MoveTo:
-		case CCharacterCommand::CC_MoveRel:
-		case CCharacterCommand::CC_PlayVideo:
-		case CCharacterCommand::CC_ScoreCheckpoint:
 		case CCharacterCommand::CC_SetMusic:
-		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
 		case CCharacterCommand::CC_ReplaceWithDefault:
+		case CCharacterCommand::CC_AnswerOption:
+		case CCharacterCommand::CC_AmbientSound:
+		case CCharacterCommand::CC_AmbientSoundAt:
+		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_Return:
-			if (bIfCondition || wLogicNestDepth)
+			if (bLastWasIfCondition || wLogicNestDepth)
+				wstr += wszQuestionMark;	//questionable If condition
+		break;
+		case CCharacterCommand::CC_Label:
+			bIsLabel = true;
+			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
 
 		case CCharacterCommand::CC_VarSet:
-			if (bIfCondition || wLogicNestDepth)
+			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
-		//no break
+			//no break
 		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
 		{
 			//Verify integrity of hold var refs.
-			switch (pCommand->y)
+			UINT operation = pCommand->command == CCharacterCommand::CC_VarSetAt ? pCommand->h : pCommand->y;
+			switch (operation)
 			{
-				case ScriptVars::AppendText:
-				case ScriptVars::AssignText:
+			case ScriptVars::AppendText:
+			case ScriptVars::AssignText:
 				break;
-				default:
-					if (!pCommand->label.empty()) //an expression is used as an operand
-					{
-						CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
-								g_pTheSM->GetScreen(SCR_EditRoom));
-						ASSERT(pEditRoomScreen);
-						ASSERT(pEditRoomScreen->pHold);
-						UINT index=0;
-						if (!CCharacter::IsValidExpression(pCommand->label.c_str(), index, pEditRoomScreen->pHold))
-							wstr += wszAsterisk; //expression is not valid
-					}
+			default:
+				if (!pCommand->label.empty()) //an expression is used as an operand
+				{
+					CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+						g_pTheSM->GetScreen(SCR_EditRoom));
+					ASSERT(pEditRoomScreen);
+					ASSERT(pEditRoomScreen->pHold);
+					UINT index = 0;
+					if (!CCharacter::IsValidExpression(pCommand->label.c_str(), index, pEditRoomScreen->pHold))
+						wstr += wszAsterisk; //expression is not valid
+				}
 				break;
 			}
 			if (pCommand->command == CCharacterCommand::CC_VarSetAt && wLogicNestDepth)
@@ -3774,27 +3781,30 @@ const
 		case CCharacterCommand::CC_WaitForCharacter:
 		case CCharacterCommand::CC_WaitForNotCharacter:
 			wstr += wszAsterisk;
-		break;
+			break;
 		default:
 			if (wLogicNestDepth && !pCommand->IsAllowedInLogicBlock())
 				wstr += wszQuestionMark; //questionable logic condition
-		break;
-	}
+			break;
+		}
 
-	UINT wFinalIndent = wIndent + (wNestDepth + wLogicNestDepth) * tabSize;
-	if (bIfCondition && !pCommand->IsLogicalWaitCommand())
-	{
-		wFinalIndent += ifIndent;
-		if (wNestDepth)
-			wFinalIndent -= tabSize;
-	}
-	else if (pCommand->command == CCharacterCommand::CC_LogicalWaitEnd) {
-		wFinalIndent -= tabSize;
-	}
+		UINT wFinalIndent = (wNestDepth + wLogicNestDepth) * INDENT_TAB_SIZE;
+		if (bIsLabel)
+			wFinalIndent = 0;
 
-	wstr.insert(wstr.end(), wFinalIndent, W_t(' '));
+		else if (bLastWasIfCondition && !pCommand->IsLogicalWaitCommand())
+			wFinalIndent += INDENT_IF_CONDITION_SIZE;
 
-	return wstr;
+		else if (bUndoOneDepth)
+			wFinalIndent -= INDENT_TAB_SIZE;
+
+		wstr.insert(wstr.begin(), bIsLabel ? wIndent - 2 : wIndent, W_t(' '));
+		wstr.insert(wstr.end(), wFinalIndent, W_t(' '));
+		wstr += pCommandList->GetTextAtLine(index);
+		pCommandList->SetItemTextAtLine(index, wstr.c_str());
+
+		bLastWasIfCondition = bIsIfCondition;
+	}
 }
 
 void CCharacterDialogWidget::AppendGotoDestination(WSTRING& wstr,
@@ -4182,6 +4192,9 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 				GetCommandDesc(commands, pCommand).c_str());
 		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
+
+	PrettyPrintCommands(pCommandList, commands);
+
 	if (commands.size())
 		pCommandList->SelectLine(0);
 }
@@ -6965,7 +6978,8 @@ WSTRING CCharacterDialogWidget::toText(
 //
 //Params:
 	const COMMANDPTR_VECTOR& commands,
-	CCharacterCommand* pCommand)   //Command to parse
+	CCharacterCommand* pCommand,   //Command to parse
+	const UINT wCommandIndex)      //Index of the command
 {
 #define concatNum(n) wstr += _itoW(n,temp,10)
 #define concatNumWithComma(n) concatNum(n); wstr += wszComma;
@@ -6979,7 +6993,8 @@ WSTRING CCharacterDialogWidget::toText(
 	if (wstrCommandName.empty())
 		return wstr;
 
-	wstr += GetPrettyPrinting(commands, pCommand, 6, 3);
+	UINT indent = ExtractCommandIndent(wCommandIndex);
+	wstr.insert(wstr.end(), indent - INDENT_PREFIX_SIZE + 2, W_t(' '));
 	wstr += wstrCommandName;
 	wstr += wszSpace;
 	

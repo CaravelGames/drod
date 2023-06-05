@@ -125,6 +125,7 @@ public:
 	void           SetItemColor(const UINT dwKey, const SDL_Color& color);
 	void           SetItemColorAtLine(const UINT index, const SDL_Color& color);
 	void           SetItemText(const UINT dwKey, const WCHAR *pwczSetText);
+	void           SetItemTextAtLine(const UINT index, const WCHAR *pwczSetText);
 	void           SetRearrangeable(bool val) { this->bRearrangable = val; }
 	void           SetRearrangeable(const UINT dwKey, bool val);
 	void           SetSelectedItemText(const WCHAR *pwczSetText);
@@ -149,6 +150,9 @@ protected:
 	virtual void   ScrollDownOnePage();
 	virtual void   ScrollUpOneLine(const UINT wLines=1);
 	virtual void   ScrollUpOnePage();
+
+	void           GetLineDrawCoords(const UINT wLineNumber, int &drawX, int &drawY, UINT &drawWidth, UINT &drawHeight);
+	virtual void   Paint_Line(const UINT wListItemNumber, const UINT wDrawLineNumber, const LBOX_ITEM &listItem);
 
 	vector<LBOX_ITEM*> Items;
 	UINT           wTopLineNo;  //of view area
