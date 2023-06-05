@@ -125,7 +125,7 @@ bool CClone::IsSwimming() const
 //Returns: if the clone can swim. Clones swim if the player swims
 {
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	return player.GetMovementType() == MovementType::WATER;
+	return player.GetMovementType() == WATER;
 }
 
 //*****************************************************************************

@@ -1,6 +1,6 @@
 # DROD 5
 # DROD RPG
-**(c) Caravel Games 2005-2020**
+**(c) Caravel Games 2005-2023**
 
 ----------------------------
 

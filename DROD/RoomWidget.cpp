@@ -7907,7 +7907,7 @@ bool CRoomWidget::GetPlayerDisplayTiles(
 const
 {
 	//Make sure display orientation is correct for role appearance.
-	switch (int(swordsman.wAppearance))
+	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return false; //Don't show anything if player is not being shown.
 		case M_BRAIN: case M_SKIPPERNEST: wO = NO_ORIENTATION; break;
@@ -8022,7 +8022,7 @@ void CRoomWidget::DrawCharacter(
 	UINT wSX, wSY;
 	const bool bHasSword = pCharacter->GetSwordCoords(wSX, wSY);
 	UINT wFrame;
-	if (bHasSword || !bEntityHasSword(wIdentity)) {
+	if (bHasSword || (!bEntityHasSword(wIdentity) && pCharacter->bNoWeapon)) {
 		wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame;
 		if (!IsMonsterTypeAnimated(wIdentity))
 			wFrame = wFrame % ANIMATION_FRAMES;

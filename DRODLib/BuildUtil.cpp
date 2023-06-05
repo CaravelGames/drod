@@ -354,7 +354,7 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		} else if (wOldTTile == T_FLUFF && baseTile != wOldTTile) {
 			room.DestroyFluff(x, y, CueEvents);
 		} else if (baseTile == T_BRIAR_SOURCE && baseTile != wOldTTile) {
-			room.briars.insert(x, y);
+			room.briars.insert(x, y, true);
 			room.briars.forceRecalc();
 		} else if (wOldTTile == T_BRIAR_SOURCE && baseTile != wOldTTile) {
 			room.briars.removeSource(x, y);

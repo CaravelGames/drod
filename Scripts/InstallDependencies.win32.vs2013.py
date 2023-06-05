@@ -2,6 +2,7 @@
 
 import os 
 import urllib.request
+import certifi
 import ntpath
 import zipfile
 import tarfile
@@ -38,7 +39,7 @@ DependenciesLibraries = DependenciesDir + "Library\\"
 DependenciesDlls = DependenciesDir + "Dll\\"
 ZlibUrl = 'http://www.zlib.net/fossils/zlib-1.2.11.tar.gz'
 LibOggName = 'libogg-1.3.0'
-SdlName = 'sdl2-2.0.12'
+SdlName = 'sdl2-2.26.1'
 
 if DepsToBuild == "all":
 	DepsToBuild = [
@@ -59,7 +60,7 @@ if DepsToBuild == "all":
 
 dependencies = {
 	'curl-7.27.0': {
-		'urls': ['https://curl.haxx.se/download/curl-7.27.0.zip'],
+		'urls': ['https://curl.se/download/archeology/curl-7.27.0.tar.gz'],
 		'include': {
 			'curl-7.27.0/include/curl': 'curl'
 		},
@@ -88,7 +89,7 @@ dependencies = {
 		}
 	},
 	'expat-2.1.0': {
-		'urls': ['https://downloads.sourceforge.net/project/expat/expat/2.1.0/expat-2.1.0.tar.gz'],
+		'urls': ['https://src.fedoraproject.org/repo/pkgs/expat/expat-2.1.0.tar.gz/dd7dab7a5fea97d2a6a43f511449b7cd/expat-2.1.0.tar.gz'],
 		'builds': [
 			{
 				'sln': 'expat-2.1.0/expat.dsw',
@@ -130,7 +131,7 @@ dependencies = {
 	},
 	'fmodapi-375-win': {
 		# No longer available on the internet
-		'urls': ['http://cdn.retrocade.net/fmodapi375win.zip'],
+		'urls': ['http://cdn.evidentlycube.com/forever/drod/fmodapi375win.zip'],
 		'include': {
 			'fmodapi375win/api/inc/': ''
 		},
@@ -143,7 +144,7 @@ dependencies = {
 	},
 	'jpeg-6b':{
 		# Custom version with prepared VS project files
-		'urls': ['http://cdn.retrocade.net/jpeg-6b.zip'],
+		'urls': ['http://cdn.evidentlycube.com/forever/drod/jpeg-6b.zip'],
 		'builds': [
 			{
 				'sln': 'jpeg-6b/jpeglib/jpeglib.sln',
@@ -176,7 +177,7 @@ dependencies = {
 	},
 	'json-0.6.0-rc2': {
 		# Release build had to have assembly generation removed from lib_json
-		'urls': ['http://cdn.retrocade.net/jsoncpp-src-0.6.0-rc2.zip'],
+		'urls': ['http://cdn.evidentlycube.com/forever/drod/jsoncpp-src-0.6.0-rc2.zip'],
 		'builds': [
 			{
 				'sln': 'jsoncpp-src-0.6.0-rc2/makefiles/vs71/jsoncpp.sln',
@@ -332,10 +333,10 @@ dependencies = {
 		}
 	},
 	SdlName: {
-		'urls': ['https://www.libsdl.org/release/SDL2-2.0.12.zip'],
+		'urls': ['https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.zip'],
 		'builds': [
 			{
-				'sln': 'sdl2-2.0.12/VisualC/SDL.sln',
+				'sln': 'sdl2-2.26.1/VisualC/SDL.sln',
 				'configs': [
 					['Debug', '/project', 'SDL2'],
 					['Release', '/project', 'SDL2'],
@@ -345,17 +346,17 @@ dependencies = {
 			}
 		],
 		'include': {
-			'SDL2-2.0.12/include': '' #Too many files to list them one by one
+			'SDL2-2.26.1/include': '' #Too many files to list them one by one
 		},
 		'libs': {
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.lib': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.lib': 'Release',
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2main.lib': 'Release'
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2.lib': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2.lib': 'Release',
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2main.lib': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2main.lib': 'Release'
 		},
 		'dlls': {
-			'SDL2-2.0.12/VisualC/Win32/Debug/SDL2.dll': 'Debug',
-			'SDL2-2.0.12/VisualC/Win32/Release/SDL2.dll': 'Release'
+			'SDL2-2.26.1/VisualC/Win32/Debug/SDL2.dll': 'Debug',
+			'SDL2-2.26.1/VisualC/Win32/Release/SDL2.dll': 'Release'
 		}
 	},
 	'sdl-ttf-2.0.14': {
@@ -399,7 +400,7 @@ def execute():
 		absolutePath = ''
 
 		for url in dependency['urls']:
-			print('Downloading dependency ' + name)
+			print('Downloading dependency ' + name + ' from: ' + url)
 
 			fileName = ntpath.basename(url)
 			finalPath = InstallDir + fileName
@@ -408,8 +409,9 @@ def execute():
 				print('Already downloaded.')
 				break
 
-			
-			urllib.request.urlretrieve(url, finalPath)
+			with urllib.request.urlopen(url, cafile=certifi.where()) as d, open(finalPath, "wb") as opfile:
+				data = d.read()
+				opfile.write(data)
 
 			if os.path.exists(finalPath):
 				break

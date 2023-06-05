@@ -140,7 +140,9 @@ private:
 	static MESSAGE_ID ImportXML(ImportBuffer* pBuffer);
 	static void Import_Init();
 	static void Import_TallyRecords(ImportBuffer* pBuffer);
+	static void Import_TallyRecords(const string& xml);
 	static void Import_ParseRecords(ImportBuffer* pBuffer);
+	static void Import_ParseRecords(const string& xml);
 	static void Import_Resolve();
 
 	static VIEWTYPE ParseViewType(const char *str);
