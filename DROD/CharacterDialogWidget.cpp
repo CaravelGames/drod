@@ -1333,19 +1333,19 @@ void CCharacterDialogWidget::AddCommandDialog()
 	//Positions for on off box 3
 	onOffListBox3Positions.insert(std::make_pair<UINT, pair<UINT, UINT>>(
 		CCharacterCommand::CC_SetNPCAppearance,
-		std::make_pair<UINT, UINT>(KEEPBEHAVIORLABEL_X, Y_ONOFFLISTBOX))
+		std::make_pair<UINT, UINT>((UINT)KEEPBEHAVIORLABEL_X, (UINT)Y_ONOFFLISTBOX))
 	);
 	onOffListBox3Positions.insert(std::make_pair<UINT, pair<UINT, UINT>>(
 		CCharacterCommand::CC_GameEffect,
-		std::make_pair<UINT, UINT>(X_ONOFFLISTBOX3, Y_ONOFFLISTBOX3))
+		std::make_pair<UINT, UINT>((UINT)X_ONOFFLISTBOX3, (UINT)Y_ONOFFLISTBOX3))
 	);
 	onOffListBox3Positions.insert(std::make_pair<UINT, pair<UINT, UINT>>(
 		CCharacterCommand::CC_Behavior,
-		std::make_pair<UINT, UINT>(X_ONOFFLISTBOX3, Y_IMPERATIVELISTBOX + CY_BEHAVIORLISTBOX + CY_SPACE))
+		std::make_pair<UINT, UINT>((UINT)X_ONOFFLISTBOX3, (UINT)(Y_IMPERATIVELISTBOX + CY_BEHAVIORLISTBOX + CY_SPACE)))
 	);
 	onOffListBox3Positions.insert(std::make_pair<UINT, pair<UINT, UINT>>(
 		CCharacterCommand::CC_WaitForOpenTile,
-		std::make_pair<UINT, UINT>(X_ONOFFLISTBOX3, IGNOREWEAPONSLABEL_Y + CY_WAITLABEL + CY_SPACE / 2))
+		std::make_pair<UINT, UINT>((UINT)X_ONOFFLISTBOX3, (UINT)(IGNOREWEAPONSLABEL_Y + CY_WAITLABEL + CY_SPACE / 2)))
 	);
 
 	ASSERT(!this->pAddCommandDialog);
