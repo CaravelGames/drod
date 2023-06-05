@@ -71,6 +71,18 @@ CTextEffect::~CTextEffect()
 	SDL_FreeSurface(this->pTextSurface);
 }
 
+//*****************************************************************************
+bool CTextEffect::Update(
+	const UINT wDeltaTime)     //(in) Time between this and last draw, can be 0 to just draw the effect as-is without any state update
+{
+	this->dwTimeElapsed += wDeltaTime;
+
+	if (this->dwDuration && this->dwTimeElapsed >= this->dwDuration)
+		return false;
+
+	return this->Update(wDeltaTime, this->dwTimeElapsed);
+}
+
 //********************************************************************************
 bool CTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Draws text in the middle of the parent widget.

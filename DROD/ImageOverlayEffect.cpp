@@ -612,7 +612,7 @@ void CImageOverlayEffect::StartNextCommand()
 	case ImageOverlayCommand::TurnDuration:
 	{
 		const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
-		const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo : 0;
+		const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wPlayerTurn : 0;
 		this->executionState.endTurn = gameTurn + max(0, val);
 	}
 	break;

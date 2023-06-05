@@ -39,7 +39,7 @@ The game requires the following libraries. Different versions may potentially be
  -  `libvorbis-1.3.3` => http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz
  -  `lpng-1512` => https://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.12/lpng1512.zip
  -  `metakit-2.4.9.7` => https://github.com/jnorthrup/metakit/archive/master.zip
- -  `sdl2-2.0.12` => https://www.libsdl.org/release/SDL2-2.0.12.zip
+ -  `sdl2-2.26.1` => https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.zip
  -  `sdl-ttf-2.0.14` => https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip
  -  `zlib` => http://www.zlib.net/fossils/zlib-1.2.11.tar.gz
 

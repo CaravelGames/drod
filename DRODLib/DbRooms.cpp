@@ -3293,7 +3293,8 @@ void CDbRoom::KillInvisibleCharacter(
 	UnlinkMonster(pCharacter);
 	this->DeadMonsters.push_back(pCharacter);
 
-	pCharacter->bAlive = false;
+	// The character is not marked as dead, as this will cause issues if they are
+	// a speaker for upcoming speech.
 }
 
 //*****************************************************************************

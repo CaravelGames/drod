@@ -118,7 +118,7 @@ public:
 	void           RequestRetainOnClear(const bool bVal=true) {this->bRequestRetainOnClear = bVal;}
 	bool           RequestsRetainOnClear() const {return this->bRequestRetainOnClear;}
 	void           SetOpacity(float fOpacity) {this->fOpacity = fOpacity;}
-	bool           Update(const UINT wDeltaTime); // Updates the state of the effect without drawing it
+	virtual bool   Update(const UINT wDeltaTime); // Updates the state of the effect without drawing it
 
 	vector<SDL_Rect>  dirtyRects; //bounding boxes covered by effect this frame
 
