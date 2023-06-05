@@ -72,6 +72,8 @@ public:
 	UINT     GetSavePlayerID() const {return this->dwSavePlayerID;}
 	UINT     GetTestPlayerID() const {return this->dwTestPlayerID;}
 
+	UINT     SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
+
 protected:
 	friend class CDrodScreenManager;
 
