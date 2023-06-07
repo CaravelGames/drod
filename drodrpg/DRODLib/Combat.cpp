@@ -605,8 +605,16 @@ bool CCombat::Advance(
 						//NOTE: Only process this when not simulating a combat outcome
 						//to avoid script commands that change the room state being executed.
 
-						//Process player's custom weapon script.
+						//Process player's custom equipment scripts.
 						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 						if (pCharacter)
 							pCharacter->ProcessAfterAttack(CueEvents);
 
@@ -635,8 +643,16 @@ bool CCombat::Advance(
 						//Update the monster's HP if this is an actual fight.
 						pMonsterBeingFought->HP = monHP;
 
-						//Process player's custom weapon script.
+						//Process player's custom equipment scripts.
 						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 						if (pCharacter)
 							pCharacter->ProcessAfterAttack(CueEvents);
 
@@ -738,8 +754,16 @@ bool CCombat::Advance(
 							BeginFightingNextQueuedMonster(CueEvents);
 						}
 
-						//Process player's custom armor script.
+						//Process player's custom equipment scripts.
 						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterDefend(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterDefend(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 						if (pCharacter)
 							pCharacter->ProcessAfterDefend(CueEvents);
 					}
@@ -893,8 +917,19 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 	ASSERT(!this->bSimulated);
 	this->pMonster->ProcessAfterAttack(CueEvents);
 
-	//Process player's custom armor script.
+	//Process player's custom equipment scripts.
 	CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter)
+		pCharacter->ProcessAfterDefend(CueEvents);
+	CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter)
+		pCharacter->ProcessAfterDefend(CueEvents);
+
+	pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+	if (pCharacter)
+		pCharacter->ProcessAfterDefend(CueEvents);
+
+	pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 	if (pCharacter)
 		pCharacter->ProcessAfterDefend(CueEvents);
 
