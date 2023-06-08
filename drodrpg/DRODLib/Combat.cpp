@@ -921,9 +921,6 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 	CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
 	if (pCharacter)
 		pCharacter->ProcessAfterDefend(CueEvents);
-	CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter)
-		pCharacter->ProcessAfterDefend(CueEvents);
 
 	pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
 	if (pCharacter)
