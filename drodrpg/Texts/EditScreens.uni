@@ -714,6 +714,30 @@ Large Shield gem
 [eng]
 Crate
 
+[MID_Shovel1]
+[eng]
+Shovel
+
+[MID_Shovel3]
+[eng]
+Shovels (3)
+
+[MID_Shovel10]
+[eng]
+Shovels (10)
+
+[MID_Dirt1]
+[eng]
+Dirt Block
+
+[MID_Dirt3]
+[eng]
+Dirt Block (3)
+
+[MID_Dirt5]
+[eng]
+Dirt Block (5)
+
 [MID_FloorMosaic]
 [eng]
 Floor mosaic
