@@ -144,6 +144,11 @@ CRoomScreen::CRoomScreen(
 	static const UINT CX_SKEY = CX_BKEY;
 	static const UINT CY_SKEY = CY_BKEY;
 
+	static const int X_SHOVEL = X_SKEY + CX_SKEY;
+	static const int Y_SHOVEL = Y_SKEY;
+	static const UINT CX_SHOVEL = 45;
+	static const UINT CY_SHOVEL = CY_BKEY;
+
 	//Item multiplier display.
 	static const int X_ITEMMULT = 135;
 	static const int Y_ITEMMULT = 355;
@@ -176,6 +181,7 @@ CRoomScreen::CRoomScreen(
 	AddWidget(new CLabelWidget(TAG_GKEY, X_GKEY, Y_GKEY, CX_GKEY, CY_GKEY, F_FrameCaption, wszEmpty));
 	AddWidget(new CLabelWidget(TAG_BKEY, X_BKEY, Y_BKEY, CX_BKEY, CY_BKEY, F_FrameCaption, wszEmpty));
 	AddWidget(new CLabelWidget(TAG_SKEY, X_SKEY, Y_SKEY, CX_SKEY, CY_SKEY, F_FrameCaption, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_SHOVEL, X_SHOVEL, Y_SHOVEL, CX_SHOVEL, CY_SHOVEL, F_FrameCaption, wszEmpty));
 
 	pLabelWidget = new CLabelWidget(
 			TAG_ITEMMULT, X_ITEMMULT, Y_ITEMMULT, CX_ITEMMULT, CY_ITEMMULT, F_ItemMultiplier, wszEmpty, false, 0, WT_Label, true);

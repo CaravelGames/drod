@@ -504,17 +504,18 @@ void CGameScreen::RedrawStats(
 	const bool bCombat = pCombat != NULL;
 
 	//Refresh texts.
-	static const UINT numStats = 17;
+	static const UINT numStats = 18;
 	static const UINT statTag[numStats] = {
 		TAG_HP, TAG_ATK, TAG_DEF, TAG_GOLD,
 		TAG_YKEY, TAG_GKEY, TAG_BKEY,
 		TAG_MONNAME, TAG_MONHP, TAG_MONATK, TAG_MONDEF,
 		TAG_SWORD, TAG_SHIELD, TAG_ACCESSORY,
-		TAG_SKEY, TAG_XP, TAG_ITEMMULT
+		TAG_SKEY, TAG_XP, TAG_ITEMMULT, TAG_SHOVEL
 	};
 
 	//Refresh sprites.
 	static const UINT MAX_KEY_DISPLAY = 99;
+	static const UINT MAX_SHOVEL_DISPLAY = 999;
 
 	const bool bSwordDisabled = this->pCurrentGame->IsPlayerSwordDisabled();
 	const bool bShieldDisabled = this->pCurrentGame->IsPlayerShieldDisabled();
@@ -573,6 +574,7 @@ void CGameScreen::RedrawStats(
 				}
 			}
 			break;
+			case 17: val = ps.shovels >= MAX_SHOVEL_DISPLAY ? MAX_SHOVEL_DISPLAY : ps.shovels; break;
 			default: break;
 		}
 
@@ -5678,11 +5680,36 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP);
 	if (CueEvents.HasOccurred(CID_ReceivedHP))
 		g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
+
+	if (CueEvents.HasOccurred(CID_ReceivedShovel)) {
+		g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP);
+
+		//Effect showing key entering player inventory.
+		const CAttachableWrapper<UINT>* pShovelTile =
+			DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+				CueEvents.GetFirstPrivateData(CID_ReceivedShovel));
+
+		//Get destination of effect.
+		CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SHOVEL));
+		if (pLabel)
+		{
+			UINT destX = pLabel->GetX();
+			UINT destY = pLabel->GetY();
+
+			const UINT shovelTile = GetTileImageForTileNo(pShovelTile->data);
+			CMovingTileEffect* pEffect = new CMovingTileEffect(this->pRoomWidget,
+				shovelTile, CCoord(player.wX, player.wY),
+				CCoord(destX, destY), 50.0);
+			this->pRoomWidget->AddLastLayerEffect(pEffect);
+		}
+	}
+
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
 		this->pMapWidget->RequestPaint();
 	}
+
 	if (CueEvents.HasOccurred(CID_LevelMap))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
@@ -6293,6 +6320,28 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		if (this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY) == T_WATER)
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
+	}
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_Dig);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+
+		//If player dug the block, center sound on player for nicer effect.
+		if (player.wX == pCoord->wX && player.wY == pCoord->wY)
+		{
+			this->fPos[0] = static_cast<float>(player.wX);
+			this->fPos[1] = static_cast<float>(player.wY);
+		} else {
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+		}
+		g_pTheSound->PlaySoundEffect(SEID_DIG, this->fPos);
+		CMoveCoord mc(*pCoord);
+		mc.wO = nGetReverseO(mc.wO); //dirt particles fly backwards
+		this->pRoomWidget->AddMLayerEffect(
+			new CDigDebrisEffect(this->pRoomWidget, mc, 10,
+				GetEffectDuration(10), GetParticleSpeed(1)));
 	}
 
 	//Events w/o accompanying sounds.
@@ -6966,6 +7015,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 	UINT count=0, incCount;
 	int healDelta=0, atkDelta=0, defDelta=0, goldDelta=0, xpDelta=0;
 	int yKeyDelta=0, gKeyDelta=0, bKeyDelta=0, sKeyDelta=0;
+	int shovelDelta = 0;
 	while (pObj)
 	{
 		const CCombatEffect *pEffect = DYN_CAST(const CCombatEffect*, const CAttachableObject*, pObj);
@@ -7122,6 +7172,12 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 				else
 					showStat(pEffect->eType, pEffect->amount, pEntity, incCount);
 			break;
+			case CET_SHOVEL:
+				if (pEntity == &player)
+					shovelDelta += pEffect->amount;
+				else
+					showStat(pEffect->eType, pEffect->amount, pEntity, incCount);
+				break;
 			default: break;
 		}
 		pObj = CueEvents.GetNextPrivateData();
@@ -7147,6 +7203,8 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 		showStat(CET_GOLD, goldDelta, &player, incCount);
 	if (xpDelta != 0)
 		showStat(CET_XP, xpDelta, &player, incCount);
+	if (shovelDelta != 0)
+		showStat(CET_SHOVEL, shovelDelta, &player, incCount);
 }
 
 //*****************************************************************************
@@ -7959,6 +8017,22 @@ void CGameScreen::showStat(const UINT eType, const int delta, CEntity *pEntity, 
 			this->pRoomWidget->AddLastLayerEffect(new CFloatTextEffect(this->pRoomWidget,
 				px, py,
 				text, whitish, F_Title, 1000, 20.0));
+		}
+		break;
+		case CET_SHOVEL:
+		if (delta != 0)
+		{
+			static const SURFACECOLOR brown = {128, 128, 32};
+			WCHAR temp[12];
+			WSTRING text;
+			if (delta > 0)
+				text += wszPlus;
+			text += _itoW(delta, temp, 10);
+			text += wszSpace;
+			text += g_pTheDB->GetMessageText(MID_ShovelsStat);
+			this->pRoomWidget->AddLastLayerEffect(new CFloatTextEffect(this->pRoomWidget,
+				px, py,
+				text, brown, F_Title, 1000, 20.0));
 		}
 		break;
 	}

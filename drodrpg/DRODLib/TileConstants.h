@@ -147,12 +147,12 @@
 #define T_DEF_UP10      97 //Defense up 10
 #define T_CRATE         98
 #define T_PRESSPLATE_BROKEN_VIRTUAL 99 //virtual tile: only used to represent broken plate in saved game data
-#define T_SHOVEL1       100
-#define T_SHOVEL3       101
-#define T_SHOVEL10      102
-#define T_DIRT1         103
-#define T_DIRT3         104
-#define T_DIRT5         105
+#define T_SHOVEL1       100 //shovels up 1
+#define T_SHOVEL3       101 //shovels up 3
+#define T_SHOVEL10      102 //shovels up 10
+#define T_DIRT1         103 //dirt block requiring 1 shovel
+#define T_DIRT3         104 //dirt block requiring 3 shovels
+#define T_DIRT5         105 //dirt block requiring 5 shovels
 
 #define TILE_COUNT     (106) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
@@ -472,7 +472,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_SHOVEL10
 	LAYER_OPAQUE, //T_DIRT1
 	LAYER_OPAQUE, //T_DIRT3
-	LAYER_OPAQUE, //T_DIRT10
+	LAYER_OPAQUE, //T_DIRT5
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1

@@ -1928,6 +1928,8 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "ATKPickup", "atk pickup.ogg");
 	AddIfMissing(INISection::Waves, "DEFPickup", "def pickup.ogg");
 	AddIfMissing(INISection::Waves, "HPPickup", "hp pickup.ogg");
+	AddIfMissing(INISection::Waves, "ShovelPickup", "shovel.ogg");
+	AddIfMissing(INISection::Waves, "Dig", "dig.ogg");
 
 	AddIfMissing(INISection::Waves, "AreaClear", "areaclear.ogg");
 	AddIfMissing(INISection::Waves, "Bomb", "explosion.ogg");

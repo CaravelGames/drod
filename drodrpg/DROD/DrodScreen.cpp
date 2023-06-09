@@ -676,6 +676,14 @@ WSTRING CDrodScreen::getStatsText(
 		wstr += wszForwardSlash;
 		wstr += _itoW(st.skeletonKeys, num, 10);
 	}
+	wstr += wszSpace;
+	wstr += wszSpace;
+
+	wstr += g_pTheDB->GetMessageText(MID_ShovelsStat);
+	wstr += wszColon;
+	wstr += wszSpace;
+	wstr += _itoW(st.shovels, num, 10);
+
 	const bool bHasSword = st.sword != NoSword;
 	const bool bHasShield = st.shield != NoShield;
 	const bool bHasAccessory = st.accessory != NoAccessory;
@@ -837,6 +845,7 @@ WSTRING CDrodScreen::getStatsText(
 	appendDoorStatsLine(wstr, MID_MoneyDoor, st.moneyDoorCost, st.openMoneyDoorCost);
 	appendDoorStatsLine(wstr, MID_RedDoor, st.redDoors, st.openRedDoors);
 	appendDoorStatsLine(wstr, MID_BlackDoor, st.blackDoors, st.openBlackDoors);
+	appendDoorStatsLine(wstr, MID_Dirt1, st.dirtBlockCost, 0);
 
 	return wstr;
 }

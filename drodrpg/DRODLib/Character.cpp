@@ -50,6 +50,7 @@
 const UINT MAX_ANSWERS = 9;
 
 //Literals used to query and store values for the NPC in the packed vars object.
+//DO NOT CHANGE
 #define commandStr "Commands"
 #define idStr "id"
 #define numCommandsStr "NumCommands"
@@ -82,6 +83,7 @@ const UINT MAX_ANSWERS = 9;
 #define ItemATKMultStr "ItemATKMultiplier"
 #define ItemDEFMultStr "ItemDEFMultiplier"
 #define ItemGRMultStr "ItemGRMultiplier"
+#define ItemShovelMultStr "ItemShovelMultiplier"
 
 #define SpawnTypeStr "SpawnType"
 #define WeaknessStr "Weakness"
@@ -254,7 +256,7 @@ CCharacter::CCharacter(
 	, color(0), sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
 	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
-	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100)
+	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100), itemShovelMult(100)
 	, wSpawnType(-1)
 {
 }
@@ -493,6 +495,8 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 			return this->itemDEFmult;
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			return this->itemGRmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_SHOVEL_MULT:
+			return this->itemShovelMult;
 
 		//Spawn type
 		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
@@ -655,6 +659,9 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
 			this->itemGRmult = val;
 		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_SHOVEL_MULT:
+			this->itemShovelMult = val;
+		break;
 
 		//Spawn type
 		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
@@ -742,6 +749,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 				case (UINT)ScriptVars::P_GKEY:
 				case (UINT)ScriptVars::P_BKEY:
 				case (UINT)ScriptVars::P_SKEY:
+				case (UINT)ScriptVars::P_SHOVEL:
 					if (int(val) < 0)
 						newVal = 0;
 				break;
@@ -786,6 +794,9 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_SKEY:
 						type = CET_SKEY;
 					break;
+					case (UINT)ScriptVars::P_SHOVEL:
+						type = CET_SHOVEL;
+					break;
 					case (UINT)ScriptVars::P_MONSTER_ATK_MULT:
 					case (UINT)ScriptVars::P_MONSTER_DEF_MULT:
 					case (UINT)ScriptVars::P_MONSTER_HP_MULT:
@@ -796,6 +807,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_ITEM_ATK_MULT:
 					case (UINT)ScriptVars::P_ITEM_DEF_MULT:
 					case (UINT)ScriptVars::P_ITEM_GR_MULT:
+					case (UINT)ScriptVars::P_ITEM_SHOVEL_MULT:
 					case (UINT)ScriptVars::P_HOTTILE:
 					case (UINT)ScriptVars::P_EXPLOSION:
 					case (UINT)ScriptVars::P_MUD_SPAWN:
@@ -811,6 +823,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_SCORE_SKEY:
 					case (UINT)ScriptVars::P_SCORE_GOLD:
 					case (UINT)ScriptVars::P_SCORE_XP:
+					case (UINT)ScriptVars::P_SCORE_SHOVEL:
 						//display nothing
 					break;
 
@@ -3479,7 +3492,7 @@ bool CCharacter::IsEntityAt(
 	if ((pflags & ScriptFlag::PDOUBLE) != 0)
 	{
 		//All player double types
-		if (bIsBeethroDouble(player.wAppearance) && !player.wAppearance != M_BEETHRO &&
+		if (bIsBeethroDouble(player.wAppearance) && !player.wAppearance != M_BEETHRO && //!!fix bad logic and correct for RPG
 			player.wX >= px && player.wX <= px + pw &&
 			player.wY >= py && player.wY <= py + ph)
 			return true;
@@ -4395,6 +4408,8 @@ float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
 			return int(this->itemDEFmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemGR:
 			return int(this->itemGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemShovels:
+			return int(this->itemShovelMult) / 100.0f;
 		default:
 			return 1.0f;
 	}
@@ -5429,6 +5444,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
 	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
 	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
+	this->itemShovelMult = vars.GetVar(ItemShovelMultStr, this->itemShovelMult);
 
 	//Spawn type
 	this->wSpawnType = vars.GetVar(SpawnTypeStr, this->wSpawnType);
@@ -5591,6 +5607,8 @@ const
 		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
 	if (this->itemGRmult != 100)
 		vars.SetVar(ItemGRMultStr, this->itemGRmult);
+	if (this->itemShovelMult != 100)
+		vars.SetVar(ItemShovelMultStr, this->itemShovelMult);
 
 	// Spawn type
 	if (this->wSpawnType != -1)

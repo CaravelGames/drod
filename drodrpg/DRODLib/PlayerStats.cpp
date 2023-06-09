@@ -12,7 +12,7 @@ using namespace ScriptVars;
 //  (see Pack/Unpack methods below).
 //Add key names here when adding a new global game var that needs to be saved.
 //DO NOT CHANGE these names
-const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
+const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 {
 	"_HP", "_ATK", "_DEF", "_GOLD",
 	"_YKEY", "_GKEY", "_BKEY",
@@ -44,7 +44,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][13] =
 	"_ScoreHP", "_ScoreATK", "_ScoreDEF", "_ScoreYKEY", "_ScoreGKEY", "_ScoreBKEY", "_ScoreSKEY", "_ScoreGR", "_ScoreXP",
 	"",
 	"", "", "",
-	""
+	"",
+	"_Shovels", "_ScoreShovels", "_ItemShovelMult", ""
 };
 
 //Message texts corresponding to the above short var texts.
@@ -75,7 +76,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarScoreHP, MID_VarScoreAtk, MID_VarScoreDef, MID_VarScoreYKey, MID_VarScoreGKey, MID_VarScoreBKey, MID_VarScoreSKey, MID_VarScoreGold, MID_VarScoreXP,
 	MID_VarMyWeakness,
 	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY,
-	MID_VarMyDescription
+	MID_VarMyDescription,
+	MID_VarShovels, MID_VarScoreShovels, MID_VarItemShovelMult, MID_VarMyItemShovelMult,
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -92,6 +94,7 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_GKEY,
 	P_BKEY,
 	P_SKEY,
+	P_SHOVEL,
 	P_SWORD,
 	P_SHIELD,
 	P_ACCESSORY,
@@ -100,6 +103,7 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_ITEM_ATK_MULT,
 	P_ITEM_DEF_MULT,
 	P_ITEM_GR_MULT,
+	P_ITEM_SHOVEL_MULT,
 	P_MONSTER_HP_MULT,
 	P_MONSTER_ATK_MULT,
 	P_MONSTER_DEF_MULT,
@@ -121,7 +125,8 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_SCORE_BKEY,
 	P_SCORE_SKEY,
 	P_SCORE_GOLD,
-	P_SCORE_XP
+	P_SCORE_XP,
+	P_SCORE_SHOVEL
 };
 
 //The MIDs for the global var subset.
@@ -137,6 +142,8 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[6],
 	predefinedVarMIDs[22],
 
+	predefinedVarMIDs[93], //shovels
+
 	predefinedVarMIDs[7],  //equipment
 	predefinedVarMIDs[8],
 	predefinedVarMIDs[29],
@@ -146,6 +153,7 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[33],
 	predefinedVarMIDs[34],
 	predefinedVarMIDs[35],
+	predefinedVarMIDs[95],
 
 	predefinedVarMIDs[16], //monster stat multipliers
 	predefinedVarMIDs[17],
@@ -172,7 +180,8 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[84],
 	predefinedVarMIDs[85],
 	predefinedVarMIDs[86],
-	predefinedVarMIDs[87]
+	predefinedVarMIDs[87],
+	predefinedVarMIDs[94]
 };
 
 //Match the global var texts in 'globalVarMIDs' to their short form texts in
@@ -189,6 +198,8 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[6],
 	predefinedVarTexts[22],
 
+	predefinedVarTexts[93], //shovels
+
 	predefinedVarTexts[7],  //equipment
 	predefinedVarTexts[8],
 	predefinedVarTexts[29],
@@ -198,6 +209,7 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[33],
 	predefinedVarTexts[34],
 	predefinedVarTexts[35],
+	predefinedVarTexts[95],
 
 	predefinedVarTexts[16], //monster stat multipliers
 	predefinedVarTexts[17],
@@ -224,8 +236,8 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[84],
 	predefinedVarTexts[85],
 	predefinedVarTexts[86],
-	predefinedVarTexts[87]
-
+	predefinedVarTexts[87],
+	predefinedVarTexts[94]
 };
 
 //*****************************************************************************
@@ -419,6 +431,8 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_GKEY: return this->greenKeys;
 		case P_BKEY: return this->blueKeys;
 		case P_SKEY: return this->skeletonKeys;
+		case P_SHOVEL: return this->shovels;
+
 		case P_SWORD: return this->sword;
 		case P_SHIELD: return this->shield;
 		case P_ACCESSORY: return this->accessory;
@@ -435,6 +449,7 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_ITEM_ATK_MULT: return this->itemATKmult;
 		case P_ITEM_DEF_MULT: return this->itemDEFmult;
 		case P_ITEM_GR_MULT: return this->itemGRmult;
+		case P_ITEM_SHOVEL_MULT: return this->itemShovelMult;
 
 		case P_HOTTILE: return this->hotTileVal;
 		case P_EXPLOSION: return this->explosionVal;
@@ -456,6 +471,7 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_SCORE_SKEY: return this->scoreSkeletonKeys;
 		case P_SCORE_GOLD: return this->scoreGOLD;
 		case P_SCORE_XP: return this->scoreXP;
+		case P_SCORE_SHOVEL: return this->scoreShovels;
 
 		case P_NoVar:
 		default: return 0;
@@ -477,6 +493,8 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_GKEY: this->greenKeys = val; break;
 		case P_BKEY: this->blueKeys = val; break;
 		case P_SKEY: this->skeletonKeys = val; break;
+		case P_SHOVEL: this->shovels = val; break;
+
 		case P_SWORD: this->sword = val; break;
 		case P_SHIELD: this->shield = val; break;
 		case P_ACCESSORY: this->accessory = val; break;
@@ -493,6 +511,7 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_ITEM_ATK_MULT: this->itemATKmult = val; break;
 		case P_ITEM_DEF_MULT: this->itemDEFmult = val; break;
 		case P_ITEM_GR_MULT: this->itemGRmult = val; break;
+		case P_ITEM_SHOVEL_MULT: this->itemShovelMult = val; break;
 
 		case P_HOTTILE: this->hotTileVal = val; break;
 		case P_EXPLOSION: this->explosionVal = val; break;
@@ -514,6 +533,7 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_SCORE_SKEY: this->scoreSkeletonKeys = int(val); break;
 		case P_SCORE_GOLD: this->scoreGOLD = int(val); break;
 		case P_SCORE_XP: this->scoreXP = int(val); break;
+		case P_SCORE_SHOVEL: this->scoreShovels = int(val); break;
 
 		case P_NoVar:
 		default: break;
@@ -532,7 +552,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		(i >= 31 && i <= 37) ||
 		(i >= 43 && i <= 48) ||
 		(i >= 73 && i <= 76) ||
-		(i >= 79 && i <= 87)
+		(i >= 79 && i <= 87) ||
+		(i >= 93 && i <= 95)
 		;
 }
 
@@ -603,6 +624,10 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 85: val = UINT(this->scoreSkeletonKeys); break;
 			case 86: val = UINT(this->scoreGOLD); break;
 			case 87: val = UINT(this->scoreXP); break;
+
+			case 93: val = UINT(this->shovels); break;
+			case 94: val = UINT(this->scoreShovels); break;
+			case 95: val = this->itemShovelMult; break;
 
 			default:
 				ASSERT(!"Not a global var index");
@@ -685,6 +710,9 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 86: this->scoreGOLD = int(val); break;
 			case 87: this->scoreXP = int(val); break;
 
+			case 93: this->shovels = int(val); break;
+			case 94: this->scoreShovels = int(val); break;
+			case 95: this->itemShovelMult = val; break;
 
 			default: ASSERT(!"Bad var"); break;
 		}

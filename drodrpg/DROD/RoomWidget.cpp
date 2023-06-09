@@ -8089,6 +8089,7 @@ float CRoomWidget::getTileElev(const UINT wOTile) const
 
 		case T_WALL: case T_WALL2:	case T_WALL_IMAGE:
 		case T_WALL_B: case T_WALL_H:
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			return 1.0f;
 
 		case T_DOOR_MONEY:

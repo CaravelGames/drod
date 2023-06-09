@@ -138,6 +138,10 @@ BKEY
 [eng]
 SKEY
 
+[MID_ShovelsStat]
+[eng]
+Shovels
+
 [MID_Score]
 [eng]
 Score

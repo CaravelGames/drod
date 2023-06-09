@@ -3962,6 +3962,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_ReceivedEquipment, g_pTheDB->GetMessageText(MID_ReceivedEquipment));
 	this->pEventListBox->AddItem(CID_ReceivedHP, g_pTheDB->GetMessageText(MID_ReceivedHP));
 	this->pEventListBox->AddItem(CID_ReceivedKey, g_pTheDB->GetMessageText(MID_ReceivedKey));
+	this->pEventListBox->AddItem(CID_ReceivedShovel, g_pTheDB->GetMessageText(MID_ReceivedShovel));
 	this->pEventListBox->AddItem(CID_Scared, g_pTheDB->GetMessageText(MID_Scared));
 	this->pEventListBox->AddItem(CID_SnakeDiedFromTruncation, g_pTheDB->GetMessageText(MID_SnakeDiedFromTruncation));
 	this->pEventListBox->AddItem(CID_Splash, g_pTheDB->GetMessageText(MID_Splash));
@@ -3975,6 +3976,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
 	this->pEventListBox->AddItem(CID_KnockOpenedDoor, g_pTheDB->GetMessageText(MID_KnockOpenedDoor));
 	this->pEventListBox->AddItem(CID_DoorLocked, g_pTheDB->GetMessageText(MID_DoorLocked));
+	this->pEventListBox->AddItem(CID_Dig, g_pTheDB->GetMessageText(MID_Dig));
 	this->pEventListBox->SelectLine(0);
 	this->pEventListBox->SetAllowFiltering(true);
 }
@@ -4093,6 +4095,9 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_DOOR_BO, g_pTheDB->GetMessageText(MID_OpenBlackDoor));
 	pListBox->AddItem(T_DOOR_MONEY, g_pTheDB->GetMessageText(MID_MoneyDoor));
 	pListBox->AddItem(T_DOOR_MONEYO, g_pTheDB->GetMessageText(MID_OpenMoneyDoor));
+	pListBox->AddItem(T_DIRT1, g_pTheDB->GetMessageText(MID_Dirt1));
+	pListBox->AddItem(T_DIRT3, g_pTheDB->GetMessageText(MID_Dirt3));
+	pListBox->AddItem(T_DIRT5, g_pTheDB->GetMessageText(MID_Dirt5));
 	pListBox->AddItem(T_TRAPDOOR, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(T_TRAPDOOR2, g_pTheDB->GetMessageText(MID_Trapdoor2));
 	pListBox->AddItem(T_PIT, g_pTheDB->GetMessageText(MID_Pit));
@@ -4137,6 +4142,9 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_DEF_UP10, g_pTheDB->GetMessageText(MID_DefenseUp10));
 	pListBox->AddItem(T_MAP, g_pTheDB->GetMessageText(MID_LevelMap));
 	pListBox->AddItem(T_MAP_DETAIL, g_pTheDB->GetMessageText(MID_LevelMapDetail));
+	pListBox->AddItem(T_SHOVEL1, g_pTheDB->GetMessageText(MID_Shovel1));
+	pListBox->AddItem(T_SHOVEL3, g_pTheDB->GetMessageText(MID_Shovel3));
+	pListBox->AddItem(T_SHOVEL10, g_pTheDB->GetMessageText(MID_Shovel10));
 	pListBox->AddItem(TV_KEY_Y, g_pTheDB->GetMessageText(MID_YellowKey));
 	pListBox->AddItem(TV_KEY_G, g_pTheDB->GetMessageText(MID_GreenKey));
 	pListBox->AddItem(TV_KEY_B, g_pTheDB->GetMessageText(MID_BlueKey));
@@ -4402,6 +4410,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_ATK_MULT, g_pTheDB->GetMessageText(MID_VarItemATKMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_DEF_MULT, g_pTheDB->GetMessageText(MID_VarItemDEFMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_GR_MULT, g_pTheDB->GetMessageText(MID_VarItemGRMult));
+	this->pVarListBox->AddItem(ScriptVars::P_ITEM_SHOVEL_MULT, g_pTheDB->GetMessageText(MID_VarItemShovelMult));
 
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_HP_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterHPMult));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_ATK_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterATKMult));
@@ -4414,6 +4423,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_ATK_MULT, g_pTheDB->GetMessageText(MID_VarMyItemATKMult));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_DEF_MULT, g_pTheDB->GetMessageText(MID_VarMyItemDEFMult));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_GR_MULT, g_pTheDB->GetMessageText(MID_VarMyItemGRMult));
+	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_ITEM_SHOVEL_MULT, g_pTheDB->GetMessageText(MID_VarMyItemShovelMult));
 
 	this->pVarListBox->AddItem(ScriptVars::P_HOTTILE, g_pTheDB->GetMessageText(MID_VarHotTile));
 	this->pVarListBox->AddItem(ScriptVars::P_EXPLOSION, g_pTheDB->GetMessageText(MID_VarExplosion));
@@ -4427,6 +4437,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_GKEY, g_pTheDB->GetMessageText(MID_VarGKey));
 	this->pVarListBox->AddItem(ScriptVars::P_BKEY, g_pTheDB->GetMessageText(MID_VarBKey));
 	this->pVarListBox->AddItem(ScriptVars::P_SKEY, g_pTheDB->GetMessageText(MID_VarSKey));
+	this->pVarListBox->AddItem(ScriptVars::P_SHOVEL, g_pTheDB->GetMessageText(MID_VarShovels));
 	this->pVarListBox->AddItem(ScriptVars::P_SWORD, g_pTheDB->GetMessageText(MID_VarSword));
 	this->pVarListBox->AddItem(ScriptVars::P_SHIELD, g_pTheDB->GetMessageText(MID_VarShield));
 	this->pVarListBox->AddItem(ScriptVars::P_ACCESSORY, g_pTheDB->GetMessageText(MID_VarAccessory));
@@ -4467,6 +4478,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_SKEY, g_pTheDB->GetMessageText(MID_VarScoreSKey));
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_GOLD, g_pTheDB->GetMessageText(MID_VarScoreGold));
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_XP, g_pTheDB->GetMessageText(MID_VarScoreXP));
+	this->pVarListBox->AddItem(ScriptVars::P_SCORE_SHOVEL, g_pTheDB->GetMessageText(MID_VarScoreShovels));
 
 	this->pVarListBox->SortAlphabetically(true);
 }

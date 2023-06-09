@@ -229,6 +229,12 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DEF_UP10},                                     //T_DEF_UP10
 	{TI_CRATE},                                        //T_CRATE
 	{DONT_USE},                                        //T_PRESSPLATE_BROKEN_VIRTUAL
+	{TI_SHOVEL_1},                                     //T_SHOVEL1
+	{TI_SHOVEL_3},                                     //T_SHOVEL3
+	{TI_SHOVEL_10},                                    //T_SHOVEL10
+	{TI_DIRT_1},                                       //T_DIRT1
+	{TI_DIRT_3},                                       //T_DIRT3
+	{TI_DIRT_5},                                       //T_DIRT5
 
 	//monsters
 	{TI_ROACH_S},
@@ -380,6 +386,12 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_DEF_UP10      97
 	0, //T_CRATE         98
 	0, //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	0, //T_SHOVEL1       100
+	0, //T_SHOVEL3       101
+	0, //T_SHOVEL10      102
+	0, //T_DIRT1         103
+	0, //T_DIRT3         104
+	0, //T_DIRT5         105
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -440,8 +452,9 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
-	1,
+	1, //crate
 	0, //unused
+	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -462,8 +475,9 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
 	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
-	1,
+	1, //crate
 	0, //unused
+	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -541,13 +555,14 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 25;
+const UINT numOLayerEntries = 28;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
-	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_FLOOR, T_FLOOR_IMAGE
+	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_FLOOR, T_FLOOR_IMAGE,
+	T_DIRT1, T_DIRT3, T_DIRT5
 };
 
 const UINT numFLayerEntries = 6;
@@ -559,7 +574,7 @@ const UINT fLayerEntries[numFLayerEntries] = {
 
 const UINT numTLayerEntries = 29;
 const UINT tLayerEntries[numTLayerEntries] = {
-	T_SWORD, T_SHIELD, T_ACCESSORY, T_MAP, T_MAP_DETAIL,
+	T_SWORD, T_SHIELD, T_ACCESSORY, T_MAP, T_SHOVEL1,
 	T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG, T_HEALTH_HUGE, T_KEY,
 	T_DEF_UP, T_DEF_UP3, T_DEF_UP10, T_FUSE, T_BOMB,
 	T_ATK_UP, T_ATK_UP3, T_ATK_UP10, T_SCROLL, T_MIRROR,
@@ -595,7 +610,6 @@ const int Y_ROOM = 40;
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
 
-
 const int X_OBJECTMENU = 6;
 const int Y_OBJECTMENU = 4;
 const UINT CX_OBJECTMENU = 275; //150
@@ -605,7 +619,6 @@ const UINT CX_INNERMENU = CX_OBJECTMENU - X_INNERMENU;
 const UINT CY_ITEMTEXT = 55;
 const UINT CX_MENUSPACE = 10;
 const UINT CY_MENUSPACE = 8; //CX_MENUSPACE;
-
 
 //*****************************************************************************
 bool bIsLightingTile(const UINT wT)
@@ -5243,6 +5256,12 @@ void CEditRoomScreen::PlotObjects()
 				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 					g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
 					break;
+				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+					g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP);
+				break;
+				case T_DIRT1: case T_DIRT3: case T_DIRT5:
+					g_pTheSound->PlaySoundEffect(SEID_DIG);
+				break;
 				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
 
@@ -7665,6 +7684,13 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_BRIDGE: wNewTile = bCW ? T_BRIDGE_H : T_BRIDGE_V; break;
 		case T_BRIDGE_H: wNewTile = bCW ? T_BRIDGE_V : T_BRIDGE; break;
 		case T_BRIDGE_V: wNewTile = bCW ? T_BRIDGE : T_BRIDGE_H; break;
+
+		case T_MAP: wNewTile = T_MAP_DETAIL; break;
+		case T_MAP_DETAIL: wNewTile = T_MAP; break;
+
+		case T_SHOVEL1: wNewTile = bCW ? T_SHOVEL3 : T_SHOVEL10; break;
+		case T_SHOVEL3: wNewTile = bCW ? T_SHOVEL10 : T_SHOVEL1; break;
+		case T_SHOVEL10: wNewTile = bCW ? T_SHOVEL1 : T_SHOVEL3; break;
 
 		//sets linked to other items whose state should match the semantic type of this one
 		case T_MUD: wNewTile = bCW ? T_TAR : T_GEL; break;

@@ -2379,7 +2379,7 @@ const
 	switch (wAppearance)
 	{
 		case M_SEEP:
-			if (!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo)))
+			if (!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo) || bIsDiggableBlock(wTileNo)))
 				return false;
 		break;
 		case M_WWING: case M_FEGUNDO:
@@ -2572,7 +2572,7 @@ const
 	const UINT wTTileNo = GetTSquare(wX, wY);
 	if ( !(wTTileNo == T_EMPTY || wTTileNo == T_SCROLL || bIsPowerUp(wTTileNo) ||
 			wTTileNo == T_FUSE || wTTileNo == T_TOKEN || wTTileNo == T_KEY ||
-			bIsEquipment(wTTileNo)))
+			bIsEquipment(wTTileNo) || bIsShovel(wTTileNo)))
 	{
 		if (wTTileNo == T_CRATE && bAllowCrateClimbing) {
 			//movement is allowed
@@ -4106,6 +4106,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		case T_CRATE:
 		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 		case T_KEY:
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			Plot(wX, wY, T_EMPTY);
 			if (bIsWater(wOSquare))
 				CueEvents.Add(CID_Splash, new CCoord(wX, wY), true);
@@ -4544,6 +4545,7 @@ void CDbRoom::ExpandExplosion(
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_HOT: case T_GOO: case T_PRESSPLATE:
 		case T_WALL_B:	case T_WALL_H:
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			//Bomb blast goes over/through these things
 			break;
 		default: return;  //everything else stops bomb blast
@@ -4621,6 +4623,9 @@ void CDbRoom::ProcessExplosionSquare(
 			ASSERT(bIsPlainFloor(this->coveredOSquares.GetAt(wX, wY)));
 			Plot(wX,wY,this->coveredOSquares.GetAt(wX, wY));
 			break;
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
+			Plot(wX, wY, T_FLOOR_DIRT);
+			break;
 
 		//If we decided we should explode these squares, then they should
 		//be dealt with, regardless of whether these tiles are impassable now.
@@ -4656,6 +4661,7 @@ void CDbRoom::ProcessExplosionSquare(
 		case T_MIRROR:  //shattered
 		case T_CRATE:
 		case T_KEY:
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			Plot(wX,wY,T_EMPTY);
 		break;
 		default:
@@ -5389,6 +5395,12 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 						++stats.openBlackDoors;
 					}
 				break;
+				
+				case T_DIRT1:
+				case T_DIRT3:
+				case T_DIRT5:
+					stats.dirtBlockCost += pLevel->getItemAmount(oTile);
+				break;
 			}
 
 			switch (tTile)
@@ -5414,6 +5426,9 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 				break;
 				case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 					stats.HP += pLevel->getItemAmount(tTile);
+				break;
+				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+					stats.shovels += pLevel->getItemAmount(tTile);
 				break;
 
 				case T_SWORD:
@@ -7805,6 +7820,14 @@ void CDbRoom::DestroyCrumblyWall(
 	ASSERT(bIsPlainFloor(this->coveredOSquares.GetAt(wX, wY)));
 	Plot(wX, wY, this->coveredOSquares.GetAt(wX, wY));
 	CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(wX, wY,	wStabO), true); 
+}
+
+//*****************************************************************************
+void CDbRoom::Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents)
+{
+	ASSERT(bIsDiggableBlock(GetOSquare(wX,wY)));
+	Plot(wX, wY, T_FLOOR_DIRT);
+	CueEvents.Add(CID_Dig, new CMoveCoord(wX, wY, wO), true);
 }
 
 //*****************************************************************************

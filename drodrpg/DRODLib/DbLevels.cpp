@@ -692,6 +692,27 @@ UINT CDbLevel::getItemAmount(const UINT item) const
 			static const UINT costFactor = 10;
 			return costFactor * this->dwMultiplier;
 		}
+
+		case T_SHOVEL1:
+		{
+			static const UINT factor = 1;
+			return factor * this->dwMultiplier;
+		}
+		case T_SHOVEL3:
+		{
+			static const UINT factor = 3;
+			return factor * this->dwMultiplier;
+		}
+		case T_SHOVEL10:
+		{
+			static const UINT factor = 10;
+			return factor * this->dwMultiplier;
+		}
+
+		case T_DIRT1: return 1;
+		case T_DIRT3: return 3;
+		case T_DIRT5: return 5;
+
 		default: return 0;
 	}
 }

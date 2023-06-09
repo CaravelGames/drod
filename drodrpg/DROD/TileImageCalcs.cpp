@@ -1534,7 +1534,14 @@ UINT GetTileImageForTileNo(
 		TI_ATK_UP10,      //T_ATK_UP10
 		TI_DEF_UP3,       //T_DEF_UP3
 		TI_DEF_UP10,      //T_DEF_UP10
-		TI_CRATE          //T_CRATE
+		TI_CRATE,         //T_CRATE
+		CALC_NEEDED,      //T_PRESSPLATE_BROKEN_VIRTUAL
+		TI_SHOVEL_1,      //T_SHOVEL1
+		TI_SHOVEL_3,      //T_SHOVEL3
+		TI_SHOVEL_10,     //T_SHOVEL10
+		TI_DIRT_1,        //T_DIRT1
+		TI_DIRT_3,        //T_DIRT3
+		TI_DIRT_5         //T_DIRT5
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));
@@ -2034,7 +2041,7 @@ UINT CalcTileImageForAccessory(const BYTE tParam)
 
 //*****************************************************************************
 bool CastsWallShadow(const UINT t) {
-	return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t);
+	return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t) || bIsDiggableBlock(t);
 }
 
 //*****************************************************************************

@@ -57,6 +57,8 @@ static const UINT TAG_MONHP = 2021;
 static const UINT TAG_MONATK = 2022;
 static const UINT TAG_MONDEF = 2023;
 
+static const UINT TAG_SHOVEL = 2024;
+
 static const UINT TAG_SWORD = 2025;
 static const UINT TAG_SHIELD = 2026;
 static const UINT TAG_ACCESSORY = 2027;
