@@ -35,7 +35,6 @@
 struct PuzzleModeOptions {
 	PuzzleModeOptions() :
 		bIsEnabled(false),
-		wGridStyle(1),
 		uGridOpacity(128),
 		bHideAnimations(false),
 		bHideBuildMarkers(false),
@@ -50,7 +49,6 @@ struct PuzzleModeOptions {
 	PuzzleModeOptions(CDbPackedVars& playerSettings) {
 		this->bIsEnabled = false;
 
-		this->wGridStyle = playerSettings.GetVar(Settings::PuzzleMode_GridStyle, 1);
 		this->uGridOpacity = playerSettings.GetVar(Settings::PuzzleMode_GridOpacity, (Uint8)128);
 
 		this->bHideAnimations = playerSettings.GetVar(Settings::PuzzleMode_VisibilityHideAnimations, false);
@@ -70,7 +68,7 @@ struct PuzzleModeOptions {
 	bool GetHideLighting() const { return this->bIsEnabled && this->bHideLighting; }
 	bool GetHideWeather() const { return this->bIsEnabled && this->bHideWeather; }
 
-	bool GetShowGrid() const { return this->bIsEnabled && this->wGridStyle > 0 && this->uGridOpacity > 0; }
+	bool GetShowGrid() const { return this->bIsEnabled && this->uGridOpacity > 0; }
 
 	bool GetShowEvilEyeBeams() const { return this->bIsEnabled && this->bShowEvilEyeBeams; }
 	bool GetShowReverseEvilEyeBeams() const { return this->bIsEnabled && this->bShowReverseEvilEyeBeams; }
@@ -80,7 +78,6 @@ struct PuzzleModeOptions {
 
 	bool bIsEnabled;
 
-	UINT wGridStyle;
 	Uint8 uGridOpacity;
 
 private:

@@ -39,7 +39,6 @@
 #include <DRODLib/SettingsKeys.h>
 
  //NOTE: tag #'s should not conflict with other widgets on screen
-const UINT TAG_GRID_STYLE = 2100;
 const UINT TAG_GRID_OPACITY = 2101;
 
 const UINT TAG_VISIBILITY_SPIDERS = 2102;
@@ -94,24 +93,14 @@ CPuzzleModeOptionsDialogWidget::CPuzzleModeOptionsDialogWidget(
 	static const int GRID_FRAME_X = CX_SPACE;
 	static const int GRID_FRAME_Y = HEADER_BOTTOM;
 	static const int GRID_FRAME_W = HALF_W;
-	static const int GRID_FRAME_H = CY_STANDARD_SLIDER * 2 + CY_SPACE * 3;
-
-	static const int GRID_STYLE_LABEL_X = CX_SPACE;
-	static const int GRID_STYLE_LABEL_Y = CY_SPACE;
-	static const int GRID_STYLE_LABEL_W = FRAME_HALF_W;
-	static const int GRID_STYLE_LABEL_H = CY_STANDARD_SLIDER;
-	static const int GRID_STYLE_LABEL_BOTTOM = GRID_STYLE_LABEL_Y + GRID_STYLE_LABEL_H + CY_SPACE;
-	static const int GRID_STYLE_SLIDER_X = CX_SPACE * 2 + FRAME_HALF_W;
-	static const int GRID_STYLE_SLIDER_Y = CY_SPACE;
-	static const int GRID_STYLE_SLIDER_W = FRAME_HALF_W;
-	static const int GRID_STYLE_SLIDER_H = CY_STANDARD_SLIDER;
+	static const int GRID_FRAME_H = CY_STANDARD_SLIDER + CY_SPACE * 2;
 
 	static const int GRID_OPACITY_LABEL_X = CX_SPACE;
-	static const int GRID_OPACITY_LABEL_Y = GRID_STYLE_LABEL_BOTTOM;
+	static const int GRID_OPACITY_LABEL_Y = CY_SPACE;
 	static const int GRID_OPACITY_LABEL_W = FRAME_HALF_W;
 	static const int GRID_OPACITY_LABEL_H = CY_STANDARD_SLIDER;
 	static const int GRID_OPACITY_SLIDER_X = CX_SPACE * 2 + FRAME_HALF_W;
-	static const int GRID_OPACITY_SLIDER_Y = GRID_STYLE_LABEL_BOTTOM;
+	static const int GRID_OPACITY_SLIDER_Y = CY_SPACE;
 	static const int GRID_OPACITY_SLIDER_W = FRAME_HALF_W;
 	static const int GRID_OPACITY_SLIDER_H = CY_STANDARD_SLIDER;
 
@@ -191,16 +180,6 @@ CPuzzleModeOptionsDialogWidget::CPuzzleModeOptionsDialogWidget(
 			GRID_FRAME_X, GRID_FRAME_Y, GRID_FRAME_W, GRID_FRAME_H,
 			g_pTheDB->GetMessageText(MID_PuzzleModeOption_Frame_GridOptions));
 		AddWidget(pFrameWidget);
-
-		pLabelWidget = new CLabelWidget(0L,
-			GRID_STYLE_LABEL_X, GRID_STYLE_LABEL_Y, GRID_STYLE_LABEL_W, GRID_STYLE_LABEL_H,
-			F_Small, g_pTheDB->GetMessageText(MID_PuzzleModeOption_GridStyle));
-		pFrameWidget->AddWidget(pLabelWidget);
-		pSliderWidget = new CSliderWidget(TAG_GRID_STYLE,
-			GRID_STYLE_SLIDER_X, GRID_STYLE_SLIDER_Y, GRID_STYLE_SLIDER_W, GRID_STYLE_SLIDER_H,
-			0, 5);
-		pSliderWidget->SetDrawTickMarks(true);
-		pFrameWidget->AddWidget(pSliderWidget);
 
 		pLabelWidget = new CLabelWidget(0L,
 			GRID_OPACITY_LABEL_X, GRID_OPACITY_LABEL_Y, GRID_OPACITY_LABEL_W, GRID_OPACITY_LABEL_H,
@@ -302,9 +281,6 @@ bool CPuzzleModeOptionsDialogWidget::SetForActivate()
 	COptionButtonWidget* pOptionWidget = NULL;
 
 	{ // GRID STYLE
-		pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_GRID_STYLE));
-		pSliderWidget->SetValue(settings.GetVar(Settings::PuzzleMode_GridStyle, 1U));
-
 		pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_GRID_OPACITY));
 		pSliderWidget->SetValue(settings.GetVar(Settings::PuzzleMode_GridOpacity, (Uint8)128));
 	}
@@ -357,9 +333,6 @@ void CPuzzleModeOptionsDialogWidget::OnDeactivate()
 	COptionButtonWidget* pOptionWidget = NULL;
 
 	{ // GRID STYLE
-		pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_GRID_STYLE));
-		settings.SetVar(Settings::PuzzleMode_GridStyle, (UINT)pSliderWidget->GetValue());
-		
 		pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_GRID_OPACITY));
 		settings.SetVar(Settings::PuzzleMode_GridOpacity, (Uint8)pSliderWidget->GetValue());
 	}

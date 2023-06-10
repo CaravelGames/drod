@@ -33,18 +33,13 @@ class CRoomWidget;
 class CGridEffect : public CEffect
 {
 public:
-	CGridEffect(CWidget *pSetWidget, const UINT wGridStyle, const Uint8 uOpacity);
-
-	static const UINT wGridStylesCount;
+	CGridEffect(CWidget *pSetWidget, const Uint8 uOpacity);
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
 
 private:
-
-	UINT GetTileImageForGridStyle(const UINT wGridStyle);
-
 	CRoomWidget *pRoomWidget;
 	UINT wTileNo;
 	Uint8 uOpacity;

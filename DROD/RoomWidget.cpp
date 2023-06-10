@@ -2283,7 +2283,7 @@ void CRoomWidget::ShowPuzzleMode(const bool bVal)
 	if (bVal)
 	{
 		if (this->puzzleModeOptions.GetShowGrid()) {
-			CGridEffect* pEffect = new CGridEffect(this, this->puzzleModeOptions.wGridStyle, this->puzzleModeOptions.uGridOpacity);
+			CGridEffect* pEffect = new CGridEffect(this, this->puzzleModeOptions.uGridOpacity);
 			pEffect->RequestRetainOnClear(true);
 			AddLastLayerEffect(pEffect);
 		}

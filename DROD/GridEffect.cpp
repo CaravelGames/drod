@@ -33,13 +33,10 @@
 
 #include <BackEndLib/Assert.h>
 
-const UINT CGridEffect::wGridStylesCount = 4;
-
 //********************************************************************************
 CGridEffect::CGridEffect(
 //Params:
 	CWidget *pSetWidget,    //(in)   Should be a room widget.
-	const UINT wGridStyle,  //(in)   Size of the grid
 	const Uint8 uOpacity)   //(in)   Grid's opacity
 	: CEffect(pSetWidget, (UINT)-1, EGRID),
 	wTileNo(TI_GRID_OVERLAY),
@@ -53,20 +50,8 @@ CGridEffect::CGridEffect(
 	SDL_Rect OwnerRect;
 	pSetWidget->GetRect(OwnerRect);
 	this->dirtyRects.push_back(OwnerRect);
-
-	this->wTileNo = GetTileImageForGridStyle(wGridStyle);
 }
 
-//********************************************************************************
-UINT CGridEffect::GetTileImageForGridStyle(const UINT wGridStyle)
-{
-	switch (wGridStyle) {
-		case 2: return TI_GRID_OVERLAY_2;
-		case 3: return TI_GRID_OVERLAY_3;
-		case 4: return TI_GRID_OVERLAY_4;
-		default: return TI_GRID_OVERLAY;
-	}
-}
 //********************************************************************************
 bool CGridEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 //Returns: true if effect should continue, or false if effect is done.

@@ -96,7 +96,6 @@ namespace Settings
 	DEF(PuzzleMode_VisibilityHideWeather);
 
 	DEF(PuzzleMode_GridOpacity);
-	DEF(PuzzleMode_GridStyle);
 }
 
 #undef DEF

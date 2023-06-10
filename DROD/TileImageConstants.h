@@ -3147,10 +3147,6 @@
 #define TI_ROCKGOLEM_2_NW   2880
 #define TI_ROCKGOLEM_BRKN_2 2881
 
-#define TI_GRID_OVERLAY_2   2882
-#define TI_GRID_OVERLAY_3   2883
-#define TI_GRID_OVERLAY_4   2884
-
-static const UINT TI_COUNT = 2885;
+static const UINT TI_COUNT = 2882;
 
 #endif //...#ifndef TILEIMAGECONSTANTS_H
