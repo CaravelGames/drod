@@ -5022,7 +5022,7 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 
 				if (this->commands.empty()) {
 					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
-					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->wProcessSequence);
+					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->color);
 					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
 				}
 			}
