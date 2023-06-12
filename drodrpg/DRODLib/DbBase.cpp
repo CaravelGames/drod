@@ -778,8 +778,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_CustomSpeechColor: strText = "Speech Color (rgb)"; break;
 		case MID_AutoPreviewCharacters: strText = "Automatically Preview Characters"; break;
 		case MID_Shovel1: strText = "Shovel"; break;
-		case MID_Shovel3: strText = "Shovels (3)"; break;
-		case MID_Shovel10: strText = "Shovels (10)"; break;
+		case MID_Shovel3: strText = "Set of Shovels"; break;
+		case MID_Shovel10: strText = "Barrel of Shovels"; break;
 		case MID_Dirt1: strText = "Dirt Block"; break;
 		case MID_Dirt3: strText = "Dirt Block (3)"; break;
 		case MID_Dirt5: strText = "Dirt Block (5)"; break;

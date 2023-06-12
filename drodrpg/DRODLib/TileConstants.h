@@ -196,7 +196,6 @@ static inline bool bIsHealth(const UINT t) {
 static inline bool bIsPowerUp(const UINT t) {
 	switch (t)
 	{
-		case T_MAP: case T_MAP_DETAIL:
 		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:

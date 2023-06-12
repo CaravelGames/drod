@@ -4910,6 +4910,8 @@ const
 		wTileNo == T_TOKEN ||
 		wTileNo == T_KEY ||
 		bIsPowerUp(wTileNo) ||
+		bIsMap(wTileNo) ||
+		bIsShovel(wTileNo) ||
 		bIsEquipment(wTileNo) ||
 		bIsStairs(wTileNo) ||
 		bIsTunnel(wTileNo)

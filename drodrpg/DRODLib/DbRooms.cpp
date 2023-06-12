@@ -2572,7 +2572,7 @@ const
 	const UINT wTTileNo = GetTSquare(wX, wY);
 	if ( !(wTTileNo == T_EMPTY || wTTileNo == T_SCROLL || bIsPowerUp(wTTileNo) ||
 			wTTileNo == T_FUSE || wTTileNo == T_TOKEN || wTTileNo == T_KEY ||
-			bIsEquipment(wTTileNo) || bIsShovel(wTTileNo)))
+			bIsEquipment(wTTileNo) || bIsMap(wTTileNo) || bIsShovel(wTTileNo)))
 	{
 		if (wTTileNo == T_CRATE && bAllowCrateClimbing) {
 			//movement is allowed
@@ -2736,8 +2736,8 @@ bool CDbRoom::HasGrabbableItems() const
 	for (UINT i=CalcRoomArea(); i--; )
 	{
 		const char t = this->pszTSquares[i];
-		//Health, power-ups, keys, map.
-		if (bIsPowerUp(t) || t == T_KEY)
+		//Health, power-ups, keys, map, shovels.
+		if (bIsPowerUp(t) || t == T_KEY || bIsMap(t) || bIsShovel(t))
 			return true;
 	}
 
@@ -4661,6 +4661,7 @@ void CDbRoom::ProcessExplosionSquare(
 		case T_MIRROR:  //shattered
 		case T_CRATE:
 		case T_KEY:
+		case T_MAP: case T_MAP_DETAIL:
 		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			Plot(wX,wY,T_EMPTY);
 		break;
