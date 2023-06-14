@@ -2030,9 +2030,18 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp to reflected room coord.
 			const UINT reflectX = this->pRoom->wRoomCols - this->pPlayer->wX - 1;
 			const UINT reflectY = this->pRoom->wRoomRows - this->pPlayer->wY - 1;
-			TeleportPlayer(reflectX, reflectY, CueEvents);
+
+			const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
+			const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
+
+			TeleportPlayer(reflectX, reflectY, CueEvents, false);
+			this->pPlayer->st.accessory = NoAccessory;
+			ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
+
 			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
+
+			return bMoved;
 		}
 		break;
 		case WallWalking:
@@ -2040,9 +2049,18 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Warp ahead two tiles in the direction faced.
 			const UINT destX = this->pPlayer->wX + nGetOX(this->pPlayer->wO) * 2;
 			const UINT destY = this->pPlayer->wY + nGetOY(this->pPlayer->wO) * 2;
-			TeleportPlayer(destX, destY, CueEvents);
+
+			const UINT wTTileNo = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
+			const bool bWasOnSameScroll = wTTileNo == T_SCROLL;
+
+			TeleportPlayer(destX, destY, CueEvents, false);
+			this->pPlayer->st.accessory = NoAccessory;
+			ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
+
 			bMoved = this->pPlayer->bHasTeleported;
 			CueEvents.Add(CID_AccessoryUsed, new CAttachableWrapper<UINT>(accessory), true);
+
+			return bMoved;
 		}
 		break;
 
@@ -3725,7 +3743,7 @@ void CCurrentGame::TeleportPlayer(
 	//
 	//Params:
 	const UINT wSetX, const UINT wSetY,  //(in)   Coords of new square.
-	CCueEvents& CueEvents)
+	CCueEvents& CueEvents, bool bProcess)
 {
 	if (!this->pRoom->IsValidColRow(wSetX, wSetY))
 	{
@@ -3753,7 +3771,9 @@ void CCurrentGame::TeleportPlayer(
 
 	this->pPlayer->SetSwordSheathed();
 
-	ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
+	if (bProcess) {
+		ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
+	}
 
 	this->pRoom->CheckForFallingAt(wSetX, wSetY, CueEvents);
 
