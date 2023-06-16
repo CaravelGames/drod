@@ -5837,12 +5837,12 @@ const
 
 	//Check for monster at square.
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
-	if (pMonster && pMonster->wType != M_FLUFFBABY) {
+	if (pMonster && (pMonster->wType != M_FLUFFBABY || HasBehavior(ScriptFlag::AvoidPuffs))) {
 		if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle()){
 			const int dx = (int)wCol - (int)this->wX;
 			const int dy = (int)wRow - (int)this->wY;
 
-			if (pMonster->wType != M_FLUFFBABY && 
+			if ((pMonster->wType != M_FLUFFBABY || HasBehavior(ScriptFlag::AvoidPuffs)) &&
 				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster)) &&
 				(!this->CanPushMonsters() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
 				return true;
@@ -6006,6 +6006,10 @@ const
 	// movement if their movement types prevent it.
 	if (HasBehavior(ScriptFlag::RestrictedMovement)) {
 		return CMonster::IsTileObstacle(wTileNo);
+	}
+
+	if (HasBehavior(ScriptFlag::AvoidFiretraps) && wTileNo == T_FIRETRAP_ON) {
+		return true;
 	}
 
 	// All the things a character can step onto

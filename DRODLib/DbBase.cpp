@@ -948,6 +948,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_TargetBestBrainDirection: strText = "Best brain direction"; break;
 	case MID_UseCommandKeyTwo: strText = "Special Command 2"; break;
 	case MID_UseCommandKeyThree: strText = "Special Command 3"; break;
+	case MID_AvoidFiretraps: strText = "Avoid Firetraps"; break;
+	case MID_AvoidPuffs: strText = "Avoid Puffs"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
