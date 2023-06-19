@@ -251,7 +251,8 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 
 	//Player's sword is not allowed to hit anything affected by sword hits.
 	const bool bDoesTileDisableMetal = this->pCurrentGame->DoesTileDisableMetal(wNewX, wNewY);
-	if (this->st.sword != NoSword && !this->bSwordOff &&
+	const bool swordless = (this->st.sword == NoSword || this->bSwordOff || this->pCurrentGame->IsPlayerSwordRemoved());
+	if (!swordless &&
 			(!this->pCurrentGame->IsSwordMetal(this->st.sword) || !bDoesTileDisableMetal))
 	{
 		//A sword is being wielded and it is not disabled.
