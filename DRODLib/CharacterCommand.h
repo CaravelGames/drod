@@ -165,7 +165,9 @@ namespace ScriptFlag
 		CanBeNPCBeethro = 25,
 		RestrictedMovement = 26,
 		InstantMovement = 27,
-		UseTunnels = 28
+		UseTunnels = 28,
+		AvoidFiretraps = 29,
+		AvoidPuffs = 30
 	};
 
 	enum DisplayFilter

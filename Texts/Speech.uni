@@ -3162,6 +3162,18 @@ Can Be NPC Beethro
 [eng]
 Instant Movement
 
+[MID_UseTunnels]
+[eng]
+Use Tunnels
+
+[MID_AvoidFiretraps]
+[eng]
+Avoid Firetraps
+
+[MID_AvoidPuffs]
+[eng]
+Avoid Puffs
+
 [MID_PreviousIf]
 [eng]
 <Previous If>
