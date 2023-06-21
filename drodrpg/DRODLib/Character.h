@@ -326,7 +326,7 @@ private:
 	UINT color, sword; //cosmetic details
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
-	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; // item value modifiers
+	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult, itemShovelMult; // item value modifiers
 	int wSpawnType; // type of monster to spawm when spawning eggs
 	WSTRING customWeakness; // matching weakness does strong hit, empty means no custom weakness
 	WSTRING customDescription; // additional monster information

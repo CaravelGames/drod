@@ -46,7 +46,8 @@ namespace ScriptVars
 		ItemHP = 6,
 		ItemATK = 7,
 		ItemDEF = 8,
-		ItemGR = 9
+		ItemGR = 9,
+		ItemShovels = 10
 	};
 
 	//Predefined global and relative game state vars, accessed through these key values.
@@ -147,7 +148,11 @@ namespace ScriptVars
 		P_ROOM_X = -91,
 		P_ROOM_Y = -92,
 		P_MONSTER_CUSTOM_DESCRIPTION = -93,
-		FirstPredefinedVar = P_MONSTER_CUSTOM_DESCRIPTION, //set this to the last var in the enumeration
+		P_SHOVEL = -94,
+		P_SCORE_SHOVEL = -95,
+		P_ITEM_SHOVEL_MULT = -96,
+		P_SCRIPT_ITEM_SHOVEL_MULT = -97,
+		FirstPredefinedVar = P_SCRIPT_ITEM_SHOVEL_MULT, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -187,13 +192,13 @@ namespace ScriptVars
 	PrimitiveType parsePrimitive(const WSTRING& wstr);
 
 	//All predefined vars.
-	extern const char predefinedVarTexts[PredefinedVarCount][13];
+	extern const char predefinedVarTexts[PredefinedVarCount][16];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
 	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=39;
+	static const UINT numGlobals=42;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -212,14 +217,15 @@ public:
 		GOLD = XP = 0;
 		speed = 0;
 		yellowKeys = greenKeys = blueKeys = skeletonKeys = 0;
+		shovels = 0;
 		sword = shield = accessory = 0;
 		monsterHPmult = monsterATKmult = monsterDEFmult = monsterGRmult = monsterXPmult = 0;
-		itemMult = itemHPmult = itemATKmult = itemDEFmult = itemGRmult = 0;
+		itemMult = itemHPmult = itemATKmult = itemDEFmult = itemGRmult = itemShovelMult = 0;
 		hotTileVal = explosionVal = 0;
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
 		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = UINT(-1); //negative indicates default
-		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = 0;
+		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = scoreShovels = 0;
 	}
 
 	UINT getVar(const WSTRING& wstr) const
@@ -239,19 +245,20 @@ public:
 	int  GOLD, XP;            //may be negative
 	UINT speed;               //attack rate
 	UINT yellowKeys, greenKeys, blueKeys, skeletonKeys;  //keys
+	UINT shovels;
 	UINT sword, shield, accessory;         //equipment
 	UINT totalMoves, totalTime; //tally stats
 
 	//Global modifiers
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; //global monster stat modifiers
-	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; //global item value modifiers
+	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult, itemShovelMult; //global item value modifiers
 	UINT hotTileVal, explosionVal; //damage modifiers
 
 	//Prior location before level warp.
 	UINT priorRoomID, priorX, priorY, priorO;
 
 	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID;
-	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP;
+	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP, scoreShovels;
 };
 
 //More stats used for various tally operations.
@@ -266,12 +273,14 @@ public:
 		yellowDoors = greenDoors = blueDoors = redDoors = blackDoors = 0;
 		openYellowDoors = openGreenDoors = openBlueDoors = openRedDoors = openBlackDoors = 0;
 		moneyDoorCost = openMoneyDoorCost = 0;
+		dirtBlockCost = 0;
 		rooms = secrets = levels = 0;
 	}
 
 	UINT yellowDoors, greenDoors, blueDoors, redDoors, blackDoors;
 	UINT openYellowDoors, openGreenDoors, openBlueDoors, openRedDoors, openBlackDoors;
 	UINT moneyDoorCost, openMoneyDoorCost;
+	UINT dirtBlockCost;
 	UINT rooms, secrets, levels;
 };
 

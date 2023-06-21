@@ -356,6 +356,7 @@ const
 		if (bIsTrapdoor(wLookTileNo))
 			return false;
 		if (bIsPowerUp(wLookTileNo) || bIsEquipment(wLookTileNo) ||
+				bIsMap(wLookTileNo) || bIsShovel(wLookTileNo) ||
 				wLookTileNo == T_KEY || wLookTileNo == T_MIRROR || wLookTileNo == T_CRATE)
 			return false;
 

@@ -70,13 +70,18 @@ enum MapColor
 	MAP_MEDRED,
 	MAP_LTRED,
 	MAP_MAGENTA,
-	MAP_BROWN,
+	MAP_LTBROWN,
+	MAP_BROWN1,
+	MAP_BROWN2,
+	MAP_BROWN3,
 	MAP_DKORANGE,
 	MAP_ORANGE,
 	MAP_LTORANGE,
 	MAP_MEDBLUE,
 	MAP_LTBLUE,
 	MAP_LTBLUE2,
+	MAP_MIDGREEN,
+	MAP_DKGREEN,
 	MAP_GREEN,
 	MAP_LTGREEN,
 	MAP_LTCYAN,
@@ -89,6 +94,7 @@ enum MapColor
 	MAP_PALEGREEN,
 	MAP_PALECYAN,
 	MAP_PALEYELLOW,
+	MAP_PALEBROWN,
 
 	MAP_WHITE,
 	MAP_WHITE1,
@@ -996,25 +1002,31 @@ void CMapWidget::InitMapColors()
 	m_arrColor[MAP_MEDRED] =   GetSurfaceColor(this->pMapSurface, 255,64, 64);
 	m_arrColor[MAP_LTRED] =    GetSurfaceColor(this->pMapSurface, 255,128,128);
 	m_arrColor[MAP_MAGENTA] =  GetSurfaceColor(this->pMapSurface, 128,0,  128);
-	m_arrColor[MAP_BROWN] =    GetSurfaceColor(this->pMapSurface, 128,128,0);
+	m_arrColor[MAP_LTBROWN] = GetSurfaceColor(this->pMapSurface, 194, 194, 0);
+	m_arrColor[MAP_BROWN1] = GetSurfaceColor(this->pMapSurface, 182, 162, 0);
+	m_arrColor[MAP_BROWN2] = GetSurfaceColor(this->pMapSurface, 160, 140, 0);
+	m_arrColor[MAP_BROWN3] = GetSurfaceColor(this->pMapSurface, 138, 118, 0);
 	m_arrColor[MAP_DKORANGE] = GetSurfaceColor(this->pMapSurface, 128,64, 0);
 	m_arrColor[MAP_ORANGE] =   GetSurfaceColor(this->pMapSurface, 255,128,0);
 	m_arrColor[MAP_LTORANGE] = GetSurfaceColor(this->pMapSurface, 255,196,128);
 	m_arrColor[MAP_MEDBLUE] =  GetSurfaceColor(this->pMapSurface, 0,  0,  192);
 	m_arrColor[MAP_LTBLUE] =   GetSurfaceColor(this->pMapSurface, 0,  0,  255);
 	m_arrColor[MAP_LTBLUE2] =  GetSurfaceColor(this->pMapSurface, 128,128,255);
-	m_arrColor[MAP_GREEN] =    GetSurfaceColor(this->pMapSurface, 0,  128,0);
+	m_arrColor[MAP_DKGREEN] = GetSurfaceColor(this->pMapSurface, 0, 64, 0);
+	m_arrColor[MAP_MIDGREEN] = GetSurfaceColor(this->pMapSurface, 0, 96, 0);
+	m_arrColor[MAP_GREEN] = GetSurfaceColor(this->pMapSurface, 0, 128, 0);
 	m_arrColor[MAP_LTGREEN] =  GetSurfaceColor(this->pMapSurface, 0,  255,0);
 	m_arrColor[MAP_LTCYAN] =   GetSurfaceColor(this->pMapSurface, 0,  255,255);
 	m_arrColor[MAP_LTMAGENTA] =GetSurfaceColor(this->pMapSurface, 255,0,  255);
 	m_arrColor[MAP_YELLOW] =   GetSurfaceColor(this->pMapSurface, 255,255,0);
 	m_arrColor[MAP_LTYELLOW] = GetSurfaceColor(this->pMapSurface, 255,255,128);
-	m_arrColor[MAP_PALEYELLOW] = GetSurfaceColor(this->pMapSurface, 255, 255, 164);
 
 	m_arrColor[MAP_PALEBLUE] = GetSurfaceColor(this->pMapSurface, 200,200,255);
 	m_arrColor[MAP_PALERED] =  GetSurfaceColor(this->pMapSurface, 255,200,200);
 	m_arrColor[MAP_PALEGREEN] =GetSurfaceColor(this->pMapSurface, 200,255,200);
-	m_arrColor[MAP_PALECYAN] = GetSurfaceColor(this->pMapSurface, 164,255,255);
+	m_arrColor[MAP_PALECYAN] = GetSurfaceColor(this->pMapSurface, 164, 255, 255);
+	m_arrColor[MAP_PALEYELLOW] = GetSurfaceColor(this->pMapSurface, 255, 255, 164);
+	m_arrColor[MAP_PALEBROWN] = GetSurfaceColor(this->pMapSurface, 220, 200, 128);
 
 	m_arrColor[MAP_WHITE] =  GetSurfaceColor(this->pMapSurface, 255, 255, 255);
 	m_arrColor[MAP_WHITE1] = GetSurfaceColor(this->pMapSurface, 240, 240, 240);
@@ -1472,10 +1484,14 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_MUD:
 			return m_arrColor[MAP_DKRED];
 		case T_GEL:
-			return m_arrColor[MAP_GREEN];
+			return m_arrColor[MAP_MIDGREEN];
 		case T_BOMB:
 //		case T_STATION:
 			return m_arrColor[MAP_LTGRAY];
+		case T_BRIAR_SOURCE:
+		case T_BRIAR_LIVE:
+		case T_BRIAR_DEAD:
+			return m_arrColor[MAP_DKGREEN];
 		case T_HEALTH_SM:
 			return m_arrColor[MAP_WHITE3];
 		case T_HEALTH_MED:
@@ -1490,6 +1506,10 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_ATK_UP10:
 		case T_DEF_UP10:
 			return m_arrColor[MAP_WHITE];
+		case T_SHOVEL1:
+		case T_SHOVEL3:
+		case T_SHOVEL10:
+			return m_arrColor[MAP_PALEBROWN];
 		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 			return m_arrColor[MAP_WHITEYELLOW];
 	}
@@ -1499,6 +1519,12 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_WALL: case T_WALL2: case T_WALL_IMAGE:
 		case T_WALL_B: case T_WALL_H: 
 			return bDarkened ? m_arrColor[MAP_DKCYAN2] : m_arrColor[MAP_BLACK];
+		case T_DIRT1:
+			return m_arrColor[MAP_BROWN3];
+		case T_DIRT3:
+			return m_arrColor[MAP_BROWN2];
+		case T_DIRT5:
+			return m_arrColor[MAP_BROWN1];
 		case T_STAIRS: case T_STAIRS_UP:
 			return m_arrColor[MAP_STAIRS];
 		case T_DOOR_Y:
@@ -1545,7 +1571,7 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 		case T_PLATFORM_P:
 			return m_arrColor[MAP_DKORANGE];
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
-			return m_arrColor[MAP_BROWN];
+			return m_arrColor[MAP_LTBROWN];
 		case T_DOOR_MONEY:
 			return m_arrColor[MAP_ORANGE];
 		default:

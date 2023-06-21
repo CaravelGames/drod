@@ -534,6 +534,8 @@ float CCurrentGame::GetGlobalStatModifier(ScriptVars::StatModifiers statType) co
 			return int(st.itemDEFmult) / 100.0f;
 		case ScriptVars::StatModifiers::ItemGR:
 			return int(st.itemGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemShovels:
+			return int(st.itemShovelMult) / 100.0f;
 		default:
 			return 1.0f;
 	}
@@ -1462,7 +1464,7 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 		s.monsterGRmult = s.monsterXPmult = 100; //100%
 
 	s.itemMult = s.itemHPmult = s.itemATKmult = s.itemDEFmult =
-		s.itemGRmult = 100; //100%
+		s.itemGRmult = s.itemShovelMult = 100; //100%
 
 	s.hotTileVal = 5;     //5% damage
 	s.explosionVal = 100; //100% damage (kill)
@@ -1475,7 +1477,7 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 	s.scoreYellowKeys = 10;
 	s.scoreGreenKeys = 20;
 	s.scoreBlueKeys = s.scoreSkeletonKeys = 30;
-	s.scoreGOLD = s.scoreXP = 0;
+	s.scoreGOLD = s.scoreXP = s.scoreShovels = 0;
 }
 
 //*****************************************************************************
@@ -3120,6 +3122,9 @@ int CCurrentGame::getItemAmount(const UINT item) const
 		break;
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 			fMult *= GetTotalStatModifier(ScriptVars::ItemDEF);
+		break;
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+			fMult *= GetTotalStatModifier(ScriptVars::ItemShovels);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
 			fMult *= GetTotalStatModifier(ScriptVars::ItemGR);
@@ -5442,7 +5447,7 @@ void CCurrentGame::ProcessPlayer(
 		default: return; //invalid command -- might be from an old version demo
 	}
 
-	const UINT nFirstO = nGetO(dx,dy);
+	const UINT nMovementO = nGetO(dx,dy);
 
 /*
 	//Player can take steps if not frozen.
@@ -5459,6 +5464,7 @@ void CCurrentGame::ProcessPlayer(
 	const UINT wTTileNo = room.GetTSquare(wOldX, wOldY);
 	bool bEnteredTunnel = false;
 	bool bMovingPlatform = false;
+	bool bDigging = false;
 	bool bJumping=false, bSwimming=false;
 
 	//Look for obstacles and set dx/dy accordingly.
@@ -5594,7 +5600,7 @@ CheckOLayer:
 			{
 				//If standing on a platform, check whether it can move.
 				if (wOTileNo == T_PLATFORM_P)
-					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
+					if (room.CanMovePlatform(wOldX, wOldY, nMovementO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
@@ -5619,7 +5625,7 @@ CheckOLayer:
 			case T_WATER:
 			{
 				if (wOTileNo == T_PLATFORM_W)
-					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
+					if (room.CanMovePlatform(wOldX, wOldY, nMovementO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
@@ -5689,6 +5695,17 @@ CheckOLayer:
 								wOldY + dy, wMoveO), true);
 			break;
 */
+
+			case T_DIRT1: case T_DIRT3: case T_DIRT5:
+				if (p.st.shovels >= pLevel->getItemAmount(wNewOTile)) {
+					bDigging = bNotAnObstacle = true;
+					goto CheckFLayer;
+				} else {
+					CueEvents.Add(CID_HitObstacle,
+						new CMoveCoord(wOldX + dx, wOldY + dy, wMoveO), true);
+				}
+			break;
+
 			default:
 				goto CheckFLayer;
 			break;
@@ -5793,12 +5810,20 @@ CheckMonsterLayer:
 			{
 				//Can move platform now.
 				if (bMovingPlatform)
-					room.MovePlatform(wOldX, wOldY, nFirstO);
+					room.MovePlatform(wOldX, wOldY, nMovementO);
 
 				//If pushable object is being pushed, can do it now.
 				if (bPushingTLayerObject)
 					room.PushObject(wOldX + dx, wOldY + dy,
 							wOldX + dx*2, wOldY + dy*2, CueEvents);
+
+				//If digging, do it now.
+				if (bDigging) {
+					const UINT destX = wOldX + dx, destY = wOldY + dy;
+					ASSERT(p.st.shovels >= this->pLevel->getItemAmount(room.GetOSquare(destX, destY)));
+					p.st.shovels -= this->pLevel->getItemAmount(room.GetOSquare(destX, destY));
+					room.Dig(destX, destY, nMovementO, CueEvents);
+				}
 
 				if (bJumping)
 					CueEvents.Add(CID_Jump);
@@ -5842,8 +5867,8 @@ MakeMove:
 
 	const bool bSwordWasSheathed = !p.HasSword();
 	//Swordless entities automatically face the way they're trying to move.
-	if (bSwordWasSheathed && nFirstO != NO_ORIENTATION)
-		p.SetOrientation(nFirstO);
+	if (bSwordWasSheathed && nMovementO != NO_ORIENTATION)
+		p.SetOrientation(nMovementO);
 
 	//Sword must be put away when on goo.
 	if (!bIsStairs(wNewOSquare)) //don't update sword status when moving on stairs
@@ -5977,6 +6002,15 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_ReceivedHP);
+	}
+	break;
+
+	case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+	{
+		const int shovels = getItemAmount(wNewTSquare);
+		incUINTValueWithBounds(p.st.shovels, shovels);
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_ReceivedShovel, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 

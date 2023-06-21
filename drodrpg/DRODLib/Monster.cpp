@@ -903,6 +903,8 @@ const
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
 				bIsPowerUp(wLookTileNo) ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
 				bIsArrow(wLookTileNo)
 			);
@@ -916,6 +918,8 @@ const
 				wLookTileNo==T_SCROLL ||
 				wLookTileNo==T_KEY ||
 				bIsPowerUp(wLookTileNo) ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
 				wLookTileNo==T_TOKEN
 			);
@@ -932,6 +936,8 @@ const
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsPowerUp(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
 				(IsFlying() && (bIsPit(wLookTileNo) || bIsWater(wLookTileNo))) ||

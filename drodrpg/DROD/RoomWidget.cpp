@@ -407,6 +407,7 @@ void CRoomWidget::AddDamagePreviews()
 				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 				{
 					int val;
 					if (this->pCurrentGame) {
@@ -8089,6 +8090,7 @@ float CRoomWidget::getTileElev(const UINT wOTile) const
 
 		case T_WALL: case T_WALL2:	case T_WALL_IMAGE:
 		case T_WALL_B: case T_WALL_H:
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			return 1.0f;
 
 		case T_DOOR_MONEY:

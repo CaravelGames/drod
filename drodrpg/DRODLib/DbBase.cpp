@@ -777,6 +777,19 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Undelete: strText = "Undelete"; break;
 		case MID_CustomSpeechColor: strText = "Speech Color (rgb)"; break;
 		case MID_AutoPreviewCharacters: strText = "Automatically Preview Characters"; break;
+		case MID_Shovel1: strText = "Shovel"; break;
+		case MID_Shovel3: strText = "Set of Shovels"; break;
+		case MID_Shovel10: strText = "Barrel of Shovels"; break;
+		case MID_Dirt1: strText = "Dirt Block"; break;
+		case MID_Dirt3: strText = "Dirt Block (3)"; break;
+		case MID_Dirt5: strText = "Dirt Block (5)"; break;
+		case MID_ShovelsStat: strText = "Shovels"; break;
+		case MID_Dig: strText = "Dig"; break;
+		case MID_ReceivedShovel: strText = "Received Shovel"; break;
+		case MID_VarShovels: strText = "_Shovels"; break;
+		case MID_VarScoreShovels: strText = "_ScoreShovels"; break;
+		case MID_VarItemShovelMult: strText = "_ItemShovelMult"; break;
+		case MID_VarMyItemShovelMult: strText = "_MyItemShovelMult"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

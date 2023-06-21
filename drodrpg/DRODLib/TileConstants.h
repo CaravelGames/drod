@@ -147,8 +147,14 @@
 #define T_DEF_UP10      97 //Defense up 10
 #define T_CRATE         98
 #define T_PRESSPLATE_BROKEN_VIRTUAL 99 //virtual tile: only used to represent broken plate in saved game data
+#define T_SHOVEL1       100 //shovels up 1
+#define T_SHOVEL3       101 //shovels up 3
+#define T_SHOVEL10      102 //shovels up 10
+#define T_DIRT1         103 //dirt block requiring 1 shovel
+#define T_DIRT3         104 //dirt block requiring 3 shovels
+#define T_DIRT5         105 //dirt block requiring 5 shovels
 
-#define TILE_COUNT     (100) //Number of tile constants from above list.
+#define TILE_COUNT     (106) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -190,7 +196,6 @@ static inline bool bIsHealth(const UINT t) {
 static inline bool bIsPowerUp(const UINT t) {
 	switch (t)
 	{
-		case T_MAP: case T_MAP_DETAIL:
 		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
@@ -230,6 +235,10 @@ static inline bool bIsMap(const UINT t) { return t == T_MAP || t == T_MAP_DETAIL
 static inline bool bIsATKUp(const UINT t) { return t == T_ATK_UP || t == T_ATK_UP3 || t == T_ATK_UP10; }
 
 static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_UP3 || t == T_DEF_UP10; }
+
+static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
+
+static inline bool bIsDiggableBlock(const UINT t) { return t == T_DIRT1 || t == T_DIRT3 || t == T_DIRT5; }
 
 //Obstacle parameter bit format: <Top edge>:1 <Left edge>:1 <64 possible obstacle types>:6
 #define OBSTACLE_TOP (0x80)
@@ -457,6 +466,12 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_DEF_UP10      97
 	LAYER_TRANSPARENT, //T_CRATE         98
 	LAYER_OPAQUE, //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	LAYER_TRANSPARENT, //T_SHOVEL1
+	LAYER_TRANSPARENT, //T_SHOVEL3
+	LAYER_TRANSPARENT, //T_SHOVEL10
+	LAYER_OPAQUE, //T_DIRT1
+	LAYER_OPAQUE, //T_DIRT3
+	LAYER_OPAQUE, //T_DIRT5
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -604,6 +619,12 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_DefenseUp10,  //T_DEF_UP10      97
 	MID_Crate,        //T_CRATE         98
 	0,                //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	MID_Shovel1,      //T_SHOVEL1
+	MID_Shovel3,      //T_SHOVEL3
+	MID_Shovel10,     //T_SHOVEL10
+	MID_Dirt1,        //T_DIRT1
+	MID_Dirt3,        //T_DIRT3
+	MID_Dirt5,        //T_DIRT5
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

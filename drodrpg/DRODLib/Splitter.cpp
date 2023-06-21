@@ -131,6 +131,8 @@ inline bool bIsObstacle(const UINT wTile)
 				bIsOpenDoor(wTile) ||
 				bIsPlatform(wTile) ||
 				bIsPowerUp(wTile) ||
+				bIsMap(wTile) ||
+				bIsShovel(wTile) ||
 				wTile==T_NODIAGONAL ||
 				wTile==T_SCROLL ||
 				wTile==T_FUSE ||

@@ -442,6 +442,10 @@ Knock opened door
 [eng]
 Player locked door
 
+[MID_Dig]
+[eng]
+Dig
+
 [MID_TurnsToWait]
 [eng]
 Turns to wait
@@ -1247,6 +1251,10 @@ Received DEF
 [MID_ReceivedHP]
 [eng]
 Received HP
+
+[MID_ReceivedShovel]
+[eng]
+Received Shovel
 
 [MID_RoomLocationText]
 [eng]

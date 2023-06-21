@@ -51,7 +51,8 @@ enum CombatEffectType {
 	CET_YKEY,      //entity's YKEYs was affected
 	CET_GKEY,      //entity's GKEYs was affected
 	CET_BKEY,      //entity's BKEYs was affected
-	CET_SKEY       //entity's SKEYs was affected
+	CET_SKEY,      //entity's SKEYs was affected
+	CET_SHOVEL     //entity's SHOVELS was affected
 };
 
 struct CombatInfo

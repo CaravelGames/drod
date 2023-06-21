@@ -137,6 +137,8 @@ enum SEID
 	SEID_ATK_PICKUP,
 	SEID_DEF_PICKUP,
 	SEID_HP_PICKUP,
+	SEID_SHOVEL_PICKUP,
+	SEID_DIG,
 
 	//Grouped sound effects -- may only play one at a time -- designated private channels.
 	//Channel n+1--Tendry's voice.

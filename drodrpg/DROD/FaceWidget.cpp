@@ -739,7 +739,7 @@ void CFaceWidget::PaintFace(
 			SDL_Surface* faceImage = this->faceImages[face->dwImageID];
 			int srcX = 0;
 
-			if (faceImage->w >= this->w * (face->eMood + 1))
+			if (faceImage->w >= int(this->w * (face->eMood + 1)))
 				srcX = this->w * face->eMood;
 
 			SDL_Rect Src = MAKE_SDL_RECT(srcX, 0, this->w, this->h);

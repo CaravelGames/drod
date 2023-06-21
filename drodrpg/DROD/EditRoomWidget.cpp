@@ -601,6 +601,8 @@ const
 		if ((bIsPit(wTileNo) || bIsWater(wTileNo) || bIsTrapdoor(wTileNo) || bIsPlatform(wTileNo) || bIsBridge(wTileNo)) &&
 			 (bIsPit(wObject) || bIsWater(wObject) || bIsTrapdoor(wObject) || bIsPlatform(wObject) || bIsBridge(wObject)))
 			return true;
+		if (bIsDiggableBlock(wTileNo) && bIsDiggableBlock(wObject))
+			return true;
 		if (bIsDoor(wObject) || bIsOpenDoor(wObject))
 			return false;
 		if (wObject == T_PRESSPLATE)
@@ -622,6 +624,8 @@ const
 		if (bIsBriar(wTileNo) && bIsBriar(wObject))
 			return true;
 		if (bIsHealth(wTileNo) && bIsHealth(wObject))
+			return true;
+		if (bIsShovel(wTileNo) && bIsShovel(wObject))
 			return true;
 		return wObject == wTileNo;
 	case 2:
@@ -838,6 +842,10 @@ const
 			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
 				return true;
 			break;
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
+			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
+				return true;
+			break;
 
 		//F-layer stuff
 		case T_NODIAGONAL:
@@ -906,6 +914,7 @@ const
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_SCROLL:
 		case T_MAP: case T_MAP_DETAIL:
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			//Not on monsters that use/affect the t-layer.
 			if (bIsMother(wTileNo[2])) return false;
 			//Can't go on things player never steps on.

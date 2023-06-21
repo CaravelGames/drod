@@ -2379,7 +2379,14 @@
 #define TI_PPB_DW         2202
 #define TI_PPB_D          2203
 
-static const UINT TI_COUNT = 2204;
+#define TI_SHOVEL_1       2204
+#define TI_SHOVEL_3       2205
+#define TI_SHOVEL_10      2206
+#define TI_DIRT_1         2207
+#define TI_DIRT_3         2208
+#define TI_DIRT_5         2209
+
+static const UINT TI_COUNT = 2210;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

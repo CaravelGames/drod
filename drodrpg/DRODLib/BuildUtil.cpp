@@ -190,7 +190,7 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 			wTTile == T_CRATE ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
 			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
-			wTTile == T_TOKEN || bIsTar(wTTile))
+			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))
 			break;
 		//No other item can be built over.
 		bValid = false;
@@ -268,7 +268,7 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 			wTTile == T_CRATE ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
 			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
-			wTTile == T_TOKEN || bIsTar(wTTile))
+			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))
 		{
 			if (TILE_LAYER[newTile] == LAYER_TRANSPARENT && bIsTar(wTTile) && newTile != wTTile) {
 				room.RemoveStabbedTar(x, y, CueEvents);

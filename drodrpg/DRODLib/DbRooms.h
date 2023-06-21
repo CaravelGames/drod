@@ -204,6 +204,7 @@ public:
 			CCueEvents &CueEvents, const UINT wStabO=NO_ORIENTATION);
 	void           DestroyTar(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           DestroyTrapdoor(const UINT wX, const UINT wY, CCueEvents &CueEvents);
+	void           Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
 /*	bool           DoesMonsterEnterRoomLater(const UINT wX, const UINT wY,
 			const UINT wMonsterType) const;
 	bool           DoesSquareContainDoublePlacementObstacle(const UINT wX, const UINT wY) const;
