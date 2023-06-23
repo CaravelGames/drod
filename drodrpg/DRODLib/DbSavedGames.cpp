@@ -2587,6 +2587,7 @@ UINT CDbSavedGames::GetScore(const PlayerStats& st)
 	dwScore += CalculateStatScore(st.skeletonKeys, st.scoreSkeletonKeys);
 	dwScore += CalculateStatScore(st.GOLD, st.scoreGOLD);
 	dwScore += CalculateStatScore(st.XP, st.scoreXP);
+	dwScore += CalculateStatScore(st.shovels, st.scoreShovels);
 
 	return dwScore;
 }

@@ -4646,8 +4646,8 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 {
 	WSTRING wstrLevelStats;
 
-	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwGOLD, dwXP;
-	UINT dwHPScore, dwATKScore, dwDEFScore, dwYKeysScore, dwGKeysScore, dwBKeysScore, dwSKeysScore, dwGOLDScore, dwXPScore, dwTotalScore;
+	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwGOLD, dwXP, dwShovels;
+	UINT dwHPScore, dwATKScore, dwDEFScore, dwYKeysScore, dwGKeysScore, dwBKeysScore, dwSKeysScore, dwGOLDScore, dwXPScore, dwShovelsScore, dwTotalScore;
 
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
@@ -4660,6 +4660,7 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	dwSKeys = st.skeletonKeys;
 	dwGOLD = st.GOLD;
 	dwXP = st.XP;
+	dwShovels = st.shovels;
 
 	dwHPScore = CDbSavedGames::CalculateStatScore(dwHP, st.scoreHP);
 	dwATKScore = CDbSavedGames::CalculateStatScore(dwATK, st.scoreATK);
@@ -4670,6 +4671,7 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	dwGKeysScore = CDbSavedGames::CalculateStatScore(dwGKeys, st.scoreGreenKeys);
 	dwBKeysScore = CDbSavedGames::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
 	dwSKeysScore = CDbSavedGames::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
+	dwShovelsScore = CDbSavedGames::CalculateStatScore(dwShovels, st.scoreShovels);
 	dwTotalScore = this->pCurrentGame->GetScore();
 
 	WCHAR temp[16];
@@ -4683,6 +4685,7 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	if (st.scoreGreenKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_GKEYStatFull, dwGKeys, st.scoreGreenKeys, dwGKeysScore);
 	if (st.scoreBlueKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
 	if (st.scoreSkeletonKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
+	if (st.scoreShovels != 0) wstrLevelStats += GetScoreCheckpointLine(MID_ShovelsStat, dwShovels, st.scoreShovels, dwShovelsScore);
 
 	//Set texts.
 	CLabelWidget* pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
