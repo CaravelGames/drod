@@ -810,6 +810,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_ITEM_SHOVEL_MULT:
 					case (UINT)ScriptVars::P_HOTTILE:
 					case (UINT)ScriptVars::P_EXPLOSION:
+					case (UINT)ScriptVars::P_BEAM:
 					case (UINT)ScriptVars::P_MUD_SPAWN:
 					case (UINT)ScriptVars::P_TAR_SPAWN:
 					case (UINT)ScriptVars::P_GEL_SPAWN:

@@ -365,3 +365,7 @@ _ItemShovelMult
 [MID_VarMyItemShovelMult]
 [eng]
 _MyItemShovelMult
+
+[MID_VarBeam]
+[eng]
+_Beam

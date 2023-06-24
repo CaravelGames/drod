@@ -198,6 +198,14 @@ Moves like you do, fights monsters as you
 [eng]
 Gaze cuts your health in half
 
+[MID_AumtlichAbilityPercentage]
+[eng]
+Gaze reduces your health by %s percent
+
+[MID_AumtlichAbilityFlatRate]
+[eng]
+Gaze reduces your health by %s HP
+
 [MID_SlayerAbility]
 [eng]
 Always strikes first

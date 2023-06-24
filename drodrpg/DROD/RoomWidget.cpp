@@ -1824,7 +1824,30 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 
 	if (pMonster->HasRayGun())
 	{
-		wstr += g_pTheDB->GetMessageText(MID_AumtlichAbility);
+		int beamVal = this->pCurrentGame->pPlayer->st.beamVal;
+
+		if (beamVal == 50) {
+			wstr += g_pTheDB->GetMessageText(MID_AumtlichAbility);
+		} else if (beamVal >= 0) {
+			//Percentage damage
+			WCHAR temp[16];
+			WSTRING value = _itoW(beamVal, temp, 10);
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_AumtlichAbilityPercentage),
+				wszStringToken,
+				value
+			);
+		} else {
+			//Flat-rate damage
+			WCHAR temp[16];
+			WSTRING value = _itoW(abs(beamVal), temp, 10);
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_AumtlichAbilityFlatRate),
+				wszStringToken,
+				value
+			);
+		}
+		
 		++count;
 	}
 

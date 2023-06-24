@@ -702,6 +702,8 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_Explosion</td><td>explosion damage(<a href="#damage">*</a>)</td><td>100 (percent)</td><td>-MAX,100</td>
   </tr><tr>
+    <td>_Beam</td><td>beam damage(<a href="#damage">*</a>)</td><td>50 (percent)</td><td>-MAX,100</td>
+  </tr><tr>
     <td>_MudSpawn</td><td>global mud spawn entity ID(<a href="#mudspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
     <td>_TarSpawn</td><td>global tar spawn entity ID(<a href="#tarspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
@@ -865,7 +867,7 @@ The variable names are case-insensitive.
 </p>
 <p><a name="roompositionvars"><b>*_RoomX, _RoomY</b></a> - These values contain the X and Y position of the current room in the level. The entrance is at (0,0), with East and South being positive directions, and North and West being negative directions. These are read-only values.
 </p>
-<p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
+<p><a name="damage"><b>*_HotTile, _Explosion, _Beam</b></a> - When damage is set to a
   positive value, it indicates the percentage of HP the target will
   lose.  A negative value indicates a flat damage to inflict.
   When the player is hasted by a Speed Potion, expected damage is halved.

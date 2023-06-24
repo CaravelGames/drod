@@ -2371,9 +2371,12 @@ bool CMonster::GetNextGaze(
 				if (!(pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor) && dot < 0) &&
 					 !pCurrentGame->equipmentBlocksGaze(ScriptFlag::Accessory))
 				{
-					//Cut player's health in half (one-quarter when hasted).
-					PlayerStats& ps = player.st;
-					UINT delta = ps.HP / (player.IsHasted() ? 4 : 2);
+					//Cut player's health by beam value (halved when hasted).
+					UINT beamVal = player.st.beamVal;
+					if (!beamVal)
+						return false; // no damage, blocks gaze
+
+					UINT delta = player.CalcDamage(beamVal);
 					if (!delta)
 						delta = 1;
 					player.DecHealth(CueEvents, delta, CID_MonsterKilledPlayer);
