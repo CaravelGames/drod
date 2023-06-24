@@ -1889,7 +1889,8 @@ void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
 	bWeatherSame &= (this->cFogLayer == (BYTE)roomWeather.wFog);
 	bWeatherSame &= (this->wSnow == roomWeather.wSnow);
 	bWeatherSame &= (this->rain == roomWeather.rain);
-	bWeatherSame &= (this->bOutside == roomWeather.bOutside);
+	bool bOutsideSame = (this->bOutside == roomWeather.bOutside);
+	bWeatherSame &= bOutsideSame;
 	bWeatherSame &= (this->bLightning == roomWeather.bLightning);
 	bWeatherSame &= (this->bClouds == roomWeather.bClouds);
 	bWeatherSame &= (this->bSkipLightfade == roomWeather.bSkipLightfade);
@@ -1899,6 +1900,11 @@ void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
 
 	GetWeather();
 	LoadSkyImage(this->pRoom);
+
+	if (!bOutsideSame) {
+		ResetForPaint();
+		Paint();
+	}
 }
 
 //*****************************************************************************
