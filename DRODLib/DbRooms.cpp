@@ -8315,6 +8315,9 @@ void CDbRoom::ClearMonsters(
 			{
 				case M_CHARACTER:
 				{
+					if (!pCurrentGame)
+						break; //Character can't be a monster enemy without a game
+
 					CCharacter* pDeleteCharacter = DYN_CAST(CCharacter*, CMonster*, pDelete);
 					// Is this character a monster enemy?
 					if (pDeleteCharacter->HasBehavior(ScriptFlag::MonsterTarget) ||
