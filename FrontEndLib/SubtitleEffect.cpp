@@ -240,6 +240,17 @@ void CSubtitleEffect::SetOffset(const int nX, const int nY)
 }
 
 //*****************************************************************************
+bool CSubtitleEffect::Update(const UINT wDeltaTime)
+{
+	this->dwTimeElapsed += wDeltaTime;
+
+	if (dwTextDuration && this->dwTimeElapsed >= this->dwDuration)
+		return false;
+
+	return this->Update(wDeltaTime, dwTimeElapsed);
+}
+
+//*****************************************************************************
 void CSubtitleEffect::GetTextWidthHeight(
 //Gets width and height of text as it is drawn within label.
 //
