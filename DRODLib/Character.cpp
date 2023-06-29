@@ -1596,6 +1596,11 @@ void CCharacter::Process(
 				const bool bAllowTurning = !pw;
 				const bool bStopTurn = GetMovement(wDestX, wDestY, dx, dy, dxFirst, dyFirst, bPathmapping, bAllowTurning);
 
+				if (ph) {
+					//Ensure 'Single Step' recalculates path on each execution.
+					this->goal.wX = UINT(-1);
+				}
+
 				//When pathfinding indicates to not move, 'Single Step' causes script execution to advance on the next turn.
 				if (bStopTurn && !ph)
 					STOP_COMMAND;
