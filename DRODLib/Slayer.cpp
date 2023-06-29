@@ -652,9 +652,10 @@ bool CSlayer::ConfirmGoal()
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
 	if (platesToDepress.has(CCoord(wGoalX, wGoalY))) {
+		UINT wTile = room.GetOSquare(wGoalX, wGoalY);
 		COrbData* pOrb = room.GetPressurePlateAtCoords(wGoalX, wGoalY);
 		//Reject activated one-use or missing plate and remove from platesToDepress
-		if (!pOrb || pOrb->eType == OT_BROKEN) {
+		if (wTile != T_PRESSPLATE || !pOrb || pOrb->eType == OT_BROKEN) {
 			platesToDepress.erase(CCoord(wGoalX, wGoalY));
 			return false;
 		}
@@ -667,9 +668,10 @@ bool CSlayer::ConfirmGoal()
 			continue;
 		}
 
+		UINT wTile = room.GetTSquare(wGoalX, wGoalY);
 		COrbData* pOrb = room.GetOrbAtCoords(orb->wX, orb->wY);
 		//Reject broken or missing orb and remove from orbsToHit
-		if (!pOrb || pOrb->eType == OT_BROKEN) {
+		if (wTile != T_ORB || !pOrb || pOrb->eType == OT_BROKEN) {
 			orbsToHit.erase(*orb);
 			continue;
 		}
