@@ -45,7 +45,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"",
 	"", "", "",
 	"",
-	"_Shovels", "_ScoreShovels", "_ItemShovelMult", ""
+	"_Shovels", "_ScoreShovels", "_ItemShovelMult", "",
+	"_Beam"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -78,6 +79,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarLevelMultiplier, MID_VarRoomX, MID_VarRoomY,
 	MID_VarMyDescription,
 	MID_VarShovels, MID_VarScoreShovels, MID_VarItemShovelMult, MID_VarMyItemShovelMult,
+	MID_VarBeam,
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -111,6 +113,7 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_MONSTER_XP_MULT,
 	P_HOTTILE,
 	P_EXPLOSION,
+	P_BEAM,
 	P_TOTALMOVES,
 	P_TOTALTIME,
 	P_MUD_SPAWN,
@@ -163,6 +166,7 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 
 	predefinedVarMIDs[43], //damage modifiers
 	predefinedVarMIDs[44],
+	predefinedVarMIDs[97],
 
 	predefinedVarMIDs[36], //tally stats
 	predefinedVarMIDs[37],
@@ -219,6 +223,7 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 
 	predefinedVarTexts[43], //damage modifiers
 	predefinedVarTexts[44],
+	predefinedVarTexts[97],
 
 	predefinedVarTexts[36], //tally stats
 	predefinedVarTexts[37],
@@ -324,6 +329,8 @@ UINT ScriptVars::getVarDefault(const ScriptVars::Predefined var)
 		case P_SCORE_BKEY:
 		case P_SCORE_SKEY:
 			return 30;
+		case P_BEAM:
+			return 50;
 		default:
 			return 0;
 	}
@@ -453,6 +460,7 @@ UINT PlayerStats::getVar(const Predefined var) const
 
 		case P_HOTTILE: return this->hotTileVal;
 		case P_EXPLOSION: return this->explosionVal;
+		case P_BEAM: return this->beamVal;
 
 		case P_TOTALMOVES: return this->totalMoves;
 		case P_TOTALTIME: return this->totalTime;
@@ -515,6 +523,7 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 
 		case P_HOTTILE: this->hotTileVal = val; break;
 		case P_EXPLOSION: this->explosionVal = val; break;
+		case P_BEAM: this->beamVal = val; break;
 
 		case P_TOTALMOVES: this->totalMoves = val; break;
 		case P_TOTALTIME: this->totalTime = val; break;
@@ -553,7 +562,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		(i >= 43 && i <= 48) ||
 		(i >= 73 && i <= 76) ||
 		(i >= 79 && i <= 87) ||
-		(i >= 93 && i <= 95)
+		(i >= 93 && i <= 95) ||
+		i == 97;
 		;
 }
 
@@ -601,6 +611,7 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 
 			case 43: val = this->hotTileVal; break;
 			case 44: val = this->explosionVal; break;
+			case 97: val = this->beamVal; break;
 
 			case 36: val = this->totalMoves; break;
 			case 37: val = this->totalTime; break;
@@ -686,6 +697,7 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 
 			case 43: this->hotTileVal = val; break;
 			case 44: this->explosionVal = val; break;
+			case 97: this->beamVal = val; break;
 
 			case 36: this->totalMoves = val; break;
 			case 37: this->totalTime = val; break;

@@ -4427,6 +4427,7 @@ void CCharacterDialogWidget::PopulateVarList()
 
 	this->pVarListBox->AddItem(ScriptVars::P_HOTTILE, g_pTheDB->GetMessageText(MID_VarHotTile));
 	this->pVarListBox->AddItem(ScriptVars::P_EXPLOSION, g_pTheDB->GetMessageText(MID_VarExplosion));
+	this->pVarListBox->AddItem(ScriptVars::P_BEAM, g_pTheDB->GetMessageText(MID_VarBeam));
 
 	this->pVarListBox->AddItem(ScriptVars::P_HP, g_pTheDB->GetMessageText(MID_VarHP));
 	this->pVarListBox->AddItem(ScriptVars::P_ATK, g_pTheDB->GetMessageText(MID_VarAtk));

@@ -544,6 +544,8 @@ enum MID_CONSTANT {
   MID_GoblinAbility = 1397,
   MID_MimicAbility = 1398,
   MID_AumtlichAbility = 1399,
+  MID_AumtlichAbilityPercentage = 1867,
+  MID_AumtlichAbilityFlatRate = 1868,
   MID_SlayerAbility = 1400,
   MID_WaterSkipperAbility = 1401,
   MID_SeepAbility = 1402,
@@ -1620,6 +1622,7 @@ enum MID_CONSTANT {
   MID_VarScoreShovels = 1858,
   MID_VarItemShovelMult = 1864,
   MID_VarMyItemShovelMult = 1865,
+  MID_VarBeam = 1866,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

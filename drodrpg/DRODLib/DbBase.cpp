@@ -790,6 +790,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarScoreShovels: strText = "_ScoreShovels"; break;
 		case MID_VarItemShovelMult: strText = "_ItemShovelMult"; break;
 		case MID_VarMyItemShovelMult: strText = "_MyItemShovelMult"; break;
+		case MID_VarBeam: strText = "_Beam"; break;
+		case MID_AumtlichAbilityPercentage: strText = "Gaze reduces your health by %s percent"; break;
+		case MID_AumtlichAbilityFlatRate: strText = "Gaze reduces your health by %s HP"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

@@ -1468,6 +1468,7 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 
 	s.hotTileVal = 5;     //5% damage
 	s.explosionVal = 100; //100% damage (kill)
+	s.beamVal = 50;       //50% damage
 
 	s.totalMoves = s.totalTime = 0;
 
