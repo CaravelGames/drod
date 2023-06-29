@@ -37,7 +37,7 @@ WSTRING EquipmentDescription::GetPredefinedAccessoryAbility(UINT type)
 	switch (type) {
 	case AccessoryType::LuckyGold: return g_pTheDB->GetMessageText(MID_BehaviorLuckyGR);
 	case AccessoryType::XPDoubler: return g_pTheDB->GetMessageText(MID_DoubleXP);
-	default: return L"";
+	default: return WSTRING();
 	}
 }
 
@@ -58,7 +58,7 @@ WSTRING EquipmentDescription::GetPredefinedShieldAbility(UINT type)
 
 //*****************************************************************************
 WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
-	UINT type, WSTRING separator)
+	UINT type, const WSTRING& separator)
 //Returns: string with text of the sword's ability, or empty string if none
 {
 	WSTRING wstr;
@@ -107,7 +107,7 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 WSTRING EquipmentDescription::GetEquipmentAbility(
 	const CCharacter* pCharacter,
 	ScriptFlag::EquipmentType equipType,
-	WSTRING separator)
+	const WSTRING& separator)
 //Returns: string with text of custom equipment ability, or empty string if none
 {
 	ASSERT(CCharacterCommand::IsRealEquipmentType(equipType));
@@ -220,7 +220,7 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
 
 		for (size_t i = 0; i < descriptions.size(); ++i) {
-			WSTRING description = descriptions[i];
+			const WSTRING& description = descriptions[i];
 			if (description.empty()) continue;
 
 			if (needSeparator)

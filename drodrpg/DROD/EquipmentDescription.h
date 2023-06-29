@@ -34,11 +34,11 @@ class EquipmentDescription {
 public:
 	static WSTRING GetPredefinedAccessoryAbility(UINT type);
 	static WSTRING GetPredefinedShieldAbility(UINT type);
-	static WSTRING GetPredefinedWeaponAbility(UINT type, WSTRING separator);
+	static WSTRING GetPredefinedWeaponAbility(UINT type, const WSTRING& separator);
 
 	static WSTRING GetEquipmentAbility(
 		const CCharacter* pCharacter,
 		ScriptFlag::EquipmentType equipType,
-		WSTRING separator
+		const WSTRING& separator
 	);
 };
