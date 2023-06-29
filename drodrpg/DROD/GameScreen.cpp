@@ -34,6 +34,7 @@
 #include "DrodFontManager.h"
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
+#include "EquipmentDescription.h"
 #include "TileImageCalcs.h"
 #include "TileImageConstants.h"
 
@@ -1763,10 +1764,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 	//Get equipment properties.
 	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
 	int atk=0, def=0;
-	bool bMetal=false, bBeamBlock=false, bBriar=false, bLuckyGR=false,
-		bAttackFirst=false, bAttackLast=false, bRemovesSword=false, bBackstab=false, bNoEnemyDEF=false,
-		bGoblinWeakness=false, bSerpentWeakness=false, bCustomWeakness=false, bLuckyXP=false,
-		bCustomDescription=false;
+	WSTRING ability;
 
 	CCharacter *pCharacter = NULL; //custom equipment
 	switch (eCommand)
@@ -1782,18 +1780,11 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 				if (pCharacter)
 				{
 					def = (int)pCharacter->getDEF();
-					bGoblinWeakness = pCharacter->HasGoblinWeakness();
-					bSerpentWeakness = pCharacter->HasSerpentWeakness();
-					bCustomWeakness = pCharacter->HasCustomWeakness();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Weapon, wszCRLF);
 				}
+			} else {
+				ability = EquipmentDescription::GetPredefinedWeaponAbility(st.sword, wszCRLF);
 			}
-			bMetal = this->pCurrentGame->IsSwordMetal(st.sword);
-			bBeamBlock = this->pCurrentGame->equipmentBlocksGaze(ScriptFlag::Weapon);
-			bBriar = (st.sword == BriarSword);
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Weapon);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Weapon);
-			bGoblinWeakness |= (st.sword == GoblinSword);
-			bSerpentWeakness |= (st.sword == SerpentSword);
 		break;
 		case CMD_USE_ARMOR:
 			if (this->pCurrentGame->IsPlayerShieldDisabled())
@@ -1803,13 +1794,13 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 			if (bIsCustomEquipment(st.shield))
 			{
 				pCharacter = this->pCurrentGame->getCustomEquipment(ScriptFlag::Armor);
-				if (pCharacter)
+				if (pCharacter) {
 					atk = (int)pCharacter->getATK();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Armor, wszCRLF);
+				}
+			} else {
+				ability = EquipmentDescription::GetPredefinedShieldAbility(st.shield);
 			}
-			bMetal = this->pCurrentGame->IsShieldMetal(st.shield);
-			bBeamBlock = this->pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor);
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Armor);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Armor);
 		break;
 		case CMD_USE_ACCESSORY:
 			if (this->pCurrentGame->IsPlayerAccessoryDisabled())
@@ -1822,27 +1813,12 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 				{
 					atk = (int)pCharacter->getATK();
 					def = (int)pCharacter->getDEF();
-					bMetal = pCharacter->IsMetal();
-					bBeamBlock = pCharacter->HasRayBlocking();
-					bGoblinWeakness = pCharacter->HasGoblinWeakness();
-					bSerpentWeakness = pCharacter->HasSerpentWeakness();
-					bCustomWeakness = pCharacter->HasCustomWeakness();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Accessory, wszCRLF);
 				}
+			} else {
+				ability = EquipmentDescription::GetPredefinedAccessoryAbility(st.accessory);
 			}
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Accessory);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Accessory);
 		break;
-	}
-	//Properties available to custom equipment.
-	if (pCharacter)
-	{
-		bBriar |= pCharacter->CanCutBriar();
-		bAttackFirst |= pCharacter->CanAttackFirst();
-		bAttackLast |= pCharacter->CanAttackLast();
-		bBackstab |= pCharacter->TurnToFacePlayerWhenFighting();
-		bNoEnemyDEF |= pCharacter->HasNoEnemyDefense();
-		bRemovesSword |= pCharacter->RemovesSword();
-		bCustomDescription = pCharacter->HasCustomDescription();
 	}
 
 	//Format as text.
@@ -1869,114 +1845,11 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 		text += g_pTheDB->GetMessageText(MID_DEFStat);
 		bNeedCR = true;
 	}
-	if (bMetal)
+	if (!ability.empty())
 	{
 		if (bNeedCR)
 			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorMetal);
-		bNeedCR = true;
-	}
-	if (bGoblinWeakness)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness);
-		bNeedCR = true;
-	}
-	if (bSerpentWeakness)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
-		bNeedCR = true;
-	}
-	if (bCustomWeakness)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += WCSReplace(
-			g_pTheDB->GetMessageText(MID_StrongAgainstAspect),
-			wszStringToken,
-			pCharacter->GetCustomWeakness()
-		);
-		bNeedCR = true;
-	}
-	if (bBeamBlock)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
-		bNeedCR = true;
-	}
-	if (bBriar)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
-		bNeedCR = true;
-	}
-	if (bLuckyGR)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorLuckyGR);
-		bNeedCR = true;
-	}
-	if (bLuckyXP)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_DoubleXP);
-		bNeedCR = true;
-	}
-	if (bAttackFirst)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_AttackFirst);
-		bNeedCR = true;
-	}
-	if (bAttackLast)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_AttackLast);
-		bNeedCR = true;
-	}
-	if (bRemovesSword)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_RemovesSword);
-		bNeedCR = true;
-	}
-	if (bBackstab)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
-		bNeedCR = true;
-	}
-	if (bNoEnemyDEF)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
-		bNeedCR = true;
-	}
-	if (bCustomDescription) {
-		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
-
-		for (size_t i = 0; i < descriptions.size(); ++i) {
-			WSTRING description = descriptions[i];
-			if (description.empty()) continue;
-
-			if (bNeedCR)
-				text += wszCRLF;
-
-			text += description;
-			bNeedCR = true;
-		}
+		text += ability;
 	}
 
 	return text;

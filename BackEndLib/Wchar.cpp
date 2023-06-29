@@ -41,6 +41,7 @@ const WCHAR wszOpenAngle[] =    { We('<'),We(0) };
 const WCHAR wszCloseAngle[] =   { We('>'),We(0) };
 const WCHAR wszColon[] =        { We(':'),We(0) };
 const WCHAR wszComma[] =        { We(','),We(0) };
+const WCHAR wszCommaSpace[] =   { We(','),We(' '),We(0) };
 #ifdef WIN32
 const WCHAR wszCRLF[] =         { We('\r'),We('\n'),We(0) };
 #else

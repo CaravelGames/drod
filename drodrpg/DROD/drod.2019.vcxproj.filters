@@ -229,6 +229,9 @@
     <ClCompile Include="CommandListBoxWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="EquipmentDescription.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -443,6 +446,9 @@
     </ClInclude>
     <ClInclude Include="CommandListBoxWidget.h">
       <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="EquipmentDescription.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

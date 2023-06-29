@@ -29,6 +29,7 @@
 #include "DrodBitmapManager.h"
 #include "DrodFontManager.h"
 #include "DrodScreen.h"
+#include "EquipmentDescription.h"
 #include "GameScreen.h"
 
 #include "DamagePreviewEffect.h"
@@ -1223,58 +1224,6 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 				mid = GetKeyMID(this->pRoom->GetTParam(wX, wY)); break;
 			case T_SWORD:
 			case T_SHIELD:
-			{
-				const UINT equipmentType = this->pRoom->GetTParam(wX, wY);
-				const bool bIsShield = tTile == T_SHIELD;
-				if (bIsCustomEquipment(equipmentType) && this->pCurrentGame) {
-					const HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(equipmentType);
-					if (pChar) {
-						AppendTextLine(pChar->charNameText.c_str());
-					} else {
-						AppendTextLine(wszQuestionMark);
-					}
-				} else {
-					AppendLine(bIsShield ? GetShieldMID(equipmentType) : GetSwordMID(equipmentType));
-				}
-
-				if (this->pCurrentGame)
-				{
-					const int oldVal = bIsShield ?
-							this->pCurrentGame->getShieldPower(this->pCurrentGame->pPlayer->st.shield) :
-							this->pCurrentGame->getWeaponPower(this->pCurrentGame->pPlayer->st.sword);
-					int newVal = bIsShield ?
-							this->pCurrentGame->getShieldPower(equipmentType) : this->pCurrentGame->getWeaponPower(equipmentType);
-					if (bIsCustomEquipment(equipmentType)) {
-						//Set up the equipment's properties by running its script in a temporary game instance.
-						CMonsterFactory mf;
-						CMonster *pNew = mf.GetNewMonster((MONSTERTYPE)M_CHARACTER);
-						ASSERT(pNew);
-						pNew->wX = pNew->wY = static_cast<UINT>(-1); //not located anywhere in the room area
-						CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
-						pCharacter->wLogicalIdentity = equipmentType;
-						pCharacter->equipType = bIsShield ? ScriptFlag::Armor : ScriptFlag::Weapon;
-						CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
-						*pTempGame = *this->pCurrentGame;
-						pCharacter->SetCurrentGame(pTempGame);
-
-						CCueEvents Ignored;
-						pCharacter->Process(CMD_WAIT, Ignored);
-						newVal = bIsShield ? pCharacter->getDEF() : pCharacter->getATK();
-						delete pTempGame;
-						delete pCharacter;
-					}
-					const int diff = newVal - oldVal;
-					wstr += wszSpace;
-					wstr += wszLeftParen;
-					if (diff >= 0)
-						wstr += wszPlus;
-					wstr += _itoW(diff, temp, 10);
-					wstr += wszRightParen;
-				}
-
-				mid = 0; //don't append another text for this
-				break;
-			}
 			case T_ACCESSORY:
 			{
 				const UINT equipmentType = this->pRoom->GetTParam(wX, wY);
@@ -1286,8 +1235,105 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						AppendTextLine(wszQuestionMark);
 					}
 				} else {
-					AppendLine(GetAccessoryMID(equipmentType));
+					switch (tTile) {
+						case T_SWORD: AppendLine(GetSwordMID(equipmentType)); break;
+						case T_SHIELD: AppendLine(GetShieldMID(equipmentType)); break;
+						case T_ACCESSORY: AppendLine(GetAccessoryMID(equipmentType)); break;
+					}
 				}
+
+				if (this->pCurrentGame)
+				{
+					int oldATK = 0, oldDEF = 0, newATK = 0, newDEF = 0;
+					WSTRING ability;
+					ScriptFlag::EquipmentType equipType;
+					UINT currentEquipment;
+					switch (tTile) {
+						case T_SWORD: 
+							equipType = ScriptFlag::Weapon;
+							currentEquipment = this->pCurrentGame->pPlayer->st.sword;
+						break;
+						case T_SHIELD:
+							equipType = ScriptFlag::Armor;
+							currentEquipment = this->pCurrentGame->pPlayer->st.shield;
+						break;
+						case T_ACCESSORY:
+							equipType = ScriptFlag::Accessory;
+							currentEquipment = this->pCurrentGame->pPlayer->st.accessory;
+						break;
+					}
+
+					pCurrentGame->getEquipmentStats(equipType, oldATK, oldDEF);
+					if (bIsCustomEquipment(equipmentType)) {
+						//Set up the equipment's properties by running its script in a temporary game instance.
+						CMonsterFactory mf;
+						CMonster *pNew = mf.GetNewMonster((MONSTERTYPE)M_CHARACTER);
+						ASSERT(pNew);
+						pNew->wX = pNew->wY = static_cast<UINT>(-1); //not located anywhere in the room area
+						CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
+						pCharacter->wLogicalIdentity = equipmentType;
+						pCharacter->equipType = equipType;
+						CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
+						*pTempGame = *this->pCurrentGame;
+						pCharacter->SetCurrentGame(pTempGame);
+
+						CCueEvents Ignored;
+						pCharacter->Process(CMD_WAIT, Ignored);
+						newATK = pCharacter->getATK();
+						newDEF = pCharacter->getDEF();
+						ability = EquipmentDescription::GetEquipmentAbility(pCharacter, equipType, wszCommaSpace);
+						delete pTempGame;
+						delete pCharacter;
+					} else if (tTile == T_SWORD) {
+						ability = EquipmentDescription::GetPredefinedWeaponAbility(equipmentType, wszCommaSpace);
+						newATK = this->pCurrentGame->getPredefinedWeaponPower(equipmentType);
+					} else if (tTile == T_SHIELD) {
+						ability = EquipmentDescription::GetPredefinedShieldAbility(equipmentType);
+						newDEF = this->pCurrentGame->getPredefinedShieldPower(equipmentType);
+					} else if (tTile == T_ACCESSORY) {
+						ability = EquipmentDescription::GetPredefinedAccessoryAbility(equipmentType);
+					}
+
+					const int diffATK = newATK - oldATK;
+					const int diffDEF = newDEF - oldDEF;
+					WSTRING equipText;
+					bool needComma = false;
+
+					if (diffATK != 0 || tTile == T_SWORD) {
+						if (diffATK >= 0)
+							equipText += wszPlus;
+						equipText += _itoW(diffATK, temp, 10);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_ATKStat);
+						needComma = true;
+					}
+					if (diffDEF != 0 || tTile == T_SHIELD) {
+						if (needComma) {
+							equipText += wszCommaSpace;
+						}
+						if (diffDEF >= 0)
+							equipText += wszPlus;
+						equipText += _itoW(diffDEF, temp, 10);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_DEFStat);
+						needComma = true;
+					}
+					if (!ability.empty()) {
+						if (needComma) {
+							equipText += wszCommaSpace;
+						}
+						equipText += ability;
+					}
+
+					if (!equipText.empty()) {
+						wstr += wszSpace;
+						wstr += wszLeftParen;
+						wstr += equipText;
+						wstr += wszRightParen;
+					}
+				}
+
+				mid = 0; //don't append another text for this
 				break;
 			}
 			case T_ORB:
