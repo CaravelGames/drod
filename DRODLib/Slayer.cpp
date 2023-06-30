@@ -668,7 +668,7 @@ bool CSlayer::ConfirmGoal()
 			continue;
 		}
 
-		UINT wTile = room.GetTSquare(wGoalX, wGoalY);
+		UINT wTile = room.GetTSquare(orb->wX, orb->wY);
 		COrbData* pOrb = room.GetOrbAtCoords(orb->wX, orb->wY);
 		//Reject broken or missing orb and remove from orbsToHit
 		if (wTile != T_ORB || !pOrb || pOrb->eType == OT_BROKEN) {
