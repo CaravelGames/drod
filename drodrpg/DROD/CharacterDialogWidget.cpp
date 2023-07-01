@@ -3709,28 +3709,37 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			else
 				wstr += wszExclamation;	//superfluous IfEnd
 			//no break
-		case CCharacterCommand::CC_IfEnd:
+		case CCharacterCommand::CC_AddRoomToMap:
+		case CCharacterCommand::CC_AnswerOption:
+		case CCharacterCommand::CC_AmbientSound:
+		case CCharacterCommand::CC_AmbientSoundAt:
+		case CCharacterCommand::CC_Autosave:
+		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_Disappear:
-		case CCharacterCommand::CC_MoveTo:
-		case CCharacterCommand::CC_MoveRel:
+		case CCharacterCommand::CC_EachAttack:
+		case CCharacterCommand::CC_EachDefend:
+		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
 		case CCharacterCommand::CC_EndScript:
 		case CCharacterCommand::CC_EndScriptOnExit:
+		case CCharacterCommand::CC_Equipment:
 		case CCharacterCommand::CC_FlushSpeech:
 		case CCharacterCommand::CC_GoSub:
 		case CCharacterCommand::CC_GoTo:
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Imperative:
-		case CCharacterCommand::CC_Behavior:
 		case CCharacterCommand::CC_LevelEntrance:
+		case CCharacterCommand::CC_MoveTo:
+		case CCharacterCommand::CC_MoveRel:
+		case CCharacterCommand::CC_PlayVideo:
+		case CCharacterCommand::CC_ScoreCheckpoint:
+		case CCharacterCommand::CC_SetMonsterVar:
 		case CCharacterCommand::CC_SetMusic:
+		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
 		case CCharacterCommand::CC_ReplaceWithDefault:
-		case CCharacterCommand::CC_AnswerOption:
-		case CCharacterCommand::CC_AmbientSound:
-		case CCharacterCommand::CC_AmbientSoundAt:
-		case CCharacterCommand::CC_PlayVideo:
-		case CCharacterCommand::CC_Return:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;

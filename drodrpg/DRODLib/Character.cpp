@@ -1050,6 +1050,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
