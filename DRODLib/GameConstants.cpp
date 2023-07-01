@@ -93,7 +93,7 @@ namespace InputCommands
 		keyDefinitions[DCMD_PuzzleModeOptions] = new KeyDefinition(CMD_EXTRA_PUZZLE_MODE_OPTIONS, "Key_PuzzleModeOptions", MID_Command_PuzzleModeOptions, BuildInputKey(SDLK_F3, false, true, false));
 		keyDefinitions[DCMD_ToggleTurnCount] = new KeyDefinition(CMD_EXTRA_TOGGLE_TURN_COUNT, "Key_ToggleTurnCount", MID_Command_ToggleTurnCount, SDLK_F7);
 		keyDefinitions[DCMD_QuickDemoRecord] = new KeyDefinition(CMD_EXTRA_QUICK_DEMO_RECORD, "Key_QuickDemoRecord", MID_Command_QuickDemoRecord, SDLK_F4);
-		keyDefinitions[DCMD_ToggleDemoRecord] = new KeyDefinition(CMD_EXTRA_TOGGLE_DEMO_RECORD, "Key_ToggleDemoRecord", MID_Command_ToggleDemoRecord, SDLK_F5);
+		keyDefinitions[DCMD_ToggleDemoRecord] = new KeyDefinition(CMD_EXTRA_TOGGLE_DEMO_RECORD, "Key_ToggleDemoRecord", MID_Command_ToggleDemoRecord, BuildInputKey(SDLK_F6, false, false, true));
 		keyDefinitions[DCMD_WatchDemos] = new KeyDefinition(CMD_EXTRA_WATCH_DEMOS, "Key_WatchDemos", MID_Command_WatchDemos, SDLK_F6);
 		keyDefinitions[DCMD_ShowHelp] = new KeyDefinition(CMD_EXTRA_SHOW_HELP, "Key_ShowHelp", MID_Command_ShowHelp, SDLK_F1);
 		keyDefinitions[DCMD_Editor_Cut] = new KeyDefinition(CMD_EXTRA_EDITOR_CUT, "Key_Editor_Cut", MID_Command_Editor_Cut, BuildInputKey(SDLK_x, false, false, true));
@@ -102,8 +102,8 @@ namespace InputCommands
 		keyDefinitions[DCMD_Editor_Undo] = new KeyDefinition(CMD_EXTRA_EDITOR_UNDO, "Key_Editor_Undo", MID_Command_Editor_Undo, BuildInputKey(SDLK_z, false, false, true));
 		keyDefinitions[DCMD_Editor_Redo] = new KeyDefinition(CMD_EXTRA_EDITOR_REDO, "Key_Editor_Redo", MID_Command_Editor_Redo, BuildInputKey(SDLK_y, false, false, true));
 		keyDefinitions[DCMD_Editor_PlaytestRoom] = new KeyDefinition(CMD_EXTRA_EDITOR_PLAYTEST_ROOM, "Key_Editor_PlaytestRoom", MID_Command_Editor_PlaytestRoom, SDLK_F5);
-		keyDefinitions[DCMD_Editor_ReflectX] = new KeyDefinition(CMD_EXTRA_EDITOR_REFLECT_X, "Key_Editor_ReflectX", MID_Command_Editor_ReflectX, SDLK_F7);
-		keyDefinitions[DCMD_Editor_ReflectY] = new KeyDefinition(CMD_EXTRA_EDITOR_REFLECT_Y, "Key_Editor_ReflectY", MID_Command_Editor_ReflectY, SDLK_F8);
+		keyDefinitions[DCMD_Editor_ReflectX] = new KeyDefinition(CMD_EXTRA_EDITOR_REFLECT_X, "Key_Editor_ReflectX", MID_Command_Editor_ReflectX, SDLK_F8);
+		keyDefinitions[DCMD_Editor_ReflectY] = new KeyDefinition(CMD_EXTRA_EDITOR_REFLECT_Y, "Key_Editor_ReflectY", MID_Command_Editor_ReflectY, BuildInputKey(SDLK_F8, false, false, true));
 		keyDefinitions[DCMD_Editor_SetFloorImage] = new KeyDefinition(CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE, "Key_Editor_SetFloorImage", MID_Command_Editor_SetFloorImage, SDLK_F9);
 		keyDefinitions[DCMD_Editor_SetOverheadImage] = new KeyDefinition(CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE, "Key_Editor_SetOverheadImage", MID_Command_Editor_SetOverheadImage, BuildInputKey(SDLK_F9, true, false, false));
 		keyDefinitions[DCMD_Editor_PrevLevel] = new KeyDefinition(CMD_EXTRA_EDITOR_PREV_LEVEL, "Key_Editor_PrevLevel", MID_Command_Editor_PrevLevel, SDLK_PAGEUP);
