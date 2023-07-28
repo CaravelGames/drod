@@ -1393,6 +1393,15 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			default: break;
 		}
 	}
+
+	//Inspectable invisible characters
+	const WSTRING invisibleInfoStr = GetInvisibleCharacterInfo(wX, wY);
+	if (invisibleInfoStr.size())
+	{
+		wstr += wszCRLF;
+		wstr += invisibleInfoStr;
+	}
+
 	//Flat layer.
 	const UINT fTile = this->pRoom->GetFSquare(wX, wY);
 	if (fTile != 0)
@@ -2021,6 +2030,66 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(mid);
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetInvisibleCharacterInfo(const UINT wX, const UINT wY) const
+{
+	WSTRING wstr;
+	bool needCR = false;
+
+	CMonster* pMonster = this->pRoom->pFirstMonster;
+	while (pMonster) {
+		if (pMonster->wX != wX || pMonster->wY != wY || pMonster->wType != M_CHARACTER) {
+			pMonster = pMonster->pNext;
+			continue;
+		}
+
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+
+		if (pCharacter->IsVisible() || !pCharacter->IsInvisibleInspectable()) {
+			pMonster = pMonster->pNext;
+			continue;
+		}
+
+		if (needCR) {
+			wstr += wszCRLF;
+		}
+
+		wstr += GetMonsterName(pMonster);
+
+		if (pCharacter->HasCustomDescription()) {
+			vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
+			WSTRING ability;
+			int count = 0;
+
+			for (size_t i = 0; i < descriptions.size(); ++i) {
+				WSTRING description = descriptions[i];
+				if (description.empty()) continue;
+
+				if (count)
+				{
+					ability += wszComma;
+					ability += wszSpace;
+				}
+				ability += description;
+				++count;
+			}
+
+			if (count) {
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += ability;
+				wstr += wszRightParen;
+			}
+		}
+
+		needCR = true;
+		pMonster = pMonster->pNext;
 	}
 
 	return wstr;

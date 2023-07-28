@@ -108,7 +108,9 @@ namespace ScriptFlag
 		RestartScriptOnRoomEntrance=14,   //restart script execution from beginning on room entrance
 		MakeGlobal=15,        //move NPC-script to the global NPC-script list
 		RunOnCombat=16,       //execute script when combat is initiated (default)
-		PauseOnCombat=17      //do not execute any script commands when combat is initiated
+		PauseOnCombat=17,     //do not execute any script commands when combat is initiated,
+		InvisibleInspectable=18, //Appears in right-click tooltip even when invsible
+		NoInvisibleInspectable=19
 	};
 
 	//Behavior patterns for NPCs/monsters.

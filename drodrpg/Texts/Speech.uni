@@ -1359,3 +1359,11 @@ Scripts with a lower processing sequence value will run before scripts with a hi
 [MID_CustomSpeechColor]
 [eng]
 Speech Color (rgb)
+
+[MID_InvisibleInspectable]
+[eng]
+Invisible inspectable
+
+[MID_NotInvisibleInspectable]
+[eng]
+Not invisible inspectable

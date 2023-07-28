@@ -4059,6 +4059,8 @@ void CCharacterDialogWidget::PopulateImperativeListBox(const bool bDefaultScript
 	this->pImperativeListBox->AddItem(ScriptFlag::ShowStatChanges, g_pTheDB->GetMessageText(MID_ShowStatChanges));
 	this->pImperativeListBox->AddItem(ScriptFlag::GhostDisplay, g_pTheDB->GetMessageText(MID_NPCGhostDisplay));
 	this->pImperativeListBox->AddItem(ScriptFlag::NoGhostDisplay, g_pTheDB->GetMessageText(MID_NPCNoGhostDisplay));
+	this->pImperativeListBox->AddItem(ScriptFlag::InvisibleInspectable, g_pTheDB->GetMessageText(MID_InvisibleInspectable));
+	this->pImperativeListBox->AddItem(ScriptFlag::NoInvisibleInspectable, g_pTheDB->GetMessageText(MID_NotInvisibleInspectable));
 	this->pImperativeListBox->AddItem(ScriptFlag::RestartScriptOnRoomEntrance, g_pTheDB->GetMessageText(MID_RestartScriptOnRoomEntrance));
 	this->pImperativeListBox->AddItem(ScriptFlag::NoRestartScriptOnRoomEntrance, g_pTheDB->GetMessageText(MID_NoRestartScriptOnRoomEntrance));
 	this->pImperativeListBox->AddItem(ScriptFlag::RunOnCombat, g_pTheDB->GetMessageText(MID_RunOnCombat));

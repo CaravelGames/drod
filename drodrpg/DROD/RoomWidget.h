@@ -249,6 +249,7 @@ public:
 			const bool bMoveInProgress=false);
 	void				FadeToLightLevel(const UINT wNewLight);
 	void           FinishMoveAnimation() {this->dwCurrentDuration = this->dwMoveDuration;}
+	WSTRING        GetInvisibleCharacterInfo(const UINT wX, const UINT wY) const;
 	void           GetSquareRect(UINT wCol, UINT wRow, SDL_Rect &SquareRect) const;
 	static UINT    GetKeyMID(const UINT param);
 	static UINT    GetOrbMID(const UINT type);

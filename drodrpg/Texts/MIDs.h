@@ -1528,6 +1528,8 @@ enum MID_CONSTANT {
   MID_ProcessingSequence = 1838,
   MID_ProcessingSequenceDescription = 1839,
   MID_CustomSpeechColor = 1849,
+  MID_InvisibleInspectable = 1869,
+  MID_NotInvisibleInspectable = 1870,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
