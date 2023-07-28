@@ -793,6 +793,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarBeam: strText = "_Beam"; break;
 		case MID_AumtlichAbilityPercentage: strText = "Gaze reduces your health by %s percent"; break;
 		case MID_AumtlichAbilityFlatRate: strText = "Gaze reduces your health by %s HP"; break;
+		case MID_InvisibleInspectable: strText = "Invisible inspectable"; break;
+		case MID_NotInvisibleInspectable: strText = "Not invisible inspectable"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
