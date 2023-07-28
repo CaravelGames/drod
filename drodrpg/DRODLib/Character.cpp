@@ -2215,7 +2215,8 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_Autosave:
 			{
 				//Autosave with identifier 'label'.
-				if (pGame->Autosave(command.label))
+				WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
+				if (pGame->Autosave(saveName))
 					CueEvents.Add(CID_Autosave);
 				bProcessNextCommand = true;
 			}
