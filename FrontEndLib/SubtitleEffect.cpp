@@ -352,7 +352,7 @@ bool CSubtitleEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 
 	this->drawOpacity = this->opacity;
 
-	if (this->dwDuration != (UINT)-1 && dwTimeElapsed > this->dwTextDuration + dwWaitForNewText)
+	if (this->dwTextDuration && this->dwDuration != (UINT)-1 && dwTimeElapsed > this->dwTextDuration + dwWaitForNewText)
 	{
 		if (g_pTheBM->bAlpha)
 		{
