@@ -145,6 +145,7 @@ public:
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}
+	bool           IsInvisibleInspectable() const {return this->bInvisibleInspectable;}
 	bool           IsLuckyGR() const {return this->bLuckyGR;}
 	bool           IsLuckyXP() const {return this->bLuckyXP;}
 	bool           IsMetal() const {return this->bMetal;}
@@ -219,6 +220,7 @@ public:
 	UINT  wIdentity;        //monster type
 	UINT  wLogicalIdentity; //logical ID (might be a hold custom character type)
 	bool  bVisible;         //on screen in room, or not
+	bool  bInvisibleInspectable; //appears in tooltip when invisible
 	bool  bScriptDone;      //true when script has run to completion
 	bool  bReplaced;        //true when script command replaces the character
 									//with a normal monster

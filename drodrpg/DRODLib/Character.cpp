@@ -101,6 +101,7 @@ const UINT MAX_ANSWERS = 9;
 #define DefeatedStr "Defeated"
 #define ShowStatChangesStr "SStatChanges"
 #define GhostImageStr "GhostImage"
+#define InvisibleInspectableStr "InvisibleInspectable"
 #define SwordStr "Sword"
 #define RestartScriptOnEntranceStr "RestartOnEntrance"
 #define GlobalStr "Global"
@@ -206,6 +207,7 @@ CCharacter::CCharacter(
 	, wIdentity(M_NONE)
 	, wLogicalIdentity(M_NONE)
 	, bVisible(false)
+	, bInvisibleInspectable(false)
 	, bScriptDone(false), bReplaced(false), bGlobal(false)
 	, bYesNoQuestion(false)
 	, bPlayerTouchedMe(false)
@@ -2590,6 +2592,14 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::PauseOnCombat:
 						this->bExecuteScriptOnCombat = false;
+					break;
+
+					//Whether character name and description are shown when invisible and right-clicked.
+					case ScriptFlag::InvisibleInspectable:
+						this->bInvisibleInspectable = true;
+					break;
+					case ScriptFlag::NoInvisibleInspectable:
+						this->bInvisibleInspectable = false;
 					break;
 
 					default:
@@ -5070,6 +5080,7 @@ void CCharacter::RestartScript()
 	this->bDefeated = false;
 	this->bShowStatChanges = true;
 	this->bGhostImage = false;
+	this->bInvisibleInspectable = false;
 	this->bRestartScriptOnRoomEntrance = false;
 //	this->bGlobal = false; //this flag doesn't get reset -- once a script's in the global list, it stays there
 	this->bExecuteScriptOnCombat = true;
@@ -5389,6 +5400,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDefeated = vars.GetVar(DefeatedStr, this->bDefeated);
 	this->bShowStatChanges = vars.GetVar(ShowStatChangesStr, this->bShowStatChanges);
 	this->bGhostImage = vars.GetVar(GhostImageStr, this->bGhostImage);
+	this->bInvisibleInspectable = vars.GetVar(InvisibleInspectableStr, this->bInvisibleInspectable);
 	this->bRestartScriptOnRoomEntrance = vars.GetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
 	this->bGlobal = vars.GetVar(GlobalStr, this->bGlobal);
 	this->bExecuteScriptOnCombat = vars.GetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
@@ -5511,6 +5523,8 @@ const
 		vars.SetVar(ShowStatChangesStr, this->bShowStatChanges);
 	if (this->bGhostImage)
 		vars.SetVar(GhostImageStr, this->bGhostImage);
+	if (this->bInvisibleInspectable)
+		vars.SetVar(InvisibleInspectableStr, this->bInvisibleInspectable);
 	if (this->bRestartScriptOnRoomEntrance)
 		vars.SetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
 	if (this->bGlobal)
