@@ -40,7 +40,7 @@ The game requires the following libraries. Different versions may potentially be
  -  `lpng-1512` => https://downloads.sourceforge.net/project/libpng/libpng15/older-releases/1.5.12/lpng1512.zip
  -  `metakit-2.4.9.7` => https://github.com/jnorthrup/metakit/archive/master.zip
  -  `sdl2-2.26.1` => https://github.com/libsdl-org/SDL/releases/download/release-2.26.1/SDL2-2.26.1.zip
- -  `sdl-ttf-2.20.1` => https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.20.1/SDL2_ttf-devel-2.20.1-VC.zip
+ -  `sdl-ttf-2.0.14` => https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip
  -  `zlib` => http://www.zlib.net/fossils/zlib-1.2.11.tar.gz
 
 You need the DLLs from the following libraries to go into the same dir with your built drod.exe:

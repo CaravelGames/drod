@@ -7125,7 +7125,7 @@ void CRoomWidget::DrawPlayer(
 
 	//Make sure display orientation is correct for role appearance.
 	UINT wDisplayO, wSwordO = swordsman.wO;
-	switch (int(swordsman.wAppearance))
+	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return; //Don't show anything if player is not being shown.
 		case M_BRAIN: case M_SKIPPERNEST: wDisplayO = NO_ORIENTATION; break;
@@ -7286,7 +7286,7 @@ bool CRoomWidget::GetPlayerDisplayTiles(
 const
 {
 	//Make sure display orientation is correct for role appearance.
-	switch (int(swordsman.wAppearance))
+	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return false; //Don't show anything if player is not being shown.
 		case M_BRAIN: case M_SKIPPERNEST: wO = NO_ORIENTATION; break;

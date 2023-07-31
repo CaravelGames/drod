@@ -209,8 +209,9 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 	const UINT oTile = room.GetOSquare(wNewX, wNewY);
 	if (IsTileObstacle(oTile))
 	{
-		if (!(bIsDoor(oTile) && (bIsEntityFlying(this->wAppearance) ||
-				bIsDoor(room.GetOSquare(wX, wY))))) //may walk along door tops or fly onto them
+		if (!(bIsDoor(oTile) && bIsDoor(room.GetOSquare(wX, wY))) && //may walk along door tops
+			 !(bIsWater(oTile) && CanWalkOnWater()) && //can cross water tiles
+			 !(bIsPit(oTile) && bIsEntityFlying(wAppearance))) //can fly over pit
 			return false;
 	}
 

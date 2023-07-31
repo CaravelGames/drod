@@ -78,6 +78,8 @@ public:
 	void           SetOffset(const int nX, const int nY);
 	void           SetMaxWidth(const UINT width) {this->maxWidth = width;}
 
+	virtual bool   Update(const UINT wDeltaTime); // Updates the state of the effect without drawing it
+
 	bool           bAttachedCoord;   //whether pCoord should be deleted on destruction
 
 

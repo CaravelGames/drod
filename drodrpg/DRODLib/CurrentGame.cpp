@@ -1048,7 +1048,7 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	const InputCommands::DCMD eCommand = InputCommands::DCMD(
 			settings.GetVar(InputCommands::COMMANDNAME_ARRAY[id], 0));
 
-	return g_pTheDB->GetMessageText(MID_UNKNOWN + eCommand);
+	return g_pTheDB->GetMessageText(KeyToMID(eCommand));
 }
 
 //*****************************************************************************

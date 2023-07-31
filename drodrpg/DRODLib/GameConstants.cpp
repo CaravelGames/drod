@@ -109,4 +109,31 @@ namespace InputCommands
 
 		return DCMD_NotFound;
 	}
+
+	MESSAGE_ID KeyToMID(const SDL_Keycode nKey)
+	{
+		switch (nKey) {
+		case SDLK_KP_DIVIDE: return MID_KEY_KP_DIVIDE;
+		case SDLK_KP_MULTIPLY: return MID_KEY_KP_MULTIPLY;
+		case SDLK_KP_MINUS: return MID_KEY_KP_MINUS;
+		case SDLK_KP_PLUS: return MID_KEY_KP_PLUS;
+		case SDLK_KP_ENTER: return MID_KEY_KP_ENTER;
+		case SDLK_KP_1: return MID_KEY_KP1;
+		case SDLK_KP_2: return MID_KEY_KP2;
+		case SDLK_KP_3: return MID_KEY_KP3;
+		case SDLK_KP_4: return MID_KEY_KP4;
+		case SDLK_KP_5: return MID_KEY_KP5;
+		case SDLK_KP_6: return MID_KEY_KP6;
+		case SDLK_KP_7: return MID_KEY_KP7;
+		case SDLK_KP_8: return MID_KEY_KP8;
+		case SDLK_KP_9: return MID_KEY_KP9;
+		case SDLK_KP_0: return MID_KEY_KP0;
+		case SDLK_KP_PERIOD: return MID_KEY_KP_PERIOD;
+		case SDLK_LEFT: return MID_KEY_LEFT;
+		case SDLK_RIGHT: return MID_KEY_RIGHT;
+		case SDLK_UP: return MID_KEY_UP;
+		case SDLK_DOWN: return MID_KEY_DOWN;
+		default: return static_cast<MESSAGE_ID>((long)MID_UNKNOWN + nKey);
+		}
+	}
 }
