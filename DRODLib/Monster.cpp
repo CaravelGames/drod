@@ -387,7 +387,7 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT)
 	{
 		CCueEvents Ignored;
-		if (OnStabbed(Ignored, this->wX, this->wY))
+		if (OnStabbed(Ignored, this->wX, this->wY, WT_HotTile))
 		{
 			//Add special cue events here instead of inside OnStabbed.
 			CueEvents.Add(CID_MonsterBurned, this);

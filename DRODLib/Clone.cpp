@@ -181,8 +181,8 @@ bool CClone::OnStabbed(CCueEvents& CueEvents, const UINT wX, const UINT wY, Weap
 	const UINT identity = GetIdentity();
 
 	if ((identity == M_WUBBA || identity == M_FLUFFBABY)
-		&& weaponType != WT_Firetrap) {
-		// Wubbas and Puffs can only be killed by Firetrap stabs.
+		&& !(weaponType == WT_Firetrap || weaponType == WT_HotTile)) {
+		// Wubbas and Puffs can only be killed by Firetrap or Hot tile stabs.
 		return false;
 	}
 
