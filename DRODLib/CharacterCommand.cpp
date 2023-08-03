@@ -280,6 +280,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("setx")] = ImageOverlayCommand::SetX;
 		commandMap[string("sety")] = ImageOverlayCommand::SetY;
 		commandMap[string("srcxy")] = ImageOverlayCommand::SrcXY;
+		commandMap[string("tilegrid")] = ImageOverlayCommand::TileGrid;
 	}
 
 	for (CommandMap::const_iterator it=commandMap.begin(); it!=commandMap.end(); ++it) {
@@ -374,6 +375,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 			case ImageOverlayCommand::ParallelRotate:
 			case ImageOverlayCommand::Rotate:
 			case ImageOverlayCommand::SrcXY:
+			case ImageOverlayCommand::TileGrid:
 				//two arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;

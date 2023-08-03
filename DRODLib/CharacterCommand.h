@@ -474,6 +474,7 @@ struct ImageOverlayCommand
 		SetX,
 		SetY,
 		SrcXY,
+		TileGrid,
 		TurnDuration,
 		Invalid
 	};

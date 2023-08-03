@@ -88,6 +88,7 @@ private:
 	bool CanLoop() const;
 	inline bool IsCommandQueueFinished() const;
 	bool IsImageDrawn();
+	bool IsTiled() const;
 	void PrepareDrawProperties();
 	void StartNextCommand();
 	void FinishCommand(const ImageOverlayCommand& command, const CommandExecution& ce);
@@ -104,9 +105,11 @@ private:
 
 	void PrepareAlteredImage();
 
+	SDL_Surface* TileSurface(SDL_Surface* pSurface);
+
 	long drawSequence;
 
-	SDL_Surface *pImageSurface, *pAlteredSurface;
+	SDL_Surface *pImageSurface, *pAlteredSurface, *pTiledSurface;
 	bool bPrepareAlteredImage;
 
 	int x, y; // Real position of the image
@@ -114,6 +117,7 @@ private:
 	int angle;
 	int scale;
 	int jitter;
+	int xTile, yTile;
 	SDL_Rect sourceClipRect;
 
 	// Properties used for the drawing
