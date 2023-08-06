@@ -242,7 +242,63 @@ void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 
 	if (this->drawDestinationRect.w > 0 && this->drawDestinationRect.h > 0) {
 		g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
+
+		if (IsRepeated()) {
+			DrawRepeated(pSrcSurface, &destSurface);
+		}
 	}
+}
+
+void CImageOverlayEffect::DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* destSurface)
+{
+	SDL_Rect srcRect;
+	SDL_Rect destRect;
+	SDL_Rect widgetRect = {
+		this->pOwnerWidget->GetX(),
+		this->pOwnerWidget->GetY(),
+		this->pOwnerWidget->GetW(),
+		this->pOwnerWidget->GetH()
+	};
+
+	int repeats = 0;
+	for (int r = 1; r <= repetitions; ++r) {
+		srcRect = this->drawSourceRect;
+		// Destination rect is created in "widget space" for clipping
+		destRect = {
+			this->drawDestinationRect.x + (r * xRepeatOffset) - widgetRect.x,
+			this->drawDestinationRect.y + (r * yRepeatOffset) - widgetRect.y,
+			this->drawDestinationRect.w,
+			this->drawDestinationRect.h,
+		};
+
+		g_pTheBM->ClipSrcAndDestToRect(srcRect, destRect, widgetRect.w, widgetRect.h);
+		if (destRect.w == 0) {
+			break;
+		}
+		// Translate back to surface space
+		destRect.x += widgetRect.x;
+		destRect.y += widgetRect.y;
+
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(srcRect, srcSurface, destRect, destSurface, this->drawAlpha);
+		++repeats;
+	}
+
+	// Work out how large the dirty rect is
+	int totalXOffset = repeats * abs(xRepeatOffset);
+	int totalYOffset = repeats * abs(yRepeatOffset);
+	SDL_Rect dirtyRect = this->drawDestinationRect;
+	dirtyRect.w += totalXOffset;
+	dirtyRect.h += totalYOffset;
+
+	// Negative offsets require the dirty rect to be shifted
+	if (this->xRepeatOffset < 0) {
+		dirtyRect.x = max(0, dirtyRect.x - totalXOffset);
+	}
+	if (this->yRepeatOffset < 0) {
+		dirtyRect.y = max(0, dirtyRect.y - totalYOffset);
+	}
+
+	this->dirtyRects[0] = dirtyRect;
 }
 
 bool CImageOverlayEffect::IsImageDrawn()
@@ -586,7 +642,6 @@ void CImageOverlayEffect::StartNextCommand()
 		this->repetitions = max(0, val);
 		this->xRepeatOffset = command.val[1];
 		this->yRepeatOffset = command.val[2];
-		this->bPrepareAlteredImage = true;
 	}
 	break;
 

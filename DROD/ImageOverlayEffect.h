@@ -81,6 +81,8 @@ protected:
 private:
 	bool AdvanceState(const UINT wDeltaTime);
 
+	void DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* destSurface);
+
 	Uint32 UpdateCommand(const ImageOverlayCommand& command, CommandExecution& ce, const Uint32 dwRemainingTime);
 	Uint32 UpdateParallelCommands(const Uint32 dwDeltaTime);
 	bool IsCurrentCommandFinished() const;
