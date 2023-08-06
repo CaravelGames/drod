@@ -232,15 +232,7 @@ void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 		pSrcSurface = this->pImageSurface;
 
 	if (this->drawDestinationRect.w > 0 && this->drawDestinationRect.h > 0) {
-		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
-		if (bSurfaceAlpha) {
-			EnableSurfaceBlending(pSrcSurface, this->drawAlpha);
-			SDL_BlitSurface(pSrcSurface, &this->drawSourceRect, &destSurface, &this->drawDestinationRect);
-			DisableSurfaceBlending(pSrcSurface);
-		}
-		else {
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
-		}
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
 	}
 }
 
