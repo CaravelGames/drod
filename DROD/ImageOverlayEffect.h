@@ -88,6 +88,7 @@ private:
 	bool CanLoop() const;
 	inline bool IsCommandQueueFinished() const;
 	bool IsImageDrawn();
+	bool IsRepeated() const;
 	bool IsTiled() const;
 	void PrepareDrawProperties();
 	void StartNextCommand();
@@ -118,6 +119,7 @@ private:
 	int scale;
 	int jitter;
 	int xTile, yTile;
+	int repetitions, xRepeatOffset, yRepeatOffset;
 	SDL_Rect sourceClipRect;
 
 	// Properties used for the drawing

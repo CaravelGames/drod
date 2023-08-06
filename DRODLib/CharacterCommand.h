@@ -467,6 +467,7 @@ struct ImageOverlayCommand
 		ParallelMove,
 		ParallelMoveTo,
 		ParallelRotate,
+		Repeat,
 		Rotate,
 		Scale,
 		SetAlpha,

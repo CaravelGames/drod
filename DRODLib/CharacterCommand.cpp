@@ -273,6 +273,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("pmove ")] = ImageOverlayCommand::ParallelMove;
 		commandMap[string("pmoveto")] = ImageOverlayCommand::ParallelMoveTo;
 		commandMap[string("protate")] = ImageOverlayCommand::ParallelRotate;
+		commandMap[string("repeat")] = ImageOverlayCommand::Repeat;
 		commandMap[string("rotate")] = ImageOverlayCommand::Rotate;
 		commandMap[string("scale")] = ImageOverlayCommand::Scale;
 		commandMap[string("setalpha")] = ImageOverlayCommand::SetAlpha;
@@ -361,6 +362,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 			case ImageOverlayCommand::ParallelMove:
 			case ImageOverlayCommand::MoveTo:
 			case ImageOverlayCommand::ParallelMoveTo:
+			case ImageOverlayCommand::Repeat:
 				//three arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;

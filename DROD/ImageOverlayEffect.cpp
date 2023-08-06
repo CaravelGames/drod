@@ -94,6 +94,7 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
 	, xTile(0), yTile(0)
+	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
 	, index(UINT(-1))
 	, loopIteration(0), maxLoops(0)
 	, startOfNextEffect(dwStartTime)
@@ -247,6 +248,11 @@ void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 bool CImageOverlayEffect::IsImageDrawn()
 {
 	return this->drawAlpha > 0 && PositionDisplayInsideRect(this->drawSourceRect, this->drawDestinationRect, this->drawX, this->drawY);
+}
+
+bool CImageOverlayEffect::IsRepeated() const
+{
+	return (this->repetitions > 0 && (this->xRepeatOffset != 0 || this->yRepeatOffset != 0));
 }
 
 bool CImageOverlayEffect::IsTiled() const
@@ -576,6 +582,14 @@ void CImageOverlayEffect::StartNextCommand()
 	}
 	break;
 
+	case ImageOverlayCommand::Repeat: {
+		this->repetitions = max(0, val);
+		this->xRepeatOffset = command.val[1];
+		this->yRepeatOffset = command.val[2];
+		this->bPrepareAlteredImage = true;
+	}
+	break;
+
 	case ImageOverlayCommand::Rotate:
 		this->executionState.startAngle = this->angle;
 		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
@@ -829,6 +843,7 @@ bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC comman
 		case ImageOverlayCommand::DisplayRect:
 		case ImageOverlayCommand::DisplayRectModify:
 		case ImageOverlayCommand::DisplaySize:
+		case ImageOverlayCommand::Repeat:
 		case ImageOverlayCommand::Rotate:
 		case ImageOverlayCommand::Scale:
 		case ImageOverlayCommand::SetAlpha:
