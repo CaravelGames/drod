@@ -189,9 +189,6 @@ void CImageOverlayEffect::PrepareDrawProperties()
 	}
 
 	this->pOwnerWidget->GetRect(this->drawDestinationRect);
-
-	this->drawX = this->x;
-	this->drawY = this->y;
 	this->drawSourceRect = this->sourceClipRect;
 
 	if (this->pTiledSurface) {
