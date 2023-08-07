@@ -775,6 +775,7 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 <b>Loop (times)</b> -- loop through the image command list this many times (-1 = infinite)<br />
 <b>(p)Move (x pixels) (y pixels) (ms)</b> -- translate the image's position by the indicated number of pixels over the indicated time interval<br />
 <b>(p)MoveTo (x pixel) (y pixel) (ms)</b> -- move the image from its current position to the indicated screen location over the course of the indicated time interval<br />
+<b>Repeat (repetions, x, y)</b> -- repeat the final image a positive number of times, with each copy offset from the previous image by x and y pixels, including in negative directions.<br />
 <b>(p)Rotate (degrees) (ms)</b> -- rotate the image the indicated amount over the specified time interval<br />
 <b>Scale (percent of original)</b> -- scale the image to the indicated amount<br />
 <b>SetAlpha (0-255)</b> -- set the image's alpha transparency to the indicated value<br />
@@ -782,6 +783,7 @@ Variables prefixed with "_My" are connected to the state of the NPC, the "_*Imag
 <b>SetX (pixel)</b> -- set the image's X coordinate<br />
 <b>SetY (pixel)</b> -- set the image's Y coordinate<br />
 <b>SrcXY (x) (y)</b> - show the source image starting from the indicated pixel position<br />
+<b>TileGrid (w) (h)</b> -- replicate the image in a w by h grid. Tiling is not supported for images that have had rotations applied.<br />
 <br />
 As an example, you can make an image start invisible, fade in, display for a couple seconds, then fade out by providing the following command sequence:<br />
 <br />
