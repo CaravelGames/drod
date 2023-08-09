@@ -132,6 +132,7 @@ protected:
 
 private:
 	void           AddChatDialog();
+	bool           AddMonsterStats(CDbRoom* pRoom, CRoomWidget* pRoomWidget, CMonster* pMonster, WSTRING& text);
 	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, float fDamagePercent=1.0f);
 	void           AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord);
 	void           AmbientSoundSetup();

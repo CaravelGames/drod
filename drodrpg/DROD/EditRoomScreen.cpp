@@ -4309,8 +4309,16 @@ void CEditRoomScreen::PasteRegion(
 		const UINT wStartY = yInc > 0 ? this->wCopyY1 : this->wCopyY2;
 		const UINT wEndY = yInc < 0 ? this->wCopyY1 : this->wCopyY2;
 
+		CDbRoom* pSrcRoom = this->pRoom;
+		CDbHold* pSrcHold = NULL;
+		if (this->pCopyRoom) {
+			pSrcRoom = this->pCopyRoom;
+			const UINT srcHoldID = g_pTheDB->Levels.GetHoldIDForLevel(pSrcRoom->dwLevelID);
+			if (srcHoldID != g_pTheDB->Levels.GetHoldIDForLevel(this->pRoom->dwLevelID))
+				pSrcHold = g_pTheDB->Holds.GetByID(srcHoldID);
+		}
+
 		//Copy tiles, one at a time.
-		CDbRoom *pSrcRoom = this->pCopyRoom ? this->pCopyRoom : this->pRoom;
 		UINT xSrc, ySrc;         //square copied from
 		UINT xDest, yDest; //square being copied to
 		UINT wSrcTile, wDestTile;
@@ -4654,7 +4662,7 @@ void CEditRoomScreen::PasteRegion(
 							pNewMonster->wX = xDest;
 							pNewMonster->wY = yDest;
 							CCharacter *pNewCharacter = DYN_CAST(CCharacter*, CMonster*, pNewMonster);
-							pNewCharacter->ChangeHold(NULL, this->pHold, info);
+							pNewCharacter->ChangeHold(pSrcHold, this->pHold, info);
 							room.LinkMonster(pNewCharacter);
 						}
 						break;
@@ -4722,6 +4730,8 @@ void CEditRoomScreen::PasteRegion(
 					VERIFY(pOrb->DeleteAgent(pAgent));
 			}
 		}
+
+		delete pSrcHold;
 	}
 
 DonePasting:

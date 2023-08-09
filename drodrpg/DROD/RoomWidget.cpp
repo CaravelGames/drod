@@ -817,19 +817,10 @@ void CRoomWidget::HighlightSelectedTile()
 		break;
 	}
 
+	/* Currently no F-layer highlights
 	switch (this->pRoom->GetFSquare(wX,wY))
 	{
-		case T_NODIAGONAL:
-		{
-			for (UINT wY=this->pRoom->wRoomRows; wY--; )
-				for (UINT wX=this->pRoom->wRoomCols; wX--; )
-					if (this->pRoom->GetFSquare(wX,wY) == T_NODIAGONAL)
-						AddShadeEffect(wX, wY, PaleYellow);
-//			bRemoveHighlightNextTurn = false;
-		}
-		break;
-		default: break;
-	}
+	}*/
 
 	const UINT wOSquare = this->pRoom->GetOSquare(wX,wY);
 	switch (wOSquare)
@@ -859,11 +850,102 @@ void CRoomWidget::HighlightSelectedTile()
 					AddDoorEffect(pPlate->agents[wIndex]);
 		}
 		break;
+		case T_DOOR_Y: case T_DOOR_YO:
+		case T_DOOR_G: case T_DOOR_GO:
+		case T_DOOR_C: case T_DOOR_CO:
+		case T_DOOR_B: case T_DOOR_BO:
+		case T_DOOR_R: case T_DOOR_RO:
+			DisplayDoorAgents(wX, wY, wOSquare);
+		break;
+		case T_DOOR_MONEY: case T_DOOR_MONEYO:
+			DisplayAgentsAffectingTiles(CCoordSet(wX, wY));
+		break;
 		default: break;
 	}
 
 	//Nothing is being highlighted.
 	RemoveHighlight();
+}
+
+//*****************************************************************************
+void CRoomWidget::DisplayDoorAgents(
+	//Finds all orbs acting on this door and
+	//displays visual representation in the room widget.
+	//
+	//Params:
+	const UINT wX, const UINT wY, const UINT type) //(in) square door is on
+{
+	CCoordSet doorCoords(wX, wY);
+	const CTileMask plateMask(type);
+	this->pRoom->GetConnectedTiles(wX, wY, plateMask, false, doorCoords);
+
+	DisplayAgentsAffectingTiles(doorCoords);
+}
+
+//*****************************************************************************
+void CRoomWidget::DisplayAgentsAffectingTiles(const CCoordSet& doorCoords)
+{
+	for (UINT orb = 0; orb < this->pRoom->orbs.size(); ++orb)
+	{
+		COrbData* pData = this->pRoom->orbs[orb];
+		for (UINT agent = 0; agent < pData->agents.size(); ++agent)
+		{
+			COrbAgentData* pAgentData = pData->agents[agent];
+			if (doorCoords.has(pAgentData->wX, pAgentData->wY))
+			{
+				//Show effect on triggering agent itself.
+				COrbAgentData sourceAgent(pData->wX, pData->wY, pAgentData->action);
+				AddOrbEffect(&sourceAgent);
+			}
+		}
+	}
+}
+
+//*****************************************************************************
+bool CRoomWidget::AddOrbEffect(
+	//Add an effect to display the affect an orb agent has on a door.
+	//
+	//Returns: whether the orb agent is on a door
+	//
+	//Params:
+	COrbAgentData* pOrbAgent)  //(in) Orb agent to display
+{
+	const UINT wX = pOrbAgent->wX, wY = pOrbAgent->wY;
+	ASSERT(this->pRoom->IsValidColRow(wX, wY));
+
+	//Only for orbs and pressure plates.
+	const bool bPressPlate = this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE;
+	if (this->pRoom->GetTSquare(wX, wY) != T_ORB && !bPressPlate)
+		return false;
+
+	//Set highlight color.
+	SURFACECOLOR color;
+	switch (pOrbAgent->action)
+	{
+	case OA_NULL:
+		//Just highlight the door (mouse is over it).
+		color = PaleYellow;
+		break;
+	case OA_TOGGLE: color = Orange; break;
+	case OA_OPEN: color = BlueGreen; break;
+	case OA_CLOSE: color = Red; break;
+	default:
+		ASSERT(!"AddOrbEffect: Bad orb agent.");
+		break;
+	}
+
+	//Get set of all tiles to highlight.
+	CCoordSet tiles(wX, wY);
+	if (bPressPlate)
+	{
+		const CTileMask plateMask(T_PRESSPLATE);
+		this->pRoom->GetConnectedTiles(wX, wY, plateMask, false, tiles);
+	}
+
+	for (CCoordSet::const_iterator tile = tiles.begin(); tile != tiles.end(); ++tile)
+		AddShadeEffect(tile->wX, tile->wY, color);
+
+	return true;
 }
 
 //*****************************************************************************
