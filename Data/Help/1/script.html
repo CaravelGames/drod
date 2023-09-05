@@ -270,6 +270,7 @@ interacts with its environment.</p>
 </li>
   <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, its local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> condition. The condition is satisfied if the command successfully invokes a variable assignment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
   </li>
+    <li><a name="resetoverrides"><b>Reset _MyScript variables</b></a> - Sets the value of all <a href="myscript.html">_MyScript variables</a> to -9999, so they no longer override command values.</li>
   <li><a name="setshallowwatertraversal"><b>Set shallow water traversal</b>
     </a> - Sets how and under what conditions the player interacts with shallow water terrain.</li>
   <li><a name="gameeffect"><b>Game effect</b>
@@ -682,7 +683,7 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_MyX</b> and <b>_MyY</b> - X and Y position of the NPC. Please keep in mind that the change is instanteous, if you need to modify the position in both axes use 'Teleport to' instead, otherwise you risk creating problematic situation when the NPC teleports first in one axis and then in the other.</li>
 	<li><b>_MyO</b> - NPC's current <a href="#valuesorientation">orientation</a>.</li>
 	<li><b>_MyName</b> - Name of this NPC. Used for right-click inspecting and for speech log.</li>
-	<li><b>_MyScript*</b> - Variables used to inject dynamic values into other scripting commands. <a href="#myscript-injection">See this section</a> for explanation on how to use them.</li>
+	<li><b>_MyScript*</b> - Variables used to inject dynamic values into other scripting commands. <a href="myscript.html">See this section</a> for explanation on how to use them.</li>
 	<li><b>_X</b> and <b>_Y</b> - X and Y position of the Player. Can cause the same potential problems as <b>_MyX</b> and <b>_MyY</b>, so use 'Teleport player to' wheen you need to teleport along two axes.</li>
 	<li><b>_O</b> - Player's current <a href="#valuesorientation">orientation</a>.</li>
 	<li><b>_RoomImageX</b> and <b>_RoomImageY</b> - Offset of the custom room image in tiles.</li>
