@@ -810,7 +810,7 @@ sdl_error:
 	UniquePtr<SDL_Window, SDL_DestroyWindow> window((
 		SDL_CreateWindow(windowTitle,
 			SDL_WINDOWPOS_CENTERED_DISPLAY(default_display), SDL_WINDOWPOS_CENTERED_DISPLAY(default_display),
-			CScreen::CX_SCREEN, CScreen::CY_SCREEN, CScreen::bAllowWindowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP)
+			CScreen::CX_SCREEN, CScreen::CY_SCREEN, (CScreen::bAllowWindowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP) & SDL_WINDOW_ALLOW_HIGHDPI)
 	));
 	if (!window.get())
 		goto sdl_error;

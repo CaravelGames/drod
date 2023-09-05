@@ -27,10 +27,13 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
 
+#include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Types.h>
 #include <BackEndLib/UtilFuncs.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
+
+#include <SDL.h>
 
 //Global app parameters.
 extern const char szCompanyName[];
@@ -120,6 +123,8 @@ namespace InputCommands
 	extern const UINT COMMAND_MIDS[DCMD_Count];
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
+
+	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }
 
 //Returns: whether the command is a movement in a compass direction
