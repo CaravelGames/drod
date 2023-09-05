@@ -467,6 +467,7 @@ struct ImageOverlayCommand
 		ParallelMove,
 		ParallelMoveTo,
 		ParallelRotate,
+		Repeat,
 		Rotate,
 		Scale,
 		SetAlpha,
@@ -474,6 +475,7 @@ struct ImageOverlayCommand
 		SetX,
 		SetY,
 		SrcXY,
+		TileGrid,
 		TurnDuration,
 		Invalid
 	};

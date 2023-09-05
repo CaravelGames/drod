@@ -86,13 +86,15 @@ CImageOverlayEffect::CImageOverlayEffect(
 	const Uint32 dwStartTime)
 	: CEffect(pSetWidget, (UINT)-1, EIMAGEOVERLAY)
 	, drawSequence(++nextDrawSequence)
-	, pImageSurface(NULL), pAlteredSurface(NULL)
+	, pImageSurface(NULL), pAlteredSurface(NULL), pTiledSurface(NULL)
 	, bPrepareAlteredImage(false)
 	, x(0), y(0)
 	, drawX(0), drawY(0)
 	, alpha(255), drawAlpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
+	, xTile(0), yTile(0)
+	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
 	, index(UINT(-1))
 	, loopIteration(0), maxLoops(0)
 	, startOfNextEffect(dwStartTime)
@@ -124,6 +126,8 @@ CImageOverlayEffect::~CImageOverlayEffect()
 		SDL_FreeSurface(this->pImageSurface);
 	if (this->pAlteredSurface)
 		SDL_FreeSurface(this->pAlteredSurface);
+	if (this->pTiledSurface)
+		SDL_FreeSurface(this->pTiledSurface);
 }
 
 void CImageOverlayEffect::InitParams()
@@ -185,12 +189,12 @@ void CImageOverlayEffect::PrepareDrawProperties()
 	}
 
 	this->pOwnerWidget->GetRect(this->drawDestinationRect);
-
-	this->drawX = this->x;
-	this->drawY = this->y;
 	this->drawSourceRect = this->sourceClipRect;
 
-	if (this->pAlteredSurface) {
+	if (this->pTiledSurface) {
+		this->drawSourceRect.w = this->pTiledSurface->w;
+		this->drawSourceRect.h = this->pTiledSurface->h;
+	} else if (this->pAlteredSurface) {
 		SDL_Surface* pSrcSurface = this->pAlteredSurface;
 		if (!this->drawSourceRect.w)
 			this->drawSourceRect.w = pSrcSurface->w;
@@ -226,27 +230,87 @@ void CImageOverlayEffect::Draw(SDL_Surface& destSurface)
 {
 	SDL_Surface* pSrcSurface;
 
-	if (this->pAlteredSurface)
+	if (this->pTiledSurface)
+		pSrcSurface = this->pTiledSurface;
+	else if (this->pAlteredSurface)
 		pSrcSurface = this->pAlteredSurface;
 	else
 		pSrcSurface = this->pImageSurface;
 
 	if (this->drawDestinationRect.w > 0 && this->drawDestinationRect.h > 0) {
-		const bool bSurfaceAlpha = !this->pImageSurface->format->Amask && this->alpha < 255;
-		if (bSurfaceAlpha) {
-			EnableSurfaceBlending(pSrcSurface, this->drawAlpha);
-			SDL_BlitSurface(pSrcSurface, &this->drawSourceRect, &destSurface, &this->drawDestinationRect);
-			DisableSurfaceBlending(pSrcSurface);
-		}
-		else {
-			g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(this->drawSourceRect, pSrcSurface, this->drawDestinationRect, &destSurface, this->drawAlpha);
+
+		if (IsRepeated()) {
+			DrawRepeated(pSrcSurface, &destSurface);
 		}
 	}
+}
+
+void CImageOverlayEffect::DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* destSurface)
+{
+	SDL_Rect srcRect;
+	SDL_Rect destRect;
+	SDL_Rect widgetRect = {
+		this->pOwnerWidget->GetX(),
+		this->pOwnerWidget->GetY(),
+		this->pOwnerWidget->GetW(),
+		this->pOwnerWidget->GetH()
+	};
+
+	int repeats = 0;
+	for (int r = 1; r <= repetitions; ++r) {
+		srcRect = this->drawSourceRect;
+		// Destination rect is created in "widget space" for clipping
+		destRect = {
+			this->drawDestinationRect.x + (r * xRepeatOffset) - widgetRect.x,
+			this->drawDestinationRect.y + (r * yRepeatOffset) - widgetRect.y,
+			this->drawDestinationRect.w,
+			this->drawDestinationRect.h,
+		};
+
+		g_pTheBM->ClipSrcAndDestToRect(srcRect, destRect, widgetRect.w, widgetRect.h);
+		if (destRect.w == 0) {
+			break;
+		}
+		// Translate back to surface space
+		destRect.x += widgetRect.x;
+		destRect.y += widgetRect.y;
+
+		g_pTheBM->BlitAlphaSurfaceWithTransparency(srcRect, srcSurface, destRect, destSurface, this->drawAlpha);
+		++repeats;
+	}
+
+	// Work out how large the dirty rect is
+	int totalXOffset = repeats * abs(xRepeatOffset);
+	int totalYOffset = repeats * abs(yRepeatOffset);
+	SDL_Rect dirtyRect = this->drawDestinationRect;
+	dirtyRect.w += totalXOffset;
+	dirtyRect.h += totalYOffset;
+
+	// Negative offsets require the dirty rect to be shifted
+	if (this->xRepeatOffset < 0) {
+		dirtyRect.x = max(0, dirtyRect.x - totalXOffset);
+	}
+	if (this->yRepeatOffset < 0) {
+		dirtyRect.y = max(0, dirtyRect.y - totalYOffset);
+	}
+
+	this->dirtyRects[0] = dirtyRect;
 }
 
 bool CImageOverlayEffect::IsImageDrawn()
 {
 	return this->drawAlpha > 0 && PositionDisplayInsideRect(this->drawSourceRect, this->drawDestinationRect, this->drawX, this->drawY);
+}
+
+bool CImageOverlayEffect::IsRepeated() const
+{
+	return (this->repetitions > 0 && (this->xRepeatOffset != 0 || this->yRepeatOffset != 0));
+}
+
+bool CImageOverlayEffect::IsTiled() const
+{
+	return (xTile!= 0 && yTile !=0 && (xTile > 1 || yTile > 1));
 }
 
 bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
@@ -571,6 +635,13 @@ void CImageOverlayEffect::StartNextCommand()
 	}
 	break;
 
+	case ImageOverlayCommand::Repeat: {
+		this->repetitions = max(0, val);
+		this->xRepeatOffset = command.val[1];
+		this->yRepeatOffset = command.val[2];
+	}
+	break;
+
 	case ImageOverlayCommand::Rotate:
 		this->executionState.startAngle = this->angle;
 		this->executionState.remainingTime = this->executionState.duration = max(0, command.val[1]);
@@ -608,6 +679,14 @@ void CImageOverlayEffect::StartNextCommand()
 		this->sourceClipRect.x = max(0, val);
 		this->sourceClipRect.y = max(0, command.val[1]);
 		break;
+
+	case ImageOverlayCommand::TileGrid:
+	{
+		this->xTile = max(0, val);
+		this->yTile = max(0, command.val[1]);
+		this->bPrepareAlteredImage = true;
+	}
+	break;
 
 	case ImageOverlayCommand::TurnDuration:
 	{
@@ -737,6 +816,52 @@ void CImageOverlayEffect::PrepareAlteredImage()
 			}
 		}
 	}
+
+	if (this->IsTiled() && !this->angle) {
+		SDL_Surface* pSurface = this->pAlteredSurface ? this->pAlteredSurface : this->pImageSurface;
+		SDL_Surface* pTiledSurface = TileSurface(pSurface);
+		if (pTiledSurface) {
+			if (this->pTiledSurface)
+				SDL_FreeSurface(this->pTiledSurface);
+			this->pTiledSurface = pTiledSurface;
+		}
+	}
+}
+
+//*****************************************************************************
+// Creates a new surface by creating a repeating grid of the given surface.
+// Grid size is determined by the xTile and yTile values.
+SDL_Surface* CImageOverlayEffect::TileSurface(SDL_Surface* pSurface)
+{
+	ASSERT(this->xTile > 0);
+	ASSERT(this->yTile > 0);
+
+	SDL_Rect srcRect = {
+		this->sourceClipRect.x,
+		this->sourceClipRect.y,
+		this->sourceClipRect.w > 0 ? this->sourceClipRect.w : this->pImageSurface->w,
+		this->sourceClipRect.h > 0 ? this->sourceClipRect.h : this->pImageSurface->h,
+	};
+	if (this->scale != ORIGINAL_SCALE) {
+		srcRect.w *= (scale / 100);
+		srcRect.h *= (scale / 100);
+	}
+
+	SDL_Rect destRect = { 0, 0, srcRect.w, srcRect.h };
+
+	int newWidth = srcRect.w * this->xTile;
+	int newHeight = srcRect.h * this->yTile;
+	SDL_Surface* pDestSurface = g_pTheBM->CreateNewSurfaceLike(pSurface, newWidth, newHeight);
+
+	for (int i = 0; i < xTile; ++i) {
+		destRect.x = destRect.w * i;
+		for (int j = 0; j < yTile; ++j) {
+			destRect.y = destRect.h * j;
+			SDL_BlitSurface(pSurface, &srcRect, pDestSurface, &destRect);
+		}
+	}
+
+	return pDestSurface;
 }
 
 bool CImageOverlayEffect::IsTimeBasedCommand(const ImageOverlayCommand::IOC commandType) const {
@@ -770,6 +895,7 @@ bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC comman
 		case ImageOverlayCommand::DisplayRect:
 		case ImageOverlayCommand::DisplayRectModify:
 		case ImageOverlayCommand::DisplaySize:
+		case ImageOverlayCommand::Repeat:
 		case ImageOverlayCommand::Rotate:
 		case ImageOverlayCommand::Scale:
 		case ImageOverlayCommand::SetAlpha:
@@ -777,6 +903,7 @@ bool CImageOverlayEffect::IsInstantCommand(const ImageOverlayCommand::IOC comman
 		case ImageOverlayCommand::SetX:
 		case ImageOverlayCommand::SetY:
 		case ImageOverlayCommand::SrcXY:
+		case ImageOverlayCommand::TileGrid:
 		// Parallel commands may take time but they run parallelly so for the purpose of occupying
 		// effect's time they are instant
 		case ImageOverlayCommand::ParallelFadeToAlpha:
