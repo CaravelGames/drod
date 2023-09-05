@@ -1863,8 +1863,10 @@ MESSAGE_ID CDbXML::ImportXML(
 	LOGCONTEXT("CDbXML::ImportXML");
 
 	ASSERT(pBuffer);
-	if (!pBuffer->uncompressedSize)
+	if (!pBuffer->uncompressedSize) {
+		bImportComplete = true;
 		return MID_ImportSuccessful;   //nothing to import
+	}
 	ASSERT(pBuffer->isPopulated());
 
 	Import_Init();
