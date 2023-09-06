@@ -1895,6 +1895,9 @@ MESSAGE_ID CDbXML::ImportXML(
 
 		Import_ParseRecords(pBuffer);
 
+		importBuf.closeStream();
+		VERIFY(importBuf.initStream() == MID_Success);
+
 		//Free parser.
 		XML_ParserFree(parser);
 		parser = NULL;
