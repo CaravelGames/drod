@@ -131,6 +131,7 @@ public:
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
 	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior) == 1; };
+	bool           HasInactiveWeapon() const;
 	bool           HasInstantMovement() const { return HasBehavior(ScriptFlag::Behavior::InstantMovement); }
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
