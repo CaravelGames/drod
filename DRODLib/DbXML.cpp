@@ -1863,8 +1863,10 @@ MESSAGE_ID CDbXML::ImportXML(
 	LOGCONTEXT("CDbXML::ImportXML");
 
 	ASSERT(pBuffer);
-	if (!pBuffer->uncompressedSize)
+	if (!pBuffer->uncompressedSize) {
+		bImportComplete = true;
 		return MID_ImportSuccessful;   //nothing to import
+	}
 	ASSERT(pBuffer->isPopulated());
 
 	Import_Init();
@@ -1892,6 +1894,9 @@ MESSAGE_ID CDbXML::ImportXML(
 		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
 
 		Import_ParseRecords(pBuffer);
+
+		importBuf.closeStream();
+		VERIFY(importBuf.initStream() == MID_Success);
 
 		//Free parser.
 		XML_ParserFree(parser);
