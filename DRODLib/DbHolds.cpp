@@ -3882,9 +3882,11 @@ void CDbHold::SaveCharacters(
 
 			//Repack the script, saving any owned data objects.
 			const UINT processingSequence_ = ch.ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER);
+			const UINT speechColor_ = ch.ExtraVars.GetVar(ParamSpeechColorStr, 0);
 			ch.ExtraVars.Clear();
 			ch.ExtraVars.SetVar(scriptIDstr, ch.dwScriptID);
 			ch.ExtraVars.SetVar(ParamProcessSequenceStr, processingSequence_);
+			ch.ExtraVars.SetVar(ParamSpeechColorStr, speechColor_);
 			CCharacter::SaveCommands(ch.ExtraVars, *ch.pCommands);
 
 			//Now the working copy of the default script can be cleared.

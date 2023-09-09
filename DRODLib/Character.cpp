@@ -175,6 +175,7 @@ CCharacter::CCharacter(
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
 	, nColor(-1)
+	, customSpeechColor(0)
 
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
@@ -6211,7 +6212,10 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 				this->wIdentity = this->pCustomChar->wType;
 
 				if (this->commands.empty()){
-					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);	
+					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+				}
+				if (!this->customSpeechColor) {
+					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
 				}
 			} else
 				//When character has a dangling reference to a custom character definition
@@ -6689,6 +6693,8 @@ void CCharacter::SetExtraVarsFromMembersWithoutScript(const bool bHoldChar)
 		this->ExtraVars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		this->ExtraVars.SetVar(ParamFStr, this->paramF);
+	if (this->customSpeechColor)
+		this->ExtraVars.SetVar(ParamSpeechColorStr, this->customSpeechColor);
 	this->ExtraVars.SetVar(ParamProcessSequenceStr, this->wProcessSequence);
 
 	//ASSERT(this->dwScriptID);
@@ -6716,6 +6722,7 @@ void CCharacter::SetBaseMembersFromExtraVars()
 	this->paramF = this->ExtraVars.GetVar(ParamFStr, this->paramF);
 
 	this->wProcessSequence = this->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+	this->customSpeechColor = this->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
 }
 
 //*****************************************************************************
