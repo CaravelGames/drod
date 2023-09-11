@@ -235,6 +235,8 @@ public:
 	bool     IsCurrentRoomExplored() const;
 	bool     IsCutScenePlaying() const {return this->dwCutScene && !this->swordsman.wPlacingDoubleType;}
 	bool     IsDemoRecording() const {return this->bIsDemoRecording;}
+	bool     IsHoldCompleteWallPassable() const { return this->bHoldCompleted && !this->bRoomExitLocked; }
+	bool     IsMasterWallPassable() const { return this->bHoldMastered && !this->bRoomExitLocked; }
 	bool     IsMusicStyleFrozen() const {return this->bMusicStyleFrozen;}
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
 	bool     IsPlayerAnsweringQuestions() const {return this->UnansweredQuestions.size() != 0;}

@@ -6136,7 +6136,7 @@ void CCurrentGame::ProcessPlayer(
 					CueEvents.Add(CID_HitObstacle, new CMoveCoord(destX, destY, wMoveO), true);
 			break;
 			case T_WALL_M:
-				if (!this->bHoldMastered)
+				if (!IsMasterWallPassable())
 				{
 					//Player hit "master wall" and couldn't go through.
 					//Don't allow this move to be made.
@@ -6146,7 +6146,7 @@ void CCurrentGame::ProcessPlayer(
 				goto CheckFLayer;
 			break;
 			case T_WALL_WIN:
-				if (!this->bHoldCompleted)
+				if (!IsHoldCompleteWallPassable())
 				{
 					//Player hit "hold completion wall" and couldn't go through.
 					//Don't allow this move to be made.

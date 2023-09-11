@@ -2399,8 +2399,8 @@ bool CDbRoom::CanPlayerMoveOnThisElement(const UINT wAppearance, const UINT wTil
 			if (!(bIsPit(wTileNo) || bIsWater(wTileNo) ||
 					bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) ||
 					bIsStairs(wTileNo) || bIsTunnel(wTileNo) || bIsPlatform(wTileNo) ||
-					(wTileNo == T_WALL_M && this->pCurrentGame && this->pCurrentGame->bHoldMastered) ||
-					(wTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->bHoldCompleted)
+					(wTileNo == T_WALL_M && this->pCurrentGame && this->pCurrentGame->IsMasterWallPassable()) ||
+					(wTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->IsHoldCompleteWallPassable())
 					))
 				return false;
 		break;
@@ -2413,8 +2413,8 @@ bool CDbRoom::CanPlayerMoveOnThisElement(const UINT wAppearance, const UINT wTil
 					bIsStairs(wTileNo) || bIsTunnel(wTileNo) || bIsPlatform(wTileNo) ||
 					(bIsShallowWater(wTileNo) &&
 					this->pCurrentGame->swordsman.GetWaterTraversalState() >= WTrv_CanWade) ||
-					(wTileNo == T_WALL_M && this->pCurrentGame && this->pCurrentGame->bHoldMastered) ||
-					(wTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->bHoldCompleted)
+					(wTileNo == T_WALL_M && this->pCurrentGame && this->pCurrentGame->IsMasterWallPassable()) ||
+					(wTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->IsHoldCompleteWallPassable())
 					))
 				return false;
 		break;
