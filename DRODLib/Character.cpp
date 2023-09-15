@@ -3126,6 +3126,8 @@ bool CCharacter::GetMovement(
 						dx, dy, true);
 			} else {
 				bStopTurn = true;
+				dxFirst = 0;
+				dyFirst = 0;
 			}
 		}
 		break;
