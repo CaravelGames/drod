@@ -2239,7 +2239,7 @@ void CCharacterDialogWidget::OnKeyDown(
 						line!=selectedLines.end(); ++line)
 				{
 					if (*line < pCommands->size())
-						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], *line);
+						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], pActiveCommandList, *line);
 				}
 				if (!wstrCommandsText.empty())
 					g_pTheSound->PlaySoundEffect(SEID_POTION);
@@ -3636,10 +3636,10 @@ WSTRING CCharacterDialogWidget::GetDataName(const UINT dwID) const
 }
 
 //*****************************************************************************
-UINT CCharacterDialogWidget::ExtractCommandIndent(const UINT wCommandIndex) const
+UINT CCharacterDialogWidget::ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const
 //Extracts command's indent size from the command listbox text
 {
-	WSTRING wstr = this->pCommandsListBox->GetTextAtLine(wCommandIndex);
+	WSTRING wstr = pCommandList->GetTextAtLine(wCommandIndex);
 
 	UINT i = 0;
 	for (; i < wstr.size(); ++i)
@@ -7003,6 +7003,7 @@ WSTRING CCharacterDialogWidget::toText(
 //Params:
 	const COMMANDPTR_VECTOR& commands,
 	CCharacterCommand* pCommand,   //Command to parse
+	const CListBoxWidget* pCommandList, //Command list to get string from
 	const UINT wCommandIndex)      //Index of the command
 {
 #define concatNum(n) wstr += _itoW(n,temp,10)
@@ -7017,7 +7018,7 @@ WSTRING CCharacterDialogWidget::toText(
 	if (wstrCommandName.empty())
 		return wstr;
 
-	UINT indent = ExtractCommandIndent(wCommandIndex);
+	UINT indent = ExtractCommandIndent(pCommandList, wCommandIndex);
 	wstr.insert(wstr.end(), indent - INDENT_PREFIX_SIZE + 2, W_t(' '));
 	wstr += wstrCommandName;
 	wstr += wszSpace;
