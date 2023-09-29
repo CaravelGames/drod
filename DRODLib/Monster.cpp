@@ -248,7 +248,7 @@ void CMonster::SetOrientation(
 	ASSERT(abs((int)dyFirst) <= 1);
 	const UINT wNewO = nGetO(dxFirst, dyFirst);
 	ASSERT(IsValidOrientation(wNewO));
-	if (wNewO != NO_ORIENTATION || !HasOrientation())
+	if (IsValidOrientation(wNewO) && (wNewO != NO_ORIENTATION || !HasOrientation()))
 		this->wO = wNewO;
 }
 
