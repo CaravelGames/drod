@@ -2044,7 +2044,7 @@ void CDbXML::Import_TallyRecords(const string& xml) //[in] string containg xml t
 			break;
 		}
 
-		const int bytesRead = min(remainingSize, XML_PARSER_BUFF_SIZE);
+		const int bytesRead = min((int)remainingSize, XML_PARSER_BUFF_SIZE);
 		ASSERT(bytesRead >= 0);
 		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
 		memcpy(buff, pXml, bytesRead);
@@ -2179,7 +2179,7 @@ void CDbXML::Import_ParseRecords(const string& xml) //[in] string containg xml t
 		}
 
 		//Get next chunk of data to parse.
-		const int bytesRead = min(remainingSize, XML_PARSER_BUFF_SIZE);
+		const int bytesRead = min((int)remainingSize, XML_PARSER_BUFF_SIZE);
 		ASSERT(bytesRead >= 0);
 		ASSERT(bytesRead <= XML_PARSER_BUFF_SIZE);
 		memcpy(buff, pXml, bytesRead);
