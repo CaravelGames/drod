@@ -5401,6 +5401,18 @@ bool CCharacter::HasSword() const
 	return CArmedMonster::HasSword();
 }
 
+//*****************************************************************************
+bool CCharacter::HasInactiveWeapon() const
+//Returns: true if the character has a weapon, but it is not currently in use
+{
+	if (!(this->bWeaponOverride || bEntityHasSword(GetResolvedIdentity())))
+		return false;
+
+	if (this->bNoWeapon || this->bWeaponSheathed)
+		return true;
+
+	return false;
+}
 
 //*****************************************************************************
 bool CCharacter::TurnsSlowly() const

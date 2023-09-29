@@ -8029,7 +8029,7 @@ void CRoomWidget::DrawCharacter(
 	UINT wSX, wSY;
 	const bool bHasSword = pCharacter->GetSwordCoords(wSX, wSY);
 	UINT wFrame;
-	if (bHasSword || (!bEntityHasSword(wIdentity) && pCharacter->bNoWeapon)) {
+	if (bHasSword || !pCharacter->HasInactiveWeapon()) {
 		wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame;
 		if (!IsMonsterTypeAnimated(wIdentity))
 			wFrame = wFrame % ANIMATION_FRAMES;
