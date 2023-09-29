@@ -116,7 +116,7 @@ private:
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
 	WSTRING GetDataName(const UINT dwID) const;
-	UINT    ExtractCommandIndent(const UINT wCommandIndex) const;
+	UINT    ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const;
 	void    PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR& commands);
 	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
 		const CCharacterCommand& pCommand) const;
@@ -169,7 +169,7 @@ private:
 
 	//For text editing of script commands.
 	CCharacterCommand* fromText(WSTRING text);
-	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand, const UINT wCommandIndex);
+	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand, const CListBoxWidget* pCommandList, const UINT wCommandIndex);
 
 	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox;
 	COptionButtonWidget *pIsVisibleButton;
