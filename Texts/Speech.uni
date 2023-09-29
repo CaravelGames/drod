@@ -3285,3 +3285,7 @@ Dying
 [MID_Talking]
 [eng]
 Talking
+
+[MID_ResetOverrides]
+[eng]
+Reset _MyScript variables

@@ -4327,6 +4327,7 @@ const
 		case CCharacterCommand::CC_IfElseIf:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
+		case CCharacterCommand::CC_ResetOverrides:
 		break;
 
 		default: break;
@@ -4466,6 +4467,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_WorldMapImage:
 			case CCharacterCommand::CC_ChallengeCompleted:
 			case CCharacterCommand::CC_Return:
+			case CCharacterCommand::CC_ResetOverrides:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
@@ -4748,6 +4750,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_PushTile, g_pTheDB->GetMessageText(MID_PushTile));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Question, g_pTheDB->GetMessageText(MID_Question));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ResetOverrides, g_pTheDB->GetMessageText(MID_ResetOverrides));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
@@ -5447,6 +5450,7 @@ void CCharacterDialogWidget::SetCommandColor(
 		break;
 		case CCharacterCommand::CC_VarSet:
 		case CCharacterCommand::CC_VarSetAt:
+		case CCharacterCommand::CC_ResetOverrides:
 			pListBox->SetItemColorAtLine(line, FullRed);
 		break;
 		case CCharacterCommand::CC_Wait: 
@@ -5671,7 +5675,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ORBAGENTS,          //CC_LinkOrb
 		NO_WIDGETS,         //CC_WaitForBuilding
 		BUILD_MARKER_ITEMS, //CC_WaitForBuildType
-		BUILD_MARKER_ITEMS  //CC_WaitForNotBuildType
+		BUILD_MARKER_ITEMS, //CC_WaitForNotBuildType
+		NO_WIDGETS          //CC_ResetOverrides
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5820,7 +5825,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LinkOrb
 		NO_LABELS,          //CC_WaitForBuilding
 		NO_LABELS,          //CC_WaitForBuildType
-		NO_LABELS           //CC_WaitForNotBuildType
+		NO_LABELS,          //CC_WaitForNotBuildType
+		NO_LABELS           //CC_ResetOverrides
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6911,6 +6917,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_LogicalWaitOr:
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
+		case CCharacterCommand::CC_ResetOverrides:
 			AddCommand();
 		break;
 
@@ -7397,6 +7404,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_WaitForBuilding:
+		case CCharacterCommand::CC_ResetOverrides:
 			break;
 
 		//Deprecated commands.
@@ -7706,6 +7714,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_LogicalWaitOr:
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
+	case CCharacterCommand::CC_ResetOverrides:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -8541,6 +8550,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_LogicalWaitOr:
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
+	case CCharacterCommand::CC_ResetOverrides:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
