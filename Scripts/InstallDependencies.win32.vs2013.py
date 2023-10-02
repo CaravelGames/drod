@@ -310,26 +310,17 @@ dependencies = {
 		}
 	},
 	'metakit-2.4.9.7': {
-		'urls': ['https://github.com/jnorthrup/metakit/archive/master.zip'],
-		'builds': [
-			{
-				'sln': 'metakit-master/win/msvc70/mksrc.sln',
-				'configs': [
-					['Debug', '/project', 'mkbug.vcxproj', '/projectconfig', 'Debug'],
-					['Release', '/project', 'mkbug.vcxproj', '/projectconfig', 'Release']
-				]
-			}
-		],
+		'urls': ['https://github.com/CaravelGames/metakit/releases/download/2.4.9.7/caravel-metakit-2.4.9.7.zip'],
 		"include": {
-			"metakit-master/include/mk4.h": "",
-			"metakit-master/include/mk4dll.h": "",
-			"metakit-master/include/mk4io.h": "",
-			"metakit-master/include/mk4str.h": "",
-			"metakit-master/include/mk4.inl": ""
+			"caravel-metakit-2.4.9.7/include/mk4.h": "",
+			"caravel-metakit-2.4.9.7/include/mk4dll.h": "",
+			"caravel-metakit-2.4.9.7/include/mk4io.h": "",
+			"caravel-metakit-2.4.9.7/include/mk4str.h": "",
+			"caravel-metakit-2.4.9.7/include/mk4.inl": ""
 		},
 		'libs': {
-			'metakit-master/builds/mk4vc70s_d.lib': 'Debug',
-			'metakit-master/builds/mk4vc70s.lib': 'Release'
+			'caravel-metakit-2.4.9.7/libs/mk4vc70s_d.lib': 'Debug',
+			'caravel-metakit-2.4.9.7/libs/mk4vc70s.lib': 'Release'
 		}
 	},
 	SdlName: {
