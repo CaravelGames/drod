@@ -1370,7 +1370,10 @@ void CCharacter::Process(
 							if (!TurnsSlowly())
 								SetOrientation(dxFirst,dyFirst);
 						}
-						break;
+						//Allow if'd command to reach STOP_COMMAND
+						if (!this->bIfBlock) {
+							break;
+						}
 					}
 					STOP_COMMAND;
 				}
