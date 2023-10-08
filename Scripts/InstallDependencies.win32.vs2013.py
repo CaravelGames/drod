@@ -321,6 +321,7 @@ dependencies = {
 		'libs': {
 			'caravel-metakit-2.4.9.7/libs/mk4vc70s_d.lib': 'Debug',
 			'caravel-metakit-2.4.9.7/libs/mk4vc70s.lib': 'Release'
+			'caravel-metakit-2.4.9.7/libs/mklib.pdb': ['Debug', 'Release']
 		}
 	},
 	SdlName: {
