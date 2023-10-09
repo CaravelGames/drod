@@ -2256,6 +2256,7 @@ bool CDbRoom::AddNewGlobalScript(const UINT dwCharID, const bool bProcessMove, C
 	pCharacter->bGlobal = true;
 	pCharacter->dwScriptID = pCustomChar->dwScriptID;
 	pCharacter->wProcessSequence = pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER);
+	pCharacter->SetCustomSpeechColor(pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, 0));
 
 	LinkMonster(pNew, false);
 

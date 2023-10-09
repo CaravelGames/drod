@@ -788,6 +788,19 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 		}
 	}
 
+	//Check for custom speech color
+	CCharacter* pCharacter = dynamic_cast<CCharacter*>(pCoord);
+	if (pCharacter)
+	{
+		const int colorIndex = pCharacter->GetCustomSpeechColor();
+		if (colorIndex)
+		{
+			color.byt1 = Uint8((colorIndex >> 16) & 255);
+			color.byt2 = Uint8((colorIndex >> 8) & 255);
+			color.byt3 = Uint8(colorIndex & 255);
+		}
+	}
+
 	//Speaker text effect.
 	CSubtitleEffect *pSubtitle = new CSubtitleEffect(this, pCoord,
 			wStr.c_str(), Black, color, dwDuration);

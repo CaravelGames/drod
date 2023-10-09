@@ -3289,3 +3289,7 @@ Talking
 [MID_ResetOverrides]
 [eng]
 Reset _MyScript variables
+
+[MID_CustomSpeechColor]
+[eng]
+Speech Color (rgb)

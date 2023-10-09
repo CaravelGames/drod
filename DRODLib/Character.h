@@ -74,6 +74,7 @@
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
 #define ParamProcessSequenceStr "ProcessSequenceParam"
+#define ParamSpeechColorStr "SpeechColorParam"
 
 #define DefaultCustomCharacterName wszEmpty
 #define NoCustomColor -1
@@ -137,6 +138,7 @@ public:
 	virtual bool   HasSword() const;
 
 	WSTRING        GetCustomName() const { return this->customName; }
+	UINT           GetCustomSpeechColor() const { return this->customSpeechColor; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -228,6 +230,7 @@ public:
 
 	void           ResolveLogicalIdentity(CDbHold *pHold);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
+	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
 	void   SetImperative(const ScriptFlag::Imperative eVal) {this->eImperative = eVal;}
 	virtual void   SetExtraVarsFromMembers(const bool bHoldChar=false);
 	void           SetExtraVarsFromMembersWithoutScript(const bool bHoldChar=false);
@@ -355,6 +358,7 @@ private:
 
 	UINT wLastSpeechLineNumber; //used during language import
 	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
+	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
 
 	//Predefined vars.
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides

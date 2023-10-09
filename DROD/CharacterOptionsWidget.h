@@ -46,31 +46,47 @@ public:
 
 	CCharacterOptionsDialog();
 
+	CTextBoxWidget* pSpeechColorRedTextBox;
+	CTextBoxWidget* pSpeechColorBlueTextBox;
+	CTextBoxWidget* pSpeechColorGreenTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
+	UINT GetSpeechColor();
 	UINT GetProcessSequence();
 
 protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 private:
+	void SetSpeechColorTexts(UINT color);
+
 	static const UINT CY_SPACE = 15;
 	static const UINT CX_SPACE = 15;
 
 	static const int CX_DIALOG = 400;
-	static const int CY_DIALOG = 420;
+	static const int CY_DIALOG = 467;
 
 	static const int CX_TITLE = 200;
 	static const int CY_TITLE = CY_LABEL_FONT_HEADER;
 	static const int X_TITLE = (CX_DIALOG - CX_TITLE) / 2;
 	static const int Y_TITLE = CY_SPACE;
 
+	static const int CX_SPEECHCOLORLABEL = 150;
+	static const int X_SPEECHCOLORLABEL = CX_SPACE;
+	static const int Y_SPEECHCOLORLABEL = Y_TITLE + CY_TITLE + CY_SPACE;
+
+	static const int CX_SPEECHCOLORTEXT = 45;
+	static const int X_SPEECHCOLORTEXT_RED = X_SPEECHCOLORLABEL + CX_SPEECHCOLORLABEL + CX_SPACE;
+	static const int X_SPEECHCOLORTEXT_GREEN = X_SPEECHCOLORTEXT_RED + CX_SPEECHCOLORTEXT + CX_SPACE / 2;
+	static const int X_SPEECHCOLORTEXT_BLUE = X_SPEECHCOLORTEXT_GREEN + CX_SPEECHCOLORTEXT + CX_SPACE / 2;
+	static const int Y_SPEECHCOLORTEXT = Y_SPEECHCOLORLABEL;
+
 	static const int CX_SEQUENCELABEL = 150;
 	static const int CY_SEQUENCELABEL = CY_STANDARD_BUTTON;
 	static const int X_SEQUENCELABEL = CX_SPACE;
-	static const int Y_SEQUENCELABEL = Y_TITLE + CY_TITLE + CY_SPACE;
+	static const int Y_SEQUENCELABEL = Y_SPEECHCOLORLABEL + CY_STANDARD_BUTTON + CY_SPACE;
 
 	static const int CX_SEQUENCEHELP = 250;
 	static const int CY_SEQUENCEHELP = 270;
@@ -92,6 +108,7 @@ private:
 	static const int X_CANCEL = CX_DIALOG / 2 + CX_SPACE / 2;
 	static const int Y_CANCEL = CY_DIALOG - CY_SAVE - CY_SPACE;
 
+	static const int SPEECHCOLOR_MAX_LENGTH = 3;
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
 };
 
