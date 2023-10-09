@@ -1621,7 +1621,11 @@ void CCharacter::Process(
 							wTurnCount = 0;
 							bProcessNextCommand = true;
 						}
-						break;
+
+						//Allow if'd command to reach STOP_COMMAND
+						if (!this->bIfBlock) {
+							break;
+						}
 					}
 					STOP_COMMAND;
 				}
@@ -3709,6 +3713,8 @@ bool CCharacter::GetMovement(
 						dx, dy, true);
 			} else {
 				bStopTurn = true;
+				dxFirst = 0;
+				dyFirst = 0;
 			}
 		}
 		break;

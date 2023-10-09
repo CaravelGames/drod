@@ -1,0 +1,3 @@
+[submodule "metakit"]
+	path = metakit
+	url = https://github.com/CaravelGames/metakit
