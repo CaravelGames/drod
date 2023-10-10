@@ -2376,7 +2376,15 @@ bool CMonster::GetNextGaze(
 					if (!beamVal)
 						return false; // no damage, blocks gaze
 
-					UINT delta = player.CalcDamage(beamVal);
+					UINT delta = 0;
+					if (beamVal == 50) {
+						// Backwards compatibility - CalcDamage rounds up, old way rounds down
+						PlayerStats& ps = player.st;
+						delta = ps.HP / (player.IsHasted() ? 4 : 2);
+					} else {
+						delta = player.CalcDamage(beamVal);
+					}
+
 					if (!delta)
 						delta = 1;
 					player.DecHealth(CueEvents, delta, CID_MonsterKilledPlayer);
