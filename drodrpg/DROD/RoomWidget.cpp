@@ -1341,11 +1341,6 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			mid = GetPressurePlateMID(pPlate ? pPlate->eType : OT_NORMAL);
 		}
 		break;
-		case T_FLOOR: case T_FLOOR_ALT: case T_FLOOR_M: case T_FLOOR_ROAD:
-		case T_FLOOR_GRASS: case T_FLOOR_DIRT: case T_FLOOR_IMAGE:
-			//Don't add extra text for plain floor.
-			mid = 0;
-		break;
 		default: mid = TILE_MID[oTile]; break;
 	}
 
