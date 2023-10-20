@@ -853,7 +853,7 @@ const
 		SDL_SetSurfaceRLE(pText, 1);
 		TTF_SetFontOutline(pFont->pTTFFont, 0);
 		SDL_Surface* p2 = TTF_RenderUNICODE_Blended(pFont->pTTFFont, reinterpret_cast<const Uint16*>(pwczText), pFont->ForeColor);
-		SDL_Rect dest = MAKE_SDL_RECT((pText->w - p2->w)/2, (pText->h - p2->h)/2+1, p2->w, p2->h);
+		SDL_Rect dest = MAKE_SDL_RECT(pFont->wOutlineWidth, pFont->wOutlineWidth - 1, pText->w, pText->h);
 		g_pTheBM->BlitRGBAtoRGBA(p2, NULL, pText, &dest);
 		SDL_FreeSurface(p2);
 	} else if (pFont->bAntiAlias && !bRenderFast) {
