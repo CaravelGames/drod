@@ -354,6 +354,9 @@ int CCombat::getPlayerDEF()
 		if (def > 0)
 			def = 0;
 		this->bMonsterDoesNoDefenseHit = true;
+	} else if (PlayerHasStrongShield(this->pMonster)){
+		// Shield with monster weakness doubles effective defense
+		doubleWithClamp(def);
 	}
 
 	return def;
@@ -434,6 +437,19 @@ bool CCombat::PlayerDoesStrongHit(const CMonster* pMonster) const
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+bool CCombat::PlayerHasStrongShield(const CMonster* pMonster) const
+//Returns: whether player gets x2 DEF against this monster
+{
+	ASSERT(pMonster);
+
+	if (this->pGame->IsPlayerShieldDisabled()) {
+		return false;
+	}
+
+	return this->pGame->IsEquipmentStrongAgainst(pMonster, ScriptFlag::Armor);
 }
 
 //*****************************************************************************
