@@ -549,10 +549,10 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
       NPC will generate roach eggs or another monster type when the player engages another monster in combat. The type of monster generated can be controlled by the <b>_MySpawn</b> and <b>_QueenSpawn variables</b>.</li>  
   <li><a name="be_goblin"><u>Goblin Weakness</u></a>:
 	  NPC is weak to goblin blades (i.e. player gets x2 ATK).
-	  Embues custom weapons with goblin blade attribute.</li>
+	  Embues custom equipment with goblin blade attribute. Shields with goblin blade attribue instead provide x2 DEF against attacks from goblin enemies.</li>
   <li><a name="be_wyrm"><u>Wyrm Weakness</u></a>:
 	  NPC is weak to wyrm blades (i.e. player gets x2 ATK).
-	  Embues custom weapons with wyrm blade attribute.</li>
+	  Embues custom equipment with wyrm blade attribute. Shields with wyrm blade attribue instead provide x2 DEF against attacks from wyrm enemies.</li>
   <li><a name="be_metal"><u>Metal</u></a>:
       Metal monsters will be damaged on oremites the same as if on a hot tile.
 	  Embues custom equipment with metal attribute (disabled on oremites).</li>
@@ -827,7 +827,7 @@ The variable names are case-insensitive.
   available choices, numbered in order of appearance.
   A value of 0 indicates no sword.
 </p>
-<p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if both _MyWeakness values are the same. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
+<p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if both _MyWeakness values are the same. A shield can also be strong against a monster, and will give x2 DEF against attacks from it. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
 </p>
 <p><a name="mydescription"><b>*_MyDescription</b></a> - A custom description property that can be set for a monster or equipment. It will be displayed after any behavior descriptors that apply to the character. A semi-colon can be used to split the description into multiple descriptors that will be displayed separately.
 </p>
