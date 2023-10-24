@@ -67,3 +67,10 @@ Music:
  - Modify the [Music] section of Data/drod.ini to apply your selection of music files.
  - To avoid running with any sound or music,
  - run the application with the "nosound" command line parameter.
+
+Fonts:
+ - The game engine supports TrueType fonts (.ttf files)
+ - Fonts can be placed in the Data/Fonts directory.
+ - Fonts for each game are initialized in `DRODFontManager.cpp`.
+ - DROD uses the Tom's New Roman and Epilog fonts, both created by Tom Murphy 7. These fonts can be obtain from http://fonts.tom7.com/.
+ - It is recommended to use the latest version of these fonts when developing, as older versions have visual problems when used with later versions of freetype.
