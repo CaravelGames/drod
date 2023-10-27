@@ -2888,6 +2888,115 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::DoesSquareContainTile(
+//Return: Does the square have a specific tile. Differentiates between variant tiles,
+//such as broken orbs, tokens, and pressure plate types.
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const UINT wTileNo //(in)   Base type to check for, may be "fake" tile.
+) const
+{
+	if (!IsValidColRow(wX, wY)) {
+		return false;
+	}
+
+	const bool bFakeElement = bIsFakeElementType(wTileNo);
+	const bool bLightingElement = bIsLighting(wTileNo);
+	const UINT tile = bFakeElement ? bConvertFakeElement(wTileNo) : wTileNo;
+
+	if (!IsValidTileNo(tile)) {
+		return false;
+	}
+
+	if (bLightingElement) {
+		const UINT lightingValue = this->pCurrentGame->pRoom->tileLights.GetAt(wX, wY);
+
+		if (wTileNo == T_WALLLIGHT) {
+			if (bIsWallLightValue(lightingValue)) return true;
+		}
+		else if (wTileNo == T_LIGHT_CEILING) {
+			if (bIsLightTileValue(lightingValue)) return true;
+		}
+		else if (wTileNo == T_DARK_CEILING) {
+			if (bIsDarkTileValue(lightingValue)) return true;
+		}
+
+		return false;
+	}
+
+	switch (TILE_LAYER[tile])
+	{
+		case 0:  //o-layer
+			if (bFakeElement) {
+				if (tile == T_PRESSPLATE)
+				{
+					const COrbData* pOrbData = GetPressurePlateAtCoords(wX, wY);
+
+					if (pOrbData != NULL && bPlateTypeMatchesFakeTile(wTileNo, pOrbData->eType)) return true;
+				}
+			} else {
+				if (GetOSquare(wX, wY) == tile)
+					return true;
+				if (tile == T_OVERHEAD_IMAGE && overheadTiles.Exists(wX, wY))
+					return true;
+			}
+		break;
+		case 1:  //t-layer
+			if (GetTSquare(wX, wY) == tile)
+			{
+				if (bFakeElement)
+				{
+					switch (tile)
+					{
+						case T_TOKEN: {
+							const BYTE tParam = GetTParam(wX, wY);
+							RoomTokenType tType = (RoomTokenType)calcTokenType(tParam);
+
+							if (wTileNo == T_ACTIVETOKEN)
+							{
+								if (bTokenActive(tParam))
+									return true;
+							} else {
+								//Special handling for tokens that have active equivalents of other base types
+								if (bTokenActive(tParam)) {
+									switch (tType) {
+										case RotateArrowsCW: tType = RotateArrowsCCW; break;
+										case RotateArrowsCCW: tType = RotateArrowsCW; break;
+										default: break;
+									}
+								}
+
+								if (tType == ConvertFakeTokenType(wTileNo))
+									return true;
+							}
+						}
+						break;
+						case T_ORB: {
+							COrbData* pOrbData = GetOrbAtCoords(wX, wY);
+							if (pOrbData) {
+								return  ((pOrbData->eType == OT_NORMAL && wTileNo == T_ORB_NORMAL)
+									|| (pOrbData->eType == OT_ONEUSE && wTileNo == T_ORB_CRACKED)
+									|| (pOrbData->eType == OT_BROKEN && wTileNo == T_ORB_BROKEN));
+							} else {
+								return wTileNo == T_ORB_NORMAL; // Regular orbs with no agents have no entry in CDbRoom::orbs collection
+							}
+						}
+						break;
+					}
+				} else {
+					return true;
+				}
+			}
+		break;
+		case 3:  //f-layer
+			return (GetFSquare(wX, wY) == tile);
+		break;
+		default: break;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CDbRoom::DoesSquareContainTeleportationObstacle(
 	// Checks if an entity of given type can teleport to this position.
 	// Monster layer is not considered here! (because teleporting on monsters is

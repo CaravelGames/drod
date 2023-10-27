@@ -4360,7 +4360,6 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 		return false;
 
 	const bool bFakeElement = bIsFakeElementType(pflags);
-	const bool bLightingElement = bIsLighting(pflags);
 	const UINT tile = bFakeElement ? bConvertFakeElement(pflags) : pflags;
 
 	const bool bRealTile = IsValidTileNo(tile);
@@ -4375,93 +4374,9 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 
 		for (UINT y=py; y <= endY; ++y)
 		{
-			for (UINT x=px; x <= endX; ++x)
-			{
-				if (!room.IsValidColRow(x,y))
-					continue;
-				if (bLightingElement){
-					const UINT lightingValue = this->pCurrentGame->pRoom->tileLights.GetAt(x, y);
-
-					if (pflags == T_WALLLIGHT){
-						if (bIsWallLightValue(lightingValue)) return true;
-					} else if (pflags == T_LIGHT_CEILING){
-						if (bIsLightTileValue(lightingValue)) return true;
-					} else if (pflags == T_DARK_CEILING){
-						if (bIsDarkTileValue(lightingValue)) return true;
-					}
-					
-					continue;
-				}
-
-				switch (TILE_LAYER[tile])
-				{
-					case 0:  //o-layer
-						if (bFakeElement){
-							if (tile == T_PRESSPLATE)
-							{
-								const COrbData* pOrbData = this->pCurrentGame->pRoom->GetPressurePlateAtCoords(x, y);
-
-								if (pOrbData != NULL && bPlateTypeMatchesFakeTile(pflags, pOrbData->eType)) return true;
-							}
-						}
-						else {
-							if (room.GetOSquare(x, y) == tile)
-								return true;
-							if (tile == T_OVERHEAD_IMAGE && room.overheadTiles.Exists(x, y))
-								return true;
-						}
-					break;
-					case 1:  //t-layer
-						if (room.GetTSquare(x,y) == tile)
-						{
-							if (bFakeElement)
-							{
-								switch(tile)
-								{
-									case T_TOKEN: {
-										const BYTE tParam = room.GetTParam(x,y);
-										RoomTokenType tType = (RoomTokenType)calcTokenType(tParam);
-
-										if (pflags == T_ACTIVETOKEN)
-										{
-											if (bTokenActive(tParam))
-												return true;
-										} else {
-											//Special handling for tokens that have active equivalents of other base types
-											if (bTokenActive(tParam)) {
-												switch (tType) {
-													case RotateArrowsCW: tType = RotateArrowsCCW; break;
-													case RotateArrowsCCW: tType = RotateArrowsCW; break;
-													default: break;
-												}
-											}
-											if (tType == ConvertFakeTokenType(pflags))
-												return true;
-										}
-									}
-									break;
-									case T_ORB: {
-										COrbData* pOrbData = room.GetOrbAtCoords(x, y);
-										if (pOrbData){
-											return  ((pOrbData->eType == OT_NORMAL && pflags == T_ORB_NORMAL)
-												|| (pOrbData->eType == OT_ONEUSE && pflags == T_ORB_CRACKED)
-												|| (pOrbData->eType == OT_BROKEN && pflags == T_ORB_BROKEN));
-										} else {
-											return pflags == T_ORB_NORMAL; // Regular orbs with no agents have no entry in CDbRoom::orbs collection
-										}
-									}
-									break;
-								}
-								
-							} else
-								return true;
-						}
-					break;
-					case 3:  //f-layer
-						if (room.GetFSquare(x,y) == tile)
-							return true;
-					break;
-					default: break;
+			for (UINT x = px; x <= endX; ++x) {
+				if (room.DoesSquareContainTile(x, y, pflags)) {
+					return true;
 				}
 			}
 		}
