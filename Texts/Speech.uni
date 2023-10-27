@@ -3293,3 +3293,11 @@ Reset _MyScript variables
 [MID_CustomSpeechColor]
 [eng]
 Speech Color (rgb)
+
+[MID_CountEntityType]
+[eng]
+Count entity type
+
+[MID_CountItem]
+[eng]
+Count item

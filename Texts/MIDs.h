@@ -1845,6 +1845,8 @@ enum MID_CONSTANT {
   MID_Talking = 2063,
   MID_ResetOverrides = 2070,
   MID_CustomSpeechColor = 2071,
+  MID_CountEntityType = 2072,
+  MID_CountItem = 2073,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
