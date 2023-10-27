@@ -377,6 +377,8 @@ public:
 		CC_WaitForBuildType,    //Wait until build marker type specified in flags is queued in rect (x,y,w,h)
 		CC_WaitForNotBuildType, //Wait until no build marker type specified in flags is queued in rect (x,y,w,h)
 		CC_ResetOverrides,      //Resets command parameter override values to no override
+		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
+		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
 
 		CC_Count
 	};

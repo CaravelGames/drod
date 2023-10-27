@@ -329,6 +329,7 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_WaitForEntityType:
 				case CCharacterCommand::CC_WaitForNotEntityType:
 				case CCharacterCommand::CC_WaitForRemains:
+				case CCharacterCommand::CC_CountEntityType:
 					SyncCustomCharacterData(c.flags, pOldHold, pNewHold, info);
 				break;
 
@@ -645,6 +646,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -720,6 +723,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3484,6 +3489,21 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_CountEntityType:
+			{
+				int count = CountEntityType(command, room, player);
+				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_CountItem:
+			{
+				int count = CountTile(command);
+				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetDarkness:
 			{
@@ -4290,6 +4310,61 @@ bool CCharacter::IsEntityTypeAt(
 }
 
 //*****************************************************************************
+//Returns: how many of the specified game entity type (flags) are in rect (x,y,w,h)
+int CCharacter::CountEntityType(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	int count = 0;
+
+	if (player.wIdentity == pflags)
+	{
+		if (player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			++count;
+	}
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+			if (!pMonster) {
+				continue;
+			}
+
+			if (pMonster->wType == pflags) {
+				++count;
+				continue;
+			}
+
+			switch (wType) {
+				case M_EYE_ACTIVE:
+				{
+					const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
+					if (pEvilEye->IsAggressive()) {
+						++count;
+						continue;
+					}
+				}
+			}
+
+			if (pMonster->wType == M_CHARACTER)
+			{
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				if (pCharacter->wLogicalIdentity == wType) {
+					++count;
+					continue;
+				}
+			}
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
 // Returns: if there is a build marker in rect (x,y,w,h)
 bool CCharacter::IsBuildMarkerAt(
 	const CCharacterCommand& command,
@@ -4383,6 +4458,47 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+//Returns: how many of the specified game element (flags) are in rect (x,y,w,h)
+int CCharacter::CountTile(const CCharacterCommand& command) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (px >= room.wRoomCols)
+		return 0;
+	if (py >= room.wRoomRows)
+		return 0;
+
+	int count = 0;
+	const bool bFakeElement = bIsFakeElementType(pflags);
+	const UINT tile = bFakeElement ? bConvertFakeElement(pflags) : pflags;
+
+	const bool bRealTile = IsValidTileNo(tile);
+	if (bRealTile)
+	{
+		UINT endX = px + pw;
+		UINT endY = py + ph;
+		if (endX >= room.wRoomCols)
+			endX = room.wRoomCols - 1;
+		if (endY >= room.wRoomRows)
+			endY = room.wRoomRows - 1;
+
+		for (UINT y = py; y <= endY; ++y)
+		{
+			for (UINT x = px; x <= endX; ++x) {
+				if (room.DoesSquareContainTile(x, y, pflags)) {
+					++count;
+				}
+			}
+		}
+	}
+
+	return count;
 }
 
 //*****************************************************************************

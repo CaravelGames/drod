@@ -159,6 +159,8 @@ public:
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
 
+	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	int            CountTile(const CCharacterCommand& command) const;
 	bool           IsAdderImmune() const { return HasBehavior(ScriptFlag::AdderImmune); }
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
