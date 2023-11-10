@@ -4339,7 +4339,7 @@ int CCharacter::CountEntityType(
 				continue;
 			}
 
-			switch (wType) {
+			switch (pMonster->wType) {
 				case M_EYE_ACTIVE:
 				{
 					const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
@@ -4353,7 +4353,7 @@ int CCharacter::CountEntityType(
 			if (pMonster->wType == M_CHARACTER)
 			{
 				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->wLogicalIdentity == wType) {
+				if (pCharacter->wLogicalIdentity == pflags) {
 					++count;
 					continue;
 				}
