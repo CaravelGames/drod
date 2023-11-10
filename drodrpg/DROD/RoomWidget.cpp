@@ -6960,8 +6960,13 @@ void CRoomWidget::DrawPlayer(
 
 	//If sword is not fully in display, draw it clipped.
 	//This is needed when raised at top edge or stepping onto room edge.
-	const bool bClipped = !IS_COLROW_IN_DISP(wSX, wSY) ||
+	bool bClipped = !IS_COLROW_IN_DISP(wSX, wSY) ||
 			 !IS_COLROW_IN_DISP(wSX + nSgnX, wSY + nSgnY);
+	if (!bClipped && this->dwMovementStepsLeft) {
+		UINT prevSX = wSX + (swordsman.wPrevX - swordsman.wX);
+		UINT prevSY = wSY + (swordsman.wPrevY - swordsman.wY);
+		bClipped = !IS_COLROW_IN_DISP(prevSX, prevSY);
+	}
 
 	TileImageBlitParams blit(wSX, wSY, wSwordTI, wXOffset, wYOffset, true, bDrawRaised);
 	blit.nOpacity = nOpacity;
