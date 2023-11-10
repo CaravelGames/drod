@@ -7634,34 +7634,33 @@ void CGameScreen::ReattachRetainedSubtitles()
 //to be hooked back in to the entities they are tracking.
 {
 	ASSERT(this->pCurrentGame);
-	for (vector<ChannelInfo>::const_iterator channel=this->speechChannels.begin();
-			channel!=this->speechChannels.end(); ++channel)
+	for (vector<ChannelInfo>::iterator channel = this->speechChannels.begin();
+		channel != this->speechChannels.end(); ++channel)
 	{
-		CSubtitleEffect *pEffect = channel->pEffect;
+		CSubtitleEffect* pEffect = channel->pEffect;
 		if (pEffect)
 		{
 			//Find current instance of the entity this subtitle effect is following.
-			CCharacter *pCharacter = this->pCurrentGame->
-						GetCharacterWithScriptID(channel->scriptID);
-			ASSERT(pCharacter);
-			if (pCharacter) //robustness
+			CCharacter* pCharacter = this->pCurrentGame->pRoom->
+				GetCharacterWithScriptID(channel->scriptID);
+			if (pCharacter) //might be a script-generated NPC
 			{
-				CFiredCharacterCommand *pSpeechCommand = new CFiredCharacterCommand(pCharacter,
-						&(pCharacter->commands[channel->commandIndex]), channel->turnNo,
-						channel->scriptID, channel->commandIndex);
+				CFiredCharacterCommand* pSpeechCommand = new CFiredCharacterCommand(pCharacter,
+					&(pCharacter->commands[channel->commandIndex]), channel->turnNo,
+					channel->scriptID, channel->commandIndex);
 				pSpeechCommand->text = channel->text;
 				PrepCustomSpeaker(pSpeechCommand);
 				if (ProcessSpeechSpeaker(pSpeechCommand))
 				{
-					CEntity *pEntity = this->pCurrentGame->getSpeakingEntity(pSpeechCommand);
+					CEntity* pEntity = this->pCurrentGame->getSpeakingEntity(pSpeechCommand);
 					pEffect->FollowCoord(pEntity);
 					this->pRoomWidget->AddToSubtitles(pEffect);
 				} else {
-					delete pEffect;
+					channel->pEffect = NULL;
 				}
 				delete pSpeechCommand;
 			} else {
-				delete pEffect;
+				channel->pEffect = NULL;
 			}
 		}
 	}

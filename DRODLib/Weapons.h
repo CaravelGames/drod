@@ -33,6 +33,7 @@
 //  Do not change these constant values.
 enum WeaponType
 {
+	WT_HotTile = -5,
 	WT_Firetrap=-4,
 	WT_FloorSpikes=-3,
 	WT_Off=-2,
