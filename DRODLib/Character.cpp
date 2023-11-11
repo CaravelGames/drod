@@ -1351,6 +1351,11 @@ void CCharacter::Process(
 		return;
 
 	CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+
+	//Don't move on half-turn if that has been forbidden
+	if (HasBehavior(ScriptFlag::OnlyProcessOnFullTurn) && pGame->bHalfTurn)
+		return;
+
 	CDbRoom& room = *(pGame->pRoom);
 	CSwordsman& player = pGame->swordsman;
 

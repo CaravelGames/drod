@@ -3174,6 +3174,10 @@ Avoid Firetraps
 [eng]
 Avoid Puffs
 
+[MID_OnlyProcessOnFullTurn]
+[eng]
+Only Process On Full Turns
+
 [MID_PreviousIf]
 [eng]
 <Previous If>

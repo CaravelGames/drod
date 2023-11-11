@@ -167,7 +167,8 @@ namespace ScriptFlag
 		InstantMovement = 27,
 		UseTunnels = 28,
 		AvoidFiretraps = 29,
-		AvoidPuffs = 30
+		AvoidPuffs = 30,
+		OnlyProcessOnFullTurn = 31,
 	};
 
 	enum DisplayFilter
