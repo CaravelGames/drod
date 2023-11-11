@@ -3588,6 +3588,7 @@ const
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 		{
 			WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(command.flags);
 			wstr += charName.length() ? charName : wszQuestionMark;
@@ -3904,6 +3905,7 @@ const
 		break;
 
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			wstr += this->pWaitForItemsListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -4798,6 +4800,9 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountEntityType, g_pTheDB->GetMessageText(MID_CountEntityType));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItem, g_pTheDB->GetMessageText(MID_CountItem));
+
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitAnd, g_pTheDB->GetMessageText(MID_LogicalWaitAnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
@@ -5678,7 +5683,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_WaitForBuilding
 		BUILD_MARKER_ITEMS, //CC_WaitForBuildType
 		BUILD_MARKER_ITEMS, //CC_WaitForNotBuildType
-		NO_WIDGETS          //CC_ResetOverrides
+		NO_WIDGETS,         //CC_ResetOverrides
+		GRAPHIC,            //CC_CountEntityType
+		WAIT_FOR_ITEMS      //CC_CountItem
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5828,7 +5835,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForBuilding
 		NO_LABELS,          //CC_WaitForBuildType
 		NO_LABELS,          //CC_WaitForNotBuildType
-		NO_LABELS           //CC_ResetOverrides
+		NO_LABELS,          //CC_ResetOverrides
+		NO_LABELS,          //CC_CountEntityType
+		NO_LABELS           //CC_CountItem
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6240,6 +6249,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 			this->pCommand->flags = this->pAddCommandGraphicListBox->GetSelectedItem();
 			QueryRect();
 		break;
@@ -6300,6 +6310,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			break;
 
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			this->pCommand->flags = this->pWaitForItemsListBox->GetSelectedItem();
 			QueryRect();
 		break;
@@ -7046,6 +7057,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			this->pWaitForItemsListBox->SelectItem(this->pCommand->flags);
 		break;
 
@@ -7218,6 +7230,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 			this->pAddCommandGraphicListBox->SelectItem(this->pCommand->flags);
 		break;
 
@@ -7848,6 +7861,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
+	case CCharacterCommand::CC_CountEntityType:
 		parseMandatoryOption(pCommand->flags, this->pAddCommandGraphicListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -7984,6 +7998,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_WaitForItem:
+	case CCharacterCommand::CC_CountItem:
 		parseMandatoryOption(pCommand->flags,this->pWaitForItemsListBox,bFound);
 		skipComma;
 		skipLeftParen;
@@ -8669,6 +8684,7 @@ WSTRING CCharacterDialogWidget::toText(
 
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
+	case CCharacterCommand::CC_CountEntityType:
 	{
 		WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(c.flags);
 		wstr += charName.length() ? charName : wszQuestionMark;
@@ -8778,6 +8794,7 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_WaitForItem:
+	case CCharacterCommand::CC_CountItem:
 		wstr += this->pWaitForItemsListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);

@@ -245,6 +245,7 @@ public:
 			const int dx, const int dy) const;
 	bool           DoesOrthoSquarePreventDiagonal(const UINT wX, const UINT wY,
 		const int dx, const int dy) const;
+	bool           DoesSquareContainTile(const UINT wX, const UINT wY, const UINT wTileNo) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 	bool           DoubleCanActivateToken(RoomTokenType type) const;
 

@@ -329,6 +329,7 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_WaitForEntityType:
 				case CCharacterCommand::CC_WaitForNotEntityType:
 				case CCharacterCommand::CC_WaitForRemains:
+				case CCharacterCommand::CC_CountEntityType:
 					SyncCustomCharacterData(c.flags, pOldHold, pNewHold, info);
 				break;
 
@@ -645,6 +646,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -720,6 +723,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3488,6 +3493,21 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_CountEntityType:
+			{
+				int count = CountEntityType(command, room, player);
+				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_CountItem:
+			{
+				int count = CountTile(command);
+				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetDarkness:
 			{
@@ -4296,6 +4316,61 @@ bool CCharacter::IsEntityTypeAt(
 }
 
 //*****************************************************************************
+//Returns: how many of the specified game entity type (flags) are in rect (x,y,w,h)
+int CCharacter::CountEntityType(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	int count = 0;
+
+	if (player.wIdentity == pflags)
+	{
+		if (player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			++count;
+	}
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+			if (!pMonster) {
+				continue;
+			}
+
+			if (pMonster->wType == pflags) {
+				++count;
+				continue;
+			}
+
+			switch (pMonster->wType) {
+				case M_EYE_ACTIVE:
+				{
+					const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
+					if (pEvilEye->IsAggressive()) {
+						++count;
+						continue;
+					}
+				}
+			}
+
+			if (pMonster->wType == M_CHARACTER)
+			{
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				if (pCharacter->wLogicalIdentity == pflags) {
+					++count;
+					continue;
+				}
+			}
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
 // Returns: if there is a build marker in rect (x,y,w,h)
 bool CCharacter::IsBuildMarkerAt(
 	const CCharacterCommand& command,
@@ -4366,7 +4441,6 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 		return false;
 
 	const bool bFakeElement = bIsFakeElementType(pflags);
-	const bool bLightingElement = bIsLighting(pflags);
 	const UINT tile = bFakeElement ? bConvertFakeElement(pflags) : pflags;
 
 	const bool bRealTile = IsValidTileNo(tile);
@@ -4381,99 +4455,56 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 
 		for (UINT y=py; y <= endY; ++y)
 		{
-			for (UINT x=px; x <= endX; ++x)
-			{
-				if (!room.IsValidColRow(x,y))
-					continue;
-				if (bLightingElement){
-					const UINT lightingValue = this->pCurrentGame->pRoom->tileLights.GetAt(x, y);
-
-					if (pflags == T_WALLLIGHT){
-						if (bIsWallLightValue(lightingValue)) return true;
-					} else if (pflags == T_LIGHT_CEILING){
-						if (bIsLightTileValue(lightingValue)) return true;
-					} else if (pflags == T_DARK_CEILING){
-						if (bIsDarkTileValue(lightingValue)) return true;
-					}
-					
-					continue;
-				}
-
-				switch (TILE_LAYER[tile])
-				{
-					case 0:  //o-layer
-						if (bFakeElement){
-							if (tile == T_PRESSPLATE)
-							{
-								const COrbData* pOrbData = this->pCurrentGame->pRoom->GetPressurePlateAtCoords(x, y);
-
-								if (pOrbData != NULL && bPlateTypeMatchesFakeTile(pflags, pOrbData->eType)) return true;
-							}
-						}
-						else {
-							if (room.GetOSquare(x, y) == tile)
-								return true;
-							if (tile == T_OVERHEAD_IMAGE && room.overheadTiles.Exists(x, y))
-								return true;
-						}
-					break;
-					case 1:  //t-layer
-						if (room.GetTSquare(x,y) == tile)
-						{
-							if (bFakeElement)
-							{
-								switch(tile)
-								{
-									case T_TOKEN: {
-										const BYTE tParam = room.GetTParam(x,y);
-										RoomTokenType tType = (RoomTokenType)calcTokenType(tParam);
-
-										if (pflags == T_ACTIVETOKEN)
-										{
-											if (bTokenActive(tParam))
-												return true;
-										} else {
-											//Special handling for tokens that have active equivalents of other base types
-											if (bTokenActive(tParam)) {
-												switch (tType) {
-													case RotateArrowsCW: tType = RotateArrowsCCW; break;
-													case RotateArrowsCCW: tType = RotateArrowsCW; break;
-													default: break;
-												}
-											}
-											if (tType == ConvertFakeTokenType(pflags))
-												return true;
-										}
-									}
-									break;
-									case T_ORB: {
-										COrbData* pOrbData = room.GetOrbAtCoords(x, y);
-										if (pOrbData){
-											return  ((pOrbData->eType == OT_NORMAL && pflags == T_ORB_NORMAL)
-												|| (pOrbData->eType == OT_ONEUSE && pflags == T_ORB_CRACKED)
-												|| (pOrbData->eType == OT_BROKEN && pflags == T_ORB_BROKEN));
-										} else {
-											return pflags == T_ORB_NORMAL; // Regular orbs with no agents have no entry in CDbRoom::orbs collection
-										}
-									}
-									break;
-								}
-								
-							} else
-								return true;
-						}
-					break;
-					case 3:  //f-layer
-						if (room.GetFSquare(x,y) == tile)
-							return true;
-					break;
-					default: break;
+			for (UINT x = px; x <= endX; ++x) {
+				if (room.DoesSquareContainTile(x, y, pflags)) {
+					return true;
 				}
 			}
 		}
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+//Returns: how many of the specified game element (flags) are in rect (x,y,w,h)
+int CCharacter::CountTile(const CCharacterCommand& command) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (px >= room.wRoomCols)
+		return 0;
+	if (py >= room.wRoomRows)
+		return 0;
+
+	int count = 0;
+	const bool bFakeElement = bIsFakeElementType(pflags);
+	const UINT tile = bFakeElement ? bConvertFakeElement(pflags) : pflags;
+
+	const bool bRealTile = IsValidTileNo(tile);
+	if (bRealTile)
+	{
+		UINT endX = px + pw;
+		UINT endY = py + ph;
+		if (endX >= room.wRoomCols)
+			endX = room.wRoomCols - 1;
+		if (endY >= room.wRoomRows)
+			endY = room.wRoomRows - 1;
+
+		for (UINT y = py; y <= endY; ++y)
+		{
+			for (UINT x = px; x <= endX; ++x) {
+				if (room.DoesSquareContainTile(x, y, pflags)) {
+					++count;
+				}
+			}
+		}
+	}
+
+	return count;
 }
 
 //*****************************************************************************

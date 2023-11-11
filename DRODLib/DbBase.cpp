@@ -952,6 +952,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_AvoidPuffs: strText = "Avoid Puffs"; break;
 	case MID_ResetOverrides: strText = "Reset _MyScript variables"; break;
 	case MID_CustomSpeechColor: strText = "Speech Color (rgb)"; break;
+	case MID_CountEntityType: strText = "Count entity type"; break;
+	case MID_CountItem: strText = "Count item"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
