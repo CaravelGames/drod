@@ -113,36 +113,28 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	ASSERT(CCharacterCommand::IsRealEquipmentType(equipType));
 
 	WSTRING text;
-	bool goblinWeakness = false, serpentWeakness = false, customWeakness = false;
 	bool needSeparator = false;
-
-	//Armor does not grant strong hit
-	if (equipType != ScriptFlag::EquipmentType::Armor) {
-		goblinWeakness = pCharacter->HasGoblinWeakness();
-		serpentWeakness = pCharacter->HasSerpentWeakness();
-		customWeakness = pCharacter->HasCustomWeakness();
-	}
 
 	if (pCharacter->IsMetal())
 	{
 		text += g_pTheDB->GetMessageText(MID_BehaviorMetal);
 		needSeparator = true;
 	}
-	if (goblinWeakness)
+	if (pCharacter->HasGoblinWeakness())
 	{
 		if (needSeparator)
 			text += separator;
 		text += g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness);
 		needSeparator = true;
 	}
-	if (serpentWeakness)
+	if (pCharacter->HasSerpentWeakness())
 	{
 		if (needSeparator)
 			text += separator;
 		text += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
 		needSeparator = true;
 	}
-	if (customWeakness)
+	if (pCharacter->HasCustomWeakness())
 	{
 		if (needSeparator)
 			text += separator;
