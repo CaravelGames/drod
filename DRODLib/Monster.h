@@ -365,6 +365,7 @@ public:
 	UINT          stunned; //whether monster is stunned and skips turn
 	bool          bNewStun; //whether monster stun was inflicted this turn
 	bool          bPushedThisTurn; //whether monster was pushed this turn
+	bool          bPushedOtherMonster; //if another monster was pushed during most recent movement
 	bool          bWaitedOnHotFloorLastTurn; //for hasteable playerdoubles
 	bool          bSafeToDelete;
 

@@ -7228,6 +7228,10 @@ void CCharacter::MoveCharacter(
 			room.ActivateToken(CueEvents, this->wX, this->wY, this);
 	}
 
+	//If another monster was pushed, the destination tile may have fallen
+	if (this->bPushedOtherMonster)
+		room.CheckForFallingAt(this->wX, this->wY, CueEvents);
+
 	SetWeaponSheathed();
 	RefreshBriars();
 

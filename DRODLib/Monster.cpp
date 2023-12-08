@@ -105,7 +105,7 @@ CMonster::CMonster(
 	, bAlive(true)
 	, bForceWeaponAttack(false)
 	, stunned(0), bNewStun(false)
-	, bPushedThisTurn(false)
+	, bPushedThisTurn(false), bPushedOtherMonster(false)
 	, bWaitedOnHotFloorLastTurn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
@@ -2160,12 +2160,14 @@ void CMonster::Move(
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	CMonster *pMonster = room.GetMonsterAtSquare(wDestX,wDestY);
 	bool bFluffPoison = false;
+	bPushedOtherMonster = false;
 	if (pMonster)
 	{
 		ASSERT(pCueEvents);
 
 		if (pMonster->IsPushableByBody() && this->CanPushMonsters()){
 			pMonster->PushInDirection(sgn(wDestX - this->wX), sgn(wDestY - this->wY), false, *pCueEvents);
+			bPushedOtherMonster = true;
 		}
 		else 
 		{
