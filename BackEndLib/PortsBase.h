@@ -78,7 +78,7 @@
 #endif
 // If that failed, try to recognize the system
 #ifndef GAME_BYTEORDER
-#  if (defined(WIN32) || defined(__i386__) || defined(__x86_64__))
+#  if (defined(WIN32) || defined(__i386__) || defined(__x86_64__) || defined(__aarch64__))
 #     define GAME_BYTEORDER GAME_BYTEORDER_LITTLE
 #  elif (defined(__APPLE__) || defined(__sgi))
 #     define GAME_BYTEORDER GAME_BYTEORDER_BIG
