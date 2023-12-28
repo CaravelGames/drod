@@ -134,6 +134,7 @@ void CMonster::Clear()
 	this->stunned = 0;
 	this->bNewStun = false;
 	this->bPushedThisTurn = false;
+	this->bPushedOtherMonster = false;
 	this->ExtraVars.Clear();
 	while (this->Pieces.size())
 	{
