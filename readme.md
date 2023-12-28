@@ -33,6 +33,10 @@ When debugging build issues edit the build file from 'ninja -k 0' to 'ninja -k N
 >
 >The dist option should be left at the default (none).
 
+It is possible to build DROD on a Raspberry Pi 4 (or probably 5), although this will require increasing the amount of swap space available for lower memory units (e.g. less than 4Gb). Failure to provide sufficient swap space will result in the Pi crashing. Increased swap space is not required to run DROD once built.
+
+To build, run `./ninjamaker -arch aarch64 -no-static` followed by `./build` in the `Master/Linux` directory. You will need to have built and installed Metakit before doing this, else it will fail when linking.
+
 
 ##### Mac builds
 

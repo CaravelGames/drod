@@ -15,6 +15,7 @@ declare -A archflags
 archflags=(
 	[x86_64]="-m64"
 	[i686]="-m32 -march=i686"
+	[aarch64]="-march=armv8.6-a"
 )
 
 declare -A distflags
