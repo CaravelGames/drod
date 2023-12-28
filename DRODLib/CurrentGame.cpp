@@ -5996,6 +5996,7 @@ void CCurrentGame::ProcessPlayer(
 	const UINT wTTileNo = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 	bool bEnteredTunnel = false;
 	bool bMovingPlatform = false;
+	bool bPushedCharacter = false;
 
 	//Look for obstacles and set dx/dy accordingly.
 	const UINT wMoveO = nGetO(dx, dy);
@@ -6252,9 +6253,6 @@ CheckMonsterLayer:
 					//Player bumps into an NPC, see if we can push him first
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
-
-					bool bPushedCharacter = false;
-
 					if (pCharacter->IsPushableByBody()){
 						const UINT wDestX = pCharacter->wX + dx;
 						const UINT wDestY = pCharacter->wY + dy;
@@ -6359,6 +6357,10 @@ MakeMove:
 	if (bCanDropTrapdoor && bMoved)
 		this->pRoom->DestroyTrapdoor(this->swordsman.wX - dx,
 				this->swordsman.wY - dy, CueEvents);
+
+	//If a character was pushed, the destination tile may have fallen
+	if (bPushedCharacter)
+		this->pRoom->CheckForFallingAt(this->swordsman.wX, this->swordsman.wY, CueEvents);
 
 	//Check for stepping on monster
 	CMonster* pMonster = this->pRoom->GetMonsterAtSquare(this->swordsman.wX, this->swordsman.wY);

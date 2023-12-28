@@ -347,6 +347,10 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 				if (bIsPit(wOTile) || bIsDeepWater(wOTile))
 					room.MovePlatform(this->wX - dx, this->wY - dy, nGetO(dx,dy));
 			}
+
+			//If another monster was pushed, the destination tile may have fallen
+			if (this->bPushedOtherMonster)
+				room.CheckForFallingAt(this->wX, this->wY, CueEvents);
 		}
 
 		//Check for movement onto a checkpoint.
