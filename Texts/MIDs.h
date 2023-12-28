@@ -1815,6 +1815,7 @@ enum MID_CONSTANT {
   MID_UseTunnels = 2057,
   MID_AvoidFiretraps = 2068,
   MID_AvoidPuffs = 2069,
+  MID_OnlyProcessOnFullTurn = 2074,
   MID_PreviousIf = 1940,
   MID_NextElseOrElseIfSkip = 1941,
   MID_PushTile = 1945,

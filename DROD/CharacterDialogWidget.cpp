@@ -4684,6 +4684,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AvoidPuffs, g_pTheDB->GetMessageText(MID_AvoidPuffs));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::RestrictedMovement, g_pTheDB->GetMessageText(MID_RestrictedMovement));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::InstantMovement, g_pTheDB->GetMessageText(MID_InstantMovement));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::OnlyProcessOnFullTurn, g_pTheDB->GetMessageText(MID_OnlyProcessOnFullTurn));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterAttackable, g_pTheDB->GetMessageText(MID_CanBeMonsterAttacked));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterTarget, g_pTheDB->GetMessageText(MID_MonsterTarget));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterTargetWhenPlayerIsTarget, g_pTheDB->GetMessageText(MID_MonsterTargetWhenPlayerIsTarget));
