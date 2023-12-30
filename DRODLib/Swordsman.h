@@ -57,6 +57,22 @@ enum WaterTraversal
 	WTrv_CanHide=3			//Can hide in Shallow Water (sheathes sword)
 };
 
+enum PlayerBehaviorState
+{
+	PBS_Default = 0,	//User Player Role properties
+	PBS_On = 1,				//Always active
+	PBS_Off = 2,			//Always inactive
+	PBS_Powered = 3,	//Active for powered player
+	PBS_Unpowered = 4	//Active for non-powered player
+};
+
+enum PlayerBehavior
+{
+	PBS_Placeholder = 0
+};
+
+typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
+
 class CSwordsman : public CEntity
 {
 public:
@@ -84,6 +100,7 @@ public:
 	void ResetStats();
 	void RotateClockwise();
 	void RotateCounterClockwise();
+	void SetBehavior(const PlayerBehavior behavior, const PlayerBehaviorState state);
 	void SetOrientation(const UINT wO, const bool updatePrevO=true);
 	void SetWeaponType(const UINT type, const bool bPersist=true);
 
@@ -122,8 +139,11 @@ public:
 	UINT     wWaterTraversal; //can override player role's natural (in)ability to wade or hide in Shallow Water
 	WeaponType weaponType;
 	WeaponType localRoomWeaponType; //active value, reverts back to 'weaponType' on room exit
+	PlayerBehaviors behaviorOverrides;
 
 private:
+	bool HasBehavior(const PlayerBehavior& behavior, bool& active) const;
+
 	void SetSwordCoords();
 };
 

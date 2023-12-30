@@ -131,6 +131,7 @@ void CSwordsman::Clear()
 	this->bWeaponOff = false;
 	this->wWaterTraversal = WTrv_AsPlayerRole;
 	this->bHasTeleported = false;
+	this->behaviorOverrides.clear();
 	EquipWeapon(WT_Sword);
 
 	ResetStats();
@@ -188,6 +189,44 @@ MovementType CSwordsman::GetMovementType() const
 			return this->GetWaterTraversalState(this->wAppearance) == WTrv_NoEntry
 				? GROUND
 				: GROUND_AND_SHALLOW_WATER;
+	}
+}
+
+//*****************************************************************************
+bool CSwordsman::HasBehavior(
+//Returns: If the given behavior is overridden. Output argument describes if it
+//appplies to the player.
+	const PlayerBehavior& behavior, //(in) behavior to check
+	bool& active //(out) does the behavior apply
+) const
+{
+	if (this->behaviorOverrides.count(behavior) == 0) {
+		active = false;
+		return false;
+	}
+
+	PlayerBehaviorState state = this->behaviorOverrides.at(behavior);
+	switch (state) {
+		case PBS_On: {
+			active = true;
+			return true;
+		}
+		case PBS_Off: {
+			active = false;
+			return true;
+		}
+		case PBS_Powered: {
+			active = bCanGetItems;
+			return true;
+		}
+		case PBS_Unpowered: {
+			active = !bCanGetItems;
+			return true;
+		}
+		default: {
+			active = false;
+			return false;
+		}
 	}
 }
 
@@ -374,6 +413,16 @@ void CSwordsman::SetWeaponType(const UINT type, const bool bPersist)
 		if (bPersist) {
 			this->weaponType = (WeaponType)type;
 		}
+	}
+}
+
+//*****************************************************************************
+void CSwordsman::SetBehavior(const PlayerBehavior behavior, const PlayerBehaviorState state)
+{
+	if (state == PBS_Default) {
+		this->behaviorOverrides.erase(behavior);
+	} else {
+		this->behaviorOverrides[behavior] = state;
 	}
 }
 
