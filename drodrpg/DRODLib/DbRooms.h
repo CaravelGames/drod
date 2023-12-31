@@ -205,6 +205,7 @@ public:
 	void           DestroyTar(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           DestroyTrapdoor(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
+	void           DisableForceArrow(const UINT wX, const UINT wY);
 /*	bool           DoesMonsterEnterRoomLater(const UINT wX, const UINT wY,
 			const UINT wMonsterType) const;
 	bool           DoesSquareContainDoublePlacementObstacle(const UINT wX, const UINT wY) const;
@@ -218,6 +219,7 @@ public:
 			const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 
+	void           EnableForceArrow(const UINT wX, const UINT wY);
 	void           ExpandBriars(CCueEvents& CueEvents);
 //	CMonster*      FindNextClone();
 	void           FixUnstableTar(CCueEvents& CueEvents);
@@ -392,6 +394,7 @@ public:
 	void           SwitchTarstuff(const UINT wType1, const UINT wType2);
 	bool           SwordfightCheck() const;
 	void           ToggleBlackGates(CCueEvents& CueEvents);
+	void           ToggleForceArrow(const UINT wX, const UINT wY);
 	void           ToggleDoor(const UINT wX, const UINT wY);
 	bool           ToggleTiles(const UINT wOldTile, const UINT wNewTile);
 	void           ToggleLight(const UINT wX, const UINT wY, CCueEvents& CueEvents);

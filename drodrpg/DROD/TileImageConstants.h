@@ -2408,7 +2408,16 @@
 #define TI_ICEMELT_3      2228
 #define TI_ICEMELT_4      2229
 
-static const UINT TI_COUNT = 2230;
+#define TI_ARROW_OFF_N    2230
+#define TI_ARROW_OFF_NE   2231
+#define TI_ARROW_OFF_E    2232
+#define TI_ARROW_OFF_SE   2233
+#define TI_ARROW_OFF_S    2234
+#define TI_ARROW_OFF_SW   2235
+#define TI_ARROW_OFF_W    2236
+#define TI_ARROW_OFF_NW   2237
+
+static const UINT TI_COUNT = 2238;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

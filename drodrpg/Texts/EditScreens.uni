@@ -742,6 +742,42 @@ Dirt Block (5)
 [eng]
 Thin Ice
 
+[MID_ForceArrowDisabled]
+[eng]
+Disabled force arrow
+
+[MID_ForceArrowDisabledN]
+[eng]
+Disabled force arrow (north)
+
+[MID_ForceArrowDisabledE]
+[eng]
+Disabled force arrow (east)
+
+[MID_ForceArrowDisabledS]
+[eng]
+Disabled force arrow (south)
+
+[MID_ForceArrowDisabledW]
+[eng]
+Disabled force arrow (west)
+
+[MID_ForceArrowDisabledNW]
+[eng]
+Disabled force arrow (northwest)
+
+[MID_ForceArrowDisabledNE]
+[eng]
+Disabled force arrow (northeast)
+
+[MID_ForceArrowDisabledSE]
+[eng]
+Disabled force arrow (southeast)
+
+[MID_ForceArrowDisabledSW]
+[eng]
+Disabled force arrow (southwest)
+
 [MID_FloorMosaic]
 [eng]
 Floor mosaic

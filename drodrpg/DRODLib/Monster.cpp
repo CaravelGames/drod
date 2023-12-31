@@ -906,13 +906,13 @@ const
 				bIsMap(wLookTileNo) ||
 				bIsShovel(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
-				bIsArrow(wLookTileNo)
+				bIsAnyArrow(wLookTileNo)
 			);
 		case WATER:
 			return !(
 				wLookTileNo==T_EMPTY ||
 				bIsWater(wLookTileNo) ||
-				bIsArrow(wLookTileNo) ||
+				bIsAnyArrow(wLookTileNo) ||
 				wLookTileNo==T_NODIAGONAL ||
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_SCROLL ||
@@ -929,7 +929,7 @@ const
 				wLookTileNo==T_EMPTY ||
 				bIsFloor(wLookTileNo) ||
 				bIsOpenDoor(wLookTileNo) ||
-				bIsArrow(wLookTileNo) ||
+				bIsAnyArrow(wLookTileNo) ||
 				bIsPlatform(wLookTileNo) ||
 				wLookTileNo==T_NODIAGONAL ||
 				wLookTileNo==T_SCROLL ||

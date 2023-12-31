@@ -1120,7 +1120,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const int X_ITEMLISTBOX = X_GRAPHICLISTBOX2;
 	static const int Y_ITEMLISTBOX = Y_GRAPHICLISTBOX2;
-	static const UINT CX_ITEMLISTBOX = 220;
+	static const UINT CX_ITEMLISTBOX = 290;
 	static const UINT CY_ITEMLISTBOX = CY_GRAPHICLISTBOX2;
 
 	static const int X_CUTSCENELABEL = X_WAITLABEL;
@@ -4132,6 +4132,14 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_ARROW_SW, g_pTheDB->GetMessageText(MID_ForceArrow_SW));
 	pListBox->AddItem(T_ARROW_S, g_pTheDB->GetMessageText(MID_ForceArrow_S));
 	pListBox->AddItem(T_ARROW_SE, g_pTheDB->GetMessageText(MID_ForceArrow_SE));
+	pListBox->AddItem(T_ARROW_OFF_E, g_pTheDB->GetMessageText(MID_ForceArrowDisabledE));
+	pListBox->AddItem(T_ARROW_OFF_N, g_pTheDB->GetMessageText(MID_ForceArrowDisabledN));
+	pListBox->AddItem(T_ARROW_OFF_NE, g_pTheDB->GetMessageText(MID_ForceArrowDisabledNE));
+	pListBox->AddItem(T_ARROW_OFF_NW, g_pTheDB->GetMessageText(MID_ForceArrowDisabledNW));
+	pListBox->AddItem(T_ARROW_OFF_S, g_pTheDB->GetMessageText(MID_ForceArrowDisabledS));
+	pListBox->AddItem(T_ARROW_OFF_SE, g_pTheDB->GetMessageText(MID_ForceArrowDisabledSE));
+	pListBox->AddItem(T_ARROW_OFF_SW, g_pTheDB->GetMessageText(MID_ForceArrowDisabledSW));
+	pListBox->AddItem(T_ARROW_OFF_W, g_pTheDB->GetMessageText(MID_ForceArrowDisabledW));
 	pListBox->AddItem(T_NODIAGONAL, g_pTheDB->GetMessageText(MID_Ortho));
 	pListBox->AddItem(T_OBSTACLE, g_pTheDB->GetMessageText(MID_Obstacle));
 	pListBox->AddItem(T_BOMB, g_pTheDB->GetMessageText(MID_Bomb));

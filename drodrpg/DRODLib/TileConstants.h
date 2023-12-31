@@ -154,8 +154,16 @@
 #define T_DIRT3         104 //dirt block requiring 3 shovels
 #define T_DIRT5         105 //dirt block requiring 5 shovels
 #define T_THINICE       106 //thin ice over water
+#define T_ARROW_OFF_N   107
+#define T_ARROW_OFF_NE  108
+#define T_ARROW_OFF_E   109
+#define T_ARROW_OFF_SE  110
+#define T_ARROW_OFF_S   111
+#define T_ARROW_OFF_SW  112
+#define T_ARROW_OFF_W   113
+#define T_ARROW_OFF_NW  114
 
-#define TILE_COUNT     (107) //Number of tile constants from above list.
+#define TILE_COUNT     (115) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -191,6 +199,31 @@ static inline bool bIsWater(const UINT t) {return t==T_WATER;}
 static inline bool bIsSheatheAffecting(const UINT t) { return t == T_GOO; }
 
 static inline bool bIsArrow(const UINT t) {return t>=T_ARROW_N && t<=T_ARROW_NW;}
+static inline bool bIsDisabledArrow(const UINT t) { return t >= T_ARROW_OFF_N && t <= T_ARROW_OFF_NW; }
+static inline bool bIsAnyArrow(const UINT t) { return bIsArrow(t) || bIsDisabledArrow(t); }
+static inline UINT getToggledForceArrow(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return T_ARROW_OFF_NE;
+		case T_ARROW_E:  return T_ARROW_OFF_E;
+		case T_ARROW_SE: return T_ARROW_OFF_SE;
+		case T_ARROW_S:  return T_ARROW_OFF_S;
+		case T_ARROW_SW: return T_ARROW_OFF_SW;
+		case T_ARROW_W:  return T_ARROW_OFF_W;
+		case T_ARROW_NW: return T_ARROW_OFF_NW;
+		case T_ARROW_N:  return T_ARROW_OFF_N;
+
+		case T_ARROW_OFF_NE: return T_ARROW_NE;
+		case T_ARROW_OFF_E:  return T_ARROW_E;
+		case T_ARROW_OFF_SE: return T_ARROW_SE;
+		case T_ARROW_OFF_S:  return T_ARROW_S;
+		case T_ARROW_OFF_SW: return T_ARROW_SW;
+		case T_ARROW_OFF_W:  return T_ARROW_W;
+		case T_ARROW_OFF_NW: return T_ARROW_NW;
+		case T_ARROW_OFF_N:  return T_ARROW_N;
+
+		default: return T_EMPTY;
+	}
+}
 
 static inline bool bIsHealth(const UINT t) {
 	return t == T_HEALTH_HUGE || t == T_HEALTH_BIG || t == T_HEALTH_MED || t == T_HEALTH_SM;
@@ -476,6 +509,14 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_OPAQUE, //T_DIRT3
 	LAYER_OPAQUE, //T_DIRT5
 	LAYER_OPAQUE, //T_THINICE
+	LAYER_FLOOR, //T_ARROW_OFF_N
+	LAYER_FLOOR, //T_ARROW_OFF_NE
+	LAYER_FLOOR, //T_ARROW_OFF_E
+	LAYER_FLOOR, //T_ARROW_OFF_SE
+	LAYER_FLOOR, //T_ARROW_OFF_S
+	LAYER_FLOOR, //T_ARROW_OFF_SW
+	LAYER_FLOOR, //T_ARROW_OFF_W
+	LAYER_FLOOR, //T_ARROW_OFF_NW
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -630,6 +671,14 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Dirt3,        //T_DIRT3
 	MID_Dirt5,        //T_DIRT5
 	MID_ThinIce,      //T_THINICE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_N
+	MID_ForceArrowDisabled, //T_ARROW_OFF_NE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_E
+	MID_ForceArrowDisabled, //T_ARROW_OFF_SE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_S
+	MID_ForceArrowDisabled, //T_ARROW_OFF_SW
+	MID_ForceArrowDisabled, //T_ARROW_OFF_W
+	MID_ForceArrowDisabled, //T_ARROW_OFF_NW
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

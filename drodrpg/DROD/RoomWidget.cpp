@@ -444,13 +444,15 @@ bool CRoomWidget::AddDoorEffect(
 	const UINT wOriginalTileNo = this->pRoom->GetOSquare(wX, wY);
 
 	//Only works for doors and lights.
-	const bool bLight = bIsLight(this->pRoom->GetTSquare(wX,wY));
-	if (!bIsDoor(wOriginalTileNo) && !bIsOpenDoor(wOriginalTileNo) && !bLight)
+	const bool bDoor = bIsDoor(wOriginalTileNo) || bIsOpenDoor(wOriginalTileNo);
+	const bool bItem = bIsLight(this->pRoom->GetTSquare(wX, wY)) ||
+		(!bDoor && bIsAnyArrow(this->pRoom->GetFSquare(wX, wY)));
+	if (!bDoor && !bItem)
 		return false;
 
 	//Contains coords to evaluate.
 	CCoordSet drawCoords;
-	if (bLight)
+	if (bItem)
 		drawCoords.insert(wX,wY);
 	else
 		this->pRoom->GetAllDoorSquares(wX, wY, drawCoords, wOriginalTileNo);
@@ -475,20 +477,20 @@ bool CRoomWidget::AddDoorEffect(
 			break;
 
 			case OA_TOGGLE:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord,
 							wOriginalTileNo == T_DOOR_Y ? TI_DOOR_YO : TI_DOOR_Y));
 				AddShadeEffect(wDrawX,wDrawY,Orange);
 			break;
 
 			case OA_OPEN:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord, TI_DOOR_YO));
 				AddShadeEffect(wDrawX,wDrawY,BlueGreen);
 			break;
 
 			case OA_CLOSE:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord, TI_DOOR_Y));
 				AddShadeEffect(wDrawX,wDrawY,Fuschia);
 			break;
@@ -891,10 +893,10 @@ void CRoomWidget::HighlightSelectedTile()
 		break;
 	}
 
-	/* Currently no F-layer highlights
-	switch (this->pRoom->GetFSquare(wX,wY))
-	{
-	}*/
+	const UINT wFTile = this->pRoom->GetFSquare(wX, wY);
+	if (bIsAnyArrow(wFTile)) {
+		DisplayAgentsAffectingTiles(CCoordSet(wX, wY));
+	}
 
 	const UINT wOSquare = this->pRoom->GetOSquare(wX,wY);
 	switch (wOSquare)

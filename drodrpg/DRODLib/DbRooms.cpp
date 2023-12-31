@@ -4017,6 +4017,14 @@ void CDbRoom::ChangeTiles(const RoomTokenType tType)
 						case T_ARROW_SW: Plot(wX, wY, T_ARROW_W); break;
 						case T_ARROW_NE: Plot(wX, wY, T_ARROW_E); break;
 						case T_ARROW_SE: Plot(wX, wY, T_ARROW_S); break;
+						case T_ARROW_OFF_N: Plot(wX, wY, T_ARROW_OFF_NE); break;
+						case T_ARROW_OFF_S: Plot(wX, wY, T_ARROW_OFF_SW); break;
+						case T_ARROW_OFF_W: Plot(wX, wY, T_ARROW_OFF_NW); break;
+						case T_ARROW_OFF_E: Plot(wX, wY, T_ARROW_OFF_SE); break;
+						case T_ARROW_OFF_NW: Plot(wX, wY, T_ARROW_OFF_N); break;
+						case T_ARROW_OFF_SW: Plot(wX, wY, T_ARROW_OFF_W); break;
+						case T_ARROW_OFF_NE: Plot(wX, wY, T_ARROW_OFF_E); break;
+						case T_ARROW_OFF_SE: Plot(wX, wY, T_ARROW_OFF_S); break;
 						default: break;
 					}
 		break;
@@ -4034,6 +4042,14 @@ void CDbRoom::ChangeTiles(const RoomTokenType tType)
 						case T_ARROW_SW: Plot(wX, wY, T_ARROW_S); break;
 						case T_ARROW_NE: Plot(wX, wY, T_ARROW_N); break;
 						case T_ARROW_SE: Plot(wX, wY, T_ARROW_E); break;
+						case T_ARROW_OFF_N: Plot(wX, wY, T_ARROW_OFF_NW); break;
+						case T_ARROW_OFF_S: Plot(wX, wY, T_ARROW_OFF_SE); break;
+						case T_ARROW_OFF_W: Plot(wX, wY, T_ARROW_OFF_SW); break;
+						case T_ARROW_OFF_E: Plot(wX, wY, T_ARROW_OFF_NE); break;
+						case T_ARROW_OFF_NW: Plot(wX, wY, T_ARROW_OFF_W); break;
+						case T_ARROW_OFF_SW: Plot(wX, wY, T_ARROW_OFF_S); break;
+						case T_ARROW_OFF_NE: Plot(wX, wY, T_ARROW_OFF_N); break;
+						case T_ARROW_OFF_SE: Plot(wX, wY, T_ARROW_OFF_E); break;
 						default: break;
 					}
 		break;
@@ -5745,6 +5761,30 @@ void CDbRoom::ToggleDoor(
 		CloseDoor(wX, wY);
 	else
 		OpenDoor(wX, wY);
+}
+
+//*****************************************************************************
+void CDbRoom::DisableForceArrow(const UINT wX, const UINT wY)
+{
+	const UINT fTile = GetFSquare(wX, wY);
+	ASSERT(bIsAnyArrow(fTile));
+	if (bIsArrow(fTile))
+		Plot(wX, wY, getToggledForceArrow(fTile));
+}
+
+void CDbRoom::EnableForceArrow(const UINT wX, const UINT wY)
+{
+	const UINT fTile = GetFSquare(wX, wY);
+	ASSERT(bIsAnyArrow(fTile));
+	if (bIsDisabledArrow(fTile))
+		Plot(wX, wY, getToggledForceArrow(fTile));
+}
+
+void CDbRoom::ToggleForceArrow(const UINT wX, const UINT wY)
+{
+	const UINT fTile = GetFSquare(wX, wY);
+	ASSERT(bIsAnyArrow(fTile));
+	Plot(wX, wY, getToggledForceArrow(fTile));
 }
 
 //*****************************************************************************
@@ -7720,28 +7760,36 @@ void CDbRoom::ActivateOrb(
 	{
 		COrbAgentData *pAgent = pOrb->agents[wIndex];
 		ASSERT(pAgent);
+		const UINT oTile = GetOSquare(pAgent->wX, pAgent->wY);
 		const UINT wTTile = GetTSquare(pAgent->wX, pAgent->wY);
+		const UINT fTile = GetFSquare(pAgent->wX, pAgent->wY);
 		switch (pAgent->action)
 		{
 			case OA_TOGGLE:
 				if (bIsLight(wTTile))
 					ToggleLight(pAgent->wX, pAgent->wY, CueEvents);
-				else
+				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					ToggleDoor(pAgent->wX, pAgent->wY);
+				else if (bIsAnyArrow(fTile))
+					ToggleForceArrow(pAgent->wX, pAgent->wY);
 			break;
 
 			case OA_OPEN:
 				if (bIsLight(wTTile))
 					TurnOnLight(pAgent->wX, pAgent->wY, CueEvents);
-				else
+				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					OpenDoor(pAgent->wX, pAgent->wY);
+				else if (bIsAnyArrow(fTile))
+					DisableForceArrow(pAgent->wX, pAgent->wY);
 			break;
 
 			case OA_CLOSE:
 				if (bIsLight(wTTile))
 					TurnOffLight(pAgent->wX, pAgent->wY, CueEvents);
-				else
+				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					CloseDoor(pAgent->wX, pAgent->wY);
+				else if (bIsAnyArrow(fTile))
+					EnableForceArrow(pAgent->wX, pAgent->wY);
 			break;
 			
 			default:

@@ -4915,7 +4915,7 @@ const
 	bool bIsObstacle = !(wTileNo == T_EMPTY ||
 		bIsFloor(wTileNo) ||
 		bIsOpenDoor(wTileNo) ||
-		bIsArrow(wTileNo) ||
+		bIsAnyArrow(wTileNo) ||
 		bIsPlatform(wTileNo) ||
 		wTileNo == T_NODIAGONAL ||
 		wTileNo == T_SCROLL ||

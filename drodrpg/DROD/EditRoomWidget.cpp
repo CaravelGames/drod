@@ -610,7 +610,7 @@ const
 		return wObject == wTileNo;
 	case 3:
 		//Arrows can replace arrows.
-		if (bIsArrow(wObject) && bIsArrow(wTileNo))
+		if (bIsAnyArrow(wObject) && bIsAnyArrow(wTileNo))
 			return true;
 		if (wObject == T_WALLLIGHT)
 			return false;
@@ -854,6 +854,8 @@ const
 			return true;
 		case T_ARROW_NW: case T_ARROW_N: case T_ARROW_NE: case T_ARROW_W:
 		case T_ARROW_E: case T_ARROW_SW: case T_ARROW_S: case T_ARROW_SE:
+		case T_ARROW_OFF_NW: case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_W:
+		case T_ARROW_OFF_E: case T_ARROW_OFF_SW: case T_ARROW_OFF_S: case T_ARROW_OFF_SE:
 			//Not on stairs.
 			return !bIsStairs(wTileNo[0]);
 

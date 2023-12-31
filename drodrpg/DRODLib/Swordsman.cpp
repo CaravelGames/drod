@@ -357,7 +357,7 @@ const
 		bIsBridge(wLookTileNo) ||
 		wLookTileNo==T_GOO ||
 		bIsOpenDoor(wLookTileNo) ||
-		bIsArrow(wLookTileNo) ||
+		bIsAnyArrow(wLookTileNo) ||
 		bIsPlatform(wLookTileNo) ||
 		wLookTileNo==T_NODIAGONAL ||
 		wLookTileNo==T_SCROLL ||
