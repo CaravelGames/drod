@@ -80,6 +80,21 @@ bool CSwordsman::IsFlying() const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanDropTrapdoor(UINT wTileNo) const
+{
+	if (!bIsFallingTile(wTileNo))
+		return false;
+
+	if (IsFlying())
+		return false;
+
+	if (bIsThinIce(wTileNo))
+		return true;
+
+	return HasSword();
+}
+
+//*****************************************************************************
 bool CSwordsman::CanJump(const int dx, const int dy) const
 //Returns: whether player has the equipment to jump a tile in (dx,dy) direction
 {
@@ -348,7 +363,7 @@ const
 		wLookTileNo==T_SCROLL ||
 		wLookTileNo==T_TOKEN ||
 		wLookTileNo==T_PRESSPLATE ||
-		(bIsTrapdoor(wLookTileNo) && !HasSword()) //won't drop trapdoors
+		(bIsFallingTile(wLookTileNo) && !CanDropTrapdoor(wLookTileNo)) //won't drop trapdoors
 	)
 		return false;
 

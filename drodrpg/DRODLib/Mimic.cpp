@@ -46,6 +46,18 @@ CMimic::CMimic(
 { }
 
 //******************************************************************************************
+bool CMimic::CanDropTrapdoor(const UINT wTileNo)
+{
+	if (!bIsFallingTile(wTileNo))
+		return false;
+
+	if (bIsThinIce(wTileNo))
+		return true;
+
+	return HasSword();
+}
+
+//******************************************************************************************
 bool CMimic::DoesSquareContainObstacle(
 //Override for mimics.  Parts copied from CMonster::DoesSquareContainObstacle.
 //
@@ -208,7 +220,7 @@ void CMimic::Process(
 
 			//Before he moves, remember important square contents.
 			const UINT wOTile = room.GetOSquare(this->wX, this->wY);
-			const bool bWasOnTrapdoor = bIsTrapdoor(wOTile);
+			const bool bWasOnTrapdoor = bIsFallingTile(wOTile);
 			const bool bWasOnPlatform = bIsPlatform(wOTile);
 
 			//Move mimic to new destination square.
@@ -220,7 +232,7 @@ void CMimic::Process(
 
 			//Check for movement off of a trapdoor.
 			ASSERT(dx || dy);
-			if (bWasOnTrapdoor && HasSword())
+			if (bWasOnTrapdoor && CanDropTrapdoor(wOTile))
 				room.DestroyTrapdoor(this->wX - dx, this->wY - dy, CueEvents);
 
 			//Check for platform movement.

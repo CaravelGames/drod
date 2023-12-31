@@ -41,6 +41,7 @@
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "IceMeltEffect.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
 #include "SteamEffect.h"
@@ -1475,6 +1476,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 			case VET_PARRY: soundID = SEID_SHIELDED; break;
 			case VET_STRONGHIT: soundID = SEID_HIT; break;
 			case VET_EQUIP: soundID = SEID_SWORDS; break;
+			case VET_ICEMELT: soundID = SEID_ICEMELT; break;
 			default: break;
 		}
 
@@ -1570,6 +1572,10 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 		case VET_STRONGHIT:
 			this->pRoomWidget->AddMLayerEffect(
 					new CFadeTileEffect(this->pRoomWidget, coord, TI_STRONGHIT, 500));
+		break;
+		case VET_ICEMELT:
+			pRoomWidget->AddOLayerEffect(
+				new CIceMeltEffect(pRoomWidget, coord));
 		break;
 		default: break; //do nothing
 	}
@@ -5822,6 +5828,24 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
 		}
+	}
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_ThinIceMelted);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		//If player drops ice, center sound on player for nicer effect.
+		if (player.wPrevX == pCoord->wX && player.wPrevY == pCoord->wY)
+		{
+			this->fPos[0] = static_cast<float>(player.wX);
+			this->fPos[1] = static_cast<float>(player.wY);
+		}
+		else {
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+		}
+		PlaySoundEffect(SEID_ICEMELT, this->fPos);
+		this->pRoomWidget->AddOLayerEffect(new CIceMeltEffect(this->pRoomWidget, *pCoord));
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CutBriar);

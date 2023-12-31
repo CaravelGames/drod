@@ -4128,7 +4128,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 	}
 
 	//Player falls?
-	if (this->pCurrentGame->IsPlayerAt(wX, wY))
+	if (this->pCurrentGame && this->pCurrentGame->wTurnNo > 0 && this->pCurrentGame->IsPlayerAt(wX, wY))
 	{
 		if (!this->pCurrentGame->pPlayer->IsFlying() && //flying player doesn't fall
 				!(bIsWater(wOSquare) && this->pCurrentGame->pPlayer->CanWalkOnWater())) //swimming player won't die on water
@@ -4538,7 +4538,7 @@ void CDbRoom::ExpandExplosion(
 		case T_PIT: case T_PIT_IMAGE: case T_PLATFORM_P:
 		case T_WATER: case T_PLATFORM_W:
 		case T_STAIRS:	case T_STAIRS_UP:
-		case T_TRAPDOOR: case T_TRAPDOOR2:
+		case T_TRAPDOOR: case T_TRAPDOOR2: case T_THINICE:
 		case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_CO:
 		case T_DOOR_RO: case T_DOOR_BO: case T_DOOR_MONEYO:
@@ -4626,6 +4626,9 @@ void CDbRoom::ProcessExplosionSquare(
 		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			Plot(wX, wY, T_FLOOR_DIRT);
 			break;
+		case T_THINICE:
+			DestroyTrapdoor(wX, wY, CueEvents);
+		break;
 
 		//If we decided we should explode these squares, then they should
 		//be dealt with, regardless of whether these tiles are impassable now.
@@ -4825,7 +4828,7 @@ const
 		case T_STAIRS: case T_STAIRS_UP:
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_CO:
 		case T_DOOR_RO: case T_DOOR_BO: case T_DOOR_MONEYO:
-		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE:
+		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE: case T_THINICE:
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_GOO: case T_HOT:
 		default:
@@ -7860,16 +7863,22 @@ void CDbRoom::DestroyTrapdoor(
 	const UINT wX, const UINT wY,    //(in)
 	CCueEvents &CueEvents)     //(in/out)
 {
-	ASSERT(bIsTrapdoor(GetOSquare(wX,wY)));
+	const UINT oldOTile = GetOSquare(wX, wY);
 	const UINT newOTile = this->coveredOSquares.GetAt(wX, wY);
+	ASSERT(bIsFallingTile(GetOSquare(wX,wY)));
 	ASSERT(bIsPit(newOTile) || bIsWater(newOTile));
 	Plot(wX, wY, newOTile);
 
 	CheckForFallingAt(wX, wY, CueEvents, true);
 	ConvertUnstableTar(CueEvents);
 
-	CueEvents.Add(CID_TrapDoorRemoved, new CCoord(wX, wY), true);
-	DecTrapdoor(CueEvents);
+	if (bIsTrapdoor(oldOTile)) {
+		CueEvents.Add(CID_TrapDoorRemoved, new CCoord(wX, wY), true);
+		DecTrapdoor(CueEvents);
+	} else {
+		ASSERT(bIsThinIce(oldOTile));
+		CueEvents.Add(CID_ThinIceMelted, new CCoord(wX, wY), true);
+	}
 }
 
 //*****************************************************************************
@@ -8057,6 +8066,7 @@ void CDbRoom::Plot(
 					this->coveredOSquares.Add(wX,wY,T_PIT); //best guess
 				break;
 				case T_TRAPDOOR2:
+				case T_THINICE:
 					this->coveredOSquares.Add(wX,wY,T_WATER);
 				break;
 				default: break;
@@ -9264,6 +9274,7 @@ void CDbRoom::InitCoveredTiles()
 				break;
 				case T_TRAPDOOR2:
 				case T_PLATFORM_W:
+				case T_THINICE:
 					//Water trapdoors and rafts are over water.
 					this->coveredOSquares.Add(wX,wY,T_WATER);
 					++wNumTiles[wOSquare];

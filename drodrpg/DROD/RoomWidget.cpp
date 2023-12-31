@@ -93,6 +93,8 @@ const int MONSTER_ANIMATION_DELAY = 3;
 #define CLOUD_SURFACE    (2)
 #define SUNSHINE_SURFACE (3)
 
+#define THIN_ICE_OPACITY       (128) //Opacity of Thin Ice
+
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
 
@@ -3964,7 +3966,7 @@ void CRoomWidget::RenderRoom(
 				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
 
 				//1. Draw opaque (floor) layer.
-				const bool bWater = bIsWater(wOTileNo) || wOTileNo == T_PLATFORM_W;
+				const bool bWater = bIsWater(wOTileNo) || wOTileNo == T_PLATFORM_W || bIsThinIce(wOTileNo);
 				if (bWater)
 					goto OLayerDone; //water is handled below
 				if (!bMosaicTile && !bTransparentOTile)
@@ -4203,7 +4205,7 @@ OLayerDone:
 										dest, pDestSurface, 128);
 						}
 
-						//5. Draw sky/water bottom.
+						//4. Draw sky/water bottom.
 						if (this->bOutside && this->pSkyImage)
 						{
 							const int wXOffset = this->dwSkyX % this->pSkyImage->w;
@@ -4225,6 +4227,13 @@ OLayerDone:
 							else
 								g_pTheBM->BlitWithTileMask(wWaterMask, src,
 										pDeepBottom, dest, pDestSurface, 50);
+						}
+
+						//5. Draw thin ice on top of water.
+						if (bIsThinIce(wOTileNo))
+						{
+							const UINT wTileImageNo = CalcTileImageForWater(this->pRoom, wX, wY, T_THINICE);
+							DrawTransparentRoomTile(wTileImageNo, THIN_ICE_OPACITY);
 						}
 
 						// All lighting is applied when drawing T-Layer
@@ -8753,7 +8762,7 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 
 			//Tiles below ground level don't ever affect lighting.
 			UINT wOTile = this->pRoom->GetOSquare(nX,nY);
-			const bool bNotPit = !(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile));
+			const bool bNotPit = !(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile) || bIsThinIce(wOTile));
 			if (bNotPit)
 			{
 				int nI, nJ;
@@ -8763,7 +8772,7 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 						{
 							//Tiles below ground level don't ever affect lighting.
 							wOTile = this->pRoom->GetOSquare(nI,nJ);
-							if (!(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile)) &&
+							if (!(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile) || bIsThinIce(wOTile)) &&
 									//If light was drawn here last turn, then
 									//this plot might have affected the light casting.
 									(this->lightedPlayerTiles.has(nI,nJ) || this->lightedRoomTiles.has(nI,nJ)))

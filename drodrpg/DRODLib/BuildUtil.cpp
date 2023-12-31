@@ -378,7 +378,13 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 
 		//When water or doors are plotted (or overwritted), redraw edges.
 		//WARNING: Where plots are needed is front-end implementation dependent.
-		if (bIsWater(tile) || bIsWater(wOldOTile) || bIsDoor(wOldOTile) || bIsDoor(tile))
+		if (
+			bIsWater(tile) ||
+			bIsWater(wOldOTile) ||
+			bIsDoor(wOldOTile) ||
+			bIsDoor(tile) ||
+			bIsThinIce(wOldOTile) ||
+			bIsThinIce(tile))
 		{
 			CCoordSet plots;
 			for (UINT nx = x - 1; nx != x + 2; ++nx)
@@ -386,7 +392,7 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 					for (UINT ny = y - 1; ny != y + 2; ++ny)
 						if (ny < room.wRoomRows)
 							plots.insert(nx, ny);
-			room.Plot(plots);
+			room.Plot(plots, true);
 		}
 		//When pit is added/removed, redraw this tile's pit edge.
 		//WARNING: Where plots are needed is front-end implementation dependent.

@@ -300,6 +300,7 @@ enum MID_CONSTANT {
   MID_Dirt1 = 1854,
   MID_Dirt3 = 1855,
   MID_Dirt5 = 1856,
+  MID_ThinIce = 1871,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,
@@ -1530,6 +1531,8 @@ enum MID_CONSTANT {
   MID_CustomSpeechColor = 1849,
   MID_InvisibleInspectable = 1869,
   MID_NotInvisibleInspectable = 1870,
+  MID_ThinIceMelted = 1872,
+  MID_IceMeltEffect = 1873,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

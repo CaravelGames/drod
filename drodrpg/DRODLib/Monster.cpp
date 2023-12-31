@@ -2281,7 +2281,7 @@ bool CMonster::GetNextGaze(
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_CO: case T_DOOR_RO: case T_DOOR_BO:
 		case T_DOOR_MONEYO:
 		case T_TUNNEL_E: case T_TUNNEL_W: case T_TUNNEL_N: case T_TUNNEL_S:
-		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE:
+		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE: case T_THINICE:
 			//Gaze can go over these objects.
 		break;
 		default:

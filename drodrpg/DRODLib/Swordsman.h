@@ -56,6 +56,7 @@ public:
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
 	UINT CalcDamage(int damageVal) const;
+	bool CanDropTrapdoor(UINT wTileNo) const;
 	bool CanJump(const int dx, const int dy) const;
 	bool CanWalkOnWater() const;
 	void Clear(const bool bNewGame);

@@ -795,6 +795,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_AumtlichAbilityFlatRate: strText = "Gaze reduces your health by %s HP"; break;
 		case MID_InvisibleInspectable: strText = "Invisible inspectable"; break;
 		case MID_NotInvisibleInspectable: strText = "Not invisible inspectable"; break;
+		case MID_ThinIce: strText = "Thin Ice"; break;
+		case MID_ThinIceMelted: strText = "Thin ice melted"; break;
+		case MID_IceMeltEffect: strText = "Ice melting"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

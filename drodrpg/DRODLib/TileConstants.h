@@ -153,8 +153,9 @@
 #define T_DIRT1         103 //dirt block requiring 1 shovel
 #define T_DIRT3         104 //dirt block requiring 3 shovels
 #define T_DIRT5         105 //dirt block requiring 5 shovels
+#define T_THINICE       106 //thin ice over water
 
-#define TILE_COUNT     (106) //Number of tile constants from above list.
+#define TILE_COUNT     (107) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -167,11 +168,13 @@ static inline bool bIsBridge(const UINT t) {return t==T_BRIDGE || t==T_BRIDGE_H 
 static inline bool bIsCustomImageTile(const UINT t) {return t==T_FLOOR_IMAGE || t== T_PIT_IMAGE || t==T_WALL_IMAGE;}
 
 static inline bool bIsTrapdoor(const UINT t) {return t==T_TRAPDOOR || t==T_TRAPDOOR2;}
+static inline bool bIsThinIce(const UINT t) { return t == T_THINICE; }
+static inline bool bIsFallingTile(const UINT t) { return bIsTrapdoor(t) || bIsThinIce(t); }
 
 static inline bool bIsPlainFloor(const UINT t) {return t==T_FLOOR || (t>=T_FLOOR_M && t<=T_FLOOR_ALT) || t==T_FLOOR_IMAGE;}
 
 static inline bool bIsFloor(const UINT t) {return bIsPlainFloor(t) ||
-		bIsTrapdoor(t) || bIsBridge(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE;}
+		bIsTrapdoor(t) || bIsBridge(t) || bIsThinIce(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE;}
 
 static inline bool bIsLight(const UINT t) {return t==T_LIGHT;}
 
@@ -472,6 +475,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_OPAQUE, //T_DIRT1
 	LAYER_OPAQUE, //T_DIRT3
 	LAYER_OPAQUE, //T_DIRT5
+	LAYER_OPAQUE, //T_THINICE
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -625,6 +629,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Dirt1,        //T_DIRT1
 	MID_Dirt3,        //T_DIRT3
 	MID_Dirt5,        //T_DIRT5
+	MID_ThinIce,      //T_THINICE
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

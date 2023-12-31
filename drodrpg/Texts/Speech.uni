@@ -1367,3 +1367,11 @@ Invisible inspectable
 [MID_NotInvisibleInspectable]
 [eng]
 Not invisible inspectable
+
+[MID_ThinIceMelted]
+[eng]
+Thin ice melted
+
+[MID_IceMeltEffect]
+[eng]
+Ice melting

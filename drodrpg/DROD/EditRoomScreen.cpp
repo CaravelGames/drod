@@ -235,6 +235,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DIRT_1},                                       //T_DIRT1
 	{TI_DIRT_3},                                       //T_DIRT3
 	{TI_DIRT_5},                                       //T_DIRT5
+	{TI_THINICE_NSWE},                                 //T_THINICE
 
 	//monsters
 	{TI_ROACH_S},
@@ -392,6 +393,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_DIRT1         103
 	0, //T_DIRT3         104
 	0, //T_DIRT5         105
+	0, //T_THINICE       106
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -455,6 +457,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, //crate
 	0, //unused
 	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -478,6 +481,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, //crate
 	0, //unused
 	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -555,13 +559,13 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 28;
+const UINT numOLayerEntries = 29;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
-	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_FLOOR, T_FLOOR_IMAGE,
+	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
 	T_DIRT1, T_DIRT3, T_DIRT5
 };
 
@@ -5261,6 +5265,9 @@ void CEditRoomScreen::PlotObjects()
 				break;
 				case T_DIRT1: case T_DIRT3: case T_DIRT5:
 					g_pTheSound->PlaySoundEffect(SEID_DIG);
+				break;
+				case T_THINICE:
+					g_pTheSound->PlaySoundEffect(SEID_ICEMELT);
 				break;
 				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;

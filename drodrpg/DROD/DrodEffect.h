@@ -91,7 +91,8 @@ enum VisualEffectType
 	VET_PARRY=16,
 	VET_JITTER=17,
 	VET_STRONGHIT=18,
-	VET_EQUIP=19
+	VET_EQUIP=19,
+	VET_ICEMELT=20
 };
 
 #endif //...#ifndef DRODEFFECT_H

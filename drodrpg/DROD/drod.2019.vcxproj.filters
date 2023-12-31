@@ -232,6 +232,9 @@
     <ClCompile Include="EquipmentDescription.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="IceMeltEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -449,6 +452,9 @@
     </ClInclude>
     <ClInclude Include="EquipmentDescription.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="IceMeltEffect.h">
+      <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
