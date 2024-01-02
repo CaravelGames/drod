@@ -7647,7 +7647,8 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 //         implying the common orientation should not be rotated.
 {
 	UINT wNewTile = T_EMPTY;
-	if (bIsTunnel(wObject) || bIsAnyArrow(wObject))
+	const bool bIsForceArrow = bIsAnyArrow(wObject);
+	if (bIsTunnel(wObject) || bIsForceArrow)
 	{
 		switch (wObject)
 		{
@@ -7675,6 +7676,12 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 			case T_ARROW_OFF_N:  wNewTile = bCW ? T_ARROW_OFF_NE : T_ARROW_OFF_NW; break;
 		}
 		SetMenuItem(wObject, wNewTile);
+		//Rotate both force arrow menu items in tandem
+		if (bIsForceArrow) {
+			const UINT alterate_object = getToggledForceArrow(wObject);
+			const UINT alternate_new_tile = getToggledForceArrow(wNewTile);
+			SetMenuItem(alterate_object, alternate_new_tile);
+		}
 		return true;
 	}
 
