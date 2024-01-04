@@ -380,6 +380,7 @@ public:
 		CC_ResetOverrides,      //Resets command parameter override values to no override
 		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
 		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
+		CC_SetPlayerBehavior,   //Set player behavior X to behavior state Y
 
 		CC_Count
 	};

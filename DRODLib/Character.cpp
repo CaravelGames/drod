@@ -3076,6 +3076,15 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetPlayerBehavior:
+			{
+				const PlayerBehavior eBehavior = (PlayerBehavior)command.x;
+				const PlayerBehaviorState state = (PlayerBehaviorState)command.y;
+				player.SetBehavior(eBehavior, state);
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_SetEntityWeapon:
 			{
 				bProcessNextCommand = true;

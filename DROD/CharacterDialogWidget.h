@@ -136,6 +136,7 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateItemListBox(CListBoxWidget *pListBox, const bool bIsBuild, const bool bIsBuildMarker, const bool bIsWaitForItem);
+	void  PopulatePlayerBehaviorListBox();
 	void  PopulatePlayerGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
 	void  PopulateBehaviorListBox();
@@ -211,6 +212,7 @@ private:
 	CListBoxWidget *pIgnoreFlagsListBox;
 	CListBoxWidget* pColorListBox;
 	CListBoxWidget* pOrbAgentListBox;
+	CListBoxWidget* pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
 
 	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
 
