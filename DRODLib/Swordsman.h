@@ -80,6 +80,7 @@ public:
 
 	bool CanAttackTowards(int dx, int dy) const;
 	bool CanDropTrapdoor(const UINT oTile) const;
+	bool CanGetItems() const;
 	bool CanLightFuses() const;
 	bool CanStepOnMonsters() const;
 	bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;

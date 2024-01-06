@@ -5050,7 +5050,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 		{
 			pDouble->SetWeaponSheathed(); //Need to set sheath status before using items
 			const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-			const bool bCanGetItems = this->swordsman.CanLightFuses();
+			const bool bCanGetItems = this->swordsman.CanGetItems();
 			UINT wNewTSquare = this->pRoom->GetTSquare(pDouble->wX, pDouble->wY);
 			switch(wNewTSquare)
 			{
@@ -5065,7 +5065,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_POTION_C:  //Clone potion.
-					if (this->swordsman.CanLightFuses())
+					if (bCanGetItems)
 						DrankPotion(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
@@ -5088,7 +5088,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_HORN_SQUAD:    //Squad horn.
-					if (this->swordsman.CanLightFuses())  //same condition as clone potion..
+					if (bCanGetItems)  //same condition as clone potion..
 						BlowHorn(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
@@ -6444,7 +6444,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 {
 	const bool bMoved = dx!=0 || dy!=0 || bPlayerTeleported;
 	const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-	const bool bCanGetItems = this->swordsman.CanLightFuses();
+	const bool bCanGetItems = this->swordsman.CanGetItems();
 	const UINT wOSquare = this->pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wTSquare = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 
@@ -6478,7 +6478,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_POTION_C:  //Clone potion.
-			if (bPlayerMove && this->swordsman.CanLightFuses() && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && bCanGetItems && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
@@ -6503,7 +6503,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_HORN_SQUAD:    //Squad horn.
-			if (bPlayerMove && this->swordsman.CanLightFuses())  //same condition as clone potion..
+			if (bPlayerMove && bCanGetItems)  //same condition as clone potion..
 				BlowHorn(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 

@@ -53,7 +53,7 @@ bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 	if (this->wAppearance == M_CONSTRUCT)
 		return true;
 
-	if (CanLightFuses()) {
+	if (CanGetItems()) {
 		if (bIsThinIce(oTile) && !bIsEntityFlying(this->wAppearance))
 			return true;
 
@@ -65,10 +65,17 @@ bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanGetItems() const
+//Returns: whether the player is able to collect in-room items
+{
+	return bIsSmitemaster(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanLightFuses() const
 //Returns: whether the player is able to light fuses
 {
-	return bIsSmitemaster(this->wAppearance) || this->bCanGetItems;
+	return CanGetItems();
 }
 
 //*****************************************************************************
