@@ -624,6 +624,7 @@ void CDbSavedGame::Clear(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 	this->eType = ST_Unknown;
 
 	this->dwPlayerID = 0L;
@@ -920,6 +921,7 @@ bool CDbSavedGame::SetMembers(
 	this->wStartRoomAppearance = Src.wStartRoomAppearance;
 	this->bStartRoomSwordOff = Src.bStartRoomSwordOff;
 	this->wStartRoomWaterTraversal = Src.wStartRoomWaterTraversal;
+	this->startRoomPlayerBehaviorOverrides = Src.startRoomPlayerBehaviorOverrides;
 	this->wStartRoomWeaponType = Src.wStartRoomWeaponType;
 
 	//object members

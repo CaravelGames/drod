@@ -63,6 +63,8 @@ enum SAVETYPE
 class CDbSavedGames;
 class CCurrentGame;
 class CDbRoom;
+enum PlayerBehavior;
+enum PlayerBehaviorState;
 class CDbSavedGame : public CDbBase
 {
 protected:
@@ -107,6 +109,7 @@ public:
 	bool     bStartRoomSwordOff;
 	UINT     wStartRoomWaterTraversal;
 	UINT     wStartRoomWeaponType;
+	std::map<const PlayerBehavior, PlayerBehaviorState> startRoomPlayerBehaviorOverrides;
 	CIDSet      ExploredRooms;
 	CIDSet      ConqueredRooms;
 	CIDSet      CompletedScripts;

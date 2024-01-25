@@ -1573,6 +1573,7 @@ bool CCurrentGame::LoadFromHold(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->pLevel->dwStartingRoomID = pEntrance->dwRoomID;
 
@@ -1775,6 +1776,7 @@ bool CCurrentGame::LoadFromRoom(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->swordsman.wX = this->swordsman.wPrevX = CDbSavedGame::wStartRoomX;
 	this->swordsman.wY = this->swordsman.wPrevY = CDbSavedGame::wStartRoomY;
@@ -1840,6 +1842,7 @@ bool CCurrentGame::LoadFromSavedGame(
 	SetPlayerRole(CDbSavedGame::wStartRoomAppearance, CueEvents);
 	this->swordsman.bWeaponOff = CDbSavedGame::bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = CDbSavedGame::wStartRoomWaterTraversal;
+	this->swordsman.behaviorOverrides = CDbSavedGame::startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetWeaponType(CDbSavedGame::wStartRoomWeaponType);
 	SetRoomStartToPlayer();
 
@@ -3900,6 +3903,7 @@ void CCurrentGame::RoomEntranceAsserts()
 	ASSERT(this->swordsman.wIdentity == this->wStartRoomAppearance);
 	ASSERT(this->swordsman.bWeaponOff == this->bStartRoomSwordOff);
 	ASSERT(this->swordsman.wWaterTraversal == this->wStartRoomWaterTraversal);
+	ASSERT(this->swordsman.behaviorOverrides == this->startRoomPlayerBehaviorOverrides);
 	ASSERT((UINT)this->swordsman.weaponType == this->wStartRoomWeaponType);
 }
 
@@ -6183,9 +6187,7 @@ CheckFLayer:
 			//If player is in humanoid, non-sworded role, allow hitting orbs directly.
 			case T_ORB:
 			case T_BEACON: case T_BEACON_OFF:
-				if ((bIsHuman(this->swordsman.wAppearance) &&
-						!bEntityHasSword(this->swordsman.wAppearance)) ||
-						this->swordsman.bCanGetItems) //power token allows this too
+				if (this->swordsman.CanBumpActivateOrb()) //power token allows this too
 					if (wNewTTile == T_ORB)
 					{
 						this->pRoom->ActivateOrb(destX, destY, CueEvents, OAT_Player);
@@ -7382,6 +7384,7 @@ void CCurrentGame::SetPlayerToRoomStart()
 	this->swordsman.bWeaponOff = this->bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = this->wStartRoomWaterTraversal;
 	this->swordsman.SetWeaponType(this->wStartRoomWeaponType);
+	this->swordsman.behaviorOverrides = this->startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetOrientation(this->wStartRoomO);
 	SetPlayer(this->wStartRoomX, this->wStartRoomY);
 	this->wLastCheckpointX = this->wLastCheckpointY = NO_CHECKPOINT;
@@ -7435,6 +7438,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->bStartRoomSwordOff = this->swordsman.bWeaponOff;
 	this->wStartRoomWaterTraversal = this->swordsman.wWaterTraversal;
 	this->wStartRoomWeaponType = this->swordsman.weaponType;
+	this->startRoomPlayerBehaviorOverrides = this->swordsman.behaviorOverrides;
 
 	this->wStartRoomO = this->swordsman.wO;
 	this->wStartRoomX = this->swordsman.wX;
