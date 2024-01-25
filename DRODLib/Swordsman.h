@@ -68,7 +68,10 @@ enum PlayerBehaviorState
 
 enum PlayerBehavior
 {
-	PBS_Placeholder = 0
+	PB_BumpActivateOrb = 0,
+	PB_LightFuses = 1,
+	PB_StepKill = 2,
+	PB_HasWeapon = 3,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -79,6 +82,7 @@ public:
 	CSwordsman() : CEntity() {Clear();}
 
 	bool CanAttackTowards(int dx, int dy) const;
+	bool CanBumpActivateOrb() const;
 	bool CanDropTrapdoor(const UINT oTile) const;
 	bool CanGetItems() const;
 	bool CanLightFuses() const;

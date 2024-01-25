@@ -5073,7 +5073,10 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 {
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PBS_Placeholder, L"Placeholder");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BumpActivateOrb, L"Body strike orbs/beacons");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_LightFuses, L"Light fuses");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_StepKill, L"Step kill");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HasWeapon, L"Has weapon");
 
 	this->pPlayerBehaviorListBox->SetAllowFiltering(true);
 }

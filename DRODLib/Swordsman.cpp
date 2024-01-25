@@ -44,6 +44,17 @@ bool CSwordsman::CanAttackTowards(int dx, int dy) const
 	return WeaponCanAttackTowards(GetActiveWeapon(), this->wO, this->wPrevO, dx, dy, this->wSwordMovement);
 }
 
+bool CSwordsman::CanBumpActivateOrb() const
+{
+	bool active;
+	if (HasBehavior(PB_BumpActivateOrb, active)) {
+		return active;
+	}
+
+	return (bIsHuman(this->wAppearance) && !bEntityHasSword(this->wAppearance)) ||
+		this->bCanGetItems;
+}
+
 //*****************************************************************************
 bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 {
@@ -75,6 +86,11 @@ bool CSwordsman::CanGetItems() const
 bool CSwordsman::CanLightFuses() const
 //Returns: whether the player is able to light fuses
 {
+	bool active;
+	if (HasBehavior(PB_LightFuses, active)) {
+		return active;
+	}
+
 	return CanGetItems();
 }
 
@@ -82,6 +98,11 @@ bool CSwordsman::CanLightFuses() const
 bool CSwordsman::CanStepOnMonsters() const
 //Returns: true if player in current role can step on (and kill) other monsters
 {
+	bool active;
+	if (HasBehavior(PB_StepKill, active)) {
+		return active;
+	}
+
 	return bCanEntityStepOnMonsters(this->wAppearance);
 }
 
@@ -446,7 +467,12 @@ bool CSwordsman::HasMetalWeapon() const
 
 bool CSwordsman::HasWeapon() const
 {
-	return bEntityHasSword(this->wAppearance) &&
+	bool hasSword;
+	if (!HasBehavior(PB_HasWeapon, hasSword)) {
+		hasSword = bEntityHasSword(this->wAppearance);
+	}
+
+	return hasSword &&
 			!(this->bNoWeapon || this->bWeaponSheathed || this->bWeaponOff || this->bIsHiding);
 }
 
