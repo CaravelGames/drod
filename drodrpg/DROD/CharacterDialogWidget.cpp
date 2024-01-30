@@ -1120,7 +1120,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const int X_ITEMLISTBOX = X_GRAPHICLISTBOX2;
 	static const int Y_ITEMLISTBOX = Y_GRAPHICLISTBOX2;
-	static const UINT CX_ITEMLISTBOX = 220;
+	static const UINT CX_ITEMLISTBOX = 290;
 	static const UINT CY_ITEMLISTBOX = CY_GRAPHICLISTBOX2;
 
 	static const int X_CUTSCENELABEL = X_WAITLABEL;
@@ -1404,6 +1404,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_JITTER, g_pTheDB->GetMessageText(MID_JitterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_STRONGHIT, g_pTheDB->GetMessageText(MID_StrongHitEffect));
 	this->pVisualEffectsListBox->AddItem(VET_EQUIP, g_pTheDB->GetMessageText(MID_EquipEffect));
+	this->pVisualEffectsListBox->AddItem(VET_ICEMELT, g_pTheDB->GetMessageText(MID_IceMeltEffect));
 	this->pVisualEffectsListBox->SelectLine(0);
 	this->pVisualEffectsListBox->SetAllowFiltering(true);
 
@@ -3980,6 +3981,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_TarBabyFormed, g_pTheDB->GetMessageText(MID_TarBabyFormed));
 	this->pEventListBox->AddItem(CID_TarstuffDestroyed, g_pTheDB->GetMessageText(MID_TarDestroyed));
 //	this->pEventListBox->AddItem(CID_TarGrew, g_pTheDB->GetMessageText(MID_TarGrew));
+	this->pEventListBox->AddItem(CID_ThinIceMelted, g_pTheDB->GetMessageText(MID_ThinIceMelted));
 	this->pEventListBox->AddItem(CID_TokenToggled, g_pTheDB->GetMessageText(MID_TokenToggled));
 	this->pEventListBox->AddItem(CID_TrapDoorRemoved, g_pTheDB->GetMessageText(MID_TrapDoorRemoved));
 	this->pEventListBox->AddItem(CID_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
@@ -4111,6 +4113,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_DIRT5, g_pTheDB->GetMessageText(MID_Dirt5));
 	pListBox->AddItem(T_TRAPDOOR, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(T_TRAPDOOR2, g_pTheDB->GetMessageText(MID_Trapdoor2));
+	pListBox->AddItem(T_THINICE, g_pTheDB->GetMessageText(MID_ThinIce));
 	pListBox->AddItem(T_PIT, g_pTheDB->GetMessageText(MID_Pit));
 	pListBox->AddItem(T_PIT_IMAGE, g_pTheDB->GetMessageText(MID_PitImage));
 	pListBox->AddItem(T_WATER, g_pTheDB->GetMessageText(MID_Water));
@@ -4129,6 +4132,14 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_ARROW_SW, g_pTheDB->GetMessageText(MID_ForceArrow_SW));
 	pListBox->AddItem(T_ARROW_S, g_pTheDB->GetMessageText(MID_ForceArrow_S));
 	pListBox->AddItem(T_ARROW_SE, g_pTheDB->GetMessageText(MID_ForceArrow_SE));
+	pListBox->AddItem(T_ARROW_OFF_E, g_pTheDB->GetMessageText(MID_ForceArrowDisabledE));
+	pListBox->AddItem(T_ARROW_OFF_N, g_pTheDB->GetMessageText(MID_ForceArrowDisabledN));
+	pListBox->AddItem(T_ARROW_OFF_NE, g_pTheDB->GetMessageText(MID_ForceArrowDisabledNE));
+	pListBox->AddItem(T_ARROW_OFF_NW, g_pTheDB->GetMessageText(MID_ForceArrowDisabledNW));
+	pListBox->AddItem(T_ARROW_OFF_S, g_pTheDB->GetMessageText(MID_ForceArrowDisabledS));
+	pListBox->AddItem(T_ARROW_OFF_SE, g_pTheDB->GetMessageText(MID_ForceArrowDisabledSE));
+	pListBox->AddItem(T_ARROW_OFF_SW, g_pTheDB->GetMessageText(MID_ForceArrowDisabledSW));
+	pListBox->AddItem(T_ARROW_OFF_W, g_pTheDB->GetMessageText(MID_ForceArrowDisabledW));
 	pListBox->AddItem(T_NODIAGONAL, g_pTheDB->GetMessageText(MID_Ortho));
 	pListBox->AddItem(T_OBSTACLE, g_pTheDB->GetMessageText(MID_Obstacle));
 	pListBox->AddItem(T_BOMB, g_pTheDB->GetMessageText(MID_Bomb));

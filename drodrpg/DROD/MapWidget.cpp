@@ -79,6 +79,7 @@ enum MapColor
 	MAP_LTORANGE,
 	MAP_MEDBLUE,
 	MAP_LTBLUE,
+	MAP_LTBLUE1,
 	MAP_LTBLUE2,
 	MAP_MIDGREEN,
 	MAP_DKGREEN,
@@ -1011,6 +1012,7 @@ void CMapWidget::InitMapColors()
 	m_arrColor[MAP_LTORANGE] = GetSurfaceColor(this->pMapSurface, 255,196,128);
 	m_arrColor[MAP_MEDBLUE] =  GetSurfaceColor(this->pMapSurface, 0,  0,  192);
 	m_arrColor[MAP_LTBLUE] =   GetSurfaceColor(this->pMapSurface, 0,  0,  255);
+	m_arrColor[MAP_LTBLUE1] =  GetSurfaceColor(this->pMapSurface, 64, 96, 255);
 	m_arrColor[MAP_LTBLUE2] =  GetSurfaceColor(this->pMapSurface, 128,128,255);
 	m_arrColor[MAP_DKGREEN] = GetSurfaceColor(this->pMapSurface, 0, 64, 0);
 	m_arrColor[MAP_MIDGREEN] = GetSurfaceColor(this->pMapSurface, 0, 96, 0);
@@ -1565,6 +1567,8 @@ inline SURFACECOLOR CMapWidget::GetMapColorFromTile(
 			return m_arrColor[MAP_BLUE];
 		case T_WATER:
 			return m_arrColor[MAP_LTBLUE];
+		case T_THINICE:
+			return m_arrColor[MAP_LTBLUE1];
 		case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
 			return m_arrColor[MAP_GRAY];
 		case T_PLATFORM_W:

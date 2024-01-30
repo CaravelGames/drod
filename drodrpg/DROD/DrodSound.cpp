@@ -140,6 +140,7 @@ const
 		case SEID_LEVELCOMPLETE:   strKeyName = "LevelComplete"; break;
 		case SEID_MIMIC:     strKeyName="Mimic"; break;
 		case SEID_MONSTERATTACK:  strKeyName="MonsterAttack"; break;
+		case SEID_ICEMELT:  strKeyName = "IceMelt"; break;
 
 		case SEID_ATK_PICKUP: strKeyName = "ATKPickup"; break;
 		case SEID_DEF_PICKUP: strKeyName = "DEFPickup"; break;
@@ -348,6 +349,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FALLING );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FROZEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_HIT );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ICEMELT );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_JUMP );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_KEY );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_LASTBRAIN );

@@ -795,6 +795,18 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_AumtlichAbilityFlatRate: strText = "Gaze reduces your health by %s HP"; break;
 		case MID_InvisibleInspectable: strText = "Invisible inspectable"; break;
 		case MID_NotInvisibleInspectable: strText = "Not invisible inspectable"; break;
+		case MID_ThinIce: strText = "Thin Ice"; break;
+		case MID_ThinIceMelted: strText = "Thin ice melted"; break;
+		case MID_IceMeltEffect: strText = "Ice melting"; break;
+		case MID_ForceArrowDisabled: strText = "Disabled force arrow"; break;
+		case MID_ForceArrowDisabledN: strText = "Disabled force arrow (north)"; break;
+		case MID_ForceArrowDisabledE: strText = "Disabled force arrow (east)"; break;
+		case MID_ForceArrowDisabledS: strText = "Disabled force arrow (south)"; break;
+		case MID_ForceArrowDisabledW: strText = "Disabled force arrow (west)"; break;
+		case MID_ForceArrowDisabledNW: strText = "Disabled force arrow (northwest)"; break;
+		case MID_ForceArrowDisabledNE: strText = "Disabled force arrow (northeast)"; break;
+		case MID_ForceArrowDisabledSE: strText = "Disabled force arrow (southeast)"; break;
+		case MID_ForceArrowDisabledSW: strText = "Disabled force arrow (southeast)"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

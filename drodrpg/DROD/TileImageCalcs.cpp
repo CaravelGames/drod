@@ -1179,7 +1179,7 @@ EDGETYPE CalcEdge(
 		case T_HOT: case T_PRESSPLATE: case T_GOO:
 			if (bIsWall(wAdjTileNo) || bIsCrumblyWall(wAdjTileNo) ||
 					bIsDoor(wAdjTileNo) || bIsOpenDoor(wAdjTileNo) ||
-					wAdjTileNo==T_OBSTACLE || bIsTrapdoor(wAdjTileNo) ||
+					wAdjTileNo==T_OBSTACLE || bIsFallingTile(wAdjTileNo) ||
 					wAdjTileNo==T_PRESSPLATE || bIsTunnel(wAdjTileNo) ||
 					wAdjTileNo==T_WATER || wAdjTileNo==T_GOO)
 				return EDGE_NONE;
@@ -1541,7 +1541,16 @@ UINT GetTileImageForTileNo(
 		TI_SHOVEL_10,     //T_SHOVEL10
 		TI_DIRT_1,        //T_DIRT1
 		TI_DIRT_3,        //T_DIRT3
-		TI_DIRT_5         //T_DIRT5
+		TI_DIRT_5,        //T_DIRT5
+		CALC_NEEDED,      //T_THINICE
+		TI_ARROW_OFF_N,   //T_ARROW_OFF_N
+		TI_ARROW_OFF_NE,  //T_ARROW_OFF_NE
+		TI_ARROW_OFF_E,   //T_ARROW_OFF_E
+		TI_ARROW_OFF_SE,  //T_ARROW_OFF_SE
+		TI_ARROW_OFF_S,   //T_ARROW_OFF_S
+		TI_ARROW_OFF_SW,  //T_ARROW_OFF_SW
+		TI_ARROW_OFF_W,   //T_ARROW_OFF_W
+		TI_ARROW_OFF_NW,  //T_ARROW_OFF_NW
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));
@@ -1581,7 +1590,8 @@ UINT CalcTileImageFor(
       case T_PLATFORM_W: case T_PLATFORM_P:
 			return CalcTileImageForPlatform(pRoom, wCol, wRow, wTileNo);
       case T_GOO:
-      case T_WATER: return CalcTileImageForWater(pRoom, wCol, wRow, wTileNo);
+      case T_WATER:
+			case T_THINICE: return CalcTileImageForWater(pRoom, wCol, wRow, wTileNo);
 
 		//t-layer
 		case T_OBSTACLE:  return CalcTileImageForObstacle(pRoom, wCol, wRow);
@@ -3298,6 +3308,10 @@ inline bool bDrawWater(const CDbRoom *pRoom, const UINT x, const UINT y, const U
 //Returns: true if water should briar up against this tile
 {
 	UINT wOSquare = pRoom->GetOSquareWithGuessing(x,y);
+
+	//Thin Ice is drawn on top of water, so use the underlying square
+	if (wOSquare == T_THINICE) wOSquare = T_WATER;
+
 	if (wOSquare == wTileNo)
 		return true;
 
@@ -3321,22 +3335,55 @@ UINT CalcTileImageForWater(
 //Returns:
 //TI_* constant.
 {
-	//If water to north, set bit 1.
+#define IsThinIceTile(wTile) ((wTile) == T_THINICE || bIsBridge((wTile)))
+	UINT wTileType = 0;
+	switch (wTileNo)
+	{
+		case T_WATER: wTileType = 0; break;
+		case T_GOO: wTileType = 1; break;
+		case T_THINICE: wTileType = 2; break;
+		default: ASSERT(!"CalcTileImageForWater: Wrong tile type"); break;
+	}
+
 	UINT wCalcCode = 0;
-	if (bDrawWater(pRoom, wCol, wRow-1, wTileNo))
-		++wCalcCode;
+	if (wTileType == 2) {
+		//Thin Ice checks for Thin Ice or bridges
+			//If thin ice is north, set bit 1.
+		UINT wOSquare = pRoom->GetOSquareWithGuessing(wCol, wRow - 1);
+		if (IsThinIceTile(wOSquare))
+			++wCalcCode;
 
-	//If water to south, set bit 2.
-	if (bDrawWater(pRoom, wCol, wRow+1, wTileNo))
-		wCalcCode += 2;
+		//If thin ice is south, set bit 2.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol, wRow + 1);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 2;
 
-	//If water to west, set bit 3.
-	if (bDrawWater(pRoom, wCol-1, wRow, wTileNo))
-		wCalcCode += 4;
+		//If thin ice is west, set bit 3.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol - 1, wRow);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 4;
 
-	//If water to east, set bit 4.
-	if (bDrawWater(pRoom, wCol+1, wRow, wTileNo))
-		wCalcCode += 8;
+		//If thin ice is east, set bit 4.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol + 1, wRow);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 8;
+	} else {
+		//If water to north, set bit 1.
+		if (bDrawWater(pRoom, wCol, wRow - 1, wTileNo))
+			++wCalcCode;
+
+		//If water to south, set bit 2.
+		if (bDrawWater(pRoom, wCol, wRow + 1, wTileNo))
+			wCalcCode += 2;
+
+		//If water to west, set bit 3.
+		if (bDrawWater(pRoom, wCol - 1, wRow, wTileNo))
+			wCalcCode += 4;
+
+		//If water to east, set bit 4.
+		if (bDrawWater(pRoom, wCol + 1, wRow, wTileNo))
+			wCalcCode += 8;
+	}
 
 		// ?.?   0     ?#?      1     ?.?      2     ?#?      3
 		// .X.         .X.            .X.            .X.
@@ -3353,7 +3400,7 @@ UINT CalcTileImageForWater(
 		// ?.?   12    ?#?      13    ? ?      14    ?#?      15
 		// #X#         #X#            #X#            #X#
 		// ?.?         ?.?            ?#?            ?#?
-	static const UINT TileImages[2][16] = {
+	static const UINT TileImages[3][16] = {
 	{
 		//Note these are to show the shape of the bank, not the water.
 		TI_WATER_NSWE, TI_WATER_SWE,  TI_WATER_NWE,  TI_WATER_WE,
@@ -3365,17 +3412,15 @@ UINT CalcTileImageForWater(
 		TI_GOO_W,    TI_GOO_NW,   TI_GOO_SW,   TI_GOO_NSW,
 		TI_GOO_E,    TI_GOO_NE,   TI_GOO_SE,   TI_GOO_NSE,
 		TI_GOO_WE,   TI_GOO_NWE,  TI_GOO_SWE,  TI_GOO_NSWE
+	},{
+		TI_THINICE,      TI_THINICE_N,    TI_THINICE_S,    TI_THINICE_NS,
+		TI_THINICE_W,    TI_THINICE_NW,   TI_THINICE_SW,   TI_THINICE_NSW,
+		TI_THINICE_E,    TI_THINICE_NE,   TI_THINICE_SE,   TI_THINICE_NSE,
+		TI_THINICE_WE,   TI_THINICE_NWE,  TI_THINICE_SWE,  TI_THINICE_NSWE
 	}};
 
 	ASSERT(wCalcCode < 16);
 
-	UINT wTileType = 0;
-	switch (wTileNo)
-	{
-		case T_WATER: wTileType = 0; break;
-		case T_GOO: wTileType = 1; break;
-		default: ASSERT(!"CalcTileImageForWater: Wrong tile type"); break;
-	}
-
 	return TileImages[wTileType][wCalcCode];
 }
+#undef IsThinIceTile

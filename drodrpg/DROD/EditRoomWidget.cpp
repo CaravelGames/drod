@@ -598,8 +598,8 @@ const
 		if (bIsWall(wTileNo) && bIsWall(wObject)) return true;
 		if (bIsCrumblyWall(wTileNo) && bIsCrumblyWall(wObject)) return true;
 		if (bIsTunnel(wTileNo) && bIsTunnel(wObject)) return true;
-		if ((bIsPit(wTileNo) || bIsWater(wTileNo) || bIsTrapdoor(wTileNo) || bIsPlatform(wTileNo) || bIsBridge(wTileNo)) &&
-			 (bIsPit(wObject) || bIsWater(wObject) || bIsTrapdoor(wObject) || bIsPlatform(wObject) || bIsBridge(wObject)))
+		if ((bIsPit(wTileNo) || bIsWater(wTileNo) || bIsFallingTile(wTileNo) || bIsPlatform(wTileNo) || bIsBridge(wTileNo)) &&
+			 (bIsPit(wObject) || bIsWater(wObject) || bIsFallingTile(wObject) || bIsPlatform(wObject) || bIsBridge(wObject)))
 			return true;
 		if (bIsDiggableBlock(wTileNo) && bIsDiggableBlock(wObject))
 			return true;
@@ -610,7 +610,7 @@ const
 		return wObject == wTileNo;
 	case 3:
 		//Arrows can replace arrows.
-		if (bIsArrow(wObject) && bIsArrow(wTileNo))
+		if (bIsAnyArrow(wObject) && bIsAnyArrow(wTileNo))
 			return true;
 		if (wObject == T_WALLLIGHT)
 			return false;
@@ -750,6 +750,7 @@ const
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_PLATFORM_W: case T_PLATFORM_P:
 		case T_TRAPDOOR: case T_TRAPDOOR2:
+		case T_THINICE:
 		case T_GOO:
 		case T_HOT:
 			//Anything can be on these.
@@ -853,6 +854,8 @@ const
 			return true;
 		case T_ARROW_NW: case T_ARROW_N: case T_ARROW_NE: case T_ARROW_W:
 		case T_ARROW_E: case T_ARROW_SW: case T_ARROW_S: case T_ARROW_SE:
+		case T_ARROW_OFF_NW: case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_W:
+		case T_ARROW_OFF_E: case T_ARROW_OFF_SW: case T_ARROW_OFF_S: case T_ARROW_OFF_SE:
 			//Not on stairs.
 			return !bIsStairs(wTileNo[0]);
 
@@ -872,7 +875,7 @@ const
 		case T_BOMB:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
 			return !bSwordsmanAt &&
-				(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
+				(bIsPlainFloor(wTileNo[0]) || bIsFallingTile(wTileNo[0]) ||
 					bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 					bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
@@ -882,7 +885,7 @@ const
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			//On normal floor, platforms, goo or water.
 			return !bSwordsmanAt &&
-					(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
+					(bIsPlainFloor(wTileNo[0]) || bIsFallingTile(wTileNo[0]) ||
 						bIsOpenDoor(wTileNo[0]) || bIsBridge(wTileNo[0]) ||
 						bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||

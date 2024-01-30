@@ -139,7 +139,7 @@ inline bool bIsObstacle(const UINT wTile)
 				wTile==T_KEY ||
 				bIsEquipment(wTile) ||
 				wTile==T_TOKEN ||
-				bIsArrow(wTile)
+				bIsAnyArrow(wTile)
 			);
 }
 

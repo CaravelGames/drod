@@ -33,6 +33,7 @@
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "IceMeltEffect.h"
 #include "RoomWidget.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
@@ -317,6 +318,12 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(pRoomWidget, *pCoord));
 		}
+	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_ThinIceMelted);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		pRoomWidget->AddOLayerEffect(new CIceMeltEffect(pRoomWidget, *pCoord));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CutBriar);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())

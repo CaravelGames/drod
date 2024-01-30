@@ -665,6 +665,11 @@ enum CUEEVENT_ID
 	//Private data: CMoveCoord* (one or more)
 	CID_Dig,
 
+	//A thin ice tile melts
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_ThinIceMelted,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

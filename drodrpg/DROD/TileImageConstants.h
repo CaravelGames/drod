@@ -2386,7 +2386,38 @@
 #define TI_DIRT_3         2208
 #define TI_DIRT_5         2209
 
-static const UINT TI_COUNT = 2210;
+#define TI_THINICE        2210
+#define TI_THINICE_E      2211
+#define TI_THINICE_WE     2212
+#define TI_THINICE_W      2213
+#define TI_THINICE_S      2214
+#define TI_THINICE_SE     2215
+#define TI_THINICE_SWE    2216
+#define TI_THINICE_SW     2217
+#define TI_THINICE_NS     2218
+#define TI_THINICE_NSE    2219
+#define TI_THINICE_NSWE   2220
+#define TI_THINICE_NSW    2221
+#define TI_THINICE_N      2222
+#define TI_THINICE_NE     2223
+#define TI_THINICE_NWE    2224
+#define TI_THINICE_NW     2225
+
+#define TI_ICEMELT_1      2226
+#define TI_ICEMELT_2      2227
+#define TI_ICEMELT_3      2228
+#define TI_ICEMELT_4      2229
+
+#define TI_ARROW_OFF_N    2230
+#define TI_ARROW_OFF_NE   2231
+#define TI_ARROW_OFF_E    2232
+#define TI_ARROW_OFF_SE   2233
+#define TI_ARROW_OFF_S    2234
+#define TI_ARROW_OFF_SW   2235
+#define TI_ARROW_OFF_W    2236
+#define TI_ARROW_OFF_NW   2237
+
+static const UINT TI_COUNT = 2238;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

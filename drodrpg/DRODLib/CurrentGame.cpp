@@ -5845,8 +5845,8 @@ CheckMonsterLayer:
 
 MakeMove:
 	//Before player moves, remember important tile contents and conditions.
-	const bool bCanDropTrapdoors = p.HasSword();
-	const bool bReadyToDropTrapdoor = bIsTrapdoor(wOTileNo) && bCanDropTrapdoors;
+	const bool bCanDropTrapdoors = p.CanDropTrapdoor(wOTileNo);
+	const bool bReadyToDropTrapdoor = bIsFallingTile(wOTileNo) && bCanDropTrapdoors;
 
 	//Set player to new location.
 	//If the player hasn't moved yet, this must be called even on a 0-delta

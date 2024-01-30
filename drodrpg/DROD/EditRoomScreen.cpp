@@ -235,6 +235,15 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DIRT_1},                                       //T_DIRT1
 	{TI_DIRT_3},                                       //T_DIRT3
 	{TI_DIRT_5},                                       //T_DIRT5
+	{TI_THINICE_NSWE},                                 //T_THINICE
+	{ TI_ARROW_OFF_N },                                //T_ARROW_OFF_N
+	{ TI_ARROW_OFF_NE },                               //T_ARROW_OFF_NE
+	{ TI_ARROW_OFF_E },                                //T_ARROW_OFF_E
+	{ TI_ARROW_OFF_SE },                               //T_ARROW_OFF_SE
+	{ TI_ARROW_OFF_S },                                //T_ARROW_OFF_S
+	{ TI_ARROW_OFF_SW },                               //T_ARROW_OFF_SW
+	{ TI_ARROW_OFF_W },                                //T_ARROW_OFF_W
+	{ TI_ARROW_OFF_NW },                               //T_ARROW_OFF_NW
 
 	//monsters
 	{TI_ROACH_S},
@@ -392,6 +401,15 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_DIRT1         103
 	0, //T_DIRT3         104
 	0, //T_DIRT5         105
+	0, //T_THINICE       106
+	0, //T_ARROW_OFF_N   107
+	0, //T_ARROW_OFF_NE  108
+	0, //T_ARROW_OFF_E   109
+	0, //T_ARROW_OFF_SE  110
+	0, //T_ARROW_OFF_S   111
+	0, //T_ARROW_OFF_SW  112
+	0, //T_ARROW_OFF_W   113
+	0, //T_ARROW_OFF_NW  114
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -455,6 +473,8 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, //crate
 	0, //unused
 	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
+	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -478,6 +498,8 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, //crate
 	0, //unused
 	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
+	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -555,19 +577,19 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 28;
+const UINT numOLayerEntries = 29;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
-	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_FLOOR, T_FLOOR_IMAGE,
+	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
 	T_DIRT1, T_DIRT3, T_DIRT5
 };
 
-const UINT numFLayerEntries = 6;
+const UINT numFLayerEntries = 7;
 const UINT fLayerEntries[numFLayerEntries] = {
-	T_ARROW_NE, T_NODIAGONAL, //T_CHECKPOINT,
+	T_ARROW_NE, T_ARROW_OFF_NE, T_NODIAGONAL, //T_CHECKPOINT,
 	T_WALLLIGHT, T_LIGHT_CEILING, T_DARK_CEILING,
 	T_SWORDSMAN
 };
@@ -1426,6 +1448,7 @@ void CEditRoomScreen::ClickRoom()
 			const UINT wX = this->pRoomWidget->wEndX, wY = this->pRoomWidget->wEndY;
 			const UINT wOTileNo = this->pRoom->GetOSquare(wX,wY);
 			const UINT wTSquare = this->pRoom->GetTSquare(wX,wY);
+			const UINT wFSquare = this->pRoom->GetFSquare(wX,wY);
 			if (wTSquare == T_ORB || wOTileNo == T_PRESSPLATE)
 			{
 				//Start editing this orb/pressure plate.
@@ -1445,7 +1468,7 @@ void CEditRoomScreen::ClickRoom()
 				}
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
 				this->pRoomWidget->AddOrbAgentsEffect(this->pOrb);
-			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare)) {
+			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare) || bIsAnyArrow(wFSquare)) {
 				//A door or light exists here -- add, modify or delete its orb agent.
 				Changing();
 				//Is this door already affected by the orb?
@@ -3940,7 +3963,9 @@ COrbAgentData* CEditRoomScreen::FindOrbAgentFor(
 	CCoordSet coords;
 	if (bIsLight(this->pRoom->GetTSquare(wX,wY)))
 		coords.insert(wX,wY);
-	else {
+	else if (bIsAnyArrow(this->pRoom->GetFSquare(wX, wY))) {
+		coords.insert(wX, wY);
+	} else {
 		const UINT oTile = this->pRoom->GetOSquare(wX,wY);
 		ASSERT(bIsDoor(oTile) || bIsOpenDoor(oTile));
 		this->pRoom->GetAllDoorSquares(wX, wY, coords, oTile);
@@ -4783,7 +4808,8 @@ void CEditRoomScreen::PasteRegion(
 				COrbAgentData *pAgent = pOrb->agents[wAgentI];
 				const UINT oTile = room.GetOSquare(pAgent->wX, pAgent->wY);
 				if (!(bIsDoor(oTile) || bIsOpenDoor(oTile) ||
-						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY))))
+						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY)) ||
+						 bIsAnyArrow(room.GetFSquare(pAgent->wX, pAgent->wY))))
 					VERIFY(pOrb->DeleteAgent(pAgent));
 			}
 		}
@@ -5223,6 +5249,8 @@ void CEditRoomScreen::PlotObjects()
 
 				case T_ARROW_NW: case T_ARROW_N: case T_ARROW_NE: case T_ARROW_E:
 				case T_ARROW_SE: case T_ARROW_S: case T_ARROW_SW: case T_ARROW_W:
+				case T_ARROW_OFF_NW: case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_E:
+				case T_ARROW_OFF_SE: case T_ARROW_OFF_S: case T_ARROW_OFF_SW: case T_ARROW_OFF_W:
 				case T_EMPTY_F:
 				case T_LIGHT_CEILING: case T_DARK_CEILING: case T_WALLLIGHT:
 				case T_NODIAGONAL:
@@ -5261,6 +5289,9 @@ void CEditRoomScreen::PlotObjects()
 				break;
 				case T_DIRT1: case T_DIRT3: case T_DIRT5:
 					g_pTheSound->PlaySoundEffect(SEID_DIG);
+				break;
+				case T_THINICE:
+					g_pTheSound->PlaySoundEffect(SEID_ICEMELT);
 				break;
 				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
@@ -7616,7 +7647,8 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 //         implying the common orientation should not be rotated.
 {
 	UINT wNewTile = T_EMPTY;
-	if (bIsTunnel(wObject) || bIsArrow(wObject))
+	const bool bIsForceArrow = bIsAnyArrow(wObject);
+	if (bIsTunnel(wObject) || bIsForceArrow)
 	{
 		switch (wObject)
 		{
@@ -7633,8 +7665,23 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 			case T_ARROW_W:  wNewTile = bCW ? T_ARROW_NW : T_ARROW_SW; break;
 			case T_ARROW_NW: wNewTile = bCW ? T_ARROW_N : T_ARROW_W; break;
 			case T_ARROW_N:  wNewTile = bCW ? T_ARROW_NE : T_ARROW_NW; break;
+
+			case T_ARROW_OFF_NE: wNewTile = bCW ? T_ARROW_OFF_E : T_ARROW_OFF_N; break;
+			case T_ARROW_OFF_E:  wNewTile = bCW ? T_ARROW_OFF_SE : T_ARROW_OFF_NE; break;
+			case T_ARROW_OFF_SE: wNewTile = bCW ? T_ARROW_OFF_S : T_ARROW_OFF_E; break;
+			case T_ARROW_OFF_S:  wNewTile = bCW ? T_ARROW_OFF_SW : T_ARROW_OFF_SE; break;
+			case T_ARROW_OFF_SW: wNewTile = bCW ? T_ARROW_OFF_W : T_ARROW_OFF_S; break;
+			case T_ARROW_OFF_W:  wNewTile = bCW ? T_ARROW_OFF_NW : T_ARROW_OFF_SW; break;
+			case T_ARROW_OFF_NW: wNewTile = bCW ? T_ARROW_OFF_N : T_ARROW_OFF_W; break;
+			case T_ARROW_OFF_N:  wNewTile = bCW ? T_ARROW_OFF_NE : T_ARROW_OFF_NW; break;
 		}
 		SetMenuItem(wObject, wNewTile);
+		//Rotate both force arrow menu items in tandem
+		if (bIsForceArrow) {
+			const UINT alterate_object = getToggledForceArrow(wObject);
+			const UINT alternate_new_tile = getToggledForceArrow(wNewTile);
+			SetMenuItem(alterate_object, alternate_new_tile);
+		}
 		return true;
 	}
 
