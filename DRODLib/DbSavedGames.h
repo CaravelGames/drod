@@ -140,6 +140,9 @@ private:
 	void     SaveWorldMapIcons(c4_View &WorldMapIconsView) const;
 	void     SaveFields(c4_RowRef& row);
 
+	void     DeserializeBehaviorOverrides();
+	void     SerializeBehaviorOverrides();
+
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();
 	bool     UpdateNew();

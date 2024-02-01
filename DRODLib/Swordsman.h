@@ -68,10 +68,11 @@ enum PlayerBehaviorState
 
 enum PlayerBehavior
 {
-	PB_BumpActivateOrb = 0,
-	PB_LightFuses = 1,
-	PB_StepKill = 2,
-	PB_HasWeapon = 3,
+	PB_Null = 0, //Not used
+	PB_BumpActivateOrb = 1,
+	PB_LightFuses = 2,
+	PB_StepKill = 3,
+	PB_HasWeapon = 4,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
