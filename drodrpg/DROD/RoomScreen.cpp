@@ -99,9 +99,9 @@ CRoomScreen::CRoomScreen(
 
 	//Player stats.
 	static const int X_HP = 60;
-	static const int Y_HP = 205;
+	static const int Y_HP = 200;
 	static const UINT CX_HP = 145 - X_HP;
-	static const UINT CY_HP = 29;
+	static const UINT CY_HP = 30;
 
 	static const int X_ATK = X_HP;
 	static const int Y_ATK = Y_HP + CY_HP;
@@ -208,7 +208,7 @@ CRoomScreen::CRoomScreen(
 	static const UINT CY_MONNAME = 25;
 
 	static const int X_MONHP = X_HP;
-	static const int Y_MONHP = 452;
+	static const int Y_MONHP = 450;
 	static const UINT CX_MONHP = 160 - X_MONHP;
 	static const UINT CY_MONHP = CY_HP;
 
