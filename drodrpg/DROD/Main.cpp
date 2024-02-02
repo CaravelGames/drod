@@ -1944,6 +1944,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "Frozen", "frozen.ogg");
 	AddIfMissing(INISection::Waves, "Fuse", "fuselighting.ogg");
 	AddIfMissing(INISection::Waves, "Hit", "hit.ogg");
+	AddIfMissing(INISection::Waves, "IceMelt", "icemelt.ogg");
 	AddIfMissing(INISection::Waves, "Jump", "jump.ogg");
 	AddIfMissing(INISection::Waves, "Key", "key.ogg");
 	AddIfMissing(INISection::Waves, "LastBrain", "Powerdown2.ogg");
