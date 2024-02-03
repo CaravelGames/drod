@@ -257,6 +257,7 @@ public:
 	float    GetGlobalStatModifier(ScriptVars::StatModifiers statType) const;
 	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
+	UINT     GetNextImageOverlayID();
 	UINT     getSpawnID(UINT defaultMonsterID) const;
 	WSTRING  getStringVar(const UINT varIndex) const;
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
@@ -330,6 +331,7 @@ public:
 	void     ProcessSwordHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			CMonster *pDouble = NULL);
 	void     QuickSave();
+	void     RemoveClearedImageOverlays(const int clearLayers);
 	void     RestartRoom(CCueEvents &CueEvents);
 	void     SaveGame(const SAVETYPE eSaveType, const WSTRING& name);
 	void     SaveToContinue();
@@ -354,6 +356,7 @@ public:
 	bool     SetPlayerSwordSheathed();
 	void     SetTurn(UINT wSetTurnNo, CCueEvents &CueEvents);
 	bool     ShowLevelStart() const;
+	void     StashPersistingEvents(CCueEvents& CueEvents);
 //	void     TallyKill();
 	void     ToggleSwordDisarm();
 	void     TradeAccessory(CCueEvents& CueEvents, const UINT newEquipment, const bool bShowStatChanges=true);
@@ -405,6 +408,9 @@ public:
 	//Front-end effects.
 	MusicData music;
 	WSTRING  customRoomLocationText;
+	vector<CImageOverlay> persistingImageOverlays;
+
+	UINT imageOverlayNextID;
 
 	//Internet.
 //	static queue<DEMO_UPLOAD*> demosForUpload;

@@ -107,6 +107,7 @@ protected:
 	virtual bool   PlayVideo(const WCHAR *pFilename, const UINT dwHoldID, const int x=0, const int y=0);
 	bool           PlayVideo(const UINT dwDataID, const int x=0, const int y=0);
 	void           PopulateChatUserList(const UINT tagUserList);
+	void           ProcessImageEvents(CCueEvents& CueEvents, CRoomWidget* pRoomWidget, const CCurrentGame* pGame);
 	void           ProcessReceivedChatData(const UINT tagUserList);
 	bool           PollForCNetInterrupt();
 	void           ReformatChatText(const UINT chatInputTextTag, const bool bNextOption=false);

@@ -611,6 +611,11 @@ UINT CCurrentGame::getNewScriptID()
 	return max;
 }
 
+UINT CCurrentGame::GetNextImageOverlayID()
+{
+	return imageOverlayNextID++;
+}
+
 //*****************************************************************************
 void CCurrentGame::SaveGame(const SAVETYPE eSaveType, const WSTRING& name)
 //Save game of specified type with the current info.
@@ -749,6 +754,8 @@ void CCurrentGame::Clear(
 
 	this->UnansweredQuestions.clear();
 	this->customRoomLocationText.clear();
+	this->persistingImageOverlays.clear();
+	this->imageOverlayNextID = 0;
 
 /*
 	this->bRoomExitLocked = false;
@@ -6667,6 +6674,8 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->music = Src.music;
 
 	this->customRoomLocationText = Src.customRoomLocationText;
+	this->persistingImageOverlays = Src.persistingImageOverlays;
+	this->imageOverlayNextID = Src.imageOverlayNextID;
 
 	//Combat.
 	this->bQuickCombat = Src.bQuickCombat;
@@ -6778,6 +6787,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 //	this->bWaitedOnHotFloorLastTurn = false;
 
 	this->dwCutScene = 0;
+	this->persistingImageOverlays.clear();
+	this->imageOverlayNextID = 0;
 
 	this->pRoom->BurnFuseEvents(CueEvents);
 
@@ -7098,6 +7109,50 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->statsAtRoomStart = this->stats;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
 	this->roomsMappedAtRoomStart = GetMappedRooms();
+}
+
+//*****************************************************************************
+void CCurrentGame::StashPersistingEvents(CCueEvents& CueEvents)
+//Used on move sequence replay to display effects that should persist in the room indefinitely
+//Effects are added/cleared in the order they are cued.
+{
+	AmbientSoundTracking(CueEvents);
+
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ImageOverlay);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+		if (pImageOverlay->loopsForever())
+			this->persistingImageOverlays.push_back(*pImageOverlay);
+		const int clearLayer = pImageOverlay->clearsImageOverlays();
+		RemoveClearedImageOverlays(clearLayer);
+
+		pObj = CueEvents.GetNextPrivateData();
+	}
+}
+
+//*****************************************************************************
+void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
+{
+	if (clearLayers == ImageOverlayCommand::NO_LAYERS)
+		return;
+
+	if (clearLayers == ImageOverlayCommand::ALL_LAYERS) {
+		this->persistingImageOverlays.clear();
+		return;
+	}
+
+	vector<CImageOverlay> keptImages;
+
+	for (vector<CImageOverlay>::const_iterator imageIt = this->persistingImageOverlays.begin();
+		imageIt != this->persistingImageOverlays.end(); ++imageIt)
+	{
+		const CImageOverlay& image = *imageIt;
+		if (clearLayers != image.getLayer())
+			keptImages.push_back(image);
+	}
+
+	this->persistingImageOverlays = keptImages;
 }
 
 //*****************************************************************************

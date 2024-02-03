@@ -1805,6 +1805,9 @@ void CHoldSelectScreen::ShowActiveRoom(const UINT dwHoldID)
 	if (bGame)
 	{
 		VERIFY(this->pRoomWidget->LoadFromCurrentGame(this->pCurrentRestoreGame));
+		CCueEvents Ignored;
+		this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
+
 		this->pRoomWidget->RequestPaint();
 		wstrDesc += (const WCHAR*)this->pCurrentRestoreGame->pLevel->NameText;
 		wstrDesc += wszColon;

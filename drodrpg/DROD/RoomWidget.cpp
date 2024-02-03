@@ -33,6 +33,7 @@
 #include "GameScreen.h"
 
 #include "DamagePreviewEffect.h"
+#include "ImageOverlayEffect.h"
 #include "PendingBuildEffect.h"
 #include "RaindropEffect.h"
 #include "RoomEffectList.h"
@@ -519,6 +520,38 @@ void CRoomWidget::AddJitter(const CMoveCoord& coord, const float fDamagePercent)
 		newJitter = MAX_JITTER;
 
 	this->jitterInfo.Add(coord.wX, coord.wY, newJitter);
+}
+
+//*****************************************************************************
+void CRoomWidget::AddLayerEffect(CEffect* pEffect, int layer)
+{
+	switch (layer) {
+	case 0:
+		AddOLayerEffect(pEffect);
+		break;
+	case 1:
+		AddTLayerEffect(pEffect);
+		break;
+	case 2:
+		AddMLayerEffect(pEffect);
+		break;
+	case 3:
+	default:
+		AddLastLayerEffect(pEffect);
+		break;
+	}
+}
+
+//*****************************************************************************
+CRoomEffectList* CRoomWidget::GetEffectListForLayer(const int layer) const
+{
+	switch (layer) {
+	case 0: return this->pOLayerEffects;
+	case 1: return this->pTLayerEffects;
+	case 2: return this->pMLayerEffects;
+	case 3:
+	default: return this->pLastLayerEffects;
+	}
 }
 
 //*****************************************************************************
@@ -2592,11 +2625,89 @@ void CRoomWidget::ToggleVarDisplay()
 }
 
 //*****************************************************************************
+void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
+{
+	if (!this->pCurrentGame)
+		return;
+
+	if (this->pCurrentGame->persistingImageOverlays.empty())
+		return;
+
+	//Don't duplicate the persistent effects drawn above when we get to ProcessImageEvents.
+	static const CUEEVENT_ID cid = CID_ImageOverlay;
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(cid);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+
+		if (pImageOverlay->loopsForever()) {
+			// These effects were already added to `persistingImageOverlays`
+			CueEvents.Remove(cid, pObj);
+			pObj = CueEvents.GetFirstPrivateData(cid);
+			continue;
+		}
+
+		//Don't wait for additional images to be added to the room widget before clearing effects.
+		bool bClearedEffect = false;
+		const int clearsLayer = pImageOverlay->clearsImageOverlays();
+		if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			CueEvents.Remove(cid, pObj);
+			pObj = CueEvents.GetFirstPrivateData(cid);
+			bClearedEffect = true;
+		}
+
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+			RemoveGroupEffects(clearsGroup);
+			bClearedEffect = true;
+		}
+
+		if (bClearedEffect)
+			continue;
+
+		pObj = CueEvents.GetNextPrivateData();
+	}
+
+	const UINT currentTurn = this->pCurrentGame->wTurnNo;
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
+
+	for (vector<CImageOverlay>::const_iterator it = this->pCurrentGame->persistingImageOverlays.begin();
+		it != this->pCurrentGame->persistingImageOverlays.end(); ++it)
+	{
+		const CImageOverlay& overlay = *it;
+		const int layer = overlay.getLayer();
+		CEffectList* pEffectList = GetEffectListForLayer(layer);
+		if (!IsPersistentEffectPlaying(pEffectList, overlay.instanceID)) {
+			CImageOverlayEffect* pEffect = new CImageOverlayEffect(this, &overlay, currentTurn, dwNow);
+			AddLayerEffect(pEffect, layer);
+		}
+	}
+}
+
+//*****************************************************************************
+bool CRoomWidget::IsPersistentEffectPlaying(CEffectList* pEffectList, const UINT instanceID) const
+{
+	ASSERT(pEffectList);
+	std::list<CEffect*> pEffects = pEffectList->Effects;
+	for (std::list<CEffect*>::const_iterator it = pEffects.begin(); it != pEffects.end(); ++it)
+	{
+		const CEffect* pEffect = *it;
+		if (pEffect->GetEffectType() == EIMAGEOVERLAY) {
+			const CImageOverlayEffect* pIOE = DYN_CAST(const CImageOverlayEffect*, const CEffect*, pEffect);
+			if (pIOE->getInstanceID() == instanceID)
+				return true;
+		}
+	}
+	return false;
+}
+
+//*****************************************************************************
 void CRoomWidget::FadeToLightLevel(
 //Crossfades room image from old to new light level.
 //
 //Params:
-	const UINT wNewLight)
+	const UINT wNewLight, CCueEvents& CueEvents)
 {
 	StopSleeping();
 
@@ -2662,6 +2773,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Render room objects.
 		this->x = this->y = 0;
 		AddDamagePreviews();
+		DisplayPersistingImageOverlays(CueEvents);
 		RenderRoomLayers(pNewRoomSurface);
 		this->x = rect.x;
 		this->y = rect.y;
@@ -2721,6 +2833,7 @@ void CRoomWidget::ShowRoomTransition(
 //
 //Params:
 	const UINT wExitOrientation,  //(in) direction of exit
+	CCueEvents& CueEvents,  //(in)
 	const bool bShowPlayer) //[default=false]
 {
 	StopSleeping();
@@ -2790,6 +2903,7 @@ void CRoomWidget::ShowRoomTransition(
 					pNewRoomSurface, &tempRect);
 
 		this->x = this->y = 0;
+		DisplayPersistingImageOverlays(CueEvents);
 		RenderRoomLayers(pNewRoomSurface, bShowPlayer);
 
 		this->x = rect.x;
@@ -5060,6 +5174,52 @@ void CRoomWidget::UpdateRoomRects()
 					CX_TILE * (wAfterEndIndex - wStartIndex), CY_TILE);
 			bInDirtyRect = false;
 		}
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::RemoveEffectsQueuedForRemoval()
+{
+	for (multimap<EffectType, int>::const_iterator it = this->queued_layer_effect_type_removal.begin();
+		it != this->queued_layer_effect_type_removal.end(); ++it)
+	{
+		const EffectType eEffectType = it->first;
+		const int layer = it->second;
+		RemoveLayerEffects(eEffectType, layer);
+	}
+
+	this->queued_layer_effect_type_removal.clear();
+}
+
+//*****************************************************************************
+void CRoomWidget::RemoveGroupEffects(int clearGroup)
+{
+	ASSERT(this->pOLayerEffects);
+	this->pOLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pTLayerEffects);
+	this->pTLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pMLayerEffects);
+	this->pMLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pLastLayerEffects);
+	this->pLastLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+}
+
+//*****************************************************************************
+void CRoomWidget::RemoveLayerEffects(const EffectType eEffectType, int layer)
+{
+	switch (layer) {
+	case 0: RemoveOLayerEffectsOfType(eEffectType); break;
+	case 1: RemoveTLayerEffectsOfType(eEffectType); break;
+	case 2: RemoveMLayerEffectsOfType(eEffectType); break;
+	case 3: RemoveLastLayerEffectsOfType(eEffectType); break;
+	default:
+		if (layer == ImageOverlayCommand::ALL_LAYERS) {
+			RemoveOLayerEffectsOfType(eEffectType);
+			RemoveTLayerEffectsOfType(eEffectType);
+			RemoveMLayerEffectsOfType(eEffectType);
+			RemoveLastLayerEffectsOfType(eEffectType);
+		}
+		break;
 	}
 }
 

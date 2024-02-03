@@ -1747,6 +1747,8 @@ void CGameScreen::DrawCurrentTurn()
 	//Refresh pointers but don't reload front-end resources.
 	this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame, false);
 
+	DisplayPersistentEffects();
+
 	this->bPersistentEventsDrawn = this->bNeedToProcessDelayedQuestions = false;
 	ProcessCueEventsBeforeRoomDraw(this->sCueEvents);
 
@@ -3156,6 +3158,7 @@ bool CGameScreen::SetForActivate()
 	ClearSpeech();
 	SetGameAmbience(true);
 	AmbientSoundSetup();
+	DisplayPersistentEffects();
 
 	SelectFirstWidget(false);
 
@@ -4459,7 +4462,7 @@ void CGameScreen::DisplayChatDialog()
 }
 
 //*****************************************************************************
-void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
+void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration, CCueEvents& CueEvents)
 {
 	//Prepare fade surface.
 	SDL_Rect srcRect;
@@ -4474,6 +4477,7 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 	{
 		SDL_BlitSurface(this->pRoomWidget->pRoomSnapshotSurface, &srcRect,
 				pSurface, &srcRect);
+		this->pRoomWidget->DisplayPersistingImageOverlays(CueEvents);
 		this->pRoomWidget->RenderRoomLayers(pSurface);
 	} else {
 		SDL_BlitSurface(pDestSurface, &srcRect, pSurface, &srcRect);
@@ -4957,6 +4961,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied);
 //			|| (!bPlayerDied && !bNPCBeethroDied && player.wAppearance != M_BEETHRO);
 
+	// And we want image events to be rendered too
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
+
 	ProcessFuseBurningEvents(CueEvents);
 
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
@@ -5407,7 +5414,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	if (bFadeLight)
 	{
 		this->pCurrentGame->pRoom->weather.wLight = wNewLightLevel;
-		this->pRoomWidget->FadeToLightLevel(wNewLightLevel);
+		this->pRoomWidget->FadeToLightLevel(wNewLightLevel, this->sCueEvents);
 	}
 
 	return eNextScreen;
@@ -6350,6 +6357,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pRoomWidget->RenderRoomLighting();
 			this->pRoomWidget->ResetForPaint();
 
+			DisplayPersistentEffects();
+
 			//Refresh map.
 			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
 			if (nowMappedRooms.size() != mappedRooms.size())
@@ -6397,7 +6406,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 			wExitOrientation = static_cast<UINT>(*pExitOrientation);
 
-			this->pRoomWidget->ShowRoomTransition(wExitOrientation);
+			this->pRoomWidget->ShowRoomTransition(wExitOrientation, CueEvents);
 			ClearEventBuffer(); //don't buffer up commands while transitioning, but don't reset pressed keys/buttons
 
 			//Update other UI elements that may have changed.
@@ -6431,6 +6440,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pMapWidget->RequestPaint();
 		}
 */
+		ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	}
 
 	return eNextScreen;
@@ -6465,6 +6475,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	SetMusicStyle();
 
 	//Allow handling either before or after room is drawn.
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	ProcessMovieEvents(CueEvents);
 
 	//ensure texts aren't on top of each other
@@ -6724,7 +6735,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 			//Fade out.
 			if (!CueEvents.HasOccurred(CID_PlayVideo))
 				Paint();
-			FadeRoom(false, 750);
+			FadeRoom(false, 750, CueEvents);
 		}
 		CueEvents.Clear();
 		this->pRoomWidget->ClearEffects();
@@ -6806,7 +6817,7 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 	{
 		if (eNextScreen == SCR_LevelStart)
 			eNextScreen = SCR_Game;
-		FadeRoom(false, 600);
+		FadeRoom(false, 600, CueEvents);
 	}
 
 	//Reset these things.
@@ -6846,7 +6857,7 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 			RedrawStats(this->pCurrentGame->pCombat, true);
 
 			//Fade in.
-			FadeRoom(true, 400);
+			FadeRoom(true, 400, CueEvents);
 
 			//Throw away everything that happened during fade.
 			ClearEvents();
@@ -7225,6 +7236,12 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		//The next item is now the first item.
 		pObj = CueEvents.GetFirstPrivateData(CID_PlayVideo);
 	}
+}
+
+void CGameScreen::DisplayPersistentEffects()
+{
+	AmbientSoundSetup();
+	this->pRoomWidget->DisplayPersistingImageOverlays(this->sCueEvents);
 }
 
 //*****************************************************************************
@@ -7736,6 +7753,8 @@ void CGameScreen::UpdateUIAfterRoomRestart(const bool bReloadEntireMap) //[defau
 	this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->ResetForPaint();
 
+	DisplayPersistentEffects();
+
 	if (bReloadEntireMap) {
 		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
 	} else {
@@ -8017,7 +8036,7 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 }
 
 //*****************************************************************************
-UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
+UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to display
 //Temporarily display another room in place of the current room.
 //
 //Returns: roomID of a different room to display, or 0 for none
@@ -8036,6 +8055,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 	this->pRoomWidget->Hide();
 	this->pTempRoomWidget->Show();
 
+	pTempRoomWidget->DisplayPersistingImageOverlays(CueEvents);
 	this->pTempRoomWidget->Paint();
 	ShowRoomCoords(this->pTempRoomWidget->pRoom);
 	UpdateRect();
@@ -8184,7 +8204,7 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 			pTempGame->UpdatePrevCoords();
 		}
 		this->pTempRoomWidget->ShowPlayer(bShowPlayer);
-		this->pTempRoomWidget->ShowRoomTransition(direction, bShowPlayer);
+		this->pTempRoomWidget->ShowRoomTransition(direction, this->sCueEvents, bShowPlayer);
 		this->pTempRoomWidget->Paint();
 		ShowRoomCoords(this->pTempRoomWidget->pRoom);
 		UpdateRect();
@@ -8230,7 +8250,8 @@ Loop:
 	this->bShowingTempRoom = true;
 	this->bNoMoveByCurrentMouseClick = true;
 
-	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom);
+	CCueEvents CueEvents;
+	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom, CueEvents);
 	delete pTempGame;
 
 	this->bShowingTempRoom = false;

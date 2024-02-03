@@ -235,6 +235,9 @@
     <ClCompile Include="IceMeltEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="ImageOverlayEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -454,6 +457,9 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="IceMeltEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageOverlayEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>

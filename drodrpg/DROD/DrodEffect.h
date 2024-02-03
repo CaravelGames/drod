@@ -66,6 +66,7 @@ enum EffectType
 	ECHATTEXT,        //CaravelNet chat text display
 	ERAINDROP,        //a falling rain drop
 	EDAMAGEPREVIEW,   //hovering enemy damage display
+	EIMAGEOVERLAY,    //image overlay
 };
 
 //*****************************************************************************

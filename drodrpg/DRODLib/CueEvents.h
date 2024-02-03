@@ -670,6 +670,11 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pSquare (one or more)
 	CID_ThinIceMelted,
 
+	//Image overlay script command
+	//
+	//Private data: CImageOverlay* (one or more)
+	CID_ImageOverlay,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

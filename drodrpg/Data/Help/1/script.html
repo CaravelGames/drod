@@ -26,7 +26,8 @@ There are five general classes of script commands, as follows:</p>
 <a href="#multichoiceexample">Example of a multiple choice question</a><br />
 <a href="#newmonsters">How to make a new monster type</a><br />
 <a href="#character-on-tarstuff">Character on tarstuff</a><br />
-<a href="#customequipment">How to make custom equipment</a>
+<a href="#customequipment">How to make custom equipment</a><br />
+<a href="#image-overlay-commands">Image Overlay commands</a>
 </p>
 <hr />
 <p><a name="placement"><b>1.&nbsp;&nbsp;Placement</b></a> - Change the NPC's location.</p>
@@ -315,6 +316,7 @@ interacts with its environment.</p>
   <li><a name="gameeffect"><b>Game effect</b></a> - Display a visual effect
 	  at a specified room location.  Particle effects may have a direction
 	  given them.  Some effects may play an optional accompanying sound effect.</li>
+  <li><a name="image-overlay"><b>Image overlay</b></a> - Input a <a href="#image-overlay-commands">custom set of commands</a> for displaying a custom image effect in the game room.</li>
 </ol>
 
 <p><a name="queries"><b>4.&nbsp;&nbsp;Queries</b></a> - Use queries to examine
@@ -1059,6 +1061,45 @@ Essentially, it's being treated as a Tarstuff Mother, although there are certain
   <li>The "Graphics" list selection and "Avatar" image are
     irrelevant for custom equipment.</li>
 </ol>
+
+<p><a name="image-overlay-commands"><b>Image overlay commands</b></a></p>
+  In addition to selecting an image for display with the "Image overlay" command, you must provide a simple set of commands to define how the image will be displayed in-game.  The list of supported (case-insensitive) commands for use in an Image Overlay script is as follows:<br />
+<br />
+<b>AddX (pixels)</b> -- shifts the image's X coordinate. Positive values shift to the right, negative values shift to the left.<br />
+<b>AddY (pixels)</b> -- shifts the image's Y coordinate. Positive values shift downwards, negative values shift upwards.<br />
+<b>CancelAll</b> -- remove all currently displaying image overlay effects. This command is typically run singly.<br />
+<b>CancelGroup (group #)</b> -- remove image overlay effects in the specified display group (0 or greater)<br />
+<b>CancelLayer (layer #)</b> -- remove image overlay effects on the specified display layer (0 through 3)<br />
+<b>Center</b> -- center the image within the room area<br />
+<b>Display (ms)</b> -- display the image in its current form for the specified duration<br />
+<b>DisplayRect (x) (y) (w) (h)</b> -- show this region of the source image<br />
+<b>DisplayRectModify (delta x) (delta y) (delta w) (delta h)</b> -- modifies the display region for the source image<br />
+<b>DisplaySize (w) (h)</b> -- show this amount of the source image, in pixels<br />
+<b>DisplayTurns (# turns)</b> -- display the image in its current form for the indicated number of game turns<br />
+<b>(p)FadeToAlpha (alpha) (ms)</b> -- transition the image from its current alpha value to the indicated value over the specified time interval<br />
+<b>Group (group #)</b> -- assign the effect to the given display group (0 or greater). Overlays without a Group command are assigned to Group #0. Only the first instance of this command in a script is executed.<br />
+<b>(p)Grow (percent of original) (ms)</b> -- scale the image by the indicated amount over the specified time interval<br />
+<b>(p)Jitter (pixels) (ms)</b> -- randomly shake the image off-center up to the indicated range for the specified time interval<br />
+<b>Layer (layer)</b> -- place the effect on the indicated display layer (0 through 3, generally corresponding to the menu tabs used for placing game elements in the room editor). Only the first instance of this command in a script is executed.<br />
+<b>Loop (times)</b> -- loop through the image command list this many times (-1 = infinite)<br />
+<b>(p)Move (x pixels) (y pixels) (ms)</b> -- translate the image's position by the indicated number of pixels over the indicated time interval<br />
+<b>(p)MoveTo (x pixel) (y pixel) (ms)</b> -- move the image from its current position to the indicated screen location over the course of the indicated time interval<br />
+<b>Repeat (repetions, x, y)</b> -- repeat the final image a positive number of times, with each copy offset from the previous image by x and y pixels, including in negative directions.<br />
+<b>(p)Rotate (degrees) (ms)</b> -- rotate the image the indicated amount over the specified time interval<br />
+<b>Scale (percent of original)</b> -- scale the image to the indicated amount<br />
+<b>SetAlpha (0-255)</b> -- set the image's alpha transparency to the indicated value<br />
+<b>SetAngle (degrees)</b> -- set the image's angle of rotation<br />
+<b>SetX (pixel)</b> -- set the image's X coordinate<br />
+<b>SetY (pixel)</b> -- set the image's Y coordinate<br />
+<b>SrcXY (x) (y)</b> - show the source image starting from the indicated pixel position<br />
+<b>TileGrid (w) (h)</b> -- replicate the image in a w by h grid. Tiling is not supported for images that have had rotations applied.<br />
+<br />
+As an example, you can make an image start invisible, fade in, display for a couple seconds, then fade out by providing the following command sequence:<br />
+<br />
+setalpha 0 fadetoalpha 255 1000 display 2000 fadetoalpha 0 800<br />
+<br />
+The text supports variable interpolation, so you can have parameters like "$.ImageX$" in the text. Any part of the command text may be inserted in this fashion.<br />
+Certain commands with time duration, marked above, may be optionally prefixed with the letter "p".  This indicates that the command will not run to completion before any subsequent commands are executed, but rather will run in parallel with the next command. Multiple parallel commands may be executed concurrently.<br />
 
 <hr />
 <a href="character.html">Character Scripting</a><br />

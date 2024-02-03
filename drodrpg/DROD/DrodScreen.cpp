@@ -34,6 +34,7 @@
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
 #include "IceMeltEffect.h"
+#include "ImageOverlayEffect.h"
 #include "RoomWidget.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
@@ -216,6 +217,8 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (!pRoomWidget)
 		return;
 	ASSERT(pGame);
+
+	ProcessImageEvents(CueEvents, pRoomWidget, pGame);
 
 	const int numFlashingTexts = CueEvents.GetOccurrenceCount(CID_FlashingMessage);
 	static const int CY_FLASHING_TEXT = 50;
@@ -608,6 +611,52 @@ void CDrodScreen::AdvanceDemoPlayback(
 		pRoomDisplay->RequestPaint();
 	else
 		pRoomWidget->RequestPaint();
+}
+
+//*****************************************************************************
+void CDrodScreen::ProcessImageEvents(
+	//Handle events for displaying image overlay effects.
+	//This must be called both before and after the room is drawn to catch all cases.
+	//
+	//Pre-condition: Persistent image effects were handled previously in DisplayPersistingImageOverlays.
+	CCueEvents& CueEvents,
+	CRoomWidget* pRoomWidget, const CCurrentGame* pGame)
+{
+	static const CUEEVENT_ID cid = CID_ImageOverlay;
+	if (!CueEvents.HasOccurred(cid))
+		return;
+
+	const UINT currentTurn = pGame ? pGame->wTurnNo : 0;
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
+
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(cid);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+
+		//Don't wait for additional images to be added to the room widget before clearing effects.
+		const int clearsLayer = pImageOverlay->clearsImageOverlays();
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsLayer == ImageOverlayCommand::NO_LAYERS &&
+			clearsGroup == ImageOverlayCommand::NO_GROUP) {
+			CImageOverlayEffect* pEffect = new CImageOverlayEffect(pRoomWidget, pImageOverlay, currentTurn, dwNow);
+			pRoomWidget->AddLayerEffect(pEffect, pImageOverlay->getLayer());
+		} else {
+			if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+				pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			}
+			if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+				pRoomWidget->RemoveGroupEffects(clearsGroup);
+			}
+		}
+
+		//Don't reprocess these events if this method is called again.
+		//This is done instead of calling ClearEvent so the occurred flag isn't reset.
+		CueEvents.Remove(cid, pObj);
+
+		//The next item is now the first item.
+		pObj = CueEvents.GetFirstPrivateData(cid);
+	}
 }
 
 //*****************************************************************************

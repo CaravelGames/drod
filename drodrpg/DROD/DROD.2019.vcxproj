@@ -565,6 +565,7 @@
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="HoldSelectScreen.cpp" />
     <ClCompile Include="IceMeltEffect.cpp" />
+    <ClCompile Include="ImageOverlayEffect.cpp" />
     <ClCompile Include="LevelStartScreen.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -639,6 +640,7 @@
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="HoldSelectScreen.h" />
     <ClInclude Include="IceMeltEffect.h" />
+    <ClInclude Include="ImageOverlayEffect.h" />
     <ClInclude Include="LevelStartScreen.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="MapWidget.h" />

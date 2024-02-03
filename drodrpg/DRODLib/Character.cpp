@@ -180,6 +180,7 @@ inline bool bCommandHasData(const UINT eCommand)
 		case CCharacterCommand::CC_AmbientSoundAt:
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_SetMusic:
+		case CCharacterCommand::CC_ImageOverlay:
 			return true;
 		default:
 			return false;
@@ -381,6 +382,7 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_AmbientSound:
 				case CCharacterCommand::CC_AmbientSoundAt:
 				case CCharacterCommand::CC_PlayVideo:
+				case CCharacterCommand::CC_ImageOverlay:
 					//Make a copy of the media object in the new hold.
 					CDbData::CopyObject(info, c.w, pNewHold->dwHoldID);
 				break;
@@ -2915,6 +2917,15 @@ void CCharacter::Process(
 				*pText = text.c_str();
 				CColorText* pColorText = new CColorText(pText, px, py, pw, ph);
 				CueEvents.Add(CID_FlashingMessage, pColorText, true);
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ImageOverlay:
+			{
+				//Display image (w) with display strategy (label).
+				const WSTRING text = pGame->ExpandText(command.label.c_str(), this);
+				CueEvents.Add(CID_ImageOverlay, new CImageOverlay(text, command.w, pGame->GetNextImageOverlayID()), true);
 
 				bProcessNextCommand = true;
 			}

@@ -1542,6 +1542,8 @@ enum MID_CONSTANT {
   MID_NotInvisibleInspectable = 1870,
   MID_ThinIceMelted = 1872,
   MID_IceMeltEffect = 1873,
+  MID_ImageOverlay = 1883,
+  MID_ImageOverlayStrategy = 1884,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
