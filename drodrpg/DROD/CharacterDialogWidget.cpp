@@ -37,6 +37,7 @@
 #include <FrontEndLib/LabelWidget.h>
 #include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
+#include <FrontEndLib/TextBox2DWidget.h>
 #include <FrontEndLib/OptionButtonWidget.h>
 
 #include "../DRODLib/Db.h"
@@ -151,7 +152,9 @@ const UINT TAG_DEFAULTCOMMANDSLISTBOX = 897;
 const UINT TAG_OK2 = 896;
 const UINT TAG_CHAROPTIONS2 = 895;
 
-const UINT TAG_VARCOMPLIST2 = 895;
+const UINT TAG_VARCOMPLIST2 = 894;
+const UINT TAG_IMAGEOVERLAY_LABEL = 893;
+const UINT TAG_IMAGEOVERLAYTEXT = 892;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1176,6 +1179,17 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	static const UINT CX_VALUE_OR_EXPRESSION_LABEL = 300;
 
+	//Image overlay
+	static const int X_IMAGELABEL = X_WAITLABEL;
+	static const int Y_IMAGELABEL = Y_WAITLABEL;
+	static const UINT CX_IMAGELABEL = 200;
+	static const UINT CY_IMAGELABEL = CY_LABEL;
+
+	static const int X_IMAGEOVERLAYTEXT = X_IMAGELABEL;
+	static const int Y_IMAGEOVERLAYTEXT = Y_IMAGELABEL + CY_IMAGELABEL;
+	static const UINT CX_IMAGEOVERLAYTEXT = CX_TEXT;
+	static const UINT CY_IMAGEOVERLAYTEXT = 284;
+
 	ASSERT(!this->pAddCommandDialog);
 	this->pAddCommandDialog = new CRenameDialogWidget(0L, -80, GetY() + (GetH()-CY_COMMAND_DIALOG)/2,
 			CX_COMMAND_DIALOG, CY_COMMAND_DIALOG);
@@ -1641,6 +1655,13 @@ void CCharacterDialogWidget::AddCommandDialog()
 	CTextBoxWidget* pText2 = new CTextBoxWidget(TAG_TEXT2, X_TEXT2, Y_TEXT2,
 		CX_TEXT2, CY_TEXT2, 6);
 	this->pAddCommandDialog->AddWidget(pText2);
+
+	//Input overlay
+	CTextBox2DWidget* pOverlayText = new CTextBox2DWidget(TAG_IMAGEOVERLAYTEXT, X_IMAGEOVERLAYTEXT, Y_IMAGEOVERLAYTEXT,
+		CX_IMAGEOVERLAYTEXT, CY_IMAGEOVERLAYTEXT, 4 * 1024);
+	this->pAddCommandDialog->AddWidget(pOverlayText);
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IMAGEOVERLAY_LABEL, X_IMAGELABEL, Y_IMAGELABEL,
+		CX_IMAGELABEL, CY_IMAGELABEL, F_Small, g_pTheDB->GetMessageText(MID_ImageOverlayStrategy)));
 
 	//Stat list box.
 	this->pStatListBox = new CListBoxWidget(TAG_STATLISTBOX,
@@ -3297,6 +3318,17 @@ const
 			wstr += wszRightParen;
 		}
 		break;
+		case CCharacterCommand::CC_ImageOverlay:
+		{
+			wstr += GetDataName(command.w);
+
+			if (!command.label.empty()) {
+				wstr += wszColon;
+				wstr += wszSpace;
+				wstr += command.label;
+			}
+		}
+		break;
 
 		case CCharacterCommand::CC_FlushSpeech:
 		case CCharacterCommand::CC_SetPlayerSword:
@@ -3750,6 +3782,19 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
 
+		case CCharacterCommand::CC_ImageOverlay:
+			if (bLastWasIfCondition || wLogicNestDepth)
+				wstr += wszQuestionMark;	//questionable If condition
+			if (pCommand->label.empty()) {
+				wstr += wszExclamation;
+			}
+			else {
+				vector<ImageOverlayCommand> temp;
+				if (!CImageOverlay::parse(pCommand->label, temp))
+					wstr += wszExclamation;
+			}
+		break;
+
 		case CCharacterCommand::CC_VarSet:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
@@ -3878,6 +3923,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Label, g_pTheDB->GetMessageText(MID_Label));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_MoveRel, g_pTheDB->GetMessageText(MID_MoveRel));
@@ -4649,7 +4695,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 39;
+	static const UINT NUM_WIDGETS = 40;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4662,7 +4708,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX,
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
-		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2
+		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -4694,6 +4740,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT STATSET[] =     { TAG_STATLISTBOX, TAG_SPEECHTEXT, 0 };
 	static const UINT MOVETYPE[] =    { TAG_MOVETYPELISTBOX, 0 };
 	static const UINT EXPRESSION[] =  { TAG_GOTOLABELTEXT, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
+	static const UINT IMAGEOVERLAY[] = { TAG_IMAGEOVERLAYTEXT, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -4773,10 +4820,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitAnd
 		NO_WIDGETS,         //CC_LogicalWaitOr
 		NO_WIDGETS,         //CC_LogicalWaitXOR
-		NO_WIDGETS          //CC_LogicalWaitEnd
+		NO_WIDGETS,         //CC_LogicalWaitEnd
+		IMAGEOVERLAY        //CC_ImageOverlay
 	};
 
-	static const UINT NUM_LABELS = 26;
+	static const UINT NUM_LABELS = 27;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -4784,7 +4832,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_SINGLESTEP, TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, TAG_CUTSCENELABEL,
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
-		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION
+		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -4811,6 +4859,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT MAP_L[NUM_LABELS] =          { TAG_ROOMREVEALLABEL, 0 };
 	static const UINT STAT_L[NUM_LABELS] =         { TAG_VALUE_OR_EXPRESSION, 0 };
 	static const UINT EXPRESSION_L[NUM_LABELS] =   { TAG_VARVALUELABEL, 0 };
+	static const UINT IMAGE_OVERLAY_L[NUM_LABELS] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -4890,7 +4939,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitAnd
 		NO_LABELS,          //CC_LogicalWaitOr
 		NO_LABELS,          //CC_LogicalWaitXOR
-		NO_LABELS           //CC_LogicalWaitEnd
+		NO_LABELS,          //CC_LogicalWaitEnd
+		IMAGE_OVERLAY_L     //CC_ImageOverlay
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5798,6 +5848,36 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_ImageOverlay:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+
+			CTextBox2DWidget* pText = DYN_CAST(CTextBox2DWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_IMAGEOVERLAYTEXT));
+			ASSERT(pText);
+			this->pCommand->label = pText->GetText();
+
+			CImageOverlay tempImage(this->pCommand->label, 0, 0);
+			if (tempImage.clearsImageOverlays() != ImageOverlayCommand::NO_LAYERS ||
+				tempImage.clearsImageOverlayGroup() != ImageOverlayCommand::NO_GROUP) {
+				//No image required.
+				this->pCommand->w = 0;
+			}
+			else {
+				const UINT dwVal = pEditRoomScreen->SelectMediaID(this->pCommand->w, CSelectMediaDialogWidget::Images);
+				if (!dwVal) {
+					//Don't add the command.
+					RollbackCommand();
+					break;
+				}
+				this->pCommand->w = dwVal;
+			}
+
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_WaitForNoBuilding:
 			QueryRect();
 		break;
@@ -5837,6 +5917,15 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 	//Gotos might have become invalid.  Display that immediately.
 	if (bRemovedLabel)
 		PopulateCommandDescriptions(pActiveCommandList, commands);
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::RollbackCommand()
+{
+	if (!this->bEditingCommand)
+		delete this->pCommand;
+
+	this->pCommand = NULL;
 }
 
 //*****************************************************************************
@@ -6139,6 +6228,14 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 					this->pAddCommandDialog->GetWidget(TAG_MOVERELY));
 			ASSERT(pRel);
 			pRel->SetText(_itoW((int)this->pCommand->y, temp, 10));
+		}
+		break;
+
+		case CCharacterCommand::CC_ImageOverlay:
+		{
+			CTextBox2DWidget* pText = DYN_CAST(CTextBox2DWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_IMAGEOVERLAYTEXT));
+			pText->SetText(this->pCommand->label.c_str());
 		}
 		break;
 
@@ -6574,6 +6671,12 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->w);
 	break;
 
+	case CCharacterCommand::CC_ImageOverlay:
+		parseNumber(pCommand->w);
+		skipComma;
+		pCommand->label = pText + pos;
+	break;
+
 	case CCharacterCommand::CC_BuildTile:
 	case CCharacterCommand::CC_WaitForItem:
 		parseMandatoryOption(pCommand->flags,this->pBuildItemsListBox,bFound);
@@ -7006,6 +7109,16 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 }
 
 //*****************************************************************************
+WSTRING RemoveNewlines(WSTRING wstr)
+{
+	for (size_t i = 0; i < wstr.length(); ++i) {
+		if (wstr[i] == '\n' || wstr[i] == '\r')
+			wstr[i] = W_t(' ');
+	}
+	return wstr;
+}
+
+//*****************************************************************************
 WSTRING CCharacterDialogWidget::toText(
 //Converts a character command into a simple text format which can be parsed by ::fromText.
 //
@@ -7151,6 +7264,11 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		concatNum(c.w);
+	break;
+
+	case CCharacterCommand::CC_ImageOverlay:
+		concatNumWithComma(c.w);
+		wstr += RemoveNewlines(c.label);
 	break;
 
 	case CCharacterCommand::CC_BuildTile:

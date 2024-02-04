@@ -147,6 +147,7 @@ private:
 	void  QueryXY();
 
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
+	void  RollbackCommand();
 	void  SelectCharacter();
 	UINT  SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
 	void  SetBitFlags();

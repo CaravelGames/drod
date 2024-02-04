@@ -9,8 +9,17 @@
 
 const UINT NPC_DEFAULT_SWORD = UINT(-1);
 
+const int ImageOverlayCommand::NO_LOOP_MAX = -1;
+const int ImageOverlayCommand::DEFAULT_LAYER = 3; //last layer
+const int ImageOverlayCommand::ALL_LAYERS = -2;
+const int ImageOverlayCommand::NO_LAYERS = -3;
+const int ImageOverlayCommand::DEFAULT_GROUP = 0;
+const int ImageOverlayCommand::NO_GROUP = -1;
+
 //*****************************************************************************
 CColorText::~CColorText() { delete pText; }
+
+CImageOverlay::~CImageOverlay() { }
 
 //*****************************************************************************
 CCharacterCommand::CCharacterCommand()
@@ -252,4 +261,233 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		default: dwSpeakerTextID = MID_None; color = "FF0000"; break;
 	}
 	return dwSpeakerTextID;
+}
+
+//*****************************************************************************
+typedef std::map<string, ImageOverlayCommand::IOC> CommandMap;
+CommandMap commandMap;
+
+ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
+{
+	ASSERT(pText);
+
+	if (commandMap.empty()) {
+		commandMap[string("addx")] = ImageOverlayCommand::AddX;
+		commandMap[string("addy")] = ImageOverlayCommand::AddY;
+		commandMap[string("cancelall")] = ImageOverlayCommand::CancelAll;
+		commandMap[string("cancelgroup")] = ImageOverlayCommand::CancelGroup;
+		commandMap[string("cancellayer")] = ImageOverlayCommand::CancelLayer;
+		commandMap[string("center")] = ImageOverlayCommand::Center;
+		commandMap[string("display ")] = ImageOverlayCommand::DisplayDuration;
+		commandMap[string("displayms")] = ImageOverlayCommand::DisplayDuration; //deprecated
+		commandMap[string("displayrect")] = ImageOverlayCommand::DisplayRect;
+		commandMap[string("displayrectmodify")] = ImageOverlayCommand::DisplayRectModify;
+		commandMap[string("displaysize")] = ImageOverlayCommand::DisplaySize;
+		commandMap[string("displayturns")] = ImageOverlayCommand::TurnDuration;
+		commandMap[string("fadetoalpha")] = ImageOverlayCommand::FadeToAlpha;
+		commandMap[string("group")] = ImageOverlayCommand::Group;
+		commandMap[string("grow")] = ImageOverlayCommand::Grow;
+		commandMap[string("jitter")] = ImageOverlayCommand::Jitter;
+		commandMap[string("layer")] = ImageOverlayCommand::Layer;
+		commandMap[string("loop")] = ImageOverlayCommand::Loop;
+		commandMap[string("move ")] = ImageOverlayCommand::Move;
+		commandMap[string("moveto")] = ImageOverlayCommand::MoveTo;
+		commandMap[string("pfadetoalpha")] = ImageOverlayCommand::ParallelFadeToAlpha;
+		commandMap[string("pgrow")] = ImageOverlayCommand::ParallelGrow;
+		commandMap[string("pjitter")] = ImageOverlayCommand::ParallelJitter;
+		commandMap[string("pmove ")] = ImageOverlayCommand::ParallelMove;
+		commandMap[string("pmoveto")] = ImageOverlayCommand::ParallelMoveTo;
+		commandMap[string("protate")] = ImageOverlayCommand::ParallelRotate;
+		commandMap[string("repeat")] = ImageOverlayCommand::Repeat;
+		commandMap[string("rotate")] = ImageOverlayCommand::Rotate;
+		commandMap[string("scale")] = ImageOverlayCommand::Scale;
+		commandMap[string("setalpha")] = ImageOverlayCommand::SetAlpha;
+		commandMap[string("setangle")] = ImageOverlayCommand::SetAngle;
+		commandMap[string("setx")] = ImageOverlayCommand::SetX;
+		commandMap[string("sety")] = ImageOverlayCommand::SetY;
+		commandMap[string("srcxy")] = ImageOverlayCommand::SrcXY;
+		commandMap[string("tilegrid")] = ImageOverlayCommand::TileGrid;
+	}
+
+	for (CommandMap::const_iterator it = commandMap.begin(); it != commandMap.end(); ++it) {
+		const string& command = it->first;
+		if (!_strnicmp(command.c_str(), pText + index, command.size())) {
+			index += command.size();
+			return it->second;
+		}
+	}
+
+	return ImageOverlayCommand::Invalid;
+}
+
+#define skipWhitespace while (pos < textLength && isspace(pText[pos])) ++pos
+
+bool parseNumber(
+	const char* pText, const UINT textLength,
+	UINT& pos, int& val) //(out)
+{
+	skipWhitespace;
+
+	if (pText[pos] == '$') {
+		//support parse validation only
+		++pos;
+		while (pos < textLength && pText[pos] != '$')
+			++pos;
+		if (pos == textLength)
+			return false; //no matching '$'
+		++pos;
+
+		val = 0;
+		return true;
+	}
+
+	const UINT oldPos = pos;
+	if (pos < textLength && pText[pos] == '-')
+		++pos;
+	while (pos < textLength && isdigit(pText[pos]))
+		++pos;
+	if (pos == oldPos)
+		return false;
+
+	val = atoi(pText + oldPos);
+	return true;
+}
+
+bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
+{
+	commands.clear();
+
+	if (wtext.empty())
+		return true;
+
+	const string text = UnicodeToUTF8(wtext);
+	const UINT textLength = text.length();
+	const char* pText = (const char*)text.c_str();
+	UINT pos = 0;
+
+	while (pos < textLength) {
+		skipWhitespace;
+		if (pos >= textLength)
+			return true;
+
+		ImageOverlayCommand::IOC eCommand = matchCommand(pText, pos);
+		if (eCommand == ImageOverlayCommand::Invalid)
+			return false;
+
+		int val[4] = { 0,0,0,0 };
+		int arg_index = 0;
+		switch (eCommand) {
+		case ImageOverlayCommand::DisplayRect:
+		case ImageOverlayCommand::DisplayRectModify:
+			//four arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::Move:
+		case ImageOverlayCommand::ParallelMove:
+		case ImageOverlayCommand::MoveTo:
+		case ImageOverlayCommand::ParallelMoveTo:
+		case ImageOverlayCommand::Repeat:
+			//three arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::DisplaySize:
+		case ImageOverlayCommand::FadeToAlpha:
+		case ImageOverlayCommand::Grow:
+		case ImageOverlayCommand::Jitter:
+		case ImageOverlayCommand::ParallelFadeToAlpha:
+		case ImageOverlayCommand::ParallelGrow:
+		case ImageOverlayCommand::ParallelJitter:
+		case ImageOverlayCommand::ParallelRotate:
+		case ImageOverlayCommand::Rotate:
+		case ImageOverlayCommand::SrcXY:
+		case ImageOverlayCommand::TileGrid:
+			//two arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		default:
+			//one argument
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::CancelAll:
+		case ImageOverlayCommand::Center:
+			//no arguments
+			break;
+		}
+		commands.push_back(ImageOverlayCommand(eCommand, val));
+	}
+
+	return true;
+}
+
+#undef skipWhitespace
+
+int CImageOverlay::clearsImageOverlays() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelAll)
+			return ImageOverlayCommand::ALL_LAYERS;
+		if (c.type == ImageOverlayCommand::CancelLayer)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_LAYERS;
+}
+
+int CImageOverlay::clearsImageOverlayGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelGroup)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_GROUP;
+}
+
+int CImageOverlay::getLayer() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Layer)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_LAYER;
+}
+
+int CImageOverlay::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
+bool CImageOverlay::loopsForever() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Loop && c.val[0] == ImageOverlayCommand::NO_LOOP_MAX)
+			return true;
+	}
+
+	return false;
 }

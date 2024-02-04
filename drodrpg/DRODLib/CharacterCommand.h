@@ -274,6 +274,7 @@ public:
 		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
 		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
 		CC_LogicalWaitEnd,      //Ends a logical wait block.
+		CC_ImageOverlay,        //Display image (w) with display strategy (text).
 		CC_Count
 	};
 
@@ -320,6 +321,89 @@ public:
 	CDbMessageText* pText;
 	int r, g, b;
 	int customColor;
+};
+
+struct ImageOverlayCommand
+{
+	static const int NO_LOOP_MAX;
+	static const int DEFAULT_LAYER;
+	static const int ALL_LAYERS;
+	static const int NO_LAYERS;
+	static const int DEFAULT_GROUP;
+	static const int NO_GROUP;
+
+	enum IOC {
+		AddX,
+		AddY,
+		CancelAll,
+		CancelGroup,
+		CancelLayer,
+		Center,
+		DisplayDuration,
+		DisplayRect,
+		DisplayRectModify,
+		DisplaySize,
+		FadeToAlpha,
+		Group,
+		Grow,
+		Jitter,
+		Layer,
+		Loop,
+		Move,
+		MoveTo,
+		ParallelFadeToAlpha,
+		ParallelGrow,
+		ParallelJitter,
+		ParallelMove,
+		ParallelMoveTo,
+		ParallelRotate,
+		Repeat,
+		Rotate,
+		Scale,
+		SetAlpha,
+		SetAngle,
+		SetX,
+		SetY,
+		SrcXY,
+		TileGrid,
+		TurnDuration,
+		Invalid
+	};
+
+	ImageOverlayCommand(IOC type, int val[4])
+		: type(type)
+	{
+		memcpy(this->val, val, 4 * sizeof(int));
+	}
+
+	IOC type;
+	int val[4];
+};
+typedef std::vector<ImageOverlayCommand> ImageOverlayCommands;
+
+class CImageOverlay : public CAttachableObject
+{
+public:
+	CImageOverlay(const WSTRING& text, UINT imageID, UINT instanceID)
+		: CAttachableObject()
+		, imageID(imageID)
+		, instanceID(instanceID)
+	{
+		parse(text, commands);
+	}
+	~CImageOverlay();
+
+	static bool parse(const WSTRING& wtext, ImageOverlayCommands& commands);
+
+	int getLayer() const;
+	int getGroup() const;
+	int clearsImageOverlays() const;
+	int clearsImageOverlayGroup() const;
+	bool loopsForever() const;
+
+	ImageOverlayCommands commands;
+	UINT imageID;
+	UINT instanceID; //for merging effect sets during play on move undo/checkpoint restore
 };
 
 typedef std::vector<CCharacterCommand> COMMAND_VECTOR;

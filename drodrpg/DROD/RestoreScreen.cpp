@@ -753,6 +753,9 @@ void CRestoreScreen::UpdateWidgets()
 	if (IsCursorVisible())
 		SetCursor(CUR_Wait);
 	VERIFY(this->pRoomWidget->LoadFromCurrentGame(this->pCurrentRestoreGame));
+	CCueEvents Ignored;
+	this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
+
 	VERIFY(this->pMapWidget->LoadFromCurrentGame(this->pCurrentRestoreGame));
 	if (IsCursorVisible())
 		SetCursor();

@@ -220,6 +220,7 @@ public:
 			const Uint32 dwDuration, const UINT displayLines=1, const SDL_Color& color=Black,
 			const UINT fadeDuration=500);
 	void           AddJitter(const CMoveCoord& coord, const float fDamagePercent);
+	void           AddLayerEffect(CEffect* pEffect, int layer);
 	void           AddLastLayerEffect(CEffect *pEffect);
 	void           AddMLayerEffect(CEffect *pEffect);
 	void           AddOLayerEffect(CEffect *pEffect);
@@ -237,6 +238,7 @@ public:
 	bool           AreCheckpointsVisible() const {return this->bShowCheckpoints;}
 	void           ClearEffects(const bool bKeepFrameRate = true);
 	void           DirtyRoom() {this->bAllDirty = true;}
+	void           DisplayPersistingImageOverlays(CCueEvents& CueEvents);
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
 	void				DisplayRoomCoordSubtitle(const int nMouseX, const int nMouseY);
 	void           DisplaySubtitle(const WCHAR *pText, const UINT wX, const UINT wY,
@@ -247,8 +249,9 @@ public:
 	virtual void   DrawMonsters(CMonster *const pMonsterList,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=false);
-	void				FadeToLightLevel(const UINT wNewLight);
+	void				FadeToLightLevel(const UINT wNewLight, CCueEvents& CueEvents);
 	void           FinishMoveAnimation() {this->dwCurrentDuration = this->dwMoveDuration;}
+	CRoomEffectList* GetEffectListForLayer(const int layer) const;
 	WSTRING        GetInvisibleCharacterInfo(const UINT wX, const UINT wY) const;
 	void           GetSquareRect(UINT wCol, UINT wRow, SDL_Rect &SquareRect) const;
 	static UINT    GetKeyMID(const UINT param);
@@ -297,7 +300,9 @@ public:
 	void           PutTLayerEffectsOnMLayer();
 
 	void           RedrawMonsters(SDL_Surface* pDestSurface);
+	void           RemoveGroupEffects(int clearGroup);
 	void           RemoveLastLayerEffectsOfType(const EffectType eEffectType, const bool bForceClearAll=true);
+	void           RemoveLayerEffects(const EffectType eEffectType, int layer);
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveOLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveTLayerEffectsOfType(const EffectType eEffectType);
@@ -325,7 +330,7 @@ public:
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
 	void           ShowDamagePreview(const bool bVal = true) { this->bShowDamagePreview = bVal; }
-	void           ShowRoomTransition(const UINT wExitOrientation, const bool bShowPlayer = false);
+	void           ShowRoomTransition(const UINT wExitOrientation, CCueEvents& CueEvents, const bool bShowPlayer = false);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
 	void           StopSleeping();
 	bool           SubtitlesHas(CSubtitleEffect *pEffect) const;
@@ -434,6 +439,7 @@ protected:
 	float          getTileElev(const UINT i, const UINT j) const;
 	float          getTileElev(const UINT wOTile) const;
 	void           GetWeather();
+	bool           IsPersistentEffectPlaying(CEffectList* pEffectList, const UINT instanceID) const;
 	void           JitterBoundsCheck(const UINT wX, const UINT wY,
 			UINT& wXOffset, UINT& wYOffset);
 	void           LowPassLightFilter(LIGHTTYPE *pSrc, LIGHTTYPE *pDest,
@@ -577,6 +583,7 @@ private:
 
 	void           PlacePlayerLightAt(int pixel_x, int pixel_y);
 	void           PropagatePlayerLight();
+	void           RemoveEffectsQueuedForRemoval();
 	void           RenderPlayerLight();
 	void           ResetPlayerLightMap();
 	void           ResetUserLightsource();
@@ -593,6 +600,8 @@ private:
 	Uint32         time_of_last_sky_move;
 
 	bool           bShowDamagePreview;
+
+	multimap<EffectType, int> queued_layer_effect_type_removal;
 };
 
 #endif //#ifndef ROOMWIDGET_H

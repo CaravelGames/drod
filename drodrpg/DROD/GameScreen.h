@@ -91,6 +91,7 @@ protected:
 	void           ClearSpeech(const bool bForceClearAll=false);
 	void           ClickOnEquipment(const UINT eCommand, const bool bRightMouseButton);
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
+	void           DisplayPersistentEffects();
 	void           DrawCurrentTurn();
 	WSTRING        GetEquipmentPropertiesText(const UINT eCommand);
 	void           GotoHelpPage();
@@ -142,7 +143,7 @@ private:
 	void           DisplayAdjacentTempRoom(const UINT direction);
 	void           DisplayChatDialog();
 //	void           DisplayRoomStats();
-	void           FadeRoom(const bool bFadeIn, const Uint32 dwDuration);
+	void           FadeRoom(const bool bFadeIn, const Uint32 dwDuration, CCueEvents& CueEvents);
 	UINT           GetEffectDuration(const UINT baseDuration) const;
 //	WSTRING        GetGameStats(const bool bHoldTotals=false, const bool bOnlyCurrentGameRooms=false) const;
 	UINT           GetMessageAnswer(const CMonsterMessage *pMsg);
@@ -185,7 +186,7 @@ private:
 //	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();
 	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter** playerHoldCharacter);
-	UINT           ShowRoom(CDbRoom *pRoom);
+	UINT           ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents);
 	void           ShowRoomCoords(CDbRoom *pRoom);
 	void           ShowRoomTemporarily(UINT roomID);
 	void           ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st);

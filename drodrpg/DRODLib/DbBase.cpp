@@ -807,6 +807,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ForceArrowDisabledNE: strText = "Disabled force arrow (northeast)"; break;
 		case MID_ForceArrowDisabledSE: strText = "Disabled force arrow (southeast)"; break;
 		case MID_ForceArrowDisabledSW: strText = "Disabled force arrow (southeast)"; break;
+		case MID_ImageOverlay: strText = "Image overlay"; break;
+		case MID_ImageOverlayStrategy: strText = "Image overlay strategy"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
