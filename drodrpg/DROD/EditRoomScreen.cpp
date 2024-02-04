@@ -577,14 +577,14 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 29;
+const UINT numOLayerEntries = 27;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
 	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
-	T_DIRT1, T_DIRT3, T_DIRT5
+	T_DIRT1
 };
 
 const UINT numFLayerEntries = 7;
@@ -594,14 +594,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 29;
+const UINT numTLayerEntries = 22;
 const UINT tLayerEntries[numTLayerEntries] = {
-	T_SWORD, T_SHIELD, T_ACCESSORY, T_MAP, T_SHOVEL1,
-	T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG, T_HEALTH_HUGE, T_KEY,
-	T_DEF_UP, T_DEF_UP3, T_DEF_UP10, T_FUSE, T_BOMB,
-	T_ATK_UP, T_ATK_UP3, T_ATK_UP10, T_SCROLL, T_MIRROR,
+	T_SWORD, T_SHIELD, T_ACCESSORY, T_SCROLL, T_MAP,
+	T_ATK_UP, T_DEF_UP, T_HEALTH_SM, T_KEY, T_SHOVEL1,
+	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_TOKEN,
 	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_CRATE, T_TOKEN, T_OBSTACLE
+	T_TAR, T_OBSTACLE
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -7732,12 +7731,29 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_BRIDGE_H: wNewTile = bCW ? T_BRIDGE_V : T_BRIDGE; break;
 		case T_BRIDGE_V: wNewTile = bCW ? T_BRIDGE : T_BRIDGE_H; break;
 
+		case T_DIRT1: wNewTile = bCW ? T_DIRT3 : T_DIRT5; break;
+		case T_DIRT3: wNewTile = bCW ? T_DIRT5 : T_DIRT1; break;
+		case T_DIRT5: wNewTile = bCW ? T_DIRT1 : T_DIRT3; break;
+
 		case T_MAP: wNewTile = T_MAP_DETAIL; break;
 		case T_MAP_DETAIL: wNewTile = T_MAP; break;
 
 		case T_SHOVEL1: wNewTile = bCW ? T_SHOVEL3 : T_SHOVEL10; break;
 		case T_SHOVEL3: wNewTile = bCW ? T_SHOVEL10 : T_SHOVEL1; break;
 		case T_SHOVEL10: wNewTile = bCW ? T_SHOVEL1 : T_SHOVEL3; break;
+
+		case T_HEALTH_SM: wNewTile = bCW ? T_HEALTH_MED : T_HEALTH_HUGE; break;
+		case T_HEALTH_MED: wNewTile = bCW ? T_HEALTH_BIG : T_HEALTH_SM; break;
+		case T_HEALTH_BIG: wNewTile = bCW ? T_HEALTH_HUGE : T_HEALTH_MED; break;
+		case T_HEALTH_HUGE: wNewTile = bCW ? T_HEALTH_SM : T_HEALTH_BIG; break;
+
+		case T_ATK_UP: wNewTile = bCW ? T_ATK_UP3 : T_ATK_UP10; break;
+		case T_ATK_UP3: wNewTile = bCW ? T_ATK_UP10 : T_ATK_UP; break;
+		case T_ATK_UP10: wNewTile = bCW ? T_ATK_UP : T_ATK_UP3; break;
+
+		case T_DEF_UP: wNewTile = bCW ? T_DEF_UP3 : T_DEF_UP10; break;
+		case T_DEF_UP3: wNewTile = bCW ? T_DEF_UP10 : T_DEF_UP; break;
+		case T_DEF_UP10: wNewTile = bCW ? T_DEF_UP : T_DEF_UP3; break;
 
 		//sets linked to other items whose state should match the semantic type of this one
 		case T_MUD: wNewTile = bCW ? T_TAR : T_GEL; break;
@@ -7799,6 +7815,13 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 			case T_DOOR_BO: Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_YO); Also(T_DOOR_MONEYO); break;
 			case T_DOOR_YO: Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_BO); Also(T_DOOR_MONEYO); break;
 			case T_DOOR_MONEYO: Also(T_DOOR_YO); Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_BO); break;
+
+			case T_ATK_UP: Also(T_DEF_UP); break;
+			case T_ATK_UP3: Also(T_DEF_UP3); break;
+			case T_ATK_UP10: Also(T_DEF_UP10); break;
+			case T_DEF_UP: Also(T_ATK_UP); break;
+			case T_DEF_UP3: Also(T_ATK_UP3); break;
+			case T_DEF_UP10: Also(T_ATK_UP10); break;
 
 			default: break;
 		}
