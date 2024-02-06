@@ -5077,6 +5077,8 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_LightFuses, L"Light fuses");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_StepKill, L"Step kill");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HasWeapon, L"Has weapon");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
 
 	this->pPlayerBehaviorListBox->SetAllowFiltering(true);
 }

@@ -73,6 +73,8 @@ enum PlayerBehavior
 	PB_LightFuses = 2,
 	PB_StepKill = 3,
 	PB_HasWeapon = 4,
+	PB_DropTrapdoors = 5,
+	PB_DropTrapdoorsArmed = 6,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;

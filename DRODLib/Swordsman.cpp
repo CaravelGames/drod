@@ -61,6 +61,13 @@ bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 	if (!bIsFallingTile(oTile))
 		return false;
 
+	bool active;
+	if (HasBehavior(PB_DropTrapdoors, active)) {
+		return active;
+	} else if (HasBehavior(PB_DropTrapdoorsArmed, active)) {
+		return active && (bIsThinIce(oTile) || HasHeavyWeapon());
+	}
+
 	if (this->wAppearance == M_CONSTRUCT)
 		return true;
 
