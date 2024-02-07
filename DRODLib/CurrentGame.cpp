@@ -5053,28 +5053,26 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 		if (pDouble->wType == M_CLONE)
 		{
 			pDouble->SetWeaponSheathed(); //Need to set sheath status before using items
-			const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-			const bool bCanGetItems = this->swordsman.CanGetItems();
 			UINT wNewTSquare = this->pRoom->GetTSquare(pDouble->wX, pDouble->wY);
 			switch(wNewTSquare)
 			{
 				case T_POTION_K:  //Mimic potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 						DrankPotion(CueEvents, M_MIMIC, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_D:  //Decoy potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkDecoyPotion())
 						DrankPotion(CueEvents, M_DECOY, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_C:  //Clone potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkClonePotion())
 						DrankPotion(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_I:  //Invisibility potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 					{
 						this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -5083,7 +5081,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_POTION_SP:  //Speed potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkSpeedPotion())
 					{
 						this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -5092,12 +5090,12 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_HORN_SQUAD:    //Squad horn.
-					if (bCanGetItems)  //same condition as clone potion..
+					if (this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 						BlowHorn(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_HORN_SOLDIER:  //Soldier horn.
-					if (bIsMonsterTarget(this->swordsman.wAppearance) || this->swordsman.bCanGetItems)
+					if (this->swordsman.CanBlowSoldierHorn())
 						BlowHorn(CueEvents, M_STALWART2, pDouble->wX, pDouble->wY);
 				break;
 
@@ -6445,8 +6443,6 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	const bool bWasOnSameScroll, const bool bPlayerMove, const bool bPlayerTeleported)
 {
 	const bool bMoved = dx!=0 || dy!=0 || bPlayerTeleported;
-	const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-	const bool bCanGetItems = this->swordsman.CanGetItems();
 	const UINT wOSquare = this->pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wTSquare = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 
@@ -6470,22 +6466,22 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	switch (wTSquare)
 	{
 		case T_POTION_K:  //Mimic potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkMimicPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_MIMIC, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_D:  //Decoy potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkDecoyPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_DECOY, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_C:  //Clone potion.
-			if (bPlayerMove && bCanGetItems && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkClonePotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_I:  //Invisibility potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkInvisibilityPotion())
 			{
 				this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6495,7 +6491,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_POTION_SP:  //Speed potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkSpeedPotion())
 			{
 				this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6505,7 +6501,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_HORN_SQUAD:    //Squad horn.
-			if (bPlayerMove && bCanGetItems)  //same condition as clone potion..
+			if (bPlayerMove && this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 				BlowHorn(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
@@ -6538,7 +6534,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	{
 		case T_FUSE:
 			//Light the fuse.
-			if (bCanGetItems)
+			if (this->swordsman.CanLightFuses())
 				this->pRoom->LightFuseEnd(CueEvents, this->swordsman.wX, this->swordsman.wY);
 		break;
 	}

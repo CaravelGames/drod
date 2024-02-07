@@ -2708,7 +2708,8 @@ const
 
 	//Look for t-square obstacle.
 	UINT wTileNo = GetTSquare(wX, wY);
-	const UINT wAppearance = this->pCurrentGame->swordsman.wAppearance;
+	const CSwordsman& swordsman = this->pCurrentGame->swordsman;
+	const UINT wAppearance = swordsman.wAppearance;
 	switch (wAppearance)
 	{
 		case M_WWING: case M_ROACH: case M_QROACH: case M_EYE: case M_EYE_ACTIVE:
@@ -2722,7 +2723,7 @@ const
 					bObstacle = true;
 
 				//Older monster types cannot normally step on potions or scrolls.
-				if (!this->pCurrentGame->swordsman.bCanGetItems)
+				if (!(swordsman.bCanGetItems || swordsman.CanDrinkPotionType(wTileNo)))
 					bObstacle = true;
 			}
 		break;

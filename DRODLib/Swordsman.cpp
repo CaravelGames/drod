@@ -44,6 +44,29 @@ bool CSwordsman::CanAttackTowards(int dx, int dy) const
 	return WeaponCanAttackTowards(GetActiveWeapon(), this->wO, this->wPrevO, dx, dy, this->wSwordMovement);
 }
 
+//*****************************************************************************
+bool CSwordsman::CanBlowSquadHorn() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSquadHorn, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanBlowSoldierHorn() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSoldierHorn, active)) {
+		return active;
+	}
+
+	return bIsMonsterTarget(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanBumpActivateOrb() const
 {
 	bool active;
@@ -143,6 +166,74 @@ bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheat
 		}
 		default:
 			return true;
+	}
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkClonePotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseClonePotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkDecoyPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseDecoyPotion, active)) {
+		return active;
+	}
+
+	return bIsSmitemaster(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkInvisibilityPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseInvisibilityPotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkMimicPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseMimicPotion, active)) {
+		return active;
+	}
+
+	return bIsSmitemaster(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkSpeedPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSpeedPotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkPotionType(const UINT wTile) const
+{
+	switch (wTile) {
+		case T_POTION_K: return CanDrinkMimicPotion();
+		case T_POTION_I: return CanDrinkInvisibilityPotion();
+		case T_POTION_D: return CanDrinkDecoyPotion();
+		case T_POTION_SP: return CanDrinkSpeedPotion();
+		case T_POTION_C: return CanDrinkClonePotion();
+		default: return false;
 	}
 }
 

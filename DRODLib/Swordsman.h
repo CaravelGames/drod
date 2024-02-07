@@ -75,6 +75,13 @@ enum PlayerBehavior
 	PB_HasWeapon = 4,
 	PB_DropTrapdoors = 5,
 	PB_DropTrapdoorsArmed = 6,
+	PB_UseMimicPotion = 7,
+	PB_UseDecoyPotion = 8,
+	PB_UseClonePotion = 9,
+	PB_UseInvisibilityPotion = 10,
+	PB_UseSpeedPotion = 11,
+	PB_UseSquadHorn = 12,
+	PB_UseSoldierHorn = 13,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -85,12 +92,20 @@ public:
 	CSwordsman() : CEntity() {Clear();}
 
 	bool CanAttackTowards(int dx, int dy) const;
+	bool CanBlowSquadHorn() const;
+	bool CanBlowSoldierHorn() const;
 	bool CanBumpActivateOrb() const;
 	bool CanDropTrapdoor(const UINT oTile) const;
 	bool CanGetItems() const;
 	bool CanLightFuses() const;
 	bool CanStepOnMonsters() const;
 	bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
+	bool CanDrinkClonePotion() const;
+	bool CanDrinkDecoyPotion() const;
+	bool CanDrinkInvisibilityPotion() const;
+	bool CanDrinkMimicPotion() const;
+	bool CanDrinkSpeedPotion() const;
+	bool CanDrinkPotionType(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();
 	void EquipWeapon(const UINT type);
