@@ -224,6 +224,12 @@ void CBriars::process(
 				//Briars break everything else.  Including orbs.
 				default: break;
 			}
+
+			//Misty tiles block briar
+			if (room.IsEitherTSquare(wX, wY, T_MIST)) {
+				bBlocked = true;
+			}
+
 			if (bBlocked) continue;
 
 			//Force arrows in wrong direction stop the briar

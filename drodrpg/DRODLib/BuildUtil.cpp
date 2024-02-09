@@ -446,6 +446,11 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 
 	room.Plot(x, y, tile);
 
+	if (bIsSolidOTile(tile) || tile == T_HOT)
+	{
+		room.DestroyMist(x, y, CueEvents);
+	}
+
 	//When placing a hole, things might fall.
 	if ((bIsPit(tile) || bIsWater(tile) || wLayer == LAYER_TRANSPARENT) &&
 		pCurrentGame->wTurnNo > 0) //don't allow player falling on room entrance

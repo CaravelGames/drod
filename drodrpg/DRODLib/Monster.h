@@ -230,6 +230,7 @@ public:
 	virtual bool  IsLongMonster() const {return false;}
 	bool          IsNextToSwordsman() const;
 	bool          IsObjectAdjacent(const UINT wObject, UINT& wX, UINT& wY) const;
+	virtual bool  IsOnMistTile() const;
 	bool          IsOnSwordsman() const;
 	virtual bool  IsOpenMove(const int dx, const int dy) const;
 	virtual bool  IsOpenMove(const UINT wX, const UINT wY, const int dx, const int dy) const;

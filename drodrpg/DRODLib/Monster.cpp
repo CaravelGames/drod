@@ -902,6 +902,7 @@ const
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
 				bIsPowerUp(wLookTileNo) ||
 				bIsMap(wLookTileNo) ||
 				bIsShovel(wLookTileNo) ||
@@ -917,6 +918,7 @@ const
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_SCROLL ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
 				bIsPowerUp(wLookTileNo) ||
 				bIsMap(wLookTileNo) ||
 				bIsShovel(wLookTileNo) ||
@@ -936,6 +938,7 @@ const
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
 				bIsMap(wLookTileNo) ||
 				bIsShovel(wLookTileNo) ||
 				bIsPowerUp(wLookTileNo) ||
@@ -1529,6 +1532,9 @@ UINT CMonster::getColor() const
 UINT CMonster::getDEF() const
 //Return: monster's DEF
 {
+	if (IsOnMistTile())
+		return 0; //Mist tile nullifies DEF
+
 	UINT val = this->DEF;
 	if (!this->pCurrentGame || !val)
 		return val;
@@ -1733,6 +1739,13 @@ const
 		}
 	}
 	return false;
+}
+
+//*****************************************************************************
+bool CMonster::IsOnMistTile() const
+//Returns: whether the monster's tile has mist
+{
+	return this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) == T_MIST;
 }
 
 //*****************************************************************************

@@ -202,6 +202,7 @@ public:
 	void           DeleteScrollTextAtSquare(const UINT wX, const UINT wY);
 	void           DestroyCrumblyWall(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const UINT wStabO=NO_ORIENTATION);
+	void           DestroyMist(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           DestroyTar(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           DestroyTrapdoor(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
@@ -268,6 +269,7 @@ public:
 			CCoordSet& tiles, const bool bAddAdjOnly=false) const;
 	UINT           GetTSquare(const UINT wX, const UINT wY) const;
 	UINT           GetTParam(const UINT wX, const UINT wY) const;
+	UINT           GetCoveredTSquare(const UINT wX, const UINT wY) const;
 	UINT           GetTSquareWithGuessing(int nX, int nY) const;
 	bool           HasClosedDoors() const;
 	bool           HasCombatableMonsters() const;
@@ -279,6 +281,7 @@ public:
 	UINT           GetBrainsPresent() const;
 	bool           IsDisarmTokenActive() const;
 	bool           IsDoorOpen(const int nCol, const int nRow);
+	bool           IsEitherTSquare(const UINT wX, const UINT wY, const UINT wTile) const;
 	bool           IsOrbBeingStruck(const UINT wX, const UINT wY) const;
 	bool           IsMonsterInRect(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const bool bConsiderPieces=true) const;
@@ -395,7 +398,7 @@ public:
 	bool           SwordfightCheck() const;
 	void           ToggleBlackGates(CCueEvents& CueEvents);
 	void           ToggleForceArrow(const UINT wX, const UINT wY);
-	void           ToggleDoor(const UINT wX, const UINT wY);
+	void           ToggleDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	bool           ToggleTiles(const UINT wOldTile, const UINT wNewTile);
 	void           ToggleLight(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	bool     TunnelGetExit(const UINT wStartX, const UINT wStartY,
@@ -418,7 +421,7 @@ private:
 	void           AddPlatformPiece(const UINT wX, const UINT wY, CCoordIndex &plots);
 	void           Clear();
 	void           ClearPushInfo();
-	void           CloseDoor(const UINT wX, const UINT wY);
+	void           CloseDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 //	void           DeletePathMaps();
 	CMonster*      FindLongMonster(const UINT wX, const UINT wY,
 			const UINT wFromDirection=10) const;

@@ -2417,7 +2417,25 @@
 #define TI_ARROW_OFF_W    2236
 #define TI_ARROW_OFF_NW   2237
 
-static const UINT TI_COUNT = 2238;
+#define TI_MIST           2238
+#define TI_MIST_E         2239
+#define TI_MIST_WE        2240
+#define TI_MIST_W         2241
+#define TI_MIST_S         2242
+#define TI_MIST_SE        2243
+#define TI_MIST_SWE       2244
+#define TI_MIST_SW        2245
+#define TI_MIST_NS        2246
+#define TI_MIST_NSE       2247
+#define TI_MIST_NSWE      2248
+#define TI_MIST_NSW       2249
+#define TI_MIST_N         2250
+#define TI_MIST_NE        2251
+#define TI_MIST_NWE       2252
+#define TI_MIST_NW        2253
+#define TI_MIST_C         2254
+
+static const UINT TI_COUNT = 2255;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

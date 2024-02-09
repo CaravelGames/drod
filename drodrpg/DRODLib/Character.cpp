@@ -2189,7 +2189,7 @@ void CCharacter::Process(
 							case T_DOOR_Y: case T_DOOR_B: case T_DOOR_G: case T_DOOR_R: case T_DOOR_C: case T_DOOR_MONEY:
 							case T_DOOR_YO: case T_DOOR_BO: case T_DOOR_GO: case T_DOOR_RO: case T_DOOR_CO: case T_DOOR_MONEYO:
 								//Toggle this door.
-								room.ToggleDoor(px, py);
+								room.ToggleDoor(px, py, CueEvents);
 								bProcessNextCommand = true;
 							break;
 							default:

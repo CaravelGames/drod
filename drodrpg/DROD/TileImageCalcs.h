@@ -63,6 +63,7 @@ UINT  GetTileImageForSerpentPiece(const UINT wType, const UINT wTileNo);
 UINT  GetTileImageForRockGiantPiece(const UINT wTileNo, const UINT wO, const UINT wFrame);
 UINT  GetTileImageForTileNo(const UINT wTileNo);
 UINT  CalcTileImageForKey(const BYTE tParam);
+UINT  CalcTileImageForMist(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForSword(const BYTE tParam);
 UINT  CalcTileImageForShield(const BYTE tParam);
 UINT  CalcTileImageForAccessory(const BYTE tParam);

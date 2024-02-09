@@ -8036,7 +8036,8 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 
 		if (g_pPredictedCombat)
 			delete g_pPredictedCombat;
-		g_pPredictedCombat = new CCombat(this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY);
+		g_pPredictedCombat = new CCombat(
+			this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY, pOrigMonster->wX, pOrigMonster->wY);
 		RedrawStats(NULL, true); //predicted combat will be shown if no combat is actually in progress
 	}
 }
