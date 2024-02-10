@@ -166,7 +166,7 @@ typedef map<ROOMCOORD, vector<UINT> > TilesMap;
 
 struct MonsterStats {
 	MonsterStats(UINT monsterType, UINT ATK, UINT DEF, UINT HP, UINT GR, UINT color)
-		: monsterType(monsterType), ATK(ATK), DEF(DEF), HP(HP), GR(GR), color(color)
+		: monsterType(monsterType), ATK(ATK), DEF(DEF), HP(HP), GR(GR), color(color), name()
 	{}
 	bool operator==(const MonsterStats& that) const
 	{
@@ -176,9 +176,11 @@ struct MonsterStats {
 			this->DEF == that.DEF &&
 			this->HP == that.HP &&
 			this->GR == that.GR &&
-			this->color == that.color;
+			this->color == that.color &&
+			this->name == that.name;
 	}
 	UINT monsterType, ATK, DEF, HP, GR, color;
+	WSTRING name;
 };
 
 //const SURFACECOLOR lockColor = {255, 255, 128};
@@ -3328,43 +3330,47 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
 	std::multimap<UINT, CCoord> damageFromMonsters;
-	vector<MonsterStats> monsterNPCStats;
+	vector<MonsterStats> monsterStats;
 
 	CDialogWidget *pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
 	CTilesWidget *pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
 	pTilesWidget->ClearTiles();
 
 	//Sort monsters by damage to player, w/ "can't be hurt" ones indicated by UINT(-1) value
-	CIDSet encounteredMonsterTypes;
 	CMonster *pMonster = pRoom->pFirstMonster;
 	while (pMonster)
 	{
-		bool bDistinctType = pMonster->wType == M_CHARACTER || !encounteredMonsterTypes.has(pMonster->wType);
-		if (bDistinctType && pMonster->IsCombatable())
+		bool bDistinctType = true;
+		if (pMonster->IsCombatable())
 		{
-			if (pMonster->wType == M_CHARACTER)
-			{
-				//Track NPCs type, stats and color -- if they all match a previous NPC, ignore this one.
-				MonsterStats npcStats(pMonster->GetIdentity(), pMonster->getATK(), pMonster->getDEF(),
-						pMonster->getHP(), pMonster->getGOLD(), pMonster->getColor());
-				UINT i;
-				for (i=0; i<monsterNPCStats.size(); ++i)
-					if (monsterNPCStats[i] == npcStats)
-						break;
-				if (i<monsterNPCStats.size())
-					bDistinctType = false;
-				else {
-					//Remember this NPC's values.
-					monsterNPCStats.push_back(npcStats);
+			//Track monster type, stats and color -- if they all match a previous monster, ignore this one.
+			MonsterStats stats(pMonster->GetIdentity(), pMonster->getATK(), pMonster->getDEF(),
+					pMonster->getHP(), pMonster->getGOLD(), pMonster->getColor());
+
+			if (pMonster->wType == M_CHARACTER) {
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				if (pCharacter) {
+					stats.name = pCharacter->GetCustomName();
 				}
 			}
+
+			UINT i;
+			for (i=0; i<monsterStats.size(); ++i)
+				if (monsterStats[i] == stats)
+					break;
+			if (i<monsterStats.size())
+				bDistinctType = false;
+			else {
+				//Remember this monster's values.
+				monsterStats.push_back(stats);
+			}
+
 			if (bDistinctType)
 			{
 				CCombat combat(pRoom->GetCurrentGame(), pMonster, player.HasSword(),
 						player.wX, player.wY, pMonster->wX, pMonster->wY);
 				const int damage = combat.GetExpectedDamage();
 				damageFromMonsters.insert(std::make_pair(static_cast<UINT>(damage), CCoord(pMonster->wX, pMonster->wY)));
-				encounteredMonsterTypes += pMonster->wType;
 			}
 		}
 		pMonster = pMonster->pNext;
