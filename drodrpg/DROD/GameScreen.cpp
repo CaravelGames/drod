@@ -6149,6 +6149,30 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			default: ASSERT(!"Invalid tar type"); break;
 		}
 	}
+	if (CueEvents.HasOccurred(CID_MistDestroyed))
+	{
+		for (pObj = CueEvents.GetFirstPrivateData(CID_MistDestroyed);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+			switch (pCoord->wValue)
+			{
+			case T_MIST:
+				PlaySoundEffect(SEID_PUFF_EXPLOSION, this->fPos);
+				if (bIsSolidOTile(this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY)))
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffInWallEffect(this->pRoomWidget, *pCoord));
+				else
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffStabEffect(this->pRoomWidget, *pCoord,
+							GetEffectDuration(6), GetParticleSpeed(2)));
+				break;
+			default: ASSERT(!"Invalid tar type"); break;
+			}
+		}
+	}
 	if (CueEvents.HasOccurred(CID_StepOnScroll))
 	{
 		this->pFaceWidget->SetReading(true);

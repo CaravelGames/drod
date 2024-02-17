@@ -54,4 +54,19 @@ public:
 			const UINT particles=PARTICLES_PER_EXPLOSION);
 };
 
+class CFluffStabEffect : public CParticleExplosionEffect
+{
+public:
+	CFluffStabEffect(CWidget* pSetWidget, const CMoveCoord& MoveCoord,
+		const UINT wParticleMinDuration, const UINT baseSpeed);
+};
+
+class CFluffInWallEffect : public CParticleExplosionEffect
+{
+public:
+	CFluffInWallEffect(CWidget* pSetWidget, const CMoveCoord& MoveCoord);
+
+	virtual bool HitsObstacle(const CDbRoom* pRoom, const PARTICLE& particle) const;
+};
+
 #endif //...#ifndef TARSTABEFFECT_H

@@ -154,6 +154,7 @@ const
 		case SEID_POTION:    strKeyName="Potion"; break;
 		case SEID_PRESSPLATE:       strKeyName="PressPlate"; break;
 		case SEID_PRESSPLATEUP:       strKeyName="PressPlateUp"; break;
+		case SEID_PUFF_EXPLOSION:       strKeyName="PuffExplosion"; break;
 		case SEID_PUNCH:        strKeyName="Punch"; break;
 		case SEID_READ:         strKeyName="Read"; break;
 		case SEID_SECRET:    strKeyName="Secret"; break;
@@ -362,6 +363,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_POTION );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PRESSPLATE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PRESSPLATEUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUFF_EXPLOSION );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUNCH );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_READ );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SECRET );

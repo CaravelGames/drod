@@ -5388,6 +5388,8 @@ void CEditRoomScreen::PlotObjects()
 				case T_GELMOTHER:	case T_GELBABY:
 				case T_GOO:
 					g_pTheSound->PlaySoundEffect(SEID_STABTAR);  break;
+				case T_MIST:
+					g_pTheSound->PlaySoundEffect(SEID_PUFF_EXPLOSION); break;
 				case T_ROCKGOLEM:
 				case T_ROCKGIANT:
 					g_pTheSound->PlaySoundEffect(SEID_BREAKWALL);   break;

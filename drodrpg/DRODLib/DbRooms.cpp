@@ -4590,6 +4590,10 @@ void CDbRoom::ExpandExplosion(
 			if (!explosion.has(wX,wY))
 				CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, direction, wTileNo), true);
 			break;
+		case T_MIST:
+			if (!explosion.has(wX,wY))
+				CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, direction, T_MIST), true);
+			break;
 		default:
 			break;
 	}
@@ -7932,8 +7936,10 @@ void CDbRoom::DestroyMist(
 	if (GetTSquare(wX, wY) == T_MIST)
 	{
 		Plot(wX, wY, T_EMPTY);
+		CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_MIST), true);
 	} else if (GetCoveredTSquare(wX, wY) == T_MIST) {
 		this->coveredTSquares.Remove(wX, wY);
+		CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_MIST), true);
 	}
 }
 

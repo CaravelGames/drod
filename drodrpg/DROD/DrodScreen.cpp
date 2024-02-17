@@ -450,6 +450,23 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			break;
 		}
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_MistDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+		switch (pCoord->wValue)
+		{
+		case T_MIST:
+			if (bIsSolidOTile(pGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY)))
+				pRoomWidget->AddTLayerEffect(
+					new CFluffInWallEffect(pRoomWidget, *pCoord));
+			else
+				pRoomWidget->AddTLayerEffect(
+					new CFluffStabEffect(pRoomWidget, *pCoord,
+						GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 2)));
+			break;
+		}
+	}
 
 	//Remove old sparks before drawing the current ones.
 	pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);

@@ -675,6 +675,11 @@ enum CUEEVENT_ID
 	//Private data: CImageOverlay* (one or more)
 	CID_ImageOverlay,
 
+	//A mist tile is destroyed
+	//
+	//Private data: CMoveCoord *pSquareDestroyedAt (one or more)
+	CID_MistDestroyed,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

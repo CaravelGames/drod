@@ -2435,7 +2435,10 @@
 #define TI_MIST_NW        2253
 #define TI_MIST_C         2254
 
-static const UINT TI_COUNT = 2255;
+#define TI_FLUFFBLOOD_1   2255
+#define TI_FLUFFBLOOD_2   2256
+
+static const UINT TI_COUNT = 2257;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

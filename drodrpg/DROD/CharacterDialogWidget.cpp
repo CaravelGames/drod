@@ -3993,6 +3993,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_Jump, g_pTheDB->GetMessageText(MID_PlayerJumped));
 	this->pEventListBox->AddItem(CID_LightToggled, g_pTheDB->GetMessageText(MID_LightToggled));
 	this->pEventListBox->AddItem(CID_MirrorShattered, g_pTheDB->GetMessageText(MID_MirrorShattered));
+	this->pEventListBox->AddItem(CID_MistDestroyed, g_pTheDB->GetMessageText(MID_MistDestroyed));
 	this->pEventListBox->AddItem(CID_MoneyDoorLocked, g_pTheDB->GetMessageText(MID_MoneyDoorLocked));
 	this->pEventListBox->AddItem(CID_MoneyDoorOpened, g_pTheDB->GetMessageText(MID_MoneyDoorOperated));
 	this->pEventListBox->AddItem(CID_MonsterBurned, g_pTheDB->GetMessageText(MID_MonsterBurned));
