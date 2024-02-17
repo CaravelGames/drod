@@ -70,7 +70,7 @@ struct EDGES {
 
 struct TileImages
 {
-	UINT o, f, t, /*tCovered,*/ wallShadow;
+	UINT o, f, t, tCovered, wallShadow;
 	EDGES edges; //black edges separating tile types
 	vector<UINT> shadowMasks;
 

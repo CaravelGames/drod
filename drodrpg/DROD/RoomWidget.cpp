@@ -4417,9 +4417,11 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	//4. Draw transparent (item) layer.
-	//4a. Draw covered mist tile beneath covering object
+	//4a. Draw covered tile beneath covering object
 	if (wCoveredTTile == T_MIST) {
-		DrawMistTile(wX, wY, nX, nY, pDestSurface, CalcTileImageForMist(this->pRoom, wX, wY));
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.tCovered);
+	} else if (wCoveredTTile != T_EMPTY) {
+		DrawRoomTile(ti.tCovered);
 	}
 
 	bool bIsMoving = false;
@@ -9216,6 +9218,16 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 				pTI->t = wTileImage;
 			}
 
+			wTileImage = GetTileImageForTileNo(this->pRoom->GetCoveredTSquare(wCol, wRow));
+			if (wTileImage == CALC_NEEDED) {
+				wTileImage = CalcTileImageForCoveredTSquare(this->pRoom, wCol, wRow);
+			}
+			if (wTileImage != pTI->tCovered)
+			{
+				pTI->dirty = 1;
+				pTI->tCovered = wTileImage;
+			}
+
 			}	//recalc
 
 			//Keep track of where wall shadows are being cast.
@@ -9348,7 +9360,7 @@ bool CRoomWidget::SetupDrawSquareInfo()
 	for (UINT wIndex = 0; wIndex<wSquareCount; ++wIndex) {
 		TileImages& ti = this->pTileImages[wIndex];
 		ti.o = TI_FLOOR;
-		ti.f = /*ti.tCovered = */ ti.t = T_EMPTY;
+		ti.f = ti.tCovered = ti.t = T_EMPTY;
 		ti.wallShadow = TI_UNSPECIFIED;
 
 		//Give each m-layer tile a random animation frame

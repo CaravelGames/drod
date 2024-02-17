@@ -54,6 +54,7 @@ void  CalcTileCoordForPit(const CDbRoom *pRoom, const UINT wCol, const UINT wRow
 UINT  CalcTileImageFor(const CDbRoom *pRoom, const UINT wTileNo, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForOSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImageForTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
+UINT  CalcTileImageForCoveredTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImagesForWallShadow(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 bool  CastsWallShadow(const UINT t);
 UINT  GetSwordlessEntityTile(const UINT wType, const UINT wO);
@@ -63,7 +64,6 @@ UINT  GetTileImageForSerpentPiece(const UINT wType, const UINT wTileNo);
 UINT  GetTileImageForRockGiantPiece(const UINT wTileNo, const UINT wO, const UINT wFrame);
 UINT  GetTileImageForTileNo(const UINT wTileNo);
 UINT  CalcTileImageForKey(const BYTE tParam);
-UINT  CalcTileImageForMist(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForSword(const BYTE tParam);
 UINT  CalcTileImageForShield(const BYTE tParam);
 UINT  CalcTileImageForAccessory(const BYTE tParam);

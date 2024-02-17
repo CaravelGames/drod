@@ -43,6 +43,7 @@ UINT  CalcTileImageForTarstuff(const CDbRoom *pRoom, const UINT wCol, const UINT
 UINT  CalcTileImageForWall(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForPlatform(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
 UINT  CalcTileImageForBriar(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
+UINT  CalcTileImageForMist(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForStairsUp(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 
 //Definitions
@@ -1683,6 +1684,16 @@ UINT CalcTileImageForTSquare(
 //TI_* constant.
 {
 	return CalcTileImageFor(pRoom, pRoom->GetTSquare(wCol, wRow), wCol, wRow);
+}
+
+//*****************************************************************************
+UINT CalcTileImageForCoveredTSquare(
+//Calculates a tile image for covered square on t-layer.
+//
+//Params:
+	const CDbRoom* pRoom, UINT wCol, UINT wRow)
+{
+	return CalcTileImageFor(pRoom, pRoom->coveredTSquares.GetAt(wCol, wRow), wCol, wRow);
 }
 
 //*****************************************************************************
