@@ -1432,6 +1432,17 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		}
 	}
 
+	if (this->pRoom->GetCoveredTSquare(wX, wY) != T_EMPTY) {
+		const UINT tCoveredTile = this->pRoom->GetCoveredTSquare(wX, wY);
+		switch (tCoveredTile)
+		{
+		case T_TOKEN:
+			mid = GetTokenMID(this->pRoom->GetTParam(wX, wY)); break;
+			default: mid = TILE_MID[tCoveredTile]; break;
+		}
+		AppendLine(mid);
+	}
+
 	//Inspectable invisible characters
 	const WSTRING invisibleInfoStr = GetInvisibleCharacterInfo(wX, wY);
 	if (invisibleInfoStr.size())
