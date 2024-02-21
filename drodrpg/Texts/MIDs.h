@@ -310,6 +310,7 @@ enum MID_CONSTANT {
   MID_ForceArrowDisabledNE = 1880,
   MID_ForceArrowDisabledSE = 1881,
   MID_ForceArrowDisabledSW = 1882,
+  MID_Mist = 1885,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,
@@ -1544,6 +1545,7 @@ enum MID_CONSTANT {
   MID_IceMeltEffect = 1873,
   MID_ImageOverlay = 1883,
   MID_ImageOverlayStrategy = 1884,
+  MID_MistDestroyed = 1886,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

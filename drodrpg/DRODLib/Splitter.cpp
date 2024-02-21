@@ -80,6 +80,25 @@ bool CSplitter::CheckForDamage(CCueEvents& CueEvents)
 }
 
 //*****************************************************************************
+bool CSplitter::IsOnMistTile() const
+//Returns: If any piece of the monster is on a mist tile
+{
+	if (CMonster::IsOnMistTile()) {
+		return true;
+	}
+
+	const CDbRoom* room = this->pCurrentGame->pRoom;
+	for (MonsterPieces::const_iterator piece = this->Pieces.begin(); piece != this->Pieces.end(); ++piece) {
+		const CMonsterPiece& mpiece = *(*piece);
+		if (room->GetTSquare(mpiece.wX, mpiece.wY) == T_MIST) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CSplitter::IsOpenMove(const int dx, const int dy) const
 //Returns: whether moving from the current position along (dx,dy) is valid
 {

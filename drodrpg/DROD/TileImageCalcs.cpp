@@ -43,6 +43,7 @@ UINT  CalcTileImageForTarstuff(const CDbRoom *pRoom, const UINT wCol, const UINT
 UINT  CalcTileImageForWall(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForPlatform(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
 UINT  CalcTileImageForBriar(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
+UINT  CalcTileImageForMist(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForStairsUp(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 
 //Definitions
@@ -1551,6 +1552,7 @@ UINT GetTileImageForTileNo(
 		TI_ARROW_OFF_SW,  //T_ARROW_OFF_SW
 		TI_ARROW_OFF_W,   //T_ARROW_OFF_W
 		TI_ARROW_OFF_NW,  //T_ARROW_OFF_NW
+		CALC_NEEDED,      //T_MIST
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));
@@ -1641,6 +1643,8 @@ UINT CalcTileImageFor(
 			const UINT tParam = pRoom->GetTParam(wCol,wRow);
 			return CalcTileImageForAccessory(tParam);
 		}
+		case T_MIST:
+			return CalcTileImageForMist(pRoom, wCol, wRow);
 
 		default: break;
 	}
@@ -1680,6 +1684,16 @@ UINT CalcTileImageForTSquare(
 //TI_* constant.
 {
 	return CalcTileImageFor(pRoom, pRoom->GetTSquare(wCol, wRow), wCol, wRow);
+}
+
+//*****************************************************************************
+UINT CalcTileImageForCoveredTSquare(
+//Calculates a tile image for covered square on t-layer.
+//
+//Params:
+	const CDbRoom* pRoom, UINT wCol, UINT wRow)
+{
+	return CalcTileImageFor(pRoom, pRoom->coveredTSquares.GetAt(wCol, wRow), wCol, wRow);
 }
 
 //*****************************************************************************
@@ -1946,6 +1960,67 @@ UINT CalcTileImageForFuse(
 	const UINT wOSquare = pRoom->GetOSquare(wCol, wRow);
 	const UINT wFuseType = bShowsShadow(wOSquare) || bIsPit(wOSquare) ? 0 : 1;
 	return TileImages[wFuseType][wCalcCode];
+}
+
+//*****************************************************************************
+UINT CalcTileImageForMist(
+//Calcs a tile image to display for a mist square.
+//
+//Params:
+	const CDbRoom* pRoom, //(in) Room to use for calcs--not necessarily the current room
+	const UINT wCol, const UINT wRow //Mist square
+)
+{
+	UINT wCalcCode = 0;
+
+	//If north mist, set bit 1
+	if (wRow > 0) {
+		if (pRoom->IsEitherTSquare(wCol, wRow - 1, T_MIST))
+			wCalcCode = 1;
+	}
+
+	//If south mist, set bit 2.
+	if (wRow < pRoom->wRoomRows - 1) {
+		if (pRoom->IsEitherTSquare(wCol, wRow + 1, T_MIST))
+			wCalcCode += 2;
+	}
+
+	//If west mist, set bit 3.
+	if (wCol > 0) {
+		if (pRoom->IsEitherTSquare(wCol - 1, wRow, T_MIST))
+			wCalcCode += 4;
+	}
+
+	//If east mist, set bit 4.
+	if (wCol < pRoom->wRoomCols - 1) {
+		if (pRoom->IsEitherTSquare(wCol + 1, wRow, T_MIST))
+			wCalcCode += 8;
+	}
+
+	// ?.?   0     ?#?      1     ?.?      2     ?#?      3
+	// .X.         .X.            .X.            .X.
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   4     ?#?      5     ?.?      6     ?#?      7
+	// #X.         #X.            #X.            #X.
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   8     ?#?      9     ?.?      10    ?#?      11
+	// .X#         .X#            .X#            .X#
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   12    ?#?      13    ? ?      14    ?#?      15
+	// #X#         #X#            #X#            #X#
+	// ?.?         ?.?            ?#?            ?#?
+	static const UINT TileImages[16] = {
+		TI_MIST,       TI_MIST_N,     TI_MIST_S,     TI_MIST_NS,
+		TI_MIST_W,     TI_MIST_NW,    TI_MIST_SW,    TI_MIST_NSW,
+		TI_MIST_E,     TI_MIST_NE,    TI_MIST_SE,    TI_MIST_NSE,
+		TI_MIST_WE,    TI_MIST_NWE,   TI_MIST_SWE,   TI_MIST_NSWE
+	};
+
+	ASSERT(wCalcCode < 16);
+	return TileImages[wCalcCode];
 }
 
 //*****************************************************************************

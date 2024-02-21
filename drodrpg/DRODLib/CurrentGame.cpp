@@ -3220,6 +3220,9 @@ int CCurrentGame::getPlayerDEF() const
 	const PlayerStats& st = this->pPlayer->st;
 	int def = st.DEF;
 
+	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST)
+		return 0;
+
 	if (!IsPlayerShieldDisabled())
 		addWithClamp(def, getShieldPower(st.shield));
 
@@ -4778,7 +4781,7 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 
 			CueEvents.Add(CID_MoneyDoorLocked);
 
-			this->pRoom->CloseDoor(wX, wY);
+			this->pRoom->CloseDoor(wX, wY, CueEvents);
 		}
 		return true; //done
 
@@ -4786,7 +4789,7 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 	}
 
 	CueEvents.Add(CID_DoorLocked, NULL, false);
-	this->pRoom->CloseDoor(this->pPlayer->wX, this->pPlayer->wY);
+	this->pRoom->CloseDoor(this->pPlayer->wX, this->pPlayer->wY, CueEvents);
 	return true;
 }
 
@@ -5346,6 +5349,7 @@ CheckTLayer:
 			}
 		break;
 		case T_CRATE:
+		case T_MIST:
 			bNotAnObstacle = true;
 		default:
 			goto CheckMonsterLayer;
@@ -5794,6 +5798,8 @@ CheckFLayer:
 			case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 				CueEvents.Add(CID_Scared);
 			break;
+			case T_MIST:
+				bNotAnObstacle = true;
 			default:
 				goto CheckMonsterLayer;	//no special obstacle handling on t-layer
 			break;

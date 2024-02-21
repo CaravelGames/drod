@@ -2495,7 +2495,7 @@ const
 	UINT wTileNo = GetTSquare(wX, wY);
 	if (!(wTileNo == T_EMPTY ||
 			wTileNo == T_FUSE || wTileNo == T_SCROLL || wTileNo == T_TOKEN ||
-			bIsMap(wTileNo) || wTileNo == T_KEY || bIsEquipment(wTileNo)))
+			bIsMap(wTileNo) || wTileNo == T_KEY || bIsEquipment(wTileNo) || wTileNo == T_MIST))
 		return false;
 
 	//Look for f-square obstacle.
@@ -4590,6 +4590,10 @@ void CDbRoom::ExpandExplosion(
 			if (!explosion.has(wX,wY))
 				CueEvents.Add(CID_TarstuffDestroyed, new CMoveCoordEx(wX, wY, direction, wTileNo), true);
 			break;
+		case T_MIST:
+			if (!explosion.has(wX,wY))
+				CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, direction, T_MIST), true);
+			break;
 		default:
 			break;
 	}
@@ -4652,6 +4656,11 @@ void CDbRoom::ProcessExplosionSquare(
 		default: break;
 	}
 
+	//Covered mist is destroyed before covering item
+	if (this->coveredTSquares.GetAt(wX, wY) == T_MIST) {
+		this->coveredTSquares.Remove(wX, wY);
+	}
+
 	UINT wTileNo = GetTSquare(wX,wY);
 	switch (wTileNo)
 	{
@@ -4682,6 +4691,7 @@ void CDbRoom::ProcessExplosionSquare(
 		case T_KEY:
 		case T_MAP: case T_MAP_DETAIL:
 		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+		case T_MIST:
 			Plot(wX,wY,T_EMPTY);
 		break;
 		default:
@@ -5023,6 +5033,12 @@ const
 	ASSERT(wY < this->wRoomRows);
 
 	return this->pszTParams[ARRAYINDEX(wX,wY)];
+}
+
+//*****************************************************************************
+UINT CDbRoom::GetCoveredTSquare(const UINT wX, const UINT wY) const
+{
+	return this->coveredTSquares.GetAt(wX, wY);
 }
 
 //*****************************************************************************
@@ -5703,7 +5719,8 @@ void CDbRoom::CloseDoor(
 //Closes a door.
 //
 //Params:
-	const UINT wX, const UINT wY) //(in) Coords of any square of the door to close.
+	const UINT wX, const UINT wY, //(in) Coords of any square of the door to close.
+	CCueEvents& CueEvents) //(in/out)
 {
 	const UINT oTile = GetOSquare(wX, wY);
 	if (!bIsOpenDoor(oTile))
@@ -5745,8 +5762,11 @@ void CDbRoom::CloseDoor(
 		case T_FUSE:
 			Plot(wSX, wSY, T_EMPTY);
 			this->LitFuses.erase(wSX, wSY);
-			break;
+		break;
 		}
+
+		//Closing a door destroys mist
+		DestroyMist(wSX, wSY, CueEvents);
 	}
 }
 
@@ -5755,10 +5775,11 @@ void CDbRoom::ToggleDoor(
 //Toggles a door either open or shut.
 //
 //Params:
-	const UINT wX, const UINT wY) //(in) Coords of any square of the door to toggle.
+	const UINT wX, const UINT wY, //(in) Coords of any square of the door to toggle.
+	CCueEvents& CueEvents) //(in/out)
 {
 	if (bIsOpenDoor(GetOSquare(wX, wY)))
-		CloseDoor(wX, wY);
+		CloseDoor(wX, wY, CueEvents);
 	else
 		OpenDoor(wX, wY);
 }
@@ -7769,7 +7790,7 @@ void CDbRoom::ActivateOrb(
 				if (bIsLight(wTTile))
 					ToggleLight(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
-					ToggleDoor(pAgent->wX, pAgent->wY);
+					ToggleDoor(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsAnyArrow(fTile))
 					ToggleForceArrow(pAgent->wX, pAgent->wY);
 			break;
@@ -7787,7 +7808,7 @@ void CDbRoom::ActivateOrb(
 				if (bIsLight(wTTile))
 					TurnOffLight(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
-					CloseDoor(pAgent->wX, pAgent->wY);
+					CloseDoor(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsAnyArrow(fTile))
 					EnableForceArrow(pAgent->wX, pAgent->wY);
 			break;
@@ -7898,6 +7919,27 @@ void CDbRoom::DestroyTar(
 	{
 		CueEvents.Add(CID_AllTarRemoved);
 		ToggleBlackGates(CueEvents);
+	}
+}
+
+//******************************************************************************
+void CDbRoom::DestroyMist(
+//Destroy mist due to a built wall/door.
+//
+//Params:
+	const UINT wX, const UINT wY, //(in)
+	CCueEvents& CueEvents)     //(in/out)
+{
+	const UINT wOSquare = GetOSquare(wX, wY);
+	ASSERT(bIsSolidOTile(wOSquare) || wOSquare == T_HOT);
+
+	if (GetTSquare(wX, wY) == T_MIST)
+	{
+		Plot(wX, wY, T_EMPTY);
+		CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_MIST), true);
+	} else if (GetCoveredTSquare(wX, wY) == T_MIST) {
+		this->coveredTSquares.Remove(wX, wY);
+		CueEvents.Add(CID_MistDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_MIST), true);
 	}
 }
 
@@ -8026,7 +8068,7 @@ bool CDbRoom::ToggleTiles(const UINT wOldTile, const UINT wNewTile)
 				bThisTileChanged=bChangedTiles=true;
 			}
 
-			//If a door has closed, it cuts fuses.
+			//If a door has closed, it cuts fuses and removes mist.
 			if (bThisTileChanged)
 			{
 				bThisTileChanged = false;
@@ -8038,6 +8080,9 @@ bool CDbRoom::ToggleTiles(const UINT wOldTile, const UINT wNewTile)
 						case T_FUSE:
 							Plot(wX, wY, T_EMPTY);
 							this->LitFuses.erase(wX, wY);
+						break;
+						case T_MIST:
+							Plot(wX, wY, T_EMPTY);
 						break;
 						default: break;
 					}
@@ -8359,6 +8404,15 @@ bool CDbRoom::IsDoorOpen(
 		case T_DOOR_Y: return false;
 		default: ASSERT(!"Bad door tile."); return false; //checked a tile that wasn't a door
 	}
+}
+
+//*****************************************************************************
+bool CDbRoom::IsEitherTSquare(const UINT wX, const UINT wY, const UINT wTile) const
+//Returns: If the t-layer or covered t-layer square at a position is the given
+//tile type
+{
+	return this->pszTSquares[ARRAYINDEX(wX, wY)] == wTile ||
+		this->coveredTSquares.GetAt(wX, wY) == wTile;
 }
 
 //*****************************************************************************

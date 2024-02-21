@@ -70,7 +70,7 @@ struct EDGES {
 
 struct TileImages
 {
-	UINT o, f, t, /*tCovered,*/ wallShadow;
+	UINT o, f, t, tCovered, wallShadow;
 	EDGES edges; //black edges separating tile types
 	vector<UINT> shadowMasks;
 
@@ -319,6 +319,9 @@ public:
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
 			const bool bEditor, const vector<TweeningTileMask>* pPitPlatformMasks=NULL);
+	void           DrawMistTile(const UINT wX, const UINT wY,
+		const int nX, const int nY, SDL_Surface* pDestSurface,
+		const UINT& ti);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}

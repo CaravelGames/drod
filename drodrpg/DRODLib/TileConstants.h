@@ -162,8 +162,9 @@
 #define T_ARROW_OFF_SW  112
 #define T_ARROW_OFF_W   113
 #define T_ARROW_OFF_NW  114
+#define T_MIST          115 //mist that nullifies DEF
 
-#define TILE_COUNT     (115) //Number of tile constants from above list.
+#define TILE_COUNT     (116) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -275,6 +276,8 @@ static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_U
 static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
 
 static inline bool bIsDiggableBlock(const UINT t) { return t == T_DIRT1 || t == T_DIRT3 || t == T_DIRT5; }
+
+static inline bool bIsSolidOTile(const UINT t) { return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t); }
 
 //Obstacle parameter bit format: <Top edge>:1 <Left edge>:1 <64 possible obstacle types>:6
 #define OBSTACLE_TOP (0x80)
@@ -517,6 +520,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_FLOOR, //T_ARROW_OFF_SW
 	LAYER_FLOOR, //T_ARROW_OFF_W
 	LAYER_FLOOR, //T_ARROW_OFF_NW
+	LAYER_TRANSPARENT, //T_MIST
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -679,6 +683,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_ForceArrowDisabled, //T_ARROW_OFF_SW
 	MID_ForceArrowDisabled, //T_ARROW_OFF_W
 	MID_ForceArrowDisabled, //T_ARROW_OFF_NW
+	MID_Mist, //T_MIST
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

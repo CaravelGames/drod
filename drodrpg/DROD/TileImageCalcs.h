@@ -54,6 +54,7 @@ void  CalcTileCoordForPit(const CDbRoom *pRoom, const UINT wCol, const UINT wRow
 UINT  CalcTileImageFor(const CDbRoom *pRoom, const UINT wTileNo, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForOSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImageForTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
+UINT  CalcTileImageForCoveredTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImagesForWallShadow(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 bool  CastsWallShadow(const UINT t);
 UINT  GetSwordlessEntityTile(const UINT wType, const UINT wO);

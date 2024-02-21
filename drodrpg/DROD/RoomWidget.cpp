@@ -95,6 +95,7 @@ const int MONSTER_ANIMATION_DELAY = 3;
 #define SUNSHINE_SURFACE (3)
 
 #define THIN_ICE_OPACITY       (128) //Opacity of Thin Ice
+#define MIST_OPACITY       (150) //Opacity of Mist
 
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
@@ -1429,6 +1430,17 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			break;
 			default: break;
 		}
+	}
+
+	if (this->pRoom->GetCoveredTSquare(wX, wY) != T_EMPTY) {
+		const UINT tCoveredTile = this->pRoom->GetCoveredTSquare(wX, wY);
+		switch (tCoveredTile)
+		{
+		case T_TOKEN:
+			mid = GetTokenMID(this->pRoom->GetTParam(wX, wY)); break;
+			default: mid = TILE_MID[tCoveredTile]; break;
+		}
+		AppendLine(mid);
 	}
 
 	//Inspectable invisible characters
@@ -4387,6 +4399,7 @@ void CRoomWidget::DrawTLayerTile(
 {
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
+	const UINT wCoveredTTile = this->pRoom->coveredTSquares.GetAt(wX, wY);
 
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
@@ -4402,6 +4415,7 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	bool bTar = bIsTar(wTTileNo);
+	bool bMist = (wTTileNo == T_MIST);
 	bool bTIsTransparent = bTar && bEditor;
 	bool bTIsTranslucent = bTar && this->pRoom->bBetterVision;
 
@@ -4414,8 +4428,15 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	//4. Draw transparent (item) layer.
+	//4a. Draw covered tile beneath covering object
+	if (wCoveredTTile == T_MIST) {
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.tCovered);
+	} else if (wCoveredTTile != T_EMPTY) {
+		DrawRoomTile(ti.tCovered);
+	}
+
 	bool bIsMoving = false;
-	if (ti.t != TI_TEMPTY && !bTar)
+	if (ti.t != TI_TEMPTY && !(bTar || bMist))
 	{
 		switch (wTTileNo)
 		{
@@ -4490,6 +4511,69 @@ void CRoomWidget::DrawTLayerTile(
 			DrawRoomTile(ti.t);
 		}
 		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+	}
+	//6b. Mist does its own thing
+	else if (bMist) {
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.t);
+		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::DrawMistTile(
+	const UINT wX, const UINT wY,
+	const int nX, const int nY,
+	SDL_Surface* pDestSurface,
+	const UINT& ti
+)
+{
+	bool adj[3][3] = { {false} };
+
+	//mark where adjacent mist tiles are
+	const UINT endX = wX + 2, endY = wY + 2;
+	UINT x, y;
+	for (y = wY - 1; y != endY; ++y)
+	{
+		if (y >= this->pRoom->wRoomRows)
+			continue;
+		const int dy = y - wY + 1;
+		for (x = wX - 1; x != endX; ++x)
+		{
+			if (x >= this->pRoom->wRoomCols)
+				continue;
+			const int dx = x - wX + 1;
+			if (dx == 1 && dy == 1)
+				continue;
+			adj[dx][dy] = (this->pRoom->IsEitherTSquare(x, y, T_MIST));
+		}
+	}
+
+	int cx = CX_TILE / 2;
+	int cy = CY_TILE / 2;
+
+	if (adj[0][0] && adj[0][1] && adj[1][0]) //upper-left corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX, nY, 0, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX, nY, 0, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[0][2] && adj[0][1] && adj[1][2]) //lower-left corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX, nY + cy, 0, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX, nY + cy, 0, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[2][0] && adj[2][1] && adj[1][0]) //upper-right corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX + cx, nY, cx, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX + cx, nY, cx, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[2][2] && adj[2][1] && adj[1][2]) //lower-right corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX +cx, nY + cy, cx, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX +cx, nY + cy, cx, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
 	}
 }
 #undef DrawRoomTile
@@ -9145,6 +9229,16 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 				pTI->t = wTileImage;
 			}
 
+			wTileImage = GetTileImageForTileNo(this->pRoom->GetCoveredTSquare(wCol, wRow));
+			if (wTileImage == CALC_NEEDED) {
+				wTileImage = CalcTileImageForCoveredTSquare(this->pRoom, wCol, wRow);
+			}
+			if (wTileImage != pTI->tCovered)
+			{
+				pTI->dirty = 1;
+				pTI->tCovered = wTileImage;
+			}
+
 			}	//recalc
 
 			//Keep track of where wall shadows are being cast.
@@ -9277,7 +9371,7 @@ bool CRoomWidget::SetupDrawSquareInfo()
 	for (UINT wIndex = 0; wIndex<wSquareCount; ++wIndex) {
 		TileImages& ti = this->pTileImages[wIndex];
 		ti.o = TI_FLOOR;
-		ti.f = /*ti.tCovered = */ ti.t = T_EMPTY;
+		ti.f = ti.tCovered = ti.t = T_EMPTY;
 		ti.wallShadow = TI_UNSPECIFIED;
 
 		//Give each m-layer tile a random animation frame

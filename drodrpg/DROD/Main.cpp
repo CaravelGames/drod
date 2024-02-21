@@ -1957,6 +1957,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "Potion", "potion.ogg");
 	AddIfMissing(INISection::Waves, "PressPlate", "pressurePlate.ogg");
 	AddIfMissing(INISection::Waves, "PressPlateUp", "pressurePlateUp.ogg");
+	AddIfMissing(INISection::Waves, "PuffExplosion", "puff-explosion.ogg");
 	AddIfMissing(INISection::Waves, "Punch", "punch.ogg");
 	AddIfMissing(INISection::Waves, "Read", "read.ogg");
 	AddIfMissing(INISection::Waves, "Secret", "SecretArea.ogg");

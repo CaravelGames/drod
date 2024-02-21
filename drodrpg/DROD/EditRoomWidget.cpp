@@ -777,14 +777,15 @@ const
 			if (bIsPit(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
-					  wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
+					  wTileNo[1] == T_TOKEN || wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO || wTileNo[2] == M_CHARACTER);
 		case T_WATER:
 			//Water -- flying+water monsters can be on it.
 			if (bIsWater(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE ||
-						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
+						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN ||
+						wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
 					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER);// || wTileNo[2] == M_SKIPPERNEST);
 		case T_STAIRS:
@@ -823,7 +824,7 @@ const
 			// FALL-THROUGH
 		case T_WALL_B:
 		case T_WALL_H:
-			if (bIsBriar(wTileNo[1]))
+			if (bIsBriar(wTileNo[1]) || wTileNo[1] == T_MIST)
 				return false;
 			if (wTileNo[2] != T_NOMONSTER && wTileNo[2] != M_SEEP &&
 					!bIsMother(wTileNo[2]) && //tarstuff mothers allowed on walls
@@ -837,7 +838,7 @@ const
 		case T_DOOR_Y:	case T_DOOR_G:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Doors can't have orbs on them.
 			//But can have tar.
-			if (wTileNo[1] == T_ORB)// || wTileNo[1] == T_STATION)
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_MIST)// || wTileNo[1] == T_STATION)
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
 			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
@@ -912,6 +913,9 @@ const
 		case T_FUSE:
 			//Not on monsters that use/affect the t-layer.
 			return !bIsMother(wTileNo[2]);
+		case T_MIST:
+			return !(bIsMother(wTileNo[2]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
+				bIsDoor(wTileNo[0]));
 		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
@@ -969,7 +973,7 @@ const
 		case T_SERPENTG:
 		case T_SERPENTB:
 			if (!(wTileNo[1] == T_EMPTY ||
-					wTileNo[1] == T_FUSE || wTileNo[1] == T_TOKEN || wTileNo[1] == T_SCROLL))
+					wTileNo[1] == T_FUSE || wTileNo[1] == T_TOKEN || wTileNo[1] == T_SCROLL || wTileNo[1] == T_MIST))
 				return false;
 			//Serpents can never overwrite serpents.
 			if (pMonster && !bAllowSelf)

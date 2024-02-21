@@ -3993,6 +3993,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_Jump, g_pTheDB->GetMessageText(MID_PlayerJumped));
 	this->pEventListBox->AddItem(CID_LightToggled, g_pTheDB->GetMessageText(MID_LightToggled));
 	this->pEventListBox->AddItem(CID_MirrorShattered, g_pTheDB->GetMessageText(MID_MirrorShattered));
+	this->pEventListBox->AddItem(CID_MistDestroyed, g_pTheDB->GetMessageText(MID_MistDestroyed));
 	this->pEventListBox->AddItem(CID_MoneyDoorLocked, g_pTheDB->GetMessageText(MID_MoneyDoorLocked));
 	this->pEventListBox->AddItem(CID_MoneyDoorOpened, g_pTheDB->GetMessageText(MID_MoneyDoorOperated));
 	this->pEventListBox->AddItem(CID_MonsterBurned, g_pTheDB->GetMessageText(MID_MonsterBurned));
@@ -4198,6 +4199,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_TAR, g_pTheDB->GetMessageText(MID_Tar));
 	pListBox->AddItem(T_MIRROR, g_pTheDB->GetMessageText(MID_Mirror));
 	pListBox->AddItem(T_CRATE, g_pTheDB->GetMessageText(MID_Crate));
+	pListBox->AddItem(T_MIST, g_pTheDB->GetMessageText(MID_Mist));
 	pListBox->AddItem(T_HEALTH_HUGE, g_pTheDB->GetMessageText(MID_HugeHealth));
 	pListBox->AddItem(T_HEALTH_BIG, g_pTheDB->GetMessageText(MID_LargeHealth));
 	pListBox->AddItem(T_HEALTH_MED, g_pTheDB->GetMessageText(MID_MediumHealth));

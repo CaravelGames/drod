@@ -362,6 +362,7 @@ const
 		wLookTileNo==T_NODIAGONAL ||
 		wLookTileNo==T_SCROLL ||
 		wLookTileNo==T_TOKEN ||
+		wLookTileNo==T_MIST ||
 		wLookTileNo==T_PRESSPLATE ||
 		(bIsFallingTile(wLookTileNo) && !CanDropTrapdoor(wLookTileNo)) //won't drop trapdoors
 	)

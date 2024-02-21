@@ -6149,6 +6149,30 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			default: ASSERT(!"Invalid tar type"); break;
 		}
 	}
+	if (CueEvents.HasOccurred(CID_MistDestroyed))
+	{
+		for (pObj = CueEvents.GetFirstPrivateData(CID_MistDestroyed);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+			switch (pCoord->wValue)
+			{
+			case T_MIST:
+				PlaySoundEffect(SEID_PUFF_EXPLOSION, this->fPos);
+				if (bIsSolidOTile(this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY)))
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffInWallEffect(this->pRoomWidget, *pCoord));
+				else
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffStabEffect(this->pRoomWidget, *pCoord,
+							GetEffectDuration(6), GetParticleSpeed(2)));
+				break;
+			default: ASSERT(!"Invalid tar type"); break;
+			}
+		}
+	}
 	if (CueEvents.HasOccurred(CID_StepOnScroll))
 	{
 		this->pFaceWidget->SetReading(true);
@@ -8036,7 +8060,8 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 
 		if (g_pPredictedCombat)
 			delete g_pPredictedCombat;
-		g_pPredictedCombat = new CCombat(this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY);
+		g_pPredictedCombat = new CCombat(
+			this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY, pOrigMonster->wX, pOrigMonster->wY);
 		RedrawStats(NULL, true); //predicted combat will be shown if no combat is actually in progress
 	}
 }

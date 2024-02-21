@@ -244,6 +244,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{ TI_ARROW_OFF_SW },                               //T_ARROW_OFF_SW
 	{ TI_ARROW_OFF_W },                                //T_ARROW_OFF_W
 	{ TI_ARROW_OFF_NW },                               //T_ARROW_OFF_NW
+	{ TI_MIST },                                       //T_MIST
 
 	//monsters
 	{TI_ROACH_S},
@@ -410,6 +411,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ARROW_OFF_SW  112
 	0, //T_ARROW_OFF_W   113
 	0, //T_ARROW_OFF_NW  114
+	0, //T_MIST          115
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -475,6 +477,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
+	1, //mist
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -500,6 +503,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
+	1, //mist
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -594,13 +598,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 22;
+const UINT numTLayerEntries = 23;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_SCROLL, T_MAP,
 	T_ATK_UP, T_DEF_UP, T_HEALTH_SM, T_KEY, T_SHOVEL1,
 	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_TOKEN,
 	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_OBSTACLE
+	T_TAR, T_OBSTACLE, T_MIST
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -1878,7 +1882,8 @@ const
 		{TI_WALL_H},
 		{TI_GEL_NSEW},
 		{TI_PPB},
-		{TI_PPT}
+		{TI_PPT},
+		{TI_MIST_C}
 	};
 
 	if (wObjectNo < M_OFFSET)
@@ -1909,6 +1914,7 @@ const
 			case T_TAR: return Tiles[5];
 			case T_MUD: return Tiles[8];
 			case T_GEL: return Tiles[10];
+			case T_MIST: return Tiles[13];
 			case T_OBSTACLE:
 			{
 				//Show from the smallest obstacle of the selected type.
@@ -5382,6 +5388,8 @@ void CEditRoomScreen::PlotObjects()
 				case T_GELMOTHER:	case T_GELBABY:
 				case T_GOO:
 					g_pTheSound->PlaySoundEffect(SEID_STABTAR);  break;
+				case T_MIST:
+					g_pTheSound->PlaySoundEffect(SEID_PUFF_EXPLOSION); break;
 				case T_ROCKGOLEM:
 				case T_ROCKGIANT:
 					g_pTheSound->PlaySoundEffect(SEID_BREAKWALL);   break;
