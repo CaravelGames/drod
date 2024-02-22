@@ -46,6 +46,8 @@
 #define GOLDStr "GOLD"
 #define XPStr "XP"
 
+#define EggSpawnStr "EggSpawn"
+
 CCoordIndex_T<USHORT> CMonster::room;
 CCoordIndex CMonster::swordsInRoom;
 
@@ -82,6 +84,7 @@ CMonster::CMonster(
 	, eMovement(eMovement)
 	, bAlive(true)
 	, HP(0), ATK(0), DEF(0), GOLD(0), XP(0)
+	, bEggSpawn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
 {
@@ -105,6 +108,7 @@ void CMonster::Clear()
 	this->bIsFirstTurn=false;
 	this->bAlive = true;
 	this->ATK = this->DEF = this->GOLD = this->HP = this->XP = 0;
+	this->bEggSpawn = false;
 	this->ExtraVars.Clear();
 	while (this->Pieces.size())
 	{
@@ -987,6 +991,11 @@ bool CMonster::IsSpawnEggTriggered(const CCueEvents& CueEvents) const
 	if (!this->pCurrentGame->pCombat->PlayerCanHarmMonster(pCombatEnemy)) //doesn't count if player engages a monster that is too shielded
 		return false;
 
+	//don't lay when a monster created by egg-laying is killed
+	if (pCombatEnemy->bEggSpawn)
+		return false;
+
+	//type-checking for backwards compatibility
 	//don't lay more eggs when eggs are killed
 	const UINT spawnID = GetSpawnType(M_REGG);
 
@@ -1065,6 +1074,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 	{
 		CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
 			CueEvents, spawnID, egg->wX, egg->wY, S, true);
+		m->bEggSpawn = true;
 		UINT wType = m->GetIdentity();
 		if (wType != M_REGG && !bMonsterHasDirection(wType)) {
 			m->wO = NO_ORIENTATION;
@@ -2036,6 +2046,9 @@ void CMonster::Save(
 	if (this->XP)
 		this->ExtraVars.SetVar(XPStr, this->XP);
 
+	if (this->bEggSpawn)
+		this->ExtraVars.SetVar(EggSpawnStr, this->bEggSpawn);
+
 	UINT dwExtraVarsSize;
 	BYTE *pbytExtraVarsBytes = this->ExtraVars.GetPackedBuffer(dwExtraVarsSize);
 	ASSERT(pbytExtraVarsBytes);
@@ -2078,6 +2091,7 @@ void CMonster::SetMembers(const CDbPackedVars& vars)
 	this->DEF = vars.GetVar(DEFStr, this->DEF);
 	this->GOLD = vars.GetVar(GOLDStr, this->GOLD);
 	this->XP = vars.GetVar(XPStr, this->XP);
+	this->bEggSpawn = vars.GetVar(EggSpawnStr, this->bEggSpawn);
 }
 
 //

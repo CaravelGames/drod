@@ -9221,6 +9221,7 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 		pNew->GOLD = pMonster->GOLD;
 		pNew->HP = pMonster->HP;
 		pNew->XP = pMonster->XP;
+		pNew->bEggSpawn = pMonster->bEggSpawn;
 		if (bCharacter) {
 			if (bLoadNPCScripts) {
 				pNew->SetMembers(extraVars[characterIndex++]); //get from data prepared above
