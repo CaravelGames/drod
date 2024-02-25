@@ -2447,4 +2447,8 @@ static inline bool bIsBriarTI(const UINT ti)
 		(ti >= TI_BRIAREDGE_SE && ti <= TI_BRIARROOT_NW);
 };
 
+static inline bool bIsMistTI(const UINT ti) {
+	return ti >= TI_MIST && ti <= TI_MIST_NW;
+}
+
 #endif //...#ifndef TILEIMAGECONSTANTS_H

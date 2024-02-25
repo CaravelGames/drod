@@ -2024,6 +2024,25 @@ UINT CalcTileImageForMist(
 }
 
 //*****************************************************************************
+BYTE GetMistCorners(const CDbRoom* pRoom, const UINT wCol, const UINT wRow)
+{
+	BYTE corners = 0;
+	if (pRoom->IsValidColRow(wCol - 1, wRow - 1) && pRoom->IsEitherTSquare(wCol - 1, wRow - 1, T_MIST))
+		corners += 1;
+
+	if (pRoom->IsValidColRow(wCol + 1, wRow - 1) && pRoom->IsEitherTSquare(wCol + 1, wRow - 1, T_MIST))
+		corners += 2;
+
+	if (pRoom->IsValidColRow(wCol - 1, wRow + 1) && pRoom->IsEitherTSquare(wCol - 1, wRow + 1, T_MIST))
+		corners += 4;
+
+	if (pRoom->IsValidColRow(wCol + 1, wRow + 1) && pRoom->IsEitherTSquare(wCol + 1, wRow + 1, T_MIST))
+		corners += 8;
+
+	return corners;
+}
+
+//*****************************************************************************
 UINT CalcTileImageForToken(const BYTE tParam)
 //Calculate image for this type of token.
 {

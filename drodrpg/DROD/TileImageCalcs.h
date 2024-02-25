@@ -77,6 +77,8 @@ WALLTYPE GetWallTypeAtSquare(const CDbRoom *pRoom, int nCol, int nRow);
 void GetObstacleStats(const CDbRoom *pRoom, const UINT wCol, const UINT wRow,
 		UINT& wObSizeIndex, UINT& xPos, UINT& yPos);
 
+BYTE GetMistCorners(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
+
 //Monster tiles.
 //Determined by orientation and animation frame.
 static const UINT DONT_USE = (UINT)-1;
