@@ -146,6 +146,7 @@ public:
 	Weather        weather;	//environmental weather conditions
 	CBridge        bridges;
 //	CBuilding      building; //tiles marked for building
+	CCoordSet      mistVents;
 
 	CCoordSet      geometryChanges, disabledLights; //for front end -- where lighting must be updated
 
@@ -222,6 +223,7 @@ public:
 
 	void           EnableForceArrow(const UINT wX, const UINT wY);
 	void           ExpandBriars(CCueEvents& CueEvents);
+	void           ExpandMist(CCueEvents& CueEvents);
 //	CMonster*      FindNextClone();
 	void           FixUnstableTar(CCueEvents& CueEvents);
 	void           FindOrbsToOpenDoor(CCoordSet& orbs, CCoordSet& doorSquares) const;
@@ -237,6 +239,7 @@ public:
 	void           GetConnectedTiles(const UINT wX, const UINT wY,
 			const CTileMask &tileMask, const bool b8Neighbor, CCoordSet& squares,
 			const CCoordSet* pIgnoreSquares=NULL, const CCoordSet* pRegionMask=NULL) const;
+	void           GetConnectedMistTiles(const UINT wX, const UINT wY, CCoordSet& mistSquares) const;
 	CCurrentGame*  GetCurrentGame() const {return this->pCurrentGame;}
 	UINT           GetExitIndexAt(const UINT wX, const UINT wY) const;
 	bool           GetExitEntranceIDAt(const UINT wX, const UINT wY, UINT &dwEntranceID) const;
@@ -419,6 +422,7 @@ private:
 	enum tartype {oldtar, newtar, notar};
 
 	void           AddPlatformPiece(const UINT wX, const UINT wY, CCoordIndex &plots);
+	bool           CanExpandMist(const UINT wX, const UINT wY) const;
 	void           Clear();
 	void           ClearPushInfo();
 	void           CloseDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);

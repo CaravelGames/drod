@@ -245,6 +245,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{ TI_ARROW_OFF_W },                                //T_ARROW_OFF_W
 	{ TI_ARROW_OFF_NW },                               //T_ARROW_OFF_NW
 	{ TI_MIST },                                       //T_MIST
+	{ TI_MISTVENT },                                   //T_MISTVENT
 
 	//monsters
 	{TI_ROACH_S},
@@ -412,6 +413,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ARROW_OFF_W   113
 	0, //T_ARROW_OFF_NW  114
 	0, //T_MIST          115
+	0, //T_MISTVENT      116
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -477,7 +479,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
-	1, //mist
+	1, 1, //mist, vent
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -503,7 +505,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, //shovels, dirt
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
-	1, //mist
+	1, 1, //mist, vent
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -581,14 +583,14 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 27;
+const UINT numOLayerEntries = 28;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
 	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
-	T_DIRT1
+	T_DIRT1, T_MISTVENT
 };
 
 const UINT numFLayerEntries = 7;
@@ -5392,6 +5394,7 @@ void CEditRoomScreen::PlotObjects()
 				case T_GOO:
 					g_pTheSound->PlaySoundEffect(SEID_STABTAR);  break;
 				case T_MIST:
+				case T_MISTVENT:
 					g_pTheSound->PlaySoundEffect(SEID_PUFF_EXPLOSION); break;
 				case T_ROCKGOLEM:
 				case T_ROCKGIANT:

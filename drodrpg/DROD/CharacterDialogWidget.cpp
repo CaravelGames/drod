@@ -4200,6 +4200,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_MIRROR, g_pTheDB->GetMessageText(MID_Mirror));
 	pListBox->AddItem(T_CRATE, g_pTheDB->GetMessageText(MID_Crate));
 	pListBox->AddItem(T_MIST, g_pTheDB->GetMessageText(MID_Mist));
+	pListBox->AddItem(T_MISTVENT, g_pTheDB->GetMessageText(MID_MistVent));
 	pListBox->AddItem(T_HEALTH_HUGE, g_pTheDB->GetMessageText(MID_HugeHealth));
 	pListBox->AddItem(T_HEALTH_BIG, g_pTheDB->GetMessageText(MID_LargeHealth));
 	pListBox->AddItem(T_HEALTH_MED, g_pTheDB->GetMessageText(MID_MediumHealth));

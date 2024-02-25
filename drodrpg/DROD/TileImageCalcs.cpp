@@ -1177,7 +1177,7 @@ EDGETYPE CalcEdge(
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_FLOOR: case T_FLOOR_M: case T_FLOOR_IMAGE:
 		case T_FLOOR_ROAD: case T_FLOOR_GRASS: case T_FLOOR_DIRT: case T_FLOOR_ALT:
-		case T_HOT: case T_PRESSPLATE: case T_GOO:
+		case T_HOT: case T_PRESSPLATE: case T_GOO: case T_MISTVENT:
 			if (bIsWall(wAdjTileNo) || bIsCrumblyWall(wAdjTileNo) ||
 					bIsDoor(wAdjTileNo) || bIsOpenDoor(wAdjTileNo) ||
 					wAdjTileNo==T_OBSTACLE || bIsFallingTile(wAdjTileNo) ||
@@ -1196,7 +1196,7 @@ EDGETYPE CalcEdge(
 				return EDGE_WALL;
 			if ((side == N || side == W) &&
 					wTileNo != T_FLOOR_IMAGE && wAdjTileNo != T_FLOOR_IMAGE &&
-					wTileNo != T_GOO && wAdjTileNo != T_GOO)
+					wTileNo != T_GOO && wAdjTileNo != T_GOO && wAdjTileNo != T_MISTVENT)
 				return EDGE_FLOOR;
 			return EDGE_NONE;
 
@@ -1553,6 +1553,7 @@ UINT GetTileImageForTileNo(
 		TI_ARROW_OFF_W,   //T_ARROW_OFF_W
 		TI_ARROW_OFF_NW,  //T_ARROW_OFF_NW
 		CALC_NEEDED,      //T_MIST
+		TI_MISTVENT,      //T_MISTVENT
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));
