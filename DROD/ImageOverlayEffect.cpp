@@ -97,9 +97,9 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
 	, index(UINT(-1))
 	, loopIteration(0), maxLoops(0)
-	, startOfNextEffect(dwStartTime)
+	, startOfNextEffect(dwStartTime), endTime(0)
 	, pRoomWidget(NULL)
-	, turnNo(turnNo)
+	, turnNo(turnNo) , endTurn(0)
 	, instanceID(0)
 	, drawSourceRect(MAKE_SDL_RECT(0, 0, 0, 0))
 	, drawDestinationRect(MAKE_SDL_RECT(0, 0, 0, 0))
@@ -115,6 +115,12 @@ CImageOverlayEffect::CImageOverlayEffect(
 	this->dirtyRects.push_back(rect);
 
 	InitParams();
+
+	endTime = pImageOverlay->getTimeLimit();
+	UINT maxTurns = pImageOverlay->getTurnLimit();
+	if (maxTurns > 0) {
+		endTurn = turnNo + maxTurns;
+	}
 
 	this->commands = pImageOverlay->commands;
 	this->instanceID = pImageOverlay->instanceID;
@@ -163,6 +169,10 @@ int CImageOverlayEffect::getGroup() const
 bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	if (!this->pImageSurface)
+		return false;
+
+	if ((endTime > 0 && dwTimeElapsed >= endTime) ||
+		(endTurn > 0 && GetGameTurn() >= endTurn))
 		return false;
 
 	if (!AdvanceState(wDeltaTime))
@@ -399,13 +409,17 @@ bool CImageOverlayEffect::IsCurrentCommandFinished() const
 		return this->executionState.remainingTime == 0;
 
 	else if (IsTurnBasedCommand(command.type)) {
-		const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
-		const UINT gameTurn = pRoom ? pRoom->GetCurrentGame()->wPlayerTurn : 0;
-
+		const UINT gameTurn = GetGameTurn();
 		return this->executionState.endTurn == gameTurn;
 	}
 	else
 		return true;
+}
+
+UINT CImageOverlayEffect::GetGameTurn() const
+{
+	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
+	return pRoom ? pRoom->GetCurrentGame()->wPlayerTurn : 0;
 }
 
 Uint32 CImageOverlayEffect::UpdateCommand(

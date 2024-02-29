@@ -281,7 +281,9 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("setx")] = ImageOverlayCommand::SetX;
 		commandMap[string("sety")] = ImageOverlayCommand::SetY;
 		commandMap[string("srcxy")] = ImageOverlayCommand::SrcXY;
+		commandMap[string("timelimit")] = ImageOverlayCommand::TimeLimit;
 		commandMap[string("tilegrid")] = ImageOverlayCommand::TileGrid;
+		commandMap[string("turnlimit")] = ImageOverlayCommand::TurnLimit;
 	}
 
 	for (CommandMap::const_iterator it=commandMap.begin(); it!=commandMap.end(); ++it) {
@@ -452,6 +454,32 @@ int CImageOverlay::getGroup() const
 	}
 
 	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
+UINT CImageOverlay::getTimeLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TimeLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
+}
+
+UINT CImageOverlay::getTurnLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TurnLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
 }
 
 bool CImageOverlay::loopsForever() const

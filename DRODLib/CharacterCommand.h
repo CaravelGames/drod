@@ -480,7 +480,9 @@ struct ImageOverlayCommand
 		SetY,
 		SrcXY,
 		TileGrid,
+		TimeLimit,
 		TurnDuration,
+		TurnLimit,
 		Invalid
 	};
 
@@ -511,6 +513,8 @@ public:
 
 	int getLayer() const;
 	int getGroup() const;
+	UINT getTimeLimit() const;
+	UINT getTurnLimit() const;
 	int clearsImageOverlays() const;
 	int clearsImageOverlayGroup() const;
 	bool loopsForever() const;
