@@ -419,7 +419,12 @@ bool CImageOverlayEffect::IsCurrentCommandFinished() const
 UINT CImageOverlayEffect::GetGameTurn() const
 {
 	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
-	return pRoom ? pRoom->GetCurrentGame()->wPlayerTurn : 0;
+
+	if (!pRoom)
+		return 0;
+
+	const CCurrentGame* pGame = pRoom->GetCurrentGame();
+	return pGame ? pGame->wPlayerTurn : 0;
 }
 
 Uint32 CImageOverlayEffect::UpdateCommand(
