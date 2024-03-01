@@ -88,6 +88,7 @@ private:
 	bool IsCurrentCommandFinished() const;
 	bool CanContinuePlayingEffect(const Uint32 dwRemainingTime) const;
 	bool CanLoop() const;
+	UINT GetGameTurn() const;
 	inline bool IsCommandQueueFinished() const;
 	bool IsImageDrawn();
 	bool IsRepeated() const;
@@ -133,13 +134,13 @@ private:
 	ImageOverlayCommands commands;
 	UINT index;
 	int loopIteration, maxLoops;
-	Uint32 startOfNextEffect;
+	Uint32 startOfNextEffect, endTime;
 
 	CommandExecution executionState;
 	vector<ParallelCommand> parallelCommands;
 
 	CRoomWidget *pRoomWidget;
-	UINT turnNo;
+	UINT turnNo, endTurn;
 
 	UINT instanceID; //for merging effect sets during play after move undo/checkpoint restore
 };
