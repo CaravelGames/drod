@@ -1093,6 +1093,8 @@ Essentially, it's being treated as a Tarstuff Mother, although there are certain
 <b>SetY (pixel)</b> -- set the image's Y coordinate<br />
 <b>SrcXY (x) (y)</b> - show the source image starting from the indicated pixel position<br />
 <b>TileGrid (w) (h)</b> -- replicate the image in a w by h grid. Tiling is not supported for images that have had rotations applied.<br />
+<b>TimeLimit (ms)</b> -- set a maximum duration for the overlay to exist. After this time has elapsed, the overlay will end, even if not all commands have been processed. Only the first instance of this command in a script is executed.<br />
+<b>TurnLimit (# turns)</b> -- set a maximum number of game turns for the overlay to exist. After that many turns have passed, the overlay will end, even if not all commands have been processed. Only the first instance of this command in a script is executed.<br />
 <br />
 As an example, you can make an image start invisible, fade in, display for a couple seconds, then fade out by providing the following command sequence:<br />
 <br />
