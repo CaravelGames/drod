@@ -4635,6 +4635,14 @@ void CEditRoomScreen::PasteRegion(
 						}
 						break;
 
+						case T_MIRROR: case T_CRATE:
+						{
+							const UINT coveredTLayerObject = pSrcRoom->GetCoveredTSquare(xSrc, ySrc);
+							if (coveredTLayerObject == T_FUSE || coveredTLayerObject == T_MIST)
+								room.coveredTSquares.Add(xDest, yDest, coveredTLayerObject);
+						}
+						break;
+
 						default: break;
 					}
 				}
@@ -5449,7 +5457,8 @@ bool CEditRoomScreen::PlotObjectAt(
 	if (!IsMonsterTileNo(wObject))
 	{
 		//Was an object of this type already on this square?
-		const bool bObjectWasHere = this->pRoom->GetTSquare(wX,wY) == wObject;
+		const UINT tTile = this->pRoom->GetTSquare(wX, wY);
+		const bool bObjectWasHere = tTile == wObject;
 		COrbData *pOldOrb = NULL;
 		if (wObject == T_ORB)
 		{
@@ -5503,6 +5512,11 @@ bool CEditRoomScreen::PlotObjectAt(
 				break;
 				case T_ACCESSORY:
 					this->pRoom->SetTParam(wX,wY, this->wSelAccessoryType);
+				break;
+				case T_MIRROR: case T_CRATE:
+					//Allow items to be covered
+					if (tTile != T_EMPTY)
+						this->pRoom->coveredTSquares.Add(wX, wY, tTile);
 				break;
 				default:
 					//Keep track of what kind of floor is in room.

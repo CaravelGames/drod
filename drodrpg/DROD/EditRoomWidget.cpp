@@ -619,6 +619,10 @@ const
 		//Can't replace customizable objects: scrolls, obstacles and lights.
 		if (wObject == T_SCROLL || wObject == T_OBSTACLE || bIsLight(wObject))
 			return false;
+		if (bIsTLayerCoveringItem(wObject) && (wTileNo == T_FUSE || wTileNo == T_MIST))
+			return true;
+		if (wObject == T_FUSE && bIsTLayerCoveringItem(wTileNo))
+			return true;
 		if (wObject == T_BOMB)
 			return false; //facilitate explosion range highlighting
 		if (bIsBriar(wTileNo) && bIsBriar(wObject))
@@ -627,6 +631,8 @@ const
 			return true;
 		if (bIsShovel(wTileNo) && bIsShovel(wObject))
 			return true;
+		if (wTileNo == T_MIRROR && wObject == T_MIRROR)
+			return false;
 		return wObject == wTileNo;
 	case 2:
 		//Same type of monster can replace itself, except long monsters and special character.
