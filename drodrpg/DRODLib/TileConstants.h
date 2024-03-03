@@ -275,6 +275,8 @@ static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_U
 
 static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
 
+static inline bool bIsTLayerCoveringItem(const UINT t) { return t == T_MIRROR || t == T_CRATE; }
+
 static inline bool bIsDiggableBlock(const UINT t) { return t == T_DIRT1 || t == T_DIRT3 || t == T_DIRT5; }
 
 static inline bool bIsSolidOTile(const UINT t) { return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t); }

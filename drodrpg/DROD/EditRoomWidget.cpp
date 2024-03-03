@@ -619,6 +619,10 @@ const
 		//Can't replace customizable objects: scrolls, obstacles and lights.
 		if (wObject == T_SCROLL || wObject == T_OBSTACLE || bIsLight(wObject))
 			return false;
+		if (bIsTLayerCoveringItem(wObject) && (wTileNo == T_FUSE || wTileNo == T_MIST))
+			return true;
+		if (wObject == T_FUSE && bIsTLayerCoveringItem(wTileNo))
+			return true;
 		if (wObject == T_BOMB)
 			return false; //facilitate explosion range highlighting
 		if (bIsBriar(wTileNo) && bIsBriar(wObject))
@@ -627,6 +631,8 @@ const
 			return true;
 		if (bIsShovel(wTileNo) && bIsShovel(wObject))
 			return true;
+		if (wTileNo == T_MIRROR && wObject == T_MIRROR)
+			return false;
 		return wObject == wTileNo;
 	case 2:
 		//Same type of monster can replace itself, except long monsters and special character.
@@ -1304,8 +1310,8 @@ void CEditRoomWidget::DrawCharacter(
 	const bool bAlt = (SDL_GetModState() & KMOD_ALT) != 0;
 	const bool preview = (bAlt != characterPreview);
 	const UINT wIdentity = pCharacter->GetIdentity();
-	UINT wFrameIndex = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES;
-	if (wIdentity != M_NONE && IsAnimated() && preview)
+	UINT wFrameIndex = IsAnimated() ? this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES : 0;
+	if (wIdentity != M_NONE && preview)
 	{
 		//Draw NPC's actual in-game image.
 		ASSERT(wIdentity < MONSTER_COUNT ||

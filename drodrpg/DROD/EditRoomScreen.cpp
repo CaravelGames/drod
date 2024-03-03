@@ -1290,11 +1290,6 @@ void CEditRoomScreen::AddPlotEffect(
 	UINT wCX, wCY;
 	switch (wObjectNo)
 	{
-		case T_STAIRS:
-		case T_STAIRS_UP:
-			wCX = wCY = 3; //at least 3x3
-			break;
-
 		case T_TARMOTHER:
 		case T_MUDMOTHER:
 		case T_GELMOTHER:
@@ -4640,6 +4635,14 @@ void CEditRoomScreen::PasteRegion(
 						}
 						break;
 
+						case T_MIRROR: case T_CRATE:
+						{
+							const UINT coveredTLayerObject = pSrcRoom->GetCoveredTSquare(xSrc, ySrc);
+							if (coveredTLayerObject == T_FUSE || coveredTLayerObject == T_MIST)
+								room.coveredTSquares.Add(xDest, yDest, coveredTLayerObject);
+						}
+						break;
+
 						default: break;
 					}
 				}
@@ -5454,7 +5457,8 @@ bool CEditRoomScreen::PlotObjectAt(
 	if (!IsMonsterTileNo(wObject))
 	{
 		//Was an object of this type already on this square?
-		const bool bObjectWasHere = this->pRoom->GetTSquare(wX,wY) == wObject;
+		const UINT tTile = this->pRoom->GetTSquare(wX, wY);
+		const bool bObjectWasHere = tTile == wObject;
 		COrbData *pOldOrb = NULL;
 		if (wObject == T_ORB)
 		{
@@ -5508,6 +5512,11 @@ bool CEditRoomScreen::PlotObjectAt(
 				break;
 				case T_ACCESSORY:
 					this->pRoom->SetTParam(wX,wY, this->wSelAccessoryType);
+				break;
+				case T_MIRROR: case T_CRATE:
+					//Allow items to be covered
+					if (tTile != T_EMPTY)
+						this->pRoom->coveredTSquares.Add(wX, wY, tTile);
 				break;
 				default:
 					//Keep track of what kind of floor is in room.
@@ -5742,31 +5751,15 @@ void CEditRoomScreen::PlotStaircase(const UINT wStairType)
 	const UINT wStartY = this->pRoomWidget->wStartY;
 	UINT wEndX = this->pRoomWidget->wEndX;
 	UINT wEndY = this->pRoomWidget->wEndY;
-	UINT wX, wY, wObjectNo;
-
-	//3x3 minimum
-	if (wEndX - wStartX < 2)
-		wEndX = wStartX + 2;
-	if (wEndY - wStartY < 2)
-		wEndY = wStartY + 2;
-
-	//Determine where staircase entrance should be.
-	const UINT wBaseY = wStairType == T_STAIRS ? wEndY : wStartY;
-	const UINT wEntranceY = wStairType == T_STAIRS ? wStartY : wEndY;
+	UINT wX, wY;
 
 	//If all spots aren't safe, don't plot anything
 	this->pRoomWidget->ResetPlot();
-	for (wY=wStartY; wY<=wEndY; ++wY)
-		for (wX=wStartX; wX<=wEndX; ++wX)
+	for (wY = wStartY; wY <= wEndY; ++wY)
+		for (wX = wStartX; wX <= wEndX; ++wX)
 		{
 			//Determine what part of staircase is being plotted at this square.
-			if (wX == wStartX || wX == wEndX || wY == wBaseY)
-				wObjectNo = T_WALL;
-			else if (wY == wEntranceY)
-				continue;   //stair entrance -- nothing will be plotted here
-			else
-				wObjectNo = wStairType;
-			if (!this->pRoomWidget->IsSafePlacement(wObjectNo, wX, wY))
+			if (!this->pRoomWidget->IsSafePlacement(wStairType, wX, wY))
 			{
 				EditObjects();
 				PaintHighlights();
@@ -5780,19 +5773,9 @@ void CEditRoomScreen::PlotStaircase(const UINT wStairType)
 	Changing();
 
 	//Plot staircase.
-	for (wY=wStartY; wY<=wEndY; ++wY)
-		for (wX=wStartX; wX<=wEndX; ++wX)
-		{
-			//Determine what part of staircase is being plotted at this square.
-			if (wX == wStartX || wX == wEndX || wY == wBaseY)
-				wObjectNo = T_WALL;
-			else if (wY == wEntranceY)
-				continue;   //stair entrance -- nothing will be plotted here
-			else
-				wObjectNo = wStairType;
-
-			PlotObjectAt(wX,wY,wObjectNo,this->wO);
-		}
+	for (wY = wStartY; wY <= wEndY; ++wY)
+		for (wX = wStartX; wX <= wEndX; ++wX)
+			PlotObjectAt(wX, wY, wStairType, this->wO);
 
 	SetDestinationEntrance(wStartX + 1, wStartY + 1, wEndX - 1, wEndY - 1);
 
