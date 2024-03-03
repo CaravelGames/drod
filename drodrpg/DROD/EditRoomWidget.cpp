@@ -1310,8 +1310,8 @@ void CEditRoomWidget::DrawCharacter(
 	const bool bAlt = (SDL_GetModState() & KMOD_ALT) != 0;
 	const bool preview = (bAlt != characterPreview);
 	const UINT wIdentity = pCharacter->GetIdentity();
-	UINT wFrameIndex = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES;
-	if (wIdentity != M_NONE && IsAnimated() && preview)
+	UINT wFrameIndex = IsAnimated() ? this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES : 0;
+	if (wIdentity != M_NONE && preview)
 	{
 		//Draw NPC's actual in-game image.
 		ASSERT(wIdentity < MONSTER_COUNT ||
