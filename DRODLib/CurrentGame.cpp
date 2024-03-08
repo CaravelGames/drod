@@ -6416,7 +6416,7 @@ MakeMove:
 			{
 				//Player dies if on same hot tile two (non-hasted) turns in a row.
 				if ((!this->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn) &&
-						bIsEntityTypeVulnerableToHeat(this->swordsman.wAppearance))
+						this->swordsman.IsVulnerableToHeat())
 				{
 					SetDyingEntity(&this->swordsman);
 					CueEvents.Add(CID_PlayerBurned);

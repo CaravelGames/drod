@@ -357,6 +357,25 @@ bool CSwordsman::HasBehavior(
 }
 
 //*****************************************************************************
+bool CSwordsman::HasDamageImmunity(const WeaponType& weaponType, bool& active) const
+{
+	PlayerBehavior behavior;
+	switch (weaponType) {
+		case WT_Sword: behavior = PB_SwordDamageImmune; break;
+		case WT_Pickaxe: behavior = PB_PickaxeDamageImmune; break;
+		case WT_Spear: behavior = PB_SpearDamageImmune; break;
+		case WT_Dagger: behavior = PB_DaggerDamageImmune; break;
+		case WT_Caber: behavior = PB_CaberDamageImmune; break;
+		case WT_FloorSpikes: behavior = PB_FloorSpikeImmune; break;
+		case WT_Firetrap: behavior = PB_FiretrapImmune; break;
+		case WT_HotTile: behavior = PB_HotTileImmune; break;
+		default: behavior = PB_SwordDamageImmune; break;
+	}
+
+	return HasBehavior(behavior, active);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsAt(UINT wX, UINT wY) const
 {
 	return IsInRoom() && wX == this->wX && wY == this->wY;
@@ -390,9 +409,25 @@ bool CSwordsman::IsStabbable() const
 }
 
 //*****************************************************************************
+bool CSwordsman::IsVulnerableToHeat() const
+{
+	bool active;
+	if (HasBehavior(PB_HotTileImmune, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	return bIsEntityTypeVulnerableToHeat(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsVulnerableToWeapon(const WeaponType weaponType) const
 //Returns: true if player in current role is vulnerable to sword hits
 {
+	bool active;
+	if (HasDamageImmunity(weaponType, active)) {
+		return !active; //No immunity = it hurts
+	}
+
 	const bool bIsStabbable = this->IsStabbable();
 
 	switch (weaponType)

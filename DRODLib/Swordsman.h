@@ -82,6 +82,14 @@ enum PlayerBehavior
 	PB_UseSpeedPotion = 11,
 	PB_UseSquadHorn = 12,
 	PB_UseSoldierHorn = 13,
+	PB_SwordDamageImmune = 14,
+	PB_PickaxeDamageImmune = 15,
+	PB_SpearDamageImmune = 16,
+	PB_DaggerDamageImmune = 17,
+	PB_CaberDamageImmune = 18,
+	PB_FloorSpikeImmune = 19,
+	PB_FiretrapImmune = 20,
+	PB_HotTileImmune = 21,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -114,6 +122,7 @@ public:
 	bool IsAt(UINT wX, UINT wY) const;
 	bool IsInRoom() const;
 	bool IsStabbable() const;
+	bool IsVulnerableToHeat() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
 	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
 	bool IsTarget() const;
@@ -166,6 +175,7 @@ public:
 
 private:
 	bool HasBehavior(const PlayerBehavior& behavior, bool& active) const;
+	bool HasDamageImmunity(const WeaponType& weaponType, bool& active) const;
 
 	void SetSwordCoords();
 };

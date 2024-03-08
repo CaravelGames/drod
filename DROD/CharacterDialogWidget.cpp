@@ -5086,6 +5086,14 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSpeedPotion, L"Drink speed potion");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSquadHorn, L"Toot squad horn");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSoldierHorn, L"Toot soldier horn");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DaggerDamageImmune, g_pTheDB->GetMessageText(MID_DaggerDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_CaberDamageImmune, g_pTheDB->GetMessageText(MID_CaberDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FloorSpikeImmune, g_pTheDB->GetMessageText(MID_FloorSpikeImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
 
 	this->pPlayerBehaviorListBox->SetAllowFiltering(true);
 }
