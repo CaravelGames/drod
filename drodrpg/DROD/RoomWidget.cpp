@@ -9228,6 +9228,13 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 				pTI->dirty = 1;
 				pTI->t = wTileImage;
 			}
+			if (bIsMistTI(wTileImage)) {
+				BYTE corners = GetMistCorners(this->pRoom, wCol, wRow);
+				if (corners != pTI->mistCorners) {
+					pTI->dirty = 1;
+					pTI->mistCorners = corners;
+				}
+			}
 
 			wTileImage = GetTileImageForTileNo(this->pRoom->GetCoveredTSquare(wCol, wRow));
 			if (wTileImage == CALC_NEEDED) {
@@ -9237,6 +9244,13 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 			{
 				pTI->dirty = 1;
 				pTI->tCovered = wTileImage;
+			}
+			if (bIsMistTI(wTileImage)) {
+				BYTE corners = GetMistCorners(this->pRoom, wCol, wRow);
+				if (corners != pTI->mistCorners) {
+					pTI->dirty = 1;
+					pTI->mistCorners = corners;
+				}
 			}
 
 			}	//recalc

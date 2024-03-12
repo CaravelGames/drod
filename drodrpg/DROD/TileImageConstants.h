@@ -2438,7 +2438,9 @@
 #define TI_FLUFFBLOOD_1   2255
 #define TI_FLUFFBLOOD_2   2256
 
-static const UINT TI_COUNT = 2257;
+#define TI_MISTVENT       2257
+
+static const UINT TI_COUNT = 2258;
 
 static inline bool bIsBriarTI(const UINT ti)
 {
@@ -2446,5 +2448,9 @@ static inline bool bIsBriarTI(const UINT ti)
 		(ti >= TI_BRIAR_SE && ti <= TI_BRIAR_N2) ||
 		(ti >= TI_BRIAREDGE_SE && ti <= TI_BRIARROOT_NW);
 };
+
+static inline bool bIsMistTI(const UINT ti) {
+	return ti >= TI_MIST && ti <= TI_MIST_NW;
+}
 
 #endif //...#ifndef TILEIMAGECONSTANTS_H

@@ -3067,6 +3067,7 @@ void CCurrentGame::ProcessMonsterDefeat(
 	}
 
 	//Each time a monster is fought, briar roots expand.
+	this->pRoom->ExpandMist(CueEvents);
 	this->pRoom->ExpandBriars(CueEvents);
 }
 

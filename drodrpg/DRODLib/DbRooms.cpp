@@ -2681,6 +2681,69 @@ void CDbRoom::ExpandBriars(CCueEvents& CueEvents)
 }
 
 //*****************************************************************************
+void CDbRoom::ExpandMist(CCueEvents& CueEvents)
+//Process one iteration of mist growth.
+{
+	CCoordSet ventConnectedMist;
+	CCoordSet expandTo;
+	UINT wX, wY;
+
+	//Find all mist connected to vents
+	for (CCoordSet::const_iterator iter = this->mistVents.begin();
+		iter != this->mistVents.end(); ++iter) {
+		wX = iter->wX;
+		wY = iter->wY;
+		UINT tTile = GetTSquare(wX, wY);
+
+		if (CanExpandMist(wX, wY)) {
+			expandTo.insert(wX, wY); //Always expand to clear vents
+		} else if (tTile == T_MIST && !ventConnectedMist.has(wX, wY)) {
+			//If this vent isn't already connected to another, find connected mist
+			CCoordSet localMist;
+			GetConnectedMistTiles(wX, wY, localMist);
+			ventConnectedMist += localMist;
+		}
+	}
+
+	//Find all tiles orthogonally adjecent to connected mist that allow expansion
+	while (ventConnectedMist.pop_first(wX, wY)) {
+		if (CanExpandMist(wX + 1, wY)) {
+			expandTo.insert(wX + 1, wY);
+		}
+		if (CanExpandMist(wX - 1, wY)) {
+			expandTo.insert(wX - 1, wY);
+		}
+		if (CanExpandMist(wX, wY + 1)) {
+			expandTo.insert(wX, wY + 1);
+		}
+		if (CanExpandMist(wX, wY - 1)) {
+			expandTo.insert(wX, wY - 1);
+		}
+	}
+
+	while (expandTo.pop_first(wX, wY)) {
+		Plot(wX, wY, T_MIST);
+	}
+}
+
+//*****************************************************************************
+bool CDbRoom::CanExpandMist(const UINT wX, const UINT wY) const
+//Returns: If mist can expand onto this tile
+{
+	if (!IsValidColRow(wX, wY))
+		return false;
+
+	UINT oTile = GetOSquare(wX, wY);
+	if (bIsSolidOTile(oTile) || oTile == T_HOT)
+		return false;
+
+	if (bIsArrow(GetFSquare(wX, wY)))
+		return false;
+
+	return GetTSquare(wX, wY) == T_EMPTY;
+}
+
+//*****************************************************************************
 CCharacter* CDbRoom::GetCharacterWithScriptID(const UINT scriptID)
 //Returns: character monster with indicated (unique) scriptID, or NULL if not found
 {
@@ -4562,6 +4625,7 @@ void CDbRoom::ExpandExplosion(
 		case T_HOT: case T_GOO: case T_PRESSPLATE:
 		case T_WALL_B:	case T_WALL_H:
 		case T_DIRT1: case T_DIRT3: case T_DIRT5:
+		case T_MISTVENT:
 			//Bomb blast goes over/through these things
 			break;
 		default: return;  //everything else stops bomb blast
@@ -5915,6 +5979,7 @@ void CDbRoom::Clear()
 	this->weather.clear();
 	this->bridges.clear();
 //	this->building.clear();
+	this->mistVents.clear();
 
 //	this->bCheckForHoldMastery = false;
 	this->bTarWasStabbed = false;
@@ -8118,6 +8183,12 @@ void CDbRoom::Plot(
 			this->PlotsMade.insert(wX,wY);
 			this->geometryChanges.insert(wX,wY);  //always assume changes to o-layer affect room geometry for easier maintenance
 
+			if (wTileNo == T_MISTVENT) {
+				this->mistVents.insert(wX, wY);
+			} else {
+				this->mistVents.erase(wX, wY);
+			}
+
 			//Specific plot types require in-game stat updates.
 			switch (wTileNo)
 			{
@@ -9089,6 +9160,8 @@ bool CDbRoom::SetMembers(
 		this->bridges.setMembersForRoom(Src.bridges, this);
 //		this->building.setMembers(Src.building);
 //		this->bCheckForHoldMastery = Src.bCheckForHoldMastery;
+		this->mistVents = Src.mistVents;
+
 		for (list<CMonster*>::const_iterator m = Src.DeadMonsters.begin();
 				m != Src.DeadMonsters.end(); ++m)
 		{
@@ -9408,6 +9481,7 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 	this->briars.setRoom(this); //call after Clear
 	this->bridges.setRoom(this);
 //	this->building.init(this->wRoomCols, this->wRoomRows);
+	this->mistVents.clear();
 	if (!bSkipPlatformInit)
 		ClearPlatforms();
 
@@ -9460,6 +9534,14 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
 				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
 				this->bridges.HandleBridgeAdded(wX, wY);
+			}
+			break;
+			//Vents.
+			case T_MISTVENT:
+			{
+				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
+				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
+				this->mistVents.insert(wX, wY);
 			}
 			break;
 		}
@@ -9667,6 +9749,41 @@ const
 		if (bLTBottom) PushTileIfOfType(wEvalX, wEvalY + 1);
 #undef PushTileIfOfType
 	}
+}
+
+//*****************************************************************************
+void CDbRoom::GetConnectedMistTiles(
+//Compiles set of all orthogonally connected mist squares, starting from (wX, wY)
+//Unlike other connection functions, this allows connections via covered T-layer
+	const UINT wX, const UINT wY, //(in) square to check from
+	CCoordSet& mistSquares)       //(out) set of contiguous tiles
+const
+{
+	mistSquares.clear();
+	CCoordSet toCheck;
+
+	if (!IsValidColRow(wX, wY))
+		return;
+
+	CCoordStack evalCoords(wX, wY);
+
+#define PushTileIfMist(x, y) {\
+	if (IsValidColRow(x, y) && IsEitherTSquare(x, y, T_MIST) && !mistSquares.has(x, y))\
+		evalCoords.Push((x), (y));}
+
+	UINT wEvalX, wEvalY;
+	while (evalCoords.PopBottom(wEvalX, wEvalY)) //perform as a queue for performance
+	{
+		if (!mistSquares.insert(wEvalX, wEvalY))
+			continue; //don't need to reprocess this tile if it was already handled
+
+		PushTileIfMist(wEvalX + 1, wEvalY);
+		PushTileIfMist(wEvalX - 1, wEvalY);
+		PushTileIfMist(wEvalX, wEvalY + 1);
+		PushTileIfMist(wEvalX, wEvalY - 1);
+	}
+
+#undef PushTileIfMist
 }
 
 //*****************************************************************************

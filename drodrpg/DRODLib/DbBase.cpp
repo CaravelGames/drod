@@ -811,6 +811,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ImageOverlayStrategy: strText = "Image overlay strategy"; break;
 		case MID_Mist: strText = "Mist"; break;
 		case MID_MistDestroyed: strText = "Mist destroyed"; break;
+		case MID_MistVent: strText = "Mist Vent"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

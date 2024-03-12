@@ -887,7 +887,8 @@ const
 					bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
 					wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
-					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0]) ||
+					wTileNo[0] == T_MISTVENT) &&
 				(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			//On normal floor, platforms, goo or water.
@@ -896,7 +897,7 @@ const
 						bIsOpenDoor(wTileNo[0]) || bIsBridge(wTileNo[0]) ||
 						bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
-						bIsWater(wTileNo[0])) &&
+						bIsWater(wTileNo[0]) || wTileNo[0] == T_MISTVENT) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_CRATE:

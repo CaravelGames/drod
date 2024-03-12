@@ -79,6 +79,7 @@ struct TileImages
 	BYTE damaged : 1;    //damaged tile must be updated on screen this frame
 	BYTE dirty : 1;      //tile is dirty and needs to be repainted
 	BYTE monster : 1;    //monster piece is on this tile
+	BYTE mistCorners: 4; //diagonally adjacent mist tiles
 };
 
 typedef USHORT LIGHTTYPE; //represents a light value on one color channel

@@ -311,6 +311,7 @@ enum MID_CONSTANT {
   MID_ForceArrowDisabledSE = 1881,
   MID_ForceArrowDisabledSW = 1882,
   MID_Mist = 1885,
+  MID_MistVent = 1887,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,
