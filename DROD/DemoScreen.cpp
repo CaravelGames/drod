@@ -570,7 +570,7 @@ int CDemoScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 //*****************************************************************************
 bool CDemoScreen::IsAtDemoEnd()
 {
-	return this->pCurrentGame->wTurnNo >= this->pDemo->wEndTurnNo;
+	return this->pCurrentGame->wTurnNo - 1 >= this->pDemo->wEndTurnNo;
 }
 
 //*****************************************************************************
