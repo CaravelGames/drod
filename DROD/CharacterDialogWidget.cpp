@@ -183,6 +183,8 @@ const UINT TAG_COLOR_LISTBOX = 875;
 const UINT TAG_WEAPON_LISTBOX2 = 874;
 const UINT TAG_VARCOMPLIST2 = 873;
 const UINT TAG_ORBAGENTLIST = 872;
+const UINT TAG_PLAYERBEHAVE_LIST = 871;
+const UINT TAG_PLAYERBEHAVESTATE_LIST = 870;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -433,6 +435,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pIgnoreFlagsListBox(NULL)
 	, pColorListBox(NULL)
 	, pOrbAgentListBox(NULL)
+	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1292,6 +1295,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT ORBAGENTLISTBOX_CX = CX_DIRECTIONLISTBOX2;
 	static const UINT ORBAGENTLISTBOX_CY = 4 * LIST_LINE_HEIGHT + 4;
 
+	static const UINT PLAYERBEHAVELISTBOX_X = X_ACTIONLISTBOX + CX_ACTIONLISTBOX + CX_SPACE;
+	static const UINT PLAYERBEHAVELISTBOX_Y = Y_ACTIONLISTBOX;
+	static const UINT PLAYERBEHAVELISTBOX_CX = CX_IMPERATIVELISTBOX;
+	static const UINT PLAYERBEHAVELISTBOX_CY = CY_ACTIONLISTBOX - 6 * LIST_LINE_HEIGHT;
+
+	static const UINT PLAYERBEHAVESTATELISTBOX_Y = PLAYERBEHAVELISTBOX_Y + PLAYERBEHAVELISTBOX_CY + CY_SPACE;
+	static const UINT PLAYERBEHAVESTATELISTBOX_CY = 5 * LIST_LINE_HEIGHT + 4;
+
 	//World map input.
 	static const int X_XCOORDLABEL = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
 	static const int Y_XCOORDLABEL = Y_WAITLABEL;
@@ -2038,6 +2049,21 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pOrbAgentListBox->AddItem(OrbAgentType::OA_TOGGLE, g_pTheDB->GetMessageText(MID_OrbAgentToggle));
 	this->pOrbAgentListBox->AddItem(OrbAgentType::OA_OPEN, g_pTheDB->GetMessageText(MID_OrbAgentOpen));
 	this->pOrbAgentListBox->AddItem(OrbAgentType::OA_CLOSE, g_pTheDB->GetMessageText(MID_OrbAgentClose));
+
+	//Player behaviors
+	this->pPlayerBehaviorListBox = new CListBoxWidget(TAG_PLAYERBEHAVE_LIST,
+		PLAYERBEHAVELISTBOX_X, PLAYERBEHAVELISTBOX_Y, PLAYERBEHAVELISTBOX_CX, PLAYERBEHAVELISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(this->pPlayerBehaviorListBox);
+	PopulatePlayerBehaviorListBox();
+
+	this->pPlayerBehaviorStateListBox = new CListBoxWidget(TAG_PLAYERBEHAVESTATE_LIST,
+		PLAYERBEHAVELISTBOX_X, PLAYERBEHAVESTATELISTBOX_Y, PLAYERBEHAVELISTBOX_CX, PLAYERBEHAVESTATELISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(this->pPlayerBehaviorStateListBox);
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Default, L"Default");
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_On, L"On");
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Off, L"Off");
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Powered, L"Powered");
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Unpowered, L"Unpowered");
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3896,6 +3922,11 @@ const
 		case CCharacterCommand::CC_SetWaterTraversal:
 			wstr += this->pWaterTraversalListBox->GetTextForKey(command.x);
 		break;
+		case CCharacterCommand::CC_SetPlayerBehavior:
+			wstr += this->pPlayerBehaviorListBox->GetTextForKey(command.x);
+			wstr += wszSpace;
+			wstr += this->pPlayerBehaviorStateListBox->GetTextForKey(command.y);
+		break;
 
 		case CCharacterCommand::CC_StartGlobalScript:
 		{
@@ -4764,6 +4795,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerStealth, g_pTheDB->GetMessageText(MID_SetPlayerStealth));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerWeapon, g_pTheDB->GetMessageText(MID_SetPlayerWeapon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerBehavior, L"Set player behavior");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
@@ -5037,6 +5069,33 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	pListBox->AddItem(T_WALL_IMAGE, g_pTheDB->GetMessageText(MID_WallImage));
 
 	pListBox->SetAllowFiltering(true);
+}
+
+void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
+{
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BumpActivateOrb, L"Body strike orbs/beacons");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_LightFuses, L"Light fuses");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_StepKill, L"Step kill");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HasWeapon, L"Has weapon");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseMimicPotion, L"Drink mimic potion");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseDecoyPotion, L"Drink decoy potion");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseClonePotion, L"Drink clone potion");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseInvisibilityPotion, L"Drink invisibility potion");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSpeedPotion, L"Drink speed potion");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSquadHorn, L"Toot squad horn");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSoldierHorn, L"Toot soldier horn");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DaggerDamageImmune, g_pTheDB->GetMessageText(MID_DaggerDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_CaberDamageImmune, g_pTheDB->GetMessageText(MID_CaberDamageImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FloorSpikeImmune, g_pTheDB->GetMessageText(MID_FloorSpikeImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
+
+	this->pPlayerBehaviorListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
@@ -5506,7 +5565,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 59;
+	static const UINT NUM_WIDGETS = 60;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5525,7 +5584,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_VARNAMETEXTINPUT, TAG_GRAPHICLISTBOX3, TAG_WAITFORITEMLISTBOX, TAG_BUILDMARKERITEMLISTBOX,
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_FLAGBOX, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
-		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST
+		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5578,6 +5637,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
 	static const UINT EXPRESSION[] = { TAG_VARNAMETEXTINPUT, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
 	static const UINT ORBAGENTS[] = { TAG_ORBAGENTLIST, 0 };
+	static const UINT PLAYERBEHAVIOR[] = {TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST, 0};
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5686,7 +5746,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		BUILD_MARKER_ITEMS, //CC_WaitForNotBuildType
 		NO_WIDGETS,         //CC_ResetOverrides
 		GRAPHIC,            //CC_CountEntityType
-		WAIT_FOR_ITEMS      //CC_CountItem
+		WAIT_FOR_ITEMS,     //CC_CountItem
+		PLAYERBEHAVIOR      //CC_SetPlayerBehavior
 	};
 
 	static const UINT NUM_LABELS = 32;
@@ -5838,7 +5899,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForNotBuildType
 		NO_LABELS,          //CC_ResetOverrides
 		NO_LABELS,          //CC_CountEntityType
-		NO_LABELS           //CC_CountItem
+		NO_LABELS,          //CC_CountItem
+		NO_LABELS,          //CC_SetPlayerBehavior
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6376,6 +6438,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_SetWaterTraversal:
 			this->pCommand->x = this->pWaterTraversalListBox->GetSelectedItem();
+			AddCommand();
+		break;
+		case CCharacterCommand::CC_SetPlayerBehavior:
+			this->pCommand->x = this->pPlayerBehaviorListBox->GetSelectedItem();
+			this->pCommand->y = this->pPlayerBehaviorStateListBox->GetSelectedItem();
 			AddCommand();
 		break;
 
@@ -7156,6 +7223,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 
 		case CCharacterCommand::CC_SetWaterTraversal:
 			this->pWaterTraversalListBox->SelectItem(this->pCommand->x);
+		break;
+
+		case CCharacterCommand::CC_SetPlayerBehavior:
+			this->pPlayerBehaviorListBox->SelectItem(this->pCommand->x);
+			this->pPlayerBehaviorStateListBox->SelectItem(this->pCommand->y);
 		break;
 
 		case CCharacterCommand::CC_GenerateEntity:
@@ -8096,6 +8168,12 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_SetWaterTraversal:
 		parseMandatoryOption(pCommand->x,this->pWaterTraversalListBox,bFound);
 	break;
+	case CCharacterCommand::CC_SetPlayerBehavior:
+		skipLeftParen;
+		parseNumber(pCommand->x);
+		skipComma;
+		parseMandatoryOption(pCommand->y, this->pPlayerBehaviorStateListBox, bFound);
+	break;
 
 	case CCharacterCommand::CC_GenerateEntity:
 		parseMandatoryOption(pCommand->h, this->pAddCommandGraphicListBox, bFound);
@@ -8853,6 +8931,11 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 	case CCharacterCommand::CC_SetWaterTraversal:
 		wstr += this->pWaterTraversalListBox->GetTextForKey(c.x);
+	break;
+	case CCharacterCommand::CC_SetPlayerBehavior:
+		concatNumWithComma(c.x);
+		wstr += wszSpace;
+		wstr += this->pPlayerBehaviorStateListBox->GetTextForKey(c.y);
 	break;
 
 	case CCharacterCommand::CC_GenerateEntity:

@@ -1573,6 +1573,7 @@ bool CCurrentGame::LoadFromHold(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->pLevel->dwStartingRoomID = pEntrance->dwRoomID;
 
@@ -1775,6 +1776,7 @@ bool CCurrentGame::LoadFromRoom(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->swordsman.wX = this->swordsman.wPrevX = CDbSavedGame::wStartRoomX;
 	this->swordsman.wY = this->swordsman.wPrevY = CDbSavedGame::wStartRoomY;
@@ -1840,6 +1842,7 @@ bool CCurrentGame::LoadFromSavedGame(
 	SetPlayerRole(CDbSavedGame::wStartRoomAppearance, CueEvents);
 	this->swordsman.bWeaponOff = CDbSavedGame::bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = CDbSavedGame::wStartRoomWaterTraversal;
+	this->swordsman.behaviorOverrides = CDbSavedGame::startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetWeaponType(CDbSavedGame::wStartRoomWeaponType);
 	SetRoomStartToPlayer();
 
@@ -3900,6 +3903,7 @@ void CCurrentGame::RoomEntranceAsserts()
 	ASSERT(this->swordsman.wIdentity == this->wStartRoomAppearance);
 	ASSERT(this->swordsman.bWeaponOff == this->bStartRoomSwordOff);
 	ASSERT(this->swordsman.wWaterTraversal == this->wStartRoomWaterTraversal);
+	ASSERT(this->swordsman.behaviorOverrides == this->startRoomPlayerBehaviorOverrides);
 	ASSERT((UINT)this->swordsman.weaponType == this->wStartRoomWeaponType);
 }
 
@@ -5049,28 +5053,26 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 		if (pDouble->wType == M_CLONE)
 		{
 			pDouble->SetWeaponSheathed(); //Need to set sheath status before using items
-			const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-			const bool bCanGetItems = this->swordsman.CanLightFuses();
 			UINT wNewTSquare = this->pRoom->GetTSquare(pDouble->wX, pDouble->wY);
 			switch(wNewTSquare)
 			{
 				case T_POTION_K:  //Mimic potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 						DrankPotion(CueEvents, M_MIMIC, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_D:  //Decoy potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkDecoyPotion())
 						DrankPotion(CueEvents, M_DECOY, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_C:  //Clone potion.
-					if (this->swordsman.CanLightFuses())
+					if (this->swordsman.CanDrinkClonePotion())
 						DrankPotion(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_I:  //Invisibility potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 					{
 						this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -5079,7 +5081,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_POTION_SP:  //Speed potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkSpeedPotion())
 					{
 						this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -5088,12 +5090,12 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_HORN_SQUAD:    //Squad horn.
-					if (this->swordsman.CanLightFuses())  //same condition as clone potion..
+					if (this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 						BlowHorn(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_HORN_SOLDIER:  //Soldier horn.
-					if (bIsMonsterTarget(this->swordsman.wAppearance) || this->swordsman.bCanGetItems)
+					if (this->swordsman.CanBlowSoldierHorn())
 						BlowHorn(CueEvents, M_STALWART2, pDouble->wX, pDouble->wY);
 				break;
 
@@ -6183,9 +6185,7 @@ CheckFLayer:
 			//If player is in humanoid, non-sworded role, allow hitting orbs directly.
 			case T_ORB:
 			case T_BEACON: case T_BEACON_OFF:
-				if ((bIsHuman(this->swordsman.wAppearance) &&
-						!bEntityHasSword(this->swordsman.wAppearance)) ||
-						this->swordsman.bCanGetItems) //power token allows this too
+				if (this->swordsman.CanBumpActivateOrb()) //power token allows this too
 					if (wNewTTile == T_ORB)
 					{
 						this->pRoom->ActivateOrb(destX, destY, CueEvents, OAT_Player);
@@ -6416,7 +6416,7 @@ MakeMove:
 			{
 				//Player dies if on same hot tile two (non-hasted) turns in a row.
 				if ((!this->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn) &&
-						bIsEntityTypeVulnerableToHeat(this->swordsman.wAppearance))
+						this->swordsman.IsVulnerableToHeat())
 				{
 					SetDyingEntity(&this->swordsman);
 					CueEvents.Add(CID_PlayerBurned);
@@ -6443,8 +6443,6 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	const bool bWasOnSameScroll, const bool bPlayerMove, const bool bPlayerTeleported)
 {
 	const bool bMoved = dx!=0 || dy!=0 || bPlayerTeleported;
-	const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-	const bool bCanGetItems = this->swordsman.CanLightFuses();
 	const UINT wOSquare = this->pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wTSquare = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 
@@ -6468,22 +6466,22 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	switch (wTSquare)
 	{
 		case T_POTION_K:  //Mimic potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkMimicPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_MIMIC, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_D:  //Decoy potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkDecoyPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_DECOY, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_C:  //Clone potion.
-			if (bPlayerMove && this->swordsman.CanLightFuses() && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkClonePotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_I:  //Invisibility potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkInvisibilityPotion())
 			{
 				this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6493,7 +6491,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_POTION_SP:  //Speed potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkSpeedPotion())
 			{
 				this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6503,7 +6501,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_HORN_SQUAD:    //Squad horn.
-			if (bPlayerMove && this->swordsman.CanLightFuses())  //same condition as clone potion..
+			if (bPlayerMove && this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 				BlowHorn(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
@@ -6536,7 +6534,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	{
 		case T_FUSE:
 			//Light the fuse.
-			if (bCanGetItems)
+			if (this->swordsman.CanLightFuses())
 				this->pRoom->LightFuseEnd(CueEvents, this->swordsman.wX, this->swordsman.wY);
 		break;
 	}
@@ -7382,6 +7380,7 @@ void CCurrentGame::SetPlayerToRoomStart()
 	this->swordsman.bWeaponOff = this->bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = this->wStartRoomWaterTraversal;
 	this->swordsman.SetWeaponType(this->wStartRoomWeaponType);
+	this->swordsman.behaviorOverrides = this->startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetOrientation(this->wStartRoomO);
 	SetPlayer(this->wStartRoomX, this->wStartRoomY);
 	this->wLastCheckpointX = this->wLastCheckpointY = NO_CHECKPOINT;
@@ -7435,6 +7434,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->bStartRoomSwordOff = this->swordsman.bWeaponOff;
 	this->wStartRoomWaterTraversal = this->swordsman.wWaterTraversal;
 	this->wStartRoomWeaponType = this->swordsman.weaponType;
+	this->startRoomPlayerBehaviorOverrides = this->swordsman.behaviorOverrides;
 
 	this->wStartRoomO = this->swordsman.wO;
 	this->wStartRoomX = this->swordsman.wX;

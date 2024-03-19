@@ -56,7 +56,7 @@ bool CClone::CanDropTrapdoor(const UINT oTile) const
 		return true;
 
 	const bool bCanDropTrapdoor = this->pCurrentGame ?
-		this->pCurrentGame->swordsman.CanLightFuses() : true;
+		this->pCurrentGame->swordsman.CanGetItems() : true;
 
 	if (bCanDropTrapdoor) {
 		if (bIsThinIce(oTile))
