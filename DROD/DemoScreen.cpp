@@ -491,7 +491,7 @@ void CDemoScreen::AdvanceTurn()
 	ProcessCommand(nCommand, wX, wY);
 
 	//Check for last turn in demo.
-	if ((int)CGameScreen::pCurrentGame->wTurnNo - 1 >= (int)this->pDemo->wEndTurnNo)
+	if (CGameScreen::pCurrentGame->wTurnNo > this->pDemo->wEndTurnNo)
 	{
 		this->currentCommandIter = CGameScreen::pCurrentGame->Commands.end();
 	} else {
@@ -570,7 +570,7 @@ int CDemoScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 //*****************************************************************************
 bool CDemoScreen::IsAtDemoEnd()
 {
-	return this->pCurrentGame->wTurnNo - 1 >= this->pDemo->wEndTurnNo;
+	return this->pCurrentGame->wTurnNo > this->pDemo->wEndTurnNo;
 }
 
 //*****************************************************************************
