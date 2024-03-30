@@ -238,6 +238,34 @@ bool CSwordsman::CanDrinkPotionType(const UINT wTile) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
+{
+	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))
+		return true;
+
+	bool bSafeOnly;
+	HasBehavior(PB_FatalPushImmune, bSafeOnly);
+
+	if (!bSafeOnly) {
+		// We don't care that these tiles might be deadly
+		return bIsPit(wTile) || bIsWater(wTile);
+	}
+
+	bool bFlying = bIsEntityFlying(this->wAppearance);
+
+	if (bIsPit(wTile) && bFlying)
+		return true;
+
+	if (bIsDeepWater(wTile) && (bIsEntitySwimming(this->wAppearance) || bFlying))
+		return true;
+
+	if (bIsShallowWater(wTile) && CanWadeInShallowWater())
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanWadeInShallowWater() const
 //Returns: true if current player role can wade in shallow water
 {
@@ -406,6 +434,34 @@ bool CSwordsman::IsStabbable() const
 			//All other (monster) roles are vulnerable.
 			return true;
 	}
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToAdder() const
+{
+	bool active;
+	HasBehavior(PB_AdderImmune, active);
+	return !active; //No immunity = edible
+
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToExplosion() const
+{
+	bool active;
+	HasBehavior(PB_ExplosionImmune, active);
+	return !active; //No immunity = it hurts
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToFluff() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffImmune, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	return bCanFluffKill(this->wAppearance);
 }
 
 //*****************************************************************************

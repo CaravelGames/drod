@@ -5094,6 +5094,10 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FloorSpikeImmune, g_pTheDB->GetMessageText(MID_FloorSpikeImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_ExplosionImmune, g_pTheDB->GetMessageText(MID_ExplosionImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_AdderImmune, g_pTheDB->GetMessageText(MID_AdderImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PuffImmune, g_pTheDB->GetMessageText(MID_PuffImmune));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FatalPushImmune, g_pTheDB->GetMessageText(MID_FatalPushImmune));
 
 	this->pPlayerBehaviorListBox->SetAllowFiltering(true);
 }

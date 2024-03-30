@@ -4880,7 +4880,7 @@ void CDbRoom::ProcessPuffAttack(
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
 	{
 		const CSwordsman& player = this->pCurrentGame->swordsman;
-		if (bCanFluffKill(player.wAppearance))
+		if (player.IsVulnerableToFluff())
 		{
 			CCurrentGame *pGame = (CCurrentGame*)this->pCurrentGame; //non-const
 			pGame->SetDyingEntity(&player);
@@ -6126,8 +6126,12 @@ void CDbRoom::ProcessExplosionSquare(
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
 	{
-		this->pCurrentGame->SetDyingEntity(&this->pCurrentGame->swordsman);
-		CueEvents.Add(CID_ExplosionKilledPlayer);
+		CSwordsman& player = this->pCurrentGame->swordsman;
+
+		if (player.IsVulnerableToExplosion()) {
+			this->pCurrentGame->SetDyingEntity(&player);
+			CueEvents.Add(CID_ExplosionKilledPlayer);
+		}
 	}
 }
 

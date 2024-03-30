@@ -258,8 +258,12 @@ const
 	if (IsTileObstacle(room.GetFSquare(wCol, wRow)))
 		return true;
 
-	//Check o-square obstacle.
+	//Check player
 	const CSwordsman& player = this->pCurrentGame->swordsman;
+	if (!player.IsVulnerableToAdder() && this->pCurrentGame->IsPlayerAt(wCol, wRow))
+		return true; //inedible player blocks tile
+
+	//Check o-square obstacle.
 	wLookTileNo = room.GetOSquare(wCol, wRow);
 	if (IsTileObstacle(wLookTileNo))
 	{

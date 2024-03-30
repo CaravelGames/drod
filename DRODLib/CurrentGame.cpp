@@ -2941,7 +2941,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wDestX, wDestY);
 		if (pMonster != NULL && pMonster->wType != M_FLUFFBABY)
 			return false;
-		if (!this->pRoom->CanPushOntoOTile(wDestX, wDestY))
+		if (!this->swordsman.CanPushOntoOTile(this->pRoom->GetOSquare(wDestX, wDestY)))
 			return false;
 		if (!this->pRoom->CanPushOntoTTile(wDestX, wDestY))
 			return false;

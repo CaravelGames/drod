@@ -90,6 +90,10 @@ enum PlayerBehavior
 	PB_FloorSpikeImmune = 19,
 	PB_FiretrapImmune = 20,
 	PB_HotTileImmune = 21,
+	PB_ExplosionImmune = 22,
+	PB_AdderImmune = 23,
+	PB_PuffImmune = 24,
+	PB_FatalPushImmune = 25,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -114,6 +118,7 @@ public:
 	bool CanDrinkMimicPotion() const;
 	bool CanDrinkSpeedPotion() const;
 	bool CanDrinkPotionType(const UINT wTile) const;
+	bool CanPushOntoOTile(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();
 	void EquipWeapon(const UINT type);
@@ -122,6 +127,9 @@ public:
 	bool IsAt(UINT wX, UINT wY) const;
 	bool IsInRoom() const;
 	bool IsStabbable() const;
+	bool IsVulnerableToAdder() const;
+	bool IsVulnerableToExplosion() const;
+	bool IsVulnerableToFluff() const;
 	bool IsVulnerableToHeat() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
 	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
