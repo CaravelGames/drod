@@ -2822,16 +2822,16 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 
 	RenderFogInPit(pSurface);
 	DrawPlatformsAndTLayer(pSurface);
-//	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(*this->pCurrentGame->pPlayer, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-//	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 //	DrawOverheadLayer(pSurface);
 //	DrawGhostOverheadCharacters(pSurface, false);
-//	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 	this->pLastLayerEffects->DrawEffects(pSurface, EDAMAGEPREVIEW);
 
 	RenderEnvironment(pSurface);
