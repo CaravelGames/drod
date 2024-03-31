@@ -6337,10 +6337,8 @@ MakeMove:
 			this->swordsman.wSwordMovement != this->swordsman.wO) //pushing forward is valid
 		this->swordsman.wSwordMovement = NO_ORIENTATION;
 
-	const bool bWeaponWasSheathed = !this->swordsman.HasWeapon();
 	//Swordless entities automatically face the way they're trying to move.
-	const bool face_movement_direction = bWeaponWasSheathed || this->swordsman.GetActiveWeapon() == WT_Dagger;
-	if (face_movement_direction && nFirstO != NO_ORIENTATION)
+	if (this->swordsman.FacesMovementDirection() && nFirstO != NO_ORIENTATION)
 	{
 		this->swordsman.SetOrientation(nFirstO);
 		this->swordsman.wSwordMovement = nFirstO;

@@ -94,6 +94,7 @@ enum PlayerBehavior
 	PB_AdderImmune = 23,
 	PB_PuffImmune = 24,
 	PB_FatalPushImmune = 25,
+	PB_FaceMovementDirection = 26,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -122,6 +123,7 @@ public:
 	bool CanWadeInShallowWater() const;
 	void Clear();
 	void EquipWeapon(const UINT type);
+	bool FacesMovementDirection() const;
 	UINT GetWaterTraversalState(UINT wRole = M_NONE) const;
 	MovementType GetMovementType() const;
 	bool IsAt(UINT wX, UINT wY) const;

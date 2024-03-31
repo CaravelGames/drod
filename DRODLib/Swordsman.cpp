@@ -275,6 +275,17 @@ bool CSwordsman::CanWadeInShallowWater() const
 }
 
 //*****************************************************************************
+bool CSwordsman::FacesMovementDirection() const
+{
+	bool active;
+	if (HasBehavior(PB_FaceMovementDirection, active)) {
+		return active;
+	}
+
+	return !HasWeapon() || GetActiveWeapon() == WT_Dagger;;
+}
+
+//*****************************************************************************
 void CSwordsman::Clear()
 {
 	CEntity::Clear();
