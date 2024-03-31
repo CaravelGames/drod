@@ -93,6 +93,7 @@ protected:
 
 private:
 	std::map<InputKey,int> InputKeyToCommandMap;
+	std::map<InputKey, int> AlternativeKeyToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H
