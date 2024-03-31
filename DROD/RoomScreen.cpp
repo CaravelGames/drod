@@ -341,11 +341,45 @@ void CRoomScreen::InitKeysymToCommandMap(
 		const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(wIndex);
 
 		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
-		const bool bInvalidSDL1mapping = inputKey >= 128 && inputKey <= 323;
 		this->InputKeyToCommandMap[inputKey] = keyDefinition->eCommand;
+		bool bCmdUseModifier = DoesCommandUseModifiers((DCMD)wIndex);
 
-		if (DoesCommandUseModifiers((DCMD)wIndex)) // Support for macros
+		if (bCmdUseModifier) // Support for macros
 			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(inputKey), false, false, true)] = keyDefinition->eCommand;
+
+		// Numlock being off can cause the numpad to be treated as different keys, but only the arrows for some reason
+		// So we store an alternative key map that flips arrow keys and some numpad keys so we can check for both
+		InputKey altKey = inputKey;
+		switch (inputKey) {
+			case SDLK_KP_8:
+				altKey = SDLK_UP;
+				break;
+			case SDLK_KP_4:
+				altKey = SDLK_LEFT;
+				break;
+			case SDLK_KP_6:
+				altKey = SDLK_RIGHT;
+				break;
+			case SDLK_KP_2:
+				altKey = SDLK_DOWN;
+				break;
+			case SDLK_UP:
+				altKey = SDLK_KP_8;
+				break;
+			case SDLK_LEFT:
+				altKey = SDLK_KP_4;
+				break;
+			case SDLK_RIGHT:
+				altKey = SDLK_KP_6;
+				break;
+			case SDLK_DOWN:
+				altKey = SDLK_KP_2;
+				break;
+		}
+
+		this->AlternativeKeyToCommandMap[altKey] = keyDefinition->eCommand;
+		if (bCmdUseModifier) // Support for macros
+			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(altKey), false, false, true)] = keyDefinition->eCommand;
 	}
 }
 
@@ -355,6 +389,10 @@ int CRoomScreen::GetCommandForInputKey(const InputKey inputKey) const
 	std::map<InputKey,int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
 	if (it != this->InputKeyToCommandMap.end())
 		return it->second;
+
+	std::map<InputKey, int>::const_iterator itAlternative = this->AlternativeKeyToCommandMap.find(inputKey);
+	if (itAlternative != this->AlternativeKeyToCommandMap.end())
+		return itAlternative->second;
 
 	return CMD_UNSPECIFIED;
 }
