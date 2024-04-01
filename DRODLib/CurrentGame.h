@@ -261,7 +261,7 @@ public:
 	bool     PlayAllCommands(CCueEvents &CueEvents,
 			const bool bTruncateInvalidCommands=false);
 	bool     PlayCommandsToTurn(const UINT wEndTurnNo, CCueEvents &CueEvents);
-	bool     PlayerEnteredTunnel(const UINT wOTileNo, const UINT wMoveO, UINT wRole = M_NONE) const;
+	bool     PlayerEnteredTunnel(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	void     PostProcessCharacter(CCharacter* pCharacter, CCueEvents& CueEvents);
 	void     ProcessCommandSetVar(const UINT itemID, UINT newVal);
 	void     ProcessCommand(int nCommand, CCueEvents &CueEvents,

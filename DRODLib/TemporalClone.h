@@ -37,6 +37,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CTemporalClone);
 
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
+	virtual bool CanEnterTunnel() const;
 	virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
 	virtual UINT GetIdentity() const;
 	virtual bool IsAttackableTarget() const;

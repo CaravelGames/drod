@@ -6019,7 +6019,7 @@ void CCharacter::getCommandXYF(
 bool CCharacter::IsOpenMove(const int dx, const int dy) const
 //Returns: whether move is possible, and player is not in the way
 {
-	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+	if (CanEnterTunnelInDirection(dx, dy)) {
 		return true;
 	}
 
@@ -7200,7 +7200,7 @@ void CCharacter::MoveCharacter(
 	UINT destX, destY;
 
 	// Preform tunnel move if allowed, otherwise just make a step
-	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+	if (CanEnterTunnelInDirection(dx, dy)) {
 		if (!this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
 			return;
 		}
@@ -7267,8 +7267,7 @@ void CCharacter::MoveCharacter(
 bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
 // Can the character enter a tunnel on its tile in the given direction.
 {
-	if (dx != 0 && dy != 0)	{
-		// No diagonal tunnels
+	if (!CanEnterTunnel()) {
 		return false;
 	}
 
@@ -7276,26 +7275,7 @@ bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
 	const UINT wFTileNo = room.GetFSquare(this->wX, this->wY);
 	const UINT wMoveO = nGetO(dx, dy);
 
-	if (bIsArrowObstacle(wFTileNo, wMoveO)) {
-		// Can't move against arrow
-		return false;
-	}
-
-	const UINT wOTileNo = room.GetOSquare(this->wX, this->wY);
-	if (!bIsTunnel(wOTileNo)) {
-		return false;
-	}
-
-	switch (wOTileNo)
-	{
-		case T_TUNNEL_N: return wMoveO == N;
-		case T_TUNNEL_S: return wMoveO == S;
-		case T_TUNNEL_E: return wMoveO == E;
-		case T_TUNNEL_W: return wMoveO == W;
-		default: ASSERT(!"Unrecognized tunnel type"); return false;
-	}
-
-	return false;
+	return room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 }
 
 //*****************************************************************************

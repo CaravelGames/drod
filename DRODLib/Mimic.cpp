@@ -385,7 +385,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 				if (this->bFrozen
 						|| DoesArrowPreventMovement(this->wX, this->wY, dx, dy)
 						|| room.DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy)
-						|| this->pCurrentGame->PlayerEnteredTunnel(wOTile, nGetO(dx, dy), wRole))
+						|| (CanEnterTunnel() && room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy)))
 					bBumpOrb = false;
 				if (bBumpOrb)
 				{

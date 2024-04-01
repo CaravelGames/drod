@@ -58,6 +58,12 @@ bool CTemporalClone::CanDropTrapdoor(const UINT oTile) const
 	return false;
 }
 
+bool CTemporalClone::CanEnterTunnel() const
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return bIsMonsterTarget(this->wIdentity) || player.bCanGetItems;
+}
+
 //*****************************************************************************************
 //Can this projection step onto (and thus kill) the player?
 bool CTemporalClone::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
@@ -241,9 +247,8 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 			applying_command = false;
 		} else {
 			CDbRoom* pRoom = this->pCurrentGame->pRoom;
-			bEnteredTunnel = this->pCurrentGame->PlayerEnteredTunnel(
-					pRoom->GetOSquare(this->wX, this->wY), nGetO(dx, dy), this->wIdentity) &&
-				!bIsArrowObstacle(pRoom->GetFSquare(this->wX, this->wY), nGetO(dx, dy));
+			bEnteredTunnel = CanEnterTunnel() &&
+				pRoom->IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 			if (bEnteredTunnel) {
 				//If tunnel cannot be exited, then don't expend a turn.
 				UINT destX, destY;
@@ -282,8 +287,8 @@ void CTemporalClone::PushInDirection(int dx, int dy, bool bStun, CCueEvents &Cue
 {
 	const CDbRoom& room = *(this->pCurrentGame->pRoom);
 	const UINT wPushO = nGetO(dx, dy);
-	const bool bEnteredTunnel = this->pCurrentGame->PlayerEnteredTunnel(room.GetOSquare(this->wX, this->wY), wPushO, this->wIdentity)
-				&& !DoesArrowPreventMovement(this->wX, this->wY, dx, dy);
+	const bool bEnteredTunnel = CanEnterTunnel() &&
+		room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 	if (bEnteredTunnel)
 	{
 		UINT destX, destY;

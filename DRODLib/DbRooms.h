@@ -373,6 +373,7 @@ public:
 	bool           IsTarVulnerableToStab(const UINT wX, const UINT wY) const;
 	bool           IsTileInRectOfType(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const UINT wType) const;
+	bool           IsTunnelTraversableInDirection(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	bool           IsValidColRow(const UINT wX, const UINT wY) const;
 	void           KillFluffOnHazard(CCueEvents &CueEvents);
 	void           KillMonstersOnHazard(CCueEvents &CueEvents);

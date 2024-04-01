@@ -2534,11 +2534,8 @@ const
 	if (pMonster->IsLongMonster() && type != M_GENTRYII)
 		return false;
 
-	if (type == M_TEMPORALCLONE){
-		const UINT tile = GetOSquare(wFromX, wFromY);
-		if (bIsTunnel(tile) && this->pCurrentGame->PlayerEnteredTunnel(tile, nGetO(wToX - wFromX, wToY - wFromY), pMonster->GetIdentity())){
-			return true;
-		}
+	if (pMonster->CanEnterTunnel() && IsTunnelTraversableInDirection(wFromX, wFromY, wToX - wFromX, wToY - wFromY)) {
+		return true;
 	}
 
 	CMonster *pDestMonster = GetMonsterAtSquare(wToX, wToY);
@@ -11391,6 +11388,43 @@ bool CDbRoom::IsDoorOpen(
 		case T_DOOR_Y: return false;
 		default: ASSERT(!"Bad door tile."); return false; //checked a tile that wasn't a door
 	}
+}
+
+//*****************************************************************************
+bool CDbRoom::IsTunnelTraversableInDirection(
+//Determine if a tunnel at the given position can be travelled through in the given direction
+	const UINT wX, const UINT wY, //Coords to tile
+	const int dx, const int dy) // Direction of travel
+	const
+{
+	if (dx != 0 && dy != 0) {
+		// No diagonal tunnels
+		return false;
+	}
+
+	const UINT wFTile = GetFSquare(wX, wY);
+	UINT wMoveO = nGetO(dx, dy);
+	//Can't move against arrow
+	if (bIsArrowObstacle(wFTile, wMoveO)) {
+		return false;
+	}
+
+	const UINT wOTileNo = GetOSquare(wX, wY);
+	//Entity enters tunnel when moving off of a tunnel in its entrance direction.
+	if (!bIsTunnel(wOTileNo)) {
+		return false;
+	}
+
+	switch (wOTileNo)
+	{
+		case T_TUNNEL_N: return wMoveO == N;
+		case T_TUNNEL_S: return wMoveO == S;
+		case T_TUNNEL_E: return wMoveO == E;
+		case T_TUNNEL_W: return wMoveO == W;
+		default: ASSERT(!"Unrecognized tunnel type"); return false;
+	}
+
+	return false;
 }
 
 //*****************************************************************************

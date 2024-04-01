@@ -95,6 +95,7 @@ enum PlayerBehavior
 	PB_PuffImmune = 24,
 	PB_FatalPushImmune = 25,
 	PB_FaceMovementDirection = 26,
+	PB_UseTunnels = 27,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -119,6 +120,7 @@ public:
 	bool CanDrinkMimicPotion() const;
 	bool CanDrinkSpeedPotion() const;
 	bool CanDrinkPotionType(const UINT wTile) const;
+	bool CanEnterTunnel() const;
 	bool CanPushOntoOTile(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();

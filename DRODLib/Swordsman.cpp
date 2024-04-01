@@ -238,6 +238,17 @@ bool CSwordsman::CanDrinkPotionType(const UINT wTile) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanEnterTunnel() const
+{
+	bool active;
+	if (HasBehavior(PB_UseTunnels, active)) {
+		return active;
+	}
+
+	return bIsMonsterTarget(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
 {
 	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))

@@ -2924,7 +2924,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 	const UINT wDestX = wFromX + dx;
 	const UINT wDestY = wFromY + dy;
 	const UINT wPushO = nGetO(dx, dy);
-	const bool bEnteredTunnel = PlayerEnteredTunnel(this->pRoom->GetOSquare(wFromX, wFromY), wPushO);
+	const bool bEnteredTunnel = PlayerEnteredTunnel(wFromX, wFromY, dx, dy);
 
 	if (!this->pRoom->IsValidColRow(wDestX, wDestY))
 		return false;
@@ -6030,7 +6030,7 @@ void CCurrentGame::ProcessPlayer(
 	{ // scope to prevent new variables from tripping up gotos to MakeMove
 
 	//Check for tunnel entrance before checking for room exit.
-	bEnteredTunnel = PlayerEnteredTunnel(wOTileNo, wMoveO);
+	bEnteredTunnel = PlayerEnteredTunnel(this->swordsman.wX, this->swordsman.wY, dx, dy);
 	if (bEnteredTunnel)
 		goto MakeMove;
 
@@ -6539,27 +6539,11 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 }
 
 //***************************************************************************************
-bool CCurrentGame::PlayerEnteredTunnel(const UINT wOTileNo, const UINT wMoveO, UINT wRole) const
+bool CCurrentGame::PlayerEnteredTunnel(const UINT wX, const UINT wY, const int dx, const int dy) const
 {
-	//Entity enters tunnel when moving off of a tunnel in its entrance direction.
-	if (!bIsTunnel(wOTileNo))
-		return false;
-	
-	//As default, use player's identity
-	if (wRole == M_NONE)
-		wRole = this->swordsman.wAppearance;
-
-	const bool bCanEnterTunnel = bIsMonsterTarget(wRole) || this->swordsman.bCanGetItems;
-	if (bCanEnterTunnel)
+	if (this->swordsman.CanEnterTunnel())
 	{
-		switch (wOTileNo)
-		{
-			case T_TUNNEL_N: return wMoveO == N;
-			case T_TUNNEL_S: return wMoveO == S;
-			case T_TUNNEL_E: return wMoveO == E;
-			case T_TUNNEL_W: return wMoveO == W;
-			default: ASSERT(!"Unrecognized tunnel type"); return false;
-		}
+		return this->pRoom->IsTunnelTraversableInDirection(wX, wY, dx, dy);
 	}
 	return false;
 }

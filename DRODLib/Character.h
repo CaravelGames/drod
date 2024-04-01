@@ -97,6 +97,7 @@ public:
 
 	bool           CanBeNPCBeethro() const;
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
+	virtual bool   CanEnterTunnel() const { return HasBehavior(ScriptFlag::UseTunnels); }
 	virtual bool   CanPressPressurePlates() const { return HasBehavior(ScriptFlag::ActivatePlates); }
 	virtual bool   CanPushObjects() const;
 	virtual bool   CanPushMonsters() const;
