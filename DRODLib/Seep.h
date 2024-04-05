@@ -40,6 +40,7 @@ public:
 	CSeep(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CSeep);
 
+	virtual bool   CanPushOntoOTile(const UINT wTile) const override;
 	bool           KillIfOutsideWall(CCueEvents &CueEvents);
 	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
 	virtual bool  CanPressPressurePlates() const { return false; }

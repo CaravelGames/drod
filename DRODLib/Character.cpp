@@ -865,6 +865,18 @@ bool CCharacter::IsImmuneToWeapon(WeaponType type) const
 }
 
 //*****************************************************************************
+bool CCharacter::IsVulnerableToAdder() const
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::AdderImmune));
+}
+
+//*****************************************************************************
+bool CCharacter::IsVulnerableToExplosion() const
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::ExplosionImmune));
+}
+
+//*****************************************************************************
 //Characters won't be stuned with imperative not stunnable
 void CCharacter::Stun(CCueEvents &CueEvents, UINT val) //[default=1]
 {
@@ -3904,10 +3916,8 @@ bool CCharacter::CanPushMonsters() const
 }
 
 //*****************************************************************************
-bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
+bool CCharacter::CanPushOntoOTile(UINT wTileNo) const
 {
-	UINT wTileNo = this->pCurrentGame->pRoom->GetOSquare(wX, wY);
-
 	if (bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo))
 		return true;
 
@@ -6038,10 +6048,17 @@ bool CCharacter::IsPlayerAllyTarget() const
 }
 
 //*****************************************************************************
-bool CCharacter::IsPuffTarget() const
+bool CCharacter::CanFluffTrack() const
 // Returns: whether Puff monsters should treat this character as a target
 {
-	return HasBehavior(ScriptFlag::PuffTarget);
+	return IsVisible() && HasBehavior(ScriptFlag::PuffTarget);
+}
+
+//*****************************************************************************
+bool CCharacter::CanFluffKill() const
+// Returns: whether contact with a puff kills this character
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::PuffImmune));
 }
 
 //*****************************************************************************

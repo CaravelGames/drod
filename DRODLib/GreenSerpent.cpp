@@ -280,14 +280,8 @@ const
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster)
 	{
-		if (pMonster->IsLongMonster() || pMonster->IsPiece())
+		if (!pMonster->IsVulnerableToAdder())
 			return true;
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsInvulnerable() || pCharacter->IsAdderImmune())
-				return true;
-		}
 	}
 
 	//No obstacle.

@@ -2558,14 +2558,6 @@ const
 	//Seep can be pushed within walls and doors, as well as onto open areas.
 	switch (type)
 	{
-		case M_SEEP:
-		{
-			const UINT tile = GetOSquare(wToX, wToY);
-			if (!(CanPushOntoOTile(wToX, wToY) ||
-					bIsDoor(tile) || bIsWall(tile) || bIsCrumblyWall(tile)))
-				return false;
-		}
-		break;
 		case M_GENTRYII:
 		{
 			CGentryii *pGentryii = const_cast<CGentryii*>(DYN_CAST(const CGentryii*, const CMonster*, pMonster));
@@ -2573,22 +2565,9 @@ const
 				return false;
 		}
 		break;
-		case M_FLUFFBABY:
-		{
-			const UINT tile = GetOSquare(wToX, wToY);
-			//Pushing onto Hot Tiles should fail, causing a "Puff Attack" instead
-			if (!(CanPushOntoOTile(wToX, wToY) && tile != T_HOT))
-				return false;
-		}
-		break;
-		case M_CHARACTER: {
-			const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-			if (!pCharacter->CanPushOntoOTileAt(wToX, wToY))
-				return false;
-		}
-		break;
 		default:
-			if (!CanPushOntoOTile(wToX, wToY))
+			const UINT tile = GetOSquare(wToX, wToY);
+			if (!pMonster->CanPushOntoOTile(tile))
 				return false;
 		break;
 	}
@@ -4842,17 +4821,6 @@ void CDbRoom::ProcessPuffAttack(
 	{
 		switch(pMonster->wType)
 		{
-			case M_CHARACTER:
-			{
-				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-				ASSERT(pCharacter);
-				if (!pCharacter->IsPuffImmune() && !pCharacter->IsInvulnerable())
-				{
-					KillMonster(pMonster, CueEvents);
-					this->pCurrentGame->CheckTallyKill(pMonster);
-				}
-			}
-			break;
 			case M_SERPENT: case M_SERPENTB: case M_SERPENTG:
 			{
 				CSerpent *pSerpent = dynamic_cast<CSerpent*>(pMonster);
@@ -4865,7 +4833,7 @@ void CDbRoom::ProcessPuffAttack(
 			}				
 			break;
 			default:
-				if (bCanFluffKill(pMonster->GetResolvedIdentity()))
+				if (pMonster->CanFluffKill())
 				{
 					KillMonster(pMonster, CueEvents);
 					this->pCurrentGame->CheckTallyKill(pMonster);
@@ -6085,10 +6053,11 @@ void CDbRoom::ProcessExplosionSquare(
 			case M_ROCKGIANT:
 				bShatterRockGiant = true;
 			break;
-			case M_GENTRYII:
-				eImperative = ScriptFlag::Invulnerable;
+			default:
+				if (!pMonster->IsVulnerableToExplosion()) {
+					eImperative = ScriptFlag::Invulnerable;
+				}
 			break;
-			default: break;
 		}
 		if (eImperative != ScriptFlag::Invulnerable)
 		{

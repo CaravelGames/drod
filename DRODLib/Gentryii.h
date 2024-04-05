@@ -43,6 +43,7 @@ public:
 
 	virtual bool IsLongMonster() const {return true;}
 	virtual bool IsOpenMove(const int dx, const int dy) const;
+	virtual bool IsVulnerableToExplosion() const override { return false; }
 	virtual bool OnStabbed(CCueEvents &/*CueEvents*/, const UINT /*wX*/=(UINT)-1, const UINT /*wY*/=(UINT)-1,
 			WeaponType /*weaponType*/=WT_Sword)
 		{ return false; }

@@ -1960,6 +1960,18 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::IsVulnerableToAdder() const
+{
+	return !(IsLongMonster() || IsPiece());
+}
+
+//*****************************************************************************
+bool CMonster::IsVulnerableToExplosion() const
+{
+	return true;
+}
+
+//*****************************************************************************
 bool CMonster::IsWading() const
 {
 	if (!this->pCurrentGame)
@@ -2022,6 +2034,29 @@ const
 
 	//Otherwise, monster might sense any alternate monster targets.
 	return SensesTarget();
+}
+
+//*****************************************************************************
+bool CMonster::CanFluffTrack() const
+{
+	return bCanFluffTrack(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanFluffKill() const
+{
+	return bCanFluffKill(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanPushOntoOTile(const UINT wTile) const
+//Returns whether the monster can be pushed onto the given tile type
+{
+	return bIsFloor(wTile) ||
+		bIsOpenDoor(wTile) ||
+		bIsPlatform(wTile) ||
+		bIsPit(wTile) ||
+		bIsWater(wTile);
 }
 
 //*****************************************************************************
