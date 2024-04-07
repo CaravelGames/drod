@@ -121,6 +121,7 @@ public:
 	bool CanDrinkSpeedPotion() const;
 	bool CanDrinkPotionType(const UINT wTile) const;
 	bool CanEnterTunnel() const;
+	bool CanHaveWeapon() const;
 	bool CanPushOntoOTile(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();

@@ -249,6 +249,18 @@ bool CSwordsman::CanEnterTunnel() const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanHaveWeapon() const
+//Returns: Does the player's appearance or behaviors allow them to have a weapon
+{
+	bool active;
+	if (HasBehavior(PB_HasWeapon, active)) {
+		return active;
+	}
+
+	return bEntityHasSword(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
 {
 	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))
@@ -510,12 +522,14 @@ bool CSwordsman::IsVulnerableToWeapon(const WeaponType weaponType) const
 
 	switch (weaponType)
 	{
+		case WT_HotTile:
+			return bIsEntityTypeVulnerableToHeat(this->wAppearance);
 		case WT_Firetrap:
 			return this->wAppearance != M_FEGUNDO;
 		case WT_FloorSpikes:
-			return !bIsEntityFlying(this->wAppearance) && this->IsStabbable();
+			return !bIsEntityFlying(this->wAppearance) && bIsStabbable;
 		default:
-			return this->IsStabbable();
+			return bIsStabbable;
 	}
 }
 
@@ -678,12 +692,7 @@ bool CSwordsman::HasMetalWeapon() const
 
 bool CSwordsman::HasWeapon() const
 {
-	bool hasSword;
-	if (!HasBehavior(PB_HasWeapon, hasSword)) {
-		hasSword = bEntityHasSword(this->wAppearance);
-	}
-
-	return hasSword &&
+	return CanHaveWeapon() &&
 			!(this->bNoWeapon || this->bWeaponSheathed || this->bWeaponOff || this->bIsHiding);
 }
 

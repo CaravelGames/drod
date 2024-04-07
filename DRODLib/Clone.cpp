@@ -49,24 +49,29 @@ CClone::CClone(
 //*****************************************************************************
 bool CClone::CanDropTrapdoor(const UINT oTile) const
 {
-	if (!bIsFallingTile(oTile))
-		return false;
-
-	if (GetIdentity() == M_CONSTRUCT)
+	if (!this->pCurrentGame)
 		return true;
 
-	const bool bCanDropTrapdoor = this->pCurrentGame ?
-		this->pCurrentGame->swordsman.CanGetItems() : true;
+	return this->pCurrentGame->swordsman.CanDropTrapdoor(oTile);
+}
 
-	if (bCanDropTrapdoor) {
-		if (bIsThinIce(oTile))
-			return true;
-		
-		if (HasSword() && bIsHeavyWeapon(GetWeaponType()))
-			return true;
-	}
+//*****************************************************************************
+bool CClone::CanFluffKill() const
+{
+	if (!this->pCurrentGame)
+		return true;
 
-	return false;
+	return this->pCurrentGame->swordsman.IsVulnerableToFluff();
+}
+
+//*****************************************************************************
+bool CClone::CanPushOntoOTile(const UINT wTile) const
+//Override for Clone, which has the same restrictions as the player
+{
+	if (!this->pCurrentGame)
+		return false;
+
+	return this->pCurrentGame->swordsman.CanPushOntoOTile(wTile);
 }
 
 //*****************************************************************************
@@ -150,6 +155,24 @@ bool CClone::IsHiding() const
 }
 
 //*****************************************************************************
+bool CClone::IsVulnerableToAdder() const
+{
+	if (!this->pCurrentGame)
+		return true;
+
+	return this->pCurrentGame->swordsman.IsVulnerableToAdder();
+}
+
+//*****************************************************************************
+bool CClone::IsVulnerableToExplosion() const
+{
+	if (!this->pCurrentGame)
+		return true;
+
+	return this->pCurrentGame->swordsman.IsVulnerableToExplosion();
+}
+
+//*****************************************************************************
 bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
 //Kill the Clone if it is on a tile that would kill its role.
 {
@@ -178,18 +201,9 @@ bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
 bool CClone::OnStabbed(CCueEvents& CueEvents, const UINT wX, const UINT wY, WeaponType weaponType)
 // Override for Clone, as some player roles can survive stabs.
 {
-	const UINT identity = GetIdentity();
-
-	if ((identity == M_WUBBA || identity == M_FLUFFBABY)
-		&& !(weaponType == WT_Firetrap || weaponType == WT_HotTile)) {
-		// Wubbas and Puffs can only be killed by Firetrap or Hot tile stabs.
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	if (!player.IsVulnerableToWeapon(weaponType))
 		return false;
-	}
-
-	if (identity == M_FEGUNDO) {
-		// Fegundoes are immune to all weapon types.
-		return false;
-	}
 
 	//Monster dies.
 	CueEvents.Add(CID_MonsterDiedFromStab, this);
@@ -227,7 +241,7 @@ bool CClone::SetWeaponSheathed()
 		return true;
 	//If player or player's identity type is marked to not have a sword, then clones do not either.
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (!bEntityHasSword(GetIdentity()) || player.bWeaponOff || player.bNoWeapon)
+	if (!player.CanHaveWeapon() || player.bWeaponOff || player.bNoWeapon)
 	{
 		this->bWeaponSheathed = true;
 		return true;
