@@ -88,6 +88,7 @@ public:
 	virtual bool BrainAffects() const {return false;}
 	virtual bool IsAggressive() const {return false;}
 	virtual bool IsFriendly() const {return true;}
+	virtual bool IsVulnerableToWeapon(WeaponType weaponType) const {return true;}
 };
 
 #endif //...#ifndef PLAYERDOUBLE_H

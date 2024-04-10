@@ -28,6 +28,7 @@
 #define TEMPORALCLONE_H
 
 #include "Mimic.h"
+#include "Swordsman.h"
 #include <queue>
 
 class CTemporalClone : public CMimic
@@ -36,15 +37,25 @@ public:
 	CTemporalClone(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CTemporalClone);
 
+	virtual bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
 	virtual bool CanEnterTunnel() const;
+	virtual bool CanFluffKill() const;
+	bool         CanHaveWeapon() const;
+	virtual bool CanPushOntoOTile(const UINT wTile) const;
 	virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
+	virtual bool FacesMovementDirection() const;
 	virtual UINT GetIdentity() const;
 	virtual bool IsAttackableTarget() const;
 	virtual bool IsFlying() const;
 	virtual bool IsHiding() const;
 	virtual bool IsMonsterTarget() const;
 	virtual bool IsTarget() const;
+	virtual bool IsVulnerableToAdder() const;
+	bool         IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
+	virtual bool IsVulnerableToExplosion() const;
+	virtual bool IsVulnerableToWeapon(const WeaponType weaponType) const;
+	virtual bool HasStepAttack() const;
 	bool         KillIfOnDeadlyTile(CCueEvents &CueEvents);
 	virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX = (UINT)-1, const UINT wY = (UINT)-1,
 		WeaponType weaponType = WT_Sword);
@@ -54,19 +65,22 @@ public:
 	void SetMovementType();
 	virtual void Stun(CCueEvents &CueEvents, UINT val=1);
 	virtual bool CanMoveOntoTunnelAt(UINT /*col*/, UINT /*row*/) const { return true; }
-	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
 
 	int getNextCommand() const;
 	void InputCommands(const vector<int>& commands);
 
 	//player stats on creation
-	UINT wIdentity;
-	UINT wAppearance;
+	UINT wIdentity; //Logical entity id - may be hold character id
+	UINT wAppearance; //Base entity id - always a game entity id
 	bool bInvisible;
 	bool bIsTarget;
+	PlayerBehaviors behaviorOverrides;
 
 private:
 	bool CanLightFuses() const;
+
+	bool HasBehavior(const PlayerBehavior& behavior, bool& active) const;
+	bool HasDamageImmunity(const WeaponType& weaponType, bool& active) const;
 
 	std::deque<int> commands;
 };

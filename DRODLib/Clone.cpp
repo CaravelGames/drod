@@ -173,6 +173,15 @@ bool CClone::IsVulnerableToExplosion() const
 }
 
 //*****************************************************************************
+bool CClone::IsVulnerableToWeapon(WeaponType weaponType) const
+{
+	if (!this->pCurrentGame)
+		return true;
+
+	return this->pCurrentGame->swordsman.IsVulnerableToWeapon(weaponType);
+}
+
+//*****************************************************************************
 bool CClone::KillIfOnDeadlyTile(CCueEvents& CueEvents)
 //Kill the Clone if it is on a tile that would kill its role.
 {

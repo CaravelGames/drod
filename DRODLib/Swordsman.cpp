@@ -157,6 +157,12 @@ bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheat
 	{
 		case M_CITIZEN: case M_ARCHITECT:
 			return false;
+		case M_CLONE: case M_TEMPORALCLONE: {
+			const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+			if (pDouble) {
+				return pDouble->IsVulnerableToWeapon(WT_Dagger);
+			}
+		}
 		case M_CHARACTER: {
 			const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 			if (!pCharacter || !pCharacter->IsVisible()) {
@@ -279,10 +285,11 @@ bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
 	if (bIsPit(wTile) && bFlying)
 		return true;
 
-	if (bIsDeepWater(wTile) && (bIsEntitySwimming(this->wAppearance) || bFlying))
+	bool bIsSwimming = bIsEntitySwimming(this->wAppearance);
+	if (bIsDeepWater(wTile) && (bIsSwimming || bFlying))
 		return true;
 
-	if (bIsShallowWater(wTile) && CanWadeInShallowWater())
+	if (bIsShallowWater(wTile) && (CanWadeInShallowWater() || bIsSwimming || bFlying))
 		return true;
 
 	return false;
@@ -476,7 +483,6 @@ bool CSwordsman::IsVulnerableToAdder() const
 	bool active;
 	HasBehavior(PB_AdderImmune, active);
 	return !active; //No immunity = edible
-
 }
 
 //*****************************************************************************

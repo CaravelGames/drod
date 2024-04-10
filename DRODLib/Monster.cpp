@@ -2420,6 +2420,12 @@ bool CMonster::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath)
 	case M_CITIZEN: case M_ARCHITECT: case M_ROCKGOLEM:
 	case M_CONSTRUCT: case M_WUBBA:
 		return false;
+	case M_CLONE: case M_TEMPORALCLONE: {
+		const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+		if (pDouble) {
+			return pDouble->IsVulnerableToWeapon(WT_Dagger);
+		}
+	}
 	case M_CHARACTER: {
 		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 		if (!pCharacter || !pCharacter->IsVisible()) {

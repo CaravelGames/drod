@@ -2610,6 +2610,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 	pClone->weaponType = this->swordsman.GetActiveWeapon();
 	pClone->wIdentity = this->swordsman.wIdentity;
 	pClone->wAppearance = this->swordsman.wAppearance;
+	pClone->behaviorOverrides = this->swordsman.behaviorOverrides;
 	pClone->SetWeaponSheathed();
 	pClone->SetMovementType();
 	pClone->InputCommands(player_commands);

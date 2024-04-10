@@ -237,7 +237,7 @@ public:
 
 	void          AskYesNo(MESSAGE_ID eMessageID, CCueEvents &CueEvents) const;
 	virtual bool  BrainAffects() const {return true;}
-	bool          CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
+	virtual bool  CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
 	virtual bool  CanDropTrapdoor(const UINT /*oTile*/) const {return false;}
 	virtual bool  CanEnterTunnel() const { return false; }
 	virtual bool  CanFindSwordsman() const;
