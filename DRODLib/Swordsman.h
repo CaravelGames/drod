@@ -96,6 +96,7 @@ enum PlayerBehavior
 	PB_FatalPushImmune = 25,
 	PB_FaceMovementDirection = 26,
 	PB_UseTunnels = 27,
+	PB_PuffTarget = 28,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -110,6 +111,7 @@ public:
 	bool CanBlowSoldierHorn() const;
 	bool CanBumpActivateOrb() const;
 	bool CanDropTrapdoor(const UINT oTile) const;
+	bool CanFluffTrack() const;
 	bool CanGetItems() const;
 	bool CanLightFuses() const;
 	bool CanStepOnMonsters() const;

@@ -79,6 +79,17 @@ bool CTemporalClone::CanEnterTunnel() const
 }
 
 //*****************************************************************************************
+bool CTemporalClone::CanFluffTrack() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffTarget, active)) {
+		return active;
+	}
+
+	return bCanFluffTrack(this->wAppearance);
+}
+
+//*****************************************************************************************
 bool CTemporalClone::CanFluffKill() const
 {
 	bool active;

@@ -40,6 +40,7 @@ public:
 	virtual bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
 	virtual bool CanEnterTunnel() const;
+	virtual bool CanFluffTrack() const;
 	virtual bool CanFluffKill() const;
 	bool         CanHaveWeapon() const;
 	virtual bool CanPushOntoOTile(const UINT wTile) const;

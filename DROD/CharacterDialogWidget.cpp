@@ -5080,6 +5080,7 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FaceMovementDirection, L"Face movement direction");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseMimicPotion, L"Drink mimic potion");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseDecoyPotion, L"Drink decoy potion");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseClonePotion, L"Drink clone potion");

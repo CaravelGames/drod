@@ -56,6 +56,15 @@ bool CClone::CanDropTrapdoor(const UINT oTile) const
 }
 
 //*****************************************************************************
+bool CClone::CanFluffTrack() const
+{
+	if (!this->pCurrentGame)
+		return true;
+
+	return this->pCurrentGame->swordsman.CanFluffTrack();
+}
+
+//*****************************************************************************
 bool CClone::CanFluffKill() const
 {
 	if (!this->pCurrentGame)

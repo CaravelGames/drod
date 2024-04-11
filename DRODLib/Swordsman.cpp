@@ -106,6 +106,17 @@ bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanFluffTrack() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffTarget, active)) {
+		return active;
+	}
+
+	return bCanFluffTrack(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CSwordsman::CanGetItems() const
 //Returns: whether the player is able to collect in-room items
 {

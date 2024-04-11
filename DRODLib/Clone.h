@@ -42,6 +42,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CClone);
 
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
+	virtual bool CanFluffTrack() const;
 	virtual bool CanFluffKill() const;
 	virtual bool CanPushOntoOTile(const UINT wTile) const;
   virtual bool CanWadeInShallowWater() const;

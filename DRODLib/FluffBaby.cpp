@@ -74,7 +74,7 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 
 	//Check player location first as a baseline
 	UINT wSX = player.wX, wSY = player.wY;
-	if (player.IsInRoom() && bCanFluffTrack(player.wAppearance) &&
+	if (player.IsInRoom() && player.CanFluffTrack() &&
 			(player.IsVisible() || CanSmellObjectAt(player.wX, player.wY)))
 	{
 		//Player is Beethro or a comparable target that is somehow sensed by this monster,
