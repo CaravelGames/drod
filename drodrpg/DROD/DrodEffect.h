@@ -67,6 +67,7 @@ enum EffectType
 	ERAINDROP,        //a falling rain drop
 	EDAMAGEPREVIEW,   //hovering enemy damage display
 	EIMAGEOVERLAY,    //image overlay
+	EFIRETRAP,        //fire trap
 };
 
 //*****************************************************************************
@@ -93,7 +94,8 @@ enum VisualEffectType
 	VET_JITTER=17,
 	VET_STRONGHIT=18,
 	VET_EQUIP=19,
-	VET_ICEMELT=20
+	VET_ICEMELT=20,
+	VET_FIRETRAP=21
 };
 
 #endif //...#ifndef DRODEFFECT_H

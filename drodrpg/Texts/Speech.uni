@@ -1387,3 +1387,11 @@ Image overlay strategy
 [MID_MistDestroyed]
 [eng]
 Mist destroyed
+
+[MID_FiretrapBurning]
+[eng]
+Fire trap burning
+
+[MID_FiretrapActivated]
+[eng]
+Fire trap activated

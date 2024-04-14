@@ -3984,6 +3984,8 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_CutBriar, g_pTheDB->GetMessageText(MID_CutBriar));
 	this->pEventListBox->AddItem(CID_DrankPotion, g_pTheDB->GetMessageText(MID_DrankPotion));
 	this->pEventListBox->AddItem(CID_EvilEyeWoke, g_pTheDB->GetMessageText(MID_EvilEyeWoke));
+	this->pEventListBox->AddItem(CID_Firetrap, g_pTheDB->GetMessageText(MID_FiretrapBurning));
+	this->pEventListBox->AddItem(CID_FiretrapActivated, g_pTheDB->GetMessageText(MID_FiretrapActivated));
 	this->pEventListBox->AddItem(CID_FuseBurning, g_pTheDB->GetMessageText(MID_FuseBurning));
 	this->pEventListBox->AddItem(CID_GelBabyFormed, g_pTheDB->GetMessageText(MID_GelBabyFormed));
 //	this->pEventListBox->AddItem(CID_GelGrew, g_pTheDB->GetMessageText(MID_GelGrew));
@@ -4155,6 +4157,8 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_DOOR_BO, g_pTheDB->GetMessageText(MID_OpenBlackDoor));
 	pListBox->AddItem(T_DOOR_MONEY, g_pTheDB->GetMessageText(MID_MoneyDoor));
 	pListBox->AddItem(T_DOOR_MONEYO, g_pTheDB->GetMessageText(MID_OpenMoneyDoor));
+	pListBox->AddItem(T_FIRETRAP, g_pTheDB->GetMessageText(MID_Firetrap));
+	pListBox->AddItem(T_FIRETRAP_ON, g_pTheDB->GetMessageText(MID_FiretrapOn));
 	pListBox->AddItem(T_DIRT1, g_pTheDB->GetMessageText(MID_Dirt1));
 	pListBox->AddItem(T_DIRT3, g_pTheDB->GetMessageText(MID_Dirt3));
 	pListBox->AddItem(T_DIRT5, g_pTheDB->GetMessageText(MID_Dirt5));
@@ -4499,6 +4503,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_HOTTILE, g_pTheDB->GetMessageText(MID_VarHotTile));
 	this->pVarListBox->AddItem(ScriptVars::P_EXPLOSION, g_pTheDB->GetMessageText(MID_VarExplosion));
 	this->pVarListBox->AddItem(ScriptVars::P_BEAM, g_pTheDB->GetMessageText(MID_VarBeam));
+	this->pVarListBox->AddItem(ScriptVars::P_FIRETRAP, g_pTheDB->GetMessageText(MID_VarFiretrap));
 
 	this->pVarListBox->AddItem(ScriptVars::P_HP, g_pTheDB->GetMessageText(MID_VarHP));
 	this->pVarListBox->AddItem(ScriptVars::P_ATK, g_pTheDB->GetMessageText(MID_VarAtk));

@@ -238,6 +238,9 @@
     <ClCompile Include="ImageOverlayEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="FiretrapEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -460,6 +463,9 @@
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="ImageOverlayEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FiretrapEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>

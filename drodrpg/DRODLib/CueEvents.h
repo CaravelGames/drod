@@ -680,6 +680,16 @@ enum CUEEVENT_ID
 	//Private data: CMoveCoord *pSquareDestroyedAt (one or more)
 	CID_MistDestroyed,
 
+	//Firetrap burning this turn.
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_Firetrap,
+
+	//Firetrap has been activated.
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_FiretrapActivated,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

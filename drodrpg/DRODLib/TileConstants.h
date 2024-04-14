@@ -164,8 +164,10 @@
 #define T_ARROW_OFF_NW  114
 #define T_MIST          115 //mist that nullifies DEF
 #define T_MISTVENT      116 //produces and expands mist
+#define T_FIRETRAP      117
+#define T_FIRETRAP_ON   118
 
-#define TILE_COUNT     (117) //Number of tile constants from above list.
+#define TILE_COUNT     (119) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -181,10 +183,13 @@ static inline bool bIsTrapdoor(const UINT t) {return t==T_TRAPDOOR || t==T_TRAPD
 static inline bool bIsThinIce(const UINT t) { return t == T_THINICE; }
 static inline bool bIsFallingTile(const UINT t) { return bIsTrapdoor(t) || bIsThinIce(t); }
 
+static inline bool bIsFiretrap(const UINT t) { return t == T_FIRETRAP || t == T_FIRETRAP_ON; }
+static inline UINT getToggledFiretrap(const UINT t) { return t == T_FIRETRAP ? T_FIRETRAP_ON : T_FIRETRAP; }
+
 static inline bool bIsPlainFloor(const UINT t) {return t==T_FLOOR || (t>=T_FLOOR_M && t<=T_FLOOR_ALT) || t==T_FLOOR_IMAGE;}
 
 static inline bool bIsFloor(const UINT t) {return bIsPlainFloor(t) ||
-		bIsTrapdoor(t) || bIsBridge(t) || bIsThinIce(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE || t==T_MISTVENT;}
+		bIsFallingTile(t) || bIsBridge(t) || bIsFiretrap(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE || t==T_MISTVENT;}
 
 static inline bool bIsLight(const UINT t) {return t==T_LIGHT;}
 
@@ -525,6 +530,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_FLOOR, //T_ARROW_OFF_NW
 	LAYER_TRANSPARENT, //T_MIST
 	LAYER_OPAQUE, //T_MISTVENT
+	LAYER_OPAQUE, //T_FIRETRAP
+	LAYER_OPAQUE, //T_FIRETRAP_ON
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -689,6 +696,8 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_ForceArrowDisabled, //T_ARROW_OFF_NW
 	MID_Mist, //T_MIST
 	MID_MistVent, //T_MISTVENT
+	MID_Firetrap,      //T_FIRETRAP
+	MID_FiretrapOn,    //T_FIRETRAP_ON
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

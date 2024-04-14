@@ -447,7 +447,7 @@ bool CRoomWidget::AddDoorEffect(
 
 	//Only works for doors and lights.
 	const bool bDoor = bIsDoor(wOriginalTileNo) || bIsOpenDoor(wOriginalTileNo);
-	const bool bItem = bIsLight(this->pRoom->GetTSquare(wX, wY)) ||
+	const bool bItem = bIsLight(this->pRoom->GetTSquare(wX, wY)) || bIsFiretrap(wOriginalTileNo) ||
 		(!bDoor && bIsAnyArrow(this->pRoom->GetFSquare(wX, wY)));
 	if (!bDoor && !bItem)
 		return false;
@@ -968,6 +968,7 @@ void CRoomWidget::HighlightSelectedTile()
 			DisplayDoorAgents(wX, wY, wOSquare);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			DisplayAgentsAffectingTiles(CCoordSet(wX, wY));
 		break;
 		default: break;
@@ -1493,13 +1494,14 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	const UINT oTile = this->pRoom->GetOSquare(wX, wY);
 	switch (oTile)
 	{
-		case T_HOT:
+		case T_HOT: case T_FIRETRAP_ON:
 			mid = 0; //no text to append later
 			AppendLine(TILE_MID[oTile]);
 			if (this->pCurrentGame)
 			{
 				wstr += wszSpace;
-				int val = this->pCurrentGame->pPlayer->st.hotTileVal;
+				PlayerStats& st = this->pCurrentGame->pPlayer->st;
+				int val = oTile == T_HOT ? st.hotTileVal : st.firetrapVal;
 				wstr += _itoW(val, temp, 10);
 				if (val >= 0)
 				{
@@ -1511,6 +1513,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 					wstr += wszSpace;
 					wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 					wstr += wszRightParen;
+				}
+				else {
+					wstr += wszSpace;
+					wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 				}
 			}
  		break;

@@ -33,6 +33,7 @@
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "FiretrapEffect.h"
 #include "IceMeltEffect.h"
 #include "ImageOverlayEffect.h"
 #include "RoomWidget.h"
@@ -465,6 +466,18 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 					new CFluffStabEffect(pRoomWidget, *pCoord,
 						GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 2)));
 			break;
+		}
+	}
+
+	if (CueEvents.HasOccurred(CID_Firetrap)) {
+		pRoomWidget->RemoveMLayerEffectsOfType(EFIRETRAP);
+		const UINT duration = GetEffectDuration(pGame, 450);
+		for (pObj = CueEvents.GetFirstPrivateData(CID_Firetrap);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, *pCoord, GetEffectDuration(pGame, duration)));
 		}
 	}
 

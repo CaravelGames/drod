@@ -746,6 +746,14 @@ Thin Ice
 [eng]
 Mist Vent
 
+[MID_Firetrap]
+[eng]
+Fire Trap
+
+[MID_FiretrapOn]
+[eng]
+Fire Trap (active)
+
 [MID_ForceArrowDisabled]
 [eng]
 Disabled force arrow

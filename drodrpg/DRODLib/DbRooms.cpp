@@ -3556,6 +3556,34 @@ const
 }
 
 //*****************************************************************************
+void CDbRoom::DamageMonster(CMonster* pMonster, int damageVal, CCueEvents& CueEvents)
+//Damage the given monster, and then kill it if the damage was lethal.
+{
+	if (pMonster->Damage(CueEvents, damageVal))
+	{
+		//Monster HP reduced to zero.
+		bool bVulnerable = true;
+		switch (pMonster->wType)
+		{
+			case M_CHARACTER:
+			{
+				//Unkillable NPCs are only "defeated".
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				bVulnerable = pCharacter->IsVulnerable();
+				if (!bVulnerable)
+					pCharacter->Defeat();
+			}
+			break;
+			default: break;
+		}
+		if (bVulnerable)
+		{
+			KillMonster(pMonster, CueEvents);
+		}
+	}
+}
+
+//*****************************************************************************
 bool CDbRoom::IsOrbBeingStruck(const UINT wX, const UINT wY) const
 //Returns: whether a creature is striking the orb at (wX,wY).
 {
@@ -4040,6 +4068,29 @@ void CDbRoom::LightFuse(
 		else
 			this->LitFuses.insert(wCol, wRow);
 		CueEvents.Add(CID_FuseBurning, new CMoveCoord(wCol, wRow, NO_ORIENTATION), true);
+	}
+}
+
+//*****************************************************************************
+void CDbRoom::ProcessActiveFiretraps(CCueEvents& CueEvents)
+//Actviate all Fluff Vents in the room, spawning Puffs and growing Fluff as appropriate
+{
+	if (this->activeFiretraps.empty())
+		return;
+	if (!this->pCurrentGame)
+		return;
+	if (this->pCurrentGame->bHalfTurn)
+		return;
+
+	bool bFluffBurned = false;
+	CCoordSet activeFiretraps;
+	activeFiretraps.insert(this->activeFiretraps.begin(), this->activeFiretraps.end());
+
+	for (CCoordSet::const_iterator iter = activeFiretraps.begin();
+		iter != activeFiretraps.end(); ++iter)
+	{
+		ASSERT(bIsFiretrap(GetOSquare(iter->wX, iter->wY)));
+		ActivateFiretrap(iter->wX, iter->wY, CueEvents);
 	}
 }
 
@@ -4549,6 +4600,11 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 			ActivateOrb(plate->second->wX, plate->second->wY, CueEvents, OAT_PressurePlateUp);
 	}
 
+	//Firetraps activate based on latest pressure plate state.
+	if (bFullMove) {
+		ProcessActiveFiretraps(CueEvents);
+	}
+
 	//Process gaze after tarstuff has grown
 	//and released pressure plates have possibly changed door states.
 	if (!this->pCurrentGame->InCombat())
@@ -4626,6 +4682,7 @@ void CDbRoom::ExpandExplosion(
 		case T_WALL_B:	case T_WALL_H:
 		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 		case T_MISTVENT:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			//Bomb blast goes over/through these things
 			break;
 		default: return;  //everything else stops bomb blast
@@ -4792,33 +4849,7 @@ void CDbRoom::ProcessExplosionSquare(
 				return; //nothing to do below //bVulnerable = false; //can't harm serpent bodies
 		}
 
-		if (pMonster->Damage(CueEvents, explosionVal))
-		{
-			//Monster HP reduced to zero.
-			bool bVulnerable = true;
-//			bool bRebirthFegundo = false;
-			switch (pMonster->wType)
-			{
-				case M_CHARACTER:
-				{
-					//Unkillable NPCs are only "defeated".
-					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-					bVulnerable = pCharacter->IsVulnerable();
-					if (!bVulnerable)
-						pCharacter->Defeat();
-				}
-				break;
-				default: break;
-			}
-			if (bVulnerable)
-			{
-				KillMonster(pMonster, CueEvents);
-/*
-				if (this->pCurrentGame)
-					this->pCurrentGame->TallyKill(); //counts as a kill
-*/
-			}
-		}
+		DamageMonster(pMonster, explosionVal, CueEvents);
 	}
 }
 
@@ -4921,6 +4952,7 @@ const
 		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE: case T_THINICE:
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_GOO: case T_HOT:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 		default:
 			if (wAppearance == M_SEEP)
 				return false;
@@ -5846,6 +5878,94 @@ void CDbRoom::ToggleDoor(
 		CloseDoor(wX, wY, CueEvents);
 	else
 		OpenDoor(wX, wY);
+}
+
+//*****************************************************************************
+void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents)
+{
+	CueEvents.Add(CID_Firetrap, new CCoord(wX, wY), true);
+
+	//Tile interactions
+	UINT tTile = this->GetTSquare(wX, wY);
+	switch (tTile) {
+		case T_ORB:
+			ActivateOrb(wX, wY, CueEvents, OAT_Item);
+		break;
+		case T_BOMB:
+			BombExplode(CueEvents, CCoordStack(wX, wY));
+		break;
+		case T_FUSE:
+			//Light the fuse.
+			if (!this->NewFuses.has(wX, wY) && !this->LitFuses.has(wX, wY))
+			{
+				this->LitFuses.insert(wX, wY);  //Burn fuse next turn.
+				CueEvents.Add(CID_FuseBurning, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
+			}
+		break;
+		case T_TAR: case T_MUD: case T_GEL:
+			StabTar(wX, wY, CueEvents, true);
+		break;
+	}
+
+	//Deal with mist separately as it may be hiding under another tile
+	DestroyMist(wX, wY, CueEvents);
+
+	//Damage
+	CSwordsman& player = *(this->pCurrentGame->pPlayer);
+	int damageVal = (int)player.st.firetrapVal;
+
+	if (!damageVal) {
+		return;
+	}
+
+	if (player.wX == wX && player.wY == wY) {
+		//Burn player
+		UINT delta = player.CalcDamage(damageVal);
+		player.DecHealth(CueEvents, delta, CID_ExplosionKilledPlayer);
+	}
+
+	CMonster* pMonster = this->GetMonsterAtSquare(wX, wY);
+	if (pMonster) {
+		//Burn monster
+		if (pMonster->IsPiece())
+		{
+			CMonsterPiece* pPiece = DYN_CAST(CMonsterPiece*, CMonster*, pMonster);
+			pMonster = pPiece->pMonster;
+			if (bIsSerpent(pMonster->wType)) {
+				//Only burn heads to avoid behaviour influenced by activation order
+				return;
+			}
+		}
+
+		DamageMonster(pMonster, damageVal, CueEvents);
+	}
+}
+
+void CDbRoom::DisableFiretrap(const UINT wX, const UINT wY)
+{
+	const UINT oTile = GetOSquare(wX, wY);
+	ASSERT(bIsFiretrap(oTile));
+	if (oTile == T_FIRETRAP_ON)
+		Plot(wX, wY, T_FIRETRAP);
+}
+
+void CDbRoom::EnableFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents)
+{
+	const UINT oTile = GetOSquare(wX, wY);
+	ASSERT(bIsFiretrap(oTile));
+	if (oTile == T_FIRETRAP) {
+		Plot(wX, wY, T_FIRETRAP_ON);
+		CueEvents.Add(CID_FiretrapActivated, new CCoord(wX, wY), true);
+	}
+}
+
+void CDbRoom::ToggleFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents)
+{
+	const UINT oTile = GetOSquare(wX, wY);
+	ASSERT(bIsFiretrap(oTile));
+	if (oTile == T_FIRETRAP)
+		CueEvents.Add(CID_FiretrapActivated, new CCoord(wX, wY), true);
+	Plot(wX, wY, getToggledFiretrap(oTile));
 }
 
 //*****************************************************************************
@@ -7856,6 +7976,8 @@ void CDbRoom::ActivateOrb(
 					ToggleLight(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					ToggleDoor(pAgent->wX, pAgent->wY, CueEvents);
+				else if (bIsFiretrap(oTile))
+					ToggleFiretrap(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsAnyArrow(fTile))
 					ToggleForceArrow(pAgent->wX, pAgent->wY);
 			break;
@@ -7865,6 +7987,8 @@ void CDbRoom::ActivateOrb(
 					TurnOnLight(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					OpenDoor(pAgent->wX, pAgent->wY);
+				else if (bIsFiretrap(oTile))
+					EnableFiretrap(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsAnyArrow(fTile))
 					DisableForceArrow(pAgent->wX, pAgent->wY);
 			break;
@@ -7874,6 +7998,8 @@ void CDbRoom::ActivateOrb(
 					TurnOffLight(pAgent->wX, pAgent->wY, CueEvents);
 				else if (bIsDoor(oTile) || bIsOpenDoor(oTile))
 					CloseDoor(pAgent->wX, pAgent->wY, CueEvents);
+				else if (bIsFiretrap(oTile))
+					DisableFiretrap(pAgent->wX, pAgent->wY);
 				else if (bIsAnyArrow(fTile))
 					EnableForceArrow(pAgent->wX, pAgent->wY);
 			break;
@@ -7996,7 +8122,7 @@ void CDbRoom::DestroyMist(
 	CCueEvents& CueEvents)     //(in/out)
 {
 	const UINT wOSquare = GetOSquare(wX, wY);
-	ASSERT(bIsSolidOTile(wOSquare) || wOSquare == T_HOT);
+	ASSERT(bIsSolidOTile(wOSquare) || wOSquare == T_HOT || wOSquare == T_FIRETRAP_ON);
 
 	if (GetTSquare(wX, wY) == T_MIST)
 	{
@@ -8187,6 +8313,13 @@ void CDbRoom::Plot(
 				this->mistVents.insert(wX, wY);
 			} else {
 				this->mistVents.erase(wX, wY);
+			}
+
+			if (wTileNo == T_FIRETRAP_ON) {
+				this->activeFiretraps.insert(wX, wY);
+			}
+			else {
+				this->activeFiretraps.erase(wX, wY);
 			}
 
 			//Specific plot types require in-game stat updates.
@@ -9161,6 +9294,7 @@ bool CDbRoom::SetMembers(
 //		this->building.setMembers(Src.building);
 //		this->bCheckForHoldMastery = Src.bCheckForHoldMastery;
 		this->mistVents = Src.mistVents;
+		this->activeFiretraps = Src.activeFiretraps;
 
 		for (list<CMonster*>::const_iterator m = Src.DeadMonsters.begin();
 				m != Src.DeadMonsters.end(); ++m)
@@ -9482,6 +9616,7 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 	this->bridges.setRoom(this);
 //	this->building.init(this->wRoomCols, this->wRoomRows);
 	this->mistVents.clear();
+	this->activeFiretraps.clear();
 	if (!bSkipPlatformInit)
 		ClearPlatforms();
 
@@ -9542,6 +9677,13 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
 				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
 				this->mistVents.insert(wX, wY);
+			}
+			break;
+			case T_FIRETRAP_ON:
+			{
+				const UINT wX = (pszSeek - this->pszOSquares) % this->wRoomCols;
+				const UINT wY = (pszSeek - this->pszOSquares) / this->wRoomCols;
+				this->activeFiretraps.insert(wX, wY);
 			}
 			break;
 		}

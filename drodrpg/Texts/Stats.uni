@@ -369,3 +369,7 @@ _MyItemShovelMult
 [MID_VarBeam]
 [eng]
 _Beam
+
+[MID_VarFiretrap]
+[eng]
+_Firetrap

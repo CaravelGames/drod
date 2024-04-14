@@ -153,7 +153,8 @@ namespace ScriptVars
 		P_ITEM_SHOVEL_MULT = -96,
 		P_SCRIPT_ITEM_SHOVEL_MULT = -97,
 		P_BEAM = -98,
-		FirstPredefinedVar = P_BEAM, //set this to the last var in the enumeration
+		P_FIRETRAP = -99,
+		FirstPredefinedVar = P_FIRETRAP, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -199,7 +200,7 @@ namespace ScriptVars
 	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=43;
+	static const UINT numGlobals=44;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -222,7 +223,7 @@ public:
 		sword = shield = accessory = 0;
 		monsterHPmult = monsterATKmult = monsterDEFmult = monsterGRmult = monsterXPmult = 0;
 		itemMult = itemHPmult = itemATKmult = itemDEFmult = itemGRmult = itemShovelMult = 0;
-		hotTileVal = explosionVal = beamVal = 0;
+		hotTileVal = explosionVal = beamVal = firetrapVal = 0;
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
 		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = UINT(-1); //negative indicates default
@@ -253,7 +254,7 @@ public:
 	//Global modifiers
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; //global monster stat modifiers
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult, itemShovelMult; //global item value modifiers
-	UINT hotTileVal, explosionVal, beamVal; //damage modifiers
+	UINT hotTileVal, explosionVal, beamVal, firetrapVal; //damage modifiers
 
 	//Prior location before level warp.
 	UINT priorRoomID, priorX, priorY, priorO;

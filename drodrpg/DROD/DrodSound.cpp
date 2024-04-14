@@ -129,6 +129,8 @@ const
 		case SEID_DOOROPEN:     strKeyName="DoorOpen"; break;
 		case SEID_EVILEYEWOKE:  strKeyName="EvilEyeWoke"; break;
 		case SEID_FALLING:  strKeyName="Falling"; break;
+		case SEID_FIRETRAP: strKeyName = "Firetrap"; break;
+		case SEID_FIRETRAP_START: strKeyName = "FiretrapStart"; break;
 		case SEID_FROZEN:  strKeyName="Frozen"; break;
 
 		case SEID_SLAYERKILL:      strKeyName="SlayerKill"; break;
@@ -348,6 +350,8 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_DOOROPEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_EVILEYEWOKE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FALLING );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_FIRETRAP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_FIRETRAP_START );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FROZEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_HIT );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_ICEMELT );

@@ -141,6 +141,8 @@ enum SEID
 	SEID_DIG,
 	SEID_ICEMELT,
 	SEID_PUFF_EXPLOSION,
+	SEID_FIRETRAP,
+	SEID_FIRETRAP_START,
 
 	//Grouped sound effects -- may only play one at a time -- designated private channels.
 	//Channel n+1--Tendry's voice.

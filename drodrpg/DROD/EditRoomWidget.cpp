@@ -594,7 +594,7 @@ const
 		//Floor types can replace themselves,
 		//except for doors: to facilitate editing them when clicked on.
 		if (bIsPlainFloor(wTileNo)) return true; //anything can replace floor
-		if (wTileNo == T_HOT || wTileNo == T_GOO) return true;
+		if (wTileNo == T_HOT || wTileNo == T_GOO || bIsFiretrap(wTileNo)) return true;
 		if (bIsWall(wTileNo) && bIsWall(wObject)) return true;
 		if (bIsCrumblyWall(wTileNo) && bIsCrumblyWall(wObject)) return true;
 		if (bIsTunnel(wTileNo) && bIsTunnel(wObject)) return true;
@@ -759,6 +759,7 @@ const
 		case T_THINICE:
 		case T_GOO:
 		case T_HOT:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			//Anything can be on these.
 			return true;
 		case T_FLOOR: case T_FLOOR_M:
@@ -877,7 +878,8 @@ const
 						bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
 						wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
-						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0]) ||
+						bIsFiretrap(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BOMB:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
@@ -888,7 +890,7 @@ const
 					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
 					wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
 					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0]) ||
-					wTileNo[0] == T_MISTVENT) &&
+					wTileNo[0] == T_MISTVENT || bIsFiretrap(wTileNo[0])) &&
 				(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			//On normal floor, platforms, goo or water.
@@ -897,7 +899,8 @@ const
 						bIsOpenDoor(wTileNo[0]) || bIsBridge(wTileNo[0]) ||
 						bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
-						bIsWater(wTileNo[0]) || wTileNo[0] == T_MISTVENT) &&
+						bIsWater(wTileNo[0]) || wTileNo[0] == T_MISTVENT ||
+						bIsFiretrap(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_CRATE:
@@ -906,7 +909,7 @@ const
 					(bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
 						bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
-						wTileNo[0] == T_GOO) &&
+						wTileNo[0] == T_GOO || bIsFiretrap(wTileNo[0])) &&
 						(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_LIGHT:
 			//Light -- only on floor, walls, pit.

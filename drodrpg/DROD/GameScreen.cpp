@@ -41,6 +41,7 @@
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "FiretrapEffect.h"
 #include "IceMeltEffect.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
@@ -1479,6 +1480,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 			case VET_STRONGHIT: soundID = SEID_HIT; break;
 			case VET_EQUIP: soundID = SEID_SWORDS; break;
 			case VET_ICEMELT: soundID = SEID_ICEMELT; break;
+			case VET_FIRETRAP: soundID = SEID_FIRETRAP_START; break;
 			default: break;
 		}
 
@@ -1578,6 +1580,10 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 		case VET_ICEMELT:
 			pRoomWidget->AddOLayerEffect(
 				new CIceMeltEffect(pRoomWidget, coord));
+		break;
+		case VET_FIRETRAP:
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, coord));
 		break;
 		default: break; //do nothing
 	}
@@ -6181,6 +6187,28 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		ASSERT((const WCHAR*)(*pScrollText));
 		this->pScrollLabel->SetText((const WCHAR*)(*pScrollText));
 		ShowScroll();
+	}
+
+	if (CueEvents.HasOccurred(CID_FiretrapActivated)) {
+		if (!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP_START))
+			PlaySoundEffect(SEID_FIRETRAP_START);
+	}
+	if (CueEvents.HasOccurred(CID_Firetrap)) {
+		//play one instance
+		if (!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP) &&
+			!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP_START))
+			PlaySoundEffect(SEID_FIRETRAP);
+
+		this->pRoomWidget->RemoveMLayerEffectsOfType(EFIRETRAP);
+
+		const UINT duration = GetEffectDuration(450);
+		for (pObj = CueEvents.GetFirstPrivateData(CID_Firetrap);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, *pCoord, duration));
+		}
 	}
 
 	//Remove old sparks before drawing the current ones.
