@@ -97,6 +97,7 @@ enum PlayerBehavior
 	PB_FaceMovementDirection = 26,
 	PB_UseTunnels = 27,
 	PB_PuffTarget = 28,
+	PB_BodyAttackImmune = 29,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -139,7 +140,7 @@ public:
 	bool IsVulnerableToFluff() const;
 	bool IsVulnerableToHeat() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
-	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
+	bool IsVulnerableToBodyAttack() const;
 	bool IsTarget() const;
 	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool IsVisible() const { return !(this->bIsInvisible || this->bIsHiding); }

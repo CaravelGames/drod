@@ -5088,6 +5088,7 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSpeedPotion, L"Drink speed potion");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSquadHorn, L"Toot squad horn");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSoldierHorn, L"Toot soldier horn");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BodyAttackImmune, L"Body Attack Immune");
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));

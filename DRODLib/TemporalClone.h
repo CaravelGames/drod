@@ -53,7 +53,7 @@ public:
 	virtual bool IsMonsterTarget() const;
 	virtual bool IsTarget() const;
 	virtual bool IsVulnerableToAdder() const;
-	bool         IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
+	bool         IsVulnerableToBodyAttack() const;
 	virtual bool IsVulnerableToExplosion() const;
 	virtual bool IsVulnerableToWeapon(const WeaponType weaponType) const;
 	virtual bool HasStepAttack() const;

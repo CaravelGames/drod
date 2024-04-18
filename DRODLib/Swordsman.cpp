@@ -551,6 +551,18 @@ bool CSwordsman::IsVulnerableToWeapon(const WeaponType weaponType) const
 }
 
 //*****************************************************************************
+bool CSwordsman::IsVulnerableToBodyAttack() const
+//Return whether the player can be stepped on by monsters
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	return bIsVulnerableToBodyAttack(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsTarget() const
 //Returns: whether player is a target to monsters
 {

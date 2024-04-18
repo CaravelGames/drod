@@ -313,6 +313,17 @@ bool CTemporalClone::IsVulnerableToAdder() const
 }
 
 //*****************************************************************************
+bool CTemporalClone::IsVulnerableToBodyAttack() const
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	return bIsVulnerableToBodyAttack(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CTemporalClone::IsVulnerableToExplosion() const
 {
 	bool active;
