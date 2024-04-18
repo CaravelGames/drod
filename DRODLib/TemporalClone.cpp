@@ -112,6 +112,39 @@ bool CTemporalClone::CanHaveWeapon() const
 }
 
 //*****************************************************************************************
+bool CTemporalClone::CanMovePlatform() const
+{
+	bool active;
+	if (HasBehavior(PB_MovePlatforms, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanPushMonsters() const
+{
+	bool active;
+	if (HasBehavior(PB_PushMonsters, active)) {
+		return active;
+	}
+
+	return this->wAppearance == M_CONSTRUCT || bIsHuman(this->wAppearance);
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanPushObjects() const
+{
+	bool active;
+	if (HasBehavior(PB_PushObjects, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************************
 bool CTemporalClone::CanPushOntoOTile(const UINT wTile) const
 {
 	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))

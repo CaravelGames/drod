@@ -6093,7 +6093,8 @@ void CCurrentGame::ProcessPlayer(
 					goto CheckFLayer;
 				//If standing on a platform, check whether it can move.
 				if (wOTileNo == T_PLATFORM_P)
-					if (this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
+					if (this->swordsman.CanMovePlatform() &&
+						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
@@ -6114,7 +6115,8 @@ void CCurrentGame::ProcessPlayer(
 						bIsEntitySwimming(this->swordsman.wAppearance))
 					goto CheckFLayer;
 				if (wOTileNo == T_PLATFORM_W)
-					if (this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
+					if (this->swordsman.CanMovePlatform() && 
+						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
@@ -6203,6 +6205,7 @@ CheckFLayer:
 				//Player ran into item.  Push if possible.
 				if (this->pRoom->CanPlayerMoveOnThisElement(
 							this->swordsman.wAppearance, this->pRoom->GetOSquare(destX, destY)) &&
+						this->swordsman.CanPushObject() &&
 						this->pRoom->CanPushTo(destX, destY, destX + dx, destY + dy))
 				{
 					//Push, if monster layer doesn't have an obstacle too.
@@ -6254,7 +6257,7 @@ CheckMonsterLayer:
 					//Player bumps into an NPC, see if we can push him first
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
-					if (pCharacter->IsPushableByBody()){
+					if (pCharacter->IsPushableByBody() && this->swordsman.CanPushMonster()){
 						const UINT wDestX = pCharacter->wX + dx;
 						const UINT wDestY = pCharacter->wY + dy;
 

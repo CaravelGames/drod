@@ -44,6 +44,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CMimic);
 
 	virtual bool CanBumpActivateOrb() const;
+	virtual bool CanMovePlatform() const { return true; }
   virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual bool FacesMovementDirection() const;

@@ -98,6 +98,9 @@ enum PlayerBehavior
 	PB_UseTunnels = 27,
 	PB_PuffTarget = 28,
 	PB_BodyAttackImmune = 29,
+	PB_PushObjects = 30,
+	PB_PushMonsters = 31,
+	PB_MovePlatforms = 32,
 };
 
 typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
@@ -125,6 +128,9 @@ public:
 	bool CanDrinkPotionType(const UINT wTile) const;
 	bool CanEnterTunnel() const;
 	bool CanHaveWeapon() const;
+	bool CanMovePlatform() const;
+	bool CanPushObject() const;
+	bool CanPushMonster() const;
 	bool CanPushOntoOTile(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();

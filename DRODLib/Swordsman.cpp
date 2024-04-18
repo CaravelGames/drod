@@ -278,6 +278,41 @@ bool CSwordsman::CanHaveWeapon() const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanMovePlatform() const
+//Returns: If the player can move a platform or raft. Assumes player is not
+//flying or swimming.
+{
+	bool active;
+	if (HasBehavior(PB_MovePlatforms, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanPushObject() const
+{
+	bool active;
+	if (HasBehavior(PB_PushObjects, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanPushMonster() const
+{
+	bool active;
+	if (HasBehavior(PB_PushMonsters, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
 {
 	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))

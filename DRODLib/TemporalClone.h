@@ -43,6 +43,9 @@ public:
 	virtual bool CanFluffTrack() const;
 	virtual bool CanFluffKill() const;
 	bool         CanHaveWeapon() const;
+	virtual bool CanMovePlatform() const;
+	virtual bool CanPushMonsters() const;
+	virtual bool CanPushObjects() const;
 	virtual bool CanPushOntoOTile(const UINT wTile) const;
 	virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
 	virtual bool FacesMovementDirection() const;

@@ -99,7 +99,7 @@ const
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
+					if (CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
 			return true;
@@ -107,7 +107,7 @@ const
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_W)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
+					if (CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
 			return true;
@@ -124,7 +124,7 @@ const
 	{
 		//There is something at the destination that is normally an obstacle,
 		//but some of them are handled specially.  Check for special handling first.
-		if (bIsTLayerCoveringItem(wLookTileNo))
+		if (bIsTLayerCoveringItem(wLookTileNo) && this->CanPushObjects())
 		{
 			//item is not an obstacle if it can be pushed away
 			const int dx = (int)wCol - (int)this->wX;
@@ -173,7 +173,7 @@ const
 				default: break;
 			}
 		}
-		else if (!pMonster->IsPushableByBody() || !this->CanPushObjects()){
+		else if (!pMonster->IsPushableByBody() || !this->CanPushMonsters()){
 			return true;
 		} else {
 			const int dx = (int)wCol - (int)this->wX;
@@ -323,7 +323,8 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 			if ((HasSword() && GetWeaponType() == WT_Dagger) || HasStepAttack())
 			{
 				CMonster *pMonster = room.GetMonsterAtSquare(wDestX,wDestY);
-				if (pMonster && pMonster->GetIdentity() != M_FLUFFBABY)
+				if (pMonster && pMonster->GetIdentity() != M_FLUFFBABY &&
+					!(pMonster->IsPushableByBody() && this->CanPushMonsters()))
 				{
 					ASSERT(!pMonster->IsPiece() && !pMonster->IsLongMonster());
 					CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
@@ -414,7 +415,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 							//Flying roles do not consider pit an obstacle
 							if (!bIsEntityFlying(wRole))
 							//If standing on a platform, check whether it can move.
-								if (wOTile != T_PLATFORM_P || !room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy)))
+								if (!(wOTile == T_PLATFORM_P && CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy))))
 									bBumpOrb = false;
 						break;
 						case T_SHALLOW_WATER:
@@ -426,7 +427,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 						case T_WATER:
 							//Flying/Swimming roles do not consider water an obstacle
 							if (!(bIsEntityFlying(wRole) || bIsEntitySwimming(wRole)))
-								if (wOTile != T_PLATFORM_W || !room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy)))
+								if (!(wOTile == T_PLATFORM_W && CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy))))
 									bBumpOrb = false;
 						break;
 						case T_DOOR_Y:
