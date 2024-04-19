@@ -5073,11 +5073,11 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 {
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BumpActivateOrb, L"Body strike orbs/beacons");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_LightFuses, L"Light fuses");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_StepKill, L"Step kill");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HasWeapon, L"Has weapon");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FaceMovementDirection, L"Face movement direction");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BumpActivateOrb, g_pTheDB->GetMessageText(MID_BumpActivateOrb));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_LightFuses, g_pTheDB->GetMessageText(MID_LightFuses));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_StepKill, g_pTheDB->GetMessageText(MID_StepKill));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_HasWeapon, g_pTheDB->GetMessageText(MID_HasWeapon));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_FaceMovementDirection, g_pTheDB->GetMessageText(MID_FaceMovementDirection));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
@@ -5085,14 +5085,14 @@ void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_MovePlatforms, g_pTheDB->GetMessageText(MID_MovePlatforms));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseTunnels, g_pTheDB->GetMessageText(MID_UseTunnels));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseMimicPotion, L"Drink mimic potion");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseDecoyPotion, L"Drink decoy potion");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseClonePotion, L"Drink clone potion");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseInvisibilityPotion, L"Drink invisibility potion");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSpeedPotion, L"Drink speed potion");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSquadHorn, L"Toot squad horn");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSoldierHorn, L"Toot soldier horn");
-	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BodyAttackImmune, L"Body Attack Immune");
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseMimicPotion, g_pTheDB->GetMessageText(MID_UseMimicPotion));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseDecoyPotion, g_pTheDB->GetMessageText(MID_UseDecoyPotion));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseClonePotion, g_pTheDB->GetMessageText(MID_UseClonePotion));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseInvisibilityPotion, g_pTheDB->GetMessageText(MID_UseInvisibilityPotion));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSpeedPotion, g_pTheDB->GetMessageText(MID_UseSpeedPotion));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSquadHorn, g_pTheDB->GetMessageText(MID_UseSquadHorn));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_UseSoldierHorn, g_pTheDB->GetMessageText(MID_UseSoldierHorn));
+	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_BodyAttackImmune, g_pTheDB->GetMessageText(MID_BodyAttackImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
 	this->pPlayerBehaviorListBox->AddItem(PlayerBehavior::PB_SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));
