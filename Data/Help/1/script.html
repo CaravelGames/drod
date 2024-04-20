@@ -209,6 +209,15 @@ interacts with its environment.</p>
   <li><a name="role"><b>Player role</b></a> - Indefinitely sets the player to
       play the role you indicate. In these roles, properties that apply to that
       entity type generally hold.</li>
+  <li><a name="setplayerbehavior"><b>Set player behavior</b></a> - Indefinitely sets a specified player <a href="#behaviorlist">behavior</a> to use the specified control state. The following states can be set:
+    <ul>
+        <li><b>Default</b> - The behavoir functions based on the active player role.</li>
+        <li><b>On</b> - The behavoir is always active.</li>
+        <li><b>Off</b> - The behavoir is disabled.</li>
+        <li><b>Powered</b> - The behavoir is disabled until a power token is activated.</li>
+        <li><b>Unpowered</b> - The behavoir is active until a power token is activated, at which point it is disabled.</li>
+    </ul>
+  </li>
   <li><a name="setplayerstealth"><b>Set player stealth</b></a> - Change the player's stealth property on room entrance to the indicated value indefinitely.</li>
   <li><a name="setplayerweapon"><b>Set player weapon</b></a> - Change the player's current weapon type, or enable or disable wielding a weapon indefinitely.</li>
   <li><a name="set-entity-weapon"><b>Set entity weapon</b></a> - Change the weapon of the armed monster or player at the specified position. Unlike <u>Set player weapon</u>, this change does not persist between rooms.</li>
@@ -552,39 +561,49 @@ continue executing script commands from a different location in the script.</p>
   </ul>
 
 <p><a name="behaviorlist"><b>Behaviors</b>
-</a> - NPC properties that may be turned on and off with the <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors. Some NPC types will have behaviors set by default. Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will reset behaviors to that appearance's default behaviors unless the <b>Keep Behaviors</b> option is set to on.</p>
+</a> - Player and NPC properties that may be turned on and off with the <a href="#setplayerbehavior">Set player behavior</a> and <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors. Some NPC types will have behaviors set by default. Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will reset behaviors to that appearance's default behaviors unless the <b>Keep Behaviors</b> option is set to on.</p>
+<p><u>Shared Behaviors:</u></p>
 <ol>
-	<li><a name ="beh-activate-token"><b>Activate Tokens</b></a>: The NPC will activate architectural tokens when it moves onto them, other than Temporal Split Points.</li>
-	<li><a name ="beh-activate-plates"><b>Activate Pressure Plates</b></a>: The NPC will press pressure when it moves onto them, and will hold down pressure plates while on them.</li>
-	<li><a name="beh-drop-trapdoor"><b>Drops Trapdoors</b></a>: The NPC will drop trapdoors and melt thin ice.</li>
-	<li><a name="beh-drop-trapdoor-armed"><b>Drop Trapdoors When Armed</b></a>: The NPC will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
-	<li><a name="beh-push-objects"><b>Push Objects</b></a>: The NPC can push objects such as Mirrors and Powder Kegs.</li>
-	<li><a name="beh-push-monsters"><b>Push Monsters</b></a>: The NPC can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
-	<li><a name="beh-move-platform"><b>Move Platforms and Rafts</b></a>: The NPC can push platforms and rafts by moving against their sides.</li>
-	<li><a name="beh-use-tunnels"><b>Use Tunnels</b></a>: The NPC will use tunnels when moving in the appropriate direction, and will consider moves through a tunnel to be open.</li>
-	<li><a name="beh-avoid-firetrap"><b>Avoid Firetraps</b></a>: The NPC will treat active firetraps as a movement obstacle. The NPC can still be pushed into an active firetrap.</li>
-	<li><a name="beh-avoid-puff"><b>Avoid Puffs</b></a>: The NPC will treat Puffs like other monsters, and consider them movement obstacles. The NPC can still be pushed into a Puff.</li>
-	<li><a name="beh-restricted-movement"><b>Restricted Movement</b></a>: The NPC can only move onto tiles it's movement type would normally allow movement onto. See <a href="#set-movement">Set movement type</a> for details.</li>
-	<li><a name="beh-instant-movement"><b>Instant Movement</b></a>: Script execution for the turn will not halt after a <a href="#facedirection">Face direction</a> or <a href="#face-towards-like-guard">Face towards like guard command</a>, or after a <a href="#move">Move</a> or <a href="#moveto">Move to</a> command in Single step mode. Move and Move to commands that are not single step will still halt execution.</li>
-	<li><a name="beh-full-turn-only"><b>Only Process On Full Turns</b></a>: The script will not run during "half-turns" when the player is under the effect of a speed potion.</li>
+    <li><a name="beh-drop-trapdoor"><b>Drops Trapdoors</b></a>: The entity will drop trapdoors and melt thin ice.</li>
+    <li><a name="beh-drop-trapdoor-armed"><b>Drop Trapdoors When Armed</b></a>: The entity will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
+    <li><a name="beh-push-objects"><b>Push Objects</b></a>: The entity can push objects such as Mirrors and Powder Kegs.</li>
+    <li><a name="beh-push-monsters"><b>Push Monsters</b></a>: The entity can push monsters that can be pushed. Currently, only NPCs with <a href="#imp-pushable-by-body">Pushable by body</a> can be pushed in this manner.</li>
+    <li><a name="beh-move-platform"><b>Move Platforms and Rafts</b></a>: The entity can push platforms and rafts by moving against their sides.</li>
+    <li><a name="beh-use-tunnels"><b>Use Tunnels</b></a>: The entity will use tunnels when moving in the appropriate direction, and will consider moves through a tunnel to be open.</li>
+    <li><a name="beh-puff-target"><b>Puff Target</b></a>: Puffs will treat the entity as a target. This does not affect the entity's vulnerability to puffs.</li>
+    <li><a name="beh-sword-immune"><b>Weapon Damage Immunity</b></a>: Attacks from the specified weapon will not kill the entity. The weapon can still be used to push the entity when applicable.</li>
+    <li><a name="beh-floor-spike-immune"><b>Floor Spikes Immunity</b></a>: The entity cannot be killed by spike traps. Flying entities will ignore the state of this behavior, and are always immune to spike traps.</li>
+    <li><a name="beh-fire-trap-immune"><b>Fire Trap Immunity</b></a>: The entity will not be killed due to ending the turn on an active fire trap.</li>
+    <li><a name="beh-hot-tile-immune"><b>Hot Tile Immunity</b></a>: The entity will not be killed due to staying on a hot tile for more than a turn. Flying entities will ignore the state of this behavior, and are always immune to hot tiles.</li>
+    <li><a name="beh-explosion-immune"><b>Explosion Immunity</b></a>: The entity cannot be killed by explosions, including ones from the Attack Tile command.</li>
+    <li><a name="beh-adder-immune"><b>Adder Immunity</b></a>: Adders cannot eat the entity.</li>
+    <li><a name="beh-puff-immune"><b>Puff Immunity</b></a>: The entity cannot be killed by puffs, either from Puffs moving onto them, or due to the entity moving onto a Puff. This does not affect whether the entity attracts Puffs.</li>
+    <li><a name="beh-fatal-push-immune"><b>Push to Fall Immunity</b></a>: The entity cannot be pushed onto pit or water tiles if this would kill them. The entity can still be pushed into other potentially dangerous tiles, such as active fire traps.</li>
+</ol>
+<p><u>Player Behaviors:</u></p>
+<ol>
+    <li><a name="beh-bump-activate"><b>Body Strike Orbs/Beacons</b></a>: The player can activate orbs and toggle seeding beacoms by bumping them.</li>
+    <li><a name="beh-light-fuses"><b>Light Fuses</b></a>: The player will light fuse ends when they step onto them.</li>
+    <li><a name="beh-step-kill"><b>Step Kill</b></a>: The player can kill monsters by stepping onto them.</li>
+    <li><a name="beh-has-weapon"><b>Has Weapon</b></a>: Allows the player to weild a weapon. The weapon can still be disabled by room elements, or with the <a href="#setplayerweapon">Set player weapon</a> command.</li>
+    <li><a name="beh-use-potion"><b>Use Potion/Blow Horn</b></a>: The player can use the specified potion type. They will also gain the ability to move onto that type of item if their role would otherwise prevent it.s</li>
+    <li><a name="beh-face-movement"><b>Face Movement Direction</b></a>: The player will turn to face the direction of their movement, even if they have a weapon that would prevent it. When this behavior is disabled, the player will always retain their direction when moving, even when unarmed. Rotation moves are not effected by this behavior.</li>
+    <li><a name="beh-body-immune"><b>Body Attack Immunity</b></a>: Monsters cannot move onto and kill the player. This does not affect whether an Adder can eat the player.</li>
+</ol>
+<p><u>NPC Behaviors:</u></p>
+<ol>
+    <li><a name="beh-activate-token"><b>Activate Tokens</b></a>: The NPC will activate architectural tokens when it moves onto them, except for Temporal Split Points.</li>
+    <li><a name="beh-activate-plates"><b>Activate Pressure Plates</b></a>: The NPC will press pressure when it moves onto them, and will hold down pressure plates while on them.</li>
+    <li><a name="beh-avoid-firetrap"><b>Avoid Firetraps</b></a>: The NPC will treat active firetraps as a movement obstacle. The NPC can still be pushed into an active firetrap.</li>
+    <li><a name="beh-avoid-puff"><b>Avoid Puffs</b></a>: The NPC will treat Puffs like other monsters, and consider them movement obstacles. The NPC can still be pushed into a Puff.</li>
+    <li><a name="beh-restricted-movement"><b>Restricted Movement</b></a>: The NPC can only move onto tiles it's movement type would normally allow movement onto. See <a href="#set-movement">Set movement type</a> for details.</li>
+    <li><a name="beh-instant-movement"><b>Instant Movement</b></a>: Script execution for the turn will not halt after a <a href="#facedirection">Face direction</a> or <a href="#face-towards-like-guard">Face towards like guard command</a>, or after a <a href="#move">Move</a> or <a href="#moveto">Move to</a> command in Single step mode. Move and Move to commands that are not single step will still halt execution.</li>
+    <li><a name="beh-full-turn-only"><b>Only Process On Full Turns</b></a>: The script will not run during "half-turns" when the player is under the effect of a speed potion.</li>
     <li><a name="beh-monster-attackable"><b>Can Be Attacked By Monsters</b></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
-	<li><a name="beh-monster-target"><b>Monster Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to monsters.</li>
-	<li><a name="beh-monster-target-if-player"><b>Monster Target When Player Is Target</b></a>: Monsters other than Puffs will treat the NPC as a target as long as the player is a monster target. Otherwise, monsters will ignore this character. This does not affect the NPC's vulnerability to monsters.</li>
-	<li><a name="beh-ally-target"><b>Ally Target</b></a>: Stalwarts and Soldiers will treat the NPC as a target. However, they will avoid stabbing the NPC if it is <a href="#imp-friendly">Friendly</a>.</li>
-	<li><a name="beh-puff-target"><b>Puff Target</b></a>: Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to puffs.</li>
-	<li><a name="beh-sword-immune"><b>Sword Damage Immunity</b></a>: Attack from swords will not kill the NPC.</li>
-	<li><a name="beh-pickaxe-immune"><b>Pickaxe Damage Immunity</b></a>: Attack from pickaxes will not kill the NPC. The NPC can still be pushed by pickaxes</li>
-	<li><a name="beh-spear-immune"><b>Spear Damage Immunity</b></a>: Attack from spears will not kill the NPC. The NPC can still be pushed by spears.</li>
-	<li><a name="beh-dagger-immune"><b>Dagger Damage Immunity</b></a>: Attack from daggers will not kill the NPC. This includes step attacks from dagger-wielding entities.</li>
-	<li><a name="beh-caber-immune"><b>Caber Damage Immunity</b></a>: Attack from cabers will not kill the NPC. The NPC can still be pushed by cabers.</li>
-	<li><a name="beh-floor-spike-immune"><b>Floor Spikes Immunity</b></a>: The NPC cannot be killed by spike traps. Flying NPCs will ignore the state of this behavior, and are always immune to spike traps.</li>
-	<li><a name="beh-fire-trap-immune"><b>Fire Trap Immunity</b></a>: The NPC will not be killed due to ending the turn on an active fire trap.</li>
-	<li><a name="beh-hot-tile-immune"><b>Hot Tile Immunity</b></a>: The NPC will not be killed due to staying on a hot tile for more than a turn. Flying NPCs will ignore the state of this behavior, and are always immune to hot tiles.</li>
-	<li><a name="beh-explosion-immune"><b>Explosion Immunity</b></a>: The NPC cannot be killed by explosions, including ones from the Attack Tile command.</li>
-	<li><a name="beh-briar-immune"><b>Briar Immunity</b></a>: Briar cannot grow onto and kill the NPC.</li>
-	<li><a name="beh-adder-immune"><b>Adder Immunity</b></a>: Adders cannot eat the NPC.</li>
-	<li><a name="beh-puff-immune"><b>Puff Immunity</b></a>: The NPC cannot be killed by puffs, either from Puffs moving onto them, or due to the NPC moving onto a Puff. This does not affect whether the NPC attracts Puffs.</li>
-	<li><a name="beh-fatal-push-immune"><b>Push to Fall Immunity</b></a>: The NPC cannot be pushed onto pit or water tiles if this would kill them. The NPC can still be pushed into other potentially dangerous tiles, such as active fire traps.</li>
+    <li><a name="beh-monster-target"><b>Monster Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to monsters.</li>
+    <li><a name="beh-monster-target-if-player"><b>Monster Target When Player Is Target</b></a>: Monsters other than Puffs will treat the NPC as a target as long as the player is a monster target. Otherwise, monsters will ignore this character. This does not affect the NPC's vulnerability to monsters.</li>
+    <li><a name="beh-ally-target"><b>Ally Target</b></a>: Stalwarts and Soldiers will treat the NPC as a target. However, they will avoid stabbing the NPC if it is <a href="#imp-friendly">Friendly</a>.</li>
+    <li><a name="beh-briar-immune"><b>Briar Immunity</b></a>: Briar cannot grow onto and kill the NPC.</li>
 </ol>
 
 <p><a name="functions"><b>Function primitives</b></a> - Predefined
