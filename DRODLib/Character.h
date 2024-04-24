@@ -97,10 +97,13 @@ public:
 
 	bool           CanBeNPCBeethro() const;
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
+	virtual bool   CanEnterTunnel() const { return HasBehavior(ScriptFlag::UseTunnels); }
 	virtual bool   CanPressPressurePlates() const { return HasBehavior(ScriptFlag::ActivatePlates); }
+	virtual bool   CanFluffKill() const override;
+	virtual bool   CanFluffTrack() const override;
 	virtual bool   CanPushObjects() const;
 	virtual bool   CanPushMonsters() const;
-	bool           CanPushOntoOTileAt(UINT wX, UINT wY) const;
+	bool           CanPushOntoOTile(UINT wTileNo) const override;
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
@@ -161,7 +164,6 @@ public:
 
 	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	int            CountTile(const CCharacterCommand& command) const;
-	bool           IsAdderImmune() const { return HasBehavior(ScriptFlag::AdderImmune); }
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
@@ -188,8 +190,6 @@ public:
 	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
 	virtual bool   IsPlayerAllyTarget() const;
 	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
-	bool           IsPuffImmune() const { return HasBehavior(ScriptFlag::PuffImmune); }
-	bool           IsPuffTarget() const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}
@@ -199,6 +199,8 @@ public:
 	bool           IsTileAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 	bool           IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
+	virtual bool   IsVulnerableToAdder() const override;
+	virtual bool   IsVulnerableToExplosion() const override;
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);

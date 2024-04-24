@@ -40,6 +40,8 @@
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Ports.h>
 
+#define BehaviorOverrideStr "PlayerBehaviorOverrides"
+
 bool IsLatestSearchCandidateType(SAVETYPE eSaveType)
 {
 	return eSaveType != ST_Demo && eSaveType != ST_Continue && eSaveType != ST_WorldMap;
@@ -151,6 +153,8 @@ bool CDbSavedGame::Load(
 		this->dwLevelTime = (UINT) p_LevelTime(row);
 		this->stats = p_Stats(row);
 		this->wVersionNo = p_Version(row);
+
+		DeserializeBehaviorOverrides();
 
 		//Populate conquered room list.
 		ConqueredRoomsView = p_ConqueredRooms(row);
@@ -624,6 +628,7 @@ void CDbSavedGame::Clear(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 	this->eType = ST_Unknown;
 
 	this->dwPlayerID = 0L;
@@ -764,6 +769,8 @@ bool CDbSavedGame::UpdateNew()
 	
 	this->dwSavedGameID = GetIncrementedID(p_SavedGameID);
 
+	SerializeBehaviorOverrides();
+
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
 	BYTE *pbytStatsBytes = this->stats.GetPackedBuffer(dwStatsSize);
@@ -813,6 +820,8 @@ bool CDbSavedGame::UpdateExisting()
 		ASSERT(!"Bad SavedGameID.");
 		return false;
 	}
+
+	SerializeBehaviorOverrides();
 
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
@@ -897,6 +906,46 @@ void CDbSavedGame::SaveFields(c4_RowRef& row)
 	p_Version(row) = this->wVersionNo;
 }
 
+void CDbSavedGame::DeserializeBehaviorOverrides()
+{
+	const char* buffer = this->stats.GetVar(BehaviorOverrideStr, "");
+	const string wrappedBuffer(buffer);
+
+	if (wrappedBuffer.empty()) {
+		//Nothing to deserialize
+		return;
+	}
+
+	string::const_iterator it = wrappedBuffer.begin();
+	while (it != wrappedBuffer.end()) {
+		PlayerBehavior b = (PlayerBehavior)*it++;
+		PlayerBehaviorState s = (PlayerBehaviorState)*it++;
+		this->startRoomPlayerBehaviorOverrides.insert({b, s});
+	}
+}
+
+void CDbSavedGame::SerializeBehaviorOverrides()
+{
+	this->stats.Unset(BehaviorOverrideStr);
+	if (this->startRoomPlayerBehaviorOverrides.empty()) {
+		//Nothing to serialize
+		return;
+	}
+
+	size_t overrides = this->startRoomPlayerBehaviorOverrides.size();
+
+	string buffer;
+	buffer.resize(0);
+	buffer.reserve(overrides * 2);
+
+	for (PlayerBehaviors::const_iterator it = this->startRoomPlayerBehaviorOverrides.begin(); it != this->startRoomPlayerBehaviorOverrides.end(); ++it) {
+		buffer.append(1, (char)it->first);
+		buffer.append(1, (char)it->second);
+	}
+
+	ASSERT(buffer.length() == overrides * 2);
+	this->stats.SetVar(BehaviorOverrideStr, buffer.c_str());
+}
 
 //*****************************************************************************
 bool CDbSavedGame::SetMembers(
@@ -920,6 +969,7 @@ bool CDbSavedGame::SetMembers(
 	this->wStartRoomAppearance = Src.wStartRoomAppearance;
 	this->bStartRoomSwordOff = Src.bStartRoomSwordOff;
 	this->wStartRoomWaterTraversal = Src.wStartRoomWaterTraversal;
+	this->startRoomPlayerBehaviorOverrides = Src.startRoomPlayerBehaviorOverrides;
 	this->wStartRoomWeaponType = Src.wStartRoomWeaponType;
 
 	//object members

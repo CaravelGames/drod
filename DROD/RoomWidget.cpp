@@ -7988,7 +7988,7 @@ const
 		wSManTI = GetStockEntityTile(swordsman.wAppearance == static_cast<UINT>(-1) ?
 			static_cast<UINT>(CHARACTER_FIRST) : swordsman.wAppearance, wO, wFrame);
 	}
-	if (wSwordTI == TI_UNSPECIFIED && bEntityHasSword(swordsman.wAppearance))
+	if (wSwordTI == TI_UNSPECIFIED && swordsman.HasWeapon())
 		wSwordTI = GetSwordTile(swordsman.wAppearance, wO, swordsman.GetActiveWeapon());
 
 	return true;

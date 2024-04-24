@@ -1960,6 +1960,18 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::IsVulnerableToAdder() const
+{
+	return !(IsLongMonster() || IsPiece());
+}
+
+//*****************************************************************************
+bool CMonster::IsVulnerableToExplosion() const
+{
+	return true;
+}
+
+//*****************************************************************************
 bool CMonster::IsWading() const
 {
 	if (!this->pCurrentGame)
@@ -2022,6 +2034,29 @@ const
 
 	//Otherwise, monster might sense any alternate monster targets.
 	return SensesTarget();
+}
+
+//*****************************************************************************
+bool CMonster::CanFluffTrack() const
+{
+	return bCanFluffTrack(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanFluffKill() const
+{
+	return bCanFluffKill(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanPushOntoOTile(const UINT wTile) const
+//Returns whether the monster can be pushed onto the given tile type
+{
+	return bIsFloor(wTile) ||
+		bIsOpenDoor(wTile) ||
+		bIsPlatform(wTile) ||
+		bIsPit(wTile) ||
+		bIsWater(wTile);
 }
 
 //*****************************************************************************
@@ -2385,6 +2420,12 @@ bool CMonster::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath)
 	case M_CITIZEN: case M_ARCHITECT: case M_ROCKGOLEM:
 	case M_CONSTRUCT: case M_WUBBA:
 		return false;
+	case M_CLONE: case M_TEMPORALCLONE: {
+		const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+		if (pDouble) {
+			return pDouble->IsVulnerableToWeapon(WT_Dagger);
+		}
+	}
 	case M_CHARACTER: {
 		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 		if (!pCharacter || !pCharacter->IsVisible()) {

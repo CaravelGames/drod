@@ -865,6 +865,18 @@ bool CCharacter::IsImmuneToWeapon(WeaponType type) const
 }
 
 //*****************************************************************************
+bool CCharacter::IsVulnerableToAdder() const
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::AdderImmune));
+}
+
+//*****************************************************************************
+bool CCharacter::IsVulnerableToExplosion() const
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::ExplosionImmune));
+}
+
+//*****************************************************************************
 //Characters won't be stuned with imperative not stunnable
 void CCharacter::Stun(CCueEvents &CueEvents, UINT val) //[default=1]
 {
@@ -3076,6 +3088,15 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetPlayerBehavior:
+			{
+				const PlayerBehavior eBehavior = (PlayerBehavior)command.x;
+				const PlayerBehaviorState state = (PlayerBehaviorState)command.y;
+				player.SetBehavior(eBehavior, state);
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_SetEntityWeapon:
 			{
 				bProcessNextCommand = true;
@@ -3895,10 +3916,8 @@ bool CCharacter::CanPushMonsters() const
 }
 
 //*****************************************************************************
-bool CCharacter::CanPushOntoOTileAt(UINT wX, UINT wY) const
+bool CCharacter::CanPushOntoOTile(UINT wTileNo) const
 {
-	UINT wTileNo = this->pCurrentGame->pRoom->GetOSquare(wX, wY);
-
 	if (bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) || bIsPlatform(wTileNo))
 		return true;
 
@@ -6010,7 +6029,7 @@ void CCharacter::getCommandXYF(
 bool CCharacter::IsOpenMove(const int dx, const int dy) const
 //Returns: whether move is possible, and player is not in the way
 {
-	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+	if (CanEnterTunnelInDirection(dx, dy)) {
 		return true;
 	}
 
@@ -6029,10 +6048,17 @@ bool CCharacter::IsPlayerAllyTarget() const
 }
 
 //*****************************************************************************
-bool CCharacter::IsPuffTarget() const
+bool CCharacter::CanFluffTrack() const
 // Returns: whether Puff monsters should treat this character as a target
 {
-	return HasBehavior(ScriptFlag::PuffTarget);
+	return IsVisible() && HasBehavior(ScriptFlag::PuffTarget);
+}
+
+//*****************************************************************************
+bool CCharacter::CanFluffKill() const
+// Returns: whether contact with a puff kills this character
+{
+	return !(IsInvulnerable() || HasBehavior(ScriptFlag::PuffImmune));
 }
 
 //*****************************************************************************
@@ -7191,7 +7217,7 @@ void CCharacter::MoveCharacter(
 	UINT destX, destY;
 
 	// Preform tunnel move if allowed, otherwise just make a step
-	if (HasBehavior(ScriptFlag::UseTunnels) && CanEnterTunnelInDirection(dx, dy)) {
+	if (CanEnterTunnelInDirection(dx, dy)) {
 		if (!this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
 			return;
 		}
@@ -7258,8 +7284,7 @@ void CCharacter::MoveCharacter(
 bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
 // Can the character enter a tunnel on its tile in the given direction.
 {
-	if (dx != 0 && dy != 0)	{
-		// No diagonal tunnels
+	if (!CanEnterTunnel()) {
 		return false;
 	}
 
@@ -7267,26 +7292,7 @@ bool CCharacter::CanEnterTunnelInDirection(const int dx, const int dy) const
 	const UINT wFTileNo = room.GetFSquare(this->wX, this->wY);
 	const UINT wMoveO = nGetO(dx, dy);
 
-	if (bIsArrowObstacle(wFTileNo, wMoveO)) {
-		// Can't move against arrow
-		return false;
-	}
-
-	const UINT wOTileNo = room.GetOSquare(this->wX, this->wY);
-	if (!bIsTunnel(wOTileNo)) {
-		return false;
-	}
-
-	switch (wOTileNo)
-	{
-		case T_TUNNEL_N: return wMoveO == N;
-		case T_TUNNEL_S: return wMoveO == S;
-		case T_TUNNEL_E: return wMoveO == E;
-		case T_TUNNEL_W: return wMoveO == W;
-		default: ASSERT(!"Unrecognized tunnel type"); return false;
-	}
-
-	return false;
+	return room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 }
 
 //*****************************************************************************

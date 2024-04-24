@@ -3178,6 +3178,58 @@ Avoid Puffs
 [eng]
 Only Process On Full Turns
 
+[MID_BumpActivateOrb]
+[eng]
+Body Strike Orbs/Beacons
+
+[MID_LightFuses]
+[eng]
+Light Fuses
+
+[MID_StepKill]
+[eng]
+Step Kill
+
+[MID_HasWeapon]
+[eng]
+Has Weapon
+
+[MID_UseMimicPotion]
+[eng]
+Drink Mimic Potion
+
+[MID_UseDecoyPotion]
+[eng]
+Drink Decoy Potion
+
+[MID_UseClonePotion]
+[eng]
+Drink Clone Potion
+
+[MID_UseInvisibilityPotion]
+[eng]
+Drink Invisibility Potion
+
+[MID_UseSpeedPotion]
+[eng]
+Drink Speed Potion
+
+[MID_UseSquadHorn]
+[eng]
+Blow Squad Horn
+
+[MID_UseSoldierHorn]
+[eng]
+Blow Soldier Horn
+
+[MID_FaceMovementDirection]
+[eng]
+Face Movement Direction
+
+[MID_BodyAttackImmune]
+[eng]
+Body Attack Immunity
+
 [MID_PreviousIf]
 [eng]
 <Previous If>

@@ -2534,11 +2534,8 @@ const
 	if (pMonster->IsLongMonster() && type != M_GENTRYII)
 		return false;
 
-	if (type == M_TEMPORALCLONE){
-		const UINT tile = GetOSquare(wFromX, wFromY);
-		if (bIsTunnel(tile) && this->pCurrentGame->PlayerEnteredTunnel(tile, nGetO(wToX - wFromX, wToY - wFromY), pMonster->GetIdentity())){
-			return true;
-		}
+	if (pMonster->CanEnterTunnel() && IsTunnelTraversableInDirection(wFromX, wFromY, wToX - wFromX, wToY - wFromY)) {
+		return true;
 	}
 
 	CMonster *pDestMonster = GetMonsterAtSquare(wToX, wToY);
@@ -2561,14 +2558,6 @@ const
 	//Seep can be pushed within walls and doors, as well as onto open areas.
 	switch (type)
 	{
-		case M_SEEP:
-		{
-			const UINT tile = GetOSquare(wToX, wToY);
-			if (!(CanPushOntoOTile(wToX, wToY) ||
-					bIsDoor(tile) || bIsWall(tile) || bIsCrumblyWall(tile)))
-				return false;
-		}
-		break;
 		case M_GENTRYII:
 		{
 			CGentryii *pGentryii = const_cast<CGentryii*>(DYN_CAST(const CGentryii*, const CMonster*, pMonster));
@@ -2576,22 +2565,9 @@ const
 				return false;
 		}
 		break;
-		case M_FLUFFBABY:
-		{
-			const UINT tile = GetOSquare(wToX, wToY);
-			//Pushing onto Hot Tiles should fail, causing a "Puff Attack" instead
-			if (!(CanPushOntoOTile(wToX, wToY) && tile != T_HOT))
-				return false;
-		}
-		break;
-		case M_CHARACTER: {
-			const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-			if (!pCharacter->CanPushOntoOTileAt(wToX, wToY))
-				return false;
-		}
-		break;
 		default:
-			if (!CanPushOntoOTile(wToX, wToY))
+			const UINT tile = GetOSquare(wToX, wToY);
+			if (!pMonster->CanPushOntoOTile(tile))
 				return false;
 		break;
 	}
@@ -2708,7 +2684,8 @@ const
 
 	//Look for t-square obstacle.
 	UINT wTileNo = GetTSquare(wX, wY);
-	const UINT wAppearance = this->pCurrentGame->swordsman.wAppearance;
+	const CSwordsman& swordsman = this->pCurrentGame->swordsman;
+	const UINT wAppearance = swordsman.wAppearance;
 	switch (wAppearance)
 	{
 		case M_WWING: case M_ROACH: case M_QROACH: case M_EYE: case M_EYE_ACTIVE:
@@ -2722,7 +2699,7 @@ const
 					bObstacle = true;
 
 				//Older monster types cannot normally step on potions or scrolls.
-				if (!this->pCurrentGame->swordsman.bCanGetItems)
+				if (!(swordsman.bCanGetItems || swordsman.CanDrinkPotionType(wTileNo)))
 					bObstacle = true;
 			}
 		break;
@@ -4844,17 +4821,6 @@ void CDbRoom::ProcessPuffAttack(
 	{
 		switch(pMonster->wType)
 		{
-			case M_CHARACTER:
-			{
-				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-				ASSERT(pCharacter);
-				if (!pCharacter->IsPuffImmune() && !pCharacter->IsInvulnerable())
-				{
-					KillMonster(pMonster, CueEvents);
-					this->pCurrentGame->CheckTallyKill(pMonster);
-				}
-			}
-			break;
 			case M_SERPENT: case M_SERPENTB: case M_SERPENTG:
 			{
 				CSerpent *pSerpent = dynamic_cast<CSerpent*>(pMonster);
@@ -4867,7 +4833,7 @@ void CDbRoom::ProcessPuffAttack(
 			}				
 			break;
 			default:
-				if (bCanFluffKill(pMonster->GetResolvedIdentity()))
+				if (pMonster->CanFluffKill())
 				{
 					KillMonster(pMonster, CueEvents);
 					this->pCurrentGame->CheckTallyKill(pMonster);
@@ -4879,7 +4845,7 @@ void CDbRoom::ProcessPuffAttack(
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
 	{
 		const CSwordsman& player = this->pCurrentGame->swordsman;
-		if (bCanFluffKill(player.wAppearance))
+		if (player.IsVulnerableToFluff())
 		{
 			CCurrentGame *pGame = (CCurrentGame*)this->pCurrentGame; //non-const
 			pGame->SetDyingEntity(&player);
@@ -6087,10 +6053,11 @@ void CDbRoom::ProcessExplosionSquare(
 			case M_ROCKGIANT:
 				bShatterRockGiant = true;
 			break;
-			case M_GENTRYII:
-				eImperative = ScriptFlag::Invulnerable;
+			default:
+				if (!pMonster->IsVulnerableToExplosion()) {
+					eImperative = ScriptFlag::Invulnerable;
+				}
 			break;
-			default: break;
 		}
 		if (eImperative != ScriptFlag::Invulnerable)
 		{
@@ -6125,8 +6092,12 @@ void CDbRoom::ProcessExplosionSquare(
 	}
 	if (this->pCurrentGame && this->pCurrentGame->IsPlayerAt(wX, wY))
 	{
-		this->pCurrentGame->SetDyingEntity(&this->pCurrentGame->swordsman);
-		CueEvents.Add(CID_ExplosionKilledPlayer);
+		CSwordsman& player = this->pCurrentGame->swordsman;
+
+		if (player.IsVulnerableToExplosion()) {
+			this->pCurrentGame->SetDyingEntity(&player);
+			CueEvents.Add(CID_ExplosionKilledPlayer);
+		}
 	}
 }
 
@@ -11386,6 +11357,43 @@ bool CDbRoom::IsDoorOpen(
 		case T_DOOR_Y: return false;
 		default: ASSERT(!"Bad door tile."); return false; //checked a tile that wasn't a door
 	}
+}
+
+//*****************************************************************************
+bool CDbRoom::IsTunnelTraversableInDirection(
+//Determine if a tunnel at the given position can be travelled through in the given direction
+	const UINT wX, const UINT wY, //Coords to tile
+	const int dx, const int dy) // Direction of travel
+	const
+{
+	if (dx != 0 && dy != 0) {
+		// No diagonal tunnels
+		return false;
+	}
+
+	const UINT wFTile = GetFSquare(wX, wY);
+	UINT wMoveO = nGetO(dx, dy);
+	//Can't move against arrow
+	if (bIsArrowObstacle(wFTile, wMoveO)) {
+		return false;
+	}
+
+	const UINT wOTileNo = GetOSquare(wX, wY);
+	//Entity enters tunnel when moving off of a tunnel in its entrance direction.
+	if (!bIsTunnel(wOTileNo)) {
+		return false;
+	}
+
+	switch (wOTileNo)
+	{
+		case T_TUNNEL_N: return wMoveO == N;
+		case T_TUNNEL_S: return wMoveO == S;
+		case T_TUNNEL_E: return wMoveO == E;
+		case T_TUNNEL_W: return wMoveO == W;
+		default: ASSERT(!"Unrecognized tunnel type"); return false;
+	}
+
+	return false;
 }
 
 //*****************************************************************************

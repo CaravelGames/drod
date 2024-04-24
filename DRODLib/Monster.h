@@ -237,12 +237,16 @@ public:
 
 	void          AskYesNo(MESSAGE_ID eMessageID, CCueEvents &CueEvents) const;
 	virtual bool  BrainAffects() const {return true;}
-	bool          CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
+	virtual bool  CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
 	virtual bool  CanDropTrapdoor(const UINT /*oTile*/) const {return false;}
+	virtual bool  CanEnterTunnel() const { return false; }
 	virtual bool  CanFindSwordsman() const;
+	virtual bool  CanFluffTrack() const;
+	virtual bool  CanFluffKill() const;
 	virtual bool  CanHideInShallowWater() const {return false;}
 	virtual bool  CanPushObjects() const { return false; }
 	virtual bool  CanPushMonsters() const { return CanPushObjects(); }
+	virtual bool  CanPushOntoOTile(const UINT wTile) const;
 	virtual bool  CanPressPressurePlates() const { return !this->IsFlying(); }
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
 	virtual bool  CanWadeInShallowWater() const;
@@ -320,6 +324,8 @@ public:
 	virtual bool  IsTileObstacle(const UINT wTileNo) const;
 	virtual bool  IsHiding() const {return false;}
 	virtual bool  IsVisible() const {return true;}
+	virtual bool  IsVulnerableToAdder() const;
+	virtual bool  IsVulnerableToExplosion() const;
 	virtual bool  IsWading() const;
 	bool          IsStunned() const { return this->stunned != 0; }
 
