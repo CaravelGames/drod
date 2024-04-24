@@ -169,6 +169,7 @@ private:
 	bool     RemoveMonster(CMonster *pMonster);
 	bool     RemoveObjectAt(const UINT wX, const UINT wY, const UINT wPlottedObject,
 			bool &bSpecialTileRemoved, bool &bTarRemoved, bool &bStairsRemoved);
+	void     RemoveOrbAssociationAt(const UINT wX, const UINT wY);
 	void     RepairDoors(const UINT doorType);
 	void     ResetAdjacentRooms();
 	void     ResetMembers();

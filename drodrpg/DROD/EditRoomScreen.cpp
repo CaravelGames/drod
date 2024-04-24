@@ -246,6 +246,8 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{ TI_ARROW_OFF_NW },                               //T_ARROW_OFF_NW
 	{ TI_MIST },                                       //T_MIST
 	{ TI_MISTVENT },                                   //T_MISTVENT
+	{ TI_FIRETRAP },                                   //T_FIRETRAP
+	{ TI_FIRETRAP_ON },                                //T_FIRETRAP_ON
 
 	//monsters
 	{TI_ROACH_S},
@@ -414,6 +416,8 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ARROW_OFF_NW  114
 	0, //T_MIST          115
 	0, //T_MISTVENT      116
+	0, //T_FIRETRAP      117
+	0, //T_FIRETRAP_ON   118
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -480,6 +484,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, //mist, vent
+	1, 1, //firetraps
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -506,6 +511,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, //ice
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, //mist, vent
+	1, 1, //firetraps
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -583,14 +589,14 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 28;
+const UINT numOLayerEntries = 29;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
 	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
-	T_DIRT1, T_MISTVENT
+	T_DIRT1, T_MISTVENT, T_FIRETRAP
 };
 
 const UINT numFLayerEntries = 7;
@@ -1468,7 +1474,7 @@ void CEditRoomScreen::ClickRoom()
 				}
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
 				this->pRoomWidget->AddOrbAgentsEffect(this->pOrb);
-			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare) || bIsAnyArrow(wFSquare)) {
+			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare) || bIsAnyArrow(wFSquare) || bIsFiretrap(wOTileNo)) {
 				//A door or light exists here -- add, modify or delete its orb agent.
 				Changing();
 				//Is this door already affected by the orb?
@@ -3963,12 +3969,12 @@ COrbAgentData* CEditRoomScreen::FindOrbAgentFor(
 
 	//Gather set of all squares this door is on.
 	CCoordSet coords;
+	const UINT oTile = this->pRoom->GetOSquare(wX,wY);
 	if (bIsLight(this->pRoom->GetTSquare(wX,wY)))
 		coords.insert(wX,wY);
-	else if (bIsAnyArrow(this->pRoom->GetFSquare(wX, wY))) {
+	else if (bIsAnyArrow(this->pRoom->GetFSquare(wX, wY)) || bIsFiretrap(oTile)) {
 		coords.insert(wX, wY);
 	} else {
-		const UINT oTile = this->pRoom->GetOSquare(wX,wY);
 		ASSERT(bIsDoor(oTile) || bIsOpenDoor(oTile));
 		this->pRoom->GetAllDoorSquares(wX, wY, coords, oTile);
 	}
@@ -4817,7 +4823,7 @@ void CEditRoomScreen::PasteRegion(
 			{
 				COrbAgentData *pAgent = pOrb->agents[wAgentI];
 				const UINT oTile = room.GetOSquare(pAgent->wX, pAgent->wY);
-				if (!(bIsDoor(oTile) || bIsOpenDoor(oTile) ||
+				if (!(bIsDoor(oTile) || bIsOpenDoor(oTile) || bIsFiretrap(oTile) ||
 						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY)) ||
 						 bIsAnyArrow(room.GetFSquare(pAgent->wX, pAgent->wY))))
 					VERIFY(pOrb->DeleteAgent(pAgent));
@@ -5302,6 +5308,12 @@ void CEditRoomScreen::PlotObjects()
 				break;
 				case T_THINICE:
 					g_pTheSound->PlaySoundEffect(SEID_ICEMELT);
+				break;
+				case T_FIRETRAP:
+					g_pTheSound->PlaySoundEffect(SEID_FIRETRAP);
+				break;
+				case T_FIRETRAP_ON:
+					g_pTheSound->PlaySoundEffect(SEID_FIRETRAP_START);
 				break;
 				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
@@ -6538,6 +6550,10 @@ bool CEditRoomScreen::RemoveObjectAt(
 			case T_DOOR_MONEY: case T_DOOR_MONEYO:
 				room.RemoveDoorTile(wX,wY,wOTileNo);
 			break;
+			case T_FIRETRAP:
+			case T_FIRETRAP_ON:
+				RemoveOrbAssociationAt(wX, wY);
+			break;
 			case T_PRESSPLATE:
 				if (room.RemovePressurePlateTile(wX,wY))
 					room.DeleteOrbAtSquare(wX,wY);
@@ -6625,6 +6641,19 @@ bool CEditRoomScreen::RemoveObjectAt(
 	}  //layer
 
 	return bSuccess;
+}
+
+//*****************************************************************************
+void CEditRoomScreen::RemoveOrbAssociationAt(const UINT wX, const UINT wY)
+{
+	CDbRoom& room = *(this->pRoom);
+	for (UINT wIndex = 0; wIndex < room.orbs.size(); ++wIndex)
+	{
+		COrbData* pOrb = room.orbs[wIndex];
+		COrbAgentData* pAgent = FindOrbAgentFor(wX, wY, pOrb);
+		if (pAgent)
+			VERIFY(pOrb->DeleteAgent(pAgent));
+	}
 }
 
 //*****************************************************************************
@@ -7693,6 +7722,8 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_DOOR_RO: wNewTile = T_DOOR_R; break;
 		case T_DOOR_BO: wNewTile = T_DOOR_B; break;
 		case T_DOOR_MONEYO: wNewTile = T_DOOR_MONEY; break;
+		case T_FIRETRAP: wNewTile = T_FIRETRAP_ON; break;
+		case T_FIRETRAP_ON: wNewTile = T_FIRETRAP; break;
 
 /*
 		case T_STAIRS: wNewTile = T_STAIRS_UP; break;

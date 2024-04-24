@@ -147,6 +147,7 @@ public:
 	CBridge        bridges;
 //	CBuilding      building; //tiles marked for building
 	CCoordSet      mistVents;
+	CCoordSet      activeFiretraps;
 
 	CCoordSet      geometryChanges, disabledLights; //for front end -- where lighting must be updated
 
@@ -155,6 +156,7 @@ public:
 	inline UINT    ROOMINDEX_TO_X(const UINT index) const { return index % this->wRoomCols; }
 	inline UINT    ROOMINDEX_TO_Y(const UINT index) const { return index / this->wRoomCols; }
 
+	void           ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           ActivateOrb(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const OrbActivationType eActivationType);
 	void           ActivateToken(CCueEvents &CueEvents, const UINT wX, const UINT wY);
@@ -195,6 +197,7 @@ public:
 */
 	bool           CropRegion(UINT& x1, UINT &y1, UINT &x2, UINT &y2) const;
 
+	void           DamageMonster(CMonster* pMonster, int damageVal, CCueEvents& CueEvents);
 	int            DangerLevel() const;
 //	void           DecMonsterCount();
 	void           DecTrapdoor(CCueEvents &CueEvents);
@@ -207,6 +210,7 @@ public:
 	void           DestroyTar(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           DestroyTrapdoor(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
+	void           DisableFiretrap(const UINT wX, const UINT wY);
 	void           DisableForceArrow(const UINT wX, const UINT wY);
 /*	bool           DoesMonsterEnterRoomLater(const UINT wX, const UINT wY,
 			const UINT wMonsterType) const;
@@ -221,6 +225,7 @@ public:
 			const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 
+	void           EnableFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           EnableForceArrow(const UINT wX, const UINT wY);
 	void           ExpandBriars(CCueEvents& CueEvents);
 	void           ExpandMist(CCueEvents& CueEvents);
@@ -400,6 +405,7 @@ public:
 	void           SwitchTarstuff(const UINT wType1, const UINT wType2);
 	bool           SwordfightCheck() const;
 	void           ToggleBlackGates(CCueEvents& CueEvents);
+	void           ToggleFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           ToggleForceArrow(const UINT wX, const UINT wY);
 	void           ToggleDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	bool           ToggleTiles(const UINT wOldTile, const UINT wNewTile);
@@ -448,6 +454,7 @@ private:
 	void           OpenDoor(const UINT wX, const UINT wY);
 	c4_Bytes *     PackSquares(const bool bSaveGameData=false) const;
 	c4_Bytes *     PackTileLights() const;
+	void           ProcessActiveFiretraps(CCueEvents& CueEvents);
 	void           ReevalBriarNear(const UINT wX, const UINT wY, const UINT wTileNo);
 	void           ReflectSquare(const bool bHoriz, UINT &wSquare) const;
 //	bool           RemoveLongMonsterPieces(CMonster *pMonster);

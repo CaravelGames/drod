@@ -2440,7 +2440,14 @@
 
 #define TI_MISTVENT       2257
 
-static const UINT TI_COUNT = 2258;
+#define TI_FIRETRAP       2258
+#define TI_FIRETRAP_ON    2259
+
+#define TI_FIRETRAP_UP1   2260
+#define TI_FIRETRAP_UP2   2261
+#define TI_FIRETRAP_UP3   2262
+
+static const UINT TI_COUNT = 2263;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

@@ -312,6 +312,8 @@ enum MID_CONSTANT {
   MID_ForceArrowDisabledSW = 1882,
   MID_Mist = 1885,
   MID_MistVent = 1887,
+  MID_Firetrap = 1888,
+  MID_FiretrapOn = 1889,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,
@@ -1547,6 +1549,8 @@ enum MID_CONSTANT {
   MID_ImageOverlay = 1883,
   MID_ImageOverlayStrategy = 1884,
   MID_MistDestroyed = 1886,
+  MID_FiretrapBurning = 1891,
+  MID_FiretrapActivated = 1892,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
@@ -1642,6 +1646,7 @@ enum MID_CONSTANT {
   MID_VarItemShovelMult = 1864,
   MID_VarMyItemShovelMult = 1865,
   MID_VarBeam = 1866,
+  MID_VarFiretrap = 1890,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,

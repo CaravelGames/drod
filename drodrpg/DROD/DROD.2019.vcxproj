@@ -562,6 +562,7 @@
     <ClCompile Include="EquipmentDescription.cpp" />
     <ClCompile Include="ExplosionEffect.cpp" />
     <ClCompile Include="FaceWidget.cpp" />
+    <ClCompile Include="FiretrapEffect.cpp" />
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="HoldSelectScreen.cpp" />
     <ClCompile Include="IceMeltEffect.cpp" />
@@ -637,6 +638,7 @@
     <ClInclude Include="EquipmentDescription.h" />
     <ClInclude Include="ExplosionEffect.h" />
     <ClInclude Include="FaceWidget.h" />
+    <ClInclude Include="FiretrapEffect.h" />
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="HoldSelectScreen.h" />
     <ClInclude Include="IceMeltEffect.h" />
