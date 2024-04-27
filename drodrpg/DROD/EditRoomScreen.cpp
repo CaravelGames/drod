@@ -6329,7 +6329,7 @@ void CEditRoomScreen::FixCorruptStaircase(
 				break;
 			this->pRoom->DeleteExitAtSquare(wEvalX, wEvalY);
 
-			this->pRoom->Plot(wEvalX, wEvalY, T_FLOOR);  //remove stairs
+			this->pRoom->Plot(wEvalX, wEvalY, this->wLastFloorSelected);  //remove stairs
 
 			//Add adjacent (4-neighbor) coords to eval stack.
 			if (wEvalX > 0)
