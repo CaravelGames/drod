@@ -6473,6 +6473,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 {
 	CDbRoom& room = *(this->pRoom);
 	const UINT wOTileNo = room.GetOSquare(wX,wY),
+			fTile = room.GetFSquare(wX, wY),
 			wTTileNo = room.GetTSquare(wX,wY),
 			wLayer = TILE_LAYER[wPlottedObject];
 	CMonster *pMonster;
@@ -6583,6 +6584,19 @@ bool CEditRoomScreen::RemoveObjectAt(
 	break;
 
 	case 3:
+		switch (fTile)
+		{
+			case T_ARROW_N: case T_ARROW_NE: case T_ARROW_E: case T_ARROW_SE:
+			case T_ARROW_S: case T_ARROW_SW: case T_ARROW_W: case T_ARROW_NW:
+			case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_E: case T_ARROW_OFF_SE:
+			case T_ARROW_OFF_S: case T_ARROW_OFF_SW: case T_ARROW_OFF_W: case T_ARROW_OFF_NW:
+				if (!bIsLight(wTTileNo) && !bIsYellowDoor(wOTileNo) && !bIsFiretrap(wOTileNo)) {
+					if (!bIsAnyArrow(fTile) || !bIsAnyArrow(wPlottedObject)) {
+						RemoveOrbAssociationAt(wX, wY);
+					}
+				}
+			break;
+		}
 	break;
 
 	default: ASSERT(!"Invalid layer"); break;
