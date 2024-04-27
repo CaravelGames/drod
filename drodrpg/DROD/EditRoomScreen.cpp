@@ -5792,7 +5792,7 @@ void CEditRoomScreen::PlotStaircase(const UINT wStairType)
 		for (wX = wStartX; wX <= wEndX; ++wX)
 			PlotObjectAt(wX, wY, wStairType, this->wO);
 
-	SetDestinationEntrance(wStartX + 1, wStartY + 1, wEndX - 1, wEndY - 1);
+	SetDestinationEntrance(wStartX, wStartY, wEndX, wEndY);
 
 	this->pRoom->InitRoomStats();
 	PaintHighlights();
@@ -6329,7 +6329,7 @@ void CEditRoomScreen::FixCorruptStaircase(
 				break;
 			this->pRoom->DeleteExitAtSquare(wEvalX, wEvalY);
 
-			this->pRoom->Plot(wEvalX, wEvalY, T_FLOOR);  //remove stairs
+			this->pRoom->Plot(wEvalX, wEvalY, this->wLastFloorSelected);  //remove stairs
 
 			//Add adjacent (4-neighbor) coords to eval stack.
 			if (wEvalX > 0)
@@ -6352,60 +6352,8 @@ void CEditRoomScreen::FixCorruptStaircase(
 				wMaxY = wEvalY;
 			}
 			break;
-
-		case T_WALL:
-			//Remove the wall surrounding the stairs if it doesn't
-			//have another wall tile adjacent to it.
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wEvalX, wEvalY);
-			break;
 		}
 	}
-
-	//Handle corners.
-	if (wMinX > 0)
-	{
-		if (wMinY > 0)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMinX-1, wMinY-1);
-		if (wMaxY < this->pRoom->wRoomRows - 1)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMinX-1, wMaxY+1);
-	}
-	if (wMaxX < this->pRoom->wRoomCols - 1)
-	{
-		if (wMinY > 0)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMaxX+1, wMinY-1);
-		if (wMaxY < this->pRoom->wRoomRows - 1)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMaxX+1, wMaxY+1);
-	}
-}
-
-//*****************************************************************************
-void CEditRoomScreen::FixCorruptStaircaseEdge(
-//Remove lone wall tiles around a staircase being removed.
-//
-//Params:
-	const UINT wMinX, const UINT wMaxX,          //(in) bounds of stairs
-	const UINT wMinY, const UINT wMaxY,          //(in) bounds of stairs
-	const UINT wEvalX, const UINT wEvalY)  //(in) Where to check wall tile
-{
-	ASSERT(this->pRoom->IsValidColRow(wEvalX, wEvalY));
-
-	//This check is needed just for the corner cases.
-	if (!bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY))) return;
-
-	if (wEvalX < wMinX && wEvalX > 0)   //left
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX-1, wEvalY)))
-			return;
-	if (wEvalX > wMaxX && wEvalX < this->pRoom->wRoomCols - 1)  //right
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX+1, wEvalY)))
-			return;
-	if (wEvalY < wMinY && wEvalY > 0)   //top (have to handle it)
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY-1)))
-			return;
-	if (wEvalY > wMaxY && wEvalY < this->pRoom->wRoomRows - 1)  //bottom
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY+1)))
-			return;
-
-	this->pRoom->Plot(wEvalX, wEvalY, T_FLOOR);  //remove wall
 }
 
 //*****************************************************************************
@@ -6525,6 +6473,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 {
 	CDbRoom& room = *(this->pRoom);
 	const UINT wOTileNo = room.GetOSquare(wX,wY),
+			fTile = room.GetFSquare(wX, wY),
 			wTTileNo = room.GetTSquare(wX,wY),
 			wLayer = TILE_LAYER[wPlottedObject];
 	CMonster *pMonster;
@@ -6635,6 +6584,19 @@ bool CEditRoomScreen::RemoveObjectAt(
 	break;
 
 	case 3:
+		switch (fTile)
+		{
+			case T_ARROW_N: case T_ARROW_NE: case T_ARROW_E: case T_ARROW_SE:
+			case T_ARROW_S: case T_ARROW_SW: case T_ARROW_W: case T_ARROW_NW:
+			case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_E: case T_ARROW_OFF_SE:
+			case T_ARROW_OFF_S: case T_ARROW_OFF_SW: case T_ARROW_OFF_W: case T_ARROW_OFF_NW:
+				if (!bIsLight(wTTileNo) && !bIsYellowDoor(wOTileNo) && !bIsFiretrap(wOTileNo)) {
+					if (!bIsAnyArrow(fTile) || !bIsAnyArrow(wPlottedObject)) {
+						RemoveOrbAssociationAt(wX, wY);
+					}
+				}
+			break;
+		}
 	break;
 
 	default: ASSERT(!"Invalid layer"); break;

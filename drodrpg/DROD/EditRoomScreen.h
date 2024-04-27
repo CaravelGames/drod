@@ -118,8 +118,6 @@ private:
 	COrbAgentData* FindOrbAgentFor(COrbData* pOrb, CCoordSet &doorCoords);
 	void     FixUnstableTar();
 	void     FixCorruptStaircase(const UINT wX, const UINT wY);
-	void     FixCorruptStaircaseEdge(const UINT wMinX, const UINT wMaxX,
-			const UINT wMinY, const UINT wMaxY, const UINT wEvalX, const UINT wEvalY);
 	CObjectMenuWidget*   GetActiveMenu();
 	void           ForceFullStyleReload();
 	void           GetFloorImageID(const bool bReselect=false);
