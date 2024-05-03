@@ -128,6 +128,8 @@ public:
 		//level tallies ("<id>[d|k|m|t]"), hold var values ("v*"),
 		//and world map music ("wm<id>[c]")
 	UINT    dwLevelDeaths, dwLevelKills, dwLevelMoves, dwLevelTime;  //used for active level
+	typedef map<UINT, map<int, int>> ScriptArrayMap;
+	ScriptArrayMap scriptArrays; //unpacked hold array var values
 	UINT     wVersionNo;
 
 	WorldMapsIcons worldMapIcons;
@@ -146,6 +148,7 @@ private:
 
 	void     DeserializeBehaviorOverrides();
 	void     SerializeBehaviorOverrides();
+	void     SerializeScriptArrays();
 
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();

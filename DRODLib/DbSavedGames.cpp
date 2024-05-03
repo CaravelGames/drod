@@ -608,47 +608,6 @@ bool CDbSavedGame::Update()
 	return UpdateExisting();
 }
 
-//
-//CDbSavedGame protected methods.
-//
-
-//*******************************************************************************
-void CDbSavedGame::Clear(
-//Frees resources associated with object and zeroes members.
-//
-//Params:
-	const bool bNewGame)  //(in)   whether new game is starting [default=true]
-{
-	this->dwRoomID=this->dwSavedGameID=0;
-	this->worldMapID = 0;
-	this->bIsHidden=false;
-	this->wStartRoomX=this->wStartRoomY=this->wStartRoomO=
-			this->wCheckpointX=this->wCheckpointY=0;
-	this->wStartRoomAppearance = M_BEETHRO; //use default value
-	this->bStartRoomSwordOff = false;
-	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
-	this->wStartRoomWeaponType = WT_Sword;
-	this->startRoomPlayerBehaviorOverrides.clear();
-	this->eType = ST_Unknown;
-
-	this->dwPlayerID = 0L;
-
-	if (bNewGame)
-	{
-		this->ConqueredRooms.clear();
-		this->ExploredRooms.clear();
-		this->CompletedScripts.clear();
-		this->GlobalScripts.clear();
-		this->entrancesExplored.clear();
-		this->worldMapIcons.clear();
-		this->stats.Clear();
-		this->dwLevelDeaths = this->dwLevelKills = this->dwLevelMoves = this->dwLevelTime = 0L;
-	}
-	this->Commands.Clear();
-
-	this->wVersionNo = 0;
-}
-
 //*****************************************************************************
 UINT CDbSavedGame::readBpUINT(const BYTE* buffer, UINT& index)
 //Deserialize 1..5 bytes --> UINT
@@ -682,6 +641,48 @@ void CDbSavedGame::writeBpUINT(string& buffer, UINT n)
 			b |= 0x80;
 		buffer.append(1, b);
 	}
+}
+
+//
+//CDbSavedGame protected methods.
+//
+
+//*******************************************************************************
+void CDbSavedGame::Clear(
+//Frees resources associated with object and zeroes members.
+//
+//Params:
+	const bool bNewGame)  //(in)   whether new game is starting [default=true]
+{
+	this->dwRoomID=this->dwSavedGameID=0;
+	this->worldMapID = 0;
+	this->bIsHidden=false;
+	this->wStartRoomX=this->wStartRoomY=this->wStartRoomO=
+			this->wCheckpointX=this->wCheckpointY=0;
+	this->wStartRoomAppearance = M_BEETHRO; //use default value
+	this->bStartRoomSwordOff = false;
+	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
+	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
+	this->scriptArrays.clear();
+	this->eType = ST_Unknown;
+
+	this->dwPlayerID = 0L;
+
+	if (bNewGame)
+	{
+		this->ConqueredRooms.clear();
+		this->ExploredRooms.clear();
+		this->CompletedScripts.clear();
+		this->GlobalScripts.clear();
+		this->entrancesExplored.clear();
+		this->worldMapIcons.clear();
+		this->stats.Clear();
+		this->dwLevelDeaths = this->dwLevelKills = this->dwLevelMoves = this->dwLevelTime = 0L;
+	}
+	this->Commands.Clear();
+
+	this->wVersionNo = 0;
 }
 
 //
@@ -857,6 +858,7 @@ bool CDbSavedGame::UpdateExisting()
 	}
 
 	SerializeBehaviorOverrides();
+	SerializeScriptArrays();
 
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
@@ -983,6 +985,41 @@ void CDbSavedGame::SerializeBehaviorOverrides()
 }
 
 //*****************************************************************************
+void CDbSavedGame::SerializeScriptArrays()
+//Converts script arrays into byte buffers that can be stored in CDbPackedVars
+//Note: deserialization is done in CCurrentGame, as it requires hold information
+{
+	if (this->scriptArrays.empty()) {
+		return;
+	}
+
+	for (ScriptArrayMap::const_iterator it = this->scriptArrays.cbegin();
+		it != this->scriptArrays.cend(); ++it) {
+		const map<int, int> arrayMap = it->second;
+		string buffer;
+
+		UINT size = 0;
+		for (map<int, int>::const_iterator arrayIt = arrayMap.cbegin();
+			arrayIt != arrayMap.cend(); ++arrayIt) {
+			if (arrayIt->second == 0) {
+				continue; //save space by skipping zero-value entries
+			}
+
+			writeBpUINT(buffer, (UINT)arrayIt->first);
+			writeBpUINT(buffer, (UINT)arrayIt->second);
+			++size;
+		}
+
+		string sizeBuffer;
+		writeBpUINT(sizeBuffer, size);
+
+		string varName("v");
+		varName += std::to_string(it->first);
+		this->stats.SetVar(varName.c_str(), (sizeBuffer + buffer).c_str());
+	}
+}
+
+//*****************************************************************************
 bool CDbSavedGame::SetMembers(
 //For copy constructor and assignment operator.
 //
@@ -1024,6 +1061,7 @@ bool CDbSavedGame::SetMembers(
 	this->dwLevelMoves = Src.dwLevelMoves;
 	this->dwLevelTime = Src.dwLevelTime;
 	this->stats = Src.stats;
+	this->scriptArrays = Src.scriptArrays;
 	this->wVersionNo = Src.wVersionNo;
 
 	return true;

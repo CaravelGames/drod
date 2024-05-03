@@ -308,6 +308,7 @@ private:
 	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
+	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
 
 	void GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
@@ -369,6 +370,8 @@ private:
 
 	typedef map<WSTRING, WSTRING> LocalScriptMap;
 	LocalScriptMap localScriptVars;
+	typedef map<UINT, map<int, int>> ScriptArrayMap;
+	ScriptArrayMap localScriptArrays;
 };
 
 class CFiredCharacterCommand : public CAttachableObject

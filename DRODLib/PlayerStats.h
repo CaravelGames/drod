@@ -124,6 +124,8 @@ namespace ScriptVars
 
 	bool IsCharacterLocalVar(const WSTRING& wstr);
 	bool IsCharacterLocalVar(const WCHAR* wstr);
+	bool IsCharacterArrayVar(const WSTRING& wstr);
+	bool IsCharacterArrayVar(const WCHAR* wstr);
 
 	//All predefined vars.
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];

@@ -356,6 +356,7 @@ public:
 	bool     bContinueCutScene;
 	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
+	map<UINT, map<int, int>> scriptArraysAtRoomStart; //
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
@@ -395,6 +396,7 @@ private:
 	void     DeleteLeakyCueEvents(CCueEvents &CueEvents);
 	void     DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType,
 							const UINT wPotionX, const UINT wPotionY);
+	void     DeserializeScriptArrays();
 	void     FlagChallengesCompleted(CCueEvents &CueEvents);
 	bool     IsActivatingTemporalSplit() const;
 	bool     IsSwordsmanTired();

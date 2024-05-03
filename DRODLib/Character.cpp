@@ -276,9 +276,12 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_WaitForVar:
 				case CCharacterCommand::CC_VarSet:
 				case CCharacterCommand::CC_VarSetAt:
+				case CCharacterCommand::CC_ArrayVarSet:
+				case CCharacterCommand::CC_ArrayVarSetAt:
+				case CCharacterCommand::CC_ClearArrayVar:
 				{
 					//Update var refs.
-					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+					UINT wRef = c.getVarID();
 					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
 						break; //predefined var IDs remain the same
 
@@ -292,11 +295,7 @@ void CCharacter::ChangeHoldForCommands(
 					}
 					//Update the var ID to match the ID of the var with this
 					//name in the destination hold.
-					if (c.command == CCharacterCommand::CC_VarSetAt) {
-						c.w = uVarID;
-					} else {
-						c.x = uVarID;
-					}
+					c.setVarID(uVarID);
 				}
 				break;
 				case CCharacterCommand::CC_AmbientSound:
@@ -630,6 +629,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_SetEntityWeapon:
+			case CCharacterCommand::CC_ArrayVarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -707,6 +707,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_SetEntityWeapon:
+			case CCharacterCommand::CC_ArrayVarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1018,6 +1019,38 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 
 		//Unrecognized identifier.
 		return false;
+	} else if (pwStr[index] == W_t('#') || pwStr[index] == W_t('@')) {
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (CDbHold::IsVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		index = endIndex;
+
+		//Is it a hold var?
+		if (!pHold->GetVarID(wVarName.c_str()))
+			return false;
+
+		if(pwStr[index] != W_t('['))
+			return false;
+		++index;
+
+		if (!IsValidExpression(pwStr, index, pHold, ']')) //recursive call
+			return false;
+		if (pwStr[index] != W_t(']')) //should be parsing the close bracket at this point
+			return false; //missing close bracket
+
+		++index;
+
+		return true;
 	}
 
 	//Invalid identifier
@@ -1287,6 +1320,43 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 			return parsePrimitive(ePrimitive, pwStr, index, pGame, pNPC);
 
 		//else: unrecognized identifier -- just return a zero value
+		return val;
+	} else if (pwStr[index] == W_t('#') || pwStr[index] == W_t('@')) {
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (CDbHold::IsVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		const bool bIsLocalArray = ScriptVars::IsCharacterLocalVar(wVarName);
+		index = endIndex;
+
+		if (bIsLocalArray && !pNPC)
+			return 0;
+
+		ASSERT(pwStr[index] == W_t('['));
+		++index; //pass left bracket
+
+		int arrayIndex = parseExpression(pwStr, index, pGame, pNPC, ']'); //recursive call
+		SKIP_WHITESPACE(pwStr, index);
+		if (pwStr[index] == W_t(']'))
+			++index;
+		else
+		{
+			//parse error -- return the current value
+			LogParseError(pwStr, "Parse error (missing close bracket)");
+		}
+
+		UINT varId = pGame->pHold->GetVarID(wVarName.c_str());
+		ScriptArrayMap& scriptArrays = bIsLocalArray ? pNPC->localScriptArrays : pGame->scriptArrays;
+		int val = scriptArrays[varId][arrayIndex];
 		return val;
 	}
 
@@ -2989,6 +3059,55 @@ void CCharacter::Process(
 				if (!IsExpressionSatisfied(command, pGame))
 					STOP_COMMAND;
 
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ArrayVarSet:
+			{
+				SetArrayVariable(command, pGame, CueEvents);
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ArrayVarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				bool success = false;
+				getCommandXY(command, wX, wY);
+
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter) {
+						pCharacter->SetArrayVariable(command, pGame, CueEvents);
+						success = true;
+
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
+					}
+				}
+
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ClearArrayVar:
+			{
+				pGame->scriptArrays[command.x].clear();
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
 				bProcessNextCommand = true;
 			}
 			break;
@@ -4972,6 +5091,8 @@ bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurren
 void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.x;
+	if (pGame->pHold && pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set array var as normal var
 
 	//Get variable.
 	CDbPackedVars& stats = pGame->stats;
@@ -5090,6 +5211,57 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 		} else {
 			stats.SetVar(varName, x);
 		}
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetArrayVariable(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	CCueEvents& CueEvents)
+{
+	const UINT varIndex = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set normal var as an array var
+
+	int arrayIndex = (int)(this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
+	ScriptArrayMap& scriptArrays = pGame->pHold->IsLocalVar(varIndex) ? this->localScriptArrays : pGame->scriptArrays;
+
+	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
+	for (vector<WSTRING>::const_iterator expression = expressions.begin();
+		expression != expressions.end(); ++expression) {
+		UINT index = 0;
+		int x = scriptArrays[varIndex][arrayIndex];
+		int operand = 0;
+		operand = parseExpression(expression->c_str(), index, pGame, this);
+
+		switch (command.h)
+		{
+			case ScriptVars::Assign:
+				x = operand;
+			break;
+			case ScriptVars::Inc:
+				addWithClamp(x, operand);
+			break;
+			case ScriptVars::Dec:
+				addWithClamp(x, -operand);
+			break;
+			case ScriptVars::MultiplyBy:
+				multWithClamp(x, operand);
+			break;
+			case ScriptVars::DivideBy:
+				if (operand)
+					x /= operand;
+			break;
+			case ScriptVars::Mod:
+				if (operand)
+					x = x % operand;
+			break;
+			default: break;
+		}
+
+		scriptArrays[varIndex][arrayIndex] = x;
+		++arrayIndex;
 	}
 }
 

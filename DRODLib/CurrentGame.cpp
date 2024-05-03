@@ -711,7 +711,7 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 								wStr += _itoW(int(val), wIntText, 10);
 							}
 						}
-					} else if (ScriptVars::IsCharacterLocalVar(wEscapeStr) && pCharacter) {
+					} else if (ScriptVars::IsCharacterLocalVar(wEscapeStr) && !ScriptVars::IsCharacterArrayVar(wEscapeStr) && pCharacter) {
 						wStr += pCharacter->getLocalVarString(wEscapeStr);
 					} else if ((reserved_lookup_id = InputCommands::getCommandIDByVarName(wEscapeStr)) < InputCommands::DCMD_Count) {
 						//Is it a player input button?
@@ -740,7 +740,7 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 							if (CCharacter::IsValidExpression(wEscapeStr.c_str(), index, this->pHold))
 							{
 								index=0;
-								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this);
+								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this, pCharacter);
 								wStr += _itoW(nVal, wIntText, 10);
 							}
 						}
@@ -1835,6 +1835,9 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pHold = this->pLevel->GetHold();
 	if (!this->pHold) throw CException("CCurrentGame::LoadFromSavedGame");
 
+	//Load script arrays
+	DeserializeScriptArrays();
+
 	//Set room start vars.
 	this->swordsman.wX = this->swordsman.wPrevX = CDbSavedGame::wStartRoomX;
 	this->swordsman.wY = this->swordsman.wPrevY = CDbSavedGame::wStartRoomY;
@@ -1991,6 +1994,41 @@ void CCurrentGame::LoadPrep(
 			this->DemoRecInfo = demoInfo;
 			this->bIsDemoRecording = bDemoRecording;
 		}
+	}
+}
+
+//***************************************************************************************
+void CCurrentGame::DeserializeScriptArrays()
+//Load hold script arrays from raw buffers stored in CDbPackedVars
+{
+	if (!pHold)
+		return;
+
+	this->scriptArrays.clear();
+
+	for (map<UINT, WSTRING>::const_iterator it = pHold->arrayScriptVars.begin();
+		it != pHold->arrayScriptVars.end(); ++it) {
+		if (pHold->IsLocalVar(it->first))
+			continue;
+
+		string varName("v");
+		varName += std::to_string(it->first);
+
+		BYTE* buffer = (BYTE*)this->stats.GetVar(varName.c_str(), (const void*)(NULL));
+		if (!buffer)
+			continue;
+
+		map<int, int> scriptArray;
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			int key = (int)readBpUINT(buffer, index);
+			int value = (int)readBpUINT(buffer, index);
+			scriptArray[key] = value;
+			--size;
+		}
+
+		scriptArrays[it->first] = scriptArray;
 	}
 }
 
@@ -6942,6 +6980,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->bMusicStyleFrozen = Src.bMusicStyleFrozen;
 	this->bWaitedOnHotFloorLastTurn = Src.bWaitedOnHotFloorLastTurn;
 	this->statsAtRoomStart = Src.statsAtRoomStart;
+	this->scriptArraysAtRoomStart = Src.scriptArraysAtRoomStart;
 	this->ambientSounds = Src.ambientSounds;
 	this->conquerTokenTurn = Src.conquerTokenTurn;
 	this->bWasRoomConqueredAtTurnStart = Src.bWasRoomConqueredAtTurnStart;
@@ -7373,6 +7412,7 @@ void CCurrentGame::SetPlayerToRoomStart()
 	this->checkpointTurns.clear();
 	this->CompletedScriptsPending.clear();
 	this->stats = this->statsAtRoomStart;
+	this->scriptArrays = this->scriptArraysAtRoomStart;
 
 	//There should be no commands at the beginning of the room, unless
 	//the command sequence is being replayed.
@@ -7427,6 +7467,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->wStartRoomY = this->swordsman.wY;
 
 	this->statsAtRoomStart = this->stats;
+	this->scriptArraysAtRoomStart = this->scriptArrays;
 	this->checkpointTurns.clear();
 }
 

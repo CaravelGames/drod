@@ -92,6 +92,40 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 	}
 }
 
+UINT CCharacterCommand::getVarID() const
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+			return x;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			return w;
+		default:
+			return 0;
+	}
+}
+
+void CCharacterCommand::setVarID(const UINT varID)
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+			x = varID;
+		break;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			w = varID;
+		break;
+		default:
+		break;
+	}
+}
+
 //*****************************************************************************
 SPEAKER getSpeakerType(const MONSTERTYPE eType)
 //Return: corresponding speaker enumeration for monster type, if supported.
