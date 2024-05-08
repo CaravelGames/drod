@@ -1950,6 +1950,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
 	bool bCustomWeakness = false, bCustomDescription = false;
+	bool bExplosiveSafe = pMonster->IsExplosiveSafe();;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -2061,6 +2062,15 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
+		++count;
+	}
+	if (bExplosiveSafe) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
 		++count;
 	}
 	if (bCustomWeakness) {

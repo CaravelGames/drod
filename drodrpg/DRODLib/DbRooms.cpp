@@ -4970,7 +4970,7 @@ void CDbRoom::PushObject(
 		this->stationary_powder_kegs.erase(wSrcX, wSrcY);
 
 		//Check for a weapon at destination location that might explode the keg
-		if (this->pCurrentGame->IsPlayerSwordAt(wDestX, wDestY)) {
+		if (this->pCurrentGame->IsPlayerSwordAt(wDestX, wDestY) && !this->pCurrentGame->IsPlayerSwordExplosiveSafe()) {
 			this->stabbed_powder_kegs.Push(wDestX, wDestY);
 			return;
 		}
@@ -4980,7 +4980,7 @@ void CDbRoom::PushObject(
 			if (nO != NO_ORIENTATION && nO != wO)
 			{
 				CMonster* pMonster = GetMonsterAtSquare(wDestX - nGetOX(nO), wDestY - nGetOY(nO));
-				if (pMonster && pMonster->HasSwordAt(wDestX, wDestY)) {
+				if (pMonster && !pMonster->IsExplosiveSafe() && pMonster->HasSwordAt(wDestX, wDestY)) {
 					this->stabbed_powder_kegs.Push(wDestX, wDestY);
 					return;
 				}

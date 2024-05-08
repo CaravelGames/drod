@@ -1485,6 +1485,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackFirst, g_pTheDB->GetMessageText(MID_AttackFirst));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackLast, g_pTheDB->GetMessageText(MID_AttackLast));
 	this->pBehaviorListBox->AddItem(ScriptFlag::RemovesSword, g_pTheDB->GetMessageText(MID_RemovesSword));
+	this->pBehaviorListBox->AddItem(ScriptFlag::ExplosiveSafe, g_pTheDB->GetMessageText(MID_ExplosiveSafe));
 	this->pBehaviorListBox->AddItem(ScriptFlag::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pBehaviorListBox->AddItem(ScriptFlag::MoveIntoSwords, g_pTheDB->GetMessageText(MID_MoveIntoSwords));
 	this->pBehaviorListBox->AddItem(ScriptFlag::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));

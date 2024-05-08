@@ -3473,6 +3473,22 @@ bool CCurrentGame::IsPlayerSwordDisabled() const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
+{
+	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+	if (pCharacter && pCharacter->IsExplosiveSafe())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter && pCharacter->IsExplosiveSafe())
+		return true;
+	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+	if (pCharacter && pCharacter->IsExplosiveSafe())
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsPlayerAccessoryDisabled() const
 //Returns: true if the player's accessory is not usable at present, else false
 {
@@ -3698,14 +3714,21 @@ void CCurrentGame::ProcessSwordHit(
 		   //Explode bomb immediately (could damage player).
 			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
 			{
-				this->pRoom->ExplodeBomb(CueEvents, wSX, wSY);
+				if (!((pDouble && pDouble->IsExplosiveSafe()) || (!pDouble && IsPlayerSwordExplosiveSafe()))) {
+					this->pRoom->ExplodeBomb(CueEvents, wSX, wSY);
+				}
 			}
 		break;
 
 		case T_POWDER_KEG:
-			//Explode keg immediately (could damage player).
-			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
-			{
+			if ((pDouble && pDouble->IsExplosiveSafe()) || (!pDouble && IsPlayerSwordExplosiveSafe())) {
+				//Safe weapon can push keg
+				const UINT wDestX = wSX + nGetOX(wSwordMovement),
+					wDestY = wSY + nGetOY(wSwordMovement);
+				if (this->pRoom->CanPushTo(wSX, wSY, wDestX, wDestY))
+					this->pRoom->PushObject(wSX, wSY, wDestX, wDestY, CueEvents);
+			} else if (this->wTurnNo) { //don't explode bomb and damage/kill player on room entrance
+				//Explode keg immediately (could damage player).
 				this->pRoom->ExplodePowderKeg(CueEvents, wSX, wSY);
 			}
 		break;

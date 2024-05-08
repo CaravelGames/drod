@@ -130,6 +130,7 @@ const UINT MAX_ANSWERS = 9;
 #define PushObjectsStr "PushObjects"
 #define SpawnEggsStr "SpawnEggs"
 #define RemovesSwordStr "RemovesSword"
+#define ExplosiveKegSafeStr "ExplosiveSafe"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -246,7 +247,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
-	, bRemovesSword(false)
+	, bRemovesSword(false) , bExplosiveSafe(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2645,6 +2646,7 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
+						this->bExplosiveSafe =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2731,6 +2733,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::RemovesSword:
 						this->bRemovesSword = true;
+					break;
+					case ScriptFlag::ExplosiveSafe:
+						this->bExplosiveSafe = true;
 					break;
 
 					default:
@@ -5455,6 +5460,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
 	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
+	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -5604,7 +5610,9 @@ const
 	if (this->bSpawnEggs)
 		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
 	if (this->bRemovesSword)
-		vars.SetVar(RemovesSwordStr, this->bSpawnEggs);
+		vars.SetVar(RemovesSwordStr, this->bRemovesSword);
+	if (this->bExplosiveSafe)
+		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

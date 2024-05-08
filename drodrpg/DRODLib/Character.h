@@ -143,6 +143,7 @@ public:
 	virtual bool   IsDamageableAt(const UINT wX, const UINT wY) const;
 	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	virtual bool   IsExplosiveSafe() const { return bExplosiveSafe; }
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->bGhostImage;}
 	bool           IsInvisibleInspectable() const {return this->bInvisibleInspectable;}
@@ -309,6 +310,7 @@ private:
 	bool bPushObjects;         //can push movable objects
 	bool bSpawnEggs;           //will spawn eggs in reaction to combats
 	bool bRemovesSword;        //prevents player having sword when equipped
+	bool bExplosiveSafe;       //sword does not detonate powder kegs
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

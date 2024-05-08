@@ -225,6 +225,7 @@ public:
 	virtual bool  IsAttackableTarget() const {return false;}
 	virtual bool  IsCombatable() const;
 	virtual bool  IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const {return true;}
+	virtual bool  IsExplosiveSafe() const { return false; }
 	virtual bool  IsFlying() const {return this->eMovement == AIR;}
 	virtual bool  IsFriendly() const {return false;}
 	virtual bool  IsLongMonster() const {return false;}
