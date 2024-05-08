@@ -1545,31 +1545,14 @@ void CEditRoomWidget::HandleMouseUp(
 		}
 */
 
-	switch (this->pRoom->GetTSquare(x2,y2))
+	UINT tTile = this->pRoom->GetTSquare(x2, y2);
+	switch (tTile)
 	{
 		case T_BOMB:
-		{
-			//Show all explosions caused by this bomb.
+		case T_POWDER_KEG:
+			//Show all explosions caused by this explosion.
 			this->pLastLayerEffects->RemoveEffectsOfType(ESHADE);
-
-			CCueEvents CueEvents;
-			CDbRoom room(*this->pRoom);
-			room.InitRoomStats();
-			room.ExplodeBomb(CueEvents, x2, y2);
-
-			CCoordSet coords;
-			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_Explosion));
-			while (pCoord)
-			{
-				coords.insert(pCoord->wX, pCoord->wY);
-				pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-						CueEvents.GetNextPrivateData());
-			}
-			static const SURFACECOLOR ExpColor = {224, 160, 0};
-			for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
-				AddShadeEffect(coord->wX, coord->wY, ExpColor);
-		}
+			HighlightBombExplosion(x2, y2, tTile);
 		return;
 		default: break;
 	}

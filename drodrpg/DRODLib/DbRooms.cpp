@@ -826,6 +826,19 @@ CDbRoom::CDbRoom(const CDbRoom &Src)
 	SetMembers(Src);
 }
 
+//*****************************************************************************
+CDbRoom::CDbRoom(const CDbRoom& Src, const bool copyGame)
+//Set pointers to NULL so Clear() won't try to delete them.
+	: CDbBase()
+	, pszOSquares(NULL), pszFSquares(NULL), pszTSquares(NULL), pszTParams(NULL)
+	, pFirstMonster(NULL), pLastMonster(NULL)
+	, pMonsterSquares(NULL)
+	, pCurrentGame(NULL)
+	//Constructor.
+{
+	SetMembers(Src, true, copyGame);
+}
+
 //
 //CDbRoom protected methods.
 //
@@ -9229,7 +9242,8 @@ bool CDbRoom::SetMembers(
 //
 //Params:
 	const CDbRoom &Src,        //(in)
-	const bool bCopyLocalInfo) //(in) default = true
+	const bool bCopyLocalInfo, //(in) default = true
+	const bool bCopyGame)      //(in) default = true
 {
 	try {
 	
@@ -9313,7 +9327,9 @@ bool CDbRoom::SetMembers(
 	this->pressurePlateIndex = Src.pressurePlateIndex;
 	this->weather = Src.weather;
 
-	this->pCurrentGame = Src.pCurrentGame;	
+	if (bCopyGame) {
+		this->pCurrentGame = Src.pCurrentGame;
+	}
 
 	//Monster data
 	this->pFirstMonster = this->pLastMonster = NULL;

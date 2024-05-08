@@ -910,7 +910,8 @@ void CRoomWidget::HighlightSelectedTile()
 		}
 		break;
 		case T_BOMB:
-			DrawInvisibilityRange(wX, wY, NULL, NULL, 3);
+		case T_POWDER_KEG:
+			HighlightBombExplosion(wX, wY, tTile);
 		break;
 		case T_BRIAR_SOURCE:
 		case T_BRIAR_LIVE: case T_BRIAR_DEAD:
@@ -976,6 +977,35 @@ void CRoomWidget::HighlightSelectedTile()
 
 	//Nothing is being highlighted.
 	RemoveHighlight();
+}
+
+//*****************************************************************************
+void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT tTile)
+//
+{
+	CCueEvents CueEvents;
+	CDbRoom room(*this->pRoom, false);
+	room.InitRoomStats();
+	CCoordStack bombs, powder_kegs;
+	switch (tTile) {
+		case T_BOMB: bombs.Push(x, y); break;
+		case T_POWDER_KEG: powder_kegs.Push(x, y); break;
+		default: break;
+	}
+	room.DoExplode(CueEvents, bombs, powder_kegs);
+
+	CCoordSet coords;
+	const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+		CueEvents.GetFirstPrivateData(CID_Explosion));
+	while (pCoord)
+	{
+		coords.insert(pCoord->wX, pCoord->wY);
+		pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+			CueEvents.GetNextPrivateData());
+	}
+	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
+	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
+		AddShadeEffect(coord->wX, coord->wY, ExpColor);
 }
 
 //*****************************************************************************

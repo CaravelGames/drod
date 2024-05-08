@@ -86,6 +86,7 @@ protected:
 
 public:
 	CDbRoom(const CDbRoom &Src);
+	CDbRoom(const CDbRoom &Src, const bool copyGame);
 	CDbRoom &operator= (const CDbRoom &Src) {
 		SetMembers(Src);
 		return *this;
@@ -475,7 +476,7 @@ private:
 	void           SaveExits(c4_View &ExitsView) const;
 	void           SetCurrentGameForMonsters(const CCurrentGame *pSetCurrentGame);
 	void           SetExtraVarsFromMembers();
-	bool           SetMembers(const CDbRoom &Src, const bool bCopyLocalInfo=true);
+	bool           SetMembers(const CDbRoom &Src, const bool bCopyLocalInfo=true, const bool bCopyGame=true);
 	void           SetMembersFromExtraVars();
 
 	bool           UnpackTileLights(const BYTE *pSrc, const UINT dwSrcSize);
