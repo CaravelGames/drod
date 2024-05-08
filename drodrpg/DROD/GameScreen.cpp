@@ -6080,23 +6080,29 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	if (CueEvents.HasOccurred(CID_BombExploded))
 	{
-		const UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded) /
-				(g_pTheBM->bAlpha ? (g_pTheBM->eyeCandy > 0 ? 100 : 50) : 10);
+		UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded);
+		UINT wRandMax = 25 + (25 * g_pTheBM->eyeCandy);
+
+		vector<CCoord> tiles;
 		pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
 		while (pObj)
 		{
-			const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-			if (RAND(wRandMod) == 0)
+			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			if (RAND(wRandMod) < wRandMax)
 			{
-				if (pCoord->wO == NO_ORIENTATION) //show debris only for this wO
-					this->pRoomWidget->AddTLayerEffect(
-							new CDebrisEffect(this->pRoomWidget, *pCoord, 3,
-									GetEffectDuration(7), GetParticleSpeed(4)));
-				this->fPos[0] = static_cast<float>(pCoord->wX);
-				this->fPos[1] = static_cast<float>(pCoord->wY);
-				g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos);
+				const CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
+				this->pRoomWidget->AddTLayerEffect(
+						new CDebrisEffect(this->pRoomWidget, moveCoord, 3,
+								GetEffectDuration(7), GetParticleSpeed(4)));
+				tiles.push_back(*pCoord);
 			}
 			pObj = CueEvents.GetNextPrivateData();
+		}
+
+		for (vector<CCoord>::const_iterator it=tiles.begin(); it!=tiles.end(); it++) {
+			this->fPos[0] = static_cast<float>(it->wX);
+			this->fPos[1] = static_cast<float>(it->wY);
+			PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos);
 		}
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivatedByDouble))
@@ -6950,7 +6956,7 @@ void CGameScreen::ProcessFuseBurningEvents(CCueEvents& CueEvents)
 	while (pCoord)
 	{
 		const UINT wTSquare = this->pCurrentGame->pRoom->GetTSquare(pCoord->wX, pCoord->wY);
-		if (wTSquare == T_FUSE || wTSquare == T_BOMB)	//needed to avoid effects
+		if (bIsCombustibleItem(wTSquare))	//needed to avoid effects
 					//where fuses have already disappeared since the cue event fired
 		{
 			if (pCoord->wO == NO_ORIENTATION && wTSquare == T_FUSE)

@@ -2140,8 +2140,7 @@ void CCharacter::Process(
 						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
 						{
 							//Explode a bomb immediately.  Doesn't expend a turn.
-							CCoordStack bomb(px, py);
-							room.BombExplode(CueEvents, bomb);
+							room.ExplodeBomb(CueEvents, px, py);
 							if (IsAlive())
 								bProcessNextCommand = true;
 						} else {
@@ -2149,6 +2148,18 @@ void CCharacter::Process(
 							STOP_COMMAND;
 						}
 					break;
+					case T_POWDER_KEG:
+						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
+						{
+							//Explode a keg immediately.  Doesn't expend a turn.
+							room.ExplodePowderKeg(CueEvents, px, py);
+							if (IsAlive())
+								bProcessNextCommand = true;
+						} else {
+							//Pause script until after first turn to explode the keg.
+							STOP_COMMAND;
+						}
+						break;
 					case T_FUSE:
 						//Light fuse.  Doesn't expend a turn.
 						room.LightFuse(CueEvents, px, py,
@@ -4765,6 +4776,7 @@ const
 		{
 			case T_MIRROR:
 			case T_CRATE:
+			case T_POWDER_KEG:
 				if (this->bPushObjects)
 				{
 					const int dx = (int)wCol - (int)this->wX;
@@ -5932,7 +5944,7 @@ void CCharacter::MoveCharacter(
 
 		//Process any and all of these item interactions.
 		UINT tTile = room.GetTSquare(this->wX, this->wY);
-		if (tTile==T_MIRROR || tTile==T_CRATE)
+		if (tTile==T_MIRROR || tTile==T_CRATE || tTile==T_POWDER_KEG)
 		{
 			room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
 			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object

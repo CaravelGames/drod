@@ -1556,6 +1556,7 @@ UINT GetTileImageForTileNo(
 		TI_MISTVENT,      //T_MISTVENT
 		TI_FIRETRAP,      //T_FIRETRAP
 		TI_FIRETRAP_ON,   //T_FIRETRAP_ON
+		TI_POWDER_KEG,    //T_POWDER_KEG
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));

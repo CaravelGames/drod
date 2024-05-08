@@ -904,6 +904,7 @@ const
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_CRATE:
+		case T_POWDER_KEG:
 			//Only on floor, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
@@ -1044,7 +1045,7 @@ const
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE ||
 							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
-							wTileNo[1] == T_CRATE );// || wTileNo[1] == T_STATION);
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG);// || wTileNo[1] == T_STATION);
 
 		case T_SEEP:
 			//Wall movement types
@@ -1061,7 +1062,7 @@ const
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE || //wTileNo[1] == T_STATION ||
 							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
-							wTileNo[1] == T_CRATE));
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG));
 
 		case T_CHARACTER:
 			//Can't go on monsters.
@@ -1554,8 +1555,7 @@ void CEditRoomWidget::HandleMouseUp(
 			CCueEvents CueEvents;
 			CDbRoom room(*this->pRoom);
 			room.InitRoomStats();
-			CCoordStack bombs(x2,y2);
-			room.BombExplode(CueEvents, bombs);
+			room.ExplodeBomb(CueEvents, x2, y2);
 
 			CCoordSet coords;
 			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,

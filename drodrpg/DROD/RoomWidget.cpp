@@ -1411,6 +1411,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			}
 			break;
 			case T_BOMB:
+			case T_POWDER_KEG:
 				if (this->pCurrentGame)
 				{
 					wstr += wszSpace;
@@ -1426,6 +1427,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						wstr += wszSpace;
 						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 						wstr += wszRightParen;
+					}
+					else {
+						wstr += wszSpace;
+						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 					}
 				}
 			break;
@@ -4455,6 +4460,7 @@ void CRoomWidget::DrawTLayerTile(
 			break;
 			case T_MIRROR:
 			case T_CRATE:
+			case T_POWDER_KEG:
 				//Render moving objects later.
 				if (this->dwMovementStepsLeft && this->pRoom->GetPushedObjectAt(wX, wY) != NULL) {
 					bIsMoving = true;

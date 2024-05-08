@@ -166,8 +166,9 @@
 #define T_MISTVENT      116 //produces and expands mist
 #define T_FIRETRAP      117
 #define T_FIRETRAP_ON   118
+#define T_POWDER_KEG    119
 
-#define TILE_COUNT     (119) //Number of tile constants from above list.
+#define TILE_COUNT     (120) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -281,7 +282,11 @@ static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_U
 
 static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
 
-static inline bool bIsTLayerCoveringItem(const UINT t) { return t == T_MIRROR || t == T_CRATE; }
+static inline bool bIsTLayerCoveringItem(const UINT t) { return t == T_MIRROR || t == T_CRATE || t == T_POWDER_KEG; }
+
+static inline bool bIsFuseConnected(const UINT t) { return t == T_FUSE || t == T_BOMB; }
+static inline bool bIsCombustibleItem(const UINT t) { return t == T_FUSE || t == T_BOMB || t == T_POWDER_KEG; }
+static inline bool bIsExplodingItem(const UINT t) { return t == T_BOMB || t == T_POWDER_KEG; }
 
 static inline bool bIsDiggableBlock(const UINT t) { return t == T_DIRT1 || t == T_DIRT3 || t == T_DIRT5; }
 
@@ -532,6 +537,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_OPAQUE, //T_MISTVENT
 	LAYER_OPAQUE, //T_FIRETRAP
 	LAYER_OPAQUE, //T_FIRETRAP_ON
+	LAYER_TRANSPARENT, //T_POWDER_KEG
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -698,6 +704,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_MistVent, //T_MISTVENT
 	MID_Firetrap,      //T_FIRETRAP
 	MID_FiretrapOn,    //T_FIRETRAP_ON
+	MID_PowderKeg,     //T_POWDER_KEG
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

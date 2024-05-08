@@ -187,7 +187,7 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		//Most items can be replaced.
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
-			wTTile == T_CRATE ||
+			wTTile == T_CRATE || wTTile == T_POWDER_KEG ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
 			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
 			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))
@@ -244,8 +244,7 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 			room.ProcessExplosionSquare(CueEvents, x, y);
 			if (bBombHere)
 			{
-				CCoordStack bombs(x, y);
-				room.BombExplode(CueEvents, bombs);
+				room.ExplodeBomb(CueEvents, x, y);
 			}
 			room.ConvertUnstableTar(CueEvents);
 
@@ -265,7 +264,7 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		//(Same logic as the t-layer check for real tiles.)
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
-			wTTile == T_CRATE ||
+			wTTile == T_CRATE || wTTile == T_POWDER_KEG ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
 			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
 			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))

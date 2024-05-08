@@ -2178,12 +2178,12 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Generate a 3x3 explosion that doesn't affect the player tile.
 			const UINT wX = this->pPlayer->wX, wY = this->pPlayer->wY;
 			CCoordSet explosion; //what tiles are affected by the explosion
-			CCoordStack bombs, coords;
+			CCoordStack bombs, powder_kegs, coords;
 			for (int y = -1; y <= 1; ++y)
 				for (int x = -1; x <= 1; ++x)
 				{
 					this->pRoom->ExpandExplosion(CueEvents, coords, wX, wY,
-							wX + x, wY + y, bombs, explosion);
+							wX + x, wY + y, bombs, powder_kegs, explosion, 1);
 				}
 
 			//Now process the effects of the explosion.
@@ -2195,8 +2195,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 
 			//If bombs were set off, explode them now.
 			//These could harm the player.
-			if (bombs.GetSize())
-				this->pRoom->BombExplode(CueEvents, bombs);
+			if (bombs.GetSize() || powder_kegs.GetSize())
+				this->pRoom->DoExplode(CueEvents, bombs, powder_kegs);
 
 			this->pRoom->ConvertUnstableTar(CueEvents);
 		}
@@ -2503,6 +2503,8 @@ void CCurrentGame::ProcessCommand(
 	CueEvents.Clear();
 	this->pRoom->ClearPlotHistory();
 
+	this->pRoom->InitStateForThisTurn();
+
 	if (this->Commands.IsFrozen())
 	{
 		//While replaying a command sequence, synthesize combat tick commands until combat is done.
@@ -2689,6 +2691,8 @@ void CCurrentGame::ProcessCommand(
 			//If a monster caused a room exit, then process nothing else for the current turn.
 			if (CueEvents.HasOccurred(CID_ExitRoom))
 				return;
+
+			this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 			//Check for stuff falling as a result of monster moves now.
 			if (CPlatform::fallTilesPending())
@@ -3694,8 +3698,15 @@ void CCurrentGame::ProcessSwordHit(
 		   //Explode bomb immediately (could damage player).
 			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
 			{
-				CCoordStack bomb(wSX, wSY);
-				this->pRoom->BombExplode(CueEvents, bomb);
+				this->pRoom->ExplodeBomb(CueEvents, wSX, wSY);
+			}
+		break;
+
+		case T_POWDER_KEG:
+			//Explode keg immediately (could damage player).
+			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
+			{
+				this->pRoom->ExplodePowderKeg(CueEvents, wSX, wSY);
 			}
 		break;
 
@@ -4047,6 +4058,8 @@ void CCurrentGame::TeleportPlayer(
 	this->pPlayer->wSwordMovement = NO_ORIENTATION;
 
 	SetPlayer(wSetX, wSetY);
+
+	this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 	this->pPlayer->SetSwordSheathed();
 
@@ -5139,7 +5152,11 @@ void CCurrentGame::ProcessMonsters(
 					}
 				break;
 			}
+
 		}
+
+		// Kegs stabbed by pushes should explode after each monster
+		this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 	}
 
 	//Run global scripts.
@@ -5339,8 +5356,9 @@ CheckTLayer:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 		break;
 
-		//Can push mirror, if possible.
+		//Can push mirror/keg, if possible.
 		case T_MIRROR:
+		case T_POWDER_KEG:
 			if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 					this->pRoom->GetOSquare(destX, destY),
 					bIsElevatedTile(wOTileNo)) &&
@@ -5755,6 +5773,7 @@ CheckFLayer:
 
 			case T_MIRROR:
 			case T_CRATE:
+			case T_POWDER_KEG:
 			{
 				//Player ran into pushable object.  Push if possible.
 				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
@@ -5769,6 +5788,7 @@ CheckFLayer:
 						bNotAnObstacle = true;
 						switch (wNewTTile) {
 							case T_MIRROR:
+							case T_POWDER_KEG:
 								bPushingTLayerObject = true;
 								break;
 							case T_CRATE:
@@ -5868,6 +5888,9 @@ MakeMove:
 	//  movement in order to update the player's prev coords.
 	if (!bEnteredTunnel && !bMoved)
 		bMoved = SetPlayer(wOldX + dx, wOldY + dy);
+
+	pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
 	const UINT wNewOSquare = pRoom->GetOSquare(p.wX, p.wY);
 
 	//These exclude the wait move executed on entering a room.

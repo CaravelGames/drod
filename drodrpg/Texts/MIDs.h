@@ -314,6 +314,7 @@ enum MID_CONSTANT {
   MID_MistVent = 1887,
   MID_Firetrap = 1888,
   MID_FiretrapOn = 1889,
+  MID_PowderKeg = 1893,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,

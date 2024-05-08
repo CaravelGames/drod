@@ -248,6 +248,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{ TI_MISTVENT },                                   //T_MISTVENT
 	{ TI_FIRETRAP },                                   //T_FIRETRAP
 	{ TI_FIRETRAP_ON },                                //T_FIRETRAP_ON
+	{ TI_POWDER_KEG},                                  //T_POWDER_KEG
 
 	//monsters
 	{TI_ROACH_S},
@@ -418,6 +419,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_MISTVENT      116
 	0, //T_FIRETRAP      117
 	0, //T_FIRETRAP_ON   118
+	0, //T_POWDER_KEG    119
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -485,6 +487,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, //mist, vent
 	1, 1, //firetraps
+	1, //powder keg
 	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
 	2, 1, 1 //psuedo tiles
@@ -512,6 +515,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
 	1, 1, //mist, vent
 	1, 1, //firetraps
+	1, //powder keg
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
 	1, 1, 1 //pseudo tiles
@@ -606,13 +610,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 23;
+const UINT numTLayerEntries = 24;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_SCROLL, T_MAP,
 	T_ATK_UP, T_DEF_UP, T_HEALTH_SM, T_KEY, T_SHOVEL1,
-	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_TOKEN,
-	T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB, T_LIGHT,
-	T_TAR, T_OBSTACLE, T_MIST
+	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_POWDER_KEG,
+	T_TOKEN, T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB,
+	T_TAR, T_OBSTACLE, T_MIST, T_LIGHT
 };
 
 const UINT numMLayerEntries = 31;  //35
@@ -4525,7 +4529,7 @@ void CEditRoomScreen::PasteRegion(
 				{
 					if (wSrcTile == T_ORB || bIsTar(wSrcTile) || wSrcTile == T_BOMB ||
 							bIsBriar(wSrcTile) || wSrcTile == T_MIRROR || wSrcTile == T_CRATE ||
-							wSrcTile == T_LIGHT) // || wSrcTile == T_STATION)
+							wSrcTile == T_POWDER_KEG || wSrcTile == T_LIGHT) // || wSrcTile == T_STATION)
 						bPasteAllowed = false;
 				}
 				if (bPasteAllowed)
@@ -5374,6 +5378,7 @@ void CEditRoomScreen::PlotObjects()
 				case T_FUSE:
 					g_pTheSound->PlaySoundEffect(SEID_STARTFUSE);   break;
 				case T_BOMB:
+				case T_POWDER_KEG:
 					g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE); break;
 				case T_KEY: case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
@@ -5528,7 +5533,7 @@ bool CEditRoomScreen::PlotObjectAt(
 				case T_ACCESSORY:
 					this->pRoom->SetTParam(wX,wY, this->wSelAccessoryType);
 				break;
-				case T_MIRROR: case T_CRATE:
+				case T_MIRROR: case T_CRATE: case T_POWDER_KEG:
 					//Allow items to be covered
 					if (tTile != T_EMPTY)
 						this->pRoom->coveredTSquares.Add(wX, wY, tTile);

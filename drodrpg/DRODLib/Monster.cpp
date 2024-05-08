@@ -2338,6 +2338,7 @@ bool CMonster::GetNextGaze(
 		case T_OBSTACLE:
 		case T_MIRROR:
 		case T_CRATE:
+		case T_POWDER_KEG:
 			//These objects stop gaze.
 			return false;
 		case T_FUSE:

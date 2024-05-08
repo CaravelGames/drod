@@ -168,7 +168,6 @@ public:
 	bool           AddPressurePlateTiles(COrbData* pPlate);
 	bool           AddScroll(CScrollData *pScroll);
 	bool           AddExit(CExitData *pExit);
-	void           BombExplode(CCueEvents &CueEvents, CCoordStack& bombs);
 	void           BurnFuses(CCueEvents &CueEvents);
 	void           BurnFuseEvents(CCueEvents &CueEvents);
 //	bool           BrainSensesSwordsman() const;
@@ -218,6 +217,10 @@ public:
 	bool           DoesSquareContainPathMapObstacle(const UINT wX, const UINT wY,
 			const MovementType eMovement) const;
 */
+	void           DoExplode(CCueEvents& CueEvents, CCoordStack& bombs, CCoordStack& powder_kegs);
+	void           DoExplodeTile(CCueEvents& CueEvents, CCoordStack& bombs, CCoordStack& powder_kegs,
+		CCoordSet& explosion, UINT wCol, UINT wRow, UINT explosion_radius,
+		bool bAddCueEvent = true);
 	bool           DoesSquareContainPlayerObstacle(const UINT wX, const UINT wY,
 			const UINT wO, const bool bRaisedSrc,
 			const bool bCrateSrc=false, const bool bAllowCrateClimbing=false) const;
@@ -286,6 +289,7 @@ public:
 	void           IncTrapdoor(CCueEvents& CueEvents);
 	void           InitCoveredTiles();
 	void           InitRoomStats(const bool bSkipPlatformInit=false);
+	void           InitStateForThisTurn();
 	UINT           GetBrainsPresent() const;
 	bool           IsDisarmTokenActive() const;
 	bool           IsDoorOpen(const int nCol, const int nRow);
@@ -350,7 +354,10 @@ public:
 	void           ProcessTurn(CCueEvents &CueEvents, const bool bFullMove);
 	void           ExpandExplosion(CCueEvents &CueEvents, CCoordStack& cs,
 			const UINT wBombX, const UINT wBombY, const UINT wX, const UINT wY,
-			CCoordStack& bombs, CCoordSet& explosion);
+			CCoordStack& bombs, CCoordStack& powder_kegs, CCoordSet& explosion, const UINT radius);
+	void           ExplodeBomb(CCueEvents& CueEvents, const UINT x, const UINT y) { CCoordStack bombs(x, y); CCoordStack cs; DoExplode(CueEvents, bombs, cs); }
+	void           ExplodePowderKeg(CCueEvents& CueEvents, const UINT x, const UINT y) { CCoordStack cs; CCoordStack powder_kegs(x, y); DoExplode(CueEvents, cs, powder_kegs); }
+
 	void           ProcessExplosionSquare(CCueEvents &CueEvents, const UINT wX, const UINT wY,
 			const bool bHarmsPlayer=true);
 	void           ProcessAumtlichGaze(CCueEvents &CueEvents);
@@ -431,6 +438,7 @@ private:
 	bool           CanExpandMist(const UINT wX, const UINT wY) const;
 	void           Clear();
 	void           ClearPushInfo();
+	void           ClearStateVarsUsedDuringTurn();
 	void           CloseDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 //	void           DeletePathMaps();
 	CMonster*      FindLongMonster(const UINT wX, const UINT wY,
@@ -439,6 +447,8 @@ private:
 			const int dx, const int dy, const bool bAbbrev=false);
 	UINT           GetLocalID() const;
 	void           GetNumber_English(const UINT num, WCHAR *str);
+	CCoordStack    GetPowderKegsStillOnHotTiles() const;
+	void           ExplodeStabbedPowderKegs(CCueEvents& CueEvents);
 	bool           LoadOrbs(c4_View &OrbsView);
 	bool           LoadMonsters(c4_View &MonstersView);
 	bool           LoadScrolls(c4_View &ScrollsView);
@@ -479,6 +489,8 @@ private:
 	vector<UINT> deletedDataIDs;    //data IDs to be deleted on Update
 	CCurrentGame * pCurrentGame;
 //	bool           bCheckForHoldMastery;
+	CCoordSet   stationary_powder_kegs;
+	CCoordStack stabbed_powder_kegs;
 };
 
 //******************************************************************************************

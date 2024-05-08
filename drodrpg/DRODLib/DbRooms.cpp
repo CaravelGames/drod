@@ -3836,32 +3836,36 @@ void CDbRoom::ActivateToken(CCueEvents &CueEvents, const UINT wX, const UINT wY)
 }
 
 //*****************************************************************************
-void CDbRoom::BombExplode(
+void CDbRoom::DoExplode(
 //Blow up bombs in coords set.
 //
 //Params:
 	CCueEvents &CueEvents,     //(in/out)
-	CCoordStack& bombs)   //(in)
+	CCoordStack& bombs,       //(in)
+	CCoordStack& powder_kegs) //(in)
 {
+	if (bombs.IsEmpty() && powder_kegs.IsEmpty())
+		return;
+
+	static const UINT BOMB_RADIUS = 3;
+	static const UINT POWDER_KEG_RADIUS = 1;
+
 	CCoordSet explosion; //what tiles are affected following explosion
 
 	//Each iteration explodes one bomb.
-	UINT wCol, wRow;
-	while (bombs.PopBottom(wCol, wRow)) //process as queue
-	{
-		//Remove bomb.  Initiate explosion.
-		if (GetTSquare(wCol,wRow) == T_BOMB)
-			Plot(wCol,wRow,T_EMPTY);
-		CueEvents.Add(CID_BombExploded, new CMoveCoord(wCol, wRow, NO_ORIENTATION), true);
+	for (;;) {
+		UINT wCol, wRow;
+		if (bombs.PopBottom(wCol, wRow)) { //process as queue
+			DoExplodeTile(CueEvents, bombs, powder_kegs, explosion, wCol, wRow, BOMB_RADIUS);
+			continue;
+		}
 
-		//Keep track of a list of squares to expand explosion out from.
-		//Constraints will be performed with each expansion from these squares.
-		CCoordStack cs(wCol, wRow);
+		if (powder_kegs.PopBottom(wCol, wRow)) {
+			DoExplodeTile(CueEvents, bombs, powder_kegs, explosion, wCol, wRow, POWDER_KEG_RADIUS);
+			continue;
+		}
 
-		//Explode outward until done.
-		UINT wX, wY;
-		while (cs.PopBottom(wX, wY))  //process as queue
-			ExpandExplosion(CueEvents, cs, wCol, wRow, wX, wY, bombs, explosion);
+		break; //none left -- done creating explosions
 	}
 
 	//Now process the explosion's effects.
@@ -3869,6 +3873,33 @@ void CDbRoom::BombExplode(
 		ProcessExplosionSquare(CueEvents, exp->wX, exp->wY);
 
 	ConvertUnstableTar(CueEvents);
+}
+
+void CDbRoom::DoExplodeTile(
+	CCueEvents& CueEvents,
+	CCoordStack& bombs,
+	CCoordStack& powder_kegs,
+	CCoordSet& explosion,
+	UINT wCol, UINT wRow,
+	UINT explosion_radius,
+	bool bAddCueEvent) //[default=true]
+{
+	//Remove exploding item.  Initiate explosion.
+	const UINT tTile = GetTSquare(wCol, wRow);
+	if (tTile == T_BOMB || tTile == T_POWDER_KEG)
+		Plot(wCol, wRow, T_EMPTY);
+
+	if (bAddCueEvent)
+		CueEvents.Add(CID_BombExploded, new CCoord(wCol, wRow), true);
+
+	//Keep track of a list of squares to expand explosion out from.
+	//Constraints will be performed with each expansion from these squares.
+	CCoordStack cs(wCol, wRow);
+
+	//Explode outward until done.
+	UINT wX, wY;
+	while (cs.PopBottom(wX, wY))  //process as queue
+		ExpandExplosion(CueEvents, cs, wCol, wRow, wX, wY, bombs, powder_kegs, explosion, explosion_radius);
 }
 
 //*****************************************************************************
@@ -3879,7 +3910,7 @@ void CDbRoom::BurnFuses(
 //Params:
 	CCueEvents &CueEvents)     //(in/out)
 {
-	CCoordStack bombs;
+	CCoordStack bombs, powder_kegs;
 
 	//Burn each lit fuse piece.
 	UINT wX, wY;
@@ -3895,6 +3926,11 @@ void CDbRoom::BurnFuses(
 				bombs.Push(wX,wY);
 				Plot(wX,wY,T_EMPTY);
 			break;
+			case T_POWDER_KEG:
+				//Detonate lit keg.
+				powder_kegs.Push(wX, wY);
+				Plot(wX,wY,T_EMPTY);
+				//No break -- fallthrough to Fuse burning
 			case T_FUSE:
 			{
 				//Start adjacent fuse pieces burning.
@@ -3908,7 +3944,9 @@ void CDbRoom::BurnFuses(
 					if (wAdjX >= wRoomCols || wAdjY >= wRoomRows)
 						continue;
 					const UINT wAdjTileNo = GetTSquare(wAdjX, wAdjY);
-					if (wAdjTileNo==T_FUSE || wAdjTileNo==T_BOMB)
+					const bool canFuseBurnOnto = bIsFuseConnected(wAdjTileNo) ||
+						(wAdjTileNo == T_POWDER_KEG && GetCoveredTSquare(wAdjX, wAdjY) == T_FUSE);
+					if (canFuseBurnOnto)
 					{
 						//Don't allow burning when blocked by force arrows.
 						const UINT wSrcFTile = GetFSquare(wX, wY),
@@ -3938,9 +3976,14 @@ void CDbRoom::BurnFuses(
 		}
 	}
 
-	//Explode all bombs simultaneously.
-	if (bombs.GetSize() > 0)
-		BombExplode(CueEvents, bombs);
+	//Include powder kegs that explode from hot tiles here,
+	//in order to avoid introducing another ordering dependency.
+	const CCoordStack kegs_on_hot_tiles = GetPowderKegsStillOnHotTiles();
+	powder_kegs += kegs_on_hot_tiles;
+
+	//Explode all explosives simultaneously.
+	if (bombs.GetSize() > 0 || powder_kegs.GetSize() > 0)
+		DoExplode(CueEvents, bombs, powder_kegs);
 
 	//Ordering issues might place new fuses where these fuses just burned.
 	//Ensure that they won't burn here again.
@@ -3949,6 +3992,34 @@ void CDbRoom::BurnFuses(
 	//Save newly lit pieces for burning next turn.
 	this->LitFuses = this->NewFuses;
 	this->NewFuses.clear();
+}
+
+//*****************************************************************************
+CCoordStack CDbRoom::GetPowderKegsStillOnHotTiles() const
+{
+	CCoordStack powder_kegs;
+	for (CCoordSet::const_iterator it = this->stationary_powder_kegs.begin();
+		it != this->stationary_powder_kegs.end(); ++it)
+	{
+		UINT wX = it->wX;
+		UINT wY = it->wY;
+		if (GetOSquare(wX, wY) == T_HOT && GetTSquare(wX, wY) == T_POWDER_KEG) {
+			powder_kegs.Push(wX, wY);
+		}
+	}
+	return powder_kegs;
+}
+
+//*****************************************************************************
+void CDbRoom::ExplodeStabbedPowderKegs(CCueEvents& CueEvents)
+{
+	if (!this->stabbed_powder_kegs.IsEmpty())
+	{
+		CCoordStack no_bombs;
+		DoExplode(CueEvents, no_bombs, this->stabbed_powder_kegs);
+
+		this->stabbed_powder_kegs.Clear();
+	}
 }
 
 //*****************************************************************************
@@ -3965,8 +4036,8 @@ void CDbRoom::BurnFuseEvents(CCueEvents &CueEvents)
 		const UINT wX = fuse->wX;
 		const UINT wY = fuse->wY;
 		const UINT wTileNo = GetTSquare(wX,wY);
-		ASSERT(wTileNo==T_FUSE || wTileNo==T_BOMB || wTileNo==T_EMPTY);
-		if (wTileNo==T_FUSE || wTileNo==T_BOMB)
+		ASSERT(bIsCombustibleItem(wTileNo) || wTileNo==T_EMPTY);
+		if (bIsCombustibleItem(wTileNo))
 		{
 			//Fuse is burning at this tile.
 			CueEvents.Add(CID_FuseBurning, new CMoveCoord(wX, wY,
@@ -4234,6 +4305,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
 		case T_MIRROR:
 		case T_CRATE:
+		case T_POWDER_KEG:
 		case T_SWORD: case T_SHIELD: case T_ACCESSORY:
 		case T_KEY:
 		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
@@ -4469,7 +4541,7 @@ bool CDbRoom::PressurePlateIsDepressedBy(const UINT item)
 {
 	switch (item)
 	{
-		case T_BOMB: case T_MIRROR: case T_CRATE:
+		case T_BOMB: case T_MIRROR: case T_CRATE: case T_POWDER_KEG:
 		case T_TAR: case T_MUD: case T_GEL:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			return true;
@@ -4648,10 +4720,10 @@ void CDbRoom::ExpandExplosion(
 	const UINT wBombX, const UINT wBombY,  //(in) source of explosion
 	const UINT wX, const UINT wY, //(in) square to place explosion
 	CCoordStack& bombs,        //(in/out) bombs to be exploded
-	CCoordSet& explosion)      //(in/out) tiles needed to be destroyed/activated
+	CCoordStack& powder_kegs,  //(in/out) powder kegs to be exploded
+	CCoordSet& explosion,      //(in/out) tiles needed to be destroyed/activated
+	const UINT radius)
 {
-	static const UINT BOMB_RADIUS = 3;
-
 	//Constraint 1. How far explosion can go.
 	if (!IsValidColRow(wX, wY)) return;
 
@@ -4659,7 +4731,7 @@ void CDbRoom::ExpandExplosion(
 	const UINT direction = GetOrientation(wBombX, wBombY, wX, wY);
 	UINT wTileNo = GetFSquare(wX,wY);
 
-	if (dist > BOMB_RADIUS)
+	if (dist > radius)
 		return;
 
 	if (bIsArrow(wTileNo) && bIsArrowObstacle(wTileNo,direction))
@@ -4695,6 +4767,11 @@ void CDbRoom::ExpandExplosion(
 			//if we haven't considered this bomb before, then add it
 			if (!explosion.has(wX,wY))
 				bombs.Push(wX,wY);
+			break;
+		case T_POWDER_KEG:
+			//if we haven't considered this bomb before, then add it
+			if (!explosion.has(wX, wY))
+				powder_kegs.Push(wX, wY);
 			break;
 		case T_OBSTACLE:
 			//blocks explosion, but because obstacles can be placed
@@ -4875,6 +4952,28 @@ void CDbRoom::PushObject(
 {
 	const UINT wTile = GetTSquare(wSrcX, wSrcY);
 	Plot(wSrcX, wSrcY, T_EMPTY);
+
+	if (wTile == T_POWDER_KEG) {
+		this->stationary_powder_kegs.erase(wSrcX, wSrcY);
+
+		//Check for a weapon at destination location that might explode the keg
+		if (this->pCurrentGame->IsPlayerSwordAt(wDestX, wDestY)) {
+			this->stabbed_powder_kegs.Push(wDestX, wDestY);
+			return;
+		}
+
+		UINT wO = nGetO(int(wDestX) - int(wSrcX), int(wDestY) - int(wSrcY));
+		for (UINT nO = 0; nO < ORIENTATION_COUNT; ++nO) {
+			if (nO != NO_ORIENTATION && nO != wO)
+			{
+				CMonster* pMonster = GetMonsterAtSquare(wDestX - nGetOX(nO), wDestY - nGetOY(nO));
+				if (pMonster && pMonster->HasSwordAt(wDestX, wDestY)) {
+					this->stabbed_powder_kegs.Push(wDestX, wDestY);
+					return;
+				}
+			}
+		}
+	}
 
 	//Determine whether object falls down at destination square.
 	switch (GetOSquare(wDestX, wDestY))
@@ -5892,8 +5991,11 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 			ActivateOrb(wX, wY, CueEvents, OAT_Item);
 		break;
 		case T_BOMB:
-			BombExplode(CueEvents, CCoordStack(wX, wY));
+			ExplodeBomb(CueEvents, wX, wY);
 		break;
+		case T_POWDER_KEG:
+			ExplodePowderKeg(CueEvents, wX, wY);
+			break;
 		case T_FUSE:
 			//Light the fuse.
 			if (!this->NewFuses.has(wX, wY) && !this->LitFuses.has(wX, wY))
@@ -6119,6 +6221,7 @@ void CDbRoom::Clear()
 	this->deletedDataIDs.clear();
 
 	ClearPushInfo();
+	ClearStateVarsUsedDuringTurn();
 
 /*
 	//These should have been cleared by the calls above.
@@ -6136,6 +6239,13 @@ void CDbRoom::ClearPushInfo()
 		delete *it;
 	}
 	this->pushed_objects.clear();
+}
+
+//*****************************************************************************
+void CDbRoom::ClearStateVarsUsedDuringTurn()
+{
+	this->stationary_powder_kegs.clear();
+	this->stabbed_powder_kegs.Clear();
 }
 
 //*****************************************************************************
@@ -9754,6 +9864,22 @@ void CDbRoom::InitRoomStats(const bool bSkipPlatformInit) //[false]
 			default: break;
 		}
 	ObstacleFill(obstacles);
+}
+
+//*****************************************************************************
+void CDbRoom::InitStateForThisTurn()
+{
+	ClearStateVarsUsedDuringTurn();
+
+	char* pszSeek, * pszStop;
+	pszStop = this->pszTSquares + CalcRoomArea() * sizeof(char);
+	for (pszSeek = this->pszTSquares; pszSeek != pszStop; ++pszSeek) {
+		if (*pszSeek == T_POWDER_KEG) {
+			const UINT wX = (pszSeek - this->pszTSquares) % this->wRoomCols;
+			const UINT wY = (pszSeek - this->pszTSquares) / this->wRoomCols;
+			this->stationary_powder_kegs.insert(wX, wY);
+		}
+	}
 }
 
 //*****************************************************************************
