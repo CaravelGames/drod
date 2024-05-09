@@ -649,6 +649,41 @@ void CDbSavedGame::Clear(
 	this->wVersionNo = 0;
 }
 
+//*****************************************************************************
+UINT CDbSavedGame::readBpUINT(const BYTE* buffer, UINT& index)
+//Deserialize 1..5 bytes --> UINT
+{
+	const BYTE* buffer2 = buffer + (index++);
+	ASSERT(*buffer2); // should not be zero (indicating a negative number)
+	UINT n = 0;
+	for (;; index++)
+	{
+		n = (n << 7) + *buffer2;
+		if (*buffer2++ & 0x80)
+			break;
+	}
+
+	return n - 0x80;
+}
+
+//*****************************************************************************
+void CDbSavedGame::writeBpUINT(string& buffer, UINT n)
+//Serialize UINT --> 1..5 bytes
+{
+	int s = 7;
+	while (s < 32 && (n >> s))
+		s += 7;
+
+	while (s)
+	{
+		s -= 7;
+		BYTE b = BYTE((n >> s) & 0x7f);
+		if (!s)
+			b |= 0x80;
+		buffer.append(1, b);
+	}
+}
+
 //
 //CDbSavedGame private methods.
 //

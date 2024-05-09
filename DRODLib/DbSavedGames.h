@@ -96,6 +96,10 @@ public:
 
 	bool    OnWorldMap() const { return worldMapID != 0; }
 
+	//Read/write UINT and UINT shaped types to/from buffer
+	static UINT  readBpUINT(const BYTE* buffer, UINT& index);
+	static void  writeBpUINT(string& buffer, UINT n);
+
 	UINT    dwSavedGameID;
 	UINT    dwRoomID;
 	UINT    worldMapID; //While set, level/room/entrance data structures in play are ignored.
