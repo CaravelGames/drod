@@ -95,7 +95,7 @@ const int MONSTER_ANIMATION_DELAY = 3;
 #define SUNSHINE_SURFACE (3)
 
 #define THIN_ICE_OPACITY       (128) //Opacity of Thin Ice
-#define MIST_OPACITY       (150) //Opacity of Mist
+#define MIST_OPACITY       (120) //Opacity of Mist
 
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
