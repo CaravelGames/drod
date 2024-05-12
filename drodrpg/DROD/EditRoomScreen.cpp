@@ -4647,7 +4647,7 @@ void CEditRoomScreen::PasteRegion(
 						}
 						break;
 
-						case T_MIRROR: case T_CRATE:
+						case T_MIRROR: case T_CRATE: case T_POWDER_KEG:
 						{
 							const UINT coveredTLayerObject = pSrcRoom->GetCoveredTSquare(xSrc, ySrc);
 							if (coveredTLayerObject == T_FUSE || coveredTLayerObject == T_MIST)
