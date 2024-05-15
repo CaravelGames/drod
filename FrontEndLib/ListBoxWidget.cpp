@@ -205,8 +205,8 @@ UINT CListBoxWidget::AddItem_Insert(
 	}
 
 	//Recalc areas of widget since they may have changed.
-	CalcAreas();
 	this->UpdateFilter(this->wstrActiveFilter);
+	CalcAreas();
 	return wIndex;
 }
 
