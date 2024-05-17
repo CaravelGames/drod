@@ -1861,6 +1861,12 @@ enum MID_CONSTANT {
   MID_CustomSpeechColor = 2071,
   MID_CountEntityType = 2072,
   MID_CountItem = 2073,
+  MID_SetPlayerBehavior = 2088,
+  MID_ArrayVarSet = 2089,
+  MID_ArrayVarSetAt = 2090,
+  MID_ClearArrayVar = 2091,
+  MID_ArrayVarNameExpression = 2092,
+  MID_ArrayIndexLabel = 2093,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

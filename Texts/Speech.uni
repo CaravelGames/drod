@@ -3357,3 +3357,27 @@ Count entity type
 [MID_CountItem]
 [eng]
 Count item
+
+[MID_SetPlayerBehavior]
+[eng]
+Set player behavior
+
+[MID_ArrayVarSet]
+[eng]
+Set array var
+
+[MID_ArrayVarSetAt]
+[eng]
+Set array var at
+
+[MID_ClearArrayVar]
+[eng]
+Clear array var
+
+[MID_ArrayVarNameExpression]
+[eng]
+Variable Name/Expression
+
+[MID_ArrayIndexLabel]
+[eng]
+Index

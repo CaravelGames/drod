@@ -968,6 +968,12 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_UseSoldierHorn: strText = "Blow Soldier Horn"; break;
 	case MID_FaceMovementDirection: strText = "Face Movement Direction"; break;
 	case MID_BodyAttackImmune: strText = "Body Attack Immunity"; break;
+	case MID_SetPlayerBehavior: strText = "Set player behavior"; break;
+	case MID_ArrayVarSet: strText = "Set array var"; break;
+	case MID_ArrayVarSetAt: strText = "Set array var at"; break;
+	case MID_ClearArrayVar: strText = "Clear array var"; break;
+	case MID_ArrayVarNameExpression: strText = "Variable Name/Expression"; break;
+	case MID_ArrayIndexLabel: strText = "Index"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
