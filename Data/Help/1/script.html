@@ -240,9 +240,10 @@ interacts with its environment.</p>
       of zero or more variables, named by you.  Use these variables to track
       persistent game state information across rooms during play. To add a variable
       to a hold, type its name into the uppermost text box and click "Add".<br />
-	 <u>Syntax</u>: Variable names must begin with a letter or period and not contain any punctuation
+	 <u>Syntax</u>: Variable names must begin with a letter, period, hash (#) or at symbol and not contain any punctuation
 	  except underscore ('_').  <a href="localvars">Starting</a> a variable name with a period ('.') configures it as a local variable instead of a global. This means each NPC will have its own version of a variable with this name and there is no value sharing among them.<br />
-      <u>Modifying variables</u>: <a name="varops">Select</a> a hold variable from the list, choose an
+     <u>Arrays</u>: Starting a variable name with a hash (#) or at symbol (@) configures it as an array variable. See <a href="scriptarray.html">Script arrays</a> for more information.<br/>
+     <u>Modifying variables</u>: <a name="varops">Select</a> a hold variable from the list, choose an
       operation and a value. Variables may either store an integer or text. If
       the operation you specify is "Assign text" or "Add text", the variable you
       select will be set to store the text you provide. You may also reference
@@ -881,6 +882,7 @@ DROD Script supports several movement types, including ones not used by normal m
 
 <hr />
 <a href="character.html">Character Scripting</a><br />
+<a href="scriptarray.html">Script arrays</a><br/>
 <a href="myscript.html">_MyScript Variable Injection</a><br />
 <a href="editroom.html">Room Editor</a><br />
 <a href="editselect.html">Level Editor</a><br />

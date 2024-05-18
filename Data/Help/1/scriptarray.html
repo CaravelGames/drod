@@ -1,0 +1,42 @@
+<html>
+<head>
+    <title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg" />
+<hr />
+<h3><u>Using Arrays in Scripts</u></h3>
+    <p>Script variables can be configured as arrays, by starting the variable name with a hash (#) or an at symbol (@). 
+    Variables starting with a hash a global arrays, while variables starting with an at symbol are local to individual characters. 
+    Once a variable is created, you cannot change if it is an array variable (but its locality can be changed). Array variables can only store integer values, not text.</p>
+    <p>An array variable is effectively a list of values, each associated with a specific index. Therefore, an arbitary number of values can be stored under a single variable name. 
+    In character scripts, all array indexes are integers, however unlike many programming languages, arrays allow negative indexes to be used.</p>
+
+    <p><u>Setting array values</u></p>
+    <p>Values can be set in an array variable using the <b>Set array var</b> command. The value at a specified index can be set either to an integer value, or an expression that will resolve to such a value.</p>
+    <p>Additionally, multiple array values can be set by providing multiple values or expressions, separated by a semi-colon (;). The first value will be assigned at the specified index, 
+    and seach subsequent value will be assigned to the next index. For example, if the specified index is 3, the first value is assigned to the third array position, the second value to the forth array position, and so on.</p>
+    <p>The <b>Set array var at</b> command works in the same way, but allows for remote variable assignment, as with <a href="script.html#setvarat">Set var at</a>.</p>
+
+    <p><u>Accessing array values</u></p>
+    <p>Like any other script variable, an array value can be used anywhere an integer value is expected. 
+    The one different is that the variable name must be followed by a pair of square brackets ([]) containing an index value. This can be a numeric value, or an another expression that resolves to such a value. 
+    If an index that has not been set is accessed, a value of zero is returned.</p>
+
+    <p><u>Examples of valid array expressions</u></p>
+    <ul>
+        <li>#Array[2]</li>
+        <li>#Array[-1]</li>
+        <li>#Array[_X]</li>
+        <li>#Array[_MyY * 2]</li>
+        <li>@Array[1]</li>
+        <li>@Array[_min(5, _MyX) + 1]</li>
+    </ul>
+
+    <p><u>Clearing arrays</u></p>
+    <p>The <b>Clear array var</b> command can be used to reset all values in an array variable to zero.</p>
+<hr />
+<a href="script.html">Command list</a><br />
+<a href="character.html">Character Scripting</a><br />
+</body>
+</html>
