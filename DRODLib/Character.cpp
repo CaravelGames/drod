@@ -375,6 +375,29 @@ WSTRING CCharacter::getLocalVarString(const WSTRING& varName) const
 }
 
 //*****************************************************************************
+int CCharacter::getArrayValue(
+	const ScriptArrayMap& scriptArrays, //[in] map of variable ids to script arrays
+	const UINT& varId, //[in] id of script array to read
+	const int arrayIndex //[in] index of value to get
+)
+//Returns: the value at the given index in the specified script array.
+//If the value has not been set, a default value of 0 is returned.
+{
+	ScriptArrayMap::const_iterator array = scriptArrays.find(varId);
+
+	if (array == scriptArrays.end()) {
+		return 0; //Array hasn't been initialized yet, so return 0 as default.
+	}
+
+	map<int, int>::const_iterator value = array->second.find(arrayIndex);
+	if (value == array->second.end()) {
+		return 0; //Value hasn't been set yet, so return 0 as default.
+	}
+
+	return value->second;
+}
+
+//*****************************************************************************
 WSTRING CCharacter::getPredefinedVar(const UINT varIndex) const
 {
 	WSTRING wstr;
@@ -1020,6 +1043,7 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		//Unrecognized identifier.
 		return false;
 	} else if (pwStr[index] == W_t('#') || pwStr[index] == W_t('@')) {
+		//Check that array variable has index
 		//Find spot where var identifier ends.
 		int endIndex = index + 1;
 		int spcTrail = 0;
@@ -1322,6 +1346,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		//else: unrecognized identifier -- just return a zero value
 		return val;
 	} else if (pwStr[index] == W_t('#') || pwStr[index] == W_t('@')) {
+		//Parse array index, then look up the value if the index if valid
 		//Find spot where var identifier ends.
 		int endIndex = index + 1;
 		int spcTrail = 0;
@@ -1356,8 +1381,7 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 
 		UINT varId = pGame->pHold->GetVarID(wVarName.c_str());
 		ScriptArrayMap& scriptArrays = bIsLocalArray ? pNPC->localScriptArrays : pGame->scriptArrays;
-		int val = scriptArrays[varId][arrayIndex];
-		return val;
+		return getArrayValue(scriptArrays, varId, arrayIndex);
 	}
 
 	//Invalid identifier
@@ -3104,7 +3128,16 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_ClearArrayVar:
 			{
-				pGame->scriptArrays[command.x].clear();
+				UINT varId = command.x;
+				ScriptArrayMap& scriptArrays = pGame->pHold->IsLocalVar(varId) ?
+					this->localScriptArrays : pGame->scriptArrays;
+
+				ScriptArrayMap::iterator& array = scriptArrays.find(varId);
+				if (array != scriptArrays.end()) {
+					//Only clear a script array that is initialized
+					array->second.clear();
+				}
+
 				//When a var is set, this might get it out of an otherwise infinite loop.
 				++wVarSets;
 				wTurnCount = 0;
@@ -5231,8 +5264,9 @@ void CCharacter::SetArrayVariable(
 	for (vector<WSTRING>::const_iterator expression = expressions.begin();
 		expression != expressions.end(); ++expression) {
 		UINT index = 0;
-		int x = scriptArrays[varIndex][arrayIndex];
-		int operand = 0;
+		int x = getArrayValue(scriptArrays, varIndex, arrayIndex);
+		//Note: [] operator will initialize missing values. This gives a default of 0.
+		int operand = scriptArrays[varIndex][arrayIndex];
 		operand = parseExpression(expression->c_str(), index, pGame, this);
 
 		switch (command.h)
@@ -5260,7 +5294,12 @@ void CCharacter::SetArrayVariable(
 			default: break;
 		}
 
-		scriptArrays[varIndex][arrayIndex] = x;
+		if (x == 0) {
+			//Save memory by clearing value
+			scriptArrays[varIndex].erase(arrayIndex);
+		} else {
+			scriptArrays[varIndex][arrayIndex] = x;
+		}
 		++arrayIndex;
 	}
 }

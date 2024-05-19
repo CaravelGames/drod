@@ -2024,6 +2024,7 @@ void CCurrentGame::DeserializeScriptArrays()
 		while (size) {
 			int key = (int)readBpUINT(buffer, index);
 			int value = (int)readBpUINT(buffer, index);
+			ASSERT(value != 0);
 			scriptArray[key] = value;
 			--size;
 		}

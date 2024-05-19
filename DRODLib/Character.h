@@ -87,6 +87,7 @@ enum CharacterDisplayMode {
 
 class CSwordsman;
 struct HoldCharacter;
+typedef map<UINT, map<int, int>> ScriptArrayMap;
 
 class CCharacter : public CPlayerDouble
 {
@@ -161,6 +162,8 @@ public:
 
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
+
+	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
 
 	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	int            CountTile(const CCharacterCommand& command) const;
@@ -370,7 +373,6 @@ private:
 
 	typedef map<WSTRING, WSTRING> LocalScriptMap;
 	LocalScriptMap localScriptVars;
-	typedef map<UINT, map<int, int>> ScriptArrayMap;
 	ScriptArrayMap localScriptArrays;
 };
 
