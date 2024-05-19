@@ -703,7 +703,7 @@ bool CCharacterDialogWidget::RenameVar(const bool bIsArrayVar)
 	} while (!bGoodSyntax);
 
 	if (ScriptVars::IsCharacterArrayVar(wstr) != bIsArrayVar) {
-		pEditRoomScreen->ShowOkMessage(L"Can't change var type");
+		pEditRoomScreen->ShowOkMessage(g_pTheDB->GetMessageText(MID_CantChangeVarType));
 		return false;
 	}
 
@@ -1850,7 +1850,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_ARRAYVAR_TEXTLABEL,
 		X_VARTEXTLABEL, Y_VARTEXTLABEL, CX_VARTEXTLABEL, CY_VARTEXTLABEL,
-		F_Small, L"Variable Name/Expression"));
+		F_Small, g_pTheDB->GetMessageText(MID_ArrayVarNameExpression)));
 
 	this->pVarListBox = new CListBoxWidget(TAG_VARLIST,
 			X_VARLISTBOX, Y_VARLISTBOX, CX_VARLISTBOX, CY_VARLISTBOX, true);
@@ -1930,7 +1930,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_ARRAYINDEX_LABEL,
 		X_VARVALUELABEL, Y_VARVALUELABEL, CX_VARVALUELABEL, CY_VARVALUELABEL,
-		F_Small, L"Index"));
+		F_Small, g_pTheDB->GetMessageText(MID_ArrayIndexLabel)));
 
 	CTextBoxWidget *pVarOperand = new CTextBoxWidget(TAG_VARVALUE, X_VARVALUE, Y_VARVALUE,
 			CX_VARVALUE, CY_VARVALUE);
@@ -4914,12 +4914,12 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerStealth, g_pTheDB->GetMessageText(MID_SetPlayerStealth));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerWeapon, g_pTheDB->GetMessageText(MID_SetPlayerWeapon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerBehavior, L"Set player behavior");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerBehavior, g_pTheDB->GetMessageText(MID_SetPlayerBehavior));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSet, L"Set array var");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSetAt, L"Set array var at");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_ClearArrayVar, L"Clear array var");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSet, g_pTheDB->GetMessageText(MID_ArrayVarSet));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSetAt, g_pTheDB->GetMessageText(MID_ArrayVarSetAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ClearArrayVar, g_pTheDB->GetMessageText(MID_ClearArrayVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_StartGlobalScript, g_pTheDB->GetMessageText(MID_StartGlobalScript));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TeleportTo, g_pTheDB->GetMessageText(MID_TeleportTo));

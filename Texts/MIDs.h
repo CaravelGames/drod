@@ -1867,6 +1867,7 @@ enum MID_CONSTANT {
   MID_ClearArrayVar = 2091,
   MID_ArrayVarNameExpression = 2092,
   MID_ArrayIndexLabel = 2093,
+  MID_CantChangeVarType = 2094,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

@@ -3381,3 +3381,7 @@ Variable Name/Expression
 [MID_ArrayIndexLabel]
 [eng]
 Index
+
+[MID_CantChangeVarType]
+[eng]
+Var type can't be changed between array and non-array
