@@ -5186,14 +5186,16 @@ void CCharacter::SaveCommands(CDbPackedVars& ExtraVars, const COMMAND_VECTOR& co
 	SaveSpeech(commands);
 
 	const UINT wNumCommands = commands.size();
-	if (wNumCommands)
-		ExtraVars.SetVar(numCommandsStr, wNumCommands);
+	ExtraVars.SetVar(numCommandsStr, wNumCommands);
 
 	//Serialize commands into a single buffer.
 	string buffer;
 	SerializeCommands(buffer, commands);
-	if (!buffer.empty())
+	if (!buffer.empty()) {
 		ExtraVars.SetVar(commandStr, (void*)(buffer.c_str()), buffer.size(), UVT_byte_buffer);
+	} else {
+		ExtraVars.Unset(commandStr);
+	}
 }
 
 //*****************************************************************************
@@ -5203,14 +5205,16 @@ void CCharacter::SaveCommands(CDbPackedVars& ExtraVars, const COMMANDPTR_VECTOR&
 	SaveSpeech(commands);
 
 	const UINT wNumCommands = commands.size();
-	if (wNumCommands)
-		ExtraVars.SetVar(numCommandsStr, wNumCommands);
+	ExtraVars.SetVar(numCommandsStr, wNumCommands);
 
 	//Serialize commands into a single buffer.
 	string buffer;
 	SerializeCommands(buffer, commands);
-	if (!buffer.empty())
+	if (!buffer.empty()) {
 		ExtraVars.SetVar(commandStr, (void*)(buffer.c_str()), buffer.size(), UVT_byte_buffer);
+	} else {
+		ExtraVars.Unset(commandStr);
+	}
 }
 
 //********************* Current serialization ********************************/

@@ -137,6 +137,8 @@ public:
 	UNPACKEDVARTYPE GetVarType(const char *pszVarName) const;
 	UINT       GetVarValueSize(const char *pszVarName) const;
 
+	void Unset(const char* pszVarName);
+
 	void *         SetVar(const char *pszVarName, const void *pValue, UINT dwValueSize, const UNPACKEDVARTYPE eType);
 	char *         SetVar(const char *pszVarName, const char *pszValue)
 	{
