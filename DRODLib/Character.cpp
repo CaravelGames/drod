@@ -7370,7 +7370,27 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 
 	const UINT wOldX = this->wX, wOldY = this->wY;
 
-	CMonster::PushInDirection(dx, dy, bStun, CueEvents);
+	const CDbRoom& room = *(this->pCurrentGame->pRoom);
+	const bool bEnteredTunnel = CanEnterTunnel() &&
+		room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
+
+	if (bEnteredTunnel) {
+		UINT destX, destY;
+		CueEvents.Add(CID_Tunnel);
+		if (this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
+			Move(destX, destY, &CueEvents);
+
+			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+			SetWeaponSheathed();
+			this->wSwordMovement = nGetO(dx, dy);
+			pGame->ProcessArmedMonsterWeapon(this, CueEvents);
+		}
+
+		if (bStun && IsAlive())
+			Stun(CueEvents, 2);
+	} else {
+		CMonster::PushInDirection(dx, dy, bStun, CueEvents);
+	}
 	SetWeaponSheathed();
 	RefreshBriars();
 
