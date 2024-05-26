@@ -103,6 +103,14 @@ void CDbPackedVars::SetMembers(const CDbPackedVars &Src)
 }
 
 //*******************************************************************************************
+void CDbPackedVars::Unset(const char* pszVarName)
+{
+	this->vars.erase(pszVarName);
+
+	this->varIter = this->vars.end(); //invalidate
+}
+
+//*******************************************************************************************
 void * CDbPackedVars::GetVar(
 //Gets value of a variable.
 //
