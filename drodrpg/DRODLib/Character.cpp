@@ -130,6 +130,7 @@ const UINT MAX_ANSWERS = 9;
 #define PushObjectsStr "PushObjects"
 #define SpawnEggsStr "SpawnEggs"
 #define RemovesSwordStr "RemovesSword"
+#define ExplosiveKegSafeStr "ExplosiveSafe"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -246,7 +247,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
-	, bRemovesSword(false)
+	, bRemovesSword(false) , bExplosiveSafe(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2140,8 +2141,7 @@ void CCharacter::Process(
 						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
 						{
 							//Explode a bomb immediately.  Doesn't expend a turn.
-							CCoordStack bomb(px, py);
-							room.BombExplode(CueEvents, bomb);
+							room.ExplodeBomb(CueEvents, px, py);
 							if (IsAlive())
 								bProcessNextCommand = true;
 						} else {
@@ -2149,6 +2149,18 @@ void CCharacter::Process(
 							STOP_COMMAND;
 						}
 					break;
+					case T_POWDER_KEG:
+						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
+						{
+							//Explode a keg immediately.  Doesn't expend a turn.
+							room.ExplodePowderKeg(CueEvents, px, py);
+							if (IsAlive())
+								bProcessNextCommand = true;
+						} else {
+							//Pause script until after first turn to explode the keg.
+							STOP_COMMAND;
+						}
+						break;
 					case T_FUSE:
 						//Light fuse.  Doesn't expend a turn.
 						room.LightFuse(CueEvents, px, py,
@@ -2634,6 +2646,7 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
+						this->bExplosiveSafe =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2720,6 +2733,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::RemovesSword:
 						this->bRemovesSword = true;
+					break;
+					case ScriptFlag::ExplosiveSafe:
+						this->bExplosiveSafe = true;
 					break;
 
 					default:
@@ -4765,6 +4781,7 @@ const
 		{
 			case T_MIRROR:
 			case T_CRATE:
+			case T_POWDER_KEG:
 				if (this->bPushObjects)
 				{
 					const int dx = (int)wCol - (int)this->wX;
@@ -5447,6 +5464,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
 	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
+	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -5596,7 +5614,9 @@ const
 	if (this->bSpawnEggs)
 		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
 	if (this->bRemovesSword)
-		vars.SetVar(RemovesSwordStr, this->bSpawnEggs);
+		vars.SetVar(RemovesSwordStr, this->bRemovesSword);
+	if (this->bExplosiveSafe)
+		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
@@ -5936,7 +5956,7 @@ void CCharacter::MoveCharacter(
 
 		//Process any and all of these item interactions.
 		UINT tTile = room.GetTSquare(this->wX, this->wY);
-		if (tTile==T_MIRROR || tTile==T_CRATE)
+		if (tTile==T_MIRROR || tTile==T_CRATE || tTile==T_POWDER_KEG)
 		{
 			room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
 			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object

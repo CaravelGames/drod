@@ -1485,6 +1485,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackFirst, g_pTheDB->GetMessageText(MID_AttackFirst));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackLast, g_pTheDB->GetMessageText(MID_AttackLast));
 	this->pBehaviorListBox->AddItem(ScriptFlag::RemovesSword, g_pTheDB->GetMessageText(MID_RemovesSword));
+	this->pBehaviorListBox->AddItem(ScriptFlag::ExplosiveSafe, g_pTheDB->GetMessageText(MID_ExplosiveSafe));
 	this->pBehaviorListBox->AddItem(ScriptFlag::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pBehaviorListBox->AddItem(ScriptFlag::MoveIntoSwords, g_pTheDB->GetMessageText(MID_MoveIntoSwords));
 	this->pBehaviorListBox->AddItem(ScriptFlag::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
@@ -4203,6 +4204,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_TAR, g_pTheDB->GetMessageText(MID_Tar));
 	pListBox->AddItem(T_MIRROR, g_pTheDB->GetMessageText(MID_Mirror));
 	pListBox->AddItem(T_CRATE, g_pTheDB->GetMessageText(MID_Crate));
+	pListBox->AddItem(T_POWDER_KEG, g_pTheDB->GetMessageText(MID_PowderKeg));
 	pListBox->AddItem(T_MIST, g_pTheDB->GetMessageText(MID_Mist));
 	pListBox->AddItem(T_MISTVENT, g_pTheDB->GetMessageText(MID_MistVent));
 	pListBox->AddItem(T_HEALTH_HUGE, g_pTheDB->GetMessageText(MID_HugeHealth));

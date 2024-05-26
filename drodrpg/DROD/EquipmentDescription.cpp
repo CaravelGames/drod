@@ -208,6 +208,13 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		text += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
 		needSeparator = true;
 	}
+	if (pCharacter->IsExplosiveSafe())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
+		needSeparator = true;
+	}
 	if (pCharacter->HasCustomDescription()) {
 		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
 

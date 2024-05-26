@@ -2447,7 +2447,9 @@
 #define TI_FIRETRAP_UP2   2261
 #define TI_FIRETRAP_UP3   2262
 
-static const UINT TI_COUNT = 2263;
+#define TI_POWDER_KEG     2263
+
+static const UINT TI_COUNT = 2264;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

@@ -904,6 +904,7 @@ const
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
 		case T_CRATE:
+		case T_POWDER_KEG:
 			//Only on floor, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
@@ -1044,7 +1045,7 @@ const
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE ||
 							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
-							wTileNo[1] == T_CRATE );// || wTileNo[1] == T_STATION);
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG);// || wTileNo[1] == T_STATION);
 
 		case T_SEEP:
 			//Wall movement types
@@ -1061,7 +1062,7 @@ const
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE || //wTileNo[1] == T_STATION ||
 							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
-							wTileNo[1] == T_CRATE));
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG));
 
 		case T_CHARACTER:
 			//Can't go on monsters.
@@ -1544,32 +1545,14 @@ void CEditRoomWidget::HandleMouseUp(
 		}
 */
 
-	switch (this->pRoom->GetTSquare(x2,y2))
+	UINT tTile = this->pRoom->GetTSquare(x2, y2);
+	switch (tTile)
 	{
 		case T_BOMB:
-		{
-			//Show all explosions caused by this bomb.
+		case T_POWDER_KEG:
+			//Show all explosions caused by this explosion.
 			this->pLastLayerEffects->RemoveEffectsOfType(ESHADE);
-
-			CCueEvents CueEvents;
-			CDbRoom room(*this->pRoom);
-			room.InitRoomStats();
-			CCoordStack bombs(x2,y2);
-			room.BombExplode(CueEvents, bombs);
-
-			CCoordSet coords;
-			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_Explosion));
-			while (pCoord)
-			{
-				coords.insert(pCoord->wX, pCoord->wY);
-				pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-						CueEvents.GetNextPrivateData());
-			}
-			static const SURFACECOLOR ExpColor = {224, 160, 0};
-			for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
-				AddShadeEffect(coord->wX, coord->wY, ExpColor);
-		}
+			HighlightBombExplosion(x2, y2, tTile);
 		return;
 		default: break;
 	}

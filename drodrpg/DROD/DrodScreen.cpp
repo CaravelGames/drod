@@ -488,7 +488,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	{
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		const UINT wTSquare = pGame->pRoom->GetTSquare(pCoord->wX, pCoord->wY);
-		if (wTSquare == T_FUSE || wTSquare == T_BOMB)	//needed to avoid effects
+		if (bIsCombustibleItem(wTSquare))	//needed to avoid effects
 					//where fuses have already disappeared since the cue event fired
 		{
 			pRoomWidget->AddTLayerEffect(

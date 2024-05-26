@@ -297,6 +297,7 @@ public:
 	bool     IsPlayerAccessoryDisabled() const;
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
+	bool     IsPlayerSwordExplosiveSafe() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
 	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;

@@ -110,7 +110,8 @@ const
 		switch (wLookTileNo)
 		{
 			case T_MIRROR:
-			case T_CRATE: 
+			case T_CRATE:
+			case T_POWDER_KEG:
 			{
 				const int dx = (int)wCol - (int)this->wX;
 				const int dy = (int)wRow - (int)this->wY;
@@ -249,7 +250,7 @@ void CMimic::Process(
 */
 			//Process any and all of these item interactions.
 			UINT tTile = room.GetTSquare(this->wX, this->wY);
-			if (tTile==T_MIRROR || tTile==T_CRATE)
+			if (tTile==T_MIRROR || tTile==T_CRATE || tTile==T_POWDER_KEG)
 			{
 				room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
 				tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object

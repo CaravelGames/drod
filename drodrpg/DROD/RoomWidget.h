@@ -281,6 +281,7 @@ public:
 	void           HideCheckpoints() {this->bShowCheckpoints = false;}
 	void           HidePlayer() {this->bShowingPlayer = false;}
 	void           HighlightSelectedTile();
+	void           HighlightBombExplosion(const UINT x, const UINT y, const UINT tTile);
 	virtual bool   IsDoubleClickable() const {return false;}
 	bool           IsLightingRendered() const;
 	bool           IsMonsterInvolvedInDeath(CMonster *pMonster) const;

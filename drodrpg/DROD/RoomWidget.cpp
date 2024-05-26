@@ -910,7 +910,8 @@ void CRoomWidget::HighlightSelectedTile()
 		}
 		break;
 		case T_BOMB:
-			DrawInvisibilityRange(wX, wY, NULL, NULL, 3);
+		case T_POWDER_KEG:
+			HighlightBombExplosion(wX, wY, tTile);
 		break;
 		case T_BRIAR_SOURCE:
 		case T_BRIAR_LIVE: case T_BRIAR_DEAD:
@@ -976,6 +977,35 @@ void CRoomWidget::HighlightSelectedTile()
 
 	//Nothing is being highlighted.
 	RemoveHighlight();
+}
+
+//*****************************************************************************
+void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT tTile)
+//
+{
+	CCueEvents CueEvents;
+	CDbRoom room(*this->pRoom, false);
+	room.InitRoomStats();
+	CCoordStack bombs, powder_kegs;
+	switch (tTile) {
+		case T_BOMB: bombs.Push(x, y); break;
+		case T_POWDER_KEG: powder_kegs.Push(x, y); break;
+		default: break;
+	}
+	room.DoExplode(CueEvents, bombs, powder_kegs);
+
+	CCoordSet coords;
+	const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+		CueEvents.GetFirstPrivateData(CID_Explosion));
+	while (pCoord)
+	{
+		coords.insert(pCoord->wX, pCoord->wY);
+		pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+			CueEvents.GetNextPrivateData());
+	}
+	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
+	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
+		AddShadeEffect(coord->wX, coord->wY, ExpColor);
 }
 
 //*****************************************************************************
@@ -1411,6 +1441,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			}
 			break;
 			case T_BOMB:
+			case T_POWDER_KEG:
 				if (this->pCurrentGame)
 				{
 					wstr += wszSpace;
@@ -1426,6 +1457,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						wstr += wszSpace;
 						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 						wstr += wszRightParen;
+					}
+					else {
+						wstr += wszSpace;
+						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 					}
 				}
 			break;
@@ -1915,6 +1950,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
 	bool bCustomWeakness = false, bCustomDescription = false;
+	bool bExplosiveSafe = pMonster->IsExplosiveSafe();;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -2026,6 +2062,15 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
+		++count;
+	}
+	if (bExplosiveSafe) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
 		++count;
 	}
 	if (bCustomWeakness) {
@@ -4455,6 +4500,7 @@ void CRoomWidget::DrawTLayerTile(
 			break;
 			case T_MIRROR:
 			case T_CRATE:
+			case T_POWDER_KEG:
 				//Render moving objects later.
 				if (this->dwMovementStepsLeft && this->pRoom->GetPushedObjectAt(wX, wY) != NULL) {
 					bIsMoving = true;
