@@ -185,7 +185,17 @@ bool ScriptVars::IsCharacterLocalVar(const WSTRING& wstr)
 
 bool ScriptVars::IsCharacterLocalVar(const WCHAR* wstr)
 {
-	return wstr && wstr[0] == '.';
+	return wstr && (wstr[0] == '.' || wstr[0] == '@');
+}
+
+bool ScriptVars::IsCharacterArrayVar(const WSTRING& wstr)
+{
+	return IsCharacterArrayVar(wstr.c_str());
+}
+
+bool ScriptVars::IsCharacterArrayVar(const WCHAR* wstr)
+{
+	return wstr && (wstr[0] == '#' || wstr[0] == '@');
 }
 
 //*****************************************************************************

@@ -87,6 +87,7 @@ enum CharacterDisplayMode {
 
 class CSwordsman;
 struct HoldCharacter;
+typedef map<UINT, map<int, int>> ScriptArrayMap;
 
 class CCharacter : public CPlayerDouble
 {
@@ -161,6 +162,8 @@ public:
 
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
+
+	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
 
 	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	int            CountTile(const CCharacterCommand& command) const;
@@ -308,6 +311,7 @@ private:
 	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
+	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
 
 	void GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
@@ -369,6 +373,7 @@ private:
 
 	typedef map<WSTRING, WSTRING> LocalScriptMap;
 	LocalScriptMap localScriptVars;
+	ScriptArrayMap localScriptArrays;
 };
 
 class CFiredCharacterCommand : public CAttachableObject

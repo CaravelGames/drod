@@ -77,7 +77,7 @@ public:
 	virtual void   OnBetweenEvents();
 
 	bool RenameCharacter();
-	bool RenameVar();
+	bool RenameVar(const bool bIsArrayVar = false);
 
 	static const UINT INDENT_PREFIX_SIZE;
 	static const UINT INDENT_TAB_SIZE;
@@ -95,7 +95,7 @@ private:
 	void  ClearPasteBuffer();
 	void  DeleteCommands(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  DeleteCustomCharacter();
-	void  DeleteVar();
+	void  DeleteVar(const bool bArrayVar = false);
 	void  EditCustomCharacters();
 	UINT  findStartTextMatch(CListBoxWidget* pListBoxWidget, const WCHAR* pText, UINT& index, bool& bFound) const;
 	UINT  findTextMatch(CListBoxWidget* pListBoxWidget, const WCHAR* pText, const UINT index, bool& bFound) const;
@@ -143,6 +143,7 @@ private:
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
+	void  UpdateVarDeleteButton(UINT widgetTag, CListBoxWidget* varListBox);
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 
@@ -200,7 +201,8 @@ private:
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
-		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2;
+		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2,
+		*pArrayVarListBox, *pArrayVarOpListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;

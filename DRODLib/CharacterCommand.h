@@ -381,6 +381,9 @@ public:
 		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
 		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
 		CC_SetPlayerBehavior,   //Set player behavior X to behavior state Y
+		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
+		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
+		CC_ClearArrayVar,       //Reset array var X
 
 		CC_Count
 	};
@@ -419,6 +422,13 @@ public:
 		return command == CC_LogicalWaitEnd ||
 			IsLogicalWaitCommand() || IsLogicalWaitCondition();
 	}
+
+	// If the command has a variable reference, return it. Otherwise returns zero.
+	UINT getVarID() const;
+
+	// Set the variable reference for a command.
+	// Has no effect on commands that don't reference a variable.
+	void setVarID(const UINT varID);
 };
 
 class CDbMessageText;
