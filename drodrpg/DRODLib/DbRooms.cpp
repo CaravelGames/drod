@@ -9293,6 +9293,8 @@ bool CDbRoom::SetMembers(
 	memcpy(this->pszTParams, Src.pszTParams, dwSquareCount * sizeof(UINT));
 	this->tileLights = Src.tileLights;
 
+	this->coveredTSquares = Src.coveredTSquares;
+
 	//Special room data
 	for (wIndex=0; wIndex<Src.orbs.size(); ++wIndex)  //must retain order
 		this->orbs.push_back(new COrbData(*(Src.orbs[wIndex])));
@@ -9411,7 +9413,6 @@ bool CDbRoom::SetMembers(
 		this->mapMarker = Src.mapMarker;
 
 		this->coveredOSquares = Src.coveredOSquares;
-		this->coveredTSquares = Src.coveredTSquares;
 		this->pressurePlateIndex = Src.pressurePlateIndex;
 		this->bTarWasStabbed = Src.bTarWasStabbed;
 //		this->bGreenDoorsOpened = Src.bGreenDoorsOpened;
