@@ -6078,6 +6078,19 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(7), GetParticleSpeed(4))); //!!ShatteringGlass effect
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_CrateDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+
+		this->fPos[0] = static_cast<float>(pCoord->wX);
+		this->fPos[1] = static_cast<float>(pCoord->wY);
+		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos);
+
+		this->pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(this->pRoomWidget, *pCoord, 12,
+				GetEffectDuration(7), GetParticleSpeed(4)));
+	}
 	if (CueEvents.HasOccurred(CID_BombExploded))
 	{
 		UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded);

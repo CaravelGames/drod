@@ -819,6 +819,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_FiretrapActivated: strText = "Fire trap activated"; break;
 		case MID_PowderKeg: strText = "Powder Keg"; break;
 		case MID_ExplosiveSafe: strText = "Explosive safe"; break;
+		case MID_CrateDestroyed: strText = "Crate destroyed"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

@@ -690,6 +690,11 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pSquare (one or more)
 	CID_FiretrapActivated,
 
+	//A crate was destroyed
+	//
+	//Private data: CMoveCoord *pSquare
+	CID_CrateDestroyed,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

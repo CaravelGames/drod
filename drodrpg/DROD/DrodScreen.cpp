@@ -297,6 +297,14 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 				new CDebrisEffect(pRoomWidget, *pCoord, 10,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_CrateDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(pRoomWidget, *pCoord, 12,
+				GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
