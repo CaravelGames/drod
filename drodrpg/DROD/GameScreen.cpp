@@ -6229,6 +6229,18 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				new CFiretrapEffect(pRoomWidget, *pCoord, duration));
 		}
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FiretrapHit);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+
+		this->fPos[0] = static_cast<float>(pCoord->wX);
+		this->fPos[1] = static_cast<float>(pCoord->wY);
+		PlaySoundEffect(SEID_HIT, this->fPos);
+
+		this->pRoomWidget->AddMLayerEffect(
+			new CFadeTileEffect(this->pRoomWidget, *pCoord, TI_STRONGHIT, 300));
+	}
 
 	//Remove old sparks before drawing the current ones.
 	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);

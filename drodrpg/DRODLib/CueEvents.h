@@ -695,6 +695,11 @@ enum CUEEVENT_ID
 	//Private data: CMoveCoord *pSquare
 	CID_CrateDestroyed,
 
+	//Fire trap hits a player or monster
+	//
+	//Private data: CCoord *pSquare
+	CID_FiretrapHit,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

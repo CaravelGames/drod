@@ -6041,6 +6041,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		//Burn player
 		UINT delta = player.CalcDamage(damageVal);
 		player.DecHealth(CueEvents, delta, CID_ExplosionKilledPlayer);
+		CueEvents.Add(CID_FiretrapHit, new CCoord(wX, wY));
 	}
 
 	CMonster* pMonster = this->GetMonsterAtSquare(wX, wY);
@@ -6057,6 +6058,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		}
 
 		DamageMonster(pMonster, damageVal, CueEvents);
+		CueEvents.Add(CID_FiretrapHit, new CCoord(wX, wY));
 	}
 }
 
