@@ -317,7 +317,9 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 		return false;
 
 	//Touching a hot tile causes fractional damage.
-	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT)
+	//But standing on crate negates the effect.
+	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT &&
+		this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) != T_CRATE)
 	{
 		if (DamagedByHotTiles() && IsDamageableAt(this->wX, this->wY))
 		{
