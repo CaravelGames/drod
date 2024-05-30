@@ -753,6 +753,11 @@ const WCHAR* CDbBase::GetMessageText(
 	string strText;
 	switch (eMessageID)
 	{
+	case MID_DemoDescKilled1: strText = "The player gets themselves killed pretty quickly."; break;
+	case MID_DemoDescKilled4: strText = "The player goes screaming to their death and takes some monsters with them."; break;
+	case MID_DemoDescLeaves1: strText = "Then the player leaves."; break;
+	case MID_DemoDescLoiters1: strText = "The player didn't do much."; break;
+	case MID_DemoDescExits1: strText = "The player exits the level."; break;
 	case MID_SetMusic: strText = "Set music"; break;
 	case MID_IfElseIf: strText = "Else If"; break;
 	case MID_VarInequal: strText = "!="; break;
