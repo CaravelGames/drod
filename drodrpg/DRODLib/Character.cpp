@@ -855,6 +855,8 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_LEVEL_MULT:
 					case (UINT)ScriptVars::P_ROOM_X:
 					case (UINT)ScriptVars::P_ROOM_Y:
+					case (UINT)ScriptVars::P_TOTAL_ATK:
+					case (UINT)ScriptVars::P_TOTAL_DEF:
 						//cannot alter
 					break;
 

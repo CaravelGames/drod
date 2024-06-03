@@ -154,7 +154,9 @@ namespace ScriptVars
 		P_SCRIPT_ITEM_SHOVEL_MULT = -97,
 		P_BEAM = -98,
 		P_FIRETRAP = -99,
-		FirstPredefinedVar = P_FIRETRAP, //set this to the last var in the enumeration
+		P_TOTAL_ATK = -100,
+		P_TOTAL_DEF = -101,
+		FirstPredefinedVar = P_TOTAL_DEF, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

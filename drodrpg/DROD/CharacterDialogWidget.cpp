@@ -4545,6 +4545,9 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_ACCESSORY_DEF, g_pTheDB->GetMessageText(MID_VarAccessoryDEF));
 	this->pVarListBox->AddItem(ScriptVars::P_ACCESSORY_GR, g_pTheDB->GetMessageText(MID_VarAccessoryGR));
 
+	this->pVarListBox->AddItem(ScriptVars::P_TOTAL_ATK, g_pTheDB->GetMessageText(MID_VarTotalAtk));
+	this->pVarListBox->AddItem(ScriptVars::P_TOTAL_DEF, g_pTheDB->GetMessageText(MID_VarTotalDef));
+
 	this->pVarListBox->AddItem(ScriptVars::P_MUD_SPAWN, g_pTheDB->GetMessageText(MID_VarMudSpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_TAR_SPAWN, g_pTheDB->GetMessageText(MID_VarTarSpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_GEL_SPAWN, g_pTheDB->GetMessageText(MID_VarGelSpawn));

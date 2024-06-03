@@ -373,3 +373,11 @@ _Beam
 [MID_VarFiretrap]
 [eng]
 _Firetrap
+
+[MID_VarTotalAtk]
+[eng]
+_TotalATK
+
+[MID_VarTotalDef]
+[eng]
+_TotalDEF
