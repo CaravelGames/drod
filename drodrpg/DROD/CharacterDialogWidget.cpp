@@ -4490,6 +4490,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_DEF_MULT, g_pTheDB->GetMessageText(MID_VarItemDEFMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_GR_MULT, g_pTheDB->GetMessageText(MID_VarItemGRMult));
 	this->pVarListBox->AddItem(ScriptVars::P_ITEM_SHOVEL_MULT, g_pTheDB->GetMessageText(MID_VarItemShovelMult));
+	this->pVarListBox->AddItem(ScriptVars::P_LEVEL_MULT, g_pTheDB->GetMessageText(MID_VarLevelMultiplier));
 
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_HP_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterHPMult));
 	this->pVarListBox->AddItem(ScriptVars::P_SCRIPT_MONSTER_ATK_MULT, g_pTheDB->GetMessageText(MID_VarMyMonsterATKMult));
@@ -4525,6 +4526,8 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_X, g_pTheDB->GetMessageText(MID_VarX));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_Y, g_pTheDB->GetMessageText(MID_VarY));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
+	this->pVarListBox->AddItem(ScriptVars::P_ROOM_Y, g_pTheDB->GetMessageText(MID_VarRoomY));
 
 	this->pVarListBox->AddItem(ScriptVars::P_TOTALMOVES, g_pTheDB->GetMessageText(MID_TotalMoves));
 //	this->pVarListBox->AddItem(ScriptVars::P_TOTALTIME, g_pTheDB->GetMessageText(MID_TotalTime)); //hidden from script use -- not correctly supported for deterministic move replay
