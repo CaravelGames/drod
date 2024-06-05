@@ -2400,8 +2400,12 @@ void CCurrentGame::ProcessCommand(
 			CMonster *pMonster = this->pRoom->pFirstMonster;
 			while (pMonster)
 			{
-				if (pMonster->wType == M_CHARACTER)
+				if (pMonster->wType == M_CHARACTER) {
 					pMonster->Process(CMD_WAIT, CueEvents);
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter && pCharacter->bScriptDone)
+						ScriptCompleted(pCharacter);
+				}
 				pMonster = pMonster->pNext;
 			}
 			this->bExecuteNoMoveCommands = false;
