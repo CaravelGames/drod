@@ -1399,3 +1399,11 @@ Fire trap burning
 [MID_FiretrapActivated]
 [eng]
 Fire trap activated
+
+[MID_CrateDestroyed]
+[eng]
+Crate destroyed
+
+[MID_FiretrapHit]
+[eng]
+Fire trap hit

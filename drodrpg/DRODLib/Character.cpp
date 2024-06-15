@@ -4212,7 +4212,8 @@ bool CCharacter::CheckForDamage(CCueEvents& CueEvents)
 	if (!IsFlying()) //airborne monsters are not damaged by oremites
 	{
 		//Damage to metal monster on oremites is the same as on hot tiles.
-		if (IsMetal() && this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_GOO)
+		if (IsMetal() && this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_GOO &&
+			this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) != T_CRATE)
 		{
 			if (IsDamageableAt(this->wX, this->wY))
 			{

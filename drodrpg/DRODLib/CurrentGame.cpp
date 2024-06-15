@@ -3451,7 +3451,9 @@ bool CCurrentGame::DoesTileDisableMetal(const UINT wX, const UINT wY) const
 {
 	//Oremites on tile disable metal
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
-	return wOTile == T_GOO;
+	//But standing on a crate negates the effect
+	const UINT wTTile = this->pRoom->GetTSquare(wX, wY);
+	return wOTile == T_GOO && wTTile != T_CRATE;
 }
 
 //*****************************************************************************
@@ -5915,10 +5917,11 @@ MakeMove:
 	pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 	const UINT wNewOSquare = pRoom->GetOSquare(p.wX, p.wY);
+	const UINT wNewTSquare = pRoom->GetTSquare(p.wX, p.wY);
 
 	//These exclude the wait move executed on entering a room.
 	const bool bWasOnSameScroll = (wTTileNo==T_SCROLL) && !bMoved && this->wTurnNo;
-	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT) && this->wTurnNo
+	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT && wNewTSquare != T_CRATE) && this->wTurnNo
 			//flying player types don't get burned by hot tiles
 			&& !p.IsFlying();
 

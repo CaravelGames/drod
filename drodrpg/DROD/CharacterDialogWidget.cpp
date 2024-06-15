@@ -3981,12 +3981,14 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_BombExploded, g_pTheDB->GetMessageText(MID_BombExploded));
 	this->pEventListBox->AddItem(CID_BriarExpanded, g_pTheDB->GetMessageText(MID_BriarExpanded));
 	this->pEventListBox->AddItem(CID_BumpedLockedDoor, g_pTheDB->GetMessageText(MID_BumpedLockedDoor));
+	this->pEventListBox->AddItem(CID_CrateDestroyed, g_pTheDB->GetMessageText(MID_CrateDestroyed));
 	this->pEventListBox->AddItem(CID_CrumblyWallDestroyed, g_pTheDB->GetMessageText(MID_CrumblyWallDestroyed));
 	this->pEventListBox->AddItem(CID_CutBriar, g_pTheDB->GetMessageText(MID_CutBriar));
 	this->pEventListBox->AddItem(CID_DrankPotion, g_pTheDB->GetMessageText(MID_DrankPotion));
 	this->pEventListBox->AddItem(CID_EvilEyeWoke, g_pTheDB->GetMessageText(MID_EvilEyeWoke));
 	this->pEventListBox->AddItem(CID_Firetrap, g_pTheDB->GetMessageText(MID_FiretrapBurning));
 	this->pEventListBox->AddItem(CID_FiretrapActivated, g_pTheDB->GetMessageText(MID_FiretrapActivated));
+	this->pEventListBox->AddItem(CID_FiretrapHit, g_pTheDB->GetMessageText(MID_FiretrapHit));
 	this->pEventListBox->AddItem(CID_FuseBurning, g_pTheDB->GetMessageText(MID_FuseBurning));
 	this->pEventListBox->AddItem(CID_GelBabyFormed, g_pTheDB->GetMessageText(MID_GelBabyFormed));
 //	this->pEventListBox->AddItem(CID_GelGrew, g_pTheDB->GetMessageText(MID_GelGrew));

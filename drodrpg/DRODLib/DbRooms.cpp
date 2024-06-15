@@ -6008,7 +6008,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		break;
 		case T_POWDER_KEG:
 			ExplodePowderKeg(CueEvents, wX, wY);
-			break;
+		break;
 		case T_FUSE:
 			//Light the fuse.
 			if (!this->NewFuses.has(wX, wY) && !this->LitFuses.has(wX, wY))
@@ -6019,6 +6019,10 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		break;
 		case T_TAR: case T_MUD: case T_GEL:
 			StabTar(wX, wY, CueEvents, true);
+		break;
+		case T_CRATE:
+			Plot(wX, wY, T_EMPTY);
+			CueEvents.Add(CID_CrateDestroyed, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
 		break;
 	}
 
@@ -6037,6 +6041,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		//Burn player
 		UINT delta = player.CalcDamage(damageVal);
 		player.DecHealth(CueEvents, delta, CID_ExplosionKilledPlayer);
+		CueEvents.Add(CID_FiretrapHit, new CCoord(wX, wY));
 	}
 
 	CMonster* pMonster = this->GetMonsterAtSquare(wX, wY);
@@ -6053,6 +6058,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 		}
 
 		DamageMonster(pMonster, damageVal, CueEvents);
+		CueEvents.Add(CID_FiretrapHit, new CCoord(wX, wY));
 	}
 }
 
