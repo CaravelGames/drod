@@ -1405,6 +1405,12 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
 		}
 
+		//Derived stat values
+		case (UINT)ScriptVars::P_TOTAL_ATK:
+			return this->getPlayerATK();
+		case (UINT)ScriptVars::P_TOTAL_DEF:
+			return this->getPlayerDEF();
+
 		default:
 			return player.st.getVar(ScriptVars::Predefined(varIndex));
 	}
@@ -2407,6 +2413,8 @@ void CCurrentGame::ProcessCommandSetVar(
 		case (UINT)ScriptVars::P_LEVEL_MULT:
 		case (UINT)ScriptVars::P_ROOM_X:
 		case (UINT)ScriptVars::P_ROOM_Y:
+		case (UINT)ScriptVars::P_TOTAL_ATK:
+		case (UINT)ScriptVars::P_TOTAL_DEF:
 			//cannot alter
 			return;
 	}

@@ -1651,6 +1651,8 @@ enum MID_CONSTANT {
   MID_VarMyItemShovelMult = 1865,
   MID_VarBeam = 1866,
   MID_VarFiretrap = 1890,
+  MID_VarTotalAtk = 1897,
+  MID_VarTotalDef = 1898,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1743,
