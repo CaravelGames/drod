@@ -1083,6 +1083,10 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			cycleTurn *= 2;
 			return this->bHalfTurn ? cycleTurn + 1 : cycleTurn;
 		}
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			return this->swordsman.weaponType;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			return this->swordsman.localRoomWeaponType;
 		default:
 			return 0;
 	}
@@ -1193,6 +1197,22 @@ void CCurrentGame::ProcessCommandSetVar(
 			UINT wRain = max(0, min(newVal, MAX_ROOM_RAIN));
 			this->pRoom->weather.rain = wRain;
 		}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			if (bIsRealWeapon(newVal) || newVal == WT_On || newVal == WT_Off) {
+				this->swordsman.EquipWeapon(newVal);
+			}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			if (bIsRealWeapon(newVal)) {
+				this->swordsman.SetWeaponType(newVal, false);
+			} else if (newVal == WT_On) {
+				this->swordsman.bNoWeapon = false;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			} else if (newVal == WT_Off) {
+				this->swordsman.bNoWeapon = true;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			}
 		break;
 		default:
 		break;

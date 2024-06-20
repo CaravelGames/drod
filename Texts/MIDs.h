@@ -1904,6 +1904,8 @@ enum MID_CONSTANT {
   MID_RoomRain = 2051,
   MID_SpawnCycle = 2055,
   MID_SpawnCycleFast = 2056,
+  MID_VarPlayerWeapon = 2095,
+  MID_VarPlayerLocalWeapon = 2096,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

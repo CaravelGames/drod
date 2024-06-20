@@ -134,3 +134,11 @@ _SpawnCycle
 [MID_SpawnCycleFast]
 [eng]
 _SpawnCycleFast
+
+[MID_VarPlayerWeapon]
+[eng]
+_PlayerWeapon
+
+[MID_VarPlayerLocalWeapon]
+[eng]
+_PlayerLocalWeapon

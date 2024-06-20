@@ -980,6 +980,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_ArrayVarNameExpression: strText = "Variable Name/Expression"; break;
 	case MID_ArrayIndexLabel: strText = "Index"; break;
 	case MID_CantChangeVarType: strText = "Var type can't be changed between array and non-array"; break;
+	case MID_VarPlayerWeapon: strText = "_PlayerWeapon"; break;
+	case MID_VarPlayerLocalWeapon: strText = "_PlayerLocalWeapon"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

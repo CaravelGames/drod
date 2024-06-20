@@ -77,7 +77,9 @@ namespace ScriptVars
 		P_ROOM_RAIN = -34,
 		P_SPAWNCYCLE = -35,
 		P_SPAWNCYCLE_FAST = -36,
-		FirstPredefinedVar = P_SPAWNCYCLE_FAST, //set this to the last var in the enumeration
+		P_PLAYER_WEAPON = -37,
+		P_PLAYER_LOCAL_WEAPON = -38,
+		FirstPredefinedVar = P_PLAYER_LOCAL_WEAPON, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

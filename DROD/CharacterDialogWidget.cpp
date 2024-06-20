@@ -5512,6 +5512,9 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_Y, g_pTheDB->GetMessageText(MID_VarY));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
 
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerWeapon));
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_LOCAL_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerLocalWeapon));
+
 	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_X, g_pTheDB->GetMessageText(MID_VarRoomImageX));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_Y, g_pTheDB->GetMessageText(MID_VarRoomImageY));
 	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_X, g_pTheDB->GetMessageText(MID_VarOverheadImageX));
