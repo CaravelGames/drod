@@ -142,3 +142,11 @@ _PlayerWeapon
 [MID_VarPlayerLocalWeapon]
 [eng]
 _PlayerLocalWeapon
+
+[MID_VarInput]
+[eng]
+_Input
+
+[MID_VarInputDirection]
+[eng]
+_InputDirection
