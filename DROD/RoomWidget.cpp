@@ -1133,6 +1133,15 @@ void CRoomWidget::HighlightSelectedTile()
 			}
 			break;
 
+			case M_TEMPORALCLONE:
+			{
+				const CTemporalClone* pClone = DYN_CAST(const CTemporalClone*, const CMonster*, pMonster);
+				if (pClone->bInvisible) {
+					DrawInvisibilityRange(wX, wY, NULL);
+					bRemoveHighlightNextTurn = false;
+				}
+			}
+
 			default: break;
 		}
 	}
