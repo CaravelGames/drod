@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
 		if (ret != static_cast<MESSAGE_ID>(-1))
 			DisplayInitErrorMessage(ret);
 	} else {
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		try
 		{
 #endif
@@ -540,7 +540,7 @@ int main(int argc, char *argv[])
 				delete pCurrentPlayer;
 			}
 
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		}
 		catch (CException& e)
 		{
