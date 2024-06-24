@@ -5512,6 +5512,9 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_Y, g_pTheDB->GetMessageText(MID_VarY));
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
 
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerWeapon));
+	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_LOCAL_WEAPON, g_pTheDB->GetMessageText(MID_VarPlayerLocalWeapon));
+
 	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_X, g_pTheDB->GetMessageText(MID_VarRoomImageX));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOMIMAGE_Y, g_pTheDB->GetMessageText(MID_VarRoomImageY));
 	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_X, g_pTheDB->GetMessageText(MID_VarOverheadImageX));
@@ -5530,6 +5533,9 @@ void CCharacterDialogWidget::PopulateVarList()
 
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
 	this->pVarListBox->AddItem(ScriptVars::P_RETURN_Y, g_pTheDB->GetMessageText(MID_VarReturnY));
+
+	this->pVarListBox->AddItem(ScriptVars::P_INPUT, g_pTheDB->GetMessageText(MID_VarInput));
+	this->pVarListBox->AddItem(ScriptVars::P_INPUT_DIRECTION, g_pTheDB->GetMessageText(MID_VarInputDirection));
 
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_WEATHER, g_pTheDB->GetMessageText(MID_RoomWeather));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_DARKNESS, g_pTheDB->GetMessageText(MID_RoomDarkness));

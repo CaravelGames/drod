@@ -392,6 +392,7 @@ void CCurrentGame::Clear(
 
 	this->bRoomExitLocked = false;
 	this->conquerTokenTurn = NO_CONQUER_TOKEN_TURN;
+	this->lastProcessedCommand = CMD_WAIT;
 
 	this->bSwordsmanOutsideRoom = false;
 	this->dwAutoSaveOptions = ASO_DEFAULT;
@@ -1083,6 +1084,28 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			cycleTurn *= 2;
 			return this->bHalfTurn ? cycleTurn + 1 : cycleTurn;
 		}
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			return this->swordsman.weaponType;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			return this->swordsman.localRoomWeaponType;
+		case (UINT)ScriptVars::P_INPUT:
+		{
+			return this->lastProcessedCommand;
+		}
+		case (UINT)ScriptVars::P_INPUT_DIRECTION:
+		{
+			switch(this->lastProcessedCommand) {
+				case CMD_N: return N;
+				case CMD_NE: return NE;
+				case CMD_W: return W;
+				case CMD_E: return E;
+				case CMD_SW: return SW;
+				case CMD_S: return S;
+				case CMD_SE: return SE;
+				case CMD_NW: return NW;
+				default: return NO_ORIENTATION;
+			}
+		}
 		default:
 			return 0;
 	}
@@ -1193,6 +1216,22 @@ void CCurrentGame::ProcessCommandSetVar(
 			UINT wRain = max(0, min(newVal, MAX_ROOM_RAIN));
 			this->pRoom->weather.rain = wRain;
 		}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			if (bIsRealWeapon(newVal) || newVal == WT_On || newVal == WT_Off) {
+				this->swordsman.EquipWeapon(newVal);
+			}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			if (bIsRealWeapon(newVal)) {
+				this->swordsman.SetWeaponType(newVal, false);
+			} else if (newVal == WT_On) {
+				this->swordsman.bNoWeapon = false;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			} else if (newVal == WT_Off) {
+				this->swordsman.bNoWeapon = true;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			}
 		break;
 		default:
 		break;
@@ -2251,6 +2290,7 @@ void CCurrentGame::ProcessCommand(
 	ASSERT(this->bIsGameActive);
 
 	const UINT dwStart = GetTicks();
+	this->lastProcessedCommand = nCommand;
 
 	//Reset relative movement for the current turn.
 	UpdatePrevCoords();
@@ -6988,6 +7028,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->scriptArraysAtRoomStart = Src.scriptArraysAtRoomStart;
 	this->ambientSounds = Src.ambientSounds;
 	this->conquerTokenTurn = Src.conquerTokenTurn;
+	this->lastProcessedCommand = Src.lastProcessedCommand;
 	this->bWasRoomConqueredAtTurnStart = Src.bWasRoomConqueredAtTurnStart;
 	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 

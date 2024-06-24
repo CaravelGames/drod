@@ -361,6 +361,7 @@ public:
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 	UINT     conquerTokenTurn; //turn player touched a Conquer token
+	UINT     lastProcessedCommand; //most recently processed comand, for read-only script var access
 
 	UINT     wMonsterKills; //total monsters killed in current room
 	UINT     wMonsterKillCombo; //total monsters killed without interruption

@@ -709,11 +709,14 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_MyScript*</b> - Variables used to inject dynamic values into other scripting commands. <a href="myscript.html">See this section</a> for explanation on how to use them.</li>
 	<li><b>_X</b> and <b>_Y</b> - X and Y position of the Player. Can cause the same potential problems as <b>_MyX</b> and <b>_MyY</b>, so use 'Teleport player to' wheen you need to teleport along two axes.</li>
 	<li><b>_O</b> - Player's current <a href="#valuesorientation">orientation</a>.</li>
+    <li><b>_PlayerWeapon</b> - Can be used to check the player's base weapon, or to indefinitely change their weapon in the same manner as the <a href="#setplayerweapon">Set player weapon</a> command. This value can also be set to -2 to disable the player's weapon, and to -1 to enable it.</li>
+    <li><b>_PlayerLocalWeapon</b> - Can be used to check the weapon currently being used by the player, or to set their current weapon for the duration of the room. This value can also be set to -2 to disarm the player, and to -1 to rearm them, as if touching a Disarm token.</li>
 	<li><b>_RoomImageX</b> and <b>_RoomImageY</b> - Offset of the custom room image in tiles.</li>
 	<li><b>_OverheadImageX</b> and <b>_OverheadImageY</b> - Offset of the custom overhead image in tiles.</li>
 	<li><b>_ThreatClock</b> - <a href="#threatclockdisplay">See this section</a>.</li>
 	<li><b>_LevelName</b> - <u>Read only!</u> Gets the name of the level.</li>
 	<li><b>_RoomX</b> and <b>_RoomY</b> - <u>Read only!</u> Gets the position of the current room in the level.</li>
+    <li><b>_Input</b> and <b>_InputDirection</b> - <u>Read only!</u> Gets the command value of the player's last input and the move direction of that input respectively. For inputs that do not move the player, such as rotations, a value of 4 is returned for the input direction.</li>
 	<li><b>_PlayerLight</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_PlayerLightType</b> - <a href="#playerlightvars">See this section</a></li>
 	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
