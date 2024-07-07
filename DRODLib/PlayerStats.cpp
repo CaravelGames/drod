@@ -201,6 +201,12 @@ bool ScriptVars::IsCharacterArrayVar(const WCHAR* wstr)
 }
 
 //*****************************************************************************
+bool ScriptVars::IsIndexInArrayRange(const int index)
+{
+	return abs(index) <= 50000;
+}
+
+//*****************************************************************************
 void Challenges::deserialize(CDbPackedVars& vars)
 {
 	challenges.clear();
