@@ -383,6 +383,10 @@ int CCharacter::getArrayValue(
 //Returns: the value at the given index in the specified script array.
 //If the value has not been set, a default value of 0 is returned.
 {
+	if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+		return 0; //Out of range value is always 0
+	}
+
 	ScriptArrayMap::const_iterator array = scriptArrays.find(varId);
 
 	if (array == scriptArrays.end()) {
@@ -5272,6 +5276,11 @@ void CCharacter::SetArrayVariable(
 	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
 	for (vector<WSTRING>::const_iterator expression = expressions.begin();
 		expression != expressions.end(); ++expression) {
+		if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+			++arrayIndex;
+			continue; //Don't set value outside of allowed range. continue instead of break as negative values can end up in range
+		}
+
 		UINT index = 0;
 		int x = getArrayValue(scriptArrays, varIndex, arrayIndex);
 		//Note: [] operator will initialize missing values. This gives a default of 0.

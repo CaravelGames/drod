@@ -131,6 +131,8 @@ namespace ScriptVars
 	bool IsCharacterArrayVar(const WSTRING& wstr);
 	bool IsCharacterArrayVar(const WCHAR* wstr);
 
+	bool IsIndexInArrayRange(const int index);
+
 	//All predefined vars.
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
