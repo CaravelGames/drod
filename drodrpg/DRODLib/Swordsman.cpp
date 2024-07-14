@@ -365,6 +365,7 @@ const
 		wLookTileNo==T_TOKEN ||
 		wLookTileNo==T_MIST ||
 		wLookTileNo==T_PRESSPLATE ||
+		wLookTileNo==T_MISTVENT ||
 		wLookTileNo==T_FIRETRAP ||
 		(bIsFallingTile(wLookTileNo) && !CanDropTrapdoor(wLookTileNo)) //won't drop trapdoors
 	)
