@@ -4765,6 +4765,12 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 //
 //Returns: whether door was closed
 {
+	//Is a crate in the way?
+	const UINT wTTile = this->pRoom->GetTSquare(wX, wY);
+	if (wTTile == T_CRATE) {
+		return false;
+	}
+
 	//Does player have a key to operate this door type?
 	PlayerStats& ps = this->pPlayer->st;
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
