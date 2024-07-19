@@ -230,6 +230,18 @@ namespace ScriptFlag
 		LC_Azure = 16
 	};
 
+	enum ItemGroup
+	{
+		IG_PlainFloor = 0, //Plain floor tiles
+		IG_Wall = 1, //All non-breakable walls
+		IG_BreakableWall = 2, //Crumbly and secret walls
+		IG_Solid = 3, //All types of wall and closed doors
+		IG_Pit = 4, //Both types of pit
+		IG_Water = 5, //All types of water
+		IG_Stairs = 6, //Both types of staircase
+		ItemGroupCount //Total number of defined groups
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
@@ -384,6 +396,7 @@ public:
 		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
 		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
 		CC_ClearArrayVar,       //Reset array var X
+		CC_WaitForItemGroup,     //Wait for game element in group (flags) to exist in rect (x,y,w,h).
 
 		CC_Count
 	};

@@ -681,6 +681,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotBuildType:
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_WaitForItemGroup:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -759,6 +760,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotBuildType:
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_WaitForItemGroup:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3290,6 +3292,14 @@ void CCharacter::Process(
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_WaitForItemGroup:
+			{
+				//Wait for element in group (flags) to exist in rect (x,y,w,h).
+				if (!IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_GenerateEntity:
 			{
 				//Generates a new entity of type h in the room at (x,y) with orientation w.
@@ -4648,6 +4658,99 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 				if (room.DoesSquareContainTile(x, y, pflags)) {
 					return true;
 				}
+			}
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+//Returns: whether a game element from the specified group (flags) is in rect (x,y,w,h).
+//Element groups correspond to functions in TileConstants.h that check for two or more elements
+bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	if (px >= room.wRoomCols)
+		return false;
+	if (py >= room.wRoomRows)
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	UINT layer;
+	bool (*tileCheck)(UINT);
+
+	switch (pflags) {
+		case ScriptFlag::IG_PlainFloor: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsPlainFloor;
+		}
+		break;
+		case ScriptFlag::IG_Wall: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsWall;
+		}
+		break;
+		case ScriptFlag::IG_BreakableWall: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsCrumblyWall;
+		}
+		break;
+		case ScriptFlag::IG_Solid: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsSolidOTile;
+		}
+		break;
+		case ScriptFlag::IG_Pit: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsPit;
+		}
+		break;
+		case ScriptFlag::IG_Water: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsWater;
+		}
+		break;
+		case ScriptFlag::IG_Stairs: {
+			layer = LAYER_OPAQUE;
+			tileCheck = bIsStairs;
+		}
+		break;
+		default: return false;
+	}
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x) {
+			switch (layer) {
+				case LAYER_OPAQUE: {
+					if (tileCheck(room.GetOSquare(x,y))) {
+						return true;
+					}
+				}
+				break;
+				case LAYER_FLOOR: {
+					if (tileCheck(room.GetFSquare(x, y))) {
+						return true;
+					}
+				}
+				break;
+				case LAYER_TRANSPARENT: {
+					if (tileCheck(room.GetTSquare(x, y)) || tileCheck(room.GetCoveredTSquare(x,y))) {
+						return true;
+					}
+				}
+				break;
+				default: return false;
 			}
 		}
 	}
