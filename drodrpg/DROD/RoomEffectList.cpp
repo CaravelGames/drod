@@ -174,7 +174,7 @@ void CRoomEffectList::RemoveOverlayEffectsInGroup(
 //
 //Params:
 	const int clearGroup,//(in) Overlay group to remove
-	 bool bForceClearAll) //if set [default=true], delete all effects,
+	const bool bForceClearAll) //if set [default=true], delete all effects,
 //including those that request to be retained
 {
 	list<CEffect*>::const_iterator iSeek = this->Effects.begin();

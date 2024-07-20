@@ -207,8 +207,8 @@ bool CDrodSound::GetSongFilepaths(
 	switch (eSongID)
 	{
 		case SONGID_INTRO:         strKeyName = "Intro"; break;
-		case SONGID_WINGAME:			strKeyName = "WinGame"; break;
-		case SONGID_CREDITS:			strKeyName = "Credits"; break;
+		case SONGID_WINGAME:       strKeyName = "WinGame"; break;
+		case SONGID_CREDITS:       strKeyName = "Credits"; break;
 		case SONGID_QUIT:          strKeyName = "Exit"; break;
 		case SONGID_ARCHITECTS:    strKeyName = "Architects"; break;
 		case SONGID_BATTLE:        strKeyName = "Battle"; break;
@@ -219,6 +219,26 @@ bool CDrodSound::GetSongFilepaths(
 		case SONGID_SEASIDE:       strKeyName = "Seaside"; break;
 		case SONGID_SERPENTS:      strKeyName = "Serpents"; break;
 		case SONGID_SLAYER:        strKeyName = "Slayer"; break;
+		case SONGID_PIRATES:       strKeyName = "Pirates"; break;
+		case SONGID_GOBLINKING:    strKeyName = "GoblinKing"; break;
+		case SONGID_BIGSERPENT:    strKeyName = "BigSerpent"; break;
+		case SONGID_TAR:           strKeyName = "Tar"; break;
+		case SONGID_PUZZLE:        strKeyName = "Puzzle"; break;
+		case SONGID_SECRETAREA:    strKeyName = "SecretArea"; break;
+		case SONGID_SMALLERPLANS:  strKeyName = "SmallerPlans"; break;
+		case SONGID_GEOMETRY:      strKeyName = "Geometry"; break;
+		case SONGID_SLIPSTAIR:     strKeyName = "SlipStair"; break;
+		case SONGID_SYMPATHETIC:   strKeyName = "Sympathetic"; break;
+		case SONGID_ASCENDANT:     strKeyName = "Ascendant"; break;
+		case SONGID_ROACHESRUN:    strKeyName = "RoachesRun"; break;
+		case SONGID_NEWIDEA:       strKeyName = "NewIdea"; break;
+		case SONGID_WALTZ:         strKeyName = "Waltz"; break;
+		case SONGID_SWINGHALLS:    strKeyName = "SwingHalls"; break;
+		case SONGID_AMBWINDY:      strKeyName = "AmbWindy"; break;
+		case SONGID_AMBBEACH:      strKeyName = "AmbBeach"; break;
+		case SONGID_AMBFOREST:     strKeyName = "AmbForest"; break;
+		case SONGID_AMBDRIPS:      strKeyName = "AmbDrips"; break;
+		case SONGID_AMBROACHES:    strKeyName = "AmbRoaches"; break;
 		default: return false;
 	}
 
