@@ -190,6 +190,7 @@ const UINT TAG_ARRAYVAROPLIST = 868;
 const UINT TAG_ARRAYINDEX_LABEL = 867;
 const UINT TAG_ARRAYVAR_REMOVE = 866;
 const UINT TAG_ARRAYVAR_TEXTLABEL = 865;
+const UINT TAG_ITEM_GROUP_LISTBOX = 864;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -436,7 +437,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL), pVarCompListBox2(NULL)
 	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
-	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL)
+	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL), pItemGroupListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
 	, pDisplayFilterListBox(NULL)
 	, pWorldMapIconFlagListBox(NULL)
@@ -1738,6 +1739,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWaitForItemsListBox->SetHotkeyItemSelection(true);
 	this->PopulateItemListBox(this->pWaitForItemsListBox, false, false, true);
 	this->pWaitForItemsListBox->SelectLine(0);
+
+	this->pItemGroupListBox = new CListBoxWidget(TAG_ITEM_GROUP_LISTBOX,
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pItemGroupListBox);
+	this->PopulateItemGroupListBox(this->pItemGroupListBox);
+	this->pItemGroupListBox->SelectLine(0);
 
 	//Yes/No selection.
 	this->pOnOffListBox = new CListBoxWidget(TAG_ONOFFLISTBOX,
@@ -3982,7 +3989,11 @@ const
 
 		case CCharacterCommand::CC_WaitForItem:
 		case CCharacterCommand::CC_CountItem:
-			wstr += this->pWaitForItemsListBox->GetTextForKey(command.flags);
+		case CCharacterCommand::CC_WaitForItemGroup:
+		{
+			CListBoxWidget* pListBox = command.command == CCharacterCommand::CC_WaitForItemGroup ?
+				this->pWaitForItemsListBox : this->pWaitForItemsListBox;
+			wstr += pListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
 			wstr += wszSpace;
@@ -3997,6 +4008,7 @@ const
 			wstr += wszComma;
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
+		}
 		break;
 
 		case CCharacterCommand::CC_GenerateEntity:
@@ -4938,6 +4950,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForEntityType, g_pTheDB->GetMessageText(MID_WaitForEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, L"Wait for item group");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuilding, g_pTheDB->GetMessageText(MID_WaitForBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
@@ -5191,6 +5204,17 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	pListBox->AddItem(T_WALL_IMAGE, g_pTheDB->GetMessageText(MID_WallImage));
 
 	pListBox->SetAllowFiltering(true);
+}
+
+void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
+{
+	pListBox->AddItem(ScriptFlag::IG_PlainFloor, L"Normal Floor");
+	pListBox->AddItem(ScriptFlag::IG_Wall, L"Regular Walls");
+	pListBox->AddItem(ScriptFlag::IG_BreakableWall, L"Breakable Walls");
+	pListBox->AddItem(ScriptFlag::IG_AnyWall, L"All Walls");
+	pListBox->AddItem(ScriptFlag::IG_Pit, L"Pits");
+	pListBox->AddItem(ScriptFlag::IG_Water, L"Water");
+	pListBox->AddItem(ScriptFlag::IG_Stairs, g_pTheDB->GetMessageText(MID_Stairs));
 }
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
@@ -5733,7 +5757,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 63;
+	static const UINT NUM_WIDGETS = 64;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5753,7 +5777,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_FLAGBOX, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
 		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST,
-		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE
+		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5808,7 +5832,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT ORBAGENTS[] = { TAG_ORBAGENTLIST, 0 };
 	static const UINT PLAYERBEHAVIOR[] = {TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST, 0};
 	static const UINT ARRAYVARSET[] = { TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_VARVALUE, 0 };
-	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST };
+	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0};
+	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -5921,7 +5946,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		PLAYERBEHAVIOR,     //CC_SetPlayerBehavior
 		ARRAYVARSET,        //CC_ArrayVarSet
 		ARRAYVARSET,        //CC_ArrayVarSetAt
-		CLEARARRAYVAR       //CC_ClearArrayVar
+		CLEARARRAYVAR,      //CC_ClearArrayVar
+		WAITFORITEMGROUP    //CC_WaitForItemGroup
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -6080,6 +6106,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYSET_L,         //CC_ArrayVarSet
 		ARRAYSET_L,         //CC_ArrayVarSetAt
 		NO_LABELS,          //CC_ClearArrayVar
+		NO_LABELS,          //CC_WaitForItemGroup
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6554,6 +6581,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForItem:
 		case CCharacterCommand::CC_CountItem:
 			this->pCommand->flags = this->pWaitForItemsListBox->GetSelectedItem();
+			QueryRect();
+		break;
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+			this->pCommand->flags = this->pItemGroupListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
@@ -7339,6 +7371,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_WaitForItem:
 		case CCharacterCommand::CC_CountItem:
 			this->pWaitForItemsListBox->SelectItem(this->pCommand->flags);
+		break;
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+			this->pItemGroupListBox->SelectItem(this->pCommand->flags);
 		break;
 
 		case CCharacterCommand::CC_WorldMapSelect:
@@ -8334,6 +8370,19 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	break;
 
+	case CCharacterCommand::CC_WaitForItemGroup:
+		parseMandatoryOption(pCommand->flags, this->pItemGroupListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+
 	case CCharacterCommand::CC_Label:
 	{
 		pCommand->label = pText+pos;
@@ -9178,6 +9227,15 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_WaitForItem:
 	case CCharacterCommand::CC_CountItem:
 		wstr += this->pWaitForItemsListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+
+	case CCharacterCommand::CC_WaitForItemGroup:
+		wstr += this->pItemGroupListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);

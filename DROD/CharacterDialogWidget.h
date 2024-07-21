@@ -136,6 +136,7 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateItemListBox(CListBoxWidget *pListBox, const bool bIsBuild, const bool bIsBuildMarker, const bool bIsWaitForItem);
+	void  PopulateItemGroupListBox(CListBoxWidget* pListBox);
 	void  PopulatePlayerBehaviorListBox();
 	void  PopulatePlayerGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
@@ -202,7 +203,7 @@ private:
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
 		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2,
-		*pArrayVarListBox, *pArrayVarOpListBox;
+		*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;
