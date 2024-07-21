@@ -106,6 +106,7 @@ static inline bool bIsHuman(const UINT mt) {
 		case M_CITIZEN: case M_CITIZEN1: case M_CITIZEN2: case M_CITIZEN3: case M_CITIZEN4:
 		case M_INSTRUCTOR: case M_NEGOTIATOR:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
+		case M_ARCHIVIST:
 			return true;
 		default:
 			return false;

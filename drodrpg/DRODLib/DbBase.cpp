@@ -823,6 +823,27 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_FiretrapHit: strText = "Firetrap hit"; break;
 		case MID_VarTotalAtk: strText = "_TotalATK"; break;
 		case MID_VarTotalDef: strText = "_TotalDEF"; break;
+		case MID_MusicPirates: strText = "Pirates"; break;
+		case MID_MusicGoblinKing: strText = "Goblin King"; break;
+		case MID_MusicBigSerpent: strText = "Big Serpent"; break;
+		case MID_MusicTar: strText = "Tar"; break;
+		case MID_MusicPuzzle: strText = "Puzzle"; break;
+		case MID_MusicSecretArea: strText = "Secret Area"; break;
+		case MID_MusicSmallerPlans: strText = "Smaller Plans"; break;
+		case MID_MusicGeometry: strText = "An Architect's Dream of Geometry"; break;
+		case MID_MusicSlipStair: strText = "A Slippery Staircase"; break;
+		case MID_MusicSympathetic: strText = "A Sympathetic Bartendry"; break;
+		case MID_MusicAscendant: strText = "Beethro Ascendant"; break;
+		case MID_MusicRoachesRun: strText = "Roaches on the Run"; break;
+		case MID_MusicNewIdea: strText = "Tendry's New Idea"; break;
+		case MID_MusicWaltz: strText = "Waltz Recombinant"; break;
+		case MID_MusicSwingHalls: strText = "Within These Swingin' Halls"; break;
+		case MID_MusicAmbWindy: strText = "Ambient - Windy"; break;
+		case MID_MusicAmbBeach: strText = "Ambient - Beach"; break;
+		case MID_MusicAmbForest: strText = "Ambient - Forest"; break;
+		case MID_MusicAmbDrips: strText = "Ambient - Dripping"; break;
+		case MID_MusicAmbRoaches: strText = "Ambient - Roaches"; break;
+		case MID_Archivist: strText = "Archivist"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

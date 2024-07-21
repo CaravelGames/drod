@@ -3047,7 +3047,8 @@ void CGameScreen::PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEv
 		case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 		case M_CITIZEN1: case M_CITIZEN2:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-		case M_CITIZEN: eSoundID = SEID_CIT_OOF; break;
+		case M_CITIZEN: case M_ARCHIVIST:
+			eSoundID = SEID_CIT_OOF; break;
 		case M_STALWART: eSoundID = SEID_STALWART_OOF; break;
 		case M_WUBBA: eSoundID = SEID_WUBBA; break;
 		case M_NEGOTIATOR: case M_INSTRUCTOR:
@@ -3546,7 +3547,7 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 						eSoundID = SEID_SPLAT; break;
 					case M_CITIZEN1: case M_CITIZEN2: case M_GUARD:
 					case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-					case M_CITIZEN:
+					case M_CITIZEN: case M_ARCHIVIST:
 						eSoundID = SEID_CIT_HI; break;
 					case M_ROCKGOLEM: case M_ROCKGIANT:
 						eSoundID = SEID_ROCK_HI; break;
@@ -5029,7 +5030,8 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-			case M_CITIZEN: eSoundID = SEID_CIT_DIE; break;
+			case M_CITIZEN: case M_ARCHIVIST:
+				eSoundID = SEID_CIT_DIE; break;
 			case M_NEGOTIATOR: case M_INSTRUCTOR:
 			case M_CITIZEN3: case M_CITIZEN4:
 				eSoundID = SEID_WOM_DIE; break;
@@ -5519,7 +5521,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-			case M_CITIZEN: eSoundID = SEID_CIT_SCARED; break;
+			case M_CITIZEN: case M_ARCHIVIST:
+				eSoundID = SEID_CIT_SCARED; break;
 			case M_STALWART: eSoundID = SEID_STALWART_SCARED; break;
 			case M_WUBBA: eSoundID = SEID_WUBBA; break;
 			case M_NEGOTIATOR: case M_INSTRUCTOR:

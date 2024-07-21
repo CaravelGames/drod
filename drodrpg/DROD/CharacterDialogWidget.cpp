@@ -4109,6 +4109,7 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 	pListBox->AddItem(M_CITIZEN4, g_pTheDB->GetMessageText(MID_Citizen4));
 	pListBox->AddItem(M_BEETHRO, g_pTheDB->GetMessageText(MID_Beethro));
 	pListBox->AddItem(M_STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
+	pListBox->AddItem(M_ARCHIVIST, g_pTheDB->GetMessageText(MID_Archivist));
 
 	pListBox->AddItem(M_NONE, g_pTheDB->GetMessageText(MID_None));
 
@@ -4408,6 +4409,7 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 
 	pListBox->AddItem(Speaker_Beethro, g_pTheDB->GetMessageText(MID_Beethro));
 	pListBox->AddItem(Speaker_SerpentG, g_pTheDB->GetMessageText(MID_GreenSerpent));
+	pListBox->AddItem(Speaker_Archivist, g_pTheDB->GetMessageText(MID_Archivist));
 	pListBox->AddItem(Speaker_Aumtlich, g_pTheDB->GetMessageText(MID_Zombie));
 	pListBox->AddItem(Speaker_Brain, g_pTheDB->GetMessageText(MID_Brain));
 	pListBox->AddItem(Speaker_Citizen, g_pTheDB->GetMessageText(MID_Citizen));

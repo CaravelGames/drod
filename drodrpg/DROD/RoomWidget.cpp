@@ -151,7 +151,8 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,   0},  //Beethro in disguise
 	{255, 255, 255},  //self (unused)
 	{255, 255, 255},  //player (unused)
-	{255, 255, 128}   //stalwart
+	{255, 255, 128},  //stalwart
+	{146, 101, 165}   //archivist
 };
 
 //Light resolution.
@@ -2233,6 +2234,7 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				case M_CITIZEN3: eMID = MID_Citizen3; break;
 				case M_CITIZEN4: eMID = MID_Citizen4; break;
 				case M_STALWART: eMID = MID_Stalwart; break;
+				case M_ARCHIVIST: eMID = MID_Archivist; break;
 				default: ASSERT(!"Unrecognized character"); break;
 			}
 			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
