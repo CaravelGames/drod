@@ -3052,7 +3052,7 @@ void CGameScreen::PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEv
 		case M_STALWART: eSoundID = SEID_STALWART_OOF; break;
 		case M_WUBBA: eSoundID = SEID_WUBBA; break;
 		case M_NEGOTIATOR: case M_INSTRUCTOR:
-		case M_CITIZEN3: case M_CITIZEN4:	
+		case M_CITIZEN3: case M_CITIZEN4:
 			eSoundID = SEID_WOM_OOF; break;
 		case M_SLAYER: eSoundID = SEID_SLAYER_OOF; break;
 		default: eSoundID = SEID_MON_OOF; break;
