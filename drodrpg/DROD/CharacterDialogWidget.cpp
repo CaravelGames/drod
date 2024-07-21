@@ -4101,6 +4101,8 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 	pListBox->AddItem(M_SKIPPERNEST, g_pTheDB->GetMessageText(MID_AntHill));
 	pListBox->AddItem(M_FEGUNDO, g_pTheDB->GetMessageText(MID_Phoenix));
 	pListBox->AddItem(M_AUMTLICH, g_pTheDB->GetMessageText(MID_Zombie));
+	pListBox->AddItem(M_CONSTRUCT, g_pTheDB->GetMessageText(MID_Construct));
+	pListBox->AddItem(M_FLUFFBABY, g_pTheDB->GetMessageText(MID_FluffBaby));
 
 	//Character pseudo monster types.
 	pListBox->AddItem(M_CITIZEN1, g_pTheDB->GetMessageText(MID_Citizen1));
@@ -4110,6 +4112,8 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 	pListBox->AddItem(M_BEETHRO, g_pTheDB->GetMessageText(MID_Beethro));
 	pListBox->AddItem(M_STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
 	pListBox->AddItem(M_ARCHIVIST, g_pTheDB->GetMessageText(MID_Archivist));
+	pListBox->AddItem(M_ARCHITECT, g_pTheDB->GetMessageText(MID_Architect));
+	pListBox->AddItem(M_PATRON, g_pTheDB->GetMessageText(MID_Patron));
 
 	pListBox->AddItem(M_NONE, g_pTheDB->GetMessageText(MID_None));
 

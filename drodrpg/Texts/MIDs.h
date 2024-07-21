@@ -449,6 +449,11 @@ enum MID_CONSTANT {
   MID_ReplaceFileButton = 1846,
   MID_FilePendingDeletionSuffix = 1847,
   MID_Undelete = 1848,
+  MID_Archivist = 1919,
+  MID_Architect = 1920,
+  MID_Patron = 1921,
+  MID_Construct = 1922,
+  MID_FluffBaby = 1933,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,
@@ -1575,7 +1580,6 @@ enum MID_CONSTANT {
   MID_FiretrapActivated = 1892,
   MID_CrateDestroyed = 1895,
   MID_FiretrapHit = 1896,
-  MID_Archivist = 1919,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

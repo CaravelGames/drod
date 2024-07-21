@@ -228,6 +228,12 @@
     <ClCompile Include="OrbUtil.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="Construct.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="FluffBaby.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h">
@@ -462,6 +468,12 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="..\Texts\MIDs.h" />
+    <ClInclude Include="Construct.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="FluffBaby.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VTune\DRODLib.vpj" />

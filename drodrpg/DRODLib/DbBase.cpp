@@ -844,6 +844,10 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MusicAmbDrips: strText = "Ambient - Dripping"; break;
 		case MID_MusicAmbRoaches: strText = "Ambient - Roaches"; break;
 		case MID_Archivist: strText = "Archivist"; break;
+		case MID_Architect: strText = "Engineer"; break;
+		case MID_Patron: strText = "Patron"; break;
+		case MID_Construct: strText = "Construct"; break;
+		case MID_FluffBaby: strText = "Puff"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

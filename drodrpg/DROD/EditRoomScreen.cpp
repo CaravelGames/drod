@@ -1975,6 +1975,7 @@ const
 				return MenuDisplayTiles[wObjectNo];
 			case T_BRAIN: return GetTileImageForMonsterType(M_BRAIN, NO_ORIENTATION, 0);
 			case T_SKIPPERNEST: return GetTileImageForMonsterType(M_SKIPPERNEST, NO_ORIENTATION, 0);
+			case T_FLUFFBABY: return GetTileImageForMonsterType(M_FLUFFBABY, NO_ORIENTATION, 0);
 			case T_ROCKGIANT:
 			{
 				//Generate 2x2 RockGiant image for this orientation.

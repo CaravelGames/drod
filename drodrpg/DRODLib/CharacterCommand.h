@@ -31,6 +31,8 @@ enum SPEAKER
 	Speaker_Player=49,
 	Speaker_Stalwart=50,
 	Speaker_Archivist=51,
+	Speaker_Architect = 52,
+	Speaker_Patron = 53,
 
 	//Monster speakers.
 	Speaker_Halph=1,
@@ -69,8 +71,10 @@ enum SPEAKER
 	Speaker_RockGiant=44,
 	Speaker_MadEye=15,
 	Speaker_GoblinKing=8,
+	Speaker_Construct = 54,
+	Speaker_FluffBaby = 55,
 
-	Speaker_Count=52
+	Speaker_Count=56
 };
 
 //Flags bits.
