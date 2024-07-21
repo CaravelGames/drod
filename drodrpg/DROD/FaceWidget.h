@@ -65,7 +65,7 @@ enum FACE_FRAME
 	FF_Striking,
 	FF_HalphNormal,
 	FF_Stalwart,
-	FF_unused2,
+	FF_Archivist,
 	FF_unused3,
 
 	FF_Aggressive,

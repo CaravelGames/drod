@@ -152,6 +152,7 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_MUDCOORDINATOR: return Speaker_MudCoordinator;
 		case M_TARTECHNICIAN: return Speaker_TarTechnician;
 		case M_STALWART: return Speaker_Stalwart;
+		case M_ARCHIVIST: return Speaker_Archivist;
 
 		//Monster types.
 		case M_ROACH: return Speaker_Roach;
@@ -220,6 +221,7 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		case Speaker_Self: dwSpeakerTextID = MID_Self; color = "000000"; break;
 		case Speaker_Player: dwSpeakerTextID = MID_Player; color = "0000A0"; break;
 		case Speaker_Stalwart: dwSpeakerTextID = MID_Stalwart; color = "A0A080"; break;
+		case Speaker_Archivist: dwSpeakerTextID = MID_Archivist; color = "9265A5"; break;
 
 		//Monster speakers.
 		case Speaker_Halph: dwSpeakerTextID = MID_Halph; color = "804020"; break;

@@ -637,6 +637,7 @@ FACE_FRAME CFaceWidget::ResolveFaceFrame(Face *face)
 		case Speaker_Instructor:
 		case Speaker_Citizen4: eFrame = FF_Citizen4; break;
 		case Speaker_Stalwart: eFrame = FF_Stalwart; break;
+		case Speaker_Archivist: eFrame = FF_Archivist; break;
 
 		//Monster speakers.
 		case Speaker_Aumtlich: eFrame = FF_Aumtlich; break;

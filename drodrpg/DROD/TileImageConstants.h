@@ -2448,8 +2448,18 @@
 #define TI_FIRETRAP_UP3   2262
 
 #define TI_POWDER_KEG     2263
+//*****************************************************************************
+#define TI_ARCHIVIST_N    2264
+#define TI_ARCHIVIST_NE   2265
+#define TI_ARCHIVIST_E    2266
+#define TI_ARCHIVIST_SE   2267
+#define TI_ARCHIVIST_S    2268
+#define TI_ARCHIVIST_SW   2269
+#define TI_ARCHIVIST_W    2270
+#define TI_ARCHIVIST_NW   2271
+//*****************************************************************************
 
-static const UINT TI_COUNT = 2264;
+static const UINT TI_COUNT = 2272;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

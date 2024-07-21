@@ -30,6 +30,7 @@ enum SPEAKER
 	Speaker_Self=48,
 	Speaker_Player=49,
 	Speaker_Stalwart=50,
+	Speaker_Archivist=51,
 
 	//Monster speakers.
 	Speaker_Halph=1,
@@ -69,7 +70,7 @@ enum SPEAKER
 	Speaker_MadEye=15,
 	Speaker_GoblinKing=8,
 
-	Speaker_Count=51
+	Speaker_Count=52
 };
 
 //Flags bits.
