@@ -99,6 +99,12 @@
     <ClCompile Include="..\DROD\DamagePreviewEffect.cpp">
       <Filter>DRODIncludes</Filter>
     </ClCompile>
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\EquipmentDescription.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OptionList.h">

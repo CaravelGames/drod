@@ -1293,6 +1293,26 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMusicListBox->AddItem(SONGID_SEASIDE, g_pTheDB->GetMessageText(MID_MusicSeaside));
 	this->pMusicListBox->AddItem(SONGID_SERPENTS, g_pTheDB->GetMessageText(MID_MusicSerpents));
 	this->pMusicListBox->AddItem(SONGID_SLAYER, g_pTheDB->GetMessageText(MID_MusicSlayer));
+	this->pMusicListBox->AddItem(SONGID_PIRATES, g_pTheDB->GetMessageText(MID_MusicPirates));
+	this->pMusicListBox->AddItem(SONGID_GOBLINKING, g_pTheDB->GetMessageText(MID_MusicGoblinKing));
+	this->pMusicListBox->AddItem(SONGID_BIGSERPENT, g_pTheDB->GetMessageText(MID_MusicBigSerpent));
+	this->pMusicListBox->AddItem(SONGID_TAR, g_pTheDB->GetMessageText(MID_MusicTar));
+	this->pMusicListBox->AddItem(SONGID_PUZZLE, g_pTheDB->GetMessageText(MID_MusicPuzzle));
+	this->pMusicListBox->AddItem(SONGID_SECRETAREA, g_pTheDB->GetMessageText(MID_MusicSecretArea));
+	this->pMusicListBox->AddItem(SONGID_SMALLERPLANS, g_pTheDB->GetMessageText(MID_MusicSmallerPlans));
+	this->pMusicListBox->AddItem(SONGID_GEOMETRY, g_pTheDB->GetMessageText(MID_MusicGeometry));
+	this->pMusicListBox->AddItem(SONGID_SLIPSTAIR, g_pTheDB->GetMessageText(MID_MusicSlipStair));
+	this->pMusicListBox->AddItem(SONGID_SYMPATHETIC, g_pTheDB->GetMessageText(MID_MusicSympathetic));
+	this->pMusicListBox->AddItem(SONGID_ASCENDANT, g_pTheDB->GetMessageText(MID_MusicAscendant));
+	this->pMusicListBox->AddItem(SONGID_ROACHESRUN, g_pTheDB->GetMessageText(MID_MusicRoachesRun));
+	this->pMusicListBox->AddItem(SONGID_NEWIDEA, g_pTheDB->GetMessageText(MID_MusicNewIdea));
+	this->pMusicListBox->AddItem(SONGID_WALTZ, g_pTheDB->GetMessageText(MID_MusicWaltz));
+	this->pMusicListBox->AddItem(SONGID_SWINGHALLS, g_pTheDB->GetMessageText(MID_MusicSwingHalls));
+	this->pMusicListBox->AddItem(SONGID_AMBWINDY, g_pTheDB->GetMessageText(MID_MusicAmbWindy));
+	this->pMusicListBox->AddItem(SONGID_AMBBEACH, g_pTheDB->GetMessageText(MID_MusicAmbBeach));
+	this->pMusicListBox->AddItem(SONGID_AMBFOREST, g_pTheDB->GetMessageText(MID_MusicAmbForest));
+	this->pMusicListBox->AddItem(SONGID_AMBDRIPS, g_pTheDB->GetMessageText(MID_MusicAmbDrips));
+	this->pMusicListBox->AddItem(SONGID_AMBROACHES, g_pTheDB->GetMessageText(MID_MusicAmbRoaches));	
 	this->pMusicListBox->SetAllowFiltering(true);
 
 	CFiles f;

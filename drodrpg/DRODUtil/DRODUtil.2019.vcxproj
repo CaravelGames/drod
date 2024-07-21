@@ -472,7 +472,9 @@
     <ClCompile Include="..\DROD\DamagePreviewEffect.cpp" />
     <ClCompile Include="..\Drod\DrodBitmapManager.cpp" />
     <ClCompile Include="..\Drod\EditRoomWidget.cpp" />
+    <ClCompile Include="..\DROD\EquipmentDescription.cpp" />
     <ClCompile Include="..\Drod\FaceWidget.cpp" />
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp" />
     <ClCompile Include="..\Drod\Light.cpp" />
     <ClCompile Include="..\Drod\MapWidget.cpp" />
     <ClCompile Include="..\Drod\ParticleExplosionEffect.cpp" />

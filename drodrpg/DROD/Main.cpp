@@ -1851,19 +1851,39 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Localization, INIKey::Language, "Eng");
 
 	//General music.
-	AddIfMissing(INISection::Songs, "Credits",    "credits.ogg");
-	AddIfMissing(INISection::Songs, "Exit",       "Busride.ogg");
-	AddIfMissing(INISection::Songs, "Intro",      "RPGTitle.ogg");
-	AddIfMissing(INISection::Songs, "WinGame",    "endhold.ogg");
-	AddIfMissing(INISection::Songs, "Architects", "architects.ogg");
-	AddIfMissing(INISection::Songs, "Battle",     "battle.ogg");
-	AddIfMissing(INISection::Songs, "Beneath",    "beneath.ogg");
-	AddIfMissing(INISection::Songs, "Dreamer",    "dreamer.ogg");
-	AddIfMissing(INISection::Songs, "Goblins",    "goblins.ogg");
-	AddIfMissing(INISection::Songs, "Redguard",   "redguard.ogg");
-	AddIfMissing(INISection::Songs, "Seaside",    "seaside.ogg");
-	AddIfMissing(INISection::Songs, "Serpents",   "serpents.ogg");
-	AddIfMissing(INISection::Songs, "Slayer",     "slayer.ogg");
+	AddIfMissing(INISection::Songs, "Credits",      "credits.ogg");
+	AddIfMissing(INISection::Songs, "Exit",         "Busride.ogg");
+	AddIfMissing(INISection::Songs, "Intro",        "RPGTitle.ogg");
+	AddIfMissing(INISection::Songs, "WinGame",      "endhold.ogg");
+	AddIfMissing(INISection::Songs, "Architects",   "architects.ogg");
+	AddIfMissing(INISection::Songs, "Battle",       "battle.ogg");
+	AddIfMissing(INISection::Songs, "Beneath",      "beneath.ogg");
+	AddIfMissing(INISection::Songs, "Dreamer",      "dreamer.ogg");
+	AddIfMissing(INISection::Songs, "Goblins",      "goblins.ogg");
+	AddIfMissing(INISection::Songs, "Redguard",     "redguard.ogg");
+	AddIfMissing(INISection::Songs, "Seaside",      "seaside.ogg");
+	AddIfMissing(INISection::Songs, "Serpents",     "serpents.ogg");
+	AddIfMissing(INISection::Songs, "Slayer",       "slayer.ogg");
+	AddIfMissing(INISection::Songs, "Pirates",      "pirates.ogg");
+	AddIfMissing(INISection::Songs, "GoblinKing",   "goblinking.ogg");
+	AddIfMissing(INISection::Songs, "BigSerpent",   "bigserpent.ogg");
+	AddIfMissing(INISection::Songs, "Tar",          "tar.ogg");
+	AddIfMissing(INISection::Songs, "Puzzle",       "puzzle.ogg");
+	AddIfMissing(INISection::Songs, "SecretArea",   "secretarea.ogg");
+	AddIfMissing(INISection::Songs, "SmallerPlans", "smallerplans.ogg");
+	AddIfMissing(INISection::Songs, "Geometry",     "geometry.ogg");
+	AddIfMissing(INISection::Songs, "SlipStair",    "slipstair.ogg");
+	AddIfMissing(INISection::Songs, "Sympathetic",  "sympathetic.ogg");
+	AddIfMissing(INISection::Songs, "Ascendant",    "ascendant.ogg");
+	AddIfMissing(INISection::Songs, "RoachesRun",   "roachesrun.ogg");
+	AddIfMissing(INISection::Songs, "NewIdea",      "newidea.ogg");
+	AddIfMissing(INISection::Songs, "Waltz",        "waltz.ogg");
+	AddIfMissing(INISection::Songs, "SwingHalls",   "swinghalls.ogg");
+	AddIfMissing(INISection::Songs, "AmbWindy",     "amb-windy.ogg");
+	AddIfMissing(INISection::Songs, "AmbBeach",     "amb-beach.ogg");
+	AddIfMissing(INISection::Songs, "AmbForest",    "amb-forest.ogg");
+	AddIfMissing(INISection::Songs, "AmbDrips",     "amb-drips.ogg");
+	AddIfMissing(INISection::Songs, "AmbRoaches",   "amb-roaches.ogg");
 
 	//Style-specific music.
 	AddIfMissing(INISection::Songs, "Deep SpacesExit", "Devious.ogg");
