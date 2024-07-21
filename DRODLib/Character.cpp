@@ -4705,9 +4705,9 @@ bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 			tileCheck = bIsCrumblyWall;
 		}
 		break;
-		case ScriptFlag::IG_Solid: {
+		case ScriptFlag::IG_AnyWall: {
 			layer = LAYER_OPAQUE;
-			tileCheck = bIsSolidOTile;
+			tileCheck = bIsAnyWall;
 		}
 		break;
 		case ScriptFlag::IG_Pit: {
@@ -5590,6 +5590,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForNotBuildType:
 		{
 			return !IsBuildMarkerTypeAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForItemGroup:
+		{
+			return IsTileGroupAt(command);
 		}
 		default:
 		{

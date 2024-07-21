@@ -86,6 +86,7 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 		case CC_WaitForBuilding:
 		case CC_WaitForBuildType:
 		case CC_WaitForNotBuildType:
+		case CC_WaitForItemGroup:
 			return true;
 		default:
 			return false;

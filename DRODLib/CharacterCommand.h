@@ -235,7 +235,7 @@ namespace ScriptFlag
 		IG_PlainFloor = 0, //Plain floor tiles
 		IG_Wall = 1, //All non-breakable walls
 		IG_BreakableWall = 2, //Crumbly and secret walls
-		IG_Solid = 3, //All types of wall and closed doors
+		IG_AnyWall = 3, //All types of wall and closed doors
 		IG_Pit = 4, //Both types of pit
 		IG_Water = 5, //All types of water
 		IG_Stairs = 6, //Both types of staircase
