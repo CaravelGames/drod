@@ -66,7 +66,7 @@ enum FACE_FRAME
 	FF_HalphNormal,
 	FF_Stalwart,
 	FF_Archivist,
-	FF_unused3,
+	FF_Architect,
 
 	FF_Aggressive,
 	FF_Aggressive_Blinking,
@@ -95,10 +95,18 @@ enum FACE_FRAME
 	FF_Talking,
 	FF_Talking_Blinking,
 	FF_dontuse,
-	FF_None,
+	FF_Patron,
 	FF_GoblinKing,
 	FF_MudCoord,
 	FF_TarTech,
+
+	FF_Brain,
+	FF_Construct,
+	FF_Unused,
+	FF_Unused2,
+	FF_Unused3,
+	FF_Unused4,
+	FF_None,
 
 	FF_Roach,
 	FF_QRoach,
@@ -106,28 +114,28 @@ enum FACE_FRAME
 	FF_WWing,
 	FF_Eye,
 	FF_MadEye,
-	FF_Brain,
-
 	FF_TarMother,
+
 	FF_TarBaby,
 	FF_MudMother,
 	FF_MudBaby,
 	FF_GelMother,
 	FF_GelBaby,
 	FF_Seep,
-
 	FF_Spider,
+
 	FF_WaterSkipper,
 	FF_SkipperNest,
 	FF_Fegundo,
 	FF_FegundoAshes,
 	FF_Mimic,
 	FF_Decoy,
-
 	FF_Wubba,
+	
 	FF_Serpent,
 	FF_SerpentG,
 	FF_SerpentB,
+	FF_FluffBaby,
 	FF_Default
 };
 

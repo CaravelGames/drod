@@ -358,7 +358,9 @@ static const UINT M_OFFSET = TILE_COUNT;
 #define T_ROCKGIANT  (M_ROCKGIANT+M_OFFSET)
 #define T_MADEYE     (M_MADEYE+M_OFFSET)
 #define T_GOBLINKING (M_GOBLINKING+M_OFFSET)
-#define MONSTER_COUNT      (38)  //Number of monsters in above list.
+#define T_CONSTRUCT  (M_CONSTRUCT+M_OFFSET)
+#define T_FLUFFBABY  (M_FLUFFBABY+M_OFFSET)
+#define MONSTER_COUNT      (40)  //Number of monsters in above list.
 
 #define TOTAL_TILE_COUNT      (TILE_COUNT+MONSTER_COUNT) //Number of all tile constants.
 static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTAL_TILE_COUNT;}
@@ -577,6 +579,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_MONSTER, //M_ROCKGIANT     +35
 	LAYER_MONSTER, //M_MADEYE        +36
 	LAYER_MONSTER, //M_GOBLINKING    +37
+	LAYER_MONSTER, //M_CONSTRUCT     +38
+	LAYER_MONSTER, //M_FLUFFBABY     +39
 
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
@@ -744,6 +748,8 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Splitter,     //M_ROCKGIANT     +35
 	MID_MadEye,       //M_MADEYE        +36
 	MID_GoblinKing,   //M_GOBLINKING    +37
+	MID_Construct,    //M_GOBLINKING    +38
+	MID_FluffBaby,    //M_FLUFFBABY     +39
 
 	MID_Swordsman,    //T_SWORDSMAN     TOTAL+0
 	0,                //T_NOMONSTER     TOTAL+1

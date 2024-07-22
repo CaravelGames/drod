@@ -106,7 +106,7 @@ static inline bool bIsHuman(const UINT mt) {
 		case M_CITIZEN: case M_CITIZEN1: case M_CITIZEN2: case M_CITIZEN3: case M_CITIZEN4:
 		case M_INSTRUCTOR: case M_NEGOTIATOR:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-		case M_ARCHIVIST:
+		case M_ARCHIVIST: case M_ARCHITECT: case M_PATRON:
 			return true;
 		default:
 			return false;
@@ -116,7 +116,7 @@ static inline bool bIsHuman(const UINT mt) {
 static inline bool bIsEntityFlying(const UINT mt) {
 	switch (mt)
 	{
-		case M_WWING: case M_FEGUNDO:
+	case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
 			return true;
 		default:
 			return false;
@@ -138,7 +138,7 @@ static inline bool bMonsterHasDirection(const UINT mt) {
 		case M_SKIPPERNEST:
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER:
 		case M_SERPENT: case M_SERPENTB: case M_SERPENTG:
-		case M_WUBBA:
+		case M_WUBBA: case M_FLUFFBABY:
 			return false;
 		default:
 			return true;

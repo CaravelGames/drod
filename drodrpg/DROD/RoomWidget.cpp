@@ -121,7 +121,7 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,  64},  //pirate
 	{160, 160, 160},  //roach
 	{192, 192, 192},  //roach queen
-	{160, 160, 160},	//roach egg
+	{160, 160, 160},  //roach egg
 	{128, 128, 128},  //wwing
 	{255, 255, 255},  //evil eye
 	{255,  96,  96},  //red serpent
@@ -152,7 +152,11 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255, 255},  //self (unused)
 	{255, 255, 255},  //player (unused)
 	{255, 255, 128},  //stalwart
-	{146, 101, 165}   //archivist
+	{146, 101, 165},  //archivist
+	{224, 224,  64},  //architect
+	{ 52, 135, 168},  //patron
+	{218, 184, 137},  //construct
+	{255, 255, 255}   //fluff baby
 };
 
 //Light resolution.
@@ -2235,6 +2239,8 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				case M_CITIZEN4: eMID = MID_Citizen4; break;
 				case M_STALWART: eMID = MID_Stalwart; break;
 				case M_ARCHIVIST: eMID = MID_Archivist; break;
+				case M_ARCHITECT: eMID = MID_Architect; break;
+				case M_PATRON: eMID = MID_Patron; break;
 				default: ASSERT(!"Unrecognized character"); break;
 			}
 			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
@@ -7432,7 +7438,7 @@ void CRoomWidget::DrawPlayer(
 	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return; //Don't show anything if player is not being shown.
-		case M_BRAIN: case M_SKIPPERNEST: wDisplayO = NO_ORIENTATION; break;
+		case M_BRAIN: case M_SKIPPERNEST: case M_FLUFFBABY: wDisplayO = NO_ORIENTATION; break;
 		default: wDisplayO = swordsman.wO; break;
 	}
 
@@ -7598,7 +7604,7 @@ const
 	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return false; //Don't show anything if player is not being shown.
-		case M_BRAIN: case M_SKIPPERNEST: wO = NO_ORIENTATION; break;
+		case M_BRAIN: case M_SKIPPERNEST: case M_FLUFFBABY: wO = NO_ORIENTATION; break;
 		default: wO = swordsman.wO; break;
 	}
 	ASSERT(IsValidOrientation(wO));
@@ -7686,7 +7692,7 @@ void CRoomWidget::DrawCharacter(
 	ASSERT(wIdentity < MONSTER_COUNT ||
 			(wIdentity >= CHARACTER_FIRST && wIdentity < CHARACTER_TYPES) ||
 			wIdentity == M_NONE);
-	const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST ?
+	const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST || wIdentity == M_FLUFFBABY ?
 			NO_ORIENTATION : pCharacter->wO;
 
 	//If a sword-wielding character is swordless, try to get its swordless frame.

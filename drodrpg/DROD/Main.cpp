@@ -1919,6 +1919,12 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "CitizenDie", "C_die1.ogg;C_die2.ogg");
 	AddIfMissing(INISection::Waves, "CitizenOof", "C_oof1.ogg;C_oof2.ogg");
 	AddIfMissing(INISection::Waves, "CitizenScared", "C_scared1.ogg;C_scared2.ogg");
+	AddIfMissing(INISection::Waves, "ConstructDie", "construct_die1.ogg;construct_die2.ogg;construct_die3.ogg;construct_die4.ogg;construct_die5.ogg;construct_die6.ogg");
+	AddIfMissing(INISection::Waves, "ConstructOof", "construct_oof1.ogg;construct_oof2.ogg;construct_oof3.ogg");
+	AddIfMissing(INISection::Waves, "ConstructScared", "construct_scared1.ogg;construct_scared2.ogg");
+	AddIfMissing(INISection::Waves, "EngineerDie", "eng_die1.ogg;eng_die2.ogg;eng_die3.ogg");
+	AddIfMissing(INISection::Waves, "EngineerOof", "eng_oof1.ogg;eng_oof2.ogg");
+	AddIfMissing(INISection::Waves, "EngineerScared", "eng_scared1.ogg;eng_scared2.ogg;eng_scared3.ogg;eng_scared4.ogg");
 	AddIfMissing(INISection::Waves, "GoblinDie", "G_die1.ogg;G_die2.ogg");
 	AddIfMissing(INISection::Waves, "GoblinOof", "G_oof1.ogg;G_oof2.ogg");
 	AddIfMissing(INISection::Waves, "GoblinScared", "G_scared1.ogg;G_scared2.ogg");

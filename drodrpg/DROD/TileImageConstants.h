@@ -2458,8 +2458,51 @@
 #define TI_ARCHIVIST_W    2270
 #define TI_ARCHIVIST_NW   2271
 //*****************************************************************************
+#define TI_CONSTRUCT_N    2272
+#define TI_CONSTRUCT_NE   2273
+#define TI_CONSTRUCT_E    2274
+#define TI_CONSTRUCT_SE   2275
+#define TI_CONSTRUCT_S    2276
+#define TI_CONSTRUCT_SW   2277
+#define TI_CONSTRUCT_W    2278
+#define TI_CONSTRUCT_NW   2279
+#define TI_CONSTRUCT_AN   2280
+#define TI_CONSTRUCT_ANE  2281
+#define TI_CONSTRUCT_AE   2282
+#define TI_CONSTRUCT_ASE  2283
+#define TI_CONSTRUCT_AS   2284
+#define TI_CONSTRUCT_ASW  2285
+#define TI_CONSTRUCT_AW   2286
+#define TI_CONSTRUCT_ANW  2287
+//*****************************************************************************
+#define TI_ARCHITECT_N    2288
+#define TI_ARCHITECT_NE   2289
+#define TI_ARCHITECT_E    2290
+#define TI_ARCHITECT_SE   2291
+#define TI_ARCHITECT_S    2292
+#define TI_ARCHITECT_SW   2293
+#define TI_ARCHITECT_W    2294
+#define TI_ARCHITECT_NW   2295
+//*****************************************************************************
+#define TI_FLUFFBABY      2296
+#define TI_FLUFFBABY_A    2297
+#define TI_FLUFF_EXP1     2298
+#define TI_FLUFF_EXP2     2299
+#define TI_FLUFF_EXP3     2300
+#define TI_FLUFF_EXP4     2301
+#define TI_FLUFF_EXP5     2302
+#define TI_FLUFF_EXP6     2303
+//*****************************************************************************
+#define TI_PATRON_N       2304
+#define TI_PATRON_NE      2305
+#define TI_PATRON_E       2306
+#define TI_PATRON_SE      2307
+#define TI_PATRON_S       2308
+#define TI_PATRON_SW      2309
+#define TI_PATRON_W       2310
+#define TI_PATRON_NW      2311
 
-static const UINT TI_COUNT = 2272;
+static const UINT TI_COUNT = 2312;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

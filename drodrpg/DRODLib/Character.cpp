@@ -5184,7 +5184,7 @@ void CCharacter::SetDefaultMovementType()
 		break;
 
 		//Flying types may also move over pits.
-		case M_WWING: case M_FEGUNDO:
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
 			eMovement = MovementType::AIR;
 		break;
 

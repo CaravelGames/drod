@@ -76,7 +76,7 @@ UINT CSwordsman::CalcDamage(int damageVal) const
 bool CSwordsman::IsFlying() const
 //Returns: whether the player type allows flying
 {
-	return this->wAppearance == M_WWING || this->wAppearance == M_FEGUNDO;
+	return this->wAppearance == M_WWING || this->wAppearance == M_FEGUNDO || this->wAppearance == M_FLUFFBABY;
 }
 
 //*****************************************************************************

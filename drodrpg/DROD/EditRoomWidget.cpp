@@ -785,7 +785,8 @@ const
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
 					  wTileNo[1] == T_TOKEN || wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
-					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO || wTileNo[2] == M_CHARACTER);
+					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
+					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_FLUFFBABY);
 		case T_WATER:
 			//Water -- flying+water monsters can be on it.
 			if (bIsWater(wTileNo[0]))
@@ -794,7 +795,8 @@ const
 						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN ||
 						wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
-					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER);// || wTileNo[2] == M_SKIPPERNEST);
+					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER ||
+				     wTileNo[2] == M_FLUFFBABY);// || wTileNo[2] == M_SKIPPERNEST);
 		case T_STAIRS:
 		case T_STAIRS_UP:
 			//Don't allow stair juxtaposition w/ t-layer items (except tar and obstacles).
@@ -1322,7 +1324,7 @@ void CEditRoomWidget::DrawCharacter(
 		ASSERT(wIdentity < MONSTER_COUNT ||
 				(wIdentity >= CHARACTER_FIRST && wIdentity < CHARACTER_TYPES) ||
 				wIdentity == M_NONE);
-		const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST ?
+		const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST || wIdentity == M_FLUFFBABY ?
 				NO_ORIENTATION : pCharacter->wO;
 
 		//If a sword-wielding character is swordless, try to get its swordless frame.

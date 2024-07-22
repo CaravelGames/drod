@@ -395,6 +395,7 @@
     <ClCompile Include="Citizen.cpp" />
     <ClCompile Include="Clone.cpp" />
     <ClCompile Include="Combat.cpp" />
+    <ClCompile Include="Construct.cpp" />
     <ClCompile Include="CueEvents.cpp" />
     <ClCompile Include="CurrentGame.cpp" />
     <ClCompile Include="Db.cpp" />
@@ -416,6 +417,7 @@
     <ClCompile Include="Decoy.cpp" />
     <ClCompile Include="EntranceData.cpp" />
     <ClCompile Include="EvilEye.cpp" />
+    <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="Goblin.cpp" />
     <ClCompile Include="GreenSerpent.cpp" />
@@ -469,6 +471,7 @@
     <ClInclude Include="Citizen.h" />
     <ClInclude Include="Clone.h" />
     <ClInclude Include="Combat.h" />
+    <ClInclude Include="Construct.h" />
     <ClInclude Include="CueEvents.h" />
     <ClInclude Include="CurrentGame.h" />
     <ClInclude Include="Db.h" />
@@ -492,6 +495,7 @@
     <ClInclude Include="Decoy.h" />
     <ClInclude Include="EntranceData.h" />
     <ClInclude Include="EvilEye.h" />
+    <ClInclude Include="FluffBaby.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Goblin.h" />
     <ClInclude Include="GreenSerpent.h" />

@@ -153,6 +153,8 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_TARTECHNICIAN: return Speaker_TarTechnician;
 		case M_STALWART: return Speaker_Stalwart;
 		case M_ARCHIVIST: return Speaker_Archivist;
+		case M_ARCHITECT: return Speaker_Architect;
+		case M_PATRON: return Speaker_Patron;
 
 		//Monster types.
 		case M_ROACH: return Speaker_Roach;
@@ -192,6 +194,8 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_GELBABY: return Speaker_GelBaby;
 		case M_CITIZEN: return Speaker_Citizen;
 		case M_ROCKGIANT: return Speaker_RockGiant;
+		case M_CONSTRUCT: return Speaker_Construct;
+		case M_FLUFFBABY: return Speaker_FluffBaby;
 
 		default: return Speaker_None;
 	}
@@ -222,6 +226,8 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		case Speaker_Player: dwSpeakerTextID = MID_Player; color = "0000A0"; break;
 		case Speaker_Stalwart: dwSpeakerTextID = MID_Stalwart; color = "A0A080"; break;
 		case Speaker_Archivist: dwSpeakerTextID = MID_Archivist; color = "9265A5"; break;
+		case Speaker_Architect: dwSpeakerTextID = MID_Architect; color = "E0E040"; break;
+		case Speaker_Patron: dwSpeakerTextID = MID_Patron; color = "3487A8"; break;
 
 		//Monster speakers.
 		case Speaker_Halph: dwSpeakerTextID = MID_Halph; color = "804020"; break;
@@ -260,6 +266,9 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		case Speaker_GelBaby: dwSpeakerTextID = MID_GelBaby; color = "00FF00"; break;
 		case Speaker_Citizen: dwSpeakerTextID = MID_Citizen; color = "A0A000"; break;
 		case Speaker_RockGiant: dwSpeakerTextID = MID_Splitter; color = "800000"; break;
+		case Speaker_Construct: dwSpeakerTextID = MID_Construct; color = "DAB889"; break;
+		case Speaker_FluffBaby: dwSpeakerTextID = MID_FluffBaby; color = "000000"; break;
+		
 		default: dwSpeakerTextID = MID_None; color = "FF0000"; break;
 	}
 	return dwSpeakerTextID;

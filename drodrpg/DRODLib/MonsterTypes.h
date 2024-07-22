@@ -46,6 +46,10 @@ enum MONSTERTYPE {
 	M_MADEYE, //moved from pseudo type for RPG
 	M_GOBLINKING, //moved from pseudotype for RPG
 
+	//5.0 monsters
+	M_CONSTRUCT,
+	M_FLUFFBABY,
+
 	MONSTER_TYPES, //end of real monster types
 
 	//Character pseudo-types (speakers)
@@ -62,6 +66,8 @@ enum MONSTERTYPE {
 	M_BEETHRO_IN_DISGUISE,
 	M_STALWART,
 	M_ARCHIVIST,
+	M_ARCHITECT, // engineer
+	M_PATRON,
 
 	CHARACTER_TYPES,
 

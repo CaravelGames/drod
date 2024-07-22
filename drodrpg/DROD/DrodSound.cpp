@@ -97,6 +97,12 @@ const
 		case SEID_CIT_DIE:   strKeyName="CitizenDie"; break;
 		case SEID_CIT_OOF:   strKeyName="CitizenOof"; break;
 		case SEID_CIT_SCARED:   strKeyName="CitizenScared"; break;
+		case SEID_CONSTRUCT_DIE:    strKeyName = "ConstructDie"; break;
+		case SEID_CONSTRUCT_OOF:    strKeyName = "ConstructOof"; break;
+		case SEID_CONSTRUCT_SCARED: strKeyName = "ConstructScared"; break;
+		case SEID_ENGINEER_DIE:    strKeyName = "EngineerDie"; break;
+		case SEID_ENGINEER_OOF:    strKeyName = "EngineerOof"; break;
+		case SEID_ENGINEER_SCARED: strKeyName = "EngineerScared"; break;
 		case SEID_GOB_DIE:    strKeyName="GoblinDie"; break;
 		case SEID_GOB_OOF:   strKeyName="GoblinOof"; break;
 		case SEID_GOB_SCARED:   strKeyName="GoblinScared"; break;
@@ -296,6 +302,12 @@ bool CDrodSound::LoadSoundEffects()
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_DIE, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_SCARED, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_DIE, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_OOF, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_SCARED, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_DIE, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_OOF, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_SCARED, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_DIE, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_SCARED, true );

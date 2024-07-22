@@ -2395,7 +2395,7 @@ const
 			if (!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo) || bIsDiggableBlock(wTileNo)))
 				return false;
 		break;
-		case M_WWING: case M_FEGUNDO:
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
 			if (!(bIsPit(wTileNo) || bIsWater(wTileNo) ||
 					bIsFloor(wTileNo) || bIsOpenDoor(wTileNo) ||
 					bIsStairs(wTileNo) || bIsTunnel(wTileNo) || bIsPlatform(wTileNo) ||
@@ -4384,8 +4384,8 @@ bool CDbRoom::AddFallingMonsterEvent(
 	if (bIsPit(wOSquare)) {
 		UINT id = pMonster->GetResolvedIdentity();
 
-		//Brain and nest characters can have an orientation, which we don't want
-		UINT wO = (id == M_BRAIN || id == M_SKIPPERNEST) ? NO_ORIENTATION : pMonster->wO;
+		//Brain, nest and puff characters can have an orientation, which we don't want
+		UINT wO = (id == M_BRAIN || id == M_SKIPPERNEST || id == M_FLUFFBABY) ? NO_ORIENTATION : pMonster->wO;
 
 		//Use custom monster type for characters.
 		if (pMonster->wType == M_CHARACTER)
@@ -5047,7 +5047,7 @@ const
 				return false;
 		break;
 		case T_PIT: case T_PIT_IMAGE:
-			if (!(wAppearance == M_WWING || wAppearance == M_FEGUNDO))
+			if (!(wAppearance == M_WWING || wAppearance == M_FEGUNDO || wAppearance == M_FLUFFBABY))
 				return false;
 		break;
 		case T_WATER:
@@ -8692,6 +8692,7 @@ int CDbRoom::DangerLevel() const
 		case M_TARBABY: case M_MUDBABY: case M_GELBABY:
 		case M_WATERSKIPPER: case M_SKIPPERNEST:
 		case M_AUMTLICH: case M_FEGUNDO: case M_FEGUNDOASHES:
+		case M_FLUFFBABY:
 			++nDanger; break;
 
 		case M_GOBLIN: case M_GUARD: case M_ROCKGIANT: nDanger += 5; break;
@@ -8702,6 +8703,10 @@ int CDbRoom::DangerLevel() const
 		case M_ROCKGOLEM:
 //			if (pMonster->IsAggressive())
 				++nDanger;
+			break;
+		case M_CONSTRUCT:
+//			if (pMonster->IsAggressive() || !this->pCurrentGame->IsCurrentRoomPendingExit())
+				nDanger += 3;
 			break;
 
 		case M_CITIZEN:

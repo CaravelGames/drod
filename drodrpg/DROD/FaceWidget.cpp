@@ -638,15 +638,19 @@ FACE_FRAME CFaceWidget::ResolveFaceFrame(Face *face)
 		case Speaker_Citizen4: eFrame = FF_Citizen4; break;
 		case Speaker_Stalwart: eFrame = FF_Stalwart; break;
 		case Speaker_Archivist: eFrame = FF_Archivist; break;
+		case Speaker_Architect: eFrame = FF_Architect; break;
+		case Speaker_Patron: eFrame = FF_Patron; break;
 
 		//Monster speakers.
 		case Speaker_Aumtlich: eFrame = FF_Aumtlich; break;
 		case Speaker_Brain: eFrame = FF_Brain; break;
 		case Speaker_Citizen: eFrame = FF_Citizen; break;
+		case Speaker_Construct: eFrame = FF_Construct; break;
 		case Speaker_Decoy: eFrame = FF_Decoy; break;
 		case Speaker_Eye: eFrame = FF_Eye; break;
 		case Speaker_Fegundo: eFrame = FF_Fegundo; break;
 		case Speaker_FegundoAshes: eFrame = FF_FegundoAshes; break;
+		case Speaker_FluffBaby: eFrame = FF_FluffBaby; break;
 		case Speaker_GelBaby: eFrame = FF_GelBaby; break;
 		case Speaker_GelMother: eFrame = FF_GelMother; break;
 		case Speaker_GoblinKing: eFrame = FF_GoblinKing; break;
