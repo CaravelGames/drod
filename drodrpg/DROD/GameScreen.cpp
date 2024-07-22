@@ -43,6 +43,7 @@
 #include "ExplosionEffect.h"
 #include "FiretrapEffect.h"
 #include "IceMeltEffect.h"
+#include "PuffExplosionEffect.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
 #include "SteamEffect.h"
@@ -1481,6 +1482,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 			case VET_EQUIP: soundID = SEID_SWORDS; break;
 			case VET_ICEMELT: soundID = SEID_ICEMELT; break;
 			case VET_FIRETRAP: soundID = SEID_FIRETRAP_START; break;
+			case VET_PUFFEXPLOSION: soundID = SEID_PUFF_EXPLOSION; break;
 			default: break;
 		}
 
@@ -1584,6 +1586,10 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 		case VET_FIRETRAP:
 			pRoomWidget->AddMLayerEffect(
 				new CFiretrapEffect(pRoomWidget, coord));
+		break;
+		case VET_PUFFEXPLOSION:
+			pRoomWidget->AddMLayerEffect(
+				new CPuffExplosionEffect(pRoomWidget, coord));
 		break;
 		default: break; //do nothing
 	}

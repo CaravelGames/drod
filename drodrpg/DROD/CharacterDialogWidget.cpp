@@ -1439,6 +1439,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_STRONGHIT, g_pTheDB->GetMessageText(MID_StrongHitEffect));
 	this->pVisualEffectsListBox->AddItem(VET_EQUIP, g_pTheDB->GetMessageText(MID_EquipEffect));
 	this->pVisualEffectsListBox->AddItem(VET_ICEMELT, g_pTheDB->GetMessageText(MID_IceMeltEffect));
+	this->pVisualEffectsListBox->AddItem(VET_PUFFEXPLOSION, g_pTheDB->GetMessageText(MID_PuffExplosionEffect));
 	this->pVisualEffectsListBox->SelectLine(0);
 	this->pVisualEffectsListBox->SetAllowFiltering(true);
 

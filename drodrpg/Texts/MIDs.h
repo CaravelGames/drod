@@ -1580,6 +1580,7 @@ enum MID_CONSTANT {
   MID_FiretrapActivated = 1892,
   MID_CrateDestroyed = 1895,
   MID_FiretrapHit = 1896,
+  MID_PuffExplosionEffect = 1934,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
