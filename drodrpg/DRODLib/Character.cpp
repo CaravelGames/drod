@@ -3336,7 +3336,9 @@ Finish:
 		if (this->bAttackInFront && !this->bAttacked)
 		{
 			this->bAttacked = true;
-			this->bAttacked = AttackPlayerWhenInFront(CueEvents);
+			if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE))
+				CueEvents.Add(CID_EvilEyeWoke);
+				
 		}
 		if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
 		{
