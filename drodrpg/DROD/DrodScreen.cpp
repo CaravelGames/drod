@@ -201,6 +201,11 @@ void CDrodScreen::AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 				new CBloodEffect(pRoomWidget, coord, 30,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 		break;
+		case M_FLUFFBABY:
+			pRoomWidget->AddTLayerEffect(
+				new CFluffStabEffect(pRoomWidget, coord,
+					GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+		break;
 		default:
 			pRoomWidget->AddTLayerEffect(
 				new CBloodEffect(pRoomWidget, coord, 16,
@@ -472,7 +477,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			else
 				pRoomWidget->AddTLayerEffect(
 					new CFluffStabEffect(pRoomWidget, *pCoord,
-						GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 2)));
+						GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 4)));
 			break;
 		}
 	}

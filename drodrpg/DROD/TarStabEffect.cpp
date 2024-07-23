@@ -30,8 +30,6 @@
 #include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Assert.h>
 
-const UINT FLUFF_PARTICLES = 15;
-
 //********************************************************************************
 CTarStabEffect::CTarStabEffect(
 //Constructor.
@@ -109,8 +107,9 @@ CFluffStabEffect::CFluffStabEffect(
 	CWidget* pSetWidget,       //(in)   Should be a room widget.
 	const CMoveCoord& MoveCoord,  //(in)   Location of debris and direction of its movement.
 	const UINT wParticleMinDuration,
-	const UINT baseSpeed)
-	: CParticleExplosionEffect(pSetWidget, MoveCoord, 8, 8, 2, FLUFF_PARTICLES,
+	const UINT baseSpeed,
+	const UINT particles)  //[default=FLUFF_PARTICLES]
+	: CParticleExplosionEffect(pSetWidget, MoveCoord, 8, 8, 2, particles,
 		wParticleMinDuration, baseSpeed)
 {
 	this->bRotatingParticles = false;

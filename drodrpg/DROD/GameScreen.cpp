@@ -371,7 +371,7 @@ UINT CGameScreen::GetMonsterDisplayTile(CMonster *pMonster, const UINT x, const 
 					TI_HALPH_S, TI_SLAYER_S, TI_FEGUNDO_S, TI_UNSPECIFIED,
 					TI_GUARD_S, TI_UNSPECIFIED, TI_MUDEYE_WO, TI_MUDBABY_S,
 					TI_GELEYE_WO, TI_GELBABY_S, TI_CITIZEN_S, TI_ROCKGIANT_S,
-					TI_EYE_WS, TI_GOBLINKING_S
+					TI_EYE_WS, TI_GOBLINKING_S, TI_CONSTRUCT_S, TI_FLUFFBABY
 				};
 				val = tile[pMonster->wType];
 				//NPC special appearance.
@@ -3984,6 +3984,16 @@ void CGameScreen::AddDamageEffect(
 						GetEffectDuration(7), GetParticleSpeed(3)));
 		}
 		break;
+		case M_FLUFFBABY:
+		{
+			UINT particles = UINT(20 * fDamagePercent);
+			if (!particles)
+				particles = 1;
+			pRoomWidget->AddTLayerEffect(
+				new CFluffStabEffect(pRoomWidget, coord,
+					GetEffectDuration(7), GetParticleSpeed(4), particles));
+		}
+		break;
 		default:
 		{
 			UINT particles = UINT(16 * fDamagePercent);
@@ -4019,6 +4029,10 @@ void CGameScreen::AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord
 	{
 		case M_SLAYER: soundID = SEID_SLAYERDIE; break;
 		case M_ROCKGOLEM: case M_ROCKGIANT: soundID = SEID_BREAKWALL; break;
+		case M_FLUFFBABY:
+			pRoomWidget->AddTLayerEffect(new CPuffExplosionEffect(pRoomWidget, coord));
+			soundID = SEID_PUFF_EXPLOSION;
+			break;
 		default: soundID = SEID_SPLAT; break;
 	}
 	g_pTheSound->PlaySoundEffect(soundID, this->fPos);

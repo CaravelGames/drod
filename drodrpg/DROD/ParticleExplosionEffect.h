@@ -39,6 +39,7 @@
 #include <vector>
 
 #define PARTICLES_PER_EXPLOSION (25)
+#define FLUFF_PARTICLES (15)
 
 struct PARTICLE
 {

@@ -202,10 +202,10 @@ CMonster * CMonsterFactory::GetNewMonster(
 		return new CZombie(this->pCurrentGame);
 
 		case M_CONSTRUCT:
-		return new CConstruct();
+		return new CConstruct(this->pCurrentGame);
 
 		case M_FLUFFBABY:
-		return new CFluffBaby();
+		return new CFluffBaby(this->pCurrentGame);
 
 		default:
 			ASSERT(!"Unexpected monster type.");

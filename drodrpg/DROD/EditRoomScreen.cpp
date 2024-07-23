@@ -258,14 +258,14 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_HALPH_S},
 	{TI_WW_S},
 	{TI_EYE_S},
-	{TI_SNKT_W,/*TI_SNK_EW,*/TI_SNK_E},
+	{TI_SNK_E},
 	{TI_TAREYE_WO,TI_TAREYE_EO},
 	{TI_TARBABY_S},
 	{TI_BRAIN},
 	{TI_MIMIC_S},
 	{TI_SPIDER_S},
-	{TI_SNKT_G_W,/*TI_SNK_G_EW,*/TI_SNK_G_E},
-	{TI_SNKT_B_W,/*TI_SNK_B_EW,*/TI_SNK_B_E},
+	{TI_SNK_G_E},
+	{TI_SNK_B_E},
 	{TI_ROCK_S},
 	{TI_WATERSKIPPER_S},
 	{TI_SKIPPERNEST},
@@ -289,6 +289,8 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_ROCKGIANT_S,TI_ROCKGIANT_S1,TI_ROCKGIANT_S2,TI_ROCKGIANT_S3},
 	{TI_EYE_WS},
 	{TI_GOBLINKING_S},
+	{TI_CONSTRUCT_S},
+	{TI_FLUFFBABY},
 
 	//pseudo tiles
 	{TI_STALWART_E, TI_SWORD_YE},
@@ -459,6 +461,8 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ROCKGIANT     +35
 	0, //T_MADEYE        +36
 	0, //T_GOBLINKING    +37
+	0, //T_CONSTRUCT     +38
+	0, //T_FLUFFBABY     +39
 
 	1, //T_SWORDSMAN     TOTAL+0
 	0, //T_NOMONSTER     TOTAL+1
@@ -488,8 +492,8 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, //mist, vent
 	1, 1, //firetraps
 	1, //powder keg
-	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
-	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
+	1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
+	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1,//M+15
 	2, 1, 1 //psuedo tiles
 };
 
@@ -517,7 +521,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, //firetraps
 	1, //powder keg
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,//M+15
 	1, 1, 1 //pseudo tiles
 };
 
@@ -619,16 +623,15 @@ const UINT tLayerEntries[numTLayerEntries] = {
 	T_TAR, T_OBSTACLE, T_MIST, T_LIGHT
 };
 
-const UINT numMLayerEntries = 31;  //35
+const UINT numMLayerEntries = 33;
 const UINT mLayerEntries[numMLayerEntries] = {
 	T_BRAIN, T_ROACH, T_WWING, T_EYE, T_QROACH,
 	T_SPIDER, T_MUDBABY, T_SKIPPERNEST, T_MUDMOTHER,
-	T_CITIZEN, T_MADEYE, T_NEATHER, T_ROCKGOLEM, T_GOBLIN,
-	T_TARBABY, T_DECOY, T_MIMIC, T_CLONE, T_GUARD,
-	T_GELBABY, T_FEGUNDO, T_WATERSKIPPER, T_SEEP, T_PIRATE,
-	T_AUMTLICH, T_WUBBA, T_GOBLINKING, T_SLAYER,
-	//T_TARMOTHER, T_GELMOTHER, T_SERPENT, T_SERPENTG,
-	T_ROCKGIANT, T_SERPENTB, T_CHARACTER
+	T_CITIZEN, T_FLUFFBABY, T_MADEYE, T_NEATHER, T_ROCKGOLEM,
+	T_GOBLIN, T_TARBABY, T_DECOY, T_MIMIC, T_CLONE,
+	T_GUARD, T_GELBABY, T_FEGUNDO, T_WATERSKIPPER, T_SEEP,
+	T_PIRATE, T_CONSTRUCT, T_AUMTLICH, T_WUBBA, T_GOBLINKING,
+	T_SLAYER, T_ROCKGIANT, T_SERPENTB, T_CHARACTER
 };
 
 //Ordering of obstacle types on pop-up menu.
@@ -5413,6 +5416,7 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_STABTAR);  break;
 				case T_MIST:
 				case T_MISTVENT:
+				case T_FLUFFBABY:
 					g_pTheSound->PlaySoundEffect(SEID_PUFF_EXPLOSION); break;
 				case T_ROCKGOLEM:
 				case T_ROCKGIANT:
@@ -5618,6 +5622,7 @@ bool CEditRoomScreen::PlotObjectAt(
 		{
 		case M_BRAIN:
 		case M_SKIPPERNEST:
+		case M_FLUFFBABY:
 			pMonster->wO = NO_ORIENTATION;
 			break;
 		case M_TARMOTHER:
