@@ -271,7 +271,7 @@ void CMonster::SetOrientation(
 	ASSERT(abs((int)dyFirst) <= 1);
 	const UINT wNewO = nGetO(dxFirst, dyFirst);
 	ASSERT(IsValidOrientation(wNewO));
-	if (wNewO != NO_ORIENTATION || !HasOrientation()) //TOFIX logic is not quite right for all cases; not sure if we want to modify at this point
+	if (IsValidOrientation(wNewO) && wNewO != NO_ORIENTATION || !HasOrientation())
 		this->wO = wNewO;
 }
 

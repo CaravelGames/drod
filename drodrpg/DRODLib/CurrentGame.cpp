@@ -285,9 +285,10 @@ CMonster* CCurrentGame::AddNewEntity(
 	if (IsValidMonsterType(identity))
 	{
 		CMonster *pMonster = this->pRoom->AddNewMonster(identity, wX, wY);
-		if (pMonster->HasOrientation()) {
-			pMonster->wO = (wO != NO_ORIENTATION) ? wO : NW ; //NW = default
-		} //otherwise: leave as constructed default
+		const bool bHasOrientation = pMonster->HasOrientation();
+		pMonster->wO = bHasOrientation ? wO : NO_ORIENTATION;
+		if (bHasOrientation && pMonster->wO == NO_ORIENTATION)
+			pMonster->wO = NW; //default
 		pMonster->bIsFirstTurn = true;
 
 		//Affect tile being placed on.
