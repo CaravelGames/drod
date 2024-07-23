@@ -68,6 +68,7 @@ enum EffectType
 	EDAMAGEPREVIEW,   //hovering enemy damage display
 	EIMAGEOVERLAY,    //image overlay
 	EFIRETRAP,        //fire trap
+	EPUFFEXPLOSION,   //puff explosion
 };
 
 //*****************************************************************************
@@ -95,7 +96,8 @@ enum VisualEffectType
 	VET_STRONGHIT=18,
 	VET_EQUIP=19,
 	VET_ICEMELT=20,
-	VET_FIRETRAP=21
+	VET_FIRETRAP=21,
+	VET_PUFFEXPLOSION=22,
 };
 
 #endif //...#ifndef DRODEFFECT_H

@@ -241,6 +241,9 @@
     <ClCompile Include="FiretrapEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="PuffExplosionEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -466,6 +469,9 @@
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="FiretrapEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="PuffExplosionEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
