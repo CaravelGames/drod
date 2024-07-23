@@ -58,7 +58,8 @@ class CFluffStabEffect : public CParticleExplosionEffect
 {
 public:
 	CFluffStabEffect(CWidget* pSetWidget, const CMoveCoord& MoveCoord,
-		const UINT wParticleMinDuration, const UINT baseSpeed);
+		const UINT wParticleMinDuration, const UINT baseSpeed,
+		const UINT particles=FLUFF_PARTICLES);
 };
 
 class CFluffInWallEffect : public CParticleExplosionEffect

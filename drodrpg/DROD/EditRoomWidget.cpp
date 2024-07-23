@@ -1008,6 +1008,7 @@ const
 		case T_CITIZEN:
 		case T_SKIPPERNEST:
 		case T_HALPH: case T_SLAYER:
+		case T_CONSTRUCT:
 			//Ground movement types
 			if (bSwordsmanAt) return false;
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
@@ -1040,6 +1041,7 @@ const
 					(wTileNo[1] == T_GEL || wTileNo[1] == T_EMPTY);
 		case T_WWING:
 		case T_FEGUNDO:
+		case T_FLUFFBABY:
 			//Air movement types
 			if (bSwordsmanAt) return false;
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
