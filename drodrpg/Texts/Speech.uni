@@ -1491,3 +1491,11 @@ Ambient - Roaches
 [MID_PuffExplosionEffect]
 [eng]
 Puff destroyed
+
+[MID_EggSpawned]
+[eng]
+Roach egg spawned
+
+[MID_ConstructSplatterEffect]
+[eng]
+Construct splatter

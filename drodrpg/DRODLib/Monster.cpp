@@ -1081,6 +1081,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 		if (wType != M_REGG && !bMonsterHasDirection(wType)) {
 			m->wO = NO_ORIENTATION;
 		}
+		CueEvents.Add(CID_EggSpawned);
 	}
 }
 

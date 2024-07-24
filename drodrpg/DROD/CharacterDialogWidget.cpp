@@ -1440,6 +1440,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_EQUIP, g_pTheDB->GetMessageText(MID_EquipEffect));
 	this->pVisualEffectsListBox->AddItem(VET_ICEMELT, g_pTheDB->GetMessageText(MID_IceMeltEffect));
 	this->pVisualEffectsListBox->AddItem(VET_PUFFEXPLOSION, g_pTheDB->GetMessageText(MID_PuffExplosionEffect));
+	this->pVisualEffectsListBox->AddItem(VET_CONSTRUCTSPLAT, g_pTheDB->GetMessageText(MID_ConstructSplatterEffect));
 	this->pVisualEffectsListBox->SelectLine(0);
 	this->pVisualEffectsListBox->SetAllowFiltering(true);
 
@@ -4007,6 +4008,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_CutBriar, g_pTheDB->GetMessageText(MID_CutBriar));
 	this->pEventListBox->AddItem(CID_DrankPotion, g_pTheDB->GetMessageText(MID_DrankPotion));
 	this->pEventListBox->AddItem(CID_EvilEyeWoke, g_pTheDB->GetMessageText(MID_EvilEyeWoke));
+	this->pEventListBox->AddItem(CID_EggSpawned, g_pTheDB->GetMessageText(MID_EggSpawned));
 	this->pEventListBox->AddItem(CID_Firetrap, g_pTheDB->GetMessageText(MID_FiretrapBurning));
 	this->pEventListBox->AddItem(CID_FiretrapActivated, g_pTheDB->GetMessageText(MID_FiretrapActivated));
 	this->pEventListBox->AddItem(CID_FiretrapHit, g_pTheDB->GetMessageText(MID_FiretrapHit));

@@ -1483,6 +1483,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 			case VET_ICEMELT: soundID = SEID_ICEMELT; break;
 			case VET_FIRETRAP: soundID = SEID_FIRETRAP_START; break;
 			case VET_PUFFEXPLOSION: soundID = SEID_PUFF_EXPLOSION; break;
+			case VET_CONSTRUCTSPLAT: soundID = SEID_CONSTRUCT_SMASH; break;
 			default: break;
 		}
 
@@ -1517,6 +1518,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 				new CBloodInWallEffect(this->pRoomWidget, coord, particles));
 		break;
 		case VET_GOLEMSPLAT:
+		case VET_CONSTRUCTSPLAT:
 			this->pRoomWidget->AddTLayerEffect(
 				new CGolemDebrisEffect(this->pRoomWidget, coord, particles,
 						GetEffectDuration(7), GetParticleSpeed(3)));
@@ -3953,6 +3955,7 @@ void CGameScreen::AddDamageEffect(
 		break;
 		case M_ROCKGOLEM:
 		case M_ROCKGIANT:
+		case M_CONSTRUCT:
 		{
 			UINT particles = UINT(10 * fDamagePercent);
 			if (!particles)
@@ -4029,6 +4032,7 @@ void CGameScreen::AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord
 	{
 		case M_SLAYER: soundID = SEID_SLAYERDIE; break;
 		case M_ROCKGOLEM: case M_ROCKGIANT: soundID = SEID_BREAKWALL; break;
+		case M_CONSTRUCT: soundID = SEID_CONSTRUCT_SMASH; break;
 		case M_FLUFFBABY:
 			pRoomWidget->AddTLayerEffect(new CPuffExplosionEffect(pRoomWidget, coord));
 			soundID = SEID_PUFF_EXPLOSION;
@@ -5696,6 +5700,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	if (CueEvents.HasOccurred(CID_Tunnel))
 		g_pTheSound->PlaySoundEffect(SEID_TUNNEL);
+	if (CueEvents.HasOccurred(CID_EggSpawned))
+		PlaySoundEffect(SEID_ROACH_EGG_SPAWNED);
 
 	//2nd. Important room events.
 	if (CueEvents.HasOccurred(CID_RedGatesToggled) ||

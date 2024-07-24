@@ -1964,6 +1964,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "Button", "buttonClick.ogg");
 	AddIfMissing(INISection::Waves, "BriarBreak", "briar-break1.ogg;briar-break2.ogg");
 	AddIfMissing(INISection::Waves, "Checkpoint", "blooomp.ogg");
+	AddIfMissing(INISection::Waves, "ConstructSmash", "ConstructSmash1.ogg;ConstructSmash2.ogg");
 	AddIfMissing(INISection::Waves, "DoorOpen", "hugedoor.ogg");
 	AddIfMissing(INISection::Waves, "EvilEyeWoke", "hmm.ogg");
 	AddIfMissing(INISection::Waves, "Falling", "whoosh.ogg");
@@ -1988,6 +1989,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "PuffExplosion", "puff-explosion.ogg");
 	AddIfMissing(INISection::Waves, "Punch", "punch.ogg");
 	AddIfMissing(INISection::Waves, "Read", "read.ogg");
+	AddIfMissing(INISection::Waves, "RoachEggSpawned", "QueenSpawn_01.ogg;QueenSpawn_02.ogg;QueenSpawn_03.ogg");
 	AddIfMissing(INISection::Waves, "Secret", "SecretArea.ogg");
 	AddIfMissing(INISection::Waves, "Shatter", "shatter.ogg");
 	AddIfMissing(INISection::Waves, "Shielded", "shielded.ogg");

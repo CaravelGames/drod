@@ -98,6 +98,7 @@ enum VisualEffectType
 	VET_ICEMELT=20,
 	VET_FIRETRAP=21,
 	VET_PUFFEXPLOSION=22,
+	VET_CONSTRUCTSPLAT=23,
 };
 
 #endif //...#ifndef DRODEFFECT_H
