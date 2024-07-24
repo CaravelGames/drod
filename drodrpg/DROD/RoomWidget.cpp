@@ -6748,7 +6748,7 @@ void CRoomWidget::DrawMonster(
 			DrawDouble(DYN_CAST(const CPlayerDouble*, CMonster*, pMonster), fRaised, pDestSurface, bMoveInProgress);
 			break;
 		case M_CHARACTER:
-			DrawCharacter(DYN_CAST(CCharacter*, CMonster*, pMonster), fRaised, pDestSurface, bMoveInProgress);
+			DrawCharacter(DYN_CAST(CCharacter*, CMonster*, pMonster), fRaised, pDestSurface, bMoveInProgress, bActionIsFrozen);
 			break;
 		case M_ROCKGIANT:
 			DrawRockGiant(pMonster, fRaised, pDestSurface, bMoveInProgress);
@@ -7683,11 +7683,13 @@ void CRoomWidget::DrawCharacter(
 	CCharacter *pCharacter,    //(in)   Pointer to CCharacter monster.
 	const float fRaised,    //(in)   Draw Character raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress)
+	const bool bMoveInProgress,
+	const bool bActionIsFrozen) //(in) Whether action is currently stopped.
 {
 	if (!pCharacter->IsVisible() && !pCharacter->IsGhostImage())
 		return;
 
+	Uint8 opacity = 255;
 	const UINT wIdentity = pCharacter->GetIdentity();
 	ASSERT(wIdentity < MONSTER_COUNT ||
 			(wIdentity >= CHARACTER_FIRST && wIdentity < CHARACTER_TYPES) ||
@@ -7717,12 +7719,19 @@ void CRoomWidget::DrawCharacter(
 
 	AddJitterOffset(pCharacter->wX, pCharacter->wY, wXOffset, wYOffset);
 
-	//Characters with wall movement type are not raised
-	float fRaisedFactor = (pCharacter->eMovement == WALL) ? 0.0f : fRaised;
+	//Characters with wall movement type are not raised and are transparent
+	float fRaisedFactor = fRaised;
+	if (pCharacter->eMovement == WALL)
+	{
+		fRaisedFactor = 0.0f;
+		if (!bActionIsFrozen) //only draw transparent when play is in progress
+			opacity = this->ghostOpacity;
+	}
 
 	//Draw character.
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset,
 			bMoveInProgress || wXOffset || wYOffset, fRaisedFactor);
+	blit.nOpacity = opacity;
 	blit.nAddColor = pCharacter->getColor();
 	DrawTileImage(blit, pDestSurface);
 

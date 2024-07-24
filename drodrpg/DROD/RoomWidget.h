@@ -409,7 +409,7 @@ protected:
 	void           DrawInvisibilityRange(const int nX, const int nY,
 			SDL_Surface *pDestSurface, CCoordIndex *pCoordIndex=NULL, const int nRange=DEFAULT_SMELL_RANGE);
 	virtual void   DrawCharacter(CCharacter *pCharacter, const float fRaised,
-			SDL_Surface *pDestSurface, const bool bMoveInProgress);
+			SDL_Surface *pDestSurface, const bool bMoveInProgress, const bool bActionIsFrozen);
 	virtual bool   DrawingSwordFor(const CMonster* /*pMonster*/) const { return true; }
 	void           DrawDouble(const CPlayerDouble *pDouble, const float  fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress, const Uint8 nOpacity=255);
