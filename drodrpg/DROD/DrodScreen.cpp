@@ -186,6 +186,7 @@ void CDrodScreen::AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 		break;
 		case M_ROCKGOLEM:
 		case M_ROCKGIANT:
+		case M_CONSTRUCT:
 			pRoomWidget->AddTLayerEffect(
 				new CGolemDebrisEffect(pRoomWidget, coord, 10,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));

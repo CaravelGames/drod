@@ -5389,7 +5389,6 @@ void CEditRoomScreen::PlotObjects()
 				break;
 
 				case T_ROACH:
-				case T_QROACH:
 				case T_GOBLIN: case T_GOBLINKING:
 				case T_WWING:
 				case T_SPIDER:
@@ -5402,6 +5401,8 @@ void CEditRoomScreen::PlotObjects()
 				case T_NOMONSTER:
 				case T_NEATHER:
 					g_pTheSound->PlaySoundEffect(SEID_SPLAT); break;
+				case T_QROACH:
+					g_pTheSound->PlaySoundEffect(SEID_ROACH_EGG_SPAWNED); break;
 				case T_EYE:
 				case T_MADEYE:
 					g_pTheSound->PlaySoundEffect(SEID_EVILEYEWOKE); break;
@@ -5432,6 +5433,8 @@ void CEditRoomScreen::PlotObjects()
 //					g_pTheSound->PlaySoundEffect(SEID_SLAYERENTERFAR);
 //					UniquePlacement(this->pRoomWidget->wEndX, this->pRoomWidget->wEndY, M_SLAYER);
 					break;
+				case T_CONSTRUCT:
+					g_pTheSound->PlaySoundEffect(SEID_CONSTRUCT_SMASH); break;
 				case T_CHARACTER:
 				case T_CITIZEN:
 					break;

@@ -700,6 +700,11 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pSquare
 	CID_FiretrapHit,
 
+	//A roach queen spawned a roach egg.
+	//
+	//Private data: CMonster *pMonster (one or more)
+	CID_EggSpawned,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

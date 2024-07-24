@@ -132,6 +132,7 @@ const
 		case SEID_BRIAR_BREAK: strKeyName="BriarBreak"; break;
 		case SEID_BUTTON:    strKeyName="Button"; break;
 		case SEID_CHECKPOINT:   strKeyName="Checkpoint"; break;
+		case SEID_CONSTRUCT_SMASH:  strKeyName = "ConstructSmash"; break;
 		case SEID_DOOROPEN:     strKeyName="DoorOpen"; break;
 		case SEID_EVILEYEWOKE:  strKeyName="EvilEyeWoke"; break;
 		case SEID_FALLING:  strKeyName="Falling"; break;
@@ -165,6 +166,7 @@ const
 		case SEID_PUFF_EXPLOSION:       strKeyName="PuffExplosion"; break;
 		case SEID_PUNCH:        strKeyName="Punch"; break;
 		case SEID_READ:         strKeyName="Read"; break;
+		case SEID_ROACH_EGG_SPAWNED: strKeyName = "RoachEggSpawned"; break;
 		case SEID_SECRET:    strKeyName="Secret"; break;
 		case SEID_SHATTER:     strKeyName="Shatter"; break;
 		case SEID_SHIELDED:     strKeyName="Shielded"; break;
@@ -379,6 +381,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BRIAR_BREAK );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BUTTON );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_CHECKPOINT );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_SMASH );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_DOOROPEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_EVILEYEWOKE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FALLING );
@@ -402,6 +405,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUFF_EXPLOSION );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUNCH );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_READ );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ROACH_EGG_SPAWNED );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SECRET );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SHATTER );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SHIELDED );

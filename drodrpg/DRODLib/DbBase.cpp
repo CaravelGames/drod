@@ -849,6 +849,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Construct: strText = "Construct"; break;
 		case MID_FluffBaby: strText = "Puff"; break;
 		case MID_PuffExplosionEffect: strText = "Puff destroyed"; break;
+		case MID_EggSpawned: strText = "Roach egg spawned"; break;
+		case MID_ConstructSplatterEffect: strText = "Construct splatter"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
