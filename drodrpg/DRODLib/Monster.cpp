@@ -1048,7 +1048,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 				// Not monster or player double or sword
 				!pMonster && !DoesSquareContainObstacle(ex, ey) &&
 				//And t-square is not occupied with a blocking item.
-				(wTSquare == T_EMPTY || wTSquare == T_FUSE) &&
+				(wTSquare == T_EMPTY || wTSquare == T_FUSE || wTSquare == T_MIST) &&
 				!bIsArrow(room.GetFSquare(ex, ey)) &&
 				//And o-square is floor or open door.
 				((bIsPlainFloor(wOSquare) || wOSquare == T_PRESSPLATE) ||

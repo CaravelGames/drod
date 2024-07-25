@@ -4956,6 +4956,7 @@ const
 		wTileNo == T_FUSE ||
 		wTileNo == T_TOKEN ||
 		wTileNo == T_KEY ||
+		wTileNo == T_MIST ||
 		bIsPowerUp(wTileNo) ||
 		bIsMap(wTileNo) ||
 		bIsShovel(wTileNo) ||
