@@ -3992,7 +3992,7 @@ const
 		case CCharacterCommand::CC_WaitForItemGroup:
 		{
 			CListBoxWidget* pListBox = command.command == CCharacterCommand::CC_WaitForItemGroup ?
-				this->pWaitForItemsListBox : this->pWaitForItemsListBox;
+				this->pItemGroupListBox : this->pWaitForItemsListBox;
 			wstr += pListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -5213,8 +5213,11 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_BreakableWall, L"Breakable Walls");
 	pListBox->AddItem(ScriptFlag::IG_AnyWall, L"All Walls");
 	pListBox->AddItem(ScriptFlag::IG_Pit, L"Pits");
-	pListBox->AddItem(ScriptFlag::IG_Water, L"Water");
+	pListBox->AddItem(ScriptFlag::IG_Water, g_pTheDB->GetMessageText(MID_Water));
 	pListBox->AddItem(ScriptFlag::IG_Stairs, g_pTheDB->GetMessageText(MID_Stairs));
+	pListBox->AddItem(ScriptFlag::IG_Bridge, g_pTheDB->GetMessageText(MID_Bridge));
+	pListBox->AddItem(ScriptFlag::IG_Trapdoor, g_pTheDB->GetMessageText(MID_Trapdoor));
+	pListBox->AddItem(ScriptFlag::IG_ThinIce, g_pTheDB->GetMessageText(MID_ThinIce));
 }
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()

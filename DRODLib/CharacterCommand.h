@@ -239,6 +239,10 @@ namespace ScriptFlag
 		IG_Pit = 4, //Both types of pit
 		IG_Water = 5, //All types of water
 		IG_Stairs = 6, //Both types of staircase
+		IG_Bridge = 7, //All types of bridge
+		IG_Trapdoor = 8, //Both trapdoors
+		IG_ThinIce = 9, //Both types of thin ice
+		IG_FallingTile = 10, //Trapdoors and thin ice
 		ItemGroupCount //Total number of defined groups
 	};
 
@@ -265,6 +269,8 @@ namespace ScriptFlag
 	static const UINT WEATHER_SUNSHINE = 0x00000008;
 	static const UINT WEATHER_SKIP_LIGHTFADE = 0x00000010;
 };
+
+typedef bool (*TileCheckFunc)(UINT t);
 
 class CDbSpeech;
 class CCharacterCommand

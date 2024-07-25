@@ -4666,12 +4666,58 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 }
 
 //*****************************************************************************
+TileCheckFunc getItemGroupFunction(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+		case ScriptFlag::IG_PlainFloor: return bIsPlainFloor;
+		case ScriptFlag::IG_Wall: return bIsWall;
+		case ScriptFlag::IG_BreakableWall: return bIsCrumblyWall;
+		case ScriptFlag::IG_AnyWall: return bIsAnyWall;
+		case ScriptFlag::IG_Pit: return bIsPit;
+		case ScriptFlag::IG_Water: return bIsWater;
+		case ScriptFlag::IG_Stairs: return bIsStairs;
+		case ScriptFlag::IG_Bridge: return bIsBridge;
+		case ScriptFlag::IG_Trapdoor: return bIsTrapdoor;
+		case ScriptFlag::IG_ThinIce: return bIsThinIce;
+		case ScriptFlag::IG_FallingTile: return bIsFallingTile;
+		default: return bIsPlainFloor;
+	}
+}
+
+//*****************************************************************************
+UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+		case ScriptFlag::IG_PlainFloor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Wall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BreakableWall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_AnyWall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Pit: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Water: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Stairs: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Bridge: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Trapdoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ThinIce: return LAYER_OPAQUE;
+		case ScriptFlag::IG_FallingTile: return LAYER_OPAQUE;
+		default: return LAYER_OPAQUE;
+	}
+}
+
+//*****************************************************************************
 //Returns: whether a game element from the specified group (flags) is in rect (x,y,w,h).
 //Element groups correspond to functions in TileConstants.h that check for two or more elements
 bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 {
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags >= ScriptFlag::ItemGroupCount) {
+		return false;
+	}
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	if (px >= room.wRoomCols)
@@ -4686,47 +4732,8 @@ bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 	if (endY >= room.wRoomRows)
 		endY = room.wRoomRows - 1;
 
-	UINT layer;
-	bool (*tileCheck)(UINT);
-
-	switch (pflags) {
-		case ScriptFlag::IG_PlainFloor: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsPlainFloor;
-		}
-		break;
-		case ScriptFlag::IG_Wall: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsWall;
-		}
-		break;
-		case ScriptFlag::IG_BreakableWall: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsCrumblyWall;
-		}
-		break;
-		case ScriptFlag::IG_AnyWall: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsAnyWall;
-		}
-		break;
-		case ScriptFlag::IG_Pit: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsPit;
-		}
-		break;
-		case ScriptFlag::IG_Water: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsWater;
-		}
-		break;
-		case ScriptFlag::IG_Stairs: {
-			layer = LAYER_OPAQUE;
-			tileCheck = bIsStairs;
-		}
-		break;
-		default: return false;
-	}
+	TileCheckFunc tileCheck = getItemGroupFunction((ScriptFlag::ItemGroup)pflags);
+	UINT layer = getItemGroupLayer((ScriptFlag::ItemGroup)pflags);
 
 	for (UINT y = py; y <= endY; ++y)
 	{
