@@ -390,6 +390,10 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_SetMusic:
 					CDbData::CopyObject(info, c.w, pNewHold->dwHoldID);
 				break;
+				case CCharacterCommand::CC_SetNPCAppearance:
+				case CCharacterCommand::CC_SetPlayerAppearance:
+					SyncCustomCharacterData(c.x, pOldHold, pNewHold, info);
+					break;
 				case CCharacterCommand::CC_GenerateEntity:
 					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
 					break;
