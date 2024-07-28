@@ -4682,6 +4682,27 @@ TileCheckFunc getItemGroupFunction(ScriptFlag::ItemGroup group)
 		case ScriptFlag::IG_Trapdoor: return bIsTrapdoor;
 		case ScriptFlag::IG_ThinIce: return bIsThinIce;
 		case ScriptFlag::IG_FallingTile: return bIsFallingTile;
+		case ScriptFlag::IG_Tunnel: return bIsTunnel;
+		case ScriptFlag::IG_Firetrap: return bIsFiretrap;
+		case ScriptFlag::IG_Platform: return bIsPlatform;
+		case ScriptFlag::IG_OpenDoor: return bIsOpenDoor;
+		case ScriptFlag::IG_ClosedDoor: return bIsDoor;
+		case ScriptFlag::IG_YellowDoor: return bIsYellowDoor;
+		case ScriptFlag::IG_GreenDoor: return bIsGreenDoor;
+		case ScriptFlag::IG_BlueDoor: return bIsBlueDoor;
+		case ScriptFlag::IG_RedDoor: return bIsRedDoor;
+		case ScriptFlag::IG_BlackDoor: return bIsBlackDoor;
+		case ScriptFlag::IG_SoldOTile: return bIsSolidOTile;
+		case ScriptFlag::IG_ActiveArrow: return bIsArrow;
+		case ScriptFlag::IG_DisabledArrow: return bIsDisabledArrow;
+		case ScriptFlag::IG_AnyArrow: return bIsAnyArrow;
+		case ScriptFlag::IG_Tarstuff: return bIsTar;
+		case ScriptFlag::IG_TarFluff: return bIsTarOrFluff;
+		case ScriptFlag::IG_Briar: return bIsBriar;
+		case ScriptFlag::IG_Beacon: return bIsBeacon;
+		case ScriptFlag::IG_Explosive: return bIsExplodingItem;
+		case ScriptFlag::IG_Pushable: return bIsTLayerCoveringItem;
+		case ScriptFlag::IG_Potion: return bIsPotion;
 		default: return bIsPlainFloor;
 	}
 }
@@ -4703,6 +4724,27 @@ UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
 		case ScriptFlag::IG_Trapdoor: return LAYER_OPAQUE;
 		case ScriptFlag::IG_ThinIce: return LAYER_OPAQUE;
 		case ScriptFlag::IG_FallingTile: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Tunnel: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Firetrap: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Platform: return LAYER_OPAQUE;
+		case ScriptFlag::IG_OpenDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ClosedDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_YellowDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_GreenDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BlueDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_RedDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BlackDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_SoldOTile: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ActiveArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_DisabledArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_AnyArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_Tarstuff: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_TarFluff: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Briar: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Beacon: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Explosive: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Pushable: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Potion: return LAYER_TRANSPARENT;
 		default: return LAYER_OPAQUE;
 	}
 }

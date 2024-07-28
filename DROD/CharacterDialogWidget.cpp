@@ -5208,16 +5208,36 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 
 void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 {
-	pListBox->AddItem(ScriptFlag::IG_PlainFloor, L"Normal Floor");
-	pListBox->AddItem(ScriptFlag::IG_Wall, L"Regular Walls");
-	pListBox->AddItem(ScriptFlag::IG_BreakableWall, L"Breakable Walls");
-	pListBox->AddItem(ScriptFlag::IG_AnyWall, L"All Walls");
-	pListBox->AddItem(ScriptFlag::IG_Pit, L"Pits");
+	pListBox->AddItem(ScriptFlag::IG_PlainFloor, L"Plain floor");
+	pListBox->AddItem(ScriptFlag::IG_Wall, L"Regular walls");
+	pListBox->AddItem(ScriptFlag::IG_BreakableWall, L"Breakable walls");
+	pListBox->AddItem(ScriptFlag::IG_AnyWall, L"Any wall");
+	pListBox->AddItem(ScriptFlag::IG_Pit, g_pTheDB->GetMessageText(MID_Pit));
 	pListBox->AddItem(ScriptFlag::IG_Water, g_pTheDB->GetMessageText(MID_Water));
 	pListBox->AddItem(ScriptFlag::IG_Stairs, g_pTheDB->GetMessageText(MID_Stairs));
 	pListBox->AddItem(ScriptFlag::IG_Bridge, g_pTheDB->GetMessageText(MID_Bridge));
 	pListBox->AddItem(ScriptFlag::IG_Trapdoor, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(ScriptFlag::IG_ThinIce, g_pTheDB->GetMessageText(MID_ThinIce));
+	pListBox->AddItem(ScriptFlag::IG_FallingTile, L"Falling tiles");
+	pListBox->AddItem(ScriptFlag::IG_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
+	pListBox->AddItem(ScriptFlag::IG_Firetrap, g_pTheDB->GetMessageText(MID_Firetrap));
+	pListBox->AddItem(ScriptFlag::IG_Platform, L"Platform or raft");
+	pListBox->AddItem(ScriptFlag::IG_OpenDoor, L"Open door");
+	pListBox->AddItem(ScriptFlag::IG_ClosedDoor, L"Closed door");
+	pListBox->AddItem(ScriptFlag::IG_YellowDoor, g_pTheDB->GetMessageText(MID_YellowDoor));
+	pListBox->AddItem(ScriptFlag::IG_GreenDoor, g_pTheDB->GetMessageText(MID_GreenDoor));
+	pListBox->AddItem(ScriptFlag::IG_BlueDoor, g_pTheDB->GetMessageText(MID_BlueDoor));
+	pListBox->AddItem(ScriptFlag::IG_RedDoor, g_pTheDB->GetMessageText(MID_RedDoor));
+	pListBox->AddItem(ScriptFlag::IG_BlackDoor, g_pTheDB->GetMessageText(MID_BlackDoor));
+	pListBox->AddItem(ScriptFlag::IG_SoldOTile, L"Any wall or closed door");
+	pListBox->AddItem(ScriptFlag::IG_ActiveArrow, g_pTheDB->GetMessageText(MID_ForceArrow));
+	pListBox->AddItem(ScriptFlag::IG_DisabledArrow, g_pTheDB->GetMessageText(MID_ForceArrowDisabled));
+	pListBox->AddItem(ScriptFlag::IG_AnyArrow, L"Any arrow");
+	pListBox->AddItem(ScriptFlag::IG_Tarstuff, L"Tar, mud or gel");
+	pListBox->AddItem(ScriptFlag::IG_TarFluff, L"Tar, mud, gel or fluff");
+	pListBox->AddItem(ScriptFlag::IG_Briar, L"Briar");
+	pListBox->AddItem(ScriptFlag::IG_Beacon, g_pTheDB->GetMessageText(MID_Beacon));
+	pListBox->AddItem(ScriptFlag::IG_Potion, L"Potion or horn");
 }
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()

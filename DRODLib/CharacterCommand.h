@@ -243,6 +243,27 @@ namespace ScriptFlag
 		IG_Trapdoor = 8, //Both trapdoors
 		IG_ThinIce = 9, //Both types of thin ice
 		IG_FallingTile = 10, //Trapdoors and thin ice
+		IG_Tunnel = 11, //All tunnel directions
+		IG_Firetrap = 12, //Both firetrap states
+		IG_Platform = 13, //Platform and raft
+		IG_OpenDoor = 14, //All types of open door
+		IG_ClosedDoor = 15, //All types of closed door
+		IG_YellowDoor = 16,
+		IG_GreenDoor = 17,
+		IG_BlueDoor = 18,
+		IG_RedDoor = 19,
+		IG_BlackDoor = 20,
+		IG_SoldOTile = 21, //All walls and closed doors
+		IG_ActiveArrow = 22, //All active arrow directions
+		IG_DisabledArrow = 23, //All disabled arrow directions
+		IG_AnyArrow = 24, //All types of arrow
+		IG_Tarstuff = 25, //Tar, mud and gel
+		IG_TarFluff = 26, //Tar, mud, gel and fluff
+		IG_Briar = 27, //All briar components
+		IG_Beacon = 28, //Both seeding beacon states
+		IG_Explosive = 29, //Bomb and keg
+		IG_Pushable = 30, //Mirror and keg
+		IG_Potion = 31, //All types of potion and horn
 		ItemGroupCount //Total number of defined groups
 	};
 
