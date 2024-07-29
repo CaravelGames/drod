@@ -1314,7 +1314,8 @@ void CEditRoomWidget::DrawCharacter(
 	CCharacter *pCharacter,    //(in)   Pointer to CCharacter monster.
 	const float fRaised,    //(in)   Draw Character raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool /*bMoveInProgress*/)
+	const bool /*bMoveInProgress*/,
+	const bool /*bActionIsFrozen*/)  //(in) Whether action is currently stopped.
 {
 	const bool bAlt = (SDL_GetModState() & KMOD_ALT) != 0;
 	const bool preview = (bAlt != characterPreview);
