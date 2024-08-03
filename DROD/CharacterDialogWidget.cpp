@@ -4963,8 +4963,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForEntityType, g_pTheDB->GetMessageText(MID_WaitForEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, L"Wait for item group");
-	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotItemGroup, L"Wait while item group");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, g_pTheDB->GetMessageText(MID_WaitForItemGroup));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotItemGroup, g_pTheDB->GetMessageText(MID_WaitForNotItemGroup));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuilding, g_pTheDB->GetMessageText(MID_WaitForBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
@@ -5222,36 +5222,36 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 
 void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 {
-	pListBox->AddItem(ScriptFlag::IG_PlainFloor, L"Plain floor");
-	pListBox->AddItem(ScriptFlag::IG_Wall, L"Regular walls");
-	pListBox->AddItem(ScriptFlag::IG_BreakableWall, L"Breakable walls");
-	pListBox->AddItem(ScriptFlag::IG_AnyWall, L"Any wall");
+	pListBox->AddItem(ScriptFlag::IG_PlainFloor, g_pTheDB->GetMessageText(MID_PlainFloor));
+	pListBox->AddItem(ScriptFlag::IG_Wall, g_pTheDB->GetMessageText(MID_RegularWall));
+	pListBox->AddItem(ScriptFlag::IG_BreakableWall, g_pTheDB->GetMessageText(MID_BreakableWall));
+	pListBox->AddItem(ScriptFlag::IG_AnyWall, g_pTheDB->GetMessageText(MID_AnyWallType));
 	pListBox->AddItem(ScriptFlag::IG_Pit, g_pTheDB->GetMessageText(MID_Pit));
 	pListBox->AddItem(ScriptFlag::IG_Water, g_pTheDB->GetMessageText(MID_Water));
 	pListBox->AddItem(ScriptFlag::IG_Stairs, g_pTheDB->GetMessageText(MID_Stairs));
 	pListBox->AddItem(ScriptFlag::IG_Bridge, g_pTheDB->GetMessageText(MID_Bridge));
 	pListBox->AddItem(ScriptFlag::IG_Trapdoor, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(ScriptFlag::IG_ThinIce, g_pTheDB->GetMessageText(MID_ThinIce));
-	pListBox->AddItem(ScriptFlag::IG_FallingTile, L"Falling tiles");
+	pListBox->AddItem(ScriptFlag::IG_FallingTile, g_pTheDB->GetMessageText(MID_FallingTile));
 	pListBox->AddItem(ScriptFlag::IG_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
 	pListBox->AddItem(ScriptFlag::IG_Firetrap, g_pTheDB->GetMessageText(MID_Firetrap));
-	pListBox->AddItem(ScriptFlag::IG_Platform, L"Platform or raft");
-	pListBox->AddItem(ScriptFlag::IG_OpenDoor, L"Open door");
-	pListBox->AddItem(ScriptFlag::IG_ClosedDoor, L"Closed door");
+	pListBox->AddItem(ScriptFlag::IG_Platform, g_pTheDB->GetMessageText(MID_PlatformOrRaft));
+	pListBox->AddItem(ScriptFlag::IG_OpenDoor, g_pTheDB->GetMessageText(MID_OpenDoor));
+	pListBox->AddItem(ScriptFlag::IG_ClosedDoor, g_pTheDB->GetMessageText(MID_ClosedDoor));
 	pListBox->AddItem(ScriptFlag::IG_YellowDoor, g_pTheDB->GetMessageText(MID_YellowDoor));
 	pListBox->AddItem(ScriptFlag::IG_GreenDoor, g_pTheDB->GetMessageText(MID_GreenDoor));
 	pListBox->AddItem(ScriptFlag::IG_BlueDoor, g_pTheDB->GetMessageText(MID_BlueDoor));
 	pListBox->AddItem(ScriptFlag::IG_RedDoor, g_pTheDB->GetMessageText(MID_RedDoor));
 	pListBox->AddItem(ScriptFlag::IG_BlackDoor, g_pTheDB->GetMessageText(MID_BlackDoor));
-	pListBox->AddItem(ScriptFlag::IG_SoldOTile, L"Any wall or closed door");
+	pListBox->AddItem(ScriptFlag::IG_SoldOTile, g_pTheDB->GetMessageText(MID_SolidOTileGroup));
 	pListBox->AddItem(ScriptFlag::IG_ActiveArrow, g_pTheDB->GetMessageText(MID_ForceArrow));
 	pListBox->AddItem(ScriptFlag::IG_DisabledArrow, g_pTheDB->GetMessageText(MID_ForceArrowDisabled));
-	pListBox->AddItem(ScriptFlag::IG_AnyArrow, L"Any arrow");
-	pListBox->AddItem(ScriptFlag::IG_Tarstuff, L"Tar, mud or gel");
-	pListBox->AddItem(ScriptFlag::IG_TarFluff, L"Tar, mud, gel or fluff");
-	pListBox->AddItem(ScriptFlag::IG_Briar, L"Briar");
+	pListBox->AddItem(ScriptFlag::IG_AnyArrow, g_pTheDB->GetMessageText(MID_AnyArrow));
+	pListBox->AddItem(ScriptFlag::IG_Tarstuff, g_pTheDB->GetMessageText(MID_TarstuffGroup));
+	pListBox->AddItem(ScriptFlag::IG_TarFluff, g_pTheDB->GetMessageText(MID_TarFluffGroup));
+	pListBox->AddItem(ScriptFlag::IG_Briar, g_pTheDB->GetMessageText(MID_Briars));
 	pListBox->AddItem(ScriptFlag::IG_Beacon, g_pTheDB->GetMessageText(MID_Beacon));
-	pListBox->AddItem(ScriptFlag::IG_Potion, L"Potion or horn");
+	pListBox->AddItem(ScriptFlag::IG_Potion, g_pTheDB->GetMessageText(MID_PotionOrHorn));
 }
 
 void CCharacterDialogWidget::PopulatePlayerBehaviorListBox()
