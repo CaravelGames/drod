@@ -3989,11 +3989,7 @@ const
 
 		case CCharacterCommand::CC_WaitForItem:
 		case CCharacterCommand::CC_CountItem:
-		case CCharacterCommand::CC_WaitForItemGroup:
-		{
-			CListBoxWidget* pListBox = command.command == CCharacterCommand::CC_WaitForItemGroup ?
-				this->pItemGroupListBox : this->pWaitForItemsListBox;
-			wstr += pListBox->GetTextForKey(command.flags);
+			wstr += this->pWaitForItemsListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
 			wstr += wszSpace;
@@ -4008,7 +4004,24 @@ const
 			wstr += wszComma;
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
-		}
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+			wstr += this->pItemGroupListBox->GetTextForKey(command.flags);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
 		break;
 
 		case CCharacterCommand::CC_GenerateEntity:
@@ -4951,6 +4964,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, L"Wait for item group");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotItemGroup, L"Wait while item group");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuilding, g_pTheDB->GetMessageText(MID_WaitForBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
@@ -5970,7 +5984,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARSET,        //CC_ArrayVarSet
 		ARRAYVARSET,        //CC_ArrayVarSetAt
 		CLEARARRAYVAR,      //CC_ClearArrayVar
-		WAITFORITEMGROUP    //CC_WaitForItemGroup
+		WAITFORITEMGROUP,   //CC_WaitForItemGroup
+		WAITFORITEMGROUP    //CC_WaitForNoItemGroup
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -6130,6 +6145,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYSET_L,         //CC_ArrayVarSetAt
 		NO_LABELS,          //CC_ClearArrayVar
 		NO_LABELS,          //CC_WaitForItemGroup
+		NO_LABELS,          //CC_WaitForNotItemGroup
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6608,6 +6624,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
 			this->pCommand->flags = this->pItemGroupListBox->GetSelectedItem();
 			QueryRect();
 		break;
@@ -7397,6 +7414,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
 			this->pItemGroupListBox->SelectItem(this->pCommand->flags);
 		break;
 
@@ -8394,6 +8412,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_WaitForItemGroup:
+	case CCharacterCommand::CC_WaitForNotItemGroup:
 		parseMandatoryOption(pCommand->flags, this->pItemGroupListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -9258,6 +9277,7 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_WaitForItemGroup:
+	case CCharacterCommand::CC_WaitForNotItemGroup:
 		wstr += this->pItemGroupListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);

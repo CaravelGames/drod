@@ -682,6 +682,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
 			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -761,6 +762,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
 			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3300,6 +3302,14 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			{
+				//Wait while element in group (flags) exist in rect (x,y,w,h).
+				if (IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_GenerateEntity:
 			{
 				//Generates a new entity of type h in the room at (x,y) with orientation w.
@@ -5643,6 +5653,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForItemGroup:
 		{
 			return IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+		{
+			return !IsTileGroupAt(command);
 		}
 		default:
 		{
