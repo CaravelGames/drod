@@ -5985,7 +5985,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARSET,        //CC_ArrayVarSetAt
 		CLEARARRAYVAR,      //CC_ClearArrayVar
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
-		WAITFORITEMGROUP    //CC_WaitForNoItemGroup
+		WAITFORITEMGROUP    //CC_WaitForNotItemGroup
 	};
 
 	static const UINT NUM_LABELS = 34;
