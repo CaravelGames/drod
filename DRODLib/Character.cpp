@@ -681,6 +681,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotBuildType:
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -759,6 +761,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotBuildType:
 			case CCharacterCommand::CC_CountEntityType:
 			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -3290,6 +3294,22 @@ void CCharacter::Process(
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_WaitForItemGroup:
+			{
+				//Wait for element in group (flags) to exist in rect (x,y,w,h).
+				if (!IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			{
+				//Wait while element in group (flags) exist in rect (x,y,w,h).
+				if (IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_GenerateEntity:
 			{
 				//Generates a new entity of type h in the room at (x,y) with orientation w.
@@ -4656,6 +4676,148 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command) const
 }
 
 //*****************************************************************************
+TileCheckFunc getItemGroupFunction(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+		case ScriptFlag::IG_PlainFloor: return bIsPlainFloor;
+		case ScriptFlag::IG_Wall: return bIsWall;
+		case ScriptFlag::IG_BreakableWall: return bIsCrumblyWall;
+		case ScriptFlag::IG_AnyWall: return bIsAnyWall;
+		case ScriptFlag::IG_Pit: return bIsPit;
+		case ScriptFlag::IG_Water: return bIsWater;
+		case ScriptFlag::IG_Stairs: return bIsStairs;
+		case ScriptFlag::IG_Bridge: return bIsBridge;
+		case ScriptFlag::IG_Trapdoor: return bIsTrapdoor;
+		case ScriptFlag::IG_ThinIce: return bIsThinIce;
+		case ScriptFlag::IG_FallingTile: return bIsFallingTile;
+		case ScriptFlag::IG_Tunnel: return bIsTunnel;
+		case ScriptFlag::IG_Firetrap: return bIsFiretrap;
+		case ScriptFlag::IG_Platform: return bIsPlatform;
+		case ScriptFlag::IG_OpenDoor: return bIsOpenDoor;
+		case ScriptFlag::IG_ClosedDoor: return bIsDoor;
+		case ScriptFlag::IG_YellowDoor: return bIsYellowDoor;
+		case ScriptFlag::IG_GreenDoor: return bIsGreenDoor;
+		case ScriptFlag::IG_BlueDoor: return bIsBlueDoor;
+		case ScriptFlag::IG_RedDoor: return bIsRedDoor;
+		case ScriptFlag::IG_BlackDoor: return bIsBlackDoor;
+		case ScriptFlag::IG_SoldOTile: return bIsSolidOTile;
+		case ScriptFlag::IG_ActiveArrow: return bIsArrow;
+		case ScriptFlag::IG_DisabledArrow: return bIsDisabledArrow;
+		case ScriptFlag::IG_AnyArrow: return bIsAnyArrow;
+		case ScriptFlag::IG_Tarstuff: return bIsTar;
+		case ScriptFlag::IG_TarFluff: return bIsTarOrFluff;
+		case ScriptFlag::IG_Briar: return bIsBriar;
+		case ScriptFlag::IG_Beacon: return bIsBeacon;
+		case ScriptFlag::IG_Explosive: return bIsExplodingItem;
+		case ScriptFlag::IG_Pushable: return bIsTLayerCoveringItem;
+		case ScriptFlag::IG_Potion: return bIsPotion;
+		default: return bIsPlainFloor;
+	}
+}
+
+//*****************************************************************************
+UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+		case ScriptFlag::IG_PlainFloor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Wall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BreakableWall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_AnyWall: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Pit: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Water: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Stairs: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Bridge: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Trapdoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ThinIce: return LAYER_OPAQUE;
+		case ScriptFlag::IG_FallingTile: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Tunnel: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Firetrap: return LAYER_OPAQUE;
+		case ScriptFlag::IG_Platform: return LAYER_OPAQUE;
+		case ScriptFlag::IG_OpenDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ClosedDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_YellowDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_GreenDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BlueDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_RedDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_BlackDoor: return LAYER_OPAQUE;
+		case ScriptFlag::IG_SoldOTile: return LAYER_OPAQUE;
+		case ScriptFlag::IG_ActiveArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_DisabledArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_AnyArrow: return LAYER_FLOOR;
+		case ScriptFlag::IG_Tarstuff: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_TarFluff: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Briar: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Beacon: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Explosive: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Pushable: return LAYER_TRANSPARENT;
+		case ScriptFlag::IG_Potion: return LAYER_TRANSPARENT;
+		default: return LAYER_OPAQUE;
+	}
+}
+
+//*****************************************************************************
+//Returns: whether a game element from the specified group (flags) is in rect (x,y,w,h).
+//Element groups correspond to functions in TileConstants.h that check for two or more elements
+bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags >= ScriptFlag::ItemGroupCount) {
+		return false;
+	}
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	if (px >= room.wRoomCols)
+		return false;
+	if (py >= room.wRoomRows)
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	TileCheckFunc tileCheck = getItemGroupFunction((ScriptFlag::ItemGroup)pflags);
+	UINT layer = getItemGroupLayer((ScriptFlag::ItemGroup)pflags);
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x) {
+			switch (layer) {
+				case LAYER_OPAQUE: {
+					if (tileCheck(room.GetOSquare(x,y))) {
+						return true;
+					}
+				}
+				break;
+				case LAYER_FLOOR: {
+					if (tileCheck(room.GetFSquare(x, y))) {
+						return true;
+					}
+				}
+				break;
+				case LAYER_TRANSPARENT: {
+					if (tileCheck(room.GetTSquare(x, y)) || tileCheck(room.GetCoveredTSquare(x,y))) {
+						return true;
+					}
+				}
+				break;
+				default: return false;
+			}
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 //Returns: how many of the specified game element (flags) are in rect (x,y,w,h)
 int CCharacter::CountTile(const CCharacterCommand& command) const
 {
@@ -5487,6 +5649,14 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForNotBuildType:
 		{
 			return !IsBuildMarkerTypeAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForItemGroup:
+		{
+			return IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+		{
+			return !IsTileGroupAt(command);
 		}
 		default:
 		{

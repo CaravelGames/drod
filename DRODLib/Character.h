@@ -200,6 +200,7 @@ public:
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
+	bool           IsTileGroupAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 	bool           IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 	virtual bool   IsVulnerableToAdder() const override;

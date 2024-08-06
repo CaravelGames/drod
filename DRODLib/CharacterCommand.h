@@ -230,6 +230,43 @@ namespace ScriptFlag
 		LC_Azure = 16
 	};
 
+	enum ItemGroup
+	{
+		IG_PlainFloor = 0, //Plain floor tiles
+		IG_Wall = 1, //All non-breakable walls
+		IG_BreakableWall = 2, //Crumbly and secret walls
+		IG_AnyWall = 3, //All types of wall and closed doors
+		IG_Pit = 4, //Both types of pit
+		IG_Water = 5, //All types of water
+		IG_Stairs = 6, //Both types of staircase
+		IG_Bridge = 7, //All types of bridge
+		IG_Trapdoor = 8, //Both trapdoors
+		IG_ThinIce = 9, //Both types of thin ice
+		IG_FallingTile = 10, //Trapdoors and thin ice
+		IG_Tunnel = 11, //All tunnel directions
+		IG_Firetrap = 12, //Both firetrap states
+		IG_Platform = 13, //Platform and raft
+		IG_OpenDoor = 14, //All types of open door
+		IG_ClosedDoor = 15, //All types of closed door
+		IG_YellowDoor = 16,
+		IG_GreenDoor = 17,
+		IG_BlueDoor = 18,
+		IG_RedDoor = 19,
+		IG_BlackDoor = 20,
+		IG_SoldOTile = 21, //All walls and closed doors
+		IG_ActiveArrow = 22, //All active arrow directions
+		IG_DisabledArrow = 23, //All disabled arrow directions
+		IG_AnyArrow = 24, //All types of arrow
+		IG_Tarstuff = 25, //Tar, mud and gel
+		IG_TarFluff = 26, //Tar, mud, gel and fluff
+		IG_Briar = 27, //All briar components
+		IG_Beacon = 28, //Both seeding beacon states
+		IG_Explosive = 29, //Bomb and keg
+		IG_Pushable = 30, //Mirror and keg
+		IG_Potion = 31, //All types of potion and horn
+		ItemGroupCount //Total number of defined groups
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
@@ -253,6 +290,8 @@ namespace ScriptFlag
 	static const UINT WEATHER_SUNSHINE = 0x00000008;
 	static const UINT WEATHER_SKIP_LIGHTFADE = 0x00000010;
 };
+
+typedef bool (*TileCheckFunc)(UINT t);
 
 class CDbSpeech;
 class CCharacterCommand
@@ -384,6 +423,8 @@ public:
 		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
 		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
 		CC_ClearArrayVar,       //Reset array var X
+		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
+		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
 
 		CC_Count
 	};

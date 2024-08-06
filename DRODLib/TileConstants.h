@@ -296,6 +296,7 @@ static inline bool bIsWall(const UINT t) {
 }
 
 static inline bool bIsCrumblyWall(const UINT t) {return t==T_WALL_B || t==T_WALL_H;}
+static inline bool bIsAnyWall(const UINT t) {return bIsWall(t) || bIsCrumblyWall(t); }
 
 static inline bool bIsStairs(const UINT t) {return t==T_STAIRS || t==T_STAIRS_UP;}
 

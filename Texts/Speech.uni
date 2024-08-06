@@ -3385,3 +3385,67 @@ Index
 [MID_CantChangeVarType]
 [eng]
 Var type can't be changed between array and non-array
+
+[MID_WaitForItemGroup]
+[eng]
+Wait for item group
+
+[MID_WaitForNotItemGroup]
+[eng]
+Wait while item group
+
+[MID_PlainFloor]
+[eng]
+Plain floor
+
+[MID_RegularWall]
+[eng]
+Solid walls
+
+[MID_BreakableWall]
+[eng]
+Breakable walls
+
+[MID_AnyWallType]
+[eng]
+Any wall
+
+[MID_FallingTile]
+[eng]
+Trapdoor or thin ice
+
+[MID_PlatformOrRaft]
+[eng]
+Platform or raft
+
+[MID_OpenDoor]
+[eng]
+Any open door
+
+[MID_ClosedDoor]
+[eng]
+Any closed door
+
+[MID_SolidOTileGroup]
+[eng]
+Any wall or closed door
+
+[MID_AnyArrow]
+[eng]
+Any arrow
+
+[MID_TarstuffGroup]
+[eng]
+Tar, mud or gel
+
+[MID_TarFluffGroup]
+[eng]
+Tar, mud, gel or fluff
+
+[MID_Briars]
+[eng]
+Any brair
+
+[MID_PotionOrHorn]
+[eng]
+Any potion or horn
