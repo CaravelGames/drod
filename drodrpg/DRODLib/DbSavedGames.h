@@ -125,6 +125,10 @@ public:
 			char* const str, CImportInfo &info);
 	virtual bool   Update();
 
+	//Read/write UINT and UINT shaped types to/from buffer
+	static UINT  readBpUINT(const BYTE* buffer, UINT& index);
+	static void  writeBpUINT(string& buffer, UINT n);
+
 	UINT     dwSavedGameID;
 	UINT     dwRoomID;
 	UINT     dwPlayerID;
