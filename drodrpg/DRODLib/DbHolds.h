@@ -94,6 +94,7 @@ public:
 	UINT        GetVarID(const WCHAR* pwszName) const;
 	const WCHAR* GetVarName(const UINT dwVarID) const;
 	void        InsertLevel(CDbLevel *pLevel);
+	bool        IsArrayVar(UINT varID) const { return this->arrayScriptVars.count(varID); }
 	static bool IsVarNameGoodSyntax(const WCHAR* pName);
 	bool        Load(const UINT dwHoldID, const bool bQuick=false);
 	CDbHold*    MakeCopy();
@@ -174,6 +175,8 @@ private:
 	vector<UINT> deletedTextIDs;   //message text IDs to be deleted on Update
 	vector<UINT> deletedSpeechIDs; //speech IDs to be deleted on Update
 	vector<UINT> deletedDataIDs;   //data IDs to be deleted on Update
+
+	map<UINT, WSTRING> arrayScriptVars;
 };
 
 //******************************************************************************************

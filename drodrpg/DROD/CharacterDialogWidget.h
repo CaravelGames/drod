@@ -76,7 +76,7 @@ public:
 	virtual void   OnBetweenEvents();
 
 	bool RenameCharacter();
-	bool RenameVar();
+	bool RenameVar(const bool bIsArrayVar = false);
 
 	UINT queryX, queryY, queryW, queryH; //for querying the user for coord info
 
@@ -97,7 +97,7 @@ private:
 	void  ClearPasteBuffer();
 	void  DeleteCommands(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  DeleteCustomCharacter();
-	void  DeleteVar();
+	void  DeleteVar(const bool bIsArrayVar = false);
 	void  EditCustomCharacters();
 	void  FinishEditingDefaultScript();
 	UINT  FilterUnsupportedCommands();
@@ -137,6 +137,7 @@ private:
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
+	void  UpdateVarDeleteButton(UINT widgetTag, CListBoxWidget* varListBox);
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 
@@ -187,7 +188,8 @@ private:
 	CListBoxWidget *pGotoLabelListBox;
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
-			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2;
+			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2,
+			*pArrayVarListBox, *pArrayVarOpListBox;
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;

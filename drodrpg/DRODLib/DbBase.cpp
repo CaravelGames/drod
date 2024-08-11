@@ -851,6 +851,12 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PuffExplosionEffect: strText = "Puff destroyed"; break;
 		case MID_EggSpawned: strText = "Roach egg spawned"; break;
 		case MID_ConstructSplatterEffect: strText = "Construct splatter"; break;
+		case MID_ArrayVarSet: strText = "Set array var"; break;
+		case MID_ArrayVarSetAt: strText = "Set array var at"; break;
+		case MID_ClearArrayVar: strText = "Clear array var"; break;
+		case MID_ArrayVarNameExpression: strText = "Variable Name/Expression"; break;
+		case MID_ArrayIndexLabel: strText = "Index"; break;
+		case MID_CantChangeVarType: strText = "Var type can't be changed between array and non-array"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

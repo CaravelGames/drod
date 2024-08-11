@@ -390,6 +390,23 @@ Predefined ScriptVars::parsePredefinedVar(const string& str)
 }
 
 //*****************************************************************************
+bool ScriptVars::IsCharacterArrayVar(const WSTRING& wstr)
+{
+	return IsCharacterArrayVar(wstr.c_str());
+}
+
+bool ScriptVars::IsCharacterArrayVar(const WCHAR* wstr)
+{
+	return wstr && wstr[0] == '#';
+}
+
+//*****************************************************************************
+bool ScriptVars::IsIndexInArrayRange(const int index)
+{
+	return abs(index) <= 50000;
+}
+
+//*****************************************************************************
 PrimitiveType ScriptVars::parsePrimitive(const WSTRING& wstr)
 {
 	const string str = UnicodeToUTF8(wstr);

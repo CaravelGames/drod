@@ -195,6 +195,11 @@ namespace ScriptVars
 	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
 	PrimitiveType parsePrimitive(const WSTRING& wstr);
 
+	bool IsCharacterArrayVar(const WSTRING& wstr);
+	bool IsCharacterArrayVar(const WCHAR* wstr);
+
+	bool IsIndexInArrayRange(const int index);
+
 	//All predefined vars.
 	extern const char predefinedVarTexts[PredefinedVarCount][16];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];

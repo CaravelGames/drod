@@ -1583,6 +1583,12 @@ enum MID_CONSTANT {
   MID_PuffExplosionEffect = 1934,
   MID_EggSpawned = 1935,
   MID_ConstructSplatterEffect = 1936,
+  MID_ArrayVarSet = 1937,
+  MID_ArrayVarSetAt = 1938,
+  MID_ClearArrayVar = 1939,
+  MID_ArrayVarNameExpression = 1940,
+  MID_ArrayIndexLabel = 1941,
+  MID_CantChangeVarType = 1942,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

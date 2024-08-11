@@ -1187,6 +1187,7 @@ void CDbSavedGame::Clear(
 	this->wStartRoomX=this->wStartRoomY=this->wStartRoomO=0;
 	this->wStartRoomAppearance = defaultPlayerType(); //use default value
 	this->bStartRoomSwordOff = false;
+	this->scriptArrays.clear();
 	this->eType = ST_Unknown;
 
 	this->dwPlayerID = 0L;
@@ -1403,6 +1404,41 @@ const
 }
 
 //*****************************************************************************
+void CDbSavedGame::SerializeScriptArrays()
+//Converts script arrays into byte buffers that can be stored in CDbPackedVars
+//Note: deserialization is done in CCurrentGame, as it requires hold information
+{
+	if (this->scriptArrays.empty()) {
+		return;
+	}
+
+	for (ScriptArrayMap::const_iterator it = this->scriptArrays.cbegin();
+		it != this->scriptArrays.cend(); ++it) {
+		const map<int, int> arrayMap = it->second;
+		string buffer;
+
+		UINT size = 0;
+		for (map<int, int>::const_iterator arrayIt = arrayMap.cbegin();
+			arrayIt != arrayMap.cend(); ++arrayIt) {
+			if (arrayIt->second == 0) {
+				continue; //save space by skipping zero-value entries
+			}
+
+			writeBpUINT(buffer, (UINT)arrayIt->first);
+			writeBpUINT(buffer, (UINT)arrayIt->second);
+			++size;
+		}
+
+		string sizeBuffer;
+		writeBpUINT(sizeBuffer, size);
+
+		string varName("v");
+		varName += std::to_string(it->first);
+		this->stats.SetVar(varName.c_str(), (sizeBuffer + buffer).c_str());
+	}
+}
+
+//*****************************************************************************
 bool CDbSavedGame::UpdateNew()
 //Add new SavedGames record to database.
 {
@@ -1514,6 +1550,8 @@ bool CDbSavedGame::UpdateExisting()
 	c4_View MonstersView;
 	SaveMonsters(MonstersView, this->pMonsterListAtRoomStart);
 
+	SerializeScriptArrays();
+
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
 	BYTE *pbytStatsBytes = this->stats.GetPackedBuffer(dwStatsSize);
@@ -1600,6 +1638,7 @@ bool CDbSavedGame::SetMembers(
 	this->moves = Src.moves;
 
 	this->stats = Src.stats;
+	this->scriptArrays = Src.scriptArrays;
 	this->wVersionNo = Src.wVersionNo;
 	this->checksumStr = Src.checksumStr;
 

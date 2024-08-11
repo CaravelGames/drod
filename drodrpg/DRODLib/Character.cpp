@@ -541,6 +541,33 @@ WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
 }
 
 //*****************************************************************************
+int CCharacter::getArrayValue(
+	const ScriptArrayMap& scriptArrays, //[in] map of variable ids to script arrays
+	const UINT& varId, //[in] id of script array to read
+	const int arrayIndex //[in] index of value to get
+)
+//Returns: the value at the given index in the specified script array.
+//If the value has not been set, a default value of 0 is returned.
+{
+	if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+		return 0; //Out of range value is always 0
+	}
+
+	ScriptArrayMap::const_iterator array = scriptArrays.find(varId);
+
+	if (array == scriptArrays.end()) {
+		return 0; //Array hasn't been initialized yet, so return 0 as default.
+	}
+
+	map<int, int>::const_iterator value = array->second.find(arrayIndex);
+	if (value == array->second.end()) {
+		return 0; //Value hasn't been set yet, so return 0 as default.
+	}
+
+	return value->second;
+}
+
+//*****************************************************************************
 bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
 //Returns: false if command cannot be allowed to execute (e.g., killing player on turn 0), otherwise true
@@ -1307,6 +1334,40 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		//Unrecognized identifier.
 		return false;
 	}
+	else if (pwStr[index] == W_t('#')) {
+		//Check that array variable has index
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (isVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		index = endIndex;
+
+		//Is it a hold var?
+		if (!pHold->GetVarID(wVarName.c_str()))
+			return false;
+
+		if (pwStr[index] != W_t('['))
+			return false;
+		++index;
+
+		if (!IsValidExpression(pwStr, index, pHold, ']')) //recursive call
+			return false;
+		if (pwStr[index] != W_t(']')) //should be parsing the close bracket at this point
+			return false; //missing close bracket
+
+		++index;
+
+		return true;
+	}
 
 	//Invalid identifier
 	return false;
@@ -1566,6 +1627,40 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 			return parsePrimitive(ePrimitive, pwStr, index, pGame, pNPC);
 
 		//else: unrecognized identifier -- just return a zero value below
+	}
+	else if (pwStr[index] == W_t('#')) {
+		//Parse array index, then look up the value if the index if valid
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (isVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		index = endIndex;
+
+		ASSERT(pwStr[index] == W_t('['));
+		++index; //pass left bracket
+
+		int arrayIndex = parseExpression(pwStr, index, pGame, pNPC, ']'); //recursive call
+		SKIP_WHITESPACE(pwStr, index);
+		if (pwStr[index] == W_t(']'))
+			++index;
+		else
+		{
+			//parse error -- return the current value
+			LogParseError(pwStr, "Parse error (missing close bracket)");
+		}
+
+		UINT varId = pGame->pHold->GetVarID(wVarName.c_str());
+		ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+		return getArrayValue(scriptArrays, varId, arrayIndex);
 	}
 
 	//Invalid identifier
@@ -3122,6 +3217,63 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_ArrayVarSet:
+			{
+				SetArrayVariable(command, pGame, CueEvents);
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ArrayVarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				bool success = false;
+				getCommandXY(command, wX, wY);
+
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter) {
+						pCharacter->SetArrayVariable(command, pGame, CueEvents);
+						success = true;
+
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
+					}
+				}
+
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ClearArrayVar:
+			{
+				UINT varId = command.x;
+				ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+
+				ScriptArrayMap::iterator& array = scriptArrays.find(varId);
+				if (array != scriptArrays.end()) {
+					//Only clear a script array that is initialized
+					array->second.clear();
+				}
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -3359,6 +3511,8 @@ Finish:
 void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.x;
+	if (pGame->pHold && pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set array var as normal var
 
 	//Get variable.
 	CDbPackedVars& stats = pGame->stats;
@@ -3459,6 +3613,69 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 		} else {
 			stats.SetVar(varName, x);
 		}
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetArrayVariable(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	CCueEvents& CueEvents)
+{
+	const UINT varIndex = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set normal var as an array var
+
+	int arrayIndex = (int)(this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+
+	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
+	for (vector<WSTRING>::const_iterator expression = expressions.begin();
+		expression != expressions.end(); ++expression) {
+		if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+			++arrayIndex;
+			continue; //Don't set value outside of allowed range. continue instead of break as negative values can end up in range
+		}
+
+		UINT index = 0;
+		int x = getArrayValue(scriptArrays, varIndex, arrayIndex);
+		//Note: [] operator will initialize missing values. This gives a default of 0.
+		int operand = scriptArrays[varIndex][arrayIndex];
+		operand = parseExpression(expression->c_str(), index, pGame, this);
+
+		switch (command.h)
+		{
+		case ScriptVars::Assign:
+			x = operand;
+			break;
+		case ScriptVars::Inc:
+			addWithClamp(x, operand);
+			break;
+		case ScriptVars::Dec:
+			addWithClamp(x, -operand);
+			break;
+		case ScriptVars::MultiplyBy:
+			multWithClamp(x, operand);
+			break;
+		case ScriptVars::DivideBy:
+			if (operand)
+				x /= operand;
+			break;
+		case ScriptVars::Mod:
+			if (operand)
+				x = x % operand;
+			break;
+		default: break;
+		}
+
+		if (x == 0) {
+			//Save memory by clearing value
+			scriptArrays[varIndex].erase(arrayIndex);
+		}
+		else {
+			scriptArrays[varIndex][arrayIndex] = x;
+		}
+		++arrayIndex;
 	}
 }
 

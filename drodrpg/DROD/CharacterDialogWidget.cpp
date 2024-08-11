@@ -155,6 +155,11 @@ const UINT TAG_CHAROPTIONS2 = 895;
 const UINT TAG_VARCOMPLIST2 = 894;
 const UINT TAG_IMAGEOVERLAY_LABEL = 893;
 const UINT TAG_IMAGEOVERLAYTEXT = 892;
+const UINT TAG_ARRAYVARLIST = 891;
+const UINT TAG_ARRAYVAROPLIST = 890;
+const UINT TAG_ARRAYINDEX_LABEL = 889;
+const UINT TAG_ARRAYVAR_REMOVE = 888;
+const UINT TAG_ARRAYVAR_TEXTLABEL = 887;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -300,6 +305,14 @@ void CRenameDialogWidget::OnDoubleClick(
 		}
 		break;
 
+		case TAG_ARRAYVARLIST:
+		{
+			CCharacterDialogWidget* pParent = DYN_CAST(CCharacterDialogWidget*,
+				CWidget*, this->pParent);
+			pParent->RenameVar(true);
+		}
+		break;
+
 		case TAG_CHARACTERLISTBOX:
 		{
 			CCharacterDialogWidget *pParent = DYN_CAST(CCharacterDialogWidget*,
@@ -388,6 +401,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOnOffListBox3(NULL), pOpenCloseListBox(NULL)
 	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
 	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL), pVarCompListBox2(NULL)
+	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pEquipmentTypesListBox(NULL), pCustomNPCListBox(NULL), pEquipTransListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
@@ -599,15 +613,17 @@ bool CCharacterDialogWidget::RenameCharacter()
 }
 
 //*****************************************************************************
-bool CCharacterDialogWidget::RenameVar()
+bool CCharacterDialogWidget::RenameVar(const bool bIsArrayVar)
 //Prompt the user to rename the selected hold variable.
 //
 //Returns: whether rename operation succeeded
 {
-	if (!this->pVarListBox->ClickedSelection())
+	CListBoxWidget* varListBox = bIsArrayVar ? this->pArrayVarListBox : this->pVarListBox;
+
+	if (!varListBox->ClickedSelection())
 		return false;
 
-	const UINT varID = this->pVarListBox->GetSelectedItem();
+	const UINT varID = varListBox->GetSelectedItem();
 	if (!varID)
 		return false;
 
@@ -626,7 +642,7 @@ bool CCharacterDialogWidget::RenameVar()
 	bool bGoodSyntax;
 	WSTRING wstr;
 	do {
-		wstr = this->pVarListBox->GetSelectedItemText();
+		wstr = varListBox->GetSelectedItemText();
 		const UINT answerTagNo = pEditRoomScreen->ShowTextInputMessage(
 				MID_RenameVariablePrompt, wstr, false, true);
 		if (answerTagNo != TAG_OK)
@@ -638,14 +654,19 @@ bool CCharacterDialogWidget::RenameVar()
 			pEditRoomScreen->ShowOkMessage(MID_VarNameSyntaxError);
 	} while (!bGoodSyntax);
 
+	if (ScriptVars::IsCharacterArrayVar(wstr) != bIsArrayVar) {
+		pEditRoomScreen->ShowOkMessage(g_pTheDB->GetMessageText(MID_CantChangeVarType));
+		return false;
+	}
+
 	if (!pEditRoomScreen->pHold->RenameVar(varID, wstr))
 	{
 		pEditRoomScreen->ShowOkMessage(MID_VarNameDuplicationError);
 		return false;
 	}
 
-	this->pVarListBox->SetSelectedItemText(wstr.c_str());
-	this->pVarListBox->Paint();
+	varListBox->SetSelectedItemText(wstr.c_str());
+	varListBox->Paint();
 	return true;
 }
 
@@ -1574,9 +1595,18 @@ void CCharacterDialogWidget::AddCommandDialog()
 			X_VARTEXTLABEL, Y_VARTEXTLABEL, CX_VARTEXTLABEL, CY_VARTEXTLABEL,
 			F_Small, g_pTheDB->GetMessageText(MID_VarNameText)));
 
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_ARRAYVAR_TEXTLABEL,
+		X_VARTEXTLABEL, Y_VARTEXTLABEL, CX_VARTEXTLABEL, CY_VARTEXTLABEL,
+		F_Small, g_pTheDB->GetMessageText(MID_ArrayVarNameExpression)));
+
 	this->pVarListBox = new CListBoxWidget(TAG_VARLIST,
 			X_VARLISTBOX, Y_VARLISTBOX, CX_VARLISTBOX, CY_VARLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pVarListBox);
+
+	this->pArrayVarListBox = new CListBoxWidget(TAG_ARRAYVARLIST,
+		X_VARLISTBOX, Y_VARLISTBOX, CX_VARLISTBOX, CY_VARLISTBOX, true);
+	this->pArrayVarListBox->AddHotkey(SDLK_RETURN, TAG_OK);
+	this->pAddCommandDialog->AddWidget(this->pArrayVarListBox);
 
 	CButtonWidget *pVarAddButton = new CButtonWidget(TAG_VARADD, X_VARADD,
 			Y_VARADD, CX_VARADD, CY_VARADD, g_pTheDB->GetMessageText(MID_VarAdd));
@@ -1584,6 +1614,9 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	CButtonWidget *pVarRemoveButton = new CButtonWidget(TAG_VARREMOVE, X_VARREMOVE,
 			Y_VARREMOVE, CX_VARREMOVE, CY_VARREMOVE, g_pTheDB->GetMessageText(MID_VarRemove));
+	this->pAddCommandDialog->AddWidget(pVarRemoveButton);
+	pVarRemoveButton = new CButtonWidget(TAG_ARRAYVAR_REMOVE, X_VARREMOVE,
+		Y_VARREMOVE, CX_VARREMOVE, CY_VARREMOVE, g_pTheDB->GetMessageText(MID_VarRemove));
 	this->pAddCommandDialog->AddWidget(pVarRemoveButton);
 
 	this->pVarOpListBox = new CListBoxWidget(TAG_VAROPLIST,
@@ -1598,6 +1631,18 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarOpListBox->AddItem(ScriptVars::AssignText, g_pTheDB->GetMessageText(MID_VarAssignText));
 	this->pVarOpListBox->AddItem(ScriptVars::AppendText, g_pTheDB->GetMessageText(MID_VarAppendText));
 	this->pVarOpListBox->SelectLine(0);
+
+	this->pArrayVarOpListBox = new CListBoxWidget(TAG_ARRAYVAROPLIST,
+		X_VAROPLIST, Y_VAROPLIST, CX_VAROPLIST, CY_VAROPLIST - (2 * LIST_LINE_HEIGHT));
+	this->pAddCommandDialog->AddWidget(this->pArrayVarOpListBox);
+	this->pArrayVarOpListBox->AddHotkey(SDLK_RETURN, TAG_OK);
+	this->pArrayVarOpListBox->AddItem(ScriptVars::Assign, g_pTheDB->GetMessageText(MID_VarAssign));
+	this->pArrayVarOpListBox->AddItem(ScriptVars::Inc, g_pTheDB->GetMessageText(MID_VarInc));
+	this->pArrayVarOpListBox->AddItem(ScriptVars::Dec, g_pTheDB->GetMessageText(MID_VarDec));
+	this->pArrayVarOpListBox->AddItem(ScriptVars::MultiplyBy, g_pTheDB->GetMessageText(MID_VarMultiplyBy));
+	this->pArrayVarOpListBox->AddItem(ScriptVars::DivideBy, g_pTheDB->GetMessageText(MID_VarDivideBy));
+	this->pArrayVarOpListBox->AddItem(ScriptVars::Mod, g_pTheDB->GetMessageText(MID_VarMod));
+	this->pArrayVarOpListBox->SelectLine(0);
 
 	this->pVarCompListBox = new CListBoxWidget(TAG_VARCOMPLIST,
 			X_VARCOMPLIST, Y_VARCOMPLIST, CX_VARCOMPLIST, CY_VARCOMPLIST);
@@ -1626,6 +1671,10 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VARVALUELABEL,
 			X_VARVALUELABEL, Y_VARVALUELABEL, CX_VARVALUELABEL, CY_VARVALUELABEL,
 			F_Small, g_pTheDB->GetMessageText(MID_VarOperand)));
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_ARRAYINDEX_LABEL,
+		X_VARVALUELABEL, Y_VARVALUELABEL, CX_VARVALUELABEL, CY_VARVALUELABEL,
+		F_Small, g_pTheDB->GetMessageText(MID_ArrayIndexLabel)));
 
 	CTextBoxWidget *pVarOperand = new CTextBoxWidget(TAG_VARVALUE, X_VARVALUE, Y_VARVALUE,
 			CX_VARVALUE, CY_VARVALUE);
@@ -1862,6 +1911,9 @@ void CCharacterDialogWidget::EditCharacter(CCharacter* pCharacter)
 
 	PopulateMainGraphicList();
 
+	UpdateVarDeleteButton(TAG_VARREMOVE, this->pVarListBox);
+	UpdateVarDeleteButton(TAG_ARRAYVAR_REMOVE, this->pArrayVarListBox);
+
 	CWidget *pButton = this->pAddCommandDialog->GetWidget(TAG_VARREMOVE);
 	ASSERT(pButton);
 	const bool bEnable = this->pVarListBox->GetItemCount() > 0;
@@ -1993,6 +2045,7 @@ void CCharacterDialogWidget::OnClick(
 					case TAG_TESTSOUND: TestSound(); break;
 					case TAG_VARADD: AddVar(); break;
 					case TAG_VARREMOVE: DeleteVar();	break;
+					case TAG_ARRAYVAR_REMOVE: DeleteVar(true); break;
 					default:
 						bLoop = false;
 					break;
@@ -2575,14 +2628,17 @@ UINT CCharacterDialogWidget::AddVar(const WCHAR* pVarName)
 		pEditRoomScreen->ShowOkMessage(MID_VarNameDuplicationError);
 		return 0;
 	}
-	const UINT line = this->pVarListBox->AddItem(dwNewVarID, pVarName);
-	this->pVarListBox->SelectLine(line);
 
-	CWidget *pButton = this->pAddCommandDialog->GetWidget(TAG_VARREMOVE);
-	ASSERT(pButton);
-	pButton->Enable();
-	if (pButton->IsVisible() && this->pAddCommandDialog->IsVisible())
-		pButton->RequestPaint();
+	if (ScriptVars::IsCharacterArrayVar(pVarName)) {
+		const UINT line = this->pArrayVarListBox->AddItem(dwNewVarID, pVarName);
+		this->pArrayVarListBox->SelectLine(line);
+		UpdateVarDeleteButton(TAG_ARRAYVAR_REMOVE, this->pArrayVarListBox);
+	}
+	else {
+		const UINT line = this->pVarListBox->AddItem(dwNewVarID, pVarName);
+		this->pVarListBox->SelectLine(line);
+		UpdateVarDeleteButton(TAG_VARREMOVE, this->pVarListBox);
+	}
 
 	return dwNewVarID;
 }
@@ -2670,10 +2726,11 @@ void CCharacterDialogWidget::DeleteCommands(
 }
 
 //*****************************************************************************
-void CCharacterDialogWidget::DeleteVar()
+void CCharacterDialogWidget::DeleteVar(const bool bArrayVar)
 //Delete selected hold var.
 {
-	ASSERT(this->pVarListBox->GetItemCount() > 0);
+	CListBoxWidget* varListBox = bArrayVar ? this->pArrayVarListBox : this->pVarListBox;
+	ASSERT(varListBox->GetItemCount() > 0);
 	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 			g_pTheSM->GetScreen(SCR_EditRoom));
 	ASSERT(pEditRoomScreen);
@@ -2681,27 +2738,21 @@ void CCharacterDialogWidget::DeleteVar()
 	if (pEditRoomScreen->ShowYesNoMessage(MID_DeleteVarPrompt) != TAG_YES)
 		return;
 
-	const UINT dwVarID = this->pVarListBox->GetSelectedItem();
-	const UINT line = this->pVarListBox->GetSelectedLineNumber();
+	const UINT dwVarID = varListBox->GetSelectedItem();
+	const UINT line = varListBox->GetSelectedLineNumber();
 	if (pEditRoomScreen->pHold->DeleteVar(dwVarID))
 	{
 		PopulateVarList();
 
 		//Select closest var in list.
-		const UINT numLines = this->pVarListBox->GetItemCount();
+		const UINT numLines = varListBox->GetItemCount();
 		if (line < numLines)
-			this->pVarListBox->SelectLine(line);
+			varListBox->SelectLine(line);
 		else if (numLines > 0)
-			this->pVarListBox->SelectLine(numLines-1);
+			varListBox->SelectLine(numLines-1);
 
 		//Set button state.
-		CWidget *pButton = GetWidget(TAG_VARREMOVE);
-		ASSERT(pButton);
-		const bool bEnable = this->pVarListBox->GetItemCount() > 0;
-		if (!bEnable && GetSelectedWidget() == pButton)
-			SelectNextWidget();
-		pButton->Enable(bEnable);
-		pButton->RequestPaint();
+		UpdateVarDeleteButton(bArrayVar ? TAG_ARRAYVAR_REMOVE : TAG_VARREMOVE, varListBox);
 	}
 }
 
@@ -2741,6 +2792,7 @@ void CCharacterDialogWidget::EditClickedCommand()
 			case TAG_TESTSOUND: TestSound(); break;
 			case TAG_VARADD: AddVar(); break;
 			case TAG_VARREMOVE: DeleteVar();	break;
+			case TAG_ARRAYVAR_REMOVE: DeleteVar(true); break;
 			default:
 				bLoop = false;
 			break;
@@ -3495,7 +3547,7 @@ const
 		// no break
 		case CCharacterCommand::CC_VarSet:
 		{
-			UINT varId = command.command == CCharacterCommand::CC_VarSetAt ? command.w : command.x;
+			UINT varId = command.getVarID();
 			UINT operation = command.command == CCharacterCommand::CC_VarSetAt ? command.h : command.y;
 			const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
 			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
@@ -3554,6 +3606,46 @@ const
 						wstr += _itoW(command.w, temp, 10);
 				break;
 			}
+		}
+		break;
+
+		case CCharacterCommand::CC_ArrayVarSetAt:
+		{
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+		}
+		//no break
+		case CCharacterCommand::CC_ArrayVarSet:
+		{
+			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.w);
+			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+			wstr += wszLeftBracket;
+			wstr += _itoW(command.flags, temp, 10);
+			wstr += wszRightBracket;
+			wstr += wszSpace;
+			UINT operation = command.h;
+			switch (operation)
+			{
+				case ScriptVars::Assign: wstr += wszEqual; break;
+				case ScriptVars::Inc: wstr += wszPlus; break;
+				case ScriptVars::Dec: wstr += wszHyphen; break;
+				case ScriptVars::MultiplyBy: wstr += wszAsterisk; break;
+				case ScriptVars::DivideBy: wstr += wszForwardSlash; break;
+				case ScriptVars::Mod: wstr += wszPercent; break;
+				default: wstr += wszQuestionMark; break;
+			}
+			wstr += wszSpace;
+			wstr += command.label;
+		}
+		break;
+		case CCharacterCommand::CC_ClearArrayVar:
+		{
+			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.x);
+			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		}
 		break;
 
@@ -3796,6 +3888,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
 		case CCharacterCommand::CC_ReplaceWithDefault:
+		case CCharacterCommand::CC_ClearArrayVar:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -3846,6 +3939,30 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 				break;
 			}
 			if (pCommand->command == CCharacterCommand::CC_VarSetAt && wLogicNestDepth)
+				wstr += wszQuestionMark; //questionable logic condition
+		}
+		break;
+		case CCharacterCommand::CC_ArrayVarSet:
+			if (bLastWasIfCondition || wLogicNestDepth)
+				wstr += wszQuestionMark;	//questionable If condition
+			//no break
+		case CCharacterCommand::CC_ArrayVarSetAt:
+		{
+			vector<WSTRING> expressions = WCSExplode(pCommand->label, *wszSemicolon);
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+			ASSERT(pEditRoomScreen);
+			ASSERT(pEditRoomScreen->pHold);
+			for (vector<WSTRING>::const_iterator expression = expressions.begin();
+				expression != expressions.end(); ++expression) {
+				UINT validationIndex = 0;
+				if (!CCharacter::IsValidExpression(expression->c_str(), validationIndex, pEditRoomScreen->pHold)) {
+					wstr += wszAsterisk; //expression is not valid
+					break;
+				}
+			}
+
+			if (pCommand->command == CCharacterCommand::CC_ArrayVarSetAt && wLogicNestDepth)
 				wstr += wszQuestionMark; //questionable logic condition
 		}
 		break;
@@ -3964,6 +4081,9 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerSword, g_pTheDB->GetMessageText(MID_SetPlayerSword));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSet, g_pTheDB->GetMessageText(MID_ArrayVarSet));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSetAt, g_pTheDB->GetMessageText(MID_ArrayVarSetAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ClearArrayVar, g_pTheDB->GetMessageText(MID_ClearArrayVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, g_pTheDB->GetMessageText(MID_ReplaceWithDefault));
@@ -4476,13 +4596,21 @@ void CCharacterDialogWidget::PopulateVarList()
 //Compile active hold's current var list.
 {
 	this->pVarListBox->Clear();
+	this->pArrayVarListBox->Clear();
 	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 			g_pTheSM->GetScreen(SCR_EditRoom));
 	ASSERT(pEditRoomScreen);
 	ASSERT(pEditRoomScreen->pHold);
-	for (vector<HoldVar>::const_iterator var = pEditRoomScreen->pHold->vars.begin();
-			var != pEditRoomScreen->pHold->vars.end(); ++var)
-		this->pVarListBox->AddItem(var->dwVarID, var->varNameText.c_str());
+	const CDbHold* pHold = pEditRoomScreen->pHold;
+	for (vector<HoldVar>::const_iterator var = pHold->vars.begin();
+		var != pHold->vars.end(); ++var) {
+		if (ScriptVars::IsCharacterArrayVar(var->varNameText)) {
+			this->pArrayVarListBox->AddItem(var->dwVarID, var->varNameText.c_str());
+		}
+		else {
+			this->pVarListBox->AddItem(var->dwVarID, var->varNameText.c_str());
+		}
+	}
 
 	//Add hard-coded global vars to the end of the list.
 	this->pVarListBox->SortAlphabetically(false);
@@ -4597,6 +4725,25 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_SHOVEL, g_pTheDB->GetMessageText(MID_VarScoreShovels));
 
 	this->pVarListBox->SortAlphabetically(true);
+	this->pArrayVarListBox->SortAlphabetically(true);
+}
+
+//*****************************************************************************
+void CCharacterDialogWidget::UpdateVarDeleteButton(
+	UINT widgetTag, CListBoxWidget* varListBox
+)
+//Update the enabled state of widget based on the content of a list box.
+//Intended for the Delete Var buttons.
+{
+	CWidget* pButton = GetWidget(widgetTag);
+	ASSERT(pButton);
+	const bool bEnable = varListBox->GetItemCount() > 0;
+	if (!bEnable && GetSelectedWidget() == pButton)
+		SelectNextWidget();
+	pButton->Enable(bEnable);
+
+	if (pButton->IsVisible() && this->pAddCommandDialog->IsVisible())
+		pButton->RequestPaint();
 }
 
 //*****************************************************************************
@@ -4742,7 +4889,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 40;
+	static const UINT NUM_WIDGETS = 43;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4755,7 +4902,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX,
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
-		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT
+		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
+		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -4763,24 +4911,24 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CUEEVENT[] =    { TAG_EVENTLISTBOX, 0 };
 	static const UINT SPEECH[] =      { TAG_DELAY, TAG_SPEECHTEXT, TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, 0 };
 	static const UINT ORIENTATION[] = { TAG_DIRECTIONLISTBOX, 0 };
- 	static const UINT ONOFF[] =       { TAG_ONOFFLISTBOX, 0 };
+	static const UINT ONOFF[] =       { TAG_ONOFFLISTBOX, 0 };
 	static const UINT OPENCLOSE[] =   { TAG_OPENCLOSELISTBOX, 0 };
 	static const UINT TEXTBOX[] =     { TAG_GOTOLABELTEXT, 0 };
 	static const UINT TEXT_AND_COLOR[] = { TAG_GOTOLABELTEXT, TAG_TEXT2, 0 };
 	static const UINT GOTO[] =        { TAG_GOTOLABELTEXT, 0 };
 	static const UINT GOTOLIST[] =    { TAG_GOTOLABELLISTBOX, 0 };
 	static const UINT MUSIC[] =       { TAG_MUSICLISTBOX, 0 };
- 	static const UINT MOVE[] =        { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_WAITFLAGSLISTBOX, 0};
- 	static const UINT WAITFLAGS[] =   { TAG_WAITFLAGSLISTBOX, 0};
- 	static const UINT VARSET[] =      { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0 };
- 	static const UINT VARGET[] =      { TAG_GOTOLABELTEXT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0 };
+	static const UINT MOVE[] =        { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_WAITFLAGSLISTBOX, 0};
+	static const UINT WAITFLAGS[] =   { TAG_WAITFLAGSLISTBOX, 0};
+	static const UINT VARSET[] =      { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0 };
+	static const UINT VARGET[] =      { TAG_GOTOLABELTEXT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0 };
 	static const UINT GRAPHIC[] =     { TAG_GRAPHICLISTBOX2, 0 };
- 	static const UINT MOVEREL[] =     { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0 };
- 	static const UINT IMPERATIVE[] =  { TAG_IMPERATIVELISTBOX, 0 };
+	static const UINT MOVEREL[] =     { TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0 };
+	static const UINT IMPERATIVE[] =  { TAG_IMPERATIVELISTBOX, 0 };
 	static const UINT ANSWER[] =      { TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0 };
 	static const UINT ITEMS[] =       { TAG_ITEMLISTBOX, 0 };
- 	static const UINT XY[] =          { TAG_MOVERELX, TAG_MOVERELY, 0};
- 	static const UINT BEHAVIOR[] =    { TAG_BEHAVIORLISTBOX, 0 };
+	static const UINT XY[] =          { TAG_MOVERELX, TAG_MOVERELY, 0};
+	static const UINT BEHAVIOR[] =    { TAG_BEHAVIORLISTBOX, 0 };
 	static const UINT EQUIPMENT[] =   { TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX, 0};
 	static const UINT NEWENTITY[] =   { TAG_GRAPHICLISTBOX2, TAG_DIRECTIONLISTBOX2, 0 };
 	static const UINT EFFECT[] =      { TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3, 0 };
@@ -4788,6 +4936,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT MOVETYPE[] =    { TAG_MOVETYPELISTBOX, 0 };
 	static const UINT EXPRESSION[] =  { TAG_GOTOLABELTEXT, TAG_VARCOMPLIST2, TAG_VARVALUE, 0 };
 	static const UINT IMAGEOVERLAY[] = { TAG_IMAGEOVERLAYTEXT, 0 };
+	static const UINT ARRAYVARSET[] = { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_VARVALUE, 0 };
+	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -4868,10 +5018,13 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_LogicalWaitOr
 		NO_WIDGETS,         //CC_LogicalWaitXOR
 		NO_WIDGETS,         //CC_LogicalWaitEnd
-		IMAGEOVERLAY        //CC_ImageOverlay
+		IMAGEOVERLAY,       //CC_ImageOverlay
+		ARRAYVARSET,        //CC_ArrayVarSet
+		ARRAYVARSET,        //CC_ArrayVarSetAt
+		CLEARARRAYVAR       //CC_ClearArrayVar
 	};
 
-	static const UINT NUM_LABELS = 27;
+	static const UINT NUM_LABELS = 29;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -4879,7 +5032,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_SINGLESTEP, TAG_VARNAMETEXTLABEL, TAG_VARVALUELABEL, TAG_CUTSCENELABEL,
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
-		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL
+		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL, TAG_ARRAYINDEX_LABEL,
+		TAG_ARRAYVAR_TEXTLABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -4907,6 +5061,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT STAT_L[NUM_LABELS] =         { TAG_VALUE_OR_EXPRESSION, 0 };
 	static const UINT EXPRESSION_L[NUM_LABELS] =   { TAG_VARVALUELABEL, 0 };
 	static const UINT IMAGE_OVERLAY_L[NUM_LABELS] = { TAG_IMAGEOVERLAY_LABEL, 0 };
+	static const UINT ARRAYSET_L[] =               { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -4987,7 +5142,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_LogicalWaitOr
 		NO_LABELS,          //CC_LogicalWaitXOR
 		NO_LABELS,          //CC_LogicalWaitEnd
-		IMAGE_OVERLAY_L     //CC_ImageOverlay
+		IMAGE_OVERLAY_L,    //CC_ImageOverlay
+		ARRAYSET_L,         //CC_ArrayVarSet
+		ARRAYSET_L,         //CC_ArrayVarSetAt
+		NO_LABELS           //CC_ClearArrayVar
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5780,6 +5938,40 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_ArrayVarSet:
+		case CCharacterCommand::CC_ArrayVarSetAt:
+		{
+			this->pCommand->w = this->pArrayVarListBox->GetSelectedItem();
+			this->pCommand->h = this->pArrayVarOpListBox->GetSelectedItem();
+
+			CTextBoxWidget* pVarOperand = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			ASSERT(pVarOperand);
+			const WCHAR* pOperandText = pVarOperand->GetText();
+			ASSERT(pOperandText);
+			this->pCommand->flags = _Wtoi(pOperandText);
+
+			CTextBoxWidget* pVarText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pVarText);
+			this->pCommand->label = pVarText->GetText();
+
+			if (this->pCommand->command == CCharacterCommand::CC_ArrayVarSetAt) {
+				QueryXY();
+			}
+			else {
+				AddCommand();
+			}
+		}
+		break;
+
+		case CCharacterCommand::CC_ClearArrayVar:
+		{
+			this->pCommand->x = this->pArrayVarListBox->GetSelectedItem();
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_WaitForExpression:
 		{
 			CTextBoxWidget* pAmount = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -6210,6 +6402,28 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		}
 		break;
 
+		case CCharacterCommand::CC_ArrayVarSet:
+		case CCharacterCommand::CC_ArrayVarSetAt:
+		{
+			this->pArrayVarListBox->SelectItem(this->pCommand->w);
+			this->pArrayVarOpListBox->SelectItem(this->pCommand->h);
+
+			CTextBoxWidget* pVarOperand = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			ASSERT(pVarOperand);
+			CTextBoxWidget* pVarText = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_GOTOLABELTEXT));
+			ASSERT(pVarText);
+			pVarOperand->SetText(_itoW(this->pCommand->flags, temp, 10));
+			pVarText->SetText(this->pCommand->label.c_str());
+		}
+		break;
+		case CCharacterCommand::CC_ClearArrayVar:
+		{
+			this->pArrayVarListBox->SelectItem(this->pCommand->x);
+		}
+		break;
+
 		case CCharacterCommand::CC_WaitForExpression:
 		{
 			CTextBoxWidget* pAmount = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -6524,6 +6738,23 @@ bool getTextUpTo(const WCHAR* pText, UINT& pos, WCHAR c)
 	return pText[pos] == c;
 }
 
+//******************************************************************************
+UINT parseOperatorSymbol(char varOperator)
+{
+	switch (varOperator)
+	{
+		default: //robust default for bad operator char
+		case '=': return ScriptVars::Assign; break;
+		case '+': return ScriptVars::Inc; break;
+		case '-': return ScriptVars::Dec; break;
+		case '*': return ScriptVars::MultiplyBy; break;
+		case '/': return ScriptVars::DivideBy; break;
+		case '%': return ScriptVars::Mod; break;
+		case ':': return ScriptVars::AssignText; break;
+		case ';': return ScriptVars::AppendText; break;
+	}
+}
+
 //*****************************************************************************
 CCharacterCommand* CCharacterDialogWidget::fromText(
 //Parses a line of text into a command.
@@ -6531,7 +6762,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 //Returns: pointer to a new character command if text parsed correctly, else NULL
 //
 //Params:
-    WSTRING text)  //Text to parse
+		WSTRING text)  //Text to parse
 {
 #define skipWhitespace while (pos < textLength && iswspace(pText[pos])) ++pos
 
@@ -6581,7 +6812,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	if (eCommand >= CCharacterCommand::CC_Count)
 		return NULL; //text doesn't match commands
 
-   CCharacterCommand *pCommand = new CCharacterCommand();
+	 CCharacterCommand *pCommand = new CCharacterCommand();
 	pCommand->command = CCharacterCommand::CharCommand(eCommand);
 
 	skipWhitespace;
@@ -6962,20 +7193,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			return NULL;
 		}
 		const char varOperator = char(WCv(pText[pos]));
-		UINT operation;
+		UINT operation = parseOperatorSymbol(varOperator);
 		++pos;
-		switch (varOperator)
-		{
-			default: //robust default for bad operator char
-			case '=': operation = ScriptVars::Assign; break;
-			case '+': operation = ScriptVars::Inc; break;
-			case '-': operation = ScriptVars::Dec; break;
-			case '*': operation = ScriptVars::MultiplyBy; break;
-			case '/': operation = ScriptVars::DivideBy; break;
-			case '%': operation = ScriptVars::Mod; break;
-			case ':': operation = ScriptVars::AssignText; break;
-			case ';': operation = ScriptVars::AppendText; break;
-		}
 
 		if (pCommand->command == CCharacterCommand::CC_VarSetAt)
 			pCommand->h = operation;
@@ -7002,6 +7221,71 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 					pCommand->label = pText + pos; //get text expression
 			}
 			break;
+		}
+	}
+	break;
+
+	case CCharacterCommand::CC_ArrayVarSetAt:
+	{
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+	}
+	// no break
+	case CCharacterCommand::CC_ArrayVarSet:
+	{
+		parseNumber(pCommand->flags);
+		skipComma;
+
+		parseChar('"');
+		WSTRING varName;
+		const bool bRes = getTextToLastQuote(pText, pos, varName);
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		UINT tempIndex = 0;
+		pCommand->w = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		if (!bFound)
+		{
+			pCommand->w = AddVar(varName.c_str());
+			if (!pCommand->w)
+			{
+				delete pCommand;
+				return NULL;
+			}
+		}
+		skipWhitespace;
+		const char varOperator = char(WCv(pText[pos]));
+		pCommand->h = parseOperatorSymbol(varOperator);
+		++pos;
+		skipWhitespace;
+		pCommand->label = pText + pos;
+	}
+	break;
+
+	case CCharacterCommand::CC_ClearArrayVar:
+	{
+		parseChar('"');
+		WSTRING varName;
+		const bool bRes = getTextToLastQuote(pText, pos, varName);
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		UINT tempIndex = 0;
+		pCommand->x = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		if (!bFound)
+		{
+			pCommand->x = AddVar(varName.c_str());
+			if (!pCommand->x)
+			{
+				delete pCommand;
+				return NULL;
+			}
 		}
 	}
 	break;
@@ -7536,6 +7820,46 @@ WSTRING CCharacterDialogWidget::toText(
 					concatNum(c.w);
 			break;
 		}
+	}
+	break;
+
+	case CCharacterCommand::CC_ArrayVarSetAt:
+	{
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+	}
+	case CCharacterCommand::CC_ArrayVarSet:
+	{
+		concatNumWithComma(c.flags);
+		UINT varId = c.w;
+		UINT operation = c.h;
+		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		wstr += wszQuote;
+		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		wstr += wszQuote;
+		wstr += wszSpace;
+		switch (operation)
+		{
+			case ScriptVars::Assign: wstr += wszEqual; break;
+			case ScriptVars::Inc: wstr += wszPlus; break;
+			case ScriptVars::Dec: wstr += wszHyphen; break;
+			case ScriptVars::MultiplyBy: wstr += wszAsterisk; break;
+			case ScriptVars::DivideBy: wstr += wszForwardSlash; break;
+			case ScriptVars::Mod: wstr += wszPercent; break;
+			default: wstr += wszQuestionMark; break;
+		}
+		wstr += wszSpace;
+		wstr += c.label;
+	}
+	break;
+
+	case CCharacterCommand::CC_ClearArrayVar:
+	{
+		UINT varId = c.x;
+		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		wstr += wszQuote;
+		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		wstr += wszQuote;
 	}
 	break;
 

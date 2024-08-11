@@ -1633,8 +1633,9 @@ bool CDbHold::IsVarNameGoodSyntax(const WCHAR* pName)
 {
 	if (!pName)
 		return false;
-	if (!iswalpha(*(pName++))) //first char must be a letter
+	if (!(iswalpha(*pName) || *pName == W_t('#'))) //first char must be a letter or hash
 		return false;
+	++pName;
 	while (WCv(*pName))
 	{
 		//No punctuation except underscore and space
@@ -2111,10 +2112,12 @@ bool CDbHold::LoadVars(
 		c4_Bytes VarNameTextBytes = p_VarNameText(row);
 		WSTRING name;
 		GetWString(name, VarNameTextBytes);
-		this->vars.push_back(HoldVar(
-				(UINT)(p_VarID(row)),
-				name.c_str()
-		));
+		const UINT varID = (UINT)(p_VarID(row));
+		this->vars.push_back(HoldVar(varID, name.c_str()));
+
+		//In-play optimization: not kept current during hold var editing
+		if (ScriptVars::IsCharacterArrayVar(name))
+			this->arrayScriptVars[varID] = name;
 	}
 
 	return true;
@@ -2807,6 +2810,7 @@ bool CDbHold::SetMembers(
 	}
 
 	this->vars = Src.vars;
+	this->arrayScriptVars = Src.arrayScriptVars;
 
 	for (vector<HoldCharacter*>::const_iterator chIter = Src.characters.begin();
 			chIter != Src.characters.end(); ++chIter)
@@ -3594,6 +3598,7 @@ void CDbHold::Clear()
 
 	ClearEntrances();
 	this->vars.clear();
+	this->arrayScriptVars.clear();
 
 	for (vector<HoldCharacter*>::iterator chIt=this->characters.begin();
 			chIt!=this->characters.end(); ++chIt)

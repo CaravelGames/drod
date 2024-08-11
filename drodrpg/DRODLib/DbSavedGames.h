@@ -167,6 +167,9 @@ public:
 	CMonster *pMonsterList, *pMonsterListAtRoomStart; //global scripts and custom equipment
 	vector<CMonster*> DeadMonsters; //deactivated global scripts and custom equipment
 
+	typedef map<UINT, map<int, int>> ScriptArrayMap;
+	ScriptArrayMap scriptArrays; //unpacked hold array var values
+
 	//Version info.
 	UINT     wVersionNo;
 	string   checksumStr;
@@ -183,6 +186,7 @@ private:
 	void     SaveEntrancesExplored(c4_View &EntrancesExploredView) const;
 	void     SaveExploredRooms(c4_View &ExploredRoomsView) const;
 	void     SaveMonsters(c4_View &MonstersView, CMonster *pMonsterList) const;
+	void     SerializeScriptArrays();
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();
 	bool     UpdateNew();

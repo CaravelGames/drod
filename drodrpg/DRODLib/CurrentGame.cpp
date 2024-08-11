@@ -1861,6 +1861,9 @@ bool CCurrentGame::LoadFromSavedGame(
 
 	CDbSavedGame::setMonstersCurrentGame(this);
 
+	//Load script arrays
+	DeserializeScriptArrays();
+
 	//Set room start vars.
 	this->pPlayer->wX = this->pPlayer->wPrevX = CDbSavedGame::wStartRoomX;
 	this->pPlayer->wY = this->pPlayer->wPrevY = CDbSavedGame::wStartRoomY;
@@ -2021,6 +2024,39 @@ void CCurrentGame::LoadPrep(
 		}
 		this->bQuickCombat = bQuickCombat;
 		this->pPlayer->st = st;
+	}
+}
+
+//***************************************************************************************
+void CCurrentGame::DeserializeScriptArrays()
+//Load hold script arrays from raw buffers stored in CDbPackedVars
+{
+	if (!pHold)
+		return;
+
+	this->scriptArrays.clear();
+
+	for (map<UINT, WSTRING>::const_iterator it = pHold->arrayScriptVars.begin();
+		it != pHold->arrayScriptVars.end(); ++it) {
+		string varName("v");
+		varName += std::to_string(it->first);
+
+		BYTE* buffer = (BYTE*)this->stats.GetVar(varName.c_str(), (const void*)(NULL));
+		if (!buffer)
+			continue;
+
+		map<int, int> scriptArray;
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			int key = (int)readBpUINT(buffer, index);
+			int value = (int)readBpUINT(buffer, index);
+			ASSERT(value != 0);
+			scriptArray[key] = value;
+			--size;
+		}
+
+		scriptArrays[it->first] = scriptArray;
 	}
 }
 
