@@ -1330,20 +1330,25 @@ void CDbHolds::CheckForVarRefs(
 			AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
 		break;
 	case CCharacterCommand::CC_VarSet:
+	case CCharacterCommand::CC_VarSetAt:
 	case CCharacterCommand::CC_WaitForVar:
+	case CCharacterCommand::CC_ArrayVarSet:
+	case CCharacterCommand::CC_ArrayVarSetAt:
+	case CCharacterCommand::CC_ClearArrayVar:
 	{
 		if (bScorepoints)
 			break;
 
+		UINT refVarID = c.getVarID();
 		const WCHAR* pVarName;
 		WSTRING wstr;
-		if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+		if (refVarID >= (UINT)ScriptVars::FirstPredefinedVar)
 		{
-			wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(c.x));
+			wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(refVarID));
 			pVarName = wstr.c_str();
 		}
 		else {
-			pVarName = pHold->GetVarName(c.x);
+			pVarName = pHold->GetVarName(refVarID);
 		}
 
 		AddScriptVarRef(varMap, pVarName, pRoom, pCharacter, characterName);
@@ -1373,7 +1378,7 @@ void CDbHolds::CheckForVarRefs(
 			default: break;
 			}
 		}
-		else {
+		else if (c.command == CCharacterCommand::CC_WaitForVar) {
 			switch (c.y)
 			{
 			case ScriptVars::Equals:
@@ -1398,6 +1403,20 @@ void CDbHolds::CheckForVarRefs(
 		}
 	}
 	break;
+	case CCharacterCommand::CC_WaitForExpression:
+	{
+		//Search for a variable name in the expression.
+		if (!c.label.empty())
+		{
+			//parse expression
+			ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+			if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+			{
+				//Mark reference to variable.
+				AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+			}
+		}
+	}
 	default: break;
 	}
 }
