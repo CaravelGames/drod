@@ -216,23 +216,25 @@ interacts with its environment.</p>
       will continue execution if the user selects this choice.
       Up to nine answer options are supported for a given Question.  Any
       additional options are ignored.</li>
-  <li><a name="setvar"><b>Set var</b></a> - In addition to
+  <li>
+      <a name="setvar"><b>Set var</b></a> - In addition to
       <a href="#predefinedvars">predefined variables</a>,
-	  each hold you create contains a set
+      each hold you create contains a set
       of zero or more variables, named by you.  Use these variables to track
       persistent game state information across rooms during play. To add a variable
-      to a hold, type its name into the uppermost text box and click "Add".
-	  Variable names must begin with a letter and not contain any punctuation
-	  except underscore ('_').  
+      to a hold, type its name into the uppermost text box and click "Add".<br />
+      <u>Syntax</u>: Variable names must begin with a letter or hash (#) and not contain any punctuation
+      except underscore ('_').<br />
+      <u>Arrays</u>: Starting a variable name with a hash (#) configures it as an array variable. See <a href="scriptarray.html">Script arrays</a> for more information.<br />
       To permanently remove a hold variable, select it from the list box on the
       left and click "Remove".  Note that this removes the variable completely
       from the hold and all NPC scripts that use it, not just from this
       particular script.<br />
-      <a name="varops">Select</a> a hold variable from the list, choose an
+      <u>Modifying variables</u>: <a name="varops">Select</a> a hold variable from the list, choose an
       operation and a value. Variables may either store an integer or text. If
       the operation you specify is "Assign text" or "Add text", the variable you
       select will be set to store the text you provide. You may also reference
-	  other variables to insert into the given text.  For operations dealing
+      other variables to insert into the given text.  For operations dealing
       with numbers, if you provide the name of another variable, its value will
       be used (invalid names will be considered a value of 0). Otherwise, the
       number you provide is used. Use the text box on top to specify the text
@@ -241,11 +243,11 @@ interacts with its environment.</p>
       will store a number.<br />
       <a name="varsintext"><u>Using vars in text</u></a>:
       In variable text assignments,
-	  <a href="#autosave">Autosave</a>, <a href="#speech">Speech</a>, <a href="#question">Questions</a>
+      <a href="#autosave">Autosave</a>, <a href="#speech">Speech</a>, <a href="#question">Questions</a>
       (see below), level entrance texts, and scroll text,
       type "$&lt;var name&gt;$" to insert the
       current value of the variable you name at this point in the text.
-	  Type "$\n$" to skip to the next line of text.<br />
+      Type "$\n$" to skip to the next line of text.<br />
       <a name="varref"><u>Comprehensive variable reference list</u></a>:
       In the <a href="editroom.html">Room Editor Screen</a>, press F2 to output
       a comprehensive list of hold variables to the clipboard (use the paste
@@ -257,7 +259,8 @@ interacts with its environment.</p>
       Press Ctrl-F7 while playing to turn on and off the variable monitor.
       Whenever a script changes a hold variable, you will be notified onscreen.
       This only works while playtesting, playing a hold you authored, or playing
-      a CaravelNet hold in beta.</li>
+      a CaravelNet hold in beta.
+  </li>
   <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, its local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> condition. The condition is satisfied if the command successfully invokes a variable assignment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
   </li>
   <li><a name="setmonstervar"><b>Set monster var</b></a> - Modify a
@@ -1112,6 +1115,7 @@ Certain commands with time duration, marked above, may be optionally prefixed wi
 
 <hr />
 <a href="character.html">Character Scripting</a><br />
+<a href="scriptarray.html">Script arrays</a><br/>
 <a href="editroom.html">Room Editor</a><br />
 <a href="editselect.html">Level Editor</a><br />
 <a href="contents.html">Contents</a><br />
