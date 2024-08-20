@@ -3966,6 +3966,15 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 				wstr += wszQuestionMark; //questionable logic condition
 		}
 		break;
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+			UINT index = 0;
+			if (!CCharacter::IsValidExpression(pCommand->label.c_str(), index, pEditRoomScreen->pHold))
+				wstr += wszAsterisk; //expression is not valid
+		}
+		break;
 
 		//Deprecated commands.
 		case CCharacterCommand::CC_GotoIf:
