@@ -1449,6 +1449,30 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 }
 
 //*****************************************************************************
+void CCurrentGame::GetArrayVarValues(VARMAP& vars)
+//Outputs a mapping of combined array name and index to value info for all array vars
+{
+	vars.clear();
+
+	for (ScriptArrayMap::const_iterator iter = this->scriptArrays.begin();
+		iter != this->scriptArrays.end(); ++iter) {
+		//Get var name.
+		const UINT wVarID = iter->first;
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
+		const map<int, int> array = iter->second;
+
+		for (map<int, int>::const_iterator arrayIter = array.begin(); arrayIter != array.end(); ++arrayIter) {
+			//Create a key for each entry in the format v[id]/[index]
+			const string key = varName + "/" + to_string(arrayIter->first);
+			VarMapInfo info;
+			info.bInteger = true;
+			info.val = arrayIter->second;
+			vars[key] = info;
+		}
+	}
+}
+
+//*****************************************************************************
 void CCurrentGame::GotoLevelEntrance(
 //Leaves the level and goes to the level with the indicated entrance.
 //

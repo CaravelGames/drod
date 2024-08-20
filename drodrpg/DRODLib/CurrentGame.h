@@ -264,6 +264,7 @@ public:
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
+	void     GetArrayVarValues(VARMAP& vars);
 	int      getItemAmount(const UINT item) const;
 	int      getPlayerATK() const;
 	int      getPlayerDEF() const;
