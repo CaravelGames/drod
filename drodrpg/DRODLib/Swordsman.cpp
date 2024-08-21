@@ -300,9 +300,10 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 			switch (room.GetTSquare(wSX, wSY))
 			{
 				case T_ORB:
+					return false;
 				case T_BOMB:
 				case T_POWDER_KEG:
-					return false;
+					return this->pCurrentGame->IsPlayerSwordExplosiveSafe();
 				case T_MIRROR:
 					if (!this->bIntraRoomPath)
 						return false;
