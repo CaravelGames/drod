@@ -1449,6 +1449,30 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 }
 
 //*****************************************************************************
+void CCurrentGame::GetArrayVarValues(VARMAP& vars)
+//Outputs a mapping of combined array name and index to value info for all array vars
+{
+	vars.clear();
+
+	for (ScriptArrayMap::const_iterator iter = this->scriptArrays.begin();
+		iter != this->scriptArrays.end(); ++iter) {
+		//Get var name.
+		const UINT wVarID = iter->first;
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
+		const map<int, int> array = iter->second;
+
+		for (map<int, int>::const_iterator arrayIter = array.begin(); arrayIter != array.end(); ++arrayIter) {
+			//Create a key for each entry in the format v[id]/[index]
+			const string key = varName + "/" + to_string(arrayIter->first);
+			VarMapInfo info;
+			info.bInteger = true;
+			info.val = arrayIter->second;
+			vars[key] = info;
+		}
+	}
+}
+
+//*****************************************************************************
 void CCurrentGame::GotoLevelEntrance(
 //Leaves the level and goes to the level with the indicated entrance.
 //
@@ -1861,6 +1885,9 @@ bool CCurrentGame::LoadFromSavedGame(
 
 	CDbSavedGame::setMonstersCurrentGame(this);
 
+	//Load script arrays
+	DeserializeScriptArrays();
+
 	//Set room start vars.
 	this->pPlayer->wX = this->pPlayer->wPrevX = CDbSavedGame::wStartRoomX;
 	this->pPlayer->wY = this->pPlayer->wPrevY = CDbSavedGame::wStartRoomY;
@@ -2021,6 +2048,39 @@ void CCurrentGame::LoadPrep(
 		}
 		this->bQuickCombat = bQuickCombat;
 		this->pPlayer->st = st;
+	}
+}
+
+//***************************************************************************************
+void CCurrentGame::DeserializeScriptArrays()
+//Load hold script arrays from raw buffers stored in CDbPackedVars
+{
+	if (!pHold)
+		return;
+
+	this->scriptArrays.clear();
+
+	for (map<UINT, WSTRING>::const_iterator it = pHold->arrayScriptVars.begin();
+		it != pHold->arrayScriptVars.end(); ++it) {
+		string varName("v");
+		varName += std::to_string(it->first);
+
+		BYTE* buffer = (BYTE*)this->stats.GetVar(varName.c_str(), (const void*)(NULL));
+		if (!buffer)
+			continue;
+
+		map<int, int> scriptArray;
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			int key = (int)readBpUINT(buffer, index);
+			int value = (int)readBpUINT(buffer, index);
+			ASSERT(value != 0);
+			scriptArray[key] = value;
+			--size;
+		}
+
+		scriptArrays[it->first] = scriptArray;
 	}
 }
 

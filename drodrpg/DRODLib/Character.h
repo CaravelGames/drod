@@ -63,6 +63,7 @@ using std::vector;
 class CSwordsman;
 struct HoldCharacter;
 class CDbHold;
+typedef map<UINT, map<int, int>> ScriptArrayMap;
 class CCharacter : public CPlayerDouble
 {
 public:
@@ -136,6 +137,8 @@ public:
 	WSTRING getPredefinedVar(const UINT varIndex) const;
 	UINT getPredefinedVarInt(const UINT varIndex) const;
 	WSTRING getPredefinedVarString(const UINT varIndex) const;
+
+	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
 
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAggressive() const {return false;}
@@ -253,6 +256,7 @@ private:
 	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
+	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 
 	void SyncCustomCharacterData(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
 	static void SyncCustomCharacterData(UINT& wLogicalIdentity, const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);

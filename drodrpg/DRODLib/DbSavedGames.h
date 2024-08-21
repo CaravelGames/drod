@@ -125,6 +125,10 @@ public:
 			char* const str, CImportInfo &info);
 	virtual bool   Update();
 
+	//Read/write UINT and UINT shaped types to/from buffer
+	static UINT  readBpUINT(const BYTE* buffer, UINT& index);
+	static void  writeBpUINT(string& buffer, UINT n);
+
 	UINT     dwSavedGameID;
 	UINT     dwRoomID;
 	UINT     dwPlayerID;
@@ -163,6 +167,9 @@ public:
 	CMonster *pMonsterList, *pMonsterListAtRoomStart; //global scripts and custom equipment
 	vector<CMonster*> DeadMonsters; //deactivated global scripts and custom equipment
 
+	typedef map<UINT, map<int, int>> ScriptArrayMap;
+	ScriptArrayMap scriptArrays; //unpacked hold array var values
+
 	//Version info.
 	UINT     wVersionNo;
 	string   checksumStr;
@@ -179,6 +186,7 @@ private:
 	void     SaveEntrancesExplored(c4_View &EntrancesExploredView) const;
 	void     SaveExploredRooms(c4_View &ExploredRoomsView) const;
 	void     SaveMonsters(c4_View &MonstersView, CMonster *pMonsterList) const;
+	void     SerializeScriptArrays();
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();
 	bool     UpdateNew();

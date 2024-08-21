@@ -235,6 +235,7 @@ public:
 	bool     changingInventory(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     Clear(const bool bNewGame=true);
 	bool     CustomNPCExists(const UINT characterID) const;
+	void     DeserializeScriptArrays();
 	void     DestroyInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
 	static void DiffVarValues(const VARMAP& vars1, const VARMAP& vars2, set<VarNameType>& diff);
 	bool     DoesPlayerAttackFirst() const;
@@ -263,6 +264,7 @@ public:
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
+	void     GetArrayVarValues(VARMAP& vars);
 	int      getItemAmount(const UINT item) const;
 	int      getPlayerATK() const;
 	int      getPlayerDEF() const;
@@ -400,6 +402,7 @@ public:
 	bool     bContinueCutScene;
 //	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
+	map<UINT, map<int, int>> scriptArraysAtRoomStart;
 	CIDSet   roomsExploredAtRoomStart, roomsMappedAtRoomStart;
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
