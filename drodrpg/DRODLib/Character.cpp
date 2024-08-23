@@ -53,6 +53,7 @@ const UINT MAX_ANSWERS = 9;
 //DO NOT CHANGE
 #define commandStr "Commands"
 #define idStr "id"
+#define initialIdStr "initialId"
 #define numCommandsStr "NumCommands"
 #define scriptIDstr "ScriptID"
 #define startLineStr "StartLine"
@@ -207,6 +208,7 @@ CCharacter::CCharacter(
 	, pCustomChar(NULL)
 	, dwScriptID(0)
 	, wIdentity(M_NONE)
+	, wInitialIdentity(M_NONE)
 	, wLogicalIdentity(M_NONE)
 	, bVisible(false)
 	, bInvisibleInspectable(false)
@@ -2993,7 +2995,8 @@ void CCharacter::Process(
 					this->wCurrentCommandIndex = 0;
 					wTurnCount = 0;
 					++wVarSets; //Count as setting a variable for loop avoidence
-					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+					const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
+					LoadCommands(initalCharacter->ExtraVars, commands);
 				}	else {
 					// Index does not automatically increment after this command is executed
 					++this->wCurrentCommandIndex;
@@ -5176,7 +5179,16 @@ void CCharacter::SetCurrentGame(
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
 	if (this->pCustomChar && this->commands.empty())
-		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+	{
+		if (this->wInitialIdentity == M_NONE) {
+			LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+		}
+		else
+		{
+			const HoldCharacter* initalCharacter = this->pCurrentGame->pHold->GetCharacter(this->wInitialIdentity);
+			LoadCommands(initalCharacter->ExtraVars, commands);
+		}
+	}
 }
 
 //*****************************************************************************
@@ -5417,6 +5429,8 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	this->wIdentity = this->wLogicalIdentity; //by default, these are the same
 
+	this->wInitialIdentity = vars.GetVar(initialIdStr, this->wLogicalIdentity); // Won't exist in earlier versions of the engine, so assume current identity
+
 	this->bVisible = vars.GetVar(visibleStr, this->bVisible);
 	if (!this->bVisible)
 		this->bSwordSheathed = true;
@@ -5526,6 +5540,7 @@ const
 	vars.Clear();
 
 	vars.SetVar(idStr, this->wLogicalIdentity);
+	vars.SetVar(initialIdStr, this->wInitialIdentity);
 	vars.SetVar(visibleStr, this->bVisible);
 	vars.SetVar(equipTypeStr, (int)this->equipType);
 

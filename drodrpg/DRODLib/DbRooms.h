@@ -242,7 +242,6 @@ public:
 	void           GetAllDoorSquares(const UINT wX, const UINT wY, CCoordSet& squares,
 			const UINT tile, const CCoordSet* pIgnoreSquares=NULL) const;
 	CCharacter*    GetCharacterWithScriptID(const UINT scriptID);
-	CCharacter*    GetCharacterFromExploredRoomWithScriptID(ExploredRoom* pExpRoom, const UINT scriptID);
 	void           GetConnectedRegionsAround(const UINT wX, const UINT wY,
 			const CTileMask &tileMask, vector<CCoordSet>& regions,
 			const CCoordSet* pIgnoreSquares=NULL, const CCoordSet* pRegionMask=NULL) const;
