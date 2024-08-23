@@ -222,6 +222,7 @@ public:
 	CIDSet answerOptions;   //optional answers supplied to a Question command
 	UINT  dwScriptID;       //charater script ref
 	UINT  wIdentity;        //monster type
+	UINT  wInitialIdentity; //initial identity in case it changes e.g. Set Appearance command
 	UINT  wLogicalIdentity; //logical ID (might be a hold custom character type)
 	bool  bVisible;         //on screen in room, or not
 	bool  bInvisibleInspectable; //appears in tooltip when invisible

@@ -2771,21 +2771,6 @@ CCharacter* CDbRoom::GetCharacterWithScriptID(const UINT scriptID)
 	return NULL; //not found
 }
 
-//*****************************************************************************
-CCharacter* CDbRoom::GetCharacterFromExploredRoomWithScriptID(ExploredRoom* pExpRoom, const UINT scriptID)
-//Returns: character monster with indicated (unique) scriptID, or NULL if not found
-{
-	for (CMonster* pMonster = pExpRoom->pMonsterList; pMonster != NULL;
-		pMonster = pMonster->pNext)
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->dwScriptID == scriptID)
-				return pCharacter; //found it
-		}
-
-	return NULL; //not found
-}
 
 //*****************************************************************************
 bool CDbRoom::HasClosedDoors() const
@@ -9539,7 +9524,7 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 			{
 				//Find original NPC containing the script for this saved character.
 				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				CCharacter *pOrigNPC = GetCharacterFromExploredRoomWithScriptID(pExpRoom, pCharacter->dwScriptID);
+				CCharacter *pOrigNPC = GetCharacterWithScriptID(pCharacter->dwScriptID);
 				if (pOrigNPC)
 				{
 					//Add the script data to the NPC's state, saved in the explored room data.
