@@ -5429,7 +5429,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	this->wIdentity = this->wLogicalIdentity; //by default, these are the same
 
-	this->wInitialIdentity = vars.GetVar(initialIdStr, this->wLogicalIdentity); // Won't exist in earlier versions of the engine, so assume current identity
+	this->wInitialIdentity = vars.GetVar(initialIdStr, this->wLogicalIdentity); // Note the default is wLogicalIdentity
 
 	this->bVisible = vars.GetVar(visibleStr, this->bVisible);
 	if (!this->bVisible)
