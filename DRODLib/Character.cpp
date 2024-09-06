@@ -4764,8 +4764,9 @@ UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
 //Element groups correspond to functions in TileConstants.h that check for two or more elements
 bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 {
-	UINT px, py, pw, ph, pflags;  //command parameters
-	getCommandParams(command, px, py, pw, ph, pflags);
+	UINT px, py, pw, ph; //command parameters
+	getCommandRect(command, px, py, pw, ph);
+	UINT pflags = command.flags;
 
 	if (pflags >= ScriptFlag::ItemGroupCount) {
 		return false;
