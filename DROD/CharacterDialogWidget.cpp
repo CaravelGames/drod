@@ -191,6 +191,7 @@ const UINT TAG_ARRAYINDEX_LABEL = 867;
 const UINT TAG_ARRAYVAR_REMOVE = 866;
 const UINT TAG_ARRAYVAR_TEXTLABEL = 865;
 const UINT TAG_ITEM_GROUP_LISTBOX = 864;
+const UINT TAG_ENTITY_LISTBOX = 863;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1957,6 +1958,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandGraphicListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pAddCommandGraphicListBox);
 
+	this->pEntityListBox = new CListBoxWidget(TAG_ENTITY_LISTBOX,
+		X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_GRAPHICLISTBOX2, CY_GRAPHICLISTBOX2, true);
+	this->pEntityListBox->SetHotkeyItemSelection(true);
+	this->pEntityListBox->SortAlphabetically(true);
+	this->pAddCommandDialog->AddWidget(this->pEntityListBox);
+
 	this->pGlobalScriptListBox = new CListBoxWidget(TAG_GLOBALSCRIPTLISTBOX,
 			X_GLOBALSCRIPTLISTBOX, Y_GLOBALSCRIPTLISTBOX, CX_GLOBALSCRIPTLISTBOX, CY_GLOBALSCRIPTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pGlobalScriptListBox);
@@ -3668,7 +3675,7 @@ const
 		case CCharacterCommand::CC_WaitForNotEntityType:
 		case CCharacterCommand::CC_CountEntityType:
 		{
-			WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(command.flags);
+			WSTRING charName = this->pEntityListBox->GetTextForKey(command.flags);
 			wstr += charName.length() ? charName : wszQuestionMark;
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -5329,6 +5336,20 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 }
 
 //*****************************************************************************
+void CCharacterDialogWidget::PopulateEntityList(CListBoxWidget* pListBox)
+//Add all monsters that script can wait for to list.
+{
+	PopulateGraphicListBox(pListBox);
+
+	//Add multi-tile monsters
+	pListBox->AddItem(M_SERPENT, g_pTheDB->GetMessageText(MID_Serpent));
+	pListBox->AddItem(M_SERPENTB, g_pTheDB->GetMessageText(MID_BlueSerpent));
+	pListBox->AddItem(M_SERPENTG, g_pTheDB->GetMessageText(MID_GreenSerpent));
+	pListBox->AddItem(M_ROCKGIANT, g_pTheDB->GetMessageText(MID_RockGiant));
+	pListBox->AddItem(M_GENTRYII, g_pTheDB->GetMessageText(MID_Gentryii));
+}
+
+//*****************************************************************************
 void CCharacterDialogWidget::PopulatePlayerGraphicListBox(CListBoxWidget *pListBox)
 //Add all monsters that character can appear as to graphics list.
 {
@@ -5434,6 +5455,12 @@ void CCharacterDialogWidget::PopulateMainGraphicList()
 	PopulateGraphicListBox(this->pAddCommandGraphicListBox);
 	PopulateCharacterList(this->pAddCommandGraphicListBox);
 	this->pAddCommandGraphicListBox->SelectItem(M_BEETHRO);
+
+	ASSERT(this->pEntityListBox);
+	this->pEntityListBox->Clear();
+	PopulateEntityList(this->pEntityListBox);
+	PopulateCharacterList(this->pEntityListBox);
+	this->pEntityListBox->SelectItem(M_BEETHRO);
 
 	ASSERT(this->pPlayerGraphicListBox);
 	this->pPlayerGraphicListBox->Clear();
@@ -5794,7 +5821,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 64;
+	static const UINT NUM_WIDGETS = 65;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5814,7 +5841,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_NATURAL_TARGET_TYPES, TAG_WEAPON_FLAGBOX, TAG_BEHAVIOR_LISTBOX, TAG_REMAINS_LISTBOX,
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
 		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST,
-		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX
+		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
+		TAG_ENTITY_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5832,7 +5860,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WAITFLAGS[] =     {TAG_WAITFLAGSLISTBOX, 0};
 	static const UINT VARSET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_VARREMOVE, TAG_VARLIST, TAG_VAROPLIST, TAG_VARVALUE, 0};
 	static const UINT VARGET[] =        {TAG_VARNAMETEXTINPUT, TAG_VARLIST, TAG_VARCOMPLIST, TAG_VARVALUE, 0};
-	static const UINT GRAPHIC[] =       {TAG_GRAPHICLISTBOX3, 0};
+	static const UINT GRAPHIC[] =       { TAG_ENTITY_LISTBOX, 0};
 	static const UINT NPC_GRAPHIC[] =   {TAG_GRAPHICLISTBOX3, TAG_ONOFFLISTBOX3, 0};
 	static const UINT PLAYER_GRAPHIC[] ={TAG_GRAPHICLISTBOX2, 0};
 	static const UINT MOVEREL[] =       {TAG_ONOFFLISTBOX, TAG_ONOFFLISTBOX2, TAG_MOVERELX, TAG_MOVERELY, 0};
@@ -6558,7 +6586,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
 		case CCharacterCommand::CC_CountEntityType:
-			this->pCommand->flags = this->pAddCommandGraphicListBox->GetSelectedItem();
+			this->pCommand->flags = this->pEntityListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
@@ -7593,7 +7621,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
 		case CCharacterCommand::CC_CountEntityType:
-			this->pAddCommandGraphicListBox->SelectItem(this->pCommand->flags);
+			this->pEntityListBox->SelectItem(this->pCommand->flags);
 		break;
 
 		case CCharacterCommand::CC_WaitForRemains:
@@ -8262,7 +8290,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
 	case CCharacterCommand::CC_CountEntityType:
-		parseMandatoryOption(pCommand->flags, this->pAddCommandGraphicListBox, bFound);
+		parseMandatoryOption(pCommand->flags, this->pEntityListBox, bFound);
 		skipComma;
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
@@ -9159,7 +9187,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_WaitForNotEntityType:
 	case CCharacterCommand::CC_CountEntityType:
 	{
-		WSTRING charName = this->pAddCommandGraphicListBox->GetTextForKey(c.flags);
+		WSTRING charName = this->pEntityListBox->GetTextForKey(c.flags);
 		wstr += charName.length() ? charName : wszQuestionMark;
 		wstr += wszComma;
 		concatNumWithComma(c.x);
