@@ -144,6 +144,7 @@ private:
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
+	void  PopulateEntityList(CListBoxWidget* pListBox);
 	void  UpdateVarDeleteButton(UINT widgetTag, CListBoxWidget* varListBox);
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
@@ -181,7 +182,7 @@ private:
 		const CListBoxWidget* pCommandList,
 		const UINT wCommandIndex);
 
-	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox, *pAddCommandGraphicListBox;
+	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox, *pAddCommandGraphicListBox, *pEntityListBox;
 	COptionButtonWidget *pIsVisibleButton;
 	CListBoxWidget *pCommandsListBox;
 	CRenameDialogWidget *pAddCommandDialog, *pAddCharacterDialog;

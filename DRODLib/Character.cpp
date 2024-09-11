@@ -4542,14 +4542,26 @@ int CCharacter::CountEntityType(
 			++count;
 	}
 
+	//To avoid counting multi-tile monsters more than once, track which ones we've seen
+	std::set<const CMonster*> seenHeads;
+
 	for (UINT y = py; y <= py + ph; ++y) {
 		for (UINT x = px; x <= px + pw; ++x) {
-			CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+			const CMonster* pMonster = room.GetMonsterAtSquare(x, y);
 			if (!pMonster) {
 				continue;
 			}
 
 			if (pMonster->wType == pflags) {
+				if (pMonster->IsPiece()) {
+					pMonster = pMonster->GetOwningMonsterConst();
+					if (seenHeads.count(pMonster)) {
+						continue;
+					}
+
+					seenHeads.insert(pMonster);
+				}
+
 				++count;
 				continue;
 			}
@@ -4557,7 +4569,7 @@ int CCharacter::CountEntityType(
 			switch (pMonster->wType) {
 				case M_EYE_ACTIVE:
 				{
-					const CEvilEye* pEvilEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
+					const CEvilEye* pEvilEye = DYN_CAST(const CEvilEye*, const CMonster*, pMonster);
 					if (pEvilEye->IsAggressive()) {
 						++count;
 						continue;
@@ -4567,7 +4579,7 @@ int CCharacter::CountEntityType(
 
 			if (pMonster->wType == M_CHARACTER)
 			{
-				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 				if (pCharacter->wLogicalIdentity == pflags) {
 					++count;
 					continue;
@@ -4764,8 +4776,9 @@ UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
 //Element groups correspond to functions in TileConstants.h that check for two or more elements
 bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 {
-	UINT px, py, pw, ph, pflags;  //command parameters
-	getCommandParams(command, px, py, pw, ph, pflags);
+	UINT px, py, pw, ph; //command parameters
+	getCommandRect(command, px, py, pw, ph);
+	UINT pflags = command.flags;
 
 	if (pflags >= ScriptFlag::ItemGroupCount) {
 		return false;
