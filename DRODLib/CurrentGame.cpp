@@ -647,6 +647,19 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 
 			return pArmedMonster->weaponType;
 		}
+		case ScriptVars::P_MonsterSize:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return 0;
+			}
+
+			if (pMonster->IsPiece()) {
+				pMonster = pMonster->GetOwningMonster();
+			}
+
+			return pMonster->Pieces.size() + 1;
+		}
 		case ScriptVars::P_BrainScore:
 		{
 			int x = params[0];

@@ -50,6 +50,7 @@ const char ScriptVars::primitiveNames[PrimitiveCount][15] =
 	"_MonsterType",
 	"_CharacterType",
 	"_EntityWeapon",
+	"_MonsterSize",
 	"_BrainScore"
 };
 
@@ -114,6 +115,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_MonsterType:
 		case P_CharacterType:
 		case P_EntityWeapon:
+		case P_MonsterSize:
 			return 2;
 		case P_RoomTile:
 		case P_BrainScore:

@@ -111,6 +111,7 @@ namespace ScriptVars
 		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
 		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
 		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
+		P_MonsterSize,//(x,y) --> number of tiles monster at (x,y) occupies, or 0 if no monster is there
 		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
 		PrimitiveCount
 	};
