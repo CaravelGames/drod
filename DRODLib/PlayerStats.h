@@ -113,6 +113,7 @@ namespace ScriptVars
 		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
 		P_MonsterSize,//(x,y) --> number of tiles monster at (x,y) occupies, or 0 if no monster is there
 		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
+		P_CleanRooms,//(f) -> number of cleared rooms in level matching bitmap flags (1 required, 2 secret, 4 unrequired)
 		PrimitiveCount
 	};
 

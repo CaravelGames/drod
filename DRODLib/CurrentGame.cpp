@@ -675,6 +675,28 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
 			return square.dwTargetDist;
 		}
+		case ScriptVars::P_CleanRooms:
+		{
+			int flags = params[0];
+			CIDSet rooms = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
+			CIDSet cleanRooms;
+
+			for (CIDSet::const_iterator iter = rooms.begin(); iter != rooms.end(); ++iter) {
+				UINT roomId = *iter;
+				if (!this->ConqueredRooms.has(roomId)) {
+					continue;
+				}
+
+				if ((flags & 1 && CDbRoom::IsRequired(roomId)) ||
+						(flags & 2 && CDbRoom::IsSecret(roomId)) ||
+						(flags & 4 && !CDbRoom::IsRequired(roomId)))
+				{
+					cleanRooms += roomId;
+				}
+			}
+
+			return cleanRooms.size();
+		}
 	}
 
 	return 0;
