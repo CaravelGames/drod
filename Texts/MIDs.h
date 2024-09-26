@@ -1884,6 +1884,7 @@ enum MID_CONSTANT {
   MID_TarFluffGroup = 2112,
   MID_Briars = 2113,
   MID_PotionOrHorn = 2114,
+  MID_RequiredMonster = 2115,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

@@ -364,6 +364,8 @@ public:
 	bool           IsPathmapNeeded() const;
 	bool           IsTimerNeeded() const;
 	static bool    IsRequired(const UINT dwRoomID);
+	bool           IsRequiredMonsterInRect(const UINT wLeft, const UINT wTop,
+		const UINT wRight, const UINT wBottom) const;
 	bool           IsRoomLightingChanged() const { return room_lighting_changed; }
 	static bool    IsSecret(const UINT dwRoomID);
 	bool           IsSwordAt(const UINT wX, const UINT wY) const;

@@ -93,6 +93,7 @@ namespace ScriptFlag
 	static const UINT BEETHRO = 0x00000080;
 	static const UINT STALWART= 0x00000100;
 	static const UINT PUFFBABY= 0x00000200;
+	static const UINT REQUIRED= 0x00000400;
 
 	//How killing NPC affects the game
 	enum Imperative

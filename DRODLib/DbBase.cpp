@@ -1000,6 +1000,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_TarFluffGroup: strText = "Tar, mud, gel or fluff"; break;
 	case MID_Briars: strText = "Any briar"; break;
 	case MID_PotionOrHorn: strText = "Any potion or horn"; break;
+	case MID_RequiredMonster: strText = "Required"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

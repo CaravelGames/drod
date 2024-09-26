@@ -4477,6 +4477,11 @@ bool CCharacter::IsEntityAt(
 			px + pw, py + ph, M_STALWART2, true))
 			return true;
 	}
+	if ((pflags & ScriptFlag::REQUIRED) != 0)
+	{
+		if (room.IsRequiredMonsterInRect(px, py, px + pw, py + ph))
+			return true;
+	}
 
 	return false;
 }

@@ -1162,7 +1162,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_WAITFLAGSLISTBOX = X_MUSICLISTBOX;
 	static const int Y_WAITFLAGSLISTBOX = Y_ONOFFLISTBOX + CY_ONOFFLISTBOX + CY_SPACE;
 	static const UINT CX_WAITFLAGSLISTBOX = 100;
-	static const UINT CY_WAITFLAGSLISTBOX = 9*LIST_LINE_HEIGHT+4;
+	static const UINT CY_WAITFLAGSLISTBOX = 10*LIST_LINE_HEIGHT+4;
 
 	//Widgets and for variable handling commands.
 	static const int X_VARTEXTLABEL = X_WAITLABEL;
@@ -1303,7 +1303,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT IGNOREFLAGSLISTBOX_X = MOVETYPELISTBOX_X + MOVETYPELISTBOX_CX + CX_SPACE;
 	static const UINT IGNOREFLAGSLISTBOX_Y = MOVETYPELISTBOX_Y;
 	static const UINT IGNOREFLAGSLISTBOX_CX = CX_WAITFLAGSLISTBOX;
-	static const UINT IGNOREFLAGSLISTBOX_CY = CY_WAITFLAGSLISTBOX;
+	static const UINT IGNOREFLAGSLISTBOX_CY = 9 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT IGNOREWEAPONSLABEL_X = MOVETYPELISTBOX_X;
 	static const UINT IGNOREWEAPONSLABEL_Y = MOVETYPELISTBOX_Y + MOVETYPELISTBOX_CY + CY_SPACE;
@@ -1673,6 +1673,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::SLAYER, g_pTheDB->GetMessageText(MID_Slayer2));
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::BEETHRO, g_pTheDB->GetMessageText(MID_Beethro));
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
+	this->pWaitFlagsListBox->AddItem(ScriptFlag::REQUIRED, g_pTheDB->GetMessageText(MID_RequiredMonster));
 	this->pWaitFlagsListBox->SelectLine(0);
 
 	this->pIgnoreFlagsListBox = new CListBoxWidget(TAG_IGNOREFLAGSLISTBOX,
