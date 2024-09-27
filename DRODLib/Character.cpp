@@ -3642,6 +3642,15 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_WaitForPlayerState:
+			{
+				if (!IsPlayerState(command, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_LogicalWaitAnd:
 			{
 				//Wait until all conditions are true.
@@ -4976,6 +4985,26 @@ bool CCharacter::IsPlayerFacing(
 }
 
 //*****************************************************************************
+bool CCharacter::IsPlayerState(const CCharacterCommand& command, const CSwordsman& player) const
+{
+	UINT px;
+	getCommandX(command, px);
+	ScriptFlag::PlayerState state = (ScriptFlag::PlayerState)command.y;
+	bool active;
+
+	switch (state)
+	{
+		case ScriptFlag::PS_Invisible: active = player.bIsInvisible; break;
+		case ScriptFlag::PS_Hasted: active = player.bIsHasted; break;
+		case ScriptFlag::PS_Powered: active = player.bCanGetItems; break;
+		case ScriptFlag::PS_Hiding: active = player.bIsHiding; break;
+		default: active = false; break;
+	}
+
+	return (active == px);
+}
+
+//*****************************************************************************
 // Returns: did the player input the specified command (x)
 bool CCharacter::DidPlayerInput(
 	const CCharacterCommand& command,
@@ -5675,6 +5704,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForNotItemGroup:
 		{
 			return !IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForPlayerState:
+		{
+			return IsPlayerState(command, pGame->swordsman);
 		}
 		default:
 		{

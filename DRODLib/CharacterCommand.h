@@ -268,6 +268,14 @@ namespace ScriptFlag
 		ItemGroupCount //Total number of defined groups
 	};
 
+	enum PlayerState
+	{
+		PS_Invisible = 0, //Taken invisibility potion
+		PS_Hasted = 1, //Taken speed potion
+		PS_Powered = 2, //Activated power token
+		PS_Hiding = 3, //Invisible or in shallow water
+	};
+
 	//World map icons
 	static const UINT WMI_OFF        = 0x00000000; //remove icon when no flags are set
 	static const UINT WMI_ON         = 0x00000001; //basic display
@@ -426,6 +434,7 @@ public:
 		CC_ClearArrayVar,       //Reset array var X
 		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
 		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
+		CC_WaitForPlayerState,  //Wait until player state (Y) is on or off (x).
 
 		CC_Count
 	};
