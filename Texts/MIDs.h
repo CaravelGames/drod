@@ -1885,6 +1885,12 @@ enum MID_CONSTANT {
   MID_Briars = 2113,
   MID_PotionOrHorn = 2114,
   MID_RequiredMonster = 2115,
+  MID_Powered = 2116,
+  MID_Unpowered = 2117,
+  MID_Invisible = 2118,
+  MID_Hasted = 2119,
+  MID_Hiding = 2120,
+  MID_WaitForPlayerState = 2121,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

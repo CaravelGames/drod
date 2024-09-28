@@ -1001,6 +1001,12 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_Briars: strText = "Any briar"; break;
 	case MID_PotionOrHorn: strText = "Any potion or horn"; break;
 	case MID_RequiredMonster: strText = "Required"; break;
+	case MID_Powered: strText = "Powered"; break;
+	case MID_Unpowered: strText = "Unpowered"; break;
+	case MID_Invisible: strText = "Invisible"; break;
+	case MID_Hasted: strText = "Hasted"; break;
+	case MID_Hiding: strText = "Hiding"; break;
+	case MID_WaitForPlayerState: strText = "Wait for player state"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
