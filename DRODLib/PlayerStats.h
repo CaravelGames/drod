@@ -81,7 +81,8 @@ namespace ScriptVars
 		P_PLAYER_LOCAL_WEAPON = -38,
 		P_INPUT = -39,
 		P_INPUT_DIRECTION = -40,
-		FirstPredefinedVar = P_INPUT_DIRECTION, //set this to the last var in the enumeration
+		P_COMBO = -41,
+		FirstPredefinedVar = P_COMBO, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

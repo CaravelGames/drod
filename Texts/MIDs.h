@@ -1931,6 +1931,7 @@ enum MID_CONSTANT {
   MID_VarPlayerLocalWeapon = 2096,
   MID_VarInput = 2097,
   MID_VarInputDirection = 2098,
+  MID_VarCombo = 2122,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

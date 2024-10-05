@@ -478,6 +478,7 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
 		case (UINT)ScriptVars::P_INPUT:
 		case (UINT)ScriptVars::P_INPUT_DIRECTION:
+		case (UINT)ScriptVars::P_COMBO:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;

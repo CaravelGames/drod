@@ -1141,6 +1141,8 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 				default: return NO_ORIENTATION;
 			}
 		}
+		case (UINT)ScriptVars::P_COMBO:
+			return this->wMonsterKillCombo;
 		default:
 			return 0;
 	}
