@@ -3960,6 +3960,44 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::IsRequiredMonsterInRect(
+//Determines if a required monster is in a rectangular area of the room.
+//Params:
+	const UINT wLeft, const UINT wTop, //(in)   Rect to find monsters in.
+	const UINT wRight, const UINT wBottom//     Boundaries are inclusive.
+) const
+{
+	ASSERT(wLeft <= wRight && wTop <= wBottom);
+
+	for (UINT y = wTop; y <= wBottom; ++y)
+	{
+		CMonster** pMonsters = &(this->pMonsterSquares[ARRAYINDEX(wLeft, y)]);
+		for (UINT x = wLeft; x <= wRight; ++x)
+		{
+			CMonster* pMonster = *pMonsters;
+			if (pMonster && pMonster->IsAlive() && pMonster->IsConquerable())
+			{
+				return true;
+			}
+			if (pMonster && pMonster->wType == M_CHARACTER)
+			{
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				if (pCharacter && pCharacter->IsAlive() &&
+					pCharacter->IsVisible() && pCharacter->IsRequiredToConquer())
+				{
+					return true;
+				}
+			}
+
+			++pMonsters;
+		}
+	}
+
+	//No required monster in rect.
+	return false;
+}
+
+//*****************************************************************************
 bool CDbRoom::IsMonsterRemainsInRectOfType(
 //Determines if any dead monster of specified type is in a rectangular area of the room.
 //

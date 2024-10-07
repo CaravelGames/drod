@@ -357,6 +357,7 @@ the state of the room and wait indefinitely until certain events occur.</p>
   <li><a name="wait-for-remains"><b>Wait for monster remains</b></a> - Wait for the remains of a specific entity type to be present in a specified room region.</li>
   <li><a name="wait-for-open-move"><b>Wait for open move</b></a> - Wait until it becomes possible for the NPC to move in the specified direction.</li>
   <li><a name="wait-for-open-tile"><b>Wait for open tile</b></a> - Wait until the tile at the specified location is open, according to the specified movement type. Additionally, this command can be configured to ignore tile-blocking weapons and entities. Hold &lt;Ctrl&gt; while clicking to select and unselect multiple selections for ignorable entities.</li>
+  <li><a name="waitplayerstate"><b>Wait for player state</b></a> - Waits until the player has a specific state (or doesn't have it if set to Off).</li>
   <li><a name="waitplayerface"><b>Wait for player to face</b></a> - Waits until
       the player turns in the specified direction.</li>
   <li><a name="waitplayerinput"><b>Wait for player to input</b></a> - Waits until the player inputs the specified command.</li>
@@ -643,8 +644,10 @@ Hint: This can be used to compare the monsters in different tiles, or for provid
 <p><a name="charactertype">* <b>_CharacterType(x,y)</b></a> - Returns the logical type of the scripted character at (x,y). If no character is present on the tile, -1 is returned.<br/>
   Hint: This can be used to provide a value for _MyScript injection.
 </p>
+<p><a name="monstersize">* <b>_MonsterSize(x,y)</b></a> - Returns the number of tiles occupied by the monster at (x,y). If no monster is present on the tile, 0 is returned.</p>
 <p><a name="entityweapon">* <b>_EntityWeapon(x,y)</b></a> - Returns the numeric weapon type of the monster or player at (x,y). The weapon type will be returned even if the entity is currently disarmed. If no weapon-using entity is present, -1 is returned.</p>
 <p><a name="brainscore">* <b>_BrainScore(x,y,t)</b></a> - Returns the distance the given tile is from the player, along a brained path, for the given <a href="#movement-types">movement type</a>. Tiles that cannot access the player return a value of -1.</p>
+<p><a name="cleanrooms">*<b>_CleanRooms(f)</b></a> - Returns how many rooms the player has cleared on the current level. It takes a bit map flag as an argument. A value of 1 counts required rooms, 2 counts secret rooms, and 4 counts unrequired rooms. These values can be combined to count multiple categories.</p>
 
 <p><a name="branchingexamples"><b>Examples of branching code structures:</b></a></p>
 <ol>
@@ -726,6 +729,7 @@ You may select these in variable commands to examine or set certain game states.
 	<li><b>_ReturnX</b> and <b>_ReturnY</b> - Used by other commands to return values for later use, eg. Get Natural Target. Otherwise can be used for temporary storing information.</li>
 	<li><b>_SpawnCycle</b> - <u>Read only!</u> Gets the current turn in the spawn cycle, between 0 and 29.</li>
 	<li><b>_SpawnCycleFast</b> - <u>Read only!</u> Gets the current turn in the spawn cycle, between 0 and 59. Even values correspond to normal turns, while odd values correspond 'half turns' where the player is moving with a speed potion.</li>
+	<li><b>_Combo</b> - <u>Read only!</u> Gets the current "combo value", the number of monsters the player has killed in a continuous run of turns.</li>
 	<li><b>_RoomWeather</b> - <a href="#roomweathervars">See this section</a></li>
 	<li><b>_RoomDarkness</b> - Controls the <a href="weather.html">lighting level</a> of a room. Can be set between 0 (no darkness) to 6 (the highest level of darkness) inclusive. If the <a href="weather.html">Skip light crossfading</a> setting is not enabled, the room will perform a fade from the old light level to the new light level.</li>
 	<li><b>_RoomFog</b> - Controls the <a href="weather.html">fog height</a> in the room. Can be set between 0 and 3 inclusive.</li>

@@ -192,6 +192,7 @@ const UINT TAG_ARRAYVAR_REMOVE = 866;
 const UINT TAG_ARRAYVAR_TEXTLABEL = 865;
 const UINT TAG_ITEM_GROUP_LISTBOX = 864;
 const UINT TAG_ENTITY_LISTBOX = 863;
+const UINT TAG_PLAYER_STATE_LISTBOX = 862;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -439,6 +440,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL), pItemGroupListBox(NULL)
+	, pPlayerStateListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
 	, pDisplayFilterListBox(NULL)
 	, pWorldMapIconFlagListBox(NULL)
@@ -1162,7 +1164,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_WAITFLAGSLISTBOX = X_MUSICLISTBOX;
 	static const int Y_WAITFLAGSLISTBOX = Y_ONOFFLISTBOX + CY_ONOFFLISTBOX + CY_SPACE;
 	static const UINT CX_WAITFLAGSLISTBOX = 100;
-	static const UINT CY_WAITFLAGSLISTBOX = 9*LIST_LINE_HEIGHT+4;
+	static const UINT CY_WAITFLAGSLISTBOX = 10*LIST_LINE_HEIGHT+4;
 
 	//Widgets and for variable handling commands.
 	static const int X_VARTEXTLABEL = X_WAITLABEL;
@@ -1303,7 +1305,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT IGNOREFLAGSLISTBOX_X = MOVETYPELISTBOX_X + MOVETYPELISTBOX_CX + CX_SPACE;
 	static const UINT IGNOREFLAGSLISTBOX_Y = MOVETYPELISTBOX_Y;
 	static const UINT IGNOREFLAGSLISTBOX_CX = CX_WAITFLAGSLISTBOX;
-	static const UINT IGNOREFLAGSLISTBOX_CY = CY_WAITFLAGSLISTBOX;
+	static const UINT IGNOREFLAGSLISTBOX_CY = 9 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT IGNOREWEAPONSLABEL_X = MOVETYPELISTBOX_X;
 	static const UINT IGNOREWEAPONSLABEL_Y = MOVETYPELISTBOX_Y + MOVETYPELISTBOX_CY + CY_SPACE;
@@ -1673,6 +1675,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::SLAYER, g_pTheDB->GetMessageText(MID_Slayer2));
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::BEETHRO, g_pTheDB->GetMessageText(MID_Beethro));
 	this->pWaitFlagsListBox->AddItem(ScriptFlag::STALWART, g_pTheDB->GetMessageText(MID_Stalwart));
+	this->pWaitFlagsListBox->AddItem(ScriptFlag::REQUIRED, g_pTheDB->GetMessageText(MID_RequiredMonster));
 	this->pWaitFlagsListBox->SelectLine(0);
 
 	this->pIgnoreFlagsListBox = new CListBoxWidget(TAG_IGNOREFLAGSLISTBOX,
@@ -1964,6 +1967,15 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pEntityListBox->SortAlphabetically(true);
 	this->pAddCommandDialog->AddWidget(this->pEntityListBox);
 
+	this->pPlayerStateListBox = new CListBoxWidget(TAG_PLAYER_STATE_LISTBOX,
+		X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_ONOFFLISTBOX, CY_DISPLAYFILTER_LISTBOX);
+	this->pPlayerStateListBox->AddItem(ScriptFlag::PS_Invisible, g_pTheDB->GetMessageText(MID_Invisible));
+	this->pPlayerStateListBox->AddItem(ScriptFlag::PS_Hasted, g_pTheDB->GetMessageText(MID_Hasted));
+	this->pPlayerStateListBox->AddItem(ScriptFlag::PS_Powered, g_pTheDB->GetMessageText(MID_Powered));
+	this->pPlayerStateListBox->AddItem(ScriptFlag::PS_Hiding, g_pTheDB->GetMessageText(MID_Hiding));
+	this->pAddCommandDialog->AddWidget(this->pPlayerStateListBox);
+	this->pPlayerStateListBox->SelectLine(0);
+
 	this->pGlobalScriptListBox = new CListBoxWidget(TAG_GLOBALSCRIPTLISTBOX,
 			X_GLOBALSCRIPTLISTBOX, Y_GLOBALSCRIPTLISTBOX, CX_GLOBALSCRIPTLISTBOX, CY_GLOBALSCRIPTLISTBOX, true);
 	this->pAddCommandDialog->AddWidget(this->pGlobalScriptListBox);
@@ -2122,11 +2134,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pPlayerBehaviorStateListBox = new CListBoxWidget(TAG_PLAYERBEHAVESTATE_LIST,
 		PLAYERBEHAVELISTBOX_X, PLAYERBEHAVESTATELISTBOX_Y, PLAYERBEHAVELISTBOX_CX, PLAYERBEHAVESTATELISTBOX_CY);
 	this->pAddCommandDialog->AddWidget(this->pPlayerBehaviorStateListBox);
-	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Default, L"Default");
-	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_On, L"On");
-	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Off, L"Off");
-	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Powered, L"Powered");
-	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Unpowered, L"Unpowered");
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Default, g_pTheDB->GetMessageText(MID_Default));
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_On, g_pTheDB->GetMessageText(MID_On));
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Off, g_pTheDB->GetMessageText(MID_Off));
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Powered, g_pTheDB->GetMessageText(MID_Powered));
+	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Unpowered, g_pTheDB->GetMessageText(MID_Unpowered));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3782,6 +3794,12 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_WaitForPlayerState:
+			wstr += this->pPlayerStateListBox->GetTextForKey(command.y);
+			wstr += wszSpace;
+			wstr += this->pOnOffListBox2->GetTextForKey(command.x);
+		break;
+
 		case CCharacterCommand::CC_BuildMarker:
 		case CCharacterCommand::CC_WaitForBuildType:
 		case CCharacterCommand::CC_WaitForNotBuildType:
@@ -4981,6 +4999,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToMove, g_pTheDB->GetMessageText(MID_WaitForPlayerToMove));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToTouchMe, g_pTheDB->GetMessageText(MID_WaitForPlayerToTouchMe));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForSomeoneToPushMe, g_pTheDB->GetMessageText(MID_WaitForSomeoneToPushMe));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerState, g_pTheDB->GetMessageText(MID_WaitForPlayerState));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForTurn, g_pTheDB->GetMessageText(MID_WaitForTurn));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, g_pTheDB->GetMessageText(MID_WaitForExpression));
@@ -5611,6 +5630,8 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycle));
 	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycleFast));
 
+	this->pVarListBox->AddItem(ScriptVars::P_COMBO, g_pTheDB->GetMessageText(MID_VarCombo));
+
 	this->pVarListBox->AddItem(ScriptVars::P_THREATCLOCK, g_pTheDB->GetMessageText(MID_VarThreatClock));
 	this->pVarListBox->AddItem(ScriptVars::P_LEVELNAME, g_pTheDB->GetMessageText(MID_VarLevelName));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
@@ -5821,7 +5842,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 65;
+	static const UINT NUM_WIDGETS = 66;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5842,7 +5863,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
 		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
-		TAG_ENTITY_LISTBOX
+		TAG_ENTITY_LISTBOX, TAG_PLAYER_STATE_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5899,6 +5920,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT ARRAYVARSET[] = { TAG_VARNAMETEXTINPUT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_VARVALUE, 0 };
 	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0};
 	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
+	static const UINT WAITFORPLAYERSTATE[] = { TAG_PLAYER_STATE_LISTBOX, TAG_ONOFFLISTBOX2, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -6013,7 +6035,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARSET,        //CC_ArrayVarSetAt
 		CLEARARRAYVAR,      //CC_ClearArrayVar
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
-		WAITFORITEMGROUP    //CC_WaitForNotItemGroup
+		WAITFORITEMGROUP,   //CC_WaitForNotItemGroup
+		WAITFORPLAYERSTATE  //CC_WaitForPlayerState
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -6174,6 +6197,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_ClearArrayVar
 		NO_LABELS,          //CC_WaitForItemGroup
 		NO_LABELS,          //CC_WaitForNotItemGroup
+		NO_LABELS,          //CC_WaitForPlayerState
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6622,6 +6646,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 			QueryXY();
 		}
+		break;
+
+		case CCharacterCommand::CC_WaitForPlayerState:
+			this->pCommand->y = this->pPlayerStateListBox->GetSelectedItem();
+			this->pCommand->x = this->pOnOffListBox2->GetSelectedItem();
+			AddCommand();
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
@@ -7634,6 +7664,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pOnOffListBox3->SelectItem(this->pCommand->h);
 		break;
 
+		case CCharacterCommand::CC_WaitForPlayerState:
+			this->pPlayerStateListBox->SelectItem(this->pCommand->y);
+			this->pOnOffListBox2->SelectItem(this->pCommand->x);
+		break;
+
 		case CCharacterCommand::CC_VarSet:
 		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
@@ -8351,6 +8386,11 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->w); skipComma;
 		parseNumber(pCommand->h);
 	}
+	break;
+
+	case CCharacterCommand::CC_WaitForPlayerState:
+		parseNumber(pCommand->y); skipComma;
+		parseNumber(pCommand->x); skipComma;
 	break;
 
 	case CCharacterCommand::CC_GetNaturalTarget:
@@ -9244,6 +9284,11 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.w);
 		concatNum(c.h);
 	}
+	break;
+
+	case CCharacterCommand::CC_WaitForPlayerState:
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x);
 	break;
 
 	case CCharacterCommand::CC_AmbientSoundAt:

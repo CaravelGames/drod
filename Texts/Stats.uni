@@ -150,3 +150,7 @@ _Input
 [MID_VarInputDirection]
 [eng]
 _InputDirection
+
+[MID_VarCombo]
+[eng]
+_Combo

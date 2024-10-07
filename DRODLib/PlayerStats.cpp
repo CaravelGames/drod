@@ -23,7 +23,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain,
 	MID_SpawnCycle, MID_SpawnCycleFast,
 	MID_VarPlayerWeapon, MID_VarPlayerLocalWeapon,
-	MID_VarInput, MID_VarInputDirection
+	MID_VarInput, MID_VarInputDirection,
+	MID_VarCombo
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -50,7 +51,9 @@ const char ScriptVars::primitiveNames[PrimitiveCount][15] =
 	"_MonsterType",
 	"_CharacterType",
 	"_EntityWeapon",
-	"_BrainScore"
+	"_MonsterSize",
+	"_BrainScore",
+	"_CleanRooms"
 };
 
 //*****************************************************************************
@@ -104,6 +107,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_OrientY:
 		case P_RotateCW:
 		case P_RotateCCW:
+		case P_CleanRooms:
 			return 1;
 		case P_Min:
 		case P_Max:
@@ -114,6 +118,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_MonsterType:
 		case P_CharacterType:
 		case P_EntityWeapon:
+		case P_MonsterSize:
 			return 2;
 		case P_RoomTile:
 		case P_BrainScore:
