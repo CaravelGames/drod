@@ -4075,7 +4075,6 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 	COrbAgentData* orbAgent = orb->GetAgentAt(linkX, linkY);
 	if (!orbAgent && bIsYellowDoor(linkO)) {
 		CCoordSet doorCoords;
-		UINT wDoorX, wDoorY;
 		room.GetAllYellowDoorSquares(linkX, linkY, doorCoords);
 		for (COrbAgentData* agent : orb->agents) {
 			if (doorCoords.has(agent->wX, agent->wY)) {
