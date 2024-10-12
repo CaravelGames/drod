@@ -50,7 +50,7 @@ if DepsToBuild == "all":
 		'json-0.6.0-rc2',
 		'libogg-1.3.0',
 		'libtheora-1.1.1',
-		'libvorbis-1.3.3',
+		'libvorbis-1.3.5',
 		'lpng-1512',
 		'metakit-2.4.9.7',
 		SdlName,
@@ -245,7 +245,7 @@ dependencies = {
 			'libtheora-1.1.1/win32/VS2008/Win32/Release/libtheora_static.lib': 'Release'
 		}
 	},
-	'libvorbis-1.3.3': {
+	'libvorbis-1.3.5': {
 		'urls': ['http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz'],
 		'needsLibOgg': 1,
 		'builds': [
@@ -320,7 +320,7 @@ dependencies = {
 		},
 		'libs': {
 			'caravel-metakit-2.4.9.7/libs/mk4vc70s_d.lib': 'Debug',
-			'caravel-metakit-2.4.9.7/libs/mk4vc70s.lib': 'Release'
+			'caravel-metakit-2.4.9.7/libs/mk4vc70s.lib': 'Release',
 			'caravel-metakit-2.4.9.7/libs/mklib.pdb': ['Debug', 'Release']
 		}
 	},
@@ -352,9 +352,9 @@ dependencies = {
 		}
 	},
 	'sdl-ttf-2.20.1': {
-		'urls': ['https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.0.14-VC.zip'],
+		'urls': ['https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-devel-2.20.1-VC.zip'],
 		'include': {
-			'SDL2_ttf-2..20.1/include': ''
+			'SDL2_ttf-2.20.1/include': ''
 		},
 		'libs': {
 			'SDL2_ttf-2.20.1/lib/x86/SDL2_ttf.lib': ['Debug', 'Release']
