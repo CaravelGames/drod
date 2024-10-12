@@ -81,7 +81,8 @@ namespace ScriptVars
 		P_PLAYER_LOCAL_WEAPON = -38,
 		P_INPUT = -39,
 		P_INPUT_DIRECTION = -40,
-		FirstPredefinedVar = P_INPUT_DIRECTION, //set this to the last var in the enumeration
+		P_COMBO = -41,
+		FirstPredefinedVar = P_COMBO, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -111,7 +112,9 @@ namespace ScriptVars
 		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
 		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
 		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
+		P_MonsterSize,//(x,y) --> number of tiles monster at (x,y) occupies, or 0 if no monster is there
 		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
+		P_CleanRooms,//(f) -> number of cleared rooms in level matching bitmap flags (1 required, 2 secret, 4 unrequired)
 		PrimitiveCount
 	};
 

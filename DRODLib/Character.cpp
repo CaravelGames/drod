@@ -478,6 +478,7 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
 		case (UINT)ScriptVars::P_INPUT:
 		case (UINT)ScriptVars::P_INPUT_DIRECTION:
+		case (UINT)ScriptVars::P_COMBO:
 			return this->pCurrentGame->getVar(varIndex);
 
 		default: ASSERT(!"GetVar val not supported"); return 0;
@@ -3642,6 +3643,15 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_WaitForPlayerState:
+			{
+				if (!IsPlayerState(command, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_LogicalWaitAnd:
 			{
 				//Wait until all conditions are true.
@@ -4065,7 +4075,6 @@ void CCharacter::LinkOrb(const CCharacterCommand& command, CDbRoom& room)
 	COrbAgentData* orbAgent = orb->GetAgentAt(linkX, linkY);
 	if (!orbAgent && bIsYellowDoor(linkO)) {
 		CCoordSet doorCoords;
-		UINT wDoorX, wDoorY;
 		room.GetAllYellowDoorSquares(linkX, linkY, doorCoords);
 		for (COrbAgentData* agent : orb->agents) {
 			if (doorCoords.has(agent->wX, agent->wY)) {
@@ -4475,6 +4484,11 @@ bool CCharacter::IsEntityAt(
 			return true;
 		if (room.IsMonsterInRectOfType(px, py,
 			px + pw, py + ph, M_STALWART2, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::REQUIRED) != 0)
+	{
+		if (room.IsRequiredMonsterInRect(px, py, px + pw, py + ph))
 			return true;
 	}
 
@@ -4968,6 +4982,26 @@ bool CCharacter::IsPlayerFacing(
 		default:
 			return (player.wO == px);
 	}
+}
+
+//*****************************************************************************
+bool CCharacter::IsPlayerState(const CCharacterCommand& command, const CSwordsman& player) const
+{
+	UINT px;
+	getCommandX(command, px);
+	ScriptFlag::PlayerState state = (ScriptFlag::PlayerState)command.y;
+	bool active;
+
+	switch (state)
+	{
+		case ScriptFlag::PS_Invisible: active = player.bIsInvisible; break;
+		case ScriptFlag::PS_Hasted: active = player.bIsHasted; break;
+		case ScriptFlag::PS_Powered: active = player.bCanGetItems; break;
+		case ScriptFlag::PS_Hiding: active = player.bIsHiding; break;
+		default: active = false; break;
+	}
+
+	return (active == px);
 }
 
 //*****************************************************************************
@@ -5670,6 +5704,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForNotItemGroup:
 		{
 			return !IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForPlayerState:
+		{
+			return IsPlayerState(command, pGame->swordsman);
 		}
 		default:
 		{

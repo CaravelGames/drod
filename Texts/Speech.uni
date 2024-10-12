@@ -3449,3 +3449,31 @@ Any brair
 [MID_PotionOrHorn]
 [eng]
 Any potion or horn
+
+[MID_RequiredMonster]
+[eng]
+Required
+
+[MID_Powered]
+[eng]
+Powered
+
+[MID_Unpowered]
+[eng]
+Unpowered
+
+[MID_Invisible]
+[eng]
+Invisible
+
+[MID_Hasted]
+[eng]
+Hasted
+
+[MID_Hiding]
+[eng]
+Hiding
+
+[MID_WaitForPlayerState]
+[eng]
+Wait for player state

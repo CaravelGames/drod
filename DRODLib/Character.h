@@ -193,6 +193,7 @@ public:
 	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
 	virtual bool   IsPlayerAllyTarget() const;
 	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
+	bool           IsPlayerState(const CCharacterCommand& command, const CSwordsman& player) const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}

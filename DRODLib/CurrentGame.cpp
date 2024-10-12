@@ -647,6 +647,19 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 
 			return pArmedMonster->weaponType;
 		}
+		case ScriptVars::P_MonsterSize:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return 0;
+			}
+
+			if (pMonster->IsPiece()) {
+				pMonster = pMonster->GetOwningMonster();
+			}
+
+			return pMonster->Pieces.size() + 1;
+		}
 		case ScriptVars::P_BrainScore:
 		{
 			int x = params[0];
@@ -661,6 +674,28 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			this->pRoom->CreatePathMap(this->swordsman.wX, this->swordsman.wY, movement);
 			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
 			return square.dwTargetDist;
+		}
+		case ScriptVars::P_CleanRooms:
+		{
+			int flags = params[0];
+			CIDSet rooms = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
+			CIDSet cleanRooms;
+
+			for (CIDSet::const_iterator iter = rooms.begin(); iter != rooms.end(); ++iter) {
+				UINT roomId = *iter;
+				if (!this->ConqueredRooms.has(roomId)) {
+					continue;
+				}
+
+				if ((flags & 1 && CDbRoom::IsRequired(roomId)) ||
+						(flags & 2 && CDbRoom::IsSecret(roomId)) ||
+						(flags & 4 && !CDbRoom::IsRequired(roomId)))
+				{
+					cleanRooms += roomId;
+				}
+			}
+
+			return cleanRooms.size();
 		}
 	}
 
@@ -1106,6 +1141,8 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 				default: return NO_ORIENTATION;
 			}
 		}
+		case (UINT)ScriptVars::P_COMBO:
+			return this->wMonsterKillCombo;
 		default:
 			return 0;
 	}
