@@ -543,58 +543,7 @@ void CSelectPlayerScreen::SetPlayerID(
 		case TAG_EXPORTSAVES:
 		{
 			const UINT dwPlayerID = this->pPlayerListBoxWidget->GetSelectedItem();
-			if (!dwPlayerID) break;
-
-			//Compile IDs of this player's saved games.
-			//The export will exclude hidden saved game records (e.g. those attached to demos, room tallies, etc.)
-			//but will include records for conquering secret rooms and ending holds.
-			CDb db;
-			db.SavedGames.FilterByPlayer(dwPlayerID);
-			db.SavedGames.FindHiddens(true);
-			CIDSet savedGameIDs, allSavedGameIDs = db.SavedGames.GetIDs();
-			for (CIDSet::const_iterator id=allSavedGameIDs.begin();
-					id!=allSavedGameIDs.end(); ++id)
-			{
-				CDbSavedGame *pSavedGame = db.SavedGames.GetByID(*id, true);
-				if (!pSavedGame->bIsHidden ||
-						pSavedGame->eType == ST_SecretConquered ||
-						pSavedGame->eType == ST_EndHold ||
-						pSavedGame->eType == ST_HoldMastered)
-					savedGameIDs += *id;
-				delete pSavedGame;
-			}
-			if (savedGameIDs.empty()) break;
-
-			CDbPlayer *pPlayer = g_pTheDB->Players.GetByID(dwPlayerID);
-			if (!pPlayer) break;
-
-			//Quick player export if requested.
-			bool bQuickExport = false;
-			string str;
-			if (CFiles::GetGameProfileString(INISection::Customizing, "QuickPlayerExport", str))
-				bQuickExport = atoi(str.c_str()) != 0;
-			if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
-				CDbXML::info.bQuickPlayerExport = true;
-
-			//Default filename is player name.
-			WSTRING wstrExportFile = (WSTRING)pPlayer->NameText;
-			CDrodScreen::callbackContext = wstrExportFile;
-			wstrExportFile += wszSpace;
-			wstrExportFile += g_pTheDB->GetMessageText(MID_Saves);
-			if (ExportSelectFile(MID_SavePlayerPath, wstrExportFile, EXT_PLAYER))
-			{
-				//Write the player saves file.
-				SetCursor(CUR_Wait);
-				Callback(MID_Exporting);
-				CDbXML::SetCallback(this);
-
-				const bool bResult = CDbXML::ExportXML(V_SavedGames, savedGameIDs,
-					wstrExportFile.c_str());
-				ExportCleanup();
-				ShowOkMessage(bResult ? MID_SavedGamesSaved : MID_PlayerFileNotSaved);
-			}
-			CDrodScreen::callbackContext.resize(0);
-			delete pPlayer;
+			ExportSaves(dwPlayerID);
 		}
 		break;
 

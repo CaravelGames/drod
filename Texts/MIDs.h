@@ -1204,6 +1204,7 @@ enum MID_CONSTANT {
   MID_RestoreToFurthestSave = 1771,
   MID_Challenges = 1847,
   MID_CompletedChallenges = 1848,
+  MID_ExportSaves = 2123,
 
   //Messages from SelectScreens.uni:
   MID_HoldManagementTitle = 1207,
