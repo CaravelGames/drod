@@ -83,6 +83,7 @@ private:
 	void     ExportDemos();
 	void		GetCNetDemos(CNetResult* pResult);
 	bool     GetItemTextForDemo(UINT dwDemoID,  WSTRING &wstrText, UINT& dwRoomID) const;
+	WSTRING  GetSelectedDemosDescription(const CIDSet demoIDs, const CDbDemo* pDemo) const;
 	bool     IsDemoAccessible(CDbDemo* pDemo, const UINT dwPlayerID,
 			const bool bPlayerIsHoldAuthor) const;
 	void		ListCNetDemos();

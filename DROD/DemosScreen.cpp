@@ -851,7 +851,8 @@ void CDemosScreen::OnClick(
 			if (pDemo)
 			{
 				//Default filename is demo description.
-				WSTRING wstrExportFile = (WSTRING)pDemo->DescriptionText;
+				WSTRING wstrExportFile = demoIDs.size() == 1 ?
+					(WSTRING)pDemo->DescriptionText : GetSelectedDemosDescription(demoIDs, pDemo);
 				if (ExportSelectFile(MID_SaveDemoPath, wstrExportFile, EXT_DEMO))
 				{
 					//Write the demo file.
@@ -1129,6 +1130,75 @@ const
 
 	delete pDemo;
 	return true;
+}
+
+//*****************************************************************************
+WSTRING CDemosScreen::GetSelectedDemosDescription(
+// Gets text to describe a group of demos. Assumes they're all in the same level.
+// If something goes wrong, it returns the description of pDemo
+	const CIDSet demoIDs,
+	const CDbDemo* pDemo) const
+{
+	//Get the saved game
+	CDbSavedGame* pSavedGame = g_pTheDB->SavedGames.GetByID(pDemo->dwSavedGameID);
+
+	if (!pSavedGame) {
+		return (WSTRING)pDemo->DescriptionText;
+	}
+
+	//Get the room
+	CDbRoom* pRoom = pSavedGame->GetRoom();
+	delete pSavedGame;
+
+	if (!pRoom) {
+		return (WSTRING)pDemo->DescriptionText;
+	}
+
+	// Get the level
+	CDbLevel* pLevel = pRoom->GetLevel();
+	delete pRoom;
+
+	if (!pLevel) {
+		return (WSTRING)pDemo->DescriptionText;
+	}
+
+	//Get the hold
+	CDbHold* pHold = pLevel->GetHold();
+
+	if (!pHold) {
+		delete pLevel;
+		return (WSTRING)pDemo->DescriptionText;
+	}
+
+	//Hold name.
+	WSTRING descText;
+	WSTRING holdName = static_cast<const WCHAR*>(pHold->NameText);
+	WSTRING abbrevHoldName;
+	static const UINT MAX_HOLD_NAME = 8;
+	if (holdName.size() <= MAX_HOLD_NAME)
+		descText += holdName;
+	else
+	{
+		//Try to abbreviate by taking only the first letter from each word
+		abbrevHoldName = filterFirstLettersAndNumbers(holdName);
+		descText += abbrevHoldName;
+	}
+	descText += wszColon;
+	descText += wszSpace;
+
+	//Level name.
+	descText += pLevel->NameText;
+	descText += wszSpace;
+
+	delete pLevel;
+	delete pHold;
+
+	//Append total number of demos
+	descText += std::to_wstring(demoIDs.size());
+	descText += wszSpace;
+	descText += g_pTheDB->GetMessageText(MID_Demos);
+
+	return descText;
 }
 
 //*****************************************************************************
