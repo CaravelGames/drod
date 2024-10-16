@@ -992,7 +992,7 @@ void CHoldSelectScreen::OnBetweenEvents()
 		RequestThumbnail(this->pSelCNetHold);
 
 	//Advance play of the featured saved game.
-	if (dwNow - lastGameTurnTick >= gameTurnTick && playDemo)
+	if (dwNow - lastGameTurnTick >= gameTurnTick && this->playDemo)
 	{
 		AdvanceRestoreGameTurn();
 		lastGameTurnTick = dwNow;

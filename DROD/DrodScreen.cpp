@@ -1845,7 +1845,7 @@ void CDrodScreen::ExportSaves(
 	//Quick player export if requested.
 	bool bQuickExport = false;
 	string str;
-	if (CFiles::GetGameProfileString(INISection::Customizing, "QuickPlayerExport", str))
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::QuickPlayerExport, str))
 		bQuickExport = atoi(str.c_str()) != 0;
 	if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
 		CDbXML::info.bQuickPlayerExport = true;

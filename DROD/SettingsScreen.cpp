@@ -455,7 +455,7 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 
 	pOptionButton = new COptionButtonWidget(TAG_PLAY_HOLDMANAGE_DEMO, X_PLAY_HOLDMANAGE_DEMO,
 		Y_PLAY_HOLDMANAGE_DEMO, CX_PLAY_HOLDMANAGE_DEMO, CY_PLAY_HOLDMANAGE_DEMO,
-		L"Play demo on Hold Management screen", true);
+		g_pTheDB->GetMessageText(MID_PlayHoldManagementDemo), true);
 	pDemoFrame->AddWidget(pOptionButton);
 
 	pDemoFrame->AddWidget(
