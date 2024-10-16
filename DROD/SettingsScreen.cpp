@@ -115,6 +115,8 @@ const UINT TAG_MENU = 1093;
 
 const UINT TAG_RESIZABLE_SCREEN = 1094;
 
+const UINT TAG_PLAY_HOLDMANAGE_DEMO = 1095;
+
 static const UINT CX_SPACE = 10;
 static const UINT CY_SPACE = 10;
 
@@ -323,6 +325,18 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 
 	static const UINT CY_SPECIAL_FRAME = Y_AUTOUNDOONDEATH + CY_AUTOUNDOONDEATH + CY_SPACE;
 
+	//Demo frame and children
+	static const UINT X_DEMO_FRAME = X_EDITOR_FRAME;
+	static const UINT Y_DEMO_FRAME = Y_EDITOR_FRAME + CY_EDITOR_FRAME + CY_SPACE;
+	static const UINT CX_DEMO_FRAME = CX_TABBEDMENU - X_DEMO_FRAME - X_PERSONAL_FRAME;
+
+	static const int X_PLAY_HOLDMANAGE_DEMO = CX_SPACE;
+	static const int Y_PLAY_HOLDMANAGE_DEMO = CY_SPACE;
+	static const UINT CX_PLAY_HOLDMANAGE_DEMO = CX_DEMO_FRAME - X_PLAY_HOLDMANAGE_DEMO;
+	static const UINT CY_PLAY_HOLDMANAGE_DEMO = CY_STANDARD_OPTIONBUTTON;
+
+	static const UINT CY_DEMO_FRAME = Y_PLAY_HOLDMANAGE_DEMO + CY_PLAY_HOLDMANAGE_DEMO + CY_SPACE;
+
 	COptionButtonWidget* pOptionButton;
 
 	//Personal frame.
@@ -419,6 +433,16 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 		Y_GEMI, CX_GEMI, CY_GEMI,
 		g_pTheDB->GetMessageText(MID_GroupEditorMenuItems), false);
 	pEditorFrame->AddWidget(pOptionButton);
+
+	//Demo frame
+	CFrameWidget* pDemoFrame = new CFrameWidget(0L, X_DEMO_FRAME, Y_DEMO_FRAME,
+		CX_DEMO_FRAME, CY_DEMO_FRAME, g_pTheDB->GetMessageText(MID_Demos));
+	pTabbedMenu->AddWidgetToTab(pDemoFrame, PERSONAL_TAB);
+
+	pOptionButton = new COptionButtonWidget(TAG_PLAY_HOLDMANAGE_DEMO, X_PLAY_HOLDMANAGE_DEMO,
+		Y_PLAY_HOLDMANAGE_DEMO, CX_PLAY_HOLDMANAGE_DEMO, CY_PLAY_HOLDMANAGE_DEMO,
+		L"Play demo on Hold Management screen", true);
+	pDemoFrame->AddWidget(pOptionButton);
 }
 
 //************************************************************************************
@@ -1591,6 +1615,11 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_GROUPEDITORMENUITEMS));
 	pOptionButton->SetChecked(settings.GetVar(Settings::GEMI, false));
 	//Check above line
+	
+	//Demo settings
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_PLAY_HOLDMANAGE_DEMO));
+	pOptionButton->SetChecked(settings.GetVar(Settings::PlayHoldManagementDemo, true));
 
 	//Command settings.
 	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
@@ -1737,6 +1766,11 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_GROUPEDITORMENUITEMS));
 	settings.SetVar(Settings::GEMI, pOptionButton->IsChecked());
+
+	//Demo settings
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_PLAY_HOLDMANAGE_DEMO));
+	settings.SetVar(Settings::PlayHoldManagementDemo, pOptionButton->IsChecked());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.

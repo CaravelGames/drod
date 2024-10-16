@@ -65,6 +65,7 @@ namespace Settings
 	DEF(Music);
 	DEF(MusicVolume);
 	DEF(NoFocusPlaysMusic);
+	DEF(PlayHoldManagementDemo);
 	DEF(PlaySessions);
 	DEF(PuzzleMode);
 	DEF(ReceiveWhispersOnlyInGame);

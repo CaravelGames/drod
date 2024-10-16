@@ -1009,6 +1009,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_WaitForPlayerState: strText = "Wait for player state"; break;
 	case MID_VarCombo: strText = "_Combo"; break;
 	case MID_ExportSaves: strText = "&Export saves"; break;
+	case MID_PlayHoldManagementDemo: strText = "Play demo on Hold Management screen"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
