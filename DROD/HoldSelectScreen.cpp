@@ -128,6 +128,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	, pCurrentRestoreGame(NULL)
 	, filter(F_ALL)
 	, pSelCNetHold(NULL)
+	, playDemo(true)
 //Constructor
 {
 	this->imageFilenames.push_back(string("Background"));
@@ -547,6 +548,8 @@ bool CHoldSelectScreen::SetForActivate()
 		this->bDownloadList = true;
 		this->dwLastNotice = updates.back().id;
 	}
+
+	this->playDemo = pCurrentPlayer->Settings.GetVar(Settings::PlayHoldManagementDemo, true);
 
 	pCurrentPlayer->Settings.SetVar(Settings::LastNotice, this->dwLastNotice);
 	pCurrentPlayer->Update();
@@ -989,7 +992,7 @@ void CHoldSelectScreen::OnBetweenEvents()
 		RequestThumbnail(this->pSelCNetHold);
 
 	//Advance play of the featured saved game.
-	if (dwNow - lastGameTurnTick >= gameTurnTick)
+	if (dwNow - lastGameTurnTick >= gameTurnTick && this->playDemo)
 	{
 		AdvanceRestoreGameTurn();
 		lastGameTurnTick = dwNow;

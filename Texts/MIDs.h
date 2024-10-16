@@ -1204,6 +1204,7 @@ enum MID_CONSTANT {
   MID_RestoreToFurthestSave = 1771,
   MID_Challenges = 1847,
   MID_CompletedChallenges = 1848,
+  MID_ExportSaves = 2123,
 
   //Messages from SelectScreens.uni:
   MID_HoldManagementTitle = 1207,
@@ -1395,6 +1396,11 @@ enum MID_CONSTANT {
   MID_AutoUndoOnDeath = 1786,
   MID_ActivateCloudSync = 1794,
   MID_ResizableWindow = 2027,
+  MID_PlayHoldManagementDemo = 2124,
+  MID_DemoDateFormat = 2125,
+  MID_DateFormatMDY = 2126,
+  MID_DateFormatDMY = 2127,
+  MID_DateFormatYMD = 2128,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

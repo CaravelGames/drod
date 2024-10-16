@@ -48,6 +48,7 @@ namespace Settings
 	DEF(CloudHoldDemosVersion);
 	DEF(CNetProgressIsOld);
 	DEF(ConnectToInternet);
+	DEF(DemoDateFormat);
 	DEF(DisplayCombos);
 	DEF(EnableChatInGame);
 	DEF(ExportPath);
@@ -65,6 +66,7 @@ namespace Settings
 	DEF(Music);
 	DEF(MusicVolume);
 	DEF(NoFocusPlaysMusic);
+	DEF(PlayHoldManagementDemo);
 	DEF(PlaySessions);
 	DEF(PuzzleMode);
 	DEF(ReceiveWhispersOnlyInGame);

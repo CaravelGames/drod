@@ -75,6 +75,8 @@ const UINT TAG_HELP = 1093;
 const UINT TAG_CHALLENGES = 1094;
 const UINT TAG_CHALLENGES_LIST = 1095;
 
+const UINT TAG_EXPORT_HOLD_SAVES = 1096;
+
 //Reserve 2000 to (2000+room size) for checkpoint tags.
 const UINT TAG_CHECKPOINT = 2000;
 #define IS_CHECKPOINT_TAG(t) ((t) >= 2000 && (t) < (2000+(38*32)))
@@ -123,12 +125,16 @@ CRestoreScreen::CRestoreScreen()
 	static const UINT CY_CANCEL_BUTTON = CY_RESTORE_BUTTON;
 	static const UINT CX_HELP_BUTTON = CX_CANCEL_BUTTON;
 	static const UINT CY_HELP_BUTTON = CY_RESTORE_BUTTON;
+	static const UINT CX_EXPORT_SAVES_BUTTON = 120;
+	static const UINT CY_EXPORT_SAVES_BUTTON = CY_RESTORE_BUTTON;
 	const int X_CANCEL_BUTTON = this->w / 2;
 	const int X_RESTORE_BUTTON = X_CANCEL_BUTTON - CX_RESTORE_BUTTON - CX_SPACE;
 	const int X_HELP_BUTTON = X_CANCEL_BUTTON + CX_CANCEL_BUTTON + CX_SPACE;
+	const int X_EXPORT_SAVES_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE;
 	const int Y_RESTORE_BUTTON = this->h - CY_SPACE - CY_RESTORE_BUTTON;
 	const int Y_CANCEL_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_HELP_BUTTON = Y_RESTORE_BUTTON;
+	const int Y_EXPORT_SAVES_BUTTON = Y_RESTORE_BUTTON;
 
 	//Mini-room widget has strict proportions and its dimensions will define 
 	//placement of most everything else.
@@ -223,6 +229,10 @@ CRestoreScreen::CRestoreScreen()
 				CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help));
 	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
+
+	pButton = new CButtonWidget(TAG_EXPORT_HOLD_SAVES, X_EXPORT_SAVES_BUTTON, Y_EXPORT_SAVES_BUTTON,
+		CX_EXPORT_SAVES_BUTTON, CY_EXPORT_SAVES_BUTTON, g_pTheDB->GetMessageText(MID_ExportSaves));
+	AddWidget(pButton);
 
 	//Level selection area.
 	AddWidget(new CLabelWidget(0L, X_CHOOSE_LEVEL_LABEL, Y_CHOOSE_LEVEL_LABEL, 
@@ -467,6 +477,10 @@ void CRestoreScreen::OnClick(
 		case TAG_CHALLENGES:
 			DisplayChallengesDialog();
 			Paint();
+		break;
+
+		case TAG_EXPORT_HOLD_SAVES:
+			ExportSaves(g_pTheDB->GetPlayerID(), g_pTheDB->GetHoldID(), true);
 		break;
 
 		default:

@@ -102,6 +102,7 @@ friend class CDrodDialogs;
 	void           ExportHold(const UINT dwHoldID);
 	void           ExportHoldScripts(CDbHold *pHold);
 	void           ExportHoldTexts(CDbHold *pHold);
+	void           ExportSaves(const UINT& playerId, const UINT& holdId = 0, const bool singleHold = false);
 	bool           ExportSelectFile(const MESSAGE_ID messageID,
 			WSTRING &wstrExportFile, const UINT extensionTypes);
 	void           ExportStyle(const WSTRING& style);

@@ -1809,6 +1809,93 @@ void CDrodScreen::ExportHoldTexts(CDbHold *pHold)
 }
 
 //*****************************************************************************
+void CDrodScreen::ExportSaves(
+	const UINT& playerID,  //(in) player to export data for
+	const UINT& holdID,    //(in) hold to export for [default = 0]
+	const bool singleHold) //(in) export saves only for a specified hold [default=false]
+{
+	//Compile IDs of this player's saved games.
+	//The export will exclude hidden saved game records (e.g. those attached to demos, room tallies, etc.)
+	//but will include records for conquering secret rooms and ending holds.
+	CDb db;
+	db.SavedGames.FilterByPlayer(playerID);
+	db.SavedGames.FindHiddens(true);
+	if (singleHold)
+	{
+		db.SavedGames.FilterByHold(holdID);
+	}
+
+	CIDSet savedGameIDs, allSavedGameIDs = db.SavedGames.GetIDs();
+	for (CIDSet::const_iterator id = allSavedGameIDs.begin();
+		id != allSavedGameIDs.end(); ++id)
+	{
+		CDbSavedGame* pSavedGame = db.SavedGames.GetByID(*id, true);
+		if (!pSavedGame->bIsHidden ||
+			pSavedGame->eType == ST_SecretConquered ||
+			pSavedGame->eType == ST_EndHold ||
+			pSavedGame->eType == ST_HoldMastered)
+			savedGameIDs += *id;
+		delete pSavedGame;
+	}
+	if (savedGameIDs.empty()) return;
+
+	CDbPlayer* pPlayer = g_pTheDB->Players.GetByID(playerID);
+	if (!pPlayer) return;
+
+	//Quick player export if requested.
+	bool bQuickExport = false;
+	string str;
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::QuickPlayerExport, str))
+		bQuickExport = atoi(str.c_str()) != 0;
+	if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
+		CDbXML::info.bQuickPlayerExport = true;
+
+	//Default filename is player name.
+	WSTRING wstrExportFile = (WSTRING)pPlayer->NameText;
+	CDrodScreen::callbackContext = wstrExportFile;
+	wstrExportFile += wszSpace;
+
+	//Add hold name if exporting for single hold
+	if (singleHold)
+	{
+		CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID);
+		if (pHold)
+		{
+			WSTRING holdName = pHold->NameText;
+			static const UINT MAX_HOLD_NAME = 16;
+			if (holdName.size() <= MAX_HOLD_NAME)
+			{
+				wstrExportFile += holdName;
+			}
+			else
+			{
+				//Abbreviate by taking only the first letter from each word
+				wstrExportFile += filterFirstLettersAndNumbers(holdName);
+			}
+
+			wstrExportFile += wszSpace;
+			delete pHold;
+		}
+	}
+
+	wstrExportFile += g_pTheDB->GetMessageText(MID_Saves);
+	if (ExportSelectFile(MID_SavePlayerPath, wstrExportFile, EXT_PLAYER))
+	{
+		//Write the player saves file.
+		SetCursor(CUR_Wait);
+		Callback(MID_Exporting);
+		CDbXML::SetCallback(this);
+
+		const bool bResult = CDbXML::ExportXML(V_SavedGames, savedGameIDs,
+			wstrExportFile.c_str());
+		ExportCleanup();
+		ShowOkMessage(bResult ? MID_SavedGamesSaved : MID_PlayerFileNotSaved);
+	}
+	CDrodScreen::callbackContext.resize(0);
+	delete pPlayer;
+}
+
+//*****************************************************************************
 bool CDrodScreen::ExportSelectFile(
 //Select a file to export data to.
 //

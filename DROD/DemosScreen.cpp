@@ -851,7 +851,8 @@ void CDemosScreen::OnClick(
 			if (pDemo)
 			{
 				//Default filename is demo description.
-				WSTRING wstrExportFile = (WSTRING)pDemo->DescriptionText;
+				WSTRING wstrExportFile = demoIDs.size() == 1 ?
+					(WSTRING)pDemo->DescriptionText : GetSelectedDemosDescription(demoIDs, pDemo);
 				if (ExportSelectFile(MID_SaveDemoPath, wstrExportFile, EXT_DEMO))
 				{
 					//Write the demo file.
@@ -1093,7 +1094,14 @@ const
 	if (!pSavedGame) {delete pDemo; return false;}
 
 	//Copy date/time to beginning of item.
-	pSavedGame->Created.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
+	CDate date = pSavedGame->Created;
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	if (pCurrentPlayer)
+	{
+		date.SetDateFormat((CDate::DateFormat)pCurrentPlayer->Settings.GetVar(Settings::DemoDateFormat, CDate::MDY));
+		delete pCurrentPlayer;
+	}
+	date.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
 	dwRoomID = pSavedGame->dwRoomID;
 	delete pSavedGame;
 
@@ -1129,6 +1137,47 @@ const
 
 	delete pDemo;
 	return true;
+}
+
+//*****************************************************************************
+WSTRING CDemosScreen::GetSelectedDemosDescription(
+// Gets text to describe a group of demos. Assumes they're all in the same level.
+// If something goes wrong, it returns the description of pDemo
+	const CIDSet demoIDs,
+	const CDbDemo* pDemo) const
+{
+	ASSERT(pDemo);
+	//Get the level and hold IDs
+	UINT roomID = CDbSavedGames::GetRoomIDofSavedGame(pDemo->dwSavedGameID);
+	UINT levelID = CDbRooms::GetLevelIDForRoom(roomID);
+	UINT holdID = CDbRooms::GetHoldIDForRoom(roomID);
+
+	//Hold name.
+	WSTRING descText;
+	WSTRING holdName = CDbHolds::GetHoldName(holdID);
+	WSTRING abbrevHoldName;
+	static const UINT MAX_HOLD_NAME = 8;
+	if (holdName.size() <= MAX_HOLD_NAME)
+		descText += holdName;
+	else
+	{
+		//Try to abbreviate by taking only the first letter from each word
+		abbrevHoldName = filterFirstLettersAndNumbers(holdName);
+		descText += abbrevHoldName;
+	}
+	descText += wszColon;
+	descText += wszSpace;
+
+	//Level name.
+	descText += CDbLevels::GetLevelName(levelID);
+	descText += wszSpace;
+
+	//Append total number of demos
+	descText += std::to_wstring(demoIDs.size());
+	descText += wszSpace;
+	descText += g_pTheDB->GetMessageText(MID_Demos);
+
+	return descText;
 }
 
 //*****************************************************************************
