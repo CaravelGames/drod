@@ -205,6 +205,13 @@ const
 				wstrText += wszSpace;
 				wstrText += _itoW(1900 + tmGet->tm_year,dummy,10);
 			break;
+			case YMD:
+				wstrText += _itoW(1900 + tmGet->tm_year, dummy, 10);
+				wstrText += wszSpace;
+				wstrText += this->wstrMonthName[tmGet->tm_mon];
+				wstrText += wszSpace;
+				wstrText += _itoW(tmGet->tm_mday, dummy, 10);
+				break;
 		}
 		bShowDate = true;
 	} else if ((dwFormatFlags & DF_SHORT_DATE) == DF_SHORT_DATE)
@@ -238,6 +245,14 @@ const
 					wstrText += wTmp;
 				}
 				wstrText += _itoW(nYear,dummy,10);
+			break;
+			case YMD:
+				//ISO-8601: YYYY-MM_DD
+				wstrText += std::to_wstring(1900 + tmGet->tm_year);
+				wstrText += wszHyphen;
+				wstrText += std::to_wstring(tmGet->tm_mon + 1);
+				wstrText += wszHyphen;
+				wstrText += std::to_wstring(tmGet->tm_mday);
 			break;
 		}
 		bShowDate = true;

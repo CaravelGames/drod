@@ -48,6 +48,7 @@ namespace Settings
 	DEF(CloudHoldDemosVersion);
 	DEF(CNetProgressIsOld);
 	DEF(ConnectToInternet);
+	DEF(DemoDateFormat);
 	DEF(DisplayCombos);
 	DEF(EnableChatInGame);
 	DEF(ExportPath);

@@ -673,3 +673,19 @@ Resizable Window
 [MID_PlayHoldManagementDemo]
 [eng]
 Play demo on Hold Management screen
+
+[MID_DemoDateFormat]
+[eng]
+Demo date format
+
+[MID_DateFormatMDY]
+[eng]
+MM/DD/YY
+
+[MID_DateFormatDMY]
+[eng]
+DD/MM/YY
+
+[MID_DateFormatYMD]
+[eng]
+YYYY-MM-DD

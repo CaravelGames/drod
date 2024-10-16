@@ -1094,7 +1094,14 @@ const
 	if (!pSavedGame) {delete pDemo; return false;}
 
 	//Copy date/time to beginning of item.
-	pSavedGame->Created.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
+	CDate date = pSavedGame->Created;
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	if (pCurrentPlayer)
+	{
+		date.SetDateFormat((CDate::DateFormat)pCurrentPlayer->Settings.GetVar(Settings::DemoDateFormat, CDate::MDY));
+		delete pCurrentPlayer;
+	}
+	date.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
 	dwRoomID = pSavedGame->dwRoomID;
 	delete pSavedGame;
 

@@ -35,6 +35,7 @@
 #include <FrontEndLib/LabelWidget.h>
 #include <FrontEndLib/FrameWidget.h>
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/OptionButtonWidget.h>
 #include <FrontEndLib/SliderWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
@@ -116,9 +117,12 @@ const UINT TAG_MENU = 1093;
 const UINT TAG_RESIZABLE_SCREEN = 1094;
 
 const UINT TAG_PLAY_HOLDMANAGE_DEMO = 1095;
+const UINT TAG_DEMO_DATE_FORMAT = 1096;
 
 static const UINT CX_SPACE = 10;
 static const UINT CY_SPACE = 10;
+
+const UINT LIST_LINE_HEIGHT = 22;
 
 static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
@@ -335,7 +339,17 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	static const UINT CX_PLAY_HOLDMANAGE_DEMO = CX_DEMO_FRAME - X_PLAY_HOLDMANAGE_DEMO;
 	static const UINT CY_PLAY_HOLDMANAGE_DEMO = CY_STANDARD_OPTIONBUTTON;
 
-	static const UINT CY_DEMO_FRAME = Y_PLAY_HOLDMANAGE_DEMO + CY_PLAY_HOLDMANAGE_DEMO + CY_SPACE;
+	static const int X_DEMO_DATE_FORMAT_LABEL = CX_SPACE;
+	static const int Y_DEMO_DATE_FORMAT_LABEL = Y_PLAY_HOLDMANAGE_DEMO + CY_PLAY_HOLDMANAGE_DEMO;
+	static const UINT CX_DEMO_DATE_FORMAT_LABEL = CX_DEMO_FRAME - X_DEMO_DATE_FORMAT_LABEL;
+	static const UINT CY_DEMO_DATE_FORMAT_LABEL = 30;
+	static const int X_DEMO_DATE_FORMAT = CX_SPACE;
+	static const int Y_DEMO_DATE_FORMAT = Y_DEMO_DATE_FORMAT_LABEL + CY_DEMO_DATE_FORMAT_LABEL + CY_SPACE;
+	static const UINT CX_DEMO_DATE_FORMAT = CX_DEMO_FRAME - X_PLAY_HOLDMANAGE_DEMO - CX_SPACE;
+	static const UINT CY_DEMO_DATE_FORMAT = LIST_LINE_HEIGHT * 3 + 4;
+
+	static const UINT CY_DEMO_FRAME = Y_PLAY_HOLDMANAGE_DEMO + CY_DEMO_DATE_FORMAT_LABEL +
+		CY_PLAY_HOLDMANAGE_DEMO + CY_DEMO_DATE_FORMAT + 2 * CY_SPACE;
 
 	COptionButtonWidget* pOptionButton;
 
@@ -443,6 +457,17 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 		Y_PLAY_HOLDMANAGE_DEMO, CX_PLAY_HOLDMANAGE_DEMO, CY_PLAY_HOLDMANAGE_DEMO,
 		L"Play demo on Hold Management screen", true);
 	pDemoFrame->AddWidget(pOptionButton);
+
+	pDemoFrame->AddWidget(
+		new CLabelWidget(0L, X_DEMO_DATE_FORMAT_LABEL, Y_DEMO_DATE_FORMAT_LABEL,
+			CX_DEMO_DATE_FORMAT_LABEL, CY_DEMO_DATE_FORMAT_LABEL, F_FrameCaption, g_pTheDB->GetMessageText(MID_DemoDateFormat)));
+
+	CListBoxWidget* pDemoDateFormat = new CListBoxWidget(TAG_DEMO_DATE_FORMAT, X_DEMO_DATE_FORMAT,
+		Y_DEMO_DATE_FORMAT, CX_DEMO_DATE_FORMAT, CY_DEMO_DATE_FORMAT);
+	pDemoDateFormat->AddItem(CDate::MDY, g_pTheDB->GetMessageText(MID_DateFormatMDY));
+	pDemoDateFormat->AddItem(CDate::DMY, g_pTheDB->GetMessageText(MID_DateFormatDMY));
+	pDemoDateFormat->AddItem(CDate::YMD, g_pTheDB->GetMessageText(MID_DateFormatYMD));
+	pDemoFrame->AddWidget(pDemoDateFormat);
 }
 
 //************************************************************************************
@@ -1621,6 +1646,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 		GetWidget(TAG_PLAY_HOLDMANAGE_DEMO));
 	pOptionButton->SetChecked(settings.GetVar(Settings::PlayHoldManagementDemo, true));
 
+	CListBoxWidget* pDemoDateFormat = DYN_CAST(CListBoxWidget*, CWidget*,
+		GetWidget(TAG_DEMO_DATE_FORMAT));
+	pDemoDateFormat->SelectItem(settings.GetVar(Settings::DemoDateFormat, CDate::MDY));
+
 	//Command settings.
 	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
 	{
@@ -1771,6 +1800,10 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_PLAY_HOLDMANAGE_DEMO));
 	settings.SetVar(Settings::PlayHoldManagementDemo, pOptionButton->IsChecked());
+
+	CListBoxWidget* pDemoDateFormat = DYN_CAST(CListBoxWidget*, CWidget*,
+		GetWidget(TAG_DEMO_DATE_FORMAT));
+	settings.SetVar(Settings::DemoDateFormat, pDemoDateFormat->GetSelectedItem());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.
