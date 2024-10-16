@@ -1146,40 +1146,15 @@ WSTRING CDemosScreen::GetSelectedDemosDescription(
 	const CIDSet demoIDs,
 	const CDbDemo* pDemo) const
 {
-	//Get the saved game
-	CDbSavedGame* pSavedGame = g_pTheDB->SavedGames.GetByID(pDemo->dwSavedGameID);
-
-	if (!pSavedGame) {
-		return (WSTRING)pDemo->DescriptionText;
-	}
-
-	//Get the room
-	CDbRoom* pRoom = pSavedGame->GetRoom();
-	delete pSavedGame;
-
-	if (!pRoom) {
-		return (WSTRING)pDemo->DescriptionText;
-	}
-
-	// Get the level
-	CDbLevel* pLevel = pRoom->GetLevel();
-	delete pRoom;
-
-	if (!pLevel) {
-		return (WSTRING)pDemo->DescriptionText;
-	}
-
-	//Get the hold
-	CDbHold* pHold = pLevel->GetHold();
-
-	if (!pHold) {
-		delete pLevel;
-		return (WSTRING)pDemo->DescriptionText;
-	}
+	ASSERT(pDemo);
+	//Get the level and hold IDs
+	UINT roomID = CDbSavedGames::GetRoomIDofSavedGame(pDemo->dwSavedGameID);
+	UINT levelID = CDbRooms::GetLevelIDForRoom(roomID);
+	UINT holdID = CDbRooms::GetHoldIDForRoom(roomID);
 
 	//Hold name.
 	WSTRING descText;
-	WSTRING holdName = static_cast<const WCHAR*>(pHold->NameText);
+	WSTRING holdName = CDbHolds::GetHoldName(holdID);
 	WSTRING abbrevHoldName;
 	static const UINT MAX_HOLD_NAME = 8;
 	if (holdName.size() <= MAX_HOLD_NAME)
@@ -1194,11 +1169,8 @@ WSTRING CDemosScreen::GetSelectedDemosDescription(
 	descText += wszSpace;
 
 	//Level name.
-	descText += pLevel->NameText;
+	descText += CDbLevels::GetLevelName(levelID);
 	descText += wszSpace;
-
-	delete pLevel;
-	delete pHold;
 
 	//Append total number of demos
 	descText += std::to_wstring(demoIDs.size());
