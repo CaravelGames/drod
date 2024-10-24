@@ -920,7 +920,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 		},
 		{
 			DCMD_Stats, DCMD_ChatHistory, DCMD_PuzzleModeOptions,
-			DCMD_ToggleTurnCount, DCMD_QuickDemoRecord, DCMD_ToggleDemoRecord,
+			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate, DCMD_QuickDemoRecord, DCMD_ToggleDemoRecord,
 			DCMD_WatchDemos, DCMD_ShowHelp,
 			NO_COMMAND
 		},

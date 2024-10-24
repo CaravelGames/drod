@@ -1373,6 +1373,8 @@ enum MID_CONSTANT {
   MID_Command_ChatHistory = 1974,
   MID_Command_PuzzleModeOptions = 1975,
   MID_Command_ToggleTurnCount = 1976,
+  MID_Command_ToggleHoldVars = 2129,
+  MID_Command_ToggleFrameRate = 2130,
   MID_Command_QuickDemoRecord = 1977,
   MID_Command_ToggleDemoRecord = 1978,
   MID_Command_WatchDemos = 1979,
@@ -1401,7 +1403,7 @@ enum MID_CONSTANT {
   MID_DateFormatMDY = 2126,
   MID_DateFormatDMY = 2127,
   MID_DateFormatYMD = 2128,
-
+  
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,
   MID_Graphic = 965,
