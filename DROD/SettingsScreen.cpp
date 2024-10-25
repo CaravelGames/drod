@@ -1230,7 +1230,7 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 		const bool bOverwrite = currentKey == newKey
 			|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
 
-		if (bOverwrite)
+		if (bOverwrite && !CanCommandsShareInput(keyDefinition->eCommand, clearedKeyDefinition->eCommand))
 		{
 			this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
 			UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
@@ -1244,6 +1244,18 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 	UpdateCommandKeyLabel(newKey, eCommand);
 
 	Paint();
+}
+
+//************************************************************************************
+bool CSettingsScreen::CanCommandsShareInput(int command, int otherCommand) const
+{
+	//Gameplay commands can't share an input with any other command
+	if (bIsGameCommand(command) || bIsGameCommand(otherCommand))
+		return false;
+
+	//Commands can share an input if they aren't used in the same context
+	//(currently the only contexts are gameplay and editor)
+	return (bIsEditorCommand(command) != bIsEditorCommand(otherCommand));
 }
 
 //************************************************************************************

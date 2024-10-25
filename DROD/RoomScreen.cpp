@@ -314,6 +314,13 @@ InputKey CRoomScreen::GetInputKeyForCommand(const UINT wCommand) const
 }
 
 //*****************************************************************************
+bool CRoomScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return bIsGameCommand(command) || !bIsEditorCommand(command);
+}
+
+//*****************************************************************************
 void CRoomScreen::InitKeysymToCommandMap(
 //Set the keysym-to-command map with values from player settings that will determine
 //which commands correspond to which keys.
@@ -339,13 +346,17 @@ void CRoomScreen::InitKeysymToCommandMap(
 	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex)
 	{
 		const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+		const int command = (int)keyDefinition->eCommand;
+
+		if (!IsCommandSupported(command))
+			continue;
 
 		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
-		this->InputKeyToCommandMap[inputKey] = keyDefinition->eCommand;
+		this->InputKeyToCommandMap[inputKey] = command;
 		bool bCmdUseModifier = DoesCommandUseModifiers((DCMD)wIndex);
 
 		if (bCmdUseModifier) // Support for macros
-			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(inputKey), false, false, true)] = keyDefinition->eCommand;
+			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(inputKey), false, false, true)] = command;
 
 		// Numlock being off can cause the numpad to be treated as different keys, but only the arrows for some reason
 		// So we store an alternative key map that flips arrow keys and some numpad keys so we can check for both
@@ -377,9 +388,9 @@ void CRoomScreen::InitKeysymToCommandMap(
 				break;
 		}
 
-		this->AlternativeKeyToCommandMap[altKey] = keyDefinition->eCommand;
+		this->AlternativeKeyToCommandMap[altKey] = command;
 		if (bCmdUseModifier) // Support for macros
-			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(altKey), false, false, true)] = keyDefinition->eCommand;
+			this->AlternativeKeyToCommandMap[BuildInputKey(ReadInputKey(altKey), false, false, true)] = command;
 	}
 }
 

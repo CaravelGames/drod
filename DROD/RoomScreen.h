@@ -67,6 +67,7 @@ protected:
 	SDL_Rect& GetEntireSignRect() const;
 	InputKey GetInputKeyForCommand(const UINT wCommand) const;
 	void     HideScroll() {this->bIsScrollVisible = false; PaintScroll();}
+	virtual bool IsCommandSupported(int command) const;
 	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
 	void     PaintBackground();
 	void     PaintScroll();

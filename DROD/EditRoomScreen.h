@@ -77,6 +77,7 @@ protected:
 
 	virtual void   ApplyINISettings();
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	virtual bool   UnloadOnDeactivate() const {return false;}
 

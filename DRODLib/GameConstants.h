@@ -291,6 +291,11 @@ enum RoomTokenType
 };
 
 //******************************************************************************************
+static inline bool bIsGameCommand(const int command)
+{
+	return command < COMMAND_COUNT;
+}
+
 static inline bool bIsVirtualCommand(const int command)
 {
 	return command > COMMAND_COUNT;
@@ -364,6 +369,12 @@ static inline int ConvertToBumpCommand(const int command)
 		case CMD_SE: return CMD_BUMP_SE;
 		default: return CMD_WAIT;
 	}
+}
+
+static inline bool bIsEditorCommand(const int command)
+{
+		return command == CMD_EXTRA_STATS || command == CMD_EXTRA_CHAT_HISTORY ||
+			(command >= CMD_EXTRA_WATCH_DEMOS && command <= CMD_EXTRA_SHOW_HELP);
 }
 
 static inline bool IsValidOrientation(const UINT o) {return o<ORIENTATION_COUNT;}
