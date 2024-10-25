@@ -578,6 +578,14 @@ Puzzle Mode Options
 [eng]
 Toggle Turn Count
 
+[MID_Command_ToggleHoldVars]
+[eng]
+Toggle Var Monitor
+
+[MID_Command_ToggleFrameRate]
+[eng]
+Toggle Frame Rate
+
 [MID_Command_QuickDemoRecord]
 [eng]
 Save Demo

@@ -1677,6 +1677,18 @@ void CGameScreen::OnKeyDown(
 		case CMD_EXTRA_TOGGLE_TURN_COUNT:
 			this->pRoomWidget->ToggleMoveCount();
 		break;
+		case CMD_EXTRA_TOGGLE_HOLD_VARS:
+#ifdef ENABLE_CHEATS
+			this->pRoomWidget->ToggleVarDisplay();
+#else
+			if (CanShowVarUpdates()) {
+				this->pRoomWidget->ToggleVarDisplay();
+			}
+#endif
+		break;
+		case CMD_EXTRA_TOGGLE_FRAME_RATE:
+			this->pRoomWidget->ToggleFrameRate();
+		break;
 		case CMD_EXTRA_SHOW_HELP:
 			GotoHelpPage();
 		break;
@@ -1732,24 +1744,12 @@ void CGameScreen::OnKeyDown(
 				this->pRoomWidget->UpdateFromCurrentGame(true);
 			}
 		break;
-		//Persistent move count display / Frame rate / Game var output.
-		case SDLK_F7:
 #ifdef ENABLE_CHEATS
+		//Game var output.
+		case SDLK_F7:
 			if (Key.keysym.mod & KMOD_SHIFT)
 				LogHoldVars();
-			else
-#endif
-			if (Key.keysym.mod & KMOD_CTRL) {
-#ifndef ENABLE_CHEATS
-				if (CanShowVarUpdates())
-#endif
-					this->pRoomWidget->ToggleVarDisplay();
-			} else if (Key.keysym.mod & KMOD_ALT) {
-				this->pRoomWidget->ToggleFrameRate();
-			}
 		break;
-
-#ifdef ENABLE_CHEATS
 		//cheat keys
 		case SDLK_F8:
 		{
