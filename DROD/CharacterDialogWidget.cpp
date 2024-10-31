@@ -193,6 +193,7 @@ const UINT TAG_ARRAYVAR_TEXTLABEL = 865;
 const UINT TAG_ITEM_GROUP_LISTBOX = 864;
 const UINT TAG_ENTITY_LISTBOX = 863;
 const UINT TAG_PLAYER_STATE_LISTBOX = 862;
+const UINT TAG_PLAYER_STATE_LISTBOX2 = 861;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -453,7 +454,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pIgnoreFlagsListBox(NULL)
 	, pColorListBox(NULL)
 	, pOrbAgentListBox(NULL)
-	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL)
+	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL), pPlayerStateListBox2(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1975,6 +1976,14 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pPlayerStateListBox->AddItem(ScriptFlag::PS_Hiding, g_pTheDB->GetMessageText(MID_Hiding));
 	this->pAddCommandDialog->AddWidget(this->pPlayerStateListBox);
 	this->pPlayerStateListBox->SelectLine(0);
+
+	this->pPlayerStateListBox2 = new CListBoxWidget(TAG_PLAYER_STATE_LISTBOX2,
+		X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_ONOFFLISTBOX, CY_DISPLAYFILTER_LISTBOX);
+	this->pPlayerStateListBox2->AddItem(ScriptFlag::PS_Invisible, g_pTheDB->GetMessageText(MID_Invisible));
+	this->pPlayerStateListBox2->AddItem(ScriptFlag::PS_Hasted, g_pTheDB->GetMessageText(MID_Hasted));
+	this->pPlayerStateListBox2->AddItem(ScriptFlag::PS_Powered, g_pTheDB->GetMessageText(MID_Powered));
+	this->pAddCommandDialog->AddWidget(this->pPlayerStateListBox2);
+	this->pPlayerStateListBox2->SelectLine(0);
 
 	this->pGlobalScriptListBox = new CListBoxWidget(TAG_GLOBALSCRIPTLISTBOX,
 			X_GLOBALSCRIPTLISTBOX, Y_GLOBALSCRIPTLISTBOX, CX_GLOBALSCRIPTLISTBOX, CY_GLOBALSCRIPTLISTBOX, true);
@@ -3795,9 +3804,14 @@ const
 		break;
 
 		case CCharacterCommand::CC_WaitForPlayerState:
-			wstr += this->pPlayerStateListBox->GetTextForKey(command.y);
+		case CCharacterCommand::CC_SetPlayerState:
+		{
+			CListBoxWidget* listBox = command.command == CCharacterCommand::CC_SetPlayerState ?
+				this->pPlayerStateListBox2 : this->pPlayerStateListBox;
+			wstr += listBox->GetTextForKey(command.y);
 			wstr += wszSpace;
 			wstr += this->pOnOffListBox2->GetTextForKey(command.x);
+		}
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
@@ -4965,6 +4979,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerWeapon, g_pTheDB->GetMessageText(MID_SetPlayerWeapon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWaterTraversal, g_pTheDB->GetMessageText(MID_SetWaterTraversal));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerBehavior, g_pTheDB->GetMessageText(MID_SetPlayerBehavior));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetPlayerState, g_pTheDB->GetMessageText(MID_SetPlayerState));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSet, g_pTheDB->GetMessageText(MID_VarSet));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_VarSetAt, g_pTheDB->GetMessageText(MID_VarSetAt));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ArrayVarSet, g_pTheDB->GetMessageText(MID_ArrayVarSet));
@@ -5842,7 +5857,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 66;
+	static const UINT NUM_WIDGETS = 67;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5863,7 +5878,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVETYPELISTBOX, TAG_IGNOREFLAGSLISTBOX, TAG_COLOR_LISTBOX, TAG_WEAPON_LISTBOX2,
 		TAG_VARCOMPLIST2, TAG_ORBAGENTLIST, TAG_PLAYERBEHAVE_LIST, TAG_PLAYERBEHAVESTATE_LIST,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
-		TAG_ENTITY_LISTBOX, TAG_PLAYER_STATE_LISTBOX
+		TAG_ENTITY_LISTBOX, TAG_PLAYER_STATE_LISTBOX, TAG_PLAYER_STATE_LISTBOX2
 	};
 
 	static const UINT NO_WIDGETS[] =    {0};
@@ -5921,6 +5936,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0};
 	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
 	static const UINT WAITFORPLAYERSTATE[] = { TAG_PLAYER_STATE_LISTBOX, TAG_ONOFFLISTBOX2, 0 };
+	static const UINT PLAYERSTATE[] = { TAG_PLAYER_STATE_LISTBOX2, TAG_ONOFFLISTBOX2, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -6036,7 +6052,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		CLEARARRAYVAR,      //CC_ClearArrayVar
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
 		WAITFORITEMGROUP,   //CC_WaitForNotItemGroup
-		WAITFORPLAYERSTATE  //CC_WaitForPlayerState
+		WAITFORPLAYERSTATE, //CC_WaitForPlayerState
+		PLAYERSTATE         //CC_SetPlayerState
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -6198,6 +6215,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForItemGroup
 		NO_LABELS,          //CC_WaitForNotItemGroup
 		NO_LABELS,          //CC_WaitForPlayerState
+		NO_LABELS,          //CC_SetPlayerState
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6649,9 +6667,14 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_WaitForPlayerState:
-			this->pCommand->y = this->pPlayerStateListBox->GetSelectedItem();
+		case CCharacterCommand::CC_SetPlayerState:
+		{
+			CListBoxWidget* listBox = this->pCommand->command == CCharacterCommand::CC_SetPlayerState ?
+				this->pPlayerStateListBox2 : this->pPlayerStateListBox;
+			this->pCommand->y = listBox->GetSelectedItem();
 			this->pCommand->x = this->pOnOffListBox2->GetSelectedItem();
 			AddCommand();
+		}
 		break;
 
 		case CCharacterCommand::CC_BuildMarker:
@@ -7665,8 +7688,13 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_WaitForPlayerState:
-			this->pPlayerStateListBox->SelectItem(this->pCommand->y);
+		case CCharacterCommand::CC_SetPlayerState:
+		{
+			CListBoxWidget* listBox = c == CCharacterCommand::CC_SetPlayerState ?
+				this->pPlayerStateListBox2 : this->pPlayerStateListBox;
+			listBox->SelectItem(this->pCommand->y);
 			this->pOnOffListBox2->SelectItem(this->pCommand->x);
+		}
 		break;
 
 		case CCharacterCommand::CC_VarSet:
@@ -8389,6 +8417,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_WaitForPlayerState:
+	case CCharacterCommand::CC_SetPlayerState:
 		parseNumber(pCommand->y); skipComma;
 		parseNumber(pCommand->x); skipComma;
 	break;
@@ -9287,6 +9316,7 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_WaitForPlayerState:
+	case CCharacterCommand::CC_SetPlayerState:
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x);
 	break;
