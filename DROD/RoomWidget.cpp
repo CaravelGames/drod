@@ -8503,6 +8503,9 @@ void CRoomWidget::DrawDoubleCursor(
 	{
 		g_pTheBM->ShadeTile(xPixel,yPixel,Red,GetDestSurface());
 		this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].dirty = 1;
+	} else if (bIsSelectSquare(player.wPlacingDoubleType)) {
+		g_pTheBM->ShadeTile(xPixel, yPixel, BlueGreen, GetDestSurface());
+		this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].dirty = 1;
 	} else {
 		//Fade in and out.
 		static Uint8 nOpacity = 160;

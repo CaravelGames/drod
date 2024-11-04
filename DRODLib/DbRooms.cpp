@@ -2781,6 +2781,10 @@ const
 {
 	ASSERT(IsValidColRow(wX, wY));
 
+	//If M_SELECT_SQUARE is being placed, the player is selecting a square for a script
+	if (wDoubleType == M_SELECT_SQUARE)
+		return false;
+
 	//Is there a monster in the square?
 	if (GetMonsterAtSquare(wX, wY) != NULL)
 		return true;

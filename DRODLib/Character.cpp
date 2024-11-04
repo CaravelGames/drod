@@ -3749,6 +3749,21 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_SelectSquare:
+			{
+				CSwordsman& swordsman = pGame->swordsman;
+				UINT selectionType = command.x ? M_SELECT_SQUARE_RESTRICTED : M_SELECT_SQUARE;
+
+				//Wait if another kind of square selection or double placement is already queued
+				if (!(swordsman.wPlacingDoubleType == 0 || swordsman.wPlacingDoubleType == selectionType))
+					STOP_COMMAND;
+
+				swordsman.wPlacingDoubleType = selectionType;
+				swordsman.wDoubleCursorX = swordsman.wX;
+				swordsman.wDoubleCursorY = swordsman.wY;
+			}
+			break;
+
 			case CCharacterCommand::CC_SetDarkness:
 			{
 				getCommandParams(command, px, py, pw, ph, pflags);

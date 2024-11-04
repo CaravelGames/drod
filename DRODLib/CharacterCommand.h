@@ -436,6 +436,7 @@ public:
 		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
 		CC_WaitForPlayerState,  //Wait until player state (Y) is on or off (x).
 		CC_SetPlayerState,      //Change player state (Y) to on or off (x).
+		CC_SelectSquare,        //Prompt the player to select a position in the room.
 
 		CC_Count
 	};

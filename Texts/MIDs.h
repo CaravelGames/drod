@@ -1900,6 +1900,8 @@ enum MID_CONSTANT {
   MID_Hiding = 2120,
   MID_WaitForPlayerState = 2121,
   MID_SetPlayerState = 2131,
+  MID_SelectSquare = 2132,
+  MID_Restricted = 2133,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
