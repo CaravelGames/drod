@@ -3274,7 +3274,12 @@ void CCharacter::Process(
 				{
 					case ScriptFlag::PS_Invisible: player.bIsInvisible = px; break;
 					case ScriptFlag::PS_Hasted: player.bIsHasted = px; break;
-					case ScriptFlag::PS_Powered: player.bCanGetItems = px; break;
+					case ScriptFlag::PS_Powered:
+					{
+						player.bCanGetItems = px;
+						room.ChangeTiles(PowerTarget);
+					}
+					break;
 					default: break;
 				}
 
