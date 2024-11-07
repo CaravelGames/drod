@@ -3264,6 +3264,28 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetPlayerState:
+			{
+				UINT px;
+				getCommandX(command, px);
+				ScriptFlag::PlayerState state = (ScriptFlag::PlayerState)command.y;
+
+				switch (state)
+				{
+					case ScriptFlag::PS_Invisible: player.bIsInvisible = px; break;
+					case ScriptFlag::PS_Hasted: player.bIsHasted = px; break;
+					case ScriptFlag::PS_Powered:
+					{
+						player.bCanGetItems = px;
+						room.ChangeTiles(PowerTarget);
+					}
+					break;
+					default: break;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_SetEntityWeapon:
 			{
 				bProcessNextCommand = true;

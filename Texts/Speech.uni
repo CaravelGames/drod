@@ -3477,3 +3477,7 @@ Hiding
 [MID_WaitForPlayerState]
 [eng]
 Wait for player state
+
+[MID_SetPlayerState]
+[eng]
+Set player state

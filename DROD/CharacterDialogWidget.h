@@ -204,7 +204,8 @@ private:
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
 		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2,
-		*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox, *pPlayerStateListBox;
+		*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox, *pPlayerStateListBox,
+		*pPlayerStateListBox2;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;

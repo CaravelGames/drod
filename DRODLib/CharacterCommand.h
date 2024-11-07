@@ -435,6 +435,7 @@ public:
 		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
 		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
 		CC_WaitForPlayerState,  //Wait until player state (Y) is on or off (x).
+		CC_SetPlayerState,      //Change player state (Y) to on or off (x).
 
 		CC_Count
 	};
