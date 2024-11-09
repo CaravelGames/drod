@@ -2497,20 +2497,7 @@ void CCurrentGame::ProcessCommand(
 		//After answering all questions, allow NPCs to execute non turn-expending commands.
 		if (this->UnansweredQuestions.empty())
 		{
-			this->bExecuteNoMoveCommands = true;
-			CMonster *pMonster = this->pRoom->pFirstMonster;
-			while (pMonster)
-			{
-				if (pMonster->wType == M_CHARACTER) {
-					pMonster->Process(CMD_WAIT, CueEvents);
-					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-					if (pCharacter && pCharacter->bScriptDone)
-						ScriptCompleted(pCharacter);
-				}
-				pMonster = pMonster->pNext;
-			}
-			this->bExecuteNoMoveCommands = false;
-			this->pRoom->ProcessTurn(CueEvents, false);
+			ProcessNoMoveCharacters(CueEvents);
 		}
 	} else {
 		bool bPlayerLeftRoom = false;
@@ -5654,56 +5641,82 @@ void CCurrentGame::ProcessDoublePlacement(
       if (!this->pRoom->DoesSquareContainDoublePlacementObstacle(this->swordsman.wDoubleCursorX,
 				this->swordsman.wDoubleCursorY, this->swordsman.wPlacingDoubleType))
       {
-         CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pRoom->AddNewMonster(
+				if (!bIsSelectSquare(this->swordsman.wPlacingDoubleType))
+				{
+					CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pRoom->AddNewMonster(
 					this->swordsman.wPlacingDoubleType,
 					this->swordsman.wDoubleCursorX, this->swordsman.wDoubleCursorY));
-         this->swordsman.wPlacingDoubleType=0;
+					this->swordsman.wPlacingDoubleType=0;
 
-         if (pDouble) //Yes, adding a Double worked.
-         {
-				//Count double placement as one command.
-				if (!this->Commands.IsFrozen())
-				{
-					this->Commands.Add(CMD_DOUBLE);
-					this->Commands.AddData(pDouble->wX, pDouble->wY);
+					if (pDouble) //Yes, adding a Double worked.
+					{
+						//Count double placement as one command.
+						if (!this->Commands.IsFrozen())
+						{
+							this->Commands.Add(CMD_DOUBLE);
+							this->Commands.AddData(pDouble->wX, pDouble->wY);
+						}
+						++this->wTurnNo;
+						++this->dwLevelMoves;
+						ASSERT(this->dwLevelMoves > 0);
+
+						CueEvents.Add(CID_DoublePlaced);
+						pDouble->SetCurrentGame(this);
+						pDouble->wPrevX = pDouble->wX;
+						pDouble->wPrevY = pDouble->wY;
+						pDouble->wPrevO = pDouble->wO = this->swordsman.wO;
+						pDouble->weaponType = this->swordsman.GetActiveWeapon();
+						pDouble->Process(CMD_WAIT, CueEvents);
+
+						QueryCheckpoint(CueEvents, pDouble->wX, pDouble->wY);
+
+						//Activate pressure plate at destination if not flying.
+						if (this->pRoom->GetOSquare(pDouble->wX, pDouble->wY) == T_PRESSPLATE &&
+							(pDouble->wType != M_CLONE || bCanEntityPressPressurePlates(this->swordsman.wAppearance)))
+							this->pRoom->ActivateOrb(pDouble->wX, pDouble->wY, CueEvents, OAT_PressurePlate);
+
+						this->pRoom->ActivateToken(CueEvents, pDouble->wX, pDouble->wY, pDouble);
+						pDouble->SetWeaponSheathed();
+						if (pDouble->HasSword())
+						{
+							ProcessArmedMonsterWeapon(pDouble, CueEvents);
+							ResolveSimultaneousTarstuffStabs(CueEvents);
+						}
+
+					 //Start immediately at clone's position, if the player didn't die by placement.
+					 if (pDouble->wType == M_CLONE &&
+							!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
+							SwitchToCloneAt(pDouble->wX, pDouble->wY);
+
+						//Handle events possible after double placement.
+						this->pRoom->ProcessTurn(CueEvents, false);
+
+						UpdatePrevCoords();
+					}
+				} else {
+					//Put selected position into script return vars
+					this->scriptReturnX = int(this->swordsman.wDoubleCursorX);
+					this->scriptReturnY = int(this->swordsman.wDoubleCursorY);
+
+					if (!this->Commands.IsFrozen())
+					{
+						this->Commands.Add(CMD_DOUBLE);
+						this->Commands.AddData(this->swordsman.wDoubleCursorX, this->swordsman.wDoubleCursorY);
+					}
+					++this->wTurnNo;
+					++this->dwLevelMoves;
+					ASSERT(this->dwLevelMoves > 0);
+
+					//Allow characters to process now that the return values are set
+					//Reset placing type to allow scripters more control over what happens
+					this->swordsman.wPlacingDoubleType = 0;
+					ProcessNoMoveCharacters(CueEvents);
+
+					//We didn't exactly set a filter, but we need to prompt a screen rerender somehow.
+					CueEvents.Add(CID_SetDisplayFilter);
 				}
-				++this->wTurnNo;
-				++this->dwLevelMoves;
-				ASSERT(this->dwLevelMoves > 0);
 
-				CueEvents.Add(CID_DoublePlaced);
-				pDouble->SetCurrentGame(this);
-				pDouble->wPrevX=pDouble->wX;
-				pDouble->wPrevY=pDouble->wY;
-				pDouble->wPrevO=pDouble->wO=this->swordsman.wO;
-				pDouble->weaponType = this->swordsman.GetActiveWeapon();
-				pDouble->Process(CMD_WAIT, CueEvents);
-
-				QueryCheckpoint(CueEvents, pDouble->wX, pDouble->wY);
-
-				//Activate pressure plate at destination if not flying.
-				if (this->pRoom->GetOSquare(pDouble->wX, pDouble->wY) == T_PRESSPLATE &&
-						(pDouble->wType != M_CLONE || bCanEntityPressPressurePlates(this->swordsman.wAppearance)))
-					this->pRoom->ActivateOrb(pDouble->wX, pDouble->wY, CueEvents, OAT_PressurePlate);
-
-				this->pRoom->ActivateToken(CueEvents, pDouble->wX, pDouble->wY, pDouble);
-				pDouble->SetWeaponSheathed();
-				if (pDouble->HasSword())
-				{
-					ProcessArmedMonsterWeapon(pDouble, CueEvents);
-					ResolveSimultaneousTarstuffStabs(CueEvents);
-				}
-
-				//Start immediately at clone's position, if the player didn't die by placement.
-				if (pDouble->wType == M_CLONE &&
-						!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
-					SwitchToCloneAt(pDouble->wX, pDouble->wY);
-
-				//Handle events possible after double placement.
-				this->pRoom->ProcessTurn(CueEvents, false);
-
-				UpdatePrevCoords();
-         }
+				this->swordsman.wPlacingDoubleType = 0;
       }
    }
 	//Move double placement cursor.
@@ -6041,6 +6054,26 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 			}
 		}
 	}
+}
+
+//***************************************************************************************
+void CCurrentGame::ProcessNoMoveCharacters(CCueEvents& CueEvents)
+//Allow NPCs to execute non turn-expending commands.
+{
+	this->bExecuteNoMoveCommands = true;
+	CMonster* pMonster = this->pRoom->pFirstMonster;
+	while (pMonster)
+	{
+		if (pMonster->wType == M_CHARACTER) {
+			pMonster->Process(CMD_WAIT, CueEvents);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (pCharacter && pCharacter->bScriptDone)
+				ScriptCompleted(pCharacter);
+		}
+		pMonster = pMonster->pNext;
+	}
+	this->bExecuteNoMoveCommands = false;
+	this->pRoom->ProcessTurn(CueEvents, false);
 }
 
 //***************************************************************************************

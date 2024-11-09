@@ -194,6 +194,7 @@ const UINT TAG_ITEM_GROUP_LISTBOX = 864;
 const UINT TAG_ENTITY_LISTBOX = 863;
 const UINT TAG_PLAYER_STATE_LISTBOX = 862;
 const UINT TAG_PLAYER_STATE_LISTBOX2 = 861;
+const UINT TAG_RESTRICTED_LABEL = 860;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -2148,6 +2149,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Off, g_pTheDB->GetMessageText(MID_Off));
 	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Powered, g_pTheDB->GetMessageText(MID_Powered));
 	this->pPlayerBehaviorStateListBox->AddItem(PlayerBehaviorState::PBS_Unpowered, g_pTheDB->GetMessageText(MID_Unpowered));
+
+	//Label for select square
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_RESTRICTED_LABEL,
+		X_WAITLABEL, Y_WAITLABEL, CX_WAITLABEL, CY_WAITLABEL,
+		F_Small, g_pTheDB->GetMessageText(MID_Restricted)));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -4447,6 +4453,15 @@ const
 				wstr += g_pTheDB->GetMessageText(MID_Off);
 		break;
 
+		case CCharacterCommand::CC_SelectSquare:
+			if (command.x)
+			{
+				wstr += wszLeftParen;
+				wstr += g_pTheDB->GetMessageText(MID_Restricted);
+				wstr += wszRightParen;
+			}
+		break;
+
 		case CCharacterCommand::CC_SetDarkness:
 			wstr += _itoW(command.flags, temp, 10);
 			wstr += wszSpace;
@@ -4971,6 +4986,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ResetOverrides, g_pTheDB->GetMessageText(MID_ResetOverrides));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SelectSquare, g_pTheDB->GetMessageText(MID_SelectSquare));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMusic, g_pTheDB->GetMessageText(MID_SetMusic));
@@ -6053,10 +6069,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
 		WAITFORITEMGROUP,   //CC_WaitForNotItemGroup
 		WAITFORPLAYERSTATE, //CC_WaitForPlayerState
-		PLAYERSTATE         //CC_SetPlayerState
+		PLAYERSTATE,        //CC_SetPlayerState
+		ONOFF               //CC_SelectSquare
 	};
 
-	static const UINT NUM_LABELS = 34;
+	static const UINT NUM_LABELS = 35;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -6067,7 +6084,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL, TAG_COLOR_LABEL, TAG_INPUTLABEL,
 		TAG_IMAGEOVERLAY_LABEL, TAG_SINGLESTEP2, TAG_KEEPBEHAVIOR_LABEL,
 		TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, TAG_ARRAYINDEX_LABEL,
-		TAG_ARRAYVAR_TEXTLABEL
+		TAG_ARRAYVAR_TEXTLABEL, TAG_RESTRICTED_LABEL
 	};
 
 	static const UINT NO_LABELS[] =      {0};
@@ -6099,6 +6116,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT OPEN_TILE_L[] =    { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
 	static const UINT EXPRESSION_L[] =     { TAG_VARVALUELABEL, 0 };
 	static const UINT ARRAYSET_L[] =     { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
+	static const UINT RESTRICTED_L[] =     { TAG_RESTRICTED_LABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,          //CC_Appear
@@ -6216,6 +6234,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForNotItemGroup
 		NO_LABELS,          //CC_WaitForPlayerState
 		NO_LABELS,          //CC_SetPlayerState
+		RESTRICTED_L,       //CC_SelectSquare
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7316,6 +7335,13 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_SelectSquare:
+		{
+			this->pCommand->x = this->pOnOffListBox->GetSelectedItem();
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_SetDarkness:
 		{
 			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -7841,6 +7867,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 					this->pAddCommandDialog->GetWidget(TAG_IMAGEOVERLAYTEXT));
 			pText->SetText(this->pCommand->label.c_str());
 		}
+		break;
+
+		case CCharacterCommand::CC_SelectSquare:
+			this->pOnOffListBox->SelectItem(this->pCommand->x);
 		break;
 
 		case CCharacterCommand::CC_SetDarkness:
@@ -9027,6 +9057,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		pCommand->label = pText+pos;
 	break;
 
+	case CCharacterCommand::CC_SelectSquare:
+		parseNumber(pCommand->x);
+	break;
+
 	case CCharacterCommand::CC_SetDarkness:
 		parseNumber(pCommand->flags);
 		skipComma;
@@ -9748,6 +9782,10 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += wszSpace;
 		concatNum(c.x);
 	}
+	break;
+
+	case CCharacterCommand::CC_SelectSquare:
+		concatNumWithComma(c.x);
 	break;
 
 	case CCharacterCommand::CC_SetDarkness:

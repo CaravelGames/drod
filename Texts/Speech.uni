@@ -3481,3 +3481,11 @@ Wait for player state
 [MID_SetPlayerState]
 [eng]
 Set player state
+
+[MID_SelectSquare]
+[eng]
+Select square
+
+[MID_Restricted]
+[eng]
+Restricted

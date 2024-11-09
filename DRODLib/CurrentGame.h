@@ -416,6 +416,7 @@ private:
 	void     PreprocessMonsters(CCueEvents &CueEvents);
 	void     ProcessMonsters(int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEvents &CueEvents);
+	void     ProcessNoMoveCharacters(CCueEvents& CueEvents);
 	void     ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents);
 	void     ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents);
 	void     ProcessPlayer(const int nCommand, CCueEvents &CueEvents);
