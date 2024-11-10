@@ -200,8 +200,10 @@ namespace ScriptFlag
 		BrainedMonster = 1,
 		BestBrainTile = 2,
 		BestBrainDirection=3,
-		Puff=4,
-		Stalwart=5
+		NearestOpenRoomEdge = 4,
+		NearestOpenRoomEdgePlayer = 5,
+		Puff=6,
+		Stalwart=7
 	};
 
 	enum GotoSmartType

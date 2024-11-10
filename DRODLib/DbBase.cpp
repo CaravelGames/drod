@@ -1019,6 +1019,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_SetPlayerState: strText = "Set player state"; break;
 	case MID_SelectSquare: strText = "Select square"; break;
 	case MID_Restricted: strText = "Restricted"; break;
+	case MID_TargetNearestOpenRoomEdge: strText = "Nearest open room edge to me"; break;
+	case MID_TargetNearestOpenRoomEdgePlayer: strText = "Nearest open room edge to player"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

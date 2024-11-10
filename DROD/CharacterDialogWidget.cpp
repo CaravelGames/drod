@@ -1716,13 +1716,15 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildMarkerListBox->SelectLine(0);
 
 	this->pNaturalTargetTypesListBox = new CListBoxWidget(TAG_NATURAL_TARGET_TYPES,
-		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, 4 * LIST_LINE_HEIGHT + 4);
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, 6 * LIST_LINE_HEIGHT + 4);
 	this->pAddCommandDialog->AddWidget(this->pNaturalTargetTypesListBox);
 	this->pNaturalTargetTypesListBox->SetHotkeyItemSelection(true);
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::RegularMonster, g_pTheDB->GetMessageText(MID_TargetRegularMonster));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BrainedMonster, g_pTheDB->GetMessageText(MID_TargetBrainedMonster));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainTile, g_pTheDB->GetMessageText(MID_TargetBestBrainTile));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainDirection, g_pTheDB->GetMessageText(MID_TargetBestBrainDirection));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::NearestOpenRoomEdge, g_pTheDB->GetMessageText(MID_TargetNearestOpenRoomEdge));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::NearestOpenRoomEdgePlayer, g_pTheDB->GetMessageText(MID_TargetNearestOpenRoomEdgePlayer));
 	// @TODO: These two are commented out because they are not yet implemented because that would require heavy refactoring
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Puff, g_pTheDB->GetMessageText(MID_FluffBaby));
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Stalwart, g_pTheDB->GetMessageText(MID_Stalwart));
