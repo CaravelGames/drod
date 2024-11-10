@@ -8716,6 +8716,10 @@ int CDbRoom::DangerLevel() const
 			break;
 
 		case M_CHARACTER:
+			if (pMonster->getHP() > 0) //Only characters with HP can be fought, which we should assume are enemies
+				++nDanger;
+			break;
+
 		default:
 			break; //NPCs and other monsters by default do not provide any urgency
 		}
