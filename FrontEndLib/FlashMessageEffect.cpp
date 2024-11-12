@@ -234,6 +234,7 @@ void CFlashMessageEffect::SetColor(int r, int g, int b)
 	this->customColor.r = (unsigned char)r;
 	this->customColor.g = (unsigned char)g;
 	this->customColor.b = (unsigned char)b;
+	this->customColor.a = 255;
 
 	RenderText();
 }
