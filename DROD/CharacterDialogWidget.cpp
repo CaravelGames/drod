@@ -4529,6 +4529,7 @@ const
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 		break;
 
 		default: break;
@@ -5012,6 +5013,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetEntityWeapon, g_pTheDB->GetMessageText(MID_SetEntityWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBrainSense, g_pTheDB->GetMessageText(MID_WaitForBrainSense));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuildType, g_pTheDB->GetMessageText(MID_WaitForBuildType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotBuildType, g_pTheDB->GetMessageText(MID_WaitForNotBuildType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanLevel, g_pTheDB->GetMessageText(MID_WaitForCleanLevel));
@@ -6072,7 +6074,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAITFORITEMGROUP,   //CC_WaitForNotItemGroup
 		WAITFORPLAYERSTATE, //CC_WaitForPlayerState
 		PLAYERSTATE,        //CC_SetPlayerState
-		ONOFF               //CC_SelectSquare
+		ONOFF,              //CC_SelectSquare
+		NO_WIDGETS,         //CC_WaitForBrainSense
 	};
 
 	static const UINT NUM_LABELS = 35;
@@ -6237,6 +6240,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForPlayerState
 		NO_LABELS,          //CC_SetPlayerState
 		RESTRICTED_L,       //CC_SelectSquare
+		NO_LABELS,          //CC_WaitForBrainSense
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7392,6 +7396,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 			AddCommand();
 		break;
 
@@ -7926,6 +7931,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_WaitForBuilding:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 			break;
 
 		//Deprecated commands.
@@ -8253,6 +8259,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
+	case CCharacterCommand::CC_WaitForBrainSense:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -9174,6 +9181,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
+	case CCharacterCommand::CC_WaitForBrainSense:
 	break;
 
 	case CCharacterCommand::CC_CutScene:

@@ -3685,6 +3685,15 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_WaitForBrainSense:
+			{
+				if (!pGame->bBrainSensesSwordsman)
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_LogicalWaitAnd:
 			{
 				//Wait until all conditions are true.
@@ -5757,6 +5766,11 @@ bool CCharacter::EvaluateConditionalCommand(
 		{
 			return IsPlayerState(command, pGame->swordsman);
 		}
+		case CCharacterCommand::CC_WaitForBrainSense:
+		{
+			return pGame->bBrainSensesSwordsman;
+		}
+		break;
 		default:
 		{
 			ASSERT(!"Bad Conditional Command");

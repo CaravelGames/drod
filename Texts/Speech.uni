@@ -3497,3 +3497,7 @@ Select square
 [MID_Restricted]
 [eng]
 Restricted
+
+[MID_WaitForBrainSense]
+[eng]
+Wait for brain sensing player

@@ -1904,6 +1904,7 @@ enum MID_CONSTANT {
   MID_SetPlayerState = 2131,
   MID_SelectSquare = 2132,
   MID_Restricted = 2133,
+  MID_WaitForBrainSense = 2136,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
