@@ -4671,6 +4671,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_Return:
 			case CCharacterCommand::CC_ResetOverrides:
 			case CCharacterCommand::CC_ClearArrayVar:
+			case CCharacterCommand::CC_SetPlayerState:
+			case CCharacterCommand::CC_SelectSquare:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
