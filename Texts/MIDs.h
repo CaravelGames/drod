@@ -1785,6 +1785,8 @@ enum MID_CONSTANT {
   MID_TargetBrainedMonster = 1894,
   MID_TargetBestBrainTile = 2064,
   MID_TargetBestBrainDirection = 2065,
+  MID_TargetNearestOpenRoomEdge = 2134,
+  MID_TargetNearestOpenRoomEdgePlayer = 2135,
   MID_GetEntityDirection = 1897,
   MID_OrbWaitAny = 1900,
   MID_OrbWaitNormal = 1901,
@@ -1902,6 +1904,7 @@ enum MID_CONSTANT {
   MID_SetPlayerState = 2131,
   MID_SelectSquare = 2132,
   MID_Restricted = 2133,
+  MID_WaitForBrainSense = 2136,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

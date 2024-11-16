@@ -53,6 +53,7 @@ const char ScriptVars::primitiveNames[PrimitiveCount][15] =
 	"_EntityWeapon",
 	"_MonsterSize",
 	"_BrainScore",
+	"_BrainDist",
 	"_CleanRooms"
 };
 
@@ -127,6 +128,8 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_Dist1:
 		case P_Dist2:
 			return 4;
+		case P_BrainDist:
+			return 5;
 	}
 	return 0;
 }

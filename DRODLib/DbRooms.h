@@ -140,6 +140,7 @@ public:
 
 
 	CPathMap *     pPathMap[NumMovementTypes];
+	CPathMap *     pExtraPathMap[NumMovementTypes]; //for paths that have non-player target
 	CCoordSet      LitFuses, NewFuses;  //all fuse pieces (and bombs) burning this turn
 	CCoordSet      Beacons;   //all beacons in the room
 	CCoordStack    NewBabies; //unstable tar tiles marked for baby conversion
@@ -211,6 +212,8 @@ public:
 	void           ClearPlatforms();
 	void           ClearTLayer();
 	void           CreatePathMap(const UINT wX, const UINT wY,
+			const MovementType eMovement);
+	CPathMap*           MakePathMap(const UINT wX, const UINT wY,
 			const MovementType eMovement);
 	void           CreatePathMaps();
 	bool           CropRegion(UINT& x1, UINT &y1, UINT &x2, UINT &y2) const;

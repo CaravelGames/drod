@@ -88,6 +88,8 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 		case CC_WaitForNotBuildType:
 		case CC_WaitForItemGroup:
 		case CC_WaitForNotItemGroup:
+		case CC_WaitForPlayerState:
+		case CC_WaitForBrainSense:
 			return true;
 		default:
 			return false;

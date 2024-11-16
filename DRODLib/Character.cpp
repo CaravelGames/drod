@@ -3630,6 +3630,17 @@ void CCharacter::Process(
 						wY = nGetO(dxFirst, dyFirst);
 					}
 					break;
+					case ScriptFlag::NearestOpenRoomEdge:
+					{
+						room.GetNearestEntranceTo(this->wX, this->wY, GetHornMovementType(this->eMovement), wX, wY);
+					}
+					break;
+					case ScriptFlag::NearestOpenRoomEdgePlayer:
+					{
+						CSwordsman& swordsman = pGame->swordsman;
+						room.GetNearestEntranceTo(swordsman.wX, swordsman.wY, GetHornMovementType(swordsman.GetMovementType()), wX, wY);
+					}
+					break;
 				}
 				
 				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, wX);
@@ -3668,6 +3679,15 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerState:
 			{
 				if (!IsPlayerState(command, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_WaitForBrainSense:
+			{
+				if (!pGame->bBrainSensesSwordsman)
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -5746,6 +5766,11 @@ bool CCharacter::EvaluateConditionalCommand(
 		{
 			return IsPlayerState(command, pGame->swordsman);
 		}
+		case CCharacterCommand::CC_WaitForBrainSense:
+		{
+			return pGame->bBrainSensesSwordsman;
+		}
+		break;
 		default:
 		{
 			ASSERT(!"Bad Conditional Command");

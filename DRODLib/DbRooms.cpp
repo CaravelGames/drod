@@ -858,8 +858,10 @@ CDbRoom::CDbRoom(const CDbRoom &Src,
 	, pCurrentGame(NULL)
 //Constructor.
 {
-	for (int n=NumMovementTypes; n--; )
-		this->pPathMap[n]=NULL;
+	for (int n = NumMovementTypes; n--; ) {
+		this->pPathMap[n] = NULL;
+		this->pExtraPathMap[n] = NULL;
+	}
 	SetMembers(Src, true, bCopyCurrentGame, bCopyForEditor);
 }
 
@@ -878,8 +880,10 @@ CDbRoom::CDbRoom()
 	, pCurrentGame(NULL)
 //Constructor.
 {
-	for (int n=0; n<NumMovementTypes; ++n)
-		this->pPathMap[n]=NULL;
+	for (int n = 0; n < NumMovementTypes; ++n) {
+		this->pPathMap[n] = NULL;
+		this->pExtraPathMap[n] = NULL;
+	}
 	Clear();
 }
 
@@ -1777,12 +1781,18 @@ bool CDbRoom::Update()
 void CDbRoom::UpdatePathMapAt(const UINT wX, const UINT wY)
 {
 	ASSERT(IsValidColRow(wX,wY));
-	for (int eMovement=0; eMovement<NumMovementTypes; ++eMovement)
+	for (int eMovement = 0; eMovement < NumMovementTypes; ++eMovement) {
 		if (this->pPathMap[eMovement])
 		{
 			this->pPathMap[eMovement]->SetSquare(wX, wY, GetSquarePathMapObstacles(
-					wX, wY, (MovementType)eMovement));
+				wX, wY, (MovementType)eMovement));
 		}
+		if (this->pExtraPathMap[eMovement])
+		{
+			this->pExtraPathMap[eMovement]->SetSquare(wX, wY, GetSquarePathMapObstacles(
+				wX, wY, (MovementType)eMovement));
+		}
+	}
 }
 
 //*****************************************************************************
@@ -2334,18 +2344,37 @@ void CDbRoom::CreatePathMap(
 {
 	if (!this->pPathMap[eMovement])
 	{
-		UINT dwPathThroughObstacleCost = 0;
-		if (eMovement == WALL || eMovement == WATER) //allow for non-wall/water
-			dwPathThroughObstacleCost = 1000;         //squares to be in the path
-		this->pPathMap[eMovement] = new CPathMap(this->wRoomCols, this->wRoomRows,
-				wX, wY, dwPathThroughObstacleCost, bMovementSupportsPartialObstacles(eMovement),
-				bMovementNeedsSubPath(eMovement));
+		this->pPathMap[eMovement] = MakePathMap(wX, wY, eMovement);
 	}
-	else
+	else {
 		this->pPathMap[eMovement]->SetTarget(wX, wY);
+		for (UINT x = 0; x < this->wRoomCols; ++x)
+			for (UINT y = 0; y < this->wRoomRows; ++y)
+				this->pPathMap[eMovement]->SetSquare(x, y, GetSquarePathMapObstacles(x, y, eMovement));
+	}
+}
+
+//*****************************************************************************
+CPathMap* CDbRoom::MakePathMap(
+//Creates and returns a PathMap for the given movement type. It's the caller's
+//responsibility to manage it.
+//
+//Params:
+	const UINT wX, const UINT wY, // (in) Position of target
+	const MovementType eMovement) // (in) Type of movement path reflects
+{
+	UINT dwPathThroughObstacleCost = 0;
+	if (eMovement == WALL || eMovement == WATER) //allow for non-wall/water
+		dwPathThroughObstacleCost = 1000;         //squares to be in the path
+	CPathMap* pathMap = new CPathMap(this->wRoomCols, this->wRoomRows,
+		wX, wY, dwPathThroughObstacleCost, bMovementSupportsPartialObstacles(eMovement),
+		bMovementNeedsSubPath(eMovement));
+
 	for (UINT x = 0; x < this->wRoomCols; ++x)
 		for (UINT y = 0; y < this->wRoomRows; ++y)
-			this->pPathMap[eMovement]->SetSquare(x, y, GetSquarePathMapObstacles(x, y, eMovement));
+			pathMap->SetSquare(x, y, GetSquarePathMapObstacles(x, y, eMovement));
+
+	return pathMap;
 }
 
 //***************************************************************************************
@@ -7413,7 +7442,9 @@ void CDbRoom::DeletePathMaps()
 	for (int n=0; n<NumMovementTypes; ++n)
 	{
 		delete pPathMap[n];
+		delete pExtraPathMap[n];
 		pPathMap[n] = NULL;
+		pExtraPathMap[n] = NULL;
 	}
 }
 
@@ -12071,9 +12102,12 @@ bool CDbRoom::SetMembers(
 		this->wLastCloneIndex = Src.wLastCloneIndex;
 		//	this->geometryChanges = Src.geometryChanges; //temporary front-end only info not needed
 		//	this->disabledLights = Src.disabledLights;
-		for (wIndex=NumMovementTypes; wIndex--; )
+		for (wIndex = NumMovementTypes; wIndex--; ) {
 			if (Src.pPathMap[wIndex])
 				this->pPathMap[wIndex] = new CPathMap(*(Src.pPathMap[wIndex]));
+			if (Src.pExtraPathMap[wIndex])
+				this->pExtraPathMap[wIndex] = new CPathMap(*(Src.pExtraPathMap[wIndex]));
+		}
 		this->LitFuses = Src.LitFuses;
 		this->NewFuses = Src.NewFuses;
 		this->NewBabies = Src.NewBabies;

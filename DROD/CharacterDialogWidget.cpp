@@ -1716,13 +1716,15 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBuildMarkerListBox->SelectLine(0);
 
 	this->pNaturalTargetTypesListBox = new CListBoxWidget(TAG_NATURAL_TARGET_TYPES,
-		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, 4 * LIST_LINE_HEIGHT + 4);
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, 6 * LIST_LINE_HEIGHT + 4);
 	this->pAddCommandDialog->AddWidget(this->pNaturalTargetTypesListBox);
 	this->pNaturalTargetTypesListBox->SetHotkeyItemSelection(true);
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::RegularMonster, g_pTheDB->GetMessageText(MID_TargetRegularMonster));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BrainedMonster, g_pTheDB->GetMessageText(MID_TargetBrainedMonster));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainTile, g_pTheDB->GetMessageText(MID_TargetBestBrainTile));
 	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::BestBrainDirection, g_pTheDB->GetMessageText(MID_TargetBestBrainDirection));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::NearestOpenRoomEdge, g_pTheDB->GetMessageText(MID_TargetNearestOpenRoomEdge));
+	this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::NearestOpenRoomEdgePlayer, g_pTheDB->GetMessageText(MID_TargetNearestOpenRoomEdgePlayer));
 	// @TODO: These two are commented out because they are not yet implemented because that would require heavy refactoring
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Puff, g_pTheDB->GetMessageText(MID_FluffBaby));
 	//this->pNaturalTargetTypesListBox->AddItem(ScriptFlag::Stalwart, g_pTheDB->GetMessageText(MID_Stalwart));
@@ -4527,6 +4529,7 @@ const
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 		break;
 
 		default: break;
@@ -4668,6 +4671,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_Return:
 			case CCharacterCommand::CC_ResetOverrides:
 			case CCharacterCommand::CC_ClearArrayVar:
+			case CCharacterCommand::CC_SetPlayerState:
+			case CCharacterCommand::CC_SelectSquare:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
@@ -5010,6 +5015,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetEntityWeapon, g_pTheDB->GetMessageText(MID_SetEntityWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBrainSense, g_pTheDB->GetMessageText(MID_WaitForBrainSense));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuildType, g_pTheDB->GetMessageText(MID_WaitForBuildType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotBuildType, g_pTheDB->GetMessageText(MID_WaitForNotBuildType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanLevel, g_pTheDB->GetMessageText(MID_WaitForCleanLevel));
@@ -6070,7 +6076,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAITFORITEMGROUP,   //CC_WaitForNotItemGroup
 		WAITFORPLAYERSTATE, //CC_WaitForPlayerState
 		PLAYERSTATE,        //CC_SetPlayerState
-		ONOFF               //CC_SelectSquare
+		ONOFF,              //CC_SelectSquare
+		NO_WIDGETS,         //CC_WaitForBrainSense
 	};
 
 	static const UINT NUM_LABELS = 35;
@@ -6235,6 +6242,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForPlayerState
 		NO_LABELS,          //CC_SetPlayerState
 		RESTRICTED_L,       //CC_SelectSquare
+		NO_LABELS,          //CC_WaitForBrainSense
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7390,6 +7398,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 			AddCommand();
 		break;
 
@@ -7924,6 +7933,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_WaitForBuilding:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForBrainSense:
 			break;
 
 		//Deprecated commands.
@@ -8251,6 +8261,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
+	case CCharacterCommand::CC_WaitForBrainSense:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
@@ -9172,6 +9183,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_LogicalWaitXOR:
 	case CCharacterCommand::CC_LogicalWaitEnd:
 	case CCharacterCommand::CC_ResetOverrides:
+	case CCharacterCommand::CC_WaitForBrainSense:
 	break;
 
 	case CCharacterCommand::CC_CutScene:
