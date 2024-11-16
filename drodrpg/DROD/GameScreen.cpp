@@ -934,7 +934,7 @@ void CGameScreen::SetMusicStyle()
 	//Default music mood -- based on room style and game environment.
 	ASSERT(this->pCurrentGame);
 	ASSERT(this->pCurrentGame->pRoom);
-	nDangerLevel = this->pCurrentGame->pRoom->DangerLevel();
+	//nDangerLevel = this->pCurrentGame->pRoom->DangerLevel();
 	UINT wMood = SONG_PUZZLE; //!nDangerLevel ? SONG_AMBIENT : nDangerLevel < 30 ? SONG_PUZZLE : SONG_ATTACK;
 
 	CRoomScreen::SetMusicStyle(this->pCurrentGame->pRoom->style, wMood);
