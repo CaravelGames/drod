@@ -689,8 +689,12 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			}
 
 			//Make sure pathmap exists
-			this->pRoom->CreatePathMap(tX, tY, movement);
-			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
+			if (!this->pRoom->pExtraPathMap[movement]) {
+				this->pRoom->pExtraPathMap[movement] = pRoom->MakePathMap(tX, tY, movement);
+			} else {
+				this->pRoom->pExtraPathMap[movement]->SetTarget(tX, tY);
+			}
+			const SQUARE& square = this->pRoom->pExtraPathMap[movement]->GetSquare(x, y);
 			return square.dwTargetDist;
 		}
 		case ScriptVars::P_CleanRooms:
