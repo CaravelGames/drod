@@ -2067,6 +2067,11 @@ void CEditSelectScreen::SetSelectedRoom(
 	//Update the room widget with new room.
 	GetLevelEntrancesInRoom();
 	this->pRoomWidget->LoadFromRoom(pRoom, &this->LevelEntrances);
+
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	if (!pCurrentPlayer) { ASSERT(!"Couldn't retrieve player."); return; } //Corrupt db.
+	this->pRoomWidget->characterPreview = pCurrentPlayer->Settings.GetVar(Settings::CharacterPreview, false);
+
 	this->pRoomWidget->Paint();
 
 	//Select room style from the list box.
