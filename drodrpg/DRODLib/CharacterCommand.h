@@ -149,6 +149,7 @@ namespace ScriptFlag
 		SpawnEggs=25,           //will spawn eggs in reaction to combats
 		RemovesSword=26,        //prevents player having sword when equipped
 		ExplosiveSafe=27,       //sword does not detonate powder kegs
+		MinimapTreasure=28,     //counts as collectable item for minimap when visible and not ended
 	};
 
 	//Inventory and global script types.

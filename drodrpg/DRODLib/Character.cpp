@@ -132,6 +132,7 @@ const UINT MAX_ANSWERS = 9;
 #define SpawnEggsStr "SpawnEggs"
 #define RemovesSwordStr "RemovesSword"
 #define ExplosiveKegSafeStr "ExplosiveSafe"
+#define MinimapTreasureStr "MinimapTreasure"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -249,7 +250,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
-	, bRemovesSword(false) , bExplosiveSafe(false)
+	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2749,7 +2750,7 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
-						this->bExplosiveSafe =
+						this->bExplosiveSafe = this->bMinimapTreasure =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2839,6 +2840,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::ExplosiveSafe:
 						this->bExplosiveSafe = true;
+					break;
+					case ScriptFlag::MinimapTreasure:
+						this->bMinimapTreasure = true;
 					break;
 
 					default:
@@ -5158,6 +5162,15 @@ bool CCharacter::IsCombatable() const
 }
 
 //*****************************************************************************
+bool CCharacter::IsMinimapTreasure() const
+//Returns: whether this character should allow the room to be marked as having
+//a collectable item. It only counts if the character can be seen by the player
+{
+	return bMinimapTreasure && !bScriptDone && (bVisible || bGhostImage);
+}
+
+
+//*****************************************************************************
 bool CCharacter::IsTileObstacle(
 //Override for NPCs.
 //
@@ -5685,6 +5698,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
 	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
 	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
+	this->bMinimapTreasure = vars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -5838,6 +5852,8 @@ const
 		vars.SetVar(RemovesSwordStr, this->bRemovesSword);
 	if (this->bExplosiveSafe)
 		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
+	if (this->bMinimapTreasure)
+		vars.SetVar(MinimapTreasureStr, this->bMinimapTreasure);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

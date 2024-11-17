@@ -857,6 +857,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ArrayVarNameExpression: strText = "Variable Name/Expression"; break;
 		case MID_ArrayIndexLabel: strText = "Index"; break;
 		case MID_CantChangeVarType: strText = "Var type can't be changed between array and non-array"; break;
+		case MID_MinimapTreasure: strText = "Minimap treasure"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
