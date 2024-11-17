@@ -2818,6 +2818,14 @@ bool CDbRoom::HasGrabbableItems() const
 			return true;
 	}
 
+	for (CMonster* pMonster = this->pFirstMonster; pMonster != NULL;
+		pMonster = pMonster->pNext)
+	{
+		//Monster flagged as being a collectable treasure
+		if (pMonster->IsMinimapTreasure())
+			return true;
+	}
+
 	return false;
 }
 

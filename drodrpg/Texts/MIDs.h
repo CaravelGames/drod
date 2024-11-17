@@ -1564,6 +1564,7 @@ enum MID_CONSTANT {
   MID_StrongAgainstAspect = 1830,
   MID_RemovesSword = 1832,
   MID_ExplosiveSafe = 1894,
+  MID_MinimapTreasure = 1943,
   MID_CharOptionsTitle = 1836,
   MID_CharOptions = 1837,
   MID_ProcessingSequence = 1838,

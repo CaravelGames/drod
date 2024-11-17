@@ -239,6 +239,7 @@ public:
 	bool          IsSpawnEggTriggered(const CCueEvents& CueEvents) const;
 	virtual bool  IsSwimming() const {return this->eMovement == WATER;}
 	virtual bool  IsTileObstacle(const UINT wTileNo) const;
+	virtual bool  IsMinimapTreasure() const { return false; }
 	virtual bool  IsVisible() const {return true;}
 	bool          MakeSlowTurn(const UINT wDesiredO);
 	void          MakeStandardMove(CCueEvents &CueEvents,

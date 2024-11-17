@@ -159,6 +159,7 @@ public:
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
+	virtual bool   IsMinimapTreasure() const;
 	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           RemovesSword() const {return this->bRemovesSword;}
 
@@ -316,6 +317,7 @@ private:
 	bool bSpawnEggs;           //will spawn eggs in reaction to combats
 	bool bRemovesSword;        //prevents player having sword when equipped
 	bool bExplosiveSafe;       //sword does not detonate powder kegs
+	bool bMinimapTreasure;     //counts as collectable item for minimap when visible and not ended
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

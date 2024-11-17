@@ -1536,6 +1536,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::NormalMovement, g_pTheDB->GetMessageText(MID_NormalMovement));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SmarterMovement, g_pTheDB->GetMessageText(MID_SmarterMovement));
 	this->pBehaviorListBox->AddItem(ScriptFlag::OmniMovement, g_pTheDB->GetMessageText(MID_OmniMovement));
+	this->pBehaviorListBox->AddItem(ScriptFlag::MinimapTreasure, g_pTheDB->GetMessageText(MID_MinimapTreasure));
 	this->pBehaviorListBox->SelectLine(0);
 
 	//Custom equipment.
