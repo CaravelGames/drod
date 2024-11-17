@@ -2071,6 +2071,7 @@ void CEditSelectScreen::SetSelectedRoom(
 	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
 	if (!pCurrentPlayer) { ASSERT(!"Couldn't retrieve player."); return; } //Corrupt db.
 	this->pRoomWidget->characterPreview = pCurrentPlayer->Settings.GetVar(Settings::CharacterPreview, false);
+	delete pCurrentPlayer;
 
 	this->pRoomWidget->Paint();
 
