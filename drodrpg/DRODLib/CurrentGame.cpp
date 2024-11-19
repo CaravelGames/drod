@@ -1206,6 +1206,18 @@ UINT CCurrentGame::getSpawnID(UINT defaultMonsterID) const
 			if (this->pPlayer->st.queenSpawnID >= 0)
 				return this->pPlayer->st.queenSpawnID;
 			break;
+		case M_TARMOTHER:
+			if (this->pPlayer->st.tarSwapID >= 0)
+				return this->pPlayer->st.tarSwapID;
+			break;
+		case M_MUDMOTHER:
+			if (this->pPlayer->st.mudSwapID >= 0)
+				return this->pPlayer->st.mudSwapID;
+			break;
+		case M_GELMOTHER:
+			if (this->pPlayer->st.gelSwapID >= 0)
+				return this->pPlayer->st.gelSwapID;
+			break;
 
 		default: break;
 	}

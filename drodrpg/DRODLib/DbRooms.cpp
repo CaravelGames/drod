@@ -7752,14 +7752,17 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 	const bool bMud = wType1 == T_MUD || wType2 == T_MUD;
 	const bool bGel = wType1 == T_GEL || wType2 == T_GEL;
 
-	const int tarId = this->pCurrentGame->getSpawnID(M_TARBABY);
-	const int mudId = this->pCurrentGame->getSpawnID(M_MUDBABY);
-	const int gelId = this->pCurrentGame->getSpawnID(M_GELBABY);
+	const int tarSpawnId = this->pCurrentGame->getSpawnID(M_TARBABY);
+	const int mudSpawnId = this->pCurrentGame->getSpawnID(M_MUDBABY);
+	const int gelSpawnId = this->pCurrentGame->getSpawnID(M_GELBABY);
+	const int tarSwapId = this->pCurrentGame->getSpawnID(M_TARMOTHER);
+	const int mudSwapId = this->pCurrentGame->getSpawnID(M_MUDMOTHER);
+	const int gelSwapId = this->pCurrentGame->getSpawnID(M_GELMOTHER);
 
 	//Don't try to swap from or to multi-tile monsters
-	if ((bTar && bIsLargeMonster(tarId)) ||
-		(bMud && bIsLargeMonster(mudId)) ||
-		(bGel && bIsLargeMonster(gelId))) {
+	if ((bTar && bIsLargeMonster(tarSpawnId)) ||
+		(bMud && bIsLargeMonster(mudSpawnId)) ||
+		(bGel && bIsLargeMonster(gelSpawnId))) {
 		return; 
 	}
 
@@ -7774,37 +7777,34 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2)
 			else if (wTTile == wType2)
 				Plot(wX,wY, wType1);
 
-			//Swap monsters.
+			//Swap monsters. Multi-tile monsters can't be swapped
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
-			if (pMonster)
+			if (pMonster && !pMonster->IsLongMonster())
 			{
 				int mType = pMonster->GetLogicalIdentity();
 				int nType = -1;
-				switch (mType)
-				{
-					case M_TARMOTHER:
-						if (bTar) nType = bMud ? M_MUDMOTHER : M_GELMOTHER;
-					break;
-					case M_MUDMOTHER:
-						if (bMud) nType = bTar ? M_TARMOTHER : M_GELMOTHER;
-					break;
-					case M_GELMOTHER:
-						if (bGel) nType = bMud ? M_MUDMOTHER : M_TARMOTHER;
-					break;
-					default: {
-						if (bTar && mType == tarId) {
-							nType = bMud ? mudId : gelId;
-						}
-						else if (bMud && mType == mudId) {
-							nType = bTar ? tarId : gelId;
-						}
-						else if (bGel && mType == gelId) {
-							nType = bMud ? mudId : tarId;
-						}
-					}
-					break;
+
+				if (bTar && mType == tarSpawnId) {
+					nType = bMud ? mudSpawnId : gelSpawnId;
 				}
-				if (nType != -1 && (IsValidMonsterType(nType) || this->pCurrentGame->pHold->GetCharacter(nType)))
+				else if (bMud && mType == mudSpawnId) {
+					nType = bTar ? tarSpawnId : gelSpawnId;
+				}
+				else if (bGel && mType == gelSpawnId) {
+					nType = bMud ? mudSpawnId : tarSpawnId;
+				}
+				else if (bTar && mType == tarSwapId) {
+					nType = bMud ? mudSwapId : gelSwapId;
+				}
+				else if (bMud && mType == mudSwapId) {
+					nType = bTar ? tarSwapId : gelSwapId;
+				}
+				else if (bGel && mType == gelSwapId) {
+					nType = bMud ? mudSwapId : tarSwapId;
+				}
+
+				if (nType != -1 && !bIsLargeMonster(nType) &&
+					(IsValidMonsterType(nType) || this->pCurrentGame->pHold->GetCharacter(nType)))
 				{
 					//Create new monster and insert in list where old monster was.
 					CMonster* pNew;

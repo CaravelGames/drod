@@ -290,6 +290,18 @@ _GelSpawn
 [eng]
 _QueenSpawn
 
+[MID_VarMudSwap]
+[eng]
+_MudSwap
+
+[MID_VarTarSwap]
+[eng]
+_TarSwap
+
+[MID_VarGelSwap]
+[eng]
+_GelSwap
+
 [MID_VarMySpawn]
 [eng]
 _MySpawn
