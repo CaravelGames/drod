@@ -2877,28 +2877,36 @@ void CGameScreen::OnKeyDown(
 		break;
 
 		case SDLK_UP: //Up arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
 				SearchForPathToNextRoom(N);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_N);
+			}
 		return;
 		case SDLK_DOWN:   //Down arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
 				SearchForPathToNextRoom(S);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_S);
+			}
 		return;
 		case SDLK_LEFT: //Left arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
 				SearchForPathToNextRoom(W);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_W);
+			}
 		return;
 		case SDLK_RIGHT: //Right arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
 				SearchForPathToNextRoom(E);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_E);
+			}
 		return;
 
 		default: break;
