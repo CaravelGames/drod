@@ -183,6 +183,7 @@ private:
 	void           ShowBigMap();
 	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           showStat(const UINT eType, const int delta, CEntity *pEntity, UINT& count);
+	void           ShowStatTooltip(int nX, int nY);
 //	void           ShowLockIcon(const bool bShow=true);
 	void           UpdatePlayerFace();
 	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter** playerHoldCharacter);
