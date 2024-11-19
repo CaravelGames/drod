@@ -2221,74 +2221,11 @@ void CGameScreen::OnBetweenEvents()
 		{
 			int nX, nY;
 			const Uint8 buttons = GetMouseState(&nX, &nY);
-			if (buttons == SDL_BUTTON_LMASK && !this->bDisableMouseMovement && !this->bNoMoveByCurrentMouseClick)
+			if (buttons == SDL_BUTTON_LMASK && !this->bDisableMouseMovement && !this->bNoMoveByCurrentMouseClick) {
 				MovePlayerToward(nX, nY);
-			else if (!buttons)
-			{
-				//Tool tips when hovering over stat labels on sidebar.
+			} else if (!buttons) { //no movement being input
 				if (IsCursorVisible())
-				{
-					MESSAGE_ID mid = this->bIsScrollVisible ? 0 : GetHintTextForRegion(nX, nY);
-
-					//Tool tip for minimap, if allowed.
-					if (!mid && this->pMapWidget->ContainsCoords(nX, nY) && this->pCurrentGame)
-					{
-						UINT roomX, roomY;
-						this->pMapWidget->GetRoomAtCoords(nX, nY, roomX, roomY);
-						const UINT roomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
-						if (roomID)
-						{
-							CDbRoom *pRoom = NULL;
-							bool bCurrentRoom = false;
-							if (this->pCurrentGame->pRoom->dwRoomID == roomID)
-							{
-								pRoom = this->pCurrentGame->pRoom;
-								bCurrentRoom = true;
-							}
-							if (!pRoom)
-							{
-								ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-								if (pExpRoom && !pExpRoom->bMapOnly)
-								{
-									//Determine room state.
-									//!!This might be a time-intensive operation, and could be optimized.
-									pRoom = g_pTheDB->Rooms.GetByID(roomID);
-									pRoom->SetMembersFromExploredRoomData(pExpRoom);
-								}
-							}
-
-							if (pRoom)
-							{
-								//Minimap room color-coding information.
-								if (pRoom->HasGrabbableItems())
-									mid = MID_RoomHasTreasure;
-								else if (pRoom->HasCombatableMonsters())
-									mid = MID_RoomHasEnemies;
-								else if (pRoom->HasClosedDoors())
-									mid = MID_RoomHasClosedDoors;
-
-								if (!bCurrentRoom)
-									delete pRoom;
-							}
-						}
-					}
-
-					if (mid)
-						RequestToolTip(mid);
-					else
-					{
-						//Tool tip describing the equipment item hovered over.
-						WSTRING text;
-						if (IsInRect(nX, nY, X_PIC[4], Y_PIC[4], rightEndOfEquipmentSlot, Y_PIC[4] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_WEAPON);
-						else if (IsInRect(nX, nY, X_PIC[5], Y_PIC[5], rightEndOfEquipmentSlot, Y_PIC[5] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_ARMOR);
-						else if (IsInRect(nX, nY, X_PIC[6], Y_PIC[6], rightEndOfEquipmentSlot, Y_PIC[6] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_ACCESSORY);
-						if (!text.empty())
-							CScreen::RequestToolTip(text.c_str());
-					}
-				}
+					ShowStatTooltip(nX, nY);
 			}
 
 			//Whenever a destination tile has been specified,
@@ -2310,6 +2247,75 @@ void CGameScreen::OnBetweenEvents()
 
 	CRoomScreen::OnBetweenEvents();
 	ProcessSpeech();
+}
+
+//*****************************************************************************
+// Tool tips when hovering mouse over stat labels on sidebar.
+void CGameScreen::ShowStatTooltip(int nX, int nY)
+{
+	if (this->wRoomQuickExitDirection != NO_ORIENTATION)
+		return; //avoid tooltip flicker
+
+	MESSAGE_ID mid = this->bIsScrollVisible ? 0 : GetHintTextForRegion(nX, nY);
+
+	//Tool tip for minimap, if allowed.
+	if (!mid && this->pMapWidget->ContainsCoords(nX, nY) && this->pCurrentGame)
+	{
+		UINT roomX, roomY;
+		this->pMapWidget->GetRoomAtCoords(nX, nY, roomX, roomY);
+		const UINT roomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
+		if (roomID)
+		{
+			CDbRoom *pRoom = NULL;
+			bool bCurrentRoom = false;
+			if (this->pCurrentGame->pRoom->dwRoomID == roomID)
+			{
+				pRoom = this->pCurrentGame->pRoom;
+				bCurrentRoom = true;
+			}
+			if (!pRoom)
+			{
+				ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
+				if (pExpRoom && !pExpRoom->bMapOnly)
+				{
+					//Determine room state.
+					//!!This might be a time-intensive operation, and could be optimized.
+					pRoom = g_pTheDB->Rooms.GetByID(roomID);
+					pRoom->SetMembersFromExploredRoomData(pExpRoom);
+				}
+			}
+
+			if (pRoom)
+			{
+				//Minimap room color-coding information.
+				if (pRoom->HasGrabbableItems())
+					mid = MID_RoomHasTreasure;
+				else if (pRoom->HasCombatableMonsters())
+					mid = MID_RoomHasEnemies;
+				else if (pRoom->HasClosedDoors())
+					mid = MID_RoomHasClosedDoors;
+
+				if (!bCurrentRoom)
+					delete pRoom;
+			}
+		}
+	}
+
+	if (mid) {
+		RequestToolTip(mid);
+	} else {
+		//Tool tip describing the equipment item hovered over.
+		WSTRING text;
+		if (IsInRect(nX, nY, X_PIC[4], Y_PIC[4], rightEndOfEquipmentSlot, Y_PIC[4] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_WEAPON);
+		} else if (IsInRect(nX, nY, X_PIC[5], Y_PIC[5], rightEndOfEquipmentSlot, Y_PIC[5] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_ARMOR);
+		} else if (IsInRect(nX, nY, X_PIC[6], Y_PIC[6], rightEndOfEquipmentSlot, Y_PIC[6] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_ACCESSORY);
+		}
+		if (!text.empty())
+			CScreen::RequestToolTip(text.c_str());
+	}
 }
 
 //*****************************************************************************
