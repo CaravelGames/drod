@@ -4722,6 +4722,9 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_TAR_SPAWN, g_pTheDB->GetMessageText(MID_VarTarSpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_GEL_SPAWN, g_pTheDB->GetMessageText(MID_VarGelSpawn));
 	this->pVarListBox->AddItem(ScriptVars::P_QUEEN_SPAWN, g_pTheDB->GetMessageText(MID_VarQueenSpawn));
+	this->pVarListBox->AddItem(ScriptVars::P_MUD_SWAP, g_pTheDB->GetMessageText(MID_VarMudSwap));
+	this->pVarListBox->AddItem(ScriptVars::P_TAR_SWAP, g_pTheDB->GetMessageText(MID_VarTarSwap));
+	this->pVarListBox->AddItem(ScriptVars::P_GEL_SWAP, g_pTheDB->GetMessageText(MID_VarGelSwap));
 
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_HP, g_pTheDB->GetMessageText(MID_VarScoreHP));
 	this->pVarListBox->AddItem(ScriptVars::P_SCORE_ATK, g_pTheDB->GetMessageText(MID_VarScoreAtk));

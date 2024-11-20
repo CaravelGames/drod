@@ -865,6 +865,9 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_SCORE_GOLD:
 					case (UINT)ScriptVars::P_SCORE_XP:
 					case (UINT)ScriptVars::P_SCORE_SHOVEL:
+					case (UINT)ScriptVars::P_MUD_SWAP:
+					case (UINT)ScriptVars::P_TAR_SWAP:
+					case (UINT)ScriptVars::P_GEL_SWAP:
 						//display nothing
 					break;
 

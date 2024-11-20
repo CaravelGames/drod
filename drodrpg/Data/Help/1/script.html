@@ -715,15 +715,21 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_Firetrap</td><td>fire trap damage(<a href="#damage">*</a>)</td><td>-1000</td><td>-MAX,100</td>
   </tr><tr>
-    <td>_MudSpawn</td><td>global mud spawn entity ID(<a href="#mudspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+    <td>_MudSpawn</td><td>global mud spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
-    <td>_TarSpawn</td><td>global tar spawn entity ID(<a href="#tarspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+    <td>_TarSpawn</td><td>global tar spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
-    <td>_GelSpawn</td><td>global gel spawn entity ID(<a href="#gelspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+    <td>_GelSpawn</td><td>global gel spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
-    <td>_QueenSpawn</td><td>global roach queen spawn entity ID(<a href="#queenspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+    <td>_QueenSpawn</td><td>global roach queen spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
-    <td>_MySpawn</td><td>local NPC spawn entity ID(<a href="#queenspawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+    <td>_MySpawn</td><td>local NPC spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_MudSwap</td><td>global mud switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_TarSwap</td><td>global tar switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_GelSwap</td><td>global gel switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
   </tr><tr>
 	<td>_ScoreHP</td><td>score value for each HP(<a href="#scorevars">*</a>)</td><td>-40</td><td>-MAX,MAX</td>
   </tr><tr>
@@ -882,6 +888,16 @@ The variable names are case-insensitive.
   positive value, it indicates the percentage of HP the target will
   lose.  A negative value indicates a flat damage to inflict.
   When the player is hasted by a Speed Potion, expected damage is halved.
+</p>
+<p><a name="spawn"><b>*_MudSpawn, _TarSpawn, _GelSpawn, _QueenSpawn, _MySpawn</b></a> - Overrides
+  the monster type produced by mud, tar, gel and roach queens respectively. NPCs with the <a href="#be_spawn_eggs">Spawn eggs</a>
+  behavior will produce the monster specified by _QueenSpawn if they do not have a value set for _MySpawn. Overriding tarstuff
+  spawns will also change the monsters affected and produced by <a href="elements.html#tarstuffswitcher">tarstuff switchers</a>.
+</p>
+<p><a name="swap"><b>*_MudSwap, _TarSwap, _GelSwap</b></a> - Overrides the monster types affected and produced by 
+  <a href="elements.html#tarstuffswitcher">tarstuff switchers</a> to be something other than tarstuff mothers. This set of monsters
+  is separate from the ones defined by the spawn override variables. Multi-tile monsters cannot be swapped, either as the source or
+  result of swapping.
 </p>
 <p><a name="enemy"><b>*_EnemyHP, _EnemyATK, _EnemyDEF, _EnemyGR, _EnemyREP</b></a> - 
   These vars are only applicable when in combat.  Custom equipment may

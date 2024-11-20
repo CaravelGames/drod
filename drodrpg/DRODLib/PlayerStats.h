@@ -156,7 +156,10 @@ namespace ScriptVars
 		P_FIRETRAP = -99,
 		P_TOTAL_ATK = -100,
 		P_TOTAL_DEF = -101,
-		FirstPredefinedVar = P_TOTAL_DEF, //set this to the last var in the enumeration
+		P_MUD_SWAP = -102,
+		P_TAR_SWAP = -103,
+		P_GEL_SWAP = -104,
+		FirstPredefinedVar = P_GEL_SWAP, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
@@ -207,7 +210,7 @@ namespace ScriptVars
 	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=44;
+	static const UINT numGlobals=47;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -233,7 +236,7 @@ public:
 		hotTileVal = explosionVal = beamVal = firetrapVal = 0;
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
-		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = UINT(-1); //negative indicates default
+		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = mudSwapID = tarSwapID = gelSwapID = UINT(-1); //negative indicates default
 		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = scoreShovels = 0;
 	}
 
@@ -266,7 +269,7 @@ public:
 	//Prior location before level warp.
 	UINT priorRoomID, priorX, priorY, priorO;
 
-	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID;
+	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID, mudSwapID, tarSwapID, gelSwapID;
 	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP, scoreShovels;
 };
 

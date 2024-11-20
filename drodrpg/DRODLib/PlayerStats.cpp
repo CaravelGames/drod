@@ -47,7 +47,8 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"",
 	"_Shovels", "_ScoreShovels", "_ItemShovelMult", "",
 	"_Beam", "_Firetrap",
-	"", ""
+	"", "",
+	"_MudSwap", "_TarSwap", "_GelSwap",
 };
 
 //Message texts corresponding to the above short var texts.
@@ -82,6 +83,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarShovels, MID_VarScoreShovels, MID_VarItemShovelMult, MID_VarMyItemShovelMult,
 	MID_VarBeam, MID_VarFiretrap,
 	MID_VarTotalAtk, MID_VarTotalDef,
+	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -123,6 +125,9 @@ const Predefined ScriptVars::globals[numGlobals] = {
 	P_TAR_SPAWN,
 	P_GEL_SPAWN,
 	P_QUEEN_SPAWN,
+	P_MUD_SWAP,
+	P_TAR_SWAP,
+	P_GEL_SWAP,
 	P_SCORE_HP,
 	P_SCORE_ATK,
 	P_SCORE_DEF,
@@ -179,6 +184,9 @@ const UINT ScriptVars::globalVarMIDs[numGlobals] = {
 	predefinedVarMIDs[74],
 	predefinedVarMIDs[75],
 	predefinedVarMIDs[76],
+	predefinedVarMIDs[101], //swap IDs
+	predefinedVarMIDs[102],
+	predefinedVarMIDs[103],
 
 	predefinedVarMIDs[79], //score values
 	predefinedVarMIDs[80],
@@ -237,6 +245,9 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 	predefinedVarTexts[74],
 	predefinedVarTexts[75],
 	predefinedVarTexts[76],
+	predefinedVarTexts[101], //swap IDs
+	predefinedVarTexts[102],
+	predefinedVarTexts[103],
 
 	predefinedVarTexts[79], //score values
 	predefinedVarTexts[80],
@@ -320,6 +331,9 @@ UINT ScriptVars::getVarDefault(const ScriptVars::Predefined var)
 		case P_MUD_SPAWN:
 		case P_GEL_SPAWN:
 		case P_QUEEN_SPAWN:
+		case P_TAR_SWAP:
+		case P_MUD_SWAP:
+		case P_GEL_SWAP:
 			return UINT(-1);
 		case P_SCORE_HP:
 			return UINT(-40);
@@ -494,6 +508,9 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_TAR_SPAWN: return this->tarSpawnID;
 		case P_GEL_SPAWN: return this->gelSpawnID;
 		case P_QUEEN_SPAWN: return this->queenSpawnID;
+		case P_MUD_SWAP: return this->mudSwapID;
+		case P_TAR_SWAP: return this->tarSwapID;
+		case P_GEL_SWAP: return this->gelSwapID;
 
 		case P_SCORE_HP: return this->scoreHP;
 		case P_SCORE_ATK: return this->scoreATK;
@@ -558,6 +575,9 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_TAR_SPAWN: this->tarSpawnID = int(val); break;
 		case P_GEL_SPAWN: this->gelSpawnID = int(val); break;
 		case P_QUEEN_SPAWN: this->queenSpawnID = int(val); break;
+		case P_MUD_SWAP: this->mudSwapID = int(val); break;
+		case P_TAR_SWAP: this->tarSwapID = int(val); break;
+		case P_GEL_SWAP: this->gelSwapID = int(val); break;
 
 		case P_SCORE_HP: this->scoreHP = int(val); break;
 		case P_SCORE_ATK: this->scoreATK = int(val); break;
