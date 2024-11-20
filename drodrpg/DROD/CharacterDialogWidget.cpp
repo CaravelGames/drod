@@ -7112,7 +7112,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y); skipComma;
 		if (isWInteger(pText + pos))
-			pCommand->w = _Wtoi(pText + pos); //get number
+			pCommand->h = _Wtoi(pText + pos); //get number
 		else
 			pCommand->label = pText + pos; //get text expression
 	break;
