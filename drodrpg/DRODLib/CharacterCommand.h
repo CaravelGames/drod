@@ -285,6 +285,7 @@ public:
 		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
 		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
 		CC_ClearArrayVar,       //Reset array var X
+		CC_ResetOverrides,      //Resets command parameter override values to no override
 		CC_Count
 	};
 

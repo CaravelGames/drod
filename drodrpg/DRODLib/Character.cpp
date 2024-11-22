@@ -3422,6 +3422,12 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_ResetOverrides: {
+				bProcessNextCommand = true;
+				paramX = paramY = paramW = paramH = paramF = NO_OVERRIDE;
+			}
+			break;
+
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
 			case CCharacterCommand::CC_WaitForCleanRoom:

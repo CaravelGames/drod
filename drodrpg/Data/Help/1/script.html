@@ -263,6 +263,7 @@ interacts with its environment.</p>
   </li>
   <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, its local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> condition. The condition is satisfied if the command successfully invokes a variable assignment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
   </li>
+  <li><a name="resetoverrides"><b>Reset _MyScript variables</b></a> - Sets the value of all <a href="#paramoverride">_MyScript variables</a> to -9999, so they no longer override command values.</li>
   <li><a name="setmonstervar"><b>Set monster var</b></a> - Modify a
 	  stat value of a monster at a specific room location.</li>
   <li><a name="eachattack"><b>Each attack</b></a> - Each time the NPC attacks,

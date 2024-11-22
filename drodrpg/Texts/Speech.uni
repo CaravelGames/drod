@@ -1503,3 +1503,7 @@ Roach egg spawned
 [MID_ConstructSplatterEffect]
 [eng]
 Construct splatter
+
+[MID_ResetOverrides]
+[eng]
+Reset _MyScript variables

@@ -1590,6 +1590,7 @@ enum MID_CONSTANT {
   MID_ArrayVarNameExpression = 1940,
   MID_ArrayIndexLabel = 1941,
   MID_CantChangeVarType = 1942,
+  MID_ResetOverrides = 1947,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
