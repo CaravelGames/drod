@@ -660,7 +660,8 @@ const WCHAR* CDbBase::GetMessageText(
 	string strText;
 	switch (eMessageID)
 	{
-		//TODO 1.3: remove all of these when building barebones and release build dat files
+		//TODO 1.3/2.0: remove all of these when building barebones and release build dat files
+		case MID_TitleMainMenu: strText = "&Back"; break;
 		case MID_DoubleXP: strText = "Double REP"; break;
 		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
 		case MID_EquipQueryStatus: strText = "Status"; break;
