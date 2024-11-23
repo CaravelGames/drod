@@ -490,7 +490,7 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_TitleMenu].pTTFFont = pFont;
 	this->LoadedFonts[F_TitleMenu].wLineSkipHeight = TTF_FontLineSkip(pFont) * 9/10;
 	this->LoadedFonts[F_TitleMenu].wSpaceWidth = wSpaceWidth;
-	this->LoadedFonts[F_TitleMenu].ForeColor = LightBlue;
+	this->LoadedFonts[F_TitleMenu].ForeColor = LightCyan;
 	this->LoadedFonts[F_TitleMenu].BackColor = DarkGray;
 	this->LoadedFonts[F_TitleMenu].bAntiAlias = true;
 	this->LoadedFonts[F_TitleMenu].bOutline = true;

@@ -117,17 +117,39 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	, bNewGamePrompt(true)
 //Constructor.
 {
+	this->imageNum = rand() % 4;
+
 	string TitleBG;
-	switch (rand() % 3)
+	switch (this->imageNum)
 	{
-		default:
 		case 0: TitleBG = "TitleBG"; break;
 		case 1: TitleBG = "TitleBG1"; break;
 		case 2: TitleBG = "TitleBG2"; break;
+		case 3: TitleBG = "TitleBGTunnel"; break;
+		default: ASSERT(!"Bad imageNum"); break;
 	}
 	this->imageFilenames.push_back(TitleBG);
+
 	this->imageFilenames.push_back(string("TitleLightMask"));
-	this->imageFilenames.push_back(string("TitleShadow"));
+
+	//Manage distinct screen assets with skittering roaches when showing a DROD RPG 1 background image
+	if (IsRPG1BG()) {
+		this->imageFilenames.push_back(string("TitleShadow"));
+
+		//Game title logo.
+		AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
+
+		string str;
+		this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
+
+		time_t t = time(NULL);
+		tm* pLocalTime = localtime(&t);
+		if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
+			this->bBackwards = true; //critters move backwards
+	}
+
+	//Caravel Games logo
+	AddWidget(new CImageWidget(0, 0, CScreen::CY_SCREEN - 132, wszCaravelLogo));
 
 	g_pTheDBM->LoadGeneralTileImages();
 
@@ -135,18 +157,12 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 
 	const bool bDemo = !IsGameFullVersion();
 
-	string str;
-	this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
-
-	//Game title.
-	AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
-	AddWidget(new CImageWidget(0, 0, CScreen::CY_SCREEN - 132, wszCaravelLogo));
-
-	//Option menu in lower center.
+	//Option menu position based on BG image.
 	const int CX_MENU = 355;
-	const int X_MENU = (CScreen::CX_SCREEN - CX_MENU) / 2;
-	const int Y_MENU = 340;
 	const int CY_MENU = 360;
+	const int X_MENU = IsRPG1BG() ? (CScreen::CX_SCREEN - CX_MENU) / 2 : 680; //lower center, right
+	const int Y_MENU = 340;
+
 	this->pMenu = new CMenuWidget(TAG_MENU, X_MENU, Y_MENU, CX_MENU, CY_MENU,
 			F_TitleMenu, F_TitleMenuActive, F_TitleMenuSelected);
 	AddWidget(this->pMenu);
@@ -200,11 +216,12 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	this->pMarqueeWidget = new CMarqueeWidget(0, X_MARQUEE, Y_MARQUEE,
 			CX_MARQUEE, CY_MARQUEE, 10);
 	AddWidget(this->pMarqueeWidget);
+}
 
-	time_t t = time(NULL);
-	tm* pLocalTime = localtime(&t);
-	if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
-		this->bBackwards = true; //critters move backwards
+//******************************************************************************
+bool CTitleScreen::IsRPG1BG() const
+{
+	return this->imageNum >= 0 && this->imageNum <= 2;
 }
 
 //******************************************************************************
@@ -567,10 +584,12 @@ void CTitleScreen::Paint(
 	//Preprocess: darken border surface.
 	if (this->bPredarken)
 	{
-		//Use darker screen if high quality graphics are set.
-		const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
-		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-				fValue, this->images[TITLE_BACKGROUND]);
+		if (IsRPG1BG()) {
+			//Use darker screen if high quality graphics are set.
+			const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
+			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+					fValue, this->images[TITLE_BACKGROUND]);
+		}
 		this->bPredarken = false;
 	}
 
@@ -988,6 +1007,57 @@ UINT CTitleScreen::GetNextDemoID()
 void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 //Updates the title screen graphics.
 {
+	if (IsRPG1BG()) {
+		DrawRPG1Screen();
+	} else {
+		//Blit the title background.
+		SDL_Surface* pDestSurface = GetDestSurface();
+		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
+
+		//Lantern light.
+		{
+			const int nLanternX = 525, nLanternY = 345;
+			//Light mask centered on mouse cursor.
+			//Bounded random walk for light jitter.
+			static int nXOffset = 0, nYOffset = 0;
+			static const int MAX_OFFSET = 2;
+			if (RAND(2) && nXOffset < MAX_OFFSET)
+				++nXOffset;
+			else if (nXOffset > -MAX_OFFSET)
+				--nXOffset;
+			if (RAND(2) && nYOffset < MAX_OFFSET)
+				++nYOffset;
+			else if (nYOffset > -MAX_OFFSET)
+				--nYOffset;
+
+			static const int nLightMaskW = this->images[LIGHT_MASK]->w;
+			static const int nLightMaskH = this->images[LIGHT_MASK]->h;
+			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
+			SDL_Rect dest = MAKE_SDL_RECT(nLanternX + nXOffset - nLightMaskW / 2, nLanternY + nYOffset - nLightMaskH / 2,
+				nLightMaskW, nLightMaskH);
+
+			static const Uint32 pulseInterval = 2000; //ms
+			Uint32 t = SDL_GetTicks() % pulseInterval;
+			const float fPulseFactor = (1.0f + cos((t / static_cast<float>(pulseInterval)) * TWOPI)) / 2.0f;
+			const float fLightFactor = 1.0f + 0.15f * fPulseFactor;
+			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fLightFactor);
+		}
+
+		PaintChildren();
+
+		this->pEffects->UpdateAndDrawEffects();
+	}
+
+	if (this->pStatusDialog->IsVisible())
+		this->pStatusDialog->Paint();
+
+	if (bUpdate)
+		UpdateRect();
+}
+
+//*****************************************************************************
+void CTitleScreen::DrawRPG1Screen()
+{
 	static const int nShadowMaskW = this->images[TITLE_SHADOW]->w;
 	static const int nShadowMaskH = this->images[TITLE_SHADOW]->h;
 	static const float fOffsetFactor = 0.12f;
@@ -995,22 +1065,22 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	//Draw light mask if higher quality graphics are enabled.
 	const bool bAlpha = g_pTheBM->bAlpha || g_pTheBM->eyeCandy;
 
-	SDL_Surface *pDestSurface = GetDestSurface();
+	SDL_Surface* pDestSurface = GetDestSurface();
 
 	int nMouseX, nMouseY;
 	GetMouseState(&nMouseX, &nMouseY);
 
 	//Blit the title background.
-	SDL_Rect redrawRect = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
-	if (bAlpha)
+	if (bAlpha) {
 		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
-	else
-	{
+	}
+	else {
 		//Selectively damage region around title graphic and shadow.
+		SDL_Rect redrawRect = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
 		redrawRect.x = X_TITLE_SHADOW - static_cast<int>(CScreen::CX_SCREEN * fOffsetFactor);
 		redrawRect.y = Y_TITLE_SHADOW - static_cast<int>((CScreen::CY_SCREEN - Y_TITLE_SHADOW) * fOffsetFactor);
-		redrawRect.w = nShadowMaskW + static_cast<int>(CScreen::CX_SCREEN/2 * fOffsetFactor) + 125;
-		redrawRect.h = nShadowMaskH + static_cast<int>(CScreen::CY_SCREEN/2 * fOffsetFactor) + 58;
+		redrawRect.w = nShadowMaskW + static_cast<int>(CScreen::CX_SCREEN / 2 * fOffsetFactor) + 125;
+		redrawRect.h = nShadowMaskH + static_cast<int>(CScreen::CY_SCREEN / 2 * fOffsetFactor) + 58;
 		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], &redrawRect, pDestSurface, &redrawRect);
 		UpdateRect(redrawRect);
 
@@ -1027,7 +1097,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		addParticle();
 		updateParticles(pDestSurface, nMouseX, nMouseY);
 		verminEffects.UpdateAndDrawEffects(false, pDestSurface);
-	
+
 		//Light mask centered on mouse cursor.
 		//Bounded random walk for light jitter.
 		static int nXOffset = 0, nYOffset = 0;
@@ -1044,10 +1114,10 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		{
 			static const int nLightMaskW = this->images[LIGHT_MASK]->w;
 			static const int nLightMaskH = this->images[LIGHT_MASK]->h;
-			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH); 
-			SDL_Rect dest = MAKE_SDL_RECT(nMouseX + nXOffset - nLightMaskW/2, nMouseY + nYOffset - nLightMaskH/2,
-					nLightMaskW, nLightMaskH);
-			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, 1.0f/fDarkFactor + 0.002f * RAND(100));
+			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
+			SDL_Rect dest = MAKE_SDL_RECT(nMouseX + nXOffset - nLightMaskW / 2, nMouseY + nYOffset - nLightMaskH / 2,
+				nLightMaskW, nLightMaskH);
+			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, 1.0f / fDarkFactor + 0.002f * RAND(100));
 		}
 	}
 
@@ -1055,21 +1125,15 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	{
 		static SDL_Rect src = MAKE_SDL_RECT(0, 0, nShadowMaskW, nShadowMaskH);
 		SDL_Rect dest = MAKE_SDL_RECT(
-				X_TITLE_SHADOW - static_cast<Sint16>((nMouseX-(int)(X_TITLE_SHADOW + nShadowMaskW/2)) * fOffsetFactor),
-				Y_TITLE_SHADOW - static_cast<Sint16>((nMouseY-(int)(Y_TITLE_SHADOW + nShadowMaskH/2)) * fOffsetFactor),
-				nShadowMaskW, nShadowMaskH);
+			X_TITLE_SHADOW - static_cast<Sint16>((nMouseX - (int)(X_TITLE_SHADOW + nShadowMaskW / 2)) * fOffsetFactor),
+			Y_TITLE_SHADOW - static_cast<Sint16>((nMouseY - (int)(Y_TITLE_SHADOW + nShadowMaskH / 2)) * fOffsetFactor),
+			nShadowMaskW, nShadowMaskH);
 		g_pTheBM->DarkenWithMask(this->images[TITLE_SHADOW], src, pDestSurface, dest, 0.2f);
 	}
 
 	PaintChildren();
 
 	this->pEffects->UpdateAndDrawEffects(!bAlpha);
-
-	if (this->pStatusDialog->IsVisible())
-		this->pStatusDialog->Paint();
-
-	if (bUpdate)
-		UpdateRect();
 }
 
 //*****************************************************************************
