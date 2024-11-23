@@ -72,6 +72,7 @@ struct FontCacheMember
 extern const SDL_Color Black, DarkGray, DarkBrown, MediumBrown, LightGray,
 		Gray, LightBrown, BlueishWhite, PinkishWhite, DarkYellow, MidYellow,
 		Yellow, LightYellow, White, Maroon, Gold, Blue, DarkBlue, LightBlue,
+		LightCyan,
 		FullRed, LightRed, LightBlue2, DarkGreen, AlmostWhite;
 
 //Fonts needed, but can't place them in a final enumeration yet (i.e.,
