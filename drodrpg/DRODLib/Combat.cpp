@@ -810,9 +810,14 @@ bool CCombat::Advance(
 			}
 		}
 
-		if (this->bEndCombat ||
+		if (!this->bSimulated) {
+			//in a real encounter, check for flags interrupting combat
+			if (this->bEndCombat ||
 				!this->pGame->bIsGameActive) //if a script executed something like a level exit, combat must stop now
-			bContinue = false; //combat has been interrupted prior to defeat
+			{
+				bContinue = false; //combat has been interrupted prior to defeat
+			}
+		}
 	} while (bContinue && bQuick); //in quick combat, sum up all rounds at once until someone dies
 
 	//Finished.
