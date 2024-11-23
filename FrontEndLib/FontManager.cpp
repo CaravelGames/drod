@@ -61,6 +61,7 @@ const SDL_Color Gold = {227, 171, 4, 0};
 const SDL_Color Blue = {0, 0, 255, 0};
 const SDL_Color DarkBlue = {0, 0, 128, 0};
 const SDL_Color LightBlue = {96, 96, 255, 0};
+const SDL_Color LightCyan = {128, 255, 255, 0};
 const SDL_Color FullRed = {255, 0, 0, 0};
 const SDL_Color LightRed = {255, 128, 128, 0};
 const SDL_Color LightBlue2 = {164, 164, 255, 0};
