@@ -6006,8 +6006,14 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 {
 	CueEvents.Add(CID_Firetrap, new CCoord(wX, wY), true);
 
+	//Deal with mist separately as it may be hiding under another tile
+	//Process this first because a firetrap can turn itself off after exploding a keg or bomb that hits an orb
+	//This is easier than making the logic within account for this
+	DestroyMist(wX, wY, CueEvents);
+
 	//Tile interactions
 	UINT tTile = this->GetTSquare(wX, wY);
+
 	switch (tTile) {
 		case T_ORB:
 			ActivateOrb(wX, wY, CueEvents, OAT_Item);
@@ -6034,9 +6040,6 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 			CueEvents.Add(CID_CrateDestroyed, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
 		break;
 	}
-
-	//Deal with mist separately as it may be hiding under another tile
-	DestroyMist(wX, wY, CueEvents);
 
 	//Damage
 	CSwordsman& player = *(this->pCurrentGame->pPlayer);
