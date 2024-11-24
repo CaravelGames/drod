@@ -1016,30 +1016,20 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 
 		//Lantern light.
 		{
+			//Light mask centered on lantern in bg image.
 			const int nLanternX = 525, nLanternY = 345;
-			//Light mask centered on mouse cursor.
-			//Bounded random walk for light jitter.
-			static int nXOffset = 0, nYOffset = 0;
-			static const int MAX_OFFSET = 2;
-			if (RAND(2) && nXOffset < MAX_OFFSET)
-				++nXOffset;
-			else if (nXOffset > -MAX_OFFSET)
-				--nXOffset;
-			if (RAND(2) && nYOffset < MAX_OFFSET)
-				++nYOffset;
-			else if (nYOffset > -MAX_OFFSET)
-				--nYOffset;
-
 			static const int nLightMaskW = this->images[LIGHT_MASK]->w;
 			static const int nLightMaskH = this->images[LIGHT_MASK]->h;
 			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
-			SDL_Rect dest = MAKE_SDL_RECT(nLanternX + nXOffset - nLightMaskW / 2, nLanternY + nYOffset - nLightMaskH / 2,
+			SDL_Rect dest = MAKE_SDL_RECT(nLanternX - nLightMaskW / 2, nLanternY - nLightMaskH / 2,
 				nLightMaskW, nLightMaskH);
 
+			//Slowing pulsing light.
 			static const Uint32 pulseInterval = 2000; //ms
+			static const float fBrightnessFactor = 0.3f; //196 --> 255 at full increase
 			Uint32 t = SDL_GetTicks() % pulseInterval;
 			const float fPulseFactor = (1.0f + cos((t / static_cast<float>(pulseInterval)) * TWOPI)) / 2.0f;
-			const float fLightFactor = 1.0f + 0.15f * fPulseFactor;
+			const float fLightFactor = 1.0f + fBrightnessFactor * fPulseFactor;
 			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fLightFactor);
 		}
 
