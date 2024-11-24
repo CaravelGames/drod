@@ -4915,9 +4915,9 @@ void CDbRoom::ProcessExplosionSquare(
 			Plot(wX,wY,T_EMPTY);
 		break;
 		default:
-			if (bIsPowerUp(wTileNo))
+			if (bIsPowerUp(wTileNo) || bIsEquipment(wTileNo))
 			{
-				//power up items are destroyed
+				//power up items and equipment are destroyed
 				Plot(wX,wY,T_EMPTY);
 			}
 			//Explosion passes through everything else.
