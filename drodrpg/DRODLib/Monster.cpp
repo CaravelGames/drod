@@ -2175,6 +2175,11 @@ bool CMonster::AttackPlayerInFrontWhenBackIsTurned(CCueEvents &CueEvents)
 	if (bPlayerIsFacingMe)
 		return false;
 
+	//Attack if movement in this direction is not forbidden.
+	if (DoesArrowPreventMovement(dx, dy) ||
+		this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy))
+		return false;
+
 	//Cannot attack something above me.
 	if (IsTileAboveMe(wTX, wTY))
 		return false;
