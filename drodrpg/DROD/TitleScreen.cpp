@@ -61,6 +61,7 @@
 const UINT TAG_MENU = 1000;
 const UINT TAG_PLAYMENU = 1001;
 const UINT TAG_INTERNET_ICON = 1010;
+const UINT TAG_CARAVEL_LOGO_SW = 1012;
 const UINT TAG_HYPERLINK_START = 10000;
 
 const UINT dwDisplayDuration = 60000;  //ms
@@ -96,6 +97,9 @@ enum VerminTypes {
 	MV_EYE,
 	VERMIN_TYPES
 };
+
+//const int CX_CARAVEL_LOGO = 132;
+const int CY_CARAVEL_LOGO = 132;
 
 //
 //Protected methods.
@@ -149,7 +153,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	}
 
 	//Caravel Games logo
-	AddWidget(new CImageWidget(0, 0, CScreen::CY_SCREEN - 132, wszCaravelLogo));
+	AddWidget(new CImageWidget(TAG_CARAVEL_LOGO_SW, 0, CScreen::CY_SCREEN - CY_CARAVEL_LOGO, wszCaravelLogo));
 
 	g_pTheDBM->LoadGeneralTileImages();
 
@@ -1010,32 +1014,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	if (IsRPG1BG()) {
 		DrawRPG1Screen();
 	} else {
-		//Blit the title background.
-		SDL_Surface* pDestSurface = GetDestSurface();
-		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
-
-		//Lantern light.
-		{
-			//Light mask centered on lantern in bg image.
-			const int nLanternX = 525, nLanternY = 345;
-			static const int nLightMaskW = this->images[LIGHT_MASK]->w;
-			static const int nLightMaskH = this->images[LIGHT_MASK]->h;
-			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
-			SDL_Rect dest = MAKE_SDL_RECT(nLanternX - nLightMaskW / 2, nLanternY - nLightMaskH / 2,
-				nLightMaskW, nLightMaskH);
-
-			//Slowing pulsing light.
-			static const Uint32 pulseInterval = 2000; //ms
-			static const float fBrightnessFactor = 0.3f; //196 --> 255 at full increase
-			Uint32 t = SDL_GetTicks() % pulseInterval;
-			const float fPulseFactor = (1.0f + cos((t / static_cast<float>(pulseInterval)) * TWOPI)) / 2.0f;
-			const float fLightFactor = 1.0f + fBrightnessFactor * fPulseFactor;
-			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fLightFactor);
-		}
-
-		PaintChildren();
-
-		this->pEffects->UpdateAndDrawEffects();
+		DrawRPG2Screen();
 	}
 
 	if (this->pStatusDialog->IsVisible())
@@ -1123,7 +1102,136 @@ void CTitleScreen::DrawRPG1Screen()
 
 	PaintChildren();
 
+	AnimateCaravelLogo(pDestSurface);
+
 	this->pEffects->UpdateAndDrawEffects(!bAlpha);
+}
+
+//*****************************************************************************
+void CTitleScreen::DrawRPG2Screen()
+{
+	//Blit the title background.
+	SDL_Surface* pDestSurface = GetDestSurface();
+	g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
+
+	//Lantern light.
+	{
+		//Light mask centered on lantern in bg image.
+		const int nLanternX = 525, nLanternY = 345;
+		static const int nLightMaskW = this->images[LIGHT_MASK]->w;
+		static const int nLightMaskH = this->images[LIGHT_MASK]->h;
+		SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
+		SDL_Rect dest = MAKE_SDL_RECT(nLanternX - nLightMaskW / 2, nLanternY - nLightMaskH / 2,
+			nLightMaskW, nLightMaskH);
+
+		//Slowing pulsing light.
+		static const Uint32 pulseInterval = 2000; //ms
+		static const float fBrightnessFactor = 0.3f; //196 --> 255 at full increase
+		Uint32 t = SDL_GetTicks() % pulseInterval;
+		const float fPulseFactor = (1.0f + cos((t / static_cast<float>(pulseInterval)) * TWOPI)) / 2.0f;
+		const float fLightFactor = 1.0f + fBrightnessFactor * fPulseFactor;
+		g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fLightFactor);
+	}
+
+	PaintChildren();
+
+	AnimateCaravelLogo(pDestSurface);
+
+	this->pEffects->UpdateAndDrawEffects();
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateCaravelLogo(SDL_Surface* pDestSurface)
+{
+	static const Uint32 FPS = 18;
+	static const Uint32 updateMS = 1000 / FPS;
+
+	static Uint32 dwTimeOfLastUpdate = 0;
+	const Uint32 dwNow = SDL_GetTicks();
+
+	bool update = false;
+	if (dwNow - dwTimeOfLastUpdate >= updateMS) {
+		dwTimeOfLastUpdate = dwNow;
+		update = true;
+	}
+
+	AnimateWaves(pDestSurface, update);
+	AnimateFlag(pDestSurface, update);
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateWaves(SDL_Surface* pDestSurface, bool update)
+//Animates the waves in the Caravel logo.
+{
+	//Waves area.
+	int X_WAVES = 33; //for logo in SW corner
+	const int Y_WAVES = 94;
+	const UINT CX_WAVES = 44;
+	const UINT CY_WAVES = 3;
+
+	CImageWidget* pCaravelLogo = DYN_CAST(CImageWidget*, CWidget*, GetWidget(TAG_CARAVEL_LOGO_SW));
+
+	static UINT wIndex = 0;
+
+	if (update) {
+		++wIndex;
+		if (wIndex == CX_WAVES) wIndex = 0;
+	}
+
+	//Draw left side of waves.
+	SDL_Rect Src = MAKE_SDL_RECT(X_WAVES + wIndex, Y_WAVES, CX_WAVES - wIndex, CY_WAVES);
+	SDL_Rect Dest = MAKE_SDL_RECT(pCaravelLogo->GetX() + X_WAVES, pCaravelLogo->GetY() + Y_WAVES, CX_WAVES - wIndex, CY_WAVES);
+	SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+	UpdateRect(Dest);
+
+	//Draw right side of waves.
+	if (wIndex)
+	{
+		Src.x = X_WAVES;
+		Src.w = wIndex;
+		Dest.x = pCaravelLogo->GetX() + X_WAVES + CX_WAVES - wIndex;
+		Dest.w = wIndex;
+		SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+		UpdateRect(Dest);
+	}
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateFlag(SDL_Surface* pDestSurface, bool update)
+//Animates the flag in the Caravel logo.
+{
+	//Flag area.
+	int X_FLAG = 50; //for logo in SW corner
+	const int Y_FLAG = 16;
+	const UINT CX_FLAG = 11;
+	const UINT CY_FLAG = 4;
+
+	CImageWidget* pCaravelLogo = DYN_CAST(CImageWidget*, CWidget*, GetWidget(TAG_CARAVEL_LOGO_SW));
+
+	static UINT wIndex = 0;
+
+	if (update) {
+		++wIndex;
+		if (wIndex == CX_FLAG) wIndex = 0;
+	}
+
+	//Draw left side of flag.
+	SDL_Rect Src = MAKE_SDL_RECT(X_FLAG + wIndex, Y_FLAG, CX_FLAG - wIndex, CY_FLAG);
+	SDL_Rect Dest = MAKE_SDL_RECT(pCaravelLogo->GetX() + X_FLAG, pCaravelLogo->GetY() + Y_FLAG, CX_FLAG - wIndex, CY_FLAG);
+	SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+	UpdateRect(Dest);
+
+	//Draw right side of flag.
+	if (wIndex)
+	{
+		Src.x = X_FLAG;
+		Src.w = wIndex;
+		Dest.x = pCaravelLogo->GetX() + X_FLAG + CX_FLAG - wIndex;
+		Dest.y = pCaravelLogo->GetY() + Y_FLAG + 1;
+		Dest.w = wIndex;
+		SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+		UpdateRect(Dest);
+	}
 }
 
 //*****************************************************************************
