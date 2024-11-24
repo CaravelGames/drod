@@ -1507,3 +1507,7 @@ Construct splatter
 [MID_ResetOverrides]
 [eng]
 Reset _MyScript variables
+
+[MID_WaitForWeapon]
+[eng]
+Wait for weapon

@@ -3233,6 +3233,7 @@ const
 		case CCharacterCommand::CC_WaitForCharacter:
 		case CCharacterCommand::CC_WaitForNotCharacter:
 		case CCharacterCommand::CC_WaitForNoBuilding:
+		case CCharacterCommand::CC_WaitForWeapon:
 			wstr += g_pTheDB->GetMessageText(MID_At);
 			wstr += wszSpace;
 			wstr += wszLeftParen;
@@ -4113,6 +4114,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToTouchMe, g_pTheDB->GetMessageText(MID_WaitForPlayerToTouchMe));
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNoBuilding, g_pTheDB->GetMessageText(MID_WaitForNoBuilding));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForTurn, g_pTheDB->GetMessageText(MID_WaitForTurn));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForVar, g_pTheDB->GetMessageText(MID_WaitForVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForExpression, g_pTheDB->GetMessageText(MID_WaitForExpression));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotRect, g_pTheDB->GetMessageText(MID_WaitWhileEntity));
@@ -5038,7 +5040,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARSET,        //CC_ArrayVarSet
 		ARRAYVARSET,        //CC_ArrayVarSetAt
 		CLEARARRAYVAR,      //CC_ClearArrayVar
-		NO_WIDGETS          //CC_ResetOverrides
+		NO_WIDGETS,         //CC_ResetOverrides
+		NO_WIDGETS          //CC_WaitForWeapon
 	};
 
 	static const UINT NUM_LABELS = 29;
@@ -5164,6 +5167,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYSET_L,         //CC_ArrayVarSetAt
 		NO_LABELS,          //CC_ClearArrayVar
 		NO_LABELS,          //CC_ResetOverrides
+		NO_LABELS,          //CC_WaitForWeapon
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6137,6 +6141,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_WaitForNoBuilding:
+		case CCharacterCommand::CC_WaitForWeapon:
 			QueryRect();
 		break;
 
@@ -6546,6 +6551,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_LogicalWaitXOR:
 		case CCharacterCommand::CC_LogicalWaitEnd:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_WaitForWeapon:
 			break;
 
 		//Deprecated commands.
@@ -6942,6 +6948,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	//no break
 	case CCharacterCommand::CC_WaitForNoBuilding:
+	case CCharacterCommand::CC_WaitForWeapon:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y); skipComma;
@@ -7599,6 +7606,7 @@ WSTRING CCharacterDialogWidget::toText(
 	}
 	//no break
 	case CCharacterCommand::CC_WaitForNoBuilding:
+	case CCharacterCommand::CC_WaitForWeapon:
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		concatNumWithComma(c.x + c.w);

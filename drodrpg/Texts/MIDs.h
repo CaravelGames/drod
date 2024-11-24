@@ -1591,6 +1591,7 @@ enum MID_CONSTANT {
   MID_ArrayIndexLabel = 1941,
   MID_CantChangeVarType = 1942,
   MID_ResetOverrides = 1947,
+  MID_WaitForWeapon = 1948,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

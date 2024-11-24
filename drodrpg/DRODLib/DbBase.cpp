@@ -862,6 +862,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarTarSwap: strText = "_TarSwap"; break;
 		case MID_VarGelSwap: strText = "_GelSwap"; break;
 		case MID_ResetOverrides: strText = "Reset _MyScript variables"; break;
+		case MID_WaitForWeapon: strText = "Wait for weapon"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

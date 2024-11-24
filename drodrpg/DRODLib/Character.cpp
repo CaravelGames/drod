@@ -995,6 +995,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -1048,6 +1049,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -1104,6 +1106,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
 				//SW corner of rectangle will become the new NW corner after rotation.
 				wNewX = (pRoom->wRoomRows-1) - (command->y + command->h);
 				command->y = command->x;
@@ -3343,6 +3346,13 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_WaitForWeapon:
+				//Wait for weapon to exist in rect (x,y,w,h).
+				if (!IsWeaponAt(command, pGame))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			break;
+
 			case CCharacterCommand::CC_AmbientSound:
 				//Play sound with DataID w (0 stops ambient sounds).
 				//If h is set, loop indefinitely.
@@ -4038,6 +4048,43 @@ bool CCharacter::DidPlayerMove(
 	}
 }
 
+//*****************************************************************************
+// Returns: is there a weapon at the given region (x,y,w,h)
+bool CCharacter::IsWeaponAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame)
+	const
+{
+	UINT px, py, pw, ph;  //command parameters
+	getCommandRect(command, px, py, pw, ph);
+
+	CDbRoom& room = *(pGame->pRoom);
+	const CSwordsman* player = pGame->pPlayer;
+
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x)
+		{
+			if (player->IsWeaponAt(x, y) || room.IsMonsterSwordAt(x, y, this))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 //******************************************************************************************
 bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
 {
@@ -4186,6 +4233,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForExpression:
 		{
 			return IsExpressionSatisfied(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForWeapon:
+		{
+			return IsWeaponAt(command, pGame);
 		}
 		default:
 		{

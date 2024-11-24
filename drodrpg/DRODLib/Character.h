@@ -171,6 +171,7 @@ public:
 
 	virtual bool   IsVisible() const {return this->bVisible;}
 	virtual bool   IsVulnerable() const {return this->bVulnerable;}
+	bool           IsWeaponAt(const CCharacterCommand& command, const CCurrentGame* pGame) const;
 	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
 	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);

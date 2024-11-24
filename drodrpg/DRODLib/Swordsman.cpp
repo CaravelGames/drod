@@ -399,6 +399,12 @@ const
 }
 
 //*****************************************************************************
+bool CSwordsman::IsWeaponAt(UINT wX, UINT wY) const
+{
+	return HasSword() && wX == GetSwordX() && wY == GetSwordY();
+}
+
+//*****************************************************************************
 bool CSwordsman::Move(
 //Move player to new location
 //
