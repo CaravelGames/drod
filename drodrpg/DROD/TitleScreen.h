@@ -74,6 +74,11 @@ private:
 	bool     ConfirmNewGame();
 
 	void     DrawRPG1Screen();
+	void     DrawRPG2Screen();
+
+	void     AnimateCaravelLogo(SDL_Surface* pDestSurface);
+	void     AnimateWaves(SDL_Surface* pDestSurface, bool update);
+	void     AnimateFlag(SDL_Surface* pDestSurface, bool update);
 
 	void     RequestNews();
 	UINT     GetNextDemoID();
