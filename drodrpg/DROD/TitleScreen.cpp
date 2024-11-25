@@ -308,7 +308,7 @@ bool CTitleScreen::SetForActivate()
 	}
 	SetMenuOptionStatus();
 
-	g_pTheSound->PlaySong(SONGID_INTRO);
+	g_pTheSound->PlaySong(IsRPG1BG() ? SONGID_INTRO : SONGID_TITLE_2);
 
 	SetCursor();
 
