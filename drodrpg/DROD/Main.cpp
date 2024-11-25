@@ -1851,7 +1851,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Localization, INIKey::Language, "Eng");
 
 	//General music.
-	AddIfMissing(INISection::Songs, "Credits",      "credits.ogg");
+	AddIfMissing(INISection::Songs, "Credits",      "A Gentle Triumph.ogg");
 	AddIfMissing(INISection::Songs, "Exit",         "Busride.ogg");
 	AddIfMissing(INISection::Songs, "Intro",        "RPGTitle.ogg");
 	AddIfMissing(INISection::Songs, "WinGame",      "endhold.ogg");
