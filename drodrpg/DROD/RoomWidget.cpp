@@ -329,6 +329,7 @@ CRoomWidget::CRoomWidget(
 //	, bNextWispFrame(false)
 	, bPlayerSleeping(false)
 	, bJitterThisFrame(false), dwLastJitterReduction(0)
+	, bRedrawDamagePreview(false)
 
 	, bOutside(false), bSkyVisible(false)
 	, dwSkyX(0)
@@ -389,6 +390,8 @@ CRoomWidget::CRoomWidget(
 void CRoomWidget::AddDamagePreviews()
 {
 	this->pLastLayerEffects->RemoveEffectsOfType(EDAMAGEPREVIEW);
+
+	this->bRedrawDamagePreview = false;
 
 	if (!this->bShowDamagePreview)
 		return;
@@ -4736,7 +4739,7 @@ void CRoomWidget::Paint(
 	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation, redraw entire room
 		this->bAllDirty = true;
 
-	if ((this->bAllDirty || bMoveMade) && bPlayerIsAlive)
+	if ((this->bAllDirty || bMoveMade || this->bRedrawDamagePreview) && bPlayerIsAlive)
 		AddDamagePreviews();
 
 	//Real-time shadow casting animation.
