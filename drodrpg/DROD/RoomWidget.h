@@ -301,6 +301,7 @@ public:
 	bool           PlayerLightTurnedOff() const;
 	void           PutTLayerEffectsOnMLayer();
 
+	void           RedrawDamagePreview(const bool val=true) { this->bRedrawDamagePreview = val; }
 	void           RedrawMonsters(SDL_Surface* pDestSurface);
 	void           RemoveGroupEffects(int clearGroup);
 	void           RemoveLastLayerEffectsOfType(const EffectType eEffectType, const bool bForceClearAll=true);
@@ -527,6 +528,7 @@ protected:
 	bool              bPlayerSleeping;  //fidget
 	bool              bJitterThisFrame;      //jitter updating
 	Uint32            dwLastJitterReduction;
+	bool              bRedrawDamagePreview;
 
 	//Environmental effects.
 	bool					bOutside, bSkyVisible; //outside, sky/ceiling is visible

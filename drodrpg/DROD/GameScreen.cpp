@@ -5868,6 +5868,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				pMonster->wProcessSequence : NO_ORIENTATION;
 		const CMoveCoord coord(pMonster->wX,pMonster->wY,wO);
 		AddKillEffect(pMonster->GetIdentity(), coord);
+
+		this->pRoomWidget->RedrawDamagePreview(); //update view for remaining enemies
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
