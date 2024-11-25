@@ -1884,6 +1884,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Songs, "AmbForest",    "amb-forest.ogg");
 	AddIfMissing(INISection::Songs, "AmbDrips",     "amb-drips.ogg");
 	AddIfMissing(INISection::Songs, "AmbRoaches",   "amb-roaches.ogg");
+	AddIfMissing(INISection::Songs, "Title2",       "Night of the Wilds.ogg");
 
 	//Style-specific music.
 	AddIfMissing(INISection::Songs, "Deep SpacesExit", "Devious.ogg");
