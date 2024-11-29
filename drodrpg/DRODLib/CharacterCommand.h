@@ -287,6 +287,7 @@ public:
 		CC_ClearArrayVar,       //Reset array var X
 		CC_ResetOverrides,      //Resets command parameter override values to no override
 		CC_WaitForWeapon,       //Wait until a weapon is in rect (x,y,w,h)
+		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
 		CC_Count
 	};
 

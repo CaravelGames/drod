@@ -863,6 +863,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarGelSwap: strText = "_GelSwap"; break;
 		case MID_ResetOverrides: strText = "Reset _MyScript variables"; break;
 		case MID_WaitForWeapon: strText = "Wait for weapon"; break;
+		case MID_WaitForOpenTile: strText = "Wait for open tile"; break;
+		case MID_Ignore: strText = "Ignore"; break;
+		case MID_IgnoreWeapons: strText = "Ignore weapons"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

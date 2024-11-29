@@ -160,6 +160,8 @@ const UINT TAG_ARRAYVAROPLIST = 890;
 const UINT TAG_ARRAYINDEX_LABEL = 889;
 const UINT TAG_ARRAYVAR_REMOVE = 888;
 const UINT TAG_ARRAYVAR_TEXTLABEL = 887;
+const UINT TAG_IGNOREWEAPONS_LABEL = 886;
+const UINT TAG_IGNOREFLAGS_LABEL = 885;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1078,9 +1080,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int Y_MUSICLISTBOX = Y_EVENTLISTBOX;
 
 	static const int X_WAITFLAGSLISTBOX = X_MUSICLISTBOX;
-	static const int Y_WAITFLAGSLISTBOX = Y_ONOFFLISTBOX + CY_ONOFFLISTBOX + CY_SPACE;
+	static const int Y_WAITFLAGSLISTBOX = Y_ONOFFLISTBOX + CY_ONOFFLISTBOX + CY_LABEL;
 	static const UINT CX_WAITFLAGSLISTBOX = 100;
 	static const UINT CY_WAITFLAGSLISTBOX = 5* LIST_LINE_HEIGHT + 4;
+
+	static const int X_IGNOREFLAGSLABEL = X_WAITFLAGSLISTBOX;
+	static const int Y_IGNOREFLAGSLABEL = Y_WAITFLAGSLISTBOX - CY_LABEL;
 
 	//Widgets and for variable handling commands.
 	static const int X_VARTEXTLABEL = X_WAITLABEL;
@@ -1752,13 +1757,18 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	//Movement type list box
 	this->pMovementTypeListBox = new CListBoxWidget(TAG_MOVETYPELISTBOX,
-		X_IMPERATIVELISTBOX, Y_IMPERATIVELISTBOX, CX_MOVETYPELISTBOX, CY_MOVETYPELISTBOX);
+		X_ONOFFLISTBOX2, Y_IMPERATIVELISTBOX, CX_MOVETYPELISTBOX, CY_MOVETYPELISTBOX);
 	this->pAddCommandDialog->AddWidget(this->pMovementTypeListBox);
 	this->pMovementTypeListBox->AddItem(MovementType::GROUND, g_pTheDB->GetMessageText(MID_Ground));
 	this->pMovementTypeListBox->AddItem(MovementType::WATER, g_pTheDB->GetMessageText(MID_Water));
 	this->pMovementTypeListBox->AddItem(MovementType::WALL, g_pTheDB->GetMessageText(MID_Wall));
 	this->pMovementTypeListBox->AddItem(MovementType::AIR, g_pTheDB->GetMessageText(MID_Air));
 	this->pStatListBox->SelectLine(0);
+
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREFLAGS_LABEL, X_IGNOREFLAGSLABEL, Y_IGNOREFLAGSLABEL,
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_Ignore)));
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, X_WAITLABEL, Y_WAITLABEL,
+		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_IgnoreWeapons)));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3259,6 +3269,40 @@ const
 			wstr += _itoW(command.y, temp, 10);
 			wstr += wszRightParen;
 		break;
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			wstr += this->pMovementTypeListBox->GetTextForKey(command.w);
+			wstr += wszSpace;
+
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+
+			if (command.h || command.flags) {
+				wstr += wszComma;
+				wstr += wszSpace;
+				if (command.h) {
+					wstr += g_pTheDB->GetMessageText(MID_IgnoreWeapons);
+				}
+				else if (command.flags) {
+					wstr += g_pTheDB->GetMessageText(MID_Ignore);
+				}
+				wstr += wszSpace;
+			}
+
+			UINT wBitfield = 1;
+			for (UINT wBits = 0; wBits < 32; ++wBits, wBitfield *= 2)
+			{
+				if ((command.flags & wBitfield) == wBitfield)
+				{
+					wstr += this->pWaitFlagsListBox->GetTextForKey(wBitfield);
+					wstr += wszSpace;
+				}
+			}
+		}
+		break;
 
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
@@ -4108,6 +4152,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenMove, g_pTheDB->GetMessageText(MID_WaitForOpenMove));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanRoom, g_pTheDB->GetMessageText(MID_WaitForCleanRoom));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToFace, g_pTheDB->GetMessageText(MID_WaitForPlayerToFace));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForPlayerToMove, g_pTheDB->GetMessageText(MID_WaitForPlayerToMove));
@@ -4956,6 +5001,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMAGEOVERLAY[] = { TAG_IMAGEOVERLAYTEXT, 0 };
 	static const UINT ARRAYVARSET[] = { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_VARVALUE, 0 };
 	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0 };
+	static const UINT OPENTILE[] =    { TAG_MOVETYPELISTBOX, TAG_WAITFLAGSLISTBOX, TAG_ONOFFLISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5041,10 +5087,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARSET,        //CC_ArrayVarSetAt
 		CLEARARRAYVAR,      //CC_ClearArrayVar
 		NO_WIDGETS,         //CC_ResetOverrides
-		NO_WIDGETS          //CC_WaitForWeapon
+		NO_WIDGETS,         //CC_WaitForWeapon
+		OPENTILE            //CC_WaitForOpenTile
 	};
 
-	static const UINT NUM_LABELS = 29;
+	static const UINT NUM_LABELS = 31;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -5053,7 +5100,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
 		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL, TAG_ARRAYINDEX_LABEL,
-		TAG_ARRAYVAR_TEXTLABEL
+		TAG_ARRAYVAR_TEXTLABEL, TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -5082,6 +5129,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT EXPRESSION_L[NUM_LABELS] =   { TAG_VARVALUELABEL, 0 };
 	static const UINT IMAGE_OVERLAY_L[NUM_LABELS] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT ARRAYSET_L[] =               { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
+	static const UINT OPENTILE_L[] =                { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -5168,6 +5216,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_ClearArrayVar
 		NO_LABELS,          //CC_ResetOverrides
 		NO_LABELS,          //CC_WaitForWeapon
+		OPENTILE_L,         //CC_WaitForOpenTile
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5639,6 +5688,22 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForItem:
 			this->pCommand->flags = this->pBuildItemsListBox->GetSelectedItem();
 			QueryRect();
+		break;
+
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			this->pCommand->w = this->pMovementTypeListBox->GetSelectedItem();
+			this->pCommand->h = this->pOnOffListBox->GetSelectedItem();
+
+			//Add set bit-fields.
+			this->pCommand->flags = 0;
+			CIDSet flagSet = this->pWaitFlagsListBox->GetSelectedItems();
+			for (CIDSet::const_iterator flag = flagSet.begin();
+				flag != flagSet.end(); ++flag)
+				this->pCommand->flags += *flag;
+
+			QueryXY();
+		}
 		break;
 
 		case CCharacterCommand::CC_GameEffect:
@@ -6255,6 +6320,12 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
 			this->pBuildItemsListBox->SelectItem(this->pCommand->flags);
+		break;
+
+		case CCharacterCommand::CC_WaitForOpenTile:
+			SetBitFlags();
+			this->pMovementTypeListBox->SelectItem(this->pCommand->w);
+			this->pOnOffListBox->SelectItem(this->pCommand->h);
 		break;
 
 		case CCharacterCommand::CC_GameEffect:
@@ -6997,6 +7068,24 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	break;
 
+	case CCharacterCommand::CC_WaitForOpenTile:
+	{
+		UINT flag;
+		do {
+			parseOption(flag, this->pWaitFlagsListBox, bFound);
+			if (bFound)
+				pCommand->flags |= flag;
+			skipWhitespace;
+		} while (bFound);
+
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y); skipComma;
+		parseNumber(pCommand->w); skipComma;
+		parseNumber(pCommand->h);
+	}
+	break;
+
 	case CCharacterCommand::CC_GameEffect:
 		parseMandatoryOption(pCommand->w,this->pDirectionListBox3,bFound);
 		skipComma;
@@ -7566,6 +7655,25 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += wszComma;
 		concatNumWithComma(c.x);
 		concatNum(c.y);
+	break;
+
+	case CCharacterCommand::CC_WaitForOpenTile:
+	{
+		UINT wBitfield = 1;
+		for (UINT wBits = 0; wBits < 32; ++wBits, wBitfield *= 2)
+		{
+			if ((c.flags & wBitfield) == wBitfield)
+			{
+				wstr += this->pWaitFlagsListBox->GetTextForKey(wBitfield);
+				wstr += wszSpace;
+			}
+		}
+
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.w);
+		concatNum(c.h);
+	}
 	break;
 
 	case CCharacterCommand::CC_MoveTo:

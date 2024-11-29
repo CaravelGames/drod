@@ -989,6 +989,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1043,6 +1044,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1098,6 +1100,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_GameEffect:
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
@@ -3997,6 +4000,66 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 }
 
 //*****************************************************************************
+//Returns: if the tile at (x,y) is open for the specified movement type (w)
+// Weapons (h) and entity types (flags) can be ignored.
+bool CCharacter::IsOpenTileAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame
+)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	CDbRoom& room = *(pGame->pRoom);
+
+	// For practical purposes, an invalid tile isn't open
+	if (!room.IsValidColRow(px, py))
+		return false;
+
+	MovementType eOldMovement = eMovement;
+	eMovement = (MovementType)pw;
+
+	bool bBlocked = CMonster::IsTileObstacle(room.GetOSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetFSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetTSquare(px, py));
+
+	eMovement = eOldMovement;
+
+	// Blocked by room tile
+	if (bBlocked)
+		return false;
+
+	const CSwordsman* player = pGame->pPlayer;
+
+	// Check if weapon blocks tile unless ignoring weapons
+	// NPC will not be blocked by its own weapon
+	if (!ph && (player->IsWeaponAt(px, py) || room.IsMonsterSwordAt(px, py, this)))
+		return false;
+
+	// Check if player blocks tile
+	if ((pflags & ScriptFlag::PLAYER) == 0 && player->IsInRoom() &&
+		player->wX == px && player->wY == py)
+		return false;
+
+	// Monster can block tile
+	// These checks are skipped if already blocked
+	CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+	if (pMonster && !(pMonster == this && (pflags & ScriptFlag::NPC) != 0)) {
+		// If a type if flagged to be ignored, it will not be considered as blocking the tile
+		UINT wMonsterType = pMonster->wType;
+		switch (wMonsterType) {
+		case M_CHARACTER:
+			return ((pflags & ScriptFlag::NPC) == 0);
+		case M_STALWART:
+			return ((pflags & ScriptFlag::STALWART) == 0);
+		default:
+			return ((pflags & ScriptFlag::MONSTER) == 0);
+		}
+	}
+
+	return true;
+}
+
+//*****************************************************************************
 // Returns: is player facing the specified direction (x)
 bool CCharacter::IsPlayerFacing(
 	const CCharacterCommand& command,
@@ -4237,6 +4300,10 @@ bool CCharacter::EvaluateConditionalCommand(
 		case CCharacterCommand::CC_WaitForWeapon:
 		{
 			return IsWeaponAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			return IsOpenTileAt(command, pGame);
 		}
 		default:
 		{

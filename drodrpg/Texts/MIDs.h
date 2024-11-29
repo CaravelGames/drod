@@ -1592,6 +1592,9 @@ enum MID_CONSTANT {
   MID_CantChangeVarType = 1942,
   MID_ResetOverrides = 1947,
   MID_WaitForWeapon = 1948,
+  MID_WaitForOpenTile = 1949,
+  MID_Ignore = 1950,
+  MID_IgnoreWeapons = 1951,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

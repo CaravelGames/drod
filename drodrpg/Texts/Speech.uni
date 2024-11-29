@@ -1511,3 +1511,15 @@ Reset _MyScript variables
 [MID_WaitForWeapon]
 [eng]
 Wait for weapon
+
+[MID_WaitForOpenTile]
+[eng]
+Wait for open tile
+
+[MID_Ignore]
+[eng]
+Ignore
+
+[MID_IgnoreWeapons]
+[eng]
+Ignore weapons

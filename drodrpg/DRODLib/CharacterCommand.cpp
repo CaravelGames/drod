@@ -108,6 +108,7 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 	case CC_SetMovementType:
 	case CC_WaitForExpression:
 	case CC_WaitForWeapon:
+	case CC_WaitForOpenTile:
 		return true;
 	default:
 		return false;

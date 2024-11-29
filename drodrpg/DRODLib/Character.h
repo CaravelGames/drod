@@ -160,6 +160,7 @@ public:
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
 	virtual bool   IsMinimapTreasure() const;
+	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
 	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
 	bool           RemovesSword() const {return this->bRemovesSword;}
 
