@@ -4051,6 +4051,7 @@ const
 			wstr += wszComma;
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
+		break;
 
 		case CCharacterCommand::CC_WaitForItemGroup:
 		case CCharacterCommand::CC_WaitForNotItemGroup:
