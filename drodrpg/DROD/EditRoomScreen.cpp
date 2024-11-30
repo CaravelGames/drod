@@ -93,6 +93,7 @@ const UINT TAG_SWORD_MENU = 1036;
 const UINT TAG_SHIELD_MENU = 1037;
 const UINT TAG_ACCESSORY_MENU = 1038;
 const UINT TAG_KEY_MENU = 1039;
+const UINT TAG_HEALTH_MENU = 1043;
 
 const UINT TAG_UNDO = 1040;
 const UINT TAG_REDO = 1041;
@@ -839,6 +840,11 @@ CEditRoomScreen::CEditRoomScreen()
 	const UINT CX_KEYMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 3; //3x2
 	const UINT CY_KEYMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
+	static const int X_HEALTH_MENU = X_OBSMENU;
+	static const int Y_HEALTH_MENU = Y_LIGHTMENU + CDrodBitmapManager::CY_TILE/2;
+	const UINT CX_HEALTH_MENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 2; //2x2
+	const UINT CY_HEALTH_MENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+
 	//Pop-up map
 	static const UINT BIGMAP_MARGIN = 100;
 	const UINT CX_BIGMAP = CDrodBitmapManager::CX_ROOM - 2*BIGMAP_MARGIN;
@@ -985,6 +991,17 @@ CEditRoomScreen::CEditRoomScreen()
 	pObjectMenu->DrawBackground(true);
 	for (UINT key=0; key<KeyCount; ++key)
 		pObjectMenu->AddObject(key, 1, 1, KeyDisplayTiles + key);
+	pObjectMenu->Hide();
+	AddWidget(pObjectMenu);
+
+	pObjectMenu = new CObjectMenuWidget(TAG_HEALTH_MENU, X_HEALTH_MENU, Y_HEALTH_MENU,
+		CX_HEALTH_MENU, CY_HEALTH_MENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
+	pObjectMenu->DrawBackground(true);
+	pObjectMenu->AddObject(T_HEALTH_SM, 1, 1, MenuDisplayTiles[T_HEALTH_SM]);
+	pObjectMenu->AddObject(T_HEALTH_MED, 1, 1, MenuDisplayTiles[T_HEALTH_MED]);
+	pObjectMenu->AddObject(T_HEALTH_BIG, 1, 1, MenuDisplayTiles[T_HEALTH_BIG]);
+	pObjectMenu->AddObject(T_HEALTH_HUGE, 1, 1, MenuDisplayTiles[T_HEALTH_HUGE]);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
@@ -2351,6 +2368,19 @@ void CEditRoomScreen::IncrementMenuSelection(const bool bForward) //[default=tru
 			this->pRoomWidget->SetAnimateMoves(false);
 			pObsMenu->PopUp();
 			SetMenuItem(wLastFloor, pObsMenu->GetSelectedObject());
+			this->pRoomWidget->SetAnimateMoves(true);
+			Paint();
+		}
+		break;
+
+		case T_HEALTH_SM: case T_HEALTH_MED:
+		case T_HEALTH_BIG: case T_HEALTH_HUGE:
+		{
+			CObjectMenuWidget* pObsMenu = DYN_CAST(CObjectMenuWidget*, CWidget*, GetWidget(TAG_HEALTH_MENU));
+			pObsMenu->SetSelectedObject(this->wSelectedObject);
+			this->pRoomWidget->SetAnimateMoves(false);
+			pObsMenu->PopUp();
+			SetMenuItem(this->wSelectedObject, pObsMenu->GetSelectedObject());
 			this->pRoomWidget->SetAnimateMoves(true);
 			Paint();
 		}
