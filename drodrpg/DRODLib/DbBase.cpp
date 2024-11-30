@@ -862,6 +862,32 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarMudSwap: strText = "_MudSwap"; break;
 		case MID_VarTarSwap: strText = "_TarSwap"; break;
 		case MID_VarGelSwap: strText = "_GelSwap"; break;
+		case MID_ResetOverrides: strText = "Reset _MyScript variables"; break;
+		case MID_WaitForWeapon: strText = "Wait for weapon"; break;
+		case MID_WaitForOpenTile: strText = "Wait for open tile"; break;
+		case MID_Ignore: strText = "Ignore"; break;
+		case MID_IgnoreWeapons: strText = "Ignore weapons"; break;
+		case MID_WaitForItemGroup: strText = "Wait for item group"; break;
+		case MID_WaitForNotItemGroup: strText = "Wait while item group"; break;
+		case MID_PlainFloor: strText = "Plain floor"; break;
+		case MID_RegularWall: strText = "Solid walls"; break;
+		case MID_BreakableWall: strText = "Breakable walls"; break;
+		case MID_AnyWallType: strText = "Any wall"; break;
+		case MID_StairsGroup: strText = "Stairs"; break;
+		case MID_TrapdoorGroup: strText = "Trapdoor"; break;
+		case MID_FallingTile: strText = "Trapdoor or thin ice"; break;
+		case MID_PlatformOrRaft: strText = "Platform or raft"; break;
+		case MID_OpenDoor: strText = "Any open door"; break;
+		case MID_ClosedDoor: strText = "Any closed door"; break;
+		case MID_SolidOTileGroup: strText = "Wall, dirt, or closed door"; break;
+		case MID_AnyArrow: strText = "Any arrow"; break;
+		case MID_TarstuffGroup: strText = "Tar, mud or gel"; break;
+		case MID_Briars: strText = "Any briar"; break;
+		case MID_HealthGroup: strText = "Health potion"; break;
+		case MID_AttackUpGroup: strText = "Attack gem"; break;
+		case MID_DefenseUpGroup: strText = "Defense gem"; break;
+		case MID_PowerupGroup: strText = "Health potion or stat gem"; break;
+		case MID_EquipmentGroup: strText = "Any equipment or slot"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

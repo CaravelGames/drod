@@ -69,6 +69,7 @@ public:
 	bool IsHasted() const {return this->bHasted;}
 	bool IsInRoom() const;
 	bool IsInvisible() const {return this->bInvisible;}
+	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool Move(const UINT wSetX, const UINT wSetY);
 	void ResetRoomStats();
 	void RotateClockwise();

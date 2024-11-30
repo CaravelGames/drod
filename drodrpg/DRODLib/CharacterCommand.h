@@ -185,7 +185,50 @@ namespace ScriptFlag
 		GOLD = 3,
 		XP = 4
 	};
+
+	enum ItemGroup
+	{
+		IG_PlainFloor = 0, //Plain floor tiles
+		IG_Wall = 1, //All non-breakable walls
+		IG_BreakableWall = 2, //Crumbly and secret walls
+		IG_AnyWall = 3, //All types of wall and closed doors
+		IG_Pit = 4, //Both types of pit
+		IG_Stairs = 5, //Both types of staircase
+		IG_Bridge = 6, //All types of bridge
+		IG_Trapdoor = 7, //Both trapdoors
+		IG_FallingTile = 8, //Trapdoors and thin ice
+		IG_Tunnel = 9, //All tunnel directions
+		IG_Firetrap = 10, //Both firetrap states
+		IG_Platform = 11, //Platform and raft
+		IG_OpenDoor = 12, //All types of open door
+		IG_ClosedDoor = 13, //All types of closed door
+		IG_YellowDoor = 14,
+		IG_GreenDoor = 15,
+		IG_BlueDoor = 16,
+		IG_RedDoor = 17,
+		IG_BlackDoor = 18,
+		IG_MoneyDoor = 19,
+		IG_DirtBlock = 20, //All sizes of dirt block
+		IG_SoldOTile = 21, //All walls and closed doors
+		IG_ActiveArrow = 22, //All active arrow directions
+		IG_DisabledArrow = 23, //All disabled arrow directions
+		IG_AnyArrow = 24, //All types of arrow
+		IG_Tarstuff = 25, //Tar, mud and gel
+		IG_Briar = 26, //All briar components
+		IG_Explosive = 27, //Bomb and keg
+		IG_Pushable = 28, //Mirror, crate, keg
+		IG_Health = 29,
+		IG_AttackUp = 30,
+		IG_DefenseUp = 31,
+		IG_Powerup = 32, //Health, atk or def
+		IG_Shovels = 33, //All sizes of shovel
+		IG_Map = 34, //Map and detailed map
+		IG_Equipment = 35, //Any equipment slot
+		ItemGroupCount //Total number of defined groups
+	};
 };
+
+typedef bool (*TileCheckFunc)(UINT t);
 
 class CDbSpeech;
 class CCharacterCommand
@@ -285,6 +328,11 @@ public:
 		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
 		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
 		CC_ClearArrayVar,       //Reset array var X
+		CC_ResetOverrides,      //Resets command parameter override values to no override
+		CC_WaitForWeapon,       //Wait until a weapon is in rect (x,y,w,h)
+		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
+		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
+		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
 		CC_Count
 	};
 
