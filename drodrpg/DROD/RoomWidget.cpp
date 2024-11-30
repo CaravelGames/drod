@@ -874,7 +874,9 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 	if (Button.button == SDL_BUTTON_RIGHT ||
 			(bDisableMouseMovement && Button.button == SDL_BUTTON_LEFT))
 	{
-		DisplayRoomCoordSubtitle(wX,wY);
+		if ((SDL_GetModState() & KMOD_CTRL) == 0) {
+			DisplayRoomCoordSubtitle(wX, wY);
+		}
 
 		//Highlighting a customized item.
 		this->wHighlightX = wX;
