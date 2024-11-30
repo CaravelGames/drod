@@ -162,6 +162,7 @@ const UINT TAG_ARRAYVAR_REMOVE = 888;
 const UINT TAG_ARRAYVAR_TEXTLABEL = 887;
 const UINT TAG_IGNOREWEAPONS_LABEL = 886;
 const UINT TAG_IGNOREFLAGS_LABEL = 885;
+const UINT TAG_ITEM_GROUP_LISTBOX = 884;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -403,7 +404,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOnOffListBox3(NULL), pOpenCloseListBox(NULL)
 	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
 	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL), pVarCompListBox2(NULL)
-	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL)
+	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL), pItemGroupListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
 	, pEquipmentTypesListBox(NULL), pCustomNPCListBox(NULL), pEquipTransListBox(NULL)
 	, pCharNameText(NULL), pCharListBox(NULL)
@@ -1476,6 +1477,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pAddCommandDialog->AddWidget(this->pBuildItemsListBox);
 	this->PopulateItemListBox(this->pBuildItemsListBox);
 	this->pBuildItemsListBox->SelectLine(0);
+
+	this->pItemGroupListBox = new CListBoxWidget(TAG_ITEM_GROUP_LISTBOX,
+		X_ITEMLISTBOX, Y_ITEMLISTBOX, CX_ITEMLISTBOX, CY_ITEMLISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pItemGroupListBox);
+	this->PopulateItemGroupListBox(this->pItemGroupListBox);
+	this->pItemGroupListBox->SelectLine(0);
 
 	//Yes/No selection.
 	this->pOnOffListBox = new CListBoxWidget(TAG_ONOFFLISTBOX,
@@ -3322,6 +3329,26 @@ const
 			wstr += _itoW(command.y + command.h, temp, 10);
 			wstr += wszRightParen;
 		break;
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+			wstr += this->pItemGroupListBox->GetTextForKey(command.flags);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+		
 		case CCharacterCommand::CC_GameEffect:
 			wstr += this->pDirectionListBox3->GetTextForKey(command.w);
 			wstr += wszSpace;
@@ -4151,6 +4178,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRect, g_pTheDB->GetMessageText(MID_WaitForEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCueEvent, g_pTheDB->GetMessageText(MID_WaitForEvent));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItem, g_pTheDB->GetMessageText(MID_WaitForItem));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForItemGroup, g_pTheDB->GetMessageText(MID_WaitForItemGroup));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotItemGroup, g_pTheDB->GetMessageText(MID_WaitForNotItemGroup));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenMove, g_pTheDB->GetMessageText(MID_WaitForOpenMove));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForOpenTile, g_pTheDB->GetMessageText(MID_WaitForOpenTile));
 //	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForCleanRoom, g_pTheDB->GetMessageText(MID_WaitForCleanRoom));
@@ -4469,6 +4498,44 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_EMPTY, g_pTheDB->GetMessageText(MID_RemoveItem));
 
 	pListBox->SetAllowFiltering(true);
+}
+
+void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
+{
+	pListBox->AddItem(ScriptFlag::IG_PlainFloor, g_pTheDB->GetMessageText(MID_PlainFloor));
+	pListBox->AddItem(ScriptFlag::IG_Wall, g_pTheDB->GetMessageText(MID_RegularWall));
+	pListBox->AddItem(ScriptFlag::IG_BreakableWall, g_pTheDB->GetMessageText(MID_BreakableWall));
+	pListBox->AddItem(ScriptFlag::IG_AnyWall, g_pTheDB->GetMessageText(MID_AnyWallType));
+	pListBox->AddItem(ScriptFlag::IG_Pit, g_pTheDB->GetMessageText(MID_Pit));
+	pListBox->AddItem(ScriptFlag::IG_Stairs, g_pTheDB->GetMessageText(MID_Stairs));
+	pListBox->AddItem(ScriptFlag::IG_Bridge, g_pTheDB->GetMessageText(MID_Bridge));
+	pListBox->AddItem(ScriptFlag::IG_Trapdoor, g_pTheDB->GetMessageText(MID_TrapdoorGroup));
+	pListBox->AddItem(ScriptFlag::IG_FallingTile, g_pTheDB->GetMessageText(MID_FallingTile));
+	pListBox->AddItem(ScriptFlag::IG_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
+	pListBox->AddItem(ScriptFlag::IG_Firetrap, g_pTheDB->GetMessageText(MID_Firetrap));
+	pListBox->AddItem(ScriptFlag::IG_Platform, g_pTheDB->GetMessageText(MID_PlatformOrRaft));
+	pListBox->AddItem(ScriptFlag::IG_OpenDoor, g_pTheDB->GetMessageText(MID_OpenDoor));
+	pListBox->AddItem(ScriptFlag::IG_ClosedDoor, g_pTheDB->GetMessageText(MID_ClosedDoor));
+	pListBox->AddItem(ScriptFlag::IG_YellowDoor, g_pTheDB->GetMessageText(MID_YellowDoor));
+	pListBox->AddItem(ScriptFlag::IG_GreenDoor, g_pTheDB->GetMessageText(MID_GreenDoor));
+	pListBox->AddItem(ScriptFlag::IG_BlueDoor, g_pTheDB->GetMessageText(MID_BlueDoor));
+	pListBox->AddItem(ScriptFlag::IG_RedDoor, g_pTheDB->GetMessageText(MID_RedDoor));
+	pListBox->AddItem(ScriptFlag::IG_BlackDoor, g_pTheDB->GetMessageText(MID_BlackDoor));
+	pListBox->AddItem(ScriptFlag::IG_MoneyDoor, g_pTheDB->GetMessageText(MID_MoneyDoor));
+	pListBox->AddItem(ScriptFlag::IG_DirtBlock, g_pTheDB->GetMessageText(MID_Dirt1));
+	pListBox->AddItem(ScriptFlag::IG_SoldOTile, g_pTheDB->GetMessageText(MID_SolidOTileGroup));
+	pListBox->AddItem(ScriptFlag::IG_ActiveArrow, g_pTheDB->GetMessageText(MID_ForceArrow));
+	pListBox->AddItem(ScriptFlag::IG_DisabledArrow, g_pTheDB->GetMessageText(MID_ForceArrowDisabled));
+	pListBox->AddItem(ScriptFlag::IG_AnyArrow, g_pTheDB->GetMessageText(MID_AnyArrow));
+	pListBox->AddItem(ScriptFlag::IG_Tarstuff, g_pTheDB->GetMessageText(MID_TarstuffGroup));
+	pListBox->AddItem(ScriptFlag::IG_Briar, g_pTheDB->GetMessageText(MID_Briars));
+	pListBox->AddItem(ScriptFlag::IG_Health, g_pTheDB->GetMessageText(MID_HealthGroup));
+	pListBox->AddItem(ScriptFlag::IG_AttackUp, g_pTheDB->GetMessageText(MID_AttackUpGroup));
+	pListBox->AddItem(ScriptFlag::IG_DefenseUp, g_pTheDB->GetMessageText(MID_DefenseUpGroup));
+	pListBox->AddItem(ScriptFlag::IG_Powerup, g_pTheDB->GetMessageText(MID_PowerupGroup));
+	pListBox->AddItem(ScriptFlag::IG_Shovels, g_pTheDB->GetMessageText(MID_Shovel1));
+	pListBox->AddItem(ScriptFlag::IG_Map, g_pTheDB->GetMessageText(MID_LevelMap));
+	pListBox->AddItem(ScriptFlag::IG_Equipment, g_pTheDB->GetMessageText(MID_EquipmentGroup));
 }
 
 //*****************************************************************************
@@ -4952,7 +5019,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 43;
+	static const UINT NUM_WIDGETS = 44;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -4966,7 +5033,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
 		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
-		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE
+		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -5002,6 +5069,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT ARRAYVARSET[] = { TAG_GOTOLABELTEXT, TAG_VARADD, TAG_ARRAYVAR_REMOVE, TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_VARVALUE, 0 };
 	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0 };
 	static const UINT OPENTILE[] =    { TAG_MOVETYPELISTBOX, TAG_WAITFLAGSLISTBOX, TAG_ONOFFLISTBOX, 0 };
+	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5088,7 +5156,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		CLEARARRAYVAR,      //CC_ClearArrayVar
 		NO_WIDGETS,         //CC_ResetOverrides
 		NO_WIDGETS,         //CC_WaitForWeapon
-		OPENTILE            //CC_WaitForOpenTile
+		OPENTILE,           //CC_WaitForOpenTile
+		WAITFORITEMGROUP,   //CC_WaitForItemGroup
+		WAITFORITEMGROUP    //CC_WaitForNoItemGroup
 	};
 
 	static const UINT NUM_LABELS = 31;
@@ -5217,6 +5287,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_ResetOverrides
 		NO_LABELS,          //CC_WaitForWeapon
 		OPENTILE_L,         //CC_WaitForOpenTile
+		NO_LABELS,          //CC_WaitForItemGroup
+		NO_LABELS,          //CC_WaitForNotItemGroup
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5687,6 +5759,12 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
 			this->pCommand->flags = this->pBuildItemsListBox->GetSelectedItem();
+			QueryRect();
+		break;
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+			this->pCommand->flags = this->pItemGroupListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
@@ -6320,6 +6398,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
 			this->pBuildItemsListBox->SelectItem(this->pCommand->flags);
+		break;
+
+		case CCharacterCommand::CC_WaitForItemGroup:
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+			this->pItemGroupListBox->SelectItem(this->pCommand->flags);
 		break;
 
 		case CCharacterCommand::CC_WaitForOpenTile:
@@ -7068,6 +7151,20 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
 	break;
 
+	case CCharacterCommand::CC_WaitForItemGroup:
+	case CCharacterCommand::CC_WaitForNotItemGroup:
+		parseMandatoryOption(pCommand->flags, this->pItemGroupListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+
 	case CCharacterCommand::CC_WaitForOpenTile:
 	{
 		UINT flag;
@@ -7744,6 +7841,16 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_BuildTile:
 	case CCharacterCommand::CC_WaitForItem:
 		wstr += this->pBuildItemsListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+
+	case CCharacterCommand::CC_WaitForItemGroup:
+	case CCharacterCommand::CC_WaitForNotItemGroup:
+		wstr += this->pItemGroupListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);

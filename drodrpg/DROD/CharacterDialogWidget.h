@@ -134,6 +134,7 @@ private:
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
 	void  PopulateItemListBox(CListBoxWidget* pListBox);
+	void  PopulateItemGroupListBox(CListBoxWidget* pListBox);
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
@@ -189,7 +190,7 @@ private:
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2,
-			*pArrayVarListBox, *pArrayVarOpListBox;
+			*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox;
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;

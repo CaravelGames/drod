@@ -197,6 +197,7 @@ static inline bool bIsLight(const UINT t) {return t==T_LIGHT;}
 static inline bool bIsWall(const UINT t) {return t==T_WALL || t==T_WALL2 || t==T_WALL_IMAGE;}
 
 static inline bool bIsCrumblyWall(const UINT t) {return t==T_WALL_B || t==T_WALL_H;}
+static inline bool bIsAnyWall(const UINT t) { return bIsWall(t) || bIsCrumblyWall(t); }
 
 static inline bool bIsStairs(const UINT t) {return t==T_STAIRS || t==T_STAIRS_UP;}
 
@@ -263,6 +264,7 @@ static inline bool bIsGreenDoor(const UINT t) {return t==T_DOOR_G || t==T_DOOR_G
 static inline bool bIsBlueDoor(const UINT t) {return t==T_DOOR_C || t==T_DOOR_CO;}
 static inline bool bIsRedDoor(const UINT t) {return t==T_DOOR_R || t==T_DOOR_RO;}
 static inline bool bIsBlackDoor(const UINT t) {return t==T_DOOR_B || t==T_DOOR_BO;}
+static inline bool bIsMoneyDoor(const UINT t) {return t==T_DOOR_MONEY || t==T_DOOR_MONEYO;}
 
 static inline bool bIsTar(const UINT t) {return t==T_TAR || t==T_MUD || t==T_GEL;}
 

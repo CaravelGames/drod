@@ -1523,3 +1523,87 @@ Ignore
 [MID_IgnoreWeapons]
 [eng]
 Ignore weapons
+
+[MID_WaitForItemGroup]
+[eng]
+Wait for item group
+
+[MID_WaitForNotItemGroup]
+[eng]
+Wait while item group
+
+[MID_PlainFloor]
+[eng]
+Plain floor
+
+[MID_RegularWall]
+[eng]
+Solid walls
+
+[MID_BreakableWall]
+[eng]
+Breakable walls
+
+[MID_AnyWallType]
+[eng]
+Any wall
+
+[MID_StairsGroup]
+[eng]
+Stairs
+
+[MID_TrapdoorGroup]
+[eng]
+Trapdoor
+
+[MID_FallingTile]
+[eng]
+Trapdoor or thin ice
+
+[MID_PlatformOrRaft]
+[eng]
+Platform or raft
+
+[MID_OpenDoor]
+[eng]
+Any open door
+
+[MID_ClosedDoor]
+[eng]
+Any closed door
+
+[MID_SolidOTileGroup]
+[eng]
+Wall, dirt, or closed door
+
+[MID_AnyArrow]
+[eng]
+Any arrow
+
+[MID_TarstuffGroup]
+[eng]
+Tar, mud or gel
+
+[MID_Briars]
+[eng]
+Any brair
+
+[MID_HealthGroup]
+[eng]
+Health potion
+
+[MID_AttackUpGroup]
+[eng]
+Attack gem
+
+[MID_DefenseUpGroup]
+[eng]
+Defense gem
+
+[MID_PowerupGroup]
+[eng]
+Health potion or stat gem
+
+[MID_EquipmentGroup]
+[eng]
+Any equipment or slot

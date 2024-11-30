@@ -219,6 +219,7 @@ public:
 	virtual bool TurnToFacePlayerWhenFighting() const {return this->bSurprisedFromBehind;}
 
 	bool           IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvents) const;
+	bool           IsTileGroupAt(const CCharacterCommand& command) const;
 
 	COMMAND_VECTOR commands;
 	HoldCharacter *pCustomChar; //custom character type

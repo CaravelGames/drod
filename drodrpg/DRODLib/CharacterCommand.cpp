@@ -109,6 +109,8 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 	case CC_WaitForExpression:
 	case CC_WaitForWeapon:
 	case CC_WaitForOpenTile:
+	case CC_WaitForItemGroup:
+	case CC_WaitForNotItemGroup:
 		return true;
 	default:
 		return false;
