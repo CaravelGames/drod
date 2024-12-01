@@ -3543,7 +3543,14 @@ Finish:
 		if (this->bAttackInFront && !this->bAttacked)
 		{
 			this->bAttacked = true;
-			if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE))
+			bool bIsEye = false;
+			if (this->pCustomChar) {
+				bIsEye = (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE);
+			} else {
+				bIsEye = (this->wIdentity == M_EYE || this->wIdentity == M_MADEYE);
+			}
+
+			if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && bIsEye)
 				CueEvents.Add(CID_EvilEyeWoke);
 				
 		}
