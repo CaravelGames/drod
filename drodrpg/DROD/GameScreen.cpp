@@ -1806,7 +1806,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					def = (int)pCharacter->getDEF();
 					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Weapon, wszCRLF);
 				}
-			} else {
+			} else if (st.sword) {
 				ability = EquipmentDescription::GetPredefinedWeaponAbility(st.sword, wszCRLF);
 			}
 		break;
@@ -1822,7 +1822,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					atk = (int)pCharacter->getATK();
 					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Armor, wszCRLF);
 				}
-			} else {
+			} else if (st.shield) {
 				ability = EquipmentDescription::GetPredefinedShieldAbility(st.shield);
 			}
 		break;
@@ -1839,7 +1839,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					def = (int)pCharacter->getDEF();
 					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Accessory, wszCRLF);
 				}
-			} else {
+			} else if (st.accessory) {
 				ability = EquipmentDescription::GetPredefinedAccessoryAbility(st.accessory);
 			}
 		break;

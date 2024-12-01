@@ -874,7 +874,9 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 	if (Button.button == SDL_BUTTON_RIGHT ||
 			(bDisableMouseMovement && Button.button == SDL_BUTTON_LEFT))
 	{
-		DisplayRoomCoordSubtitle(wX,wY);
+		if ((SDL_GetModState() & KMOD_CTRL) == 0) {
+			DisplayRoomCoordSubtitle(wX, wY);
+		}
 
 		//Highlighting a customized item.
 		this->wHighlightX = wX;
@@ -1955,6 +1957,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 
 	bool bAttackAdj = pMonster->wType == M_WATERSKIPPER || pMonster->wType == M_SEEP;
 	bool bAttackInFront = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
+	bool bSurprisedBehind = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
 	bool bCustomWeakness = false, bCustomDescription = false;
@@ -1965,6 +1968,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 		bAttackAdj |= pCharacter->AttacksWhenAdjacent();
 		bAttackInFront |= pCharacter->AttacksInFront();
+		bSurprisedBehind |= pCharacter->TurnToFacePlayerWhenFighting();
 		bAttackInFrontWhenBack |= pCharacter->AttacksInFrontWhenBackTurned();
 		bSpawnEggs |= pCharacter->CanSpawnEggs();
 		bCustomWeakness = pCharacter->HasCustomWeakness();
@@ -2041,6 +2045,16 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_GoblinAbility);
+		++count;
+	}
+	if (bSurprisedBehind)
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
 		++count;
 	}
 	if (pMonster->CanAttackFirst())
