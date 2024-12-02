@@ -175,14 +175,20 @@ namespace ScriptVars
 		P_Min,       //(x,y) --> min(x,y)
 		P_Max,       //(x,y) --> max(x,y)
 		P_Orient,    //(dx,dy) --> o
+		P_Facing,    //(dx,dy) --> o
 		P_OrientX,   //o --> dx
 		P_OrientY,   //o --> dy
 		P_RotateCW,  //o --> cw(o)
 		P_RotateCCW, //o --> ccw(o)
+		P_RotateDist,//(o1, o2) --> number of turns between the two
 		P_Dist0,     //L-infinity norm
 		P_Dist1,     //L-1 norm (Manhattan distance)
 		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
+		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
 		P_EnemyStat, //(x,y,stat) --> stat value of enemy at (x,y)
+		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
+		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
 		PrimitiveCount
 	};
 
@@ -207,7 +213,7 @@ namespace ScriptVars
 	extern const char predefinedVarTexts[PredefinedVarCount][16];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
-	extern const char primitiveNames[PrimitiveCount][11]; //expand buffer size as needed
+	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
 	static const UINT numGlobals=47;
