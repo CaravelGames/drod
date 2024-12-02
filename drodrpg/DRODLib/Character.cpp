@@ -133,6 +133,7 @@ const UINT MAX_ANSWERS = 9;
 #define RemovesSwordStr "RemovesSword"
 #define ExplosiveKegSafeStr "ExplosiveSafe"
 #define MinimapTreasureStr "MinimapTreasure"
+#define CutTarAnywhereStr "CutTarAnywhere"
 #define MovementTypeStr "MovementType"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
@@ -250,7 +251,7 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
-	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false)
+	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false), bCutTarAnywhere(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2765,7 +2766,7 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
-						this->bExplosiveSafe = this->bMinimapTreasure =
+						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2855,6 +2856,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::ExplosiveSafe:
 						this->bExplosiveSafe = true;
+					break;
+					case ScriptFlag::CutTarAnywhere:
+						this->bCutTarAnywhere = true;
 					break;
 					case ScriptFlag::MinimapTreasure:
 						this->bMinimapTreasure = true;
@@ -6014,6 +6018,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
 	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	this->bMinimapTreasure = vars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	this->bCutTarAnywhere = vars.GetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -6169,6 +6174,8 @@ const
 		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	if (this->bMinimapTreasure)
 		vars.SetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	if (this->bCutTarAnywhere)
+		vars.SetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

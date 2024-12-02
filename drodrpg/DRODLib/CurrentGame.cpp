@@ -3265,6 +3265,30 @@ bool CCurrentGame::CanPlayerCutBriars() const
 }
 
 //*****************************************************************************
+bool CCurrentGame::CanPlayerCutTarAnywhere() const
+//Returns: whether player can cut tarstuff on otherwise non-vulnerable squares
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::CustomNPCExists(const UINT characterID) const
 //Returns: whether a custom NPC with the specified ID is defined for the current hold
 {
@@ -3768,8 +3792,10 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_TAR:	case T_MUD: case T_GEL:
+		{
+			bool alwaysCut = pDouble ? pDouble->CanCutTarAnywhere() : CanPlayerCutTarAnywhere();
 			if (!pMonster &&  //if tar stab isn't being handled by a fight with a monster above
-					this->pRoom->StabTar(wSX, wSY, CueEvents, false)) //don't remove tar yet!
+				this->pRoom->StabTar(wSX, wSY, CueEvents, false) || alwaysCut) //don't remove tar yet!
 			{
 				//Stab hits vulnerable tarstuff.
 
@@ -3778,7 +3804,7 @@ void CCurrentGame::ProcessSwordHit(
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
 				//Alternative logic applies to NPCs acting as mothers.
-				CMonster *pMother = NULL;
+				CMonster* pMother = NULL;
 
 				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
@@ -3786,12 +3812,14 @@ void CCurrentGame::ProcessSwordHit(
 				if (pMother && !IsFighting(pMother))
 				{
 					InitiateCombat(CueEvents, pMother, true, 0, 0, wSX, wSY, true);
-					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX,wSY,wSwordMovement), pMother));
-				} else {
+					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX, wSY, wSwordMovement), pMother));
+				}
+				else {
 					//Mark for removal at end of turn
-					this->simulSwordHits.push_back(CMoveCoord(wSX,wSY,wSwordMovement));
+					this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
 				}
 			}
+		}
 		break;
 
 		case T_BOMB:

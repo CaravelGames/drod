@@ -1607,3 +1607,7 @@ Health potion or stat gem
 [MID_EquipmentGroup]
 [eng]
 Any equipment or slot
+
+[MID_BehaviorCutTarAnywhere]
+[eng]
+Cut tarstuff anywhere

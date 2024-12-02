@@ -1536,6 +1536,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyGR, g_pTheDB->GetMessageText(MID_BehaviorLuckyGR));
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyXP, g_pTheDB->GetMessageText(MID_DoubleXP));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Briar, g_pTheDB->GetMessageText(MID_BehaviorBriarCut));
+	this->pBehaviorListBox->AddItem(ScriptFlag::CutTarAnywhere, g_pTheDB->GetMessageText(MID_CutTarAnywhere));
 	this->pBehaviorListBox->AddItem(ScriptFlag::NoEnemyDefense, g_pTheDB->GetMessageText(MID_NoEnemyDefense));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackFirst, g_pTheDB->GetMessageText(MID_AttackFirst));
 	this->pBehaviorListBox->AddItem(ScriptFlag::AttackLast, g_pTheDB->GetMessageText(MID_AttackLast));

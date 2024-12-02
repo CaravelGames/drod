@@ -231,6 +231,7 @@ public:
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 //			const bool bUseCurrentTurnNo=true);
 	bool     CanPlayerCutBriars() const;
+	bool     CanPlayerCutTarAnywhere() const;
 	bool     CanPlayerMoveTo(const UINT wX, const UINT wY) const;
 	bool     changingInventory(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     Clear(const bool bNewGame=true);

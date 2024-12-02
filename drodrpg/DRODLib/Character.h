@@ -79,6 +79,7 @@ public:
 	virtual bool   CanAttackFirst() const {return this->bAttackFirst;}
 	virtual bool   CanAttackLast() const {return this->bAttackLast;}
 	virtual bool   CanCutBriar() const {return this->bBriar;}
+	virtual bool   CanCutTarAnywhere() const { return this->bCutTarAnywhere; }
 	virtual bool   CanSpawnEggs() const {return this->bSpawnEggs;}
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
@@ -321,6 +322,7 @@ private:
 	bool bRemovesSword;        //prevents player having sword when equipped
 	bool bExplosiveSafe;       //sword does not detonate powder kegs
 	bool bMinimapTreasure;     //counts as collectable item for minimap when visible and not ended
+	bool bCutTarAnywhere;      //can cut tarstuff on otherwise non-vulnerable areas
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

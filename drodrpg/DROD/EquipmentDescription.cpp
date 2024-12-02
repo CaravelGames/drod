@@ -159,6 +159,13 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		text += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
 		needSeparator = true;
 	}
+	if (pCharacter->CanCutTarAnywhere())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_CutTarAnywhere);
+		needSeparator = true;
+	}
 	if (pCharacter->IsLuckyGR())
 	{
 		if (needSeparator)

@@ -153,6 +153,7 @@ public:
 	virtual bool  CanAttackFirst() const {return false;}
 	virtual bool  CanAttackLast() const {return false;}
 	virtual bool  CanCutBriar() const {return false;}
+	virtual bool  CanCutTarAnywhere() const {return false;}
 	virtual bool  CanFindSwordsman() const;
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
 	virtual bool  CheckForDamage(CCueEvents& CueEvents);
