@@ -40,6 +40,7 @@
 #define TILECONSTANTS_H
 
 #include <BackEndLib/Types.h>
+#include "GameConstants.h"
 #include "../Texts/MIDs.h"
 
 //Tile constants--reordering existing constants may break macros.  Add new
@@ -231,6 +232,21 @@ static inline UINT getToggledForceArrow(const UINT t) {
 		case T_ARROW_OFF_N:  return T_ARROW_N;
 
 		default: return T_EMPTY;
+	}
+}
+
+static inline UINT getForceArrowDirection(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return NE;
+		case T_ARROW_E:  return E;
+		case T_ARROW_SE: return SE;
+		case T_ARROW_S:  return S;
+		case T_ARROW_SW: return SW;
+		case T_ARROW_W:  return W;
+		case T_ARROW_NW: return NW;
+		case T_ARROW_N:  return N;
+
+		default: return NO_ORIENTATION;
 	}
 }
 

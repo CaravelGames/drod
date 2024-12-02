@@ -894,6 +894,19 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const int dy = sgn(params[1]);
 			return nGetO(dx, dy);
 		}
+		case ScriptVars::P_Facing:
+		{
+			int dx = params[0];
+			int dy = params[1];
+			//If one of the four compass directions is more direct than a diagonal,
+			//snap to it.
+			const int absDx = abs(dx), absDy = abs(dy);
+			if (absDx > 2 * absDy)
+				dy = 0;
+			else if (absDy > 2 * absDx)
+				dx = 0;
+			return nGetO(sgn(dx), sgn(dy));
+		}
 		case ScriptVars::P_OrientX:
 		case ScriptVars::P_OrientY:
 		case ScriptVars::P_RotateCW:
@@ -908,6 +921,25 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 				case ScriptVars::P_RotateCW: return nNextCO(o);
 				case ScriptVars::P_RotateCCW: return nNextCCO(o);
 			}
+		}
+		case ScriptVars::P_RotateDist:
+		{
+			UINT wO1 = params[0];
+			UINT wO2 = params[1];
+			UINT wTurns = 0;
+
+			if (!(IsValidOrientation(wO1) && IsValidOrientation(wO2)) ||
+				wO1 == NO_ORIENTATION || wO2 == NO_ORIENTATION) {
+				return 0;
+			}
+
+			while (wO1 != wO2) {
+				wO1 = nNextCO(wO1);
+				++wTurns;
+				ASSERT(wTurns < 8);
+			}
+
+			return wTurns <= 4 ? wTurns : 8 - wTurns;
 		}
 		case ScriptVars::P_Min:
 			return min(params[0], params[1]);
@@ -931,6 +963,20 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			const int deltaY = params[3] - params[1];
 			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
 		}
+		case ScriptVars::P_ArrowDir:
+		{
+			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
+			return getForceArrowDirection(tile);
+		}
+		case ScriptVars::P_RoomTile:
+		{
+			switch (params[2]) {
+			case 0: return this->pRoom->GetOSquare(params[0], params[1]);
+			case 1: return this->pRoom->GetFSquare(params[0], params[1]);
+			case 2: return this->pRoom->GetTSquare(params[0], params[1]);
+			default: return 0;
+			}
+		}
 		case ScriptVars::P_EnemyStat:
 		{
 			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
@@ -943,6 +989,30 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 					case ScriptFlag::XP: return pMonster->XP;
 				}
 			}
+		}
+		break;
+		case ScriptVars::P_MonsterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				return pMonster->wType;
+			}
+			return -1;
+		}
+		break;
+		case ScriptVars::P_CharacterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return -1;
+			}
+
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (!pCharacter) {
+				return -1;
+			}
+
+			return pCharacter->wLogicalIdentity;
 		}
 		break;
 	}

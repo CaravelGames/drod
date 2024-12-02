@@ -263,20 +263,26 @@ const char* ScriptVars::globalVarShortNames[numGlobals] = {
 
 //*****************************************************************************
 // Values are not case sensitive; caps added here for readability
-const char ScriptVars::primitiveNames[PrimitiveCount][11] =
+const char ScriptVars::primitiveNames[PrimitiveCount][15] =
 {
 	"_abs",
 	"_min",
 	"_max",
 	"_orient",
+	"_facing",
 	"_ox",
 	"_oy",
 	"_rotateCW",
 	"_rotateCCW",
+	"_rotateDist",
 	"_dist0",
 	"_dist1",
 	"_dist2",
-	"_EnemyStat"
+	"_ArrowDir",
+	"_RoomTile",
+	"_EnemyStat",
+	"_MonsterType",
+	"_CharacterType"
 };
 
 //*****************************************************************************
@@ -450,8 +456,14 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_Min:
 		case P_Max:
 		case P_Orient:
+		case P_Facing:
+		case P_RotateDist:
+		case P_ArrowDir:
+		case P_MonsterType:
+		case P_CharacterType:
 			return 2;
 		case P_EnemyStat:
+		case P_RoomTile:
 			return 3;
 		case P_Dist0:
 		case P_Dist1:
