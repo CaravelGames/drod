@@ -6043,13 +6043,14 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 
 	//Damage
 	CSwordsman& player = *(this->pCurrentGame->pPlayer);
+	bool bPlayerHarmed = this->pCurrentGame->IsPlayerDamagedByFiretrap();
 	int damageVal = (int)player.st.firetrapVal;
 
 	if (!damageVal) {
 		return;
 	}
 
-	if (player.wX == wX && player.wY == wY) {
+	if (bPlayerHarmed && player.wX == wX && player.wY == wY) {
 		//Burn player
 		UINT delta = player.CalcDamage(damageVal);
 		player.DecHealth(CueEvents, delta, CID_ExplosionKilledPlayer);
@@ -6057,7 +6058,7 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 	}
 
 	CMonster* pMonster = this->GetMonsterAtSquare(wX, wY);
-	if (pMonster) {
+	if (pMonster && pMonster->DamagedByFiretraps()) {
 		//Burn monster
 		if (pMonster->IsPiece())
 		{

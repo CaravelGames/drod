@@ -152,6 +152,9 @@ namespace ScriptFlag
 		MinimapTreasure=28,     //counts as collectable item for minimap when visible and not ended
 		CutTarAnywhere=29,      //can cut tarstuff on otherwise non-vulnerable areas
 		WallMirrorSafe=30,      //sword doesn't break walls or mirrors
+		HotTileImmune=31,       //not damaged by hotiles
+		FiretrapImmune=32,      //not damaged by firetraps
+		MistImmune=33,          //DEF not negated by mist
 	};
 
 	//Inventory and global script types.

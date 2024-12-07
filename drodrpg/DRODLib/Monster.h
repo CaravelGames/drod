@@ -160,6 +160,7 @@ public:
 	void          Clear();
 //	bool          ConfirmPath();
 	bool          Damage(CCueEvents& CueEvents, int damageVal);
+	virtual bool  DamagedByFiretraps() const { return true; }
 	virtual bool  DamagedByHotTiles() const {return true;}
 	virtual void  Delete() { }
 	UINT          DistToSwordsman(const bool bIncludeNonTarget=false) const;

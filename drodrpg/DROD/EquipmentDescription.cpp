@@ -152,6 +152,27 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		text += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
 		needSeparator = true;
 	}
+	if (!pCharacter->DamagedByHotTiles())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_HotTileImmune);
+		needSeparator = true;
+	}
+	if (!pCharacter->DamagedByFiretraps())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_FiretrapImmune);
+		needSeparator = true;
+	}
+	if (pCharacter->IsMistImmune())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_MistImmune);
+		needSeparator = true;
+	}
 	if (pCharacter->CanCutBriar())
 	{
 		if (needSeparator)

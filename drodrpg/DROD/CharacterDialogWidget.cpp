@@ -1532,6 +1532,9 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::SpawnEggs, g_pTheDB->GetMessageText(MID_SpawnEggs));
 	this->pBehaviorListBox->AddItem(ScriptFlag::GoblinWeakness, g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness));
 	this->pBehaviorListBox->AddItem(ScriptFlag::SerpentWeakness, g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness));
+	this->pBehaviorListBox->AddItem(ScriptFlag::HotTileImmune, g_pTheDB->GetMessageText(MID_HotTileImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
+	this->pBehaviorListBox->AddItem(ScriptFlag::MistImmune, g_pTheDB->GetMessageText(MID_MistImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Metal, g_pTheDB->GetMessageText(MID_BehaviorMetal));
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyGR, g_pTheDB->GetMessageText(MID_BehaviorLuckyGR));
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyXP, g_pTheDB->GetMessageText(MID_DoubleXP));

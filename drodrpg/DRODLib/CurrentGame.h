@@ -300,6 +300,9 @@ public:
 	bool     IsPlayerAccessoryDisabled() const;
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
+	bool     IsPlayerDamagedByHotTile() const;
+	bool     IsPlayerDamagedByFiretrap() const;
+	bool     IsPlayerMistImmune() const;
 	bool     IsPlayerSwordExplosiveSafe() const;
 	bool     IsPlayerSwordWallAndMirrorSafe() const;
 	bool     IsSwordMetal(const UINT type) const;

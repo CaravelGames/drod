@@ -3332,7 +3332,8 @@ int CCurrentGame::getPlayerDEF() const
 	const PlayerStats& st = this->pPlayer->st;
 	int def = st.DEF;
 
-	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST)
+	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
+		!IsPlayerMistImmune())
 		return 0;
 
 	if (!IsPlayerShieldDisabled())
@@ -3578,6 +3579,78 @@ bool CCurrentGame::IsPlayerSwordDisabled() const
 //Returns: true if the player's sword is not usable at present, else false
 {
 	return this->pPlayer->IsSwordDisabled();
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByHotTile() const
+//Returns: will stepping on a hot tile harm the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByFiretrap() const
+//Return: will an active firetrap damage the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerMistImmune() const
+//Return: is the player protected from mist's DEF-nullifying effect
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+
+	return false;
 }
 
 //*****************************************************************************
@@ -6066,7 +6139,8 @@ MakeMove:
 	const bool bWasOnSameScroll = (wTTileNo==T_SCROLL) && !bMoved && this->wTurnNo;
 	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT && wNewTSquare != T_CRATE) && this->wTurnNo
 			//flying player types don't get burned by hot tiles
-			&& !p.IsFlying();
+			&& !p.IsFlying()
+			&& IsPlayerDamagedByHotTile();
 
 	//If obstacle was in the way, player's sword doesn't move.
 	if (!bMoved && nCommand != CMD_C && nCommand != CMD_CC &&

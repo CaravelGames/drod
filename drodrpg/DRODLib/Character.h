@@ -85,6 +85,8 @@ public:
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
+	virtual bool   DamagedByFiretraps() const { return !bFiretrapImmune; }
+	virtual bool   DamagedByHotTiles() const { return !bHotTileImmune; }
 	void           Defeat();
 	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
@@ -155,6 +157,8 @@ public:
 	bool           IsLuckyXP() const {return this->bLuckyXP;}
 	bool           IsMetal() const {return this->bMetal;}
 	virtual bool   IsMissionCritical() const {return this->bMissionCritical;}
+	bool           IsMistImmune() const { return this->bMistImmune; }
+	virtual bool   IsOnMistTile() const;
 	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
 	bool           IsRestartScriptOnRoomEntrance() const {return this->bRestartScriptOnRoomEntrance;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
@@ -325,6 +329,9 @@ private:
 	bool bMinimapTreasure;     //counts as collectable item for minimap when visible and not ended
 	bool bCutTarAnywhere;      //can cut tarstuff on otherwise non-vulnerable areas
 	bool bWallMirrorSafe;      //sword doesn't break walls or mirrors
+	bool bHotTileImmune;       //not damaged by hotiles
+	bool bFiretrapImmune;      //not damaged by firetraps
+	bool bMistImmune;          //DEF not negated by mist
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

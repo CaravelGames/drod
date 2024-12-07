@@ -1615,3 +1615,15 @@ Cut tarstuff anywhere
 [MID_WallMirrorSafe]
 [eng]
 Wall and mirror safe
+
+[MID_HotTileImmune]
+[eng]
+Heatproof
+
+[MID_FiretrapImmune]
+[eng]
+Fireproof
+
+[MID_MistImmune]
+[eng]
+Mist protection
