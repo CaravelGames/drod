@@ -151,6 +151,7 @@ namespace ScriptFlag
 		ExplosiveSafe=27,       //sword does not detonate powder kegs
 		MinimapTreasure=28,     //counts as collectable item for minimap when visible and not ended
 		CutTarAnywhere=29,      //can cut tarstuff on otherwise non-vulnerable areas
+		WallMirrorSafe=30,      //sword doesn't break walls or mirrors
 	};
 
 	//Inventory and global script types.

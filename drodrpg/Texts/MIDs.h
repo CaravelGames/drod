@@ -1617,6 +1617,7 @@ enum MID_CONSTANT {
   MID_PowerupGroup = 1971,
   MID_EquipmentGroup = 1972,
   MID_CutTarAnywhere = 1973,
+  MID_WallMirrorSafe = 1974,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

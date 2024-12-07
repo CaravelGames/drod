@@ -163,6 +163,7 @@ public:
 	virtual bool   IsMinimapTreasure() const;
 	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
 	bool IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
+	virtual bool   IsWallAndMirrorSafe() const { return this->bWallMirrorSafe; }
 	bool           RemovesSword() const {return this->bRemovesSword;}
 
 	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
@@ -323,6 +324,7 @@ private:
 	bool bExplosiveSafe;       //sword does not detonate powder kegs
 	bool bMinimapTreasure;     //counts as collectable item for minimap when visible and not ended
 	bool bCutTarAnywhere;      //can cut tarstuff on otherwise non-vulnerable areas
+	bool bWallMirrorSafe;      //sword doesn't break walls or mirrors
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

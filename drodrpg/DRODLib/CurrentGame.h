@@ -301,6 +301,7 @@ public:
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
 	bool     IsPlayerSwordExplosiveSafe() const;
+	bool     IsPlayerSwordWallAndMirrorSafe() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
 	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;

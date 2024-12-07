@@ -135,6 +135,7 @@ const UINT MAX_ANSWERS = 9;
 #define MinimapTreasureStr "MinimapTreasure"
 #define CutTarAnywhereStr "CutTarAnywhere"
 #define MovementTypeStr "MovementType"
+#define WallMirrorSafeStr "WallMirrorSafe"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -252,6 +253,7 @@ CCharacter::CCharacter(
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
 	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false), bCutTarAnywhere(false)
+	, bWallMirrorSafe(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2766,7 +2768,7 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
-						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere =
+						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere = this->bWallMirrorSafe =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2856,6 +2858,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::ExplosiveSafe:
 						this->bExplosiveSafe = true;
+					break;
+					case ScriptFlag::WallMirrorSafe:
+						this->bWallMirrorSafe = true;
 					break;
 					case ScriptFlag::CutTarAnywhere:
 						this->bCutTarAnywhere = true;
@@ -6019,6 +6024,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	this->bMinimapTreasure = vars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
 	this->bCutTarAnywhere = vars.GetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	this->bWallMirrorSafe = vars.GetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -6176,6 +6182,8 @@ const
 		vars.SetVar(MinimapTreasureStr, this->bMinimapTreasure);
 	if (this->bCutTarAnywhere)
 		vars.SetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	if (this->bWallMirrorSafe)
+		vars.SetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

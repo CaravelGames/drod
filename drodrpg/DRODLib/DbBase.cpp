@@ -889,6 +889,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_PowerupGroup: strText = "Health potion or stat gem"; break;
 		case MID_EquipmentGroup: strText = "Any equipment or slot"; break;
 		case MID_CutTarAnywhere: strText = "Cut tarstuff anywhere"; break;
+		case MID_WallMirrorSafe: strText = "Wall and mirror safe"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

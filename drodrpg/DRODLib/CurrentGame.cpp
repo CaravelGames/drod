@@ -3597,6 +3597,30 @@ bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsPlayerSwordWallAndMirrorSafe() const
+//Returns: if the player's weapon can't break walls and mirrors
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsPlayerAccessoryDisabled() const
 //Returns: true if the player's accessory is not usable at present, else false
 {
@@ -3874,7 +3898,8 @@ void CCurrentGame::ProcessSwordHit(
 				wSrcX = this->pPlayer->wX;
 				wSrcY = this->pPlayer->wY;
 			}
-			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY)
+			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY &&
+				!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe()))
 			{
 				//Head on strike shatters mirror.
 				this->pRoom->Plot(wSX, wSY, T_EMPTY);
@@ -3900,7 +3925,9 @@ void CCurrentGame::ProcessSwordHit(
 	{
 		case T_WALL_B:
 		case T_WALL_H:
-		   this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			if (!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe())) {
+				this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			}
 		break;
 		default: break;
 	}

@@ -222,6 +222,13 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		text += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
 		needSeparator = true;
 	}
+	if (pCharacter->IsWallAndMirrorSafe())
+	{
+		if (needSeparator)
+			text += separator;
+		text += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
+		needSeparator = true;
+	}
 	if (pCharacter->HasCustomDescription()) {
 		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
 

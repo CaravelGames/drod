@@ -2095,6 +2095,15 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
 		++count;
 	}
+	if (pMonster->IsWallAndMirrorSafe()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
+		++count;
+	}
 	if (bCustomWeakness) {
 		if (count)
 		{

@@ -242,6 +242,7 @@ public:
 	virtual bool  IsTileObstacle(const UINT wTileNo) const;
 	virtual bool  IsMinimapTreasure() const { return false; }
 	virtual bool  IsVisible() const {return true;}
+	virtual bool  IsWallAndMirrorSafe() const { return false; }
 	bool          MakeSlowTurn(const UINT wDesiredO);
 	void          MakeStandardMove(CCueEvents &CueEvents,
 			const int dx, const int dy);
