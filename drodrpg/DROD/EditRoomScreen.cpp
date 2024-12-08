@@ -546,8 +546,17 @@ const UINT TokenDisplayTiles[RoomTokenCount] =
 const UINT SwordDisplayTiles[SwordCount] =
 {
 	TI_SWORD1, TI_SWORD2, TI_SWORD6, TI_SWORD3, TI_SWORD4,
-	TI_SWORD5, TI_SWORD7, TI_SWORD8, TI_SWORD9, TI_SWORD10
+	TI_SWORD5, TI_SWORD7, TI_SWORD8, TI_SWORD9, TI_DAGGER_SWORD,
+	TI_STAFF_SWORD_NEUTRAL, TI_SPEAR_SWORD_NEUTRAL, TI_SWORD10
 };
+
+const UINT SwordOrder[SwordCount] =
+{
+	WoodenBlade, ShortSword, GoblinSword, LongSword, HookSword,
+	ReallyBigSword, LuckySword, SerpentSword, BriarSword, Dagger,
+	Staff, Spear, WeaponSlot
+};
+const UINT SwordOrderSize = 13; // number of items in the above array
 
 const UINT ShieldDisplayTiles[ShieldCount] =
 {
@@ -832,8 +841,12 @@ CEditRoomScreen::CEditRoomScreen()
 
 	static const int X_EQUIPMENU = X_OBSMENU;
 	static const int Y_EQUIPMENU = Y_LIGHTMENU;
-	const UINT CX_EQUIPMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
-	const UINT CY_EQUIPMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
+	const UINT CX_SWORDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x4
+	const UINT CY_SWORDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
+	const UINT CX_SHIELDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x2
+	const UINT CY_SHIELDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+	const UINT CX_ACCESSORYMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
+	const UINT CY_ACCESSORYMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
 
 	static const int X_KEYMENU = X_OBSMENU;
 	static const int Y_KEYMENU = Y_LIGHTMENU + CDrodBitmapManager::CY_TILE/2;
@@ -959,16 +972,16 @@ CEditRoomScreen::CEditRoomScreen()
 
 	//Equipment pop-up menus.
 	pObjectMenu = new CObjectMenuWidget(TAG_SWORD_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_SWORDMENU, CY_SWORDMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT sword=1; sword<SwordCount; ++sword)
-		pObjectMenu->AddObject(sword, 1, 1, SwordDisplayTiles + sword-1);
+		pObjectMenu->AddObject(SwordOrder[sword - 1], 1, 1, SwordDisplayTiles + sword - 1);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
 	pObjectMenu = new CObjectMenuWidget(TAG_SHIELD_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_SHIELDMENU, CY_SHIELDMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT shield=1; shield<ShieldCount; ++shield)
@@ -977,7 +990,7 @@ CEditRoomScreen::CEditRoomScreen()
 	AddWidget(pObjectMenu);
 
 	pObjectMenu = new CObjectMenuWidget(TAG_ACCESSORY_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_ACCESSORYMENU, CY_ACCESSORYMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT accessory=1; accessory<AccessoryCount; ++accessory)
@@ -6715,6 +6728,7 @@ void CEditRoomScreen::RotateClockwise()
 		return;
 	}
 
+	UINT swordOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6786,8 +6800,15 @@ void CEditRoomScreen::RotateClockwise()
 		case T_SWORD:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid sword type.
+			for (swordOrderIndex = 0; swordOrderIndex < SwordOrderSize; swordOrderIndex++)
+			{
+				if (this->wSelSwordType == SwordOrder[swordOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelSwordType =
-					this->wSelSwordType == SwordCount-1 ? 1 : this->wSelSwordType + 1;
+				swordOrderIndex == SwordOrderSize - 1 ? SwordOrder[0] : SwordOrder[swordOrderIndex + 1];
 			UpdateMenuGraphic(T_SWORD);
 		break;
 		case T_SHIELD:
@@ -6833,6 +6854,7 @@ void CEditRoomScreen::RotateCounterClockwise()
 		return;
 	}
 
+	UINT swordOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6905,8 +6927,15 @@ void CEditRoomScreen::RotateCounterClockwise()
 		case T_SWORD:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid sword type.
+			for (swordOrderIndex = 0; swordOrderIndex < SwordOrderSize; swordOrderIndex++)
+			{
+				if (this->wSelSwordType == SwordOrder[swordOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelSwordType =
-					this->wSelSwordType == 1 ? SwordCount-1 : this->wSelSwordType - 1;
+				swordOrderIndex == 0 ? SwordOrder[SwordOrderSize - 1] : SwordOrder[swordOrderIndex - 1];
 			UpdateMenuGraphic(T_SWORD);
 		break;
 		case T_SHIELD:

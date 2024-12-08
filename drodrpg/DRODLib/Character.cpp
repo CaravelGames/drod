@@ -3988,6 +3988,7 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case TV_EXPLOSION: break; //handled above
 					case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
 					case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
+					case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
 						realTile = T_SWORD;
 					break;
 					case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
@@ -4021,6 +4022,9 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case TV_SWORD8: param = SerpentSword; break;
 					case TV_SWORD9: param = BriarSword; break;
 					case TV_SWORD10: param = WeaponSlot; break;
+					case TV_SWORD11: param = Dagger; break;
+					case TV_SWORD12: param = Staff; break;
+					case TV_SWORD13: param = Spear; break;
 					case TV_SHIELD1: param = WoodenShield; break;
 					case TV_SHIELD2: param = BronzeShield; break;
 					case TV_SHIELD3: param = SteelShield; break;

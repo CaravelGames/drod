@@ -242,6 +242,9 @@ enum SwordType
 	SerpentSword = 8,
 	BriarSword = 9,
 	WeaponSlot = 10,  //allows placing the held weapon at this location
+	Dagger = 11,
+	Staff = 12,
+	Spear = 13,
 	SwordCount
 };
 
