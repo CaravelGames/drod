@@ -153,12 +153,14 @@ public:
 	virtual bool  CanAttackFirst() const {return false;}
 	virtual bool  CanAttackLast() const {return false;}
 	virtual bool  CanCutBriar() const {return false;}
+	virtual bool  CanCutTarAnywhere() const {return false;}
 	virtual bool  CanFindSwordsman() const;
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
 	virtual bool  CheckForDamage(CCueEvents& CueEvents);
 	void          Clear();
 //	bool          ConfirmPath();
 	bool          Damage(CCueEvents& CueEvents, int damageVal);
+	virtual bool  DamagedByFiretraps() const { return true; }
 	virtual bool  DamagedByHotTiles() const {return true;}
 	virtual void  Delete() { }
 	UINT          DistToSwordsman(const bool bIncludeNonTarget=false) const;
@@ -241,6 +243,7 @@ public:
 	virtual bool  IsTileObstacle(const UINT wTileNo) const;
 	virtual bool  IsMinimapTreasure() const { return false; }
 	virtual bool  IsVisible() const {return true;}
+	virtual bool  IsWallAndMirrorSafe() const { return false; }
 	bool          MakeSlowTurn(const UINT wDesiredO);
 	void          MakeStandardMove(CCueEvents &CueEvents,
 			const int dx, const int dy);

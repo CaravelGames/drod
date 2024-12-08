@@ -231,6 +231,7 @@ public:
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 //			const bool bUseCurrentTurnNo=true);
 	bool     CanPlayerCutBriars() const;
+	bool     CanPlayerCutTarAnywhere() const;
 	bool     CanPlayerMoveTo(const UINT wX, const UINT wY) const;
 	bool     changingInventory(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     Clear(const bool bNewGame=true);
@@ -299,7 +300,11 @@ public:
 	bool     IsPlayerAccessoryDisabled() const;
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
+	bool     IsPlayerDamagedByHotTile() const;
+	bool     IsPlayerDamagedByFiretrap() const;
+	bool     IsPlayerMistImmune() const;
 	bool     IsPlayerSwordExplosiveSafe() const;
+	bool     IsPlayerSwordWallAndMirrorSafe() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
 	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;

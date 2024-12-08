@@ -133,7 +133,12 @@ const UINT MAX_ANSWERS = 9;
 #define RemovesSwordStr "RemovesSword"
 #define ExplosiveKegSafeStr "ExplosiveSafe"
 #define MinimapTreasureStr "MinimapTreasure"
+#define CutTarAnywhereStr "CutTarAnywhere"
 #define MovementTypeStr "MovementType"
+#define WallMirrorSafeStr "WallMirrorSafe"
+#define HotTileImmuneStr "HotTileImmune"
+#define FiretrapImmuneStr "FiretrapImmune"
+#define MistImmuneStr "MistImmune"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -250,7 +255,8 @@ CCharacter::CCharacter(
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
-	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false)
+	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false), bCutTarAnywhere(false)
+	, bWallMirrorSafe(false), bHotTileImmune(false), bFiretrapImmune(false), bMistImmune(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -2765,7 +2771,8 @@ void CCharacter::Process(
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
-						this->bExplosiveSafe = this->bMinimapTreasure =
+						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere = this->bWallMirrorSafe =
+						this->bHotTileImmune = this->bFiretrapImmune = this->bMistImmune =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2856,8 +2863,23 @@ void CCharacter::Process(
 					case ScriptFlag::ExplosiveSafe:
 						this->bExplosiveSafe = true;
 					break;
+					case ScriptFlag::WallMirrorSafe:
+						this->bWallMirrorSafe = true;
+					break;
+					case ScriptFlag::CutTarAnywhere:
+						this->bCutTarAnywhere = true;
+					break;
 					case ScriptFlag::MinimapTreasure:
 						this->bMinimapTreasure = true;
+					break;
+					case ScriptFlag::HotTileImmune:
+						this->bHotTileImmune = true;
+					break;
+					case ScriptFlag::FiretrapImmune:
+						this->bFiretrapImmune = true;
+					break;
+					case ScriptFlag::MistImmune:
+						this->bMistImmune = true;
 					break;
 
 					default:
@@ -5484,6 +5506,15 @@ bool CCharacter::IsMinimapTreasure() const
 	return bMinimapTreasure && !bScriptDone && (bVisible || bGhostImage);
 }
 
+//*****************************************************************************
+bool CCharacter::IsOnMistTile() const
+{
+	// If immune to mist, always act as if not on mist
+	if (bMistImmune)
+		return false;
+
+	return CMonster::IsOnMistTile();
+}
 
 //*****************************************************************************
 bool CCharacter::IsTileObstacle(
@@ -6014,6 +6045,11 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
 	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	this->bMinimapTreasure = vars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	this->bCutTarAnywhere = vars.GetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	this->bWallMirrorSafe = vars.GetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
+	this->bHotTileImmune = vars.GetVar(HotTileImmuneStr, this->bHotTileImmune);
+	this->bFiretrapImmune = vars.GetVar(FiretrapImmuneStr, this->bFiretrapImmune);
+	this->bMistImmune = vars.GetVar(MistImmuneStr, this->bMistImmune);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -6169,6 +6205,16 @@ const
 		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
 	if (this->bMinimapTreasure)
 		vars.SetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	if (this->bCutTarAnywhere)
+		vars.SetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	if (this->bWallMirrorSafe)
+		vars.SetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
+	if (this->bHotTileImmune)
+		vars.SetVar(HotTileImmuneStr, this->bHotTileImmune);
+	if (this->bFiretrapImmune)
+		vars.SetVar(FiretrapImmuneStr, this->bFiretrapImmune);
+	if (this->bMistImmune)
+		vars.SetVar(MistImmuneStr, this->bMistImmune);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

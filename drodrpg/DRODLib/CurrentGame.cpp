@@ -3335,6 +3335,30 @@ bool CCurrentGame::CanPlayerCutBriars() const
 }
 
 //*****************************************************************************
+bool CCurrentGame::CanPlayerCutTarAnywhere() const
+//Returns: whether player can cut tarstuff on otherwise non-vulnerable squares
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::CustomNPCExists(const UINT characterID) const
 //Returns: whether a custom NPC with the specified ID is defined for the current hold
 {
@@ -3378,7 +3402,8 @@ int CCurrentGame::getPlayerDEF() const
 	const PlayerStats& st = this->pPlayer->st;
 	int def = st.DEF;
 
-	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST)
+	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
+		!IsPlayerMistImmune())
 		return 0;
 
 	if (!IsPlayerShieldDisabled())
@@ -3627,6 +3652,78 @@ bool CCurrentGame::IsPlayerSwordDisabled() const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByHotTile() const
+//Returns: will stepping on a hot tile harm the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByFiretrap() const
+//Return: will an active firetrap damage the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerMistImmune() const
+//Return: is the player protected from mist's DEF-nullifying effect
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 {
 	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
@@ -3638,6 +3735,30 @@ bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
 	if (pCharacter && pCharacter->IsExplosiveSafe())
 		return true;
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerSwordWallAndMirrorSafe() const
+//Returns: if the player's weapon can't break walls and mirrors
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
 
 	return false;
 }
@@ -3838,8 +3959,10 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_TAR:	case T_MUD: case T_GEL:
+		{
+			bool alwaysCut = pDouble ? pDouble->CanCutTarAnywhere() : CanPlayerCutTarAnywhere();
 			if (!pMonster &&  //if tar stab isn't being handled by a fight with a monster above
-					this->pRoom->StabTar(wSX, wSY, CueEvents, false)) //don't remove tar yet!
+				this->pRoom->StabTar(wSX, wSY, CueEvents, false) || alwaysCut) //don't remove tar yet!
 			{
 				//Stab hits vulnerable tarstuff.
 
@@ -3848,7 +3971,7 @@ void CCurrentGame::ProcessSwordHit(
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
 				//Alternative logic applies to NPCs acting as mothers.
-				CMonster *pMother = NULL;
+				CMonster* pMother = NULL;
 
 				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
@@ -3856,12 +3979,14 @@ void CCurrentGame::ProcessSwordHit(
 				if (pMother && !IsFighting(pMother))
 				{
 					InitiateCombat(CueEvents, pMother, true, 0, 0, wSX, wSY, true);
-					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX,wSY,wSwordMovement), pMother));
-				} else {
+					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX, wSY, wSwordMovement), pMother));
+				}
+				else {
 					//Mark for removal at end of turn
-					this->simulSwordHits.push_back(CMoveCoord(wSX,wSY,wSwordMovement));
+					this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
 				}
 			}
+		}
 		break;
 
 		case T_BOMB:
@@ -3916,7 +4041,8 @@ void CCurrentGame::ProcessSwordHit(
 				wSrcX = this->pPlayer->wX;
 				wSrcY = this->pPlayer->wY;
 			}
-			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY)
+			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY &&
+				!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe()))
 			{
 				//Head on strike shatters mirror.
 				this->pRoom->Plot(wSX, wSY, T_EMPTY);
@@ -3942,7 +4068,9 @@ void CCurrentGame::ProcessSwordHit(
 	{
 		case T_WALL_B:
 		case T_WALL_H:
-		   this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			if (!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe())) {
+				this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			}
 		break;
 		default: break;
 	}
@@ -6081,7 +6209,8 @@ MakeMove:
 	const bool bWasOnSameScroll = (wTTileNo==T_SCROLL) && !bMoved && this->wTurnNo;
 	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT && wNewTSquare != T_CRATE) && this->wTurnNo
 			//flying player types don't get burned by hot tiles
-			&& !p.IsFlying();
+			&& !p.IsFlying()
+			&& IsPlayerDamagedByHotTile();
 
 	//If obstacle was in the way, player's sword doesn't move.
 	if (!bMoved && nCommand != CMD_C && nCommand != CMD_CC &&

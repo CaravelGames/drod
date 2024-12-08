@@ -1961,7 +1961,8 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
 	bool bCustomWeakness = false, bCustomDescription = false;
-	bool bExplosiveSafe = pMonster->IsExplosiveSafe();;
+	bool bExplosiveSafe = pMonster->IsExplosiveSafe();
+	bool bMistImmune = false;
 
 	if (pMonster->wType == M_CHARACTER)
 	{
@@ -1973,6 +1974,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		bSpawnEggs |= pCharacter->CanSpawnEggs();
 		bCustomWeakness = pCharacter->HasCustomWeakness();
 		bCustomDescription = pCharacter->HasCustomDescription();
+		bMistImmune = pCharacter->IsMistImmune();
 	}
 
 	if (pMonster->HasRayGun())
@@ -2086,6 +2088,36 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
 		++count;
 	}
+	if (!pMonster->DamagedByHotTiles())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_HotTileImmune);
+		++count;
+	}
+	if (!pMonster->DamagedByFiretraps())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_FiretrapImmune);
+		++count;
+	}
+	if (bMistImmune)
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_MistImmune);
+		++count;
+	}
 	if (bExplosiveSafe) {
 		if (count)
 		{
@@ -2093,6 +2125,15 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
+		++count;
+	}
+	if (pMonster->IsWallAndMirrorSafe()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
 		++count;
 	}
 	if (bCustomWeakness) {

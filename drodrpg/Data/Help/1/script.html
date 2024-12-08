@@ -553,6 +553,12 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  NPC emits a beam that halves the player's health on contact.</li>
   <li><a name="be_beam_block"><u>Beam blocker</u></a>:
       Embues custom equipment with the ability to block beam attacks. Swords will prevent beams passing through them, shields protect from beams the player is facing, and accessories will protect from beams in all directions.</li>
+  <li><a name="be_hot_tile_immune"><u>Heatproof</u></a>:
+      Prevents the NPC from being harmed by hot tiles, and custom equipment with this ability protects the player from hot tiles.</li>
+  <li><a name="be_hot_tile_immune"><u>Heatproof</u></a>:
+      Prevents the NPC from being harmed by firetraps, and custom equipment with this ability protects the player from firetraps.</li>
+  <li><a name="be_hot_tile_immune"><u>Heatproof</u></a>:
+      The NPC's DEF is not nullified by mist, and custom equipment with this ability stops the player's DEF being nullified by mist.</li>
   <li><a name="be_surprised"><u>Surprised from behind</u></a>:
 	  If the player attacks a monster with this attribute from behind,
 	  the NPC loses its first attack turn.  For equipment, it gives the player's
@@ -578,6 +584,10 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  NPC can cut briars with its sword.
 	  Embues custom equipment with briar-cutting attribute (the player's
 	  sword can cut briars).</li>
+  <li><a name="be_cuttar"><u>Cut tarstuff anywhere</u></a>:
+	  NPC can cut tarstuff at any position, not just weak points.
+	  Embues custom equipment with tar-cutting attribute (the player's
+	  sword can cut tarstuff at any position).</li>
   <li><a name="be_noenemydefense"><u>No enemy defense</u></a>:
 	  Attacks nullify the enemy's DEF rating.  Embues custom armor with
 	  protection against monsters with this attack ability.</li>
@@ -599,6 +609,8 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  Otherwise, it is not allowed (default).</li>
   <li><a name="be_explodesafe"><u>Explosive safe</u></a>:
 	  A piece of equipment with this behavior will prevent the player's sword from detonating bombs and powder kegs, allowing kegs to be pushed with the sword. An NPC with this behavior will not detonate bombs or kegs with their sword.</li>
+    <li><a name="be_wallsafe"><u>Wall and mirror safe</u></a>:
+	  A piece of equipment with this behavior will prevent the player's sword from breaking walls and shattering mirrors. An NPC with this behavior will not break walls or shatter mirrors with their sword.</li>
   <li><a name="be_directonlymovement"><u>Direct-only movement</u></a>: If the
       target is in a diagonal direction from the NPC, but
 	  diagonal movement is blocked, then don't move at all.  If the target is

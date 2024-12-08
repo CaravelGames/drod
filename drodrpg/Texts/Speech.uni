@@ -1607,3 +1607,23 @@ Health potion or stat gem
 [MID_EquipmentGroup]
 [eng]
 Any equipment or slot
+
+[MID_BehaviorCutTarAnywhere]
+[eng]
+Cut tarstuff anywhere
+
+[MID_WallMirrorSafe]
+[eng]
+Wall and mirror safe
+
+[MID_HotTileImmune]
+[eng]
+Heatproof
+
+[MID_FiretrapImmune]
+[eng]
+Fireproof
+
+[MID_MistImmune]
+[eng]
+Mist protection
