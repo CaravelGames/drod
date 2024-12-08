@@ -1600,7 +1600,8 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 	s.scoreYellowKeys = 10;
 	s.scoreGreenKeys = 20;
 	s.scoreBlueKeys = s.scoreSkeletonKeys = 30;
-	s.scoreGOLD = s.scoreXP = s.scoreShovels = 0;
+	s.scoreGOLD = s.scoreXP = 0;
+	s.scoreShovels = 1;
 }
 
 //*****************************************************************************
