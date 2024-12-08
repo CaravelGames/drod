@@ -436,7 +436,7 @@ void CTextBox2DWidget::SetCursorByPos(
 			wIndex = wFirstPos + (wLastPos - wFirstPos + 1) / 2;
 			GetPixelLocationAt(this->wTextDisplayIndex, wIndex, wWidth, wHeight);
 
-			if (static_cast<int>(wWidth) > xPos || static_cast<int>(wHeight) > yPos)
+			if (static_cast<int>(wWidth) > xPos)
 			{
 				//We are past the correct character position or line of text.
 				wLastPos = wIndex - 1;
