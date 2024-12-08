@@ -186,6 +186,7 @@ namespace ScriptVars
 		P_Dist2,     //L-2 norm (Euclidean distance)
 		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
 		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
+		P_SlotItem,  //(x,y) --> id of item in item slot at (x,y), or -1 if no slot
 		P_EnemyStat, //(x,y,stat) --> stat value of enemy at (x,y)
 		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
 		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
