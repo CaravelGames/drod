@@ -280,6 +280,7 @@ const char ScriptVars::primitiveNames[PrimitiveCount][15] =
 	"_dist2",
 	"_ArrowDir",
 	"_RoomTile",
+	"_SlotItem",
 	"_EnemyStat",
 	"_MonsterType",
 	"_CharacterType"
@@ -461,6 +462,7 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 		case P_Facing:
 		case P_RotateDist:
 		case P_ArrowDir:
+		case P_SlotItem:
 		case P_MonsterType:
 		case P_CharacterType:
 			return 2;

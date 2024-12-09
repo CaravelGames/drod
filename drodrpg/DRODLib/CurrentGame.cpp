@@ -977,6 +977,22 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 			default: return 0;
 			}
 		}
+		case ScriptVars::P_SlotItem:
+		{
+			UINT slot = this->pRoom->GetTSquare(params[0], params[1]);
+			if (!bIsEquipment(slot)) {
+				return -1;
+			}
+			UINT item = this->pRoom->GetTParam(params[0], params[1]);
+			//Return empty slots as zero
+			switch (slot)
+			{
+				case T_SWORD: return (item == WeaponSlot) ? 0 : item;
+				case T_SHIELD: return (item == ArmorSlot) ? 0 : item;
+				case T_ACCESSORY: return (item == AccessorySlot) ? 0 : item;
+				default: return item;
+			}
+		}
 		case ScriptVars::P_EnemyStat:
 		{
 			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
