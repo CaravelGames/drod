@@ -273,6 +273,7 @@ public:
 	bool     IsPlayerSwordAt(const UINT wX, const UINT wY) const;
 	bool     IsRoomAtCoordsExplored(const UINT dwRoomX, const UINT dwRoomY) const;
 	bool     IsPlayerAccessoryDisabled() const;
+	bool     IsPlayerItemDisabled(const UINT type) const;
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
 	bool     IsSwordMetal(const UINT type) const;
