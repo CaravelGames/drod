@@ -354,6 +354,8 @@ UINT ScriptVars::getVarDefault(const ScriptVars::Predefined var)
 		case P_SCORE_BKEY:
 		case P_SCORE_SKEY:
 			return 30;
+		case P_SCORE_SHOVEL:
+			return 1;
 		case P_BEAM:
 			return 50;
 		case P_FIRETRAP:
