@@ -227,6 +227,7 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 			break;
 		case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
 		case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
+		case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
 			newTile = T_SWORD;
 			break;
 		case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5: case TV_SHIELD6:
@@ -295,6 +296,9 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_SWORD8: room.SetTParam(x, y, SerpentSword); break;
 		case TV_SWORD9: room.SetTParam(x, y, BriarSword); break;
 		case TV_SWORD10: room.SetTParam(x, y, WeaponSlot); break;
+		case TV_SWORD11: room.SetTParam(x, y, Dagger); break;
+		case TV_SWORD12: room.SetTParam(x, y, Staff); break;
+		case TV_SWORD13: room.SetTParam(x, y, Spear); break;
 		case TV_SHIELD1: room.SetTParam(x, y, WoodenShield); break;
 		case TV_SHIELD2: room.SetTParam(x, y, BronzeShield); break;
 		case TV_SHIELD3: room.SetTParam(x, y, SteelShield); break;

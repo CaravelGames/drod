@@ -2501,8 +2501,29 @@
 #define TI_PATRON_SW      2309
 #define TI_PATRON_W       2310
 #define TI_PATRON_NW      2311
-
-static const UINT TI_COUNT = 2312;
+//*****************************************************************************
+#define TI_STAFF_SWORD_N       2312
+#define TI_STAFF_SWORD_NE      2313
+#define TI_STAFF_SWORD_E       2314
+#define TI_STAFF_SWORD_SE      2315
+#define TI_STAFF_SWORD_S       2316
+#define TI_STAFF_SWORD_SW      2317
+#define TI_STAFF_SWORD_W       2318
+#define TI_STAFF_SWORD_NW      2319
+#define TI_STAFF_SWORD_NEUTRAL 2320
+//*****************************************************************************
+#define TI_SPEAR_SWORD_N       2321
+#define TI_SPEAR_SWORD_NE      2322
+#define TI_SPEAR_SWORD_E       2323
+#define TI_SPEAR_SWORD_SE      2324
+#define TI_SPEAR_SWORD_S       2325
+#define TI_SPEAR_SWORD_SW      2326
+#define TI_SPEAR_SWORD_W       2327
+#define TI_SPEAR_SWORD_NW      2328
+#define TI_SPEAR_SWORD_NEUTRAL 2329
+//*****************************************************************************
+#define TI_DAGGER_SWORD 2330
+static const UINT TI_COUNT = 2331;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

@@ -770,6 +770,17 @@ const UINT BRIAR_SWORD_TI[] = {
 	TI_SWORD9_W,  TI_SWORD9_S,   TI_SWORD9_E,
 	TI_SWORD9_SW, TI_SWORD9_S, TI_SWORD9_SE};
 
+const UINT STAFF_SWORD_TI[] = {
+	TI_STAFF_SWORD_NW, TI_STAFF_SWORD_N, TI_STAFF_SWORD_NE,
+	TI_STAFF_SWORD_W,  TI_STAFF_SWORD_S, TI_STAFF_SWORD_E,
+	TI_STAFF_SWORD_SW, TI_STAFF_SWORD_S, TI_STAFF_SWORD_SE };
+
+const UINT SPEAR_SWORD_TI[] = {
+	TI_SPEAR_SWORD_NW, TI_SPEAR_SWORD_N, TI_SPEAR_SWORD_NE,
+	TI_SPEAR_SWORD_W,  TI_SPEAR_SWORD_S, TI_SPEAR_SWORD_E,
+	TI_SPEAR_SWORD_SW, TI_SPEAR_SWORD_S, TI_SPEAR_SWORD_SE };
+
+
 //Unarmed entity tiles.
 const UINT BEETHRO_UTI[] = {
 	TI_BEETHRO_UYNW, TI_BEETHRO_UYN, TI_BEETHRO_UYNE,
@@ -1314,7 +1325,10 @@ UINT GetPredefinedSwordTile(
 		case LuckySword: return LUCKY_SWORD_TI[wO];
 		case SerpentSword: return SERPENT_SWORD_TI[wO];
 		case BriarSword: return BRIAR_SWORD_TI[wO];
+		case Staff: return STAFF_SWORD_TI[wO];
+		case Spear: return SPEAR_SWORD_TI[wO];
 		case WeaponSlot:
+		case Dagger:
 		default: break; //resolve below
 	}
 
@@ -2147,6 +2161,9 @@ UINT CalcTileImageForSword(const BYTE tParam)
 		case SerpentSword: return TI_SWORD8;
 		case BriarSword: return TI_SWORD9;
 		case WeaponSlot: return TI_SWORD10;
+		case Dagger: return TI_DAGGER_SWORD;
+		case Staff: return TI_STAFF_SWORD_NEUTRAL;
+		case Spear: return TI_SPEAR_SWORD_NEUTRAL;
 
 		default: return TI_UNSPECIFIED;
 	}

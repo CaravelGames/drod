@@ -63,13 +63,11 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 {
 	WSTRING wstr;
 
-	if (type == SwordType::WoodenBlade || type == SwordType::WeaponSlot) {
-		//These swords have no abilties
-		return wstr;
+	if (!(type == SwordType::WoodenBlade ||
+		type == SwordType::Staff ||
+		type == SwordType::WeaponSlot)) {
+		wstr += g_pTheDB->GetMessageText(MID_BehaviorMetal);
 	}
-
-	//All swords with abilites are also metal
-	wstr += g_pTheDB->GetMessageText(MID_BehaviorMetal);
 
 	switch (type) {
 		case SwordType::GoblinSword: {
@@ -95,6 +93,22 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 		case SwordType::BriarSword: {
 			wstr += separator;
 			wstr += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
+		}
+		break;
+		case SwordType::Dagger: {
+			wstr += separator;
+			wstr += g_pTheDB->GetMessageText(MID_RemovesSword);
+		}
+		break;
+		case SwordType::Staff: {
+			wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
+			wstr += separator;
+			wstr += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
+		}
+		break;
+		case SwordType::Spear: {
+			wstr += separator;
+			wstr += g_pTheDB->GetMessageText(MID_CutTarAnywhere);
 		}
 		break;
 		default: break;

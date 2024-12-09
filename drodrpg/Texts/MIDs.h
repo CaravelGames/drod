@@ -454,6 +454,9 @@ enum MID_CONSTANT {
   MID_Patron = 1921,
   MID_Construct = 1922,
   MID_FluffBaby = 1933,
+  MID_Sword11 = 1978,
+  MID_Sword12 = 1979,
+  MID_Sword13 = 1980,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,

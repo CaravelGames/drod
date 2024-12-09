@@ -3338,6 +3338,9 @@ bool CCurrentGame::CanPlayerCutBriars() const
 bool CCurrentGame::CanPlayerCutTarAnywhere() const
 //Returns: whether player can cut tarstuff on otherwise non-vulnerable squares
 {
+	if (this->pPlayer->st.sword == Spear)
+		return true;
+
 	CCharacter* pCharacter;
 	if (!IsPlayerSwordDisabled()) {
 		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
@@ -3460,10 +3463,13 @@ int CCurrentGame::getPredefinedWeaponPower(const UINT type)
 		case GoblinSword: return 30; //x2ATK: goblin + goblinking
 		case LongSword: return 70;
 		case HookSword: return 120;
-		case ReallyBigSword: return 220;
+		case ReallyBigSword: return 220; // Blocks Beams
 		case LuckySword: return 10;    //x2 GOLD
 		case SerpentSword: return 120; //x2ATK: serpents
 		case BriarSword: return 10;    //breaks briars
+		case Dagger: return 10; // Small sword
+		case Staff: return 30; //can use on oremites, explosive safe, wall and mirror safe
+		case Spear: return 50; //Cut tarstuff anywhere
 	}
 }
 
@@ -3538,6 +3544,9 @@ bool CCurrentGame::IsLuckyXPItem(const UINT type) const
 //*****************************************************************************
 bool CCurrentGame::IsPlayerSwordRemoved() const
 {
+	if (this->pPlayer->st.sword == Dagger)
+		return true;
+
 	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
 	if (pCharacter && pCharacter->RemovesSword())
 		return true;
@@ -3726,6 +3735,9 @@ bool CCurrentGame::IsPlayerMistImmune() const
 //*****************************************************************************
 bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 {
+	if (this->pPlayer->st.sword == Staff)
+		return true;
+
 	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
 	if (pCharacter && pCharacter->IsExplosiveSafe())
 		return true;
@@ -3743,6 +3755,9 @@ bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 bool CCurrentGame::IsPlayerSwordWallAndMirrorSafe() const
 //Returns: if the player's weapon can't break walls and mirrors
 {
+	if (this->pPlayer->st.sword == Staff)
+		return true;
+
 	CCharacter* pCharacter;
 	if (!IsPlayerSwordDisabled()) {
 		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
@@ -3792,6 +3807,7 @@ bool CCurrentGame::IsSwordMetal(const UINT type) const
 	{
 		case NoSword:
 		case WoodenBlade:
+		case Staff:
 			return false;
 		default:
 		{

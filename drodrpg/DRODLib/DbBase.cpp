@@ -893,6 +893,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_HotTileImmune: strText = "Heatproof"; break;
 		case MID_FiretrapImmune: strText = "Fireproof"; break;
 		case MID_MistImmune: strText = "Mist protection"; break;
+		case MID_Sword11: strText = "Dagger"; break;
+		case MID_Sword12: strText = "Staff"; break;
+		case MID_Sword13: strText = "Spear"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

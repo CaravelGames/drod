@@ -5551,6 +5551,9 @@ UINT CRoomWidget::GetSwordMID(const UINT param)
 		case SerpentSword: return MID_Sword8;
 		case BriarSword: return MID_Sword9;
 		case WeaponSlot: return MID_Sword10;
+		case Dagger: return MID_Sword11;
+		case Staff: return MID_Sword12;
+		case Spear: return MID_Sword13;
 	}
 }
 

@@ -417,7 +417,10 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define TV_ACCESSORY10 ((UINT)-31)
 #define TV_ACCESSORY11 ((UINT)-32)
 #define TV_ACCESSORY12 ((UINT)-33)
-static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_ACCESSORY12;}
+#define TV_SWORD11     ((UINT)-34)
+#define TV_SWORD12     ((UINT)-35)
+#define TV_SWORD13     ((UINT)-36)
+static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_SWORD13;}
 
 //Virtual tiles: enumerate after TOTAL_TILE_COUNT
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance
