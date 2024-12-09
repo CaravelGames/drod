@@ -6008,11 +6008,10 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 							pCoord->wX, pCoord->wY);
 				if (wTileNo == TI_UNSPECIFIED)
 				{
-					// Still don't know what the tile is, it might be  be custom equipment dropped onto the trapdoor
+					// Still don't know what the tile is, it might be custom equipment dropped onto the trapdoor
 					const UINT tParam = this->pRoomWidget->pRoom->GetTParam(pCoord->wX, pCoord->wY);
 					if (bIsCustomEquipment(tParam))
 					{
-						//Display custom equipment's image.
 						wTileNo = this->pRoomWidget->GetCustomEntityTile(tParam, NO_ORIENTATION, 0);
 						if (wTileNo == TI_UNSPECIFIED)
 							wTileNo = TI_GENERIC_EQUIPMENT;
