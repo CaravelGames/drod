@@ -3584,15 +3584,22 @@ bool CCurrentGame::DoesPlayerAttackFirst() const
 	if (this->pPlayer->IsHasted() || this->pPlayer->IsInvisible())
 		return true;
 
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->CanAttackFirst())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->CanAttackFirst())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->CanAttackFirst())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanAttackFirst())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanAttackFirst())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanAttackFirst())
+			return true;
+	}
 
 	return false;
 }
@@ -3604,15 +3611,22 @@ bool CCurrentGame::DoesPlayerAttackLast() const
 	if (this->pPlayer->IsHasted() || this->pPlayer->IsInvisible())
 		return false; //these attributes override a last attack behavior
 
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->CanAttackLast())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->CanAttackLast())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->CanAttackLast())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanAttackLast())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanAttackLast())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanAttackLast())
+			return true;
+	}
 
 	return false;
 }
@@ -3621,15 +3635,22 @@ bool CCurrentGame::DoesPlayerAttackLast() const
 bool CCurrentGame::DoesPlayerBackstab() const
 //Returns: whether the player has an ability to perform a strong backstab attack
 {
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->TurnToFacePlayerWhenFighting())
+			return true;
+	}
 
 	return false;
 }
@@ -3640,6 +3661,10 @@ bool CCurrentGame::DoesPlayerItemHaveNoEnemyDefense(const UINT type) const
 //         or armor that protects against nullified DEF
 {
 	//No predefined weapons have this attribute.
+
+	if (IsPlayerItemDisabled(type)) {
+		return false;
+	}
 
 	CCharacter* pCharacter = getCustomEquipment(type);
 	if (pCharacter && pCharacter->HasNoEnemyDefense())
@@ -3658,6 +3683,20 @@ bool CCurrentGame::DoesTileDisableMetal(const UINT wX, const UINT wY) const
 	const UINT wTTile = this->pRoom->GetTSquare(wX, wY);
 	return wOTile == T_GOO && wTTile != T_CRATE;
 }
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerItemDisabled(const UINT type) const
+//Returns: true if the given equipment type is not usable at present, else false
+{
+	switch (type) {
+		case ScriptFlag::Weapon: return IsPlayerSwordDisabled();
+		case ScriptFlag::Armor: return IsPlayerShieldDisabled();
+		case ScriptFlag::Accessory:return IsPlayerAccessoryDisabled();
+	}
+
+	return false;
+}
+
 
 //*****************************************************************************
 bool CCurrentGame::IsPlayerShieldDisabled() const
