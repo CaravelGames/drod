@@ -3422,10 +3422,6 @@ int CCurrentGame::getPlayerDEF() const
 	const PlayerStats& st = this->pPlayer->st;
 	int def = st.DEF;
 
-	if (this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
-		!IsPlayerMistImmune())
-		return 0;
-
 	if (!IsPlayerShieldDisabled())
 		addWithClamp(def, getShieldPower(st.shield));
 
@@ -3442,6 +3438,11 @@ int CCurrentGame::getPlayerDEF() const
 		if (pCharacter)
 			addWithClamp(def, (int)pCharacter->getDEF());
 	}
+
+	//Mist negates positive defense value
+	if (def > 0 && this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
+		!IsPlayerMistImmune())
+		return 0;
 
 	return def;
 }
