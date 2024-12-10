@@ -2209,7 +2209,7 @@ UINT CalcTileImageForAccessory(const BYTE tParam)
 		case XPDoubler: return TI_ACCESSORY11;
 		case AccessorySlot: return TI_ACCESSORY12;
 
-		default: ASSERT(!"Unexpected accessory type."); return 0;
+		default: return TI_UNSPECIFIED;
 	}
 }
 

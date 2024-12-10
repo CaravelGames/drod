@@ -6006,6 +6006,17 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				if (wTileNo == CALC_NEEDED)
 					wTileNo = CalcTileImageFor(this->pCurrentGame->pRoom, pCoord->wValue,
 							pCoord->wX, pCoord->wY);
+				if (wTileNo == TI_UNSPECIFIED)
+				{
+					// Still don't know what the tile is, it might be custom equipment dropped onto the trapdoor
+					const UINT tParam = this->pRoomWidget->pRoom->GetTParam(pCoord->wX, pCoord->wY);
+					if (bIsCustomEquipment(tParam))
+					{
+						wTileNo = this->pRoomWidget->GetCustomEntityTile(tParam, NO_ORIENTATION, 0);
+						if (wTileNo == TI_UNSPECIFIED)
+							wTileNo = TI_GENERIC_EQUIPMENT;
+					}
+				}
 			}
 			fallingTiles[ROOMCOORD(pCoord->wX, pCoord->wY)].push_back(wTileNo);
 			pObj = CueEvents.GetNextPrivateData();
