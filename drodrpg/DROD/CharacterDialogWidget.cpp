@@ -4671,6 +4671,7 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 
 	pListBox->AddItem(Speaker_Beethro, g_pTheDB->GetMessageText(MID_Beethro));
 	pListBox->AddItem(Speaker_SerpentG, g_pTheDB->GetMessageText(MID_GreenSerpent));
+	pListBox->AddItem(Speaker_Architect, g_pTheDB->GetMessageText(MID_Architect));
 	pListBox->AddItem(Speaker_Archivist, g_pTheDB->GetMessageText(MID_Archivist));
 	pListBox->AddItem(Speaker_Aumtlich, g_pTheDB->GetMessageText(MID_Zombie));
 	pListBox->AddItem(Speaker_Brain, g_pTheDB->GetMessageText(MID_Brain));
@@ -4680,11 +4681,13 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_Citizen3, g_pTheDB->GetMessageText(MID_Citizen3));
 	pListBox->AddItem(Speaker_Citizen4, g_pTheDB->GetMessageText(MID_Citizen4));
 	pListBox->AddItem(Speaker_Clone, g_pTheDB->GetMessageText(MID_Clone));
+	pListBox->AddItem(Speaker_Construct, g_pTheDB->GetMessageText(MID_Construct));
 	pListBox->AddItem(Speaker_Decoy, g_pTheDB->GetMessageText(MID_Decoy));
 	pListBox->AddItem(Speaker_Eye, g_pTheDB->GetMessageText(MID_EvilEye));
 	pListBox->AddItem(Speaker_MadEye, g_pTheDB->GetMessageText(MID_MadEye));
 	pListBox->AddItem(Speaker_Fegundo, g_pTheDB->GetMessageText(MID_Phoenix));
 	pListBox->AddItem(Speaker_FegundoAshes, g_pTheDB->GetMessageText(MID_PhoenixAshes));
+	pListBox->AddItem(Speaker_FluffBaby, g_pTheDB->GetMessageText(MID_FluffBaby));
 	pListBox->AddItem(Speaker_GelBaby, g_pTheDB->GetMessageText(MID_GelBaby));
 	pListBox->AddItem(Speaker_GelMother, g_pTheDB->GetMessageText(MID_GelMother));
 	pListBox->AddItem(Speaker_Goblin, g_pTheDB->GetMessageText(MID_Goblin));
@@ -4695,6 +4698,7 @@ void CCharacterDialogWidget::PopulateSpeakerList(CListBoxWidget *pListBox)
 	pListBox->AddItem(Speaker_Mimic, g_pTheDB->GetMessageText(MID_Mimic));
 	pListBox->AddItem(Speaker_MudBaby, g_pTheDB->GetMessageText(MID_MudBaby));
 	pListBox->AddItem(Speaker_MudMother, g_pTheDB->GetMessageText(MID_MudMother));
+	pListBox->AddItem(Speaker_Patron, g_pTheDB->GetMessageText(MID_Patron));
 	pListBox->AddItem(Speaker_Pirate, g_pTheDB->GetMessageText(MID_Pirate));
 	pListBox->AddItem(Speaker_Roach, g_pTheDB->GetMessageText(MID_Roach));
 	pListBox->AddItem(Speaker_RoachEgg, g_pTheDB->GetMessageText(MID_RoachEgg));
