@@ -756,8 +756,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_BKEYStatFull: strText = "Blue Keys"; break;
 		case MID_SKEYStatFull: strText = "Skeleton Keys"; break;
 		case MID_VarMyWeakness: strText = "_MyWeakness"; break;
-		case MID_CustomAspect: strText = "%s aspect"; break;
-		case MID_StrongAgainstAspect: strText = "Strong against %s"; break;
+		case MID_CustomType: strText = "%s type"; break;
+		case MID_StrongAgainstType: strText = "Strong against %s"; break;
 		case MID_ShowScore: strText = "Show score"; break;
 		case MID_RemovesSword: strText = "Removes sword"; break;
 		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;

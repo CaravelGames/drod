@@ -2145,7 +2145,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 		ASSERT(pCharacter);
 		wstr += WCSReplace(
-			g_pTheDB->GetMessageText(MID_CustomAspect),
+			g_pTheDB->GetMessageText(MID_CustomType),
 			wszStringToken,
 			pCharacter->GetCustomWeakness()
 		);
