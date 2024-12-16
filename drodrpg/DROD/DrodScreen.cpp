@@ -2045,7 +2045,7 @@ void CDrodScreen::ImportHoldMedia()
 
 		//Import music.
 		WSTRING wstrDir;
-		for (wI=SONG_MOOD_COUNT+33; wI--; )	//include other music too
+		for (wI=SONG_MOOD_COUNT+34; wI--; )	//include other music too
 		{
 			list<WSTRING> songlist;
 
@@ -2059,6 +2059,11 @@ void CDrodScreen::ImportHoldMedia()
 			}
 			else switch (wI)
 			{
+				case SONG_MOOD_COUNT+33:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_TITLE_2, songlist);
+					break;
+
 				//Include end game music for full hold/version only.
 				case SONG_MOOD_COUNT+32:
 					if (wStyleNo == 2)
