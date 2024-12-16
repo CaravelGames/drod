@@ -5690,7 +5690,7 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 					const UINT tParam = GetTParam(wX,wY);
 					const UINT power = CCurrentGame::getPredefinedWeaponPower(tParam);
 					const UINT oldPower = CCurrentGame::getPredefinedWeaponPower(stats.sword);
-					if (power > oldPower || (power == oldPower && tParam > stats.sword))
+					if ((power > oldPower || (power == oldPower && tParam > stats.sword)) && tParam != WeaponSlot)
 						stats.sword = tParam;
 				}
 				break;
@@ -5700,7 +5700,7 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 					const UINT tParam = GetTParam(wX,wY);
 					const UINT power = CCurrentGame::getPredefinedShieldPower(tParam);
 					const UINT oldPower = CCurrentGame::getPredefinedShieldPower(stats.shield);
-					if (power > oldPower || (power == oldPower && tParam > stats.shield))
+					if ((power > oldPower || (power == oldPower && tParam > stats.shield)) && tParam != ArmorSlot)
 						stats.shield = tParam;
 				}
 				break;
@@ -5709,7 +5709,8 @@ void CDbRoom::getStats(RoomStats& stats, const CDbLevel *pLevel) const
 					//Display any accessory available, as they are not ordered by power.
 					const UINT tParam = GetTParam(wX,wY);
 					ASSERT(tParam < AccessoryCount);
-					stats.accessory = tParam;
+					if (tParam != AccessorySlot)
+						stats.accessory = tParam;
 				}
 				break;
 			}

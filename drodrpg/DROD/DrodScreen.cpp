@@ -784,9 +784,9 @@ WSTRING CDrodScreen::getStatsText(
 	wstr += wszSpace;
 	wstr += _itoW(st.shovels, num, 10);
 
-	const bool bHasSword = st.sword != NoSword;
-	const bool bHasShield = st.shield != NoShield;
-	const bool bHasAccessory = st.accessory != NoAccessory;
+	const bool bHasSword = st.sword != NoSword && st.sword != WeaponSlot;
+	const bool bHasShield = st.shield != NoShield && st.shield != ArmorSlot;
+	const bool bHasAccessory = st.accessory != NoAccessory && st.accessory != AccessorySlot;
 	const bool bHasEquipment = bHasSword || bHasShield || bHasAccessory;
 	if (bHasEquipment)
 	{

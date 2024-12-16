@@ -287,9 +287,9 @@ enum AccessoryType
 			//original accessory values into the current values.
 };
 
-static inline bool bIsValidStandardWeapon(const UINT t) { return t < WeaponSlot; }
-static inline bool bIsValidStandardShield(const UINT t) { return t < ArmorSlot; }
-static inline bool bIsValidStandardAccessory(const UINT t) { return t < AccessorySlot; }
+static inline bool bIsValidStandardWeapon(const UINT t) { return t < SwordCount && t != WeaponSlot; }
+static inline bool bIsValidStandardShield(const UINT t) { return t < ShieldCount && t != ArmorSlot; }
+static inline bool bIsValidStandardAccessory(const UINT t) { return t < AccessoryCount && t != AccessorySlot; }
 
 //******************************************************************************************
 //Environmental weather conditions.
