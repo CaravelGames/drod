@@ -431,6 +431,7 @@ void CTextBox2DWidget::SetCursorByPos(
 		UINT wFirstPos = wIndex, wLastPos = wIndex;
 		if (!getLineStartIndexFollowingIndex(wLastPos))
 			wLastPos = wLength;
+		UINT originalLastPos = wLastPos;
 		while (wFirstPos < wLastPos)
 		{
 			wIndex = wFirstPos + (wLastPos - wFirstPos + 1) / 2;
@@ -449,6 +450,9 @@ void CTextBox2DWidget::SetCursorByPos(
 		}
 		//Get final position.
 		wIndex = wFirstPos;
+		//LastPos is actually the character after this line, unless it's the actual last character.
+		if (wIndex == originalLastPos && wIndex != this->text.size())
+			wIndex -= 1;
 		if (wIndex > wLength)
 			SetCursorIndex(wLength);
 		else
