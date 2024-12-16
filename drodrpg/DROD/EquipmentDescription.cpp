@@ -153,7 +153,7 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		if (needSeparator)
 			text += separator;
 		text += WCSReplace(
-			g_pTheDB->GetMessageText(MID_StrongAgainstAspect),
+			g_pTheDB->GetMessageText(MID_StrongAgainstType),
 			wszStringToken,
 			pCharacter->GetCustomWeakness()
 		);
