@@ -1328,11 +1328,11 @@ Wait for Exactly One:
 [eng]
 Wait for Conditions End
 
-[MID_CustomAspect]
+[MID_CustomType]
 [eng]
-%s aspect
+%s type
 
-[MID_StrongAgainstAspect]
+[MID_StrongAgainstType]
 [eng]
 Strong against %s
 
