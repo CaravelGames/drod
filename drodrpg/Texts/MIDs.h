@@ -1356,6 +1356,7 @@ enum MID_CONSTANT {
   MID_MusicCustom = 1283,
   MID_MusicQuiet = 1063,
   MID_MusicTitle = 1064,
+  MID_MusicTitle2 = 1981,
   MID_MusicWinGame = 1065,
   MID_MusicExitGame = 1676,
   MID_MusicArchitects = 1677,

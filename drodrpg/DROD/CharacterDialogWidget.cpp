@@ -1309,6 +1309,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMusicListBox->AddItem(static_cast<UINT>(SONGID_CUSTOM), g_pTheDB->GetMessageText(MID_MusicCustom));
 	this->pMusicListBox->AddItem(SONGID_NONE, g_pTheDB->GetMessageText(MID_MusicQuiet));
 	this->pMusicListBox->AddItem(SONGID_INTRO, g_pTheDB->GetMessageText(MID_MusicTitle));
+	this->pMusicListBox->AddItem(SONGID_TITLE_2, g_pTheDB->GetMessageText(MID_MusicTitle2));
 	this->pMusicListBox->AddItem(SONGID_WINGAME, g_pTheDB->GetMessageText(MID_MusicWinGame));
 	this->pMusicListBox->AddItem(SONGID_QUIT, g_pTheDB->GetMessageText(MID_MusicExitGame));
 	this->pMusicListBox->AddItem(SONGID_ARCHITECTS, g_pTheDB->GetMessageText(MID_MusicArchitects));

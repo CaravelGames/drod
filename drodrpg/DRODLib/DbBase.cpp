@@ -824,6 +824,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_FiretrapHit: strText = "Firetrap hit"; break;
 		case MID_VarTotalAtk: strText = "_TotalATK"; break;
 		case MID_VarTotalDef: strText = "_TotalDEF"; break;
+		case MID_MusicTitle2: strText = "Title 2"; break;
 		case MID_MusicPirates: strText = "Pirates"; break;
 		case MID_MusicGoblinKing: strText = "Goblin King"; break;
 		case MID_MusicBigSerpent: strText = "Big Serpent"; break;
