@@ -1052,7 +1052,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 				!bIsArrow(room.GetFSquare(ex, ey)) &&
 				//And o-square is floor or open door.
 				((bIsPlainFloor(wOSquare) || wOSquare == T_PRESSPLATE) ||
-					bIsOpenDoor(wOSquare) ||
+					bIsOpenDoor(wOSquare) || bIsMistVent(wOSquare) ||
 					bIsPlatform(wOSquare) || bIsBridge(wOSquare) ||
 					wOSquare == T_GOO)
 				)

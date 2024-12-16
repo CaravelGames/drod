@@ -194,6 +194,7 @@ static inline bool bIsFloor(const UINT t) {return bIsPlainFloor(t) ||
 		bIsFallingTile(t) || bIsBridge(t) || bIsFiretrap(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE || t==T_MISTVENT;}
 
 static inline bool bIsLight(const UINT t) {return t==T_LIGHT;}
+static inline bool bIsMistVent(const UINT t) { return t == T_MISTVENT;}
 
 static inline bool bIsWall(const UINT t) {return t==T_WALL || t==T_WALL2 || t==T_WALL_IMAGE;}
 
