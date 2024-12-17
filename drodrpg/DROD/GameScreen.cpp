@@ -6235,6 +6235,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			break;
 			default: ASSERT(!"Invalid tar type"); break;
 		}
+
+		this->pRoomWidget->RedrawDamagePreview(); //cutting tar can spawn in new monsters late in the turn processing
 	}
 	if (CueEvents.HasOccurred(CID_MistDestroyed))
 	{
