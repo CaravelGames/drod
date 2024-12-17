@@ -7704,7 +7704,7 @@ void CDbRoom::ConvertUnstableTar(
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 
 			//Don't spawn tar babies under living monsters
-			if (!pMonster)
+			if (this->pCurrentGame && !pMonster)
 			{
 				//Spawn a tarbaby.
 				const UINT wOSquare = GetOSquare(wX,wY);
@@ -7717,8 +7717,8 @@ void CDbRoom::ConvertUnstableTar(
 					UINT monsterID;
 					CMonster *m = NULL;
 					const UINT wO = nGetO(sgn(wSX - wX), sgn(wSY - wY));
-					switch (wTarType)
-					{
+						switch (wTarType)
+						{
 						case T_TAR:
 							monsterID = this->pCurrentGame->getSpawnID(M_TARBABY);
 							m = this->pCurrentGame->AddNewEntity(CueEvents, monsterID, wX, wY, wO, true);
@@ -7738,11 +7738,11 @@ void CDbRoom::ConvertUnstableTar(
 								CueEvents.Add(CID_GelBabyFormed, m);
 							break;
 						default: ASSERT(!"Bad tar type"); continue;
+						}
 					}
 				}
 			}
 		}
-	}
 	
 	this->NewBabies.Clear();
 }
