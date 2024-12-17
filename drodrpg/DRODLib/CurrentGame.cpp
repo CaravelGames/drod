@@ -3179,11 +3179,12 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 					//NPC script is responsible for what happens after tarstuff defeat,
 					//e.g., resetting HP for subsequent tarstuff battles.
 				} else {
-				//Reset the tarstuff mother's HP back to full to allow attacking another tile.
-				ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
-				ASSERT(!pDefeatedMonster->getHP());
-				pDefeatedMonster->SetHP();
+					//Reset the tarstuff mother's HP back to full to allow attacking another tile.
+					ASSERT(pDefeatedMonster->wX != this->pCombat->wX || pDefeatedMonster->wY != this->pCombat->wY);
+					ASSERT(!pDefeatedMonster->getHP());
+					pDefeatedMonster->SetHP();
 				}
+				ProcessPostCombatExpansions(CueEvents);
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
@@ -3240,9 +3241,7 @@ void CCurrentGame::ProcessMonsterDefeat(
 		}
 	}
 
-	//Each time a monster is fought, briar roots expand.
-	this->pRoom->ExpandMist(CueEvents);
-	this->pRoom->ExpandBriars(CueEvents);
+	ProcessPostCombatExpansions(CueEvents);
 }
 
 //*****************************************************************************
@@ -3254,6 +3253,14 @@ void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEve
 	pDefeatedNPC->ProcessAfterDefeat(CueEvents);
 	this->bExecuteNoMoveCommands = false;
 	CueEvents.Add(CID_NPC_Defeated, pDefeatedNPC);
+}
+
+//*****************************************************************************
+//Each time a monster is fought, expand things that grow.
+void CCurrentGame::ProcessPostCombatExpansions(CCueEvents& CueEvents)
+{
+	this->pRoom->ExpandMist(CueEvents);
+	this->pRoom->ExpandBriars(CueEvents);
 }
 
 //*****************************************************************************

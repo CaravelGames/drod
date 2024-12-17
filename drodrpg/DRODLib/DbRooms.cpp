@@ -7704,7 +7704,7 @@ void CDbRoom::ConvertUnstableTar(
 			CMonster *pMonster = GetMonsterAtSquare(wX,wY);
 
 			//Don't spawn tar babies under living monsters
-			if (!pMonster)
+			if (this->pCurrentGame && !pMonster)
 			{
 				//Spawn a tarbaby.
 				const UINT wOSquare = GetOSquare(wX,wY);
