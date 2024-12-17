@@ -4150,16 +4150,16 @@ void CRoomWidget::RenderRoom(
 //Render o- and t-layers in room for either game play or the room editor.
 //
 //Params:
-	int wCol, int wRow,     //(in) top-left tile coords [default=(0,0) to (xSize,ySize)]
-	int wWidth, int wHeight,
+	int nCol, int nRow,     //(in) top-left tile coords [default=(0,0) to (xSize,ySize)]
+	int nWidth, int nHeight,
 	const bool bEditor)     //[default=true]
 {
-	BoundsCheckRect(wCol,wRow,wWidth,wHeight);
-	const UINT wRowOffset = this->pRoom->wRoomCols - wWidth;
+	BoundsCheckRect(nCol,nRow,nWidth,nHeight);
+	const UINT wRowOffset = this->pRoom->wRoomCols - nWidth;
 	const UINT wLightRowOffset = wRowOffset * wLightValuesPerTile;
-	const UINT wStartPos = wRow * this->pRoom->wRoomCols + wCol;
-	const UINT wXEnd = wCol + wWidth;
-	const UINT wYEnd = wRow + wHeight;
+	const UINT wStartPos = nRow * this->pRoom->wRoomCols + nCol;
+	const UINT wXEnd = nCol + nWidth;
+	const UINT wYEnd = nRow + nHeight;
 
 	//For pit rendering.
 	SDL_Surface *pPitsideTexture = g_pTheDBM->pTextures[PITSIDE_MOSAIC];
@@ -4186,9 +4186,9 @@ void CRoomWidget::RenderRoom(
 	UINT wX, wY, wTI;
 	int nX, nY;
 
-	for (wY = wRow; wY < wYEnd; ++wY)
+	for (wY = nRow; wY < wYEnd; ++wY)
 	{
-		for (wX = wCol; wX < wXEnd; ++wX)
+		for (wX = nCol; wX < wXEnd; ++wX)
 		{
 			if (this->bAllDirty || pTI->dirty)
 			{
@@ -4228,17 +4228,35 @@ void CRoomWidget::RenderRoom(
 					if (bIsStairs(wOTileNo))
 					{
 						UINT wColIgnored, wRow;
+						float fLight;
 						if (wOTileNo == T_STAIRS)
 						{
+							//Lighting decreases further down the stairs
 							CalcStairPosition(this->pRoom, wX, wY, wColIgnored, wRow);
-							float fLight = 1.0f - (wRow-1)*0.08f;
-							if (fLight < 0.1) fLight = 0.1f;
-							g_pTheDBM->DarkenTile(nX, nY, fLight, pDestSurface);
+							if (wRow > 1) { //value is 1-based; topmost stair (half tile) is fully lit
+								fLight = 1.0f - (wRow - 1) * 0.08f;
+								if (fLight < 0.1f)
+									fLight = 0.1f;
+								g_pTheDBM->DarkenRect(nX, nY, CX_TILE, CY_TILE / 2, fLight, pDestSurface); //top half
+							}
+
+							fLight = 1.0f - (wRow - 0.5f) * 0.08f; //bottom half -- a half-step darker
+							if (fLight < 0.1f)
+								fLight = 0.1f;
+							g_pTheDBM->DarkenRect(nX, nY + CY_TILE / 2, CX_TILE, CY_TILE / 2, fLight, pDestSurface);
 						} else {
 							CalcStairUpPosition(this->pRoom, wX, wY, wColIgnored, wRow);
-							float fLight = 1.0f + (wRow-1)*0.08f;
-							if (fLight > 1.7) fLight = 1.7f;
-							g_pTheDBM->LightenTile(pDestSurface, nX, nY, fLight);
+							if (wRow > 1) { //value is 1-based; bottommost stair (half tile) is not lightened
+								fLight = 1.0f + (wRow - 1) * 0.08f;
+								if (fLight > 1.7f)
+									fLight = 1.7f;
+								g_pTheDBM->LightenRect(pDestSurface, nX, nY + CY_TILE / 2, CX_TILE, CY_TILE / 2, fLight); //bottom half
+							}
+
+							fLight = 1.0f + (wRow - 0.5f) * 0.08f; //top half -- a half-step lighter
+							if (fLight > 1.7f)
+								fLight = 1.7f;
+							g_pTheDBM->LightenRect(pDestSurface, nX, nY, CX_TILE, CY_TILE / 2, fLight);
 						}
 					}
 				} else {
@@ -4527,7 +4545,7 @@ void CRoomWidget::DrawTLayerTile(
 			//That is, preclude darkness from being drawn twice on moving platform tiles.
 			g_pTheBM->DarkenTileWithMultiTileMask(*pPitPlatformMasks, nX, nY, CX_TILE, CY_TILE, pDestSurface, fDark);
 		} else if (bIsPit(wOTileNo)) {
-		AddDark(fDark);
+			AddDark(fDark);
 		}
 	}
 

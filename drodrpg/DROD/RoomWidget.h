@@ -310,8 +310,8 @@ public:
 	void           RemoveOLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveTLayerEffectsOfType(const EffectType eEffectType);
 	void				RenderEnvironment(SDL_Surface *pDestSurface=NULL);
-	void           RenderRoom(int wCol=0, int wRow=0,
-			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS,
+	void           RenderRoom(int nCol=0, int nRow=0,
+			int nWidth=CDrodBitmapManager::DISPLAY_COLS, int nHeight=CDrodBitmapManager::DISPLAY_ROWS,
 			const bool bEditor=true);
 	void           RenderRoomInPlay(int wCol=0, int wRow=0,
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
