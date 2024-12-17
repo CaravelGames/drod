@@ -2701,6 +2701,7 @@ WALLTYPE GetWallTypeAtSquare(const CDbRoom *pRoom, const int nCol, const int nRo
 //*****************************************************************************
 void CalcStairPosition(
 //Find out what position in a staircase this tile is (from top-left corner).
+//Value is 1-based.
 //
 //Params:
 	const CDbRoom *pRoom,   //(in)   Room to use for calcs--not necessarily the
@@ -2713,29 +2714,29 @@ void CalcStairPosition(
 	wStairsCol = wStairsRow = 0;
 	UINT wPrevTile;
 
-	if (wCol == 0)
+	if (wCol == 0) {
 		wStairsCol = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsCol;
-			wPrevTile = (wCol-wStairsCol>0) ?
-				pRoom->GetOSquare(wCol-wStairsCol, wRow) : T_WALL;
+			if (wCol - wStairsCol == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol-wStairsCol, wRow);
 		}
 	}
 
-	if (wRow == 0)
+	if (wRow == 0) {
 		wStairsRow = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsRow;
-			wPrevTile = (wRow-wStairsRow>0) ?
-				pRoom->GetOSquare(wCol, wRow-wStairsRow) : T_WALL;
+			if (wRow - wStairsRow == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol, wRow-wStairsRow);
 		}
 	}
 }
@@ -2776,7 +2777,8 @@ UINT CalcTileImageForStairs(
 
 //*****************************************************************************
 void CalcStairUpPosition(
-//Find out what position in a staircase this tile is (from top-left corner).
+//Find out what position in a staircase this tile is (from bottom-left corner).
+//Value is 1-based.
 //
 //Params:
 	const CDbRoom *pRoom,   //(in)   Room to use for calcs--not necessarily the
@@ -2784,35 +2786,34 @@ void CalcStairUpPosition(
 	const UINT wCol, const UINT wRow,   //(in)   Square for which to calc.
 	UINT& wStairsCol, UINT& wStairsRow) //(out)  position
 {
-	//Find out what position in a staircase this tile is (from bottom-left corner).
 	const UINT wStairTile = pRoom->GetOSquare(wCol, wRow);
 	ASSERT(wStairTile==T_STAIRS_UP);
 	wStairsCol = wStairsRow = 0;
 	UINT wPrevTile;
 
-	if (wCol == 0)
+	if (wCol == 0) {
 		wStairsCol = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsCol;
-			wPrevTile = (wCol-wStairsCol>0) ?
-				pRoom->GetOSquare(wCol-wStairsCol, wRow) : T_WALL;
+			if (wCol - wStairsCol == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol-wStairsCol, wRow);
 		}
 	}
 
-	if (wRow == pRoom->wRoomRows-1)
+	if (wRow == pRoom->wRoomRows - 1) {
 		wStairsRow = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsRow;
-			wPrevTile = (wRow+wStairsRow<pRoom->wRoomRows-1) ?
-				pRoom->GetOSquare(wCol, wRow+wStairsRow) : T_WALL;
+			if (wRow + wStairsRow >= pRoom->wRoomRows - 1)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol, wRow+wStairsRow);
 		}
 	}
 }
