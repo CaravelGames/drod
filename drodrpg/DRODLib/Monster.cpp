@@ -1054,7 +1054,7 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 				((bIsPlainFloor(wOSquare) || wOSquare == T_PRESSPLATE) ||
 					bIsOpenDoor(wOSquare) || bIsMistVent(wOSquare) ||
 					bIsPlatform(wOSquare) || bIsBridge(wOSquare) ||
-					wOSquare == T_GOO)
+					wOSquare == T_GOO || wOSquare == T_FIRETRAP)
 				)
 			{
 				//Spot is open for placing an egg.
