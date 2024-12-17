@@ -121,7 +121,7 @@
 #define T_DOOR_RO       70 //Red Open
 #define T_DOOR_BO       71 //Black Open
 #define T_TRAPDOOR2     72 //trapdoor over water
-#define T_GOO           73
+#define T_GOO           73 //oremites
 #define T_LIGHT         74 //light source
 #define T_HOT           75 //hot tile
 #define T_GEL           76 //gel (tarstuff)
