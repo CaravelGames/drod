@@ -270,7 +270,7 @@ private:
 	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 
 	void SyncCustomCharacterData(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
-	static void SyncCustomCharacterData(UINT& wLogicalIdentity, const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
+	static void SyncCustomCharacterData(UINT& wIdentity, UINT& wInitialIdentity, UINT& wLogicalIdentity, const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info);
 
 	//Internal command storage representation --> 3.1.0+
 	static void  DeserializeCommand(BYTE* buffer, UINT& index, CCharacterCommand& command);
