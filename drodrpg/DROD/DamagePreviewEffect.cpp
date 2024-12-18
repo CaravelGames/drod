@@ -33,8 +33,6 @@
 #include <BackEndLib/Assert.h>
 #include <FrontEndLib/Screen.h>
 
-const int YOFFSET = 3;   //this font draws a bit too low
-
 //********************************************************************************
 CBonusPreviewEffect::CBonusPreviewEffect(
 	//Constructor.
@@ -46,6 +44,7 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, wX(wX), wY(wY)
 	, pTextSurface(NULL)
+	, YOFFSET(-29)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
@@ -65,9 +64,10 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	}
 }
 
-CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget)
+CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget, int yOffset)
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, pTextSurface(NULL)
+	, YOFFSET(yOffset)
 { }
 
 //********************************************************************************
@@ -103,7 +103,7 @@ void CBonusPreviewEffect::Draw(SDL_Surface& destSurface)
 	this->dirtyRects[0].x = destX;
 	this->dirtyRects[0].y = destY;
 
-	SDL_Rect SrcRect = MAKE_SDL_RECT(0, YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
+	SDL_Rect SrcRect = MAKE_SDL_RECT(0, this->YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(destX, destY, this->dirtyRects[0].w, this->dirtyRects[0].h);
 	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
 
@@ -181,7 +181,7 @@ void CBonusPreviewEffect::PrepWidgetForValue(const int value)
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 
-	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - YOFFSET);
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - this->YOFFSET);
 	this->dirtyRects.push_back(Dest);
 }
 
@@ -192,7 +192,7 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const CMonster *pMonster)     //(in)   Enemy to display damage preview for.
-	: CBonusPreviewEffect(pSetWidget)
+	: CBonusPreviewEffect(pSetWidget, 3)
 	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
 {
 	ASSERT(pSetWidget);
@@ -339,6 +339,6 @@ void CDamagePreviewEffect::PrepWidget()
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 
-	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - YOFFSET);
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - this->YOFFSET);
 	this->dirtyRects.push_back(Dest);
 }

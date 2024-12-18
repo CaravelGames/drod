@@ -42,12 +42,13 @@ public:
 	virtual ~CBonusPreviewEffect();
 
 protected:
-	CBonusPreviewEffect(CWidget* pSetWidget);
+	CBonusPreviewEffect(CWidget* pSetWidget, int yOffset);
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
 
 	UINT         wX, wY;
 	UINT         wValidTurn;   //game turn this display is valid for
+	const int    YOFFSET;
 
 	CRoomWidget* pRoomWidget;
 
