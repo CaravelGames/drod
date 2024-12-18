@@ -7153,7 +7153,7 @@ void CEditRoomScreen::SetItemLabelText(const UINT wObject)
 	{
 		WSTRING wstr = g_pTheDB->GetMessageText(wMID);
 		WCHAR temp[16];
-		if (bIsHealth(wObject) || bIsATKUp(wObject) || bIsDEFUp(wObject)) {
+		if (bIsHealth(wObject) || bIsATKUp(wObject) || bIsDEFUp(wObject) || bIsShovel(wObject)) {
 			const int val = (int)(this->pLevel->getItemAmount(wObject));
 			wstr += wszSpace;
 			wstr += wszLeftParen;
