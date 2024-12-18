@@ -299,6 +299,7 @@ void CCharacter::SyncCustomCharacterData(
 	CImportInfo& info)
 {
 	SyncCustomCharacterData(this->wLogicalIdentity, pSrcHold, pDestHold, info);
+	this->wInitialIdentity = this->wLogicalIdentity;
 }
 
 //Returns: whether something was changed
@@ -327,6 +328,7 @@ void CCharacter::SyncCustomCharacterData(
 				pDestCustomChar->dwDataID_Avatar = pCustomChar->dwDataID_Avatar;
 				pDestCustomChar->dwDataID_Tiles = pCustomChar->dwDataID_Tiles;
 				pDestCustomChar->ExtraVars = pCustomChar->ExtraVars;
+				pDestCustomChar->ExtraVars.SetVar(initialIdStr, charID);
 
 				pSrcHold->CopyCustomCharacterData(*pDestCustomChar, pDestHold, info);
 			}
