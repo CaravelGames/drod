@@ -298,13 +298,12 @@ void CCharacter::SyncCustomCharacterData(
 	CDbHold* pDestHold,
 	CImportInfo& info)
 {
-	SyncCustomCharacterData(this->wIdentity, this->wInitialIdentity, this->wLogicalIdentity, pSrcHold, pDestHold, info);
+	SyncCustomCharacterData(this->wLogicalIdentity, pSrcHold, pDestHold, info);
+	this->wInitialIdentity = this->wLogicalIdentity;
 }
 
 //Returns: whether something was changed
 void CCharacter::SyncCustomCharacterData(
-	UINT& wIdentity,
-	UINT& wInitialIdentity,
 	UINT& wLogicalIdentity,
 	const CDbHold* pSrcHold,
 	CDbHold* pDestHold,
@@ -333,7 +332,7 @@ void CCharacter::SyncCustomCharacterData(
 
 				pSrcHold->CopyCustomCharacterData(*pDestCustomChar, pDestHold, info);
 			}
-			wIdentity = wInitialIdentity = wLogicalIdentity = charID;
+			wLogicalIdentity = charID;
 		}
 	}
 }
@@ -404,10 +403,10 @@ void CCharacter::ChangeHoldForCommands(
 				break;
 				case CCharacterCommand::CC_SetNPCAppearance:
 				case CCharacterCommand::CC_SetPlayerAppearance:
-					SyncCustomCharacterData(c.x, c.x, c.x, pOldHold, pNewHold, info);
+					SyncCustomCharacterData(c.x, pOldHold, pNewHold, info);
 					break;
 				case CCharacterCommand::CC_GenerateEntity:
-					SyncCustomCharacterData(c.h, c.h, c.h, pOldHold, pNewHold, info);
+					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
 					break;
 
 				case CCharacterCommand::CC_LevelEntrance:
@@ -416,7 +415,7 @@ void CCharacter::ChangeHoldForCommands(
 
 				case CCharacterCommand::CC_Speech:
 					if (c.pSpeech)
-						SyncCustomCharacterData(c.pSpeech->wCharacter, c.pSpeech->wCharacter, c.pSpeech->wCharacter, pOldHold, pNewHold, info);
+						SyncCustomCharacterData(c.pSpeech->wCharacter, pOldHold, pNewHold, info);
 				break;
 
 				default: break;
