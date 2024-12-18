@@ -33,8 +33,6 @@
 #include <BackEndLib/Assert.h>
 #include <FrontEndLib/Screen.h>
 
-const int YOFFSET = 3;   //this font draws a bit too low
-
 //********************************************************************************
 CBonusPreviewEffect::CBonusPreviewEffect(
 	//Constructor.
@@ -49,6 +47,7 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
+	this->YOFFSET = -29;
 
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
@@ -103,7 +102,7 @@ void CBonusPreviewEffect::Draw(SDL_Surface& destSurface)
 	this->dirtyRects[0].x = destX;
 	this->dirtyRects[0].y = destY;
 
-	SDL_Rect SrcRect = MAKE_SDL_RECT(0, YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
+	SDL_Rect SrcRect = MAKE_SDL_RECT(0, this->YOFFSET, this->dirtyRects[0].w, this->dirtyRects[0].h);
 	SDL_Rect ScreenRect = MAKE_SDL_RECT(destX, destY, this->dirtyRects[0].w, this->dirtyRects[0].h);
 	SDL_BlitSurface(this->pTextSurface, &SrcRect, &destSurface, &ScreenRect);
 
@@ -181,7 +180,7 @@ void CBonusPreviewEffect::PrepWidgetForValue(const int value)
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 
-	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - YOFFSET);
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - this->YOFFSET);
 	this->dirtyRects.push_back(Dest);
 }
 
@@ -201,6 +200,7 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 
 	this->wX = this->pMonster->wX;
 	this->wY = this->pMonster->wY;
+	this->YOFFSET = 3;
 
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
@@ -339,6 +339,6 @@ void CDamagePreviewEffect::PrepWidget()
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 
-	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - YOFFSET);
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH - this->YOFFSET);
 	this->dirtyRects.push_back(Dest);
 }

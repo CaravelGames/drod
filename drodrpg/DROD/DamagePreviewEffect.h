@@ -48,6 +48,7 @@ protected:
 
 	UINT         wX, wY;
 	UINT         wValidTurn;   //game turn this display is valid for
+	int          YOFFSET;      //must set in the constructor, different derived classes need a different value
 
 	CRoomWidget* pRoomWidget;
 
