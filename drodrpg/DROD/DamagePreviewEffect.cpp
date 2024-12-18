@@ -44,10 +44,10 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, wX(wX), wY(wY)
 	, pTextSurface(NULL)
+	, YOFFSET(-29)
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
-	this->YOFFSET = -29;
 
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
@@ -64,9 +64,10 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	}
 }
 
-CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget)
+CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget, int yOffset)
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, pTextSurface(NULL)
+	, YOFFSET(yOffset)
 { }
 
 //********************************************************************************
@@ -191,7 +192,7 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const CMonster *pMonster)     //(in)   Enemy to display damage preview for.
-	: CBonusPreviewEffect(pSetWidget)
+	: CBonusPreviewEffect(pSetWidget, 3)
 	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
 {
 	ASSERT(pSetWidget);
@@ -200,7 +201,6 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 
 	this->wX = this->pMonster->wX;
 	this->wY = this->pMonster->wY;
-	this->YOFFSET = 3;
 
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);
 	CDbRoom *pRoom = this->pRoomWidget->GetRoom();
