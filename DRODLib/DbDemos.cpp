@@ -907,7 +907,8 @@ bool CDbDemo::GetTimeElapsed(UINT &dwTimeElapsed) const
 		if (pGame->Commands.Count() > 0) {
 			wEndTurn = pGame->Commands.Count() - 1;
 		} else {
-			wEndTurn = 0;
+			//No time is elapsed by an empty demo
+			return true;
 		}
 	}
 
