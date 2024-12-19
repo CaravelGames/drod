@@ -1865,6 +1865,22 @@ bool CMonster::GetTarget(
 }
 
 //*****************************************************************************
+bool CMonster::HasPieceAt(const UINT wX, const UINT wY) const
+//Returns: if part of this monster is at (x,y)
+{
+	for (MonsterPieces::const_iterator piece = this->Pieces.begin();
+		piece != this->Pieces.end(); ++piece)
+	{
+		const CMonsterPiece* pPiece = *piece;
+		if (pPiece->wX == wX && pPiece->wY == wY) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CMonster::HasSwordAt(const UINT wX, const UINT wY) const
 //Returns: whether this monster has a sword at (x,y)
 {

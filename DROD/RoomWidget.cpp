@@ -1556,7 +1556,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			}
 		}
 
-		if (pMonster->wX != wX || pMonster->wY != wY)
+		if ((pMonster->wX != wX || pMonster->wY != wY) && !pMonster->HasPieceAt(wX, wY))
 			goto SkipDescribingMonster;
 
 		if (!bCharacterName) {

@@ -298,6 +298,7 @@ public:
 	virtual WeaponType GetWeaponType() const { return WT_Sword; }
 	bool          GetTarget(UINT &wX, UINT &wY, const bool bConsiderDecoys=true);
 
+	bool          HasPieceAt(const UINT wX, const UINT wY) const;
 	virtual bool  HasSword() const { return false; }
 	bool          HasSwordAt(const UINT wX, const UINT wY) const;
 	virtual bool  IsAggressive() const {return true;}
