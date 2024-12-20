@@ -3465,6 +3465,7 @@ void CDbRoom::RemoveMonsterDuringPlayWithoutEffect(CMonster* pMonster)
 				RemoveMonsterEnemy(pMonster);
 			}
 		}
+		break;
 		case M_STALWART: case M_STALWART2:
 		case M_TEMPORALCLONE:
 			RemoveMonsterEnemy(pMonster);
