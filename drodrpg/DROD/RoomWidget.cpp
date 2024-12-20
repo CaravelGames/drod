@@ -5071,7 +5071,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 						{
 							default: break;
 							case 2: //over floor
-								bShowFogHere = !(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare));
+								bShowFogHere = !(bIsSolidOTile(wOSquare));
 							break;
 							case 3: //over walls (i.e. everything)
 								bShowFogHere = true;
