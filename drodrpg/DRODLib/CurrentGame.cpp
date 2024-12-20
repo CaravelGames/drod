@@ -556,17 +556,23 @@ float CCurrentGame::GetTotalStatModifier(ScriptVars::StatModifiers statType) con
 		fMult *= pRoom->GetStatModifierFromCharacters(statType);
 	}
 
-	const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
-	if (pWeapon) {
-		fMult *= pWeapon->GetStatModifier(statType);
+	if (!IsPlayerSwordDisabled()) {
+		const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
+		if (pWeapon) {
+			fMult *= pWeapon->GetStatModifier(statType);
+		}
 	}
-	const CCharacter* pArmor = getCustomEquipment(ScriptFlag::Armor);
-	if (pArmor) {
-		fMult *= pArmor->GetStatModifier(statType);
+	if (!IsPlayerShieldDisabled()) {
+		const CCharacter* pArmor = getCustomEquipment(ScriptFlag::Armor);
+		if (pArmor) {
+			fMult *= pArmor->GetStatModifier(statType);
+		}
 	}
-	const CCharacter* pAccessory = getCustomEquipment(ScriptFlag::Accessory);
-	if (pAccessory) {
-		fMult *= pAccessory->GetStatModifier(statType);
+	if (!IsPlayerAccessoryDisabled()) {
+		const CCharacter* pAccessory = getCustomEquipment(ScriptFlag::Accessory);
+		if (pAccessory) {
+			fMult *= pAccessory->GetStatModifier(statType);
+		}
 	}
 
 	return fMult;
@@ -3328,6 +3334,11 @@ int CCurrentGame::getItemAmount(const UINT item) const
 bool CCurrentGame::equipmentBlocksGaze(const UINT type) const
 //Returns: whether the specified inventory item can block the aumtlich gaze
 {
+	//Disabled item can't block gaze
+	if (IsPlayerItemDisabled(type)) {
+		return false;
+	}
+
 	if (type == ScriptFlag::Weapon && this->pPlayer->st.sword == ReallyBigSword)
 		return true;
 
@@ -3345,15 +3356,22 @@ bool CCurrentGame::CanPlayerCutBriars() const
 	if (this->pPlayer->st.sword == BriarSword)
 		return true;
 
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->CanCutBriar())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->CanCutBriar())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->CanCutBriar())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanCutBriar())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanCutBriar())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanCutBriar())
+			return true;
+	}
 
 	return false;
 }
@@ -3537,6 +3555,11 @@ bool CCurrentGame::IsFighting(const CMonster* pMonster) const
 bool CCurrentGame::IsLuckyGRItem(const UINT type) const
 //Returns: whether the player's specified inventory item is lucky (gives x2 gold)
 {
+	//Disabled items aren't lucky
+	if (IsPlayerItemDisabled(type)) {
+		return false;
+	}
+
 	if (type == ScriptFlag::Weapon &&
 			this->pPlayer->st.sword == LuckySword)
 		return true;
@@ -3555,6 +3578,11 @@ bool CCurrentGame::IsLuckyGRItem(const UINT type) const
 bool CCurrentGame::IsLuckyXPItem(const UINT type) const
 //Returns: whether the player's specified inventory item gives x2 XP
 {
+	//Disabled items aren't lucky
+	if (IsPlayerItemDisabled(type)) {
+		return false;
+	}
+
 	if (type == ScriptFlag::Accessory &&
 			this->pPlayer->st.accessory == XPDoubler)
 		return true;
@@ -3572,15 +3600,22 @@ bool CCurrentGame::IsPlayerSwordRemoved() const
 	if (this->pPlayer->st.sword == Dagger)
 		return true;
 
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->RemovesSword())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->RemovesSword())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->RemovesSword())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->RemovesSword())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->RemovesSword())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->RemovesSword())
+			return true;
+	}
 
 	return false;
 }
@@ -3802,15 +3837,22 @@ bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
 	if (this->pPlayer->st.sword == Staff)
 		return true;
 
-	CCharacter* pCharacter = getCustomEquipment(ScriptFlag::Weapon);
-	if (pCharacter && pCharacter->IsExplosiveSafe())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Armor);
-	if (pCharacter && pCharacter->IsExplosiveSafe())
-		return true;
-	pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-	if (pCharacter && pCharacter->IsExplosiveSafe())
-		return true;
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
 
 	return false;
 }
