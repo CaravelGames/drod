@@ -231,6 +231,7 @@ public:
 	virtual bool  IsFlying() const {return this->eMovement == AIR;}
 	virtual bool  IsFriendly() const {return false;}
 	virtual bool  IsLongMonster() const {return false;}
+	virtual bool  IsMistImmune() const {return false;}
 	bool          IsNextToSwordsman() const;
 	bool          IsObjectAdjacent(const UINT wObject, UINT& wX, UINT& wY) const;
 	virtual bool  IsOnMistTile() const;

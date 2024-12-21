@@ -37,6 +37,8 @@ class CConstruct : public CMonsterFacesTarget
 public:
 	CConstruct(CCurrentGame* pSetCurrentGame = NULL) : CMonsterFacesTarget(M_CONSTRUCT, pSetCurrentGame) {}
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CConstruct);
+
+	virtual bool IsMistImmune() const { return true; }
 };
 
 #endif //...#ifndef CONSTRUCT_H

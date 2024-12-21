@@ -41,6 +41,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CFluffBaby);
 
 	virtual bool HasOrientation() const { return false; }
+	virtual bool IsMistImmune() const { return true; }
 };
 
 #endif //...#ifndef FLUFFBABY_H

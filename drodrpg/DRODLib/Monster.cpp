@@ -1545,7 +1545,7 @@ UINT CMonster::getColor() const
 UINT CMonster::getDEF() const
 //Return: monster's DEF
 {
-	if (IsOnMistTile())
+	if (IsOnMistTile() && !IsMistImmune())
 		return 0; //Mist tile nullifies DEF
 
 	UINT val = this->DEF;
