@@ -8396,6 +8396,10 @@ void CGameScreen::ShowRoomTemporarily(UINT roomID)
 Loop:
 	CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
 	*pTempGame = *this->pCurrentGame;
+	//PrepTempGameForRoomDisplay will restart the room, which replaces the monster
+	//list with the start of turn version. This is not really what we want, so we
+	//update the starting list to be the current list.
+	pTempGame->SetMonsterListAtRoomStart();
 	if (!pTempGame->PrepTempGameForRoomDisplay(roomID)) {
 		delete pTempGame;
 		return;
