@@ -52,7 +52,7 @@ const UINT MON_HP[MONSTER_TYPES] = {
 	 100,  220,  10, 200, 180,
 	 100, 4500, 200,   1, 160,   0,
 	  50,  130, 180, 360, 260, 800,
-	 100,  400,  80, 100
+	 100,  400, 500, 100
 };
 const UINT MON_ATK[MONSTER_TYPES] = {
 	  20,   42,   0, 120,  65,  38,  32,
@@ -70,7 +70,7 @@ const UINT MON_DEF[MONSTER_TYPES] = {
 	  50,   30, 320, 130, 210,
 	  15,  310,  90,  80, 105,   0,
 	  22,    3, 360,  20,   5, 100,
-	  30,   66, 272,   0
+	  30,   66, 120,   0
 };
 const UINT MON_GOLD[MONSTER_TYPES] = {
 	   2,    6,   0,  30,  25,   3,  5,
@@ -79,7 +79,7 @@ const UINT MON_GOLD[MONSTER_TYPES] = {
 	  55,   35, 100,  90, 120,
 	  25, 1000,  50,   0,  65,   0,
 	  12,    8, 200,  40,  18, 500,
-	  22,  144, 112,  17
+	  22,  144, 125,  17
 };
 
 //monster attack speed is always uniform

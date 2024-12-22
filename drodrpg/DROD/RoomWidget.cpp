@@ -1962,7 +1962,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
 	bool bCustomWeakness = false, bCustomDescription = false;
 	bool bExplosiveSafe = pMonster->IsExplosiveSafe();
-	bool bMistImmune = false;
+	bool bMistImmune = pMonster->IsMistImmune();
 
 	if (pMonster->wType == M_CHARACTER)
 	{
