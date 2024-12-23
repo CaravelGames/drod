@@ -1894,6 +1894,28 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::KillIfOutsideWall(CCueEvents& CueEvents)
+//Kill the monster if it's not on a wall or door.
+//
+//Returns: If it died
+{
+	//If ghost was on a door that opened, kill it.
+	const UINT dwTileNo = this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY);
+	if (bIsOpenDoor(dwTileNo) || bIsFloor(dwTileNo))
+	{
+		CCurrentGame* pGame = (CCurrentGame*)this->pCurrentGame; //non-const
+		if (pGame->IsFighting(this))
+			return false; //if terrain changes during a fight, just let the combat play out
+
+		pGame->pRoom->KillMonster(this, CueEvents);
+		SetKillInfo(NO_ORIENTATION); //center stab effect
+		CueEvents.Add(CID_MonsterDiedFromStab, this);
+		return true;
+	}
+	return false;
+}
+
+//*****************************************************************************
 bool CMonster::MakeSlowTurn(const UINT wDesiredO)
 //Make a 45 degree (1/8th rotation) turn toward the desired orientation.
 //

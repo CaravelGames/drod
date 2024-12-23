@@ -1537,6 +1537,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pBehaviorListBox->AddItem(ScriptFlag::FiretrapImmune, g_pTheDB->GetMessageText(MID_FiretrapImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::MistImmune, g_pTheDB->GetMessageText(MID_MistImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Metal, g_pTheDB->GetMessageText(MID_BehaviorMetal));
+	this->pBehaviorListBox->AddItem(ScriptFlag::WallDwelling, g_pTheDB->GetMessageText(MID_SeepAbility));
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyGR, g_pTheDB->GetMessageText(MID_BehaviorLuckyGR));
 	this->pBehaviorListBox->AddItem(ScriptFlag::LuckyXP, g_pTheDB->GetMessageText(MID_DoubleXP));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Briar, g_pTheDB->GetMessageText(MID_BehaviorBriarCut));
