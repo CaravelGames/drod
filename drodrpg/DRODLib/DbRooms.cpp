@@ -3000,14 +3000,8 @@ void CDbRoom::KillSeepOutsideWall(CCueEvents &CueEvents)
 	while (pMonster)
 	{
 		pNext = pMonster->pNext;
-		switch (pMonster->wType)
-		{
-			case M_SEEP:
-			{
-				CSeep *pWallMonster = DYN_CAST(CSeep*, CMonster*, pMonster);
-				pWallMonster->KillIfOutsideWall(CueEvents);
-			}
-			break;
+		if (pMonster->IsWallDwelling()) {
+			pMonster->KillIfOutsideWall(CueEvents);
 		}
 		pMonster = pNext;
 	}

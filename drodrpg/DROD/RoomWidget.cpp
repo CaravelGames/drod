@@ -2088,6 +2088,24 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
 		++count;
 	}
+	if (pMonster->IsWallDwelling())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_SeepAbility);
+		++count;
+	} else if (pMonster->IsSwimming()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_WaterSkipperAbility);
+		++count;
+	}
 	if (!pMonster->DamagedByHotTiles())
 	{
 		if (count)
@@ -2175,8 +2193,6 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	switch (pMonster->wType)
 	{
 		case M_MIMIC: mid = MID_MimicAbility; break;
-		case M_WATERSKIPPER: mid = MID_WaterSkipperAbility; break;
-		case M_SEEP: mid = MID_SeepAbility; break;
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER: mid = MID_TarMotherAbility; break;
 		default: break;
 	}

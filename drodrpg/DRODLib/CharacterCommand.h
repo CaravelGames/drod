@@ -155,6 +155,7 @@ namespace ScriptFlag
 		HotTileImmune=31,       //not damaged by hotiles
 		FiretrapImmune=32,      //not damaged by firetraps
 		MistImmune=33,          //DEF not negated by mist
+		WallDwelling=34,        //dies outside of solid tile
 	};
 
 	//Inventory and global script types.

@@ -139,6 +139,7 @@ const UINT MAX_ANSWERS = 9;
 #define HotTileImmuneStr "HotTileImmune"
 #define FiretrapImmuneStr "FiretrapImmune"
 #define MistImmuneStr "MistImmune"
+#define WallDwellingStr "WallDwelling"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -257,6 +258,7 @@ CCharacter::CCharacter(
 	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
 	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false), bCutTarAnywhere(false)
 	, bWallMirrorSafe(false), bHotTileImmune(false), bFiretrapImmune(false), bMistImmune(false)
+	, bWallDwelling(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
@@ -1773,6 +1775,13 @@ void CCharacter::Process(
 	//Only character monsters taking up a single tile are implemented.
 	ASSERT(!bIsSerpent(GetResolvedIdentity()));
 
+	//Being outside of a wall is instantly lethal for wall-dwellers
+	if (IsWallDwelling()) {
+		if (KillIfOutsideWall(CueEvents)) {
+			return;
+		}
+	}
+
 	//Skip script execution if no commands to play.
 	if (this->wCurrentCommandIndex >= this->commands.size())
 		goto Finish;
@@ -2774,7 +2783,7 @@ void CCharacter::Process(
 						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
 						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
 						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere = this->bWallMirrorSafe =
-						this->bHotTileImmune = this->bFiretrapImmune = this->bMistImmune =
+						this->bHotTileImmune = this->bFiretrapImmune = this->bMistImmune = this->bWallDwelling =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2882,6 +2891,9 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::MistImmune:
 						this->bMistImmune = true;
+					break;
+					case ScriptFlag::WallDwelling:
+						this->bWallDwelling = true;
 					break;
 
 					default:
@@ -6056,6 +6068,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bHotTileImmune = vars.GetVar(HotTileImmuneStr, this->bHotTileImmune);
 	this->bFiretrapImmune = vars.GetVar(FiretrapImmuneStr, this->bFiretrapImmune);
 	this->bMistImmune = vars.GetVar(MistImmuneStr, this->bMistImmune);
+	this->bWallDwelling = vars.GetVar(WallDwellingStr, this->bWallDwelling);
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
@@ -6221,6 +6234,8 @@ const
 		vars.SetVar(FiretrapImmuneStr, this->bFiretrapImmune);
 	if (this->bMistImmune)
 		vars.SetVar(MistImmuneStr, this->bMistImmune);
+	if (this->bWallDwelling)
+		vars.SetVar(WallDwellingStr, this->bWallDwelling);
 	if (this->eMovement)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 

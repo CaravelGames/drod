@@ -178,6 +178,7 @@ public:
 
 	virtual bool   IsVisible() const {return this->bVisible;}
 	virtual bool   IsVulnerable() const {return this->bVulnerable;}
+	virtual bool   IsWallDwelling() const { return this->bWallDwelling; }
 	bool           IsWeaponAt(const CCharacterCommand& command, const CCurrentGame* pGame) const;
 	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
 	static void    LoadCommands(const CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
@@ -332,6 +333,7 @@ private:
 	bool bHotTileImmune;       //not damaged by hotiles
 	bool bFiretrapImmune;      //not damaged by firetraps
 	bool bMistImmune;          //DEF not negated by mist
+	bool bWallDwelling;        //dies outside of solid tile
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
