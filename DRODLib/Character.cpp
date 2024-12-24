@@ -4710,6 +4710,9 @@ bool CCharacter::IsDoorStateAt(
 {
 	UINT px, py;  //command parameters
 	getCommandXY(command, px, py);
+	if (!room.IsValidColRow(px, py))
+		return false;
+
 	const UINT wTile = room.GetOSquare(px, py);
 	if (command.w == (UINT)OA_CLOSE && !bIsDoor(wTile))
 		return false;  //door hasn't closed yet
@@ -4874,6 +4877,9 @@ bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 	for (UINT y = py; y <= endY; ++y)
 	{
 		for (UINT x = px; x <= endX; ++x) {
+			if (!room.IsValidColRow(x, y))
+				continue;
+
 			switch (layer) {
 				case LAYER_OPAQUE: {
 					if (tileCheck(room.GetOSquare(x,y))) {
@@ -5696,11 +5702,13 @@ bool CCharacter::EvaluateConditionalCommand(
 		}
 		case CCharacterCommand::CC_WaitForEntityType:
 		{
-			return IsEntityTypeAt(command, room, pGame->swordsman);
+			return (IsValidEntityWait(command, room)
+				&& IsEntityTypeAt(command, room, pGame->swordsman));
 		}
 		case CCharacterCommand::CC_WaitForNotEntityType:
 		{
-			return !IsEntityTypeAt(command, room, pGame->swordsman);
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityTypeAt(command, room, pGame->swordsman));
 		}
 		case CCharacterCommand::CC_FaceTowards:
 		{
@@ -5727,7 +5735,8 @@ bool CCharacter::EvaluateConditionalCommand(
 		}
 		case CCharacterCommand::CC_WaitForRemains:
 		{
-			return IsMonsterRemainsAt(command, room);
+			return (IsValidEntityWait(command, room)
+				&& IsMonsterRemainsAt(command, room));
 		}
 		case CCharacterCommand::CC_SetMovementType:
 		{
