@@ -7825,6 +7825,9 @@ void CRoomWidget::DrawCharacter(
 	}
 
 	//Draw character.
+	// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].dirty = 1;
+
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset,
 			bMoveInProgress || wXOffset || wYOffset, fRaisedFactor);
 	blit.nOpacity = opacity;
@@ -7835,6 +7838,10 @@ void CRoomWidget::DrawCharacter(
 	if (bHasSword) {
 		blit.wCol = wSX;
 		blit.wRow = wSY;
+
+		// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+		if (this->pRoom->IsValidColRow(pCharacter->GetSwordX(), pCharacter->GetSwordY()))
+			this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->GetSwordX(), pCharacter->GetSwordY())].dirty = 1;
 		DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
 	}
 }
@@ -7926,6 +7933,9 @@ void CRoomWidget::DrawRockGiant(
 		blit.wCol = (*piece)->wX;
 		blit.wRow = (*piece)->wY;
 		blit.wTileImageNo = GetTileImageForRockGiantPiece(wI, pMonster->wO, wFrame);
+
+		// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+		this->pTileImages[this->pRoom->ARRAYINDEX((*piece)->wX, (*piece)->wY)].dirty = 1;
 		DrawTileImage(blit, pDestSurface);
 	}
 }
