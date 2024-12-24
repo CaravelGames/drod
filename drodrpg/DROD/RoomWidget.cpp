@@ -4625,6 +4625,12 @@ void CRoomWidget::DrawTLayerTile(
 			DrawTransparentRoomTile(TI_WALLLIGHT, 180);
 	}
 
+	//4b. Mist does its own thing - but needs to come before shadows
+	if (bMist) {
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.t);
+		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+	}
+
 	//5. Cast shadows onto environment, except onto pit.
 	if (!bIsPitTile)
 	{
@@ -4662,11 +4668,6 @@ void CRoomWidget::DrawTLayerTile(
 		} else {
 			DrawRoomTile(ti.t);
 		}
-		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
-	}
-	//6b. Mist does its own thing
-	else if (bMist) {
-		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.t);
 		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
 	}
 }
