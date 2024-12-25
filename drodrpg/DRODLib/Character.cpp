@@ -3923,6 +3923,9 @@ bool CCharacter::IsDoorStateAt(
 {
 	UINT px, py;  //command parameters
 	getCommandXY(command, px, py);
+	if (!room.IsValidColRow(px, py))
+		return false;
+
 	const UINT wTile = room.GetOSquare(px, py);
 	if (command.w == (UINT)OA_CLOSE && !bIsDoor(wTile))
 		return false;  //door hasn't closed yet
@@ -4192,6 +4195,9 @@ bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 	for (UINT y = py; y <= endY; ++y)
 	{
 		for (UINT x = px; x <= endX; ++x) {
+			if (!room.IsValidColRow(x, y))
+				continue;
+
 			switch (layer) {
 			case LAYER_OPAQUE: {
 				if (tileCheck(room.GetOSquare(x, y))) {
