@@ -57,6 +57,7 @@ const UINT MAX_ANSWERS = 9;
 #define numCommandsStr "NumCommands"
 #define scriptIDstr "ScriptID"
 #define startLineStr "StartLine"
+#define scriptDoneStr "ScriptDone"
 #define visibleStr "visible"
 #define equipTypeStr "equipType"
 
@@ -1784,6 +1785,10 @@ void CCharacter::Process(
 
 	//Skip script execution if no commands to play.
 	if (this->wCurrentCommandIndex >= this->commands.size())
+		goto Finish;
+
+	//Skip script execution if script is already ended.
+	if (this->bScriptDone)
 		goto Finish;
 
 	{ //scoping
@@ -6010,6 +6015,8 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	this->wInitialIdentity = vars.GetVar(initialIdStr, this->wLogicalIdentity); // Note the default is wLogicalIdentity
 
+	this->bScriptDone = vars.GetVar(scriptDoneStr, false);
+
 	this->bVisible = vars.GetVar(visibleStr, this->bVisible);
 	if (!this->bVisible)
 		this->bSwordSheathed = true;
@@ -6303,6 +6310,8 @@ const
 		vars.SetVar(TooltipStr, this->customDescription.c_str());
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
+	if (this->bScriptDone)
+		vars.SetVar(scriptDoneStr, this->bScriptDone);
 
 	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
 }
