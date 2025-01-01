@@ -375,7 +375,7 @@ const
 	//Items the player can step on while executing a smart intra-room path.
 	if (this->bIntraRoomPath)
 	{
-		if (bIsTrapdoor(wLookTileNo))
+		if (bIsFallingTile(wLookTileNo))
 			return false;
 		if (bIsPowerUp(wLookTileNo) || bIsEquipment(wLookTileNo) ||
 				bIsMap(wLookTileNo) || bIsShovel(wLookTileNo) ||
