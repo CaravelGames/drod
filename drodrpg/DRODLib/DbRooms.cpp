@@ -9565,6 +9565,9 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 		if (bCharacter)
 		{
 			pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			//Invisible characters are not in room.
+			if (!pCharacter->IsVisible())
+				bInRoom = false;
 		}
 
 		CMonster *pNew = AddNewMonster(pMonster->wType, pMonster->wX, pMonster->wY, bInRoom);
@@ -9581,9 +9584,6 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 			} else {
 				pNew->SetMembers(pCharacter->ExtraVars); //don't need script data, just pre-existing stats
 			}
-			//Invisible characters are not in room.
-			if (!pCharacter->IsVisible())
-				bInRoom = false;
 		}
 
 		ASSERT(pNew->IsLongMonster() || pMonster->Pieces.empty());
