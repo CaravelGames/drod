@@ -3917,7 +3917,8 @@ void CGameScreen::AddDamageEffect(
 //Params:
 	const UINT wMonsterType,
 	const CMoveCoord& coord,
-	float fDamagePercent) //[default=1.0]
+	float fDamagePercent, //[default=1.0]
+	const bool bApplyJitter) //[default=true]
 {
 	if (fDamagePercent > 1.0)
 		fDamagePercent = 1.0;
@@ -4023,7 +4024,8 @@ void CGameScreen::AddDamageEffect(
 		break;
 	}
 
-	this->pRoomWidget->AddJitter(coord, fDamagePercent);
+	if (bApplyJitter)
+		this->pRoomWidget->AddJitter(coord, fDamagePercent);
 }
 
 //*****************************************************************************
@@ -4055,7 +4057,7 @@ void CGameScreen::AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord
 	}
 	g_pTheSound->PlaySoundEffect(soundID, this->fPos);
 
-	AddDamageEffect(wMonsterType, coord);
+	AddDamageEffect(wMonsterType, coord, 1.0, false);
 }
 
 //*****************************************************************************
