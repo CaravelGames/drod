@@ -8467,6 +8467,9 @@ void CDbRoom::Plot(
 				case T_FLOOR_IMAGE:
 				case T_HOT:
 				case T_WATER: case T_PIT: case T_PIT_IMAGE:
+				case T_MISTVENT:
+				case T_FIRETRAP: case T_FIRETRAP_ON:
+				case T_DIRT1: case T_DIRT3: case T_DIRT5:
 					this->coveredOSquares.Add(wX,wY,wTileNo);
 				break;
 				case T_GOO:
@@ -9703,6 +9706,12 @@ void CDbRoom::InitCoveredTiles()
 		floorMask.set(T_GOO);
 		floorMask.set(T_FLOOR_IMAGE);
 		floorMask.set(T_PRESSPLATE);
+		floorMask.set(T_MISTVENT);
+		floorMask.set(T_FIRETRAP);
+		floorMask.set(T_FIRETRAP_ON);
+		floorMask.set(T_DIRT1);
+		floorMask.set(T_DIRT3);
+		floorMask.set(T_DIRT5);
 
 		pitMask.set(T_TRAPDOOR);
 		pitMask.set(T_PLATFORM_P);
@@ -9728,6 +9737,9 @@ void CDbRoom::InitCoveredTiles()
 				case T_STAIRS:	case T_STAIRS_UP:
 				case T_HOT:
 				case T_WATER:
+				case T_MISTVENT:
+				case T_FIRETRAP: case T_FIRETRAP_ON:
+				case T_DIRT1: case T_DIRT3: case T_DIRT5:
 					this->coveredOSquares.Add(wX,wY,wOSquare);
 					++wNumTiles[wOSquare];
 				break;
