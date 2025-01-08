@@ -576,6 +576,7 @@ continue executing script commands from a different location in the script.</p>
 </a> - Player and NPC properties that may be turned on and off with the <a href="#setplayerbehavior">Set player behavior</a> and <a href="#behavior">Behavior</a> command. In most cases, the <a href="#impinvulnerable">Invulnerable</a> imperative takes precedent over damage immunity behaviors. Some NPC types will have behaviors set by default. Changing an NPC's appearance with <a href="#setappearance">Set appearance</a> will reset behaviors to that appearance's default behaviors unless the <b>Keep Behaviors</b> option is set to on.</p>
 <p><u>Shared Behaviors:</u></p>
 <ol>
+    <li><a name="beh-light-fuses"><b>Light Fuses</b></a>: The entity can light fuse ends by stepping onto them.</li>
     <li><a name="beh-drop-trapdoor"><b>Drops Trapdoors</b></a>: The entity will drop trapdoors and melt thin ice.</li>
     <li><a name="beh-drop-trapdoor-armed"><b>Drop Trapdoors When Armed</b></a>: The entity will drop trapdoors if it is armed with a weapon, and will melt thin ice.</li>
     <li><a name="beh-push-objects"><b>Push Objects</b></a>: The entity can push objects such as Mirrors and Powder Kegs.</li>
@@ -595,7 +596,6 @@ continue executing script commands from a different location in the script.</p>
 <p><u>Player Behaviors:</u></p>
 <ol>
     <li><a name="beh-bump-activate"><b>Body Strike Orbs/Beacons</b></a>: The player can activate orbs and toggle seeding beacoms by bumping them.</li>
-    <li><a name="beh-light-fuses"><b>Light Fuses</b></a>: The player will light fuse ends when they step onto them.</li>
     <li><a name="beh-step-kill"><b>Step Kill</b></a>: The player can kill monsters by stepping onto them.</li>
     <li><a name="beh-has-weapon"><b>Has Weapon</b></a>: Allows the player to weild a weapon. The weapon can still be disabled by room elements, or with the <a href="#setplayerweapon">Set player weapon</a> command.</li>
     <li><a name="beh-use-potion"><b>Use Potion/Blow Horn</b></a>: The player can use the specified potion type. They will also gain the ability to move onto that type of item if their role would otherwise prevent it.s</li>

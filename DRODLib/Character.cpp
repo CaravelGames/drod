@@ -3930,7 +3930,7 @@ void CCharacter::Process(
 	} //Wrap variables initialized within jump, to make g++ happy
 
 Finish:
-	if (this->bVisible && bIsBeethroDouble(GetResolvedIdentity()) && IsAlive())
+	if (this->bVisible && HasBehavior(ScriptFlag::LightFuses) && IsAlive())
 	{
 		//Light any fuse stood on.
 		room.LightFuseEnd(CueEvents, this->wX, this->wY);
@@ -6900,6 +6900,7 @@ void CCharacter::SetDefaultBehaviors()
 
 	if (bIsBeethroDouble(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::DropTrapdoorsArmed);
+		behaviorFlags.insert(ScriptFlag::LightFuses);
 	}
 
 	if (bIsHuman(wResolvedIdentity)) {
