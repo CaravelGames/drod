@@ -4909,6 +4909,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 {
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ActivateTokens, g_pTheDB->GetMessageText(MID_ActivateToken));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::ActivatePlates, g_pTheDB->GetMessageText(MID_ActivatePlates));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::LightFuses, g_pTheDB->GetMessageText(MID_LightFuses));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoors, g_pTheDB->GetMessageText(MID_DropTrapdoors));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::DropTrapdoorsArmed, g_pTheDB->GetMessageText(MID_DropTrapdoorsArmed));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PushObjects, g_pTheDB->GetMessageText(MID_PushObjects));
