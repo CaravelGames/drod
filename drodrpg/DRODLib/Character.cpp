@@ -1807,6 +1807,9 @@ void CCharacter::Process(
 	CDbRoom& room = *(pGame->pRoom);
 	CSwordsman& player = *pGame->pPlayer;
 
+	// Some commands should not be executed when previewing a room remotely
+	const bool bRoomBeingDisplayedOnly = pGame->IsRoomBeingDisplayedOnly();
+
 	//Keep track of swordsman's orientation on previous and current turn.
 	this->wLastSO = this->wSO;
 	this->wSO = player.wO;
@@ -2358,6 +2361,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_AddRoomToMap:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Add room at (x,y) to player's mapped rooms.
 				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
 						command.x, pGame->pLevel->dwLevelID*100 + command.y);
@@ -2373,6 +2377,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_Autosave:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Autosave with identifier 'label'.
 				WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
 				if (pGame->Autosave(saveName))
@@ -2472,6 +2477,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Wait until player faces orientation X.
 				if (!IsPlayerFacing(command, player))
 					STOP_COMMAND;
@@ -2481,6 +2487,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Wait until player moves in direction X.
 				if (!DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
@@ -2490,6 +2497,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Wait until player bumps into me (on this turn).
 				if (player.wX == this->wX && player.wY == this->wY)
 					this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
@@ -3112,6 +3120,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
+				if (bRoomBeingDisplayedOnly) return;
 				//Defines a scoring point with identifier 'label'.
 				const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
 				if (bNotFrozen ||  //when playing back commands, don't do this stuff
@@ -3200,6 +3209,7 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
+				if (bRoomBeingDisplayedOnly) return;
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
 				if (!pGame->wTurnNo)
 					return; //don't execute on the room entrance move -- execute next turn
