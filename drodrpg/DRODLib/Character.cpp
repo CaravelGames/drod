@@ -2482,7 +2482,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
 				//Wait until player faces orientation X.
-				if (bRoomBeingDisplayedOnly || !IsPlayerFacing(command, player))
+				if (!IsPlayerFacing(command, player))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -2491,7 +2491,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
 				//Wait until player moves in direction X.
-				if (bRoomBeingDisplayedOnly || !DidPlayerMove(command, player, nLastCommand))
+				if (!DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -2499,11 +2499,8 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 			{
-				if (bRoomBeingDisplayedOnly)
-					STOP_COMMAND;
-
 				//Wait until player bumps into me (on this turn).
-				if (player.wX == this->wX && player.wY == this->wY)
+				if (player.wX == this->wX && player.wY == this->wY && !bRoomBeingDisplayedOnly)
 					this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
 
 				if (!this->bPlayerTouchedMe)
@@ -3843,7 +3840,8 @@ bool CCharacter::IsEntityAt(
 		//Check for player by default if no flags are selected.
 		if (player.IsInRoom() &&
 			player.wX >= px && player.wX <= px + pw &&
-			player.wY >= py && player.wY <= py + ph)
+			player.wY >= py && player.wY <= py + ph &&
+			!this->pCurrentGame->IsRoomBeingDisplayedOnly())
 			return true;
 	}
 	if ((pflags & ScriptFlag::HALPH) != 0)
@@ -4317,7 +4315,7 @@ bool CCharacter::IsPlayerFacing(
 	const CSwordsman& player
 ) const
 {
-	if (!player.IsInRoom())
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
 		return false;
 
 	UINT px;  //command parameter
@@ -4341,7 +4339,7 @@ bool CCharacter::DidPlayerMove(
 	const int nLastCommand
 ) const
 {
-	if (!player.IsInRoom())
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
 		return false;
 
 	const bool bPlayerMoved = player.wX != player.wPrevX ||
@@ -4520,7 +4518,7 @@ bool CCharacter::EvaluateConditionalCommand(
 		}
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 		{
-			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY)
+			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY && !pGame->IsRoomBeingDisplayedOnly())
 				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
 
 			return this->bPlayerTouchedMe;
