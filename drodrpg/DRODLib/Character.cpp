@@ -1807,7 +1807,7 @@ void CCharacter::Process(
 	CDbRoom& room = *(pGame->pRoom);
 	CSwordsman& player = *pGame->pPlayer;
 
-	// Some commands should not be executed when previewing a room remotely
+	// Some commands should not have side effects when previewing a room remotely
 	const bool bRoomBeingDisplayedOnly = pGame->IsRoomBeingDisplayedOnly();
 
 	//Keep track of swordsman's orientation on previous and current turn.
@@ -2481,9 +2481,8 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
-				if (bRoomBeingDisplayedOnly) return;
 				//Wait until player faces orientation X.
-				if (!IsPlayerFacing(command, player))
+				if (bRoomBeingDisplayedOnly || !IsPlayerFacing(command, player))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -2491,9 +2490,8 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
-				if (bRoomBeingDisplayedOnly) return;
 				//Wait until player moves in direction X.
-				if (!DidPlayerMove(command, player, nLastCommand))
+				if (bRoomBeingDisplayedOnly || !DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
 
 				bProcessNextCommand = true;
@@ -2501,7 +2499,9 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 			{
-				if (bRoomBeingDisplayedOnly) return;
+				if (bRoomBeingDisplayedOnly)
+					STOP_COMMAND;
+
 				//Wait until player bumps into me (on this turn).
 				if (player.wX == this->wX && player.wY == this->wY)
 					this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
@@ -3214,7 +3214,8 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
-				if (bRoomBeingDisplayedOnly) return;
+				if (bRoomBeingDisplayedOnly)
+					return;
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
 				if (!pGame->wTurnNo)
 					return; //don't execute on the room entrance move -- execute next turn
@@ -3355,16 +3356,16 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
-				if (!bRoomBeingDisplayedOnly)
+				if (this->bIfBlock)
 				{
-					if (this->bIfBlock)
+					//As an If condition, this acts as a query that is true when
+					//the player is in this role.
+					if (player.wIdentity != command.x)
+						STOP_COMMAND;
+				}
+				else {
+					if (!bRoomBeingDisplayedOnly)
 					{
-						//As an If condition, this acts as a query that is true when
-						//the player is in this role.
-						if (player.wIdentity != command.x)
-							STOP_COMMAND;
-					}
-					else {
 						//Sets player's identity to entity X.
 						pGame->SetPlayerRole(command.x);
 					}
