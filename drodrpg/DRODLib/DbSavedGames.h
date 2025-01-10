@@ -78,6 +78,7 @@ struct ExploredRoom
 	CMonster *pMonsterList;
 	CIDSet litFuses;
 	CCoordStack platformDeltas;
+	c4_Bytes tileLightsBytes;
 
 //	vector<UINT> orbTypes; //track broken orbs/plates -- no longer used
 };

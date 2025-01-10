@@ -7066,6 +7066,11 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		pLastNewMonster = pNew;
 	}
 
+	//Save tile lights
+	pBytes = room.PackTileLights();
+	pExpRoom->tileLightsBytes = c4_Bytes(pBytes->Contents(), pBytes->Size(), true);
+	delete pBytes;
+
 	//All other data should be non-mutable or reconstructible on room init.
 }
 

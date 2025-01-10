@@ -116,7 +116,8 @@ ExploredRoom::ExploredRoom()
 //*******************************************************************************
 ExploredRoom::ExploredRoom(const ExploredRoom& that)
 //Copy constructor.
-	: SquaresBytes(that.SquaresBytes.Contents(), that.SquaresBytes.Size(), true)
+	: SquaresBytes()
+	, tileLightsBytes()
 {
 	this->roomID = that.roomID;
 	this->bMapOnly = that.bMapOnly;
@@ -125,6 +126,10 @@ ExploredRoom::ExploredRoom(const ExploredRoom& that)
 	this->litFuses = that.litFuses;
 	this->platformDeltas = that.platformDeltas;
 //	this->orbTypes = that.orbTypes;
+	if (that.SquaresBytes.Size())
+		this->SquaresBytes = c4_Bytes(that.SquaresBytes.Contents(), that.SquaresBytes.Size(), true);
+	if (that.tileLightsBytes.Size())
+		this->tileLightsBytes = c4_Bytes(that.tileLightsBytes.Contents(), that.tileLightsBytes.Size(), true);
 
 	saveMonsterList(that.pMonsterList);
 }
@@ -385,6 +390,11 @@ void CDbSavedGame::LoadExploredRooms(const c4_View& ExploredRoomsView)
 		c4_View LitFusesView = p_LitFuses(row);
 		c4_View PlatformDeltasView = p_PlatformDeltas(row);
 		c4_View OrbTypesView = p_OrbTypes(row);
+		c4_Bytes TileLightsBytes = p_TileLights(row);
+		if (TileLightsBytes.Size())
+			pRoom->tileLightsBytes = c4_Bytes(TileLightsBytes.Contents(), TileLightsBytes.Size(), true);
+		else
+			pRoom->tileLightsBytes = c4_Bytes();
 
 		UINT wCount = 0;
 
@@ -996,6 +1006,14 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 				}
 */
 				break;
+				case P_TileLights:
+				{
+					BYTE* data;
+					const UINT size = Base64::decode(str, data);
+					pImportExploredRoom->tileLightsBytes = c4_Bytes((const BYTE*)data, size, true);
+					delete[] data;
+				}
+				break;
 				case P_End:
 					//Finish processing
 					if (pImportExploredRoom->roomID) //only save records for valid rooms
@@ -1370,6 +1388,7 @@ const
 		p_LitFuses(row) = LitFusesView;
 		p_PlatformDeltas(row) = PlatformDeltasView;
 		p_OrbTypes(row) = OrbTypesView;
+		p_TileLights(row) = room.tileLightsBytes;
 	}
 }
 
@@ -2033,6 +2052,10 @@ void CDbSavedGames::ExportXML(
 				str += CLOSETAG;
 			}
 */
+
+			str += PROPTAG(P_TileLights);
+			str += Base64::encode(r.tileLightsBytes.Contents(), r.tileLightsBytes.Size());
+			str += CLOSETAG;
 
 			str += ENDVPTAG(VP_ExploredRooms);
 		}

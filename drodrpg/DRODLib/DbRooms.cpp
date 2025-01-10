@@ -9491,6 +9491,10 @@ void CDbRoom::SetMembersFromExploredRoomData(ExploredRoom *pExpRoom)
 
 	//Load room state.
 	UnpackSquares(pExpRoom->SquaresBytes.Contents(), pExpRoom->SquaresBytes.Size());
+
+	if (pExpRoom->tileLightsBytes.Size())
+		UnpackTileLights(pExpRoom->tileLightsBytes.Contents(), pExpRoom->tileLightsBytes.Size());
+
 	InitRoomStats(true); //don't alter platform connected components
 
 	//Load special room info.
