@@ -2361,27 +2361,31 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_AddRoomToMap:
 			{
-				if (bRoomBeingDisplayedOnly) break;
-				//Add room at (x,y) to player's mapped rooms.
-				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
-						command.x, pGame->pLevel->dwLevelID*100 + command.y);
-				if (roomID)
+				if (!bRoomBeingDisplayedOnly)
 				{
-					const bool bMarkExplored = command.w != 0;
-					pGame->AddRoomToMap(roomID, bMarkExplored);
-					CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
+					//Add room at (x,y) to player's mapped rooms.
+					const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+						command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+					if (roomID)
+					{
+						const bool bMarkExplored = command.w != 0;
+						pGame->AddRoomToMap(roomID, bMarkExplored);
+						CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
 							bMarkExplored ? T_MAP_DETAIL : T_MAP));
+					}
 				}
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_Autosave:
 			{
-				if (bRoomBeingDisplayedOnly) break;
-				//Autosave with identifier 'label'.
-				WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
-				if (pGame->Autosave(saveName))
-					CueEvents.Add(CID_Autosave);
+				if (!bRoomBeingDisplayedOnly)
+				{
+					//Autosave with identifier 'label'.
+					WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
+					if (pGame->Autosave(saveName))
+						CueEvents.Add(CID_Autosave);
+				}
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3120,19 +3124,20 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
-				if (bRoomBeingDisplayedOnly) break;
-				//Defines a scoring point with identifier 'label'.
-				const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
-				if (bNotFrozen ||  //when playing back commands, don't do this stuff
-						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+				if (!bRoomBeingDisplayedOnly)
 				{
-					CDbMessageText *pScoreIDText = new CDbMessageText();
-					*pScoreIDText = command.label.c_str();
-					CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
-					if (bNotFrozen)
-						const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+					//Defines a scoring point with identifier 'label'.
+					const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
+					if (bNotFrozen ||  //when playing back commands, don't do this stuff
+						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+					{
+						CDbMessageText* pScoreIDText = new CDbMessageText();
+						*pScoreIDText = command.label.c_str();
+						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
+						if (bNotFrozen)
+							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+					}
 				}
-
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3350,16 +3355,19 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
-				if (bRoomBeingDisplayedOnly) break;
-				if (this->bIfBlock)
+				if (!bRoomBeingDisplayedOnly)
 				{
-					//As an If condition, this acts as a query that is true when
-					//the player is in this role.
-					if (player.wIdentity != command.x)
-						STOP_COMMAND;
-				} else {
-					//Sets player's identity to entity X.
-					pGame->SetPlayerRole(command.x);
+					if (this->bIfBlock)
+					{
+						//As an If condition, this acts as a query that is true when
+						//the player is in this role.
+						if (player.wIdentity != command.x)
+							STOP_COMMAND;
+					}
+					else {
+						//Sets player's identity to entity X.
+						pGame->SetPlayerRole(command.x);
+					}
 				}
 				bProcessNextCommand = true;
 			}
