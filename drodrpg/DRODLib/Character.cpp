@@ -2361,7 +2361,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_AddRoomToMap:
 			{
-				if (bRoomBeingDisplayedOnly) return;
+				if (bRoomBeingDisplayedOnly) break;
 				//Add room at (x,y) to player's mapped rooms.
 				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
 						command.x, pGame->pLevel->dwLevelID*100 + command.y);
@@ -2377,7 +2377,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_Autosave:
 			{
-				if (bRoomBeingDisplayedOnly) return;
+				if (bRoomBeingDisplayedOnly) break;
 				//Autosave with identifier 'label'.
 				WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
 				if (pGame->Autosave(saveName))
@@ -3120,7 +3120,7 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
-				if (bRoomBeingDisplayedOnly) return;
+				if (bRoomBeingDisplayedOnly) break;
 				//Defines a scoring point with identifier 'label'.
 				const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
 				if (bNotFrozen ||  //when playing back commands, don't do this stuff
@@ -3350,6 +3350,7 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
+				if (bRoomBeingDisplayedOnly) break;
 				if (this->bIfBlock)
 				{
 					//As an If condition, this acts as a query that is true when
