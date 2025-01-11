@@ -65,7 +65,7 @@ public:
 	//For priority queue insertion:
 	//An element being inserted with equal or higher dwScore gets placed later in the queue.
 	//FIXME: The current operator could have different behavior, based on implementation.
-	bool operator <(const CPathNode& mc) const {return this->wScore >= mc.wScore;}
+	bool operator <(const CPathNode& mc) const {return mc.wScore < this->wScore;}
 };
 
 //
