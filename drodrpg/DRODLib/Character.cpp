@@ -1807,6 +1807,9 @@ void CCharacter::Process(
 	CDbRoom& room = *(pGame->pRoom);
 	CSwordsman& player = *pGame->pPlayer;
 
+	// Some commands should not have side effects when previewing a room remotely
+	const bool bRoomBeingDisplayedOnly = pGame->IsRoomBeingDisplayedOnly();
+
 	//Keep track of swordsman's orientation on previous and current turn.
 	this->wLastSO = this->wSO;
 	this->wSO = player.wO;
@@ -2358,25 +2361,31 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_AddRoomToMap:
 			{
-				//Add room at (x,y) to player's mapped rooms.
-				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
-						command.x, pGame->pLevel->dwLevelID*100 + command.y);
-				if (roomID)
+				if (!bRoomBeingDisplayedOnly)
 				{
-					const bool bMarkExplored = command.w != 0;
-					pGame->AddRoomToMap(roomID, bMarkExplored);
-					CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
+					//Add room at (x,y) to player's mapped rooms.
+					const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+						command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+					if (roomID)
+					{
+						const bool bMarkExplored = command.w != 0;
+						pGame->AddRoomToMap(roomID, bMarkExplored);
+						CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
 							bMarkExplored ? T_MAP_DETAIL : T_MAP));
+					}
 				}
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_Autosave:
 			{
-				//Autosave with identifier 'label'.
-				WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
-				if (pGame->Autosave(saveName))
-					CueEvents.Add(CID_Autosave);
+				if (!bRoomBeingDisplayedOnly)
+				{
+					//Autosave with identifier 'label'.
+					WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
+					if (pGame->Autosave(saveName))
+						CueEvents.Add(CID_Autosave);
+				}
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2491,7 +2500,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 			{
 				//Wait until player bumps into me (on this turn).
-				if (player.wX == this->wX && player.wY == this->wY)
+				if (player.wX == this->wX && player.wY == this->wY && !bRoomBeingDisplayedOnly)
 					this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
 
 				if (!this->bPlayerTouchedMe)
@@ -3112,18 +3121,20 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
-				//Defines a scoring point with identifier 'label'.
-				const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
-				if (bNotFrozen ||  //when playing back commands, don't do this stuff
-						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+				if (!bRoomBeingDisplayedOnly)
 				{
-					CDbMessageText *pScoreIDText = new CDbMessageText();
-					*pScoreIDText = command.label.c_str();
-					CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
-					if (bNotFrozen)
-						const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+					//Defines a scoring point with identifier 'label'.
+					const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
+					if (bNotFrozen ||  //when playing back commands, don't do this stuff
+						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+					{
+						CDbMessageText* pScoreIDText = new CDbMessageText();
+						*pScoreIDText = command.label.c_str();
+						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
+						if (bNotFrozen)
+							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+					}
 				}
-
 				bProcessNextCommand = true;
 			}
 			break;
@@ -3200,6 +3211,8 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
+				if (bRoomBeingDisplayedOnly)
+					return;
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
 				if (!pGame->wTurnNo)
 					return; //don't execute on the room entrance move -- execute next turn
@@ -3346,9 +3359,13 @@ void CCharacter::Process(
 					//the player is in this role.
 					if (player.wIdentity != command.x)
 						STOP_COMMAND;
-				} else {
-					//Sets player's identity to entity X.
-					pGame->SetPlayerRole(command.x);
+				}
+				else {
+					if (!bRoomBeingDisplayedOnly)
+					{
+						//Sets player's identity to entity X.
+						pGame->SetPlayerRole(command.x);
+					}
 				}
 				bProcessNextCommand = true;
 			}
@@ -3823,7 +3840,8 @@ bool CCharacter::IsEntityAt(
 		//Check for player by default if no flags are selected.
 		if (player.IsInRoom() &&
 			player.wX >= px && player.wX <= px + pw &&
-			player.wY >= py && player.wY <= py + ph)
+			player.wY >= py && player.wY <= py + ph &&
+			!this->pCurrentGame->IsRoomBeingDisplayedOnly())
 			return true;
 	}
 	if ((pflags & ScriptFlag::HALPH) != 0)
@@ -4297,7 +4315,7 @@ bool CCharacter::IsPlayerFacing(
 	const CSwordsman& player
 ) const
 {
-	if (!player.IsInRoom())
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
 		return false;
 
 	UINT px;  //command parameter
@@ -4321,7 +4339,7 @@ bool CCharacter::DidPlayerMove(
 	const int nLastCommand
 ) const
 {
-	if (!player.IsInRoom())
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
 		return false;
 
 	const bool bPlayerMoved = player.wX != player.wPrevX ||
@@ -4500,7 +4518,7 @@ bool CCharacter::EvaluateConditionalCommand(
 		}
 		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 		{
-			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY)
+			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY && !pGame->IsRoomBeingDisplayedOnly())
 				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
 
 			return this->bPlayerTouchedMe;
