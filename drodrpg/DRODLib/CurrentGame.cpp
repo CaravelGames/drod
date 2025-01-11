@@ -422,7 +422,12 @@ void CCurrentGame::AddRoomToMap(
 			pRoom->PreprocessMonsters(Ignored);
 			this->bExecuteNoMoveCommands = bExecOriginal;
 */
-
+			if (!bSaveRoom)
+			{
+				// If we don't want to include the room in save data, then we are adding a preview room.
+				// Any mapOnly room will need converting to a preview room by unsetting bSave.
+				pExpRoom->bSave = false;
+			}
 			SaveExploredRoomData(*pRoom);
 
 			this->pRoom = pOrigRoom;
