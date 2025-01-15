@@ -674,6 +674,14 @@ Auto undo on death
 [eng]
 Activate Cloud Sync
 
+[MID_DeactivateCloudSyncPrompt]
+[eng]
+Deactivate cloud sync for this profile? This will only affect the local profile.
+
+[MID_ReactivateCloudSyncPrompt]
+[eng]
+A cloud player profile was already set for this CaravelNet account, which matches the local profile. Reactivate cloud sync?
+
 [MID_ResizableWindow]
 [eng]
 Resizable Window

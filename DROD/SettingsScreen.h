@@ -66,6 +66,9 @@ private:
 	bool     AreCNetDetailsChanged(CDbPlayer *pPlayer);
 	bool     CanCommandsShareInput(int command, int otherCommand) const;
 	void     CloudActivate();
+	void     CloudReactivate();
+	void     CloudToggle();
+	bool     DoesCloudPlayerMatchLocalPlayer(CDbPlayer* pPlayer, const string cloudPlayerXML) const;
 	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const InputKey CurrentKey, InputKey &NewKey, const bool bAllowSpecial);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void OnClick(const UINT dwTagNo);
@@ -77,6 +80,7 @@ private:
 	void     SetUndoLevelNumLabel();
 	void     SetUnspecifiedPlayerSettings(CDbPackedVars &Settings);
 	void     SetWidgetStates();
+	void     SetCloudWidgetStates();
 	void     SynchOption(const UINT dwTagNo);
 	void     SynchScreenSizeWidget();
 	void     UpdatePlayerDataFromWidgets(CDbPlayer *pPlayer);
