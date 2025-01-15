@@ -1367,7 +1367,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						ability = EquipmentDescription::GetPredefinedWeaponAbility(equipmentType, wszCommaSpace);
 						newATK = this->pCurrentGame->getPredefinedWeaponPower(equipmentType);
 					} else if (tTile == T_SHIELD) {
-						ability = EquipmentDescription::GetPredefinedShieldAbility(equipmentType);
+						ability = EquipmentDescription::GetPredefinedShieldAbility(equipmentType, wszCommaSpace);
 						newDEF = this->pCurrentGame->getPredefinedShieldPower(equipmentType);
 					} else if (tTile == T_ACCESSORY) {
 						ability = EquipmentDescription::GetPredefinedAccessoryAbility(equipmentType);
@@ -5607,6 +5607,9 @@ UINT CRoomWidget::GetShieldMID(const UINT param)
 		case KiteShield: return MID_Shield4;
 		case OremiteShield: return MID_Shield5;
 		case ArmorSlot: return MID_Shield6;
+		case MirrorShield: return MID_Shield7;
+		case LeatherShield: return MID_Shield8;
+		case AluminumShield: return MID_Shield9;
 	}
 }
 

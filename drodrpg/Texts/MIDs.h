@@ -457,6 +457,9 @@ enum MID_CONSTANT {
   MID_Sword11 = 1978,
   MID_Sword12 = 1979,
   MID_Sword13 = 1980,
+  MID_Shield7 = 1982,
+  MID_Shield8 = 1983,
+  MID_Shield9 = 1984,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,

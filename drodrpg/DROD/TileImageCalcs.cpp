@@ -2183,6 +2183,9 @@ UINT CalcTileImageForShield(const BYTE tParam)
 		case KiteShield: return TI_SHIELD4;
 		case OremiteShield: return TI_SHIELD5;
 		case ArmorSlot: return TI_SHIELD6;
+		case MirrorShield: return TI_SHIELD7;
+		case LeatherShield: return TI_SHIELD8;
+		case AluminumShield: return TI_SHIELD9;
 
 		default: return TI_UNSPECIFIED;
 	}

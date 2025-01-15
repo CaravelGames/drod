@@ -4491,6 +4491,9 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(TV_SHIELD4, g_pTheDB->GetMessageText(MID_Shield4));
 	pListBox->AddItem(TV_SHIELD5, g_pTheDB->GetMessageText(MID_Shield5));
 	pListBox->AddItem(TV_SHIELD6, g_pTheDB->GetMessageText(MID_Shield6));
+	pListBox->AddItem(TV_SHIELD7, g_pTheDB->GetMessageText(MID_Shield7));
+	pListBox->AddItem(TV_SHIELD8, g_pTheDB->GetMessageText(MID_Shield8));
+	pListBox->AddItem(TV_SHIELD9, g_pTheDB->GetMessageText(MID_Shield9));
 	pListBox->AddItem(TV_ACCESSORY1, g_pTheDB->GetMessageText(MID_Accessory1));
 	pListBox->AddItem(TV_ACCESSORY2, g_pTheDB->GetMessageText(MID_Accessory2));
 	pListBox->AddItem(TV_ACCESSORY3, g_pTheDB->GetMessageText(MID_Accessory3));

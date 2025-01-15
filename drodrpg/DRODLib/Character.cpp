@@ -4032,7 +4032,7 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 						realTile = T_SWORD;
 					break;
 					case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
-					case TV_SHIELD6:
+					case TV_SHIELD6: case TV_SHIELD7: case TV_SHIELD8: case TV_SHIELD9:
 						realTile = T_SHIELD;
 					break;
 					case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
@@ -4071,6 +4071,9 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case TV_SHIELD4: param = KiteShield; break;
 					case TV_SHIELD5: param = OremiteShield; break;
 					case TV_SHIELD6: param = ArmorSlot; break;
+					case TV_SHIELD7: param = MirrorShield; break;
+					case TV_SHIELD8: param = LeatherShield; break;
+					case TV_SHIELD9: param = AluminumShield; break;
 					case TV_ACCESSORY1: param = GrapplingHook; break;
 					case TV_ACCESSORY2: param = WaterBoots; break;
 					case TV_ACCESSORY3: param = InvisibilityPotion; break;
