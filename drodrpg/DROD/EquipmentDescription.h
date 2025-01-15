@@ -33,7 +33,7 @@ class CCharacter;
 class EquipmentDescription {
 public:
 	static WSTRING GetPredefinedAccessoryAbility(UINT type);
-	static WSTRING GetPredefinedShieldAbility(UINT type);
+	static WSTRING GetPredefinedShieldAbility(UINT type, const WSTRING& separator);
 	static WSTRING GetPredefinedWeaponAbility(UINT type, const WSTRING& separator);
 
 	static WSTRING GetEquipmentAbility(

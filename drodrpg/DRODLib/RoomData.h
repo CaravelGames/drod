@@ -257,6 +257,9 @@ enum ShieldType
 	KiteShield = 4,
 	OremiteShield = 5,
 	ArmorSlot = 6,
+	MirrorShield = 7,
+	LeatherShield = 8,
+	AluminumShield = 9,
 	ShieldCount,
 	ShieldSwordOffset = 8 //Backwards-compatibility: Don't change this value.
 			//Shields originally were indexed immediately after swords in the

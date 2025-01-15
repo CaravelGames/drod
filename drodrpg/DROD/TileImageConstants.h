@@ -2523,7 +2523,10 @@
 #define TI_SPEAR_SWORD_NEUTRAL 2329
 //*****************************************************************************
 #define TI_DAGGER_SWORD 2330
-static const UINT TI_COUNT = 2331;
+#define TI_SHIELD7      2331
+#define TI_SHIELD8      2332
+#define TI_SHIELD9      2333
+static const UINT TI_COUNT = 2334;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

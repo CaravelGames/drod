@@ -230,7 +230,8 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
 			newTile = T_SWORD;
 			break;
-		case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5: case TV_SHIELD6:
+		case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
+		case TV_SHIELD6: case TV_SHIELD7: case TV_SHIELD8: case TV_SHIELD9:
 			newTile = T_SHIELD;
 			break;
 		case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
@@ -305,6 +306,9 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_SHIELD4: room.SetTParam(x, y, KiteShield); break;
 		case TV_SHIELD5: room.SetTParam(x, y, OremiteShield); break;
 		case TV_SHIELD6: room.SetTParam(x, y, ArmorSlot); break;
+		case TV_SHIELD7: room.SetTParam(x, y, MirrorShield); break;
+		case TV_SHIELD8: room.SetTParam(x, y, LeatherShield); break;
+		case TV_SHIELD9: room.SetTParam(x, y, AluminumShield); break;
 		case TV_ACCESSORY1: room.SetTParam(x, y, GrapplingHook); break;
 		case TV_ACCESSORY2: room.SetTParam(x, y, WaterBoots); break;
 		case TV_ACCESSORY3: room.SetTParam(x, y, InvisibilityPotion); break;

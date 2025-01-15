@@ -42,15 +42,31 @@ WSTRING EquipmentDescription::GetPredefinedAccessoryAbility(UINT type)
 }
 
 //*****************************************************************************
-WSTRING EquipmentDescription::GetPredefinedShieldAbility(UINT type)
+WSTRING EquipmentDescription::GetPredefinedShieldAbility(
+	UINT type, const WSTRING& separator)
 //Returns: string with text of the shield's ability, or empty string if none
 {
 	WSTRING wstr;
 
 	if (!(type == ShieldType::WoodenShield ||
 		type == ShieldType::OremiteShield ||
+		type == ShieldType::LeatherShield ||
 		type == ShieldType::ArmorSlot)) {
 		wstr += g_pTheDB->GetMessageText(MID_BehaviorMetal);
+	}
+
+	switch (type) {
+		case ShieldType::MirrorShield: {
+			wstr += separator;
+			wstr += g_pTheDB->GetMessageText(MID_BehaviorBeamBlock);
+		}
+		break;
+		case ShieldType::AluminumShield: {
+			wstr += separator;
+			wstr += g_pTheDB->GetMessageText(MID_MistImmune);
+		}
+		break;
+		default: break;
 	}
 
 	return wstr;

@@ -897,6 +897,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Sword11: strText = "Dagger"; break;
 		case MID_Sword12: strText = "Staff"; break;
 		case MID_Sword13: strText = "Spear"; break;
+		case MID_Shield7: strText = "Mirror Shield"; break;
+		case MID_Shield8: strText = "Leather Shield"; break;
+		case MID_Shield9: strText = "Aluminum Shield"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

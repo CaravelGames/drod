@@ -1823,7 +1823,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Armor, wszCRLF);
 				}
 			} else if (st.shield) {
-				ability = EquipmentDescription::GetPredefinedShieldAbility(st.shield);
+				ability = EquipmentDescription::GetPredefinedShieldAbility(st.shield, wszCRLF);
 			}
 		break;
 		case CMD_USE_ACCESSORY:

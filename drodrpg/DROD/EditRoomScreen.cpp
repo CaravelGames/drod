@@ -217,7 +217,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DARK_CEILING},                                 //T_DARK_CEILING
 	{TI_WALLLIGHT},                                    //T_WALLLIGHT
 	{TI_YELLOWKEY},                                    //T_KEY
-	{TI_SWORD1},                                       //T_SWORD
+	{TI_DAGGER_SWORD},                                 //T_SWORD
 	{TI_MONEYDOOR_O},                                  //T_DOOR_MONEY
 	{TI_SHIELD1},                                      //T_SHIELD
 	{TI_HEALTH_SM},                                    //T_HEALTH_SM
@@ -545,23 +545,31 @@ const UINT TokenDisplayTiles[RoomTokenCount] =
 
 const UINT SwordDisplayTiles[SwordCount] =
 {
-	TI_SWORD1, TI_SWORD2, TI_SWORD6, TI_SWORD3, TI_SWORD4,
-	TI_SWORD5, TI_SWORD7, TI_SWORD8, TI_SWORD9, TI_DAGGER_SWORD,
-	TI_STAFF_SWORD_NEUTRAL, TI_SPEAR_SWORD_NEUTRAL, TI_SWORD10
+	TI_DAGGER_SWORD, TI_SWORD1, TI_SWORD7, TI_SWORD9, TI_SWORD2,
+	TI_SWORD6, TI_STAFF_SWORD_NEUTRAL, TI_SPEAR_SWORD_NEUTRAL, TI_SWORD3, TI_SWORD4,
+	TI_SWORD8, TI_SWORD5, TI_SWORD10
 };
 
 const UINT SwordOrder[SwordCount] =
 {
-	WoodenBlade, ShortSword, GoblinSword, LongSword, HookSword,
-	ReallyBigSword, LuckySword, SerpentSword, BriarSword, Dagger,
-	Staff, Spear, WeaponSlot
+	Dagger, WoodenBlade, LuckySword, BriarSword, ShortSword,
+	GoblinSword, Staff, Spear, LongSword, HookSword,
+	SerpentSword, ReallyBigSword, WeaponSlot
 };
 const UINT SwordOrderSize = 13; // number of items in the above array
 
 const UINT ShieldDisplayTiles[ShieldCount] =
 {
-	TI_SHIELD1, TI_SHIELD2, TI_SHIELD3, TI_SHIELD4, TI_SHIELD5, TI_SHIELD6
+	TI_SHIELD1, TI_SHIELD2, TI_SHIELD7, TI_SHIELD8, TI_SHIELD9,
+	TI_SHIELD3, TI_SHIELD4, TI_SHIELD5, TI_SHIELD6
 };
+
+const UINT ShieldOrder[ShieldCount] =
+{
+	WoodenShield, BronzeShield, MirrorShield, LeatherShield, AluminumShield,
+	SteelShield, KiteShield, OremiteShield, ArmorSlot
+};
+const UINT ShieldOrderSize = 9; // number of items in the above array
 
 const UINT AccessoryDisplayTiles[AccessoryCount] =
 {
@@ -771,7 +779,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, wSelOrbType(OT_NORMAL), wSelPlateType(OT_TOGGLE)
 	, wSelTokenType(RotateArrowsCW)
 	, wSelKeyType(YellowKey)
-	, wSelSwordType(WoodenBlade), wSelShieldType(WoodenShield), wSelAccessoryType(GrapplingHook)
+	, wSelSwordType(Dagger), wSelShieldType(WoodenShield), wSelAccessoryType(GrapplingHook)
 	, wLastFloorSelected(T_FLOOR)
 	, wLastEntranceSelected(static_cast<UINT>(-1))
 	, bSelectingImageStart(false)
@@ -843,8 +851,8 @@ CEditRoomScreen::CEditRoomScreen()
 	static const int Y_EQUIPMENU = Y_LIGHTMENU;
 	const UINT CX_SWORDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x4
 	const UINT CY_SWORDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
-	const UINT CX_SHIELDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x2
-	const UINT CY_SHIELDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+	const UINT CX_SHIELDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
+	const UINT CY_SHIELDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
 	const UINT CX_ACCESSORYMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
 	const UINT CY_ACCESSORYMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
 
@@ -985,7 +993,7 @@ CEditRoomScreen::CEditRoomScreen()
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT shield=1; shield<ShieldCount; ++shield)
-		pObjectMenu->AddObject(shield, 1, 1, ShieldDisplayTiles + shield-1);
+		pObjectMenu->AddObject(ShieldOrder[shield - 1], 1, 1, ShieldDisplayTiles + shield - 1);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
@@ -6728,7 +6736,7 @@ void CEditRoomScreen::RotateClockwise()
 		return;
 	}
 
-	UINT swordOrderIndex = 0;
+	UINT swordOrderIndex, shieldOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6814,8 +6822,15 @@ void CEditRoomScreen::RotateClockwise()
 		case T_SHIELD:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid shield type.
+			for (shieldOrderIndex = 0; shieldOrderIndex < ShieldOrderSize; shieldOrderIndex++)
+			{
+				if (this->wSelShieldType == ShieldOrder[shieldOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelShieldType =
-					this->wSelShieldType == ShieldCount-1 ? 1 : this->wSelShieldType + 1;
+				shieldOrderIndex == ShieldOrderSize - 1 ? ShieldOrder[0] : ShieldOrder[shieldOrderIndex + 1];
 			UpdateMenuGraphic(T_SHIELD);
 		break;
 		case T_ACCESSORY:
@@ -6854,7 +6869,7 @@ void CEditRoomScreen::RotateCounterClockwise()
 		return;
 	}
 
-	UINT swordOrderIndex = 0;
+	UINT swordOrderIndex, shieldOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6941,8 +6956,15 @@ void CEditRoomScreen::RotateCounterClockwise()
 		case T_SHIELD:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid shield type.
+			for (shieldOrderIndex = 0; shieldOrderIndex < ShieldOrderSize; shieldOrderIndex++)
+			{
+				if (this->wSelShieldType == ShieldOrder[shieldOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelShieldType =
-					this->wSelShieldType == 1 ? ShieldCount-1 : this->wSelShieldType - 1;
+				shieldOrderIndex == 0 ? ShieldOrder[ShieldOrderSize - 1] : ShieldOrder[shieldOrderIndex - 1];
 			UpdateMenuGraphic(T_SHIELD);
 		break;
 		case T_ACCESSORY:

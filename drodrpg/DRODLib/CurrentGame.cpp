@@ -3346,6 +3346,8 @@ bool CCurrentGame::equipmentBlocksGaze(const UINT type) const
 
 	if (type == ScriptFlag::Weapon && this->pPlayer->st.sword == ReallyBigSword)
 		return true;
+	if (type == ScriptFlag::Armor && this->pPlayer->st.shield == MirrorShield)
+		return true;
 
 	CCharacter* pCharacter = getCustomEquipment(type);
 	if (pCharacter && pCharacter->HasRayBlocking())
@@ -3492,6 +3494,9 @@ int CCurrentGame::getPredefinedShieldPower(const UINT type)
 		case SteelShield: return 70;
 		case KiteShield: return 120;
 		case OremiteShield: return 220;  //can use on oremites
+		case MirrorShield: return 30; //Blocks Beams
+		case LeatherShield: return 50; //can use on oremites
+		case AluminumShield: return 50; //Mist protection
 	}
 }
 
@@ -3823,6 +3828,8 @@ bool CCurrentGame::IsPlayerMistImmune() const
 			return true;
 	}
 	if (!IsPlayerShieldDisabled()) {
+		if (this->pPlayer->st.shield == AluminumShield)
+			return true;
 		pCharacter = getCustomEquipment(ScriptFlag::Armor);
 		if (pCharacter && pCharacter->IsMistImmune())
 			return true;
@@ -3939,6 +3946,7 @@ bool CCurrentGame::IsShieldMetal(const UINT type) const
 		case NoShield:
 		case WoodenShield:
 		case OremiteShield:
+		case LeatherShield:
 			return false;
 		default:
 		{
