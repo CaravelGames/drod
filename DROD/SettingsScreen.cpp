@@ -57,6 +57,12 @@
 
 using namespace InputCommands;
 
+//Static values for storing cloud profile information
+namespace {
+	static WSTRING s_cloudOriginalName;
+	static time_t s_cloudCreated;
+};
+
 //Tabbed menu info.
 #define PERSONAL_TAB (0)
 #define GAS_TAB (1)
@@ -396,7 +402,7 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 
 #ifndef STEAMBUILD
 	pPersonalFrame->AddWidget(
-		new CButtonWidget(TAG_CLOUD_ACTIVATE, X_CLOUD_ACTIVATE, Y_CLOUD_ACTIVATE,
+		new COptionButtonWidget(TAG_CLOUD_ACTIVATE, X_CLOUD_ACTIVATE, Y_CLOUD_ACTIVATE,
 			CX_CLOUD_ACTIVATE, CY_CLOUD_ACTIVATE, g_pTheDB->GetMessageText(MID_ActivateCloudSync)));
 #endif
 
@@ -1159,7 +1165,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 			UploadScores();
 		break;
 		case TAG_CLOUD_ACTIVATE:
-			CloudActivate();
+			CloudToggle();
 		break;
 	}  //switch dwTagNo
 
@@ -1488,6 +1494,22 @@ void CSettingsScreen::SetWidgetStates()
 	pButton->Enable(!holdIds.empty());
 	if (bButtonsVisible)
 		pButton->RequestPaint();
+
+	SetCloudWidgetStates();
+}
+
+//************************************************************************************
+void CSettingsScreen::SetCloudWidgetStates()
+//Enable/disable widgets depending on state. Separate from SetWidgetStates due to how
+//cloud settings are handled.
+{
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+
+	COptionButtonWidget* pButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CLOUD_ACTIVATE));
+	pButton->SetChecked(pPlayer->Settings.GetVar(Settings::CloudActivated, false));
+	pButton->RequestPaint();
+	delete pPlayer;
 }
 
 //************************************************************************************
@@ -2156,6 +2178,23 @@ const
 }
 
 //*****************************************************************************
+void CSettingsScreen::CloudToggle()
+{
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	if (pPlayer->Settings.GetVar(Settings::CloudActivated, false)) {
+		if (ShowYesNoMessage(MID_DeactivateCloudSyncPrompt) == TAG_YES) {
+			pPlayer->Settings.SetVar(Settings::CloudActivated, false);
+			pPlayer->Update();
+		}
+	} else {
+		CloudActivate();
+	}
+
+	delete pPlayer;
+	SetCloudWidgetStates();
+}
+
+//*****************************************************************************
 void CSettingsScreen::CloudActivate()
 {
 	ShowOkMessage(MID_CaravelNetCloudExplanation);
@@ -2184,10 +2223,14 @@ void CSettingsScreen::CloudActivate()
 	if (pResult->pJson) {
 		const string cloudPlayerXML = pResult->pJson->get("player", "").asString();
 		if (!cloudPlayerXML.empty()) {
-			// A player profile has already been uploaded to CaravelNet.
-			// Abort uploading this one.
-			Paint();
-			ShowOkMessage(MID_CloudPlayerAlreadyUploaded);
+			if (DoesCloudPlayerMatchLocalPlayer(pCurrentPlayer, cloudPlayerXML)) {
+				CloudReactivate();
+			} else {
+				// Another player profile has already been uploaded to CaravelNet.
+				// Abort uploading this one.
+				Paint();
+				ShowOkMessage(MID_CloudPlayerAlreadyUploaded);
+			}
 			return;
 		}
 		delete pResult;
@@ -2246,4 +2289,76 @@ void CSettingsScreen::CloudActivate()
 
 	Paint();
 	ShowOkMessage(bSuccess ? MID_CloudSynchSuccessful : MID_CloudSynchError);
+}
+
+//*****************************************************************************
+void CSettingsScreen::CloudReactivate()
+//Re-enable cloud uploads
+{
+	if (ShowYesNoMessage(MID_ReactivateCloudSyncPrompt) == TAG_NO) {
+		return;
+	}
+
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	pPlayer->Settings.SetVar(Settings::CloudActivated, true);
+	pPlayer->Update();
+	delete pPlayer;
+}
+
+//*****************************************************************************
+void ParseCloudXML(
+//Attempt to read original player name and creation date from a parsed xml tag
+	void* userData, const char* name, const char* args[]
+)
+{
+	string tagName(name);
+	if (tagName != ViewTypeStr(V_Players)) {
+		return;
+	}
+
+	string nameAttribute(args[0]);
+	string creationAttribute(args[2]);
+
+	//Correctly formed Players tag will have the original name followed by the
+	//creation date.
+	if (nameAttribute != PropTypeStr(P_GID_OriginalNameMessage) ||
+		creationAttribute != PropTypeStr(P_GID_Created)) {
+		return;
+	}
+
+	//Decode original name
+	string originalName(args[1]);
+	Base64::decode(originalName, s_cloudOriginalName);
+
+	//Convert created time string to time value
+	s_cloudCreated = convertToTimeT(args[3]);
+}
+
+//*****************************************************************************
+//Function that doesn't do anything for parser.
+void end(void* userData, const char* name) {}
+
+//*****************************************************************************
+bool CSettingsScreen::DoesCloudPlayerMatchLocalPlayer(
+//Returns: if the recieved cloud player matchs the local player, based on the
+//profile's original names and creation dates.
+	CDbPlayer* pPlayer,          //(in) local player
+	const string cloudPlayerXML) //(in) xml containing cloud player definition
+const
+{
+	//Clear any existing values
+	s_cloudOriginalName.clear();
+	s_cloudCreated = 0;
+
+	XML_Parser parser = XML_ParserCreate(NULL);
+	XML_SetElementHandler(parser, ParseCloudXML, end);
+	XML_Status status = XML_Parse(parser, cloudPlayerXML.c_str(), cloudPlayerXML.length(), true);
+	XML_ParserFree(parser);
+
+	if (status != XML_STATUS_OK) {
+		return false;
+	}
+
+	return s_cloudCreated == pPlayer->Created &&
+		s_cloudOriginalName == (WSTRING)pPlayer->OriginalNameText;
 }

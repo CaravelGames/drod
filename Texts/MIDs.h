@@ -1397,6 +1397,8 @@ enum MID_CONSTANT {
   MID_UnlimitedUndo = 1757,
   MID_AutoUndoOnDeath = 1786,
   MID_ActivateCloudSync = 1794,
+  MID_DeactivateCloudSyncPrompt = 2137,
+  MID_ReactivateCloudSyncPrompt = 2138,
   MID_ResizableWindow = 2027,
   MID_PlayHoldManagementDemo = 2124,
   MID_DemoDateFormat = 2125,
