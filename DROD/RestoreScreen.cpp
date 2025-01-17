@@ -100,6 +100,7 @@ CRestoreScreen::CRestoreScreen()
 	, pScaledWorldMapWidget(NULL)
 	, pChallengesDialog(NULL)
 	, pChallengesListBox(NULL)
+	, pChallengesCountLabel(NULL)
 //Constructor.
 {
 	SetKeyRepeat(66);
@@ -316,7 +317,7 @@ CRestoreScreen::CRestoreScreen()
 
 	const int CX_CHALLENGES_OKAY = 100;
 	static const UINT CY_CHALLENGES_OKAY = CY_STANDARD_BUTTON;
-	static const int X_CHALLENGES_OKAY = (CX_CHALLENGES_DIALOG - CX_CHALLENGES_OKAY) / 2;
+	static const int X_CHALLENGES_OKAY = CX_CHALLENGES_DIALOG - CX_CHALLENGES_OKAY - CX_SPACE;
 	static const int Y_CHALLENGES_OKAY = CY_CHALLENGES_DIALOG - CY_CHALLENGES_OKAY - CY_SPACE - 5;
 
 	pButton = new CButtonWidget(TAG_CHALLENGES, X_CHALLENGES_BUTTON, Y_CHALLENGES_BUTTON, 
@@ -340,6 +341,12 @@ CRestoreScreen::CRestoreScreen()
 			FONTLIB::F_Message, g_pTheDB->GetMessageText(MID_CompletedChallenges));
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	this->pChallengesDialog->AddWidget(pLabel);
+
+	this->pChallengesCountLabel = new CLabelWidget(0, CX_SPACE, Y_CHALLENGES_OKAY,
+		CX_CHALLENGES_DIALOG - 2 * CX_SPACE, CY_CHALLENGES_TITLE,
+		FONTLIB::F_Message, L"(0/0)");
+	this->pChallengesCountLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	this->pChallengesDialog->AddWidget(this->pChallengesCountLabel);
 
 	pButton = new CButtonWidget(TAG_OK,
 			X_CHALLENGES_OKAY, Y_CHALLENGES_OKAY,
@@ -1045,7 +1052,7 @@ void CRestoreScreen::DisplayChallengesDialog()
 {
 	if (this->pChallengesListBox->IsEmpty()) {
 		SetCursor(CUR_Wait);
-		PopulateChallenges(this->pChallengesListBox);
+		PopulateChallenges(this->pChallengesListBox, this->pChallengesCountLabel);
 		SetCursor();
 	}
 
@@ -1080,7 +1087,8 @@ void CRestoreScreen::AddChallengesCompletedInDemo(const UINT demoID)
 }
 
 //*****************************************************************************
-void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
+void CRestoreScreen::PopulateChallenges(
+	CListBoxWidget* pListBoxWidget, CLabelWidget* pLabelWidget)
 {
 	//Complete scanning any remaining rooms for challenges.
 	for (CIDSet::const_iterator roomIt=this->challengeScanRoomIDs.begin();
@@ -1107,10 +1115,12 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 	CIDSet exploredRoomIDs;
 	if (this->challengeVarMap.empty()) {
 		pListBoxWidget->AddItem(0, g_pTheDB->GetMessageText(MID_None), true);
+		pLabelWidget->Hide();
 	} else {
 		CDb db;
 		const UINT savedGameID = db.SavedGames.FindByType(ST_PlayerTotal, g_pTheDB->GetPlayerID(), false);
 		exploredRoomIDs = db.SavedGames.GetExploredRooms(savedGameID); //roomIDs for all holds
+		pLabelWidget->Show();
 	}
 
 #ifndef ENABLE_CHEATS
@@ -1157,6 +1167,14 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 	}
 
 	pListBoxWidget->SelectLine(0);
+
+	// Count of challenges
+	WSTRING countString = wszLeftParen;
+	countString += std::to_wstring(this->completedChallenges.size());
+	countString += wszForwardSlash;
+	countString += std::to_wstring(this->challengeVarMap.size());
+	countString += wszRightParen;
+	pLabelWidget->SetText(countString.c_str());
 }
 
 //*****************************************************************************
