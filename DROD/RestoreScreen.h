@@ -78,7 +78,7 @@ private:
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
-	void     PopulateChallenges(CListBoxWidget* pListBoxWidget);
+	void     PopulateChallenges(CListBoxWidget* pListBoxWidget, CLabelWidget* pLabelWidget);
 	void     PopulateLevelListBoxFromSavedGames();
 	void     PopulateLevelListFromWorldMapSavedGames(const CDbHold& hold);
 	void     RestoreGame();
@@ -104,6 +104,7 @@ private:
 	CScalerWidget *pScaledWorldMapWidget;
 	CDialogWidget *pChallengesDialog;
 	CListBoxWidget *pChallengesListBox;
+	CLabelWidget* pChallengesCountLabel;
 
 	CHECKPOINT_LIST Checkpoints;
 
