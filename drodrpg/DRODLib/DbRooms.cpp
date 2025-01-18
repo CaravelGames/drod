@@ -6397,27 +6397,10 @@ bool CDbRoom::UnpackSquares(
 {
 	if (!pSrc || !dwSrcSize) return false;
 
-	const UINT dwSquareCount = CalcRoomArea();
-	ASSERT(dwSquareCount);
+	if (!AllocTileLayers())
+		return false;
 
-	//Alloc squares for this room.
-	if (!this->pszOSquares)
-		this->pszOSquares = new char[dwSquareCount];
-	if (!this->pszOSquares) return false;
-	if (!this->pszFSquares)
-		this->pszFSquares = new char[dwSquareCount];
-	if (!this->pszFSquares) {delete[] this->pszOSquares; return false;}
-	if (!this->pszTSquares)
-		this->pszTSquares = new char[dwSquareCount];
-	if (!this->pszTSquares) {delete[] this->pszOSquares; delete[] this->pszFSquares; return false;}
-	if (!this->pszTParams)
-		this->pszTParams = new UINT[dwSquareCount];
-	if (!this->pszTParams) {delete[] this->pszOSquares; delete[] this->pszOSquares; delete[] this->pszTSquares; return false;}
-	if (!this->pMonsterSquares)
-		this->pMonsterSquares = new CMonster*[dwSquareCount];
-	if (!this->pMonsterSquares) {delete[] this->pszOSquares; delete[] this->pszOSquares; delete[] this->pszTSquares; delete[] this->pszTParams; return false;}
-	memset(this->pMonsterSquares, 0, dwSquareCount * sizeof(CMonster*));
-	this->coveredTSquares.Init(this->wRoomCols, this->wRoomRows, T_EMPTY);
+	const UINT dwSquareCount = CalcRoomArea();
 
 	const BYTE *pRead = pSrc, *pStopReading = pRead + dwSrcSize;
 
@@ -6545,6 +6528,33 @@ bool CDbRoom::UnpackSquares(
    //Source buffer should contain data for exactly the number of squares in 
 	//the room.
 	if (pRead != pStopReading) return false;
+
+	return true;
+}
+
+//*****************************************************************************
+bool CDbRoom::AllocTileLayers()
+{
+	const UINT dwSquareCount = CalcRoomArea();
+	ASSERT(dwSquareCount);
+
+	if (!this->pszOSquares)
+		this->pszOSquares = new char[dwSquareCount];
+	if (!this->pszOSquares) return false;
+	if (!this->pszFSquares)
+		this->pszFSquares = new char[dwSquareCount];
+	if (!this->pszFSquares) { delete[] this->pszOSquares; return false; }
+	if (!this->pszTSquares)
+		this->pszTSquares = new char[dwSquareCount];
+	if (!this->pszTSquares) { delete[] this->pszOSquares; delete[] this->pszFSquares; return false; }
+	if (!this->pszTParams)
+		this->pszTParams = new UINT[dwSquareCount];
+	if (!this->pszTParams) { delete[] this->pszOSquares; delete[] this->pszOSquares; delete[] this->pszTSquares; return false; }
+	if (!this->pMonsterSquares)
+		this->pMonsterSquares = new CMonster * [dwSquareCount];
+	if (!this->pMonsterSquares) { delete[] this->pszOSquares; delete[] this->pszOSquares; delete[] this->pszTSquares; delete[] this->pszTParams; return false; }
+	memset(this->pMonsterSquares, 0, dwSquareCount * sizeof(CMonster*));
+	this->coveredTSquares.Init(this->wRoomCols, this->wRoomRows, T_EMPTY);
 
 	return true;
 }

@@ -169,6 +169,7 @@ public:
 	bool           AddPressurePlateTiles(COrbData* pPlate);
 	bool           AddScroll(CScrollData *pScroll);
 	bool           AddExit(CExitData *pExit);
+	bool           AllocTileLayers();
 	void           BurnFuses(CCueEvents &CueEvents);
 	void           BurnFuseEvents(CCueEvents &CueEvents);
 //	bool           BrainSensesSwordsman() const;
