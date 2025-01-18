@@ -650,7 +650,8 @@ inline bool bIsEmptyTile(const UINT wObject, const UINT wLayer)
 {
 	switch (wLayer)
 	{
-		case LAYER_OPAQUE: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT;
+		case LAYER_OPAQUE: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT ||
+			wObject == T_OVERHEAD_IMAGE;
 		case LAYER_TRANSPARENT: return wObject == T_EMPTY;
 		case LAYER_MONSTER: return wObject == T_NOMONSTER;
 		case LAYER_FLOOR: return wObject == T_EMPTY || wObject == T_EMPTY_F ||
@@ -741,6 +742,7 @@ const
 		case T_CHECKPOINT:
 		case T_LIGHT_CEILING:
 		case T_DARK_CEILING:
+		case T_OVERHEAD_IMAGE:
 			//Can go anywhere.
 			return true;
 
@@ -1231,7 +1233,10 @@ void CEditRoomWidget::Paint(
 	this->pMLayerEffects->UpdateAndDrawEffects();
 	this->pMLayerEffects->DirtyTiles();
 
-	//5b. Draw effects that go on top of everything else drawn in the room.
+	//6. Overhead layer.
+	DrawOverheadLayer(pDestSurface);
+
+	//7. Draw effects that go on top of everything else drawn in the room.
 	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 

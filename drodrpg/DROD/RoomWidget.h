@@ -418,6 +418,7 @@ protected:
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=true, const bool bDrawPieces=true);
 	void           DrawMonsterKillingPlayer(SDL_Surface *pDestSurface);
+	void           DrawOverheadLayer(SDL_Surface* pDestSurface);
 	void           DrawPlayer(const CSwordsman &swordsman, SDL_Surface *pDestSurface);
 	float          DrawRaisedOnTiles(const UINT wOTileNo, const UINT wTTileNo) const;
 	float          DrawRaised(const UINT wX, const UINT wY) const;

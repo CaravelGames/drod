@@ -250,6 +250,7 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{ TI_FIRETRAP },                                   //T_FIRETRAP
 	{ TI_FIRETRAP_ON },                                //T_FIRETRAP_ON
 	{ TI_POWDER_KEG},                                  //T_POWDER_KEG
+	{ TI_OVERHEAD_IMAGE },                             //T_OVERHEAD_IMAGE
 
 	//monsters
 	{TI_ROACH_S},
@@ -423,6 +424,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_FIRETRAP      117
 	0, //T_FIRETRAP_ON   118
 	0, //T_POWDER_KEG    119
+	0, //T_OVERHEAD_IMAGE 120
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -493,6 +495,7 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, //mist, vent
 	1, 1, //firetraps
 	1, //powder keg
+	1, //overhead image
 	1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1,//M+15
 	2, 1, 1 //psuedo tiles
@@ -521,6 +524,7 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, //mist, vent
 	1, 1, //firetraps
 	1, //powder keg
+	1, //overhead image
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,//M+15
 	1, 1, 1 //pseudo tiles
@@ -621,8 +625,8 @@ const UINT oLayerEntries[numOLayerEntries] = {
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
-	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR, T_FLOOR_IMAGE,
-	T_DIRT1, T_MISTVENT, T_FIRETRAP
+	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR,
+	T_DIRT1, T_MISTVENT, T_FIRETRAP, T_FLOOR_IMAGE
 };
 
 const UINT numFLayerEntries = 7;
@@ -1664,8 +1668,13 @@ void CEditRoomScreen::ClickRoom()
 			if (this->bSelectingImageStart)
 			{
 				VERIFY(SetState(ES_PLACING));   //resets this->bSelectingImageStart
-				this->pRoom->wImageStartX = this->pRoomWidget->wEndX;
-				this->pRoom->wImageStartY = this->pRoomWidget->wEndY;
+				if (GetSelectedObject() == T_OVERHEAD_IMAGE) {
+					this->pRoom->wOverheadImageStartX = this->pRoomWidget->wEndX;
+					this->pRoom->wOverheadImageStartY = this->pRoomWidget->wEndY;
+				} else {
+					this->pRoom->wImageStartX = this->pRoomWidget->wEndX;
+					this->pRoom->wImageStartY = this->pRoomWidget->wEndY;
+				}
 				this->pRoomWidget->Paint();
 			} else {
 				this->pCharacterDialog->FinishCommand(this->pRoomWidget->wEndX,
@@ -1817,25 +1826,27 @@ UINT CEditRoomScreen::SelectMediaID(
 }
 
 //*****************************************************************************
-void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
-//Select an image for display as this room's special floor mosaic, either from
-//the DB or from disk.
+void CEditRoomScreen::GetCustomImageID(
+	UINT& roomDataID,
+	UINT& imageStartX, UINT& imageStartY,
+	const bool bReselect) //[default=false]
 {
-	//ID only needs to be assigned once.
-	if (this->pRoom->dwDataID && !bReselect) return;
+	//ID needs to be assigned once.
+	if (roomDataID && !bReselect)
+		return;
 
 	//Can only access this operation to change the DB for holds you own.
 	if (this->pHold->dwPlayerID != g_pTheDB->GetPlayerID() && !SaveRoomToDB())
 		return;
 
 	this->pSelectMediaDialog->SetForDisplay(MID_ImageSelectPrompt, this->pHold, CSelectMediaDialogWidget::Images);
-	this->pSelectMediaDialog->SelectItem(this->pRoom->dwDataID);
+	this->pSelectMediaDialog->SelectItem(roomDataID);
 	if (this->pSelectMediaDialog->Display() != TAG_OK) {
 		RequestPaint();
 		return;
 	}
 
-	this->pRoom->dwDataID = this->pSelectMediaDialog->GetSelectedItem();
+	roomDataID = this->pSelectMediaDialog->GetSelectedItem();
 
 	Changing();
 
@@ -1851,6 +1862,25 @@ void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
 	this->pRoomWidget->LoadRoomImages();
 	SetLightLevel();
 	this->pRoomWidget->Paint();
+}
+
+
+//*****************************************************************************
+void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
+//Select an image for display as this room's special floor mosaic, either from
+//the DB or from disk.
+{
+	GetCustomImageID(this->pRoom->dwDataID,
+		this->pRoom->wImageStartX, this->pRoom->wImageStartY,
+		bReselect);
+}
+
+//*****************************************************************************
+void CEditRoomScreen::GetOverheadImageID(const bool bReselect)
+{
+	GetCustomImageID(this->pRoom->dwOverheadDataID,
+		this->pRoom->wOverheadImageStartX, this->pRoom->wOverheadImageStartY,
+		bReselect);
 }
 
 //*****************************************************************************
@@ -2665,7 +2695,8 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
 				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
 				case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
-				case T_FLOOR_IMAGE: case T_PIT_IMAGE: case T_WALL_IMAGE: 
+				case T_FLOOR_IMAGE: case T_PIT_IMAGE: case T_WALL_IMAGE:
+				case T_OVERHEAD_IMAGE:
 					RequestToolTip(MID_RotateToChangeType);
 				break;
 				case T_OBSTACLE:
@@ -3127,7 +3158,11 @@ void CEditRoomScreen::OnKeyDown(
 
 		case SDLK_F9:
 			Changing(RoomAndHold);
-			GetFloorImageID(true);
+			if (Key.keysym.mod & KMOD_SHIFT) {
+				GetOverheadImageID(true);
+			} else {
+				GetFloorImageID(true);
+			}
 		break;
 
 		case SDLK_PAGEUP: case SDLK_KP_9:
@@ -4263,10 +4298,28 @@ void CEditRoomScreen::PaintHighlights()
 	if (this->bShowErrors && this->eState != ES_LONGMONSTER)
 		ShowErrors();
 //	DrawHalphSlayerEntrances();
+	MarkOverheadLayerTiles();
 
 	ASSERT(this->pRoom);
 	this->pRoom->ResetPressurePlatesState();
 	this->pRoom->SetPressurePlatesState();
+}
+
+//*****************************************************************************
+void CEditRoomScreen::MarkOverheadLayerTiles()
+{
+	const CCoordIndex& tiles = this->pRoom->overheadTiles;
+	if (tiles.empty())
+		return;
+
+	//Highlight tiles set with an overhead layer.
+	static const SURFACECOLOR OverheadColor = { 40, 90, 220 };
+	for (UINT wY = 0; wY < this->pRoom->wRoomRows; ++wY) {
+		for (UINT wX = 0; wX < this->pRoom->wRoomCols; ++wX) {
+			if (tiles.Exists(wX, wY))
+				this->pRoomWidget->AddShadeEffect(wX, wY, OverheadColor);
+		}
+	}
 }
 
 //*****************************************************************************
@@ -4322,6 +4375,9 @@ void CEditRoomScreen::EraseRegion()
 				room.tileLights.Remove(xDest, yDest);
 				this->pRoomWidget->bCeilingLightsRendered = false;
 			}
+
+			//Erase overhead layer.
+			room.overheadTiles.Set(xDest, yDest, 0);
 
 			//Erase f-layer.
 			EraseAndPlot(xDest, yDest, T_EMPTY_F, false);
@@ -4567,6 +4623,10 @@ void CEditRoomScreen::PasteRegion(
 					room.tileLights.Add(xDest, yDest, ceilingLight);
 					this->pRoomWidget->bCeilingLightsRendered = false;
 				}
+
+				//Copy overhead layer.
+				room.overheadTiles.Set(xDest, yDest,
+					pSrcRoom->overheadTiles.GetAt(xSrc, ySrc));
 
 				//Copy f-layer.
 				wSrcTile = pSrcRoom->GetFSquare(xSrc, ySrc);
@@ -5310,6 +5370,11 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
 					GetFloorImageID();
 					break;
+				case T_OVERHEAD_IMAGE:
+					//Assign a user-defined image texture to this custom tile type.
+					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
+					GetOverheadImageID();
+				break;
 				case T_EMPTY:
 				case T_PIT:
 					g_pTheSound->PlaySoundEffect(SEID_BREAKWALL);   break;
@@ -5783,6 +5848,11 @@ bool CEditRoomScreen::EraseAndPlot(
 		this->pRoomWidget->bCeilingLightsRendered = false;
 		return true;
 	}
+	if (wObjectToPlot == T_OVERHEAD_IMAGE) {
+		//Overhead image is on its own layer and won't overwrite anything else.
+		this->pRoom->overheadTiles.Add(wX, wY);
+		return true;
+	}
 
 	bool bObRemoved=false;  //obstacle tile was removed
 	bool bTarRemoved=false;
@@ -5972,6 +6042,10 @@ void CEditRoomScreen::EraseObjects(
 				case T_DARK_CEILING:
 					this->pRoom->tileLights.Remove(wX,wY);
 					this->pRoomWidget->bCeilingLightsRendered = false;
+					bSomethingPlotted = true;
+				break;
+				case T_OVERHEAD_IMAGE:
+					this->pRoom->overheadTiles.Remove(wX, wY);
 					bSomethingPlotted = true;
 				break;
 
@@ -7805,9 +7879,10 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_FLOOR_DIRT: wNewTile = bCW ? T_FLOOR_ALT : T_FLOOR_GRASS; break;
 		case T_FLOOR_ALT: wNewTile = bCW ? T_FLOOR : T_FLOOR_DIRT; break;
 
-		case T_FLOOR_IMAGE: wNewTile = bCW ? T_PIT_IMAGE : T_WALL_IMAGE; break;
+		case T_FLOOR_IMAGE: wNewTile = bCW ? T_PIT_IMAGE : T_OVERHEAD_IMAGE; break;
 		case T_PIT_IMAGE: wNewTile = bCW ? T_WALL_IMAGE : T_FLOOR_IMAGE; break;
-		case T_WALL_IMAGE: wNewTile = bCW ? T_FLOOR_IMAGE : T_PIT_IMAGE; break;
+		case T_WALL_IMAGE: wNewTile = bCW ? T_OVERHEAD_IMAGE : T_PIT_IMAGE; break;
+		case T_OVERHEAD_IMAGE: wNewTile = bCW ? T_FLOOR_IMAGE : T_WALL_IMAGE; break;
 
 		case T_BRIDGE: wNewTile = bCW ? T_BRIDGE_H : T_BRIDGE_V; break;
 		case T_BRIDGE_H: wNewTile = bCW ? T_BRIDGE_V : T_BRIDGE; break;

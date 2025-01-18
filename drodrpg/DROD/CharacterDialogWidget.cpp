@@ -4412,6 +4412,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(T_TRAPDOOR, g_pTheDB->GetMessageText(MID_Trapdoor));
 	pListBox->AddItem(T_TRAPDOOR2, g_pTheDB->GetMessageText(MID_Trapdoor2));
 	pListBox->AddItem(T_THINICE, g_pTheDB->GetMessageText(MID_ThinIce));
+	pListBox->AddItem(T_OVERHEAD_IMAGE, g_pTheDB->GetMessageText(MID_OverheadImage));
 	pListBox->AddItem(T_PIT, g_pTheDB->GetMessageText(MID_Pit));
 	pListBox->AddItem(T_PIT_IMAGE, g_pTheDB->GetMessageText(MID_PitImage));
 	pListBox->AddItem(T_WATER, g_pTheDB->GetMessageText(MID_Water));
@@ -4509,6 +4510,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(TV_EXPLOSION, g_pTheDB->GetMessageText(MID_Explosion));
 	pListBox->AddItem(T_EMPTY_F, g_pTheDB->GetMessageText(MID_RemoveFLayerItem));
 	pListBox->AddItem(T_EMPTY, g_pTheDB->GetMessageText(MID_RemoveItem));
+	pListBox->AddItem(TV_REMOVE_OVERHEAD_IMAGE, g_pTheDB->GetMessageText(MID_RemoveOverheadImage));
 
 	pListBox->SetAllowFiltering(true);
 }

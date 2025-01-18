@@ -1631,3 +1631,7 @@ Fireproof
 [MID_MistImmune]
 [eng]
 Mist protection
+
+[MID_RemoveOverheadImage]
+[eng]
+Remove overhead image

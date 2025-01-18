@@ -935,6 +935,9 @@ bool CDbRoom::Load(
 	this->dwDataID = (UINT) (p_DataID(row));
 	this->wImageStartX = (UINT) (p_ImageStartX(row));
 	this->wImageStartY = (UINT) (p_ImageStartY(row));
+	this->dwOverheadDataID = (UINT)(p_OverheadDataID(row));
+	this->wOverheadImageStartX = (UINT)(p_OverheadImageStartX(row));
+	this->wOverheadImageStartY = (UINT)(p_OverheadImageStartY(row));
 
 	this->bPartialLoad = bQuick;
 	if (!bQuick)
@@ -6172,10 +6175,12 @@ void CDbRoom::Clear()
 
 	ClearPlotHistory();
 
-	this->dwRoomID = this->dwLevelID = this->dwDataID = 
+	this->dwRoomID = this->dwLevelID = 
+		this->dwDataID = this->wOverheadImageStartX =
 		this->dwRoomX = this->dwRoomY = 0;
 	this->wRoomCols = this->wRoomRows =
 		this->wImageStartX = this->wImageStartY = 
+		this->wOverheadImageStartX = this->wOverheadImageStartY =
 		this->wTrapDoorsLeft = this->wTarLeft = 0;
 	this->bBetterVision = false;
 //	this->bPersistentCitizenMovement = false;
@@ -6195,6 +6200,8 @@ void CDbRoom::Clear()
 
 	delete[] this->pszTParams;
 	this->pszTParams = NULL;
+
+	this->overheadTiles.Clear();
 
 	delete[] this->pMonsterSquares;
 	this->pMonsterSquares = NULL;
@@ -6409,8 +6416,8 @@ bool CDbRoom::UnpackSquares(
 	// The version for PackSquares() was 5 when development of DROD RPG
 	// started, so there is no RPG data in existence with version < 5.
 	ASSERT(version >= 5);
-	if (version < 5 || version > 7)
-		return false; //DROD RPG supports up to room data format version 7.
+	if (version < 5 || version > 8)
+		return false; //DROD RPG supports up to room data format version 8.
 
 	char *pWriteO = this->pszOSquares, *pWriteF = this->pszFSquares, *pWriteT = this->pszTSquares;  //shorthand
 	UINT *pWriteTP = this->pszTParams;
@@ -6523,6 +6530,34 @@ bool CDbRoom::UnpackSquares(
 		}
 	}
 
+	//7. Read overhead layer (version 8+)
+	if (version >= 8)
+	{
+		BYTE val = *(pRead++);
+		if (val != 0) //indicates there is some data
+		{
+			UINT index = 0;
+			while (index < dwSquareCount)
+			{
+				//Don't read past end of buffer.
+				if (pRead >= pStopReading)
+					return false;
+
+				numTiles = *(pRead++);
+				ASSERT(numTiles); //having a run-length of zero is wasteful
+				ASSERT(index + numTiles <= dwSquareCount);
+				val = *(pRead++);
+				ASSERT(val < 2); //only on/off
+				while (numTiles--) {
+					this->overheadTiles.SetAtIndex(index++, val);
+				}
+			}
+			//All tiles in layer should have been read without excess.
+			if (index != dwSquareCount)
+				return false;
+		}
+	}
+
 	//Monster records read in LoadMonsters().
 
    //Source buffer should contain data for exactly the number of squares in 
@@ -6537,6 +6572,9 @@ bool CDbRoom::AllocTileLayers()
 {
 	const UINT dwSquareCount = CalcRoomArea();
 	ASSERT(dwSquareCount);
+
+	if (!this->overheadTiles.Init(this->wRoomCols, this->wRoomRows))
+		return false;
 
 	if (!this->pszOSquares)
 		this->pszOSquares = new char[dwSquareCount];
@@ -8796,7 +8834,7 @@ c4_Bytes* CDbRoom::PackSquares(
 	char *pWrite = pSquares;
 
 	//1. Version of data format.
-	*(pWrite++) = 7;
+	*(pWrite++) = 8;
 
 	//Run-length encoding info.
 	char lastSquare, square = T_EMPTY;
@@ -8921,6 +8959,38 @@ c4_Bytes* CDbRoom::PackSquares(
 				*(pWrite++) = square;
 			}
 		}
+	}
+
+	//6. Write overhead layer, if necessary.
+	if (this->overheadTiles.empty()) {
+		*(pWrite++) = (char)0;
+	}
+	else {
+		*(pWrite++) = (char)1; //indicates we have some data for this layer
+
+		const BYTE* pData = this->overheadTiles.GetIndex();
+		BYTE val, lastVal = *pData;
+		count = 0;
+		for (dwSquareI = 0; dwSquareI < dwSquareCount; ++dwSquareI, ++pData)
+		{
+			val = *pData;
+
+			if (*pData == lastVal && count < 255) {
+				++count;
+			}
+			else {
+				//Write out run info.  Start new run.
+				ASSERT(count > 0);
+				*(pWrite++) = (char)count;
+				*(pWrite++) = (char)lastVal;
+
+				lastVal = val;
+				count = 1;
+			}
+		}
+		ASSERT(count > 0);
+		*(pWrite++) = (char)count;
+		*(pWrite++) = (char)val;
 	}
 
 	const UINT dwSquaresLen = (UINT) (pWrite - pSquares);
@@ -9180,6 +9250,9 @@ bool CDbRoom::UpdateExisting()
 	p_DataID(row) = this->dwDataID;
 	p_ImageStartX(row) = this->wImageStartX;
 	p_ImageStartY(row) = this->wImageStartY;
+	p_OverheadDataID(row) = this->dwOverheadDataID;
+	p_OverheadImageStartX(row) = this->wOverheadImageStartX;
+	p_OverheadImageStartY(row) = this->wOverheadImageStartY;
 	p_StyleName(row) = PutWString(this->style);
 	p_Squares(row) = *pSquaresBytes;
 	p_TileLights(row) = *pLightsBytes;
@@ -9309,6 +9382,9 @@ bool CDbRoom::SetMembers(
 	this->dwDataID = Src.dwDataID;
 	this->wImageStartX = Src.wImageStartX;
 	this->wImageStartY = Src.wImageStartY;
+	this->dwOverheadDataID = Src.dwOverheadDataID;
+	this->wOverheadImageStartX = Src.wOverheadImageStartX;
+	this->wOverheadImageStartY = Src.wOverheadImageStartY;
 //	this->wMonsterCount = Src.wMonsterCount;
 //	this->wBrainCount = Src.wBrainCount;
 	this->wTarLeft = Src.wTarLeft;
@@ -9334,6 +9410,8 @@ bool CDbRoom::SetMembers(
 	this->tileLights = Src.tileLights;
 
 	this->coveredTSquares = Src.coveredTSquares;
+
+	this->overheadTiles = Src.overheadTiles;
 
 	//Special room data
 	for (wIndex=0; wIndex<Src.orbs.size(); ++wIndex)  //must retain order

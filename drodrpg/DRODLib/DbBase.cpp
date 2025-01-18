@@ -938,6 +938,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Shield7: strText = "Mirror Shield"; break;
 		case MID_Shield8: strText = "Leather Shield"; break;
 		case MID_Shield9: strText = "Aluminum Shield"; break;
+		case MID_OverheadImage: strText = "Overhead Image"; break;
+		case MID_RemoveOverheadImage: strText = "Remove overhead image"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
