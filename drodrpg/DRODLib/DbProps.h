@@ -99,6 +99,9 @@ DEFPROP(c4_IntProp,     NextDemoID);
 DEFPROP(c4_IntProp,     NumBytes);
 DEFPROP(c4_IntProp,     O);
 DEFPROP(c4_IntProp,     OrderIndex);
+DEFPROP(c4_IntProp,     OverheadDataID);
+DEFPROP(c4_IntProp,     OverheadImageStartX);
+DEFPROP(c4_IntProp,     OverheadImageStartY);
 DEFPROP(c4_IntProp,     PlayerID);
 //DEFPROP(c4_IntProp,     ProcessSequence);
 DEFPROP(c4_BytesProp,   RawData);
@@ -197,6 +200,9 @@ DEFTDEF(ROOMS_VIEWDEF,
 			"DataID:I,"
 			"ImageStartX:I,"
 			"ImageStartY:I,"
+			"OverheadDataID:I,"
+			"OverheadImageStartX,"
+			"OverheadImageStartY,"
 			"StyleName:B,"
 			"Squares:B,"
 			"TileLights:B,"
@@ -528,6 +534,9 @@ enum PROPTYPE
 	P_O,
 	P_OrbTypes,  //list
 	P_OrderIndex,
+	P_OverheadDataID,
+	P_OverheadImageStartX,
+	P_OverheadImageStartY,
 	P_PlayerID,
 //	P_ProcessSequence,
 	P_RawData,
@@ -609,7 +618,9 @@ extern const char propTypeStr[P_Count][26]
 	"LevelID",
 	"LitFuses", "MapOnly", "MapMarker",
 	"Message", "MessageText", "MessageTextID", "ModName", "Mood", "Multiplier",
-	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex", "PlayerID",
+	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex",
+	"OverheadDataID", "OverheadImageStartX", "OverheadImageStartY",
+	"PlayerID",
 //	"ProcessSequence",
 	"RawData", "Right", "RoomID", "RoomCols",
 	"RoomRows", "RoomX", "RoomY", "SavedGameID", "ScriptID",

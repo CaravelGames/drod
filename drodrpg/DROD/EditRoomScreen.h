@@ -120,7 +120,10 @@ private:
 	void     FixCorruptStaircase(const UINT wX, const UINT wY);
 	CObjectMenuWidget*   GetActiveMenu();
 	void           ForceFullStyleReload();
+	void     GetCustomImageID(UINT& roomDataID, UINT& imageStartX, UINT& imageStartY,
+		const bool bReselect);
 	void           GetFloorImageID(const bool bReselect=false);
+	void           GetOverheadImageID(const bool bReselect = false);
 	void           GetLevelEntrancesInRoom();
 	const UINT*    GetTileImageForMonsterType(const UINT wType, const UINT wO,
 			const UINT wAnimFrame) const;
@@ -131,6 +134,8 @@ private:
 
 	bool     LoadRoom(CDbRoom *pNewRoom);
 	bool     LoadRoomAtCoords(const UINT dwRoomX, const UINT dwRoomY, const bool bForceReload=false);
+
+	void     MarkOverheadLayerTiles();
 
 	bool     MergePressurePlate(const UINT wX, const UINT wY, const bool bUpdateType=false);
 	CObjectMenuWidget* ObjectMenuForTile(const UINT wTile);

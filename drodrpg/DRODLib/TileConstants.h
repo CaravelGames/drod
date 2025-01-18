@@ -168,8 +168,9 @@
 #define T_FIRETRAP      117
 #define T_FIRETRAP_ON   118
 #define T_POWDER_KEG    119
+#define T_OVERHEAD_IMAGE 120 //used in front end
 
-#define TILE_COUNT     (120) //Number of tile constants from above list.
+#define TILE_COUNT     (121) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -424,7 +425,8 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define TV_SHIELD7     ((UINT)-37)
 #define TV_SHIELD8     ((UINT)-38)
 #define TV_SHIELD9     ((UINT)-39)
-static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_SHIELD9;}
+#define TV_REMOVE_OVERHEAD_IMAGE (UINT(-40))
+static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_REMOVE_OVERHEAD_IMAGE;}
 
 //Virtual tiles: enumerate after TOTAL_TILE_COUNT
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance
@@ -565,6 +567,7 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_OPAQUE, //T_FIRETRAP          117
 	LAYER_OPAQUE, //T_FIRETRAP_ON       118
 	LAYER_TRANSPARENT, //T_POWDER_KEG   119
+	LAYER_OPAQUE, //T_OVERHEAD_IMAGE    120
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -734,6 +737,7 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Firetrap,      //T_FIRETRAP
 	MID_FiretrapOn,    //T_FIRETRAP_ON
 	MID_PowderKeg,     //T_POWDER_KEG
+	MID_OverheadImage, //T_OVERHEAD_IMAGE
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1

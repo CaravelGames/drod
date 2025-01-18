@@ -315,6 +315,7 @@ enum MID_CONSTANT {
   MID_Firetrap = 1888,
   MID_FiretrapOn = 1889,
   MID_PowderKeg = 1893,
+  MID_OverheadImage = 1985,
   MID_FloorMosaic = 332,
   MID_FloorRoad = 333,
   MID_FloorGrass = 334,
@@ -1628,6 +1629,7 @@ enum MID_CONSTANT {
   MID_HotTileImmune = 1975,
   MID_FiretrapImmune = 1976,
   MID_MistImmune = 1977,
+  MID_RemoveOverheadImage = 1986,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

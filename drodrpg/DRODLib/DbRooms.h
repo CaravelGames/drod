@@ -107,10 +107,13 @@ public:
 	bool           bIsSecret;     //room is marked as a secret
 	UINT          dwDataID;      //for special floor image mosaic
 	UINT           wImageStartX, wImageStartY;   //where mosaic starts tiling
+	UINT           dwOverheadDataID; //for custom overhead image texture
+	UINT           wOverheadImageStartX, wOverheadImageStartY; //where texture starts tiling
 	char *            pszOSquares;   //currently supports up to 256 tile types
 	char *            pszFSquares;
 	char *            pszTSquares;
 	UINT *            pszTParams;
+	CCoordIndex       overheadTiles;
 	vector<COrbData*> orbs;
 	vector<CScrollData*> Scrolls;
 	vector<CExitData*>   Exits;

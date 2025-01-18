@@ -4005,6 +4005,8 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case 0:  //o-layer
 						if (room.GetOSquare(x,y) == tile)
 							return true;
+						if (tile == T_OVERHEAD_IMAGE && room.overheadTiles.Exists(x, y))
+							return true;
 					break;
 					case 1:  //t-layer
 						if (room.GetTSquare(x,y) == tile)

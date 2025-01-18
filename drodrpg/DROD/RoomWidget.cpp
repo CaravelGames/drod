@@ -2591,9 +2591,13 @@ void CRoomWidget::LoadRoomImages()
 	//Load new floor image mosaic, if any.
 	if (g_pTheDBM->pTextures[FLOOR_IMAGE])
 		SDL_FreeSurface(g_pTheDBM->pTextures[FLOOR_IMAGE]);
+	if (g_pTheDBM->pTextures[OVERHEAD_IMAGE])
+		SDL_FreeSurface(g_pTheDBM->pTextures[OVERHEAD_IMAGE]);
+
 	CDbRoom *pThisRoom = this->pCurrentGame ? this->pCurrentGame->pRoom : this->pRoom;
 	const UINT dwDataID = pThisRoom->dwDataID;
 	g_pTheDBM->pTextures[FLOOR_IMAGE] = g_pTheDBM->LoadImageSurface(dwDataID);
+	g_pTheDBM->pTextures[OVERHEAD_IMAGE] = g_pTheDBM->LoadImageSurface(pThisRoom->dwOverheadDataID);
 
 	//Generate room model for lighting.
 	this->bRenderRoomLight = true;
@@ -2962,7 +2966,7 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
 	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
-//	DrawOverheadLayer(pSurface);
+	DrawOverheadLayer(pSurface);
 //	DrawGhostOverheadCharacters(pSurface, false);
 	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 	this->pLastLayerEffects->DrawEffects(pSurface, EDAMAGEPREVIEW);
@@ -4140,6 +4144,9 @@ UINT CRoomWidget::GetTextureIndexForTile(const UINT tileNo, const bool bForceBas
 		case T_WALL_IMAGE: wTextureIndex =
 				!bForceBaseImage && g_pTheDBM->pTextures[FLOOR_IMAGE] ? FLOOR_IMAGE : WALL_MOSAIC;
 		break;
+		case T_OVERHEAD_IMAGE:
+			wTextureIndex = g_pTheDBM->pTextures[OVERHEAD_IMAGE] ? OVERHEAD_IMAGE : WALL_MOSAIC;
+		break;
 		default:
 			if (!bForceBaseImage)
 			{
@@ -4915,6 +4922,8 @@ void CRoomWidget::Paint(
 		//5a. Draw effects that go on top of monsters/player.
 	this->pMLayerEffects->DrawEffects();
 		this->pMLayerEffects->DirtyTiles();
+
+	DrawOverheadLayer(pDestSurface);
 
 	ReduceJitter();
 
@@ -7519,6 +7528,56 @@ float CRoomWidget::DrawRaised(const UINT wX, const UINT wY) const
 {
 	ASSERT(this->pRoom);
 	return DrawRaisedOnTiles(this->pRoom->GetOSquare(wX, wY), this->pRoom->GetTSquare(wX, wY));
+}
+
+//*****************************************************************************
+void CRoomWidget::DrawOverheadLayer(SDL_Surface* pDestSurface)
+{
+	ASSERT(pDestSurface);
+
+	const CCoordIndex& tiles = this->pRoom->overheadTiles;
+	if (tiles.empty())
+		return;
+
+	SDL_Surface* pTileTexture = g_pTheDBM->pTextures[OVERHEAD_IMAGE];
+	if (!pTileTexture)
+		return;
+
+	const UINT wWidth = pTileTexture->w;
+	const UINT wHeight = pTileTexture->h;
+	int nI;
+
+	UINT index = 0;
+	for (UINT wY = 0; wY < this->pRoom->wRoomRows; ++wY) {
+		for (UINT wX = 0; wX < this->pRoom->wRoomCols; ++wX, ++index) {
+			if (tiles.Exists(wX, wY)) {
+				TileImages& ti = this->pTileImages[index];
+				if (this->bAllDirty || ti.dirty || ti.damaged)
+				{
+					ti.dirty = 1;
+
+					//Calculate coords for custom texture from indicated origin.
+					const int pixelX = this->x + wX * CX_TILE;
+					const int pixelY = this->y + wY * CY_TILE;
+
+					SDL_Rect src = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
+					SDL_Rect dest = MAKE_SDL_RECT(pixelX, pixelY, CX_TILE, CY_TILE);
+
+					nI = (int(wX) - int(this->pRoom->wOverheadImageStartX)) * CX_TILE;
+					while (nI < 0)
+						nI += wWidth;
+					src.x = nI % wWidth;
+
+					nI = (int(wY) - int(this->pRoom->wOverheadImageStartY)) * CY_TILE;
+					while (nI < 0)
+						nI += wHeight;
+					src.y = nI % wHeight;
+
+					SDL_BlitSurface(pTileTexture, &src, pDestSurface, &dest);
+				}
+			}
+		}
+	}
 }
 
 //*****************************************************************************

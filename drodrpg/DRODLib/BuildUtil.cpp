@@ -150,6 +150,11 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		if (wOTile == tile)
 			bValid = bAllowSame;
 
+		if (tile == T_OVERHEAD_IMAGE) {
+			if (room.overheadTiles.Exists(x, y))
+				bValid = bAllowSame;
+		}
+
 		//Adding tiles to platforms is not currently supported by the engine.
 		if (bIsPlatform(tile))
 			return false;
@@ -253,6 +258,13 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 			CueEvents.Add(CID_BombExploded, new CMoveCoord(x, y, 0), true);
 		}
 		return true;
+
+		case TV_REMOVE_OVERHEAD_IMAGE:
+			if (room.overheadTiles.Exists(x, y)) {
+				room.overheadTiles.Remove(x, y);
+				return true;
+			}
+		return false;
 
 		default: break;
 	}

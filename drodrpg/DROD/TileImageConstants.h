@@ -2526,7 +2526,9 @@
 #define TI_SHIELD7      2331
 #define TI_SHIELD8      2332
 #define TI_SHIELD9      2333
-static const UINT TI_COUNT = 2334;
+//*****************************************************************************
+#define TI_OVERHEAD_IMAGE 2334
+static const UINT TI_COUNT = 2335;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

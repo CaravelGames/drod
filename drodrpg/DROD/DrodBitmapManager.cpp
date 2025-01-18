@@ -374,7 +374,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 	WSTRING wstrCurrentName;
 	list<WSTRING>::reverse_iterator rStr;
 	UINT wI;
-	for (wI=TEXTURE_COUNT-1; wI--; ) //skip loading for FLOOR_IMAGE
+	for (wI=TEXTURE_COUNT-2; wI--; ) //skip loading for FLOOR_IMAGE and OVERHEAD_IMAGE
 	{
 		//Last images in list override first ones.
 		bool bFoundImage = false;
@@ -574,7 +574,8 @@ bool CDrodBitmapManager::LoadTexture(
 	//Load a tile from these images for editor to display a sample.
 	static const UINT textureTiles[TEXTURE_COUNT] = {
 		TI_ROAD, TI_GRASS, TI_DIRT, TI_ALT, TI_FLOOR, TI_FLOOR_M,
-		TI_PIT_M, TI_WALL_M, TI_SPIKE, TI_SPIKE, TI_FLOOR_IMAGE
+		TI_PIT_M, TI_WALL_M, TI_SPIKE, TI_SPIKE, TI_FLOOR_IMAGE,
+		TI_OVERHEAD_IMAGE
 	};
 	const UINT textureTile = textureTiles[wI];
 	if (textureTile != TI_DONT_USE) {
