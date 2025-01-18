@@ -426,6 +426,8 @@ public:
 	bool           UnpackSquares(const BYTE *pSrc, const UINT dwSrcSize);
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);
+	bool           WasObjectPushedThisTurn(const UINT wX, const UINT wY) const {
+		return (GetPushedObjectAt(wX, wY)) != NULL; }
 
 	//scope: used while processing the current turn
 	const RoomObject* GetPushedObjectAt(const UINT wX, const UINT wY) const;

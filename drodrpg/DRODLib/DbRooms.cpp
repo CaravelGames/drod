@@ -2504,6 +2504,10 @@ const
 	if (!IsValidColRow(wX, wY))
 		return false;
 
+	//Object can only be pushed once per turn process
+	if (WasObjectPushedThisTurn(wFromX, wFromY))
+		return false;
+
 	//Look for t-square obstacle.
 	UINT wTileNo = GetTSquare(wX, wY);
 	if (!(wTileNo == T_EMPTY ||
