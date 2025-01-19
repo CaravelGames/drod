@@ -1787,10 +1787,6 @@ void CCharacter::Process(
 	if (this->wCurrentCommandIndex >= this->commands.size())
 		goto Finish;
 
-	//Skip script execution if script is already ended.
-	if (this->bScriptDone)
-		goto Finish;
-
 	{ //scoping
 	CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
 	if (HasUnansweredQuestion(CueEvents) || pGame->HasUnansweredQuestion(this)) //don't execute further commands until current question is answered
@@ -1809,6 +1805,11 @@ void CCharacter::Process(
 
 	// Some commands should not have side effects when previewing a room remotely
 	const bool bRoomBeingDisplayedOnly = pGame->IsRoomBeingDisplayedOnly();
+
+	// Don't process a character script when previewing a room if the script is marked as ended
+	// This prevents removed characters from coming back when previewing the room you are currently in
+	if (bRoomBeingDisplayedOnly && this->bScriptDone)
+		goto Finish;
 
 	//Keep track of swordsman's orientation on previous and current turn.
 	this->wLastSO = this->wSO;
@@ -3056,7 +3057,7 @@ void CCharacter::Process(
 						const UINT value = UINT(nValue > 0 ? nValue : 0); //support only non-negative values
 
 						switch (pw) {
-							case ScriptFlag::HP: pMonster->HP = max(1, value); break; //cannot kill monster via this command
+							case ScriptFlag::HP: pMonster->ChangeHP(max(1, value)); break; //cannot kill monster via this command
 							case ScriptFlag::ATK: pMonster->ATK = value; break;
 							case ScriptFlag::DEF: pMonster->DEF = value; break;
 							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
