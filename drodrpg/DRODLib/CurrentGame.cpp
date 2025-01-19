@@ -3475,7 +3475,7 @@ int CCurrentGame::getPlayerDEF() const
 	if (def > 0 &&
 		this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
 		!IsPlayerMistImmune() &&
-		!this->IsRoomBeingDisplayedOnly())
+		this->pPlayer->IsInRoom())
 		return 0;
 
 	return def;
