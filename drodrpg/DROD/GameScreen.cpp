@@ -8205,6 +8205,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 	this->pTempRoomWidget->HidePlayer();
 	VERIFY(this->pTempRoomWidget->LoadFromRoom(pRoom));
 	this->pTempRoomWidget->pCurrentGame = pRoom->GetCurrentGame();
+	this->pTempRoomWidget->pCurrentGame->pPlayer->wIdentity = this->pTempRoomWidget->pCurrentGame->pPlayer->wAppearance = M_NONE;
 
 	if (this->bShowingBigMap)
 		this->pBigMapWidget->Hide(); //hide big map while displaying another room
