@@ -156,6 +156,7 @@ public:
 	virtual bool  CanCutTarAnywhere() const {return false;}
 	virtual bool  CanFindSwordsman() const;
 	virtual bool  CanSmellObjectAt(const UINT wX, const UINT wY) const;
+	virtual void  ChangeHP(const UINT HP) { this->HP = HP; }
 	virtual bool  CheckForDamage(CCueEvents& CueEvents);
 	void          Clear();
 //	bool          ConfirmPath();

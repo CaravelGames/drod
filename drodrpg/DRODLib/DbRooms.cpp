@@ -9606,11 +9606,14 @@ void CDbRoom::SetMonstersFromExploredRoomData(
 
 		if (bIsSerpent(pNew->wType))
 		{
+			CSerpent *pSerpent = DYN_CAST(CSerpent*, CMonster*, pMonster);
+			CSerpent *pNewSerpent = DYN_CAST(CSerpent*, CMonster*, pNew);
 			//Link serpent pieces to the main monster object.
-			CSerpent *pSerpent = DYN_CAST(CSerpent*, CMonster*, pNew);
 			ASSERT(pMonster->Pieces.size());
 			UINT wTempX, wTempY;
-			pSerpent->GetTail(wTempX, wTempY);
+			pNewSerpent->GetTail(wTempX, wTempY);
+			//Update base hp
+			pNewSerpent->BaseHP = pSerpent->BaseHP;
 		}
 	}
 }
