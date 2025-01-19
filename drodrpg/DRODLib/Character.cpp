@@ -3057,7 +3057,7 @@ void CCharacter::Process(
 						const UINT value = UINT(nValue > 0 ? nValue : 0); //support only non-negative values
 
 						switch (pw) {
-							case ScriptFlag::HP: pMonster->HP = max(1, value); break; //cannot kill monster via this command
+							case ScriptFlag::HP: pMonster->ChangeHP(max(1, value)); break; //cannot kill monster via this command
 							case ScriptFlag::ATK: pMonster->ATK = value; break;
 							case ScriptFlag::DEF: pMonster->DEF = value; break;
 							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
