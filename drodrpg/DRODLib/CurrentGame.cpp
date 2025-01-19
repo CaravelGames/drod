@@ -3472,8 +3472,10 @@ int CCurrentGame::getPlayerDEF() const
 	}
 
 	//Mist negates positive defense value
-	if (def > 0 && this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
-		!IsPlayerMistImmune())
+	if (def > 0 &&
+		this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
+		!IsPlayerMistImmune() &&
+		!this->IsRoomBeingDisplayedOnly())
 		return 0;
 
 	return def;
