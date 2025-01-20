@@ -132,6 +132,8 @@ private:
 	WCHAR*        SetLastMessageText(const WCHAR *pwczNewMessageText, const UINT dwNewMessageTextLen);
 	WCHAR*  pwczLastMessageText;
 
+	static void   RedefineDatabase(c4_Storage* storage);
+
 	PREVENT_DEFAULT_COPY(CDbBase);
 };
 
