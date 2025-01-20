@@ -30,6 +30,9 @@
 //Define DbProps in this object
 #define INCLUDED_FROM_DBBASE_CPP
 
+//Uncomment to update dat files to latest DBProps.h definitions after loading.
+//#define REDEFINE_DATABASE
+
 #include "DbBase.h"
 #include "Db.h"
 #include "DbProps.h"
@@ -543,6 +546,16 @@ MESSAGE_ID CDbBase::Open(
 		if (!m_pDataStorage || !m_pHoldStorage ||
 				!m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
 			throw MID_CouldNotOpenDB;
+
+#ifdef REDEFINE_DATABASE
+		RedefineDatabase(m_pDataStorage);
+		RedefineDatabase(m_pHoldStorage);
+		RedefineDatabase(m_pPlayerStorage);
+		RedefineDatabase(m_pSaveStorage);
+		RedefineDatabase(m_pSaveMoveStorage);
+		RedefineDatabase(m_pTextStorage);
+#endif // REDEFINE_DATABASE
+
 #endif
 
 		buildIndex();
@@ -639,6 +652,31 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 	newStorage.Commit();
 
 	return true;
+}
+
+//*****************************************************************************
+void CDbBase::RedefineDatabase(
+//Update all views in the specificed dat file to match the definitions from
+//DBProps.h
+c4_Storage* storage) //(in) metakit storage object for dat file
+{
+#ifdef REDEFINE_DATABASE
+	//Calling GetAs with the appropriate VIEWDEF will update the view.
+	storage->GetAs(INCREMENTEDIDS_VIEWDEF);
+	storage->GetAs(DATA_VIEWDEF);
+	storage->GetAs(DEMOS_VIEWDEF);
+	storage->GetAs(HOLDS_VIEWDEF);
+	storage->GetAs(LEVELS_VIEWDEF);
+	storage->GetAs(MESSAGETEXTS_VIEWDEF);
+	storage->GetAs(PLAYERS_VIEWDEF);
+	storage->GetAs(ROOMS_VIEWDEF);
+	storage->GetAs(SAVEDGAMES_VIEWDEF);
+	storage->GetAs(SAVEDGAMEMOVES_VIEWDEF);
+	storage->GetAs(SPEECH_VIEWDEF);
+
+	//Now commit the changes
+	storage->Commit();
+#endif // REDEFINE_DATABASE
 }
 
 //*****************************************************************************
