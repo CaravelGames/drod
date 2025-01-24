@@ -2468,7 +2468,7 @@ void CCharacterDialogWidget::OnSelectChange(const UINT dwTagNo)
 
 		case TAG_GRAPHICLISTBOX:
 			ASSERT(this->pCharacter);
-			this->pCharacter->wLogicalIdentity = this->pGraphicListBox->GetSelectedItem();
+			this->pCharacter->wLogicalIdentity = this->pCharacter->wInitialIdentity = this->pGraphicListBox->GetSelectedItem();
 			if (this->pCharacter->wLogicalIdentity == M_NONE)
 			{
 				//Don't allow visible to be checked when "None" graphic setting is selected.
