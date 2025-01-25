@@ -51,11 +51,13 @@ public:
 	CTextBoxWidget *pSpeechColorGreenTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
+	COptionButtonWidget *pGhostDisplayCheckbox;
 	COptionButtonWidget *pMinimapTreasureCheckbox;
 
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
 	UINT GetColor();
+	bool GetGhostDisplay();
 	UINT GetSpeechColor();
 	UINT GetProcessSequence();
 	bool GetMinimapTreasure();
@@ -70,7 +72,7 @@ private:
 	static const UINT SPACE_CX = 15;
 
 	static const int DIALOG_CX = 400;
-	static const int DIALOG_CY = 350;
+	static const int DIALOG_CY = 390;
 
 	static const int LABEL_CX = 150;
 	static const int LABEL_CY = CY_STANDARD_BUTTON;
@@ -82,9 +84,15 @@ private:
 	static const int TITLE_X = (DIALOG_CX - TITLE_CX) / 2;
 	static const int TITLE_Y = SPACE_CY;
 
+	static const int GHOSTDISPLAY_BUTTON_X = SPACE_CX;
+	static const int GHOSTDISPLAY_BUTTON_Y = TITLE_Y + TITLE_CY + SPACE_CY;
+
+	static const int TREASURE_BUTTON_X = SPACE_CX;
+	static const int TREASURE_BUTTON_Y = GHOSTDISPLAY_BUTTON_Y + TITLE_CY + SPACE_CY / 2;
+
 	static const int COLORLABEL_CX = 150;
 	static const int COLORLABEL_X = SPACE_CX;
-	static const int COLORLABEL_Y = TITLE_Y + TITLE_CY + SPACE_CY;
+	static const int COLORLABEL_Y = TREASURE_BUTTON_Y + TITLE_CY + SPACE_CY;
 
 	static const int COLORTEXT_X = COLORLABEL_X + COLORLABEL_CX + SPACE_CX;
 	static const int COLORTEXT_Y = COLORLABEL_Y;
@@ -109,9 +117,6 @@ private:
 
 	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + LABEL_CX + SPACE_CX;
 	static const int SEQUENCETEXT_Y = SEQUENCELABEL_Y;
-
-	static const int TREASURE_BUTTON_X = SPACE_CX;
-	static const int TREASURE_BUTTON_Y = SEQUENCEHELP_Y + TITLE_CY + SPACE_CY * 2;
 
 	static const int SAVE_CX = 100;
 	static const int SAVE_CY = CY_STANDARD_BUTTON;

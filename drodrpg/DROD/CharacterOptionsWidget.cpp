@@ -97,6 +97,10 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 
 	AddWidget(this->pSequenceTextBox);
 
+	this->pGhostDisplayCheckbox = new COptionButtonWidget(0L, GHOSTDISPLAY_BUTTON_X, GHOSTDISPLAY_BUTTON_Y,
+		SEQUENCEHELP_CX, LABEL_CY, g_pTheDB->GetMessageText(MID_NPCGhostDisplay));
+	AddWidget(this->pGhostDisplayCheckbox);
+
 	this->pMinimapTreasureCheckbox = new COptionButtonWidget(0L, TREASURE_BUTTON_X, TREASURE_BUTTON_Y,
 		SEQUENCEHELP_CX, LABEL_CY, g_pTheDB->GetMessageText(MID_MinimapTreasure));
 	AddWidget(this->pMinimapTreasureCheckbox);
@@ -117,6 +121,7 @@ void CCharacterOptionsDialog::SetCharacter(
 
 	SetSpeechColorTexts(pCharacter->GetCustomSpeechColor());
 
+	this->pGhostDisplayCheckbox->SetChecked(pCharacter->IsGhostImage());
 	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->IsMinimapTreasure());
 }
 
@@ -135,6 +140,7 @@ void CCharacterOptionsDialog::SetCharacter(
 
 	SetSpeechColorTexts(pCharacter->ExtraVars.GetVar(ParamSpeechColorStr, 0));
 
+	this->pGhostDisplayCheckbox->SetChecked(pCharacter->ExtraVars.GetVar(GhostImageStr, false));
 	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->ExtraVars.GetVar(MinimapTreasureStr, false));
 }
 
@@ -159,6 +165,12 @@ void CCharacterOptionsDialog::SetSpeechColorTexts(UINT color)
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetColor(){
 	return (UINT)this->pColorTextBox->GetNumber();
+}
+
+//*****************************************************************************
+bool CCharacterOptionsDialog::GetGhostDisplay()
+{
+	return this->pGhostDisplayCheckbox->IsChecked();
 }
 
 //*****************************************************************************
