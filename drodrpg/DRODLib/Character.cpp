@@ -2734,6 +2734,9 @@ void CCharacter::Process(
 					//Whether a not-visible NPC (i.e. not occupying a room tile) is displayed on screen.
 					case ScriptFlag::NoGhostDisplay:
 						this->bGhostImage = false;
+						if (this->bMinimapTreasure) {
+							room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+						}
 					break;
 					case ScriptFlag::GhostDisplay:
 						this->bGhostImage = true;
@@ -3146,11 +3149,17 @@ void CCharacter::Process(
 				//Remove character from any future play in the current game.
 				this->bScriptDone = true;
 				this->wCurrentCommandIndex = this->commands.size();
+				if (this->bMinimapTreasure) {
+					room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+				}
 			goto Finish;
 			case CCharacterCommand::CC_EndScriptOnExit:
 				//Remove character from any future play in the current game once the room is exited.
 				this->bScriptDone = true;
 				bProcessNextCommand = true;
+				if (this->bMinimapTreasure) {
+					room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+				}
 			break;
 
 			case CCharacterCommand::CC_ReplaceWithDefault:
@@ -6436,6 +6445,7 @@ void CCharacter::Disappear()
 		CDbRoom& room = *(this->pCurrentGame->pRoom);
 		ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
 		room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] = NULL;
+		room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
 	}
 }
 
