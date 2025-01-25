@@ -102,7 +102,6 @@ const UINT MAX_ANSWERS = 9;
 #define SwordSafeToPlayerStr "SwSafeToPlayer"
 #define DefeatedStr "Defeated"
 #define ShowStatChangesStr "SStatChanges"
-#define GhostImageStr "GhostImage"
 #define InvisibleInspectableStr "InvisibleInspectable"
 #define SwordStr "Sword"
 #define RestartScriptOnEntranceStr "RestartOnEntrance"
@@ -5718,6 +5717,7 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
 					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->color);
 					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
+					this->bGhostImage = this->pCustomChar->ExtraVars.GetVar(GhostImageStr, this->bGhostImage);
 					this->bMinimapTreasure = this->pCustomChar->ExtraVars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
 				}
 			}
