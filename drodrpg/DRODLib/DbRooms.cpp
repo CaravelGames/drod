@@ -371,6 +371,19 @@ void CDbRooms::ExportXML(
 				str += INT32TOSTR(pRoom->wImageStartY);
 			}
 		}
+		if (pRoom->dwOverheadDataID)
+		{
+			//Only save attached data if it's not a dangling pointer.
+			if (g_pTheDB->Data.Exists(pRoom->dwOverheadDataID))
+			{
+				str += PROPTAG(P_OverheadDataID);
+				str += INT32TOSTR(pRoom->dwOverheadDataID);
+				str += PROPTAG(P_OverheadImageStartX);
+				str += INT32TOSTR(pRoom->wOverheadImageStartX);
+				str += PROPTAG(P_OverheadImageStartY);
+				str += INT32TOSTR(pRoom->wOverheadImageStartY);
+			}
+		}
 
 		//Process squares data.
 		str += PROPTAG(P_Squares);
@@ -1193,6 +1206,23 @@ MESSAGE_ID CDbRoom::SetProperty(
 			break;
 		case P_ImageStartY:
 			this->wImageStartY = convertToUINT(str);
+			break;
+		case P_OverheadDataID:
+			this->dwOverheadDataID = convertToUINT(str);
+			if (this->dwOverheadDataID)
+			{
+				//Set to local ID.
+				PrimaryKeyMap::const_iterator localID = info.DataIDMap.find(this->dwOverheadDataID);
+				if (localID == info.DataIDMap.end())
+					return MID_FileCorrupted;  //record should have been loaded already
+				this->dwOverheadDataID = localID->second;
+			}
+			break;
+		case P_OverheadImageStartX:
+			this->wOverheadImageStartX = convertToUINT(str);
+			break;
+		case P_OverheadImageStartY:
+			this->wOverheadImageStartY = convertToUINT(str);
 			break;
 		case P_Squares:
 		{
