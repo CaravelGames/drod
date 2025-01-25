@@ -96,6 +96,10 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	this->pSequenceTextBox->AddHotkey(SDLK_RETURN, TAG_SAVE);
 
 	AddWidget(this->pSequenceTextBox);
+
+	this->pMinimapTreasureCheckbox = new COptionButtonWidget(0L, TREASURE_BUTTON_X, TREASURE_BUTTON_Y,
+		SEQUENCEHELP_CX, LABEL_CY, g_pTheDB->GetMessageText(MID_MinimapTreasure));
+	AddWidget(this->pMinimapTreasureCheckbox);
 }
 
 //*****************************************************************************
@@ -112,6 +116,8 @@ void CCharacterOptionsDialog::SetCharacter(
 	this->pColorTextBox->SetText(temp);
 
 	SetSpeechColorTexts(pCharacter->GetCustomSpeechColor());
+
+	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->IsMinimapTreasure());
 }
 
 //*****************************************************************************
@@ -128,6 +134,8 @@ void CCharacterOptionsDialog::SetCharacter(
 	this->pColorTextBox->SetText(temp);
 
 	SetSpeechColorTexts(pCharacter->ExtraVars.GetVar(ParamSpeechColorStr, 0));
+
+	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->ExtraVars.GetVar(MinimapTreasureStr, false));
 }
 
 //*****************************************************************************
@@ -168,6 +176,12 @@ UINT CCharacterOptionsDialog::GetSpeechColor()
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetProcessSequence(){
 	return (UINT) this->pSequenceTextBox->GetNumber();
+}
+
+//*****************************************************************************
+bool CCharacterOptionsDialog::GetMinimapTreasure()
+{
+	return this->pMinimapTreasureCheckbox->IsChecked();
 }
 
 //*****************************************************************************
