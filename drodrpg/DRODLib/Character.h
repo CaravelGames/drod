@@ -59,6 +59,7 @@ using std::vector;
 #define ParamProcessSequenceStr "ProcessSequenceParam"
 #define ColorStr "Color"
 #define ParamSpeechColorStr "SpeechColorParam"
+#define MinimapTreasureStr "MinimapTreasure"
 
 class CSwordsman;
 struct HoldCharacter;
@@ -218,6 +219,7 @@ public:
 	virtual void   SetExtraVarsForExport() { PackExtraVars(true); } //include config params and script
 	void           SetExtraVarsFromMembersWithoutScript(CDbPackedVars& vars) const;
 	virtual void   SetMembers(const CDbPackedVars& vars);
+	void           SetMinimapTreasure(const bool minimapTreasure) { this->bMinimapTreasure = minimapTreasure; }
 	virtual void   Delete();
 
 	//Behavior patterns.

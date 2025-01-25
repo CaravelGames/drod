@@ -133,7 +133,6 @@ const UINT MAX_ANSWERS = 9;
 #define SpawnEggsStr "SpawnEggs"
 #define RemovesSwordStr "RemovesSword"
 #define ExplosiveKegSafeStr "ExplosiveSafe"
-#define MinimapTreasureStr "MinimapTreasure"
 #define CutTarAnywhereStr "CutTarAnywhere"
 #define MovementTypeStr "MovementType"
 #define WallMirrorSafeStr "WallMirrorSafe"
@@ -5710,6 +5709,7 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
 					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->color);
 					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
+					this->bMinimapTreasure = this->pCustomChar->ExtraVars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
 				}
 			}
 			else

@@ -51,11 +51,14 @@ public:
 	CTextBoxWidget *pSpeechColorGreenTextBox;
 	CTextBoxWidget *pSequenceTextBox;
 
+	COptionButtonWidget *pMinimapTreasureCheckbox;
+
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
 	UINT GetColor();
 	UINT GetSpeechColor();
 	UINT GetProcessSequence();
+	bool GetMinimapTreasure();
 
 protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
@@ -67,7 +70,7 @@ private:
 	static const UINT SPACE_CX = 15;
 
 	static const int DIALOG_CX = 400;
-	static const int DIALOG_CY = 300;
+	static const int DIALOG_CY = 350;
 
 	static const int LABEL_CX = 150;
 	static const int LABEL_CY = CY_STANDARD_BUTTON;
@@ -106,6 +109,9 @@ private:
 
 	static const int SEQUENCETEXT_X = SEQUENCELABEL_X + LABEL_CX + SPACE_CX;
 	static const int SEQUENCETEXT_Y = SEQUENCELABEL_Y;
+
+	static const int TREASURE_BUTTON_X = SPACE_CX;
+	static const int TREASURE_BUTTON_Y = SEQUENCEHELP_Y + TITLE_CY + SPACE_CY * 2;
 
 	static const int SAVE_CX = 100;
 	static const int SAVE_CY = CY_STANDARD_BUTTON;
