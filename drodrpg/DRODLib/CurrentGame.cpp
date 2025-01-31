@@ -8133,6 +8133,58 @@ UINT CCurrentGame::WriteCurrentRoomConquerDemo()
 */
 
 //***************************************************************************************
+UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
+//Creates or updates a high score record for the give scorepoint.
+//
+//Returns:
+//HighScoreID of the HighScores record.
+{
+	if (this->bNoSaves)
+		return 0; //playing a dummy game session -- don't save scores
+
+	PlayerStats st = this->pPlayer->st; //temp copy
+	st.ATK = getPlayerATK();
+	st.DEF = getPlayerDEF();
+
+	CDbLocalHighScore* pHighScore;
+	int score = CDbSavedGames::GetScore(st);
+	CDb db;
+	UINT holdID = db.GetHoldID();
+	UINT playerID = db.GetPlayerID();
+	CDbPackedVars stats;
+	st.Pack(stats);
+
+	db.HighScores.FilterByHold(holdID);
+	db.HighScores.FilterByPlayer(playerID);
+
+	if (db.HighScores.HasScorepoint(name)) {
+		//Update existing score if a new best has been achieved
+		UINT id = db.HighScores.GetIDForScorepoint(name);
+		ASSERT(id);
+		pHighScore = db.HighScores.GetByID(id);
+		if (score > pHighScore->score) {
+			pHighScore->score = score;
+			pHighScore->stats = stats;
+			//send some kind of event perhaps
+		}
+	} else {
+		//Create new score
+		pHighScore = db.HighScores.GetNew();
+		pHighScore->dwHoldID = holdID;
+		pHighScore->dwPlayerID = playerID;
+		pHighScore->score = score;
+		pHighScore->scorepointName = name;
+		pHighScore->stats = stats;
+	}
+
+	pHighScore->Update();
+	UINT highScoreID = pHighScore->dwHighScoreID;
+	delete pHighScore;
+
+	return highScoreID;
+}
+
+//***************************************************************************************
 UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 //Writes a saved game record containing the saved game's stats info for upload.
 //

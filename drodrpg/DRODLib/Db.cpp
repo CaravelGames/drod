@@ -475,6 +475,7 @@ UINT CDb::LookupRowByPrimaryKey(
 		case V_SavedGames: dwRowCount = g_pTheDB->SavedGames.GetViewSize(dwID); break;
 		case V_SavedGameMoves: dwRowCount = g_pTheDB->SavedGameMoves.GetViewSize(dwID); break;
 		case V_Speech: dwRowCount = g_pTheDB->Speech.GetViewSize(dwID); break;
+		case V_LocalHighScores: dwRowCount = g_pTheDB->HighScores.GetViewSize(dwID); break;
 		default:
 			ASSERT(!"CDb::LookupRowByPrimaryKey: Unexpected property type.");
 			return ROW_NO_MATCH;
@@ -1112,10 +1113,12 @@ void CDb::RemoveEmptyRows()
 		this->Data.RemoveEmptyRows();
 		DirtyData();
 	}
-	if (this->Demos.emptyEndRows || this->SavedGames.emptyEndRows)
+	if (this->Demos.emptyEndRows || this->SavedGames.emptyEndRows ||
+			this->HighScores.emptyEndRows)
 	{
 		this->Demos.RemoveEmptyRows();
 		this->SavedGames.RemoveEmptyRows();
+		this->HighScores.RemoveEmptyRows();
 		DirtySave();
 	}
 	if (this->Holds.emptyEndRows || this->Levels.emptyEndRows ||

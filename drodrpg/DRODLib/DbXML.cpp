@@ -114,6 +114,7 @@ void CDbXML::AddRowsForPendingRecords()
 	g_pTheDB->Demos.EnsureEmptyRows(CDbXML::info.nDemos);
 	g_pTheDB->Players.EnsureEmptyRows(CDbXML::info.nPlayers);
 	g_pTheDB->SavedGames.EnsureEmptyRows(CDbXML::info.nSavedGames);
+	g_pTheDB->HighScores.EnsureEmptyRows(CDbXML::info.nHighScore);
 
 	CDbXML::info.bPreparsed = true;
 }
@@ -150,6 +151,8 @@ CDbBase* CDbXML::GetNewRecord(
 			return g_pTheDB->SavedGameMoves.GetNew();
 		case V_Speech:
 			return g_pTheDB->Speech.GetNew();
+		case V_LocalHighScores:
+			return g_pTheDB->HighScores.GetNew();
 
 		default:
 			ASSERT(!"Unexpected view type.");
@@ -262,6 +265,7 @@ void CDbXML::TallyElement(
 		case V_Rooms: ++CDbXML::info.nRooms; break;
 		case V_SavedGames: ++CDbXML::info.nSavedGames; break;
 		case V_Speech: ++CDbXML::info.nSpeech; break;
+		case V_LocalHighScores: ++CDbXML::info.nHighScore; break;
 		default: break;
 	}
 }

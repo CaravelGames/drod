@@ -74,6 +74,7 @@ DEFPROP(c4_IntProp,     GID_LevelIndex);
 DEFPROP(c4_IntProp,     GID_NewLevelIndex);
 DEFPROP(c4_IntProp,     GID_OriginalNameMessageID);
 DEFPROP(c4_IntProp,     GID_PlayerID);
+DEFPROP(c4_IntProp,     HighScoreID);
 DEFPROP(c4_IntProp,     HoldID);
 DEFPROP(c4_IntProp,     ImageStartX);
 DEFPROP(c4_IntProp,     ImageStartY);
@@ -112,6 +113,8 @@ DEFPROP(c4_IntProp,     RoomRows);
 DEFPROP(c4_IntProp,     RoomX);
 DEFPROP(c4_IntProp,     RoomY);
 DEFPROP(c4_IntProp,     SavedGameID);
+DEFPROP(c4_IntProp,     Score);
+DEFPROP(c4_BytesProp,   ScorepointName);
 DEFPROP(c4_IntProp,     ScriptID);
 DEFPROP(c4_BytesProp,   Settings);
 DEFPROP(c4_IntProp,     ShowDescription);
@@ -168,7 +171,8 @@ DEFTDEF(INCREMENTEDIDS_VIEWDEF,
 			"PlayerID:I,"
 			"RoomID:I,"
 			"SavedGameID:I,"
-			"SpeechID:I"
+			"SpeechID:I,"
+			"HighScoreID:I"
 		"]");
 
 #define MONSTERS_VIEWPROPDEF  \
@@ -421,6 +425,17 @@ DEFTDEF(SAVEDGAMEMOVES_VIEWDEF,
 			"Commands:B"     //packed movement commands
 		"]");
 
+DEFTDEF(LOCALHIGHSCORES_VIEWDEF,
+		"LocalHighScores"
+		"["
+				"HighScoreID:I,"
+				"Score:I,"
+				"PlayerID:I,"
+				"HoldID:I,"
+				"ScorepointName:B,"
+				"Stats:B"
+		"]");
+
 #undef DEFPROP
 #undef DEFTDEF
 
@@ -444,6 +459,7 @@ enum VIEWTYPE
 	V_SavedGameMoves,
 	V_SavedGames,
 	V_Speech,
+	V_LocalHighScores,
 	V_Count,
 	V_Invalid
 };
@@ -507,6 +523,7 @@ enum PROPTYPE
 	P_GID_NewLevelIndex,
 	P_GID_OriginalNameMessage, //not ID
 	P_GID_PlayerID,
+	P_HighScoreID,
 	P_HoldID,
 	P_ImageStartX,
 	P_ImageStartY,
@@ -547,6 +564,8 @@ enum PROPTYPE
 	P_RoomX,
 	P_RoomY,
 	P_SavedGameID,
+	P_Score,
+	P_ScorepointName,
 	P_ScriptID,
 	P_Settings,
 	P_ShowDescription,
@@ -577,11 +596,11 @@ enum PROPTYPE
 };
 
 //*****************************************************************************
-extern const char viewTypeStr[V_Count][15]
+extern const char viewTypeStr[V_Count][16]
 #ifdef INCLUDED_FROM_DBBASE_CPP
 = {
 	"Data", "Demos", "Holds", "Levels", "MessageTexts", "Players",
-	"Rooms", "SavedGameMoves", "SavedGames", "Speech"
+	"Rooms", "SavedGameMoves", "SavedGames", "Speech", "LocalHighScores"
 }
 #endif
 ;
@@ -610,7 +629,7 @@ extern const char propTypeStr[P_Count][26]
 	"EditingPrivileges", "EMailMessage", "EndHoldMessage", "EndTurnNo",
 	"EntranceID", "EntrancesExplored", "ExtraVars", "Flags", "GID_Created",
 	"GID_LevelIndex", "GID_NewLevelIndex", "GID_OriginalNameMessage",
-	"GID_PlayerID", "HoldID", "ImageStartX", "ImageStartY",
+	"GID_PlayerID", "HighScoreID", "HoldID", "ImageStartX", "ImageStartY",
 //	"IsFirstTurn",
 	"IsHidden", "IsLocal", "IsMainEntrance",
 	"IsSecret",
@@ -623,7 +642,7 @@ extern const char propTypeStr[P_Count][26]
 	"PlayerID",
 //	"ProcessSequence",
 	"RawData", "Right", "RoomID", "RoomCols",
-	"RoomRows", "RoomX", "RoomY", "SavedGameID", "ScriptID",
+	"RoomRows", "RoomX", "RoomY", "SavedGameID", "Score", "ScorepointName", "ScriptID",
 	"Settings", "ShowDescription", "ShowSequenceNo", "SpeechID", "Squares",
 	"StartRoomAppearance",
 	"StartRoomO", "StartRoomSwordOff", "StartRoomX", "StartRoomY", "Stats",

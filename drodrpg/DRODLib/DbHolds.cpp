@@ -144,6 +144,14 @@ void CDbHolds::Delete(
 			DeleteMessage(static_cast<MESSAGE_ID>(descriptionMID));
 	}
 
+	//Delete all local high scores for the hold
+	db.HighScores.FilterByHold(dwHoldID);
+	db.HighScores.FilterByPlayer(0);
+	CIDSet scoreIDs = db.HighScores.GetIDs();
+	for (iter = scoreIDs.begin(); iter != scoreIDs.end(); ++iter) {
+		db.HighScores.Delete(*iter);
+	}
+
 	//Delete the hold.
 	CDb::deleteHold(dwHoldID); //call first
 	HoldsView.RemoveAt(dwHoldRowI);

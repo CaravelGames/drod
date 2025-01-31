@@ -67,6 +67,8 @@ const
 			return this->SavedGames.has(dwID);
 		case V_Speech:
 			return this->Speech.has(dwID);
+		case V_LocalHighScores:
+			return this->HighScores.has(dwID);
 		default:
 			ASSERTP(false, "CDbRefs::IsSet() Unexpected view type.");
 			return false;
@@ -107,6 +109,9 @@ void CDbRefs::Set(
 			break;
 		case V_Speech:
 			this->Speech += dwID;
+			break;
+		case V_LocalHighScores:
+			this->HighScores += dwID;
 			break;
 		default:
 			ASSERTP(false, "CDbRefs::Set() Unexpected view type.");

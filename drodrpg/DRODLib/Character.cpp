@@ -3133,8 +3133,10 @@ void CCharacter::Process(
 						CDbMessageText* pScoreIDText = new CDbMessageText();
 						*pScoreIDText = command.label.c_str();
 						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
-						if (bNotFrozen)
+						if (bNotFrozen) {
 							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteLocalHighScore(command.label);
+						}
 					}
 				}
 				bProcessNextCommand = true;

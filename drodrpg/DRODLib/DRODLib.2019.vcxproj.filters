@@ -234,6 +234,9 @@
     <ClCompile Include="FluffBaby.cpp">
       <Filter>Monsters</Filter>
     </ClCompile>
+    <ClCompile Include="DbLocalHighScores.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h">
@@ -473,6 +476,9 @@
     </ClInclude>
     <ClInclude Include="FluffBaby.h">
       <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="DbLocalHighScores.h">
+      <Filter>DBs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

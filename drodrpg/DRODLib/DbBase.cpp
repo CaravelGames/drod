@@ -177,6 +177,7 @@ c4_IntProp* CDbBase::GetPrimaryKeyProp(
 		case V_SavedGames: return &p_SavedGameID;
 		case V_SavedGameMoves: return &p_SavedGameID;
 		case V_Speech: return &p_SpeechID;
+		case V_LocalHighScores: return &p_HighScoreID;
 		default:
 			ASSERT(!"CDbBase::GetPrimaryKeyProp: Unexpected property type.");
 		return NULL;
@@ -214,6 +215,7 @@ UINT CDbBase::GetIncrementedID(
 	static const int nRoomID = p_RoomID.GetId();
 	static const int nSavedGameID = p_SavedGameID.GetId();
 	static const int nSpeechID = p_SpeechID.GetId();
+	static const int nHighScoreId = p_HighScoreID.GetId();
 
 	if (nPropID == nDataID)
 	{
@@ -225,7 +227,7 @@ UINT CDbBase::GetIncrementedID(
 	} else if (nPropID == nPlayerID) {
 		pStorage = m_pPlayerStorage;
 		CDbBase::DirtyPlayer();
-	} else if (nPropID == nDemoID || nPropID == nSavedGameID) {
+	} else if (nPropID == nDemoID || nPropID == nSavedGameID || nPropID == nHighScoreId) {
 		pStorage = m_pSaveStorage;
 		CDbBase::DirtySave();
 	} else if (nPropID == nMessageID || nPropID == nMessageTextID) {
@@ -315,6 +317,7 @@ c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName
 			return m_pPlayerStorage->View(viewName);
 		case V_Demos:
 		case V_SavedGames:
+		case V_LocalHighScores:
 			return m_pSaveStorage->View(viewName);
 		case V_SavedGameMoves:
 			return m_pSaveMoveStorage->View(viewName);
@@ -633,6 +636,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 	c4_View SavedGames = newStorage.GetAs(SAVEDGAMES_VIEWDEF);
 	c4_View SavedGameMoves = newStorage.GetAs(SAVEDGAMEMOVES_VIEWDEF);
 	c4_View Speech = newStorage.GetAs(SPEECH_VIEWDEF);
+	c4_View LocalHighScores = newStorage.GetAs(LOCALHIGHSCORES_VIEWDEF);
 
 	if (initIncrementedIDs >= 0)
 	{
@@ -646,7 +650,8 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 			p_PlayerID[      initIncrementedIDs ] +
 			p_RoomID[        initIncrementedIDs ] +
 			p_SavedGameID[   initIncrementedIDs ] +
-			p_SpeechID[      initIncrementedIDs ]);
+			p_SpeechID[      initIncrementedIDs ] +
+			p_HighScoreID[   initIncrementedIDs ]);
 	}
 
 	newStorage.Commit();
@@ -673,6 +678,7 @@ c4_Storage* storage) //(in) metakit storage object for dat file
 	storage->GetAs(SAVEDGAMES_VIEWDEF);
 	storage->GetAs(SAVEDGAMEMOVES_VIEWDEF);
 	storage->GetAs(SPEECH_VIEWDEF);
+	storage->GetAs(LOCALHIGHSCORES_VIEWDEF);
 
 	//Now commit the changes
 	storage->Commit();

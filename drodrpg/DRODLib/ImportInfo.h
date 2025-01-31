@@ -83,9 +83,10 @@ public:
 	PrimaryKeyMap RoomIDMap;
 	PrimaryKeyMap SavedGameIDMap;
 	PrimaryKeyMap SpeechIDMap;
+	PrimaryKeyMap HighScoreIDMap;
 
 	bool bPreparsed;
-	UINT  nData, nDemos, nHolds, nLevels, nPlayers, nRooms, nSavedGames, nSpeech;
+	UINT  nData, nDemos, nHolds, nLevels, nPlayers, nRooms, nSavedGames, nSpeech, nHighScore;
 
 	bool  bReplaceOldPlayers;
 	bool  bReplaceOldHolds;     //confirm upgrading saved games in hold
