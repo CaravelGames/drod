@@ -405,6 +405,7 @@
     <ClCompile Include="DbDemos.cpp" />
     <ClCompile Include="DbHolds.cpp" />
     <ClCompile Include="DbLevels.cpp" />
+    <ClCompile Include="DbLocalHighScores.cpp" />
     <ClCompile Include="DbMessageText.cpp" />
     <ClCompile Include="DbPackedVars.cpp" />
     <ClCompile Include="DbPlayers.cpp" />
@@ -481,6 +482,7 @@
     <ClInclude Include="DbDemos.h" />
     <ClInclude Include="DbHolds.h" />
     <ClInclude Include="DbLevels.h" />
+    <ClInclude Include="DbLocalHighScores.h" />
     <ClInclude Include="DbMessageText.h" />
     <ClInclude Include="DbPackedVars.h" />
     <ClInclude Include="DbPlayers.h" />

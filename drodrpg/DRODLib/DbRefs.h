@@ -64,6 +64,7 @@ private:
 	CIDSet Rooms;       //maybe ref
 	CIDSet SavedGames;  //maybe ref
 	CIDSet Speech;      //never a ref
+	CIDSet HighScores;  //never a ref
 };
 
 #endif //...#ifndef DBREFS_H

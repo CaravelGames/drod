@@ -115,6 +115,13 @@ void CDbPlayers::Delete(
 	for (iter = SavedGameIDs.begin(); iter != SavedGameIDs.end(); ++iter)
 		db.SavedGames.Delete(*iter);
 
+	db.HighScores.FilterByHold(0);
+	db.HighScores.FilterByPlayer(dwPlayerID);
+	CIDSet highScoreIDs = db.HighScores.GetIDs();
+	for (iter = highScoreIDs.begin(); iter != highScoreIDs.end(); ++iter) {
+		db.HighScores.Delete(*iter);
+	}
+
 	CDbBase::DirtyPlayer();
 	if (!bRetainRef)
 	{
@@ -324,6 +331,21 @@ void CDbPlayers::ExportXML(
 				if (str.size() > str.capacity()*0.98)
 					str.reserve(str.capacity() * 2);
 				db.SavedGames.ExportXML(*iter, dbRefs, str);
+			}
+
+			CDbXML::PerformCallbackf(0.01f);
+			db.HighScores.FilterByPlayer(dwPlayerID);
+			CIDSet HighScoreIDs = db.HighScores.GetIDs();
+			const float fNumHighScores = (float)SavedGameIDs.size();
+			str.reserve(static_cast<UINT>(str.capacity() + fNumHighScores * 500)); //large speed optimization
+
+			for (iter = HighScoreIDs.begin(), wCount = 0; iter != HighScoreIDs.end(); ++iter) {
+				CDbXML::PerformCallbackf(++wCount / fNumHighScores);
+				if (str.size() > str.capacity() * 0.98) {
+					str.reserve(str.capacity() * 2);
+				}
+
+				db.HighScores.ExportXML(*iter, dbRefs, str);
 			}
 		}
 

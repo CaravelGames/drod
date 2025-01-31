@@ -381,6 +381,7 @@ public:
 	bool     UseAccessory(CCueEvents &CueEvents);
 	bool     WalkDownStairs();
 //	UINT     WriteCurrentRoomDieDemo();
+	UINT     WriteLocalHighScore(const WSTRING& name);
 	UINT     WriteScoreCheckpointSave(const WSTRING& name);
 
 	bool     PrepTempGameForRoomDisplay(const UINT roomID);
