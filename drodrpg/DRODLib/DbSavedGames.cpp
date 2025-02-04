@@ -2008,6 +2008,8 @@ void CDbSavedGames::ExportXML(
 			str += INT32TOSTR(r.mapMarker);
 			str += PROPTAG(P_Squares);
 			str += Base64::encode(r.SquaresBytes.Contents(), r.SquaresBytes.Size());
+			str += PROPTAG(P_TileLights);
+			str += Base64::encode(r.tileLightsBytes.Contents(), r.tileLightsBytes.Size());
 			str += CLOSESTARTTAG;
 
 			for (CMonster *pMonster = r.pMonsterList; pMonster != NULL; pMonster = pMonster->pNext)
@@ -2052,11 +2054,6 @@ void CDbSavedGames::ExportXML(
 				str += CLOSETAG;
 			}
 */
-
-			str += PROPTAG(P_TileLights);
-			str += Base64::encode(r.tileLightsBytes.Contents(), r.tileLightsBytes.Size());
-			str += CLOSETAG;
-
 			str += ENDVPTAG(VP_ExploredRooms);
 		}
 
