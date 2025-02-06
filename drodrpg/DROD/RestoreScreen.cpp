@@ -927,11 +927,14 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 	CDb db;
 	pListBoxWidget->SelectLine(0);
 
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	CDbHold* pHold = this->pCurrentRestoreGame->pHold;
+	db.HighScores.FilterByPlayer(pPlayer->dwPlayerID);
+	db.HighScores.FilterByHold(pHold->dwHoldID);
+
 #ifndef ENABLE_CHEATS
 	// Check hold authorship
 	// Not required if cheats are active
-	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
-	CDbHold* pHold = this->pCurrentRestoreGame->pHold;
 	bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
 	delete pPlayer;
 #endif
@@ -941,13 +944,24 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 	{
 		//Display info for this variable.
 		WSTRING scorepointName = vars->first;
-		bool hasScore = (db.SavedGames.FindByName(ST_ScoreCheckpoint, scorepointName) != 0);
+		bool hasScore = (db.HighScores.HasScorepoint(scorepointName));
 #ifndef ENABLE_CHEATS
 		if (!(hasScore || bIsAuthor)) {
-			pListBoxWidget->AddItem(0, L"???", !hasScore);
+			pListBoxWidget->AddItem(0, L"???", true);
 		}	else
 #endif
 		{
+			if (hasScore) {
+				UINT scoreID = db.HighScores.GetIDForScorepoint(scorepointName);
+				ASSERT(scoreID);
+				CDbLocalHighScore* pHighScore = db.HighScores.GetByID(scoreID);
+				scorepointName += wszSpace;
+				scorepointName += wszHyphen;
+				scorepointName += wszSpace;
+				scorepointName += std::to_wstring(pHighScore->score);
+				delete pHighScore;
+			}
+
 			pListBoxWidget->AddItem(0, scorepointName.c_str(), !hasScore);
 		}
 	}
