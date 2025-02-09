@@ -767,6 +767,7 @@ void CCurrentGame::Clear(
 
 	this->UnansweredQuestions.clear();
 	this->customRoomLocationText.clear();
+	this->localScoreMessage.clear();
 	this->persistingImageOverlays.clear();
 	this->imageOverlayNextID = 0;
 
@@ -7160,6 +7161,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->music = Src.music;
 
 	this->customRoomLocationText = Src.customRoomLocationText;
+	this->localScoreMessage = Src.localScoreMessage;
 	this->persistingImageOverlays = Src.persistingImageOverlays;
 	this->imageOverlayNextID = Src.imageOverlayNextID;
 
@@ -7328,6 +7330,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->UnansweredQuestions.clear();
 
 	this->customRoomLocationText.clear();
+	this->localScoreMessage.clear();
 
 	this->pRoom->KillSeepOutsideWall(CueEvents); //remove before any doors change
 
@@ -8146,11 +8149,22 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 	st.ATK = getPlayerATK();
 	st.DEF = getPlayerDEF();
 
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	ASSERT(pPlayer);
+	bool showLocalMessage = true;
+	if (pPlayer->Settings.GetVar(useInternetStr, false)) {
+		if (g_pTheNet) {
+			if (g_pTheNet->IsLocalHold(this->pHold->dwHoldID)) {
+				showLocalMessage = false;
+			}
+		}
+	}
+
 	CDbLocalHighScore* pHighScore;
 	int score = CDbSavedGames::GetScore(st);
 	CDb db;
-	UINT holdID = db.GetHoldID();
-	UINT playerID = db.GetPlayerID();
+	UINT holdID = this->pHold->dwHoldID;
+	UINT playerID = pPlayer->dwPlayerID;
 	CDbPackedVars stats;
 	st.Pack(stats);
 
@@ -8165,7 +8179,15 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 		if (score > pHighScore->score) {
 			pHighScore->score = score;
 			pHighScore->stats = stats;
-			//send some kind of event perhaps
+			localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
+		} else {
+			double ratio = (double)score / (double)pHighScore->score;
+			int percent = ratio * 100;
+			localScoreMessage = WCSReplace(
+				g_pTheDB->GetMessageText(MID_PercentOptimal),
+				wszStringToken,
+				std::to_wstring(percent)
+			);
 		}
 	} else {
 		//Create new score
@@ -8175,11 +8197,13 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 		pHighScore->score = score;
 		pHighScore->scorepointName = name;
 		pHighScore->stats = stats;
+		localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
 	}
 
 	pHighScore->Update();
 	UINT highScoreID = pHighScore->dwHighScoreID;
 	delete pHighScore;
+	delete pPlayer;
 
 	return highScoreID;
 }

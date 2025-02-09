@@ -2172,6 +2172,13 @@ void CGameScreen::OnBetweenEvents()
 			//No combat and no questions.
 			this->wThisCombatTickSpeed = this->wCombatTickSpeed; //default preference
 
+			if (!this->pCurrentGame->localScoreMessage.empty()) {
+				this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
+					this->pRoomWidget, this->pCurrentGame->localScoreMessage.c_str(),
+					-300, 3000));	//show at top of room for 3s
+				this->pCurrentGame->localScoreMessage.clear();
+			}
+
 			if (!this->pCurrentGame->dwCutScene)
 			{
 				this->dwLastCutSceneMove = 0;
