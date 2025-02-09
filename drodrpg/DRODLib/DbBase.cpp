@@ -947,7 +947,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_OverheadImage: strText = "Overhead Image"; break;
 		case MID_RemoveOverheadImage: strText = "Remove overhead image"; break;
 		case MID_NewLocalHighScore: strText = "New personal best!"; break;
-		case MID_PercentOptimal: strText = "%s% optimal"; break;
+		case MID_PercentOptimal: strText = "%s% of personal best"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
