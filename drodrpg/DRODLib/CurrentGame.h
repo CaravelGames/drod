@@ -425,6 +425,8 @@ public:
 
 	UINT imageOverlayNextID;
 
+	WSTRING localScoreMessage;
+
 	//Internet.
 //	static queue<DEMO_UPLOAD*> demosForUpload;
 	static queue<SCORE_UPLOAD*> scoresForUpload;

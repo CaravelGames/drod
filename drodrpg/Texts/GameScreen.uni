@@ -351,3 +351,11 @@ Blue Keys
 [MID_SKEYStatFull]
 [eng]
 Skeleton Keys
+
+[MID_NewLocalHighScore]
+[eng]
+New personal best!
+
+[MID_PercentOptimal]
+[eng]
+%s% optimal

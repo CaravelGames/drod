@@ -606,6 +606,8 @@ enum MID_CONSTANT {
   MID_GKEYStatFull = 1825,
   MID_BKEYStatFull = 1826,
   MID_SKEYStatFull = 1827,
+  MID_NewLocalHighScore = 1987,
+  MID_PercentOptimal = 1989,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,
