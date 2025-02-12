@@ -3284,7 +3284,8 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 
 	PopulateGotoLabelList(*pChar->pCommands);
 
-	PopulateCommandDescriptions(this->pDefaultScriptCommandsListBox, *pChar->pCommands);
+	if (!this->pDefaultScriptCommandsListBox->GetItemCount())
+		PopulateCommandDescriptions(this->pDefaultScriptCommandsListBox, *pChar->pCommands);
 
 	CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 			g_pTheSM->GetScreen(SCR_EditRoom));
