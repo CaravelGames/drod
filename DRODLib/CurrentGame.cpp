@@ -6291,13 +6291,16 @@ void CCurrentGame::ProcessPlayer(
 				if (bIsEntityFlying(this->swordsman.wAppearance))
 					goto CheckFLayer;
 				//If standing on a platform, check whether it can move.
-				if (wOTileNo == T_PLATFORM_P)
+				if (wOTileNo == T_PLATFORM_P) {
 					if (this->swordsman.CanMovePlatform() &&
 						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
 					}
+					CueEvents.Add(CID_PlatformBlocked, new CMoveCoord(
+						this->swordsman.wX, this->swordsman.wY, wMoveO), true);
+				}
 				CueEvents.Add(CID_Scared);
 			break;
 			case T_SHALLOW_WATER:
@@ -6313,13 +6316,16 @@ void CCurrentGame::ProcessPlayer(
 				if (bIsEntityFlying(this->swordsman.wAppearance) ||
 						bIsEntitySwimming(this->swordsman.wAppearance))
 					goto CheckFLayer;
-				if (wOTileNo == T_PLATFORM_W)
-					if (this->swordsman.CanMovePlatform() && 
+				if (wOTileNo == T_PLATFORM_W) {
+					if (this->swordsman.CanMovePlatform() &&
 						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
 					}
+					CueEvents.Add(CID_PlatformBlocked, new CMoveCoord(
+						this->swordsman.wX, this->swordsman.wY, wMoveO), true);
+				}
 				CueEvents.Add(CID_Scared);
 			break;
 			case T_DOOR_Y:
