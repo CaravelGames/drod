@@ -8137,7 +8137,7 @@ UINT CCurrentGame::WriteCurrentRoomConquerDemo()
 
 //***************************************************************************************
 UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
-//Creates or updates a high score record for the give scorepoint.
+//Creates or updates a high score record for the given scorepoint.
 //
 //Returns:
 //HighScoreID of the HighScores record.
@@ -8160,7 +8160,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 		}
 	}
 
-	CDbLocalHighScore* pHighScore;
+	CDbLocalHighScore* pHighScore = NULL;
 	int score = CDbSavedGames::GetScore(st);
 	CDb db;
 	UINT holdID = this->pHold->dwHoldID;
@@ -8176,9 +8176,12 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 		UINT id = db.HighScores.GetIDForScorepoint(name);
 		ASSERT(id);
 		pHighScore = db.HighScores.GetByID(id);
+		ASSERT(pHighScore);
 		if (score > pHighScore->score) {
 			pHighScore->score = score;
 			pHighScore->stats = stats;
+			pHighScore->Update();
+
 			localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
 		} else {
 			double ratio = (double)score / (double)pHighScore->score;
@@ -8192,15 +8195,17 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 	} else {
 		//Create new score
 		pHighScore = db.HighScores.GetNew();
+		ASSERT(pHighScore);
 		pHighScore->dwHoldID = holdID;
 		pHighScore->dwPlayerID = playerID;
 		pHighScore->score = score;
 		pHighScore->scorepointName = name;
 		pHighScore->stats = stats;
+		pHighScore->Update();
+
 		localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
 	}
 
-	pHighScore->Update();
 	UINT highScoreID = pHighScore->dwHighScoreID;
 	delete pHighScore;
 	delete pPlayer;
