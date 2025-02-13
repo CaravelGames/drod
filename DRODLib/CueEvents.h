@@ -848,6 +848,11 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_CommandKeyThreePressed,
 
+	//Platform or raft couldn't be moved by player
+	//
+	//Private data: CCoord *pSquare
+	CID_PlatformBlocked,
+
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider
 	//Make sure this is always the last CueEvent defined

@@ -4563,6 +4563,29 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	for (pObj = CueEvents.GetFirstPrivateData(CID_PlatformBlocked);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pMoveCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		const CDbRoom* pRoom = this->pCurrentGame->pRoom;
+		CPlatform* platform = pRoom->GetPlatformAt(pMoveCoord->wX, pMoveCoord->wY);
+		CCoordSet platformTiles;
+		platform->GetTiles(platformTiles);
+		for (CCoordSet::const_iterator coord = platformTiles.begin(); coord != platformTiles.end(); ++coord)
+		{
+			if (bIsTar(pRoom->GetTSquare(coord->wX, coord->wY))) {
+				this->pRoomWidget->AddMLayerEffect(new CBumpObstacleEffect(this->pRoomWidget,
+					coord->wX, coord->wY, pMoveCoord->wO));
+				continue;
+			}
+			CMonster* pMonster = pRoom->GetMonsterAtSquare(coord->wX, coord->wY);
+			if (pMonster && (pMonster->IsLongMonster() || pMonster->IsPiece())) {
+				this->pRoomWidget->AddMLayerEffect(new CBumpObstacleEffect(this->pRoomWidget,
+					coord->wX, coord->wY, pMoveCoord->wO));
+			}
+		}
+	}
+
 	if (CueEvents.HasOccurred(CID_MonsterSpoke))
 		//complete turn animation immediately in preparation for question
 		this->pRoomWidget->FinishMoveAnimation();
