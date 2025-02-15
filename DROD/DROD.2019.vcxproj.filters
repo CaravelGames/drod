@@ -265,6 +265,9 @@
     <ClCompile Include="TileSwirlEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="DottedLineEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AumtlichGazeEffect.h">
@@ -541,6 +544,9 @@
       <Filter>Effects</Filter>
     </ClInclude>
     <ClInclude Include="TileSwirlEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DottedLineEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>

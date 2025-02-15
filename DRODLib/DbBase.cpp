@@ -1024,6 +1024,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_WaitForBrainSense: strText = "Wait for brain sensing player"; break;
 	case MID_DeactivateCloudSyncPrompt: strText = "Deactivate cloud sync for this profile? This will only affect the local profile."; break;
 	case MID_ReactivateCloudSyncPrompt: strText = "A cloud player profile was already set for this CaravelNet account, which matches the local profile. Reactivate cloud sync?"; break;
+	case MID_DottedLineEffect: strText = "Dotted line"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
