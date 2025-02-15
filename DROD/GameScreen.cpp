@@ -70,6 +70,7 @@
 #include <FrontEndLib/ButtonWidget.h>
 #include <FrontEndLib/DialogWidget.h>
 #include <FrontEndLib/ExpandingTextEffect.h>
+#include <FrontEndLib/FadeTileEffect.h>
 #include <FrontEndLib/FlashMessageEffect.h>
 #include <FrontEndLib/FrameWidget.h>
 #include <FrontEndLib/LabelWidget.h>
@@ -89,6 +90,7 @@
 #include "../DRODLib/DbRooms.h"
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/GameConstants.h"
+#include "../DRODLib/Halph.h"
 #include "../DRODLib/Mimic.h"
 #include "../DRODLib/Monster.h"
 #include "../DRODLib/MonsterFactory.h"
@@ -3726,15 +3728,22 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	else if (CueEvents.HasOccurred(CID_HalphCantOpen))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphCantOpen) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHCANTOPEN : SEID_HALPH2CANTOPEN);
+		this->pRoomWidget->AddMLayerEffect(new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+		this->pRoomWidget->AddMLayerEffect(
+			new CFadeTileEffect(this->pRoomWidget, pHalph->GetLatestRequest(), TI_CHECKPOINT, 750));
 	}
 	else if (CueEvents.HasOccurred(CID_HalphInterrupted))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphInterrupted) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHINTERRUPTED : SEID_HALPH2INTERRUPTED);
+		this->pRoomWidget->AddMLayerEffect(
+			new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+		this->pRoomWidget->AddMLayerEffect(
+			new CFadeTileEffect(this->pRoomWidget, pHalph->GetCurrentGoal(), TI_CHECKPOINT, 750));
 	}
 	else if (CueEvents.HasOccurred(CID_HalphHurryUp))
 	{
