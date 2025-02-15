@@ -1697,6 +1697,7 @@ enum MID_CONSTANT {
   MID_PlayerSwirlEffect = 2018,
   MID_VerminEffect = 1435,
   MID_BoltEffect = 1436,
+  MID_DottedLineEffect = 2139,
   MID_NPCCustomTileSizeWarning = 1442,
   MID_AnimationSpeed = 1648,
   MID_RoomLocationText = 1649,

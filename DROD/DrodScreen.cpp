@@ -33,6 +33,7 @@
 #include "BloodEffect.h"
 #include "CheckpointEffect.h"
 #include "DebrisEffect.h"
+#include "DottedLineEffect.h"
 #include "ExplosionEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "FiretrapEffect.h"
@@ -403,6 +404,11 @@ void CDrodScreen::AddVisualEffect(const VisualEffectInfo* pEffect, CRoomWidget* 
 		case VET_TILESWIRL:
 			pRoomWidget->AddMLayerEffect(
 				new CTileSwirlEffect(pRoomWidget, coord));
+		break;
+		case VET_DOTTEDLINE:
+			pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(pRoomWidget, GetEffectDuration(pGame, 500),
+					src, coord));
 		break;
 		default: break; //do nothing
 	}

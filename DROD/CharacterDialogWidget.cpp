@@ -1656,6 +1656,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_TILESWIRL, g_pTheDB->GetMessageText(MID_SwirlEffect));
 	this->pVisualEffectsListBox->AddItem(VET_VERMIN, g_pTheDB->GetMessageText(MID_VerminEffect));
 	this->pVisualEffectsListBox->AddItem(VET_BOLT, g_pTheDB->GetMessageText(MID_BoltEffect));
+	this->pVisualEffectsListBox->AddItem(VET_DOTTEDLINE, g_pTheDB->GetMessageText(MID_DottedLineEffect));
 	this->pVisualEffectsListBox->AddItem(VET_JITTER, g_pTheDB->GetMessageText(MID_JitterEffect));
 	this->pVisualEffectsListBox->AddItem(VET_SPIKES, g_pTheDB->GetMessageText(MID_FloorSpikes));
 	this->pVisualEffectsListBox->AddItem(VET_FIRETRAP, g_pTheDB->GetMessageText(MID_Firetrap));

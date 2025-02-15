@@ -2414,6 +2414,12 @@ Bolt
 [fra]
 Éclair
 
+[MID_DottedLineEffect]
+[eng]
+Dotted line
+[fra]
+Ligne pointillée
+
 [MID_NPCCustomTileSizeWarning]
 [eng]
 WARNING: Image is not a multiple of the room tile size and may not display correctly.
