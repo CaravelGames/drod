@@ -39,6 +39,7 @@
 #include "BloodEffect.h"
 #include "CheckpointEffect.h"
 #include "DebrisEffect.h"
+#include "DottedLineEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "ExplosionEffect.h"
 #include "FiretrapEffect.h"
@@ -3722,9 +3723,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	else if (CueEvents.HasOccurred(CID_HalphStriking))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphStriking) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHSTRIKING : SEID_HALPH2STRIKING);
+		this->pRoomWidget->AddMLayerEffect(
+			new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
 	}
 	else if (CueEvents.HasOccurred(CID_HalphCantOpen))
 	{
@@ -3747,9 +3750,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	else if (CueEvents.HasOccurred(CID_HalphHurryUp))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphHurryUp) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHHURRYUP : SEID_HALPH2HURRYUP);
+		this->pRoomWidget->AddMLayerEffect(
+			new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
 	}
 
 	//Handle dynamically-allocated sound channels -- give most important sounds priority.
