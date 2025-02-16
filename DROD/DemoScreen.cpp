@@ -310,7 +310,7 @@ void CDemoScreen::OnKeyDown(
 			while (wMovesToDo--) {
 				AdvanceTurn();
 			}
-			this->bPaused = false;
+			this->bPaused = true;
 			this->bPauseNextMove = true;
 			break;
 		
