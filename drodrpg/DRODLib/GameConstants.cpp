@@ -40,20 +40,20 @@ const char szCompanyName[] = "Caravel Games";
 
 const char szDROD[] = "drodrpg";
 const WCHAR wszDROD[] = { We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We(0) };
-const char szDROD_VER[] = "1_0";
-const WCHAR wszDROD_VER[] = { We('1'),We('_'),We('0'),We(0) };
+const char szDROD_VER[] = "2_0";
+const WCHAR wszDROD_VER[] = { We('2'),We('_'),We('0'),We(0) };
 const char szUserspaceFolder[] = "DRODRPG";
 
-const UINT VERSION_NUMBER = 407; //1.3 data format version -- increment when exported data format changes
-const UINT NEXT_VERSION_NUMBER = 500;
+const UINT VERSION_NUMBER = 500; //2.0 data format version -- increment when exported data format changes
+const UINT NEXT_VERSION_NUMBER = 600;
 
 //#define DROD_VERSION_REVISION alpha.2020-11-01
 #ifdef DROD_VERSION_REVISION
 // (the WS macro requires c++11 or windows)
-const WCHAR wszVersionReleaseNumber[] = WS("1.3.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
+const WCHAR wszVersionReleaseNumber[] = WS("2.0.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('2'),We('.'),We('0'),We('.'),We('0'),We('.'),We('6'),We('3'),We('8'),We('-'),We('d'),We('e'),We('v'),We(0)   // 2.0.0.* -- full version number plus build number
+	We('2'),We('.'),We('3'),We('.'),We('0'),We('.'),We('7'),We('3'),We('1'),We('-'),We('d'),We('e'),We('v'),We(0)   // 2.0.0.* -- full version number plus build number
 };
 #endif
 

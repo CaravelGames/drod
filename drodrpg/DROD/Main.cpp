@@ -147,7 +147,7 @@ bool bWindowsDataFilesInUserSpecificDir = false;
 
 //This is a filename that will probably exist in this specific game only.
 static const WCHAR wszUniqueResFile[] = {
-    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('1'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
+    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('2'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
 
 //
 //Private function prototypes.
