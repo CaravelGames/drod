@@ -240,6 +240,8 @@ public:
 	void           ResolveLogicalIdentity(CDbHold *pHold);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
 	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
+	void           SetDefaultBehaviors();
+	void           SetDefaultMovementType();
 	void   SetImperative(const ScriptFlag::Imperative eVal) {this->eImperative = eVal;}
 	virtual void   SetExtraVarsFromMembers(const bool bHoldChar=false);
 	void           SetExtraVarsFromMembersWithoutScript(const bool bHoldChar=false);
@@ -308,8 +310,6 @@ private:
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
 
-	void SetDefaultBehaviors();
-	void SetDefaultMovementType();
 	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
