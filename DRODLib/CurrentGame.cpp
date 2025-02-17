@@ -263,6 +263,8 @@ CMonster* CCurrentGame::AddNewEntity(
 	CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
 	pCharacter->wLogicalIdentity = identity;
 	pCharacter->SetCurrentGame(this); //will assign the default script for custom NPCs
+	pCharacter->SetDefaultBehaviors();
+	pCharacter->SetDefaultMovementType();
 	pCharacter->dwScriptID = this->pHold->GetNewScriptID();
 	pCharacter->bNewEntity = true;
 

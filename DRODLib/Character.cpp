@@ -6857,11 +6857,9 @@ void CCharacter::SetCurrentGame(
 			default: break;
 		}
 
+		SetDefaultBehaviors();
+		SetDefaultMovementType();
 	}
-
-	// Always set default behaviors and movement types
-	SetDefaultBehaviors();
-	SetDefaultMovementType();
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
