@@ -578,6 +578,10 @@ Quiet
 [eng]
 Title
 
+[MID_MusicTitle2]
+[eng]
+Title 2
+
 [MID_MusicWinGame]
 [eng]
 Win game
@@ -621,6 +625,86 @@ Serpents
 [MID_MusicSlayer]
 [eng]
 Slayer
+
+[MID_MusicPirates]
+[eng]
+Pirates
+
+[MID_MusicGoblinKing]
+[eng]
+Goblin King
+
+[MID_MusicBigSerpent]
+[eng]
+Big Serpent
+
+[MID_MusicTar]
+[eng]
+Tar
+
+[MID_MusicPuzzle]
+[eng]
+Puzzle
+
+[MID_MusicSecretArea]
+[eng]
+Secret Area
+
+[MID_MusicSmallerPlans]
+[eng]
+Smaller Plans
+
+[MID_MusicGeometry]
+[eng]
+An Architect's Dream of Geometry
+
+[MID_MusicSlipStair]
+[eng]
+A Slippery Staircase
+
+[MID_MusicSympathetic]
+[eng]
+A Sympathetic Bartendry
+
+[MID_MusicAscendant]
+[eng]
+Beethro Ascendant
+
+[MID_MusicRoachesRun]
+[eng]
+Roaches on the Run
+
+[MID_MusicNewIdea]
+[eng]
+Tendry's New Idea
+
+[MID_MusicWaltz]
+[eng]
+Waltz Recombinant
+
+[MID_MusicSwingHalls]
+[eng]
+Within These Swingin' Halls
+
+[MID_MusicAmbWindy]
+[eng]
+Ambient - Windy
+
+[MID_MusicAmbBeach]
+[eng]
+Ambient - Beach
+
+[MID_MusicAmbForest]
+[eng]
+Ambient - Forest
+
+[MID_MusicAmbDrips]
+[eng]
+Ambient - Dripping
+
+[MID_MusicAmbRoaches]
+[eng]
+Ambient - Roaches
 
 [MID_GelBabyFormed]
 [eng]
@@ -1412,90 +1496,6 @@ Crate destroyed
 [eng]
 Fire trap hit
 
-[MID_MusicTitle2]
-[eng]
-Title 2
-
-[MID_MusicPirates]
-[eng]
-Pirates
-
-[MID_MusicGoblinKing]
-[eng]
-Goblin King
-
-[MID_MusicBigSerpent]
-[eng]
-Big Serpent
-
-[MID_MusicTar]
-[eng]
-Tar
-
-[MID_MusicPuzzle]
-[eng]
-Puzzle
-
-[MID_MusicSecretArea]
-[eng]
-Secret Area
-
-[MID_MusicSmallerPlans]
-[eng]
-Smaller Plans
-
-[MID_MusicGeometry]
-[eng]
-An Architect's Dream of Geometry
-
-[MID_MusicSlipStair]
-[eng]
-A Slippery Staircase
-
-[MID_MusicSympathetic]
-[eng]
-A Sympathetic Bartendry
-
-[MID_MusicAscendant]
-[eng]
-Beethro Ascendant
-
-[MID_MusicRoachesRun]
-[eng]
-Roaches on the Run
-
-[MID_MusicNewIdea]
-[eng]
-Tendry's New Idea
-
-[MID_MusicWaltz]
-[eng]
-Waltz Recombinant
-
-[MID_MusicSwingHalls]
-[eng]
-Within These Swingin' Halls
-
-[MID_MusicAmbWindy]
-[eng]
-Ambient - Windy
-
-[MID_MusicAmbBeach]
-[eng]
-Ambient - Beach
-
-[MID_MusicAmbForest]
-[eng]
-Ambient - Forest
-
-[MID_MusicAmbDrips]
-[eng]
-Ambient - Dripping
-
-[MID_MusicAmbRoaches]
-[eng]
-Ambient - Roaches
-
 [MID_PuffExplosionEffect]
 [eng]
 Puff destroyed
@@ -1507,6 +1507,30 @@ Roach egg spawned
 [MID_ConstructSplatterEffect]
 [eng]
 Construct splatter
+
+[MID_ArrayVarSet]
+[eng]
+Set array var
+
+[MID_ArrayVarSetAt]
+[eng]
+Set array var at
+
+[MID_ClearArrayVar]
+[eng]
+Clear array var
+
+[MID_ArrayVarNameExpression]
+[eng]
+Variable Name/Expression
+
+[MID_ArrayIndexLabel]
+[eng]
+Index
+
+[MID_CantChangeVarType]
+[eng]
+Var type can't be changed between array and non-array
 
 [MID_ResetOverrides]
 [eng]
@@ -1612,7 +1636,7 @@ Health potion or stat gem
 [eng]
 Any equipment or slot
 
-[MID_BehaviorCutTarAnywhere]
+[MID_CutTarAnywhere]
 [eng]
 Cut tarstuff anywhere
 
