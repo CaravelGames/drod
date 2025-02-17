@@ -149,7 +149,7 @@ MESSAGE_ID CDbLocalHighScore::SetProperty(
 		break;
 		case P_ScorepointName:
 		{
-			this->scorepointName = UTF8ToUnicode(str);
+			Base64::decode(str, this->scorepointName);
 		}
 		break;
 		case P_Stats:
