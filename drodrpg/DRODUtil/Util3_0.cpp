@@ -488,7 +488,7 @@ void CUtil3_0::GetMasterFilepath(
 	WSTRING &wstrFilepath)  //(out)  Filepath.
 const
 {
-	static const WCHAR wszDRODRPGDat[] = {{'d'},{'r'},{'o'},{'d'},{'r'},{'p'},{'g'},{'1'},{'_'},{'0'},{'.'},{'d'},{'a'},{'t'},{0}};
+	static const WCHAR wszDRODRPGDat[] = {{'d'},{'r'},{'o'},{'d'},{'r'},{'p'},{'g'},{'2'},{'_'},{'0'},{'.'},{'d'},{'a'},{'t'},{0}};
 	wstrFilepath += this->strPath.c_str();
 	wstrFilepath += wszSlash;
 	wstrFilepath += wszDRODRPGDat;
