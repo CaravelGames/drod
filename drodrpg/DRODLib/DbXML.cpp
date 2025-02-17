@@ -831,6 +831,7 @@ bool CDbXML::UpdateLocalIDs()
 			case V_Data:
 			case V_SavedGameMoves:
 			case V_Speech:
+			case V_LocalHighScores:
 				break;   //these types need no fix-ups
 
 			default:

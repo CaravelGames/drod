@@ -45,6 +45,8 @@ public:
 		return *this;
 	}
 
+	UINT GetPrimaryKey() const { return this->dwHighScoreID; }
+
 	bool Load(const UINT dwLocalHighScoreID, const bool bQuick = false);
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, char* const str,
 		CImportInfo& info, bool& bSaveRecord);
