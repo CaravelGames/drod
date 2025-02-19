@@ -757,7 +757,7 @@ void CMapWidget::RefreshRoom(const UINT roomID, const UINT mapMarker) //[default
 	//Now load tile data.
 	UINT loadMapMarker = mapMarker;
 	ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-	if (pExpRoom && !pExpRoom->bMapOnly && pExpRoom->SquaresBytes.Size())
+	if (pExpRoom && pExpRoom->HasDetail() && pExpRoom->SquaresBytes.Size())
 	{
 		VERIFY(pTempRoom->UnpackSquares(pExpRoom->SquaresBytes.Contents(), pExpRoom->SquaresBytes.Size()));
 		if (mapMarker == MAP_NOT_MARKED)
@@ -1118,7 +1118,7 @@ bool CMapWidget::LoadMapSurface(
 			ExploredRoom *pExpRoom = NULL;
 			if (this->pCurrentGame)
 				pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
-			if (pExpRoom && !pExpRoom->bMapOnly && pExpRoom->SquaresBytes.Size())
+			if (pExpRoom && pExpRoom->HasDetail() && pExpRoom->SquaresBytes.Size())
 			{
 				VERIFY(pRoom->UnpackSquares(pExpRoom->SquaresBytes.Contents(), pExpRoom->SquaresBytes.Size()));
 				mapMarker = pExpRoom->mapMarker;
@@ -1349,7 +1349,7 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 	ExploredRoom *pExpRoom = this->pCurrentGame ? this->pCurrentGame->getExploredRoom(pRoom->dwRoomID) : NULL;
 
 	//Room previews are shown distinctly on the map
-	const bool bRoomPreview = pExpRoom && !pExpRoom->bSave;
+	const bool bRoomPreview = pExpRoom && (pExpRoom->mapState == MapState::Preview);
 	if (bRoomPreview)
 		this->PreviewedRooms += pRoom->dwRoomID;
 

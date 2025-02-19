@@ -2283,7 +2283,7 @@ void CGameScreen::ShowStatTooltip(int nX, int nY)
 			if (!pRoom)
 			{
 				ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-				if (pExpRoom && !pExpRoom->bMapOnly)
+				if (pExpRoom && pExpRoom->HasDetail())
 				{
 					//Determine room state.
 					//!!This might be a time-intensive operation, and could be optimized.
@@ -2375,7 +2375,7 @@ void CGameScreen::OnClick(
 					if (!this->pCurrentGame->InCombat() && !this->bNeedToProcessDelayedQuestions)
 					{
 						ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-						if (pExpRoom && !pExpRoom->bMapOnly)
+						if (pExpRoom && pExpRoom->HasDetail())
 							ShowRoomTemporarily(roomID);
 						else ToggleBigMap();
 					}
@@ -2418,7 +2418,7 @@ void CGameScreen::OnClick(
 					ToggleBigMap();
 				} else {
 					ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-					if (pExpRoom && !pExpRoom->bMapOnly)
+					if (pExpRoom && pExpRoom->HasDetail())
 						ShowRoomTemporarily(roomID);
 					else ToggleBigMap(); //no room to show -- close map
 				}
@@ -8429,7 +8429,7 @@ Loop:
 	if (showNewRoomID)
 	{
 		ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(showNewRoomID);
-		if (pExpRoom && !pExpRoom->bMapOnly)
+		if (pExpRoom && pExpRoom->HasDetail())
 		{
 			roomID = showNewRoomID;
 			goto Loop;

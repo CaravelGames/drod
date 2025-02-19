@@ -106,7 +106,7 @@ CMonster* copyMonsterList(CMonster *pThatMonsterList)
 //*******************************************************************************
 ExploredRoom::ExploredRoom()
 	: roomID(0)
-	, bMapOnly(true)
+	, mapState(MapState::Invisible)
 	, bSave(true)
 	, mapMarker(0)
 	, pMonsterList(NULL)
@@ -120,7 +120,7 @@ ExploredRoom::ExploredRoom(const ExploredRoom& that)
 	, tileLightsBytes()
 {
 	this->roomID = that.roomID;
-	this->bMapOnly = that.bMapOnly;
+	this->mapState = that.mapState;
 	this->bSave = that.bSave;
 	this->mapMarker = that.mapMarker;
 	this->litFuses = that.litFuses;
@@ -234,7 +234,7 @@ const
 			roomIt != this->ExploredRooms.end(); ++roomIt)
 	{
 		const ExploredRoom& room = *(*roomIt);
-		const bool bMapOnlyFilter = bMapOnlyAlso || !room.bMapOnly;
+		const bool bMapOnlyFilter = bMapOnlyAlso || room.HasDetail();
 		const bool bNoSaveFilter = bIncludeNoSavedAlso || room.bSave;
 		if (bMapOnlyFilter && bNoSaveFilter)
 			rooms += room.roomID;
@@ -271,7 +271,7 @@ bool CDbSavedGame::IsRoomExplored(const UINT roomID, const bool bConsiderCurrent
 			room != this->ExploredRooms.end(); ++room)
 	{
 		if ((*room)->roomID == roomID)
-			return !((*room)->bMapOnly);
+			return ((*room)->HasDetail());
 	}
 
 	//room hasn't been explored before, but player is here now
@@ -381,7 +381,7 @@ void CDbSavedGame::LoadExploredRooms(const c4_View& ExploredRoomsView)
 
 		ExploredRoom *pRoom = new ExploredRoom();
 		pRoom->roomID = p_RoomID(row);
-		pRoom->bMapOnly = p_MapOnly(row) != 0;
+		pRoom->mapState = (MapState)(int)(p_MapState(row));
 		pRoom->mapMarker = p_MapMarker(row);
 		c4_Bytes SquaresBytes = p_Squares(row);
 		pRoom->SquaresBytes = c4_Bytes(SquaresBytes.Contents(), SquaresBytes.Size(), true);
@@ -599,13 +599,13 @@ void CDbSavedGame::RemoveMappedRoomsNotIn(
 			continue;
 		}
 
-		if (!exploredRoomIDs.has(roomID) && !pRoom->bMapOnly)
+		if (!exploredRoomIDs.has(roomID) && pRoom->HasDetail())
 		{
 			//Explored room is reverted to "mapped only" room.
 			delete pRoom;
 			pRoom = new ExploredRoom();
 			pRoom->roomID = roomID;
-			pRoom->bMapOnly = true;
+			pRoom->mapState = MapState::NoDetail;
 		}
 
 		retainedRooms.push_back(pRoom);
@@ -969,7 +969,14 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 					pImportExploredRoom->roomID = localID != info.RoomIDMap.end() ? localID->second : 0;
 					break;
 				case P_MapOnly:
-					pImportExploredRoom->bMapOnly = convertIntStrToBool(str);
+				{
+					//Update from 1.0
+					bool bMapOnly = convertIntStrToBool(str);
+					pImportExploredRoom->mapState = bMapOnly ? MapState::NoDetail : MapState::Explored;
+				}
+					break;
+				case P_MapState:
+					pImportExploredRoom->mapState = (MapState)convertToInt(str);
 					break;
 				case P_MapMarker:
 					pImportExploredRoom->mapMarker = convertToUINT(str);
@@ -1381,7 +1388,7 @@ const
 
 		c4_RowRef row = ExploredRoomsView[wRoomCount++];
 		p_RoomID(row) = room.roomID;
-		p_MapOnly(row) = room.bMapOnly;
+		p_MapState(row) = room.mapState;
 		p_MapMarker(row) = room.mapMarker;
 		p_Squares(row) = room.SquaresBytes;
 		p_Monsters(row) = MonstersView;
@@ -1724,7 +1731,7 @@ void CDbSavedGames::AddRoomsToPlayerTally(
 		{
 			ExploredRoom *pExpRoom = new ExploredRoom();
 			pExpRoom->roomID = roomID;
-			pExpRoom->bMapOnly = true;
+			pExpRoom->mapState = MapState::NoDetail;
 			pPlayerProgress->ExploredRooms.push_back(pExpRoom);
 			bUpdate = true;
 		}
@@ -2002,8 +2009,8 @@ void CDbSavedGames::ExportXML(
 
 			str += STARTVPTAG(VP_ExploredRooms, P_RoomID);
 			str += INT32TOSTR(r.roomID);
-			str += PROPTAG(P_MapOnly);
-			str += INT32TOSTR(r.bMapOnly);
+			str += PROPTAG(P_MapState);
+			str += INT32TOSTR(r.mapState);
 			str += PROPTAG(P_MapMarker);
 			str += INT32TOSTR(r.mapMarker);
 			str += PROPTAG(P_Squares);
