@@ -221,7 +221,7 @@ bool CGameScreen::LoadSavedGame(
 		return false;
 
 	this->bPlayTesting = false;
-	this->undo.setRewindLimit(this->pCurrentGame->wTurnNo);
+	this->undo.setRewindLimit(this->pCurrentGame->wPlayerTurn);
 	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
 
 	SetSignTextToCurrentRoom();
@@ -5380,7 +5380,7 @@ void CGameScreen::RestartRoom(int nCommand, CCueEvents& CueEvents)
 	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
 
 	if (!this->bPlayTesting)
-		this->undo.setRewindLimit(this->pCurrentGame->wTurnNo); //can't undo past restart point
+		this->undo.setRewindLimit(this->pCurrentGame->wPlayerTurn); //can't undo past restart point
 
 	ClearEventsThatOnlyShowOnInitialRoomEntrance(CueEvents);
 
