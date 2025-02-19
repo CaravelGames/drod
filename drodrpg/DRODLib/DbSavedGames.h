@@ -58,6 +58,14 @@ enum SAVETYPE
 	ST_PlayerTotal=10      //contains set of all rooms ever explored/conquered
 };
 
+enum MapState
+{
+	Invisible = 0, //Not shown on map
+	NoDetail = 1, //Shown but without detail
+	Preview = 2, //Explored on a previous save, not yet visited
+	Explored = 3, //The player has been to this room
+};
+
 //******************************************************************************************
 class CMonster;
 struct ExploredRoom
@@ -70,7 +78,7 @@ struct ExploredRoom
 	void saveMonsterList(CMonster *pThatMonsterList);
 
 	UINT roomID;
-	bool bMapOnly; //room is shown on map, but hasn't been explored
+	MapState mapState;
 	bool bSave;    //include in saved game if set
 	UINT mapMarker; //marker placed on this room on the map
 
@@ -79,6 +87,8 @@ struct ExploredRoom
 	CIDSet litFuses;
 	CCoordStack platformDeltas;
 	c4_Bytes tileLightsBytes;
+
+	bool HasDetail() const { return mapState >= Preview; }
 
 //	vector<UINT> orbTypes; //track broken orbs/plates -- no longer used
 };

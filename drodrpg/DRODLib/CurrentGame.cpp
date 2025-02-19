@@ -383,26 +383,29 @@ void CCurrentGame::AddRoomToMap(
 //
 //Params:
 	const UINT roomID,
-	const bool bMarkRoomVisible, //If set [default=false], then make the room fully visible on the map.
+	const MapState mapState, //Visibilty state of the room on map [default=NoDetail]
 	const bool bSaveRoom) //Whether to flag including this room in save data [default=true]
 {
 	ExploredRoom *pExpRoom = getExploredRoom(roomID);
 	bool bWasRoomPreview = false;
 	if (pExpRoom)
 	{
-		bWasRoomPreview = !pExpRoom->bSave;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
+		if (pExpRoom->mapState < mapState)
+		{
+			pExpRoom->mapState = mapState;
+		}
 	} else {
 		pExpRoom = new ExploredRoom();
 		this->ExploredRooms.push_back(pExpRoom);
 		pExpRoom->roomID = roomID;
-		pExpRoom->bMapOnly = true;
+		pExpRoom->mapState = mapState;
 		pExpRoom->bSave = bSaveRoom;
 	}
 
 	//Room marked only on the map becomes fully visible (as if explored) if bMarkRoomVisible is set.
 	ASSERT(pExpRoom);
-	if (bMarkRoomVisible && (pExpRoom->bMapOnly || bWasRoomPreview))
+	if (pExpRoom->mapState == MapState::Explored)
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
 		if (pRoom)
@@ -4936,7 +4939,7 @@ void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
 
 	for (CIDSet::const_iterator it=this->PreviouslyExploredRooms.begin(); it!=this->PreviouslyExploredRooms.end(); ++it)
 	{
-		AddRoomToMap(*it, bMakeRoomsVisible, false);
+		AddRoomToMap(*it, MapState::Preview, false);
 	}
 }
 
@@ -6603,7 +6606,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 			if (!CDbRoom::IsSecret(roomID))
 			{
 				ASSERT(!getExploredRoom(roomID) || bShowDetail);
-				AddRoomToMap(roomID, bShowDetail);
+				AddRoomToMap(roomID, bShowDetail ? MapState::Explored : MapState::NoDetail);
 			}
 		}
 
@@ -6978,15 +6981,13 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 		return;
 	
 	room.mapMarker = pExpRoom->mapMarker;
-
-	const bool bWasRoomPreview = !pExpRoom->bSave;
 	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly || bWasRoomPreview)
+	if (pExpRoom->mapState != MapState::Explored)
 	{
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
-		pExpRoom->bMapOnly = false;
+		pExpRoom->mapState = MapState::Explored;
 		return;
 	}
 
@@ -7013,7 +7014,7 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		pExpRoom->pMonsterList = NULL;
 	}
 
-	pExpRoom->bMapOnly = false;
+	pExpRoom->mapState = MapState::Explored;
 	pExpRoom->mapMarker = room.mapMarker;
 
 	//Save room state.

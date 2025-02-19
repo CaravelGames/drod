@@ -226,7 +226,7 @@ public:
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
 	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
 			const UINT wX, const UINT wY, const UINT wO, const bool bMakeCharacterVisible=false);
-	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
+	void     AddRoomToMap(const UINT roomID, const MapState mapState=MapState::NoDetail, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 //			const bool bUseCurrentTurnNo=true);
