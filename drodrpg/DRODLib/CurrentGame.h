@@ -521,7 +521,7 @@ private:
 	UINT dwComputationTimePerSnapshot; //real movement computation time between game state snapshots
 */
 
-	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0, const bool bMakeRoomsVisible = true);
+	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0);
 	CIDSet   PreviouslyExploredRooms; //cache values
 };
 
