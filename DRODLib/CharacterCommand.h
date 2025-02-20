@@ -441,6 +441,8 @@ public:
 		CC_SetPlayerState,      //Change player state (Y) to on or off (x).
 		CC_SelectSquare,        //Prompt the player to select a position in the room.
 		CC_WaitForBrainSense,   //Wait until a brain senses the player.
+		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
+		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 
 		CC_Count
 	};

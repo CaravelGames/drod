@@ -1502,6 +1502,8 @@ void CDbHolds::CheckForVarRefs(
 		case CCharacterCommand::CC_ArrayVarSet:
 		case CCharacterCommand::CC_ArrayVarSetAt:
 		case CCharacterCommand::CC_ClearArrayVar:
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		case CCharacterCommand::CC_CountArrayEntries:
 		{
 			if (bChallenges)
 				break;
