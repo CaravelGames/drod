@@ -90,6 +90,7 @@ bool CCharacterCommand::IsLogicalWaitCondition() const {
 		case CC_WaitForNotItemGroup:
 		case CC_WaitForPlayerState:
 		case CC_WaitForBrainSense:
+		case CC_WaitForArrayEntry:
 			return true;
 		default:
 			return false;
@@ -102,6 +103,8 @@ UINT CCharacterCommand::getVarID() const
 		case CC_VarSet:
 		case CC_WaitForVar:
 		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
 			return x;
 		case CC_VarSetAt:
 		case CC_ArrayVarSet:
@@ -118,6 +121,8 @@ void CCharacterCommand::setVarID(const UINT varID)
 		case CC_VarSet:
 		case CC_WaitForVar:
 		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
 			x = varID;
 		break;
 		case CC_VarSetAt:

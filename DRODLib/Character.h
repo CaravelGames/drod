@@ -284,8 +284,10 @@ private:
 	void BuildTiles(const CCharacterCommand& command, CCueEvents& CueEvents);
 	bool CanEnterTunnelInDirection(const int dx, const int dy) const;
 	bool ConfirmPathWithNextMoveOpen();
+	int CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame);
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
+	bool DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
 
 	bool EvaluateConditionalCommand(
 		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
