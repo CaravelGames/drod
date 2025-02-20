@@ -403,7 +403,7 @@ void CCurrentGame::AddRoomToMap(
 		pExpRoom->bSave = bSaveRoom;
 	}
 
-	//Room marked only on the map becomes fully visible (as if explored) if bMarkRoomVisible is set.
+	//Room marked only on the map becomes fully visible (as if explored) if mapState is Explored.
 	ASSERT(pExpRoom);
 	if (pExpRoom->mapState == MapState::Explored)
 	{
@@ -4924,7 +4924,7 @@ void CCurrentGame::AddCompletedScripts()
 //For front-end, to display a preview of rooms explored in other play sessions
 //Called when a game is begun or loaded to populate this list for reference during play
 void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
-	UINT playerID, const bool bMakeRoomsVisible) //[default=0, true]
+	UINT playerID) //[default=0]
 {
 	ASSERT(this->pHold);
 	if (!playerID) {
