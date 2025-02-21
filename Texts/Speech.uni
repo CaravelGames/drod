@@ -3507,3 +3507,11 @@ Restricted
 [MID_WaitForBrainSense]
 [eng]
 Wait for brain sensing player
+
+[MID_WaitForArrayEntry]
+[eng]
+Wait for array entry
+
+[MID_CountArrayEntries]
+[eng]
+Count array entries

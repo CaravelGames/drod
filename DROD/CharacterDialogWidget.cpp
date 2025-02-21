@@ -1929,7 +1929,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVarCompListBox->SelectLine(0);
 
 	this->pVarCompListBox2 = new CListBoxWidget(TAG_VARCOMPLIST2,
-		X_VARVALUE, Y_VARLISTBOX, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
+		X_VARADD, Y_VARLISTBOX, CX_VARCOMPLIST, CY_VARCOMPLIST - LIST_LINE_HEIGHT);
 	this->pAddCommandDialog->AddWidget(this->pVarCompListBox2);
 	this->pVarCompListBox2->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pVarCompListBox2->AddItem(ScriptVars::Equals, g_pTheDB->GetMessageText(MID_VarEquals));
@@ -4404,6 +4404,22 @@ const
 			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		}
 		break;
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		case CCharacterCommand::CC_CountArrayEntries:
+		{
+			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.x);
+			wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+			wstr += wszLeftBracket;
+			wstr += wszRightBracket;
+			wstr += wszSpace;
+			AddOperatorSymbol(wstr, command.y);
+			wstr += wszSpace;
+			if (!command.label.empty())
+				wstr += command.label;
+			else
+				wstr += _itoW(command.w, temp, 10);
+		}
+		break;
 
 		case CCharacterCommand::CC_WaitForExpression:
 		{
@@ -4761,6 +4777,24 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 					wstr += wszAsterisk; //expression is not valid
 			}
 			break;
+			case CCharacterCommand::CC_CountArrayEntries:
+				if (bLastWasIfCondition || wLogicNestDepth)
+					wstr += wszQuestionMark;	//questionable If condition
+			//no break
+			case CCharacterCommand::CC_WaitForArrayEntry:
+			{
+				if (!pCommand->label.empty()) //an expression is used as an operand
+				{
+					CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+						g_pTheSM->GetScreen(SCR_EditRoom));
+					ASSERT(pEditRoomScreen);
+					ASSERT(pEditRoomScreen->pHold);
+					UINT validationIndex = 0;
+					if (!CCharacter::IsValidExpression(pCommand->label.c_str(), validationIndex, pEditRoomScreen->pHold))
+						wstr += wszAsterisk; //expression is not valid
+				}
+			}
+			break;
 
 			//Deprecated commands.
 			case CCharacterCommand::CC_GotoIf:
@@ -5019,6 +5053,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetEntityWeapon, g_pTheDB->GetMessageText(MID_SetEntityWeapon));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_Wait));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForArrayEntry, g_pTheDB->GetMessageText(MID_WaitForArrayEntry));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBrainSense, g_pTheDB->GetMessageText(MID_WaitForBrainSense));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForBuildType, g_pTheDB->GetMessageText(MID_WaitForBuildType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForNotBuildType, g_pTheDB->GetMessageText(MID_WaitForNotBuildType));
@@ -5049,6 +5084,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForRemains, g_pTheDB->GetMessageText(MID_WaitForRemains));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForWeapon, g_pTheDB->GetMessageText(MID_WaitForWeapon));
 
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountArrayEntries, g_pTheDB->GetMessageText(MID_CountArrayEntries));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountEntityType, g_pTheDB->GetMessageText(MID_CountEntityType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItem, g_pTheDB->GetMessageText(MID_CountItem));
 
@@ -5963,6 +5999,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
 	static const UINT WAITFORPLAYERSTATE[] = { TAG_PLAYER_STATE_LISTBOX, TAG_ONOFFLISTBOX2, 0 };
 	static const UINT PLAYERSTATE[] = { TAG_PLAYER_STATE_LISTBOX2, TAG_ONOFFLISTBOX2, 0 };
+	static const UINT ARRAYVARQUERY[] = { TAG_ARRAYVARLIST, TAG_VARCOMPLIST2, TAG_VARVALUE, 0};
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,         //CC_Appear
@@ -6082,6 +6119,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		PLAYERSTATE,        //CC_SetPlayerState
 		ONOFF,              //CC_SelectSquare
 		NO_WIDGETS,         //CC_WaitForBrainSense
+		ARRAYVARQUERY,      //CC_WaitForArrayEntry
+		ARRAYVARQUERY,      //CC_CountArrayEntries
 	};
 
 	static const UINT NUM_LABELS = 35;
@@ -6247,6 +6286,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetPlayerState
 		RESTRICTED_L,       //CC_SelectSquare
 		NO_LABELS,          //CC_WaitForBrainSense
+		EXPRESSION_L,       //CC_WaitForArrayEntry
+		EXPRESSION_L,       //CC_CountArrayEntries
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7192,6 +7233,30 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		case CCharacterCommand::CC_CountArrayEntries:
+		{
+			this->pCommand->x = this->pArrayVarListBox->GetSelectedItem();
+			this->pCommand->y = this->pVarCompListBox2->GetSelectedItem();
+
+			CTextBoxWidget* pVarOperand = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			ASSERT(pVarOperand);
+			const WCHAR* pOperandText = pVarOperand->GetText();
+			ASSERT(pOperandText);
+			//Is operand just a number or is it a more complex expression?
+			if (isWInteger(pOperandText))
+			{
+				this->pCommand->w = _Wtoi(pOperandText);
+				this->pCommand->label.resize(0);
+			}
+			else {
+				this->pCommand->label = pOperandText;
+			}
+			AddCommand();
+		}
+		break;
+
 		case CCharacterCommand::CC_WaitForExpression:
 		{
 			CTextBoxWidget* pAmount = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -7802,6 +7867,20 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_ClearArrayVar:
 		{
 			this->pArrayVarListBox->SelectItem(this->pCommand->x);
+		}
+		break;
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		case CCharacterCommand::CC_CountArrayEntries:
+		{
+			this->pArrayVarListBox->SelectItem(this->pCommand->x);
+			this->pVarCompListBox2->SelectItem(this->pCommand->y);
+
+			CTextBoxWidget* pVarOperand = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_VARVALUE));
+			if (!this->pCommand->label.empty())
+				pVarOperand->SetText(this->pCommand->label.c_str());
+			else
+				pVarOperand->SetText(_itoW(this->pCommand->w, temp, 10));
 		}
 		break;
 		case CCharacterCommand::CC_WaitForExpression:
@@ -9015,6 +9094,42 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_WaitForArrayEntry:
+	case CCharacterCommand::CC_CountArrayEntries:
+	{
+		parseChar('"');
+		WSTRING varName;
+		const bool bRes = getTextToLastQuote(pText, pos, varName);
+		if (!bRes)
+		{
+			delete pCommand;
+			return NULL;
+		}
+
+		UINT tempIndex = 0;
+		pCommand->x = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		if (!bFound)
+		{
+			pCommand->x = AddVar(varName.c_str());
+			if (!pCommand->x)
+			{
+				delete pCommand;
+				return NULL;
+			}
+		}
+
+		skipWhitespace;
+		const char varOperator = char(WCv(pText[pos]));
+		pCommand->y = parseOperatorSymbol(varOperator);
+		++pos;
+		skipWhitespace;
+		if (isWInteger(pText + pos))
+			pCommand->w = _Wtoi(pText + pos); //get number
+		else
+			pCommand->label = pText + pos; //get text expression
+	}
+	break;
+
 	case CCharacterCommand::CC_WaitForExpression:
 	{
 		parseChar('"');
@@ -9785,6 +9900,23 @@ WSTRING CCharacterDialogWidget::toText(
 		wstr += wszQuote;
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
+	}
+	break;
+
+	case CCharacterCommand::CC_WaitForArrayEntry:
+	case CCharacterCommand::CC_CountArrayEntries:
+	{
+		UINT varId = c.x;
+		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		wstr += wszQuote;
+		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
+		wstr += wszQuote;
+		AddOperatorSymbol(wstr, c.y);
+		wstr += wszSpace;
+		if (!c.label.empty())
+			wstr += c.label;
+		else
+			concatNum(c.w);
 	}
 	break;
 
