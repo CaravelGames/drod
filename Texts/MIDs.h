@@ -1908,6 +1908,8 @@ enum MID_CONSTANT {
   MID_SelectSquare = 2132,
   MID_Restricted = 2133,
   MID_WaitForBrainSense = 2136,
+  MID_WaitForArrayEntry = 2140,
+  MID_CountArrayEntries = 2141,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
