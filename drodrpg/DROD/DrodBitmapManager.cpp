@@ -59,7 +59,7 @@ const WCHAR wszDefaultStyleName[] = { We('D'),We('e'),We('e'),We('p'),We(' '),We
 const char textureTileNames[TEXTURE_COUNT][13] = {
 	"Road", "Grass", "Dirt", "Alt",
 	"Floor", "Mosaic", "Pit", "Wall", "Pitside", "PitsideSmall",
-	"DONT_USE"  //no default FLOOR_IMAGE
+	"DONT_USE", "DONT_USE"  //no default FLOOR_IMAGE, OVERHEAD_IMAGE
 };
 
 const UINT TI_DONT_USE = (UINT)-1;

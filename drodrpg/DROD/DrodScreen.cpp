@@ -63,7 +63,7 @@
 
 #include <sstream>
 
-#ifdef DEV_BUILD //comment out to embed media to .dats
+#ifdef DEV_BUILD //enable to embed media files to master .dat file
 #	define EMBED_STYLES
 #endif
 
@@ -1799,8 +1799,12 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 	const WSTRING wstrBasename = styleName.front();
 	for (wI=TEXTURE_COUNT; wI--; )
 	{
+		if (wI == TEXTURE_COUNT - 1) { //skip OVERHEAD_IMAGE texture
+			continue;
+		}
+
 		WSTRING wstrFile = wstrBasename;
-		if (wI == TEXTURE_COUNT-1) { //skip FLOOR_IMAGE texture: load 'tiles' images instead
+		if (wI == TEXTURE_COUNT-2) { //skip FLOOR_IMAGE texture: load 'tiles' images instead
 			wstrFile += wszTILES;
 		} else {
 			//Style textures.
@@ -1865,7 +1869,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 void CDrodScreen::ImportHoldMedia()
 //Imports sound and graphics files from disk into the DB.
 {
-#if defined(EMBED_STYLES) && defined(CARAVELBUILD)
+#ifdef EMBED_STYLES
 	//Get names of all styles.
 	list<WSTRING> styles;
 	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
@@ -1961,7 +1965,9 @@ void CDrodScreen::ImportHoldMedia()
 						default: ASSERT(!"Bad sell screen image index"); break;
 					}
 				}
-			} else if (wI == TEXTURE_COUNT-1) {
+			} else if (wI == TEXTURE_COUNT-1) { //skip OVERHEAD_IMAGE texture
+				continue;
+			} else if (wI == TEXTURE_COUNT-2) {
 				wstrImportFile += wszTILES;	//skip FLOOR_IMAGE texture: load 'tiles' images now
 			} else {
 				//Room style image files.
