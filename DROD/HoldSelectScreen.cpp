@@ -844,6 +844,11 @@ void CHoldSelectScreen::DownloadSelectedHolds()
 		if (!hold_is_installed(dwKey)) {
 			holdName = this->pHoldListBoxWidget->GetTextAtLine(*line);
 #ifdef STEAMBUILD
+			const HoldInfo& h = this->holdInfo[dwKey];
+			if (h.status == CDbHold::Official || CDbHold::IsOfficialHold(CDbHold::HoldStatus(h.status))) {
+				ShowOkMessage(MID_SteamErrorAttemptingToImportOfficialHold);
+				return;
+			}
 //TODO: attempting to download official DLC holds from Steam should open a browser to the Steam game purchase page
 #endif
 		} else {
