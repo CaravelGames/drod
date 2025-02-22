@@ -3278,6 +3278,7 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 		}
 		this->bEditingDefaultScript = true;
 		this->defaultScriptCustomCharID = pChar->dwCharID;
+		PopulateCommandDescriptions(this->pDefaultScriptCommandsListBox, *pChar->pCommands);
 	}
 
 	//Different commands/fields are available in default scripts.
