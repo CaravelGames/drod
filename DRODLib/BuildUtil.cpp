@@ -97,6 +97,9 @@ UINT BuildUtil::BuildTilesAt(
 			if (BuildUtil::BuildAnyTile(room, baseTile, tile, x, y, bAllowSame, CueEvents))
 				++builtTiles;
 
+	if (baseTile >= TOTAL_EDIT_TILE_COUNT)
+		return builtTiles;
+
 	if (TILE_LAYER[baseTile] == LAYER_OPAQUE) {
 		for (UINT y = py; y <= endY; ++y)
 			for (UINT x = px; x <= endX; ++x) {
