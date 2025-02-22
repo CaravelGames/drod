@@ -103,7 +103,7 @@
       <Filter>DRODIncludes</Filter>
     </ClCompile>
     <ClCompile Include="..\DROD\EquipmentDescription.cpp">
-      <Filter>General</Filter>
+      <Filter>DRODIncludes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
