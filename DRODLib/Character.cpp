@@ -2179,6 +2179,7 @@ void CCharacter::Process(
 						//Activate orb.
 						if (bExecuteNoMoveCommands) return;
 						room.ActivateOrb(px, py, CueEvents, OAT_ScriptOrb);
+						bProcessNextCommand = false; //could be true because of lighting
 					break;
 					case T_BEACON: case T_BEACON_OFF:
 						//Activate beacon.  Doesn't expend a turn.
@@ -2209,6 +2210,7 @@ void CCharacter::Process(
 								wY = pData->wY;
 							}
 							room.ActivateOrb(wX, wY, CueEvents, OAT_ScriptPlate);
+							bProcessNextCommand = false; //could be true because of lighting
 						} else {
 							//No item to active on this tile.  Just continue script.
 							bProcessNextCommand = true;
