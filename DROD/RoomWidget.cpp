@@ -8176,7 +8176,7 @@ void CRoomWidget::DrawArmedMonster(
 			if (this->pCurrentGame)
 			{
 				CSwordsman& player = this->pCurrentGame->swordsman;
-				const UINT wSManTI = GetCustomEntityTile(player.wIdentity, pArmedMonster->wO, wFrame);
+				const UINT wSManTI = GetEntityTile(logicalIdentity, player.wIdentity, pArmedMonster->wO, wFrame);
 				if (wSManTI != TI_UNSPECIFIED)
 					blit.wTileImageNo = wSManTI;
 
