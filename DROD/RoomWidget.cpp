@@ -8273,7 +8273,7 @@ void CRoomWidget::AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, cons
 	if (this->dwMovementStepsLeft)
 		return;
 
-	if (pTC->IsStunned() || pTC->bFrozen)
+	if (pTC->IsStunned())
 		return;
 
 	const int command = pTC->getNextCommand();
