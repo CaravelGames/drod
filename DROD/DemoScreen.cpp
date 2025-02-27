@@ -156,6 +156,8 @@ bool CDemoScreen::SetForActivate()
 			settings.GetVar(Settings::PuzzleMode, false))
 		this->pRoomWidget->TogglePuzzleMode();
 
+	SetShowVoicedSubtitle(settings.GetVar(Settings::ShowSubtitlesWithVoices, true));
+
 	PaintClock(true);
 
 	//Set frame rate as high as needed for smooth animations.
