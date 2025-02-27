@@ -6196,6 +6196,8 @@ void CGameScreen::ShowRoomTemporarily(const UINT roomID)
 	pTempGame->statsAtRoomStart = this->pCurrentGame->stats;
 	pRoom->SetCurrentGame(pTempGame);
 	pTempGame->SetTurn(0, CueEvents);
+	//Allow clones to be drawn using current player role
+	pTempGame->swordsman.wIdentity = this->pCurrentGame->swordsman.wIdentity;
 
 	ShowRoom(pTempGame, CueEvents);
 
