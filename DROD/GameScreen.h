@@ -120,6 +120,7 @@ protected:
 	void           ProcessQuestionPrompts(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           RetainEffectCleanup(const bool bVal=false);
 	virtual bool   SetForActivate();
+	void           SetShowVoicedSubtitle(bool showSubtitle) { this->bShowingSubtitlesWithVoice = showSubtitle; }
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 	//These are called by CDemoScreen.
