@@ -261,14 +261,18 @@ const
 	const int piece_dx = destX - piece.wX;
 	const int piece_dy = destY - piece.wY;
 	const bool adjacent = (abs(piece_dx) <= 1) && (abs(piece_dy) <= 1);
+	const bool prevIsHead = (prevPiece == this);
 	if (adjacent)
 	{
 		//Make sure that this doesn't pull a connecting link against a Force Arrow's direction
 		const UINT wFTileNo = this->pCurrentGame->pRoom->GetFSquare(piece.wX,piece.wY);
 		const int link_dx = destX - prevPiece->wX;
 		const int link_dy = destY - prevPiece->wY;
-		if (!(bIsArrow(wFTileNo) && bIsArrowObstacle(wFTileNo,nGetO(link_dx,link_dy))))
+		if (!(bIsArrow(wFTileNo) && bIsArrowObstacle(wFTileNo, nGetO(link_dx, link_dy)))) {
 			return true; //found slack -- chain pull stops here
+		}	else if (prevIsHead && piece_dx == 0 && piece_dy == 0) {
+			return true;
+		}
 	}
 
 	if (IsPinnedAt(piece.wX, piece.wY)) {
