@@ -4484,6 +4484,14 @@ const
 			}
 		break;
 
+		case CCharacterCommand::CC_AddRoomToMap:
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+		break;
+
 		case CCharacterCommand::CC_SetDarkness:
 			wstr += _itoW(command.flags, temp, 10);
 			wstr += wszSpace;
@@ -4693,6 +4701,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_ClearArrayVar:
 			case CCharacterCommand::CC_SetPlayerState:
 			case CCharacterCommand::CC_SelectSquare:
+			case CCharacterCommand::CC_AddRoomToMap:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
 				break;
@@ -5098,6 +5107,8 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapMusic, g_pTheDB->GetMessageText(MID_WorldMapMusic));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_AddRoomToMap, g_pTheDB->GetMessageText(MID_AddRoomToMap));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
@@ -5804,6 +5815,21 @@ void CCharacterDialogWidget::resolveForwardReferences(const COMMANDPTR_VECTOR& n
 }
 
 //*****************************************************************************
+void CCharacterDialogWidget::QueryMapRoom()
+//Get a map room from the user.
+{
+	this->mapQueryX = this->pCommand->x;
+	this->mapQueryY = this->pCommand->y;
+
+	//Get location information through CEditRoomScreen.
+	CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+		g_pTheSM->GetScreen(SCR_EditRoom));
+	ASSERT(pEditRoomScreen);
+	pEditRoomScreen->SetState(ES_GETMAPROOM, true);
+	Deactivate();
+}
+
+//*****************************************************************************
 void CCharacterDialogWidget::QueryRect()
 //Get rectangular area info from user.
 {
@@ -6122,6 +6148,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_WaitForBrainSense
 		ARRAYVARQUERY,      //CC_WaitForArrayEntry
 		ARRAYVARQUERY,      //CC_CountArrayEntries
+		NO_WIDGETS,         //CC_AddRoomToMap
 	};
 
 	static const UINT NUM_LABELS = 35;
@@ -6289,6 +6316,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForBrainSense
 		EXPRESSION_L,       //CC_WaitForArrayEntry
 		EXPRESSION_L,       //CC_CountArrayEntries
+		NO_LABELS,          //CC_AddRoomToMap
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7420,6 +7448,10 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_AddRoomToMap:
+			QueryMapRoom();
+		break;
+
 		case CCharacterCommand::CC_SetDarkness:
 		{
 			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -7989,6 +8021,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		}
 		break;
 
+		case CCharacterCommand::CC_AddRoomToMap:
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_AppearAt:
 		case CCharacterCommand::CC_Disappear:
@@ -9192,6 +9225,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->x);
 	break;
 
+	case CCharacterCommand::CC_AddRoomToMap:
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+	break;
+
 	case CCharacterCommand::CC_SetDarkness:
 		parseNumber(pCommand->flags);
 		skipComma;
@@ -9935,6 +9975,11 @@ WSTRING CCharacterDialogWidget::toText(
 
 	case CCharacterCommand::CC_SelectSquare:
 		concatNumWithComma(c.x);
+	break;
+
+	case CCharacterCommand::CC_AddRoomToMap:
+		concatNumWithComma(c.x);
+		concatNum(c.y);
 	break;
 
 	case CCharacterCommand::CC_SetDarkness:

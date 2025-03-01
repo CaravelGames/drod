@@ -3821,7 +3821,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_GentryiiPulledTaut))
 		PlaySoundEffect(SEID_CHAIN_PULL);
 
-	if (CueEvents.HasOccurred(CID_CompleteLevel))
+	if (CueEvents.HasOccurred(CID_CompleteLevel) || CueEvents.HasOccurred(CID_AddedRoomToMap))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
 		this->pMapWidget->RequestPaint();

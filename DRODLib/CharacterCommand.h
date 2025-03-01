@@ -443,6 +443,7 @@ public:
 		CC_WaitForBrainSense,   //Wait until a brain senses the player.
 		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
 		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
+		CC_AddRoomToMap,        //Add room at (x,y) to player's mapped rooms.
 
 		CC_Count
 	};

@@ -3515,3 +3515,7 @@ Wait for array entry
 [MID_CountArrayEntries]
 [eng]
 Count array entries
+
+[MID_AddRoomToMap]
+[eng]
+Add room to map

@@ -3820,6 +3820,21 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_AddRoomToMap:
+			{
+				//Add room at (x,y) to player's mapped rooms.
+				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+					command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+				if (roomID)
+				{
+					pGame->ExploredRooms += roomID;
+					CueEvents.Add(CID_AddedRoomToMap);
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_SetDarkness:
 			{
 				getCommandParams(command, px, py, pw, ph, pflags);

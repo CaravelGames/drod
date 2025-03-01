@@ -628,6 +628,7 @@ enum MID_CONSTANT {
   MID_ReplaceFileButton = 2002,
   MID_FilePendingDeletionSuffix = 2003,
   MID_Undelete = 2004,
+  MID_GetMapRoom = 2142,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,
@@ -1910,6 +1911,7 @@ enum MID_CONSTANT {
   MID_WaitForBrainSense = 2136,
   MID_WaitForArrayEntry = 2140,
   MID_CountArrayEntries = 2141,
+  MID_AddRoomToMap = 2143,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

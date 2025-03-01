@@ -45,7 +45,8 @@ enum EditState
 	ES_GETRECT,    //query for a room rectangle
 	ES_PASTING,    //next click pastes a copied room region
 	ES_GETSQUARES1,//query for first of two room squares
-	ES_GETSQUARES2 //query for second of two room squares
+	ES_GETSQUARES2,//query for second of two room squares
+	ES_GETMAPROOM  //query for a room from the minimap
 };
 
 //Plotting a long monster segment in the editor.

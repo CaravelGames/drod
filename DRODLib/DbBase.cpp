@@ -1027,6 +1027,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_DottedLineEffect: strText = "Dotted line"; break;
 	case MID_WaitForArrayEntry: strText = "Wait for array entry"; break;
 	case MID_CountArrayEntries: strText = "Count array entries"; break;
+	case MID_GetMapRoom: strText = "(Selecting Room)"; break;
+	case MID_AddRoomToMap: strText = "Add room to map"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
