@@ -112,6 +112,9 @@ const UINT TAG_SHOWDESCRIPTION_ONCE = 1063;
 const UINT TAG_LEVELENTRANCEAUDIO = 1064;
 const UINT TAG_LEVELENTRANCEAUDIONAME = 1065;
 
+const UINT TAG_BIGMAPCONTAINER = 1070;
+const UINT TAG_BIGMAP = 1071;
+
 #define NO_ENTRANCE (static_cast<UINT>(-1))
 
 const SURFACECOLOR PaleYellow = {255, 255, 128};
@@ -818,6 +821,11 @@ CEditRoomScreen::CEditRoomScreen()
 	static const UINT CY_HELP = 32;
 #endif
 
+	//Pop-up map
+	static const UINT BIGMAP_MARGIN = 100;
+	const UINT CX_BIGMAP = CDrodBitmapManager::CX_ROOM - 2 * BIGMAP_MARGIN;
+	const UINT CY_BIGMAP = CDrodBitmapManager::CY_ROOM - 2 * BIGMAP_MARGIN;
+
 	this->pMapWidget->Enable();
 
 	//Add widgets.
@@ -985,6 +993,18 @@ CEditRoomScreen::CEditRoomScreen()
 		X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pCharacterDialog->GetW()) / 2,
 		Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pCharacterDialog->GetH()) / 2);   //center over room widget
 	this->pCharacterDialog->Hide();
+
+	//Pop-up map.
+	CScrollableWidget* pScrollingMap = new CScrollableWidget(TAG_BIGMAPCONTAINER, 0, 0,
+		CX_BIGMAP, CY_BIGMAP);
+	pScrollingMap->Hide();
+	this->pRoomWidget->AddWidget(pScrollingMap);
+	pScrollingMap->Center();
+	CMapWidget* pPopUpMap = new CMapWidget(TAG_BIGMAP, 0, 0,
+		CDrodBitmapManager::DISPLAY_COLS, CDrodBitmapManager::DISPLAY_ROWS, NULL);
+	pPopUpMap->bUserMoveable = false;
+	pPopUpMap->Hide();
+	pScrollingMap->AddWidget(pPopUpMap);
 
 	AddChatDialog();
 	AddLevelEntranceDialog();
@@ -1658,6 +1678,9 @@ void CEditRoomScreen::ClickRoom()
 			this->pCharacterDialog->Display();
 			Paint();
 		}
+		break;
+		case ES_GETMAPROOM:
+			//do nothing here
 		break;
 
 		default: ASSERT(false); break;
@@ -2427,6 +2450,9 @@ bool CEditRoomScreen::LoadRoom(
 void CEditRoomScreen::OnBetweenEvents()
 //Called periodically when no events are being processed.
 {
+	if (this->eState == ES_GETMAPROOM)
+		return; //don't animate anything in this state
+
 	if (this->bEnableChat)
 	{
 		ChatPolling(TAG_CHATUSERS);
@@ -2608,6 +2634,37 @@ void CEditRoomScreen::OnClick(
 		case TAG_ROOM:
 			if ((SDL_GetModState() & KMOD_CTRL) == 0)
 				ClickRoom();
+		break;
+
+		case TAG_BIGMAP:
+		{
+			ASSERT(this->eState == ES_GETMAPROOM); //should only be clickable in this state
+
+			//Determine clicked room.
+			CMapWidget* pPopUpMap =
+				DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_BIGMAP));
+			const UINT roomID = this->pLevel->GetRoomIDAtCoords(
+				pPopUpMap->dwClickedRoomX, pPopUpMap->dwClickedRoomY);
+			if (!roomID)
+			{
+				//No room clicked.
+				g_pTheSound->PlaySoundEffect(SEID_WISP);
+			}
+			else {
+				//Return local (x,y) coords of clicked room.
+				this->pCharacterDialog->FinishCommand(pPopUpMap->dwClickedRoomX,
+					pPopUpMap->dwClickedRoomY % 100);
+
+				pPopUpMap->Hide();
+				CScrollableWidget* pScrollingMap =
+					DYN_CAST(CScrollableWidget*, CWidget*, GetWidget(TAG_BIGMAPCONTAINER));
+				pScrollingMap->Hide();
+
+				VERIFY(SetState(ES_PLACING));
+				this->pCharacterDialog->Display();
+				Paint();
+			}
+		}
 		break;
 	}
 }
@@ -2887,7 +2944,11 @@ void CEditRoomScreen::OnKeyDown(
 				//Handle some cleanup on screen exit.
 				if (this->eState != ES_PLACING)
 				{
-					if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT) break;
+					if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT ||
+						this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2 ||
+						this->eState == ES_GETMAPROOM) {
+						break;
+					}
 					VERIFY(SetState(ES_PLACING));
 					Paint(); //redraw room highlights
 				} else {
@@ -3167,7 +3228,8 @@ void CEditRoomScreen::OnMouseWheel(
 
 	//Don't display the active object in the region being selected or change the selection parameters.
 	if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT ||
-			this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2)
+			this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2 ||
+			this->eState == ES_GETMAPROOM)
 		return;
 
 	//Update room widget if a plot is occurring.
@@ -7213,6 +7275,9 @@ void CEditRoomScreen::SetSignTextToCurrentRoom(
 	case ES_GETRECT:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomRect);
 		break;
+	case ES_GETMAPROOM:
+		wstrSignText += g_pTheDB->GetMessageText(MID_GetMapRoom);
+		break;
 	case ES_PASTING:
 		wstrSignText += g_pTheDB->GetMessageText(MID_PastingRegionStatus);
 		break;
@@ -7260,6 +7325,28 @@ bool CEditRoomScreen::SetState(
 			this->bSelectingImageStart = false;
 
 			this->pRoomWidget->bPlacing = true;
+		break;
+
+		case ES_GETMAPROOM:
+		{
+			//Display pop-up map.
+			CMapWidget* pPopUpMap =
+				DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_BIGMAP));
+			ASSERT(pPopUpMap);
+			VERIFY(pPopUpMap->LoadFromLevel(this->pLevel));
+
+			//Select previously chosen room, if any.
+			pPopUpMap->SelectRoomIfValid(this->pCharacterDialog->mapQueryX,
+				this->pLevel->dwLevelID * 100 + this->pCharacterDialog->mapQueryY);
+
+			pPopUpMap->Show();
+			CScrollableWidget* pScrollingMap =
+				DYN_CAST(CScrollableWidget*, CWidget*, GetWidget(TAG_BIGMAPCONTAINER));
+			pScrollingMap->Show();
+			Paint();
+
+			this->pRoomWidget->bPlacing = false;
+		}
 		break;
 
 		default:

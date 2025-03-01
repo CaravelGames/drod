@@ -79,6 +79,8 @@ public:
 	bool RenameCharacter();
 	bool RenameVar(const bool bIsArrayVar = false);
 
+	UINT mapQueryX, mapQueryY; //for querying the user for map position
+
 	static const UINT INDENT_PREFIX_SIZE;
 	static const UINT INDENT_TAB_SIZE;
 	static const UINT INDENT_IF_CONDITION_SIZE;
@@ -149,6 +151,7 @@ private:
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 
+	void  QueryMapRoom();
 	void  QueryRect();
 	void  QueryXY();
 	void  QueryXYWH();

@@ -853,6 +853,11 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pSquare
 	CID_PlatformBlocked,
 
+	//Script added a room to the explored rooms list
+	//
+	//Private data: NONE
+	CID_AddedRoomToMap,
+
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider
 	//Make sure this is always the last CueEvent defined
