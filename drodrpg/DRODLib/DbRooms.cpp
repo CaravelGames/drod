@@ -6206,7 +6206,7 @@ void CDbRoom::Clear()
 	ClearPlotHistory();
 
 	this->dwRoomID = this->dwLevelID = 
-		this->dwDataID = this->wOverheadImageStartX =
+		this->dwDataID = this->dwOverheadDataID =
 		this->dwRoomX = this->dwRoomY = 0;
 	this->wRoomCols = this->wRoomRows =
 		this->wImageStartX = this->wImageStartY = 
