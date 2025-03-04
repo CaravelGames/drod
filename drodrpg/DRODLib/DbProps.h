@@ -637,7 +637,7 @@ extern const char propTypeStr[P_Count][26]
 	"IsSecret",
 	"LanguageCode", "LastUpdated", "Left",
 	"LevelID",
-	"LitFuses", "MapOnly", "MapState", "MapMarker",
+	"LitFuses", "MapOnly", "MapMarker", "MapState",
 	"Message", "MessageText", "MessageTextID", "ModName", "Mood", "Multiplier",
 	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex",
 	"OverheadDataID", "OverheadImageStartX", "OverheadImageStartY",
