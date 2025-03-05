@@ -952,9 +952,24 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 	switch (vpType)
 	{
 		case VP_ExploredRooms:
+		{
 			ASSERT(pType == P_Start || pImportExploredRoom);
 			ASSERT(pType == P_Start || (!pImportERMonster && !pImportERPiece));
-			switch (pType)
+			//In version 1.0, the tags for the map marker and map only properties were transposed.
+			//We must account for this error when importing older saves
+			PROPTYPE propertyType = pType;
+			if (info.wVersion < 500)
+			{
+				if (propertyType == P_MapMarker)
+				{
+					propertyType = P_MapOnly;
+				}
+				else if (propertyType == P_MapOnly)
+				{
+					propertyType = P_MapMarker;
+				}
+			}
+			switch (propertyType)
 			{
 				case P_Start:
 					ASSERT(!pImportExploredRoom);
@@ -1035,6 +1050,7 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 					return MID_FileCorrupted;
 			}
 			break;
+		}
 		case VP_Monsters:
 			ASSERT(pType == P_Start || pImportERMonster);
 			switch (pType)
