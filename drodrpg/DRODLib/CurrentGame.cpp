@@ -387,9 +387,10 @@ void CCurrentGame::AddRoomToMap(
 	const bool bSaveRoom) //Whether to flag including this room in save data [default=true]
 {
 	ExploredRoom *pExpRoom = getExploredRoom(roomID);
-	bool bWasRoomPreview = false;
+	bool bWasUnexplored = false;
 	if (pExpRoom)
 	{
+		bWasUnexplored = pExpRoom->mapState != MapState::Explored;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
 		if (pExpRoom->mapState < mapState)
 		{
@@ -405,7 +406,7 @@ void CCurrentGame::AddRoomToMap(
 
 	//Room marked only on the map becomes fully visible (as if explored) if mapState is Explored.
 	ASSERT(pExpRoom);
-	if (pExpRoom->mapState == MapState::Explored)
+	if (pExpRoom->mapState == MapState::Explored && bWasUnexplored)
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
 		if (pRoom)
