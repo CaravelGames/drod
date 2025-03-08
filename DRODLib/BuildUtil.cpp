@@ -48,8 +48,6 @@ bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 	case T_SNK_SW:
 	case T_CHECKPOINT:
 	case T_LIGHT_CEILING:
-	case T_PLATFORM_W:
-	case T_PLATFORM_P:
 	case T_WALL_M:
 	case T_STAIRS_UP:
 	case T_STAIRS:
@@ -282,6 +280,13 @@ bool BuildUtil::BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile
 				return true;
 			}
 		return false;
+		case T_PLATFORM_W:
+		case T_PLATFORM_P:
+			if (BuildNormalTile(room, baseTile, tile, x, y, false, CueEvents)) {
+				room.PlotPlatform(x, y, tile);
+				return true;
+			}
+		return false;
 		default:
 			return BuildNormalTile(room, baseTile, tile, x, y, bAllowSame, CueEvents);
 	}
@@ -382,7 +387,9 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		|| bIsThinIce(baseTile)
 		|| bIsThinIce(wOldOTile)
 		|| bIsDoor(wOldOTile)
-		|| bIsDoor(baseTile))
+		|| bIsDoor(baseTile)
+		|| baseTile == T_PLATFORM_W
+		|| wOldOTile == T_PLATFORM_W)
 	{
 		CCoordSet plots;
 		for (int nJ = -1; nJ <= 1; ++nJ){

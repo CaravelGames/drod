@@ -410,6 +410,7 @@ public:
 			CMonster *pMonster=NULL, bool bUnderObject=false);
 	void           Plot(const CCoordSet& plots, const bool bChangesRoomGeometry=false);
 	void           PlotMonster(UINT wX, UINT wY, UINT wTileNo, CMonster *pMonster);
+	void           PlotPlatform(UINT wX, UINT wY, UINT wTileNo);
 	void           PreprocessMonsters(CCueEvents& CueEvents);
 	static bool    PressurePlateIsDepressedBy(const UINT item);
 	void           ProcessTurn(CCueEvents &CueEvents, const bool bFullMove);
