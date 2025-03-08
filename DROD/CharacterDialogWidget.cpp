@@ -5218,8 +5218,6 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 		pListBox->AddItem(T_PLATE_MULTI, g_pTheDB->GetMessageText(MID_PressurePlate));
 		pListBox->AddItem(T_PLATE_ON_OFF, g_pTheDB->GetMessageText(MID_PressurePlateToggle));
 		pListBox->AddItem(T_PLATE_ONEUSE, g_pTheDB->GetMessageText(MID_PressurePlateOneUse));
-		pListBox->AddItem(T_PLATFORM_P, g_pTheDB->GetMessageText(MID_PlatformPit));
-		pListBox->AddItem(T_PLATFORM_W, g_pTheDB->GetMessageText(MID_PlatformWater));
 		pListBox->AddItem(T_LIGHT_CEILING, g_pTheDB->GetMessageText(MID_LightCeiling));
 		pListBox->AddItem(T_SCROLL, g_pTheDB->GetMessageText(MID_Scroll));
 		pListBox->AddItem(T_STAIRS, g_pTheDB->GetMessageText(MID_Stairs));
@@ -5290,6 +5288,8 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	pListBox->AddItem(T_OVERHEAD_IMAGE, g_pTheDB->GetMessageText(MID_OverheadImage));
 	pListBox->AddItem(T_PIT, g_pTheDB->GetMessageText(MID_Pit));
 	pListBox->AddItem(T_PIT_IMAGE, g_pTheDB->GetMessageText(MID_PitImage));
+	pListBox->AddItem(T_PLATFORM_P, g_pTheDB->GetMessageText(MID_PlatformPit));
+	pListBox->AddItem(T_PLATFORM_W, g_pTheDB->GetMessageText(MID_PlatformWater));
 	pListBox->AddItem(T_POTION_C, g_pTheDB->GetMessageText(MID_ClonePotion));
 	pListBox->AddItem(T_POTION_D, g_pTheDB->GetMessageText(MID_DecoyPotion));
 	pListBox->AddItem(T_POTION_I, g_pTheDB->GetMessageText(MID_InvisPotion));

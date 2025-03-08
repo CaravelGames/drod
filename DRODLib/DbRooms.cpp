@@ -11080,6 +11080,61 @@ void CDbRoom::PlotMonster(UINT wX, UINT wY, UINT wTileNo, CMonster *pMonster)
 }
 
 //*****************************************************************************
+void CDbRoom::PlotPlatform(UINT wX, UINT wY, UINT wTileNo)
+//Set up a newly built platform tile. It will connect to any adjacent platforms,
+//merging multiple platforms if needed.
+{
+	ASSERT(GetOSquare(wX, wY) == wTileNo);
+	std::set<CPlatform*> adjacentPlatforms;
+	const bool bPit = wTileNo == T_PLATFORM_P;
+	CIDSet types(bPit ? T_PIT : T_WATER);
+	if (bPit)
+		types += T_PIT_IMAGE;
+
+	//Find existing same-type platforms next to this tile
+	CPlatform* adjacent = GetPlatformAt(wX - 1, wY);
+	if (adjacent && this->GetOSquare(wX, wY) == wTileNo) {
+		adjacentPlatforms.insert(adjacent);
+	}
+	adjacent = GetPlatformAt(wX + 1, wY);
+	if (adjacent && this->GetOSquare(wX, wY) == wTileNo) {
+		adjacentPlatforms.insert(adjacent);
+	}
+	adjacent = GetPlatformAt(wX, wY - 1);
+	if (adjacent && this->GetOSquare(wX, wY) == wTileNo) {
+		adjacentPlatforms.insert(adjacent);
+	}
+	adjacent = GetPlatformAt(wX, wY + 1);
+	if (adjacent && this->GetOSquare(wX, wY) == wTileNo) {
+		adjacentPlatforms.insert(adjacent);
+	}
+
+	if (adjacentPlatforms.size() == 0) {
+		//Make new platform
+		CPlatform* platform = new CPlatform(CCoordSet(wX, wY), types);
+		platform->SetCurrentGame(this->pCurrentGame);
+		this->platforms.push_back(platform);
+		return;
+	} else if (adjacentPlatforms.size() == 1) {
+		//Expand platform
+		CPlatform* platform = *adjacentPlatforms.begin();
+		platform->AddTile(wX, wY);
+		return;
+	}
+
+	//Merge multiple platforms
+	//Pick one adjacent plaform to take blocks from the others
+	CPlatform* platform = *adjacentPlatforms.begin();
+	platform->AddTile(wX, wY);
+	adjacentPlatforms.erase(platform);
+
+	for (std::set<CPlatform*>::iterator iter = adjacentPlatforms.begin();
+		iter != adjacentPlatforms.end(); ++iter) {
+		platform->Merge(*iter);
+	}
+}
+
+//*****************************************************************************
 void CDbRoom::ReplaceOLayerTile(
 	const UINT wX, const UINT wY,
 	const UINT wTileNo)
@@ -11144,10 +11199,10 @@ void CDbRoom::ReplaceOLayerTile(
 					}
 			}
 		break;
-		case T_TRAPDOOR:
+		case T_TRAPDOOR: case T_PLATFORM_P:
 			this->coveredOSquares.Add(wX,wY,T_PIT); //best guess
 		break;
-		case T_TRAPDOOR2: case T_THINICE:
+		case T_TRAPDOOR2: case T_THINICE: case T_PLATFORM_W:
 			this->coveredOSquares.Add(wX,wY,T_WATER); //deep water only
 		break;
 		case T_THINICE_SH:
