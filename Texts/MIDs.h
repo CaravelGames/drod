@@ -1406,6 +1406,7 @@ enum MID_CONSTANT {
   MID_DateFormatMDY = 2126,
   MID_DateFormatDMY = 2127,
   MID_DateFormatYMD = 2128,
+  MID_Command_ToggleMovementOrderHint = 2144,
   
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

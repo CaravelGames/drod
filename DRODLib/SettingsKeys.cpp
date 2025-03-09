@@ -63,6 +63,7 @@ namespace Settings
 	DEF(Language);
 	DEF(LastNotice);
 	DEF(MoveCounter);
+	DEF(MovementOrderHint);
 	DEF(Music);
 	DEF(MusicVolume);
 	DEF(NoFocusPlaysMusic);

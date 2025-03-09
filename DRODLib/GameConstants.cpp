@@ -91,6 +91,7 @@ namespace InputCommands
 		keyDefinitions[DCMD_Stats] = new KeyDefinition(CMD_EXTRA_STATS, "Key_Stats", MID_Command_Stats, SDLK_RETURN);
 		keyDefinitions[DCMD_ChatHistory] = new KeyDefinition(CMD_EXTRA_CHAT_HISTORY, "Key_ChatHistory", MID_Command_ChatHistory, BuildInputKey(SDLK_RETURN, false, false, true));
 		keyDefinitions[DCMD_PuzzleModeOptions] = new KeyDefinition(CMD_EXTRA_PUZZLE_MODE_OPTIONS, "Key_PuzzleModeOptions", MID_Command_PuzzleModeOptions, BuildInputKey(SDLK_F3, false, true, false));
+		keyDefinitions[DCMD_ToggleMovementOrderHint] = new KeyDefinition(CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT, "Key_ToggleMovementOrderHint", MID_Command_ToggleMovementOrderHint, BuildInputKey(SDLK_F3, false, false, true));
 		keyDefinitions[DCMD_ToggleTurnCount] = new KeyDefinition(CMD_EXTRA_TOGGLE_TURN_COUNT, "Key_ToggleTurnCount", MID_Command_ToggleTurnCount, SDLK_F7);
 		keyDefinitions[DCMD_ToggleHoldVars] = new KeyDefinition(CMD_EXTRA_TOGGLE_HOLD_VARS, "Key_ToggleHoldVars", MID_Command_ToggleHoldVars, BuildInputKey(SDLK_F7, false, false, true));
 		keyDefinitions[DCMD_ToggleFrameRate] = new KeyDefinition(CMD_EXTRA_TOGGLE_FRAME_RATE, "Key_ToggleFrameRate", MID_Command_ToggleFrameRate, BuildInputKey(SDLK_F7, false, true, false));

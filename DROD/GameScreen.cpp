@@ -1425,6 +1425,7 @@ void CGameScreen::OnDeactivate()
 		vars.SetVar(Settings::EnableChatInGame, this->bEnableChat);
 		vars.SetVar(Settings::ReceiveWhispersOnlyInGame, this->bReceiveWhispersOnly);
 		vars.SetVar(Settings::MoveCounter, this->pRoomWidget->IsShowingMoveCount());
+		vars.SetVar(Settings::MovementOrderHint, this->pRoomWidget->IsShowingMovementOrder());
 		vars.SetVar(Settings::PuzzleMode, this->pRoomWidget->IsShowingPuzzleMode());
 
 		pCurrentPlayer->Update();
@@ -1656,6 +1657,9 @@ void CGameScreen::OnKeyDown(
 			g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 			this->pRoomWidget->TogglePuzzleMode();
 			this->pRoomWidget->DirtyRoom();
+		break;
+		case CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT:
+			this->pRoomWidget->ToggleMovementOrderHint();
 		break;
 		case CMD_EXTRA_SKIP_SPEECH:
 			if (this->pCurrentGame && this->pCurrentGame->IsCutScenePlaying()) {
@@ -2055,6 +2059,11 @@ void CGameScreen::ApplyPlayerSettings()
 	if (this->pRoomWidget->IsShowingPuzzleMode() !=
 			settings.GetVar(Settings::PuzzleMode, false))
 		this->pRoomWidget->TogglePuzzleMode();
+
+	//Enable/disable movement order effect
+	if (this->pRoomWidget->IsShowingMovementOrder() !=
+		settings.GetVar(Settings::MovementOrderHint, false))
+		this->pRoomWidget->ToggleMovementOrderHint();
 
 	this->bAutoUndoOnDeath = settings.GetVar(Settings::AutoUndoOnDeath, false);
 
