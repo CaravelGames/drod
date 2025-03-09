@@ -340,6 +340,7 @@ public:
 	virtual bool   IsPlayerLightRendered() const;
 	bool           IsPlayerLightShowing() const;
 	bool           IsShowingMoveCount() const {return this->bShowMoveCount;}
+	bool           IsShowingMovementOrder() const {return this->bShowMovementOrderHints;}
 	bool           IsShowingPuzzleMode() const {return this->bShowPuzzleMode;}
 	bool           IsTemporalCloneAnimated() const { return this->temporalCloneEffectHeight >= 0; }
 	bool           IsWeatherRendered() const;
@@ -393,6 +394,7 @@ public:
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
 	void           SetPuzzleModeOptions(const PuzzleModeOptions &puzzleModeOptions);
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
+	void           ShowMovementOrderHints(const bool bVal = true) { this->bShowMovementOrderHints = bVal; }
 	void           ShowRoomTransition(const UINT wExitOrientation, CCueEvents& CueEvents);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
 	void           ShowPuzzleMode(const bool bVal);
@@ -403,6 +405,7 @@ public:
 	void           SyncWeather(CCueEvents& CueEvents);
 	void           ToggleFrameRate();
 	void           ToggleMoveCount();
+	void           ToggleMovementOrderHint();
 	void           TogglePuzzleMode();
 	void           ToggleVarDisplay();
 	static void    TranslateMonsterColor(const int nColor, float& fR, float& fG, float& fB);
@@ -649,6 +652,7 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddMovementOrderHints();
 	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
 	void           AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, const UINT frame);
 	inline void    ApplyDisplayFilter(int displayFilter, SDL_Surface* pDestSurface, UINT wX, UINT wY);
@@ -711,6 +715,8 @@ private:
 	bool              need_to_update_room_weather;
 
 	Uint32            time_of_last_sky_move;
+
+	bool              bShowMovementOrderHints;
 
 	multimap<EffectType, int> queued_layer_effect_type_removal;
 };

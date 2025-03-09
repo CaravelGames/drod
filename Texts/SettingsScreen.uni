@@ -705,3 +705,7 @@ DD/MM/YY
 [MID_DateFormatYMD]
 [eng]
 YYYY-MM-DD
+
+[MID_Command_ToggleMovementOrderHint]
+[eng]
+Toggle Ordering Hint

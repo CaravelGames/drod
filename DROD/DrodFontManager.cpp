@@ -530,6 +530,20 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_ExpandText].OutlineColor = Black;
 	this->LoadedFonts[F_ExpandText].wOutlineWidth = 2;	
 
+	//Load damage preview font.
+	pFont = GetFont(wstrFont2Filepath, 14);
+	if (!pFont) return false;
+	this->LoadedFonts[F_MovementOrderPreview].pTTFFont = pFont;
+	this->LoadedFonts[F_MovementOrderPreview].wLineSkipHeight = GetFontHeight(F_MovementOrderPreview);
+	this->LoadedFonts[F_MovementOrderPreview].ForeColor = White;
+	this->LoadedFonts[F_MovementOrderPreview].BackColor = Black;
+	this->LoadedFonts[F_MovementOrderPreview].bAntiAlias = true;
+	this->LoadedFonts[F_MovementOrderPreview].bOutline = true;
+	this->LoadedFonts[F_MovementOrderPreview].OutlineColor = Black;
+	this->LoadedFonts[F_MovementOrderPreview].wOutlineWidth = 1;
+	GetWordWidth(F_MovementOrderPreview, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_MovementOrderPreview].wSpaceWidth = wSpaceWidth;
+
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG
 	for (UINT wFontI = 0; wFontI < F_Last; ++wFontI)

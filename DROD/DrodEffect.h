@@ -75,6 +75,7 @@ enum EffectType
 	ECNETNOTICE,      //caravelnet notice
 	EROOMDRAWSTATS,
 	ETILESWIRL,       //tile swirl effect
+	EMOVEORDERHINT    //movement order preview
 };
 
 //*****************************************************************************

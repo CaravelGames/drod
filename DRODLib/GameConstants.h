@@ -122,7 +122,8 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+37)
 #define CMD_EXTRA_TOGGLE_HOLD_VARS (COMMAND_COUNT+38)
 #define CMD_EXTRA_TOGGLE_FRAME_RATE (COMMAND_COUNT+39)
-#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+40)
+#define CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT (COMMAND_COUNT+40)
+#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+41)
 
 // Hardcoded commands used by DemoScreen that cannot be remapped
 #define CMD_DEMO_SEEK_010 (EXTRA_COMMAND_COUNT + 1)
@@ -231,6 +232,7 @@ namespace InputCommands
 		DCMD_ToggleTurnCount,
 		DCMD_ToggleHoldVars,
 		DCMD_ToggleFrameRate,
+		DCMD_ToggleMovementOrderHint,
 		DCMD_QuickDemoRecord,
 		DCMD_ToggleDemoRecord,
 		DCMD_WatchDemos,

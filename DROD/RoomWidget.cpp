@@ -34,6 +34,7 @@
 #include "EvilEyeGazeEffect.h"
 #include "GridEffect.h"
 #include "ImageOverlayEffect.h"
+#include "MovementOrderHintEffect.h"
 #include "PendingBuildEffect.h"
 #include "RoomEffectList.h"
 #include "SnowflakeEffect.h"
@@ -377,6 +378,8 @@ CRoomWidget::CRoomWidget(
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
 	, time_of_last_sky_move(0)
+
+	, bShowMovementOrderHints(false)
 {
 	this->imageFilenames.push_back(string("Bolts"));
 	this->imageFilenames.push_back(string("Fog1"));
@@ -2369,6 +2372,14 @@ void CRoomWidget::ToggleMoveCount()
 }
 
 //*****************************************************************************
+//Shows/hides movement order of all monsters.
+void CRoomWidget::ToggleMovementOrderHint()
+{
+	ShowMovementOrderHints(!this->bShowMovementOrderHints);
+	AddMovementOrderHints();
+}
+
+//*****************************************************************************
 void CRoomWidget::TogglePuzzleMode()
 //Toggles puzzle display mode.
 {
@@ -2532,6 +2543,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Render room objects.
 		this->x = this->y = 0;
 		DisplayPersistingImageOverlays(CueEvents);
+		AddMovementOrderHints();
 		RenderRoomLayers(pNewRoomSurface);
 		this->x = rect.x;
 		this->y = rect.y;
@@ -2580,6 +2592,7 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	DrawGhostOverheadCharacters(pSurface, false);
 	
 	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EMOVEORDERHINT);
 
 	RenderEnvironment(pSurface);
 
@@ -4734,6 +4747,9 @@ void CRoomWidget::Paint(
 	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation everything must be made dirty
 		this->bAllDirty = true;
 
+	if ((this->bAllDirty || bMoveMade) && bPlayerIsAlive)
+		AddMovementOrderHints();
+
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
@@ -6539,6 +6555,33 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 	}
 
 	DrawTLayerTiles(tilesDrawn, pitMasks, pDestSurface, fLightLevel, bAddLight, bEditor);
+}
+
+//*****************************************************************************
+void CRoomWidget::AddMovementOrderHints()
+{
+	this->pLastLayerEffects->RemoveEffectsOfType(EMOVEORDERHINT);
+
+	if (!bShowMovementOrderHints)
+		return;
+
+	int index = 1;
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL;
+		pMonster = pMonster->pNext)
+	{
+		const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+
+		if (!pMonster->IsVisible()) {
+			if (!pCharacter)
+				continue;
+
+			if (!pCharacter->IsInvisibleCountMoveOrder())
+				continue;
+		}
+
+		AddLastLayerEffect(new CMovementOrderHintEffect(this, pMonster, index));
+		++index;
+	}
 }
 
 //*****************************************************************************

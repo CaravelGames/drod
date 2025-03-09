@@ -920,7 +920,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 	static const int COMMAND_COLUMN_OFFSETS [BUTTON_COLUMNS] = {0, 6, 13};
 	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
 		{
-			DCMD_LockRoom, DCMD_SkipSpeech, DCMD_TogglePuzzleMode,
+			DCMD_LockRoom, DCMD_SkipSpeech, DCMD_TogglePuzzleMode, DCMD_ToggleMovementOrderHint,
 			DCMD_ToggleFullScreen, DCMD_Screenshot, DCMD_SaveRoomImage,
 			NO_COMMAND,
 		},

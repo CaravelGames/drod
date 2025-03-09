@@ -1029,6 +1029,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_CountArrayEntries: strText = "Count array entries"; break;
 	case MID_GetMapRoom: strText = "(Selecting Room)"; break;
 	case MID_AddRoomToMap: strText = "Add room to map"; break;
+	case MID_Command_ToggleMovementOrderHint: strText = "Toggle Ordering Hint"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
