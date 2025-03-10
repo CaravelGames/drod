@@ -134,13 +134,22 @@ SDL_Surface* CMovementOrderHintEffect::GetSurfaceForOrder(int order)
 //Since rendering text is relatively expensive, surfaces are cached to reduce the
 //amount of renders required.
 {
+	//At some point, these hints aren't useful
+	if (order > 1000)
+		order = 1000;
+
 	//Try getting from the cache first
 	map<int, SDL_Surface*>::iterator finder = s_surfaceCache.find(order);
 	if (finder != s_surfaceCache.end()) {
 		return finder->second;
 	}
 
-	WSTRING wstr = std::to_wstring(order);
+	WSTRING wstr; 
+	if (order == 1000) {
+		wstr = L">999";
+	} else {
+		wstr = std::to_wstring(order);
+	}
 	static const UINT eFontType = F_MovementOrderHint;
 	UINT wLineW, wLineH;
 	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
