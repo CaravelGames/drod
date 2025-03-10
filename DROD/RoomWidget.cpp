@@ -6572,10 +6572,9 @@ void CRoomWidget::AddMovementOrderHints()
 		const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 
 		if (!pMonster->IsVisible()) {
-			if (!pCharacter)
-				continue;
+			if (pCharacter && pCharacter->IsInvisibleCountMoveOrder())
+				++index; //count but don't show to avoid potential overlaps
 
-			if (!pCharacter->IsInvisibleCountMoveOrder())
 				continue;
 		}
 
