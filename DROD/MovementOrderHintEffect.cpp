@@ -69,6 +69,9 @@ CMovementOrderHintEffect::~CMovementOrderHintEffect()
 //********************************************************************************
 bool CMovementOrderHintEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
+	ASSERT(this->pRoomWidget->GetRoom());
+	ASSERT(this->pRoomWidget->GetRoom()->GetCurrentGame());
+
 	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
 	if (wTurnNow != this->wValidTurn)
 		return false;
@@ -108,7 +111,7 @@ void CMovementOrderHintEffect::Draw(SDL_Surface& destSurface)
 void CMovementOrderHintEffect::PrepWidget()
 {
 	WSTRING wstr = std::to_wstring(wMoveOrder);
-	static const UINT eFontType = F_MovementOrderPreview;
+	static const UINT eFontType = F_MovementOrderHint;
 	UINT wLineW, wLineH;
 	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
 		CBitmapManager::CX_TILE * 2, wLineW, wLineH);

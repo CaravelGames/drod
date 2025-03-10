@@ -530,19 +530,19 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_ExpandText].OutlineColor = Black;
 	this->LoadedFonts[F_ExpandText].wOutlineWidth = 2;	
 
-	//Load damage preview font.
+	//Load movement order hint font.
 	pFont = GetFont(wstrFont2Filepath, 14);
 	if (!pFont) return false;
-	this->LoadedFonts[F_MovementOrderPreview].pTTFFont = pFont;
-	this->LoadedFonts[F_MovementOrderPreview].wLineSkipHeight = GetFontHeight(F_MovementOrderPreview);
-	this->LoadedFonts[F_MovementOrderPreview].ForeColor = White;
-	this->LoadedFonts[F_MovementOrderPreview].BackColor = Black;
-	this->LoadedFonts[F_MovementOrderPreview].bAntiAlias = true;
-	this->LoadedFonts[F_MovementOrderPreview].bOutline = true;
-	this->LoadedFonts[F_MovementOrderPreview].OutlineColor = Black;
-	this->LoadedFonts[F_MovementOrderPreview].wOutlineWidth = 1;
-	GetWordWidth(F_MovementOrderPreview, wszSpace, wSpaceWidth);
-	this->LoadedFonts[F_MovementOrderPreview].wSpaceWidth = wSpaceWidth;
+	this->LoadedFonts[F_MovementOrderHint].pTTFFont = pFont;
+	this->LoadedFonts[F_MovementOrderHint].wLineSkipHeight = GetFontHeight(F_MovementOrderHint);
+	this->LoadedFonts[F_MovementOrderHint].ForeColor = White;
+	this->LoadedFonts[F_MovementOrderHint].BackColor = Black;
+	this->LoadedFonts[F_MovementOrderHint].bAntiAlias = true;
+	this->LoadedFonts[F_MovementOrderHint].bOutline = true;
+	this->LoadedFonts[F_MovementOrderHint].OutlineColor = Black;
+	this->LoadedFonts[F_MovementOrderHint].wOutlineWidth = 1;
+	GetWordWidth(F_MovementOrderHint, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_MovementOrderHint].wSpaceWidth = wSpaceWidth;
 
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG
