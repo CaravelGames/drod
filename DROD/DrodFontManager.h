@@ -77,7 +77,7 @@ enum FONTTYPE
 	F_ExpandText,
 	F_WorldMapLevel,
 	F_SettingsKeymaps,
-	F_MovementOrderPreview,
+	F_MovementOrderHint,
 
 	F_Last
 };

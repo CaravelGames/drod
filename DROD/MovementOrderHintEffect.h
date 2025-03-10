@@ -29,9 +29,6 @@
 
 #include <FrontEndLib/Effect.h>
 #include <BackEndLib/Types.h>
-#include <BackEndLib/Coord.h>
-
-#include <vector>
 
  //****************************************************************************************
 class CMonster;
