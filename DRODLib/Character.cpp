@@ -2797,6 +2797,14 @@ void CCharacter::Process(
 						this->bInvisibleInspectable = false;
 						bChangeImperative = false;
 						break;
+					case ScriptFlag::InvisibleCountMoveOrder:
+						this->bInvisibleCountsMoveOrder = true;
+						bChangeImperative = false;
+					break;
+					case ScriptFlag::InvisibleNotCountMoveOrder:
+						this->bInvisibleCountsMoveOrder = false;
+						bChangeImperative = false;
+					break;
 					case ScriptFlag::NotPushable:
 						this->bNotPushable = true;
 						this->bPushableByBody = false;
