@@ -45,6 +45,7 @@
 #include "FiretrapEffect.h"
 #include "IceMeltEffect.h"
 #include "ImageOverlayEffect.h"
+#include "MovementOrderHintEffect.h"
 #include "PuffExplosionEffect.h"
 #include "SparkEffect.h"
 #include "SpikeEffect.h"
@@ -1477,6 +1478,9 @@ void CGameScreen::OnDeactivate()
 		}
 
 		delete pCurrentPlayer;
+
+		//Don't retain this cache while not playing.
+		CMovementOrderHintEffect::ClearSurfaceCache();
 
 		//Ensure all internet upload requests have been sent.
 		WaitToUploadDemos();
