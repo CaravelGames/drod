@@ -32,6 +32,8 @@
 #include <BackEndLib/Assert.h>
 #include <FrontEndLib/Screen.h>
 
+static map<int, SDL_Surface*> s_surfaceCache;
+
 //********************************************************************************
 CMovementOrderHintEffect::CMovementOrderHintEffect(
 	CWidget* pSetWidget, const CMonster* pMonster, int moveOrder)
@@ -62,8 +64,19 @@ CMovementOrderHintEffect::CMovementOrderHintEffect(
 //********************************************************************************
 CMovementOrderHintEffect::~CMovementOrderHintEffect()
 {
-	if (this->pTextSurface)
-		SDL_FreeSurface(this->pTextSurface);
+	//Don't free pTextSurface here, as that will invalidate the cache entry.
+}
+
+//********************************************************************************
+void CMovementOrderHintEffect::ClearSurfaceCache()
+//Free all surfaces in s_surfaceCache, then clear it.
+{
+	for (map<int, SDL_Surface*>::iterator iter = s_surfaceCache.begin();
+		iter != s_surfaceCache.end(); ++iter)
+	{
+		SDL_FreeSurface(iter->second);
+	}
+	s_surfaceCache.clear();
 }
 
 //********************************************************************************
@@ -110,26 +123,41 @@ void CMovementOrderHintEffect::Draw(SDL_Surface& destSurface)
 //********************************************************************************
 void CMovementOrderHintEffect::PrepWidget()
 {
-	WSTRING wstr = std::to_wstring(wMoveOrder);
+	this->pTextSurface = GetSurfaceForOrder(wMoveOrder);
+	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, this->pTextSurface->w, this->pTextSurface->h);
+	this->dirtyRects.push_back(Dest);
+}
+
+//********************************************************************************
+SDL_Surface* CMovementOrderHintEffect::GetSurfaceForOrder(int order)
+//Get a surface with the rendered text for the given movement order position.
+//Since rendering text is relatively expensive, surfaces are cached to reduce the
+//amount of renders required.
+{
+	//Try getting from the cache first
+	map<int, SDL_Surface*>::iterator finder = s_surfaceCache.find(order);
+	if (finder != s_surfaceCache.end()) {
+		return finder->second;
+	}
+
+	WSTRING wstr = std::to_wstring(order);
 	static const UINT eFontType = F_MovementOrderHint;
 	UINT wLineW, wLineH;
 	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
 		CBitmapManager::CX_TILE * 2, wLineW, wLineH);
 
-	//Render text to internal surface to avoid re-rendering each frame.
-	if (this->pTextSurface)
-		SDL_FreeSurface(this->pTextSurface);
-	this->pTextSurface = CBitmapManager::ConvertSurface(
+	//Render text to a cached surface to avoid having to rerender each turn.
+	SDL_Surface* pSurface = CBitmapManager::ConvertSurface(
 		SDL_CreateRGBSurface(SDL_SWSURFACE, wLineW, wLineH, g_pTheBM->BITS_PER_PIXEL, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000));
-	ASSERT(this->pTextSurface);
+	ASSERT(pSurface);
 
-	const Uint32 bg_color = SDL_MapRGBA(this->pTextSurface->format, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
-	SDL_FillRect(this->pTextSurface, NULL, bg_color);
+	const Uint32 bg_color = SDL_MapRGBA(pSurface->format, 0, 0, 0, SDL_ALPHA_TRANSPARENT);
+	SDL_FillRect(pSurface, NULL, bg_color);
 
 	//Draw text (outlined, w/ anti-aliasing).
 	g_pTheFM->DrawTextToRect(eFontType, wstr.c_str(),
-		0, 0, wLineW, wLineH, this->pTextSurface);
+		0, 0, wLineW, wLineH, pSurface);
 
-	SDL_Rect Dest = MAKE_SDL_RECT(0, 0, wLineW, wLineH);
-	this->dirtyRects.push_back(Dest);
+	s_surfaceCache[order] = pSurface;
+	return pSurface;
 }

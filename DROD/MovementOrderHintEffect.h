@@ -39,6 +39,8 @@ public:
 	CMovementOrderHintEffect(CWidget* pSetWidget, const CMonster* pMonster, int moveOrder);
 	~CMovementOrderHintEffect();
 
+	static void ClearSurfaceCache();
+
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
@@ -50,6 +52,8 @@ protected:
 
 private:
 	void PrepWidget();
+
+	SDL_Surface* GetSurfaceForOrder(int order);
 
 	CMonster* pMonster;
 
