@@ -1999,7 +1999,7 @@ void CDrodScreen::ImportHoldMedia()
 					pImage->DataNameText = wstrImportFile.c_str();
 					pImage->dwHoldID = 0;
 					pImage->data.Set((const BYTE*)data,data.Size());
-					if (wI == TEXTURE_COUNT || wI == TEXTURE_COUNT-1)
+					if (wI == TEXTURE_COUNT || wI == FLOOR_IMAGE)
 					{
 						//Get .tim data.
 						const WSTRING wstrTimFilepath = g_pTheBM->GetTileImageMapFilepath(wstrImportFile.c_str());
