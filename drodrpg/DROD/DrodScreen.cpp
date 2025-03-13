@@ -1912,7 +1912,7 @@ void CDrodScreen::ImportHoldMedia()
 		//Import images.
 		static const UINT NUM_SELL_SCREENS = 2;
 		static const UINT NUM_EXIT_SCREENS = NUM_SELL_SCREENS;
-		static const UINT NUM_GRAPHICS_FILES = 22;
+		static const UINT NUM_GRAPHICS_FILES = 23;
 		static const char graphicFilename[NUM_GRAPHICS_FILES][32] = {
 			"Background", "Bolts",
 //			"Clock1", "Clock2",
@@ -1920,7 +1920,7 @@ void CDrodScreen::ImportHoldMedia()
 			"Faces", "GameScreen", "GameScreenParts",
 			"LevelStartBackground", "RoomEditScreen",
 			"TitleShadow", "TitleBG", "TitleBG1",
-			"TitleBG2", "TitleDROD", "TitleLightMask",
+			"TitleBG2", "TitleBGTunnel", "TitleDROD", "TitleLightMask",
 			"Fog1", "Clouds1", "Sunshine1",
 			"SignalBad", "SignalGood", "SignalNo", "SignalYes"
 		};
