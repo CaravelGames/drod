@@ -2885,6 +2885,7 @@ void CGameScreen::OnKeyDown(
 
 		case SDLK_UP: //Up arrow.
 			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(N);
 			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
 				HideCursor();
@@ -2893,6 +2894,7 @@ void CGameScreen::OnKeyDown(
 		return;
 		case SDLK_DOWN:   //Down arrow.
 			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(S);
 			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
 				HideCursor();
@@ -2901,6 +2903,7 @@ void CGameScreen::OnKeyDown(
 		return;
 		case SDLK_LEFT: //Left arrow.
 			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(W);
 			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
 				HideCursor();
@@ -2909,6 +2912,7 @@ void CGameScreen::OnKeyDown(
 		return;
 		case SDLK_RIGHT: //Right arrow.
 			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(E);
 			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
 				HideCursor();
