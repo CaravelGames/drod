@@ -625,7 +625,8 @@ bool PlayerStats::IsGlobalStatIndex(UINT i)
 		(i >= 73 && i <= 76) ||
 		(i >= 79 && i <= 87) ||
 		(i >= 93 && i <= 95) ||
-		i == 97 || i == 98;
+		i == 97 || i == 98 ||
+		(i >= 101 && i <= 103)
 		;
 }
 
@@ -688,6 +689,9 @@ void PlayerStats::Pack(CDbPackedVars& stats)
 			case 74: val = UINT(this->tarSpawnID); break;
 			case 75: val = UINT(this->gelSpawnID); break;
 			case 76: val = UINT(this->queenSpawnID); break;
+			case 101: val = UINT(this->mudSwapID); break;
+			case 102: val = UINT(this->tarSwapID); break;
+			case 103: val = UINT(this->gelSwapID); break;
 
 			case 79: val = UINT(this->scoreHP); break;
 			case 80: val = UINT(this->scoreATK); break;
@@ -775,6 +779,9 @@ void PlayerStats::Unpack(CDbPackedVars& stats)
 			case 74: this->tarSpawnID = int(val); break;
 			case 75: this->gelSpawnID = int(val); break;
 			case 76: this->queenSpawnID = int(val); break;
+			case 101: this->mudSwapID = int(val); break;
+			case 102: this->tarSwapID = int(val); break;
+			case 103: this->gelSwapID = int(val); break;
 
 			case 79: this->scoreHP = int(val); break;
 			case 80: this->scoreATK = int(val); break;
