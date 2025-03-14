@@ -114,6 +114,7 @@ const UINT TAG_GROUPEDITORMENUITEMS = 1072;
 
 const UINT TAG_UNDOLEVEL_NUM_LABEL = 1073;
 const UINT TAG_AUTOUNDOONDEATH = 1074;
+const UINT TAG_CITIZEN_DESCRIBE_COLOR = 1075;
 
 const UINT TAG_CANCEL = 1091;
 const UINT TAG_HELP = 1092;
@@ -332,8 +333,12 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	static const int Y_AUTOUNDOONDEATH = Y_SAVEONDIE + CY_SAVEONDIE;
 	static const UINT CX_AUTOUNDOONDEATH = CX_SHOWCHECKPOINTS;
 	static const UINT CY_AUTOUNDOONDEATH = CY_STANDARD_OPTIONBUTTON;
+	static const int X_DESCRIBE_CITIZEN_COLOR = X_AUTOUNDOONDEATH;
+	static const int Y_DESCRIBE_CITIZEN_COLOR = Y_AUTOUNDOONDEATH + CY_AUTOUNDOONDEATH;
+	static const UINT CX_DESCRIBE_CITIZEN_COLOR = CX_AUTOUNDOONDEATH;
+	static const UINT CY_DESCRIBE_CITIZEN_COLOR = CY_AUTOUNDOONDEATH;
 
-	static const UINT CY_SPECIAL_FRAME = Y_AUTOUNDOONDEATH + CY_AUTOUNDOONDEATH + CY_SPACE;
+	static const UINT CY_SPECIAL_FRAME = Y_DESCRIBE_CITIZEN_COLOR + CY_DESCRIBE_CITIZEN_COLOR + CY_SPACE;
 
 	//Demo frame and children
 	static const UINT X_DEMO_FRAME = X_EDITOR_FRAME;
@@ -431,6 +436,12 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	pOptionButton = new COptionButtonWidget(TAG_AUTOUNDOONDEATH, X_AUTOUNDOONDEATH,
 		Y_AUTOUNDOONDEATH, CX_AUTOUNDOONDEATH, CY_AUTOUNDOONDEATH,
 		g_pTheDB->GetMessageText(MID_AutoUndoOnDeath),
+		false);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_CITIZEN_DESCRIBE_COLOR, X_DESCRIBE_CITIZEN_COLOR,
+		Y_DESCRIBE_CITIZEN_COLOR, CX_DESCRIBE_CITIZEN_COLOR, CY_DESCRIBE_CITIZEN_COLOR,
+		g_pTheDB->GetMessageText(MID_DescribeCitizenColor),
 		false);
 	pSpecialFrame->AddWidget(pOptionButton);
 
@@ -1663,6 +1674,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_AUTOUNDOONDEATH));
 	pOptionButton->SetChecked(settings.GetVar(Settings::AutoUndoOnDeath, false));
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CITIZEN_DESCRIBE_COLOR));
+	pOptionButton->SetChecked(settings.GetVar(Settings::DescribeCitizenColor, false));
+
 	//Editor settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_AUTOSAVE));
@@ -1818,6 +1833,10 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_AUTOUNDOONDEATH));
 	settings.SetVar(Settings::AutoUndoOnDeath, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CITIZEN_DESCRIBE_COLOR));
+	settings.SetVar(Settings::DescribeCitizenColor, pOptionButton->IsChecked());
 
 	//Editor settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,

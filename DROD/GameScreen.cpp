@@ -2069,6 +2069,10 @@ void CGameScreen::ApplyPlayerSettings()
 		settings.GetVar(Settings::MovementOrderHint, false))
 		this->pRoomWidget->ToggleMovementOrderHint();
 
+	//Set if citizen groups are subtitled as numbers or colors
+	this->pRoomWidget->DescribeCitizenColor(
+		settings.GetVar(Settings::DescribeCitizenColor, false));
+
 	this->bAutoUndoOnDeath = settings.GetVar(Settings::AutoUndoOnDeath, false);
 
 	//Move repeat rate.

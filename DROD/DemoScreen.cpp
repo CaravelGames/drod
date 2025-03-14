@@ -155,6 +155,8 @@ bool CDemoScreen::SetForActivate()
 	if (this->pRoomWidget->IsShowingPuzzleMode() !=
 			settings.GetVar(Settings::PuzzleMode, false))
 		this->pRoomWidget->TogglePuzzleMode();
+	this->pRoomWidget->DescribeCitizenColor(
+		settings.GetVar(Settings::DescribeCitizenColor, false));
 
 	SetShowVoicedSubtitle(settings.GetVar(Settings::ShowSubtitlesWithVoices, true));
 

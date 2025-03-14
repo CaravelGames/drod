@@ -2093,6 +2093,10 @@ void CEditRoomScreen::ApplyPlayerSettings()
 	//Set room editing options.
 	this->bAutoSave = pCurrentPlayer->Settings.GetVar(Settings::AutoSave, true);
 
+	//Set if citizen groups are subtitled as numbers or colors
+	this->pRoomWidget->DescribeCitizenColor(
+		pCurrentPlayer->Settings.GetVar(Settings::DescribeCitizenColor, false));
+
 	COptionButtonWidget *pOptionButton = static_cast<COptionButtonWidget *>(
 			GetWidget(TAG_SHOWERRORS));
 	this->bShowErrors = pCurrentPlayer->Settings.GetVar(Settings::ShowErrors, true);

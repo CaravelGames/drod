@@ -709,3 +709,7 @@ YYYY-MM-DD
 [MID_Command_ToggleMovementOrderHint]
 [eng]
 Toggle Ordering Hint
+
+[MID_DescribeCitizenColor]
+[eng]
+Describe citizen groups as color

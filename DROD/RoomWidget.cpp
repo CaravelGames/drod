@@ -1574,9 +1574,16 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			const int stationType = pCitizen->StationType();
 			if (stationType >= 0)
 			{
-				wstr += wszSpace;
-				wstr += wszPoundSign;
-				wstr += _itoW(stationType, temp, 10);
+				if (bDescribeCitizenColor) {
+					wstr += wszSpace;
+					wstr += wszHyphen;
+					wstr += wszSpace;
+					wstr += DescribeStationColor(stationType);
+				} else {
+					wstr += wszSpace;
+					wstr += wszPoundSign;
+					wstr += _itoW(stationType, temp, 10);
+				}
 			}
 		}
 
@@ -1636,11 +1643,19 @@ SkipDescribingMonster:
 		//Indicate station color.
 		if (tTile == T_STATION)
 		{
-			wstr += wszSpace;
-			wstr += wszLeftParen;
-			wstr += wszPoundSign;
-			wstr += _itoW(this->pRoom->GetTParam(wX, wY), temp, 10);
-			wstr += wszRightParen;
+			int stationType = (int)(this->pRoom->GetTParam(wX, wY));
+			if (bDescribeCitizenColor) {
+				wstr += wszSpace;
+				wstr += wszHyphen;
+				wstr += wszSpace;
+				wstr += DescribeStationColor(stationType);
+			} else {
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += wszPoundSign;
+				wstr += _itoW(stationType, temp, 10);
+				wstr += wszRightParen;
+			}
 		}
 	}
 
@@ -5802,6 +5817,33 @@ void CRoomWidget::DeleteArrays()
 	this->pTileImages = NULL;
 
 	this->lightMaps.clear();
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::DescribeStationColor(const int& stationType) const
+//Returns a string describing the color of the given station type
+{
+	UINT mid;
+	switch (stationType) {
+		default: case 0: mid = MID_White; break;
+		case 1: mid = MID_Red; break;
+		case 2: mid = MID_Green; break;
+		case 3: mid = MID_Blue; break;
+		case 4: mid = MID_PaleRed; break;
+		case 5: mid = MID_PaleGreen; break;
+		case 6: mid = MID_PaleBlue; break;
+		case 7: mid = MID_Yellow; break;
+		case 8: mid = MID_Cyan; break;
+		case 9: mid = MID_Mauve; break;
+		case 10: mid = MID_Orange; break;
+		case 11: mid = MID_Pink; break;
+		case 12: mid = MID_Lime; break;
+		case 13: mid = MID_Turquoise; break;
+		case 14: mid = MID_Violet; break;
+		case 15: mid = MID_Azure; break;
+	}
+
+	return g_pTheDB->GetMessageText(mid);
 }
 
 //*****************************************************************************

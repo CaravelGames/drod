@@ -304,6 +304,7 @@ public:
 	bool           AreCheckpointsVisible() const {return this->bShowCheckpoints;}
 	void           ClearEffects(const bool bKeepFrameRate = true);
 	void           CountDirtyTiles(UINT& damaged, UINT& dirty, UINT& monster) const;
+	void           DescribeCitizenColor(bool desribeAsColor) { bDescribeCitizenColor = desribeAsColor; }
 	void           DirtyRoom() {this->bAllDirty = true;}
 	void           DisplayPersistingImageOverlays(CCueEvents& CueEvents);
 	void           DisplayRoomCoordSubtitle(const int nMouseX, const int nMouseY);
@@ -462,6 +463,7 @@ protected:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS,
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           DeleteArrays();
+	WSTRING        DescribeStationColor(const int& stationType) const;
 	void           DirtyTileRect(const int x1, const int y1,
 			const int x2, const int y2);
 	void           DirtyTilesForSpriteAt(UINT pixel_x, UINT pixel_y, UINT w, UINT h);
@@ -717,6 +719,7 @@ private:
 	Uint32            time_of_last_sky_move;
 
 	bool              bShowMovementOrderHints;
+	bool              bDescribeCitizenColor;
 
 	multimap<EffectType, int> queued_layer_effect_type_removal;
 };
