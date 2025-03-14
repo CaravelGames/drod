@@ -49,6 +49,7 @@ namespace Settings
 	DEF(CNetProgressIsOld);
 	DEF(ConnectToInternet);
 	DEF(DemoDateFormat);
+	DEF(DescribeCitizenColor);
 	DEF(DisplayCombos);
 	DEF(EnableChatInGame);
 	DEF(ExportPath);
