@@ -633,6 +633,10 @@ const
 			return true;
 		if (wTileNo == T_MIRROR && wObject == T_MIRROR)
 			return false;
+		if (wTileNo == T_CRATE && wObject == T_CRATE)
+			return false;
+		if (wTileNo == T_POWDER_KEG && wObject == T_POWDER_KEG)
+			return false;
 		return wObject == wTileNo;
 	case 2:
 		//Same type of monster can replace itself, except long monsters and special character.
