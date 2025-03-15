@@ -311,7 +311,7 @@ static inline bool bIsVulnerableToBodyAttack(const UINT mt) {
 static inline bool bCanFluffKill(const UINT mt) {
 	switch(mt) {
 		case M_ROCKGOLEM: case M_ROCKGIANT: case M_CONSTRUCT:
-		case M_GENTRYII: case M_FLUFFBABY: case M_SEEP:
+		case M_GENTRYII: case M_FLUFFBABY:
 			return false;
 		default:
 			return true;
