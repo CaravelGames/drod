@@ -278,6 +278,11 @@ bool CCombat::PlayerAttacksFirst(const bool bPlayerHitWithWeapon) const
 bool CCombat::AttackIsFromBehindMonster(int &dx, int &dy) const
 //Returns: whether the attack is coming from behind the monster
 {
+	ASSERT(this->pGame);
+	const CSwordsman& player = *this->pGame->pPlayer;
+	if (player.wAppearance == M_NONE)
+		return false; //player not in room isn't attacking from anywhere
+
 	//Direction toward attack.
 	dx = sgn(int(this->wFromX - this->pMonster->wX));
 	dy = sgn(int(this->wFromY - this->pMonster->wY));
