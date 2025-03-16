@@ -163,6 +163,8 @@ const UINT TAG_ARRAYVAR_TEXTLABEL = 887;
 const UINT TAG_IGNOREWEAPONS_LABEL = 886;
 const UINT TAG_IGNOREFLAGS_LABEL = 885;
 const UINT TAG_ITEM_GROUP_LISTBOX = 884;
+const UINT TAG_MAP_ICON_STATE_LISTBOX = 883;
+const UINT TAG_MAP_ICON_LISTBOX = 882;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -411,6 +413,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pSpeechText(NULL)
 	, pStatListBox(NULL)
 	, pMovementTypeListBox(NULL)
+	, pMapIconListBox(NULL), pMapIconStateListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1217,6 +1220,18 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_IMAGEOVERLAYTEXT = CX_TEXT;
 	static const UINT CY_IMAGEOVERLAYTEXT = 284;
 
+	//Minimap icons
+	static const int X_MAP_ICON_LISTBOX = X_DIRECTIONLISTBOX;
+	static const int Y_MAP_ICON_LISTBOX = Y_DIRECTIONLISTBOX;
+	static const int CX_MAP_ICON_LISTBOX = CX_DIRECTIONLISTBOX;
+	static const int CY_MAP_ICON_LISTBOX = 17 * LIST_LINE_HEIGHT + 4; //17 entries;
+
+	static const int X_MAP_ICON_STATE_LISTBOX = X_MAP_ICON_LISTBOX +
+		CX_MAP_ICON_LISTBOX + CX_SPACE;
+	static const int Y_MAP_ICON_STATE_LISTBOX = Y_MAP_ICON_LISTBOX;
+	static const int CX_MAP_ICON_STATE_LISTBOX = CX_DIRECTIONLISTBOX;
+	static const int CY_MAP_ICON_STATE_LISTBOX = 4 * LIST_LINE_HEIGHT + 4; //4 entries;
+
 	ASSERT(!this->pAddCommandDialog);
 	this->pAddCommandDialog = new CRenameDialogWidget(0L, -80, GetY() + (GetH()-CY_COMMAND_DIALOG)/2,
 			CX_COMMAND_DIALOG, CY_COMMAND_DIALOG);
@@ -1783,6 +1798,39 @@ void CCharacterDialogWidget::AddCommandDialog()
 		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_Ignore)));
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_IGNOREWEAPONS_LABEL, X_WAITLABEL, Y_WAITLABEL,
 		CX_WAITLABEL, CY_WAITLABEL, F_Small, g_pTheDB->GetMessageText(MID_IgnoreWeapons)));
+
+	//minimap icons
+	this->pMapIconListBox = new CListBoxWidget(TAG_MAP_ICON_LISTBOX,
+		X_MAP_ICON_LISTBOX, Y_MAP_ICON_LISTBOX, CX_MAP_ICON_LISTBOX, CY_MAP_ICON_LISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pMapIconListBox);
+	this->pMapIconListBox->AddItem(ScriptVars::MI_None, g_pTheDB->GetMessageText(MID_None));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Sword, g_pTheDB->GetMessageText(MID_Sword));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Shield, g_pTheDB->GetMessageText(MID_Shield));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Star, g_pTheDB->GetMessageText(MID_Star));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Skull, g_pTheDB->GetMessageText(MID_Skull));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Chest, g_pTheDB->GetMessageText(MID_Chest));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_Gear, g_pTheDB->GetMessageText(MID_Gear));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_MoneyBag, g_pTheDB->GetMessageText(MID_MoneyBag));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_KeyBlue, g_pTheDB->GetMessageText(MID_BlueKey));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_KeyWhite, g_pTheDB->GetMessageText(MID_WhiteKey));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_StairsUp, g_pTheDB->GetMessageText(MID_StairsUp));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_StairsDown, g_pTheDB->GetMessageText(MID_StairsDown));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_NorthArrow, g_pTheDB->GetMessageText(MID_NorthArrow));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_EastArrow, g_pTheDB->GetMessageText(MID_EastArrow));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_SouthArrow, g_pTheDB->GetMessageText(MID_SouthArrow));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_WestArrow, g_pTheDB->GetMessageText(MID_WestArrow));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_QuestionMark, g_pTheDB->GetMessageText(MID_QuestionMark));
+	this->pMapIconListBox->SelectLine(0);
+
+	this->pMapIconStateListBox = new CListBoxWidget(TAG_MAP_ICON_STATE_LISTBOX,
+		X_MAP_ICON_STATE_LISTBOX, Y_MAP_ICON_STATE_LISTBOX,
+		CX_MAP_ICON_STATE_LISTBOX, CY_MAP_ICON_STATE_LISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pMapIconStateListBox);
+	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Normal, g_pTheDB->GetMessageText(MID_Normal));
+	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Greyscale, g_pTheDB->GetMessageText(MID_Grayscale));
+	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Negative, g_pTheDB->GetMessageText(MID_Negative));
+	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Sepia, g_pTheDB->GetMessageText(MID_Sepia));
+	this->pMapIconStateListBox->SelectLine(0);
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3175,6 +3223,17 @@ const
 				wstr += g_pTheDB->GetMessageText(MID_FullRoomReveal);
 			}
 		break;
+		case CCharacterCommand::CC_SetMapIcon:
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszSpace;
+			wstr += this->pMapIconListBox->GetTextForKey(command.w);
+			wstr += wszSpace;
+			wstr += this->pMapIconStateListBox->GetTextForKey(command.h);
+		break;
 		case CCharacterCommand::CC_MoveRel:
 			wstr += wszLeftParen;
 			wstr += _itoW((int)command.x, temp, 10);
@@ -3975,6 +4034,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_ClearArrayVar:
 		case CCharacterCommand::CC_ResetOverrides:
+		case CCharacterCommand::CC_SetMapIcon:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4169,6 +4229,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMapIcon, L"Set map icon");
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
@@ -5042,7 +5103,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 44;
+	static const UINT NUM_WIDGETS = 46;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5056,7 +5117,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_DIRECTIONLISTBOX2,
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
 		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
-		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX
+		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
+		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -5093,6 +5155,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CLEARARRAYVAR[] = { TAG_ARRAYVARLIST, 0 };
 	static const UINT OPENTILE[] =    { TAG_MOVETYPELISTBOX, TAG_WAITFLAGSLISTBOX, TAG_ONOFFLISTBOX, 0 };
 	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
+	static const UINT MAPICON[] = { TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5181,7 +5244,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_WIDGETS,         //CC_WaitForWeapon
 		OPENTILE,           //CC_WaitForOpenTile
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
-		WAITFORITEMGROUP    //CC_WaitForNoItemGroup
+		WAITFORITEMGROUP,   //CC_WaitForNoItemGroup
+		MAPICON             //CC_SetMinimapIcon
 	};
 
 	static const UINT NUM_LABELS = 31;
@@ -5312,6 +5376,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		OPENTILE_L,         //CC_WaitForOpenTile
 		NO_LABELS,          //CC_WaitForItemGroup
 		NO_LABELS,          //CC_WaitForNotItemGroup
+		NO_LABELS,          //CC_SetMapIcon
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -5973,6 +6038,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_AddRoomToMap:
 			this->pCommand->w = this->pOnOffListBox->GetSelectedItem();
+			QueryMapRoom();
+		break;
+		case	CCharacterCommand::CC_SetMapIcon:
+			this->pCommand->w = this->pMapIconListBox->GetSelectedItem();
+			this->pCommand->h = this->pMapIconStateListBox->GetSelectedItem();
 			QueryMapRoom();
 		break;
 
@@ -6705,6 +6775,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_AddRoomToMap:
 			this->pOnOffListBox->SelectItem(this->pCommand->w);
 		break;
+		case CCharacterCommand::CC_SetMapIcon:
+			this->pMapIconListBox->SelectItem(this->pCommand->w);
+			this->pMapIconStateListBox->SelectItem(this->pCommand->h);
+		break;
 
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_AppearAt:
@@ -7059,6 +7133,14 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->y);
 		skipRightParen;
 		parseOptionalNumber(pCommand->w);
+	break;
+	case CCharacterCommand::CC_SetMapIcon:
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		parseNumber(pCommand->w);
+		parseNumber(pCommand->h);
 	break;
 
 	case CCharacterCommand::CC_ActivateItemAt:
@@ -7757,6 +7839,12 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 		concatNum(c.w);
+	break;
+	case CCharacterCommand::CC_SetMapIcon:
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.w);
+		concatNum(c.h);
 	break;
 
 	case CCharacterCommand::CC_Equipment:

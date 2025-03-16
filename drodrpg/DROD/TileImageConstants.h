@@ -2528,7 +2528,24 @@
 #define TI_SHIELD9      2333
 //*****************************************************************************
 #define TI_OVERHEAD_IMAGE 2334
-static const UINT TI_COUNT = 2335;
+//*****************************************************************************
+#define TI_MAP_ICON_SWORD 2351
+#define TI_MAP_ICON_SHIELD 2352
+#define TI_MAP_ICON_STAR 2353
+#define TI_MAP_ICON_SKULL 2354
+#define TI_MAP_ICON_ARROW_NORTH 2355
+#define TI_MAP_ICON_ARROW_EAST 2356
+#define TI_MAP_ICON_ARROW_SOUTH 2357
+#define TI_MAP_ICON_ARROW_WEST 2358
+#define TI_MAP_ICON_STAIR_UP 2359
+#define TI_MAP_ICON_STAIR_DOWN 2360
+#define TI_MAP_ICON_CHEST 2361
+#define TI_MAP_ICON_GEAR 2362
+#define TI_MAP_ICON_MONEY_BAG 2363
+#define TI_MAP_ICON_KEY_BLUE 2364
+#define TI_MAP_ICON_KEY_WHITE 2365
+#define TI_MAP_ICON_QUESTION_MARK 2366
+static const UINT TI_COUNT = 2367;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

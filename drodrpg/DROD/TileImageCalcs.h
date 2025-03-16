@@ -63,6 +63,7 @@ UINT  GetTileImageForEntity(const UINT wType, const UINT wO, const UINT wAnimFra
 UINT  GetTileImageForSerpentPiece(const UINT wType, const UINT wTileNo);
 UINT  GetTileImageForRockGiantPiece(const UINT wTileNo, const UINT wO, const UINT wFrame);
 UINT  GetTileImageForTileNo(const UINT wTileNo);
+UINT  GetTileImageForMapIcon(const ScriptVars::MapIcon mapIcon);
 UINT  CalcTileImageForKey(const BYTE tParam);
 UINT  CalcTileImageForSword(const BYTE tParam);
 UINT  CalcTileImageForShield(const BYTE tParam);

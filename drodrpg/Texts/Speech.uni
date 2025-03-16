@@ -1659,3 +1659,71 @@ Mist protection
 [MID_RemoveOverheadImage]
 [eng]
 Remove overhead image
+
+[MID_Grayscale]
+[eng]
+Grayscale
+
+[MID_Negative]
+[eng]
+Negative
+
+[MID_Sepia]
+[eng]
+Sepia
+
+[MID_Sword]
+[eng]
+Sword
+
+[MID_Shield]
+[eng]
+Shield
+
+[MID_Star]
+[eng]
+Star
+
+[MID_Skull]
+[eng]
+Skull
+
+[MID_NorthArrow]
+[eng]
+North arrrow
+
+[MID_EastArrow]
+[eng]
+East arrrow
+
+[MID_SouthArrow]
+[eng]
+South arrrow
+
+[MID_WestArrow]
+[eng]
+West arrrow
+
+[MID_StairsDown]
+[eng]
+Stairs down
+
+[MID_Chest]
+[eng]
+Chest
+
+[MID_Gear]
+[eng]
+Gear
+
+[MID_MoneyBag]
+[eng]
+Money bag
+
+[MID_WhiteKey]
+[eng]
+White key
+
+[MID_QuestionMark]
+[eng]
+Question mark

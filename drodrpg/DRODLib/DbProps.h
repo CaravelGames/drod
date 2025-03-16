@@ -87,6 +87,8 @@ DEFPROP(c4_IntProp,     LanguageCode);
 DEFPROP(c4_IntProp,     LastUpdated);
 DEFPROP(c4_IntProp,     Left);
 DEFPROP(c4_IntProp,     LevelID);
+DEFPROP(c4_IntProp,     MapIcon);
+DEFPROP(c4_IntProp,     MapIconState);
 DEFPROP(c4_IntProp,     MapMarker);
 DEFPROP(c4_IntProp,     MapOnly);
 DEFPROP(c4_IntProp,     MapState);
@@ -260,6 +262,8 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 				"RoomID:I,"
 				"MapState:I,"
 				"MapMarker:I,"
+				"MapIcon:I,"
+				"MapIconState:I,"
 
 				//room delta:
 				"Squares:B,"   //room tiles now
@@ -538,6 +542,8 @@ enum PROPTYPE
 	P_Left,
 	P_LevelID,
 	P_LitFuses,  //list
+	P_MapIcon,
+	P_MapIconState,
 	P_MapMarker,
 	P_MapOnly,
 	P_MapState,
@@ -637,7 +643,7 @@ extern const char propTypeStr[P_Count][26]
 	"IsSecret",
 	"LanguageCode", "LastUpdated", "Left",
 	"LevelID",
-	"LitFuses", "MapMarker", "MapOnly", "MapState",
+	"LitFuses", "MapIcon", "MapIconState", "MapMarker", "MapOnly", "MapState",
 	"Message", "MessageText", "MessageTextID", "ModName", "Mood", "Multiplier",
 	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex",
 	"OverheadDataID", "OverheadImageStartX", "OverheadImageStartY",

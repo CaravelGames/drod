@@ -2376,6 +2376,10 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetMapIcon:
+				SetMapIcon(command, pGame, CueEvents);
+				bProcessNextCommand = true;
+			break;
 			case CCharacterCommand::CC_Autosave:
 			{
 				if (!bRoomBeingDisplayedOnly)
@@ -3802,6 +3806,44 @@ void CCharacter::SetArrayVariable(
 			scriptArrays[varIndex][arrayIndex] = x;
 		}
 		++arrayIndex;
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetMapIcon(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	CCueEvents& CueEvents)
+{
+	//Check icon is valid before expensive db calls
+	ScriptVars::MapIcon icon = (ScriptVars::MapIcon)command.w;
+	ScriptVars::MapIconState iconState = (ScriptVars::MapIconState)command.h;
+	if (icon >= ScriptVars::MapIconCount) {
+		return;
+	}
+
+	const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+		command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+
+	if (!roomID) {
+		return;
+	}
+
+	ExploredRoom* pExpRoom = pGame->getExploredRoom(roomID);
+	//Explore the room to map so it can have icons, but don't make it revealed
+	if (!pExpRoom) {
+		pGame->AddRoomToMap(roomID, MapState::Invisible);
+		pExpRoom = pGame->getExploredRoom(roomID);
+		if (!pExpRoom) {
+			return; //Can this happen?
+		}
+	}
+
+	pExpRoom->mapIcon = icon;
+	pExpRoom->mapIconState = iconState;
+
+	if (pExpRoom->mapState != MapState::Invisible) {
+		CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(T_MAP));
 	}
 }
 

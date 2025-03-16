@@ -1440,7 +1440,29 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 				wSquareIndex -= GetRoomShowWidth();
 		}
 	}
-			
+
+	if (pExpRoom && pExpRoom->mapIcon != ScriptVars::MI_None) {
+		//Figure x and y inside of pixel map.
+		const UINT x = (pRoom->dwRoomX - this->dwLeftRoomX) *
+			GetRoomShowWidth() + this->wBorderW;
+		const UINT y = (pRoom->dwRoomY - this->dwTopRoomY) *
+			GetRoomShowHeight() + this->wBorderH;
+		const UINT w = GetRoomShowWidth();
+		const UINT h = GetRoomShowHeight();
+
+		UINT wTI = GetTileImageForMapIcon(pExpRoom->mapIcon);
+		g_pTheBM->BlitTileImagePart(wTI, x, y, 0, 0, w, h,
+			this->pMapSurface);
+
+		if (pExpRoom->mapIconState == ScriptVars::MIS_Greyscale) {
+			g_pTheBM->BAndWRect(x, y, w, h, this->pMapSurface, wTI);
+		} else if (pExpRoom->mapIconState == ScriptVars::MIS_Negative) {
+			g_pTheBM->NegativeRect(x, y, w, h, this->pMapSurface, wTI);
+		} else if (pExpRoom->mapIconState == ScriptVars::MIS_Sepia) {
+			g_pTheBM->SepiaRect(x, y, w, h, this->pMapSurface, wTI);
+		}
+	}
+
 	UnlockMapSurface();
 }
 
