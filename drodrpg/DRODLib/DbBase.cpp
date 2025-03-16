@@ -948,6 +948,23 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_RemoveOverheadImage: strText = "Remove overhead image"; break;
 		case MID_NewLocalHighScore: strText = "New personal best!"; break;
 		case MID_PercentOptimal: strText = "%s% of personal best"; break;
+		case MID_Grayscale: strText = "Grayscale"; break;
+		case MID_Negative: strText = "Negative"; break;
+		case MID_Sepia: strText = "Sepia"; break;
+		case MID_Sword: strText = "Sword"; break;
+		case MID_Shield: strText = "Shield"; break;
+		case MID_Star: strText = "Star"; break;
+		case MID_Skull: strText = "Skull"; break;
+		case MID_NorthArrow: strText = "North arrow"; break;
+		case MID_EastArrow: strText = "East arrow"; break;
+		case MID_SouthArrow: strText = "South arrow"; break;
+		case MID_WestArrow: strText = "West arrow"; break;
+		case MID_StairsDown: strText = "Stairs down"; break;
+		case MID_Chest: strText = "Chest"; break;
+		case MID_Gear: strText = "Gear"; break;
+		case MID_MoneyBag: strText = "Money bag"; break;
+		case MID_WhiteKey: strText = "White key"; break;
+		case MID_QuestionMark: strText = "Question mark"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

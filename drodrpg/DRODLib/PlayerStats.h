@@ -193,6 +193,34 @@ namespace ScriptVars
 		PrimitiveCount
 	};
 
+	enum MapIcon {
+		MI_None = 0,
+		MI_Sword = 1,
+		MI_Shield = 2,
+		MI_Star = 3,
+		MI_Skull = 4,
+		MI_NorthArrow = 5,
+		MI_EastArrow = 6,
+		MI_SouthArrow = 7,
+		MI_WestArrow = 8,
+		MI_StairsUp = 9,
+		MI_StairsDown = 10,
+		MI_Chest = 11,
+		MI_Gear = 12,
+		MI_MoneyBag = 13,
+		MI_KeyBlue = 14,
+		MI_KeyWhite = 15,
+		MI_QuestionMark = 16,
+		MapIconCount
+	};
+
+	enum MapIconState {
+		MIS_Normal = 0,
+		MIS_Greyscale = 1,
+		MIS_Negative = 2,
+		MIS_Sepia = 3
+	};
+
 	void init();
 	UINT getVarDefault(const ScriptVars::Predefined var);
 	string getVarName(const ScriptVars::Predefined var);

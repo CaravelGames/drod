@@ -1628,6 +1628,33 @@ UINT GetTileImageForTileNo(
 }
 
 //*****************************************************************************
+UINT GetTileImageForMapIcon(const ScriptVars::MapIcon mapIcon)
+{
+	ASSERT(mapIcon < ScriptVars::MapIconCount);
+	static const UINT MapIconImageArray[ScriptVars::MapIconCount] = {
+		TI_MAP_ICON_QUESTION_MARK, //MI_None
+		TI_MAP_ICON_SWORD,         //MI_Sword
+		TI_MAP_ICON_SHIELD,        //MI_Shield
+		TI_MAP_ICON_STAR,          //MI_Star
+		TI_MAP_ICON_SKULL,         //MI_Skill
+		TI_MAP_ICON_ARROW_NORTH,   //MI_ArrowNorth
+		TI_MAP_ICON_ARROW_EAST,    //MI_ArrowEast
+		TI_MAP_ICON_ARROW_SOUTH,   //MI_ArrowSouth
+		TI_MAP_ICON_ARROW_WEST,    //MI_ArrowWest
+		TI_MAP_ICON_STAIR_UP,      //MI_StairsUp
+		TI_MAP_ICON_STAIR_DOWN,    //MI_StairsDown
+		TI_MAP_ICON_CHEST,         //MI_Chest
+		TI_MAP_ICON_GEAR,          //MI_Gear
+		TI_MAP_ICON_MONEY_BAG,     //MI_MoneyBag
+		TI_MAP_ICON_KEY_BLUE,      //MI_KeyBlue
+		TI_MAP_ICON_KEY_WHITE,     //MI_KeyWhite
+		TI_MAP_ICON_QUESTION_MARK  //MI_QuestionMark
+	};
+
+	return MapIconImageArray[mapIcon];
+}
+
+//*****************************************************************************
 UINT CalcTileImageFor(
 //Calculates a tile image for the given tile at (wCol,wRow).
 //

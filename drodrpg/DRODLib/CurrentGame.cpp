@@ -6606,7 +6606,8 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 			const UINT roomID = *roomIter;
 			if (!CDbRoom::IsSecret(roomID))
 			{
-				ASSERT(!getExploredRoom(roomID) || bShowDetail);
+				ExploredRoom* pExpRoom = getExploredRoom(roomID);
+				ASSERT(!pExpRoom || pExpRoom->IsInvisible() || bShowDetail);
 				AddRoomToMap(roomID, bShowDetail ? MapState::Explored : MapState::NoDetail);
 			}
 		}
@@ -7600,6 +7601,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->statsAtRoomStart = this->stats;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
 	this->roomsMappedAtRoomStart = GetMappedRooms();
+	this->roomsMappedAtRoomStart += GetInvisibleRooms();
 }
 
 //*****************************************************************************

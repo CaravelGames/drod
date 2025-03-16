@@ -109,6 +109,8 @@ ExploredRoom::ExploredRoom()
 	, mapState(MapState::Invisible)
 	, bSave(true)
 	, mapMarker(0)
+	, mapIcon(ScriptVars::MapIcon::MI_None)
+	, mapIconState(ScriptVars::MapIconState::MIS_Normal)
 	, pMonsterList(NULL)
 {
 }
@@ -123,6 +125,8 @@ ExploredRoom::ExploredRoom(const ExploredRoom& that)
 	this->mapState = that.mapState;
 	this->bSave = that.bSave;
 	this->mapMarker = that.mapMarker;
+	this->mapIcon = that.mapIcon;
+	this->mapIconState = that.mapIconState;
 	this->litFuses = that.litFuses;
 	this->platformDeltas = that.platformDeltas;
 //	this->orbTypes = that.orbTypes;
@@ -234,10 +238,30 @@ const
 			roomIt != this->ExploredRooms.end(); ++roomIt)
 	{
 		const ExploredRoom& room = *(*roomIt);
+		if (room.IsInvisible()) {
+			continue;
+		}
+
 		const bool bMapOnlyFilter = bMapOnlyAlso || room.HasDetail();
 		const bool bNoSaveFilter = bIncludeNoSavedAlso || room.bSave;
 		if (bMapOnlyFilter && bNoSaveFilter)
 			rooms += room.roomID;
+	}
+	return rooms;
+}
+
+//*****************************************************************************
+CIDSet CDbSavedGame::GetInvisibleRooms() const
+//Returns: All "explored rooms" that should not be shown on the map
+{
+	CIDSet rooms;
+	for (vector<ExploredRoom*>::const_iterator roomIt = this->ExploredRooms.begin();
+		roomIt != this->ExploredRooms.end(); ++roomIt)
+	{
+		const ExploredRoom& room = *(*roomIt);
+		if (room.IsInvisible()) {
+			rooms += room.roomID;
+		}
 	}
 	return rooms;
 }
@@ -383,6 +407,8 @@ void CDbSavedGame::LoadExploredRooms(const c4_View& ExploredRoomsView)
 		pRoom->roomID = p_RoomID(row);
 		pRoom->mapState = (MapState)(int)(p_MapState(row));
 		pRoom->mapMarker = p_MapMarker(row);
+		pRoom->mapIcon = (ScriptVars::MapIcon)(int)p_MapIcon(row);
+		pRoom->mapIconState = (ScriptVars::MapIconState)(int)p_MapIconState(row);
 		c4_Bytes SquaresBytes = p_Squares(row);
 		pRoom->SquaresBytes = c4_Bytes(SquaresBytes.Contents(), SquaresBytes.Size(), true);
 		pRoom->pMonsterList = NULL;
@@ -983,6 +1009,16 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 					//If room ID doesn't exist, then this record probably exists for a removed room.
 					pImportExploredRoom->roomID = localID != info.RoomIDMap.end() ? localID->second : 0;
 					break;
+				case P_MapIcon:
+				{
+					pImportExploredRoom->mapIcon = (ScriptVars::MapIcon)convertToInt(str);
+				}
+				break;
+				case P_MapIconState:
+				{
+					pImportExploredRoom->mapIconState = (ScriptVars::MapIconState)convertToInt(str);
+				}
+				break;
 				case P_MapOnly:
 				{
 					//Update from 1.0
@@ -1406,6 +1442,8 @@ const
 		p_RoomID(row) = room.roomID;
 		p_MapState(row) = room.mapState;
 		p_MapMarker(row) = room.mapMarker;
+		p_MapIcon(row) = room.mapIcon;
+		p_MapIconState(row) = room.mapIconState;
 		p_Squares(row) = room.SquaresBytes;
 		p_Monsters(row) = MonstersView;
 		p_LitFuses(row) = LitFusesView;
@@ -2025,6 +2063,10 @@ void CDbSavedGames::ExportXML(
 
 			str += STARTVPTAG(VP_ExploredRooms, P_RoomID);
 			str += INT32TOSTR(r.roomID);
+			str += PROPTAG(P_MapIcon);
+			str += INT32TOSTR(r.mapIcon);
+			str += PROPTAG(P_MapIconState);
+			str += INT32TOSTR(r.mapIconState);
 			str += PROPTAG(P_MapState);
 			str += INT32TOSTR(r.mapState);
 			str += PROPTAG(P_MapMarker);

@@ -82,12 +82,16 @@ struct ExploredRoom
 	bool bSave;    //include in saved game if set
 	UINT mapMarker; //marker placed on this room on the map
 
+	ScriptVars::MapIcon mapIcon; //icon for minimap
+	ScriptVars::MapIconState mapIconState; //style to draw map icon
+
 	c4_Bytes SquaresBytes;
 	CMonster *pMonsterList;
 	CIDSet litFuses;
 	CCoordStack platformDeltas;
 	c4_Bytes tileLightsBytes;
 
+	bool IsInvisible() const { return mapState == Invisible; }
 	bool HasDetail() const { return mapState >= Preview; }
 
 //	vector<UINT> orbTypes; //track broken orbs/plates -- no longer used
@@ -154,6 +158,7 @@ public:
 	ExploredRoom* getExploredRoom(const UINT roomID) const;
 	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false, const bool bIncludeNoSavedAlso=true) const;
 	CIDSet    GetMappedRooms() const {return GetExploredRooms(true);}
+	CIDSet    GetInvisibleRooms() const;
 	bool      IsRoomExplored(const UINT roomID, const bool bConsiderCurrentRoom=true) const;
 	void      LoadExploredRooms(const c4_View& ExploredRoomsView);
 	CMonster* LoadMonster(const c4_RowRef& row);
