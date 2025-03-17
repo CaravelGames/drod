@@ -1215,6 +1215,7 @@ enum MID_CONSTANT {
   MID_NewGames = 1841,
   MID_ConfirmNewGame = 1842,
   MID_AutoPreviewCharacters = 1850,
+  MID_MapIconAlpha = 2007,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

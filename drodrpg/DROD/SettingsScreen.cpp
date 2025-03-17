@@ -59,6 +59,8 @@ using namespace InputCommands;
 #define COMMANDS_TAB (2)
 #define BG_COLOR 220,210,190
 
+#define MIN_ICON_ALPHA (64)
+
 //Default command key mappings.
 const SDL_Keycode COMMANDKEY_ARRAY[2][DCMD_Count] = {	//desktop or laptop keyboard
 {	//numpad default
@@ -108,6 +110,7 @@ const UINT TAG_SHOW_SUBTITLES = 1050;
 //const UINT TAG_DISPLAY_COMBOS = 1052;
 const UINT TAG_NO_FOCUS_PLAYS_MUSIC = 1053;
 const UINT TAG_DAMAGEPREVIEW = 1054;
+const UINT TAG_MAP_ICON_ALPHA = 1055;
 
 /*
 const UINT TAG_SHOWCHECKPOINTS = 1055;
@@ -345,6 +348,14 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_DAMAGEPREVIEW = Y_ENVIRONMENTAL + CY_ALPHA;
 	static const UINT CX_DAMAGEPREVIEW = CX_ALPHA;
 	static const UINT CY_DAMAGEPREVIEW = CY_STANDARD_OPTIONBUTTON;
+	static const int X_MAP_ICON_ALPHA_LABEL = X_ALPHA;
+	static const int Y_MAP_ICON_ALPHA_LABEL = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW;
+	static const UINT CX_MAP_ICON_ALPHA_LABEL = 240;
+	static const UINT CY_MAP_ICON_ALPHA_LABEL = 40;
+	static const int X_MAP_ICON_ALPHA = X_MAP_ICON_ALPHA_LABEL + CX_MAP_ICON_ALPHA_LABEL + CX_SPACE;
+	static const int Y_MAP_ICON_ALPHA = Y_MAP_ICON_ALPHA_LABEL;
+	static const UINT CX_MAP_ICON_ALPHA = CX_GRAPHICS_FRAME - X_MAP_ICON_ALPHA - CX_SPACE;
+	static const UINT CY_MAP_ICON_ALPHA = CY_STANDARD_SLIDER;
 
 	static const int Y_GAMMA_LABEL = Y_USEFULLSCREEN;
 	static const UINT X_GAMMA_LABEL = X_USEFULLSCREEN + CX_USEFULLSCREEN - 10;
@@ -363,7 +374,7 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CY_GAMMA = CY_STANDARD_SLIDER;
 	static const int Y_GAMMA = Y_GAMMA_LABEL + CY_GAMMA_LABEL;
 
-	static const UINT CY_GRAPHICS_FRAME = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW + CY_SPACE;
+	static const UINT CY_GRAPHICS_FRAME = Y_MAP_ICON_ALPHA + CY_MAP_ICON_ALPHA + CY_SPACE;
 
 	//Sound
 	const UINT CX_SOUND_FRAME = CX_GRAPHICS_FRAME;
@@ -613,6 +624,12 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_DAMAGEPREVIEW, X_DAMAGEPREVIEW, Y_DAMAGEPREVIEW,
 		CX_DAMAGEPREVIEW, CY_DAMAGEPREVIEW, g_pTheDB->GetMessageText(MID_DamagePreview), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
+
+	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_MAP_ICON_ALPHA_LABEL, Y_MAP_ICON_ALPHA_LABEL,
+		CX_MAP_ICON_ALPHA_LABEL, CY_MAP_ICON_ALPHA_LABEL, F_Small, g_pTheDB->GetMessageText(MID_MapIconAlpha)));
+	pSliderWidget = new CSliderWidget(TAG_MAP_ICON_ALPHA, X_MAP_ICON_ALPHA,
+		Y_MAP_ICON_ALPHA, CX_MAP_ICON_ALPHA, CY_MAP_ICON_ALPHA, 255, BYTE(255 - MIN_ICON_ALPHA + 1));
+	pGraphicsFrame->AddWidget(pSliderWidget);
 
 /*
 	// Gamma currently doesn't work on the SDL2 engine
@@ -1344,6 +1361,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DamagePreview, true));
 
+	bytValue = settings.GetVar(Settings::MapIconAlpha, BYTE(g_pTheDBM->mapIconAlpha));
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
+	pSliderWidget->SetValue(bytValue - MIN_ICON_ALPHA);
+
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
@@ -1481,6 +1502,10 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
 	settings.SetVar(Settings::DamagePreview, pOptionButton->IsChecked());
+
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
+	settings.SetVar(Settings::MapIconAlpha, BYTE(pSliderWidget->GetValue() + MIN_ICON_ALPHA));
+	g_pTheDBM->mapIconAlpha = pSliderWidget->GetValue() + MIN_ICON_ALPHA;
 
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,

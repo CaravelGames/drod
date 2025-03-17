@@ -1452,7 +1452,7 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 
 		UINT wTI = GetTileImageForMapIcon(pExpRoom->mapIcon);
 		g_pTheBM->BlitTileImagePart(wTI, x, y, 0, 0, w, h,
-			this->pMapSurface);
+			this->pMapSurface, false, g_pTheDBM->mapIconAlpha);
 
 		if (pExpRoom->mapIconState == ScriptVars::MIS_Greyscale) {
 			g_pTheBM->BAndWRect(x, y, w, h, this->pMapSurface, wTI);

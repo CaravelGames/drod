@@ -50,6 +50,7 @@ const UINT CDrodBitmapManager::NUM_TILEIMAGESURFACES = 1 + ((TI_COUNT-1) / TILES
 
 const float CDrodBitmapManager::fMinGamma = 0.5f;
 const float CDrodBitmapManager::fMaxGamma = 2.0f;
+Uint8 CDrodBitmapManager::mapIconAlpha = 255;
 
 const WCHAR wszSKIES[] = { We('S'),We('k'),We('i'),We('e'),We('s'),We(0) };
 const WCHAR wszTILES[] = { We('T'),We('i'),We('l'),We('e'),We('s'),We(0) };
