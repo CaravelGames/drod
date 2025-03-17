@@ -136,7 +136,7 @@ char windowTitle[120];
 char windowTitle[] = "DROD RPG BETA - DO NOT DISTRIBUTE (buggy releases make us look bad)";
 #	endif
 #else
-char windowTitle[] = "DROD RPG: Tendry's Tale";
+char windowTitle[] = "DROD RPG 2: A Courageous Rescue";
 #endif
 
 #ifdef WIN32
