@@ -999,10 +999,11 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		if (!plates.empty())
 		{
 			CCoordStack orbPath = this->pathToDest;
-			bPathFound |= FindOptimalPathTo(this->wX, this->wY, plates, false);
+			bool bPlatePathFound = FindOptimalPathTo(this->wX, this->wY, plates, false);
+			bPathFound = bOrbPathFound || bPlatePathFound;
 
 			//Choose shorter path.  With a tie, paths to orbs take preference.
-			if (bOrbPathFound && this->pathToDest.GetSize() >= orbPath.GetSize())
+			if (!bPlatePathFound || (bOrbPathFound && this->pathToDest.GetSize() >= orbPath.GetSize()))
 				this->pathToDest = orbPath;
 		}
 		if (!bPathFound)
