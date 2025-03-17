@@ -743,7 +743,9 @@ bool CCombat::Advance(
 						const bool bAttackIsBehindMonster = AttackIsFromBehindMonster(dx, dy);
 						if (bAttackIsBehindMonster)
 							bSkipTurn = true;
-						pMonsterBeingFought->SetOrientation(dx, dy);
+						if (player.wAppearance != M_NONE) {
+							pMonsterBeingFought->SetOrientation(dx, dy);
+						}
 					}
 				}
 
