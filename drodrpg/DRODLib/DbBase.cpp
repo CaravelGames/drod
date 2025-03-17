@@ -965,6 +965,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MoneyBag: strText = "Money bag"; break;
 		case MID_WhiteKey: strText = "White key"; break;
 		case MID_QuestionMark: strText = "Question mark"; break;
+		case MID_MapIconAlpha: strText = "Map icon alpha"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

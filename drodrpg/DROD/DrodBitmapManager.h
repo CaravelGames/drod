@@ -89,6 +89,7 @@ public:
 	static BYTE GetGammaOne();
 	bool        SetGamma(const BYTE val);
 	static const float fMinGamma, fMaxGamma;
+	static Uint8 mapIconAlpha;
 
 protected:
 	SDL_Surface *   LoadJPEGSurface(BYTE* imageBuffer, const UINT wSize);

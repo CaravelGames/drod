@@ -65,6 +65,7 @@ namespace Settings
 	DEF(ItemTips);
 	DEF(Language);
 	DEF(LastNotice);
+	DEF(MapIconAlpha);
 	DEF(MoveCounter);
 	DEF(Music);
 	DEF(MusicVolume);
