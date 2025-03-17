@@ -165,6 +165,7 @@ const UINT TAG_IGNOREFLAGS_LABEL = 885;
 const UINT TAG_ITEM_GROUP_LISTBOX = 884;
 const UINT TAG_MAP_ICON_STATE_LISTBOX = 883;
 const UINT TAG_MAP_ICON_LISTBOX = 882;
+const UINT TAG_COLOR_LISTBOX = 881;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -414,6 +415,7 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pStatListBox(NULL)
 	, pMovementTypeListBox(NULL)
 	, pMapIconListBox(NULL), pMapIconStateListBox(NULL)
+	, pColorListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1232,6 +1234,12 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int CX_MAP_ICON_STATE_LISTBOX = CX_DIRECTIONLISTBOX;
 	static const int CY_MAP_ICON_STATE_LISTBOX = 4 * LIST_LINE_HEIGHT + 4; //4 entries;
 
+	//Colors
+	static const UINT COLORLISTBOX_X = X_DIRECTIONLISTBOX2;
+	static const UINT COLORLISTBOX_Y = Y_DIRECTIONLISTBOX;
+	static const UINT COLORLISTBOX_CX = CX_DIRECTIONLISTBOX2;
+	static const UINT COLORLISTBOX_CY = 17 * LIST_LINE_HEIGHT + 4; //17 entries
+
 	ASSERT(!this->pAddCommandDialog);
 	this->pAddCommandDialog = new CRenameDialogWidget(0L, -80, GetY() + (GetH()-CY_COMMAND_DIALOG)/2,
 			CX_COMMAND_DIALOG, CY_COMMAND_DIALOG);
@@ -1831,6 +1839,28 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Negative, g_pTheDB->GetMessageText(MID_Negative));
 	this->pMapIconStateListBox->AddItem(ScriptVars::MIS_Sepia, g_pTheDB->GetMessageText(MID_Sepia));
 	this->pMapIconStateListBox->SelectLine(0);
+
+	//Color selection
+	this->pColorListBox = new CListBoxWidget(TAG_COLOR_LISTBOX,
+		COLORLISTBOX_X, COLORLISTBOX_Y, COLORLISTBOX_CX, COLORLISTBOX_CY);
+	this->pAddCommandDialog->AddWidget(pColorListBox);
+	this->pColorListBox->AddItem(ScriptFlag::LC_None, g_pTheDB->GetMessageText(MID_None));
+	this->pColorListBox->AddItem(ScriptFlag::LC_White, g_pTheDB->GetMessageText(MID_White));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Red, g_pTheDB->GetMessageText(MID_Red));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Green, g_pTheDB->GetMessageText(MID_Green));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Blue, g_pTheDB->GetMessageText(MID_Blue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleRed, g_pTheDB->GetMessageText(MID_PaleRed));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleGreen, g_pTheDB->GetMessageText(MID_PaleGreen));
+	this->pColorListBox->AddItem(ScriptFlag::LC_PaleBlue, g_pTheDB->GetMessageText(MID_PaleBlue));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Yellow, g_pTheDB->GetMessageText(MID_Yellow));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Cyan, g_pTheDB->GetMessageText(MID_Cyan));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Mauve, g_pTheDB->GetMessageText(MID_Mauve));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Orange, g_pTheDB->GetMessageText(MID_Orange));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Pink, g_pTheDB->GetMessageText(MID_Pink));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Lime, g_pTheDB->GetMessageText(MID_Lime));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, g_pTheDB->GetMessageText(MID_Turquoise));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, g_pTheDB->GetMessageText(MID_Violet));
+	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, g_pTheDB->GetMessageText(MID_Azure));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3876,6 +3906,55 @@ const
 			wstr += this->pMovementTypeListBox->GetTextForKey(command.x);
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+			wstr += _itoW(command.flags, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+			wstr += this->pColorListBox->GetTextForKey(command.flags);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			wstr += wszHyphen;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x + command.w, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y + command.h, temp, 10);
+			wstr += wszRightParen;
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+			wstr += this->pColorListBox->GetTextForKey(command.flags);
+			wstr += wszComma;
+			wstr += wszSpace;
+			wstr += _itoW(command.w, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -4035,6 +4114,9 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_ClearArrayVar:
 		case CCharacterCommand::CC_ResetOverrides:
 		case CCharacterCommand::CC_SetMapIcon:
+		case CCharacterCommand::CC_SetDarkness:
+		case CCharacterCommand::CC_SetCeilingLight:
+		case CCharacterCommand::CC_SetWallLight:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4268,6 +4350,11 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitOr, g_pTheDB->GetMessageText(MID_LogicalWaitOr));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitXOR, g_pTheDB->GetMessageText(MID_LogicalWaitXOR));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, g_pTheDB->GetMessageText(MID_LogicalWaitEnd));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, g_pTheDB->GetMessageText(MID_SetWallLight));
+
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
 }
@@ -5103,7 +5190,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 46;
+	static const UINT NUM_WIDGETS = 47;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5118,7 +5205,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
 		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
-		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX
+		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, TAG_COLOR_LISTBOX
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -5156,6 +5243,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT OPENTILE[] =    { TAG_MOVETYPELISTBOX, TAG_WAITFLAGSLISTBOX, TAG_ONOFFLISTBOX, 0 };
 	static const UINT WAITFORITEMGROUP[] = { TAG_ITEM_GROUP_LISTBOX, 0 };
 	static const UINT MAPICON[] = { TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, 0 };
+	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX, 0 };
+	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5245,7 +5334,10 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		OPENTILE,           //CC_WaitForOpenTile
 		WAITFORITEMGROUP,   //CC_WaitForItemGroup
 		WAITFORITEMGROUP,   //CC_WaitForNoItemGroup
-		MAPICON             //CC_SetMinimapIcon
+		MAPICON,            //CC_SetMinimapIcon
+		WAIT,               //CC_SetDarkness
+		CEILINGLIGHT,       //CC_SetCeilingLight
+		WALLLIGHT           //CC_SetWallLight
 	};
 
 	static const UINT NUM_LABELS = 31;
@@ -5377,6 +5469,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_WaitForItemGroup
 		NO_LABELS,          //CC_WaitForNotItemGroup
 		NO_LABELS,          //CC_SetMapIcon
+		NO_LABELS,          //CC_SetDarkness
+		NO_LABELS,          //CC_SetCeilingLight
+		NO_LABELS,          //CC_SetWallLight
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6381,6 +6476,34 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			QueryRect();
 		break;
 
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			UINT wDarkness = _Wtoi(pDarkLevel->GetText());
+			this->pCommand->flags = max(0, min(wDarkness, NUM_DARK_TYPES));
+			QueryRect();
+		}
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+		{
+			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
+			QueryRect();
+		}
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			UINT wLight = _Wtoi(pLightLevel->GetText());
+			this->pCommand->w = max(0, min(wLight, MAX_LIGHT_DISTANCE));
+			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
+			QueryXY();
+		}
+		break;
+
 		case CCharacterCommand::CC_Appear:
 		case CCharacterCommand::CC_Disappear:
 		case CCharacterCommand::CC_EndScript:
@@ -6778,6 +6901,29 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_SetMapIcon:
 			this->pMapIconListBox->SelectItem(this->pCommand->w);
 			this->pMapIconStateListBox->SelectItem(this->pCommand->h);
+		break;
+
+		case CCharacterCommand::CC_SetDarkness:
+		{
+			CTextBoxWidget* pDarkLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDarkLevel);
+			pDarkLevel->SetText(_itoW(this->pCommand->flags, temp, 10));
+		}
+		break;
+		case CCharacterCommand::CC_SetCeilingLight:
+		{
+			this->pColorListBox->SelectItem(this->pCommand->flags);
+		}
+		break;
+		case CCharacterCommand::CC_SetWallLight:
+		{
+			CTextBoxWidget* pLightLevel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pLightLevel);
+			pLightLevel->SetText(_itoW(this->pCommand->w, temp, 10));
+			this->pColorListBox->SelectItem(this->pCommand->flags);
+		}
 		break;
 
 		case CCharacterCommand::CC_Appear:
@@ -7744,6 +7890,41 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	}
 	break;
 
+	case CCharacterCommand::CC_SetDarkness:
+		parseNumber(pCommand->flags);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+	case CCharacterCommand::CC_SetCeilingLight:
+		parseMandatoryOption(pCommand->flags, this->pColorListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->w); pCommand->w -= pCommand->x; skipComma;
+		parseNumber(pCommand->h); pCommand->h -= pCommand->y;
+	break;
+	case CCharacterCommand::CC_SetWallLight:
+		parseMandatoryOption(pCommand->flags, this->pColorListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseNumber(pCommand->w);
+	break;
+
 	default: ASSERT(false); break;
 	}
 
@@ -8260,6 +8441,29 @@ WSTRING CCharacterDialogWidget::toText(
 	}
 	break;
 	
+	case CCharacterCommand::CC_SetDarkness:
+		concatNumWithComma(c.flags);
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+	case CCharacterCommand::CC_SetCeilingLight:
+		wstr += this->pColorListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.x + c.w);
+		concatNum(c.y + c.h);
+	break;
+	case CCharacterCommand::CC_SetWallLight:
+		wstr += this->pColorListBox->GetTextForKey(c.flags);
+		wstr += wszComma;
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNum(c.w);
+	break;
+
 	default: ASSERT(!"Bad command"); break;
 	}
 

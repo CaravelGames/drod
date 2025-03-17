@@ -2602,6 +2602,7 @@ void CRoomWidget::LoadRoomImages()
 	//Generate room model for lighting.
 	this->bRenderRoomLight = true;
 	this->bCeilingLightsRendered = false;
+	this->ceilingLightChanges.reset();
 
 	//Load sky image, if applicable.
 	if (this->bSkyVisible)
@@ -4535,6 +4536,28 @@ OLayerDone:
 		//Advance to next row.
 		pTI += wRowOffset;
 		psL += wLightRowOffset;
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
+{
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (CueEvents.HasOccurred(CID_ExitRoom) || this->ceilingLightChanges.empty()) {
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_LightTilesChanged)) {
+		this->ceilingLightChanges.add(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+		return;
+	}
+
+	if (!ceilingLightChanges.isAfterLatest(currentTurn + 1)) {
+		this->ceilingLightChanges.removeAfter(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
 	}
 }
 

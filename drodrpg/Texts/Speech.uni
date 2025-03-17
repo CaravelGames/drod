@@ -1727,3 +1727,15 @@ White key
 [MID_QuestionMark]
 [eng]
 Question mark
+
+[MID_SetDarkness]
+[eng]
+Set ceiling darkness
+
+[MID_SetCeilingLight]
+[eng]
+Set ceiling light
+
+[MID_SetWallLight]
+[eng]
+Set wall light

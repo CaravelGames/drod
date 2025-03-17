@@ -291,6 +291,8 @@ public:
 	bool           HasCombatableMonsters() const;
 	bool           HasGrabbableItems() const;
 
+	void           ForceTileRedraw(const UINT wX, const UINT wY, const bool bGeometryChanges);
+
 	void           IncTrapdoor(CCueEvents& CueEvents);
 	void           InitCoveredTiles();
 	void           InitRoomStats(const bool bSkipPlatformInit=false);

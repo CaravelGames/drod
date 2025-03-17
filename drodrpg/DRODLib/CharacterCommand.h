@@ -232,6 +232,27 @@ namespace ScriptFlag
 		IG_Equipment = 35, //Any equipment slot
 		ItemGroupCount //Total number of defined groups
 	};
+
+	enum LightColors
+	{
+		LC_None = 0,
+		LC_White = 1,
+		LC_Red = 2,
+		LC_Green = 3,
+		LC_Blue = 4,
+		LC_PaleRed = 5,
+		LC_PaleGreen = 6,
+		LC_PaleBlue = 7,
+		LC_Yellow = 8,
+		LC_Cyan = 9,
+		LC_Mauve = 10,
+		LC_Orange = 11,
+		LC_Pink = 12,
+		LC_Lime = 13,
+		LC_Turquoise = 14,
+		LC_Violet = 15,
+		LC_Azure = 16
+	};
 };
 
 typedef bool (*TileCheckFunc)(UINT t);
@@ -340,6 +361,9 @@ public:
 		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
 		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
 		CC_SetMapIcon,          //Set icon for map room at (x,y) to w, with state h
+		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
+		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
+		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
 		CC_Count
 	};
 

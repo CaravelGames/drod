@@ -74,6 +74,24 @@ enum MID_CONSTANT {
   MID_CNetNotConnected = 1463,
   MID_ChatHistory = 1464,
 
+  //Messages from Colors.uni:
+  MID_White = 2008,
+  MID_Red = 2009,
+  MID_Green = 2010,
+  MID_Blue = 2011,
+  MID_PaleRed = 2012,
+  MID_PaleGreen = 2013,
+  MID_PaleBlue = 2014,
+  MID_Yellow = 2015,
+  MID_Cyan = 2016,
+  MID_Mauve = 2017,
+  MID_Orange = 2018,
+  MID_Pink = 2019,
+  MID_Lime = 2020,
+  MID_Turquoise = 2021,
+  MID_Violet = 2022,
+  MID_Azure = 2023,
+
   //Messages from Credits.uni:
   MID_Cr_Producer_C = 1692,
   MID_Cr_Producer = 1693,
@@ -1650,6 +1668,9 @@ enum MID_CONSTANT {
   MID_MoneyBag = 2004,
   MID_WhiteKey = 2005,
   MID_QuestionMark = 2006,
+  MID_SetDarkness = 2024,
+  MID_SetCeilingLight = 2025,
+  MID_SetWallLight = 2026,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

@@ -999,6 +999,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1008,6 +1009,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForItemGroup:
 			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -1056,6 +1059,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1065,6 +1069,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForItemGroup:
 			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -1114,6 +1120,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetMonsterVar:
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
@@ -1125,6 +1132,8 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForItemGroup:
 			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				//SW corner of rectangle will become the new NW corner after rotation.
 				wNewX = (pRoom->wRoomRows-1) - (command->y + command->h);
 				command->y = command->x;
@@ -3527,6 +3536,94 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_LogicalWaitEnd:
 				//Marks the end of a logical block. Has no other function.
 				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_SetDarkness:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+				bool bCeilingLightChanged = false;
+
+				//clamp pflag to lighting type range
+				pflags = max(0, min(pflags, NUM_DARK_TYPES));
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Add(x, y, LIGHT_OFF + pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				if (bCeilingLightChanged)
+					CueEvents.Add(CID_LightTilesChanged);
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_SetCeilingLight:
+			{
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				if (!(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Add(x, y, pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				CueEvents.Add(CID_LightTilesChanged);
+			}
+			break;
+			case CCharacterCommand::CC_SetWallLight: {
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+				pw = max(0, min(pw, MAX_LIGHT_DISTANCE));
+
+				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (bIsLightTileValue(room.tileLights.GetAt(px, py)))
+					CueEvents.Add(CID_LightTilesChanged);
+
+				if (pw == 0 || pflags == 0) {
+					//Remove tile light
+					room.tileLights.Remove(px, py);
+					room.ForceTileRedraw(px, py, false);
+				}
+				else {
+					UINT wLightParam = (pflags - 1);
+					wLightParam += (pw - 1) * NUM_LIGHT_TYPES;
+					room.tileLights.Add(px, py, WALL_LIGHT + wLightParam);
+					room.ForceTileRedraw(px, py, false);
+				}
+
+				CueEvents.Add(CID_LightToggled);
+			}
 			break;
 
 			case CCharacterCommand::CC_ResetOverrides: {

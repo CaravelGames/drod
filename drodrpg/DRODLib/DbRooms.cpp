@@ -8239,6 +8239,17 @@ void CDbRoom::ActivateOrb(
 }
 
 //*****************************************************************************
+void CDbRoom::ForceTileRedraw(
+	// Forces a redraw of a tile at given coordinates
+	const UINT wX, const UINT wY, const bool bGeometryChanges)
+{
+	if (bGeometryChanges)
+		this->geometryChanges.insert(wX, wY);
+
+	this->PlotsMade.insert(wX, wY);
+}
+
+//*****************************************************************************
 void CDbRoom::FloodPlot(
 //Flood fills all squares from a starting square with a new tile.  Only adjacent
 //squares from the starting square with the same tile will be flooded.
