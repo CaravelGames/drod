@@ -966,6 +966,25 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_WhiteKey: strText = "White key"; break;
 		case MID_QuestionMark: strText = "Question mark"; break;
 		case MID_MapIconAlpha: strText = "Map icon alpha"; break;
+		case MID_White: strText = "White"; break;
+		case MID_Red: strText = "Red"; break;
+		case MID_Green: strText = "Green"; break;
+		case MID_Blue: strText = "Blue"; break;
+		case MID_PaleRed: strText = "Pale Red"; break;
+		case MID_PaleGreen: strText = "Pale Green"; break;
+		case MID_PaleBlue: strText = "Pale Blue"; break;
+		case MID_Yellow: strText = "Yellow"; break;
+		case MID_Cyan: strText = "Cyan"; break;
+		case MID_Mauve: strText = "Mauve"; break;
+		case MID_Orange: strText = "Orange"; break;
+		case MID_Pink: strText = "Pink"; break;
+		case MID_Lime: strText = "Lime"; break;
+		case MID_Turquoise: strText = "Turquoise"; break;
+		case MID_Violet: strText = "Violet"; break;
+		case MID_Azure: strText = "Azure"; break;
+		case MID_SetDarkness: strText = "Set ceiling darkness"; break;
+		case MID_SetCeilingLight: strText = "Set ceiling light"; break;
+		case MID_SetWallLight: strText = "Set wall light"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

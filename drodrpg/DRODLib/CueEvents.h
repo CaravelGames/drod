@@ -705,6 +705,11 @@ enum CUEEVENT_ID
 	//Private data: CMonster *pMonster (one or more)
 	CID_EggSpawned,
 
+	//A change has been made to the room's lighting tiles.
+	//
+	//Private data: NONE
+	CID_LightTilesChanged,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

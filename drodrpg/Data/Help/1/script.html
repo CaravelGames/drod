@@ -16,6 +16,7 @@ There are five general classes of script commands, as follows:</p>
   <li><a href="#interaction">Interaction</a></li>
   <li><a href="#queries">Queries</a></li>
   <li><a href="#decision">Decision making</a></li>
+  <li><a href="#lighting">Lighting</a></li>
 </ol>
 <p>
 <a href="#usagenotes">Notes about using NPC scripts</a><br />
@@ -461,6 +462,12 @@ continue executing script commands from a different location in the script.</p>
 	  current game when the room is exited. Hint: use this command to permanently
 	  stop the NPC from executing any more commands, and then disappear when
 	  the room is exited.</li>
+</ol>
+<p><a name="lighting"><b>6.&nbsp;&nbsp;Lighting</b></a> - The following commands can be used to alter the lighting layer of a room. Only one type of lighting can be present on a tile, so these commands will overwrite pre-existing tile lighting. Architects should be considerate to players, and not excessively change the lighting of a room during play.</p>
+<ol>
+  <li><a name="set-dark"><b>Set ceiling darkness</b></a> - Adds darkness to an area. Values between 1 and 32 inclusive will darken a tile, while a value of zero will remove lighting from the tile. Values outside of this range will be clamped to the valid range.</li>
+  <li><a name="set-light"><b>Set ceiling light</b></a> - Adds colored light to an area. Any of the 16 predefined colors can be used. Selecting 'none' will remove lighting from the tile.</li>
+  <li><a name="set-wall-light"><b>Set wall light</b></a> - Adds a wall light element to a tile, with the given intensity. Any of the 16 predefined colors can be used, with an intensity between 1 and 8 inclusive. Selecting 'none' or setting an intensity of zero will remove lighting from the tile.</li>
 </ol>
 
 <br />

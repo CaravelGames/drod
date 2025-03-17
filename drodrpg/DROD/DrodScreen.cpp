@@ -593,6 +593,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (bLightToggled)
 		pRoomWidget->RenderRoomLighting();
 	pRoomWidget->AddPlayerLight();
+	pRoomWidget->RerenderRoomCeilingLight(CueEvents);
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
 	{
 		//Do an update of tile image arrays.
