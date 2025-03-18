@@ -965,7 +965,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MoneyBag: strText = "Money bag"; break;
 		case MID_QuestionMark: strText = "Question mark"; break;
 		case MID_MapIconAlpha: strText = "Map icon alpha"; break;
-		case MID_WhiteKey: strText = "White key"; break;
+		case MID_TarstuffAlpha: strText = "Tarstuff alpha"; break;
 		case MID_White: strText = "White"; break;
 		case MID_Red: strText = "Red"; break;
 		case MID_Green: strText = "Green"; break;

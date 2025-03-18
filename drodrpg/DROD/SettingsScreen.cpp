@@ -59,6 +59,7 @@ using namespace InputCommands;
 #define COMMANDS_TAB (2)
 #define BG_COLOR 220,210,190
 
+#define MIN_TARSTUFF_ALPHA (64)
 #define MIN_ICON_ALPHA (64)
 
 //Default command key mappings.
@@ -111,6 +112,7 @@ const UINT TAG_SHOW_SUBTITLES = 1050;
 const UINT TAG_NO_FOCUS_PLAYS_MUSIC = 1053;
 const UINT TAG_DAMAGEPREVIEW = 1054;
 const UINT TAG_MAP_ICON_ALPHA = 1055;
+const UINT TAG_TARSTUFF_ALPHA = 1056;
 
 /*
 const UINT TAG_SHOWCHECKPOINTS = 1055;
@@ -348,8 +350,18 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_DAMAGEPREVIEW = Y_ENVIRONMENTAL + CY_ALPHA;
 	static const UINT CX_DAMAGEPREVIEW = CX_ALPHA;
 	static const UINT CY_DAMAGEPREVIEW = CY_STANDARD_OPTIONBUTTON;
+
+	static const int X_TARSTUFF_ALPHA_LABEL = X_ALPHA;
+	static const int Y_TARSTUFF_ALPHA_LABEL = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW;
+	static const UINT CX_TARSTUFF_ALPHA_LABEL = 240;
+	static const UINT CY_TARSTUFF_ALPHA_LABEL = 40;
+	static const int X_TARSTUFF_ALPHA = X_TARSTUFF_ALPHA_LABEL + CX_TARSTUFF_ALPHA_LABEL + CX_SPACE;
+	static const int Y_TARSTUFF_ALPHA = Y_TARSTUFF_ALPHA_LABEL;
+	static const UINT CX_TARSTUFF_ALPHA = CX_GRAPHICS_FRAME - X_TARSTUFF_ALPHA - CX_SPACE;
+	static const UINT CY_TARSTUFF_ALPHA = CY_STANDARD_SLIDER;
+
 	static const int X_MAP_ICON_ALPHA_LABEL = X_ALPHA;
-	static const int Y_MAP_ICON_ALPHA_LABEL = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW;
+	static const int Y_MAP_ICON_ALPHA_LABEL = Y_TARSTUFF_ALPHA_LABEL + CY_TARSTUFF_ALPHA + CY_SPACE;
 	static const UINT CX_MAP_ICON_ALPHA_LABEL = 240;
 	static const UINT CY_MAP_ICON_ALPHA_LABEL = 40;
 	static const int X_MAP_ICON_ALPHA = X_MAP_ICON_ALPHA_LABEL + CX_MAP_ICON_ALPHA_LABEL + CX_SPACE;
@@ -624,6 +636,12 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_DAMAGEPREVIEW, X_DAMAGEPREVIEW, Y_DAMAGEPREVIEW,
 		CX_DAMAGEPREVIEW, CY_DAMAGEPREVIEW, g_pTheDB->GetMessageText(MID_DamagePreview), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
+
+	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_TARSTUFF_ALPHA_LABEL, Y_TARSTUFF_ALPHA_LABEL,
+		CX_TARSTUFF_ALPHA_LABEL, CY_TARSTUFF_ALPHA_LABEL, F_Small, g_pTheDB->GetMessageText(MID_TarstuffAlpha)));
+	pSliderWidget = new CSliderWidget(TAG_TARSTUFF_ALPHA, X_TARSTUFF_ALPHA,
+		Y_TARSTUFF_ALPHA, CX_TARSTUFF_ALPHA, CY_TARSTUFF_ALPHA, 255, BYTE(255 - MIN_TARSTUFF_ALPHA + 1));
+	pGraphicsFrame->AddWidget(pSliderWidget);
 
 	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_MAP_ICON_ALPHA_LABEL, Y_MAP_ICON_ALPHA_LABEL,
 		CX_MAP_ICON_ALPHA_LABEL, CY_MAP_ICON_ALPHA_LABEL, F_Small, g_pTheDB->GetMessageText(MID_MapIconAlpha)));
@@ -1361,6 +1379,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DamagePreview, true));
 
+	bytValue = settings.GetVar(Settings::TarstuffAlpha, BYTE(g_pTheDBM->tarstuffAlpha));
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA));
+	pSliderWidget->SetValue(bytValue - MIN_TARSTUFF_ALPHA);
+
 	bytValue = settings.GetVar(Settings::MapIconAlpha, BYTE(g_pTheDBM->mapIconAlpha));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
 	pSliderWidget->SetValue(bytValue - MIN_ICON_ALPHA);
@@ -1502,6 +1524,10 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
 	settings.SetVar(Settings::DamagePreview, pOptionButton->IsChecked());
+
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA));
+	settings.SetVar(Settings::TarstuffAlpha, BYTE(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA));
+	g_pTheDBM->tarstuffAlpha = pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA;
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
 	settings.SetVar(Settings::MapIconAlpha, BYTE(pSliderWidget->GetValue() + MIN_ICON_ALPHA));

@@ -4598,7 +4598,7 @@ void CRoomWidget::DrawTLayerTile(
 	bool bTar = bIsTar(wTTileNo);
 	bool bMist = (wTTileNo == T_MIST);
 	bool bTIsTransparent = bTar && bEditor;
-	bool bTIsTranslucent = bTar && this->pRoom->bBetterVision;
+	bool bTIsTranslucent = bTar && (this->pRoom->bBetterVision || g_pTheDBM->tarstuffAlpha != 255);
 
 	//3. Draw floor (object) layer.
 	if (ti.f != TI_TEMPTY)
@@ -4694,6 +4694,11 @@ void CRoomWidget::DrawTLayerTile(
 		{
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
+			static const Uint8 TRANSLUCENT_ALPHA = 166;
+			Uint8 tar_alpha = this->pRoom->bBetterVision ? TRANSLUCENT_ALPHA : 255;
+			if (g_pTheDBM->tarstuffAlpha < tar_alpha) {
+				tar_alpha = g_pTheDBM->tarstuffAlpha;
+			}
 			DrawTransparentRoomTile(ti.t, 166);
 		} else {
 			DrawRoomTile(ti.t);
