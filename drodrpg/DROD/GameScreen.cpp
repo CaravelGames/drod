@@ -5694,6 +5694,12 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	if (CueEvents.HasOccurred(CID_MapIcon))
+	{
+		this->pMapWidget->UpdateFromCurrentGame();
+		this->pMapWidget->RequestPaint();
+	}
+
 	if (CueEvents.HasOccurred(CID_MoneyDoorOpened) || CueEvents.HasOccurred(CID_MoneyDoorLocked))
 		g_pTheSound->PlaySoundEffect(SEID_ORBHIT); //!!new sound
 	if (CueEvents.HasOccurred(CID_KnockOpenedDoor) || CueEvents.HasOccurred(CID_DoorLocked))
