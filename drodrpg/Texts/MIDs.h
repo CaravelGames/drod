@@ -1234,6 +1234,7 @@ enum MID_CONSTANT {
   MID_ConfirmNewGame = 1842,
   MID_AutoPreviewCharacters = 1850,
   MID_MapIconAlpha = 2006,
+  MID_TarstuffAlpha = 2007,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,
@@ -1667,7 +1668,6 @@ enum MID_CONSTANT {
   MID_Gear = 2003,
   MID_MoneyBag = 2004,
   MID_QuestionMark = 2005,
-  MID_WhiteKey = 2007,
   MID_SetDarkness = 2024,
   MID_SetCeilingLight = 2025,
   MID_SetWallLight = 2026,

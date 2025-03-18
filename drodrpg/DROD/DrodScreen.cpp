@@ -2314,6 +2314,8 @@ void CDrodScreen::EnablePlayerSettings(
 	g_pTheBM->bAlpha = pPlayer->Settings.GetVar(Settings::Alpha, true);
 	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne()));
 	g_pTheBM->eyeCandy = (pPlayer->Settings.GetVar(Settings::EyeCandy, true) ? 1 : 0);
+	g_pTheDBM->tarstuffAlpha = pPlayer->Settings.GetVar(Settings::TarstuffAlpha, BYTE(255));
+	g_pTheDBM->mapIconAlpha = pPlayer->Settings.GetVar(Settings::MapIconAlpha, BYTE(255));
 
 	//RepeatRate is queried in CGameScreen::ApplyPlayerSettings().
 

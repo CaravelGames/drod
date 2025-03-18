@@ -431,6 +431,8 @@ int main(int argc, char *argv[])
 			if (gamma != gammaOne) //causes tinted display issues on Mac
 				g_pTheDBM->SetGamma(gamma);
 			g_pTheDBM->eyeCandy = s.GetVar(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
+			g_pTheDBM->tarstuffAlpha = s.GetVar(Settings::TarstuffAlpha, BYTE(255));
+			g_pTheDBM->mapIconAlpha = s.GetVar(Settings::MapIconAlpha, BYTE(255));
 
 			//Set sound preferences.
 			g_pTheSound->EnableSoundEffects(s.GetVar(Settings::SoundEffects, true));
