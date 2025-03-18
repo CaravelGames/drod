@@ -1820,7 +1820,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMapIconListBox->AddItem(ScriptVars::MI_Gear, g_pTheDB->GetMessageText(MID_Gear));
 	this->pMapIconListBox->AddItem(ScriptVars::MI_MoneyBag, g_pTheDB->GetMessageText(MID_MoneyBag));
 	this->pMapIconListBox->AddItem(ScriptVars::MI_KeyBlue, g_pTheDB->GetMessageText(MID_BlueKey));
-	this->pMapIconListBox->AddItem(ScriptVars::MI_KeyWhite, g_pTheDB->GetMessageText(MID_WhiteKey));
+	this->pMapIconListBox->AddItem(ScriptVars::MI_KeyWhite, g_pTheDB->GetMessageText(MID_SkeletonKey));
 	this->pMapIconListBox->AddItem(ScriptVars::MI_StairsUp, g_pTheDB->GetMessageText(MID_StairsUp));
 	this->pMapIconListBox->AddItem(ScriptVars::MI_StairsDown, g_pTheDB->GetMessageText(MID_StairsDown));
 	this->pMapIconListBox->AddItem(ScriptVars::MI_NorthArrow, g_pTheDB->GetMessageText(MID_NorthArrow));
