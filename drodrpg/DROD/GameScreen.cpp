@@ -3241,6 +3241,8 @@ bool CGameScreen::SetForActivate()
 
 	this->signColor = Black;
 
+	this->mapIconChanges.reset();
+
 	//When coming from another screen, cue events might have been generated that
 	//need to be displayed when returning to this screen.
 	//Examples of this are the "exit level!" or "secret room!" cues that should
@@ -4483,6 +4485,7 @@ void CGameScreen::DeleteCurrentGame()
 //	this->bHoldConquered = false;
 
 	this->pRoomWidget->RemoveHighlight();
+	this->mapIconChanges.reset();
 }
 
 //*****************************************************************************
@@ -5404,6 +5407,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				g_pPredictedCombat = NULL;
 
 				this->wRoomQuickExitDirection = NO_ORIENTATION;
+				this->mapIconChanges.reset();
 			}
 			else if (nCommand < CMD_C || nCommand == CMD_NW)
 			{
@@ -5697,7 +5701,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_MapIcon))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
 		this->pMapWidget->RequestPaint();
+		this->mapIconChanges.add(this->pCurrentGame->wTurnNo);
 	}
 
 	if (CueEvents.HasOccurred(CID_MoneyDoorOpened) || CueEvents.HasOccurred(CID_MoneyDoorLocked))
@@ -7904,6 +7910,8 @@ void CGameScreen::RestartRoom(int nCommand, CCueEvents& CueEvents)
 	this->wUndoToTurn = this->pCurrentGame->wTurnNo;
 
 	bool bReloadEntireMap = roomPreviews.containsAny(mappedRooms); //preview state could have changed for these rooms
+	bReloadEntireMap |= !this->mapIconChanges.isAfterLatest(1);
+	this->mapIconChanges.reset();
 	if (!bReloadEntireMap) {
 		const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
 		if (nowMappedRooms.size() != mappedRooms.size())
@@ -8737,6 +8745,14 @@ void CGameScreen::UndoMove()
 
 	//Refresh map if something changed by undoing.
 	bool bReloadEntireMap = previewedRooms.containsAny(exploredRooms); //these may have changed
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (!bReloadEntireMap) {
+		if (!mapIconChanges.isAfterLatest(currentTurn + 1)) {
+			bReloadEntireMap = true;
+		}
+	}
+	this->mapIconChanges.removeAfter(currentTurn);
+
 	if (!bReloadEntireMap) {
 		const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
 		const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();

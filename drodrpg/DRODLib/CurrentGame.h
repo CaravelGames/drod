@@ -413,6 +413,7 @@ public:
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
 	map<UINT, map<int, int>> scriptArraysAtRoomStart;
 	CIDSet   roomsExploredAtRoomStart, roomsMappedAtRoomStart;
+	map <UINT, pair<ScriptVars::MapIcon, ScriptVars::MapIconState>> mapIconsAtRoomStart;
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set

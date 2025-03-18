@@ -7539,6 +7539,18 @@ void CCurrentGame::SetPlayerToRoomStart()
 	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
 			this->PreviouslyExploredRooms);
 
+	for (vector<ExploredRoom*>::const_iterator roomIter = this->ExploredRooms.begin();
+		roomIter != this->ExploredRooms.end(); ++roomIter)
+	{
+		ExploredRoom* pExpRoom = *roomIter;
+		map<UINT, pair<ScriptVars::MapIcon, ScriptVars::MapIconState>>::const_iterator finder =
+			this->mapIconsAtRoomStart.find(pExpRoom->roomID);
+		if (finder != this->mapIconsAtRoomStart.end()) {
+			pExpRoom->mapIcon = finder->second.first;
+			pExpRoom->mapIconState = finder->second.second;
+		}
+	}
+
 	//Prepare vars for recording saved games.
 	this->bIsGameActive = true;
 	this->wTurnNo = 0;
@@ -7602,6 +7614,13 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->roomsExploredAtRoomStart = GetExploredRooms();
 	this->roomsMappedAtRoomStart = GetMappedRooms();
 	this->roomsMappedAtRoomStart += GetInvisibleRooms();
+
+	this->mapIconsAtRoomStart.clear();
+	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
+		room != this->ExploredRooms.end(); ++room) {
+			ExploredRoom* pExpRoom = *room;
+			this->mapIconsAtRoomStart[pExpRoom->roomID] = { pExpRoom->mapIcon, pExpRoom->mapIconState };
+	}
 }
 
 //*****************************************************************************
