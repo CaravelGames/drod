@@ -710,6 +710,11 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_LightTilesChanged,
 
+	//An icon was changed on a visible room
+	//
+	//Private data: NONE
+	CID_MapIcon,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };

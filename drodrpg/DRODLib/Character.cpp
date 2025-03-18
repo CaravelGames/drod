@@ -3940,7 +3940,7 @@ void CCharacter::SetMapIcon(
 	pExpRoom->mapIconState = iconState;
 
 	if (pExpRoom->mapState != MapState::Invisible) {
-		CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(T_MAP));
+		CueEvents.Add(CID_MapIcon);
 	}
 }
 
