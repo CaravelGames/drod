@@ -474,6 +474,9 @@
     <ClInclude Include="PuffExplosionEffect.h">
       <Filter>Effects</Filter>
     </ClInclude>
+    <ClInclude Include="EffectChangeHistory.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\DROD.ico">

@@ -635,6 +635,7 @@
     <ClInclude Include="EditRoomScreen.h" />
     <ClInclude Include="EditRoomWidget.h" />
     <ClInclude Include="EditSelectScreen.h" />
+    <ClInclude Include="EffectChangeHistory.h" />
     <ClInclude Include="EntranceSelectDialogWidget.h" />
     <ClInclude Include="EquipmentDescription.h" />
     <ClInclude Include="ExplosionEffect.h" />

@@ -28,6 +28,7 @@
 #ifndef GAMESCREEN_H
 #define GAMESCREEN_H
 
+#include "EffectChangeHistory.h"
 #include "RoomScreen.h"
 
 #include "../DRODLib/CurrentGame.h"
@@ -44,6 +45,7 @@ class CClockWidget;
 class CFiredCharacterCommand;
 class CEntranceSelectDialogWidget;
 class CSubtitleEffect;
+class EffectChangeHistory;
 struct VisualEffectInfo;
 class CGameScreen : public CRoomScreen
 {
@@ -273,6 +275,8 @@ private:
 	UINT        wUndoToTurn; //undo moves back to this turn at once
 //	bool			bHoldConquered; //whether player has conquered hold being played
 //	CIDSet		roomsPreviouslyConquered; //rooms player has conquered previously in hold being played
+
+	EffectChangeHistory mapIconChanges;
 
 	float *fPos;   //position vector
 

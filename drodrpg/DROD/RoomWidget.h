@@ -33,6 +33,7 @@
 
 #include "DrodBitmapManager.h"
 #include "DrodEffect.h"
+#include "EffectChangeHistory.h"
 #include "FaceWidget.h"
 #include "Light.h"
 #include "TileImageCalcs.h"
@@ -194,46 +195,6 @@ struct TileImageBlitParams {
 };
 
 typedef map<ROOMCOORD, vector<TweeningTileMask> > t_PitMasks;
-
-//******************************************************************************
-//Class to record when changes to effects that require specific refreshing are made.
-//When the room goes "back in time", these effects can then be downdated.
-//It is assumed that adding a record means that any records in its future are now invalid
-class EffectChangeHistory {
-public:
-	EffectChangeHistory() = default;
-	~EffectChangeHistory() = default;
-
-	bool isAfterLatest(UINT turn) {
-		return turn > changeTurns.back();
-	}
-
-	//Remove all records after a given turn.
-	void removeAfter(UINT turn) {
-		while (!empty() && changeTurns.back() >= turn) {
-			changeTurns.pop_back();
-		}
-	}
-
-	//Add a new record. Any records from later turns are removed.
-	void add(UINT turn) {
-		removeAfter(turn);
-		changeTurns.push_back(turn);
-	}
-
-	void reset() {
-		changeTurns.clear();
-		changeTurns.push_back(0);
-	}
-
-	bool empty() {
-		return changeTurns.empty();
-	}
-
-private:
-	std::vector<UINT> changeTurns;
-};
-
 //******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
