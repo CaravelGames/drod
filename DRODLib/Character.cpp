@@ -682,6 +682,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetWallLight:
 			case CCharacterCommand::CC_SetEntityWeapon:
 			case CCharacterCommand::CC_ArrayVarSetAt:
 				command->x = (pRoom->wRoomCols-1) - command->x;
@@ -697,6 +698,8 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
@@ -762,6 +765,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_FaceTowards:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_SetWallLight:
 			case CCharacterCommand::CC_SetEntityWeapon:
 			case CCharacterCommand::CC_ArrayVarSetAt:
 				command->y = (pRoom->wRoomRows-1) - command->y;
@@ -777,6 +781,8 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotEntityType:
 			case CCharacterCommand::CC_WaitForWeapon:
 			case CCharacterCommand::CC_WaitForRemains:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 			case CCharacterCommand::CC_WaitForBuilding:
 			case CCharacterCommand::CC_WaitForBuildType:
 			case CCharacterCommand::CC_WaitForNotBuildType:
