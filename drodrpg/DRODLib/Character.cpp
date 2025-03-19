@@ -3089,9 +3089,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_AttackTile:
 			{
 				getCommandRect(command, px, py, pw, ph);
-				int damage;
+				int damage = 0;
 				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
-				CMonster* pTarget;
+				CMonster* pTarget = NULL;
 				if (pMonster && pMonster->getHP() > 0) {
 					//Attack monster
 					pTarget = pMonster;
@@ -3108,7 +3108,7 @@ void CCharacter::Process(
 					player.Damage(CueEvents, -damage, CID_MonsterKilledPlayer); //-ve for flat damage
 				}
 
-				if (damage == 0) {
+				if (damage == 0 && pTarget) {
 					CueEvents.Add(CID_EntityAffected, new CCombatEffect(pTarget, CET_NODAMAGE), true);
 				}
 
