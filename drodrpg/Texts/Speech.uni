@@ -1735,3 +1735,11 @@ Set ceiling light
 [MID_SetWallLight]
 [eng]
 Set wall light
+
+[MID_SetMapIcon]
+[eng]
+Set map icon
+
+[MID_AttackTile]
+[eng]
+Attack tile

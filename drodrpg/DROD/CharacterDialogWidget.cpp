@@ -166,6 +166,7 @@ const UINT TAG_ITEM_GROUP_LISTBOX = 884;
 const UINT TAG_MAP_ICON_STATE_LISTBOX = 883;
 const UINT TAG_MAP_ICON_LISTBOX = 882;
 const UINT TAG_COLOR_LISTBOX = 881;
+const UINT TAG_NO_DEF_LABEL = 880;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -1861,6 +1862,11 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, g_pTheDB->GetMessageText(MID_Turquoise));
 	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, g_pTheDB->GetMessageText(MID_Violet));
 	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, g_pTheDB->GetMessageText(MID_Azure));
+
+	//Attack tile no enemy defense label.
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_NO_DEF_LABEL, X_SINGLESTEPLABEL,
+		Y_SINGLESTEPLABEL, CX_SINGLESTEPLABEL, CY_SINGLESTEPLABEL, F_Small,
+		g_pTheDB->GetMessageText(MID_NoEnemyDefense)));
 
 	//OK/cancel buttons.
 	CButtonWidget *pOKButton = new CButtonWidget(
@@ -3902,6 +3908,24 @@ const
 		}
 		break;
 
+		case CCharacterCommand::CC_AttackTile:
+			wstr += _itoW(command.w, temp, 10);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_ATKStat);
+			wstr += wszSpace;
+			wstr += g_pTheDB->GetMessageText(MID_At);
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += _itoW(command.x, temp, 10);
+			wstr += wszComma;
+			wstr += _itoW(command.y, temp, 10);
+			wstr += wszRightParen;
+			if (command.h) {
+				wstr += wszSpace;
+				wstr += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
+			}
+		break;
+
 		case CCharacterCommand::CC_SetMovementType:
 			wstr += this->pMovementTypeListBox->GetTextForKey(command.x);
 		break;
@@ -4117,6 +4141,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_SetDarkness:
 		case CCharacterCommand::CC_SetCeilingLight:
 		case CCharacterCommand::CC_SetWallLight:
+		case CCharacterCommand::CC_AttackTile:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4276,6 +4301,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_AnswerOption, g_pTheDB->GetMessageText(MID_AnswerOption));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Appear, g_pTheDB->GetMessageText(MID_Appear));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_AppearAt, g_pTheDB->GetMessageText(MID_AppearAt));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_AttackTile, g_pTheDB->GetMessageText(MID_AttackTile));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Autosave, g_pTheDB->GetMessageText(MID_Autosave));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Behavior, g_pTheDB->GetMessageText(MID_Behavior));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_BuildTile, g_pTheDB->GetMessageText(MID_BuildMarker));
@@ -4311,7 +4337,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Return, g_pTheDB->GetMessageText(MID_ReturnCommand));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_RoomLocationText, g_pTheDB->GetMessageText(MID_RoomLocationText));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ScoreCheckpoint, g_pTheDB->GetMessageText(MID_ScoreCheckpoint));
-	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMapIcon, L"Set map icon");
+	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMapIcon, g_pTheDB->GetMessageText(MID_SetMapIcon));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMovementType, g_pTheDB->GetMessageText(MID_SetMovementType));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetMonsterVar, g_pTheDB->GetMessageText(MID_SetMonsterVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetNPCAppearance, g_pTheDB->GetMessageText(MID_SetNPCAppearance));
@@ -5245,6 +5271,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT MAPICON[] = { TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, 0 };
 	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX, 0 };
 	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
+	static const UINT ATTACKTILE[] = { TAG_WAIT, TAG_ONOFFLISTBOX2, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5337,10 +5364,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		MAPICON,            //CC_SetMinimapIcon
 		WAIT,               //CC_SetDarkness
 		CEILINGLIGHT,       //CC_SetCeilingLight
-		WALLLIGHT           //CC_SetWallLight
+		WALLLIGHT,          //CC_SetWallLight
+		ATTACKTILE          //CC_AttackTile
 	};
 
-	static const UINT NUM_LABELS = 31;
+	static const UINT NUM_LABELS = 32;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -5349,7 +5377,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
 		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL, TAG_ARRAYINDEX_LABEL,
-		TAG_ARRAYVAR_TEXTLABEL, TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL
+		TAG_ARRAYVAR_TEXTLABEL, TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, TAG_NO_DEF_LABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -5378,7 +5406,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT EXPRESSION_L[NUM_LABELS] =   { TAG_VARVALUELABEL, 0 };
 	static const UINT IMAGE_OVERLAY_L[NUM_LABELS] = { TAG_IMAGEOVERLAY_LABEL, 0 };
 	static const UINT ARRAYSET_L[] =               { TAG_ARRAYINDEX_LABEL, TAG_ARRAYVAR_TEXTLABEL, 0 };
-	static const UINT OPENTILE_L[] =                { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
+	static const UINT OPENTILE_L[] =               { TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, 0 };
+	static const UINT ATTACKTILE_L[] =             { TAG_NO_DEF_LABEL, 0 };
 
 	static const UINT* activeLabels[CCharacterCommand::CC_Count] = {
 		NO_LABELS,
@@ -5472,6 +5501,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetDarkness
 		NO_LABELS,          //CC_SetCeilingLight
 		NO_LABELS,          //CC_SetWallLight
+		ATTACKTILE_L,       //CC_AttackTile
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6380,6 +6410,16 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		}
 		break;
 
+		case CCharacterCommand::CC_AttackTile:
+		{
+			CTextBoxWidget* pDamage = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			this->pCommand->w = pDamage->GetNumber();
+			this->pCommand->h = this->pOnOffListBox2->GetSelectedItem();
+			QueryXY();
+		}
+		break;
+
 		case CCharacterCommand::CC_SetMovementType:
 			this->pCommand->x = this->pMovementTypeListBox->GetSelectedItem();
 			AddCommand();
@@ -6853,6 +6893,16 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 				this->pSpeechText->SetText(this->pCommand->label.c_str());
 			else
 				this->pSpeechText->SetText(_itoW(this->pCommand->h, temp, 10));
+		}
+		break;
+
+		case CCharacterCommand::CC_AttackTile:
+		{
+			CTextBoxWidget* pDamage = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_WAIT));
+			ASSERT(pDamage);
+			pDamage->SetText(_itoW(this->pCommand->w, temp, 10));
+			this->pOnOffListBox2->SelectItem(this->pCommand->h);
 		}
 		break;
 
@@ -7570,6 +7620,13 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			pCommand->label = pText + pos; //get text expression
 	break;
 
+	case CCharacterCommand::CC_AttackTile:
+		parseNumber(pCommand->x); skipComma; skipComma;
+		parseNumber(pCommand->y); skipComma; skipComma;
+		parseNumber(pCommand->w); skipComma; skipComma;
+		parseNumber(pCommand->h); skipComma; skipComma;
+	break;
+
 	case CCharacterCommand::CC_SetMovementType:
 		parseMandatoryOption(pCommand->x, this->pMovementTypeListBox, bFound);
 	break;
@@ -8251,6 +8308,13 @@ WSTRING CCharacterDialogWidget::toText(
 		else
 			concatNum(c.h);
 	}
+	break;
+
+	case CCharacterCommand::CC_AttackTile:
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+		concatNumWithComma(c.w);
+		concatNumWithComma(c.h);
 	break;
 
 	case CCharacterCommand::CC_SetMovementType:

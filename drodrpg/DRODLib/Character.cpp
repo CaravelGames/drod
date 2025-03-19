@@ -1000,6 +1000,7 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1060,6 +1061,7 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
@@ -1121,6 +1123,7 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForOpenTile:
 			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
@@ -3081,6 +3084,36 @@ void CCharacter::Process(
 					}
 				}
 				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_AttackTile:
+			{
+				getCommandRect(command, px, py, pw, ph);
+				int damage;
+				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+				CMonster* pTarget;
+				if (pMonster && pMonster->getHP() > 0) {
+					//Attack monster
+					pTarget = pMonster;
+					int reduction = ph ? 0 : pMonster->getDEF();
+					damage = pw - reduction;
+					damage = max(0, damage);
+					room.DamageMonster(pMonster, -damage, CueEvents); //-ve for flat damage
+				} else if (pCurrentGame->IsPlayerAt(px, py)) {
+					//Attack player
+					pTarget = &player;
+					int reduction = ph ? 0 : pCurrentGame->getPlayerDEF();
+					damage = pw - reduction;
+					damage = max(0, damage);
+					player.Damage(CueEvents, -damage, CID_MonsterKilledPlayer); //-ve for flat damage
+				}
+
+				if (damage == 0) {
+					CueEvents.Add(CID_EntityAffected, new CCombatEffect(pTarget, CET_NODAMAGE), true);
+				}
+
+				bProcessNextCommand = true;
+			}
 			break;
 
 			case CCharacterCommand::CC_GameEffect:
