@@ -1432,6 +1432,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 			case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 			case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+			case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			{
 				int val;
 				if (this->pCurrentGame) {
