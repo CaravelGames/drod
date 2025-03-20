@@ -517,19 +517,45 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_TitleMenuSelected].OutlineColor = Black;
 	this->LoadedFonts[F_TitleMenuSelected].wOutlineWidth = 2;
 
-	//Load damage preview font.
+	//Load damage preview fonts.
 	pFont = GetFont(wstrFont2Filepath, 14);
 	if (!pFont) return false;
-	this->LoadedFonts[F_DamagePreview].pTTFFont = pFont;
-	this->LoadedFonts[F_DamagePreview].wLineSkipHeight = GetFontHeight(F_DamagePreview);
-	this->LoadedFonts[F_DamagePreview].ForeColor = Yellow;
-	this->LoadedFonts[F_DamagePreview].BackColor = Black;
-	this->LoadedFonts[F_DamagePreview].bAntiAlias = true;
-	this->LoadedFonts[F_DamagePreview].bOutline = true;
-	this->LoadedFonts[F_DamagePreview].OutlineColor = Black;
-	this->LoadedFonts[F_DamagePreview].wOutlineWidth = 1;
-	GetWordWidth(F_DamagePreview, wszSpace, wSpaceWidth);
-	this->LoadedFonts[F_DamagePreview].wSpaceWidth = wSpaceWidth;
+	this->LoadedFonts[F_DamagePreviewSmall].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewSmall].wLineSkipHeight = GetFontHeight(F_DamagePreviewSmall);
+	this->LoadedFonts[F_DamagePreviewSmall].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewSmall].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewSmall].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewSmall].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewSmall].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewSmall].wOutlineWidth = 1;
+	GetWordWidth(F_DamagePreviewSmall, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewSmall].wSpaceWidth = wSpaceWidth;
+
+	pFont = GetFont(wstrFont2Filepath, 17);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreviewMedium].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewMedium].wLineSkipHeight = GetFontHeight(F_DamagePreviewMedium);
+	this->LoadedFonts[F_DamagePreviewMedium].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewMedium].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewMedium].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewMedium].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewMedium].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewMedium].wOutlineWidth = 1;
+	GetWordWidth(F_DamagePreviewMedium, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewMedium].wSpaceWidth = wSpaceWidth;
+
+	pFont = GetFont(wstrFont2Filepath, 20);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreviewLarge].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewLarge].wLineSkipHeight = GetFontHeight(F_DamagePreviewLarge);
+	this->LoadedFonts[F_DamagePreviewLarge].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewLarge].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewLarge].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewLarge].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewLarge].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewLarge].wOutlineWidth = 2;
+	GetWordWidth(F_DamagePreviewLarge, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewLarge].wSpaceWidth = wSpaceWidth;
 
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG
