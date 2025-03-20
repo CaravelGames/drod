@@ -1673,6 +1673,7 @@ enum MID_CONSTANT {
   MID_SetWallLight = 2026,
   MID_SetMapIcon = 2027,
   MID_AttackTile = 2028,
+  MID_Roachie = 2029,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

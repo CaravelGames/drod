@@ -4511,6 +4511,7 @@ void CCharacterDialogWidget::PopulateGraphicListBox(CListBoxWidget *pListBox)
 	pListBox->AddItem(M_ARCHIVIST, g_pTheDB->GetMessageText(MID_Archivist));
 	pListBox->AddItem(M_ARCHITECT, g_pTheDB->GetMessageText(MID_Architect));
 	pListBox->AddItem(M_PATRON, g_pTheDB->GetMessageText(MID_Patron));
+	pListBox->AddItem(M_ROACHIE, g_pTheDB->GetMessageText(MID_Roachie));
 
 	pListBox->AddItem(M_NONE, g_pTheDB->GetMessageText(MID_None));
 

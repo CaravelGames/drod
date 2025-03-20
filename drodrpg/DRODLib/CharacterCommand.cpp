@@ -193,6 +193,7 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_ARCHIVIST: return Speaker_Archivist;
 		case M_ARCHITECT: return Speaker_Architect;
 		case M_PATRON: return Speaker_Patron;
+		case M_ROACHIE: return Speaker_Roach;
 
 		//Monster types.
 		case M_ROACH: return Speaker_Roach;
