@@ -309,7 +309,8 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 						return false;
 					break;
 				case T_TAR: case T_MUD: case T_GEL:
-					if (room.IsTarVulnerableToStab(wSX, wSY))
+					if (this->pCurrentGame->CanPlayerCutTarAnywhere() ||
+						room.IsTarVulnerableToStab(wSX, wSY))
 						return false;
 				break;
 				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
