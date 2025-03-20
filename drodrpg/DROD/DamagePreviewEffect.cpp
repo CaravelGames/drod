@@ -33,6 +33,12 @@
 #include <BackEndLib/Assert.h>
 #include <FrontEndLib/Screen.h>
 
+const int LARGE_DIGITS = 4;
+const int MAX_VALUE_FOR_LARGE_DIGITS = int(pow(10, LARGE_DIGITS)) - 1; //i.e., 9999
+
+const int MEDIUM_DIGITS = 5;
+const int MAX_VALUE_FOR_MEDIUM_DIGITS = int(pow(10, MEDIUM_DIGITS)) - 1; //i.e., 99999
+
 //********************************************************************************
 CBonusPreviewEffect::CBonusPreviewEffect(
 	//Constructor.
@@ -44,8 +50,15 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, wX(wX), wY(wY)
 	, pTextSurface(NULL)
-	, YOFFSET(-29)
 {
+	if (abs(value) <= MAX_VALUE_FOR_LARGE_DIGITS) {
+		this->YOFFSET = -25; //large font - needs more space to display at bottom of tile
+	} else if (abs(value) <= MAX_VALUE_FOR_MEDIUM_DIGITS) {
+		this->YOFFSET = -28; //medium font
+	} else {
+		this->YOFFSET = -29; //small font - closer to bottom of tile
+	}
+
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);
 
@@ -142,8 +155,7 @@ void CBonusPreviewEffect::PrepWidgetForValue(const int value)
 		wstr += _itoW(value, temp, 10);
 	}
 
-	static const UINT eFontType = F_DamagePreview;
-	static const UINT outlineWidth = 1;
+	const UINT eFontType = wstr.length() <= LARGE_DIGITS ? F_DamagePreviewLarge : (wstr.length() <= MEDIUM_DIGITS ? F_DamagePreviewMedium : F_DamagePreviewSmall);
 
 	UINT wLineW, wLineH;
 	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
@@ -287,9 +299,8 @@ void CDamagePreviewEffect::PrepWidget()
 		}
 	}
 
-	static const UINT eFontType = F_DamagePreview;
-	static const UINT outlineWidth = 1;
-	
+	const UINT eFontType = wstr.length() <= LARGE_DIGITS ? F_DamagePreviewLarge : (wstr.length() <= MEDIUM_DIGITS ? F_DamagePreviewMedium : F_DamagePreviewSmall);
+
 	UINT wLineW, wLineH;
 	g_pTheFM->GetTextRectHeight(eFontType, wstr.c_str(),
 		CBitmapManager::CX_TILE * 2, wLineW, wLineH);

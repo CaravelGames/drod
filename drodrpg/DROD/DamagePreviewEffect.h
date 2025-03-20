@@ -48,7 +48,7 @@ protected:
 
 	UINT         wX, wY;
 	UINT         wValidTurn;   //game turn this display is valid for
-	const int    YOFFSET;
+	int          YOFFSET;
 
 	CRoomWidget* pRoomWidget;
 
