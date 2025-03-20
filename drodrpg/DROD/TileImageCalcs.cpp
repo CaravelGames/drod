@@ -720,6 +720,13 @@ const UINT CharacterTileImageArray[CHARACTER_TYPES-CHARACTER_FIRST][ORIENTATION_
 	TI_PATRON_NW,            TI_PATRON_N,    TI_PATRON_NE,
 	TI_PATRON_W,             TI_PATRON_S,    TI_PATRON_E,
 	TI_PATRON_SW,            TI_PATRON_S,    TI_PATRON_SE
+	},
+
+	//M_ROACHIE
+	{
+	TI_ROACHIE_NW,    TI_ROACHIE_N,    TI_ROACHIE_NE,
+	TI_ROACHIE_W,     TI_ROACHIE_S,    TI_ROACHIE_E,
+	TI_ROACHIE_SW,    TI_ROACHIE_S,    TI_ROACHIE_SE,
 	}
 };
 
@@ -1376,6 +1383,13 @@ UINT GetTileImageForEntity(
 			case 0: return MonsterTileImageArray[wType][wO];
 			case 1: return AnimatedMonsterTileImageArray[wType][wO];
 		}
+	} else if (wType == M_ROACHIE) {
+		//Animated pseudo-type
+		UINT tile = CharacterTileImageArray[wType - CHARACTER_FIRST][wO];
+		if (wAnimFrame == 1) {
+			tile -= 8;
+		}
+		return tile;
 	} else {
 		//Character monster pseudo-type.
 		ASSERT(wType>=CHARACTER_FIRST && wType<CHARACTER_TYPES);

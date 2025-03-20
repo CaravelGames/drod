@@ -2529,6 +2529,23 @@
 //*****************************************************************************
 #define TI_OVERHEAD_IMAGE 2334
 //*****************************************************************************
+#define TI_ROACHIE_AN 2335
+#define TI_ROACHIE_ANE 2336
+#define TI_ROACHIE_AE 2337
+#define TI_ROACHIE_ASE 2338
+#define TI_ROACHIE_AS 2339
+#define TI_ROACHIE_ASW 2340
+#define TI_ROACHIE_AW 2341
+#define TI_ROACHIE_ANW 2342
+#define TI_ROACHIE_N 2343
+#define TI_ROACHIE_NE 2344
+#define TI_ROACHIE_E 2345
+#define TI_ROACHIE_SE 2346
+#define TI_ROACHIE_S 2347
+#define TI_ROACHIE_SW 2348
+#define TI_ROACHIE_W 2349
+#define TI_ROACHIE_NW 2350
+//*****************************************************************************
 #define TI_MAP_ICON_SWORD 2351
 #define TI_MAP_ICON_SHIELD 2352
 #define TI_MAP_ICON_STAR 2353

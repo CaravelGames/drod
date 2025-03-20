@@ -987,6 +987,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SetWallLight: strText = "Set wall light"; break;
 		case MID_SetMapIcon: strText = "Set map icon"; break;
 		case MID_AttackTile: strText = "Attack tile"; break;
+		case MID_Roachie: strText = "Roachie"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

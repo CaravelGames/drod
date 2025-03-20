@@ -2315,6 +2315,7 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				case M_ARCHIVIST: eMID = MID_Archivist; break;
 				case M_ARCHITECT: eMID = MID_Architect; break;
 				case M_PATRON: eMID = MID_Patron; break;
+				case M_ROACHIE: eMID = MID_Roachie; break;
 				default: ASSERT(!"Unrecognized character"); break;
 			}
 			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
