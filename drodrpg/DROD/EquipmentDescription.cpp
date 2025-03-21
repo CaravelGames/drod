@@ -245,7 +245,7 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 		text += g_pTheDB->GetMessageText(MID_AttackLast);
 		needSeparator = true;
 	}
-	if (pCharacter->RemovesSword())
+	if (pCharacter->RemovesSword() && equipType == ScriptFlag::Weapon)
 	{
 		if (needSeparator)
 			text += separator;
