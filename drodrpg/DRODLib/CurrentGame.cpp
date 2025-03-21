@@ -3623,16 +3623,6 @@ bool CCurrentGame::IsPlayerSwordRemoved() const
 		if (pCharacter && pCharacter->RemovesSword())
 			return true;
 	}
-	if (!IsPlayerShieldDisabled()) {
-		pCharacter = getCustomEquipment(ScriptFlag::Armor);
-		if (pCharacter && pCharacter->RemovesSword())
-			return true;
-	}
-	if (!IsPlayerAccessoryDisabled()) {
-		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
-		if (pCharacter && pCharacter->RemovesSword())
-			return true;
-	}
 
 	return false;
 }

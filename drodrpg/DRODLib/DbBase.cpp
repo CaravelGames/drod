@@ -803,7 +803,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_CustomType: strText = "%s type"; break;
 		case MID_StrongAgainstType: strText = "Strong against %s"; break;
 		case MID_ShowScore: strText = "Show score"; break;
-		case MID_RemovesSword: strText = "Removes sword"; break;
+		case MID_RemovesSword: strText = "Small weapon"; break;
 		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;
 		case MID_VarRoomX: strText = "_RoomX"; break;
 		case MID_VarRoomY: strText = "_RoomY"; break;
