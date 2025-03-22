@@ -55,6 +55,7 @@ CLabelWidget::CLabelWidget(
 	: CWidget(eType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, eFontType(eSetFontType)
 	, eTextAlign(TA_Left)
+	, eTextVAlign(TA_VTop)
 	, bClickable(false)
 	, bCacheRendering(bCacheRendering)
 	, pRenderedText(NULL)
@@ -172,6 +173,12 @@ void CLabelWidget::Paint(
 	{
 		int nOffsetX, nOffsetY;
 		GetScrollOffset(nOffsetX, nOffsetY);
+
+		if (this->eTextVAlign == TA_VCenter) {
+			UINT textW, textH;
+			this->GetTextWidthHeight(textW, textH);
+			nOffsetY += (int(this->h) - int(textH)) / 2;
+		}
 
 		UINT wLineOffsetX = 0;
 
