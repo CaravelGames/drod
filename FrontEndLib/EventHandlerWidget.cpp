@@ -92,6 +92,7 @@ CEventHandlerWidget::CEventHandlerWidget(
 	: CWidget(eSetType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, bPaused(false)
 	, bUpdateMotion(false)
+	, bAllowRepeating(true)
 
 	, pHeldDownWidget(NULL)
 	, pHoveringWidget(NULL)
@@ -497,7 +498,8 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 		
 		//If user has held a widget down long enough, call its HandleMouseDownRepeat().
 		const UINT dwNow = SDL_GetTicks();
-		if ( this->pHeldDownWidget &&
+		if (this->bAllowRepeating &&
+				this->pHeldDownWidget &&
 				dwNow - this->dwLastMouseDownRepeat > ((this->bIsFirstMouseDownRepeat) ?
 				MOUSEDOWN_REPEAT_INITIAL_DELAY : MOUSEDOWN_REPEAT_CONTINUE_DELAY) )
 		{
@@ -535,7 +537,7 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 
 		//Check for a repeating keypress.
 		UINT dwRepeatTagNo;
-		if (IsKeyRepeating(dwRepeatTagNo))
+		if (this->bAllowRepeating && IsKeyRepeating(dwRepeatTagNo))
 		{
 			if (!CheckForSelectionChange(m_RepeatingKey))
 			{
