@@ -232,6 +232,7 @@ protected:
 
 	bool bPaused;  //whether animation is paused
 	bool bUpdateMotion; //whether widgets moved
+	bool bAllowRepeating; //whether widget supports automatic key/mouse repeating
 
 private:
 	//Event handling methods called directly by Activate().
