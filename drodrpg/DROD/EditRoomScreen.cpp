@@ -3386,7 +3386,7 @@ void CEditRoomScreen::OnKeyDown(
 	const UINT wOldSwordType = this->wSelSwordType;
 	const UINT wOldShieldType = this->wSelShieldType;
 	const UINT wOldAccessoryType = this->wSelAccessoryType;
-	const int nCommand = GetCommandForKeysym(Key.keysym.sym);
+	const int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 	switch (nCommand)
 	{
 		//Rotate orientation.

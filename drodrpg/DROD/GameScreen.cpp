@@ -2595,7 +2595,7 @@ void CGameScreen::OnKeyDown(
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Check for a game command.
-	int nCommand = GetCommandForKeysym(Key.keysym.sym);
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 	if (nCommand != CMD_UNSPECIFIED)
 	{
 		//Hide mouse cursor while playing.
@@ -2621,15 +2621,6 @@ void CGameScreen::OnKeyDown(
 			//Only allow inputting player movement commands when no cutscene is playing.
 			if (!this->pCurrentGame->dwCutScene || nCommand >= CMD_WAIT)
 			{
-				//Ctrl and Shift key modifiers use weapon and armor instead of accessory.
-				if (nCommand == CMD_USE_ACCESSORY)
-				{
-					if (bShift)
-						nCommand = CMD_USE_WEAPON;
-					else if (bCtrl)
-						nCommand = CMD_USE_ARMOR;
-				}
-
 				if (!ProcessCommandWrapper(nCommand))
 					return;
 
@@ -2887,7 +2878,7 @@ void CGameScreen::OnKeyDown(
 			if (Key.keysym.mod & KMOD_CTRL) {
 				HideCursor();
 				SearchForPathToNextRoom(N);
-			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
 				HideCursor();
 				ProcessCommandWrapper(CMD_N);
 			}
@@ -2896,7 +2887,7 @@ void CGameScreen::OnKeyDown(
 			if (Key.keysym.mod & KMOD_CTRL) {
 				HideCursor();
 				SearchForPathToNextRoom(S);
-			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
 				HideCursor();
 				ProcessCommandWrapper(CMD_S);
 			}
@@ -2905,7 +2896,7 @@ void CGameScreen::OnKeyDown(
 			if (Key.keysym.mod & KMOD_CTRL) {
 				HideCursor();
 				SearchForPathToNextRoom(W);
-			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
 				HideCursor();
 				ProcessCommandWrapper(CMD_W);
 			}
@@ -2914,7 +2905,7 @@ void CGameScreen::OnKeyDown(
 			if (Key.keysym.mod & KMOD_CTRL) {
 				HideCursor();
 				SearchForPathToNextRoom(E);
-			} else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED) {
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
 				HideCursor();
 				ProcessCommandWrapper(CMD_E);
 			}
@@ -5157,7 +5148,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				break;
 				case SDL_KEYDOWN:
 				{
-					const int nCommand = GetCommandForKeysym(event.key.keysym.sym);
+					const int nCommand = GetCommandForInputKey(BuildInputKey(event.key));
 					if (nCommand == CMD_UNDO)
 						bUndoDeath = true;
 					else if (nCommand == CMD_RESTART)
@@ -8287,7 +8278,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 						case SDLK_DOWN: nCommand = CMD_S; break;
 						case SDLK_LEFT: nCommand = CMD_W; break;
 						case SDLK_RIGHT: nCommand = CMD_E; break;
-						default: nCommand = GetCommandForKeysym(event.key.keysym.sym); break;
+						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
 					}
 					switch (nCommand)
 					{

@@ -118,9 +118,17 @@ Undo Last Move
 [eng]
 Battle Stats
 
+[MID_UseWeaponKey]
+[eng]
+Use weapon
+
+[MID_UseArmorKey]
+[eng]
+Use shield
+
 [MID_UseAccessoryKey]
 [eng]
-Use equipment
+Use accessory
 
 [MID_LockCommand]
 [eng]
@@ -461,3 +469,15 @@ Map icon alpha
 [MID_TarstuffAlpha]
 [eng]
 Tarstuff alpha
+
+[MID_GetKeyDescription_NoModifiers]
+[eng]
+Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed for this command.
+
+[MID_GetKeyDescription_YesModifiers]
+[eng]
+Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this command.
+
+[MID_OverwritingMacroKeyError]
+[eng]
+You can't map to this key because command '%1' uses the same key but without any modifiers.

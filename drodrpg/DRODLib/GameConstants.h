@@ -27,13 +27,17 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
 
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Types.h>
 #include <BackEndLib/UtilFuncs.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
 
+#include "../Texts/MIDs.h"
+
 #include <SDL.h>
+#include <unordered_map>
 
 //Global app parameters.
 extern const char szCompanyName[];
@@ -96,6 +100,36 @@ static const UINT ORIENTATION_COUNT = 9;
 //******************************************************************************************
 namespace InputCommands
 {
+	const InputKey UseDesktopKey = 0;
+
+	class KeyDefinition {
+	public:
+		KeyDefinition(const UINT eCommand,
+			const char* settingName,
+			MID_CONSTANT commandMID,
+			const InputKey defaultKeyDesktop,
+			const InputKey defaultKeyNotebook = UseDesktopKey)
+			: eCommand(eCommand),
+			settingName(settingName),
+			commandMID(commandMID),
+			defaultKeyDesktop(defaultKeyDesktop),
+			defaultKeyNotebook(defaultKeyNotebook == UseDesktopKey ? defaultKeyDesktop : defaultKeyNotebook)
+		{
+		}
+
+		const InputKey GetDefaultKey(const UINT wKeyboardMode) const
+		{
+			return wKeyboardMode == 1 ? this->defaultKeyNotebook : this->defaultKeyDesktop;
+		}
+
+		const UINT eCommand;
+
+		const InputKey defaultKeyDesktop;
+		const InputKey defaultKeyNotebook;
+		const char* settingName;
+		const MID_CONSTANT commandMID;
+	};
+
 	enum DCMD
 	{
 		DCMD_First = 0,
@@ -113,6 +147,8 @@ namespace InputCommands
 		DCMD_Restart,
 		DCMD_Undo,
 		DCMD_Battle,
+		DCMD_UseWeapon,
+		DCMD_UseArmor,
 		DCMD_UseAccessory,
 		DCMD_Lock,
 		DCMD_Command,
@@ -121,10 +157,12 @@ namespace InputCommands
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count
 	};
-	extern const char *COMMANDNAME_ARRAY[DCMD_Count];
-	extern const UINT COMMAND_MIDS[DCMD_Count];
+
+	extern const std::unordered_map<DCMD, KeyDefinition*> COMMAND_MAP;
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
+	extern const KeyDefinition* GetKeyDefinition(const UINT nCommand);
+	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }

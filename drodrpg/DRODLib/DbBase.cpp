@@ -988,6 +988,12 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SetMapIcon: strText = "Set map icon"; break;
 		case MID_AttackTile: strText = "Attack tile"; break;
 		case MID_Roachie: strText = "Roachie"; break;
+		case MID_UseAccessoryKey: strText = "Use accessory"; break;
+		case MID_UseWeaponKey: strText = "Use weapon"; break;
+		case MID_UseArmorKey: strText = "Use armor"; break;
+		case MID_GetKeyDescription_NoModifiers: strText = "Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed for this command."; break;
+		case MID_GetKeyDescription_YesModifiers: strText = "Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this command."; break;
+		case MID_OverwritingMacroKeyError: strText = "You can't map to this key because command '%1' uses the same key but without any modifiers."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

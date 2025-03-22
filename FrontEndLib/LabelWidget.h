@@ -33,6 +33,13 @@
 #include <string>
 using std::string;
 
+//Y position for a label using F_TITLE font on the screens with the darkened horizontal bar at the top
+// to fit neatly in the middle of said bar
+static const UINT Y_TITLE_LABEL_CENTER_DARK_BAR = 16;
+//Standard height of labels.
+static const UINT CY_LABEL_FONT_TITLE = 52;
+static const UINT CY_LABEL_FONT_HEADER = 30;
+
 //******************************************************************************
 class CLabelWidget : public CWidget
 {

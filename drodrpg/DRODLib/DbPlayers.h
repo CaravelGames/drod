@@ -89,6 +89,8 @@ public:
 	CDbMessageText OriginalNameText;
 	CDate       Created, LastUpdated;
 
+	static void ConvertInputSettings(CDbPackedVars& settings);
+
 private:
 	UINT       GetLocalID();
 	bool        UpdateExisting();

@@ -1179,6 +1179,8 @@ enum MID_CONSTANT {
   MID_RestartRoom = 925,
   MID_UndoMove = 926,
   MID_BattleKey = 1291,
+  MID_UseWeaponKey = 2030,
+  MID_UseArmorKey = 2031,
   MID_UseAccessoryKey = 1599,
   MID_LockCommand = 1637,
   MID_UseCommandKey = 1632,
@@ -1235,6 +1237,9 @@ enum MID_CONSTANT {
   MID_AutoPreviewCharacters = 1850,
   MID_MapIconAlpha = 2006,
   MID_TarstuffAlpha = 2007,
+  MID_OverwritingMacroKeyError = 2032,
+  MID_GetKeyDescription_NoModifiers = 2033,
+  MID_GetKeyDescription_YesModifiers = 2034,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

@@ -73,9 +73,6 @@
     <ClCompile Include="JpegHandler.cpp">
       <Filter>Formats</Filter>
     </ClCompile>
-    <ClCompile Include="KeypressDialogWidget.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
     <ClCompile Include="LabelWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
@@ -251,9 +248,6 @@
     </ClInclude>
     <ClInclude Include="JpegHandler.h">
       <Filter>Formats</Filter>
-    </ClInclude>
-    <ClInclude Include="KeypressDialogWidget.h">
-      <Filter>Widgets</Filter>
     </ClInclude>
     <ClInclude Include="LabelWidget.h">
       <Filter>Widgets</Filter>
