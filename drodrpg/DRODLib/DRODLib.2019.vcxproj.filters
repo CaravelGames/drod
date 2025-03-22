@@ -237,6 +237,9 @@
     <ClCompile Include="DbLocalHighScores.cpp">
       <Filter>DBs</Filter>
     </ClCompile>
+    <ClCompile Include="I18N.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h">
@@ -479,6 +482,9 @@
     </ClInclude>
     <ClInclude Include="DbLocalHighScores.h">
       <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="I18N.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

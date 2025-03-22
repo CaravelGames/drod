@@ -129,10 +129,36 @@ namespace InputCommands
 		case SDLK_KP_9: return MID_KEY_KP9;
 		case SDLK_KP_0: return MID_KEY_KP0;
 		case SDLK_KP_PERIOD: return MID_KEY_KP_PERIOD;
-		case SDLK_LEFT: return MID_KEY_LEFT;
-		case SDLK_RIGHT: return MID_KEY_RIGHT;
+		case SDLK_F1: return MID_KEY_F1;
+		case SDLK_F2: return MID_KEY_F2;
+		case SDLK_F3: return MID_KEY_F3;
+		case SDLK_F4: return MID_KEY_F4;
+		case SDLK_F5: return MID_KEY_F5;
+		case SDLK_F6: return MID_KEY_F6;
+		case SDLK_F7: return MID_KEY_F7;
+		case SDLK_F8: return MID_KEY_F8;
+		case SDLK_F9: return MID_KEY_F9;
+		case SDLK_F10: return MID_KEY_F10;
+		case SDLK_F11: return MID_KEY_F11;
+		case SDLK_F12: return MID_KEY_F12;
+		case SDLK_HOME: return MID_KEY_HOME;
+		case SDLK_END: return MID_KEY_END;
+		case SDLK_PAGEUP: return MID_KEY_PAGEUP;
+		case SDLK_PAGEDOWN: return MID_KEY_PAGEDOWN;
+		case SDLK_SPACE: return MID_KEY_SPACE;
+		case SDLK_RETURN: return MID_KEY_RETURN;
+		case SDLK_CAPSLOCK: return MID_KEY_CAPSLOCK;
+		case SDLK_NUMLOCKCLEAR: return MID_KEY_NUMLOCK;
+		case SDLK_INSERT: return MID_KEY_INSERT;
+		case SDLK_DELETE: return MID_KEY_DELETE;
+		case SDLK_PRINTSCREEN: return MID_KEY_PRINT;
 		case SDLK_UP: return MID_KEY_UP;
 		case SDLK_DOWN: return MID_KEY_DOWN;
+		case SDLK_LEFT: return MID_KEY_LEFT;
+		case SDLK_RIGHT: return MID_KEY_RIGHT;
+		case SDLK_APP1: return MID_UNKNOWN;
+		case SDLK_APP2: return MID_UNKNOWN;
+		case SDLK_APPLICATION: return MID_UNKNOWN;
 		default: return static_cast<MESSAGE_ID>((long)MID_UNKNOWN + nKey);
 		}
 	}

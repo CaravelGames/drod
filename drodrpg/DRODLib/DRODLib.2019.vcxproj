@@ -424,6 +424,7 @@
     <ClCompile Include="GreenSerpent.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Halph.cpp" />
+    <ClCompile Include="I18N.cpp" />
     <ClCompile Include="ImportInfo.cpp" />
     <ClCompile Include="Mimic.cpp" />
     <ClCompile Include="Monster.cpp" />
@@ -504,6 +505,7 @@
     <ClInclude Include="Guard.h" />
     <ClInclude Include="Halph.h" />
     <ClInclude Include="HoldRecords.h" />
+    <ClInclude Include="I18N.h" />
     <ClInclude Include="ImportInfo.h" />
     <ClInclude Include="Mimic.h" />
     <ClInclude Include="Monster.h" />
