@@ -244,6 +244,9 @@
     <ClCompile Include="PuffExplosionEffect.cpp">
       <Filter>Effects</Filter>
     </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -476,6 +479,9 @@
     </ClInclude>
     <ClInclude Include="EffectChangeHistory.h">
       <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

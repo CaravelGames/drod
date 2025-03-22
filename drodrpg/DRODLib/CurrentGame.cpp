@@ -36,6 +36,7 @@
 #include "DbXML.h"
 #include "CueEvents.h"
 #include "GameConstants.h"
+#include "I18N.h"
 #include "Halph.h"
 #include "Monster.h"
 #include "MonsterFactory.h"
@@ -1156,10 +1157,11 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	ASSERT(id < InputCommands::DCMD_Count);
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
-	const InputCommands::DCMD eCommand = InputCommands::DCMD(
-			settings.GetVar(InputCommands::COMMANDNAME_ARRAY[id], 0));
+	const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	return g_pTheDB->GetMessageText(KeyToMID(eCommand));
+	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, 0);
+
+	return I18N::DescribeInputKey(inputKey);
 }
 
 //*****************************************************************************

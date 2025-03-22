@@ -33,6 +33,7 @@
 #include <FrontEndLib/LabelWidget.h>
 
 #include "../DRODLib/SettingsKeys.h"
+#include <DRODLib/GameConstants.h>
 
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
@@ -412,15 +413,15 @@ void CRoomScreen::PaintSign()
 }
 
 //*****************************************************************************
-SDL_Keycode CRoomScreen::GetKeysymForCommand(const UINT wCommand) const
+InputKey CRoomScreen::GetInputKeyForCommand(const UINT wCommand) const
 //Returns: keysym currently set for indicated command
 {
-	for (std::map<SDL_Keycode,int>::const_iterator it = KeysymToCommandMap.begin(); it != KeysymToCommandMap.end(); ++it)
+	for (std::map<InputKey, int>::const_iterator it = InputKeyToCommandMap.begin(); it != InputKeyToCommandMap.end(); ++it)
 		if (it->second == (int)wCommand)
 			return it->first;
 
 	ASSERT(!"Command not assigned");
-	return SDLK_UNKNOWN;
+	return UNKNOWN_INPUT_KEY;
 }
 
 //*****************************************************************************
@@ -432,7 +433,7 @@ void CRoomScreen::InitKeysymToCommandMap(
 	CDbPackedVars &PlayerSettings)   //(in)   Player settings to load from.
 {
 	//Clear the map.
-	this->KeysymToCommandMap.clear();
+	this->InputKeyToCommandMap.clear();
 
 	//Check whether default is for keyboard or laptop.
 	CFiles Files;
@@ -445,29 +446,25 @@ void CRoomScreen::InitKeysymToCommandMap(
 	}
 
 	//Get key command values from current player settings.
-	static const int commands[InputCommands::DCMD_Count] = {
-		CMD_NW, CMD_N, CMD_NE,
-		CMD_W, CMD_WAIT, CMD_E,
-		CMD_SW, CMD_S, CMD_SE,
-		CMD_C, CMD_CC, CMD_RESTART, CMD_UNDO,
-		CMD_BATTLE_KEY, CMD_USE_ACCESSORY,
-		CMD_LOCK, CMD_EXEC_COMMAND, CMD_SCORE_KEY
-	};
+	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex)
+	{
+		const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
 
-	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex) {
-		const int nKey = PlayerSettings.GetVar(InputCommands::COMMANDNAME_ARRAY[wIndex],
-				COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
-		this->KeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : nKey] = commands[wIndex];
+		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
+		const bool bInvalidSDL1mapping = inputKey >= 128 && inputKey <= 323;
+		this->InputKeyToCommandMap[inputKey] = keyDefinition->eCommand;
+
+		if (InputCommands::DoesCommandUseModifiers((InputCommands::DCMD)wIndex)) // Support for macros
+			this->InputKeyToCommandMap[BuildInputKey(inputKey, false, false, true)] = keyDefinition->eCommand;
 	}
 }
 
 //*****************************************************************************
-int CRoomScreen::GetCommandForKeysym(const SDL_Keycode& sym) const
+int CRoomScreen::GetCommandForInputKey(const InputKey& inputKey) const
 {
-	std::map<SDL_Keycode,int>::const_iterator it = this->KeysymToCommandMap.find(sym);
-	if (it != this->KeysymToCommandMap.end())
-			return it->second;
+	std::map<InputKey, int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
+	if (it != this->InputKeyToCommandMap.end())
+		return it->second;
 
 	return CMD_UNSPECIFIED;
 }

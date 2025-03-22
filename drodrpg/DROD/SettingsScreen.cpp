@@ -41,6 +41,7 @@
 #include <FrontEndLib/ProgressBarWidget.h>
 
 #include "../DRODLib/Db.h"
+#include "../DRODLib/I18N.h"
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/SettingsKeys.h"
@@ -48,6 +49,7 @@
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
 
@@ -73,24 +75,9 @@ const SDL_Keycode COMMANDKEY_ARRAY[2][DCMD_Count] = {	//desktop or laptop keyboa
 }};
 
 //Widget tag constants.
-const UINT TAG_NW_BUTTON = 1001;
-const UINT TAG_N_BUTTON = 1002;
-const UINT TAG_NE_BUTTON = 1003;
-const UINT TAG_W_BUTTON = 1004;
-const UINT TAG_WAIT_BUTTON = 1005;
-const UINT TAG_E_BUTTON = 1006;
-const UINT TAG_SW_BUTTON = 1007;
-const UINT TAG_S_BUTTON = 1008;
-const UINT TAG_SE_BUTTON = 1009;
-const UINT TAG_C_BUTTON = 1010;
-const UINT TAG_CC_BUTTON = 1011;
-const UINT TAG_RESTART_BUTTON = 1012;
-const UINT TAG_UNDO_BUTTON = 1013;
-const UINT TAG_BATTLE_BUTTON = 1014;
-const UINT TAG_ACCESSORY_BUTTON = 1015;
-const UINT TAG_LOCK_BUTTON = 1016;
-const UINT TAG_COMMAND_BUTTON = 1017;
-const UINT TAG_SCORE_BUTTON = 1018;
+// Tags 1100 to 1299 are reserved for button remaps
+const UINT TAG_KEY_BUTTON_START = 1100;
+const UINT TAG_KEY_BUTTON_END = 1299;
 
 const UINT TAG_DEFAULT_DESKTOP = 1030;
 const UINT TAG_DEFAULT_LAPTOP = 1031;
@@ -142,8 +129,35 @@ const UINT TAG_HELP = 1092;
 
 const UINT TAG_MENU = 1093;
 
-const UINT CX_MESSAGE = 370;
-const UINT CY_MESSAGE = 120;
+static const UINT CX_SPACE = 10;
+static const UINT CY_SPACE = 10;
+
+static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
+
+static const UINT CX_OKAY_BUTTON = 110;
+static const UINT CY_OKAY_BUTTON = CY_STANDARD_BUTTON;
+static const UINT CX_CANCEL_BUTTON = CX_OKAY_BUTTON;
+static const UINT CY_CANCEL_BUTTON = CY_OKAY_BUTTON;
+static const UINT CX_HELP_BUTTON = CX_OKAY_BUTTON;
+static const UINT CY_HELP_BUTTON = CY_OKAY_BUTTON;
+const int X_CANCEL_BUTTON = (CScreen::CX_SCREEN - CX_CANCEL_BUTTON) / 2;
+static const int X_OKAY_BUTTON = X_CANCEL_BUTTON - CX_OKAY_BUTTON - CX_SPACE;
+const int X_HELP_BUTTON = X_CANCEL_BUTTON + CX_CANCEL_BUTTON + CX_SPACE;
+const int Y_OKAY_BUTTON = CScreen::CY_SCREEN - CY_SPACE - CY_OKAY_BUTTON;
+static const int Y_CANCEL_BUTTON = Y_OKAY_BUTTON;
+const int Y_HELP_BUTTON = Y_OKAY_BUTTON;
+
+const UINT CY_MENU_TAB = 37;
+const int Y_INNERMENU = CY_MENU_TAB + CY_SPACE * 3;
+
+const UINT CX_WIDE_FRAME = 520;
+
+//Menu
+const int X_TABBEDMENU = CX_SPACE * 2;
+const int Y_TABBEDMENU = Y_TITLE + CY_TITLE + Y_TITLE;
+const UINT CX_TABBEDMENU = CScreen::CX_SCREEN - X_TABBEDMENU * 2;
+const UINT CY_TABBEDMENU = Y_OKAY_BUTTON - Y_TABBEDMENU - CY_SPACE * 2;
 
 //
 //Protected methods.
@@ -153,7 +167,7 @@ const UINT CY_MESSAGE = 120;
 CSettingsScreen::CSettingsScreen()
 //Constructor.
 	: CDrodScreen(SCR_Settings)
-	, pDialogBox(NULL), pCommandLabel(NULL)
+	, pKeypressDialog(NULL)
 	, pCurrentPlayer(NULL)
 	, pNameWidget(NULL)
 	, pCaravelNetNameWidget(NULL)
@@ -439,24 +453,6 @@ CSettingsScreen::CSettingsScreen()
 
 	const UINT CY_SOUND_FRAME = Y_NO_FOCUS_PLAYS_MUSIC + CY_NO_FOCUS_PLAYS_MUSIC + CY_SPACE;
 
-	static const UINT CX_DISABLE_MOUSE = 250;
-	static const UINT CY_DISABLE_MOUSE = CY_STANDARD_OPTIONBUTTON;
-
-	//Commands tab.
-
-//	const int X_COMMANDS_FRAME = CX_SPACE;
-//	static const int Y_COMMANDS_FRAME = Y_INNERMENU;
-//	const UINT CX_COMMANDS_FRAME = (CX_TABBEDMENU - (CX_SPACE * 4)) / 2;
-//	const UINT CY_COMMANDS_FRAME = 540;
-	const UINT CX_CMD_BUTTON = 200;
-	static const UINT CY_CMD_BUTTON = CY_STANDARD_BUTTON;
-	static const int X_CMD_BUTTON = CX_SPACE;
-	static const int Y_CMD_BUTTON = Y_INNERMENU + CY_SPACE;
-	const int X_CMD_LABEL = X_CMD_BUTTON + CX_CMD_BUTTON + CX_SPACE;
-	const UINT CX_CMD_LABEL = 120;
-	static const UINT CY_CMD_LABEL = CY_CMD_BUTTON;
-	static const UINT BUTTON_COLUMNS = 3;
-
 	//
 	//Add widgets to screen.
 	//
@@ -480,6 +476,7 @@ CSettingsScreen::CSettingsScreen()
 	pTabbedMenu->SetBGImage("Background", 128);
 	AddWidget(pTabbedMenu);
 
+	SetupKeymap1Tab(pTabbedMenu);
 
 	//Settings tab.
 
@@ -723,80 +720,6 @@ CSettingsScreen::CSettingsScreen()
 			g_pTheDB->GetMessageText(MID_NoFocusPlaysMusic), false);
 	pSoundFrame->AddWidget(pOptionButton);
 
-	//Commands tab.
-
-	//Command buttons.
-	static const UINT BUTTON_COMMAND_COUNT = DCMD_Count;
-	static const UINT ButtonTags[BUTTON_COMMAND_COUNT] = {
-		TAG_NW_BUTTON, TAG_N_BUTTON, TAG_NE_BUTTON, 
-		TAG_W_BUTTON, TAG_WAIT_BUTTON, TAG_E_BUTTON,
-		TAG_SW_BUTTON, TAG_S_BUTTON, TAG_SE_BUTTON,
-		TAG_C_BUTTON, TAG_CC_BUTTON, TAG_RESTART_BUTTON,
-		TAG_UNDO_BUTTON, TAG_BATTLE_BUTTON, TAG_ACCESSORY_BUTTON,
-		TAG_LOCK_BUTTON, TAG_COMMAND_BUTTON, TAG_SCORE_BUTTON
-	};
-
-	//Show directional buttons in three columns.
-	static const UINT DIRECTIONAL_BUTTON_COUNT = 11;
-	UINT wButtonTagI;
-	for (wButtonTagI = 0; wButtonTagI < DIRECTIONAL_BUTTON_COUNT; ++wButtonTagI)
-	{
-		const UINT xCol = wButtonTagI % BUTTON_COLUMNS;
-		const UINT xRow = wButtonTagI / BUTTON_COLUMNS;
-
-		//Command buttons.
-		const MESSAGE_ID eMsgID = static_cast<MESSAGE_ID>(COMMAND_MIDS[wButtonTagI]);
-		const UINT yPixel = Y_CMD_BUTTON + (CY_CMD_BUTTON + 1) * xRow;
-		pButton = new CButtonWidget(ButtonTags[wButtonTagI],
-			X_CMD_BUTTON + (CX_CMD_BUTTON + CX_CMD_LABEL) * xCol, yPixel,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(eMsgID));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-		//Command labels.
-		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
-				X_CMD_LABEL + (CX_CMD_BUTTON + CX_CMD_LABEL) * xCol, yPixel,
-				CX_CMD_LABEL, CY_CMD_LABEL, F_Small, wszEmpty);
-		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
-	}
-
-	//Rest of command buttons.
-	int Y_BUTTON_OFFSET = Y_CMD_BUTTON + CY_CMD_BUTTON * 6;
-	for ( ; wButtonTagI < BUTTON_COMMAND_COUNT; ++wButtonTagI)
-	{
-		//Command buttons.
-		const MESSAGE_ID eMsgID = static_cast<MESSAGE_ID>(COMMAND_MIDS[wButtonTagI]);
-		pButton = new CButtonWidget(ButtonTags[wButtonTagI],
-			X_CMD_BUTTON, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(eMsgID));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-		//Command labels.
-		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
-				X_CMD_LABEL, Y_BUTTON_OFFSET,
-				CX_CMD_LABEL, CY_CMD_LABEL, F_Small, wszEmpty);
-		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
-
-		Y_BUTTON_OFFSET += CY_CMD_BUTTON + 1;
-	}
-
-
-	pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, X_CMD_BUTTON,
-			Y_BUTTON_OFFSET + CY_SPACE*2, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
-			g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
-	pTabbedMenu->AddWidgetToTab(pOptionButton, COMMANDS_TAB);
-
-	//Command default buttons.
-	Y_BUTTON_OFFSET = CY_TABBEDMENU - CY_CMD_BUTTON - CY_SPACE;
-	pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
-			X_CMD_BUTTON, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(MID_DefaultDesktop));
-	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-	pButton = new CButtonWidget(TAG_DEFAULT_LAPTOP,
-			X_CMD_BUTTON + CX_CMD_BUTTON + CX_SPACE, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(MID_DefaultLaptop));
-	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
 	//Okay, cancel and help buttons.
 	pButton = new CButtonWidget(TAG_OK, X_OKAY_BUTTON, Y_OKAY_BUTTON,
 				CX_OKAY_BUTTON, CY_OKAY_BUTTON, g_pTheDB->GetMessageText(MID_Okay));
@@ -805,44 +728,157 @@ CSettingsScreen::CSettingsScreen()
 	pButton = new CButtonWidget(TAG_CANCEL, X_CANCEL_BUTTON, Y_CANCEL_BUTTON,
 			CX_CANCEL_BUTTON, CY_CANCEL_BUTTON, g_pTheDB->GetMessageText(MID_Cancel));
 	AddWidget(pButton);
-	AddHotkey(SDLK_ESCAPE,TAG_CANCEL); 
-	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON, 
-			CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help)); 
-	AddWidget(pButton); 
+	AddHotkey(SDLK_ESCAPE,TAG_CANCEL);
+	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON,
+			CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help));
+	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
 
-	//Dialog box for reassigning a command key.
-	static const int Y_COMMANDPROMPTLABEL = CY_SPACE;
-	static const UINT CX_MESSAGE_BUTTON = 80;
-	static const UINT CX_LABEL = CX_MESSAGE - CX_SPACE*2;
-	static const UINT CY_LABEL = 25;
-	static const int Y_COMMANDLABEL = Y_COMMANDPROMPTLABEL + CY_LABEL + CY_SPACE;
-	this->pDialogBox = new CKeypressDialogWidget(0L,
-			0, 0, CX_MESSAGE, CY_MESSAGE);
-	AddWidget(this->pDialogBox);
+	this->pKeypressDialog = new CKeypressDialogWidget(0L);
+	AddWidget(this->pKeypressDialog);
 
-	pTitle = new CLabelWidget(0L, 0, Y_COMMANDPROMPTLABEL,
-			CX_LABEL, CY_LABEL, F_Small, g_pTheDB->GetMessageText(MID_GetKeyCommand));
-	pTitle->SetAlign(CLabelWidget::TA_CenterGroup);
-	this->pDialogBox->AddWidget(pTitle);
-	this->pCommandLabel = new CLabelWidget(0L, CX_SPACE, Y_COMMANDLABEL,
-			CX_LABEL, CY_LABEL, F_Small, wszEmpty);
-	this->pCommandLabel->SetAlign(CLabelWidget::TA_CenterGroup);
-	this->pDialogBox->AddWidget(this->pCommandLabel);
-	pButton = new CButtonWidget(TAG_CANCEL,
-			(CX_MESSAGE-CX_MESSAGE_BUTTON) / 2,
-			CY_MESSAGE-CY_STANDARD_BUTTON - CY_SPACE,
-			CX_MESSAGE_BUTTON, CY_STANDARD_BUTTON,
-			g_pTheDB->GetMessageText(MID_CancelNoHotkey));
-	this->pDialogBox->AddWidget(pButton);
-	this->pDialogBox->Center();
-	this->pDialogBox->Hide();
+	this->pKeypressDialog->Center();
+	this->pKeypressDialog->Hide();
 }
 
 //************************************************************************************
 CSettingsScreen::~CSettingsScreen()
 {
 	delete this->pCurrentPlayer;
+}
+
+//************************************************************************************
+void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
+{
+	static const UINT BUTTON_COLUMNS = 3;
+
+	static const int CMD_BUTTON_X = CX_SPACE;
+	static const int CMD_BUTTON_Y = Y_INNERMENU + CY_SPACE;
+	static const int CMD_BUTTON_W = 210;
+	static const int CMD_BUTTON_H = CY_STANDARD_BUTTON;
+	static const int CMD_BUTTON_V_SPACE = 6;
+	static const int CMD_BUTTON_SPECIAL_Y = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * 6;
+
+	static const int DEFAULT_BUTTON_Y = CY_TABBEDMENU - CMD_BUTTON_H - CY_SPACE;
+
+	// command labels are relative to their respective buttons, see X/Y offset
+	//               CMD_LABEL_X = <Calculated dynamically>
+	//               CMD_LABEL_Y = <Calculated dynamically>
+	static const int CMD_LABEL_W = 110;
+	static const int CMD_LABEL_H = CMD_BUTTON_H + 4;
+	static const int CMD_LABEL_X_OFFSET = CMD_BUTTON_W + CX_SPACE;
+	static const int CMD_LABEL_Y_OFFSET = (CMD_BUTTON_H - CMD_LABEL_H) / 2 - 5;
+
+	static const UINT CX_DISABLE_MOUSE = 250;
+	static const UINT CY_DISABLE_MOUSE = CY_STANDARD_OPTIONBUTTON;
+
+	static const int NO_COMMAND = 1;
+	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
+		{
+			DCMD_Lock, DCMD_UseWeapon, DCMD_UseArmor, DCMD_UseAccessory,
+			DCMD_Command,
+			NO_COMMAND,
+		},
+		{
+			DCMD_Battle, DCMD_ShowScore,
+			NO_COMMAND
+		},
+		{
+			DCMD_Undo, DCMD_Restart,
+			NO_COMMAND
+		}
+	};
+
+	//Command buttons.
+	static const UINT GAMEPLAY_BUTTON_COMMAND_COUNT = DCMD_Count;
+
+	CLabelWidget* pLabelWidget;
+	CButtonWidget* pButton;
+
+	//Show directional buttons in three columns.
+	static const UINT DIRECTIONAL_BUTTON_COUNT = 11;
+	UINT wButtonTagI;
+	for (wButtonTagI = 0; wButtonTagI < DIRECTIONAL_BUTTON_COUNT; ++wButtonTagI)
+	{
+		const KeyDefinition* pKeyDefinition = GetKeyDefinition(wButtonTagI);
+
+		const UINT colIndex = wButtonTagI % BUTTON_COLUMNS;
+		const UINT rowIndex = wButtonTagI / BUTTON_COLUMNS;
+
+		const MESSAGE_ID eCommandNameMID = static_cast<MESSAGE_ID>(pKeyDefinition->commandMID);
+		const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * colIndex;
+		const int buttonY = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * rowIndex;
+
+		const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+		const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+		//Command buttons.
+		this->pCommandButtonWidgets[wButtonTagI] = new CButtonWidget(TAG_KEY_BUTTON_START + wButtonTagI,
+			buttonX, buttonY,
+			CMD_BUTTON_W, CMD_BUTTON_H,
+			g_pTheDB->GetMessageText(eCommandNameMID));
+		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], COMMANDS_TAB);
+
+		//Command labels.
+		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
+			labelX, labelY,
+			CMD_LABEL_W, CMD_LABEL_H,
+			F_SettingsKeymaps, wszEmpty);
+		this->pCommandLabelWidgets[wButtonTagI]->SetVAlign(CLabelWidget::TA_VCenter);
+		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
+	}
+
+	//Rest of command buttons.
+	const int Y_OFFSET = (CMD_BUTTON_H + CY_SPACE) * (DIRECTIONAL_BUTTON_COUNT / BUTTON_COLUMNS + 1);
+	for (UINT columnIndex = 0; columnIndex < BUTTON_COLUMNS; ++columnIndex)
+	{
+		UINT buttonIndex = 0;
+		while (COMMAND_COLUMNS[columnIndex][buttonIndex] != NO_COMMAND)
+		{
+			const DCMD command = (DCMD)COMMAND_COLUMNS[columnIndex][buttonIndex];
+
+			const MESSAGE_ID eCommandNameMID = GetKeyDefinition(command)->commandMID;
+			const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * columnIndex;
+			const int buttonY = CMD_BUTTON_Y + Y_OFFSET + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * buttonIndex;
+
+			const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+			const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+			this->pCommandButtonWidgets[command] = new CButtonWidget(TAG_KEY_BUTTON_START + command,
+				buttonX, buttonY,
+				CMD_BUTTON_W, CMD_BUTTON_H,
+				g_pTheDB->GetMessageText(eCommandNameMID));
+			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], COMMANDS_TAB);
+
+			//Command labels.
+			this->pCommandLabelWidgets[command] = new CLabelWidget(0,
+				labelX, labelY,
+				CMD_LABEL_W, CMD_LABEL_H,
+				F_SettingsKeymaps, wszEmpty);
+			this->pCommandLabelWidgets[command]->SetVAlign(CLabelWidget::TA_VCenter);
+			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], COMMANDS_TAB);
+
+			buttonIndex++;
+		}
+	}
+
+	COptionButtonWidget* pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, CMD_BUTTON_X,
+		DEFAULT_BUTTON_Y - CMD_BUTTON_H - CY_SPACE, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
+		g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
+	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+
+	{ //Command default buttons.
+		pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
+			CMD_BUTTON_X, DEFAULT_BUTTON_Y,
+			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultDesktop));
+		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+
+		pButton = new CButtonWidget(TAG_DEFAULT_LAPTOP,
+			CMD_BUTTON_X + CMD_BUTTON_W + CX_SPACE, DEFAULT_BUTTON_Y,
+			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultLaptop));
+		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+	}
 }
 
 //******************************************************************************
@@ -901,6 +937,22 @@ void CSettingsScreen::OnKeyDown(
 	}
 
 	SetWidgetStates();
+}
+
+//************************************************************************************
+const DCMD CSettingsScreen::ButtonTagToDcmd(const UINT dwTagNo) const
+{
+	ASSERT(dwTagNo - TAG_KEY_BUTTON_START >= 0);
+	ASSERT(dwTagNo - TAG_KEY_BUTTON_START < DCMD_Count);
+
+	return DCMD(dwTagNo - TAG_KEY_BUTTON_START);
+}
+
+//************************************************************************************
+void CSettingsScreen::UpdateCommandKeyLabel(const InputKey inputKey, const UINT wCommandIndex)
+{
+	CLabelWidget* pLabel = this->pCommandLabelWidgets[wCommandIndex];
+	pLabel->SetText(I18N::DescribeInputKey(inputKey).c_str());
 }
 
 //************************************************************************************
@@ -964,64 +1016,15 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 				for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 				{
-					const SDL_Keycode nKey = COMMANDKEY_ARRAY[wKeyboard][wIndex];
-					this->pCurrentPlayer->Settings.SetVar(COMMANDNAME_ARRAY[wIndex], nKey);
-					DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[wIndex])->
-							SetText(g_pTheDB->GetMessageText(KeyToMID(nKey)));
+					const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+
+					const InputKey nKey = keyDefinition->GetDefaultKey(wKeyboard);
+					this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, nKey);
+					UpdateCommandKeyLabel(nKey, wIndex);
 				}
 
 				Paint();
 			}
-		break;
-
-		case TAG_NW_BUTTON: case TAG_N_BUTTON: case TAG_NE_BUTTON:
-		case TAG_W_BUTTON: case TAG_WAIT_BUTTON: case TAG_E_BUTTON:
-		case TAG_SW_BUTTON: case TAG_S_BUTTON: case TAG_SE_BUTTON:
-		case TAG_C_BUTTON: case TAG_CC_BUTTON: case TAG_RESTART_BUTTON:
-		case TAG_UNDO_BUTTON: case TAG_BATTLE_BUTTON: case TAG_ACCESSORY_BUTTON:
-		case TAG_LOCK_BUTTON:
-		case TAG_COMMAND_BUTTON:
-		case TAG_SCORE_BUTTON:
-		{
-			DCMD eCommand = BUTTONTAG_TO_DCMD(dwTagNo);
-
-			SDL_Keycode newKey, currentKey;
-			currentKey = static_cast<SDL_Keycode>(this->pCurrentPlayer->Settings.GetVar(
-				COMMANDNAME_ARRAY[eCommand], SDLK_UNKNOWN));
-			if (GetCommandKeyRedefinition(eCommand, currentKey, newKey))
-			{
-				if (newKey != currentKey)
-				{
-					//Overwritten key commands set to undefined.
-					for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
-					{
-						if (this->pCurrentPlayer->Settings.GetVar(
-							COMMANDNAME_ARRAY[nCommand], 0)==newKey)
-						{
-							this->pCurrentPlayer->Settings.SetVar(
-								COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
-							DYN_CAST(CLabelWidget*, CWidget*,
-								this->pCommandLabelWidgets[nCommand])->
-								SetText(g_pTheDB->GetMessageText(KeyToMID(SDLK_UNKNOWN)));
-						}
-					}
-
-					//Update current player settings for this command to newKey.
-					this->pCurrentPlayer->Settings.SetVar(
-							COMMANDNAME_ARRAY[eCommand], newKey);
-
-					//Update label of command that was changed.
-					DYN_CAST(CLabelWidget*, CWidget*,
-							this->pCommandLabelWidgets[eCommand])->
-								SetText(g_pTheDB->GetMessageText(KeyToMID(newKey)));
-
-					Paint();
-				}
-			} else {
-				OnQuit();
-				return;
-			}
-		}
 		break;
 
 		case TAG_SCREENSIZE:
@@ -1075,10 +1078,95 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
       case TAG_UPLOADSCORES:
 			UploadScores();
 		break;
+
+		default:
+			DoKeyRedefinition(dwTagNo);
+		break;
+
 	}  //switch dwTagNo
 
 #  undef BUTTONTAG_TO_DCMD
 #  undef DCMD_TO_LABELTAG
+}
+
+//************************************************************************************
+const KeyDefinition* CSettingsScreen::GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const
+{
+	const SDL_Keycode newKeycode = ReadInputKey(newKey);
+
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		if (nCommand == eChangedCommand || !DoesCommandUseModifiers((DCMD)nCommand))
+			continue;
+
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		if (this->pCurrentPlayer->Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY) == (InputKey)newKeycode)
+			return keyDefinition;
+	}
+
+	return NULL;
+}
+
+//************************************************************************************
+void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
+	if (dwTagNo < TAG_KEY_BUTTON_START || dwTagNo > TAG_KEY_BUTTON_END)
+		return;
+
+	InputKey newKey, currentKey;
+
+	const DCMD eCommand = ButtonTagToDcmd(dwTagNo);
+	const KeyDefinition* keyDefinition = GetKeyDefinition(eCommand);
+	currentKey = this->pCurrentPlayer->Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
+
+	if (!GetCommandKeyRedefinition(eCommand, currentKey, newKey, !DoesCommandUseModifiers(eCommand)))
+	{
+		OnQuit();
+		return;
+	}
+	if (newKey == currentKey)
+		return;
+
+	// If we are changing a command that does not support modifiers, and provide a key with
+	// modifiers, make sure we don't use the same base key as any of the commands
+	// that have modifiers-variants built-in, eg. ctrl+move
+	if (!DoesCommandUseModifiers(eCommand) && (InputKey)ReadInputKey(newKey) != newKey)
+	{
+		const KeyDefinition* pOverwrittenKey = GetOverwrittenModifiableKey(newKey, eCommand);
+
+		if (pOverwrittenKey) {
+			WSTRING str = WCSReplace(
+				g_pTheDB->GetMessageText(MID_OverwritingMacroKeyError),
+				L"%1",
+				g_pTheDB->GetMessageText(pOverwrittenKey->commandMID)
+			);
+			ShowOkMessage(str.c_str());
+			return;
+		}
+	}
+
+	//Overwritten key commands set to undefined.
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		const KeyDefinition* clearedKeyDefinition = GetKeyDefinition(nCommand);
+		const InputKey currentKey = this->pCurrentPlayer->Settings.GetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+		const bool bOverwrite = currentKey == newKey
+			|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
+
+		if (bOverwrite)
+		{
+			this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+			UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
+		}
+	}
+
+	//Update current player settings for this command to newKey.
+	this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, newKey);
+
+	//Update label of command that was changed.
+	UpdateCommandKeyLabel(newKey, eCommand);
+
+	Paint();
 }
 
 //************************************************************************************
@@ -1257,13 +1345,9 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 
 	for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 	{
-		SETMISSING(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		const KeyDefinition* keyDefinition = GetKeyDefinition(wIndex);
 
-		//SDL1 key mapping migration
-		const int nKey = Settings.GetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
-		if (bInvalidSDL1mapping)
-			Settings.SetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		SETMISSING(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
 	}
 
 #  undef SETMISSING
@@ -1465,9 +1549,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	//Command settings.
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
-		const int nKey = settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
-		DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[nCommand])->SetText(
-			g_pTheDB->GetMessageText(KeyToMID(SDL_Keycode(nKey))));
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		const InputKey nKey = settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
+		UpdateCommandKeyLabel(nKey, nCommand);
 	}
 
 	bytVolume = settings.GetVar(Settings::RepeatRate, (BYTE)128);
@@ -1850,23 +1935,37 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 //Returns false if SDL_Quit/ALT-F4 occurred, true otherwise. 
 //
 //Params:
-	const DCMD eCommand,    //(in) Command being redefined
-	const SDL_Keycode CurrentKey,   //(in)
-	SDL_Keycode &NewKey)            //(out)
+	const DCMD eCommand,       //(in) Command being redefined
+	const InputKey CurrentKey, //(in)
+	InputKey& NewKey,           //(out)
+	const bool bAllowSpecial)  //(in) Whether to allow keys in the F range and modifiers
 {
-	const MESSAGE_ID eButtonMID = COMMAND_MIDS[eCommand];
-	this->pCommandLabel->SetText(g_pTheDB->GetMessageText(eButtonMID));
+	const MESSAGE_ID eButtonMID = GetKeyDefinition(eCommand)->commandMID;
+	this->pKeypressDialog->SetupDisplay(eButtonMID, bAllowSpecial);
 
 	UINT dwRetTagNo;
-	SDL_Keycode DialogKey = SDLK_UNKNOWN;
+	InputKey dialogKey = UNKNOWN_INPUT_KEY;
+	SDL_Keycode readKeyCode;
+	bool bIsShift, bIsAlt, bIsCtrl;
+
 	bool bInvalidKey; 
 	do 
 	{
-		dwRetTagNo = this->pDialogBox->Display();
-		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL ||
-				dwRetTagNo == TAG_ESCAPE) break;
-		DialogKey = this->pDialogBox->GetKey();
-		bInvalidKey = (DialogKey >= SDLK_F1 && DialogKey <= SDLK_F12) || (DialogKey >= SDLK_F13);
+		dwRetTagNo = this->pKeypressDialog->Display();
+		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL || dwRetTagNo == TAG_ESCAPE)
+			break;
+
+		bInvalidKey = false;
+		dialogKey = this->pKeypressDialog->GetKey();
+		ReadInputKey(dialogKey, readKeyCode, bIsShift, bIsAlt, bIsCtrl);
+		if (!bAllowSpecial) {
+			if (bIsShift || bIsAlt || bIsCtrl)
+				bInvalidKey = true;
+			if ((dialogKey >= SDLK_F1 && dialogKey <= SDLK_F12) || dialogKey >= SDLK_F13)
+				bInvalidKey = true;
+		}
+
+
 		if (bInvalidKey)
 			ShowOkMessage(MID_InvalidCommandKey);
 	} while (bInvalidKey);
@@ -1880,7 +1979,7 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 		return true;
 	}
 
-	NewKey = DialogKey;
+	NewKey = dialogKey;
 	return true;
 }
 
@@ -1895,7 +1994,9 @@ const
 {
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
-		if (Settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN) == SDLK_UNKNOWN)
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		if (Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY) == UNKNOWN_INPUT_KEY)
 			return false;
 	}
 	return true;

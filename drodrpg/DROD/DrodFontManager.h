@@ -80,6 +80,7 @@ enum FONTTYPE
 	F_DamagePreviewSmall,
 	F_DamagePreviewMedium,
 	F_DamagePreviewLarge,
+	F_SettingsKeymaps,
 
 	F_Last
 };
