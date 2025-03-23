@@ -2605,7 +2605,158 @@ void CGameScreen::OnKeyDown(
 
 	//Check for a game command.
 	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
-	if (nCommand != CMD_UNSPECIFIED)
+	switch (nCommand)
+	{
+		case CMD_EXTRA_SAVE_GAME:
+			SaveGame();
+		break;
+		case CMD_EXTRA_LOAD_GAME:
+			LoadGame();
+		break;
+		case CMD_EXTRA_QUICK_SAVE:
+			if (!this->bPlayTesting)
+			{
+				this->pCurrentGame->QuickSave();
+				CTextEffect* pTextEffect = new CTextEffect(this->pRoomWidget,
+					g_pTheDB->GetMessageText(MID_QuickSaveCompleted), F_Stats, 500, 1000, false, true);
+				pTextEffect->Move(5, 5);
+				this->pRoomWidget->AddLastLayerEffect(pTextEffect);
+			}
+		break;
+		case CMD_EXTRA_QUICK_LOAD:
+			if (!this->bPlayTesting)
+			{
+				const UINT quicksaveID = g_pTheDB->SavedGames.FindByContinue(ST_Quicksave);
+				if (!quicksaveID)
+				{
+					ShowOkMessage(MID_QuickSave_NoneAvailable);
+					break;
+				}
+				if (ShowYesNoMessage(MID_QuickLoadQuestion) == TAG_YES)
+				{
+					SetCursor(CUR_Wait);
+					if (LoadQuicksave())
+					{
+						this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+						this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame);
+						this->pMapWidget->RequestPaint();
+						Paint();
+					}
+					SetCursor();
+					HideCursor();
+				}
+			}
+		break;
+
+		//Skip cutscene/clear playing speech.
+		case CMD_EXTRA_SKIP_SPEECH:
+			if (this->pCurrentGame && this->pCurrentGame->dwCutScene)
+			{
+				if (this->pCurrentGame->dwCutScene == 1)
+				{
+					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
+					ClearSpeech(true);
+				}
+				else {
+					this->pCurrentGame->dwCutScene = 1; //run cutscene quickly to its conclusion
+				}
+			} else if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
+				//Speed up combat x2.
+				this->wThisCombatTickSpeed /= 2;
+				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
+				{
+					this->wThisCombatTickSpeed = 0;
+					this->pCurrentGame->bQuickCombat = true;
+				}
+			} else {
+				//Clear all speech and subtitles of any sort
+				ClearSpeech(true);
+				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
+			}
+		break;
+
+		//Show chat dialog.
+		case CMD_EXTRA_OPEN_CHAT:
+			ShowCursor();
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			this->pCurrentGame->UpdateTime(SDL_GetTicks());  //make time current
+			//DisplayRoomStats();
+			DisplayChatDialog();
+		break;
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pSpeechBox);
+		break;
+
+		//Room screenshot.
+		case CMD_EXTRA_SAVE_ROOM_IMAGE:
+		{
+			SDL_Surface* pRoomSurface = SDL_CreateRGBSurface(
+				SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
+				g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
+			if (!pRoomSurface) break;
+			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
+				this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
+			SaveSurface(pRoomSurface);
+			SDL_FreeSurface(pRoomSurface);
+		}
+		break;
+
+		case CMD_EXTRA_SHOW_HELP:
+			GotoHelpPage();
+		break;
+
+		case CMD_EXTRA_SETTINGS:
+			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
+				GoToScreen(SCR_Settings);
+			}
+			else {
+				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			}
+		break;
+
+		case CMD_EXTRA_TOGGLE_TURN_COUNT:
+			this->pRoomWidget->ToggleMoveCount();
+		break;
+		case CMD_EXTRA_TOGGLE_HOLD_VARS:
+#ifdef ENABLE_CHEATS
+			this->pRoomWidget->ToggleVarDisplay();
+#else
+			if (CanShowVarUpdates()) {
+				this->pRoomWidget->ToggleVarDisplay();
+			}
+#endif
+		break;
+		case CMD_EXTRA_TOGGLE_FRAME_RATE:
+			this->pRoomWidget->ToggleFrameRate();
+		break;
+
+		//Global var editor.
+		case CMD_EXTRA_EDIT_VARS:
+			if (!this->bShowingBigMap && !this->bShowingTempRoom && GetScreenType() == SCR_Game)
+			{
+				if (!this->pCurrentGame->InCombat() && !this->pCurrentGame->dwCutScene && //don't allow altering vars during self-advancing play segments
+					this->pCurrentGame->GetUnansweredQuestion() == NULL) //or when constrained to a specific type of response
+				{
+#ifndef ENABLE_CHEATS
+					if (this->bPlayTesting)
+#endif
+						EditGlobalVars(this->pSpeechBox, NULL, this->pCurrentGame);
+				}
+			}
+		break;
+		case CMD_EXTRA_LOG_VARS:
+			LogHoldVars();
+		break;
+
+		//Force full style reload.
+		case CMD_EXTRA_RELOAD_STYLE:
+			this->pRoomWidget->UpdateFromCurrentGame(true);
+		break;
+	}
+
+	if (!bIsVirtualCommand(nCommand) && nCommand != CMD_UNSPECIFIED)
 	{
 		//Hide mouse cursor while playing.
 		HideCursor();
@@ -2642,39 +2793,12 @@ void CGameScreen::OnKeyDown(
 		}
 	}
 
+	if (nCommand) // We handled one of the mapped commands, do nothing else here
+		return;
+
 	//Check for other keys.
 	switch (Key.keysym.sym)
 	{
-		//Help screen.
-		case SDLK_F1:
-			GotoHelpPage();
-		break;
-
-		//Save game.
-		case SDLK_F2:
-			SaveGame();
-		break;
-
-		//Load game.
-		case SDLK_F3:
-			LoadGame();
-		break;
-
-		//Global var editor.
-		case SDLK_F4:
-			if (!this->bShowingBigMap && !this->bShowingTempRoom && GetScreenType() == SCR_Game)
-			{
-				if (!this->pCurrentGame->InCombat() && !this->pCurrentGame->dwCutScene && //don't allow altering vars during self-advancing play segments
-						this->pCurrentGame->GetUnansweredQuestion() == NULL) //or when constrained to a specific type of response
-				{
-#ifndef ENABLE_CHEATS
-					if (this->bPlayTesting)
-#endif
-						EditGlobalVars(this->pSpeechBox, NULL, this->pCurrentGame);
-				}
-			}
-		break;
-
 /*
 		case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
@@ -2699,50 +2823,6 @@ void CGameScreen::OnKeyDown(
 		}
 		break;
 */
-
-		case SDLK_F6:
-			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
-				GoToScreen(SCR_Settings);
-			} else {
-				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-			}
-		return;
-
-		//Quick save/load.
-		case SDLK_F5:
-			if (!this->bPlayTesting)
-			{
-				this->pCurrentGame->QuickSave();
-				CTextEffect *pTextEffect = new CTextEffect(this->pRoomWidget,
-						g_pTheDB->GetMessageText(MID_QuickSaveCompleted), F_Stats, 500, 1000, false, true);
-				pTextEffect->Move(5, 5);
-				this->pRoomWidget->AddLastLayerEffect(pTextEffect);
-			}
-		break;
-		case SDLK_F9:
-			if (!this->bPlayTesting)
-			{
-				const UINT quicksaveID = g_pTheDB->SavedGames.FindByContinue(ST_Quicksave);
-				if (!quicksaveID)
-				{
-					ShowOkMessage(MID_QuickSave_NoneAvailable);
-					break;
-				}
-				if (ShowYesNoMessage(MID_QuickLoadQuestion) == TAG_YES)
-				{
-					SetCursor(CUR_Wait);
-					if (LoadQuicksave())
-					{
-						this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-						this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame);
-						this->pMapWidget->RequestPaint();
-						Paint();
-					}
-					SetCursor();
-					HideCursor();
-				}
-			}
-		break;
 
 /*
 		case SDLK_F5:
@@ -2796,37 +2876,6 @@ void CGameScreen::OnKeyDown(
 		break;
 */
 
-		//Room screenshot.
-		case SDLK_F11:
-		if (Key.keysym.mod & KMOD_CTRL)
-		{
-			SDL_Surface *pRoomSurface = SDL_CreateRGBSurface(
-					SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
-					g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
-			if (!pRoomSurface) break;
-			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
-					this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
-			SaveSurface(pRoomSurface);
-			SDL_FreeSurface(pRoomSurface);
-		}
-		break;
-
-		//Show chat dialog.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				ShowCursor();
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				this->pCurrentGame->UpdateTime(SDL_GetTicks());  //make time current
-//				DisplayRoomStats();
-				DisplayChatDialog();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pSpeechBox);
-			}
-		break;
 /*
 		//Toggle room lock.
 		case SDLK_LSHIFT: case SDLK_RSHIFT:
@@ -2836,52 +2885,6 @@ void CGameScreen::OnKeyDown(
 			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
 		break;
 */
-
-		//Skip cutscene/clear playing speech.
-		case SDLK_SPACE:
-			if (this->pCurrentGame && this->pCurrentGame->dwCutScene)
-			{
-				if (this->pCurrentGame->dwCutScene == 1)
-				{
-					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
-					ClearSpeech(true);
-				} else {
-					this->pCurrentGame->dwCutScene = 1; //run cutscene quickly to its conclusion
-				}
-			} else if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
-				//Speed up combat x2.
-				this->wThisCombatTickSpeed /= 2;
-				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
-				{
-					this->wThisCombatTickSpeed = 0;
-					this->pCurrentGame->bQuickCombat = true;
-				}
-			} else {
-				//Clear all speech and subtitles of any sort
-				ClearSpeech(true);
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
-			}
-		break;
-
-		//Force full style reload.
-		case SDLK_F8:
-			this->pRoomWidget->UpdateFromCurrentGame(true);
-		break;
-		//Persistent move count display / Frame rate / Game var output.
-		case SDLK_F7:
-			if (Key.keysym.mod & KMOD_SHIFT) {
-				LogHoldVars();
-			} else if (Key.keysym.mod & KMOD_CTRL) {
-#ifndef ENABLE_CHEATS
-				if (CanShowVarUpdates())
-#endif
-					this->pRoomWidget->ToggleVarDisplay();
-			} else if (Key.keysym.mod & KMOD_ALT) {
-				this->pRoomWidget->ToggleFrameRate();
-			} else {
-				this->pRoomWidget->ToggleMoveCount();
-			}
-		break;
 
 		case SDLK_UP: //Up arrow.
 			if (Key.keysym.mod & KMOD_CTRL) {

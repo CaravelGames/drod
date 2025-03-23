@@ -481,3 +481,75 @@ Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this
 [MID_OverwritingMacroKeyError]
 [eng]
 You can't map to this key because command '%1' uses the same key but without any modifiers.
+
+[MID_MoreCommands]
+[eng]
+More Commands
+
+[MID_SaveGame]
+[eng]
+Save Game
+
+[MID_LoadGame]
+[eng]
+Load Game
+
+[MID_QuickSave]
+[eng]
+Quick Save
+
+[MID_QuickLoad]
+[eng]
+Quick Load
+
+[MID_SkipSpeech]
+[eng]
+Skip Speech
+
+[MID_Command_ChatHistory]
+[eng]
+Open Chat History
+
+[MID_Command_Screenshot]
+[eng]
+Game Screenshot
+
+[MID_Command_SaveRoomImage]
+[eng]
+Room Screenshot
+
+[MID_Command_ShowHelp]
+[eng]
+Show Help
+
+[MID_Command_OpenSettings]
+[eng]
+Open Settings
+
+[MID_Command_ToggleFullScreen]
+[eng]
+Toggle Full Screen
+
+MID_Command_ToggleTurnCount
+[eng]
+Toggle Turn Count
+
+[MID_Command_ToggleHoldVars]
+[eng]
+Toggle Var Monitor
+
+[MID_Command_ToggleFrameRate]
+[eng]
+Toggle Frame Rate
+
+[MID_Command_EditVars]
+[eng]
+Edit Variables
+
+[MID_Command_LogVars]
+[eng]
+Log Variable State
+
+[MID_Command_ReloadStyle]
+[eng]
+Force Reload Style

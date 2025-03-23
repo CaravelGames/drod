@@ -49,6 +49,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/GameConstants.h"
 #include "../DRODLib/SettingsKeys.h"
 
 #include <FrontEndLib/ButtonWidget.h>
@@ -2316,6 +2317,15 @@ void CDrodScreen::EnablePlayerSettings(
 	g_pTheBM->eyeCandy = (pPlayer->Settings.GetVar(Settings::EyeCandy, true) ? 1 : 0);
 	g_pTheDBM->tarstuffAlpha = pPlayer->Settings.GetVar(Settings::TarstuffAlpha, BYTE(255));
 	g_pTheDBM->mapIconAlpha = pPlayer->Settings.GetVar(Settings::MapIconAlpha, BYTE(255));
+
+	CScreen::inputKeyFullScreen = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_ToggleFullScreen)->settingName,
+		(InputKey)SDLK_F10
+	);
+	CScreen::inputKeyScreenshot = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_Screenshot)->settingName,
+		(InputKey)SDLK_F11
+	);
 
 	//RepeatRate is queried in CGameScreen::ApplyPlayerSettings().
 

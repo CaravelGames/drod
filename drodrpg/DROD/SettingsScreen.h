@@ -53,6 +53,7 @@ protected:
 
 private:
 	void       SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu);
+	void       SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu);
 	const DCMD ButtonTagToDcmd(const UINT dwTagNo) const;
 	void       DoKeyRedefinition(const UINT dwTagNo);
 	const KeyDefinition* GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const;

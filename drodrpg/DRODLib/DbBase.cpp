@@ -994,6 +994,25 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_GetKeyDescription_NoModifiers: strText = "Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed for this command."; break;
 		case MID_GetKeyDescription_YesModifiers: strText = "Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this command."; break;
 		case MID_OverwritingMacroKeyError: strText = "You can't map to this key because command '%1' uses the same key but without any modifiers."; break;
+		case MID_MoreCommands: strText = "More Commands"; break;
+		case MID_SaveGame: strText = "Save game"; break;
+		case MID_LoadGame: strText = "Load game"; break;
+		case MID_QuickSave: strText = "Quick Save"; break;
+		case MID_QuickLoad: strText = "Quick Load"; break;
+		case MID_SkipSpeech: strText = "Skip Speech"; break;
+		case MID_Command_OpenChat: strText = "Open Chatbox"; break;
+		case MID_Command_ChatHistory: strText = "Open Chat History"; break;
+		case MID_Command_Screenshot: strText = "Game Screenshot"; break;
+		case MID_Command_SaveRoomImage: strText = "Room Screenshot"; break;
+		case MID_Command_ShowHelp: strText = "Show Help"; break;
+		case MID_Command_OpenSettings: strText = "Open Settings"; break;
+		case MID_Command_ToggleFullScreen: strText = "Toggle Full Screen"; break;
+		case MID_Command_ToggleTurnCount: strText = "Toggle Turn Count"; break;
+		case MID_Command_ToggleHoldVars: strText = "Toggle Var Monitor"; break;
+		case MID_Command_ToggleFrameRate: strText = "Toggle Frame Rate"; break;
+		case MID_Command_EditVars: strText = "Edit Variables"; break;
+		case MID_Command_LogVars: strText = "Log Variable State"; break;
+		case MID_Command_ReloadStyle: strText = "Force Style Reload"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
