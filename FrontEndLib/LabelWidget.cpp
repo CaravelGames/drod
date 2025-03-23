@@ -226,6 +226,6 @@ void CLabelWidget::RenderAndCacheText()
 
 		g_pTheFM->DrawTextToRect(this->eFontType, this->wstrText.c_str(),
 				0, this->y_font_offset, this->w, this->h, this->pRenderedText, this->wFirstIndent,
-				this->bPrintLeadingSpacesAfterFirstLine);
+				255, this->bPrintLeadingSpacesAfterFirstLine);
 	}
 }
