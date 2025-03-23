@@ -122,7 +122,7 @@ public:
 			const UINT wWidth=0, const UINT wHeight=0, const Uint8 opacity=255) const;
 	void        DrawTextToRect(const UINT eFontType, const WCHAR *pwczText,
 			int nX, int nY, UINT wW, UINT wH, SDL_Surface *pSurface,
-			const UINT wFirstIndent=0, const Uint8 opacity=255) const;
+			const UINT wFirstIndent=0, const Uint8 opacity=255, const bool bPrintLeadingSpaces=false) const;
 	void        DrawHotkeyTextToLine(const UINT eFontType, const WCHAR *pwczText,
 			int nX, int nY, UINT wW, SDL_Surface *pSurface, const Uint8 opacity=255,
 			const int eHotkeyFont=-1) const;
@@ -160,7 +160,8 @@ protected:
 	const WCHAR *  DrawText_CopyNextWord(const WCHAR *pwczStart,
 			WCHAR *wczWord, UINT &wWordLen) const;
 	const WCHAR *  DrawText_SkipOverNonWord(const WCHAR *pwczStart,
-			UINT &wTrailSpaceCount, UINT &wTrailCRLFCount) const;
+			UINT &wTrailSpaceCount, UINT &wTrailCRLFCount,
+			bool bStopAtCRLF=false) const;
 	void        DrawPartialWord(const UINT eFontType, WCHAR *wczWord,
 			const UINT wWordLen, const int xDraw, const int yDraw,
 			const UINT wXLimit, SDL_Surface *pSurface,
