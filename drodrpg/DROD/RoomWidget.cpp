@@ -1774,11 +1774,8 @@ const
 }
 
 //*****************************************************************************
-WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const
-//Returns: two or three lines of text giving information about this monster and fighting it
+CMonster* CRoomWidget::GetMonsterForStatDisplay(const UINT wX, const UINT wY) const
 {
-	WSTRING wstr;
-
 	CMonster* pMonster = this->pRoom->GetMonsterAtSquare(wX, wY);
 	if (!pMonster)
 	{
@@ -1787,10 +1784,99 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 		//the player will have to fight it at this location.
 		pMonster = this->pRoom->GetMotherConnectedToTarTile(wX, wY);
 		if (!pMonster)
-			return wstr;
+			return NULL;
 	}
 
-	pMonster = pMonster->GetOwningMonster();
+	return pMonster->GetOwningMonster();
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetMonsterNameAndAbility(CMonster* pMonster) const
+{
+	WSTRING wstr;
+
+	if (!pMonster)
+		return wstr;
+	
+	wstr = GetMonsterName(pMonster);
+
+	const WSTRING ability = GetMonsterAbility(pMonster);
+	if (!ability.empty())
+	{
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+		wstr += ability;
+		wstr += wszRightParen;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY) const
+{
+	WSTRING wstr;
+
+	if (!pMonster)
+		return wstr;
+
+	CSwordsman& player = *this->pCurrentGame->pPlayer;
+	CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
+
+	const int damage = combat.GetExpectedDamage();
+	if (damage < 0) {
+		wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
+		return wstr;
+	}
+
+	WCHAR temp[12];
+
+	wstr += g_pTheDB->GetMessageText(MID_ExpectedDamage);
+	wstr += wszColon;
+	wstr += wszSpace;
+	if (damage >= INT_MAX) {
+		wstr += g_pTheDB->GetMessageText(MID_Death);
+	} else {
+		if (combat.IsExpectedDamageApproximate())
+			wstr += wszTilde;
+		wstr += _itoW(damage, temp, 10);
+	}
+
+	static const WCHAR multiplier[] = { We('x'),We(0) };
+	const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
+	const UINT monsterAttacks = combat.GetMonsterAttacksMade();
+	const UINT needATK = combat.IsExpectedDamageApproximate() ? 0 : //don't provide a false guess
+		combat.GetProjectedPlayerATKIncreaseForFasterWin();
+
+	wstr += wszSpace;
+	wstr += wszLeftParen;
+	wstr += _itoW(enemySingleAttackDamage, temp, 10);
+	wstr += wszSpace;
+	wstr += multiplier;
+	wstr += wszSpace;
+	wstr += _itoW(monsterAttacks, temp, 10);
+	if (needATK) {
+		wstr += wszComma;
+		wstr += wszSpace;
+		wstr += wszPlus;
+		wstr += _itoW(needATK, temp, 10);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
+	}
+	wstr += wszRightParen;
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const
+//Returns: two or three lines of text giving information about this monster and fighting it
+{
+	WSTRING wstr;
+
+	CMonster* pMonster = GetMonsterForStatDisplay(wX, wY);
+	if (!pMonster)
+		return wstr;
 
 	UINT type = pMonster->wType;
 	if (!this->pCurrentGame)
@@ -1824,23 +1910,16 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 				pGameScreen->ShowStatsForMonster(pMonster);
 		}
 
-		wstr += GetMonsterName(pMonster);
-		WSTRING ability = GetMonsterAbility(pMonster);
-		if (!ability.empty())
-		{
-			wstr += wszSpace;
-			wstr += wszLeftParen;
-			wstr += ability;
-			wstr += wszRightParen;
-		}
+		wstr += GetMonsterNameAndAbility(pMonster);
 		if (!pMonster->IsCombatable())
 			return wstr;  //types that can't fight the player -- don't show any info for them
-
-		WCHAR temp[12];
 		wstr += wszCRLF;
 
-		const int gold = pMonster->getGOLD() * this->pCurrentGame->pPlayer->getGoldMultiplier();
-		const int xp = pMonster->getXP() * this->pCurrentGame->pPlayer->getXPMultiplier();
+		WCHAR temp[12];
+
+		CSwordsman& player = *this->pCurrentGame->pPlayer;
+		const int gold = pMonster->getGOLD() * player.getGoldMultiplier();
+		const int xp = pMonster->getXP() * player.getXPMultiplier();
 		if (bFull)
 		{
 			wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
@@ -1877,47 +1956,9 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 			wstr += wszCRLF;
 		}
 
-		CSwordsman& player = *this->pCurrentGame->pPlayer;
-		CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
-		const int damage = combat.GetExpectedDamage();
 		wstr += wszSpace;
-		if (damage < 0) {
-			wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
-		} else {
-			wstr += g_pTheDB->GetMessageText(MID_ExpectedDamage);
-			wstr += wszColon;
-			wstr += wszSpace;
-			if (damage >= INT_MAX) {
-				wstr += g_pTheDB->GetMessageText(MID_Death);
-			} else {
-				if (combat.IsExpectedDamageApproximate())
-					wstr += wszTilde;
-				wstr += _itoW(damage, temp, 10);
-			}
 
-			static const WCHAR multiplier[] = {We('x'),We(0)};
-			const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
-			const UINT monsterAttacks = combat.GetMonsterAttacksMade();
-			const UINT needATK = combat.IsExpectedDamageApproximate() ? 0 : //don't provide a false guess
-					combat.GetProjectedPlayerATKIncreaseForFasterWin();
-
-			wstr += wszSpace;
-			wstr += wszLeftParen;
-			wstr += _itoW(enemySingleAttackDamage, temp, 10);
-			wstr += wszSpace;
-			wstr += multiplier;
-			wstr += wszSpace;
-			wstr += _itoW(monsterAttacks, temp, 10);
-			if (needATK) {
-				wstr += wszComma;
-				wstr += wszSpace;
-				wstr += wszPlus;
-				wstr += _itoW(needATK, temp, 10);
-				wstr += wszSpace;
-				wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
-			}
-			wstr += wszRightParen;
-		}
+		wstr += GetCombatAnalysis(pMonster, wX, wY);
 
 		if (!bFull)
 		{

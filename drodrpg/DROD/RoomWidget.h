@@ -269,6 +269,9 @@ public:
 	UINT           GetEntityTile(const UINT wApparentIdentity,
 			const UINT wLogicalIdentity, const UINT wO, const UINT wFrame) const;
 	UINT           GetLastTurn() const {return this->wLastTurn;}
+	CMonster*      GetMonsterForStatDisplay(const UINT wX, const UINT wY) const;
+	WSTRING        GetMonsterNameAndAbility(CMonster* pMonster) const;
+	WSTRING        GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY) const;
 	WSTRING        GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const;
 	WSTRING        GetMonsterAbility(CMonster* pMonster) const;
 	WSTRING        GetMonsterName(CMonster* pMonster) const;
