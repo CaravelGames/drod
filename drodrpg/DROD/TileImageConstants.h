@@ -2562,7 +2562,19 @@
 #define TI_MAP_ICON_KEY_BLUE 2364
 #define TI_MAP_ICON_KEY_WHITE 2365
 #define TI_MAP_ICON_QUESTION_MARK 2366
-static const UINT TI_COUNT = 2367;
+//*****************************************************************************
+#define TI_STAT_ICON_HP  2367
+#define TI_STAT_ICON_ATK 2368
+#define TI_STAT_ICON_DEF 2369
+#define TI_STAT_ICON_GR  2370
+#define TI_STAT_ICON_REP 2371
+#define TI_STAT_ICON_YK  2372
+#define TI_STAT_ICON_GK  2373
+#define TI_STAT_ICON_BK  2374
+#define TI_STAT_ICON_SK  2375
+#define TI_STAT_ICON_SHOVEL 2376
+
+static const UINT TI_COUNT = 2377;
 
 static inline bool bIsBriarTI(const UINT ti)
 {
