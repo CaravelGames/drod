@@ -7040,23 +7040,10 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		pExpRoom->orbTypes.push_back(room.orbs[count]->eType);
 	*/
 
-	//Save monsters.
+	//Save a copy of monsters to the explored room.
 	CMonster *pLastNewMonster = NULL;
 	for (CMonster *pMonster = room.pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		//Save monster state info where needed.
-		if (pMonster->wType == M_CHARACTER)
-		{
-			//Restart scripts that are flagged to do so.
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsRestartScriptOnRoomEntrance())
-				pCharacter->RestartScript();
-
-			//Save current state of NPC, but the NPCs script itself doesn't need to be saved,
-			//and should not be included to save space.
-			pCharacter->SetExtraVarsFromMembersWithoutScript(pCharacter->ExtraVars);
-		}
-
 		//Make copy of monster in its current state.
 		CMonster *pNew = pMonster->Clone();
 		//Copy monster pieces.
@@ -7068,6 +7055,19 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 			CMonsterPiece *pNewPiece = new CMonsterPiece(pNew,
 					oldPiece.wTileNo, oldPiece.wX, oldPiece.wY);
 			pNew->Pieces.push_back(pNewPiece);
+		}
+
+		//Save monster state info where needed.
+		if (pNew->wType == M_CHARACTER)
+		{
+			//Restart scripts that are flagged to do so.
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
+			if (pCharacter->IsRestartScriptOnRoomEntrance())
+				pCharacter->RestartScript();
+
+			//Save current state of NPC, but the NPCs script itself doesn't need to be saved,
+			//and should not be included to save space.
+			pCharacter->SetExtraVarsFromMembersWithoutScript(pCharacter->ExtraVars);
 		}
 
 		pNew->ResetCurrentGame();
