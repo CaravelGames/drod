@@ -58,7 +58,8 @@ using namespace InputCommands;
 //Tabbed menu info.
 #define PERSONAL_TAB (0)
 #define GAS_TAB (1)
-#define COMMANDS_TAB (2)
+#define KEYMAP_1_TAB (2)
+#define KEYMAP_2_TAB (3)
 #define BG_COLOR 220,210,190
 
 #define MIN_TARSTUFF_ALPHA (64)
@@ -469,14 +470,16 @@ CSettingsScreen::CSettingsScreen()
 
 	//Object menu.
 	CTabbedMenuWidget *pTabbedMenu = new CTabbedMenuWidget(TAG_MENU, X_TABBEDMENU,
-			Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 3, CY_MENU_TAB, BG_COLOR);
+			Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 4, CY_MENU_TAB, BG_COLOR);
 	pTabbedMenu->SetTabText(PERSONAL_TAB, g_pTheDB->GetMessageText(MID_Settings));
 	pTabbedMenu->SetTabText(GAS_TAB, g_pTheDB->GetMessageText(MID_GraphicsAndSound));
-	pTabbedMenu->SetTabText(COMMANDS_TAB, g_pTheDB->GetMessageText(MID_Commands));
+	pTabbedMenu->SetTabText(KEYMAP_1_TAB, g_pTheDB->GetMessageText(MID_Commands));
+	pTabbedMenu->SetTabText(KEYMAP_2_TAB, g_pTheDB->GetMessageText(MID_MoreCommands));
 	pTabbedMenu->SetBGImage("Background", 128);
 	AddWidget(pTabbedMenu);
 
 	SetupKeymap1Tab(pTabbedMenu);
+	SetupKeymap2Tab(pTabbedMenu);
 
 	//Settings tab.
 
@@ -791,7 +794,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 	};
 
 	//Command buttons.
-	static const UINT GAMEPLAY_BUTTON_COMMAND_COUNT = DCMD_Count;
+	static const UINT GAMEPLAY_BUTTON_COMMAND_COUNT = DCMD_ExtraKeys;
 
 	CLabelWidget* pLabelWidget;
 	CButtonWidget* pButton;
@@ -818,7 +821,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 			buttonX, buttonY,
 			CMD_BUTTON_W, CMD_BUTTON_H,
 			g_pTheDB->GetMessageText(eCommandNameMID));
-		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], COMMANDS_TAB);
+		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], KEYMAP_1_TAB);
 
 		//Command labels.
 		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
@@ -826,7 +829,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 			CMD_LABEL_W, CMD_LABEL_H,
 			F_SettingsKeymaps, wszEmpty);
 		this->pCommandLabelWidgets[wButtonTagI]->SetVAlign(CLabelWidget::TA_VCenter);
-		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
+		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], KEYMAP_1_TAB);
 	}
 
 	//Rest of command buttons.
@@ -849,7 +852,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 				buttonX, buttonY,
 				CMD_BUTTON_W, CMD_BUTTON_H,
 				g_pTheDB->GetMessageText(eCommandNameMID));
-			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], COMMANDS_TAB);
+			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], KEYMAP_1_TAB);
 
 			//Command labels.
 			this->pCommandLabelWidgets[command] = new CLabelWidget(0,
@@ -857,7 +860,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 				CMD_LABEL_W, CMD_LABEL_H,
 				F_SettingsKeymaps, wszEmpty);
 			this->pCommandLabelWidgets[command]->SetVAlign(CLabelWidget::TA_VCenter);
-			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], COMMANDS_TAB);
+			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], KEYMAP_1_TAB);
 
 			buttonIndex++;
 		}
@@ -866,18 +869,95 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 	COptionButtonWidget* pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, CMD_BUTTON_X,
 		DEFAULT_BUTTON_Y - CMD_BUTTON_H - CY_SPACE, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
 		g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
-	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+	pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
 
 	{ //Command default buttons.
 		pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
 			CMD_BUTTON_X, DEFAULT_BUTTON_Y,
 			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultDesktop));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+		pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
 
 		pButton = new CButtonWidget(TAG_DEFAULT_LAPTOP,
 			CMD_BUTTON_X + CMD_BUTTON_W + CX_SPACE, DEFAULT_BUTTON_Y,
 			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultLaptop));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
+		pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
+	}
+}
+
+//******************************************************************************
+void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
+{
+	// These constants are copied over from Keymap1Tab. These two pages do not have to look
+	// identical but it'd be best if they did
+	static const UINT BUTTON_COLUMNS = 3;
+
+	static const int CMD_BUTTON_X = CX_SPACE;
+	static const int CMD_BUTTON_Y = Y_INNERMENU + CY_SPACE;
+	static const int CMD_BUTTON_W = 210;
+	static const int CMD_BUTTON_H = CY_STANDARD_BUTTON;
+	static const int CMD_BUTTON_V_SPACE = 6;
+	static const int CMD_BUTTON_SPECIAL_Y = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * 6;
+
+	static const int DEFAULT_BUTTON_Y = CY_TABBEDMENU - CMD_BUTTON_H - CY_SPACE;
+
+	// command labels are relative to their respective buttons, see X/Y offset
+	//               CMD_LABEL_X = <Calculated dynamically>
+	//               CMD_LABEL_Y = <Calculated dynamically>
+	static const int CMD_LABEL_W = 110;
+	static const int CMD_LABEL_H = CMD_BUTTON_H + 4;
+	static const int CMD_LABEL_X_OFFSET = CMD_BUTTON_W + CX_SPACE;
+	static const int CMD_LABEL_Y_OFFSET = (CMD_BUTTON_H - CMD_LABEL_H) / 2 - 5;
+
+	static const int NO_COMMAND = 1;
+	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
+		{
+			DCMD_SaveGame, DCMD_LoadGame, DCMD_QuickSave, DCMD_QuickLoad,
+			DCMD_SkipSpeech, DCMD_OpenChat, DCMD_ChatHistory,
+			DCMD_Screenshot, DCMD_SaveRoomImage, DCMD_ShowHelp, DCMD_Settings,
+			DCMD_ToggleFullScreen,
+			NO_COMMAND,
+		},
+		{
+			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
+			DCMD_EditVars, DCMD_LogVars, DCMD_ReloadStyle,
+			NO_COMMAND
+		},
+		{
+			NO_COMMAND
+		}
+	};
+
+	for (UINT columnIndex = 0; columnIndex < BUTTON_COLUMNS; ++columnIndex)
+	{
+		UINT buttonIndex = 0;
+		while (COMMAND_COLUMNS[columnIndex][buttonIndex] != NO_COMMAND)
+		{
+			const DCMD command = (DCMD)COMMAND_COLUMNS[columnIndex][buttonIndex];
+
+			const MESSAGE_ID eCommandNameMID = GetKeyDefinition(command)->commandMID;
+			const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * columnIndex;
+			const int buttonY = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * buttonIndex;
+
+			const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+			const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+			this->pCommandButtonWidgets[command] = new CButtonWidget(TAG_KEY_BUTTON_START + command,
+				buttonX, buttonY,
+				CMD_BUTTON_W, CMD_BUTTON_H,
+				g_pTheDB->GetMessageText(eCommandNameMID));
+			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], KEYMAP_2_TAB);
+
+			//Command labels.
+			this->pCommandLabelWidgets[command] = new CLabelWidget(0,
+				labelX, labelY,
+				CMD_LABEL_W, CMD_LABEL_H,
+				F_SettingsKeymaps, wszEmpty);
+			this->pCommandLabelWidgets[command]->SetVAlign(CLabelWidget::TA_VCenter);
+			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], KEYMAP_2_TAB);
+
+			buttonIndex++;
+		}
 	}
 }
 

@@ -80,10 +80,29 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_ENDMOVE   (24) //used in validating a game session's move sequence -- marks the end of the command sequence
 #define CMD_SETVAR    (25) //tracks vars altered through the playtest/cheat terminal popup
 #define COMMAND_COUNT (26)
-#define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1) //access hook for front end call only
-#define CMD_BATTLE_KEY (COMMAND_COUNT+2)       //access hook for front end processing only
-#define CMD_ADVANCE_COMBAT (COMMAND_COUNT+3)   //access hook for front end call only
-#define CMD_SCORE_KEY (COMMAND_COUNT+4)   //access hook for front end call only
+//access hook for front end calls
+#define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1)
+#define CMD_BATTLE_KEY (COMMAND_COUNT+2)
+#define CMD_ADVANCE_COMBAT (COMMAND_COUNT+3)
+#define CMD_SCORE_KEY (COMMAND_COUNT+4)
+#define CMD_EXTRA_SAVE_GAME (COMMAND_COUNT+5)
+#define CMD_EXTRA_LOAD_GAME (COMMAND_COUNT+6)
+#define CMD_EXTRA_QUICK_SAVE (COMMAND_COUNT+7)
+#define CMD_EXTRA_QUICK_LOAD (COMMAND_COUNT+8)
+#define CMD_EXTRA_SKIP_SPEECH (COMMAND_COUNT+9)
+#define CMD_EXTRA_OPEN_CHAT (COMMAND_COUNT+10)
+#define CMD_EXTRA_CHAT_HISTORY (COMMAND_COUNT+11)
+#define CMD_EXTRA_SCREENSHOT (COMMAND_COUNT+12)
+#define CMD_EXTRA_SAVE_ROOM_IMAGE (COMMAND_COUNT+13)
+#define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+14)
+#define CMD_EXTRA_SETTINGS (COMMAND_COUNT+15)
+#define CMD_EXTRA_TOGGLE_FULL_SCREEN (COMMAND_COUNT+16)
+#define CMD_EXTRA_TOGGLE_TURN_COUNT (COMMAND_COUNT+17)
+#define CMD_EXTRA_TOGGLE_HOLD_VARS (COMMAND_COUNT+18)
+#define CMD_EXTRA_TOGGLE_FRAME_RATE (COMMAND_COUNT+19)
+#define CMD_EXTRA_EDIT_VARS (COMMAND_COUNT+20)
+#define CMD_EXTRA_LOG_VARS (COMMAND_COUNT+21)
+#define CMD_EXTRA_RELOAD_STYLE (COMMAND_COUNT+22)
 
 //Sword orientation.
 static const UINT NW = 0;
@@ -154,8 +173,34 @@ namespace InputCommands
 		DCMD_Command,
 		DCMD_ShowScore,
 
+		// Below are keymaps which are not commands but other actions in the game
+		//Save and load
+		DCMD_SaveGame,
+		DCMD_LoadGame,
+		DCMD_QuickSave,
+		DCMD_QuickLoad,
+
+		//Dialogs and screens
+		DCMD_SkipSpeech,
+		DCMD_OpenChat,
+		DCMD_ChatHistory,
+		DCMD_Screenshot,
+		DCMD_SaveRoomImage,
+		DCMD_ShowHelp,
+		DCMD_Settings,
+		DCMD_ToggleFullScreen,
+
+		//Technical keys
+		DCMD_ToggleTurnCount,
+		DCMD_ToggleHoldVars,
+		DCMD_ToggleFrameRate,
+		DCMD_EditVars,
+		DCMD_LogVars,
+		DCMD_ReloadStyle,
+
 		DCMD_Count,
-		DCMD_NotFound=DCMD_Count
+		DCMD_NotFound=DCMD_Count,
+		DCMD_ExtraKeys = DCMD_SaveGame
 	};
 
 	extern const std::unordered_map<DCMD, KeyDefinition*> COMMAND_MAP;
@@ -165,6 +210,12 @@ namespace InputCommands
 	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
+}
+
+//Returns: Whether the command is a real game command or a front-end hook
+static inline bool bIsVirtualCommand(const int command)
+{
+	return command > COMMAND_COUNT;
 }
 
 //Returns: whether the command is a movement in a compass direction

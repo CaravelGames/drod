@@ -88,6 +88,29 @@ namespace InputCommands
 		keyDefinitions[DCMD_Command] = new KeyDefinition(CMD_EXEC_COMMAND, "UseCommand", MID_UseCommandKey, SDLK_KP_PERIOD);
 		keyDefinitions[DCMD_ShowScore] = new KeyDefinition(CMD_SCORE_KEY, "ShowScore", MID_ShowScore, SDLK_KP_MINUS);
 
+		keyDefinitions[DCMD_SaveGame] = new KeyDefinition(CMD_EXTRA_SAVE_GAME, "Key_SaveGame", MID_SaveGame, SDLK_F2);
+		keyDefinitions[DCMD_LoadGame] = new KeyDefinition(CMD_EXTRA_LOAD_GAME, "Key_LoadGame", MID_LoadGame, SDLK_F3);
+		keyDefinitions[DCMD_QuickSave] = new KeyDefinition(CMD_EXTRA_QUICK_SAVE, "Key_QuickSave", MID_QuickSave, SDLK_F5);
+		keyDefinitions[DCMD_QuickLoad] = new KeyDefinition(CMD_EXTRA_QUICK_LOAD, "Key_QuickLoad", MID_QuickLoad, SDLK_F9);
+
+		keyDefinitions[DCMD_SkipSpeech] = new KeyDefinition(CMD_EXTRA_SKIP_SPEECH, "Key_SkipSpeech", MID_SkipSpeech, SDLK_SPACE);
+		keyDefinitions[DCMD_OpenChat] = new KeyDefinition(CMD_EXTRA_OPEN_CHAT, "Key_OpenChat", MID_Command_OpenChat, SDLK_RETURN);
+		keyDefinitions[DCMD_ChatHistory] = new KeyDefinition(CMD_EXTRA_CHAT_HISTORY, "Key_ChatHistory", MID_Command_ChatHistory, BuildInputKey(SDLK_RETURN, false, false, true));
+		keyDefinitions[DCMD_Screenshot] = new KeyDefinition(CMD_EXTRA_SCREENSHOT, "Key_Screenshot", MID_Command_Screenshot, SDLK_F11);
+		keyDefinitions[DCMD_SaveRoomImage] = new KeyDefinition(CMD_EXTRA_SAVE_ROOM_IMAGE, "Key_SaveRoomImage", MID_Command_SaveRoomImage, BuildInputKey(SDLK_F11, false, false, true));
+		keyDefinitions[DCMD_ShowHelp] = new KeyDefinition(CMD_EXTRA_SHOW_HELP, "Key_ShowHelp", MID_Command_ShowHelp, SDLK_F1);
+		keyDefinitions[DCMD_Settings] = new KeyDefinition(CMD_EXTRA_SETTINGS, "Key_Settings", MID_Command_OpenSettings, SDLK_F6);
+		keyDefinitions[DCMD_ToggleFullScreen] = new KeyDefinition(CMD_EXTRA_TOGGLE_FULL_SCREEN, "Key_ToggleFullScreen", MID_Command_ToggleFullScreen, SDLK_F10);
+
+		keyDefinitions[DCMD_ToggleTurnCount] = new KeyDefinition(CMD_EXTRA_TOGGLE_TURN_COUNT, "Key_ToggleTurnCount", MID_Command_ToggleTurnCount, SDLK_F7);
+		keyDefinitions[DCMD_ToggleHoldVars] = new KeyDefinition(CMD_EXTRA_TOGGLE_HOLD_VARS, "Key_ToggleHoldVars", MID_Command_ToggleHoldVars, BuildInputKey(SDLK_F7, false, false, true));
+		keyDefinitions[DCMD_ToggleFrameRate] = new KeyDefinition(CMD_EXTRA_TOGGLE_FRAME_RATE, "Key_ToggleFrameRate", MID_Command_ToggleFrameRate, BuildInputKey(SDLK_F7, false, true, false));
+
+		keyDefinitions[DCMD_EditVars] = new KeyDefinition(CMD_EXTRA_EDIT_VARS, "Key_EditVars", MID_Command_EditVars, SDLK_F4);
+		keyDefinitions[DCMD_LogVars] = new KeyDefinition(CMD_EXTRA_LOG_VARS, "Key_LogVars", MID_Command_LogVars, BuildInputKey(SDLK_F7, true, false, false));
+
+		keyDefinitions[DCMD_ReloadStyle] = new KeyDefinition(CMD_EXTRA_RELOAD_STYLE, "Key_ReloadStyle", MID_Command_ReloadStyle, BuildInputKey(SDLK_F8, false, true, false));
+
 		return keyDefinitions;
 	}
 
