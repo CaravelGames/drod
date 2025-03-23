@@ -152,6 +152,7 @@ const UINT TAG_SCOREFRAME = 1062;
 const UINT TAG_SCORETEXT = 1063;
 const UINT TAG_SCORETOTAL = 1064;
 const UINT TAG_SCORE_OK = 1065;
+const UINT TAG_SCORETILES = 1066;
 
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
@@ -1162,7 +1163,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	static const int X_OK1 = (CX_MESSAGE - CX_MESSAGE_BUTTON) / 2;
 
 	//Score dialog.
-	static const UINT CX_SCOREDIALOG = 600;
+	static const UINT CX_SCOREDIALOG = 500;
 	static const UINT CY_SCOREDIALOG = 320;
 
 	static const int Y_SCORENAME = 15;
@@ -1171,8 +1172,12 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	static const int Y_SCOREFRAME = Y_SCORENAME + CY_SCORENAME;
 	static const UINT CX_SCOREFRAME = CX_SCOREDIALOG - CX_SPACE * 2;
 
-	static const int X_SCORETEXT = 15;
-	static const int Y_SCORETEXT = 15;
+	static const int X_SCORETILES = 140;
+	static const int Y_SCORETILES = CY_SPACE;
+	const UINT CX_SCORETILES = CDrodBitmapManager::CX_TILE;
+
+	static const int X_SCORETEXT = X_SCORETILES + CX_SCORETILES;
+	static const int Y_SCORETEXT = Y_SCORETILES - 5;
 	static const UINT CX_SCORETEXT = 500;
 	static const UINT CY_SCORETEXT = 140;
 
@@ -1331,6 +1336,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel = new CLabelWidget(TAG_BATTLETEXT,
 				X_BATTLETEXT, Y_BATTLETILES, CX_BATTLETEXT, 0,
 				F_Message, wszEmpty);
+		pLabel->SetPrintLeadingSpacesAfterFirstLine();
 		pFrame->AddWidget(pLabel);
 
 		pButton = new CButtonWidget(TAG_BATTLEOK, X_OK1, Y_MESSAGE_BUTTON,
@@ -1351,6 +1357,9 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pFrame = new CFrameWidget(TAG_SCOREFRAME, CX_SPACE, Y_SCOREFRAME,
 				CX_SCOREFRAME, CY_SCOREFRAME, NULL);
 		this->pScoreDialog->AddWidget(pFrame);
+		
+		pFrame->AddWidget(new CTilesWidget(TAG_SCORETILES,
+				X_SCORETILES, Y_SCORETILES, CX_SCORETILES, CY_SCORETEXT));
 
 		//Score texts.
 		pLabel = new CLabelWidget(TAG_SCORETEXT, X_SCORETEXT, Y_SCORETEXT,
@@ -3466,10 +3475,70 @@ bool CGameScreen::AddMonsterStats(
 //Returns: If the text was appended
 {
 	CDialogWidget* pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
+	CWidget* pFrame = pStatsDialog->GetWidget(TAG_BATTLEFRAME);
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
 	CLabelWidget* pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
 
-	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
+	CMonster* pStatMonster = pRoomWidget->GetMonsterForStatDisplay(pMonster->wX, pMonster->wY);
+ 	ASSERT(pStatMonster);
+	WSTRING wstr = pRoomWidget->GetMonsterNameAndAbility(pStatMonster);
+
+	CSwordsman& player = *this->pCurrentGame->pPlayer;
+	const int gold = pStatMonster->getGOLD() * player.getGoldMultiplier();
+	const int xp = pStatMonster->getXP() * player.getXPMultiplier();
+	bool bStrongHitIgnored;
+
+	vector<int> xIcon;
+	if (pStatMonster->IsCombatable()) {
+		wstr += wszCRLF;
+
+		vector<int> stat;
+		stat.push_back(pStatMonster->getHP());
+		stat.push_back(CCombat::getMonsterATK(pStatMonster, this->pCurrentGame, bStrongHitIgnored));
+		stat.push_back(pStatMonster->getDEF());
+		stat.push_back(gold);
+		stat.push_back(xp);
+
+		//Calculate where to put stat icons and text values
+		const UINT eFontType = pText->GetFontType();
+		const UINT wSpaceWidth = g_pTheFM->GetSpaceWidth(eFontType);
+		const UINT wIconSpaces = 1 + CDrodBitmapManager::CX_TILE / wSpaceWidth;
+		UINT lineW = 0, wWidth; //aggregate text line width
+		WSTRING wStat;
+		WCHAR temp[12];
+
+		for (UINT i = 0; i < stat.size(); ++i) {
+			if (i == 3 && !gold) {
+				xIcon.push_back(-1); //skip this icon
+				continue;
+			}
+			if (i == 4 && !xp) {
+				xIcon.push_back(-1);
+				continue;
+			}
+
+			wstr.append(wIconSpaces, We(' ')); //render next text value past icon
+			lineW += wIconSpaces * wSpaceWidth;
+
+			xIcon.push_back(lineW - CDrodBitmapManager::CX_TILE); //next icon goes at this x-coord
+
+			wStat = _itoW(stat[i], temp, 10);
+			wstr += wStat;
+
+			//start next icon past text and some trailing spaces
+			g_pTheFM->GetWordWidth(eFontType, wStat.c_str(), wWidth);
+			lineW += wWidth;
+			static const int SPACES = 2;
+			wstr.append(SPACES, We(' '));
+			lineW += SPACES * wSpaceWidth;
+		}
+
+		wstr += wszCRLF;
+		wstr += pRoomWidget->GetCombatAnalysis(pStatMonster, pMonster->wX, pMonster->wY);
+	}
+
+	const WSTRING newText = wstr;
+//	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
 	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
 
 	if (!text.empty()) //determine text height
@@ -3501,6 +3570,18 @@ bool CGameScreen::AddMonsterStats(
 				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
 			pTilesWidget->AddTile(tileNo, xPixel,
 				wCurrentTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
+		}
+	}
+
+	if (pStatMonster->IsCombatable()) {
+		//Add stat icons in the calculated positions
+		static UINT tile[5] = { TI_STAT_ICON_HP, TI_STAT_ICON_ATK, TI_STAT_ICON_DEF, TI_STAT_ICON_GR, TI_STAT_ICON_REP };
+		const UINT xPos = pText->GetX() - pFrame->GetX(); //relative pos in parent widget
+		const int y = wCurrentTextHeight + int(wNewTextHeight * 0.38f);
+		for (UINT i = 0; i < xIcon.size(); ++i) {
+			if (xIcon[i] >= 0) {
+				pTilesWidget->AddTile(tile[i], xPos + xIcon[i], y);
+			}
 		}
 	}
 
@@ -4617,18 +4698,50 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	dwShovelsScore = CDbSavedGames::CalculateStatScore(dwShovels, st.scoreShovels);
 	dwTotalScore = this->pCurrentGame->GetScore();
 
-	WCHAR temp[16];
+	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETILES));
+	pTilesWidget->ClearTiles();
 
-	if (st.scoreHP != 0) wstrLevelStats += GetScoreCheckpointLine(MID_MonsterHP, dwHP, st.scoreHP, dwHPScore);
-	if (st.scoreATK != 0) wstrLevelStats += GetScoreCheckpointLine(MID_ATKStat, dwATK, st.scoreATK, dwATKScore);
-	if (st.scoreDEF != 0) wstrLevelStats += GetScoreCheckpointLine(MID_DEFStat, dwDEF, st.scoreDEF, dwDEFScore);
-	if (st.scoreGOLD != 0) wstrLevelStats += GetScoreCheckpointLine(MID_GRStat, dwGOLD, st.scoreGOLD, dwGOLDScore);
-	if (st.scoreXP != 0) wstrLevelStats += GetScoreCheckpointLine(MID_XPStat, dwXP, st.scoreXP, dwXPScore);
-	if (st.scoreYellowKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_YKEYStatFull, dwYKeys, st.scoreYellowKeys, dwYKeysScore);
-	if (st.scoreGreenKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_GKEYStatFull, dwGKeys, st.scoreGreenKeys, dwGKeysScore);
-	if (st.scoreBlueKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
-	if (st.scoreSkeletonKeys != 0) wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
-	if (st.scoreShovels != 0) wstrLevelStats += GetScoreCheckpointLine(MID_ShovelsStat, dwShovels, st.scoreShovels, dwShovelsScore);
+	vector<UINT> tile;
+	if (st.scoreHP != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_MonsterHP, dwHP, st.scoreHP, dwHPScore);
+		tile.push_back(TI_STAT_ICON_HP);
+	}
+	if (st.scoreATK != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_ATKStat, dwATK, st.scoreATK, dwATKScore);
+		tile.push_back(TI_STAT_ICON_ATK);
+	}
+	if (st.scoreDEF != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_DEFStat, dwDEF, st.scoreDEF, dwDEFScore);
+		tile.push_back(TI_STAT_ICON_DEF);
+	}
+	if (st.scoreGOLD != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_GRStat, dwGOLD, st.scoreGOLD, dwGOLDScore);
+		tile.push_back(TI_STAT_ICON_GR);
+	}
+	if (st.scoreXP != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_XPStat, dwXP, st.scoreXP, dwXPScore);
+		tile.push_back(TI_STAT_ICON_REP);
+	}
+	if (st.scoreYellowKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_YKEYStatFull, dwYKeys, st.scoreYellowKeys, dwYKeysScore);
+		tile.push_back(TI_STAT_ICON_YK);
+	}
+	if (st.scoreGreenKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_GKEYStatFull, dwGKeys, st.scoreGreenKeys, dwGKeysScore);
+		tile.push_back(TI_STAT_ICON_GK);
+	}
+	if (st.scoreBlueKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
+		tile.push_back(TI_STAT_ICON_BK);
+	}
+	if (st.scoreSkeletonKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
+		tile.push_back(TI_STAT_ICON_SK);
+	}
+	if (st.scoreShovels != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_ShovelsStat, dwShovels, st.scoreShovels, dwShovelsScore);
+		tile.push_back(TI_STAT_ICON_SHOVEL);
+	}
 
 	//Set texts.
 	CLabelWidget* pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
@@ -4641,9 +4754,16 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	UINT wTextHeight, wIgnored;
 	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message, wstrLevelStats.c_str(), rect.w, wIgnored, wTextHeight);
 	pTextLabel->SetHeight(wTextHeight);
+	pTilesWidget->SetHeight(wTextHeight);
+
+	//Add stat icons
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(pTextLabel->GetFontType());
+	for (UINT i = 0; i < tile.size(); ++i) {
+		pTilesWidget->AddTile(tile[i], 0, wLineHeight * i);
+	}
 
 	CLabelWidget* pTotalLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
-	pTotalLabel->Move(0, wTextHeight - CY_SPACE);
+	pTotalLabel->Move(0, wTextHeight - (CY_SPACE*3/2));
 
 	CDialogWidget* pDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_SCOREDIALOG));
 	CButtonWidget* pButton = DYN_CAST(CButtonWidget*, CWidget*, GetWidget(TAG_SCORE_OK));
@@ -4659,6 +4779,8 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	CWidget* pFrame = DYN_CAST(CWidget*, CWidget*, GetWidget(TAG_SCOREFRAME));
 	const UINT wFrameHeight = wTextHeight + pTotalLabel->GetH() + pButton->GetH();
 	pFrame->SetHeight(wFrameHeight);
+
+	WCHAR temp[16];
 
 	wstrLevelStats = g_pTheDB->GetMessageText(MID_Score);
 	wstrLevelStats += wszSpace;
@@ -4682,12 +4804,9 @@ WSTRING CGameScreen::GetScoreCheckpointLine(const MID_CONSTANT statName, const U
 	WSTRING wstrText;
 	WCHAR temp[16];
 
-	wstrText += g_pTheDB->GetMessageText(statName);
-	wstrText += wszColon;
-	wstrText += wszSpace;
 	wstrText += _itoW(statAmount, temp, 10);
 	wstrText += wszSpace;
-	wstrText += scoreMultiplier < 0 ? wszForwardSlash : wszAsterisk;
+	wstrText += scoreMultiplier < 0 ? wszForwardSlash : wszTimes;
 	wstrText += wszSpace;
 	wstrText += _itoW(abs(scoreMultiplier), temp, 10);
 	wstrText += wszSpace;
