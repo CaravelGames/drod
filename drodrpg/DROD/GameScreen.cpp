@@ -3470,7 +3470,7 @@ bool CGameScreen::AddMonsterStats(
 	CDbRoom* pRoom, //current room
 	CRoomWidget* pRoomWidget, //the display widget for the room
 	CMonster* pMonster, //monster to display information for
-	WSTRING& text) //string to append to. may be non-empty.
+	WSTRING& text) //(in/out) string to append to. may be non-empty.
 //
 //Returns: If the text was appended
 {
@@ -3481,7 +3481,11 @@ bool CGameScreen::AddMonsterStats(
 
 	CMonster* pStatMonster = pRoomWidget->GetMonsterForStatDisplay(pMonster->wX, pMonster->wY);
  	ASSERT(pStatMonster);
-	WSTRING wstr = pRoomWidget->GetMonsterNameAndAbility(pStatMonster);
+	WSTRING wstr;
+	if (!text.empty()) {
+		wstr += wszCRLF; // separate entries with a blank line
+	}
+	wstr += pRoomWidget->GetMonsterNameAndAbility(pStatMonster);
 
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
 	const int gold = pStatMonster->getGOLD() * player.getGoldMultiplier();
@@ -3489,14 +3493,17 @@ bool CGameScreen::AddMonsterStats(
 	bool bStrongHitIgnored;
 
 	//Calculate where to put stat icons and text values
-	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
-	if (!text.empty()) //determine text height
-		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
-
-	vector<pair<int, int> > xyIcon; //where to place stat icons
 	const UINT eFontType = pText->GetFontType();
 	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(eFontType);
+	UINT yEnemyIcon = 0, wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+	if (!text.empty()) {
+		//determine height of input text
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
+		yEnemyIcon = wCurrentTextHeight + wLineHeight;
+	}
+
+	vector<pair<int, int> > xyIcon; //where to place stat icons
 	if (pStatMonster->IsCombatable()) {
 		//calc placement of text line w/ stats
 		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
@@ -3571,7 +3578,7 @@ bool CGameScreen::AddMonsterStats(
 			const int xPixel = x * CDrodBitmapManager::CX_TILE +
 				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
 			pTilesWidget->AddTile(tileNo, xPixel,
-				wCurrentTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
+				yEnemyIcon + y * CDrodBitmapManager::CY_TILE, r, g, b);
 		}
 	}
 
