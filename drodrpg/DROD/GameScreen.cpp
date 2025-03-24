@@ -3489,10 +3489,20 @@ bool CGameScreen::AddMonsterStats(
 	bool bStrongHitIgnored;
 
 	//Calculate where to put stat icons and text values
-	vector<int> xIcon;
+	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+	if (!text.empty()) //determine text height
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
+
+	vector<pair<int, int> > xyIcon; //where to place stat icons
 	const UINT eFontType = pText->GetFontType();
 	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(eFontType);
 	if (pStatMonster->IsCombatable()) {
+		//calc placement of text line w/ stats
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			wstr.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
+		const int yIcons = int(wCurrentTextHeight + wNewTextHeight);
+
 		wstr += wszCRLF;
 
 		vector<int> stat;
@@ -3510,18 +3520,18 @@ bool CGameScreen::AddMonsterStats(
 
 		for (UINT i = 0; i < stat.size(); ++i) {
 			if (i == 3 && !gold) {
-				xIcon.push_back(-1); //skip this icon
+				xyIcon.push_back(make_pair(-1,-1)); //skip this icon
 				continue;
 			}
 			if (i == 4 && !xp) {
-				xIcon.push_back(-1);
+				xyIcon.push_back(make_pair(-1,-1));
 				continue;
 			}
 
 			wstr.append(wIconSpaces, We(' ')); //render next text value past icon
 			lineW += wIconSpaces * wSpaceWidth;
 
-			xIcon.push_back(lineW - CDrodBitmapManager::CX_TILE); //next icon goes at this x-coord
+			xyIcon.push_back(make_pair(int(lineW - CDrodBitmapManager::CX_TILE), yIcons));
 
 			wStat = _itoW(stat[i], temp, 10);
 			wstr += wStat;
@@ -3538,18 +3548,9 @@ bool CGameScreen::AddMonsterStats(
 		wstr += pRoomWidget->GetCombatAnalysis(pStatMonster, pMonster->wX, pMonster->wY);
 	}
 
-	const WSTRING newText = wstr;
-//	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
-	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
-
-	if (!text.empty()) //determine text height
-		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
-
-	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-		newText.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
-
 	//If the resulting text will make the dialog to large, don't add it
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+		wstr.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
 	if (wCurrentTextHeight + wNewTextHeight > CDrodBitmapManager::CY_ROOM - 60) {
 		return false;
 	}
@@ -3578,17 +3579,17 @@ bool CGameScreen::AddMonsterStats(
 		//Add stat icons in the calculated positions
 		static UINT tile[5] = { TI_STAT_ICON_HP, TI_STAT_ICON_ATK, TI_STAT_ICON_DEF, TI_STAT_ICON_GR, TI_STAT_ICON_REP };
 		const UINT xPos = pText->GetX() - pFrame->GetX(); //relative pos in parent widget
-		const int y = wCurrentTextHeight + wNewTextHeight - 2 * wLineHeight;
-		for (UINT i = 0; i < xIcon.size(); ++i) {
-			if (xIcon[i] >= 0) {
-				pTilesWidget->AddTile(tile[i], xPos + xIcon[i], y);
+		for (UINT i = 0; i < xyIcon.size(); ++i) {
+			const pair<int, int> xy = xyIcon[i];
+			if (xy.first >= 0) {
+				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second);
 			}
 		}
 	}
 
 	if (!text.empty())
 		text += wszCRLF;
-	text += newText;
+	text += wstr;
 
 	return true;
 }
