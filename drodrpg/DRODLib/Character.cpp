@@ -3960,12 +3960,17 @@ void CCharacter::SetMapIcon(
 	}
 
 	ExploredRoom* pExpRoom = pGame->getExploredRoom(roomID);
-	//Explore the room to map so it can have icons, but don't make it revealed
+	//Explore the room on the map so it can have icons, but don't make it revealed
 	if (!pExpRoom) {
 		pGame->AddRoomToMap(roomID, MapState::Invisible);
 		pExpRoom = pGame->getExploredRoom(roomID);
 		if (!pExpRoom) {
 			return; //Can this happen?
+		}
+	} else if (!pExpRoom->bSave) {
+		//When adding an icon, always need to save this room to preserve the icon
+		if (icon != ScriptVars::MapIcon::MI_None) {
+			pExpRoom->bSave = true;
 		}
 	}
 
