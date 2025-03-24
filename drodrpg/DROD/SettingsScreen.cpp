@@ -910,7 +910,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 
 	static const int NO_COMMAND = 1;
 	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
-	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][15] = {
 		{
 			DCMD_SaveGame, DCMD_LoadGame, DCMD_QuickSave, DCMD_QuickLoad,
 			DCMD_SkipSpeech, DCMD_OpenChat, DCMD_ChatHistory,
@@ -921,9 +921,17 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 		{
 			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
 			DCMD_EditVars, DCMD_LogVars, DCMD_ReloadStyle,
+			DCMD_Editor_Cut, DCMD_Editor_Copy, DCMD_Editor_Paste,
+			DCMD_Editor_Undo, DCMD_Editor_Redo, DCMD_Editor_Delete,
 			NO_COMMAND
 		},
 		{
+			DCMD_Editor_PlaytestRoom,
+			DCMD_Editor_ReflectX, DCMD_Editor_ReflectY, DCMD_Editor_RotateCW,
+			DCMD_Editor_SetFloorImage, DCMD_Editor_SetOverheadImage,
+			DCMD_Editor_ToggleCharacterPreview,
+			DCMD_Editor_PrevLevel, DCMD_Editor_NextLevel, DCMD_Editor_LogVarRefs,
+			DCMD_Editor_HoldStats, DCMD_Editor_LevelStats,
 			NO_COMMAND
 		}
 	};
@@ -1233,7 +1241,7 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 		const bool bOverwrite = currentKey == newKey
 			|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
 
-		if (bOverwrite)
+		if (bOverwrite && !CanCommandsShareInput(keyDefinition->eCommand, clearedKeyDefinition->eCommand))
 		{
 			this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
 			UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
@@ -1247,6 +1255,16 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 	UpdateCommandKeyLabel(newKey, eCommand);
 
 	Paint();
+}
+
+//************************************************************************************
+bool CSettingsScreen::CanCommandsShareInput(int command, int otherCommand) const
+{
+	//Commands can share an input if they aren't used in the same context
+	//(currently the only contexts are gameplay and editor)
+	return !((bIsGameScreenCommand(command) && bIsGameScreenCommand(command)) ||
+		(bIsEditorCommand(command) && bIsEditorCommand(otherCommand)) ||
+		(bIsEditSelectCommand(command) && bIsEditSelectCommand(command)));
 }
 
 //************************************************************************************

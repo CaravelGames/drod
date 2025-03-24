@@ -53,6 +53,7 @@ protected:
 	CEditSelectScreen();
 	virtual ~CEditSelectScreen();
 
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	void     FreeMembers();
 	virtual bool   UnloadOnDeactivate() const {return false;}

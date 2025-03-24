@@ -2401,6 +2401,75 @@ bool CDrodScreen::IsStyleOnDisk(
 }
 
 //*****************************************************************************
+bool CDrodScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return false;
+}
+
+//*****************************************************************************
+int CDrodScreen::GetCommandForInputKey(InputKey inputKey) const
+{
+	std::map<InputKey, int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
+	if (it != this->InputKeyToCommandMap.end())
+		return it->second;
+
+	return CMD_UNSPECIFIED;
+}
+
+//*****************************************************************************
+InputKey CDrodScreen::GetInputKeyForCommand(const UINT wCommand) const
+//Returns: keysym currently set for indicated command
+{
+	for (std::map<InputKey, int>::const_iterator it = InputKeyToCommandMap.begin(); it != InputKeyToCommandMap.end(); ++it)
+		if (it->second == (int)wCommand)
+			return it->first;
+
+	ASSERT(!"Command not assigned");
+	return UNKNOWN_INPUT_KEY;
+}
+
+//*****************************************************************************
+void CDrodScreen::InitKeysymToCommandMap(
+//Set the keysym-to-command map with values from player settings that will determine
+//which commands correspond to which keys.
+//
+//Params:
+	CDbPackedVars& PlayerSettings)   //(in)   Player settings to load from.
+{
+	//Clear the map.
+	this->InputKeyToCommandMap.clear();
+
+	//Check whether default is for keyboard or laptop.
+	CFiles Files;
+	string strKeyboard;
+	UINT wKeyboard = 0;	//default to numpad
+	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
+	{
+		wKeyboard = atoi(strKeyboard.c_str());
+		if (wKeyboard > 1) wKeyboard = 0;	//invalid setting
+	}
+
+	//Get key command values from current player settings.
+	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex)
+	{
+		const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+		const int command = (int)keyDefinition->eCommand;
+
+		//Different screens support different commands
+		if (!IsCommandSupported(command))
+			continue;
+
+		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
+		const bool bInvalidSDL1mapping = inputKey >= 128 && inputKey <= 323;
+		this->InputKeyToCommandMap[inputKey] = command;
+
+		if (InputCommands::DoesCommandUseModifiers((InputCommands::DCMD)wIndex)) // Support for macros
+			this->InputKeyToCommandMap[BuildInputKey(inputKey, false, false, true)] = command;
+	}
+}
+
+//*****************************************************************************
 bool CDrodScreen::OnQuit()
 //Called when SDL_QUIT event is received.
 {

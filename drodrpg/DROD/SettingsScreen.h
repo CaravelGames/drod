@@ -60,6 +60,7 @@ private:
 
 	bool     AllCommandsAreAssignedToKeys(CDbPackedVars &Settings) const;
 	bool     AreCNetDetailsChanged(CDbPlayer *pPlayer);
+	bool     CanCommandsShareInput(int command, int otherCommand) const;
 	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const InputKey CurrentKey, InputKey& NewKey,
 		const bool bAllowSpecial);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
