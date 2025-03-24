@@ -230,7 +230,7 @@ ExploredRoom* CDbSavedGame::getExploredRoom(const UINT roomID) const
 //           with optional filters of rooms that are not saved or only marked on the map
 CIDSet CDbSavedGame::GetExploredRooms(
 	const bool bMapOnlyAlso, //[default=false] include rooms just marked on map
-	const bool bIncludeNoSavedAlso) //[default=true] include rooms marked to not save (aka previews)
+	const bool bIncludePreviewAlso) //[default=true] include rooms marked as previews
 const
 {
 	CIDSet rooms;
@@ -243,8 +243,8 @@ const
 		}
 
 		const bool bMapOnlyFilter = bMapOnlyAlso || room.HasDetail();
-		const bool bNoSaveFilter = bIncludeNoSavedAlso || room.bSave;
-		if (bMapOnlyFilter && bNoSaveFilter)
+		const bool bPreviewFilter = bIncludePreviewAlso || !room.IsPreview();
+		if (bMapOnlyFilter && bPreviewFilter)
 			rooms += room.roomID;
 	}
 	return rooms;

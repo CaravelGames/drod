@@ -92,6 +92,7 @@ struct ExploredRoom
 	c4_Bytes tileLightsBytes;
 
 	bool IsInvisible() const { return mapState == Invisible; }
+	bool IsPreview() const { return mapState == Preview; }
 	bool HasDetail() const { return mapState >= Preview; }
 
 //	vector<UINT> orbTypes; //track broken orbs/plates -- no longer used
