@@ -100,6 +100,7 @@ private:
 	const UINT*    DisplaySelection(const UINT wObjectNo) const;
 	bool     DeleteLevelEntrance(const UINT wX, const UINT wY);
 	void     DisplayChatDialog();
+	virtual bool IsCommandSupported(int command) const;
 //	void     DrawHalphSlayerEntrances();
 	void     EditLevelEntrance(const UINT wX, const UINT wY);
 	bool     EditLevelEntrance(WSTRING &wstrDescription, bool &bMainEntrance,

@@ -553,3 +553,71 @@ Log Variable State
 [MID_Command_ReloadStyle]
 [eng]
 Force Reload Style
+
+[MID_Command_Editor_Cut]
+[eng]
+Cut
+
+[MID_Command_Editor_Copy]
+[eng]
+Copy
+
+[MID_Command_Editor_Paste]
+[eng]
+Paste
+
+[MID_Command_Editor_Undo]
+[eng]
+Undo
+
+[MID_Command_Editor_Redo]
+[eng]
+Redo
+
+[MID_Command_Editor_Delete]
+[eng]
+Delete
+
+[MID_Command_Editor_PlaytestRoom]
+[eng]
+Playtest Room
+
+[MID_Command_Editor_ReflectX]
+[eng]
+Reflect Room X
+
+[MID_Command_Editor_ReflectY]
+[eng]
+Reflect Room Y
+
+[MID_Command_Editor_RotateCW]
+[eng]
+Rotate Room Clockwise
+
+[MID_Command_Editor_SetFloorImage]
+[eng]
+Set Floor Image
+
+[MID_Command_Editor_SetOverheadImage]
+[eng]
+Set Overhead Image
+
+[MID_Command_Editor_PrevLevel]
+[eng]
+Go to Prev Level
+
+[MID_Command_Editor_NextLevel]
+[eng]
+Go to Next Level
+
+[MID_Command_Editor_NextLevel]
+[eng]
+Log Var References
+
+[MID_Command_Editor_HoldStats]
+[eng]
+Show Hold Stats
+
+[MID_Command_Editor_LevelStats]
+[eng]
+Show Level Stats

@@ -58,6 +58,8 @@ public:
 	void     EditGlobalVars(CEntranceSelectDialogWidget *pListBox, PlayerStats* st,
 			CCurrentGame* pGame=NULL);
 
+	int            GetCommandForInputKey(InputKey input) const;
+
 	static WSTRING getStatsText(const PlayerStats& st, CCurrentGame* pGame=NULL);
 	static WSTRING getStatsText(const RoomStats& st, CCurrentGame* pGame=NULL);
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
@@ -90,6 +92,7 @@ protected:
 	bool           ExportSelectFile(const MESSAGE_ID messageID,
 			WSTRING &wstrExportFile, const UINT extensionTypes);
 	void           ExportStyle(const WSTRING& style);
+	InputKey       GetInputKeyForCommand(const UINT wCommand) const;
 	void           GoToBuyNow();
 	void           GoToForum();
 	MESSAGE_ID     Import(const UINT extensionTypes, CIDSet& importedIDs,
@@ -100,6 +103,8 @@ protected:
 	void		      ImportHoldMedia();
 	void           ImportQueuedFiles();
 	bool           IsStyleOnDisk(list<WSTRING>& styleName, list<WSTRING>& skies);
+	virtual bool   IsCommandSupported(int command) const;
+	void           InitKeysymToCommandMap(CDbPackedVars& PlayerSettings);
 
 	void           EnablePlayerSettings(const UINT dwPlayerID);
 	virtual bool   OnQuit();
@@ -152,6 +157,8 @@ private:
 
 	UINT ShowMessage(const MESSAGE_ID dwMessageID);
 	UINT ShowMessage(const WCHAR *pwczText);
+
+	std::map<InputKey, int> InputKeyToCommandMap;
 };
 
 #endif //...#ifndef DRODSCREEN_H

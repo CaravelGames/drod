@@ -665,6 +665,13 @@ WSTRING CEditSelectScreen::GetSelectedStyle() const
 }
 
 //*****************************************************************************
+bool CEditSelectScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return bIsEditSelectCommand(command);
+}
+
+//*****************************************************************************
 bool CEditSelectScreen::SetForActivate()
 //Called before screen is activated and first paint.
 //
@@ -691,6 +698,12 @@ bool CEditSelectScreen::SetForActivate()
 
 	this->dwPrevHoldID = 0;
 	SelectFirstWidget(false);
+
+	{
+		CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+		InitKeysymToCommandMap(pPlayer->Settings);
+		delete pPlayer;
+	}
 
 	SetCursor();
 
@@ -868,14 +881,16 @@ void CEditSelectScreen::OnKeyDown(
 {
 	CScreen::OnKeyDown(dwTagNo, Key);
 
-	switch (Key.keysym.sym)
+	const int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+
+	switch (nCommand)
 	{
-		case SDLK_F1:
+		case CMD_EXTRA_SHOW_HELP:
 			CBrowserScreen::SetPageToLoad("editselect.html");
 			GoToScreen(SCR_Browser);
 		break;
 
-		case SDLK_F2:
+		case CMD_EXTRA_EDITOR_LOG_VAR_REFS:
 			//Output all scripts where each hold var is referenced.
 			if (this->pSelectedHold)
 			{
@@ -886,7 +901,7 @@ void CEditSelectScreen::OnKeyDown(
 			}
 		break;
 
-		case SDLK_F3:
+		case CMD_EXTRA_EDITOR_HOLD_STATS:
 			//Hold stats.
 			if (this->pSelectedHold)
 			{
@@ -897,8 +912,7 @@ void CEditSelectScreen::OnKeyDown(
 				ShowOkMessage(wstr.c_str());
 			}
 		break;
-
-		case SDLK_F4:
+		case CMD_EXTRA_EDITOR_LEVEL_STATS:
 			//Level stats.
 			if (this->pSelectedLevel)
 			{
@@ -910,81 +924,43 @@ void CEditSelectScreen::OnKeyDown(
 			}
 		break;
 
-		case SDLK_F5:
+		case CMD_EXTRA_EDITOR_PLAYTEST_ROOM:
 			//User probably wants to playtest, so go to room editor for this.
 			GoToRoomEditor();
 		break;
 
-		case SDLK_DELETE:
+		//Cutting, copying and pasting selected level
+		case CMD_EXTRA_EDITOR_CUT:
+		case CMD_EXTRA_EDITOR_COPY:
 		{
-			CWidget *pWidget = GetSelectedWidget();
+			CWidget* pWidget = GetSelectedWidget();
+			ASSERT(pWidget);
 			switch (pWidget->GetTagNo())
 			{
-			case TAG_MAP:
-				{
-					if (!this->pSelectedRoom) break;
-					if (!ModifyHold()) break;
-					//Not allowed to delete level entrance room.
-					UINT dSX, dSY;
-					this->pSelectedLevel->GetStartingRoomCoords(dSX, dSY);
-					CDbRoom *pRoom = g_pTheDB->Rooms.GetByCoords(
-							this->pSelectedLevel->dwLevelID, dSX, dSY);
-					if (pRoom->dwRoomID == this->pSelectedRoom->dwRoomID)
-						ShowOkMessage(MID_CantDeleteEntranceRoom);
-					else
-						if (ShowYesNoMessage(MID_DeleteRoomPrompt) == TAG_YES)
-						{
-							const UINT dwHoldID = this->pSelectedHold->dwHoldID;
-							g_pTheDB->Rooms.Delete(this->pSelectedRoom->dwRoomID);
+			case TAG_LEVEL_LBOX:
+			{
+				if (!this->pSelectedLevel) break;
+				//Get an instance of the level being copied.
+				delete this->pLevelCopy;
+				this->pLevelCopy = g_pTheDB->Levels.GetByID(
+					this->pSelectedLevel->dwLevelID);
 
-							//Reload hold and level.
-							delete this->pSelectedHold;
-							this->pSelectedHold = g_pTheDB->Holds.GetByID(dwHoldID);
-							SelectLevel(this->pSelectedLevel->dwLevelID);
-							Paint();
-						}
-					delete pRoom;
-				}
+				g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
+			}
+			break;
+
+			case TAG_MAP:
+				this->pMapWidget->CopyRoom(nCommand == CMD_EXTRA_EDITOR_COPY);
 				break;
 			}
-			SetWidgetStates();
+
+			return;
 		}
 		break;
-
-		//Cutting, copying and pasting selected level
-		case SDLK_x:
-		case SDLK_c:
-			if (Key.keysym.mod & KMOD_CTRL)
-			{
-				CWidget *pWidget = GetSelectedWidget();
-				ASSERT(pWidget);
-				switch (pWidget->GetTagNo())
-				{
-					case TAG_LEVEL_LBOX:
-					{
-						if (!this->pSelectedLevel) break;
-						//Get an instance of the level being copied.
-						delete this->pLevelCopy;
-						this->pLevelCopy = g_pTheDB->Levels.GetByID(
-								this->pSelectedLevel->dwLevelID);
-
-						g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
-					}
-					break;
-
-					case TAG_MAP:
-						this->pMapWidget->CopyRoom(Key.keysym.sym == SDLK_c); //Ctrl-C copies
-					break;
-				}
-			}
-			return;
-
-		case SDLK_v:
+		case CMD_EXTRA_EDITOR_PASTE:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			StopKeyRepeating();  //don't repeat this operation
-			CWidget *pWidget = GetSelectedWidget();
+			CWidget* pWidget = GetSelectedWidget();
 			ASSERT(pWidget);
 			switch (pWidget->GetTagNo())
 			{
@@ -1015,10 +991,9 @@ void CEditSelectScreen::OnKeyDown(
 						{
 							ShowOkMessage(MID_CantDeleteEntranceRoom);
 							break;
+						} else if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES) {
+							break;
 						}
-						else
-							if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES)
-								break;
 					}
 					const bool bUpdate = this->pMapWidget->PasteRoom(this->pSelectedHold);
 					if (bUpdate)
@@ -1044,18 +1019,54 @@ void CEditSelectScreen::OnKeyDown(
 		}
 		break;
 
-		case SDLK_F7:
-			if (Key.keysym.mod & KMOD_CTRL)
-			{
-				RotateLevelC();
-			} else {
-				ReflectLevelX();
-			}
+		case CMD_EXTRA_EDITOR_REFLECT_X:
+			ReflectLevelX();
 		break;
-		case SDLK_F8:
+		case CMD_EXTRA_EDITOR_REFLECT_Y:
 			ReflectLevelY();
 		break;
+		case CMD_EXTRA_EDITOR_ROTATE_CW:
+			RotateLevelC();
+		break;
 
+		case CMD_EXTRA_EDITOR_DELETE:
+		{
+			CWidget *pWidget = GetSelectedWidget();
+			switch (pWidget->GetTagNo())
+			{
+				case TAG_MAP:
+				{
+					if (!this->pSelectedRoom) break;
+					if (!ModifyHold()) break;
+					//Not allowed to delete level entrance room.
+					UINT dSX, dSY;
+					this->pSelectedLevel->GetStartingRoomCoords(dSX, dSY);
+					CDbRoom *pRoom = g_pTheDB->Rooms.GetByCoords(
+							this->pSelectedLevel->dwLevelID, dSX, dSY);
+					if (pRoom->dwRoomID == this->pSelectedRoom->dwRoomID)
+						ShowOkMessage(MID_CantDeleteEntranceRoom);
+					else if (ShowYesNoMessage(MID_DeleteRoomPrompt) == TAG_YES)
+					{
+						const UINT dwHoldID = this->pSelectedHold->dwHoldID;
+						g_pTheDB->Rooms.Delete(this->pSelectedRoom->dwRoomID);
+
+						//Reload hold and level.
+						delete this->pSelectedHold;
+						this->pSelectedHold = g_pTheDB->Holds.GetByID(dwHoldID);
+						SelectLevel(this->pSelectedLevel->dwLevelID);
+						Paint();
+					}
+					delete pRoom;
+				}
+				break;
+			}
+			SetWidgetStates();
+		}
+		break;
+	}
+
+	switch (Key.keysym.sym)
+	{
 		default:
 			if (IsDeactivating())
 				FreeMembers();

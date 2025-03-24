@@ -1013,6 +1013,24 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_EditVars: strText = "Edit Variables"; break;
 		case MID_Command_LogVars: strText = "Log Variable State"; break;
 		case MID_Command_ReloadStyle: strText = "Force Style Reload"; break;
+		case MID_Command_Editor_Cut: strText = "Cut"; break;
+		case MID_Command_Editor_Copy: strText = "Copy"; break;
+		case MID_Command_Editor_Paste: strText = "Paste"; break;
+		case MID_Command_Editor_Undo: strText = "Undo"; break;
+		case MID_Command_Editor_Redo: strText = "Redo"; break;
+		case MID_Command_Editor_Delete: strText = "Delete"; break;
+		case MID_Command_Editor_PlaytestRoom: strText = "Playtest Room"; break;
+		case MID_Command_Editor_ReflectX: strText = "Reflect Room X"; break;
+		case MID_Command_Editor_ReflectY: strText = "Reflect Room Y"; break;
+		case MID_Command_Editor_RotateCW: strText = "Rotate Room Clockwise"; break;
+		case MID_Command_Editor_SetFloorImage: strText = "Set Floor Image"; break;
+		case MID_Command_Editor_SetOverheadImage: strText = "Set Overhead Image"; break;
+		case MID_Command_Editor_ToggleCharacterPreview: strText = "Toggle NPC Preview"; break;
+		case MID_Command_Editor_PrevLevel: strText = "Go to Prev Level"; break;
+		case MID_Command_Editor_NextLevel: strText = "Go to Next Level"; break;
+		case MID_Command_Editor_LogVarRefs: strText = "Log Var References"; break;
+		case MID_Command_Editor_HoldStats: strText = "Show Hold Stats"; break;
+		case MID_Command_Editor_LevelStats: strText = "Show Level Stats"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
