@@ -3488,7 +3488,10 @@ bool CGameScreen::AddMonsterStats(
 	const int xp = pStatMonster->getXP() * player.getXPMultiplier();
 	bool bStrongHitIgnored;
 
+	//Calculate where to put stat icons and text values
 	vector<int> xIcon;
+	const UINT eFontType = pText->GetFontType();
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(eFontType);
 	if (pStatMonster->IsCombatable()) {
 		wstr += wszCRLF;
 
@@ -3499,8 +3502,6 @@ bool CGameScreen::AddMonsterStats(
 		stat.push_back(gold);
 		stat.push_back(xp);
 
-		//Calculate where to put stat icons and text values
-		const UINT eFontType = pText->GetFontType();
 		const UINT wSpaceWidth = g_pTheFM->GetSpaceWidth(eFontType);
 		const UINT wIconSpaces = 1 + CDrodBitmapManager::CX_TILE / wSpaceWidth;
 		UINT lineW = 0, wWidth; //aggregate text line width
@@ -3577,7 +3578,7 @@ bool CGameScreen::AddMonsterStats(
 		//Add stat icons in the calculated positions
 		static UINT tile[5] = { TI_STAT_ICON_HP, TI_STAT_ICON_ATK, TI_STAT_ICON_DEF, TI_STAT_ICON_GR, TI_STAT_ICON_REP };
 		const UINT xPos = pText->GetX() - pFrame->GetX(); //relative pos in parent widget
-		const int y = wCurrentTextHeight + int(wNewTextHeight * 0.38f);
+		const int y = wCurrentTextHeight + wNewTextHeight - 2 * wLineHeight;
 		for (UINT i = 0; i < xIcon.size(); ++i) {
 			if (xIcon[i] >= 0) {
 				pTilesWidget->AddTile(tile[i], xPos + xIcon[i], y);
