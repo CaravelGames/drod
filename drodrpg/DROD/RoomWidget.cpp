@@ -100,6 +100,8 @@ const int MONSTER_ANIMATION_DELAY = 3;
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
 
+const Uint8 BONUS_OPACITY = 205; //80%
+
 const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,   0},  //Beethro
 	{255, 135,  25},  //Halph
@@ -403,7 +405,7 @@ void CRoomWidget::AddDamagePreviews()
 			continue; //don't show damage preview on large monster segments
 
 		if (pMonster->IsCombatable())
-			AddLastLayerEffect(new CDamagePreviewEffect(this, pMonster));
+			AddLastLayerEffect(new CDamagePreviewEffect(this, pMonster, BONUS_OPACITY));
 	}
 
 	//Add item stat effects
@@ -430,7 +432,7 @@ void CRoomWidget::AddDamagePreviews()
 						val = (int)(pLevel->getItemAmount(tTile));
 						delete pLevel;
 					}
-					AddLastLayerEffect(new CBonusPreviewEffect(this, wX, wY, val));
+					AddLastLayerEffect(new CBonusPreviewEffect(this, wX, wY, val, BONUS_OPACITY));
 				}
 				break;
 			}
