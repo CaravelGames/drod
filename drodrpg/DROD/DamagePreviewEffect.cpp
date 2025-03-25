@@ -46,10 +46,12 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	//Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
 	const UINT wX, const UINT wY,
-	const int value)
+	const int value,
+	const Uint8 opacity) //[default=255]
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, wX(wX), wY(wY)
 	, pTextSurface(NULL)
+	, opacity(opacity)
 {
 	if (abs(value) <= MAX_VALUE_FOR_LARGE_DIGITS) {
 		this->YOFFSET = -25; //large font - needs more space to display at bottom of tile
@@ -77,10 +79,11 @@ CBonusPreviewEffect::CBonusPreviewEffect(
 	}
 }
 
-CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget, int yOffset)
+CBonusPreviewEffect::CBonusPreviewEffect(CWidget* pSetWidget, int yOffset, const Uint8 opacity)
 	: CEffect(pSetWidget, (UINT)-1, EDAMAGEPREVIEW)
 	, pTextSurface(NULL)
 	, YOFFSET(yOffset)
+	, opacity(opacity)
 { }
 
 //********************************************************************************
@@ -189,7 +192,7 @@ void CBonusPreviewEffect::PrepWidgetForValue(const int value)
 
 	//Draw text (outlined, w/ anti-aliasing).
 	g_pTheFM->DrawTextToRect(eFontType, wstr.c_str(),
-		0, 0, wLineW, wLineH, this->pTextSurface);
+		0, 0, wLineW, wLineH, this->pTextSurface, 0, this->opacity);
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 
@@ -203,8 +206,9 @@ CDamagePreviewEffect::CDamagePreviewEffect(
 //
 //Params:
 	CWidget *pSetWidget,          //(in)   Should be a room widget.
-	const CMonster *pMonster)     //(in)   Enemy to display damage preview for.
-	: CBonusPreviewEffect(pSetWidget, 3)
+	const CMonster *pMonster,     //(in)   Enemy to display damage preview for.
+	const Uint8 opacity)          //(in)   [default=255]
+	: CBonusPreviewEffect(pSetWidget, 3, opacity)
 	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
 {
 	ASSERT(pSetWidget);
@@ -321,7 +325,7 @@ void CDamagePreviewEffect::PrepWidget()
 	SDL_Color cannot_harm_enemy = { 255, 64, 64 };
 	SDL_Color cannot_harm_player = { 172, 172, 172 };
 	SDL_Color death = { 192, 0, 0 };
-	SDL_Color color = { 255, 255, 0 }; //yellow = default/middle
+	SDL_Color color = { 255, 255, 64 }; //yellow = default/middle
 	if (damage < 0) {
 		color = combat.MonsterCanHarmPlayer(this->pMonster) ? cannot_harm_enemy : neither_can_harm;
 	} else if (damage == 0) {
@@ -346,7 +350,8 @@ void CDamagePreviewEffect::PrepWidget()
 
 	//Draw text (outlined, w/ anti-aliasing).
 	g_pTheFM->DrawTextToRect(eFontType, wstr.c_str(),
-		0, 0, wLineW, wLineH, this->pTextSurface);
+		0, 0, wLineW, wLineH, this->pTextSurface, 0,
+		eFontType == F_DamagePreviewLarge ? this->opacity : 255); //large-font numbers respect transparency
 
 	g_pTheFM->SetFontColor(eFontType, origColor);
 

@@ -38,17 +38,18 @@ class CRoomWidget;
 class CBonusPreviewEffect : public CEffect
 {
 public:
-	CBonusPreviewEffect(CWidget* pSetWidget, const UINT wX, const UINT wY, const int value);
+	CBonusPreviewEffect(CWidget* pSetWidget, const UINT wX, const UINT wY, const int value, const Uint8 opacity=255);
 	virtual ~CBonusPreviewEffect();
 
 protected:
-	CBonusPreviewEffect(CWidget* pSetWidget, int yOffset);
+	CBonusPreviewEffect(CWidget* pSetWidget, int yOffset, const Uint8 opacity = 255);
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
 
 	UINT         wX, wY;
 	UINT         wValidTurn;   //game turn this display is valid for
 	int          YOFFSET;
+	Uint8        opacity;
 
 	CRoomWidget* pRoomWidget;
 
@@ -63,7 +64,7 @@ class CMonster;
 class CDamagePreviewEffect : public CBonusPreviewEffect
 {
 public:
-	CDamagePreviewEffect(CWidget *pSetWidget, const CMonster *pMonster);
+	CDamagePreviewEffect(CWidget *pSetWidget, const CMonster *pMonster, const Uint8 opacity=255);
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
