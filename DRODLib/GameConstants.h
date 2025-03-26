@@ -373,16 +373,20 @@ static inline int ConvertToBumpCommand(const int command)
 	}
 }
 
-static inline bool bIsEditorCommand(const int command)
+static inline bool bIsGameScreenCommand(const int command)
 {
-		return (command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_NEXT_LEVEL);
+	return bIsGameCommand(command) ||
+		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_WATCH_DEMOS) ||
+		(command >= CMD_EXTRA_SHOW_HELP && command <= CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT);
 }
 
-static inline bool bIsSharedCommand(const int command)
+static inline bool bIsEditorCommand(const int command)
 {
-	return command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY
-		|| command == CMD_EXTRA_STATS || command == CMD_EXTRA_WATCH_DEMOS
-		|| command == CMD_EXTRA_SHOW_HELP;
+		return bIsGameCommand(command) ||
+			(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_SHOW_HELP) ||
+			command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
+			command == CMD_EXTRA_STATS || command == CMD_EXTRA_WATCH_DEMOS ||
+			command == CMD_EXTRA_SHOW_HELP;
 }
 
 static inline bool IsValidOrientation(const UINT o) {return o<ORIENTATION_COUNT;}

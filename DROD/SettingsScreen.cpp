@@ -1266,13 +1266,10 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 //************************************************************************************
 bool CSettingsScreen::CanCommandsShareInput(int command, int otherCommand) const
 {
-	//Gameplay commands can't share an input with any other command
-	if (bIsGameCommand(command) || bIsGameCommand(otherCommand))
-		return false;
-
 	//Commands can share an input if they aren't used in the same context
 	//(currently the only contexts are gameplay and editor)
-	return (bIsEditorCommand(command) != bIsEditorCommand(otherCommand));
+	return !((bIsGameScreenCommand(command) || bIsGameScreenCommand(command)) ||
+		(bIsEditorCommand(command) && bIsEditorCommand(otherCommand)));
 }
 
 //************************************************************************************

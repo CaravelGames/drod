@@ -1767,8 +1767,7 @@ void CEditRoomScreen::DisplayChatText(const WSTRING& text, const SDL_Color& colo
 bool CEditRoomScreen::IsCommandSupported(int command) const
 //Returns: if the given command does something on this screen.
 {
-	return bIsGameCommand(command) || bIsEditorCommand(command)
-		|| bIsSharedCommand(command);
+	return bIsEditorCommand(command);
 }
 
 //*****************************************************************************

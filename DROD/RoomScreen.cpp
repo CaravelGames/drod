@@ -317,7 +317,7 @@ InputKey CRoomScreen::GetInputKeyForCommand(const UINT wCommand) const
 bool CRoomScreen::IsCommandSupported(int command) const
 //Returns: if the given command does something on this screen.
 {
-	return bIsGameCommand(command) || !bIsEditorCommand(command);
+	return bIsGameScreenCommand(command);
 }
 
 //*****************************************************************************
