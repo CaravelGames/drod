@@ -43,6 +43,7 @@ protected:
 	CRestoreScreen();
 	virtual ~CRestoreScreen();
 
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
