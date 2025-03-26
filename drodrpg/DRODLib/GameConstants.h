@@ -121,6 +121,9 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_EDITOR_LOG_VAR_REFS (COMMAND_COUNT+38)
 #define CMD_EXTRA_EDITOR_HOLD_STATS (COMMAND_COUNT+39)
 #define CMD_EXTRA_EDITOR_LEVEL_STATS (COMMAND_COUNT+40)
+#define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+41)
+#define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+42)
+#define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+43)
 
 //Sword orientation.
 static const UINT NW = 0;
@@ -237,6 +240,11 @@ namespace InputCommands
 		DCMD_Editor_HoldStats,
 		DCMD_Editor_LevelStats,
 
+		//Script editor
+		DCMD_Script_SelectAll,
+		DCMD_Script_ToText,
+		DCMD_Script_FromText,
+
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
 		DCMD_ExtraKeys = DCMD_SaveGame
@@ -275,7 +283,8 @@ static inline bool bIsEditorCommand(const int command)
 		(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_LOG_VAR_REFS) ||
 		command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
 		command == CMD_EXTRA_OPEN_CHAT || command == CMD_EXTRA_RELOAD_STYLE ||
-		command == CMD_EXTRA_SHOW_HELP || command == CMD_EXTRA_EDIT_VARS;
+		command == CMD_EXTRA_SHOW_HELP || command == CMD_EXTRA_EDIT_VARS ||
+		command >= CMD_EXTRA_SCRIPT_SELECT_ALL;
 }
 
 static inline bool bIsEditSelectCommand(const int command)

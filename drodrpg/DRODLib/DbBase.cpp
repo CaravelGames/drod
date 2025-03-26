@@ -1031,6 +1031,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_Editor_LogVarRefs: strText = "Log Var References"; break;
 		case MID_Command_Editor_HoldStats: strText = "Show Hold Stats"; break;
 		case MID_Command_Editor_LevelStats: strText = "Show Level Stats"; break;
+		case MID_Command_Script_SelectAll: strText = "Select All"; break;
+		case MID_Command_Script_ToText: strText = "Export Script Commands"; break;
+		case MID_Command_Script_FromText: strText = "Import Script Commands"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
