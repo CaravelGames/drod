@@ -1031,6 +1031,14 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_AddRoomToMap: strText = "Add room to map"; break;
 	case MID_Command_ToggleMovementOrderHint: strText = "Toggle Ordering Hint"; break;
 	case MID_DescribeCitizenColor: strText = "Describe citizen groups as color"; break;
+	case MID_Command_OpenSettings: strText = "Open Settings"; break;
+	case MID_Command_ReloadStyle: strText = "Force Style Reload"; break;
+	case MID_Command_Editor_Delete: strText = "Delete"; break;
+	case MID_Command_LogVars: strText = "Log Variable State"; break;
+	case MID_Command_Editor_LogVarRefs: strText = "Log Var References"; break;
+	case MID_Command_Editor_LogChallengeRefs: strText = "Log Challenges"; break;
+	case MID_Command_Editor_HoldStats: strText = "Show Hold Stats"; break;
+	case MID_Command_Editor_LevelStats: strText = "Show Level Stats"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

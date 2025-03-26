@@ -1408,7 +1408,15 @@ enum MID_CONSTANT {
   MID_DateFormatYMD = 2128,
   MID_Command_ToggleMovementOrderHint = 2144,
   MID_DescribeCitizenColor = 2145,
-  
+  MID_Command_OpenSettings = 2146,
+  MID_Command_ReloadStyle = 2147,
+  MID_Command_Editor_Delete = 2148,
+  MID_Command_LogVars = 2149,
+  MID_Command_Editor_LogVarRefs = 2150,
+  MID_Command_Editor_LogChallengeRefs = 2151,
+  MID_Command_Editor_HoldStats = 2152,
+  MID_Command_Editor_LevelStats = 2153,
+
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,
   MID_Graphic = 965,

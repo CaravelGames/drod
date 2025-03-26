@@ -56,7 +56,6 @@ class CRoomScreen : public CDrodScreen
 public:
 	static void    SetMusicStyle(WSTRING style, const UINT wMood, const UINT fadeDuration=3000);
 	void	       AddNoticesDialog();
-	virtual int    GetCommandForInputKey(const InputKey inputKey) const;
 
 protected:
 	friend class CScreenManager;
@@ -65,10 +64,8 @@ protected:
 	virtual ~CRoomScreen() { }
 
 	SDL_Rect& GetEntireSignRect() const;
-	InputKey GetInputKeyForCommand(const UINT wCommand) const;
 	void     HideScroll() {this->bIsScrollVisible = false; PaintScroll();}
 	virtual bool IsCommandSupported(int command) const;
-	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
 	void     PaintBackground();
 	void     PaintScroll();
 	void     PaintSign();
@@ -91,10 +88,6 @@ protected:
 	std::map<UINT, CNetNotice> notices;
 
 	bool              bIsScrollVisible;
-
-private:
-	std::map<InputKey,int> InputKeyToCommandMap;
-	std::map<InputKey, int> AlternativeKeyToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H

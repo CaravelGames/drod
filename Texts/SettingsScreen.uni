@@ -713,3 +713,35 @@ Toggle Ordering Hint
 [MID_DescribeCitizenColor]
 [eng]
 Describe citizen groups as color
+
+[MID_Command_OpenSettings]
+[eng]
+Open Settings
+
+[MID_Command_ReloadStyle]
+[eng]
+Force Reload Style
+
+[MID_Command_Editor_Delete]
+[eng]
+Delete
+
+[MID_Command_LogVars]
+[eng]
+Log Variable State
+
+[MID_Command_Editor_LogVarRefs]
+[eng]
+Log Var References
+
+[MID_Command_Editor_LogChallengeRefs]
+[eng]
+Log Challenges
+
+[MID_Command_Editor_HoldStats]
+[eng]
+Show Hold Stats
+
+[MID_Command_Editor_LevelStats]
+[eng]
+Show Level Stats
