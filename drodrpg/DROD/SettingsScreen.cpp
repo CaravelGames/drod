@@ -789,6 +789,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 		},
 		{
 			DCMD_Undo, DCMD_Restart,
+			DCMD_SaveGame, DCMD_LoadGame, DCMD_QuickSave, DCMD_QuickLoad,
 			NO_COMMAND
 		}
 	};
@@ -909,20 +910,22 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 	static const int CMD_LABEL_Y_OFFSET = (CMD_BUTTON_H - CMD_LABEL_H) / 2 - 5;
 
 	static const int NO_COMMAND = 1;
+	static const int SKIP_SPACE = 2;
 	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
 	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][15] = {
 		{
-			DCMD_SaveGame, DCMD_LoadGame, DCMD_QuickSave, DCMD_QuickLoad,
 			DCMD_SkipSpeech, DCMD_OpenChat, DCMD_ChatHistory,
 			DCMD_Screenshot, DCMD_SaveRoomImage, DCMD_ShowHelp, DCMD_Settings,
 			DCMD_ToggleFullScreen,
+			SKIP_SPACE,
+			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
 			NO_COMMAND,
 		},
 		{
-			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
 			DCMD_EditVars, DCMD_LogVars, DCMD_ReloadStyle,
 			DCMD_Editor_Cut, DCMD_Editor_Copy, DCMD_Editor_Paste,
 			DCMD_Editor_Undo, DCMD_Editor_Redo, DCMD_Editor_Delete,
+			DCMD_Script_SelectAll, DCMD_Script_ToText, DCMD_Script_FromText,
 			NO_COMMAND
 		},
 		{
@@ -942,6 +945,10 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 		while (COMMAND_COLUMNS[columnIndex][buttonIndex] != NO_COMMAND)
 		{
 			const DCMD command = (DCMD)COMMAND_COLUMNS[columnIndex][buttonIndex];
+			if (command == SKIP_SPACE) {
+				buttonIndex++;
+				continue;
+			}
 
 			const MESSAGE_ID eCommandNameMID = GetKeyDefinition(command)->commandMID;
 			const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * columnIndex;

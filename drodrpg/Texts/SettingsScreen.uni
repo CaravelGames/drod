@@ -621,3 +621,15 @@ Show Hold Stats
 [MID_Command_Editor_LevelStats]
 [eng]
 Show Level Stats
+
+[MID_Command_Script_SelectAll]
+[eng]
+Select All
+
+[MID_Command_Script_ToText]
+[eng]
+Export Script Commands
+
+[MID_Command_Script_FromText]
+[eng]
+Import Script Commands

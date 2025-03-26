@@ -131,6 +131,10 @@ namespace InputCommands
 		keyDefinitions[DCMD_Editor_HoldStats] = new KeyDefinition(CMD_EXTRA_EDITOR_HOLD_STATS, "Key_Editor_HoldStats", MID_Command_Editor_HoldStats, SDLK_F3);
 		keyDefinitions[DCMD_Editor_LevelStats] = new KeyDefinition(CMD_EXTRA_EDITOR_LEVEL_STATS, "Key_Editor_LevelStats", MID_Command_Editor_LevelStats, SDLK_F4);
 
+		keyDefinitions[DCMD_Script_SelectAll] = new KeyDefinition(CMD_EXTRA_SCRIPT_SELECT_ALL, "Key_Script_SelectAll", MID_Command_Script_SelectAll, BuildInputKey(SDLK_a, false, false, true));
+		keyDefinitions[DCMD_Script_ToText] = new KeyDefinition(CMD_EXTRA_SCRIPT_TO_TEXT, "Key_Script_ToText", MID_Command_Script_ToText, BuildInputKey(SDLK_b, false, false, true));
+		keyDefinitions[DCMD_Script_FromText] = new KeyDefinition(CMD_EXTRA_SCRIPT_FROM_TEXT, "Key_Script_FromText", MID_Command_Script_FromText, BuildInputKey(SDLK_b, true, false, true));
+
 		return keyDefinitions;
 	}
 

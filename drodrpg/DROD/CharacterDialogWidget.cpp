@@ -2243,9 +2243,13 @@ void CCharacterDialogWidget::OnKeyDown(
 	if (this->pAddCommandDialog->IsVisible())
 		return; //can't alter the command list while inputting a command
 
-	switch (Key.keysym.sym)
+	//Get command through CEditRoomScreen.
+	CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+		g_pTheSM->GetScreen(SCR_EditRoom));
+	const int nCommand = pEditRoomScreen->GetCommandForInputKey(BuildInputKey(Key));
+	switch (nCommand)
 	{
-		case SDLK_DELETE:
+		case CMD_EXTRA_EDITOR_DELETE:
 		{
 			CListBoxWidget *pActiveCommandList = GetActiveCommandListBox();
 			if (pActiveCommandList->GetItemCount())
@@ -2267,11 +2271,8 @@ void CCharacterDialogWidget::OnKeyDown(
 		break;
 
 		//Cut/copy/paste from command list.
-		case SDLK_x:
+		case CMD_EXTRA_EDITOR_CUT:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0)
-				break;
-
 			CListBoxWidget *pActiveCommandList = GetActiveCommandListBox();
 			vector<void*> keys(pActiveCommandList->GetSelectedItemsPointers());
 			if (keys.empty())
@@ -2325,7 +2326,7 @@ void CCharacterDialogWidget::OnKeyDown(
 			Paint();
 		}
 		break;
-		case SDLK_c:
+		case CMD_EXTRA_EDITOR_COPY:
 		{
 			if ((Key.keysym.mod & KMOD_CTRL) == 0)
 				break;
@@ -2353,7 +2354,7 @@ void CCharacterDialogWidget::OnKeyDown(
 			prepareForwardReferences(this->commandBuffer);
 		}
 		break;
-		case SDLK_v:
+		case CMD_EXTRA_EDITOR_PASTE:
 		{
 			if ((Key.keysym.mod & KMOD_CTRL) == 0)
 				break;
@@ -2415,7 +2416,7 @@ void CCharacterDialogWidget::OnKeyDown(
 		break;
 
 		//Select all script commands.
-		case SDLK_a:
+		case CMD_EXTRA_SCRIPT_SELECT_ALL:
 		{
 			if ((Key.keysym.mod & KMOD_CTRL) == 0) //Ctrl-A
 				break;
@@ -2427,84 +2428,89 @@ void CCharacterDialogWidget::OnKeyDown(
 		break;
 
 		//Copy/paste script commands to/from clipboard text.
-		case SDLK_b:
+		case CMD_EXTRA_SCRIPT_TO_TEXT:
 		{
 			if (this->bEditingCommand)
 				break;
 			ASSERT(!this->pCommand);
 
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) //Ctrl-b
-				break;
-
 			CListBoxWidget *pActiveCommandList = GetActiveCommandListBox();
 			COMMANDPTR_VECTOR *pCommands = GetActiveCommands();
 
 			WSTRING wstrCommandsText;
-			if ((Key.keysym.mod & KMOD_SHIFT) == 0)
+			//Commands -> clipboard
+			const CIDSet selectedLines = pActiveCommandList->GetSelectedLineNumbers();
+			for (CIDSet::const_iterator line=selectedLines.begin();
+					line!=selectedLines.end(); ++line)
 			{
-				//Commands -> clipboard
-				const CIDSet selectedLines = pActiveCommandList->GetSelectedLineNumbers();
-				for (CIDSet::const_iterator line=selectedLines.begin();
-						line!=selectedLines.end(); ++line)
-				{
-					if (*line < pCommands->size())
-						wstrCommandsText += toText(*pCommands, (*pCommands)[*line], pActiveCommandList, *line);
-				}
-				if (!wstrCommandsText.empty())
-					g_pTheSound->PlaySoundEffect(SEID_POTION);
-				CClipboard::SetString(wstrCommandsText);
-			} else {  //Ctrl-shift-b
-				//Clipboard -> commands
-				CClipboard::GetString(wstrCommandsText);
-
-				static const WCHAR delimiters[] = {We('\r'),We('\n'),We(0)};
-				COMMANDPTR_VECTOR newCommands;
-				WCHAR *pwLine, *pwText = (WCHAR*)wstrCommandsText.c_str();
-
-				//Extract one line at a time and parse.
-				pwLine = WCStok(pwText, delimiters);
-				while (pwLine)
-				{
-					WSTRING wstrCommand = pwLine; //make copy
-					CCharacterCommand *pCommand = fromText(wstrCommand);
-					if (pCommand)
-						newCommands.push_back(pCommand);
-					pwLine = WCStok(NULL, delimiters);
-				}
-
-				if (!newCommands.empty())
-				{
-					g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-
-					resolveForwardReferences(newCommands);
-
-					const UINT wSelectedLine = pActiveCommandList->GetSelectedLineNumber();
-					if (wSelectedLine < pCommands->size())
-						pCommands->insert(pCommands->begin() + (wSelectedLine + 1),
-							newCommands.begin(), newCommands.end());
-					else
-						pCommands->insert(pCommands->begin(), newCommands.begin(), newCommands.end());
-
-					const UINT deletedCommands = FilterUnsupportedCommands();
-
-					//Show inserted commands.
-					const UINT wTopLine = pActiveCommandList->GetTopLineNumber();
-					PopulateCommandDescriptions(pActiveCommandList, *pCommands);
-					pActiveCommandList->SetTopLineNumber(wTopLine);
-
-					const UINT selectedLine = wSelectedLine + newCommands.size() - deletedCommands;
-					pActiveCommandList->SelectLine(selectedLine);
-				} else {
-					//Sound for empty or invalid clipboard data.
-					g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-				}
-
-				if (IsEditingDefaultScript())
-					SetDefaultScriptWidgetStates();
-				else
-					SetWidgetStates();
-				Paint();
+				if (*line < pCommands->size())
+					wstrCommandsText += toText(*pCommands, (*pCommands)[*line], pActiveCommandList, *line);
 			}
+			if (!wstrCommandsText.empty())
+				g_pTheSound->PlaySoundEffect(SEID_POTION);
+			CClipboard::SetString(wstrCommandsText);
+		}
+		break;
+		case CMD_EXTRA_SCRIPT_FROM_TEXT:
+		{
+			if (this->bEditingCommand)
+				break;
+			ASSERT(!this->pCommand);
+
+			CListBoxWidget* pActiveCommandList = GetActiveCommandListBox();
+			COMMANDPTR_VECTOR* pCommands = GetActiveCommands();
+
+			WSTRING wstrCommandsText;
+			//Clipboard -> commands
+			CClipboard::GetString(wstrCommandsText);
+
+			static const WCHAR delimiters[] = { We('\r'),We('\n'),We(0) };
+			COMMANDPTR_VECTOR newCommands;
+			WCHAR* pwLine, * pwText = (WCHAR*)wstrCommandsText.c_str();
+
+			//Extract one line at a time and parse.
+			pwLine = WCStok(pwText, delimiters);
+			while (pwLine)
+			{
+				WSTRING wstrCommand = pwLine; //make copy
+				CCharacterCommand* pCommand = fromText(wstrCommand);
+				if (pCommand)
+					newCommands.push_back(pCommand);
+				pwLine = WCStok(NULL, delimiters);
+			}
+
+			if (!newCommands.empty())
+			{
+				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
+
+				resolveForwardReferences(newCommands);
+
+				const UINT wSelectedLine = pActiveCommandList->GetSelectedLineNumber();
+				if (wSelectedLine < pCommands->size())
+					pCommands->insert(pCommands->begin() + (wSelectedLine + 1),
+						newCommands.begin(), newCommands.end());
+				else
+					pCommands->insert(pCommands->begin(), newCommands.begin(), newCommands.end());
+
+				const UINT deletedCommands = FilterUnsupportedCommands();
+
+				//Show inserted commands.
+				const UINT wTopLine = pActiveCommandList->GetTopLineNumber();
+				PopulateCommandDescriptions(pActiveCommandList, *pCommands);
+				pActiveCommandList->SetTopLineNumber(wTopLine);
+
+				const UINT selectedLine = wSelectedLine + newCommands.size() - deletedCommands;
+				pActiveCommandList->SelectLine(selectedLine);
+			} else {
+				//Sound for empty or invalid clipboard data.
+				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			}
+
+			if (IsEditingDefaultScript())
+				SetDefaultScriptWidgetStates();
+			else
+				SetWidgetStates();
+			Paint();
 		}
 		break;
 
