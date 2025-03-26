@@ -351,6 +351,12 @@ CRestoreScreen::~CRestoreScreen()
 }
 
 //******************************************************************************
+bool CRestoreScreen::IsCommandSupported(int command) const
+{
+	return command == CMD_EXTRA_EDITOR_DELETE;
+}
+
+//******************************************************************************
 bool CRestoreScreen::SetForActivate()
 //Called before screen is activated and first paint.
 //
@@ -368,6 +374,11 @@ bool CRestoreScreen::SetForActivate()
 		SelectWidget(TAG_SAVE_LBOX);
 	}
 
+	{
+		CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+		InitKeysymToCommandMap(pPlayer->Settings);
+		delete pPlayer;
+	}
 	return true;
 }
 
@@ -476,7 +487,8 @@ void CRestoreScreen::OnKeyDown(
 {
 	CScreen::OnKeyDown(dwTagNo, Key);
 
-	switch (Key.keysym.sym)
+	const int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+	switch (nCommand)
 	{
 /*
 		case SDLK_F6:
@@ -498,7 +510,7 @@ void CRestoreScreen::OnKeyDown(
 		}
 		break;
 */
-		case SDLK_DELETE:
+		case CMD_EXTRA_EDITOR_DELETE:
 		{
 			//Delete selected saved games.
 			CIDSet savedGameIDs = this->pSaveListBoxWidget->GetSelectedItems();
