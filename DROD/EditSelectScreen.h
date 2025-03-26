@@ -47,6 +47,7 @@ public:
 	void     ResetSelectedHold();
 	void     SetToCopiedHold(CDbHold *pHold, CDbLevel *pLevel);
 	WSTRING  GetSelectedStyle() const;
+	virtual bool IsCommandSupported(int command) const;
 
 protected:
 	friend class CDrodScreenManager;

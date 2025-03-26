@@ -62,8 +62,11 @@ public:
 	virtual void   Callbackf(float fVal);
 	virtual void   CallbackText(const WCHAR* wpText);
 
+	virtual bool IsCommandSupported(int command) const;
 	UINT    ImportHoldImage(const UINT holdID, const UINT extensionFlags=EXT_JPEG|EXT_PNG);
+	void    InitKeysymToCommandMap(CDbPackedVars& PlayerSettings);
 
+	virtual int    GetCommandForInputKey(const InputKey inputKey) const;
 	static WSTRING getStatsText(const RoomStats& st);
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
 	static bool    IsGameFullVersion();
@@ -121,6 +124,7 @@ friend class CDrodDialogs;
 	bool           IsStyleOnDisk(list<WSTRING>& styleName, list<WSTRING>& skies);
 
 	void           EnablePlayerSettings(const UINT dwPlayerID);
+	InputKey       GetInputKeyForCommand(const UINT wCommand) const;
 	virtual bool   OnQuit();
 	bool           ParseConsoleCommand(const WCHAR *pText);
 	virtual bool   PlayVideo(const WCHAR *pFilename, const UINT dwHoldID, const int x=0, const int y=0);
@@ -175,6 +179,9 @@ private:
 
 	UINT ShowMessage(const MESSAGE_ID dwMessageID);
 	UINT ShowMessage(const WCHAR *pwczText);
+
+	std::map<InputKey, int> InputKeyToCommandMap;
+	std::map<InputKey, int> AlternativeKeyToCommandMap;
 };
 
 #endif //...#ifndef DRODSCREEN_H

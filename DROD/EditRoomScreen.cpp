@@ -2930,13 +2930,24 @@ void CEditRoomScreen::OnKeyDown(
 		case CMD_EXTRA_EDITOR_UNDO:
 			if (Key.keysym.mod & KMOD_CTRL)
 				UndoCommand(true);
-			break;
+		break;
 
 		case CMD_EXTRA_EDITOR_REDO:
 			if (Key.keysym.mod & KMOD_CTRL)
 				UndoCommand(false);
-			break;
+		break;
 
+		case CMD_EXTRA_EDITOR_LOG_VAR_REFS:
+		case CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS:
+			//Output all scripts where each hold var or challenge is referenced.
+			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
+			SetCursor(CUR_Wait);
+			g_pTheDB->Holds.LogScriptVarRefs(this->pHold->dwHoldID, nCommand == CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS);
+			SetCursor();
+		break;
+		case CMD_EXTRA_RELOAD_STYLE:
+			ForceFullStyleReload();
+		break;
 	}
 
 	//Check for other keys.
@@ -2957,18 +2968,6 @@ void CEditRoomScreen::OnKeyDown(
 				} else {
 					UnloadPlaytestSession();
 				}
-			break;
-
-			//dev keys
-			case SDLK_F2:
-				//Output all scripts where each hold var (or Alt=challenge) is referenced.
-				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-				SetCursor(CUR_Wait);
-				g_pTheDB->Holds.LogScriptVarRefs(this->pHold->dwHoldID, (Key.keysym.mod & KMOD_ALT) != 0);
-				SetCursor();
-			break;
-			case SDLK_F3:
-				ForceFullStyleReload();
 			break;
 
 			case SDLK_F4:

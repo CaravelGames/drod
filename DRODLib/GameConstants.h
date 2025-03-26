@@ -112,18 +112,26 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_EDITOR_PASTE (COMMAND_COUNT+27)
 #define CMD_EXTRA_EDITOR_UNDO (COMMAND_COUNT+28)
 #define CMD_EXTRA_EDITOR_REDO (COMMAND_COUNT+29)
-#define CMD_EXTRA_EDITOR_PLAYTEST_ROOM (COMMAND_COUNT+30)
-#define CMD_EXTRA_EDITOR_REFLECT_X (COMMAND_COUNT+31)
-#define CMD_EXTRA_EDITOR_REFLECT_Y (COMMAND_COUNT+32)
-#define CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE (COMMAND_COUNT+33)
-#define CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE (COMMAND_COUNT+34)
-#define CMD_EXTRA_EDITOR_PREV_LEVEL (COMMAND_COUNT+35)
-#define CMD_EXTRA_EDITOR_NEXT_LEVEL (COMMAND_COUNT+36)
-#define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+37)
-#define CMD_EXTRA_TOGGLE_HOLD_VARS (COMMAND_COUNT+38)
-#define CMD_EXTRA_TOGGLE_FRAME_RATE (COMMAND_COUNT+39)
-#define CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT (COMMAND_COUNT+40)
-#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+41)
+#define CMD_EXTRA_EDITOR_DELETE (COMMAND_COUNT+30)
+#define CMD_EXTRA_EDITOR_PLAYTEST_ROOM (COMMAND_COUNT+31)
+#define CMD_EXTRA_EDITOR_REFLECT_X (COMMAND_COUNT+32)
+#define CMD_EXTRA_EDITOR_REFLECT_Y (COMMAND_COUNT+33)
+#define CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE (COMMAND_COUNT+34)
+#define CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE (COMMAND_COUNT+35)
+#define CMD_EXTRA_EDITOR_PREV_LEVEL (COMMAND_COUNT+36)
+#define CMD_EXTRA_EDITOR_NEXT_LEVEL (COMMAND_COUNT+37)
+#define CMD_EXTRA_EDITOR_LOG_VAR_REFS (COMMAND_COUNT+38)
+#define CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS (COMMAND_COUNT+39)
+#define CMD_EXTRA_EDITOR_HOLD_STATS (COMMAND_COUNT+40)
+#define CMD_EXTRA_EDITOR_LEVEL_STATS (COMMAND_COUNT+41)
+#define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+42)
+#define CMD_EXTRA_TOGGLE_HOLD_VARS (COMMAND_COUNT+43)
+#define CMD_EXTRA_TOGGLE_FRAME_RATE (COMMAND_COUNT+44)
+#define CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT (COMMAND_COUNT+45)
+#define CMD_EXTRA_SETTINGS (COMMAND_COUNT+46)
+#define CMD_EXTRA_RELOAD_STYLE (COMMAND_COUNT+47)
+#define CMD_EXTRA_LOG_VARS (COMMAND_COUNT+48)
+#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+49)
 
 // Hardcoded commands used by DemoScreen that cannot be remapped
 #define CMD_DEMO_SEEK_010 (EXTRA_COMMAND_COUNT + 1)
@@ -237,13 +245,17 @@ namespace InputCommands
 		DCMD_ToggleDemoRecord,
 		DCMD_WatchDemos,
 		DCMD_ShowHelp,
-		
+		DCMD_Settings,
+		DCMD_ReloadStyle,
+		DCMD_LogVars,
+
 		// Editor
 		DCMD_Editor_Cut,
 		DCMD_Editor_Copy,
 		DCMD_Editor_Paste,
 		DCMD_Editor_Undo,
 		DCMD_Editor_Redo,
+		DCMD_Editor_Delete,
 		DCMD_Editor_PlaytestRoom,
 		DCMD_Editor_ReflectX,
 		DCMD_Editor_ReflectY,
@@ -251,6 +263,10 @@ namespace InputCommands
 		DCMD_Editor_SetOverheadImage,
 		DCMD_Editor_PrevLevel,
 		DCMD_Editor_NextLevel,
+		DCMD_Editor_LogVarRefs,
+		DCMD_Editor_LogChallengeRefs,
+		DCMD_Editor_HoldStats,
+		DCMD_Editor_LevelStats,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
@@ -377,16 +393,21 @@ static inline bool bIsGameScreenCommand(const int command)
 {
 	return bIsGameCommand(command) ||
 		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_WATCH_DEMOS) ||
-		(command >= CMD_EXTRA_SHOW_HELP && command <= CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT);
+		(command >= CMD_EXTRA_SHOW_HELP && command <= CMD_EXTRA_LOG_VARS);
 }
 
 static inline bool bIsEditorCommand(const int command)
 {
 		return bIsGameCommand(command) ||
-			(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_SHOW_HELP) ||
+			(command >= CMD_EXTRA_WATCH_DEMOS && command <= CMD_EXTRA_SHOW_HELP) ||
 			command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
-			command == CMD_EXTRA_STATS || command == CMD_EXTRA_WATCH_DEMOS ||
-			command == CMD_EXTRA_SHOW_HELP;
+			command == CMD_EXTRA_STATS || command == CMD_EXTRA_RELOAD_STYLE;
+}
+
+static inline bool bIsEditSelectCommand(const int command)
+{
+	return(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_REFLECT_Y) || 
+		(command >= CMD_EXTRA_EDITOR_LOG_VAR_REFS && command <= CMD_EXTRA_SHOW_HELP);
 }
 
 static inline bool IsValidOrientation(const UINT o) {return o<ORIENTATION_COUNT;}

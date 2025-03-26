@@ -929,23 +929,27 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 
 	static const int NO_COMMAND = 1;
 	static const int COMMAND_COLUMN_OFFSETS [BUTTON_COLUMNS] = {0, 6, 13};
-	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][15] = {
 		{
 			DCMD_LockRoom, DCMD_SkipSpeech, DCMD_TogglePuzzleMode, DCMD_ToggleMovementOrderHint,
-			DCMD_ToggleFullScreen, DCMD_Screenshot, DCMD_SaveRoomImage,
+			DCMD_ToggleFullScreen, DCMD_Stats, DCMD_ChatHistory, DCMD_PuzzleModeOptions,
+			DCMD_QuickDemoRecord, DCMD_ToggleDemoRecord, DCMD_WatchDemos,
+			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
 			NO_COMMAND,
 		},
 		{
-			DCMD_Stats, DCMD_ChatHistory, DCMD_PuzzleModeOptions,
-			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate, DCMD_QuickDemoRecord, DCMD_ToggleDemoRecord,
-			DCMD_WatchDemos, DCMD_ShowHelp,
+			DCMD_Screenshot, DCMD_SaveRoomImage, DCMD_ShowHelp,
+			DCMD_Settings, DCMD_ReloadStyle, DCMD_LogVars,
+			DCMD_Editor_LogVarRefs, DCMD_Editor_LogChallengeRefs, DCMD_Editor_Cut,
+			DCMD_Editor_Copy, DCMD_Editor_Paste, DCMD_Editor_Undo,
+			DCMD_Editor_Redo, DCMD_Editor_Delete,
 			NO_COMMAND
 		},
 		{
-			DCMD_Editor_Cut, DCMD_Editor_Copy, DCMD_Editor_Paste,
-			DCMD_Editor_Undo, DCMD_Editor_Redo, DCMD_Editor_PlaytestRoom,
+			DCMD_Editor_PlaytestRoom,
 			DCMD_Editor_ReflectX, DCMD_Editor_ReflectY, DCMD_Editor_SetFloorImage,
 			DCMD_Editor_SetOverheadImage, DCMD_Editor_PrevLevel, DCMD_Editor_NextLevel,
+			DCMD_Editor_HoldStats, DCMD_Editor_LevelStats,
 			NO_COMMAND
 		}
 	};

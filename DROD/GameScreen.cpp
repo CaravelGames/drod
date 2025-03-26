@@ -1703,6 +1703,31 @@ void CGameScreen::OnKeyDown(
 		case CMD_EXTRA_SHOW_HELP:
 			GotoHelpPage();
 		break;
+
+		case CMD_EXTRA_SETTINGS:
+			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
+				GoToScreen(SCR_Settings);
+			} else {
+				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			}
+		break;
+
+		case CMD_EXTRA_RELOAD_STYLE:
+			//Force full style reload.
+			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
+			this->pRoomWidget->UpdateFromCurrentGame(true);
+		break;
+
+		//Game var output.
+		case CMD_EXTRA_LOG_VARS:
+#ifdef ENABLE_CHEATS
+			LogHoldVars();
+#else
+			if (g_pTheDB->Holds.PlayerCanEditHold(this->pCurrentGame->pHold->dwHoldID)) {
+				LogHoldVars();
+			}
+#endif
+		break;
 	}
 	if (!bIsVirtualCommand(nCommand) && nCommand != CMD_UNSPECIFIED)
 	{
@@ -1739,28 +1764,7 @@ void CGameScreen::OnKeyDown(
 	//Check for other keys.
 	switch (Key.keysym.sym)
 	{
-		case SDLK_F2:
-			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
-				GoToScreen(SCR_Settings);
-			} else {
-				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-			}
-		return;
-
-		//display modes
-		case SDLK_F3:
-			if (Key.keysym.mod & KMOD_CTRL) {
-				//Force full style reload.
-				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-				this->pRoomWidget->UpdateFromCurrentGame(true);
-			}
-		break;
 #ifdef ENABLE_CHEATS
-		//Game var output.
-		case SDLK_F7:
-			if (Key.keysym.mod & KMOD_SHIFT)
-				LogHoldVars();
-		break;
 		//cheat keys
 		case SDLK_F8:
 		{
