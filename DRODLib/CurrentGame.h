@@ -227,6 +227,7 @@ public:
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
 	void     GetArrayVarValues(VARMAP& vars);
+	WSTRING  GetArrayVarAsString(const UINT varID);
 	WSTRING  getStringVar(const UINT varIndex) const;
 	void     GotoLevelEntrance(CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay=false);
 	bool     IsCurrentLevelComplete() const;

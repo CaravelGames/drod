@@ -1354,6 +1354,32 @@ void CCurrentGame::GetArrayVarValues(VARMAP& vars)
 }
 
 //*****************************************************************************
+WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
+//
+{
+	ScriptArrayMap::const_iterator array = this->scriptArrays.find(varID);
+	if (array == this->scriptArrays.end()) {
+		return L""; //Array hasn't been initialized yet
+	}
+
+	WSTRING wstr;
+	bool bNeedComma = false;
+	for (map<int, int>::const_iterator iter = array->second.cbegin();
+		iter != array->second.cend(); ++iter) {
+		if (bNeedComma) {
+			wstr += wszComma;
+		}
+
+		wstr += std::to_wstring(iter->first);
+		wstr += wszColon;
+		wstr += std::to_wstring(iter->second);
+		bNeedComma = true;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
 void CCurrentGame::GotoLevelEntrance(
 //Leaves the level and goes to the level with the indicated entrance.
 //
