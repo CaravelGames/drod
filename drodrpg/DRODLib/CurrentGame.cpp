@@ -1615,6 +1615,37 @@ WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
 }
 
 //*****************************************************************************
+void CCurrentGame::SetArrayVarFromString(const UINT varID, const WSTRING& wstr)
+{
+	if (wstr.empty()) {
+		ScriptArrayMap::iterator& array = scriptArrays.find(varID);
+		if (array != scriptArrays.end()) {
+			//Clear a script array that is initialized
+			array->second.clear();
+		}
+
+		return;
+	}
+
+	//This will make a new array if one doesn't exist
+	map<int, int>& array = this->scriptArrays[varID];
+	array.clear();
+
+	vector<WSTRING> entries = WCSExplode(wstr, *wszComma);
+	for (vector<WSTRING>::const_iterator iter = entries.cbegin();
+		iter != entries.cend(); ++iter) {
+		vector<WSTRING> keyValue = WCSExplode(*iter, *wszColon);
+		if (keyValue.size() != 2) {
+			continue; //need two values
+		}
+
+		int key = _Wtoi(keyValue[0].c_str());
+		int value = _Wtoi(keyValue[1].c_str());
+		array[key] = value;
+	}
+}
+
+//*****************************************************************************
 void CCurrentGame::GotoLevelEntrance(
 //Leaves the level and goes to the level with the indicated entrance.
 //
