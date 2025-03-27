@@ -266,6 +266,7 @@ public:
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
 	void     GetArrayVarValues(VARMAP& vars);
+	WSTRING  GetArrayVarAsString(const UINT varID);
 	int      getItemAmount(const UINT item) const;
 	int      getPlayerATK() const;
 	int      getPlayerDEF() const;
