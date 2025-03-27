@@ -7340,9 +7340,9 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_SetMapIcon:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
-		parseNumber(pCommand->y);
+		parseNumber(pCommand->y); skipComma
 		skipRightParen;
-		parseNumber(pCommand->w);
+		parseNumber(pCommand->w); skipComma
 		parseNumber(pCommand->h);
 	break;
 
