@@ -946,8 +946,9 @@ void CGameScreen::LogHoldVars()
 		str += UnicodeToUTF8(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
-		if (bInteger)
-		{
+		if (this->pCurrentGame->pHold->IsArrayVar(wVarID)) {
+			str += UnicodeToUTF8(this->pCurrentGame->GetArrayVarAsString(wVarID));
+		} else if (bInteger) {
 			const int nVal = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), (int)0);
 			str += _itoa(nVal, temp, 10);
 		} else {
