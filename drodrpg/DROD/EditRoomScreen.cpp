@@ -3280,6 +3280,17 @@ void CEditRoomScreen::OnKeyDown(
 	//Check for other keys.
 	switch (Key.keysym.sym)
 	{
+		case SDLK_F4:
+		{
+			const bool bAltCtrl = (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL)) != 0;
+			if (bAltCtrl)
+			{
+				//Save on ALT-F4 exit.
+				SaveRoom();
+			}
+		}
+		break;
+
 		//Exit screen.
 		case SDLK_ESCAPE:
 			//Handle some cleanup on screen exit.
