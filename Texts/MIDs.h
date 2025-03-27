@@ -1416,6 +1416,9 @@ enum MID_CONSTANT {
   MID_Command_Editor_LogChallengeRefs = 2151,
   MID_Command_Editor_HoldStats = 2152,
   MID_Command_Editor_LevelStats = 2153,
+  MID_Command_Script_SelectAll = 2154,
+  MID_Command_Script_ToText = 2155,
+  MID_Command_Script_FromText = 2156,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

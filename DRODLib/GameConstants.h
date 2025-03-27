@@ -131,7 +131,10 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SETTINGS (COMMAND_COUNT+46)
 #define CMD_EXTRA_RELOAD_STYLE (COMMAND_COUNT+47)
 #define CMD_EXTRA_LOG_VARS (COMMAND_COUNT+48)
-#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+49)
+#define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+49)
+#define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+50)
+#define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+51)
+#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+52)
 
 // Hardcoded commands used by DemoScreen that cannot be remapped
 #define CMD_DEMO_SEEK_010 (EXTRA_COMMAND_COUNT + 1)
@@ -267,6 +270,11 @@ namespace InputCommands
 		DCMD_Editor_LogChallengeRefs,
 		DCMD_Editor_HoldStats,
 		DCMD_Editor_LevelStats,
+
+		//Script editor
+		DCMD_Script_SelectAll,
+		DCMD_Script_ToText,
+		DCMD_Script_FromText,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
