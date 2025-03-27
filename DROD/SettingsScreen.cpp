@@ -1274,7 +1274,8 @@ bool CSettingsScreen::CanCommandsShareInput(int command, int otherCommand) const
 	//Commands can share an input if they aren't used in the same context
 	//(currently the only contexts are gameplay and editor)
 	return !((bIsGameScreenCommand(command) || bIsGameScreenCommand(command)) ||
-		(bIsEditorCommand(command) && bIsEditorCommand(otherCommand)));
+		(bIsEditorCommand(command) && bIsEditorCommand(otherCommand)) ||
+		(bIsEditSelectCommand(command) && bIsEditSelectCommand(command)));
 }
 
 //************************************************************************************
