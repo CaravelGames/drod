@@ -65,6 +65,7 @@ protected:
 	CDemosScreen();
 	virtual ~CDemosScreen();
 
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	void     ResetRoom() {this->dwRoomID = this->dwLevelID = 0;}
 

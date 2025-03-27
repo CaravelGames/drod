@@ -379,6 +379,12 @@ CDemosScreen::~CDemosScreen()
 	delete this->pDemoCurrentGame;
 }
 
+//************************************************************************************
+bool CDemosScreen::IsCommandSupported(int command) const
+{
+	return command == CMD_EXTRA_EDITOR_DELETE;
+}
+
 //******************************************************************************
 bool CDemosScreen::SetForActivate()
 //Called before screen is activated and first paint.
@@ -445,6 +451,12 @@ bool CDemosScreen::SetForActivate()
 	this->bHoldPublished = true;
 	this->bIsAuthor = g_pTheDB->GetPlayerID() == g_pTheDB->Holds.GetAuthorID(dwHoldID);
 	DownloadRoomDemos(this->dwRoomID);
+
+	{
+		CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+		InitKeysymToCommandMap(pPlayer->Settings);
+		delete pPlayer;
+	}
 
 	return true;
 }
