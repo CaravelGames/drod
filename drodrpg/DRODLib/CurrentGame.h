@@ -361,6 +361,7 @@ public:
 	void     EnableInventory(CCueEvents& CueEvents, const UINT type);
 	bool     QueryInventoryStatus(const UINT type) const;
 	void     SellInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
+	void     SetArrayVarFromString(const UINT varID, const WSTRING& wstr);
 	void     SetExecuteNoMoveCommands(const bool bVal=true) {this->bExecuteNoMoveCommands = bVal;}
 	bool     SetPlayer(const UINT wSetX, const UINT wSetY);
 	void     TeleportPlayer(const UINT wSetX, const UINT wSetY, CCueEvents& CueEvents, bool bProcess = true);

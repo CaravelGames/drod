@@ -1123,8 +1123,11 @@ void CDrodScreen::EditGlobalVars(
 			UNPACKEDVARTYPE vType;
 			WSTRING wstrValue;
 			vType = stats.GetVarType(varName);
+			bool bIsArray = pGame->pHold->IsArrayVar(itemID);
 
-			if (vType == UVT_int) {
+			if (bIsArray) {
+				wstrValue = pGame->GetArrayVarAsString(itemID);
+			} else if (vType == UVT_int) {
 				int iVarValue = stats.GetVar(varName, (int)0);
 				std::basic_stringstream<WCHAR_t> stream;
 				stream << iVarValue;
@@ -1138,8 +1141,10 @@ void CDrodScreen::EditGlobalVars(
 				wstrValue);
 			if (tagNo == TAG_OK)
 			{
-				// Hold variables can be strings or integers
-				if (isWInteger(wstrValue.c_str())) {
+				// Hold variables can be arrays, strings or integers
+				if (bIsArray) {
+					pGame->SetArrayVarFromString(itemID, wstrValue);
+				} else if (isWInteger(wstrValue.c_str())) {
 					int varValue = _Wtoi(wstrValue.c_str());
 					stats.SetVar(varName, varValue);
 				}
