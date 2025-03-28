@@ -1065,13 +1065,8 @@ void CEditSelectScreen::OnKeyDown(
 		break;
 	}
 
-	switch (Key.keysym.sym)
-	{
-		default:
-			if (IsDeactivating())
-				FreeMembers();
-		break;
-	}
+	if (IsDeactivating())
+		FreeMembers();
 }
 
 //*****************************************************************************

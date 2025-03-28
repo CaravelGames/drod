@@ -8257,7 +8257,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 			localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
 		} else {
 			double ratio = (double)score / (double)pHighScore->score;
-			int percent = ratio * 100;
+			int percent = int(ratio * 100);
 			localScoreMessage = WCSReplace(
 				g_pTheDB->GetMessageText(MID_PercentOptimal),
 				wszStringToken,

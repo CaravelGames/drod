@@ -264,8 +264,8 @@ void CImageOverlayEffect::DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* des
 	SDL_Rect widgetRect = {
 		this->pOwnerWidget->GetX(),
 		this->pOwnerWidget->GetY(),
-		this->pOwnerWidget->GetW(),
-		this->pOwnerWidget->GetH()
+		int(this->pOwnerWidget->GetW()),
+		int(this->pOwnerWidget->GetH())
 	};
 
 	int repeats = 0;

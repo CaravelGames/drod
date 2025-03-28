@@ -797,9 +797,6 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 	//Command buttons.
 	static const UINT GAMEPLAY_BUTTON_COMMAND_COUNT = DCMD_ExtraKeys;
 
-	CLabelWidget* pLabelWidget;
-	CButtonWidget* pButton;
-
 	//Show directional buttons in three columns.
 	static const UINT DIRECTIONAL_BUTTON_COUNT = 11;
 	UINT wButtonTagI;
@@ -870,9 +867,10 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 	COptionButtonWidget* pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, CMD_BUTTON_X,
 		DEFAULT_BUTTON_Y - CMD_BUTTON_H - CY_SPACE, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
 		g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
-	pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
+	pTabbedMenu->AddWidgetToTab(pOptionButton, KEYMAP_1_TAB);
 
 	{ //Command default buttons.
+		CButtonWidget* pButton;
 		pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
 			CMD_BUTTON_X, DEFAULT_BUTTON_Y,
 			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultDesktop));
