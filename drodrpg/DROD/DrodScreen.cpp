@@ -2470,7 +2470,7 @@ void CDrodScreen::InitKeysymToCommandMap(
 		this->InputKeyToCommandMap[inputKey] = command;
 
 		if (InputCommands::DoesCommandUseModifiers((InputCommands::DCMD)wIndex)) // Support for macros
-			this->InputKeyToCommandMap[BuildInputKey(inputKey, false, false, true)] = command;
+			this->InputKeyToCommandMap[BuildInputKey(int32_t(inputKey), false, false, true)] = command;
 	}
 }
 
