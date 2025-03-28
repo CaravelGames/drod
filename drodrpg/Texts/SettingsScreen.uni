@@ -470,6 +470,10 @@ Map icon alpha
 [eng]
 Tarstuff alpha
 
+[MID_OverwritingMacroKeyError]
+[eng]
+You can't map to this key because command '%1' uses the same key but without any modifiers.
+
 [MID_GetKeyDescription_NoModifiers]
 [eng]
 Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed for this command.
@@ -477,10 +481,6 @@ Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed 
 [MID_GetKeyDescription_YesModifiers]
 [eng]
 Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this command.
-
-[MID_OverwritingMacroKeyError]
-[eng]
-You can't map to this key because command '%1' uses the same key but without any modifiers.
 
 [MID_MoreCommands]
 [eng]
@@ -506,6 +506,10 @@ Quick Load
 [eng]
 Skip Speech
 
+[MID_Command_OpenChat]
+[eng]
+Open Chatbox
+
 [MID_Command_ChatHistory]
 [eng]
 Open Chat History
@@ -530,7 +534,7 @@ Open Settings
 [eng]
 Toggle Full Screen
 
-MID_Command_ToggleTurnCount
+[MID_Command_ToggleTurnCount]
 [eng]
 Toggle Turn Count
 
@@ -601,6 +605,10 @@ Set Floor Image
 [MID_Command_Editor_SetOverheadImage]
 [eng]
 Set Overhead Image
+
+[MID_Command_Editor_ToggleCharacterPreview]
+[eng]
+Toggle NPC Preview
 
 [MID_Command_Editor_PrevLevel]
 [eng]
