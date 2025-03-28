@@ -2609,6 +2609,16 @@ void CGameScreen::OnKeyDown(
 	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 	switch (nCommand)
 	{
+		case CMD_BATTLE_KEY:
+			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
+		break;
+
+		case CMD_SCORE_KEY:
+			ASSERT(this->pCurrentGame);
+			ASSERT(this->pCurrentGame->pPlayer);
+			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
+		break;
+
 		case CMD_EXTRA_SAVE_GAME:
 			SaveGame();
 		break;
@@ -5466,16 +5476,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 			//was already handled in the calling ProcessCommand
 //			this->bUndoJustMade = false;
 		break;
-
-		case CMD_BATTLE_KEY:
-			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
-		return SCR_Game;
-
-		case CMD_SCORE_KEY:
-			ASSERT(this->pCurrentGame);
-			ASSERT(this->pCurrentGame->pPlayer);
-			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
-		return SCR_Game;
 
 		default:
 		{
