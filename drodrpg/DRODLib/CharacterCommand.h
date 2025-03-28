@@ -230,6 +230,8 @@ namespace ScriptFlag
 		IG_Shovels = 33, //All sizes of shovel
 		IG_Map = 34, //Map and detailed map
 		IG_Equipment = 35, //Any equipment slot
+		IG_Keys = 36, //Any key
+		IG_Collectable = 37, //Any item the player can pick up
 		ItemGroupCount //Total number of defined groups
 	};
 

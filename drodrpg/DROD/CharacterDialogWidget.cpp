@@ -4733,8 +4733,10 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_AttackUp, g_pTheDB->GetMessageText(MID_AttackUpGroup));
 	pListBox->AddItem(ScriptFlag::IG_DefenseUp, g_pTheDB->GetMessageText(MID_DefenseUpGroup));
 	pListBox->AddItem(ScriptFlag::IG_Powerup, g_pTheDB->GetMessageText(MID_PowerupGroup));
+	pListBox->AddItem(ScriptFlag::IG_Keys, g_pTheDB->GetMessageText(MID_Keys));
 	pListBox->AddItem(ScriptFlag::IG_Shovels, g_pTheDB->GetMessageText(MID_Shovel1));
 	pListBox->AddItem(ScriptFlag::IG_Map, g_pTheDB->GetMessageText(MID_LevelMap));
+	pListBox->AddItem(ScriptFlag::IG_Collectable, g_pTheDB->GetMessageText(MID_CollectableGroup));
 	pListBox->AddItem(ScriptFlag::IG_Equipment, g_pTheDB->GetMessageText(MID_EquipmentGroup));
 }
 
