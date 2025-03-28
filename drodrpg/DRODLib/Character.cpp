@@ -2981,25 +2981,27 @@ Finish:
 		}
 */
 		//Behavior patterns.
-		if (this->bFaceTarget)
-			FaceTarget();
-		if (this->bFaceAwayFromTarget)
-			FaceAwayFromTarget();
+		if (!this->pCurrentGame->bHalfTurn) {
+			if (this->bFaceTarget)
+				FaceTarget();
+			if (this->bFaceAwayFromTarget)
+				FaceAwayFromTarget();
 
-		if (this->bAttackAdjacent && !this->bAttacked)
-		{
-			this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
-			this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
-		}
-		if (this->bAttackInFront && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			this->bAttacked = AttackPlayerWhenInFront(CueEvents);
-		}
-		if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+			if (this->bAttackAdjacent && !this->bAttacked)
+			{
+				this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
+				this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
+			}
+			if (this->bAttackInFront && !this->bAttacked)
+			{
+				this->bAttacked = true;
+				this->bAttacked = AttackPlayerWhenInFront(CueEvents);
+			}
+			if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
+			{
+				this->bAttacked = true;
+				this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+			}
 		}
 	}
 
