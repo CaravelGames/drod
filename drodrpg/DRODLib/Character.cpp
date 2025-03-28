@@ -3729,37 +3729,39 @@ Finish:
 		}
 */
 		//Behavior patterns.
-		if (this->bFaceTarget)
-			FaceTarget();
-		if (this->bFaceAwayFromTarget)
-			FaceAwayFromTarget();
+		if (!this->pCurrentGame->bHalfTurn) {
+			if (this->bFaceTarget)
+				FaceTarget();
+			if (this->bFaceAwayFromTarget)
+				FaceAwayFromTarget();
 
-		if (this->bSpawnEggs && this->IsSpawnEggTriggered(CueEvents))
-			SpawnEgg(CueEvents);
+			if (this->bSpawnEggs && this->IsSpawnEggTriggered(CueEvents))
+				SpawnEgg(CueEvents);
 
-		if (this->bAttackAdjacent && !this->bAttacked)
-		{
-			this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
-			this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
-		}
-		if (this->bAttackInFront && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			bool bIsEye = false;
-			if (this->pCustomChar) {
-				bIsEye = (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE);
-			} else {
-				bIsEye = (this->wIdentity == M_EYE || this->wIdentity == M_MADEYE);
+			if (this->bAttackAdjacent && !this->bAttacked)
+			{
+				this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
+				this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
+			}
+			if (this->bAttackInFront && !this->bAttacked)
+			{
+				this->bAttacked = true;
+				bool bIsEye = false;
+				if (this->pCustomChar) {
+					bIsEye = (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE);
+				} else {
+					bIsEye = (this->wIdentity == M_EYE || this->wIdentity == M_MADEYE);
+				}
+
+				if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && bIsEye)
+					CueEvents.Add(CID_EvilEyeWoke);
 			}
 
-			if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && bIsEye)
-				CueEvents.Add(CID_EvilEyeWoke);
-				
-		}
-		if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+			if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
+			{
+				this->bAttacked = true;
+				this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+			}
 		}
 	}
 
