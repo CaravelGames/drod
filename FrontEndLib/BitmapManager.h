@@ -189,6 +189,12 @@ public:
 	void SetSurfaceColorKey(const UINT wTileImageNo, const UINT wSurfaceIndex, SDL_Surface *pTileSurface);
 
 	TILEIMAGETYPE GetTileType(const UINT wTileNo) const;
+
+	void HsvToRectWithTileMask(SDL_Surface* pDestSurface,
+		const UINT x, const UINT y, const UINT w, const UINT h,
+		const float h1, const float s1, const float v1,
+		const UINT wTIMask, const UINT wXOffset, const UINT wYOffset);
+
 	virtual UINT   Init() {return 0;}
 	void        Invert(SDL_Surface *pDestSurface, int x, int y, UINT w, UINT h);
 

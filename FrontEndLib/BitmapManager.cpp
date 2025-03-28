@@ -2605,6 +2605,163 @@ void CBitmapManager::LightenRect(
 }
 
 //**********************************************************************************
+//h: position in the spectrum
+//s: color saturation (purity)
+//v: color brightness
+void CBitmapManager::HsvToRectWithTileMask(SDL_Surface* pDestSurface,
+	const UINT x, const UINT y, const UINT w, const UINT h,
+	const float h1, const float s1, const float v1, //apply values set in [0..1] range, ignore others
+	const UINT wTIMask, const UINT wXOffset, const UINT wYOffset)
+{
+	ASSERT(w <= CX_TILE);
+	ASSERT(h <= CY_TILE);
+
+	const bool bSetH = 0.0f <= h1 && h1 <= 1.0f;
+	const bool bSetS = 0.0f <= s1 && s1 <= 1.0f;
+	const bool bSetV = 0.0f <= v1 && v1 <= 1.0f;
+	if (!(bSetH || bSetS || bSetV)) {
+		return; //nothing to do
+	}
+
+	if (SDL_MUSTLOCK(pDestSurface)) {
+		if (SDL_LockSurface(pDestSurface) < 0) {
+			ASSERT(!"LightenRectWithTileMask::Lock surface failed.");
+			return;
+		}
+	}
+
+	const UINT wBPP = pDestSurface->format->BytesPerPixel;
+	ASSERT(wBPP == BYTES_PER_PIXEL);
+	const UINT wPixelByteNo = y * pDestSurface->pitch + (x * wBPP);
+	const UINT dwRowWidth = w * wBPP;
+	const UINT dwRowOffset = pDestSurface->pitch - dwRowWidth;
+
+	//Start at (wXOffset, wYOffset) on mask.
+	SDL_Surface* pMaskSurface = GetTileSurface(wTIMask);
+	ASSERT(pMaskSurface);
+#if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
+	ASSERT(pMaskSurface->format->Rmask == 0xff0000);
+	ASSERT(pMaskSurface->format->Gmask == 0x00ff00);
+	ASSERT(pMaskSurface->format->Bmask == 0x0000ff);
+#endif
+	const UINT wMaskBPP = pMaskSurface->format->BytesPerPixel;
+	Uint8* pMask = GetTileSurfacePixel(wTIMask, wXOffset, wYOffset) + PIXEL_FUDGE_FACTOR;
+	const UINT dwMaskRowOffset = pMaskSurface->pitch - (w * wMaskBPP);
+
+	//Get color index.
+	const UINT wR = pDestSurface->format->Rshift / 8;
+	const UINT wG = pDestSurface->format->Gshift / 8;
+	const UINT wB = pDestSurface->format->Bshift / 8;
+
+	Uint8* pSeek = (Uint8*)pDestSurface->pixels + wPixelByteNo;
+	Uint8* const pStop = pSeek + (h * pDestSurface->pitch);
+
+	while (pSeek != pStop)
+	{
+		ASSERT(pSeek < pStop);
+		Uint8* const pEndOfRow = pSeek + dwRowWidth;
+
+		//Each iteration modifies one pixel.
+		while (pSeek != pEndOfRow)
+		{
+			//Skip color-keyed transparent pixels on tile mask.
+			if (pMask[0] != TransColor[0] || pMask[1] != TransColor[1] || pMask[2] != TransColor[2])
+			{
+				//rgb -> hsv
+				Uint8 r = pSeek[wR], g = pSeek[wG], b = pSeek[wB];
+				float maxc = max(r, g);
+				if (b > maxc) {
+					maxc = b;
+				}
+				float minc = min(r, g);
+				if (b < minc) {
+					minc = b;
+				}
+				
+				maxc /= 255.0f; //0..255 -> 0..1
+				minc /= 255.0f;
+				const float range = float(maxc - minc);
+
+				float h = 0.0f, s = 0.0f, v = maxc;
+				if (range > 0.0f) {
+					s = range / maxc;
+					const float rc = (maxc - r) / range;
+					const float gc = (maxc - g) / range;
+					const float bc = (maxc - b) / range;
+					if (r == maxc) {
+						h = bc - gc;
+					} else if (g == maxc) {
+						h = 2.0f + rc - bc;
+					} else {
+						h = 4.0f + gc - rc;
+					}
+					h /= 6.0f; //see below
+					while (h < 0.0f)
+						h += 1.0f;
+				}
+
+				//Modify h,s,v
+				if (bSetH) {
+					h = h1;
+				}
+				if (bSetS) {
+					s = s1;
+				}
+				if (bSetV) {
+					v = v1;
+				}
+				
+				//hsv -> rgb
+				if (s == 0.0f) {
+					r = g = b = int(v * 255.0f);
+				} else {
+					int i = int(h * 6.0f);
+					const float f = (h * 6.0f) - i;
+					const float p = v * (1.0f - s);
+					const float q = v * (1.0f - s * f);
+					const float t = v * (1.0f - s * (1.0f - f));
+					i = i % 6;
+					switch (i) {
+						case 0:
+							r = int(v * 255.0f); g = int(t * 255.0f); b = int(p * 255.0f);
+							break;
+						case 1:
+							r = int(q * 255.0f); g = int(v * 255.0f); b = int(p * 255.0f);
+							break;
+						case 2:
+							r = int(p * 255.0f); g = int(v * 255.0f); b = int(t * 255.0f);
+							break;
+						case 3:
+							r = int(p * 255.0f); g = int(q * 255.0f); b = int(v * 255.0f);
+							break;
+						case 4:
+							r = int(t * 255.0f); g = int(p * 255.0f); b = int(v * 255.0f);
+							break;
+						case 5:
+							r = int(v * 255.0f); g = int(p * 255.0f); b = int(q * 255.0f);
+							break;
+						default:
+							ASSERT(!"Invalid i");
+							break;
+					}
+				}
+
+				pSeek[wR] = r;
+				pSeek[wG] = g;
+				pSeek[wB] = b;
+			}
+			pSeek += wBPP;
+			pMask += wMaskBPP;
+		}
+		pSeek += dwRowOffset;
+		pMask += dwMaskRowOffset;
+	}
+
+	if (SDL_MUSTLOCK(pDestSurface))
+		SDL_UnlockSurface(pDestSurface);
+}
+
+//**********************************************************************************
 void CBitmapManager::LightenRectWithTileMask(
 //Set pixel intensities to % of original (multiplicative light addition).
 //Use pixel mask.
