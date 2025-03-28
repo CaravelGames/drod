@@ -1747,3 +1747,7 @@ Attack tile
 [MID_Roachie]
 [eng]
 Roachie
+
+[MID_CollectableGroup]
+[eng]
+Collectable items

@@ -302,6 +302,12 @@ static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_U
 
 static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
 
+static inline bool bIsKey(const UINT t) { return t == T_KEY; }
+
+static inline bool bIsCollectable(const UINT t) {
+	return bIsPowerUp(t) || bIsShovel(t) || bIsMap(t) || bIsKey(t);
+}
+
 static inline bool bIsTLayerCoveringItem(const UINT t) { return t == T_MIRROR || t == T_CRATE || t == T_POWDER_KEG; }
 
 static inline bool bIsFuseConnected(const UINT t) { return t == T_FUSE || t == T_BOMB; }
