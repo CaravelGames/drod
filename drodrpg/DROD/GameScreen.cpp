@@ -4807,8 +4807,7 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	WCHAR temp[16];
 
 	wstrLevelStats = g_pTheDB->GetMessageText(MID_Score);
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += wszEqual;
+	wstrLevelStats += wszColon;
 	wstrLevelStats += wszSpace;
 	wstrLevelStats += _itoW(dwTotalScore, temp, 10);
 
