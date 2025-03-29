@@ -1925,6 +1925,7 @@ enum MID_CONSTANT {
   MID_WaitForArrayEntry = 2140,
   MID_CountArrayEntries = 2141,
   MID_AddRoomToMap = 2143,
+  MID_CanKillNonTargetPlayer = 2157,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

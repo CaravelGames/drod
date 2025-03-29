@@ -3519,3 +3519,7 @@ Count array entries
 [MID_AddRoomToMap]
 [eng]
 Add room to map
+
+[MID_CanKillNonTargetPlayer]
+[eng]
+Can Kill Non-target Player

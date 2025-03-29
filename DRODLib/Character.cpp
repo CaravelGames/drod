@@ -6606,9 +6606,19 @@ const
 		}
 	}
 
-	//Can't move onto player if set to "safe".
-	if (this->bSafeToPlayer && this->pCurrentGame->IsPlayerAt(wCol, wRow))
-		return true;
+	if (this->pCurrentGame->IsPlayerAt(wCol, wRow)) {
+		//Can't move onto player if set to "safe".
+		if (this->bSafeToPlayer)
+			return true;
+
+		//Can't step on a body-attack immune player.
+		//For backwards compatibility, can't move onto a non-target player
+		//unless behavior allows it.
+		const CSwordsman& player = this->pCurrentGame->swordsman;
+		if (!(player.IsVulnerableToBodyAttack() &&
+				(player.IsTarget() || HasBehavior(ScriptFlag::CanKillNonTargetPlayer))))
+			return true;
+	}
 
 	//Can't step on any swords.
 	if (!this->swordsInRoom.empty()) {
@@ -7056,6 +7066,7 @@ void CCharacter::SetDefaultBehaviors()
 		behaviorFlags.insert(ScriptFlag::PushObjects);
 		behaviorFlags.insert(ScriptFlag::PushMonsters);
 		behaviorFlags.insert(ScriptFlag::MovePlatforms);
+		behaviorFlags.insert(ScriptFlag::CanKillNonTargetPlayer);
 	}
 
 	if (!this->IsFlying() && this->GetIdentity() != M_SEEP) {
