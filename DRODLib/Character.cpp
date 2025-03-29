@@ -6585,12 +6585,22 @@ const
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster && (pMonster->wType != M_FLUFFBABY || HasBehavior(ScriptFlag::AvoidPuffs))) {
 		if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle()){
+			if (pMonster->wType == M_FLUFFBABY && HasBehavior(ScriptFlag::AvoidPuffs)) {
+				return true; //Behavior makes monster treat puff as impassable.
+			}
+
+			//If this can push, the monster can be pushed, we're good.
 			const int dx = (int)wCol - (int)this->wX;
 			const int dy = (int)wRow - (int)this->wY;
+			bool bPush = this->CanPushMonsters() && pMonster->IsPushableByBody() &&
+				room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy);
 
-			if ((pMonster->wType != M_FLUFFBABY || HasBehavior(ScriptFlag::AvoidPuffs)) &&
-				(!pMonster->IsAttackableTarget() || !CanDaggerStep(pMonster)) &&
-				(!this->CanPushMonsters() || !pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy))){
+			//Can this kill the monster it's stepping to?
+			//Humans need dagger to do this.
+			bool bKill = pMonster->IsAttackableTarget() &&
+				(!bIsHuman(GetResolvedIdentity()) || CanDaggerStep(pMonster));
+
+			if (!bKill && !bPush) {
 				return true;
 			}
 		}
