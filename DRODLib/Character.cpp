@@ -3233,8 +3233,8 @@ void CCharacter::Process(
 				ResolveLogicalIdentity(pGame->pHold);
 				// When the underlying identity is changed, update default behaviors
 				if (!command.y && wIdentity != wPreviousIdentity) {
-					SetDefaultBehaviors();
 					SetDefaultMovementType();
+					SetDefaultBehaviors();
 				}
 				bProcessNextCommand = true;
 			}
@@ -7007,8 +7007,8 @@ void CCharacter::SetCurrentGame(
 			default: break;
 		}
 
-		SetDefaultBehaviors();
 		SetDefaultMovementType();
+		SetDefaultBehaviors();
 	}
 
 	//If this NPC is a custom character with no script,
