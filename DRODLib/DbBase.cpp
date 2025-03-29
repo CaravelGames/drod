@@ -1042,6 +1042,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_Command_Script_SelectAll: strText = "Select All"; break;
 	case MID_Command_Script_ToText: strText = "Export Script Commands"; break;
 	case MID_Command_Script_FromText: strText = "Import Script Commands"; break;
+	case MID_CanKillNonTargetPlayer: strText = "Can Kill Non-target Player"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;

@@ -171,6 +171,7 @@ namespace ScriptFlag
 		AvoidPuffs = 30,
 		OnlyProcessOnFullTurn = 31,
 		LightFuses = 32,
+		CanKillNonTargetPlayer = 33,
 	};
 
 	enum DisplayFilter
