@@ -3523,3 +3523,7 @@ Add room to map
 [MID_CanKillNonTargetPlayer]
 [eng]
 Can Kill Non-target Player
+
+[MID_WakesEvilEyes]
+[eng]
+Wakes Evil Eyes

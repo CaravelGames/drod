@@ -180,7 +180,7 @@ bool CEvilEye::WakeupCheck(
 			bHastedTarget = this->pCurrentGame->swordsman.bIsHasted;
 		} else {
 			CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(cx, cy);
-			if (pMonster && pMonster->IsMonsterTarget())
+			if (pMonster && pMonster->WakesEyes())
 			{
 				if (pMonster->wType == M_CLONE || pMonster->wType == M_TEMPORALCLONE)
 				{
