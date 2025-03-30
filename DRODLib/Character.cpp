@@ -7083,6 +7083,11 @@ void CCharacter::SetDefaultBehaviors()
 		behaviorFlags.insert(ScriptFlag::CanBeNPCBeethro);
 	}
 
+	if (bIsMonsterTarget(wIdentity)) {
+		//These types wake up evil eyes when seen
+		behaviorFlags.insert(ScriptFlag::WakesEyes);
+	}
+
 	if (bCanFluffTrack(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffTarget);
 	}

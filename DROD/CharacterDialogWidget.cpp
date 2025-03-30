@@ -4970,6 +4970,7 @@ void CCharacterDialogWidget::PopulateBehaviorListBox()
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::MonsterTargetWhenPlayerIsTarget, g_pTheDB->GetMessageText(MID_MonsterTargetWhenPlayerIsTarget));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::AllyTarget, g_pTheDB->GetMessageText(MID_AllyTarget));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PuffTarget, g_pTheDB->GetMessageText(MID_PuffTarget));
+	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::WakesEyes, g_pTheDB->GetMessageText(MID_WakesEvilEyes));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SwordDamageImmune, g_pTheDB->GetMessageText(MID_SwordDamageImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::PickaxeDamageImmune, g_pTheDB->GetMessageText(MID_PickaxeDamageImmune));
 	this->pBehaviorListBox->AddItem(ScriptFlag::Behavior::SpearDamageImmune, g_pTheDB->GetMessageText(MID_SpearDamageImmune));

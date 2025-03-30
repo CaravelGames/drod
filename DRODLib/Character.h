@@ -256,6 +256,7 @@ public:
 	virtual void   Delete();
 
 	virtual bool SetWeaponSheathed();
+	virtual bool WakesEyes() const { return HasBehavior(ScriptFlag::WakesEyes); }
 
 	COMMAND_VECTOR commands;
 	UINT dwScriptID;       //charater script ref

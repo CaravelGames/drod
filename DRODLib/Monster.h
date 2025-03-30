@@ -359,6 +359,7 @@ public:
 	void          SetOrientation(const int dxFirst, const int dyFirst);
 	virtual void  Stun(CCueEvents &CueEvents, UINT val=1);
 	virtual bool  TakesTurn() const { return IsAlive(); }
+	virtual bool  WakesEyes() const { return IsMonsterTarget(); }
 
 	UINT          wType;          //monster type
 	UINT          wProcessSequence;  //priority in movement sequence

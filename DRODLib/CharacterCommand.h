@@ -172,6 +172,7 @@ namespace ScriptFlag
 		OnlyProcessOnFullTurn = 31,
 		LightFuses = 32,
 		CanKillNonTargetPlayer = 33,
+		WakesEyes = 34,
 	};
 
 	enum DisplayFilter
