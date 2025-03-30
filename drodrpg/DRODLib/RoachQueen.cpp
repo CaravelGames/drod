@@ -38,18 +38,8 @@
 //
 
 //*****************************************************************************************
-void CRoachQueen::Process(
-//Process a roach queen for movement.
-//
-//Params:
-	const int /*nLastCommand*/,   //(in) Last swordsman command.
-	CCueEvents &CueEvents)  //(in/out) A cues object that will be populated
-							//with codes indicating events that happened that may correspond to
-							//sound or graphical effects.
+bool CRoachQueen::IsEggSpawner() const
+//Roach queen can spawn eggs.
 {
-	//Shall queen lay an egg?
-	if (IsSpawnEggTriggered(CueEvents))
-	{
-		SpawnEgg(CueEvents);
-	}
+	return true;
 }

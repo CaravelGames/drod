@@ -5577,6 +5577,11 @@ void CCurrentGame::ProcessMonsters(
 				}
 			}
 
+			//Shall monster lay an egg?
+			//This can happen on full turns.
+			if (pMonster->IsSpawnEggTriggered(CueEvents))
+				pMonster->SpawnEgg(CueEvents);
+
 			//Remember the next monster now, because this monster may be dead or made global and
 			//removed from the monster list in the next block.
 			pNextMonster = pMonster->pNext;
