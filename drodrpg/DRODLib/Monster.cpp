@@ -979,6 +979,9 @@ bool CMonster::IsOpenMove(const UINT wX, const UINT wY, const int dx, const int 
 //Returns: whether an egg should be spawned this turn
 bool CMonster::IsSpawnEggTriggered(const CCueEvents& CueEvents) const
 {
+	if (!IsEggSpawner())
+		return false; //not an egg-spawning monster
+
 	//lay an egg any time player fights a monster...
 	if (!CueEvents.HasOccurred(CID_MonsterEngaged))
 		return false;

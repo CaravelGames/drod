@@ -150,6 +150,7 @@ public:
 	virtual bool   IsCombatable() const;
 	virtual bool   IsDamageableAt(const UINT wX, const UINT wY) const;
 	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	virtual bool   IsEggSpawner() const { return this->bSpawnEggs; }
 	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
 	virtual bool   IsExplosiveSafe() const { return bExplosiveSafe; }
 	virtual bool   IsFriendly() const;

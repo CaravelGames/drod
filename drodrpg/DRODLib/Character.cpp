@@ -3735,9 +3735,6 @@ Finish:
 			if (this->bFaceAwayFromTarget)
 				FaceAwayFromTarget();
 
-			if (this->bSpawnEggs && this->IsSpawnEggTriggered(CueEvents))
-				SpawnEgg(CueEvents);
-
 			if (this->bAttackAdjacent && !this->bAttacked)
 			{
 				this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
