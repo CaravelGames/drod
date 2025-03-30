@@ -4795,6 +4795,10 @@ void CCurrentGame::ProcessMonsters(
 				//Handle monsters that perform specific functions on half-turns.
 				switch (pMonster->wType)
 				{
+					case M_QROACH:
+						//Queen can spawn egg on half-turn.
+						pMonster->Process(nLastCommand, CueEvents);
+					break;
 					case M_CHARACTER:
 					{
 						//Character commands that don't expend a turn processed.
