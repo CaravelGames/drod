@@ -601,19 +601,20 @@ continue executing script commands from a different location in the script.</p>
     <li><a name="beh-bump-activate"><b>Body Strike Orbs/Beacons</b></a>: The player can activate orbs and toggle seeding beacoms by bumping them.</li>
     <li><a name="beh-step-kill"><b>Step Kill</b></a>: The player can kill monsters by stepping onto them.</li>
     <li><a name="beh-has-weapon"><b>Has Weapon</b></a>: Allows the player to weild a weapon. The weapon can still be disabled by room elements, or with the <a href="#setplayerweapon">Set player weapon</a> command.</li>
-    <li><a name="beh-use-potion"><b>Use Potion/Blow Horn</b></a>: The player can use the specified potion type. They will also gain the ability to move onto that type of item if their role would otherwise prevent it.s</li>
+    <li><a name="beh-use-potion"><b>Use Potion/Blow Horn</b></a>: The player can use the specified potion type. They will also gain the ability to move onto that type of item if their role would otherwise prevent its.</li>
     <li><a name="beh-face-movement"><b>Face Movement Direction</b></a>: The player will turn to face the direction of their movement, even if they have a weapon that would prevent it. When this behavior is disabled, the player will always retain their direction when moving, even when unarmed. Rotation moves are not effected by this behavior.</li>
     <li><a name="beh-body-immune"><b>Body Attack Immunity</b></a>: Monsters cannot move onto and kill the player. This does not affect whether an Adder can eat the player.</li>
 </ol>
 <p><u>NPC Behaviors:</u></p>
 <ol>
     <li><a name="beh-activate-token"><b>Activate Tokens</b></a>: The NPC will activate architectural tokens when it moves onto them, except for Temporal Split Points.</li>
-    <li><a name="beh-activate-plates"><b>Activate Pressure Plates</b></a>: The NPC will press pressure when it moves onto them, and will hold down pressure plates while on them.</li>
+    <li><a name="beh-activate-plates"><b>Activate Pressure Plates</b></a>: The NPC will press pressure plates when it moves onto them, and will hold down pressure plates while on them.</li>
     <li><a name="beh-avoid-firetrap"><b>Avoid Firetraps</b></a>: The NPC will treat active firetraps as a movement obstacle. The NPC can still be pushed into an active firetrap.</li>
     <li><a name="beh-avoid-puff"><b>Avoid Puffs</b></a>: The NPC will treat Puffs like other monsters, and consider them movement obstacles. The NPC can still be pushed into a Puff.</li>
     <li><a name="beh-restricted-movement"><b>Restricted Movement</b></a>: The NPC can only move onto tiles it's movement type would normally allow movement onto. See <a href="#set-movement">Set movement type</a> for details.</li>
     <li><a name="beh-instant-movement"><b>Instant Movement</b></a>: Script execution for the turn will not halt after a <a href="#facedirection">Face direction</a> or <a href="#face-towards-like-guard">Face towards like guard command</a>, or after a <a href="#move">Move</a> or <a href="#moveto">Move to</a> command in Single step mode. Move and Move to commands that are not single step will still halt execution.</li>
     <li><a name="beh-full-turn-only"><b>Only Process On Full Turns</b></a>: The script will not run during "half-turns" when the player is under the effect of a speed potion.</li>
+    <li><a name="beh-appear-weapons-only"><b>Can Appear On Weapons</b></a>: The NPC can appear on a square occupied by a weapon when using the <a href="#appear">Appear</a> or <a href="#appearat">Appear at</a> commands.</li>
     <li><a name="beh-kill-non-target"><b>Can Kill Non-target Player</b></a>: The NPC will be able to step onto and kill the player even if the player isn't a monster target.</li>
     <li><a name="beh-monster-attackable"><b>Can Be Attacked By Monsters</b></a>: Hostile monsters can move onto and kill the NPC. Monster attacks ignore the <a href="#impinvulnerable">Invulnerable</a> imperative. Additionally, this does not affect whether an Adder can eat the NPC.</li>
     <li><a name="beh-monster-target"><b>Monster Target</b></a>: Monsters other than Puffs will treat the NPC as a target. This does not affect the NPC's vulnerability to monsters.</li>

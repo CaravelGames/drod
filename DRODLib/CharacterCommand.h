@@ -173,6 +173,7 @@ namespace ScriptFlag
 		LightFuses = 32,
 		CanKillNonTargetPlayer = 33,
 		WakesEyes = 34,
+		AppearOnWeapons = 35,
 	};
 
 	enum DisplayFilter

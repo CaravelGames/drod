@@ -1927,6 +1927,7 @@ enum MID_CONSTANT {
   MID_AddRoomToMap = 2143,
   MID_CanKillNonTargetPlayer = 2157,
   MID_WakesEvilEyes = 2158,
+  MID_AppearOnWeapons = 2159,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,
