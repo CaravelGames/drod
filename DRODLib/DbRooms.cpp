@@ -2766,10 +2766,6 @@ const
 
 			//These monsters can't be stepped on
 			UINT monsterType = pMonster->wType;
-			if (monsterType == M_TEMPORALCLONE || monsterType == M_CLONE) {
-				const CPlayerDouble *pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
-				monsterType = pDouble->GetIdentity();
-			}
 			switch (monsterType)
 			{
 				case M_WUBBA:
@@ -2777,6 +2773,12 @@ const
 				case M_FEGUNDO:
 					bObstacle = bMonsterObstacle = true;
 					break;
+				case M_CLONE: case M_TEMPORALCLONE:
+				{
+					const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+					bObstacle = bMonsterObstacle = !pDouble->IsVulnerableToPlayerBodyAttack();
+				}
+				break;
 				case M_CHARACTER:
 				{
 					const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);

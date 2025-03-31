@@ -172,20 +172,6 @@ bool CTemporalClone::CanPushOntoOTile(const UINT wTile) const
 	return false;
 }
 
-//*****************************************************************************************
-//Can this projection step onto (and thus kill) the player?
-bool CTemporalClone::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
-{
-	if (bStepAttack)
-		return true;
-
-	if (!(HasSword() && GetWeaponType() == WT_Dagger))
-		return false;
-
-	//Check if player is invulnerable to "dagger stepping".
-	return player.IsVulnerableToWeapon(WT_Dagger);
-}
-
 //*****************************************************************************
 bool CTemporalClone::FacesMovementDirection() const
 {
@@ -362,6 +348,21 @@ bool CTemporalClone::IsVulnerableToExplosion() const
 	bool active;
 	HasBehavior(PB_ExplosionImmune, active);
 	return !active; //No immunity = it hurts
+}
+
+//*****************************************************************************
+bool CTemporalClone::IsVulnerableToPlayerBodyAttack() const
+//Returns: If a body attack from the player can kill this.
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	//Slightly differet roles are safe from being attacked by players than by
+	//monsters.
+	return !(this->wAppearance == M_ROCKGOLEM || this->wAppearance == M_WUBBA ||
+		this->wAppearance == M_FEGUNDO || this->wAppearance == M_CONSTRUCT);
 }
 
 //*****************************************************************************

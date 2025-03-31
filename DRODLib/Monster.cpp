@@ -574,7 +574,7 @@ CheckMonster:
 			pMonster->wType != M_FLUFFBABY // Fluff babies can be stepped on regardless of anything
 			&& !this->CanDaggerStep(pMonster, false)
 			// Even when attackable, body-attack-invulnerable targets just can't be killed by a body-attack
-			&& (!pMonster->IsAttackableTarget() || !bIsVulnerableToBodyAttack(pMonster->GetIdentity()))
+			&& (!pMonster->IsAttackableTarget() || !pMonster->IsVulnerableToBodyAttack())
 			&& ( // If object is pushable AND cannot be pushed
 				!this->CanPushObjects()
 				|| !pMonster->IsPushableByBody()
@@ -1979,6 +1979,12 @@ const
 bool CMonster::IsVulnerableToAdder() const
 {
 	return !(IsLongMonster() || IsPiece());
+}
+
+//*****************************************************************************
+bool CMonster::IsVulnerableToBodyAttack() const
+{
+	return bIsVulnerableToBodyAttack(this->GetIdentity());
 }
 
 //*****************************************************************************

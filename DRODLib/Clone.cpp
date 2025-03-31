@@ -182,6 +182,15 @@ bool CClone::IsVulnerableToExplosion() const
 }
 
 //*****************************************************************************
+bool CClone::IsVulnerableToPlayerBodyAttack() const
+{
+	if (!this->pCurrentGame)
+		return false;
+
+	return this->pCurrentGame->swordsman.IsCloneVulnerableToThisBodyAttack();
+}
+
+//*****************************************************************************
 bool CClone::IsVulnerableToWeapon(WeaponType weaponType) const
 {
 	if (!this->pCurrentGame)

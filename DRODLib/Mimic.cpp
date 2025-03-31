@@ -62,7 +62,7 @@ bool CMimic::CanBumpActivateOrb() const
 bool CMimic::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
 {
 	if (bStepAttack)
-		return true;
+		return player.IsVulnerableToDoubleBodyAttack(true);
 
 	if (!(HasSword() && GetWeaponType() == WT_Dagger))
 		return false;

@@ -497,6 +497,21 @@ bool CSwordsman::IsAt(UINT wX, UINT wY) const
 }
 
 //*****************************************************************************
+bool CSwordsman::IsCloneVulnerableToThisBodyAttack() const
+//Returns if a clone of the player can be body attacked by the player.
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	//Slightly differet roles are safe from being attacked by players than by
+	//monsters.
+	return !(this->wAppearance == M_ROCKGOLEM || this->wAppearance == M_WUBBA ||
+		this->wAppearance == M_FEGUNDO || this->wAppearance == M_CONSTRUCT);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsInRoom() const
 //Returns: whether player is controlling a character in the game room
 {
@@ -595,6 +610,21 @@ bool CSwordsman::IsVulnerableToBodyAttack() const
 	}
 
 	return bIsVulnerableToBodyAttack(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToDoubleBodyAttack(bool bStepAttack) const
+//Return whether the player can be stepped on by player doubles
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	if (wAppearance == M_CITIZEN || wAppearance == M_ARCHITECT)
+		return !bStepAttack;
+
+	return !(wAppearance == M_WUBBA || wAppearance == M_FEGUNDO);
 }
 
 //*****************************************************************************

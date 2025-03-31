@@ -47,7 +47,7 @@ public:
 	virtual bool CanPushMonsters() const;
 	virtual bool CanPushObjects() const;
 	virtual bool CanPushOntoOTile(const UINT wTile) const;
-	virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
+	//virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
 	virtual bool FacesMovementDirection() const;
 	virtual UINT GetIdentity() const;
 	virtual bool IsAttackableTarget() const;
@@ -56,8 +56,9 @@ public:
 	virtual bool IsMonsterTarget() const;
 	virtual bool IsTarget() const;
 	virtual bool IsVulnerableToAdder() const;
-	bool         IsVulnerableToBodyAttack() const;
+	virtual bool IsVulnerableToBodyAttack() const;
 	virtual bool IsVulnerableToExplosion() const;
+	virtual bool IsVulnerableToPlayerBodyAttack() const;
 	virtual bool IsVulnerableToWeapon(const WeaponType weaponType) const;
 	virtual bool HasStepAttack() const;
 	bool         KillIfOnDeadlyTile(CCueEvents &CueEvents);
