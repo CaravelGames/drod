@@ -326,6 +326,7 @@ public:
 	virtual bool  IsHiding() const {return false;}
 	virtual bool  IsVisible() const {return true;}
 	virtual bool  IsVulnerableToAdder() const;
+	virtual bool  IsVulnerableToBodyAttack() const;
 	virtual bool  IsVulnerableToExplosion() const;
 	virtual bool  IsWading() const;
 	bool          IsStunned() const { return this->stunned != 0; }

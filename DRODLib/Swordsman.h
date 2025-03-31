@@ -139,6 +139,7 @@ public:
 	UINT GetWaterTraversalState(UINT wRole = M_NONE) const;
 	MovementType GetMovementType() const;
 	bool IsAt(UINT wX, UINT wY) const;
+	bool IsCloneVulnerableToThisBodyAttack() const;
 	bool IsInRoom() const;
 	bool IsStabbable() const;
 	bool IsVulnerableToAdder() const;
@@ -147,6 +148,7 @@ public:
 	bool IsVulnerableToHeat() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
 	bool IsVulnerableToBodyAttack() const;
+	bool IsVulnerableToDoubleBodyAttack(bool bStepAttack) const;
 	bool IsTarget() const;
 	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool IsVisible() const { return !(this->bIsInvisible || this->bIsHiding); }

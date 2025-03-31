@@ -53,6 +53,7 @@ public:
 	virtual bool IsHiding() const;
 	virtual bool IsVulnerableToAdder() const;
 	virtual bool IsVulnerableToExplosion() const;
+	virtual bool IsVulnerableToPlayerBodyAttack() const;
 	virtual bool IsVulnerableToWeapon(WeaponType weaponType) const;
   bool KillIfOnDeadlyTile(CCueEvents& CueEvents);
   virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX = (UINT)-1, const UINT wY = (UINT)-1,

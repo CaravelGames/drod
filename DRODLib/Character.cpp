@@ -6597,7 +6597,7 @@ const
 
 			//Can this kill the monster it's stepping to?
 			//Humans need dagger to do this.
-			bool bKill = pMonster->IsAttackableTarget() &&
+			bool bKill = pMonster->IsAttackableTarget() && pMonster->IsVulnerableToBodyAttack() &&
 				(!bIsHuman(GetResolvedIdentity()) || CanDaggerStep(pMonster));
 
 			if (!bKill && !bPush) {
