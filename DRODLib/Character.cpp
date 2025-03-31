@@ -1567,7 +1567,7 @@ void CCharacter::Process(
 				ASSERT(room.IsValidColRow(this->wX, this->wY));
 				if (room.GetMonsterAtSquare(this->wX, this->wY) != NULL ||
 						pGame->IsPlayerAt(this->wX, this->wY) ||
-						room.IsSwordAt(this->wX, this->wY))
+						(room.IsSwordAt(this->wX, this->wY) && !HasBehavior(ScriptFlag::AppearOnWeapons)))
 					STOP_COMMAND;
 
 				//Place character on starting square.
@@ -1606,7 +1606,7 @@ void CCharacter::Process(
 				if (!room.IsValidColRow(px,py) ||
 						room.GetMonsterAtSquare(px, py) != NULL ||
 						pGame->IsPlayerAt(px, py) ||
-						room.IsSwordAt(px, py))
+						(room.IsSwordAt(px, py) && !HasBehavior(ScriptFlag::AppearOnWeapons)))
 					STOP_COMMAND;
 
 				//Place character on starting square.
