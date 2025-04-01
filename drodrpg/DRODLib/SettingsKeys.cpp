@@ -53,6 +53,7 @@ namespace Settings
 	DEF(DamagePreview);
 	DEF(DisableMouse);
 	DEF(DisplayCombos);
+	DEF(EnableAutosave);
 	DEF(EnableChatInGame);
 	DEF(ExportPath);
 	DEF(EyeCandy);

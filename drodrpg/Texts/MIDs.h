@@ -1280,6 +1280,7 @@ enum MID_CONSTANT {
   MID_Command_Script_SelectAll = 2072,
   MID_Command_Script_ToText = 2073,
   MID_Command_Script_FromText = 2074,
+  MID_EnableAutosaves = 2076,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

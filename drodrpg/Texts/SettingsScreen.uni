@@ -641,3 +641,7 @@ Export Script Commands
 [MID_Command_Script_FromText]
 [eng]
 Import Script Commands
+
+[MID_EnableAutosaves]
+[eng]
+Enable autosaves
