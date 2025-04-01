@@ -280,20 +280,20 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CY_CHARACTERPREVIEW = CY_STANDARD_OPTIONBUTTON;
 	static const UINT CY_EDITOR_FRAME = Y_CHARACTERPREVIEW + CY_CHARACTERPREVIEW + CY_SPACE;
 
-	//New game frame and children
-	static const int X_NEWGAME_FRAME = X_EDITOR_FRAME;
-	static const int Y_NEWGAME_FRAME = Y_EDITOR_FRAME + CY_EDITOR_FRAME + 2*CY_SPACE;
-	static const UINT CX_NEWGAME_FRAME = CX_EDITOR_FRAME;
+	//Special frame and children
+	static const int X_SPECIAL_FRAME = X_EDITOR_FRAME;
+	static const int Y_SPECIAL_FRAME = Y_EDITOR_FRAME + CY_EDITOR_FRAME + 2*CY_SPACE;
+	static const UINT CX_SPECIAL_FRAME = CX_EDITOR_FRAME;
 	static const int X_NEWGAMEPROMPT = CX_SPACE;
 	static const int Y_NEWGAMEPROMPT = CY_SPACE;
-	static const UINT CX_NEWGAMEPROMPT = CX_NEWGAME_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
+	static const UINT CX_NEWGAMEPROMPT = CX_SPECIAL_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
 	static const UINT CY_NEWGAMEPROMPT = CY_STANDARD_OPTIONBUTTON;
-	static const UINT CY_NEWGAME_FRAME = Y_NEWGAMEPROMPT + CY_NEWGAMEPROMPT + CY_SPACE;
+	static const UINT CY_SPECIAL_FRAME = Y_NEWGAMEPROMPT + CY_NEWGAMEPROMPT + CY_SPACE;
 
 	//Game speed frame and children.
-	static const int X_SPECIAL_FRAME = X_PERSONAL_FRAME;
-	static const int Y_SPECIAL_FRAME = Y_PERSONAL_FRAME + CY_PERSONAL_FRAME + 2*CY_SPACE;
-	static const UINT CX_SPECIAL_FRAME = CX_PERSONAL_FRAME;
+	static const int X_SPEED_FRAME = X_PERSONAL_FRAME;
+	static const int Y_SPEED_FRAME = Y_PERSONAL_FRAME + CY_PERSONAL_FRAME + 2*CY_SPACE;
+	static const UINT CX_SPEED_FRAME = CX_PERSONAL_FRAME;
 
 	static const int Y_SLOWCOMBAT_LABEL = CY_SPACE;
 	static const UINT CX_SLOWCOMBAT_LABEL = 100;
@@ -301,7 +301,7 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_FASTCOMBAT_LABEL = Y_SLOWCOMBAT_LABEL;
 	static const UINT CX_FASTCOMBAT_LABEL = 40;
 	static const UINT CY_FASTCOMBAT_LABEL = CY_SLOWCOMBAT_LABEL;
-	const int X_FASTCOMBAT_LABEL = CX_SPECIAL_FRAME - CX_FASTCOMBAT_LABEL - CX_SPACE;
+	const int X_FASTCOMBAT_LABEL = CX_SPEED_FRAME - CX_FASTCOMBAT_LABEL - CX_SPACE;
 	static const int X_COMBATRATE_LABEL = CX_SPACE * 2;
 	static const int Y_COMBATRATE_LABEL = Y_SLOWCOMBAT_LABEL + CY_SLOWCOMBAT_LABEL;
 	static const UINT CX_COMBATRATE_LABEL = 100;
@@ -309,7 +309,7 @@ CSettingsScreen::CSettingsScreen()
 
 	static const int X_QUICKCOMBAT = X_COMBATRATE_LABEL + CX_COMBATRATE_LABEL + CX_SPACE;
 	static const int Y_QUICKCOMBAT = Y_SLOWCOMBAT_LABEL + CY_SLOWCOMBAT_LABEL;
-	static const UINT CX_QUICKCOMBAT = CX_SPECIAL_FRAME - X_QUICKCOMBAT - CX_SPACE*2;
+	static const UINT CX_QUICKCOMBAT = CX_SPEED_FRAME - X_QUICKCOMBAT - CX_SPACE*2;
 	static const UINT CY_QUICKCOMBAT = CY_STANDARD_SLIDER;
 	static const int X_SLOWCOMBAT_LABEL = X_QUICKCOMBAT;
 
@@ -321,7 +321,7 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_FAST_LABEL = Y_SLOW_LABEL;
 	static const UINT CX_FAST_LABEL = 40;
 	static const UINT CY_FAST_LABEL = CY_SLOW_LABEL;
-	const int X_FAST_LABEL = CX_SPECIAL_FRAME - CX_FAST_LABEL - CX_SPACE;
+	const int X_FAST_LABEL = CX_SPEED_FRAME - CX_FAST_LABEL - CX_SPACE;
 	*/
 	static const int X_REPEATRATE_LABEL = CX_SPACE * 2;
 	static const int Y_REPEATRATE_LABEL = Y_QUICKCOMBAT + CY_QUICKCOMBAT + 5; //Y_SLOW_LABEL + CY_SLOW_LABEL;
@@ -337,7 +337,7 @@ CSettingsScreen::CSettingsScreen()
 /*
 	static const int X_SHOWCHECKPOINTS = CX_SPACE;
 	static const int Y_SHOWCHECKPOINTS = CY_SPACE;
-	static const UINT CX_SHOWCHECKPOINTS = CX_SPECIAL_FRAME - X_SHOWCHECKPOINTS;
+	static const UINT CX_SHOWCHECKPOINTS = CX_SPEED_FRAME - X_SHOWCHECKPOINTS;
 	static const UINT CY_SHOWCHECKPOINTS = CY_STANDARD_OPTIONBUTTON;
 	static const int X_SAVEONCONQUER = CX_SPACE;
 	static const int Y_SAVEONCONQUER = Y_SHOWCHECKPOINTS + CY_SHOWCHECKPOINTS;
@@ -348,7 +348,7 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CX_SAVEONDIE = CX_SHOWCHECKPOINTS;
 	static const UINT CY_SAVEONDIE = CY_STANDARD_OPTIONBUTTON;
 */
-	static const UINT CY_SPECIAL_FRAME = Y_REPEATRATE + CY_REPEATRATE + CY_SPACE;
+	static const UINT CY_SPEED_FRAME = Y_REPEATRATE + CY_REPEATRATE + CY_SPACE;
 
 	//Graphics frame and children.
 	const UINT CX_GRAPHICS_FRAME = 550;
@@ -539,33 +539,33 @@ CSettingsScreen::CSettingsScreen()
       CX_UPLOADSCORES, CY_UPLOADSCORES, g_pTheDB->GetMessageText(MID_UploadScores)) );
 
 	//Game speed frame.
-	CFrameWidget *pSpecialFrame = new CFrameWidget(0L, X_SPECIAL_FRAME, Y_SPECIAL_FRAME,
-			CX_SPECIAL_FRAME, CY_SPECIAL_FRAME, g_pTheDB->GetMessageText(MID_GameSpeed));
-	pTabbedMenu->AddWidgetToTab(pSpecialFrame, PERSONAL_TAB);
+	CFrameWidget *pSpeedFrame = new CFrameWidget(0L, X_SPEED_FRAME, Y_SPEED_FRAME,
+			CX_SPEED_FRAME, CY_SPEED_FRAME, g_pTheDB->GetMessageText(MID_GameSpeed));
+	pTabbedMenu->AddWidgetToTab(pSpeedFrame, PERSONAL_TAB);
 
 	//Combat rate.
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_COMBATRATE_LABEL, Y_COMBATRATE_LABEL,
 					CX_COMBATRATE_LABEL, CY_COMBATRATE_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_QuickCombat)) );
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_SLOWCOMBAT_LABEL, Y_SLOWCOMBAT_LABEL,
 					CX_SLOWCOMBAT_LABEL, CY_SLOWCOMBAT_LABEL, F_Small, g_pTheDB->GetMessageText(MID_Slow)) );
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_FASTCOMBAT_LABEL, Y_FASTCOMBAT_LABEL,
 					CX_FASTCOMBAT_LABEL, CY_FASTCOMBAT_LABEL, F_Small, g_pTheDB->GetMessageText(MID_Fast)) );
 	pSliderWidget = new CSliderWidget(TAG_QUICKCOMBAT, X_QUICKCOMBAT,
 			Y_QUICKCOMBAT, CX_QUICKCOMBAT, CY_QUICKCOMBAT, 0, COMBAT_SPEED_NOTCHES);
-	pSpecialFrame->AddWidget(pSliderWidget);
+	pSpeedFrame->AddWidget(pSliderWidget);
 	
 	//Repeat rate.
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_REPEATRATE_LABEL, Y_REPEATRATE_LABEL,
 					CX_REPEATRATE_LABEL, CY_REPEATRATE_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_RepeatRate)) );
 	pSliderWidget = new CSliderWidget(TAG_REPEATRATE, X_REPEATRATE,
 			Y_REPEATRATE, CX_REPEATRATE, CY_REPEATRATE, 128);
-	pSpecialFrame->AddWidget(pSliderWidget);
+	pSpeedFrame->AddWidget(pSliderWidget);
 /*
 	pSpecialFrame->AddWidget(
 			new CLabelWidget(0, X_SLOW_LABEL, Y_SLOW_LABEL,
@@ -615,14 +615,14 @@ CSettingsScreen::CSettingsScreen()
 	pEditorFrame->AddWidget(pOptionButton);
 
 	//New game frame
-	CFrameWidget* pNewGameFrame = new CFrameWidget(0L, X_NEWGAME_FRAME, Y_NEWGAME_FRAME,
-		CX_NEWGAME_FRAME, CY_NEWGAME_FRAME, g_pTheDB->GetMessageText(MID_NewGames));
-	pTabbedMenu->AddWidgetToTab(pNewGameFrame, PERSONAL_TAB);
+	CFrameWidget* pSpecialFrame = new CFrameWidget(0L, X_SPECIAL_FRAME, Y_SPECIAL_FRAME,
+		CX_SPECIAL_FRAME, CY_SPECIAL_FRAME, g_pTheDB->GetMessageText(MID_SpecialSettings));
+	pTabbedMenu->AddWidgetToTab(pSpecialFrame, PERSONAL_TAB);
 
 	pOptionButton = new COptionButtonWidget(TAG_NEWGAMEPROMPT, X_NEWGAMEPROMPT,
 		Y_NEWGAMEPROMPT, CX_NEWGAMEPROMPT, CY_NEWGAMEPROMPT,
 		g_pTheDB->GetMessageText(MID_ConfirmNewGame), true);
-	pNewGameFrame->AddWidget(pOptionButton);
+	pSpecialFrame->AddWidget(pOptionButton);
 
 	//Graphics and sound tab.
 
@@ -1715,7 +1715,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_NO_FOCUS_PLAYS_MUSIC));
 	pOptionButton->SetChecked(settings.GetVar(Settings::NoFocusPlaysMusic, false));
 
-	//Special settings.
+	//Speed settings.
 	bytValue = settings.GetVar(Settings::CombatRate, BYTE(0));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_QUICKCOMBAT));
 	pSliderWidget->SetValue(bytValue);
@@ -1750,7 +1750,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DisableMouse, false));
 
-	//New game settings.
+	//Special settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_NEWGAMEPROMPT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::NewGamePrompt, true));
@@ -1861,7 +1861,7 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	settings.SetVar(Settings::NoFocusPlaysMusic, pOptionButton->IsChecked());
 	g_pTheSound->bNoFocusPlaysMusic = pOptionButton->IsChecked();
 
-	//Special settings.
+	//Speed settings.
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_QUICKCOMBAT));
 	settings.SetVar(Settings::CombatRate, pSliderWidget->GetValue());
@@ -1895,7 +1895,7 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	settings.SetVar(Settings::DisableMouse, pOptionButton->IsChecked());
 
-	//New game settings.
+	//Special settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_NEWGAMEPROMPT));
 	settings.SetVar(Settings::NewGamePrompt, pOptionButton->IsChecked());
