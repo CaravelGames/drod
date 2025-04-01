@@ -812,7 +812,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ProcessingSequence: strText = "Processing sequence:"; break;
 		case MID_ProcessingSequenceDescription: strText = "Scripts with a lower processing sequence value will run before scripts with a higher value."; break;
 		case MID_VarMyDescription: strText = "_MyDescription"; break;
-		case MID_NewGames: strText = "New games"; break;
+		case MID_SpecialSettings: strText = "Special"; break;
 		case MID_ConfirmNewGame: strText = "Confirm new game"; break;
 		case MID_ReallyStartNewGame: strText = "Really start a new game?"; break;
 		case MID_ErrorCannotReplaceWithDifferentExistingFile: strText = "You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted."; break;

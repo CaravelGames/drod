@@ -1232,7 +1232,7 @@ enum MID_CONSTANT {
   MID_NoFocusPlaysMusic = 1746,
   MID_DamagePreview = 1809,
   MID_ShowScore = 1831,
-  MID_NewGames = 1841,
+  MID_SpecialSettings = 1841,
   MID_ConfirmNewGame = 1842,
   MID_AutoPreviewCharacters = 1850,
   MID_MapIconAlpha = 2006,
