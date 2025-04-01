@@ -1159,7 +1159,7 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 	const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, 0);
+	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, InputKey(0));
 
 	return I18N::DescribeInputKey(inputKey);
 }
