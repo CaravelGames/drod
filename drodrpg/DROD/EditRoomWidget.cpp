@@ -631,6 +631,10 @@ const
 			return true;
 		if (bIsShovel(wTileNo) && bIsShovel(wObject))
 			return true;
+		if (bIsATKUp(wTileNo) && bIsATKUp(wObject))
+			return true;
+		if (bIsDEFUp(wTileNo) && bIsDEFUp(wObject))
+			return true;
 		if (wTileNo == T_MIRROR && wObject == T_MIRROR)
 			return false;
 		if (wTileNo == T_CRATE && wObject == T_CRATE)
