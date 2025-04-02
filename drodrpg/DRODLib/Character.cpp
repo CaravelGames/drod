@@ -224,6 +224,7 @@ CCharacter::CCharacter(
 	, bAttacked(false)
 	, equipType(ScriptFlag::NotEquipment)
 	, movementIQ(SmartDiagonalOnly)
+	, bMovementChanged(false)
 
 	, wCurrentCommandIndex(0)
 	, wTurnDelay(0)
@@ -2942,6 +2943,7 @@ void CCharacter::Process(
 
 				const MovementType eNewMovementType = (MovementType)command.x;
 				this->eMovement = eNewMovementType;
+				bMovementChanged = true;
 			}
 			break;
 
@@ -6036,6 +6038,8 @@ void CCharacter::SetDefaultMovementType()
 			eMovement = MovementType::GROUND;
 		break;
 	}
+
+	bMovementChanged = false;
 }
 
 //*****************************************************************************
@@ -6300,6 +6304,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	if (vars.DoesVarExist(MovementTypeStr)) {
 		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
+		bMovementChanged = true;
 	} else {
 		SetDefaultMovementType();
 	}
@@ -6464,7 +6469,7 @@ const
 		vars.SetVar(MistImmuneStr, this->bMistImmune);
 	if (this->bWallDwelling)
 		vars.SetVar(WallDwellingStr, this->bWallDwelling);
-	if (this->eMovement)
+	if (this->bMovementChanged)
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
