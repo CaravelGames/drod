@@ -2258,7 +2258,7 @@ void CGameScreen::OnBetweenEvents()
 			if (SDL_GetTicks() >= this->pRoomWidget->playThunder.front())
 			{
 				this->pRoomWidget->playThunder.pop();
-				g_pTheSound->PlaySoundEffect(SEID_THUNDER, NULL, NULL, false, 1.0f + fRAND_MID(0.2f));
+				g_pTheSound->PlaySoundEffect(SEID_THUNDER, 1.0f + fRAND_MID(0.2f));
 			}
 		}
 	}
@@ -3118,10 +3118,11 @@ void CGameScreen::PlaySoundEffect(
 //Wrapper function to set the frequency multiplier for sound effects
 //based on game context.
 	const UINT eSEID, float* pos, float* vel, //default=[NULL,NULL]
-	const bool bUseVoiceVolume)
+	const bool bUseVoiceVolume, //[default=false]
+	float frequencyMultiplier,  //[default=1.0]
+	float volumeMultiplier)     //[default=1.0]
 {
 	//Special contexts where sounds are played back differently for effect.
-	float frequencyMultiplier = 1.0f;
 	if (this->pCurrentGame)
 	{
 		ASSERT(this->pCurrentGame->pRoom);
@@ -3130,6 +3131,7 @@ void CGameScreen::PlaySoundEffect(
 		if (player.IsHasted())// || player.bFrozen)
 			frequencyMultiplier = 0.8f;
 
+		/*
 		switch (eSEID)
 		{
 			case SEID_STABTAR:
@@ -3138,9 +3140,10 @@ void CGameScreen::PlaySoundEffect(
 			break;
 			default: break;
 		}
+		*/
 	}
 
-	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier);
+	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier, volumeMultiplier);
 }
 
 //*****************************************************************************
@@ -5638,6 +5641,36 @@ SCREENTYPE CGameScreen::ProcessCommand(
 }
 
 //*****************************************************************************
+UINT GetTileForCueEvent(CCueEvents& CueEvents, const CUEEVENT_ID id, const UINT defaultTile=T_EMPTY)
+{
+	const CAttachableWrapper<UINT>* pTile =
+		DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+			CueEvents.GetFirstPrivateData(id));
+	return pTile ? pTile->data : defaultTile;
+}
+
+//*****************************************************************************
+//Orb sound frequency changes subtly based on room location. Range: 0.95 to 1.05x
+float getOrbFrequencyMult(const UINT x, const UINT y)
+{
+	return 0.95f + (0.1f * (x + y) /
+		(CDrodBitmapManager::CDrodBitmapManager::DISPLAY_COLS +
+			CDrodBitmapManager::CDrodBitmapManager::DISPLAY_ROWS - 1));
+}
+
+//When multiple instances of a sound play at once around the room, the sound can be very loud.
+//Reducing the volume of the sounds will keep from overwhelming the player's speakers.
+//
+//Returns: percent to reduce sfx based on the number of sounds that are going to play
+float getVolumeMultiplier(const UINT count)
+{
+	if (!count)
+		return 1.0f;
+
+	return 1.0f / min(count, CSound::CHANNEL_COUNT / 4); //heuristic to make it sound good
+}
+
+//*****************************************************************************
 SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 //Process cue events list to create effects that should occur before
 //room is drawn.
@@ -5659,6 +5692,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
 	const CAttachableObject *pObj;
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
+
+	float frequencyMult;
+	float volumeMultiplier;
 
 	ProcessMovieEvents(CueEvents);
 
@@ -5762,21 +5798,25 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 	if (CueEvents.HasOccurred(CID_DrankPotion))
 		g_pTheSound->PlaySoundEffect(SEID_POTION);
-	if (CueEvents.HasOccurred(CID_ReceivedATK))
-		g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP);
-	if (CueEvents.HasOccurred(CID_ReceivedDEF))
-		g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP);
-	if (CueEvents.HasOccurred(CID_ReceivedHP))
-		g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
+	if (CueEvents.HasOccurred(CID_ReceivedATK)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedATK);
+		g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP, getFrequencyMultForItem(tile));
+	}
+	if (CueEvents.HasOccurred(CID_ReceivedDEF)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedDEF);
+		g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP, getFrequencyMultForItem(tile));
+	}
+	if (CueEvents.HasOccurred(CID_ReceivedHP)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedHP);
+		g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP, getFrequencyMultForItem(tile));
+	}
 
 	if (CueEvents.HasOccurred(CID_ReceivedShovel)) {
-		g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP);
+		const UINT shovel = GetTileForCueEvent(CueEvents, CID_ReceivedShovel);
 
-		//Effect showing key entering player inventory.
-		const CAttachableWrapper<UINT>* pShovelTile =
-			DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_ReceivedShovel));
+		g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP, getFrequencyMultForItem(shovel));
 
+		//Effect showing shovel entering player inventory.
 		//Get destination of effect.
 		CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SHOVEL));
 		if (pLabel)
@@ -5784,7 +5824,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			UINT destX = pLabel->GetX();
 			UINT destY = pLabel->GetY();
 
-			const UINT shovelTile = GetTileImageForTileNo(pShovelTile->data);
+			const UINT shovelTile = GetTileImageForTileNo(shovel);
 			CMovingTileEffect* pEffect = new CMovingTileEffect(this->pRoomWidget,
 				shovelTile, CCoord(player.wX, player.wY),
 				CCoord(destX, destY), 50.0);
@@ -5808,11 +5848,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		CWidget *pMapWidget = GetWidget(TAG_MAP);
 		if (pMapWidget)
 		{
-			const CAttachableWrapper<UINT>* pMapType =
-				DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
-					CueEvents.GetFirstPrivateData(CID_LevelMap));
-
-			const UINT tMapTile = GetTileImageForTileNo(pMapType ? pMapType->data : T_MAP);
+			const UINT tile = GetTileForCueEvent(CueEvents, CID_LevelMap, T_MAP);
+			const UINT tMapTile = GetTileImageForTileNo(tile);
 			ASSERT(tMapTile != CALC_NEEDED);
 			CMovingTileEffect *pEffect = new CMovingTileEffect(this->pRoomWidget,
 					tMapTile, CCoord(player.wX, player.wY),
@@ -5840,10 +5877,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	else if (CueEvents.HasOccurred(CID_OrbActivatedByPlayer))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivatedByPlayer);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_ORBHIT);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			//If player hits orb, center sound on player for nicer effect.
 			if (player.GetSwordX() == pOrbData->wX && player.GetSwordY() == pOrbData->wY)
@@ -5854,8 +5890,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				this->fPos[0] = static_cast<float>(pOrbData->wX);
 				this->fPos[1] = static_cast<float>(pOrbData->wY);
 			}
+			frequencyMult = getOrbFrequencyMult(pOrbData->wX, pOrbData->wY);
 			g_pTheSound->PlaySoundEffect(pOrbData->eType == OT_BROKEN ?
-					SEID_ORBBROKE : SEID_ORBHIT, this->fPos);
+					SEID_ORBBROKE : SEID_ORBHIT, this->fPos, NULL, false, frequencyMult);
 			this->pRoomWidget->AddStrikeOrbEffect(*pOrbData);
 			pObj = CueEvents.GetNextPrivateData();
 		}
@@ -5974,23 +6011,22 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_ReceivedKey))
 	{
-		g_pTheSound->PlaySoundEffect(SEID_KEY);
-
 		//Effect showing key entering player inventory.
 		const CAttachableWrapper<BYTE> *pKeyType =
 				DYN_CAST(const CAttachableWrapper<BYTE>*, const CAttachableObject*,
 				CueEvents.GetFirstPrivateData(CID_ReceivedKey));
 
 		//Get destination of effect.
-		UINT destX = 0, destY = 0, keyTag = 0;
+		UINT destX = 0, destY = 0, keyTag = 0, virtualTile = 0;
 		switch (pKeyType->data)
 		{
-			case YellowKey: keyTag = TAG_YKEY; break;
-			case GreenKey: keyTag = TAG_GKEY; break;
-			case BlueKey: keyTag = TAG_BKEY; break;
-			case SkeletonKey: keyTag = TAG_SKEY; break;
+			case YellowKey: keyTag = TAG_YKEY; virtualTile = TV_KEY_Y; break;
+			case GreenKey: keyTag = TAG_GKEY; virtualTile = TV_KEY_G; break;
+			case BlueKey: keyTag = TAG_BKEY; virtualTile = TV_KEY_B; break;
+			case SkeletonKey: keyTag = TAG_SKEY; virtualTile = TV_KEY_S; break;
 			default: break;
 		}
+
 		CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(keyTag));
 		if (pLabel)
 		{
@@ -6003,6 +6039,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					CCoord(destX, destY), 50.0);
 			this->pRoomWidget->AddLastLayerEffect(pEffect);
 		}
+
+		g_pTheSound->PlaySoundEffect(SEID_KEY, getFrequencyMultForItem(virtualTile));
 	}
 
 	if (CueEvents.HasOccurred(CID_ReceivedEquipment))
@@ -6136,9 +6174,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					}
 				}
 			}
-			else if (bIsSerpentTile(pCoord->wValue))
+			else if (bIsSerpentTile(pCoord->wValue)) {
 				wTileNo = GetTileImageForSerpentPiece(pCoord->wO, pCoord->wValue);
-			else {
+			} else {
 				wTileNo = GetTileImageForTileNo(pCoord->wValue);
 				if (bIsBriar(pCoord->wValue))
 				{
@@ -6189,10 +6227,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_PressurePlate))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_PressurePlate);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_PRESSPLATE);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -6204,10 +6241,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_PressurePlateReleased))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_PressurePlateReleased);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_PRESSPLATEUP);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -6217,6 +6253,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_CrumblyWallDestroyed));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CrumblyWallDestroyed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6230,7 +6267,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos);
+		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(5), GetParticleSpeed(4)));
@@ -6250,10 +6287,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_OrbActivated))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivated);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_ORBHITQUIET);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -6271,6 +6307,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->fPos[1] = static_cast<float>(pOrbData->wY);
 		g_pTheSound->PlaySoundEffect(SEID_ORBBROKE, this->fPos);
 	}
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_MirrorShattered));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MirrorShattered);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6283,7 +6320,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_SHATTER, this->fPos);
+		frequencyMult = 0.9f + (0.2f * (RAND(3) + RAND(3)) / 4.0f); //triangle distribution around mean
+		g_pTheSound->PlaySoundEffect(SEID_SHATTER, this->fPos, NULL, false, frequencyMult, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(7), GetParticleSpeed(4))); //!!ShatteringGlass effect
@@ -6322,10 +6360,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 
+		volumeMultiplier = getVolumeMultiplier(tiles.size());
 		for (vector<CCoord>::const_iterator it=tiles.begin(); it!=tiles.end(); it++) {
 			this->fPos[0] = static_cast<float>(it->wX);
 			this->fPos[1] = static_cast<float>(it->wY);
-			PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos);
+			PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		}
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivatedByDouble))
@@ -6346,6 +6385,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_TarstuffDestroyed));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TarstuffDestroyed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6363,7 +6403,6 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_STABTAR, this->fPos);
 		switch (pCoord->wValue)
 		{
 			case T_TAR:
@@ -6383,6 +6422,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			break;
 			default: ASSERT(!"Invalid tar type"); break;
 		}
+		g_pTheSound->PlaySoundEffect(SEID_STABTAR, this->fPos, NULL, false, getFrequencyMultForItem(pCoord->wValue), volumeMultiplier);
 
 		this->pRoomWidget->RedrawDamagePreview(); //cutting tar can spawn in new monsters late in the turn processing
 	}
@@ -6518,13 +6558,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				new CSteamEffect(this->pRoomWidget, coord));
 	}
 */
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_Splash));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Splash);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pCoord->wX);
 		this->fPos[1] = static_cast<float>(pCoord->wY);
-		g_pTheSound->PlaySoundEffect(SEID_SPLASH, this->fPos);
+		g_pTheSound->PlaySoundEffect(SEID_SPLASH, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		if (this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY) == T_WATER)
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
@@ -6533,7 +6574,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Dig);
 		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
 
 		//If player dug the block, center sound on player for nicer effect.
 		if (player.wX == pCoord->wX && player.wY == pCoord->wY)
@@ -6544,7 +6585,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_DIG, this->fPos);
+		g_pTheSound->PlaySoundEffect(SEID_DIG, this->fPos, NULL, false, getFrequencyMultForItem(pCoord->wValue));
 		CMoveCoord mc(*pCoord);
 		mc.wO = nGetReverseO(mc.wO); //dirt particles fly backwards
 		this->pRoomWidget->AddMLayerEffect(
@@ -7254,7 +7295,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 				}
 				this->pRoomWidget->AddMLayerEffect(
 						new CFadeTileEffect(this->pRoomWidget, *pEntity, tile, 500));
-				g_pTheSound->PlaySoundEffect(SEID_SHIELDED, NULL);
+				g_pTheSound->PlaySoundEffect(SEID_SHIELDED);
 			}
 			break;
 			case CET_STRONGHIT:
@@ -7293,7 +7334,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 
 						//Monster strikes player,
 						const SEID seid = GetMonsterAttackSoundEffect(pCombat);
-						g_pTheSound->PlaySoundEffect(seid, NULL);
+						g_pTheSound->PlaySoundEffect(seid);
 					}
 
 					//Don't overlap display of multiple hit number on player.
@@ -7315,10 +7356,11 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 					//Play attack sound when player/mimic hits monster.
 					if (pCombat)
 					{
-						if (this->pCurrentGame->pRoom->GetMonsterAtSquare(pCombat->wFromX, pCombat->wFromY))
-							g_pTheSound->PlaySoundEffect(SEID_SPLAT, NULL); //mimic is attacking
-						else
-							g_pTheSound->PlaySoundEffect(player.HasSword() ? SEID_SPLAT : SEID_PUNCH, NULL);
+						if (this->pCurrentGame->pRoom->GetMonsterAtSquare(pCombat->wFromX, pCombat->wFromY)) {
+							g_pTheSound->PlaySoundEffect(SEID_SPLAT); //mimic is attacking
+						} else {
+							g_pTheSound->PlaySoundEffect(player.HasSword() ? SEID_SPLAT : SEID_PUNCH);
+						}
 					}
 				}
 

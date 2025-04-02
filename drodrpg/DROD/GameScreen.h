@@ -110,7 +110,7 @@ protected:
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEvents);
 	void           PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
-			const bool bUseVoiceVolume=false);
+			const bool bUseVoiceVolume=false, const float frequencyMultiplier = 1.0f, const float volumeMultiplier = 1.0f);
 	SCREENTYPE     ProcessCommand(const int nCommand); //, const bool bMacro=false);
 	bool           ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           ProcessFuseBurningEvents(CCueEvents& CueEvents);
