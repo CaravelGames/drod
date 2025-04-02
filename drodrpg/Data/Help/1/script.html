@@ -677,6 +677,10 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_MyColor</td><td>NPC's RGB modifier (<a href="#mycolor">*</a>)</td><td>505050</td><td>000000,999999</td>
   </tr><tr>
+    <td>_MyHue</td><td>NPC's base color modifier (<a href="#myhue">*</a>)</td><td>0</td><td>0,6000</td>
+  </tr><tr>
+    <td>_MySaturation</td><td>NPC's color strength modifier (<a href="#mysaturation">*</a>)</td><td>0</td><td>0,1000</td>
+  </tr><tr>
     <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
 	</tr><tr>
     <td>_MyWeakness</td><td>NPC's custom weakness type (<a href="#myweakness">*</a>)</td><td></td><td>Text</td>
@@ -871,7 +875,20 @@ The variable names are case-insensitive.
   two-digit pair defines the
   amount of R/G/B color offset to the NPC's image.  A value of 50 is normal.
   Lower values (0-49) remove a proportionate amount of that color.
-  Greater values (51-99) enhance that color.
+  Greater values (51-99) enhance that color. This alteration is applied after changes
+  to hue and saturation.
+</p>
+<p><a name="myhue"><b>*_MyHue</b></a> - a number between 0 and 6000, inclusive. If it
+    is set to a non-zero value, it will change the base color of the NPC's image. At a 
+    value of 1, the image is shifted to red. Increasing values will shift to orange, yellow,
+    blue, green, indigo and violet, before cyling back to red as the value reachs 6000. Black,
+    white and greys in the character's image are not affected by this change.
+</p>
+<p>
+    <a name="mysaturation"><b>*_MySaturation</b></a> - a number between 0 and 1000,
+    inclusive. If it is set to a non-zero value, it will change the base colors of
+    the NPC's image. Lower values make the colors less intense, while higher values
+    make them more intense.
 </p>
 <p><a name="mysword"><b>*_MySword</b></a> - set this to change what kind of
   sword the NPC wields.  This affects the NPC's appearance only, and does

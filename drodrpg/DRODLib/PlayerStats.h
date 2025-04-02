@@ -159,7 +159,9 @@ namespace ScriptVars
 		P_MUD_SWAP = -102,
 		P_TAR_SWAP = -103,
 		P_GEL_SWAP = -104,
-		FirstPredefinedVar = P_GEL_SWAP, //set this to the last var in the enumeration
+		P_MONSTER_HUE = -105,
+		P_MONSTER_SATURATION = -106,
+		FirstPredefinedVar = P_MONSTER_SATURATION, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 

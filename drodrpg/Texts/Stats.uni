@@ -393,3 +393,11 @@ _TotalATK
 [MID_VarTotalDef]
 [eng]
 _TotalDEF
+
+[MID_VarMonsterHue]
+[eng]
+_MyHue
+
+[MID_VarMonsterSaturation]
+[eng]
+_MySaturation

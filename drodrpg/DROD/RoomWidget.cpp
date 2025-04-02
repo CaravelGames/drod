@@ -241,6 +241,7 @@ TileImageBlitParams::TileImageBlitParams(UINT col, UINT row, UINT tile,
 	, nOpacity(255)
 	, bClipped(false)
 	, nAddColor(-1)
+	, hsv({ -1.0f, -1.0f, -1.0f })
 	, bCastShadowsOnTop(true)
 	, appliedDarkness(0.75)
 { }
@@ -254,6 +255,7 @@ TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	, nOpacity(rhs.nOpacity)
 	, bClipped(rhs.bClipped)
 	, nAddColor(rhs.nAddColor)
+	, hsv(rhs.hsv)
 	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
 	, appliedDarkness(rhs.appliedDarkness)
 { }
@@ -6130,11 +6132,21 @@ void CRoomWidget::TranslateMonsterColor(
 void CRoomWidget::AddColorToTile(
 	SDL_Surface* pDestSurface, //surface to render to
 	const int nAddColor,     //color code (<=0 : don't add color)
+	const std::array<float, 3> hsv,//hue, saturation and value
 	const UINT wTileImageNo, //tile mask
 	const UINT nPixelX, const UINT nPixelY, //pixel location of blit
 	const UINT wWidth, const UINT wHeight,  //dimensions of blit
 	const int nXOffset, const int nYOffset) //relative offset [default=(0,0)]
 {
+	//Apply optional hue change
+	if (hsv[0] || hsv[1] || hsv[2])
+	{
+		g_pTheBM->HsvToRectWithTileMask(pDestSurface,
+			nPixelX + nXOffset, nPixelY + nYOffset, wWidth, wHeight,
+			hsv[0], hsv[1], hsv[2],
+			wTileImageNo, nXOffset, nYOffset);
+	}
+
 	//Add optional color filter.
 	if (nAddColor > 0) //>= 0 ; -1 = none, 0 = also no color addition
 	{
@@ -6413,6 +6425,7 @@ void CRoomWidget::DrawDamagedMonsterSwords(SDL_Surface *pDestSurface)
 					TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false,
 						DrawRaised(pMonster->wX, pMonster->wY));
 					blit.nAddColor = pMonster->getColor();
+					blit.hsv = pMonster->getHSV();
 					DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 				}
 			}
@@ -6721,6 +6734,7 @@ void CRoomWidget::DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surf
 			JitterBoundsCheck(wSX, wSY, wXOffset, wYOffset);
 			TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false, fRaised);
 			blit.nAddColor = pMonster->getColor();
+			blit.hsv = pMonster->getHSV();
 			DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 		}
 	}
@@ -6971,6 +6985,7 @@ void CRoomWidget::DrawMonster(
 			TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, fRaised);
 			blit.nOpacity = opacity;
 			blit.nAddColor = pMonster->getColor();
+			blit.hsv = pMonster->getHSV();
 			DrawTileImage(blit, pDestSurface);
 		}
 		break;
@@ -7233,7 +7248,7 @@ void CRoomWidget::DrawTileImageWithoutLight(
 		BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
 		pDestSurface, true, blit.nOpacity);
 
-	AddColorToTile(pDestSurface, blit.nAddColor, blit.wTileImageNo,
+	AddColorToTile(pDestSurface, blit.nAddColor, blit.hsv, blit.wTileImageNo,
 		nPixelX, nPixelY,
 		BlitRect.w, BlitRect.h);
 
@@ -7967,6 +7982,7 @@ void CRoomWidget::DrawCharacter(
 			bMoveInProgress || wXOffset || wYOffset, fRaisedFactor);
 	blit.nOpacity = opacity;
 	blit.nAddColor = pCharacter->getColor();
+	blit.hsv = pCharacter->getHSV();
 	DrawTileImage(blit, pDestSurface);
 
 	//Draw character with sword.
@@ -8012,6 +8028,7 @@ void CRoomWidget::DrawDouble(
 	TileImageBlitParams blit(pDouble->wX, pDouble->wY, wDoubleTI, wXOffset, wYOffset,
 			bMoveInProgress || wXOffset || wYOffset, fRaised);
 	blit.nAddColor = pDouble->getColor();
+	blit.hsv = pDouble->getHSV();
 	blit.nOpacity = nOpacity;
 
 	// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering

@@ -712,7 +712,8 @@ void CGameScreen::RedrawStats(
 			if (i==0)
 			{
 				ASSERT(pCombat->pMonster);
-				this->pRoomWidget->AddColorToTile(pDestSurface, pCombat->pMonster->getColor(), val, X_PIC[i], Y_PIC[i],
+				this->pRoomWidget->AddColorToTile(pDestSurface, pCombat->pMonster->getColor(),
+					pCombat->pMonster->getHSV(), val, X_PIC[i], Y_PIC[i],
 						CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 			}
 		}

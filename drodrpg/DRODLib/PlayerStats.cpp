@@ -49,6 +49,7 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"_Beam", "_Firetrap",
 	"", "",
 	"_MudSwap", "_TarSwap", "_GelSwap",
+	"", "",
 };
 
 //Message texts corresponding to the above short var texts.
@@ -84,6 +85,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarBeam, MID_VarFiretrap,
 	MID_VarTotalAtk, MID_VarTotalDef,
 	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
+	MID_VarMonsterHue, MID_VarMonsterSaturation
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
