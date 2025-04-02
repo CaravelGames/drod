@@ -78,6 +78,7 @@
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/AttachableObject.h>
 
+#include <array>
 #include <list>
 using std::list;
 
@@ -214,6 +215,7 @@ public:
 	virtual UINT  getHP() const;
 	virtual UINT  getSword() const;
 	virtual int   getXP() const; //may be negative
+	virtual std::array<float, 3> getHSV() const;
 
 	virtual bool  HasCustomWeakness() const {return false;}
 	virtual bool  HasGoblinWeakness() const {return false;}

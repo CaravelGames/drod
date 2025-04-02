@@ -1036,6 +1036,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_Script_FromText: strText = "Import Script Commands"; break;
 		case MID_CollectableGroup: strText = "Collectable items"; break;
 		case MID_EnableAutosaves: strText = "Enable autosaves"; break;
+		case MID_VarMonsterHue: strText = "_MyHue"; break;
+		case MID_VarMonsterSaturation: strText = "_MySaturation"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

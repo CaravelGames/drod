@@ -47,6 +47,8 @@
 #include <BackEndLib/CoordStack.h>
 #include <BackEndLib/Types.h>
 
+#include <array>
+
 //Range of weather parameters.
 #define LIGHT_LEVELS (7)	//number of light levels
 #define FOG_INCREMENTS (4)
@@ -189,6 +191,7 @@ struct TileImageBlitParams {
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
+	std::array<float, 3> hsv; //hue, saturation, value
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
@@ -214,7 +217,7 @@ public:
 	CRoomWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW,
 			UINT wSetH);
 
-	void           AddColorToTile(SDL_Surface* pDestSurface, const int nAddColor, const UINT wTileImageNo,
+	void           AddColorToTile(SDL_Surface* pDestSurface, const int nAddColor, const std::array<float, 3> hsv, const UINT wTileImageNo,
 			const UINT nPixelX, const UINT nPixelY, const UINT wWidth, const UINT wHeight, const int nXOffset=0, const int nYOffset=0);
 	bool           AddDoorEffect(COrbAgentData *pOrbAgent);
 	void           AddInfoSubtitle(CMoveCoord *pCoord, const WSTRING& wstr,

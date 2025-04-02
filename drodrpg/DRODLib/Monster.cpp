@@ -1545,6 +1545,13 @@ UINT CMonster::getColor() const
 }
 
 //*****************************************************************************
+std::array<float, 3 > CMonster::getHSV() const
+//Return: float-converted color hue, saturation and value
+{
+	return { -1, -1, -1 }; //no changes by default
+}
+
+//*****************************************************************************
 UINT CMonster::getDEF() const
 //Return: monster's DEF
 {
