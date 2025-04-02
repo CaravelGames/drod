@@ -667,8 +667,8 @@ const UINT mObstacleEntries[numObstacles] = {
 
 const UINT wLightMult = 2, wDarkMult = 25;
 
-const int X_ROOM = 163 + 44*3;
-const int Y_ROOM = 40;
+const int X_ROOM = 166 + 44*3;
+const int Y_ROOM = 45;
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
 

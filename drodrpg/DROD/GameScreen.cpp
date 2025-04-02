@@ -1068,8 +1068,8 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	this->fPos[0] = this->fPos[1] = this->fPos[2] = 0.0;
 
 	//Room widgets.
-	static const int X_ROOM = 163 + 44*3;
-	static const int Y_ROOM = 40;
+	static const int X_ROOM = 166 + 44*3;
+	static const int Y_ROOM = 45;
 	static const int X_FACE = 15;
 	static const int Y_FACE = 15;
 //	static const int X_CLOCK = 4;
