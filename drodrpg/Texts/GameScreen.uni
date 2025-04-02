@@ -270,24 +270,24 @@ If it drops to 0, you die.
 [MID_ATKTooltip]
 [eng]
 ATK - Attack power
-Your attack rating in combat.
+Your attack rating in combat. Increases damage.
 It must be higher than an enemy's DEF to inflict damage.
 
 [MID_DEFTooltip]
 [eng]
 DEF - Defense power
-Your defense rating in combat.
-When your defense is as high as an enemy's ATK, they cannot hurt you.
+Your defense rating in combat. Reduces damage.
+When this is as high as an enemy's ATK, they cannot hurt you.
 
 [MID_GRTooltip]
 [eng]
 GR - Greckles
-Currency used to open greckle gates.
+Currency used to open greckle gates and more.
 
 [MID_REPTooltip]
 [eng]
 REP - Reputation
-Increases as you defeat monsters.
+Special stat - customizable.
 
 [MID_KeysTooltip]
 [eng]
