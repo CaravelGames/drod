@@ -77,6 +77,7 @@ enum FONTTYPE
 	F_ItemMultiplier,
 	F_ScoreTotal,
 	F_InvSlotText,
+	F_StatPanelText,
 	F_DamagePreviewSmall,
 	F_DamagePreviewMedium,
 	F_DamagePreviewLarge,

@@ -75,7 +75,7 @@ CRoomScreen::CRoomScreen(
 
 	static const int X_MAP = 15;
 	static const int Y_MAP = 578;
-	static const UINT CX_MAP = 245; //130;
+	static const UINT CX_MAP = 254;
 	static const UINT CY_MAP = 138;
 	static const int X_SCROLL_LABEL = 27;
 	static const int Y_SCROLL_LABEL = 218;
@@ -126,7 +126,7 @@ CRoomScreen::CRoomScreen(
 
 	//Player keys.
 	static const int X_YKEY = 22;
-	static const int Y_YKEY = 370;
+	static const int Y_YKEY = 372;
 	static const UINT CX_YKEY = 30;
 	static const UINT CY_YKEY = CY_XP;
 
@@ -158,8 +158,8 @@ CRoomScreen::CRoomScreen(
 
 	//Player equipment.
 	static const int X_SWORD = 182;
-	static const int Y_SWORD = 200;
-	static const UINT CX_SWORD = 260 - X_SWORD;
+	static const int Y_SWORD = 199;
+	static const UINT CX_SWORD = 265 - X_SWORD;
 	static const UINT CY_SWORD = 260 - Y_SWORD;
 
 	static const int X_SHIELD = X_SWORD;
@@ -173,16 +173,16 @@ CRoomScreen::CRoomScreen(
 	static const UINT CY_ACCESSORY = CY_SHIELD;
 
 	CLabelWidget *pLabelWidget;
-	AddWidget(new CLabelWidget(TAG_HP, X_HP, Y_HP, CX_HP, CY_HP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_ATK, X_ATK, Y_ATK, CX_ATK, CY_ATK, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_DEF, X_DEF, Y_DEF, CX_DEF, CY_DEF, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_GOLD, X_GOLD, Y_GOLD, CX_GOLD, CY_GOLD, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_XP, X_XP, Y_XP, CX_XP, CY_XP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_YKEY, X_YKEY, Y_YKEY, CX_YKEY, CY_YKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_GKEY, X_GKEY, Y_GKEY, CX_GKEY, CY_GKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_BKEY, X_BKEY, Y_BKEY, CX_BKEY, CY_BKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_SKEY, X_SKEY, Y_SKEY, CX_SKEY, CY_SKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_SHOVEL, X_SHOVEL, Y_SHOVEL, CX_SHOVEL, CY_SHOVEL, F_FrameCaption, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_HP, X_HP, Y_HP, CX_HP, CY_HP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_ATK, X_ATK, Y_ATK, CX_ATK, CY_ATK, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_DEF, X_DEF, Y_DEF, CX_DEF, CY_DEF, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_GOLD, X_GOLD, Y_GOLD, CX_GOLD, CY_GOLD, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_XP, X_XP, Y_XP, CX_XP, CY_XP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_YKEY, X_YKEY, Y_YKEY, CX_YKEY, CY_YKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_GKEY, X_GKEY, Y_GKEY, CX_GKEY, CY_GKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_BKEY, X_BKEY, Y_BKEY, CX_BKEY, CY_BKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_SKEY, X_SKEY, Y_SKEY, CX_SKEY, CY_SKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_SHOVEL, X_SHOVEL, Y_SHOVEL, CX_SHOVEL, CY_SHOVEL, F_StatPanelText, wszEmpty));
 
 	pLabelWidget = new CLabelWidget(
 			TAG_ITEMMULT, X_ITEMMULT, Y_ITEMMULT, CX_ITEMMULT, CY_ITEMMULT, F_ItemMultiplier, wszEmpty, false, 0, WT_Label, true);
@@ -190,23 +190,23 @@ CRoomScreen::CRoomScreen(
 	AddWidget(pLabelWidget);
 
 	pLabelWidget = new CLabelWidget(
-			TAG_SWORD, X_SWORD, Y_SWORD, CX_SWORD, CY_SWORD, F_InvSlotText, wszEmpty);
+			TAG_SWORD, X_SWORD, Y_SWORD, CX_SWORD, CY_SWORD, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 	pLabelWidget = new CLabelWidget(
-			TAG_SHIELD, X_SHIELD, Y_SHIELD, CX_SHIELD, CY_SHIELD, F_InvSlotText, wszEmpty);
+			TAG_SHIELD, X_SHIELD, Y_SHIELD, CX_SHIELD, CY_SHIELD, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 	pLabelWidget = new CLabelWidget(
-			TAG_ACCESSORY, X_ACCESSORY, Y_ACCESSORY, CX_ACCESSORY, CY_ACCESSORY, F_InvSlotText, wszEmpty);
+			TAG_ACCESSORY, X_ACCESSORY, Y_ACCESSORY, CX_ACCESSORY, CY_ACCESSORY, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 
 	//Monster stats.
 	static const int X_MONNAME = 22;
-	static const int Y_MONNAME = 425;
+	static const int Y_MONNAME = 420;
 	static const UINT CX_MONNAME = 160 - X_MONNAME;
-	static const UINT CY_MONNAME = 25;
+	static const UINT CY_MONNAME = 30;
 
 	static const int X_MONHP = X_HP;
 	static const int Y_MONHP = 450;
@@ -223,10 +223,10 @@ CRoomScreen::CRoomScreen(
 	static const UINT CX_MONDEF = CX_MONATK;
 	static const UINT CY_MONDEF = CY_MONATK;
 
-	AddWidget(new CLabelWidget(TAG_MONNAME, X_MONNAME, Y_MONNAME, CX_MONNAME, CY_MONNAME, F_Small, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONHP, X_MONHP, Y_MONHP, CX_MONHP, CY_MONHP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONATK, X_MONATK, Y_MONATK, CX_MONATK, CY_MONATK, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONDEF, X_MONDEF, Y_MONDEF, CX_MONDEF, CY_MONDEF, F_FrameCaption, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONNAME, X_MONNAME, Y_MONNAME, CX_MONNAME, CY_MONNAME, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONHP, X_MONHP, Y_MONHP, CX_MONHP, CY_MONHP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONATK, X_MONATK, Y_MONATK, CX_MONATK, CY_MONATK, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONDEF, X_MONDEF, Y_MONDEF, CX_MONDEF, CY_MONDEF, F_StatPanelText, wszEmpty));
 }
 
 //*****************************************************************************

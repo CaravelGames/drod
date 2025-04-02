@@ -40,8 +40,7 @@
 //Holds the only instance of CDrodFontManager for the app.
 CDrodFontManager *g_pTheDFM = NULL;
 
-//const SDL_Color InventoryBG = {180, 180, 180, 0};
-const SDL_Color InvSlotBG = {178, 178, 178, 0}; //BG color of inventory slots
+const SDL_Color InvSlotBG = {112, 112, 112, 0}; //approximate BG color of inventory slots
 
 //*****************************************************************************
 CDrodFontManager::CDrodFontManager()
@@ -370,12 +369,23 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_ListBoxItem].bAntiAlias = true;
 
 	//Inventory slot item text.
+	pFont = GetFont(wstrFontFilepath, 19);
+	if (!pFont) return false;
 	this->LoadedFonts[F_InvSlotText].pTTFFont = pFont;
-	this->LoadedFonts[F_InvSlotText].wLineSkipHeight = CY_LBOX_ITEM;
-	this->LoadedFonts[F_InvSlotText].wSpaceWidth = 8;
+	this->LoadedFonts[F_InvSlotText].wLineSkipHeight = 20;
+	this->LoadedFonts[F_InvSlotText].wSpaceWidth = 6;
+	this->LoadedFonts[F_InvSlotText].ForeColor = Black;
 	this->LoadedFonts[F_InvSlotText].BackColor = InvSlotBG;
 	this->LoadedFonts[F_InvSlotText].bAntiAlias = true;
 	
+	pFont = GetFont(wstrFontFilepath, 21);
+	if (!pFont) return false;
+	this->LoadedFonts[F_StatPanelText].pTTFFont = pFont;
+	this->LoadedFonts[F_StatPanelText].wLineSkipHeight = 20;
+	this->LoadedFonts[F_StatPanelText].wSpaceWidth = 6;
+	this->LoadedFonts[F_StatPanelText].ForeColor = Black;
+	this->LoadedFonts[F_StatPanelText].BackColor = InvSlotBG;
+	this->LoadedFonts[F_StatPanelText].bAntiAlias = true;
 
 	//Load selected list box item font.
 	pFont = GetFont(wstrFontFilepath, 19);
