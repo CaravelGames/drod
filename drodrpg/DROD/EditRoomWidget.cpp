@@ -1351,6 +1351,7 @@ void CEditRoomWidget::DrawCharacter(
 		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, fRaised);
 		blit.nOpacity = opacity;
 		blit.nAddColor = pCharacter->getColor();
+		blit.hsv = pCharacter->getHSV();
 		DrawTileImage(blit, pDestSurface);
 
 		//Draw character with sword.

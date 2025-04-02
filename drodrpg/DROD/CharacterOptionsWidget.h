@@ -45,6 +45,8 @@ public:
 
 	CCharacterOptionsDialog();
 
+	CTextBoxWidget *pHueTextBox;
+	CTextBoxWidget *pSaturationTextBox;
 	CTextBoxWidget *pColorTextBox;
 	CTextBoxWidget *pSpeechColorRedTextBox;
 	CTextBoxWidget *pSpeechColorBlueTextBox;
@@ -57,6 +59,8 @@ public:
 	void SetCharacter(const CCharacter *pCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
 	UINT GetColor();
+	UINT GetHue();
+	UINT GetSaturation();
 	bool GetGhostDisplay();
 	UINT GetSpeechColor();
 	UINT GetProcessSequence();
@@ -72,7 +76,7 @@ private:
 	static const UINT SPACE_CX = 15;
 
 	static const int DIALOG_CX = 400;
-	static const int DIALOG_CY = 390;
+	static const int DIALOG_CY = 480;
 
 	static const int LABEL_CX = 150;
 	static const int LABEL_CY = CY_STANDARD_BUTTON;
@@ -90,9 +94,23 @@ private:
 	static const int TREASURE_BUTTON_X = SPACE_CX;
 	static const int TREASURE_BUTTON_Y = GHOSTDISPLAY_BUTTON_Y + TITLE_CY + SPACE_CY / 2;
 
+	static const int HUELABEL_CX = 150;
+	static const int HUELABEL_X = SPACE_CX;
+	static const int HUELABEL_Y = TREASURE_BUTTON_Y + TITLE_CY + SPACE_CY;
+
+	static const int HUETEXT_X = HUELABEL_X + HUELABEL_CX + SPACE_CX;
+	static const int HUETEXT_Y = HUELABEL_Y;
+
+	static const int SATURATIONLABEL_CX = 150;
+	static const int SATURATIONLABEL_X = SPACE_CX;
+	static const int SATURATIONLABEL_Y = HUELABEL_Y + TITLE_CY + SPACE_CY;
+
+	static const int SATURATIONTEXT_X = SATURATIONLABEL_X + SATURATIONLABEL_CX + SPACE_CX;
+	static const int SATURATIONTEXT_Y = SATURATIONLABEL_Y;
+
 	static const int COLORLABEL_CX = 150;
 	static const int COLORLABEL_X = SPACE_CX;
-	static const int COLORLABEL_Y = TREASURE_BUTTON_Y + TITLE_CY + SPACE_CY;
+	static const int COLORLABEL_Y = SATURATIONLABEL_Y + TITLE_CY + SPACE_CY;
 
 	static const int COLORTEXT_X = COLORLABEL_X + COLORLABEL_CX + SPACE_CX;
 	static const int COLORTEXT_Y = COLORLABEL_Y;
