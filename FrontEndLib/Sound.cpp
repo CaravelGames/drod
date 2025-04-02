@@ -1219,6 +1219,15 @@ bool CSound::StopSong(
 
 //********************************************************************************
 void CSound::PlaySoundEffect(
+	const UINT eSEID,
+	const float frequencyMultiplier,
+	const float fVolumeMultiplier)
+{
+	PlaySoundEffect(eSEID, NULL, NULL, false, frequencyMultiplier, fVolumeMultiplier);
+}
+
+//********************************************************************************
+void CSound::PlaySoundEffect(
 //Plays a sound effect.
 //
 //Params:
