@@ -47,6 +47,7 @@
 #include "Mimic.h"
 #include "Pathmap.h"
 #include "PhoenixAshes.h"
+#include "SettingsKeys.h"
 #include "Serpent.h"
 #include "Splitter.h"
 #include "Swordsman.h"
@@ -448,6 +449,14 @@ bool CCurrentGame::Autosave(const WSTRING& name)
 //Returns: whether a record was saved to the DB
 {
 	if (this->bNoSaves)
+		return false;
+
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	ASSERT(pPlayer);
+	bool bAutosaveEnabled = pPlayer->Settings.GetVar(Settings::EnableAutosave, true);
+	delete pPlayer;
+
+	if (!bAutosaveEnabled)
 		return false;
 
 	if (this->Commands.IsFrozen() || !this->bIsGameActive)
