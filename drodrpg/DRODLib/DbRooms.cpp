@@ -2221,7 +2221,7 @@ void CDbRoom::RotateClockwise()
 			this->pszTParams[wIndex] = tParams[wIndex];
 		}
 
-	//Reflect platforms.
+	//Rotate platforms.
 	for (vector<CPlatform*>::const_iterator platformIter = this->platforms.begin();
 			platformIter != this->platforms.end(); ++platformIter)
 	{
@@ -8319,9 +8319,10 @@ void CDbRoom::DestroyCrumblyWall(
 //*****************************************************************************
 void CDbRoom::Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents)
 {
-	ASSERT(bIsDiggableBlock(GetOSquare(wX,wY)));
+	const UINT oTile = GetOSquare(wX, wY);
+	ASSERT(bIsDiggableBlock(oTile));
+	CueEvents.Add(CID_Dig, new CMoveCoordEx(wX, wY, wO, oTile), true);
 	Plot(wX, wY, T_FLOOR_DIRT);
-	CueEvents.Add(CID_Dig, new CMoveCoord(wX, wY, wO), true);
 }
 
 //*****************************************************************************

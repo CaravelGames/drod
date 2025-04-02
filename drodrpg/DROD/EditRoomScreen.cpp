@@ -5421,19 +5421,19 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_SPLASH); break;
 
 				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
-					g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP);
+					g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP, getFrequencyMultForItem(wPlottedObject));
 					break;
 				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
-					g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP);
+					g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP, getFrequencyMultForItem(wPlottedObject));
 					break;
 				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
-					g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP);
+					g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP, getFrequencyMultForItem(wPlottedObject));
 					break;
 				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
-					g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP);
+					g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP, getFrequencyMultForItem(wPlottedObject));
 				break;
 				case T_DIRT1: case T_DIRT3: case T_DIRT5:
-					g_pTheSound->PlaySoundEffect(SEID_DIG);
+					g_pTheSound->PlaySoundEffect(SEID_DIG, getFrequencyMultForItem(wPlottedObject));
 				break;
 				case T_THINICE:
 					g_pTheSound->PlaySoundEffect(SEID_ICEMELT);
@@ -5501,12 +5501,30 @@ void CEditRoomScreen::PlotObjects()
 				}
 				break;
 				case T_FUSE:
-					g_pTheSound->PlaySoundEffect(SEID_STARTFUSE);   break;
+					g_pTheSound->PlaySoundEffect(SEID_STARTFUSE);
+				break;
 				case T_BOMB:
 				case T_POWDER_KEG:
-					g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE); break;
-				case T_KEY: case T_SWORD: case T_SHIELD: case T_ACCESSORY:
-					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
+					g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE);
+				break;
+				case T_KEY:
+				{
+					UINT virtualTile = 0;
+					switch (this->wSelKeyType) {
+						case YellowKey: virtualTile = TV_KEY_Y; break;
+						case GreenKey: virtualTile = TV_KEY_G; break;
+						case BlueKey: virtualTile = TV_KEY_B; break;
+						case SkeletonKey: virtualTile = TV_KEY_S; break;
+						default: break;
+					}
+
+					g_pTheSound->PlaySoundEffect(SEID_KEY, getFrequencyMultForItem(virtualTile));
+				}
+				break;
+				case T_SWORD:
+				case T_SHIELD:
+				case T_ACCESSORY:
+					g_pTheSound->PlaySoundEffect(SEID_SWORDS);
 				break;
 
 				case T_ROACH:
@@ -5528,9 +5546,9 @@ void CEditRoomScreen::PlotObjects()
 				case T_MADEYE:
 					g_pTheSound->PlaySoundEffect(SEID_EVILEYEWOKE); break;
 				case T_TAR:	case T_MUD: case T_GEL:
-					//Remove illegal tar formations.
-					FixUnstableTar();
-					//NO BREAK
+					FixUnstableTar(); //Remove illegal tar formations.
+					g_pTheSound->PlaySoundEffect(SEID_STABTAR, getFrequencyMultForItem(wPlottedObject));
+					break;
 				case T_TARMOTHER:	case T_TARBABY:
 				case T_MUDMOTHER:	case T_MUDBABY:
 				case T_GELMOTHER:	case T_GELBABY:

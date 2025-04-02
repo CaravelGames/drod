@@ -6533,7 +6533,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		incintValueWithBounds(p.st.ATK, atk);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_ReceivedATK);
+		CueEvents.Add(CID_ReceivedATK, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
@@ -6543,22 +6543,21 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		incintValueWithBounds(p.st.DEF, def);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_ReceivedDEF);
+		CueEvents.Add(CID_ReceivedDEF, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
 	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 	{
 		const int heal = getItemAmount(wNewTSquare);
-		if (heal < 0)
+		if (heal < 0) {
 			p.DecHealth(CueEvents, -heal, CID_ExplosionKilledPlayer);
-		else
-		{
+		} else {
 			incUINTValueWithBounds(p.st.HP, heal);
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_HEAL, heal), true);
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_ReceivedHP);
+		CueEvents.Add(CID_ReceivedHP, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
