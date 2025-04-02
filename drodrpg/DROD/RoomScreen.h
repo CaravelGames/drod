@@ -87,6 +87,8 @@ protected:
 	void     SetSignText(const WCHAR *pwczSetText);
 	void     ShowScroll() {this->bIsScrollVisible = true;}
 
+	static float getFrequencyMultForItem(const UINT tile);
+
 	//These are accessed by CDemoScreen.
 	CMapWidget *      pMapWidget;
 	CLabelWidget *    pScrollLabel;
