@@ -49,6 +49,20 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	AddWidget(new CLabelWidget(0L, TITLE_X, TITLE_Y,
 		TITLE_CX, TITLE_CY, F_Header, g_pTheDB->GetMessageText(MID_CharOptionsTitle)));
 
+	AddWidget(new CLabelWidget(0L, HUELABEL_X, HUELABEL_Y,
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterHue)));
+
+	this->pHueTextBox = new CTextBoxWidget(0L, HUETEXT_X, HUETEXT_Y,
+		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+	AddWidget(pHueTextBox);
+
+	AddWidget(new CLabelWidget(0L, SATURATIONLABEL_X, SATURATIONLABEL_Y,
+		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterSaturation)));
+
+	this->pSaturationTextBox = new CTextBoxWidget(0L, SATURATIONTEXT_X, SATURATIONTEXT_Y,
+		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+	AddWidget(pSaturationTextBox);
+
 	AddWidget(new CLabelWidget(0L, COLORLABEL_X, COLORLABEL_Y,
 		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterColor)));
 
@@ -119,6 +133,12 @@ void CCharacterOptionsDialog::SetCharacter(
 	_itoW(pCharacter->getColor(), temp, 10, bufferLength);
 	this->pColorTextBox->SetText(temp);
 
+	_itoW(pCharacter->getHue(), temp, 10, bufferLength);
+	this->pHueTextBox->SetText(temp);
+
+	_itoW(pCharacter->getSaturation(), temp, 10, bufferLength);
+	this->pSaturationTextBox->SetText(temp);
+
 	SetSpeechColorTexts(pCharacter->GetCustomSpeechColor());
 
 	this->pGhostDisplayCheckbox->SetChecked(pCharacter->IsGhostImage());
@@ -137,6 +157,12 @@ void CCharacterOptionsDialog::SetCharacter(
 
 	_itoW(pCharacter->ExtraVars.GetVar(ColorStr, 0), temp, 10, bufferLength);
 	this->pColorTextBox->SetText(temp);
+
+	_itoW(pCharacter->ExtraVars.GetVar(HueStr, 0), temp, 10, bufferLength);
+	this->pHueTextBox->SetText(temp);
+
+	_itoW(pCharacter->ExtraVars.GetVar(SaturationStr, 0), temp, 10, bufferLength);
+	this->pSaturationTextBox->SetText(temp);
 
 	SetSpeechColorTexts(pCharacter->ExtraVars.GetVar(ParamSpeechColorStr, 0));
 
@@ -165,6 +191,18 @@ void CCharacterOptionsDialog::SetSpeechColorTexts(UINT color)
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetColor(){
 	return (UINT)this->pColorTextBox->GetNumber();
+}
+
+//*****************************************************************************
+UINT CCharacterOptionsDialog::GetHue()
+{
+	return (UINT)this->pHueTextBox->GetNumber();
+}
+
+//*****************************************************************************
+UINT CCharacterOptionsDialog::GetSaturation()
+{
+	return (UINT)this->pSaturationTextBox->GetNumber();
 }
 
 //*****************************************************************************

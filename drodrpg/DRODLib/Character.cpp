@@ -5675,6 +5675,13 @@ UINT CCharacter::getHue() const
 }
 
 //*****************************************************************************
+UINT CCharacter::getSaturation() const
+//Return: monster's saturation
+{
+	return this->saturation;
+}
+
+//*****************************************************************************
 std::array<float, 3> CCharacter::getHSV() const
 //Return: float-converted color hue, saturation and value
 {

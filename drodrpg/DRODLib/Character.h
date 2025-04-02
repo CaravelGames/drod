@@ -128,6 +128,7 @@ public:
 	virtual UINT   getATK() const;   //allow "negative" values to be returned
 	virtual UINT   getColor() const;
 	virtual UINT   getHue() const;
+	virtual UINT   getSaturation() const;
 	virtual std::array<float, 3> getHSV() const;
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
 	virtual UINT   getSword() const;

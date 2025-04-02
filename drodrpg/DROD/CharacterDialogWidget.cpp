@@ -2111,6 +2111,8 @@ void CCharacterDialogWidget::OnClick(
 			if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
 				this->pCharacter->wProcessSequence = this->pCharOptionsDialog->GetProcessSequence();
 				this->pCharacter->SetColor(this->pCharOptionsDialog->GetColor());
+				this->pCharacter->SetHue(this->pCharOptionsDialog->GetHue());
+				this->pCharacter->SetSaturation(this->pCharOptionsDialog->GetSaturation());
 				this->pCharacter->SetCustomSpeechColor(this->pCharOptionsDialog->GetSpeechColor());
 				this->pCharacter->SetGhostImage(this->pCharOptionsDialog->GetGhostDisplay());
 				this->pCharacter->SetMinimapTreasure(this->pCharOptionsDialog->GetMinimapTreasure());
@@ -3093,6 +3095,8 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 				if (dwTagNo == CCharacterOptionsDialog::TAG_SAVE) {
 					pChar->ExtraVars.SetVar(ParamProcessSequenceStr, this->pCharOptionsDialog->GetProcessSequence());
 					pChar->ExtraVars.SetVar(ColorStr, this->pCharOptionsDialog->GetColor());
+					pChar->ExtraVars.SetVar(HueStr, this->pCharOptionsDialog->GetHue());
+					pChar->ExtraVars.SetVar(SaturationStr, this->pCharOptionsDialog->GetSaturation());
 					pChar->ExtraVars.SetVar(ParamSpeechColorStr, this->pCharOptionsDialog->GetSpeechColor());
 					pChar->ExtraVars.SetVar(GhostImageStr, this->pCharOptionsDialog->GetGhostDisplay());
 					pChar->ExtraVars.SetVar(MinimapTreasureStr, this->pCharOptionsDialog->GetMinimapTreasure());
