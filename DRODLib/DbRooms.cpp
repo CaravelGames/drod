@@ -2776,7 +2776,8 @@ const
 				case M_CLONE: case M_TEMPORALCLONE:
 				{
 					const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
-					bObstacle = bMonsterObstacle = !pDouble->IsVulnerableToPlayerBodyAttack();
+					if (!pDouble->IsVulnerableToPlayerBodyAttack())
+						bObstacle = bMonsterObstacle = true;
 				}
 				break;
 				case M_CHARACTER:
