@@ -156,7 +156,7 @@ const UINT TAG_SCORETILES = 1066;
 
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
-const UINT CX_SIDEBAR = 260; //width of active sidebar widget area
+const UINT CX_SIDEBAR = 268; //width of active sidebar widget area
 
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
@@ -196,7 +196,7 @@ const UINT numMenuPics = 4+3; //monster tiles (4), sword, shield, accessory
 const int X_PIC[numMenuPics] = {160, 160+44, 160,    160+44,  135, 135, 135};
 const int Y_PIC[numMenuPics] = {427, 427,    427+44, 427+44,  205, 255, 305};
 
-const int rightEndOfEquipmentSlot = 259; //same as value in CX_SWORD in RoomScreen.cpp
+const int rightEndOfEquipmentSlot = 265; //same as value used in CX_SWORD in RoomScreen.cpp
 
 #ifdef STEAMBUILD
 CSteamLeaderboards::CSteamLeaderboards() { }
