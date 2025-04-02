@@ -418,3 +418,42 @@ bool CRoomScreen::IsCommandSupported(int command) const
 {
 	return bIsGameScreenCommand(command);
 }
+
+//*****************************************************************************
+// Change sound effect pitch based on item power level
+float CRoomScreen::getFrequencyMultForItem(const UINT tile)
+{
+	switch (tile) {
+		case T_HEALTH_SM: return 1.1f;
+		case T_HEALTH_BIG: return 0.9f;
+		case T_HEALTH_HUGE: return 0.8f;
+
+		case T_ATK_UP3: return 0.9f;
+		case T_ATK_UP10: return 0.8f;
+
+		case T_DEF_UP3: return 0.9f;
+		case T_DEF_UP10: return 0.8f;
+
+		case T_SHOVEL3: return 0.95f;
+		case T_SHOVEL10: return 0.85f;
+
+		case TV_KEY_G: return 0.95f;
+		case TV_KEY_B: return 0.9f;
+		case TV_KEY_S: return 0.85f;
+
+		case T_DIRT3: return 0.9f;
+		case T_DIRT5: return 0.8f;
+
+		case T_MUD: return 1.1f;
+		case T_GEL: return 0.9f;
+
+		case T_DIRT1:
+		case T_HEALTH_MED:
+		case T_ATK_UP:
+		case T_DEF_UP:
+		case T_SHOVEL1:
+		case TV_KEY_Y:
+		case T_TAR:
+		default: return 1.0f;
+	}
+}
