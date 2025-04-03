@@ -126,6 +126,7 @@ public:
 	static CIDSet getDemosInRoom(const UINT roomID);
 	static UINT   getHoldOfDemo(const UINT demoID);
 	static CIDSet getLevelsInHold(const UINT holdID);
+	static CIDSet getLocalHighscoresForHold(const UINT holdID);
 	static CIDSet getRoomsInHold(const UINT holdID);
 	static CIDSet getRoomsInLevel(const UINT levelID);
 	static UINT   getSavedGameOfDemo(const UINT demoID);
