@@ -8239,9 +8239,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 	bool showLocalMessage = true;
 	if (pPlayer->Settings.GetVar(useInternetStr, false)) {
 		if (g_pTheNet) {
-			if (g_pTheNet->IsLocalHold(this->pHold->dwHoldID)) {
 				showLocalMessage = false;
-			}
 		}
 	}
 
