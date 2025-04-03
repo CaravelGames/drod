@@ -798,6 +798,17 @@ CIDSet CDb::getLevelsInHold(const UINT holdID)
 }
 
 //*****************************************************************************
+CIDSet CDb::getLocalHighscoresForHold(const UINT holdID)
+//Returns: set of local highScoreIDs belong to this hold
+{
+	CIDSet IDs;
+	CDb db;
+	db.HighScores.FilterByHold(holdID);
+	db.HighScores.GetIDs(IDs);
+	return IDs;
+}
+
+//*****************************************************************************
 CIDSet CDb::getRoomsInHold(const UINT holdID)
 //Returns: set of roomIDs belonging to this hold, or empty set if level doesn't exist
 {

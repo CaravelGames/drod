@@ -913,6 +913,16 @@ bool CDbXML::ExportSavedGames(
 
 	pCallbackObject = pSaveCallbackObject;
 
+	//Compile list of all high score IDs for hold
+	CIDSet highScoreIDs = CDb::getLocalHighscoresForHold(dwHoldID);
+	if (ExportXML(V_LocalHighScores, highScoreIDs, info.exportedHighScores)) {
+		bSomethingExported = true;
+	} else {
+		info.exportedHighScores.resize(0);
+	}
+
+	pCallbackObject = pSaveCallbackObject;
+
 	return bSomethingExported;
 }
 
@@ -942,6 +952,12 @@ void CDbXML::ImportSavedGames()
 	res = ImportXML(info.exportedSavedGames.c_str(), info.exportedSavedGames.size());
 	ASSERT(res == MID_ImportSuccessful);
 	info.exportedSavedGames.resize(0);
+
+	info.ImportStatus = importState; //ignore import state changes in high score restoration
+	info.typeBeingImported = CImportInfo::HighScore;
+	res = ImportXML(info.exportedHighScores.c_str(), info.exportedHighScores.size());
+	ASSERT(res == MID_ImportSuccessful);
+	info.exportedHighScores.resize(0);
 
 	info.typeBeingImported = importType;
 	info.ImportStatus = importState;
@@ -1271,6 +1287,7 @@ MESSAGE_ID CDbXML::ImportXML(
 		{
 			case CImportInfo::Demo: break;
 			case CImportInfo::SavedGame: break;
+			case CImportInfo::HighScore: break;
 			case CImportInfo::Hold:
 				if (info.dwHoldImportedID == 0)
 					ContinueImport(MID_HoldIgnored);
@@ -1485,6 +1502,9 @@ bool CDbXML::ExportXML(
 				g_pTheDB->SavedGames.ExportXML(dwPrimaryKey, dbRefs, text);
 				CDbXML::PerformCallbackf(wCount/(float)wTotal);
 				break;
+			case V_LocalHighScores:
+				g_pTheDB->HighScores.ExportXML(dwPrimaryKey, dbRefs, text);
+			break;
 
 			default:
 				ASSERT(!"CDbXML::ExportXML: Unexpected view type.");

@@ -3018,6 +3018,7 @@ MESSAGE_ID CDbHold::SetProperty(
 
 				case CImportInfo::Demo:
 				case CImportInfo::SavedGame:
+				case CImportInfo::HighScore:
 					//A saved game/demo in this hold is being imported.
 					//No hold version checking is done.
 					bSaveRecord = false;
