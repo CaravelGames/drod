@@ -5146,6 +5146,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	//If player hits undo, then speech will continue at the next line.
 	CutSpeech();
 
+	//Interrupts any mouse-selected pathing.
+	this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
+
 	//Shows current stats.
 	RedrawStats(this->pCurrentGame->pCombat, true);
 
