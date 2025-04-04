@@ -3585,6 +3585,7 @@ bool CGameScreen::AddMonsterStats(
 	//Draw monster tiles at current text height.
 	float r, g, b;
 	pRoomWidget->TranslateMonsterColor(pMonster->getColor(), r, g, b);
+	const std::array<float, 3> hsv = pMonster->getHSV();
 	UINT tileNo = TI_UNSPECIFIED;
 	for (UINT i = 2 * 2; i--; )
 	{
@@ -3597,7 +3598,7 @@ bool CGameScreen::AddMonsterStats(
 			const int xPixel = x * CDrodBitmapManager::CX_TILE +
 				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
 			pTilesWidget->AddTile(tileNo, xPixel,
-				yEnemyIcon + y * CDrodBitmapManager::CY_TILE, r, g, b);
+				yEnemyIcon + y * CDrodBitmapManager::CY_TILE, hsv, r, g, b);
 		}
 	}
 
@@ -3608,7 +3609,7 @@ bool CGameScreen::AddMonsterStats(
 		for (UINT i = 0; i < xyIcon.size(); ++i) {
 			const pair<int, int> xy = xyIcon[i];
 			if (xy.first >= 0) {
-				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second);
+				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second, hsv);
 			}
 		}
 	}
