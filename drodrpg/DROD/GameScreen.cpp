@@ -6508,7 +6508,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		ProcessFuseBurningEvents(CueEvents);
 
 	//3rd. Monster actions.
-	if (CueEvents.HasOccurred(CID_GoblinAttacks))
+	if (CueEvents.HasOccurred(CID_EnemySneakAttack))
 		g_pTheSound->PlaySoundEffect(SEID_HIT);
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_SnakeDiedFromTruncation);

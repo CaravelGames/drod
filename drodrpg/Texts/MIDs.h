@@ -1355,7 +1355,7 @@ enum MID_CONSTANT {
   MID_PushObjects = 1688,
   MID_EvilEyeWoke = 1015,
   MID_FuseBurning = 1016,
-  MID_GoblinAttacks = 1353,
+  MID_EnemySneakAttack = 1353,
   MID_HitObstacle = 1018,
   MID_ItemUsed = 1512,
   MID_MirrorShattered = 1168,
