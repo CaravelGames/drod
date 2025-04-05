@@ -187,6 +187,8 @@ const
 		case SEID_SWORDS:       strKeyName="Sword"; break;
 		case SEID_WISP:         strKeyName="Wisp"; break;
 		case SEID_WUBBA:			strKeyName="Wubba"; break;
+
+		case SEID_WORLDMAP_CLICK: strKeyName = "WorldmapClick"; break;
 		default: return false;
 	}
 
@@ -423,6 +425,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WALK );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WATERSTEP );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WISP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_WORLDMAP_CLICK );
 #  undef SHARED_CHANNEL_SOUNDEFFECT
 
 	//If this assertion fires, too many private sound channels were designated.

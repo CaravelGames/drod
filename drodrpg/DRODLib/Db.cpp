@@ -341,6 +341,15 @@ bool CDb::ValidateMoveSequence(
 				pGame->FreezeCommands();
 				//The "continue" below lets us validate these new cue events
 				//before playing the next command.
+			} else if (CueEvents.HasOccurred(CID_ExitToWorldMapPending)) {
+				const CAttachableWrapper<UINT>* pInfo = DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+					CueEvents.GetFirstPrivateData(CID_ExitToWorldMapPending));
+				const UINT dwEntranceID = pInfo->data;
+
+				CueEvents.Clear();
+				pGame->UnfreezeCommands(); //must be done before loading
+				pGame->LoadFromWorldMap(dwEntranceID);
+				pGame->FreezeCommands();
 			} else {
 				CueEvents.Clear(); //we're done checking these events
 			}
@@ -377,8 +386,27 @@ bool CDb::ValidateMoveSequence(
 			wX = wY = UINT(-1);
 		}
 
-		//Execute this command.
-		pGame->ProcessCommand(command, CueEvents, wX, wY);
+		if (command == CMD_WORLD_MAP) {
+			CueEvents.Clear();
+			ExitType exitType = (ExitType)wY;
+
+			if (pGame->IsValidWorldMapTransfer(wX, exitType)) {
+				pGame->UnfreezeCommands(); //must be done before loading
+				if (exitType == ET_Entrance) {
+					pGame->LoadFromLevelEntrance(holdID, wX, CueEvents);
+				} else {
+					pGame->LoadFromWorldMap(wX);
+				}
+				pGame->FreezeCommands();
+			} else {
+				//Illegal world map transfer
+				bGood = false;
+				break;
+			}
+		} else {
+			//Execute this command.
+			pGame->ProcessCommand(command, CueEvents, wX, wY);
+		}
 	}
 
 	//Resolve any combat initiated on final move

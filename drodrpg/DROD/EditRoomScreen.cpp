@@ -1833,6 +1833,39 @@ UINT CEditRoomScreen::SelectMediaID(
 }
 
 //*****************************************************************************
+CEntranceSelectDialogWidget::BUTTONTYPE CEditRoomScreen::SelectEntrance(
+	CEntranceSelectDialogWidget* pEntranceBox,
+	CDbHold* pHold,
+	ExitChoice& exitChoice,
+	const MESSAGE_ID messagePromptID,
+	const CEntranceSelectDialogWidget::DATATYPE datatype
+)
+{
+	ASSERT(pEntranceBox);
+	ASSERT(pHold);
+	ASSERT(pEntranceBox->IsLoaded());
+	ASSERT(datatype == CEntranceSelectDialogWidget::Entrances ||
+		datatype == CEntranceSelectDialogWidget::WorldMaps ||
+		datatype == CEntranceSelectDialogWidget::EntrancesAndMaps ||
+		datatype == CEntranceSelectDialogWidget::StairTargets);
+
+	pEntranceBox->SetPrompt(messagePromptID);
+	pEntranceBox->SetSourceHold(pHold);
+	pEntranceBox->PopulateList(datatype);
+
+	//Select current choice
+	pEntranceBox->SelectItem(exitChoice);
+
+	const CEntranceSelectDialogWidget::BUTTONTYPE eButton =
+		(CEntranceSelectDialogWidget::BUTTONTYPE)pEntranceBox->Display();
+	Paint();
+
+	//Get selected value.
+	exitChoice = pEntranceBox->GetSelectedExitChoice();
+	return eButton;
+}
+
+//*****************************************************************************
 void CEditRoomScreen::GetCustomImageID(
 	UINT& roomDataID,
 	UINT& imageStartX, UINT& imageStartY,
@@ -2221,69 +2254,6 @@ void CEditRoomScreen::HighlightPendingPaste()
 				this->wCopyX2 - this->wCopyX1, this->wCopyY2 - this->wCopyY1,
 				Gray, !bShowSource);
 	}
-}
-
-//*****************************************************************************
-UINT CEditRoomScreen::ImportHoldImage(const UINT extensionFlags)
-//Load an image file from disk into the hold,
-//using any of the specified supported file extensions.
-//Returns: dataID if operation completed successfully or 0 if it was canceled.
-{
-	static const char importImagePath[] = "ImportImagePath";
-
-	//Get image import path.
-	CFiles Files;
-	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	WSTRING wstrImportPath = pCurrentPlayer ?
-			pCurrentPlayer->Settings.GetVar(importImagePath, Files.GetDatPath().c_str()) :
-			Files.GetDatPath();
-
-	WSTRING wstrImportFile;
-	do {
-		const UINT dwTagNo = SelectFile(wstrImportPath,
-				wstrImportFile, MID_ImageSelectPrompt, false, extensionFlags);
-		if (dwTagNo != TAG_OK)
-		{
-			delete pCurrentPlayer;
-			return 0;
-		}
-
-		//Update the path in player settings, so next time dialog
-		//comes up it will have the same path.
-		if (pCurrentPlayer)
-		{
-			pCurrentPlayer->Settings.SetVar(importImagePath, wstrImportPath.c_str());
-			pCurrentPlayer->Update();
-		}
-
-		//Load image.
-		CStretchyBuffer buffer;
-		if (!Files.ReadFileIntoBuffer(wstrImportFile.c_str(), buffer, true))
-			ShowOkMessage(MID_FileNotFound);
-		else
-		{
-			const UINT wDataFormat = g_pTheBM->GetImageType(buffer);
-			if (wDataFormat == DATA_UNKNOWN)
-				ShowOkMessage(MID_FileCorrupted);
-			else
-			{
-				CDbDatum *pImage = g_pTheDB->Data.GetNew();
-				pImage->wDataFormat = wDataFormat;
-				pImage->data.Set((const BYTE*)buffer, buffer.Size());
-				pImage->DataNameText = getFilenameFromPath(wstrImportFile.c_str());
-				pImage->dwHoldID = this->pHold->dwHoldID; //image belongs to this hold
-				pImage->Update();
-				const UINT dwDataID = pImage->dwDataID;
-				delete pImage;
-				delete pCurrentPlayer;
-				return dwDataID;
-			}
-		}
-	} while (true);
-
-	ASSERT(!"Bad logic path.");
-	delete pCurrentPlayer;
-	return 0;
 }
 
 //*****************************************************************************
@@ -4122,7 +4092,8 @@ void CEditRoomScreen::SetDestinationEntrance(
 {
 	g_pTheSound->PlaySoundEffect(SEID_WALK);
 	UINT dwEntranceID;
-	const bool bFound = this->pRoom->GetExitEntranceIDAt(wX1,wY1,dwEntranceID);
+	ExitType exitType;
+	const bool bFound = this->pRoom->GetExitEntranceInfoAt(wX1,wY1,dwEntranceID, exitType);
 	const UINT wOSquare = this->pRoom->GetOSquare(wX1,wY1);
 	if (!bFound)
 	{
@@ -4132,7 +4103,7 @@ void CEditRoomScreen::SetDestinationEntrance(
 			if (wY1 == 0) break;
 			if (this->pRoom->GetOSquare(wX1,wY1-1) != wOSquare) break;
 			--wY1;
-		} while (!this->pRoom->GetExitEntranceIDAt(wX1,wY1,dwEntranceID));
+		} while (!this->pRoom->GetExitEntranceInfoAt(wX1, wY1, dwEntranceID, exitType));
 		do {
 			if (wY2 == this->pRoom->wRoomRows - 1) break;
 			if (this->pRoom->GetOSquare(wX1,wY2+1) != wOSquare) break;
@@ -4149,14 +4120,16 @@ void CEditRoomScreen::SetDestinationEntrance(
 	}
 	bool bValueSet = false;
 	do {
+		ExitChoice exitChoice = { exitType, dwEntranceID };
 		CEntranceSelectDialogWidget::BUTTONTYPE button =
-				SelectListID(this->pEntranceBox, this->pHold, dwEntranceID,
-			MID_ExitLevelPrompt);
+				SelectEntrance(this->pEntranceBox, this->pHold, exitChoice,
+			MID_ExitLevelPrompt, CEntranceSelectDialogWidget::StairTargets);
 		switch(button)
 		{
 			case CEntranceSelectDialogWidget::OK:
 				Changing();
-				this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
+				this->pRoom->SetExit(
+					exitChoice.entrance, wX1, wY1, wX2, wY2, exitChoice.exitType);
 				bValueSet = true;
 			break;
 
@@ -7547,6 +7520,8 @@ void CEditRoomScreen::ShowErrors()
 //	static const SURFACECOLOR LightGreen = {128, 255, 128};
 //	static const SURFACECOLOR LightBlack = {192, 192, 192};
 	static const SURFACECOLOR Orange = {255, 128, 0};
+	static const SURFACECOLOR PaleGreen = { 230, 255, 230 };
+	static const SURFACECOLOR Purple = { 255, 128, 255 };
 
 	UINT wTileNo[4], wAdjTile[4];
 	bool bMatchingEdge;
@@ -7676,10 +7651,18 @@ void CEditRoomScreen::ShowErrors()
 
 			case T_STAIRS: case T_STAIRS_UP:
 			{
-				//Mark stairs that end hold (visual cue).
+				//Mark stairs that end hold, etc (visual cue).
 				const UINT index = this->pRoom->GetExitIndexAt(wX,wY);
-				if (index == NO_EXIT || !this->pRoom->Exits[index]->dwEntranceID)
-					AddShadeToTile(Orange);
+				const CExitData* pStairs = this->pRoom->Exits[index];
+				if (index == NO_EXIT || !this->pRoom->Exits[index]->dwEntranceID) {
+					AddShadeToTile(Orange); //ends hold
+				} else if (pStairs->IsWorldMapExit()) {
+					if (this->pHold->DoesWorldMapExist(pStairs->dwEntranceID)) {
+						AddShadeToTile(PaleGreen); //world map
+					} else {
+						AddShadeToTile(Purple); //bad world map
+					}
+				}
 			}
 			break;
 			}

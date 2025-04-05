@@ -841,10 +841,7 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			SelectFirstWidget(false);
 
 			this->bReloadDemos = false;
-			if (pGameScreen->ShouldShowLevelStart())
-				return SCR_LevelStart;
-
-			return SCR_Game;
+			return pGameScreen->SelectGotoScreen();
 		}
 
 		case MNU_HELP:

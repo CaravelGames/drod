@@ -56,6 +56,7 @@ public:
 	SEID     GetMonsterAttackSoundEffect(CCombat* pCombat) const;
 	UINT     GetMonsterDisplayTile(CMonster *pMonster, const UINT x, const UINT y);
 	static MESSAGE_ID GetHintTextForRegion(int nX, int nY);
+	void     GotoEntrance(UINT entranceID, ExitType exitType);
 	bool     IsGameLoaded() const {return this->pCurrentGame!=NULL;}
 	bool     LoadContinueGame();
 	bool     LoadQuicksave();
@@ -67,6 +68,7 @@ public:
 	bool     ProcessCommandWrapper(const int nCommand);
 	SCREENTYPE     ProcessCommand(const int nCommand, const UINT wX, const UINT wY);
 	void     RedrawStats(CCombat *pCombat, const bool bUpdateRect);
+	SCREENTYPE SelectGotoScreen();
 	void		SetGameAmbience(const bool bRecalc=false);
 	void     SetMusicStyle();
 	void     SetQuickCombat();

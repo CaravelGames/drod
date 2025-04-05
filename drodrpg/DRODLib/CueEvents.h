@@ -715,6 +715,13 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_MapIcon,
 
+	//The swordsman has exited to world map, but the map has not been loaded yet.
+	//The destination map ID is attached for the ProcessCommand() caller to
+	//initiate the map load in response.
+	//
+	//Private data: (UINT) World map to go to
+	CID_ExitToWorldMapPending,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };
@@ -730,7 +737,7 @@ static inline bool IS_VALID_CID(const CUEEVENT_ID cid)   {return (UINT)(cid) < C
 
 //Has player left room or will he shortly be leaving/restarting?  Another way
 //of looking at: are any more commands going to be processed in the current room.
-extern const CUEEVENT_ID CIDA_PlayerLeftRoom[10];
+extern const CUEEVENT_ID CIDA_PlayerLeftRoom[11];
 
 //Did something kill the player?  This array should be checked for death instead
 //of these separate events so that future causes of death will be checked without

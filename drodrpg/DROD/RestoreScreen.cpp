@@ -1016,8 +1016,5 @@ void CRestoreScreen::RestoreGame()
 			g_pTheSM->GetScreen(SCR_Game));
 	ASSERT(pGameScreen);
 	pGameScreen->LoadSavedGame(this->dwSelectedSavedGameID);
-	if (pGameScreen->ShouldShowLevelStart())
-		GoToScreen(SCR_LevelStart);
-	else
-		GoToScreen(SCR_Game);
+	GoToScreen(pGameScreen->SelectGotoScreen());
 }

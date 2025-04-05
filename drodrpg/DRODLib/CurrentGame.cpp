@@ -1661,8 +1661,17 @@ void CCurrentGame::GotoLevelEntrance(
 	CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay)
 {
 	ASSERT(wEntrance != (UINT)EXIT_LOOKUP);
+	ProcessPlayer_HandleLeaveLevel(CueEvents, LevelExit(LevelExit::SpecificID, wEntrance), bSkipEntranceDisplay);
+}
 
-	ProcessPlayer_HandleLeaveLevel(CueEvents, wEntrance, bSkipEntranceDisplay);
+//*****************************************************************************
+void CCurrentGame::GotoWorldMap(CCueEvents& CueEvents, const UINT wWorldMap)
+//Leaves the level and goes to the world map with the indicated entrance.
+//
+//Params:
+{
+	ASSERT(wWorldMap);
+	ProcessPlayer_HandleLeaveLevel(CueEvents, LevelExit(LevelExit::WorldMapID, wWorldMap), true);
 }
 
 //*****************************************************************************
@@ -1707,6 +1716,126 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 bool CCurrentGame::IsCurrentRoomExplored(const bool bConsiderCurrentRoom) const
 {
 	return CDbSavedGame::IsRoomExplored(this->pRoom->dwRoomID, bConsiderCurrentRoom);
+}
+
+//*****************************************************************************
+void CCurrentGame::SetWorldMapIcon(
+	UINT worldMapID,
+	UINT xPos, UINT yPos,
+	UINT entranceID,
+	ExitType exitType,
+	UINT charID,
+	UINT imageID,
+	UINT displayFlags)
+{
+	ASSERT(!charID || !imageID);
+
+	if (!this->pHold->DoesWorldMapExist(worldMapID))
+		return;
+
+	WorldMapsIcons::iterator iter = this->worldMapIcons.find(worldMapID);
+	if (displayFlags == ScriptFlag::WMI_Off) {
+		if (iter != this->worldMapIcons.end()) {
+			//Remove all icons for this entranceID on this world map
+			WorldMapIcons& icons = iter->second;
+			WorldMapIcons newIcons;
+			for (WorldMapIcons::const_iterator iconIt = icons.begin();
+				iconIt != icons.end(); ++iconIt)
+			{
+				if (iconIt->entranceID != entranceID)
+					newIcons.push_back(*iconIt);
+			}
+
+			icons = newIcons;
+		}
+	} else {
+		//Only for valid entrance IDs
+		if (this->pHold->GetEntrance(entranceID) ||
+			(LevelExit::IsWorldMapID(entranceID) &&
+				this->pHold->DoesWorldMapExist(LevelExit::ConvertWorldMapID(entranceID))))
+		{
+			if (iter != this->worldMapIcons.end()) {
+				//Replace any icons at the same coords on this world map.
+				WorldMapIcons& icons = iter->second;
+				WorldMapIcons newIcons;
+				bool bReplaced = false;
+				for (WorldMapIcons::const_iterator iconIt = icons.begin();
+					iconIt != icons.end(); ++iconIt)
+				{
+					const WorldMapIcon& icon = *iconIt;
+					if (icon.xPos == xPos && icon.yPos == yPos) {
+						bReplaced = true; //remove icon from the copied data
+					} else {
+						newIcons.push_back(icon);
+					}
+				}
+
+				if (bReplaced)
+					icons = newIcons;
+			}
+
+			//Can have multiple icons with the same destination on a world map
+			this->worldMapIcons[worldMapID].push_back(
+				WorldMapIcon(entranceID, xPos, yPos, charID, imageID, displayFlags, exitType));
+		}
+	}
+}
+
+//*****************************************************************************
+//The world map music specifications are stored, only for lookup in the front end.
+string GetWorldMapVarNamePrefix(UINT worldMapID)
+{
+	string prefix = "wm";
+
+	char worldMap[12];
+	_itoa(worldMapID, worldMap, 10);
+
+	prefix += worldMap;
+
+	return prefix;
+}
+
+string GetWorldMapMusicVarNamePrefix(UINT worldMapID) {
+	return GetWorldMapVarNamePrefix(worldMapID) + "m";
+}
+
+string GetWorldMapMusicCustomIDNamePiece() {
+	return string("c");
+}
+
+void CCurrentGame::SetWorldMapMusic(UINT worldMapID, const WSTRING& songlist)
+{
+	if (this->pHold->DoesWorldMapExist(worldMapID)) {
+		const string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+		this->stats.SetVar(varName.c_str(), songlist.c_str());
+	}
+}
+
+void CCurrentGame::SetWorldMapMusic(UINT worldMapID, const UINT songID, const UINT customID)
+{
+	if (this->pHold->DoesWorldMapExist(worldMapID)) {
+		string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+		this->stats.SetVar(varName.c_str(), songID);
+
+		varName += GetWorldMapMusicCustomIDNamePiece();
+		this->stats.SetVar(varName.c_str(), customID);
+	}
+}
+
+WorldMapMusic CCurrentGame::GetWorldMapMusic(UINT worldMapID)
+{
+	string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+	if (this->stats.GetVarType(varName.c_str()) == UVT_wchar_string) {
+		const WCHAR* songlist = this->stats.GetVar(varName.c_str(), (WCHAR*)(wszEmpty));
+		return WorldMapMusic(WSTRING(songlist));
+	}
+
+	const UINT songID = this->stats.GetVar(varName.c_str(), UINT(0));
+
+	varName += GetWorldMapMusicCustomIDNamePiece();
+	const UINT customID = this->stats.GetVar(varName.c_str(), UINT(0));
+
+	return WorldMapMusic(songID, customID);
 }
 
 //*****************************************************************************
@@ -1777,6 +1906,37 @@ const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsValidWorldMapTransfer(
+//Returns: if going to a place via world map is allowed given the current
+//game state
+	UINT wEntranceID, ExitType exitType) //[in] transfer details
+	const
+{
+	if (!OnWorldMap()) {
+		return false;
+	}
+
+	//The transfer is valid if the current world map has an icon with a matching
+	//entrance ID and exit type.
+	WorldMapsIcons::const_iterator iter = this->worldMapIcons.find(this->worldMapID);
+	if (iter == this->worldMapIcons.end()) {
+		return false;
+	}
+
+	const WorldMapIcons& icons = iter->second;
+	for (WorldMapIcons::const_iterator iconIt = icons.begin();
+		iconIt != icons.end(); ++iconIt) {
+		if (iconIt->entranceID == wEntranceID &&
+			iconIt->exitType == exitType &&
+			iconIt->IsTraverserable()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::LoadFromHold(
 //Loads current game from the starting level and room of a specified hold.
 //
@@ -1792,6 +1952,8 @@ bool CCurrentGame::LoadFromHold(
 	bool bSuccess=true;
 
 	LoadPrep();
+
+	this->worldMapID = 0;
 
 	//Load the hold.
 	this->pHold = new CDbHold();
@@ -1888,6 +2050,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		if (!this->pRoom) {bSuccess=false; goto Cleanup;}
 		this->pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID);
 		if (!this->pLevel) {bSuccess=false; goto Cleanup;}
+		this->worldMapID = 0;
 
 		this->pPlayer->wX = this->pPlayer->wPrevX = st.priorX;
 		this->pPlayer->wY = this->pPlayer->wPrevY = st.priorY;
@@ -1896,6 +2059,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		//Go to predefined level entrance.
 		this->pEntrance = this->pHold->GetEntrance(dwEntranceID);
 		ASSERTP(pEntrance, "Dangling level entrance ID");   //Corrupted DB if NULL
+		this->worldMapID = 0;
 
 		//Load the room of the level entrance.
 		this->pRoom = new CDbRoom();
@@ -1953,6 +2117,24 @@ Cleanup:
 	return bSuccess;
 }
 
+bool CCurrentGame::LoadFromWorldMap(const UINT worldMapID)
+{
+	LOGCONTEXT("CCurrentGame::LoadFromWorldMap");
+
+	SetRoomStartToPlayer();
+	SetPlayerToRoomStart(); //reset some vars so saving game works properly
+
+	if (!this->pHold->DoesWorldMapExist(worldMapID))
+		return false;
+
+	this->worldMapID = worldMapID;
+
+	this->bIsGameActive = true;
+	this->bIsNewRoom = false;
+	return true;
+}
+
+
 //*****************************************************************************
 bool CCurrentGame::LoadFromRoom(
 //Loads current game from specified room (for playtesting).
@@ -2001,6 +2183,7 @@ bool CCurrentGame::LoadFromRoom(
 	
 	//Set entrance to the main level entrance.
 	this->pEntrance = this->pHold->GetMainEntranceForLevel(this->pLevel->dwLevelID);
+	this->worldMapID = 0;
 
 	//Set room start vars.
 	this->pPlayer->wX = this->pPlayer->wPrevX = wX;
@@ -2078,6 +2261,9 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pPlayer->bSwordOff = CDbSavedGame::bStartRoomSwordOff;
 	UnpackData(this->stats);
 	SetRoomStartToPlayer();
+
+	if (this->worldMapID)
+		return true;
 
 	const bool bAtRoomStart = bRestoreAtRoomStart || this->Commands.Empty();
 
@@ -4512,6 +4698,25 @@ void CCurrentGame::SaveToEndHold()
 	Update();
 }
 
+//*****************************************************************************
+void CCurrentGame::SaveToWorldMap()
+{
+	//It is not valid to save the current game when it is inactive.
+	ASSERT(this->bIsGameActive);
+
+	if (this->bNoSaves)
+		return;
+
+	this->eType = ST_WorldMap;
+	this->wVersionNo = VERSION_NUMBER;
+	this->bIsHidden = false;
+
+	//Is there already a saved game for this room?
+	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByHoldWorldMap(this->pHold->dwHoldID, this->worldMapID);
+	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
+	Update();
+}
+
 /*
 //-****************************************************************************
 void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
@@ -5481,7 +5686,8 @@ void CCurrentGame::ProcessMonsters(
 		//In this event, the room data have already been packed and NPC script
 		//state saved, and further processing could get monsters and packed
 		//state out of synch when the room is loaded again.
-		ASSERT(!CueEvents.HasOccurred(CID_ExitLevelPending));
+		ASSERT(!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+			!CueEvents.HasOccurred(CID_ExitToWorldMapPending));
 
 		//Platforms fall when mimics are done moving.
 		const bool bIsMimic = pMonster->wType == M_MIMIC;
@@ -5607,7 +5813,8 @@ void CCurrentGame::ProcessMonsters(
 					//Note that all other monster types have taken their turn by
 					//the time NPCs are processed in the monster list,
 					//so there's no danger of other monster types being skipped.
-					if (CueEvents.HasOccurred(CID_ExitLevelPending))
+					if (CueEvents.HasOccurred(CID_ExitLevelPending) ||
+						CueEvents.HasOccurred(CID_ExitToWorldMapPending))
 						pNextMonster = NULL;
 				}
 				break;
@@ -6647,18 +6854,18 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 //Called when the player walked onto stairs or a scripted event was triggered
 //warping to a new level entrance.
 //
-//Ending state:      The game will be inactive.  A cue event of either CID_WinGame or
-//             CID_ExitLevelPending will have been added.
+//Ending state:      The game will be inactive.  A cue event of either CID_WinGame,
+//             CID_ExitLevelPending or CID_ExitToWorldMap will have been added.
 //Side effects:      Demos may be saved.
 //
 //Params:
 	CCueEvents &CueEvents,  //(out)  Events added to it.
-	const UINT wEntrance,   //if set, go to this level entrance [default=EXIT_LOOKUP]
+	const LevelExit& exit,  //specifies destination [default=StairLookup]
 	const bool bSkipEntranceDisplay) //[default=false]
 {
 	//If exiting level not from stairs, the destination ID should be specified.
-	ASSERT(bIsStairs(this->pRoom->GetOSquare(this->pPlayer->wX, this->pPlayer->wY)) ||
-			wEntrance != (UINT)EXIT_LOOKUP);
+	ASSERT(exit.type != LevelExit::StairLookup ||
+		bIsStairs(this->pRoom->GetOSquare(this->pPlayer->wX, this->pPlayer->wY)));
 
 	//If a critical character died on exit move, the exit doesn't count.
 	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
@@ -6698,8 +6905,9 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 */
 
 	//If exiting via stairs, check for a defined exit destination for this room region.
-	UINT dwEntranceID=wEntrance;
-	if (wEntrance == (UINT)EXIT_LOOKUP)
+	UINT dwEntranceID = exit.entranceID;
+	bool bWorldMap = false; //are we going to a world map
+	if (exit.type == LevelExit::StairLookup)
 	{
 		for (UINT i=0; i<this->pRoom->Exits.size(); ++i)
 		{
@@ -6707,19 +6915,30 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			if (this->pPlayer->wX >= pStairs->wLeft && this->pPlayer->wX <= pStairs->wRight &&
 					this->pPlayer->wY >= pStairs->wTop && this->pPlayer->wY <= pStairs->wBottom) 
 			{
+				UINT stairTarget = pStairs->dwEntranceID;
+				if (!stairTarget) {
+					continue; //Won't go anywhere, so keep looking
+				} else if (stairTarget == UINT(EXIT_PRIOR_LOCATION)) {
+					dwEntranceID = stairTarget;
+					break; //No need to validate prior location
+				}
+
 				//Robustness measure: verify this entrance record actually exists.
-				if (pStairs->dwEntranceID && pStairs->dwEntranceID != UINT(EXIT_PRIOR_LOCATION) &&
-						!this->pHold->GetEntrance(pStairs->dwEntranceID))
+				bWorldMap = (pStairs->IsWorldMapExit());
+				if ((!bWorldMap && !this->pHold->GetEntrance(stairTarget)) ||
+					(bWorldMap && !this->pHold->DoesWorldMapExist(stairTarget)))
 				{
 					//Exit has dangling entrance ID -- ignore it and keep looking.
 					continue;
 				}
-				dwEntranceID = pStairs->dwEntranceID;
+				dwEntranceID = stairTarget;
 				break;
 			}
 		}
-		if (dwEntranceID == (UINT)EXIT_LOOKUP) //no exit destination defined by stairs
+		if (!dwEntranceID) //no exit destination defined by stairs
 			dwEntranceID = EXIT_ENDHOLD;  //so end the hold
+	} else if (exit.type == LevelExit::WorldMapID) {
+		bWorldMap = true;
 	}
 
 	//Returning to a prior warp location is only possible when one has been defined.
@@ -6728,7 +6947,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		if (!this->pPlayer->st.priorRoomID)
 		{
 			//Nowhere to go.
-			if (wEntrance != (UINT)EXIT_LOOKUP)
+			if (exit.type != LevelExit::StairLookup)
 				return;
 
 			dwEntranceID = EXIT_ENDHOLD; //stairs force ending the hold
@@ -6739,7 +6958,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			//in the editor since the time this game was last played/saved.
 			//
 			//We must be robust to it.
-			if (wEntrance != (UINT)EXIT_LOOKUP)
+			if (exit.type != LevelExit::StairLookup)
 				return; //destination not valid -- don't travel anywhere
 
 			dwEntranceID = EXIT_ENDHOLD; //stairs force ending the hold
@@ -6747,7 +6966,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			//Can't update prior location until we've loaded it in LoadFromLevelEntrance
 			ASSERT(!this->pPendingPriorLocation);
 			CSwordsman& p = *this->pPlayer;
-			if (wEntrance == UINT(EXIT_LOOKUP)) {
+			if (exit.entranceID == UINT(EXIT_LOOKUP)) {
 				this->pPendingPriorLocation = new CMoveCoordEx(
 						p.wPrevX, p.wPrevY, p.wPrevO, this->pRoom->dwRoomID);
 			} else {
@@ -6760,7 +6979,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		CSwordsman& p = *this->pPlayer;
 		PlayerStats& ps = p.st;
 		ps.priorRoomID = this->pRoom->dwRoomID;
-		if (wEntrance == UINT(EXIT_LOOKUP)) {
+		if (exit.type == LevelExit::StairLookup) {
 			ps.priorX = p.wPrevX;
 			ps.priorY = p.wPrevY;
 			ps.priorO = p.wPrevO;
@@ -6771,37 +6990,47 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		}
 	}
 
-	//If no exits, this signifies the end of the hold, i.e.,
-	//If there are no levels to go to next, then the game has been won.
-	CEntranceData *pEntrance = this->pHold->GetEntrance(dwEntranceID);
-	if (pEntrance)
-	{
-		//Send back level to go to next.
-		//ProcessCommand() caller must invoke LoadFromLevelEntrance
-		//to continue play at the appropriate location.
-		CueEvents.Add(CID_ExitLevelPending,
-				new CCoord(dwEntranceID, bSkipEntranceDisplay), true);
+	bool bEndHold = false;
+	if (bWorldMap) {
+		if (this->pHold->DoesWorldMapExist(dwEntranceID)) {
+			CueEvents.Add(CID_ExitToWorldMapPending,
+				new CAttachableWrapper<UINT>(dwEntranceID), true);
+		} else {
+			bEndHold = true;
+		}
 	} else {
-		//Return to the location where the prior Level Entrance script command
-		//was invoked.
-		if (dwEntranceID == (UINT)EXIT_PRIOR_LOCATION)
+		//If no exits, this signifies the end of the hold, i.e.,
+		//If there are no levels to go to next, then the game has been won.
+		CEntranceData* pEntrance = this->pHold->GetEntrance(dwEntranceID);
+		if (pEntrance)
 		{
+			//Send back level to go to next.
 			//ProcessCommand() caller must invoke LoadFromLevelEntrance
 			//to continue play at the appropriate location.
-			ASSERT(this->pPlayer->st.priorRoomID);
-			CueEvents.Add(CID_ExitLevelPending, new CCoord(EXIT_PRIOR_LOCATION, true), true);
+			CueEvents.Add(CID_ExitLevelPending,
+				new CCoord(dwEntranceID, bSkipEntranceDisplay), true);
 		} else {
-			//End the hold.
-
-			//Stop any multi-room demo sequence being recorded.
-//			this->bIsDemoRecording = false;
-
-			CueEvents.Add(CID_WinGame);
-			if (!this->Commands.IsFrozen())
+			//Return to the location where the prior Level Entrance script command
+			//was invoked.
+			if (dwEntranceID == (UINT)EXIT_PRIOR_LOCATION)
 			{
-				++this->pPlayer->st.totalMoves; //Add move before saving.  Another move will be tallied after saving, but it is ignored
-				SaveToEndHold();
+				//ProcessCommand() caller must invoke LoadFromLevelEntrance
+				//to continue play at the appropriate location.
+				ASSERT(this->pPlayer->st.priorRoomID);
+				CueEvents.Add(CID_ExitLevelPending, new CCoord(EXIT_PRIOR_LOCATION, true), true);
+			} else {
+				bEndHold = true;
 			}
+		}
+	}
+
+	if (bEndHold) {
+		//End the hold.
+		CueEvents.Add(CID_WinGame);
+		if (!this->Commands.IsFrozen())
+		{
+			++this->pPlayer->st.totalMoves; //Add move before saving.  Another move will be tallied after saving, but it is ignored
+			SaveToEndHold();
 		}
 	}
 

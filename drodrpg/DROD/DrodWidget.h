@@ -10,7 +10,8 @@ enum DRODWIDGETTYPE
 {
 	WT_Clock = WT_Count,   
 	WT_Face,
-	WT_Map
+	WT_Map,
+	WT_WorldMap,
 };
 
 #endif //#ifndef DRODWIDGET_H

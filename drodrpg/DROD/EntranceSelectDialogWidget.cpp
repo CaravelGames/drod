@@ -116,7 +116,8 @@ CEntranceSelectDialogWidget::CEntranceSelectDialogWidget(
 void CEntranceSelectDialogWidget::AddEntranceToList(CEntranceData *pEntrance)
 {
 	const WSTRING descText = pEntrance->GetPositionDescription();
-	this->pListBoxWidget->AddItem(pEntrance->dwEntranceID, descText.c_str());
+	exitChoices.push_back({ ExitType::ET_Entrance, pEntrance->dwEntranceID });
+	this->pListBoxWidget->AddItemPointer(&exitChoices.back(), descText.c_str());
 }
 
 //*****************************************************************************
@@ -255,6 +256,7 @@ void CEntranceSelectDialogWidget::PrepareToPopulateList(const DATATYPE datatype)
 //Set up widgets in preparation to populate the list and display the dialog.
 {
 	this->pListBoxWidget->Clear();
+	this->exitChoices.clear();
 
 	//Which buttons to show for each view option.
 	bool bShowButtons[3] = {true, false, false}; //OK, DONE, DELETE
@@ -262,6 +264,8 @@ void CEntranceSelectDialogWidget::PrepareToPopulateList(const DATATYPE datatype)
 	{
 		default:
 		case Entrances:
+		case WorldMaps:
+		case EntrancesAndMaps:
 			if (!this->pSourceHold)
 				return;
 		break;
@@ -302,16 +306,47 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 	switch (datatype)
 	{
 		case Entrances:
+		case EntrancesAndMaps:
+		case StairTargets:
 		{
 			//Default choice (end hold).
 			this->pListBoxWidget->SortAlphabetically(false);
-			this->pListBoxWidget->AddItem(EXIT_ENDHOLD, g_pTheDB->GetMessageText(MID_DefaultExit));
-			this->pListBoxWidget->AddItem(EXIT_PRIOR_LOCATION, g_pTheDB->GetMessageText(MID_ReturnToPriorLocation));
+			if (datatype != EntrancesAndMaps) {
+				exitChoices.push_back({ ExitType::ET_Entrance, UINT(EXIT_ENDHOLD) });
+				this->pListBoxWidget->AddItemPointer(&exitChoices.back(), g_pTheDB->GetMessageText(MID_DefaultExit));
+				exitChoices.push_back({ ExitType::ET_Entrance, UINT(EXIT_PRIOR_LOCATION) });
+				this->pListBoxWidget->AddItemPointer(&exitChoices.back(), g_pTheDB->GetMessageText(MID_ReturnToPriorLocation));
+			}
 
 			ENTRANCE_VECTOR entrances;
 			SortEntrances(this->pSourceHold, entrances);
 			for (UINT wIndex=0; wIndex<entrances.size(); ++wIndex)
 				AddEntranceToList(entrances[wIndex]);
+		}
+		//drop through for Entrance + Map case
+		if (datatype == Entrances) {
+			break;
+		}
+
+		case WorldMaps:
+		{
+			this->pListBoxWidget->SortAlphabetically(false);
+			//Get maps.  Sort by order index in hold.
+			SORTED_WORLD_MAPS maps;
+			for (vector<HoldWorldMap>::const_iterator map = this->pSourceHold->worldMaps.begin();
+				map != this->pSourceHold->worldMaps.end(); ++map)
+			{
+				maps.insert(&(*map));
+			}
+
+			for (SORTED_WORLD_MAPS::const_iterator sorted = maps.begin();
+				sorted != maps.end(); ++sorted)
+			{
+				const HoldWorldMap& map = *(*sorted);
+				exitChoices.push_back({ ExitType::ET_WorldMap, map.worldMapID });
+				this->pListBoxWidget->AddItemPointer(
+					&exitChoices.back(), map.nameText.c_str());
+			}
 		}
 		break;
 
@@ -503,6 +538,18 @@ UINT CEntranceSelectDialogWidget::GetSelectedItem() const
 }
 
 //*****************************************************************************
+ExitChoice CEntranceSelectDialogWidget::GetSelectedExitChoice() const
+{
+	void* selectedPointer = this->pListBoxWidget->GetSelectedItemPointer();
+	if (!selectedPointer)
+		return { ET_Entrance, 0 };
+
+	ExitChoice* exitChoice = (ExitChoice*)(selectedPointer);
+	ASSERT(exitChoice);
+	return ExitChoice(exitChoice->exitType, exitChoice->entrance);
+}
+
+//*****************************************************************************
 void CEntranceSelectDialogWidget::PopulateListBoxFromGlobalVars(const PlayerStats& st)
 //Populate the list with the set of global game vars and display their current values.
 {
@@ -570,6 +617,21 @@ void CEntranceSelectDialogWidget::SelectItem(
 }
 
 //*****************************************************************************
+void CEntranceSelectDialogWidget::SelectItem(const ExitChoice& exitChoice)
+{
+	//Find the line corresponding to the key.
+	UINT wSeekLineNo = 0;
+	for (vector<ExitChoice>::const_iterator iter = this->exitChoices.begin();
+		iter != this->exitChoices.end(); ++iter) {
+		if (*iter == exitChoice) {
+			this->pListBoxWidget->SelectLine(wSeekLineNo);
+			return;
+		}
+		++wSeekLineNo;
+	}
+}
+
+//*****************************************************************************
 void CEntranceSelectDialogWidget::SetCurrentGame(CCurrentGame *pGame)
 {
 	this->pCurrentGame = pGame;
@@ -588,4 +650,33 @@ void CEntranceSelectDialogWidget::SetSourceHold(CDbHold *pHold)   //(in)
 {
 	this->pSourceHold = pHold;
 	this->pCurrentGame = NULL;
+}
+
+//*****************************************************************************
+ExitChoice::ExitChoice()
+{
+}
+
+//*****************************************************************************
+ExitChoice::ExitChoice(ExitType exitType, UINT entrance)
+	: exitType(exitType), entrance(entrance)
+{
+}
+
+//*****************************************************************************
+bool ExitChoice::operator==(const ExitChoice& other) const
+{
+	return (this->entrance == other.entrance) &&
+		(this->exitType == other.exitType);
+}
+
+//*****************************************************************************
+UINT ExitChoice::GetForIconCommand() const
+//Returns: Entrance value used in CC_WorldMapIcon or CC_WorldMapImage
+{
+	if (this->exitType == ET_WorldMap) {
+		return LevelExit::ConvertWorldMapID(this->entrance);
+	}
+
+	return this->entrance;
 }

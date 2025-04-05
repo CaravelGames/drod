@@ -850,6 +850,19 @@ void CGameScreen::MarkCurrentEntranceExplored()
 }
 
 //*****************************************************************************
+SCREENTYPE CGameScreen::SelectGotoScreen()
+//When entering a game, which screen should be displayed at first?
+{
+	if (this->pCurrentGame && this->pCurrentGame->OnWorldMap())
+		return SCR_WorldMap;
+
+	if (ShouldShowLevelStart())
+		return SCR_LevelStart;
+
+	return SCR_Game;
+}
+
+//*****************************************************************************
 bool CGameScreen::ShouldShowLevelStart()
 //Used by screen-changing code outside of CGameScreen to determine if the
 //level start screen should be shown before the game screen.
@@ -869,6 +882,24 @@ bool CGameScreen::ShouldShowLevelStart()
 		this->bIsSavedGameStale = true;
 
 	return bShowLevelStart;
+}
+
+//*****************************************************************************
+//Currently, used by CWorldMapScreen to prepare transition to an area.
+void CGameScreen::GotoEntrance(UINT entranceID, ExitType exitType)
+{
+	this->bIsSavedGameStale = false;
+
+	if (exitType == ExitType::ET_WorldMap) {
+		this->pCurrentGame->LoadFromWorldMap(entranceID);
+	} else {
+		this->pCurrentGame->LoadFromLevelEntrance(
+			this->pCurrentGame->pHold->dwHoldID, entranceID, this->sCueEvents);
+	}
+
+	if (this->pCurrentGame->IsRecordingMoves()) {
+		this->pCurrentGame->moves.AppendWorldMapCommand(entranceID, exitType);
+	}
 }
 
 //*****************************************************************************
@@ -5517,6 +5548,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				//If light level is changing, save value for a light fade below.
 				bPlayerDied = this->sCueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
 				if (!bPlayerDied && !this->sCueEvents.HasOccurred(CID_ExitLevelPending) &&
+						!this->sCueEvents.HasOccurred(CID_ExitToWorldMapPending) &&
 						this->pCurrentGame->bIsGameActive &&
 						this->pRoomWidget->IsLightingRendered() &&
 						!this->pCurrentGame->pRoom->weather.bSkipLightfade)
@@ -5567,6 +5599,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 	if (!this->sCueEvents.HasOccurred(CID_ExitLevelPending) &&
 			!this->sCueEvents.HasOccurred(CID_ExitRoomPending) &&
+			!this->sCueEvents.HasOccurred(CID_ExitToWorldMapPending) &&
 			!this->sCueEvents.HasOccurred(CID_ExitRoom))
 		UpdateSound();
 	const Uint32 dwNow = SDL_GetTicks();
@@ -7109,15 +7142,25 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen)
 //Returns: whether the game screen should be exited
 {
+	UINT dwEntranceID = 0;
+	bool bGotoWorldMap = false;
+	bool bSkipEntranceScreen = false;
 	//Check for level exiting.
-	if (!CueEvents.HasOccurred(CID_ExitLevelPending))
-		return false;
-
-	const CCoord *pExitInfo =
+	if (CueEvents.HasOccurred(CID_ExitLevelPending)) {
+		const CCoord* pExitInfo =
 			DYN_CAST(const CCoord*, const CAttachableObject*,
-			CueEvents.GetFirstPrivateData(CID_ExitLevelPending));
-	const UINT dwEntranceID = pExitInfo->wX;
-	const bool bSkipEntranceScreen = pExitInfo->wY != 0;
+				CueEvents.GetFirstPrivateData(CID_ExitLevelPending));
+		dwEntranceID = pExitInfo->wX;
+		bSkipEntranceScreen = pExitInfo->wY != 0;
+	} else if (CueEvents.HasOccurred(CID_ExitToWorldMapPending)) {
+		const CAttachableWrapper<UINT>* pInfo = DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+			CueEvents.GetFirstPrivateData(CID_ExitToWorldMapPending));
+		dwEntranceID = pInfo->data;
+		bGotoWorldMap = true;
+	} else {
+		return false;
+	}
+
 	if (!dwEntranceID)
 		return false; //not a valid event field value -- ignore it
 
@@ -7152,20 +7195,25 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 			Paint();
 	}
 
-	//Fade out when level entrance screen is not shown.
-	CEntranceData *pEntrance = this->pCurrentGame->pHold->GetEntrance(dwEntranceID);
-	bool bShowLevelEntranceDescription =
+	bool bShowLevelEntranceDescription = false;
+	if (bGotoWorldMap) {
+		eNextScreen = SCR_WorldMap;
+	} else {
+		//Fade out when level entrance screen is not shown.
+		CEntranceData* pEntrance = this->pCurrentGame->pHold->GetEntrance(dwEntranceID);
+		bShowLevelEntranceDescription =
 			pEntrance && pEntrance->eShowDescription != CEntranceData::DD_No && !bSkipEntranceScreen;
-	if (pEntrance && pEntrance->eShowDescription == CEntranceData::DD_Once &&
+		if (pEntrance && pEntrance->eShowDescription == CEntranceData::DD_Once &&
 			this->pCurrentGame->entrancesExplored.has(dwEntranceID))
-		bShowLevelEntranceDescription = false; //this entrance has been entered before
-	if (bShowLevelEntranceDescription)
-		eNextScreen = SCR_LevelStart;
-	else
-	{
-		if (eNextScreen == SCR_LevelStart)
-			eNextScreen = SCR_Game;
-		FadeRoom(false, 600, CueEvents);
+			bShowLevelEntranceDescription = false; //this entrance has been entered before
+		if (bShowLevelEntranceDescription)
+			eNextScreen = SCR_LevelStart;
+		else
+		{
+			if (eNextScreen == SCR_LevelStart)
+				eNextScreen = SCR_Game;
+			FadeRoom(false, 600, CueEvents);
+		}
 	}
 
 	//Reset these things.
@@ -7180,6 +7228,12 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 		//Handle uploads before loading new level data so room isn't
 		//redrawn in incorrect style on error.
 		WaitToUploadDemos();
+
+		if (bGotoWorldMap) {
+			this->pCurrentGame->LoadFromWorldMap(dwEntranceID);
+			this->pRoomWidget->ResetRoom();
+			return true;
+		}
 
 		this->pCurrentGame->LoadFromLevelEntrance(this->pCurrentGame->pHold->dwHoldID,
 				dwEntranceID, CueEvents);

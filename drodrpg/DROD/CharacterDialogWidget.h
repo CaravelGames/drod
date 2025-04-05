@@ -116,6 +116,8 @@ private:
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
 	WSTRING GetDataName(const UINT dwID) const;
+	WSTRING GetEntranceName(CEditRoomScreen* pEditRoomScreen, UINT entranceID) const;
+	WSTRING GetWorldMapNameText(CEditRoomScreen* pEditRoomScreen, UINT worldMapID) const;
 	UINT    ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const;
 	void    PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR& commands);
 	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
@@ -199,6 +201,8 @@ private:
 	CListBoxWidget *pMovementTypeListBox;
 	CListBoxWidget* pMapIconListBox, * pMapIconStateListBox;
 	CListBoxWidget* pColorListBox;
+	CListBoxWidget* pWorldMapIconFlagListBox;
+	CListBoxWidget* pWorldMapImageFlagListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

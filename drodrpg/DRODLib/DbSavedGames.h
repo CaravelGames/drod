@@ -55,7 +55,8 @@ enum SAVETYPE
 	ST_ScoreCheckpoint=7, //   ST_SecretConquered=7,  //for uploading to the server
 	ST_Progress=8,         //for uploading player's room tally progress
 	ST_DemoUpload=9,       //tracks demos tested to upload for high-score submission (2.0; deprecated)
-	ST_PlayerTotal=10      //contains set of all rooms ever explored/conquered
+	ST_PlayerTotal=10,     //contains set of all rooms ever explored/conquered
+	ST_WorldMap = 11,        //saved on entering a world map
 };
 
 enum MapState
@@ -143,12 +144,15 @@ public:
 			char* const str, CImportInfo &info);
 	virtual bool   Update();
 
+	bool           OnWorldMap() const { return worldMapID != 0; }
+
 	//Read/write UINT and UINT shaped types to/from buffer
 	static UINT  readBpUINT(const BYTE* buffer, UINT& index);
 	static void  writeBpUINT(string& buffer, UINT n);
 
 	UINT     dwSavedGameID;
 	UINT     dwRoomID;
+	UINT     worldMapID; //While set, level/room/entrance data structures in play are ignored.
 	UINT     dwPlayerID;
 	bool     bIsHidden;
 
@@ -189,6 +193,8 @@ public:
 	typedef map<UINT, map<int, int>> ScriptArrayMap;
 	ScriptArrayMap scriptArrays; //unpacked hold array var values
 
+	WorldMapsIcons worldMapIcons;
+
 	//Version info.
 	UINT     wVersionNo;
 	string   checksumStr;
@@ -205,6 +211,7 @@ private:
 	void     SaveEntrancesExplored(c4_View &EntrancesExploredView) const;
 	void     SaveExploredRooms(c4_View &ExploredRoomsView) const;
 	void     SaveMonsters(c4_View &MonstersView, CMonster *pMonsterList) const;
+	void     SaveWorldMapIcons(c4_View& WorldMapIconsView) const;
 	void     SerializeScriptArrays();
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();
@@ -251,6 +258,7 @@ public:
 	UINT        FindByName(const UINT eSavetype, const UINT holdID, const UINT playerID, const WSTRING *pName=NULL);
 	UINT        FindByRoomLatest(const UINT dwRoomID);
 	UINT        FindByType(const SAVETYPE eType, const UINT dwPlayerID=0, const bool bBackwardsSearch=true);
+	UINT        FindByHoldWorldMap(const UINT holdID, const UINT worldMapID);
 	void        FindHiddens(const bool bFlag);
 	UINT        FindIdenticalSave(const CDbSavedGame& that);
 
@@ -263,6 +271,7 @@ public:
 	static UINT GetScore(const PlayerStats& st);
 	static UINT CalculateStatScore(const int stat, const int scoreMultiplier);
 	static SAVETYPE GetType(const UINT savedGameID);
+	static UINT GetWorldMapID(const UINT savedGameID);
 
 	static bool RenameSavedGame(const UINT savedGameID, const WSTRING& name);
 	UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);

@@ -486,6 +486,9 @@
     <ClInclude Include="I18N.h">
       <Filter>General</Filter>
     </ClInclude>
+    <ClInclude Include="CurrentGameRecords.h">
+      <Filter>General</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VTune\DRODLib.vpj" />

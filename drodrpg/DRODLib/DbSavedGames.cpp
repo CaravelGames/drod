@@ -331,19 +331,28 @@ bool CDbSavedGame::Load(
 	ASSERT(this->dwSavedGameID == dwLoadSavedGameID);
 	this->dwPlayerID = (UINT) (p_PlayerID(row));
 	this->dwRoomID = (UINT) (p_RoomID(row));
+	this->worldMapID = (UINT)(p_WorldMapID(row));
 	this->eType = (SAVETYPE) (int) p_Type(row);
 	this->bIsHidden = ( p_IsHidden(row)!=0 );
 
 	if (!this->dwRoomID && this->eType != ST_DemoUpload && //Placeholder record.
-			this->eType != ST_PlayerTotal)
-		throw CException("CDbSavedGame::Load");
+		this->eType != ST_PlayerTotal) {
+		if (this->eType == ST_WorldMap) {
+			if (!OnWorldMap())
+				throw CException("CDbSavedGame::Load -- No World Map");
+		} else {
+			throw CException("CDbSavedGame::Load");
+		}
+	}
 
 	this->bPartialLoad = bQuick;
 	if (!bQuick)
 	{
-		c4_View ExploredRoomsView, CompletedScriptsView, EntrancesExploredView;
+		c4_View ExploredRoomsView, CompletedScriptsView, EntrancesExploredView,
+			WorldMapIconsView;
 		c4_Bytes checksumStrBytes = (c4_Bytes)p_ChecksumStr(row);
-		UINT dwScriptI, dwScriptCount, entranceI, entrancesExploredCount;
+		UINT dwScriptI, dwScriptCount, entranceI, entrancesExploredCount,
+			iconI, worldMapIconsCount;
 
 		this->wStartRoomX = (UINT) p_StartRoomX(row);
 		this->wStartRoomY = (UINT) p_StartRoomY(row);
@@ -381,6 +390,24 @@ bool CDbSavedGame::Load(
 				(const char*)checksumStrBytes.Contents(), checksumStrBytes.Size());
 		if (!g_pTheNet->VerifyChecksum(this))
 			this->checksumStr.resize(0);
+
+		WorldMapIconsView = p_WorldMapIcons(row);
+		worldMapIconsCount = WorldMapIconsView.GetSize();
+		for (iconI = 0; iconI < worldMapIconsCount; ++iconI)
+		{
+			c4_RowRef row = WorldMapIconsView[iconI];
+
+			const UINT worldMapID = UINT(p_WorldMapID(row));
+			this->worldMapIcons[worldMapID].push_back(WorldMapIcon(
+				UINT(p_EntranceID(row)),
+				UINT(p_X(row)),
+				UINT(p_Y(row)),
+				UINT(p_CharID(row)),
+				UINT(p_ImageID(row)),
+				UINT(p_Flags(row)),
+				ExitType(int(p_ExitType(row)))
+			));
+		}
 	}
 
 	}
@@ -814,6 +841,9 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 				bSaveRecord = false;
 			}
 			break;
+		case P_WorldMapID:
+			this->worldMapID = convertToUINT(str);
+			break;
 		case P_Type:
 			this->eType = static_cast<SAVETYPE>(convertToInt(str));
 			if (!this->dwRoomID)
@@ -821,7 +851,7 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 				//2.0.9: A zero room ID is valid for some saved game types.
 				//For other types, a zero ID indicates records for this room are
 				//being ignored -- don't save this game.
-				if (this->eType != ST_PlayerTotal)
+				if (this->eType != ST_PlayerTotal && this->eType != ST_WorldMap)
 					bSaveRecord = false;
 			}
 			if (info.typeBeingImported == CImportInfo::SavedGame || info.typeBeingImported == CImportInfo::Player)
@@ -1232,6 +1262,60 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 					return MID_FileCorrupted;
 			}
 			break;
+		case VP_WorldMapIcons:
+			switch (pType)
+			{
+				case P_Start:
+					info.importWorldMapIcon.clear();
+					break;
+				case P_WorldMapID:
+					info.importWorldMapID = convertToUINT(str);
+					break;
+				case P_EntranceID:
+					info.importWorldMapIcon.entranceID = convertToUINT(str);
+					break;
+				case P_ExitType:
+					info.importWorldMapIcon.exitType = ExitType(convertToUINT(str));
+					break;
+				case P_X:
+					info.importWorldMapIcon.xPos = convertToUINT(str);
+					break;
+				case P_Y:
+					info.importWorldMapIcon.yPos = convertToUINT(str);
+					break;
+				case P_CharID:
+					info.importWorldMapIcon.charID = convertToUINT(str);
+					break;
+				case P_ImageID:
+				{
+					UINT& imageID = info.importWorldMapIcon.imageID = convertToUINT(str);
+					if (imageID)
+					{
+						//Set to local ID.
+						PrimaryKeyMap::const_iterator localID = info.DataIDMap.find(imageID);
+						if (localID == info.DataIDMap.end()) {
+#ifdef STEAMBUILD
+							imageID = 0; //probably dangling DLC reference
+							break;
+#else
+							return MID_FileCorrupted;  //record should have been loaded already
+#endif
+						}
+						imageID = localID->second;
+				}
+			}
+			break;
+			case P_Flags:
+				info.importWorldMapIcon.displayFlags = convertToUINT(str);
+				break;
+			case P_End:
+				//Finish processing
+				this->worldMapIcons[info.importWorldMapID].push_back(info.importWorldMapIcon);
+				break;
+			default:
+				return MID_FileCorrupted;
+			}
+			break;
 		default:
 			return MID_FileCorrupted;
 	}
@@ -1265,6 +1349,7 @@ void CDbSavedGame::Clear(
 	const bool bNewGame)  //(in)   whether new game is starting [default=true]
 {
 	this->dwRoomID=this->dwSavedGameID=0L;
+	this->worldMapID = 0;
 	this->bIsHidden=false;
 	this->wStartRoomX=this->wStartRoomY=this->wStartRoomO=0;
 	this->wStartRoomAppearance = defaultPlayerType(); //use default value
@@ -1288,6 +1373,8 @@ void CDbSavedGame::Clear(
 		deleteMonsterList(this->pMonsterList);
 		deleteMonsterList(this->pMonsterListAtRoomStart);
 		this->pMonsterList = this->pMonsterListAtRoomStart = NULL;
+
+		this->worldMapIcons.clear();
 
 		this->wVersionNo = 0;
 		this->checksumStr.resize(0);
@@ -1489,6 +1576,38 @@ const
 }
 
 //*****************************************************************************
+void CDbSavedGame::SaveWorldMapIcons(c4_View& WorldMapIconsView) const
+{
+	UINT wSize = 0;
+	WorldMapsIcons::const_iterator iter;
+	for (iter = this->worldMapIcons.begin(); iter != this->worldMapIcons.end(); ++iter)
+		wSize += iter->second.size();
+	WorldMapIconsView.SetSize(wSize);
+
+	UINT wCount = 0;
+	for (iter = this->worldMapIcons.begin(); iter != this->worldMapIcons.end(); ++iter)
+	{
+		const UINT worldMapID = iter->first;
+		const WorldMapIcons& icons = iter->second;
+		for (WorldMapIcons::const_iterator iconIt = icons.begin();
+			iconIt != icons.end(); ++iconIt, ++wCount) {
+			const WorldMapIcon& icon = *iconIt;
+
+			c4_RowRef row = WorldMapIconsView[wCount];
+
+			p_WorldMapID(row) = worldMapID;
+			p_EntranceID(row) = icon.entranceID;
+			p_ExitType(row) = icon.exitType;
+			p_X(row) = icon.xPos;
+			p_Y(row) = icon.yPos;
+			p_CharID(row) = icon.charID;
+			p_ImageID(row) = icon.charID ? 0 : icon.imageID; //only one can be set
+			p_Flags(row) = icon.displayFlags;
+		}
+	}
+}
+
+//*****************************************************************************
 void CDbSavedGame::SerializeScriptArrays()
 //Converts script arrays into byte buffers that can be stored in CDbPackedVars
 //Note: deserialization is done in CCurrentGame, as it requires hold information
@@ -1545,6 +1664,9 @@ bool CDbSavedGame::UpdateNew()
 	c4_View MonstersView;
 	SaveMonsters(MonstersView, this->pMonsterListAtRoomStart);
 
+	c4_View WorldMapIconsView;
+	SaveWorldMapIcons(WorldMapIconsView);
+
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
 	BYTE *pbytStatsBytes = this->stats.GetPackedBuffer(dwStatsSize);
@@ -1571,6 +1693,7 @@ bool CDbSavedGame::UpdateNew()
 	p_SavedGameID(row) = this->dwSavedGameID;
 	p_PlayerID(row) = this->dwPlayerID;
 	p_RoomID(row) = this->dwRoomID;
+	p_WorldMapID(row) = this->worldMapID;
 	p_Type(row) = this->eType;
 	p_IsHidden(row) = this->bIsHidden;
 	p_LastUpdated(row) = UINT(this->LastUpdated);
@@ -1583,6 +1706,7 @@ bool CDbSavedGame::UpdateNew()
 	p_CompletedScripts(row) = CompletedScriptsView;
 	p_EntrancesExplored(row) = EntrancesExploredView;
 	p_Monsters(row) = MonstersView;
+	p_WorldMapIcons(row) = WorldMapIconsView;
 	p_Created(row) = UINT(this->Created);
 	p_Commands(row) = CommandsBytes;
 	p_Stats(row) = StatsBytes;
@@ -1635,6 +1759,9 @@ bool CDbSavedGame::UpdateExisting()
 	c4_View MonstersView;
 	SaveMonsters(MonstersView, this->pMonsterListAtRoomStart);
 
+	c4_View WorldMapIconsView;
+	SaveWorldMapIcons(WorldMapIconsView);
+
 	SerializeScriptArrays();
 
 	//Get stats into a buffer that can be written to db.
@@ -1656,6 +1783,7 @@ bool CDbSavedGame::UpdateExisting()
 	p_SavedGameID(row) = this->dwSavedGameID;
 	p_PlayerID(row) = this->dwPlayerID;
 	p_RoomID(row) = this->dwRoomID;
+	p_WorldMapID(row) = this->worldMapID;
 	p_Type(row) = this->eType;
 	p_IsHidden(row) = this->bIsHidden;
 	p_LastUpdated(row) = UINT(this->LastUpdated);
@@ -1668,6 +1796,7 @@ bool CDbSavedGame::UpdateExisting()
 	p_CompletedScripts(row) = CompletedScriptsView;
 	p_EntrancesExplored(row) = EntrancesExploredView;
 	p_Monsters(row) = MonstersView;
+	p_WorldMapIcons(row) = WorldMapIconsView;
 	p_Created(row) = UINT(this->Created);
 	p_Commands(row) = CommandsBytes;
 	p_Stats(row) = StatsBytes;
@@ -1696,6 +1825,7 @@ bool CDbSavedGame::SetMembers(
 	//primitive types
 	this->dwSavedGameID = Src.dwSavedGameID;
 	this->dwRoomID = Src.dwRoomID;
+	this->worldMapID = Src.worldMapID;
 	this->dwPlayerID = Src.dwPlayerID;
 	this->bIsHidden = Src.bIsHidden;
 	this->eType = Src.eType;
@@ -1708,6 +1838,7 @@ bool CDbSavedGame::SetMembers(
 	//object members
 	DeleteExploredRooms();
 	this->ExploredRooms = GetCopyOfExploredRooms(Src.ExploredRooms);
+	this->worldMapIcons = Src.worldMapIcons;
 
 	//Monster data
 	deleteMonsterList(this->pMonsterList);
@@ -1972,6 +2103,20 @@ void CDbSavedGames::ExportXML(
 		g_pTheDB->Rooms.ExportXML(*iter, dbRefs, str, true);
 */
 
+//Also include refs to world map image dataIDs.
+	for (WorldMapsIcons::const_iterator iter = pSavedGame->worldMapIcons.begin();
+		iter != pSavedGame->worldMapIcons.end(); ++iter)
+	{
+		const WorldMapIcons& icons = iter->second;
+		for (WorldMapIcons::const_iterator iconIt = icons.begin();
+			iconIt != icons.end(); ++iconIt)
+		{
+			const WorldMapIcon& icon = *iconIt;
+			if (icon.imageID && !icon.charID)
+				g_pTheDB->Data.ExportXML(icon.imageID, dbRefs, str, true);
+		}
+	}
+
 	//Prepare data.
 	char dummy[32];
 
@@ -1979,6 +2124,8 @@ void CDbSavedGames::ExportXML(
 	str += INT32TOSTR(pSavedGame->dwPlayerID);
 	str += PROPTAG(P_RoomID);
 	str += INT32TOSTR(pSavedGame->dwRoomID);
+	str += PROPTAG(P_WorldMapID);
+	str += INT32TOSTR(pSavedGame->worldMapID);
 	str += PROPTAG(P_Type);
 	str += INT32TOSTR(pSavedGame->eType);
 /*
@@ -2134,6 +2281,49 @@ void CDbSavedGames::ExportXML(
 			//CDbSavedGame::LoadMonster sets ExtraVars; don't call SetExtraVarsForExport here
 			pMonster->ExportXML(str);
 			pMonster = pMonster->pNext;
+		}
+
+		if (pSavedGame->worldMapIcons.empty()) {
+			str += CLOSETAG;
+		} else {
+			str += CLOSESTARTTAG;
+
+			for (WorldMapsIcons::const_iterator iter = pSavedGame->worldMapIcons.begin();
+				iter != pSavedGame->worldMapIcons.end(); ++iter)
+			{
+				const UINT worldMapID = iter->first;
+				const WorldMapIcons& icons = iter->second;
+				for (WorldMapIcons::const_iterator iconIt = icons.begin();
+					iconIt != icons.end(); ++iconIt)
+				{
+					WorldMapIcon icon = *iconIt;
+					if (icon.imageID && !g_pTheDB->Data.Exists(icon.imageID)) {
+						//if dangling image ID, then display a default tile icon instead
+						icon.imageID = 0;
+						//don't need to change displayFlags:
+						//all image display flags are supported by tile icons
+					}
+
+					str += STARTVPTAG(VP_WorldMapIcons, P_WorldMapID);
+					str += INT32TOSTR(worldMapID);
+					str += PROPTAG(P_EntranceID);
+					str += INT32TOSTR(icon.entranceID);
+					str += PROPTAG(P_X);
+					str += INT32TOSTR(icon.xPos);
+					str += PROPTAG(P_Y);
+					str += INT32TOSTR(icon.yPos);
+					if (icon.charID) {
+						str += PROPTAG(P_CharID);
+						str += INT32TOSTR(icon.charID);
+					} else if (icon.imageID) {
+						str += PROPTAG(P_ImageID);
+						str += INT32TOSTR(icon.imageID);
+					}
+					str += PROPTAG(P_Flags);
+					str += INT32TOSTR(icon.displayFlags);
+					str += CLOSETAG;
+				}
+			}
 		}
 
 		str += ENDTAG(V_SavedGames);
@@ -2307,7 +2497,7 @@ UINT CDbSavedGames::SaveNewContinue(const UINT dwPlayerID, const UINT type) //[d
 {
 	CDbSavedGame *pSavedGame = g_pTheDB->SavedGames.GetNew();
 	pSavedGame->dwPlayerID = dwPlayerID;
-	pSavedGame->dwRoomID = 0;
+	pSavedGame->dwRoomID = pSavedGame->worldMapID = 0;
 	pSavedGame->eType = SAVETYPE(type);
 	pSavedGame->bIsHidden = true;
 	pSavedGame->wStartRoomX = 0;
@@ -2662,6 +2852,39 @@ UINT CDbSavedGames::FindByType(
 }
 
 //*****************************************************************************
+UINT CDbSavedGames::FindByHoldWorldMap(const UINT holdID, const UINT worldMapID)
+{
+	ASSERT(holdID);
+	ASSERT(worldMapID);
+	ASSERT(IsOpen());
+
+	const UINT dwCurrentPlayerID = g_pTheDB->GetPlayerID();
+	ASSERT(dwCurrentPlayerID);
+
+	const CIDSet savedGamesInHold = CDb::getSavedGamesInHold(holdID);
+
+	//Each iteration looks at one saved game record for a match.
+	c4_View SavedGamesView;
+	for (CIDSet::const_iterator savedGame = savedGamesInHold.begin();
+		savedGame != savedGamesInHold.end(); ++savedGame)
+	{
+		const UINT dwSavedGameI = LookupRowByPrimaryKey(*savedGame, V_SavedGames, SavedGamesView);
+		c4_RowRef row = SavedGamesView[dwSavedGameI];
+		ASSERT(dwSavedGameI != ROW_NO_MATCH);
+		if (dwSavedGameI == ROW_NO_MATCH)
+			continue; //robustness guard
+
+		if (SAVETYPE(int(p_Type(row))) != ST_WorldMap)
+			continue;
+		if (((UINT)p_WorldMapID(row)) != worldMapID)
+			continue;
+		if (UINT(p_PlayerID(row)) == dwCurrentPlayerID)
+			return UINT(p_SavedGameID(row)); //Found it.
+	}
+	return 0;  //Didn't find it.
+}
+
+//*****************************************************************************
 UINT CDbSavedGames::GetHoldIDofSavedGame(
 //Get the ID of the hold a saved game belongs to.
 //
@@ -2866,6 +3089,18 @@ SAVETYPE CDbSavedGames::GetType(const UINT savedGameID)
 		return ST_Unknown;
 
 	return SAVETYPE(int(p_Type(SavedGamesView[dwSavedGameI])));
+}
+
+//*******************************************************************************
+UINT CDbSavedGames::GetWorldMapID(const UINT savedGameID)
+{
+	c4_View SavedGamesView;
+	const UINT dwSavedGameI = LookupRowByPrimaryKey(savedGameID,
+		V_SavedGames, SavedGamesView);
+	if (dwSavedGameI == ROW_NO_MATCH)
+		return 0;
+
+	return SAVETYPE(UINT(p_WorldMapID(SavedGamesView[dwSavedGameI])));
 }
 
 //******************************************************************************

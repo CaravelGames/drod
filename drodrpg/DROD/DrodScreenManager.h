@@ -56,7 +56,8 @@ enum SCREENTYPE
 	SCR_Browser,
 	SCR_Sell,
 	SCR_Mod,
-	SCR_Chat
+	SCR_Chat,
+	SCR_WorldMap
 };
 
 //Cursor icons.

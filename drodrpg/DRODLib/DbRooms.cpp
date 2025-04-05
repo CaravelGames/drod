@@ -530,6 +530,8 @@ void CDbRooms::ExportXML(
 			str += INT32TOSTR(pExit->wTop);
 			str += PROPTAG(P_Bottom);
 			str += INT32TOSTR(pExit->wBottom);
+			str += PROPTAG(P_ExitType);
+			str += INT32TOSTR(pExit->exitType);
 			str += CLOSETAG;
 		}
 
@@ -1633,6 +1635,9 @@ MESSAGE_ID CDbRoom::SetProperty(
 						pImportExit = NULL;
 						return MID_FileCorrupted;
 					}
+					break;
+				case P_ExitType:
+					pImportExit->exitType = ExitType(convertToInt(str));
 					break;
 				case P_End:
 					//Finish processing
@@ -5415,6 +5420,33 @@ const
 }
 
 //*****************************************************************************
+//Returns: true if a level exit at (wX,wY) was found
+//
+//Params:
+bool CDbRoom::GetExitEntranceInfoAt(
+	const UINT wX, const UINT wY, //(in)
+	UINT& dwEntranceID, //(out) entranceID for the exit at (wX,wY), else 0L if none.
+	ExitType& exitType //(out) exit type for the exit at (wX,wY), else ET_Entrance if none.
+) const
+{
+	for (UINT i = 0; i < this->Exits.size(); ++i)
+	{
+		const CExitData& stairs = *(this->Exits[i]);
+		if (wX >= stairs.wLeft && wX <= stairs.wRight &&
+			wY >= stairs.wTop && wY <= stairs.wBottom)
+		{
+			dwEntranceID = stairs.dwEntranceID;
+			exitType = stairs.exitType;
+			return true;
+		}
+	}
+
+	dwEntranceID = 0L;
+	exitType = ET_Entrance;
+	return false;
+}
+
+//*****************************************************************************
 void CDbRoom::FindOrbsToOpenDoor(CCoordSet& orbs, CCoordSet& doorSquares) const
 {
 	COrbData *pOrb;
@@ -5448,7 +5480,8 @@ void CDbRoom::SetExit(
 //
 //Params:
 	const UINT dwEntranceID,
-	const UINT wX, const UINT wY, const UINT wX2, const UINT wY2)
+	const UINT wX, const UINT wY, const UINT wX2, const UINT wY2,
+	ExitType exitType)
 {
 	ASSERT(bIsStairs(GetOSquare(wX,wY)));
 
@@ -5461,6 +5494,7 @@ void CDbRoom::SetExit(
 		{
 			//Modify existing exit's value.
 			pStairs->dwEntranceID = dwEntranceID;
+			pStairs->exitType = exitType;
 
 			//Ensure boundaries include those passed in.
 			if (wX < pStairs->wLeft)
@@ -5480,7 +5514,7 @@ void CDbRoom::SetExit(
 	ASSERT(wX2 < this->wRoomCols);
 	ASSERT(wY2 < this->wRoomRows);
 
-	CExitData *pNewExit = new CExitData(dwEntranceID, wX, wX2, wY, wY2);
+	CExitData *pNewExit = new CExitData(dwEntranceID, wX, wX2, wY, wY2, exitType);
 	this->Exits.push_back(pNewExit);
 }
 
@@ -7186,7 +7220,8 @@ bool CDbRoom::LoadExits(
 		c4_RowRef row = ExitsView[wExitI];
 		CExitData *pExit = new CExitData(p_EntranceID(row),
 				p_Left(row), p_Right(row),
-				p_Top(row), p_Bottom(row));
+				p_Top(row), p_Bottom(row),
+				ExitType(int(p_ExitType(row))));
 		if (!pExit) {bSuccess = false; goto Cleanup;}
 		this->Exits.push_back(pExit);
 	}
@@ -9213,6 +9248,7 @@ const
 		p_Right(row) = exitData.wRight;
 		p_Top(row) = exitData.wTop;
 		p_Bottom(row) = exitData.wBottom;
+		p_ExitType(row) = exitData.exitType;
 	}
 }
 

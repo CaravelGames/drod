@@ -574,6 +574,19 @@ bool CDrodFontManager::LoadFonts()
 	GetWordWidth(F_DamagePreviewLarge, wszSpace, wSpaceWidth);
 	this->LoadedFonts[F_DamagePreviewLarge].wSpaceWidth = wSpaceWidth;
 
+	//Load world map font.
+	pFont = GetFont(wstrFont2Filepath, 22);
+	if (!pFont) return false;
+	this->LoadedFonts[F_WorldMapLevel].pTTFFont = pFont;
+	this->LoadedFonts[F_WorldMapLevel].wLineSkipHeight = GetFontHeight(F_WorldMapLevel);
+	this->LoadedFonts[F_WorldMapLevel].wSpaceWidth = 5;
+	this->LoadedFonts[F_WorldMapLevel].ForeColor = AlmostWhite;
+	this->LoadedFonts[F_WorldMapLevel].BackColor = DarkGray;
+	this->LoadedFonts[F_WorldMapLevel].bAntiAlias = true;
+	this->LoadedFonts[F_WorldMapLevel].bOutline = true;
+	this->LoadedFonts[F_WorldMapLevel].OutlineColor = Black;
+	this->LoadedFonts[F_WorldMapLevel].wOutlineWidth = 2;
+
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG
 	for (UINT wFontI = 0; wFontI < F_Last; ++wFontI)

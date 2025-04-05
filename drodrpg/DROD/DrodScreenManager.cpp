@@ -47,6 +47,7 @@
 #include "SettingsScreen.h"
 #include "TitleScreen.h"
 #include "WinStartScreen.h"
+#include "WorldMapScreen.h"
 #include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
@@ -108,6 +109,7 @@ void CDrodScreenManager::GetScreenName(const UINT eScreen, string &strName) cons
 		case SCR_Sell:            strName = "Sell"; return;
 		case SCR_Mod:             strName = "Mod"; return;
 		case SCR_Chat:            strName = "Chat"; return;
+		case SCR_WorldMap:        strName = "WorldMap"; return;
 		default:                  strName = "Unknown"; ASSERT(!"Bad screen type."); return;
 	}
 }
@@ -240,6 +242,9 @@ CScreen* CDrodScreenManager::GetNewScreen(
 
 		case SCR_Chat:
 			return new CChatScreen;
+
+		case SCR_WorldMap:
+			return new CWorldMapScreen;
 
 		default:
 			ASSERT(!"Bad screen type.");
