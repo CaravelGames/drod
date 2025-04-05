@@ -6139,7 +6139,7 @@ void CRoomWidget::AddColorToTile(
 	const int nXOffset, const int nYOffset) //relative offset [default=(0,0)]
 {
 	//Apply optional hue change
-	if (hsv[0] || hsv[1] || hsv[2])
+	if (hsv[0] >= 0 || hsv[1] >= 0 || hsv[2] >= 0)
 	{
 		g_pTheBM->HsvToRectWithTileMask(pDestSurface,
 			nPixelX + nXOffset, nPixelY + nYOffset, wWidth, wHeight,
