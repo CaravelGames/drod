@@ -46,5 +46,5 @@ void CGoblin::Process(
 	FaceTarget();
 
 	if (AttackPlayerInFrontWhenBackIsTurned(CueEvents))
-		CueEvents.Add(CID_GoblinAttacks);
+		CueEvents.Add(CID_EnemySneakAttack);
 }

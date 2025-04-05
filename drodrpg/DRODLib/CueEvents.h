@@ -191,10 +191,10 @@ enum CUEEVENT_ID
 	//Private data: CDbMessageText *pScrollText (one)
 	CID_StepOnScroll,
 
-	//A goblin attacks the player from behind.
+	//An enemy attacks the player from behind.
 	//
 	//Private data: NONE
-	CID_GoblinAttacks,
+	CID_EnemySneakAttack,
 
 	//A score checkpoint is triggered.
 	//

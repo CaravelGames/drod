@@ -3771,8 +3771,9 @@ Finish:
 
 			if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
 			{
-				this->bAttacked = true;
 				this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+				if (this->bAttacked)
+					CueEvents.Add(CID_EnemySneakAttack);
 			}
 		}
 	}

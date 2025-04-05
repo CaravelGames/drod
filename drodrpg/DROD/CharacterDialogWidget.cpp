@@ -4419,7 +4419,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_FuseBurning, g_pTheDB->GetMessageText(MID_FuseBurning));
 	this->pEventListBox->AddItem(CID_GelBabyFormed, g_pTheDB->GetMessageText(MID_GelBabyFormed));
 //	this->pEventListBox->AddItem(CID_GelGrew, g_pTheDB->GetMessageText(MID_GelGrew));
-	this->pEventListBox->AddItem(CID_GoblinAttacks, g_pTheDB->GetMessageText(MID_GoblinAttacks));
+	this->pEventListBox->AddItem(CID_EnemySneakAttack, g_pTheDB->GetMessageText(MID_EnemySneakAttack));
 	this->pEventListBox->AddItem(CID_HitObstacle, g_pTheDB->GetMessageText(MID_HitObstacle));
 	this->pEventListBox->AddItem(CID_ItemUsed, g_pTheDB->GetMessageText(MID_ItemUsed));
 	this->pEventListBox->AddItem(CID_Jump, g_pTheDB->GetMessageText(MID_PlayerJumped));
