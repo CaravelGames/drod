@@ -255,6 +255,17 @@ namespace ScriptFlag
 		LC_Violet = 15,
 		LC_Azure = 16
 	};
+
+	//World map icons
+	enum WorldMapFlags {
+		WMI_Off = 0,        //remove icon when no flags are set
+		WMI_On = 1,         //basic display
+		WMI_LevelState = 2, //display supplemental level state on icon
+		WMI_Cleared = 3,    //display clear state on icon
+		WMI_Disabled = 4,   //disabled area
+		WMI_Locked = 5,     //locked area
+		WMI_NoLabel = 6,    //disabled area with no label shown
+	};
 };
 
 typedef bool (*TileCheckFunc)(UINT t);
@@ -367,6 +378,11 @@ public:
 		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
 		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
 		CC_AttackTile,          //Attack the entity at (x,y) with a power of (w) ATK. Ignores DEF if (h) is set
+		CC_WorldMapSelect,      //Sets the world map that other world map commands operate on to X.
+		CC_WorldMapMusic,       //Sets the music to be played to X (optionally, custom Y/label).
+		CC_WorldMapIcon,        //Places an icon on the world map at (x,y), to level entrance (w), displayed as character type (h), of display type (flags).
+		CC_WorldMapImage,       //Places an icon on the world map at (x,y), to level entrance (w), displayed as image (h), of display type (flags).
+		CC_GoToWorldMap,        //Takes player to world map X.
 		CC_Count
 	};
 
@@ -395,6 +411,16 @@ public:
 	bool IsAllowedInLogicBlock() const {
 		return command == CC_LogicalWaitEnd ||
 			IsLogicalWaitCommand() || IsLogicalWaitCondition();
+	}
+
+	bool IsMusicCommand() const {
+		switch (command) {
+		case CC_SetMusic:
+		case CC_WorldMapMusic:
+			return true;
+		default:
+			return false;
+		}
 	}
 
 	// If the command has a variable reference, return it. Otherwise returns zero.

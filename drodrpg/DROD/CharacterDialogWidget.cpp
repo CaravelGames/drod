@@ -167,6 +167,12 @@ const UINT TAG_MAP_ICON_STATE_LISTBOX = 883;
 const UINT TAG_MAP_ICON_LISTBOX = 882;
 const UINT TAG_COLOR_LISTBOX = 881;
 const UINT TAG_NO_DEF_LABEL = 880;
+const UINT TAG_ICONDISPLAY = 879;
+const UINT TAG_IMAGEDISPLAY = 878;
+const UINT TAG_X_COORD = 877;
+const UINT TAG_Y_COORD = 876;
+const UINT TAG_X_COORD_LABEL = 875;
+const UINT TAG_Y_COORD_LABEL = 874;
 
 const UINT MAX_TEXT_LABEL_SIZE = 100;
 
@@ -417,6 +423,8 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pMovementTypeListBox(NULL)
 	, pMapIconListBox(NULL), pMapIconStateListBox(NULL)
 	, pColorListBox(NULL)
+	, pWorldMapIconFlagListBox(NULL)
+	, pWorldMapImageFlagListBox(NULL)
 
 	, pCharacter(NULL)
 	, pCommand(NULL)
@@ -1241,6 +1249,33 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT COLORLISTBOX_CX = CX_DIRECTIONLISTBOX2;
 	static const UINT COLORLISTBOX_CY = 17 * LIST_LINE_HEIGHT + 4; //17 entries
 
+	//World map input.
+	static const int X_XCOORDLABEL = X_GRAPHICLISTBOX2 + CX_GRAPHICLISTBOX2 + CX_SPACE;
+	static const int Y_XCOORDLABEL = Y_WAITLABEL;
+	static const UINT CX_XCOORDLABEL = 100;
+	static const UINT CY_XCOORDLABEL = CY_WAITLABEL;
+
+	static const int X_XCOORD = X_XCOORDLABEL;
+	static const int Y_XCOORD = Y_XCOORDLABEL + CY_XCOORDLABEL;
+	static const UINT CX_XCOORD = 60;
+	static const UINT CY_XCOORD = CY_WAIT;
+
+	static const int X_YCOORDLABEL = X_XCOORDLABEL + CX_XCOORDLABEL;
+	static const int Y_YCOORDLABEL = Y_XCOORDLABEL;
+	static const UINT CX_YCOORDLABEL = CX_XCOORDLABEL;
+	static const UINT CY_YCOORDLABEL = CY_XCOORDLABEL;
+
+	static const int X_YCOORD = X_YCOORDLABEL;
+	static const int Y_YCOORD = Y_YCOORDLABEL + CY_YCOORDLABEL;
+	static const UINT CX_YCOORD = CX_XCOORD;
+	static const UINT CY_YCOORD = CY_XCOORD;
+
+	static const int X_ICONDISPLAY_LISTBOX = X_XCOORD;
+	static const int Y_ICONDISPLAY_LISTBOX = Y_XCOORD + CY_XCOORD + CY_SPACE;
+	static const UINT CX_ICONDISPLAY_LISTBOX = 120;
+	static const UINT CY_ICONDISPLAY_LISTBOX = 6 * LIST_LINE_HEIGHT + 4;
+	static const UINT CY_IMAGEDISPLAY_LISTBOX = 5 * LIST_LINE_HEIGHT + 4;
+
 	ASSERT(!this->pAddCommandDialog);
 	this->pAddCommandDialog = new CRenameDialogWidget(0L, -80, GetY() + (GetH()-CY_COMMAND_DIALOG)/2,
 			CX_COMMAND_DIALOG, CY_COMMAND_DIALOG);
@@ -1755,6 +1790,24 @@ void CCharacterDialogWidget::AddCommandDialog()
 	pRelY->SetText(wszZero);
 	this->pAddCommandDialog->AddWidget(pRelY);
 
+	//(x,y) coords
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_X_COORD_LABEL, X_XCOORDLABEL,
+		Y_XCOORDLABEL, CX_XCOORDLABEL, CY_XCOORDLABEL, F_Small,
+		g_pTheDB->GetMessageText(MID_X_Coord)));
+	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_Y_COORD_LABEL, X_YCOORDLABEL,
+		Y_YCOORDLABEL, CX_YCOORDLABEL, CY_YCOORDLABEL, F_Small,
+		g_pTheDB->GetMessageText(MID_Y_Coord)));
+	pRelX = new CTextBoxWidget(TAG_X_COORD, X_XCOORD, Y_XCOORD,
+		CX_XCOORD, CY_XCOORD, 4);
+	pRelX->SetDigitsOnly(true);
+	pRelX->SetText(wszZero);
+	this->pAddCommandDialog->AddWidget(pRelX);
+	pRelY = new CTextBoxWidget(TAG_Y_COORD, X_YCOORD, Y_YCOORD,
+		CX_YCOORD, CY_YCOORD, 3);
+	pRelY->SetDigitsOnly(true);
+	pRelY->SetText(wszZero);
+	this->pAddCommandDialog->AddWidget(pRelY);
+
 	//Sounds.
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_LOOPSOUND, X_LOOPSOUND,
 			Y_LOOPSOUND, CX_LOOPSOUND, CY_LOOPSOUND, F_Small,
@@ -1862,6 +1915,30 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pColorListBox->AddItem(ScriptFlag::LC_Turquoise, g_pTheDB->GetMessageText(MID_Turquoise));
 	this->pColorListBox->AddItem(ScriptFlag::LC_Violet, g_pTheDB->GetMessageText(MID_Violet));
 	this->pColorListBox->AddItem(ScriptFlag::LC_Azure, g_pTheDB->GetMessageText(MID_Azure));
+
+	//World map icon display flags list box.
+	this->pWorldMapIconFlagListBox = new CListBoxWidget(TAG_ICONDISPLAY,
+		X_ICONDISPLAY_LISTBOX, Y_ICONDISPLAY_LISTBOX, CX_ICONDISPLAY_LISTBOX, CY_ICONDISPLAY_LISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pWorldMapIconFlagListBox);
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_Off, g_pTheDB->GetMessageText(MID_WMI_Off));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_On, g_pTheDB->GetMessageText(MID_WMI_On));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_LevelState, g_pTheDB->GetMessageText(MID_WMI_LevelState));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_Cleared, g_pTheDB->GetMessageText(MID_WMI_Cleared));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_Locked, g_pTheDB->GetMessageText(MID_WMI_Locked));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_Disabled, g_pTheDB->GetMessageText(MID_WMI_Disabled));
+	this->pWorldMapIconFlagListBox->AddItem(ScriptFlag::WMI_NoLabel, g_pTheDB->GetMessageText(MID_WMI_NoLabel));
+	this->pWorldMapIconFlagListBox->SelectLine(0);
+
+	//World map image display flags list box.
+	this->pWorldMapImageFlagListBox = new CListBoxWidget(TAG_IMAGEDISPLAY,
+		X_ICONDISPLAY_LISTBOX, Y_ICONDISPLAY_LISTBOX, CX_ICONDISPLAY_LISTBOX, CY_IMAGEDISPLAY_LISTBOX);
+	this->pAddCommandDialog->AddWidget(this->pWorldMapImageFlagListBox);
+	this->pWorldMapImageFlagListBox->AddItem(ScriptFlag::WMI_Off, g_pTheDB->GetMessageText(MID_WMI_Off));
+	this->pWorldMapImageFlagListBox->AddItem(ScriptFlag::WMI_On, g_pTheDB->GetMessageText(MID_WMI_On));
+	this->pWorldMapImageFlagListBox->AddItem(ScriptFlag::WMI_Locked, g_pTheDB->GetMessageText(MID_WMI_Locked));
+	this->pWorldMapImageFlagListBox->AddItem(ScriptFlag::WMI_Disabled, g_pTheDB->GetMessageText(MID_WMI_Disabled));
+	this->pWorldMapImageFlagListBox->AddItem(ScriptFlag::WMI_NoLabel, g_pTheDB->GetMessageText(MID_WMI_NoLabel));
+	this->pWorldMapImageFlagListBox->SelectLine(0);
 
 	//Attack tile no enemy defense label.
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_NO_DEF_LABEL, X_SINGLESTEPLABEL,
@@ -3712,14 +3789,96 @@ const
 				wstr += wszRightParen;
 				wstr += wszSpace;
 			}
-			if (!pEntrance)
-			{
-				wstr += g_pTheDB->GetMessageText(command.x == (UINT)EXIT_PRIOR_LOCATION ?
-						MID_ReturnToPriorLocation : MID_DefaultExit);
+			wstr += GetEntranceName(pEditRoomScreen, command.x);
+		}
+		break;
+
+		case CCharacterCommand::CC_GoToWorldMap:
+		case CCharacterCommand::CC_WorldMapSelect:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+
+			wstr += GetWorldMapNameText(pEditRoomScreen, command.x);
+		}
+		break;
+		case CCharacterCommand::CC_WorldMapMusic:
+			if (command.label.size())
+				wstr += command.label;
+			else if (int(command.x) == SONGID_CUSTOM)
+				wstr += GetDataName(command.y);
+			else
+				wstr += this->pMusicListBox->GetTextForKey(command.x);
+			break;
+
+		case CCharacterCommand::CC_WorldMapIcon:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+
+			const bool bEntranceOff = command.flags == ScriptFlag::WMI_Off;
+			if (!bEntranceOff) {
+				const WSTRING charName = this->pPlayerGraphicListBox->GetTextForKey(command.h);
+				wstr += charName.length() ? charName : wszQuestionMark;
+				wstr += wszSpace;
+			}
+
+			const WSTRING displayFlag = this->pWorldMapIconFlagListBox->GetTextForKey(command.flags);
+			wstr += displayFlag.length() ? displayFlag : wszQuestionMark;
+			wstr += wszSpace;
+
+			if (!bEntranceOff) {
+				wstr += g_pTheDB->GetMessageText(MID_At);
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += _itoW((int)command.x, temp, 10);
+				wstr += wszComma;
+				wstr += _itoW((int)command.y, temp, 10);
+				wstr += wszRightParen;
+				wstr += wszSpace;
+			}
+
+			wstr += g_pTheDB->GetMessageText(MID_To);
+			wstr += wszSpace;
+			if (LevelExit::IsWorldMapID(command.w)) {
+				wstr += GetWorldMapNameText(pEditRoomScreen, LevelExit::ConvertWorldMapID(command.w));
 			} else {
-				wstr += wszQuote;
-				wstr += pEntrance->GetPositionDescription();
-				wstr += wszQuote;
+				wstr += GetEntranceName(pEditRoomScreen, command.w);
+			}
+		}
+		break;
+		case CCharacterCommand::CC_WorldMapImage:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+
+			const bool bEntranceOff = command.flags == ScriptFlag::WMI_Off;
+			if (!bEntranceOff) {
+				wstr += GetDataName(command.h);
+				wstr += wszSpace;
+			}
+
+			const WSTRING displayFlag = this->pWorldMapImageFlagListBox->GetTextForKey(command.flags);
+			wstr += displayFlag.length() ? displayFlag : wszQuestionMark;
+			wstr += wszSpace;
+
+			if (!bEntranceOff) {
+				wstr += g_pTheDB->GetMessageText(MID_At);
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += _itoW((int)command.x, temp, 10);
+				wstr += wszComma;
+				wstr += _itoW((int)command.y, temp, 10);
+				wstr += wszRightParen;
+				wstr += wszSpace;
+			}
+
+			wstr += g_pTheDB->GetMessageText(MID_To);
+			wstr += wszSpace;
+			if (LevelExit::IsWorldMapID(command.w)) {
+				wstr += GetWorldMapNameText(pEditRoomScreen, LevelExit::ConvertWorldMapID(command.w));
+			} else {
+				wstr += GetEntranceName(pEditRoomScreen, command.w);
 			}
 		}
 		break;
@@ -4041,6 +4200,44 @@ WSTRING CCharacterDialogWidget::GetDataName(const UINT dwID) const
 }
 
 //*****************************************************************************
+WSTRING CCharacterDialogWidget::GetEntranceName(
+	CEditRoomScreen* pEditRoomScreen,
+	UINT entranceID)
+	const
+{
+	WSTRING wstr;
+	CEntranceData* pEntrance = pEditRoomScreen->pHold->GetEntrance(entranceID);
+	if (!pEntrance) {
+		wstr += g_pTheDB->GetMessageText(entranceID == (UINT)EXIT_PRIOR_LOCATION ?
+			MID_ReturnToPriorLocation : MID_DefaultExit);
+	} else {
+		wstr += wszQuote;
+		wstr += pEntrance->GetPositionDescription();
+		wstr += wszQuote;
+	}
+	
+	return wstr;
+}
+
+WSTRING CCharacterDialogWidget::GetWorldMapNameText(CEditRoomScreen* pEditRoomScreen, UINT worldMapID) const
+{
+	WSTRING wstr;
+
+	ASSERT(pEditRoomScreen->pHold);
+
+	const WSTRING name = pEditRoomScreen->pHold->GetWorldMapName(worldMapID);
+	if (name.empty()) {
+		wstr += wszQuestionMark;
+	}
+	else {
+		wstr += wszQuote;
+		wstr += name;
+		wstr += wszQuote;
+	}
+	return wstr;
+}
+
+//*****************************************************************************
 UINT CCharacterDialogWidget::ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const
 //Extracts command's indent size from the command listbox text
 {
@@ -4152,6 +4349,11 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_SetCeilingLight:
 		case CCharacterCommand::CC_SetWallLight:
 		case CCharacterCommand::CC_AttackTile:
+		case CCharacterCommand::CC_WorldMapSelect:
+		case CCharacterCommand::CC_WorldMapMusic:
+		case CCharacterCommand::CC_WorldMapIcon:
+		case CCharacterCommand::CC_WorldMapImage:
+		case CCharacterCommand::CC_GoToWorldMap:
 			if (bLastWasIfCondition || wLogicNestDepth)
 				wstr += wszQuestionMark;	//questionable If condition
 		break;
@@ -4333,6 +4535,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GenerateEntity, g_pTheDB->GetMessageText(MID_GenerateEntity));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoSub, g_pTheDB->GetMessageText(MID_GoSub));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_GoToWorldMap, g_pTheDB->GetMessageText(MID_GoToWorldMap));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
@@ -4390,6 +4593,11 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetWallLight, g_pTheDB->GetMessageText(MID_SetWallLight));
+
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapIcon, g_pTheDB->GetMessageText(MID_WorldMapIcon));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapImage, g_pTheDB->GetMessageText(MID_WorldMapImage));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapMusic, g_pTheDB->GetMessageText(MID_WorldMapMusic));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_WorldMapSelect, g_pTheDB->GetMessageText(MID_WorldMapSelect));
 
 	this->pActionListBox->SelectLine(0);
 	this->pActionListBox->SetAllowFiltering(true);
@@ -5231,7 +5439,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 {
 	//Code is structured in this way to facilitate quick addition of
 	//additional action parameters.
-	static const UINT NUM_WIDGETS = 47;
+	static const UINT NUM_WIDGETS = 51;
 	static const UINT widgetTag[NUM_WIDGETS] = {
 		TAG_WAIT, TAG_EVENTLISTBOX, TAG_DELAY, TAG_SPEECHTEXT,
 		TAG_SPEAKERLISTBOX, TAG_MOODLISTBOX, TAG_ADDSOUND, TAG_TESTSOUND, TAG_DIRECTIONLISTBOX,
@@ -5246,7 +5454,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_VISUALEFFECTS_LISTBOX, TAG_DIRECTIONLISTBOX3, TAG_ONOFFLISTBOX3,
 		TAG_TEXT2, TAG_STATLISTBOX, TAG_MOVETYPELISTBOX, TAG_VARCOMPLIST2, TAG_IMAGEOVERLAYTEXT,
 		TAG_ARRAYVARLIST, TAG_ARRAYVAROPLIST, TAG_ARRAYVAR_REMOVE, TAG_ITEM_GROUP_LISTBOX,
-		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, TAG_COLOR_LISTBOX
+		TAG_MAP_ICON_STATE_LISTBOX, TAG_MAP_ICON_LISTBOX, TAG_COLOR_LISTBOX,
+		TAG_ICONDISPLAY, TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD
 	};
 
 	static const UINT NO_WIDGETS[] =  {0};
@@ -5270,7 +5479,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT IMPERATIVE[] =  { TAG_IMPERATIVELISTBOX, 0 };
 	static const UINT ANSWER[] =      { TAG_GOTOLABELTEXT, TAG_GOTOLABELLISTBOX, 0 };
 	static const UINT ITEMS[] =       { TAG_ITEMLISTBOX, 0 };
-	static const UINT XY[] =          { TAG_MOVERELX, TAG_MOVERELY, 0};
+	static const UINT XY[] =          { TAG_X_COORD, TAG_Y_COORD, 0};
 	static const UINT BEHAVIOR[] =    { TAG_BEHAVIORLISTBOX, 0 };
 	static const UINT EQUIPMENT[] =   { TAG_EQUIPMENTTYPE_LISTBOX, TAG_CUSTOMNPC_LISTBOX, TAG_EQUIPTRANS_LISTBOX, 0};
 	static const UINT NEWENTITY[] =   { TAG_GRAPHICLISTBOX2, TAG_DIRECTIONLISTBOX2, 0 };
@@ -5287,6 +5496,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CEILINGLIGHT[] = { TAG_COLOR_LISTBOX, 0 };
 	static const UINT WALLLIGHT[] = { TAG_WAIT, TAG_COLOR_LISTBOX, 0 };
 	static const UINT ATTACKTILE[] = { TAG_WAIT, TAG_ONOFFLISTBOX2, 0 };
+	static const UINT WORLD_MAP_ICON[] = { TAG_GRAPHICLISTBOX2, TAG_ICONDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0 };
+	static const UINT WORLD_MAP_IMAGE[] = { TAG_IMAGEDISPLAY, TAG_X_COORD, TAG_Y_COORD, 0 };
 
 	static const UINT* activeWidgets[CCharacterCommand::CC_Count] = {
 		NO_WIDGETS,
@@ -5380,10 +5591,15 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		WAIT,               //CC_SetDarkness
 		CEILINGLIGHT,       //CC_SetCeilingLight
 		WALLLIGHT,          //CC_SetWallLight
-		ATTACKTILE          //CC_AttackTile
+		ATTACKTILE,         //CC_AttackTile
+		NO_WIDGETS,         //CC_WorldMapSelect
+		MUSIC,              //CC_WorldMapMusic
+		WORLD_MAP_ICON,     //CC_WorldMapIcon
+		WORLD_MAP_IMAGE,    //CC_WorldMapImage
+		NO_WIDGETS          //CC_GoToWorldMap
 	};
 
-	static const UINT NUM_LABELS = 32;
+	static const UINT NUM_LABELS = 34;
 	static const UINT labelTag[NUM_LABELS] = {
 		TAG_EVENTLABEL, TAG_WAITLABEL, TAG_DELAYLABEL, TAG_SPEAKERLABEL,
 		TAG_MOODLABEL, TAG_TEXTLABEL, TAG_DIRECTIONLABEL, TAG_SOUNDNAME_LABEL,
@@ -5392,7 +5608,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, TAG_LOOPSOUND, TAG_WAITABSLABEL,
 		TAG_SKIPENTRANCELABEL, TAG_DIRECTIONLABEL2, TAG_SOUNDEFFECTLABEL, TAG_ROOMREVEALLABEL,
 		TAG_COLOR_LABEL, TAG_VALUE_OR_EXPRESSION, TAG_IMAGEOVERLAY_LABEL, TAG_ARRAYINDEX_LABEL,
-		TAG_ARRAYVAR_TEXTLABEL, TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, TAG_NO_DEF_LABEL
+		TAG_ARRAYVAR_TEXTLABEL, TAG_IGNOREFLAGS_LABEL, TAG_IGNOREWEAPONS_LABEL, TAG_NO_DEF_LABEL,
+		TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL
 	};
 
 	static const UINT NO_LABELS[NUM_LABELS] =      {0};
@@ -5412,7 +5629,7 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 	static const UINT CUTSCENE_L[NUM_LABELS] =     { TAG_CUTSCENELABEL, 0 };
 	static const UINT MOVEREL_L[NUM_LABELS] =      { TAG_NOTURNING, TAG_SINGLESTEP, TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, 0 };
 	static const UINT LOOPSOUND_L[NUM_LABELS] =    { TAG_LOOPSOUND, 0 };
-	static const UINT XY_L[NUM_LABELS] =           { TAG_MOVERELXLABEL, TAG_MOVERELYLABEL, 0 };
+	static const UINT XY_L[NUM_LABELS] =           { TAG_X_COORD_LABEL, TAG_Y_COORD_LABEL, 0 };
 	static const UINT SKIPENTRANCE_L[NUM_LABELS] = { TAG_SKIPENTRANCELABEL, 0 };
 	static const UINT NEWENTITY_L[NUM_LABELS] =    { TAG_DIRECTIONLABEL2, 0 };
 	static const UINT EFFECT_L[NUM_LABELS] =       { TAG_SOUNDEFFECTLABEL, 0 };
@@ -5517,6 +5734,11 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		NO_LABELS,          //CC_SetCeilingLight
 		NO_LABELS,          //CC_SetWallLight
 		ATTACKTILE_L,       //CC_AttackTile
+		NO_LABELS,          //CC_WorldMapSelect
+		MUSIC_L,            //CC_WorldMapMusic
+		XY_L,               //CC_WorldMapIcon
+		XY_L,               //CC_WorldMapImage
+		NO_LABELS,          //CC_GoToWorldMap
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6101,6 +6323,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 
 		case CCharacterCommand::CC_SetMusic:
+		case CCharacterCommand::CC_WorldMapMusic:
 			//Either music ID or name is set.
 			this->pCommand->x = this->pMusicListBox->GetSelectedItem();
 			this->pCommand->label = wszEmpty;
@@ -6266,6 +6489,106 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				if (!this->bEditingCommand)
 					delete this->pCommand;
 				this->pCommand = NULL;
+			}
+		}
+		break;
+
+		case CCharacterCommand::CC_GoToWorldMap:
+		case CCharacterCommand::CC_WorldMapSelect:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+			ASSERT(pEditRoomScreen->pHold);
+			ExitChoice exitChoice = { ExitType::ET_WorldMap, this->pCommand->x };
+			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
+				exitChoice, MID_SelectWorldMapPrompt, CEntranceSelectDialogWidget::WorldMaps) != CEntranceSelectDialogWidget::OK)
+			{
+				RollbackCommand();
+				break;
+			}
+			this->pCommand->x = exitChoice.entrance;
+			if (this->pCommand->x) {
+				AddCommand();
+			} else {
+				//No map specified.  Don't add the command.
+				RollbackCommand();
+			}
+		}
+		break;
+		case CCharacterCommand::CC_WorldMapIcon:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+			ASSERT(pEditRoomScreen->pHold);
+
+			ExitChoice exitChoice;
+			if (LevelExit::IsWorldMapID(this->pCommand->w)) {
+				exitChoice = { ExitType::ET_WorldMap, LevelExit::ConvertWorldMapID(this->pCommand->w) };
+			} else {
+				exitChoice = { ExitType::ET_Entrance, this->pCommand->w };
+			}
+			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
+				exitChoice, MID_SelectWorldMapPrompt, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
+			{
+				CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+					this->pAddCommandDialog->GetWidget(TAG_X_COORD));
+				ASSERT(pRel);
+				this->pCommand->x = (UINT)(_Wtoi(pRel->GetText()));
+
+				pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+					this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
+				ASSERT(pRel);
+				this->pCommand->y = (UINT)(_Wtoi(pRel->GetText()));
+
+				this->pCommand->w = exitChoice.GetForIconCommand();
+				this->pCommand->h = this->pPlayerGraphicListBox->GetSelectedItem();
+				this->pCommand->flags = this->pWorldMapIconFlagListBox->GetSelectedItem();
+				AddCommand();
+			}
+		}
+		break;
+		case CCharacterCommand::CC_WorldMapImage:
+		{
+			CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+				g_pTheSM->GetScreen(SCR_EditRoom));
+			ASSERT(pEditRoomScreen->pHold);
+
+			const UINT dwFlag = this->pWorldMapImageFlagListBox->GetSelectedItem();
+			UINT dwMedia = 0;
+			if (dwFlag != ScriptFlag::WMI_Off)
+			{
+				dwMedia = pEditRoomScreen->SelectMediaID(this->pCommand->h, CSelectMediaDialogWidget::Images);
+				if (!dwMedia) {
+					//Don't add the command.
+					RollbackCommand();
+					break;
+				}
+			}
+
+			ExitChoice exitChoice;
+			if (LevelExit::IsWorldMapID(this->pCommand->w)) {
+				exitChoice = { ExitType::ET_WorldMap, LevelExit::ConvertWorldMapID(this->pCommand->w) };
+			}
+			else {
+				exitChoice = { ExitType::ET_Entrance, this->pCommand->w };
+			}
+			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
+				exitChoice, MID_SelectWorldMapPrompt, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
+			{
+				CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+					this->pAddCommandDialog->GetWidget(TAG_X_COORD));
+				ASSERT(pRel);
+				this->pCommand->x = (UINT)(_Wtoi(pRel->GetText()));
+
+				pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+					this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
+				ASSERT(pRel);
+				this->pCommand->y = (UINT)(_Wtoi(pRel->GetText()));
+
+				this->pCommand->w = exitChoice.GetForIconCommand();
+				this->pCommand->h = dwMedia;
+				this->pCommand->flags = dwFlag;
+				AddCommand();
 			}
 		}
 		break;
@@ -6477,11 +6800,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			if (dwVal)
 			{
 				CTextBoxWidget *pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
-						this->pAddCommandDialog->GetWidget(TAG_MOVERELX));
+						this->pAddCommandDialog->GetWidget(TAG_X_COORD));
 				ASSERT(pRel);
 				this->pCommand->x = (UINT)pRel->GetNumber();
 				pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
-						this->pAddCommandDialog->GetWidget(TAG_MOVERELY));
+						this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
 				ASSERT(pRel);
 				this->pCommand->y = (UINT)pRel->GetNumber();
 
@@ -6659,6 +6982,42 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pOnOffListBox->SelectItem(this->pCommand->y);
 		break;
 
+		case CCharacterCommand::CC_WorldMapSelect:
+		case CCharacterCommand::CC_GoToWorldMap:
+			break;
+
+		case CCharacterCommand::CC_WorldMapIcon:
+		{
+			CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_X_COORD));
+			ASSERT(pRel);
+			pRel->SetText(_itoW((int)this->pCommand->x, temp, 10));
+
+			pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
+			ASSERT(pRel);
+			pRel->SetText(_itoW((int)this->pCommand->y, temp, 10));
+
+			this->pPlayerGraphicListBox->SelectItem(this->pCommand->h);
+			this->pWorldMapIconFlagListBox->SelectItem(this->pCommand->flags);
+		}
+		break;
+		case CCharacterCommand::CC_WorldMapImage:
+		{
+			CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_X_COORD));
+			ASSERT(pRel);
+			pRel->SetText(_itoW((int)this->pCommand->x, temp, 10));
+
+			pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
+				this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
+			ASSERT(pRel);
+			pRel->SetText(_itoW((int)this->pCommand->y, temp, 10));
+
+			this->pWorldMapImageFlagListBox->SelectItem(this->pCommand->flags);
+		}
+		break;
+
 		case CCharacterCommand::CC_FaceDirection:
 		case CCharacterCommand::CC_WaitForPlayerToFace:
 		case CCharacterCommand::CC_WaitForPlayerToMove:
@@ -6689,6 +7048,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 
 		case CCharacterCommand::CC_SetMusic:
+		case CCharacterCommand::CC_WorldMapMusic:
 			if ((int)this->pCommand->x < SONGID_COUNT)
 				this->pMusicListBox->SelectItem(this->pCommand->x);
 			else if (this->pCommand->x == static_cast<UINT>(SONGID_CUSTOM))
@@ -6942,11 +7302,11 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_PlayVideo:
 		{
 			CTextBoxWidget *pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
-					this->pAddCommandDialog->GetWidget(TAG_MOVERELX));
+					this->pAddCommandDialog->GetWidget(TAG_X_COORD));
 			ASSERT(pRel);
 			pRel->SetText(_itoW((int)this->pCommand->x, temp, 10));
 			pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
-					this->pAddCommandDialog->GetWidget(TAG_MOVERELY));
+					this->pAddCommandDialog->GetWidget(TAG_Y_COORD));
 			ASSERT(pRel);
 			pRel->SetText(_itoW((int)this->pCommand->y, temp, 10));
 		}
@@ -7362,6 +7722,35 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->y);
 	break;
 
+	case CCharacterCommand::CC_WorldMapSelect:
+	case CCharacterCommand::CC_GoToWorldMap:
+		parseNumber(pCommand->x);
+	break;
+
+	case CCharacterCommand::CC_WorldMapIcon:
+		parseMandatoryOption(pCommand->h, this->pPlayerGraphicListBox, bFound);
+		skipComma;
+		parseMandatoryOption(pCommand->flags, this->pWorldMapIconFlagListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseNumber(pCommand->w); skipComma;
+	break;
+	case CCharacterCommand::CC_WorldMapImage:
+		parseNumber(pCommand->h); skipComma;
+		parseMandatoryOption(pCommand->flags, this->pWorldMapImageFlagListBox, bFound);
+		skipComma;
+		skipLeftParen;
+		parseNumber(pCommand->x); skipComma;
+		parseNumber(pCommand->y);
+		skipRightParen;
+		skipComma;
+		parseNumber(pCommand->w); skipComma;
+	break;
+
 	case CCharacterCommand::CC_Equipment:
 		skipLeftParen;
 		parseNumber(pCommand->w); skipComma;
@@ -7647,6 +8036,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	break;
 
 	case CCharacterCommand::CC_SetMusic:
+	case CCharacterCommand::CC_WorldMapMusic:
 		skipLeftParen;
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->w); skipComma;
@@ -8088,6 +8478,43 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNum(c.y);
 	break;
+
+	case CCharacterCommand::CC_WorldMapSelect:
+	case CCharacterCommand::CC_GoToWorldMap:
+		concatNum(c.x);
+	break;
+
+	case CCharacterCommand::CC_WorldMapIcon:
+	{
+		const WSTRING charName = this->pPlayerGraphicListBox->GetTextForKey(c.h);
+		wstr += charName.length() ? charName : wszQuestionMark;
+		wstr += wszComma;
+
+		const WSTRING flag = this->pWorldMapIconFlagListBox->GetTextForKey(c.flags);
+		wstr += flag.length() ? flag : wszQuestionMark;
+		wstr += wszComma;
+
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+
+		concatNum(c.w);
+	}
+	break;
+	case CCharacterCommand::CC_WorldMapImage:
+	{
+		concatNumWithComma(c.h);
+
+		const WSTRING flag = this->pWorldMapImageFlagListBox->GetTextForKey(c.flags);
+		wstr += flag.length() ? flag : wszQuestionMark;
+		wstr += wszComma;
+
+		concatNumWithComma(c.x);
+		concatNumWithComma(c.y);
+
+		concatNum(c.w);
+	}
+	break;
+
 	case CCharacterCommand::CC_AddRoomToMap:
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
@@ -8337,6 +8764,7 @@ WSTRING CCharacterDialogWidget::toText(
 	break;
 
 	case CCharacterCommand::CC_SetMusic:
+	case CCharacterCommand::CC_WorldMapMusic:
 		if (c.label.size())
 		{
 			concatNumWithComma(0); //x==0

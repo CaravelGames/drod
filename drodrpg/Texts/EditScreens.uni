@@ -24,11 +24,11 @@ Nouvelle Oubliette
 
 [MID_NewLevel]
 [eng]
-New &Level
+(add new level)
 [fra]
-Nouveau Niveau
+(ajouter un nouveau niveau)
 [rus]
-Новый &Уровень
+(добавить новый уровень)
 
 [MID_AddRoomPrompt]
 [eng]
@@ -1381,3 +1381,43 @@ Leather Shield
 [MID_Shield9]
 [eng]
 Aluminum Shield
+
+[MID_LevelSelectTab]
+[eng]
+Levels
+
+[MID_WorldMapSelectTab]
+[eng]
+Maps
+
+[MID_WorldMapSetImage]
+[eng]
+Image
+
+[MID_NewWorldMapPrompt]
+[eng]
+(add new world map)
+
+[MID_NameWorldMap]
+[eng]
+Please name this world map.
+
+[MID_DeleteWorldMapPrompt]
+[eng]
+Are you sure you want to permanently delete this world map?
+
+[MID_WorldMapSettings]
+[eng]
+Map display type
+
+[MID_WorldMapNoLabels]
+[eng]
+No labels
+
+[MID_WorldMapShowLabels]
+[eng]
+Labels
+
+[MID_WorldMapDisplayLabelsWhenExplored]
+[eng]
+Labels when explored

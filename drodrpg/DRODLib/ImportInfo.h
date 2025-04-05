@@ -127,6 +127,10 @@ public:
 	HoldCharacter importChar;
 //	CEntranceData *pEntrance; //single level entrance (1.6, deprecated since 2.0)
 	CEntranceData *pImportEntrance; //hold entrances
+
+	HoldWorldMap importWorldMap;
+	UINT importWorldMapID;
+	WorldMapIcon importWorldMapIcon;
 };
 
 #endif //...#ifndef IMPORTINFO_H

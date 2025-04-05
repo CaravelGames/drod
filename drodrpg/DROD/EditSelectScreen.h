@@ -33,6 +33,7 @@
 class CDbHold;
 class CDbLevel;
 class CDbRoom;
+class CImageWidget;
 class CListBoxWidget;
 class CMapWidget;
 class CMoveCoord;
@@ -59,6 +60,7 @@ protected:
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 private:
+	virtual void   OnBetweenEvents();
 	virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
@@ -76,6 +78,9 @@ private:
 	bool     SelectFirstHold();
 	bool     SelectHold(const UINT dwHoldID, const bool bLoadHoldRecordOnly=false);
 
+	void     AddNewLevelLineToLevelList();
+	void     AddNewMapLineToMapList();
+
 	UINT     AddLevel();
 	void     DeleteLevel();
 	void     MakeLevelFirst();
@@ -90,10 +95,19 @@ private:
 	void     SetSelectedRoom(CDbRoom *pRoom);
 	void     SetRoomStyle(const WCHAR* pwStyle);
 
+	UINT     AddWorldMap();
+	void     DeleteWorldMap();
+	void     RenameWorldMap();
+	bool     SelectFirstWorldMap();
+	bool     SelectWorldMap(const UINT dwWorldMapID);
+	bool     SetImageWorldMap();
+	void     DrawScaledWorldMapImage();
+
 	bool     PasteLevel();
 	void     PopulateLevelListBox();
 	void     PopulateHoldListBox();
 	void     PopulateStyleListBox();
+	void     PopulateWorldMapListBox();
 	void     ReflectLevelX();
 	void     ReflectLevelY();
 	void     RotateLevelC();
@@ -106,6 +120,7 @@ private:
 	CListBoxWidget *  pHoldListBoxWidget;
 	CListBoxWidget *  pStyleListBoxWidget;
 	CEntranceSelectDialogWidget * pEntranceBox;     //choose from list of levels
+	CListBoxWidget* pWorldMapListBoxWidget;
 	CTextBoxWidget *pLevelMultiplier;
 
 	//Currently selected hold/level/room.
@@ -114,13 +129,16 @@ private:
 	CDbRoom *         pSelectedRoom;
 	vector<CMoveCoord*> LevelEntrances;  //level entrances in the current room
 	UINT dwPrevHoldID;
+	UINT selectedWorldMapID;
 
 	CDbLevel *        pLevelCopy; //level being cut/copied
+	bool              addLevelAfterEvents, addWorldMapAfterEvents;
 
 	//Level/room display.
 	CMapWidget *      pMapWidget;
 	CEditRoomWidget * pRoomWidget;
-	CScalerWidget *   pScaledRoomWidget;
+	CScalerWidget *   pScaledRoomWidget, *pScaledWorldMapWidget;
+	CImageWidget* pWorldMapImage;
 };
 
 #endif //...#ifndef EDITSELECTSCREEN_H

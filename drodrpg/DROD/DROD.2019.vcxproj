@@ -607,6 +607,8 @@
     <ClCompile Include="WadeEffect.cpp" />
     <ClCompile Include="WeatherDialogWidget.cpp" />
     <ClCompile Include="WinStartScreen.cpp" />
+    <ClCompile Include="WorldMapScreen.cpp" />
+    <ClCompile Include="WorldMapWidget.cpp" />
     <ClCompile Include="ZombieGazeEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -687,6 +689,8 @@
     <ClInclude Include="WadeEffect.h" />
     <ClInclude Include="WeatherDialogWidget.h" />
     <ClInclude Include="WinStartScreen.h" />
+    <ClInclude Include="WorldMapScreen.h" />
+    <ClInclude Include="WorldMapWidget.h" />
     <ClInclude Include="ZombieGazeEffect.h" />
   </ItemGroup>
   <ItemGroup>

@@ -61,7 +61,6 @@ public:
 	virtual ~CEditRoomScreen();
 
 	static void    FillInRoomEdges(CDbRoom* const pRoom);
-	UINT    ImportHoldImage(const UINT extensionFlags=EXT_JPEG|EXT_PNG);
 	UINT    ImportHoldSound();
 	UINT    ImportHoldVideo();
 
@@ -73,6 +72,11 @@ public:
 	UINT     GetTestPlayerID() const {return this->dwTestPlayerID;}
 
 	UINT     SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
+
+	CEntranceSelectDialogWidget::BUTTONTYPE
+		SelectEntrance(CEntranceSelectDialogWidget* pEntranceBox,
+			CDbHold* pHold, ExitChoice& exitChoice, const MESSAGE_ID messagePromptID,
+			const CEntranceSelectDialogWidget::DATATYPE datatype = CEntranceSelectDialogWidget::Entrances);
 
 protected:
 	friend class CDrodScreenManager;

@@ -62,11 +62,13 @@ DEFPROP(c4_BytesProp,   DataNameText);
 DEFPROP(c4_IntProp,     Delay);
 DEFPROP(c4_IntProp,     DemoID);
 DEFPROP(c4_IntProp,     DescriptionMessageID);
+DEFPROP(c4_IntProp,     DisplayType);
 DEFPROP(c4_IntProp,     EditingPrivileges);
 DEFPROP(c4_IntProp,     EMailMessageID); //deprecated
 DEFPROP(c4_IntProp,     EndHoldMessageID);
 DEFPROP(c4_IntProp,     EndTurnNo);
 DEFPROP(c4_IntProp,     EntranceID);
+DEFPROP(c4_IntProp,     ExitType);
 DEFPROP(c4_BytesProp,   ExtraVars);
 DEFPROP(c4_IntProp,     Flags);
 DEFPROP(c4_IntProp,     GID_Created);
@@ -76,6 +78,7 @@ DEFPROP(c4_IntProp,     GID_OriginalNameMessageID);
 DEFPROP(c4_IntProp,     GID_PlayerID);
 DEFPROP(c4_IntProp,     HighScoreID);
 DEFPROP(c4_IntProp,     HoldID);
+DEFPROP(c4_IntProp,     ImageID);
 DEFPROP(c4_IntProp,     ImageStartX);
 DEFPROP(c4_IntProp,     ImageStartY);
 //DEFPROP(c4_IntProp,     IsFirstTurn);
@@ -140,6 +143,8 @@ DEFPROP(c4_IntProp,     Type);
 DEFPROP(c4_IntProp,     VarID);
 DEFPROP(c4_BytesProp,   VarNameText);
 DEFPROP(c4_IntProp,     Version);
+DEFPROP(c4_IntProp,     WorldMapID);
+DEFPROP(c4_BytesProp,   WorldMapNameText);
 DEFPROP(c4_IntProp,     X);
 DEFPROP(c4_IntProp,     Y);
 
@@ -160,6 +165,8 @@ DEFPROP(c4_ViewProp, Scrolls);
 DEFPROP(c4_ViewProp, Pieces);
 DEFPROP(c4_ViewProp, PlatformDeltas);
 DEFPROP(c4_ViewProp, Vars);
+DEFPROP(c4_ViewProp, WorldMaps);
+DEFPROP(c4_ViewProp, WorldMapIcons);
 
 //This view has records for all ID keys.
 DEFTDEF(INCREMENTEDIDS_VIEWDEF,
@@ -238,7 +245,8 @@ DEFTDEF(ROOMS_VIEWDEF,
 				"Left:I,"
 				"Right:I,"
 				"Top:I,"
-				"Bottom:I"
+				"Bottom:I,"
+				"ExitType:I"
 			"],"
 			"ExtraVars:B"
 		"]");
@@ -249,6 +257,7 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 			"SavedGameID:I,"
 			"PlayerID:I,"
 			"RoomID:I,"
+			"WorldMapID:I,"
 			"Type:I,"
 			"IsHidden:I,"
 			"LastUpdated:I,"
@@ -290,6 +299,17 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 			"EntrancesExplored"
 			"["
 				"EntranceID:I"
+			"],"
+			"WorldMapIcons"
+			"["
+				"WorldMapID:I,"
+				"EntranceID:I,"
+				"ExitType:I,"
+				"X:I,"
+				"Y:I,"
+				"CharID:I,"
+				"ImageID:I,"
+				"Flags:I"
 			"],"
 			MONSTERS_VIEWPROPDEF "," //global scripts and custom equipment
 			"Created:I,"
@@ -381,7 +401,16 @@ DEFTDEF(HOLDS_VIEWDEF,
 				"AnimationSpeed:I,"
 				"ExtraVars:B"
 			"],"
-			"CaravelNetMedia:I"
+			"CaravelNetMedia:I,"
+			"WorldMapID:I,"
+			"WorldMaps"
+			"["
+				"WorldMapID:I,"
+				"DataID:I,"
+				"DisplayType:I,"
+				"OrderIndex:I,"
+				"WorldMapNameText:B"
+			"]"
 		"]");
 
 DEFTDEF(PLAYERS_VIEWDEF,
@@ -484,6 +513,8 @@ enum VIEWPROPTYPE
 	VP_Pieces,
 	VP_PlatformDeltas,
 	VP_Vars,
+	VP_WorldMaps,
+	VP_WorldMapIcons,
 	VP_Count,
 	VP_Invalid
 };
@@ -515,12 +546,14 @@ enum PROPTYPE
 	P_Delay,
 	P_DemoID,
 	P_DescriptionMessage,   //not ID
+	P_DisplayType,
 	P_EditingPrivileges,
 	P_EMailMessage, //not ID
 	P_EndHoldMessage,       //not ID
 	P_EndTurnNo,
 	P_EntranceID,
 	P_EntrancesExplored,  //list
+	P_ExitType,
 	P_ExtraVars,
 	P_Flags,
 	P_GID_Created,
@@ -530,6 +563,7 @@ enum PROPTYPE
 	P_GID_PlayerID,
 	P_HighScoreID,
 	P_HoldID,
+	P_ImageID,
 	P_ImageStartX,
 	P_ImageStartY,
 //	P_IsFirstTurn,
@@ -595,6 +629,8 @@ enum PROPTYPE
 	P_VarID,
 	P_VarNameText,
 	P_Version,
+	P_WorldMapID,
+	P_WorldMapNameText,
 	P_X,
 	P_Y,
 	P_Count,
@@ -618,7 +654,8 @@ extern const char viewpropTypeStr[VP_Count][15]
 = {
 	"Characters", "Entrances", "Exits", "ExploredRooms",
 	"Monsters", "OrbAgents",
-	"Orbs", "Scrolls", "Pieces", "PlatformDeltas", "Vars"
+	"Orbs", "Scrolls", "Pieces", "PlatformDeltas", "Vars",
+	"WorldMaps", "WorldMapIcons"
 }
 #endif
 ;
@@ -633,11 +670,11 @@ extern const char propTypeStr[P_Count][26]
 	"Commands", "CompletedScripts",
 	"Created", "DataFormat", "DataID", "DataIDTiles",
 	"DataNameText",
-	"DataNameTextID", "Delay", "DemoID", "DescriptionMessage",
+	"DataNameTextID", "Delay", "DemoID", "DescriptionMessage", "DisplayType",
 	"EditingPrivileges", "EMailMessage", "EndHoldMessage", "EndTurnNo",
-	"EntranceID", "EntrancesExplored", "ExtraVars", "Flags", "GID_Created",
+	"EntranceID", "EntrancesExplored", "ExitType", "ExtraVars", "Flags", "GID_Created",
 	"GID_LevelIndex", "GID_NewLevelIndex", "GID_OriginalNameMessage",
-	"GID_PlayerID", "HighScoreID", "HoldID", "ImageStartX", "ImageStartY",
+	"GID_PlayerID", "HighScoreID", "HoldID", "ImageID", "ImageStartX", "ImageStartY",
 //	"IsFirstTurn",
 	"IsHidden", "IsLocal", "IsMainEntrance",
 	"IsSecret",
@@ -656,7 +693,7 @@ extern const char propTypeStr[P_Count][26]
 	"StartRoomO", "StartRoomSwordOff", "StartRoomX", "StartRoomY", "Stats",
 	"Status", "StyleName",
 	"TileLights", "TimData", "Top", "Type", "VarID", "VarNameText", "Version",
-	"X", "Y"
+	"WorldMap", "WorldMapNameText", "X", "Y"
 }
 #endif
 ;

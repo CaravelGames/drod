@@ -192,6 +192,8 @@ inline bool bCommandHasData(const UINT eCommand)
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_SetMusic:
 		case CCharacterCommand::CC_ImageOverlay:
+		case CCharacterCommand::CC_WorldMapMusic:
+		case CCharacterCommand::CC_WorldMapImage:
 			return true;
 		default:
 			return false;
@@ -228,6 +230,7 @@ CCharacter::CCharacter(
 	, equipType(ScriptFlag::NotEquipment)
 	, movementIQ(SmartDiagonalOnly)
 	, bMovementChanged(false)
+	, worldMapID(0)
 
 	, wCurrentCommandIndex(0)
 	, wTurnDelay(0)
@@ -421,6 +424,18 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_Speech:
 					if (c.pSpeech)
 						SyncCustomCharacterData(c.pSpeech->wCharacter, pOldHold, pNewHold, info);
+				break;
+
+				case CCharacterCommand::CC_WorldMapMusic:
+					CDbData::CopyObject(info, c.y, pNewHold->dwHoldID);
+				break;
+				case CCharacterCommand::CC_WorldMapIcon:
+					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
+					SyncEntranceID(info, c.w);
+				break;
+				case CCharacterCommand::CC_WorldMapImage:
+					CDbData::CopyObject(info, c.h, pNewHold->dwHoldID);
+					SyncEntranceID(info, c.w);
 				break;
 
 				default: break;
@@ -3294,11 +3309,31 @@ void CCharacter::Process(
 				++this->wCurrentCommandIndex;
 
 				getCommandXY(command, px, py); //NOTE: only py is considered here
-				if (!CueEvents.HasOccurred(CID_ExitLevelPending)) //don't queue more than one level exit
+				if (!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+					!CueEvents.HasOccurred(CID_ExitToWorldMapPending)) //don't queue more than one level exit
 					pGame->GotoLevelEntrance(CueEvents, command.x, py != 0);
 
 				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
 			break;
+
+			case CCharacterCommand::CC_GoToWorldMap:
+				if (bRoomBeingDisplayedOnly)
+					return;
+				//Takes player to world map X.
+				if (!pGame->wTurnNo)
+					return; //don't execute on the room entrance move -- execute next turn
+
+				//When saving room data in GotoLevelEntrance,
+				//this NPC should start at the next script command
+				//next time the script is processed.
+				++this->wCurrentCommandIndex;
+
+				if (!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+					!CueEvents.HasOccurred(CID_ExitToWorldMapPending)) //don't queue more than one level exit
+					pGame->GotoWorldMap(CueEvents, command.x);
+
+				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
+				break;
 
 			case CCharacterCommand::CC_VarSet:
 			{
@@ -3525,6 +3560,57 @@ void CCharacter::Process(
 				getCommandXY(command, px, py);
 				CueEvents.Add(CID_PlayVideo, new CMoveCoord(px, py, command.w), true);
 				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_WorldMapSelect:
+				//Sets the world map that other world map commands operate on to X.
+				this->worldMapID = command.x;
+				bProcessNextCommand = true;
+				break;
+			case CCharacterCommand::CC_WorldMapMusic:
+				//Sets the music to be played on preselected world map.
+				if (!command.label.empty())
+					pGame->SetWorldMapMusic(this->worldMapID, command.label);
+				else
+					pGame->SetWorldMapMusic(this->worldMapID, command.x, command.y);
+				bProcessNextCommand = true;
+				break;
+			case CCharacterCommand::CC_WorldMapIcon:
+			{
+				//Places an icon on the preselected world map at (x,y), to level entrance (w), displayed as custom NPC (h), of display type (flags).
+				getCommandParams(command, px, py, pw, ph, pflags);
+				UINT targetID;
+				ExitType exitType;
+				if (int(pw) < 0) {
+					targetID = LevelExit::ConvertWorldMapID(pw);
+					exitType = ExitType::ET_WorldMap;
+				} else {
+					targetID = pw;
+					exitType = ExitType::ET_Entrance;
+				}
+
+				pGame->SetWorldMapIcon(this->worldMapID, px, py, targetID, exitType, ph, 0, pflags);
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WorldMapImage:
+			{
+				//Places an icon on the preselected world map at (x,y), to level entrance (w), displayed as image (h), of display type (flags).
+				getCommandParams(command, px, py, pw, ph, pflags);
+				UINT targetID;
+				ExitType exitType;
+				if (int(pw) < 0) {
+					targetID = LevelExit::ConvertWorldMapID(pw);
+					exitType = ExitType::ET_WorldMap;
+				}
+				else {
+					targetID = pw;
+					exitType = ExitType::ET_Entrance;
+				}
+
+				pGame->SetWorldMapIcon(this->worldMapID, px, py, targetID, exitType, 0, ph, pflags);
+				bProcessNextCommand = true;
+			}
 			break;
 
 			case CCharacterCommand::CC_LogicalWaitAnd:

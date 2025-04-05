@@ -705,6 +705,7 @@ const WCHAR* CDbBase::GetMessageText(
 	switch (eMessageID)
 	{
 		//TODO 1.3/2.0: remove all of these when building barebones and release build dat files
+		case MID_NewLevel: strText = "(add new level)"; break;
 		case MID_TitleMainMenu: strText = "&Back"; break;
 		case MID_DoubleXP: strText = "Double REP"; break;
 		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
@@ -1038,6 +1039,33 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_EnableAutosaves: strText = "Enable autosaves"; break;
 		case MID_VarMonsterHue: strText = "_MyHue"; break;
 		case MID_VarMonsterSaturation: strText = "_MySaturation"; break;
+		case MID_HoldImportDuplicateNameError: strText = "ERROR: An asset with this name already exists in the hold."; break;
+		case MID_LevelSelectTab: strText = "Levels"; break;
+		case MID_WorldMapSelectTab: strText = "Maps"; break;
+		case MID_WorldMapSetImage: strText = "Image"; break;
+		case MID_NewWorldMapPrompt: strText = "(add new world map)"; break;
+		case MID_NameWorldMap: strText = "Please name this world map."; break;
+		case MID_DeleteWorldMapPrompt: strText = "Are you sure you want to permanently delete this world map?"; break;
+		case MID_WorldMapSettings: strText = "Map display type"; break;
+		case MID_WorldMapNoLabels: strText = "No labels"; break;
+		case MID_WorldMapShowLabels: strText = "Labels"; break;
+		case MID_WorldMapDisplayLabelsWhenExplored: strText = "Labels when explored"; break;
+		case MID_WorldMapSelect: strText = "World Map Select"; break;
+		case MID_SelectWorldMapPrompt: strText = "Please select a world map."; break;
+		case MID_WorldMapMusic: strText = "World Map Music"; break;
+		case MID_WorldMapIcon: strText = "World Map Tile Icon"; break;
+		case MID_WorldMapImage: strText = "World Map Image Icon"; break;
+		case MID_WMI_Off: strText = "Off"; break;
+		case MID_WMI_On: strText = "On"; break;
+		case MID_WMI_LevelState: strText = "Level state"; break;
+		case MID_WMI_Disabled: strText = "Disabled"; break;
+		case MID_WMI_Locked: strText = "Locked"; break;
+		case MID_WMI_NoLabel: strText = "Image only"; break;
+		case MID_X_Coord: strText = "x"; break;
+		case MID_Y_Coord: strText = "y"; break;
+		case MID_GoToWorldMap: strText = "Go to world map"; break;
+		case MID_WorldMapDestinationPrompt: strText = "Choose a destination"; break;
+		case MID_WMI_Cleared: strText = "Cleared"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

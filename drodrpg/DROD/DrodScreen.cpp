@@ -644,6 +644,7 @@ void CDrodScreen::AdvanceDemoPlayback(
 		if ((CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied) ||
 				CueEvents.HasOccurred(CID_WinGame) ||
 				CueEvents.HasOccurred(CID_ExitLevelPending) ||
+				CueEvents.HasOccurred(CID_ExitToWorldMapPending) ||
 				CueEvents.HasOccurred(CID_InvalidAttackMove))) //invalid move indicates play sequence is for a different hold version
 		{
 			while (commandIter != pGame->Commands.end())
@@ -1164,6 +1165,79 @@ void CDrodScreen::EditGlobalVars(
 	} while (itemID != 0);
 
 	Paint();
+}
+
+//*****************************************************************************
+UINT CDrodScreen::ImportHoldImage(const UINT holdID, const UINT extensionFlags)
+//Load an image file from disk into the hold,
+//using any of the specified supported file extensions.
+//Returns: dataID if operation completed successfully or 0 if it was canceled.
+{
+	static const char importImagePath[] = "ImportImagePath";
+
+	//Get image import path.
+	CFiles Files;
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	WSTRING wstrImportPath = pCurrentPlayer ?
+		pCurrentPlayer->Settings.GetVar(importImagePath, Files.GetDatPath().c_str()) :
+		Files.GetDatPath();
+
+	WSTRING wstrImportFile;
+	for (;;)
+	{
+		const UINT dwTagNo = SelectFile(wstrImportPath,
+			wstrImportFile, MID_ImageSelectPrompt, false, extensionFlags);
+		if (dwTagNo != TAG_OK)
+		{
+			delete pCurrentPlayer;
+			return 0;
+		}
+
+		//Update the path in player settings, so next time dialog
+		//comes up it will have the same path.
+		if (pCurrentPlayer)
+		{
+			pCurrentPlayer->Settings.SetVar(importImagePath, wstrImportPath.c_str());
+			pCurrentPlayer->Update();
+		}
+
+		//Forbid importing multiple images with the same name into a hold.
+		const WSTRING filename = getFilenameFromPath(wstrImportFile.c_str());
+		CDb db;
+		db.Data.FilterByHold(holdID);
+		if (db.Data.FindByName(filename.c_str()) != 0) {
+			ShowOkMessage(MID_HoldImportDuplicateNameError);
+			continue;
+		}
+
+		//Load image.
+		CStretchyBuffer buffer;
+		if (!Files.ReadFileIntoBuffer(wstrImportFile.c_str(), buffer, true)) {
+			ShowOkMessage(MID_FileNotFound);
+		}
+		else {
+			const UINT wDataFormat = g_pTheBM->GetImageType(buffer);
+			if (wDataFormat == DATA_UNKNOWN) {
+				ShowOkMessage(MID_FileCorrupted);
+			}
+			else {
+				CDbDatum* pImage = g_pTheDB->Data.GetNew();
+				pImage->wDataFormat = wDataFormat;
+				pImage->data.Set((const BYTE*)buffer, buffer.Size());
+				pImage->DataNameText = filename;
+				pImage->dwHoldID = holdID; //image belongs to this hold
+				pImage->Update();
+				const UINT dwDataID = pImage->dwDataID;
+				delete pImage;
+				delete pCurrentPlayer;
+				return dwDataID;
+			}
+		}
+	}
+
+	ASSERT(!"Bad logic path.");
+	delete pCurrentPlayer;
+	return 0;
 }
 
 //*****************************************************************************

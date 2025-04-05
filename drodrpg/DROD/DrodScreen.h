@@ -55,6 +55,8 @@ public:
 	virtual void   Callbackf(float fVal);
 	virtual void   CallbackText(const WCHAR* wpText);
 
+	UINT    ImportHoldImage(const UINT holdID, const UINT extensionFlags = EXT_JPEG | EXT_PNG);
+
 	void     EditGlobalVars(CEntranceSelectDialogWidget *pListBox, PlayerStats* st,
 			CCurrentGame* pGame=NULL);
 

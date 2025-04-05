@@ -2573,8 +2573,13 @@
 #define TI_STAT_ICON_BK  2374
 #define TI_STAT_ICON_SK  2375
 #define TI_STAT_ICON_SHOVEL 2376
+//*****************************************************************************
+#define TI_WORLDMAP_NEW 2377
+#define TI_WORLDMAP_LOCK 2378
+#define TI_WORLDMAP_IN_PROGRESS 2379
+#define TI_WORLDMAP_CLEAR 2380
 
-static const UINT TI_COUNT = 2377;
+static const UINT TI_COUNT = 2381;
 
 static inline bool bIsBriarTI(const UINT ti)
 {

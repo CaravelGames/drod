@@ -73,6 +73,7 @@
 #  pragma warning(disable:4786)
 #endif
 
+#include "CurrentGameRecords.h"
 #include "DbSavedGames.h"
 #include "DbDemos.h"
 #include "GameConstants.h"
@@ -178,16 +179,6 @@ struct MusicData
 	WSTRING songMood;  //play music by mood name
 };
 
-//*******************************************************************************
-//To facilitate some var lookup operations.
-struct VarMapInfo {
-	bool bInteger;
-	UINT val;
-	WSTRING wstrVal;
-};
-typedef std::string VarNameType;
-typedef std::map<VarNameType, VarMapInfo> VARMAP;
-
 struct TarstuffStab {
 	TarstuffStab(const CMoveCoord& c, CMonster* m)
 		: moveCoord(c), pTarstuffMonster(m)
@@ -284,6 +275,7 @@ public:
 	const CMonsterMessage* GetUnansweredQuestion() const
 			{ return UnansweredQuestions.empty() ? NULL : &UnansweredQuestions.front(); }
 	void     GotoLevelEntrance(CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay=false);
+	void     GotoWorldMap(CCueEvents& CueEvents, const UINT wWorldMap);
 	bool HasUnansweredQuestion(const CMonster *pMonster) const;
 	static void InitRPGStats(PlayerStats& s);
 	bool     IsCurrentRoomExplored(const bool bConsiderCurrentRoom=true) const;
@@ -312,10 +304,13 @@ public:
 	bool     IsShieldMetal(const UINT type) const;
 	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;
 	bool     IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const;
+	bool     IsRecordingMoves() const { return !this->Commands.IsFrozen() && !this->bNoSaves; }
 	bool     IsValidatingPlayback() const {return this->bValidatingPlayback;}
+	bool     IsValidWorldMapTransfer(UINT wEntranceID, ExitType exitType) const;
 	bool     LoadFromHold(const UINT dwHoldID, CCueEvents &CueEvents);
 	bool     LoadFromLevelEntrance(const UINT dwHoldID, const UINT dwEntranceID,
 			CCueEvents &CueEvents);
+	bool     LoadFromWorldMap(const UINT worldMapID);
 	bool     LoadFromRoom(const UINT dwRoomID, CCueEvents &CueEvents,
 			const UINT wX, const UINT wY, const UINT wO, const UINT wIdentity,
 			const bool bSwordOff, const bool bNoSaves=false);
@@ -348,6 +343,7 @@ public:
 	void     SaveGame(const SAVETYPE eSaveType, const WSTRING& name);
 	void     SaveToContinue();
 	void     SaveToEndHold();
+	void     SaveToWorldMap();
 /*
 	void     SaveToLevelBegin();
 	void     SaveToRoomBegin();
@@ -387,6 +383,13 @@ public:
 	UINT     WriteScoreCheckpointSave(const WSTRING& name);
 
 	bool     PrepTempGameForRoomDisplay(const UINT roomID);
+
+	//World map.
+	void     SetWorldMapIcon(UINT worldMapID, UINT xPos, UINT yPos, UINT entranceID, ExitType exitType,
+		UINT customCharID, UINT imageID, UINT displayFlags);
+	void     SetWorldMapMusic(UINT worldMapID, const WSTRING& songlist);
+	void     SetWorldMapMusic(UINT worldMapID, const UINT songID, const UINT customID);
+	WorldMapMusic GetWorldMapMusic(UINT worldMapID);
 
 	CDbRoom *   pRoom;
 	CDbLevel *  pLevel;
@@ -476,7 +479,7 @@ private:
 	void     ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
 		const bool bWasOnSameScroll, const bool bPlayerMove = true, const bool bPlayerTeleported = false);
 	void     ProcessPlayer_HandleLeaveLevel(CCueEvents &CueEvents,
-			const UINT wEntrance=EXIT_LOOKUP, const bool bSkipEntranceDisplay=false);
+		const LevelExit& exit = LevelExit(), const bool bSkipEntranceDisplay=false);
 	bool     ProcessPlayer_HandleLeaveRoom(const UINT wMoveO,
 			CCueEvents &CueEvents);
 	void     ProcessSimultaneousSwordHits(CCueEvents &CueEvents);

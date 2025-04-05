@@ -479,6 +479,16 @@ enum MID_CONSTANT {
   MID_Shield7 = 1982,
   MID_Shield8 = 1983,
   MID_Shield9 = 1984,
+  MID_LevelSelectTab = 2080,
+  MID_WorldMapSelectTab = 2081,
+  MID_WorldMapSetImage = 2082,
+  MID_NewWorldMapPrompt = 2083,
+  MID_NameWorldMap = 2084,
+  MID_DeleteWorldMapPrompt = 2085,
+  MID_WorldMapSettings = 2086,
+  MID_WorldMapNoLabels = 2087,
+  MID_WorldMapShowLabels = 2088,
+  MID_WorldMapDisplayLabelsWhenExplored = 2089,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,
@@ -684,6 +694,7 @@ enum MID_CONSTANT {
   MID_DownloadFailed = 1290,
   MID_ImportTallying = 1313,
   MID_ImportWrongRootTag = 1473,
+  MID_HoldImportDuplicateNameError = 2079,
 
   //Messages from KeyDescriptions.uni:
   MID_UNKNOWN = 499,
@@ -1721,6 +1732,22 @@ enum MID_CONSTANT {
   MID_AttackTile = 2028,
   MID_Roachie = 2029,
   MID_CollectableGroup = 2075,
+  MID_WorldMapSelect = 2090,
+  MID_SelectWorldMapPrompt = 2091,
+  MID_WorldMapMusic = 2092,
+  MID_WorldMapIcon = 2093,
+  MID_WorldMapImage = 2094,
+  MID_WMI_Off = 2095,
+  MID_WMI_On = 2096,
+  MID_WMI_LevelState = 2097,
+  MID_WMI_Cleared = 2105,
+  MID_WMI_Disabled = 2098,
+  MID_WMI_Locked = 2099,
+  MID_WMI_NoLabel = 2100,
+  MID_X_Coord = 2101,
+  MID_Y_Coord = 2102,
+  MID_GoToWorldMap = 2103,
+  MID_WorldMapDestinationPrompt = 2104,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

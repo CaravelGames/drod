@@ -256,6 +256,8 @@ public:
 	CCurrentGame*  GetCurrentGame() const {return this->pCurrentGame;}
 	UINT           GetExitIndexAt(const UINT wX, const UINT wY) const;
 	bool           GetExitEntranceIDAt(const UINT wX, const UINT wY, UINT &dwEntranceID) const;
+	bool           GetExitEntranceInfoAt(const UINT wX, const UINT wY,
+		UINT &dwEntranceID, ExitType& exitType) const;
 	UINT          GetImportCharacterSpeechID();
 	CDbLevel*      GetLevel() const;
 	void           GetLevelPositionDescription(WSTRING &wstrDescription,
@@ -412,7 +414,7 @@ public:
 
 	void           SetScrollTextAtSquare(const UINT wX, const UINT wY, const WCHAR* pwczScrollText);
 	void           SetExit(const UINT dwEntranceID, const UINT wX, const UINT wY,
-			const UINT wX2=(UINT)-1, const UINT wY2=(UINT)-1);
+			const UINT wX2=(UINT)-1, const UINT wY2=(UINT)-1, ExitType exitType = ExitType::ET_Entrance);
 	bool           SomeMonsterCanSmellSwordsman() const;
 	bool           StabTar(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			const bool removeTarNow, const UINT wStabO=NO_ORIENTATION);

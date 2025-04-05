@@ -476,6 +476,7 @@
     <ClInclude Include="Construct.h" />
     <ClInclude Include="CueEvents.h" />
     <ClInclude Include="CurrentGame.h" />
+    <ClInclude Include="CurrentGameRecords.h" />
     <ClInclude Include="Db.h" />
     <ClInclude Include="DbBase.h" />
     <ClInclude Include="DbCommands.h" />

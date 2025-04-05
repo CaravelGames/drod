@@ -65,6 +65,15 @@ void CDbSavedGameMove::Append(
 }
 
 //*****************************************************************************
+void CDbSavedGameMove::AppendWorldMapCommand(UINT wEntrance, ExitType exitType)
+//Adds command data for world map interaction
+{
+	this->MoveSequence += CMD_WORLD_MAP;
+	this->MoveSequence += wEntrance;
+	this->MoveSequence += (UINT)exitType;
+}
+
+//*****************************************************************************
 bool CDbSavedGameMove::Load(
 //Load move sequence (previous to current room) for the indicated saved game.
 //

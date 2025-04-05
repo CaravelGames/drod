@@ -2011,6 +2011,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "WaterStep", "waterstep.ogg");
 	AddIfMissing(INISection::Waves, "Wisp", "belltoll.ogg");
 	AddIfMissing(INISection::Waves, "Wubba", "wubba.ogg");
+	AddIfMissing(INISection::Waves, "WorldmapClick", "worldmap-click.ogg");
 
 #undef AddIfMissing
 }

@@ -79,7 +79,8 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXITROOM  (23) //used in storing game session's move sequence -- a marker between rooms
 #define CMD_ENDMOVE   (24) //used in validating a game session's move sequence -- marks the end of the command sequence
 #define CMD_SETVAR    (25) //tracks vars altered through the playtest/cheat terminal popup
-#define COMMAND_COUNT (26)
+#define CMD_WORLD_MAP (26) //used in storing game session's move sequence - world map interaction
+#define COMMAND_COUNT (27)
 //access hook for front end calls
 #define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1)
 #define CMD_BATTLE_KEY (COMMAND_COUNT+2)
@@ -344,7 +345,8 @@ static inline bool bIsComplexCommand(const int command)
 	switch (command)
 	{
 		case CMD_SETVAR:
-		case CMD_ANSWER: return true;
+		case CMD_ANSWER:
+		case CMD_WORLD_MAP: return true;
 		default: return false;
 	}
 }

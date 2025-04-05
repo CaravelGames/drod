@@ -1403,6 +1403,23 @@ UINT GetTileImageForEntity(
 	}
 }
 
+UINT GetTileImageForEntityOrDefault(const UINT wType, UINT wO, const UINT wAnimFrame)
+{
+	if (!IsValidOrientation(wO))
+		wO = S;
+	if (IsValidMonsterType(wType))
+	{
+		if (MonsterTileImageArray[wType][wO] == DONT_USE)
+			wO = NO_ORIENTATION;
+	}
+	else {
+		if (CharacterTileImageArray[wType - CHARACTER_FIRST][wO] == DONT_USE)
+			wO = NO_ORIENTATION;
+	}
+
+	return GetTileImageForEntity(wType, wO, wAnimFrame);
+}
+
 //*****************************************************************************
 UINT GetTileImageForSerpentPiece(
 //Gets a tile image to display for a monster.

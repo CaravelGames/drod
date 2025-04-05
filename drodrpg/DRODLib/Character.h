@@ -260,6 +260,7 @@ public:
 	MovementIQ movementIQ;  //movement behavior
 	bool  bMovementChanged; //movement type is changed
 	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
+	UINT worldMapID;        //the world map that "world map *" script commands will operate on
 
 private:
 	bool BuildTiles(const CCharacterCommand& command, CCueEvents &CueEvents);

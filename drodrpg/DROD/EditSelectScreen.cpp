@@ -42,10 +42,12 @@
 #include "WeatherDialogWidget.h"
 #include <FrontEndLib/ButtonWidget.h>
 #include <FrontEndLib/FrameWidget.h>
+#include <FrontEndLib/ImageWidget.h>
 #include <FrontEndLib/LabelWidget.h>
 #include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/OptionButtonWidget.h>
 #include <FrontEndLib/ScalerWidget.h>
+#include <FrontEndLib/TabbedMenuWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
 
 #include "../DRODLib/CueEvents.h"
@@ -100,11 +102,31 @@ const UINT TAG_REDESC_HOLD = 1063;
 const UINT TAG_ENDING_MESSAGE = 1064;
 const UINT TAG_HOLD_SETTINGS_OK = 1065;
 
+const UINT TAG_LEVELMENU = 1070;
+const UINT TAG_WORLDMAP_LBOX = 1071;
+const UINT TAG_RENAME_WORLDMAP = 1072;
+const UINT TAG_SETIMAGE_WORLDMAP = 1073;
+const UINT TAG_DELETE_WORLDMAP = 1074;
+const UINT TAG_WORLDMAP_IMAGE = 1075;
+const UINT TAG_MINIWORLDMAP = 1076;
+
+const UINT TAG_WORLDMAPDISPLAYLIST = 1077;
+const UINT TAG_WORLDMAPSETTINGSFRAME = 1078;
+const UINT TAG_LEVELSETTINGSFRAME = 1079;
+
 const UINT TAG_EDIT = 1091;
 const UINT TAG_CANCEL = 1092;
 const UINT TAG_HELP = 1093;
 
 const SDL_Color DarkRed = {92, 0, 0, 0}; //authored hold tint
+
+//Level tabbed menu
+#define LEVEL_TAB (0)
+#define WORLDMAP_TAB (1)
+#define BG_COLOR 220,210,190
+
+const UINT ADD_LEVEL_ID = static_cast<UINT>(-1);
+const UINT ADD_WORLDMAP_ID = static_cast<UINT>(-1);
 
 //
 //Public methods.
@@ -148,13 +170,17 @@ CEditSelectScreen::CEditSelectScreen()
 	: CDrodScreen(SCR_EditSelect)
 	, pLevelListBoxWidget(NULL), pHoldListBoxWidget(NULL)
 	, pStyleListBoxWidget(NULL)
+	, pWorldMapListBoxWidget(NULL)
 	, pEntranceBox(NULL), pLevelMultiplier(NULL)
 	, pSelectedHold(NULL), pSelectedLevel(NULL), pSelectedRoom(NULL)
 	, dwPrevHoldID(0)
+	, selectedWorldMapID(0)
 	, pLevelCopy(NULL)
+	, addLevelAfterEvents(false), addWorldMapAfterEvents(false)
 	, pMapWidget(NULL)
 	, pRoomWidget(NULL)
-	, pScaledRoomWidget(NULL)
+	, pScaledRoomWidget(NULL), pScaledWorldMapWidget(NULL)
+	, pWorldMapImage(NULL)
 //Constructor.
 {
 	SetKeyRepeat(66);
@@ -223,18 +249,19 @@ CEditSelectScreen::CEditSelectScreen()
 	static const UINT CX_HOLD_LBOX = X_NEW_HOLD + CX_NEW_HOLD - X_HOLD_LBOX + 1;
 	static const UINT CY_HOLD_LBOX = 246; //11*22 + 4
 
+	//Level menu
+	const int X_TABBEDMENU = X_NEW_HOLD + CX_NEW_HOLD + CX_SPACE;
+	const int Y_TABBEDMENU = Y_CHOOSE_HOLD_LABEL;
+	const UINT CX_TABBEDMENU = 290;
+	const UINT CY_TABBEDMENU = CY_CHOOSE_HOLD_LABEL + CY_SPACE + CY_HOLD_LBOX + 45;
+
+	const UINT CY_MENU_TAB = 35;
+	const int Y_INNERMENU = CY_MENU_TAB + CY_SPACE / 2;
+
 	//Level selection.
-	static const int X_CHOOSE_LEVEL_LABEL = X_NEW_HOLD + CX_NEW_HOLD + CX_SPACE * 2;
-	static const int Y_CHOOSE_LEVEL_LABEL = Y_CHOOSE_HOLD_LABEL;
-	static const UINT CX_CHOOSE_LEVEL_LABEL = 150;
-	static const UINT CY_CHOOSE_LEVEL_LABEL = CY_STANDARD_BUTTON;
-	static const UINT CX_NEW_LEVEL = CX_NEW_HOLD;
-	static const UINT CY_NEW_LEVEL = CY_STANDARD_BUTTON;
-	static const int X_NEW_LEVEL = X_CHOOSE_LEVEL_LABEL + CX_CHOOSE_LEVEL_LABEL + CX_SPACE;
-	static const int Y_NEW_LEVEL = Y_CHOOSE_LEVEL_LABEL + 3;
-	static const int X_LEVEL_LBOX = X_CHOOSE_LEVEL_LABEL;
-	static const int Y_LEVEL_LBOX = Y_CHOOSE_LEVEL_LABEL + CY_CHOOSE_LEVEL_LABEL + 7;
-	static const UINT CX_LEVEL_LBOX = 282;
+	static const int X_LEVEL_LBOX = CX_SPACE;
+	static const int Y_LEVEL_LBOX = Y_INNERMENU;
+	static const UINT CX_LEVEL_LBOX = CX_TABBEDMENU - 2 * X_LEVEL_LBOX;
 	static const UINT CY_LEVEL_LBOX = CY_HOLD_LBOX;
 
 	//Style selection.
@@ -297,8 +324,8 @@ CEditSelectScreen::CEditSelectScreen()
 
 	//Level settings.
 	static const UINT CX_RENAME_LEVEL = 80;
-	static const int X_RENAME_LEVEL = X_CHOOSE_LEVEL_LABEL;
-	static const int Y_RENAME_LEVEL = Y_LEVEL_LBOX + CY_LEVEL_LBOX + 8;
+	static const int X_RENAME_LEVEL = X_LEVEL_LBOX + 5;
+	static const int Y_RENAME_LEVEL = Y_LEVEL_LBOX + CY_LEVEL_LBOX + CY_SPACE - 1;
 	static const UINT CY_RENAME_LEVEL = CY_STANDARD_BUTTON;
 	static const UINT CX_REDESC_LEVEL = CX_RENAME_LEVEL;
 	static const int X_REDESC_LEVEL = X_RENAME_LEVEL + CX_RENAME_LEVEL + CX_SPACE;
@@ -422,30 +449,54 @@ CEditSelectScreen::CEditSelectScreen()
 				CX_MANAGE, CY_MANAGE, g_pTheDB->GetMessageText(MID_Manage));
 	AddWidget(pButton);
 
+	//Level selection tabbed menu.
+	CTabbedMenuWidget* pTabbedMenu = new CTabbedMenuWidget(TAG_LEVELMENU, X_TABBEDMENU,
+		Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 2, CY_MENU_TAB, BG_COLOR);
+	pTabbedMenu->SetTabText(LEVEL_TAB, g_pTheDB->GetMessageText(MID_LevelSelectTab));
+	pTabbedMenu->SetTabText(WORLDMAP_TAB, g_pTheDB->GetMessageText(MID_WorldMapSelectTab));
+	pTabbedMenu->SetBGImage("Background", 128);
+	AddWidget(pTabbedMenu);
+
 	//Level selection area.
-	AddWidget(new CLabelWidget(0L, X_CHOOSE_LEVEL_LABEL, Y_CHOOSE_LEVEL_LABEL,
-				CX_CHOOSE_LEVEL_LABEL, CY_CHOOSE_LEVEL_LABEL, F_Header,
-				g_pTheDB->GetMessageText(MID_ChooseLevel)));
-	pButton = new CButtonWidget(TAG_NEW_LEVEL, X_NEW_LEVEL, Y_NEW_LEVEL,
-				CX_NEW_LEVEL, CY_NEW_LEVEL, g_pTheDB->GetMessageText(MID_NewLevel));
-	pButton->Disable();
-	AddWidget(pButton);
 	this->pLevelListBoxWidget = new CListBoxWidget(TAG_LEVEL_LBOX,
 			X_LEVEL_LBOX, Y_LEVEL_LBOX, CX_LEVEL_LBOX, CY_LEVEL_LBOX, false, true);
-	AddWidget(this->pLevelListBoxWidget);
+	pTabbedMenu->AddWidgetToTab(this->pLevelListBoxWidget, LEVEL_TAB);
 
 	pButton = new CButtonWidget(TAG_RENAME_LEVEL, X_RENAME_LEVEL, Y_RENAME_LEVEL, 
 				CX_RENAME_LEVEL, CY_RENAME_LEVEL, g_pTheDB->GetMessageText(MID_Rename));
 	pButton->Disable();
-	AddWidget(pButton);
+	pTabbedMenu->AddWidgetToTab(pButton, LEVEL_TAB);
 	pButton = new CButtonWidget(TAG_REDESC_LEVEL, X_REDESC_LEVEL, Y_REDESC_LEVEL,
 				CX_REDESC_LEVEL, CY_REDESC_LEVEL, g_pTheDB->GetMessageText(MID_Describe));
 	pButton->Disable();
-	AddWidget(pButton);
+	pTabbedMenu->AddWidgetToTab(pButton, LEVEL_TAB);
 	pButton = new CButtonWidget(TAG_DELETE_LEVEL, X_DELETE_LEVEL, Y_DELETE_LEVEL,
 				CX_DELETE_LEVEL, CY_DELETE_LEVEL, g_pTheDB->GetMessageText(MID_DeleteNoHotkey));
 	pButton->Disable();
-	AddWidget(pButton);
+	pTabbedMenu->AddWidgetToTab(pButton, LEVEL_TAB);
+
+	//World map selection area.
+	this->pWorldMapListBoxWidget = new CListBoxWidget(TAG_WORLDMAP_LBOX,
+		X_LEVEL_LBOX, Y_LEVEL_LBOX, CX_LEVEL_LBOX, CY_LEVEL_LBOX, false, true);
+	pTabbedMenu->AddWidgetToTab(this->pWorldMapListBoxWidget, WORLDMAP_TAB);
+	pButton = new CButtonWidget(TAG_RENAME_WORLDMAP, X_RENAME_LEVEL, Y_RENAME_LEVEL,
+		CX_RENAME_LEVEL, CY_RENAME_LEVEL, g_pTheDB->GetMessageText(MID_Rename));
+	pButton->Disable();
+	pTabbedMenu->AddWidgetToTab(pButton, WORLDMAP_TAB);
+	pButton = new CButtonWidget(TAG_SETIMAGE_WORLDMAP, X_REDESC_LEVEL, Y_REDESC_LEVEL,
+		CX_REDESC_LEVEL, CY_REDESC_LEVEL, g_pTheDB->GetMessageText(MID_WorldMapSetImage));
+	pButton->Disable();
+	pTabbedMenu->AddWidgetToTab(pButton, WORLDMAP_TAB);
+	pButton = new CButtonWidget(TAG_DELETE_WORLDMAP, X_DELETE_LEVEL, Y_DELETE_LEVEL,
+		CX_DELETE_LEVEL, CY_DELETE_LEVEL, g_pTheDB->GetMessageText(MID_DeleteNoHotkey));
+	pButton->Disable();
+	pTabbedMenu->AddWidgetToTab(pButton, WORLDMAP_TAB);
+
+	this->pScaledWorldMapWidget = new CScalerWidget(TAG_MINIWORLDMAP, X_MINIROOM, Y_MINIROOM,
+		CX_MINIROOM, CY_MINIROOM, false);
+	AddWidget(this->pScaledWorldMapWidget);
+	this->pWorldMapImage = new CImageWidget(TAG_WORLDMAP_IMAGE, 0, 0, (SDL_Surface*)NULL);
+	this->pScaledWorldMapWidget->AddScaledWidget(this->pWorldMapImage);
 
 	//Hold settings area.
 	CFrameWidget *pHoldSettingsFrame = new CFrameWidget(0L, X_HOLD_FRAME,
@@ -473,8 +524,8 @@ CEditSelectScreen::CEditSelectScreen()
 	pHoldSettingsFrame->AddWidget(pWhoCanEditListBox);
 
 	//Level settings area.
-	CFrameWidget *pLevelSettingsFrame = new CFrameWidget(0L, X_LEVEL_FRAME,
-			Y_LEVEL_FRAME, CX_LEVEL_FRAME, CY_LEVEL_FRAME,
+	CFrameWidget *pLevelSettingsFrame = new CFrameWidget(TAG_LEVELSETTINGSFRAME,
+		X_LEVEL_FRAME, Y_LEVEL_FRAME, CX_LEVEL_FRAME, CY_LEVEL_FRAME,
 			g_pTheDB->GetMessageText(MID_LevelSettings));
 	AddWidget(pLevelSettingsFrame);
 
@@ -504,6 +555,26 @@ CEditSelectScreen::CEditSelectScreen()
 			5, TAG_LEVELMULTIPLIER);
 	this->pLevelMultiplier->SetDigitsOnly();
 	pLevelSettingsFrame->AddWidget(this->pLevelMultiplier);
+
+	const UINT CY_WORLDMAP_SETTINGS_FRAME = CY_LEVEL_FRAME + CY_POSITION_LABEL - CY_SPACE;
+	CFrameWidget* pWorldMapSettingsFrame = new CFrameWidget(TAG_WORLDMAPSETTINGSFRAME,
+		X_LEVEL_FRAME, Y_LEVEL_FRAME, CX_LEVEL_FRAME, CY_WORLDMAP_SETTINGS_FRAME,
+		g_pTheDB->GetMessageText(MID_WorldMapSettings));
+	AddWidget(pWorldMapSettingsFrame);
+	pWorldMapSettingsFrame->Hide();
+
+	const int X_WORLDMAP_DISPLAY_LISTBOX = CX_SPACE;
+	const int Y_WORLDMAP_DISPLAY_LISTBOX = 2 * CY_SPACE;
+	const UINT CX_WORLDMAP_DISPLAY_LISTBOX = CX_LEVEL_FRAME - 2 * X_WORLDMAP_DISPLAY_LISTBOX;
+	const UINT CY_WORLDMAP_DISPLAY_LISTBOX = 3 * 22 + 4;
+
+	CListBoxWidget* pWorldMapDisplayTypeListBox = new CListBoxWidget(TAG_WORLDMAPDISPLAYLIST,
+		X_WORLDMAP_DISPLAY_LISTBOX, Y_WORLDMAP_DISPLAY_LISTBOX,
+		CX_WORLDMAP_DISPLAY_LISTBOX, CY_WORLDMAP_DISPLAY_LISTBOX);
+	pWorldMapDisplayTypeListBox->AddItem(HoldWorldMap::NoLabels, g_pTheDB->GetMessageText(MID_WorldMapNoLabels));
+	pWorldMapDisplayTypeListBox->AddItem(HoldWorldMap::Labels, g_pTheDB->GetMessageText(MID_WorldMapShowLabels));
+	pWorldMapDisplayTypeListBox->AddItem(HoldWorldMap::LabelsWhenExplored, g_pTheDB->GetMessageText(MID_WorldMapDisplayLabelsWhenExplored));
+	pWorldMapSettingsFrame->AddWidget(pWorldMapDisplayTypeListBox);
 
 	//Room style selection area.
 	AddWidget(new CLabelWidget(0L, X_CHOOSE_STYLE_LABEL, Y_CHOOSE_STYLE_LABEL,
@@ -632,6 +703,10 @@ void CEditSelectScreen::ResetSelectedHold()
 	this->pRoomWidget->ResetRoom();
 	this->pMapWidget->ClearMap();
 
+	this->pWorldMapListBoxWidget->Clear();
+	this->pWorldMapImage->SetImage((SDL_Surface*)NULL);
+	this->pScaledWorldMapWidget->RefreshSize();
+
 	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*,
 			GetWidget(TAG_HOLD_AUTHOR_LABEL));
 	pLabel->SetText(wszEmpty);
@@ -715,6 +790,37 @@ bool CEditSelectScreen::SetForActivate()
 //
 
 //*****************************************************************************
+void CEditSelectScreen::OnBetweenEvents()
+{
+	if (this->addLevelAfterEvents) {
+		this->addLevelAfterEvents = false;
+		if (!AddLevel()) {
+			if (this->pSelectedLevel) {
+				this->pLevelListBoxWidget->SelectItem(this->pSelectedLevel->dwLevelID); //revert
+			} else {
+				this->pLevelListBoxWidget->DeselectAll();
+				this->pLevelListBoxWidget->UnsetCursorLine();
+			}
+		}
+		Paint();
+	}
+
+	if (this->addWorldMapAfterEvents) {
+		this->addWorldMapAfterEvents = false;
+		if (!AddWorldMap()) {
+			if (this->selectedWorldMapID) {
+				this->pWorldMapListBoxWidget->SelectItem(this->selectedWorldMapID); //revert
+			} else {
+				this->pWorldMapListBoxWidget->DeselectAll();
+				this->pWorldMapListBoxWidget->UnsetCursorLine();
+			}
+		}
+		Paint();
+	}
+}
+
+
+//*****************************************************************************
 void CEditSelectScreen::OnClick(
 //Called when widget receives a click event.
 //
@@ -792,6 +898,23 @@ void CEditSelectScreen::OnClick(
 			DeleteLevel();
 		break;
 
+		case TAG_RENAME_WORLDMAP:
+			RenameWorldMap();
+		break;
+
+		case TAG_SETIMAGE_WORLDMAP:
+			if (ModifyHold()) {
+				SetImageWorldMap();
+				this->pSelectedHold->Update();
+				DrawScaledWorldMapImage();
+				Paint();
+			}
+		break;
+
+		case TAG_DELETE_WORLDMAP:
+			DeleteWorldMap();
+		break;
+
 		case TAG_MANAGE:
 			g_pTheDB->Commit();
 			if (this->pSelectedHold)
@@ -864,6 +987,11 @@ void CEditSelectScreen::OnDoubleClick(const UINT dwTagNo)
 		case TAG_LEVEL_LBOX:
 			if (this->pLevelListBoxWidget->ClickedSelection())
 				RenameLevel();
+		break;
+
+		case TAG_WORLDMAP_LBOX:
+			if (this->pWorldMapListBoxWidget->ClickedSelection())
+				RenameWorldMap();
 		break;
 
 		case TAG_MAP:
@@ -1118,6 +1246,32 @@ void CEditSelectScreen::OnRearranged(const UINT dwTagNo)
 		}
 		break;
 
+		case TAG_WORLDMAP_LBOX:
+		{
+			if (!ModifyHold())
+			{
+				PopulateWorldMapListBox(); //revert reordering
+				this->pWorldMapListBoxWidget->SelectItem(this->selectedWorldMapID);
+				this->pWorldMapListBoxWidget->RequestPaint();
+				return;
+			}
+
+			g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+
+			//Update order of world maps in hold.
+			for (UINT dwIndex = 0; dwIndex < this->pWorldMapListBoxWidget->GetItemCount(); ++dwIndex)
+			{
+				const UINT worldMapID = this->pWorldMapListBoxWidget->GetKeyAtLine(dwIndex);
+				ASSERT(worldMapID);
+				if (worldMapID != ADD_WORLDMAP_ID) {
+					this->pSelectedHold->SetOrderIndexForWorldMap(worldMapID, dwIndex);
+				}
+			}
+
+			this->pSelectedHold->Update();
+		}
+		break;
+
 		default: break;
 	}
 }
@@ -1157,7 +1311,33 @@ void CEditSelectScreen::OnSelectChange(
 		break;
 
 		case TAG_LEVEL_LBOX:
-			SelectLevel(this->pLevelListBoxWidget->GetSelectedItem());
+		{
+			const UINT levelID = this->pLevelListBoxWidget->GetSelectedItem();
+			if (levelID == ADD_LEVEL_ID) {
+				//need to wait for keypress/click/etc to be released before popping up another dialog
+				this->addLevelAfterEvents = true;
+			} else {
+				SelectLevel(levelID);
+			}
+			Paint();
+		}
+		break;
+
+		case TAG_WORLDMAP_LBOX:
+		{
+			const UINT worldMapID = this->pWorldMapListBoxWidget->GetSelectedItem();
+			if (worldMapID == ADD_WORLDMAP_ID) {
+				//need to wait for keypress/click/etc to be released before popping up another dialog
+				this->addWorldMapAfterEvents = true;
+			} else {
+				SelectWorldMap(worldMapID);
+			}
+			Paint();
+		}
+		break;
+
+		case TAG_LEVELMENU:
+			SetWidgetStates();
 			Paint();
 		break;
 
@@ -1331,6 +1511,24 @@ void CEditSelectScreen::OnSelectChange(
 		}
 		break;
 
+		case TAG_WORLDMAPDISPLAYLIST:
+		{
+			CListBoxWidget* pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
+				GetWidget(TAG_WORLDMAPDISPLAYLIST));
+			if (ModifyHold()) {
+				this->pSelectedHold->SetDisplayTypeForWorldMap(
+					this->pWorldMapListBoxWidget->GetSelectedItem(),
+					HoldWorldMap::DisplayType(pWorldMapDisplayListBox->GetSelectedItem()));
+				this->pSelectedHold->Update();
+			} else {
+				pWorldMapDisplayListBox->SelectItem(
+					this->pSelectedHold->GetWorldMapDisplayType(pWorldMapDisplayListBox->GetSelectedItem())
+				);
+				pWorldMapDisplayListBox->Paint();
+			}
+		}
+		break;
+
 		default: break;
 	}
 }
@@ -1412,12 +1610,14 @@ void CEditSelectScreen::SetWidgetStates()
 	UINT wIndex;
 
 	const bool bHold = this->pSelectedHold != NULL;
+	const bool bLevel = this->pSelectedLevel != NULL;
 	const bool bRoom = this->pSelectedRoom != NULL;
+	const bool bWorldMap = this->selectedWorldMapID != 0;
 
 	//Hold
 	static const UINT wHoldWidgets = 3;
 	static const UINT holdWidgetTag[wHoldWidgets] = {
-		TAG_NEW_LEVEL, TAG_COPY_HOLD,	TAG_HOLD_SETTINGS
+		TAG_COPY_HOLD, TAG_HOLD_SETTINGS
 	};
 	for (wIndex=0; wIndex<wHoldWidgets; ++wIndex)
 	{
@@ -1435,7 +1635,19 @@ void CEditSelectScreen::SetWidgetStates()
 	for (wIndex=0; wIndex<wLevelWidgets; ++wIndex)
 	{
 		VERIFY(pWidget = GetWidget(levelWidgetTag[wIndex]));
-		pWidget->Enable(this->pSelectedLevel != NULL);
+		pWidget->Enable(bLevel);
+	}
+
+	//World map.
+	static const UINT wWorldMapWidgets = 4;
+	static const UINT worldmapWidgetTag[wWorldMapWidgets] = {
+		TAG_RENAME_WORLDMAP, TAG_SETIMAGE_WORLDMAP, TAG_DELETE_WORLDMAP,
+		TAG_WORLDMAPDISPLAYLIST
+	};
+	for (wIndex = 0; wIndex < wWorldMapWidgets; ++wIndex)
+	{
+		VERIFY(pWidget = GetWidget(worldmapWidgetTag[wIndex]));
+		pWidget->Enable(bWorldMap);
 	}
 
 	//Room
@@ -1453,6 +1665,19 @@ void CEditSelectScreen::SetWidgetStates()
 
 	pOpButton = DYN_CAST(COptionButtonWidget*, CWidget*, pButtons[1]);
 	pOpButton->SetChecked(this->pSelectedRoom != NULL && this->pSelectedRoom->bIsSecret);
+
+	//Selective room/world map display.
+	CTabbedMenuWidget* pTabbedMenu = DYN_CAST(CTabbedMenuWidget*, CWidget*, GetWidget(TAG_LEVELMENU));
+	const bool bWorldMapTab = pTabbedMenu->GetSelectedTab() == WORLDMAP_TAB;
+	this->pScaledWorldMapWidget->Show(bWorldMapTab);
+	this->pScaledRoomWidget->Show(!bWorldMapTab);
+
+	pWidget = GetWidget(TAG_WORLDMAPSETTINGSFRAME);
+	pWidget->Show(bWorldMapTab);
+	pWidget = GetWidget(TAG_LEVELSETTINGSFRAME);
+	pWidget->Show(!bWorldMapTab);
+	pWidget = GetWidget(TAG_POSITION_LABEL);
+	pWidget->Show(!bWorldMapTab);
 }
 
 //*****************************************************************************
@@ -1592,6 +1817,7 @@ bool CEditSelectScreen::SelectHold(
 	pWhoCanEditListBox->SelectItem((UINT)this->pSelectedHold->editingPrivileges);
 
 	PopulateLevelListBox();
+	PopulateWorldMapListBox();
 
 	if (!bLoadHoldRecordOnly)
 		SelectFirstLevel();
@@ -1599,6 +1825,20 @@ bool CEditSelectScreen::SelectHold(
 	SetWidgetStates();
 
 	return true;
+}
+
+//*****************************************************************************
+void CEditSelectScreen::AddNewLevelLineToLevelList()
+{
+	this->pLevelListBoxWidget->AddItem(ADD_LEVEL_ID, g_pTheDB->GetMessageText(MID_NewLevel));
+	this->pLevelListBoxWidget->SetRearrangeable(ADD_LEVEL_ID, false);
+}
+
+//*****************************************************************************
+void CEditSelectScreen::AddNewMapLineToMapList()
+{
+	this->pWorldMapListBoxWidget->AddItem(ADD_WORLDMAP_ID, g_pTheDB->GetMessageText(MID_NewWorldMapPrompt));
+	this->pWorldMapListBoxWidget->SetRearrangeable(ADD_WORLDMAP_ID, false);
 }
 
 //*****************************************************************************
@@ -1651,7 +1891,9 @@ UINT CEditSelectScreen::AddLevel()
 
 	//Add to level list box.
 	const UINT dwLevelID = pLevel->dwLevelID;
+	this->pLevelListBoxWidget->RemoveItem(ADD_LEVEL_ID);
 	this->pLevelListBoxWidget->AddItem(dwLevelID, pLevel->NameText);
+	AddNewLevelLineToLevelList(); //keep this line at the end of the list
 	this->pLevelListBoxWidget->SelectItem(dwLevelID);
 
 	//Add entrance room to level.
@@ -1693,14 +1935,16 @@ bool CEditSelectScreen::SelectFirstLevel()
 	for (UINT wIndex=this->pLevelListBoxWidget->GetItemCount(); wIndex--; )
 	{
 		dwLevelID = this->pLevelListBoxWidget->GetKeyAtLine(wIndex);
-		CDbLevel *pLevel = g_pTheDB->Levels.GetByID(dwLevelID, true);
-		ASSERT(pLevel);
-		if ((time_t)pLevel->LastUpdated > mostRecentTime)
-		{
-			mostRecentTime = (time_t)pLevel->LastUpdated;
-			dwSelectLevelID = dwLevelID;
+		if (dwLevelID != ADD_LEVEL_ID) {
+			CDbLevel* pLevel = g_pTheDB->Levels.GetByID(dwLevelID, true);
+			ASSERT(pLevel);
+			if ((time_t)pLevel->LastUpdated > mostRecentTime)
+			{
+				mostRecentTime = (time_t)pLevel->LastUpdated;
+				dwSelectLevelID = dwLevelID;
+			}
+			delete pLevel;
 		}
-		delete pLevel;
 	}
 
 	return SelectLevel(dwSelectLevelID);
@@ -1848,6 +2092,135 @@ UINT CEditSelectScreen::AddRoom(
 }
 
 //*****************************************************************************
+UINT CEditSelectScreen::AddWorldMap()
+//Inserts a new world into the current hold.
+//
+//Returns: new map's ID
+{
+	if (!this->pSelectedHold)
+		return 0L;
+
+	if (!ModifyHold())
+		return 0L;
+
+	WSTRING wstrName;
+	UINT dwTagNo = ShowTextInputMessage(MID_NameWorldMap, wstrName);
+	if (dwTagNo != TAG_OK)
+		return 0L;
+
+	const UINT newWorldMapID = this->pSelectedHold->AddWorldMap(wstrName.c_str());
+	if (newWorldMapID) {
+		this->pSelectedHold->Update();
+
+		//Add to world map list box.
+		this->pWorldMapListBoxWidget->RemoveItem(ADD_WORLDMAP_ID);
+		this->pWorldMapListBoxWidget->AddItem(newWorldMapID, wstrName.c_str());
+		AddNewMapLineToMapList(); //keep this line at the end of the list
+
+		SelectWorldMap(newWorldMapID);
+
+		SetWidgetStates();
+	}
+
+	return newWorldMapID;
+}
+
+//*****************************************************************************
+bool CEditSelectScreen::SelectFirstWorldMap()
+{
+	return SelectWorldMap(this->pWorldMapListBoxWidget->GetKeyAtLine(0));
+}
+
+//*****************************************************************************
+bool CEditSelectScreen::SelectWorldMap(const UINT dwWorldMapID)
+{
+	this->pWorldMapImage->SetImage((SDL_Surface*)NULL);
+
+	ASSERT(this->pSelectedHold);
+	if (!dwWorldMapID || dwWorldMapID == ADD_WORLDMAP_ID) {
+		this->selectedWorldMapID = 0;
+		this->pWorldMapListBoxWidget->DeselectAll();
+		this->pWorldMapListBoxWidget->UnsetCursorLine();
+		return false;
+	}
+
+	this->selectedWorldMapID = dwWorldMapID;
+
+	this->pWorldMapListBoxWidget->SelectItem(dwWorldMapID);
+
+	CListBoxWidget* pWorldMapDisplayListBox = DYN_CAST(CListBoxWidget*, CWidget*,
+		GetWidget(TAG_WORLDMAPDISPLAYLIST));
+	pWorldMapDisplayListBox->SelectItem(
+		this->pSelectedHold->GetWorldMapDisplayType(dwWorldMapID));
+
+	DrawScaledWorldMapImage();
+
+	return true;
+}
+
+//*****************************************************************************
+bool CEditSelectScreen::SetImageWorldMap()
+{
+	ASSERT(this->pSelectedHold);
+
+	ASSERT(this->selectedWorldMapID);
+	ASSERT(this->selectedWorldMapID != ADD_WORLDMAP_ID);
+
+SelectImage:
+	UINT dwDataID;
+	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
+	do {
+		dwDataID = this->pSelectedHold->GetWorldMapDataID(this->selectedWorldMapID);
+		eButton = SelectListID(
+			this->pEntranceBox, this->pSelectedHold, dwDataID,
+			MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
+		if (eButton != CEntranceSelectDialogWidget::OK &&
+			eButton != CEntranceSelectDialogWidget::Delete)
+			return false;
+
+		if (eButton == CEntranceSelectDialogWidget::Delete)
+		{
+			//Remove this image from the database and make another selection.
+			if (dwDataID) {
+				g_pTheDB->Data.Delete(dwDataID);
+				this->pSelectedHold->SetDataIDForWorldMap(this->selectedWorldMapID, 0);
+			}
+		}
+	} while (eButton != CEntranceSelectDialogWidget::OK);
+
+	if (dwDataID) {
+		this->pSelectedHold->SetDataIDForWorldMap(this->selectedWorldMapID, dwDataID);
+	} else {
+		//Load new image from disk.
+		const UINT dwID = ImportHoldImage(this->pSelectedHold->dwHoldID, EXT_JPEG | EXT_PNG);
+		if (dwID)
+			this->pSelectedHold->SetDataIDForWorldMap(this->selectedWorldMapID, dwID);
+		goto SelectImage;	//return to image select menu
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+void CEditSelectScreen::DrawScaledWorldMapImage()
+{
+	this->pWorldMapImage->SetImage((SDL_Surface*)NULL);
+
+	const UINT dataID = this->pSelectedHold->GetWorldMapDataID(this->selectedWorldMapID);
+	if (dataID) {
+		SDL_Surface* pImage = g_pTheDBM->LoadImageSurface(dataID);
+		if (pImage) {
+			this->pWorldMapImage->SetImage(pImage);
+		}
+	}
+
+	this->pScaledWorldMapWidget->RefreshSize();
+
+	if (!g_pTheSM->bTransitioning)
+		this->pScaledWorldMapWidget->Paint();
+}
+
+//*****************************************************************************
 void CEditSelectScreen::CopyHold()
 //Make duplicate copy of selected hold.
 {
@@ -1913,6 +2286,35 @@ void CEditSelectScreen::DeleteLevel()
 	this->pSelectedHold->Update();
 
 	SelectHold(this->pSelectedHold->dwHoldID);
+	Paint();
+}
+
+//*****************************************************************************
+void CEditSelectScreen::DeleteWorldMap()
+//Deletes the currently selected world map from its hold, upon user confirmation.
+{
+	if (!this->selectedWorldMapID)
+		return;
+	ASSERT(this->pSelectedHold);
+	if (!ModifyHold())
+		return;
+
+	WSTRING prompt = this->pWorldMapListBoxWidget->GetSelectedItemText();
+	prompt += wszColon;
+	prompt += wszCRLF;
+	prompt += g_pTheDB->GetMessageText(MID_DeleteWorldMapPrompt);
+	if (ShowYesNoMessage(prompt.c_str()) != TAG_YES)
+		return;
+
+	this->pSelectedHold->DeleteWorldMap(this->selectedWorldMapID);
+	this->pSelectedHold->Update();
+
+	this->pWorldMapListBoxWidget->RemoveItem(this->selectedWorldMapID);
+
+	SelectFirstWorldMap();
+
+	SetWidgetStates();
+
 	Paint();
 }
 
@@ -2234,6 +2636,8 @@ void CEditSelectScreen::PopulateLevelListBox()
 		this->pLevelListBoxWidget->AddItem((*level)->dwLevelID, (const WCHAR*)((*level)->NameText));
 		delete *level;
 	}
+
+	AddNewLevelLineToLevelList();
 	}
 	END_DBREFCOUNT_CHECK;
 }
@@ -2264,6 +2668,39 @@ void CEditSelectScreen::PopulateStyleListBox()
 	}
 
 	this->pStyleListBoxWidget->SelectLine(0);
+}
+
+//*****************************************************************************
+void CEditSelectScreen::PopulateWorldMapListBox()
+//Puts world maps of current hold into list box.
+{
+	BEGIN_DBREFCOUNT_CHECK;
+	{
+		this->pWorldMapListBoxWidget->Clear();
+
+		if (!this->pSelectedHold)
+			return;
+
+		//Get maps.  Sort by order index in hold.
+		SORTED_WORLD_MAPS maps;
+		for (vector<HoldWorldMap>::const_iterator map = this->pSelectedHold->worldMaps.begin();
+			map != this->pSelectedHold->worldMaps.end(); ++map)
+		{
+			maps.insert(&(*map));
+		}
+
+		for (SORTED_WORLD_MAPS::const_iterator sorted = maps.begin();
+			sorted != maps.end(); ++sorted)
+		{
+			const HoldWorldMap& map = *(*sorted);
+			this->pWorldMapListBoxWidget->AddItem(map.worldMapID, map.nameText.c_str());
+		}
+
+		this->selectedWorldMapID = this->pWorldMapListBoxWidget->GetKeyAtLine(0);
+
+		AddNewMapLineToMapList();
+	}
+	END_DBREFCOUNT_CHECK;
 }
 
 //*****************************************************************************
@@ -2448,5 +2885,27 @@ void CEditSelectScreen::RenameLevel()
 		this->pSelectedLevel->Update();
 		this->pLevelListBoxWidget->SetSelectedItemText(wstr.c_str());
 		this->pLevelListBoxWidget->Paint();
+	}
+}
+
+//*****************************************************************************
+void CEditSelectScreen::RenameWorldMap()
+//User renames currently selected world map.
+{
+	if (!this->selectedWorldMapID)
+		return;
+
+	ASSERT(this->pSelectedHold);
+	if (!ModifyHold())
+		return;
+
+	WSTRING wstr = this->pWorldMapListBoxWidget->GetSelectedItemText();
+	const UINT dwAnswerTagNo = ShowTextInputMessage(MID_NameWorldMap, wstr);
+	if (dwAnswerTagNo == TAG_OK)
+	{
+		this->pSelectedHold->RenameWorldMap(this->selectedWorldMapID, wstr);
+		this->pSelectedHold->Update();
+		this->pWorldMapListBoxWidget->SetSelectedItemText(wstr.c_str());
+		this->pWorldMapListBoxWidget->Paint();
 	}
 }

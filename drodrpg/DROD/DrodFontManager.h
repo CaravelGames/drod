@@ -82,6 +82,7 @@ enum FONTTYPE
 	F_DamagePreviewMedium,
 	F_DamagePreviewLarge,
 	F_SettingsKeymaps,
+	F_WorldMapLevel,
 
 	F_Last
 };

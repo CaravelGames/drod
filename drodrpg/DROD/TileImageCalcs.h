@@ -71,6 +71,7 @@ UINT  CalcTileImageForAccessory(const BYTE tParam);
 UINT  CalcTileImageForStairs(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForToken(const BYTE tParam);
 UINT  CalcTileImageForWater(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
+UINT  GetTileImageForEntityOrDefault(const UINT wType, UINT wO, const UINT wAnimFrame);
 
 enum WALLTYPE {WALL_NONE, WALL_EDGE, WALL_INNER};
 WALLTYPE GetWallTypeAtSquare(const CDbRoom *pRoom, int nCol, int nRow);

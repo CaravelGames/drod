@@ -1751,3 +1751,67 @@ Roachie
 [MID_CollectableGroup]
 [eng]
 Collectable items
+
+[MID_WorldMapSelect]
+[eng]
+World Map Select
+
+[MID_SelectWorldMapPrompt]
+[eng]
+Please select a world map.
+
+[MID_WorldMapMusic]
+[eng]
+World Map Music
+
+[MID_WorldMapIcon]
+[eng]
+World Map Tile Icon
+
+[MID_WorldMapImage]
+[eng]
+World Map Image Icon
+
+[MID_WMI_Off]
+[eng]
+Off
+
+[MID_WMI_On]
+[eng]
+On
+
+[MID_WMI_LevelState]
+[eng]
+Level state
+
+[MID_WMI_Cleared]
+[eng]
+Cleared
+
+[MID_WMI_Disabled]
+[eng]
+Disabled
+
+[MID_WMI_Locked]
+[eng]
+Locked
+
+[MID_WMI_NoLabel]
+[eng]
+Image only
+
+[MID_X_Coord]
+[eng]
+x
+
+[MID_Y_Coord]
+[eng]
+y
+
+[MID_GoToWorldMap]
+[eng]
+Go to world map
+
+[MID_WorldMapDestinationPrompt]
+[eng]
+Choose a destination
