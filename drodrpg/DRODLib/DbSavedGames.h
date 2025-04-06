@@ -109,6 +109,8 @@ struct SAVE_INFO {
 
 typedef std::multimap<UINT, SAVE_INFO> SORTED_SAVES;
 
+typedef map<UINT, MapState> RoomMapStates;
+
 //******************************************************************************************
 class CDbSavedGames;
 class CCurrentGame;
@@ -159,7 +161,7 @@ public:
 	ExploredRoom* getExploredRoom(const UINT roomID) const;
 	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false, const bool bIncludeNoSavedAlso=true) const;
 	CIDSet    GetMappedRooms() const {return GetExploredRooms(true);}
-	CIDSet    GetInvisibleRooms() const;
+	RoomMapStates GetMappedRoomsWithState() const;
 	bool      IsRoomExplored(const UINT roomID, const bool bConsiderCurrentRoom=true) const;
 	void      LoadExploredRooms(const c4_View& ExploredRoomsView);
 	CMonster* LoadMonster(const c4_RowRef& row);
@@ -167,7 +169,7 @@ public:
 	void      ReloadMonsterList(CMonster *pAlternateMonsterList=NULL);
 	void      removeGlobalScriptForEquipment(const UINT type);
 	void      removeGlobalScripts(const CIDSet& completedScripts);
-	void      RemoveMappedRoomsNotIn(const CIDSet& exploredRoomIDs, const CIDSet& mappedRoomIDs,
+	void      RemoveMappedRoomsNotIn(const CIDSet& exploredRoomIDs, const RoomMapStates& mappedRoomIDs,
 			const CIDSet& roomPreviewIDs);
 	void      SetMonsterListAtRoomStart();
 	void      setMonstersCurrentGame(CCurrentGame* pCurrentGame);

@@ -251,17 +251,15 @@ const
 }
 
 //*****************************************************************************
-CIDSet CDbSavedGame::GetInvisibleRooms() const
-//Returns: All "explored rooms" that should not be shown on the map
+RoomMapStates CDbSavedGame::GetMappedRoomsWithState() const
+//Returns: State of all rooms tracked on the level
 {
-	CIDSet rooms;
+	RoomMapStates rooms;
 	for (vector<ExploredRoom*>::const_iterator roomIt = this->ExploredRooms.begin();
 		roomIt != this->ExploredRooms.end(); ++roomIt)
 	{
 		const ExploredRoom& room = *(*roomIt);
-		if (room.IsInvisible()) {
-			rooms += room.roomID;
-		}
+		rooms[room.roomID] = room.mapState;
 	}
 	return rooms;
 }
@@ -597,14 +595,18 @@ void CDbSavedGame::removeGlobalScripts(const CIDSet& completedScripts)
 //*****************************************************************************
 void CDbSavedGame::RemoveMappedRoomsNotIn(
 //Remove any room objects in this->ExploredRooms that are not contained in mappedRoomIDs,
-//which is a superset of exploredRoomIDs.
-//Any rooms that were previously explored, but now are only mapped,
-//are reverted to "bMapOnly" status.
+// which is a superset of exploredRoomIDs.
+//Revert the state of rooms listed only on the map.
+//Any rooms that were previously saved with state, but now are to be only listed on the map,
+// have their state removed.
 //Explored rooms are also reverted to non-saved room previews where applicable.
-	const CIDSet& exploredRoomIDs, const CIDSet& mappedRoomIDs,
+	const CIDSet& exploredRoomIDs,
+	const RoomMapStates& mappedRoomIDs,
 	const CIDSet& roomPreviewIDs) //rooms to display on the map, but not to write to a saved game
 {
-	ASSERT(mappedRoomIDs.contains(exploredRoomIDs)); //superset
+	for (CIDSet::const_iterator iter = exploredRoomIDs.begin(); iter != exploredRoomIDs.end(); ++iter) {
+		ASSERT(mappedRoomIDs.count(*iter)); //mappedRoomIDs is superset of exploredRooms
+	}
 
 	vector<ExploredRoom*> retainedRooms;
 	for (vector<ExploredRoom*>::const_iterator roomIter = this->ExploredRooms.begin();
@@ -612,8 +614,11 @@ void CDbSavedGame::RemoveMappedRoomsNotIn(
 	{
 		ExploredRoom* pRoom = *roomIter;
 		const UINT roomID = pRoom->roomID;
-		if (!mappedRoomIDs.has(roomID))
-		{
+		RoomMapStates::const_iterator roomMap = mappedRoomIDs.find(roomID);
+		if (roomMap != mappedRoomIDs.end()) {
+			//Revert room map state
+			pRoom->mapState = roomMap->second;
+		} else {
 			//This room was added to the map since entering the current room -- take it back off
 			if (pRoom->bSave && !roomPreviewIDs.has(roomID)) {
 				delete pRoom; //room shouldn't be included in any list
