@@ -896,11 +896,10 @@ void CCurrentGame::ExitCurrentRoom()
 			this->moves.Append(this->Commands);
 	}
 
-	//Record that scripts were completed.
-	AddCompletedScripts();
+	CheckGlobalScriptsState();
 
 	//Save info for room being exited.
-	SaveExploredRoomData(*this->pRoom);
+	SaveExploredRoomData(*this->pRoom, true);
 
 	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
 }
@@ -4919,56 +4918,14 @@ UINT CCurrentGame::WriteCurrentRoomDieDemo()
 //
 
 //***************************************************************************************
-void CCurrentGame::AddCompletedScripts()
-//Remove NPCs for scripts that are marked "End"ed.
-//Also, restart any NPC scripts flagged to do so.
+void CCurrentGame::CheckGlobalScriptsState()
+//Clear or restart any global NPC scripts flagged to do so.
 {
-	//Since rooms don't reset, we don't need to keep track of which NPCs ended
-	//in previous room sessions.  Instead, just remove them from the room now on exit.
-	//
-	//Handling it this way is also necessary to avoid generated NPCs with a
-	//colliding scriptID of another NPC in the hold from ending that NPC's script.
-	CMonster *pMonster = this->pRoom->pFirstMonster;
-	while (pMonster)
-	{
-		CMonster *pNext = pMonster->pNext;
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->bScriptDone)
-			{
-				//Delete monster from room before room data is saved.
-				this->pRoom->UnlinkMonster(pCharacter);
-				this->pRoom->DeadMonsters.push_back(pCharacter); //don't dealloc yet -- might still have pointer refs
-			}
-		}
-		pMonster = pNext;
-	}
-
-/*
-	//Check for scripts that completed but were not marked yet.
-	//This could happen for scripts that execute and complete on room entrance,
-	//and then the player immediately leaves the room without making a move.
-	CMonster *pMonster = this->pRoom->pFirstMonster;
-	while (pMonster)
-	{
-		if (M_CHARACTER == pMonster->wType)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->bScriptDone)
-				this->CompletedScriptsPending += pCharacter->dwScriptID;
-		}
-		pMonster = pMonster->pNext;
-	}
-
-	this->CompletedScripts += this->CompletedScriptsPending;
-*/
-
 	CDbSavedGame::removeGlobalScripts(this->CompletedScriptsPending);
 	this->CompletedScriptsPending.clear();
 
 	//Restart global scripts that are flagged to do so.
-	for (pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
+	for (CMonster *pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
 	{
 		if (pMonster->wType == M_CHARACTER)
 		{
@@ -7059,8 +7016,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 }
 
 //*****************************************************************************
-void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
-//Adds or updates an ExploredRoom record to keep track of what is in the room being left.
+// Adds or updates an ExploredRoom record to keep track of what is in the room being left.
+void CCurrentGame::SaveExploredRoomData(
+	const CDbRoom& room,
+	const bool bOmitCompletedScripts) //Whether characters marked "ended" should be omitted from the save record data [default=false]
 {
 	//Has this room already been explored?
 	ExploredRoom *pExpRoom = getExploredRoom(room.dwRoomID);
@@ -7106,6 +7065,14 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 	CMonster *pLastNewMonster = NULL;
 	for (CMonster *pMonster = room.pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
+		if (bOmitCompletedScripts && pMonster->wType == M_CHARACTER) {
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (pCharacter->bScriptDone) {
+				//Don't retain character in room data being saved.
+				continue;
+			}
+		}
+
 		//Make copy of monster in its current state.
 		CMonster *pNew = pMonster->Clone();
 		//Copy monster pieces.
@@ -7137,10 +7104,9 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		//Link up.
 		pNew->pNext = NULL;
 		pNew->pPrevious = pLastNewMonster;
-		if (!pExpRoom->pMonsterList)
+		if (!pExpRoom->pMonsterList) {
 			pExpRoom->pMonsterList = pNew;
-		else
-		{
+		} else {
 			ASSERT(pLastNewMonster);
 			pLastNewMonster->pNext = pNew;
 		}

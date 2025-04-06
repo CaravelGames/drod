@@ -355,7 +355,7 @@ public:
 			{this->dwAutoSaveOptions = dwSetAutoSaveOptions;}
 	void     SetComputationTimePerSnapshot(const UINT dwTime);
 */
-	void     SaveExploredRoomData(CDbRoom& room);
+	void     SaveExploredRoomData(const CDbRoom& room, const bool bOmitCompletedScripts=false);
 
 	void     DisableInventory(CCueEvents& CueEvents, const UINT type, const bool bDisable=true);
 	void     EnableInventory(CCueEvents& CueEvents, const UINT type);
@@ -448,11 +448,11 @@ private:
 			const UINT wFromX, const UINT wFromY, const UINT wX, const UINT wY,
 			const bool bDefeatToStabTarTile=false);
 
-	void		AddCompletedScripts();
 	void     AddRoomsToPlayerTally();
 	void     AddQuestionsToList(CCueEvents &CueEvents,
 			list<CMonsterMessage> &QuestionList) const;
 	void     AmbientSoundTracking(CCueEvents &CueEvents);
+	void     CheckGlobalScriptsState();
 	void     DeleteLeakyCueEvents(CCueEvents &CueEvents);
 //	void     DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType);
 	void     ExitCurrentRoom();
