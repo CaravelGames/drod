@@ -4446,11 +4446,6 @@ void CCurrentGame::SaveToContinue()
 	if (this->bNoSaves)
 		return;
 
-	/*
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	*/
-
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
@@ -7640,8 +7635,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	PackData(this->stats);
 	this->statsAtRoomStart = this->stats;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
-	this->roomsMappedAtRoomStart = GetMappedRooms();
-	this->roomsMappedAtRoomStart += GetInvisibleRooms();
+	this->roomsMappedAtRoomStart = GetMappedRoomsWithState();
 
 	this->mapIconsAtRoomStart.clear();
 	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
