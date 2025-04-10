@@ -409,7 +409,8 @@ static inline bool bIsEditorCommand(const int command)
 		return bIsGameCommand(command) ||
 			(command >= CMD_EXTRA_WATCH_DEMOS && command <= CMD_EXTRA_SHOW_HELP) ||
 			command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
-			command == CMD_EXTRA_STATS || command == CMD_EXTRA_RELOAD_STYLE;
+			command == CMD_EXTRA_STATS || command == CMD_EXTRA_RELOAD_STYLE ||
+			(command >= CMD_EXTRA_SCRIPT_SELECT_ALL && command <= CMD_EXTRA_SCRIPT_FROM_TEXT);
 }
 
 static inline bool bIsEditSelectCommand(const int command)
