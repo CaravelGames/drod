@@ -9358,6 +9358,9 @@ bool CDbRoom::UpdateNew()
 	p_DataID(row) = this->dwDataID;
 	p_ImageStartX(row) = this->wImageStartX;
 	p_ImageStartY(row) = this->wImageStartY;
+	p_OverheadDataID(row) = this->dwOverheadDataID;
+	p_OverheadImageStartX(row) = this->wOverheadImageStartX;
+	p_OverheadImageStartY(row) = this->wOverheadImageStartY;
 	p_StyleName(row) = PutWString(this->style);
 	p_Squares(row) = *pSquaresBytes;
 	p_TileLights(row) = *pLightsBytes;
