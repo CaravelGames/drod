@@ -11242,9 +11242,11 @@ void CDbRoom::ReplaceTLayerItem(const UINT wX, const UINT wY, const UINT wTileNo
 
 	} else if (bIsTLayerCoveringItem(wTileNo) && bIsTLayerCoverableItem(oldTile)) {
 		// Cover coverables
-		tObj = SetTLayer(wX, wY, wTileNo);
-		tObj->place_under(oldTile);
+		RoomObject* newObj = AddTLayerObject(wX, wY, wTileNo);
+		if (newObj->cover(tObj))
+			RemoveTLayerObject(tObj);
 
+		this->tLayer[tileIndex] = newObj;
 	} else {
 		tObj = SetTLayer(wX,wY,wTileNo);
 	}
