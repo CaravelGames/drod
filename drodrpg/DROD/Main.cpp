@@ -192,14 +192,24 @@ int main(int argc, char *argv[])
 		} else if (!_stricmp(arg, "demo")) {
 			bIsDemo = true;
 			Metadata::Set(MetaKey::DEMO, "1");
-		}
+		} else if (!strcmp(arg, "embedmedia")) {
+#ifdef DEV_BUILD
+			Metadata::Set(MetaKey::EMBEDMEDIA, "1");
+#else
+			return 2;
+#endif
 #ifdef WIN32
-		else if (!strncmp(arg, "commondatadir=", 14)) {
+		} else if (!strncmp(arg, "commondatadir=", 14)) {
 			const UINT val = convertToUINT(arg + 14);
 			bWindowsDataFilesInUserSpecificDir = val == 0 ? true : false;
-		}
 #endif
- //else: more command line arg processing occurs below
+		} else if (!strncmp(arg, "datafilenum=", 12)) { //active in Steam build only
+			if (!CDbBase::SetCreateDataFileNum(convertToUINT(arg + 12)))
+				return 2;
+		} else if (!strncmp(arg, "applyholdstatus=", 16)) {
+			Metadata::Set(MetaKey::APPLYHOLDSTATUS, arg + 16);
+		}
+		//else: more command line arg processing occurs below
 	}
 
 # if defined(__linux__) || defined(__FreeBSD__)
