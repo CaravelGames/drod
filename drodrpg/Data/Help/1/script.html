@@ -185,6 +185,9 @@ interacts with its environment.</p>
       point taken, either via stairs or script.
       Using it again consecutively will return to the location of original use.
       </li>
+  <li><a name="gotoworldmap"><b>Go to world map</b></a> - Sends the player
+     immediately to any world map defined in the hold.
+     </li>
   <li><a name="playvideo"><b>Play video</b></a> - Plays a video file, imported
       from a video file on disk, at the specified screen coordinates.  Sound
       tracks in video files are not supported, but sounds and music may be
@@ -330,6 +333,11 @@ interacts with its environment.</p>
 	  at a specified room location.  Particle effects may have a direction
 	  given them.  Some effects may play an optional accompanying sound effect.</li>
   <li><a name="image-overlay"><b>Image overlay</b></a> - Input a <a href="#image-overlay-commands">custom set of commands</a> for displaying a custom image effect in the game room.</li>
+  <li><a name="world-map-select"><b>World Map Select</b></a> - Select an overworld map for subsequent World Map commands to be performed with reference to. Without this command, the other World Map commands will do nothing.</li>
+  <li><a name="world-map-music"><b>World Map Music</b></a> -
+Sets the music that plays on the previously selected map. This only need be executed once during a hold playthrough. Any subsequent executions will override the previous setting.</li>
+  <li><a name="world-map-tile-icon"><b>World Map Tile Icon</b></a> - Places an icon on the previously selected map. You specify the position the icon appears on the map, its state, and if active, what level entrance or map it leads to when the player clicks on it from this map screen. Icons persist on the specified map from that moment for the entire playthrough. Placing an icon at the same position as another will override the first. Using icon type "Off" will remove an icon from the map. You can select a custom NPC with a looping animation speed in order to display an animated graphic on the map.</li>
+  <li><a name="world-map-image-icon"><b>World Map Image Icon</b></a> - Places an image on the previously selected map. Works in other respects as the "World Map Tile Icon" command.</li>
 </ol>
 
 <p><a name="queries"><b>4.&nbsp;&nbsp;Queries</b></a> - Use queries to examine
