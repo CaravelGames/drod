@@ -46,7 +46,6 @@
 #include <mk4.h>
 
 #define ROW_NO_MATCH ((UINT)-1)
-#define START_LOCAL_ID (10000)
 
 extern void GetWString(WSTRING& wstr, const c4_Bytes& Bytes);
 extern c4_Bytes PutWString(const WSTRING& wstr);
@@ -99,6 +98,9 @@ public:
 			char* const str, CImportInfo &info);
 	virtual bool        Update()=0;
 
+	//For dev building of various DLC packs (static DB files)
+	static bool SetCreateDataFileNum(UINT num);
+
 protected:
 	static bool bDirtyData, bDirtyHold, bDirtyPlayer, bDirtySave, bDirtyText; //one for each data file
 	bool        bPartialLoad;  //set on quick record load
@@ -113,7 +115,11 @@ protected:
 	virtual void resetIndex();
 	virtual void buildIndex();
 
+	static const UINT START_LOCAL_ID;
+
 private:
+	static WSTRING BaseResourceFilename();
+
 	virtual void  Commit();
 	virtual void  Rollback();
 	void          Undirty();
@@ -128,11 +134,18 @@ private:
 	static UINT         LookupRowByPrimaryKey(const UINT dwID,
 			const VIEWTYPE vType, const c4_IntProp *pPropID, const UINT rowCount, c4_View &View);
 
-	static UINT   globalRowToLocalRow(const UINT globalRowIndex, const VIEWTYPE vType);
+	static UINT   globalRowToLocalRow(UINT globalRowIndex, const VIEWTYPE vType);
 	WCHAR*        SetLastMessageText(const WCHAR *pwczNewMessageText, const UINT dwNewMessageTextLen);
 	WCHAR*  pwczLastMessageText;
 
 	static void   RedefineDatabase(c4_Storage* storage);
+
+	bool CreateContentFile(const WSTRING& wFilename, UINT num);
+	void OpenStaticContentFiles(const WSTRING& wstrResPath);
+
+	//For dev building of various DLC packs (static DB files)
+	static UINT GetStartIDForDLC(UINT fileNum);
+	static UINT creatingStaticDataFileNum;
 
 	PREVENT_DEFAULT_COPY(CDbBase);
 };

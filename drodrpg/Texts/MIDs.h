@@ -1123,6 +1123,7 @@ enum MID_CONSTANT {
   MID_DROD_RPG1 = 1414,
   MID_DROD_RPG1_2 = 1757,
   MID_DROD_RPG1_3 = 1758,
+  MID_DROD_RPG2_0 = 2106,
   MID_DROD_UnsupportedVersion = 1415,
   MID_UploadVerifiedVictoryDemosPrompt = 910,
   MID_BetaHold = 911,

@@ -61,6 +61,7 @@
 #include <BackEndLib/Base64.h>
 #include <BackEndLib/Browser.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 
 #include <sstream>
 
@@ -1451,9 +1452,11 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 	CDbHold *pHold = g_pTheDB->Holds.GetByID(dwHoldID);
 	if (!pHold) return;
 
+#ifndef STEAMBUILD
 	//Load graphics/music into hold for inclusion in export.
 	if (pHold->status == CDbHold::Main)
-		ImportHoldMedia();
+		ImportMedia();
+#endif
 
 	//Default filename is hold name.
 	WSTRING wstrExportFile = (WSTRING)pHold->NameText;
@@ -1606,9 +1609,11 @@ MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 		return MID_DROD_RPG1;   //1.0
 	if (wVersion == 406)
 		return MID_DROD_RPG1_2; //1.1/1.2
-	if (wVersion >= 407 && wVersion < NEXT_VERSION_NUMBER)
+	if (wVersion >= 407 && wVersion < 500)
 		return MID_DROD_RPG1_3; //1.3
-	return MID_DROD_UnsupportedVersion; //???
+	if (wVersion >= 500 && wVersion < NEXT_VERSION_NUMBER)
+		return MID_DROD_RPG2_0;
+	return MID_DROD_UnsupportedVersion;
 }
 
 //*****************************************************************************
@@ -1616,9 +1621,9 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-	string url = "http://www.caravelgames.com/buyRPG.html";
+	string url = "http://www.caravelgames.com/buyRPG.html"; //UPDATE FOR DROD RPG 2
 #ifdef STEAMBUILD
-	url = "http://store.steampowered.com/app/351330";
+	url = "http://store.steampowered.com/app/867797";
 #elif defined(WIN32)
 	//use default
 #elif defined(__linux__)
@@ -1628,7 +1633,7 @@ void CDrodScreen::GoToBuyNow()
 #elif defined(__APPLE__)
 	url = "http://www.caravelgames.com/buyRPGOSX.html";
 #else
-#error Add a buy link for this platform ?
+#	error Add a buy link for this platform ?
 #endif
 
 	if (!OpenExtBrowser(url.c_str()))
@@ -1831,12 +1836,30 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 }
 
 //*****************************************************************************
+//Return: a "good enough" threshold to distinguish between the demo and full official game hold
+//        i.e., if the hold has at least this many level entrances defined, this is the full (registered) hold
+UINT CDrodScreen::EntrancesInFullVersion()
+{
+	return 50;
+}
+
+//*****************************************************************************
 bool CDrodScreen::IsGameFullVersion()
 //Returns: whether the included hold is the full version (true), otherwise false
 {
+#ifdef STEAMBUILD
+	return Metadata::GetInt(MetaKey::DEMO) != 1;
+#endif
+
+	//Programmatic override for embedding game media files in dev build.
+	if (Metadata::GetInt(MetaKey::EMBEDMEDIA) == 1)
+		return Metadata::GetInt(MetaKey::DEMO) != 1;
+
 	const UINT mainholdID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Main);
+	if (!mainholdID)
+		return false;
 	CDbHold *pHold = g_pTheDB->Holds.GetByID(mainholdID);
-	const bool bFull = pHold && pHold->Entrances.size() > 50;
+	const bool bFull = pHold && pHold->Entrances.size() >= EntrancesInFullVersion();
 	delete pHold;
 	return bFull;
 }
@@ -1947,7 +1970,7 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 }
 
 //*****************************************************************************
-void CDrodScreen::ImportHoldMedia()
+void CDrodScreen::ImportMedia()
 //Imports sound and graphics files from disk into the DB.
 {
 #ifdef EMBED_STYLES
@@ -1956,8 +1979,22 @@ void CDrodScreen::ImportHoldMedia()
 	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 		return;	//styles are missing
 
-	//If hold being exported is for demo, include the City style only.
-	//Otherwise include all of them.
+	CFiles f;
+
+	//Log all files being exported for debugging purposes.
+	WSTRING wstrLog;
+	AsciiToUnicode(".export.log", wstrLog);
+	WSTRING wstrLogFilename = f.GetDatPath();
+	wstrLogFilename += wszSlash;
+	wstrLogFilename += CFiles::wGameName;
+	wstrLogFilename += wstrLog;
+
+#define LOG_TEXT(wtext) { string strLog = UnicodeToUTF8(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
+
+	//Default: if official hold is the demo version, include selected demo styles only. Otherwise include all of them.
+//	CDbHold::HoldStatus status = GetInstalledOfficialHold();
+//	if (status == CDbHold::NoStatus)
+//		status = (CDbHold::HoldStatus)Metadata::GetInt(MetaKey::APPLYHOLDSTATUS);
 	const bool bDemo = !IsGameFullVersion();
 	if (bDemo)
 	{
@@ -2060,6 +2097,8 @@ void CDrodScreen::ImportHoldMedia()
 			if (embeddedImages.count(wstrImportFile) != 0)
 				continue; //this image was already processed -- don't reimport it
 			embeddedImages.insert(wstrImportFile);
+
+			LOG_TEXT(wstrImportFile);
 
 			WSTRING wstrFilepath;
 			const UINT wDataFormat = g_pTheBM->GetImageFilepath(wstrImportFile.c_str(), wstrFilepath);
@@ -2301,6 +2340,8 @@ void CDrodScreen::ImportHoldMedia()
 					continue; //this song was already processed -- don't redo it
 				embeddedSongs.insert(wstrSongFilename);
 
+				LOG_TEXT(wstrSongFilename);
+
 				wstrSongFilepath = wstrDir + wstrSongFilename;
 
 				CStretchyBuffer data;
@@ -2340,6 +2381,8 @@ void CDrodScreen::ImportHoldMedia()
 				continue; //this sound file has already been imported -- skip it
 			embeddedSounds.insert(*iFilename);
 
+			LOG_TEXT(*iFilename);
+
 			wstrSoundPath = wstrDir + *iFilename;
 
 			CStretchyBuffer data;
@@ -2364,6 +2407,7 @@ void CDrodScreen::ImportHoldMedia()
 	}
 
 	HideStatusMessage();
+#undef LOG_TEXT
 #endif
 }
 
@@ -2412,16 +2456,21 @@ void CDrodScreen::EnablePlayerSettings(
 }
 
 //*****************************************************************************
-void CDrodScreen::ImportQueuedFiles()
+bool CDrodScreen::ImportQueuedFiles()
 //Import queued filenames.
 {
 	if (importFiles.empty())
-		return;
+		return false;
 
 	CIDSet ignored;
 	set<WSTRING> importedStyles;
 	ImportFiles(CDrodScreen::importFiles, ignored, importedStyles);
 	importFiles.clear();
+
+#ifdef DEV_BUILD
+	return true; //signal to exit app
+#endif
+	return false;
 }
 
 //*****************************************************************************

@@ -65,6 +65,7 @@ public:
 	static WSTRING getStatsText(const PlayerStats& st, CCurrentGame* pGame=NULL);
 	static WSTRING getStatsText(const RoomStats& st, CCurrentGame* pGame=NULL);
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
+	static UINT    EntrancesInFullVersion();
 	static bool    IsGameFullVersion();
 
 	bool ValidateVideo(CStretchyBuffer& buffer) { return PlayVideoBuffer(buffer, NULL); }
@@ -102,8 +103,8 @@ protected:
 	bool           ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename=NULL);
 	MESSAGE_ID     ImportFiles(const vector<WSTRING>& wstrImportFiles,
 			CIDSet& importedIDs, set<WSTRING>& importedStyles, const bool bSilent=false);
-	void		      ImportHoldMedia();
-	void           ImportQueuedFiles();
+	void           ImportMedia();
+	bool           ImportQueuedFiles();
 	bool           IsStyleOnDisk(list<WSTRING>& styleName, list<WSTRING>& skies);
 	virtual bool   IsCommandSupported(int command) const;
 	void           InitKeysymToCommandMap(CDbPackedVars& PlayerSettings);
