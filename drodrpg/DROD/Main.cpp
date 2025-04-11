@@ -1063,7 +1063,9 @@ void DeinitSound()
 //*****************************************************************************
 void InitMetadata()
 {
+	Metadata::Set(MetaKey::APPLYHOLDSTATUS, "-1"); //CDbHold::NoStatus
 	Metadata::Set(MetaKey::DEMO, "0");
+	Metadata::Set(MetaKey::EMBEDMEDIA, "0");
 	Metadata::Set(MetaKey::MAX_EYE_CANDY, "1");
 }
 
