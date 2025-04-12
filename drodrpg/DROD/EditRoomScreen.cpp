@@ -1892,8 +1892,8 @@ void CEditRoomScreen::GetCustomImageID(
 
 	if (!bReselect)
 	{
-		this->pRoom->wImageStartX = this->pRoomWidget->wStartX;
-		this->pRoom->wImageStartY = this->pRoomWidget->wStartY;
+		imageStartX = this->pRoomWidget->wStartX;
+		imageStartY = this->pRoomWidget->wStartY;
 	} else {
 		this->bSelectingImageStart = true;
 		VERIFY(SetState(ES_GETSQUARE));
