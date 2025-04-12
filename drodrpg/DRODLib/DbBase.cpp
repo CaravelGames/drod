@@ -1199,6 +1199,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_WorldMapDestinationPrompt: strText = "Choose a destination"; break;
 		case MID_WMI_Cleared: strText = "Cleared"; break;
 		case MID_DROD_RPG2_0: strText = "RPG (2.0)"; break;
+		case MID_VarReturnX: strText = "_ReturnX"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

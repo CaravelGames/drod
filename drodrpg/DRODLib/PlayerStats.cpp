@@ -50,6 +50,7 @@ const char ScriptVars::predefinedVarTexts[PredefinedVarCount][16] =
 	"", "",
 	"_MudSwap", "_TarSwap", "_GelSwap",
 	"", "",
+	"_ReturnX"
 };
 
 //Message texts corresponding to the above short var texts.
@@ -85,7 +86,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarBeam, MID_VarFiretrap,
 	MID_VarTotalAtk, MID_VarTotalDef,
 	MID_VarMudSwap, MID_VarTarSwap, MID_VarGelSwap,
-	MID_VarMonsterHue, MID_VarMonsterSaturation
+	MID_VarMonsterHue, MID_VarMonsterSaturation,
+	MID_VarReturnX
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
@@ -541,6 +543,8 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_SCORE_XP: return this->scoreXP;
 		case P_SCORE_SHOVEL: return this->scoreShovels;
 
+		case (UINT)ScriptVars::P_RETURN_X: return this->scriptReturnX;
+
 		case P_NoVar:
 		default: return 0;
 	}
@@ -607,6 +611,8 @@ void PlayerStats::setVar(const Predefined var, const UINT val)
 		case P_SCORE_GOLD: this->scoreGOLD = int(val); break;
 		case P_SCORE_XP: this->scoreXP = int(val); break;
 		case P_SCORE_SHOVEL: this->scoreShovels = int(val); break;
+
+		case P_RETURN_X: this->scriptReturnX = int(val); break;
 
 		case P_NoVar:
 		default: break;

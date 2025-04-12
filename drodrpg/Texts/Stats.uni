@@ -401,3 +401,7 @@ _MyHue
 [MID_VarMonsterSaturation]
 [eng]
 _MySaturation
+
+[MID_VarReturnX]
+[eng]
+_ReturnX
