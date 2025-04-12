@@ -383,6 +383,8 @@ public:
 		CC_WorldMapIcon,        //Places an icon on the world map at (x,y), to level entrance (w), displayed as character type (h), of display type (flags).
 		CC_WorldMapImage,       //Places an icon on the world map at (x,y), to level entrance (w), displayed as image (h), of display type (flags).
 		CC_GoToWorldMap,        //Takes player to world map X.
+		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
+		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 		CC_Count
 	};
 
