@@ -906,6 +906,7 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 					case (UINT)ScriptVars::P_MUD_SWAP:
 					case (UINT)ScriptVars::P_TAR_SWAP:
 					case (UINT)ScriptVars::P_GEL_SWAP:
+					case (UINT)ScriptVars::P_RETURN_X:
 						//display nothing
 					break;
 

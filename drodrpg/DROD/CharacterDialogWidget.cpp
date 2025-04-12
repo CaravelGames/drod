@@ -5232,6 +5232,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_PLAYER_O, g_pTheDB->GetMessageText(MID_VarO));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_X, g_pTheDB->GetMessageText(MID_VarRoomX));
 	this->pVarListBox->AddItem(ScriptVars::P_ROOM_Y, g_pTheDB->GetMessageText(MID_VarRoomY));
+	this->pVarListBox->AddItem(ScriptVars::P_RETURN_X, g_pTheDB->GetMessageText(MID_VarReturnX));
 
 	this->pVarListBox->AddItem(ScriptVars::P_TOTALMOVES, g_pTheDB->GetMessageText(MID_TotalMoves));
 //	this->pVarListBox->AddItem(ScriptVars::P_TOTALTIME, g_pTheDB->GetMessageText(MID_TotalTime)); //hidden from script use -- not correctly supported for deterministic move replay
