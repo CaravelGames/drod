@@ -89,12 +89,14 @@ public:
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
+	int            CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame);
 	virtual bool   DamagedByFiretraps() const { return !bFiretrapImmune; }
 	virtual bool   DamagedByHotTiles() const { return !bHotTileImmune; }
 	void           Defeat();
 	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
+	bool DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame);
 
 	bool EvaluateConditionalCommand(
 		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);

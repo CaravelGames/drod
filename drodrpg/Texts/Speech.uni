@@ -1815,3 +1815,11 @@ Go to world map
 [MID_WorldMapDestinationPrompt]
 [eng]
 Choose a destination
+
+[MID_WaitForArrayEntry]
+[eng]
+Wait for array entry
+
+[MID_CountArrayEntries]
+[eng]
+Count array entries

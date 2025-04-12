@@ -1200,6 +1200,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_WMI_Cleared: strText = "Cleared"; break;
 		case MID_DROD_RPG2_0: strText = "RPG (2.0)"; break;
 		case MID_VarReturnX: strText = "_ReturnX"; break;
+		case MID_WaitForArrayEntry: strText = "Wait for array entry"; break;
+		case MID_CountArrayEntries: strText = "Count array entries"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

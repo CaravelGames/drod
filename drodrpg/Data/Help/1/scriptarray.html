@@ -23,6 +23,16 @@
     The one difference is that the variable name must be followed by a pair of square brackets ([]) containing an index value. This can be a numeric value or an expression that resolves to such a value.
     If an index that has not been set is accessed, a default value of 0 is returned.</p>
 
+    <p><u>Querying full arrays</u></p>
+    <p>Two commands operate over an entire array, to provide a concise way to determine its state:
+    <ul>
+        <li><a name="wait-for-entry"><b>Wait for array entry</b></a> - Waits until the given array contains a value that satisfies the given comparison to a given value.
+        As with other variable commands, an expression can be used in place of a constant value.</li>
+        <li><a name="count-entries"><b>Count array entries</b></a> - Counts the number of values in the array that satisfies the given comparison to a given value.
+        The result is stored in <b>_ReturnX</b>.</li>
+    </ul>
+    </p>
+
     <p><u>Examples of valid array expressions</u></p>
     <ul>
         <li>#Array[2]</li>

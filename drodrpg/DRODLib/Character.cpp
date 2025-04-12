@@ -200,6 +200,24 @@ inline bool bCommandHasData(const UINT eCommand)
 	}
 }
 
+std::function<bool(int, int)> getComparator(ScriptVars::Comp comparison) {
+	switch (comparison) {
+	case ScriptVars::Equals:
+	default:
+		return [](int lhs, int rhs) { return lhs == rhs; };
+	case ScriptVars::Greater:
+		return [](int lhs, int rhs) { return lhs > rhs; };
+	case ScriptVars::Less:
+		return [](int lhs, int rhs) { return lhs < rhs; };
+	case ScriptVars::GreaterThanOrEqual:
+		return [](int lhs, int rhs) { return lhs >= rhs; };
+	case ScriptVars::LessThanOrEqual:
+		return [](int lhs, int rhs) { return lhs <= rhs; };
+	case ScriptVars::Inequal:
+		return [](int lhs, int rhs) { return lhs != rhs; };
+	}
+}
+
 //
 //Public methods.
 //
@@ -376,6 +394,11 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_WaitForVar:
 				case CCharacterCommand::CC_VarSet:
 				case CCharacterCommand::CC_VarSetAt:
+				case CCharacterCommand::CC_ArrayVarSet:
+				case CCharacterCommand::CC_ArrayVarSetAt:
+				case CCharacterCommand::CC_ClearArrayVar:
+				case CCharacterCommand::CC_WaitForArrayEntry:
+				case CCharacterCommand::CC_CountArrayEntries:
 				{
 					//Update var refs.
 					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
@@ -3457,6 +3480,20 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_WaitForArrayEntry:
+			{
+				if (!DoesArrayVarSatisfy(command, pGame))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_CountArrayEntries:
+			{
+				int count = CountArrayVarEntries(command, pGame);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
 
 			case CCharacterCommand::CC_SetPlayerAppearance:
 			{
@@ -4760,6 +4797,76 @@ bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* 
 }
 
 //*****************************************************************************
+bool CCharacter::DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	const UINT varId = command.x;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return false; //Only for array vars
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	ScriptArrayMap::const_iterator finder = scriptArrays.find(varId);
+
+	if (finder == scriptArrays.end()) {
+		return false; //Array hasn't been initialized yet, so it can't contain the target value
+	}
+
+	const map<int, int>& array = finder->second;
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	const UINT varId = command.x;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return 0; //Only for array vars
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	ScriptArrayMap::const_iterator finder = scriptArrays.find(varId);
+
+	if (finder == scriptArrays.end()) {
+		return 0; //Array hasn't been initialized yet, so must have zero of anything
+	}
+
+	const map<int, int>& array = finder->second;
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	int count = 0;
+
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
 //
 bool CCharacter::EvaluateConditionalCommand(
 	const CCharacterCommand& command,
@@ -4860,6 +4967,11 @@ bool CCharacter::EvaluateConditionalCommand(
 		{
 			return !IsTileGroupAt(command);
 		}
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		{
+			return DoesArrayVarSatisfy(command, pGame);
+		}
+		break;
 		default:
 		{
 			ASSERT(!"Bad Conditional Command");

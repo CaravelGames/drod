@@ -1749,6 +1749,8 @@ enum MID_CONSTANT {
   MID_Y_Coord = 2102,
   MID_GoToWorldMap = 2103,
   MID_WorldMapDestinationPrompt = 2104,
+  MID_WaitForArrayEntry = 2108,
+  MID_CountArrayEntries = 2109,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
