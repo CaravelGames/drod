@@ -188,6 +188,8 @@ struct TarstuffStab {
 	CMonster* pTarstuffMonster;
 };
 
+typedef pair<ScriptVars::MapIcon, ScriptVars::MapIconState> MapIconPair;
+
 //*******************************************************************************
 class CCombat;
 class CDb;
@@ -419,7 +421,7 @@ public:
 	map<UINT, map<int, int>> scriptArraysAtRoomStart;
 	CIDSet   roomsExploredAtRoomStart;
 	RoomMapStates roomsMappedAtRoomStart;
-	map <UINT, pair<ScriptVars::MapIcon, ScriptVars::MapIconState>> mapIconsAtRoomStart;
+	map <UINT, MapIconPair> mapIconsAtRoomStart;
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
 	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
