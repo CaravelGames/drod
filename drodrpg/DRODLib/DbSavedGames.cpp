@@ -286,19 +286,21 @@ const
 }
 
 //*******************************************************************************
-bool CDbSavedGame::IsRoomExplored(const UINT roomID, const bool bConsiderCurrentRoom) const
+bool CDbSavedGame::IsRoomExplored(const UINT roomID,
+	const bool bConsiderCurrentRoom) //[default=true]
+const
 //Returns: whether room has been explored by player (not just marked on map)
 {
+	//room hasn't been explored before, but player is here now
+	if (bConsiderCurrentRoom && roomID == this->dwRoomID)
+		return true;
+
 	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
 			room != this->ExploredRooms.end(); ++room)
 	{
 		if ((*room)->roomID == roomID)
 			return ((*room)->HasDetail());
 	}
-
-	//room hasn't been explored before, but player is here now
-	if (bConsiderCurrentRoom && roomID == this->dwRoomID)
-		return true;
 
 	return false;
 }
@@ -642,10 +644,7 @@ void CDbSavedGame::RemoveMappedRoomsNotIn(
 		ExploredRoom* pRoom = *roomIter;
 		const UINT roomID = pRoom->roomID;
 		RoomMapStates::const_iterator roomMap = mappedRoomIDs.find(roomID);
-		if (roomMap != mappedRoomIDs.end()) {
-			//Revert room map state
-			pRoom->mapState = roomMap->second;
-		} else {
+		if (roomMap == mappedRoomIDs.end()) {
 			//This room was added to the map since entering the current room -- take it back off
 			if (pRoom->bSave && !roomPreviewIDs.has(roomID)) {
 				delete pRoom; //room shouldn't be included in any list
@@ -656,6 +655,9 @@ void CDbSavedGame::RemoveMappedRoomsNotIn(
 			}
 			continue;
 		}
+
+		//Revert room map state
+		pRoom->mapState = roomMap->second;
 
 		if (!exploredRoomIDs.has(roomID) && pRoom->HasDetail())
 		{
