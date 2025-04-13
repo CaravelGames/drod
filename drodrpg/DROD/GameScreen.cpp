@@ -3640,7 +3640,7 @@ bool CGameScreen::AddMonsterStats(
 		for (UINT i = 0; i < xyIcon.size(); ++i) {
 			const pair<int, int> xy = xyIcon[i];
 			if (xy.first >= 0) {
-				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second, hsv);
+				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second);
 			}
 		}
 	}
