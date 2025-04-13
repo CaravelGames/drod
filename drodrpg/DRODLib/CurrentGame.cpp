@@ -7795,11 +7795,12 @@ void CCurrentGame::SetPlayerToRoomStart()
 		roomIter != this->ExploredRooms.end(); ++roomIter)
 	{
 		ExploredRoom* pExpRoom = *roomIter;
-		map<UINT, pair<ScriptVars::MapIcon, ScriptVars::MapIconState>>::const_iterator finder =
+		map<UINT, MapIconPair>::const_iterator finder =
 			this->mapIconsAtRoomStart.find(pExpRoom->roomID);
 		if (finder != this->mapIconsAtRoomStart.end()) {
-			pExpRoom->mapIcon = finder->second.first;
-			pExpRoom->mapIconState = finder->second.second;
+			const MapIconPair mapIconPair = finder->second;
+			pExpRoom->mapIcon = mapIconPair.first;
+			pExpRoom->mapIconState = mapIconPair.second;
 		}
 	}
 
