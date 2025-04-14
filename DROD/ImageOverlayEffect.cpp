@@ -171,6 +171,9 @@ bool CImageOverlayEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElaps
 	if (!this->pImageSurface)
 		return false;
 
+	if (this->commands.empty())
+		return false;
+
 	if ((endTime > 0 && dwTimeElapsed >= endTime) ||
 		(endTurn > 0 && GetGameTurn() >= endTurn))
 		return false;
