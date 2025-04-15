@@ -52,6 +52,7 @@
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
 
+#include <set>
 #include <vector>
 using std::vector;
 
@@ -113,7 +114,7 @@ public:
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
 	vector<WSTRING> GetCustomDescriptions() const;
-	WSTRING        GetCustomWeakness() const { return this->customWeakness; };
+	std::set<WSTRING> GetCustomWeaknesses() const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetLogicalIdentity() const {return this->wLogicalIdentity;}
 	UINT           GetNextSpeechID();

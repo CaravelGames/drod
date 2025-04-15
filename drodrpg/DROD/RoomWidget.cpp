@@ -2201,19 +2201,25 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		++count;
 	}
 	if (bCustomWeakness) {
-		if (count)
-		{
-			wstr += wszComma;
-			wstr += wszSpace;
-		}
 		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 		ASSERT(pCharacter);
-		wstr += WCSReplace(
-			g_pTheDB->GetMessageText(MID_CustomType),
-			wszStringToken,
-			pCharacter->GetCustomWeakness()
-		);
-		++count;
+		std::set<WSTRING> weaknesses = pCharacter->GetCustomWeaknesses();
+		for (std::set<WSTRING>::const_iterator iter = weaknesses.cbegin();
+			iter != weaknesses.cend(); ++iter) {
+			const WSTRING weakness = *iter;
+			if (count)
+			{
+				wstr += wszComma;
+				wstr += wszSpace;
+			}
+		
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_CustomType),
+				wszStringToken,
+				weakness
+			);
+			++count;
+		}
 	}
 	if (bCustomDescription) {
 		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
