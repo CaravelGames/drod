@@ -909,6 +909,22 @@ const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimit
 }
 
 //*****************************************************************************
+const std::set<WSTRING> WCSExplodeSet(WSTRING const& source, WCHAR const delimiter)
+// Explodes a string into pieces, and put them into a set
+{
+	std::set<WSTRING> result;
+	std::wistringstream iss(source);
+
+	for (WSTRING token; std::getline(iss, token, delimiter); )
+	{
+		if (!token.empty())
+			result.insert(token);
+	}
+
+	return result;
+}
+
+//*****************************************************************************
 bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles)
 // Returns true if haystack contains every string in needle, even if they overlap
 {
