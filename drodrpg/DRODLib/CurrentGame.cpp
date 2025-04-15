@@ -4242,8 +4242,14 @@ bool CCurrentGame::IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT
 		if (pMonster->HasCustomWeakness() && pEquipment->HasCustomWeakness()) {
 			const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 			ASSERT(pCharacter);
-			if (pCharacter->GetCustomWeakness() == pEquipment->GetCustomWeakness())
-				return true;
+			std::set<WSTRING> equipStrengths = pEquipment->GetCustomWeaknesses();
+			std::set<WSTRING> characterWeaknesses = pCharacter->GetCustomWeaknesses();
+			for (std::set<WSTRING>::const_iterator iter = equipStrengths.cbegin();
+				iter != equipStrengths.cend(); ++iter) {
+				if (characterWeaknesses.count(*iter) > 0) {
+					return true;
+				}
+			}
 		}
 	}
 

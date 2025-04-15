@@ -5441,6 +5441,13 @@ vector<WSTRING> CCharacter::GetCustomDescriptions() const
 	return WCSExplode(this->customDescription, *wszSemicolon);
 }
 
+//*****************************************************************************
+//Returns: custom weaknesses for the NPC, divided into a set
+set<WSTRING> CCharacter::GetCustomWeaknesses() const
+{
+	return WCSExplodeSet(this->customWeakness, *wszSemicolon);
+}
+
 UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
 {
 	if (this->wSpawnType >= 0) {

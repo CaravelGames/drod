@@ -166,14 +166,21 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	}
 	if (pCharacter->HasCustomWeakness())
 	{
-		if (needSeparator)
-			text += separator;
-		text += WCSReplace(
-			g_pTheDB->GetMessageText(MID_StrongAgainstType),
-			wszStringToken,
-			pCharacter->GetCustomWeakness()
-		);
-		needSeparator = true;
+		std::set<WSTRING> weaknesses = pCharacter->GetCustomWeaknesses();
+		for (std::set<WSTRING>::const_iterator iter = weaknesses.cbegin();
+			iter != weaknesses.cend(); ++iter) {
+			const WSTRING weakness = *iter;
+			if (needSeparator)
+				text += separator;
+
+			text += WCSReplace(
+				g_pTheDB->GetMessageText(MID_StrongAgainstType),
+				wszStringToken,
+				weakness
+			);
+
+			needSeparator = true;
+		}
 	}
 	if (pCharacter->HasRayBlocking())
 	{

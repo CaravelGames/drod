@@ -905,7 +905,7 @@ The variable names are case-insensitive.
   available choices, numbered in order of appearance.
   A value of 0 indicates no sword.
 </p>
-<p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if both _MyWeakness values are the same. A shield can also be strong against a monster, and will give x2 DEF against attacks from it. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
+<p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A semi-colon can be used to split the weakness into multiple weaknessess that are checked separately. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if the two have a matching _MyWeakness value. A shield can also be strong against a monster, and will give x2 DEF against attacks from it. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
 </p>
 <p><a name="mydescription"><b>*_MyDescription</b></a> - A custom description property that can be set for a monster or equipment. It will be displayed after any behavior descriptors that apply to the character. A semi-colon can be used to split the description into multiple descriptors that will be displayed separately.
 </p>
