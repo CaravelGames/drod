@@ -36,6 +36,7 @@
 #include "Types.h"  //need BYTE, UINT
 
 #include <cstring>
+#include <set>
 #include <vector>
 
 #define STRFY(x) #x
@@ -165,6 +166,7 @@ std::string strReplace(std::string const &source, std::string const &from, std::
 WSTRING WCSReplace(WSTRING const &source, WSTRING const &from, WSTRING const &to);
 WSTRING WCSToLower(WSTRING const& source);
 const std::vector<WSTRING> WCSExplode(WSTRING const& source, WCHAR const delimiter);
+const std::set<WSTRING>    WCSExplodeSet(WSTRING const& source, WCHAR const delimiter);
 bool WCSContainsAll(WSTRING const& haystack, std::vector<WSTRING> const& needles);
 
 
