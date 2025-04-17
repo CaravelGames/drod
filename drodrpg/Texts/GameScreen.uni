@@ -180,15 +180,15 @@ Doubles ATK power of monsters in the room
 
 [MID_EyeAbility]
 [eng]
-Strikes when you step in front
+Strikes in front
 
 [MID_RoachQueenAbility]
 [eng]
-Spawns a tough egg when a monster is fought
+Spawns eggs
 
 [MID_GoblinAbility]
 [eng]
-Strikes when you turn your back to it
+Strikes when back turned
 
 [MID_MimicAbility]
 [eng]
@@ -224,7 +224,7 @@ Strikes when adjacent
 
 [MID_TarMotherAbility]
 [eng]
-Attached tarstuff becomes alive and dangerous
+Attached tarstuff becomes alive
 
 [MID_QuickPathNotAvailable]
 [eng]
