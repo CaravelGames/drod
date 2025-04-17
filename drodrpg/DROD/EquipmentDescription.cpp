@@ -88,7 +88,7 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 	switch (type) {
 		case SwordType::GoblinSword: {
 			wstr += separator;
-			wstr += g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness);
+			wstr += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Goblin));
 		}
 		break;
 		case SwordType::ReallyBigSword: {
@@ -103,7 +103,7 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 		break;
 		case SwordType::SerpentSword: {
 			wstr += separator;
-			wstr += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
+			wstr += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Serpent));
 		}
 		break;
 		case SwordType::BriarSword: {
@@ -154,14 +154,14 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	{
 		if (needSeparator)
 			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness);
+		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Goblin));
 		needSeparator = true;
 	}
 	if (pCharacter->HasSerpentWeakness())
 	{
 		if (needSeparator)
 			text += separator;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
+		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Serpent));
 		needSeparator = true;
 	}
 	if (pCharacter->HasCustomWeakness())
@@ -173,11 +173,7 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 			if (needSeparator)
 				text += separator;
 
-			text += WCSReplace(
-				g_pTheDB->GetMessageText(MID_StrongAgainstType),
-				wszStringToken,
-				weakness
-			);
+			text += MakeStrongAgainstDescription(weakness);
 
 			needSeparator = true;
 		}
@@ -303,4 +299,14 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	}
 
 	return text;
+}
+
+//*****************************************************************************
+WSTRING EquipmentDescription::MakeStrongAgainstDescription(const WSTRING& type)
+{
+	return WCSReplace(
+		g_pTheDB->GetMessageText(MID_StrongAgainstType),
+		wszStringToken,
+		type
+	);
 }

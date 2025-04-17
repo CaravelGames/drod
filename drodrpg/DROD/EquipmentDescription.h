@@ -41,4 +41,6 @@ public:
 		ScriptFlag::EquipmentType equipType,
 		const WSTRING& separator
 	);
+
+	static WSTRING MakeStrongAgainstDescription(const WSTRING& type);
 };

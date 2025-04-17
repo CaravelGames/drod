@@ -2006,6 +2006,8 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 	bool bSurprisedBehind = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
 	bool bSpawnEggs = pMonster->wType == M_QROACH;
+	bool bGoblinWeakness = pMonster->HasGoblinWeakness();
+	bool bSerpentWeakness = pMonster->HasSerpentWeakness();
 	bool bCustomWeakness = false, bCustomDescription = false;
 	bool bExplosiveSafe = pMonster->IsExplosiveSafe();
 	bool bMistImmune = pMonster->IsMistImmune();
@@ -2198,6 +2200,36 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
+		++count;
+	}
+	if (bGoblinWeakness) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+
+		wstr += WCSReplace(
+			g_pTheDB->GetMessageText(MID_CustomType),
+			wszStringToken,
+			g_pTheDB->GetMessageText(MID_Goblin)
+		);
+
+		++count;
+	}
+	if (bSerpentWeakness) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+
+		wstr += WCSReplace(
+			g_pTheDB->GetMessageText(MID_CustomType),
+			wszStringToken,
+			g_pTheDB->GetMessageText(MID_Serpent)
+		);
+
 		++count;
 	}
 	if (bCustomWeakness) {
