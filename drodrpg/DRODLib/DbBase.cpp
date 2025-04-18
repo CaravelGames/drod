@@ -838,6 +838,11 @@ const WCHAR* CDbBase::GetMessageText(
 	{
 		//TODO 2.0: remove all of these when building barebones and release build dat files
 		case MID_NewLevel: strText = "(add new level)"; break;
+		case MID_EyeAbility: strText = "Strikes in front"; break;
+		case MID_RoachQueenAbility: strText = "Spawns eggs"; break;
+		case MID_GoblinAbility: strText = "Strikes when back turned"; break;
+		case MID_MimicAbility: strText = "Moves and fights like you"; break;
+		case MID_TarMotherAbility: strText = "Attached tarstuff becomes alive"; break;
 		case MID_TitleMainMenu: strText = "&Back"; break;
 		case MID_DoubleXP: strText = "Double REP"; break;
 		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
