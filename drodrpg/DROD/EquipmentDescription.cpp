@@ -103,7 +103,7 @@ WSTRING EquipmentDescription::GetPredefinedWeaponAbility(
 		break;
 		case SwordType::SerpentSword: {
 			wstr += separator;
-			wstr += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Serpent));
+			wstr += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Wyrm));
 		}
 		break;
 		case SwordType::BriarSword: {
@@ -161,7 +161,7 @@ WSTRING EquipmentDescription::GetEquipmentAbility(
 	{
 		if (needSeparator)
 			text += separator;
-		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Serpent));
+		text += MakeStrongAgainstDescription(g_pTheDB->GetMessageText(MID_Wyrm));
 		needSeparator = true;
 	}
 	if (pCharacter->HasCustomWeakness())
