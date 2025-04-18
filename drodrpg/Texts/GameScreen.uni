@@ -192,7 +192,7 @@ Strikes when back turned
 
 [MID_MimicAbility]
 [eng]
-Moves like you do, fights monsters as you
+Moves and fights like you
 
 [MID_AumtlichAbility]
 [eng]
@@ -359,3 +359,7 @@ New personal best!
 [MID_PercentOptimal]
 [eng]
 %s% of personal best
+
+[MID_Wyrm]
+[eng]
+Wyrm

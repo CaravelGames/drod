@@ -636,6 +636,7 @@ enum MID_CONSTANT {
   MID_SKEYStatFull = 1827,
   MID_NewLocalHighScore = 1987,
   MID_PercentOptimal = 1989,
+  MID_Wyrm = 2110,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,

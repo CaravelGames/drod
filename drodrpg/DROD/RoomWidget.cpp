@@ -2227,7 +2227,7 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += WCSReplace(
 			g_pTheDB->GetMessageText(MID_CustomType),
 			wszStringToken,
-			g_pTheDB->GetMessageText(MID_Serpent)
+			g_pTheDB->GetMessageText(MID_Wyrm)
 		);
 
 		++count;

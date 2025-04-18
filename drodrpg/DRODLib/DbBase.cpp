@@ -1202,6 +1202,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_VarReturnX: strText = "_ReturnX"; break;
 		case MID_WaitForArrayEntry: strText = "Wait for array entry"; break;
 		case MID_CountArrayEntries: strText = "Count array entries"; break;
+		case MID_Wyrm: strText = "Wyrm"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
