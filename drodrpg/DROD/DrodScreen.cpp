@@ -2171,7 +2171,7 @@ void CDrodScreen::ImportMedia()
 
 		//Import music.
 		WSTRING wstrDir;
-		for (wI=SONG_MOOD_COUNT+34; wI--; )	//include other music too
+		for (wI=SONG_MOOD_COUNT+35; wI--; )	//include other music too
 		{
 			list<WSTRING> songlist;
 
@@ -2185,113 +2185,117 @@ void CDrodScreen::ImportMedia()
 			}
 			else switch (wI)
 			{
-				case SONG_MOOD_COUNT+33:
+				case SONG_MOOD_COUNT+34:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_TITLE_2, songlist);
 					break;
 
 				//Include end game music for full hold/version only.
-				case SONG_MOOD_COUNT+32:
+				case SONG_MOOD_COUNT+33:
 					if (wStyleNo == 2)
 						g_pTheSound->GetSongFilepaths(SONGID_CREDITS, songlist);
 				break;
 
 				//Import other playable songs once.
-				case SONG_MOOD_COUNT+31:
+				case SONG_MOOD_COUNT+32:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_ARCHITECTS, songlist);
 				break;
-				case SONG_MOOD_COUNT+30:
+				case SONG_MOOD_COUNT+31:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_BATTLE, songlist);
 				break;
-				case SONG_MOOD_COUNT+29:
+				case SONG_MOOD_COUNT+30:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_BENEATH, songlist);
 				break;
-				case SONG_MOOD_COUNT+28:
+				case SONG_MOOD_COUNT+29:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_DREAMER, songlist);
 				break;
-				case SONG_MOOD_COUNT+27:
+				case SONG_MOOD_COUNT+28:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_GOBLINS, songlist);
 				break;
-				case SONG_MOOD_COUNT+26:
+				case SONG_MOOD_COUNT+27:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_REDGUARD, songlist);
 				break;
-				case SONG_MOOD_COUNT+25:
+				case SONG_MOOD_COUNT+26:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SEASIDE, songlist);
 				break;
-				case SONG_MOOD_COUNT+24:
+				case SONG_MOOD_COUNT+25:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SERPENTS, songlist);
 				break;
-				case SONG_MOOD_COUNT+23:
+				case SONG_MOOD_COUNT+24:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SLAYER, songlist);
 				break;
-				case SONG_MOOD_COUNT+22:
+				case SONG_MOOD_COUNT+23:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_PIRATES, songlist);
 					break;
-				case SONG_MOOD_COUNT+21:
+				case SONG_MOOD_COUNT+22:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_GOBLINKING, songlist);
 					break;
-				case SONG_MOOD_COUNT+20:
+				case SONG_MOOD_COUNT+21:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_BIGSERPENT, songlist);
 					break;
-				case SONG_MOOD_COUNT+19:
+				case SONG_MOOD_COUNT+20:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_TAR, songlist);
 					break;
-				case SONG_MOOD_COUNT+18:
+				case SONG_MOOD_COUNT+19:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_PUZZLE, songlist);
 					break;
-				case SONG_MOOD_COUNT+17:
+				case SONG_MOOD_COUNT+18:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SECRETAREA, songlist);
 					break;
-				case SONG_MOOD_COUNT+16:
+				case SONG_MOOD_COUNT+17:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SMALLERPLANS, songlist);
 					break;
-				case SONG_MOOD_COUNT+15:
+				case SONG_MOOD_COUNT+16:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_GEOMETRY, songlist);
 					break;
-				case SONG_MOOD_COUNT+14:
+				case SONG_MOOD_COUNT+15:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SLIPSTAIR, songlist);
 					break;
-				case SONG_MOOD_COUNT+13:
+				case SONG_MOOD_COUNT+14:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SYMPATHETIC, songlist);
 					break;
-				case SONG_MOOD_COUNT+12:
+				case SONG_MOOD_COUNT+13:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_ASCENDANT, songlist);
 					break;
-				case SONG_MOOD_COUNT+11:
+				case SONG_MOOD_COUNT+12:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_ROACHESRUN, songlist);
 					break;
-				case SONG_MOOD_COUNT+10:
+				case SONG_MOOD_COUNT+11:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_NEWIDEA, songlist);
 					break;
-				case SONG_MOOD_COUNT+9:
+				case SONG_MOOD_COUNT+10:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_WALTZ, songlist);
 					break;
-				case SONG_MOOD_COUNT+8:
+				case SONG_MOOD_COUNT+9:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SWINGHALLS, songlist);
+					break;
+				case SONG_MOOD_COUNT+8:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_ELIZABETH, songlist);
 					break;
 				case SONG_MOOD_COUNT+7:
 					if (wStyleNo == 1)

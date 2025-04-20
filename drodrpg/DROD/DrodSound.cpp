@@ -250,6 +250,7 @@ bool CDrodSound::GetSongFilepaths(
 		case SONGID_AMBDRIPS:      strKeyName = "AmbDrips"; break;
 		case SONGID_AMBROACHES:    strKeyName = "AmbRoaches"; break;
 		case SONGID_TITLE_2:       strKeyName = "Title2"; break;
+		case SONGID_ELIZABETH:     strKeyName = "Elizabeth"; break;
 		default: return false;
 	}
 
