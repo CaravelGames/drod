@@ -1468,6 +1468,7 @@ enum MID_CONSTANT {
   MID_MusicNewIdea = 1911,
   MID_MusicWaltz = 1912,
   MID_MusicSwingHalls = 1913,
+  MID_MusicElizabeth = 2111,
   MID_MusicAmbWindy = 1914,
   MID_MusicAmbBeach = 1915,
   MID_MusicAmbForest = 1916,

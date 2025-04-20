@@ -1395,6 +1395,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pMusicListBox->AddItem(SONGID_NEWIDEA, g_pTheDB->GetMessageText(MID_MusicNewIdea));
 	this->pMusicListBox->AddItem(SONGID_WALTZ, g_pTheDB->GetMessageText(MID_MusicWaltz));
 	this->pMusicListBox->AddItem(SONGID_SWINGHALLS, g_pTheDB->GetMessageText(MID_MusicSwingHalls));
+	this->pMusicListBox->AddItem(SONGID_ELIZABETH, g_pTheDB->GetMessageText(MID_MusicElizabeth));
 	this->pMusicListBox->AddItem(SONGID_AMBWINDY, g_pTheDB->GetMessageText(MID_MusicAmbWindy));
 	this->pMusicListBox->AddItem(SONGID_AMBBEACH, g_pTheDB->GetMessageText(MID_MusicAmbBeach));
 	this->pMusicListBox->AddItem(SONGID_AMBFOREST, g_pTheDB->GetMessageText(MID_MusicAmbForest));
