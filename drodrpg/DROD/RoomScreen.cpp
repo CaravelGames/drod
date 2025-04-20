@@ -147,11 +147,11 @@ CRoomScreen::CRoomScreen(
 
 	static const int X_SHOVEL = X_SKEY + CX_SKEY;
 	static const int Y_SHOVEL = Y_SKEY;
-	static const UINT CX_SHOVEL = 45;
-	static const UINT CY_SHOVEL = CY_BKEY;
+	static const UINT CX_SHOVEL = CX_SKEY;
+	static const UINT CY_SHOVEL = CY_SKEY;
 
 	//Item multiplier display.
-	static const int X_ITEMMULT = 135;
+	static const int X_ITEMMULT = 165;
 	static const int Y_ITEMMULT = 355;
 	static const UINT CX_ITEMMULT = 265 - X_ITEMMULT;
 	static const UINT CY_ITEMMULT = 40;
