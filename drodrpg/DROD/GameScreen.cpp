@@ -1721,7 +1721,6 @@ void CGameScreen::ClearSpeech(const bool bForceClearAll) //[default=false]
 			} else {
 				pCommand->pExecutingNPC = pCommand->pSpeakingEntity =
 						pCurrentGame->GetCharacterWithScriptID(pCommand->scriptID);
-				ASSERT(pCommand->pExecutingNPC);
 				if (pCommand->pExecutingNPC) //robustness
 				{
 					//This speech command may be reliably retained.
