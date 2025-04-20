@@ -636,13 +636,13 @@ const UINT fLayerEntries[numFLayerEntries] = {
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 24;
+const UINT numTLayerEntries = 23;
 const UINT tLayerEntries[numTLayerEntries] = {
 	T_SWORD, T_SHIELD, T_ACCESSORY, T_SCROLL, T_MAP,
 	T_ATK_UP, T_DEF_UP, T_HEALTH_SM, T_KEY, T_SHOVEL1,
 	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_POWDER_KEG,
-	T_TOKEN, T_BRIAR_SOURCE, T_BRIAR_LIVE, T_BRIAR_DEAD, T_ORB,
-	T_TAR, T_OBSTACLE, T_MIST, T_LIGHT
+	T_TOKEN, T_BRIAR_SOURCE, T_BRIAR_DEAD, T_ORB, T_TAR,
+	T_OBSTACLE, T_MIST, T_LIGHT
 };
 
 const UINT numMLayerEntries = 33;
@@ -5377,8 +5377,11 @@ void CEditRoomScreen::PlotObjects()
 				case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
 				case T_MIRROR: case T_TOKEN: case T_CRATE:
 				case T_LIGHT:
-				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR); break;
+
+				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
+					g_pTheSound->PlaySoundEffect(SEID_BRIAR_BREAK); break;
+
 				case T_DOOR_Y: case T_DOOR_YO:
 				case T_DOOR_G: case T_DOOR_GO:
 				case T_DOOR_C: case T_DOOR_CO:
