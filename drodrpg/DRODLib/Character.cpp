@@ -3878,6 +3878,8 @@ Finish:
 			{
 				this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
 				this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
+				if (this->bAttacked)
+					CueEvents.Add(CID_EnemySneakAttack);
 			}
 			if (this->bAttackInFront && !this->bAttacked)
 			{
@@ -3889,8 +3891,11 @@ Finish:
 					bIsEye = (this->wIdentity == M_EYE || this->wIdentity == M_MADEYE);
 				}
 
-				if (this->bAttacked = AttackPlayerWhenInFront(CueEvents) && bIsEye)
-					CueEvents.Add(CID_EvilEyeWoke);
+				if (this->bAttacked = AttackPlayerWhenInFront(CueEvents))
+					if (bIsEye)
+						CueEvents.Add(CID_EvilEyeWoke);
+					else
+						CueEvents.Add(CID_EnemySneakAttack);
 			}
 
 			if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
