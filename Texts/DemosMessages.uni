@@ -250,14 +250,10 @@ Le joueur a touché un marqueur Conquête au tour
 [eng]
 Challenge completed!
 [fra]
-Challenge completed! !!translate
-[rus]
-Challenge completed! !!translate
+Défi terminé!
 
 [MID_DemoDescChallengeCompleted]
 [eng]
 The player completed a challenge.
 [fra]
-The player completed a challenge. !!translate
-[rus]
-The player completed a challenge. !!translate
+Le joueur a complété un défi.

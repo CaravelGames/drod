@@ -584,17 +584,17 @@ Changer la note
 [eng]
 Get player from cloud
 [rus]
-Get player from cloud!!translate
+Получить плеер из облака
 [fra]
-Get player from cloud!!translate
+Obtenir le lecteur depuis le cloud
 
 [MID_CaravelNetConnectionError]
 [eng]
 Failure establishing connection.
 [rus]
-Failure establishing connection.!!translate
+Не удалось установить соединение.
 [fra]
-Failure establishing connection.!!translate
+Échec de l'établissement de la connexion.
 
 [MID_CaravelNetCloudExplanation]
 [eng]
@@ -608,70 +608,66 @@ MID CaravelNetCloudExplanation !!translate
 [eng]
 Use this player profile for your CaravelNet Cloud account?
 [rus]
-Use this player profile for your CaravelNet Cloud account? !!translate
+Использовать этот профиль игрока для своей учетной записи CaravelNet Cloud?
 [fra]
-Use this player profile for your CaravelNet Cloud account? !!translate
+Utiliser ce profil de joueur pour votre compte CaravelNet Cloud ?
 
 [MID_CaravelNetAuthenticationPrompt]
 [eng]
 Please provide a CaravelNet username and key.
 [rus]
-Please provide a CaravelNet username and key.!!translate
+Пожалуйста, укажите имя пользователя и ключ CaravelNet.
 [fra]
-Please provide a CaravelNet username and key.!!translate
+Veuillez fournir un nom d'utilisateur et une clé CaravelNet.
 
 [MID_CaravelNetAuthError]
 [eng]
 Sorry, either your login credentials were not accepted or the connection to CaravelNet failed.
 [rus]
-MID_CaravelNetAuthError!!translate
+Извините, либо ваши учетные данные не были приняты, либо подключение к CaravelNet не удалось.
 [fra]
-MID_CaravelNetAuthError!!translate
+Désolé, soit vos identifiants de connexion n'ont pas été acceptés, soit la connexion à CaravelNet a échoué.
 
 [MID_CloudSynchInProgress]
 [eng]
 Cloud sync in progress...
 [rus]
-Cloud sync in progress...!!translate
+Выполняется облачная синхронизация...
 [fra]
-Cloud sync in progress...!!translate
+Synchronisation du cloud en cours...
 
 [MID_CloudSynchSuccessful]
 [eng]
 Cloud sync successful!
 [rus]
-Cloud sync successful! !!translate
+Облачная синхронизация прошла успешно!
 [fra]
-Cloud sync successful! !!translate
+Synchronisation cloud réussie !
 
 [MID_CloudSynchError]
 [eng]
 Cloud sync error.
 [rus]
-Cloud sync error.!!translate
+Ошибка синхронизации с облаком.
 [fra]
-Cloud sync error.!!translate
+Erreur de synchronisation du cloud.
 
 [MID_CloudNoPlayerAvailable]
 [eng]
 No CaravelNet Cloud player profile available.
 [rus]
-No CaravelNet Cloud player profile available.!!translate
+Нет доступного профиля игрока CaravelNet Cloud.
 [fra]
-No CaravelNet Cloud player profile available.!!translate
+Aucun profil de joueur CaravelNet Cloud disponible.
 
 [MID_CloudPlayerAlreadyUploaded]
 [eng]
 A cloud player profile was already set for this CaravelNet account.
 [rus]
-A cloud player profile was already set for this CaravelNet account.!!translate
+Для этой учетной записи CaravelNet уже был настроен профиль облачного игрока.
 [fra]
-A cloud player profile was already set for this CaravelNet account.!!translate
+Un profil de lecteur cloud a déjà été défini pour ce compte CaravelNet.
 
 [MID_UpdatingHoldList]
 [eng]
 Updating hold list
-[rus]
-Updating hold list!!translate
-[fra]
-Updating hold list!!translate

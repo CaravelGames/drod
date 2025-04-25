@@ -179,18 +179,10 @@ Graphismes et Son
 [MID_SettingsTabKeymap1]
 [eng]
 Keymap 1
-[fra]
-Keymap 1!!translate
-[rus]
-Keymap 1!!translate
 
 [MID_SettingsTabKeymap2]
 [eng]
 Keymap 2
-[fra]
-Keymap 2!!translate
-[rus]
-Keymap 2!!translate
 
 [MID_Graphics]
 [eng]
@@ -420,17 +412,17 @@ Appuyez sur la nouvelle touche pour cette commande.
 [eng]
 Press "Escape" to cancel. Key modifiers (shift, alt, control) are not allowed for this command.
 [fra]
-Press "Escape" to cancel. Key modifiers (shift, alt, control) are not allowed for this command.!!translate
+Appuyez sur "Échap" pour annuler. Les modificateurs de touches (shift, alt, control) ne sont pas autorisés pour cette commande.
 [rus]
-Press "Escape" to cancel. Key modifiers (shift, alt, control) are not allowed for this command.!!translate
+Нажмите «Escape» для отмены. Для этой команды не допускаются клавиши-модификаторы (shift, alt, control).
 
 [MID_GetKeyDescription_YesModifiers]
 [eng]
 Press "Escape" to cancel. Can use key modifiers (shift, alt, control) for this command.
 [fra]
-Press "Escape" to cancel. Can use key modifiers (shift, alt, control) for this command.!!translate
+Appuyez sur "Échap" pour annuler. Peut utiliser des modificateurs clés (shift, alt, control) pour cette commande.
 [rus]
-Press "Escape" to cancel. Can use key modifiers (shift, alt, control) for this command.!!translate
+Нажмите «Escape» для отмены. Для этой команды можно использовать клавиши-модификаторы (shift, alt, control).
 
 [MID_DefineAllKeys]
 [eng]

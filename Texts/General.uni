@@ -179,14 +179,14 @@ DROD doit mettre à jour vos fichiers de données pour que cette version du jeu 
 [eng]
 DROD ran out of memory.  You might free up enough memory by closing other applications.
 [rus]
-MID_NoMoreMemory!!translate
+У DROD закончилась память.  Вы можете освободить достаточно памяти, закрыв другие приложения.
 [fra]
-MID_NoMoreMemory!!translate
+DROD a manqué de mémoire.  Vous pourriez libérer suffisamment de mémoire en fermant d'autres applications.
 
 [MID_CaravelServerError]
 [eng]
 There was an error contacting the Caravel server.
 [rus]
-MID_CaravelServerError!!translate
+Произошла ошибка при обращении к серверу Caravel.
 [fra]
-MID_CaravelServerError!!translate
+Une erreur s'est produite en contactant le serveur Caravel.

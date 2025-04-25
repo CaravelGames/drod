@@ -90,33 +90,27 @@ Secrets conquis :
 [eng]
 Total rooms conquered/explored:
 [rus]
-Total rooms conquered/explored:!!translate
+Всего завоевано/исследовано комнат:
 [fra]
 Total des pièces conquises/explorées :
 
 [MID_RestoreToFurthestSave]
 [eng]
 &Furthest Save
-[rus]
-Furthest Save!!translate
-[fra]
-Furthest Save!!translate
 
 [MID_Challenges]
 [eng]
 Ch&allenges
 [rus]
-Ch&allenges!!translate
+Вызовы
 [fra]
-Ch&allenges!!translate
+Défis
 
 [MID_CompletedChallenges]
 [eng]
 Completed Challenges
-[rus]
-Completed Challenges!!translate
 [fra]
-Completed Challenges!!translate
+Défis terminés
 
 [MID_ExportSaves]
 [eng]
