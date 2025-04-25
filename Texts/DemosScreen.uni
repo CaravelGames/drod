@@ -194,7 +194,7 @@ Il n'y a pas de scores pour cette pièce.
 [eng]
 This room does not record high scores.
 [rus]
-!!translate This room does not record high scores.
+В этой комнате не фиксируются высокие баллы.
 [fra]
 Cette pièce n'enregistre pas les meilleurs scores.
 
@@ -242,33 +242,33 @@ Voulez-vous supprimer toutes les démos du joueur pour cet antre ?
 [eng]
 Go to move. Allowed range is 0 to %end%:
 [rus]
-Go to move. Allowed range is 0 to %end%:!!translate
+Перейти к движению. Допустимый диапазон: от 0 до %end%:
 [fra]
-Go to move. Allowed range is 0 to %end%:!!translate
+Aller au mouvement. La plage autorisée est de 0 à %end%:
 
 [MID_DemoEnded]
 [eng]
 Demo ended
 [rus]
-Demo ended!!translate
+демонстрация закончилось
 [fra]
-Demo ended!!translate
+Démo terminée
 
 [MID_DemoEndedEarly]
 [eng]
 Demo ended early
 [rus]
-Demo ended early!!translate
+демонстрация закончилось досрочно
 [fra]
-Demo ended early!!translate
+La démo s'est terminée plus tôt
 
 [MID_DemoMoveNumberSuffix]
 [eng]
 (Demo move %now%/%total%)
 [rus]
-(Demo move %now%/%total%)!!translate
+(ход %now%/%total%)
 [fra]
-(Demo move %now%/%total%)!!translate
+(Mouvement %now%/%total%)
 
 [MID_DemoHelp]
 [eng]

@@ -206,7 +206,7 @@ Verrou
 Moves bumping into a closed
 Master Wall are not allowed.
 [rus]
-Стена опыта запрещена.
+Ходы натыкаются на закрытую Стена опыта не допускаются.
 [fra]
 Les mouvements contre un
 Mur Maître fermé ne sont pas permis.
@@ -215,12 +215,9 @@ Mur Maître fermé ne sont pas permis.
 [eng]
 Moves bumping into a closed
 Hold Complete Wall are not allowed.
-[rus]
-Moves bumping into a closed
-Hold Complete Wall are not allowed.!!translate
 [fra]
-Moves bumping into a closed
-Hold Complete Wall are not allowed.!!translate
+Les mouvements contre un
+Mur de Conquête fermé ne sont pas permis.
 
 [MID_StatsBoxThisRoom]
 [eng]
