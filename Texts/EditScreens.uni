@@ -26,9 +26,9 @@ N&ouvel Antre
 [eng]
 (add new level)
 [fra]
-(add new level)!!translate
+(ajouter un nouveau niveau)
 [rus]
-(add new level)!!translate
+(добавить новый уровень)
 
 [MID_AddRoomPrompt]
 [eng]
@@ -734,71 +734,71 @@ Force arrow
 [rus]
 Силовая стрелка
 [fra]
-Force arrow!!translate 
+Flèche de force
 
 [MID_ForceArrowN]
 [eng]
 Force arrow (north)
 [rus]
-Force arrow (north)!!translate 
+Силовая стрелка (север)
 [fra]
-Force arrow (north)!!translate 
+Flèche de force (nord)
 
 [MID_ForceArrowE]
 [eng]
 Force arrow (east)
 [rus]
-Force arrow (east)!!translate 
+Силовая стрелка (восток)
 [fra]
-Force arrow (east)!!translate 
+Flèche de force (est)
 
 [MID_ForceArrowS]
 [eng]
 Force arrow (south)
 [rus]
-Force arrow (south)!!translate 
+Силовая стрелка (юг)
 [fra]
-Force arrow (south)!!translate 
+Flèche de force (sud)
 
 [MID_ForceArrowW]
 [eng]
 Force arrow (west)
 [rus]
-Force arrow (west)!!translate 
+Силовая стрелка (запад)
 [fra]
-Force arrow (west)!!translate 
+Flèche de force (ouest)
 
 [MID_ForceArrowNW]
 [eng]
 Force arrow (northwest)
 [rus]
-Force arrow (northwest)!!translate 
+Силовая стрелка (северо-запад)
 [fra]
-Force arrow (northwest)!!translate 
+Flèche de force (nord-ouest)
 
 [MID_ForceArrowNE]
 [eng]
 Force arrow (northeast)
 [rus]
-Force arrow (northeast)!!translate 
+Силовая стрелка (северо-восток)
 [fra]
-Force arrow (northeast)!!translate 
+Flèche de force (nord-est)
 
 [MID_ForceArrowSE]
 [eng]
 Force arrow (southeast)
 [rus]
-Force arrow (southeast)!!translate 
+Силовая стрелка (юго-восток)
 [fra]
-Force arrow (southeast)!!translate 
+Flèche de force (sud-est)
 
 [MID_ForceArrowSW]
 [eng]
 Force arrow (southwest)
 [rus]
-Force arrow (southwest)!!translate 
+Силовая стрелка (юго-запад)
 [fra]
-Force arrow (southwest)!!translate 
+Flèche de force (sud-ouest)
 
 [MID_InvisPotion]
 [eng]
@@ -995,10 +995,8 @@ Mur maître
 [MID_HoldCompleteWall]
 [eng]
 Hold Complete wall
-[rus]
-Hold Complete wall!!translate
 [fra]
-Hold Complete wall!!translate
+Mur de Conquête
 
 [MID_Mud]
 [eng]
@@ -1108,9 +1106,9 @@ Ronce
 [eng]
 Withered briar
 [rus]
-Withered briar!!translate
+Увядший кустарник
 [fra]
-Withered briar!!translate
+Ronce fanée
 
 [MID_Water]
 [eng]
@@ -1734,212 +1732,209 @@ c
 [eng]
 Show entrance description once
 [rus]
-!!translateShow entrance description once
+Показать описание входа один раз
 [fra]
-!!translateShow entrance description once
-
+Afficher une seule fois la description de l'entrée
 
 [MID_LevelSelectTab]
 [eng]
 Levels
 [fra]
-Levels!!translate
+Niveaux
 
 [MID_WorldMapSelectTab]
 [eng]
 Maps
 [fra]
-Maps!!translate
+Cartes
 
 [MID_WorldMapSetImage]
 [eng]
 Image
 [fra]
-Image!!translate
+Image
 
 [MID_NewWorldMapPrompt]
 [eng]
 (add new world map)
 [fra]
-(add new world map)!!translate
+(ajouter une nouvelle carte du monde)
 
 [MID_NameWorldMap]
 [eng]
 Please name this world map.
 [fra]
-Please name this world map.!!translate
+Veuillez nommer cette carte du monde.
 
 [MID_DeleteWorldMapPrompt]
 [eng]
 Are you sure you want to permanently delete this world map?
 [fra]
-Are you sure you want to permanently delete this world map?!!translate
+Êtes-vous sûr de vouloir supprimer définitivement cette carte du monde ?
 
 [MID_WorldMapSettings]
 [eng]
 Map display type
 [fra]
-Map display type!!translate
+Mode d'affichage de la carte
 
 [MID_WorldMapNoLabels]
 [eng]
 No labels
 [fra]
-No labels!!translate
+Pas d'étiquettes
 
 [MID_WorldMapShowLabels]
 [eng]
 Labels
 [fra]
-Labels!!translate
+Étiquettes
 
 [MID_WorldMapDisplayLabelsWhenExplored]
 [eng]
 Labels when explored
 [fra]
-Labels when explored!!translate
+Étiquettes une fois explorées
 
 [MID_Architect]
 [eng]
 Engineer
 [fra]
-Engineer!!translate
+Ingénieur
 
 [MID_Beacon]
 [eng]
 Seeding beacon
-[fra]
-Seeding beacon!!translate
 
 [MID_BeaconOff]
 [eng]
 Seeding beacon (off)
-[fra]
-Seeding Beacon (off)!!translate
 
 [MID_TokenSword]
 [eng]
 Token (sword)
 [fra]
-Token (sword)!!translate
+Marqueur (sabre)
 
 [MID_TokenPickaxe]
 [eng]
 Token (pickaxe)
 [fra]
-Token (pickaxe)!!translate
+Marqueur (pioche)
 
 [MID_TokenSpear]
 [eng]
 Token (spear)
 [fra]
-Token (spear)!!translate
+Marqueur (lance)
 
 [MID_Construct]
 [eng]
 Construct
 [fra]
-Construct!!translate
+Automate
 
 [MID_TokenStaff]
 [eng]
 Token (staff)
 [fra]
-Token (staff)!!translate
+Marqueur (bâton)
 
 [MID_TokenDagger]
 [eng]
 Token (dagger)
 [fra]
-Token (dagger)!!translate
+Marqueur (poignard)
 
 [MID_TokenCaber]
 [eng]
 Token (mini-caber)
 [fra]
-Token (mini-caber)!!translate
+Marqueur (mini-caber)
 
 [MID_PowderKeg]
 [eng]
 Powder keg
 [fra]
-Powder keg!!translate
+Baril de poudre
 
 [MID_FloorSpikes]
 [eng]
 Floor spikes
 [fra]
-Floor spikes!!translate
+Pointes de sol
 
 [MID_ForceArrowDisabled]
 [eng]
 Disabled force arrow
+[rus]
+Деактивированная силовая стрелка
 [fra]
-Disabled force arrow!!translate
+Flèche de force désactivée
 
 [MID_ForceArrowDisabledN]
 [eng]
 Disabled force arrow (north)
 [rus]
-Disabled force arrow (north)!!translate 
+Деактивированная силовая стрелка (север)
 [fra]
-Disabled force arrow (north)!!translate 
+Flèche de force désactivée (nord)
 
 [MID_ForceArrowDisabledE]
 [eng]
 Disabled force arrow (east)
 [rus]
-Disabled force arrow (east)!!translate 
+Деактивированная силовая стрелка (восток)
 [fra]
-Disabled force arrow (east)!!translate 
+Flèche de force désactivée (est)
 
 [MID_ForceArrowDisabledS]
 [eng]
 Disabled force arrow (south)
 [rus]
-Disabled force arrow (south)!!translate 
+Деактивированная силовая стрелка (юг)
 [fra]
-Disabled force arrow (south)!!translate 
+Flèche de force désactivée (sud)
 
 [MID_ForceArrowDisabledW]
 [eng]
 Disabled force arrow (west)
 [rus]
-Disabled force arrow (west)!!translate 
+Деактивированная силовая стрелка (запад)
 [fra]
-Disabled force arrow (west)!!translate 
+Flèche de force désactivée (ouest)
 
 [MID_ForceArrowDisabledNW]
 [eng]
 Disabled force arrow (northwest)
 [rus]
-Disabled force arrow (northwest)!!translate 
+Деактивированная силовая стрелка (северо-запад)
 [fra]
-Disabled force arrow (northwest)!!translate 
+Flèche de force désactivée (nord-ouest)
 
 [MID_ForceArrowDisabledNE]
 [eng]
 Disabled force arrow (northeast)
 [rus]
-Disabled force arrow (northeast)!!translate 
+Деактивированная силовая стрелка (северо-восток)
 [fra]
-Disabled force arrow (northeast)!!translate 
+Flèche de force désactivée (nord-est)
 
 [MID_ForceArrowDisabledSE]
 [eng]
 Disabled force arrow (southeast)
 [rus]
-Disabled force arrow (southeast)!!translate 
+Деактивированная силовая стрелка (юго-восток)
 [fra]
-Disabled force arrow (southeast)!!translate 
+Flèche de force désactivée (sud-est)
 
 [MID_ForceArrowDisabledSW]
 [eng]
 Disabled force arrow (southwest)
 [rus]
-Disabled force arrow (southwest)!!translate 
+Деактивированная силовая стрелка (юго-запад)
 [fra]
-Disabled force arrow (southwest)!!translate 
+Flèche de force désactivée (sud-ouest)
 
 [MID_Gentryii]
 [eng]
@@ -1951,137 +1946,130 @@ Gentryii
 [eng]
 Temporal split point
 [fra]
-Temporal split point!!translate
+Point de division temporelle
 
 [MID_TemporalClone]
 [eng]
 Temporal projection
 [fra]
-Temporal projection!!translate
+Projection temporelle
 
 [MID_OverheadImage]
 [eng]
 Overhead image
 [rus]
-Overhead image!!translate
+Изображение сверху
 [fra]
-Overhead image!!translate
+Image ci-dessus
 
 [MID_HitF9ToReorient]
 [eng]
 Hit F9 to reselect and re-locate custom texture.
 [rus]
-Hit F9 to reselect and re-locate custom texture.!!translate
+Нажмите F9, чтобы повторно выбрать и изменить местоположение пользовательской текстуры.
 [fra]
-Hit F9 to reselect and re-locate custom texture.!!translate
+Appuyez sur F9 pour resélectionner et relocaliser la texture personnalisée.
 
 [MID_HitShiftF9ToReorient]
 [eng]
 Hit Shift-F9 to reselect and re-locate custom texture.
 [rus]
-Hit Shift-F9 to reselect and re-locate custom texture.!!translate
+Нажмите Shift-F9, чтобы повторно выбрать и изменить местоположение пользовательской текстуры.
 [fra]
-Hit Shift-F9 to reselect and re-locate custom texture.!!translate
+Appuyez sur Shift-F9 pour resélectionner et relocaliser la texture personnalisée.
 
 [MID_Fluff]
 [eng]
 Fluff
-[fra]
-Fluff!!translate
 
 [MID_FluffBaby]
 [eng]
 Puff
-[fra]
-Puff!!translate
 
 [MID_FluffVent]
 [eng]
 Fluff vent
-[fra]
-Fluff vent!!translate
 
 [MID_ThinIce]
 [eng]
 Thin ice
 [rus]
-Thin ice!!translate
+Тонкий лед
 [fra]
-Thin ice!!translate
+Glace mince
 
 [MID_ThinIce2]
 [eng]
 Thin ice (over shallows)
 [rus]
-Thin ice (over shallows)!!translate
+Тонкий лед (над мелководьем)
 [fra]
-Thin ice (over shallows)!!translate
+Glace mince (sur les eaux peu profondes)
 
 [MID_Firetrap]
 [eng]
 Fire trap
 [fra]
-Fire trap!!translate
+Piège à incendie
 
 [MID_TemporalSplitToken]
 [eng]
 Token (temporal split)
 [rus]
-Token (temporal split)!!translate
 [fra]
-Token (temporal split)!!translate
+Marqueur (division temporelle)
 
 [MID_TemporalSplitUsed]
 [eng]
 Token (used temporal split)
 [fra]
-Token (used temporal split)!!translate
+Marqueur (utilisé la division temporelle)
 
 [MID_FiretrapOn]
 [eng]
 Firetrap (active)
 [fra]
-Firetrap (active)!!translate
+Piège à incendie (actif)
 
 [MID_ErrorCannotReplaceWithDifferentExistingFile]
 [eng]
 You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted.
 [rus]
-You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted.!!translate
+Вы пытаетесь заменить файл с именем '%fileBase%' на '%fileSelected%'. К сожалению, в этой катакомбе уже есть файл с таким именем - его сначала нужно удалить.
 [fra]
-You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted.!!translate
+Vous essayez de remplacer un fichier nommé « %fileBase% » par « %fileSelected% ». Malheureusement, il existe déjà un fichier portant ce nom dans cette antre ; il doit d'abord être supprimé.
 
 [MID_ReplaceMediaWithAnother]
 [eng]
 This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated.
 [rus]
-This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated.!!translate
+В этой катакомбе уже есть файл с именем '%file%'. Хотите заменить его этим новым файлом? Все его использования будут обновлены.
 [fra]
-This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated.!!translate
+Cet antre contient déjà un fichier nommé « %file% ». Souhaitez-vous le remplacer par ce nouveau fichier ? Toutes ses utilisations seront mises à jour.
 
 [MID_ReplaceFileButton]
 [eng]
 Replace
 [rus]
-Replace!!translate
+Заменять
 [fra]
-Replace!!translate
+Remplacer
 
 [MID_FilePendingDeletionSuffix]
 [eng]
 (Pending deletion)
 [rus]
-(Pending deletion)!!translate
+(Ожидание удаления)
 [fra]
-(Pending deletion)!!translate
+(En attente de suppression)
 
 [MID_Undelete]
 [eng]
 Undelete
 [rus]
-Undelete!!translate
+Отменить удаление
 [fra]
-Undelete!!translate
+Annuler la suppression
 
 [MID_GetMapRoom]
 [eng]

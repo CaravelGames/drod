@@ -600,9 +600,9 @@ Failure establishing connection.
 [eng]
 With an active CaravelNet subscription and internet connection, you can sync your local player progress and hold data to the CaravelNet Cloud.  Each CaravelNet Cloud account is tied to a single player profile.  To use this feature, you must first activate cloud syncing from the Player Settings Screen.  After a successful sync, the game will auto-backup your play progress and local holds to the CaravelNet Cloud.  This lets you keep multiple game installations in sync.
 [rus]
-MID CaravelNetCloudExplanation !!translate
+При активной подписке CaravelNet и подключении к Интернету вы можете синхронизировать локальный прогресс игрока и данные о хранении в облаке CaravelNet. Каждая учетная запись CaravelNet Cloud привязана к одному профилю игрока. Чтобы использовать эту функцию, сначала необходимо активировать облачную синхронизацию на экране настроек игрока. После успешной синхронизации игра автоматически создаст резервную копию вашего игрового прогресса и локальных данных в облаке CaravelNet. Это позволяет вам синхронизировать несколько установок игры.
 [fra]
-MID CaravelNetCloudExplanation !!translate
+Avec un abonnement CaravelNet actif et une connexion internet, vous pouvez synchroniser votre progression et vos données de sauvegarde locales avec le cloud CaravelNet. Chaque compte CaravelNet Cloud est associé à un profil de joueur. Pour utiliser cette fonctionnalité, vous devez d'abord activer la synchronisation cloud depuis les paramètres du joueur. Une fois la synchronisation réussie, le jeu sauvegardera automatiquement votre progression et vos sauvegardes locales sur le cloud CaravelNet. Cela vous permet de synchroniser plusieurs installations de jeu.
 
 [MID_PerformCloudSynchPrompt]
 [eng]
