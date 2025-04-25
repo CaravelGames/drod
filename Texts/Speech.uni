@@ -11,9 +11,9 @@ Options du Personnage
 [eng]
 Type
 [rus]
-Type!!translate
+Тип
 [fra]
-Type!!translate
+Type
 
 [MID_IsVisible]
 [eng]
@@ -66,7 +66,7 @@ Save
 [eng]
 Processing Sequence:
 [fra]
-Processing Sequence:!!translate
+Séquence de traitement :
 
 [MID_AddScriptCommand]
 [eng]
@@ -135,17 +135,17 @@ Déplacment vers
 [eng]
 Teleport to
 [rus]
-Teleport to!!translate
+Телепортироваться в
 [fra]
-Teleport to!!translate
+Téléporter vers
 
 [MID_TeleportPlayerTo]
 [eng]
 Teleport Player to
 [rus]
-Teleport Player to!!translate
+Телепортировать игрока в
 [fra]
-Teleport Player to!!translate
+Téléporter le joueur vers
 
 [MID_FaceDirection]
 [eng]
@@ -210,17 +210,13 @@ Attend pendant qu'entité
 [eng]
 Wait for entity type
 [rus]
-Wait for entity type!!translate
+Подождите тип сущности
 [fra]
-Wait for entity type!!translate
+Attendre le type d'entité
 
 [MID_WaitWhileEntityType]
 [eng]
 Wait while entity type
-[rus]
-Wait while entity type!!translate
-[fra]
-Wait while entity type!!translate
 
 [MID_WaitForRemains]
 [eng]
@@ -582,9 +578,9 @@ Roach egg hatched
 [eng]
 Roach egg spawned
 [rus]
-Roach egg spawned!!translate
+Тараканье яйцо выметано
 [fra]
-Roach egg spawned!!translate
+Œuf de cafard pondu
 
 [MID_EvilEyeWoke]
 [eng]
@@ -788,9 +784,9 @@ Splash
 [eng]
 Player swings weapon
 [rus]
-Игрок размахивает мечом!!translate
+Игрок размахивает мечом
 [fra]
-Joueur tourne épée!!translate
+Joueur tourne épée
 
 [MID_TarBabyFormed]
 [eng]
@@ -1172,42 +1168,22 @@ Calme
 [MID_MusicTitle_KDD]
 [eng]
 Title (KDD)
-[rus]
-Title (KDD)!!translate
-[fra]
-Title (KDD)!!translate
 
 [MID_MusicTitle_JTRH]
 [eng]
 Title (JtRH)
-[rus]
-Title (JtRH)!!translate
-[fra]
-Title (JtRH)!!translate
 
 [MID_MusicTitle_TCB]
 [eng]
 Title (TCB)
-[rus]
-Title (TCB)!!translate
-[fra]
-Title (TCB)!!translate
 
 [MID_MusicTitle_GATEB]
 [eng]
 Title (GatEB)
-[rus]
-Title (GatEB)!!translate
-[fra]
-Title (GatEB)!!translate
 
 [MID_MusicTitle_TSS]
 [eng]
 Title (TSS)
-[rus]
-Title (TSS)!!translate
-[fra]
-Title (TSS)!!translate
 
 [MID_MusicWinGame]
 [eng]
@@ -1221,98 +1197,70 @@ Victoire
 [MID_MusicFinale_JTRH]
 [eng]
 Finale (JtRH)
-[rus]
-Finale (JtRH)!!translate
-[fra]
-Finale (JtRH)!!translate
 
 [MID_MusicFinale_TCB]
 [eng]
 Finale (TCB)
-[rus]
-Finale (TCB)!!translate
-[fra]
-Finale (TCB)!!translate
 
 [MID_MusicCredits_KDD]
 [eng]
 Credits (KDD)
-[rus]
-Credits (KDD)!!translate
-[fra]
-Credits (KDD)!!translate
 
 [MID_MusicCredits_JTRH]
 [eng]
 Credits (JtRH)
-[rus]
-Credits (JtRH)!!translate
-[fra]
-Credits (JtRH)!!translate
 
 [MID_MusicCredits_TCB]
 [eng]
 Credits (TCB)
-[rus]
-Credits (TCB)!!translate
-[fra]
-Credits (TCB)!!translate
 
 [MID_MusicCredits_GATEB]
 [eng]
 Credits (GatEB)
-[rus]
-Credits (GatEB)!!translate
-[fra]
-Credits (GatEB)!!translate
 
 [MID_MusicCredits_TSS]
 [eng]
 Credits (TSS)
-[rus]
-Credits (TSS)!!translate
-[fra]
-Credits (TSS)!!translate
 
 [MID_MusicQuit_KDD]
 [eng]
 Quit (KDD)
 [rus]
-Quit (KDD)!!translate
+Выход (KDD)
 [fra]
-Quit (KDD)!!translate
+Quitter (KDD)
 
 [MID_MusicQuit_JTRH]
 [eng]
 Quit (JtRH)
 [rus]
-Quit (JtRH)!!translate
+Выход (JtRH)
 [fra]
-Quit (JtRH)!!translate
+Quitter (JtRH)
 
 [MID_MusicQuit_TCB]
 [eng]
 Quit (TCB)
 [rus]
-Quit (TCB)!!translate
+Выход (TCB)
 [fra]
-Quit (TCB)!!translate
+Quitter (TCB)
 
 [MID_MusicQuit_GATEB]
 [eng]
 Quit (GatEB)
 [rus]
-Quit (GatEB)!!translate
+Выход (GatEB)
 [fra]
-Quit (GatEB)!!translate
+Quitter (GatEB)
 
 [MID_MusicQuit_TSS]
 [eng]
 Quit (TSS)
 [rus]
-Quit (TSS)!!translate
+Выход (TSS)
 [fra]
-Quit (TSS)!!translate
+Quitter (TSS)
 
 [MID_MusicWinLevel1]
 [eng]
@@ -1470,9 +1418,9 @@ Sinon
 [eng]
 Else If
 [rus]
-Else If!!translate
+В противном случае, если
 [fra]
-Else If!!translate
+Sinon si
 
 [MID_IfEnd]
 [eng]
@@ -1534,19 +1482,18 @@ Citizen - 1100
 Fluff - 1500
 Character - 9999
 [fra]
-Player - First
-Temporal Projection - 50
-Mimics/Doubles - 100
+Joueur - Premier
+Projection temporelle - 50
+Doubles - 100
 Fegundo - 150
-Stalwart - 175
-Slayer - 200
-Guard - 300
-Default/Monsters - 1000
-Engineer - 1050
-Citizen - 1100
+Fidèle - 175
+Massacreur - 200
+Guarde - 300
+Par défaut/Monstres - 1000
+Ingénieur - 1050
+Citoyen - 1100
 Fluff - 1500
-Character - 9999
-!!translate
+Personnage - 9999
 
 [MID_VarNameText]
 [eng]
@@ -1902,17 +1849,17 @@ Parcours direct exclusivement
 [eng]
 Normal beelining
 [rus]
-Normal beelining!!translate
+Нормальное перемещение
 [fra]
-Normal beelining!!translate
+Parcours normale
 
 [MID_SmartBeelining]
 [eng]
 Smart beelining
 [rus]
-Smart beelining!!translate
+Умное перемещение
 [fra]
-Smart beelining!!translate
+Parcours intelligent
 
 [MID_FlexibleBeelining]
 [eng]
@@ -1926,18 +1873,10 @@ Parcours flexible
 [MID_PathfindingMovement]
 [eng]
 Pathfinding
-[rus]
-Pathfinding!!translate
-[fra]
-Pathfinding!!translate
 
 [MID_PathfindingOpenOnlyMovement]
 [eng]
 Pathfinding (open only)
-[rus]
-Pathfinding (open only)!!translate
-[fra]
-Pathfinding (open only)!!translate
 
 [MID_SetPlayerSword]
 [eng]
@@ -2430,123 +2369,123 @@ ATTENTION : cette image n'est pas un multiple de la taille des cases de cette pi
 [eng]
 Animation Speed (ms)
 [rus]
-!!translateAnimation Speed (ms)
+Скорость анимации (ms)
 [fra]
-Animation Speed (ms)!!translate
+Vitesse d'animation (ms)
 
 [MID_RoomLocationText]
 [eng]
 Room location text
 [fra]
-Room location text!!translate
+Texte d'emplacement de la pièce
 
 [MID_FlashingMessage]
 [eng]
 Flashing message
 [fra]
-Flashing message!!translate
+Texte clignotant
 
 [MID_DisplayFilter]
 [eng]
 Display Filter
 [fra]
-Display Filter!!translate
+Texte clignotant
 
 [MID_DisplayNormal]
 [eng]
 Normal
 [fra]
-Normal!!translate
+Normal
 
 [MID_DisplayBandW]
 [eng]
 B+W
 [fra]
-B+W!!translate
+B+W
 
 [MID_DisplaySepia]
 [eng]
 Sepia
 [fra]
-Sepia!!translate
+Sépia
 
 [MID_DisplayNegative]
 [eng]
 Negative
 [fra]
-Negative!!translate
+Négatif
 
 [MID_BuildCommand]
 [eng]
 Build
 [fra]
-Build!!translate
+Construire
 
 [MID_WorldMapMusic]
 [eng]
 World Map Music
 [fra]
-World Map Music!!translate
+Musique de la carte du monde
 
 [MID_SelectWorldMapPrompt]
 [eng]
 Please select a world map.
 [fra]
-Please select a world map.!!translate
+Veuillez sélectionner une carte du monde.
 
 [MID_CustomNPCID]
 [eng]
 ID
 [fra]
-ID!!translate
+ID
 
 [MID_WorldMapIcon]
 [eng]
 World Map Tile Icon
 [fra]
-World Map Tile Icon!!translate
+Icône de tuile de carte du monde
 
 [MID_WorldMapImage]
 [eng]
 World Map Image Icon
 [fra]
-World Map Image Icon!!translate
+Icône d'image de carte du monde
 
 [MID_WMI_Off]
 [eng]
 Off
 [fra]
-Off!!translate
+Off
 
 [MID_WMI_On]
 [eng]
 On
 [fra]
-On!!translate
+On
 
 [MID_WMI_LevelState]
 [eng]
 Level state
 [fra]
-Level state!!translate
+État de niveau
 
 [MID_WMI_Disabled]
 [eng]
 Disabled
 [fra]
-Disabled!!translate
+Désactivé
 
 [MID_WMI_Locked]
 [eng]
 Locked
 [fra]
-Locked!!translate
+Fermée
 
 [MID_WMI_NoLabel]
 [eng]
 Image only
 [fra]
-Image only!!translate
+Image seulement
 
 [MID_X_Coord]
 [eng]
@@ -2560,145 +2499,137 @@ y
 [eng]
 to
 [fra]
-to!!translate
+à
 
 [MID_WorldMapSelect]
 [eng]
 World Map Select
 [fra]
-World Map Select!!translate
+Sélection de la carte du monde
 
 [MID_WorldMapDestinationPrompt]
 [eng]
 Choose a destination
 [fra]
-Choose a destination!!translate
+Choisissez une destination
 
 [MID_SetPlayerWeapon]
 [eng]
 Set player weapon
 [fra]
-Set player weapon!!translate
+Définir l'arme du joueur
 
 [MID_WeaponSword]
 [eng]
 Sword
 [fra]
-Sword!!translate
+Sabre
 
 [MID_WeaponPickaxe]
 [eng]
 Pickaxe
 [fra]
-Pickaxe!!translate
+Pioche
 
 [MID_WeaponSpear]
 [eng]
 Spear
 [fra]
-Spear!!translate
+Lance
 
 [MID_CutBriar]
 [eng]
 Cut briar
 [fra]
-Cut briar!!translate
+Couper ronce
 
 [MID_ConstructReanimated]
 [eng]
 Construct reanimated
 [fra]
-Construct reanimated!!translate
+Automatique réanimé
 
 [MID_WeaponStaff]
 [eng]
 Staff
 [fra]
-Staff!!translate
+Bâton
 
 [MID_WeaponDagger]
 [eng]
 Dagger
 [fra]
-Dagger!!translate
+Poignard
 
 [MID_JitterEffect]
 [eng]
 Jitter
 [fra]
-Jitter!!translate
+Secouer
 
 [MID_WeaponCaber]
 [eng]
 Mini-caber
 [fra]
-Mini-caber!!translate
+Mini-caber
 
 [MID_ChallengeCompleted]
 [eng]
 Challenge completed
 [fra]
-Challenge completed!!translate
+Défi terminé
 
 [MID_NPCGhostDisplayOverhead]
 [eng]
 Ghost display overhead
 [fra]
-Ghost display overhead!!translate
+Affichage fantôme au-dessus
 
 [MID_NPCInvisibleInspectable]
 [eng]
 Invisible inspectable
-[fra]
-Invisible inspectable!translate
 
 [MID_NPCInvisibleNotInspectable]
 [eng]
 Invisible not inspectable
-[fra]
-Invisible not inspectable!translate
 
 [MID_NPCInvisibleIncludeMoveOrder]
 [eng]
 Invisible includes move order
-[fra]
-Invisible includes move order!translate
 
 [MID_NPCInvisibleNotIncludeMoveOrder]
 [eng]
 Invisible don't include move order
-[fra]
-Invisible don't include move order!translate
 
 [MID_AttackTile]
 [eng]
 Attack tile
 [fra]
-Attack Tile!!translate
+Tuile d'attaque
 
 [MID_AttackTileStab]
 [eng]
 Stab
 [fra]
-Stab!!translate
+Poignarder
 
 [MID_AttackTileExplosion]
 [eng]
 Explosion
 [fra]
-Explosion!!translate
+Explosion
 
 [MID_AttackTileDamage]
 [eng]
 Damage
 [fra]
-Damage!!translate
+Dommage
 
 [MID_AttackTileKill]
 [eng]
 Kill
 [fra]
-Kill!!translate
+Meurtre
 
 [MID_AttackTileRemove]
 [eng]
@@ -2716,141 +2647,125 @@ Two-turn stun
 [eng]
 All brains removed
 [rus]
-All brains removed!!translate
+Все мозги удалены
 [fra]
-All brains removed!!translate
+Tous les cerveaux retirés
 
 [MID_SetPlayerStealth]
 [eng]
 Set player stealth
 [rus]
-Set player stealth!!translate
+Установить скрытность игрока
 [fra]
-Set player stealth!!translate
+Définir la furtivité du joueur
 
 [MID_TarstuffStabbed]
 [eng]
 Tarstuff stabbed
-[rus]
-Tarstuff stabbed!!translate
 [fra]
-Tarstuff stabbed!!translate
+Goudron poignardé
 
 [MID_PuffExplosionEffect]
 [eng]
 Puff explosion
-[fra]
-Puff explosion!!translate
-[rus]
-Puff explosion!!translate
 
 [MID_FloorSpikesPoised]
 [eng]
 Floor spikes poised
 [fra]
-Floor spikes poised!!translate
+Pointes de sol prêtes
 
 [MID_FloorSpikesUp]
 [eng]
 Floor spikes sprung
 [fra]
-Floor spikes sprung!!translate
+Les pointes de sol poignardent
 
 [MID_FiretrapActivated]
 [eng]
 Fire trap activated
 [fra]
-Fire trap activated!!translate
+Piège à incendie activé
 
 [MID_FiretrapBurning]
 [eng]
 Fire trap burning
 [fra]
-Fire trap burning!!translate
+Flammes de piège à incendie
 
 [MID_CloneSwitchEvent]
 [eng]
 Clone switch
 [fra]
-Clone switch!!translate
+Changer de clone
 
 [MID_ActivatedTemporalSplit]
 [eng]
 Activated temporal split
-[fra]
-Activated temporal split!!translate
 
 [MID_SeedingBeaconActivated]
 [eng]
 Seeding beacon activated
-[fra]
-Seeding beacon activated!!translate
 
 [MID_SeedingBeaconDeactivated]
 [eng]
 Seeding beacon deactivated
-[fra]
-Seeding beacon deactivated!!translate
 
 [MID_ScriptColor]
 [eng]
 Color (hex: rrggbb)
 [fra]
-Color (hex: rrggbb)!!translate
+Couleur (hex: rrggbb)
 
 [MID_WaitForPlayerToInput]
 [eng]
 Wait for player to input
 [fra]
-Wait for player to input!!translate
+Attendez que le joueur entre
 
 [MID_ChooseInput]
 [eng]
 Choose input command
 [fra]
-Choose input command!!translate
+Choisir la commande d'entrée
 
 [MID_ReturnCommand]
 [eng]
 Return
 [fra]
-Return!!translate
+Retourner
 
 [MID_GoSub]
 [eng]
 GoSub
-[fra]
-GoSub!!translate
 
 [MID_RemoveOverheadImage]
 [eng]
 Remove overhead image
-[fra]
-Remove overhead image!!translate
 
 [MID_ImageOverlay]
 [eng]
 Image overlay
 [fra]
-Image overlay!!translate
+Superposition d'images
 
 [MID_ImageOverlayStrategy]
 [eng]
 Display Strategy
 [fra]
-Display Strategy!!translate
+Stratégie d'affichage
 
 [MID_ThinIceMelted]
 [eng]
 Thin ice melted
 [fra]
-Thin ice melted!!translate
+De la glace fine a fondu
 
 [MID_IceMeltEffect]
 [eng]
 Ice melting
 [fra]
-Ice melting!!translate
+Fonte des glaces
 
 [MID_BrainPathmapObstacle]
 [eng]
@@ -2896,17 +2811,13 @@ Fluff destroyed
 [eng]
 Destroy Trapdoor
 [rus]
-Destroy Trapdoor!!translate
+Уничтожить люк
 [fra]
-Destroy Trapdoor!!translate
+Détruire trappe
 
 [MID_RemoveFloorLayer]
 [eng]
 Remove floor layer
-[rus]
-Remove floor layer!!translate
-[fra]
-Remove floor layer!!translate
 
 [MID_RemoveTransparentLayer]
 [eng]
@@ -2963,26 +2874,14 @@ Orb (broken)
 [MID_WaitForWeapon]
 [eng]
 Wait for Weapon
-[fra]
-Wait for Weapon!!translate
-[rus]
-Wait for Weapon!!translate
 
 [MID_Behavior]
 [eng]
 Behavior
-[fra]
-Behavior!!translate
-[rus]
-Behavior!!translate
 
 [MID_ActivateToken]
 [eng]
 Activate Tokens
-[fra]
-Activate Tokens!!translate
-[rus]
-Activate Tokens!!translate
 
 [MID_ActivatePlates]
 [eng]
@@ -2991,26 +2890,14 @@ Activate Pressure Plates
 [MID_DropTrapdoors]
 [eng]
 Drop Trapdoors
-[fra]
-Drop Trapdoors!!translate
-[rus]
-Drop Trapdoors!!translate
 
 [MID_DropTrapdoorsArmed]
 [eng]
 Drop Trapdoors When Armed
-[fra]
-Drop Trapdoors When Armed!!translate
-[rus]
-Drop Trapdoors When Armed!!translate
 
 [MID_PushObjects]
 [eng]
 Push Objects
-[fra]
-Push Objects!!translate
-[rus]
-Push Objects!!translate
 
 [MID_PushMonsters]
 [eng]
@@ -3019,10 +2906,6 @@ Push Monsters
 [MID_MovePlatforms]
 [eng]
 Move Platforms and Rafts
-[fra]
-Move Platforms and Rafts!!translate
-[rus]
-Move Platforms and Rafts!!translate
 
 [MID_RestrictedMovement]
 [eng]
@@ -3031,138 +2914,70 @@ Restricted Movement
 [MID_CanBeMonsterAttacked]
 [eng]
 Can Be Attacked By Monsters
-[fra]
-Can Be Attacked By Monsters!!translate
-[rus]
-Can Be Attacked By Monsters!!translate
 
 [MID_MonsterTarget]
 [eng]
 Monster Target
-[fra]
-Monster Target!!translate
-[rus]
-Monster Target!!translate
 
 [MID_MonsterTargetWhenPlayerIsTarget]
 [eng]
 Monster Target When Player Is Target
-[fra]
-Monster Target When Player Is Target!!translate
-[rus]
-Monster Target When Player Is Target!!translate
 
 [MID_AllyTarget]
 [eng]
 Player Ally Target
-[fra]
-Player Ally Target!!translate
-[rus]
-Player Ally Target!!translate
 
 [MID_PuffTarget]
 [eng]
 Puff Target
-[fra]
-Puff Target!!translate
-[rus]
-Puff Target!!translate
 
 [MID_SwordDamageImmune]
 [eng]
 Sword Damage Immunity
-[fra]
-Sword Damage Immunity!!translate
-[rus]
-Sword Damage Immunity!!translate
 
 [MID_PickaxeDamageImmune]
 [eng]
 Pickaxe Damage Immunity
-[fra]
-Pickaxe Damage Immunity!!translate
-[rus]
-Pickaxe Damage Immunity!!translate
 
 [MID_SpearDamageImmune]
 [eng]
 Spear Damage Immunity
-[fra]
-Spear Damage Immunity!!translate
-[rus]
-Spear Damage Immunity!!translate
 
 [MID_DaggerDamageImmune]
 [eng]
 Dagger Damage Immunity
-[fra]
-Dagger Damage Immunity!!translate
-[rus]
-Dagger Damage Immunity!!translate
 
 [MID_CaberDamageImmune]
 [eng]
 Caber Damage Immunity
-[fra]
-Caber Damage Immunity!!translate
-[rus]
-Caber Damage Immunity!!translate
 
 [MID_FloorSpikeImmune]
 [eng]
 Floor Spikes Immunity
-[fra]
-Floor Spikes Immunity!!translate
-[rus]
-Floor Spikes Immunity!!translate
 
 [MID_FiretrapImmune]
 [eng]
 Fire trap Immunity
-[fra]
-Fire trap Immunity!!translate
-[rus]
-Fire trap Immunity!!translate
 
 [MID_HotTileImmune]
 [eng]
 Hot Tile Immunity
-[fra]
-Hot Tile Immunity!!translate
-[rus]
-Hot Tile Immunity!!translate
 
 [MID_ExplosionImmune]
 [eng]
 Explosion Immunity
-[fra]
-Explosion Immunity!!translate
-[rus]
-Explosion Immunity!!translate
 
 [MID_BriarImmune]
 [eng]
 Briar Immunity
-[fra]
-Briar Immunity!!translate
-[rus]
-Briar Immunity!!translate
 
 [MID_AdderImmune]
 [eng]
 Adder Immunity
-[fra]
-Adder Immunity!!translate
-[rus]
-Adder Immunity!!translate
 
 [MID_PuffImmune]
 [eng]
 Puff Immunity
-[fra]
-Puff Immunity!!translate
-[rus]
-Puff Immunity!!translate
 
 [MID_FatalPushImmune]
 [eng]
