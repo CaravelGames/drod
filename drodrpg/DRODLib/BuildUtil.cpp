@@ -88,7 +88,8 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 	if (!room.CropRegion(px, py, endX, endY))
 		return true;
 
-	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F;
+	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F ||
+		tile == T_REMOVE_TRANSPARENT;
 	const bool bVirtualTile = IsVirtualTile(tile);
 	if (!bRealTile && !bVirtualTile)
 		return true; //unrecognized tile ID
@@ -181,6 +182,10 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 			break;
 		}
 
+		//Special removal build can clear anything.
+		if (tile == T_REMOVE_TRANSPARENT)
+			return true;
+
 		//Obstacles may not be built -- only queried in IsTileAt.
 		if (tile == T_OBSTACLE)
 			bValid = false;
@@ -266,6 +271,9 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 				return true;
 			}
 		return false;
+
+		case TV_REMOVE_TRANSPARENT:
+			return BuildRealTile(room, T_REMOVE_TRANSPARENT, x, y, bAllowSame, CueEvents);
 
 		default: break;
 	}
@@ -442,6 +450,9 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 			//this case isn't handled in briars.plotted() via room plot below
 			//room.briars.forceRecalc();
 		}
+		else if (oldTTile == T_OBSTACLE && tile == T_REMOVE_TRANSPARENT) {
+			RecalculateObstacle(room, x, y);
+		}
 
 		//Update room tarstuff state
 		if (bIsTar(tile)) {
@@ -493,4 +504,64 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	CueEvents.Add(CID_ObjectBuilt, new CMoveCoord(x, y, tile), true);
 
 	return true;
+}
+
+void BuildUtil::RecalculateObstacle(CDbRoom& room, const UINT wCol, const UINT wRow)
+// Collapse obstacle into 1x1 units
+{
+	const BYTE obType = calcObstacleType(room.GetTParam(wCol, wRow));
+	ASSERT(obType);
+
+	//Find obstacle edges to figure out which relative x/y position this tile is at.
+	UINT xPos = 0;
+	UINT yPos = 0;
+	UINT x = wCol, y = wRow;
+	while (x > 0) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break; //found left edge
+		if (room.GetTSquare(x - 1, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x - 1, wRow)) != obType) break;
+		++xPos;
+		--x;
+	}
+
+	UINT leftX = x;
+
+	x = wCol + 1;
+	while (x < room.wRoomCols) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break;
+		if (room.GetTSquare(x, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x, wRow)) != obType) break;
+		++x;
+	}
+
+	x -= wCol - xPos; //x dimension of this obstacle
+	ASSERT(xPos < x);
+
+	while (y > 0) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;  //found top edge
+		if (room.GetTSquare(wCol, y - 1) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y - 1)) != obType) break;
+		++yPos;
+		--y;
+	}
+
+	UINT topY = y;
+
+	y = wRow + 1;
+	while (y < room.wRoomRows) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;
+		if (room.GetTSquare(wCol, y) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y)) != obType) break;
+		++y;
+	}
+
+	y -= wRow - yPos; //y dimension of this obstacle
+	ASSERT(yPos < y);
+
+	for (UINT i = 0; i < x; i++) {
+		for (UINT j = 0; j < y; j++) {
+			room.SetTParam(leftX + i, topY + j, OBSTACLE_TOP | OBSTACLE_LEFT | obType);
+			room.ForceTileRedraw(leftX + i, topY + j, true);
+		}
+	}
 }

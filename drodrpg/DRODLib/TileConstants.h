@@ -432,14 +432,16 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define TV_SHIELD8     ((UINT)-38)
 #define TV_SHIELD9     ((UINT)-39)
 #define TV_REMOVE_OVERHEAD_IMAGE (UINT(-40))
-static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_REMOVE_OVERHEAD_IMAGE;}
+#define TV_REMOVE_TRANSPARENT (UINT(-41))
+static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_REMOVE_TRANSPARENT;}
 
 //Virtual tiles: enumerate after TOTAL_TILE_COUNT
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance
 #define T_NOMONSTER           (TOTAL_TILE_COUNT + 1)  //for erasing monsters only
 #define T_EMPTY_F             (TOTAL_TILE_COUNT + 2)  //for erasing f-layer objects only
+#define T_REMOVE_TRANSPARENT  (TOTAL_TILE_COUNT + 3)  //for erasing t-layer objects only
 
-#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 3)
+#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 4)
 
 enum TILELAYERS {
 	LAYER_OPAQUE = 0,
@@ -618,7 +620,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
-	LAYER_FLOOR  //T_EMPTY_F       TOTAL+2
+	LAYER_FLOOR, //T_EMPTY_F       TOTAL+2
+	LAYER_TRANSPARENT //T_EMPTY_TRANSPARENT TOTAL+3
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
@@ -788,7 +791,8 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 
 	MID_Swordsman,    //T_SWORDSMAN     TOTAL+0
 	0,                //T_NOMONSTER     TOTAL+1
-	0                 //T_EMPTY_F       TOTAL+2
+	0,                //T_EMPTY_F       TOTAL+2
+	0                 //T_REMOVE_TRANSPARENT TOTAL+3
 };
 
 #endif //...#ifndef TILECONSTANTS_H
