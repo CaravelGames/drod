@@ -195,7 +195,8 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 			wTTile == T_CRATE || wTTile == T_POWDER_KEG ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
 			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
-			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))
+			wTTile == T_TOKEN || bIsTar(wTTile) || wTTile == T_MIST ||
+			bIsShovel(wTTile))
 			break;
 		//No other item can be built over.
 		bValid = false;
