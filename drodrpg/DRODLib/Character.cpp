@@ -782,14 +782,24 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 			ASSERT(pCombat);
 			CMonster *pMonster = pCombat->pMonster;
 			ASSERT(pMonster);
+			bool bRefreshCombat = false;
 			switch (varIndex)
 			{
 				case (UINT)ScriptVars::P_ENEMY_HP: pMonster->HP = (int)val > 0 ? val : 0; break;
-				case (UINT)ScriptVars::P_ENEMY_ATK: pMonster->ATK = (int)val > 0 ? val : 0; break;
-				case (UINT)ScriptVars::P_ENEMY_DEF: pMonster->DEF = (int)val > 0 ? val : 0; break;
+				case (UINT)ScriptVars::P_ENEMY_ATK:
+					pMonster->ATK = (int)val > 0 ? val : 0;
+					bRefreshCombat = true;
+				break;
+				case (UINT)ScriptVars::P_ENEMY_DEF:
+					pMonster->DEF = (int)val > 0 ? val : 0;
+					bRefreshCombat = true;
+				break;
 				case (UINT)ScriptVars::P_ENEMY_GOLD: pMonster->GOLD = val; break;
 				case (UINT)ScriptVars::P_ENEMY_XP: pMonster->XP = val; break;
 			}
+
+			if (bRefreshCombat)
+				pCombat->InitMonsterStats(false);
 		}
 		break;
 
@@ -3126,15 +3136,26 @@ void CCharacter::Process(
 							nValue = parseExpression(command.label.c_str(), index, pGame, this);
 						}
 						const UINT value = UINT(nValue > 0 ? nValue : 0); //support only non-negative values
+						bool bRefreshCombat = false;
 
 						switch (pw) {
 							case ScriptFlag::HP: pMonster->ChangeHP(max(1, value)); break; //cannot kill monster via this command
-							case ScriptFlag::ATK: pMonster->ATK = value; break;
-							case ScriptFlag::DEF: pMonster->DEF = value; break;
+							case ScriptFlag::ATK:
+								pMonster->ATK = value;
+								bRefreshCombat = true;
+							break;
+							case ScriptFlag::DEF:
+								pMonster->DEF = value;
+								bRefreshCombat = true;
+							break;
 							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
 							case ScriptFlag::XP: pMonster->XP = value; break;
 							default: break; //do nothing
 						}
+
+						CCombat* pCombat = this->pCurrentGame->pCombat;
+						if (bRefreshCombat && pCombat && pCombat->pMonster == pMonster)
+							pCombat->InitMonsterStats(false);
 					}
 				}
 				bProcessNextCommand = true;
