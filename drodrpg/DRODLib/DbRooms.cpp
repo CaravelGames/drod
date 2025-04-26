@@ -8561,7 +8561,8 @@ void CDbRoom::Plot(
 						//    which layer the tile is plotted to.
 	CMonster *pMonster)  //(in) default=NULL
 {
-	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F);
+	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F ||
+		T_REMOVE_TRANSPARENT);
 	ASSERT(IsValidColRow(wX, wY));
 
 	const UINT wSquareIndex = ARRAYINDEX(wX,wY);
@@ -8656,12 +8657,16 @@ void CDbRoom::Plot(
 			if (bGeometryChanging)
 				this->geometryChanges.insert(wX,wY);
 
-			if (wTileNo == T_EMPTY && this->coveredTSquares.GetAt(wX,wY) != T_EMPTY)
+			if ((wTileNo == T_EMPTY || wTileNo == T_REMOVE_TRANSPARENT) &&
+				this->coveredTSquares.GetAt(wX,wY) != T_EMPTY)
 			{
 				this->pszTSquares[wSquareIndex] = static_cast<char>(
 						this->coveredTSquares.GetAt(wX,wY));
 				ASSERT(T_EMPTY == 0);
 				this->coveredTSquares.Remove(wX,wY); //set to T_EMPTY
+			}
+			else if (wTileNo == T_REMOVE_TRANSPARENT) {
+				this->pszTSquares[wSquareIndex] = static_cast<char>(T_EMPTY);
 			} else
 				this->pszTSquares[wSquareIndex] = static_cast<char>(wTileNo);
 			if (!this->pCurrentGame)

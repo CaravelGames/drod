@@ -4945,6 +4945,7 @@ void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(TV_EXPLOSION, g_pTheDB->GetMessageText(MID_Explosion));
 	pListBox->AddItem(T_EMPTY_F, g_pTheDB->GetMessageText(MID_RemoveFLayerItem));
 	pListBox->AddItem(T_EMPTY, g_pTheDB->GetMessageText(MID_RemoveItem));
+	pListBox->AddItem(TV_REMOVE_TRANSPARENT, g_pTheDB->GetMessageText(MID_RemoveTransparentLayer));
 	pListBox->AddItem(TV_REMOVE_OVERHEAD_IMAGE, g_pTheDB->GetMessageText(MID_RemoveOverheadImage));
 
 	pListBox->SetAllowFiltering(true);
