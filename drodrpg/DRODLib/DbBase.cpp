@@ -1208,6 +1208,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_WaitForArrayEntry: strText = "Wait for array entry"; break;
 		case MID_CountArrayEntries: strText = "Count array entries"; break;
 		case MID_Wyrm: strText = "Wyrm"; break;
+		case MID_MusicElizabeth: strText = "Elizabeth"; break;
 		case MID_RemoveTransparentLayer: strText = "Remove transparent layer object"; break;
 		default: break;
 	}

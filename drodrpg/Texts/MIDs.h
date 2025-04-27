@@ -1753,7 +1753,7 @@ enum MID_CONSTANT {
   MID_WorldMapDestinationPrompt = 2104,
   MID_WaitForArrayEntry = 2108,
   MID_CountArrayEntries = 2109,
-  MID_RemoveTransparentLayer = 2111,
+  MID_RemoveTransparentLayer = 2112,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,
