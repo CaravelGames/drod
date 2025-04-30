@@ -128,12 +128,6 @@ public:
 	static void PerformCallbackf(float fVal);
 	static void PerformCallbackText(const WCHAR* wpText);
 
-	//For (un)compression
-	static bool z_compress(const BYTE* src, const ULONG srcSize,
-			BYTE*& dest, ULONG& destLen);
-	static MESSAGE_ID z_uncompress(ULONG& decodedSize, BYTE*& decodedBuf,
-			const BYTE* inBuffer, const UINT inBufferSize);
-
 	static CImportInfo info;
 //	static vector<DEMO_UPLOAD> upgradedHoldVictoryDemos;
 	static RecordMap exportInfo;
