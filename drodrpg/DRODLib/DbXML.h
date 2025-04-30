@@ -36,6 +36,7 @@
 #include "../Texts/MIDs.h"
 
 #include <expat.h>
+#include <zlib.h>
 
 #include <vector>
 using std::vector;
@@ -64,6 +65,28 @@ struct SCORE_UPLOAD
 	WSTRING scorename;
 	UINT wScore;
 	UINT dwSavedGameID;
+};
+
+struct streamingOutParams
+{
+	streamingOutParams()
+		: pOutBuffer(NULL)
+		, pGzf(NULL)
+	{
+	}
+	void reset() {
+		pOutBuffer = NULL;
+		pGzf = NULL;
+	}
+	void set(string* str, gzFile* gzf)
+	{
+		pOutBuffer = str;
+		pGzf = gzf;
+	}
+	bool flush(const ULONG maxSizeThreshold = 0);
+
+	string* pOutBuffer;
+	gzFile* pGzf;
 };
 
 //*****************************************************************************
@@ -144,6 +167,8 @@ private:
 	static vector <VIEWTYPE> dbRecordTypes;   //record types
 	static vector <VIEWPROPTYPE> vpCurrentType;  //stack of viewprops being parsed
 	static vector <bool>  SaveRecord;   //whether record should be saved to the DB
+
+	static streamingOutParams streamingOut;
 };
 
 #endif //...#ifndef DBMXL_H
