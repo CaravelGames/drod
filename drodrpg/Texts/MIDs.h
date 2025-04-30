@@ -656,6 +656,7 @@ enum MID_CONSTANT {
   MID_ConsoleHelp = 1465,
   MID_UnrecognizedConsoleCommand = 1466,
   MID_CaravelServerError = 1748,
+  MID_NoMoreMemory = 2113,
 
   //Messages from Import.uni:
   MID_Import = 474,

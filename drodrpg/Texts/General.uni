@@ -108,3 +108,11 @@ Unrecognized console command
 [MID_CaravelServerError]
 [eng]
 There was an error contacting the Caravel server.
+
+[MID_NoMoreMemory]
+[eng]
+DROD ran out of memory.  You might free up enough memory by closing other applications.
+[rus]
+У DROD закончилась память.  Вы можете освободить достаточно памяти, закрыв другие приложения.
+[fra]
+DROD a manqué de mémoire.  Vous pourriez libérer suffisamment de mémoire en fermant d'autres applications.
