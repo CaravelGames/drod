@@ -114,8 +114,8 @@ bool CDbSavedGameMove::Load(
 	}
 
 	BYTE *decodedBuf = NULL; //called method will allocate memory
-	MESSAGE_ID ret = CDbXML::z_uncompress(decodedSize, decodedBuf, bytes, numInBytes);
-	if (ret != MID_Success)
+	CStretchyBuffer encodedBuf = CStretchyBuffer(bytes, numInBytes);
+	if (!encodedBuf.Uncompress(decodedBuf, decodedSize))
 	{
 		ASSERT(!decodedBuf);
 		ASSERT(!"Can't unpack move data");
