@@ -7656,8 +7656,8 @@ void CEditRoomScreen::ShowErrors()
 			{
 				//Mark stairs that end hold, etc (visual cue).
 				const UINT index = this->pRoom->GetExitIndexAt(wX,wY);
-				const CExitData* pStairs = this->pRoom->Exits[index];
-				if (index == NO_EXIT || !this->pRoom->Exits[index]->dwEntranceID) {
+				const CExitData* pStairs = index != NO_EXIT ? this->pRoom->Exits[index] : nullptr;
+				if (index == NO_EXIT || !pStairs->dwEntranceID) {
 					AddShadeToTile(Orange); //ends hold
 				} else if (pStairs->IsWorldMapExit()) {
 					if (this->pHold->DoesWorldMapExist(pStairs->dwEntranceID)) {
