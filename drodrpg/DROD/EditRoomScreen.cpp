@@ -7665,6 +7665,8 @@ void CEditRoomScreen::ShowErrors()
 					} else {
 						AddShadeToTile(Purple); //bad world map
 					}
+				} else if (pStairs->dwEntranceID == EXIT_PRIOR_LOCATION) {
+					AddShadeToTile(PaleYellow); //return to prior location
 				}
 			}
 			break;
