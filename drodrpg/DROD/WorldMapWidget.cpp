@@ -484,9 +484,17 @@ const
 		if (pChar->animationSpeed && pChar->dwDataID_Tiles)
 			return ANIMATED_TILE; //calculated during real-time animation
 
-		const UINT tile = g_pTheBM->GetCustomTileNo(pChar->dwDataID_Tiles, orientation, frame);
+		static const UINT tileIndex = 4; //index for south-facing tile
+		UINT tile = g_pTheBM->GetCustomTileNo(pChar->dwDataID_Tiles, tileIndex, frame);
 		if (tile != TI_UNSPECIFIED)
 			return tile;
+
+		//If there isn't an animation row, try using default row
+		if (frame != 0) {
+			tile = g_pTheBM->GetCustomTileNo(pChar->dwDataID_Tiles, tileIndex, 0);
+			if (tile != TI_UNSPECIFIED)
+				return tile;
+		}
 
 		//Use stock/default character tileset.
 		return GetTileImageForEntity(pChar->wType == M_NONE ?
