@@ -2079,6 +2079,10 @@ void CGameScreen::ApplyPlayerSettings()
 	this->pRoomWidget->DescribeCitizenColor(
 		settings.GetVar(Settings::DescribeCitizenColor, false));
 
+	//Set extra hinting effects
+	this->bShowHalphEffects = settings.GetVar(Settings::ShowHalphEffects, false);
+	this->bShowDoublePlacementSwirl = settings.GetVar(Settings::ShowDoublePlacementEffect, false);
+
 	this->bAutoUndoOnDeath = settings.GetVar(Settings::AutoUndoOnDeath, false);
 
 	//Move repeat rate.
@@ -3749,35 +3753,43 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphStriking) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHSTRIKING : SEID_HALPH2STRIKING);
-		this->pRoomWidget->AddMLayerEffect(
-			new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphCantOpen))
 	{
 		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphCantOpen) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHCANTOPEN : SEID_HALPH2CANTOPEN);
-		this->pRoomWidget->AddMLayerEffect(new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
-		this->pRoomWidget->AddMLayerEffect(
-			new CFadeTileEffect(this->pRoomWidget, pHalph->GetLatestRequest(), TI_CHECKPOINT, 750));
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, pHalph->GetLatestRequest(), TI_CHECKPOINT, 750));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphInterrupted))
 	{
 		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphInterrupted) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHINTERRUPTED : SEID_HALPH2INTERRUPTED);
-		this->pRoomWidget->AddMLayerEffect(
-			new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
-		this->pRoomWidget->AddMLayerEffect(
-			new CFadeTileEffect(this->pRoomWidget, pHalph->GetCurrentGoal(), TI_CHECKPOINT, 750));
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, pHalph->GetCurrentGoal(), TI_CHECKPOINT, 750));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphHurryUp))
 	{
 		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphHurryUp) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHHURRYUP : SEID_HALPH2HURRYUP);
-		this->pRoomWidget->AddMLayerEffect(
-			new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		}
 	}
 
 	//Handle dynamically-allocated sound channels -- give most important sounds priority.
@@ -3824,7 +3836,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		PlaySoundEffect(SEID_MIMIC);
 		this->pRoomWidget->RenderRoomInPlay(); //remove double placement effect
 		pObj = CueEvents.GetFirstPrivateData(CID_DoublePlaced);
-		if (pObj) {
+		if (pObj && this->bShowDoublePlacementSwirl) {
 			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
 			this->pRoomWidget->AddMLayerEffect(new CTileSwirlEffect(this->pRoomWidget, CMoveCoord(pCoord->wX, pCoord->wY, 0)));
 		}

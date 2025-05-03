@@ -121,6 +121,8 @@ protected:
 	void           RetainEffectCleanup(const bool bVal=false);
 	virtual bool   SetForActivate();
 	void           SetShowVoicedSubtitle(bool showSubtitle) { this->bShowingSubtitlesWithVoice = showSubtitle; }
+	void           SetShowHalphEffects(bool showEffects) { this->bShowHalphEffects = showEffects; }
+	void           SetShowPlaceDoubleSwirl(bool showSwirl) { this->bShowDoublePlacementSwirl = showSwirl; }
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 	//These are called by CDemoScreen.
@@ -224,6 +226,8 @@ private:
 	deque<CFiredCharacterCommand*> speech; //speech dialog queued to play
 	Uint32 dwNextSpeech; //time next speech can begin
 	bool   bShowingSubtitlesWithVoice;	//whether subtitles are shown when voices are playing
+	bool   bShowHalphEffects; //are effects shown for Halph actions (door-knocking, path becoming blocked)
+	bool   bShowDoublePlacementSwirl; //is a swirl effect added when placing a player double
 	Uint32 dwTimeMinimized; //time game is minimized
 	Uint32 dwLastCutSceneMove, dwSavedMoveDuration;
 

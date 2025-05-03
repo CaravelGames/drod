@@ -115,6 +115,8 @@ const UINT TAG_GROUPEDITORMENUITEMS = 1072;
 const UINT TAG_UNDOLEVEL_NUM_LABEL = 1073;
 const UINT TAG_AUTOUNDOONDEATH = 1074;
 const UINT TAG_CITIZEN_DESCRIBE_COLOR = 1075;
+const UINT TAG_HALPH_EFFECTS = 1076;
+const UINT TAG_PLACE_DOUBLE_EFFECT = 1077;
 
 const UINT TAG_CANCEL = 1091;
 const UINT TAG_HELP = 1092;
@@ -338,7 +340,16 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	static const UINT CX_DESCRIBE_CITIZEN_COLOR = CX_AUTOUNDOONDEATH;
 	static const UINT CY_DESCRIBE_CITIZEN_COLOR = CY_AUTOUNDOONDEATH;
 
-	static const UINT CY_SPECIAL_FRAME = Y_DESCRIBE_CITIZEN_COLOR + CY_DESCRIBE_CITIZEN_COLOR + CY_SPACE;
+	static const int X_HALPH_EFFECTS = CX_SPACE;
+	static const int Y_HALPH_EFFECTS = Y_DESCRIBE_CITIZEN_COLOR + CY_AUTOUNDOONDEATH;
+	static const UINT CX_HALPH_EFFECTS = CX_SPECIAL_FRAME - X_HALPH_EFFECTS;
+	static const UINT CY_HALPH_EFFECTS = CY_STANDARD_OPTIONBUTTON;
+	static const int X_PLACE_DOUBLE_EFFECT = CX_SPACE;
+	static const int Y_PLACE_DOUBLE_EFFECT = Y_HALPH_EFFECTS + CY_AUTOUNDOONDEATH;
+	static const UINT CX_PLACE_DOUBLE_EFFECT = CX_SPECIAL_FRAME - X_PLACE_DOUBLE_EFFECT;
+	static const UINT CY_PLACE_DOUBLE_EFFECT = CY_STANDARD_OPTIONBUTTON;
+
+	static const UINT CY_SPECIAL_FRAME = Y_PLACE_DOUBLE_EFFECT + CY_PLACE_DOUBLE_EFFECT + CY_SPACE;
 
 	//Demo frame and children
 	static const UINT X_DEMO_FRAME = X_EDITOR_FRAME;
@@ -442,6 +453,18 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	pOptionButton = new COptionButtonWidget(TAG_CITIZEN_DESCRIBE_COLOR, X_DESCRIBE_CITIZEN_COLOR,
 		Y_DESCRIBE_CITIZEN_COLOR, CX_DESCRIBE_CITIZEN_COLOR, CY_DESCRIBE_CITIZEN_COLOR,
 		g_pTheDB->GetMessageText(MID_DescribeCitizenColor),
+		false);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_HALPH_EFFECTS, X_HALPH_EFFECTS,
+		Y_HALPH_EFFECTS, CX_HALPH_EFFECTS, CY_HALPH_EFFECTS,
+		g_pTheDB->GetMessageText(MID_ShowHalphEffects),
+		false);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_PLACE_DOUBLE_EFFECT, X_PLACE_DOUBLE_EFFECT,
+		Y_PLACE_DOUBLE_EFFECT, CX_PLACE_DOUBLE_EFFECT, CY_PLACE_DOUBLE_EFFECT,
+		g_pTheDB->GetMessageText(MID_ShowPlaceDoubleEffect),
 		false);
 	pSpecialFrame->AddWidget(pOptionButton);
 
@@ -1681,6 +1704,14 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 		GetWidget(TAG_CITIZEN_DESCRIBE_COLOR));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DescribeCitizenColor, false));
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_HALPH_EFFECTS));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ShowHalphEffects, false));
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_PLACE_DOUBLE_EFFECT));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ShowDoublePlacementEffect, false));
+
 	//Editor settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_AUTOSAVE));
@@ -1840,6 +1871,14 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_CITIZEN_DESCRIBE_COLOR));
 	settings.SetVar(Settings::DescribeCitizenColor, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_HALPH_EFFECTS));
+	settings.SetVar(Settings::ShowHalphEffects, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_PLACE_DOUBLE_EFFECT));
+	settings.SetVar(Settings::ShowDoublePlacementEffect, pOptionButton->IsChecked());
 
 	//Editor settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
