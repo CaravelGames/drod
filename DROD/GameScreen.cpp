@@ -56,6 +56,7 @@
 #include "SwordsmanSwirlEffect.h"
 #include "SwordSwingEffect.h"
 #include "TarStabEffect.h"
+#include "TileSwirlEffect.h"
 #include "TrapdoorFallEffect.h"
 #include "VerminEffect.h"
 #include "WadeEffect.h"
@@ -3822,6 +3823,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	{
 		PlaySoundEffect(SEID_MIMIC);
 		this->pRoomWidget->RenderRoomInPlay(); //remove double placement effect
+		pObj = CueEvents.GetFirstPrivateData(CID_DoublePlaced);
+		if (pObj) {
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			this->pRoomWidget->AddMLayerEffect(new CTileSwirlEffect(this->pRoomWidget, CMoveCoord(pCoord->wX, pCoord->wY, 0)));
+		}
 	}
 	if (CueEvents.HasOccurred(CID_SeedingBeaconActivated))
 		PlaySoundEffect(SEID_SEEDING_BEACON_ON);
