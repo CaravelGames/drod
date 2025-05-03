@@ -749,3 +749,11 @@ Export Script Commands
 [MID_Command_Script_FromText]
 [eng]
 Import Script Commands
+
+[MID_ShowHalphEffects]
+[eng]
+Show visual confirmation for Halph actions
+
+[MID_ShowPlaceDoubleEffect]
+[eng]
+Show swirl at double placement position

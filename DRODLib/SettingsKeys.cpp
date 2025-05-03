@@ -76,7 +76,9 @@ namespace Settings
 	DEF(ResizableWindow);
 	DEF(ShowCheckpoints);
 	DEF(ShowDemosFromLevel);
+	DEF(ShowDoublePlacementEffect);
 	DEF(ShowErrors);
+	DEF(ShowHalphEffects);
 	DEF(ShowSubtitlesWithVoices);
 	DEF(SoundEffects);
 	DEF(SoundEffectsVolume);

@@ -159,6 +159,8 @@ bool CDemoScreen::SetForActivate()
 		settings.GetVar(Settings::DescribeCitizenColor, false));
 
 	SetShowVoicedSubtitle(settings.GetVar(Settings::ShowSubtitlesWithVoices, true));
+	SetShowHalphEffects(settings.GetVar(Settings::ShowHalphEffects, false));
+	SetShowPlaceDoubleSwirl(settings.GetVar(Settings::ShowDoublePlacementEffect, false));
 
 	PaintClock(true);
 
