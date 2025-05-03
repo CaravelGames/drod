@@ -5710,7 +5710,7 @@ void CCurrentGame::ProcessDoublePlacement(
 						++this->dwLevelMoves;
 						ASSERT(this->dwLevelMoves > 0);
 
-						CueEvents.Add(CID_DoublePlaced);
+						CueEvents.Add(CID_DoublePlaced, new CCoord(pDouble->wX, pDouble->wY), true);
 						pDouble->SetCurrentGame(this);
 						pDouble->wPrevX = pDouble->wX;
 						pDouble->wPrevY = pDouble->wY;

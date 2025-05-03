@@ -279,7 +279,7 @@ enum CUEEVENT_ID
 
 	//Swordsman placed a double.
 	//
-	//Private data: NONE
+	//Private data: CCoord (one)
 	CID_DoublePlaced,
 
 	//Swordsman ran into obstacle.
