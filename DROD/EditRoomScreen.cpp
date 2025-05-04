@@ -4057,12 +4057,22 @@ void CEditRoomScreen::SetDestinationEntrance(
 	}
 	bool bValueSet = false;
 	do {
-		if (SelectListID(this->pEntranceBox, this->pHold, dwEntranceID,
-			MID_ExitLevelPrompt) == CEntranceSelectDialogWidget::OK)
+		CEntranceSelectDialogWidget::BUTTONTYPE button =
+			SelectListID(this->pEntranceBox, this->pHold, dwEntranceID, MID_ExitLevelPrompt);
+
+		switch (button)
 		{
-			Changing();
-			this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
-			bValueSet = true;
+			case CEntranceSelectDialogWidget::OK:
+				Changing();
+				this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
+				bValueSet = true;
+			break;
+
+			case CEntranceSelectDialogWidget::ESC:
+			case CEntranceSelectDialogWidget::QUIT:
+			return;
+
+			default: break;
 		}
 	} while (!bValueSet);
 }
