@@ -90,6 +90,7 @@ void CTextBox2DWidget::HandleKeyDown(
 {
 	const SDL_Keycode key = KeyboardEvent.keysym.sym;
 	const bool bShift = (KeyboardEvent.keysym.mod & KMOD_SHIFT) != 0;
+	const bool bCtrl = (KeyboardEvent.keysym.mod & KMOD_CTRL) != 0;
 	const UINT wOldCursorPos = this->wCursorIndex;
 	const UINT wOldCursorX = this->wCursorX;
 	const UINT wOldCursorY = this->wCursorY;
@@ -144,6 +145,10 @@ void CTextBox2DWidget::HandleKeyDown(
 		case SDLK_RETURN:
 		case SDLK_KP_ENTER:
 		{
+			if (bCtrl)
+			{
+				break;
+			}
 			if (!GetHotkeyTag(KeyboardEvent.keysym)) //don't type character if this is a hotkey
 			{
 				const WCHAR wc = TranslateUnicodeKeysym(KeyboardEvent.keysym);
