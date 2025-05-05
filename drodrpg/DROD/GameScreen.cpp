@@ -8153,6 +8153,7 @@ void CGameScreen::UpdateUIAfterRoomRestart(const bool bReloadEntireMap) //[defau
 	SetGameAmbience(true);
 	AmbientSoundSetup(); //determine what sounds should be playing now
 
+	this->pRoomWidget->ceilingLightChanges.reset();
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->ResetForPaint();
