@@ -5432,6 +5432,7 @@ void CGameScreen::UpdateUIAfterRoomRestart()
 	ClearSpeech();
 	SetGameAmbience(true);
 
+	this->pRoomWidget->ceilingLightChanges.reset();
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->ResetForPaint();
