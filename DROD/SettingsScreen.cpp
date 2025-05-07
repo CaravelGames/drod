@@ -118,6 +118,11 @@ const UINT TAG_CITIZEN_DESCRIBE_COLOR = 1075;
 const UINT TAG_HALPH_EFFECTS = 1076;
 const UINT TAG_PLACE_DOUBLE_EFFECT = 1077;
 
+const UINT TAG_TARSTUFF_ALPHA_VALUE_LABEL = 1078;
+const UINT TAG_SOUNDEFF_VALUE_LABEL = 1079;
+const UINT TAG_VOICE_VALUE_LABEL = 1097;
+const UINT TAG_MUSIC_VALUE_LABEL = 1098;
+
 const UINT TAG_CANCEL = 1091;
 const UINT TAG_HELP = 1092;
 
@@ -518,6 +523,9 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 	static const int X_GRAPHICS_FRAME = CX_SPACE * 2;
 	static const int Y_GRAPHICS_FRAME = Y_INNERMENU;
 
+	static const int CX_SLIDER_VALUE_LABEL = 35;
+	static const int CY_SLIDER_VALUE_LABEL = 28;
+
 	static const UINT CX_USEFULLSCREEN = 200;
 	static const UINT CY_USEFULLSCREEN = CY_STANDARD_OPTIONBUTTON;
 	static const int X_USEFULLSCREEN = CX_SPACE;
@@ -561,8 +569,9 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 
 	static const int X_TARSTUFFALPHA = X_GAMMA;
 	static const int Y_TARSTUFFALPHA = Y_TARSTUFFALPHA_LABEL;
-	static const UINT CX_TARSTUFFALPHA = CX_GAMMA;
+	static const UINT CX_TARSTUFFALPHA = CX_GRAPHICS_FRAME - X_TARSTUFFALPHA - CX_SPACE - CX_SLIDER_VALUE_LABEL;
 	static const UINT CY_TARSTUFFALPHA = CY_STANDARD_SLIDER;
+	static const int X_TARSTUFF_ALPHA_VALUE_LABEL = X_TARSTUFFALPHA + CX_TARSTUFFALPHA;
 
 	static const int X_DISPLAY_COMBOS = X_USEFULLSCREEN;
 	static const int Y_DISPLAY_COMBOS = Y_TARSTUFFALPHA + CY_STANDARD_OPTIONBUTTON + (4 * CY_SPACE);
@@ -596,20 +605,23 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 	static const UINT CX_ENABLE_MUSIC = CX_ENABLE_SOUNDEFF;
 	static const UINT CY_ENABLE_MUSIC = CY_ENABLE_VOICES;
 	static const int X_SOUNDEFF_VOLUME = X_ENABLE_VOICES + CX_ENABLE_SOUNDEFF;
-	static const UINT CX_SOUNDEFF_VOLUME = CX_SOUND_FRAME - X_SOUNDEFF_VOLUME - CX_SPACE;
+	static const UINT CX_SOUNDEFF_VOLUME = CX_SOUND_FRAME - X_SOUNDEFF_VOLUME - CX_SPACE - CX_SLIDER_VALUE_LABEL;
 	static const UINT CY_SOUNDEFF_VOLUME = CY_STANDARD_SLIDER;
 	static const int Y_SOUNDEFF_VOLUME = Y_ENABLE_SOUNDEFF +
 		(CY_ENABLE_SOUNDEFF - CY_SOUNDEFF_VOLUME) / 2;
+	static const int X_SOUNDEFF_VOLUME_LABEL = X_SOUNDEFF_VOLUME + CX_SOUNDEFF_VOLUME + CX_SPACE;
 	static const int X_QUIET_LABEL = X_SOUNDEFF_VOLUME;
 	static const int X_VOICES_VOLUME = X_ENABLE_VOICES + CX_ENABLE_VOICES;
-	static const UINT CX_VOICES_VOLUME = CX_SOUND_FRAME - X_VOICES_VOLUME - CX_SPACE;
+	static const UINT CX_VOICES_VOLUME = CX_SOUND_FRAME - X_VOICES_VOLUME - CX_SPACE - CX_SLIDER_VALUE_LABEL;
 	static const UINT CY_VOICES_VOLUME = CY_STANDARD_SLIDER;
 	static const int Y_VOICES_VOLUME = Y_ENABLE_VOICES +
 		(CY_ENABLE_VOICES - CY_VOICES_VOLUME) / 2;
+	static const int X_VOICES_VOLUME_LABEL = X_VOICES_VOLUME + CX_VOICES_VOLUME + CX_SPACE;
 	static const UINT CX_MUSIC_VOLUME = CX_SOUNDEFF_VOLUME;
 	static const UINT CY_MUSIC_VOLUME = CY_STANDARD_SLIDER;
 	static const int X_MUSIC_VOLUME = X_SOUNDEFF_VOLUME;
 	static const int Y_MUSIC_VOLUME = Y_ENABLE_MUSIC + (CY_ENABLE_MUSIC - CY_MUSIC_VOLUME) / 2;
+	static const int X_MUSIC_VOLUME_LABEL = X_MUSIC_VOLUME + CX_MUSIC_VOLUME + CX_SPACE;
 
 	static const int X_SHOWSUBTITLES = CX_SPACE;
 	static const int Y_SHOWSUBTITLES = Y_MUSIC_VOLUME + CY_MUSIC_VOLUME;
@@ -666,6 +678,12 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 		CX_TARSTUFFALPHA, CY_TARSTUFFALPHA, 255, BYTE(255 - MIN_TARSTUFF_ALPHA + 1));
 	pGraphicsFrame->AddWidget(pSliderWidget);
 
+	CLabelWidget* pLabel = new CLabelWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL, X_TARSTUFF_ALPHA_VALUE_LABEL, Y_TARSTUFFALPHA,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, std::to_wstring(BYTE(255 - MIN_TARSTUFF_ALPHA + 1)).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pGraphicsFrame->AddWidget(pLabel);
+
 	pOptionButton = new COptionButtonWidget(TAG_DISPLAY_COMBOS, X_DISPLAY_COMBOS, Y_DISPLAY_COMBOS,
 		CX_DISPLAY_COMBOS, CY_DISPLAY_COMBOS, g_pTheDB->GetMessageText(MID_ComboDisplay), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
@@ -712,6 +730,12 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 		Y_SOUNDEFF_VOLUME, CX_SOUNDEFF_VOLUME, CY_SOUNDEFF_VOLUME, DEFAULT_SOUND_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
 
+	pLabel = new CLabelWidget(TAG_SOUNDEFF_VALUE_LABEL, X_SOUNDEFF_VOLUME_LABEL, Y_SOUNDEFF_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, std::to_wstring(DEFAULT_SOUND_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
+
 	pOptionButton = new COptionButtonWidget(TAG_ENABLE_VOICES, X_ENABLE_VOICES,
 		Y_ENABLE_VOICES, CX_ENABLE_VOICES, CY_ENABLE_VOICES,
 		g_pTheDB->GetMessageText(MID_PlayVoices), false);
@@ -721,6 +745,12 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 		Y_VOICES_VOLUME, CX_VOICES_VOLUME, CY_VOICES_VOLUME, DEFAULT_VOICE_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
 
+	pLabel = new CLabelWidget(TAG_VOICE_VALUE_LABEL, X_VOICES_VOLUME_LABEL, Y_VOICES_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, std::to_wstring(DEFAULT_VOICE_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
+
 	pOptionButton = new COptionButtonWidget(TAG_ENABLE_MUSIC, X_ENABLE_MUSIC,
 		Y_ENABLE_MUSIC, CX_ENABLE_MUSIC, CY_ENABLE_MUSIC,
 		g_pTheDB->GetMessageText(MID_PlayMusic), false);
@@ -729,6 +759,12 @@ void CSettingsScreen::SetupMediaTab(CTabbedMenuWidget* pTabbedMenu)
 	pSliderWidget = new CSliderWidget(TAG_MUSIC_VOLUME, X_MUSIC_VOLUME,
 		Y_MUSIC_VOLUME, CX_MUSIC_VOLUME, CY_MUSIC_VOLUME, DEFAULT_MUSIC_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
+
+	pLabel = new CLabelWidget(TAG_MUSIC_VALUE_LABEL, X_MUSIC_VOLUME_LABEL, Y_MUSIC_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, std::to_wstring(DEFAULT_MUSIC_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
 
 	pOptionButton = new COptionButtonWidget(TAG_SHOW_SUBTITLES, X_SHOWSUBTITLES,
 		Y_SHOWSUBTITLES, CX_SHOWSUBTITLES, CY_SHOWSUBTITLES,
@@ -1390,6 +1426,46 @@ void CSettingsScreen::OnSelectChange(
 			SetUndoLevelNumLabel();
 			Paint();
 		break;
+		case TAG_TARSTUFF_TRANSPARENCY:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
+			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA).c_str());
+			Paint();
+		}
+		break;
+		case TAG_SOUNDEFF_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
+			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			Paint();
+		}
+		break;
+		case TAG_VOICES_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
+			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			Paint();
+		}
+		break;
+		case TAG_MUSIC_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
+			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			Paint();
+		}
+		break;
 		default: break;
 	}
 	SynchOption(dwTagNo);
@@ -1619,6 +1695,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 
 	//Video settings.
 	CSliderWidget *pSliderWidget;
+	CLabelWidget* pLabel;
 	COptionButtonWidget *pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_USE_FULLSCREEN));
 	pOptionButton->SetChecked((CScreen::bAllowFullScreen && CScreen::bAllowWindowed) ?
@@ -1643,6 +1720,8 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	bytValue = settings.GetVar(Settings::TarstuffAlpha, BYTE(g_pTheDBM->tarstuffAlpha));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_TRANSPARENCY));
 	pSliderWidget->SetValue(bytValue - MIN_TARSTUFF_ALPHA);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
+	pLabel->SetText(std::to_wstring(bytValue).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DISPLAY_COMBOS));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DisplayCombos, true));
@@ -1655,15 +1734,21 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	BYTE bytVolume = settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
+	pLabel->SetText(std::to_wstring(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_VOICES));
 	pOptionButton->SetChecked(settings.GetVar(Settings::Voices, g_pTheSound->IsSoundEffectsOn()));
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
+	pLabel->SetText(std::to_wstring(bytVolume).c_str());
 	
 	bytVolume = settings.GetVar(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_VOICES_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
+	pLabel->SetText(std::to_wstring(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_MUSIC));
