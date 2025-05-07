@@ -1211,6 +1211,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MusicElizabeth: strText = "Elizabeth"; break;
 		case MID_RemoveTransparentLayer: strText = "Remove transparent layer object"; break;
 		case MID_NoMoreMemory: strText = "DROD ran out of memory. You might free up enough memory by closing other applications."; break;
+		case MID_ShowPercentOptimal: strText = "Show banner for non-best local scores"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

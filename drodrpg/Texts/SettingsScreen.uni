@@ -645,3 +645,7 @@ Import Script Commands
 [MID_EnableAutosaves]
 [eng]
 Enable autosaves
+
+[MID_ShowPercentOptimal]
+[eng]
+Show banner for non-best local scores
