@@ -123,6 +123,7 @@ const UINT TAG_CHARACTERPREVIEW = 1073;
 
 const UINT TAG_NEWGAMEPROMPT = 1072;
 const UINT TAG_GAME_AUTOSAVE = 1079;
+const UINT TAG_SHOW_PERCENT_OPTIMAL = 1094;
 
 const UINT TAG_TARSTUFF_ALPHA_VALUE_LABEL = 1074;
 const UINT TAG_MAP_ICON_ALPHA_VALUE_LABEL = 1075;
@@ -295,7 +296,12 @@ CSettingsScreen::CSettingsScreen()
 	static const int CX_GAME_AUTOSAVE = CX_SPECIAL_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
 	static const int CY_GAME_AUTOSAVE = CY_STANDARD_OPTIONBUTTON;
 
-	static const UINT CY_SPECIAL_FRAME = Y_GAME_AUTOSAVE + CY_GAME_AUTOSAVE + CY_SPACE;
+	static const int X_SHOW_PERCENT_OPTIMAL = CX_SPACE;
+	static const int Y_SHOW_PERCENT_OPTIMAL = Y_GAME_AUTOSAVE + CY_GAME_AUTOSAVE;
+	static const int CX_SHOW_PERCENT_OPTIMAL = CX_SPECIAL_FRAME - X_SHOW_PERCENT_OPTIMAL - CX_SPACE;
+	static const int CY_SHOW_PERCENT_OPTIMAL = CY_STANDARD_OPTIONBUTTON;
+
+	static const UINT CY_SPECIAL_FRAME = Y_SHOW_PERCENT_OPTIMAL + CY_SHOW_PERCENT_OPTIMAL + CY_SPACE;
 
 	//Game speed frame and children.
 	static const int X_SPEED_FRAME = X_PERSONAL_FRAME;
@@ -634,6 +640,11 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_GAME_AUTOSAVE, X_GAME_AUTOSAVE,
 		Y_GAME_AUTOSAVE, CX_GAME_AUTOSAVE, CY_GAME_AUTOSAVE,
 		g_pTheDB->GetMessageText(MID_EnableAutosaves), true);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_SHOW_PERCENT_OPTIMAL, X_SHOW_PERCENT_OPTIMAL,
+		Y_SHOW_PERCENT_OPTIMAL, CX_SHOW_PERCENT_OPTIMAL, CY_SHOW_PERCENT_OPTIMAL,
+		g_pTheDB->GetMessageText(MID_ShowPercentOptimal), true);
 	pSpecialFrame->AddWidget(pOptionButton);
 
 	//Graphics and sound tab.
@@ -1771,6 +1782,10 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 		GetWidget(TAG_GAME_AUTOSAVE));
 	pOptionButton->SetChecked(settings.GetVar(Settings::EnableAutosave, true));
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_SHOW_PERCENT_OPTIMAL));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ShowPercentOptimal, true));
+
 	//Command settings.
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
@@ -1919,6 +1934,10 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_GAME_AUTOSAVE));
 	settings.SetVar(Settings::EnableAutosave, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_SHOW_PERCENT_OPTIMAL));
+	settings.SetVar(Settings::ShowPercentOptimal, pOptionButton->IsChecked());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.

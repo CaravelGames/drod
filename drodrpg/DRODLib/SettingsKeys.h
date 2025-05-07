@@ -79,6 +79,7 @@ namespace Settings
 	DEF(ShowCheckpoints);
 	DEF(ShowDemosFromLevel);
 	DEF(ShowErrors);
+	DEF(ShowPercentOptimal);
 	DEF(ShowSubtitlesWithVoices);
 	DEF(SoundEffects);
 	DEF(SoundEffectsVolume);
