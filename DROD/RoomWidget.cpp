@@ -271,6 +271,7 @@ TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
 	, appliedDarkness(rhs.appliedDarkness)
 	, nCustomColor(rhs.nCustomColor)
+	, hsv(rhs.hsv)
 { }
 
 bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)
@@ -7498,6 +7499,15 @@ void CRoomWidget::DrawTileImageWithoutLight(
 				1.0f+lightMap[0][blit.nAddColor], 1.0f+lightMap[1][blit.nAddColor], 1.0f+lightMap[2][blit.nAddColor],
 				blit.wTileImageNo, BlitRect.x, BlitRect.y);
 
+	//Apply optional hue change
+	if (blit.hsv[0] >= 0 || blit.hsv[1] >= 0 || blit.hsv[2] >= 0)
+	{
+		g_pTheBM->HsvToRectWithTileMask(pDestSurface,
+			nPixelX, nPixelY, BlitRect.w, BlitRect.h,
+			blit.hsv[0], blit.hsv[1], blit.hsv[2],
+			blit.wTileImageNo, BlitRect.x, BlitRect.y);
+	}
+
 	if (blit.nCustomColor != -1) {
 		float fR, fG, fB;
 		TranslateMonsterColor(blit.nCustomColor, fR, fG, fB);
@@ -8165,6 +8175,7 @@ void CRoomWidget::DrawCharacter(
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress, bDrawRaised);
 	blit.nOpacity = nOpacity;
 	blit.nCustomColor = pCharacter->nColor;
+	blit.hsv = pCharacter->getHSV();
 	blit.nAddColor = nAddColor;
 	DrawTileImage(blit, pDestSurface);
 

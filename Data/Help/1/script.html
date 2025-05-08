@@ -723,6 +723,15 @@ You may select these in variable commands to examine or set certain game states.
 		<li><b>FF5050</b> - WIll be more red than before</li>
 	</ul>
 	</li>
+    <li><a name="myhue"><b>_MyHue</b></a> - a number between 0 and 6000, inclusive. If it
+        is set to a non-zero value, it will change the base color of the NPC's image. At a
+        value of 1, the image is shifted to red. Increasing values will shift to orange, yellow,
+        blue, green, indigo and violet, before cyling back to red as the value approaches 6000. Black,
+        white and greys in the character's image are not affected by this change.</li>
+    <li><a name="mysaturation"><b>_MySaturation</b></a> - a number between 0 and 1000,
+        inclusive. If it is set to a non-zero value, it will change the base colors of
+        the NPC's image. Lower values make the colors less intense, while higher values
+        make them more intense.</li>
 	<li><b>_MyX</b> and <b>_MyY</b> - X and Y position of the NPC. Please keep in mind that the change is instanteous, if you need to modify the position in both axes use 'Teleport to' instead, otherwise you risk creating problematic situation when the NPC teleports first in one axis and then in the other.</li>
 	<li><b>_MyO</b> - NPC's current <a href="#valuesorientation">orientation</a>.</li>
 	<li><b>_MyName</b> - Name of this NPC. Used for right-click inspecting and for speech log.</li>

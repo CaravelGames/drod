@@ -82,7 +82,9 @@ namespace ScriptVars
 		P_INPUT = -39,
 		P_INPUT_DIRECTION = -40,
 		P_COMBO = -41,
-		FirstPredefinedVar = P_COMBO, //set this to the last var in the enumeration
+		P_MONSTER_HUE = -42,
+		P_MONSTER_SATURATION = -43,
+		FirstPredefinedVar = P_MONSTER_SATURATION, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
