@@ -3154,7 +3154,8 @@ void CCharacter::Process(
 						}
 
 						CCombat* pCombat = this->pCurrentGame->pCombat;
-						if (bRefreshCombat && pCombat && pCombat->pMonster == pMonster)
+						if (bRefreshCombat && pCombat && pCombat->pMonster == pMonster &&
+							!pCombat->bEndCombat)
 							pCombat->InitMonsterStats(false);
 					}
 				}
