@@ -49,6 +49,8 @@
 #include <BackEndLib/CoordStack.h>
 #include <BackEndLib/Types.h>
 
+#include <array>
+
 //Range of weather parameters.
 #define LIGHT_LEVELS (MAX_ROOM_LIGHT + 1) //number of light levels
 #define FOG_INCREMENTS (MAX_ROOM_FOG + 1)
@@ -197,6 +199,7 @@ struct TileImageBlitParams {
 		, bCastShadowsOnTop(true)
 		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
 		, nCustomColor(-1)
+		, hsv({ -1.0f, -1.0f, -1.0f })
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -215,6 +218,7 @@ struct TileImageBlitParams {
 	bool bClipped;
 	int nAddColor;
 	int nCustomColor;
+	std::array<float, 3> hsv; //hue, saturation, value
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.

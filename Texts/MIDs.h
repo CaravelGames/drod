@@ -1971,6 +1971,8 @@ enum MID_CONSTANT {
   MID_VarInput = 2097,
   MID_VarInputDirection = 2098,
   MID_VarCombo = 2122,
+  MID_VarMonsterHue = 2162,
+  MID_VarMonsterSaturation = 2163,
 
   //Messages from Steam.uni:
   MID_SteamAPIInitError = 1898,

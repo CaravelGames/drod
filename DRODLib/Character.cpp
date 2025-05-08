@@ -41,9 +41,14 @@
 #include <BackEndLib/Ports.h>
 #include <BackEndLib/Files.h>
 
+#include <array>
+
 const UINT NPC_DEFAULT_SWORD = UINT(-1);
 
 const UINT MAX_ANSWERS = 9;
+
+const UINT MAX_HUE = 6000;
+const UINT MAX_SATURATION = 1000;
 
 #define NO_LABEL (-1)
 
@@ -193,6 +198,8 @@ CCharacter::CCharacter(
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
 	, nColor(-1)
+	, nHue(0)
+	, nSaturation(0)
 	, customSpeechColor(0)
 
 	, bWaitingForCueEvent(false)
@@ -452,6 +459,10 @@ UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 
 		case (UINT)ScriptVars::P_MONSTER_COLOR:
 			return this->nColor;
+		case (UINT)ScriptVars::P_MONSTER_HUE:
+			return this->nHue;
+		case (UINT)ScriptVars::P_MONSTER_SATURATION:
+			return this->nSaturation;
 
 		//Room position.
 		case (UINT)ScriptVars::P_MONSTER_X:
@@ -552,6 +563,12 @@ void CCharacter::setPredefinedVarInt(
 
 		case (UINT)ScriptVars::P_MONSTER_COLOR:
 			this->nColor = val;
+		break;
+		case (UINT)ScriptVars::P_MONSTER_HUE:
+			this->nHue = max(0, min(val, MAX_HUE));
+		break;
+		case (UINT)ScriptVars::P_MONSTER_SATURATION:
+			this->nSaturation = max(0, min(val, MAX_SATURATION));
 		break;
 		//Room position.
 		case (UINT)ScriptVars::P_MONSTER_X:
@@ -6704,6 +6721,17 @@ void CCharacter::getCommandXYF(
 	x = (this->paramX == NO_OVERRIDE ? command.x : this->paramX);
 	y = (this->paramY == NO_OVERRIDE ? command.y : this->paramY);
 	f = (this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
+}
+
+//*****************************************************************************
+std::array<float, 3> CCharacter::getHSV() const
+//Return: float-converted color hue, saturation and value
+{
+	float hue = this->nHue ? float(this->nHue) / MAX_HUE : -1;
+	float saturation = this->nSaturation ? float(this->nSaturation) / MAX_SATURATION : -1;
+
+	//Chaning value currently isn't supported
+	return { hue, saturation, -1 };
 }
 
 //*****************************************************************************

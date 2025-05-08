@@ -156,6 +156,8 @@ public:
 	void           getCommandXYF(const CCharacterCommand& command,
 		UINT& x, UINT& y, UINT& f) const;
 
+	std::array<float, 3> getHSV() const;
+
 	WSTRING getPredefinedVar(const UINT varIndex) const;
 	UINT getPredefinedVarInt(const UINT varIndex) const;
 	WSTRING getPredefinedVarString(const UINT varIndex) const;
@@ -362,6 +364,9 @@ private:
 	bool bFriendly;
 	MovementIQ movementIQ;  //movement behavior
 	UINT worldMapID;        //the world map that "world map *" script commands will operate on
+
+	int nHue;
+	int nSaturation;
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;

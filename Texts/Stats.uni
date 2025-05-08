@@ -154,3 +154,11 @@ _InputDirection
 [MID_VarCombo]
 [eng]
 _Combo
+
+[MID_VarMonsterHue]
+[eng]
+_MyHue
+
+[MID_VarMonsterSaturation]
+[eng]
+_MySaturation

@@ -5693,6 +5693,8 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->SortAlphabetically(false);
 
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_COLOR, g_pTheDB->GetMessageText(MID_VarMonsterColor));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_HUE, g_pTheDB->GetMessageText(MID_VarMonsterHue));
+	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_SATURATION, g_pTheDB->GetMessageText(MID_VarMonsterSaturation));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_WEAPON, g_pTheDB->GetMessageText(MID_VarMonsterWeapon));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_X, g_pTheDB->GetMessageText(MID_VarMonsterX));
 	this->pVarListBox->AddItem(ScriptVars::P_MONSTER_Y, g_pTheDB->GetMessageText(MID_VarMonsterY));

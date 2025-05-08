@@ -24,7 +24,8 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_SpawnCycle, MID_SpawnCycleFast,
 	MID_VarPlayerWeapon, MID_VarPlayerLocalWeapon,
 	MID_VarInput, MID_VarInputDirection,
-	MID_VarCombo
+	MID_VarCombo,
+	MID_VarMonsterHue, MID_VarMonsterSaturation
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
