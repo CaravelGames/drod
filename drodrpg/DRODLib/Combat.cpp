@@ -566,6 +566,11 @@ bool CCombat::Advance(
 		this->playerTicks += ps.speed * (player.IsHasted() ? 2 : 1);
 		this->monsterTicks += MON_SPEED;
 
+		//Update enemy HP if in non-simulated quick combat
+		if (bQuick && !this->bSimulated) {
+			monHP = pMonsterBeingFought->getHP();
+		}
+
 		//Does either the player or enemy perform a strike this iteration?
 		const bool bStrike = (this->playerTicks >= CCombat::hitTicks) ||
 				(this->monsterTicks >= CCombat::hitTicks);
