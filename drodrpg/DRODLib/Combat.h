@@ -159,6 +159,8 @@ public:
 
 	//combat progress
 	UINT playerTicks, monsterTicks; //progress toward next hit
+	UINT playerStalls, monsterStalls; //how many hits resulted in no progress (hp was same or higher than before hit)
+	bool bCombatStalled; //indicates combat ended due to not having enough progress
 
 private:
 	UINT playerAttacksMade, monsterAttacksMade;

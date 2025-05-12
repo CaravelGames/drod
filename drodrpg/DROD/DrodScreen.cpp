@@ -646,7 +646,8 @@ void CDrodScreen::AdvanceDemoPlayback(
 				CueEvents.HasOccurred(CID_WinGame) ||
 				CueEvents.HasOccurred(CID_ExitLevelPending) ||
 				CueEvents.HasOccurred(CID_ExitToWorldMapPending) ||
-				CueEvents.HasOccurred(CID_InvalidAttackMove))) //invalid move indicates play sequence is for a different hold version
+				CueEvents.HasOccurred(CID_InvalidAttackMove)) || //invalid move indicates play sequence is for a different hold version
+				CueEvents.HasOccurred(CID_StalledCombat)) //stalled combat indicates play sequence is for a different hold version
 		{
 			while (commandIter != pGame->Commands.end())
 				commandIter = pGame->Commands.GetNext();

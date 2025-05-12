@@ -722,6 +722,11 @@ enum CUEEVENT_ID
 	//Private data: (UINT) World map to go to
 	CID_ExitToWorldMapPending,
 
+	//Player engaged in a combat that seemed unlikely to ever end
+	//
+	//Private data: CMoveCoord *pMoveCoord
+	CID_StalledCombat,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };
