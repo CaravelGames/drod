@@ -3244,6 +3244,14 @@ void CCurrentGame::ProcessCommand(
 			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_InvalidAttackMove, &coord); //add an event to let the front-end know what happened
+	} else if (this->pCombat && this->pCombat->bCombatStalled) {
+		static CMoveCoord coord;
+		coord.wX = this->pCombat->pMonster->wX;
+		coord.wY = this->pCombat->pMonster->wY;
+		if (!this->Commands.IsFrozen())
+			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
+		CueEvents.Clear(); //don't show events from previous turn again
+		CueEvents.Add(CID_StalledCombat, &coord); //add an event to let the front-end know what happened
 	}
 }
 

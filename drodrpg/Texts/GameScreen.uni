@@ -363,3 +363,7 @@ New personal best!
 [MID_Wyrm]
 [eng]
 Wyrm
+
+[MID_CombatStalled]
+[eng]
+Combat failed to resolve (invalid move)

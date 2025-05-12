@@ -5578,7 +5578,8 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				this->pRoomWidget->RemoveMLayerEffectsOfType(EFADETILE); //no damage shield
 			}
 
-			if (this->sCueEvents.HasOccurred(CID_InvalidAttackMove))
+			if (this->sCueEvents.HasOccurred(CID_InvalidAttackMove) ||
+				this->sCueEvents.HasOccurred(CID_StalledCombat))
 			{
 				//This move was just undone.
 				//Speech pointers need to be relinked and room state refreshed.
@@ -6000,7 +6001,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_MonsterEngaged))
 	{
-		if (this->pCurrentGame->pCombat)
+		if (this->pCurrentGame->pCombat && !this-pCurrentGame->pCombat->bCombatStalled)
 		{
 			//If a monster can't be harmed, report on it
 			CMonster *pMonster = this->pCurrentGame->pCombat->PlayerCantHarmAQueuedMonster();
@@ -6875,8 +6876,16 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	if (yFlashingTextOffset < Y_FLASHING_TEXT_MIN)
 		yFlashingTextOffset = Y_FLASHING_TEXT_MIN;
 
-	if (CueEvents.HasOccurred(CID_InvalidAttackMove))
+	if (CueEvents.HasOccurred(CID_StalledCombat))
 	{
+		pObj = CueEvents.GetFirstPrivateData(CID_StalledCombat);
+		ASSERT(pObj);
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		static CMoveCoord coord;
+		coord = *pCoord;
+		this->pRoomWidget->AddInfoSubtitle(&coord, g_pTheDB->GetMessageText(MID_CombatStalled), 2000);
+		ShowStatsForMonsterAt(pCoord->wX, pCoord->wY);
+	} else if (CueEvents.HasOccurred(CID_InvalidAttackMove)) {
 		pObj = CueEvents.GetFirstPrivateData(CID_InvalidAttackMove);
 		ASSERT(pObj);
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);

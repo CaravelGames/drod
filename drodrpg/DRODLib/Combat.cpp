@@ -214,6 +214,8 @@ CCombat::CCombat(
 	, pDefeatedMonster(NULL)
 	, bFightNextMonsterInQueue(false)
 	, playerTicks(0), monsterTicks(0)
+	, playerStalls(0), monsterStalls(0)
+	, bCombatStalled(false)
 	, playerAttacksMade(0), monsterAttacksMade(0)
 	, monsterHPOnFinalRound(0)
 	, bExpectedDamageIsApproximate(false)
@@ -384,6 +386,8 @@ void CCombat::InitMonsterStats(const bool bCombatStart) //[default=true]
 		this->bPlayerBackstabs = this->pGame->DoesPlayerBackstab();
 		this->playerAttacksMade = this->monsterAttacksMade = 0;
 		this->monsterHPOnFinalRound = 0;
+		this->playerStalls = this->monsterStalls = 0;
+		this->bCombatStalled = false;
 	}
 
 	//Monster's attack stats and attributes.
@@ -588,6 +592,9 @@ bool CCombat::Advance(
 			//Does player attack now?
 			if (this->playerTicks >= CCombat::hitTicks)
 			{
+				UINT playerHPBefore = ps.HP;
+				UINT monsterHPBefore = pMonsterBeingFought->HP;
+
 				int monCombatDEF = (int)this->monDEF;
 				int playerATK = this->plATK;
 
@@ -652,6 +659,15 @@ bool CCombat::Advance(
 							bEndCombat = true;
 							BeginFightingNextQueuedMonster(CueEvents);
 						}
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or monster HP failed to go down overall as result of player turn)
+						if (ps.HP > playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP >= monsterHPBefore) {
+							++this->monsterStalls;
+						}
 					}
 				} else {
 					//Apply damage to monster.
@@ -689,6 +705,15 @@ bool CCombat::Advance(
 						{
 							bEndCombat = true;
 							BeginFightingNextQueuedMonster(CueEvents);
+						}
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or monster HP failed to go down overall as result of player turn)
+						if (ps.HP > playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP >= monsterHPBefore) {
+							++this->monsterStalls;
 						}
 					}
 
@@ -739,6 +764,9 @@ bool CCombat::Advance(
 			//Does monster attack now?
 			if (this->monsterTicks >= CCombat::hitTicks && bContinue)
 			{
+				UINT playerHPBefore = ps.HP;
+				UINT monsterHPBefore = pMonsterBeingFought->HP;
+
 				bool bSkipTurn = false;
 				if (pMonsterBeingFought->TurnToFacePlayerWhenFighting())
 				{
@@ -797,6 +825,15 @@ bool CCombat::Advance(
 						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 						if (pCharacter)
 							pCharacter->ProcessAfterDefend(CueEvents);
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or player HP failed to go down overall as result of monster turn)
+						if (ps.HP >= playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP > monsterHPBefore) {
+							++this->monsterStalls;
+						}
 					}
 
 					//Check for player death after scripts are processed.
@@ -822,6 +859,13 @@ bool CCombat::Advance(
 
 				//If other monsters are queued to fight, handle next one now.
 				BeginFightingNextQueuedMonster(CueEvents);
+			}
+
+			//The combat isn't making a timely progression towards a conclusion
+			if (this->playerStalls > 25 && this->monsterStalls > 25)
+			{
+				bContinue = false;
+				this->bCombatStalled = true;
 			}
 		}
 
