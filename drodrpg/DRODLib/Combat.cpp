@@ -79,7 +79,7 @@ const UINT MON_GOLD[MONSTER_TYPES] = {
 	  55,   35, 100,  90, 120,
 	  25, 1000,  50,   0,  65,   0,
 	  12,    8, 200,  40,  18, 500,
-	  22,  144, 125,  17
+	  22,  144, 125,  10
 };
 
 //monster attack speed is always uniform
