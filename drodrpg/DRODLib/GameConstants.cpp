@@ -50,10 +50,10 @@ const UINT NEXT_VERSION_NUMBER = 500;
 //#define DROD_VERSION_REVISION alpha.2020-11-01
 #ifdef DROD_VERSION_REVISION
 // (the WS macro requires c++11 or windows)
-const WCHAR wszVersionReleaseNumber[] = WS("1.2.8.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
+const WCHAR wszVersionReleaseNumber[] = WS("1.2.10.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('1'),We('.'),We('2'),We('.'),We('8'),We('.'),We('2'),We('7'),We('0'),We(0)   // 1.2.8.* -- full version number plus build number
+	We('1'),We('.'),We('2'),We('.'),We('1'),We('0'),We('.'),We('8'),We('0'),We('2'),We(0)   // 1.2.10.* -- full version number plus build number
 };
 #endif
 
