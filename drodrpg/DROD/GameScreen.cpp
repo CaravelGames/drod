@@ -544,6 +544,7 @@ void CGameScreen::RedrawStats(
 	for (i=0; i<numStats; ++i)
 	{
 		int val = 0, val_percent = 0, val_mod = 0;
+		bool hasValue = true;
 		switch (i)
 		{
 			case 0: val = ps.HP; if (val < 0) val = 0; break;
@@ -554,9 +555,30 @@ void CGameScreen::RedrawStats(
 			case 5: val = ps.greenKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.greenKeys ; break;
 			case 6: val = ps.blueKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.blueKeys; break;
 			case 7: wstr = (bCombat ? this->pRoomWidget->GetMonsterName(pCombat->pMonster) : wszEmpty); break;
-			case 8: val = bCombat ? pCombat->pMonster->getHP() : BLANK_ITEM; break;
-			case 9: val = bCombat ? pCombat->monATK : BLANK_ITEM; break;
-			case 10: val = bCombat ? pCombat->monDEF : BLANK_ITEM; break;
+			case 8:
+				if (pCombat)
+				{
+					val = pCombat->pMonster->getHP();
+				} else {
+					hasValue = false;
+				}
+			break;
+			case 9:
+				if (pCombat)
+				{
+					val = pCombat->monATK;
+				} else {
+					hasValue = false;
+				}
+			break;
+			case 10:
+				if (pCombat)
+				{
+					val = pCombat->monDEF;
+				} else {
+					hasValue = false;
+				}
+			break;
 			case 11: val = ps.sword != NoSword ? CRoomWidget::GetSwordMID(ps.sword) : (UINT)MID_NoText; break;
 			case 12: val = ps.shield != NoShield ? CRoomWidget::GetShieldMID(ps.shield) : (UINT)MID_NoText; break;
 			case 13: val = ps.accessory != NoAccessory ? CRoomWidget::GetAccessoryMID(ps.accessory) : (UINT)MID_NoText; break;
@@ -647,7 +669,7 @@ void CGameScreen::RedrawStats(
 			break;
 			default:
 				//allow values to be blank
-				pLabel->SetText(val == (int)BLANK_ITEM ? wszEmpty : _itoW(val, temp, 10));
+				pLabel->SetText(hasValue ? _itoW(val, temp, 10): wszEmpty);
 			break;
 		}
 		pLabel->RequestPaint();
