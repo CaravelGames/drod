@@ -1529,12 +1529,12 @@ const
 UINT CMonster::getATK() const
 //Return: monster's ATK
 {
-	UINT val = this->ATK;
+	int val = this->ATK;
 	if (!this->pCurrentGame || !val) //multiply by zero will still be zero, so return now
 		return val;
 	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterATK);
-	val = UINTBounds(val * fMult);
-	return !val ? 1 : val; //ATK always >= 1
+	val = intBounds(val * fMult);
+	return !val ? 1 : val; //ATK can be negative
 }
 
 //*****************************************************************************
@@ -1555,15 +1555,16 @@ std::array<float, 3 > CMonster::getHSV() const
 UINT CMonster::getDEF() const
 //Return: monster's DEF
 {
-	if (IsOnMistTile() && !IsMistImmune())
-		return 0; //Mist tile nullifies DEF
-
-	UINT val = this->DEF;
+	int val = this->DEF;
 	if (!this->pCurrentGame || !val)
 		return val;
 	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterDEF);
-	val = UINTBounds(val * fMult);
-	return !val ? 1 : val; //DEF always >= 1
+	val = intBounds(val * fMult);
+
+	if (val < 0 && IsOnMistTile() && !IsMistImmune())
+		return 0; //Mist tile nullifies +ve DEF
+
+	return val; //DEF get be negative
 }
 
 //*****************************************************************************
