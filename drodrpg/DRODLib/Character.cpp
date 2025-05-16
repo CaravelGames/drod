@@ -787,11 +787,11 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 			{
 				case (UINT)ScriptVars::P_ENEMY_HP: pMonster->HP = (int)val > 0 ? val : 0; break;
 				case (UINT)ScriptVars::P_ENEMY_ATK:
-					pMonster->ATK = (int)val > 0 ? val : 0;
+					pMonster->ATK = val;
 					bRefreshCombat = true;
 				break;
 				case (UINT)ScriptVars::P_ENEMY_DEF:
-					pMonster->DEF = (int)val > 0 ? val : 0;
+					pMonster->DEF = val;
 					bRefreshCombat = true;
 				break;
 				case (UINT)ScriptVars::P_ENEMY_GOLD: pMonster->GOLD = val; break;
