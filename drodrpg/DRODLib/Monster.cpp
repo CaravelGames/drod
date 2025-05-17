@@ -1534,7 +1534,7 @@ UINT CMonster::getATK() const
 		return val;
 	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterATK);
 	val = intBounds(val * fMult);
-	return !val ? 1 : val; //ATK can be negative
+	return val; //ATK can be negative
 }
 
 //*****************************************************************************
@@ -1561,10 +1561,10 @@ UINT CMonster::getDEF() const
 	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterDEF);
 	val = intBounds(val * fMult);
 
-	if (val < 0 && IsOnMistTile() && !IsMistImmune())
-		return 0; //Mist tile nullifies +ve DEF
+	if (val > 0 && IsOnMistTile() && !IsMistImmune())
+		return 0; //Mist tile nullifies positive DEF
 
-	return val; //DEF get be negative
+	return val; //DEF can be negative
 }
 
 //*****************************************************************************
