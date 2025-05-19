@@ -489,6 +489,7 @@ enum MID_CONSTANT {
   MID_WorldMapNoLabels = 2087,
   MID_WorldMapShowLabels = 2088,
   MID_WorldMapDisplayLabelsWhenExplored = 2089,
+  MID_SelectExitDestination = 2116,
 
   //Messages from EndOfGame.uni:
   MID_YouConquered = 406,
