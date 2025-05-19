@@ -1421,3 +1421,7 @@ Labels
 [MID_WorldMapDisplayLabelsWhenExplored]
 [eng]
 Labels when explored
+
+[MID_SelectExitDestination]
+[eng]
+Please select the destination.

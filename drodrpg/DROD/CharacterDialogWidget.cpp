@@ -6573,7 +6573,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				exitChoice = { ExitType::ET_Entrance, this->pCommand->w };
 			}
 			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
-				exitChoice, MID_SelectWorldMapPrompt, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
+				exitChoice, MID_SelectExitDestination, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
 			{
 				CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_X_COORD));
@@ -6618,7 +6618,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				exitChoice = { ExitType::ET_Entrance, this->pCommand->w };
 			}
 			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
-				exitChoice, MID_SelectWorldMapPrompt, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
+				exitChoice, MID_SelectExitDestination, CEntranceSelectDialogWidget::EntrancesAndMaps) == CEntranceSelectDialogWidget::OK)
 			{
 				CTextBoxWidget* pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
 					this->pAddCommandDialog->GetWidget(TAG_X_COORD));

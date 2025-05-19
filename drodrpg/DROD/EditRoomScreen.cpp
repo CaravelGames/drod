@@ -4123,7 +4123,7 @@ void CEditRoomScreen::SetDestinationEntrance(
 		ExitChoice exitChoice = { exitType, dwEntranceID };
 		CEntranceSelectDialogWidget::BUTTONTYPE button =
 				SelectEntrance(this->pEntranceBox, this->pHold, exitChoice,
-			MID_ExitLevelPrompt, CEntranceSelectDialogWidget::StairTargets);
+			MID_SelectExitDestination, CEntranceSelectDialogWidget::StairTargets);
 		switch(button)
 		{
 			case CEntranceSelectDialogWidget::OK:
