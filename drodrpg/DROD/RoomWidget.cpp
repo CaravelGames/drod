@@ -100,7 +100,7 @@ const int MONSTER_ANIMATION_DELAY = 3;
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
 
-const Uint8 BONUS_OPACITY = 205; //80%
+const Uint8 BONUS_OPACITY = 255; //100%
 
 const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,   0},  //Beethro
