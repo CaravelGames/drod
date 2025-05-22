@@ -103,7 +103,7 @@ private:
 	CListBoxWidget *  pDemoListBoxWidget, *pCNetDemoListBoxWidget;
 	CRoomWidget *     pRoomWidget;
 	CCurrentGame *    pDemoCurrentGame;
-	CLabelWidget *    pAuthorWidget, *pCreatedWidget, *pDurationWidget;
+	CLabelWidget *    pNameWidget, *pAuthorWidget, *pCreatedWidget, *pDurationWidget;
 	CLabelWidget *    pDescriptionWidget;
 	COptionButtonWidget *pShowButton;
 	CLabelWidget *    pLBoxHeaderWidget;
