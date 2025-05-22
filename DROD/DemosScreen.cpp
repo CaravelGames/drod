@@ -82,7 +82,7 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	, pDemoListBoxWidget(NULL), pCNetDemoListBoxWidget(NULL)
 	, pRoomWidget(NULL)
 	, pDemoCurrentGame(NULL)
-	, pAuthorWidget(NULL), pCreatedWidget(NULL), pDurationWidget(NULL)
+	, pNameWidget(NULL), pAuthorWidget(NULL), pCreatedWidget(NULL), pDurationWidget(NULL)
 	, pDescriptionWidget(NULL)
 	, pLBoxHeaderWidget(NULL), pNoDemoWidget(NULL)
 	, pDetailsFrame(NULL)
@@ -193,8 +193,13 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	static const int X_MINIROOM = CX_SPACE;
 	const int Y_MINIROOM = CY_DETAILS_FRAME - CY_SPACE - CY_MINIROOM;
 
+	static const int X_NAME = X_MINIROOM;
+	static const int Y_NAME = CY_SPACE;
+	static const UINT CX_NAME = CX_DETAILS_FRAME - CX_SPACE;
+	static const UINT CY_NAME = 25;
+
 	static const int X_AUTHOR_LABEL = X_MINIROOM;
-	static const int Y_AUTHOR_LABEL = CY_SPACE;
+	static const int Y_AUTHOR_LABEL = Y_NAME + CY_NAME;
 	static const UINT CX_AUTHOR_LABEL = 100;
 	static const UINT CY_AUTHOR_LABEL = 25;
 
@@ -281,6 +286,9 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	AddWidget(this->pDetailsFrame);
 
 	//Details frame widgets.
+	this->pNameWidget = new CLabelWidget(0L, X_NAME, Y_NAME,
+		CX_NAME, CY_NAME, F_Small, wszEmpty);
+	this->pDetailsFrame->AddWidget(this->pNameWidget);
 	this->pDetailsFrame->AddWidget(new CLabelWidget(0L, X_AUTHOR_LABEL, Y_AUTHOR_LABEL,
 					CX_AUTHOR_LABEL, CY_AUTHOR_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_Author)));
@@ -408,6 +416,7 @@ bool CDemosScreen::SetForActivate()
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 
 	this->pLBoxHeaderWidget->SetText(wszEmpty);
+	this->pNameWidget->SetText(wszEmpty);
 	this->pAuthorWidget->SetText(wszEmpty);
 	this->pCreatedWidget->SetText(wszEmpty);
 	this->pDurationWidget->SetText(wszEmpty);
@@ -1475,6 +1484,8 @@ void CDemosScreen::SetWidgetsToDemo(
 	//Enable upload button if this is a CaravelNet hold.
 	pButton = GetWidget(TAG_UPLOAD);
 	pButton->Enable(g_pTheNet->IsLocalHold(this->pDemoCurrentGame->pHold->dwHoldID));
+
+	this->pNameWidget->SetText(pDemo->DescriptionText);
 
 	//Get author text from a couple of lookups.
 	const WCHAR *pwczAuthor = pDemo->GetAuthorText();
