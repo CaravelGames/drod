@@ -280,6 +280,7 @@ void CSlayer::Process(
 		if (bWispOnTarget || ExtendWisp(CueEvents)) //assuming left-to-right evaluation
 		{
 			CueEvents.Add(CID_WispOnPlayer);
+			StopOpeningDoor();
 			AdvanceAlongWisp(CueEvents);
 		}
 		return;
@@ -307,6 +308,7 @@ void CSlayer::Process(
 				//The wisp continues to stretch towards the target each turn using the above rules
 				//with the goal of maintaining a constant connection to the target.
 				CueEvents.Add(CID_WispOnPlayer);
+				StopOpeningDoor();
 				AdvanceAlongWisp(CueEvents);
 			}
 		break;
@@ -591,6 +593,9 @@ bool CSlayer::CheckWispIntegrity()
 		{
 			++piece;
 			SeverWispAt(piece);  //don't need any wisp past target
+			if (this->state == OpeningDoor) {
+				StopOpeningDoor();
+			}
 			return true;
 		}
 
