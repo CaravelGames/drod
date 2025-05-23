@@ -479,6 +479,35 @@ bool CSlayer::IsOpenMove(const UINT wX, const UINT wY, const int dx, const int d
 }
 
 //*****************************************************************************
+//Returns: true if standing at (wX, wY) with sword orientation at wSO won't stab anything
+//that explodes
+bool CSlayer::IsExplosiveSafe(const UINT& wX, const UINT& wY, const UINT& wSO) const
+{
+	ASSERT(this->pCurrentGame->pRoom);
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	ASSERT(room.IsValidColRow(wX, wY));
+
+	//Determine where the sword would be.
+	const UINT wSX = wX + nGetOX(wSO);
+	const UINT wSY = wY + nGetOY(wSO);
+
+	if (!room.IsValidColRow(wSX, wSY))
+		return true; //sword would be out-of-bounds and wouldn't hit anything
+
+	//If sword is put away on this tile, no stabbing would occur, so this position is always safe.
+	if (DoesSquareRemoveWeapon(wX, wY))
+		return true;
+
+	//Never stab a bomb.
+	const UINT wTSquare = room.GetTSquare(wSX, wSY);
+	if (this->weaponType != WT_Staff && bIsExplodingItem(wTSquare))
+		return false;
+
+	//Don't care about anything else for this check.
+	return true;
+}
+
+//*****************************************************************************
 bool CSlayer::IsSafeToStab(const UINT wFromX, const UINT wFromY, const UINT wSO) const
 //Returns: true if standing at (wFromX, wFromY) with sword orientation at wSO won't stab anything
 //dangerous, or a guard or Slayer.  Otherwise false.
@@ -1031,7 +1060,20 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		UINT wNextX, wNextY;
 		this->pathToDest.Pop(wNextX, wNextY);  //Slayer is now making this move
 		this->wSwordMovement = nGetO(wNextX - this->wX, wNextY - this->wY);
-		Move(wNextX, wNextY, &CueEvents);
+		//Move to the next tile in the path, as long as that doesn't stab an explosive
+		if (IsExplosiveSafe(wNextX, wNextY, this->wO)) {
+			Move(wNextX, wNextY, &CueEvents);
+		} else {
+			//Try turning to get around explosives
+			if (IsExplosiveSafe(wNextX, wNextY, nNextCO(this->wO))) {
+				this->wO = nNextCO(this->wO);
+				this->wSwordMovement = CSwordsman::GetSwordMovement(CMD_C, this->wO);
+			}
+			else if (IsExplosiveSafe(wNextX, wNextY, nNextCCO(this->wO))) {
+				this->wO = nNextCCO(this->wO);
+				this->wSwordMovement = CSwordsman::GetSwordMovement(CMD_CC, this->wO);
+			}
+		}
 	} else {
 		//If we think we're next to our destination but there are no orbs to hit,
 		//then we must be on a plate.  Start chasing the player again.
