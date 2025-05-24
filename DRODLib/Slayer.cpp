@@ -1089,8 +1089,11 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		ASSERT(room.IsValidColRow(destX, destY));
 		const UINT orbStrikingOrientation = GetOrientationFacingTarget(destX, destY);
 		ASSERT(orbStrikingOrientation != NO_ORIENTATION);
-		if (!MakeSlowTurnIfOpen(orbStrikingOrientation))
-		{
+		if (this->weaponType == WT_Dagger) {
+			//Use dagger to bump orb (rotation won't work)
+			this->wO = orbStrikingOrientation;
+			this->wSwordMovement = orbStrikingOrientation;
+		} else if (!MakeSlowTurnIfOpen(orbStrikingOrientation)) {
 			//Slayer can't turn to strike the orb.  Start searching for player again.
 			StopStrikingOrb(CueEvents);
 			StopOpeningDoor();
