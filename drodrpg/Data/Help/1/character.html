@@ -23,10 +23,7 @@ use them.</p>
 <p><a name="graphic"><b>Graphic</b></a> - Select what your NPC will look like from the list of
 available entities.  Selecting "None" (the default)
 indicates this NPC is used for scripting events but cannot appear as a visible character
-in the room.  Additionally, a character as a Seep can move within walls and doors,
-can move on water as a Water Skipper, and as a
-Wraithwing or Fegundo can fly over water and pit and move over raised tiles.
-Flying monsters may attack targets on raised tiles, but do not depress pressure plates.
+in the room.  Hint: With the "None" setting, a character cannot be made visible.
 </p>
 <p><a name="management"><b>Character Management</b></a> -
 Click "Characters" to bring up the <a href="customchar.html">Custom Character Management</a> dialog.</p>
@@ -37,6 +34,12 @@ Hint: making a character with a "None" graphic visible will set it to the
 "Citizen 1" type.</p>
 <p><a name="charoptions"><b>Options</b></a> - Click to set the NPC's options:</p>
 <ul>
+  <li><b>Ghost display</b>, which makes a character appear on screen even when not set to be visible.
+  Ghost display characters have no "physical" presence in the room, e.g. they can be walked through.</li>
+  <li><b>Minimap treasure</b>, which makes a character count as a treasure for the purpose of automatically
+  coloring the room on the minimap. This only applies if the character is visible or has ghost display.</li>
+  <li><b>_MyHue</b>, which allows the predefined <a href="script.html#myhue">_MyHue</a> var to be set for the character. Setting it this way allows it to be used when displaying an NPC's in-game appearance in the editor.</li>
+  <li><b>_MySaturation</b>, which allows the predefined <a href="script.html#mysaturation">_MySaturation</a> var to be set for the character. Setting it this way allows it to be used when displaying an NPC's in-game appearance in the editor.</li>
   <li><b>_MyColor</b>, which allows the predefined <a href="script.html#mycolor">_MyColor</a> var to be set for the character. Setting it this way allows it to be used when displaying an NPC's in-game appearance in the editor.</li>
   <li><b>Speech Color</b>, which controls the color of the character's speech subtitles. Each input takes a value of 0 to 255, and the three values are combined into a single RGB color value. If all inputs are zero, the default subtitle color will be used.</li>
   <li><b>Processing sequence</b>, which controls the order of scripts running in a room. Scripts with lower processing sequence values run earlier, and scripts with higher values run later. This does not affect the order in which equipment scripts will be run.</li>
@@ -66,6 +69,9 @@ imported correctly.</p>
 <p><a name="revise">You</a> may click on the NPC in the room at any time
 to revise its appearance and script.  Shift-click on an NPC to change its orientation.
 <a name="reposition">Click</a> and drag an NPC to reposition it in the room.</p>
+<p>Hold Alt to toggle viewing characters with the character icon, or as it will appear when playing.
+You can change the game setting <a href="settings.html#editor">Automatically Preview Characters<a> to
+invert this toggle.</p>
 <hr />
 <a href="editroom.html">Room Editor</a><br />
 <a href="editselect.html">Level Editor</a><br />
