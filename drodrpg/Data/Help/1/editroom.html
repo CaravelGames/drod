@@ -119,7 +119,7 @@ objects are the following:</p>
   <li><u><a href="equipment.html" name="equipment">Equipment</a></u>.  Items
       the player may pick up and place in inventory slots.</li>
   <li><a name="orbs"><u>Orbs</u></a>. Click on an orb to view which room objects
-      it affects. <a href="#gates">Gates</a> and
+      it affects. <a href="#gates">Gates</a>, force arrows, fire traps and
       <a href="#lighting">lights</a> may be affected. Lightning bolts will flash
       from the orb to all objects it is defined to act on. Objects
       highlighted green will be opened/enabled when the orb is
@@ -180,19 +180,19 @@ objects are the following:</p>
       lights will increase their light intensity and radius by a tile, up to a
       maximum of eight tiles. Shift-click lights to decrease their intensity and
       range.</li>
-  <li><a name="customtextures"><u>Custom room textures</u></a>. Several floor
-      textures are included with each room style. Additionally, you may add your
-      own textures for floors, walls, and pits by selecting color swirl tile on
+  <li><a name="customtextures"><u>Custom room textures</u></a>. Multiple stock floor
+      textures are included with each room style. Their difference is purely cosmetic. In addition, you may add your
+      own custom image textures for floors, walls, and pits by selecting the respective tile on
       the object menu.  When first placing a custom texture tile in a room, you
-      will be prompted to import an image file into your hold from disk to use
-      as your custom texture. These images should be a multiple of the room tile
-      size, which is 44x44 pixels. <a name="supportedimg">Only</a> JPEG and PNG
-      images are supported for import, and transparency is not supported. Once
+      will be prompted to import an image file into your hold from disk. Custom texture images should typically be a multiple of the room tile
+      size, which is 44x44 pixels. Textures will automatically repeat if you designate a room area larger than the image. <a name="supportedimg">Only</a> JPEG and PNG
+      images are supported for import.  Transparency is supported for custom floor, wall and overhead textures. Once
       one or more images have been imported into your hold, you may select from
       these for display in any room in the hold. Only one image can be selected
-      as a custom texture for each room. Press F9 to change the image selected
-      for a room and its origin tile (i.e. the coordinates the image starts tiling
-      from).</li>
+      as a custom floor/wall/pit texture for each room. Press F9 to change the image selected
+      for a room and its origin tile (i.e. the location the image starts tiling from). The origin tile can also be modified dynamically via predefined script vars during play.</li>
+  <li><a name="overheadtexture"><u>Overhead textures</u></a>. You may select an alternate image in each room for use
+	  as an overhead texture. Judicious use of overhead textures can add a greater feeling of depth to a room. Tiles selected for overhead image display will be tinted blue in the room editor. Press Shift-F9 to select a different image and modify the origin of a room's overhead image. The origin tile can also be modified dynamically via predefined script vars during play.</li>
   <li><a name="obstacles"><u>Scenery obstacles</u></a>. Scenery obstacles can
       appear in a variety of different shapes and sizes. You can switch between
       different types of obstacles with the rotate keys or clicking the scenery
@@ -327,7 +327,7 @@ include the following:</p>
   <li>Ctrl-F7 - rotate room clockwise</li>
   <li>F7 - reflect room horizontally</li>
   <li>F8 - reflect room vertically</li>
-  <li>Ctrl-F8 - force reload of the current room graphics.
+  <li>Alt-F8 - force reload of the current room graphics.
       Useful for graphic mod development with the game open.</li>
   <li>F9 - (re)define a custom room image and its tile origin</li>
   <li>Ctrl-F9 - (re)define an overhead image and its tile origin</li>
