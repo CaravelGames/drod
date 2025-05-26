@@ -45,8 +45,13 @@ public:
 
 	//Remove all records after a given turn.
 	void removeAfter(UINT turn) {
-		while (!empty() && changeTurns.back() >= turn) {
-			changeTurns.pop_back();
+		if (turn == 0) {
+			reset();
+		}
+		else {
+			while (!empty() && changeTurns.back() >= turn) {
+				changeTurns.pop_back();
+			}
 		}
 	}
 
