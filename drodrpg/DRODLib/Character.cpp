@@ -4682,14 +4682,18 @@ bool CCharacter::IsPlayerFacing(
 
 	UINT px;  //command parameter
 	getCommandX(command, px);
+
+	ASSERT(this->wLastSO != NO_ORIENTATION);
+	ASSERT(this->wSO != NO_ORIENTATION);
+
 	switch (px)
 	{
 	case CMD_C:
-		return (player.wO == nNextCO(player.wPrevO));
+		return (wSO == nNextCO(wLastSO));
 	case CMD_CC:
-		return (player.wO == nNextCCO(player.wPrevO));
+		return (wSO == nNextCCO(wLastSO));
 	default:
-		return (player.wO == px);
+		return (wSO == px);
 	}
 }
 
@@ -4710,12 +4714,15 @@ bool CCharacter::DidPlayerMove(
 	UINT px;  //command parameter
 	getCommandX(command, px);
 
+	ASSERT(this->wLastSO != NO_ORIENTATION);
+	ASSERT(this->wSO != NO_ORIENTATION);
+
 	switch (px)
 	{
 	case CMD_C:
-		return (player.wO == nNextCO(player.wPrevO));
+		return (wSO == nNextCO(wLastSO));
 	case CMD_CC:
-		return (player.wO == nNextCCO(player.wPrevO));
+		return (wSO == nNextCCO(wLastSO));
 	default:
 		return (bPlayerMoved && CSwordsman::GetSwordMovement( //conversion routine
 			nLastCommand, NO_ORIENTATION) == px);
