@@ -2473,7 +2473,7 @@ const
 	const UINT wTTileNo = GetTSquare(wX, wY);
 	if (!(wTTileNo == T_EMPTY ||
 			wTTileNo == T_FUSE || wTTileNo == T_SCROLL || wTTileNo == T_TOKEN ||
-			wTTileNo == T_KEY || bIsPowerUp(wTTileNo) || bIsEquipment(wTTileNo) ||
+			wTTileNo == T_KEY || bIsCollectable(wTTileNo) || bIsEquipment(wTTileNo) ||
 			wTTileNo == T_CRATE))
 		return false;
 

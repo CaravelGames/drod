@@ -252,21 +252,6 @@ static inline UINT getForceArrowDirection(const UINT t) {
 	}
 }
 
-static inline bool bIsHealth(const UINT t) {
-	return t == T_HEALTH_HUGE || t == T_HEALTH_BIG || t == T_HEALTH_MED || t == T_HEALTH_SM;
-}
-
-static inline bool bIsPowerUp(const UINT t) {
-	switch (t)
-	{
-		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
-		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
-		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			return true;
-		default: return false;
-	}
-}
-
 static inline bool bIsSerpentTile(const UINT t) {return t>=T_SNK_EW && t<=T_SNKT_E;}
 
 static inline bool bIsBriar(const UINT t) {return t>=T_BRIAR_SOURCE && t<=T_BRIAR_LIVE;}
@@ -303,6 +288,12 @@ static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_U
 static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
 
 static inline bool bIsKey(const UINT t) { return t == T_KEY; }
+
+static inline bool bIsHealth(const UINT t) {
+	return t == T_HEALTH_HUGE || t == T_HEALTH_BIG || t == T_HEALTH_MED || t == T_HEALTH_SM;
+}
+
+static inline bool bIsPowerUp(const UINT t) { return bIsHealth(t) || bIsATKUp(t) || bIsDEFUp(t); }
 
 static inline bool bIsCollectable(const UINT t) {
 	return bIsPowerUp(t) || bIsShovel(t) || bIsMap(t) || bIsKey(t);
