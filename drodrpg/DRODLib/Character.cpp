@@ -4209,11 +4209,6 @@ bool CCharacter::IsEntityAt(
 	}
 	if ((pflags & ScriptFlag::MONSTER) != 0)
 	{
-		//excludes player doubles, friendly enemies, and NPCs
-		if (!bIsHuman(player.wAppearance) &&
-			player.wX >= px && player.wX <= px + pw &&
-			player.wY >= py && player.wY <= py + ph)
-			return true;
 		if (room.IsMonsterInRect(px, py,
 			px + pw, py + ph))
 			return true;
