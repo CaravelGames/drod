@@ -184,7 +184,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	this->pPlayMenu = new CMenuWidget(TAG_PLAYMENU, X_MENU, Y_MENU, CX_MENU, CY_MENU,
 			F_TitleMenu, F_TitleMenuActive, F_TitleMenuSelected);
 	AddWidget(this->pPlayMenu);
-	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleTutorial), MNU_TUTORIAL);
+	//this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleTutorial), MNU_TUTORIAL);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleNewGame), MNU_NEWGAME);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleContinue), MNU_CONTINUE);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleRestore), MNU_RESTORE);
@@ -354,7 +354,7 @@ void CTitleScreen::OnBetweenEvents()
 	else
 		switch (this->pPlayMenu->GetOnOption())
 		{
-			case MNU_TUTORIAL: RequestToolTip(MID_TutorialTip); break;
+			//case MNU_TUTORIAL: RequestToolTip(MID_TutorialTip); break;
 			case MNU_NEWGAME: RequestToolTip(MID_NewGameTip); break;
 			case MNU_CONTINUE: RequestToolTip(MID_ContinueTip); break;
 			case MNU_RESTORE: RequestToolTip(MID_RestoreTip); break;
@@ -1300,7 +1300,7 @@ void CTitleScreen::SetMenuOptionStatus()
 	this->pMenu->Enable(MNU_SETTINGS, dwPlayerID != 0);
 
 	//Check for Tutorial hold.
-	this->pPlayMenu->Enable(MNU_TUTORIAL, g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Tutorial) != 0);
+	//this->pPlayMenu->Enable(MNU_TUTORIAL, g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Tutorial) != 0);
 
 	db.SavedGames.FilterByHold(g_pTheDB->GetHoldID());
 	db.SavedGames.FilterByPlayer(g_pTheDB->GetPlayerID());
