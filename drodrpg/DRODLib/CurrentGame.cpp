@@ -5703,6 +5703,8 @@ void CCurrentGame::ProcessMonsters(
 		ASSERT(!CueEvents.HasOccurred(CID_ExitLevelPending) &&
 			!CueEvents.HasOccurred(CID_ExitToWorldMapPending));
 
+		this->pRoom->ClearPushInfo();
+
 		//Platforms fall when mimics are done moving.
 		const bool bIsMimic = pMonster->wType == M_MIMIC;
 		if (!bMimicsMoved && !bIsMimic)
