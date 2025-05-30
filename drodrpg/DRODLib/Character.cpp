@@ -6285,7 +6285,7 @@ void CCharacter::SetCurrentGame(
 	ResolveLogicalIdentity(this->pCurrentGame ? this->pCurrentGame->pHold : NULL);
 
 	//Set the movement type
-	if(bIsFirstTurn)
+	if(!bMovementChanged)
 		SetDefaultMovementType();
 
 	//If this NPC is a custom character with no script,
