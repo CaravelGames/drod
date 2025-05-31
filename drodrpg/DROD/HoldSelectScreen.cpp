@@ -89,6 +89,23 @@ const UINT gameTurnTick = 100; //for the miniroom animation (ms)
 
 inline bool hold_is_installed(UINT holdID) { return int(holdID) > 0; }
 
+bool CanDeleteHold(const CDbHold::HoldStatus status)
+{
+	//Player is not allowed to delete pre-installed holds.
+	if (status == CDbHold::Tutorial)
+		return false;
+
+#ifdef STEAMBUILD
+	if (CDbHold::IsOfficialHold(status) || status == CDbHold::Official) //DLC is managed via Steam UI
+		return false;
+#else
+	if (status == CDbHold::GetOfficialHoldStatus())
+		return false;
+#endif
+
+	return true;
+}
+
 //
 //Public methods.
 //
@@ -641,7 +658,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 		CDbHold *pHold = g_pTheDB->Holds.GetByID(*id, true);
 		ASSERT(pHold);
 #ifndef ENABLE_CHEATS
-		if (pHold->status == CDbHold::Main || pHold->status == CDbHold::Tutorial)
+		if (!CanDeleteHold(pHold->status))
 		{
 			//Player is not allowed to delete the pre-installed holds.
 			delete pHold;
@@ -1382,8 +1399,7 @@ void CHoldSelectScreen::SetHoldDesc()
 	const bool bHoldAuthor = pHold->dwPlayerID == g_pTheDB->GetPlayerID();
 	this->pExportButton->Enable(bHoldAuthor);
 	//Only authored and non-preinstalled holds may be deleted.
-	this->pDeleteButton->Enable(bHoldAuthor || pHold->status == CDbHold::Homemade ||
-			pHold->status == CDbHold::Official);
+	this->pDeleteButton->Enable(bHoldAuthor || CanDeleteHold(pHold->status));
 #endif
 	delete pHold;
 
@@ -1485,7 +1501,7 @@ void CHoldSelectScreen::SetHoldFilter()
 					!bLocalHold, -1, true); //place non-local holds last
 			this->pHoldListBoxWidget->EnableItemAtIndex(insertedAtIndex);
 
-			if (h.status == CDbHold::Official || h.status == CDbHold::Main) //make official holds stand out
+			if (h.status == CDbHold::Official || CDbHold::IsOfficialHold(CDbHold::HoldStatus(h.status))) //make official holds stand out
 			{
 				static const SDL_Color Purple = {96, 0, 96, 0};
 				this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, Purple);

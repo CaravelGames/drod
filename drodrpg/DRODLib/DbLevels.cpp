@@ -867,7 +867,7 @@ void CDbLevel::RekeyExitIDs(
 	const bool bDifferentHold = pNewHold->dwHoldID != pOldHold->dwHoldID;
 
 	//Special official hold considerations.
-	const bool bOfficialHoldTransfer = pOldHold->status == CDbHold::Main && (pOldHold->status == pNewHold->status);
+	const bool bOfficialHoldTransfer = CDbHold::IsOfficialHold(pOldHold->status) && (pOldHold->status == pNewHold->status);
 
 	CDb db;
 	const CIDSet roomIDs = CDb::getRoomsInLevel(this->dwLevelID);

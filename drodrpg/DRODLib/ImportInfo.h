@@ -47,6 +47,7 @@ using std::vector;
 //Used during DB import.
 //Maps old local IDs to new local IDs and stores other needed information.
 typedef std::map<UINT, UINT> PrimaryKeyMap;
+typedef std::multimap<UINT, UINT> PrimaryKeyMultiMap;
 
 //Used during export.
 //Tracks records with owner IDs.  May be used to test for duplicate entries.

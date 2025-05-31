@@ -1455,7 +1455,7 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 
 #ifndef STEAMBUILD
 	//Load graphics/music into hold for inclusion in export.
-	if (pHold->status == CDbHold::Main)
+	if (CDbHold::IsOfficialHold(pHold->status))
 		ImportMedia();
 #endif
 
@@ -1856,7 +1856,7 @@ bool CDrodScreen::IsGameFullVersion()
 	if (Metadata::GetInt(MetaKey::EMBEDMEDIA) == 1)
 		return Metadata::GetInt(MetaKey::DEMO) != 1;
 
-	const UINT mainholdID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Main);
+	const UINT mainholdID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::GetOfficialHoldStatus());
 	if (!mainholdID)
 		return false;
 	CDbHold *pHold = g_pTheDB->Holds.GetByID(mainholdID);
