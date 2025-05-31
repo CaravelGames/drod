@@ -1018,7 +1018,8 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 //*****************************************************************************
 // Performs a simulation of this combat to forecast total damage the player will take.
 // If combat requires too many rounds, it will be short-circuited and an estimate returned.
-int CCombat::GetExpectedDamage()
+int CCombat::GetExpectedDamage(
+	const UINT maxStrikesToPerform) //if set, then evaluate up to this many combat strikes [default=0]
 //Returns: amount of damage player will suffer if striking this monster first;
 //         -1: player cannot harm monster
 {
@@ -1038,7 +1039,6 @@ int CCombat::GetExpectedDamage()
 	this->bExpectedDamageIsApproximate = false;
 
 	player.st.HP = MAX_HP; //give player max HP for total damage calculation
-	static const UINT maxStrikesToPerform = 1000;
 	Advance(Ignored, true, maxStrikesToPerform);
 	UINT uDamage = UINT(MAX_HP) - player.st.HP;
 

@@ -1817,7 +1817,7 @@ WSTRING CRoomWidget::GetMonsterNameAndAbility(CMonster* pMonster) const
 }
 
 //*****************************************************************************
-WSTRING CRoomWidget::GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY) const
+WSTRING CRoomWidget::GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY, bool bFullCombat) const
 {
 	WSTRING wstr;
 
@@ -1827,7 +1827,7 @@ WSTRING CRoomWidget::GetCombatAnalysis(CMonster* pMonster, const UINT wX, const 
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
 	CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
 
-	const int damage = combat.GetExpectedDamage();
+	const int damage = combat.GetExpectedDamage(bFullCombat ? 0 : 1000);
 	if (damage < 0) {
 		wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
 		return wstr;
@@ -1962,7 +1962,7 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 
 		wstr += wszSpace;
 
-		wstr += GetCombatAnalysis(pMonster, wX, wY);
+		wstr += GetCombatAnalysis(pMonster, wX, wY, false);
 
 		if (!bFull)
 		{

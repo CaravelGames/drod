@@ -102,7 +102,7 @@ public:
 	bool Advance(CCueEvents& CueEvents, bool bQuickResolution, const UINT maxStrikesToPerform=0);
 
 	bool AttackIsFromBehindMonster(int &dx, int &dy) const;
-	int  GetExpectedDamage();
+	int  GetExpectedDamage(const UINT maxStrikesToPerform = 0);
 	UINT GetMonsterSingleAttackDamage() const;
 	UINT GetMonsterAttacksMade() const { return monsterAttacksMade; }
 	static UINT GetMonsterType(CMonster *pMonster);

@@ -274,7 +274,7 @@ public:
 	UINT           GetLastTurn() const {return this->wLastTurn;}
 	CMonster*      GetMonsterForStatDisplay(const UINT wX, const UINT wY) const;
 	WSTRING        GetMonsterNameAndAbility(CMonster* pMonster) const;
-	WSTRING        GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY) const;
+	WSTRING        GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY, bool bFullCombat) const;
 	WSTRING        GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const;
 	WSTRING        GetMonsterAbility(CMonster* pMonster) const;
 	WSTRING        GetMonsterName(CMonster* pMonster) const;
