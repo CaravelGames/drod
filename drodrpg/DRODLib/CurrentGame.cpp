@@ -7238,14 +7238,21 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 //Loads the state of mutable room elements of the room being entered from the prior visit.
 {
 	ExploredRoom *pExpRoom = getExploredRoom(room.dwRoomID);
-	if (!pExpRoom)
+	this->bIsNewRoom = false;
+	if (!pExpRoom) {
+		this->bIsNewRoom = true;
 		return;
+	}
 	
 	room.mapMarker = pExpRoom->mapMarker;
 	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
 	if (pExpRoom->mapState != MapState::Explored)
 	{
+		//Has this room been previously explored?
+		if (!pExpRoom->HasDetail()) {
+			this->bIsNewRoom = true;
+		}
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
 		pExpRoom->mapState = MapState::Explored;
@@ -7557,8 +7564,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	this->dwPlayerID = g_pTheDB->GetPlayerID();
 
-	//Has this room been previously explored?
-	this->bIsNewRoom = !IsCurrentRoomExplored(false);
 /*
 	if (this->bIsNewRoom)
 		SetCurrentRoomExplored();
