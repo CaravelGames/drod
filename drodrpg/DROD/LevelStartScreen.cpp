@@ -160,7 +160,7 @@ bool CLevelStartScreen::SetForActivate()
 	this->pHoldNameWidget->SetText(pHold->NameText);
 	this->pLevelNameWidget->SetText(pLevel->NameText);
 
-	if (pHold->status == CDbHold::Main || pHold->status == CDbHold::Tutorial) {
+	if (CDbHold::IsOfficialHold(pHold->status) || pHold->status == CDbHold::Tutorial) {
 		this->pCreatedWidget->SetText(wszEmpty);
 		this->pAuthorWidget->SetText(wszEmpty);
 	} else {

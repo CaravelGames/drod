@@ -1611,6 +1611,26 @@ CDbHold::~CDbHold()
 	Clear();
 }
 
+
+//*****************************************************************************
+//Returns: the official hold status code for this game release
+CDbHold::HoldStatus CDbHold::GetOfficialHoldStatus()
+{
+	return ACR;
+}
+
+//*****************************************************************************
+bool CDbHold::IsOfficialHold(HoldStatus holdstatus)
+{
+	switch (holdstatus) {
+	case Tendry:
+	case ACR:
+		return true;
+
+	default: return false;
+	}
+}
+
 //*****************************************************************************
 UINT CDbHold::AddCharacter(const WCHAR* pwszName)
 //Adds custom character with given name.  Name must be unique.
@@ -3139,8 +3159,15 @@ MESSAGE_ID CDbHold::SetProperty(
 			const HoldStatus eMatchHoldsWithStatus =
 					(info.typeBeingImported == CImportInfo::Player ||
 							info.typeBeingImported == CImportInfo::SavedGame)
-					? Main : NoStatus;	//match player imports for demo and full main hold
-			const UINT dwLocalHoldID = GetLocalID(eMatchHoldsWithStatus);
+					? ACR : NoStatus;	//match player imports for demo and full main hold
+			//Across DLC data, there could be multiple instances of the same author GID.
+			//To join a DLC hold, we need to match against all of these.
+			std::pair<PrimaryKeyMultiMap::const_iterator, PrimaryKeyMultiMap::const_iterator> localIDMap =
+				info.PlayerIDMap.equal_range(this->dwPlayerID);
+			CIDSet localPlayerIDs;
+			for (PrimaryKeyMultiMap::const_iterator it = localIDMap.first; it != localIDMap.second; ++it)
+				localPlayerIDs += it->second;
+			const UINT dwLocalHoldID = GetLocalID(eMatchHoldsWithStatus, localPlayerIDs, this->dwPlayerID);
 			if (!dwLocalHoldID)
 			{
 				//Hold not found -- add a new record to the DB.
@@ -3231,7 +3258,7 @@ MESSAGE_ID CDbHold::SetProperty(
 
 						//If not the official hold, inform the player that hold versions don't match,
 						//and saved games from a different hold version might not be valid here.
-						if (this->status != Main)
+						if (!IsOfficialHold(this->status))
 							return MID_PlayerSavesIgnored;
 					}
 				break;
@@ -3622,15 +3649,16 @@ bool CDbHold::Update()
 
 //*****************************************************************************
 UINT CDbHold::GetLocalID(
-//Compares this object's GID fields against those of the records in the DB.
-//ASSUME: dwPlayerID has already been set to the local record ID
-//
-//Returns: local ID if a record in the DB matches this object's GUID, else 0
-//
-//Params:
-	const HoldStatus eStatusMatching)  //(in) consider holds w/ this status as identical
-	                                   //     [default = NoStatus]
-const
+	//Compares this object's GID fields against those of the records in the DB.
+	//ASSUME: dwPlayerID has not yet been remapped to the local record ID
+	//
+	//Returns: local ID if a record in the DB matches this object's GUID (and matchedPlayerID gets remapped), else 0
+	//
+	//Params:
+	const HoldStatus eStatusMatching,	//(in) consider holds w/ this status as identical
+	const CIDSet& playerIDs, //match against any of these hold author IDs
+	UINT& matchedPlayerID) //(in/out) the author ID that got matched
+	const
 {
 	ASSERT(IsOpen());
 	const UINT dwHoldCount = GetViewSize(V_Holds);
@@ -3645,10 +3673,11 @@ const
 		{
 			//Check author.
 			const UINT dwPlayerID = (UINT)p_GID_PlayerID(row);
-			if (this->dwPlayerID == dwPlayerID)
+			if (playerIDs.has(dwPlayerID))
 			{
 				//GUIDs match.  Return this record's local ID.
-				return (UINT) p_HoldID(row);
+				matchedPlayerID = dwPlayerID;
+				return (UINT)p_HoldID(row);
 			}
 		}
 
@@ -3658,12 +3687,12 @@ const
 			const HoldStatus status = (HoldStatus)(UINT)p_Status(row);
 			if (status == eStatusMatching)
 				//Both are considered as the same hold.  Match them.
-				return (UINT) p_HoldID(row);
+				return (UINT)p_HoldID(row);
 		}
 	}
 
 	//No match.
-	return 0;
+	return 0L;
 }
 
 //*****************************************************************************
@@ -3884,7 +3913,7 @@ bool CDbHold::UpdateExisting()
 	//Update Holds record.
 	p_HoldID(row) = this->dwHoldID;
 	p_LevelID(row) = this->dwLevelID;
-	if (this->status != CDbHold::Main) //CaravelNet keeps version of published official holds the same
+	if (!IsOfficialHold(this->status)) //CaravelNet keeps version of published official holds the same
 		p_LastUpdated(row) = UINT(this->LastUpdated);
 	p_GID_PlayerID(row) = this->dwPlayerID;
 	p_GID_NewLevelIndex(row) = this->dwNewLevelIndex;

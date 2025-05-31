@@ -64,6 +64,16 @@ public:
 
 	virtual ~CDbHold();
 
+	enum HoldStatus
+	{
+		NoStatus = -1,
+		Homemade = 0,
+		Tendry = 1, //Tendry's Tale
+		Official = 2,
+		Tutorial = 3,
+		ACR = 4, //A Courageous Rescue
+	};
+
 	UINT        AddCharacter(const WCHAR* pwszName);
 	void        AddEntrance(CEntranceData* pEntrance, const bool bReplaceMainEntrance=true);
 	UINT        AddVar(const WCHAR* pwszName);
@@ -101,6 +111,7 @@ public:
 	HoldWorldMap::DisplayType GetWorldMapDisplayType(const UINT worldMapID) const;
 	WSTRING     GetWorldMapName(const UINT worldMapID) const;
 	void        InsertLevel(CDbLevel *pLevel);
+	static bool IsOfficialHold(HoldStatus holdstatus);
 	bool        IsArrayVar(UINT varID) const { return this->arrayScriptVars.count(varID); }
 	static bool IsVarNameGoodSyntax(const WCHAR* pName);
 	bool        Load(const UINT dwHoldID, const bool bQuick=false);
@@ -152,21 +163,14 @@ public:
 	};
 	EditAccess     editingPrivileges;  //who can edit the hold
 
-	enum HoldStatus
-	{
-		NoStatus=-1,
-		Homemade=0,
-		Main=1,
-		Official=2,
-		Tutorial=3
-	};
+	static HoldStatus GetOfficialHoldStatus();
 	HoldStatus		status;	//type of hold
 	bool           bCaravelNetMedia; //whether d/led from CaravelNet
 
 private:
 	void     Clear();
 	void     ClearEntrances();
-	UINT     GetLocalID(const HoldStatus eStatusMatching=NoStatus) const;
+	UINT     GetLocalID(const HoldStatus eStatusMatching, const CIDSet& playerIDs, UINT& matchedPlayerID) const;
 	UINT     GetNewCharacterID();
 	bool     LoadCharacters(c4_View &CharsView);
 	bool     LoadEntrances(c4_View& EntrancesView);

@@ -84,7 +84,7 @@ CWinStartScreen::CWinStartScreen()
 bool CWinStartScreen::IsMainDungeon() const
 //Returns: whether this is the official hold that came with the game
 {
-	const UINT dwOfficialHoldID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Main);
+	const UINT dwOfficialHoldID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::ACR);
 	if (g_pTheDB->GetHoldID() != dwOfficialHoldID)
 		return false; //not the official hold
 	return IsGameFullVersion();
