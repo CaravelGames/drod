@@ -3623,7 +3623,7 @@ bool CGameScreen::AddMonsterStats(
 		}
 
 		wstr += wszCRLF;
-		wstr += pRoomWidget->GetCombatAnalysis(pStatMonster, pMonster->wX, pMonster->wY);
+		wstr += pRoomWidget->GetCombatAnalysis(pStatMonster, pMonster->wX, pMonster->wY, true);
 	}
 
 	//If the resulting text will make the dialog to large, don't add it

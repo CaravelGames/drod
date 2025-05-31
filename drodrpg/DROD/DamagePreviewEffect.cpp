@@ -271,7 +271,7 @@ void CDamagePreviewEffect::PrepWidget()
 
 	WSTRING wstr;
 	const UINT playerHP = pGame->pPlayer->st.HP;
-	const int damage = combat.GetExpectedDamage();
+	const int damage = combat.GetExpectedDamage(1000);
 	if (damage == -1) {
 		//player cannot harm enemy
 		UTF8ToUnicode("????", wstr);
