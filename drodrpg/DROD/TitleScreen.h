@@ -101,6 +101,7 @@ private:
 	void     ResetCNetStatus();
 	void     SetMenuOptionStatus();
 	void     SetNewsText();
+	void     SetTitleScreenSkin();
 	virtual bool   UnloadOnDeactivate() const;
 
 	//Vermin.
@@ -133,6 +134,7 @@ private:
 
 	//Background and Graphics.
 	bool IsRPG1BG() const;
+	CDbHold::HoldStatus hold_status;
 	UINT imageNum;
 	bool bPredarken;
 	bool bReloadGraphics;

@@ -1022,6 +1022,23 @@ WSTRING CDbHolds::GetHoldName(const UINT holdID) const
 }
 
 //*****************************************************************************
+CDbHold::HoldStatus CDbHolds::GetNewestInstalledOfficialHoldStatus()
+{
+	int maxStatus = static_cast<int>(CDbHold::NoStatus);
+
+	CDb db;
+	const CIDSet holdIDs = db.Holds.GetIDs();
+	for (CIDSet::const_iterator iter = holdIDs.begin(); iter != holdIDs.end(); ++iter)
+	{
+		const CDbHold::HoldStatus status = CDbHolds::GetStatus(*iter);
+		if (CDbHold::IsOfficialHold(status) && int(status) > maxStatus)
+			maxStatus = int(status);
+	}
+
+	return CDbHold::HoldStatus(maxStatus);
+}
+
+//*****************************************************************************
 void CDbHolds::GetRooms(const UINT dwHoldID, HoldStats& stats) const
 //OUT: hold room lists
 {
@@ -1173,6 +1190,18 @@ const
 		if (roomsExplored.has(*iter))
 			++wCount;
 	return wCount;
+}
+
+//*****************************************************************************
+CDbHold::HoldStatus CDbHolds::GetStatus(const UINT dwHoldID)
+{
+	if (!dwHoldID) return CDbHold::NoStatus;
+
+	c4_View HoldsView;
+	const UINT dwHoldRowI = LookupRowByPrimaryKey(dwHoldID, V_Holds, HoldsView);
+	if (dwHoldRowI == ROW_NO_MATCH) return CDbHold::NoStatus;
+
+	return (CDbHold::HoldStatus)(int)p_Status(HoldsView[dwHoldRowI]);
 }
 
 //*****************************************************************************
