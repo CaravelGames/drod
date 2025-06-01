@@ -32,6 +32,7 @@
 #include "DrodFileDialogWidget.h"
 #include "EntranceSelectDialogWidget.h"
 #include <FrontEndLib/Screen.h>
+#include "../DRODLib/DbHolds.h"
 #include "../DRODLib/NetInterface.h"
 
 #define TAG_OK_WHOLELEVEL	(TAG_OK + 1) //apply setting change to whole level
@@ -83,7 +84,7 @@ protected:
 			const UINT containerWidgetTag);
 	UINT     GetEffectDuration(CCurrentGame* pGame, const UINT baseDuration) const;
 	UINT     GetParticleSpeed(CCurrentGame* pGame, const UINT baseSpeed) const;
-
+	static CDbHold::HoldStatus GetHoldStatus();
 	virtual void   ApplyINISettings();
 	virtual void   ChatPolling(const UINT tagUserList);
 	virtual void   DisplayChatText(const WSTRING& /*text*/, const SDL_Color& /*color*/) {}
@@ -156,6 +157,7 @@ public:
 	static void    logoutFromChat();
 
 private:
+	CDbHold::HoldStatus GetInstalledOfficialHold();
 	void  PrepareDatumForExport(const WSTRING& modName, const WSTRING& wstrFile, CIDSet& ids, const UINT dataType);
 
 	UINT ShowMessage(const MESSAGE_ID dwMessageID);

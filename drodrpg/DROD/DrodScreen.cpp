@@ -726,6 +726,12 @@ UINT CDrodScreen::GetParticleSpeed(CCurrentGame* pGame, const UINT baseSpeed) co
 			(baseSpeed > 1 ? baseSpeed/2 : 1) : baseSpeed;
 }
 
+//******************************************************************************
+CDbHold::HoldStatus CDrodScreen::GetHoldStatus()
+{
+	return CDbHolds::GetStatus(g_pTheDB->GetHoldID());
+}
+
 //*****************************************************************************
 WSTRING CDrodScreen::getStatsText(
 //Print player stats as text.
@@ -1842,6 +1848,21 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 UINT CDrodScreen::EntrancesInFullVersion()
 {
 	return 50;
+}
+
+//*****************************************************************************
+CDbHold::HoldStatus CDrodScreen::GetInstalledOfficialHold()
+{
+	static const CDbHold::HoldStatus officialHolds[] = {
+		CDbHold::ACR, CDbHold::Tendry, CDbHold::NoStatus };
+
+	for (UINT i = 0; officialHolds[i] != CDbHold::NoStatus; ++i) {
+		const UINT holdID = g_pTheDB->Holds.GetHoldIDWithStatus(officialHolds[i]);
+		if (holdID)
+			return officialHolds[i];
+	}
+
+	return CDbHold::NoStatus;
 }
 
 //*****************************************************************************

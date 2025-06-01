@@ -234,6 +234,7 @@ public:
 	static UINT       GetHoldID(const CDate& Created,
 			CDbMessageText& HoldNameText, CDbMessageText& origAuthorText);
 	WSTRING     GetHoldName(const UINT holdID) const;
+	static CDbHold::HoldStatus GetNewestInstalledOfficialHoldStatus();
 	void        GetRooms(const UINT dwHoldID, HoldStats& stats) const;
 	static void GetRoomsExplored(const UINT dwHoldID, const UINT dwPlayerID,
 			CIDSet& rooms);
@@ -245,6 +246,7 @@ public:
 			CDbHold *pHold, CCharacter *pCharacter, WSTRING& roomText,
 			CDbLevel *pLevel, CDbRoom *pRoom, ENTRANCE_VECTOR& entrancesIgnored) const;
 	UINT        GetSecretsDone(HoldStats& stats, const UINT dwHoldID,	const UINT dwPlayerID) const;
+	static CDbHold::HoldStatus GetStatus(const UINT dwHoldID);
 	static UINT GetHoldIDWithStatus(const CDbHold::HoldStatus status);
 	bool        IsHoldMastered(const UINT dwHoldID, const UINT playerID) const;
 	void        LogScriptVarRefs(const UINT holdID, const bool bScorepoints = false);

@@ -121,36 +121,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	, bNewGamePrompt(true)
 //Constructor.
 {
-	this->imageNum = rand() % 4;
-
-	string TitleBG;
-	switch (this->imageNum)
-	{
-		case 0: TitleBG = "TitleBG"; break;
-		case 1: TitleBG = "TitleBG1"; break;
-		case 2: TitleBG = "TitleBG2"; break;
-		case 3: TitleBG = "TitleBGTunnel"; break;
-		default: ASSERT(!"Bad imageNum"); break;
-	}
-	this->imageFilenames.push_back(TitleBG);
-
-	this->imageFilenames.push_back(string("TitleLightMask"));
-
-	//Manage distinct screen assets with skittering roaches when showing a DROD RPG 1 background image
-	if (IsRPG1BG()) {
-		this->imageFilenames.push_back(string("TitleShadow"));
-
-		//Game title logo.
-		AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
-
-		string str;
-		this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
-
-		time_t t = time(NULL);
-		tm* pLocalTime = localtime(&t);
-		if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
-			this->bBackwards = true; //critters move backwards
-	}
+	SetTitleScreenSkin();
 
 	//Caravel Games logo
 	AddWidget(new CImageWidget(TAG_CARAVEL_LOGO_SW, 0, CScreen::CY_SCREEN - CY_CARAVEL_LOGO, wszCaravelLogo));
@@ -283,6 +254,8 @@ bool CTitleScreen::SetForActivate()
 		this->dwNonTutorialHoldID = 0;
 	}
 
+	SetTitleScreenSkin();
+
 	LoadDemos();
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
@@ -322,6 +295,76 @@ bool CTitleScreen::SetForActivate()
 //
 //Private methods.
 //
+
+//*****************************************************************************
+void CTitleScreen::SetTitleScreenSkin()
+{
+	this->hold_status = GetHoldStatus();
+	if (!CDbHold::IsOfficialHold(this->hold_status)) {
+		//Check CaravelNet data to determine which game version the hold is from.
+		const UINT holdID = g_pTheDB->GetHoldID();
+		if (holdID) {
+			CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID, true);
+			if (pHold) {
+				vector<CNetMedia*>& cNetMedia = g_pTheNet->GetCNetMedia();
+				const int nIndex = g_pTheNet->getIndexForName((const WCHAR*)pHold->NameText);
+				if (nIndex >= 0) {
+					CNetMedia* pHoldData = cNetMedia[nIndex];
+					const UINT version = pHoldData->wVersion;
+					if (version < 500)
+						this->hold_status = CDbHold::Tendry;
+					else if (version < 600)
+						this->hold_status = CDbHold::ACR;
+				}
+				delete pHold;
+			}
+		}
+
+		//To provide consistency w/o CaravelNet, set skin based on the newest installed official hold.
+		if (!CDbHold::IsOfficialHold(this->hold_status)) {
+			this->hold_status = CDbHolds::GetNewestInstalledOfficialHoldStatus();
+		}
+	}
+
+	switch (this->hold_status) {
+		case CDbHold::Tendry:
+			this->imageNum = rand() % 3;
+		break;
+		case CDbHold::ACR:
+		default:
+			this->imageNum = 3;
+	}
+
+	string TitleBG;
+	switch (this->imageNum)
+	{
+		case 0: TitleBG = "TitleBG"; break;
+		case 1: TitleBG = "TitleBG1"; break;
+		case 2: TitleBG = "TitleBG2"; break;
+		case 3: TitleBG = "TitleBGTunnel"; break;
+		default: ASSERT(!"Bad imageNum"); break;
+	}
+	this->imageFilenames.clear();
+	this->imageFilenames.push_back(TitleBG);
+
+	this->imageFilenames.push_back(string("TitleLightMask"));
+
+	//Manage distinct screen assets with skittering roaches when showing a DROD RPG 1 background image
+	if (IsRPG1BG()) {
+		this->imageFilenames.push_back(string("TitleShadow"));
+
+		//Game title logo.
+		AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
+
+		string str;
+		this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
+
+		time_t t = time(NULL);
+		tm* pLocalTime = localtime(&t);
+		if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
+			this->bBackwards = true; //critters move backwards
+	}
+}
 
 //*****************************************************************************
 void CTitleScreen::OnBetweenEvents()
