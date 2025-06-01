@@ -8542,6 +8542,14 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 						case SDLK_DOWN: nCommand = CMD_S; break;
 						case SDLK_LEFT: nCommand = CMD_W; break;
 						case SDLK_RIGHT: nCommand = CMD_E; break;
+						case SDLK_LSHIFT:
+						case SDLK_RSHIFT:
+						case SDLK_LCTRL:
+						case SDLK_RCTRL:
+						case SDLK_LALT:
+						case SDLK_RALT:
+							nCommand = -1; // Allow modifier keys to be pressed in case any needed commands are mapped to use them
+							break;
 						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
 					}
 					switch (nCommand)
@@ -8563,6 +8571,8 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 							break;
 						case CMD_E:
 							DisplayAdjacentTempRoom(E);
+							break;
+						case -1: // modifier key
 							break;
 						default:
 							bShow = false;
