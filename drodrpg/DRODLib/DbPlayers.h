@@ -92,7 +92,7 @@ public:
 	static void ConvertInputSettings(CDbPackedVars& settings);
 
 private:
-	UINT       GetLocalID();
+	CIDSet      GetLocalIDs();
 	bool        UpdateExisting();
 	bool        UpdateNew();
 	void        Clear();

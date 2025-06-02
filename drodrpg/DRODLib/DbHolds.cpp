@@ -3199,6 +3199,11 @@ MESSAGE_ID CDbHold::SetProperty(
 			const UINT dwLocalHoldID = GetLocalID(eMatchHoldsWithStatus, localPlayerIDs, this->dwPlayerID);
 			if (!dwLocalHoldID)
 			{
+				//Now remap hold's foreign playerID
+				PrimaryKeyMultiMap::const_iterator localID = info.PlayerIDMap.find(this->dwPlayerID);
+				ASSERT(localID != info.PlayerIDMap.end()); //case already guarded against in PlayerID field import below
+				this->dwPlayerID = localID->second;
+
 				//Hold not found -- add a new record to the DB.
 				if (this->NameText.IsEmpty() ||
 						info.typeBeingImported == CImportInfo::LanguageMod)

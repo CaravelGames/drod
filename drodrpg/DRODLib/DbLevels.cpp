@@ -1065,10 +1065,10 @@ MESSAGE_ID CDbLevel::SetProperty(
 				return MID_FileCorrupted;  //corrupt file (must have an author)
 
 			//Set to local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID == info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should have been loaded already
-			this->dwPlayerID = (*localID).second;
+			this->dwPlayerID = (*localPlayerID).second;
 			break;
 		}
 		case P_NameMessage:
