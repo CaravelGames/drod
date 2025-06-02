@@ -3362,16 +3362,20 @@ MESSAGE_ID CDbHold::SetProperty(
 			this->LastUpdated = convertToTimeT(str);
 			break;
 		case P_GID_PlayerID:
+		{
 			this->dwPlayerID = convertToUINT(str);
 			if (!this->dwPlayerID)
 				return MID_FileCorrupted;  //corrupt file (must have an author)
 
-			//Set to local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
+			//Local ID existence check.
+			PrimaryKeyMultiMap::const_iterator localID = info.PlayerIDMap.find(this->dwPlayerID);
 			if (localID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should have been loaded already
-			this->dwPlayerID = (*localID).second;
+
+			//the player ID will be corrected in P_HoldID resolution above --
+			//necessary for DLC with multiple potential matches
 			break;
+		}
 		case P_GID_NewLevelIndex:
 			this->dwNewLevelIndex = convertToUINT(str);
 			if (this->dwLevelID && !this->dwNewLevelIndex)
@@ -3678,16 +3682,16 @@ bool CDbHold::Update()
 
 //*****************************************************************************
 UINT CDbHold::GetLocalID(
-	//Compares this object's GID fields against those of the records in the DB.
-	//ASSUME: dwPlayerID has not yet been remapped to the local record ID
-	//
-	//Returns: local ID if a record in the DB matches this object's GUID (and matchedPlayerID gets remapped), else 0
-	//
-	//Params:
+//Compares this object's GID fields against those of the records in the DB.
+//ASSUME: dwPlayerID has not yet been remapped to the local record ID
+//
+//Returns: local ID if a record in the DB matches this object's GUID (and matchedPlayerID gets remapped), else 0
+//
+//Params:
 	const HoldStatus eStatusMatching,	//(in) consider holds w/ this status as identical
 	const CIDSet& playerIDs, //match against any of these hold author IDs
 	UINT& matchedPlayerID) //(in/out) the author ID that got matched
-	const
+const
 {
 	ASSERT(IsOpen());
 	const UINT dwHoldCount = GetViewSize(V_Holds);
