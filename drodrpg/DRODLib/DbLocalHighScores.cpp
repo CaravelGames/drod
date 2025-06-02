@@ -136,10 +136,10 @@ MESSAGE_ID CDbLocalHighScore::SetProperty(
 		{
 			this->dwPlayerID = convertToUINT(str);
 			//Set to local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID == info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should exist now
-			this->dwPlayerID = localID->second;
+			this->dwPlayerID = localPlayerID->second;
 		}
 		break;
 		case P_Score:

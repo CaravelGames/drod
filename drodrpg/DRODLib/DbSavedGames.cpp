@@ -803,16 +803,17 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 		}
 		break;
 		case P_PlayerID:
+		{
 			//This ID field is the first received.
 			this->dwPlayerID = convertToUINT(str);
 			if (!this->dwPlayerID)
 				return MID_FileCorrupted;  //corrupt data (saved game must have player)
 
 			//Look up local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID == info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should exist now
-			this->dwPlayerID = localID->second;
+			this->dwPlayerID = localPlayerID->second;
 
 			//When importing saved games only, and not during a hold upgrade,
 			//they become owned by the current player.
@@ -830,6 +831,7 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 				}
 			}
 			break;
+		}
 		case P_RoomID:
 			this->dwRoomID = convertToUINT(str);
 

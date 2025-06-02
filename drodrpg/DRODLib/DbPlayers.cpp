@@ -543,8 +543,8 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				return MID_FileCorrupted;  //corrupt file
 
 			//Look up local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID != info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID != info.PlayerIDMap.end())
 			{
 				if (info.bImportingSavedGames)
 				{
@@ -568,17 +568,28 @@ MESSAGE_ID CDbPlayer::SetProperty(
 					return MID_PlayerIgnored;	//import saved games into, then halt import
 
 				//Match player ID to local ID if possible for hold GUID matching.
-				info.PlayerIDMap[this->dwPlayerID] = GetLocalID();
+				const CIDSet localPlayerIDs = GetLocalIDs();
+				if (localPlayerIDs.empty()) {
+					info.PlayerIDMap.insert(make_pair(this->dwPlayerID, 0));
+				} else {
+					for (CIDSet::const_iterator it = localPlayerIDs.begin(); it != localPlayerIDs.end(); ++it)
+						info.PlayerIDMap.insert(make_pair(this->dwPlayerID, *it));
+				}
+
 				bSaveRecord = false;
 				break;
 			}
 
 			//Look up player in the DB.
-			const UINT dwLocalPlayerID = GetLocalID();
-			if (dwLocalPlayerID)
+			const CIDSet localPlayerIDs = GetLocalIDs();
+			if (!localPlayerIDs.empty())
 			{
-				//Player found in DB.
-				info.PlayerIDMap[this->dwPlayerID] = dwLocalPlayerID;
+				//For DLC hold matching, support mapping of all player author profiles that match.
+				for (CIDSet::const_iterator it = localPlayerIDs.begin(); it != localPlayerIDs.end(); ++it)
+					info.PlayerIDMap.insert(make_pair(this->dwPlayerID, *it));
+
+				//Which one we use here won't matter for purposes of DLC hold joining.
+				const UINT dwLocalPlayerID = localPlayerIDs.getFirst();
 				this->dwPlayerID = dwLocalPlayerID;
 
 				c4_View PlayersView;
@@ -645,7 +656,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				const UINT dwOldLocalID = this->dwPlayerID;
 				this->dwPlayerID = 0;
 				Update();
-				info.PlayerIDMap[dwOldLocalID] = this->dwPlayerID;
+				info.PlayerIDMap.insert(make_pair(dwOldLocalID, this->dwPlayerID));
 
 				//Keep track of player being imported: the first player record encountered.
 				if (info.typeBeingImported == CImportInfo::Player && !info.dwPlayerImportedID)
@@ -761,11 +772,13 @@ void CDbPlayer::Clear()
 }
 
 //*****************************************************************************
-UINT CDbPlayer::GetLocalID()
+CIDSet CDbPlayer::GetLocalIDs()
 //Compares this object's GID fields against those of the records in the DB.
 //
 //Returns: local ID if a record in the DB matches this object's GUID, else 0
 {
+	CIDSet ids;
+
 	ASSERT(IsOpen());
 	const UINT dwPlayerCount = GetViewSize(V_Players);
 
@@ -779,17 +792,16 @@ UINT CDbPlayer::GetLocalID()
 		{
 			//Check original name.
 			const UINT dwOriginalNameMessageID = p_GID_OriginalNameMessageID(row);
-			CDbMessageText FromDbOriginalNameText( static_cast<MESSAGE_ID>(dwOriginalNameMessageID) );
+			CDbMessageText FromDbOriginalNameText(static_cast<MESSAGE_ID>(dwOriginalNameMessageID));
 			if (FromDbOriginalNameText == this->OriginalNameText)
 			{
 				//GUIDs match.  Return this record's local ID.
-				return (UINT) p_PlayerID(row);
+				ids += UINT(p_PlayerID(row));
 			}
 		}
 	}
 
-	//No match.
-	return 0L;
+	return ids;
 }
 
 //*****************************************************************************

@@ -80,7 +80,7 @@ public:
 	PrimaryKeyMap EntranceIDMap; //for copying levels
 	PrimaryKeyMap HoldIDMap;
 	PrimaryKeyMap LevelIDMap;
-	PrimaryKeyMap PlayerIDMap;
+	PrimaryKeyMultiMap PlayerIDMap; //for DLC, need to support multiple instances of same player profile being present for hold joins
 	PrimaryKeyMap RoomIDMap;
 	PrimaryKeyMap SavedGameIDMap;
 	PrimaryKeyMap SpeechIDMap;
