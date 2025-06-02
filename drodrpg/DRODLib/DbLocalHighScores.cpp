@@ -87,7 +87,7 @@ MESSAGE_ID CDbLocalHighScore::SetProperty(
 				return MID_FileCorrupted;
 
 			//Look up local ID.
-			localID = info.HighScoreIDMap.find(this->dwHoldID);
+			localID = info.HighScoreIDMap.find(this->dwHighScoreID);
 			if (localID != info.HighScoreIDMap.end())
 				//Error - this high score should not have been imported already.
 				return MID_FileCorrupted;
@@ -99,7 +99,7 @@ MESSAGE_ID CDbLocalHighScore::SetProperty(
 					const UINT dwOldLocalID = this->dwHighScoreID;
 					this->dwHighScoreID = 0L;
 					Update();
-					info.HoldIDMap[dwOldLocalID] = this->dwHighScoreID;
+					info.HighScoreIDMap[dwOldLocalID] = this->dwHighScoreID;
 				} else {
 					c4_View LocalHighScoresView;
 					const UINT dwLocalHighScoreI = LookupRowByPrimaryKey(dwLocalHighScoreID,
