@@ -122,9 +122,7 @@ MESSAGE_ID CDbLocalHighScore::SetProperty(
 			this->dwHoldID = convertToUINT(str);
 			//Set to local ID.
 			localID = info.HoldIDMap.find(this->dwHoldID);
-			if (localID == info.HoldIDMap.end())
-				return MID_HoldNotFound;   //record should have been loaded already
-			this->dwHoldID = (*localID).second;
+			this->dwHoldID = localID != info.HoldIDMap.end() ? (*localID).second : 0;
 			if (!this->dwHoldID)
 			{
 				//Records for this hold are being ignored. Don't save this high score.
