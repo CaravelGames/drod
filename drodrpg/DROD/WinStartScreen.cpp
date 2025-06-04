@@ -84,8 +84,8 @@ CWinStartScreen::CWinStartScreen()
 bool CWinStartScreen::IsMainDungeon() const
 //Returns: whether this is the official hold that came with the game
 {
-	const UINT dwOfficialHoldID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::ACR);
-	if (g_pTheDB->GetHoldID() != dwOfficialHoldID)
+	CDbHold::HoldStatus holdStatus = GetHoldStatus();
+	if (holdStatus != CDbHold::ACR && holdStatus != CDbHold::Tendry)
 		return false; //not the official hold
 	return IsGameFullVersion();
 }
@@ -267,7 +267,7 @@ void CWinStartScreen::OnKeyDown(
 	this->pEffects->Clear();
 	if (IsDeactivating())
 	{
-		SetDestScreenType(bIsMainDungeon ? SCR_Credits : SCR_Return);
+		SetDestScreenType(bIsMainDungeon ? GetCreditsScreen() : SCR_Return);
 		return;
 	}
 
@@ -275,7 +275,7 @@ void CWinStartScreen::OnKeyDown(
 		if (UserWillRateHold())
 			return;
 
-	GoToScreen(bIsMainDungeon ? SCR_Credits : SCR_Return);
+	GoToScreen(bIsMainDungeon ? GetCreditsScreen() : SCR_Return);
 }
 
 //******************************************************************************
@@ -295,7 +295,17 @@ void CWinStartScreen::OnMouseUp(
 		if (UserWillRateHold())
 			return;
 
-	GoToScreen(bIsMainDungeon ? SCR_Credits : SCR_Return);
+	GoToScreen(bIsMainDungeon ? GetCreditsScreen() : SCR_Return);
+}
+
+//******************************************************************************
+SCREENTYPE CWinStartScreen::GetCreditsScreen() const
+{
+	switch (GetHoldStatus()) {
+	case CDbHold::Tendry: return SCR_CreditsTendry;
+	case CDbHold::ACR: return SCR_CreditsACR;
+	default: return SCR_Return;
+	}
 }
 
 //******************************************************************************

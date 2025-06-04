@@ -99,7 +99,8 @@ void CDrodScreenManager::GetScreenName(const UINT eScreen, string &strName) cons
 		case SCR_Demo:            strName = "Demo"; return;
 		case SCR_Demos:           strName = "Demos"; return;
 		case SCR_LevelStart:      strName = "LevelStart"; return;
-		case SCR_Credits:         strName = "Credits"; return;
+		case SCR_CreditsTendry:   strName = "CreditsTendry"; return;
+		case SCR_CreditsACR:      strName = "CreditsACR"; return;
 		case SCR_NewPlayer:       strName = "NewPlayer"; return;
 		case SCR_SelectPlayer:    strName = "SelectPlayer"; return;
 		case SCR_EditSelect:      strName = "EditSelect"; return;
@@ -213,8 +214,11 @@ CScreen* CDrodScreenManager::GetNewScreen(
 		case SCR_LevelStart:
 			return new CLevelStartScreen;
 
-		case SCR_Credits:
-			return new CCreditsScreen;
+		case SCR_CreditsTendry:
+			return new CCreditsTendryScreen;
+
+		case SCR_CreditsACR:
+			return new CCreditsACRScreen;
 
 		case SCR_NewPlayer:
 			return new CNewPlayerScreen;

@@ -1214,6 +1214,94 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ShowPercentOptimal: strText = "Show banner for non-best local scores"; break;
 		case MID_CombatStalled: strText = "Combat failed to resolve (invalid move)"; break;
 		case MID_SelectExitDestination: strText = "Please select the destination."; break;
+		case MID_Cr_ACR_Intro: strText = "Congratulations on making it to the end of another of Tendry's incredible adventures! It's pretty crazy that it's been 17 years since the first adventure, but that's a testament to the timelessness of the DROD series.\r\n\
+\r\n\
+This is the part where I talk a bit more about all the people who put in a lot of work to bring this game to life. There's a larger history of the development of this game that you can read, if you can find it. There's a secret level hiding in the game somewhere, keep looking! In fact... there's more than one secret level...\r\n\
+\r\n\
+You can speed up or slow down the scrolling with the arrow keys, and space to pause."; break;
+		case MID_Cr_ACR_Producer_Title: strText = "Producer, Direction"; break;
+		case MID_Cr_ACR_Producer: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Producer_Text: strText = "Hey that's me! I worked on quite a lot of different aspects of this game, so you'll see my name come up a lot more over the course of these credits."; break;
+		case MID_Cr_ACR_LeadProgrammer_Title: strText = "Lead Programmer"; break;
+		case MID_Cr_ACR_LeadProgrammer: strText = "Adam Love (hyperme)"; break;
+		case MID_Cr_ACR_LeadProgrammer_Text: strText = "This game is a joint venture between myself and Adam. Adam has been working on improving the DROD and DROD RPG engines for many years now, which has been instrumental in keeping the game alive. Without his tireless work, this game never would have existed.\r\n\
+\r\n\
+It was great working with Adam. If I had a feature I wanted implementing, no matter how complicated, Adam delivered. Adam coded up most of the new features, and also upgraded the engine, moving over so many features from the DROD 5.2 engine, many of those features Adam originally created."; break;
+		case MID_Cr_ACR_Programmer_Title: strText = "Additional Programming"; break;
+		case MID_Cr_ACR_Programmer: strText = "Kieran Millar\r\n\
+Mike Rimer"; break;
+		case MID_Cr_ACR_Programmer_Text: strText = "A huge thank you to Mike for putting in so much work over the years into the DROD series, especially with the work put in to publishing the works of fans as Smitemaster's Selections. Without this incredible opportunity, making the sequel to DROD RPG wouldn't have been a consideration."; break;
+		case MID_Cr_ACR_MacPort_Title: strText = "Mac OS X Port"; break;
+		case MID_Cr_ACR_MacPort: strText = "Tom Brouws"; break;
+		case MID_Cr_ACR_Music_Title: strText = "Music"; break;
+		case MID_Cr_ACR_Music: strText = "Erik Hermansen\r\n\
+Emmett Plant\r\n\
+Jon Sonnenberg\r\n\
+Seth Rimer\r\n\
+Night of the Wilds by Vindsvept"; break;
+		case MID_Cr_ACR_Artwork_Title: strText = "Artwork"; break;
+		case MID_Cr_ACR_Artwork: strText = "Erik Hermansen\r\n\
+Aleksander Kowalczyk\r\n\
+Mike Rimer\r\n\
+Kieran Millar"; break;
+		case MID_Cr_ACR_LevelDesign_Title: strText = "Level Design"; break;
+		case MID_Cr_ACR_LevelDesign: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_FeatureDesign_Title: strText = "Feature Design"; break;
+		case MID_Cr_ACR_FeatureDesign: strText = "Adam Love (hyperme)\r\n\
+Kieran Millar\r\n\
+Mike Rimer\r\n\
+Nadia Rockford"; break;
+		case MID_Cr_ACR_Story_Title: strText = "Story, Continuity"; break;
+		case MID_Cr_ACR_Story: strText = "Kieran Millar\r\n\
+Mike Rimer\r\n\
+Nadia Rockford"; break;
+		case MID_Cr_ACR_CNet_Title: strText = "CaravelNet Interface"; break;
+		case MID_Cr_ACR_CNet: strText = "Matt Schikore\r\n\
+Mike Rimer"; break;
+		case MID_Cr_ACR_Web_Title: strText = "Web Design"; break;
+		case MID_Cr_ACR_Web: strText = "Matt Schikore"; break;
+		case MID_Cr_ACR_VoiceCoord_Title: strText = "Voice Coordination"; break;
+		case MID_Cr_ACR_VoiceCoord: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Voice_Title: strText = "Voice Talent"; break;
+		case MID_Cr_ACR_Voice: strText = "Sam Benner (Someone Else)\r\n\
+Liam Costello\r\n\
+Erik Hermansen\r\n\
+Leah Lindsay\r\n\
+Kieran Millar\r\n\
+Mike Rimer\r\n\
+Olga Rimer\r\n\
+Seth Rimer\r\n\
+Nadia Rockford\r\n\
+Mark Sommerville\r\n\
+George Wanfried (Chaco)\r\n\
+Maria\r\n\
+Pavol (LovaP48)\r\n\
+Sapphire Crook\r\n\
+Spleen\r\n\
+Xindaris"; break;
+		case MID_Cr_ACR_Voice_Text: strText = "I need to give a shoutout to the wonderful members of the DROD community that lent their voice talents for this game. Together there are over 1,200 voice lines! A special shoutout goes to Leah, who reprised the role of Tendry after all these years. Tendry has over 500 voice lines in this game."; break;
+		case MID_Cr_ACR_Sound_Title: strText = "Sound Effects"; break;
+		case MID_Cr_ACR_Sound: strText = "Mike Rimer\r\n\
+Kieran Millar\r\n\
+Numerous Creative Commons sound files from freesound.org"; break;
+		case MID_Cr_ACR_SoundEdit_Title: strText = "Sound Editing and Mastering"; break;
+		case MID_Cr_ACR_SoundEdit: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_TestCoord_Title: strText = "Testing Coordination"; break;
+		case MID_Cr_ACR_TestCoord: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Test_Title: strText = "Testing"; break;
+		case MID_Cr_ACR_Test: strText = "Henri Kareinen\r\n\
+Mike Rimer\r\n\
+Nadia Rockford\r\n\
+greenscience"; break;
+		case MID_Cr_ACR_Outro: strText = "As always, we're hugely grateful for the work put in by our testers, especially Nadia who took on extra roles, including doing lots of proof-reading, helping with the story and pushing hard for popular features.\r\n\
+\r\n\
+Thank you so much for playing, I really hoped you enjoyed it.\r\n\
+\r\n\
+--Kieran"; break;
+		case MID_Cr_ACR_TheEnd: strText = "DROD RPG 2: A Courageous Rescue\r\n\
+\r\n\
+(c)2025 Caravel Games, LLC\r\n\
+www.caravelgames.com"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
