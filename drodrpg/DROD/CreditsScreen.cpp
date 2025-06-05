@@ -257,7 +257,7 @@ bool CCreditsACRScreen::SetForActivate()
 	A_CONTRIBUTOR(MID_Cr_ACR_Sound, MID_Cr_ACR_Sound_Title);
 	A_FACEIMAGE(Speaker_Aumtlich);
 
-	A_CONTRIBUTOR(MID_Cr_ACR_SoundEdit_Title, MID_Cr_ACR_SoundEdit_Title);
+	A_CONTRIBUTOR(MID_Cr_ACR_SoundEdit, MID_Cr_ACR_SoundEdit_Title);
 	A_FACEIMAGE(Speaker_Halph);
 
 	A_CONTRIBUTOR(MID_Cr_ACR_TestCoord, MID_Cr_ACR_TestCoord_Title);
