@@ -55,11 +55,12 @@
 #endif
 
 #define TITLE_BACKGROUND (0)
-#define LIGHT_MASK       (1)
-#define TITLE_SHADOW     (2)
+#define LIGHT_MASK       (4)
+#define TITLE_SHADOW     (5)
 
 const UINT TAG_MENU = 1000;
 const UINT TAG_PLAYMENU = 1001;
+const UINT TAG_TITLE_IMG = 1002;
 const UINT TAG_INTERNET_ICON = 1010;
 const UINT TAG_CARAVEL_LOGO_SW = 1012;
 const UINT TAG_HYPERLINK_START = 10000;
@@ -121,7 +122,16 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	, bNewGamePrompt(true)
 //Constructor.
 {
-	SetTitleScreenSkin();
+	//Load image assets
+	this->imageFilenames.push_back(string("TitleBG"));
+	this->imageFilenames.push_back(string("TitleBG1"));
+	this->imageFilenames.push_back(string("TitleBG2"));
+	this->imageFilenames.push_back(string("TitleBGTunnel"));
+	this->imageFilenames.push_back(string("TitleLightMask"));
+	this->imageFilenames.push_back(string("TitleShadow"));
+
+	//Game title logo.
+	AddWidget(new CImageWidget(TAG_TITLE_IMG, X_TITLE, Y_TITLE, wszTitle));
 
 	//Caravel Games logo
 	AddWidget(new CImageWidget(TAG_CARAVEL_LOGO_SW, 0, CScreen::CY_SCREEN - CY_CARAVEL_LOGO, wszCaravelLogo));
@@ -135,7 +145,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	//Option menu position based on BG image.
 	const int CX_MENU = 355;
 	const int CY_MENU = 360;
-	const int X_MENU = IsRPG1BG() ? (CScreen::CX_SCREEN - CX_MENU) / 2 : 680; //lower center, right
+	const int X_MENU = GetMenuXPosition(CX_MENU); //lower center, right
 	const int Y_MENU = 340;
 
 	this->pMenu = new CMenuWidget(TAG_MENU, X_MENU, Y_MENU, CX_MENU, CY_MENU,
@@ -191,12 +201,20 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	this->pMarqueeWidget = new CMarqueeWidget(0, X_MARQUEE, Y_MARQUEE,
 			CX_MARQUEE, CY_MARQUEE, 10);
 	AddWidget(this->pMarqueeWidget);
+
+	SetTitleScreenSkin();
 }
 
 //******************************************************************************
 bool CTitleScreen::IsRPG1BG() const
 {
 	return this->imageNum >= 0 && this->imageNum <= 2;
+}
+
+//******************************************************************************
+int CTitleScreen::GetMenuXPosition(const int width) const
+{
+	return IsRPG1BG() ? (CScreen::CX_SCREEN - width) / 2 : 680; //lower center, right;
 }
 
 //******************************************************************************
@@ -335,27 +353,13 @@ void CTitleScreen::SetTitleScreenSkin()
 			this->imageNum = 3;
 	}
 
-	string TitleBG;
-	switch (this->imageNum)
-	{
-		case 0: TitleBG = "TitleBG"; break;
-		case 1: TitleBG = "TitleBG1"; break;
-		case 2: TitleBG = "TitleBG2"; break;
-		case 3: TitleBG = "TitleBGTunnel"; break;
-		default: ASSERT(!"Bad imageNum"); break;
-	}
-	this->imageFilenames.clear();
-	this->imageFilenames.push_back(TitleBG);
-
-	this->imageFilenames.push_back(string("TitleLightMask"));
+	this->backgroundIndex = TITLE_BACKGROUND + this->imageNum;
+	CWidget* titleImage = GetWidget(TAG_TITLE_IMG);
+	ASSERT(titleImage);
 
 	//Manage distinct screen assets with skittering roaches when showing a DROD RPG 1 background image
 	if (IsRPG1BG()) {
-		this->imageFilenames.push_back(string("TitleShadow"));
-
-		//Game title logo.
-		AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
-
+		titleImage->Show();
 		string str;
 		this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
 
@@ -363,7 +367,17 @@ void CTitleScreen::SetTitleScreenSkin()
 		tm* pLocalTime = localtime(&t);
 		if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
 			this->bBackwards = true; //critters move backwards
+	} else {
+		titleImage->Hide();
 	}
+
+	CWidget* mainMenu = GetWidget(TAG_MENU);
+	ASSERT(mainMenu);
+	mainMenu->Move(GetMenuXPosition(mainMenu->GetW()), mainMenu->GetY());
+
+	CWidget* playMenu = GetWidget(TAG_PLAYMENU);
+	ASSERT(playMenu);
+	playMenu->Move(GetMenuXPosition(playMenu->GetW()), playMenu->GetY());
 }
 
 //*****************************************************************************
@@ -635,13 +649,17 @@ void CTitleScreen::Paint(
 			//Use darker screen if high quality graphics are set.
 			const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
 			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-					fValue, this->images[TITLE_BACKGROUND]);
+				fValue, this->images[TITLE_BACKGROUND]);
+			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+				fValue, this->images[TITLE_BACKGROUND + 1]);
+			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+				fValue, this->images[TITLE_BACKGROUND + 2]);
 		}
 		this->bPredarken = false;
 	}
 
 	//Draw background.
-	g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, GetDestSurface(), NULL);
+	g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, GetDestSurface(), NULL);
 
 	//Draw the screen.
 	RedrawScreen(bUpdateRect);
@@ -1081,7 +1099,7 @@ void CTitleScreen::DrawRPG1Screen()
 
 	//Blit the title background.
 	if (bAlpha) {
-		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
+		g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, pDestSurface, NULL);
 	}
 	else {
 		//Selectively damage region around title graphic and shadow.
@@ -1090,13 +1108,13 @@ void CTitleScreen::DrawRPG1Screen()
 		redrawRect.y = Y_TITLE_SHADOW - static_cast<int>((CScreen::CY_SCREEN - Y_TITLE_SHADOW) * fOffsetFactor);
 		redrawRect.w = nShadowMaskW + static_cast<int>(CScreen::CX_SCREEN / 2 * fOffsetFactor) + 125;
 		redrawRect.h = nShadowMaskH + static_cast<int>(CScreen::CY_SCREEN / 2 * fOffsetFactor) + 58;
-		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], &redrawRect, pDestSurface, &redrawRect);
+		g_pTheBM->BlitSurface(this->images[this->backgroundIndex], &redrawRect, pDestSurface, &redrawRect);
 		UpdateRect(redrawRect);
 
 		//Erase effects drawn last frame.
 		SDL_Rect src = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
-		EraseChildren(this->images[TITLE_BACKGROUND], src, true);
-		this->pEffects->EraseEffects(this->images[TITLE_BACKGROUND], src, true);
+		EraseChildren(this->images[this->backgroundIndex], src, true);
+		this->pEffects->EraseEffects(this->images[this->backgroundIndex], src, true);
 	}
 
 	if (bAlpha)
@@ -1152,7 +1170,7 @@ void CTitleScreen::DrawRPG2Screen()
 {
 	//Blit the title background.
 	SDL_Surface* pDestSurface = GetDestSurface();
-	g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
+	g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, pDestSurface, NULL);
 
 	//Lantern light.
 	{
