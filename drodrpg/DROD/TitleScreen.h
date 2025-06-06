@@ -134,8 +134,10 @@ private:
 
 	//Background and Graphics.
 	bool IsRPG1BG() const;
+	int GetMenuXPosition(const int width) const;
 	CDbHold::HoldStatus hold_status;
 	UINT imageNum;
+	UINT backgroundIndex;
 	bool bPredarken;
 	bool bReloadGraphics;
 
