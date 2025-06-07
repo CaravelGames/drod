@@ -645,16 +645,15 @@ void CTitleScreen::Paint(
 	//Preprocess: darken border surface.
 	if (this->bPredarken)
 	{
-		if (IsRPG1BG()) {
-			//Use darker screen if high quality graphics are set.
-			const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
-			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-				fValue, this->images[TITLE_BACKGROUND]);
-			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-				fValue, this->images[TITLE_BACKGROUND + 1]);
-			g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-				fValue, this->images[TITLE_BACKGROUND + 2]);
-		}
+		//Use darker screen if high quality graphics are set.
+		const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
+		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+			fValue, this->images[TITLE_BACKGROUND]);
+		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+			fValue, this->images[TITLE_BACKGROUND + 1]);
+		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+			fValue, this->images[TITLE_BACKGROUND + 2]);
+
 		this->bPredarken = false;
 	}
 
