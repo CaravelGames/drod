@@ -7887,6 +7887,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->statsAtRoomStart = this->stats;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
 	this->roomsMappedAtRoomStart = GetMappedRoomsWithState();
+	this->roomsMappedAtRoomStart[this->pRoom->dwRoomID] = MapState::Explored;
 
 	this->mapIconsAtRoomStart.clear();
 	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
