@@ -2766,9 +2766,15 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 
 		UndoCommands(num_commands_to_undo, CueEvents);
 
+		UINT returnedTo = this->wTurnNo;
 		this->wPlayerTurn = playerTurn_;
 		this->wTurnNo = turnNo_;
 		this->checkpointTurns = checkpointTurns_;
+
+		//If the player rewinds to the exact turn a cutscene starts, update the tracked turn
+		//number so that undoing doesn't undo too far.
+		if (this->cutSceneStartTurn == returnedTo)
+			this->cutSceneStartTurn = this->wTurnNo;
 
 		ASSERT(this->activatingTemporalSplit > 0);
 		--this->activatingTemporalSplit;
