@@ -80,13 +80,13 @@ namespace InputCommands
 
 		keyDefinitions[DCMD_Restart] = new KeyDefinition(CMD_RESTART, "Restart", MID_RestartRoom, SDLK_r);
 		keyDefinitions[DCMD_Undo] = new KeyDefinition(CMD_UNDO, "Undo", MID_UndoMove, SDLK_BACKSPACE);
-		keyDefinitions[DCMD_Battle] = new KeyDefinition(CMD_BATTLE_KEY, "Battle", MID_BattleKey, SDLK_KP_PLUS);
+		keyDefinitions[DCMD_Battle] = new KeyDefinition(CMD_BATTLE_KEY, "Battle", MID_BattleKey, SDLK_KP_PLUS, SDLK_EQUALS);
 		keyDefinitions[DCMD_UseWeapon] = new KeyDefinition(CMD_USE_WEAPON, "UseWeapon", MID_UseWeaponKey, BuildInputKey(SDLK_TAB, true, false, false));
 		keyDefinitions[DCMD_UseArmor] = new KeyDefinition(CMD_USE_ARMOR, "UseArmor", MID_UseArmorKey, BuildInputKey(SDLK_TAB, false, false, true));
 		keyDefinitions[DCMD_UseAccessory] = new KeyDefinition(CMD_USE_ACCESSORY, "UseAccessory", MID_UseAccessoryKey, SDLK_TAB);
-		keyDefinitions[DCMD_Lock] = new KeyDefinition(CMD_LOCK, "Lock", MID_LockCommand, SDLK_KP_0);
-		keyDefinitions[DCMD_Command] = new KeyDefinition(CMD_EXEC_COMMAND, "UseCommand", MID_UseCommandKey, SDLK_KP_PERIOD);
-		keyDefinitions[DCMD_ShowScore] = new KeyDefinition(CMD_SCORE_KEY, "ShowScore", MID_ShowScore, SDLK_KP_MINUS);
+		keyDefinitions[DCMD_Lock] = new KeyDefinition(CMD_LOCK, "Lock", MID_LockCommand, SDLK_KP_0, SDLK_0);
+		keyDefinitions[DCMD_Command] = new KeyDefinition(CMD_EXEC_COMMAND, "UseCommand", MID_UseCommandKey, SDLK_KP_PERIOD, SDLK_PERIOD);
+		keyDefinitions[DCMD_ShowScore] = new KeyDefinition(CMD_SCORE_KEY, "ShowScore", MID_ShowScore, SDLK_KP_MINUS, SDLK_MINUS);
 
 		keyDefinitions[DCMD_SaveGame] = new KeyDefinition(CMD_EXTRA_SAVE_GAME, "Key_SaveGame", MID_SaveGame, SDLK_F2);
 		keyDefinitions[DCMD_LoadGame] = new KeyDefinition(CMD_EXTRA_LOAD_GAME, "Key_LoadGame", MID_LoadGame, SDLK_F3);
