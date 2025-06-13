@@ -682,6 +682,8 @@ enum MID_CONSTANT {
   MID_PercentOptimal = 1989,
   MID_Wyrm = 2110,
   MID_CombatStalled = 2115,
+  MID_ShovelTooltip = 2158,
+  MID_LevelMultiplierTooltip = 2159,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,

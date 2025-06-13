@@ -1947,8 +1947,11 @@ MESSAGE_ID CGameScreen::GetHintTextForRegion(int nX, int nY)
 {
 	static const int xStat = 16;
 	static const int x2Stat = xStat + 112;
+	static const int x3Stat = x2Stat + 32;
+	static const int xItemMult = 170;
+	static const int x2ItemMult = xItemMult + 90;
 
-	if (nX >= xStat && nX <= x2Stat)
+	if (nX >= xStat && nX <= x2ItemMult)
 	{
 		//Player stats.
 		static const int yStat[7] = {202, 236, 264, 291, 325, 352, 400};
@@ -1965,6 +1968,10 @@ MESSAGE_ID CGameScreen::GetHintTextForRegion(int nX, int nY)
 			return MID_REPTooltip;
 		if (IsInRect(nX, nY, xStat, yStat[5], x2Stat, yStat[6]))
 			return MID_KeysTooltip;
+		if (IsInRect(nX, nY, x2Stat, yStat[5], x3Stat, yStat[6]))
+			return MID_ShovelTooltip;
+		if (IsInRect(nX, nY, xItemMult, yStat[5], x2ItemMult, yStat[6]))
+			return MID_LevelMultiplierTooltip;
 
 		//Monster stats.
 		static const int y2Stat[4] = {450, 482, 512, 542};

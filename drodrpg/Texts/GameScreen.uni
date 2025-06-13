@@ -367,3 +367,13 @@ Wyrm
 [MID_CombatStalled]
 [eng]
 Combat failed to resolve (invalid move)
+
+[MID_ShovelTooltip]
+[eng]
+Shovels
+Used to dig through dirt blocks.
+
+[MID_LevelMultiplierTooltip]
+[eng]
+Level Multiplier
+Multiplies resources gained from health potions, gems and shovels.
