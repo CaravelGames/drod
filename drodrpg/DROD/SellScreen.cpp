@@ -57,7 +57,7 @@ CSellScreen::CSellScreen()
 
 	if (GetHoldStatus() == CDbHold::Tendry)
 	{
-		this->imageFilenames.push_back(string("Sell"));
+		this->imageFilenames.push_back(string("Sell1"));
 		this->imageFilenames.push_back(string("SellSShots"));
 	} else {
 		this->imageFilenames.push_back(string("Sell2"));
