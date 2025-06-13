@@ -54,8 +54,15 @@ CSellScreen::CSellScreen()
 	, lastUpdate(0)
 {
 	//Load this background screen.
-	this->imageFilenames.push_back(string("Sell1"));
-	this->imageFilenames.push_back(string("SellSShots"));
+
+	if (GetHoldStatus() == CDbHold::Tendry)
+	{
+		this->imageFilenames.push_back(string("Sell"));
+		this->imageFilenames.push_back(string("SellSShots"));
+	} else {
+		this->imageFilenames.push_back(string("Sell2"));
+		this->imageFilenames.push_back(string("SellSShots2"));
+	}
 
 	static const int X_BUY_BUTTON = 748;
 	static const int Y_BUY_BUTTON = 534;
