@@ -1302,6 +1302,8 @@ Thank you so much for playing, I really hoped you enjoyed it.\r\n\
 \r\n\
 (c)2025 Caravel Games, LLC\r\n\
 www.caravelgames.com"; break;
+		case MID_ShovelTooltip: strText = "Shovels\r\nUsed to dig through dirt blocks."; break;
+		case MID_LevelMultiplierTooltip: strText = "Level Multiplier\r\nMultiplies resources gained from health potions, gems and shovels."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
