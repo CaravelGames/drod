@@ -121,7 +121,7 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 		}
 	}
 
-	if (TILE_LAYER[tile] == LAYER_OPAQUE) {
+	if (tile < TOTAL_EDIT_TILE_COUNT && TILE_LAYER[tile] == LAYER_OPAQUE) {
 		for (UINT y = py; y <= endY; ++y)
 			for (UINT x = px; x <= endX; ++x) {
 				//When o-layer changes, refresh bridge supports.
