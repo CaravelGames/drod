@@ -4357,7 +4357,7 @@ void CGameScreen::SearchForPathToNextRoom(
 		}
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
-		if (!this->pCurrentGame->roomsExploredAtRoomStart.has(newRoomID))
+		if (!this->pCurrentGame->IsRoomExplored(newRoomID))
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
