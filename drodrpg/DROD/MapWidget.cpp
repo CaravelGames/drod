@@ -1355,8 +1355,6 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 
 	const bool bNoDetails = !bRoomPreview && this->NoDetailRooms.has(pRoom->dwRoomID);
 
-	const bool bSecret = pRoom->bIsSecret;
-
 	//Map markers override default room coloring.
 	SURFACECOLOR color, maxColor = { 0, 0, 0 };
 	switch (mapMarker)
@@ -1371,6 +1369,7 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 	const bool bHasClosedDoors = !mapMarker && pRoom->HasClosedDoors();
 	const bool bHasMonsters = !mapMarker && pRoom->HasCombatableMonsters();
 	const bool bHasItems = !mapMarker && pRoom->HasGrabbableItems();
+	const bool bSecret = !mapMarker && pRoom->bIsSecret;
 
 	//Set colors in map surface to correspond to squares in the room.
 	LockMapSurface();
