@@ -2722,8 +2722,15 @@ void CGameScreen::OnKeyDown(
 
 		//Skip cutscene/clear playing speech.
 		case CMD_EXTRA_SKIP_SPEECH:
-			if (this->pCurrentGame && this->pCurrentGame->dwCutScene)
-			{
+			if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
+				//Speed up combat x2.
+				this->wThisCombatTickSpeed /= 2;
+				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
+				{
+					this->wThisCombatTickSpeed = 0;
+					this->pCurrentGame->bQuickCombat = true;
+				}
+			} else if (this->pCurrentGame && this->pCurrentGame->dwCutScene) {
 				if (this->pCurrentGame->dwCutScene == 1)
 				{
 					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
@@ -2731,14 +2738,6 @@ void CGameScreen::OnKeyDown(
 				}
 				else {
 					this->pCurrentGame->dwCutScene = 1; //run cutscene quickly to its conclusion
-				}
-			} else if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
-				//Speed up combat x2.
-				this->wThisCombatTickSpeed /= 2;
-				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
-				{
-					this->wThisCombatTickSpeed = 0;
-					this->pCurrentGame->bQuickCombat = true;
 				}
 			} else {
 				//Clear all speech and subtitles of any sort
