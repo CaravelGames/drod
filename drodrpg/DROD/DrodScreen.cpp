@@ -2050,7 +2050,7 @@ void CDrodScreen::ImportMedia()
 		WSTRING wstrBasename = styleBasenames.front();
 
 		//Import images.
-		static const UINT NUM_SELL_SCREENS = 2;
+		static const UINT NUM_SELL_SCREENS = 4;
 		static const UINT NUM_EXIT_SCREENS = NUM_SELL_SCREENS;
 		static const UINT NUM_GRAPHICS_FILES = 23;
 		static const char graphicFilename[NUM_GRAPHICS_FILES][32] = {
@@ -2093,8 +2093,10 @@ void CDrodScreen::ImportMedia()
 					//Demo/registered exit screens.  Import one kind or the other.
 					if (wStylesToExport > 1) //no sell screens in full version
 						continue;
-					static const WCHAR wszSell[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{0}};
+					static const WCHAR wszSell[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{'1'},{0}};
 					static const WCHAR wszSellSShots[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{0}};
+					static const WCHAR wszSell2[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{'2'},{0}};
+					static const WCHAR wszSellSShots2[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{'2'},{0}};
 
 					const UINT wSellScreenNum = wI - TEXTURE_COUNT - NUM_GRAPHICS_FILES;
 					ASSERT(wStylesToExport == 1 && wSellScreenNum <= NUM_SELL_SCREENS);
@@ -2102,6 +2104,8 @@ void CDrodScreen::ImportMedia()
 					{
 						case 1: wstrImportFile = wszSell; break;
 						case 2: wstrImportFile = wszSellSShots; break;
+						case 3: wstrImportFile = wszSell2; break;
+						case 4: wstrImportFile = wszSellSShots2; break;
 						default: ASSERT(!"Bad sell screen image index"); break;
 					}
 				}
