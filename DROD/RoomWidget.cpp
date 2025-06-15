@@ -8559,8 +8559,22 @@ void CRoomWidget::DrawSwordFor(
 
 	//Sword isn't fully in display -- just draw it clipped.
 	//(This is needed for when stepping onto room edge.)
+	signed int columnOffset = 0;
+	if ((signed int)blit.wXOffset > 0)
+		columnOffset = 1;
+	if ((signed int)blit.wXOffset < 0)
+		columnOffset = -1;
+	UINT offsetCol = blit.wCol + columnOffset;
+
+	signed int rowOffset = 0;
+	if ((signed int)blit.wYOffset > 0)
+		rowOffset = 1;
+	if ((signed int)blit.wYOffset < 0)
+		rowOffset = -1;
+	UINT offsetRow = blit.wRow + rowOffset;
 	if (!IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
-			 !IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY))
+		!IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY) ||
+		!IS_COLROW_IN_DISP(offsetCol, offsetRow))
 		blit.bClipped = true;
 
 	DrawTileImage(blit, pDestSurface);
