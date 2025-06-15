@@ -882,12 +882,12 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 			DisplayRoomCoordSubtitle(wX, wY);
 		}
 
-		PlacePlayerLightAt(pixel_x, pixel_y);
-
 		//Highlighting a customized item.
 		this->wHighlightX = wX;
 		this->wHighlightY = wY;
 		HighlightSelectedTile();
+
+		PlacePlayerLightAt(pixel_x, pixel_y);
 	}
 }
 
