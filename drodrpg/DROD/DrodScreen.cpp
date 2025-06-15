@@ -2092,9 +2092,9 @@ void CDrodScreen::ImportMedia()
 					//Demo/registered exit screens.  Import one kind or the other.
 					if (wStylesToExport > 1) //no sell screens in full version
 						continue;
-					static const WCHAR wszSell[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{'1'},{0}};
+					static const WCHAR wszSell[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{0}};
 					static const WCHAR wszSellSShots[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{0}};
-					static const WCHAR wszSell2[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{'2'},{0}};
+					static const WCHAR wszSell2[] = {{'S'},{'e'},{'l'},{'l'},{'2'},{0}};
 					static const WCHAR wszSellSShots2[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{'2'},{0}};
 
 					const UINT wSellScreenNum = wI - TEXTURE_COUNT - NUM_GRAPHICS_FILES;
