@@ -2031,7 +2031,6 @@ void CDrodScreen::ImportMedia()
 	//Ensure each song is only imported once.
 	set<WSTRING> embeddedImages, embeddedSongs, embeddedSounds;
 
-	CFiles f;
 	UINT wStyleNo, wI;
 	for (wStyleNo = 1; wStyleNo <= wStylesToExport; ++wStyleNo)
 	{
