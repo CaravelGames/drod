@@ -1079,6 +1079,7 @@ void CDbPlayer::ConvertInputSettings(CDbPackedVars& settings)
 		const KeyDefinition *keyDefinition = GetKeyDefinition(i);
 		
 		if (!settings.DoesVarExist(keyDefinition->settingName))
+			settings.SetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboardMode));
 			continue;
 		
 		const UNPACKEDVARTYPE varType = settings.GetVarType(keyDefinition->settingName);
