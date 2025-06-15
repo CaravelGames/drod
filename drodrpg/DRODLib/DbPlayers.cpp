@@ -514,7 +514,6 @@ bool CDbPlayer::Load(
 		return false;
 	}
 
-	ConvertInputSettings(this->Settings);
 	return true;
 }
 

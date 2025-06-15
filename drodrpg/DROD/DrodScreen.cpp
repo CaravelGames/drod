@@ -2451,6 +2451,8 @@ void CDrodScreen::EnablePlayerSettings(
 		return;
 	}
 
+	CDbPlayer::ConvertInputSettings(pPlayer->Settings);
+
 	g_pTheSound->EnableSoundEffects(pPlayer->Settings.GetVar(Settings::SoundEffects, true));
 	g_pTheSound->SetSoundEffectsVolume(pPlayer->Settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME));
 
