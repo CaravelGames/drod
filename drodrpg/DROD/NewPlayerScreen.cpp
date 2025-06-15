@@ -38,6 +38,7 @@
 #include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
 
 #ifdef DEV_BUILD //comment out to embed media immediately
