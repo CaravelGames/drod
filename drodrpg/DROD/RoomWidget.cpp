@@ -882,12 +882,12 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 			DisplayRoomCoordSubtitle(wX, wY);
 		}
 
+		PlacePlayerLightAt(pixel_x, pixel_y);
+
 		//Highlighting a customized item.
 		this->wHighlightX = wX;
 		this->wHighlightY = wY;
 		HighlightSelectedTile();
-
-		PlacePlayerLightAt(pixel_x, pixel_y);
 	}
 }
 
@@ -3565,6 +3565,9 @@ void CRoomWidget::RenderPlayerLight()
 // Pre-condition: player light vars are clear
 void CRoomWidget::PropagatePlayerLight()
 {
+	this->pActiveLightedTiles = &this->lightedPlayerTiles;
+	this->lightMaps.pActiveLight = this->lightMaps.psPlayerLight;
+
 	CEntity *pEntity = GetLightholder();
 	if (pEntity)
 	{
@@ -3583,8 +3586,6 @@ void CRoomWidget::PropagatePlayerLight()
 		static const UINT wPlayerLightRadius = 3;
 		static const UINT wLightParam = (wPlayerLightRadius-1)*NUM_LIGHT_TYPES+0; //white light
 
-		this->pActiveLightedTiles = &this->lightedPlayerTiles;
-		this->lightMaps.pActiveLight = this->lightMaps.psPlayerLight;
 		PropagateLight(fxPos, fyPos, fZ, wLightParam);
 
 		this->wLastPlayerLightX = pEntity->wX;
