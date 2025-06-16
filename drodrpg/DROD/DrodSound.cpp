@@ -48,7 +48,7 @@ const UINT SAMPLE_CHANNEL_COUNT = 14;
 #endif
 
 //Default volume settings.
-const UINT DEFAULT_SOUND_VOLUME = 128, DEFAULT_MUSIC_VOLUME = 85, DEFAULT_VOICE_VOLUME = 255;
+const UINT DEFAULT_SOUND_VOLUME = 80, DEFAULT_MUSIC_VOLUME = 40, DEFAULT_VOICE_VOLUME = 255;
 
 const float fDefaultMinDist = 8.0f, fDefaultMaxDist = 1000.0f;
 
