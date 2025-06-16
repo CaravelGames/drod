@@ -435,13 +435,15 @@ public:
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);
 	bool           WasObjectPushedThisTurn(const UINT wX, const UINT wY) const {
-		return (GetPushedObjectAt(wX, wY)) != NULL; }
+		return HasObjectAtMoved(wX, wY); }
 
 	//scope: used while processing the current turn
 	const RoomObject* GetPushedObjectAt(const UINT wX, const UINT wY) const;
+	bool HasObjectAtMoved(const UINT wX, const UINT wY) const;
 
 private:
 	set<const RoomObject*> pushed_objects; //a simplified implementation of pushed objects to facilitate mirror movement animation
+	CCoordSet moved_objects; //objects that have been moved this processing step, to prevent body + weapon push from single entity
 
 	enum tartype {oldtar, newtar, notar};
 
@@ -449,6 +451,7 @@ private:
 	bool           CanExpandMist(const UINT wX, const UINT wY) const;
 	void           Clear();
 	void           ClearPushInfo();
+	void           ClearMovedInfo();
 	void           ClearStateVarsUsedDuringTurn();
 	void           CloseDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 //	void           DeletePathMaps();

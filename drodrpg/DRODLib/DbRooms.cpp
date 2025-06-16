@@ -1755,6 +1755,12 @@ const RoomObject* CDbRoom::GetPushedObjectAt(const UINT wX, const UINT wY) const
 }
 
 //*****************************************************************************
+bool CDbRoom::HasObjectAtMoved(const UINT wX, const UINT wY) const
+{
+	return this->moved_objects.has(wX, wY);
+}
+
+//*****************************************************************************
 void CDbRoom::ReevalBriarNear(
 //Alert briar structures that room geometry has changed at (x,y).
 //
@@ -5066,6 +5072,7 @@ void CDbRoom::PushObject(
 			pObj->wPrevX = wSrcX;
 			pObj->wPrevY = wSrcY;
 			this->pushed_objects.insert(pObj);
+			this->moved_objects.insert(wDestX, wDestY);
 			
 			break;
 	}
@@ -6343,10 +6350,17 @@ void CDbRoom::ClearPushInfo()
 }
 
 //*****************************************************************************
+void CDbRoom::ClearMovedInfo()
+{
+	this->moved_objects.clear();
+}
+
+//*****************************************************************************
 void CDbRoom::ClearStateVarsUsedDuringTurn()
 {
 	this->stationary_powder_kegs.clear();
 	this->stabbed_powder_kegs.Clear();
+	this->moved_objects.clear();
 }
 
 //*****************************************************************************
