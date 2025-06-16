@@ -1839,26 +1839,33 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 
 // AddIfMissing(INISection::Graphics, "Clock", "Clock");
+
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
-	AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
-	AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing(INISection::Graphics, "Beach", "Beach");
-	AddIfMissing(INISection::Graphics, "Beach Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing(INISection::Graphics, "City", "City");
-	AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
 	AddIfMissing(INISection::Graphics, "Deep Spaces", "DeepSpaces");
 	AddIfMissing(INISection::Graphics, "Deep Spaces Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing(INISection::Graphics, "Forest", "Forest");
-	AddIfMissing(INISection::Graphics, "Forest Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
-	AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
-	AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
-	AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, "Swamp", "Swamp");
-	AddIfMissing(INISection::Graphics, "Swamp Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;Beach;City;Deep Spaces;Forest;Fortress;Foundation;Iceworks;Swamp");
+	if (bFullVersion)
+	{
+		AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
+		AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+		AddIfMissing(INISection::Graphics, "Beach", "Beach");
+		AddIfMissing(INISection::Graphics, "Beach Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, "City", "City");
+		AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, "Forest", "Forest");
+		AddIfMissing(INISection::Graphics, "Forest Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
+		AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
+		AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+		AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
+		AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Swamp", "Swamp");
+		AddIfMissing(INISection::Graphics, "Swamp Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;Beach;City;Deep Spaces;Forest;Fortress;Foundation;Iceworks;Swamp");
+	}
+	else {
+		AddIfMissing(INISection::Graphics, INIKey::Style, "Deep Spaces");
+	}
 
 	AddIfMissing(INISection::Localization, INIKey::ExportText, "0");
 	AddIfMissing(INISection::Localization, INIKey::Keyboard, "0");
