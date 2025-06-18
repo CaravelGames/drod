@@ -947,9 +947,9 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 #ifndef ENABLE_CHEATS
 	// Check hold authorship
 	// Not required if cheats are active
-	bool bIsAuthor = (pPlayer->dwPlayerID == pHold->dwPlayerID);
-	delete pPlayer;
+	bool bShowName = db.Holds.PlayerCanEditHold(pHold->dwHoldID);
 #endif
+	delete pPlayer;
 
 	for (CDbHolds::VARCOORDMAP::const_iterator vars = this->scorepointVarMap.begin();
 		vars != this->scorepointVarMap.end(); ++vars)
@@ -958,7 +958,7 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 		WSTRING scorepointName = vars->first;
 		bool hasScore = (db.HighScores.HasScorepoint(scorepointName));
 #ifndef ENABLE_CHEATS
-		if (!(hasScore || bIsAuthor)) {
+		if (!(hasScore || bShowName)) {
 			pListBoxWidget->AddItem(0, L"???", true);
 		}	else
 #endif
