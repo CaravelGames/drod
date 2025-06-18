@@ -52,6 +52,7 @@
 #include <BackEndLib/InputKey.h>
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
+#include <BackEndLib/Browser.h>
 
 using namespace InputCommands;
 
@@ -1196,42 +1197,50 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
-			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
-			if (!wCaravelNetRequest) {
-				ShowOkMessage(MID_CaravelNetUnreachable);
-				break;
-			}
+			SetFullScreen(false);
+			string url = "https://forum.caravelgames.com/member.php?Action=editcaravelnet";
 
-			SetCursor(CUR_Wait);
-			ShowStatusMessage(MID_RequestingKey);
+			if (!OpenExtBrowser(url.c_str()))
+				ShowOkMessage(MID_NoBrowserToRequestKey);
 
-			while (g_pTheNet->GetStatus(wCaravelNetRequest) < 0)
-				SDL_Delay(20); // just wait until it's finished
-			HideStatusMessage();
-			SetCursor();
-			CStretchyBuffer* pBuffer = g_pTheNet->GetResults(wCaravelNetRequest);
-			// Buffer possibilities:
-			//   '1' : Okay.  Email sent.
-			//   '2' : Not registered.
-			//   '3' : Registration Expired
-			if (!pBuffer || pBuffer->Size() < 1) {
-				ShowOkMessage(MID_CaravelNetUnreachable);
-				break;
-			}
-			switch ( ((BYTE*)*pBuffer)[0]) {
-				case '1':
-					ShowOkMessage(MID_KeySent);
-					break;
-				case '2':
-					ShowOkMessage(MID_NotRegistered);
-					break;
-				case '3':
-					ShowOkMessage(MID_RegistrationExpired);
-					break;
-				default:
-					break;
-			}
+			// Old functionality that emailed a key below, in case we ever want to bring it back
+			
+			//const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
+			//UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
+			//if (!wCaravelNetRequest) {
+			//	ShowOkMessage(MID_CaravelNetUnreachable);
+			//	break;
+			//}
+
+			//SetCursor(CUR_Wait);
+			//ShowStatusMessage(MID_RequestingKey);
+
+			//while (g_pTheNet->GetStatus(wCaravelNetRequest) < 0)
+			//	SDL_Delay(20); // just wait until it's finished
+			//HideStatusMessage();
+			//SetCursor();
+			//CStretchyBuffer* pBuffer = g_pTheNet->GetResults(wCaravelNetRequest);
+			//// Buffer possibilities:
+			////   '1' : Okay.  Email sent.
+			////   '2' : Not registered.
+			////   '3' : Registration Expired
+			//if (!pBuffer || pBuffer->Size() < 1) {
+			//	ShowOkMessage(MID_CaravelNetUnreachable);
+			//	break;
+			//}
+			//switch ( ((BYTE*)*pBuffer)[0]) {
+			//	case '1':
+			//		ShowOkMessage(MID_KeySent);
+			//		break;
+			//	case '2':
+			//		ShowOkMessage(MID_NotRegistered);
+			//		break;
+			//	case '3':
+			//		ShowOkMessage(MID_RegistrationExpired);
+			//		break;
+			//	default:
+			//		break;
+			//}
 		}
 		break;
 
