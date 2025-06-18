@@ -922,6 +922,22 @@ void CRestoreScreen::PopulateListBoxFromSavedGames()
 	}
 }
 
+//*****************************************************************************
+WSTRING obscureScorepointName(const WSTRING& name)
+//Returns: Copy of string with alphanumeric characters replaced by question marks
+{
+	WSTRING obscured;
+	for (WSTRING::const_iterator it = name.cbegin(); it != name.cend(); ++it) {
+		if (isalnum(*it)) {
+			obscured.push_back('?');
+		} else {
+			obscured.push_back(*it);
+		}
+	}
+
+	return obscured;
+}
+
 void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 {
 	//Complete scanning any remaining rooms for scorepoints.
@@ -959,7 +975,7 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 		bool hasScore = (db.HighScores.HasScorepoint(scorepointName));
 #ifndef ENABLE_CHEATS
 		if (!(hasScore || bShowName)) {
-			pListBoxWidget->AddItem(0, L"???", true);
+			pListBoxWidget->AddItem(0, obscureScorepointName(scorepointName).c_str(), true);
 		}	else
 #endif
 		{
