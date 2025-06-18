@@ -1304,6 +1304,7 @@ Thank you so much for playing, I really hoped you enjoyed it.\r\n\
 www.caravelgames.com"; break;
 		case MID_ShovelTooltip: strText = "Shovels\r\nUsed to dig through dirt blocks."; break;
 		case MID_LevelMultiplierTooltip: strText = "Level Multiplier\r\nMultiplies resources gained from health potions, gems and shovels."; break;
+		case MID_NoBrowserToRequestKey: strText = "Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
