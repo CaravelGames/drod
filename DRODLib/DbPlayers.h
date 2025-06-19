@@ -98,6 +98,8 @@ private:
 	bool        UpdateExisting();
 	bool        UpdateNew();
 	void        Clear();
+
+	void        UpgradeKeyDefintions();
 };
 
 #endif //...#ifndef DBPLAYERS_H

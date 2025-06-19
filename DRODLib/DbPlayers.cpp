@@ -816,6 +816,9 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				const bool bEyeCandy = this->Settings.GetVar(Settings::EyeCandy, true);
 				this->Settings.SetVar(Settings::EyeCandy, BYTE(bEyeCandy ? Metadata::GetInt(MetaKey::MAX_EYE_CANDY) : 0));
 			}
+			if (info.wVersion < 509) {
+				UpgradeKeyDefintions();
+			}
 			delete[] data;
 			break;
 		}
@@ -888,6 +891,32 @@ void CDbPlayer::Clear()
 	this->Created = this->LastUpdated = 0;
 	this->Settings.Clear();
 	this->challenges.clear();
+}
+
+//*****************************************************************************
+void CDbPlayer::UpgradeKeyDefintions()
+//In pre-5.2 versions, control settings were stored as int rather than as int64.
+//Since int might be smaller than int64, this can cause problems, so this function
+//converts all key settings to be int64.
+{
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+		const char* name = keyDefinition->settingName;
+		if (!this->Settings.DoesVarExist(name)) {
+			continue; //Nothing to do - not set
+		}
+
+		if (this->Settings.GetVarValueSize(name) == sizeof(int64_t))
+		{
+			continue; //Nothing to do - already correct size
+		}
+
+		//Remove the value, then set again with an int64 value
+		const int val = this->Settings.GetVar(name, 0);
+		this->Settings.Unset(name);
+		this->Settings.SetVar(name, int64_t(val));
+	}
 }
 
 //*****************************************************************************
