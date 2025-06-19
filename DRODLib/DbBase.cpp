@@ -1049,6 +1049,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_ShowPlaceDoubleEffect: strText = "Show swirl at double placement position"; break;
 	case MID_VarMonsterHue: strText = "_MyHue"; break;
 	case MID_VarMonsterSaturation: strText = "_MySaturation"; break;
+	case MID_NoBrowserToRequestKey: strText = "Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
