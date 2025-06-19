@@ -757,3 +757,7 @@ Show visual confirmation for Halph actions
 [MID_ShowPlaceDoubleEffect]
 [eng]
 Show swirl at double placement position
+
+[MID_NoBrowserToRequestKey]
+[eng]
+Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet

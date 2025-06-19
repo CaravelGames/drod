@@ -54,6 +54,7 @@
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Base64.h>
+#include <BackEndLib/Browser.h>
 
 using namespace InputCommands;
 
@@ -1202,37 +1203,43 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
-			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
-			if (!wCaravelNetRequest) {
-				ShowOkMessage(MID_CaravelNetUnreachable);
-				break;
-			}
+			SetFullScreen(false);
+			string url = "https://forum.caravelgames.com/member.php?Action=editcaravelnet";
 
-			GenericNetTransactionWait(wCaravelNetRequest, MID_RequestingKey);
-			Paint();
+			if (!OpenExtBrowser(url.c_str()))
+				ShowOkMessage(MID_NoBrowserToRequestKey);
 
-			CNetResult* pResult = g_pTheNet->GetResults(wCaravelNetRequest);
-			// Buffer possibilities:
-			//   '1' : Okay.  Email sent.
-			//   '2' : Not registered.
-			//   '3' : Registration Expired
-			if (!pResult)
-				break;
-			switch (pResult->pJson->get("status", 1).asInt()) {
-				case 1:
-					ShowOkMessage(MID_KeySent);
-					break;
-				case 2:
-					ShowOkMessage(MID_NotRegistered);
-					break;
-				case 3:
-					ShowOkMessage(MID_RegistrationExpired);
-					break;
-				default:
-					break;
-			}
-			delete pResult;
+			//const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
+			//UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
+			//if (!wCaravelNetRequest) {
+			//	ShowOkMessage(MID_CaravelNetUnreachable);
+			//	break;
+			//}
+			//
+			//GenericNetTransactionWait(wCaravelNetRequest, MID_RequestingKey);
+			//Paint();
+			//
+			//CNetResult* pResult = g_pTheNet->GetResults(wCaravelNetRequest);
+			//// Buffer possibilities:
+			////   '1' : Okay.  Email sent.
+			////   '2' : Not registered.
+			////   '3' : Registration Expired
+			//if (!pResult)
+			//	break;
+			//switch (pResult->pJson->get("status", 1).asInt()) {
+			//	case 1:
+			//		ShowOkMessage(MID_KeySent);
+			//		break;
+			//	case 2:
+			//		ShowOkMessage(MID_NotRegistered);
+			//		break;
+			//	case 3:
+			//		ShowOkMessage(MID_RegistrationExpired);
+			//		break;
+			//	default:
+			//		break;
+			//}
+			//delete pResult;
 		}
 		break;
 
