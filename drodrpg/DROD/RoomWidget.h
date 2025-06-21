@@ -294,6 +294,7 @@ public:
 	bool           IsMoveAnimating() const {return this->dwMovementStepsLeft != 0;}
 	virtual bool   IsPlayerLightRendered() const;
 	bool           IsPlayerLightShowing() const;
+	bool           IsShowingMoveCount() const { return this->bShowMoveCount; }
 	bool           IsWeatherRendered() const;
 	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame, const bool bLoad=true);
 	bool           LoadFromRoom(CDbRoom *pRoom, const bool bLoad=true);

@@ -4299,6 +4299,11 @@ void CGameScreen::ApplyPlayerSettings()
 	this->pRoomWidget->ShowDamagePreview(bShowDamagePreview);
 	this->pTempRoomWidget->ShowDamagePreview(bShowDamagePreview);
 
+	//Enable/disable move counter.
+	if (this->pRoomWidget->IsShowingMoveCount() !=
+		settings.GetVar(Settings::MoveCounter, false))
+		this->pRoomWidget->ToggleMoveCount();
+
 /*
 	//Set times when saved games and demos are saved automatically.
 	if (!this->bPlayTesting)
