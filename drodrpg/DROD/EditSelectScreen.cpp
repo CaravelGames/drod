@@ -1221,11 +1221,13 @@ void CEditSelectScreen::OnRearranged(const UINT dwTagNo)
 			{
 				const UINT dwLevelID = this->pLevelListBoxWidget->GetKeyAtLine(dwIndex);
 				ASSERT(dwLevelID);
-				CDbLevel *pLevel = g_pTheDB->Levels.GetByID(dwLevelID);
-				ASSERT(pLevel);
-				pLevel->dwOrderIndex = dwIndex + 1;
-				pLevel->Update();
-				delete pLevel;
+				if (dwLevelID != ADD_LEVEL_ID) {
+					CDbLevel* pLevel = g_pTheDB->Levels.GetByID(dwLevelID);
+					ASSERT(pLevel);
+					pLevel->dwOrderIndex = dwIndex + 1;
+					pLevel->Update();
+					delete pLevel;
+				}
 			}
 			//Reload selected level so local state is synched.
 			const UINT dwLevelID = this->pSelectedLevel->dwLevelID;
