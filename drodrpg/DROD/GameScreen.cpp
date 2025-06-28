@@ -4778,16 +4778,16 @@ void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
 	dwXP = st.XP;
 	dwShovels = st.shovels;
 
-	dwHPScore = CDbSavedGames::CalculateStatScore(dwHP, st.scoreHP);
-	dwATKScore = CDbSavedGames::CalculateStatScore(dwATK, st.scoreATK);
-	dwDEFScore = CDbSavedGames::CalculateStatScore(dwDEF, st.scoreDEF);
-	dwGOLDScore = CDbSavedGames::CalculateStatScore(dwGOLD, st.scoreGOLD);
-	dwXPScore = CDbSavedGames::CalculateStatScore(dwXP, st.scoreXP);
-	dwYKeysScore = CDbSavedGames::CalculateStatScore(dwYKeys, st.scoreYellowKeys);
-	dwGKeysScore = CDbSavedGames::CalculateStatScore(dwGKeys, st.scoreGreenKeys);
-	dwBKeysScore = CDbSavedGames::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
-	dwSKeysScore = CDbSavedGames::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
-	dwShovelsScore = CDbSavedGames::CalculateStatScore(dwShovels, st.scoreShovels);
+	dwHPScore = CCurrentGame::CalculateStatScore(dwHP, st.scoreHP);
+	dwATKScore = CCurrentGame::CalculateStatScore(dwATK, st.scoreATK);
+	dwDEFScore = CCurrentGame::CalculateStatScore(dwDEF, st.scoreDEF);
+	dwGOLDScore = CCurrentGame::CalculateStatScore(dwGOLD, st.scoreGOLD);
+	dwXPScore = CCurrentGame::CalculateStatScore(dwXP, st.scoreXP);
+	dwYKeysScore = CCurrentGame::CalculateStatScore(dwYKeys, st.scoreYellowKeys);
+	dwGKeysScore = CCurrentGame::CalculateStatScore(dwGKeys, st.scoreGreenKeys);
+	dwBKeysScore = CCurrentGame::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
+	dwSKeysScore = CCurrentGame::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
+	dwShovelsScore = CCurrentGame::CalculateStatScore(dwShovels, st.scoreShovels);
 	dwTotalScore = this->pCurrentGame->GetScore();
 
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETILES));

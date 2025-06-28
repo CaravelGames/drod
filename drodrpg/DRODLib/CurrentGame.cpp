@@ -1285,7 +1285,44 @@ UINT CCurrentGame::GetScore() const
 	st.ATK = getPlayerATK();
 	st.DEF = getPlayerDEF();
 
-	return CDbSavedGames::GetScore(st);
+	return GetScore(st);
+}
+
+//*******************************************************************************
+UINT CCurrentGame::GetScore(const PlayerStats& st)
+//Return: score for these player stats
+{
+	UINT dwScore = 0;
+	dwScore += CalculateStatScore(st.HP, st.scoreHP);
+	dwScore += CalculateStatScore(st.ATK, st.scoreATK);
+	dwScore += CalculateStatScore(st.DEF, st.scoreDEF);
+	dwScore += CalculateStatScore(st.yellowKeys, st.scoreYellowKeys);
+	dwScore += CalculateStatScore(st.greenKeys, st.scoreGreenKeys);
+	dwScore += CalculateStatScore(st.blueKeys, st.scoreBlueKeys);
+	dwScore += CalculateStatScore(st.skeletonKeys, st.scoreSkeletonKeys);
+	dwScore += CalculateStatScore(st.GOLD, st.scoreGOLD);
+	dwScore += CalculateStatScore(st.XP, st.scoreXP);
+	dwScore += CalculateStatScore(st.shovels, st.scoreShovels);
+
+	return dwScore;
+}
+
+//*******************************************************************************
+UINT CCurrentGame::CalculateStatScore(const int stat, const int scoreMultiplier)
+//Return: score for a particular stat
+{
+	const int maxAllowedScore = 100000000;
+	if (scoreMultiplier > 0)
+	{
+		if (stat > maxAllowedScore / scoreMultiplier) return maxAllowedScore;
+		if (stat < -maxAllowedScore / scoreMultiplier) return -maxAllowedScore;
+		return stat * scoreMultiplier;
+	}
+	if (scoreMultiplier < 0)
+	{
+		return min(maxAllowedScore, max(-maxAllowedScore, stat / abs(scoreMultiplier)));
+	}
+	return 0;
 }
 
 //*****************************************************************************
@@ -8456,7 +8493,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 	}
 
 	CDbLocalHighScore* pHighScore = NULL;
-	int score = CDbSavedGames::GetScore(st);
+	int score = GetScore(st);
 	CDb db;
 	UINT holdID = this->pHold->dwHoldID;
 	UINT playerID = pPlayer->dwPlayerID;
