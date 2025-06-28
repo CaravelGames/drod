@@ -271,6 +271,8 @@ public:
 	WSTRING  GetScrollTextAt(const UINT wX, const UINT wY);
 	UINT     GetRoomExitDirection(const UINT wMoveO) const;
 	UINT     GetScore() const;
+	static UINT GetScore(const PlayerStats& st);
+	static UINT CalculateStatScore(const int stat, const int scoreMultiplier);
 	CEntity* getSpeakingEntity(CFiredCharacterCommand* pFiredCommand);
 	bool     GetSwordsman(UINT& wSX, UINT& wSY, const bool bIncludeNonTarget=false) const;
 	UINT     GetSwordMovement() const;

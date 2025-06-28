@@ -2113,7 +2113,7 @@ void CSettingsScreen::UploadScoreCheckpointSaves(const UINT dwPlayerID)
 
 			PlayerStats ps;
 			ps.Unpack(pSavedGame->stats);
-			const UINT score = CDbSavedGames::GetScore(ps);
+			const UINT score = CCurrentGame::GetScore(ps);
 
 			const UINT wUploadingScoreHandle = g_pTheNet->UploadScore(text, pSavedGame->stats.GetVar(szSavename, wszEmpty), score);
 			delete pSavedGame;
