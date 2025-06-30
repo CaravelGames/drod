@@ -80,6 +80,7 @@
 #include "MonsterMessage.h"
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
+#include "TotalMapStates.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/AttachableObject.h>
 #include <BackEndLib/Coord.h>
@@ -204,7 +205,7 @@ protected:
 	CCurrentGame();
 	CCurrentGame(const CCurrentGame &Src)
 		: CDbSavedGame(false), pRoom(NULL), pLevel(NULL),
-		  pHold(NULL), pEntrance(NULL)//, pSnapshotGame(NULL)
+		  pHold(NULL), pEntrance(NULL), pTotalMapStates(NULL)//, pSnapshotGame(NULL)
 	{SetMembers(Src);}
 
 public:
@@ -399,6 +400,7 @@ public:
 	CDbLevel *  pLevel;
 	CDbHold *   pHold;
 	CEntranceData *pEntrance;
+	CTotalMapStates *pTotalMapStates;
 
 	//Player state
 	CSwordsman *pPlayer;
@@ -406,6 +408,7 @@ public:
 	//Game state vars
 //	bool     bIsDemoRecording;
 	bool     bIsGameActive;
+	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	UINT     wTurnNo;
 	UINT     wPlayerTurn;      //player move #
 	UINT     wSpawnCycleCount; //monster move #
@@ -523,7 +526,6 @@ private:
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 
 	bool     bRoomDisplayOnly; //indicates player is not in room and no player interaction should be processed
-	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	bool     bValidatingPlayback; //for streamlining parts of the playback process
 
 /*

@@ -57,6 +57,7 @@ enum SAVETYPE
 	ST_DemoUpload=9,       //tracks demos tested to upload for high-score submission (2.0; deprecated)
 	ST_PlayerTotal=10,     //contains set of all rooms ever explored/conquered
 	ST_WorldMap = 11,        //saved on entering a world map
+	ST_TotalMapStates=12, //for tracking the best MapState seen for each room across all sessions
 };
 
 enum MapState
