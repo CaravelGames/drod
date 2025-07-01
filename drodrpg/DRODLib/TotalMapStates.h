@@ -12,7 +12,7 @@ public:
 	CTotalMapStates() { }
 	~CTotalMapStates() { }
 	void Load(const UINT dwPlayerID, const UINT dwHoldID);
-	const MapState GetStoredMapStateForRoom(const UINT roomID);
+	const MapState GetStoredMapStateForRoom(const UINT roomID) const;
 	void Update(const UINT roomID, const MapState state, const bool bNoSaves);
 	void Update(const CIDSet roomIDs, const MapState state, const bool bNoSaves);
 

@@ -39,7 +39,7 @@ class CMapWidget : public CFocusWidget
 {     
 public:
 	CMapWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW, 
-			UINT wSetH, CCurrentGame *pSetCurrentGame, const UINT sizeMultiplier=1);
+			UINT wSetH, const CCurrentGame *pSetCurrentGame, const UINT sizeMultiplier=1);
 
 	void           ClearMap();
 	void           ClearState();
@@ -52,7 +52,7 @@ public:
 	void           GetVisibleMapRect(SDL_Rect &rect) const;
 	void           HighlightRoom(SDL_Rect& dest, const UINT wWidth=1);
 	bool           IsDeletingRoom() const {return this->bDeletingRoom;}
-	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame,
+	bool           LoadFromCurrentGame(const CCurrentGame *pSetCurrentGame,
 			const bool bDrawSurface=true);
 	bool           LoadFromLevel(CDbLevel *pLevel);
 	virtual void   Paint(bool bUpdateRect = true);
@@ -108,7 +108,7 @@ private:
 	CIDSet               NoDetailRooms, PreviewedRooms;
 	bool              bIsLevelComplete;
 
-	CCurrentGame * pCurrentGame;  //to show map of a game in progress
+	const CCurrentGame * pCurrentGame;  //to show map of a game in progress
 	CDbLevel *           pLevel;        //to show map of entire level
 	SDL_Surface *        pMapSurface;
 

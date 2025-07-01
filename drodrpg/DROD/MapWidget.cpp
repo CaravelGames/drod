@@ -120,7 +120,7 @@ CMapWidget::CMapWidget(
 	UINT dwSetTagNo,                //(in)   Required params for CWidget 
 	int nSetX, int nSetY,               //    constructor.
 	UINT wSetW, UINT wSetH,             //
-	CCurrentGame *pSetCurrentGame,   //(in) Game to use for drawing the map.
+	const CCurrentGame *pSetCurrentGame,   //(in) Game to use for drawing the map.
 	const UINT sizeMultiplier) //[default=1]
 	: CFocusWidget((WIDGETTYPE)WT_Map, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, bVacantRoom(false)
@@ -399,7 +399,7 @@ bool CMapWidget::LoadFromCurrentGame(
 //Sets current game used by map.
 //
 //Params:
-	CCurrentGame *pSetCurrentGame,   //(in) New current game.
+	const CCurrentGame *pSetCurrentGame,   //(in) New current game.
 	const bool bDrawSurface)   //(in) if true [default], draw rooms onto map surface
 //
 //Returns:
