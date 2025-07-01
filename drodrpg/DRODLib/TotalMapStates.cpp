@@ -46,7 +46,7 @@ void CTotalMapStates::Load(const UINT dwPlayerID, const UINT dwHoldID)
 
 //*****************************************************************************
 //Returns the stored room state for a room id
-MapState CTotalMapStates::GetStoredMapStateForRoom(const UINT roomID)
+const MapState CTotalMapStates::GetStoredMapStateForRoom(const UINT roomID)
 {
 	MapState foundMapState = MapState::Invisible;
 

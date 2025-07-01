@@ -453,7 +453,7 @@ public:
 
 	//TotalMapStates
 	CTotalMapStates TotalMapStates;
-	MapState GetStoredMapStateForRoom(const UINT roomID) { return TotalMapStates.GetStoredMapStateForRoom(roomID); }
+	const MapState GetStoredMapStateForRoom(const UINT roomID) { return TotalMapStates.GetStoredMapStateForRoom(roomID); }
 	void UpdateStoredMapState(const UINT roomID, const MapState state) { TotalMapStates.Update(roomID, state, this->bNoSaves); }
 	void UpdateStoredMapState(const CIDSet roomIDs, const MapState state) { TotalMapStates.Update(roomIDs, state, this->bNoSaves); }
 

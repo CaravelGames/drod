@@ -8655,7 +8655,7 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 
 	const UINT dwNewRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(newRoomX, newRoomY);
 
-	if (!this->pCurrentGame->CDbSavedGame::IsRoomExplored(dwNewRoomID) &&
+	if (!this->pCurrentGame->IsRoomExplored(dwNewRoomID) &&
 		this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID) < MapState::Preview) {
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 		return;

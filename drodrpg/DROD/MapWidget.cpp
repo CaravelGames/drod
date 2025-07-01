@@ -120,7 +120,7 @@ CMapWidget::CMapWidget(
 	UINT dwSetTagNo,                //(in)   Required params for CWidget 
 	int nSetX, int nSetY,               //    constructor.
 	UINT wSetW, UINT wSetH,             //
-	const CCurrentGame *pSetCurrentGame,   //(in) Game to use for drawing the map.
+	CCurrentGame *pSetCurrentGame,   //(in) Game to use for drawing the map.
 	const UINT sizeMultiplier) //[default=1]
 	: CFocusWidget((WIDGETTYPE)WT_Map, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, bVacantRoom(false)
@@ -399,7 +399,7 @@ bool CMapWidget::LoadFromCurrentGame(
 //Sets current game used by map.
 //
 //Params:
-	const CCurrentGame *pSetCurrentGame,   //(in) New current game.
+	CCurrentGame *pSetCurrentGame,   //(in) New current game.
 	const bool bDrawSurface)   //(in) if true [default], draw rooms onto map surface
 //
 //Returns:
@@ -928,11 +928,9 @@ bool CMapWidget::SelectRoomIfValid(
 	if (dwRoomID) //Yes.
 	{
 		MapState storedMapState = MapState::Invisible;
-		{//scoping
-			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
-			if (this->pCurrentGame)
-				storedMapState = pGame->GetStoredMapStateForRoom(dwRoomID);
-		}
+		if (this->pCurrentGame)
+			storedMapState = this->pCurrentGame->GetStoredMapStateForRoom(dwRoomID);
+		
 		//Has it been explored?
 		if (this->bEditing ||
 			this->ExploredRooms.has(dwRoomID) ||
@@ -1095,11 +1093,8 @@ bool CMapWidget::LoadMapSurface(
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
 
 		MapState storedMapState = MapState::Invisible;
-		{//scoping
-			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
-			if (this->pCurrentGame)
-				storedMapState = pGame->GetStoredMapStateForRoom(*iter);
-		}
+		if (this->pCurrentGame)
+			storedMapState = this->pCurrentGame->GetStoredMapStateForRoom(*iter);
 
 		const bool bIncludeRoom = this->bEditing ||
 			storedMapState != MapState::Invisible ||
@@ -1367,16 +1362,15 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 	MapState drawState = MapState::Invisible;
 	if (this->pCurrentGame)
 	{
-		CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
-		pExpRoom = pGame->getExploredRoom(pRoom->dwRoomID);
+		pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
 		if (pExpRoom)
-			drawState = max(pExpRoom->mapState, pGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
+			drawState = max(pExpRoom->mapState, this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
 		else
 		{
-			if (pGame->pRoom->dwRoomID == pRoom->dwRoomID)
+			if (this->pCurrentGame->pRoom->dwRoomID == pRoom->dwRoomID)
 				drawState = MapState::Explored;
 			else
-				drawState = pGame->GetStoredMapStateForRoom(pRoom->dwRoomID);
+				drawState = this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID);
 		}
 	}
 
