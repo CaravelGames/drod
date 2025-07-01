@@ -9,8 +9,8 @@
 //*******************************************************************************
 class CTotalMapStates {
 public:
-	CTotalMapStates();
-	~CTotalMapStates() { };
+	CTotalMapStates() { }
+	~CTotalMapStates() { }
 	void Load(const UINT dwPlayerID, const UINT dwHoldID);
 	MapState GetStoredMapStateForRoom(const UINT roomID);
 	void Update(const UINT roomID, const MapState state, const bool bNoSaves);

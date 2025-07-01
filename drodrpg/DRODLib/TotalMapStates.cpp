@@ -38,13 +38,6 @@
 //
 
 //*****************************************************************************
-//Constructor
-CTotalMapStates::CTotalMapStates()
-{
-	this->mapStates = map<UINT, MapState>();
-}
-
-//*****************************************************************************
 //Load the map states from the saved game
 void CTotalMapStates::Load(const UINT dwPlayerID, const UINT dwHoldID)
 {

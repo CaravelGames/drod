@@ -205,7 +205,7 @@ protected:
 	CCurrentGame();
 	CCurrentGame(const CCurrentGame &Src)
 		: CDbSavedGame(false), pRoom(NULL), pLevel(NULL),
-		  pHold(NULL), pEntrance(NULL), pTotalMapStates(NULL)//, pSnapshotGame(NULL)
+		  pHold(NULL), pEntrance(NULL)//, pSnapshotGame(NULL)
 	{SetMembers(Src);}
 
 public:
@@ -400,7 +400,6 @@ public:
 	CDbLevel *  pLevel;
 	CDbHold *   pHold;
 	CEntranceData *pEntrance;
-	CTotalMapStates *pTotalMapStates;
 
 	//Player state
 	CSwordsman *pPlayer;
@@ -451,6 +450,12 @@ public:
 	bool     bQuickCombat; //combat resolves immediately when set
 	CCombat  *pCombat;
 	CMonster *pBlockedSwordHit; //when not NULL, indicates this turn's movement is invalid due to a forbidden attack on this monster
+
+	//TotalMapStates
+	CTotalMapStates TotalMapStates;
+	MapState GetStoredMapStateForRoom(const UINT roomID) { return TotalMapStates.GetStoredMapStateForRoom(roomID); }
+	void UpdateStoredMapState(const UINT roomID, const MapState state) { TotalMapStates.Update(roomID, state, this->bNoSaves); }
+	void UpdateStoredMapState(const CIDSet roomIDs, const MapState state) { TotalMapStates.Update(roomIDs, state, this->bNoSaves); }
 
 private:
 	void AdvanceCombat(CCueEvents& CueEvents);
@@ -536,6 +541,8 @@ private:
 
 	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0);
 	CIDSet   PreviouslyExploredRooms; //cache values
+
+	void     InitializeTotalMapStates();
 };
 
 #endif //...#ifndef CURRENTGAME_H

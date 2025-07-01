@@ -162,7 +162,6 @@ CCurrentGame::CCurrentGame()
 	: pRoom(NULL)
 	, pLevel(NULL)
 	, pHold(NULL)
-	, pTotalMapStates(NULL)
 	, pCombat(NULL)
 //	, pSnapshotGame(NULL)
 	, pPendingPriorLocation(NULL)
@@ -200,7 +199,6 @@ CCurrentGame::~CCurrentGame()
 
 	Clear();
 	delete this->pPlayer;
-	delete this->pTotalMapStates;
 }
 
 //*****************************************************************************
@@ -2018,11 +2016,7 @@ bool CCurrentGame::LoadFromHold(
 	InitRPGStats(this->pPlayer->st);
 	PackData(this->statsAtRoomStart);
 
-	if (!this->pTotalMapStates)
-	{
-		this->pTotalMapStates = new CTotalMapStates();
-		this->pTotalMapStates->Load(this->dwPlayerID, dwHoldID);
-	}
+	InitializeTotalMapStates();
 
 	//Load the first room of level.
 	this->pRoom = this->pLevel->GetStartingRoom();
@@ -2227,7 +2221,7 @@ bool CCurrentGame::LoadFromRoom(
 	bSuccess = this->pHold->Load(this->pLevel->dwHoldID);
 	if (!bSuccess) goto Cleanup;
 
-	this->pTotalMapStates = new CTotalMapStates();
+	InitializeTotalMapStates();
 	
 	//Set entrance to the main level entrance.
 	this->pEntrance = this->pHold->GetMainEntranceForLevel(this->pLevel->dwLevelID);
@@ -2296,11 +2290,7 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pHold = this->pLevel->GetHold();
 	if (!this->pHold) throw CException("CCurrentGame::LoadFromSavedGame");
 
-	if (!this->pTotalMapStates)
-	{
-		this->pTotalMapStates = new CTotalMapStates();
-		this->pTotalMapStates->Load(this->dwPlayerID, this->pHold->dwHoldID);
-	}
+	InitializeTotalMapStates();
 
 	CDbSavedGame::setMonstersCurrentGame(this);
 
@@ -5181,6 +5171,7 @@ UINT CCurrentGame::WriteCurrentRoomDieDemo()
 }
 */
 
+//***************************************************************************************
 //
 //Private methods.
 //
@@ -6888,7 +6879,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		//Level map.
 		//Mark all non-secret rooms in level on map.
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
-		CIDSet roomsWithStatesToUpdate = CIDSet();
+		CIDSet roomsWithStatesToUpdate;
 		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
 		MapState mapState = bShowDetail ? MapState::Explored : MapState::NoDetail;
 		roomsInLevel -= GetExploredRooms(!bShowDetail, !bShowDetail); //non-detailed map ignores rooms already marked
@@ -6905,8 +6896,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 				roomsWithStatesToUpdate += roomID;
 			}
 		}
-		ASSERT(this->pTotalMapStates);
-		this->pTotalMapStates->Update(roomsWithStatesToUpdate, mapState, this->bNoSaves);
+		UpdateStoredMapState(roomsWithStatesToUpdate, mapState);
 
 		room.Plot(p.wX, p.wY, T_EMPTY);
 		CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(wNewTSquare), true);
@@ -7738,8 +7728,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	AddRoomsToPlayerTally();
 	if (!this->IsRoomBeingDisplayedOnly())
 	{
-		ASSERT(this->pTotalMapStates);
-		this->pTotalMapStates->Update(this->dwRoomID, MapState::Explored, this->bNoSaves);
+		UpdateStoredMapState(this->dwRoomID, MapState::Explored);
 	}
 
 	//Reset ambient sounds and speech.
@@ -8631,6 +8620,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 	return this->dwSavedGameID;
 }
 
+//***************************************************************************************
 //Only call this on a temporary object, prior to temporary room preview in the front-end.
 //Returns: whether prep operation succeeded
 bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
@@ -8664,4 +8654,12 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 	this->pRoom->SetSwordsSheathed();
 
 	return true;
+}
+
+//***************************************************************************************
+//Initialize TotalMapStates
+void CCurrentGame::InitializeTotalMapStates()
+{
+	if (!this->bNoSaves)
+		TotalMapStates.Load(this->dwPlayerID, this->pHold->dwHoldID);
 }

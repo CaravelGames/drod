@@ -928,8 +928,11 @@ bool CMapWidget::SelectRoomIfValid(
 	if (dwRoomID) //Yes.
 	{
 		MapState storedMapState = MapState::Invisible;
-		if (this->pCurrentGame && this->pCurrentGame->pTotalMapStates)
-			storedMapState = this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(dwRoomID);
+		{//scoping
+			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+			if (this->pCurrentGame)
+				storedMapState = pGame->GetStoredMapStateForRoom(dwRoomID);
+		}
 		//Has it been explored?
 		if (this->bEditing ||
 			this->ExploredRooms.has(dwRoomID) ||
@@ -1092,13 +1095,16 @@ bool CMapWidget::LoadMapSurface(
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
 
 		MapState storedMapState = MapState::Invisible;
-		if (this->pCurrentGame && this->pCurrentGame->pTotalMapStates)
-			storedMapState = this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(*iter);
+		{//scoping
+			CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+			if (this->pCurrentGame)
+				storedMapState = pGame->GetStoredMapStateForRoom(*iter);
+		}
 
 		const bool bIncludeRoom = this->bEditing ||
-				this->NoDetailRooms.has(*iter) ||
-				this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY) ||
-				storedMapState != MapState::Invisible;
+			storedMapState != MapState::Invisible ||
+			this->NoDetailRooms.has(*iter) ||
+			this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
 
 		if (!bInScrollWindow || bIncludeRoom)
 		{
@@ -1361,15 +1367,16 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 	MapState drawState = MapState::Invisible;
 	if (this->pCurrentGame)
 	{
-		pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
+		CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+		pExpRoom = pGame->getExploredRoom(pRoom->dwRoomID);
 		if (pExpRoom)
-			drawState = max(pExpRoom->mapState, this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(pRoom->dwRoomID));
+			drawState = max(pExpRoom->mapState, pGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
 		else
 		{
-			if (this->pCurrentGame->pRoom->dwRoomID == pRoom->dwRoomID)
+			if (pGame->pRoom->dwRoomID == pRoom->dwRoomID)
 				drawState = MapState::Explored;
 			else
-				drawState = this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(pRoom->dwRoomID);
+				drawState = pGame->GetStoredMapStateForRoom(pRoom->dwRoomID);
 		}
 	}
 

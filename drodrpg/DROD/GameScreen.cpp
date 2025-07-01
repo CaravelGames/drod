@@ -2447,12 +2447,12 @@ void CGameScreen::OnClick(
 					{
 						ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
 						if ((pExpRoom && pExpRoom->HasDetail()) ||
-							this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+							this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
 						{
 							ShowRoomTemporarily(roomID);
-						}
-						else
+						} else {
 							ToggleBigMap();
+						}
 					}
 				}
 			}
@@ -2494,12 +2494,13 @@ void CGameScreen::OnClick(
 				} else {
 					ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
 					if ((pExpRoom && pExpRoom->HasDetail()) ||
-						this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+						this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
 					{
 						ShowRoomTemporarily(roomID);
 					}
-					else
+					else {
 						ToggleBigMap(); //no room to show -- close map
+					}
 				}
 			}
 			break;
@@ -4370,7 +4371,7 @@ void CGameScreen::SearchForPathToNextRoom(
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
 		if (!this->pCurrentGame->IsRoomExplored(newRoomID) &&
-			this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(newRoomID) != MapState::Invisible)
+			this->pCurrentGame->GetStoredMapStateForRoom(newRoomID) != MapState::Invisible)
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
@@ -8654,8 +8655,8 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 
 	const UINT dwNewRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(newRoomX, newRoomY);
 
-	if (!this->pCurrentGame->IsRoomAtCoordsExplored(newRoomX, newRoomY) &&
-		this->pCurrentGame->pTotalMapStates->GetStoredMapStateForRoom(dwNewRoomID) < MapState::Preview) {
+	if (!this->pCurrentGame->CDbSavedGame::IsRoomExplored(dwNewRoomID) &&
+		this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID) < MapState::Preview) {
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 		return;
 	}
