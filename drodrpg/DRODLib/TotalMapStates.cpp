@@ -75,10 +75,10 @@ void CTotalMapStates::Update(
 
 //*****************************************************************************
 //Updates the map state for many room ids, adding them if not currently in the list
-//This is more efficient for updating rooks in bulk, only triggering a single save
+//This is more efficient for updating rooms in bulk, only triggering a single update
 //Used by map collectibles
 void CTotalMapStates::Update(
-	const CIDSet roomIDs, // A set of room IDs
+	const CIDSet& roomIDs, // A set of room IDs
 	const MapState state, // The MapState to update the rooms to (if better)
 	const bool bNoSaves) // If saving to the db should be prevented
 {
