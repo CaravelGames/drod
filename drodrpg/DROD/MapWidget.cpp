@@ -933,9 +933,9 @@ bool CMapWidget::SelectRoomIfValid(
 		
 		//Has it been explored?
 		if (this->bEditing ||
+			storedMapState != MapState::Invisible ||
 			this->ExploredRooms.has(dwRoomID) ||
-			this->NoDetailRooms.has(dwRoomID) ||
-			storedMapState != MapState::Invisible) //Yes.
+			this->NoDetailRooms.has(dwRoomID)) //Yes.
 		{
 			//Select the room.
 			SelectRoom(dwRoomX, dwRoomY);
