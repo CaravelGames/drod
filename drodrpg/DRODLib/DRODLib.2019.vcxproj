@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="BuildDats|Win32">
@@ -454,6 +454,7 @@
     <ClCompile Include="Swordsman.cpp" />
     <ClCompile Include="TarBaby.cpp" />
     <ClCompile Include="TarMother.cpp" />
+    <ClCompile Include="TotalMapStates.cpp" />
     <ClCompile Include="WraithWing.cpp" />
     <ClCompile Include="Wubba.cpp" />
     <ClCompile Include="Zombie.cpp" />
@@ -528,6 +529,7 @@
     <ClInclude Include="RoachQueen.h" />
     <ClInclude Include="RockGiant.h" />
     <ClInclude Include="RoomData.h" />
+    <ClInclude Include="TotalMapStates.h" />
     <ClInclude Include="Seep.h" />
     <ClInclude Include="Serpent.h" />
     <ClInclude Include="SettingsKeys.h" />

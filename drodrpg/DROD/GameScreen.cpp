@@ -2446,9 +2446,13 @@ void CGameScreen::OnClick(
 					if (!this->pCurrentGame->InCombat() && !this->bNeedToProcessDelayedQuestions)
 					{
 						ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-						if (pExpRoom && pExpRoom->HasDetail())
+						if ((pExpRoom && pExpRoom->HasDetail()) ||
+							this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+						{
 							ShowRoomTemporarily(roomID);
-						else ToggleBigMap();
+						} else {
+							ToggleBigMap();
+						}
 					}
 				}
 			}
@@ -2489,9 +2493,14 @@ void CGameScreen::OnClick(
 					ToggleBigMap();
 				} else {
 					ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-					if (pExpRoom && pExpRoom->HasDetail())
+					if ((pExpRoom && pExpRoom->HasDetail()) ||
+						this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+					{
 						ShowRoomTemporarily(roomID);
-					else ToggleBigMap(); //no room to show -- close map
+					}
+					else {
+						ToggleBigMap(); //no room to show -- close map
+					}
 				}
 			}
 			break;
@@ -4361,7 +4370,8 @@ void CGameScreen::SearchForPathToNextRoom(
 		}
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
-		if (!this->pCurrentGame->IsRoomExplored(newRoomID))
+		if (!this->pCurrentGame->IsRoomExplored(newRoomID) &&
+			this->pCurrentGame->GetStoredMapStateForRoom(newRoomID) != MapState::Invisible)
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
@@ -8643,7 +8653,10 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 		default: ASSERT(!"Unsupported temp room pan direction"); return;
 	}
 
-	if (!this->pCurrentGame->IsRoomAtCoordsExplored(newRoomX, newRoomY)) {
+	const UINT dwNewRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(newRoomX, newRoomY);
+
+	if (!this->pCurrentGame->IsRoomExplored(dwNewRoomID) &&
+		this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID) < MapState::Preview) {
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 		return;
 	}

@@ -927,9 +927,15 @@ bool CMapWidget::SelectRoomIfValid(
 			dwRoomX, dwRoomY);
 	if (dwRoomID) //Yes.
 	{
+		MapState storedMapState = MapState::Invisible;
+		if (this->pCurrentGame)
+			storedMapState = this->pCurrentGame->GetStoredMapStateForRoom(dwRoomID);
+		
 		//Has it been explored?
-		if (this->bEditing || this->ExploredRooms.has(dwRoomID) ||
-				this->NoDetailRooms.has(dwRoomID)) //Yes.
+		if (this->bEditing ||
+			storedMapState != MapState::Invisible ||
+			this->ExploredRooms.has(dwRoomID) ||
+			this->NoDetailRooms.has(dwRoomID)) //Yes.
 		{
 			//Select the room.
 			SelectRoom(dwRoomX, dwRoomY);
@@ -1085,9 +1091,15 @@ bool CMapWidget::LoadMapSurface(
 	for (CIDSet::const_iterator iter=roomIDs.begin(); iter != roomIDs.end(); ++iter)
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(*iter, true);  //load only coord data
+
+		MapState storedMapState = MapState::Invisible;
+		if (this->pCurrentGame)
+			storedMapState = this->pCurrentGame->GetStoredMapStateForRoom(*iter);
+
 		const bool bIncludeRoom = this->bEditing ||
-				this->NoDetailRooms.has(*iter) ||
-				this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
+			storedMapState != MapState::Invisible ||
+			this->NoDetailRooms.has(*iter) ||
+			this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
 
 		if (!bInScrollWindow || bIncludeRoom)
 		{
@@ -1346,14 +1358,28 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 
 	//Get variables that affect how map pixels are set.
 	//When there is no current game, then show everything fully.
-	ExploredRoom *pExpRoom = this->pCurrentGame ? this->pCurrentGame->getExploredRoom(pRoom->dwRoomID) : NULL;
+	ExploredRoom* pExpRoom = NULL;
+	MapState drawState = MapState::Invisible;
+	if (this->pCurrentGame)
+	{
+		pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
+		if (pExpRoom)
+			drawState = max(pExpRoom->mapState, this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
+		else
+		{
+			if (this->pCurrentGame->pRoom->dwRoomID == pRoom->dwRoomID)
+				drawState = MapState::Explored;
+			else
+				drawState = this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID);
+		}
+	}
 
 	//Room previews are shown distinctly on the map
-	const bool bRoomPreview = pExpRoom && (pExpRoom->mapState == MapState::Preview);
+	const bool bRoomPreview = drawState == MapState::Preview;
 	if (bRoomPreview)
 		this->PreviewedRooms += pRoom->dwRoomID;
 
-	const bool bNoDetails = !bRoomPreview && this->NoDetailRooms.has(pRoom->dwRoomID);
+	const bool bNoDetails = !bRoomPreview && (drawState == MapState::NoDetail || this->NoDetailRooms.has(pRoom->dwRoomID));
 
 	//Map markers override default room coloring.
 	SURFACECOLOR color, maxColor = { 0, 0, 0 };

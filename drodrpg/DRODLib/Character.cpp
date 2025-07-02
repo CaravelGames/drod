@@ -2443,7 +2443,9 @@ void CCharacter::Process(
 					if (roomID)
 					{
 						const bool bMarkExplored = command.w != 0;
-						pGame->AddRoomToMap(roomID, bMarkExplored ? MapState::Explored : MapState::NoDetail);
+						const MapState mapState = bMarkExplored ? MapState::Explored : MapState::NoDetail;
+						pGame->AddRoomToMap(roomID, mapState);
+						pGame->UpdateStoredMapState(roomID, mapState);
 						CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
 							bMarkExplored ? T_MAP_DETAIL : T_MAP));
 					}

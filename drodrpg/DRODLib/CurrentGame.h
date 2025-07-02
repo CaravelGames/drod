@@ -80,6 +80,7 @@
 #include "MonsterMessage.h"
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
+#include "TotalMapStates.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/AttachableObject.h>
 #include <BackEndLib/Coord.h>
@@ -406,6 +407,7 @@ public:
 	//Game state vars
 //	bool     bIsDemoRecording;
 	bool     bIsGameActive;
+	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	UINT     wTurnNo;
 	UINT     wPlayerTurn;      //player move #
 	UINT     wSpawnCycleCount; //monster move #
@@ -448,6 +450,12 @@ public:
 	bool     bQuickCombat; //combat resolves immediately when set
 	CCombat  *pCombat;
 	CMonster *pBlockedSwordHit; //when not NULL, indicates this turn's movement is invalid due to a forbidden attack on this monster
+
+	//TotalMapStates
+	CTotalMapStates TotalMapStates;
+	MapState GetStoredMapStateForRoom(const UINT roomID) const { return TotalMapStates.GetStoredMapStateForRoom(roomID); }
+	void UpdateStoredMapState(const UINT roomID, const MapState state) { TotalMapStates.Update(roomID, state, this->bNoSaves); }
+	void UpdateStoredMapState(const CIDSet& roomIDs, const MapState state) { TotalMapStates.Update(roomIDs, state, this->bNoSaves); }
 
 private:
 	void AdvanceCombat(CCueEvents& CueEvents);
@@ -523,7 +531,6 @@ private:
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 
 	bool     bRoomDisplayOnly; //indicates player is not in room and no player interaction should be processed
-	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	bool     bValidatingPlayback; //for streamlining parts of the playback process
 
 /*
@@ -534,6 +541,8 @@ private:
 
 	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0);
 	CIDSet   PreviouslyExploredRooms; //cache values
+
+	void     InitializeTotalMapStates();
 };
 
 #endif //...#ifndef CURRENTGAME_H
