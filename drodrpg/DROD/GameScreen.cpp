@@ -3560,6 +3560,7 @@ bool CGameScreen::AddMonsterStats(
 //
 //Returns: If the text was appended
 {
+	CCurrentGame* pGame = pRoom->GetCurrentGame();
 	CDialogWidget* pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
 	CWidget* pFrame = pStatsDialog->GetWidget(TAG_BATTLEFRAME);
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
@@ -3573,7 +3574,7 @@ bool CGameScreen::AddMonsterStats(
 	}
 	wstr += pRoomWidget->GetMonsterNameAndAbility(pStatMonster);
 
-	CSwordsman& player = *this->pCurrentGame->pPlayer;
+	CSwordsman& player = *pGame->pPlayer;
 	const int gold = pStatMonster->getGOLD() * player.getGoldMultiplier();
 	const int xp = pStatMonster->getXP() * player.getXPMultiplier();
 	bool bStrongHitIgnored;
@@ -3600,7 +3601,7 @@ bool CGameScreen::AddMonsterStats(
 
 		vector<int> stat;
 		stat.push_back(pStatMonster->getHP());
-		stat.push_back(CCombat::getMonsterATK(pStatMonster, this->pCurrentGame, bStrongHitIgnored));
+		stat.push_back(CCombat::getMonsterATK(pStatMonster, pGame, bStrongHitIgnored));
 		stat.push_back(pStatMonster->getDEF());
 		stat.push_back(gold);
 		stat.push_back(xp);
