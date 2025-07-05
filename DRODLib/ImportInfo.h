@@ -116,7 +116,7 @@ public:
 	CIDSet localHoldIDs;
 	std::set<WSTRING> roomStyles; //room style references encountered in import
 
-	string   exportedDemos, exportedSavedGames;  //saved games temporarily exported while hold is being upgraded
+	std::vector<string> exportedDemos, exportedSavedGames;  //saved games temporarily exported while hold is being upgraded
 	WSTRING  userMessages;     //text messages for the user's convenience
 
 	MESSAGE_ID ImportStatus;   //result of import process
