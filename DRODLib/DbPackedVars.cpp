@@ -111,7 +111,7 @@ void CDbPackedVars::Unset(const char *pszVarName)
 {
 	this->vars.erase(pszVarName);
 
-	this->varIter = this->vars.end(); //invalidate
+	this->lastQueryIter = this->varIter = this->vars.end(); //invalidate
 }
 
 //*******************************************************************************************
