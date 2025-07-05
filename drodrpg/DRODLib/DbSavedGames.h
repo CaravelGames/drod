@@ -240,7 +240,7 @@ protected:
 
 public:
 	void        AddRoomsToPlayerTally(const UINT dwPlayerID, const CIDSet& ExploredRooms);
-	bool        CleanupPlayerTallies();
+	bool        CleanupPlayerTalliesAndMapStates();
 	virtual void      Delete(const UINT dwSavedGameID);
 	void        DeleteForRoom(const UINT dwRoomID);
 //	void        VerifyForRoom(const UINT dwRoomID);
@@ -274,7 +274,11 @@ public:
 
 	static bool RenameSavedGame(const UINT savedGameID, const WSTRING& name);
 	UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);
-	void       UpdatePlayerTallies(const CImportInfo& info);
+	void       UpdatePlayerTalliesAndMapStates(const CImportInfo& info);
+
+	RoomMapStates LoadMapStates(const UINT dwPlayerID, const CIDSet& rooms);
+	void          UpdateTotalMapStates(const UINT dwPlayerID, const RoomMapStates& RoomMapStates);
+	void          UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlayerID);
 
 private:
 	virtual void      LoadMembership();

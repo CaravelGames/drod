@@ -2028,8 +2028,6 @@ bool CCurrentGame::LoadFromHold(
 	this->wVersionNo = VERSION_NUMBER;
 	this->checksumStr = g_pTheNet->GetChecksum(this, 1);
 
-	AddRoomsPreviouslyExploredByPlayerToMap();
-
 /*
 	//Save to level-begin and room-begin slots.
 	//ATTN: Do this before SetMembersAfterRoomLoad changes anything.
@@ -2147,6 +2145,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 	SetPlayerToRoomStart();
 
 	//Get members ready.
+	InitializeTotalMapStates();
 	RetrieveExploredRoomData(*this->pRoom);
 	CDbSavedGame::SetMonsterListAtRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
@@ -2328,8 +2327,6 @@ bool CCurrentGame::LoadFromSavedGame(
 	//Put room in correct beginning state and get cue events for the 
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
-
-	AddRoomsPreviouslyExploredByPlayerToMap();
 
 	//Cue events coming from first step into the room.
 		SetMembersAfterRoomLoad(CueEvents, false);
@@ -5192,29 +5189,6 @@ void CCurrentGame::CheckGlobalScriptsState()
 			if (pCharacter->IsRestartScriptOnRoomEntrance())
 				pCharacter->RestartScript();
 		}
-	}
-}
-
-//*****************************************************************************
-//For front-end, to display a preview of rooms explored in other play sessions
-//Called when a game is begun or loaded to populate this list for reference during play
-void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
-	UINT playerID) //[default=0]
-{
-	ASSERT(this->pHold);
-	if (!playerID) {
-		playerID = g_pTheDB->GetPlayerID();
-		if (!playerID)
-			return;
-	}
-
-	//May be a compute-intensive call, so cache results in member var
-	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, this->PreviouslyExploredRooms);
-	this->PreviouslyExploredRooms -= this->dwRoomID; //don't need to include the player's current room for preview
-
-	for (CIDSet::const_iterator it=this->PreviouslyExploredRooms.begin(); it!=this->PreviouslyExploredRooms.end(); ++it)
-	{
-		AddRoomToMap(*it, MapState::Preview, false);
 	}
 }
 
@@ -8661,5 +8635,5 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 void CCurrentGame::InitializeTotalMapStates()
 {
 	if (!this->bNoSaves)
-		TotalMapStates.Load(this->dwPlayerID, this->pHold->dwHoldID);
+		TotalMapStates.Load(this->dwPlayerID, this->pLevel->dwLevelID);
 }
