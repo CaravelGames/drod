@@ -2219,7 +2219,7 @@ bool CCurrentGame::LoadFromRoom(
 	if (!this->pHold) {bSuccess=false; goto Cleanup;}
 	bSuccess = this->pHold->Load(this->pLevel->dwHoldID);
 	if (!bSuccess) goto Cleanup;
-
+	
 	InitializeTotalMapStates();
 	
 	//Set entrance to the main level entrance.
@@ -2289,7 +2289,7 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pHold = this->pLevel->GetHold();
 	if (!this->pHold) throw CException("CCurrentGame::LoadFromSavedGame");
 
-	InitializeTotalMapStates();
+	InitializeTotalMapStates(true);
 
 	CDbSavedGame::setMonstersCurrentGame(this);
 
@@ -8631,9 +8631,9 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 }
 
 //***************************************************************************************
+void CCurrentGame::InitializeTotalMapStates(const bool forceLoading) // (in) default=[false] force loading the map states despite being in noSaves mode (e.g. restore screen)
 //Initialize TotalMapStates
-void CCurrentGame::InitializeTotalMapStates()
 {
-	if (!this->bNoSaves)
+	if (forceLoading || !this->bNoSaves)
 		TotalMapStates.Load(this->dwPlayerID, this->pLevel->dwLevelID);
 }

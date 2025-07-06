@@ -3215,15 +3215,13 @@ void CDbSavedGames::UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlaye
 	db.SavedGames.FindHiddens(true);
 	const CIDSet savedGameIDs = db.SavedGames.GetIDs();
 
-	CDbSavedGame* pSavedGame;
 	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
 	{
-		pSavedGame = db.SavedGames.GetByID(*iter);
+		CDbSavedGame* pSavedGame = db.SavedGames.GetByID(*iter);
 		ASSERT(pSavedGame);
 		if (pSavedGame->eType != ST_DemoUpload && //Not a real saved game record
 			pSavedGame->eType != ST_TotalMapStates) //We will merge with this later
 		{
-			pSavedGame->ExploredRooms;
 			for (vector<ExploredRoom*>::const_iterator room = pSavedGame->ExploredRooms.begin(); room != pSavedGame->ExploredRooms.end(); ++room)
 			{
 				ExploredRoom* pRoom = *room;
@@ -3235,6 +3233,8 @@ void CDbSavedGames::UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlaye
 				if (pRoom->mapState > currentMapState)
 					mapStates[pRoom->roomID] = pRoom->mapState;
 			}
+			if (pSavedGame->dwRoomID != 0)
+				mapStates[pSavedGame->dwRoomID] = MapState::Explored;
 		}
 		delete pSavedGame;
 	}

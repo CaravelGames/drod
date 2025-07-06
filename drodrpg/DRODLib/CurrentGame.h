@@ -541,7 +541,7 @@ private:
 
 	CIDSet   PreviouslyExploredRooms; //cache values
 
-	void     InitializeTotalMapStates();
+	void     InitializeTotalMapStates(const bool forceLoading = false);
 };
 
 #endif //...#ifndef CURRENTGAME_H
