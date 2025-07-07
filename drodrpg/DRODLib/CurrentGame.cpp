@@ -395,7 +395,7 @@ void CCurrentGame::AddRoomToMap(
 	{
 		bWasUnexplored = pExpRoom->mapState != MapState::Explored;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
-		if (pExpRoom->mapState < mapState)
+		if (CDbSavedGames::IsMoreDetailedMapState(mapState, pExpRoom->mapState))
 		{
 			pExpRoom->mapState = mapState;
 		}

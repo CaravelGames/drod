@@ -3103,10 +3103,10 @@ void CDbSavedGames::UpdatePlayerTalliesAndMapStates(
 			for (vector<ExploredRoom*>::iterator iter = pPlayerProgress->ExploredRooms.begin();
 					iter != pPlayerProgress->ExploredRooms.end(); ++iter)
 			{
-				ExploredRoom *pExpRoom = *iter;
-				if (pExpRoom->roomID == room_iter->first)
+				ExploredRoom& exploredRoom = **iter;
+				if (exploredRoom.roomID == room_iter->first)
 				{
-					pExpRoom->roomID = room_iter->second;
+					exploredRoom.roomID = room_iter->second;
 					bChanged = true;
 					break;
 				}
@@ -3135,14 +3135,14 @@ RoomMapStates CDbSavedGames::LoadMapStates(const UINT dwPlayerID, const CIDSet& 
 	CIDSet::const_iterator room;
 	for (room = exploredRooms.begin(); room != exploredRooms.end(); ++room)
 	{
-		UINT roomID = *room;
+		const UINT roomID = *room;
 		vector<ExploredRoom*>::const_iterator room;
 		for (room = pMapStateSave->ExploredRooms.begin(); room != pMapStateSave->ExploredRooms.end(); ++room)
 		{
-			ExploredRoom* pRoom = *room;
-			if (pRoom->roomID == roomID)
+			const ExploredRoom& exploredRoom = **room;
+			if (exploredRoom.roomID == roomID)
 			{
-				mapStates[roomID] = pRoom->mapState;
+				mapStates[roomID] = exploredRoom.mapState;
 				break;
 			}
 		}
@@ -3176,12 +3176,12 @@ void CDbSavedGames::UpdateTotalMapStates(const UINT dwPlayerID, const RoomMapSta
 		vector<ExploredRoom*>::const_iterator room;
 		for (room = pMapStateSave->ExploredRooms.begin(); room != pMapStateSave->ExploredRooms.end(); ++room)
 		{
-			ExploredRoom* pRoom = *room;
-			if (pRoom->roomID == roomID)
+			ExploredRoom& exploredRoom = **room;
+			if (exploredRoom.roomID == roomID)
 			{
-				if (pRoom->mapState < it->second)
+				if (IsMoreDetailedMapState(it->second, exploredRoom.mapState))
 				{
-					pRoom->mapState = it->second;
+					exploredRoom.mapState = it->second;
 					bUpdate = true;
 				}
 				break;
@@ -3230,7 +3230,7 @@ void CDbSavedGames::UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlaye
 				if (currentMapStateIter != mapStates.end()) {
 					currentMapState = currentMapStateIter->second;
 				}
-				if (pRoom->mapState > currentMapState)
+				if (IsMoreDetailedMapState(pRoom->mapState, currentMapState))
 					mapStates[pRoom->roomID] = pRoom->mapState;
 			}
 			if (pSavedGame->dwRoomID != 0)
@@ -3239,6 +3239,13 @@ void CDbSavedGames::UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlaye
 		delete pSavedGame;
 	}
 	UpdateTotalMapStates(dwPlayerID, mapStates);
+}
+
+//*******************************************************************************
+bool CDbSavedGames::IsMoreDetailedMapState(const MapState first, const MapState second)
+//Returns if the first map state is more detailed than the second
+{
+	return first > second;
 }
 
 //*******************************************************************************

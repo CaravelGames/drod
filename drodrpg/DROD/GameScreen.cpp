@@ -2447,7 +2447,7 @@ void CGameScreen::OnClick(
 					{
 						ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
 						if ((pExpRoom && pExpRoom->HasDetail()) ||
-							this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+							CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(roomID), MapState::NoDetail))
 						{
 							ShowRoomTemporarily(roomID);
 						} else {
@@ -2494,7 +2494,7 @@ void CGameScreen::OnClick(
 				} else {
 					ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
 					if ((pExpRoom && pExpRoom->HasDetail()) ||
-						this->pCurrentGame->GetStoredMapStateForRoom(roomID) >= MapState::Preview)
+						CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(roomID), MapState::NoDetail))
 					{
 						ShowRoomTemporarily(roomID);
 					}
@@ -4371,7 +4371,7 @@ void CGameScreen::SearchForPathToNextRoom(
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
 		if (!this->pCurrentGame->IsRoomExplored(newRoomID) &&
-			this->pCurrentGame->GetStoredMapStateForRoom(newRoomID) != MapState::Invisible)
+			CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(newRoomID), MapState::Invisible))
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
@@ -8656,7 +8656,8 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 	const UINT dwNewRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(newRoomX, newRoomY);
 
 	if (!this->pCurrentGame->IsRoomExplored(dwNewRoomID) &&
-		this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID) < MapState::Preview) {
+		!CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID), MapState::NoDetail))
+	{
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 		return;
 	}

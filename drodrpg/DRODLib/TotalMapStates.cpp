@@ -41,7 +41,7 @@
 //Load the map states from the saved game
 void CTotalMapStates::Load(const UINT dwPlayerID, const UINT dwLevelID)
 {
-	CIDSet roomsInLevel = CDb::getRoomsInLevel(dwLevelID);
+	const CIDSet roomsInLevel = CDb::getRoomsInLevel(dwLevelID);
 	this->mapStates = g_pTheDB->SavedGames.LoadMapStates(dwPlayerID, roomsInLevel);
 	UINT numberOfExploredRooms = 0;
 	for (RoomMapStates::const_iterator it = this->mapStates.begin(); it != this->mapStates.end(); ++it)
@@ -137,7 +137,7 @@ bool CTotalMapStates::UpdateRoom(const UINT roomID, const MapState state)
 		return true;
 	}
 
-	if (currentMapState < state) {
+	if (CDbSavedGames::IsMoreDetailedMapState(state, currentMapState)) {
 		this->mapStates[roomID] = state;
 		return true;
 	}

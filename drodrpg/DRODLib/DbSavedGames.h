@@ -279,6 +279,7 @@ public:
 	RoomMapStates LoadMapStates(const UINT dwPlayerID, const CIDSet& rooms);
 	void          UpdateTotalMapStates(const UINT dwPlayerID, const RoomMapStates& RoomMapStates);
 	void          UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlayerID);
+	static bool   IsMoreDetailedMapState(const MapState first, const MapState second);
 
 private:
 	virtual void      LoadMembership();
