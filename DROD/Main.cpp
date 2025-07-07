@@ -542,7 +542,7 @@ int main(int argc, char *argv[])
 
 #ifndef NO_EXCEPTIONS
 		}
-		catch (CException& e)
+		catch (std::exception& e)
 		{
 		  m_pFiles->AppendErrorLog(e.what());
 		  if (g_pTheDB->IsOpen())
@@ -552,6 +552,7 @@ int main(int argc, char *argv[])
 		}
 		catch (...)
 		{
+			m_pFiles->AppendErrorLog("Unkown exception");
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
