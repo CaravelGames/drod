@@ -32,6 +32,8 @@
 
 #include "DbXML.h"
 #include "CurrentGame.h"
+#include "DbSavedGames.h"
+
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
 #include <BackEndLib/StretchyBuffer.h>
@@ -1037,13 +1039,40 @@ bool CDbXML::UpdateLocalIDs()
 					{
 						const UINT playerID = g_pTheDB->GetPlayerID();
 						const UINT dwSavedGameID = g_pTheDB->SavedGames.FindByType(
-								ST_PlayerTotal, playerID, false);
+							ST_PlayerTotal, playerID, false);
 						if (dwSavedGameID && dwSavedGameID != pSavedGame->dwSavedGameID)
 						{
 							//Only one instance of this saved game record type exists
 							//per player.  Merge room IDs into the existing record
 							//and delete this new one.
 							g_pTheDB->SavedGames.AddRoomsToPlayerTally(playerID, pSavedGame->GetExploredRooms());
+
+							if (pSavedGame->dwSavedGameID) //don't keep this one around
+								g_pTheDB->SavedGames.Delete(pSavedGame->dwSavedGameID);
+
+							bSavedGameUpdated = true;
+							bSkipRecord = true;
+						}
+					}
+					break;
+					case ST_TotalMapStates:
+					{
+						const UINT playerID = g_pTheDB->GetPlayerID();
+						const UINT dwSavedGameID = g_pTheDB->SavedGames.FindByType(
+							ST_TotalMapStates, playerID, false);
+						if (dwSavedGameID && dwSavedGameID != pSavedGame->dwSavedGameID)
+						{
+							//Only one instance of this saved game record type exists
+							//per player.  Merge rooms into the existing record
+							//and delete this new one.
+							vector<ExploredRoom *>::const_iterator room;
+							RoomMapStates mapStates;
+							for (room = pSavedGame->ExploredRooms.begin(); room != pSavedGame->ExploredRooms.end(); ++room)
+							{
+								ExploredRoom* pRoom = *room;
+								mapStates[pRoom->roomID] = pRoom->mapState;
+							}
+							g_pTheDB->SavedGames.UpdateTotalMapStates(playerID, mapStates);
 
 							if (pSavedGame->dwSavedGameID) //don't keep this one around
 								g_pTheDB->SavedGames.Delete(pSavedGame->dwSavedGameID);
@@ -1898,9 +1927,14 @@ void CDbXML::Import_Resolve()
 		if (WasImportSuccessful()) //don't need to reimport any peripheral data if main import failed
 		{
 			if (info.bReplaceOldHolds)
-				g_pTheDB->SavedGames.UpdatePlayerTallies(info);
+				g_pTheDB->SavedGames.UpdatePlayerTalliesAndMapStates(info);
 			info.Clear(true);		//only partial clear before saved game import
 			ImportSavedGames();
+			if (info.dwPlayerImportedID)
+			{
+				// RPG 1 kept track of what rooms you had explored differently, need to convert to new method
+				g_pTheDB->SavedGames.UpdateTotalMapStatesWithAllSavedGameRooms(info.dwPlayerImportedID);
+			}
 		}
 
 		//Output any log notes user might find useful.

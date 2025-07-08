@@ -673,7 +673,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 
 		g_pTheDB->Holds.Delete(*id);
 	}
-	g_pTheDB->SavedGames.CleanupPlayerTallies();
+	g_pTheDB->SavedGames.CleanupPlayerTalliesAndMapStates();
 
 	HideStatusMessage();
 	g_pTheNet->MatchCNetHolds();

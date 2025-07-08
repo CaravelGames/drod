@@ -4145,7 +4145,7 @@ void CCharacter::SetMapIcon(
 	pExpRoom->mapIcon = icon;
 	pExpRoom->mapIconState = iconState;
 
-	if (pExpRoom->mapState != MapState::Invisible) {
+	if (CDbSavedGames::IsMoreDetailedMapState(pExpRoom->mapState, MapState::Invisible)) {
 		CueEvents.Add(CID_MapIcon);
 	}
 }

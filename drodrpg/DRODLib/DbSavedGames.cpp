@@ -337,8 +337,10 @@ bool CDbSavedGame::Load(
 	this->eType = (SAVETYPE) (int) p_Type(row);
 	this->bIsHidden = ( p_IsHidden(row)!=0 );
 
-	if (!this->dwRoomID && this->eType != ST_DemoUpload && //Placeholder record.
-		this->eType != ST_PlayerTotal) {
+	if (!this->dwRoomID &&
+		this->eType != ST_DemoUpload && //Placeholder record.
+		this->eType != ST_PlayerTotal &&
+		this->eType != ST_TotalMapStates) {
 		if (this->eType == ST_WorldMap) {
 			if (!OnWorldMap())
 				throw CException("CDbSavedGame::Load -- No World Map");
@@ -834,7 +836,11 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 		}
 		case P_RoomID:
 			this->dwRoomID = convertToUINT(str);
-
+			if (this->dwRoomID == 0)
+			{
+				// Some hidden save files are not associated with a room
+				break;
+			}
 			//Look up local ID.
 			localID = info.RoomIDMap.find(this->dwRoomID);
 			//If room ID doesn't exist, then the saved game probably exists for a removed room.
@@ -855,7 +861,7 @@ MESSAGE_ID CDbSavedGame::SetProperty(
 				//2.0.9: A zero room ID is valid for some saved game types.
 				//For other types, a zero ID indicates records for this room are
 				//being ignored -- don't save this game.
-				if (this->eType != ST_PlayerTotal && this->eType != ST_WorldMap)
+				if (this->eType != ST_PlayerTotal && this->eType != ST_TotalMapStates && this->eType != ST_WorldMap)
 					bSaveRecord = false;
 			}
 			if (info.typeBeingImported == CImportInfo::SavedGame || info.typeBeingImported == CImportInfo::Player)
@@ -1720,7 +1726,9 @@ bool CDbSavedGame::UpdateNew()
 	delete[] pbytCommands;
 	delete[] pbytStatsBytes;
 
-	if (this->eType != ST_Progress && this->eType != ST_PlayerTotal)
+	if (this->eType != ST_Progress &&
+		this->eType != ST_PlayerTotal &&
+		this->eType != ST_TotalMapStates)
 	{
 		this->moves.savedGameID = this->dwSavedGameID;
 		VERIFY(this->moves.Update());
@@ -1810,7 +1818,9 @@ bool CDbSavedGame::UpdateExisting()
 	delete[] pbytCommands;
 	delete[] pbytStatsBytes;
 
-	if (this->eType != ST_Progress && this->eType != ST_PlayerTotal)
+	if (this->eType != ST_Progress &&
+		this->eType != ST_PlayerTotal &&
+		this->eType != ST_TotalMapStates)
 	{
 		this->moves.savedGameID = this->dwSavedGameID;
 		VERIFY(this->moves.Update());
@@ -1938,8 +1948,8 @@ void CDbSavedGames::AddRoomsToPlayerTally(
 }
 
 //*******************************************************************************
-bool CDbSavedGames::CleanupPlayerTallies()
-//Removes rooms which do not exist from all "PlayerTotal" saved games.
+bool CDbSavedGames::CleanupPlayerTalliesAndMapStates()
+//Removes rooms which do not exist from all "PlayerTotal" and TotalMapStates saved games.
 //These might be left over from a deleted hold.
 {
 	bool bAnyChanged = false;
@@ -1950,7 +1960,7 @@ bool CDbSavedGames::CleanupPlayerTallies()
 	for (UINT dwSavedGamesI=0; dwSavedGamesI<dwSavedGamesCount; ++dwSavedGamesI)
 	{
 		c4_RowRef row = GetRowRef(V_SavedGames, dwSavedGamesI);
-		if (SAVETYPE(int(p_Type(row))) != ST_PlayerTotal)
+		if (SAVETYPE(int(p_Type(row))) != ST_PlayerTotal && SAVETYPE(int(p_Type(row))) != ST_TotalMapStates)
 			continue;
 
 		CDbSavedGame *pPlayerProgress = GetByID(UINT(p_SavedGameID(row)));
@@ -2287,11 +2297,7 @@ void CDbSavedGames::ExportXML(
 			pMonster = pMonster->pNext;
 		}
 
-		if (pSavedGame->worldMapIcons.empty()) {
-			str += CLOSETAG;
-		} else {
-			str += CLOSESTARTTAG;
-
+		if (!pSavedGame->worldMapIcons.empty()) {
 			for (WorldMapsIcons::const_iterator iter = pSavedGame->worldMapIcons.begin();
 				iter != pSavedGame->worldMapIcons.end(); ++iter)
 			{
@@ -3071,8 +3077,8 @@ UINT CDbSavedGames::GetWorldMapID(const UINT savedGameID)
 }
 
 //******************************************************************************
-void CDbSavedGames::UpdatePlayerTallies(
-//Modify all ST_PlayerTotals saves when replacing a hold to use the new room IDs.
+void CDbSavedGames::UpdatePlayerTalliesAndMapStates(
+//Modify all ST_PlayerTotal and ST_TotalMapStates saves when replacing a hold to use the new room IDs.
 //
 //Params:
 	const CImportInfo& info)
@@ -3081,7 +3087,7 @@ void CDbSavedGames::UpdatePlayerTallies(
 	for (UINT dwSavedGamesI=0; dwSavedGamesI<dwSavedGamesCount; ++dwSavedGamesI)
 	{
 		c4_RowRef row = GetRowRef(V_SavedGames, dwSavedGamesI);
-		if (SAVETYPE(int(p_Type(row))) != ST_PlayerTotal)
+		if (SAVETYPE(int(p_Type(row))) != ST_PlayerTotal && SAVETYPE(int(p_Type(row))) != ST_TotalMapStates)
 			continue;
 
 		CDbSavedGame *pPlayerProgress = GetByID(UINT(p_SavedGameID(row)));
@@ -3097,10 +3103,10 @@ void CDbSavedGames::UpdatePlayerTallies(
 			for (vector<ExploredRoom*>::iterator iter = pPlayerProgress->ExploredRooms.begin();
 					iter != pPlayerProgress->ExploredRooms.end(); ++iter)
 			{
-				ExploredRoom *pExpRoom = *iter;
-				if (pExpRoom->roomID == room_iter->first)
+				ExploredRoom& exploredRoom = **iter;
+				if (exploredRoom.roomID == room_iter->first)
 				{
-					pExpRoom->roomID = room_iter->second;
+					exploredRoom.roomID = room_iter->second;
 					bChanged = true;
 					break;
 				}
@@ -3113,6 +3119,136 @@ void CDbSavedGames::UpdatePlayerTallies(
 	}
 }
 
+//******************************************************************************
+RoomMapStates CDbSavedGames::LoadMapStates(const UINT dwPlayerID, const CIDSet& rooms)
+//Retrieve all states from ST_TotalMapStates for the supplied rooms
+{
+	RoomMapStates mapStates;
+
+	const UINT dwID = FindByType(ST_TotalMapStates, dwPlayerID);
+	CDbSavedGame* pMapStateSave = GetByID(dwID);
+	if (!pMapStateSave)
+		return mapStates;
+
+	CIDSet exploredRooms = pMapStateSave->GetExploredRooms(true, true);
+	exploredRooms.intersect(rooms);
+	CIDSet::const_iterator room;
+	for (room = exploredRooms.begin(); room != exploredRooms.end(); ++room)
+	{
+		const UINT roomID = *room;
+		vector<ExploredRoom*>::const_iterator room;
+		for (room = pMapStateSave->ExploredRooms.begin(); room != pMapStateSave->ExploredRooms.end(); ++room)
+		{
+			const ExploredRoom& exploredRoom = **room;
+			if (exploredRoom.roomID == roomID)
+			{
+				mapStates[roomID] = exploredRoom.mapState;
+				break;
+			}
+		}
+	}
+	delete pMapStateSave;
+	return mapStates;
+}
+
+//******************************************************************************
+void CDbSavedGames::UpdateTotalMapStates(const UINT dwPlayerID, const RoomMapStates& RoomMapStates)
+//Update ST_TotalMapStates
+{
+	// No backwards search is to ensure this works when merging a player import, but it'll likely be an early db entry anyway
+	const UINT dwID = FindByType(ST_TotalMapStates, dwPlayerID, false);
+	CDbSavedGame* pMapStateSave = GetByID(dwID);
+	if (!pMapStateSave)
+	{
+		//Make new save record to store player's room map states.
+		pMapStateSave = GetNew();
+		pMapStateSave->dwPlayerID = dwPlayerID;
+		pMapStateSave->eType = ST_TotalMapStates;
+		pMapStateSave->bIsHidden = true;
+	}
+
+	//Merge RoomMapStates list with existing list.
+	bool bUpdate = false;
+	for (RoomMapStates::const_iterator it = RoomMapStates.begin(); it != RoomMapStates.end(); ++it)
+	{
+		const UINT roomID = it->first;
+		ASSERT(roomID);
+		vector<ExploredRoom*>::const_iterator room;
+		for (room = pMapStateSave->ExploredRooms.begin(); room != pMapStateSave->ExploredRooms.end(); ++room)
+		{
+			ExploredRoom& exploredRoom = **room;
+			if (exploredRoom.roomID == roomID)
+			{
+				if (IsMoreDetailedMapState(it->second, exploredRoom.mapState))
+				{
+					exploredRoom.mapState = it->second;
+					bUpdate = true;
+				}
+				break;
+			}
+		}
+
+		//Room not found -- add a record of it.
+		if (room == pMapStateSave->ExploredRooms.end())
+		{
+			ExploredRoom* pExpRoom = new ExploredRoom();
+			pExpRoom->roomID = roomID;
+			pExpRoom->mapState = it->second;
+			pMapStateSave->ExploredRooms.push_back(pExpRoom);
+			bUpdate = true;
+		}
+	}
+
+	if (bUpdate)
+		pMapStateSave->Update();
+
+	delete pMapStateSave;
+}
+
+//*******************************************************************************
+void CDbSavedGames::UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlayerID)
+//Update ST_TotalMapStates with explored rooms from every save
+{
+	RoomMapStates mapStates;
+	CDb db;
+	db.SavedGames.FilterByPlayer(dwPlayerID);
+	db.SavedGames.FindHiddens(true);
+	const CIDSet savedGameIDs = db.SavedGames.GetIDs();
+
+	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
+	{
+		CDbSavedGame* pSavedGame = db.SavedGames.GetByID(*iter);
+		ASSERT(pSavedGame);
+		if (pSavedGame->eType != ST_DemoUpload && //Not a real saved game record
+			pSavedGame->eType != ST_TotalMapStates) //We will merge with this later
+		{
+			for (vector<ExploredRoom*>::const_iterator room = pSavedGame->ExploredRooms.begin(); room != pSavedGame->ExploredRooms.end(); ++room)
+			{
+				ExploredRoom* pRoom = *room;
+				MapState currentMapState = MapState::Invisible;
+				RoomMapStates::const_iterator currentMapStateIter = mapStates.find(pRoom->roomID);
+				if (currentMapStateIter != mapStates.end()) {
+					currentMapState = currentMapStateIter->second;
+				}
+				if (IsMoreDetailedMapState(pRoom->mapState, currentMapState))
+					mapStates[pRoom->roomID] = pRoom->mapState;
+			}
+			if (pSavedGame->dwRoomID != 0)
+				mapStates[pSavedGame->dwRoomID] = MapState::Explored;
+		}
+		delete pSavedGame;
+	}
+	UpdateTotalMapStates(dwPlayerID, mapStates);
+}
+
+//*******************************************************************************
+bool CDbSavedGames::IsMoreDetailedMapState(const MapState first, const MapState second)
+//Returns if the first map state is more detailed than the second
+{
+	return first > second;
+}
+
+//*******************************************************************************
 //
 //CDbSavedGames private methods.
 //

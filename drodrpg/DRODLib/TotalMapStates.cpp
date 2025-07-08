@@ -27,11 +27,11 @@
  //Implementation of CTotalMapStates.
 
 #include "TotalMapStates.h"
+#include "Db.h"
 #include "DbSavedGames.h"
 #include <BackEndLib/Types.h>
 
 #include <map>
-
 //*****************************************************************************
 //
 //Public methods.
@@ -39,18 +39,30 @@
 
 //*****************************************************************************
 //Load the map states from the saved game
-void CTotalMapStates::Load(const UINT dwPlayerID, const UINT dwHoldID)
+void CTotalMapStates::Load(const UINT dwPlayerID, const UINT dwLevelID)
 {
-	//TODO
+	const CIDSet roomsInLevel = CDb::getRoomsInLevel(dwLevelID);
+	this->mapStates = g_pTheDB->SavedGames.LoadMapStates(dwPlayerID, roomsInLevel);
+	UINT numberOfExploredRooms = 0;
+	for (RoomMapStates::const_iterator it = this->mapStates.begin(); it != this->mapStates.end(); ++it)
+	{
+		if (it->second == MapState::Explored)
+			numberOfExploredRooms++;
+	}
+	// An optimization - if the level is already fully explored on load, we can shortcut the other methods
+	this->bLevelIsFullyExplored = numberOfExploredRooms == roomsInLevel.size();
 }
 
 //*****************************************************************************
 //Returns the stored room state for a room id
 MapState CTotalMapStates::GetStoredMapStateForRoom(const UINT roomID) const
 {
+	if (this->bLevelIsFullyExplored)
+		return MapState::Preview;
+
 	MapState foundMapState = MapState::Invisible;
 
-	std::map<UINT, MapState>::const_iterator it = this->mapStates.find(roomID);
+	RoomMapStates::const_iterator it = this->mapStates.find(roomID);
 	if (it != this->mapStates.end()) {
 		foundMapState = it->second;
 	}
@@ -69,6 +81,9 @@ void CTotalMapStates::Update(
 	const MapState state, // The MapState to update the room to (if better)
 	const bool bNoSaves) // If saving to the db should be prevented
 {
+	if (this->bLevelIsFullyExplored)
+		return;
+
 	if (UpdateRoom(roomID, state) && !bNoSaves)
 		Save();
 }
@@ -82,6 +97,9 @@ void CTotalMapStates::Update(
 	const MapState state, // The MapState to update the rooms to (if better)
 	const bool bNoSaves) // If saving to the db should be prevented
 {
+	if (this->bLevelIsFullyExplored)
+		return;
+
 	if (state == MapState::Invisible)
 		return;
 
@@ -110,7 +128,7 @@ bool CTotalMapStates::UpdateRoom(const UINT roomID, const MapState state)
 
 	MapState currentMapState = MapState::Invisible;
 
-	std::map<UINT, MapState>::const_iterator it = this->mapStates.find(roomID);
+	RoomMapStates::const_iterator it = this->mapStates.find(roomID);
 	if (it != this->mapStates.end()) {
 		currentMapState = it->second;
 	}
@@ -119,7 +137,7 @@ bool CTotalMapStates::UpdateRoom(const UINT roomID, const MapState state)
 		return true;
 	}
 
-	if (currentMapState < state) {
+	if (CDbSavedGames::IsMoreDetailedMapState(state, currentMapState)) {
 		this->mapStates[roomID] = state;
 		return true;
 	}
@@ -129,7 +147,9 @@ bool CTotalMapStates::UpdateRoom(const UINT roomID, const MapState state)
 
 //*****************************************************************************
 //Saves the map states into the ST_TotalMapStates saved game
-void CTotalMapStates::Save()
+void CTotalMapStates::Save() const
 {
-	// TODO
+	const UINT dwPlayerID = g_pTheDB->GetPlayerID();
+	ASSERT(dwPlayerID);
+	g_pTheDB->SavedGames.UpdateTotalMapStates(dwPlayerID, this->mapStates);
 }

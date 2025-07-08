@@ -933,7 +933,7 @@ bool CMapWidget::SelectRoomIfValid(
 		
 		//Has it been explored?
 		if (this->bEditing ||
-			storedMapState != MapState::Invisible ||
+			CDbSavedGames::IsMoreDetailedMapState(storedMapState, MapState::Invisible) ||
 			this->ExploredRooms.has(dwRoomID) ||
 			this->NoDetailRooms.has(dwRoomID)) //Yes.
 		{
@@ -1097,7 +1097,7 @@ bool CMapWidget::LoadMapSurface(
 			storedMapState = this->pCurrentGame->GetStoredMapStateForRoom(*iter);
 
 		const bool bIncludeRoom = this->bEditing ||
-			storedMapState != MapState::Invisible ||
+			CDbSavedGames::IsMoreDetailedMapState(storedMapState, MapState::Invisible) ||
 			this->NoDetailRooms.has(*iter) ||
 			this->pCurrentGame->IsRoomAtCoordsExplored(pRoom->dwRoomX, pRoom->dwRoomY);
 
