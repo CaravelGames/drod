@@ -965,8 +965,8 @@ sdl_error:
 	SDL_SetCursor(g_pTheSM->GetCursor(CUR_Wait));
 
 	//Show splash screen graphic.
-	const int X_TITLE = (CScreen::CX_SCREEN - 182) / 2; //center
-	const int Y_TITLE = 200;
+	const int X_TITLE = (CScreen::CX_SCREEN - 512) / 2; //center
+	const int Y_TITLE = 125;
 	static const WCHAR wszSplashscreenGraphic[] = { We('D'),We('o'),We('o'),We('r'),We(0) }; // Door
 	CImageWidget *pTitleImage = new CImageWidget(0, X_TITLE, Y_TITLE, wszSplashscreenGraphic);
 	pTitleImage->Paint();
