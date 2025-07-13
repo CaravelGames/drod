@@ -1269,36 +1269,19 @@ bool CDbXML::ExportSavedGames(
 	bool bSomethingExported = false;
 	CAttachableObject *pSaveCallbackObject = pCallbackObject;   //don't reset this
 
-	//Due to the limits of C++, trying to export a sufficently large number of
-	//demos or saves will cause a crash. We can avoid this by breaking the exports
-	//into smaller groups.
-	const int MAX_EXPORTS = 2000;
-
 	//Compile list of all (non-hidden) demo IDs in hold.
 	//The demo export will include saved game records attached to demos.
 	CIDSet demoIDs = CDb::getDemosInHold(dwHoldID);
-	vector<CIDSet> splitDemoIds = CIDSet::divide(demoIDs, MAX_EXPORTS);
 
-	for (vector<CIDSet>::const_iterator it = splitDemoIds.begin(); it != splitDemoIds.end(); ++it)
-	{
-		string demos;
-		bSomethingExported |= ExportXML(V_Demos, *it, demos);
-		info.exportedDemos.push_back(demos);
-		pCallbackObject = pSaveCallbackObject;
-	}
+	bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemos);
+	pCallbackObject = pSaveCallbackObject;
 
 	//Compile list of all saved game IDs in hold.
 	//The saved game export will exclude saved game records attached to demos.
 	CIDSet savedGameIDs = CDb::getSavedGamesInHold(dwHoldID);
-	vector<CIDSet> splitSaveIds = CIDSet::divide(savedGameIDs, MAX_EXPORTS);
 
-	for (vector<CIDSet>::const_iterator it = splitSaveIds.begin(); it != splitSaveIds.end(); ++it)
-	{
-		string saves;
-		bSomethingExported |= ExportXML(V_SavedGames, *it, saves);
-		info.exportedSavedGames.push_back(saves);
-		pCallbackObject = pSaveCallbackObject;
-	}
+	bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGames);
+	pCallbackObject = pSaveCallbackObject;
 
 	return bSomethingExported;
 }
@@ -1317,22 +1300,17 @@ void CDbXML::ImportSavedGames()
 	const CImportInfo::ImportType importType = info.typeBeingImported;
 	const MESSAGE_ID importState = info.ImportStatus;
 	info.typeBeingImported = CImportInfo::Demo;
-
-	for (vector<string>::const_iterator it = info.exportedDemos.begin();
-		it != info.exportedDemos.end(); ++it)
-	{
-		VERIFY(ImportXML(*it) == MID_ImportSuccessful);
+	if (info.exportedDemos.size()) {
+		VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
+		info.exportedDemos.resize(0);
 	}
-	info.exportedDemos.clear();
 
 	info.ImportStatus = importState; //ignore import state changes in saved game restoration
 	info.typeBeingImported = CImportInfo::SavedGame;
-	for (vector<string>::const_iterator it = info.exportedSavedGames.begin();
-		it != info.exportedSavedGames.end(); ++it)
-	{
-		VERIFY(ImportXML(*it) == MID_ImportSuccessful);
+	if (info.exportedSavedGames.size()) {
+		VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
+		info.exportedSavedGames.resize(0);
 	}
-	info.exportedSavedGames.clear();
 
 	info.typeBeingImported = importType;
 	info.ImportStatus = importState;
