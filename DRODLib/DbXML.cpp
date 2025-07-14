@@ -307,6 +307,7 @@ bool streamingOutParams::flush(const ULONG maxSizeThreshold) //[default=0]
 
 		const ULONG bytesWritten = gzwrite(*this->pGzf, (const BYTE*)pOutBuffer->c_str(), (unsigned int)srcLen);
 		pOutBuffer->erase(0, bytesWritten);
+		hasFlushed = true;
 		return bytesWritten == srcLen;
 	}
 	return true; //no-op
@@ -2368,12 +2369,7 @@ bool CDbXML::ExportXML(
 		string text; //only in scope until compressed
 
 		// Compress the data in gzip format (previously, zlib format w/ stretchy buffer encoding).
-#ifdef WIN32
-		gzFile gzf = gzopen_w(wszFilename, "wb");
-#else
-		const string filename = UnicodeToUTF8(wszFilename);
-		gzFile gzf = gzopen(filename.c_str(), "wb");
-#endif
+		gzFile gzf = openGZipFile(wszFilename);
 
 		CDbXML::streamingOut.set(&text, &gzf);
 		if (!ExportXML(vType, primaryKeys, text))
@@ -2449,7 +2445,7 @@ bool CDbXML::ExportXML(
 	}
 
 	pCallbackObject = NULL; //release hook
-	bSomethingExported = (text.size() > headerSize);
+	bSomethingExported = (text.size() > headerSize) || CDbXML::streamingOut.hasFlushed;
 
 	text += getXMLfooter();
 
@@ -2555,4 +2551,15 @@ bool CDbXML::ExportXMLRecords(
 		}
 	}
 	return true;
+}
+
+//*****************************************************************************
+gzFile CDbXML::openGZipFile(const WCHAR* wszFilename)
+{
+#ifdef WIN32
+	return gzopen_w(wszFilename, "wb");
+#else
+	const string filename = UnicodeToUTF8(wszFilename);
+	return gzopen(filename.c_str(), "wb");
+#endif
 }
