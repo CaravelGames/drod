@@ -9324,7 +9324,7 @@ void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
 {
 #ifdef STEAMBUILD
 	if (GetScreenType() == SCR_Game && !this->bPlayTesting &&
-			(this->pCurrentGame->pHold && this->pCurrentGame->pHold->status == CDbHold::Main) &&
+			this->pCurrentGame->pHold && CDbHold::IsOfficialHold(this->pCurrentGame->pHold->status) &&
 			SteamUserStats())
 	{
 		const WSTRING holdName = static_cast<const WCHAR *>(this->pCurrentGame->pHold->NameText);
