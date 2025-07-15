@@ -3402,7 +3402,7 @@ MESSAGE_ID CDbHold::SetProperty(
 		case P_Status:
 			this->status = static_cast<HoldStatus>(convertToInt(str));
 #if defined(STEAMBUILD) && !defined(DEV_BUILD)
-			if ((this->status == CDbHold::Main || this->status == CDbHold::Official) &&
+			if (CDbHold::IsOfficialHold(this->status) &&
 					info.typeBeingImported == CImportInfo::Hold)
 				return MID_SteamErrorAttemptingToImportOfficialHold;
 #endif
