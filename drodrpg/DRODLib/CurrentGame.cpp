@@ -8505,7 +8505,7 @@ UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
 			pHighScore->Update();
 
 			localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
-		} else if (pPlayer->Settings.GetVar(Settings::ShowPercentOptimal, true)) {
+		} else if (pPlayer->Settings.GetVar(Settings::ShowPercentOptimal, true) && score >= 0 && pHighScore->score > 0) {
 			double ratio = (double)score / (double)pHighScore->score;
 			int percent = int(ratio * 100);
 			localScoreMessage = WCSReplace(
