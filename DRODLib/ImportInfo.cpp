@@ -28,6 +28,7 @@
 #include "ImportInfo.h"
 #include "EntranceData.h"
 #include "../Texts/MIDs.h"
+#include <BackEndLib/Files.h>
 
 //*****************************************************************************
 CImportInfo::CImportInfo()
@@ -93,6 +94,8 @@ void CImportInfo::Clear(
 		this->exportedDemos.resize(0);
 		this->exportedSavedGames.resize(0);
 
+		ClearTempFiles();
+
 		this->importWorldMapID = 0;
 	}
 
@@ -112,4 +115,20 @@ void CImportInfo::Clear(
 	pEntrance = NULL;
 	delete pImportEntrance;
 	pImportEntrance = NULL;
+}
+
+//*****************************************************************************
+void CImportInfo::ClearTempFiles()
+{
+	if (!this->exportedDemosFile.empty() &&
+		CFiles::DoesFileExist(this->exportedDemosFile.c_str())) {
+		CFiles::EraseFile(this->exportedDemosFile.c_str());
+	}
+	this->exportedDemosFile.resize(0);
+
+	if (!this->exportedSavedGamesFile.empty() &&
+		CFiles::DoesFileExist(this->exportedSavedGamesFile.c_str())) {
+		CFiles::EraseFile(this->exportedSavedGamesFile.c_str());
+	}
+	this->exportedSavedGamesFile.resize(0);
 }
