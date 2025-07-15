@@ -1881,6 +1881,8 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
 	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "400");
 	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
+	AddIfMissing(INISection::Customizing, INIKey::ExportDemoThreshold, "500");
+	AddIfMissing(INISection::Customizing, INIKey::ExportSavedGamesThreshold, "1000");
 	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScreenMinimize, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScreenMode, "0");

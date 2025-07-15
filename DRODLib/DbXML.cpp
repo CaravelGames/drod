@@ -70,6 +70,9 @@ bool bImportComplete = false;
 const char szDRODVersion[] = "Version";
 static const char szDRODHeaderInfo[] = "Info";
 
+const WCHAR szTempDemoFilename[] = L"~exportedDemos.tmp";
+const WCHAR szTempSavedGamesFilename[] = L"~exportedSavedGames.tmp";
+
 struct roomSet {
 	CIDSet conquered, explored;
 };
@@ -295,6 +298,17 @@ void InitTokens()
 	if (propMap.empty())
 		for (int pType=P_First; pType<P_Count; ++pType)
 			propMap[string(propTypeStr[pType])] = pType;
+}
+
+//*****************************************************************************
+UINT getExportThreshold(const char* pszKey, UINT fallback)
+{
+	string str;
+	if (CFiles::GetGameProfileString(INISection::Customizing, pszKey, str)) {
+		return std::stoi(str);
+	}
+
+	return fallback;
 }
 
 //If buffer has more data than indicated amount, flush it to the file.
@@ -1274,14 +1288,24 @@ bool CDbXML::ExportSavedGames(
 	//The demo export will include saved game records attached to demos.
 	CIDSet demoIDs = CDb::getDemosInHold(dwHoldID);
 
-	bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemos);
+	if (demoIDs.size() <= getExportThreshold(INIKey::ExportDemoThreshold, 500)) {
+		bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemos);
+	} else {
+		info.exportedDemosFile = prepareTemporaryFile(szTempDemoFilename);
+		bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemosFile.c_str());
+	}
 	pCallbackObject = pSaveCallbackObject;
 
 	//Compile list of all saved game IDs in hold.
 	//The saved game export will exclude saved game records attached to demos.
 	CIDSet savedGameIDs = CDb::getSavedGamesInHold(dwHoldID);
 
-	bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGames);
+	if (savedGameIDs.size() <= getExportThreshold(INIKey::ExportSavedGamesThreshold, 1000)) {
+		bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGames);
+	} else {
+		info.exportedSavedGamesFile = prepareTemporaryFile(szTempSavedGamesFilename);
+		bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGamesFile.c_str());
+	}
 	pCallbackObject = pSaveCallbackObject;
 
 	return bSomethingExported;
@@ -1304,6 +1328,10 @@ void CDbXML::ImportSavedGames()
 	if (info.exportedDemos.size()) {
 		VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
 		info.exportedDemos.resize(0);
+	} else if (!info.exportedDemosFile.empty() &&
+		CFiles::DoesFileExist(info.exportedDemosFile.c_str())) {
+		importBuf.clear();
+		VERIFY(ImportXML(info.exportedDemosFile.c_str(), CImportInfo::Demo) == MID_ImportSuccessful);
 	}
 
 	info.ImportStatus = importState; //ignore import state changes in saved game restoration
@@ -1311,6 +1339,10 @@ void CDbXML::ImportSavedGames()
 	if (info.exportedSavedGames.size()) {
 		VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
 		info.exportedSavedGames.resize(0);
+	} else if (!info.exportedSavedGamesFile.empty() &&
+		CFiles::DoesFileExist(info.exportedSavedGamesFile.c_str())) {
+		importBuf.clear();
+		VERIFY(ImportXML(info.exportedSavedGamesFile.c_str(), CImportInfo::SavedGame) == MID_ImportSuccessful);
 	}
 
 	info.typeBeingImported = importType;
@@ -1583,6 +1615,7 @@ void CDbXML::CleanUp()
 	importBuf.clear();
 
 	info.Clear(true);
+	info.ClearTempFiles();
 	pCallbackObject = NULL; //release hook
 }
 
@@ -2551,6 +2584,22 @@ bool CDbXML::ExportXMLRecords(
 		}
 	}
 	return true;
+}
+
+//*****************************************************************************
+WSTRING CDbXML::prepareTemporaryFile(const WCHAR* wszFilename)
+//Returns: Path for a temporary export file
+//Will erase any existing file of that name
+{
+	WSTRING filePath = CFiles::GetDatPath();
+	filePath += wszSlash;
+	filePath += wszFilename;
+
+	if (CFiles::DoesFileExist(filePath.c_str())) {
+		CFiles::EraseFile(filePath.c_str());
+	}
+
+	return filePath;
 }
 
 //*****************************************************************************

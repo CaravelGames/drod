@@ -19,6 +19,8 @@ namespace INIKey
 	DEF(AlwaysFullBlit);
 	DEF(AutoLogin);
 	DEF(CrossfadeDuration);
+	DEF(ExportDemoThreshold);
+	DEF(ExportSavedGamesThreshold);
 	DEF(ExportSpeech);
 	DEF(ExportText);
 	DEF(FullScoreUpload);
