@@ -7879,7 +7879,7 @@ void CCharacter::PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEven
 
 	if (bEnteredTunnel) {
 		UINT destX, destY;
-		CueEvents.Add(CID_Tunnel);
+		CueEvents.Add(CID_MonsterTunnel);
 		if (this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
 			Move(destX, destY, &CueEvents);
 
@@ -7934,7 +7934,7 @@ void CCharacter::MoveCharacter(
 		if (!this->pCurrentGame->TunnelGetExit(this->wX, this->wY, dx, dy, destX, destY, this)) {
 			return;
 		}
-		CueEvents.Add(CID_Tunnel);
+		CueEvents.Add(CID_MonsterTunnel);
 	}	else {
 		destX = this->wX + dx;
 		destY = this->wY + dy;

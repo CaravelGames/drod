@@ -3902,7 +3902,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
-	if (CueEvents.HasOccurred(CID_Tunnel))
+	if (CueEvents.HasOccurred(CID_Tunnel) || CueEvents.HasOccurred(CID_MonsterTunnel))
 		PlaySoundEffect(SEID_TUNNEL);
 	if (CueEvents.HasOccurred(CID_Horn_Squad))
 		PlaySoundEffect(SEID_HORN_SQUAD);

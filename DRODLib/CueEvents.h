@@ -858,6 +858,11 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_AddedRoomToMap,
 
+	//Monster walked through a tunnel.
+	//
+	//Private data: NONE
+	CID_MonsterTunnel,
+
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider
 	//Make sure this is always the last CueEvent defined
