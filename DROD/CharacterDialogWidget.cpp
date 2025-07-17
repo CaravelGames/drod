@@ -5182,6 +5182,7 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_TokenToggled, g_pTheDB->GetMessageText(MID_TokenToggled));
 	this->pEventListBox->AddItem(CID_TrapDoorRemoved, g_pTheDB->GetMessageText(MID_TrapDoorRemoved));
 	this->pEventListBox->AddItem(CID_Tunnel, g_pTheDB->GetMessageText(MID_Tunnel));
+	this->pEventListBox->AddItem(CID_MonsterTunnel, g_pTheDB->GetMessageText(MID_MonsterTunnel));
 	this->pEventListBox->AddItem(CID_WispOnPlayer, g_pTheDB->GetMessageText(MID_WispOnPlayer));
 	this->pEventListBox->AddItem(CID_WubbaStabbed, g_pTheDB->GetMessageText(MID_WubbaStabbed));
 	
