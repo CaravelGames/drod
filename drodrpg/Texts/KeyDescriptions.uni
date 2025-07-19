@@ -825,182 +825,182 @@ F15
 [eng]
 Num Lock
 [fra]
-Num Lock!!translate
+Verr. Num
 [rus]
-"Num Lock"
+Num Lock
 
 [MID_KEY_CAPSLOCK]
 [eng]
 Caps Lock
 [fra]
-Caps Lock!!translate
+Verr. Maj
 [rus]
-"Caps Lock"
+Caps Lock
 
 [MID_KEY_SCROLLOCK]
 [eng]
 Scroll Lock
 [fra]
-Scroll Lock!!translate
+Arrêt Défil
 [rus]
-"Scroll Lock"
+Scroll Lock
 
 [MID_KEY_RSHIFT]
 [eng]
 Right Shift
 [fra]
-Right Shift!!translate
+Maj Droit
 [rus]
-"Right Shift"
+Правый Shift
 
 [MID_KEY_LSHIFT]
 [eng]
 Left Shift
 [fra]
-Left Shift!!translate
+Maj Gauche
 [rus]
-"Left Shift"
+Левый Shift
 
 [MID_KEY_RCTRL]
 [eng]
 Right Ctrl
 [fra]
-Right Ctrl!!translate
+Ctrl Droit
 [rus]
-"Right Ctrl"
+Правый Ctrl
 
 [MID_KEY_LCTRL]
 [eng]
 Left Ctrl
 [fra]
-Left Ctrl!!translate
+Ctrl Gauche
 [rus]
-"Left Ctrl"
+Левый Ctrl
 
 [MID_KEY_RALT]
 [eng]
 Right Alt
 [fra]
-Right Alt!!translate
+Alt Droit
 [rus]
-"Right Alt"
+Правый Alt
 
 [MID_KEY_LALT]
 [eng]
 Left Alt
 [fra]
-Left Alt!!translate
+Alt Gauche
 [rus]
-"Left Alt"
+Левый Alt
 
 [MID_KEY_RMETA]
 [eng]
 Right Meta
 [fra]
-Right Meta!!translate
+Méta Droit
 [rus]
-"Right Meta"
+Правая Meta
 
 [MID_KEY_LMETA]
 [eng]
 Left Meta
 [fra]
-Left Meta!!translate
+Méta Gauche
 [rus]
-"Left Meta"
+Левая Meta
 
 [MID_KEY_LSUPER]
 [eng]
 Left Windows key
 [fra]
-Left Windows key!!translate
+Touche Windows Gauche
 [rus]
-"Left Windows key"
+Левая клавиша Windows
 
 [MID_KEY_RSUPER]
 [eng]
 Right Windows key
 [fra]
-Right Windows key!!translate
+Touche Windows Droite
 [rus]
-"Right Windows key"
+Правая клавиша Windows
 
 [MID_KEY_MODE]
 [eng]
 Alt Gr key
 [fra]
-Alt Gr key!!translate
+Touche Alt Gr
 [rus]
-"Alt Gr key"
+Alt Gr
 
 [MID_KEY_COMPOSE]
 [eng]
 Multi-key compose key
 [fra]
-Multi-key compose key!!translate
+Touche compose
 [rus]
-"Multi-key compose key"
+Составная мультиклавиша
 
 [MID_KEY_HELP]
 [eng]
 Help
 [fra]
-Help!!translate
+Aide
 [rus]
-"Помощь"
+Помощь
 
 [MID_KEY_PRINT]
 [eng]
 Print
 [fra]
-Print!!translate
+Imprimer
 [rus]
-"Печатать"
+Печатать
 
 [MID_KEY_SYSREQ]
 [eng]
 SysReq
 [fra]
-SysReq!!translate
+SysReq
 [rus]
-"SysReq"
+SysReq
 
 [MID_KEY_BREAK]
 [eng]
 Break
 [fra]
-Break!!translate
+Pause
 [rus]
-"Break"
+Пауза
 
 [MID_KEY_MENU]
 [eng]
 Menu
 [fra]
-Menu!!translate
+Menu
 [rus]
-"Менью"
+Менью
 
 [MID_KEY_POWER]
 [eng]
 Power
 [fra]
-Power!!translate
+Power
 [rus]
-"Power"
+Питание
 
 [MID_KEY_EURO]
 [eng]
 Euro
 [fra]
-Euro!!translate
+Euro
 [rus]
-"Euro"
+Евро
 
 [MID_KEY_UNDO]
 [eng]
 Undo
 [fra]
-Undo!!translate
+Annuler
 [rus]
-"Undo"
+Отменить

@@ -2,7 +2,7 @@
 [eng]
 Current directory
 [fra]
-Current directory!!translate
+Adresse
 [rus]
 Подкаталог
 
@@ -10,7 +10,7 @@ Current directory!!translate
 [eng]
 File name
 [fra]
-File name!!translate
+Nom du fichier
 [rus]
 Название файла
 
@@ -18,7 +18,7 @@ File name!!translate
 [eng]
 File type
 [fra]
-File type!!translate
+Type du fichier
 [rus]
 Тип файла
 
@@ -26,7 +26,7 @@ File type!!translate
 [eng]
 Do you really want to overwrite this file?
 [fra]
-Do you really want to overwrite this file?!!translate
+Voulez-vous écraser ce fichier ?
 [rus]
 Вы точно хотите переписать над этим файлом?
 
