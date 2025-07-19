@@ -206,9 +206,9 @@ Musique
 [eng]
 Play Voices
 [fra]
-!!translate
+Activer Voix
 [rus]
-!!translate
+Громкость голоса
 
 [MID_Quiet]
 [eng]
@@ -234,7 +234,7 @@ Show subtitles when voices play
 [eng]
 Alpha blending
 [fra]
-Alpha blending!!translate
+Alpha blending
 [rus]
 Алфа
 
@@ -322,41 +322,41 @@ CaravelNet Key
 [eng]
 Requesting CaravelNet Key
 [fra]
-!!translate
+Demande de clef CaravelNet
 [rus]
-!!translate
+Запрашивается ключ CaravelNet
 
 [MID_KeySent]
 [eng]
 A new CaravelNet Key has been sent to your registered e-mail address.
 [fra]
-!!translate
+Une nouvelle clef CaravelNet a été envoyée à l'adresse e-mail que vous avez indiquée.
 [rus]
-!!translate
+Новый ключ CaravelNet был отправлен на ваш зарегистрированный электронный ящик
 
 [MID_NotRegistered]
 [eng]
 You are not a registered user of CaravelNet.
 [fra]
-!!translate
+Vous n'êtes pas un utilisateur enregistré de CaravelNet.
 [rus]
-!!translate
+Вы - незарегистрированный пользователь CaravelNet
 
 [MID_RegistrationExpired]
 [eng]
 Your CaravelNet registration has expired.
 [fra]
-!!translate
+Votre inscription CaravelNet a expiré.
 [rus]
-!!translate
+Ваш регистрационный период CaravelNet истек
 
 [MID_CaravelNetUnreachable]
 [eng]
 Could not contact CaravelNet.
 [fra]
-!!translate
+Impossible de contacter CaravelNet.
 [rus]
-!!translate
+Невозможно соединиться с CaravelNet
 
 [MID_GetKeyCommand]
 [eng]
@@ -386,25 +386,25 @@ Cette touche ne peut pas être employée. "Echap" et "F1 à F12" sont des touche
 [eng]
 Please enter a player name.
 [fra]
-!!translate
+Veuillez entrer un nom de joueur.
 [rus]
-!!translate
+Введите, пожалуйста, имя игрока.
 
 [MID_RequestNewKey]
 [eng]
 Request New Key
 [fra]
-!!translate
+Demander une Nouvelle Clef
 [rus]
-!!translate
+Запрос новой клавиши
 
 [MID_UploadScores]
 [eng]
 Report my Progress
 [fra]
-!!translate
+Signaler mes progrès
 [rus]
-!!translate
+Сообщить о моем прогрессе
 
 [MID_ConnectToInternet]
 [eng]

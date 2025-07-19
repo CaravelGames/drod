@@ -2,9 +2,9 @@
 [eng]
 Hold Management
 [fra]
-!!translate
+Gestion des Antres
 [rus]
-!!translate
+Управление Катакомбами
 
 [MID_SelectPlayerPrompt]
 [eng]
@@ -20,9 +20,13 @@ Welcome to DROD RPG!
 
 Enter your name below or click "Import" if you have a player profile on disk from which you would like to import existing information.
 [fra]
-!!translate
+Bienvenue dans DROD !
+
+Entrez votre nom ci-dessous ou cliquez "Importer" si vous avez un profil joueur dont vous voulez importer les données.
 [rus]
-!!translate
+Добро пожаловать в ДРОД!
+
+Введите внизу свое имя или щелкните на кнопке "Импорт", если хотите загрузить информацию из профиля игрока, сохраненного на диске.
 
 [MID_DeletePlayerPrompt]
 [eng]
@@ -60,7 +64,7 @@ Supprimer Joueur
 [eng]
 Delete Hold
 [fra]
-!!translate
+Effacer Antre
 [rus]
 &Удалить Крепость
 
@@ -68,7 +72,7 @@ Delete Hold
 [eng]
 Download
 [fra]
-!!translate
+Télécharger
 [rus]
 Скачать
 

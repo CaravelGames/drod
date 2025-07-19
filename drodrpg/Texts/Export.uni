@@ -2,7 +2,7 @@
 [eng]
 Please give the filename to save your player and progress to.
 [fra]
-Please give the filename to save your player and progress to.!!translate
+Veuillez indiquer l'emplacement où sauvegarder ce joueur
 [rus]
 Наберите название файла, куда сохранить этого героя.
 
@@ -10,7 +10,7 @@ Please give the filename to save your player and progress to.!!translate
 [eng]
 Player successfully saved.
 [fra]
-Player successfully saved.!!translate
+Le joueur a bien été sauvegardé.
 [rus]
 Герой удачно сохранен.
 
@@ -18,7 +18,7 @@ Player successfully saved.!!translate
 [eng]
 DROD failed to save this player's data.  Possibly there is not enough space on the drive where it is being saved.
 [fra]
-!!translate
+DROD n'a pas pu sauvegarder ce joueur. Vous n'avez peut-être pas de droit d'écriture ou bien il n'y a pas assez d'espace sur le disque que vous avez choisi.
 [rus]
 ДРОД не смог сохранить героя.  Наверно, места не хватает на диске.
 
@@ -26,7 +26,7 @@ DROD failed to save this player's data.  Possibly there is not enough space on t
 [eng]
 Please give the path to save this hold data to.
 [fra]
-Please give the path to save this hold data to.!!translate
+Veuillez indiquer l'emplacement où sauvegarder les données de cet antre
 [rus]
 Наберите название файла, куда сохранить эту крепость.
 
@@ -34,7 +34,7 @@ Please give the path to save this hold data to.!!translate
 [eng]
 Hold successfully saved.
 [fra]
-Hold successfully saved.!!translate
+L'antre a bien été sauvegardé.
 [rus]
 Крепость удачно сохранена.
 
@@ -46,7 +46,7 @@ DROD failed to save this hold.  Possibly there is not enough space on the drive 
 [eng]
 Exporting data...
 [fra]
-Exporting data...!!translate
+Exportation des données…
 [rus]
 Сохраняя данные...
 
@@ -54,7 +54,7 @@ Exporting data...!!translate
 [eng]
 hold originally authored by
 [fra]
-!!translate
+Antre initialement créé par
 [rus]
 крепость впервые сделано (кем)
 
@@ -62,25 +62,25 @@ hold originally authored by
 [eng]
 Do you want to export hold speech texts?
 [fra]
-!!translate
+Voulez-vous exporter les doublages de l'antre ?
 [rus]
-!!translate
+Вы хотите экспортировать тексты диалогов катакомбы?
 
 [MID_HoldScriptsSaved]
 [eng]
 Hold speech script saved.
 [fra]
-!!translate
+Script des doublages d el'antre sauvegardé.
 [rus]
-!!translate
+Сценарий диалогов катакомбы сохранен
 
 [MID_ExportSavedProgress]
 [eng]
 Export &Saves Only
 [fra]
-!!translate
+N'exporter que les &Sauvegardes
 [rus]
-!!translate
+Экспорт &сохраненных игр
 
 [MID_Saves]
 [eng]
@@ -94,9 +94,9 @@ saves
 [eng]
 Progress saved.
 [fra]
-!!translate
+Les sauvegardes ont bien été exportées.
 [rus]
-!!translate
+Результаты сохраненной игры успешно записаны.
 
 [MID_Manage]
 [eng]

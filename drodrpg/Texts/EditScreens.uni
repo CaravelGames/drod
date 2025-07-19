@@ -59,7 +59,8 @@ Le style de Pièce
 This hold and all its levels will be permanently deleted!
 All players' saved games and demos for this hold will also be deleted.  Are you sure you want to remove it?
 [fra]
-Cette oubliette et tous ses niveaux seront supprimés définitivements!  (...!!translate) Êtes-vous sûrs de vouloir les effacer?
+Cet antre et tous ses niveaux seront définitivement supprimés !
+Les sauvegardes de tous les joueurs pour cet antre seront aussi effacées. Êtes-vous sûr de vouloir le supprimer ?
 [rus]
 Крепость со всеми уровнями навсегда стерутся!  Все сохраненные игры и демонстрации в этой крепости тоже стерутся.  Точно продолжать?
 
@@ -261,7 +262,7 @@ Voulez-vous que ce soit la pièce d'entrée de niveau?
 [eng]
 (End hold)
 [fra]
-(End hold)!!translate
+(Fin de l'antre)
 [rus]
 (Конец крепосты)
 
@@ -269,7 +270,7 @@ Voulez-vous que ce soit la pièce d'entrée de niveau?
 [eng]
 Show levels from all holds.
 [fra]
-Show levels from all holds.!!translate
+Afficher les niveaux de tous les antres.
 [rus]
 Показывать уровни из всех крепостей.
 
@@ -277,7 +278,7 @@ Show levels from all holds.!!translate
 [eng]
 Please select a new level entrance destination for the stairs that went to this level.
 [fra]
-Please select a new level entrance destination for the stairs that went to this level.!!translate
+Veuillez choisir une nouvelle destination d'entrée de niveau pour les escaliers qui menaient à ce niveau.
 [rus]
 Укажите куда все лесницы, предже ведущие в этот уровень, теперь пойдут.
 
@@ -348,7 +349,7 @@ Fermé
 [eng]
 Required Room
 [fra]
-Required Room!!translate
+Pièce Obligatoire
 [rus]
 Победа требуется в комнате
 
@@ -356,7 +357,7 @@ Required Room!!translate
 [eng]
 Hidden Room
 [fra]
-Hidden Room!!translate
+Pièce Secrète
 [rus]
 Тайная комната
 
@@ -364,7 +365,7 @@ Hidden Room!!translate
 [eng]
 Would you like to create a new hold that will contain levels you can edit?
 [fra]
-Would you like to create a new hold that will contain levels you can edit?!!translate
+Voulez-vous créer un nouvel antre qui contiendra des niveaux que vous pourrez éditer ?
 [rus]
 Хотите ли Вы создать новую крепость, содержашуюся комнаты, которые Вы можете строить?
 
@@ -372,23 +373,23 @@ Would you like to create a new hold that will contain levels you can edit?!!tran
 [eng]
 Undo
 [fra]
-Undo!!translate
+Annuler
 [rus]
-!!translate
+Annuler
 
 [MID_Redo]
 [eng]
 Redo
 [fra]
-Redo!!translate
+Rétablir
 [rus]
-!!translate
+Повт.
 
 [MID_WhoCanEdit]
 [eng]
 Who can edit?
 [fra]
-!!translate
+Qui a le droit d'éditer ?
 [rus]
 Кто может менять?
 
@@ -396,7 +397,7 @@ Who can edit?
 [eng]
 Only You
 [fra]
-!!translate
+Vous seulement
 [rus]
 Только Вы
 
@@ -404,7 +405,7 @@ Only You
 [eng]
 You and Masters
 [fra]
-!!translate
+Vous et les Maîtres
 [rus]
 Вы с экспертами
 
@@ -412,7 +413,7 @@ You and Masters
 [eng]
 You and Conquerors
 [fra]
-!!translate
+Vous et les Conquérants
 [rus]
 Вы с победительями
 
@@ -420,7 +421,7 @@ You and Conquerors
 [eng]
 Anyone
 [fra]
-!!translate
+Tout le Monde
 [rus]
 Любой
 
@@ -428,7 +429,7 @@ Anyone
 [eng]
 You have modified a room in a hold authored by another player.  Do you want to make a modified copy of the hold for yourself?  (No discards changes)
 [fra]
-!!translate
+Vous avez modifié une pièce dans un antre créé par un autre joueur. Voulez-vous faire une copie de cet antre pour vous-même ? ('Non' annule les changements)
 [rus]
 Вы измените чужую комнату.  Хотите ли Вы скопировать крепость и сделать новую своей?  ("Нет" оставит комнату в старом виде.)
 
@@ -436,7 +437,7 @@ You have modified a room in a hold authored by another player.  Do you want to m
 [eng]
 Do you want to make a copy of this hold that you can edit?
 [fra]
-!!translate
+Voulez-vous créer une copie de cet antre que vous pourrez éditer ?
 [rus]
 Хотите ли Вы скопировать крепость, чтобы изменять ее?
 
@@ -444,7 +445,7 @@ Do you want to make a copy of this hold that you can edit?
 [eng]
 Ending
 [fra]
-!!translate
+Final
 [rus]
 Прошание
 
@@ -452,7 +453,7 @@ Ending
 [eng]
 Please enter what the player will see upon completing your hold.
 [fra]
-!!translate
+Veuillez indiquer ce que le joueur verra après avoir terminé votre oubliette.
 [rus]
 Напишите что иргок увидит при окончании вашей крепости.
 

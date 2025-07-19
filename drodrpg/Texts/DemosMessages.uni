@@ -101,7 +101,7 @@ Please give the path to save this demo to
 [eng]
 This demo is corrupted or from another version of DROD with different gameplay behavior.
 [fra]
-!!translate
+Cette démo est corrompue ou provient d'une autre version de DROD comportant des éléments de jeu différents.
 [rus]
 Демонстрация либо сломанная либо от другой версии ДРОДа с другими правилами.
 
@@ -109,33 +109,33 @@ This demo is corrupted or from another version of DROD with different gameplay b
 [eng]
 Beethro gets himself killed pretty quickly.
 [fra]
-!!translate
+Le joueur se fait rapidement tuer.
 [rus]
-!!translate
+Игрок погибает довольно быстро.
 
 [MID_DemoDescKilled2]
 [eng]
 Beethro dies, and the monsters live.
 [fra]
-!!translate
+Le joueur meurt, les monstres vivent.
 [rus]
-!!translate
+Игрок погибает, чудовища остаются в живых.
 
 [MID_DemoDescKilled3]
 [eng]
 Beethro dies horribly, but kills a monster first.
 [fra]
-!!translate
+Le joueur meurt horriblement, mais pas sans avoir tué un monstre auparavant.
 [rus]
-!!translate
+Игрок погибает ужасной смертью, сперва убив чудовище.
 
 [MID_DemoDescKilled4]
 [eng]
 Beethro goes screaming to his death and takes some monsters with him.
 [fra]
-!!translate
+Le joueur meurt en hurlant mais emporte quelques monstres avec lui.
 [rus]
-!!translate
+Игрок истошно вопит и, умирая, захватывает с собой несколько чудовищ.
 
 [MID_DemoDescHalphKilled]
 [eng]
@@ -145,110 +145,110 @@ Halph gets killed.
 [eng]
 Beethro conquers the room after slaying just one monster
 [fra]
-!!translate
+Le joueur conquiert cette pièce après n'avoir tué qu'un seul monstre
 [rus]
-!!translate
+Игрок проходит комнату, уничтожив всего одно чудовище,
 
 [MID_DemoDescConquers2]
 [eng]
 and it takes little time.
 [fra]
-!!translate
+et ça ne traîne pas.
 [rus]
-!!translate
+и на это уходит некоторое время.
 
 [MID_DemoDescConquers3]
 [eng]
 but it takes forever.
 [fra]
-!!translate
+mais ça dure une éternité.
 [rus]
-!!translate
+но на это уходит вечность.
 
 [MID_DemoDescConquers4]
 [eng]
 Beethro kills off a handful of monsters and conquers the room.
 [fra]
-!!translate
+Le joueur tue une poignée de monstres et conquiert la pièce.
 [rus]
-!!translate
+Игрок убивает тучу чудовищ и проходит комнату.
 
 [MID_DemoDescConquers5]
 [eng]
 After destroying a group of monsters, Beethro conquers the room.
 [fra]
-!!translate
+Après avoir détruit un groupe de monstres, le joueur conquiert la pièce.
 [rus]
-!!translate
+Уничтожив группу чудовищ, игрок проходит комнату.
 
 [MID_DemoDescConquers6]
 [eng]
 Beethro lays waste to a sprawling horde of vermin and conquers the room!
 [fra]
-!!translate
+Le joueur massacre une immense horde de vermines et conquiert la pièce !
 [rus]
-!!translate
+Игрок в щепки разносит орду кровожадных хищников и проходит комнату!
 
 [MID_DemoDescLeaves1]
 [eng]
 Then he leaves.
 [fra]
-!!translate
+Puis il s'en va.
 [rus]
-!!translate
+После этого он уходит.
 
 [MID_DemoDescLeaves2]
 [eng]
 Beethro is just passing through.
 [fra]
-!!translate
+Le joueur ne fait que passer.
 [rus]
-!!translate
+Игрок просто проходит
 
 [MID_DemoDescLeaves3]
 [eng]
 Beethro exits the room with work left undone.
 [fra]
-!!translate
+Le joueur quitte la pièce alors qu'il reste du pain sur la planche.
 [rus]
-!!translate
+Игрок выходит из комнаты, не завершив свою работу.
 
 [MID_DemoDescLoiters1]
 [eng]
 He came.  He saw.  He didn't do much of anything.
 [fra]
-!!translate
+Le joueur n'a rien foutu.
 [rus]
-!!translate
+Игрок ничего не сделал.
 
 [MID_DemoDescLoiters2]
 [eng]
 Beethro spends some time here without accomplishing much.
 [fra]
-!!translate
+Le joueur passe un peu de temps ici sans accomplir grand-chose.
 [rus]
-!!translate
+Игрок проводит там некоторое время, ничего особо не добившись.
 
 [MID_DemoDescExits1]
 [eng]
 Then he exits the level.
 [fra]
-!!translate
+Puis il quitte le niveau.
 [rus]
-!!translate
+После этого он выходит с уровня.
 
 [MID_DemoDescExits2]
 [eng]
 Beethro exits the level.
 [fra]
-!!translate
+Le jouer quitte le niveau.
 [rus]
-!!translate
+Игрок выходит с уровня.
 
 [MID_DemoDescExits3]
 [eng]
 Beethro exits the level with work left undone.
 [fra]
-!!translate
+Le joueur quitte le niveau alors qu'il reste du travail à abattre.
 [rus]
-!!translate
+Игрок выходит с уровня, не завершив свою работу.

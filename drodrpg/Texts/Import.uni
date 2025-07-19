@@ -2,7 +2,7 @@
 [eng]
 &Import
 [fra]
-&Import!!translate
+&Importer
 [rus]
 Ввести файл
 
@@ -10,7 +10,7 @@
 [eng]
 Please select the file you want to import
 [fra]
-Please select the file you want to import!!translate
+Veuillez indiquer le nom du fichier que vous voulez importer
 [rus]
 Дайте имя файла, который Вы хотите ввести в игру.
 
@@ -18,7 +18,7 @@ Please select the file you want to import!!translate
 [eng]
 Importing
 [fra]
-Importing!!translate
+Importation
 [rus]
 Читая
 
@@ -38,7 +38,7 @@ Checking saved game integrity...
 [eng]
 Data imported successfully.
 [fra]
-Data imported successfully.!!translate
+Les données ont bien été importées.
 [rus]
 Файл удачно импортирован.
 
@@ -46,7 +46,7 @@ Data imported successfully.!!translate
 [eng]
 ERROR: File not found.
 [fra]
-ERROR: File not found.!!translate
+ERREUR : Fichier introuvable
 [rus]
 Внимание!  Файл не найден.
 
@@ -54,7 +54,7 @@ ERROR: File not found.!!translate
 [eng]
 ERROR: File corrupted.
 [fra]
-ERROR: File corrupted.!!translate
+ERREUR : Fichier corrompu.
 [rus]
 Внимание!  Файл испорчен.
 
@@ -62,7 +62,7 @@ ERROR: File corrupted.!!translate
 [eng]
 ERROR: Hold not found.
 [fra]
-ERROR: Hold not found.!!translate
+ERREUR : Antre introuvable.
 [rus]
 Внимание!  Крепость не найдена.
 
@@ -70,7 +70,7 @@ ERROR: Hold not found.!!translate
 [eng]
 ERROR: Level not found.
 [fra]
-ERROR: Level not found.!!translate
+ERREUR : Niveau introuvablee
 [rus]
 Внимание!  Уровень не найден.
 
@@ -78,31 +78,31 @@ ERROR: Level not found.!!translate
 [eng]
 The hold data being imported was ignored.
 [fra]
-!!translate
+Les données de l'antre importé ont été ignorées.
 [rus]
-!!translate
+Данные импортируемой катакомбы были отклонены.
 
 [MID_HoldIdenticalIgnored]
 [eng]
 This hold is the same as a hold already installed and was ignored.
 [fra]
-!!translate
+Cet antre est le même qu'un autre déjà installé et a été ignoré.
 [rus]
-!!translate
+Эта катакомба идентична ранее установленной; катакомба отклонена.
 
 [MID_HoldNotIdenticalIgnored]
 [eng]
 This hold does not match any installed hold and was ignored.
 [fra]
-!!translate
+Cet antre ne correspond à aucun antre installé et a été ignoré.
 [rus]
-!!translate
+Эта катакомба не соответствует ни одной из ранее установленных; катакомба отклонена.
 
 [MID_PlayerIgnored]
 [eng]
 The player being imported is the same as or an older version of an existing player and was ignored.
 [fra]
-!!translate
+Le fichier de joueur importé est d'une version similaire ou plus vieille qu'un fichier déjà existant et a été ignoré.
 [rus]
 Игрок в файле является более старым, чем тот, который уже в памяти и был пропушен.
 
@@ -110,7 +110,7 @@ The player being imported is the same as or an older version of an existing play
 [eng]
 A demo being imported belongs to a hold that you don't have and was ignored.
 [fra]
-!!translate
+Une ou plusieurs démos importés appartiennent à un antre, un niveau ou une pièce que vous ne possédez pas et ont été ignorés.
 [rus]
 Демонстрация в файле принадлежит отсутствуюшей крепости и была пропушена.
 
@@ -118,23 +118,23 @@ A demo being imported belongs to a hold that you don't have and was ignored.
 [eng]
 The saved games in this file could not be imported into an active player.
 [fra]
-!!translate
+Les parties sauvegardées dans ce fichier n'ont pas pu être importées pour un joueur actif.
 [rus]
-!!translate
+Сохраненные игры из этого файла не могут быть импортированы активному игроку.
 
 [MID_OverwriteHoldPrompt]
 [eng]
 This hold replaces an earlier version of the same hold. After importing the new version, only saved games compatible with the new version will be left intact. Is this okay?
 [fra]
-!!translate
+Ce fichier remplace une version plus ancienne du même antre. Après avoir importé la nouvelle version, seules les parties sauvegardées compatibles avec la nouvelle version seront accessibles. D'accord ?
 [rus]
-Крепость в файле изменит более старую версию той же крепости. Импортируя новую версия, !!translate.  Продолжать?
+Данная катакомба заменит ее предыдущую версию. После осуществления импорта новой версии доступными останутся лишь сохраненные игры, совместимые с ней. Желаете продолжить?
 
 [MID_OverwritePlayerPrompt]
 [eng]
 You are importing a newer version of a current player. Doing this will replace all your current player's data with the player data being imported.  Is this okay?
 [fra]
-!!translate
+Vous êtes en train d'importer une version plus récente d'un joueur existant. Ceci remplacera toutes les données du joueur existant par celle de celui importé. D'accord ?
 [rus]
 Игрок в файле изменит более старую версию того же игрока.  Импортируя новую версия, Вы смените все сохраненные игры от старого игрока теми, которые от нового.  Продолжать?
 
@@ -142,7 +142,7 @@ You are importing a newer version of a current player. Doing this will replace a
 [eng]
 The player was successfully imported, but certain saved games were created from a different version of a hold in memory.  Only saved games compatible with the current hold version will be retained.
 [fra]
-!!translate
+Le joueur a bien été importé, mais certaines parties sauvegardées avaient été créées sous une version différente d'un antre installé. Seules les parties sauvegardées compatibles avec la version actuelle de l'antre seront conservées.
 [rus]
 Игрок импортирован, однако некоторые игры были сделаны в крепости другой версии, чем имеется у Вас на данный момент.  В таких крепостей, только игры в начле уровня были приняты.
 
@@ -150,9 +150,9 @@ The player was successfully imported, but certain saved games were created from 
 [eng]
 This file was created by a newer version of DROD and isn't supported in this earlier version.
 [fra]
-!!translate
+Ce fichier a été créé par une version plus récente de DROD et n'est pas pris en charge dans cette version plus ancienne.
 [rus]
-!!translate
+Этот файл был создан в более поздней версии ДРОДа и не поддерживается в этой, более ранней.
 
 [MID_NotConnected]
 [eng]
