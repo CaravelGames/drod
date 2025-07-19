@@ -10,7 +10,7 @@ Editeur
 [eng]
 Choose Hold:
 [fra]
-Choisir l'Oubliette
+Choisissez l'Antre :
 [rus]
 Выберите крепость
 
@@ -18,7 +18,7 @@ Choisir l'Oubliette
 [eng]
 New H&old
 [fra]
-Nouvelle Oubliette
+N&ouvel Antre
 [rus]
 Новую &крепость
 
@@ -114,7 +114,7 @@ Décrire
 [eng]
 Hold Settings
 [fra]
-Réglages de Oubliette
+Paramètres de l'Antre
 [rus]
 Настройки крепости
 
@@ -182,7 +182,7 @@ Entrez un texte déroulant
 [eng]
 The hold was not saved.
 [fra]
-L'oubliette n'a pas été sauvée.
+L'antre n'a pas été enregistré.
 [rus]
 Крепость не была сохранена.
 
@@ -206,7 +206,7 @@ La pièce n'a pas été sauvée.
 [eng]
 Please name this hold.
 [fra]
-Nommez s'il vous plaît cette oubliette.
+Veuillez nommer cet antre.
 [rus]
 Пожалуйста, назовите свою крепость.
 
@@ -214,7 +214,7 @@ Nommez s'il vous plaît cette oubliette.
 [eng]
 Please describe this hold.
 [fra]
-Décrivez s'il vous plaît cette oubliette.
+Veuillez décrire cet antre.
 [rus]
 Пожалуйста, опишите свою крепость.
 
@@ -453,7 +453,7 @@ Final
 [eng]
 Please enter what the player will see upon completing your hold.
 [fra]
-Veuillez indiquer ce que le joueur verra après avoir terminé votre oubliette.
+Veuillez entrer ce que le joueur verra après avoir terminé votre antre.
 [rus]
 Напишите что иргок увидит при окончании вашей крепости.
 
