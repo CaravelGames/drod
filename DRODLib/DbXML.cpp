@@ -1345,6 +1345,7 @@ void CDbXML::ImportSavedGames()
 		VERIFY(ImportXML(info.exportedSavedGamesFile.c_str(), CImportInfo::SavedGame) == MID_ImportSuccessful);
 	}
 
+	info.ClearTempFiles();
 	info.typeBeingImported = importType;
 	info.ImportStatus = importState;
 	info.bImportingSavedGames = false;
@@ -1615,7 +1616,6 @@ void CDbXML::CleanUp()
 	importBuf.clear();
 
 	info.Clear(true);
-	info.ClearTempFiles();
 	pCallbackObject = NULL; //release hook
 }
 
