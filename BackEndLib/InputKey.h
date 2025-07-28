@@ -29,7 +29,7 @@
 
 #include <SDL_syswm.h>
 #include <SDL_events.h>
-#include <BackEndLib/Types.h>
+#include "Types.h"
 
 #define UNKNOWN_INPUT_KEY InputKey(0)
 
