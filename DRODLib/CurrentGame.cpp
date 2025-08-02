@@ -4710,7 +4710,6 @@ void CCurrentGame::SetTurn(
 		const UINT d_ = this->dwLevelDeaths, k_ = this->dwLevelKills,
 				m_ = this->dwLevelMoves, t_ = this->dwLevelTime,
 				st_ = this->dwStartTime;
-		const bool rl_ = this->bRoomExitLocked;
 		const UINT dwAutoSaveOptions_ = this->dwAutoSaveOptions;
 
 		//Restore game to state of selected snapshot.
@@ -4734,7 +4733,7 @@ void CCurrentGame::SetTurn(
 		this->dwLevelMoves = m_;
 		this->dwLevelTime = t_;
 		this->dwStartTime = st_;
-		this->bRoomExitLocked = rl_;
+		this->bRoomExitLocked = bOldIsRoomLocked;
 		this->dwAutoSaveOptions = dwAutoSaveOptions_;
 
 		return;
