@@ -649,3 +649,7 @@ Enable autosaves
 [MID_ShowPercentOptimal]
 [eng]
 Show banner for non-best local scores
+
+[MID_NoBrowserToRequestKey]
+[eng]
+Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet

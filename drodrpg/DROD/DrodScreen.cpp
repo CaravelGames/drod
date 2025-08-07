@@ -2049,7 +2049,7 @@ void CDrodScreen::ImportMedia()
 			"Faces", "GameScreen", "GameScreenParts",
 			"LevelStartBackground", "RoomEditScreen",
 			"TitleShadow", "TitleBG", "TitleBG1",
-			"TitleBG2", "TitleBGTunnel", "TitleDROD", "TitleLightMask",
+			"TitleBG2", "TitleBG_RPG2", "TitleDROD", "TitleLightMask",
 			"Fog1", "Clouds1", "Sunshine1",
 			"SignalBad", "SignalGood", "SignalNo", "SignalYes"
 		};
