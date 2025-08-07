@@ -1628,19 +1628,9 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-	string url = "http://www.caravelgames.com/buyRPG.html"; //UPDATE FOR DROD RPG 2
+	string url = "http://www.caravelgames.com/buyRPG2.html";
 #ifdef STEAMBUILD
-	url = "http://store.steampowered.com/app/867797";
-#elif defined(WIN32)
-	//use default
-#elif defined(__linux__)
-	url = "http://www.caravelgames.com/buyRPGLinux.html";
-#elif defined(__FreeBSD__)
-	url = "http://www.caravelgames.com/buyRPGFreeBSD.html";
-#elif defined(__APPLE__)
-	url = "http://www.caravelgames.com/buyRPGOSX.html";
-#else
-#	error Add a buy link for this platform ?
+	url = "http://store.steampowered.com/app/3661610";
 #endif
 
 	if (!OpenExtBrowser(url.c_str()))
