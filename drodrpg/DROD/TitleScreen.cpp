@@ -126,7 +126,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	this->imageFilenames.push_back(string("TitleBG"));
 	this->imageFilenames.push_back(string("TitleBG1"));
 	this->imageFilenames.push_back(string("TitleBG2"));
-	this->imageFilenames.push_back(string("TitleBGTunnel"));
+	this->imageFilenames.push_back(string("TitleBG_RPG2"));
 	this->imageFilenames.push_back(string("TitleLightMask"));
 	this->imageFilenames.push_back(string("TitleShadow"));
 
@@ -214,7 +214,7 @@ bool CTitleScreen::IsRPG1BG() const
 //******************************************************************************
 int CTitleScreen::GetMenuXPosition(const int width) const
 {
-	return IsRPG1BG() ? (CScreen::CX_SCREEN - width) / 2 : 680; //lower center, right;
+	return IsRPG1BG() ? (CScreen::CX_SCREEN - width) / 2 : 675; //lower center, right;
 }
 
 //******************************************************************************
@@ -1170,25 +1170,6 @@ void CTitleScreen::DrawRPG2Screen()
 	//Blit the title background.
 	SDL_Surface* pDestSurface = GetDestSurface();
 	g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, pDestSurface, NULL);
-
-	//Lantern light.
-	{
-		//Light mask centered on lantern in bg image.
-		const int nLanternX = 525, nLanternY = 345;
-		static const int nLightMaskW = this->images[LIGHT_MASK]->w;
-		static const int nLightMaskH = this->images[LIGHT_MASK]->h;
-		SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
-		SDL_Rect dest = MAKE_SDL_RECT(nLanternX - nLightMaskW / 2, nLanternY - nLightMaskH / 2,
-			nLightMaskW, nLightMaskH);
-
-		//Slowing pulsing light.
-		static const Uint32 pulseInterval = 2000; //ms
-		static const float fBrightnessFactor = 0.3f; //196 --> 255 at full increase
-		Uint32 t = SDL_GetTicks() % pulseInterval;
-		const float fPulseFactor = (1.0f + cos((t / static_cast<float>(pulseInterval)) * TWOPI)) / 2.0f;
-		const float fLightFactor = 1.0f + fBrightnessFactor * fPulseFactor;
-		g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fLightFactor);
-	}
 
 	PaintChildren();
 
