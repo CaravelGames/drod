@@ -53,6 +53,7 @@ const WCHAR wszEqual[] =        { We('='),We(0) };
 const WCHAR wszExclamation[] =  { We('!'),We(0) };
 const WCHAR wszForwardSlash[] = { We('/'),We(0) };
 const WCHAR wszHyphen[] =       { We('-'),We(0) };
+const WCHAR wszTilde[] =        { We('~'),We(0) };
 const WCHAR wszParentDir[] =    { We('.'),We('.'),We(0) };
 const WCHAR wszPercent[] =      { We('%'),We(0) };
 const WCHAR wszPeriod[] =       { We('.'),We(0) };

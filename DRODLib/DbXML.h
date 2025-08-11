@@ -157,7 +157,7 @@ private:
 	static void ImportSavedGames();
 	static void VerifySavedGames();
 
-	static WSTRING prepareTemporaryFile(const WCHAR* wszFilename);
+	static WSTRING prepareTemporaryFile(const WCHAR* wszFilename, const WSTRING& holdName);
 	static gzFile openGZipFile(const WCHAR* wszFilename);
 
 	static vector <CDbBase*> dbRecordStack;   //stack of records being parsed
