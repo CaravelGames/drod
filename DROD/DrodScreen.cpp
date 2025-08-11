@@ -2248,6 +2248,7 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 	{
 		//Not continuing import
 		CDbXML::CleanUp();
+		CDbXML::info.ClearTempFiles();
 		return false;
 	}
 
