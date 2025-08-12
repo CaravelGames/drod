@@ -120,6 +120,7 @@ public:
 	bool PlayerCanHarmQueuedMonster() const;
 	CMonster* PlayerCantHarmAQueuedMonster() const;
 	bool PlayerDoesStrongHit(const CMonster* pMonster) const;
+	bool PlayerIgnoresEnemyDefense() const;
 	bool PlayerHasStrongShield(const CMonster* pMonster) const;
 	bool QueueMonster(CMonster* pMonster, const bool bPlayerHitsFirst,
 			const UINT wFromX, const UINT wFromY,

@@ -334,7 +334,7 @@ int CCombat::getPlayerATK()
 		this->bPlayerDoesStrongHit = true;
 	}
 
-	if (player.HasSword() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon))
+	if (PlayerIgnoresEnemyDefense())
 	{
 		//Player is wielding a NoDefense weapon.  Monster cannot protect against it.
 		//if (this->monDEF > 0) this->monDEF = 0; //don't modify stat here, so monster's DEF display will be more useful
@@ -449,6 +449,13 @@ bool CCombat::PlayerDoesStrongHit(const CMonster* pMonster) const
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+bool CCombat::PlayerIgnoresEnemyDefense() const
+//Returns: whether player ignores the enemy's defense
+{
+	return !this->pGame->IsPlayerSwordDisabled() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon);
 }
 
 //*****************************************************************************
@@ -1086,7 +1093,7 @@ bool CCombat::PlayerCanHarmMonster(const CMonster *pMonster) const
 		doubleWithClamp(atk); //doubles effective attack power
 	if (PlayerDoesStrongHit(pMonster))
 		doubleWithClamp(atk); //doubles effective attack power
-	if (player.HasSword() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon))
+	if (PlayerIgnoresEnemyDefense())
 		monDef = 0;
 
 	int dx, dy;
