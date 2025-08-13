@@ -4087,8 +4087,8 @@ MovePlayer:
 	//If the player couldn't move, interrupt path to destination.
 	if (p.wX == wPX && p.wY == wPY)
 		this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
-	//If player used a tunnel warp, then reset path to avoid oscillations.
-	else if (this->sCueEvents.HasOccurred(CID_Tunnel))
+	//If player used a tunnel warp or grappling hook, then reset path to avoid oscillations.
+	else if (this->sCueEvents.HasOccurred(CID_Tunnel) || this->sCueEvents.HasOccurred(CID_Jump))
 		this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
 }
 
