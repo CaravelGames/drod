@@ -136,9 +136,9 @@ void CCharacterOptionsDialog::SetSpeechColorTexts(UINT color)
 //*****************************************************************************
 UINT CCharacterOptionsDialog::GetSpeechColor()
 {
-	UINT r = min((UINT)this->pSpeechColorRedTextBox->GetNumber(), 255);
-	UINT g = min((UINT)this->pSpeechColorGreenTextBox->GetNumber(), 255);
-	UINT b = min((UINT)this->pSpeechColorBlueTextBox->GetNumber(), 255);
+	UINT r = min((UINT)this->pSpeechColorRedTextBox->GetNumber(), 255U);
+	UINT g = min((UINT)this->pSpeechColorGreenTextBox->GetNumber(), 255U);
+	UINT b = min((UINT)this->pSpeechColorBlueTextBox->GetNumber(), 255U);
 
 	UINT value = (r << 16) + (g << 8) + b;
 

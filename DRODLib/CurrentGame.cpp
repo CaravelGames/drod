@@ -1256,25 +1256,25 @@ void CCurrentGame::ProcessCommandSetVar(
 		break;
 		case (UINT)ScriptVars::P_ROOM_DARKNESS:
 		{
-			UINT wLight = max(0, min(newVal, MAX_ROOM_LIGHT));
+			UINT wLight = max(0U, min(newVal, MAX_ROOM_LIGHT));
 			this->pRoom->weather.wLight = wLight;
 		}
 		break;
 		case (UINT)ScriptVars::P_ROOM_FOG:
 		{
-			UINT wFog = max(0, min(newVal, MAX_ROOM_FOG));
+			UINT wFog = max(0U, min(newVal, MAX_ROOM_FOG));
 			this->pRoom->weather.wFog = wFog;
 		}
 		break;
 		case (UINT)ScriptVars::P_ROOM_SNOW:
 		{
-			UINT wSnow = max(0, min(newVal, MAX_ROOM_SNOW));
+			UINT wSnow = max(0U, min(newVal, MAX_ROOM_SNOW));
 			this->pRoom->weather.wSnow = wSnow;
 		}
 		break;
 		case (UINT)ScriptVars::P_ROOM_RAIN:
 		{
-			UINT wRain = max(0, min(newVal, MAX_ROOM_RAIN));
+			UINT wRain = max(0U, min(newVal, MAX_ROOM_RAIN));
 			this->pRoom->weather.rain = wRain;
 		}
 		break;
