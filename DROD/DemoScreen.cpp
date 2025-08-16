@@ -237,7 +237,7 @@ void CDemoScreen::OnKeyDown(
 
 	// The longer forward/backwards key is pressed the faster frames should pass
 	UINT wMovesToDo = static_cast<UINT>(max(
-		1,
+		1.0,
 		ceil(GetKeyRepeatDuration() / NAVIGATION_SPEED_INCREASE)
 	));
 
