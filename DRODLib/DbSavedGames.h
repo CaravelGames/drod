@@ -63,8 +63,8 @@ enum SAVETYPE
 class CDbSavedGames;
 class CCurrentGame;
 class CDbRoom;
-enum PlayerBehavior;
-enum PlayerBehaviorState;
+enum PlayerBehavior : int;
+enum PlayerBehaviorState : int;
 class CDbSavedGame : public CDbBase
 {
 protected:
