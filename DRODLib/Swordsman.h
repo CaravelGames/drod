@@ -57,7 +57,7 @@ enum WaterTraversal
 	WTrv_CanHide=3			//Can hide in Shallow Water (sheathes sword)
 };
 
-enum PlayerBehaviorState
+enum PlayerBehaviorState : int
 {
 	PBS_Default = 0,	//User Player Role properties
 	PBS_On = 1,				//Always active
@@ -66,7 +66,7 @@ enum PlayerBehaviorState
 	PBS_Unpowered = 4	//Active for non-powered player
 };
 
-enum PlayerBehavior
+enum PlayerBehavior : int
 {
 	PB_Null = 0, //Not used
 	PB_BumpActivateOrb = 1,
