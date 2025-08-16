@@ -6929,7 +6929,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				this->pAddCommandDialog->GetWidget(TAG_WAIT));
 			ASSERT(pDarkLevel);
 			UINT wDarkness = _Wtoi(pDarkLevel->GetText());
-			this->pCommand->flags = max(0, min(wDarkness, NUM_DARK_TYPES));
+			this->pCommand->flags = max(0U, min(wDarkness, UINT(NUM_DARK_TYPES)));
 			QueryRect();
 		}
 		break;
@@ -6945,7 +6945,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				this->pAddCommandDialog->GetWidget(TAG_WAIT));
 			ASSERT(pLightLevel);
 			UINT wLight = _Wtoi(pLightLevel->GetText());
-			this->pCommand->w = max(0, min(wLight, MAX_LIGHT_DISTANCE));
+			this->pCommand->w = max(0U, min(wLight, UINT(MAX_LIGHT_DISTANCE)));
 			this->pCommand->flags = this->pColorListBox->GetSelectedItem();
 			QueryXY();
 		}

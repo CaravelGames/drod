@@ -3141,7 +3141,7 @@ void CCharacter::Process(
 						bool bRefreshCombat = false;
 
 						switch (pw) {
-							case ScriptFlag::HP: pMonster->ChangeHP(max(1, value)); break; //cannot kill monster via this command
+							case ScriptFlag::HP: pMonster->ChangeHP(max(1U, value)); break; //cannot kill monster via this command
 							case ScriptFlag::ATK:
 								pMonster->ATK = value;
 								bRefreshCombat = true;
@@ -3740,7 +3740,7 @@ void CCharacter::Process(
 				bool bCeilingLightChanged = false;
 
 				//clamp pflag to lighting type range
-				pflags = max(0, min(pflags, NUM_DARK_TYPES));
+				pflags = max(0U, min(pflags, UINT(NUM_DARK_TYPES)));
 
 				if (pflags == 0) {
 					//Remove tile lights
@@ -3798,7 +3798,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_SetWallLight: {
 				bProcessNextCommand = true;
 				getCommandParams(command, px, py, pw, ph, pflags);
-				pw = max(0, min(pw, MAX_LIGHT_DISTANCE));
+				pw = max(0U, min(pw, UINT(MAX_LIGHT_DISTANCE)));
 
 				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
 					break;
@@ -6256,13 +6256,13 @@ void CCharacter::RestartScript()
 //*****************************************************************************
 void CCharacter::SetHue(const UINT hue)
 {
-	this->hue = max(0, min(hue, MAX_HUE));
+	this->hue = max(0U, min(hue, MAX_HUE));
 }
 
 //*****************************************************************************
 void CCharacter::SetSaturation(const UINT saturation)
 {
-	this->saturation = max(0, min(saturation, MAX_SATURATION));
+	this->saturation = max(0U, min(saturation, MAX_SATURATION));
 }
 
 //*****************************************************************************
