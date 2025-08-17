@@ -1664,7 +1664,7 @@ WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
 void CCurrentGame::SetArrayVarFromString(const UINT varID, const WSTRING& wstr)
 {
 	if (wstr.empty()) {
-		ScriptArrayMap::iterator& array = scriptArrays.find(varID);
+		const ScriptArrayMap::iterator& array = scriptArrays.find(varID);
 		if (array != scriptArrays.end()) {
 			//Clear a script array that is initialized
 			array->second.clear();
@@ -6208,6 +6208,7 @@ void CCurrentGame::ProcessPlayer(
 	bool bMovingPlatform = false;
 	bool bDigging = false;
 	bool bJumping=false, bSwimming=false;
+	const bool bPrevTileIsElevated = bIsElevatedTile(wOTileNo);
 
 	//Look for obstacles and set dx/dy accordingly.
 	const UINT wMoveO = nGetO(dx, dy);
@@ -6285,7 +6286,6 @@ void CCurrentGame::ProcessPlayer(
 */
 
 	//Check for obstacles in destination square.
-	const bool bPrevTileIsElevated = bIsElevatedTile(wOTileNo);
 	if (room.DoesSquareContainPlayerObstacle(
 			wOldX + dx, wOldY + dy, wMoveO, bPrevTileIsElevated))
 	{
