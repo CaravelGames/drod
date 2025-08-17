@@ -3200,7 +3200,7 @@ void CCharacter::Process(
 				ScriptArrayMap& scriptArrays = pGame->pHold->IsLocalVar(varId) ?
 					this->localScriptArrays : pGame->scriptArrays;
 
-				ScriptArrayMap::iterator& array = scriptArrays.find(varId);
+				const ScriptArrayMap::iterator& array = scriptArrays.find(varId);
 				if (array != scriptArrays.end()) {
 					//Only clear a script array that is initialized
 					array->second.clear();
