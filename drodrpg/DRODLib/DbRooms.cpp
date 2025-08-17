@@ -2479,7 +2479,7 @@ const
 	const UINT wTTileNo = GetTSquare(wX, wY);
 	if (!(wTTileNo == T_EMPTY ||
 			wTTileNo == T_FUSE || wTTileNo == T_SCROLL || wTTileNo == T_TOKEN ||
-			bIsCollectable(wTTileNo) || bIsEquipment(wTTileNo) || wTTileNo == T_CRATE))
+			bIsCollectable(wTTileNo) || bIsEquipment(wTTileNo) || wTTileNo == T_CRATE || wTTileNo == T_MIST))
 		return false;
 
 	//Look for f-square obstacle.
@@ -2630,9 +2630,9 @@ const
 
 	//Look for t-square obstacle.
 	const UINT wTTileNo = GetTSquare(wX, wY);
-	if ( !(wTTileNo == T_EMPTY || wTTileNo == T_SCROLL || bIsPowerUp(wTTileNo) ||
-			wTTileNo == T_FUSE || wTTileNo == T_TOKEN || wTTileNo == T_KEY ||
-			bIsEquipment(wTTileNo) || bIsMap(wTTileNo) || bIsShovel(wTTileNo)))
+	if ( !(wTTileNo == T_EMPTY || wTTileNo == T_SCROLL || bIsCollectable(wTTileNo) ||
+			wTTileNo == T_FUSE || wTTileNo == T_TOKEN || bIsEquipment(wTTileNo) ||
+			wTTileNo == T_MIST))
 	{
 		if (wTTileNo == T_CRATE && bAllowCrateClimbing) {
 			//movement is allowed
