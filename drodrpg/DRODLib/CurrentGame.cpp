@@ -8635,5 +8635,5 @@ void CCurrentGame::InitializeTotalMapStates(const bool forceLoading) // (in) def
 //Initialize TotalMapStates
 {
 	if (forceLoading || !this->bNoSaves)
-		TotalMapStates.Load(this->dwPlayerID, this->pLevel->dwLevelID);
+		TotalMapStates.Load(g_pTheDB->GetPlayerID(), this->pLevel->dwLevelID);
 }
