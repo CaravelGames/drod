@@ -4372,7 +4372,7 @@ void CGameScreen::SearchForPathToNextRoom(
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
 		if (!this->pCurrentGame->IsRoomExplored(newRoomID) &&
-			CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(newRoomID), MapState::Invisible))
+			!CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(newRoomID), MapState::Invisible))
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
