@@ -320,8 +320,17 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 				default: break;
 			}
 			if (!this->bIntraRoomPath)
-				if (room.GetMonsterAtSquare(wSX, wSY))
-					return false;
+			{
+				CMonster* pMonsterAtSwordLocation = room.GetMonsterAtSquare(wSX, wSY);
+				if (pMonsterAtSwordLocation)
+				{
+					if (pMonsterAtSwordLocation->IsCombatable())
+						return false;
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonsterAtSwordLocation);
+					if (pCharacter && pCharacter->IsCombatable())
+						return false;
+				}
+			}
 		}
 	}
 
