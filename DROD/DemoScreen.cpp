@@ -114,8 +114,8 @@ CDemoScreen::CDemoScreen()
 	, bUniformTurnSpeed(false)
 //Constructor.
 {
-	static const INT HELP_DIALOG_W = 800;
-	static const INT HELP_DIALOG_H = 600;
+	static const UINT HELP_DIALOG_W = 800;
+	static const UINT HELP_DIALOG_H = 600;
 
 	{
 		CHtmlDialogWidget *pHtmlDialogWidget = new CHtmlDialogWidget(TAG_HELPDIALOG, HELP_DIALOG_W, HELP_DIALOG_H);
