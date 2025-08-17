@@ -1303,7 +1303,7 @@ void CDrodScreen::InitKeysymToCommandMap(
 	//which commands correspond to which keys.
 	//
 	//Params:
-	CDbPackedVars& PlayerSettings)   //(in)   Player settings to load from.
+	const CDbPackedVars& PlayerSettings)   //(in)   Player settings to load from.
 {
 	//Clear the map.
 	this->InputKeyToCommandMap.clear();
@@ -1976,7 +1976,7 @@ void CDrodScreen::ExportSaves(
 		CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID);
 		if (pHold)
 		{
-			WSTRING holdName = pHold->NameText;
+			WSTRING holdName(pHold->NameText);
 			static const UINT MAX_HOLD_NAME = 16;
 			if (holdName.size() <= MAX_HOLD_NAME)
 			{

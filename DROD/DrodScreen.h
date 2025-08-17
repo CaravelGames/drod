@@ -64,7 +64,7 @@ public:
 
 	virtual bool IsCommandSupported(int command) const;
 	UINT    ImportHoldImage(const UINT holdID, const UINT extensionFlags=EXT_JPEG|EXT_PNG);
-	void    InitKeysymToCommandMap(CDbPackedVars& PlayerSettings);
+	void    InitKeysymToCommandMap(const CDbPackedVars& PlayerSettings);
 
 	virtual int    GetCommandForInputKey(const InputKey inputKey) const;
 	static WSTRING getStatsText(const RoomStats& st);
