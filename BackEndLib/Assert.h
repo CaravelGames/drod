@@ -79,8 +79,8 @@ using std::string;
 #define _ASSERT_VOID_CAST(exp)   static_cast<void>(exp)
 #ifdef _DEBUG
 # if defined(WIN32) && !defined(__GNUC__)
-#   define ASSERT(exp)          _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILENAME__,__LINE__,#exp) )
-#   define ASSERTP(exp, desc)   _ASSERT_VOID_CAST( (exp) ? 0 : AssertErr(__FILENAME__,__LINE__,(desc)) )
+#   define ASSERT(exp)          _ASSERT_VOID_CAST( (exp) ? void() : AssertErr(__FILENAME__,__LINE__,#exp) )
+#   define ASSERTP(exp, desc)   _ASSERT_VOID_CAST( (exp) ? void() : AssertErr(__FILENAME__,__LINE__,(desc)) )
 # else
 #   define ASSERT(exp)          do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,#exp); MY_BREAKPOINT(); }} while (0)
 #   define ASSERTP(exp, desc)   do { if (!(exp)) { AssertErr(__FILENAME__,__LINE__,(desc)); MY_BREAKPOINT(); }} while (0)
