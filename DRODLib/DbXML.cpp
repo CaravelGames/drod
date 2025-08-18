@@ -71,8 +71,8 @@ bool bImportComplete = false;
 const char szDRODVersion[] = "Version";
 static const char szDRODHeaderInfo[] = "Info";
 
-const WCHAR szTempDemoFilename[] = L"exportedDemos.demo";
-const WCHAR szTempSavedGamesFilename[] = L"exportedSavedGames.player";
+const WCHAR szTempDemoFilename[] = WS("exportedDemos.demo");
+const WCHAR szTempSavedGamesFilename[] = WS("exportedSavedGames.player");
 
 struct roomSet {
 	CIDSet conquered, explored;

@@ -146,7 +146,7 @@ SDL_Surface* CMovementOrderHintEffect::GetSurfaceForOrder(int order)
 
 	WSTRING wstr; 
 	if (order == 1000) {
-		wstr = L">999";
+		wstr = WS(">999");
 	} else {
 		wstr = to_WSTRING(order);
 	}
