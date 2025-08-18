@@ -30,7 +30,7 @@ static void TestCeilingLight(UINT lightType, UINT tileTypeToCheck, bool shouldPa
 
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1);
 		RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForItem, 10, 10, 0, 0, tileTypeToCheck);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, WS(""));
 
 		CCueEvents CueEvents;
 		Runner::StartGame(10, 25, N, CueEvents);
@@ -45,7 +45,7 @@ static void TestCeilingDarkness(UINT lightType, UINT tileTypeToCheck, bool shoul
 
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1);
 		RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForItem, 10, 10, 0, 0, tileTypeToCheck);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, WS(""));
 
 		CCueEvents CueEvents;
 		Runner::StartGame(10, 25, N, CueEvents);
