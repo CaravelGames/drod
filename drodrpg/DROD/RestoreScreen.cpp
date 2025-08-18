@@ -986,7 +986,7 @@ void CRestoreScreen::PopulateScorepoints(CListBoxWidget* pListBoxWidget)
 				scorepointName += wszSpace;
 				scorepointName += wszHyphen;
 				scorepointName += wszSpace;
-				scorepointName += std::to_wstring(pHighScore->score);
+				scorepointName += to_WSTRING(pHighScore->score);
 				delete pHighScore;
 			}
 
