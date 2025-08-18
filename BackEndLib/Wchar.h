@@ -169,5 +169,6 @@ const std::vector<WSTRING> WCSExplode(WSTRING const& source, WCHAR const delimit
 const std::set<WSTRING>    WCSExplodeSet(WSTRING const& source, WCHAR const delimiter);
 bool WCSContainsAll(WSTRING const& haystack, std::vector<WSTRING> const& needles);
 
+WSTRING to_WSTRING(int value);
 
 #endif
