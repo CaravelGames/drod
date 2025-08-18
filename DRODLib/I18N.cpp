@@ -52,7 +52,7 @@ namespace I18N {
 		bool bHasModifier = bIsShift || bIsCtrl || bIsAlt;
 		bool bHasNonModifier = keyCode != SDLK_UNKNOWN;
 
-		std::wstringstream str;
+		std::basic_stringstream<WCHAR> str;
 
 		if (bIsShift) {
 			str << (wModifierCount > 1 && bHasNonModifier ? ShiftShort : ShiftLong);
