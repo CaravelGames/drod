@@ -166,5 +166,6 @@ WSTRING WCSToLower(WSTRING const &source);
 const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimiter);
 bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles);
 
+WSTRING to_WSTRING(int value);
 
 #endif
