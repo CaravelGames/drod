@@ -85,25 +85,25 @@ TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
 			}
 
 			TestParsedValue(
-				wstring(L"_rotateCW(") + std::to_wstring(wO) + wstring(L")"),
+				wstring(L"_rotateCW(") + to_WSTRING(wO) + wstring(L")"),
 				nNextCO(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_rotateCCW(") + std::to_wstring(wO) + wstring(L")"),
+				wstring(L"_rotateCCW(") + to_WSTRING(wO) + wstring(L")"),
 				nNextCCO(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_ox(") + std::to_wstring(wO) + wstring(L")"),
+				wstring(L"_ox(") + to_WSTRING(wO) + wstring(L")"),
 				nGetOX(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_oy(") + std::to_wstring(wO) + wstring(L")"),
+				wstring(L"_oy(") + to_WSTRING(wO) + wstring(L")"),
 				nGetOY(wO),
 				pGame,
 				pCharacter

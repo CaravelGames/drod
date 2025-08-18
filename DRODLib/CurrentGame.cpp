@@ -1370,9 +1370,9 @@ WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
 			wstr += wszComma;
 		}
 
-		wstr += std::to_wstring(iter->first);
+		wstr += to_WSTRING(iter->first);
 		wstr += wszColon;
-		wstr += std::to_wstring(iter->second);
+		wstr += to_WSTRING(iter->second);
 		bNeedComma = true;
 	}
 

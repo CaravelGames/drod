@@ -1170,9 +1170,9 @@ void CRestoreScreen::PopulateChallenges(
 
 	// Count of challenges
 	WSTRING countString = wszLeftParen;
-	countString += std::to_wstring(this->completedChallenges.size());
+	countString += to_WSTRING(this->completedChallenges.size());
 	countString += wszForwardSlash;
-	countString += std::to_wstring(this->challengeVarMap.size());
+	countString += to_WSTRING(this->challengeVarMap.size());
 	countString += wszRightParen;
 	pLabelWidget->SetText(countString.c_str());
 }

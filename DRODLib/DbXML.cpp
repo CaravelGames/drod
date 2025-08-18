@@ -2597,7 +2597,7 @@ WSTRING CDbXML::prepareTemporaryFile(const WCHAR* wszFilename, const WSTRING& ho
 	filePath += wszTilde;
 	filePath += holdName;
 	filePath += wszHyphen; 
-	filePath += std::to_wstring(std::time(NULL));
+	filePath += to_WSTRING(std::time(NULL));
 	filePath += wszHyphen;
 	filePath += wszFilename;
 
