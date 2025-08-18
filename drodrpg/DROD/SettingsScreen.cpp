@@ -683,7 +683,7 @@ CSettingsScreen::CSettingsScreen()
 
 	CLabelWidget* pLabel = new CLabelWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL, X_TARSTUFF_ALPHA_VALUE_LABEL, Y_TARSTUFF_ALPHA,
 		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
-		F_Small, std::to_wstring(BYTE(255 - MIN_TARSTUFF_ALPHA + 1)).c_str());
+		F_Small, to_WSTRING(BYTE(255 - MIN_TARSTUFF_ALPHA + 1)).c_str());
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	pGraphicsFrame->AddWidget(pLabel);
 
@@ -695,7 +695,7 @@ CSettingsScreen::CSettingsScreen()
 
 	pLabel = new CLabelWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL, X_MAP_ICON_ALPHA_VALUE_LABEL, Y_MAP_ICON_ALPHA,
 		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
-		F_Small, std::to_wstring(BYTE(255 - MIN_ICON_ALPHA + 1)).c_str());
+		F_Small, to_WSTRING(BYTE(255 - MIN_ICON_ALPHA + 1)).c_str());
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	pGraphicsFrame->AddWidget(pLabel);
 
@@ -747,7 +747,7 @@ CSettingsScreen::CSettingsScreen()
 
 	pLabel = new CLabelWidget(TAG_SOUNDEFF_VALUE_LABEL, X_SOUNDEFF_VOLUME_LABEL, Y_SOUNDEFF_VOLUME,
 		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
-		F_Small, std::to_wstring(DEFAULT_SOUND_VOLUME).c_str());
+		F_Small, to_WSTRING(DEFAULT_SOUND_VOLUME).c_str());
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	pSoundFrame->AddWidget(pLabel);
 
@@ -762,7 +762,7 @@ CSettingsScreen::CSettingsScreen()
 
 	pLabel = new CLabelWidget(TAG_VOICE_VALUE_LABEL, X_VOICES_VOLUME_LABEL, Y_VOICES_VOLUME,
 		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
-		F_Small, std::to_wstring(DEFAULT_VOICE_VOLUME).c_str());
+		F_Small, to_WSTRING(DEFAULT_VOICE_VOLUME).c_str());
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	pSoundFrame->AddWidget(pLabel);
 
@@ -777,7 +777,7 @@ CSettingsScreen::CSettingsScreen()
 
 	pLabel = new CLabelWidget(TAG_MUSIC_VALUE_LABEL, X_MUSIC_VOLUME_LABEL, Y_MUSIC_VOLUME,
 		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
-		F_Small, std::to_wstring(DEFAULT_MUSIC_VOLUME).c_str());
+		F_Small, to_WSTRING(DEFAULT_MUSIC_VOLUME).c_str());
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	pSoundFrame->AddWidget(pLabel);
 
@@ -1440,7 +1440,7 @@ void CSettingsScreen::OnSelectChange(
 				GetWidget(dwTagNo));
 			//Update label
 			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
-			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA).c_str());
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA).c_str());
 			Paint();
 		}
 		break;
@@ -1450,7 +1450,7 @@ void CSettingsScreen::OnSelectChange(
 				GetWidget(dwTagNo));
 			//Update label
 			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL));
-			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue() + MIN_ICON_ALPHA).c_str());
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue() + MIN_ICON_ALPHA).c_str());
 			Paint();
 		}
 		break;
@@ -1460,7 +1460,7 @@ void CSettingsScreen::OnSelectChange(
 				GetWidget(dwTagNo));
 			//Update label
 			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
-			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
 			Paint();
 		}
 		break;
@@ -1470,7 +1470,7 @@ void CSettingsScreen::OnSelectChange(
 				GetWidget(dwTagNo));
 			//Update label
 			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
-			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
 			Paint();
 		}
 		break;
@@ -1480,7 +1480,7 @@ void CSettingsScreen::OnSelectChange(
 				GetWidget(dwTagNo));
 			//Update label
 			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
-			pLabel->SetText(std::to_wstring(pSliderWidget->GetValue()).c_str());
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
 			Paint();
 		}
 		break;
@@ -1698,13 +1698,13 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA));
 	pSliderWidget->SetValue(bytValue - MIN_TARSTUFF_ALPHA);
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
-	pLabel->SetText(std::to_wstring(bytValue).c_str());
+	pLabel->SetText(to_WSTRING(bytValue).c_str());
 
 	bytValue = settings.GetVar(Settings::MapIconAlpha, BYTE(g_pTheDBM->mapIconAlpha));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
 	pSliderWidget->SetValue(bytValue - MIN_ICON_ALPHA);
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL));
-	pLabel->SetText(std::to_wstring(bytValue).c_str());
+	pLabel->SetText(to_WSTRING(bytValue).c_str());
 
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
@@ -1715,7 +1715,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
-	pLabel->SetText(std::to_wstring(bytVolume).c_str());
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_VOICES));
@@ -1726,7 +1726,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_VOICES_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
-	pLabel->SetText(std::to_wstring(bytVolume).c_str());
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_MUSIC));
@@ -1737,7 +1737,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_MUSIC_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
-	pLabel->SetText(std::to_wstring(bytVolume).c_str());
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOW_SUBTITLES));
