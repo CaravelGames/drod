@@ -148,7 +148,7 @@ SDL_Surface* CMovementOrderHintEffect::GetSurfaceForOrder(int order)
 	if (order == 1000) {
 		wstr = L">999";
 	} else {
-		wstr = std::to_wstring(order);
+		wstr = to_WSTRING(order);
 	}
 	static const UINT eFontType = F_MovementOrderHint;
 	UINT wLineW, wLineH;

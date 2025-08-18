@@ -248,11 +248,11 @@ const
 			break;
 			case YMD:
 				//ISO-8601: YYYY-MM_DD
-				wstrText += std::to_wstring(1900 + tmGet->tm_year);
+				wstrText += to_WSTRING(1900 + tmGet->tm_year);
 				wstrText += wszHyphen;
-				wstrText += std::to_wstring(tmGet->tm_mon + 1);
+				wstrText += to_WSTRING(tmGet->tm_mon + 1);
 				wstrText += wszHyphen;
-				wstrText += std::to_wstring(tmGet->tm_mday);
+				wstrText += to_WSTRING(tmGet->tm_mday);
 			break;
 		}
 		bShowDate = true;
