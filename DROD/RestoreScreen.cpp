@@ -344,7 +344,7 @@ CRestoreScreen::CRestoreScreen()
 
 	this->pChallengesCountLabel = new CLabelWidget(0, CX_SPACE, Y_CHALLENGES_OKAY,
 		CX_CHALLENGES_DIALOG - 2 * CX_SPACE, CY_CHALLENGES_TITLE,
-		FONTLIB::F_Message, L"(0/0)");
+		FONTLIB::F_Message, WS("0/0"));
 	this->pChallengesCountLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	this->pChallengesDialog->AddWidget(this->pChallengesCountLabel);
 
