@@ -5,7 +5,7 @@ static void AddPushableCharacter(UINT x, UINT y) {
 	CCharacter *character = RoomBuilder::AddVisibleCharacter(x, y);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Imperative, ScriptFlag::PushableByWeapon);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForSomeoneToPushMe);
-	RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+	RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, WS(""));
 }
 
 TEST_CASE("Scripting command 'Wait for someone to push me'", "[scripting][push]") {

@@ -57,7 +57,7 @@ TEST_CASE("Scripting: Use Tunnels Behavior", "[game][scripting][behavior]") {
 		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(10, 10, 0, M_SPIDER);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::UseTunnels, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_WaitForOpenMove, E);
-		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, WS(""));
 
 		CCueEvents CueEvents;
 		CCurrentGame* game = Runner::StartGame(15, 15, N, CueEvents);
@@ -75,7 +75,7 @@ TEST_CASE("Scripting: Use Tunnels Behavior", "[game][scripting][behavior]") {
 		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(10, 10, 0, M_SPIDER);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::UseTunnels, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_WaitForOpenMove, E);
-		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, WS(""));
 
 		CCueEvents CueEvents;
 		CCurrentGame* game = Runner::StartGame(15, 15, N, CueEvents);
