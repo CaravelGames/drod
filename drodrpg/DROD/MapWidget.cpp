@@ -1130,10 +1130,13 @@ bool CMapWidget::LoadMapSurface(
 			ExploredRoom *pExpRoom = NULL;
 			if (this->pCurrentGame)
 				pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
+			
+			if (pExpRoom && pExpRoom->HasDetail())
+				mapMarker = pExpRoom->mapMarker;
+
 			if (pExpRoom && pExpRoom->HasDetail() && pExpRoom->SquaresBytes.Size())
 			{
 				VERIFY(pRoom->UnpackSquares(pExpRoom->SquaresBytes.Contents(), pExpRoom->SquaresBytes.Size()));
-				mapMarker = pExpRoom->mapMarker;
 
 				//Synch monster data to room's current state in this game.
 				pRoom->SetMonstersFromExploredRoomData(pExpRoom, false);
