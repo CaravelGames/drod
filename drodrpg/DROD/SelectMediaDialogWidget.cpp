@@ -310,7 +310,7 @@ const WSTRING CSelectMediaDialogWidget::GetMediaName(const UINT wMediaId, CIDSet
 
 	WSTRING name = g_pTheDB->Data.GetNameFor(wMediaId);
 	if (deletedDataIDs->has(wMediaId)) {
-		name += L" ";
+		name += wszSpace;
 		name += g_pTheDB->GetMessageText(MID_FilePendingDeletionSuffix);
 	}
 
@@ -408,8 +408,8 @@ UINT CSelectMediaDialogWidget::ImportFile(
 		if (wExistingImageId && wReplacedMediaId && wExistingImageId != wReplacedMediaId) {
 			const CDbDatum *pReplacedFile = db.Data.GetByID(wReplacedMediaId);
 			WSTRING message = g_pTheDB->GetMessageText(MID_ErrorCannotReplaceWithDifferentExistingFile);
-			message = WCSReplace(message, L"%fileBase%", pReplacedFile->DataNameText);
-			message = WCSReplace(message, L"%fileSelected%", filename);
+			message = WCSReplace(message, WS("%fileBase%"), pReplacedFile->DataNameText);
+			message = WCSReplace(message, WS("%fileSelected%"), filename);
 			delete pReplacedFile;
 			g_pTheDialogs->ShowOkMessage(message.c_str());
 			continue;
@@ -418,7 +418,7 @@ UINT CSelectMediaDialogWidget::ImportFile(
 		// 3b. If we are importing a new file, ask whether user wants to replace it
 		if (wExistingImageId && !wReplacedMediaId) {
 			WSTRING message = g_pTheDB->GetMessageText(MID_ReplaceMediaWithAnother);
-			message = WCSReplace(message, L"%file%", filename);
+			message = WCSReplace(message, WS("%file%"), filename);
 
 			if (g_pTheDialogs->ShowYesNoMessage(message.c_str(), MID_Rename, MID_Cancel) != TAG_YES)
 				continue;
