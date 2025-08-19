@@ -1640,7 +1640,7 @@ WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
 {
 	ScriptArrayMap::const_iterator array = this->scriptArrays.find(varID);
 	if (array == this->scriptArrays.end()) {
-		return L""; //Array hasn't been initialized yet
+		return WS(""); //Array hasn't been initialized yet
 	}
 
 	WSTRING wstr;

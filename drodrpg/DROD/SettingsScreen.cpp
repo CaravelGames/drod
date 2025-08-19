@@ -1306,7 +1306,7 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 		if (pOverwrittenKey) {
 			WSTRING str = WCSReplace(
 				g_pTheDB->GetMessageText(MID_OverwritingMacroKeyError),
-				L"%1",
+				WS("%1"),
 				g_pTheDB->GetMessageText(pOverwrittenKey->commandMID)
 			);
 			ShowOkMessage(str.c_str());
