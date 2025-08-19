@@ -897,7 +897,7 @@ const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimit
 // Adapted from: https://stackoverflow.com/a/12967010
 {
 	std::vector<WSTRING> result;
-	std::wistringstream iss(source);
+	std::basic_istringstream<WCHAR> iss(source);
 
 	for (WSTRING token; std::getline(iss, token, delimiter); )
 	{
@@ -913,7 +913,7 @@ const std::set<WSTRING> WCSExplodeSet(WSTRING const& source, WCHAR const delimit
 // Explodes a string into pieces, and put them into a set
 {
 	std::set<WSTRING> result;
-	std::wistringstream iss(source);
+	std::basic_istringstream<WCHAR> iss(source);
 
 	for (WSTRING token; std::getline(iss, token, delimiter); )
 	{
