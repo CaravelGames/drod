@@ -1074,100 +1074,21 @@ void CDbHolds::GetRoomsExplored(
 
 	rooms.clear();
 
-	//Get all player's saved games in hold.
 	CDb db;
-	db.SavedGames.FilterByPlayer(dwPlayerID);
-	db.SavedGames.FilterByHold(dwHoldID);
-	db.SavedGames.FindHiddens(true);
-	const CIDSet savedGameIDs = db.SavedGames.GetIDs();
+	CDbSavedGame* pSavedGame;
 
-	CDbSavedGame *pSavedGame;
-	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
-	{
-		pSavedGame = db.SavedGames.GetByID(*iter);
-		ASSERT(pSavedGame);
-		if (pSavedGame->eType != ST_DemoUpload) //not a real saved game record
-		{
-			rooms += pSavedGame->GetExploredRooms();
-			rooms += pSavedGame->dwRoomID;
-		}
-		delete pSavedGame;
-	}
-
-	//Total rooms explored/conquered for this hold.
 	pSavedGame = db.SavedGames.GetByID(
 			db.SavedGames.FindByType(ST_PlayerTotal, dwPlayerID, false));
 	if (pSavedGame)
 	{
 		const CIDSet roomsInHold = CDb::getRoomsInHold(dwHoldID);
-/*
-		if (bOnlyConquered)
-		{
-			pSavedGame->ConqueredRooms.intersect(roomsInHold);
-			rooms += pSavedGame->ConqueredRooms;
-		} else {
-*/
 		CIDSet expRooms = pSavedGame->GetExploredRooms(true); //this save flags "map only" on all explored rooms
 		expRooms.intersect(roomsInHold);
 		rooms += expRooms;
-//		}
 
 		delete pSavedGame;
 	}
 }
-
-//*****************************************************************************
-/*
-void CDbHolds::GetRoomsExplored(
-//OUT: set of room IDs explored and conquered by player in specified hold
-//
-//Params:
-	const UINT dwHoldID, const UINT dwPlayerID,   //(in)
-	CIDSet& exploredRooms, CIDSet& conqueredRooms) //(out)
-{
-	ASSERT(dwHoldID);
-	ASSERT(dwPlayerID);
-
-	exploredRooms.clear();
-	conqueredRooms.clear();
-
-	//Get all player's saved games in hold.
-	CDb db;
-	CIDSet savedGameIDs;
-	db.SavedGames.FilterByPlayer(dwPlayerID);
-	db.SavedGames.FilterByHold(dwHoldID);
-	db.SavedGames.FindHiddens(true);
-	db.SavedGames.GetIDs(savedGameIDs);
-
-	CDbSavedGame *pSavedGame;
-	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
-	{
-		pSavedGame = db.SavedGames.GetByID(*iter);
-		ASSERT(pSavedGame);
-		if (pSavedGame->eType != ST_DemoUpload) //not a real saved game record
-		{
-			conqueredRooms += pSavedGame->ConqueredRooms;
-			exploredRooms += pSavedGame->ExploredRooms;
-		}
-		delete pSavedGame;
-	}
-
-	//Total rooms explored/conquered for this hold.
-	pSavedGame = db.SavedGames.GetByID(
-			db.SavedGames.FindByType(ST_PlayerTotal, dwPlayerID, false));
-	if (pSavedGame)
-	{
-		CIDSet roomsInHold = CDb::getRoomsInHold(dwHoldID);
-		pSavedGame->ConqueredRooms.intersect(roomsInHold);
-		conqueredRooms += pSavedGame->ConqueredRooms;
-
-		pSavedGame->ExploredRooms.intersect(roomsInHold);
-		exploredRooms += pSavedGame->ExploredRooms;
-
-		delete pSavedGame;
-	}
-}
-*/
 
 //*****************************************************************************
 UINT CDbHolds::GetSecretsDone(
@@ -1182,6 +1103,9 @@ const
 {
 	CIDSet roomsExplored;
 	GetRooms(dwHoldID, stats);
+	if (stats.secretRooms.size() == 0)
+		return 0; // No secret rooms in this hold, so no need to check if we've explored them
+
 	GetRoomsExplored(dwHoldID, dwPlayerID, roomsExplored);
 
 	UINT wCount=0;
