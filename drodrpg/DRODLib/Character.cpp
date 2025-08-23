@@ -4024,7 +4024,7 @@ void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGa
 	break;
 	case ScriptVars::AppendText:
 	{
-		WSTRING text = stats.GetVar(varName, wszEmpty);
+		WSTRING text = bPredefinedVar ? getPredefinedVarString(varIndex) : stats.GetVar(varName, wszEmpty);
 		text += pGame->ExpandText(command.label.c_str());
 		if (bPredefinedVar)
 			setPredefinedVarString(varIndex, text, CueEvents);
