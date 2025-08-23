@@ -3386,7 +3386,7 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_VarSet:
 			{
 				//Sets var X (operation Y) W, e.g. X += 5
-				SetVariable(command, pGame, CueEvents, this);
+				SetVariable(command, pGame, CueEvents);
 
 				//When a var is set, this might get it out of an otherwise infinite loop.
 				++wVarSets;
@@ -3936,11 +3936,7 @@ Finish:
 }
 
 //*****************************************************************************
-void CCharacter::SetVariable(
-	const CCharacterCommand& command,
-	CCurrentGame* pGame,
-	CCueEvents& CueEvents,
-	CCharacter* pCharacter) //[default=NULL]
+void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
 {
 	const UINT varIndex = command.x;
 	if (pGame->pHold && pGame->pHold->IsArrayVar(varIndex))
@@ -4019,7 +4015,7 @@ void CCharacter::SetVariable(
 
 	case ScriptVars::AssignText:
 	{
-		const WSTRING text = pGame->ExpandText(command.label.c_str(), pCharacter);
+		const WSTRING text = pGame->ExpandText(command.label.c_str(), this);
 		if (bPredefinedVar)
 			setPredefinedVarString(varIndex, text, CueEvents);
 		else

@@ -284,7 +284,7 @@ private:
 	void SetDefaultMovementType();
 	bool setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
 	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
-	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents, CCharacter* pCharacter=NULL);
+	void SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 	void SetMapIcon(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents);
 
