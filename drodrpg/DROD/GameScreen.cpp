@@ -627,12 +627,17 @@ void CGameScreen::RedrawStats(
 				if (bIsCustomEquipment(item))
 				{
 					ASSERT(this->pCurrentGame);
+					UINT equipType = i == 11 ? ScriptFlag::Weapon : i == 12 ? ScriptFlag::Armor :
+						ScriptFlag::Accessory;
 					if (this->pCurrentGame->pHold)
 					{
-						HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(item);
-						if (pChar)
-						{
-							pLabel->SetText(pChar->charNameText.c_str());
+						CCharacter *pChar = this->pCurrentGame->getCustomEquipment(equipType);
+						if (pChar->GetCustomName() != DefaultCustomCharacterName) {
+							pLabel->SetText(pChar->GetCustomName().c_str());
+							break;
+						} else {
+							HoldCharacter *pHoldChar = this->pCurrentGame->pHold->GetCharacter(item);
+							pLabel->SetText(pHoldChar->charNameText.c_str());
 							break;
 						}
 					}

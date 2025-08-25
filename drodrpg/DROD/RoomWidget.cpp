@@ -1310,12 +1310,13 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			case T_ACCESSORY:
 			{
 				const UINT equipmentType = this->pRoom->GetTParam(wX, wY);
+				WSTRING customName;
 				if (bIsCustomEquipment(equipmentType) && this->pCurrentGame) {
 					const HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(equipmentType);
 					if (pChar) {
-						AppendTextLine(pChar->charNameText.c_str());
+						customName = pChar->charNameText;
 					} else {
-						AppendTextLine(wszQuestionMark);
+						customName.append(wszQuestionMark);
 					}
 				} else {
 					switch (tTile) {
@@ -1365,6 +1366,11 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						newATK = pCharacter->getATK();
 						newDEF = pCharacter->getDEF();
 						ability = EquipmentDescription::GetEquipmentAbility(pCharacter, equipType, wszCommaSpace);
+						if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+							customName = pCharacter->GetCustomName();
+						}
+
+						AppendTextLine(customName.c_str());
 						delete pTempGame;
 						delete pCharacter;
 					} else if (tTile == T_SWORD) {
