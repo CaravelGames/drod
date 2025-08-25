@@ -2139,6 +2139,9 @@ bool CMonster::AttackPlayerWhenAdjacent(CCueEvents& CueEvents)
 //If adjacent to the player in a direction without movement forbidden, then attack.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find a target (i.e. the player).
 	//If the player is invisible, he can't be seen.
 	UINT wTX, wTY;
@@ -2179,6 +2182,9 @@ bool CMonster::AttackPlayerInFrontWhenBackIsTurned(CCueEvents &CueEvents)
 //Attack the player when in front of the monster and the player's back is turned.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find a target (i.e. the player).
 	//If the player is invisible, he can't be seen.
 	UINT wTX, wTY;
@@ -2232,6 +2238,9 @@ bool CMonster::AttackPlayerWhenInFront(CCueEvents &CueEvents)
 //Attack the player when the player stands directly in front of the monster.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find target.  If player is invisible, player can't be seen.
 	UINT wTX, wTY;
 	if (!GetTarget(wTX,wTY))
