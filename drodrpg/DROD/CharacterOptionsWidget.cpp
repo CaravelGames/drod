@@ -53,14 +53,14 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterHue)));
 
 	this->pHueTextBox = new CTextBoxWidget(0L, HUETEXT_X, HUETEXT_Y,
-		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+		TEXT_CX, TEXT_CY, HUE_STATURATION_MAX_LENGTH, TAG_OK);
 	AddWidget(pHueTextBox);
 
 	AddWidget(new CLabelWidget(0L, SATURATIONLABEL_X, SATURATIONLABEL_Y,
 		LABEL_CX, LABEL_CY, F_Small, g_pTheDB->GetMessageText(MID_VarMonsterSaturation)));
 
 	this->pSaturationTextBox = new CTextBoxWidget(0L, SATURATIONTEXT_X, SATURATIONTEXT_Y,
-		TEXT_CX, TEXT_CY, COLOR_MAX_LENGTH, TAG_OK);
+		TEXT_CX, TEXT_CY, HUE_STATURATION_MAX_LENGTH, TAG_OK);
 	AddWidget(pSaturationTextBox);
 
 	AddWidget(new CLabelWidget(0L, COLORLABEL_X, COLORLABEL_Y,
@@ -118,11 +118,17 @@ CCharacterOptionsDialog::CCharacterOptionsDialog(
 	this->pMinimapTreasureCheckbox = new COptionButtonWidget(0L, TREASURE_BUTTON_X, TREASURE_BUTTON_Y,
 		SEQUENCEHELP_CX, LABEL_CY, g_pTheDB->GetMessageText(MID_MinimapTreasure));
 	AddWidget(this->pMinimapTreasureCheckbox);
+
+	this->pPreviewTile = new CTilesWidget(0U, PREVIEW_TILE_X, PREVIEW_TILE_Y,
+		CDrodBitmapManager::CX_TILE, CDrodBitmapManager::CY_TILE);
+	AddWidget(this->pPreviewTile);
+
+	this->previewTileNumber = TI_UNSPECIFIED;
 }
 
 //*****************************************************************************
 void CCharacterOptionsDialog::SetCharacter(
-	const CCharacter *pCharacter
+	const CCharacter *pCharacter, const HoldCharacter* pHoldCharacter
 ){
 	const UINT bufferLength = PROCESSING_SEQUENCE_MAX_LENGTH + 1; // Added space for null-termination
 	WCHAR temp[bufferLength];
@@ -143,6 +149,15 @@ void CCharacterOptionsDialog::SetCharacter(
 
 	this->pGhostDisplayCheckbox->SetChecked(pCharacter->IsGhostImage());
 	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->IsMinimapTreasure());
+
+	if (pHoldCharacter) {
+		CalculatePreviewTile(pHoldCharacter);
+	} else {
+		const UINT wIdentity = pCharacter->wLogicalIdentity;
+		this->previewTileNumber = GetTileImageForEntity(wIdentity == M_NONE ?
+			static_cast<UINT>(CHARACTER_FIRST) : wIdentity, S, 0);
+	}
+	UpdatePreview();
 }
 
 //*****************************************************************************
@@ -168,6 +183,24 @@ void CCharacterOptionsDialog::SetCharacter(
 
 	this->pGhostDisplayCheckbox->SetChecked(pCharacter->ExtraVars.GetVar(GhostImageStr, false));
 	this->pMinimapTreasureCheckbox->SetChecked(pCharacter->ExtraVars.GetVar(MinimapTreasureStr, false));
+
+	CalculatePreviewTile(pCharacter);
+	UpdatePreview();
+}
+
+//*****************************************************************************
+void CCharacterOptionsDialog::CalculatePreviewTile(const HoldCharacter* pCharacter)
+{
+	this->previewTileNumber == TI_UNSPECIFIED;
+	static const UINT tileIndex = 4; //index for south-facing tile
+	this->previewTileNumber = g_pTheBM->GetCustomTileNo(pCharacter->dwDataID_Tiles, tileIndex, 0);
+	if (this->previewTileNumber == TI_UNSPECIFIED) {
+		this->previewTileNumber = g_pTheBM->GetCustomTileNo(pCharacter->dwDataID_Tiles, 0, 0);
+		if (this->previewTileNumber == TI_UNSPECIFIED) {
+			this->previewTileNumber = GetTileImageForEntity(pCharacter->wType == M_NONE ?
+				static_cast<UINT>(CHARACTER_FIRST) : pCharacter->wType, S, 0);
+		}
+	}
 }
 
 //*****************************************************************************
@@ -186,6 +219,25 @@ void CCharacterOptionsDialog::SetSpeechColorTexts(UINT color)
 	this->pSpeechColorGreenTextBox->SetText(temp);
 	_itoW(b, temp, 10, bufferLength);
 	this->pSpeechColorBlueTextBox->SetText(temp);
+}
+
+//*****************************************************************************
+void CCharacterOptionsDialog::UpdatePreview()
+{
+	this->pPreviewTile->ClearTiles();
+	if (this->previewTileNumber == TI_UNSPECIFIED)
+		return;
+
+	float r, g, b;
+	CRoomWidget::TranslateMonsterColor(GetColor(), r, g, b);
+
+	CCharacter character(NULL);
+	character.SetHue(GetHue());
+	character.SetSaturation(GetSaturation());
+
+	this->pPreviewTile->AddTile(previewTileNumber, 0, 0, character.getHSV(),
+		r, g, b);
+	Paint();
 }
 
 //*****************************************************************************
@@ -247,6 +299,15 @@ void CCharacterOptionsDialog::OnKeyDown(
 		case SDLK_ESCAPE:
 			Deactivate();
 			dwDeactivateValue = CCharacterOptionsDialog::TAG_CANCEL;
-			break;
+		break;
 	}
+}
+
+//*****************************************************************************
+void CCharacterOptionsDialog::OnKeyUp(
+	const UINT dwTagNo, const SDL_KeyboardEvent& Key)
+{
+	//We update the preview image on key up as this will happen after the text
+	//input widgets have updated their content in response to a key down event.
+	UpdatePreview();
 }
