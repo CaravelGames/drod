@@ -253,11 +253,13 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 
 		case TV_EXPLOSION:
 		{
-			const bool bBombHere = room.GetTSquare(x, y) == T_BOMB;
+			const UINT wTTile = room.GetTSquare(x, y);
 			room.ProcessExplosionSquare(CueEvents, x, y);
-			if (bBombHere)
+			if (wTTile == T_BOMB)
 			{
 				room.ExplodeBomb(CueEvents, x, y);
+			} else if (wTTile == T_POWDER_KEG) {
+				room.ExplodePowderKeg(CueEvents, x, y);
 			}
 			room.ConvertUnstableTar(CueEvents);
 

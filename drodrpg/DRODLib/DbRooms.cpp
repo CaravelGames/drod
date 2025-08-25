@@ -3068,6 +3068,9 @@ bool CDbRoom::KillMonster(
 	ASSERT(pMonster);
 	ASSERT(!pMonster->IsPiece());
 
+	if (!pMonster->bAlive)
+		return false; // It's possible to try to kill an enemy twice e.g. on defend script processing an imperative die command.
+
 	const UINT mType = pMonster->wType;
 
 	//Don't remove killed mission-critical types from monster list.

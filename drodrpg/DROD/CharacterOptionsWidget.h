@@ -33,6 +33,7 @@
 #include "EditRoomScreen.h"
 #include <FrontEndLib/DialogWidget.h>
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/TilesWidget.h>
 
 #include "../Texts/MIDs.h"
 #include "../DRODLib/Db.h"
@@ -56,7 +57,9 @@ public:
 	COptionButtonWidget *pGhostDisplayCheckbox;
 	COptionButtonWidget *pMinimapTreasureCheckbox;
 
-	void SetCharacter(const CCharacter *pCharacter);
+	CTilesWidget* pPreviewTile;
+
+	void SetCharacter(const CCharacter *pCharacter, const HoldCharacter *pHoldCharacter);
 	void SetCharacter(HoldCharacter *pCharacter);
 	UINT GetColor();
 	UINT GetHue();
@@ -68,9 +71,14 @@ public:
 
 protected:
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
+	virtual void OnKeyUp(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 private:
+	void CalculatePreviewTile(const HoldCharacter* pCharacter);
 	void SetSpeechColorTexts(UINT color);
+	void UpdatePreview();
+
+	UINT previewTileNumber;
 
 	static const UINT SPACE_CY = 15;
 	static const UINT SPACE_CX = 15;
@@ -93,6 +101,9 @@ private:
 
 	static const int TREASURE_BUTTON_X = SPACE_CX;
 	static const int TREASURE_BUTTON_Y = GHOSTDISPLAY_BUTTON_Y + TITLE_CY + SPACE_CY / 2;
+
+	static const int PREVIEW_TILE_X = (DIALOG_CX * 3) / 4;
+	static const int PREVIEW_TILE_Y = GHOSTDISPLAY_BUTTON_Y;
 
 	static const int HUELABEL_CX = 150;
 	static const int HUELABEL_X = SPACE_CX;
@@ -146,6 +157,7 @@ private:
 	static const int CANCEL_X = DIALOG_CX / 2 + SPACE_CX / 2;
 	static const int CANCEL_Y = DIALOG_CY - SAVE_CY - SPACE_CY;
 
+	static const int HUE_STATURATION_MAX_LENGTH = 4;
 	static const int COLOR_MAX_LENGTH = 6;
 	static const int SPEECHCOLOR_MAX_LENGTH = 3;
 	static const int PROCESSING_SEQUENCE_MAX_LENGTH = 9;
