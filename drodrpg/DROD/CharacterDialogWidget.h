@@ -115,6 +115,7 @@ private:
 	const CCharacterCommand* GetCommandWithLabelText(const COMMANDPTR_VECTOR& commands,
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
+	HoldCharacter* GetCustomCharacter(const UINT dwCharId);
 	WSTRING GetDataName(const UINT dwID) const;
 	WSTRING GetEntranceName(CEditRoomScreen* pEditRoomScreen, UINT entranceID) const;
 	WSTRING GetWorldMapNameText(CEditRoomScreen* pEditRoomScreen, UINT worldMapID) const;

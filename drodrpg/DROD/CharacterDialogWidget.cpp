@@ -2182,7 +2182,8 @@ void CCharacterDialogWidget::OnClick(
 
 		case TAG_CHAROPTIONS:
 		{
-			this->pCharOptionsDialog->SetCharacter(this->pCharacter);
+			const HoldCharacter* pHoldCharacter = GetCustomCharacter(this->pCharacter->wLogicalIdentity);
+			this->pCharOptionsDialog->SetCharacter(this->pCharacter, pHoldCharacter);
 			UINT dwTagNo = this->pCharOptionsDialog->Display();
 			this->pCharOptionsDialog->Hide();
 
@@ -4204,6 +4205,19 @@ HoldCharacter* CCharacterDialogWidget::GetCustomCharacter()
 			g_pTheSM->GetScreen(SCR_EditRoom));
 	ASSERT(pEditRoomScreen->pHold);
 	return pEditRoomScreen->pHold->GetCharacter(dwSelectedCharID);
+}
+
+//*****************************************************************************
+//Return: pointer to custom character record for given id
+HoldCharacter* CCharacterDialogWidget::GetCustomCharacter(const UINT dwCharId)
+{
+	if (dwCharId < CUSTOM_CHARACTER_FIRST)
+		return NULL; //not custom
+
+	CEditRoomScreen* pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
+		g_pTheSM->GetScreen(SCR_EditRoom));
+	ASSERT(pEditRoomScreen->pHold);
+	return pEditRoomScreen->pHold->GetCharacter(dwCharId);
 }
 
 //*****************************************************************************
