@@ -353,7 +353,7 @@ int main(int argc, char *argv[])
 		if (ret != static_cast<MESSAGE_ID>(-1))
 			DisplayInitErrorMessage(ret);
 	} else {
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		try
 		{
 #endif
@@ -520,11 +520,11 @@ int main(int argc, char *argv[])
 				delete pCurrentPlayer;
 			}
 
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		}
-		catch (CException& e)
+		catch (std::exception& e)
 		{
-		  CFiles::AppendErrorLog(e.what());
+			m_pFiles->AppendErrorLog(e.what());
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
@@ -532,6 +532,7 @@ int main(int argc, char *argv[])
 		}
 		catch (...)
 		{
+			m_pFiles->AppendErrorLog("Unknown exception");
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
