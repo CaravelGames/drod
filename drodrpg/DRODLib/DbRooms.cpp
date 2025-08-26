@@ -842,7 +842,7 @@ CDbRoom::CDbRoom(const CDbRoom &Src)
 }
 
 //*****************************************************************************
-CDbRoom::CDbRoom(const CDbRoom& Src, const bool copyGame)
+CDbRoom::CDbRoom(const CDbRoom& Src, const bool copyGame, const bool copyForEditor)
 //Set pointers to NULL so Clear() won't try to delete them.
 	: CDbBase()
 	, pszOSquares(NULL), pszFSquares(NULL), pszTSquares(NULL), pszTParams(NULL)
@@ -851,7 +851,7 @@ CDbRoom::CDbRoom(const CDbRoom& Src, const bool copyGame)
 	, pCurrentGame(NULL)
 	//Constructor.
 {
-	SetMembers(Src, true, copyGame);
+	SetMembers(Src, true, copyGame, copyForEditor);
 }
 
 //
@@ -9458,7 +9458,8 @@ bool CDbRoom::SetMembers(
 //Params:
 	const CDbRoom &Src,        //(in)
 	const bool bCopyLocalInfo, //(in) default = true
-	const bool bCopyGame)      //(in) default = true
+	const bool bCopyGame,      //(in) default = true
+	const bool bCopyForEditor) //[default=false]
 {
 	try {
 	
@@ -9570,7 +9571,7 @@ bool CDbRoom::SetMembers(
 		//When not in play, always add monsters to the monster layer.
 		//When making a room copy during play, only place monsters in the monster
 		//layer when they are visible.
-		LinkMonster(pMonster, !this->pCurrentGame || pMonster->IsVisible());
+		LinkMonster(pMonster, bCopyForEditor || pMonster->IsVisible());
 		pMonster->wProcessSequence = wProcessSequence; //restore value
 
 		//Copy monster pieces.

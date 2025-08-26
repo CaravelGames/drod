@@ -6777,7 +6777,7 @@ void CEditRoomScreen::Changing(
 			changes.push_back(new CDbHold(*(this->pHold)));
 			//NO BREAK
 		case Room:
-			changes.push_back(new CDbRoom(*(this->pRoom)));
+			changes.push_back(new CDbRoom(*(this->pRoom), true, true));
 		break;
 		case Hold:
 			changes.push_back(new CDbHold(*(this->pHold)));
