@@ -8614,8 +8614,14 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 		return false;
 	}
 
+	//Resetting room will clear haste and invisibility states, so persist them
+	const bool bPlayerHasted = this->pPlayer->bHasted;
+	const bool bPlayerInvisible = this->pPlayer->bInvisible;
 	CCueEvents Ignored;
 	RestartRoom(Ignored);
+	this->pPlayer->bHasted = bPlayerHasted;
+	this->pPlayer->bInvisible = bPlayerInvisible;
+
 	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
 		if (pMonster->wType == M_CHARACTER)
