@@ -92,7 +92,7 @@ public:
 		return *this;
 	}
 	void MakeCopy(const CDbRoom &Src) {SetMembers(Src, false);}
-	CDbRoom* MakeCopy(CImportInfo& info, const UINT newHoldID) const;
+	CDbRoom* MakeCopy(CImportInfo& info, const UINT newHoldID, const bool bCopyForEditor = false) const;
 
 	virtual ~CDbRoom();
 
