@@ -9436,12 +9436,13 @@ bool CDbRoom::UpdateNew()
 }
 
 //*****************************************************************************
-CDbRoom* CDbRoom::MakeCopy(CImportInfo& info, const UINT newHoldID) const
+CDbRoom* CDbRoom::MakeCopy(
+	CImportInfo& info, const UINT newHoldID, const bool bCopyForEditor) const
 //Replicates room data for new record entry in DB.
 {
 	CDbRoom *pCopy = g_pTheDB->Rooms.GetNew();
 	if (!pCopy) return NULL;
-	pCopy->SetMembers(*this, false);
+	pCopy->SetMembers(*this, false, true, bCopyForEditor);
 
 	//Copy custom room media, if needed.
 	if (newHoldID) {

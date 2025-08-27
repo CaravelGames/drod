@@ -3138,7 +3138,7 @@ void CEditRoomScreen::OnKeyDown(
 					CImportInfo info;
 					const UINT roomDataID = this->pRoom->dwDataID;
 					this->pRoom->dwDataID = 0; //don't copy room media data
-					this->pCopyRoom = this->pRoom->MakeCopy(info, 0); //same hold
+					this->pCopyRoom = this->pRoom->MakeCopy(info, 0, true); //same hold
 					this->pRoom->dwDataID = roomDataID;
 				}
 
