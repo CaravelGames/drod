@@ -6537,11 +6537,11 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			CEditRoomScreen *pEditRoomScreen = DYN_CAST(CEditRoomScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_EditRoom));
 			ASSERT(pEditRoomScreen->pHold);
-			UINT dwVal = this->pCommand->x;
-			if (pEditRoomScreen->SelectListID(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
-					dwVal, MID_ExitLevelPrompt) == CEntranceSelectDialogWidget::OK)
+			ExitChoice exitChoice = { ExitType::ET_Entrance, this->pCommand->x };
+			if (pEditRoomScreen->SelectEntrance(pEditRoomScreen->pEntranceBox, pEditRoomScreen->pHold,
+				exitChoice, MID_SelectExitDestination, CEntranceSelectDialogWidget::Entrances) == CEntranceSelectDialogWidget::OK)
 			{
-				this->pCommand->x = dwVal;
+				this->pCommand->x = exitChoice.entrance;
 				this->pCommand->y = this->pOnOffListBox->GetSelectedItem();
 				AddCommand();
 			} else {
