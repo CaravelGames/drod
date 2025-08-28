@@ -314,13 +314,13 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 				GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
-			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-		if (pCoord->wO == NO_ORIENTATION)
-			pRoomWidget->AddTLayerEffect(
-					new CDebrisEffect(pRoomWidget, *pCoord, 3,
-							GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
+		pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(pRoomWidget, moveCoord, 3,
+				GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
