@@ -5479,6 +5479,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
+	this->pFaceWidget->SetDying(false);
+
 	if (bUndoDeath)
 	{
 		this->pRoomWidget->DirtyRoom();	//remove fading
@@ -5488,8 +5491,6 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	StopAmbientSounds();
 	ClearSpeech();
-	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
-	this->pFaceWidget->SetDying(false);
 	return true;
 }
 
