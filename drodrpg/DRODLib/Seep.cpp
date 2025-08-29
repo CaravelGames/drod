@@ -35,32 +35,6 @@
 //
 
 //*****************************************************************************************
-bool CSeep::KillIfOutsideWall(CCueEvents &CueEvents)
-//Kill the monster if outside wall.
-//
-//Returns: whether monster was killed
-{
-//	if (IsOnSwordsman())
-//		return false; //retain for front end display death sequence
-
-	//If ghost was on a door that opened, kill it.
-	const UINT dwTileNo = this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY);
-	if (bIsOpenDoor(dwTileNo) || bIsFloor(dwTileNo))
-	{
-		CCurrentGame *pGame = (CCurrentGame*)this->pCurrentGame; //non-const
-		if (pGame->IsFighting(this))
-			return false; //if terrain changes during a fight, just let the combat play out
-
-		pGame->pRoom->KillMonster(this, CueEvents);
-//		pGame->TallyKill();
-		SetKillInfo(NO_ORIENTATION); //center stab effect
-		CueEvents.Add(CID_MonsterDiedFromStab, this);
-		return true;
-	}
-	return false;
-}
-
-//*****************************************************************************************
 void CSeep::Process(
 //Process a seep for movement.
 //
@@ -76,5 +50,5 @@ void CSeep::Process(
 	FaceTarget();
 
 	if (AttackPlayerWhenAdjacent(CueEvents))
-		CueEvents.Add(CID_GoblinAttacks);
+		CueEvents.Add(CID_EnemySneakAttack);
 }

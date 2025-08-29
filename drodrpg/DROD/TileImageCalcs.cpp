@@ -43,6 +43,7 @@ UINT  CalcTileImageForTarstuff(const CDbRoom *pRoom, const UINT wCol, const UINT
 UINT  CalcTileImageForWall(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForPlatform(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
 UINT  CalcTileImageForBriar(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
+UINT  CalcTileImageForMist(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForStairsUp(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 
 //Definitions
@@ -315,6 +316,20 @@ const UINT MonsterTileImageArray[MONSTER_TYPES][ORIENTATION_COUNT] = {
 	TI_GOBLINKING_NW,             TI_GOBLINKING_N,        TI_GOBLINKING_NE,
 	TI_GOBLINKING_W,              TI_GOBLINKING_S,        TI_GOBLINKING_E,
 	TI_GOBLINKING_SW,             TI_GOBLINKING_S,        TI_GOBLINKING_SE
+	},
+
+	//M_CONSTRUCT
+	{
+	TI_CONSTRUCT_NW,       TI_CONSTRUCT_N,      TI_CONSTRUCT_NE,
+	TI_CONSTRUCT_W,        TI_CONSTRUCT_S,      TI_CONSTRUCT_E,
+	TI_CONSTRUCT_SW,       TI_CONSTRUCT_S,      TI_CONSTRUCT_SE
+	},
+
+	//M_FLUFFBABY
+	{
+	DONT_USE,               DONT_USE,            DONT_USE,
+	DONT_USE,               TI_FLUFFBABY,            DONT_USE,
+	DONT_USE,               DONT_USE,            DONT_USE
 	}
 };
 
@@ -587,6 +602,20 @@ const UINT AnimatedMonsterTileImageArray[MONSTER_TYPES][ORIENTATION_COUNT] = {
 	TI_GOBLINKING_NW,             TI_GOBLINKING_N,        TI_GOBLINKING_NE,
 	TI_GOBLINKING_W,              TI_GOBLINKING_S,        TI_GOBLINKING_E,
 	TI_GOBLINKING_SW,             TI_GOBLINKING_S,        TI_GOBLINKING_SE
+	},
+
+	//M_CONSTRUCT
+	{
+	TI_CONSTRUCT_ANW,       TI_CONSTRUCT_AN,      TI_CONSTRUCT_ANE,
+	TI_CONSTRUCT_AW,        TI_CONSTRUCT_AS,      TI_CONSTRUCT_AE,
+	TI_CONSTRUCT_ASW,       TI_CONSTRUCT_AS,      TI_CONSTRUCT_ASE
+	},
+
+	//M_FLUFFBABY
+	{
+	DONT_USE,               DONT_USE,            DONT_USE,
+	DONT_USE,               TI_FLUFFBABY_A,            DONT_USE,
+	DONT_USE,               DONT_USE,            DONT_USE
 	}
 };
 
@@ -670,6 +699,34 @@ const UINT CharacterTileImageArray[CHARACTER_TYPES-CHARACTER_FIRST][ORIENTATION_
 	TI_STALWART_NW,         TI_STALWART_N,         TI_STALWART_NE,
 	TI_STALWART_W,          TI_STALWART_S,         TI_STALWART_E,
 	TI_STALWART_SW,         TI_STALWART_S,         TI_STALWART_SE
+	},
+
+	//M_ARCHIVIST
+	{
+	TI_ARCHIVIST_NW,        TI_ARCHIVIST_N,        TI_ARCHIVIST_NE,
+	TI_ARCHIVIST_W,         TI_ARCHIVIST_S,        TI_ARCHIVIST_E,
+	TI_ARCHIVIST_SW,        TI_ARCHIVIST_S,        TI_ARCHIVIST_SE
+	},
+
+	//M_ARCHITECT
+	{
+	TI_ARCHITECT_NW,            TI_ARCHITECT_N,    TI_ARCHITECT_NE,
+	TI_ARCHITECT_W,             TI_ARCHITECT_S,    TI_ARCHITECT_E,
+	TI_ARCHITECT_SW,            TI_ARCHITECT_S,    TI_ARCHITECT_SE
+	},
+
+	//M_PATRON
+	{
+	TI_PATRON_NW,            TI_PATRON_N,    TI_PATRON_NE,
+	TI_PATRON_W,             TI_PATRON_S,    TI_PATRON_E,
+	TI_PATRON_SW,            TI_PATRON_S,    TI_PATRON_SE
+	},
+
+	//M_ROACHIE
+	{
+	TI_ROACHIE_NW,    TI_ROACHIE_N,    TI_ROACHIE_NE,
+	TI_ROACHIE_W,     TI_ROACHIE_S,    TI_ROACHIE_E,
+	TI_ROACHIE_SW,    TI_ROACHIE_S,    TI_ROACHIE_SE,
 	}
 };
 
@@ -719,6 +776,17 @@ const UINT BRIAR_SWORD_TI[] = {
 	TI_SWORD9_NW, TI_SWORD9_N, TI_SWORD9_NE,
 	TI_SWORD9_W,  TI_SWORD9_S,   TI_SWORD9_E,
 	TI_SWORD9_SW, TI_SWORD9_S, TI_SWORD9_SE};
+
+const UINT STAFF_SWORD_TI[] = {
+	TI_STAFF_SWORD_NW, TI_STAFF_SWORD_N, TI_STAFF_SWORD_NE,
+	TI_STAFF_SWORD_W,  TI_STAFF_SWORD_S, TI_STAFF_SWORD_E,
+	TI_STAFF_SWORD_SW, TI_STAFF_SWORD_S, TI_STAFF_SWORD_SE };
+
+const UINT SPEAR_SWORD_TI[] = {
+	TI_SPEAR_SWORD_NW, TI_SPEAR_SWORD_N, TI_SPEAR_SWORD_NE,
+	TI_SPEAR_SWORD_W,  TI_SPEAR_SWORD_S, TI_SPEAR_SWORD_E,
+	TI_SPEAR_SWORD_SW, TI_SPEAR_SWORD_S, TI_SPEAR_SWORD_SE };
+
 
 //Unarmed entity tiles.
 const UINT BEETHRO_UTI[] = {
@@ -1176,10 +1244,10 @@ EDGETYPE CalcEdge(
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_FLOOR: case T_FLOOR_M: case T_FLOOR_IMAGE:
 		case T_FLOOR_ROAD: case T_FLOOR_GRASS: case T_FLOOR_DIRT: case T_FLOOR_ALT:
-		case T_HOT: case T_PRESSPLATE: case T_GOO:
+		case T_HOT: case T_PRESSPLATE: case T_GOO: case T_MISTVENT:
 			if (bIsWall(wAdjTileNo) || bIsCrumblyWall(wAdjTileNo) ||
 					bIsDoor(wAdjTileNo) || bIsOpenDoor(wAdjTileNo) ||
-					wAdjTileNo==T_OBSTACLE || bIsTrapdoor(wAdjTileNo) ||
+					wAdjTileNo==T_OBSTACLE || bIsFallingTile(wAdjTileNo) ||
 					wAdjTileNo==T_PRESSPLATE || bIsTunnel(wAdjTileNo) ||
 					wAdjTileNo==T_WATER || wAdjTileNo==T_GOO)
 				return EDGE_NONE;
@@ -1195,7 +1263,7 @@ EDGETYPE CalcEdge(
 				return EDGE_WALL;
 			if ((side == N || side == W) &&
 					wTileNo != T_FLOOR_IMAGE && wAdjTileNo != T_FLOOR_IMAGE &&
-					wTileNo != T_GOO && wAdjTileNo != T_GOO)
+					wTileNo != T_GOO && wAdjTileNo != T_GOO && wAdjTileNo != T_MISTVENT)
 				return EDGE_FLOOR;
 			return EDGE_NONE;
 
@@ -1264,7 +1332,10 @@ UINT GetPredefinedSwordTile(
 		case LuckySword: return LUCKY_SWORD_TI[wO];
 		case SerpentSword: return SERPENT_SWORD_TI[wO];
 		case BriarSword: return BRIAR_SWORD_TI[wO];
+		case Staff: return STAFF_SWORD_TI[wO];
+		case Spear: return SPEAR_SWORD_TI[wO];
 		case WeaponSlot:
+		case Dagger:
 		default: break; //resolve below
 	}
 
@@ -1312,6 +1383,13 @@ UINT GetTileImageForEntity(
 			case 0: return MonsterTileImageArray[wType][wO];
 			case 1: return AnimatedMonsterTileImageArray[wType][wO];
 		}
+	} else if (wType == M_ROACHIE) {
+		//Animated pseudo-type
+		UINT tile = CharacterTileImageArray[wType - CHARACTER_FIRST][wO];
+		if (wAnimFrame == 1) {
+			tile -= 8;
+		}
+		return tile;
 	} else {
 		//Character monster pseudo-type.
 		ASSERT(wType>=CHARACTER_FIRST && wType<CHARACTER_TYPES);
@@ -1323,6 +1401,23 @@ UINT GetTileImageForEntity(
 		}
 		return CharacterTileImageArray[wType-CHARACTER_FIRST][wO];
 	}
+}
+
+UINT GetTileImageForEntityOrDefault(const UINT wType, UINT wO, const UINT wAnimFrame)
+{
+	if (!IsValidOrientation(wO))
+		wO = S;
+	if (IsValidMonsterType(wType))
+	{
+		if (MonsterTileImageArray[wType][wO] == DONT_USE)
+			wO = NO_ORIENTATION;
+	}
+	else {
+		if (CharacterTileImageArray[wType - CHARACTER_FIRST][wO] == DONT_USE)
+			wO = NO_ORIENTATION;
+	}
+
+	return GetTileImageForEntity(wType, wO, wAnimFrame);
 }
 
 //*****************************************************************************
@@ -1497,7 +1592,7 @@ UINT GetTileImageForTileNo(
 		TI_ALT,           //T_FLOOR_ALT
 		TI_MONEYDOOR,     //T_DOOR_MONEY
 		CALC_NEEDED,      //T_MUD
-      TI_STAIRSUP,      //T_STAIRS_UP
+		TI_STAIRSUP,      //T_STAIRS_UP
 		CALC_NEEDED,      //T_WALL_H
 		TI_TUNNEL_E,      //T_TUNNEL_E
 		TI_TUNNEL_W,      //T_TUNNEL_W
@@ -1527,11 +1622,67 @@ UINT GetTileImageForTileNo(
 		TI_MONEYDOOR_O,   //T_DOOR_MONEYO
 		CALC_NEEDED,      //T_SHIELD
 		TI_HEALTH_SM,     //T_HEALTH_SM
-		CALC_NEEDED       //T_ACCESSORY
+		CALC_NEEDED,      //T_ACCESSORY
+		TI_MAP_DETAIL,    //T_MAP_DETAIL
+		TI_HEALTH_HUGE,   //T_HEALTH_HUGE
+		TI_ATK_UP3,       //T_ATK_UP3
+		TI_ATK_UP10,      //T_ATK_UP10
+		TI_DEF_UP3,       //T_DEF_UP3
+		TI_DEF_UP10,      //T_DEF_UP10
+		TI_CRATE,         //T_CRATE
+		CALC_NEEDED,      //T_PRESSPLATE_BROKEN_VIRTUAL
+		TI_SHOVEL_1,      //T_SHOVEL1
+		TI_SHOVEL_3,      //T_SHOVEL3
+		TI_SHOVEL_10,     //T_SHOVEL10
+		TI_DIRT_1,        //T_DIRT1
+		TI_DIRT_3,        //T_DIRT3
+		TI_DIRT_5,        //T_DIRT5
+		CALC_NEEDED,      //T_THINICE
+		TI_ARROW_OFF_N,   //T_ARROW_OFF_N
+		TI_ARROW_OFF_NE,  //T_ARROW_OFF_NE
+		TI_ARROW_OFF_E,   //T_ARROW_OFF_E
+		TI_ARROW_OFF_SE,  //T_ARROW_OFF_SE
+		TI_ARROW_OFF_S,   //T_ARROW_OFF_S
+		TI_ARROW_OFF_SW,  //T_ARROW_OFF_SW
+		TI_ARROW_OFF_W,   //T_ARROW_OFF_W
+		TI_ARROW_OFF_NW,  //T_ARROW_OFF_NW
+		CALC_NEEDED,      //T_MIST
+		TI_MISTVENT,      //T_MISTVENT
+		TI_FIRETRAP,      //T_FIRETRAP
+		TI_FIRETRAP_ON,   //T_FIRETRAP_ON
+		TI_POWDER_KEG,    //T_POWDER_KEG
+		TI_OVERHEAD_IMAGE,//T_OVERHEAD_IMAGE
 	};
 
 	ASSERT(IsValidTileNo(wTileNo));
 	return TileImageArray[wTileNo];
+}
+
+//*****************************************************************************
+UINT GetTileImageForMapIcon(const ScriptVars::MapIcon mapIcon)
+{
+	ASSERT(mapIcon < ScriptVars::MapIconCount);
+	static const UINT MapIconImageArray[ScriptVars::MapIconCount] = {
+		TI_MAP_ICON_QUESTION_MARK, //MI_None
+		TI_MAP_ICON_SWORD,         //MI_Sword
+		TI_MAP_ICON_SHIELD,        //MI_Shield
+		TI_MAP_ICON_STAR,          //MI_Star
+		TI_MAP_ICON_SKULL,         //MI_Skill
+		TI_MAP_ICON_ARROW_NORTH,   //MI_ArrowNorth
+		TI_MAP_ICON_ARROW_EAST,    //MI_ArrowEast
+		TI_MAP_ICON_ARROW_SOUTH,   //MI_ArrowSouth
+		TI_MAP_ICON_ARROW_WEST,    //MI_ArrowWest
+		TI_MAP_ICON_STAIR_UP,      //MI_StairsUp
+		TI_MAP_ICON_STAIR_DOWN,    //MI_StairsDown
+		TI_MAP_ICON_CHEST,         //MI_Chest
+		TI_MAP_ICON_GEAR,          //MI_Gear
+		TI_MAP_ICON_MONEY_BAG,     //MI_MoneyBag
+		TI_MAP_ICON_KEY_BLUE,      //MI_KeyBlue
+		TI_MAP_ICON_KEY_WHITE,     //MI_KeyWhite
+		TI_MAP_ICON_QUESTION_MARK  //MI_QuestionMark
+	};
+
+	return MapIconImageArray[mapIcon];
 }
 
 //*****************************************************************************
@@ -1567,7 +1718,8 @@ UINT CalcTileImageFor(
       case T_PLATFORM_W: case T_PLATFORM_P:
 			return CalcTileImageForPlatform(pRoom, wCol, wRow, wTileNo);
       case T_GOO:
-      case T_WATER: return CalcTileImageForWater(pRoom, wCol, wRow, wTileNo);
+      case T_WATER:
+			case T_THINICE: return CalcTileImageForWater(pRoom, wCol, wRow, wTileNo);
 
 		//t-layer
 		case T_OBSTACLE:  return CalcTileImageForObstacle(pRoom, wCol, wRow);
@@ -1581,8 +1733,8 @@ UINT CalcTileImageFor(
 			switch (pOrb->eType)
 			{
 				case OT_NORMAL: return TI_ORB_D;
-//				case OT_ONEUSE: return TI_ORB_CRACKING; //not used in RPG
-//				case OT_BROKEN: return TI_ORB_CRACKED;
+				case OT_ONEUSE: return TI_ORB_CRACKING;
+				case OT_BROKEN: return TI_ORB_CRACKED;
 				default: ASSERT(!"Unexpected orb type."); break;
 			}
 		}
@@ -1617,6 +1769,8 @@ UINT CalcTileImageFor(
 			const UINT tParam = pRoom->GetTParam(wCol,wRow);
 			return CalcTileImageForAccessory(tParam);
 		}
+		case T_MIST:
+			return CalcTileImageForMist(pRoom, wCol, wRow);
 
 		default: break;
 	}
@@ -1656,6 +1810,16 @@ UINT CalcTileImageForTSquare(
 //TI_* constant.
 {
 	return CalcTileImageFor(pRoom, pRoom->GetTSquare(wCol, wRow), wCol, wRow);
+}
+
+//*****************************************************************************
+UINT CalcTileImageForCoveredTSquare(
+//Calculates a tile image for covered square on t-layer.
+//
+//Params:
+	const CDbRoom* pRoom, UINT wCol, UINT wRow)
+{
+	return CalcTileImageFor(pRoom, pRoom->coveredTSquares.GetAt(wCol, wRow), wCol, wRow);
 }
 
 //*****************************************************************************
@@ -1704,7 +1868,7 @@ UINT CalcTileImageForFourNeighborCC(
 		// ?.?   12    ?#?      13    ? ?      14    ?#?      15
 		// #X#         #X#            #X#            #X#
 		// ?.?         ?.?            ?#?            ?#?
-	static const UINT TYPES = 14;
+	static const UINT TYPES = 17;
 	static const UINT TileImages[TYPES][16] = {
 	{
 		TI_DOOR_Y,     TI_DOOR_YN,    TI_DOOR_YS,    TI_DOOR_YNS,
@@ -1776,6 +1940,21 @@ UINT CalcTileImageForFourNeighborCC(
 		TI_PPT_CW,    TI_PPT_CNW,   TI_PPT_CSW,   TI_PPT_CNSW,
 		TI_PPT_CE,    TI_PPT_CNE,   TI_PPT_CSE,   TI_PPT_CNSE,
 		TI_PPT_CWE,   TI_PPT_CNWE,  TI_PPT_CSWE,  TI_PPT_CNSWE
+	},{
+		TI_PPB,      TI_PPB_N,    TI_PPB_S,    TI_PPB_NS,
+		TI_PPB_W,    TI_PPB_NW,   TI_PPB_SW,   TI_PPB_NSW,
+		TI_PPB_E,    TI_PPB_NE,   TI_PPB_SE,   TI_PPB_NSE,
+		TI_PPB_WE,   TI_PPB_NWE,  TI_PPB_SWE,  TI_PPB_NSWE
+	},{
+		TI_PPB_C,     TI_PPB_CN,    TI_PPB_CS,    TI_PPB_CNS,
+		TI_PPB_CW,    TI_PPB_CNW,   TI_PPB_CSW,   TI_PPB_CNSW,
+		TI_PPB_CE,    TI_PPB_CNE,   TI_PPB_CSE,   TI_PPB_CNSE,
+		TI_PPB_CWE,   TI_PPB_CNWE,  TI_PPB_CSWE,  TI_PPB_CNSWE
+	},{
+		TI_PPB_D,     TI_PPB_DN,    TI_PPB_DS,    TI_PPB_DNS,
+		TI_PPB_DW,    TI_PPB_DNW,   TI_PPB_DSW,   TI_PPB_DNSW,
+		TI_PPB_DE,    TI_PPB_DNE,   TI_PPB_DSE,   TI_PPB_DNSE,
+		TI_PPB_DWE,   TI_PPB_DNWE,  TI_PPB_DSWE,  TI_PPB_DNSWE
 	}};
 
 	ASSERT(wCalcCode < 16);
@@ -1800,12 +1979,14 @@ UINT CalcTileImageForFourNeighborCC(
 				wItemType = 10;
 			else
 			{
-/*
-				if (pPlate->eType == OT_ONEUSE) //not used in RPG
-					return TI_PP_BROKE1;
+				if (pPlate->eType == OT_ONEUSE)
+				{
+					wItemType = pPlate->bActive ? 16 : 14; break;
+				}
 				if (pPlate->eType == OT_BROKEN)
-					return TI_PP_BROKE2;
-*/
+				{
+					wItemType = 15; break;
+				}
 				if (pPlate->bActive)
 				{
 					wItemType = pPlate->eType == OT_TOGGLE ? 13 : 11;
@@ -1908,6 +2089,86 @@ UINT CalcTileImageForFuse(
 }
 
 //*****************************************************************************
+UINT CalcTileImageForMist(
+//Calcs a tile image to display for a mist square.
+//
+//Params:
+	const CDbRoom* pRoom, //(in) Room to use for calcs--not necessarily the current room
+	const UINT wCol, const UINT wRow //Mist square
+)
+{
+	UINT wCalcCode = 0;
+
+	//If north mist, set bit 1
+	if (wRow > 0) {
+		if (pRoom->IsEitherTSquare(wCol, wRow - 1, T_MIST))
+			wCalcCode = 1;
+	}
+
+	//If south mist, set bit 2.
+	if (wRow < pRoom->wRoomRows - 1) {
+		if (pRoom->IsEitherTSquare(wCol, wRow + 1, T_MIST))
+			wCalcCode += 2;
+	}
+
+	//If west mist, set bit 3.
+	if (wCol > 0) {
+		if (pRoom->IsEitherTSquare(wCol - 1, wRow, T_MIST))
+			wCalcCode += 4;
+	}
+
+	//If east mist, set bit 4.
+	if (wCol < pRoom->wRoomCols - 1) {
+		if (pRoom->IsEitherTSquare(wCol + 1, wRow, T_MIST))
+			wCalcCode += 8;
+	}
+
+	// ?.?   0     ?#?      1     ?.?      2     ?#?      3
+	// .X.         .X.            .X.            .X.
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   4     ?#?      5     ?.?      6     ?#?      7
+	// #X.         #X.            #X.            #X.
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   8     ?#?      9     ?.?      10    ?#?      11
+	// .X#         .X#            .X#            .X#
+	// ?.?         ?.?            ?#?            ?#?
+
+	// ?.?   12    ?#?      13    ? ?      14    ?#?      15
+	// #X#         #X#            #X#            #X#
+	// ?.?         ?.?            ?#?            ?#?
+	static const UINT TileImages[16] = {
+		TI_MIST,       TI_MIST_N,     TI_MIST_S,     TI_MIST_NS,
+		TI_MIST_W,     TI_MIST_NW,    TI_MIST_SW,    TI_MIST_NSW,
+		TI_MIST_E,     TI_MIST_NE,    TI_MIST_SE,    TI_MIST_NSE,
+		TI_MIST_WE,    TI_MIST_NWE,   TI_MIST_SWE,   TI_MIST_NSWE
+	};
+
+	ASSERT(wCalcCode < 16);
+	return TileImages[wCalcCode];
+}
+
+//*****************************************************************************
+BYTE GetMistCorners(const CDbRoom* pRoom, const UINT wCol, const UINT wRow)
+{
+	BYTE corners = 0;
+	if (pRoom->IsValidColRow(wCol - 1, wRow - 1) && pRoom->IsEitherTSquare(wCol - 1, wRow - 1, T_MIST))
+		corners += 1;
+
+	if (pRoom->IsValidColRow(wCol + 1, wRow - 1) && pRoom->IsEitherTSquare(wCol + 1, wRow - 1, T_MIST))
+		corners += 2;
+
+	if (pRoom->IsValidColRow(wCol - 1, wRow + 1) && pRoom->IsEitherTSquare(wCol - 1, wRow + 1, T_MIST))
+		corners += 4;
+
+	if (pRoom->IsValidColRow(wCol + 1, wRow + 1) && pRoom->IsEitherTSquare(wCol + 1, wRow + 1, T_MIST))
+		corners += 8;
+
+	return corners;
+}
+
+//*****************************************************************************
 UINT CalcTileImageForToken(const BYTE tParam)
 //Calculate image for this type of token.
 {
@@ -1959,6 +2220,9 @@ UINT CalcTileImageForSword(const BYTE tParam)
 		case SerpentSword: return TI_SWORD8;
 		case BriarSword: return TI_SWORD9;
 		case WeaponSlot: return TI_SWORD10;
+		case Dagger: return TI_DAGGER_SWORD;
+		case Staff: return TI_STAFF_SWORD_NEUTRAL;
+		case Spear: return TI_SPEAR_SWORD_NEUTRAL;
 
 		default: return TI_UNSPECIFIED;
 	}
@@ -1978,6 +2242,9 @@ UINT CalcTileImageForShield(const BYTE tParam)
 		case KiteShield: return TI_SHIELD4;
 		case OremiteShield: return TI_SHIELD5;
 		case ArmorSlot: return TI_SHIELD6;
+		case MirrorShield: return TI_SHIELD7;
+		case LeatherShield: return TI_SHIELD8;
+		case AluminumShield: return TI_SHIELD9;
 
 		default: return TI_UNSPECIFIED;
 	}
@@ -2004,13 +2271,13 @@ UINT CalcTileImageForAccessory(const BYTE tParam)
 		case XPDoubler: return TI_ACCESSORY11;
 		case AccessorySlot: return TI_ACCESSORY12;
 
-		default: ASSERT(!"Unexpected accessory type."); return 0;
+		default: return TI_UNSPECIFIED;
 	}
 }
 
 //*****************************************************************************
 bool CastsWallShadow(const UINT t) {
-	return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t);
+	return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t) || bIsDiggableBlock(t);
 }
 
 //*****************************************************************************
@@ -2496,6 +2763,7 @@ WALLTYPE GetWallTypeAtSquare(const CDbRoom *pRoom, const int nCol, const int nRo
 //*****************************************************************************
 void CalcStairPosition(
 //Find out what position in a staircase this tile is (from top-left corner).
+//Value is 1-based.
 //
 //Params:
 	const CDbRoom *pRoom,   //(in)   Room to use for calcs--not necessarily the
@@ -2508,29 +2776,29 @@ void CalcStairPosition(
 	wStairsCol = wStairsRow = 0;
 	UINT wPrevTile;
 
-	if (wCol == 0)
+	if (wCol == 0) {
 		wStairsCol = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsCol;
-			wPrevTile = (wCol-wStairsCol>0) ?
-				pRoom->GetOSquare(wCol-wStairsCol, wRow) : T_WALL;
+			if (wCol - wStairsCol == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol-wStairsCol, wRow);
 		}
 	}
 
-	if (wRow == 0)
+	if (wRow == 0) {
 		wStairsRow = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsRow;
-			wPrevTile = (wRow-wStairsRow>0) ?
-				pRoom->GetOSquare(wCol, wRow-wStairsRow) : T_WALL;
+			if (wRow - wStairsRow == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol, wRow-wStairsRow);
 		}
 	}
 }
@@ -2571,7 +2839,8 @@ UINT CalcTileImageForStairs(
 
 //*****************************************************************************
 void CalcStairUpPosition(
-//Find out what position in a staircase this tile is (from top-left corner).
+//Find out what position in a staircase this tile is (from bottom-left corner).
+//Value is 1-based.
 //
 //Params:
 	const CDbRoom *pRoom,   //(in)   Room to use for calcs--not necessarily the
@@ -2579,35 +2848,34 @@ void CalcStairUpPosition(
 	const UINT wCol, const UINT wRow,   //(in)   Square for which to calc.
 	UINT& wStairsCol, UINT& wStairsRow) //(out)  position
 {
-	//Find out what position in a staircase this tile is (from bottom-left corner).
 	const UINT wStairTile = pRoom->GetOSquare(wCol, wRow);
 	ASSERT(wStairTile==T_STAIRS_UP);
 	wStairsCol = wStairsRow = 0;
 	UINT wPrevTile;
 
-	if (wCol == 0)
+	if (wCol == 0) {
 		wStairsCol = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsCol;
-			wPrevTile = (wCol-wStairsCol>0) ?
-				pRoom->GetOSquare(wCol-wStairsCol, wRow) : T_WALL;
+			if (wCol - wStairsCol == 0)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol-wStairsCol, wRow);
 		}
 	}
 
-	if (wRow == pRoom->wRoomRows-1)
+	if (wRow == pRoom->wRoomRows - 1) {
 		wStairsRow = 1;
-	else
-	{
+	} else {
 		wPrevTile = wStairTile;
 		while (wPrevTile==wStairTile)
 		{
 			++wStairsRow;
-			wPrevTile = (wRow+wStairsRow<pRoom->wRoomRows-1) ?
-				pRoom->GetOSquare(wCol, wRow+wStairsRow) : T_WALL;
+			if (wRow + wStairsRow >= pRoom->wRoomRows - 1)
+				break;
+			wPrevTile = pRoom->GetOSquare(wCol, wRow+wStairsRow);
 		}
 	}
 }
@@ -3267,6 +3535,10 @@ inline bool bDrawWater(const CDbRoom *pRoom, const UINT x, const UINT y, const U
 //Returns: true if water should briar up against this tile
 {
 	UINT wOSquare = pRoom->GetOSquareWithGuessing(x,y);
+
+	//Thin Ice is drawn on top of water, so use the underlying square
+	if (wOSquare == T_THINICE) wOSquare = T_WATER;
+
 	if (wOSquare == wTileNo)
 		return true;
 
@@ -3290,22 +3562,55 @@ UINT CalcTileImageForWater(
 //Returns:
 //TI_* constant.
 {
-	//If water to north, set bit 1.
+#define IsThinIceTile(wTile) ((wTile) == T_THINICE || bIsBridge((wTile)))
+	UINT wTileType = 0;
+	switch (wTileNo)
+	{
+		case T_WATER: wTileType = 0; break;
+		case T_GOO: wTileType = 1; break;
+		case T_THINICE: wTileType = 2; break;
+		default: ASSERT(!"CalcTileImageForWater: Wrong tile type"); break;
+	}
+
 	UINT wCalcCode = 0;
-	if (bDrawWater(pRoom, wCol, wRow-1, wTileNo))
-		++wCalcCode;
+	if (wTileType == 2) {
+		//Thin Ice checks for Thin Ice or bridges
+			//If thin ice is north, set bit 1.
+		UINT wOSquare = pRoom->GetOSquareWithGuessing(wCol, wRow - 1);
+		if (IsThinIceTile(wOSquare))
+			++wCalcCode;
 
-	//If water to south, set bit 2.
-	if (bDrawWater(pRoom, wCol, wRow+1, wTileNo))
-		wCalcCode += 2;
+		//If thin ice is south, set bit 2.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol, wRow + 1);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 2;
 
-	//If water to west, set bit 3.
-	if (bDrawWater(pRoom, wCol-1, wRow, wTileNo))
-		wCalcCode += 4;
+		//If thin ice is west, set bit 3.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol - 1, wRow);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 4;
 
-	//If water to east, set bit 4.
-	if (bDrawWater(pRoom, wCol+1, wRow, wTileNo))
-		wCalcCode += 8;
+		//If thin ice is east, set bit 4.
+		wOSquare = pRoom->GetOSquareWithGuessing(wCol + 1, wRow);
+		if (IsThinIceTile(wOSquare))
+			wCalcCode += 8;
+	} else {
+		//If water to north, set bit 1.
+		if (bDrawWater(pRoom, wCol, wRow - 1, wTileNo))
+			++wCalcCode;
+
+		//If water to south, set bit 2.
+		if (bDrawWater(pRoom, wCol, wRow + 1, wTileNo))
+			wCalcCode += 2;
+
+		//If water to west, set bit 3.
+		if (bDrawWater(pRoom, wCol - 1, wRow, wTileNo))
+			wCalcCode += 4;
+
+		//If water to east, set bit 4.
+		if (bDrawWater(pRoom, wCol + 1, wRow, wTileNo))
+			wCalcCode += 8;
+	}
 
 		// ?.?   0     ?#?      1     ?.?      2     ?#?      3
 		// .X.         .X.            .X.            .X.
@@ -3322,7 +3627,7 @@ UINT CalcTileImageForWater(
 		// ?.?   12    ?#?      13    ? ?      14    ?#?      15
 		// #X#         #X#            #X#            #X#
 		// ?.?         ?.?            ?#?            ?#?
-	static const UINT TileImages[2][16] = {
+	static const UINT TileImages[3][16] = {
 	{
 		//Note these are to show the shape of the bank, not the water.
 		TI_WATER_NSWE, TI_WATER_SWE,  TI_WATER_NWE,  TI_WATER_WE,
@@ -3334,17 +3639,15 @@ UINT CalcTileImageForWater(
 		TI_GOO_W,    TI_GOO_NW,   TI_GOO_SW,   TI_GOO_NSW,
 		TI_GOO_E,    TI_GOO_NE,   TI_GOO_SE,   TI_GOO_NSE,
 		TI_GOO_WE,   TI_GOO_NWE,  TI_GOO_SWE,  TI_GOO_NSWE
+	},{
+		TI_THINICE,      TI_THINICE_N,    TI_THINICE_S,    TI_THINICE_NS,
+		TI_THINICE_W,    TI_THINICE_NW,   TI_THINICE_SW,   TI_THINICE_NSW,
+		TI_THINICE_E,    TI_THINICE_NE,   TI_THINICE_SE,   TI_THINICE_NSE,
+		TI_THINICE_WE,   TI_THINICE_NWE,  TI_THINICE_SWE,  TI_THINICE_NSWE
 	}};
 
 	ASSERT(wCalcCode < 16);
 
-	UINT wTileType = 0;
-	switch (wTileNo)
-	{
-		case T_WATER: wTileType = 0; break;
-		case T_GOO: wTileType = 1; break;
-		default: ASSERT(!"CalcTileImageForWater: Wrong tile type"); break;
-	}
-
 	return TileImages[wTileType][wCalcCode];
 }
+#undef IsThinIceTile

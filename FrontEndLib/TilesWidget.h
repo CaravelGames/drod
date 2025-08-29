@@ -28,15 +28,17 @@
 #define TILESWIDGET_H
 
 #include "Widget.h"
+#include <array>
 #include <vector>
 
 struct TILEDATA
 {
-	TILEDATA(UINT wTileNo, int x, int y, const float r, const float g, const float b)
-		: wTileNo(wTileNo), x(x), y(y), r(r), g(g), b(b)
+	TILEDATA(UINT wTileNo, int x, int y, const std::array<float, 3> hsv, const float r, const float g, const float b)
+		: wTileNo(wTileNo), x(x), y(y), hsv(hsv), r(r), g(g), b(b)
 	{}
 	UINT wTileNo;
 	int x, y;
+	const std::array<float, 3> hsv;
 	float r, g, b;
 };
 
@@ -51,6 +53,7 @@ public:
 	virtual void   Paint(bool bUpdateRect = true);
 
 	void AddTile(const UINT tileNo, const int x, const int y,
+			const std::array<float, 3> hsv = { -1, -1, -1 },
 			const float r=1.0f, const float g=1.0f, const float b=1.0f);
 	void ClearTiles();
 

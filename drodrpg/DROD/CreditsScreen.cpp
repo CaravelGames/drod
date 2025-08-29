@@ -52,8 +52,8 @@ const UINT CX_CREDITS = CScreen::CX_SCREEN - X_CREDITS*2;
 //
 
 //************************************************************************************
-CCreditsScreen::CCreditsScreen()
-	: CDrodScreen(SCR_Credits)
+CCreditsScreen::CCreditsScreen(SCREENTYPE screentype)
+	: CDrodScreen(screentype)
 	, pScrollingText(NULL)
 //Constructor.
 {
@@ -64,6 +64,15 @@ CCreditsScreen::CCreditsScreen()
 	AddWidget(this->pScrollingText);
 	SetRate(CCreditsScreen::fScrollRateMultiplier);
 }
+
+//*****************************************************************************
+CCreditsTendryScreen::CCreditsTendryScreen()
+	: CCreditsScreen(SCR_CreditsTendry)
+{}
+
+CCreditsACRScreen::CCreditsACRScreen()
+	: CCreditsScreen(SCR_CreditsACR)
+{}
 
 //*****************************************************************************
 void CCreditsScreen::Paint(
@@ -84,7 +93,7 @@ void CCreditsScreen::Paint(
 }
 
 //************************************************************************************
-bool CCreditsScreen::SetForActivate()
+void CCreditsScreen::SetForActivateStart()
 //Called before screen is activated and first paint.
 //
 //Returns:
@@ -96,17 +105,15 @@ bool CCreditsScreen::SetForActivate()
 	g_pTheSM->ClearReturnScreens();
 	g_pTheSM->InsertReturnScreen(SCR_Title);
 
-	g_pTheSound->PlaySong(SONGID_CREDITS);
-
 	//Fix up scrolling text widget state in case screen was activated before.
 	this->pScrollingText->SetBackground(this->images[0]);
 	this->pScrollingText->ClearText();
-	this->pScrollingText->ScrollAbsolute(0,0);
+	this->pScrollingText->ScrollAbsolute(0, 0);
 	this->pScrollingText->Show();
 
 	//For face image display preparation.
-	CFaceWidget *pFaceWidget = new CFaceWidget(0, 0, 0, CX_FACE, CY_FACE);
-	AddWidget(pFaceWidget, true);
+	this->pFaceWidget = new CFaceWidget(0, 0, 0, CX_FACE, CY_FACE);
+	AddWidget(this->pFaceWidget, true);
 
 //Add some text to the scrolling text widget.
 #  define A_TEXT(mid) \
@@ -122,12 +129,20 @@ bool CCreditsScreen::SetForActivate()
 //Add optional face image below name.
 #	define A_FACEIMAGE(eSpeaker) { \
 	SDL_Surface *pFaceSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, CX_FACE, CY_FACE, g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0); \
-	pFaceWidget->SetDestSurface(pFaceSurface); \
-	pFaceWidget->SetCharacter(eSpeaker, false); \
-	pFaceWidget->Paint(); \
+	this->pFaceWidget->SetDestSurface(pFaceSurface); \
+	this->pFaceWidget->SetCharacter(PlayerRole, eSpeaker, NULL); \
+	this->pFaceWidget->Paint(); \
 	CImageWidget *pImage = new CImageWidget(0, (this->pScrollingText->GetW()-CX_FACE)/2, 0, pFaceSurface); \
-	this->pScrollingText->Add(pImage); }
+	this->pScrollingText->Add(pImage); \
+	this->pScrollingText->AddText(wszCRLF, F_CreditsText); }
+}
 
+//************************************************************************************
+bool CCreditsTendryScreen::SetForActivate()
+{
+	SetForActivateStart();
+
+	g_pTheSound->PlaySong(SONGID_CREDITS);
 
 	//Credits start here.
 	A_CONTRIBUTOR(MID_Cr_Producer, MID_Cr_Producer_C);
@@ -181,17 +196,96 @@ bool CCreditsScreen::SetForActivate()
 
 	A_TEXT(MID_CreditsTheEnd);
 
+	SetForActivateComplete();
+
+	return true;
+}
+
+//************************************************************************************
+bool CCreditsACRScreen::SetForActivate()
+{
+	SetForActivateStart();
+
+	g_pTheSound->PlaySong(SONGID_CREDITS);
+
+	//Credits start here.
+	A_TEXT(MID_Cr_ACR_Intro);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Producer, MID_Cr_ACR_Producer_Title);
+	A_FACEIMAGE(Speaker_Stalwart);
+	A_TEXT(MID_Cr_ACR_Producer_Text);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_LeadProgrammer, MID_Cr_ACR_LeadProgrammer_Title);
+	A_FACEIMAGE(Speaker_Construct);
+	A_TEXT(MID_Cr_ACR_LeadProgrammer_Text);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Programmer, MID_Cr_ACR_Programmer_Title);
+	A_FACEIMAGE(Speaker_Architect);
+	A_TEXT(MID_Cr_ACR_Programmer_Text);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_MacPort, MID_Cr_ACR_MacPort_Title);
+	A_FACEIMAGE(Speaker_GoblinKing);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Music, MID_Cr_ACR_Music_Title);
+	A_FACEIMAGE(Speaker_Slayer);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Artwork, MID_Cr_ACR_Artwork_Title);
+	A_FACEIMAGE(Speaker_Patron);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_LevelDesign, MID_Cr_ACR_LevelDesign_Title);
+	A_FACEIMAGE(Speaker_Archivist);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_FeatureDesign, MID_Cr_ACR_FeatureDesign_Title);
+	A_FACEIMAGE(Speaker_Brain);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Story, MID_Cr_ACR_Story_Title);
+	A_FACEIMAGE(Speaker_Beethro);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_CNet, MID_Cr_ACR_CNet_Title);
+	A_FACEIMAGE(Speaker_Goblin);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Web, MID_Cr_ACR_Web_Title);
+	A_FACEIMAGE(Speaker_GoblinKing);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_VoiceCoord, MID_Cr_ACR_VoiceCoord_Title);
+	A_FACEIMAGE(Speaker_Citizen1);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Voice, MID_Cr_ACR_Voice_Title);
+	A_FACEIMAGE(Speaker_Citizen2);
+	A_TEXT(MID_Cr_ACR_Voice_Text);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Sound, MID_Cr_ACR_Sound_Title);
+	A_FACEIMAGE(Speaker_Aumtlich);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_SoundEdit, MID_Cr_ACR_SoundEdit_Title);
+	A_FACEIMAGE(Speaker_Halph);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_TestCoord, MID_Cr_ACR_TestCoord_Title);
+	A_FACEIMAGE(Speaker_RockGiant);
+
+	A_CONTRIBUTOR(MID_Cr_ACR_Test, MID_Cr_ACR_Test_Title);
+	A_FACEIMAGE(Speaker_RockGolem);
+
+	A_TEXT(MID_Cr_ACR_Outro);
+
+	A_TEXT(MID_Cr_ACR_TheEnd);
+
+	SetForActivateComplete();
+
+	return true;
+}
+
+//*****************************************************************************************
+void CCreditsScreen::SetForActivateComplete()
+{
+	RemoveWidget(this->pFaceWidget);
+
+	ClearEvents(); //don't let an extra keypress during transition cause quick exit
+}
 
 #undef A_TEXT
 #undef A_CONTRIBUTOR
 #undef A_FACEIMAGE
-
-	RemoveWidget(pFaceWidget);
-
-	ClearEvents(); //don't let an extra keypress during transition cause quick exit
-
-	return true;
-}
 
 //*****************************************************************************************
 void CCreditsScreen::OnKeyDown(

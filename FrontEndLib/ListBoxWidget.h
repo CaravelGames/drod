@@ -120,16 +120,21 @@ public:
 	bool           SelectLineStartingWith(const WCHAR wc);
 	bool           SelectLineWithText(const WCHAR* pText);
 	void           SelectMultipleItems(const bool bVal);
+	void           SetAllowFiltering(const bool bVal) { this->bAllowFiltering = bVal; }
 	void           SetHotkeyItemSelection(const bool bVal=true) {this->bHotkeyItemSelection = bVal;}
 	void           SetItemColor(const UINT dwKey, const SDL_Color& color);
 	void           SetItemColorAtLine(const UINT index, const SDL_Color& color);
 	void           SetItemText(const UINT dwKey, const WCHAR *pwczSetText);
+	void           SetItemTextAtLine(const UINT index, const WCHAR *pwczSetText);
 	void           SetRearrangeable(bool val) { this->bRearrangable = val; }
 	void           SetRearrangeable(const UINT dwKey, bool val);
 	void           SetSelectedItemText(const WCHAR *pwczSetText);
 	void           SetTopLineNumber(const UINT wSetTopLine);
 	void           SortAlphabetically(const bool bVal) {this->bSortAlphabetically = bVal;}
 	void           UnsetCursorLine() { this->wCursorLine = static_cast<UINT>(-1); }
+	virtual void   Unselect(const bool bPaint = true);
+
+	static WSTRING wstrFilterWord; // Text prefixing the filter-input preview
 
 protected:
 	virtual void   HandleDrag(const SDL_MouseMotionEvent &MouseMotionEvent);
@@ -145,6 +150,9 @@ protected:
 	virtual void   ScrollDownOnePage();
 	virtual void   ScrollUpOneLine(const UINT wLines=1);
 	virtual void   ScrollUpOnePage();
+
+	void           GetLineDrawCoords(const UINT wLineNumber, int &drawX, int &drawY, UINT &drawWidth, UINT &drawHeight);
+	virtual void   Paint_Line(const UINT wListItemNumber, const UINT wDrawLineNumber, const LBOX_ITEM &listItem);
 
 	vector<LBOX_ITEM*> Items;
 	UINT           wTopLineNo;  //of view area
@@ -163,11 +171,17 @@ protected:
 	bool           bRearrangable;    //can rearrange choices in list
 	UINT           wDraggingLineNo;  //this line # is being moved in the list
 	bool           bRearranged;      //choices were rearranged on mouse drag
+	bool           bAllowFiltering;  //Allow filtering by typing text
+	WSTRING        wstrActiveFilter;
 
 private:
 	UINT           AddItem_Insert(LBOX_ITEM *pNew, const bool bGrayed,
 			const int nInsertAt, const bool bGrayLast);
+	bool           IsValidFilterCharacter(const WCHAR character);
 	WSTRING        StripLeadingArticle(const WSTRING& text);
+	void           UpdateFilter(WSTRING wstrFilter);
+
+	vector<LBOX_ITEM *> filteredItems;
 };
 
 #endif //#ifndef LISTBOXWIDGET_H

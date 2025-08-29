@@ -54,6 +54,7 @@ void  CalcTileCoordForPit(const CDbRoom *pRoom, const UINT wCol, const UINT wRow
 UINT  CalcTileImageFor(const CDbRoom *pRoom, const UINT wTileNo, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForOSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImageForTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
+UINT  CalcTileImageForCoveredTSquare(const CDbRoom *pRoom, UINT wCol, UINT wRow);
 UINT  CalcTileImagesForWallShadow(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 bool  CastsWallShadow(const UINT t);
 UINT  GetSwordlessEntityTile(const UINT wType, const UINT wO);
@@ -62,6 +63,7 @@ UINT  GetTileImageForEntity(const UINT wType, const UINT wO, const UINT wAnimFra
 UINT  GetTileImageForSerpentPiece(const UINT wType, const UINT wTileNo);
 UINT  GetTileImageForRockGiantPiece(const UINT wTileNo, const UINT wO, const UINT wFrame);
 UINT  GetTileImageForTileNo(const UINT wTileNo);
+UINT  GetTileImageForMapIcon(const ScriptVars::MapIcon mapIcon);
 UINT  CalcTileImageForKey(const BYTE tParam);
 UINT  CalcTileImageForSword(const BYTE tParam);
 UINT  CalcTileImageForShield(const BYTE tParam);
@@ -69,12 +71,15 @@ UINT  CalcTileImageForAccessory(const BYTE tParam);
 UINT  CalcTileImageForStairs(const CDbRoom *pRoom, const UINT wCol, const UINT wRow);
 UINT  CalcTileImageForToken(const BYTE tParam);
 UINT  CalcTileImageForWater(const CDbRoom *pRoom, const UINT wCol, const UINT wRow, const UINT wTileNo);
+UINT  GetTileImageForEntityOrDefault(const UINT wType, UINT wO, const UINT wAnimFrame);
 
 enum WALLTYPE {WALL_NONE, WALL_EDGE, WALL_INNER};
 WALLTYPE GetWallTypeAtSquare(const CDbRoom *pRoom, int nCol, int nRow);
 
 void GetObstacleStats(const CDbRoom *pRoom, const UINT wCol, const UINT wRow,
 		UINT& wObSizeIndex, UINT& xPos, UINT& yPos);
+
+BYTE GetMistCorners(const CDbRoom* pRoom, const UINT wCol, const UINT wRow);
 
 //Monster tiles.
 //Determined by orientation and animation frame.

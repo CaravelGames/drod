@@ -43,35 +43,52 @@ protected:
 	CRestoreScreen();
 	virtual ~CRestoreScreen();
 
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 private:
 	void     ChooseSavedGame(const UINT dwSavedGameID);
 	void     ClearState();
+	void     DisplayScorepointsDialog();
+	void     InitScorepointQuery();
 	virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	virtual void   Paint(bool bUpdateRect=true);
 	void     PopulateListBoxFromSavedGames();
+	void     PopulateScorepoints(CListBoxWidget* pListBoxWidget);
+	void     RenameSaveGame(const UINT saveID);
 	void     RestoreGame();
 	bool     SetWidgets();
 	void     ShowSave();
 	void     ShowSaveStats();
 	void     UpdateWidgets();
 
+	void     GetSaves();
+	SORTED_SAVES GetSortedSaves() const;
+
+	vector<SAVE_INFO> saves;
+
 	UINT       dwSelectedSavedGameID;
 	UINT       dwLastGameID;
-//	UINT        wConqueredRooms;
-	bool        bHoldConquered;
-	bool        bResetWidgets;      //on screen activation
+//	UINT       wConqueredRooms;
+	UINT       gameSort;
+	bool       bHoldConquered;
+	bool       bResetWidgets;      //on screen activation
 
 	CCurrentGame   *pCurrentRestoreGame;
 	CRoomWidget    *pRoomWidget;
 	CScalerWidget  *pScaledRoomWidget;
 	CMapWidget     *pMapWidget;
 	CListBoxWidget *pSaveListBoxWidget;
+	CDialogWidget* pScorepointsDialog;
+	CListBoxWidget* pScorepointsListBox;
+
+	//optimization for compiling challenges and completion
+	CIDSet scorepointScanRoomIDs;
+	CDbHolds::VARCOORDMAP scorepointVarMap;
 };
 
 #endif //...#ifndef RESTORESCREEN_H

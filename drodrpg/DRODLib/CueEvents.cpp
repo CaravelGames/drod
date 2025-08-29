@@ -37,8 +37,8 @@ using namespace std;
 
 //Has player left room or will he shortly be leaving/restarting?  Another way
 //of looking at: are any more commands going to be processed in the current room.
-const CUEEVENT_ID CIDA_PlayerLeftRoom[10] = {
-	CID_ExitRoomPending, CID_ExitRoom, CID_ExitLevelPending, CID_WinGame,
+const CUEEVENT_ID CIDA_PlayerLeftRoom[11] = {
+	CID_ExitRoomPending, CID_ExitRoom, CID_ExitLevelPending, CID_ExitToWorldMapPending, CID_WinGame,
 	CID_MonsterKilledPlayer, CID_ExplosionKilledPlayer, CID_BriarKilledPlayer,
 	CID_CriticalNPCDied, CID_PlayerFellIntoPit, CID_PlayerDrownedInWater}; //CID_NPCBeethroDied
 

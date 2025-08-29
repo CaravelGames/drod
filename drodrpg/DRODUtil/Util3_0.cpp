@@ -488,7 +488,7 @@ void CUtil3_0::GetMasterFilepath(
 	WSTRING &wstrFilepath)  //(out)  Filepath.
 const
 {
-	static const WCHAR wszDRODRPGDat[] = {{'d'},{'r'},{'o'},{'d'},{'r'},{'p'},{'g'},{'1'},{'_'},{'0'},{'.'},{'d'},{'a'},{'t'},{0}};
+	static const WCHAR wszDRODRPGDat[] = {{'d'},{'r'},{'o'},{'d'},{'r'},{'p'},{'g'},{'2'},{'_'},{'0'},{'.'},{'d'},{'a'},{'t'},{0}};
 	wstrFilepath += this->strPath.c_str();
 	wstrFilepath += wszSlash;
 	wstrFilepath += wszDRODRPGDat;
@@ -725,11 +725,29 @@ const
   CStretchyBuffer Source;
   if (!CFiles::ReadFileIntoBuffer(pwzFilepath, Source)) return false;
 
+  // Uni files are in UTF8, but they used to be in a wider format. Therefore, the code works on wide characters.
+  // So we will convert from UTF8 to Unicode, and extract from the converted string.
+  const char* pSource = (const char*)((const BYTE*)Source);
+  WSTRING wideSource = UTF8ToUnicode(pSource);
+
   const WCHAR wszNameTagStart[] = {{'M'},{'I'},{'D'},{'_'},{0}};
   char szNameTag[MAXLEN_NAMETAG + 1];
 
-  const WCHAR *pSeek = (const WCHAR *)((const BYTE *)Source);
-  const WCHAR *pStop = (const WCHAR *)((const BYTE *) pSeek + Source.Size());
+#ifdef WIN32
+	// We need crlf line ends, at least for Windows builds.
+	// This ensures we get them if the file has lr line ends
+	WSTRING::size_type pos = 0;
+	while ((pos = wideSource.find(L"\n", pos)) != string::npos)
+	{
+		if (wideSource.at(pos - 1) != L'\r')
+			wideSource.insert(pos, L"\r");
+
+		pos++;
+	}
+#endif
+
+  const WCHAR* pSeek = wideSource.c_str();
+  const WCHAR* pStop = pSeek + wideSource.size();
   const WCHAR *pTagStart;
   UINT wTagLen;
   while (pSeek <= pStop)

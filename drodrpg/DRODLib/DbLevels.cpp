@@ -269,6 +269,23 @@ UINT CDbLevels::GetHoldIDForLevel(const UINT dwLevelID)
 }
 
 //*****************************************************************************
+WSTRING CDbLevels::GetLevelName(const UINT levelID)
+{
+	WSTRING name;
+
+	c4_View LevelsView;
+	const UINT dwLevelI = LookupRowByPrimaryKey(levelID, V_Levels, LevelsView);
+	if (dwLevelI != ROW_NO_MATCH) {
+		c4_RowRef row = LevelsView[dwLevelI];
+
+		CDbMessageText NameText((UINT)p_NameMessageID(row));
+		name = (const WCHAR*)NameText;
+	}
+
+	return name;
+}
+
+//*****************************************************************************
 void CDbLevels::GetRoomsExplored(
 //OUT: Compiled lists of room IDs, one being the all the rooms in the level,
 //and the second the subset of these rooms having been explored
@@ -617,6 +634,11 @@ UINT CDbLevel::getItemAmount(const UINT item) const
 {
 	switch (item)
 	{
+		case T_HEALTH_HUGE:
+		{
+			static const UINT healFactor = 1000;
+			return healFactor * this->dwMultiplier;
+		}
 		case T_HEALTH_BIG:
 		{
 			static const UINT healFactor = 200;
@@ -632,21 +654,65 @@ UINT CDbLevel::getItemAmount(const UINT item) const
 			static const UINT healFactor = 15;
 			return healFactor * this->dwMultiplier;
 		}
+
 		case T_ATK_UP:
 		{
 			static const UINT atkFactor = 1;
 			return atkFactor * this->dwMultiplier;
 		}
+		case T_ATK_UP3:
+		{
+			static const UINT atkFactor = 3;
+			return atkFactor * this->dwMultiplier;
+		}
+		case T_ATK_UP10:
+		{
+			static const UINT atkFactor = 10;
+			return atkFactor * this->dwMultiplier;
+		}
+
 		case T_DEF_UP:
 		{
 			static const UINT defFactor = 1;
 			return defFactor * this->dwMultiplier;
 		}
+		case T_DEF_UP3:
+		{
+			static const UINT defFactor = 3;
+			return defFactor * this->dwMultiplier;
+		}
+		case T_DEF_UP10:
+		{
+			static const UINT defFactor = 10;
+			return defFactor * this->dwMultiplier;
+		}
+
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
 		{
 			static const UINT costFactor = 10;
 			return costFactor * this->dwMultiplier;
 		}
+
+		case T_SHOVEL1:
+		{
+			static const UINT factor = 1;
+			return factor * this->dwMultiplier;
+		}
+		case T_SHOVEL3:
+		{
+			static const UINT factor = 3;
+			return factor * this->dwMultiplier;
+		}
+		case T_SHOVEL10:
+		{
+			static const UINT factor = 10;
+			return factor * this->dwMultiplier;
+		}
+
+		case T_DIRT1: return 1;
+		case T_DIRT3: return 3;
+		case T_DIRT5: return 5;
+
 		default: return 0;
 	}
 }
@@ -801,7 +867,7 @@ void CDbLevel::RekeyExitIDs(
 	const bool bDifferentHold = pNewHold->dwHoldID != pOldHold->dwHoldID;
 
 	//Special official hold considerations.
-	const bool bOfficialHoldTransfer = pOldHold->status == CDbHold::Main && (pOldHold->status == pNewHold->status);
+	const bool bOfficialHoldTransfer = CDbHold::IsOfficialHold(pOldHold->status) && (pOldHold->status == pNewHold->status);
 
 	CDb db;
 	const CIDSet roomIDs = CDb::getRoomsInLevel(this->dwLevelID);
@@ -999,10 +1065,10 @@ MESSAGE_ID CDbLevel::SetProperty(
 				return MID_FileCorrupted;  //corrupt file (must have an author)
 
 			//Set to local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID == info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should have been loaded already
-			this->dwPlayerID = (*localID).second;
+			this->dwPlayerID = (*localPlayerID).second;
 			break;
 		}
 		case P_NameMessage:

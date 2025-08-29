@@ -52,6 +52,7 @@ private:
 	UINT lastTurn;      //last turn var query was made
 
 	VARMAP lastVars;   //latest displayed var state
+	VARMAP lastArrayVars; //latest displayed array var state
 
 	CRoomWidget *pRoomWidget;
 

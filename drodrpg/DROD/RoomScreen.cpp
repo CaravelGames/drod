@@ -33,6 +33,7 @@
 #include <FrontEndLib/LabelWidget.h>
 
 #include "../DRODLib/SettingsKeys.h"
+#include <DRODLib/GameConstants.h>
 
 #include <BackEndLib/Exception.h>
 #include <BackEndLib/Files.h>
@@ -40,6 +41,21 @@
 
 #define BG_SURFACE      (0)
 #define PARTS_SURFACE   (1)
+
+static const UINT CX_LEFT_SIGN = 65;
+static const UINT CX_MIDDLE_SIGN = 36;
+static const UINT CX_RIGHT_SIGN = 68;
+static const UINT CY_SIGN = 36;
+static const int X_LEFT_SIGN_SRC = 1;
+static const int X_MIDDLE_SIGN_SRC = 69;
+static const int X_RIGHT_SIGN_SRC = 118;
+static const int Y_SIGN_SRC = 384;
+static const int X_SIGN = 163 + 44 * 3;
+static const int Y_SIGN = 2;
+static const UINT CX_SIGN = 1018 - X_SIGN;
+static SDL_Rect LeftSignSource = { X_LEFT_SIGN_SRC, Y_SIGN_SRC, CX_LEFT_SIGN, CY_SIGN };
+static SDL_Rect MiddleSignSource = { X_MIDDLE_SIGN_SRC, Y_SIGN_SRC, CX_MIDDLE_SIGN, CY_SIGN };
+static SDL_Rect RightSignSource = { X_RIGHT_SIGN_SRC, Y_SIGN_SRC, CX_RIGHT_SIGN, CY_SIGN };
 
 //*****************************************************************************
 CRoomScreen::CRoomScreen(
@@ -59,7 +75,7 @@ CRoomScreen::CRoomScreen(
 
 	static const int X_MAP = 15;
 	static const int Y_MAP = 578;
-	static const UINT CX_MAP = 245; //130;
+	static const UINT CX_MAP = 254;
 	static const UINT CY_MAP = 138;
 	static const int X_SCROLL_LABEL = 27;
 	static const int Y_SCROLL_LABEL = 218;
@@ -84,9 +100,9 @@ CRoomScreen::CRoomScreen(
 
 	//Player stats.
 	static const int X_HP = 60;
-	static const int Y_HP = 205;
+	static const int Y_HP = 200;
 	static const UINT CX_HP = 145 - X_HP;
-	static const UINT CY_HP = 29;
+	static const UINT CY_HP = 30;
 
 	static const int X_ATK = X_HP;
 	static const int Y_ATK = Y_HP + CY_HP;
@@ -110,7 +126,7 @@ CRoomScreen::CRoomScreen(
 
 	//Player keys.
 	static const int X_YKEY = 22;
-	static const int Y_YKEY = 370;
+	static const int Y_YKEY = 372;
 	static const UINT CX_YKEY = 30;
 	static const UINT CY_YKEY = CY_XP;
 
@@ -129,16 +145,21 @@ CRoomScreen::CRoomScreen(
 	static const UINT CX_SKEY = CX_BKEY;
 	static const UINT CY_SKEY = CY_BKEY;
 
+	static const int X_SHOVEL = X_SKEY + CX_SKEY;
+	static const int Y_SHOVEL = Y_SKEY;
+	static const UINT CX_SHOVEL = CX_SKEY;
+	static const UINT CY_SHOVEL = CY_SKEY;
+
 	//Item multiplier display.
-	static const int X_ITEMMULT = 135;
+	static const int X_ITEMMULT = 165;
 	static const int Y_ITEMMULT = 355;
 	static const UINT CX_ITEMMULT = 265 - X_ITEMMULT;
 	static const UINT CY_ITEMMULT = 40;
 
 	//Player equipment.
 	static const int X_SWORD = 182;
-	static const int Y_SWORD = 200;
-	static const UINT CX_SWORD = 260 - X_SWORD;
+	static const int Y_SWORD = 199;
+	static const UINT CX_SWORD = 265 - X_SWORD;
 	static const UINT CY_SWORD = 260 - Y_SWORD;
 
 	static const int X_SHIELD = X_SWORD;
@@ -152,15 +173,16 @@ CRoomScreen::CRoomScreen(
 	static const UINT CY_ACCESSORY = CY_SHIELD;
 
 	CLabelWidget *pLabelWidget;
-	AddWidget(new CLabelWidget(TAG_HP, X_HP, Y_HP, CX_HP, CY_HP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_ATK, X_ATK, Y_ATK, CX_ATK, CY_ATK, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_DEF, X_DEF, Y_DEF, CX_DEF, CY_DEF, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_GOLD, X_GOLD, Y_GOLD, CX_GOLD, CY_GOLD, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_XP, X_XP, Y_XP, CX_XP, CY_XP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_YKEY, X_YKEY, Y_YKEY, CX_YKEY, CY_YKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_GKEY, X_GKEY, Y_GKEY, CX_GKEY, CY_GKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_BKEY, X_BKEY, Y_BKEY, CX_BKEY, CY_BKEY, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_SKEY, X_SKEY, Y_SKEY, CX_SKEY, CY_SKEY, F_FrameCaption, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_HP, X_HP, Y_HP, CX_HP, CY_HP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_ATK, X_ATK, Y_ATK, CX_ATK, CY_ATK, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_DEF, X_DEF, Y_DEF, CX_DEF, CY_DEF, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_GOLD, X_GOLD, Y_GOLD, CX_GOLD, CY_GOLD, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_XP, X_XP, Y_XP, CX_XP, CY_XP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_YKEY, X_YKEY, Y_YKEY, CX_YKEY, CY_YKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_GKEY, X_GKEY, Y_GKEY, CX_GKEY, CY_GKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_BKEY, X_BKEY, Y_BKEY, CX_BKEY, CY_BKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_SKEY, X_SKEY, Y_SKEY, CX_SKEY, CY_SKEY, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_SHOVEL, X_SHOVEL, Y_SHOVEL, CX_SHOVEL, CY_SHOVEL, F_StatPanelText, wszEmpty));
 
 	pLabelWidget = new CLabelWidget(
 			TAG_ITEMMULT, X_ITEMMULT, Y_ITEMMULT, CX_ITEMMULT, CY_ITEMMULT, F_ItemMultiplier, wszEmpty, false, 0, WT_Label, true);
@@ -168,26 +190,26 @@ CRoomScreen::CRoomScreen(
 	AddWidget(pLabelWidget);
 
 	pLabelWidget = new CLabelWidget(
-			TAG_SWORD, X_SWORD, Y_SWORD, CX_SWORD, CY_SWORD, F_InvSlotText, wszEmpty);
+			TAG_SWORD, X_SWORD, Y_SWORD, CX_SWORD, CY_SWORD, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 	pLabelWidget = new CLabelWidget(
-			TAG_SHIELD, X_SHIELD, Y_SHIELD, CX_SHIELD, CY_SHIELD, F_InvSlotText, wszEmpty);
+			TAG_SHIELD, X_SHIELD, Y_SHIELD, CX_SHIELD, CY_SHIELD, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 	pLabelWidget = new CLabelWidget(
-			TAG_ACCESSORY, X_ACCESSORY, Y_ACCESSORY, CX_ACCESSORY, CY_ACCESSORY, F_InvSlotText, wszEmpty);
+			TAG_ACCESSORY, X_ACCESSORY, Y_ACCESSORY, CX_ACCESSORY, CY_ACCESSORY, F_InvSlotText, wszEmpty, false, 0, WT_Label, true);
 	pLabelWidget->SetClickable(true);
 	AddWidget(pLabelWidget);
 
 	//Monster stats.
 	static const int X_MONNAME = 22;
-	static const int Y_MONNAME = 425;
+	static const int Y_MONNAME = 420;
 	static const UINT CX_MONNAME = 160 - X_MONNAME;
-	static const UINT CY_MONNAME = 25;
+	static const UINT CY_MONNAME = 30;
 
 	static const int X_MONHP = X_HP;
-	static const int Y_MONHP = 452;
+	static const int Y_MONHP = 450;
 	static const UINT CX_MONHP = 160 - X_MONHP;
 	static const UINT CY_MONHP = CY_HP;
 
@@ -201,10 +223,10 @@ CRoomScreen::CRoomScreen(
 	static const UINT CX_MONDEF = CX_MONATK;
 	static const UINT CY_MONDEF = CY_MONATK;
 
-	AddWidget(new CLabelWidget(TAG_MONNAME, X_MONNAME, Y_MONNAME, CX_MONNAME, CY_MONNAME, F_Small, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONHP, X_MONHP, Y_MONHP, CX_MONHP, CY_MONHP, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONATK, X_MONATK, Y_MONATK, CX_MONATK, CY_MONATK, F_FrameCaption, wszEmpty));
-	AddWidget(new CLabelWidget(TAG_MONDEF, X_MONDEF, Y_MONDEF, CX_MONDEF, CY_MONDEF, F_FrameCaption, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONNAME, X_MONNAME, Y_MONNAME, CX_MONNAME, CY_MONNAME, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONHP, X_MONHP, Y_MONHP, CX_MONHP, CY_MONHP, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONATK, X_MONATK, Y_MONATK, CX_MONATK, CY_MONATK, F_StatPanelText, wszEmpty));
+	AddWidget(new CLabelWidget(TAG_MONDEF, X_MONDEF, Y_MONDEF, CX_MONDEF, CY_MONDEF, F_StatPanelText, wszEmpty));
 }
 
 //*****************************************************************************
@@ -301,24 +323,18 @@ void CRoomScreen::PaintScroll(const bool bUpdateRect) //[default=true]
 }
 
 //*****************************************************************************
+SDL_Rect& CRoomScreen::GetEntireSignRect() const
+{
+	static SDL_Rect EntireSign = { X_SIGN, Y_SIGN, CX_SIGN, CY_SIGN };
+
+	return EntireSign;
+}
+
+//*****************************************************************************
 void CRoomScreen::PaintSign()
 //Paint the sign.
 {
-	static const UINT CX_LEFT_SIGN = 65;
-	static const UINT CX_MIDDLE_SIGN = 36;
-	static const UINT CX_RIGHT_SIGN = 68;
-	static const UINT CY_SIGN = 36;
-	static const int X_LEFT_SIGN_SRC = 1;
-	static const int X_MIDDLE_SIGN_SRC = 69;
-	static const int X_RIGHT_SIGN_SRC = 118;
-	static const int Y_SIGN_SRC = 384;
-	static const int X_SIGN = 163 + 44*3;
-	static const int Y_SIGN = 2;
-	static const UINT CX_SIGN = 1018 - X_SIGN;
-	static SDL_Rect LeftSignSource = {X_LEFT_SIGN_SRC, Y_SIGN_SRC, CX_LEFT_SIGN, CY_SIGN};
-	static SDL_Rect MiddleSignSource = {X_MIDDLE_SIGN_SRC, Y_SIGN_SRC, CX_MIDDLE_SIGN, CY_SIGN};
-	static SDL_Rect RightSignSource = {X_RIGHT_SIGN_SRC, Y_SIGN_SRC, CX_RIGHT_SIGN, CY_SIGN};
-	static SDL_Rect EntireSign = {X_SIGN, Y_SIGN, CX_SIGN, CY_SIGN};
+	SDL_Rect& EntireSign = GetEntireSignRect();
 
 	ASSERT(this->images[BG_SURFACE]);
 	ASSERT(this->images[PARTS_SURFACE]);
@@ -397,63 +413,47 @@ void CRoomScreen::PaintSign()
 }
 
 //*****************************************************************************
-SDL_Keycode CRoomScreen::GetKeysymForCommand(const UINT wCommand) const
-//Returns: keysym currently set for indicated command
+bool CRoomScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
 {
-	for (std::map<SDL_Keycode,int>::const_iterator it = KeysymToCommandMap.begin(); it != KeysymToCommandMap.end(); ++it)
-		if (it->second == (int)wCommand)
-			return it->first;
-
-	ASSERT(!"Command not assigned");
-	return SDLK_UNKNOWN;
+	return bIsGameScreenCommand(command);
 }
 
 //*****************************************************************************
-void CRoomScreen::InitKeysymToCommandMap(
-//Set the keysym-to-command map with values from player settings that will determine
-//which commands correspond to which keys.
-//
-//Params:
-	CDbPackedVars &PlayerSettings)   //(in)   Player settings to load from.
+// Change sound effect pitch based on item power level
+float CRoomScreen::getFrequencyMultForItem(const UINT tile)
 {
-	//Clear the map.
-	this->KeysymToCommandMap.clear();
+	switch (tile) {
+		case T_HEALTH_SM: return 1.1f;
+		case T_HEALTH_BIG: return 0.9f;
+		case T_HEALTH_HUGE: return 0.8f;
 
-	//Check whether default is for keyboard or laptop.
-	CFiles Files;
-	string strKeyboard;
-	UINT wKeyboard = 0;	//default to numpad
-	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
-	{
-		wKeyboard = atoi(strKeyboard.c_str());
-		if (wKeyboard > 1) wKeyboard = 0;	//invalid setting
-	}
+		case T_ATK_UP3: return 0.9f;
+		case T_ATK_UP10: return 0.8f;
 
-	//Get key command values from current player settings.
-	static const int commands[InputCommands::DCMD_Count] = {
-		CMD_NW, CMD_N, CMD_NE,
-		CMD_W, CMD_WAIT, CMD_E,
-		CMD_SW, CMD_S, CMD_SE,
-		CMD_C, CMD_CC, CMD_RESTART, CMD_UNDO,
-		CMD_BATTLE_KEY, CMD_USE_ACCESSORY,
-		CMD_LOCK, CMD_EXEC_COMMAND
-	};
+		case T_DEF_UP3: return 0.9f;
+		case T_DEF_UP10: return 0.8f;
 
-	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex) {
-		const int nKey = PlayerSettings.GetVar(InputCommands::COMMANDNAME_ARRAY[wIndex],
-				COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
-		this->KeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : nKey] = commands[wIndex];
+		case T_SHOVEL3: return 0.95f;
+		case T_SHOVEL10: return 0.85f;
+
+		case TV_KEY_G: return 0.95f;
+		case TV_KEY_B: return 0.9f;
+		case TV_KEY_S: return 0.85f;
+
+		case T_DIRT3: return 0.9f;
+		case T_DIRT5: return 0.8f;
+
+		case T_MUD: return 1.1f;
+		case T_GEL: return 0.9f;
+
+		case T_DIRT1:
+		case T_HEALTH_MED:
+		case T_ATK_UP:
+		case T_DEF_UP:
+		case T_SHOVEL1:
+		case TV_KEY_Y:
+		case T_TAR:
+		default: return 1.0f;
 	}
 }
-
-//*****************************************************************************
-int CRoomScreen::GetCommandForKeysym(const SDL_Keycode& sym) const
-{
-	std::map<SDL_Keycode,int>::const_iterator it = this->KeysymToCommandMap.find(sym);
-	if (it != this->KeysymToCommandMap.end())
-			return it->second;
-
-	return CMD_UNSPECIFIED;
-}
-

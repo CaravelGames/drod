@@ -469,14 +469,18 @@
     <ClCompile Include="..\Drod\BloodEffect.cpp" />
     <ClCompile Include="..\Drod\BoundingBox.cpp" />
     <ClCompile Include="..\Drod\Color.cpp" />
+    <ClCompile Include="..\DROD\DamagePreviewEffect.cpp" />
     <ClCompile Include="..\Drod\DrodBitmapManager.cpp" />
     <ClCompile Include="..\Drod\EditRoomWidget.cpp" />
+    <ClCompile Include="..\DROD\EquipmentDescription.cpp" />
     <ClCompile Include="..\Drod\FaceWidget.cpp" />
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp" />
     <ClCompile Include="..\Drod\Light.cpp" />
     <ClCompile Include="..\Drod\MapWidget.cpp" />
     <ClCompile Include="..\Drod\ParticleExplosionEffect.cpp" />
     <ClCompile Include="..\Drod\PendingPlotEffect.cpp" />
     <ClCompile Include="..\Drod\Point.cpp" />
+    <ClCompile Include="..\DROD\RaindropEffect.cpp" />
     <ClCompile Include="..\Drod\Rectangle.cpp" />
     <ClCompile Include="..\Drod\RoomEffectList.cpp" />
     <ClCompile Include="..\Drod\RoomWidget.cpp" />
@@ -487,6 +491,7 @@
     <ClCompile Include="..\Drod\StrikeOrbEffect.cpp" />
     <ClCompile Include="..\Drod\TileImageCalcs.cpp" />
     <ClCompile Include="..\DROD\VarMonitorEffect.cpp" />
+    <ClCompile Include="..\DROD\WadeEffect.cpp" />
     <ClCompile Include="..\Drod\ZombieGazeEffect.cpp" />
     <ClCompile Include="DRODUtil.cpp" />
     <ClCompile Include="OptionList.cpp" />

@@ -359,6 +359,7 @@
       </BrowseInformationFile>
       <OmitDefaultLibName>true</OmitDefaultLibName>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;WIN32;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -537,15 +538,19 @@
     <ClCompile Include="BoundingBox.cpp" />
     <ClCompile Include="BrowserScreen.cpp" />
     <ClCompile Include="CharacterDialogWidget.cpp" />
+    <ClCompile Include="CharacterOptionsWidget.cpp" />
     <ClCompile Include="Chat.cpp" />
     <ClCompile Include="ChatScreen.cpp" />
     <ClCompile Include="ClockWidget.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="CommandListBoxWidget.cpp" />
     <ClCompile Include="CreditsScreen.cpp" />
+    <ClCompile Include="DamagePreviewEffect.cpp" />
     <ClCompile Include="DebrisEffect.cpp" />
     <ClCompile Include="DemoScreen.cpp" />
     <ClCompile Include="DemosScreen.cpp" />
     <ClCompile Include="DrodBitmapManager.cpp" />
+    <ClCompile Include="DrodDialogs.cpp" />
     <ClCompile Include="DrodFileDialogWidget.cpp" />
     <ClCompile Include="DrodFontManager.cpp" />
     <ClCompile Include="DrodScreen.cpp" />
@@ -555,10 +560,15 @@
     <ClCompile Include="EditRoomWidget.cpp" />
     <ClCompile Include="EditSelectScreen.cpp" />
     <ClCompile Include="EntranceSelectDialogWidget.cpp" />
+    <ClCompile Include="EquipmentDescription.cpp" />
     <ClCompile Include="ExplosionEffect.cpp" />
     <ClCompile Include="FaceWidget.cpp" />
+    <ClCompile Include="FiretrapEffect.cpp" />
     <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="HoldSelectScreen.cpp" />
+    <ClCompile Include="IceMeltEffect.cpp" />
+    <ClCompile Include="ImageOverlayEffect.cpp" />
+    <ClCompile Include="KeypressDialogWidget.cpp" />
     <ClCompile Include="LevelStartScreen.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -569,12 +579,15 @@
     <ClCompile Include="PendingBuildEffect.cpp" />
     <ClCompile Include="PendingPlotEffect.cpp" />
     <ClCompile Include="Point.cpp" />
+    <ClCompile Include="PuffExplosionEffect.cpp" />
+    <ClCompile Include="RaindropEffect.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="RestoreScreen.cpp" />
     <ClCompile Include="RoomEffectList.cpp" />
     <ClCompile Include="RoomScreen.cpp" />
     <ClCompile Include="RoomWidget.cpp" />
     <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SelectMediaDialogWidget.cpp" />
     <ClCompile Include="SelectPlayerScreen.cpp" />
     <ClCompile Include="SellScreen.cpp" />
     <ClCompile Include="SettingsScreen.cpp" />
@@ -592,8 +605,11 @@
     <ClCompile Include="TrapdoorFallEffect.cpp" />
     <ClCompile Include="VarMonitorEffect.cpp" />
     <ClCompile Include="VerminEffect.cpp" />
+    <ClCompile Include="WadeEffect.cpp" />
     <ClCompile Include="WeatherDialogWidget.cpp" />
     <ClCompile Include="WinStartScreen.cpp" />
+    <ClCompile Include="WorldMapScreen.cpp" />
+    <ClCompile Include="WorldMapWidget.cpp" />
     <ClCompile Include="ZombieGazeEffect.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -601,15 +617,19 @@
     <ClInclude Include="BoundingBox.h" />
     <ClInclude Include="BrowserScreen.h" />
     <ClInclude Include="CharacterDialogWidget.h" />
+    <ClInclude Include="CharacterOptionsWidget.h" />
     <ClInclude Include="Chat.h" />
     <ClInclude Include="ChatScreen.h" />
     <ClInclude Include="ClockWidget.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="CommandListBoxWidget.h" />
     <ClInclude Include="CreditsScreen.h" />
+    <ClInclude Include="DamagePreviewEffect.h" />
     <ClInclude Include="DebrisEffect.h" />
     <ClInclude Include="DemoScreen.h" />
     <ClInclude Include="DemosScreen.h" />
     <ClInclude Include="DrodBitmapManager.h" />
+    <ClInclude Include="DrodDialogs.h" />
     <ClInclude Include="DrodEffect.h" />
     <ClInclude Include="DrodFileDialogWidget.h" />
     <ClInclude Include="DrodFontManager.h" />
@@ -619,11 +639,17 @@
     <ClInclude Include="EditRoomScreen.h" />
     <ClInclude Include="EditRoomWidget.h" />
     <ClInclude Include="EditSelectScreen.h" />
+    <ClInclude Include="EffectChangeHistory.h" />
     <ClInclude Include="EntranceSelectDialogWidget.h" />
+    <ClInclude Include="EquipmentDescription.h" />
     <ClInclude Include="ExplosionEffect.h" />
     <ClInclude Include="FaceWidget.h" />
+    <ClInclude Include="FiretrapEffect.h" />
     <ClInclude Include="GameScreen.h" />
     <ClInclude Include="HoldSelectScreen.h" />
+    <ClInclude Include="IceMeltEffect.h" />
+    <ClInclude Include="ImageOverlayEffect.h" />
+    <ClInclude Include="KeypressDialogWidget.h" />
     <ClInclude Include="LevelStartScreen.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="MapWidget.h" />
@@ -633,6 +659,8 @@
     <ClInclude Include="PendingBuildEffect.h" />
     <ClInclude Include="PendingPlotEffect.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="PuffExplosionEffect.h" />
+    <ClInclude Include="RaindropEffect.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="RestoreScreen.h" />
     <ClInclude Include="RoomEffectList.h" />
@@ -640,6 +668,7 @@
     <ClInclude Include="RoomWidget.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneObject.h" />
+    <ClInclude Include="SelectMediaDialogWidget.h" />
     <ClInclude Include="SelectPlayerScreen.h" />
     <ClInclude Include="SellScreen.h" />
     <ClInclude Include="SettingsScreen.h" />
@@ -658,8 +687,11 @@
     <ClInclude Include="TrapdoorFallEffect.h" />
     <ClInclude Include="VarMonitorEffect.h" />
     <ClInclude Include="VerminEffect.h" />
+    <ClInclude Include="WadeEffect.h" />
     <ClInclude Include="WeatherDialogWidget.h" />
     <ClInclude Include="WinStartScreen.h" />
+    <ClInclude Include="WorldMapScreen.h" />
+    <ClInclude Include="WorldMapWidget.h" />
     <ClInclude Include="ZombieGazeEffect.h" />
   </ItemGroup>
   <ItemGroup>

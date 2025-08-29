@@ -228,6 +228,21 @@
     <ClCompile Include="OrbUtil.cpp">
       <Filter>General</Filter>
     </ClCompile>
+    <ClCompile Include="Construct.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="FluffBaby.cpp">
+      <Filter>Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="DbLocalHighScores.cpp">
+      <Filter>DBs</Filter>
+    </ClCompile>
+    <ClCompile Include="I18N.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="TotalMapStates.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Combat.h">
@@ -459,6 +474,25 @@
       <Filter>General</Filter>
     </ClInclude>
     <ClInclude Include="OrbUtil.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Texts\MIDs.h" />
+    <ClInclude Include="Construct.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="FluffBaby.h">
+      <Filter>Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="DbLocalHighScores.h">
+      <Filter>DBs</Filter>
+    </ClInclude>
+    <ClInclude Include="I18N.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CurrentGameRecords.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="TotalMapStates.h">
       <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>

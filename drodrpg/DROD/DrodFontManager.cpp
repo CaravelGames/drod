@@ -40,8 +40,7 @@
 //Holds the only instance of CDrodFontManager for the app.
 CDrodFontManager *g_pTheDFM = NULL;
 
-//const SDL_Color InventoryBG = {180, 180, 180, 0};
-const SDL_Color InvSlotBG = {178, 178, 178, 0}; //BG color of inventory slots
+const SDL_Color InvSlotBG = {112, 112, 112, 0}; //approximate BG color of inventory slots
 
 //*****************************************************************************
 CDrodFontManager::CDrodFontManager()
@@ -234,6 +233,13 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_Small].BackColor = LightBrown;
 	this->LoadedFonts[F_Small].bAntiAlias = true;
 
+	//Load settings keymap found
+	this->LoadedFonts[F_SettingsKeymaps].pTTFFont = pFont;
+	this->LoadedFonts[F_SettingsKeymaps].wLineSkipHeight = 18;
+	this->LoadedFonts[F_SettingsKeymaps].wSpaceWidth = 3;
+	this->LoadedFonts[F_SettingsKeymaps].BackColor = LightBrown;
+	this->LoadedFonts[F_SettingsKeymaps].bAntiAlias = true;
+
 	//Load header font.
 	pFont = GetFont(wstrFontFilepath, 22, TTF_STYLE_BOLD);
 	if (!pFont) return false;
@@ -363,12 +369,23 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_ListBoxItem].bAntiAlias = true;
 
 	//Inventory slot item text.
+	pFont = GetFont(wstrFontFilepath, 19);
+	if (!pFont) return false;
 	this->LoadedFonts[F_InvSlotText].pTTFFont = pFont;
-	this->LoadedFonts[F_InvSlotText].wLineSkipHeight = CY_LBOX_ITEM;
-	this->LoadedFonts[F_InvSlotText].wSpaceWidth = 8;
+	this->LoadedFonts[F_InvSlotText].wLineSkipHeight = 20;
+	this->LoadedFonts[F_InvSlotText].wSpaceWidth = 6;
+	this->LoadedFonts[F_InvSlotText].ForeColor = Black;
 	this->LoadedFonts[F_InvSlotText].BackColor = InvSlotBG;
 	this->LoadedFonts[F_InvSlotText].bAntiAlias = true;
 	
+	pFont = GetFont(wstrFontFilepath, 21);
+	if (!pFont) return false;
+	this->LoadedFonts[F_StatPanelText].pTTFFont = pFont;
+	this->LoadedFonts[F_StatPanelText].wLineSkipHeight = 20;
+	this->LoadedFonts[F_StatPanelText].wSpaceWidth = 6;
+	this->LoadedFonts[F_StatPanelText].ForeColor = Black;
+	this->LoadedFonts[F_StatPanelText].BackColor = InvSlotBG;
+	this->LoadedFonts[F_StatPanelText].bAntiAlias = true;
 
 	//Load selected list box item font.
 	pFont = GetFont(wstrFontFilepath, 19);
@@ -490,7 +507,7 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_TitleMenu].pTTFFont = pFont;
 	this->LoadedFonts[F_TitleMenu].wLineSkipHeight = TTF_FontLineSkip(pFont) * 9/10;
 	this->LoadedFonts[F_TitleMenu].wSpaceWidth = wSpaceWidth;
-	this->LoadedFonts[F_TitleMenu].ForeColor = LightBlue;
+	this->LoadedFonts[F_TitleMenu].ForeColor = Gold;
 	this->LoadedFonts[F_TitleMenu].BackColor = DarkGray;
 	this->LoadedFonts[F_TitleMenu].bAntiAlias = true;
 	this->LoadedFonts[F_TitleMenu].bOutline = true;
@@ -516,6 +533,59 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_TitleMenuSelected].bOutline = true;
 	this->LoadedFonts[F_TitleMenuSelected].OutlineColor = Black;
 	this->LoadedFonts[F_TitleMenuSelected].wOutlineWidth = 2;
+
+	//Load damage preview fonts.
+	pFont = GetFont(wstrFont2Filepath, 14);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreviewSmall].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewSmall].wLineSkipHeight = GetFontHeight(F_DamagePreviewSmall);
+	this->LoadedFonts[F_DamagePreviewSmall].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewSmall].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewSmall].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewSmall].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewSmall].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewSmall].wOutlineWidth = 1;
+	GetWordWidth(F_DamagePreviewSmall, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewSmall].wSpaceWidth = wSpaceWidth;
+
+	pFont = GetFont(wstrFont2Filepath, 17);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreviewMedium].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewMedium].wLineSkipHeight = GetFontHeight(F_DamagePreviewMedium);
+	this->LoadedFonts[F_DamagePreviewMedium].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewMedium].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewMedium].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewMedium].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewMedium].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewMedium].wOutlineWidth = 1;
+	GetWordWidth(F_DamagePreviewMedium, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewMedium].wSpaceWidth = wSpaceWidth;
+
+	pFont = GetFont(wstrFont2Filepath, 20);
+	if (!pFont) return false;
+	this->LoadedFonts[F_DamagePreviewLarge].pTTFFont = pFont;
+	this->LoadedFonts[F_DamagePreviewLarge].wLineSkipHeight = GetFontHeight(F_DamagePreviewLarge);
+	this->LoadedFonts[F_DamagePreviewLarge].ForeColor = Yellow;
+	this->LoadedFonts[F_DamagePreviewLarge].BackColor = Black;
+	this->LoadedFonts[F_DamagePreviewLarge].bAntiAlias = true;
+	this->LoadedFonts[F_DamagePreviewLarge].bOutline = true;
+	this->LoadedFonts[F_DamagePreviewLarge].OutlineColor = Black;
+	this->LoadedFonts[F_DamagePreviewLarge].wOutlineWidth = 2;
+	GetWordWidth(F_DamagePreviewLarge, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_DamagePreviewLarge].wSpaceWidth = wSpaceWidth;
+
+	//Load world map font.
+	pFont = GetFont(wstrFont2Filepath, 22);
+	if (!pFont) return false;
+	this->LoadedFonts[F_WorldMapLevel].pTTFFont = pFont;
+	this->LoadedFonts[F_WorldMapLevel].wLineSkipHeight = GetFontHeight(F_WorldMapLevel);
+	this->LoadedFonts[F_WorldMapLevel].wSpaceWidth = 5;
+	this->LoadedFonts[F_WorldMapLevel].ForeColor = AlmostWhite;
+	this->LoadedFonts[F_WorldMapLevel].BackColor = DarkGray;
+	this->LoadedFonts[F_WorldMapLevel].bAntiAlias = true;
+	this->LoadedFonts[F_WorldMapLevel].bOutline = true;
+	this->LoadedFonts[F_WorldMapLevel].OutlineColor = Black;
+	this->LoadedFonts[F_WorldMapLevel].wOutlineWidth = 2;
 
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG

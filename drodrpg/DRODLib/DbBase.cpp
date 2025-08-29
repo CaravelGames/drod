@@ -30,6 +30,9 @@
 //Define DbProps in this object
 #define INCLUDED_FROM_DBBASE_CPP
 
+//Uncomment to update dat files to latest DBProps.h definitions after loading.
+//#define REDEFINE_DATABASE
+
 #include "DbBase.h"
 #include "Db.h"
 #include "DbProps.h"
@@ -53,9 +56,24 @@ bool CDbBase::bDirtyPlayer = false;
 bool CDbBase::bDirtySave = false;
 bool CDbBase::bDirtyText = false;
 
+//DB keys before START_LOCAL_ID are used for read-only, pre-installed game content
+#ifdef STEAMBUILD
+const UINT CDbBase::START_LOCAL_ID = 10000000; //10M
+#else
+const UINT CDbBase::START_LOCAL_ID = 10000; //legacy
+#endif
+
+const UINT MAX_IDS_IN_BASE_DAT = 100000;
+const UINT MAX_IDS_IN_SINGLE_DLC_PACK = 10000;
+
+UINT CDbBase::creatingStaticDataFileNum = 0;
+
 //Module-scope vars.
 set<CDbBase*> m_dbRefs;
-c4_Storage *m_pMainStorage = NULL;
+//Pre-installed game content and pre-packaged read-only/static DLC packs
+typedef map<UINT, c4_Storage*> StaticStorageMap;
+StaticStorageMap m_pMainStorage;
+//Local player content, including imported homemade holds
 c4_Storage *m_pDataStorage = NULL;
 c4_Storage *m_pHoldStorage = NULL;
 c4_Storage *m_pPlayerStorage = NULL;
@@ -64,6 +82,7 @@ c4_Storage *m_pSaveMoveStorage = NULL; //auxiliary to pSaveStorage
 c4_Storage *m_pTextStorage = NULL;
 
 const WCHAR pwszDrod[] = { We('d'),We('r'),We('o'),We('d'),We(0) };
+const WCHAR pwszDataFileExtension[] = { We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszDotDat[] = { We('.'),We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszData[] = { We('d'),We('a'),We('t'),We('a'),We('.'),We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszHold[] = { We('h'),We('o'),We('l'),We('d'),We('.'),We('d'),We('a'),We('t'),We(0) };
@@ -174,6 +193,7 @@ c4_IntProp* CDbBase::GetPrimaryKeyProp(
 		case V_SavedGames: return &p_SavedGameID;
 		case V_SavedGameMoves: return &p_SavedGameID;
 		case V_Speech: return &p_SpeechID;
+		case V_LocalHighScores: return &p_HighScoreID;
 		default:
 			ASSERT(!"CDbBase::GetPrimaryKeyProp: Unexpected property type.");
 		return NULL;
@@ -195,7 +215,8 @@ UINT CDbBase::GetIncrementedID(
 
 	c4_Storage *pStorage;
 #ifdef DEV_BUILD
-	pStorage = m_pMainStorage;
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	pStorage = m_pMainStorage[CDbBase::creatingStaticDataFileNum];
 	CDbBase::DirtyData();
 #else
 	const int nPropID = propID.GetId();
@@ -211,6 +232,7 @@ UINT CDbBase::GetIncrementedID(
 	static const int nRoomID = p_RoomID.GetId();
 	static const int nSavedGameID = p_SavedGameID.GetId();
 	static const int nSpeechID = p_SpeechID.GetId();
+	static const int nHighScoreId = p_HighScoreID.GetId();
 
 	if (nPropID == nDataID)
 	{
@@ -222,7 +244,7 @@ UINT CDbBase::GetIncrementedID(
 	} else if (nPropID == nPlayerID) {
 		pStorage = m_pPlayerStorage;
 		CDbBase::DirtyPlayer();
-	} else if (nPropID == nDemoID || nPropID == nSavedGameID) {
+	} else if (nPropID == nDemoID || nPropID == nSavedGameID || nPropID == nHighScoreId) {
 		pStorage = m_pSaveStorage;
 		CDbBase::DirtySave();
 	} else if (nPropID == nMessageID || nPropID == nMessageTextID) {
@@ -248,37 +270,59 @@ UINT CDbBase::GetIncrementedID(
 c4_RowRef CDbBase::GetRowRef(const VIEWTYPE vType, UINT dwGlobalIndex)
 //Returns: a reference to a view row
 //
-//Hint: Call this method when iterating across all row indices.
-//However, after a call to LookupRowByPrimaryKey(..., view),
-//calling this is incorrect.  Instead, invoke view[returnedIndex] to retrieve
-//the locally-indexed row from the proper view.
+//Hint: Call this method when iterating across all row indices (i.e., in all DB files).
+// When calling LookupRowByPrimaryKey(..., view), however,
+// invoke view[returnedIndex] instead to retrieve the locally-indexed row from the known view.
 {
 	const char* viewName = ViewTypeStr(vType);
 
 	UINT localIndex = dwGlobalIndex;
-	c4_View View = m_pMainStorage->View(viewName);
-	const UINT size = View.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
-	                                    //but this is only a problem if other .dat files are non-empty
-	                                    //which should be avoided when building the main .dat file.
-	if (localIndex < size)
-		return View.GetAt(localIndex);
-	localIndex -= size; //index not in this view -- use relative index in subsequent views
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		const UINT size = view.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
+										  //but this is only a problem if the local player .dat files are non-empty
+										  //which should be avoided when building the main or other static DLC .dat files.
+		if (localIndex < size)
+			return view.GetAt(localIndex);
 
-	//Look in other DB.
+		localIndex -= size; //index not in this view -- use relative index in subsequent views
+	}
+
 	c4_View localContentView = GetPlayerDataView(vType, viewName);
 	return localContentView.GetAt(localIndex);
 }
 
 //*****************************************************************************
 c4_ViewRef CDbBase::GetActiveView(const VIEWTYPE vType)
-//Returns: the view of indicated type that may be written to
+//Returns: the view of indicated type to write to
 {
 	const char* viewName = ViewTypeStr(vType);
 #ifdef DEV_BUILD
-	return m_pMainStorage->View(viewName);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	return m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
 #else
 	return GetPlayerDataView(vType, viewName);
 #endif
+}
+
+//*****************************************************************************
+UINT CDbBase::GetStartIDForDLC(UINT fileNum)
+{
+	UINT id = 0;
+	if (fileNum > 0) {
+		id = MAX_IDS_IN_BASE_DAT + (fileNum-1) * MAX_IDS_IN_SINGLE_DLC_PACK;
+		ASSERT(id < START_LOCAL_ID);
+	}
+	return id;
+}
+
+bool CDbBase::SetCreateDataFileNum(UINT num) {
+	ASSERT(!CDbBase::IsOpen());
+#if defined(DEV_BUILD) && defined(STEAMBUILD) //need to have larger value of START_LOCAL_ID
+	CDbBase::creatingStaticDataFileNum = num;
+	return true;
+#endif
+	return false;
 }
 
 //*****************************************************************************
@@ -286,8 +330,17 @@ c4_ViewRef CDbBase::GetView(const VIEWTYPE vType, const UINT dwID)
 //Returns: view reference from one of the databases.
 {
 	const char* viewName = ViewTypeStr(vType);
-	if (dwID < START_LOCAL_ID)
-		return m_pMainStorage->View(viewName); //pre-packaged database
+	if (dwID < START_LOCAL_ID) {
+		//pre-packaged database (content pack)
+		UINT dataFileNum = 0;
+		if (dwID >= MAX_IDS_IN_BASE_DAT)
+			dataFileNum = 1 + (dwID - MAX_IDS_IN_BASE_DAT) / MAX_IDS_IN_SINGLE_DLC_PACK; //ID block allocation strategy
+		StaticStorageMap::const_iterator it = m_pMainStorage.find(dataFileNum);
+		if (it != m_pMainStorage.end())
+			return it->second->View(viewName);
+
+		return m_pMainStorage[0]->View(viewName); //gotta return something
+	}
 
 	//The player's local content database.
 	return GetPlayerDataView(vType, viewName);
@@ -312,6 +365,7 @@ c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName
 			return m_pPlayerStorage->View(viewName);
 		case V_Demos:
 		case V_SavedGames:
+		case V_LocalHighScores:
 			return m_pSaveStorage->View(viewName);
 		case V_SavedGameMoves:
 			return m_pSaveMoveStorage->View(viewName);
@@ -319,7 +373,7 @@ c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName
 			return m_pTextStorage->View(viewName);
 		default:
 			ASSERT(!"Non-supported DB table");
-			return m_pMainStorage->View(viewName); //gotta return something
+			return m_pMainStorage[0]->View(viewName); //gotta return something
 	}
 #endif
 }
@@ -330,20 +384,33 @@ UINT CDbBase::GetViewSize(const VIEWTYPE vType)
 {
 	const char* viewName = ViewTypeStr(vType);
 
-	c4_View view = m_pMainStorage->View(viewName);
+	UINT totalSize = 0;
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		totalSize += view.GetSize();
+	}
+
 	c4_View localContentView = GetPlayerDataView(vType, viewName);
-	return view.GetSize() + localContentView.GetSize();
+	totalSize += localContentView.GetSize();
+
+	return totalSize;
 }
 
 //*****************************************************************************
 UINT CDbBase::globalRowToLocalRow(
-//Translates a global row index to its local row index.
-	const UINT globalRowIndex, const VIEWTYPE vType)
+//Translates a global row index (position) to its local row index (position).
+	UINT globalRowIndex, const VIEWTYPE vType)
 {
-	const UINT baseIndexRowCount = GetView(vType,0).GetSize();
-	if (globalRowIndex < baseIndexRowCount)
-		return globalRowIndex; //in base view, global index is equivalent to local index
-	return globalRowIndex - baseIndexRowCount; //subtract number of rows in first view
+	const char* viewName = ViewTypeStr(vType);
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		const UINT viewRowCount = view.GetSize();
+		if (globalRowIndex < viewRowCount)
+			break; //found the view that contains this global row position
+		globalRowIndex -= viewRowCount; //skip past this view
+	}
+
+	return globalRowIndex;
 }
 
 //*****************************************************************************
@@ -403,12 +470,13 @@ UINT CDbBase::LookupRowByPrimaryKey(
 //*****************************************************************************
 bool CDbBase::IsOpen()
 {
-	if (!m_pMainStorage)
+	if (m_pMainStorage.empty())
 		return false;
+	//ASSUME: entries in m_pMainStorage will be non-null
 
 #ifndef DEV_BUILD
-	return m_pDataStorage != NULL && m_pHoldStorage != NULL && m_pPlayerStorage != NULL &&
-			m_pSaveStorage != NULL && m_pSaveMoveStorage != NULL && m_pTextStorage != NULL;
+	if (!m_pDataStorage || !m_pHoldStorage || !m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
+		return false;
 #endif
 
 	return true;
@@ -433,7 +501,7 @@ MESSAGE_ID CDbBase::Open(
 	{
 		//Close databases if already open.
 		Close();
-		ASSERT(!m_pMainStorage);
+		ASSERT(m_pMainStorage.empty());
 		ASSERT(!m_pDataStorage);
 		ASSERT(!m_pHoldStorage);
 		ASSERT(!m_pPlayerStorage);
@@ -443,16 +511,14 @@ MESSAGE_ID CDbBase::Open(
 
 		//Concatenate paths to stock and player databases.
 		CFiles Files;
-		WSTRING wstrPath, wstrMainDatPath, wstrDataDatPath, wstrHoldDatPath,
-				wstrPlayerDatPath, wstrSaveDatPath, wstrSaveMoveDatPath, wstrTextDatPath;
-		wstrMainDatPath = (pwszResFilepath) ? pwszResFilepath : Files.GetResPath();
-		wstrMainDatPath += wszSlash;
-		wstrMainDatPath += CFiles::wGameName;
-		wstrMainDatPath += wszDROD_VER;
-		wstrMainDatPath += pwszDotDat;
+		const WSTRING wstrResPath = pwszResFilepath ? pwszResFilepath : Files.GetResPath();
+		const WSTRING wstrMainDatBaseFilepath = wstrResPath + wszSlash + CDbBase::BaseResourceFilename();
+		const WSTRING wstrMainDatPath = wstrMainDatBaseFilepath + pwszDotDat;
 
-		wstrPath = Files.GetDatPath();
-		wstrPath += wszSlash;
+		WSTRING wstrDataDatPath, wstrHoldDatPath,
+				wstrPlayerDatPath, wstrSaveDatPath, wstrSaveMoveDatPath, wstrTextDatPath;
+
+		const WSTRING wstrPath = Files.GetDatPath() + wszSlash;
 		wstrDataDatPath = wstrPath + pwszData;
 		wstrHoldDatPath = wstrPath + pwszHold;
 		wstrPlayerDatPath = wstrPath + pwszPlayer;
@@ -466,26 +532,26 @@ MESSAGE_ID CDbBase::Open(
 
 		//Create new, fresh data files if they don't already exist.
 		if (!CFiles::DoesFileExist(wstrDataDatPath.c_str())
-				&& !CreateDatabase(wstrDataDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrDataDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrHoldDatPath.c_str()))
 		{
-			if (!CreateDatabase(wstrHoldDatPath.c_str(), START_LOCAL_ID))
+			if (!CreateDatabase(wstrHoldDatPath, START_LOCAL_ID))
 				return MID_DatNoAccess;
 		}
 		if (!CFiles::DoesFileExist(wstrPlayerDatPath.c_str()))
 		{
-			if (!CreateDatabase(wstrPlayerDatPath.c_str(), START_LOCAL_ID))
+			if (!CreateDatabase(wstrPlayerDatPath, START_LOCAL_ID))
 				return MID_DatNoAccess;
 		}
 		if (!CFiles::DoesFileExist(wstrSaveDatPath.c_str())
-				&& !CreateDatabase(wstrSaveDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrSaveDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrSaveMoveDatPath.c_str())
-				&& !CreateDatabase(wstrSaveMoveDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrSaveMoveDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrTextDatPath.c_str())
-				&& !CreateDatabase(wstrTextDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrTextDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 
 		//Verify read and write access.
@@ -516,16 +582,25 @@ MESSAGE_ID CDbBase::Open(
 		//Metakit has performance issues when working with Unicode filenames.
 		//So, we will ignore the WCHAR filenames and open the DB the fast and memory efficient way.
 		string filename = UnicodeToUTF8(wstrMainDatPath);
+
 		int writeFlag =
 #ifdef DEV_BUILD
-		1; //save explicitly to this file only (when not creating another pack)
+		!CDbBase::creatingStaticDataFileNum ? 1 : 0; //save explicitly to this file only (when not creating another pack)
 #else
 		//Static dats MUST be opened read-only, otherwise things break horribly (i.e., implementation doesn't support this)
 		0;  //0 = read-only
 #endif
-		m_pMainStorage = new c4_Storage(filename.c_str(), writeFlag);
-		if (!m_pMainStorage)
+		c4_Storage *pBaseStorage = new c4_Storage(filename.c_str(), writeFlag);
+		if (!pBaseStorage)
 			throw MID_CouldNotOpenDB;
+		m_pMainStorage[0] = pBaseStorage;
+
+#ifdef DEV_BUILD
+		if (CDbBase::creatingStaticDataFileNum && !CreateContentFile(wstrMainDatBaseFilepath, CDbBase::creatingStaticDataFileNum))
+			return MID_DatNoAccess;
+#elif STEAMBUILD
+		OpenStaticContentFiles(wstrResPath);
+#endif
 
 #ifndef DEV_BUILD
 		UnicodeToUTF8(wstrDataDatPath, filename);
@@ -540,9 +615,20 @@ MESSAGE_ID CDbBase::Open(
 		m_pSaveMoveStorage = new c4_Storage(filename.c_str(), 1);
 		UnicodeToUTF8(wstrTextDatPath, filename);
 		m_pTextStorage = new c4_Storage(filename.c_str(), 1);
+
 		if (!m_pDataStorage || !m_pHoldStorage ||
 				!m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
 			throw MID_CouldNotOpenDB;
+
+#	ifdef REDEFINE_DATABASE
+		RedefineDatabase(m_pDataStorage);
+		RedefineDatabase(m_pHoldStorage);
+		RedefineDatabase(m_pPlayerStorage);
+		RedefineDatabase(m_pSaveStorage);
+		RedefineDatabase(m_pSaveMoveStorage);
+		RedefineDatabase(m_pTextStorage);
+#	endif // REDEFINE_DATABASE
+
 #endif
 
 		buildIndex();
@@ -554,6 +640,66 @@ MESSAGE_ID CDbBase::Open(
 	}
 	Undirty();
 	return dwRet;
+}
+
+WSTRING CDbBase::BaseResourceFilename()
+{
+	return CFiles::wGameName + CFiles::wGameVer; 
+}
+
+//*****************************************************************************
+//Creating a static content file/DLC pack.
+bool CDbBase::CreateContentFile(const WSTRING& wFilename, UINT num)
+{
+	ASSERT(num);
+	if (!num)
+		return true;
+
+	WSTRING wAdditionalDataFilepath = wFilename + wszUnderscore;
+	WCHAR temp[12];
+	wAdditionalDataFilepath += _itoW(num, temp, 10);
+	wAdditionalDataFilepath += pwszDotDat;
+
+	if (!CFiles::DoesFileExist(wAdditionalDataFilepath.c_str())
+		&& !CreateDatabase(wAdditionalDataFilepath, GetStartIDForDLC(num)))
+		return false;
+
+	const string filepath = UnicodeToUTF8(wAdditionalDataFilepath);
+	c4_Storage* pStaticStorage = new c4_Storage(filepath.c_str(), 1);
+	if (!pStaticStorage)
+		throw MID_CouldNotOpenDB;
+	m_pMainStorage[num] = pStaticStorage;
+
+	return true;
+}
+
+//*****************************************************************************
+void CDbBase::OpenStaticContentFiles(const WSTRING& wstrResPath)
+//Scan for and open other static files (called "<gamename><gamever>_<num>"),
+//inserting them into the data file map, positioned by number, for read-only access.
+{
+	vector<WSTRING> dataFiles;
+	CFiles::GetFileList(wstrResPath.c_str(), pwszDataFileExtension, dataFiles);
+	if (!dataFiles.empty()) {
+		const WSTRING wPath = wstrResPath + wszSlash;
+		const WSTRING wBasename = CDbBase::BaseResourceFilename() + wszUnderscore;
+		//See note in CDbBase::Open() regarding Metakit ASCII filename handling
+		const string resPath = UnicodeToUTF8(wPath);
+		const string basename = UnicodeToUTF8(wBasename);
+		for (vector<WSTRING>::const_iterator fileIt = dataFiles.begin(); fileIt != dataFiles.end(); ++fileIt) {
+			const string filename = UnicodeToUTF8(*fileIt);
+			if (!filename.compare(0, basename.size(), basename)) {
+				const int storageFileNum = convertToInt(filename.c_str() + basename.size());
+				if (storageFileNum > 0 && UINT(storageFileNum) != CDbBase::creatingStaticDataFileNum) {
+					ASSERT(!m_pMainStorage.count(storageFileNum));
+					const string filepath = resPath + filename;
+					c4_Storage* pStaticStorage = new c4_Storage(filepath.c_str(), 0);
+					if (pStaticStorage)
+						m_pMainStorage[storageFileNum] = pStaticStorage;
+				}
+			}
+		}
+	}
 }
 
 //*****************************************************************************
@@ -577,8 +723,10 @@ void CDbBase::Close(const bool bCommit) //[default=true]
 //*****************************************************************************
 void CDbBase::ResetStorage()
 {
-	//Close main database.
-	delete m_pMainStorage; m_pMainStorage = NULL;
+	//Close static databases.
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+		delete it->second;
+	m_pMainStorage.clear();
 
 	//Close player databases.
 	delete m_pDataStorage; m_pDataStorage = NULL;
@@ -620,6 +768,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 	c4_View SavedGames = newStorage.GetAs(SAVEDGAMES_VIEWDEF);
 	c4_View SavedGameMoves = newStorage.GetAs(SAVEDGAMEMOVES_VIEWDEF);
 	c4_View Speech = newStorage.GetAs(SPEECH_VIEWDEF);
+	c4_View LocalHighScores = newStorage.GetAs(LOCALHIGHSCORES_VIEWDEF);
 
 	if (initIncrementedIDs >= 0)
 	{
@@ -633,12 +782,39 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 			p_PlayerID[      initIncrementedIDs ] +
 			p_RoomID[        initIncrementedIDs ] +
 			p_SavedGameID[   initIncrementedIDs ] +
-			p_SpeechID[      initIncrementedIDs ]);
+			p_SpeechID[      initIncrementedIDs ] +
+			p_HighScoreID[   initIncrementedIDs ]);
 	}
 
 	newStorage.Commit();
 
 	return true;
+}
+
+//*****************************************************************************
+void CDbBase::RedefineDatabase(
+//Update all views in the specificed dat file to match the definitions from
+//DBProps.h
+c4_Storage* storage) //(in) metakit storage object for dat file
+{
+#ifdef REDEFINE_DATABASE
+	//Calling GetAs with the appropriate VIEWDEF will update the view.
+	storage->GetAs(INCREMENTEDIDS_VIEWDEF);
+	storage->GetAs(DATA_VIEWDEF);
+	storage->GetAs(DEMOS_VIEWDEF);
+	storage->GetAs(HOLDS_VIEWDEF);
+	storage->GetAs(LEVELS_VIEWDEF);
+	storage->GetAs(MESSAGETEXTS_VIEWDEF);
+	storage->GetAs(PLAYERS_VIEWDEF);
+	storage->GetAs(ROOMS_VIEWDEF);
+	storage->GetAs(SAVEDGAMES_VIEWDEF);
+	storage->GetAs(SAVEDGAMEMOVES_VIEWDEF);
+	storage->GetAs(SPEECH_VIEWDEF);
+	storage->GetAs(LOCALHIGHSCORES_VIEWDEF);
+
+	//Now commit the changes
+	storage->Commit();
+#endif // REDEFINE_DATABASE
 }
 
 //*****************************************************************************
@@ -656,10 +832,18 @@ const WCHAR* CDbBase::GetMessageText(
 {
 #ifdef PATCH
 	//Hard-code message texts that won't be in the pre-packaged .dat file when patching an older version.
-	//Add new message texts here in future patches.
+	//Add new message texts here as they are added in minor version bumps.
 	string strText;
 	switch (eMessageID)
 	{
+		//TODO 2.0: remove all of these when building barebones and release build dat files
+		case MID_NewLevel: strText = "(add new level)"; break;
+		case MID_EyeAbility: strText = "Strikes in front"; break;
+		case MID_RoachQueenAbility: strText = "Spawns eggs"; break;
+		case MID_GoblinAbility: strText = "Strikes when back turned"; break;
+		case MID_MimicAbility: strText = "Moves and fights like you"; break;
+		case MID_TarMotherAbility: strText = "Attached tarstuff becomes alive"; break;
+		case MID_TitleMainMenu: strText = "&Back"; break;
 		case MID_DoubleXP: strText = "Double REP"; break;
 		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
 		case MID_EquipQueryStatus: strText = "Status"; break;
@@ -674,8 +858,453 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_MoneyDoorOperated: strText = "Money door opened"; break;
 		case MID_MoneyDoorLocked: strText = "Money door locked"; break;
 		case MID_CaravelServerError: strText = "There was an error contacting the Caravel server."; break;
+		case MID_BehaviorBeamBlock: strText = "Beam blocker"; break;
+		case MID_VarLessThanOrEqual: strText = "<="; break;
+		case MID_VarGreaterThanOrEqual: strText = ">="; break;
+		case MID_VarInequal: strText = "!="; break;
+		case MID_VarMyMonsterHPMult: strText = "_MyMonsterHPMult"; break;
+		case MID_VarMyMonsterATKMult: strText = "_MyMonsterATKMult"; break;
+		case MID_VarMyMonsterDEFMult: strText = "_MyMonsterDEFMult"; break;
+		case MID_VarMyMonsterGRMult: strText = "_MyMonsterGRMult"; break;
+		case MID_VarMyMonsterXPMult: strText = "_MyMonsterREPMult"; break;
+		case MID_VarMyItemMult: strText = "_MyItemMult"; break;
+		case MID_VarMyItemHPMult: strText = "_MyItemHPMult"; break;
+		case MID_VarMyItemATKMult: strText = "_MyItemATKMult"; break;
+		case MID_VarMyItemDEFMult: strText = "_MyItemDEFMult"; break;
+		case MID_VarMyItemGRMult: strText = "_MyItemGRMult"; break;
+		case MID_IfElseIf: strText = "Else If"; break;
+		case MID_ReturnCommand: strText = "Return"; break;
+		case MID_GoSub: strText = "GoSub"; break;
+		case MID_PreviousIf: strText = "<Previous If>"; break;
+		case MID_NextElseOrElseIfSkip: strText = "<Next Else or Else If (Skip Condition)>"; break;
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
 		case MID_QuickPathNotAvailable: strText = "No known path is available."; break;
+		case MID_Rain: strText = "Rain"; break;
+		case MID_LevelMapDetail: strText = "Level Map (detailed)"; break;
+		case MID_DrankPotion: strText = "Player drank speed/invisibility potion"; break;
+		case MID_ReceivedATK: strText = "Received ATK"; break;
+		case MID_ReceivedDEF: strText = "Received DEF"; break;
+		case MID_ReceivedHP: strText = "Received HP"; break;
+		case MID_HugeHealth: strText = "Huge health"; break;
+		case MID_DefenseUp: strText = "Small Shield gem"; break;
+		case MID_DefenseUp3: strText = "Medium Shield gem"; break;
+		case MID_DefenseUp10: strText = "Large Shield gem"; break;
+		case MID_AttackUp: strText = "Small Power gem"; break;
+		case MID_AttackUp3: strText = "Medium Power gem"; break;
+		case MID_AttackUp10: strText = "Large Power gem"; break;
+		case MID_EachVictory: strText = "Each victory"; break;
+		case MID_VarMudSpawn: strText = "_MudSpawn"; break;
+		case MID_VarTarSpawn: strText = "_TarSpawn"; break;
+		case MID_VarGelSpawn: strText = "_GelSpawn"; break;
+		case MID_VarQueenSpawn: strText = "_QueenSpawn"; break;
+		case MID_Crate: strText = "Crate"; break;
+		case MID_RoomLocationText: strText = "Room location text"; break;
+		case MID_FlashingMessage: strText = "Flashing message"; break;
+		case MID_ScriptColor: strText = "Color(hex: rrggbb)"; break;
+		case MID_SetMonsterVar: strText = "Set monster var"; break;
+		case MID_To: strText = "to"; break;
+		case MID_ValueOrExpression: strText = "Value or expression"; break;
+		case MID_VarMonsterName: strText = "_MyName"; break;
+		case MID_SaveGameSort: strText = "Sort by"; break;
+		case MID_GameSortChronological: strText = "Time"; break;
+		case MID_GameSortAlphabetical: strText = "Name"; break;
+		case MID_SetMovementType: strText = "Set movement type"; break;
+		case MID_Ground: strText = "Ground"; break;
+		case MID_Air: strText = "Air"; break;
+		case MID_SpawnEggs: strText = "Spawn Eggs"; break;
+		case MID_VarMySpawn: strText = "_MySpawn"; break;
+		case MID_Scorepoints: strText = "Scorepoints"; break;
+		case MID_ListboxFilter: strText = "Filter"; break;
+		case MID_ReplaceWithDefault: strText = "Replace with Default Script"; break;
+		case MID_VarSetAt: strText = "Set var at"; break;
+		case MID_EquipGenerate: strText = "Generate"; break;
+		case MID_DamagePreview: strText = "Combat damage preview"; break;
+		case MID_WaitForExpression: strText = "Wait until expression"; break;
+		case MID_LogicalWaitAnd: strText = "Wait for All:"; break;
+		case MID_LogicalWaitOr: strText = "Wait for Any:"; break;
+		case MID_LogicalWaitXOR: strText = "Wait for Exactly One:"; break;
+		case MID_LogicalWaitEnd: strText = "Wait for Conditions End"; break;
+		case MID_VarScoreHP: strText = "_ScoreHP"; break;
+		case MID_VarScoreAtk: strText = "_ScoreATK"; break;
+		case MID_VarScoreDef: strText = "_ScoreDEF"; break;
+		case MID_VarScoreYKey: strText = "_ScoreYellowKeys"; break;
+		case MID_VarScoreGKey: strText = "_ScoreGreenKeys"; break;
+		case MID_VarScoreBKey: strText = "_ScoreBlueKeys"; break;
+		case MID_VarScoreSKey: strText = "_ScoreSkeletonKeys"; break;
+		case MID_VarScoreGold: strText = "_ScoreGR"; break;
+		case MID_VarScoreXP: strText = "_ScoreREP"; break;
+		case MID_YKEYStatFull: strText = "Yellow Keys"; break;
+		case MID_GKEYStatFull: strText = "Green Keys"; break;
+		case MID_BKEYStatFull: strText = "Blue Keys"; break;
+		case MID_SKEYStatFull: strText = "Skeleton Keys"; break;
+		case MID_VarMyWeakness: strText = "_MyWeakness"; break;
+		case MID_CustomType: strText = "%s type"; break;
+		case MID_StrongAgainstType: strText = "Strong against %s"; break;
+		case MID_ShowScore: strText = "Show score"; break;
+		case MID_RemovesSword: strText = "Small weapon"; break;
+		case MID_VarLevelMultiplier: strText = "_LevelMultiplier"; break;
+		case MID_VarRoomX: strText = "_RoomX"; break;
+		case MID_VarRoomY: strText = "_RoomY"; break;
+		case MID_CharOptionsTitle: strText = "Character Options"; break;
+		case MID_CharOptions: strText = "Options"; break;
+		case MID_ProcessingSequence: strText = "Processing sequence:"; break;
+		case MID_ProcessingSequenceDescription: strText = "Scripts with a lower processing sequence value will run before scripts with a higher value."; break;
+		case MID_VarMyDescription: strText = "_MyDescription"; break;
+		case MID_SpecialSettings: strText = "Special"; break;
+		case MID_ConfirmNewGame: strText = "Confirm new game"; break;
+		case MID_ReallyStartNewGame: strText = "Really start a new game?"; break;
+		case MID_ErrorCannotReplaceWithDifferentExistingFile: strText = "You are trying to replace a file named '%fileBase%' with '%fileSelected%'. Unfortunately there is already a file with that name in this hold - it must first be deleted."; break;
+		case MID_ReplaceMediaWithAnother: strText = "This hold already contains a file named '%file%'. Do you want to replace it with this new file? All usages of it will be updated."; break;
+		case MID_ReplaceFileButton: strText = "Replace"; break;
+		case MID_FilePendingDeletionSuffix: strText = "(Pending deletion)"; break;
+		case MID_Undelete: strText = "Undelete"; break;
+		case MID_CustomSpeechColor: strText = "Speech Color (rgb)"; break;
+		case MID_AutoPreviewCharacters: strText = "Automatically Preview Characters"; break;
+		case MID_Shovel1: strText = "Shovel"; break;
+		case MID_Shovel3: strText = "Set of Shovels"; break;
+		case MID_Shovel10: strText = "Barrel of Shovels"; break;
+		case MID_Dirt1: strText = "Dirt Block"; break;
+		case MID_Dirt3: strText = "Dirt Block (3)"; break;
+		case MID_Dirt5: strText = "Dirt Block (5)"; break;
+		case MID_ShovelsStat: strText = "Shovels"; break;
+		case MID_Dig: strText = "Dig"; break;
+		case MID_ReceivedShovel: strText = "Received Shovel"; break;
+		case MID_VarShovels: strText = "_Shovels"; break;
+		case MID_VarScoreShovels: strText = "_ScoreShovels"; break;
+		case MID_VarItemShovelMult: strText = "_ItemShovelMult"; break;
+		case MID_VarMyItemShovelMult: strText = "_MyItemShovelMult"; break;
+		case MID_VarBeam: strText = "_Beam"; break;
+		case MID_AumtlichAbilityPercentage: strText = "Gaze reduces your health by %s percent"; break;
+		case MID_AumtlichAbilityFlatRate: strText = "Gaze reduces your health by %s HP"; break;
+		case MID_InvisibleInspectable: strText = "Invisible inspectable"; break;
+		case MID_NotInvisibleInspectable: strText = "Not invisible inspectable"; break;
+		case MID_ThinIce: strText = "Thin Ice"; break;
+		case MID_ThinIceMelted: strText = "Thin ice melted"; break;
+		case MID_IceMeltEffect: strText = "Ice melting"; break;
+		case MID_ForceArrowDisabled: strText = "Disabled force arrow"; break;
+		case MID_ForceArrowDisabledN: strText = "Disabled force arrow (north)"; break;
+		case MID_ForceArrowDisabledE: strText = "Disabled force arrow (east)"; break;
+		case MID_ForceArrowDisabledS: strText = "Disabled force arrow (south)"; break;
+		case MID_ForceArrowDisabledW: strText = "Disabled force arrow (west)"; break;
+		case MID_ForceArrowDisabledNW: strText = "Disabled force arrow (northwest)"; break;
+		case MID_ForceArrowDisabledNE: strText = "Disabled force arrow (northeast)"; break;
+		case MID_ForceArrowDisabledSE: strText = "Disabled force arrow (southeast)"; break;
+		case MID_ForceArrowDisabledSW: strText = "Disabled force arrow (southeast)"; break;
+		case MID_ImageOverlay: strText = "Image overlay"; break;
+		case MID_ImageOverlayStrategy: strText = "Image overlay strategy"; break;
+		case MID_Mist: strText = "Mist"; break;
+		case MID_MistDestroyed: strText = "Mist destroyed"; break;
+		case MID_MistVent: strText = "Mist Vent"; break;
+		case MID_Firetrap: strText = "Fire Trap"; break;
+		case MID_FiretrapOn: strText = "Fire Trap (active)"; break;
+		case MID_VarFiretrap: strText = "_Firetrap"; break;
+		case MID_FiretrapBurning: strText = "Fire trap burning"; break;
+		case MID_FiretrapActivated: strText = "Fire trap activated"; break;
+		case MID_PowderKeg: strText = "Powder Keg"; break;
+		case MID_ExplosiveSafe: strText = "Explosive safe"; break;
+		case MID_CrateDestroyed: strText = "Crate destroyed"; break;
+		case MID_FiretrapHit: strText = "Firetrap hit"; break;
+		case MID_VarTotalAtk: strText = "_TotalATK"; break;
+		case MID_VarTotalDef: strText = "_TotalDEF"; break;
+		case MID_MusicTitle2: strText = "Title 2"; break;
+		case MID_MusicPirates: strText = "Pirates"; break;
+		case MID_MusicGoblinKing: strText = "Goblin King"; break;
+		case MID_MusicBigSerpent: strText = "Big Serpent"; break;
+		case MID_MusicTar: strText = "Tar"; break;
+		case MID_MusicPuzzle: strText = "Puzzle"; break;
+		case MID_MusicSecretArea: strText = "Secret Area"; break;
+		case MID_MusicSmallerPlans: strText = "Smaller Plans"; break;
+		case MID_MusicGeometry: strText = "An Architect's Dream of Geometry"; break;
+		case MID_MusicSlipStair: strText = "A Slippery Staircase"; break;
+		case MID_MusicSympathetic: strText = "A Sympathetic Bartendry"; break;
+		case MID_MusicAscendant: strText = "Beethro Ascendant"; break;
+		case MID_MusicRoachesRun: strText = "Roaches on the Run"; break;
+		case MID_MusicNewIdea: strText = "Tendry's New Idea"; break;
+		case MID_MusicWaltz: strText = "Waltz Recombinant"; break;
+		case MID_MusicSwingHalls: strText = "Within These Swingin' Halls"; break;
+		case MID_MusicAmbWindy: strText = "Ambient - Windy"; break;
+		case MID_MusicAmbBeach: strText = "Ambient - Beach"; break;
+		case MID_MusicAmbForest: strText = "Ambient - Forest"; break;
+		case MID_MusicAmbDrips: strText = "Ambient - Dripping"; break;
+		case MID_MusicAmbRoaches: strText = "Ambient - Roaches"; break;
+		case MID_Archivist: strText = "Archivist"; break;
+		case MID_Architect: strText = "Engineer"; break;
+		case MID_Patron: strText = "Patron"; break;
+		case MID_Construct: strText = "Construct"; break;
+		case MID_FluffBaby: strText = "Puff"; break;
+		case MID_PuffExplosionEffect: strText = "Puff destroyed"; break;
+		case MID_EggSpawned: strText = "Roach egg spawned"; break;
+		case MID_ConstructSplatterEffect: strText = "Construct splatter"; break;
+		case MID_ArrayVarSet: strText = "Set array var"; break;
+		case MID_ArrayVarSetAt: strText = "Set array var at"; break;
+		case MID_ClearArrayVar: strText = "Clear array var"; break;
+		case MID_ArrayVarNameExpression: strText = "Variable Name/Expression"; break;
+		case MID_ArrayIndexLabel: strText = "Index"; break;
+		case MID_CantChangeVarType: strText = "Var type can't be changed between array and non-array"; break;
+		case MID_MinimapTreasure: strText = "Minimap treasure"; break;
+		case MID_VarMudSwap: strText = "_MudSwap"; break;
+		case MID_VarTarSwap: strText = "_TarSwap"; break;
+		case MID_VarGelSwap: strText = "_GelSwap"; break;
+		case MID_ResetOverrides: strText = "Reset _MyScript variables"; break;
+		case MID_WaitForWeapon: strText = "Wait for weapon"; break;
+		case MID_WaitForOpenTile: strText = "Wait for open tile"; break;
+		case MID_Ignore: strText = "Ignore"; break;
+		case MID_IgnoreWeapons: strText = "Ignore weapons"; break;
+		case MID_WaitForItemGroup: strText = "Wait for item group"; break;
+		case MID_WaitForNotItemGroup: strText = "Wait while item group"; break;
+		case MID_PlainFloor: strText = "Plain floor"; break;
+		case MID_RegularWall: strText = "Solid walls"; break;
+		case MID_BreakableWall: strText = "Breakable walls"; break;
+		case MID_AnyWallType: strText = "Any wall"; break;
+		case MID_StairsGroup: strText = "Stairs"; break;
+		case MID_TrapdoorGroup: strText = "Trapdoor"; break;
+		case MID_FallingTile: strText = "Trapdoor or thin ice"; break;
+		case MID_PlatformOrRaft: strText = "Platform or raft"; break;
+		case MID_OpenDoor: strText = "Any open door"; break;
+		case MID_ClosedDoor: strText = "Any closed door"; break;
+		case MID_SolidOTileGroup: strText = "Wall, dirt, or closed door"; break;
+		case MID_AnyArrow: strText = "Any arrow"; break;
+		case MID_TarstuffGroup: strText = "Tar, mud or gel"; break;
+		case MID_Briars: strText = "Any briar"; break;
+		case MID_HealthGroup: strText = "Health potion"; break;
+		case MID_AttackUpGroup: strText = "Attack gem"; break;
+		case MID_DefenseUpGroup: strText = "Defense gem"; break;
+		case MID_PowerupGroup: strText = "Health potion or stat gem"; break;
+		case MID_EquipmentGroup: strText = "Any equipment or slot"; break;
+		case MID_CutTarAnywhere: strText = "Cut tarstuff anywhere"; break;
+		case MID_WallMirrorSafe: strText = "Wall and mirror safe"; break;
+		case MID_HotTileImmune: strText = "Heatproof"; break;
+		case MID_FiretrapImmune: strText = "Fireproof"; break;
+		case MID_MistImmune: strText = "Mistproof"; break;
+		case MID_Sword11: strText = "Dagger"; break;
+		case MID_Sword12: strText = "Staff"; break;
+		case MID_Sword13: strText = "Spear"; break;
+		case MID_Shield7: strText = "Mirror Shield"; break;
+		case MID_Shield8: strText = "Leather Shield"; break;
+		case MID_Shield9: strText = "Aluminum Shield"; break;
+		case MID_OverheadImage: strText = "Overhead Image"; break;
+		case MID_RemoveOverheadImage: strText = "Remove overhead image"; break;
+		case MID_NewLocalHighScore: strText = "New personal best!"; break;
+		case MID_PercentOptimal: strText = "%s% of personal best"; break;
+		case MID_Grayscale: strText = "Grayscale"; break;
+		case MID_Negative: strText = "Negative"; break;
+		case MID_Sepia: strText = "Sepia"; break;
+		case MID_Sword: strText = "Sword"; break;
+		case MID_Shield: strText = "Shield"; break;
+		case MID_Star: strText = "Star"; break;
+		case MID_Skull: strText = "Skull"; break;
+		case MID_NorthArrow: strText = "North arrow"; break;
+		case MID_EastArrow: strText = "East arrow"; break;
+		case MID_SouthArrow: strText = "South arrow"; break;
+		case MID_WestArrow: strText = "West arrow"; break;
+		case MID_StairsDown: strText = "Stairs down"; break;
+		case MID_Chest: strText = "Chest"; break;
+		case MID_Gear: strText = "Gear"; break;
+		case MID_MoneyBag: strText = "Money bag"; break;
+		case MID_QuestionMark: strText = "Question mark"; break;
+		case MID_MapIconAlpha: strText = "Map icon alpha"; break;
+		case MID_TarstuffAlpha: strText = "Tarstuff alpha"; break;
+		case MID_White: strText = "White"; break;
+		case MID_Red: strText = "Red"; break;
+		case MID_Green: strText = "Green"; break;
+		case MID_Blue: strText = "Blue"; break;
+		case MID_PaleRed: strText = "Pale Red"; break;
+		case MID_PaleGreen: strText = "Pale Green"; break;
+		case MID_PaleBlue: strText = "Pale Blue"; break;
+		case MID_Yellow: strText = "Yellow"; break;
+		case MID_Cyan: strText = "Cyan"; break;
+		case MID_Mauve: strText = "Mauve"; break;
+		case MID_Orange: strText = "Orange"; break;
+		case MID_Pink: strText = "Pink"; break;
+		case MID_Lime: strText = "Lime"; break;
+		case MID_Turquoise: strText = "Turquoise"; break;
+		case MID_Violet: strText = "Violet"; break;
+		case MID_Azure: strText = "Azure"; break;
+		case MID_SetDarkness: strText = "Set ceiling darkness"; break;
+		case MID_SetCeilingLight: strText = "Set ceiling light"; break;
+		case MID_SetWallLight: strText = "Set wall light"; break;
+		case MID_SetMapIcon: strText = "Set map icon"; break;
+		case MID_AttackTile: strText = "Attack tile"; break;
+		case MID_Roachie: strText = "Roachie"; break;
+		case MID_UseAccessoryKey: strText = "Use accessory"; break;
+		case MID_UseWeaponKey: strText = "Use weapon"; break;
+		case MID_UseArmorKey: strText = "Use armor"; break;
+		case MID_GetKeyDescription_NoModifiers: strText = "Press \"Escape\" to cancel. Key modifiers (shift, alt, control) are not allowed for this command."; break;
+		case MID_GetKeyDescription_YesModifiers: strText = "Press \"Escape\" to cancel. Can use key modifiers (shift, alt, control) for this command."; break;
+		case MID_OverwritingMacroKeyError: strText = "You can't map to this key because command '%1' uses the same key but without any modifiers."; break;
+		case MID_MoreCommands: strText = "More Commands"; break;
+		case MID_SaveGame: strText = "Save game"; break;
+		case MID_LoadGame: strText = "Load game"; break;
+		case MID_QuickSave: strText = "Quick Save"; break;
+		case MID_QuickLoad: strText = "Quick Load"; break;
+		case MID_SkipSpeech: strText = "Skip Speech"; break;
+		case MID_Command_OpenChat: strText = "Open Chatbox"; break;
+		case MID_Command_ChatHistory: strText = "Open Chat History"; break;
+		case MID_Command_Screenshot: strText = "Game Screenshot"; break;
+		case MID_Command_SaveRoomImage: strText = "Room Screenshot"; break;
+		case MID_Command_ShowHelp: strText = "Show Help"; break;
+		case MID_Command_OpenSettings: strText = "Open Settings"; break;
+		case MID_Command_ToggleFullScreen: strText = "Toggle Full Screen"; break;
+		case MID_Command_ToggleTurnCount: strText = "Toggle Turn Count"; break;
+		case MID_Command_ToggleHoldVars: strText = "Toggle Var Monitor"; break;
+		case MID_Command_ToggleFrameRate: strText = "Toggle Frame Rate"; break;
+		case MID_Command_EditVars: strText = "Edit Variables"; break;
+		case MID_Command_LogVars: strText = "Log Variable State"; break;
+		case MID_Command_ReloadStyle: strText = "Force Style Reload"; break;
+		case MID_Command_Editor_Cut: strText = "Cut"; break;
+		case MID_Command_Editor_Copy: strText = "Copy"; break;
+		case MID_Command_Editor_Paste: strText = "Paste"; break;
+		case MID_Command_Editor_Undo: strText = "Undo"; break;
+		case MID_Command_Editor_Redo: strText = "Redo"; break;
+		case MID_Command_Editor_Delete: strText = "Delete"; break;
+		case MID_Command_Editor_PlaytestRoom: strText = "Playtest Room"; break;
+		case MID_Command_Editor_ReflectX: strText = "Reflect Room X"; break;
+		case MID_Command_Editor_ReflectY: strText = "Reflect Room Y"; break;
+		case MID_Command_Editor_RotateCW: strText = "Rotate Room Clockwise"; break;
+		case MID_Command_Editor_SetFloorImage: strText = "Set Floor Image"; break;
+		case MID_Command_Editor_SetOverheadImage: strText = "Set Overhead Image"; break;
+		case MID_Command_Editor_ToggleCharacterPreview: strText = "Toggle NPC Preview"; break;
+		case MID_Command_Editor_PrevLevel: strText = "Go to Prev Level"; break;
+		case MID_Command_Editor_NextLevel: strText = "Go to Next Level"; break;
+		case MID_Command_Editor_LogVarRefs: strText = "Log Var References"; break;
+		case MID_Command_Editor_HoldStats: strText = "Show Hold Stats"; break;
+		case MID_Command_Editor_LevelStats: strText = "Show Level Stats"; break;
+		case MID_Command_Script_SelectAll: strText = "Select All"; break;
+		case MID_Command_Script_ToText: strText = "Export Script Commands"; break;
+		case MID_Command_Script_FromText: strText = "Import Script Commands"; break;
+		case MID_CollectableGroup: strText = "Collectable items"; break;
+		case MID_EnableAutosaves: strText = "Enable autosaves"; break;
+		case MID_VarMonsterHue: strText = "_MyHue"; break;
+		case MID_VarMonsterSaturation: strText = "_MySaturation"; break;
+		case MID_HoldImportDuplicateNameError: strText = "ERROR: An asset with this name already exists in the hold."; break;
+		case MID_LevelSelectTab: strText = "Levels"; break;
+		case MID_WorldMapSelectTab: strText = "Maps"; break;
+		case MID_WorldMapSetImage: strText = "Image"; break;
+		case MID_NewWorldMapPrompt: strText = "(add new world map)"; break;
+		case MID_NameWorldMap: strText = "Please name this world map."; break;
+		case MID_DeleteWorldMapPrompt: strText = "Are you sure you want to permanently delete this world map?"; break;
+		case MID_WorldMapSettings: strText = "Map display type"; break;
+		case MID_WorldMapNoLabels: strText = "No labels"; break;
+		case MID_WorldMapShowLabels: strText = "Labels"; break;
+		case MID_WorldMapDisplayLabelsWhenExplored: strText = "Labels when explored"; break;
+		case MID_WorldMapSelect: strText = "World Map Select"; break;
+		case MID_SelectWorldMapPrompt: strText = "Please select a world map."; break;
+		case MID_WorldMapMusic: strText = "World Map Music"; break;
+		case MID_WorldMapIcon: strText = "World Map Tile Icon"; break;
+		case MID_WorldMapImage: strText = "World Map Image Icon"; break;
+		case MID_WMI_Off: strText = "Off"; break;
+		case MID_WMI_On: strText = "On"; break;
+		case MID_WMI_LevelState: strText = "Level state"; break;
+		case MID_WMI_Disabled: strText = "Disabled"; break;
+		case MID_WMI_Locked: strText = "Locked"; break;
+		case MID_WMI_NoLabel: strText = "Image only"; break;
+		case MID_X_Coord: strText = "x"; break;
+		case MID_Y_Coord: strText = "y"; break;
+		case MID_GoToWorldMap: strText = "Go to world map"; break;
+		case MID_WorldMapDestinationPrompt: strText = "Choose a destination"; break;
+		case MID_WMI_Cleared: strText = "Cleared"; break;
+		case MID_DROD_RPG2_0: strText = "RPG (2.0)"; break;
+		case MID_VarReturnX: strText = "_ReturnX"; break;
+		case MID_WaitForArrayEntry: strText = "Wait for array entry"; break;
+		case MID_CountArrayEntries: strText = "Count array entries"; break;
+		case MID_Wyrm: strText = "Wyrm"; break;
+		case MID_MusicElizabeth: strText = "Elizabeth"; break;
+		case MID_RemoveTransparentLayer: strText = "Remove transparent layer object"; break;
+		case MID_NoMoreMemory: strText = "DROD ran out of memory. You might free up enough memory by closing other applications."; break;
+		case MID_ShowPercentOptimal: strText = "Show banner for non-best local scores"; break;
+		case MID_CombatStalled: strText = "Combat failed to resolve (invalid move)"; break;
+		case MID_SelectExitDestination: strText = "Please select the destination."; break;
+		case MID_Cr_ACR_Intro: strText = "Congratulations on making it to the end of another of Tendry's incredible adventures! It's pretty crazy that it's been 17 years since the first adventure, but that's a testament to the timelessness of the DROD series.\r\n\
+\r\n\
+This is the part where I talk a bit more about all the people who put in a lot of work to bring this game to life. There's a larger history of the development of this game that you can read, if you can find it. There's a secret level hiding in the game somewhere, keep looking! In fact... there's more than one secret level...\r\n\
+\r\n\
+You can speed up or slow down the scrolling with the arrow keys, and space to pause."; break;
+		case MID_Cr_ACR_Producer_Title: strText = "Producer, Direction"; break;
+		case MID_Cr_ACR_Producer: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Producer_Text: strText = "Hey that's me! I worked on quite a lot of different aspects of this game, so you'll see my name come up a lot more over the course of these credits."; break;
+		case MID_Cr_ACR_LeadProgrammer_Title: strText = "Lead Programmer"; break;
+		case MID_Cr_ACR_LeadProgrammer: strText = "Adam Love (hyperme)"; break;
+		case MID_Cr_ACR_LeadProgrammer_Text: strText = "This game is a joint venture between myself and Adam. Adam has been working on improving the DROD and DROD RPG engines for many years now, which has been instrumental in keeping the game alive. Without his tireless work, this game never would have existed.\r\n\
+\r\n\
+It was great working with Adam. If I had a feature I wanted implementing, no matter how complicated, Adam delivered. Adam coded up most of the new features, and also upgraded the engine, moving over so many features from the DROD 5.2 engine, many of those features Adam originally created."; break;
+		case MID_Cr_ACR_Programmer_Title: strText = "Additional Programming"; break;
+		case MID_Cr_ACR_Programmer: strText = "Kieran Millar\r\n\
+Mike Rimer"; break;
+		case MID_Cr_ACR_Programmer_Text: strText = "A huge thank you to Mike for putting in so much work over the years into the DROD series, especially with the work put in to publishing the works of fans as Smitemaster's Selections. Without this incredible opportunity, making the sequel to DROD RPG wouldn't have been a consideration."; break;
+		case MID_Cr_ACR_MacPort_Title: strText = "Mac OS X Port"; break;
+		case MID_Cr_ACR_MacPort: strText = "Tom Brouws"; break;
+		case MID_Cr_ACR_Music_Title: strText = "Music"; break;
+		case MID_Cr_ACR_Music: strText = "Erik Hermansen\r\n\
+Emmett Plant\r\n\
+Jon Sonnenberg\r\n\
+Seth Rimer\r\n\
+Night of the Wilds by Vindsvept"; break;
+		case MID_Cr_ACR_Artwork_Title: strText = "Artwork"; break;
+		case MID_Cr_ACR_Artwork: strText = "Erik Hermansen\r\n\
+Aleksander Kowalczyk\r\n\
+Mike Rimer\r\n\
+Kieran Millar"; break;
+		case MID_Cr_ACR_LevelDesign_Title: strText = "Level Design"; break;
+		case MID_Cr_ACR_LevelDesign: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_FeatureDesign_Title: strText = "Feature Design"; break;
+		case MID_Cr_ACR_FeatureDesign: strText = "Adam Love (hyperme)\r\n\
+Kieran Millar\r\n\
+Mike Rimer\r\n\
+Nadia Rockford"; break;
+		case MID_Cr_ACR_Story_Title: strText = "Story, Continuity"; break;
+		case MID_Cr_ACR_Story: strText = "Kieran Millar\r\n\
+Mike Rimer\r\n\
+Nadia Rockford"; break;
+		case MID_Cr_ACR_CNet_Title: strText = "CaravelNet Interface"; break;
+		case MID_Cr_ACR_CNet: strText = "Matt Schikore\r\n\
+Mike Rimer"; break;
+		case MID_Cr_ACR_Web_Title: strText = "Web Design"; break;
+		case MID_Cr_ACR_Web: strText = "Matt Schikore"; break;
+		case MID_Cr_ACR_VoiceCoord_Title: strText = "Voice Coordination"; break;
+		case MID_Cr_ACR_VoiceCoord: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Voice_Title: strText = "Voice Talent"; break;
+		case MID_Cr_ACR_Voice: strText = "Sam Benner (Someone Else)\r\n\
+Liam Costello\r\n\
+Erik Hermansen\r\n\
+Leah Lindsay\r\n\
+Kieran Millar\r\n\
+Mike Rimer\r\n\
+Olga Rimer\r\n\
+Seth Rimer\r\n\
+Nadia Rockford\r\n\
+Mark Sommerville\r\n\
+George Wanfried (Chaco)\r\n\
+Maria\r\n\
+Pavol (LovaP48)\r\n\
+Sapphire Crook\r\n\
+Spleen\r\n\
+Xindaris"; break;
+		case MID_Cr_ACR_Voice_Text: strText = "I need to give a shoutout to the wonderful members of the DROD community that lent their voice talents for this game. Together there are over 1,200 voice lines! A special shoutout goes to Leah, who reprised the role of Tendry after all these years. Tendry has over 500 voice lines in this game."; break;
+		case MID_Cr_ACR_Sound_Title: strText = "Sound Effects"; break;
+		case MID_Cr_ACR_Sound: strText = "Mike Rimer\r\n\
+Kieran Millar\r\n\
+Numerous Creative Commons sound files from freesound.org"; break;
+		case MID_Cr_ACR_SoundEdit_Title: strText = "Sound Editing and Mastering"; break;
+		case MID_Cr_ACR_SoundEdit: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_TestCoord_Title: strText = "Testing Coordination"; break;
+		case MID_Cr_ACR_TestCoord: strText = "Kieran Millar"; break;
+		case MID_Cr_ACR_Test_Title: strText = "Testing"; break;
+		case MID_Cr_ACR_Test: strText = "Henri Kareinen\r\n\
+Mike Rimer\r\n\
+Nadia Rockford\r\n\
+greenscience"; break;
+		case MID_Cr_ACR_Outro: strText = "As always, we're hugely grateful for the work put in by our testers, especially Nadia who took on extra roles, including doing lots of proof-reading, helping with the story and pushing hard for popular features.\r\n\
+\r\n\
+Thank you so much for playing, I really hoped you enjoyed it.\r\n\
+\r\n\
+--Kieran"; break;
+		case MID_Cr_ACR_TheEnd: strText = "DROD RPG 2: A Courageous Rescue\r\n\
+\r\n\
+(c)2025 Caravel Games, LLC\r\n\
+www.caravelgames.com"; break;
+		case MID_ShovelTooltip: strText = "Shovels\r\nUsed to dig through dirt blocks."; break;
+		case MID_LevelMultiplierTooltip: strText = "Level Multiplier\r\nMultiplies resources gained from health potions, gems and shovels."; break;
+		case MID_NoBrowserToRequestKey: strText = "Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
@@ -846,10 +1475,22 @@ MESSAGE_ID CDbBase::AddMessageText(
 	c4_View view;
 	UINT rowIndex = LookupRowByPrimaryKey(dwMessageTextID, V_MessageTexts, view);
 	ASSERT(rowIndex != ROW_NO_MATCH);
-	//If ID is in the first view, the local ID is equivalent to the global ID.
-	//Otherwise, add the size of the first view to get the ID's global index.
+
+	//If ID is in the first view, the local index is equivalent to the global index.
+	//Otherwise, add the size of each previous view to get the ID's global position.
+	UINT previousViewSize = 0;
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		const UINT storageStartID = GetStartIDForDLC(it->first);
+		if (dwMessageTextID >= storageStartID) {
+			rowIndex += previousViewSize;
+		}
+
+		c4_View view = it->second->View(viewName);
+		previousViewSize = view.GetSize();
+	}
 	if (dwMessageTextID >= START_LOCAL_ID)
-		rowIndex += GetView(V_MessageTexts,0).GetSize();
+		rowIndex += previousViewSize;
 
 	addMessage(eMessageID, rowIndex);
 
@@ -945,37 +1586,32 @@ void CDbBase::DeleteMarkedMessages()
 
 	ASSERT(CDbBase::bDirtyText);
 
-	//Assume: all message texts being deleted are from the same view
-	//(i.e. the same .dat file).
-	c4_View MessageTextsView = GetView(V_MessageTexts,
-#ifdef DEV_BUILD
-		0
-#else
-		START_LOCAL_ID
-#endif
-	);
+	CIDSet deletedMessageRows;
 
-	//Compile set of all messageText rows to be deleted.
-	CIDSet messageRows;
-	for (CIDSet::const_iterator messageID = messageIDsMarkedForDeletion.begin();
-			messageID != messageIDsMarkedForDeletion.end(); ++messageID)
-		messageRows += getMessageRows(*messageID);
-
-	//Each iteration deletes one messageText row.
 	//Delete in descending order to keep lower row indices correct.
-	for (CIDSet::const_reverse_iterator messageRow = messageRows.rbegin();
-			messageRow != messageRows.rend(); ++messageRow)
+	for (CIDSet::const_reverse_iterator messageID = messageIDsMarkedForDeletion.rbegin();
+			messageID != messageIDsMarkedForDeletion.rend(); ++messageID)
 	{
-		ASSERT(*messageRow != ROW_NO_MATCH);
-		ASSERT(messageIDsMarkedForDeletion.has(
-				UINT(p_MessageID(GetRowRef(V_MessageTexts, *messageRow)))));
+		c4_View MessageTextsView = GetView(V_MessageTexts, *messageID);
 
-		const UINT localRowIndex = globalRowToLocalRow(*messageRow, V_MessageTexts);
-		MessageTextsView.RemoveAt(localRowIndex);
+		const CIDSet messageRows(getMessageRows(*messageID));
+		deletedMessageRows += messageRows;
+
+		//Each iteration deletes one messageText row.
+		for (CIDSet::const_reverse_iterator messageRow = messageRows.rbegin();
+				messageRow != messageRows.rend(); ++messageRow)
+		{
+			ASSERT(*messageRow != ROW_NO_MATCH);
+			ASSERT(messageIDsMarkedForDeletion.has(
+					UINT(p_MessageID(GetRowRef(V_MessageTexts, *messageRow)))));
+
+			const UINT localRowIndex = globalRowToLocalRow(*messageRow, V_MessageTexts);
+			MessageTextsView.RemoveAt(localRowIndex);
+		}
 	}
 
 	//Resynch row index lookup.
-	deleteMessages(messageIDsMarkedForDeletion, messageRows);
+	deleteMessages(messageIDsMarkedForDeletion, deletedMessageRows);
 	messageIDsMarkedForDeletion.clear();
 }
 
@@ -983,8 +1619,11 @@ void CDbBase::DeleteMarkedMessages()
 void CDbBase::ExportTexts(const WCHAR *pFilename)
 //Exports all message texts in base DB to file.
 {
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	c4_View MessageTextsView = m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
+
 	CStretchyBuffer buf;
-	c4_View MessageTextsView = GetView(V_MessageTexts, 0);
 	ExportTexts(MessageTextsView, buf);
 	if (!buf.empty())
 		CFiles::WriteBufferToFile(pFilename, buf);
@@ -1037,9 +1676,13 @@ void CDbBase::ExportTexts(c4_View& MessageTextsView, CStretchyBuffer& buf)
 bool CDbBase::ImportTexts(const WCHAR *pFilename)
 //Sets all message texts in base DB from info contained in file.
 {
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	c4_View MessageTextsView = m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
+
 	CStretchyBuffer buf;
 	CFiles::ReadFileIntoBuffer(pFilename, buf, true);
-	c4_View MessageTextsView = GetView(V_MessageTexts, 0);
+
 	return ImportTexts(MessageTextsView, buf);
 }
 
@@ -1088,7 +1731,9 @@ bool CDbBase::ImportTexts(c4_View& /*MessageTextsView*/, CStretchyBuffer& buf)
 	}
 
 	//Save to disk.
-	m_pMainStorage->Commit();
+	for (StaticStorageMap::const_iterator it = m_pMainStorage.begin(); it != m_pMainStorage.end(); ++it)
+		it->second->Commit();
+
 	return true;
 }
 
@@ -1103,7 +1748,6 @@ MESSAGE_ID CDbBase::SetProperty(
 
 //*****************************************************************************
 MESSAGE_ID CDbBase::SetProperty(
-//NOTE: Unused parameter names commented out to suppress warnings
 	const PROPTYPE /*pType*/,
 	char* const /*str*/,
 	CImportInfo &/*Maps*/,
@@ -1144,7 +1788,7 @@ const
 	UINT dwEnglishRowI = ROW_NO_MATCH, dwFoundRowI = ROW_NO_MATCH;
 
 	//Get rows in which this messageID is located.
-	CIDSet messageRows = getMessageRows(eMessageID);
+	const CIDSet messageRows = getMessageRows(eMessageID);
 
 	//Each iteration scans one of these rows for a language match.
 	for (CIDSet::const_iterator messageRow = messageRows.begin();
@@ -1189,7 +1833,7 @@ const
 	CCoordSet ids;
 
 	//Get rows in which this messageID is located.
-	CIDSet messageRows = getMessageRows(eMessageID);
+	const CIDSet messageRows = getMessageRows(eMessageID);
 
 	//Each iteration scans one of these rows for a language match.
 	for (CIDSet::const_iterator messageRow = messageRows.begin();
@@ -1226,8 +1870,8 @@ void CDbBase::Commit()
 	{
 		DeleteMarkedMessages();
 #ifdef DEV_BUILD
-		ASSERT(m_pMainStorage);
-		m_pMainStorage->Commit();
+		for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+			it->second->Commit();
 #else
 		if (CDbBase::bDirtyData)
 			m_pDataStorage->Commit();
@@ -1257,7 +1901,8 @@ void CDbBase::Rollback()
 	{
 		messageIDsMarkedForDeletion.clear();
 #ifdef DEV_BUILD
-		m_pMainStorage->Rollback();
+		for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+			it->second->Rollback();
 #else
 		m_pDataStorage->Rollback();
 		m_pHoldStorage->Rollback();
@@ -1407,4 +2052,3 @@ void CDbBase::buildIndex()
 		addMessage(UINT(p_MessageID(row)), messageI);
 	}
 }
-

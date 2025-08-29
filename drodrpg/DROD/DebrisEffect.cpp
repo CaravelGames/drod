@@ -74,3 +74,25 @@ CGolemDebrisEffect::CGolemDebrisEffect(
 
 	InitParticles();
 }
+
+//********************************************************************************
+CDigDebrisEffect::CDigDebrisEffect(
+//Constructor.
+//
+//Params:
+	CWidget* pSetWidget,       //(in)   Should be a room widget.
+	const CMoveCoord& MoveCoord,  //(in)   Location of debris and direction of its movement.
+	const UINT wMinParticles,	//(in)   Pieces of debris [default=10]
+	const UINT wParticleMinDuration, const UINT wParticleSpeed)
+	: CParticleExplosionEffect(pSetWidget, MoveCoord, 12, 16, 2, wMinParticles,
+		wParticleMinDuration, wParticleSpeed)
+{
+	this->tileNums[0] = TI_GOLEMDEBRIS1;
+	this->tileNums[1] = TI_GOLEMDEBRIS2;
+	this->xDims[0] = 12;
+	this->yDims[0] = 16;
+	this->xDims[1] = 8;
+	this->yDims[1] = 8;
+
+	InitParticles();
+}

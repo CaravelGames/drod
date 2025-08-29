@@ -38,13 +38,13 @@ class CRoachQueen : public CMonster
 {
 public:
 	CRoachQueen(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_QROACH, pSetCurrentGame) {}
+	virtual bool IsEggSpawner() const;
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CRoachQueen);
 
 /*	virtual bool IsAggressive() const {return false;}
 	virtual bool GetBrainDirectedMovement(int &dxFirst, int &dyFirst,
 			int &dx, int &dy, const MovementIQ movementIQ=SmartDiagonalOnly) const;
 */
-	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
 #endif //...#ifndef ROACHQUEEN_H

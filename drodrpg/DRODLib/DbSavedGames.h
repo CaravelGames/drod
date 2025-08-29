@@ -55,7 +55,17 @@ enum SAVETYPE
 	ST_ScoreCheckpoint=7, //   ST_SecretConquered=7,  //for uploading to the server
 	ST_Progress=8,         //for uploading player's room tally progress
 	ST_DemoUpload=9,       //tracks demos tested to upload for high-score submission (2.0; deprecated)
-	ST_PlayerTotal=10      //contains set of all rooms ever explored/conquered
+	ST_PlayerTotal=10,     //contains set of all rooms ever explored/conquered
+	ST_WorldMap = 11,        //saved on entering a world map
+	ST_TotalMapStates=12, //for tracking the best MapState seen for each room across all sessions
+};
+
+enum MapState
+{
+	Invisible = 0, //Not shown on map
+	NoDetail = 1, //Shown but without detail
+	Preview = 2, //Explored on a previous save, not yet visited
+	Explored = 3, //The player has been to this room
 };
 
 //******************************************************************************************
@@ -70,14 +80,22 @@ struct ExploredRoom
 	void saveMonsterList(CMonster *pThatMonsterList);
 
 	UINT roomID;
-	bool bMapOnly; //room is shown on map, but hasn't been explored
+	MapState mapState;
 	bool bSave;    //include in saved game if set
 	UINT mapMarker; //marker placed on this room on the map
+
+	ScriptVars::MapIcon mapIcon; //icon for minimap
+	ScriptVars::MapIconState mapIconState; //style to draw map icon
 
 	c4_Bytes SquaresBytes;
 	CMonster *pMonsterList;
 	CIDSet litFuses;
 	CCoordStack platformDeltas;
+	c4_Bytes tileLightsBytes;
+
+	bool IsInvisible() const { return mapState == Invisible; }
+	bool IsPreview() const { return mapState == Preview; }
+	bool HasDetail() const { return mapState >= Preview; }
 
 //	vector<UINT> orbTypes; //track broken orbs/plates -- no longer used
 };
@@ -92,6 +110,8 @@ struct SAVE_INFO {
 };
 
 typedef std::multimap<UINT, SAVE_INFO> SORTED_SAVES;
+
+typedef map<UINT, MapState> RoomMapStates;
 
 //******************************************************************************************
 class CDbSavedGames;
@@ -125,8 +145,15 @@ public:
 			char* const str, CImportInfo &info);
 	virtual bool   Update();
 
+	bool           OnWorldMap() const { return worldMapID != 0; }
+
+	//Read/write UINT and UINT shaped types to/from buffer
+	static UINT  readBpUINT(const BYTE* buffer, UINT& index);
+	static void  writeBpUINT(string& buffer, UINT n);
+
 	UINT     dwSavedGameID;
 	UINT     dwRoomID;
+	UINT     worldMapID; //While set, level/room/entrance data structures in play are ignored.
 	UINT     dwPlayerID;
 	bool     bIsHidden;
 
@@ -137,8 +164,9 @@ public:
 	void      appendToGlobalMonsterList(CMonster *pMonster);
 	CCharacter* getCustomEquipment(const UINT type) const;
 	ExploredRoom* getExploredRoom(const UINT roomID) const;
-	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false) const;
+	CIDSet    GetExploredRooms(const bool bMapOnlyAlso=false, const bool bIncludeNoSavedAlso=true) const;
 	CIDSet    GetMappedRooms() const {return GetExploredRooms(true);}
+	RoomMapStates GetMappedRoomsWithState() const;
 	bool      IsRoomExplored(const UINT roomID, const bool bConsiderCurrentRoom=true) const;
 	void      LoadExploredRooms(const c4_View& ExploredRoomsView);
 	CMonster* LoadMonster(const c4_RowRef& row);
@@ -146,7 +174,7 @@ public:
 	void      ReloadMonsterList(CMonster *pAlternateMonsterList=NULL);
 	void      removeGlobalScriptForEquipment(const UINT type);
 	void      removeGlobalScripts(const CIDSet& completedScripts);
-	void      RemoveMappedRoomsNotIn(const CIDSet& exploredRoomIDs, const CIDSet& mappedRoomIDs,
+	void      RemoveMappedRoomsNotIn(const CIDSet& exploredRoomIDs, const RoomMapStates& mappedRoomIDs,
 			const CIDSet& roomPreviewIDs);
 	void      SetMonsterListAtRoomStart();
 	void      setMonstersCurrentGame(CCurrentGame* pCurrentGame);
@@ -162,6 +190,11 @@ public:
 	CDbPackedVars stats; //contains current global and local hold var values
 	CMonster *pMonsterList, *pMonsterListAtRoomStart; //global scripts and custom equipment
 	vector<CMonster*> DeadMonsters; //deactivated global scripts and custom equipment
+
+	typedef map<UINT, map<int, int>> ScriptArrayMap;
+	ScriptArrayMap scriptArrays; //unpacked hold array var values
+
+	WorldMapsIcons worldMapIcons;
 
 	//Version info.
 	UINT     wVersionNo;
@@ -179,6 +212,8 @@ private:
 	void     SaveEntrancesExplored(c4_View &EntrancesExploredView) const;
 	void     SaveExploredRooms(c4_View &ExploredRoomsView) const;
 	void     SaveMonsters(c4_View &MonstersView, CMonster *pMonsterList) const;
+	void     SaveWorldMapIcons(c4_View& WorldMapIconsView) const;
+	void     SerializeScriptArrays();
 	bool     SetMembers(const CDbSavedGame &Src);
 	bool     UpdateExisting();
 	bool     UpdateNew();
@@ -205,7 +240,7 @@ protected:
 
 public:
 	void        AddRoomsToPlayerTally(const UINT dwPlayerID, const CIDSet& ExploredRooms);
-	bool        CleanupPlayerTallies();
+	bool        CleanupPlayerTalliesAndMapStates();
 	virtual void      Delete(const UINT dwSavedGameID);
 	void        DeleteForRoom(const UINT dwRoomID);
 //	void        VerifyForRoom(const UINT dwRoomID);
@@ -224,6 +259,7 @@ public:
 	UINT        FindByName(const UINT eSavetype, const UINT holdID, const UINT playerID, const WSTRING *pName=NULL);
 	UINT        FindByRoomLatest(const UINT dwRoomID);
 	UINT        FindByType(const SAVETYPE eType, const UINT dwPlayerID=0, const bool bBackwardsSearch=true);
+	UINT        FindByHoldWorldMap(const UINT holdID, const UINT worldMapID);
 	void        FindHiddens(const bool bFlag);
 	UINT        FindIdenticalSave(const CDbSavedGame& that);
 
@@ -232,12 +268,18 @@ public:
 	static UINT GetPlayerIDofSavedGame(const UINT dwSavedGameID);
 	static UINT GetRoomIDofSavedGame(const UINT dwSavedGameID);
 	static UINT GetSavedGameID(const UINT dwRoomID, const CDate& Created, const UINT dwPlayerID);
-	static SORTED_SAVES GetSortedSaveInfo(const CIDSet& savedGameIDs);
-	static UINT GetScore(const PlayerStats& st);
+	static vector<SAVE_INFO> GetSaveInfo(const CIDSet& savedGameIDs);
 	static SAVETYPE GetType(const UINT savedGameID);
+	static UINT GetWorldMapID(const UINT savedGameID);
 
-   UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);
-	void       UpdatePlayerTallies(const CImportInfo& info);
+	static bool RenameSavedGame(const UINT savedGameID, const WSTRING& name);
+	UINT       SaveNewContinue(const UINT dwPlayerID, const UINT type=ST_Continue);
+	void       UpdatePlayerTalliesAndMapStates(const CImportInfo& info);
+
+	RoomMapStates LoadMapStates(const UINT dwPlayerID, const CIDSet& rooms);
+	void          UpdateTotalMapStates(const UINT dwPlayerID, const RoomMapStates& RoomMapStates);
+	void          UpdateTotalMapStatesWithAllSavedGameRooms(const UINT dwPlayerID);
+	static bool   IsMoreDetailedMapState(const MapState first, const MapState second);
 
 private:
 	virtual void      LoadMembership();

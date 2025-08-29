@@ -32,6 +32,7 @@
 #include "Ports.h"  // for towlower, iswspace
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
 //Some common small strings.  Larger strings are localizable and should be kept in database.
 const WCHAR wszAmpersand[] =    { We('&'),We(0) };
@@ -40,6 +41,7 @@ const WCHAR wszOpenAngle[] =    { We('<'),We(0) };
 const WCHAR wszCloseAngle[] =   { We('>'),We(0) };
 const WCHAR wszColon[] =        { We(':'),We(0) };
 const WCHAR wszComma[] =        { We(','),We(0) };
+const WCHAR wszCommaSpace[] =   { We(','),We(' '),We(0) };
 #ifdef WIN32
 const WCHAR wszCRLF[] =         { We('\r'),We('\n'),We(0) };
 #else
@@ -51,6 +53,7 @@ const WCHAR wszEmpty[] =        { We(0) };
 const WCHAR wszEqual[] =        { We('='),We(0) };
 const WCHAR wszExclamation[] =  { We('!'),We(0) };
 const WCHAR wszForwardSlash[] = { We('/'),We(0) };
+const WCHAR wszTimes[] =        { We('x'),We(0) };
 const WCHAR wszHyphen[] =       { We('-'),We(0) };
 const WCHAR wszParentDir[] =    { We('.'),We('.'),We(0) };
 const WCHAR wszPercent[] =      { We('%'),We(0) };
@@ -67,6 +70,8 @@ const WCHAR wszSemicolon[] =    { We(';'),We(0) };
 const WCHAR wszSpace[] =        { We(' '),We(0) };
 const WCHAR wszUnderscore[] =   { We('_'),We(0) };
 const WCHAR wszZero[] =         { We('0'),We(0) };
+const WCHAR wszTilde[] =        { We('~'),We(0) };
+const WCHAR wszStringToken[] =  { We('%'),We('s'),We(0) };
 #ifdef WIN32
 const WCHAR wszSlash[] = { We('\\'),We(0) };
 #else
@@ -128,6 +133,13 @@ void AsciiToUnicode(const char *psz, WSTRING &wstr)
 //*****************************************************************************
 void AsciiToUnicode(const std::string &str, WSTRING &wstr) {
 	AsciiToUnicode(str.c_str(), wstr);
+}
+
+//*****************************************************************************
+const WSTRING AsciiToUnicode(const char *psz) {
+	WSTRING res;
+	AsciiToUnicode(psz, res);
+	return res;
 }
 
 //******************************************************************************
@@ -865,4 +877,72 @@ WSTRING WCSReplace(
 		result += source.substr(processed, loc-processed)+to;
 		processed = loc + from.size();
 	}
+}
+
+//*****************************************************************************
+WSTRING WCSToLower(WSTRING const &source)
+//Converts WSTRING to lowercase
+{
+	WSTRING lowercased;
+	lowercased.reserve(source.size());
+	for (WSTRING::const_iterator it = source.begin(); it != source.end(); ++it)
+		lowercased += towlower(*it);
+
+	return lowercased;
+}
+
+//*****************************************************************************
+const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimiter)
+// Explodes a string into pieces
+// Adapted from: https://stackoverflow.com/a/12967010
+{
+	std::vector<WSTRING> result;
+	std::basic_istringstream<WCHAR> iss(source);
+
+	for (WSTRING token; std::getline(iss, token, delimiter); )
+	{
+		if (!token.empty())
+			result.push_back(token);
+	}
+
+	return result;
+}
+
+//*****************************************************************************
+const std::set<WSTRING> WCSExplodeSet(WSTRING const& source, WCHAR const delimiter)
+// Explodes a string into pieces, and put them into a set
+{
+	std::set<WSTRING> result;
+	std::basic_istringstream<WCHAR> iss(source);
+
+	for (WSTRING token; std::getline(iss, token, delimiter); )
+	{
+		if (!token.empty())
+			result.insert(token);
+	}
+
+	return result;
+}
+
+//*****************************************************************************
+bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles)
+// Returns true if haystack contains every string in needle, even if they overlap
+{
+	for (std::vector<WSTRING>::const_iterator iter = needles.begin(); iter < needles.end(); ++iter)
+	{
+		if (haystack.find(*iter) == WSTRING::npos)
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+WSTRING to_WSTRING(int value)
+// Returns: string representation of input
+{
+	WCHAR temp[32];
+	_itoW(value, temp, 10, 32);
+	WSTRING string(temp);
+	return string;
 }

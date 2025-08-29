@@ -92,6 +92,7 @@ CEventHandlerWidget::CEventHandlerWidget(
 	: CWidget(eSetType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, bPaused(false)
 	, bUpdateMotion(false)
+	, bAllowRepeating(true)
 
 	, pHeldDownWidget(NULL)
 	, pHoveringWidget(NULL)
@@ -497,7 +498,8 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 		
 		//If user has held a widget down long enough, call its HandleMouseDownRepeat().
 		const UINT dwNow = SDL_GetTicks();
-		if ( this->pHeldDownWidget &&
+		if (this->bAllowRepeating &&
+				this->pHeldDownWidget &&
 				dwNow - this->dwLastMouseDownRepeat > ((this->bIsFirstMouseDownRepeat) ?
 				MOUSEDOWN_REPEAT_INITIAL_DELAY : MOUSEDOWN_REPEAT_CONTINUE_DELAY) )
 		{
@@ -535,7 +537,7 @@ void CEventHandlerWidget::Activate_HandleBetweenEvents()
 
 		//Check for a repeating keypress.
 		UINT dwRepeatTagNo;
-		if (IsKeyRepeating(dwRepeatTagNo))
+		if (this->bAllowRepeating && IsKeyRepeating(dwRepeatTagNo))
 		{
 			if (!CheckForSelectionChange(m_RepeatingKey))
 			{
@@ -673,6 +675,13 @@ void CEventHandlerWidget::Activate_HandleKeyDown(
 					if (IsDeactivating())
 						return;  //if widget became inactive after key, stop handling event
 					
+
+					if (pSelectedWidget->bIsPreventingEventBubbling)
+					{ // If widget wants to trap the event then stop handling it
+						pSelectedWidget->bIsPreventingEventBubbling = false;
+						return;
+					}
+
 					//If selected widget doesn't accept text entry then hotkey
 					//without ALT can be used for any widget.
 					//If selected widget does accept text entry, it can use the Enter
@@ -1030,18 +1039,17 @@ bool CEventHandlerWidget::SelectPrevWidget(
 	CWidget *pWidget;
 	if (iSeek != this->FocusList.begin())
 	{
-		--iSeek;
-		do
+		while (iSeek != this->FocusList.begin())
 		{
+			--iSeek;
+
 			pWidget = *iSeek;
 			if (pWidget && pWidget->IsSelectable(!bPaint))
 			{
 				ChangeSelection(iSeek, bPaint);
 				return true;
 			}
-			--iSeek;
 		}
-		while (iSeek != this->FocusList.begin());
 	}
 
 	//Search for next selectable widget from end of focus list.

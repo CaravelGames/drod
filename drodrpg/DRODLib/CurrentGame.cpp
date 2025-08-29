@@ -36,6 +36,7 @@
 #include "DbXML.h"
 #include "CueEvents.h"
 #include "GameConstants.h"
+#include "I18N.h"
 #include "Halph.h"
 #include "Monster.h"
 #include "MonsterFactory.h"
@@ -46,10 +47,12 @@
 #include "Mimic.h"
 #include "Pathmap.h"
 #include "PhoenixAshes.h"
+#include "SettingsKeys.h"
 #include "Serpent.h"
 #include "Splitter.h"
 #include "Swordsman.h"
 #include "TileConstants.h"
+#include "TotalMapStates.h"
 #include "NetInterface.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
@@ -74,7 +77,8 @@ const UINT SpeakerConstant[Speaker_Count] = {
 	M_SERPENTG, M_SERPENTB, M_WATERSKIPPER, M_SKIPPERNEST, M_AUMTLICH, M_CLONE,
 	M_DECOY, M_WUBBA, M_SEEP, M_FEGUNDO, M_FEGUNDOASHES, M_MUDMOTHER,
 	M_MUDBABY, M_GELMOTHER, M_GELBABY, M_ROCKGIANT, M_CITIZEN3, M_CITIZEN4,
-	M_BEETHRO_IN_DISGUISE, UINT(M_CUSTOM), UINT(M_PLAYER), M_STALWART
+	M_BEETHRO_IN_DISGUISE, UINT(M_CUSTOM), UINT(M_PLAYER), M_STALWART,
+	M_ARCHIVIST, M_ARCHITECT, M_PATRON, M_CONSTRUCT, M_FLUFFBABY
 };
 
 #define shieldOffStr    "ShieldOff"
@@ -269,17 +273,18 @@ void CCurrentGame::ActivateTokenAt(const UINT wX, const UINT wY)
 }
 
 //*****************************************************************************
-void CCurrentGame::AddNewEntity(
+CMonster* CCurrentGame::AddNewEntity(
 //Adds a new monster in the room of the indicated type.
 //
 //Params:
 	CCueEvents& CueEvents,
-	const UINT identity, const UINT wX, const UINT wY, const UINT wO)
+	const UINT identity, const UINT wX, const UINT wY, const UINT wO,
+	const bool bMakeCharacterVisible) //[default=false]
 {
 	if (!IsValidOrientation(wO))
-		return; //invalid
+		return NULL; //invalid
 	if (bIsSerpent(identity) || identity == M_FEGUNDOASHES || identity == M_CHARACTER)
-		return; //not supported
+		return NULL; //not supported
 	if (IsValidMonsterType(identity))
 	{
 		CMonster *pMonster = this->pRoom->AddNewMonster(identity, wX, wY);
@@ -292,19 +297,19 @@ void CCurrentGame::AddNewEntity(
 		//Affect tile being placed on.
 		if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && !bIsEntityFlying(identity))
 			this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
-		return;
+		return pMonster;
 	}
 
 	if (identity == M_NONE)
 	{
 		//Remove any entity occupying this tile.
 		this->pRoom->KillMonsterAtSquare(wX, wY, CueEvents, true);
-		return;
+		return NULL;
 	}
 
 	if (identity >= CUSTOM_CHARACTER_FIRST &&
 			!this->pHold->GetCharacter(identity))
-		return; //do nothing if this is an invalid custom character type
+		return NULL; //do nothing if this is an invalid custom character type
 
 	//Add NPC to the room.
 	CMonsterFactory mf;
@@ -321,6 +326,9 @@ void CCurrentGame::AddNewEntity(
 	pCharacter->SetCurrentGame(this); //will assign the default script for custom NPCs
 	pCharacter->dwScriptID = getNewScriptID();
 
+	if (bMakeCharacterVisible)
+		pCharacter->bVisible = true;
+
 	//Place in room if visible.
 	bool bVisible = pCharacter->IsVisible();
 	if (bVisible &&
@@ -332,17 +340,13 @@ void CCurrentGame::AddNewEntity(
 			//There is no default script for the NPC, so it would never appear.
 			//Just pretend it was never added to the room.
 			delete pCharacter;
-			return;
+			return NULL;
 		}
 
 		pCharacter->bVisible = false;
 		bVisible = false;
 	}
 	this->pRoom->LinkMonster(pNew, bVisible);
-
-	//Affect tile being placed on.
-	if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && !pCharacter->IsFlying())
-		this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
 
 	//Set up the NPC's properties by running the default script.
 	//Guard against creating new scripted entities that immediately
@@ -368,6 +372,12 @@ void CCurrentGame::AddNewEntity(
 
 		SetExecuteNoMoveCommands(bExec);
 	}
+
+	//Affect tile being placed on.
+	if (this->pRoom->GetOSquare(wX, wY) == T_PRESSPLATE && !pCharacter->IsFlying())
+		this->pRoom->ActivateOrb(wX, wY, CueEvents, OAT_PressurePlate);
+
+	return pNew;
 }
 
 //*****************************************************************************
@@ -376,26 +386,30 @@ void CCurrentGame::AddRoomToMap(
 //
 //Params:
 	const UINT roomID,
-	const bool bMarkRoomVisible, //If set [default=false], then make the room fully visible on the map.
+	const MapState mapState, //Visibilty state of the room on map [default=NoDetail]
 	const bool bSaveRoom) //Whether to flag including this room in save data [default=true]
 {
 	ExploredRoom *pExpRoom = getExploredRoom(roomID);
-	bool bWasRoomPreview = false;
+	bool bWasUnexplored = false;
 	if (pExpRoom)
 	{
-		bWasRoomPreview = !pExpRoom->bSave;
+		bWasUnexplored = pExpRoom->mapState != MapState::Explored;
 		pExpRoom->bSave |= bSaveRoom; //saving takes precedence
+		if (CDbSavedGames::IsMoreDetailedMapState(mapState, pExpRoom->mapState))
+		{
+			pExpRoom->mapState = mapState;
+		}
 	} else {
 		pExpRoom = new ExploredRoom();
 		this->ExploredRooms.push_back(pExpRoom);
 		pExpRoom->roomID = roomID;
-		pExpRoom->bMapOnly = true;
+		pExpRoom->mapState = mapState;
 		pExpRoom->bSave = bSaveRoom;
 	}
 
-	//Room marked only on the map becomes fully visible (as if explored) if bMarkRoomVisible is set.
+	//Room marked only on the map becomes fully visible (as if explored) if mapState is Explored.
 	ASSERT(pExpRoom);
-	if (bMarkRoomVisible && (pExpRoom->bMapOnly || bWasRoomPreview))
+	if (pExpRoom->mapState == MapState::Explored && bWasUnexplored)
 	{
 		CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
 		if (pRoom)
@@ -415,7 +429,12 @@ void CCurrentGame::AddRoomToMap(
 			pRoom->PreprocessMonsters(Ignored);
 			this->bExecuteNoMoveCommands = bExecOriginal;
 */
-
+			if (!bSaveRoom)
+			{
+				// If we don't want to include the room in save data, then we are adding a preview room.
+				// Any mapOnly room will need converting to a preview room by unsetting bSave.
+				pExpRoom->bSave = false;
+			}
 			SaveExploredRoomData(*pRoom);
 
 			this->pRoom = pOrigRoom;
@@ -431,6 +450,14 @@ bool CCurrentGame::Autosave(const WSTRING& name)
 //Returns: whether a record was saved to the DB
 {
 	if (this->bNoSaves)
+		return false;
+
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	ASSERT(pPlayer);
+	bool bAutosaveEnabled = pPlayer->Settings.GetVar(Settings::EnableAutosave, true);
+	delete pPlayer;
+
+	if (!bAutosaveEnabled)
 		return false;
 
 	if (this->Commands.IsFrozen() || !this->bIsGameActive)
@@ -502,6 +529,76 @@ const
 }
 
 //*****************************************************************************
+float CCurrentGame::GetGlobalStatModifier(ScriptVars::StatModifiers statType) const
+// Returns: the multiplicative global modifier for the given statistic
+{
+	PlayerStats& st = this->pPlayer->st;
+
+	// When calculating, treat values that can be negative as signed int
+	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterHP:
+			return st.monsterHPmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterATK:
+			return st.monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return st.monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return int(st.monsterGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return int(st.monsterXPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return int(st.itemMult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return int(st.itemHPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return int(st.itemATKmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return int(st.itemDEFmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return int(st.itemGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemShovels:
+			return int(st.itemShovelMult) / 100.0f;
+		default:
+			return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
+float CCurrentGame::GetTotalStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the total multiplicative modifier for the given statistic
+//It is the product of the global, NPC and equipment modifiers
+{
+	float fMult = GetGlobalStatModifier(statType);
+
+	if (pRoom) {
+		fMult *= pRoom->GetStatModifierFromCharacters(statType);
+	}
+
+	if (!IsPlayerSwordDisabled()) {
+		const CCharacter* pWeapon = getCustomEquipment(ScriptFlag::Weapon);
+		if (pWeapon) {
+			fMult *= pWeapon->GetStatModifier(statType);
+		}
+	}
+	if (!IsPlayerShieldDisabled()) {
+		const CCharacter* pArmor = getCustomEquipment(ScriptFlag::Armor);
+		if (pArmor) {
+			fMult *= pArmor->GetStatModifier(statType);
+		}
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		const CCharacter* pAccessory = getCustomEquipment(ScriptFlag::Accessory);
+		if (pAccessory) {
+			fMult *= pAccessory->GetStatModifier(statType);
+		}
+	}
+
+	return fMult;
+}
+
+//*****************************************************************************
 bool CCurrentGame::IsEquipmentValid(
 	const UINT id, // (in) Index/ID of the equipment
 	const UINT type) // (in) type of the equipment (ScriptFlag::EquipmentType constant)
@@ -540,6 +637,11 @@ UINT CCurrentGame::getNewScriptID()
 	++max;
 	this->CompletedScripts += max;
 	return max;
+}
+
+UINT CCurrentGame::GetNextImageOverlayID()
+{
+	return imageOverlayNextID++;
 }
 
 //*****************************************************************************
@@ -647,9 +749,9 @@ void CCurrentGame::Clear(
 	this->pPendingPriorLocation = NULL;
 
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	this->music.clear();
 
@@ -679,6 +781,10 @@ void CCurrentGame::Clear(
 //	memset(&(this->DemoRecInfo), 0, sizeof(this->DemoRecInfo));
 
 	this->UnansweredQuestions.clear();
+	this->customRoomLocationText.clear();
+	this->localScoreMessage.clear();
+	this->persistingImageOverlays.clear();
+	this->imageOverlayNextID = 0;
 
 /*
 	this->bRoomExitLocked = false;
@@ -791,13 +897,169 @@ void CCurrentGame::ExitCurrentRoom()
 			this->moves.Append(this->Commands);
 	}
 
-	//Record that scripts were completed.
-	AddCompletedScripts();
+	CheckGlobalScriptsState();
 
 	//Save info for room being exited.
-	SaveExploredRoomData(*this->pRoom);
+	SaveExploredRoomData(*this->pRoom, true);
 
 	this->PreviouslyExploredRooms -= this->pRoom->dwRoomID; //can forget this room was previewed for the rest of this game
+}
+
+//***************************************************************************************
+//Evaluate a calculated function in context of the current game
+int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params)
+{
+	ASSERT(params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive));
+
+	switch (ePrimitive) {
+		case ScriptVars::P_Abs:
+			return abs(params[0]);
+		case ScriptVars::P_Orient:
+		{
+			const int dx = sgn(params[0]);
+			const int dy = sgn(params[1]);
+			return nGetO(dx, dy);
+		}
+		case ScriptVars::P_Facing:
+		{
+			int dx = params[0];
+			int dy = params[1];
+			//If one of the four compass directions is more direct than a diagonal,
+			//snap to it.
+			const int absDx = abs(dx), absDy = abs(dy);
+			if (absDx > 2 * absDy)
+				dy = 0;
+			else if (absDy > 2 * absDx)
+				dx = 0;
+			return nGetO(sgn(dx), sgn(dy));
+		}
+		case ScriptVars::P_OrientX:
+		case ScriptVars::P_OrientY:
+		case ScriptVars::P_RotateCW:
+		case ScriptVars::P_RotateCCW:
+		{
+			const int o = params[0];
+			if (!IsValidOrientation(o))
+				return o;
+			switch (ePrimitive) {
+				case ScriptVars::P_OrientX: return nGetOX(o);
+				case ScriptVars::P_OrientY: return nGetOY(o);
+				case ScriptVars::P_RotateCW: return nNextCO(o);
+				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+			}
+		}
+		case ScriptVars::P_RotateDist:
+		{
+			UINT wO1 = params[0];
+			UINT wO2 = params[1];
+			UINT wTurns = 0;
+
+			if (!(IsValidOrientation(wO1) && IsValidOrientation(wO2)) ||
+				wO1 == NO_ORIENTATION || wO2 == NO_ORIENTATION) {
+				return 0;
+			}
+
+			while (wO1 != wO2) {
+				wO1 = nNextCO(wO1);
+				++wTurns;
+				ASSERT(wTurns < 8);
+			}
+
+			return wTurns <= 4 ? wTurns : 8 - wTurns;
+		}
+		case ScriptVars::P_Min:
+			return min(params[0], params[1]);
+		case ScriptVars::P_Max:
+			return max(params[0], params[1]);
+		case ScriptVars::P_Dist0: //L-infinity norm
+		{
+			const int deltaX = abs(params[2] - params[0]);
+			const int deltaY = abs(params[3] - params[1]);
+			return max(deltaX, deltaY);
+		}
+		case ScriptVars::P_Dist1: //L-1 norm (Manhattan distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return abs(deltaX) + abs(deltaY);
+		}
+		case ScriptVars::P_Dist2: //L-2 norm (Euclidean distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
+		}
+		case ScriptVars::P_ArrowDir:
+		{
+			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
+			return getForceArrowDirection(tile);
+		}
+		case ScriptVars::P_RoomTile:
+		{
+			switch (params[2]) {
+			case 0: return this->pRoom->GetOSquare(params[0], params[1]);
+			case 1: return this->pRoom->GetFSquare(params[0], params[1]);
+			case 2: return this->pRoom->GetTSquare(params[0], params[1]);
+			default: return 0;
+			}
+		}
+		case ScriptVars::P_SlotItem:
+		{
+			UINT slot = this->pRoom->GetTSquare(params[0], params[1]);
+			if (!bIsEquipment(slot)) {
+				return -1;
+			}
+			UINT item = this->pRoom->GetTParam(params[0], params[1]);
+			//Return empty slots as zero
+			switch (slot)
+			{
+				case T_SWORD: return (item == WeaponSlot) ? 0 : item;
+				case T_SHIELD: return (item == ArmorSlot) ? 0 : item;
+				case T_ACCESSORY: return (item == AccessorySlot) ? 0 : item;
+				default: return item;
+			}
+		}
+		case ScriptVars::P_EnemyStat:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				switch (params[2]) {
+					case ScriptFlag::HP: return pMonster->HP;
+					case ScriptFlag::ATK: return pMonster->ATK;
+					case ScriptFlag::DEF: return pMonster->DEF;
+					case ScriptFlag::GOLD: return pMonster->GOLD;
+					case ScriptFlag::XP: return pMonster->XP;
+				}
+			}
+		}
+		break;
+		case ScriptVars::P_MonsterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				return pMonster->wType;
+			}
+			return -1;
+		}
+		break;
+		case ScriptVars::P_CharacterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return -1;
+			}
+
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (!pCharacter) {
+				return -1;
+			}
+
+			return pCharacter->wLogicalIdentity;
+		}
+		break;
+	}
+
+	return 0;
 }
 
 //*****************************************************************************
@@ -832,17 +1094,22 @@ WSTRING CCurrentGame::ExpandText(
 				} else {
 					//Resolve var name.
 					WCHAR wIntText[20];
+					//Is it a predefined var?
 					const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wEscapeStr);
 					InputCommands::DCMD reserved_lookup_id;
 					if (eVar != ScriptVars::P_NoVar)
 					{
-						//Is it a predefined var?
-						UINT val;
-						if (pCharacter)
-							val = pCharacter->getPredefinedVar(eVar);
-						else
-							val = getVar(eVar);
-						wStr += _itoW(int(val), wIntText, 10);
+						//Yes.
+						if (pCharacter) {
+							wStr += pCharacter->getPredefinedVar(eVar);
+						} else {
+							if (ScriptVars::IsStringVar(eVar)) {
+								wStr += getStringVar(eVar);
+							} else {
+								const UINT val = getVar(eVar);
+								wStr += _itoW(int(val), wIntText, 10);
+							}
+						}
 					} else if ((reserved_lookup_id = InputCommands::getCommandIDByVarName(wEscapeStr)) < InputCommands::DCMD_Count) {
 						//Is it a player input button?
 						wStr += getTextForInputCommandKey(reserved_lookup_id);
@@ -899,10 +1166,11 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	ASSERT(id < InputCommands::DCMD_Count);
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
-	const InputCommands::DCMD eCommand = InputCommands::DCMD(
-			settings.GetVar(InputCommands::COMMANDNAME_ARRAY[id], 0));
+	const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	return g_pTheDB->GetMessageText(KeyToMID(eCommand));
+	const InputKey inputKey = settings.GetVar(keyDefinition->settingName, InputKey(0));
+
+	return I18N::DescribeInputKey(inputKey);
 }
 
 //*****************************************************************************
@@ -1018,7 +1286,44 @@ UINT CCurrentGame::GetScore() const
 	st.ATK = getPlayerATK();
 	st.DEF = getPlayerDEF();
 
-	return CDbSavedGames::GetScore(st);
+	return GetScore(st);
+}
+
+//*******************************************************************************
+UINT CCurrentGame::GetScore(const PlayerStats& st)
+//Return: score for these player stats
+{
+	UINT dwScore = 0;
+	dwScore += CalculateStatScore(st.HP, st.scoreHP);
+	dwScore += CalculateStatScore(st.ATK, st.scoreATK);
+	dwScore += CalculateStatScore(st.DEF, st.scoreDEF);
+	dwScore += CalculateStatScore(st.yellowKeys, st.scoreYellowKeys);
+	dwScore += CalculateStatScore(st.greenKeys, st.scoreGreenKeys);
+	dwScore += CalculateStatScore(st.blueKeys, st.scoreBlueKeys);
+	dwScore += CalculateStatScore(st.skeletonKeys, st.scoreSkeletonKeys);
+	dwScore += CalculateStatScore(st.GOLD, st.scoreGOLD);
+	dwScore += CalculateStatScore(st.XP, st.scoreXP);
+	dwScore += CalculateStatScore(st.shovels, st.scoreShovels);
+
+	return dwScore;
+}
+
+//*******************************************************************************
+UINT CCurrentGame::CalculateStatScore(const int stat, const int scoreMultiplier)
+//Return: score for a particular stat
+{
+	const int maxAllowedScore = 100000000;
+	if (scoreMultiplier > 0)
+	{
+		if (stat > maxAllowedScore / scoreMultiplier) return maxAllowedScore;
+		if (stat < -maxAllowedScore / scoreMultiplier) return -maxAllowedScore;
+		return stat * scoreMultiplier;
+	}
+	if (scoreMultiplier < 0)
+	{
+		return min(maxAllowedScore, max(-maxAllowedScore, stat / abs(scoreMultiplier)));
+	}
+	return 0;
 }
 
 //*****************************************************************************
@@ -1027,6 +1332,47 @@ WSTRING CCurrentGame::GetScrollTextAt(const UINT wX, const UINT wY)
 {
 	const WCHAR *pText = pRoom->GetScrollTextAtSquare(wX, wY);
 	return ExpandText(pText);
+}
+
+//*****************************************************************************
+UINT CCurrentGame::getSpawnID(UINT defaultMonsterID) const
+//Enables custom override option for what monster type is spawned instead of a default/base type
+//Returns: ID of monster to spawn
+{
+	switch (defaultMonsterID) {
+		case M_MUDBABY:
+			if (this->pPlayer->st.mudSpawnID >= 0)
+				return this->pPlayer->st.mudSpawnID;
+			break;
+		case M_TARBABY:
+			if (this->pPlayer->st.tarSpawnID >= 0)
+				return this->pPlayer->st.tarSpawnID;
+			break;
+		case M_GELBABY:
+			if (this->pPlayer->st.gelSpawnID >= 0)
+				return this->pPlayer->st.gelSpawnID;
+			break;
+		case M_REGG:
+			if (this->pPlayer->st.queenSpawnID >= 0)
+				return this->pPlayer->st.queenSpawnID;
+			break;
+		case M_TARMOTHER:
+			if (this->pPlayer->st.tarSwapID >= 0)
+				return this->pPlayer->st.tarSwapID;
+			break;
+		case M_MUDMOTHER:
+			if (this->pPlayer->st.mudSwapID >= 0)
+				return this->pPlayer->st.mudSwapID;
+			break;
+		case M_GELMOTHER:
+			if (this->pPlayer->st.gelSwapID >= 0)
+				return this->pPlayer->st.gelSwapID;
+			break;
+
+		default: break;
+	}
+
+	return defaultMonsterID;
 }
 
 //*****************************************************************************
@@ -1212,6 +1558,23 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 		}
 		return 0;
 
+		//Level information
+		case (UINT)ScriptVars::P_LEVEL_MULT:
+			return this->pLevel->dwMultiplier;
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
+		{
+			int dX, dY;
+			this->pRoom->GetPositionInLevel(dX, dY);
+			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
+		}
+
+		//Derived stat values
+		case (UINT)ScriptVars::P_TOTAL_ATK:
+			return this->getPlayerATK();
+		case (UINT)ScriptVars::P_TOTAL_DEF:
+			return this->getPlayerDEF();
+
 		default:
 			return player.st.getVar(ScriptVars::Predefined(varIndex));
 	}
@@ -1248,6 +1611,87 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 }
 
 //*****************************************************************************
+void CCurrentGame::GetArrayVarValues(VARMAP& vars)
+//Outputs a mapping of combined array name and index to value info for all array vars
+{
+	vars.clear();
+
+	for (ScriptArrayMap::const_iterator iter = this->scriptArrays.begin();
+		iter != this->scriptArrays.end(); ++iter) {
+		//Get var name.
+		const UINT wVarID = iter->first;
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
+		const map<int, int> array = iter->second;
+
+		for (map<int, int>::const_iterator arrayIter = array.begin(); arrayIter != array.end(); ++arrayIter) {
+			//Create a key for each entry in the format v[id]/[index]
+			const string key = varName + "/" + to_string(arrayIter->first);
+			VarMapInfo info;
+			info.bInteger = true;
+			info.val = arrayIter->second;
+			vars[key] = info;
+		}
+	}
+}
+
+//*****************************************************************************
+WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
+//
+{
+	ScriptArrayMap::const_iterator array = this->scriptArrays.find(varID);
+	if (array == this->scriptArrays.end()) {
+		return WS(""); //Array hasn't been initialized yet
+	}
+
+	WSTRING wstr;
+	bool bNeedComma = false;
+	for (map<int, int>::const_iterator iter = array->second.cbegin();
+		iter != array->second.cend(); ++iter) {
+		if (bNeedComma) {
+			wstr += wszComma;
+		}
+
+		wstr += to_WSTRING(iter->first);
+		wstr += wszColon;
+		wstr += to_WSTRING(iter->second);
+		bNeedComma = true;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+void CCurrentGame::SetArrayVarFromString(const UINT varID, const WSTRING& wstr)
+{
+	if (wstr.empty()) {
+		const ScriptArrayMap::iterator& array = scriptArrays.find(varID);
+		if (array != scriptArrays.end()) {
+			//Clear a script array that is initialized
+			array->second.clear();
+		}
+
+		return;
+	}
+
+	//This will make a new array if one doesn't exist
+	map<int, int>& array = this->scriptArrays[varID];
+	array.clear();
+
+	vector<WSTRING> entries = WCSExplode(wstr, *wszComma);
+	for (vector<WSTRING>::const_iterator iter = entries.cbegin();
+		iter != entries.cend(); ++iter) {
+		vector<WSTRING> keyValue = WCSExplode(*iter, *wszColon);
+		if (keyValue.size() != 2) {
+			continue; //need two values
+		}
+
+		int key = _Wtoi(keyValue[0].c_str());
+		int value = _Wtoi(keyValue[1].c_str());
+		array[key] = value;
+	}
+}
+
+//*****************************************************************************
 void CCurrentGame::GotoLevelEntrance(
 //Leaves the level and goes to the level with the indicated entrance.
 //
@@ -1255,8 +1699,17 @@ void CCurrentGame::GotoLevelEntrance(
 	CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay)
 {
 	ASSERT(wEntrance != (UINT)EXIT_LOOKUP);
+	ProcessPlayer_HandleLeaveLevel(CueEvents, LevelExit(LevelExit::SpecificID, wEntrance), bSkipEntranceDisplay);
+}
 
-	ProcessPlayer_HandleLeaveLevel(CueEvents, wEntrance, bSkipEntranceDisplay);
+//*****************************************************************************
+void CCurrentGame::GotoWorldMap(CCueEvents& CueEvents, const UINT wWorldMap)
+//Leaves the level and goes to the world map with the indicated entrance.
+//
+//Params:
+{
+	ASSERT(wWorldMap);
+	ProcessPlayer_HandleLeaveLevel(CueEvents, LevelExit(LevelExit::WorldMapID, wWorldMap), true);
 }
 
 //*****************************************************************************
@@ -1266,7 +1719,7 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 	s.HP = 500;
 	s.ATK = 10;
 	s.DEF = 10;
-	s.GOLD = 0;
+	s.GOLD = s.XP = 0;
 	s.speed = 100;
 
 	s.yellowKeys = s.greenKeys = s.blueKeys = s.skeletonKeys = 0;
@@ -1278,18 +1731,149 @@ void CCurrentGame::InitRPGStats(PlayerStats& s)
 		s.monsterGRmult = s.monsterXPmult = 100; //100%
 
 	s.itemMult = s.itemHPmult = s.itemATKmult = s.itemDEFmult =
-		s.itemGRmult = 100; //100%
+		s.itemGRmult = s.itemShovelMult = 100; //100%
 
 	s.hotTileVal = 5;     //5% damage
 	s.explosionVal = 100; //100% damage (kill)
+	s.beamVal = 50;       //50% damage
+	s.firetrapVal = UINT(-1000); //1000 damage
 
 	s.totalMoves = s.totalTime = 0;
+
+	s.scoreHP = -40; //1 point per 40 HP
+	s.scoreATK = 5;
+	s.scoreDEF = 3;
+	s.scoreYellowKeys = 10;
+	s.scoreGreenKeys = 20;
+	s.scoreBlueKeys = s.scoreSkeletonKeys = 30;
+	s.scoreGOLD = s.scoreXP = 0;
+	s.scoreShovels = 1;
 }
 
 //*****************************************************************************
 bool CCurrentGame::IsCurrentRoomExplored(const bool bConsiderCurrentRoom) const
 {
 	return CDbSavedGame::IsRoomExplored(this->pRoom->dwRoomID, bConsiderCurrentRoom);
+}
+
+//*****************************************************************************
+void CCurrentGame::SetWorldMapIcon(
+	UINT worldMapID,
+	UINT xPos, UINT yPos,
+	UINT entranceID,
+	ExitType exitType,
+	UINT charID,
+	UINT imageID,
+	UINT displayFlags)
+{
+	ASSERT(!charID || !imageID);
+
+	if (!this->pHold->DoesWorldMapExist(worldMapID))
+		return;
+
+	WorldMapsIcons::iterator iter = this->worldMapIcons.find(worldMapID);
+	if (displayFlags == ScriptFlag::WMI_Off) {
+		if (iter != this->worldMapIcons.end()) {
+			//Remove all icons for this entranceID on this world map
+			WorldMapIcons& icons = iter->second;
+			WorldMapIcons newIcons;
+			for (WorldMapIcons::const_iterator iconIt = icons.begin();
+				iconIt != icons.end(); ++iconIt)
+			{
+				if (iconIt->entranceID != entranceID)
+					newIcons.push_back(*iconIt);
+			}
+
+			icons = newIcons;
+		}
+	} else {
+		//Only for valid entrance IDs
+		if (this->pHold->GetEntrance(entranceID) ||
+			(LevelExit::IsWorldMapID(entranceID) &&
+				this->pHold->DoesWorldMapExist(LevelExit::ConvertWorldMapID(entranceID))))
+		{
+			if (iter != this->worldMapIcons.end()) {
+				//Replace any icons at the same coords on this world map.
+				WorldMapIcons& icons = iter->second;
+				WorldMapIcons newIcons;
+				bool bReplaced = false;
+				for (WorldMapIcons::const_iterator iconIt = icons.begin();
+					iconIt != icons.end(); ++iconIt)
+				{
+					const WorldMapIcon& icon = *iconIt;
+					if (icon.xPos == xPos && icon.yPos == yPos) {
+						bReplaced = true; //remove icon from the copied data
+					} else {
+						newIcons.push_back(icon);
+					}
+				}
+
+				if (bReplaced)
+					icons = newIcons;
+			}
+
+			//Can have multiple icons with the same destination on a world map
+			this->worldMapIcons[worldMapID].push_back(
+				WorldMapIcon(entranceID, xPos, yPos, charID, imageID, displayFlags, exitType));
+		}
+	}
+}
+
+//*****************************************************************************
+//The world map music specifications are stored, only for lookup in the front end.
+string GetWorldMapVarNamePrefix(UINT worldMapID)
+{
+	string prefix = "wm";
+
+	char worldMap[12];
+	_itoa(worldMapID, worldMap, 10);
+
+	prefix += worldMap;
+
+	return prefix;
+}
+
+string GetWorldMapMusicVarNamePrefix(UINT worldMapID) {
+	return GetWorldMapVarNamePrefix(worldMapID) + "m";
+}
+
+string GetWorldMapMusicCustomIDNamePiece() {
+	return string("c");
+}
+
+void CCurrentGame::SetWorldMapMusic(UINT worldMapID, const WSTRING& songlist)
+{
+	if (this->pHold->DoesWorldMapExist(worldMapID)) {
+		const string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+		this->stats.SetVar(varName.c_str(), songlist.c_str());
+	}
+}
+
+void CCurrentGame::SetWorldMapMusic(UINT worldMapID, const UINT songID, const UINT customID)
+{
+	if (this->pHold->DoesWorldMapExist(worldMapID)) {
+		string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+		this->stats.SetVar(varName.c_str(), songID);
+
+		varName += GetWorldMapMusicCustomIDNamePiece();
+		this->stats.SetVar(varName.c_str(), customID);
+	}
+}
+
+WorldMapMusic CCurrentGame::GetWorldMapMusic(UINT worldMapID)
+{
+	string varName = GetWorldMapMusicVarNamePrefix(worldMapID);
+	if (this->stats.GetVarType(varName.c_str()) == UVT_wchar_string) {
+		const WCHAR* songlist = this->stats.GetVar(varName.c_str(), (WCHAR*)(wszEmpty));
+		return WorldMapMusic(WSTRING(songlist));
+	}
+
+	const UINT songID = this->stats.GetVar(varName.c_str(), UINT(0));
+
+	varName += GetWorldMapMusicCustomIDNamePiece();
+	const UINT customID = this->stats.GetVar(varName.c_str(), UINT(0));
+
+	return WorldMapMusic(songID, customID);
 }
 
 //*****************************************************************************
@@ -1360,6 +1944,37 @@ const
 }
 
 //*****************************************************************************
+bool CCurrentGame::IsValidWorldMapTransfer(
+//Returns: if going to a place via world map is allowed given the current
+//game state
+	UINT wEntranceID, ExitType exitType) //[in] transfer details
+	const
+{
+	if (!OnWorldMap()) {
+		return false;
+	}
+
+	//The transfer is valid if the current world map has an icon with a matching
+	//entrance ID and exit type.
+	WorldMapsIcons::const_iterator iter = this->worldMapIcons.find(this->worldMapID);
+	if (iter == this->worldMapIcons.end()) {
+		return false;
+	}
+
+	const WorldMapIcons& icons = iter->second;
+	for (WorldMapIcons::const_iterator iconIt = icons.begin();
+		iconIt != icons.end(); ++iconIt) {
+		if (iconIt->entranceID == wEntranceID &&
+			iconIt->exitType == exitType &&
+			iconIt->IsTraverserable()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CCurrentGame::LoadFromHold(
 //Loads current game from the starting level and room of a specified hold.
 //
@@ -1375,6 +1990,8 @@ bool CCurrentGame::LoadFromHold(
 	bool bSuccess=true;
 
 	LoadPrep();
+
+	this->worldMapID = 0;
 
 	//Load the hold.
 	this->pHold = new CDbHold();
@@ -1399,6 +2016,8 @@ bool CCurrentGame::LoadFromHold(
 	InitRPGStats(this->pPlayer->st);
 	PackData(this->statsAtRoomStart);
 
+	InitializeTotalMapStates();
+
 	//Load the first room of level.
 	this->pRoom = this->pLevel->GetStartingRoom();
 	if (!this->pRoom) {bSuccess=false; goto Cleanup;}
@@ -1408,8 +2027,6 @@ bool CCurrentGame::LoadFromHold(
 
 	this->wVersionNo = VERSION_NUMBER;
 	this->checksumStr = g_pTheNet->GetChecksum(this, 1);
-
-	AddRoomsPreviouslyExploredByPlayerToMap();
 
 /*
 	//Save to level-begin and room-begin slots.
@@ -1471,6 +2088,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		if (!this->pRoom) {bSuccess=false; goto Cleanup;}
 		this->pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID);
 		if (!this->pLevel) {bSuccess=false; goto Cleanup;}
+		this->worldMapID = 0;
 
 		this->pPlayer->wX = this->pPlayer->wPrevX = st.priorX;
 		this->pPlayer->wY = this->pPlayer->wPrevY = st.priorY;
@@ -1479,6 +2097,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		//Go to predefined level entrance.
 		this->pEntrance = this->pHold->GetEntrance(dwEntranceID);
 		ASSERTP(pEntrance, "Dangling level entrance ID");   //Corrupted DB if NULL
+		this->worldMapID = 0;
 
 		//Load the room of the level entrance.
 		this->pRoom = new CDbRoom();
@@ -1526,6 +2145,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 	SetPlayerToRoomStart();
 
 	//Get members ready.
+	InitializeTotalMapStates();
 	RetrieveExploredRoomData(*this->pRoom);
 	CDbSavedGame::SetMonsterListAtRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
@@ -1535,6 +2155,24 @@ Cleanup:
 	if (!bSuccess) Clear();
 	return bSuccess;
 }
+
+bool CCurrentGame::LoadFromWorldMap(const UINT worldMapID)
+{
+	LOGCONTEXT("CCurrentGame::LoadFromWorldMap");
+
+	SetRoomStartToPlayer();
+	SetPlayerToRoomStart(); //reset some vars so saving game works properly
+
+	if (!this->pHold->DoesWorldMapExist(worldMapID))
+		return false;
+
+	this->worldMapID = worldMapID;
+
+	this->bIsGameActive = true;
+	this->bIsNewRoom = false;
+	return true;
+}
+
 
 //*****************************************************************************
 bool CCurrentGame::LoadFromRoom(
@@ -1582,8 +2220,11 @@ bool CCurrentGame::LoadFromRoom(
 	bSuccess = this->pHold->Load(this->pLevel->dwHoldID);
 	if (!bSuccess) goto Cleanup;
 	
+	InitializeTotalMapStates();
+	
 	//Set entrance to the main level entrance.
 	this->pEntrance = this->pHold->GetMainEntranceForLevel(this->pLevel->dwLevelID);
+	this->worldMapID = 0;
 
 	//Set room start vars.
 	this->pPlayer->wX = this->pPlayer->wPrevX = wX;
@@ -1648,7 +2289,12 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pHold = this->pLevel->GetHold();
 	if (!this->pHold) throw CException("CCurrentGame::LoadFromSavedGame");
 
+	InitializeTotalMapStates(true);
+
 	CDbSavedGame::setMonstersCurrentGame(this);
+
+	//Load script arrays
+	DeserializeScriptArrays();
 
 	//Set room start vars.
 	this->pPlayer->wX = this->pPlayer->wPrevX = CDbSavedGame::wStartRoomX;
@@ -1658,6 +2304,9 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pPlayer->bSwordOff = CDbSavedGame::bStartRoomSwordOff;
 	UnpackData(this->stats);
 	SetRoomStartToPlayer();
+
+	if (this->worldMapID)
+		return true;
 
 	const bool bAtRoomStart = bRestoreAtRoomStart || this->Commands.Empty();
 
@@ -1679,11 +2328,9 @@ bool CCurrentGame::LoadFromSavedGame(
 	//last step the player has taken.
 	RetrieveExploredRoomData(*this->pRoom);
 
-	AddRoomsPreviouslyExploredByPlayerToMap();
-
 	//Cue events coming from first step into the room.
-	SetMembersAfterRoomLoad(CueEvents, false);
-	ProcessCommand_EndOfTurnEventHandling(CueEvents);
+		SetMembersAfterRoomLoad(CueEvents, false);
+		ProcessCommand_EndOfTurnEventHandling(CueEvents);
 	if (!bAtRoomStart)
 	{
 		//Ignore cue events from first step into the room.
@@ -1814,6 +2461,39 @@ void CCurrentGame::LoadPrep(
 }
 
 //***************************************************************************************
+void CCurrentGame::DeserializeScriptArrays()
+//Load hold script arrays from raw buffers stored in CDbPackedVars
+{
+	if (!pHold)
+		return;
+
+	this->scriptArrays.clear();
+
+	for (map<UINT, WSTRING>::const_iterator it = pHold->arrayScriptVars.begin();
+		it != pHold->arrayScriptVars.end(); ++it) {
+		string varName("v");
+		varName += std::to_string(it->first);
+
+		BYTE* buffer = (BYTE*)this->stats.GetVar(varName.c_str(), (const void*)(NULL));
+		if (!buffer)
+			continue;
+
+		map<int, int> scriptArray;
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			int key = (int)readBpUINT(buffer, index);
+			int value = (int)readBpUINT(buffer, index);
+			ASSERT(value != 0);
+			scriptArray[key] = value;
+			--size;
+		}
+
+		scriptArrays[it->first] = scriptArray;
+	}
+}
+
+//***************************************************************************************
 bool CCurrentGame::MayUseAccessory() const
 //Returns: whether the current accessory may be used by the player
 {
@@ -1866,7 +2546,8 @@ bool CCurrentGame::MayUseAccessory() const
 			ASSERT(room.IsValidColRow(reflectX, reflectY));
 			return !room.DoesSquareContainPlayerObstacle(
 					 reflectX, reflectY, NO_ORIENTATION,
-					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)));
+					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)),
+					 room.GetTSquare(p.wX, p.wY) == T_CRATE, true); //can climb onto crates, and from crates to doors
 		}
 		case WallWalking:
 		{
@@ -1885,8 +2566,9 @@ bool CCurrentGame::MayUseAccessory() const
 				return false;
 
 			return !room.DoesSquareContainPlayerObstacle(
-					 destX, destY, NO_ORIENTATION,
-					 bIsElevatedTile(room.GetOSquare(p.wX, p.wY)));
+				destX, destY, NO_ORIENTATION,
+				bIsElevatedTile(room.GetOSquare(p.wX, p.wY)),
+				room.GetTSquare(p.wX, p.wY) == T_CRATE, true); //can climb onto crates, and from crates to doors
 		}
 
 		case NoAccessory:
@@ -1973,12 +2655,12 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 			//Generate a 3x3 explosion that doesn't affect the player tile.
 			const UINT wX = this->pPlayer->wX, wY = this->pPlayer->wY;
 			CCoordSet explosion; //what tiles are affected by the explosion
-			CCoordStack bombs, coords;
+			CCoordStack bombs, powder_kegs, coords;
 			for (int y = -1; y <= 1; ++y)
 				for (int x = -1; x <= 1; ++x)
 				{
 					this->pRoom->ExpandExplosion(CueEvents, coords, wX, wY,
-							wX + x, wY + y, bombs, explosion);
+							wX + x, wY + y, bombs, powder_kegs, explosion, 1);
 				}
 
 			//Now process the effects of the explosion.
@@ -1990,8 +2672,8 @@ bool CCurrentGame::UseAccessory(CCueEvents &CueEvents)
 
 			//If bombs were set off, explode them now.
 			//These could harm the player.
-			if (bombs.GetSize())
-				this->pRoom->BombExplode(CueEvents, bombs);
+			if (bombs.GetSize() || powder_kegs.GetSize())
+				this->pRoom->DoExplode(CueEvents, bombs, powder_kegs);
 
 			this->pRoom->ConvertUnstableTar(CueEvents);
 		}
@@ -2152,6 +2834,20 @@ bool CCurrentGame::PlayCommands(
 }
 
 //*****************************************************************************
+WSTRING CCurrentGame::getStringVar(const UINT varIndex) const
+{
+	return WSTRING();
+/*
+	switch (varIndex) {
+		case (UINT)ScriptVars::P_LEVELNAME:
+			return WSTRING(this->pLevel->NameText);
+		default:
+			return WSTRING();
+	}
+*/
+}
+
+//*****************************************************************************
 void CCurrentGame::ProcessCommandSetVar(
 //Called when some predefined variables are changed,
 //e.g. via CMD_SETVAR command and CCharacter::SetPredefinedVar.
@@ -2185,6 +2881,11 @@ void CCurrentGame::ProcessCommandSetVar(
 		case (UINT)ScriptVars::P_SPEED:
 		case (UINT)ScriptVars::P_TOTALMOVES:
 		case (UINT)ScriptVars::P_TOTALTIME:
+		case (UINT)ScriptVars::P_LEVEL_MULT:
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
+		case (UINT)ScriptVars::P_TOTAL_ATK:
+		case (UINT)ScriptVars::P_TOTAL_DEF:
 			//cannot alter
 			return;
 	}
@@ -2280,6 +2981,8 @@ void CCurrentGame::ProcessCommand(
 	//of scope or the ProcessCommand() method is called again on the same instance.  
 	CueEvents.Clear();
 	this->pRoom->ClearPlotHistory();
+
+	this->pRoom->InitStateForThisTurn();
 
 	if (this->Commands.IsFrozen())
 	{
@@ -2468,6 +3171,8 @@ void CCurrentGame::ProcessCommand(
 			if (CueEvents.HasOccurred(CID_ExitRoom))
 				return;
 
+			this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
 			//Check for stuff falling as a result of monster moves now.
 			if (CPlatform::fallTilesPending())
 				CPlatform::checkForFalling(this->pRoom, CueEvents);
@@ -2580,6 +3285,14 @@ void CCurrentGame::ProcessCommand(
 			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_InvalidAttackMove, &coord); //add an event to let the front-end know what happened
+	} else if (this->pCombat && this->pCombat->bCombatStalled) {
+		static CMoveCoord coord;
+		coord.wX = this->pCombat->pMonster->wX;
+		coord.wY = this->pCombat->pMonster->wY;
+		if (!this->Commands.IsFrozen())
+			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
+		CueEvents.Clear(); //don't show events from previous turn again
+		CueEvents.Add(CID_StalledCombat, &coord); //add an event to let the front-end know what happened
 	}
 }
 
@@ -2789,9 +3502,12 @@ void CCurrentGame::AdvanceCombat(CCueEvents& CueEvents)
 					ASSERT(!pDefeatedMonster->getHP());
 					pDefeatedMonster->SetHP();
 				}
+				ProcessPostCombatExpansions(CueEvents);
 			} else {
 				ProcessMonsterDefeat(CueEvents, pDefeatedMonster, this->pCombat->wX, this->pCombat->wY, GetSwordMovement());
 			}
+
+			ProcessAfterVictory(CueEvents);
 
 			//If more monsters are queued for fighting,
 			//they will be fought automatically the next time this method is called.
@@ -2823,11 +3539,11 @@ void CCurrentGame::ProcessMonsterDefeat(
 
 			this->pRoom->KillMonster(pDefeatedMonster, CueEvents);
 
-			//Tarstuff tile should be removed at end of combat.
+					//Tarstuff tile should be removed at end of combat.
 			//Tarstuff under a killed enemy is always removed, even if the tarstuff would otherwise remain stable.
 			if (bIsTar(this->pRoom->GetTSquare(wSX, wSY)))
-				this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
-		}
+						this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
+			}
 		else if (CueEvents.HasOccurredWith(CID_SnakeDiedFromTruncation, pDefeatedMonster))
 		{
 			ASSERT(bIsSerpent(pDefeatedMonster->wType));
@@ -2843,8 +3559,7 @@ void CCurrentGame::ProcessMonsterDefeat(
 		}
 	}
 
-	//Each time a monster is fought, briar roots expand.
-	this->pRoom->ExpandBriars(CueEvents);
+	ProcessPostCombatExpansions(CueEvents);
 }
 
 //*****************************************************************************
@@ -2859,6 +3574,40 @@ void CCurrentGame::ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEve
 }
 
 //*****************************************************************************
+//Each time a monster is fought, expand things that grow.
+void CCurrentGame::ProcessPostCombatExpansions(CCueEvents& CueEvents)
+{
+	this->pRoom->ExpandMist(CueEvents);
+	this->pRoom->ExpandBriars(CueEvents);
+}
+
+//*****************************************************************************
+void CCurrentGame::ProcessAfterVictory(CCueEvents& CueEvents)
+//When a monster is defeated in combat, jump scripts to set victory label.
+{
+	//Room scripts
+	CMonster* pMonster;
+	for (pMonster = this->pRoom->pFirstMonster; pMonster; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ProcessAfterVictory(CueEvents);
+		}
+	}
+
+	//Global scripts, including custom equipment
+	for (pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType == M_CHARACTER)
+		{
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			pCharacter->ProcessAfterVictory(CueEvents);
+		}
+	}
+}
+
+//*****************************************************************************
 int CCurrentGame::getItemAmount(const UINT item) const
 //Returns: the usage amount of this item on the current level with current game state
 //
@@ -2870,20 +3619,23 @@ int CCurrentGame::getItemAmount(const UINT item) const
 
 	//Apply general item multiplier and item-specific multiplier.
 	ASSERT(this->pPlayer);
-	float fMult = int(this->pPlayer->st.itemMult) / 100.0f; //may be negative, so treat as a signed int
+	float fMult = GetTotalStatModifier(ScriptVars::ItemAll); //may be negative
 	switch (item)
 	{
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			fMult *= int(this->pPlayer->st.itemHPmult) / 100.0f;
+		case T_HEALTH_HUGE: case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
+			fMult *= GetTotalStatModifier(ScriptVars::ItemHP);
 		break;
-		case T_ATK_UP:
-			fMult *= int(this->pPlayer->st.itemATKmult) / 100.0f;
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+			fMult *= GetTotalStatModifier(ScriptVars::ItemATK);
 		break;
-		case T_DEF_UP:
-			fMult *= int(this->pPlayer->st.itemDEFmult) / 100.0f;
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+			fMult *= GetTotalStatModifier(ScriptVars::ItemDEF);
+		break;
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+			fMult *= GetTotalStatModifier(ScriptVars::ItemShovels);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
-			fMult *= int(this->pPlayer->st.itemGRmult) / 100.0f;
+			fMult *= GetTotalStatModifier(ScriptVars::ItemGR);
 		break;
 		default: break;
 	}
@@ -2894,11 +3646,18 @@ int CCurrentGame::getItemAmount(const UINT item) const
 bool CCurrentGame::equipmentBlocksGaze(const UINT type) const
 //Returns: whether the specified inventory item can block the aumtlich gaze
 {
+	//Disabled item can't block gaze
+	if (IsPlayerItemDisabled(type)) {
+		return false;
+	}
+
 	if (type == ScriptFlag::Weapon && this->pPlayer->st.sword == ReallyBigSword)
+		return true;
+	if (type == ScriptFlag::Armor && this->pPlayer->st.shield == MirrorShield)
 		return true;
 
 	CCharacter* pCharacter = getCustomEquipment(type);
-	if (pCharacter && pCharacter->HasRayGun())
+	if (pCharacter && pCharacter->HasRayBlocking())
 		return true;
 
 	return false;
@@ -2911,7 +3670,7 @@ bool CCurrentGame::CanPlayerCutBriars() const
 	if (this->pPlayer->st.sword == BriarSword && !IsPlayerSwordDisabled())
 		return true;
 
-	CCharacter* pCharacter; 
+	CCharacter* pCharacter;
 	if (!IsPlayerSwordDisabled()) {
 		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
 		if (pCharacter && pCharacter->CanCutBriar())
@@ -2925,6 +3684,33 @@ bool CCurrentGame::CanPlayerCutBriars() const
 	if (!IsPlayerAccessoryDisabled()) {
 		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
 		if (pCharacter && pCharacter->CanCutBriar())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::CanPlayerCutTarAnywhere() const
+//Returns: whether player can cut tarstuff on otherwise non-vulnerable squares
+{
+	if (this->pPlayer->st.sword == Spear)
+		return true;
+
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->CanCutTarAnywhere())
 			return true;
 	}
 
@@ -2992,6 +3778,13 @@ int CCurrentGame::getPlayerDEF() const
 			addWithClamp(def, (int)pCharacter->getDEF());
 	}
 
+	//Mist negates positive defense value
+	if (def > 0 &&
+		this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY) == T_MIST &&
+		!IsPlayerMistImmune() &&
+		this->pPlayer->IsInRoom())
+		return 0;
+
 	return def;
 }
 
@@ -3010,6 +3803,9 @@ int CCurrentGame::getPredefinedShieldPower(const UINT type)
 		case SteelShield: return 70;
 		case KiteShield: return 120;
 		case OremiteShield: return 220;  //can use on oremites
+		case MirrorShield: return 30; //Blocks Beams
+		case LeatherShield: return 50; //can use on oremites
+		case AluminumShield: return 50; //Mist protection
 	}
 }
 
@@ -3029,10 +3825,13 @@ int CCurrentGame::getPredefinedWeaponPower(const UINT type)
 		case GoblinSword: return 30; //x2ATK: goblin + goblinking
 		case LongSword: return 70;
 		case HookSword: return 120;
-		case ReallyBigSword: return 220;
+		case ReallyBigSword: return 220; // Blocks Beams
 		case LuckySword: return 10;    //x2 GOLD
 		case SerpentSword: return 120; //x2ATK: serpents
 		case BriarSword: return 10;    //breaks briars
+		case Dagger: return 10; // Small sword
+		case Staff: return 30; //can use on oremites, explosive safe, wall and mirror safe
+		case Spear: return 50; //Cut tarstuff anywhere
 	}
 }
 
@@ -3065,7 +3864,7 @@ int CCurrentGame::getWeaponPower(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsFighting(CMonster* pMonster) const
+bool CCurrentGame::IsFighting(const CMonster* pMonster) const
 //Returns: whether the indicated entity is engaged in combat
 {
 	return this->pCombat && this->pCombat->IsFighting(pMonster);
@@ -3075,7 +3874,7 @@ bool CCurrentGame::IsFighting(CMonster* pMonster) const
 bool CCurrentGame::IsLuckyGRItem(const UINT type) const
 //Returns: whether the player's specified inventory item is lucky (gives x2 gold)
 {
-	//Disabled item doesn't provide luck
+	//Disabled items aren't lucky
 	if (IsPlayerItemDisabled(type)) {
 		return false;
 	}
@@ -3110,6 +3909,22 @@ bool CCurrentGame::IsLuckyXPItem(const UINT type) const
 	CCharacter* pCharacter = getCustomEquipment(type);
 	if (pCharacter && pCharacter->IsLuckyXP())
 		return true;
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerSwordRemoved() const
+{
+	if (this->pPlayer->st.sword == Dagger)
+		return true;
+
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->RemovesSword())
+			return true;
+	}
 
 	return false;
 }
@@ -3216,7 +4031,9 @@ bool CCurrentGame::DoesTileDisableMetal(const UINT wX, const UINT wY) const
 {
 	//Oremites on tile disable metal
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
-	return wOTile == T_GOO;
+	//But standing on a crate negates the effect
+	const UINT wTTile = this->pRoom->GetTSquare(wX, wY);
+	return wOTile == T_GOO && wTTile != T_CRATE;
 }
 
 //*****************************************************************************
@@ -3224,9 +4041,9 @@ bool CCurrentGame::IsPlayerItemDisabled(const UINT type) const
 //Returns: true if the given equipment type is not usable at present, else false
 {
 	switch (type) {
-	case ScriptFlag::Weapon: return IsPlayerSwordDisabled();
-	case ScriptFlag::Armor: return IsPlayerShieldDisabled();
-	case ScriptFlag::Accessory:return IsPlayerAccessoryDisabled();
+		case ScriptFlag::Weapon: return IsPlayerSwordDisabled();
+		case ScriptFlag::Armor: return IsPlayerShieldDisabled();
+		case ScriptFlag::Accessory: return IsPlayerAccessoryDisabled();
 	}
 
 	return false;
@@ -3248,6 +4065,133 @@ bool CCurrentGame::IsPlayerSwordDisabled() const
 //Returns: true if the player's sword is not usable at present, else false
 {
 	return this->pPlayer->IsSwordDisabled();
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByHotTile() const
+//Returns: will stepping on a hot tile harm the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByHotTiles())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerDamagedByFiretrap() const
+//Return: will an active firetrap damage the player
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && !pCharacter->DamagedByFiretraps())
+			return false;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerMistImmune() const
+//Return: is the player protected from mist's DEF-nullifying effect
+{
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		if (this->pPlayer->st.shield == AluminumShield)
+			return true;
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsMistImmune())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerSwordExplosiveSafe() const
+{
+	if (this->pPlayer->st.sword == Staff)
+		return true;
+
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsExplosiveSafe())
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCurrentGame::IsPlayerSwordWallAndMirrorSafe() const
+//Returns: if the player's weapon can't break walls and mirrors
+{
+	if (this->pPlayer->st.sword == Staff)
+		return true;
+
+	CCharacter* pCharacter;
+	if (!IsPlayerSwordDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Weapon);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerShieldDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Armor);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+	if (!IsPlayerAccessoryDisabled()) {
+		pCharacter = getCustomEquipment(ScriptFlag::Accessory);
+		if (pCharacter && pCharacter->IsWallAndMirrorSafe())
+			return true;
+	}
+
+	return false;
 }
 
 //*****************************************************************************
@@ -3279,6 +4223,7 @@ bool CCurrentGame::IsSwordMetal(const UINT type) const
 	{
 		case NoSword:
 		case WoodenBlade:
+		case Staff:
 			return false;
 		default:
 		{
@@ -3299,6 +4244,7 @@ bool CCurrentGame::IsShieldMetal(const UINT type) const
 		case NoShield:
 		case WoodenShield:
 		case OremiteShield:
+		case LeatherShield:
 			return false;
 		default:
 		{
@@ -3311,7 +4257,7 @@ bool CCurrentGame::IsShieldMetal(const UINT type) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
+bool CCurrentGame::IsSwordStrongAgainst(const CMonster* pMonster) const
 //Returns: whether the player's sword is strong against this monster
 {
 	const UINT sword = this->pPlayer->st.sword;
@@ -3331,16 +4277,28 @@ bool CCurrentGame::IsSwordStrongAgainst(CMonster* pMonster) const
 }
 
 //*****************************************************************************
-bool CCurrentGame::IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const
+bool CCurrentGame::IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const
 //Returns: whether the player has an item that is strong against this monster
 {
-	CCharacter* pCharacter = getCustomEquipment(type);
-	if (pCharacter)
+	CCharacter* pEquipment = getCustomEquipment(type);
+	if (pEquipment)
 	{
-		if (pMonster->HasGoblinWeakness() && pCharacter->HasGoblinWeakness())
+		if (pMonster->HasGoblinWeakness() && pEquipment->HasGoblinWeakness())
 			return true;
-		if (pMonster->HasSerpentWeakness() && pCharacter->HasSerpentWeakness())
+		if (pMonster->HasSerpentWeakness() && pEquipment->HasSerpentWeakness())
 			return true;
+		if (pMonster->HasCustomWeakness() && pEquipment->HasCustomWeakness()) {
+			const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+			ASSERT(pCharacter);
+			std::set<WSTRING> equipStrengths = pEquipment->GetCustomWeaknesses();
+			std::set<WSTRING> characterWeaknesses = pCharacter->GetCustomWeaknesses();
+			for (std::set<WSTRING>::const_iterator iter = equipStrengths.cbegin();
+				iter != equipStrengths.cend(); ++iter) {
+				if (characterWeaknesses.count(*iter) > 0) {
+					return true;
+				}
+			}
+		}
 	}
 
 	return false;
@@ -3440,8 +4398,10 @@ void CCurrentGame::ProcessSwordHit(
 		break;
 
 		case T_TAR:	case T_MUD: case T_GEL:
+		{
+			bool alwaysCut = pDouble ? pDouble->CanCutTarAnywhere() : CanPlayerCutTarAnywhere();
 			if (!pMonster &&  //if tar stab isn't being handled by a fight with a monster above
-					this->pRoom->StabTar(wSX, wSY, CueEvents, false)) //don't remove tar yet!
+				this->pRoom->StabTar(wSX, wSY, CueEvents, false) || alwaysCut) //don't remove tar yet!
 			{
 				//Stab hits vulnerable tarstuff.
 
@@ -3450,7 +4410,7 @@ void CCurrentGame::ProcessSwordHit(
 				//and the mother must be defeated to break this piece of tarstuff.
 				//The mother's HP is restored after breaking the tarstuff tile.
 				//Alternative logic applies to NPCs acting as mothers.
-				CMonster *pMother = NULL;
+				CMonster* pMother = NULL;
 
 				//Currently applies to player or mimic attacks only.
 				if (!pDouble || pDouble->wType == M_MIMIC)
@@ -3458,20 +4418,36 @@ void CCurrentGame::ProcessSwordHit(
 				if (pMother && !IsFighting(pMother))
 				{
 					InitiateCombat(CueEvents, pMother, true, 0, 0, wSX, wSY, true);
-					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX,wSY,wSwordMovement), pMother));
-				} else {
+					this->possibleTarStabs.push_back(TarstuffStab(CMoveCoord(wSX, wSY, wSwordMovement), pMother));
+				}
+				else {
 					//Mark for removal at end of turn
-					this->simulSwordHits.push_back(CMoveCoord(wSX,wSY,wSwordMovement));
+					this->simulSwordHits.push_back(CMoveCoord(wSX, wSY, wSwordMovement));
+				}
+			}
+		}
+		break;
+
+		case T_BOMB:
+		   //Explode bomb immediately (could damage player).
+			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
+			{
+				if (!((pDouble && pDouble->IsExplosiveSafe()) || (!pDouble && IsPlayerSwordExplosiveSafe()))) {
+					this->pRoom->ExplodeBomb(CueEvents, wSX, wSY);
 				}
 			}
 		break;
 
-		case T_BOMB:
-			//Explode bomb immediately (could damage player).
-			if (this->wTurnNo)   //don't explode bomb and damage/kill player on room entrance
-			{
-				CCoordStack bomb(wSX, wSY);
-				this->pRoom->BombExplode(CueEvents, bomb);
+		case T_POWDER_KEG:
+			if ((pDouble && pDouble->IsExplosiveSafe()) || (!pDouble && IsPlayerSwordExplosiveSafe())) {
+				//Safe weapon can push keg
+				const UINT wDestX = wSX + nGetOX(wSwordMovement),
+					wDestY = wSY + nGetOY(wSwordMovement);
+				if (this->pRoom->CanPushTo(wSX, wSY, wDestX, wDestY))
+					this->pRoom->PushObject(wSX, wSY, wDestX, wDestY, CueEvents);
+			} else if (this->wTurnNo) { //don't explode bomb and damage/kill player on room entrance
+				//Explode keg immediately (could damage player).
+				this->pRoom->ExplodePowderKeg(CueEvents, wSX, wSY);
 			}
 		break;
 
@@ -3504,7 +4480,8 @@ void CCurrentGame::ProcessSwordHit(
 				wSrcX = this->pPlayer->wX;
 				wSrcY = this->pPlayer->wY;
 			}
-			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY)
+			if (wSrcX + nGetOX(wSwordMovement) == wSX && wSrcY + nGetOY(wSwordMovement) == wSY &&
+				!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe()))
 			{
 				//Head on strike shatters mirror.
 				this->pRoom->Plot(wSX, wSY, T_EMPTY);
@@ -3530,7 +4507,9 @@ void CCurrentGame::ProcessSwordHit(
 	{
 		case T_WALL_B:
 		case T_WALL_H:
-		   this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			if (!(pDouble ? pDouble->IsWallAndMirrorSafe() : IsPlayerSwordWallAndMirrorSafe())) {
+				this->pRoom->DestroyCrumblyWall(wSX, wSY, CueEvents, wSwordMovement);
+			}
 		break;
 		default: break;
 	}
@@ -3707,11 +4686,6 @@ void CCurrentGame::SaveToContinue()
 	if (this->bNoSaves)
 		return;
 
-	/*
-	bool bExploredOnEntrance;
-	const bool bConqueredOnEntrance = SavePrep(bExploredOnEntrance);
-	*/
-
 	//Must store what state game was in on room entrance, so when moves are
 	//replayed, we'll end up at the current state once more.
 	CDbPackedVars _stats = this->stats;
@@ -3778,6 +4752,25 @@ void CCurrentGame::SaveToEndHold()
 	Update();
 }
 
+//*****************************************************************************
+void CCurrentGame::SaveToWorldMap()
+{
+	//It is not valid to save the current game when it is inactive.
+	ASSERT(this->bIsGameActive);
+
+	if (this->bNoSaves)
+		return;
+
+	this->eType = ST_WorldMap;
+	this->wVersionNo = VERSION_NUMBER;
+	this->bIsHidden = false;
+
+	//Is there already a saved game for this room?
+	const UINT dwExistingSavedGameID = g_pTheDB->SavedGames.FindByHoldWorldMap(this->pHold->dwHoldID, this->worldMapID);
+	this->dwSavedGameID = dwExistingSavedGameID; //0 or existing ID, to be overwritten
+	Update();
+}
+
 /*
 //-****************************************************************************
 void CCurrentGame::SetComputationTimePerSnapshot(const UINT dwTime)
@@ -3823,6 +4816,8 @@ void CCurrentGame::TeleportPlayer(
 	this->pPlayer->wSwordMovement = NO_ORIENTATION;
 
 	SetPlayer(wSetX, wSetY);
+
+	this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 
 	this->pPlayer->SetSwordSheathed();
 
@@ -4172,61 +5167,20 @@ UINT CCurrentGame::WriteCurrentRoomDieDemo()
 }
 */
 
+//***************************************************************************************
 //
 //Private methods.
 //
 
 //***************************************************************************************
-void CCurrentGame::AddCompletedScripts()
-//Remove NPCs for scripts that are marked "End"ed.
-//Also, restart any NPC scripts flagged to do so.
+void CCurrentGame::CheckGlobalScriptsState()
+//Clear or restart any global NPC scripts flagged to do so.
 {
-	//Since rooms don't reset, we don't need to keep track of which NPCs ended
-	//in previous room sessions.  Instead, just remove them from the room now on exit.
-	//
-	//Handling it this way is also necessary to avoid generated NPCs with a
-	//colliding scriptID of another NPC in the hold from ending that NPC's script.
-	CMonster *pMonster = this->pRoom->pFirstMonster;
-	while (pMonster)
-	{
-		CMonster *pNext = pMonster->pNext;
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->bScriptDone)
-			{
-				//Delete monster from room before room data is saved.
-				this->pRoom->UnlinkMonster(pCharacter);
-				this->pRoom->DeadMonsters.push_back(pCharacter); //don't dealloc yet -- might still have pointer refs
-			}
-		}
-		pMonster = pNext;
-	}
-
-/*
-	//Check for scripts that completed but were not marked yet.
-	//This could happen for scripts that execute and complete on room entrance,
-	//and then the player immediately leaves the room without making a move.
-	CMonster *pMonster = this->pRoom->pFirstMonster;
-	while (pMonster)
-	{
-		if (M_CHARACTER == pMonster->wType)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->bScriptDone)
-				this->CompletedScriptsPending += pCharacter->dwScriptID;
-		}
-		pMonster = pMonster->pNext;
-	}
-
-	this->CompletedScripts += this->CompletedScriptsPending;
-*/
-
 	CDbSavedGame::removeGlobalScripts(this->CompletedScriptsPending);
 	this->CompletedScriptsPending.clear();
 
 	//Restart global scripts that are flagged to do so.
-	for (pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
+	for (CMonster *pMonster = CDbSavedGame::pMonsterList; pMonster; pMonster = pMonster->pNext)
 	{
 		if (pMonster->wType == M_CHARACTER)
 		{
@@ -4234,29 +5188,6 @@ void CCurrentGame::AddCompletedScripts()
 			if (pCharacter->IsRestartScriptOnRoomEntrance())
 				pCharacter->RestartScript();
 		}
-	}
-}
-
-//*****************************************************************************
-//For front-end, to display a preview of rooms explored in other play sessions
-//Called when a game is begun or loaded to populate this list for reference during play
-void CCurrentGame::AddRoomsPreviouslyExploredByPlayerToMap(
-	UINT playerID, const bool bMakeRoomsVisible) //[default=0, true]
-{
-	ASSERT(this->pHold);
-	if (!playerID) {
-		playerID = g_pTheDB->GetPlayerID();
-		if (!playerID)
-			return;
-	}
-
-	//May be a compute-intensive call, so cache results in member var
-	CDbHolds::GetRoomsExplored(this->pHold->dwHoldID, playerID, this->PreviouslyExploredRooms);
-	this->PreviouslyExploredRooms -= this->dwRoomID; //don't need to include the player's current room for preview
-
-	for (CIDSet::const_iterator it=this->PreviouslyExploredRooms.begin(); it!=this->PreviouslyExploredRooms.end(); ++it)
-	{
-		AddRoomToMap(*it, bMakeRoomsVisible, false);
 	}
 }
 
@@ -4334,14 +5265,27 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 	pObj = CueEvents.GetFirstPrivateData(CID_Speech);
 	while (pObj)
 	{
+		static const UINT MAX_SPEECH_HISTORY = 100;
 		const CFiredCharacterCommand *pCmd = DYN_CAST(const CFiredCharacterCommand*,
 				const CAttachableObject*, pObj);
 		if (!pCmd->bFlush) //Ignore flush commands.
 		{
+			if (this->roomSpeech.size() >= MAX_SPEECH_HISTORY)
+			{
+				//Pop first item from speech sequence.
+				delete this->roomSpeech[0].pSpeechCommand;
+				const UINT sizeMinusOne = this->roomSpeech.size() - 1;
+				for (UINT i = 0; i < sizeMinusOne; ++i)
+					this->roomSpeech[i] = this->roomSpeech[i + 1];
+				this->roomSpeech.pop_back();
+			}
+
 			CCharacterCommand *pCommand = new CCharacterCommand(*(pCmd->pCommand));
 			ASSERT(pCommand->pSpeech);
 			pCommand->pSpeech->MessageText = pCmd->text.c_str(); //get interpolated text
 			UINT& characterType = pCommand->pSpeech->wCharacter;
+			WSTRING customName = DefaultCustomCharacterName;
+
 			if (characterType == Speaker_Self)
 			{
 				//Resolve now because there won't be any hook to the executing NPC later.
@@ -4351,6 +5295,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				//Convert to the speaker type.
 				if (characterType < CUSTOM_CHARACTER_FIRST)
 					characterType = getSpeakerType(MONSTERTYPE(characterType));
+
+				customName = pCharacter->GetCustomName();
 			}
 			else if (characterType == Speaker_Player)
 			{
@@ -4361,8 +5307,24 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				if (wPlayerIdentity >= CUSTOM_CHARACTER_FIRST)
 					characterType = wPlayerIdentity;
 			}
+			else if (characterType == Speaker_Custom)
+			{
+				ASSERT(this->pRoom->IsValidColRow(pCommand->x, pCommand->y));
+				CMonster* pMonster = this->pRoom->GetMonsterAtSquare(
+					pCommand->x, pCommand->y);
+				if (pMonster)
+				{
+					if (pMonster->wType == M_CHARACTER) {
+						CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
-			this->roomSpeech.push_back(pCommand);
+						customName = pCharacter->GetCustomName();
+					}
+
+					characterType = getSpeakerType(MONSTERTYPE(pMonster->GetResolvedIdentity()));
+				}
+			}
+
+			this->roomSpeech.push_back(SpeechLog(customName, pCommand));
 		}
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -4464,6 +5426,12 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 //
 //Returns: whether door was closed
 {
+	//Is a crate in the way?
+	const UINT wTTile = this->pRoom->GetTSquare(wX, wY);
+	if (wTTile == T_CRATE) {
+		return false;
+	}
+
 	//Does player have a key to operate this door type?
 	PlayerStats& ps = this->pPlayer->st;
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
@@ -4528,7 +5496,7 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 
 			CueEvents.Add(CID_MoneyDoorLocked);
 
-			this->pRoom->CloseDoor(wX, wY);
+			this->pRoom->CloseDoor(wX, wY, CueEvents);
 		}
 		return true; //done
 
@@ -4536,7 +5504,7 @@ bool CCurrentGame::LockDoor(CCueEvents& CueEvents, const UINT wX, const UINT wY)
 	}
 
 	CueEvents.Add(CID_DoorLocked, NULL, false);
-	this->pRoom->CloseDoor(this->pPlayer->wX, this->pPlayer->wY);
+	this->pRoom->CloseDoor(this->pPlayer->wX, this->pPlayer->wY, CueEvents);
 	return true;
 }
 
@@ -4750,7 +5718,10 @@ void CCurrentGame::ProcessMonsters(
 		//In this event, the room data have already been packed and NPC script
 		//state saved, and further processing could get monsters and packed
 		//state out of synch when the room is loaded again.
-		ASSERT(!CueEvents.HasOccurred(CID_ExitLevelPending));
+		ASSERT(!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+			!CueEvents.HasOccurred(CID_ExitToWorldMapPending));
+
+		this->pRoom->ClearMovedInfo();
 
 		//Platforms fall when mimics are done moving.
 		const bool bIsMimic = pMonster->wType == M_MIMIC;
@@ -4810,6 +5781,11 @@ void CCurrentGame::ProcessMonsters(
 					default: break; //all other monster types do nothing
 				}
 			}
+
+			//Shall monster lay an egg?
+			//This can happen on full turns.
+			if (pMonster->IsSpawnEggTriggered(CueEvents))
+				pMonster->SpawnEgg(CueEvents);
 
 			//Remember the next monster now, because this monster may be dead or made global and
 			//removed from the monster list in the next block.
@@ -4875,7 +5851,8 @@ void CCurrentGame::ProcessMonsters(
 					//Note that all other monster types have taken their turn by
 					//the time NPCs are processed in the monster list,
 					//so there's no danger of other monster types being skipped.
-					if (CueEvents.HasOccurred(CID_ExitLevelPending))
+					if (CueEvents.HasOccurred(CID_ExitLevelPending) ||
+						CueEvents.HasOccurred(CID_ExitToWorldMapPending))
 						pNextMonster = NULL;
 				}
 				break;
@@ -4888,7 +5865,11 @@ void CCurrentGame::ProcessMonsters(
 					}
 				break;
 			}
+
 		}
+
+		// Kegs stabbed by pushes should explode after each monster
+		this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
 	}
 
 	//Run global scripts.
@@ -4968,8 +5949,10 @@ bool CCurrentGame::CanPlayerMoveTo(const UINT wX, const UINT wY) const
 	if (room.DoesSquarePreventDiagonal(p.wX, p.wY, dx,dy))
 		return false;
 
-	//Player enters a tunnel.
 	const UINT wOTileNo = room.GetOSquare(p.wX, p.wY);
+	const UINT wTTileNo = room.GetTSquare(p.wX, p.wY);
+
+	//Player enters a tunnel.
 	if (bIsTunnel(wOTileNo)) // && p.IsTarget())
 	{
 		bool bEnteredTunnel = false;
@@ -4995,7 +5978,7 @@ bool CCurrentGame::CanPlayerMoveTo(const UINT wX, const UINT wY) const
 		return false;
 
 	if (!room.DoesSquareContainPlayerObstacle(wX, wY, wMoveO,
-			bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+			bIsElevatedTile(wOTileNo)))
 		return true;
 
 	//Specific obstacle types.
@@ -5028,7 +6011,8 @@ CheckOLayer:
 			//If player can jump a tile of pit, extend the movement direction.
 			if (p.CanJump(dx,dy) && room.CanJumpTo(
 					destX, destY, destX + dx, destY + dy,
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+					bIsElevatedTile(wOTileNo),
+					wTTileNo == T_CRATE))
 			{
 				bNotAnObstacle = true;
 				goto CheckTLayer;
@@ -5052,7 +6036,8 @@ CheckOLayer:
 			//If player can jump a tile of water, extend the movement direction.
 			if (p.CanJump(dx,dy) && room.CanJumpTo(
 					destX, destY, destX + dx, destY + dy,
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))))
+					bIsElevatedTile(wOTileNo),
+					wTTileNo == T_CRATE))
 			{
 				bNotAnObstacle = true;
 				goto CheckTLayer;
@@ -5084,17 +6069,21 @@ CheckTLayer:
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 		break;
 
-		//Can push mirror, if possible.
+		//Can push mirror/keg, if possible.
 		case T_MIRROR:
+		case T_POWDER_KEG:
 			if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 					this->pRoom->GetOSquare(destX, destY),
-					bIsElevatedTile(room.GetOSquare(p.wX, p.wY))) &&
+					bIsElevatedTile(wOTileNo)) &&
 						room.CanPushTo(destX, destY, destX + dx, destY + dy))
 			{
 				bNotAnObstacle = true;
 				goto CheckMonsterLayer;
 			}
 		break;
+		case T_CRATE:
+		case T_MIST:
+			bNotAnObstacle = true;
 		default:
 			goto CheckMonsterLayer;
 		break;
@@ -5203,7 +6192,7 @@ void CCurrentGame::ProcessPlayer(
 		default: return; //invalid command -- might be from an old version demo
 	}
 
-	const UINT nFirstO = nGetO(dx,dy);
+	const UINT nMovementO = nGetO(dx,dy);
 
 /*
 	//Player can take steps if not frozen.
@@ -5220,7 +6209,9 @@ void CCurrentGame::ProcessPlayer(
 	const UINT wTTileNo = room.GetTSquare(wOldX, wOldY);
 	bool bEnteredTunnel = false;
 	bool bMovingPlatform = false;
+	bool bDigging = false;
 	bool bJumping=false, bSwimming=false;
+	const bool bPrevTileIsElevated = bIsElevatedTile(wOTileNo);
 
 	//Look for obstacles and set dx/dy accordingly.
 	const UINT wMoveO = nGetO(dx, dy);
@@ -5299,20 +6290,17 @@ void CCurrentGame::ProcessPlayer(
 
 	//Check for obstacles in destination square.
 	if (room.DoesSquareContainPlayerObstacle(
-			wOldX + dx, wOldY + dy, wMoveO, bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+			wOldX + dx, wOldY + dy, wMoveO, bPrevTileIsElevated))
 	{
 		//There is an obstacle on the destination square,
 		//but it might need special handling or queries.
 		//Check each layer for an object that gets handled specially.
-		const UINT wNewOTile = room.GetOSquare(wOldX + dx,
-				wOldY + dy);
-		const UINT wNewFTile = room.GetFSquare(wOldX + dx,
-				wOldY + dy);
-		const UINT wNewTTile = room.GetTSquare(wOldX + dx,
-				wOldY + dy);
+		const UINT wNewOTile = room.GetOSquare(wOldX + dx, wOldY + dy);
+		const UINT wNewFTile = room.GetFSquare(wOldX + dx, wOldY + dy);
+		const UINT wNewTTile = room.GetTSquare(wOldX + dx, wOldY + dy);
 		CMonster *pMonster = room.GetMonsterAtSquare(
 				wOldX + dx, wOldY + dy);
-		bool bNotAnObstacle=false, bPushingMirror=false;
+		bool bNotAnObstacle=false, bPushingTLayerObject=false;
 
 		//If a monster is on the destination tile, player fights it,
 		//even if player won't be able to move onto that tile once the monster is gone.
@@ -5354,19 +6342,21 @@ CheckOLayer:
 		switch (wNewOTile)
 		{
 			case T_PIT: case T_PIT_IMAGE:
+			{
 				//If standing on a platform, check whether it can move.
 				if (wOTileNo == T_PLATFORM_P)
-					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
+					if (room.CanMovePlatform(wOldX, wOldY, nMovementO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
 					}
 
 				//If player can jump a tile of pit, extend the movement direction.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+						bPrevTileIsElevated, bPrevTileHasCrate))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5375,10 +6365,12 @@ CheckOLayer:
 				}
 
 				CueEvents.Add(CID_Scared);
+			}
 			break;
 			case T_WATER:
+			{
 				if (wOTileNo == T_PLATFORM_W)
-					if (room.CanMovePlatform(wOldX, wOldY, nFirstO))
+					if (room.CanMovePlatform(wOldX, wOldY, nMovementO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
@@ -5392,10 +6384,11 @@ CheckOLayer:
 				}
 
 				//If player can jump a tile of water, extend the movement direction.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				if (p.CanJump(dx,dy) && room.CanJumpTo(
 						wOldX + dx, wOldY + dy,
 						wOldX + dx*2, wOldY + dy*2,
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))))
+						bPrevTileIsElevated, bPrevTileHasCrate))
 				{
 					bJumping = bNotAnObstacle = true;
 					dx *= 2;
@@ -5404,20 +6397,23 @@ CheckOLayer:
 				}
 
 				CueEvents.Add(CID_PlayerOnWaterEdge);
+			}
 			break;
 			case T_DOOR_Y:
 			case T_DOOR_C: case T_DOOR_G:
 			case T_DOOR_MONEY:
-				//When adjacent a door, player may knock on it to open it.
-				if (!bIsElevatedTile(wOTileNo))
+				//When adjacent a door, and not standing on a crate,
+				//player may knock on it to open it.
+				if (!bIsElevatedTile(wOTileNo) && wTTileNo != T_CRATE)
 				{
 					if (KnockOnDoor(CueEvents, wOldX + dx, wOldY + dy))
 						break;
 				}
 			//NO BREAK
 			case T_DOOR_B: case T_DOOR_R:
-				//Player may walk on doors when standing on them, but is not allowed to knock from above.
-				if (bIsElevatedTile(wOTileNo))
+				//Player may walk on doors when standing on them, or from a crate,
+				//but is not allowed to knock from this position.
+				if (bIsElevatedTile(wOTileNo) || wTTileNo == T_CRATE)
 				{
 					bNotAnObstacle = true;
 					goto CheckFLayer;
@@ -5444,6 +6440,17 @@ CheckOLayer:
 								wOldY + dy, wMoveO), true);
 			break;
 */
+
+			case T_DIRT1: case T_DIRT3: case T_DIRT5:
+				if (p.st.shovels >= pLevel->getItemAmount(wNewOTile)) {
+					bDigging = bNotAnObstacle = true;
+					goto CheckFLayer;
+				} else {
+					CueEvents.Add(CID_HitObstacle,
+						new CMoveCoord(wOldX + dx, wOldY + dy, wMoveO), true);
+				}
+			break;
+
 			default:
 				goto CheckFLayer;
 			break;
@@ -5478,17 +6485,45 @@ CheckFLayer:
 			break;
 
 			case T_MIRROR:
+			case T_CRATE:
+			case T_POWDER_KEG:
 			{
-				//Player ran into mirror.  Push if possible.
+				//Player ran into pushable object.  Push if possible.
+				const bool bPrevTileHasCrate = wTTileNo == T_CRATE;
 				const UINT destX = wOldX + dx, destY = wOldY + dy;
 				if (room.CanPlayerMoveOnThisElement(p.wAppearance,
 						room.GetOSquare(destX, destY),
-						bIsElevatedTile(room.GetOSquare(wOldX, wOldY))) &&
-							room.CanPushTo(destX, destY, destX + dx, destY + dy))
+						bPrevTileIsElevated))
 				{
-					//Push, if monster layer doesn't have an obstacle too.
-					bPushingMirror = bNotAnObstacle = true;
-					goto CheckMonsterLayer;
+					if (room.CanPushTo(destX, destY, destX + dx, destY + dy))
+					{
+						//Push, if monster layer doesn't have an obstacle too.
+						bNotAnObstacle = true;
+						switch (wNewTTile) {
+							case T_MIRROR:
+							case T_POWDER_KEG:
+								bPushingTLayerObject = true;
+								break;
+							case T_CRATE:
+								//Don't push a crate from atop another crate.
+								//If stepping onto pushable crate from above, don't push it.
+								//Otherwise do push it.  Can push along top of door.
+								if (!bPrevTileHasCrate) {
+									if (!bPrevTileIsElevated || bIsDoor(wNewOTile))
+										bPushingTLayerObject = true;
+								}
+								break;
+							default: ASSERT(!"Incomplete logic");
+								break;
+						}
+						goto CheckMonsterLayer;
+					}
+					if (wNewTTile == T_CRATE) {
+						//Cannot push in this instance,
+						//but can move onto if monster layer doesn't have an obstacle
+						bNotAnObstacle = true;
+						goto CheckMonsterLayer;
+					}
 				}
 				//Can't push.
 				CueEvents.Add(CID_HitObstacle,
@@ -5498,6 +6533,8 @@ CheckFLayer:
 			case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 				CueEvents.Add(CID_Scared);
 			break;
+			case T_MIST:
+				bNotAnObstacle = true;
 			default:
 				goto CheckMonsterLayer;	//no special obstacle handling on t-layer
 			break;
@@ -5522,12 +6559,20 @@ CheckMonsterLayer:
 			{
 				//Can move platform now.
 				if (bMovingPlatform)
-					room.MovePlatform(wOldX, wOldY, nFirstO);
+					room.MovePlatform(wOldX, wOldY, nMovementO);
 
-				//If mirror is being pushed, can do it now.
-				if (bPushingMirror)
+				//If pushable object is being pushed, can do it now.
+				if (bPushingTLayerObject)
 					room.PushObject(wOldX + dx, wOldY + dy,
 							wOldX + dx*2, wOldY + dy*2, CueEvents);
+
+				//If digging, do it now.
+				if (bDigging) {
+					const UINT destX = wOldX + dx, destY = wOldY + dy;
+					ASSERT(p.st.shovels >= this->pLevel->getItemAmount(room.GetOSquare(destX, destY)));
+					p.st.shovels -= this->pLevel->getItemAmount(room.GetOSquare(destX, destY));
+					room.Dig(destX, destY, nMovementO, CueEvents);
+				}
 
 				if (bJumping)
 					CueEvents.Add(CID_Jump);
@@ -5548,21 +6593,26 @@ CheckMonsterLayer:
 
 MakeMove:
 	//Before player moves, remember important tile contents and conditions.
-	const bool bCanDropTrapdoors = p.HasSword();
-	const bool bReadyToDropTrapdoor = bIsTrapdoor(wOTileNo) && bCanDropTrapdoors;
+	const bool bCanDropTrapdoors = p.CanDropTrapdoor(wOTileNo);
+	const bool bReadyToDropTrapdoor = bIsFallingTile(wOTileNo) && bCanDropTrapdoors;
 
 	//Set player to new location.
 	//If the player hasn't moved yet, this must be called even on a 0-delta
 	//  movement in order to update the player's prev coords.
 	if (!bEnteredTunnel && !bMoved)
 		bMoved = SetPlayer(wOldX + dx, wOldY + dy);
+
+	pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
 	const UINT wNewOSquare = pRoom->GetOSquare(p.wX, p.wY);
+	const UINT wNewTSquare = pRoom->GetTSquare(p.wX, p.wY);
 
 	//These exclude the wait move executed on entering a room.
 	const bool bWasOnSameScroll = (wTTileNo==T_SCROLL) && !bMoved && this->wTurnNo;
-	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT) && this->wTurnNo
+	const bool bStayedOnHotFloor = (wNewOSquare == T_HOT && wNewTSquare != T_CRATE) && this->wTurnNo
 			//flying player types don't get burned by hot tiles
-			&& !p.IsFlying();
+			&& !p.IsFlying()
+			&& IsPlayerDamagedByHotTile();
 
 	//If obstacle was in the way, player's sword doesn't move.
 	if (!bMoved && nCommand != CMD_C && nCommand != CMD_CC &&
@@ -5571,8 +6621,8 @@ MakeMove:
 
 	const bool bSwordWasSheathed = !p.HasSword();
 	//Swordless entities automatically face the way they're trying to move.
-	if (bSwordWasSheathed && nFirstO != NO_ORIENTATION)
-		p.SetOrientation(nFirstO);
+	if (bSwordWasSheathed && nMovementO != NO_ORIENTATION)
+		p.SetOrientation(nMovementO);
 
 	//Sword must be put away when on goo.
 	if (!bIsStairs(wNewOSquare)) //don't update sword status when moving on stairs
@@ -5674,50 +6724,48 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	//Check for t-layer items player can step onto and use.
 	switch (wNewTSquare)
 	{
-	case T_ATK_UP:
+	case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 	{
 		const int atk = getItemAmount(wNewTSquare);
 		incintValueWithBounds(p.st.ATK, atk);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_ATK, atk), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedATK, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
-	case T_DEF_UP:
+	case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 	{
 		const int def = getItemAmount(wNewTSquare);
 		incintValueWithBounds(p.st.DEF, def);
 		CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_DEF, def), true);
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedDEF, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
-	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
+	case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 	{
 		const int heal = getItemAmount(wNewTSquare);
-		if (heal < 0)
+		if (heal < 0) {
 			p.DecHealth(CueEvents, -heal, CID_ExplosionKilledPlayer);
-		else
-		{
+		} else {
 			incUINTValueWithBounds(p.st.HP, heal);
 			CueEvents.Add(CID_EntityAffected, new CCombatEffect(&p, CET_HEAL, heal), true);
 		}
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_DrankPotion);
+		CueEvents.Add(CID_ReceivedHP, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
-	/*
-			case T_POTION_SP:  //Speed potion.
-				{
-					++p.st.speedPotions;
-					room.Plot(p.wX, p.wY, T_EMPTY);
-					CueEvents.Add(CID_DrankPotion);
-				}
-			break;
-	*/
+	case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+	{
+		const int shovels = getItemAmount(wNewTSquare);
+		incUINTValueWithBounds(p.st.shovels, shovels);
+		room.Plot(p.wX, p.wY, T_EMPTY);
+		CueEvents.Add(CID_ReceivedShovel, new CAttachableWrapper<UINT>(wNewTSquare), true);
+	}
+	break;
 
 	case T_FUSE:
 		//Light the fuse.
@@ -5803,11 +6851,15 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	break;
 
 	case T_MAP:
+	case T_MAP_DETAIL:
 	{
 		//Level map.
 		//Mark all non-secret rooms in level on map.
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
-		roomsInLevel -= GetExploredRooms(true); //ignore rooms already marked
+		CIDSet roomsWithStatesToUpdate;
+		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
+		MapState mapState = bShowDetail ? MapState::Explored : MapState::NoDetail;
+		roomsInLevel -= GetExploredRooms(!bShowDetail, !bShowDetail); //non-detailed map ignores rooms already marked
 		roomsInLevel -= room.dwRoomID;  //ignore current room
 		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
 			roomIter != roomsInLevel.end(); ++roomIter)
@@ -5815,13 +6867,16 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 			const UINT roomID = *roomIter;
 			if (!CDbRoom::IsSecret(roomID))
 			{
-				ASSERT(!getExploredRoom(roomID));
-				AddRoomToMap(roomID);
+				ExploredRoom* pExpRoom = getExploredRoom(roomID);
+				ASSERT(!pExpRoom || pExpRoom->IsInvisible() || bShowDetail);
+				AddRoomToMap(roomID, mapState);
+				roomsWithStatesToUpdate += roomID;
 			}
 		}
+		UpdateStoredMapState(roomsWithStatesToUpdate, mapState);
 
 		room.Plot(p.wX, p.wY, T_EMPTY);
-		CueEvents.Add(CID_LevelMap);
+		CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(wNewTSquare), true);
 	}
 	break;
 
@@ -5841,18 +6896,18 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 //Called when the player walked onto stairs or a scripted event was triggered
 //warping to a new level entrance.
 //
-//Ending state:      The game will be inactive.  A cue event of either CID_WinGame or
-//             CID_ExitLevelPending will have been added.
+//Ending state:      The game will be inactive.  A cue event of either CID_WinGame,
+//             CID_ExitLevelPending or CID_ExitToWorldMap will have been added.
 //Side effects:      Demos may be saved.
 //
 //Params:
 	CCueEvents &CueEvents,  //(out)  Events added to it.
-	const UINT wEntrance,   //if set, go to this level entrance [default=EXIT_LOOKUP]
+	const LevelExit& exit,  //specifies destination [default=StairLookup]
 	const bool bSkipEntranceDisplay) //[default=false]
 {
 	//If exiting level not from stairs, the destination ID should be specified.
-	ASSERT(bIsStairs(this->pRoom->GetOSquare(this->pPlayer->wX, this->pPlayer->wY)) ||
-			wEntrance != (UINT)EXIT_LOOKUP);
+	ASSERT(exit.type != LevelExit::StairLookup ||
+		bIsStairs(this->pRoom->GetOSquare(this->pPlayer->wX, this->pPlayer->wY)));
 
 	//If a critical character died on exit move, the exit doesn't count.
 	if (CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
@@ -5892,8 +6947,9 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 */
 
 	//If exiting via stairs, check for a defined exit destination for this room region.
-	UINT dwEntranceID=wEntrance;
-	if (wEntrance == (UINT)EXIT_LOOKUP)
+	UINT dwEntranceID = exit.entranceID;
+	bool bWorldMap = false; //are we going to a world map
+	if (exit.type == LevelExit::StairLookup)
 	{
 		for (UINT i=0; i<this->pRoom->Exits.size(); ++i)
 		{
@@ -5901,19 +6957,30 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			if (this->pPlayer->wX >= pStairs->wLeft && this->pPlayer->wX <= pStairs->wRight &&
 					this->pPlayer->wY >= pStairs->wTop && this->pPlayer->wY <= pStairs->wBottom) 
 			{
+				UINT stairTarget = pStairs->dwEntranceID;
+				if (!stairTarget) {
+					continue; //Won't go anywhere, so keep looking
+				} else if (stairTarget == UINT(EXIT_PRIOR_LOCATION)) {
+					dwEntranceID = stairTarget;
+					break; //No need to validate prior location
+				}
+
 				//Robustness measure: verify this entrance record actually exists.
-				if (pStairs->dwEntranceID && pStairs->dwEntranceID != UINT(EXIT_PRIOR_LOCATION) &&
-						!this->pHold->GetEntrance(pStairs->dwEntranceID))
+				bWorldMap = (pStairs->IsWorldMapExit());
+				if ((!bWorldMap && !this->pHold->GetEntrance(stairTarget)) ||
+					(bWorldMap && !this->pHold->DoesWorldMapExist(stairTarget)))
 				{
 					//Exit has dangling entrance ID -- ignore it and keep looking.
 					continue;
 				}
-				dwEntranceID = pStairs->dwEntranceID;
+				dwEntranceID = stairTarget;
 				break;
 			}
 		}
-		if (dwEntranceID == (UINT)EXIT_LOOKUP) //no exit destination defined by stairs
+		if (!dwEntranceID) //no exit destination defined by stairs
 			dwEntranceID = EXIT_ENDHOLD;  //so end the hold
+	} else if (exit.type == LevelExit::WorldMapID) {
+		bWorldMap = true;
 	}
 
 	//Returning to a prior warp location is only possible when one has been defined.
@@ -5922,7 +6989,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		if (!this->pPlayer->st.priorRoomID)
 		{
 			//Nowhere to go.
-			if (wEntrance != (UINT)EXIT_LOOKUP)
+			if (exit.type != LevelExit::StairLookup)
 				return;
 
 			dwEntranceID = EXIT_ENDHOLD; //stairs force ending the hold
@@ -5933,7 +7000,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			//in the editor since the time this game was last played/saved.
 			//
 			//We must be robust to it.
-			if (wEntrance != (UINT)EXIT_LOOKUP)
+			if (exit.type != LevelExit::StairLookup)
 				return; //destination not valid -- don't travel anywhere
 
 			dwEntranceID = EXIT_ENDHOLD; //stairs force ending the hold
@@ -5941,7 +7008,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 			//Can't update prior location until we've loaded it in LoadFromLevelEntrance
 			ASSERT(!this->pPendingPriorLocation);
 			CSwordsman& p = *this->pPlayer;
-			if (wEntrance == UINT(EXIT_LOOKUP)) {
+			if (exit.entranceID == UINT(EXIT_LOOKUP)) {
 				this->pPendingPriorLocation = new CMoveCoordEx(
 						p.wPrevX, p.wPrevY, p.wPrevO, this->pRoom->dwRoomID);
 			} else {
@@ -5954,7 +7021,7 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		CSwordsman& p = *this->pPlayer;
 		PlayerStats& ps = p.st;
 		ps.priorRoomID = this->pRoom->dwRoomID;
-		if (wEntrance == UINT(EXIT_LOOKUP)) {
+		if (exit.type == LevelExit::StairLookup) {
 			ps.priorX = p.wPrevX;
 			ps.priorY = p.wPrevY;
 			ps.priorO = p.wPrevO;
@@ -5965,37 +7032,47 @@ void CCurrentGame::ProcessPlayer_HandleLeaveLevel(
 		}
 	}
 
-	//If no exits, this signifies the end of the hold, i.e.,
-	//If there are no levels to go to next, then the game has been won.
-	CEntranceData *pEntrance = this->pHold->GetEntrance(dwEntranceID);
-	if (pEntrance)
-	{
-		//Send back level to go to next.
-		//ProcessCommand() caller must invoke LoadFromLevelEntrance
-		//to continue play at the appropriate location.
-		CueEvents.Add(CID_ExitLevelPending,
-				new CCoord(dwEntranceID, bSkipEntranceDisplay), true);
+	bool bEndHold = false;
+	if (bWorldMap) {
+		if (this->pHold->DoesWorldMapExist(dwEntranceID)) {
+			CueEvents.Add(CID_ExitToWorldMapPending,
+				new CAttachableWrapper<UINT>(dwEntranceID), true);
+		} else {
+			bEndHold = true;
+		}
 	} else {
-		//Return to the location where the prior Level Entrance script command
-		//was invoked.
-		if (dwEntranceID == (UINT)EXIT_PRIOR_LOCATION)
+		//If no exits, this signifies the end of the hold, i.e.,
+		//If there are no levels to go to next, then the game has been won.
+		CEntranceData* pEntrance = this->pHold->GetEntrance(dwEntranceID);
+		if (pEntrance)
 		{
+			//Send back level to go to next.
 			//ProcessCommand() caller must invoke LoadFromLevelEntrance
 			//to continue play at the appropriate location.
-			ASSERT(this->pPlayer->st.priorRoomID);
-			CueEvents.Add(CID_ExitLevelPending, new CCoord(EXIT_PRIOR_LOCATION, true), true);
+			CueEvents.Add(CID_ExitLevelPending,
+				new CCoord(dwEntranceID, bSkipEntranceDisplay), true);
 		} else {
-			//End the hold.
-
-			//Stop any multi-room demo sequence being recorded.
-//			this->bIsDemoRecording = false;
-
-			CueEvents.Add(CID_WinGame);
-			if (!this->Commands.IsFrozen())
+			//Return to the location where the prior Level Entrance script command
+			//was invoked.
+			if (dwEntranceID == (UINT)EXIT_PRIOR_LOCATION)
 			{
-				++this->pPlayer->st.totalMoves; //Add move before saving.  Another move will be tallied after saving, but it is ignored
-				SaveToEndHold();
+				//ProcessCommand() caller must invoke LoadFromLevelEntrance
+				//to continue play at the appropriate location.
+				ASSERT(this->pPlayer->st.priorRoomID);
+				CueEvents.Add(CID_ExitLevelPending, new CCoord(EXIT_PRIOR_LOCATION, true), true);
+			} else {
+				bEndHold = true;
 			}
+		}
+	}
+
+	if (bEndHold) {
+		//End the hold.
+		CueEvents.Add(CID_WinGame);
+		if (!this->Commands.IsFrozen())
+		{
+			++this->pPlayer->st.totalMoves; //Add move before saving.  Another move will be tallied after saving, but it is ignored
+			SaveToEndHold();
 		}
 	}
 
@@ -6187,19 +7264,24 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 //Loads the state of mutable room elements of the room being entered from the prior visit.
 {
 	ExploredRoom *pExpRoom = getExploredRoom(room.dwRoomID);
-	if (!pExpRoom)
+	this->bIsNewRoom = false;
+	if (!pExpRoom) {
+		this->bIsNewRoom = true;
 		return;
+	}
 	
 	room.mapMarker = pExpRoom->mapMarker;
-
-	const bool bWasRoomPreview = !pExpRoom->bSave;
 	pExpRoom->bSave = true; //previewed room will now be maintained as an explored room in save data
 
-	if (pExpRoom->bMapOnly || bWasRoomPreview)
+	if (pExpRoom->mapState != MapState::Explored)
 	{
+		//Has this room been previously explored?
+		if (!pExpRoom->HasDetail()) {
+			this->bIsNewRoom = true;
+		}
 		//Room is on the map but hasn't been explored previously.
 		//Now the player is arriving here for first time, so record the room as explored.
-		pExpRoom->bMapOnly = false;
+		pExpRoom->mapState = MapState::Explored;
 		return;
 	}
 
@@ -6207,8 +7289,10 @@ void CCurrentGame::RetrieveExploredRoomData(CDbRoom& room)
 }
 
 //*****************************************************************************
-void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
-//Adds or updates an ExploredRoom record to keep track of what is in the room being left.
+// Adds or updates an ExploredRoom record to keep track of what is in the room being left.
+void CCurrentGame::SaveExploredRoomData(
+	const CDbRoom& room,
+	const bool bOmitCompletedScripts) //Whether characters marked "ended" should be omitted from the save record data [default=false]
 {
 	//Has this room already been explored?
 	ExploredRoom *pExpRoom = getExploredRoom(room.dwRoomID);
@@ -6226,11 +7310,11 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		pExpRoom->pMonsterList = NULL;
 	}
 
-	pExpRoom->bMapOnly = false;
+	pExpRoom->mapState = MapState::Explored;
 	pExpRoom->mapMarker = room.mapMarker;
 
 	//Save room state.
-	c4_Bytes *pBytes = room.PackSquares();
+	c4_Bytes *pBytes = room.PackSquares(true);
 	pExpRoom->SquaresBytes = c4_Bytes(pBytes->Contents(), pBytes->Size(), true);
 	delete pBytes;
 
@@ -6250,21 +7334,16 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 		pExpRoom->orbTypes.push_back(room.orbs[count]->eType);
 	*/
 
-	//Save monsters.
+	//Save a copy of monsters to the explored room.
 	CMonster *pLastNewMonster = NULL;
 	for (CMonster *pMonster = room.pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		//Save monster state info where needed.
-		if (pMonster->wType == M_CHARACTER)
-		{
-			//Restart scripts that are flagged to do so.
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsRestartScriptOnRoomEntrance())
-				pCharacter->RestartScript();
-
-			//Save current state of NPC, but the NPCs script itself doesn't need to be saved,
-			//and should not be included to save space.
-			pCharacter->SetExtraVarsFromMembersWithoutScript(pCharacter->ExtraVars);
+		if (bOmitCompletedScripts && pMonster->wType == M_CHARACTER) {
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (pCharacter->bScriptDone) {
+				//Don't retain character in room data being saved.
+				continue;
+			}
 		}
 
 		//Make copy of monster in its current state.
@@ -6280,20 +7359,37 @@ void CCurrentGame::SaveExploredRoomData(CDbRoom& room)
 			pNew->Pieces.push_back(pNewPiece);
 		}
 
+		//Save monster state info where needed.
+		if (pNew->wType == M_CHARACTER)
+		{
+			//Restart scripts that are flagged to do so.
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
+			if (pCharacter->IsRestartScriptOnRoomEntrance())
+				pCharacter->RestartScript();
+
+			//Save current state of NPC, but the NPCs script itself doesn't need to be saved,
+			//and should not be included to save space.
+			pCharacter->SetExtraVarsFromMembersWithoutScript(pCharacter->ExtraVars);
+		}
+
 		pNew->ResetCurrentGame();
 
 		//Link up.
 		pNew->pNext = NULL;
 		pNew->pPrevious = pLastNewMonster;
-		if (!pExpRoom->pMonsterList)
+		if (!pExpRoom->pMonsterList) {
 			pExpRoom->pMonsterList = pNew;
-		else
-		{
+		} else {
 			ASSERT(pLastNewMonster);
 			pLastNewMonster->pNext = pNew;
 		}
 		pLastNewMonster = pNew;
 	}
+
+	//Save tile lights
+	pBytes = room.PackTileLights();
+	pExpRoom->tileLightsBytes = c4_Bytes(pBytes->Contents(), pBytes->Size(), true);
+	delete pBytes;
 
 	//All other data should be non-mutable or reconstructible on room init.
 }
@@ -6357,16 +7453,21 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->ambientSounds = Src.ambientSounds;
 
 	//Speech log.
-	vector<CCharacterCommand*>::const_iterator iter;
+	vector<SpeechLog>::const_iterator iter;
 	for (iter = this->roomSpeech.begin();	iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	for (iter = Src.roomSpeech.begin();	iter != Src.roomSpeech.end(); ++iter)
 	{
-		CCharacterCommand& c = *(*iter);
-		this->roomSpeech.push_back(new CCharacterCommand(c));
+		CCharacterCommand& c = *iter->pSpeechCommand;
+		this->roomSpeech.push_back(SpeechLog(iter->customName, new CCharacterCommand(c)));
 	}
 	this->music = Src.music;
+
+	this->customRoomLocationText = Src.customRoomLocationText;
+	this->localScoreMessage = Src.localScoreMessage;
+	this->persistingImageOverlays = Src.persistingImageOverlays;
+	this->imageOverlayNextID = Src.imageOverlayNextID;
 
 	//Combat.
 	this->bQuickCombat = Src.bQuickCombat;
@@ -6478,6 +7579,8 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 //	this->bWaitedOnHotFloorLastTurn = false;
 
 	this->dwCutScene = 0;
+	this->persistingImageOverlays.clear();
+	this->imageOverlayNextID = 0;
 
 	this->pRoom->BurnFuseEvents(CueEvents);
 
@@ -6487,8 +7590,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	this->dwPlayerID = g_pTheDB->GetPlayerID();
 
-	//Has this room been previously explored?
-	this->bIsNewRoom = !IsCurrentRoomExplored(false);
 /*
 	if (this->bIsNewRoom)
 		SetCurrentRoomExplored();
@@ -6511,6 +7612,7 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 		const UINT tTile = this->pRoom->GetTSquare(this->pPlayer->wX, this->pPlayer->wY);
 		if (tTile == T_BOMB || tTile == T_MIRROR)
 			this->pRoom->Plot(this->pPlayer->wX, this->pPlayer->wY, T_EMPTY);
+		//T_CRATE: Player starts on top of crate
 
 		//Remove any monster here.
 		this->pRoom->KillMonsterAtSquare(this->pPlayer->wX, this->pPlayer->wY, CueEvents);
@@ -6528,6 +7630,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Remove any monster messages left unprocessed.
 	this->UnansweredQuestions.clear();
+
+	this->customRoomLocationText.clear();
+	this->localScoreMessage.clear();
 
 	this->pRoom->KillSeepOutsideWall(CueEvents); //remove before any doors change
 
@@ -6554,9 +7659,6 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 */
 	}
 
-	//Mark which pressure plates are depressed on entrance.
-	this->pRoom->SetPressurePlatesState();
-
 	//No combat should be occurring at this point.
 	delete this->pCombat;
 	this->pCombat = NULL;
@@ -6574,6 +7676,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	ProcessScripts(CMD_WAIT, CueEvents, CDbSavedGame::pMonsterList);
 	this->pRoom->PreprocessMonsters(CueEvents);
 	this->bExecuteNoMoveCommands = false;
+
+	//Mark which pressure plates are depressed on entrance.
+	this->pRoom->SetPressurePlatesState();
 
 	ProcessSimultaneousSwordHits(CueEvents);  //destroy simultaneously-stabbed tar
 	this->pRoom->KillSeepOutsideWall(CueEvents); //check again if doors have changed
@@ -6598,12 +7703,16 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 	this->pRoom->CharactersCheckForCueEvents(CueEvents, CDbSavedGame::pMonsterList); //global scripts
 
 	AddRoomsToPlayerTally();
+	if (!this->IsRoomBeingDisplayedOnly())
+	{
+		UpdateStoredMapState(this->dwRoomID, MapState::Explored);
+	}
 
 	//Reset ambient sounds and speech.
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	//Get sounds+speech queued on room entrance.
@@ -6733,6 +7842,19 @@ void CCurrentGame::SetPlayerToRoomStart()
 	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
 			this->PreviouslyExploredRooms);
 
+	for (vector<ExploredRoom*>::const_iterator roomIter = this->ExploredRooms.begin();
+		roomIter != this->ExploredRooms.end(); ++roomIter)
+	{
+		ExploredRoom* pExpRoom = *roomIter;
+		map<UINT, MapIconPair>::const_iterator finder =
+			this->mapIconsAtRoomStart.find(pExpRoom->roomID);
+		if (finder != this->mapIconsAtRoomStart.end()) {
+			const MapIconPair mapIconPair = finder->second;
+			pExpRoom->mapIcon = mapIconPair.first;
+			pExpRoom->mapIconState = mapIconPair.second;
+		}
+	}
+
 	//Prepare vars for recording saved games.
 	this->bIsGameActive = true;
 	this->wTurnNo = 0;
@@ -6794,7 +7916,59 @@ void CCurrentGame::SetRoomStartToPlayer()
 	PackData(this->stats);
 	this->statsAtRoomStart = this->stats;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
-	this->roomsMappedAtRoomStart = GetMappedRooms();
+	this->roomsMappedAtRoomStart = GetMappedRoomsWithState();
+	this->roomsMappedAtRoomStart[this->pRoom->dwRoomID] = MapState::Explored;
+
+	this->mapIconsAtRoomStart.clear();
+	for (vector<ExploredRoom*>::const_iterator room = this->ExploredRooms.begin();
+		room != this->ExploredRooms.end(); ++room) {
+			ExploredRoom* pExpRoom = *room;
+			this->mapIconsAtRoomStart[pExpRoom->roomID] = { pExpRoom->mapIcon, pExpRoom->mapIconState };
+	}
+}
+
+//*****************************************************************************
+void CCurrentGame::StashPersistingEvents(CCueEvents& CueEvents)
+//Used on move sequence replay to display effects that should persist in the room indefinitely
+//Effects are added/cleared in the order they are cued.
+{
+	AmbientSoundTracking(CueEvents);
+
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ImageOverlay);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+		if (pImageOverlay->loopsForever())
+			this->persistingImageOverlays.push_back(*pImageOverlay);
+		const int clearLayer = pImageOverlay->clearsImageOverlays();
+		RemoveClearedImageOverlays(clearLayer);
+
+		pObj = CueEvents.GetNextPrivateData();
+	}
+}
+
+//*****************************************************************************
+void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
+{
+	if (clearLayers == ImageOverlayCommand::NO_LAYERS)
+		return;
+
+	if (clearLayers == ImageOverlayCommand::ALL_LAYERS) {
+		this->persistingImageOverlays.clear();
+		return;
+	}
+
+	vector<CImageOverlay> keptImages;
+
+	for (vector<CImageOverlay>::const_iterator imageIt = this->persistingImageOverlays.begin();
+		imageIt != this->persistingImageOverlays.end(); ++imageIt)
+	{
+		const CImageOverlay& image = *imageIt;
+		if (clearLayers != image.getLayer())
+			keptImages.push_back(image);
+	}
+
+	this->persistingImageOverlays = keptImages;
 }
 
 //*****************************************************************************
@@ -7289,6 +8463,82 @@ UINT CCurrentGame::WriteCurrentRoomConquerDemo()
 */
 
 //***************************************************************************************
+UINT CCurrentGame::WriteLocalHighScore(const WSTRING& name)
+//Creates or updates a high score record for the given scorepoint.
+//
+//Returns:
+//HighScoreID of the HighScores record.
+{
+	if (this->bNoSaves)
+		return 0; //playing a dummy game session -- don't save scores
+
+	PlayerStats st = this->pPlayer->st; //temp copy
+	st.ATK = getPlayerATK();
+	st.DEF = getPlayerDEF();
+
+	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+	ASSERT(pPlayer);
+	bool showLocalMessage = true;
+	if (pPlayer->Settings.GetVar(useInternetStr, false)) {
+		if (g_pTheNet) {
+				showLocalMessage = false;
+		}
+	}
+
+	CDbLocalHighScore* pHighScore = NULL;
+	int score = GetScore(st);
+	CDb db;
+	UINT holdID = this->pHold->dwHoldID;
+	UINT playerID = pPlayer->dwPlayerID;
+	CDbPackedVars stats;
+	st.Pack(stats);
+
+	db.HighScores.FilterByHold(holdID);
+	db.HighScores.FilterByPlayer(playerID);
+
+	if (db.HighScores.HasScorepoint(name)) {
+		//Update existing score if a new best has been achieved
+		UINT id = db.HighScores.GetIDForScorepoint(name);
+		ASSERT(id);
+		pHighScore = db.HighScores.GetByID(id);
+		ASSERT(pHighScore);
+		if (score > pHighScore->score) {
+			pHighScore->score = score;
+			pHighScore->stats = stats;
+			pHighScore->Update();
+
+			localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
+		} else if (pPlayer->Settings.GetVar(Settings::ShowPercentOptimal, true) && score >= 0 && pHighScore->score > 0) {
+			double ratio = (double)score / (double)pHighScore->score;
+			int percent = int(ratio * 100);
+			localScoreMessage = WCSReplace(
+				g_pTheDB->GetMessageText(MID_PercentOptimal),
+				wszStringToken,
+				to_WSTRING(percent)
+			);
+		}
+	} else {
+		//Create new score
+		pHighScore = db.HighScores.GetNew();
+		ASSERT(pHighScore);
+		pHighScore->dwHoldID = holdID;
+		pHighScore->dwPlayerID = playerID;
+		pHighScore->score = score;
+		pHighScore->scorepointName = name;
+		pHighScore->stats = stats;
+		pHighScore->Update();
+
+		localScoreMessage = g_pTheDB->GetMessageText(MID_NewLocalHighScore);
+	}
+
+	UINT highScoreID = pHighScore->dwHighScoreID;
+	delete pHighScore;
+	delete pPlayer;
+
+	return highScoreID;
+}
+
+//***************************************************************************************
 UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 //Writes a saved game record containing the saved game's stats info for upload.
 //
@@ -7347,6 +8597,7 @@ UINT CCurrentGame::WriteScoreCheckpointSave(const WSTRING& name)
 	return this->dwSavedGameID;
 }
 
+//***************************************************************************************
 //Only call this on a temporary object, prior to temporary room preview in the front-end.
 //Returns: whether prep operation succeeded
 bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
@@ -7366,8 +8617,14 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 		return false;
 	}
 
+	//Resetting room will clear haste and invisibility states, so persist them
+	const bool bPlayerHasted = this->pPlayer->bHasted;
+	const bool bPlayerInvisible = this->pPlayer->bInvisible;
 	CCueEvents Ignored;
 	RestartRoom(Ignored);
+	this->pPlayer->bHasted = bPlayerHasted;
+	this->pPlayer->bInvisible = bPlayerInvisible;
+
 	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
 		if (pMonster->wType == M_CHARACTER)
@@ -7380,4 +8637,12 @@ bool CCurrentGame::PrepTempGameForRoomDisplay(const UINT roomID)
 	this->pRoom->SetSwordsSheathed();
 
 	return true;
+}
+
+//***************************************************************************************
+void CCurrentGame::InitializeTotalMapStates(const bool forceLoading) // (in) default=[false] force loading the map states despite being in noSaves mode (e.g. restore screen)
+//Initialize TotalMapStates
+{
+	if (forceLoading || !this->bNoSaves)
+		TotalMapStates.Load(g_pTheDB->GetPlayerID(), this->pLevel->dwLevelID);
 }

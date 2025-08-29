@@ -50,6 +50,6 @@ void CAnt::Process(
 	FaceTarget();
 
 	if (AttackPlayerWhenAdjacent(CueEvents))
-		CueEvents.Add(CID_GoblinAttacks);
+		CueEvents.Add(CID_EnemySneakAttack);
 }
 

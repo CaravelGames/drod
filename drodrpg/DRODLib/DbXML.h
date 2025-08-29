@@ -36,6 +36,7 @@
 #include "../Texts/MIDs.h"
 
 #include <expat.h>
+#include <zlib.h>
 
 #include <vector>
 using std::vector;
@@ -66,7 +67,30 @@ struct SCORE_UPLOAD
 	UINT dwSavedGameID;
 };
 
+struct streamingOutParams
+{
+	streamingOutParams()
+		: pOutBuffer(NULL)
+		, pGzf(NULL)
+	{
+	}
+	void reset() {
+		pOutBuffer = NULL;
+		pGzf = NULL;
+	}
+	void set(string* str, gzFile* gzf)
+	{
+		pOutBuffer = str;
+		pGzf = gzf;
+	}
+	bool flush(const ULONG maxSizeThreshold = 0);
+
+	string* pOutBuffer;
+	gzFile* pGzf;
+};
+
 //*****************************************************************************
+struct ImportBuffer;
 class CDbXML : public CDb
 {
 public:
@@ -74,6 +98,7 @@ public:
 	static void CleanUp();
 	static MESSAGE_ID ImportXML(const WCHAR *pszFilename, const CImportInfo::ImportType type);
 	static MESSAGE_ID ImportXML(CStretchyBuffer &buffer, const CImportInfo::ImportType type);
+	static MESSAGE_ID ImportXML(const string& xml);
 	static MESSAGE_ID ImportXML();	//continue import already in progress
 	static bool ExportXML(const VIEWTYPE vType,
 			const UINT dwPrimaryKey, const WCHAR *pszFilename);
@@ -81,6 +106,8 @@ public:
 			const CIDSet& primaryKeys, const WCHAR *pszFilename);
 	static bool ExportXML(const VIEWTYPE vType, const CIDSet& primaryKeys,
 			string &text, const UINT eSaveType=0);
+
+	static MESSAGE_ID Uncompress(BYTE* buffer, UINT size);
 
 	static UINT GetActiveSpeechID();
 
@@ -101,12 +128,6 @@ public:
 	static void PerformCallbackf(float fVal);
 	static void PerformCallbackText(const WCHAR* wpText);
 
-	//For (un)compression
-	static bool z_compress(const BYTE* src, const ULONG srcSize,
-			BYTE*& dest, ULONG& destLen);
-	static MESSAGE_ID z_uncompress(ULONG& decodedSize, BYTE*& decodedBuf,
-			const BYTE* inBuffer, const UINT inBufferSize);
-
 	static CImportInfo info;
 //	static vector<DEMO_UPLOAD> upgradedHoldVictoryDemos;
 	static RecordMap exportInfo;
@@ -118,7 +139,13 @@ private:
 
 	static CDbBase * GetNewRecord(const VIEWTYPE vType);
 
-	static MESSAGE_ID ImportXML(const char *buf, const UINT size);
+	static MESSAGE_ID ImportXML(ImportBuffer* pBuffer);
+	static void Import_Init();
+	static void Import_TallyRecords(ImportBuffer* pBuffer);
+	static void Import_TallyRecords(const string& xml);
+	static void Import_ParseRecords(ImportBuffer* pBuffer);
+	static void Import_ParseRecords(const string& xml);
+	static void Import_Resolve();
 
 	static VIEWTYPE ParseViewType(const char *str);
 	static VIEWPROPTYPE ParseViewpropType(const char *str);
@@ -134,6 +161,8 @@ private:
 	static vector <VIEWTYPE> dbRecordTypes;   //record types
 	static vector <VIEWPROPTYPE> vpCurrentType;  //stack of viewprops being parsed
 	static vector <bool>  SaveRecord;   //whether record should be saved to the DB
+
+	static streamingOutParams streamingOut;
 };
 
 #endif //...#ifndef DBMXL_H

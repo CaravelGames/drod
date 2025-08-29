@@ -55,7 +55,9 @@ CLabelWidget::CLabelWidget(
 	: CWidget(eType, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, eFontType(eSetFontType)
 	, eTextAlign(TA_Left)
+	, eTextVAlign(TA_VTop)
 	, bClickable(false)
+	, bPrintLeadingSpacesAfterFirstLine(false)
 	, bCacheRendering(bCacheRendering)
 	, pRenderedText(NULL)
 	, y_font_offset(y_font_offset)
@@ -173,6 +175,12 @@ void CLabelWidget::Paint(
 		int nOffsetX, nOffsetY;
 		GetScrollOffset(nOffsetX, nOffsetY);
 
+		if (this->eTextVAlign == TA_VCenter) {
+			UINT textW, textH;
+			this->GetTextWidthHeight(textW, textH);
+			nOffsetY += (int(this->h) - int(textH)) / 2;
+		}
+
 		UINT wLineOffsetX = 0;
 
 		//Get drawing X coord for centered text.
@@ -190,7 +198,8 @@ void CLabelWidget::Paint(
 		} else {
 			g_pTheFM->DrawTextToRect(this->eFontType, this->wstrText.c_str(),
 					this->x + wLineOffsetX + nOffsetX, this->y + nOffsetY,
-					this->w, this->h, GetDestSurface(), this->wFirstIndent);
+					this->w, this->h, GetDestSurface(), this->wFirstIndent,
+					255, this->bPrintLeadingSpacesAfterFirstLine);
 		}
 	}
 
@@ -216,6 +225,7 @@ void CLabelWidget::RenderAndCacheText()
 		SDL_FillRect(this->pRenderedText, NULL, color);
 
 		g_pTheFM->DrawTextToRect(this->eFontType, this->wstrText.c_str(),
-				0, this->y_font_offset, this->w, this->h, this->pRenderedText, this->wFirstIndent);
+				0, this->y_font_offset, this->w, this->h, this->pRenderedText, this->wFirstIndent,
+				255, this->bPrintLeadingSpacesAfterFirstLine);
 	}
 }

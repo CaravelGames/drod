@@ -382,8 +382,11 @@ bool CDemosScreen::SetForActivate()
 	if (this->bRetainDemos)
 	{
 		this->bRetainDemos = false;
-		if (this->pDemoCurrentGame)
+		if (this->pDemoCurrentGame) {
 			this->pRoomWidget->LoadFromCurrentGame(this->pDemoCurrentGame);
+			CCueEvents Ignored;
+			this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
+		}
 		return true;
 	}
 
@@ -1380,6 +1383,7 @@ void CDemosScreen::SetWidgetsToDemo(
 			this->pDemoCurrentGame->Commands.GetFirst(); //quick replay from beginning
 		this->pDemoCurrentGame->SetTurn(pDemo->wBeginTurnNo, Ignored);
 		this->pRoomWidget->LoadFromCurrentGame(this->pDemoCurrentGame);
+		this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
 
 /*
 		//Since there is no way to flag hold mastery in a demo,

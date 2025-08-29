@@ -28,6 +28,7 @@
 #ifndef GAMESCREEN_H
 #define GAMESCREEN_H
 
+#include "EffectChangeHistory.h"
 #include "RoomScreen.h"
 
 #include "../DRODLib/CurrentGame.h"
@@ -44,6 +45,7 @@ class CClockWidget;
 class CFiredCharacterCommand;
 class CEntranceSelectDialogWidget;
 class CSubtitleEffect;
+class EffectChangeHistory;
 struct VisualEffectInfo;
 class CGameScreen : public CRoomScreen
 {
@@ -54,6 +56,7 @@ public:
 	SEID     GetMonsterAttackSoundEffect(CCombat* pCombat) const;
 	UINT     GetMonsterDisplayTile(CMonster *pMonster, const UINT x, const UINT y);
 	static MESSAGE_ID GetHintTextForRegion(int nX, int nY);
+	void     GotoEntrance(UINT entranceID, ExitType exitType);
 	bool     IsGameLoaded() const {return this->pCurrentGame!=NULL;}
 	bool     LoadContinueGame();
 	bool     LoadQuicksave();
@@ -65,6 +68,7 @@ public:
 	bool     ProcessCommandWrapper(const int nCommand);
 	SCREENTYPE     ProcessCommand(const int nCommand, const UINT wX, const UINT wY);
 	void     RedrawStats(CCombat *pCombat, const bool bUpdateRect);
+	SCREENTYPE SelectGotoScreen();
 	void		SetGameAmbience(const bool bRecalc=false);
 	void     SetMusicStyle();
 	void     SetQuickCombat();
@@ -91,6 +95,7 @@ protected:
 	void           ClearSpeech(const bool bForceClearAll=false);
 	void           ClickOnEquipment(const UINT eCommand, const bool bRightMouseButton);
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
+	void           DisplayPersistentEffects();
 	void           DrawCurrentTurn();
 	WSTRING        GetEquipmentPropertiesText(const UINT eCommand);
 	void           GotoHelpPage();
@@ -107,7 +112,7 @@ protected:
 	void           PaintClock(const bool bShowImmediately=false);
 	void           PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEvents);
 	void           PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
-			const bool bUseVoiceVolume=false);
+			const bool bUseVoiceVolume=false, const float frequencyMultiplier = 1.0f, const float volumeMultiplier = 1.0f);
 	SCREENTYPE     ProcessCommand(const int nCommand); //, const bool bMacro=false);
 	bool           ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           ProcessFuseBurningEvents(CCueEvents& CueEvents);
@@ -133,7 +138,7 @@ protected:
 private:
 	void           AddChatDialog();
 	bool           AddMonsterStats(CDbRoom* pRoom, CRoomWidget* pRoomWidget, CMonster* pMonster, WSTRING& text);
-	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, float fDamagePercent=1.0f);
+	void           AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coord, float fDamagePercent=1.0f, const bool bApplyJitter=true);
 	void           AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord);
 	void           AmbientSoundSetup();
 	void           ApplyPlayerSettings();
@@ -142,7 +147,7 @@ private:
 	void           DisplayAdjacentTempRoom(const UINT direction);
 	void           DisplayChatDialog();
 //	void           DisplayRoomStats();
-	void           FadeRoom(const bool bFadeIn, const Uint32 dwDuration);
+	void           FadeRoom(const bool bFadeIn, const Uint32 dwDuration, CCueEvents& CueEvents);
 	UINT           GetEffectDuration(const UINT baseDuration) const;
 //	WSTRING        GetGameStats(const bool bHoldTotals=false, const bool bOnlyCurrentGameRooms=false) const;
 	UINT           GetMessageAnswer(const CMonsterMessage *pMsg);
@@ -175,16 +180,21 @@ private:
 	void				ProcessSpeechCues(CCueEvents& CueEvents);
 	bool           ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand);
 	void           ReattachRetainedSubtitles();
+	void           RestartRoom(int nCommand, CCueEvents& CueEvents);
 	void           ScoreCheckpoint(const WCHAR* pScoreIDText);
+	WSTRING        GetScoreCheckpointLine(const MID_CONSTANT statName, const UINT statAMount, const int scoreMultiplier, const UINT statScore);
 	void           SendAchievement(const char* achievement, const UINT dwScore=0);
 	void           ShowBigMap();
 	virtual void   ShowChatHistory(CEntranceSelectDialogWidget* pBox);
 	void           showStat(const UINT eType, const int delta, CEntity *pEntity, UINT& count);
+	void           ShowStatTooltip(int nX, int nY);
 //	void           ShowLockIcon(const bool bShow=true);
-	void           ShowPlayerFace(const bool bOverrideLock=false);
-	UINT           ShowRoom(CDbRoom *pRoom);
+	void           UpdatePlayerFace();
+	void           ResolvePlayerFace(SPEAKER& pSpeaker, HoldCharacter** playerHoldCharacter);
+	UINT           ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents);
 	void           ShowRoomCoords(CDbRoom *pRoom);
 	void           ShowRoomTemporarily(UINT roomID);
+	void           ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st);
 	void           ShowSpeechLog();
 	void           SwirlEffect();
 	void           SynchScroll();
@@ -193,9 +203,13 @@ private:
 	void           ToggleBigMap();
 	void           UndoMove();
 	void           UpdateEffectsFreeze();
+	void           UpdateScroll();
+	void           UpdateSign();
 	void           UpdateSound();
+	void           UpdateUIAfterRoomRestart(const bool bReloadEntireMap=false);
+	void           UpdateUIAfterMoveUndo(bool bReloadEntireMap=false);
 	bool           UploadDemoPolling();
-	void				UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);
+	void           UploadExploredRooms(const SAVETYPE eSaveType=ST_Continue);
 	void           WaitToUploadDemos();
 
 	bool        bShowLevelStartBeforeActivate;
@@ -263,6 +277,8 @@ private:
 	UINT        wUndoToTurn; //undo moves back to this turn at once
 //	bool			bHoldConquered; //whether player has conquered hold being played
 //	CIDSet		roomsPreviouslyConquered; //rooms player has conquered previously in hold being played
+
+	EffectChangeHistory mapIconChanges;
 
 	float *fPos;   //position vector
 

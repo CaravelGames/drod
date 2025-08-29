@@ -41,6 +41,7 @@
 #include <FrontEndLib/ProgressBarWidget.h>
 
 #include "../DRODLib/Db.h"
+#include "../DRODLib/I18N.h"
 #include "../DRODLib/GameConstants.h"
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/SettingsKeys.h"
@@ -48,49 +49,41 @@
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
+#include <BackEndLib/Browser.h>
 
 using namespace InputCommands;
 
 //Tabbed menu info.
 #define PERSONAL_TAB (0)
 #define GAS_TAB (1)
-#define COMMANDS_TAB (2)
+#define KEYMAP_1_TAB (2)
+#define KEYMAP_2_TAB (3)
 #define BG_COLOR 220,210,190
+
+#define MIN_TARSTUFF_ALPHA (64)
+#define MIN_ICON_ALPHA (64)
 
 //Default command key mappings.
 const SDL_Keycode COMMANDKEY_ARRAY[2][DCMD_Count] = {	//desktop or laptop keyboard
 {	//numpad default
 	SDLK_KP_7, SDLK_KP_8, SDLK_KP_9, SDLK_KP_4, SDLK_KP_5, SDLK_KP_6, SDLK_KP_1, SDLK_KP_2, SDLK_KP_3,
-	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_KP_PLUS, SDLK_TAB, SDLK_KP_0, SDLK_KP_PERIOD
+	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_KP_PLUS, SDLK_TAB, SDLK_KP_0, SDLK_KP_PERIOD, SDLK_KP_MINUS
 },{	//laptop default
 	SDLK_7, SDLK_8, SDLK_9, SDLK_u, SDLK_i, SDLK_o, SDLK_j, SDLK_k, SDLK_l,
-	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_0, SDLK_TAB, SDLK_COMMA, SDLK_PERIOD
+	SDLK_w, SDLK_q, SDLK_r, SDLK_BACKSPACE, SDLK_0, SDLK_TAB, SDLK_COMMA, SDLK_PERIOD, SDLK_KP_MINUS
 }};
 
 //Widget tag constants.
-const UINT TAG_NW_BUTTON = 1001;
-const UINT TAG_N_BUTTON = 1002;
-const UINT TAG_NE_BUTTON = 1003;
-const UINT TAG_W_BUTTON = 1004;
-const UINT TAG_WAIT_BUTTON = 1005;
-const UINT TAG_E_BUTTON = 1006;
-const UINT TAG_SW_BUTTON = 1007;
-const UINT TAG_S_BUTTON = 1008;
-const UINT TAG_SE_BUTTON = 1009;
-const UINT TAG_C_BUTTON = 1010;
-const UINT TAG_CC_BUTTON = 1011;
-const UINT TAG_RESTART_BUTTON = 1012;
-const UINT TAG_UNDO_BUTTON = 1013;
-const UINT TAG_BATTLE_BUTTON = 1014;
-const UINT TAG_ACCESSORY_BUTTON = 1015;
-const UINT TAG_LOCK_BUTTON = 1016;
-const UINT TAG_COMMAND_BUTTON = 1017;
+// Tags 1100 to 1299 are reserved for button remaps
+const UINT TAG_KEY_BUTTON_START = 1100;
+const UINT TAG_KEY_BUTTON_END = 1299;
 
-const UINT TAG_DEFAULT_DESKTOP = 1018;
-const UINT TAG_DEFAULT_LAPTOP = 1019;
-const UINT TAG_DISABLE_MOUSE_MOVEMENT = 1020;
+const UINT TAG_DEFAULT_DESKTOP = 1030;
+const UINT TAG_DEFAULT_LAPTOP = 1031;
+const UINT TAG_DISABLE_MOUSE_MOVEMENT = 1032;
 
 const UINT TAG_USE_FULLSCREEN = 1040;
 const UINT TAG_ENABLE_SOUNDEFF = 1041;
@@ -106,6 +99,9 @@ const UINT TAG_SHOW_SUBTITLES = 1050;
 //const UINT TAG_TARSTUFF_TRANSPARENCY = 1051;
 //const UINT TAG_DISPLAY_COMBOS = 1052;
 const UINT TAG_NO_FOCUS_PLAYS_MUSIC = 1053;
+const UINT TAG_DAMAGEPREVIEW = 1054;
+const UINT TAG_MAP_ICON_ALPHA = 1055;
+const UINT TAG_TARSTUFF_ALPHA = 1056;
 
 /*
 const UINT TAG_SHOWCHECKPOINTS = 1055;
@@ -124,6 +120,17 @@ const UINT TAG_UPLOADSCORES = 1065;
 
 const UINT TAG_AUTOSAVE = 1070;
 const UINT TAG_ITEMTIPS = 1071;
+const UINT TAG_CHARACTERPREVIEW = 1073;
+
+const UINT TAG_NEWGAMEPROMPT = 1072;
+const UINT TAG_GAME_AUTOSAVE = 1079;
+const UINT TAG_SHOW_PERCENT_OPTIMAL = 1094;
+
+const UINT TAG_TARSTUFF_ALPHA_VALUE_LABEL = 1074;
+const UINT TAG_MAP_ICON_ALPHA_VALUE_LABEL = 1075;
+const UINT TAG_SOUNDEFF_VALUE_LABEL = 1076;
+const UINT TAG_VOICE_VALUE_LABEL = 1077;
+const UINT TAG_MUSIC_VALUE_LABEL = 1078;
 
 //don't use values 1080-1089
 
@@ -132,8 +139,35 @@ const UINT TAG_HELP = 1092;
 
 const UINT TAG_MENU = 1093;
 
-const UINT CX_MESSAGE = 370;
-const UINT CY_MESSAGE = 120;
+static const UINT CX_SPACE = 10;
+static const UINT CY_SPACE = 10;
+
+static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
+
+static const UINT CX_OKAY_BUTTON = 110;
+static const UINT CY_OKAY_BUTTON = CY_STANDARD_BUTTON;
+static const UINT CX_CANCEL_BUTTON = CX_OKAY_BUTTON;
+static const UINT CY_CANCEL_BUTTON = CY_OKAY_BUTTON;
+static const UINT CX_HELP_BUTTON = CX_OKAY_BUTTON;
+static const UINT CY_HELP_BUTTON = CY_OKAY_BUTTON;
+const int X_CANCEL_BUTTON = (CScreen::CX_SCREEN - CX_CANCEL_BUTTON) / 2;
+static const int X_OKAY_BUTTON = X_CANCEL_BUTTON - CX_OKAY_BUTTON - CX_SPACE;
+const int X_HELP_BUTTON = X_CANCEL_BUTTON + CX_CANCEL_BUTTON + CX_SPACE;
+const int Y_OKAY_BUTTON = CScreen::CY_SCREEN - CY_SPACE - CY_OKAY_BUTTON;
+static const int Y_CANCEL_BUTTON = Y_OKAY_BUTTON;
+const int Y_HELP_BUTTON = Y_OKAY_BUTTON;
+
+const UINT CY_MENU_TAB = 37;
+const int Y_INNERMENU = CY_MENU_TAB + CY_SPACE * 3;
+
+const UINT CX_WIDE_FRAME = 520;
+
+//Menu
+const int X_TABBEDMENU = CX_SPACE * 2;
+const int Y_TABBEDMENU = Y_TITLE + CY_TITLE + Y_TITLE;
+const UINT CX_TABBEDMENU = CScreen::CX_SCREEN - X_TABBEDMENU * 2;
+const UINT CY_TABBEDMENU = Y_OKAY_BUTTON - Y_TABBEDMENU - CY_SPACE * 2;
 
 //
 //Protected methods.
@@ -143,7 +177,7 @@ const UINT CY_MESSAGE = 120;
 CSettingsScreen::CSettingsScreen()
 //Constructor.
 	: CDrodScreen(SCR_Settings)
-	, pDialogBox(NULL), pCommandLabel(NULL)
+	, pKeypressDialog(NULL)
 	, pCurrentPlayer(NULL)
 	, pNameWidget(NULL)
 	, pCaravelNetNameWidget(NULL)
@@ -243,12 +277,37 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_ITEMTIPS = Y_AUTOSAVE + CY_AUTOSAVE;
 	static const UINT CX_ITEMTIPS = CX_AUTOSAVE;
 	static const UINT CY_ITEMTIPS = CY_STANDARD_OPTIONBUTTON;
-	static const UINT CY_EDITOR_FRAME = Y_ITEMTIPS + CY_ITEMTIPS + CY_SPACE;
+	static const int X_CHARACTERPREVIEW = CX_SPACE;
+	static const int Y_CHARACTERPREVIEW = Y_ITEMTIPS + CY_AUTOSAVE;
+	static const UINT CX_CHARACTERPREVIEW = CX_AUTOSAVE;
+	static const UINT CY_CHARACTERPREVIEW = CY_STANDARD_OPTIONBUTTON;
+	static const UINT CY_EDITOR_FRAME = Y_CHARACTERPREVIEW + CY_CHARACTERPREVIEW + CY_SPACE;
+
+	//Special frame and children
+	static const int X_SPECIAL_FRAME = X_EDITOR_FRAME;
+	static const int Y_SPECIAL_FRAME = Y_EDITOR_FRAME + CY_EDITOR_FRAME + 2*CY_SPACE;
+	static const UINT CX_SPECIAL_FRAME = CX_EDITOR_FRAME;
+	static const int X_NEWGAMEPROMPT = CX_SPACE;
+	static const int Y_NEWGAMEPROMPT = CY_SPACE;
+	static const UINT CX_NEWGAMEPROMPT = CX_SPECIAL_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
+	static const UINT CY_NEWGAMEPROMPT = CY_STANDARD_OPTIONBUTTON;
+
+	static const int X_GAME_AUTOSAVE = CX_SPACE;
+	static const int Y_GAME_AUTOSAVE = Y_NEWGAMEPROMPT + CY_NEWGAMEPROMPT;
+	static const int CX_GAME_AUTOSAVE = CX_SPECIAL_FRAME - X_NEWGAMEPROMPT - CX_SPACE;
+	static const int CY_GAME_AUTOSAVE = CY_STANDARD_OPTIONBUTTON;
+
+	static const int X_SHOW_PERCENT_OPTIMAL = CX_SPACE;
+	static const int Y_SHOW_PERCENT_OPTIMAL = Y_GAME_AUTOSAVE + CY_GAME_AUTOSAVE;
+	static const int CX_SHOW_PERCENT_OPTIMAL = CX_SPECIAL_FRAME - X_SHOW_PERCENT_OPTIMAL - CX_SPACE;
+	static const int CY_SHOW_PERCENT_OPTIMAL = CY_STANDARD_OPTIONBUTTON;
+
+	static const UINT CY_SPECIAL_FRAME = Y_SHOW_PERCENT_OPTIMAL + CY_SHOW_PERCENT_OPTIMAL + CY_SPACE;
 
 	//Game speed frame and children.
-	static const int X_SPECIAL_FRAME = X_PERSONAL_FRAME;
-	static const int Y_SPECIAL_FRAME = Y_PERSONAL_FRAME + CY_PERSONAL_FRAME + 2*CY_SPACE;
-	static const UINT CX_SPECIAL_FRAME = CX_PERSONAL_FRAME;
+	static const int X_SPEED_FRAME = X_PERSONAL_FRAME;
+	static const int Y_SPEED_FRAME = Y_PERSONAL_FRAME + CY_PERSONAL_FRAME + 2*CY_SPACE;
+	static const UINT CX_SPEED_FRAME = CX_PERSONAL_FRAME;
 
 	static const int Y_SLOWCOMBAT_LABEL = CY_SPACE;
 	static const UINT CX_SLOWCOMBAT_LABEL = 100;
@@ -256,7 +315,7 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_FASTCOMBAT_LABEL = Y_SLOWCOMBAT_LABEL;
 	static const UINT CX_FASTCOMBAT_LABEL = 40;
 	static const UINT CY_FASTCOMBAT_LABEL = CY_SLOWCOMBAT_LABEL;
-	const int X_FASTCOMBAT_LABEL = CX_SPECIAL_FRAME - CX_FASTCOMBAT_LABEL - CX_SPACE;
+	const int X_FASTCOMBAT_LABEL = CX_SPEED_FRAME - CX_FASTCOMBAT_LABEL - CX_SPACE;
 	static const int X_COMBATRATE_LABEL = CX_SPACE * 2;
 	static const int Y_COMBATRATE_LABEL = Y_SLOWCOMBAT_LABEL + CY_SLOWCOMBAT_LABEL;
 	static const UINT CX_COMBATRATE_LABEL = 100;
@@ -264,7 +323,7 @@ CSettingsScreen::CSettingsScreen()
 
 	static const int X_QUICKCOMBAT = X_COMBATRATE_LABEL + CX_COMBATRATE_LABEL + CX_SPACE;
 	static const int Y_QUICKCOMBAT = Y_SLOWCOMBAT_LABEL + CY_SLOWCOMBAT_LABEL;
-	static const UINT CX_QUICKCOMBAT = CX_SPECIAL_FRAME - X_QUICKCOMBAT - CX_SPACE*2;
+	static const UINT CX_QUICKCOMBAT = CX_SPEED_FRAME - X_QUICKCOMBAT - CX_SPACE*2;
 	static const UINT CY_QUICKCOMBAT = CY_STANDARD_SLIDER;
 	static const int X_SLOWCOMBAT_LABEL = X_QUICKCOMBAT;
 
@@ -276,7 +335,7 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_FAST_LABEL = Y_SLOW_LABEL;
 	static const UINT CX_FAST_LABEL = 40;
 	static const UINT CY_FAST_LABEL = CY_SLOW_LABEL;
-	const int X_FAST_LABEL = CX_SPECIAL_FRAME - CX_FAST_LABEL - CX_SPACE;
+	const int X_FAST_LABEL = CX_SPEED_FRAME - CX_FAST_LABEL - CX_SPACE;
 	*/
 	static const int X_REPEATRATE_LABEL = CX_SPACE * 2;
 	static const int Y_REPEATRATE_LABEL = Y_QUICKCOMBAT + CY_QUICKCOMBAT + 5; //Y_SLOW_LABEL + CY_SLOW_LABEL;
@@ -292,7 +351,7 @@ CSettingsScreen::CSettingsScreen()
 /*
 	static const int X_SHOWCHECKPOINTS = CX_SPACE;
 	static const int Y_SHOWCHECKPOINTS = CY_SPACE;
-	static const UINT CX_SHOWCHECKPOINTS = CX_SPECIAL_FRAME - X_SHOWCHECKPOINTS;
+	static const UINT CX_SHOWCHECKPOINTS = CX_SPEED_FRAME - X_SHOWCHECKPOINTS;
 	static const UINT CY_SHOWCHECKPOINTS = CY_STANDARD_OPTIONBUTTON;
 	static const int X_SAVEONCONQUER = CX_SPACE;
 	static const int Y_SAVEONCONQUER = Y_SHOWCHECKPOINTS + CY_SHOWCHECKPOINTS;
@@ -303,14 +362,17 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CX_SAVEONDIE = CX_SHOWCHECKPOINTS;
 	static const UINT CY_SAVEONDIE = CY_STANDARD_OPTIONBUTTON;
 */
-	static const UINT CY_SPECIAL_FRAME = Y_REPEATRATE + CY_REPEATRATE + CY_SPACE;
+	static const UINT CY_SPEED_FRAME = Y_REPEATRATE + CY_REPEATRATE + CY_SPACE;
 
 	//Graphics frame and children.
-	const UINT CX_GRAPHICS_FRAME = CX_PERSONAL_FRAME;
+	const UINT CX_GRAPHICS_FRAME = 550;
 	static const int X_GRAPHICS_FRAME = X_PERSONAL_FRAME;
 	static const int Y_GRAPHICS_FRAME = Y_PERSONAL_FRAME;
 
-	static const UINT CX_USEFULLSCREEN = 200;
+	static const int CX_SLIDER_VALUE_LABEL = 35;
+	static const int CY_SLIDER_VALUE_LABEL = 28;
+
+	static const UINT CX_USEFULLSCREEN = 400;
 	static const UINT CY_USEFULLSCREEN = CY_STANDARD_OPTIONBUTTON;
 	static const int X_USEFULLSCREEN = CX_SPACE;
 	static const int Y_USEFULLSCREEN = CY_SPACE;
@@ -322,6 +384,30 @@ CSettingsScreen::CSettingsScreen()
 	static const int Y_ENVIRONMENTAL = Y_ALPHA + CY_ALPHA;
 	static const UINT CX_ENVIRONMENTAL = CX_ALPHA;
 	static const UINT CY_ENVIRONMENTAL = CY_STANDARD_OPTIONBUTTON;
+	static const int X_DAMAGEPREVIEW = X_ALPHA;
+	static const int Y_DAMAGEPREVIEW = Y_ENVIRONMENTAL + CY_ALPHA;
+	static const UINT CX_DAMAGEPREVIEW = CX_ALPHA;
+	static const UINT CY_DAMAGEPREVIEW = CY_STANDARD_OPTIONBUTTON;
+
+	static const int X_TARSTUFF_ALPHA_LABEL = X_ALPHA;
+	static const int Y_TARSTUFF_ALPHA_LABEL = Y_DAMAGEPREVIEW + CY_DAMAGEPREVIEW;
+	static const UINT CX_TARSTUFF_ALPHA_LABEL = 240;
+	static const UINT CY_TARSTUFF_ALPHA_LABEL = 40;
+	static const int X_TARSTUFF_ALPHA = X_TARSTUFF_ALPHA_LABEL + CX_TARSTUFF_ALPHA_LABEL + CX_SPACE;
+	static const int Y_TARSTUFF_ALPHA = Y_TARSTUFF_ALPHA_LABEL;
+	static const UINT CX_TARSTUFF_ALPHA = CX_GRAPHICS_FRAME - X_TARSTUFF_ALPHA - CX_SPACE - CX_SLIDER_VALUE_LABEL;
+	static const UINT CY_TARSTUFF_ALPHA = CY_STANDARD_SLIDER;
+	static const int X_TARSTUFF_ALPHA_VALUE_LABEL = X_TARSTUFF_ALPHA + CX_TARSTUFF_ALPHA;
+
+	static const int X_MAP_ICON_ALPHA_LABEL = X_ALPHA;
+	static const int Y_MAP_ICON_ALPHA_LABEL = Y_TARSTUFF_ALPHA_LABEL + CY_TARSTUFF_ALPHA + CY_SPACE;
+	static const UINT CX_MAP_ICON_ALPHA_LABEL = 240;
+	static const UINT CY_MAP_ICON_ALPHA_LABEL = 40;
+	static const int X_MAP_ICON_ALPHA = X_MAP_ICON_ALPHA_LABEL + CX_MAP_ICON_ALPHA_LABEL + CX_SPACE;
+	static const int Y_MAP_ICON_ALPHA = Y_MAP_ICON_ALPHA_LABEL;
+	static const UINT CX_MAP_ICON_ALPHA = CX_GRAPHICS_FRAME - X_MAP_ICON_ALPHA - CX_SPACE - CX_SLIDER_VALUE_LABEL;
+	static const UINT CY_MAP_ICON_ALPHA = CY_STANDARD_SLIDER;
+	static const int X_MAP_ICON_ALPHA_VALUE_LABEL = X_MAP_ICON_ALPHA + CX_MAP_ICON_ALPHA;
 
 	static const int Y_GAMMA_LABEL = Y_USEFULLSCREEN;
 	static const UINT X_GAMMA_LABEL = X_USEFULLSCREEN + CX_USEFULLSCREEN - 10;
@@ -340,7 +426,7 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CY_GAMMA = CY_STANDARD_SLIDER;
 	static const int Y_GAMMA = Y_GAMMA_LABEL + CY_GAMMA_LABEL;
 
-	static const UINT CY_GRAPHICS_FRAME = Y_ENVIRONMENTAL + CY_ENVIRONMENTAL + CY_SPACE;
+	static const UINT CY_GRAPHICS_FRAME = Y_MAP_ICON_ALPHA + CY_MAP_ICON_ALPHA + CY_SPACE;
 
 	//Sound
 	const UINT CX_SOUND_FRAME = CX_GRAPHICS_FRAME;
@@ -367,20 +453,23 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CX_ENABLE_MUSIC = CX_ENABLE_SOUNDEFF;
 	static const UINT CY_ENABLE_MUSIC = CY_ENABLE_VOICES;
 	static const int X_SOUNDEFF_VOLUME = X_ENABLE_VOICES + CX_ENABLE_SOUNDEFF;
-	static const UINT CX_SOUNDEFF_VOLUME = CX_SOUND_FRAME - X_SOUNDEFF_VOLUME - CX_SPACE;
+	static const UINT CX_SOUNDEFF_VOLUME = CX_SOUND_FRAME - X_SOUNDEFF_VOLUME - CX_SPACE - CX_SLIDER_VALUE_LABEL;
 	static const UINT CY_SOUNDEFF_VOLUME = CY_STANDARD_SLIDER;
 	static const int Y_SOUNDEFF_VOLUME = Y_ENABLE_SOUNDEFF +
 			(CY_ENABLE_SOUNDEFF - CY_SOUNDEFF_VOLUME) / 2;
+	static const int X_SOUNDEFF_VOLUME_LABEL = X_SOUNDEFF_VOLUME + CX_SOUNDEFF_VOLUME + CX_SPACE;
 	static const int X_QUIET_LABEL = X_SOUNDEFF_VOLUME;
 	static const int X_VOICES_VOLUME = X_ENABLE_VOICES + CX_ENABLE_VOICES;
-	static const UINT CX_VOICES_VOLUME = CX_SOUND_FRAME - X_VOICES_VOLUME - CX_SPACE;
+	static const UINT CX_VOICES_VOLUME = CX_SOUND_FRAME - X_VOICES_VOLUME - CX_SPACE - CX_SLIDER_VALUE_LABEL;
 	static const UINT CY_VOICES_VOLUME = CY_STANDARD_SLIDER;
 	static const int Y_VOICES_VOLUME = Y_ENABLE_VOICES +
 			(CY_ENABLE_VOICES - CY_VOICES_VOLUME) / 2;
+	static const int X_VOICES_VOLUME_LABEL = X_VOICES_VOLUME + CX_VOICES_VOLUME + CX_SPACE;
 	static const UINT CX_MUSIC_VOLUME = CX_SOUNDEFF_VOLUME;
 	static const UINT CY_MUSIC_VOLUME = CY_STANDARD_SLIDER;
 	static const int X_MUSIC_VOLUME = X_SOUNDEFF_VOLUME;
 	static const int Y_MUSIC_VOLUME = Y_ENABLE_MUSIC + (CY_ENABLE_MUSIC - CY_MUSIC_VOLUME) / 2;
+	static const int X_MUSIC_VOLUME_LABEL = X_MUSIC_VOLUME + CX_MUSIC_VOLUME + CX_SPACE;
 	static const int X_SHOWSUBTITLES = CX_SPACE;
 	static const int Y_SHOWSUBTITLES = Y_MUSIC_VOLUME + CY_MUSIC_VOLUME;
 	static const UINT CX_SHOWSUBTITLES = CX_SOUND_FRAME - X_SHOWSUBTITLES;
@@ -392,24 +481,6 @@ CSettingsScreen::CSettingsScreen()
 	static const UINT CY_NO_FOCUS_PLAYS_MUSIC = CY_STANDARD_OPTIONBUTTON;
 
 	const UINT CY_SOUND_FRAME = Y_NO_FOCUS_PLAYS_MUSIC + CY_NO_FOCUS_PLAYS_MUSIC + CY_SPACE;
-
-	static const UINT CX_DISABLE_MOUSE = 250;
-	static const UINT CY_DISABLE_MOUSE = CY_STANDARD_OPTIONBUTTON;
-
-	//Commands tab.
-
-//	const int X_COMMANDS_FRAME = CX_SPACE;
-//	static const int Y_COMMANDS_FRAME = Y_INNERMENU;
-//	const UINT CX_COMMANDS_FRAME = (CX_TABBEDMENU - (CX_SPACE * 4)) / 2;
-//	const UINT CY_COMMANDS_FRAME = 540;
-	const UINT CX_CMD_BUTTON = 200;
-	static const UINT CY_CMD_BUTTON = CY_STANDARD_BUTTON;
-	static const int X_CMD_BUTTON = CX_SPACE;
-	static const int Y_CMD_BUTTON = Y_INNERMENU + CY_SPACE;
-	const int X_CMD_LABEL = X_CMD_BUTTON + CX_CMD_BUTTON + CX_SPACE;
-	const UINT CX_CMD_LABEL = 120;
-	static const UINT CY_CMD_LABEL = CY_CMD_BUTTON;
-	static const UINT BUTTON_COLUMNS = 3;
 
 	//
 	//Add widgets to screen.
@@ -427,13 +498,16 @@ CSettingsScreen::CSettingsScreen()
 
 	//Object menu.
 	CTabbedMenuWidget *pTabbedMenu = new CTabbedMenuWidget(TAG_MENU, X_TABBEDMENU,
-			Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 3, CY_MENU_TAB, BG_COLOR);
+			Y_TABBEDMENU, CX_TABBEDMENU, CY_TABBEDMENU, 4, CY_MENU_TAB, BG_COLOR);
 	pTabbedMenu->SetTabText(PERSONAL_TAB, g_pTheDB->GetMessageText(MID_Settings));
 	pTabbedMenu->SetTabText(GAS_TAB, g_pTheDB->GetMessageText(MID_GraphicsAndSound));
-	pTabbedMenu->SetTabText(COMMANDS_TAB, g_pTheDB->GetMessageText(MID_Commands));
+	pTabbedMenu->SetTabText(KEYMAP_1_TAB, g_pTheDB->GetMessageText(MID_Commands));
+	pTabbedMenu->SetTabText(KEYMAP_2_TAB, g_pTheDB->GetMessageText(MID_MoreCommands));
 	pTabbedMenu->SetBGImage("Background", 128);
 	AddWidget(pTabbedMenu);
 
+	SetupKeymap1Tab(pTabbedMenu);
+	SetupKeymap2Tab(pTabbedMenu);
 
 	//Settings tab.
 
@@ -479,33 +553,33 @@ CSettingsScreen::CSettingsScreen()
       CX_UPLOADSCORES, CY_UPLOADSCORES, g_pTheDB->GetMessageText(MID_UploadScores)) );
 
 	//Game speed frame.
-	CFrameWidget *pSpecialFrame = new CFrameWidget(0L, X_SPECIAL_FRAME, Y_SPECIAL_FRAME,
-			CX_SPECIAL_FRAME, CY_SPECIAL_FRAME, g_pTheDB->GetMessageText(MID_GameSpeed));
-	pTabbedMenu->AddWidgetToTab(pSpecialFrame, PERSONAL_TAB);
+	CFrameWidget *pSpeedFrame = new CFrameWidget(0L, X_SPEED_FRAME, Y_SPEED_FRAME,
+			CX_SPEED_FRAME, CY_SPEED_FRAME, g_pTheDB->GetMessageText(MID_GameSpeed));
+	pTabbedMenu->AddWidgetToTab(pSpeedFrame, PERSONAL_TAB);
 
 	//Combat rate.
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_COMBATRATE_LABEL, Y_COMBATRATE_LABEL,
 					CX_COMBATRATE_LABEL, CY_COMBATRATE_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_QuickCombat)) );
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_SLOWCOMBAT_LABEL, Y_SLOWCOMBAT_LABEL,
 					CX_SLOWCOMBAT_LABEL, CY_SLOWCOMBAT_LABEL, F_Small, g_pTheDB->GetMessageText(MID_Slow)) );
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_FASTCOMBAT_LABEL, Y_FASTCOMBAT_LABEL,
 					CX_FASTCOMBAT_LABEL, CY_FASTCOMBAT_LABEL, F_Small, g_pTheDB->GetMessageText(MID_Fast)) );
 	pSliderWidget = new CSliderWidget(TAG_QUICKCOMBAT, X_QUICKCOMBAT,
 			Y_QUICKCOMBAT, CX_QUICKCOMBAT, CY_QUICKCOMBAT, 0, COMBAT_SPEED_NOTCHES);
-	pSpecialFrame->AddWidget(pSliderWidget);
+	pSpeedFrame->AddWidget(pSliderWidget);
 	
 	//Repeat rate.
-	pSpecialFrame->AddWidget(
+	pSpeedFrame->AddWidget(
 			new CLabelWidget(0, X_REPEATRATE_LABEL, Y_REPEATRATE_LABEL,
 					CX_REPEATRATE_LABEL, CY_REPEATRATE_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_RepeatRate)) );
 	pSliderWidget = new CSliderWidget(TAG_REPEATRATE, X_REPEATRATE,
 			Y_REPEATRATE, CX_REPEATRATE, CY_REPEATRATE, 128);
-	pSpecialFrame->AddWidget(pSliderWidget);
+	pSpeedFrame->AddWidget(pSliderWidget);
 /*
 	pSpecialFrame->AddWidget(
 			new CLabelWidget(0, X_SLOW_LABEL, Y_SLOW_LABEL,
@@ -549,6 +623,30 @@ CSettingsScreen::CSettingsScreen()
 					g_pTheDB->GetMessageText(MID_ItemTips), true);
 	pEditorFrame->AddWidget(pOptionButton);
 
+	pOptionButton = new COptionButtonWidget(TAG_CHARACTERPREVIEW, X_CHARACTERPREVIEW,
+		Y_CHARACTERPREVIEW, CX_CHARACTERPREVIEW, CY_CHARACTERPREVIEW,
+		g_pTheDB->GetMessageText(MID_AutoPreviewCharacters), false);
+	pEditorFrame->AddWidget(pOptionButton);
+
+	//New game frame
+	CFrameWidget* pSpecialFrame = new CFrameWidget(0L, X_SPECIAL_FRAME, Y_SPECIAL_FRAME,
+		CX_SPECIAL_FRAME, CY_SPECIAL_FRAME, g_pTheDB->GetMessageText(MID_SpecialSettings));
+	pTabbedMenu->AddWidgetToTab(pSpecialFrame, PERSONAL_TAB);
+
+	pOptionButton = new COptionButtonWidget(TAG_NEWGAMEPROMPT, X_NEWGAMEPROMPT,
+		Y_NEWGAMEPROMPT, CX_NEWGAMEPROMPT, CY_NEWGAMEPROMPT,
+		g_pTheDB->GetMessageText(MID_ConfirmNewGame), true);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_GAME_AUTOSAVE, X_GAME_AUTOSAVE,
+		Y_GAME_AUTOSAVE, CX_GAME_AUTOSAVE, CY_GAME_AUTOSAVE,
+		g_pTheDB->GetMessageText(MID_EnableAutosaves), true);
+	pSpecialFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_SHOW_PERCENT_OPTIMAL, X_SHOW_PERCENT_OPTIMAL,
+		Y_SHOW_PERCENT_OPTIMAL, CX_SHOW_PERCENT_OPTIMAL, CY_SHOW_PERCENT_OPTIMAL,
+		g_pTheDB->GetMessageText(MID_ShowPercentOptimal), true);
+	pSpecialFrame->AddWidget(pOptionButton);
 
 	//Graphics and sound tab.
 
@@ -572,6 +670,34 @@ CSettingsScreen::CSettingsScreen()
 	pOptionButton = new COptionButtonWidget(TAG_ENVIRONMENT, X_ENVIRONMENTAL, Y_ENVIRONMENTAL,
 			CX_ENVIRONMENTAL, CY_ENVIRONMENTAL, g_pTheDB->GetMessageText(MID_EnvironmentalEffects), true);
 	pGraphicsFrame->AddWidget(pOptionButton);
+
+	pOptionButton = new COptionButtonWidget(TAG_DAMAGEPREVIEW, X_DAMAGEPREVIEW, Y_DAMAGEPREVIEW,
+		CX_DAMAGEPREVIEW, CY_DAMAGEPREVIEW, g_pTheDB->GetMessageText(MID_DamagePreview), true);
+	pGraphicsFrame->AddWidget(pOptionButton);
+
+	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_TARSTUFF_ALPHA_LABEL, Y_TARSTUFF_ALPHA_LABEL,
+		CX_TARSTUFF_ALPHA_LABEL, CY_TARSTUFF_ALPHA_LABEL, F_Small, g_pTheDB->GetMessageText(MID_TarstuffAlpha)));
+	pSliderWidget = new CSliderWidget(TAG_TARSTUFF_ALPHA, X_TARSTUFF_ALPHA,
+		Y_TARSTUFF_ALPHA, CX_TARSTUFF_ALPHA, CY_TARSTUFF_ALPHA, 255, BYTE(255 - MIN_TARSTUFF_ALPHA + 1));
+	pGraphicsFrame->AddWidget(pSliderWidget);
+
+	CLabelWidget* pLabel = new CLabelWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL, X_TARSTUFF_ALPHA_VALUE_LABEL, Y_TARSTUFF_ALPHA,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, to_WSTRING(BYTE(255 - MIN_TARSTUFF_ALPHA + 1)).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pGraphicsFrame->AddWidget(pLabel);
+
+	pGraphicsFrame->AddWidget(new CLabelWidget(0L, X_MAP_ICON_ALPHA_LABEL, Y_MAP_ICON_ALPHA_LABEL,
+		CX_MAP_ICON_ALPHA_LABEL, CY_MAP_ICON_ALPHA_LABEL, F_Small, g_pTheDB->GetMessageText(MID_MapIconAlpha)));
+	pSliderWidget = new CSliderWidget(TAG_MAP_ICON_ALPHA, X_MAP_ICON_ALPHA,
+		Y_MAP_ICON_ALPHA, CX_MAP_ICON_ALPHA, CY_MAP_ICON_ALPHA, 255, BYTE(255 - MIN_ICON_ALPHA + 1));
+	pGraphicsFrame->AddWidget(pSliderWidget);
+
+	pLabel = new CLabelWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL, X_MAP_ICON_ALPHA_VALUE_LABEL, Y_MAP_ICON_ALPHA,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, to_WSTRING(BYTE(255 - MIN_ICON_ALPHA + 1)).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pGraphicsFrame->AddWidget(pLabel);
 
 /*
 	// Gamma currently doesn't work on the SDL2 engine
@@ -619,6 +745,12 @@ CSettingsScreen::CSettingsScreen()
 			Y_SOUNDEFF_VOLUME, CX_SOUNDEFF_VOLUME, CY_SOUNDEFF_VOLUME, DEFAULT_SOUND_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
 
+	pLabel = new CLabelWidget(TAG_SOUNDEFF_VALUE_LABEL, X_SOUNDEFF_VOLUME_LABEL, Y_SOUNDEFF_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, to_WSTRING(DEFAULT_SOUND_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
+
 	pOptionButton = new COptionButtonWidget(TAG_ENABLE_VOICES, X_ENABLE_VOICES,
 			Y_ENABLE_VOICES, CX_ENABLE_VOICES, CY_ENABLE_VOICES,
 			g_pTheDB->GetMessageText(MID_PlayVoices), false);
@@ -628,6 +760,12 @@ CSettingsScreen::CSettingsScreen()
 			Y_VOICES_VOLUME, CX_VOICES_VOLUME, CY_VOICES_VOLUME, DEFAULT_VOICE_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
 
+	pLabel = new CLabelWidget(TAG_VOICE_VALUE_LABEL, X_VOICES_VOLUME_LABEL, Y_VOICES_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, to_WSTRING(DEFAULT_VOICE_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
+
 	pOptionButton = new COptionButtonWidget(TAG_ENABLE_MUSIC, X_ENABLE_MUSIC,
 			Y_ENABLE_MUSIC, CX_ENABLE_MUSIC, CY_ENABLE_MUSIC,
 			g_pTheDB->GetMessageText(MID_PlayMusic), false);
@@ -636,6 +774,12 @@ CSettingsScreen::CSettingsScreen()
 	pSliderWidget = new CSliderWidget(TAG_MUSIC_VOLUME, X_MUSIC_VOLUME,
 			Y_MUSIC_VOLUME, CX_MUSIC_VOLUME, CY_MUSIC_VOLUME, DEFAULT_MUSIC_VOLUME);
 	pSoundFrame->AddWidget(pSliderWidget);
+
+	pLabel = new CLabelWidget(TAG_MUSIC_VALUE_LABEL, X_MUSIC_VOLUME_LABEL, Y_MUSIC_VOLUME,
+		CX_SLIDER_VALUE_LABEL, CY_SLIDER_VALUE_LABEL,
+		F_Small, to_WSTRING(DEFAULT_MUSIC_VOLUME).c_str());
+	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pSoundFrame->AddWidget(pLabel);
 
 	pOptionButton = new COptionButtonWidget(TAG_SHOW_SUBTITLES, X_SHOWSUBTITLES,
 			Y_SHOWSUBTITLES, CX_SHOWSUBTITLES, CY_SHOWSUBTITLES,
@@ -647,80 +791,6 @@ CSettingsScreen::CSettingsScreen()
 			g_pTheDB->GetMessageText(MID_NoFocusPlaysMusic), false);
 	pSoundFrame->AddWidget(pOptionButton);
 
-	//Commands tab.
-
-	//Command buttons.
-	static const UINT BUTTON_COMMAND_COUNT = DCMD_Count;
-	static const UINT ButtonTags[BUTTON_COMMAND_COUNT] = {
-		TAG_NW_BUTTON, TAG_N_BUTTON, TAG_NE_BUTTON, 
-		TAG_W_BUTTON, TAG_WAIT_BUTTON, TAG_E_BUTTON,
-		TAG_SW_BUTTON, TAG_S_BUTTON, TAG_SE_BUTTON,
-		TAG_C_BUTTON, TAG_CC_BUTTON, TAG_RESTART_BUTTON,
-		TAG_UNDO_BUTTON, TAG_BATTLE_BUTTON, TAG_ACCESSORY_BUTTON,
-		TAG_LOCK_BUTTON, TAG_COMMAND_BUTTON
-	};
-
-	//Show directional buttons in three columns.
-	static const UINT DIRECTIONAL_BUTTON_COUNT = 11;
-	UINT wButtonTagI;
-	for (wButtonTagI = 0; wButtonTagI < DIRECTIONAL_BUTTON_COUNT; ++wButtonTagI)
-	{
-		const UINT xCol = wButtonTagI % BUTTON_COLUMNS;
-		const UINT xRow = wButtonTagI / BUTTON_COLUMNS;
-
-		//Command buttons.
-		const MESSAGE_ID eMsgID = static_cast<MESSAGE_ID>(COMMAND_MIDS[wButtonTagI]);
-		const UINT yPixel = Y_CMD_BUTTON + (CY_CMD_BUTTON + 1) * xRow;
-		pButton = new CButtonWidget(ButtonTags[wButtonTagI],
-			X_CMD_BUTTON + (CX_CMD_BUTTON + CX_CMD_LABEL) * xCol, yPixel,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(eMsgID));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-		//Command labels.
-		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
-				X_CMD_LABEL + (CX_CMD_BUTTON + CX_CMD_LABEL) * xCol, yPixel,
-				CX_CMD_LABEL, CY_CMD_LABEL, F_Small, wszEmpty);
-		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
-	}
-
-	//Rest of command buttons.
-	int Y_BUTTON_OFFSET = Y_CMD_BUTTON + CY_CMD_BUTTON * 6;
-	for ( ; wButtonTagI < BUTTON_COMMAND_COUNT; ++wButtonTagI)
-	{
-		//Command buttons.
-		const MESSAGE_ID eMsgID = static_cast<MESSAGE_ID>(COMMAND_MIDS[wButtonTagI]);
-		pButton = new CButtonWidget(ButtonTags[wButtonTagI],
-			X_CMD_BUTTON, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(eMsgID));
-		pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-		//Command labels.
-		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
-				X_CMD_LABEL, Y_BUTTON_OFFSET,
-				CX_CMD_LABEL, CY_CMD_LABEL, F_Small, wszEmpty);
-		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], COMMANDS_TAB);
-
-		Y_BUTTON_OFFSET += CY_CMD_BUTTON + 1;
-	}
-
-
-	pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, X_CMD_BUTTON,
-			Y_BUTTON_OFFSET + CY_SPACE*2, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
-			g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
-	pTabbedMenu->AddWidgetToTab(pOptionButton, COMMANDS_TAB);
-
-	//Command default buttons.
-	Y_BUTTON_OFFSET = CY_TABBEDMENU - CY_CMD_BUTTON - CY_SPACE;
-	pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
-			X_CMD_BUTTON, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(MID_DefaultDesktop));
-	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
-	pButton = new CButtonWidget(TAG_DEFAULT_LAPTOP,
-			X_CMD_BUTTON + CX_CMD_BUTTON + CX_SPACE, Y_BUTTON_OFFSET,
-			CX_CMD_BUTTON, CY_CMD_BUTTON, g_pTheDB->GetMessageText(MID_DefaultLaptop));
-	pTabbedMenu->AddWidgetToTab(pButton, COMMANDS_TAB);
-
 	//Okay, cancel and help buttons.
 	pButton = new CButtonWidget(TAG_OK, X_OKAY_BUTTON, Y_OKAY_BUTTON,
 				CX_OKAY_BUTTON, CY_OKAY_BUTTON, g_pTheDB->GetMessageText(MID_Okay));
@@ -729,44 +799,247 @@ CSettingsScreen::CSettingsScreen()
 	pButton = new CButtonWidget(TAG_CANCEL, X_CANCEL_BUTTON, Y_CANCEL_BUTTON,
 			CX_CANCEL_BUTTON, CY_CANCEL_BUTTON, g_pTheDB->GetMessageText(MID_Cancel));
 	AddWidget(pButton);
-	AddHotkey(SDLK_ESCAPE,TAG_CANCEL); 
-	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON, 
-			CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help)); 
-	AddWidget(pButton); 
+	AddHotkey(SDLK_ESCAPE,TAG_CANCEL);
+	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON,
+			CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help));
+	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
 
-	//Dialog box for reassigning a command key.
-	static const int Y_COMMANDPROMPTLABEL = CY_SPACE;
-	static const UINT CX_MESSAGE_BUTTON = 80;
-	static const UINT CX_LABEL = CX_MESSAGE - CX_SPACE*2;
-	static const UINT CY_LABEL = 25;
-	static const int Y_COMMANDLABEL = Y_COMMANDPROMPTLABEL + CY_LABEL + CY_SPACE;
-	this->pDialogBox = new CKeypressDialogWidget(0L,
-			0, 0, CX_MESSAGE, CY_MESSAGE);
-	AddWidget(this->pDialogBox);
+	this->pKeypressDialog = new CKeypressDialogWidget(0L);
+	AddWidget(this->pKeypressDialog);
 
-	pTitle = new CLabelWidget(0L, 0, Y_COMMANDPROMPTLABEL,
-			CX_LABEL, CY_LABEL, F_Small, g_pTheDB->GetMessageText(MID_GetKeyCommand));
-	pTitle->SetAlign(CLabelWidget::TA_CenterGroup);
-	this->pDialogBox->AddWidget(pTitle);
-	this->pCommandLabel = new CLabelWidget(0L, CX_SPACE, Y_COMMANDLABEL,
-			CX_LABEL, CY_LABEL, F_Small, wszEmpty);
-	this->pCommandLabel->SetAlign(CLabelWidget::TA_CenterGroup);
-	this->pDialogBox->AddWidget(this->pCommandLabel);
-	pButton = new CButtonWidget(TAG_CANCEL,
-			(CX_MESSAGE-CX_MESSAGE_BUTTON) / 2,
-			CY_MESSAGE-CY_STANDARD_BUTTON - CY_SPACE,
-			CX_MESSAGE_BUTTON, CY_STANDARD_BUTTON,
-			g_pTheDB->GetMessageText(MID_CancelNoHotkey));
-	this->pDialogBox->AddWidget(pButton);
-	this->pDialogBox->Center();
-	this->pDialogBox->Hide();
+	this->pKeypressDialog->Center();
+	this->pKeypressDialog->Hide();
 }
 
 //************************************************************************************
 CSettingsScreen::~CSettingsScreen()
 {
 	delete this->pCurrentPlayer;
+}
+
+//************************************************************************************
+void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
+{
+	static const UINT BUTTON_COLUMNS = 3;
+
+	static const int CMD_BUTTON_X = CX_SPACE;
+	static const int CMD_BUTTON_Y = Y_INNERMENU + CY_SPACE;
+	static const int CMD_BUTTON_W = 210;
+	static const int CMD_BUTTON_H = CY_STANDARD_BUTTON;
+	static const int CMD_BUTTON_V_SPACE = 6;
+	static const int CMD_BUTTON_SPECIAL_Y = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * 6;
+
+	static const int DEFAULT_BUTTON_Y = CY_TABBEDMENU - CMD_BUTTON_H - CY_SPACE;
+
+	// command labels are relative to their respective buttons, see X/Y offset
+	//               CMD_LABEL_X = <Calculated dynamically>
+	//               CMD_LABEL_Y = <Calculated dynamically>
+	static const int CMD_LABEL_W = 110;
+	static const int CMD_LABEL_H = CMD_BUTTON_H + 4;
+	static const int CMD_LABEL_X_OFFSET = CMD_BUTTON_W + CX_SPACE;
+	static const int CMD_LABEL_Y_OFFSET = (CMD_BUTTON_H - CMD_LABEL_H) / 2 - 5;
+
+	static const UINT CX_DISABLE_MOUSE = 250;
+	static const UINT CY_DISABLE_MOUSE = CY_STANDARD_OPTIONBUTTON;
+
+	static const int NO_COMMAND = 1;
+	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][13] = {
+		{
+			DCMD_Lock, DCMD_UseWeapon, DCMD_UseArmor, DCMD_UseAccessory,
+			DCMD_Command,
+			NO_COMMAND,
+		},
+		{
+			DCMD_Battle, DCMD_ShowScore,
+			NO_COMMAND
+		},
+		{
+			DCMD_Undo, DCMD_Restart,
+			DCMD_SaveGame, DCMD_LoadGame, DCMD_QuickSave, DCMD_QuickLoad,
+			NO_COMMAND
+		}
+	};
+
+	//Command buttons.
+	static const UINT GAMEPLAY_BUTTON_COMMAND_COUNT = DCMD_ExtraKeys;
+
+	//Show directional buttons in three columns.
+	static const UINT DIRECTIONAL_BUTTON_COUNT = 11;
+	UINT wButtonTagI;
+	for (wButtonTagI = 0; wButtonTagI < DIRECTIONAL_BUTTON_COUNT; ++wButtonTagI)
+	{
+		const KeyDefinition* pKeyDefinition = GetKeyDefinition(wButtonTagI);
+
+		const UINT colIndex = wButtonTagI % BUTTON_COLUMNS;
+		const UINT rowIndex = wButtonTagI / BUTTON_COLUMNS;
+
+		const MESSAGE_ID eCommandNameMID = static_cast<MESSAGE_ID>(pKeyDefinition->commandMID);
+		const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * colIndex;
+		const int buttonY = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * rowIndex;
+
+		const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+		const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+		//Command buttons.
+		this->pCommandButtonWidgets[wButtonTagI] = new CButtonWidget(TAG_KEY_BUTTON_START + wButtonTagI,
+			buttonX, buttonY,
+			CMD_BUTTON_W, CMD_BUTTON_H,
+			g_pTheDB->GetMessageText(eCommandNameMID));
+		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], KEYMAP_1_TAB);
+
+		//Command labels.
+		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
+			labelX, labelY,
+			CMD_LABEL_W, CMD_LABEL_H,
+			F_SettingsKeymaps, wszEmpty);
+		this->pCommandLabelWidgets[wButtonTagI]->SetVAlign(CLabelWidget::TA_VCenter);
+		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], KEYMAP_1_TAB);
+	}
+
+	//Rest of command buttons.
+	const int Y_OFFSET = (CMD_BUTTON_H + CY_SPACE) * (DIRECTIONAL_BUTTON_COUNT / BUTTON_COLUMNS + 1);
+	for (UINT columnIndex = 0; columnIndex < BUTTON_COLUMNS; ++columnIndex)
+	{
+		UINT buttonIndex = 0;
+		while (COMMAND_COLUMNS[columnIndex][buttonIndex] != NO_COMMAND)
+		{
+			const DCMD command = (DCMD)COMMAND_COLUMNS[columnIndex][buttonIndex];
+
+			const MESSAGE_ID eCommandNameMID = GetKeyDefinition(command)->commandMID;
+			const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * columnIndex;
+			const int buttonY = CMD_BUTTON_Y + Y_OFFSET + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * buttonIndex;
+
+			const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+			const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+			this->pCommandButtonWidgets[command] = new CButtonWidget(TAG_KEY_BUTTON_START + command,
+				buttonX, buttonY,
+				CMD_BUTTON_W, CMD_BUTTON_H,
+				g_pTheDB->GetMessageText(eCommandNameMID));
+			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], KEYMAP_1_TAB);
+
+			//Command labels.
+			this->pCommandLabelWidgets[command] = new CLabelWidget(0,
+				labelX, labelY,
+				CMD_LABEL_W, CMD_LABEL_H,
+				F_SettingsKeymaps, wszEmpty);
+			this->pCommandLabelWidgets[command]->SetVAlign(CLabelWidget::TA_VCenter);
+			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], KEYMAP_1_TAB);
+
+			buttonIndex++;
+		}
+	}
+
+	COptionButtonWidget* pOptionButton = new COptionButtonWidget(TAG_DISABLE_MOUSE_MOVEMENT, CMD_BUTTON_X,
+		DEFAULT_BUTTON_Y - CMD_BUTTON_H - CY_SPACE, CX_DISABLE_MOUSE, CY_DISABLE_MOUSE,
+		g_pTheDB->GetMessageText(MID_DisableMouseMovement), false);
+	pTabbedMenu->AddWidgetToTab(pOptionButton, KEYMAP_1_TAB);
+
+	{ //Command default buttons.
+		CButtonWidget* pButton;
+		pButton = new CButtonWidget(TAG_DEFAULT_DESKTOP,
+			CMD_BUTTON_X, DEFAULT_BUTTON_Y,
+			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultDesktop));
+		pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
+
+		pButton = new CButtonWidget(TAG_DEFAULT_LAPTOP,
+			CMD_BUTTON_X + CMD_BUTTON_W + CX_SPACE, DEFAULT_BUTTON_Y,
+			CMD_BUTTON_W, CMD_BUTTON_H, g_pTheDB->GetMessageText(MID_DefaultLaptop));
+		pTabbedMenu->AddWidgetToTab(pButton, KEYMAP_1_TAB);
+	}
+}
+
+//******************************************************************************
+void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
+{
+	// These constants are copied over from Keymap1Tab. These two pages do not have to look
+	// identical but it'd be best if they did
+	static const UINT BUTTON_COLUMNS = 3;
+
+	static const int CMD_BUTTON_X = CX_SPACE;
+	static const int CMD_BUTTON_Y = Y_INNERMENU + CY_SPACE;
+	static const int CMD_BUTTON_W = 210;
+	static const int CMD_BUTTON_H = CY_STANDARD_BUTTON;
+	static const int CMD_BUTTON_V_SPACE = 6;
+	static const int CMD_BUTTON_SPECIAL_Y = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * 6;
+
+	static const int DEFAULT_BUTTON_Y = CY_TABBEDMENU - CMD_BUTTON_H - CY_SPACE;
+
+	// command labels are relative to their respective buttons, see X/Y offset
+	//               CMD_LABEL_X = <Calculated dynamically>
+	//               CMD_LABEL_Y = <Calculated dynamically>
+	static const int CMD_LABEL_W = 110;
+	static const int CMD_LABEL_H = CMD_BUTTON_H + 4;
+	static const int CMD_LABEL_X_OFFSET = CMD_BUTTON_W + CX_SPACE;
+	static const int CMD_LABEL_Y_OFFSET = (CMD_BUTTON_H - CMD_LABEL_H) / 2 - 5;
+
+	static const int NO_COMMAND = 1;
+	static const int SKIP_SPACE = 2;
+	static const int COMMAND_COLUMN_OFFSETS[BUTTON_COLUMNS] = { 0, 6, 13 };
+	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][15] = {
+		{
+			DCMD_SkipSpeech, DCMD_OpenChat, DCMD_ChatHistory,
+			DCMD_Screenshot, DCMD_SaveRoomImage, DCMD_ShowHelp, DCMD_Settings,
+			DCMD_ToggleFullScreen,
+			SKIP_SPACE,
+			DCMD_ToggleTurnCount, DCMD_ToggleHoldVars, DCMD_ToggleFrameRate,
+			NO_COMMAND,
+		},
+		{
+			DCMD_EditVars, DCMD_LogVars, DCMD_ReloadStyle,
+			DCMD_Editor_Cut, DCMD_Editor_Copy, DCMD_Editor_Paste,
+			DCMD_Editor_Undo, DCMD_Editor_Redo, DCMD_Editor_Delete,
+			DCMD_Script_SelectAll, DCMD_Script_ToText, DCMD_Script_FromText,
+			NO_COMMAND
+		},
+		{
+			DCMD_Editor_PlaytestRoom,
+			DCMD_Editor_ReflectX, DCMD_Editor_ReflectY, DCMD_Editor_RotateCW,
+			DCMD_Editor_SetFloorImage, DCMD_Editor_SetOverheadImage,
+			DCMD_Editor_ToggleCharacterPreview,
+			DCMD_Editor_PrevLevel, DCMD_Editor_NextLevel, DCMD_Editor_LogVarRefs,
+			DCMD_Editor_HoldStats, DCMD_Editor_LevelStats,
+			NO_COMMAND
+		}
+	};
+
+	for (UINT columnIndex = 0; columnIndex < BUTTON_COLUMNS; ++columnIndex)
+	{
+		UINT buttonIndex = 0;
+		while (COMMAND_COLUMNS[columnIndex][buttonIndex] != NO_COMMAND)
+		{
+			const DCMD command = (DCMD)COMMAND_COLUMNS[columnIndex][buttonIndex];
+			if (command == SKIP_SPACE) {
+				buttonIndex++;
+				continue;
+			}
+
+			const MESSAGE_ID eCommandNameMID = GetKeyDefinition(command)->commandMID;
+			const int buttonX = CMD_BUTTON_X + (CMD_BUTTON_W + CMD_LABEL_W + CX_SPACE) * columnIndex;
+			const int buttonY = CMD_BUTTON_Y + (CMD_BUTTON_H + CMD_BUTTON_V_SPACE) * buttonIndex;
+
+			const int labelX = buttonX + CMD_LABEL_X_OFFSET;
+			const int labelY = buttonY + CMD_LABEL_Y_OFFSET;
+
+			this->pCommandButtonWidgets[command] = new CButtonWidget(TAG_KEY_BUTTON_START + command,
+				buttonX, buttonY,
+				CMD_BUTTON_W, CMD_BUTTON_H,
+				g_pTheDB->GetMessageText(eCommandNameMID));
+			pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[command], KEYMAP_2_TAB);
+
+			//Command labels.
+			this->pCommandLabelWidgets[command] = new CLabelWidget(0,
+				labelX, labelY,
+				CMD_LABEL_W, CMD_LABEL_H,
+				F_SettingsKeymaps, wszEmpty);
+			this->pCommandLabelWidgets[command]->SetVAlign(CLabelWidget::TA_VCenter);
+			pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[command], KEYMAP_2_TAB);
+
+			buttonIndex++;
+		}
+	}
 }
 
 //******************************************************************************
@@ -825,6 +1098,22 @@ void CSettingsScreen::OnKeyDown(
 	}
 
 	SetWidgetStates();
+}
+
+//************************************************************************************
+const DCMD CSettingsScreen::ButtonTagToDcmd(const UINT dwTagNo) const
+{
+	ASSERT(dwTagNo - TAG_KEY_BUTTON_START >= 0);
+	ASSERT(dwTagNo - TAG_KEY_BUTTON_START < DCMD_Count);
+
+	return DCMD(dwTagNo - TAG_KEY_BUTTON_START);
+}
+
+//************************************************************************************
+void CSettingsScreen::UpdateCommandKeyLabel(const InputKey inputKey, const UINT wCommandIndex)
+{
+	CLabelWidget* pLabel = this->pCommandLabelWidgets[wCommandIndex];
+	pLabel->SetText(I18N::DescribeInputKey(inputKey).c_str());
 }
 
 //************************************************************************************
@@ -888,63 +1177,15 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 				for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 				{
-					const SDL_Keycode nKey = COMMANDKEY_ARRAY[wKeyboard][wIndex];
-					this->pCurrentPlayer->Settings.SetVar(COMMANDNAME_ARRAY[wIndex], nKey);
-					DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[wIndex])->
-							SetText(g_pTheDB->GetMessageText(KeyToMID(nKey)));
+					const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+
+					const InputKey nKey = keyDefinition->GetDefaultKey(wKeyboard);
+					this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, nKey);
+					UpdateCommandKeyLabel(nKey, wIndex);
 				}
 
 				Paint();
 			}
-		break;
-
-		case TAG_NW_BUTTON: case TAG_N_BUTTON: case TAG_NE_BUTTON:
-		case TAG_W_BUTTON: case TAG_WAIT_BUTTON: case TAG_E_BUTTON:
-		case TAG_SW_BUTTON: case TAG_S_BUTTON: case TAG_SE_BUTTON:
-		case TAG_C_BUTTON: case TAG_CC_BUTTON: case TAG_RESTART_BUTTON:
-		case TAG_UNDO_BUTTON: case TAG_BATTLE_BUTTON: case TAG_ACCESSORY_BUTTON:
-		case TAG_LOCK_BUTTON:
-		case TAG_COMMAND_BUTTON:
-		{
-			DCMD eCommand = BUTTONTAG_TO_DCMD(dwTagNo);
-
-			SDL_Keycode newKey, currentKey;
-			currentKey = static_cast<SDL_Keycode>(this->pCurrentPlayer->Settings.GetVar(
-				COMMANDNAME_ARRAY[eCommand], SDLK_UNKNOWN));
-			if (GetCommandKeyRedefinition(eCommand, currentKey, newKey))
-			{
-				if (newKey != currentKey)
-				{
-					//Overwritten key commands set to undefined.
-					for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
-					{
-						if (this->pCurrentPlayer->Settings.GetVar(
-							COMMANDNAME_ARRAY[nCommand], 0)==newKey)
-						{
-							this->pCurrentPlayer->Settings.SetVar(
-								COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
-							DYN_CAST(CLabelWidget*, CWidget*,
-								this->pCommandLabelWidgets[nCommand])->
-								SetText(g_pTheDB->GetMessageText(KeyToMID(SDLK_UNKNOWN)));
-						}
-					}
-
-					//Update current player settings for this command to newKey.
-					this->pCurrentPlayer->Settings.SetVar(
-							COMMANDNAME_ARRAY[eCommand], newKey);
-
-					//Update label of command that was changed.
-					DYN_CAST(CLabelWidget*, CWidget*,
-							this->pCommandLabelWidgets[eCommand])->
-								SetText(g_pTheDB->GetMessageText(KeyToMID(newKey)));
-
-					Paint();
-				}
-			} else {
-				OnQuit();
-				return;
-			}
-		}
 		break;
 
 		case TAG_SCREENSIZE:
@@ -956,52 +1197,155 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 		case TAG_REQUESTNEWKEY:
 		{
-			const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
-			UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
-			if (!wCaravelNetRequest) {
-				ShowOkMessage(MID_CaravelNetUnreachable);
-				break;
-			}
+			SetFullScreen(false);
+			string url = "https://forum.caravelgames.com/member.php?Action=editcaravelnet";
 
-			SetCursor(CUR_Wait);
-			ShowStatusMessage(MID_RequestingKey);
+			if (!OpenExtBrowser(url.c_str()))
+				ShowOkMessage(MID_NoBrowserToRequestKey);
 
-			while (g_pTheNet->GetStatus(wCaravelNetRequest) < 0)
-				SDL_Delay(20); // just wait until it's finished
-			HideStatusMessage();
-			SetCursor();
-			CStretchyBuffer* pBuffer = g_pTheNet->GetResults(wCaravelNetRequest);
-			// Buffer possibilities:
-			//   '1' : Okay.  Email sent.
-			//   '2' : Not registered.
-			//   '3' : Registration Expired
-			if (!pBuffer || pBuffer->Size() < 1) {
-				ShowOkMessage(MID_CaravelNetUnreachable);
-				break;
-			}
-			switch ( ((BYTE*)*pBuffer)[0]) {
-				case '1':
-					ShowOkMessage(MID_KeySent);
-					break;
-				case '2':
-					ShowOkMessage(MID_NotRegistered);
-					break;
-				case '3':
-					ShowOkMessage(MID_RegistrationExpired);
-					break;
-				default:
-					break;
-			}
+			// Old functionality that emailed a key below, in case we ever want to bring it back
+			
+			//const string str = UnicodeToUTF8(pCaravelNetNameWidget->GetText());
+			//UINT wCaravelNetRequest = g_pTheNet->RequestNewKey(str);
+			//if (!wCaravelNetRequest) {
+			//	ShowOkMessage(MID_CaravelNetUnreachable);
+			//	break;
+			//}
+
+			//SetCursor(CUR_Wait);
+			//ShowStatusMessage(MID_RequestingKey);
+
+			//while (g_pTheNet->GetStatus(wCaravelNetRequest) < 0)
+			//	SDL_Delay(20); // just wait until it's finished
+			//HideStatusMessage();
+			//SetCursor();
+			//CStretchyBuffer* pBuffer = g_pTheNet->GetResults(wCaravelNetRequest);
+			//// Buffer possibilities:
+			////   '1' : Okay.  Email sent.
+			////   '2' : Not registered.
+			////   '3' : Registration Expired
+			//if (!pBuffer || pBuffer->Size() < 1) {
+			//	ShowOkMessage(MID_CaravelNetUnreachable);
+			//	break;
+			//}
+			//switch ( ((BYTE*)*pBuffer)[0]) {
+			//	case '1':
+			//		ShowOkMessage(MID_KeySent);
+			//		break;
+			//	case '2':
+			//		ShowOkMessage(MID_NotRegistered);
+			//		break;
+			//	case '3':
+			//		ShowOkMessage(MID_RegistrationExpired);
+			//		break;
+			//	default:
+			//		break;
+			//}
 		}
 		break;
 
       case TAG_UPLOADSCORES:
 			UploadScores();
 		break;
+
+		default:
+			DoKeyRedefinition(dwTagNo);
+		break;
+
 	}  //switch dwTagNo
 
 #  undef BUTTONTAG_TO_DCMD
 #  undef DCMD_TO_LABELTAG
+}
+
+//************************************************************************************
+const KeyDefinition* CSettingsScreen::GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const
+{
+	const SDL_Keycode newKeycode = ReadInputKey(newKey);
+
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		if (nCommand == eChangedCommand || !DoesCommandUseModifiers((DCMD)nCommand))
+			continue;
+
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		if (this->pCurrentPlayer->Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY) == (InputKey)newKeycode)
+			return keyDefinition;
+	}
+
+	return NULL;
+}
+
+//************************************************************************************
+void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
+	if (dwTagNo < TAG_KEY_BUTTON_START || dwTagNo > TAG_KEY_BUTTON_END)
+		return;
+
+	InputKey newKey, currentKey;
+
+	const DCMD eCommand = ButtonTagToDcmd(dwTagNo);
+	const KeyDefinition* keyDefinition = GetKeyDefinition(eCommand);
+	currentKey = this->pCurrentPlayer->Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
+
+	if (!GetCommandKeyRedefinition(eCommand, currentKey, newKey, !DoesCommandUseModifiers(eCommand)))
+	{
+		OnQuit();
+		return;
+	}
+	if (newKey == currentKey)
+		return;
+
+	// If we are changing a command that does not support modifiers, and provide a key with
+	// modifiers, make sure we don't use the same base key as any of the commands
+	// that have modifiers-variants built-in, eg. ctrl+move
+	if (!DoesCommandUseModifiers(eCommand) && (InputKey)ReadInputKey(newKey) != newKey)
+	{
+		const KeyDefinition* pOverwrittenKey = GetOverwrittenModifiableKey(newKey, eCommand);
+
+		if (pOverwrittenKey) {
+			WSTRING str = WCSReplace(
+				g_pTheDB->GetMessageText(MID_OverwritingMacroKeyError),
+				WS("%1"),
+				g_pTheDB->GetMessageText(pOverwrittenKey->commandMID)
+			);
+			ShowOkMessage(str.c_str());
+			return;
+		}
+	}
+
+	//Overwritten key commands set to undefined.
+	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
+	{
+		const KeyDefinition* clearedKeyDefinition = GetKeyDefinition(nCommand);
+		const InputKey currentKey = this->pCurrentPlayer->Settings.GetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+		const bool bOverwrite = currentKey == newKey
+			|| (DoesCommandUseModifiers(eCommand) && ReadInputKey(currentKey) == ReadInputKey(newKey));
+
+		if (bOverwrite && !CanCommandsShareInput(keyDefinition->eCommand, clearedKeyDefinition->eCommand))
+		{
+			this->pCurrentPlayer->Settings.SetVar(clearedKeyDefinition->settingName, UNKNOWN_INPUT_KEY);
+			UpdateCommandKeyLabel(UNKNOWN_INPUT_KEY, nCommand);
+		}
+	}
+
+	//Update current player settings for this command to newKey.
+	this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, newKey);
+
+	//Update label of command that was changed.
+	UpdateCommandKeyLabel(newKey, eCommand);
+
+	Paint();
+}
+
+//************************************************************************************
+bool CSettingsScreen::CanCommandsShareInput(int command, int otherCommand) const
+{
+	//Commands can share an input if they aren't used in the same context
+	//(currently the only contexts are gameplay and editor)
+	return !((bIsGameScreenCommand(command) && bIsGameScreenCommand(command)) ||
+		(bIsEditorCommand(command) && bIsEditorCommand(otherCommand)) ||
+		(bIsEditSelectCommand(command) && bIsEditSelectCommand(command)));
 }
 
 //************************************************************************************
@@ -1046,6 +1390,7 @@ void CSettingsScreen::OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &/
 			g_pTheSound->StopSoundEffect(SEID_STALWART_DIE);
 			g_pTheSound->PlaySoundEffect(SEID_STALWART_DIE); //play sample sound
 			g_pTheSound->SetSoundEffectsVolume(nSoundVolume);
+			Paint();
 		}
 		break;
 
@@ -1087,6 +1432,56 @@ void CSettingsScreen::OnSelectChange(
 			COptionButtonWidget *pOptionButton = DYN_CAST(COptionButtonWidget*,
 				CWidget*, GetWidget(dwTagNo));
 			g_pTheSound->bNoFocusPlaysMusic = pOptionButton->IsChecked();
+		}
+		break;
+		case TAG_TARSTUFF_ALPHA:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA).c_str());
+			Paint();
+		}
+		break;
+		case TAG_MAP_ICON_ALPHA:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL));
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue() + MIN_ICON_ALPHA).c_str());
+			Paint();
+		}
+		break;
+		case TAG_SOUNDEFF_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
+			Paint();
+		}
+		break;
+		case TAG_VOICES_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
+			Paint();
+		}
+		break;
+		case TAG_MUSIC_VOLUME:
+		{
+			CSliderWidget* pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
+				GetWidget(dwTagNo));
+			//Update label
+			CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
+			pLabel->SetText(to_WSTRING(pSliderWidget->GetValue()).c_str());
+			Paint();
 		}
 		break;
 		default: break;
@@ -1180,13 +1575,9 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 
 	for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 	{
-		SETMISSING(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		const KeyDefinition* keyDefinition = GetKeyDefinition(wIndex);
 
-		//SDL1 key mapping migration
-		const int nKey = Settings.GetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
-		if (bInvalidSDL1mapping)
-			Settings.SetVar(COMMANDNAME_ARRAY[wIndex], COMMANDKEY_ARRAY[wKeyboard][wIndex]);
+		SETMISSING(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
 	}
 
 #  undef SETMISSING
@@ -1283,6 +1674,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	
 	//Video settings.
 	CSliderWidget *pSliderWidget;
+	CLabelWidget* pLabel;
 	COptionButtonWidget *pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_USE_FULLSCREEN));
 	pOptionButton->SetChecked((CScreen::bAllowFullScreen && CScreen::bAllowWindowed) ?
@@ -1299,6 +1691,21 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_ENVIRONMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::EyeCandy, g_pTheBM->eyeCandy > 0));
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
+	pOptionButton->SetChecked(settings.GetVar(Settings::DamagePreview, true));
+
+	bytValue = settings.GetVar(Settings::TarstuffAlpha, BYTE(g_pTheDBM->tarstuffAlpha));
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA));
+	pSliderWidget->SetValue(bytValue - MIN_TARSTUFF_ALPHA);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA_VALUE_LABEL));
+	pLabel->SetText(to_WSTRING(bytValue).c_str());
+
+	bytValue = settings.GetVar(Settings::MapIconAlpha, BYTE(g_pTheDBM->mapIconAlpha));
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
+	pSliderWidget->SetValue(bytValue - MIN_ICON_ALPHA);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA_VALUE_LABEL));
+	pLabel->SetText(to_WSTRING(bytValue).c_str());
+
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
@@ -1307,6 +1714,8 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	BYTE bytVolume = settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VALUE_LABEL));
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_VOICES));
@@ -1316,6 +1725,8 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_VOICES_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_MUSIC));
@@ -1325,6 +1736,8 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_MUSIC_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
+	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_MUSIC_VALUE_LABEL));
+	pLabel->SetText(to_WSTRING(bytVolume).c_str());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOW_SUBTITLES));
@@ -1334,7 +1747,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_NO_FOCUS_PLAYS_MUSIC));
 	pOptionButton->SetChecked(settings.GetVar(Settings::NoFocusPlaysMusic, false));
 
-	//Special settings.
+	//Speed settings.
 	bytValue = settings.GetVar(Settings::CombatRate, BYTE(0));
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_QUICKCOMBAT));
 	pSliderWidget->SetValue(bytValue);
@@ -1362,15 +1775,33 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton->SetChecked(settings.GetVar(Settings::ItemTips, true));
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CHARACTERPREVIEW));
+	pOptionButton->SetChecked(settings.GetVar(Settings::CharacterPreview, false));
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	pOptionButton->SetChecked(settings.GetVar(Settings::DisableMouse, false));
+
+	//Special settings.
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_NEWGAMEPROMPT));
+	pOptionButton->SetChecked(settings.GetVar(Settings::NewGamePrompt, true));
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_GAME_AUTOSAVE));
+	pOptionButton->SetChecked(settings.GetVar(Settings::EnableAutosave, true));
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_SHOW_PERCENT_OPTIMAL));
+	pOptionButton->SetChecked(settings.GetVar(Settings::ShowPercentOptimal, true));
 
 	//Command settings.
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
-		const int nKey = settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN);
-		DYN_CAST(CLabelWidget*, CWidget*, pCommandLabelWidgets[nCommand])->SetText(
-			g_pTheDB->GetMessageText(KeyToMID(SDL_Keycode(nKey))));
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		const InputKey nKey = settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
+		UpdateCommandKeyLabel(nKey, nCommand);
 	}
 
 	bytVolume = settings.GetVar(Settings::RepeatRate, (BYTE)128);
@@ -1425,6 +1856,17 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	settings.SetVar(Settings::EyeCandy, pOptionButton->IsChecked());
 	g_pTheBM->eyeCandy = pOptionButton->IsChecked() ? 1 : 0;
 
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(TAG_DAMAGEPREVIEW));
+	settings.SetVar(Settings::DamagePreview, pOptionButton->IsChecked());
+
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_TARSTUFF_ALPHA));
+	settings.SetVar(Settings::TarstuffAlpha, BYTE(pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA));
+	g_pTheDBM->tarstuffAlpha = pSliderWidget->GetValue() + MIN_TARSTUFF_ALPHA;
+
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_MAP_ICON_ALPHA));
+	settings.SetVar(Settings::MapIconAlpha, BYTE(pSliderWidget->GetValue() + MIN_ICON_ALPHA));
+	g_pTheDBM->mapIconAlpha = pSliderWidget->GetValue() + MIN_ICON_ALPHA;
+
 	//Sound settings.
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
@@ -1459,7 +1901,7 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	settings.SetVar(Settings::NoFocusPlaysMusic, pOptionButton->IsChecked());
 	g_pTheSound->bNoFocusPlaysMusic = pOptionButton->IsChecked();
 
-	//Special settings.
+	//Speed settings.
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_QUICKCOMBAT));
 	settings.SetVar(Settings::CombatRate, pSliderWidget->GetValue());
@@ -1485,10 +1927,26 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ITEMTIPS));
 	settings.SetVar("ItemTips", pOptionButton->IsChecked());
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_CHARACTERPREVIEW));
+	settings.SetVar(Settings::CharacterPreview, pOptionButton->IsChecked());
 
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_DISABLE_MOUSE_MOVEMENT));
 	settings.SetVar(Settings::DisableMouse, pOptionButton->IsChecked());
+
+	//Special settings.
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_NEWGAMEPROMPT));
+	settings.SetVar(Settings::NewGamePrompt, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_GAME_AUTOSAVE));
+	settings.SetVar(Settings::EnableAutosave, pOptionButton->IsChecked());
+
+	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
+		GetWidget(TAG_SHOW_PERCENT_OPTIMAL));
+	settings.SetVar(Settings::ShowPercentOptimal, pOptionButton->IsChecked());
 
 	//Command settings--these were updated in response to previous UI events, 
 	//so nothing to do here.
@@ -1655,7 +2113,7 @@ void CSettingsScreen::UploadScoreCheckpointSaves(const UINT dwPlayerID)
 
 			PlayerStats ps;
 			ps.Unpack(pSavedGame->stats);
-			const UINT score = CDbSavedGames::GetScore(ps);
+			const UINT score = CCurrentGame::GetScore(ps);
 
 			const UINT wUploadingScoreHandle = g_pTheNet->UploadScore(text, pSavedGame->stats.GetVar(szSavename, wszEmpty), score);
 			delete pSavedGame;
@@ -1734,23 +2192,37 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 //Returns false if SDL_Quit/ALT-F4 occurred, true otherwise. 
 //
 //Params:
-	const DCMD eCommand,    //(in) Command being redefined
-	const SDL_Keycode CurrentKey,   //(in)
-	SDL_Keycode &NewKey)            //(out)
+	const DCMD eCommand,       //(in) Command being redefined
+	const InputKey CurrentKey, //(in)
+	InputKey& NewKey,           //(out)
+	const bool bAllowSpecial)  //(in) Whether to allow keys in the F range and modifiers
 {
-	const MESSAGE_ID eButtonMID = COMMAND_MIDS[eCommand];
-	this->pCommandLabel->SetText(g_pTheDB->GetMessageText(eButtonMID));
+	const MESSAGE_ID eButtonMID = GetKeyDefinition(eCommand)->commandMID;
+	this->pKeypressDialog->SetupDisplay(eButtonMID, bAllowSpecial);
 
 	UINT dwRetTagNo;
-	SDL_Keycode DialogKey = SDLK_UNKNOWN;
+	InputKey dialogKey = UNKNOWN_INPUT_KEY;
+	SDL_Keycode readKeyCode;
+	bool bIsShift, bIsAlt, bIsCtrl;
+
 	bool bInvalidKey; 
 	do 
 	{
-		dwRetTagNo = this->pDialogBox->Display();
-		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL ||
-				dwRetTagNo == TAG_ESCAPE) break;
-		DialogKey = this->pDialogBox->GetKey();
-		bInvalidKey = (DialogKey >= SDLK_F1 && DialogKey <= SDLK_F12) || (DialogKey >= SDLK_F13);
+		dwRetTagNo = this->pKeypressDialog->Display();
+		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL || dwRetTagNo == TAG_ESCAPE)
+			break;
+
+		bInvalidKey = false;
+		dialogKey = this->pKeypressDialog->GetKey();
+		ReadInputKey(dialogKey, readKeyCode, bIsShift, bIsAlt, bIsCtrl);
+		if (!bAllowSpecial) {
+			if (bIsShift || bIsAlt || bIsCtrl)
+				bInvalidKey = true;
+			if ((dialogKey >= SDLK_F1 && dialogKey <= SDLK_F12) || dialogKey >= SDLK_F13)
+				bInvalidKey = true;
+		}
+
+
 		if (bInvalidKey)
 			ShowOkMessage(MID_InvalidCommandKey);
 	} while (bInvalidKey);
@@ -1764,7 +2236,7 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 		return true;
 	}
 
-	NewKey = DialogKey;
+	NewKey = dialogKey;
 	return true;
 }
 
@@ -1779,7 +2251,9 @@ const
 {
 	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
 	{
-		if (Settings.GetVar(COMMANDNAME_ARRAY[nCommand], SDLK_UNKNOWN) == SDLK_UNKNOWN)
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+
+		if (Settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY) == UNKNOWN_INPUT_KEY)
 			return false;
 	}
 	return true;

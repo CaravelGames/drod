@@ -44,7 +44,7 @@ UINT CCombat::hitTicks = 1000;
 //clo    dec    wub  seep   stal
 //hal    sla    feg  fegAsh gua  (NPC)
 //mm     mb     gm   gb     cit  rgiant
-//madeye gking
+//madeye gking  con  fb
 const UINT MON_HP[MONSTER_TYPES] = {
 	  45,   50,   1, 320, 100,  35,  60,
 	2500,  100, 320,  35, 210,  55,
@@ -52,7 +52,7 @@ const UINT MON_HP[MONSTER_TYPES] = {
 	 100,  220,  10, 200, 180,
 	 100, 4500, 200,   1, 160,   0,
 	  50,  130, 180, 360, 260, 800,
-	 100,  400
+	 100,  400, 500, 100
 };
 const UINT MON_ATK[MONSTER_TYPES] = {
 	  20,   42,   0, 120,  65,  38,  32,
@@ -61,7 +61,7 @@ const UINT MON_ATK[MONSTER_TYPES] = {
 	 680,  180,   0, 380, 430,
 	  65,  560, 390,   0, 230,   0,
 	  48,   60, 460, 310,  85, 500,
-	  95,  199
+	  95,  199, 400, 100
 };
 const UINT MON_DEF[MONSTER_TYPES] = {
 	   2,    6,  23,  15,  15,   3,   8,
@@ -70,7 +70,7 @@ const UINT MON_DEF[MONSTER_TYPES] = {
 	  50,   30, 320, 130, 210,
 	  15,  310,  90,  80, 105,   0,
 	  22,    3, 360,  20,   5, 100,
-	  30,   66
+	  30,   66, 120,   0
 };
 const UINT MON_GOLD[MONSTER_TYPES] = {
 	   2,    6,   0,  30,  25,   3,  5,
@@ -79,7 +79,7 @@ const UINT MON_GOLD[MONSTER_TYPES] = {
 	  55,   35, 100,  90, 120,
 	  25, 1000,  50,   0,  65,   0,
 	  12,    8, 200,  40,  18, 500,
-	  22,  144
+	  22,  144, 125,  10
 };
 
 //monster attack speed is always uniform
@@ -214,8 +214,11 @@ CCombat::CCombat(
 	, pDefeatedMonster(NULL)
 	, bFightNextMonsterInQueue(false)
 	, playerTicks(0), monsterTicks(0)
+	, playerStalls(0), monsterStalls(0)
+	, bCombatStalled(false)
 	, playerAttacksMade(0), monsterAttacksMade(0)
 	, monsterHPOnFinalRound(0)
+	, bExpectedDamageIsApproximate(false)
 {
 	ASSERT(pCurrentGame);
 	this->wTurnOfCombat = this->pGame->wTurnNo;
@@ -277,6 +280,11 @@ bool CCombat::PlayerAttacksFirst(const bool bPlayerHitWithWeapon) const
 bool CCombat::AttackIsFromBehindMonster(int &dx, int &dy) const
 //Returns: whether the attack is coming from behind the monster
 {
+	ASSERT(this->pGame);
+	const CSwordsman& player = *this->pGame->pPlayer;
+	if (player.wAppearance == M_NONE)
+		return false; //player not in room isn't attacking from anywhere
+
 	//Direction toward attack.
 	dx = sgn(int(this->wFromX - this->pMonster->wX));
 	dy = sgn(int(this->wFromY - this->pMonster->wY));
@@ -326,7 +334,7 @@ int CCombat::getPlayerATK()
 		this->bPlayerDoesStrongHit = true;
 	}
 
-	if (player.HasSword() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon))
+	if (PlayerIgnoresEnemyDefense())
 	{
 		//Player is wielding a NoDefense weapon.  Monster cannot protect against it.
 		//if (this->monDEF > 0) this->monDEF = 0; //don't modify stat here, so monster's DEF display will be more useful
@@ -353,6 +361,9 @@ int CCombat::getPlayerDEF()
 		if (def > 0)
 			def = 0;
 		this->bMonsterDoesNoDefenseHit = true;
+	} else if (PlayerHasStrongShield(this->pMonster)){
+		// Shield with monster weakness doubles effective defense
+		doubleWithClamp(def);
 	}
 
 	return def;
@@ -375,6 +386,8 @@ void CCombat::InitMonsterStats(const bool bCombatStart) //[default=true]
 		this->bPlayerBackstabs = this->pGame->DoesPlayerBackstab();
 		this->playerAttacksMade = this->monsterAttacksMade = 0;
 		this->monsterHPOnFinalRound = 0;
+		this->playerStalls = this->monsterStalls = 0;
+		this->bCombatStalled = false;
 	}
 
 	//Monster's attack stats and attributes.
@@ -396,7 +409,7 @@ bool CCombat::IsCurrent() const
 }
 
 //*****************************************************************************
-bool CCombat::IsFighting(CMonster* pMonster) const
+bool CCombat::IsFighting(const CMonster* pMonster) const
 //Returns: whether this monster is queued for fighting
 {
 	if (this->pMonster == pMonster)
@@ -418,7 +431,7 @@ UINT CCombat::MonsterATKDoubles(const CCurrentGame* pGame)
 }
 
 //*****************************************************************************
-bool CCombat::PlayerDoesStrongHit(CMonster* pMonster) const
+bool CCombat::PlayerDoesStrongHit(const CMonster* pMonster) const
 //Returns: whether player does x2 ATK against this monster
 {
 	ASSERT(pMonster);
@@ -428,11 +441,34 @@ bool CCombat::PlayerDoesStrongHit(CMonster* pMonster) const
 		if (this->pGame->IsSwordStrongAgainst(pMonster))
 			return true;
 	}
-	if (this->pGame->IsEquipmentStrongAgainst(pMonster, ScriptFlag::Accessory)) {
-		return true;
+	if (!this->pGame->IsPlayerAccessoryDisabled())
+	{
+		if (this->pGame->IsEquipmentStrongAgainst(pMonster, ScriptFlag::Accessory)) {
+			return true;
+		}
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+bool CCombat::PlayerIgnoresEnemyDefense() const
+//Returns: whether player ignores the enemy's defense
+{
+	return !this->pGame->IsPlayerSwordDisabled() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon);
+}
+
+//*****************************************************************************
+bool CCombat::PlayerHasStrongShield(const CMonster* pMonster) const
+//Returns: whether player gets x2 DEF against this monster
+{
+	ASSERT(pMonster);
+
+	if (this->pGame->IsPlayerShieldDisabled()) {
+		return false;
+	}
+
+	return this->pGame->IsEquipmentStrongAgainst(pMonster, ScriptFlag::Armor);
 }
 
 //*****************************************************************************
@@ -491,7 +527,8 @@ bool CCombat::Advance(
 //
 //Params:
 	CCueEvents& CueEvents, //(in/out) events occurring during fight turn(s)
-	bool bQuickResolution) //if true, then calculate all turns immediately until resolution
+	bool bQuickResolution, //if true, then calculate all turns immediately until resolution
+	const UINT maxStrikesToPerform) //if set, then evaluate up to this many combat strikes [default=0]
 {
 	bool bContinue = true; //true while combat rounds should continue being processed this call
 
@@ -531,231 +568,322 @@ bool CCombat::Advance(
 	bool bNoDefenseHit = false, bNoDefenseHitOnPlayer = false;
 	bool bPlayerDied = false;
 
-	bool bQuick;
+	bool bQuick = bQuickResolution;
+	UINT playerStrikesPerformed = 0;
 	do {
-		//Process a round of combat.
-
-		//Re-evaluate player's current ATK+DEF.
-		this->plATK = getPlayerATK();
-		this->plDEF = getPlayerDEF();
-
-		//While player can harm enemy without damage, combine combat rounds into one.
-		bQuick = bQuickResolution ||
-				(this->plDEF >= (int)this->monATK && this->plATK > (int)this->monDEF);
+		//Process a tick of combat resolution.
 
 		//Add some progress toward when each entity hits again.
 		this->playerTicks += ps.speed * (player.IsHasted() ? 2 : 1);
 		this->monsterTicks += MON_SPEED;
 
-		//Does player attack now?
-		if (this->playerTicks >= CCombat::hitTicks)
-		{
-			int monCombatDEF = (int)this->monDEF;
-			int playerATK = this->plATK;
-
-			if (this->bPlayerDoesNoDefenseHit)
-			{
-				if (monCombatDEF > 0)
-					monCombatDEF = 0;
-			}
-			if (this->bPlayerBackstabs)
-			{
-				//Double-strong backstab hit on first attack.
-				int dx, dy;
-				if (AttackIsFromBehindMonster(dx, dy))
-				{
-					doubleWithClamp(playerATK);
-					bStrongHit = true;
-				}
-				this->bPlayerBackstabs = false;
-			}
-
-			//Player swings at monster.
-			++this->playerAttacksMade;
-			if (playerATK <= monCombatDEF)
-			{
-				//Monster not hurt
-				CueEvents.Add(CID_EntityAffected, new CCombatEffect(pMonsterBeingFought, CET_NODAMAGE), true);
-				++this->noDamageHits;
-
-				if (this->bSimulated)
-				{
-					//When simulating a fight and the player would have run out of HP
-					//when fighting a monster that cannot be harmed on this combat turn,
-					//we will assume the player will never be able to defeat the monster,
-					//even if custom scripting might have changed things,
-					//in order to avoid the possibility of an endless simulation.
-					if (damageToPlayer >= this->nonSimulatedPlayerHP)
-					{
-						player.st.HP = 0;
-						bContinue = false;
-					}
-				} else {
-					//Process special instructions when the monster is hit, even if
-					//no damage is inflicted.
-					//NOTE: Only process this when not simulating a combat outcome
-					//to avoid script commands that change the room state being executed.
-
-					//Process player's custom weapon script.
-					CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
-					if (pCharacter)
-						pCharacter->ProcessAfterAttack(CueEvents);
-
-					if (!pMonsterBeingFought->ProcessAfterDefend(CueEvents))
-					{
-						bEndCombat = true;
-						BeginFightingNextQueuedMonster(CueEvents);
-					}
-				}
-			} else {
-				//Apply damage to monster.
-				const UINT monsterHPAtRoundStart = monHP;
-				const UINT delta = playerATK - monCombatDEF;
-				if (delta > 0)
-					this->noDamageHits = 0;
-				DecrementUINT(monHP, delta);  //avoid negative values
-				damageToMonster += delta;
-				if (this->bPlayerDoesStrongHit)
-					bStrongHit = true;
-				if (this->bPlayerDoesNoDefenseHit)
-					bNoDefenseHit = true;
-
-				//Process special instructions when the monster is hit.
-				if (!this->bSimulated)
-				{
-					//Update the monster's HP if this is an actual fight.
-					pMonsterBeingFought->HP = monHP;
-
-					//Process player's custom weapon script.
-					CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
-					if (pCharacter)
-						pCharacter->ProcessAfterAttack(CueEvents);
-
-					if (!pMonsterBeingFought->ProcessAfterDefend(CueEvents))
-					{
-						bEndCombat = true;
-						BeginFightingNextQueuedMonster(CueEvents);
-					}
-				}
-
-				//Check for monster death after scripts are processed.
-				if (!monHP)
-				{
-					//Monster died.
-					bContinue = false;
-
-					this->monsterHPOnFinalRound = monsterHPAtRoundStart;
-					if (!bPlayerDied)
-					{
-						//spoils of war (could be negative if defined that way)
-						const int monGOLD = pMonsterBeingFought->getGOLD() * player.getGoldMultiplier();
-						const int monXP = pMonsterBeingFought->getXP() * player.getXPMultiplier();
-						incintValueWithBounds(ps.GOLD, monGOLD);
-						CueEvents.Add(CID_EntityAffected, new CCombatEffect(&player, CET_GOLD, monGOLD), true);
-
-						incintValueWithBounds(ps.XP, monXP);
-						if (monGOLD != monXP) //only show this if it's different from gold received
-							CueEvents.Add(CID_EntityAffected, new CCombatEffect(&player, CET_XP, monXP), true);
-
-						player.bInvisible = false; //player loses any invisibility once combat is completed
-
-						//This was a grueling fight.
-						if (ps.HP < this->plStartingHP * 3/4)
-							CueEvents.Add(CID_SwordsmanTired);
-
-						//Keep track of which monster just died.
-						this->pDefeatedMonster = pMonsterBeingFought;
-
-						//If other monsters are queued to fight, set up to handle next one.
-						BeginFightingNextQueuedMonster(CueEvents);
-					}
-				}
-			}
-
-			this->playerTicks -= CCombat::hitTicks;
+		//Update enemy HP if in non-simulated quick combat
+		if (bQuick && !this->bSimulated) {
+			monHP = pMonsterBeingFought->getHP();
 		}
 
-		//Does monster attack now?
-		if (this->monsterTicks >= CCombat::hitTicks && bContinue)
-		{
-			bool bSkipTurn=false;
-			if (pMonsterBeingFought->TurnToFacePlayerWhenFighting())
-			{
-				if (pMonsterBeingFought->HasOrientation()) //directionless monsters can't be surprised from behind
-				{
-					int dx, dy;
-					const bool bAttackIsBehindMonster = AttackIsFromBehindMonster(dx, dy);
-					if (bAttackIsBehindMonster)
-						bSkipTurn = true;
-					pMonsterBeingFought->SetOrientation(dx,dy);
-				}
-			}
+		//Does either the player or enemy perform a strike this iteration?
+		const bool bStrike = (this->playerTicks >= CCombat::hitTicks) ||
+				(this->monsterTicks >= CCombat::hitTicks);
 
-			if (!bSkipTurn)
+		if (bStrike)
+		{
+			//Re-evaluate player's current ATK+DEF.
+			this->plATK = getPlayerATK();
+			this->plDEF = getPlayerDEF();
+
+			//While player can harm enemy without damage, combine combat rounds into one.
+			bQuick = bQuickResolution ||
+				(this->plDEF >= (int)this->monATK && this->plATK > (int)this->monDEF);
+
+			//Does player attack now?
+			if (this->playerTicks >= CCombat::hitTicks)
 			{
-				//Monster swings at player.
-				++this->monsterAttacksMade;
-				if ((int)this->monATK <= this->plDEF)
+				UINT playerHPBefore = ps.HP;
+				UINT monsterHPBefore = pMonsterBeingFought->HP;
+
+				int monCombatDEF = (int)this->monDEF;
+				int playerATK = this->plATK;
+
+				if (this->bPlayerDoesNoDefenseHit)
 				{
-					//Player not hurt.
-					bPlayerShielded = true;
+					if (monCombatDEF > 0)
+						monCombatDEF = 0;
+				}
+				if (this->bPlayerBackstabs)
+				{
+					//Double-strong backstab hit on first attack.
+					int dx, dy;
+					if (AttackIsFromBehindMonster(dx, dy))
+					{
+						doubleWithClamp(playerATK);
+						bStrongHit = true;
+					}
+					this->bPlayerBackstabs = false;
+				}
+
+				//Player swings at monster.
+				++this->playerAttacksMade;
+				if (playerATK <= monCombatDEF)
+				{
+					//Monster not hurt
+					CueEvents.Add(CID_EntityAffected, new CCombatEffect(pMonsterBeingFought, CET_NODAMAGE), true);
 					++this->noDamageHits;
+
+					if (this->bSimulated)
+					{
+						//When simulating a fight and the player would have run out of HP
+						//when fighting a monster that cannot be harmed on this combat turn,
+						//we will assume the player will never be able to defeat the monster,
+						//even if custom scripting might have changed things,
+						//in order to avoid the possibility of an endless simulation.
+						if (damageToPlayer >= this->nonSimulatedPlayerHP)
+						{
+							player.st.HP = 0;
+							bContinue = false;
+						}
+					} else {
+						//Process special instructions when the monster is hit, even if
+						//no damage is inflicted.
+						//NOTE: Only process this when not simulating a combat outcome
+						//to avoid script commands that change the room state being executed.
+
+						//Process player's custom equipment scripts.
+						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						if (!pMonsterBeingFought->ProcessAfterDefend(CueEvents))
+						{
+							bEndCombat = true;
+							BeginFightingNextQueuedMonster(CueEvents);
+						}
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or monster HP failed to go down overall as result of player turn)
+						if (ps.HP > playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP >= monsterHPBefore) {
+							++this->monsterStalls;
+						}
+					}
 				} else {
-					//Apply damage to player.
-					const UINT delta = GetMonsterSingleAttackDamage();
+					//Apply damage to monster.
+					const UINT monsterHPAtRoundStart = monHP;
+					const UINT delta = playerATK - monCombatDEF;
 					if (delta > 0)
 						this->noDamageHits = 0;
-					DecrementUINT(ps.HP, delta);
-					damageToPlayer += delta;
-					if (this->bMonsterDoesStrongHit)
-						bStrongHitOnPlayer = true;
-					if (this->bMonsterDoesNoDefenseHit)
-						bNoDefenseHitOnPlayer = true;
-				}
+					DecrementUINT(monHP, delta);  //avoid negative values
+					damageToMonster += delta;
+					if (this->bPlayerDoesStrongHit)
+						bStrongHit = true;
+					if (this->bPlayerDoesNoDefenseHit)
+						bNoDefenseHit = true;
 
-				//Process special instructions when the monster attacks,
-				//whether or not it inflicts damage.
-				if (!this->bSimulated)
-				{
-					if (!pMonsterBeingFought->ProcessAfterAttack(CueEvents)) {
-						this->bEndCombat = true;
-						BeginFightingNextQueuedMonster(CueEvents);
+					//Process special instructions when the monster is hit.
+					if (!this->bSimulated)
+					{
+						//Update the monster's HP if this is an actual fight.
+						pMonsterBeingFought->HP = monHP;
+
+						//Process player's custom equipment scripts.
+						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
+						if (pCharacter)
+							pCharacter->ProcessAfterAttack(CueEvents);
+
+						if (!pMonsterBeingFought->ProcessAfterDefend(CueEvents))
+						{
+							bEndCombat = true;
+							BeginFightingNextQueuedMonster(CueEvents);
+						}
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or monster HP failed to go down overall as result of player turn)
+						if (ps.HP > playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP >= monsterHPBefore) {
+							++this->monsterStalls;
+						}
 					}
 
-					//Process player's custom armor script.
-					CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
-					if (pCharacter)
-						pCharacter->ProcessAfterDefend(CueEvents);
+					//Check for monster death after scripts are processed.
+					if (!monHP)
+					{
+						//Monster died.
+						bContinue = false;
+
+						this->monsterHPOnFinalRound = monsterHPAtRoundStart;
+						if (!bPlayerDied)
+						{
+							//spoils of war (could be negative if defined that way)
+							const int monGOLD = pMonsterBeingFought->getGOLD() * player.getGoldMultiplier();
+							const int monXP = pMonsterBeingFought->getXP() * player.getXPMultiplier();
+							incintValueWithBounds(ps.GOLD, monGOLD);
+							CueEvents.Add(CID_EntityAffected, new CCombatEffect(&player, CET_GOLD, monGOLD), true);
+
+							incintValueWithBounds(ps.XP, monXP);
+							if (monGOLD != monXP) //only show this if it's different from gold received
+								CueEvents.Add(CID_EntityAffected, new CCombatEffect(&player, CET_XP, monXP), true);
+
+							player.bInvisible = false; //player loses any invisibility once combat is completed
+
+							//This was a grueling fight.
+							if (ps.HP < this->plStartingHP * 3 / 4)
+								CueEvents.Add(CID_SwordsmanTired);
+
+							//Keep track of which monster just died.
+							this->pDefeatedMonster = pMonsterBeingFought;
+
+							//If other monsters are queued to fight, set up to handle next one.
+							BeginFightingNextQueuedMonster(CueEvents);
+						}
+					}
 				}
 
-				//Check for player death after scripts are processed.
-				if (!ps.HP)
-				{
-					bPlayerDied = true;
-					//In simulated combat, figure out how much damage the player would take
-					//before killing the monster, even when the player actually dies first.
-					bContinue = this->bSimulated;
+				this->playerTicks -= CCombat::hitTicks; //begin counting time to next strike
+
+				//Interrupt combat evaluation if we've exceeded the maximum strikes to calculate in this call.
+				if (maxStrikesToPerform && ++playerStrikesPerformed >= maxStrikesToPerform && monHP > 0) {
+					bContinue = false;
+					this->bExpectedDamageIsApproximate = true;
+					this->monsterHPOnFinalRound = monHP;
 				}
 			}
 
-			this->bPlayerBackstabs = false; //if monster gets first hit, backstab attack fails
+			//Does monster attack now?
+			if (this->monsterTicks >= CCombat::hitTicks && bContinue)
+			{
+				UINT playerHPBefore = ps.HP;
+				UINT monsterHPBefore = pMonsterBeingFought->HP;
 
-			this->monsterTicks -= CCombat::hitTicks;
+				bool bSkipTurn = false;
+				if (pMonsterBeingFought->TurnToFacePlayerWhenFighting())
+				{
+					if (pMonsterBeingFought->HasOrientation()) //directionless monsters can't be surprised from behind
+					{
+						int dx, dy;
+						const bool bAttackIsBehindMonster = AttackIsFromBehindMonster(dx, dy);
+						if (bAttackIsBehindMonster)
+							bSkipTurn = true;
+						if (player.wAppearance != M_NONE) {
+							pMonsterBeingFought->SetOrientation(dx, dy);
+						}
+					}
+				}
+
+				if (!bSkipTurn)
+				{
+					//Monster swings at player.
+					++this->monsterAttacksMade;
+					if ((int)this->monATK <= this->plDEF)
+					{
+						//Player not hurt.
+						bPlayerShielded = true;
+						++this->noDamageHits;
+					} else {
+						//Apply damage to player.
+						const UINT delta = GetMonsterSingleAttackDamage();
+						if (delta > 0)
+							this->noDamageHits = 0;
+						DecrementUINT(ps.HP, delta);
+						damageToPlayer += delta;
+						if (this->bMonsterDoesStrongHit)
+							bStrongHitOnPlayer = true;
+						if (this->bMonsterDoesNoDefenseHit)
+							bNoDefenseHitOnPlayer = true;
+					}
+
+					//Process special instructions when the monster attacks,
+					//whether or not it inflicts damage.
+					if (!this->bSimulated)
+					{
+						if (!pMonsterBeingFought->ProcessAfterAttack(CueEvents)) {
+							this->bEndCombat = true;
+							BeginFightingNextQueuedMonster(CueEvents);
+						}
+
+						//Process player's custom equipment scripts.
+						CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+						if (pCharacter)
+							pCharacter->ProcessAfterDefend(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+						if (pCharacter)
+							pCharacter->ProcessAfterDefend(CueEvents);
+
+						pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
+						if (pCharacter)
+							pCharacter->ProcessAfterDefend(CueEvents);
+
+						//Track when combatant HP goes up as a result of script effects
+						//(or player HP failed to go down overall as result of monster turn)
+						if (ps.HP >= playerHPBefore) {
+							++this->playerStalls;
+						}
+						if (pMonsterBeingFought->HP > monsterHPBefore) {
+							++this->monsterStalls;
+						}
+					}
+
+					//Check for player death after scripts are processed.
+					if (!ps.HP)
+					{
+						bPlayerDied = true;
+						//In simulated combat, figure out how much damage the player would take
+						//before killing the monster, even when the player actually dies first.
+						bContinue = this->bSimulated;
+					}
+				}
+
+				this->bPlayerBackstabs = false; //if monster gets first hit, backstab attack fails
+
+				this->monsterTicks -= CCombat::hitTicks;
+			}
+
+			//If the enemy's not dead and neither combatant can harm
+			//the other, then end the combat.
+			if (this->noDamageHits >= 3 && monHP)
+			{
+				bContinue = false;
+
+				//If other monsters are queued to fight, handle next one now.
+				BeginFightingNextQueuedMonster(CueEvents);
+			}
+
+			//The combat isn't making a timely progression towards a conclusion
+			if (this->playerStalls > 25 && this->monsterStalls > 25)
+			{
+				bContinue = false;
+				this->bCombatStalled = true;
+			}
 		}
 
-		//If the enemy's not dead and neither combatant can harm
-		//the other, then end the combat.
-		if (this->noDamageHits >= 3 && monHP)
-		{
-			bContinue = false;
-
-			//If other monsters are queued to fight, handle next one now.
-			BeginFightingNextQueuedMonster(CueEvents);
-		}
-
-		if (this->bEndCombat ||
+		if (!this->bSimulated) {
+			//in a real encounter, check for flags interrupting combat
+			if (this->bEndCombat ||
 				!this->pGame->bIsGameActive) //if a script executed something like a level exit, combat must stop now
-			bContinue = false; //combat has been interrupted prior to defeat
+			{
+				bContinue = false; //combat has been interrupted prior to defeat
+			}
+		}
 	} while (bContinue && bQuick); //in quick combat, sum up all rounds at once until someone dies
 
 	//Finished.
@@ -876,8 +1004,16 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 	ASSERT(!this->bSimulated);
 	this->pMonster->ProcessAfterAttack(CueEvents);
 
-	//Process player's custom armor script.
+	//Process player's custom equipment scripts.
 	CCharacter* pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Armor);
+	if (pCharacter)
+		pCharacter->ProcessAfterDefend(CueEvents);
+
+	pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Weapon);
+	if (pCharacter)
+		pCharacter->ProcessAfterDefend(CueEvents);
+
+	pCharacter = this->pGame->getCustomEquipment(ScriptFlag::Accessory);
 	if (pCharacter)
 		pCharacter->ProcessAfterDefend(CueEvents);
 
@@ -887,8 +1023,11 @@ void CCombat::MonsterAttacksPlayerOnce(CCueEvents& CueEvents)
 }
 
 //*****************************************************************************
-int CCombat::GetExpectedDamage()
-//Returns: amount of damage player will suffer if striking this monster first
+// Performs a simulation of this combat to forecast total damage the player will take.
+// If combat requires too many rounds, it will be short-circuited and an estimate returned.
+int CCombat::GetExpectedDamage(
+	const UINT maxStrikesToPerform) //if set, then evaluate up to this many combat strikes [default=0]
+//Returns: amount of damage player will suffer if striking this monster first;
 //         -1: player cannot harm monster
 {
 	if (!PlayerCanHarmMonster(this->pMonster))
@@ -904,11 +1043,28 @@ int CCombat::GetExpectedDamage()
 	CSwordsman player_ = player;
 	const UINT wMonsterO = this->pMonster->wO;
 	this->bSimulated = true; //don't alter room state
+	this->bExpectedDamageIsApproximate = false;
 
 	player.st.HP = MAX_HP; //give player max HP for total damage calculation
-	Advance(Ignored, true);
-	const UINT uDamage = UINT(MAX_HP) - player.st.HP;
-	int damage = uDamage >= INT_MAX ? INT_MAX : uDamage;
+	Advance(Ignored, true, maxStrikesToPerform);
+	UINT uDamage = UINT(MAX_HP) - player.st.HP;
+
+	if (this->bExpectedDamageIsApproximate) {
+		//Combat damage took too long to predict -- extrapolate based on partial outcome.
+		ASSERT(this->monsterHPOnFinalRound);
+
+		const double fPercentMonsterHPTaken = 1.0f - (this->monsterHPOnFinalRound / double(this->pMonster->getHP()));
+		ASSERT(0.0f <= fPercentMonsterHPTaken && fPercentMonsterHPTaken <= 1.0f);
+		if (fPercentMonsterHPTaken > 0.0f) {
+			const double fFactorToCompleteCombat = 1.0f / fPercentMonsterHPTaken;
+			uDamage = UINT(ceil(double(uDamage) * fFactorToCompleteCombat));
+			this->monsterAttacksMade = UINT(ceil(double(this->monsterAttacksMade) * fFactorToCompleteCombat));
+		} else {
+			uDamage = INT_MAX;
+		}
+	}
+
+	const int damage = uDamage >= INT_MAX ? INT_MAX : uDamage;
 
 	//Restore original state.
 	this->bSimulated = false;
@@ -919,7 +1075,7 @@ int CCombat::GetExpectedDamage()
 }
 
 //*****************************************************************************
-bool CCombat::PlayerCanHarmMonster(CMonster *pMonster) const
+bool CCombat::PlayerCanHarmMonster(const CMonster *pMonster) const
 //Returns: whether player has the power to harm this monster
 {
 	ASSERT(pMonster);
@@ -937,7 +1093,7 @@ bool CCombat::PlayerCanHarmMonster(CMonster *pMonster) const
 		doubleWithClamp(atk); //doubles effective attack power
 	if (PlayerDoesStrongHit(pMonster))
 		doubleWithClamp(atk); //doubles effective attack power
-	if (player.HasSword() && this->pGame->DoesPlayerItemHaveNoEnemyDefense(ScriptFlag::Weapon))
+	if (PlayerIgnoresEnemyDefense())
 		monDef = 0;
 
 	int dx, dy;

@@ -32,10 +32,16 @@
 #include "DbPlayers.h"
 #include "DbProps.h"
 #include "DbXML.h"
+#include "SettingsKeys.h"
+
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Base64.h>
 #include <BackEndLib/Exception.h>
+#include <BackEndLib/Files.h>
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/Ports.h>
+
+using namespace InputCommands;
 
 //
 //CDbPlayers public methods.
@@ -114,6 +120,13 @@ void CDbPlayers::Delete(
 	}
 	for (iter = SavedGameIDs.begin(); iter != SavedGameIDs.end(); ++iter)
 		db.SavedGames.Delete(*iter);
+
+	db.HighScores.FilterByHold(0);
+	db.HighScores.FilterByPlayer(dwPlayerID);
+	CIDSet highScoreIDs = db.HighScores.GetIDs();
+	for (iter = highScoreIDs.begin(); iter != highScoreIDs.end(); ++iter) {
+		db.HighScores.Delete(*iter);
+	}
 
 	CDbBase::DirtyPlayer();
 	if (!bRetainRef)
@@ -325,6 +338,21 @@ void CDbPlayers::ExportXML(
 					str.reserve(str.capacity() * 2);
 				db.SavedGames.ExportXML(*iter, dbRefs, str);
 			}
+
+			CDbXML::PerformCallbackf(0.01f);
+			db.HighScores.FilterByPlayer(dwPlayerID);
+			CIDSet HighScoreIDs = db.HighScores.GetIDs();
+			const float fNumHighScores = (float)SavedGameIDs.size();
+			str.reserve(static_cast<UINT>(str.capacity() + fNumHighScores * 500)); //large speed optimization
+
+			for (iter = HighScoreIDs.begin(), wCount = 0; iter != HighScoreIDs.end(); ++iter) {
+				CDbXML::PerformCallbackf(++wCount / fNumHighScores);
+				if (str.size() > str.capacity() * 0.98) {
+					str.reserve(str.capacity() * 2);
+				}
+
+				db.HighScores.ExportXML(*iter, dbRefs, str);
+			}
 		}
 
 		CDbXML::PerformCallbackf(1.0f);
@@ -388,6 +416,7 @@ CDbPackedVars CDbPlayers::GetSettings(const UINT dwPlayerID)
 	if (dwPlayerRowI == ROW_NO_MATCH) {ASSERT(!"Bad player ID."); return settings;}
 
 	settings = p_Settings(PlayersView[dwPlayerRowI]);
+	CDbPlayer::ConvertInputSettings(settings);
 	return settings;
 }
 
@@ -484,6 +513,7 @@ bool CDbPlayer::Load(
 		Clear();
 		return false;
 	}
+
 	return true;
 }
 
@@ -512,8 +542,8 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				return MID_FileCorrupted;  //corrupt file
 
 			//Look up local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
-			if (localID != info.PlayerIDMap.end())
+			PrimaryKeyMultiMap::const_iterator localPlayerID = info.PlayerIDMap.find(this->dwPlayerID);
+			if (localPlayerID != info.PlayerIDMap.end())
 			{
 				if (info.bImportingSavedGames)
 				{
@@ -537,17 +567,28 @@ MESSAGE_ID CDbPlayer::SetProperty(
 					return MID_PlayerIgnored;	//import saved games into, then halt import
 
 				//Match player ID to local ID if possible for hold GUID matching.
-				info.PlayerIDMap[this->dwPlayerID] = GetLocalID();
+				const CIDSet localPlayerIDs = GetLocalIDs();
+				if (localPlayerIDs.empty()) {
+					info.PlayerIDMap.insert(make_pair(this->dwPlayerID, 0));
+				} else {
+					for (CIDSet::const_iterator it = localPlayerIDs.begin(); it != localPlayerIDs.end(); ++it)
+						info.PlayerIDMap.insert(make_pair(this->dwPlayerID, *it));
+				}
+
 				bSaveRecord = false;
 				break;
 			}
 
 			//Look up player in the DB.
-			const UINT dwLocalPlayerID = GetLocalID();
-			if (dwLocalPlayerID)
+			const CIDSet localPlayerIDs = GetLocalIDs();
+			if (!localPlayerIDs.empty())
 			{
-				//Player found in DB.
-				info.PlayerIDMap[this->dwPlayerID] = dwLocalPlayerID;
+				//For DLC hold matching, support mapping of all player author profiles that match.
+				for (CIDSet::const_iterator it = localPlayerIDs.begin(); it != localPlayerIDs.end(); ++it)
+					info.PlayerIDMap.insert(make_pair(this->dwPlayerID, *it));
+
+				//Which one we use here won't matter for purposes of DLC hold joining.
+				const UINT dwLocalPlayerID = localPlayerIDs.getFirst();
 				this->dwPlayerID = dwLocalPlayerID;
 
 				c4_View PlayersView;
@@ -614,7 +655,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				const UINT dwOldLocalID = this->dwPlayerID;
 				this->dwPlayerID = 0;
 				Update();
-				info.PlayerIDMap[dwOldLocalID] = this->dwPlayerID;
+				info.PlayerIDMap.insert(make_pair(dwOldLocalID, this->dwPlayerID));
 
 				//Keep track of player being imported: the first player record encountered.
 				if (info.typeBeingImported == CImportInfo::Player && !info.dwPlayerImportedID)
@@ -667,6 +708,10 @@ MESSAGE_ID CDbPlayer::SetProperty(
 			Base64::decode(str,data);
 			this->Settings = (const BYTE*)data;
 			delete[] data;
+			if (info.wVersion < 500) {
+				UpgradeKeyDefintions();
+			}
+
 			break;
 		}
 		default:
@@ -730,11 +775,39 @@ void CDbPlayer::Clear()
 }
 
 //*****************************************************************************
-UINT CDbPlayer::GetLocalID()
+void CDbPlayer::UpgradeKeyDefintions()
+//In pre-2.0 versions, control settings were stored as int rather than as int64.
+//Since int might be smaller than int64, this can cause problems, so this function
+//converts all key settings to be int64.
+{
+	for (int nCommand = DCMD_First; nCommand < DCMD_Count; ++nCommand)
+	{
+		const KeyDefinition* keyDefinition = GetKeyDefinition(nCommand);
+		const char* name = keyDefinition->settingName;
+		if (!this->Settings.DoesVarExist(name)) {
+			continue; //Nothing to do - not set
+		}
+
+		if (this->Settings.GetVarValueSize(name) == sizeof(int64_t))
+		{
+			continue; //Nothing to do - already correct size
+		}
+
+		//Remove the value, then set again with an int64 value
+		const int val = this->Settings.GetVar(name, 0);
+		this->Settings.Unset(name);
+		this->Settings.SetVar(name, int64_t(val));
+	}
+}
+
+//*****************************************************************************
+CIDSet CDbPlayer::GetLocalIDs()
 //Compares this object's GID fields against those of the records in the DB.
 //
 //Returns: local ID if a record in the DB matches this object's GUID, else 0
 {
+	CIDSet ids;
+
 	ASSERT(IsOpen());
 	const UINT dwPlayerCount = GetViewSize(V_Players);
 
@@ -748,17 +821,16 @@ UINT CDbPlayer::GetLocalID()
 		{
 			//Check original name.
 			const UINT dwOriginalNameMessageID = p_GID_OriginalNameMessageID(row);
-			CDbMessageText FromDbOriginalNameText( static_cast<MESSAGE_ID>(dwOriginalNameMessageID) );
+			CDbMessageText FromDbOriginalNameText(static_cast<MESSAGE_ID>(dwOriginalNameMessageID));
 			if (FromDbOriginalNameText == this->OriginalNameText)
 			{
 				//GUIDs match.  Return this record's local ID.
-				return (UINT) p_PlayerID(row);
+				ids += UINT(p_PlayerID(row));
 			}
 		}
 	}
 
-	//No match.
-	return 0L;
+	return ids;
 }
 
 //*****************************************************************************
@@ -875,3 +947,40 @@ bool CDbPlayer::UpdateNew()
 	return true;
 }
 
+//*****************************************************************************
+void CDbPlayer::ConvertInputSettings(CDbPackedVars& settings)
+// 2.0 changed how key inputs are stored from UINT32 to INT64, so that modifier key flags can also
+// be stored for a key
+{
+	string strKeyboard;
+	UINT wKeyboardMode = 0;	//whether to use desktop or laptop keyboard laout
+	if (CFiles::GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
+	{
+		wKeyboardMode = atoi(strKeyboard.c_str());
+		if (wKeyboardMode > 1) wKeyboardMode = 0;	//invalid setting
+	}
+
+	for (int i = 0; i < InputCommands::DCMD_Count; ++i)
+	{
+		const KeyDefinition* keyDefinition = GetKeyDefinition(i);
+
+		if (!settings.DoesVarExist(keyDefinition->settingName))
+			settings.SetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboardMode));
+			continue;
+
+		const UNPACKEDVARTYPE varType = settings.GetVarType(keyDefinition->settingName);
+		if (varType == UVT_int) {
+			InputKey oldKey = settings.GetVar(keyDefinition->settingName, SDLK_UNKNOWN);
+
+			// Convert old SDL1 mappings
+			const bool bInvalidSDL1mapping = oldKey >= 128 && oldKey <= 323;
+			if (bInvalidSDL1mapping)
+				oldKey = keyDefinition->GetDefaultKey(wKeyboardMode);
+
+			InputKey newType = InputKey(oldKey);
+			settings.SetVar(keyDefinition->settingName, newType);
+		}
+
+		ASSERT(settings.GetVarType(keyDefinition->settingName) == UVT_long_long_int);
+	}
+}
