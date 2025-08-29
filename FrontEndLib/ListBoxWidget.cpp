@@ -36,6 +36,19 @@
 
 using namespace std;
 
+WSTRING CListBoxWidget::wstrFilterWord;
+
+
+#ifdef RUSSIAN_BUILD
+const int TEXT_DRAW_Y_OFFSET = -1; //Because this particular font is a tiny bit too far down.
+#else
+const int TEXT_DRAW_Y_OFFSET = -5; //Because this particular font is always too far down.
+#endif
+
+const UINT ITEM_LEFT_PADDING = 2;
+
+
+
 //
 //Public methods.
 //
@@ -65,7 +78,12 @@ CListBoxWidget::CListBoxWidget(
 	, bRearrangable(bRearrangable)
 	, wDraggingLineNo(UINT(-1))
 	, bRearranged(false)
+	, bAllowFiltering(false)
+	, wstrActiveFilter(wszEmpty)
 {
+	if (CListBoxWidget::wstrFilterWord.size() == 0)
+		AsciiToUnicode("Filter", CListBoxWidget::wstrFilterWord);
+
 	CalcAreas();
 }
 
@@ -187,6 +205,7 @@ UINT CListBoxWidget::AddItem_Insert(
 	}
 
 	//Recalc areas of widget since they may have changed.
+	this->UpdateFilter(this->wstrActiveFilter);
 	CalcAreas();
 	return wIndex;
 }
@@ -218,7 +237,9 @@ void CListBoxWidget::Clear()
 			iSeek != this->Items.end(); ++iSeek)
 		delete *iSeek;
 	this->Items.clear();
+	this->filteredItems.clear();
 	this->selectedLines.clear();
+	this->wstrActiveFilter.clear();
 	UnsetCursorLine();
 
 	//Recalc areas of widget since they may have changed.
@@ -252,8 +273,8 @@ bool CListBoxWidget::EnableItem(const UINT dwKey, const bool bVal)	//[default=tr
 //
 //Returns: true if item with key is found, else false.
 {
-	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek)
+	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek)
 	{
 		if ((*iSeek)->dwKey == dwKey) //Found item.
 		{
@@ -270,9 +291,9 @@ bool CListBoxWidget::EnableItemAtIndex(const UINT index, const bool bVal) //[def
 //
 //Returns: true if index is valid, else false
 {
-	if (index >= this->Items.size())
+	if (index >= this->filteredItems.size())
 		return false;
-	this->Items[index]->bGrayed = !bVal;
+	this->filteredItems[index]->bGrayed = !bVal;
 
 	return true;
 }
@@ -300,20 +321,20 @@ UINT CListBoxWidget::GetKeyAtCursor() const
 UINT CListBoxWidget::GetKeyAtLine(const UINT wLineNo) const
 //Returns: tag # of item on specified line in list, or 0 if line is not valid
 {
-	if (wLineNo >= this->Items.size())
+	if (wLineNo >= this->filteredItems.size())
 		return 0;
 
-	return this->Items[wLineNo]->dwKey;
+	return this->filteredItems[wLineNo]->dwKey;
 }
 
 //******************************************************************************
 void* CListBoxWidget::GetKeyPointerAtLine(const UINT wLineNo) const
 //Returns: tag pointer of item on specified line in list
 {
-	if (wLineNo >= this->Items.size())
+	if (wLineNo >= this->filteredItems.size())
 		return NULL;
 
-	return this->Items[wLineNo]->pKey;
+	return this->filteredItems[wLineNo]->pKey;
 }
 
 //******************************************************************************
@@ -321,8 +342,8 @@ UINT CListBoxWidget::GetKeyWithText(const WCHAR* pText) const
 //Returns: key of first line matching text, or -1 if none
 {
 	int nLine = 0;
-	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek, ++nLine)
+	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek, ++nLine)
 	{
 		if (!WCScmp((*iSeek)->text.c_str(), pText)) //Found item.
 			return (*iSeek)->dwKey;
@@ -335,8 +356,8 @@ int CListBoxWidget::GetLineWithKey(const UINT dwKey) const
 //Returns: first line number with indicated key, or -1 if none
 {
 	int nLine = 0;
-	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek, ++nLine)
+	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek, ++nLine)
 	{
 		if ((*iSeek)->dwKey == dwKey) //Found item.
 			return nLine;
@@ -349,8 +370,8 @@ int CListBoxWidget::GetLineWithKeyPointer(const void* pKey) const
 //Returns: first line number with indicated key pointer, or -1 if none
 {
 	int nLine = 0;
-	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek, ++nLine)
+	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek, ++nLine)
 	{
 		if ((*iSeek)->pKey == pKey) //Found item.
 			return nLine;
@@ -363,8 +384,8 @@ int CListBoxWidget::GetLineWithText(const WCHAR* pText) const
 //Returns: first line number with text, or -1 if none
 {
 	int nLine = 0;
-	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek, ++nLine)
+	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek, ++nLine)
 	{
 		if (!WCScmp((*iSeek)->text.c_str(), pText)) //Found item.
 			return nLine;
@@ -379,9 +400,9 @@ UINT CListBoxWidget::GetSelectedItem() const
 	if (this->selectedLines.empty())
 		return 0;
 	const UINT wSelectedLine = this->selectedLines.getFirst();
-	ASSERT(wSelectedLine < this->Items.size());
+	ASSERT(wSelectedLine < this->filteredItems.size());
 
-	return this->Items[wSelectedLine]->dwKey;
+	return this->filteredItems[wSelectedLine]->dwKey;
 }
 
 //******************************************************************************
@@ -391,9 +412,9 @@ void* CListBoxWidget::GetSelectedItemPointer() const
 	if (this->selectedLines.empty())
 		return NULL;
 	const UINT wSelectedLine = this->selectedLines.getFirst();
-	ASSERT(wSelectedLine < this->Items.size());
+	ASSERT(wSelectedLine < this->filteredItems.size());
 
-	return this->Items[wSelectedLine]->pKey;
+	return this->filteredItems[wSelectedLine]->pKey;
 }
 
 //******************************************************************************
@@ -404,8 +425,8 @@ CIDSet CListBoxWidget::GetSelectedItems() const
 	for (CIDSet::const_iterator line = this->selectedLines.begin();
 			line != this->selectedLines.end(); ++line)
 	{
-		ASSERT(*line < this->Items.size());
-		keys += this->Items[*line]->dwKey;
+		ASSERT(*line < this->filteredItems.size());
+		keys += this->filteredItems[*line]->dwKey;
 	}
 	return keys;
 }
@@ -418,8 +439,8 @@ vector<void*> CListBoxWidget::GetSelectedItemsPointers() const
 	for (CIDSet::const_iterator line = this->selectedLines.begin();
 			line != this->selectedLines.end(); ++line)
 	{
-		ASSERT(*line < this->Items.size());
-		keys.push_back(this->Items[*line]->pKey);
+		ASSERT(*line < this->filteredItems.size());
+		keys.push_back(this->filteredItems[*line]->pKey);
 	}
 	return keys;
 }
@@ -432,8 +453,8 @@ vector<UINT> CListBoxWidget::GetSelectedItemsVector() const
 	for (CIDSet::const_iterator line = this->selectedLines.begin();
 			line != this->selectedLines.end(); ++line)
 	{
-		ASSERT(*line < this->Items.size());
-		keys.push_back(this->Items[*line]->dwKey);
+		ASSERT(*line < this->filteredItems.size());
+		keys.push_back(this->filteredItems[*line]->dwKey);
 	}
 	return keys;
 }
@@ -445,9 +466,9 @@ WSTRING CListBoxWidget::GetSelectedItemText() const
 	if (this->selectedLines.empty())
 		return wszEmpty;
 	const UINT wSelectedLine = this->selectedLines.getFirst();
-	ASSERT(wSelectedLine < this->Items.size());
+	ASSERT(wSelectedLine < this->filteredItems.size());
 
-	return this->Items[wSelectedLine]->text;
+	return this->filteredItems[wSelectedLine]->text;
 }
 
 //******************************************************************************
@@ -458,8 +479,8 @@ vector<WSTRING> CListBoxWidget::GetSelectedItemTexts() const
 	for (CIDSet::const_iterator line = this->selectedLines.begin();
 			line != this->selectedLines.end(); ++line)
 	{
-		ASSERT(*line < this->Items.size());
-	   texts.push_back(this->Items[*line]->text);
+		ASSERT(*line < this->filteredItems.size());
+	   texts.push_back(this->filteredItems[*line]->text);
 	}
 	return texts;
 }
@@ -488,18 +509,18 @@ const WCHAR* CListBoxWidget::GetTextAtCursor() const
 const WCHAR* CListBoxWidget::GetTextAtLine(const UINT wLineNo) const
 //Returns: text of item on specified line in list
 {
-	if (wLineNo >= this->Items.size())
+	if (wLineNo >= this->filteredItems.size())
 		return NULL;
 
-	return this->Items[wLineNo]->text.c_str();
+	return this->filteredItems[wLineNo]->text.c_str();
 }
 
 //******************************************************************************
 const WCHAR* CListBoxWidget::GetTextForKey(const UINT dwKey) const
 //Returns: text corresponding to item with specified key, or "" if none.
 {
-	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek)
+	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek)
 	{
 		if ((*iSeek)->dwKey == dwKey) //Found item.
 			return (*iSeek)->text.c_str();
@@ -541,8 +562,8 @@ bool CListBoxWidget::IsEmpty() const
 bool CListBoxWidget::IsItemEnabled(const UINT dwKey) const
 //Returns: whether item with key is found and enabled, else false.
 {
-	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek)
+	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek)
 	{
 		if ((*iSeek)->dwKey == dwKey) //Found item.
 			return !((*iSeek)->bGrayed);
@@ -615,6 +636,7 @@ bool CListBoxWidget::RemoveItem(
 		}
 	}
 
+	UpdateFilter(this->wstrActiveFilter);
 	//Recalc areas of widget since they may have changed.
 	CalcAreas();
 
@@ -654,6 +676,8 @@ bool CListBoxWidget::RemoveItem(const void* pKey)
 		}
 	}
 
+	UpdateFilter(this->wstrActiveFilter);
+
 	//Recalc areas of widget since they may have changed.
 	CalcAreas();
 
@@ -681,7 +705,9 @@ bool CListBoxWidget::RemoveItems(const CIDSet& keys)
 			wIndex--;
 		}
 	}
+
 	this->selectedLines.clear();
+	UpdateFilter(this->wstrActiveFilter);
 	SelectItems(remainingSelectedKeys);
 
 	//Recalc areas of widget since they may have changed.
@@ -695,7 +721,7 @@ void CListBoxWidget::SelectAllLines()
 //Selects all lines.
 {
 	this->selectedLines.clear();
-	for (UINT line=this->Items.size(); line--; )
+	for (UINT line=this->filteredItems.size(); line--; )
 		this->selectedLines += line;
 }
 
@@ -709,8 +735,8 @@ void CListBoxWidget::SelectItem(
 {
 	//Find the line corresponding to the key.
 	UINT wSeekLineNo = 0;
-	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
-		iSeek != this->Items.end(); ++iSeek)
+	for(vector<LBOX_ITEM *>::const_iterator iSeek = this->filteredItems.begin();
+		iSeek != this->filteredItems.end(); ++iSeek)
 	{
 		if ((*iSeek)->dwKey == dwKey) //Found item.
 		{
@@ -751,10 +777,10 @@ bool CListBoxWidget::SelectLine(
 	const UINT wLineNo,  //(in)   Line to select.
 	const bool bRetainSelections)  //[default=false]
 {
-	if (this->Items.empty())
+	if (this->filteredItems.empty())
 		return false; //nothing to select
 
-	ASSERT(wLineNo == 0 || wLineNo < this->Items.size());
+	ASSERT(wLineNo == 0 || wLineNo < this->filteredItems.size());
 
 	const CIDSet oldSelection = this->selectedLines;
 
@@ -783,26 +809,26 @@ bool CListBoxWidget::SelectLineStartingWith(const WCHAR wc)
 //Selects the first line in the list starting with the indicated character.
 //Returns: Whether an item with this text exists.
 {
-	if (this->Items.empty())
+	if (this->filteredItems.empty())
 		return false; //nothing to select
 
 	const CIDSet oldSelection = this->selectedLines;
 
 	//Search for a line starting with this character.
 	UINT wLineNo;
-	for (wLineNo = 0; wLineNo < this->Items.size(); ++wLineNo)
+	for (wLineNo = 0; wLineNo < this->filteredItems.size(); ++wLineNo)
 	{
 		const WCHAR line_wc = this->bIgnoreLeadingArticlesInSort ? 
-			towlower(StripLeadingArticle(this->Items[wLineNo]->text)[0]) : 
-			towlower(this->Items[wLineNo]->text[0]);
+			towlower(StripLeadingArticle(this->filteredItems[wLineNo]->text)[0]) :
+			towlower(this->filteredItems[wLineNo]->text[0]);
 		
 		if (line_wc == wc)
 			break; //found one
 		if (this->bSortAlphabetically &&
-				(wc < line_wc || wLineNo == this->Items.size()-1))
+				(wc < line_wc || wLineNo == this->filteredItems.size()-1))
 			break; //passed the spot where the letter would appear in the list
 	}
-	if (wLineNo == this->Items.size())
+	if (wLineNo == this->filteredItems.size())
 		return false; //nothing found
 
 	//Go to this line.
@@ -826,17 +852,17 @@ bool CListBoxWidget::SelectLineWithText(const WCHAR* pText)
 //Selects the first line in the list matching this text.
 //Returns: Whether an item with this text exists.
 {
-	if (this->Items.empty())
+	if (this->filteredItems.empty())
 		return false; //nothing to select
 
 	const CIDSet oldSelection = this->selectedLines;
 
 	//Search for a line with this text.
 	UINT wLineNo;
-	for (wLineNo = 0; wLineNo < this->Items.size(); ++wLineNo)
-		if (!WCScmp(this->Items[wLineNo]->text.c_str(), pText))
+	for (wLineNo = 0; wLineNo < this->filteredItems.size(); ++wLineNo)
+		if (!WCScmp(this->filteredItems[wLineNo]->text.c_str(), pText))
 			break; //found one
-	if (wLineNo == this->Items.size())
+	if (wLineNo == this->filteredItems.size())
 		return false; //nothing found
 
 	//Go to this line.  Select it.
@@ -878,79 +904,115 @@ void CListBoxWidget::Paint(
 	//this widget can't be offset.
 	ASSERT(!IsScrollOffset());
 
-	static const UINT CX_ITEM_INDENT = 2;
-
 	//Draw inset area where text appears.
 	SDL_Surface *pDestSurface = GetDestSurface();
 	DrawInset(this->x, this->y, this->w, this->h, this->images[0],
 			pDestSurface, true, false, !IsEnabled());
 
-	if (this->Items.empty())
-		return;
+	const vector<LBOX_ITEM *> &items = this->filteredItems;
 
-	const bool bDrawScrollBar = (this->Items.size() > this->wDisplayLineCount);
+	const bool bDrawScrollBar = (items.size() > this->wDisplayLineCount);
 	if (bDrawScrollBar)
 		DrawVertScrollBar(pDestSurface);
 
 	//Find top item.
-	vector<LBOX_ITEM *>::const_iterator iListItem = this->Items.begin() + this->wTopLineNo;
+	vector<LBOX_ITEM *>::const_iterator iListItem = items.begin() + this->wTopLineNo;
 
 	//Draw item text.
-	const UINT wStopLineNo = this->wTopLineNo + wDisplayLineCount;
-	const int xDraw = this->x + CX_INSET_BORDER + CX_ITEM_INDENT;
-	int yDraw = this->ItemsRect.y = this->y + CY_INSET_BORDER;
-	const UINT cxDraw = this->w - (CX_INSET_BORDER * 2) - CX_ITEM_INDENT -
-			(bDrawScrollBar * CX_UP);
+	const UINT wStopLineNo = this->wTopLineNo + this->wDisplayLineCount;
 	for (UINT wLineNo = this->wTopLineNo;
-			wLineNo < wStopLineNo && iListItem != this->Items.end();
+			wLineNo < wStopLineNo && iListItem != items.end();
 			++wLineNo, ++iListItem)
 	{
-		ASSERT(yDraw < static_cast<int>(this->y + this->h - CY_INSET_BORDER));
+		Paint_Line(wLineNo, wLineNo - this->wTopLineNo, **iListItem);
+	}
 
-		//If this is selected item, draw solid rect underneath.
-		SDL_Rect ItemRect = MAKE_SDL_RECT(xDraw - CX_ITEM_INDENT, yDraw,
-				cxDraw + CX_ITEM_INDENT, CY_LBOX_ITEM);
-		if (this->selectedLines.has(wLineNo))
-		{
-			const SURFACECOLOR BackColor =
-					GetSurfaceColor(pDestSurface, 190, 181, 165);
-			DrawFilledRect(ItemRect, BackColor, pDestSurface);
-		}
+	this->ItemsRect.y = this->y + CY_INSET_BORDER;
 
-		//Draw text for one item.
-		const UINT eDrawFont = this->selectedLines.has(wLineNo) ?
-				FONTLIB::F_SelectedListBoxItem : FONTLIB::F_ListBoxItem;
-		SDL_Color origColor = g_pTheFM->GetFontColor(eDrawFont);
-		if ((*iListItem)->bGrayed)  //whether text is shown grayed out
-		{
-			g_pTheFM->SetFontColor(eDrawFont, Gray);
-		} else {
-			g_pTheFM->SetFontColor(eDrawFont, (*iListItem)->color);
-		}
-		//Draw selected line text.
-#ifdef RUSSIAN_BUILD
-		static const int DY_TEXT = -1; //Because this particular font is a tiny bit too far down.
-#else
-		static const int DY_TEXT = -5; //Because this particular font is always too far down.
-#endif
-		g_pTheFM->DrawTextXY(eDrawFont, (*iListItem)->text.c_str(), pDestSurface,
-				xDraw, yDraw + DY_TEXT, cxDraw, (int)CY_LBOX_ITEM - DY_TEXT);
-		g_pTheFM->SetFontColor(eDrawFont, origColor);
+	if (this->wstrActiveFilter.size() > 0)
+	{
+		int drawX, drawY;
+		UINT drawWidth, drawHeight;
+		GetLineDrawCoords(0, drawX, drawY, drawWidth, drawHeight);
 
-		//Draw focus box (cursor).
-		const bool bCursorOnLine = wLineNo == this->wCursorLine;
-		if (bCursorOnLine && IsSelected())
-		{
-			const SURFACECOLOR FocusColor =
-					GetSurfaceColor(pDestSurface, RGB_FOCUS);
-			DrawRect(ItemRect,FocusColor,pDestSurface);
-		}
-		yDraw += CY_LBOX_ITEM;
+		drawX = this->x + 10;
+		drawY = this->y + TEXT_DRAW_Y_OFFSET + this->h - CY_LBOX_ITEM - 1;
+
+		const SURFACECOLOR FilterSeparatorColor = GetSurfaceColor(GetDestSurface(), 102, 102, 102);
+		
+		WSTRING message = this->wstrFilterWord;
+		message += wszColon;
+		message += wszSpace;
+		message += this->wstrActiveFilter;
+		DrawRow(this->x, drawY + 3, drawWidth, FilterSeparatorColor, pDestSurface);
+		g_pTheFM->DrawTextXY(FONTLIB::F_ListBoxItem, message.c_str(), pDestSurface,
+			drawX, drawY,
+			drawWidth - 20, (int)CY_LBOX_ITEM - TEXT_DRAW_Y_OFFSET);
+
 	}
 
 	//PaintChildren();
 	ASSERT(this->Children.empty()); //list box doesn't have children
 	if (bUpdateRect) UpdateRect();
+}
+
+//******************************************************************************
+void CListBoxWidget::Paint_Line(
+	const UINT wListItemNumber,
+	const UINT wDrawLineNumber,
+	const LBOX_ITEM &listItem)
+{
+	SDL_Surface *pDestSurface = GetDestSurface();
+
+	bool bIsSelected = this->selectedLines.has(wListItemNumber);
+
+	int drawX, drawY;
+	UINT drawWidth, drawHeight;
+	GetLineDrawCoords(wDrawLineNumber, drawX, drawY, drawWidth, drawHeight);
+
+	ASSERT(drawY < static_cast<int>(this->y + this->h - CY_INSET_BORDER));
+
+	//If this is selected item, draw solid rect underneath.
+	if (bIsSelected)
+	{
+		SDL_Rect ItemRect = MAKE_SDL_RECT(
+			drawX - ITEM_LEFT_PADDING, drawY,
+			drawWidth + ITEM_LEFT_PADDING, drawHeight
+		);
+
+		const SURFACECOLOR BackColor = GetSurfaceColor(pDestSurface, 190, 181, 165);
+		DrawFilledRect(ItemRect, BackColor, pDestSurface);
+	}
+
+	const UINT eDrawFont = bIsSelected
+		? FONTLIB::F_SelectedListBoxItem
+		: FONTLIB::F_ListBoxItem;
+	SDL_Color origColor = g_pTheFM->GetFontColor(eDrawFont);
+
+	//whether text is shown grayed out
+	if (listItem.bGrayed)
+		g_pTheFM->SetFontColor(eDrawFont, Gray);
+	else
+		g_pTheFM->SetFontColor(eDrawFont, listItem.color);
+
+	//Draw selected line text.
+	g_pTheFM->DrawTextXY(eDrawFont, listItem.text.c_str(), pDestSurface,
+		drawX, drawY + TEXT_DRAW_Y_OFFSET, drawWidth, (int)drawHeight - TEXT_DRAW_Y_OFFSET);
+	g_pTheFM->SetFontColor(eDrawFont, origColor);
+
+	//Draw focus box (cursor).
+	const bool bCursorOnLine = (wListItemNumber == this->wCursorLine);
+	if (bCursorOnLine && IsSelected())
+	{
+		SDL_Rect ItemRect = MAKE_SDL_RECT(
+			drawX - ITEM_LEFT_PADDING, drawY,
+			drawWidth + ITEM_LEFT_PADDING, drawHeight
+		);
+
+		const SURFACECOLOR FocusColor =
+			GetSurfaceColor(pDestSurface, RGB_FOCUS);
+		DrawRect(ItemRect, FocusColor, pDestSurface);
+	}
 }
 
 //******************************************************************************
@@ -971,10 +1033,10 @@ void CListBoxWidget::SetItemColor(const UINT dwKey, const SDL_Color& color)
 //******************************************************************************
 void CListBoxWidget::SetItemColorAtLine(const UINT index, const SDL_Color& color)
 {
-	if (index >= this->Items.size())
+	if (index >= this->filteredItems.size())
 		return;
 
-	this->Items[index]->color = color;
+	this->filteredItems[index]->color = color;
 }
 
 //******************************************************************************
@@ -997,6 +1059,18 @@ void CListBoxWidget::SetItemText(const UINT dwKey, const WCHAR *pwczSetText)
 }
 
 //******************************************************************************
+void CListBoxWidget::SetItemTextAtLine(const UINT index, const WCHAR *pwczSetText)
+//Updates the text description of the item at the specific line.
+{
+	ASSERT(pwczSetText);
+
+	if (index >= this->filteredItems.size())
+		return;
+
+	this->filteredItems[index]->text = pwczSetText;
+}
+
+//******************************************************************************
 void CListBoxWidget::SetRearrangeable(const UINT dwKey, bool val)
 {
 	for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
@@ -1014,10 +1088,10 @@ void CListBoxWidget::SetRearrangeable(const UINT dwKey, bool val)
 void CListBoxWidget::SetSelectedItemText(const WCHAR *pwczSetText)
 //Updates the text description of the item at the cursor's location.
 {
-	if (this->wCursorLine >= this->Items.size()) return;
+	if (this->wCursorLine >= this->filteredItems.size()) return;
 	ASSERT(pwczSetText);
 
-	vector<LBOX_ITEM *>::const_iterator iListItem = this->Items.begin() + this->wCursorLine;
+	vector<LBOX_ITEM *>::const_iterator iListItem = this->filteredItems.begin() + this->wCursorLine;
 	(*iListItem)->text = pwczSetText;
 }
 
@@ -1026,7 +1100,7 @@ void CListBoxWidget::SetTopLineNumber(const UINT wSetTopLine)
 //Sets the list view so the item line showing at the top of the list is the
 //specified line number.
 {
-	if (wSetTopLine <= this->Items.size() - this->wDisplayLineCount)
+	if (wSetTopLine <= this->filteredItems.size() - this->wDisplayLineCount)
 		this->wTopLineNo = wSetTopLine;
 }
 
@@ -1047,12 +1121,12 @@ void CListBoxWidget::HandleKeyDown(
 	switch (KeyboardEvent.keysym.sym)
 	{
 		case SDLK_UP: case SDLK_KP_8:
-			if (wNewCursorLine > 0 && wNewCursorLine < this->Items.size())
+			if (wNewCursorLine > 0 && wNewCursorLine < this->filteredItems.size())
 				--wNewCursorLine;
 		break;
 
 		case SDLK_DOWN: case SDLK_KP_2:
-			if (wNewCursorLine < this->Items.size() - 1)
+			if (wNewCursorLine < this->filteredItems.size() - 1)
 				++wNewCursorLine;
 		break;
 
@@ -1061,7 +1135,7 @@ void CListBoxWidget::HandleKeyDown(
 		break;
 
 		case SDLK_END: case SDLK_KP_1:
-			wNewCursorLine = this->Items.size() - 1;
+			wNewCursorLine = this->filteredItems.size() - 1;
 		break;
 
 		case SDLK_PAGEUP: case SDLK_KP_9:
@@ -1073,15 +1147,18 @@ void CListBoxWidget::HandleKeyDown(
 
 		case SDLK_PAGEDOWN: case SDLK_KP_3:
 			if ((int)(wNewCursorLine) + (int)(this->wDisplayLineCount) <
-						(int)this->Items.size() - 1)
+						(int)this->filteredItems.size() - 1)
 				wNewCursorLine += this->wDisplayLineCount;
 			else
-				wNewCursorLine = this->Items.size() - 1;
+				wNewCursorLine = this->filteredItems.size() - 1;
 		break;
 
 		case SDLK_SPACE:
+			if (this->bAllowFiltering)
+				UpdateFilter(this->wstrActiveFilter + wszSpace);
+
 			//Toggle selection on current line.
-			if (this->bMultipleSelection && this->selectedLines.has(this->wCursorLine))
+			else if (this->bMultipleSelection && this->selectedLines.has(this->wCursorLine))
 			{
 				DeselectLine(this->wCursorLine);
 				RequestPaint();
@@ -1090,7 +1167,32 @@ void CListBoxWidget::HandleKeyDown(
 				wPrevCursorLine = (UINT)(-1); //select the current line below
 		break;
 
+		case SDLK_BACKSPACE:
+			if (this->wstrActiveFilter.size() > 0) {
+				UpdateFilter(this->wstrActiveFilter.substr(0, this->wstrActiveFilter.size() - 1));
+				RequestPaint();
+			}
+			break;
+
+		case SDLK_ESCAPE:
+			if (this->wstrActiveFilter.size() > 0) {
+				UpdateFilter(wszEmpty);
+				RequestPaint();
+				PreventEventBubbling();
+			}
+			break;
+
 		default:
+			if (this->bAllowFiltering && !(KeyboardEvent.keysym.mod & KMOD_SHIFT)) {
+				const WCHAR character = KeyboardEvent.keysym.sym == SDLK_SPACE ? We(' ') : TranslateUnicodeKeysym(KeyboardEvent.keysym);
+
+				if (IsValidFilterCharacter(character)) {
+					UpdateFilter(this->wstrActiveFilter + character);
+					PreventEventBubbling();
+					RequestPaint();
+				}
+			}
+
 			if (this->bHotkeyItemSelection)
 			{
 				//CTRL+char to select that line.
@@ -1122,6 +1224,86 @@ void CListBoxWidget::HandleKeyDown(
 		CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
 		if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
 	}
+}
+
+//******************************************************************************
+void CListBoxWidget::UpdateFilter(WSTRING wstrFilter)
+{
+	if (!this->bAllowFiltering) {
+		this->filteredItems = this->Items;
+		return;
+	}
+
+	wstrFilter = WCSToLower(wstrFilter);
+	const std::vector<WSTRING> filterTokens = WCSExplode(wstrFilter, wszSpace[0]);
+
+	vector<LBOX_ITEM *> items;
+
+	UINT wCursorKey = GetKeyAtCursor();
+
+	if (wstrFilter.size() == 0)
+		items = this->Items;
+
+	else {
+		for (vector<LBOX_ITEM *>::const_iterator iSeek = this->Items.begin();
+			iSeek != this->Items.end(); ++iSeek)
+		{
+			LBOX_ITEM *item = *iSeek;
+
+			if (WCSContainsAll(WCSToLower(item->text), filterTokens))
+				items.push_back(item);
+		}
+	}
+
+	this->filteredItems = items;
+	this->selectedLines.clear();
+	this->wstrActiveFilter = wstrFilter;
+
+	CalcAreas();
+
+	{ // Update the cursor to match the old highlighted item or select the item at the top of the list
+		UINT wNewCursorLine = GetLineWithKey(wCursorKey);
+		if (wNewCursorLine >= this->filteredItems.size())
+			wNewCursorLine = 0;
+
+		SelectLine(wNewCursorLine);
+	}
+
+	// If there are fewer items than can fit or we are scrolled past the last item somehow, make things fit
+	if (this->filteredItems.size() <= this->wDisplayLineCount)
+		this->wTopLineNo = 0;
+
+	while (this->wTopLineNo > 0 && this->wTopLineNo + this->wDisplayLineCount < this->filteredItems.size())
+		--this->wTopLineNo;
+
+	// Scroll so that the selected item is visible
+	if (this->selectedLines.size() > 0)
+	{
+		const UINT wSelectedLine = GetSelectedLineNumber();
+		while (wSelectedLine < this->wTopLineNo)
+			ScrollUpOnePage();
+		while (wSelectedLine >= this->wTopLineNo + this->wDisplayLineCount)
+			ScrollDownOnePage();
+
+		// We don't want to update the selection when no filter is active
+		// just to avoid messing up with parents during their setup
+		if (GetKeyAtCursor() != wCursorKey && wstrFilter.size() > 0) {
+			CEventHandlerWidget *pEventHandler = GetEventHandlerWidget();
+			if (pEventHandler) pEventHandler->OnSelectChange(GetTagNo());
+		}
+	}
+
+}
+
+//******************************************************************************
+void CListBoxWidget::GetLineDrawCoords(const UINT wLineNumber, int &drawX, int &drawY, UINT &drawWidth, UINT &drawHeight)
+{
+	const bool bDrawScrollBar = (this->filteredItems.size() > this->wDisplayLineCount);
+
+	drawX = this->x + CX_INSET_BORDER + ITEM_LEFT_PADDING;
+	drawY = this->y + CY_INSET_BORDER + wLineNumber * CY_LBOX_ITEM;
+	drawWidth = this->w - (CX_INSET_BORDER * 2) - ITEM_LEFT_PADDING - (bDrawScrollBar * CX_UP);
+	drawHeight = CY_LBOX_ITEM;
 }
 
 //******************************************************************************
@@ -1211,6 +1393,7 @@ void CListBoxWidget::HandleDrag(
 		this->Items[this->wDraggingLineNo] = this->Items[this->wCursorLine];
 		this->Items[this->wCursorLine] = pItem;
 		this->wDraggingLineNo = this->wCursorLine;
+		this->filteredItems = this->Items;
 
 		SelectLine(this->wCursorLine);
 
@@ -1219,6 +1402,9 @@ void CListBoxWidget::HandleDrag(
 	} else {
 		this->wCursorLine = this->wDraggingLineNo;
 	}
+
+	UpdateFilter(WSTRING());
+	RequestPaint();
 }
 
 //******************************************************************************
@@ -1312,8 +1498,8 @@ CListBoxWidget::SW_CLICK_RESULT CListBoxWidget::ClickAtCoords(
 
 		this->wCursorLine = this->wTopLineNo +
 				((nY - this->ItemsRect.y) / CY_LBOX_ITEM);
-		if (this->wCursorLine >= this->Items.size())
-			this->wCursorLine = this->Items.size() - 1;
+		if (this->wCursorLine >= this->filteredItems.size())
+			this->wCursorLine = this->filteredItems.size() - 1;
 
 		const SDL_Keymod mod = SDL_GetModState();
 		const bool bRangeSelect = (mod & KMOD_SHIFT) != 0;
@@ -1352,8 +1538,11 @@ void CListBoxWidget::CalcAreas()
 //Calculate coords and dimensions of areas within list box.
 {
 	this->wDisplayLineCount = (this->h - (CY_INSET_BORDER * 2)) / CY_LBOX_ITEM;
+	if (this->wstrActiveFilter.size() > 0)
+		--this->wDisplayLineCount; // We need to keep the last row empty to display the filter
+
 	const UINT wDisplayH = this->wDisplayLineCount * CY_LBOX_ITEM; //skip any remainder space that's less then one line
-	const UINT wContentH = this->Items.size() * CY_LBOX_ITEM;
+	const UINT wContentH = this->filteredItems.size() * CY_LBOX_ITEM;
 	UINT wViewTopY = this->wTopLineNo * CY_LBOX_ITEM;
 	CalcAreas_VerticalOnly(wContentH, wDisplayH, wViewTopY);
 	this->wTopLineNo = wViewTopY / CY_LBOX_ITEM;
@@ -1439,4 +1628,21 @@ void CListBoxWidget::ScrollUpOnePage()
 	else
 		this->wTopLineNo = 0;
 	CalcAreas();
+}
+
+//******************************************************************************
+void CListBoxWidget::Unselect(const bool bPaint)
+// Clear the filter when focus is lost
+{
+	UpdateFilter(WSTRING());
+	CFocusWidget::Unselect(bPaint);
+}
+
+//******************************************************************************
+bool CListBoxWidget::IsValidFilterCharacter(const WCHAR wc)
+{
+	return (wc >= 'a' && wc <= 'z')
+		|| (wc >= 'A' && wc <= 'Z')
+		|| (wc >= '0' && wc <= '9')
+		|| (wc == ' ');
 }

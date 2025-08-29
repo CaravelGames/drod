@@ -31,93 +31,15 @@
 
 #include "RoachQueen.h"
 #include "Combat.h"
+#include "Character.h"
 
 //
 //Public methods.
 //
 
 //*****************************************************************************************
-void CRoachQueen::Process(
-//Process a roach queen for movement.
-//
-//Params:
-	const int /*nLastCommand*/,   //(in) Last swordsman command.
-	CCueEvents &CueEvents)  //(in/out) A cues object that will be populated
-							//with codes indicating events that happened that may correspond to
-							//sound or graphical effects.
+bool CRoachQueen::IsEggSpawner() const
+//Roach queen can spawn eggs.
 {
-	//Shall we lay an egg?
-	if ((CueEvents.HasOccurred(CID_MonsterEngaged) && //lay an egg any time player fights a different monster
-				this->pCurrentGame->pCombat != NULL &&   //fighting someone...
-				!this->pCurrentGame->IsFighting(this) && //...not me
-				this->pCurrentGame->pCombat->PlayerCanHarmMonster(this->pCurrentGame->pCombat->pMonster) && //doesn't count if player engages a monster that is too shielded
-				this->pCurrentGame->pCombat->pMonster->wType != M_REGG) //don't lay more eggs when eggs are killed
-		)
-	{
-		UINT wSX, wSY;
-		if (!GetTarget(wSX,wSY))
-			return;	//no change -- and don't lay eggs
-
-		CCoordSet eggs;
-		CDbRoom& room = *(this->pCurrentGame->pRoom);
-		float fClosest = 99999.0;
-		for (int y = -1; y <= 1; ++y)
-		{
-			for (int x = -1; x <= 1; ++x)
-			{
-				//The criteria for laying an egg in a square should be:
-				//1. Square does not contain a monster (including mimic).
-				//2. Square does not contain player or a sword.
-				//3. T-square is mostly empty (backwards compatibility).
-				//4. F-tile is open.
-				//5. O-square is open floor/door (except for open yellow doors -- for backwards compatibility).
-				//6. Swordsman is still sensed at the new square moved to (backwards compatibility).
-				const UINT ex = this->wX + x;
-				const UINT ey = this->wY + y;
-				if (!room.IsValidColRow(ex, ey))
-					continue;
-
-				const UINT wOSquare = room.GetOSquare(ex, ey);
-				const UINT wTSquare = room.GetTSquare(ex, ey);
-				CMonster* pMonster = room.GetMonsterAtSquare(ex, ey);
-				if (
-					// Not current queen position
-					!(ex == this->wX && ey == this->wY) &&
-					// Not the player
-					!this->pCurrentGame->IsPlayerAt(ex, ey) &&
-					// Not monster or player double or sword
-					!pMonster && !DoesSquareContainObstacle(ex, ey) &&
-					//And t-square is not occupied with a blocking item.
-					(wTSquare == T_EMPTY || wTSquare == T_FUSE) &&
-					!bIsArrow(room.GetFSquare(ex, ey)) &&
-					//And o-square is floor or open door.
-					((bIsPlainFloor(wOSquare) || wOSquare == T_PRESSPLATE) ||
-							bIsOpenDoor(wOSquare) ||
-							bIsPlatform(wOSquare) || bIsBridge(wOSquare) ||
-							wOSquare == T_GOO)
-					)
-				{
-					//Spot is open for placing an egg.
-					const float fDist = DistanceToTarget(ex, ey, wSX, wSY);
-					if (fDist < fClosest)
-					{
-						//Place one egg on the tile closest to target.
-						fClosest = fDist;
-						eggs.clear();
-						eggs.insert(ex,ey);
-					}
-				}
-			}
-		}
-
-		//Lay eggs and check for them being laid on pressure plates.
-		for (CCoordSet::const_iterator egg=eggs.begin(); egg!=eggs.end(); ++egg)
-		{
-			CMonster *m = room.AddNewMonster(M_REGG, egg->wX, egg->wY);
-			m->bIsFirstTurn = true;
-
-			if (room.GetOSquare(egg->wX, egg->wY) == T_PRESSPLATE)
-				room.ActivateOrb(egg->wX, egg->wY, CueEvents, OAT_PressurePlate);
-		}
-	}
+	return true;
 }

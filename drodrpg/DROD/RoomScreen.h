@@ -57,6 +57,8 @@ static const UINT TAG_MONHP = 2021;
 static const UINT TAG_MONATK = 2022;
 static const UINT TAG_MONDEF = 2023;
 
+static const UINT TAG_SHOVEL = 2024;
+
 static const UINT TAG_SWORD = 2025;
 static const UINT TAG_SHIELD = 2026;
 static const UINT TAG_ACCESSORY = 2027;
@@ -69,7 +71,6 @@ class CRoomScreen : public CDrodScreen
 {
 public:
 	static void    SetMusicStyle(WSTRING style, const UINT wMood, const UINT fadeDuration=3000);
-	int     GetCommandForKeysym(const SDL_Keycode& sym) const;
 
 protected:
 	friend class CScreenManager;
@@ -77,14 +78,16 @@ protected:
 	CRoomScreen(const SCREENTYPE eSetType);
 	virtual ~CRoomScreen() { }
 
-	SDL_Keycode GetKeysymForCommand(const UINT wCommand) const;
+	SDL_Rect& GetEntireSignRect() const;
 	void     HideScroll() {this->bIsScrollVisible = false;}
-	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
+	virtual bool IsCommandSupported(int command) const;
 	void     PaintBackground();
 	void     PaintScroll(const bool bUpdateRect=true);
 	void     PaintSign();
 	void     SetSignText(const WCHAR *pwczSetText);
 	void     ShowScroll() {this->bIsScrollVisible = true;}
+
+	static float getFrequencyMultForItem(const UINT tile);
 
 	//These are accessed by CDemoScreen.
 	CMapWidget *      pMapWidget;
@@ -94,9 +97,6 @@ protected:
 	SDL_Color         signColor;    //color of text on sign
 
 	bool              bIsScrollVisible;
-
-private:
-	std::map<SDL_Keycode,int> KeysymToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H

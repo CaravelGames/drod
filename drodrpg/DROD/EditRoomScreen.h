@@ -30,6 +30,7 @@
 
 #include "RoomScreen.h"
 #include "EditRoomWidget.h"
+#include "SelectMediaDialogWidget.h"
 #include "../DRODLib/DbHolds.h"
 #include "../DRODLib/DbRooms.h"
 #include <BackEndLib/CoordSet.h>
@@ -60,7 +61,6 @@ public:
 	virtual ~CEditRoomScreen();
 
 	static void    FillInRoomEdges(CDbRoom* const pRoom);
-	UINT    ImportHoldImage(const UINT extensionFlags=EXT_JPEG|EXT_PNG);
 	UINT    ImportHoldSound();
 	UINT    ImportHoldVideo();
 
@@ -70,6 +70,13 @@ public:
 
 	UINT     GetSavePlayerID() const {return this->dwSavePlayerID;}
 	UINT     GetTestPlayerID() const {return this->dwTestPlayerID;}
+
+	UINT     SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
+
+	CEntranceSelectDialogWidget::BUTTONTYPE
+		SelectEntrance(CEntranceSelectDialogWidget* pEntranceBox,
+			CDbHold* pHold, ExitChoice& exitChoice, const MESSAGE_ID messagePromptID,
+			const CEntranceSelectDialogWidget::DATATYPE datatype = CEntranceSelectDialogWidget::Entrances);
 
 protected:
 	friend class CDrodScreenManager;
@@ -86,6 +93,7 @@ protected:
 private:
 	void     AddChatDialog();
 	void     AddLevelEntranceDialog();
+	void     AddMediaSelectionDialog();
 	void     AddPlotEffect(const UINT wObjectNo);
 	UINT     AddRoom(const UINT dwRoomX, const UINT dwRoomY);
 	void     ApplyPlayerSettings();
@@ -96,6 +104,7 @@ private:
 	const UINT*    DisplaySelection(const UINT wObjectNo) const;
 	bool     DeleteLevelEntrance(const UINT wX, const UINT wY);
 	void     DisplayChatDialog();
+	virtual bool IsCommandSupported(int command) const;
 //	void     DrawHalphSlayerEntrances();
 	void     EditLevelEntrance(const UINT wX, const UINT wY);
 	bool     EditLevelEntrance(WSTRING &wstrDescription, bool &bMainEntrance,
@@ -114,11 +123,12 @@ private:
 	COrbAgentData* FindOrbAgentFor(COrbData* pOrb, CCoordSet &doorCoords);
 	void     FixUnstableTar();
 	void     FixCorruptStaircase(const UINT wX, const UINT wY);
-	void     FixCorruptStaircaseEdge(const UINT wMinX, const UINT wMaxX,
-			const UINT wMinY, const UINT wMaxY, const UINT wEvalX, const UINT wEvalY);
 	CObjectMenuWidget*   GetActiveMenu();
 	void           ForceFullStyleReload();
+	void     GetCustomImageID(UINT& roomDataID, UINT& imageStartX, UINT& imageStartY,
+		const bool bReselect);
 	void           GetFloorImageID(const bool bReselect=false);
+	void           GetOverheadImageID(const bool bReselect = false);
 	void           GetLevelEntrancesInRoom();
 	const UINT*    GetTileImageForMonsterType(const UINT wType, const UINT wO,
 			const UINT wAnimFrame) const;
@@ -129,6 +139,8 @@ private:
 
 	bool     LoadRoom(CDbRoom *pNewRoom);
 	bool     LoadRoomAtCoords(const UINT dwRoomX, const UINT dwRoomY, const bool bForceReload=false);
+
+	void     MarkOverheadLayerTiles();
 
 	bool     MergePressurePlate(const UINT wX, const UINT wY, const bool bUpdateType=false);
 	CObjectMenuWidget* ObjectMenuForTile(const UINT wTile);
@@ -165,6 +177,7 @@ private:
 	bool     RemoveMonster(CMonster *pMonster);
 	bool     RemoveObjectAt(const UINT wX, const UINT wY, const UINT wPlottedObject,
 			bool &bSpecialTileRemoved, bool &bTarRemoved, bool &bStairsRemoved);
+	void     RemoveOrbAssociationAt(const UINT wX, const UINT wY);
 	void     RepairDoors(const UINT doorType);
 	void     ResetAdjacentRooms();
 	void     ResetMembers();
@@ -177,6 +190,7 @@ private:
 	void     SetDestinationEntrance(const UINT wX1, const UINT wY1,
 			const UINT wX2, const UINT wY2);
 	void     SetGlobalVarDefaults(const PlayerStats& st);
+	void     SetItemLabelText(const UINT wObject);
 	void     SetLightLevel();
 	void     SetMenuItem(const UINT wObject, const UINT wNewTile);
 	void     SetOrbAgentsForDoor(const UINT wX, const UINT wY);
@@ -202,6 +216,7 @@ private:
 	CTabbedMenuWidget * pTabbedMenu;
 	CCharacterDialogWidget *pCharacterDialog;
 	CEntranceSelectDialogWidget * pEntranceBox;     //choose from list of levels
+	CSelectMediaDialogWidget* pSelectMediaDialog;
 	CDialogWidget *pLevelEntranceDialog; //for defining level entrances
 	UINT              wSelectedObject;  //object selected for placement
 	UINT              wSelectedObjectSave; //object selected, while

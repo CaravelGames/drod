@@ -33,16 +33,25 @@
 #include <string>
 using std::string;
 
+//Y position for a label using F_TITLE font on the screens with the darkened horizontal bar at the top
+// to fit neatly in the middle of said bar
+static const UINT Y_TITLE_LABEL_CENTER_DARK_BAR = 16;
+//Standard height of labels.
+static const UINT CY_LABEL_FONT_TITLE = 52;
+static const UINT CY_LABEL_FONT_HEADER = 30;
+
 //******************************************************************************
 class CLabelWidget : public CWidget
 {
 public:
-	 enum TEXTALIGN
-	 {
-		 TA_Left = 0,
-		 TA_CenterGroup = 2  //Multiple lines of text are not individually centered, but the
-							 //group of lines as a whole are centered within the label area.
-	 };
+	enum TEXTALIGN
+	{
+		TA_Left = 0,
+		TA_CenterGroup = 2,  //Multiple lines of text are not individually centered, but the
+		                     //group of lines as a whole are centered within the label area.
+		TA_VTop = 0,
+		TA_VCenter = 1,
+	};
 
 	CLabelWidget(const UINT dwSetTagNo, const int nSetX, const int nSetY, const UINT wSetW,
 			const UINT wSetH, const UINT eSetFontType, const WCHAR *pwczSetText,
@@ -61,7 +70,9 @@ public:
 	void           SetClickable(const bool bVal) {this->bClickable = bVal;}
 	void           SetFontType(const UINT eSetFontType);
 	void           SetFontYOffset(const int y) { y_font_offset = y; }
-	void           SetAlign(const TEXTALIGN eSetAlign) {this->eTextAlign = eSetAlign;}
+	void           SetAlign(const TEXTALIGN eSetAlign) { this->eTextAlign = eSetAlign; }
+	void           SetVAlign(const TEXTALIGN eSetAlign) { this->eTextVAlign = eSetAlign; }
+	void           SetPrintLeadingSpacesAfterFirstLine(const bool bVal = true) { this->bPrintLeadingSpacesAfterFirstLine = bVal; }
 	void           SetText(const WCHAR *pwczSetText, const bool bResizeToFit=false,
 			const UINT wFirstIndent=0, const bool bFitWidth=false);
 
@@ -71,9 +82,11 @@ private:
 	WSTRING           wstrText;
 	UINT              eFontType;
 	TEXTALIGN         eTextAlign;
+	TEXTALIGN         eTextVAlign;
 	UINT              wFirstIndent;
 	mutable UINT      wLastWidth;  //Cached; always use GetLastWidth() to read
 	bool              bClickable; //whether clicks on label will be caught and handled
+	bool              bPrintLeadingSpacesAfterFirstLine;
 
 	bool              bCacheRendering;
 	SDL_Surface      *pRenderedText;

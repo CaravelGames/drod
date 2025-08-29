@@ -39,10 +39,12 @@
 #include "DrodFileDialogWidget.h"
 #include "DrodFontManager.h"
 #include "DrodBitmapManager.h"
+#include "DrodDialogs.h"
 #include "DrodScreen.h"
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
 #include "GameScreen.h"
+#include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/ImageWidget.h>
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
@@ -134,7 +136,7 @@ char windowTitle[120];
 char windowTitle[] = "DROD RPG BETA - DO NOT DISTRIBUTE (buggy releases make us look bad)";
 #	endif
 #else
-char windowTitle[] = "DROD RPG: Tendry's Tale";
+char windowTitle[] = "DROD RPG 2: A Courageous Rescue";
 #endif
 
 #ifdef WIN32
@@ -145,7 +147,7 @@ bool bWindowsDataFilesInUserSpecificDir = false;
 
 //This is a filename that will probably exist in this specific game only.
 static const WCHAR wszUniqueResFile[] = {
-    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('1'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
+    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('2'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
 
 //
 //Private function prototypes.
@@ -190,14 +192,24 @@ int main(int argc, char *argv[])
 		} else if (!_stricmp(arg, "demo")) {
 			bIsDemo = true;
 			Metadata::Set(MetaKey::DEMO, "1");
-		}
+		} else if (!strcmp(arg, "embedmedia")) {
+#ifdef DEV_BUILD
+			Metadata::Set(MetaKey::EMBEDMEDIA, "1");
+#else
+			return 2;
+#endif
 #ifdef WIN32
-		else if (!strncmp(arg, "commondatadir=", 14)) {
+		} else if (!strncmp(arg, "commondatadir=", 14)) {
 			const UINT val = convertToUINT(arg + 14);
 			bWindowsDataFilesInUserSpecificDir = val == 0 ? true : false;
-		}
 #endif
- //else: more command line arg processing occurs below
+		} else if (!strncmp(arg, "datafilenum=", 12)) { //active in Steam build only
+			if (!CDbBase::SetCreateDataFileNum(convertToUINT(arg + 12)))
+				return 2;
+		} else if (!strncmp(arg, "applyholdstatus=", 16)) {
+			Metadata::Set(MetaKey::APPLYHOLDSTATUS, arg + 16);
+		}
+		//else: more command line arg processing occurs below
 	}
 
 # if defined(__linux__) || defined(__FreeBSD__)
@@ -341,7 +353,7 @@ int main(int argc, char *argv[])
 		if (ret != static_cast<MESSAGE_ID>(-1))
 			DisplayInitErrorMessage(ret);
 	} else {
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		try
 		{
 #endif
@@ -429,6 +441,8 @@ int main(int argc, char *argv[])
 			if (gamma != gammaOne) //causes tinted display issues on Mac
 				g_pTheDBM->SetGamma(gamma);
 			g_pTheDBM->eyeCandy = s.GetVar(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
+			g_pTheDBM->tarstuffAlpha = s.GetVar(Settings::TarstuffAlpha, BYTE(255));
+			g_pTheDBM->mapIconAlpha = s.GetVar(Settings::MapIconAlpha, BYTE(255));
 
 			//Set sound preferences.
 			g_pTheSound->EnableSoundEffects(s.GetVar(Settings::SoundEffects, true));
@@ -506,11 +520,11 @@ int main(int argc, char *argv[])
 				delete pCurrentPlayer;
 			}
 
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		}
-		catch (CException& e)
+		catch (std::exception& e)
 		{
-		  CFiles::AppendErrorLog(e.what());
+			m_pFiles->AppendErrorLog(e.what());
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
@@ -518,6 +532,7 @@ int main(int argc, char *argv[])
 		}
 		catch (...)
 		{
+			m_pFiles->AppendErrorLog("Unknown exception");
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
@@ -653,6 +668,9 @@ MESSAGE_ID Init(
 #endif
 
 	srand(int(time(NULL)));
+
+	// Init FrontendLocalization
+	CListBoxWidget::wstrFilterWord = g_pTheDB->GetMessageText(MID_ListboxFilter);
 
 	//Success.
 	return (bRestoredFromCorruption) ? MID_DatCorrupted_Restored : MID_Success;
@@ -928,6 +946,7 @@ sdl_error:
 	ASSERT(!g_pTheFM);
 	g_pTheDFM = new CDrodFontManager();
 	g_pTheFM = (CFontManager*)g_pTheDFM;
+	g_pTheDialogs = new CDrodDialogs();
 	if (!g_pTheFM) return MID_OutOfMemory;
 	ret = (MESSAGE_ID)g_pTheDFM->Init();
 	if (ret) return ret;
@@ -947,9 +966,9 @@ sdl_error:
 	SDL_SetCursor(g_pTheSM->GetCursor(CUR_Wait));
 
 	//Show splash screen graphic.
-	const int X_TITLE = (CScreen::CX_SCREEN - 182) / 2; //center
-	const int Y_TITLE = 200;
-	static const WCHAR wszSplashscreenGraphic[] = {We('D'),We('o'),We('o'),We('r'),We(0)};
+	const int X_TITLE = (CScreen::CX_SCREEN - 512) / 2; //center
+	const int Y_TITLE = 125;
+	static const WCHAR wszSplashscreenGraphic[] = { We('D'),We('o'),We('o'),We('r'),We(0) }; // Door
 	CImageWidget *pTitleImage = new CImageWidget(0, X_TITLE, Y_TITLE, wszSplashscreenGraphic);
 	pTitleImage->Paint();
 	PresentRect();
@@ -1045,7 +1064,9 @@ void DeinitSound()
 //*****************************************************************************
 void InitMetadata()
 {
+	Metadata::Set(MetaKey::APPLYHOLDSTATUS, "-1"); //CDbHold::NoStatus
 	Metadata::Set(MetaKey::DEMO, "0");
+	Metadata::Set(MetaKey::EMBEDMEDIA, "0");
 	Metadata::Set(MetaKey::MAX_EYE_CANDY, "1");
 }
 
@@ -1819,39 +1840,74 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::Windib, "1");
 
 // AddIfMissing(INISection::Graphics, "Clock", "Clock");
+
 	AddIfMissing(INISection::Graphics, "General", "GeneralTiles");
-	AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
-	AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing(INISection::Graphics, "City", "City");
-	AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
 	AddIfMissing(INISection::Graphics, "Deep Spaces", "DeepSpaces");
 	AddIfMissing(INISection::Graphics, "Deep Spaces Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
-	AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
-	AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
-	AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
-	AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
-	AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
-	AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;City;Deep Spaces;Fortress;Foundation;Iceworks");
+	if (bFullVersion)
+	{
+		AddIfMissing(INISection::Graphics, "Aboveground", "Aboveground");
+		AddIfMissing(INISection::Graphics, "Aboveground Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+		AddIfMissing(INISection::Graphics, "Beach", "Beach");
+		AddIfMissing(INISection::Graphics, "Beach Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, "City", "City");
+		AddIfMissing(INISection::Graphics, "City Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, "Forest", "Forest");
+		AddIfMissing(INISection::Graphics, "Forest Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Fortress", "Fortress");
+		AddIfMissing(INISection::Graphics, "Fortress Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Foundation", "Foundation");
+		AddIfMissing(INISection::Graphics, "Foundation Skies", "DayPuffyClouds;DuskClouds;SunsetRed;NightPuffyClouds;DarkNightPuffyClouds;DarkNightPuffyClouds");
+		AddIfMissing(INISection::Graphics, "Iceworks", "Iceworks");
+		AddIfMissing(INISection::Graphics, "Iceworks Skies", "DayEvenClouds;DuskEvenClouds;DuskEvenClouds;NightEvenClouds;DarkNightClouds;DarkNightClouds");
+		AddIfMissing(INISection::Graphics, "Swamp", "Swamp");
+		AddIfMissing(INISection::Graphics, "Swamp Skies", "DayStormy;DuskStormy;DuskStormy;NightStormy;DarkNightStormy;DarkNightStormy;DarkNightStormy");
+		AddIfMissing(INISection::Graphics, INIKey::Style, "Aboveground;Beach;City;Deep Spaces;Forest;Fortress;Foundation;Iceworks;Swamp");
+	}
+	else {
+		AddIfMissing(INISection::Graphics, INIKey::Style, "Deep Spaces");
+	}
 
 	AddIfMissing(INISection::Localization, INIKey::ExportText, "0");
 	AddIfMissing(INISection::Localization, INIKey::Keyboard, "0");
 	AddIfMissing(INISection::Localization, INIKey::Language, "Eng");
 
 	//General music.
-	AddIfMissing(INISection::Songs, "Credits",    "credits.ogg");
-	AddIfMissing(INISection::Songs, "Exit",       "Busride.ogg");
-	AddIfMissing(INISection::Songs, "Intro",      "RPGTitle.ogg");
-	AddIfMissing(INISection::Songs, "WinGame",    "endhold.ogg");
-	AddIfMissing(INISection::Songs, "Architects", "architects.ogg");
-	AddIfMissing(INISection::Songs, "Battle",     "battle.ogg");
-	AddIfMissing(INISection::Songs, "Beneath",    "beneath.ogg");
-	AddIfMissing(INISection::Songs, "Dreamer",    "dreamer.ogg");
-	AddIfMissing(INISection::Songs, "Goblins",    "goblins.ogg");
-	AddIfMissing(INISection::Songs, "Redguard",   "redguard.ogg");
-	AddIfMissing(INISection::Songs, "Seaside",    "seaside.ogg");
-	AddIfMissing(INISection::Songs, "Serpents",   "serpents.ogg");
-	AddIfMissing(INISection::Songs, "Slayer",     "slayer.ogg");
+	AddIfMissing(INISection::Songs, "Credits",      "A Gentle Triumph.ogg");
+	AddIfMissing(INISection::Songs, "Exit",         "Busride.ogg");
+	AddIfMissing(INISection::Songs, "Intro",        "RPGTitle.ogg");
+	AddIfMissing(INISection::Songs, "WinGame",      "endhold.ogg");
+	AddIfMissing(INISection::Songs, "Architects",   "architects.ogg");
+	AddIfMissing(INISection::Songs, "Battle",       "battle.ogg");
+	AddIfMissing(INISection::Songs, "Beneath",      "beneath.ogg");
+	AddIfMissing(INISection::Songs, "Dreamer",      "dreamer.ogg");
+	AddIfMissing(INISection::Songs, "Goblins",      "goblins.ogg");
+	AddIfMissing(INISection::Songs, "Redguard",     "redguard.ogg");
+	AddIfMissing(INISection::Songs, "Seaside",      "seaside.ogg");
+	AddIfMissing(INISection::Songs, "Serpents",     "serpents.ogg");
+	AddIfMissing(INISection::Songs, "Slayer",       "slayer.ogg");
+	AddIfMissing(INISection::Songs, "Pirates",      "pirates.ogg");
+	AddIfMissing(INISection::Songs, "GoblinKing",   "goblinking.ogg");
+	AddIfMissing(INISection::Songs, "BigSerpent",   "bigserpent.ogg");
+	AddIfMissing(INISection::Songs, "Tar",          "tar.ogg");
+	AddIfMissing(INISection::Songs, "Puzzle",       "puzzle.ogg");
+	AddIfMissing(INISection::Songs, "SecretArea",   "secretarea.ogg");
+	AddIfMissing(INISection::Songs, "SmallerPlans", "smallerplans.ogg");
+	AddIfMissing(INISection::Songs, "Geometry",     "geometry.ogg");
+	AddIfMissing(INISection::Songs, "SlipStair",    "slipstair.ogg");
+	AddIfMissing(INISection::Songs, "Sympathetic",  "sympathetic.ogg");
+	AddIfMissing(INISection::Songs, "Ascendant",    "ascendant.ogg");
+	AddIfMissing(INISection::Songs, "RoachesRun",   "roachesrun.ogg");
+	AddIfMissing(INISection::Songs, "NewIdea",      "newidea.ogg");
+	AddIfMissing(INISection::Songs, "Waltz",        "waltz.ogg");
+	AddIfMissing(INISection::Songs, "SwingHalls",   "swinghalls.ogg");
+	AddIfMissing(INISection::Songs, "AmbWindy",     "amb-windy.ogg");
+	AddIfMissing(INISection::Songs, "AmbBeach",     "amb-beach.ogg");
+	AddIfMissing(INISection::Songs, "AmbForest",    "amb-forest.ogg");
+	AddIfMissing(INISection::Songs, "AmbDrips",     "amb-drips.ogg");
+	AddIfMissing(INISection::Songs, "AmbRoaches",   "amb-roaches.ogg");
+	AddIfMissing(INISection::Songs, "Title2",       "Night of the Wilds.ogg");
+	AddIfMissing(INISection::Songs, "Elizabeth",    "elizabeth.ogg");
 
 	//Style-specific music.
 	AddIfMissing(INISection::Songs, "Deep SpacesExit", "Devious.ogg");
@@ -1860,14 +1916,20 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	{
 		AddIfMissing(INISection::Songs, "AbovegroundExit", "above win.ogg");
 		AddIfMissing(INISection::Songs, "AbovegroundPuzzle", "above cont 1.ogg;above cont 2.ogg;above aggr 1.ogg;above aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "BeachExit", "above win.ogg");
+		AddIfMissing(INISection::Songs, "BeachPuzzle", "FnM/CRUS CO 01.ogg;FnM/CRUS CO 02.ogg;FnM/CRUS CO 03.ogg;FnM/CRUS CO 04.ogg;FnM/CRUS AG 01.ogg;FnM/CRUS AG 02.ogg;FnM/CRUS AG 03.ogg;FnM/CRUS AG 04.ogg");
 		AddIfMissing(INISection::Songs, "CityExit", "city win level.ogg");
 		AddIfMissing(INISection::Songs, "CityPuzzle", "city cont 1.ogg;city cont 2.ogg;city aggr 1.ogg;city aggr 2.ogg");
+		AddIfMissing(INISection::Songs, "ForestExit", "city win level.ogg");
+		AddIfMissing(INISection::Songs, "ForestPuzzle", "FnM/ANFM CO 01.ogg;FnM/ANFM CO 02.ogg;FnM/ANFM CO 03.ogg;FnM/ANFM CO 04.ogg;FnM/ANFM AG 01.ogg;FnM/ANFM AG 02.ogg;FnM/ANFM AG 03.ogg;FnM/ANFM AG 04.ogg");
 		AddIfMissing(INISection::Songs, "FortressExit", "fortress win.ogg");
 		AddIfMissing(INISection::Songs, "FortressPuzzle", "fortress cont 1.ogg;fortress cont 2.ogg;fortress aggr 1.ogg;fortress aggr 2.ogg");
 		AddIfMissing(INISection::Songs, "FoundationExit", "Delver.ogg");
 		AddIfMissing(INISection::Songs, "FoundationPuzzle", "After Paraguay.ogg;Brood.ogg;WithoutFear.ogg;Ancient Machine I.ogg");
 		AddIfMissing(INISection::Songs, "IceworksExit", "MySmallBox.ogg");
 		AddIfMissing(INISection::Songs, "IceworksPuzzle", "Larger View.ogg;Ive Been Here.ogg;The Steady Smite.ogg;The Reward.ogg");
+		AddIfMissing(INISection::Songs, "SwampExit", "fortress win.ogg");
+		AddIfMissing(INISection::Songs, "SwampPuzzle", "FnM/POND CO 01.ogg;FnM/POND CO 02.ogg;FnM/POND CO 03.ogg;FnM/POND CO 04.ogg;FnM/POND AG 01.ogg;FnM/POND AG 02.ogg;FnM/POND AG 03.ogg;FnM/POND AG 04.ogg");
 	}
 
 	AddIfMissing(INISection::Startup, "LogErrors", "1");
@@ -1881,6 +1943,12 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "CitizenDie", "C_die1.ogg;C_die2.ogg");
 	AddIfMissing(INISection::Waves, "CitizenOof", "C_oof1.ogg;C_oof2.ogg");
 	AddIfMissing(INISection::Waves, "CitizenScared", "C_scared1.ogg;C_scared2.ogg");
+	AddIfMissing(INISection::Waves, "ConstructDie", "construct_die1.ogg;construct_die2.ogg;construct_die3.ogg;construct_die4.ogg;construct_die5.ogg;construct_die6.ogg");
+	AddIfMissing(INISection::Waves, "ConstructOof", "construct_oof1.ogg;construct_oof2.ogg;construct_oof3.ogg");
+	AddIfMissing(INISection::Waves, "ConstructScared", "construct_scared1.ogg;construct_scared2.ogg");
+	AddIfMissing(INISection::Waves, "EngineerDie", "eng_die1.ogg;eng_die2.ogg;eng_die3.ogg");
+	AddIfMissing(INISection::Waves, "EngineerOof", "eng_oof1.ogg;eng_oof2.ogg");
+	AddIfMissing(INISection::Waves, "EngineerScared", "eng_scared1.ogg;eng_scared2.ogg;eng_scared3.ogg;eng_scared4.ogg");
 	AddIfMissing(INISection::Waves, "GoblinDie", "G_die1.ogg;G_die2.ogg");
 	AddIfMissing(INISection::Waves, "GoblinOof", "G_oof1.ogg;G_oof2.ogg");
 	AddIfMissing(INISection::Waves, "GoblinScared", "G_scared1.ogg;G_scared2.ogg");
@@ -1905,40 +1973,13 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "WomanOof", "Cf_oof1.ogg;Cf_oof2.ogg");
 	AddIfMissing(INISection::Waves, "WomanScared", "Cf_scared1.ogg;Cf_scared2.ogg");
 
-/*
-	AddIfMissing(INISection::Waves, "CitizenClear", "CitizenClear1.ogg;CitizenClear2.ogg;CitizenClear3.ogg");
-	AddIfMissing(INISection::Waves, "CitizenHi", "CitizenHi1.ogg;CitizenHi2.ogg;CitizenHi3.ogg");
-
-	AddIfMissing(INISection::Waves, "GoblinClear", "GoblinClear1.ogg");
-	AddIfMissing(INISection::Waves, "GoblinHi", "GoblinHi1.ogg;GoblinHi2.ogg;GoblinHi3.ogg;GoblinHi4.ogg");
-
-	AddIfMissing(INISection::Waves, "MonsterClear", "hiss.ogg");
-
-	AddIfMissing(INISection::Waves, "RockClear", "RockClear1.ogg");
-	AddIfMissing(INISection::Waves, "RockHi", "RockHi1.ogg;RockHi2.ogg");
-
-	AddIfMissing(INISection::Waves, "WomanClear", "WomanClear1.ogg");
-	AddIfMissing(INISection::Waves, "WomanHi", "WomanHi1.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "HalphCantOpen", "HalphDoorBlocked1.ogg;HalphDoorBlocked2.ogg");
-	AddIfMissing(INISection::Waves, "HalphEntered", "heya unk.ogg;here i am again.ogg;what did i miss.ogg;im back.ogg;whats going on.ogg;oh hey there you are.ogg");
-	AddIfMissing(INISection::Waves, "HalphFollowing", "HalphFollow1.ogg;HalphFollow2.ogg");
-	AddIfMissing(INISection::Waves, "HalphHurryUp", "HalphHurryUp1.ogg;HalphHurryUp2.ogg");
-	AddIfMissing(INISection::Waves, "HalphInterrupted", "now i cant get there.ogg;hey im blocked.ogg");
-	AddIfMissing(INISection::Waves, "HalphStriking", "HalphGetDoor1.ogg;HalphGetDoor2.ogg");
-	AddIfMissing(INISection::Waves, "HalphWaiting", "HalphWait1.ogg;HalphWait2.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "NLaughing", "NeatherLaugh1.ogg;NeatherLaugh2.ogg;NeatherLaugh3.ogg");
-	AddIfMissing(INISection::Waves, "SlayerCombat", "i am unassailable.ogg;come closer and strike.ogg;cut me if you can.ogg;i will give you the hook.ogg;prepare for your removal.ogg;ah this maneuver.ogg;careful the hook is sharp.ogg;slaying time.ogg");
-*/
-/*
-	AddIfMissing(INISection::Waves, "SlayerEnterFar", "keep running delver.ogg;the wisp will find you.ogg;wait there ill be along.ogg");
-	AddIfMissing(INISection::Waves, "SlayerEnterNear", "ready for the hook.ogg;the empire commands.ogg;ah there you are.ogg");
-*/
-
 	AddIfMissing(INISection::Waves, "SlayerKill", "laughing.ogg;a textbook delver mistake.ogg;finally how could i.ogg;the job is done.ogg");
+
+	AddIfMissing(INISection::Waves, "ATKPickup", "atk pickup.ogg");
+	AddIfMissing(INISection::Waves, "DEFPickup", "def pickup.ogg");
+	AddIfMissing(INISection::Waves, "HPPickup", "hp pickup.ogg");
+	AddIfMissing(INISection::Waves, "ShovelPickup", "shovel.ogg");
+	AddIfMissing(INISection::Waves, "Dig", "dig.ogg");
 
 	AddIfMissing(INISection::Waves, "AreaClear", "areaclear.ogg");
 	AddIfMissing(INISection::Waves, "Bomb", "explosion.ogg");
@@ -1947,12 +1988,16 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "Button", "buttonClick.ogg");
 	AddIfMissing(INISection::Waves, "BriarBreak", "briar-break1.ogg;briar-break2.ogg");
 	AddIfMissing(INISection::Waves, "Checkpoint", "blooomp.ogg");
+	AddIfMissing(INISection::Waves, "ConstructSmash", "ConstructSmash1.ogg;ConstructSmash2.ogg");
 	AddIfMissing(INISection::Waves, "DoorOpen", "hugedoor.ogg");
 	AddIfMissing(INISection::Waves, "EvilEyeWoke", "hmm.ogg");
 	AddIfMissing(INISection::Waves, "Falling", "whoosh.ogg");
+	AddIfMissing(INISection::Waves, "Firetrap", "firetrap.ogg");
+	AddIfMissing(INISection::Waves, "FiretrapStart", "firetrap_start.ogg");
 	AddIfMissing(INISection::Waves, "Frozen", "frozen.ogg");
 	AddIfMissing(INISection::Waves, "Fuse", "fuselighting.ogg");
 	AddIfMissing(INISection::Waves, "Hit", "hit.ogg");
+	AddIfMissing(INISection::Waves, "IceMelt", "icemelt.ogg");
 	AddIfMissing(INISection::Waves, "Jump", "jump.ogg");
 	AddIfMissing(INISection::Waves, "Key", "key.ogg");
 	AddIfMissing(INISection::Waves, "LastBrain", "Powerdown2.ogg");
@@ -1965,8 +2010,10 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "Potion", "potion.ogg");
 	AddIfMissing(INISection::Waves, "PressPlate", "pressurePlate.ogg");
 	AddIfMissing(INISection::Waves, "PressPlateUp", "pressurePlateUp.ogg");
+	AddIfMissing(INISection::Waves, "PuffExplosion", "puff-explosion.ogg");
 	AddIfMissing(INISection::Waves, "Punch", "punch.ogg");
 	AddIfMissing(INISection::Waves, "Read", "read.ogg");
+	AddIfMissing(INISection::Waves, "RoachEggSpawned", "QueenSpawn_01.ogg;QueenSpawn_02.ogg;QueenSpawn_03.ogg");
 	AddIfMissing(INISection::Waves, "Secret", "SecretArea.ogg");
 	AddIfMissing(INISection::Waves, "Shatter", "shatter.ogg");
 	AddIfMissing(INISection::Waves, "Shielded", "shielded.ogg");
@@ -1985,6 +2032,7 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Waves, "WaterStep", "waterstep.ogg");
 	AddIfMissing(INISection::Waves, "Wisp", "belltoll.ogg");
 	AddIfMissing(INISection::Waves, "Wubba", "wubba.ogg");
+	AddIfMissing(INISection::Waves, "WorldmapClick", "worldmap-click.ogg");
 
 #undef AddIfMissing
 }

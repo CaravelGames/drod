@@ -56,6 +56,7 @@ public:
 	virtual ~CDbSavedGameMove() {}
 
 	void Append(CDbCommands& commands, const bool bEndOfSequence=false);
+	void AppendWorldMapCommand(UINT wEntrance, ExitType exitType);
 	void clear() {this->MoveSequence.Clear();}
 	bool empty() const {return this->MoveSequence.empty();}
 	const CStretchyBuffer& getMoves() const {return this->MoveSequence;}

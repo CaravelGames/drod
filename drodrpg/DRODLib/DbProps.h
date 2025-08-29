@@ -62,11 +62,13 @@ DEFPROP(c4_BytesProp,   DataNameText);
 DEFPROP(c4_IntProp,     Delay);
 DEFPROP(c4_IntProp,     DemoID);
 DEFPROP(c4_IntProp,     DescriptionMessageID);
+DEFPROP(c4_IntProp,     DisplayType);
 DEFPROP(c4_IntProp,     EditingPrivileges);
 DEFPROP(c4_IntProp,     EMailMessageID); //deprecated
 DEFPROP(c4_IntProp,     EndHoldMessageID);
 DEFPROP(c4_IntProp,     EndTurnNo);
 DEFPROP(c4_IntProp,     EntranceID);
+DEFPROP(c4_IntProp,     ExitType);
 DEFPROP(c4_BytesProp,   ExtraVars);
 DEFPROP(c4_IntProp,     Flags);
 DEFPROP(c4_IntProp,     GID_Created);
@@ -74,7 +76,9 @@ DEFPROP(c4_IntProp,     GID_LevelIndex);
 DEFPROP(c4_IntProp,     GID_NewLevelIndex);
 DEFPROP(c4_IntProp,     GID_OriginalNameMessageID);
 DEFPROP(c4_IntProp,     GID_PlayerID);
+DEFPROP(c4_IntProp,     HighScoreID);
 DEFPROP(c4_IntProp,     HoldID);
+DEFPROP(c4_IntProp,     ImageID);
 DEFPROP(c4_IntProp,     ImageStartX);
 DEFPROP(c4_IntProp,     ImageStartY);
 //DEFPROP(c4_IntProp,     IsFirstTurn);
@@ -86,8 +90,11 @@ DEFPROP(c4_IntProp,     LanguageCode);
 DEFPROP(c4_IntProp,     LastUpdated);
 DEFPROP(c4_IntProp,     Left);
 DEFPROP(c4_IntProp,     LevelID);
+DEFPROP(c4_IntProp,     MapIcon);
+DEFPROP(c4_IntProp,     MapIconState);
 DEFPROP(c4_IntProp,     MapMarker);
 DEFPROP(c4_IntProp,     MapOnly);
+DEFPROP(c4_IntProp,     MapState);
 DEFPROP(c4_IntProp,     MessageID);
 DEFPROP(c4_BytesProp,   MessageText);
 DEFPROP(c4_IntProp,     MessageTextID);
@@ -99,6 +106,9 @@ DEFPROP(c4_IntProp,     NextDemoID);
 DEFPROP(c4_IntProp,     NumBytes);
 DEFPROP(c4_IntProp,     O);
 DEFPROP(c4_IntProp,     OrderIndex);
+DEFPROP(c4_IntProp,     OverheadDataID);
+DEFPROP(c4_IntProp,     OverheadImageStartX);
+DEFPROP(c4_IntProp,     OverheadImageStartY);
 DEFPROP(c4_IntProp,     PlayerID);
 //DEFPROP(c4_IntProp,     ProcessSequence);
 DEFPROP(c4_BytesProp,   RawData);
@@ -109,6 +119,8 @@ DEFPROP(c4_IntProp,     RoomRows);
 DEFPROP(c4_IntProp,     RoomX);
 DEFPROP(c4_IntProp,     RoomY);
 DEFPROP(c4_IntProp,     SavedGameID);
+DEFPROP(c4_IntProp,     Score);
+DEFPROP(c4_BytesProp,   ScorepointName);
 DEFPROP(c4_IntProp,     ScriptID);
 DEFPROP(c4_BytesProp,   Settings);
 DEFPROP(c4_IntProp,     ShowDescription);
@@ -131,6 +143,8 @@ DEFPROP(c4_IntProp,     Type);
 DEFPROP(c4_IntProp,     VarID);
 DEFPROP(c4_BytesProp,   VarNameText);
 DEFPROP(c4_IntProp,     Version);
+DEFPROP(c4_IntProp,     WorldMapID);
+DEFPROP(c4_BytesProp,   WorldMapNameText);
 DEFPROP(c4_IntProp,     X);
 DEFPROP(c4_IntProp,     Y);
 
@@ -151,6 +165,8 @@ DEFPROP(c4_ViewProp, Scrolls);
 DEFPROP(c4_ViewProp, Pieces);
 DEFPROP(c4_ViewProp, PlatformDeltas);
 DEFPROP(c4_ViewProp, Vars);
+DEFPROP(c4_ViewProp, WorldMaps);
+DEFPROP(c4_ViewProp, WorldMapIcons);
 
 //This view has records for all ID keys.
 DEFTDEF(INCREMENTEDIDS_VIEWDEF,
@@ -165,7 +181,8 @@ DEFTDEF(INCREMENTEDIDS_VIEWDEF,
 			"PlayerID:I,"
 			"RoomID:I,"
 			"SavedGameID:I,"
-			"SpeechID:I"
+			"SpeechID:I,"
+			"HighScoreID:I"
 		"]");
 
 #define MONSTERS_VIEWPROPDEF  \
@@ -197,6 +214,9 @@ DEFTDEF(ROOMS_VIEWDEF,
 			"DataID:I,"
 			"ImageStartX:I,"
 			"ImageStartY:I,"
+			"OverheadDataID:I,"
+			"OverheadImageStartX:I,"
+			"OverheadImageStartY:I,"
 			"StyleName:B,"
 			"Squares:B,"
 			"TileLights:B,"
@@ -225,7 +245,8 @@ DEFTDEF(ROOMS_VIEWDEF,
 				"Left:I,"
 				"Right:I,"
 				"Top:I,"
-				"Bottom:I"
+				"Bottom:I,"
+				"ExitType:I"
 			"],"
 			"ExtraVars:B"
 		"]");
@@ -236,6 +257,7 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 			"SavedGameID:I,"
 			"PlayerID:I,"
 			"RoomID:I,"
+			"WorldMapID:I,"
 			"Type:I,"
 			"IsHidden:I,"
 			"LastUpdated:I,"
@@ -247,8 +269,10 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 			"ExploredRooms"
 			"["
 				"RoomID:I,"
-				"MapOnly:I,"
+				"MapState:I,"
 				"MapMarker:I,"
+				"MapIcon:I,"
+				"MapIconState:I,"
 
 				//room delta:
 				"Squares:B,"   //room tiles now
@@ -265,7 +289,8 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 				"Orbs"
 				"["
 					"X:I"
-				"]"
+				"],"
+				"TileLights:B"
 			"],"
 			"CompletedScripts"
 			"["
@@ -274,6 +299,17 @@ DEFTDEF(SAVEDGAMES_VIEWDEF,
 			"EntrancesExplored"
 			"["
 				"EntranceID:I"
+			"],"
+			"WorldMapIcons"
+			"["
+				"WorldMapID:I,"
+				"EntranceID:I,"
+				"ExitType:I,"
+				"X:I,"
+				"Y:I,"
+				"CharID:I,"
+				"ImageID:I,"
+				"Flags:I"
 			"],"
 			MONSTERS_VIEWPROPDEF "," //global scripts and custom equipment
 			"Created:I,"
@@ -365,7 +401,16 @@ DEFTDEF(HOLDS_VIEWDEF,
 				"AnimationSpeed:I,"
 				"ExtraVars:B"
 			"],"
-			"CaravelNetMedia:I"
+			"CaravelNetMedia:I,"
+			"WorldMapID:I,"
+			"WorldMaps"
+			"["
+				"WorldMapID:I,"
+				"DataID:I,"
+				"DisplayType:I,"
+				"OrderIndex:I,"
+				"WorldMapNameText:B"
+			"]"
 		"]");
 
 DEFTDEF(PLAYERS_VIEWDEF,
@@ -414,6 +459,17 @@ DEFTDEF(SAVEDGAMEMOVES_VIEWDEF,
 			"Commands:B"     //packed movement commands
 		"]");
 
+DEFTDEF(LOCALHIGHSCORES_VIEWDEF,
+		"LocalHighScores"
+		"["
+				"HighScoreID:I,"
+				"Score:I,"
+				"PlayerID:I,"
+				"HoldID:I,"
+				"ScorepointName:B,"
+				"Stats:B"
+		"]");
+
 #undef DEFPROP
 #undef DEFTDEF
 
@@ -437,6 +493,7 @@ enum VIEWTYPE
 	V_SavedGameMoves,
 	V_SavedGames,
 	V_Speech,
+	V_LocalHighScores,
 	V_Count,
 	V_Invalid
 };
@@ -456,6 +513,8 @@ enum VIEWPROPTYPE
 	VP_Pieces,
 	VP_PlatformDeltas,
 	VP_Vars,
+	VP_WorldMaps,
+	VP_WorldMapIcons,
 	VP_Count,
 	VP_Invalid
 };
@@ -487,12 +546,14 @@ enum PROPTYPE
 	P_Delay,
 	P_DemoID,
 	P_DescriptionMessage,   //not ID
+	P_DisplayType,
 	P_EditingPrivileges,
 	P_EMailMessage, //not ID
 	P_EndHoldMessage,       //not ID
 	P_EndTurnNo,
 	P_EntranceID,
 	P_EntrancesExplored,  //list
+	P_ExitType,
 	P_ExtraVars,
 	P_Flags,
 	P_GID_Created,
@@ -500,7 +561,9 @@ enum PROPTYPE
 	P_GID_NewLevelIndex,
 	P_GID_OriginalNameMessage, //not ID
 	P_GID_PlayerID,
+	P_HighScoreID,
 	P_HoldID,
+	P_ImageID,
 	P_ImageStartX,
 	P_ImageStartY,
 //	P_IsFirstTurn,
@@ -513,8 +576,11 @@ enum PROPTYPE
 	P_Left,
 	P_LevelID,
 	P_LitFuses,  //list
+	P_MapIcon,
+	P_MapIconState,
 	P_MapMarker,
 	P_MapOnly,
+	P_MapState,
 	P_Message,     //not ID
 	P_MessageText,
 	P_MessageTextID,
@@ -527,6 +593,9 @@ enum PROPTYPE
 	P_O,
 	P_OrbTypes,  //list
 	P_OrderIndex,
+	P_OverheadDataID,
+	P_OverheadImageStartX,
+	P_OverheadImageStartY,
 	P_PlayerID,
 //	P_ProcessSequence,
 	P_RawData,
@@ -537,6 +606,8 @@ enum PROPTYPE
 	P_RoomX,
 	P_RoomY,
 	P_SavedGameID,
+	P_Score,
+	P_ScorepointName,
 	P_ScriptID,
 	P_Settings,
 	P_ShowDescription,
@@ -558,6 +629,8 @@ enum PROPTYPE
 	P_VarID,
 	P_VarNameText,
 	P_Version,
+	P_WorldMapID,
+	P_WorldMapNameText,
 	P_X,
 	P_Y,
 	P_Count,
@@ -567,11 +640,11 @@ enum PROPTYPE
 };
 
 //*****************************************************************************
-extern const char viewTypeStr[V_Count][15]
+extern const char viewTypeStr[V_Count][16]
 #ifdef INCLUDED_FROM_DBBASE_CPP
 = {
 	"Data", "Demos", "Holds", "Levels", "MessageTexts", "Players",
-	"Rooms", "SavedGameMoves", "SavedGames", "Speech"
+	"Rooms", "SavedGameMoves", "SavedGames", "Speech", "LocalHighScores"
 }
 #endif
 ;
@@ -581,7 +654,8 @@ extern const char viewpropTypeStr[VP_Count][15]
 = {
 	"Characters", "Entrances", "Exits", "ExploredRooms",
 	"Monsters", "OrbAgents",
-	"Orbs", "Scrolls", "Pieces", "PlatformDeltas", "Vars"
+	"Orbs", "Scrolls", "Pieces", "PlatformDeltas", "Vars",
+	"WorldMaps", "WorldMapIcons"
 }
 #endif
 ;
@@ -596,28 +670,30 @@ extern const char propTypeStr[P_Count][26]
 	"Commands", "CompletedScripts",
 	"Created", "DataFormat", "DataID", "DataIDTiles",
 	"DataNameText",
-	"DataNameTextID", "Delay", "DemoID", "DescriptionMessage",
+	"DataNameTextID", "Delay", "DemoID", "DescriptionMessage", "DisplayType",
 	"EditingPrivileges", "EMailMessage", "EndHoldMessage", "EndTurnNo",
-	"EntranceID", "EntrancesExplored", "ExtraVars", "Flags", "GID_Created",
+	"EntranceID", "EntrancesExplored", "ExitType", "ExtraVars", "Flags", "GID_Created",
 	"GID_LevelIndex", "GID_NewLevelIndex", "GID_OriginalNameMessage",
-	"GID_PlayerID", "HoldID", "ImageStartX", "ImageStartY",
+	"GID_PlayerID", "HighScoreID", "HoldID", "ImageID", "ImageStartX", "ImageStartY",
 //	"IsFirstTurn",
 	"IsHidden", "IsLocal", "IsMainEntrance",
 	"IsSecret",
 	"LanguageCode", "LastUpdated", "Left",
 	"LevelID",
-	"LitFuses", "MapOnly", "MapMarker",
+	"LitFuses", "MapIcon", "MapIconState", "MapMarker", "MapOnly", "MapState",
 	"Message", "MessageText", "MessageTextID", "ModName", "Mood", "Multiplier",
-	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex", "PlayerID",
+	"NameMessage", "NextDemoID", "NumBytes", "O", "OrbTypes", "OrderIndex",
+	"OverheadDataID", "OverheadImageStartX", "OverheadImageStartY",
+	"PlayerID",
 //	"ProcessSequence",
 	"RawData", "Right", "RoomID", "RoomCols",
-	"RoomRows", "RoomX", "RoomY", "SavedGameID", "ScriptID",
+	"RoomRows", "RoomX", "RoomY", "SavedGameID", "Score", "ScorepointName", "ScriptID",
 	"Settings", "ShowDescription", "ShowSequenceNo", "SpeechID", "Squares",
 	"StartRoomAppearance",
 	"StartRoomO", "StartRoomSwordOff", "StartRoomX", "StartRoomY", "Stats",
 	"Status", "StyleName",
 	"TileLights", "TimData", "Top", "Type", "VarID", "VarNameText", "Version",
-	"X", "Y"
+	"WorldMap", "WorldMapNameText", "X", "Y"
 }
 #endif
 ;

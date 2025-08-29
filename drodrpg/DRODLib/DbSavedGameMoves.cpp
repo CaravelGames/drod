@@ -65,6 +65,15 @@ void CDbSavedGameMove::Append(
 }
 
 //*****************************************************************************
+void CDbSavedGameMove::AppendWorldMapCommand(UINT wEntrance, ExitType exitType)
+//Adds command data for world map interaction
+{
+	this->MoveSequence += CMD_WORLD_MAP;
+	this->MoveSequence += wEntrance;
+	this->MoveSequence += (UINT)exitType;
+}
+
+//*****************************************************************************
 bool CDbSavedGameMove::Load(
 //Load move sequence (previous to current room) for the indicated saved game.
 //
@@ -105,8 +114,8 @@ bool CDbSavedGameMove::Load(
 	}
 
 	BYTE *decodedBuf = NULL; //called method will allocate memory
-	MESSAGE_ID ret = CDbXML::z_uncompress(decodedSize, decodedBuf, bytes, numInBytes);
-	if (ret != MID_Success)
+	CStretchyBuffer encodedBuf = CStretchyBuffer(bytes, numInBytes);
+	if (!encodedBuf.Uncompress(decodedBuf, decodedSize))
 	{
 		ASSERT(!decodedBuf);
 		ASSERT(!"Can't unpack move data");

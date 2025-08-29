@@ -16,6 +16,7 @@ There are five general classes of script commands, as follows:</p>
   <li><a href="#interaction">Interaction</a></li>
   <li><a href="#queries">Queries</a></li>
   <li><a href="#decision">Decision making</a></li>
+  <li><a href="#lighting">Lighting</a></li>
 </ol>
 <p>
 <a href="#usagenotes">Notes about using NPC scripts</a><br />
@@ -26,7 +27,8 @@ There are five general classes of script commands, as follows:</p>
 <a href="#multichoiceexample">Example of a multiple choice question</a><br />
 <a href="#newmonsters">How to make a new monster type</a><br />
 <a href="#character-on-tarstuff">Character on tarstuff</a><br />
-<a href="#customequipment">How to make custom equipment</a>
+<a href="#customequipment">How to make custom equipment</a><br />
+<a href="#image-overlay-commands">Image Overlay commands</a>
 </p>
 <hr />
 <p><a name="placement"><b>1.&nbsp;&nbsp;Placement</b></a> - Change the NPC's location.</p>
@@ -88,6 +90,14 @@ functions.</p>
 <ol>
   <li><a name="setappearance"><b>Set appearance</b></a> - Changes the NPC's
       "Graphic" and default properties to the specified entity type.</li>
+  <li><a name="setmovement"><b>Set Movement Type</b></a> - Changes which tiles the NPC can move on. The options are:
+  <ol>
+	<li><b>Ground</b> - Normal movement behavior. The NPC cannot cross tiles that block normal movement.</li>
+	<li><b>Water</b> - The NPC can move over water tiles in additional to normal floor tiles. Additionally, the NPC will not drown if dropped into water.</li>
+	<li><b>Wall</b> - The NPC can move through wall and doors tiles in additional to crossing normal floor tiles.</li>
+	<li><b>Air</b> - The NPC can move over all non-wall and non-door tiles. Additionally, it is not effect by damaging tiles, and cannot be killed by being dropped into water or into pits.</li>
+  </ol>
+  </li>
   <li><a name="turnintomonster"><b>Turn into monster</b></a> - Turns the NPC
       into a regular monster of the type indicated by its graphic.  This ends
       script execution immediately and the NPC is permanently replaced by a
@@ -100,6 +110,7 @@ functions.</p>
 	  turn.  Also used to define certain attributes of the NPC's abilities
 	  (see <a href="#behaviorlist">Behaviors</a>).  Compatible behaviors
 	  may be combined.</li>
+  <li><a name="replacewithdefault"><b>Replace with Default Script</b></a> - If the NPC is a custom NPC type, replaces the script content with that NPC type's default script. That script will then begin executing. Has no effect when used in an NPC with a pre-defined type.</li>
 </ol>
 
 <p><a name="interaction"><b>3.&nbsp;&nbsp;Interaction</b></a> - How the NPC
@@ -112,6 +123,9 @@ interacts with its environment.</p>
       to orbs before striking them for more intuitive behavior.  If no one is
       next to the orb when struck, it will appear that Beethro is using his
       portable orb.</li>
+  <li><a name="attack-tile"><b>Attack tile</b></a> - Damages the player or monster
+      at the room square you select, with the specified amount of ATK power. The
+      command can be configured to ignore the target's DEF value.</li>
   <li><a name="speech"><b>Speech</b></a> - Causes someone in the room to say
       something.<br />
       <a name="dialogtext"><u>Dialog text</u></a>: Type the words that are said.
@@ -171,6 +185,9 @@ interacts with its environment.</p>
       point taken, either via stairs or script.
       Using it again consecutively will return to the location of original use.
       </li>
+  <li><a name="gotoworldmap"><b>Go to world map</b></a> - Sends the player
+     immediately to any world map defined in the hold.
+     </li>
   <li><a name="playvideo"><b>Play video</b></a> - Plays a video file, imported
       from a video file on disk, at the specified screen coordinates.  Sound
       tracks in video files are not supported, but sounds and music may be
@@ -206,23 +223,25 @@ interacts with its environment.</p>
       will continue execution if the user selects this choice.
       Up to nine answer options are supported for a given Question.  Any
       additional options are ignored.</li>
-  <li><a name="setvar"><b>Set var</b></a> - In addition to
+  <li>
+      <a name="setvar"><b>Set var</b></a> - In addition to
       <a href="#predefinedvars">predefined variables</a>,
-	  each hold you create contains a set
+      each hold you create contains a set
       of zero or more variables, named by you.  Use these variables to track
       persistent game state information across rooms during play. To add a variable
-      to a hold, type its name into the uppermost text box and click "Add".
-	  Variable names must begin with a letter and not contain any punctuation
-	  except underscore ('_').  
+      to a hold, type its name into the uppermost text box and click "Add".<br />
+      <u>Syntax</u>: Variable names must begin with a letter or hash (#) and not contain any punctuation
+      except underscore ('_').<br />
+      <u>Arrays</u>: Starting a variable name with a hash (#) configures it as an array variable. See <a href="scriptarray.html">Script arrays</a> for more information.<br />
       To permanently remove a hold variable, select it from the list box on the
       left and click "Remove".  Note that this removes the variable completely
       from the hold and all NPC scripts that use it, not just from this
       particular script.<br />
-      <a name="varops">Select</a> a hold variable from the list, choose an
+      <u>Modifying variables</u>: <a name="varops">Select</a> a hold variable from the list, choose an
       operation and a value. Variables may either store an integer or text. If
       the operation you specify is "Assign text" or "Add text", the variable you
       select will be set to store the text you provide. You may also reference
-	  other variables to insert into the given text.  For operations dealing
+      other variables to insert into the given text.  For operations dealing
       with numbers, if you provide the name of another variable, its value will
       be used (invalid names will be considered a value of 0). Otherwise, the
       number you provide is used. Use the text box on top to specify the text
@@ -231,11 +250,11 @@ interacts with its environment.</p>
       will store a number.<br />
       <a name="varsintext"><u>Using vars in text</u></a>:
       In variable text assignments,
-	  <a href="#speech">Speech</a>, <a href="#question">Questions</a>
+      <a href="#autosave">Autosave</a>, <a href="#speech">Speech</a>, <a href="#question">Questions</a>
       (see below), level entrance texts, and scroll text,
       type "$&lt;var name&gt;$" to insert the
       current value of the variable you name at this point in the text.
-	  Type "$\n$" to skip to the next line of text.<br />
+      Type "$\n$" to skip to the next line of text.<br />
       <a name="varref"><u>Comprehensive variable reference list</u></a>:
       In the <a href="editroom.html">Room Editor Screen</a>, press F2 to output
       a comprehensive list of hold variables to the clipboard (use the paste
@@ -247,13 +266,22 @@ interacts with its environment.</p>
       Press Ctrl-F7 while playing to turn on and off the variable monitor.
       Whenever a script changes a hold variable, you will be notified onscreen.
       This only works while playtesting, playing a hold you authored, or playing
-      a CaravelNet hold in beta.</li>
+      a CaravelNet hold in beta.
+  </li>
+  <li><a name="setvarat"><b>Set var at</b></a> - Allows the <a href="#setvar">Set var</a> command to be invoked with an NPC on another tile. All assignment and parsing will occur as if the target NPC called the Set var command. Thus, its local variables will be used, allowing them to be written or read remotely. This command can also be used an <a href="#if">If</a> condition. The condition is satisfied if the command successfully invokes a variable assignment on an NPC in the target square. Hint: Use this for scripts that rely on the result of a remote variable assignment.
+  </li>
+  <li><a name="resetoverrides"><b>Reset _MyScript variables</b></a> - Sets the value of all <a href="#paramoverride">_MyScript variables</a> to -9999, so they no longer override command values.</li>
+  <li><a name="setmonstervar"><b>Set monster var</b></a> - Modify a
+	  stat value of a monster at a specific room location.</li>
   <li><a name="eachattack"><b>Each attack</b></a> - Each time the NPC attacks,
       jump the script to the indicated <a href="#label">Label</a>.</li>
   <li><a name="eachdefend"><b>Each defend</b></a> - Each time the NPC is hit,
       jump the script to the indicated <a href="#label">Label</a>.</li>
   <li><a name="eachuse"><b>Each use</b></a> - (Custom equipment scripts only)
       Each time this equipment is activated by the player,
+      jump the script to the indicated <a href="#label">Label</a>.</li>
+  <li><a name="eachvictory"><b>Each victory</b></a> - 
+      Each time an enemy is defeated,
       jump the script to the indicated <a href="#label">Label</a>.</li>
   <li><a name="equipment"><b>Equipment</b></a> - Modifies the player's indicated
       equipment slot.  <u>Trade</u>: set the specified custom NPC as a custom
@@ -289,6 +317,11 @@ interacts with its environment.</p>
 	  then it will show the room on the minimap as if the player has already
 	  explored it.  If the indicated room has already been explored
 	  by the player, this command does nothing.</li>
+  <li><a name="set-map-icon"><b>Set map icon</b></a> - Adds an icon for the selected
+      room on the player's map. Icons can be added to unrevealed rooms but are only displayed
+      on rooms that have been revealed to the player. Setting the icon to "none"
+      will remove any icon from that room. In addition to normal display, icons can be
+      shown in grayscale, negative color, and sepia.</li>
   <li><a name="autosave"><b>Autosave</b></a> - Automatically saves the player's
       game in an "Autosave" slot under the name you provide.
 	  Whenever this command is executed, any previous
@@ -299,6 +332,12 @@ interacts with its environment.</p>
   <li><a name="gameeffect"><b>Game effect</b></a> - Display a visual effect
 	  at a specified room location.  Particle effects may have a direction
 	  given them.  Some effects may play an optional accompanying sound effect.</li>
+  <li><a name="image-overlay"><b>Image overlay</b></a> - Input a <a href="#image-overlay-commands">custom set of commands</a> for displaying a custom image effect in the game room.</li>
+  <li><a name="world-map-select"><b>World Map Select</b></a> - Select an overworld map for subsequent World Map commands to be performed with reference to. Without this command, the other World Map commands will do nothing.</li>
+  <li><a name="world-map-music"><b>World Map Music</b></a> -
+Sets the music that plays on the previously selected map. This only need be executed once during a hold playthrough. Any subsequent executions will override the previous setting.</li>
+  <li><a name="world-map-tile-icon"><b>World Map Tile Icon</b></a> - Places an icon on the previously selected map. You specify the position the icon appears on the map, its state, and if active, what level entrance or map it leads to when the player clicks on it from this map screen. Icons persist on the specified map from that moment for the entire playthrough. Placing an icon at the same position as another will override the first. Using icon type "Off" will remove an icon from the map. You can select a custom NPC with a looping animation speed in order to display an animated graphic on the map.</li>
+  <li><a name="world-map-image-icon"><b>World Map Image Icon</b></a> - Places an image on the previously selected map. Works in other respects as the "World Map Tile Icon" command.</li>
 </ol>
 
 <p><a name="queries"><b>4.&nbsp;&nbsp;Queries</b></a> - Use queries to examine
@@ -346,6 +385,7 @@ the state of the room and wait indefinitely until certain events occur.</p>
       until the player bumps into the NPC.</li>
   <li><a name="waitvar"><b>Wait until var</b></a> - Waits until a <a href="#setvar">
       hold variable</a> meets the condition you specify.</li>
+  <li><a name="wait-expression"><b>Wait until expression</b></a> - Waits until a given expression satisfies the condition you specify. In addition to hold variables, expressions can also use <a href="#functions">function primitives</a>. Expressions can only be compared to constant values.</li>
   <li><a name="waitdefeat"><b>Wait for defeat</b></a> - Waits until the
       NPC has been defeated (i.e. its HP has been reduced to zero).
 	  This must be used in conjunction with
@@ -363,6 +403,13 @@ the state of the room and wait indefinitely until certain events occur.</p>
 	  <a href="#move">Move</a> command in that direction.</li>
   <li><a name="waitforitem"><b>Wait for item</b></a> - Wait until the
       specified element is located in the marked room region.</li>
+  <li><a name="waitforitemgroup"><b>Wait for item group</b>
+    </a> - Wait until any element from the specified group is located in the marked room region.</li>
+  <li><a name="waitwhileitemgroup"><b>Wait while item group</b>
+    </a> - Wait until no elements from the specified group are located in the marked room region.</li>
+  <li><a name="waitforweapon"><b>Wait for weapon</b></a> - Wait until a
+      weapon is located in the marked room region.</li>
+  <li><a name="logical-wait"><b>Multi-expression Waits</b></a> - Multi-expression wait commands are used to perform an atomic check on multiple conditions, i.e., as a single combined boolean query, which returns a single true or false value. Script execution halts at this point until the multiple conditions are met as specified. The expression block begins with <b>Wait for All</b>, <b>Wait for Any</b> or <b>Wait for Exactly One</b> command, and should end with a <b>Wait for Conditions End</b> command. An <b>All</b> block will wait until all subqueries are true, an <b>Any</b> block will wait until any subquery is true, and an <b>Exactly One</b> block will wait until exactly one subquery is true. Additionally, a multi-expression wait block can be used as a condition for an <a href="#if">if statement</a>. Multi-expression wait blocks can be nested if more complex logic is required. All "Wait for" commands can be used as subqueries, along with the <a href="#role">Set role</a> and <a href="#set-movement">Set movement type</a> commands, which function as they do when used as an if condition.</li>
 </ol>
 
 <p><a name="decision"><b>5.&nbsp;&nbsp;Decision making</b></a> - Use the
@@ -373,8 +420,8 @@ continue executing script commands from a different location in the script.</p>
       block of one or more script commands, based on a condition you specify in
       the next script command, which must be a query. If the query is
       immediately satisfied, then the script commands that follow after will be
-      executed.  An <a href="#ifend"><b>If End</b></a> or
-      <a href="#else"><b>Else</b></a> command indicates the end of the optional
+      executed.  An <a href="#ifend"><b>If End</b></a>,
+      <a href="#else"><b>Else</b></a> or <a href="#else-if"><b>Else if</b></a> command indicates the end of the optional
       code block. If the following query is not true, the script will continue
       after the following the next <a href="#else"><b>Else</b></a> or
       <a href="#ifend"><b>If End</b></a> command that marks the end of the
@@ -387,6 +434,7 @@ continue executing script commands from a different location in the script.</p>
       <b>Else</b> commands in conditional blocks are optional, but they must
       always follow somewhere after an <a href="#if"><b>If ...</b></a> to be
       meaningful.</li>
+  <li><a name="else-if"><b>Else if</b></a> can optionally be used instead of <a href="#else"><b>Else</b></a> to avoid nesting script commands. It works exactly the same as nesting an <a href="#if"><b>If ...</b></a> <a href=  "#ifend"><b>If End</b></a> block inside an <a href="#else"><b>Else</b></a></li>
   <li><a name="ifend"><b>If End</b></a> - Marks the end of
       <a href="#if"><b>If ...</b></a> and <a href="#else"><b>Else</b></a> blocks.<br />
       <a name="condnotes">Notes:</a>
@@ -419,6 +467,8 @@ continue executing script commands from a different location in the script.</p>
       sequence of commands over and over. Use a <a href="#wait"><b>Wait 0</b></a>
       command as the last statement of a loop that is to be executed once each
       turn.</li>
+  <li><a name="gosub"><b>Gosub</b></a> - Similar to "Go to", it continues execution from the indicated label. Used in conjunction with "Return" for more modular scripting.</li>
+  <li><a name="return"><b>Return</b></a> - Continue executing commands from the most recent "Gosub" command executed. When multiple Gosub commands are executed, then multiple Return commands will jump back to these in order from most to least recent.</li>
   <li><a name="endonexit"><b>End on room exit</b></a> - Removes the NPC for the
       rest of the current game when the room is exited.
 	  Hint: use this command at the start of a script to have the NPC execute
@@ -428,6 +478,12 @@ continue executing script commands from a different location in the script.</p>
 	  current game when the room is exited. Hint: use this command to permanently
 	  stop the NPC from executing any more commands, and then disappear when
 	  the room is exited.</li>
+</ol>
+<p><a name="lighting"><b>6.&nbsp;&nbsp;Lighting</b></a> - The following commands can be used to alter the lighting layer of a room. Only one type of lighting can be present on a tile, so these commands will overwrite pre-existing tile lighting. Architects should be considerate to players, and not excessively change the lighting of a room during play.</p>
+<ol>
+  <li><a name="set-dark"><b>Set ceiling darkness</b></a> - Adds darkness to an area. Values between 1 and 32 inclusive will darken a tile, while a value of zero will remove lighting from the tile. Values outside of this range will be clamped to the valid range.</li>
+  <li><a name="set-light"><b>Set ceiling light</b></a> - Adds colored light to an area. Any of the 16 predefined colors can be used. Selecting 'none' will remove lighting from the tile.</li>
+  <li><a name="set-wall-light"><b>Set wall light</b></a> - Adds a wall light element to a tile, with the given intensity. Any of the 16 predefined colors can be used, with an intensity between 1 and 8 inclusive. Selecting 'none' or setting an intensity of zero will remove lighting from the tile.</li>
 </ol>
 
 <br />
@@ -518,19 +574,31 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  Attack(<a href="#attack">*</a>) whenever the player is adjacent the NPC.</li>
   <li><a name="be_beam"><u>Beam attack</u></a>:
 	  NPC emits a beam that halves the player's health on contact.</li>
+  <li><a name="be_beam_block"><u>Beam blocker</u></a>:
+      Embues custom equipment with the ability to block beam attacks. Swords will prevent beams passing through them, shields protect from beams the player is facing, and accessories will protect from beams in all directions.</li>
+  <li><a name="be_hot_tile_immune"><u>Heatproof</u></a>:
+      Prevents the NPC from being harmed by hot tiles, and custom equipment with this ability protects the player from hot tiles.</li>
+  <li><a name="be_firetrap_immune"><u>Fireproof</u></a>:
+      Prevents the NPC from being harmed by firetraps, and custom equipment with this ability protects the player from firetraps.</li>
+  <li><a name="be_mist_immune"><u>Mist protection</u></a>:
+      The NPC's DEF is not nullified by mist, and custom equipment with this ability stops the player's DEF being nullified by mist.</li>
   <li><a name="be_surprised"><u>Surprised from behind</u></a>:
 	  If the player attacks a monster with this attribute from behind,
 	  the NPC loses its first attack turn.  For equipment, it gives the player's
 	  first hit x2 ATK when hitting the monster first from behind.</li>
+  <li><a name="be_spawn_eggs"><u>Spawn Eggs</u></a>:
+      NPC will generate roach eggs or another monster type when the player engages another monster in combat. The type of monster generated can be controlled by the <b>_MySpawn</b> and <b>_QueenSpawn variables</b>.</li>  
   <li><a name="be_goblin"><u>Goblin Weakness</u></a>:
 	  NPC is weak to goblin blades (i.e. player gets x2 ATK).
-	  Embues custom weapons with goblin blade attribute.</li>
+	  Embues custom equipment with goblin blade attribute. Shields with goblin blade attribute instead provide x2 DEF against attacks from goblin enemies.</li>
   <li><a name="be_wyrm"><u>Wyrm Weakness</u></a>:
 	  NPC is weak to wyrm blades (i.e. player gets x2 ATK).
-	  Embues custom weapons with wyrm blade attribute.</li>
+	  Embues custom equipment with wyrm blade attribute. Shields with wyrm blade attribute instead provide x2 DEF against attacks from wyrm enemies.</li>
   <li><a name="be_metal"><u>Metal</u></a>:
       Metal monsters will be damaged on oremites the same as if on a hot tile.
 	  Embues custom equipment with metal attribute (disabled on oremites).</li>
+  <li><a name="be_wall_dwelling"><u>Wall-dwelling</u></a>:
+      A wall-dwelling monster will die if it is not on wall or closed door tile.</li>
   <li><a name="be_lucky"><u>Lucky</u></a>:
 	  Embues custom equipment with lucky attribute (x2 GR from combat
 	  for each lucky item held).</li>
@@ -541,6 +609,10 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  NPC can cut briars with its sword.
 	  Embues custom equipment with briar-cutting attribute (the player's
 	  sword can cut briars).</li>
+  <li><a name="be_cuttar"><u>Cut tarstuff anywhere</u></a>:
+	  NPC can cut tarstuff at any position, not just weak points.
+	  Embues custom equipment with tar-cutting attribute (the player's
+	  sword can cut tarstuff at any position).</li>
   <li><a name="be_noenemydefense"><u>No enemy defense</u></a>:
 	  Attacks nullify the enemy's DEF rating.  Embues custom armor with
 	  protection against monsters with this attack ability.</li>
@@ -549,6 +621,8 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
 	  protection against monsters with this attack ability.</li>
   <li><a name="be_attacklast"><u>Attack last</u></a>:
 	  Always attack last against the enemy.</li>
+  <li><a name="be_attacklast"><u>Removes sword</u></a>:
+	  A piece of equipment with this behavior will prevent the player from holding a sword, even if they have a weapon equipped. The player still benefits from the weapon's stat increases, and any other scripted effects it may have.</li>
   <li><a name="be_droptrapdoors"><u>Drop Trapdoors</u></a>:
 	  When moving off trapdoors, setting this causes them to drop.
 	  Otherwise, nothing happens (default).</li>
@@ -558,6 +632,10 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
   <li><a name="be_pushobjects"><u>Push Objects</u></a>:
 	  Allows the NPC to push mirrors and move platforms.
 	  Otherwise, it is not allowed (default).</li>
+  <li><a name="be_explodesafe"><u>Explosive safe</u></a>:
+	  A piece of equipment with this behavior will prevent the player's sword from detonating bombs and powder kegs, allowing kegs to be pushed with the sword. An NPC with this behavior will not detonate bombs or kegs with their sword.</li>
+    <li><a name="be_wallsafe"><u>Wall and mirror safe</u></a>:
+	  A piece of equipment with this behavior will prevent the player's sword from breaking walls and shattering mirrors. An NPC with this behavior will not break walls or shatter mirrors with their sword.</li>
   <li><a name="be_directonlymovement"><u>Direct-only movement</u></a>: If the
       target is in a diagonal direction from the NPC, but
 	  diagonal movement is blocked, then don't move at all.  If the target is
@@ -573,6 +651,8 @@ that may be set with the <a href="#behavior">Behavior</a> command.</p>
   <li><a name="be_omnimovement"><u>Omni movement</u></a>: When a
 	  desired diagonal or orthogonal movement is blocked, then attempt to make
 	  a movement to the side that might help to approach the destination.</li>
+  <li><a name="be_minimaptreasure"><u>Minimap treasure</u></a>:
+      A character with this behavior will count as a collectable item for the purpose of setting the room color on the minimap. This only applies if the character is visible or has the <a href="#ghost">Ghost display</a> imperative.</li>
 </ol>
 <p><a name="attack"><b>*Attack</b></a> - Monsters may not attack the player
 when the player is above the monster, e.g. standing on a raised door when
@@ -584,18 +664,20 @@ predefined variables that may be set and queried with the
 <a href="#setvar">Set var</a> and <a href="#waitvar">Wait until var</a> commands.
 Some of these variables are tied to game state and are updated automatically
 as play progresses.  Others are altered solely through script commands.
+These variables may be referenced in script expressions.
+The variable names are case-insensitive.
 <br /><br />
 <table>
   <tr>
-    <td width="160"><b>Name</b></td><td width="350"><b>Description</b></td><td width="170"><b>Default value</b></td><td width="150"><b>Valid range</b></td>
+    <td width="200"><b>Name</b></td><td width="340"><b>Description</b></td><td width="170"><b>Default value</b></td><td width="150"><b>Valid range</b></td>
   </tr><tr>
     <td><b>NPC stats</b></td><td></td><td></td><td></td>
   </tr><tr>
     <td>_MyHP</td><td>NPC's HP</td><td>0 (<a href="#myhp">*</a>)</td><td>0,MAX</td>
   </tr><tr>
-    <td>_MyATK</td><td>NPC's ATK</td><td>0</td><td>0,MAX</td>
+    <td>_MyATK</td><td>NPC's ATK</td><td>0</td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_MyDEF</td><td>NPC's DEF</td><td>0</td><td>0,MAX</td>
+    <td>_MyDEF</td><td>NPC's DEF</td><td>0</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_MyGold</td><td>NPC's GR (battle loot)</td><td>0</td><td>-MAX,MAX</td>
   </tr><tr>
@@ -603,7 +685,15 @@ as play progresses.  Others are altered solely through script commands.
   </tr><tr>
     <td>_MyColor</td><td>NPC's RGB modifier (<a href="#mycolor">*</a>)</td><td>505050</td><td>000000,999999</td>
   </tr><tr>
+    <td>_MyHue</td><td>NPC's base color modifier (<a href="#myhue">*</a>)</td><td>0</td><td>0,6000</td>
+  </tr><tr>
+    <td>_MySaturation</td><td>NPC's color strength modifier (<a href="#mysaturation">*</a>)</td><td>0</td><td>0,1000</td>
+  </tr><tr>
     <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
+	</tr><tr>
+    <td>_MyWeakness</td><td>NPC's custom weakness type (<a href="#myweakness">*</a>)</td><td></td><td>Text</td>
+  </tr><tr>
+    <td>_MyDescription</td><td>NPC's custom description (<a href="#mydescription">*</a>)</td><td></td><td>Text</td>
   </tr><tr>
     <td>_MyX</td><td>NPC's X coordinate (room column)</td><td></td><td>0,15</td>
   </tr><tr>
@@ -631,9 +721,21 @@ as play progresses.  Others are altered solely through script commands.
   </tr><tr>
     <td>_MonsterGRMult</td><td>global monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_MonsterREFMult</td><td>global monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+    <td>_MonsterREPMult</td><td>global monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_ItemMult</td><td>global item stat multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+    <td>_MyMonsterHPMult</td><td>local monster HP multiplier(<a href="#mymonhpmult">*</a>)</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterATKMult</td><td>local monster ATK multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterDEFMult</td><td>local monster DEF multiplier</td><td>100 (percent)</td><td>0,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterGRMult</td><td>local monster GR multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyMonsterREPMult</td><td>local monster REP multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_LevelMultiplier</td><td>current level's item stat multiplier(<a href="#levelmult">*</a>)</td><td></td><td></td>
+  </tr><tr>
+    <td>_ItemMult</td><td>global item stat multiplier(<a href="#itemmult">*</a>)</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_ItemHPMult</td><td>global health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
@@ -643,9 +745,57 @@ as play progresses.  Others are altered solely through script commands.
   </tr><tr>
     <td>_ItemGRMult</td><td>global money door multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
   </tr><tr>
+    <td>_MyItemMult</td><td>local item stat multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemHPMult</td><td>local health item multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemATKMult</td><td>local ATK power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemDEFMult</td><td>local DEF power-up multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
+    <td>_MyItemGRMult</td><td>local money door multiplier</td><td>100 (percent)</td><td>-MAX,MAX</td>
+  </tr><tr>
     <td>_HotTile</td><td>hot tile damage(<a href="#damage">*</a>)</td><td>5 (percent)</td><td>-MAX,100</td>
   </tr><tr>
     <td>_Explosion</td><td>explosion damage(<a href="#damage">*</a>)</td><td>100 (percent)</td><td>-MAX,100</td>
+  </tr><tr>
+    <td>_Beam</td><td>beam damage(<a href="#damage">*</a>)</td><td>50 (percent)</td><td>-MAX,100</td>
+  </tr><tr>
+    <td>_Firetrap</td><td>fire trap damage(<a href="#damage">*</a>)</td><td>-1000</td><td>-MAX,100</td>
+  </tr><tr>
+    <td>_MudSpawn</td><td>global mud spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_TarSpawn</td><td>global tar spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_GelSpawn</td><td>global gel spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_QueenSpawn</td><td>global roach queen spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_MySpawn</td><td>local NPC spawn entity ID(<a href="#spawn">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_MudSwap</td><td>global mud switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_TarSwap</td><td>global tar switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+    <td>_GelSwap</td><td>global gel switcher entity ID(<a href="#swap">*</a>)</td><td>-1 (default)</td><td>valid entity ID</td>
+  </tr><tr>
+	<td>_ScoreHP</td><td>score value for each HP(<a href="#scorevars">*</a>)</td><td>-40</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreATK</td><td>score value for each ATK</td><td>5</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreDEF</td><td>score value for each DEF</td><td>3</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreYellowKeys</td><td>score value for each yellow key</td><td>10</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreGreenKeys</td><td>score value for each green key</td><td>20</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreBlueKeys</td><td>score value for each blue key</td><td>30</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreSkeletonKeys</td><td>score value for each skeleton key</td><td>30</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreGR</td><td>score value for each GR</td><td>0</td><td>-MAX,MAX</td>
+  </tr><tr>
+	<td>_ScoreREP</td><td>score value for each REP</td><td>0</td><td>-MAX,MAX</td>
   </tr><tr>
     <td><b>Player stats</b></td><td></td><td></td><td></td>
   </tr><tr>
@@ -679,19 +829,21 @@ as play progresses.  Others are altered solely through script commands.
   </tr><tr>
     <td>_O</td><td>player's orientation (direction faced)</td><td></td><td>0,8</td>
   </tr><tr>
+    <td>_RoomX</td><td>current room's X coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
+  </tr><tr>
+    <td>_RoomY</td><td>current room's Y coordinate in level(<a href="#roompositionvars">*</a>)</td><td></td><td></td>
+  </tr><tr>
     <td><b>Play info</b></td><td></td><td></td><td></td>
   </tr><tr>
     <td>_TotalMoves</td><td>total moves made by the player this game</td><td></td><td></td>
-  </tr><tr>
-    <td>_TotalTime</td><td>total time spent by the player this game (in ms)</td><td></td><td></td>
   </tr><tr>
     <td><b>Combat stats</b></td><td></td><td></td><td></td>
   </tr><tr>
     <td>_EnemyHP</td><td>Enemy's HP(<a href="#enemy">*</a>)</td><td></td><td>0,MAX</td>
   </tr><tr>
-    <td>_EnemyATK</td><td>Enemy's ATK</td><td></td><td>0,MAX</td>
+    <td>_EnemyATK</td><td>Enemy's ATK</td><td></td><td>-MAX,MAX</td>
   </tr><tr>
-    <td>_EnemyDEF</td><td>Enemy's DEF</td><td></td><td>0,MAX</td>
+    <td>_EnemyDEF</td><td>Enemy's DEF</td><td></td><td>-MAX,MAX</td>
   </tr><tr>
     <td>_EnemyGR</td><td>Enemy's GR (battle loot)</td><td></td><td>-MAX,MAX</td>
   </tr><tr>
@@ -729,7 +881,20 @@ as play progresses.  Others are altered solely through script commands.
   two-digit pair defines the
   amount of R/G/B color offset to the NPC's image.  A value of 50 is normal.
   Lower values (0-49) remove a proportionate amount of that color.
-  Greater values (51-99) enhance that color.
+  Greater values (51-99) enhance that color. This alteration is applied after changes
+  to hue and saturation.
+</p>
+<p><a name="myhue"><b>*_MyHue</b></a> - a number between 0 and 6000, inclusive. If it
+    is set to a non-zero value, it will change the base color of the NPC's image. At a 
+    value of 1, the image is shifted to red. Increasing values will shift to orange, yellow,
+    blue, green, indigo and violet, before cyling back to red as the value approaches 6000. Black,
+    white and greys in the character's image are not affected by this change.
+</p>
+<p>
+    <a name="mysaturation"><b>*_MySaturation</b></a> - a number between 0 and 1000,
+    inclusive. If it is set to a non-zero value, it will change the base colors of
+    the NPC's image. Lower values make the colors less intense, while higher values
+    make them more intense.
 </p>
 <p><a name="mysword"><b>*_MySword</b></a> - set this to change what kind of
   sword the NPC wields.  This affects the NPC's appearance only, and does
@@ -737,6 +902,10 @@ as play progresses.  Others are altered solely through script commands.
   See <a href="equipment.html">Equipment</a> for
   available choices, numbered in order of appearance.
   A value of 0 indicates no sword.
+</p>
+<p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A semi-colon can be used to split the weakness into multiple weaknessess that are checked separately. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if the two have a matching _MyWeakness value. A shield can also be strong against a monster, and will give x2 DEF against attacks from it. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
+</p>
+<p><a name="mydescription"><b>*_MyDescription</b></a> - A custom description property that can be set for a monster or equipment. It will be displayed after any behavior descriptors that apply to the character. A semi-colon can be used to split the description into multiple descriptors that will be displayed separately.
 </p>
 <p><a name="paramoverride"><b>*_MyScriptX</b></a> - This and the other script
   command parameter overrides are used if variable parameters are required
@@ -753,16 +922,41 @@ as play progresses.  Others are altered solely through script commands.
   command with variable parameters in order to ensure later commands are not
   affected unintentionally by your parameter overrides.
 </p>
-<p><a name="monhpmult"><b>*_MonsterHPmult</b></a> - This value is a percent
+<p><a name="monhpmult"><b>*_MonsterHPMult</b></a> - This value is a percent
   multiplier.  It is applied to
   a predefined monster's base HP when the player first enters the room.
   The other stat multipliers are applied to the monster's base stats during
   combat.
 </p>
-<p><a name="damage"><b>*_HotTile, _Explosion</b></a> - When damage is set to a
+<p><a name="mymonhpmult"><b>*_MyMonsterHPMult</b></a> - This value is a percent
+  multiplier. It is a local version of the monster HP multiplier.
+  Local modifiers stack multiplicatively with global modifiers, and are applied
+  by NPCs and custom player equipment.
+</p>
+<p><a name="mymonhpmult"><b>*_ItemMult</b></a> - This value is a percent
+  multiplier. Item multipliers are applied to items of the appropriate type,
+  and are available in global and local versions, and are applied when items are
+  collected. If the total multiplier for an item is negative, collecting it will
+  reduce the player's statistics.
+</p>
+<p><a name="levelmult"><b>*_LevelMultiplier</b></a> - This value contains the currents level's item multiplier, as set in the editor. It is a read-only value.
+</p>
+<p><a name="roompositionvars"><b>*_RoomX, _RoomY</b></a> - These values contain the X and Y position of the current room in the level. The entrance is at (0,0), with East and South being positive directions, and North and West being negative directions. These are read-only values.
+</p>
+<p><a name="damage"><b>*_HotTile, _Explosion, _Beam, _Firetrap</b></a> - When damage is set to a
   positive value, it indicates the percentage of HP the target will
   lose.  A negative value indicates a flat damage to inflict.
   When the player is hasted by a Speed Potion, expected damage is halved.
+</p>
+<p><a name="spawn"><b>*_MudSpawn, _TarSpawn, _GelSpawn, _QueenSpawn, _MySpawn</b></a> - Overrides
+  the monster type produced by mud, tar, gel and roach queens respectively. NPCs with the <a href="#be_spawn_eggs">Spawn eggs</a>
+  behavior will produce the monster specified by _QueenSpawn if they do not have a value set for _MySpawn. Overriding tarstuff
+  spawns will also change the monsters affected and produced by <a href="elements.html#tarstuffswitcher">tarstuff switchers</a>.
+</p>
+<p><a name="swap"><b>*_MudSwap, _TarSwap, _GelSwap</b></a> - Overrides the monster types affected and produced by 
+  <a href="elements.html#tarstuffswitcher">tarstuff switchers</a> to be something other than tarstuff mothers. This set of monsters
+  is separate from the ones defined by the spawn override variables. Multi-tile monsters cannot be swapped, either as the source or
+  result of swapping.
 </p>
 <p><a name="enemy"><b>*_EnemyHP, _EnemyATK, _EnemyDEF, _EnemyGR, _EnemyREP</b></a> - 
   These vars are only applicable when in combat.  Custom equipment may
@@ -775,6 +969,62 @@ as play progresses.  Others are altered solely through script commands.
   These vars reference the stat values of the player's current equipment.
   When predefined equipment is carried, its values may be queried but not
   altered.
+</p>
+<p><a name="totalstats"><b>*_TotalATK, _TotalDEF</b></a> - These vars are equal to the player's total ATK and DEF stats 
+    after applying the effects of equipment and room elements. These are read-only values.
+</p>
+<p><a name="scorevars"><b>*_ScoreHP, _ScoreATK, _ScoreDEF, _ScoreYellowKeys,
+  _ScoreGreenKeys, _ScoreBlueKeys, _ScoreSkeletonKeys, _ScoreGR, _ScoreREP</b></a> - 
+  These vars determine how much each of the player's resources is worth for scoring
+  at score checkpoints. A positive value will make each one worth that much.  A
+  negative value will divide your total by that amount, rounding down.  A value of 0
+  will cause it to not be listed on score checkpoints.  Each resource is capped at a
+  total score of 100 million, if you are likely to reach this cap, you should lower
+  your score multiplier.  <b>Note:</b> Players can look at their current score at any
+  time by right-clicking on the player character, so you should set these values at
+  the earliest opportunity.
+</p>
+
+<p><a name="functions"><b>Function primitives</b></a> - Predefined
+  functions may be inserted anywhere a variable is referenced. The function will
+  return a value based on the input parameters and current game context, where applicable.
+  Functions are useful to apply in variable expressions.
+  All inputs must either be integer values or an expression that resolves to an integer value.
+  All outputs are likewise integers.
+  Function names are case-insensitive.
+</p>
+<p><a name="abs">* <b>_abs(x)</b></a> - Returns the absolute value of x</p>
+<p><a name="min">* <b>_min(x,y)</b></a> - Returns the lesser of two values</p>
+<p><a name="max">* <b>_max(x,y)</b></a> - Returns the greater of two values</p>
+<p><a name="orient">* <b>_orient(dx,dy)</b></a> - Returns an orientation id (0-8), given x,y directional offsets</p>
+<p><a name="facing">* <b>_facing(dx,dy)</b></a> - Returns the orientation id (0-8) most directly facing in the direction of the given x,y vector</p>
+<p><a name="ox">* <b>_ox(o)</b></a> - Given an orientation id (0-8), returns its x component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="oy">* <b>_oy(o)</b></a> - Given an orientation id (0-8), returns its y component offset (-1, 0, 1).  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotatecw">* <b>_rotateCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotateccw">* <b>_rotateCCW(o)</b></a> - Given an orientation id (0-8), returns the id of the orientation in a counter-clockwise direction.  Given an invalid orientation value, the same value is returned.</p>
+<p><a name="rotatedist">* <b>_rotateDist(o1, o2)</b></a> - Give two orientation ids (0-8), returns the number of rotations between them. If either value is invalid, or has a value of 4, returns a value of zero.</p>
+<p><a name="dist0">* <b>_dist0(x1,y1,x2,y2)</b></a> - Returns the L-infinity norm (max axial distance) between two 2-D coordinates.</p>
+<p><a name="dist1">* <b>_dist1(x1,y1,x2,y2)</b></a> - Returns the L-1 norm (Manhattan distance) between two 2-D coordinates.</p>
+<p><a name="dist2">* <b>_dist2(x1,y1,x2,y2)</b></a> - Returns the L-2 norm (Euclidean distance) between two 2-D coordinates.</p>
+<p><a name="arrowdir">* <b>_ArrowDir(x,y)</b></a> - Returns the the orientation id (0-8) for the arrow at the room location (x,y). If no arrow is present, returns a value of 4.</p>
+<p><a name="roomtile">* <b>_RoomTile(x,y,z)</b></a> - Returns the numeric id of the room tile at (x,y). Use the z parameter to select the tile layer.<br/>
+Supported layer values - 0 -> O Layer, 1 -> F Layer, 2 -> T Layer <br/>
+Hint: Each layer corresponds to a tab in the editor's tile selection dialog.
+</p>
+<p><a name="slotitem">* <b>_SlotItem(x,y)</b></a> - Returns the id of the item in the equipment slot at (x,y). If the tile doesn't have an equipment slot, returns -1, and 0 is returned for empty slots.</p>
+<p><a name="enemystat">* <b>_EnemyStat(x,y,stat)</b></a> - Returns the stat value of the
+  enemy at room location (x,y).  If no enemy is at the current location, the result
+  is zero.<br />
+  Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP<br />
+  <i>Hint:</i> Use within the value expression of <i>Set monster var</i> to make
+  relative offsets to an enemy's stats.<br />
+  <i>Example to reduce HP of the enemy at room position (10,10) by 1:</i> Set monster var HP,10,10,_EnemyStat(10, 10, 0) - 1
+</p>
+<p><a name="monstertype">* <b>_MonsterType(x,y)</b></a> - Returns the numeric monster type of the monster at (x,y). If no monster is present on the tile, -1 is returned.<br/>
+Hint: This can be used to compare the monsters in different tiles, or for providing a value for _MyScript injection.
+</p>
+<p><a name="charactertype">* <b>_CharacterType(x,y)</b></a> - Returns the logical type of the scripted character at (x,y). If no character is present on the tile, -1 is returned.<br/>
+  Hint: This can be used to provide a value for _MyScript injection.
 </p>
 
 <p><a name="playerinputvars"><b>List of player command input variables</b></a></p>
@@ -911,10 +1161,53 @@ Essentially, it's being treated as a Tarstuff Mother, although there are certain
 	appear as that predefined weapon type.</li>
   <li>The "Graphics" list selection and "Avatar" image are
     irrelevant for custom equipment.</li>
+  <li>Place your custom equipment in the room by using the Equipment Generate command.</li>
 </ol>
+
+<p><a name="image-overlay-commands"><b>Image overlay commands</b></a></p>
+  In addition to selecting an image for display with the "Image overlay" command, you must provide a simple set of commands to define how the image will be displayed in-game.  The list of supported (case-insensitive) commands for use in an Image Overlay script is as follows:<br />
+<br />
+<b>AddX (pixels)</b> -- shifts the image's X coordinate. Positive values shift to the right, negative values shift to the left.<br />
+<b>AddY (pixels)</b> -- shifts the image's Y coordinate. Positive values shift downwards, negative values shift upwards.<br />
+<b>CancelAll</b> -- remove all currently displaying image overlay effects. This command is typically run singly.<br />
+<b>CancelGroup (group #)</b> -- remove image overlay effects in the specified display group (0 or greater)<br />
+<b>CancelLayer (layer #)</b> -- remove image overlay effects on the specified display layer (0 through 3)<br />
+<b>Center</b> -- center the image within the room area<br />
+<b>Display (ms)</b> -- display the image in its current form for the specified duration<br />
+<b>DisplayRect (x) (y) (w) (h)</b> -- show this region of the source image<br />
+<b>DisplayRectModify (delta x) (delta y) (delta w) (delta h)</b> -- modifies the display region for the source image<br />
+<b>DisplaySize (w) (h)</b> -- show this amount of the source image, in pixels<br />
+<b>DisplayTurns (# turns)</b> -- display the image in its current form for the indicated number of game turns<br />
+<b>(p)FadeToAlpha (alpha) (ms)</b> -- transition the image from its current alpha value to the indicated value over the specified time interval<br />
+<b>Group (group #)</b> -- assign the effect to the given display group (0 or greater). Overlays without a Group command are assigned to Group #0. Only the first instance of this command in a script is executed.<br />
+<b>(p)Grow (percent of original) (ms)</b> -- scale the image by the indicated amount over the specified time interval<br />
+<b>(p)Jitter (pixels) (ms)</b> -- randomly shake the image off-center up to the indicated range for the specified time interval<br />
+<b>Layer (layer)</b> -- place the effect on the indicated display layer (0 through 3, generally corresponding to the menu tabs used for placing game elements in the room editor). Only the first instance of this command in a script is executed.<br />
+<b>Loop (times)</b> -- loop through the image command list this many times (-1 = infinite)<br />
+<b>(p)Move (x pixels) (y pixels) (ms)</b> -- translate the image's position by the indicated number of pixels over the indicated time interval<br />
+<b>(p)MoveTo (x pixel) (y pixel) (ms)</b> -- move the image from its current position to the indicated screen location over the course of the indicated time interval<br />
+<b>Repeat (repetions, x, y)</b> -- repeat the final image a positive number of times, with each copy offset from the previous image by x and y pixels, including in negative directions.<br />
+<b>(p)Rotate (degrees) (ms)</b> -- rotate the image the indicated amount over the specified time interval<br />
+<b>Scale (percent of original)</b> -- scale the image to the indicated amount<br />
+<b>SetAlpha (0-255)</b> -- set the image's alpha transparency to the indicated value<br />
+<b>SetAngle (degrees)</b> -- set the image's angle of rotation<br />
+<b>SetX (pixel)</b> -- set the image's X coordinate<br />
+<b>SetY (pixel)</b> -- set the image's Y coordinate<br />
+<b>SrcXY (x) (y)</b> - show the source image starting from the indicated pixel position<br />
+<b>TileGrid (w) (h)</b> -- replicate the image in a w by h grid. Tiling is not supported for images that have had rotations applied.<br />
+<b>TimeLimit (ms)</b> -- set a maximum duration for the overlay to exist. After this time has elapsed, the overlay will end, even if not all commands have been processed. Only the first instance of this command in a script is executed.<br />
+<b>TurnLimit (# turns)</b> -- set a maximum number of game turns for the overlay to exist. After that many turns have passed, the overlay will end, even if not all commands have been processed. Only the first instance of this command in a script is executed.<br />
+<br />
+As an example, you can make an image start invisible, fade in, display for a couple seconds, then fade out by providing the following command sequence:<br />
+<br />
+setalpha 0 fadetoalpha 255 1000 display 2000 fadetoalpha 0 800<br />
+<br />
+The text supports variable interpolation, so you can have parameters like "$.ImageX$" in the text. Any part of the command text may be inserted in this fashion.<br />
+Certain commands with time duration, marked above, may be optionally prefixed with the letter "p".  This indicates that the command will not run to completion before any subsequent commands are executed, but rather will run in parallel with the next command. Multiple parallel commands may be executed concurrently.<br />
 
 <hr />
 <a href="character.html">Character Scripting</a><br />
+<a href="scriptarray.html">Script arrays</a><br/>
 <a href="editroom.html">Room Editor</a><br />
 <a href="editselect.html">Level Editor</a><br />
 <a href="contents.html">Contents</a><br />

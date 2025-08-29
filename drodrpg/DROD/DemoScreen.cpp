@@ -140,6 +140,7 @@ bool CDemoScreen::SetForActivate()
 
 	//Ensure room display is current.
 	this->pRoomWidget->LoadFromCurrentGame(CGameScreen::pCurrentGame);
+	this->pRoomWidget->DisplayPersistingImageOverlays(this->sCueEvents);
 
 	//Get first command.
 	this->currentCommandIter = 
@@ -363,7 +364,7 @@ void CDemoScreen::OnBetweenEvents()
 			if (LoadDemoGame(this->pDemo->dwNextDemoID))
 			{
 				//Load succeeded -- start playing it next frame.
-				this->pRoomWidget->ShowRoomTransition(wExitOrientation);
+				this->pRoomWidget->ShowRoomTransition(wExitOrientation, CGameScreen::sCueEvents);
 				this->pMapWidget->DrawMapSurfaceFromRoom(CGameScreen::pCurrentGame->pRoom);
 				this->pMapWidget->RequestPaint();
 				this->currentCommandIter = CGameScreen::pCurrentGame->Commands.GetFirst();

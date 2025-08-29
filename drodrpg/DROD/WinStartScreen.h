@@ -43,6 +43,7 @@ protected:
 	virtual bool   SetForActivate();
 
 private:
+	SCREENTYPE     GetCreditsScreen() const;
 	bool           IsMainDungeon() const;
 	virtual void	OnBetweenEvents();
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);

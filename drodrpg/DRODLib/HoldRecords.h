@@ -46,6 +46,50 @@ struct HoldVar
 };
 
 //*****************************************************************************
+//Per-hold world maps.
+struct HoldWorldMap
+{
+	enum DisplayType {
+		NoLabels = 0,
+		Labels = 1,
+		LabelsWhenExplored = 2
+	};
+
+	HoldWorldMap()
+		: worldMapID(0), dataID(0), displayType(Labels), orderIndex(0)
+	{
+	}
+	HoldWorldMap(const UINT worldMapID, const UINT dataID,
+		DisplayType displayType, UINT orderIndex, const WCHAR* pwszName)
+		: worldMapID(worldMapID), dataID(dataID), displayType(displayType)
+		, orderIndex(orderIndex)
+	{
+		ASSERT(pwszName);
+		this->nameText = pwszName;
+	}
+	void clear()
+	{
+		worldMapID = dataID = orderIndex = 0;
+		displayType = NoLabels;
+		nameText.clear();
+	}
+
+	UINT worldMapID;  //unique ID
+	UINT dataID; //foreign key
+	DisplayType displayType;
+	UINT orderIndex;
+	WSTRING nameText;
+};
+
+struct sortWorldMaps {
+	bool operator() (const HoldWorldMap* pMap1, const HoldWorldMap* pMap2) const
+	{
+		return pMap1->orderIndex < pMap2->orderIndex;
+	}
+};
+typedef std::set<const HoldWorldMap*, sortWorldMaps> SORTED_WORLD_MAPS;
+
+//*****************************************************************************
 //Per-hold definable NPC character.
 struct HoldCharacter
 {
@@ -118,5 +162,48 @@ struct HoldCharacter
 	CDbPackedVars ExtraVars; //holds default character script
 	COMMANDPTR_VECTOR *pCommands; //working copy of default character script
 };
+
+//******************************************************************************************
+//Where an exit can go
+enum ExitType
+{
+	ET_Entrance = 0,
+	ET_WorldMap = 1,
+};
+
+//*****************************************************************************
+struct WorldMapIcon
+{
+	WorldMapIcon()
+		: entranceID(0), xPos(0), yPos(0), charID(0), imageID(0), displayFlags(0)
+		, exitType(ExitType::ET_Entrance)
+	{
+	}
+	WorldMapIcon(UINT entranceID, UINT xPos, UINT yPos, UINT charID, UINT imageID, UINT displayFlags,
+		ExitType exitType)
+		: entranceID(entranceID), xPos(xPos), yPos(yPos), charID(charID), imageID(imageID), displayFlags(displayFlags)
+		, exitType(exitType)
+	{
+	}
+
+	void clear() { entranceID = xPos = yPos = charID = imageID = displayFlags = 0; exitType = ExitType::ET_Entrance; }
+	bool IsTraverserable() const {
+		switch (displayFlags) {
+			case ScriptFlag::WMI_On:
+			case ScriptFlag::WMI_LevelState:
+			case ScriptFlag::WMI_Cleared: return true;
+			default: return false;
+		}
+	}
+	bool IsWorldMapExit() const { return exitType == ExitType::ET_WorldMap; }
+
+	UINT entranceID;
+	ExitType exitType;
+	UINT xPos, yPos;
+	UINT charID, imageID;
+	UINT displayFlags;
+};
+typedef std::vector<WorldMapIcon> WorldMapIcons; //icons on a world map
+typedef std::map<UINT, WorldMapIcons> WorldMapsIcons; //worldMapID --> icons
 
 #endif

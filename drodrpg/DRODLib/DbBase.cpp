@@ -30,6 +30,9 @@
 //Define DbProps in this object
 #define INCLUDED_FROM_DBBASE_CPP
 
+//Uncomment to update dat files to latest DBProps.h definitions after loading.
+//#define REDEFINE_DATABASE
+
 #include "DbBase.h"
 #include "Db.h"
 #include "DbProps.h"
@@ -53,9 +56,24 @@ bool CDbBase::bDirtyPlayer = false;
 bool CDbBase::bDirtySave = false;
 bool CDbBase::bDirtyText = false;
 
+//DB keys before START_LOCAL_ID are used for read-only, pre-installed game content
+#ifdef STEAMBUILD
+const UINT CDbBase::START_LOCAL_ID = 10000000; //10M
+#else
+const UINT CDbBase::START_LOCAL_ID = 10000; //legacy
+#endif
+
+const UINT MAX_IDS_IN_BASE_DAT = 100000;
+const UINT MAX_IDS_IN_SINGLE_DLC_PACK = 10000;
+
+UINT CDbBase::creatingStaticDataFileNum = 0;
+
 //Module-scope vars.
 set<CDbBase*> m_dbRefs;
-c4_Storage *m_pMainStorage = NULL;
+//Pre-installed game content and pre-packaged read-only/static DLC packs
+typedef map<UINT, c4_Storage*> StaticStorageMap;
+StaticStorageMap m_pMainStorage;
+//Local player content, including imported homemade holds
 c4_Storage *m_pDataStorage = NULL;
 c4_Storage *m_pHoldStorage = NULL;
 c4_Storage *m_pPlayerStorage = NULL;
@@ -64,6 +82,7 @@ c4_Storage *m_pSaveMoveStorage = NULL; //auxiliary to pSaveStorage
 c4_Storage *m_pTextStorage = NULL;
 
 const WCHAR pwszDrod[] = { We('d'),We('r'),We('o'),We('d'),We(0) };
+const WCHAR pwszDataFileExtension[] = { We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszDotDat[] = { We('.'),We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszData[] = { We('d'),We('a'),We('t'),We('a'),We('.'),We('d'),We('a'),We('t'),We(0) };
 const WCHAR pwszHold[] = { We('h'),We('o'),We('l'),We('d'),We('.'),We('d'),We('a'),We('t'),We(0) };
@@ -174,6 +193,7 @@ c4_IntProp* CDbBase::GetPrimaryKeyProp(
 		case V_SavedGames: return &p_SavedGameID;
 		case V_SavedGameMoves: return &p_SavedGameID;
 		case V_Speech: return &p_SpeechID;
+		case V_LocalHighScores: return &p_HighScoreID;
 		default:
 			ASSERT(!"CDbBase::GetPrimaryKeyProp: Unexpected property type.");
 		return NULL;
@@ -195,7 +215,8 @@ UINT CDbBase::GetIncrementedID(
 
 	c4_Storage *pStorage;
 #ifdef DEV_BUILD
-	pStorage = m_pMainStorage;
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	pStorage = m_pMainStorage[CDbBase::creatingStaticDataFileNum];
 	CDbBase::DirtyData();
 #else
 	const int nPropID = propID.GetId();
@@ -211,6 +232,7 @@ UINT CDbBase::GetIncrementedID(
 	static const int nRoomID = p_RoomID.GetId();
 	static const int nSavedGameID = p_SavedGameID.GetId();
 	static const int nSpeechID = p_SpeechID.GetId();
+	static const int nHighScoreId = p_HighScoreID.GetId();
 
 	if (nPropID == nDataID)
 	{
@@ -222,7 +244,7 @@ UINT CDbBase::GetIncrementedID(
 	} else if (nPropID == nPlayerID) {
 		pStorage = m_pPlayerStorage;
 		CDbBase::DirtyPlayer();
-	} else if (nPropID == nDemoID || nPropID == nSavedGameID) {
+	} else if (nPropID == nDemoID || nPropID == nSavedGameID || nPropID == nHighScoreId) {
 		pStorage = m_pSaveStorage;
 		CDbBase::DirtySave();
 	} else if (nPropID == nMessageID || nPropID == nMessageTextID) {
@@ -248,37 +270,59 @@ UINT CDbBase::GetIncrementedID(
 c4_RowRef CDbBase::GetRowRef(const VIEWTYPE vType, UINT dwGlobalIndex)
 //Returns: a reference to a view row
 //
-//Hint: Call this method when iterating across all row indices.
-//However, after a call to LookupRowByPrimaryKey(..., view),
-//calling this is incorrect.  Instead, invoke view[returnedIndex] to retrieve
-//the locally-indexed row from the proper view.
+//Hint: Call this method when iterating across all row indices (i.e., in all DB files).
+// When calling LookupRowByPrimaryKey(..., view), however,
+// invoke view[returnedIndex] instead to retrieve the locally-indexed row from the known view.
 {
 	const char* viewName = ViewTypeStr(vType);
 
 	UINT localIndex = dwGlobalIndex;
-	c4_View View = m_pMainStorage->View(viewName);
-	const UINT size = View.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
-	                                    //but this is only a problem if other .dat files are non-empty
-	                                    //which should be avoided when building the main .dat file.
-	if (localIndex < size)
-		return View.GetAt(localIndex);
-	localIndex -= size; //index not in this view -- use relative index in subsequent views
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		const UINT size = view.GetSize(); //!!this count is too large if DEV_BUILD and emptyEndRows > 0,
+										  //but this is only a problem if the local player .dat files are non-empty
+										  //which should be avoided when building the main or other static DLC .dat files.
+		if (localIndex < size)
+			return view.GetAt(localIndex);
 
-	//Look in other DB.
+		localIndex -= size; //index not in this view -- use relative index in subsequent views
+	}
+
 	c4_View localContentView = GetPlayerDataView(vType, viewName);
 	return localContentView.GetAt(localIndex);
 }
 
 //*****************************************************************************
 c4_ViewRef CDbBase::GetActiveView(const VIEWTYPE vType)
-//Returns: the view of indicated type that may be written to
+//Returns: the view of indicated type to write to
 {
 	const char* viewName = ViewTypeStr(vType);
 #ifdef DEV_BUILD
-	return m_pMainStorage->View(viewName);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	return m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
 #else
 	return GetPlayerDataView(vType, viewName);
 #endif
+}
+
+//*****************************************************************************
+UINT CDbBase::GetStartIDForDLC(UINT fileNum)
+{
+	UINT id = 0;
+	if (fileNum > 0) {
+		id = MAX_IDS_IN_BASE_DAT + (fileNum-1) * MAX_IDS_IN_SINGLE_DLC_PACK;
+		ASSERT(id < START_LOCAL_ID);
+	}
+	return id;
+}
+
+bool CDbBase::SetCreateDataFileNum(UINT num) {
+	ASSERT(!CDbBase::IsOpen());
+#if defined(DEV_BUILD) && defined(STEAMBUILD) //need to have larger value of START_LOCAL_ID
+	CDbBase::creatingStaticDataFileNum = num;
+	return true;
+#endif
+	return false;
 }
 
 //*****************************************************************************
@@ -286,8 +330,17 @@ c4_ViewRef CDbBase::GetView(const VIEWTYPE vType, const UINT dwID)
 //Returns: view reference from one of the databases.
 {
 	const char* viewName = ViewTypeStr(vType);
-	if (dwID < START_LOCAL_ID)
-		return m_pMainStorage->View(viewName); //pre-packaged database
+	if (dwID < START_LOCAL_ID) {
+		//pre-packaged database (content pack)
+		UINT dataFileNum = 0;
+		if (dwID >= MAX_IDS_IN_BASE_DAT)
+			dataFileNum = 1 + (dwID - MAX_IDS_IN_BASE_DAT) / MAX_IDS_IN_SINGLE_DLC_PACK; //ID block allocation strategy
+		StaticStorageMap::const_iterator it = m_pMainStorage.find(dataFileNum);
+		if (it != m_pMainStorage.end())
+			return it->second->View(viewName);
+
+		return m_pMainStorage[0]->View(viewName); //gotta return something
+	}
 
 	//The player's local content database.
 	return GetPlayerDataView(vType, viewName);
@@ -312,6 +365,7 @@ c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName
 			return m_pPlayerStorage->View(viewName);
 		case V_Demos:
 		case V_SavedGames:
+		case V_LocalHighScores:
 			return m_pSaveStorage->View(viewName);
 		case V_SavedGameMoves:
 			return m_pSaveMoveStorage->View(viewName);
@@ -319,7 +373,7 @@ c4_ViewRef CDbBase::GetPlayerDataView(const VIEWTYPE vType, const char* viewName
 			return m_pTextStorage->View(viewName);
 		default:
 			ASSERT(!"Non-supported DB table");
-			return m_pMainStorage->View(viewName); //gotta return something
+			return m_pMainStorage[0]->View(viewName); //gotta return something
 	}
 #endif
 }
@@ -330,20 +384,33 @@ UINT CDbBase::GetViewSize(const VIEWTYPE vType)
 {
 	const char* viewName = ViewTypeStr(vType);
 
-	c4_View view = m_pMainStorage->View(viewName);
+	UINT totalSize = 0;
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		totalSize += view.GetSize();
+	}
+
 	c4_View localContentView = GetPlayerDataView(vType, viewName);
-	return view.GetSize() + localContentView.GetSize();
+	totalSize += localContentView.GetSize();
+
+	return totalSize;
 }
 
 //*****************************************************************************
 UINT CDbBase::globalRowToLocalRow(
-//Translates a global row index to its local row index.
-	const UINT globalRowIndex, const VIEWTYPE vType)
+//Translates a global row index (position) to its local row index (position).
+	UINT globalRowIndex, const VIEWTYPE vType)
 {
-	const UINT baseIndexRowCount = GetView(vType,0).GetSize();
-	if (globalRowIndex < baseIndexRowCount)
-		return globalRowIndex; //in base view, global index is equivalent to local index
-	return globalRowIndex - baseIndexRowCount; //subtract number of rows in first view
+	const char* viewName = ViewTypeStr(vType);
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		c4_View view = it->second->View(viewName);
+		const UINT viewRowCount = view.GetSize();
+		if (globalRowIndex < viewRowCount)
+			break; //found the view that contains this global row position
+		globalRowIndex -= viewRowCount; //skip past this view
+	}
+
+	return globalRowIndex;
 }
 
 //*****************************************************************************
@@ -403,12 +470,13 @@ UINT CDbBase::LookupRowByPrimaryKey(
 //*****************************************************************************
 bool CDbBase::IsOpen()
 {
-	if (!m_pMainStorage)
+	if (m_pMainStorage.empty())
 		return false;
+	//ASSUME: entries in m_pMainStorage will be non-null
 
 #ifndef DEV_BUILD
-	return m_pDataStorage != NULL && m_pHoldStorage != NULL && m_pPlayerStorage != NULL &&
-			m_pSaveStorage != NULL && m_pSaveMoveStorage != NULL && m_pTextStorage != NULL;
+	if (!m_pDataStorage || !m_pHoldStorage || !m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
+		return false;
 #endif
 
 	return true;
@@ -433,7 +501,7 @@ MESSAGE_ID CDbBase::Open(
 	{
 		//Close databases if already open.
 		Close();
-		ASSERT(!m_pMainStorage);
+		ASSERT(m_pMainStorage.empty());
 		ASSERT(!m_pDataStorage);
 		ASSERT(!m_pHoldStorage);
 		ASSERT(!m_pPlayerStorage);
@@ -443,16 +511,14 @@ MESSAGE_ID CDbBase::Open(
 
 		//Concatenate paths to stock and player databases.
 		CFiles Files;
-		WSTRING wstrPath, wstrMainDatPath, wstrDataDatPath, wstrHoldDatPath,
-				wstrPlayerDatPath, wstrSaveDatPath, wstrSaveMoveDatPath, wstrTextDatPath;
-		wstrMainDatPath = (pwszResFilepath) ? pwszResFilepath : Files.GetResPath();
-		wstrMainDatPath += wszSlash;
-		wstrMainDatPath += CFiles::wGameName;
-		wstrMainDatPath += wszDROD_VER;
-		wstrMainDatPath += pwszDotDat;
+		const WSTRING wstrResPath = pwszResFilepath ? pwszResFilepath : Files.GetResPath();
+		const WSTRING wstrMainDatBaseFilepath = wstrResPath + wszSlash + CDbBase::BaseResourceFilename();
+		const WSTRING wstrMainDatPath = wstrMainDatBaseFilepath + pwszDotDat;
 
-		wstrPath = Files.GetDatPath();
-		wstrPath += wszSlash;
+		WSTRING wstrDataDatPath, wstrHoldDatPath,
+				wstrPlayerDatPath, wstrSaveDatPath, wstrSaveMoveDatPath, wstrTextDatPath;
+
+		const WSTRING wstrPath = Files.GetDatPath() + wszSlash;
 		wstrDataDatPath = wstrPath + pwszData;
 		wstrHoldDatPath = wstrPath + pwszHold;
 		wstrPlayerDatPath = wstrPath + pwszPlayer;
@@ -466,26 +532,26 @@ MESSAGE_ID CDbBase::Open(
 
 		//Create new, fresh data files if they don't already exist.
 		if (!CFiles::DoesFileExist(wstrDataDatPath.c_str())
-				&& !CreateDatabase(wstrDataDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrDataDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrHoldDatPath.c_str()))
 		{
-			if (!CreateDatabase(wstrHoldDatPath.c_str(), START_LOCAL_ID))
+			if (!CreateDatabase(wstrHoldDatPath, START_LOCAL_ID))
 				return MID_DatNoAccess;
 		}
 		if (!CFiles::DoesFileExist(wstrPlayerDatPath.c_str()))
 		{
-			if (!CreateDatabase(wstrPlayerDatPath.c_str(), START_LOCAL_ID))
+			if (!CreateDatabase(wstrPlayerDatPath, START_LOCAL_ID))
 				return MID_DatNoAccess;
 		}
 		if (!CFiles::DoesFileExist(wstrSaveDatPath.c_str())
-				&& !CreateDatabase(wstrSaveDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrSaveDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrSaveMoveDatPath.c_str())
-				&& !CreateDatabase(wstrSaveMoveDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrSaveMoveDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 		if (!CFiles::DoesFileExist(wstrTextDatPath.c_str())
-				&& !CreateDatabase(wstrTextDatPath.c_str(), START_LOCAL_ID))
+				&& !CreateDatabase(wstrTextDatPath, START_LOCAL_ID))
 			return MID_DatNoAccess;
 
 		//Verify read and write access.
@@ -516,16 +582,25 @@ MESSAGE_ID CDbBase::Open(
 		//Metakit has performance issues when working with Unicode filenames.
 		//So, we will ignore the WCHAR filenames and open the DB the fast and memory efficient way.
 		string filename = UnicodeToUTF8(wstrMainDatPath);
+
 		int writeFlag =
 #ifdef DEV_BUILD
-		1; //save explicitly to this file only (when not creating another pack)
+		!CDbBase::creatingStaticDataFileNum ? 1 : 0; //save explicitly to this file only (when not creating another pack)
 #else
 		//Static dats MUST be opened read-only, otherwise things break horribly (i.e., implementation doesn't support this)
 		0;  //0 = read-only
 #endif
-		m_pMainStorage = new c4_Storage(filename.c_str(), writeFlag);
-		if (!m_pMainStorage)
+		c4_Storage *pBaseStorage = new c4_Storage(filename.c_str(), writeFlag);
+		if (!pBaseStorage)
 			throw MID_CouldNotOpenDB;
+		m_pMainStorage[0] = pBaseStorage;
+
+#ifdef DEV_BUILD
+		if (CDbBase::creatingStaticDataFileNum && !CreateContentFile(wstrMainDatBaseFilepath, CDbBase::creatingStaticDataFileNum))
+			return MID_DatNoAccess;
+#elif STEAMBUILD
+		OpenStaticContentFiles(wstrResPath);
+#endif
 
 #ifndef DEV_BUILD
 		UnicodeToUTF8(wstrDataDatPath, filename);
@@ -540,9 +615,20 @@ MESSAGE_ID CDbBase::Open(
 		m_pSaveMoveStorage = new c4_Storage(filename.c_str(), 1);
 		UnicodeToUTF8(wstrTextDatPath, filename);
 		m_pTextStorage = new c4_Storage(filename.c_str(), 1);
+
 		if (!m_pDataStorage || !m_pHoldStorage ||
 				!m_pPlayerStorage || !m_pSaveStorage || !m_pSaveMoveStorage || !m_pTextStorage)
 			throw MID_CouldNotOpenDB;
+
+#	ifdef REDEFINE_DATABASE
+		RedefineDatabase(m_pDataStorage);
+		RedefineDatabase(m_pHoldStorage);
+		RedefineDatabase(m_pPlayerStorage);
+		RedefineDatabase(m_pSaveStorage);
+		RedefineDatabase(m_pSaveMoveStorage);
+		RedefineDatabase(m_pTextStorage);
+#	endif // REDEFINE_DATABASE
+
 #endif
 
 		buildIndex();
@@ -554,6 +640,66 @@ MESSAGE_ID CDbBase::Open(
 	}
 	Undirty();
 	return dwRet;
+}
+
+WSTRING CDbBase::BaseResourceFilename()
+{
+	return CFiles::wGameName + CFiles::wGameVer; 
+}
+
+//*****************************************************************************
+//Creating a static content file/DLC pack.
+bool CDbBase::CreateContentFile(const WSTRING& wFilename, UINT num)
+{
+	ASSERT(num);
+	if (!num)
+		return true;
+
+	WSTRING wAdditionalDataFilepath = wFilename + wszUnderscore;
+	WCHAR temp[12];
+	wAdditionalDataFilepath += _itoW(num, temp, 10);
+	wAdditionalDataFilepath += pwszDotDat;
+
+	if (!CFiles::DoesFileExist(wAdditionalDataFilepath.c_str())
+		&& !CreateDatabase(wAdditionalDataFilepath, GetStartIDForDLC(num)))
+		return false;
+
+	const string filepath = UnicodeToUTF8(wAdditionalDataFilepath);
+	c4_Storage* pStaticStorage = new c4_Storage(filepath.c_str(), 1);
+	if (!pStaticStorage)
+		throw MID_CouldNotOpenDB;
+	m_pMainStorage[num] = pStaticStorage;
+
+	return true;
+}
+
+//*****************************************************************************
+void CDbBase::OpenStaticContentFiles(const WSTRING& wstrResPath)
+//Scan for and open other static files (called "<gamename><gamever>_<num>"),
+//inserting them into the data file map, positioned by number, for read-only access.
+{
+	vector<WSTRING> dataFiles;
+	CFiles::GetFileList(wstrResPath.c_str(), pwszDataFileExtension, dataFiles);
+	if (!dataFiles.empty()) {
+		const WSTRING wPath = wstrResPath + wszSlash;
+		const WSTRING wBasename = CDbBase::BaseResourceFilename() + wszUnderscore;
+		//See note in CDbBase::Open() regarding Metakit ASCII filename handling
+		const string resPath = UnicodeToUTF8(wPath);
+		const string basename = UnicodeToUTF8(wBasename);
+		for (vector<WSTRING>::const_iterator fileIt = dataFiles.begin(); fileIt != dataFiles.end(); ++fileIt) {
+			const string filename = UnicodeToUTF8(*fileIt);
+			if (!filename.compare(0, basename.size(), basename)) {
+				const int storageFileNum = convertToInt(filename.c_str() + basename.size());
+				if (storageFileNum > 0 && UINT(storageFileNum) != CDbBase::creatingStaticDataFileNum) {
+					ASSERT(!m_pMainStorage.count(storageFileNum));
+					const string filepath = resPath + filename;
+					c4_Storage* pStaticStorage = new c4_Storage(filepath.c_str(), 0);
+					if (pStaticStorage)
+						m_pMainStorage[storageFileNum] = pStaticStorage;
+				}
+			}
+		}
+	}
 }
 
 //*****************************************************************************
@@ -577,8 +723,10 @@ void CDbBase::Close(const bool bCommit) //[default=true]
 //*****************************************************************************
 void CDbBase::ResetStorage()
 {
-	//Close main database.
-	delete m_pMainStorage; m_pMainStorage = NULL;
+	//Close static databases.
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+		delete it->second;
+	m_pMainStorage.clear();
 
 	//Close player databases.
 	delete m_pDataStorage; m_pDataStorage = NULL;
@@ -620,6 +768,7 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 	c4_View SavedGames = newStorage.GetAs(SAVEDGAMES_VIEWDEF);
 	c4_View SavedGameMoves = newStorage.GetAs(SAVEDGAMEMOVES_VIEWDEF);
 	c4_View Speech = newStorage.GetAs(SPEECH_VIEWDEF);
+	c4_View LocalHighScores = newStorage.GetAs(LOCALHIGHSCORES_VIEWDEF);
 
 	if (initIncrementedIDs >= 0)
 	{
@@ -633,12 +782,39 @@ bool CDbBase::CreateDatabase(const WSTRING& wstrFilepath, int initIncrementedIDs
 			p_PlayerID[      initIncrementedIDs ] +
 			p_RoomID[        initIncrementedIDs ] +
 			p_SavedGameID[   initIncrementedIDs ] +
-			p_SpeechID[      initIncrementedIDs ]);
+			p_SpeechID[      initIncrementedIDs ] +
+			p_HighScoreID[   initIncrementedIDs ]);
 	}
 
 	newStorage.Commit();
 
 	return true;
+}
+
+//*****************************************************************************
+void CDbBase::RedefineDatabase(
+//Update all views in the specificed dat file to match the definitions from
+//DBProps.h
+c4_Storage* storage) //(in) metakit storage object for dat file
+{
+#ifdef REDEFINE_DATABASE
+	//Calling GetAs with the appropriate VIEWDEF will update the view.
+	storage->GetAs(INCREMENTEDIDS_VIEWDEF);
+	storage->GetAs(DATA_VIEWDEF);
+	storage->GetAs(DEMOS_VIEWDEF);
+	storage->GetAs(HOLDS_VIEWDEF);
+	storage->GetAs(LEVELS_VIEWDEF);
+	storage->GetAs(MESSAGETEXTS_VIEWDEF);
+	storage->GetAs(PLAYERS_VIEWDEF);
+	storage->GetAs(ROOMS_VIEWDEF);
+	storage->GetAs(SAVEDGAMES_VIEWDEF);
+	storage->GetAs(SAVEDGAMEMOVES_VIEWDEF);
+	storage->GetAs(SPEECH_VIEWDEF);
+	storage->GetAs(LOCALHIGHSCORES_VIEWDEF);
+
+	//Now commit the changes
+	storage->Commit();
+#endif // REDEFINE_DATABASE
 }
 
 //*****************************************************************************
@@ -656,26 +832,10 @@ const WCHAR* CDbBase::GetMessageText(
 {
 #ifdef PATCH
 	//Hard-code message texts that won't be in the pre-packaged .dat file when patching an older version.
-	//Add new message texts here in future patches.
+	//Add new message texts here as they are added in minor version bumps.
 	string strText;
 	switch (eMessageID)
 	{
-		case MID_DoubleXP: strText = "Double REP"; break;
-		case MID_DisableMouseMovement: strText = "Disable mouse movement"; break;
-		case MID_EquipQueryStatus: strText = "Status"; break;
-		case MID_RunOnCombat: strText = "Run on combat engagement"; break;
-		case MID_PauseOnCombat: strText = "Pause on combat engagement"; break;
-		case MID_OpenMoneyDoor: strText = "Greckle gate (open)"; break;
-		case MID_NPCCustomTileSizeWarning: strText = "WARNING: Image is not a multiple of the room tile size and may not display correctly."; break;
-		case MID_KnockOpenedDoor: strText = "Knock opened door"; break;
-		case MID_DoorLocked: strText = "Player locked door"; break;
-		case MID_ATKForFasterCombatWin: strText = "ATK for faster win"; break;
-		case MID_NoFocusPlaysMusic: strText = "No focus plays music"; break;
-		case MID_MoneyDoorOperated: strText = "Money door opened"; break;
-		case MID_MoneyDoorLocked: strText = "Money door locked"; break;
-		case MID_CaravelServerError: strText = "There was an error contacting the Caravel server."; break;
-		case MID_NPCDefeated: strText = "NPC defeated"; break;
-		case MID_QuickPathNotAvailable: strText = "No known path is available."; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
@@ -846,10 +1006,22 @@ MESSAGE_ID CDbBase::AddMessageText(
 	c4_View view;
 	UINT rowIndex = LookupRowByPrimaryKey(dwMessageTextID, V_MessageTexts, view);
 	ASSERT(rowIndex != ROW_NO_MATCH);
-	//If ID is in the first view, the local ID is equivalent to the global ID.
-	//Otherwise, add the size of the first view to get the ID's global index.
+
+	//If ID is in the first view, the local index is equivalent to the global index.
+	//Otherwise, add the size of each previous view to get the ID's global position.
+	UINT previousViewSize = 0;
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it) {
+		const UINT storageStartID = GetStartIDForDLC(it->first);
+		if (dwMessageTextID >= storageStartID) {
+			rowIndex += previousViewSize;
+		}
+
+		c4_View view = it->second->View(viewName);
+		previousViewSize = view.GetSize();
+	}
 	if (dwMessageTextID >= START_LOCAL_ID)
-		rowIndex += GetView(V_MessageTexts,0).GetSize();
+		rowIndex += previousViewSize;
 
 	addMessage(eMessageID, rowIndex);
 
@@ -945,37 +1117,32 @@ void CDbBase::DeleteMarkedMessages()
 
 	ASSERT(CDbBase::bDirtyText);
 
-	//Assume: all message texts being deleted are from the same view
-	//(i.e. the same .dat file).
-	c4_View MessageTextsView = GetView(V_MessageTexts,
-#ifdef DEV_BUILD
-		0
-#else
-		START_LOCAL_ID
-#endif
-	);
+	CIDSet deletedMessageRows;
 
-	//Compile set of all messageText rows to be deleted.
-	CIDSet messageRows;
-	for (CIDSet::const_iterator messageID = messageIDsMarkedForDeletion.begin();
-			messageID != messageIDsMarkedForDeletion.end(); ++messageID)
-		messageRows += getMessageRows(*messageID);
-
-	//Each iteration deletes one messageText row.
 	//Delete in descending order to keep lower row indices correct.
-	for (CIDSet::const_reverse_iterator messageRow = messageRows.rbegin();
-			messageRow != messageRows.rend(); ++messageRow)
+	for (CIDSet::const_reverse_iterator messageID = messageIDsMarkedForDeletion.rbegin();
+			messageID != messageIDsMarkedForDeletion.rend(); ++messageID)
 	{
-		ASSERT(*messageRow != ROW_NO_MATCH);
-		ASSERT(messageIDsMarkedForDeletion.has(
-				UINT(p_MessageID(GetRowRef(V_MessageTexts, *messageRow)))));
+		c4_View MessageTextsView = GetView(V_MessageTexts, *messageID);
 
-		const UINT localRowIndex = globalRowToLocalRow(*messageRow, V_MessageTexts);
-		MessageTextsView.RemoveAt(localRowIndex);
+		const CIDSet messageRows(getMessageRows(*messageID));
+		deletedMessageRows += messageRows;
+
+		//Each iteration deletes one messageText row.
+		for (CIDSet::const_reverse_iterator messageRow = messageRows.rbegin();
+				messageRow != messageRows.rend(); ++messageRow)
+		{
+			ASSERT(*messageRow != ROW_NO_MATCH);
+			ASSERT(messageIDsMarkedForDeletion.has(
+					UINT(p_MessageID(GetRowRef(V_MessageTexts, *messageRow)))));
+
+			const UINT localRowIndex = globalRowToLocalRow(*messageRow, V_MessageTexts);
+			MessageTextsView.RemoveAt(localRowIndex);
+		}
 	}
 
 	//Resynch row index lookup.
-	deleteMessages(messageIDsMarkedForDeletion, messageRows);
+	deleteMessages(messageIDsMarkedForDeletion, deletedMessageRows);
 	messageIDsMarkedForDeletion.clear();
 }
 
@@ -983,8 +1150,11 @@ void CDbBase::DeleteMarkedMessages()
 void CDbBase::ExportTexts(const WCHAR *pFilename)
 //Exports all message texts in base DB to file.
 {
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	c4_View MessageTextsView = m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
+
 	CStretchyBuffer buf;
-	c4_View MessageTextsView = GetView(V_MessageTexts, 0);
 	ExportTexts(MessageTextsView, buf);
 	if (!buf.empty())
 		CFiles::WriteBufferToFile(pFilename, buf);
@@ -1037,9 +1207,13 @@ void CDbBase::ExportTexts(c4_View& MessageTextsView, CStretchyBuffer& buf)
 bool CDbBase::ImportTexts(const WCHAR *pFilename)
 //Sets all message texts in base DB from info contained in file.
 {
+	const char* viewName = ViewTypeStr(V_MessageTexts);
+	ASSERT(m_pMainStorage.count(CDbBase::creatingStaticDataFileNum) != 0);
+	c4_View MessageTextsView = m_pMainStorage[CDbBase::creatingStaticDataFileNum]->View(viewName);
+
 	CStretchyBuffer buf;
 	CFiles::ReadFileIntoBuffer(pFilename, buf, true);
-	c4_View MessageTextsView = GetView(V_MessageTexts, 0);
+
 	return ImportTexts(MessageTextsView, buf);
 }
 
@@ -1088,7 +1262,9 @@ bool CDbBase::ImportTexts(c4_View& /*MessageTextsView*/, CStretchyBuffer& buf)
 	}
 
 	//Save to disk.
-	m_pMainStorage->Commit();
+	for (StaticStorageMap::const_iterator it = m_pMainStorage.begin(); it != m_pMainStorage.end(); ++it)
+		it->second->Commit();
+
 	return true;
 }
 
@@ -1103,7 +1279,6 @@ MESSAGE_ID CDbBase::SetProperty(
 
 //*****************************************************************************
 MESSAGE_ID CDbBase::SetProperty(
-//NOTE: Unused parameter names commented out to suppress warnings
 	const PROPTYPE /*pType*/,
 	char* const /*str*/,
 	CImportInfo &/*Maps*/,
@@ -1144,7 +1319,7 @@ const
 	UINT dwEnglishRowI = ROW_NO_MATCH, dwFoundRowI = ROW_NO_MATCH;
 
 	//Get rows in which this messageID is located.
-	CIDSet messageRows = getMessageRows(eMessageID);
+	const CIDSet messageRows = getMessageRows(eMessageID);
 
 	//Each iteration scans one of these rows for a language match.
 	for (CIDSet::const_iterator messageRow = messageRows.begin();
@@ -1189,7 +1364,7 @@ const
 	CCoordSet ids;
 
 	//Get rows in which this messageID is located.
-	CIDSet messageRows = getMessageRows(eMessageID);
+	const CIDSet messageRows = getMessageRows(eMessageID);
 
 	//Each iteration scans one of these rows for a language match.
 	for (CIDSet::const_iterator messageRow = messageRows.begin();
@@ -1226,8 +1401,8 @@ void CDbBase::Commit()
 	{
 		DeleteMarkedMessages();
 #ifdef DEV_BUILD
-		ASSERT(m_pMainStorage);
-		m_pMainStorage->Commit();
+		for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+			it->second->Commit();
 #else
 		if (CDbBase::bDirtyData)
 			m_pDataStorage->Commit();
@@ -1257,7 +1432,8 @@ void CDbBase::Rollback()
 	{
 		messageIDsMarkedForDeletion.clear();
 #ifdef DEV_BUILD
-		m_pMainStorage->Rollback();
+		for (StaticStorageMap::const_iterator it=m_pMainStorage.begin(); it!=m_pMainStorage.end(); ++it)
+			it->second->Rollback();
 #else
 		m_pDataStorage->Rollback();
 		m_pHoldStorage->Rollback();
@@ -1407,4 +1583,3 @@ void CDbBase::buildIndex()
 		addMessage(UINT(p_MessageID(row)), messageI);
 	}
 }
-

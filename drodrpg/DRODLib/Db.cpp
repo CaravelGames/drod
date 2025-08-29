@@ -341,6 +341,15 @@ bool CDb::ValidateMoveSequence(
 				pGame->FreezeCommands();
 				//The "continue" below lets us validate these new cue events
 				//before playing the next command.
+			} else if (CueEvents.HasOccurred(CID_ExitToWorldMapPending)) {
+				const CAttachableWrapper<UINT>* pInfo = DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+					CueEvents.GetFirstPrivateData(CID_ExitToWorldMapPending));
+				const UINT dwEntranceID = pInfo->data;
+
+				CueEvents.Clear();
+				pGame->UnfreezeCommands(); //must be done before loading
+				pGame->LoadFromWorldMap(dwEntranceID);
+				pGame->FreezeCommands();
 			} else {
 				CueEvents.Clear(); //we're done checking these events
 			}
@@ -377,8 +386,27 @@ bool CDb::ValidateMoveSequence(
 			wX = wY = UINT(-1);
 		}
 
-		//Execute this command.
-		pGame->ProcessCommand(command, CueEvents, wX, wY);
+		if (command == CMD_WORLD_MAP) {
+			CueEvents.Clear();
+			ExitType exitType = (ExitType)wY;
+
+			if (pGame->IsValidWorldMapTransfer(wX, exitType)) {
+				pGame->UnfreezeCommands(); //must be done before loading
+				if (exitType == ET_Entrance) {
+					pGame->LoadFromLevelEntrance(holdID, wX, CueEvents);
+				} else {
+					pGame->LoadFromWorldMap(wX);
+				}
+				pGame->FreezeCommands();
+			} else {
+				//Illegal world map transfer
+				bGood = false;
+				break;
+			}
+		} else {
+			//Execute this command.
+			pGame->ProcessCommand(command, CueEvents, wX, wY);
+		}
 	}
 
 	//Resolve any combat initiated on final move
@@ -475,6 +503,7 @@ UINT CDb::LookupRowByPrimaryKey(
 		case V_SavedGames: dwRowCount = g_pTheDB->SavedGames.GetViewSize(dwID); break;
 		case V_SavedGameMoves: dwRowCount = g_pTheDB->SavedGameMoves.GetViewSize(dwID); break;
 		case V_Speech: dwRowCount = g_pTheDB->Speech.GetViewSize(dwID); break;
+		case V_LocalHighScores: dwRowCount = g_pTheDB->HighScores.GetViewSize(dwID); break;
 		default:
 			ASSERT(!"CDb::LookupRowByPrimaryKey: Unexpected property type.");
 			return ROW_NO_MATCH;
@@ -797,6 +826,17 @@ CIDSet CDb::getLevelsInHold(const UINT holdID)
 }
 
 //*****************************************************************************
+CIDSet CDb::getLocalHighscoresForHold(const UINT holdID)
+//Returns: set of local highScoreIDs belong to this hold
+{
+	CIDSet IDs;
+	CDb db;
+	db.HighScores.FilterByHold(holdID);
+	db.HighScores.GetIDs(IDs);
+	return IDs;
+}
+
+//*****************************************************************************
 CIDSet CDb::getRoomsInHold(const UINT holdID)
 //Returns: set of roomIDs belonging to this hold, or empty set if level doesn't exist
 {
@@ -1112,10 +1152,12 @@ void CDb::RemoveEmptyRows()
 		this->Data.RemoveEmptyRows();
 		DirtyData();
 	}
-	if (this->Demos.emptyEndRows || this->SavedGames.emptyEndRows)
+	if (this->Demos.emptyEndRows || this->SavedGames.emptyEndRows ||
+			this->HighScores.emptyEndRows)
 	{
 		this->Demos.RemoveEmptyRows();
 		this->SavedGames.RemoveEmptyRows();
+		this->HighScores.RemoveEmptyRows();
 		DirtySave();
 	}
 	if (this->Holds.emptyEndRows || this->Levels.emptyEndRows ||

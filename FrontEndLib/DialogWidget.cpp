@@ -366,7 +366,23 @@ void CDialogWidget::OnKeyDown(
 {
 	switch (Key.keysym.sym)
 	{
+		case SDLK_KP_ENTER:
+			if ((Key.keysym.mod & KMOD_CTRL) != 0 &&
+				this->dwReqTextField) {
+				this->dwDeactivateValue = TAG_OK;
+				Deactivate();
+				return;
+			}
+		break;
+
 		case SDLK_RETURN:
+			if ((Key.keysym.mod & KMOD_CTRL) != 0 &&
+				this->dwReqTextField) {
+				this->dwDeactivateValue = TAG_OK;
+				Deactivate();
+				return;
+			}
+
 			if ((Key.keysym.mod & KMOD_ALT) == 0) break;
 		//NO BREAK
 

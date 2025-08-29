@@ -90,6 +90,21 @@
     <ClCompile Include="..\Drod\Sphere.cpp">
       <Filter>RoomModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\DROD\RaindropEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\WadeEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\DamagePreviewEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\ImageOverlayEffect.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\DROD\EquipmentDescription.cpp">
+      <Filter>DRODIncludes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OptionList.h">

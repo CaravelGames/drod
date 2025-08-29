@@ -55,12 +55,14 @@
 #endif
 
 #define TITLE_BACKGROUND (0)
-#define LIGHT_MASK       (1)
-#define TITLE_SHADOW     (2)
+#define LIGHT_MASK       (4)
+#define TITLE_SHADOW     (5)
 
 const UINT TAG_MENU = 1000;
 const UINT TAG_PLAYMENU = 1001;
+const UINT TAG_TITLE_IMG = 1002;
 const UINT TAG_INTERNET_ICON = 1010;
+const UINT TAG_CARAVEL_LOGO_SW = 1012;
 const UINT TAG_HYPERLINK_START = 10000;
 
 const UINT dwDisplayDuration = 60000;  //ms
@@ -97,6 +99,9 @@ enum VerminTypes {
 	VERMIN_TYPES
 };
 
+//const int CX_CARAVEL_LOGO = 132;
+const int CY_CARAVEL_LOGO = 132;
+
 //
 //Protected methods.
 //
@@ -114,19 +119,22 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	, pMarqueeWidget(NULL)
 	, bWaitingForHoldlist(false)
 	, bPredarken(true), bReloadGraphics(false)
+	, bNewGamePrompt(true)
 //Constructor.
 {
-	string TitleBG;
-	switch (rand() % 3)
-	{
-		default:
-		case 0: TitleBG = "TitleBG"; break;
-		case 1: TitleBG = "TitleBG1"; break;
-		case 2: TitleBG = "TitleBG2"; break;
-	}
-	this->imageFilenames.push_back(TitleBG);
+	//Load image assets
+	this->imageFilenames.push_back(string("TitleBG"));
+	this->imageFilenames.push_back(string("TitleBG1"));
+	this->imageFilenames.push_back(string("TitleBG2"));
+	this->imageFilenames.push_back(string("TitleBG_RPG2"));
 	this->imageFilenames.push_back(string("TitleLightMask"));
 	this->imageFilenames.push_back(string("TitleShadow"));
+
+	//Game title logo.
+	AddWidget(new CImageWidget(TAG_TITLE_IMG, X_TITLE, Y_TITLE, wszTitle));
+
+	//Caravel Games logo
+	AddWidget(new CImageWidget(TAG_CARAVEL_LOGO_SW, 0, CScreen::CY_SCREEN - CY_CARAVEL_LOGO, wszCaravelLogo));
 
 	g_pTheDBM->LoadGeneralTileImages();
 
@@ -134,18 +142,12 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 
 	const bool bDemo = !IsGameFullVersion();
 
-	string str;
-	this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
-
-	//Game title.
-	AddWidget(new CImageWidget(0, X_TITLE, Y_TITLE, wszTitle));
-	AddWidget(new CImageWidget(0, 0, CScreen::CY_SCREEN - 132, wszCaravelLogo));
-
-	//Option menu in lower center.
+	//Option menu position based on BG image.
 	const int CX_MENU = 355;
-	const int X_MENU = (CScreen::CX_SCREEN - CX_MENU) / 2;
-	const int Y_MENU = 340;
 	const int CY_MENU = 360;
+	const int X_MENU = GetMenuXPosition(CX_MENU); //lower center, right
+	const int Y_MENU = 340;
+
 	this->pMenu = new CMenuWidget(TAG_MENU, X_MENU, Y_MENU, CX_MENU, CY_MENU,
 			F_TitleMenu, F_TitleMenuActive, F_TitleMenuSelected);
 	AddWidget(this->pMenu);
@@ -163,7 +165,7 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 	this->pPlayMenu = new CMenuWidget(TAG_PLAYMENU, X_MENU, Y_MENU, CX_MENU, CY_MENU,
 			F_TitleMenu, F_TitleMenuActive, F_TitleMenuSelected);
 	AddWidget(this->pPlayMenu);
-	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleTutorial), MNU_TUTORIAL);
+	//this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleTutorial), MNU_TUTORIAL);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleNewGame), MNU_NEWGAME);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleContinue), MNU_CONTINUE);
 	this->pPlayMenu->AddText(g_pTheDB->GetMessageText(MID_TitleRestore), MNU_RESTORE);
@@ -200,10 +202,19 @@ CTitleScreen::CTitleScreen() : CDrodScreen(SCR_Title)
 			CX_MARQUEE, CY_MARQUEE, 10);
 	AddWidget(this->pMarqueeWidget);
 
-	time_t t = time(NULL);
-	tm* pLocalTime = localtime(&t);
-	if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
-		this->bBackwards = true; //critters move backwards
+	SetTitleScreenSkin();
+}
+
+//******************************************************************************
+bool CTitleScreen::IsRPG1BG() const
+{
+	return this->imageNum >= 0 && this->imageNum <= 2;
+}
+
+//******************************************************************************
+int CTitleScreen::GetMenuXPosition(const int width) const
+{
+	return IsRPG1BG() ? (CScreen::CX_SCREEN - width) / 2 : 675; //lower center, right;
 }
 
 //******************************************************************************
@@ -261,10 +272,14 @@ bool CTitleScreen::SetForActivate()
 		this->dwNonTutorialHoldID = 0;
 	}
 
+	SetTitleScreenSkin();
+
 	LoadDemos();
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 	g_pTheSound->bNoFocusPlaysMusic = settings.GetVar(Settings::NoFocusPlaysMusic, false);
+
+	this->bNewGamePrompt = settings.GetVar(Settings::NewGamePrompt, true);
 
 	ASSERT(!this->bWaitingForHoldlist); //no previous transaction should be left uncompleted
 	if (g_pTheNet->IsEnabled()) //if CaravelNet connection hasn't been disabled
@@ -284,7 +299,7 @@ bool CTitleScreen::SetForActivate()
 	}
 	SetMenuOptionStatus();
 
-	g_pTheSound->PlaySong(SONGID_INTRO);
+	g_pTheSound->PlaySong(IsRPG1BG() ? SONGID_INTRO : SONGID_TITLE_2);
 
 	SetCursor();
 
@@ -298,6 +313,72 @@ bool CTitleScreen::SetForActivate()
 //
 //Private methods.
 //
+
+//*****************************************************************************
+void CTitleScreen::SetTitleScreenSkin()
+{
+	this->hold_status = GetHoldStatus();
+	if (!CDbHold::IsOfficialHold(this->hold_status)) {
+		//Check CaravelNet data to determine which game version the hold is from.
+		const UINT holdID = g_pTheDB->GetHoldID();
+		if (holdID) {
+			CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID, true);
+			if (pHold) {
+				vector<CNetMedia*>& cNetMedia = g_pTheNet->GetCNetMedia();
+				const int nIndex = g_pTheNet->getIndexForName((const WCHAR*)pHold->NameText);
+				if (nIndex >= 0) {
+					CNetMedia* pHoldData = cNetMedia[nIndex];
+					const UINT version = pHoldData->wVersion;
+					if (version < 500)
+						this->hold_status = CDbHold::Tendry;
+					else if (version < 600)
+						this->hold_status = CDbHold::ACR;
+				}
+				delete pHold;
+			}
+		}
+
+		//To provide consistency w/o CaravelNet, set skin based on the newest installed official hold.
+		if (!CDbHold::IsOfficialHold(this->hold_status)) {
+			this->hold_status = CDbHolds::GetNewestInstalledOfficialHoldStatus();
+		}
+	}
+
+	switch (this->hold_status) {
+		case CDbHold::Tendry:
+			this->imageNum = rand() % 3;
+		break;
+		case CDbHold::ACR:
+		default:
+			this->imageNum = 3;
+	}
+
+	this->backgroundIndex = TITLE_BACKGROUND + this->imageNum;
+	CWidget* titleImage = GetWidget(TAG_TITLE_IMG);
+	ASSERT(titleImage);
+
+	//Manage distinct screen assets with skittering roaches when showing a DROD RPG 1 background image
+	if (IsRPG1BG()) {
+		titleImage->Show();
+		string str;
+		this->bExtraCritters = CFiles::GetGameProfileString(INISection::Startup, "ExtraCritters", str);
+
+		time_t t = time(NULL);
+		tm* pLocalTime = localtime(&t);
+		if (pLocalTime->tm_mon == 3 && pLocalTime->tm_mday == 1)
+			this->bBackwards = true; //critters move backwards
+	} else {
+		titleImage->Hide();
+	}
+
+	CWidget* mainMenu = GetWidget(TAG_MENU);
+	ASSERT(mainMenu);
+	mainMenu->Move(GetMenuXPosition(mainMenu->GetW()), mainMenu->GetY());
+
+	CWidget* playMenu = GetWidget(TAG_PLAYMENU);
+	ASSERT(playMenu);
+	playMenu->Move(GetMenuXPosition(playMenu->GetW()), playMenu->GetY());
+}
 
 //*****************************************************************************
 void CTitleScreen::OnBetweenEvents()
@@ -330,7 +411,7 @@ void CTitleScreen::OnBetweenEvents()
 	else
 		switch (this->pPlayMenu->GetOnOption())
 		{
-			case MNU_TUTORIAL: RequestToolTip(MID_TutorialTip); break;
+			//case MNU_TUTORIAL: RequestToolTip(MID_TutorialTip); break;
 			case MNU_NEWGAME: RequestToolTip(MID_NewGameTip); break;
 			case MNU_CONTINUE: RequestToolTip(MID_ContinueTip); break;
 			case MNU_RESTORE: RequestToolTip(MID_RestoreTip); break;
@@ -567,12 +648,17 @@ void CTitleScreen::Paint(
 		//Use darker screen if high quality graphics are set.
 		const float fValue = g_pTheBM->bAlpha || g_pTheBM->eyeCandy ? fDarkFactor : 0.75f;
 		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
-				fValue, this->images[TITLE_BACKGROUND]);
+			fValue, this->images[TITLE_BACKGROUND]);
+		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+			fValue, this->images[TITLE_BACKGROUND + 1]);
+		g_pTheBM->DarkenRect(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN,
+			fValue, this->images[TITLE_BACKGROUND + 2]);
+
 		this->bPredarken = false;
 	}
 
 	//Draw background.
-	g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, GetDestSurface(), NULL);
+	g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, GetDestSurface(), NULL);
 
 	//Draw the screen.
 	RedrawScreen(bUpdateRect);
@@ -768,8 +854,11 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 					g_pTheSM->GetScreen(SCR_Game));
 			ASSERT(pGameScreen);
-			if (pGameScreen->IsGameLoaded())
+			const UINT dwContinueID = g_pTheDB->SavedGames.FindByContinue();
+			if (pGameScreen->IsGameLoaded() || dwContinueID) {
+				if (!ConfirmNewGame()) return SCR_Title;
 				pGameScreen->UnloadGame();
+			}
 			if (!pGameScreen->LoadNewGame(dwCurrentHoldID))
 			{
 				ShowOkMessage(MID_LoadGameFailed);
@@ -812,10 +901,7 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 			SelectFirstWidget(false);
 
 			this->bReloadDemos = false;
-			if (pGameScreen->ShouldShowLevelStart())
-				return SCR_LevelStart;
-
-			return SCR_Game;
+			return pGameScreen->SelectGotoScreen();
 		}
 
 		case MNU_HELP:
@@ -929,6 +1015,17 @@ void CTitleScreen::Animate()
 }
 
 //*****************************************************************************
+bool CTitleScreen::ConfirmNewGame()
+//Returns: If player really wants to start a new game
+{
+	//New game confirmation is disabled in player settings
+	if (!this->bNewGamePrompt)
+		return true;
+
+	return (ShowYesNoMessage(g_pTheDB->GetMessageText(MID_ReallyStartNewGame)) == TAG_YES);
+}
+
+//*****************************************************************************
 UINT CTitleScreen::GetNextDemoID()
 //Returns:
 //DemoID of next demo in sequence to show or 0L if there are no demos to show.
@@ -971,6 +1068,22 @@ UINT CTitleScreen::GetNextDemoID()
 void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 //Updates the title screen graphics.
 {
+	if (IsRPG1BG()) {
+		DrawRPG1Screen();
+	} else {
+		DrawRPG2Screen();
+	}
+
+	if (this->pStatusDialog->IsVisible())
+		this->pStatusDialog->Paint();
+
+	if (bUpdate)
+		UpdateRect();
+}
+
+//*****************************************************************************
+void CTitleScreen::DrawRPG1Screen()
+{
 	static const int nShadowMaskW = this->images[TITLE_SHADOW]->w;
 	static const int nShadowMaskH = this->images[TITLE_SHADOW]->h;
 	static const float fOffsetFactor = 0.12f;
@@ -978,29 +1091,29 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	//Draw light mask if higher quality graphics are enabled.
 	const bool bAlpha = g_pTheBM->bAlpha || g_pTheBM->eyeCandy;
 
-	SDL_Surface *pDestSurface = GetDestSurface();
+	SDL_Surface* pDestSurface = GetDestSurface();
 
 	int nMouseX, nMouseY;
 	GetMouseState(&nMouseX, &nMouseY);
 
 	//Blit the title background.
-	SDL_Rect redrawRect = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
-	if (bAlpha)
-		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], NULL, pDestSurface, NULL);
-	else
-	{
+	if (bAlpha) {
+		g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, pDestSurface, NULL);
+	}
+	else {
 		//Selectively damage region around title graphic and shadow.
+		SDL_Rect redrawRect = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
 		redrawRect.x = X_TITLE_SHADOW - static_cast<int>(CScreen::CX_SCREEN * fOffsetFactor);
 		redrawRect.y = Y_TITLE_SHADOW - static_cast<int>((CScreen::CY_SCREEN - Y_TITLE_SHADOW) * fOffsetFactor);
-		redrawRect.w = nShadowMaskW + static_cast<int>(CScreen::CX_SCREEN/2 * fOffsetFactor) + 125;
-		redrawRect.h = nShadowMaskH + static_cast<int>(CScreen::CY_SCREEN/2 * fOffsetFactor) + 58;
-		g_pTheBM->BlitSurface(this->images[TITLE_BACKGROUND], &redrawRect, pDestSurface, &redrawRect);
+		redrawRect.w = nShadowMaskW + static_cast<int>(CScreen::CX_SCREEN / 2 * fOffsetFactor) + 125;
+		redrawRect.h = nShadowMaskH + static_cast<int>(CScreen::CY_SCREEN / 2 * fOffsetFactor) + 58;
+		g_pTheBM->BlitSurface(this->images[this->backgroundIndex], &redrawRect, pDestSurface, &redrawRect);
 		UpdateRect(redrawRect);
 
 		//Erase effects drawn last frame.
 		SDL_Rect src = MAKE_SDL_RECT(0, 0, CScreen::CX_SCREEN, CScreen::CY_SCREEN);
-		EraseChildren(this->images[TITLE_BACKGROUND], src, true);
-		this->pEffects->EraseEffects(this->images[TITLE_BACKGROUND], src, true);
+		EraseChildren(this->images[this->backgroundIndex], src, true);
+		this->pEffects->EraseEffects(this->images[this->backgroundIndex], src, true);
 	}
 
 	if (bAlpha)
@@ -1010,7 +1123,7 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		addParticle();
 		updateParticles(pDestSurface, nMouseX, nMouseY);
 		verminEffects.UpdateAndDrawEffects(false, pDestSurface);
-	
+
 		//Light mask centered on mouse cursor.
 		//Bounded random walk for light jitter.
 		static int nXOffset = 0, nYOffset = 0;
@@ -1027,10 +1140,10 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 		{
 			static const int nLightMaskW = this->images[LIGHT_MASK]->w;
 			static const int nLightMaskH = this->images[LIGHT_MASK]->h;
-			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH); 
-			SDL_Rect dest = MAKE_SDL_RECT(nMouseX + nXOffset - nLightMaskW/2, nMouseY + nYOffset - nLightMaskH/2,
-					nLightMaskW, nLightMaskH);
-			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, 1.0f/fDarkFactor + 0.002f * RAND(100));
+			SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
+			SDL_Rect dest = MAKE_SDL_RECT(nMouseX + nXOffset - nLightMaskW / 2, nMouseY + nYOffset - nLightMaskH / 2,
+				nLightMaskW, nLightMaskH);
+			g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, 1.0f / fDarkFactor + 0.002f * RAND(100));
 		}
 	}
 
@@ -1038,21 +1151,125 @@ void CTitleScreen::RedrawScreen(const bool bUpdate) //[default=true]
 	{
 		static SDL_Rect src = MAKE_SDL_RECT(0, 0, nShadowMaskW, nShadowMaskH);
 		SDL_Rect dest = MAKE_SDL_RECT(
-				X_TITLE_SHADOW - static_cast<Sint16>((nMouseX-(int)(X_TITLE_SHADOW + nShadowMaskW/2)) * fOffsetFactor),
-				Y_TITLE_SHADOW - static_cast<Sint16>((nMouseY-(int)(Y_TITLE_SHADOW + nShadowMaskH/2)) * fOffsetFactor),
-				nShadowMaskW, nShadowMaskH);
+			X_TITLE_SHADOW - static_cast<Sint16>((nMouseX - (int)(X_TITLE_SHADOW + nShadowMaskW / 2)) * fOffsetFactor),
+			Y_TITLE_SHADOW - static_cast<Sint16>((nMouseY - (int)(Y_TITLE_SHADOW + nShadowMaskH / 2)) * fOffsetFactor),
+			nShadowMaskW, nShadowMaskH);
 		g_pTheBM->DarkenWithMask(this->images[TITLE_SHADOW], src, pDestSurface, dest, 0.2f);
 	}
 
 	PaintChildren();
 
+	AnimateCaravelLogo(pDestSurface);
+
 	this->pEffects->UpdateAndDrawEffects(!bAlpha);
+}
 
-	if (this->pStatusDialog->IsVisible())
-		this->pStatusDialog->Paint();
+//*****************************************************************************
+void CTitleScreen::DrawRPG2Screen()
+{
+	//Blit the title background.
+	SDL_Surface* pDestSurface = GetDestSurface();
+	g_pTheBM->BlitSurface(this->images[this->backgroundIndex], NULL, pDestSurface, NULL);
 
-	if (bUpdate)
-		UpdateRect();
+	PaintChildren();
+
+	AnimateCaravelLogo(pDestSurface);
+
+	this->pEffects->UpdateAndDrawEffects();
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateCaravelLogo(SDL_Surface* pDestSurface)
+{
+	static const Uint32 FPS = 18;
+	static const Uint32 updateMS = 1000 / FPS;
+
+	static Uint32 dwTimeOfLastUpdate = 0;
+	const Uint32 dwNow = SDL_GetTicks();
+
+	bool update = false;
+	if (dwNow - dwTimeOfLastUpdate >= updateMS) {
+		dwTimeOfLastUpdate = dwNow;
+		update = true;
+	}
+
+	AnimateWaves(pDestSurface, update);
+	AnimateFlag(pDestSurface, update);
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateWaves(SDL_Surface* pDestSurface, bool update)
+//Animates the waves in the Caravel logo.
+{
+	//Waves area.
+	int X_WAVES = 33; //for logo in SW corner
+	const int Y_WAVES = 94;
+	const UINT CX_WAVES = 44;
+	const UINT CY_WAVES = 3;
+
+	CImageWidget* pCaravelLogo = DYN_CAST(CImageWidget*, CWidget*, GetWidget(TAG_CARAVEL_LOGO_SW));
+
+	static UINT wIndex = 0;
+
+	if (update) {
+		++wIndex;
+		if (wIndex == CX_WAVES) wIndex = 0;
+	}
+
+	//Draw left side of waves.
+	SDL_Rect Src = MAKE_SDL_RECT(X_WAVES + wIndex, Y_WAVES, CX_WAVES - wIndex, CY_WAVES);
+	SDL_Rect Dest = MAKE_SDL_RECT(pCaravelLogo->GetX() + X_WAVES, pCaravelLogo->GetY() + Y_WAVES, CX_WAVES - wIndex, CY_WAVES);
+	SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+	UpdateRect(Dest);
+
+	//Draw right side of waves.
+	if (wIndex)
+	{
+		Src.x = X_WAVES;
+		Src.w = wIndex;
+		Dest.x = pCaravelLogo->GetX() + X_WAVES + CX_WAVES - wIndex;
+		Dest.w = wIndex;
+		SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+		UpdateRect(Dest);
+	}
+}
+
+//*****************************************************************************
+void CTitleScreen::AnimateFlag(SDL_Surface* pDestSurface, bool update)
+//Animates the flag in the Caravel logo.
+{
+	//Flag area.
+	int X_FLAG = 50; //for logo in SW corner
+	const int Y_FLAG = 16;
+	const UINT CX_FLAG = 11;
+	const UINT CY_FLAG = 4;
+
+	CImageWidget* pCaravelLogo = DYN_CAST(CImageWidget*, CWidget*, GetWidget(TAG_CARAVEL_LOGO_SW));
+
+	static UINT wIndex = 0;
+
+	if (update) {
+		++wIndex;
+		if (wIndex == CX_FLAG) wIndex = 0;
+	}
+
+	//Draw left side of flag.
+	SDL_Rect Src = MAKE_SDL_RECT(X_FLAG + wIndex, Y_FLAG, CX_FLAG - wIndex, CY_FLAG);
+	SDL_Rect Dest = MAKE_SDL_RECT(pCaravelLogo->GetX() + X_FLAG, pCaravelLogo->GetY() + Y_FLAG, CX_FLAG - wIndex, CY_FLAG);
+	SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+	UpdateRect(Dest);
+
+	//Draw right side of flag.
+	if (wIndex)
+	{
+		Src.x = X_FLAG;
+		Src.w = wIndex;
+		Dest.x = pCaravelLogo->GetX() + X_FLAG + CX_FLAG - wIndex;
+		Dest.y = pCaravelLogo->GetY() + Y_FLAG + 1;
+		Dest.w = wIndex;
+		SDL_BlitSurface(pCaravelLogo->GetImageSurface(), &Src, pDestSurface, &Dest);
+		UpdateRect(Dest);
+	}
 }
 
 //*****************************************************************************
@@ -1124,7 +1341,7 @@ void CTitleScreen::SetMenuOptionStatus()
 	this->pMenu->Enable(MNU_SETTINGS, dwPlayerID != 0);
 
 	//Check for Tutorial hold.
-	this->pPlayMenu->Enable(MNU_TUTORIAL, g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Tutorial) != 0);
+	//this->pPlayMenu->Enable(MNU_TUTORIAL, g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Tutorial) != 0);
 
 	db.SavedGames.FilterByHold(g_pTheDB->GetHoldID());
 	db.SavedGames.FilterByPlayer(g_pTheDB->GetPlayerID());

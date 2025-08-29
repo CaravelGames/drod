@@ -39,6 +39,7 @@ public:
 	CMimic(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CMimic);
 
+	virtual bool CanDropTrapdoor(const UINT wTileNo);
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 	virtual SwordType GetWeaponType() const { return SwordType::LongSword; }

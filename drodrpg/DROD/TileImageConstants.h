@@ -2312,8 +2312,274 @@
 #define TI_STALWART_UW    2140
 #define TI_STALWART_UNW   2141
 
+#define TI_RAIN1          2142
+#define TI_RAIN2          2143
+#define TI_WADE1          2144
+#define TI_WADE2          2145
+#define TI_WADE3          2146
 
-static const UINT TI_COUNT = 2142;
+#define TI_MAP_DETAIL     2147
+#define TI_HEALTH_HUGE    2148
+#define TI_ATK_UP3        2149
+#define TI_ATK_UP10       2150
+#define TI_DEF_UP3        2151
+#define TI_DEF_UP10       2152
+#define TI_CRATE          2153
+
+#define TI_ORB_CRACKING   2154
+#define TI_ORB_CRACKED    2155
+
+//Full One Use PP Tiles
+#define TI_PPB            2156
+#define TI_PPB_E          2157
+#define TI_PPB_WE         2158
+#define TI_PPB_W          2159
+#define TI_PPB_S          2160
+#define TI_PPB_SE         2161
+#define TI_PPB_SWE        2162
+#define TI_PPB_SW         2163
+#define TI_PPB_NS         2164
+#define TI_PPB_NSE        2165
+#define TI_PPB_NSWE       2166
+#define TI_PPB_NSW        2167
+#define TI_PPB_N          2168
+#define TI_PPB_NE         2169
+#define TI_PPB_NWE        2170
+#define TI_PPB_NW         2171
+#define TI_PPB_CSE        2172
+#define TI_PPB_CSWE       2173
+#define TI_PPB_CSW        2174
+#define TI_PPB_CS         2175
+#define TI_PPB_CNSE       2176
+#define TI_PPB_CNSWE      2177
+#define TI_PPB_CNSW       2178
+#define TI_PPB_CNS        2179
+#define TI_PPB_CNE        2180
+#define TI_PPB_CNWE       2181
+#define TI_PPB_CNW        2182
+#define TI_PPB_CN         2183
+#define TI_PPB_CE         2184
+#define TI_PPB_CWE        2185
+#define TI_PPB_CW         2186
+#define TI_PPB_C          2187
+#define TI_PPB_DSE        2188
+#define TI_PPB_DSWE       2189
+#define TI_PPB_DSW        2190
+#define TI_PPB_DS         2191
+#define TI_PPB_DNSE       2192
+#define TI_PPB_DNSWE      2193
+#define TI_PPB_DNSW       2194
+#define TI_PPB_DNS        2195
+#define TI_PPB_DNE        2196
+#define TI_PPB_DNWE       2197
+#define TI_PPB_DNW        2198
+#define TI_PPB_DN         2199
+#define TI_PPB_DE         2200
+#define TI_PPB_DWE        2201
+#define TI_PPB_DW         2202
+#define TI_PPB_D          2203
+
+#define TI_SHOVEL_1       2204
+#define TI_SHOVEL_3       2205
+#define TI_SHOVEL_10      2206
+#define TI_DIRT_1         2207
+#define TI_DIRT_3         2208
+#define TI_DIRT_5         2209
+
+#define TI_THINICE        2210
+#define TI_THINICE_E      2211
+#define TI_THINICE_WE     2212
+#define TI_THINICE_W      2213
+#define TI_THINICE_S      2214
+#define TI_THINICE_SE     2215
+#define TI_THINICE_SWE    2216
+#define TI_THINICE_SW     2217
+#define TI_THINICE_NS     2218
+#define TI_THINICE_NSE    2219
+#define TI_THINICE_NSWE   2220
+#define TI_THINICE_NSW    2221
+#define TI_THINICE_N      2222
+#define TI_THINICE_NE     2223
+#define TI_THINICE_NWE    2224
+#define TI_THINICE_NW     2225
+
+#define TI_ICEMELT_1      2226
+#define TI_ICEMELT_2      2227
+#define TI_ICEMELT_3      2228
+#define TI_ICEMELT_4      2229
+
+#define TI_ARROW_OFF_N    2230
+#define TI_ARROW_OFF_NE   2231
+#define TI_ARROW_OFF_E    2232
+#define TI_ARROW_OFF_SE   2233
+#define TI_ARROW_OFF_S    2234
+#define TI_ARROW_OFF_SW   2235
+#define TI_ARROW_OFF_W    2236
+#define TI_ARROW_OFF_NW   2237
+
+#define TI_MIST           2238
+#define TI_MIST_E         2239
+#define TI_MIST_WE        2240
+#define TI_MIST_W         2241
+#define TI_MIST_S         2242
+#define TI_MIST_SE        2243
+#define TI_MIST_SWE       2244
+#define TI_MIST_SW        2245
+#define TI_MIST_NS        2246
+#define TI_MIST_NSE       2247
+#define TI_MIST_NSWE      2248
+#define TI_MIST_NSW       2249
+#define TI_MIST_N         2250
+#define TI_MIST_NE        2251
+#define TI_MIST_NWE       2252
+#define TI_MIST_NW        2253
+#define TI_MIST_C         2254
+
+#define TI_FLUFFBLOOD_1   2255
+#define TI_FLUFFBLOOD_2   2256
+
+#define TI_MISTVENT       2257
+
+#define TI_FIRETRAP       2258
+#define TI_FIRETRAP_ON    2259
+
+#define TI_FIRETRAP_UP1   2260
+#define TI_FIRETRAP_UP2   2261
+#define TI_FIRETRAP_UP3   2262
+
+#define TI_POWDER_KEG     2263
+//*****************************************************************************
+#define TI_ARCHIVIST_N    2264
+#define TI_ARCHIVIST_NE   2265
+#define TI_ARCHIVIST_E    2266
+#define TI_ARCHIVIST_SE   2267
+#define TI_ARCHIVIST_S    2268
+#define TI_ARCHIVIST_SW   2269
+#define TI_ARCHIVIST_W    2270
+#define TI_ARCHIVIST_NW   2271
+//*****************************************************************************
+#define TI_CONSTRUCT_N    2272
+#define TI_CONSTRUCT_NE   2273
+#define TI_CONSTRUCT_E    2274
+#define TI_CONSTRUCT_SE   2275
+#define TI_CONSTRUCT_S    2276
+#define TI_CONSTRUCT_SW   2277
+#define TI_CONSTRUCT_W    2278
+#define TI_CONSTRUCT_NW   2279
+#define TI_CONSTRUCT_AN   2280
+#define TI_CONSTRUCT_ANE  2281
+#define TI_CONSTRUCT_AE   2282
+#define TI_CONSTRUCT_ASE  2283
+#define TI_CONSTRUCT_AS   2284
+#define TI_CONSTRUCT_ASW  2285
+#define TI_CONSTRUCT_AW   2286
+#define TI_CONSTRUCT_ANW  2287
+//*****************************************************************************
+#define TI_ARCHITECT_N    2288
+#define TI_ARCHITECT_NE   2289
+#define TI_ARCHITECT_E    2290
+#define TI_ARCHITECT_SE   2291
+#define TI_ARCHITECT_S    2292
+#define TI_ARCHITECT_SW   2293
+#define TI_ARCHITECT_W    2294
+#define TI_ARCHITECT_NW   2295
+//*****************************************************************************
+#define TI_FLUFFBABY      2296
+#define TI_FLUFFBABY_A    2297
+#define TI_FLUFF_EXP1     2298
+#define TI_FLUFF_EXP2     2299
+#define TI_FLUFF_EXP3     2300
+#define TI_FLUFF_EXP4     2301
+#define TI_FLUFF_EXP5     2302
+#define TI_FLUFF_EXP6     2303
+//*****************************************************************************
+#define TI_PATRON_N       2304
+#define TI_PATRON_NE      2305
+#define TI_PATRON_E       2306
+#define TI_PATRON_SE      2307
+#define TI_PATRON_S       2308
+#define TI_PATRON_SW      2309
+#define TI_PATRON_W       2310
+#define TI_PATRON_NW      2311
+//*****************************************************************************
+#define TI_STAFF_SWORD_N       2312
+#define TI_STAFF_SWORD_NE      2313
+#define TI_STAFF_SWORD_E       2314
+#define TI_STAFF_SWORD_SE      2315
+#define TI_STAFF_SWORD_S       2316
+#define TI_STAFF_SWORD_SW      2317
+#define TI_STAFF_SWORD_W       2318
+#define TI_STAFF_SWORD_NW      2319
+#define TI_STAFF_SWORD_NEUTRAL 2320
+//*****************************************************************************
+#define TI_SPEAR_SWORD_N       2321
+#define TI_SPEAR_SWORD_NE      2322
+#define TI_SPEAR_SWORD_E       2323
+#define TI_SPEAR_SWORD_SE      2324
+#define TI_SPEAR_SWORD_S       2325
+#define TI_SPEAR_SWORD_SW      2326
+#define TI_SPEAR_SWORD_W       2327
+#define TI_SPEAR_SWORD_NW      2328
+#define TI_SPEAR_SWORD_NEUTRAL 2329
+//*****************************************************************************
+#define TI_DAGGER_SWORD 2330
+#define TI_SHIELD7      2331
+#define TI_SHIELD8      2332
+#define TI_SHIELD9      2333
+//*****************************************************************************
+#define TI_OVERHEAD_IMAGE 2334
+//*****************************************************************************
+#define TI_ROACHIE_AN 2335
+#define TI_ROACHIE_ANE 2336
+#define TI_ROACHIE_AE 2337
+#define TI_ROACHIE_ASE 2338
+#define TI_ROACHIE_AS 2339
+#define TI_ROACHIE_ASW 2340
+#define TI_ROACHIE_AW 2341
+#define TI_ROACHIE_ANW 2342
+#define TI_ROACHIE_N 2343
+#define TI_ROACHIE_NE 2344
+#define TI_ROACHIE_E 2345
+#define TI_ROACHIE_SE 2346
+#define TI_ROACHIE_S 2347
+#define TI_ROACHIE_SW 2348
+#define TI_ROACHIE_W 2349
+#define TI_ROACHIE_NW 2350
+//*****************************************************************************
+#define TI_MAP_ICON_SWORD 2351
+#define TI_MAP_ICON_SHIELD 2352
+#define TI_MAP_ICON_STAR 2353
+#define TI_MAP_ICON_SKULL 2354
+#define TI_MAP_ICON_ARROW_NORTH 2355
+#define TI_MAP_ICON_ARROW_EAST 2356
+#define TI_MAP_ICON_ARROW_SOUTH 2357
+#define TI_MAP_ICON_ARROW_WEST 2358
+#define TI_MAP_ICON_STAIR_UP 2359
+#define TI_MAP_ICON_STAIR_DOWN 2360
+#define TI_MAP_ICON_CHEST 2361
+#define TI_MAP_ICON_GEAR 2362
+#define TI_MAP_ICON_MONEY_BAG 2363
+#define TI_MAP_ICON_KEY_BLUE 2364
+#define TI_MAP_ICON_KEY_WHITE 2365
+#define TI_MAP_ICON_QUESTION_MARK 2366
+//*****************************************************************************
+#define TI_STAT_ICON_HP  2367
+#define TI_STAT_ICON_ATK 2368
+#define TI_STAT_ICON_DEF 2369
+#define TI_STAT_ICON_GR  2370
+#define TI_STAT_ICON_REP 2371
+#define TI_STAT_ICON_YK  2372
+#define TI_STAT_ICON_GK  2373
+#define TI_STAT_ICON_BK  2374
+#define TI_STAT_ICON_SK  2375
+#define TI_STAT_ICON_SHOVEL 2376
+//*****************************************************************************
+#define TI_WORLDMAP_NEW 2377
+#define TI_WORLDMAP_LOCK 2378
+#define TI_WORLDMAP_IN_PROGRESS 2379
+#define TI_WORLDMAP_CLEAR 2380
+
+static const UINT TI_COUNT = 2381;
 
 static inline bool bIsBriarTI(const UINT ti)
 {
@@ -2321,5 +2587,9 @@ static inline bool bIsBriarTI(const UINT ti)
 		(ti >= TI_BRIAR_SE && ti <= TI_BRIAR_N2) ||
 		(ti >= TI_BRIAREDGE_SE && ti <= TI_BRIARROOT_NW);
 };
+
+static inline bool bIsMistTI(const UINT ti) {
+	return ti >= TI_MIST && ti <= TI_MIST_NW;
+}
 
 #endif //...#ifndef TILEIMAGECONSTANTS_H

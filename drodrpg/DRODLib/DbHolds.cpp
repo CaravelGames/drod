@@ -55,21 +55,13 @@ bool IsCopyableSavedGame(SAVETYPE type)
 //		case ST_LevelBegin:
 		case ST_Continue:
 		case ST_EndHold:
-//		case ST_WorldMap:
+		case ST_WorldMap:
 //		case ST_HoldMastered:
 			return true;
 		default:
 			return false;
 	}
 }
-
-//For compiling the location of scripts that reference variables.
-struct VARCOORDELEM {
-	UINT roomID;
-	CCoordIndex coords;
-};
-typedef vector<VARCOORDELEM> VARROOMS;
-typedef map<WSTRING, VARROOMS> VARCOORDMAP;
 
 //
 //CDbHolds public methods.
@@ -150,6 +142,14 @@ void CDbHolds::Delete(
 		const UINT descriptionMID = p_DescriptionMessageID(row);
 		if (descriptionMID)
 			DeleteMessage(static_cast<MESSAGE_ID>(descriptionMID));
+	}
+
+	//Delete all local high scores for the hold
+	db.HighScores.FilterByHold(dwHoldID);
+	db.HighScores.FilterByPlayer(0);
+	CIDSet scoreIDs = db.HighScores.GetIDs();
+	for (iter = scoreIDs.begin(); iter != scoreIDs.end(); ++iter) {
+		db.HighScores.Delete(*iter);
 	}
 
 	//Delete the hold.
@@ -646,6 +646,8 @@ void CDbHolds::ExportXML(
 		str += PROPTAG(P_CharID);
 		str += INT32TOSTR(pHold->dwCharID);
 		//bCaravelNetMedia should be ignored
+		str += PROPTAG(P_WorldMapID);
+		str += INT32TOSTR(pHold->dwWorldMapID);
 	}
 
 	//Put primary key last, so all message fields have been set by the
@@ -744,6 +746,27 @@ void CDbHolds::ExportXML(
 				str += PROPTAG(P_DataIDTiles);
 				str += INT32TOSTR(ch.dwDataID_Tiles);
 			}
+			str += CLOSETAG;
+		}
+
+		//Hold world maps.
+		dwSize = pHold->worldMaps.size();
+		for (dwIndex = 0; dwIndex < dwSize; ++dwIndex)
+		{
+			HoldWorldMap& map = pHold->worldMaps[dwIndex];
+			if (map.dataID)
+				g_pTheDB->Data.ExportXML(map.dataID, dbRefs, str);
+
+			str += STARTVPTAG(VP_WorldMaps, P_WorldMapID);
+			str += INT32TOSTR(map.worldMapID);
+			str += PROPTAG(P_DataID);
+			str += INT32TOSTR(map.dataID);
+			str += PROPTAG(P_DisplayType);
+			str += INT32TOSTR(map.displayType);
+			str += PROPTAG(P_OrderIndex);
+			str += INT32TOSTR(map.orderIndex);
+			str += PROPTAG(P_WorldMapNameText);
+			str += Base64::encode(map.nameText);
 			str += CLOSETAG;
 		}
 
@@ -999,6 +1022,23 @@ WSTRING CDbHolds::GetHoldName(const UINT holdID) const
 }
 
 //*****************************************************************************
+CDbHold::HoldStatus CDbHolds::GetNewestInstalledOfficialHoldStatus()
+{
+	int maxStatus = static_cast<int>(CDbHold::NoStatus);
+
+	CDb db;
+	const CIDSet holdIDs = db.Holds.GetIDs();
+	for (CIDSet::const_iterator iter = holdIDs.begin(); iter != holdIDs.end(); ++iter)
+	{
+		const CDbHold::HoldStatus status = CDbHolds::GetStatus(*iter);
+		if (CDbHold::IsOfficialHold(status) && int(status) > maxStatus)
+			maxStatus = int(status);
+	}
+
+	return CDbHold::HoldStatus(maxStatus);
+}
+
+//*****************************************************************************
 void CDbHolds::GetRooms(const UINT dwHoldID, HoldStats& stats) const
 //OUT: hold room lists
 {
@@ -1034,100 +1074,21 @@ void CDbHolds::GetRoomsExplored(
 
 	rooms.clear();
 
-	//Get all player's saved games in hold.
 	CDb db;
-	db.SavedGames.FilterByPlayer(dwPlayerID);
-	db.SavedGames.FilterByHold(dwHoldID);
-	db.SavedGames.FindHiddens(true);
-	const CIDSet savedGameIDs = db.SavedGames.GetIDs();
+	CDbSavedGame* pSavedGame;
 
-	CDbSavedGame *pSavedGame;
-	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
-	{
-		pSavedGame = db.SavedGames.GetByID(*iter);
-		ASSERT(pSavedGame);
-		if (pSavedGame->eType != ST_DemoUpload) //not a real saved game record
-		{
-			rooms += pSavedGame->GetExploredRooms();
-			rooms += pSavedGame->dwRoomID;
-		}
-		delete pSavedGame;
-	}
-
-	//Total rooms explored/conquered for this hold.
 	pSavedGame = db.SavedGames.GetByID(
 			db.SavedGames.FindByType(ST_PlayerTotal, dwPlayerID, false));
 	if (pSavedGame)
 	{
 		const CIDSet roomsInHold = CDb::getRoomsInHold(dwHoldID);
-/*
-		if (bOnlyConquered)
-		{
-			pSavedGame->ConqueredRooms.intersect(roomsInHold);
-			rooms += pSavedGame->ConqueredRooms;
-		} else {
-*/
 		CIDSet expRooms = pSavedGame->GetExploredRooms(true); //this save flags "map only" on all explored rooms
 		expRooms.intersect(roomsInHold);
 		rooms += expRooms;
-//		}
 
 		delete pSavedGame;
 	}
 }
-
-//*****************************************************************************
-/*
-void CDbHolds::GetRoomsExplored(
-//OUT: set of room IDs explored and conquered by player in specified hold
-//
-//Params:
-	const UINT dwHoldID, const UINT dwPlayerID,   //(in)
-	CIDSet& exploredRooms, CIDSet& conqueredRooms) //(out)
-{
-	ASSERT(dwHoldID);
-	ASSERT(dwPlayerID);
-
-	exploredRooms.clear();
-	conqueredRooms.clear();
-
-	//Get all player's saved games in hold.
-	CDb db;
-	CIDSet savedGameIDs;
-	db.SavedGames.FilterByPlayer(dwPlayerID);
-	db.SavedGames.FilterByHold(dwHoldID);
-	db.SavedGames.FindHiddens(true);
-	db.SavedGames.GetIDs(savedGameIDs);
-
-	CDbSavedGame *pSavedGame;
-	for (CIDSet::const_iterator iter = savedGameIDs.begin(); iter != savedGameIDs.end(); ++iter)
-	{
-		pSavedGame = db.SavedGames.GetByID(*iter);
-		ASSERT(pSavedGame);
-		if (pSavedGame->eType != ST_DemoUpload) //not a real saved game record
-		{
-			conqueredRooms += pSavedGame->ConqueredRooms;
-			exploredRooms += pSavedGame->ExploredRooms;
-		}
-		delete pSavedGame;
-	}
-
-	//Total rooms explored/conquered for this hold.
-	pSavedGame = db.SavedGames.GetByID(
-			db.SavedGames.FindByType(ST_PlayerTotal, dwPlayerID, false));
-	if (pSavedGame)
-	{
-		CIDSet roomsInHold = CDb::getRoomsInHold(dwHoldID);
-		pSavedGame->ConqueredRooms.intersect(roomsInHold);
-		conqueredRooms += pSavedGame->ConqueredRooms;
-
-		pSavedGame->ExploredRooms.intersect(roomsInHold);
-		exploredRooms += pSavedGame->ExploredRooms;
-
-		delete pSavedGame;
-	}
-}
-*/
 
 //*****************************************************************************
 UINT CDbHolds::GetSecretsDone(
@@ -1142,6 +1103,9 @@ const
 {
 	CIDSet roomsExplored;
 	GetRooms(dwHoldID, stats);
+	if (stats.secretRooms.size() == 0)
+		return 0; // No secret rooms in this hold, so no need to check if we've explored them
+
 	GetRoomsExplored(dwHoldID, dwPlayerID, roomsExplored);
 
 	UINT wCount=0;
@@ -1150,6 +1114,18 @@ const
 		if (roomsExplored.has(*iter))
 			++wCount;
 	return wCount;
+}
+
+//*****************************************************************************
+CDbHold::HoldStatus CDbHolds::GetStatus(const UINT dwHoldID)
+{
+	if (!dwHoldID) return CDbHold::NoStatus;
+
+	c4_View HoldsView;
+	const UINT dwHoldRowI = LookupRowByPrimaryKey(dwHoldID, V_Holds, HoldsView);
+	if (dwHoldRowI == ROW_NO_MATCH) return CDbHold::NoStatus;
+
+	return (CDbHold::HoldStatus)(int)p_Status(HoldsView[dwHoldRowI]);
 }
 
 //*****************************************************************************
@@ -1185,161 +1161,256 @@ bool CDbHolds::IsHoldMastered(const UINT dwHoldID, const UINT playerID) const
 }
 
 //*****************************************************************************
-void AddScriptVarRef(
+void CDbHolds::AddScriptVarRef(
 //Adds the location of this variable reference to the varmap.
 //
 //Params:
-	VARCOORDMAP& varMap, const WCHAR* varName, const UINT roomID,
-	const UINT roomCols, const UINT roomRows, const UINT x, const UINT y)
+	VARCOORDMAP& varMap, const WCHAR* varName,
+	const CDbRoom* pRoom, const CCharacter* pCharacter,
+	const WSTRING& characterName)
 {
 	if (!varName)
 		varName = wszEmpty; //unrecognized variable reference
-	WSTRING wstrVarName(varName);
+	const WSTRING wstrVarName(varName);
 
 	VARCOORDMAP::iterator var = varMap.find(wstrVarName);
 	if (var == varMap.end())
 	{
 		//First instance of var.
-		varMap[wstrVarName] = VARROOMS();
+		varMap[wstrVarName] = VAR_LOCATIONS();
 		var = varMap.find(wstrVarName);
 		ASSERT(var != varMap.end());
 	}
+	VAR_LOCATIONS& locations = var->second;
 
-	VARROOMS& rooms = var->second;
-	UINT i;
-	for (i=0; i<rooms.size(); ++i)
-		if (rooms[i].roomID == roomID)
-			break;
-	if (i == rooms.size())
-	{
-		//First instance of var in this room.
-		VARCOORDELEM elem;
-		elem.roomID = roomID;
-		rooms.push_back(elem);
-		rooms.back().coords.Init(roomCols, roomRows);
+	if (pRoom) {
+		ASSERT(pCharacter);
+		const UINT roomID = pRoom->dwRoomID;
+		const UINT roomCols = pRoom->wRoomCols;
+		const UINT roomRows = pRoom->wRoomRows;
+		const UINT x = pCharacter->wX;
+		const UINT y = pCharacter->wY;
+
+		VARROOMS& rooms = locations.rooms;
+		VARROOMS::iterator it = rooms.find(roomID);
+		if (it == rooms.end()) {
+			//First instance of var in this room.
+			rooms[roomID] = CCoordIndex(roomCols, roomRows);
+			it = rooms.find(roomID);
+		}
+
+		//Tally the times this var is referenced in this script.
+		CCoordIndex& coords = it->second;
+		coords.Add(x, y, coords.GetAt(x, y) + 1);
 	}
-
-	//Tally the times this var is referenced in this script.
-	VARCOORDELEM& elem = rooms[i];
-	ASSERT(elem.roomID == roomID);
-	elem.coords.Add(x,y, elem.coords.GetAt(x,y)+1);
+	else {
+		ASSERT(!characterName.empty());
+		locations.characterNames.insert(characterName);
+	}
 }
 
 //*****************************************************************************
-void CDbHolds::LogScriptVarRefs(const UINT holdID)
+void CDbHolds::LogScriptVarRefs(const UINT holdID, const bool bScorepoints)
 //Output a log of all vars used in the hold.
 {
 	ASSERT(IsOpen());
 
-	CDbHold *pHold = GetByID(holdID);
+	CDbHold* pHold = GetByID(holdID);
 	if (!pHold)
 		return;
 
+	VARCOORDMAP varMap;
+	const CIDSet roomIDs = GetScriptCommandRefs(pHold, bScorepoints, varMap);
+	for (CIDSet::const_iterator roomIt = roomIDs.begin(); roomIt != roomIDs.end(); ++roomIt)
+		GetScriptCommandRefsForRoom(*roomIt, pHold, bScorepoints, varMap);
+	delete pHold;
+
+	const WSTRING text = GetTextForVarMap(varMap);
+	CClipboard::SetString(text);
+}
+
+//*****************************************************************************
+void CDbHolds::GetScriptScorepointRefs(
+	const CDbHold* pHold,
+	VARCOORDMAP& varMap, CIDSet& roomIDs) //(out)
+{
+	roomIDs = GetScriptCommandRefs(pHold, true, varMap);
+	//caller needs to scan these roomIDs
+}
+
+CIDSet CDbHolds::GetScriptCommandRefs(
+	const CDbHold* pHold, const bool bChallenges,
+	VARCOORDMAP& varMap) //(out)
+{
+	//Default scripts.
+	for (vector<HoldCharacter*>::const_iterator character = pHold->characters.begin();
+		character != pHold->characters.end(); ++character)
+	{
+		HoldCharacter* c = *character;
+		COMMAND_VECTOR commands;
+		CCharacter::LoadCommands(c->ExtraVars, commands);
+		for (UINT i = 0; i < commands.size(); ++i)
+			CheckForVarRefs(commands[i], bChallenges, varMap, pHold, NULL, NULL, c->charNameText);
+	}
+
 	//Order levels in hold.
 	SORTED_LEVELS levels;
-	CIDSet levelsInHold = CDb::getLevelsInHold(holdID);
+	CIDSet levelsInHold = CDb::getLevelsInHold(pHold->dwHoldID);
 	for (CIDSet::const_iterator levelID = levelsInHold.begin(); levelID != levelsInHold.end(); ++levelID)
 	{
-		CDbLevel *pLevel = g_pTheDB->Levels.GetByID(*levelID);
+		CDbLevel* pLevel = g_pTheDB->Levels.GetByID(*levelID);
 		ASSERT(pLevel);
 		levels.insert(pLevel);
 	}
 
-	VARCOORDMAP varMap;
+	CIDSet roomIDs;
 	for (SORTED_LEVELS::const_iterator level = levels.begin(); level != levels.end(); ++level)
 	{
-		CDbLevel *pLevel = *level;
-		CIDSet roomIDs = CDb::getRoomsInLevel(pLevel->dwLevelID);
-		for (CIDSet::const_iterator id=roomIDs.begin(); id!=roomIDs.end(); ++id)
-		{
-			//Scan a room for var references.
-			const UINT roomID = *id;
-			CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID);
-			ASSERT(pRoom);
+		CDbLevel* pLevel = *level;
+		const CIDSet levelRoomIDs = CDb::getRoomsInLevel(pLevel->dwLevelID);
 
-			for (CMonster *pMonster = pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
-			{
-				if (pMonster->wType != M_CHARACTER)
-					continue;
+		//Caller needs to scan these rooms for IDs
+		roomIDs += levelRoomIDs;
 
-				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				for (UINT i=0; i<pCharacter->commands.size(); ++i)
-				{
-					const CCharacterCommand& c = pCharacter->commands[i];
-					switch (c.command)
-					{
-						case CCharacterCommand::CC_VarSet:
-						case CCharacterCommand::CC_WaitForVar:
-						{
-							WSTRING varName;
-							if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
-							{
-								varName = ScriptVars::getVarNameW(ScriptVars::Predefined(c.x));
-							} else {
-								varName = pHold->GetVarName(c.x);
-							}
-							AddScriptVarRef(varMap, varName.c_str(), roomID, pRoom->wRoomCols,
-									pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-
-							if (c.command == CCharacterCommand::CC_VarSet)
-							{
-								switch (c.y)
-								{
-									case ScriptVars::Assign:
-									case ScriptVars::Inc:
-									case ScriptVars::Dec:
-									case ScriptVars::MultiplyBy:
-									case ScriptVars::DivideBy:
-									case ScriptVars::Mod:
-										//Search for a variable name in the operand.
-										if (!c.label.empty())
-										{
-											//parse expression
-											ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
-											if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
-											{
-												//Mark reference to variable.
-												AddScriptVarRef(varMap, c.label.c_str(), roomID, pRoom->wRoomCols,
-														pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-											}
-										}
-									break;
-									default: break;
-								}
-							} else {
-								switch (c.y)
-								{
-									case ScriptVars::Equals:
-									case ScriptVars::Greater:
-									case ScriptVars::Less:
-										//Search for a variable name in the operand.
-										if (!c.label.empty())
-										{
-											//parse expression
-											ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
-											if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
-											{
-												//Mark reference to variable.
-												AddScriptVarRef(varMap, c.label.c_str(), roomID, pRoom->wRoomCols,
-														pRoom->wRoomRows, pCharacter->wX, pCharacter->wY);
-											}
-										}
-									break;
-									default: break;
-								}
-							}
-						}
-						break;
-						default: break;
-					}
-				}
-			}
-			delete pRoom;
-		}
 		delete pLevel;
 	}
-	delete pHold;
+	return roomIDs;
+}
 
+//*****************************************************************************
+void CDbHolds::GetScriptCommandRefsForRoom(const UINT roomID,
+	const CDbHold* pHold, const bool bChallenges,
+	VARCOORDMAP& varMap) //(out)
+{
+	CDbRoom* pRoom = g_pTheDB->Rooms.GetByID(roomID);
+	if (!pRoom)
+		return;
+
+	const WSTRING noName;
+	for (CMonster* pMonster = pRoom->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
+	{
+		if (pMonster->wType != M_CHARACTER)
+			continue;
+
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		for (UINT i = 0; i < pCharacter->commands.size(); ++i)
+			CheckForVarRefs(pCharacter->commands[i], bChallenges, varMap, pHold, pRoom, pCharacter, noName);
+	}
+	delete pRoom;
+}
+
+//*****************************************************************************
+void CDbHolds::CheckForVarRefs(
+	const CCharacterCommand& c, const bool bScorepoints,
+	VARCOORDMAP& varMap, //(in/out)
+	const CDbHold* pHold,
+	const CDbRoom* pRoom, const CCharacter* pCharacter,
+	const WSTRING& characterName)
+{
+	switch (c.command)
+	{
+	case CCharacterCommand::CC_ScoreCheckpoint:
+		if (bScorepoints)
+			AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+		break;
+	case CCharacterCommand::CC_VarSet:
+	case CCharacterCommand::CC_VarSetAt:
+	case CCharacterCommand::CC_WaitForVar:
+	case CCharacterCommand::CC_ArrayVarSet:
+	case CCharacterCommand::CC_ArrayVarSetAt:
+	case CCharacterCommand::CC_ClearArrayVar:
+	{
+		if (bScorepoints)
+			break;
+
+		UINT refVarID = c.getVarID();
+		const WCHAR* pVarName;
+		WSTRING wstr;
+		if (refVarID >= (UINT)ScriptVars::FirstPredefinedVar)
+		{
+			wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(refVarID));
+			pVarName = wstr.c_str();
+		}
+		else {
+			pVarName = pHold->GetVarName(refVarID);
+		}
+
+		AddScriptVarRef(varMap, pVarName, pRoom, pCharacter, characterName);
+
+		if (c.command == CCharacterCommand::CC_VarSet)
+		{
+			switch (c.y)
+			{
+			case ScriptVars::Assign:
+			case ScriptVars::Inc:
+			case ScriptVars::Dec:
+			case ScriptVars::MultiplyBy:
+			case ScriptVars::DivideBy:
+			case ScriptVars::Mod:
+				//Search for a variable name in the operand.
+				if (!c.label.empty())
+				{
+					//parse expression
+					ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+					if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+					{
+						//Mark reference to variable.
+						AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+					}
+				}
+				break;
+			default: break;
+			}
+		}
+		else if (c.command == CCharacterCommand::CC_WaitForVar) {
+			switch (c.y)
+			{
+			case ScriptVars::Equals:
+			case ScriptVars::Greater:
+			case ScriptVars::GreaterThanOrEqual:
+			case ScriptVars::Less:
+			case ScriptVars::LessThanOrEqual:
+				//Search for a variable name in the operand.
+				if (!c.label.empty())
+				{
+					//parse expression
+					ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+					if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+					{
+						//Mark reference to variable.
+						AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+					}
+				}
+				break;
+			default: break;
+			}
+		}
+	}
+	break;
+	case CCharacterCommand::CC_WaitForExpression:
+	{
+		if (bScorepoints)
+			break;
+
+		//Search for a variable name in the expression.
+		if (!c.label.empty())
+		{
+			//parse expression
+			ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+			if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+			{
+				//Mark reference to variable.
+				AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+			}
+		}
+	}
+	default: break;
+	}
+}
+
+//*****************************************************************************
+WSTRING CDbHolds::GetTextForVarMap(const VARCOORDMAP& varMap)
+{
 	WSTRING text;
 	for (VARCOORDMAP::const_iterator vars = varMap.begin(); vars != varMap.end(); ++vars)
 	{
@@ -1349,22 +1420,28 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 		text += wszCRLF;
 
 		//Print location of all references to this variable.
-		const VARROOMS& rooms = vars->second;
-		for (UINT i=0; i<rooms.size(); ++i)
+		const VAR_LOCATIONS& locations = vars->second;
+		for (set<WSTRING>::const_iterator strIt = locations.characterNames.begin();
+			strIt != locations.characterNames.end(); ++strIt)
 		{
-			const VARCOORDELEM& room = rooms[i];
-			const UINT roomID = room.roomID;
-			CDbRoom *pRoom = g_pTheDB->Rooms.GetByID(roomID, true);
+			text += *strIt;
+			text += wszCRLF;
+		}
+
+		const VARROOMS& rooms = locations.rooms;
+		for (VARROOMS::const_iterator it = rooms.begin(); it != rooms.end(); ++it)
+		{
+			const UINT roomID = it->first;
+			const CCoordIndex& coords = it->second;
+			ASSERT(roomID);
+			CDbRoom* pRoom = g_pTheDB->Rooms.GetByID(roomID, true);
 			ASSERT(pRoom);
-			CDbLevel *pLevel = g_pTheDB->Levels.GetByID(pRoom->dwLevelID);
-			ASSERT(pLevel);
 
 			//Level name.
 			text += wszSpace;
-			text += pLevel->NameText;
+			text += CDbLevels::GetLevelName(pRoom->dwLevelID);
 			text += wszColon;
 			text += wszSpace;
-			delete pLevel;
 
 			//Room name.
 			pRoom->GetLevelPositionDescription(text, true);
@@ -1372,10 +1449,10 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 			delete pRoom;
 
 			//All positions in room where var is referenced.
-			for (UINT y=0; y<room.coords.GetRows(); ++y)
-				for (UINT x=0; x<room.coords.GetCols(); ++x)
+			for (UINT y = 0; y < coords.GetRows(); ++y)
+				for (UINT x = 0; x < coords.GetCols(); ++x)
 				{
-					const UINT num = room.coords.GetAt(x,y);
+					const UINT num = coords.GetAt(x, y);
 					if (num)
 					{
 						WCHAR temp[10];
@@ -1397,8 +1474,7 @@ void CDbHolds::LogScriptVarRefs(const UINT holdID)
 		}
 		text += wszCRLF;
 	}
-
-	CClipboard::SetString(text);
+	return text;
 }
 
 //*****************************************************************************
@@ -1444,6 +1520,13 @@ void CDbHold::CopyHoldMedia(CDbHold *pNewHold, CImportInfo& info)
 	{
 		CopyCustomCharacterData(*(*chIter), pNewHold, info);
 	}
+
+	for (vector<HoldWorldMap>::iterator wmIter = pNewHold->worldMaps.begin();
+		wmIter != pNewHold->worldMaps.end(); ++wmIter)
+	{
+		HoldWorldMap& map = *wmIter;
+		CDbData::CopyObject(info, map.dataID, pNewHold->dwHoldID);
+	}
 }
 
 //*****************************************************************************
@@ -1481,6 +1564,26 @@ CDbHold::~CDbHold()
 	Clear();
 }
 
+
+//*****************************************************************************
+//Returns: the official hold status code for this game release
+CDbHold::HoldStatus CDbHold::GetOfficialHoldStatus()
+{
+	return ACR;
+}
+
+//*****************************************************************************
+bool CDbHold::IsOfficialHold(HoldStatus holdstatus)
+{
+	switch (holdstatus) {
+	case Tendry:
+	case ACR:
+		return true;
+
+	default: return false;
+	}
+}
+
 //*****************************************************************************
 UINT CDbHold::AddCharacter(const WCHAR* pwszName)
 //Adds custom character with given name.  Name must be unique.
@@ -1509,6 +1612,18 @@ UINT CDbHold::AddVar(const WCHAR* pwszName)
 	const UINT dwNewVarID = ++this->dwVarID;
 	this->vars.push_back(HoldVar(dwNewVarID, pwszName));
 	return dwNewVarID;
+}
+
+//*****************************************************************************
+UINT CDbHold::AddWorldMap(const WCHAR* pwszName)
+{
+	if (GetWorldMapID(pwszName))
+		return 0; //Found matching name -- don't add it again.
+
+	const UINT dwNewWorldMapID = ++this->dwWorldMapID;
+	this->worldMaps.push_back(HoldWorldMap(
+		dwWorldMapID, 0, HoldWorldMap::NoLabels, dwNewWorldMapID, pwszName));
+	return dwNewWorldMapID;
 }
 
 //*****************************************************************************
@@ -1557,14 +1672,66 @@ bool CDbHold::DeleteVar(const UINT dwVarID)
 	return false;
 }
 
+bool CDbHold::DeleteWorldMap(const UINT dwWorldMapID)
+{
+	for (vector<HoldWorldMap>::iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map)
+		if (map->worldMapID == dwWorldMapID)
+		{
+			this->worldMaps.erase(map);
+			return true;
+		}
+	return false;
+}
+
+//*****************************************************************************
+bool CDbHold::SetDataIDForWorldMap(const UINT worldMapID, const UINT dataID)
+{
+	for (vector<HoldWorldMap>::iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map)
+		if (map->worldMapID == worldMapID)
+		{
+			map->dataID = dataID;
+			return true;
+		}
+	return false;
+}
+
+//*****************************************************************************
+bool CDbHold::SetDisplayTypeForWorldMap(const UINT worldMapID, HoldWorldMap::DisplayType type)
+{
+	for (vector<HoldWorldMap>::iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map)
+		if (map->worldMapID == worldMapID)
+		{
+			map->displayType = type;
+			return true;
+		}
+	return false;
+}
+
+//*****************************************************************************
+bool CDbHold::SetOrderIndexForWorldMap(const UINT worldMapID, const UINT orderIndex)
+{
+	for (vector<HoldWorldMap>::iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map)
+		if (map->worldMapID == worldMapID)
+		{
+			map->orderIndex = orderIndex;
+			return true;
+		}
+	return false;
+}
+
 //*****************************************************************************
 bool CDbHold::IsVarNameGoodSyntax(const WCHAR* pName)
 //Returns: whether a var name has correct syntax
 {
 	if (!pName)
 		return false;
-	if (!iswalpha(*(pName++))) //first char must be a letter
+	if (!(iswalpha(*pName) || *pName == W_t('#'))) //first char must be a letter or hash
 		return false;
+	++pName;
 	while (WCv(*pName))
 	{
 		//No punctuation except underscore and space
@@ -1862,13 +2029,16 @@ void CDbHold::RemoveLevel(
 			//exit's EntranceID to the newEntranceID.
 			c4_RowRef exitRow = ExitsView[wExitI];
 			const UINT dwEntranceID = (UINT) p_EntranceID(exitRow);
+			const ExitType exitType = (ExitType)(int)p_ExitType(exitRow);
 			if (dwEntranceID)
 			{
 				CEntranceData *pEntrance = GetEntrance(dwEntranceID);
-				if (!pEntrance)
-					p_EntranceID(exitRow) = 0; //bad entrance -- remove reference
-				else if (roomsInLevel.has(pEntrance->dwRoomID))
+				if (!pEntrance) {
+					if (exitType == ExitType::ET_Entrance)
+						p_EntranceID(exitRow) = 0; //bad entrance -- remove reference
+				} else if (roomsInLevel.has(pEntrance->dwRoomID)) {
 					p_EntranceID(exitRow) = dwNewEntranceID;
+				}
 			}
 		}
 	}
@@ -1928,6 +2098,7 @@ bool CDbHold::Load(
 	this->status = (CDbHold::HoldStatus)(UINT)(p_Status(row));
 	this->dwVarID = (UINT) p_VarID(row);
 	this->dwCharID = (UINT) p_CharID(row);
+	this->dwWorldMapID = (UINT)p_WorldMapID(row);
 
 	this->bPartialLoad = bQuick;
 	if (!bQuick)
@@ -1938,6 +2109,8 @@ bool CDbHold::Load(
 		if (!LoadVars(VarsView)) throw CException("CDbHold::Load");
 		c4_View CharactersView = p_Characters(row);
 		if (!LoadCharacters(CharactersView)) throw CException("CDbHold::Load");
+		c4_View WorldMapsView = p_WorldMaps(row);
+		if (!LoadWorldMaps(WorldMapsView)) throw CException("CDbHold::Load");
 	}
 
 	this->bCaravelNetMedia = (UINT)p_CaravelNetMedia(row) != 0;
@@ -2041,9 +2214,34 @@ bool CDbHold::LoadVars(
 		c4_Bytes VarNameTextBytes = p_VarNameText(row);
 		WSTRING name;
 		GetWString(name, VarNameTextBytes);
-		this->vars.push_back(HoldVar(
-				(UINT)(p_VarID(row)),
-				name.c_str()
+		const UINT varID = (UINT)(p_VarID(row));
+		this->vars.push_back(HoldVar(varID, name.c_str()));
+
+		//In-play optimization: not kept current during hold var editing
+		if (ScriptVars::IsCharacterArrayVar(name))
+			this->arrayScriptVars[varID] = name;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CDbHold::LoadWorldMaps(c4_View& WorldMapsView)
+{
+	UINT wWorldMapI;
+	const UINT wSize = WorldMapsView.GetSize();
+	for (wWorldMapI = 0; wWorldMapI < wSize; ++wWorldMapI)
+	{
+		c4_RowRef row = WorldMapsView[wWorldMapI];
+		c4_Bytes WorldMapNameTextBytes = p_WorldMapNameText(row);
+		WSTRING name;
+		GetWString(name, WorldMapNameTextBytes);
+		this->worldMaps.push_back(HoldWorldMap(
+			UINT(p_WorldMapID(row)),
+			UINT(p_DataID(row)),
+			HoldWorldMap::DisplayType(UINT(p_DisplayType(row))),
+			UINT(p_OrderIndex(row)),
+			name.c_str()
 		));
 	}
 
@@ -2261,6 +2459,67 @@ const WCHAR* CDbHold::GetVarName(const UINT dwVarID) const
 }
 
 //*****************************************************************************
+UINT CDbHold::GetWorldMapID(const WCHAR* pwszName) const
+{
+	if (pwszName) {
+		for (vector<HoldWorldMap>::const_iterator map = this->worldMaps.begin();
+			map != this->worldMaps.end(); ++map) {
+			if (!map->nameText.compare(pwszName))
+				return map->worldMapID;
+		}
+	}
+	return 0;
+}
+
+//*****************************************************************************
+UINT CDbHold::GetWorldMapDataID(const UINT worldMapID) const
+{
+	if (worldMapID) {
+		for (vector<HoldWorldMap>::const_iterator map = this->worldMaps.begin();
+			map != this->worldMaps.end(); ++map) {
+			if (map->worldMapID == worldMapID)
+				return map->dataID;
+		}
+	}
+	return 0;
+}
+
+//*****************************************************************************
+HoldWorldMap::DisplayType CDbHold::GetWorldMapDisplayType(const UINT worldMapID) const
+{
+	if (worldMapID) {
+		for (vector<HoldWorldMap>::const_iterator map = this->worldMaps.begin();
+			map != this->worldMaps.end(); ++map) {
+			if (map->worldMapID == worldMapID)
+				return map->displayType;
+		}
+	}
+	return HoldWorldMap::NoLabels;
+}
+
+//*****************************************************************************
+WSTRING CDbHold::GetWorldMapName(const UINT worldMapID) const
+{
+	for (vector<HoldWorldMap>::const_iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map) {
+		if (map->worldMapID == worldMapID)
+			return map->nameText;
+	}
+	return WSTRING();
+}
+
+//*****************************************************************************
+bool CDbHold::DoesWorldMapExist(UINT worldMapID) const
+{
+	for (vector<HoldWorldMap>::const_iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map) {
+		if (map->worldMapID == worldMapID)
+			return true;
+	}
+	return false;
+}
+
+//*****************************************************************************
 bool CDbHold::RenameCharacter(const UINT dwCharID, const WSTRING& newName)
 //Renames character with specified ID.
 //Returns: whether character with this ID exists and newName is unique
@@ -2304,6 +2563,26 @@ bool CDbHold::RenameVar(const UINT dwVarID, const WSTRING& newName)
 
 			//New name is unique.  Assign it.
 			var->varNameText = newName;
+			return true;
+		}
+	return false; //ID not found
+}
+
+//*****************************************************************************
+bool CDbHold::RenameWorldMap(const UINT dwWorldMapID, const WSTRING& newName)
+{
+	for (vector<HoldWorldMap>::iterator map = this->worldMaps.begin();
+		map != this->worldMaps.end(); ++map)
+		if (map->worldMapID == dwWorldMapID)
+		{
+			//Found -- ensure new name is unique.
+			for (vector<HoldWorldMap>::iterator map2 = this->worldMaps.begin();
+				map2 != this->worldMaps.end(); ++map2)
+				if (map2 != map && !map2->nameText.compare(newName)) //other vars only
+					return false;
+
+			//New name is unique.  Assign it.
+			map->nameText = newName;
 			return true;
 		}
 	return false; //ID not found
@@ -2517,6 +2796,21 @@ CDbHold* CDbHold::MakeCopy()
 				}
 			}
 
+			for (WorldMapsIcons::const_iterator iter = pSavedGame->worldMapIcons.begin();
+				iter != pSavedGame->worldMapIcons.end(); ++iter)
+			{
+				const WorldMapIcons& icons = iter->second;
+				for (WorldMapIcons::const_iterator iconIt = icons.begin();
+					iconIt != icons.end(); ++iconIt)
+				{
+					WorldMapIcon icon = *iconIt;
+					if (icon.imageID) {
+						PrimaryKeyMap::const_iterator localID = info.DataIDMap.find(icon.imageID);
+						icon.imageID = (localID != info.DataIDMap.end()) ? localID->second : 0;
+					}
+				}
+			}
+
 			pSavedGame->Update();
 		}
 		delete pSavedGame;
@@ -2531,6 +2825,14 @@ void CDbHold::MarkDataForDeletion(const UINT dataID)
 {
 	if (dataID)
 		this->deletedDataIDs.push_back(dataID);
+}
+
+//*****************************************************************************
+void CDbHold::UnmarkDataForDeletion(const UINT dataID)
+//Keep track of data IDs so that data object is deleted if Update is called.
+{
+	if (dataID)
+		this->deletedDataIDs.erase(std::remove(this->deletedDataIDs.begin(), this->deletedDataIDs.end(), dataID), this->deletedDataIDs.end());
 }
 
 //*****************************************************************************
@@ -2718,6 +3020,7 @@ bool CDbHold::SetMembers(
 	this->dwScriptID = Src.dwScriptID;
 	this->dwVarID = Src.dwVarID;
 	this->dwCharID = Src.dwCharID;
+	this->dwWorldMapID = Src.dwWorldMapID;
 
 	UINT wIndex;
 	for (wIndex=0; wIndex<Src.Entrances.size(); ++wIndex)
@@ -2729,6 +3032,8 @@ bool CDbHold::SetMembers(
 	}
 
 	this->vars = Src.vars;
+	this->arrayScriptVars = Src.arrayScriptVars;
+	this->worldMaps = Src.worldMaps;
 
 	for (vector<HoldCharacter*>::const_iterator chIter = Src.characters.begin();
 			chIter != Src.characters.end(); ++chIter)
@@ -2807,10 +3112,22 @@ MESSAGE_ID CDbHold::SetProperty(
 			const HoldStatus eMatchHoldsWithStatus =
 					(info.typeBeingImported == CImportInfo::Player ||
 							info.typeBeingImported == CImportInfo::SavedGame)
-					? Main : NoStatus;	//match player imports for demo and full main hold
-			const UINT dwLocalHoldID = GetLocalID(eMatchHoldsWithStatus);
+					? ACR : NoStatus;	//match player imports for demo and full main hold
+			//Across DLC data, there could be multiple instances of the same author GID.
+			//To join a DLC hold, we need to match against all of these.
+			std::pair<PrimaryKeyMultiMap::const_iterator, PrimaryKeyMultiMap::const_iterator> localIDMap =
+				info.PlayerIDMap.equal_range(this->dwPlayerID);
+			CIDSet localPlayerIDs;
+			for (PrimaryKeyMultiMap::const_iterator it = localIDMap.first; it != localIDMap.second; ++it)
+				localPlayerIDs += it->second;
+			const UINT dwLocalHoldID = GetLocalID(eMatchHoldsWithStatus, localPlayerIDs, this->dwPlayerID);
 			if (!dwLocalHoldID)
 			{
+				//Now remap hold's foreign playerID
+				PrimaryKeyMultiMap::const_iterator localID = info.PlayerIDMap.find(this->dwPlayerID);
+				ASSERT(localID != info.PlayerIDMap.end()); //case already guarded against in PlayerID field import below
+				this->dwPlayerID = localID->second;
+
 				//Hold not found -- add a new record to the DB.
 				if (this->NameText.IsEmpty() ||
 						info.typeBeingImported == CImportInfo::LanguageMod)
@@ -2899,13 +3216,14 @@ MESSAGE_ID CDbHold::SetProperty(
 
 						//If not the official hold, inform the player that hold versions don't match,
 						//and saved games from a different hold version might not be valid here.
-						if (this->status != Main)
+						if (!IsOfficialHold(this->status))
 							return MID_PlayerSavesIgnored;
 					}
 				break;
 
 				case CImportInfo::Demo:
 				case CImportInfo::SavedGame:
+				case CImportInfo::HighScore:
 					//A saved game/demo in this hold is being imported.
 					//No hold version checking is done.
 					bSaveRecord = false;
@@ -2973,16 +3291,20 @@ MESSAGE_ID CDbHold::SetProperty(
 			this->LastUpdated = convertToTimeT(str);
 			break;
 		case P_GID_PlayerID:
+		{
 			this->dwPlayerID = convertToUINT(str);
 			if (!this->dwPlayerID)
 				return MID_FileCorrupted;  //corrupt file (must have an author)
 
-			//Set to local ID.
-			localID = info.PlayerIDMap.find(this->dwPlayerID);
+			//Local ID existence check.
+			PrimaryKeyMultiMap::const_iterator localID = info.PlayerIDMap.find(this->dwPlayerID);
 			if (localID == info.PlayerIDMap.end())
 				return MID_FileCorrupted;  //record should have been loaded already
-			this->dwPlayerID = (*localID).second;
+
+			//the player ID will be corrected in P_HoldID resolution above --
+			//necessary for DLC with multiple potential matches
 			break;
+		}
 		case P_GID_NewLevelIndex:
 			this->dwNewLevelIndex = convertToUINT(str);
 			if (this->dwLevelID && !this->dwNewLevelIndex)
@@ -3004,7 +3326,7 @@ MESSAGE_ID CDbHold::SetProperty(
 		case P_Status:
 			this->status = static_cast<HoldStatus>(convertToInt(str));
 #if defined(STEAMBUILD) && !defined(DEV_BUILD)
-			if ((this->status == CDbHold::Main || this->status == CDbHold::Official) &&
+			if (CDbHold::IsOfficialHold(this->status) &&
 					info.typeBeingImported == CImportInfo::Hold)
 				return MID_SteamErrorAttemptingToImportOfficialHold;
 #endif
@@ -3014,6 +3336,9 @@ MESSAGE_ID CDbHold::SetProperty(
 			break;
 		case P_CharID:
 			this->dwCharID = convertToUINT(str);
+			break;
+		case P_WorldMapID:
+			this->dwWorldMapID = convertToUINT(str);
 			break;
 		default:
 			return MID_FileCorrupted;
@@ -3198,6 +3523,54 @@ MESSAGE_ID CDbHold::SetProperty(
 					return MID_FileCorrupted;
 			}
 			break;
+		case VP_WorldMaps:
+			switch (pType)
+			{
+				case P_Start:
+					//Start with fresh record.
+					ASSERT(!info.importWorldMap.worldMapID);
+					ASSERT(info.importWorldMap.nameText.empty());
+					ASSERT(info.typeBeingImported != CImportInfo::LanguageMod);
+					break;
+				case P_WorldMapID:
+					info.importWorldMap.worldMapID = convertToUINT(str);
+					break;
+				case P_DataID:
+				{
+					info.importWorldMap.dataID = convertToUINT(str);
+					UINT& id = info.importWorldMap.dataID;
+					if (id)
+					{
+						//Set to local ID.
+						PrimaryKeyMap::const_iterator localID = info.DataIDMap.find(id);
+						if (localID == info.DataIDMap.end())
+							return MID_FileCorrupted;  //record should have been loaded already
+						id = localID->second;
+					}
+				}
+				break;
+				case P_DisplayType:
+					info.importWorldMap.displayType = static_cast<HoldWorldMap::DisplayType>(convertToInt(str));
+					break;
+				case P_OrderIndex:
+					info.importWorldMap.orderIndex = convertToUINT(str);
+					break;
+				case P_WorldMapNameText:
+				{
+					WSTRING text;
+					Base64::decode(str, text);
+					info.importWorldMap.nameText = text.c_str();
+					break;
+				}
+				case P_End:
+					//Finish processing
+					this->worldMaps.push_back(info.importWorldMap);
+					info.importWorldMap.clear();
+					break;
+				default:
+					return MID_FileCorrupted;
+			}
+			break;
 		default:
 			return MID_FileCorrupted;
 	}
@@ -3239,13 +3612,14 @@ bool CDbHold::Update()
 //*****************************************************************************
 UINT CDbHold::GetLocalID(
 //Compares this object's GID fields against those of the records in the DB.
-//ASSUME: dwPlayerID has already been set to the local record ID
+//ASSUME: dwPlayerID has not yet been remapped to the local record ID
 //
-//Returns: local ID if a record in the DB matches this object's GUID, else 0
+//Returns: local ID if a record in the DB matches this object's GUID (and matchedPlayerID gets remapped), else 0
 //
 //Params:
-	const HoldStatus eStatusMatching)  //(in) consider holds w/ this status as identical
-	                                   //     [default = NoStatus]
+	const HoldStatus eStatusMatching,	//(in) consider holds w/ this status as identical
+	const CIDSet& playerIDs, //match against any of these hold author IDs
+	UINT& matchedPlayerID) //(in/out) the author ID that got matched
 const
 {
 	ASSERT(IsOpen());
@@ -3261,10 +3635,11 @@ const
 		{
 			//Check author.
 			const UINT dwPlayerID = (UINT)p_GID_PlayerID(row);
-			if (this->dwPlayerID == dwPlayerID)
+			if (playerIDs.has(dwPlayerID))
 			{
 				//GUIDs match.  Return this record's local ID.
-				return (UINT) p_HoldID(row);
+				matchedPlayerID = dwPlayerID;
+				return (UINT)p_HoldID(row);
 			}
 		}
 
@@ -3274,12 +3649,12 @@ const
 			const HoldStatus status = (HoldStatus)(UINT)p_Status(row);
 			if (status == eStatusMatching)
 				//Both are considered as the same hold.  Match them.
-				return (UINT) p_HoldID(row);
+				return (UINT)p_HoldID(row);
 		}
 	}
 
 	//No match.
-	return 0;
+	return 0L;
 }
 
 //*****************************************************************************
@@ -3390,6 +3765,25 @@ void CDbHold::SaveVars(
 }
 
 //*****************************************************************************
+void CDbHold::SaveWorldMaps(c4_View& WorldMapsView)
+{
+	UINT wWorldMapI;
+	const UINT wSize = this->worldMaps.size();
+	WorldMapsView.SetSize(wSize); //speed optimization
+	for (wWorldMapI = 0; wWorldMapI < wSize; ++wWorldMapI)
+	{
+		c4_RowRef row = WorldMapsView[wWorldMapI];
+		const HoldWorldMap& map = this->worldMaps[wWorldMapI];
+
+		p_WorldMapID(row) = map.worldMapID;
+		p_DataID(row) = map.dataID;
+		p_DisplayType(row) = UINT(map.displayType);
+		p_OrderIndex(row) = UINT(map.orderIndex);
+		p_WorldMapNameText(row) = PutWString(map.nameText);
+	}
+}
+
+//*****************************************************************************
 bool CDbHold::UpdateNew()
 //Add new Holds record to database.
 {
@@ -3404,10 +3798,11 @@ bool CDbHold::UpdateNew()
 		this->Created.SetToNow();
 		this->LastUpdated.SetToNow();
 	}
-	c4_View CharactersView, EntrancesView, VarsView;
+	c4_View CharactersView, EntrancesView, VarsView, WorldMapsView;
 	SaveCharacters(CharactersView);
 	SaveEntrances(EntrancesView);
 	SaveVars(VarsView);
+	SaveWorldMaps(WorldMapsView);
 
 	//Write out message texts.
 	const UINT dwNameID = this->NameText.UpdateText();
@@ -3437,6 +3832,8 @@ bool CDbHold::UpdateNew()
 	p_CharID(row) = this->dwCharID;
 	p_Characters(row) = CharactersView;
 	p_CaravelNetMedia(row) = this->bCaravelNetMedia;
+	p_WorldMapID(row) = this->dwWorldMapID;
+	p_WorldMaps(row) = WorldMapsView;
 
 	CDb::addHold(this->dwHoldID);
 	return true;
@@ -3469,15 +3866,16 @@ bool CDbHold::UpdateExisting()
 	ASSERT(dwNameID);
 	ASSERT(dwDescID);
 	//ASSERT(dwEndHoldID);  //might be 0
-	c4_View CharactersView, EntrancesView, VarsView;
+	c4_View CharactersView, EntrancesView, VarsView, WorldMapsView;
 	SaveCharacters(CharactersView);
 	SaveEntrances(EntrancesView);
 	SaveVars(VarsView);
+	SaveWorldMaps(WorldMapsView);
 
 	//Update Holds record.
 	p_HoldID(row) = this->dwHoldID;
 	p_LevelID(row) = this->dwLevelID;
-	if (this->status != CDbHold::Main) //CaravelNet keeps version of published official holds the same
+	if (!IsOfficialHold(this->status)) //CaravelNet keeps version of published official holds the same
 		p_LastUpdated(row) = UINT(this->LastUpdated);
 	p_GID_PlayerID(row) = this->dwPlayerID;
 	p_GID_NewLevelIndex(row) = this->dwNewLevelIndex;
@@ -3491,6 +3889,8 @@ bool CDbHold::UpdateExisting()
 	p_CharID(row) = this->dwCharID;
 	p_Characters(row) = CharactersView;
 	p_CaravelNetMedia(row) = this->bCaravelNetMedia;
+	p_WorldMapID(row) = this->dwWorldMapID;
+	p_WorldMaps(row) = WorldMapsView;
 
 	CDbBase::DirtyHold();
 	return true;
@@ -3509,18 +3909,22 @@ void CDbHold::Clear()
 	this->EndHoldText.Clear();
 	this->Created = this->LastUpdated = 0;
 
-	this->dwNewLevelIndex = this->dwScriptID = this->dwVarID = this->dwCharID = 0;
+	this->dwNewLevelIndex = this->dwScriptID = this->dwVarID = this->dwCharID =
+		this->dwWorldMapID = 0;
 	this->editingPrivileges = Anyone;
 	this->status = Homemade;
 	this->bCaravelNetMedia = false;
 
 	ClearEntrances();
 	this->vars.clear();
+	this->arrayScriptVars.clear();
 
 	for (vector<HoldCharacter*>::iterator chIt=this->characters.begin();
 			chIt!=this->characters.end(); ++chIt)
 		delete *chIt;
 	this->characters.clear();
+
+	this->worldMaps.clear();
 
 	this->deletedTextIDs.clear();
 	this->deletedSpeechIDs.clear();

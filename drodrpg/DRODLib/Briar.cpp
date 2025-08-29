@@ -169,6 +169,7 @@ void CBriars::process(
 
 	//Examine each briar tile connected to a root for expansion to adjacent room tiles.
 	CCoordSet pressurePlates;
+	CCoordStack powder_kegs;
 	for (CCoordSet::const_iterator tile=existingBriarTiles.begin();
 			tile!=existingBriarTiles.end(); ++tile)
 	{
@@ -224,6 +225,12 @@ void CBriars::process(
 				//Briars break everything else.  Including orbs.
 				default: break;
 			}
+
+			//Misty tiles block briar
+			if (room.IsEitherTSquare(wX, wY, T_MIST)) {
+				bBlocked = true;
+			}
+
 			if (bBlocked) continue;
 
 			//Force arrows in wrong direction stop the briar
@@ -308,6 +315,11 @@ void CBriars::process(
 			{
 				room.LitFuses.erase(wX, wY);
 			}
+			else if (wTTile == T_POWDER_KEG)
+			{
+				powder_kegs.Push(wX, wY);
+			}
+
 			room.Plot(wX,wY,T_BRIAR_LIVE);
 
 			//If dead tiles are adjacent to the newly-grown piece, they now become alive.
@@ -357,6 +369,12 @@ void CBriars::process(
 			if (wOTile == T_PRESSPLATE)
 				pressurePlates.insert(wX,wY);
 		}
+	}
+
+	//Briar growth detonates kegs
+	if (!powder_kegs.IsEmpty()) {
+		CCoordStack no_bombs;
+		pRoom->DoExplode(CueEvents, no_bombs, powder_kegs);
 	}
 
 	//Convert unstable tar to tar babies

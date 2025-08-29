@@ -29,7 +29,10 @@
 //Implementation of CSerpent.
 
 #include "Serpent.h"
+#include "Combat.h"
 #include "MonsterPiece.h"
+
+#define BaseHPStr "BaseHP"
 
 //
 //Public methods.
@@ -38,7 +41,7 @@
 //*****************************************************************************************
 CSerpent::CSerpent(const MONSTERTYPE eSerpentType, CCurrentGame *pSetCurrentGame)
 	: CMonster(eSerpentType, pSetCurrentGame)
-	, wOldTailX(UINT(-1)), wOldTailY(UINT(-1))
+	, wOldTailX(UINT(-1)), wOldTailY(UINT(-1)), BaseHP(0)
 {
 }
 
@@ -211,9 +214,32 @@ bool CSerpent::ShortenTail(
 	pBackPiece->wTileNo = tile;
 
 	//Reset monster's HP back to full to allow attacking another segment.
-	SetHP();
+	if (!this->BaseHP) {
+		//If BaseHP value isn't set, use SetHP(). This is required to maintain previous
+		//behaviour where the monster HP hasn't been changed.
+		SetHP();
+	} else {
+		this->HP = this->BaseHP;
+	}
 
 	return false;
+}
+
+//*****************************************************************************************
+void CSerpent::Save(const c4_RowRef& MonsterRowRef, const bool bSaveScript)
+{
+	if (this->BaseHP)
+		this->ExtraVars.SetVar(BaseHPStr, this->BaseHP);
+
+	//Continue with normal monster serialization
+	CMonster::Save(MonsterRowRef, bSaveScript);
+}
+
+//*****************************************************************************************
+void CSerpent::SetMembers(const CDbPackedVars& vars)
+{
+	CMonster::SetMembers(vars);
+	this->BaseHP = this->ExtraVars.GetVar(BaseHPStr, 0);
 }
 
 //*****************************************************************************************
@@ -237,7 +263,7 @@ const
 			wLookTileNo==T_FUSE ||
 			wLookTileNo==T_KEY ||
 			bIsEquipment(wLookTileNo) ||
-			wLookTileNo==T_MAP ||
+			bIsMap(wLookTileNo) ||
 			wLookTileNo==T_TOKEN
 			//should have T_SCROLL and ARROWs also, but they were left out of
 			//Webfoot/Caravel DROD (vv. 1.0 -- 1.6) since the serpent pieces were 
@@ -329,6 +355,13 @@ void CSerpent::GetTail(
 		}
 		return;
 	}
+}
+
+//*****************************************************************************
+void CSerpent::ChangeHP(const UINT HP)
+{
+	this->HP = HP;
+	this->BaseHP = HP; //So that after tail combat, HP becomes the new value
 }
 
 //

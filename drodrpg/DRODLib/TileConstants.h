@@ -40,6 +40,7 @@
 #define TILECONSTANTS_H
 
 #include <BackEndLib/Types.h>
+#include "GameConstants.h"
 #include "../Texts/MIDs.h"
 
 //Tile constants--reordering existing constants may break macros.  Add new
@@ -113,18 +114,18 @@
 #define T_TUNNEL_E      63
 #define T_TUNNEL_W      64
 #define T_FLOOR_IMAGE   65 //user-defined image
-#define T_WALL2         66	//alternate solid wall
+#define T_WALL2         66 //alternate solid wall
 #define T_WATER         67
 #define T_DOOR_GO       68 //Monster/Green Open
 #define T_DOOR_CO       69 //Blue/Exit Open
 #define T_DOOR_RO       70 //Red Open
 #define T_DOOR_BO       71 //Black Open
 #define T_TRAPDOOR2     72 //trapdoor over water
-#define T_GOO           73
-#define T_LIGHT         74	//light source
+#define T_GOO           73 //oremites
+#define T_LIGHT         74 //light source
 #define T_HOT           75 //hot tile
 #define T_GEL           76 //gel (tarstuff)
-#define T_MAP           77 //level map
+#define T_MAP           77 //level map (room locations only)
 #define T_PRESSPLATE    78 //pressure plate
 #define T_BRIDGE        79 //bridge
 #define T_BRIDGE_H      80 //bridge (horizontal)
@@ -139,8 +140,37 @@
 #define T_SHIELD        89 //shield
 #define T_HEALTH_SM     90 //Health (small)
 #define T_ACCESSORY     91 //accessory
+#define T_MAP_DETAIL    92 //level map (full room reveal, as if explored)
+#define T_HEALTH_HUGE   93 //Health (huge)
+#define T_ATK_UP3       94 //Attack up 3
+#define T_ATK_UP10      95 //Attack up 10
+#define T_DEF_UP3       96 //Defense up 3
+#define T_DEF_UP10      97 //Defense up 10
+#define T_CRATE         98
+#define T_PRESSPLATE_BROKEN_VIRTUAL 99 //virtual tile: only used to represent broken plate in saved game data
+#define T_SHOVEL1       100 //shovels up 1
+#define T_SHOVEL3       101 //shovels up 3
+#define T_SHOVEL10      102 //shovels up 10
+#define T_DIRT1         103 //dirt block requiring 1 shovel
+#define T_DIRT3         104 //dirt block requiring 3 shovels
+#define T_DIRT5         105 //dirt block requiring 5 shovels
+#define T_THINICE       106 //thin ice over water
+#define T_ARROW_OFF_N   107
+#define T_ARROW_OFF_NE  108
+#define T_ARROW_OFF_E   109
+#define T_ARROW_OFF_SE  110
+#define T_ARROW_OFF_S   111
+#define T_ARROW_OFF_SW  112
+#define T_ARROW_OFF_W   113
+#define T_ARROW_OFF_NW  114
+#define T_MIST          115 //mist that nullifies DEF
+#define T_MISTVENT      116 //produces and expands mist
+#define T_FIRETRAP      117
+#define T_FIRETRAP_ON   118
+#define T_POWDER_KEG    119
+#define T_OVERHEAD_IMAGE 120 //used in front end
 
-#define TILE_COUNT     (92) //Number of tile constants from above list.
+#define TILE_COUNT     (121) //Number of tile constants from above list.
 static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 
 //
@@ -153,17 +183,24 @@ static inline bool bIsBridge(const UINT t) {return t==T_BRIDGE || t==T_BRIDGE_H 
 static inline bool bIsCustomImageTile(const UINT t) {return t==T_FLOOR_IMAGE || t== T_PIT_IMAGE || t==T_WALL_IMAGE;}
 
 static inline bool bIsTrapdoor(const UINT t) {return t==T_TRAPDOOR || t==T_TRAPDOOR2;}
+static inline bool bIsThinIce(const UINT t) { return t == T_THINICE; }
+static inline bool bIsFallingTile(const UINT t) { return bIsTrapdoor(t) || bIsThinIce(t); }
+
+static inline bool bIsFiretrap(const UINT t) { return t == T_FIRETRAP || t == T_FIRETRAP_ON; }
+static inline UINT getToggledFiretrap(const UINT t) { return t == T_FIRETRAP ? T_FIRETRAP_ON : T_FIRETRAP; }
 
 static inline bool bIsPlainFloor(const UINT t) {return t==T_FLOOR || (t>=T_FLOOR_M && t<=T_FLOOR_ALT) || t==T_FLOOR_IMAGE;}
 
 static inline bool bIsFloor(const UINT t) {return bIsPlainFloor(t) ||
-		bIsTrapdoor(t) || bIsBridge(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE;}
+		bIsFallingTile(t) || bIsBridge(t) || bIsFiretrap(t) || t==T_HOT || t==T_GOO || t==T_PRESSPLATE || t==T_MISTVENT;}
 
 static inline bool bIsLight(const UINT t) {return t==T_LIGHT;}
+static inline bool bIsMistVent(const UINT t) { return t == T_MISTVENT;}
 
 static inline bool bIsWall(const UINT t) {return t==T_WALL || t==T_WALL2 || t==T_WALL_IMAGE;}
 
 static inline bool bIsCrumblyWall(const UINT t) {return t==T_WALL_B || t==T_WALL_H;}
+static inline bool bIsAnyWall(const UINT t) { return bIsWall(t) || bIsCrumblyWall(t); }
 
 static inline bool bIsStairs(const UINT t) {return t==T_STAIRS || t==T_STAIRS_UP;}
 
@@ -174,24 +211,44 @@ static inline bool bIsWater(const UINT t) {return t==T_WATER;}
 static inline bool bIsSheatheAffecting(const UINT t) { return t == T_GOO; }
 
 static inline bool bIsArrow(const UINT t) {return t>=T_ARROW_N && t<=T_ARROW_NW;}
+static inline bool bIsDisabledArrow(const UINT t) { return t >= T_ARROW_OFF_N && t <= T_ARROW_OFF_NW; }
+static inline bool bIsAnyArrow(const UINT t) { return bIsArrow(t) || bIsDisabledArrow(t); }
+static inline UINT getToggledForceArrow(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return T_ARROW_OFF_NE;
+		case T_ARROW_E:  return T_ARROW_OFF_E;
+		case T_ARROW_SE: return T_ARROW_OFF_SE;
+		case T_ARROW_S:  return T_ARROW_OFF_S;
+		case T_ARROW_SW: return T_ARROW_OFF_SW;
+		case T_ARROW_W:  return T_ARROW_OFF_W;
+		case T_ARROW_NW: return T_ARROW_OFF_NW;
+		case T_ARROW_N:  return T_ARROW_OFF_N;
 
-static inline bool bIsHealth(const UINT t) {
-	switch (t)
-	{
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			return true;
-		default: return false;
+		case T_ARROW_OFF_NE: return T_ARROW_NE;
+		case T_ARROW_OFF_E:  return T_ARROW_E;
+		case T_ARROW_OFF_SE: return T_ARROW_SE;
+		case T_ARROW_OFF_S:  return T_ARROW_S;
+		case T_ARROW_OFF_SW: return T_ARROW_SW;
+		case T_ARROW_OFF_W:  return T_ARROW_W;
+		case T_ARROW_OFF_NW: return T_ARROW_NW;
+		case T_ARROW_OFF_N:  return T_ARROW_N;
+
+		default: return T_EMPTY;
 	}
 }
 
-static inline bool bIsPowerUp(const UINT t) {
-	switch (t)
-	{
-		case T_MAP:
-		case T_ATK_UP: case T_DEF_UP:
-		case T_HEALTH_BIG: case T_HEALTH_MED: case T_HEALTH_SM:
-			return true;
-		default: return false;
+static inline UINT getForceArrowDirection(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return NE;
+		case T_ARROW_E:  return E;
+		case T_ARROW_SE: return SE;
+		case T_ARROW_S:  return S;
+		case T_ARROW_SW: return SW;
+		case T_ARROW_W:  return W;
+		case T_ARROW_NW: return NW;
+		case T_ARROW_N:  return N;
+
+		default: return NO_ORIENTATION;
 	}
 }
 
@@ -201,15 +258,16 @@ static inline bool bIsBriar(const UINT t) {return t>=T_BRIAR_SOURCE && t<=T_BRIA
 
 static inline bool bIsPlatform(const UINT t) {return t==T_PLATFORM_W || t==T_PLATFORM_P;}
 
-static inline bool bIsDoor(const UINT t) {return (t>=T_DOOR_C && t<=T_DOOR_Y) ||	t==T_DOOR_B || t==T_DOOR_MONEY;}   //closed doors
+static inline bool bIsDoor(const UINT t) {return (t>=T_DOOR_C && t<=T_DOOR_Y) || t==T_DOOR_B || t==T_DOOR_MONEY;}   //closed doors
 
-static inline bool bIsOpenDoor(const UINT t) {return t==T_DOOR_YO ||	(t>=T_DOOR_GO && t<=T_DOOR_BO) || t==T_DOOR_MONEYO;}
+static inline bool bIsOpenDoor(const UINT t) {return t==T_DOOR_YO || (t>=T_DOOR_GO && t<=T_DOOR_BO) || t==T_DOOR_MONEYO;}
 
 static inline bool bIsYellowDoor(const UINT t) {return t==T_DOOR_Y || t==T_DOOR_YO;}
 static inline bool bIsGreenDoor(const UINT t) {return t==T_DOOR_G || t==T_DOOR_GO;}
 static inline bool bIsBlueDoor(const UINT t) {return t==T_DOOR_C || t==T_DOOR_CO;}
 static inline bool bIsRedDoor(const UINT t) {return t==T_DOOR_R || t==T_DOOR_RO;}
 static inline bool bIsBlackDoor(const UINT t) {return t==T_DOOR_B || t==T_DOOR_BO;}
+static inline bool bIsMoneyDoor(const UINT t) {return t==T_DOOR_MONEY || t==T_DOOR_MONEYO;}
 
 static inline bool bIsTar(const UINT t) {return t==T_TAR || t==T_MUD || t==T_GEL;}
 
@@ -220,6 +278,36 @@ static inline bool bIsElevatedTile(const UINT t) {
 }
 
 static inline bool bIsEquipment(const UINT t) {return t==T_SWORD || t==T_SHIELD || t==T_ACCESSORY;}
+
+static inline bool bIsMap(const UINT t) { return t == T_MAP || t == T_MAP_DETAIL; }
+
+static inline bool bIsATKUp(const UINT t) { return t == T_ATK_UP || t == T_ATK_UP3 || t == T_ATK_UP10; }
+
+static inline bool bIsDEFUp(const UINT t) { return t == T_DEF_UP || t == T_DEF_UP3 || t == T_DEF_UP10; }
+
+static inline bool bIsShovel(const UINT t) { return t == T_SHOVEL1 || t == T_SHOVEL3 || t == T_SHOVEL10; }
+
+static inline bool bIsKey(const UINT t) { return t == T_KEY; }
+
+static inline bool bIsHealth(const UINT t) {
+	return t == T_HEALTH_HUGE || t == T_HEALTH_BIG || t == T_HEALTH_MED || t == T_HEALTH_SM;
+}
+
+static inline bool bIsPowerUp(const UINT t) { return bIsHealth(t) || bIsATKUp(t) || bIsDEFUp(t); }
+
+static inline bool bIsCollectable(const UINT t) {
+	return bIsPowerUp(t) || bIsShovel(t) || bIsMap(t) || bIsKey(t);
+}
+
+static inline bool bIsTLayerCoveringItem(const UINT t) { return t == T_MIRROR || t == T_CRATE || t == T_POWDER_KEG; }
+
+static inline bool bIsFuseConnected(const UINT t) { return t == T_FUSE || t == T_BOMB; }
+static inline bool bIsCombustibleItem(const UINT t) { return t == T_FUSE || t == T_BOMB || t == T_POWDER_KEG; }
+static inline bool bIsExplodingItem(const UINT t) { return t == T_BOMB || t == T_POWDER_KEG; }
+
+static inline bool bIsDiggableBlock(const UINT t) { return t == T_DIRT1 || t == T_DIRT3 || t == T_DIRT5; }
+
+static inline bool bIsSolidOTile(const UINT t) { return bIsWall(t) || bIsCrumblyWall(t) || bIsDoor(t) || bIsDiggableBlock(t); }
 
 //Obstacle parameter bit format: <Top edge>:1 <Left edge>:1 <64 possible obstacle types>:6
 #define OBSTACLE_TOP (0x80)
@@ -287,7 +375,9 @@ static const UINT M_OFFSET = TILE_COUNT;
 #define T_ROCKGIANT  (M_ROCKGIANT+M_OFFSET)
 #define T_MADEYE     (M_MADEYE+M_OFFSET)
 #define T_GOBLINKING (M_GOBLINKING+M_OFFSET)
-#define MONSTER_COUNT      (38)  //Number of monsters in above list.
+#define T_CONSTRUCT  (M_CONSTRUCT+M_OFFSET)
+#define T_FLUFFBABY  (M_FLUFFBABY+M_OFFSET)
+#define MONSTER_COUNT      (40)  //Number of monsters in above list.
 
 #define TOTAL_TILE_COUNT      (TILE_COUNT+MONSTER_COUNT) //Number of all tile constants.
 static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTAL_TILE_COUNT;}
@@ -326,14 +416,23 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define TV_ACCESSORY10 ((UINT)-31)
 #define TV_ACCESSORY11 ((UINT)-32)
 #define TV_ACCESSORY12 ((UINT)-33)
-static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_ACCESSORY12;}
+#define TV_SWORD11     ((UINT)-34)
+#define TV_SWORD12     ((UINT)-35)
+#define TV_SWORD13     ((UINT)-36)
+#define TV_SHIELD7     ((UINT)-37)
+#define TV_SHIELD8     ((UINT)-38)
+#define TV_SHIELD9     ((UINT)-39)
+#define TV_REMOVE_OVERHEAD_IMAGE (UINT(-40))
+#define TV_REMOVE_TRANSPARENT (UINT(-41))
+static inline bool IsVirtualTile(const UINT t) {return t>=(UINT)TV_REMOVE_TRANSPARENT;}
 
 //Virtual tiles: enumerate after TOTAL_TILE_COUNT
 #define T_SWORDSMAN           (TOTAL_TILE_COUNT + 0)  //for placing the level entrance
 #define T_NOMONSTER           (TOTAL_TILE_COUNT + 1)  //for erasing monsters only
 #define T_EMPTY_F             (TOTAL_TILE_COUNT + 2)  //for erasing f-layer objects only
+#define T_REMOVE_TRANSPARENT  (TOTAL_TILE_COUNT + 3)  //for erasing t-layer objects only
 
-#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 3)
+#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 4)
 
 enum TILELAYERS {
 	LAYER_OPAQUE = 0,
@@ -439,6 +538,35 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_TRANSPARENT, //T_SHIELD        89
 	LAYER_TRANSPARENT, //T_HEALTH_SM     90
 	LAYER_TRANSPARENT, //T_ACCESSORY     91
+	LAYER_TRANSPARENT, //T_MAP_DETAIL    92
+	LAYER_TRANSPARENT, //T_HEALTH_HUGE   93
+	LAYER_TRANSPARENT, //T_ATK_UP3       94
+	LAYER_TRANSPARENT, //T_ATK_UP10      95
+	LAYER_TRANSPARENT, //T_DEF_UP3       96
+	LAYER_TRANSPARENT, //T_DEF_UP10      97
+	LAYER_TRANSPARENT, //T_CRATE         98
+	LAYER_OPAQUE, //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	LAYER_TRANSPARENT, //T_SHOVEL1      100
+	LAYER_TRANSPARENT, //T_SHOVEL3      101
+	LAYER_TRANSPARENT, //T_SHOVEL10     102
+	LAYER_OPAQUE, //T_DIRT1             103
+	LAYER_OPAQUE, //T_DIRT3             104
+	LAYER_OPAQUE, //T_DIRT5             105
+	LAYER_OPAQUE, //T_THINICE           106
+	LAYER_FLOOR, //T_ARROW_OFF_N        107
+	LAYER_FLOOR, //T_ARROW_OFF_NE       108
+	LAYER_FLOOR, //T_ARROW_OFF_E        109
+	LAYER_FLOOR, //T_ARROW_OFF_SE       110
+	LAYER_FLOOR, //T_ARROW_OFF_S        111
+	LAYER_FLOOR, //T_ARROW_OFF_SW       112
+	LAYER_FLOOR, //T_ARROW_OFF_W        113
+	LAYER_FLOOR, //T_ARROW_OFF_NW       114
+	LAYER_TRANSPARENT, //T_MIST         115
+	LAYER_OPAQUE, //T_MISTVENT          116
+	LAYER_OPAQUE, //T_FIRETRAP          117
+	LAYER_OPAQUE, //T_FIRETRAP_ON       118
+	LAYER_TRANSPARENT, //T_POWDER_KEG   119
+	LAYER_OPAQUE, //T_OVERHEAD_IMAGE    120
 
 	LAYER_MONSTER, //M_ROACH         +0
 	LAYER_MONSTER, //M_QROACH        +1
@@ -478,10 +606,13 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_MONSTER, //M_ROCKGIANT     +35
 	LAYER_MONSTER, //M_MADEYE        +36
 	LAYER_MONSTER, //M_GOBLINKING    +37
+	LAYER_MONSTER, //M_CONSTRUCT     +38
+	LAYER_MONSTER, //M_FLUFFBABY     +39
 
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
-	LAYER_FLOOR  //T_EMPTY_F       TOTAL+2
+	LAYER_FLOOR, //T_EMPTY_F       TOTAL+2
+	LAYER_TRANSPARENT //T_EMPTY_TRANSPARENT TOTAL+3
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
@@ -553,17 +684,17 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Tunnel_W,     //T_TUNNEL_W      64
 	MID_FloorImage,   //T_FLOOR_IMAGE   65
 	MID_Wall2,        //T_WALL2         66
-	MID_Water,			//T_WATER         67
+	MID_Water,        //T_WATER         67
 	MID_OpenGreenDoor,//T_DOOR_GO       68
 	MID_OpenBlueDoor, //T_DOOR_CO       69
 	MID_OpenRedDoor,  //T_DOOR_RO       70
 	MID_OpenBlackDoor,//T_DOOR_BO       71
 	MID_Trapdoor2,    //T_TRAPDOOR2     72
-	MID_Goo,			   //T_GOO           73
+	MID_Goo,          //T_GOO           73
 	MID_Light,        //T_LIGHT         74
 	MID_Hot,          //T_HOT           75
-	MID_Gel,	         //T_GEL           76
-	MID_Station,      //T_MAP           77
+	MID_Gel,	      //T_GEL           76
+	MID_LevelMap,     //T_MAP           77
 	MID_PressurePlate,//T_PRESSPLATE    78
 	MID_Bridge,       //T_BRIDGE        79
 	MID_Bridge_H,     //T_BRIDGE_H      80
@@ -578,6 +709,35 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Shield1,      //T_SHIELD        89
 	MID_SmallHealth,  //T_HEALTH_SM     90
 	MID_Accessory1,   //T_ACCESSORY     91
+	MID_LevelMapDetail, //T_MAP_DETAIL  92
+	MID_HugeHealth,   //T_HEALTH_HUGE   93
+	MID_AttackUp3,    //T_ATK_UP3       94
+	MID_AttackUp10,   //T_ATK_UP10      95
+	MID_DefenseUp3,   //T_DEF_UP3       96
+	MID_DefenseUp10,  //T_DEF_UP10      97
+	MID_Crate,        //T_CRATE         98
+	0,                //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	MID_Shovel1,      //T_SHOVEL1
+	MID_Shovel3,      //T_SHOVEL3
+	MID_Shovel10,     //T_SHOVEL10
+	MID_Dirt1,        //T_DIRT1
+	MID_Dirt3,        //T_DIRT3
+	MID_Dirt5,        //T_DIRT5
+	MID_ThinIce,      //T_THINICE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_N
+	MID_ForceArrowDisabled, //T_ARROW_OFF_NE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_E
+	MID_ForceArrowDisabled, //T_ARROW_OFF_SE
+	MID_ForceArrowDisabled, //T_ARROW_OFF_S
+	MID_ForceArrowDisabled, //T_ARROW_OFF_SW
+	MID_ForceArrowDisabled, //T_ARROW_OFF_W
+	MID_ForceArrowDisabled, //T_ARROW_OFF_NW
+	MID_Mist, //T_MIST
+	MID_MistVent, //T_MISTVENT
+	MID_Firetrap,      //T_FIRETRAP
+	MID_FiretrapOn,    //T_FIRETRAP_ON
+	MID_PowderKeg,     //T_POWDER_KEG
+	MID_OverheadImage, //T_OVERHEAD_IMAGE
 
 	MID_Roach,        //M_ROACH         +0
 	MID_RoachQueen,   //M_QROACH        +1
@@ -617,10 +777,13 @@ static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
 	MID_Splitter,     //M_ROCKGIANT     +35
 	MID_MadEye,       //M_MADEYE        +36
 	MID_GoblinKing,   //M_GOBLINKING    +37
+	MID_Construct,    //M_GOBLINKING    +38
+	MID_FluffBaby,    //M_FLUFFBABY     +39
 
 	MID_Swordsman,    //T_SWORDSMAN     TOTAL+0
 	0,                //T_NOMONSTER     TOTAL+1
-	0                 //T_EMPTY_F       TOTAL+2
+	0,                //T_EMPTY_F       TOTAL+2
+	0                 //T_REMOVE_TRANSPARENT TOTAL+3
 };
 
 #endif //...#ifndef TILECONSTANTS_H

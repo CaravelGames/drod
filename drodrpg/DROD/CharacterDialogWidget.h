@@ -30,7 +30,8 @@
 #ifndef CHARACTERDIALOGWIDGET_H
 #define CHARACTERDIALOGWIDGET_H
 
-#include "EntranceSelectDialogWidget.h"
+#include "CharacterOptionsWidget.h"
+#include "SelectMediaDialogWidget.h"
 #include "../DRODLib/Character.h"
 #include "../DRODLib/DbData.h"
 #include <FrontEndLib/DialogWidget.h>
@@ -75,9 +76,13 @@ public:
 	virtual void   OnBetweenEvents();
 
 	bool RenameCharacter();
-	bool RenameVar();
+	bool RenameVar(const bool bIsArrayVar = false);
 
 	UINT queryX, queryY, queryW, queryH; //for querying the user for coord info
+
+	static const UINT INDENT_PREFIX_SIZE;
+	static const UINT INDENT_TAB_SIZE;
+	static const UINT INDENT_IF_CONDITION_SIZE;
 
 private:
 	void  AddCharacterDialog();
@@ -92,7 +97,7 @@ private:
 	void  ClearPasteBuffer();
 	void  DeleteCommands(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  DeleteCustomCharacter();
-	void  DeleteVar();
+	void  DeleteVar(const bool bIsArrayVar = false);
 	void  EditCustomCharacters();
 	void  FinishEditingDefaultScript();
 	UINT  FilterUnsupportedCommands();
@@ -110,10 +115,14 @@ private:
 	const CCharacterCommand* GetCommandWithLabelText(const COMMANDPTR_VECTOR& commands,
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
+	HoldCharacter* GetCustomCharacter(const UINT dwCharId);
 	WSTRING GetDataName(const UINT dwID) const;
-	WSTRING GetPrettyPrinting(const COMMANDPTR_VECTOR& commands,
-			CCharacterCommand* pCommand,
-			const UINT ifIndent, const UINT tabSize) const;
+	WSTRING GetEntranceName(CEditRoomScreen* pEditRoomScreen, UINT entranceID) const;
+	WSTRING GetWorldMapNameText(CEditRoomScreen* pEditRoomScreen, UINT worldMapID) const;
+	UINT    ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const;
+	void    PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR& commands);
+	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
+		const CCharacterCommand& pCommand) const;
    virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDoubleClick(const UINT dwTagNo);
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
@@ -127,9 +136,12 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
+	void  PopulateItemListBox(CListBoxWidget* pListBox);
+	void  PopulateItemGroupListBox(CListBoxWidget* pListBox);
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
+	void  UpdateVarDeleteButton(UINT widgetTag, CListBoxWidget* varListBox);
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 
@@ -140,8 +152,9 @@ private:
 	void  QueryXY();
 
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
+	void  RollbackCommand();
 	void  SelectCharacter();
-	UINT  SelectMediaID(const UINT dwDefault, const CEntranceSelectDialogWidget::DATATYPE eType);
+	UINT  SelectMediaID(const UINT dwSelectedValue, const CSelectMediaDialogWidget::DATATYPE eType);
 	void  SetBitFlags();
 	void  SetWidgetStates();
 	void  SetActionWidgetStates();
@@ -158,15 +171,17 @@ private:
 	void  SetWidgetsFromCommandParameters();
 	void  TestSound();
 	void  UpdateCharacter();
+	void  UpdateSmartGotoList(bool bActivate);
 
 	//For text editing of script commands.
 	CCharacterCommand* fromText(WSTRING text);
-	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand);
+	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand, const CListBoxWidget* pCommandList, const UINT wCommandIndex);
 
 	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox;
 	COptionButtonWidget *pIsVisibleButton;
 	CListBoxWidget *pCommandsListBox, *pDefaultScriptCommandsListBox;
 	CRenameDialogWidget *pAddCommandDialog, *pAddCharacterDialog, *pScriptDialog;
+	CCharacterOptionsDialog* pCharOptionsDialog;
 	CListBoxWidget *pActionListBox;
 	CListBoxWidget *pEventListBox;
 	CListBoxWidget *pSpeakerListBox;
@@ -177,10 +192,18 @@ private:
 	CListBoxWidget *pGotoLabelListBox;
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
-			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox;
+			*pImperativeListBox, *pBuildItemsListBox, *pBehaviorListBox, *pVarCompListBox2,
+			*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox;
 	CListBoxWidget *pEquipmentTypesListBox, *pCustomNPCListBox, *pEquipTransListBox;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
+	CTextBoxWidget* pSpeechText;
+	CListBoxWidget *pStatListBox;
+	CListBoxWidget *pMovementTypeListBox;
+	CListBoxWidget* pMapIconListBox, * pMapIconStateListBox;
+	CListBoxWidget* pColorListBox;
+	CListBoxWidget* pWorldMapIconFlagListBox;
+	CListBoxWidget* pWorldMapImageFlagListBox;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

@@ -90,6 +90,7 @@ void CTextBox2DWidget::HandleKeyDown(
 {
 	const SDL_Keycode key = KeyboardEvent.keysym.sym;
 	const bool bShift = (KeyboardEvent.keysym.mod & KMOD_SHIFT) != 0;
+	const bool bCtrl = (KeyboardEvent.keysym.mod & KMOD_CTRL) != 0;
 	const UINT wOldCursorPos = this->wCursorIndex;
 	const UINT wOldCursorX = this->wCursorX;
 	const UINT wOldCursorY = this->wCursorY;
@@ -144,6 +145,10 @@ void CTextBox2DWidget::HandleKeyDown(
 		case SDLK_RETURN:
 		case SDLK_KP_ENTER:
 		{
+			if (bCtrl)
+			{
+				break;
+			}
 			if (!GetHotkeyTag(KeyboardEvent.keysym)) //don't type character if this is a hotkey
 			{
 				const WCHAR wc = TranslateUnicodeKeysym(KeyboardEvent.keysym);
@@ -431,12 +436,13 @@ void CTextBox2DWidget::SetCursorByPos(
 		UINT wFirstPos = wIndex, wLastPos = wIndex;
 		if (!getLineStartIndexFollowingIndex(wLastPos))
 			wLastPos = wLength;
+		UINT originalLastPos = wLastPos;
 		while (wFirstPos < wLastPos)
 		{
 			wIndex = wFirstPos + (wLastPos - wFirstPos + 1) / 2;
 			GetPixelLocationAt(this->wTextDisplayIndex, wIndex, wWidth, wHeight);
 
-			if (static_cast<int>(wWidth) > xPos || static_cast<int>(wHeight) > yPos)
+			if (static_cast<int>(wWidth) > xPos)
 			{
 				//We are past the correct character position or line of text.
 				wLastPos = wIndex - 1;
@@ -449,6 +455,9 @@ void CTextBox2DWidget::SetCursorByPos(
 		}
 		//Get final position.
 		wIndex = wFirstPos;
+		//LastPos is actually the character after this line, unless it's the actual last character.
+		if (wIndex == originalLastPos && wIndex != this->text.size())
+			wIndex -= 1;
 		if (wIndex > wLength)
 			SetCursorIndex(wLength);
 		else

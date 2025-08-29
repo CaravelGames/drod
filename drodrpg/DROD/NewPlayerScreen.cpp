@@ -38,6 +38,7 @@
 #include "../DRODLib/SettingsKeys.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 #include <BackEndLib/Wchar.h>
 
 #ifdef DEV_BUILD //comment out to embed media immediately
@@ -148,9 +149,21 @@ bool CNewPlayerScreen::SetForActivate()
 
 	//Need to enter this screen if no players exist yet.
 	const UINT dwPlayerID = g_pTheDB->GetPlayerID();
-#if defined(BETA) && defined(CARAVELBUILD) && defined(EMBED_STYLES)
-	if (!dwPlayerID)
-		ImportHoldMedia(NULL);
+#ifdef DEV_BUILD
+	if (!dwPlayerID) {
+		if (Metadata::GetInt(MetaKey::EMBEDMEDIA) == 1) {
+			ImportMedia();
+
+			//force quit game
+			GoToScreen(SCR_None);
+			return false;
+		}
+
+		if (ImportQueuedFiles()) {
+			GoToScreen(SCR_None);
+			return false;
+		}
+	}
 #endif
 
 	return dwPlayerID == 0;

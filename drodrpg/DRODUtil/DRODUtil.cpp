@@ -45,11 +45,11 @@
 #include <zlib.h>
 
 //This is a filename that will probably exist in this specific game only.
-#define APPNAME   "DRODRPGUtil v1.0"
-const WCHAR wszDROD_VER[] = {{'1'},{'_'},{'0'},{0}};
+#define APPNAME   "DRODRPGUtil v2.0"
+const WCHAR wszDROD_VER[] = {{'2'},{'_'},{'0'},{0}};
 
 static const WCHAR wszUniqueResFile[] = {
-    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('1'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
+    We('d'),We('r'),We('o'),We('d'),We('r'),We('p'),We('g'),We('2'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0) };
 
 //Prototypes.
 const WSTRING GetDefaultPath();

@@ -5,6 +5,7 @@
 
 #include "TileConstants.h"
 #include "DbMessageText.h"
+#include "HoldRecords.h"
 
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/CoordSet.h>
@@ -192,14 +193,19 @@ class CExitData
 {
 public:
 	CExitData()
-		: dwEntranceID(0), wLeft(0), wRight(0), wTop(0), wBottom(0)
+		: dwEntranceID(0), wLeft(0), wRight(0), wTop(0), wBottom(0), exitType(ExitType::ET_Entrance)
 	{ }
 	CExitData(const UINT dwEntranceID, const UINT wLeft, const UINT wRight,
-		const UINT wTop, const UINT wBottom)
+		const UINT wTop, const UINT wBottom, const ExitType exitType = ExitType::ET_Entrance)
 		: dwEntranceID(dwEntranceID), wLeft(wLeft), wRight(wRight), wTop(wTop), wBottom(wBottom)
+		, exitType(exitType)
 	{ }
+
+	bool IsWorldMapExit() const { return exitType == ExitType::ET_WorldMap; }
+
 	UINT       dwEntranceID;
 	UINT        wLeft, wRight, wTop, wBottom;
+	ExitType   exitType;
 };
 
 //******************************************************************************************
@@ -242,6 +248,9 @@ enum SwordType
 	SerpentSword = 8,
 	BriarSword = 9,
 	WeaponSlot = 10,  //allows placing the held weapon at this location
+	Dagger = 11,
+	Staff = 12,
+	Spear = 13,
 	SwordCount
 };
 
@@ -254,6 +263,9 @@ enum ShieldType
 	KiteShield = 4,
 	OremiteShield = 5,
 	ArmorSlot = 6,
+	MirrorShield = 7,
+	LeatherShield = 8,
+	AluminumShield = 9,
 	ShieldCount,
 	ShieldSwordOffset = 8 //Backwards-compatibility: Don't change this value.
 			//Shields originally were indexed immediately after swords in the
@@ -284,9 +296,9 @@ enum AccessoryType
 			//original accessory values into the current values.
 };
 
-static inline bool bIsValidStandardWeapon(const UINT t) { return t < WeaponSlot; }
-static inline bool bIsValidStandardShield(const UINT t) { return t < ArmorSlot; }
-static inline bool bIsValidStandardAccessory(const UINT t) { return t < AccessorySlot; }
+static inline bool bIsValidStandardWeapon(const UINT t) { return t < SwordCount && t != WeaponSlot; }
+static inline bool bIsValidStandardShield(const UINT t) { return t < ShieldCount && t != ArmorSlot; }
+static inline bool bIsValidStandardAccessory(const UINT t) { return t < AccessoryCount && t != AccessorySlot; }
 
 //******************************************************************************************
 //Environmental weather conditions.
@@ -295,7 +307,7 @@ struct Weather
 {
 	void clear() {
 		bOutside = bLightning = bClouds = bSunshine = bSkipLightfade = false;
-		wFog = wLight = wSnow = 0;
+		wFog = wLight = wSnow = rain = 0;
 		sky.resize(0);
 	}
 	bool bOutside;		//area is located outside
@@ -307,6 +319,7 @@ struct Weather
 	UINT wLight;      //room's ambient light level
 	UINT wSnow;       //rate of snowfall
 	WSTRING sky;      //name of sky image (if non-default)
+	UINT rain;        //rate of rainfall (0=none)
 };
 
 //******************************************************************************************

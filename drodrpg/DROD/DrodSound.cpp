@@ -48,7 +48,7 @@ const UINT SAMPLE_CHANNEL_COUNT = 14;
 #endif
 
 //Default volume settings.
-const UINT DEFAULT_SOUND_VOLUME = 128, DEFAULT_MUSIC_VOLUME = 85, DEFAULT_VOICE_VOLUME = 255;
+const UINT DEFAULT_SOUND_VOLUME = 80, DEFAULT_MUSIC_VOLUME = 40, DEFAULT_VOICE_VOLUME = 255;
 
 const float fDefaultMinDist = 8.0f, fDefaultMaxDist = 1000.0f;
 
@@ -97,6 +97,12 @@ const
 		case SEID_CIT_DIE:   strKeyName="CitizenDie"; break;
 		case SEID_CIT_OOF:   strKeyName="CitizenOof"; break;
 		case SEID_CIT_SCARED:   strKeyName="CitizenScared"; break;
+		case SEID_CONSTRUCT_DIE:    strKeyName = "ConstructDie"; break;
+		case SEID_CONSTRUCT_OOF:    strKeyName = "ConstructOof"; break;
+		case SEID_CONSTRUCT_SCARED: strKeyName = "ConstructScared"; break;
+		case SEID_ENGINEER_DIE:    strKeyName = "EngineerDie"; break;
+		case SEID_ENGINEER_OOF:    strKeyName = "EngineerOof"; break;
+		case SEID_ENGINEER_SCARED: strKeyName = "EngineerScared"; break;
 		case SEID_GOB_DIE:    strKeyName="GoblinDie"; break;
 		case SEID_GOB_OOF:   strKeyName="GoblinOof"; break;
 		case SEID_GOB_SCARED:   strKeyName="GoblinScared"; break;
@@ -120,53 +126,19 @@ const
 		case SEID_WOM_OOF:   strKeyName="WomanOof"; break;
 		case SEID_WOM_SCARED:   strKeyName="WomanScared"; break;
 
-/*
-		case SEID_CIT_CLEAR:   strKeyName="CitizenClear"; break;
-		case SEID_CIT_HI:   strKeyName="CitizenHi"; break;
-
-		case SEID_GOB_CLEAR:   strKeyName="GoblinClear"; break;
-		case SEID_GOB_HI:   strKeyName="GoblinHi"; break;
-
-		case SEID_MON_CLEAR: strKeyName="MonsterClear"; break;
-
-		case SEID_ROCK_CLEAR:   strKeyName="RockClear"; break;
-		case SEID_ROCK_OOF:   strKeyName="RockOof"; break;
-		case SEID_ROCK_HI:   strKeyName="RockHi"; break;
-
-		case SEID_WOM_CLEAR:   strKeyName="WomanClear"; break;
-		case SEID_WOM_HI:   strKeyName="WomanHi"; break;
-*/
-
 		case SEID_AREACLEAR: strKeyName="AreaClear"; break;
 		case SEID_AUTOSAVE: strKeyName="Autosave"; break;
 		case SEID_BREAKWALL: strKeyName="BreakWall"; break;
 		case SEID_BRIAR_BREAK: strKeyName="BriarBreak"; break;
 		case SEID_BUTTON:    strKeyName="Button"; break;
 		case SEID_CHECKPOINT:   strKeyName="Checkpoint"; break;
+		case SEID_CONSTRUCT_SMASH:  strKeyName = "ConstructSmash"; break;
 		case SEID_DOOROPEN:     strKeyName="DoorOpen"; break;
 		case SEID_EVILEYEWOKE:  strKeyName="EvilEyeWoke"; break;
 		case SEID_FALLING:  strKeyName="Falling"; break;
+		case SEID_FIRETRAP: strKeyName = "Firetrap"; break;
+		case SEID_FIRETRAP_START: strKeyName = "FiretrapStart"; break;
 		case SEID_FROZEN:  strKeyName="Frozen"; break;
-
-/*
-		case SEID_SLAYERENTERNEAR: strKeyName="SlayerEnterNear"; break;
-		case SEID_SLAYERENTERFAR:  strKeyName="SlayerEnterFar"; break;
-		case SEID_SLAYERCOMBAT:    strKeyName="SlayerCombat"; break;
-*/
-
-/*
-		case SEID_HALPHCANTOPEN: strKeyName = "HalphCantOpen"; break;
-		case SEID_HALPHENTERED:  strKeyName = "HalphEntered"; break;
-		case SEID_HALPHFOLLOWING: strKeyName="HalphFollowing"; break;
-		case SEID_HALPHHURRYUP:  strKeyName = "HalphHurryUp"; break;
-		case SEID_HALPHINTERRUPTED:  strKeyName = "HalphInterrupted"; break;
-		case SEID_HALPHSTRIKING:strKeyName = "HalphStriking"; break;
-		case SEID_HALPHWAITING: strKeyName="HalphWaiting"; break;
-*/
-/*
-		case SEID_NLAUGHING: strKeyName="NLaughing"; break;
-*/
-
 
 		case SEID_SLAYERKILL:      strKeyName="SlayerKill"; break;
 
@@ -177,6 +149,13 @@ const
 		case SEID_LEVELCOMPLETE:   strKeyName = "LevelComplete"; break;
 		case SEID_MIMIC:     strKeyName="Mimic"; break;
 		case SEID_MONSTERATTACK:  strKeyName="MonsterAttack"; break;
+		case SEID_ICEMELT:  strKeyName = "IceMelt"; break;
+
+		case SEID_ATK_PICKUP: strKeyName = "ATKPickup"; break;
+		case SEID_DEF_PICKUP: strKeyName = "DEFPickup"; break;
+		case SEID_HP_PICKUP: strKeyName = "HPPickup"; break;
+		case SEID_SHOVEL_PICKUP: strKeyName = "ShovelPickup"; break;
+		case SEID_DIG: strKeyName = "Dig"; break;
 
 		case SEID_ORBBROKE:  strKeyName="OrbBroke"; break;
 		case SEID_ORBHIT:    strKeyName="OrbHit"; break;
@@ -184,8 +163,10 @@ const
 		case SEID_POTION:    strKeyName="Potion"; break;
 		case SEID_PRESSPLATE:       strKeyName="PressPlate"; break;
 		case SEID_PRESSPLATEUP:       strKeyName="PressPlateUp"; break;
+		case SEID_PUFF_EXPLOSION:       strKeyName="PuffExplosion"; break;
 		case SEID_PUNCH:        strKeyName="Punch"; break;
 		case SEID_READ:         strKeyName="Read"; break;
+		case SEID_ROACH_EGG_SPAWNED: strKeyName = "RoachEggSpawned"; break;
 		case SEID_SECRET:    strKeyName="Secret"; break;
 		case SEID_SHATTER:     strKeyName="Shatter"; break;
 		case SEID_SHIELDED:     strKeyName="Shielded"; break;
@@ -206,6 +187,8 @@ const
 		case SEID_SWORDS:       strKeyName="Sword"; break;
 		case SEID_WISP:         strKeyName="Wisp"; break;
 		case SEID_WUBBA:			strKeyName="Wubba"; break;
+
+		case SEID_WORLDMAP_CLICK: strKeyName = "WorldmapClick"; break;
 		default: return false;
 	}
 
@@ -234,8 +217,8 @@ bool CDrodSound::GetSongFilepaths(
 	switch (eSongID)
 	{
 		case SONGID_INTRO:         strKeyName = "Intro"; break;
-		case SONGID_WINGAME:			strKeyName = "WinGame"; break;
-		case SONGID_CREDITS:			strKeyName = "Credits"; break;
+		case SONGID_WINGAME:       strKeyName = "WinGame"; break;
+		case SONGID_CREDITS:       strKeyName = "Credits"; break;
 		case SONGID_QUIT:          strKeyName = "Exit"; break;
 		case SONGID_ARCHITECTS:    strKeyName = "Architects"; break;
 		case SONGID_BATTLE:        strKeyName = "Battle"; break;
@@ -246,6 +229,28 @@ bool CDrodSound::GetSongFilepaths(
 		case SONGID_SEASIDE:       strKeyName = "Seaside"; break;
 		case SONGID_SERPENTS:      strKeyName = "Serpents"; break;
 		case SONGID_SLAYER:        strKeyName = "Slayer"; break;
+		case SONGID_PIRATES:       strKeyName = "Pirates"; break;
+		case SONGID_GOBLINKING:    strKeyName = "GoblinKing"; break;
+		case SONGID_BIGSERPENT:    strKeyName = "BigSerpent"; break;
+		case SONGID_TAR:           strKeyName = "Tar"; break;
+		case SONGID_PUZZLE:        strKeyName = "Puzzle"; break;
+		case SONGID_SECRETAREA:    strKeyName = "SecretArea"; break;
+		case SONGID_SMALLERPLANS:  strKeyName = "SmallerPlans"; break;
+		case SONGID_GEOMETRY:      strKeyName = "Geometry"; break;
+		case SONGID_SLIPSTAIR:     strKeyName = "SlipStair"; break;
+		case SONGID_SYMPATHETIC:   strKeyName = "Sympathetic"; break;
+		case SONGID_ASCENDANT:     strKeyName = "Ascendant"; break;
+		case SONGID_ROACHESRUN:    strKeyName = "RoachesRun"; break;
+		case SONGID_NEWIDEA:       strKeyName = "NewIdea"; break;
+		case SONGID_WALTZ:         strKeyName = "Waltz"; break;
+		case SONGID_SWINGHALLS:    strKeyName = "SwingHalls"; break;
+		case SONGID_AMBWINDY:      strKeyName = "AmbWindy"; break;
+		case SONGID_AMBBEACH:      strKeyName = "AmbBeach"; break;
+		case SONGID_AMBFOREST:     strKeyName = "AmbForest"; break;
+		case SONGID_AMBDRIPS:      strKeyName = "AmbDrips"; break;
+		case SONGID_AMBROACHES:    strKeyName = "AmbRoaches"; break;
+		case SONGID_TITLE_2:       strKeyName = "Title2"; break;
+		case SONGID_ELIZABETH:     strKeyName = "Elizabeth"; break;
 		default: return false;
 	}
 
@@ -303,6 +308,12 @@ bool CDrodSound::LoadSoundEffects()
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_DIE, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CIT_SCARED, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_DIE, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_OOF, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_SCARED, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_DIE, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_OOF, true );
+	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_ENGINEER_SCARED, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_DIE, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_OOF, true );
 	PRIVATE_CHANNEL_SOUNDEFFECT( SEID_GOB_SCARED, true );
@@ -362,6 +373,11 @@ bool CDrodSound::LoadSoundEffects()
 #  define SHARED_CHANNEL_SOUNDEFFECT(s) \
 	LoadSoundEffect((s), true, true, SEID_NONE)
 
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ATK_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_DEF_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_HP_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_SHOVEL_PICKUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_DIG );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_AREACLEAR );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_AUTOSAVE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BOMBEXPLODE );
@@ -369,11 +385,15 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BRIAR_BREAK );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_BUTTON );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_CHECKPOINT );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_CONSTRUCT_SMASH );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_DOOROPEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_EVILEYEWOKE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FALLING );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_FIRETRAP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_FIRETRAP_START );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_FROZEN );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_HIT );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ICEMELT );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_JUMP );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_KEY );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_LASTBRAIN );
@@ -386,8 +406,10 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_POTION );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PRESSPLATE );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PRESSPLATEUP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUFF_EXPLOSION );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_PUNCH );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_READ );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_ROACH_EGG_SPAWNED );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SECRET );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SHATTER );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_SHIELDED );
@@ -404,6 +426,7 @@ bool CDrodSound::LoadSoundEffects()
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WALK );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WATERSTEP );
 	SHARED_CHANNEL_SOUNDEFFECT( SEID_WISP );
+	SHARED_CHANNEL_SOUNDEFFECT( SEID_WORLDMAP_CLICK );
 #  undef SHARED_CHANNEL_SOUNDEFFECT
 
 	//If this assertion fires, too many private sound channels were designated.

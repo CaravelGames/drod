@@ -76,7 +76,22 @@ UINT CSwordsman::CalcDamage(int damageVal) const
 bool CSwordsman::IsFlying() const
 //Returns: whether the player type allows flying
 {
-	return this->wAppearance == M_WWING || this->wAppearance == M_FEGUNDO;
+	return this->wAppearance == M_WWING || this->wAppearance == M_FEGUNDO || this->wAppearance == M_FLUFFBABY;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDropTrapdoor(UINT wTileNo) const
+{
+	if (!bIsFallingTile(wTileNo))
+		return false;
+
+	if (IsFlying())
+		return false;
+
+	if (bIsThinIce(wTileNo))
+		return true;
+
+	return HasSword();
 }
 
 //*****************************************************************************
@@ -252,7 +267,8 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 
 	//Player's sword is not allowed to hit anything affected by sword hits.
 	const bool bDoesTileDisableMetal = this->pCurrentGame->DoesTileDisableMetal(wNewX, wNewY);
-	if (this->st.sword != NoSword && !this->bSwordOff &&
+	const bool swordless = (this->st.sword == NoSword || this->bSwordOff || this->pCurrentGame->IsPlayerSwordRemoved());
+	if (!swordless &&
 			(!this->pCurrentGame->IsSwordMetal(this->st.sword) || !bDoesTileDisableMetal))
 	{
 		//A sword is being wielded and it is not disabled.
@@ -284,14 +300,17 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 			switch (room.GetTSquare(wSX, wSY))
 			{
 				case T_ORB:
-				case T_BOMB:
 					return false;
+				case T_BOMB:
+				case T_POWDER_KEG:
+					return this->pCurrentGame->IsPlayerSwordExplosiveSafe();
 				case T_MIRROR:
 					if (!this->bIntraRoomPath)
 						return false;
 					break;
 				case T_TAR: case T_MUD: case T_GEL:
-					if (room.IsTarVulnerableToStab(wSX, wSY))
+					if (this->pCurrentGame->CanPlayerCutTarAnywhere() ||
+						room.IsTarVulnerableToStab(wSX, wSY))
 						return false;
 				break;
 				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
@@ -301,8 +320,17 @@ bool CSwordsman::IsOpenMove(const UINT wX, const UINT wY, const int dx, const in
 				default: break;
 			}
 			if (!this->bIntraRoomPath)
-				if (room.GetMonsterAtSquare(wSX, wSY))
-					return false;
+			{
+				CMonster* pMonsterAtSwordLocation = room.GetMonsterAtSquare(wSX, wSY);
+				if (pMonsterAtSwordLocation)
+				{
+					if (pMonsterAtSwordLocation->IsCombatable())
+						return false;
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonsterAtSwordLocation);
+					if (pCharacter && pCharacter->IsCombatable())
+						return false;
+				}
+			}
 		}
 	}
 
@@ -341,23 +369,27 @@ const
 		bIsBridge(wLookTileNo) ||
 		wLookTileNo==T_GOO ||
 		bIsOpenDoor(wLookTileNo) ||
-		bIsArrow(wLookTileNo) ||
+		bIsAnyArrow(wLookTileNo) ||
 		bIsPlatform(wLookTileNo) ||
 		wLookTileNo==T_NODIAGONAL ||
 		wLookTileNo==T_SCROLL ||
 		wLookTileNo==T_TOKEN ||
+		wLookTileNo==T_MIST ||
 		wLookTileNo==T_PRESSPLATE ||
-		(bIsTrapdoor(wLookTileNo) && !HasSword()) //won't drop trapdoors
+		wLookTileNo==T_MISTVENT ||
+		wLookTileNo==T_FIRETRAP ||
+		(bIsFallingTile(wLookTileNo) && !CanDropTrapdoor(wLookTileNo)) //won't drop trapdoors
 	)
 		return false;
 
 	//Items the player can step on while executing a smart intra-room path.
 	if (this->bIntraRoomPath)
 	{
-		if (bIsTrapdoor(wLookTileNo))
+		if (bIsFallingTile(wLookTileNo))
 			return false;
 		if (bIsPowerUp(wLookTileNo) || bIsEquipment(wLookTileNo) ||
-				wLookTileNo == T_KEY || wLookTileNo == T_MIRROR)
+				bIsMap(wLookTileNo) || bIsShovel(wLookTileNo) ||
+				wLookTileNo == T_KEY || wLookTileNo == T_MIRROR || wLookTileNo == T_CRATE || wLookTileNo == T_POWDER_KEG)
 			return false;
 
 		//Accessory-specific paths.
@@ -374,6 +406,12 @@ const
 	}
 
 	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::IsWeaponAt(UINT wX, UINT wY) const
+{
+	return HasSword() && wX == GetSwordX() && wY == GetSwordY();
 }
 
 //*****************************************************************************
@@ -481,6 +519,9 @@ bool CSwordsman::HasSword() const
 //Whether player is carrying a sword in front.
 {
 	if (this->st.sword == NoSword)
+		return false;
+
+	if (this->pCurrentGame->IsPlayerSwordRemoved())
 		return false;
 
 	return !IsSwordDisabled();

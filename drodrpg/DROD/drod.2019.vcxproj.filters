@@ -208,6 +208,51 @@
     <ClCompile Include="Sphere.cpp">
       <Filter>RoomModel</Filter>
     </ClCompile>
+    <ClCompile Include="RaindropEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="WadeEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DamagePreviewEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodDialogs.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectMediaDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="CharacterOptionsWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandListBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="EquipmentDescription.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="IceMeltEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageOverlayEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="FiretrapEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="PuffExplosionEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldMapWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldMapScreen.cpp">
+      <Filter>Screens</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Chat.h">
@@ -401,6 +446,54 @@
     </ClInclude>
     <ClInclude Include="Sphere.h">
       <Filter>RoomModel</Filter>
+    </ClInclude>
+    <ClInclude Include="RaindropEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="WadeEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DamagePreviewEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodDialogs.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectMediaDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="CharacterOptionsWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListBoxWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="EquipmentDescription.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="IceMeltEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageOverlayEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="FiretrapEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="PuffExplosionEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectChangeHistory.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldMapWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldMapScreen.h">
+      <Filter>Screens</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

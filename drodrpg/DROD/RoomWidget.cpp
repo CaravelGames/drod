@@ -29,9 +29,13 @@
 #include "DrodBitmapManager.h"
 #include "DrodFontManager.h"
 #include "DrodScreen.h"
+#include "EquipmentDescription.h"
 #include "GameScreen.h"
 
+#include "DamagePreviewEffect.h"
+#include "ImageOverlayEffect.h"
 #include "PendingBuildEffect.h"
+#include "RaindropEffect.h"
 #include "RoomEffectList.h"
 #include "SnowflakeEffect.h"
 #include "SparkEffect.h"
@@ -90,8 +94,13 @@ const int MONSTER_ANIMATION_DELAY = 3;
 #define CLOUD_SURFACE    (2)
 #define SUNSHINE_SURFACE (3)
 
+#define THIN_ICE_OPACITY       (128) //Opacity of Thin Ice
+#define MIST_OPACITY       (120) //Opacity of Mist
+
 const Uint8 MAX_FOG_OPACITY = 128; //[0,255]
 const Uint8 MIN_FOG_OPACITY =  64; //[0,255]
+
+const Uint8 BONUS_OPACITY = 255; //100%
 
 const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,   0},  //Beethro
@@ -114,7 +123,7 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,  64},  //pirate
 	{160, 160, 160},  //roach
 	{192, 192, 192},  //roach queen
-	{160, 160, 160},	//roach egg
+	{160, 160, 160},  //roach egg
 	{128, 128, 128},  //wwing
 	{255, 255, 255},  //evil eye
 	{255,  96,  96},  //red serpent
@@ -144,7 +153,12 @@ const SURFACECOLOR SpeakerColor[Speaker_Count] = {
 	{255, 255,   0},  //Beethro in disguise
 	{255, 255, 255},  //self (unused)
 	{255, 255, 255},  //player (unused)
-	{255, 255, 128}   //stalwart
+	{255, 255, 128},  //stalwart
+	{146, 101, 165},  //archivist
+	{224, 224,  64},  //architect
+	{ 52, 135, 168},  //patron
+	{218, 184, 137},  //construct
+	{255, 255, 255}   //fluff baby
 };
 
 //Light resolution.
@@ -208,7 +222,7 @@ const SURFACECOLOR Orange = {255, 128, 0};
 const SURFACECOLOR PaleYellow = {255, 255, 128};
 const SURFACECOLOR Red = {255, 0, 0};
 
-const UINT CY_RAISED = 9; //vertical offset when monster is on a raised object (pixels)
+const UINT CY_RAISED = 15; //vertical offset when monster is on a raised object (pixels)
 const UINT MAX_JITTER = 10; //maximum jitter magnitude (pixels)
 const Uint32 JITTER_REDUCTION_INTERVAL = 50; //how often to reduce jitters (ms)
 
@@ -217,18 +231,40 @@ SDL_Rect TileImageBlitParams::display_area = { 0,0,0,0 };
 bool TileImageBlitParams::crop_display = false;
 
 //*****************************************************************************
+TileImageBlitParams::TileImageBlitParams(UINT col, UINT row, UINT tile,
+	UINT xOffset, UINT yOffset, bool dirtyTiles, float raisedFactor) //[default = [0,0,false,0.0f]
+	: wCol(col), wRow(row)
+	, wTileImageNo(tile)
+	, wXOffset(xOffset), wYOffset(yOffset)
+	, bDirtyTiles(dirtyTiles)
+	, raisedFactor(raisedFactor)
+	, nOpacity(255)
+	, bClipped(false)
+	, nAddColor(-1)
+	, hsv({ -1.0f, -1.0f, -1.0f })
+	, bCastShadowsOnTop(true)
+	, appliedDarkness(0.75)
+{ }
+
 TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	: wCol(rhs.wCol), wRow(rhs.wRow)
 	, wTileImageNo(rhs.wTileImageNo)
 	, wXOffset(rhs.wXOffset), wYOffset(rhs.wYOffset)
 	, bDirtyTiles(rhs.bDirtyTiles)
-	, bDrawRaised(rhs.bDrawRaised)
+	, raisedFactor(rhs.raisedFactor)
 	, nOpacity(rhs.nOpacity)
 	, bClipped(rhs.bClipped)
 	, nAddColor(rhs.nAddColor)
+	, hsv(rhs.hsv)
 	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
 	, appliedDarkness(rhs.appliedDarkness)
 { }
+
+int TileImageBlitParams::getRaisedPixels() const {
+	if (raisedFactor <= 0.0f)
+		return 0;
+	return int(CY_RAISED * raisedFactor);
+}
 
 bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)
 {
@@ -297,6 +333,7 @@ CRoomWidget::CRoomWidget(
 //	, bNextWispFrame(false)
 	, bPlayerSleeping(false)
 	, bJitterThisFrame(false), dwLastJitterReduction(0)
+	, bRedrawDamagePreview(false)
 
 	, bOutside(false), bSkyVisible(false)
 	, dwSkyX(0)
@@ -313,6 +350,7 @@ CRoomWidget::CRoomWidget(
 	, fCloudAngle(0)
 	, bSunlight(false)
 	, wSnow(0)
+	, rain(0)
 	, bSkipLightfade(false)
 	, pSkyImage(NULL)
 
@@ -320,7 +358,6 @@ CRoomWidget::CRoomWidget(
 //	, bWasPlacingDouble(false), bWasInvisible(false)
 	, wLastTurn((UINT)-1)
 	, wLastOrientation(0), wLastX(0), wLastY(0)
-	, bLastRaised(false)
 
 	, CX_TILE(CBitmapManager::CX_TILE), CY_TILE(CBitmapManager::CY_TILE)
 
@@ -329,6 +366,8 @@ CRoomWidget::CRoomWidget(
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
 	, time_of_last_sky_move(0)
+
+	, bShowDamagePreview(false)
 {
 	this->imageFilenames.push_back(string("Bolts"));
 	this->imageFilenames.push_back(string("Fog1"));
@@ -352,6 +391,58 @@ CRoomWidget::CRoomWidget(
 }
 
 //*****************************************************************************
+void CRoomWidget::AddDamagePreviews()
+{
+	this->pLastLayerEffects->RemoveEffectsOfType(EDAMAGEPREVIEW);
+
+	this->bRedrawDamagePreview = false;
+
+	if (!this->bShowDamagePreview)
+		return;
+
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL;
+			pMonster = pMonster->pNext)
+	{
+		if (pMonster->GetOwningMonster() != pMonster)
+			continue; //don't show damage preview on large monster segments
+
+		if (pMonster->IsCombatable())
+			AddLastLayerEffect(new CDamagePreviewEffect(this, pMonster, BONUS_OPACITY));
+	}
+
+	//Add item stat effects
+	const UINT rows = this->pRoom->wRoomRows;
+	const UINT cols = this->pRoom->wRoomCols;
+	UINT wX, wY;
+	for (wY = 0; wY < rows; ++wY)
+	{
+		for (wX = 0; wX < cols; ++wX)
+		{
+			const UINT tTile = this->pRoom->GetTSquare(wX, wY);
+			switch (tTile)
+			{
+				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+				{
+					int val;
+					if (this->pCurrentGame) {
+						val = this->pCurrentGame->getItemAmount(tTile);
+					} else {
+						CDbLevel* pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
+						val = (int)(pLevel->getItemAmount(tTile));
+						delete pLevel;
+					}
+					AddLastLayerEffect(new CBonusPreviewEffect(this, wX, wY, val, BONUS_OPACITY));
+				}
+				break;
+			}
+		}
+	}
+}
+
+//*****************************************************************************
 bool CRoomWidget::AddDoorEffect(
 //Add an effect to display the effect an orb agent has on a door.
 //
@@ -367,13 +458,15 @@ bool CRoomWidget::AddDoorEffect(
 	const UINT wOriginalTileNo = this->pRoom->GetOSquare(wX, wY);
 
 	//Only works for doors and lights.
-	const bool bLight = bIsLight(this->pRoom->GetTSquare(wX,wY));
-	if (!bIsDoor(wOriginalTileNo) && !bIsOpenDoor(wOriginalTileNo) && !bLight)
+	const bool bDoor = bIsDoor(wOriginalTileNo) || bIsOpenDoor(wOriginalTileNo);
+	const bool bItem = bIsLight(this->pRoom->GetTSquare(wX, wY)) || bIsFiretrap(wOriginalTileNo) ||
+		(!bDoor && bIsAnyArrow(this->pRoom->GetFSquare(wX, wY)));
+	if (!bDoor && !bItem)
 		return false;
 
 	//Contains coords to evaluate.
 	CCoordSet drawCoords;
-	if (bLight)
+	if (bItem)
 		drawCoords.insert(wX,wY);
 	else
 		this->pRoom->GetAllDoorSquares(wX, wY, drawCoords, wOriginalTileNo);
@@ -398,20 +491,20 @@ bool CRoomWidget::AddDoorEffect(
 			break;
 
 			case OA_TOGGLE:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord,
 							wOriginalTileNo == T_DOOR_Y ? TI_DOOR_YO : TI_DOOR_Y));
 				AddShadeEffect(wDrawX,wDrawY,Orange);
 			break;
 
 			case OA_OPEN:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord, TI_DOOR_YO));
 				AddShadeEffect(wDrawX,wDrawY,BlueGreen);
 			break;
 
 			case OA_CLOSE:
-				if (!this->pCurrentGame && !bLight)
+				if (!this->pCurrentGame && !bItem)
 					AddLastLayerEffect(new CTransTileEffect(this, coord, TI_DOOR_Y));
 				AddShadeEffect(wDrawX,wDrawY,Fuschia);
 			break;
@@ -440,6 +533,38 @@ void CRoomWidget::AddJitter(const CMoveCoord& coord, const float fDamagePercent)
 		newJitter = MAX_JITTER;
 
 	this->jitterInfo.Add(coord.wX, coord.wY, newJitter);
+}
+
+//*****************************************************************************
+void CRoomWidget::AddLayerEffect(CEffect* pEffect, int layer)
+{
+	switch (layer) {
+	case 0:
+		AddOLayerEffect(pEffect);
+		break;
+	case 1:
+		AddTLayerEffect(pEffect);
+		break;
+	case 2:
+		AddMLayerEffect(pEffect);
+		break;
+	case 3:
+	default:
+		AddLastLayerEffect(pEffect);
+		break;
+	}
+}
+
+//*****************************************************************************
+CRoomEffectList* CRoomWidget::GetEffectListForLayer(const int layer) const
+{
+	switch (layer) {
+	case 0: return this->pOLayerEffects;
+	case 1: return this->pTLayerEffects;
+	case 2: return this->pMLayerEffects;
+	case 3:
+	default: return this->pLastLayerEffects;
+	}
 }
 
 //*****************************************************************************
@@ -628,20 +753,18 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 		color = SpeakerColor[getSpeakerType((MONSTERTYPE)wIdentity)];
 	}
 
-/*
-	//Background color for citizens matches their station-type color.
-	CCitizen *pCitizen = dynamic_cast<CCitizen*>(pCoord);
-	if (pCitizen)
+	//Check for custom speech color
+	CCharacter *pCharacter = dynamic_cast<CCharacter*>(pCoord);
+	if (pCharacter)
 	{
-		const int colorIndex = pCitizen->StationType();
-		if (colorIndex >= 0)
+		const int colorIndex = pCharacter->GetCustomSpeechColor();
+		if (colorIndex)
 		{
-			color.byt1 = Uint8((1.0 + lightMap[0][colorIndex]) * 127.5); //half-saturated
-			color.byt2 = Uint8((1.0 + lightMap[1][colorIndex]) * 127.5);
-			color.byt3 = Uint8((1.0 + lightMap[2][colorIndex]) * 127.5);
+			color.byt1 = Uint8((colorIndex >> 16) & 255);
+			color.byt2 = Uint8((colorIndex >> 8) & 255);
+			color.byt3 = Uint8(colorIndex & 255);
 		}
 	}
-*/
 
 	//Speaker text effect.
 	CSubtitleEffect *pSubtitle = new CSubtitleEffect(this, pCoord,
@@ -656,7 +779,6 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 
 	//If entity speaking is an invisible NPC script, then don't offset the speech
 	//coords to avoid drawing over the entity.
-	CCharacter *pCharacter = dynamic_cast<CCharacter*>(pCoord);
 	if (pCharacter)
 	{
 		if (!pCharacter->bVisible)
@@ -756,7 +878,9 @@ void CRoomWidget::HandleMouseUp(const SDL_MouseButtonEvent &Button)
 	if (Button.button == SDL_BUTTON_RIGHT ||
 			(bDisableMouseMovement && Button.button == SDL_BUTTON_LEFT))
 	{
-		DisplayRoomCoordSubtitle(wX,wY);
+		if ((SDL_GetModState() & KMOD_CTRL) == 0) {
+			DisplayRoomCoordSubtitle(wX, wY);
+		}
 
 		//Highlighting a customized item.
 		this->wHighlightX = wX;
@@ -800,7 +924,8 @@ void CRoomWidget::HighlightSelectedTile()
 		}
 		break;
 		case T_BOMB:
-			DrawInvisibilityRange(wX, wY, NULL, NULL, 3);
+		case T_POWDER_KEG:
+			HighlightBombExplosion(wX, wY, tTile);
 		break;
 		case T_BRIAR_SOURCE:
 		case T_BRIAR_LIVE: case T_BRIAR_DEAD:
@@ -817,10 +942,10 @@ void CRoomWidget::HighlightSelectedTile()
 		break;
 	}
 
-	/* Currently no F-layer highlights
-	switch (this->pRoom->GetFSquare(wX,wY))
-	{
-	}*/
+	const UINT wFTile = this->pRoom->GetFSquare(wX, wY);
+	if (bIsAnyArrow(wFTile)) {
+		DisplayAgentsAffectingTiles(CCoordSet(wX, wY));
+	}
 
 	const UINT wOSquare = this->pRoom->GetOSquare(wX,wY);
 	switch (wOSquare)
@@ -858,6 +983,7 @@ void CRoomWidget::HighlightSelectedTile()
 			DisplayDoorAgents(wX, wY, wOSquare);
 		break;
 		case T_DOOR_MONEY: case T_DOOR_MONEYO:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			DisplayAgentsAffectingTiles(CCoordSet(wX, wY));
 		break;
 		default: break;
@@ -865,6 +991,35 @@ void CRoomWidget::HighlightSelectedTile()
 
 	//Nothing is being highlighted.
 	RemoveHighlight();
+}
+
+//*****************************************************************************
+void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT tTile)
+//
+{
+	CCueEvents CueEvents;
+	CDbRoom room(*this->pRoom, false);
+	room.InitRoomStats();
+	CCoordStack bombs, powder_kegs;
+	switch (tTile) {
+		case T_BOMB: bombs.Push(x, y); break;
+		case T_POWDER_KEG: powder_kegs.Push(x, y); break;
+		default: break;
+	}
+	room.DoExplode(CueEvents, bombs, powder_kegs);
+
+	CCoordSet coords;
+	const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+		CueEvents.GetFirstPrivateData(CID_Explosion));
+	while (pCoord)
+	{
+		coords.insert(pCoord->wX, pCoord->wY);
+		pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
+			CueEvents.GetNextPrivateData());
+	}
+	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
+	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
+		AddShadeEffect(coord->wX, coord->wY, ExpColor);
 }
 
 //*****************************************************************************
@@ -1152,27 +1307,47 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 				mid = GetKeyMID(this->pRoom->GetTParam(wX, wY)); break;
 			case T_SWORD:
 			case T_SHIELD:
+			case T_ACCESSORY:
 			{
 				const UINT equipmentType = this->pRoom->GetTParam(wX, wY);
-				const bool bIsShield = tTile == T_SHIELD;
+				WSTRING customName;
 				if (bIsCustomEquipment(equipmentType) && this->pCurrentGame) {
 					const HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(equipmentType);
 					if (pChar) {
-						AppendTextLine(pChar->charNameText.c_str());
+						customName = pChar->charNameText;
 					} else {
-						AppendTextLine(wszQuestionMark);
+						customName.append(wszQuestionMark);
 					}
 				} else {
-					AppendLine(bIsShield ? GetShieldMID(equipmentType) : GetSwordMID(equipmentType));
+					switch (tTile) {
+						case T_SWORD: AppendLine(GetSwordMID(equipmentType)); break;
+						case T_SHIELD: AppendLine(GetShieldMID(equipmentType)); break;
+						case T_ACCESSORY: AppendLine(GetAccessoryMID(equipmentType)); break;
+					}
 				}
 
 				if (this->pCurrentGame)
 				{
-					const int oldVal = bIsShield ?
-							this->pCurrentGame->getShieldPower(this->pCurrentGame->pPlayer->st.shield) :
-							this->pCurrentGame->getWeaponPower(this->pCurrentGame->pPlayer->st.sword);
-					int newVal = bIsShield ?
-							this->pCurrentGame->getShieldPower(equipmentType) : this->pCurrentGame->getWeaponPower(equipmentType);
+					int oldATK = 0, oldDEF = 0, newATK = 0, newDEF = 0;
+					WSTRING ability;
+					ScriptFlag::EquipmentType equipType;
+					UINT currentEquipment;
+					switch (tTile) {
+						case T_SWORD: 
+							equipType = ScriptFlag::Weapon;
+							currentEquipment = this->pCurrentGame->pPlayer->st.sword;
+						break;
+						case T_SHIELD:
+							equipType = ScriptFlag::Armor;
+							currentEquipment = this->pCurrentGame->pPlayer->st.shield;
+						break;
+						case T_ACCESSORY:
+							equipType = ScriptFlag::Accessory;
+							currentEquipment = this->pCurrentGame->pPlayer->st.accessory;
+						break;
+					}
+
+					pCurrentGame->getEquipmentStats(equipType, oldATK, oldDEF);
 					if (bIsCustomEquipment(equipmentType)) {
 						//Set up the equipment's properties by running its script in a temporary game instance.
 						CMonsterFactory mf;
@@ -1181,42 +1356,73 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						pNew->wX = pNew->wY = static_cast<UINT>(-1); //not located anywhere in the room area
 						CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
 						pCharacter->wLogicalIdentity = equipmentType;
-						pCharacter->equipType = bIsShield ? ScriptFlag::Armor : ScriptFlag::Weapon;
+						pCharacter->equipType = equipType;
 						CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
 						*pTempGame = *this->pCurrentGame;
 						pCharacter->SetCurrentGame(pTempGame);
 
 						CCueEvents Ignored;
 						pCharacter->Process(CMD_WAIT, Ignored);
-						newVal = bIsShield ? pCharacter->getDEF() : pCharacter->getATK();
+						newATK = pCharacter->getATK();
+						newDEF = pCharacter->getDEF();
+						ability = EquipmentDescription::GetEquipmentAbility(pCharacter, equipType, wszCommaSpace);
+						if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+							customName = pCharacter->GetCustomName();
+						}
+
+						AppendTextLine(customName.c_str());
 						delete pTempGame;
 						delete pCharacter;
+					} else if (tTile == T_SWORD) {
+						ability = EquipmentDescription::GetPredefinedWeaponAbility(equipmentType, wszCommaSpace);
+						newATK = this->pCurrentGame->getPredefinedWeaponPower(equipmentType);
+					} else if (tTile == T_SHIELD) {
+						ability = EquipmentDescription::GetPredefinedShieldAbility(equipmentType, wszCommaSpace);
+						newDEF = this->pCurrentGame->getPredefinedShieldPower(equipmentType);
+					} else if (tTile == T_ACCESSORY) {
+						ability = EquipmentDescription::GetPredefinedAccessoryAbility(equipmentType);
 					}
-					const int diff = newVal - oldVal;
-					wstr += wszSpace;
-					wstr += wszLeftParen;
-					if (diff >= 0)
-						wstr += wszPlus;
-					wstr += _itoW(diff, temp, 10);
-					wstr += wszRightParen;
+
+					const int diffATK = newATK - oldATK;
+					const int diffDEF = newDEF - oldDEF;
+					WSTRING equipText;
+					bool needComma = false;
+
+					if (diffATK != 0 || tTile == T_SWORD) {
+						if (diffATK >= 0)
+							equipText += wszPlus;
+						equipText += _itoW(diffATK, temp, 10);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_ATKStat);
+						needComma = true;
+					}
+					if (diffDEF != 0 || tTile == T_SHIELD) {
+						if (needComma) {
+							equipText += wszCommaSpace;
+						}
+						if (diffDEF >= 0)
+							equipText += wszPlus;
+						equipText += _itoW(diffDEF, temp, 10);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_DEFStat);
+						needComma = true;
+					}
+					if (!ability.empty()) {
+						if (needComma) {
+							equipText += wszCommaSpace;
+						}
+						equipText += ability;
+					}
+
+					if (!equipText.empty()) {
+						wstr += wszSpace;
+						wstr += wszLeftParen;
+						wstr += equipText;
+						wstr += wszRightParen;
+					}
 				}
 
 				mid = 0; //don't append another text for this
-				break;
-			}
-			case T_ACCESSORY:
-			{
-				const UINT equipmentType = this->pRoom->GetTParam(wX, wY);
-				if (bIsCustomEquipment(equipmentType) && this->pCurrentGame) {
-					const HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(equipmentType);
-					if (pChar) {
-						AppendTextLine(pChar->charNameText.c_str());
-					} else {
-						AppendTextLine(wszQuestionMark);
-					}
-				} else {
-					AppendLine(GetAccessoryMID(equipmentType));
-				}
 				break;
 			}
 			case T_ORB:
@@ -1233,24 +1439,30 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		//Show item values.
 		switch (tTile)
 		{
-			case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-			case T_DEF_UP:	case T_ATK_UP:
+			case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+			case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+			case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+			case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			{
-				CDbLevel *pLevel = this->pCurrentGame ? NULL :
-						g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
-				wstr += wszSpace;
 				int val;
-				if (this->pCurrentGame)
+				if (this->pCurrentGame) {
 					val = this->pCurrentGame->getItemAmount(tTile);
-				else
+				} else {
+					CDbLevel* pLevel = g_pTheDB->Levels.GetByID(this->pRoom->dwLevelID, true);
 					val = (int)(pLevel->getItemAmount(tTile));
+					delete pLevel;
+				}
+
+				wstr += wszSpace;
+				wstr += wszLeftParen;
 				if (val >= 0)
 					wstr += wszPlus;
 				wstr += _itoW(val, temp, 10);
-				delete pLevel;
+				wstr += wszRightParen;
 			}
 			break;
 			case T_BOMB:
+			case T_POWDER_KEG:
 				if (this->pCurrentGame)
 				{
 					wstr += wszSpace;
@@ -1267,11 +1479,35 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 						wstr += wszRightParen;
 					}
+					else {
+						wstr += wszSpace;
+						wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
+					}
 				}
 			break;
 			default: break;
 		}
 	}
+
+	if (this->pRoom->GetCoveredTSquare(wX, wY) != T_EMPTY) {
+		const UINT tCoveredTile = this->pRoom->GetCoveredTSquare(wX, wY);
+		switch (tCoveredTile)
+		{
+		case T_TOKEN:
+			mid = GetTokenMID(this->pRoom->GetTParam(wX, wY)); break;
+			default: mid = TILE_MID[tCoveredTile]; break;
+		}
+		AppendLine(mid);
+	}
+
+	//Inspectable invisible characters
+	const WSTRING invisibleInfoStr = GetInvisibleCharacterInfo(wX, wY);
+	if (invisibleInfoStr.size())
+	{
+		wstr += wszCRLF;
+		wstr += invisibleInfoStr;
+	}
+
 	//Flat layer.
 	const UINT fTile = this->pRoom->GetFSquare(wX, wY);
 	if (fTile != 0)
@@ -1314,13 +1550,14 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	const UINT oTile = this->pRoom->GetOSquare(wX, wY);
 	switch (oTile)
 	{
-		case T_HOT:
+		case T_HOT: case T_FIRETRAP_ON:
 			mid = 0; //no text to append later
 			AppendLine(TILE_MID[oTile]);
 			if (this->pCurrentGame)
 			{
 				wstr += wszSpace;
-				int val = this->pCurrentGame->pPlayer->st.hotTileVal;
+				PlayerStats& st = this->pCurrentGame->pPlayer->st;
+				int val = oTile == T_HOT ? st.hotTileVal : st.firetrapVal;
 				wstr += _itoW(val, temp, 10);
 				if (val >= 0)
 				{
@@ -1332,6 +1569,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 					wstr += wszSpace;
 					wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 					wstr += wszRightParen;
+				}
+				else {
+					wstr += wszSpace;
+					wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
 				}
 			}
  		break;
@@ -1543,11 +1784,8 @@ const
 }
 
 //*****************************************************************************
-WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const
-//Returns: two or three lines of text giving information about this monster and fighting it
+CMonster* CRoomWidget::GetMonsterForStatDisplay(const UINT wX, const UINT wY) const
 {
-	WSTRING wstr;
-
 	CMonster* pMonster = this->pRoom->GetMonsterAtSquare(wX, wY);
 	if (!pMonster)
 	{
@@ -1556,10 +1794,99 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 		//the player will have to fight it at this location.
 		pMonster = this->pRoom->GetMotherConnectedToTarTile(wX, wY);
 		if (!pMonster)
-			return wstr;
+			return NULL;
 	}
 
-	pMonster = pMonster->GetOwningMonster();
+	return pMonster->GetOwningMonster();
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetMonsterNameAndAbility(CMonster* pMonster) const
+{
+	WSTRING wstr;
+
+	if (!pMonster)
+		return wstr;
+	
+	wstr = GetMonsterName(pMonster);
+
+	const WSTRING ability = GetMonsterAbility(pMonster);
+	if (!ability.empty())
+	{
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+		wstr += ability;
+		wstr += wszRightParen;
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY, bool bFullCombat) const
+{
+	WSTRING wstr;
+
+	if (!pMonster)
+		return wstr;
+
+	CSwordsman& player = *this->pCurrentGame->pPlayer;
+	CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
+
+	const int damage = combat.GetExpectedDamage(bFullCombat ? 0 : 1000);
+	if (damage < 0) {
+		wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
+		return wstr;
+	}
+
+	WCHAR temp[12];
+
+	wstr += g_pTheDB->GetMessageText(MID_ExpectedDamage);
+	wstr += wszColon;
+	wstr += wszSpace;
+	if (damage >= INT_MAX) {
+		wstr += g_pTheDB->GetMessageText(MID_Death);
+	} else {
+		if (combat.IsExpectedDamageApproximate())
+			wstr += wszTilde;
+		wstr += _itoW(damage, temp, 10);
+	}
+
+	static const WCHAR multiplier[] = { We('x'),We(0) };
+	const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
+	const UINT monsterAttacks = combat.GetMonsterAttacksMade();
+	const UINT needATK = combat.IsExpectedDamageApproximate() ? 0 : //don't provide a false guess
+		combat.GetProjectedPlayerATKIncreaseForFasterWin();
+
+	wstr += wszSpace;
+	wstr += wszLeftParen;
+	wstr += _itoW(enemySingleAttackDamage, temp, 10);
+	wstr += wszSpace;
+	wstr += multiplier;
+	wstr += wszSpace;
+	wstr += _itoW(monsterAttacks, temp, 10);
+	if (needATK) {
+		wstr += wszComma;
+		wstr += wszSpace;
+		wstr += wszPlus;
+		wstr += _itoW(needATK, temp, 10);
+		wstr += wszSpace;
+		wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
+	}
+	wstr += wszRightParen;
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const
+//Returns: two or three lines of text giving information about this monster and fighting it
+{
+	WSTRING wstr;
+
+	CMonster* pMonster = GetMonsterForStatDisplay(wX, wY);
+	if (!pMonster)
+		return wstr;
 
 	UINT type = pMonster->wType;
 	if (!this->pCurrentGame)
@@ -1593,23 +1920,16 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 				pGameScreen->ShowStatsForMonster(pMonster);
 		}
 
-		wstr += GetMonsterName(pMonster);
-		WSTRING ability = GetMonsterAbility(pMonster);
-		if (!ability.empty())
-		{
-			wstr += wszSpace;
-			wstr += wszLeftParen;
-			wstr += ability;
-			wstr += wszRightParen;
-		}
+		wstr += GetMonsterNameAndAbility(pMonster);
 		if (!pMonster->IsCombatable())
 			return wstr;  //types that can't fight the player -- don't show any info for them
-
-		WCHAR temp[12];
 		wstr += wszCRLF;
 
-		const int gold = pMonster->getGOLD() * this->pCurrentGame->pPlayer->getGoldMultiplier();
-		const int xp = pMonster->getXP() * this->pCurrentGame->pPlayer->getXPMultiplier();
+		WCHAR temp[12];
+
+		CSwordsman& player = *this->pCurrentGame->pPlayer;
+		const int gold = pMonster->getGOLD() * player.getGoldMultiplier();
+		const int xp = pMonster->getXP() * player.getXPMultiplier();
 		if (bFull)
 		{
 			wstr += g_pTheDB->GetMessageText(MID_MonsterHP);
@@ -1646,43 +1966,9 @@ WSTRING CRoomWidget::GetMonsterInfo(const UINT wX, const UINT wY, const bool bFu
 			wstr += wszCRLF;
 		}
 
-		CSwordsman& player = *this->pCurrentGame->pPlayer;
-		CCombat combat(this->pCurrentGame, pMonster, player.HasSword(), player.wX, player.wY, wX, wY);
-		const int damage = combat.GetExpectedDamage();
 		wstr += wszSpace;
-		if (damage < 0)
-			wstr += g_pTheDB->GetMessageText(MID_MonsterDefenseTooHigh);
-		else {
-			wstr += g_pTheDB->GetMessageText(MID_ExpectedDamage);
-			wstr += wszColon;
-			wstr += wszSpace;
-			if (damage >= INT_MAX) {
-				wstr += g_pTheDB->GetMessageText(MID_Death);
-			} else {
-				static const WCHAR multiplier[] = {We('x'),We(0)};
-				const int enemySingleAttackDamage = combat.GetMonsterSingleAttackDamage();
-				const UINT monsterAttacks = combat.GetMonsterAttacksMade();
-				const UINT needATK = combat.GetProjectedPlayerATKIncreaseForFasterWin();
 
-				wstr += _itoW(damage, temp, 10);
-				wstr += wszSpace;
-				wstr += wszLeftParen;
-				wstr += _itoW(enemySingleAttackDamage, temp, 10);
-				wstr += wszSpace;
-				wstr += multiplier;
-				wstr += wszSpace;
-				wstr += _itoW(monsterAttacks, temp, 10);
-				if (needATK) {
-					wstr += wszComma;
-					wstr += wszSpace;
-					wstr += wszPlus;
-					wstr += _itoW(needATK, temp, 10);
-					wstr += wszSpace;
-					wstr += g_pTheDB->GetMessageText(MID_ATKForFasterCombatWin);
-				}
-				wstr += wszRightParen;
-			}
-		}
+		wstr += GetCombatAnalysis(pMonster, wX, wY, false);
 
 		if (!bFull)
 		{
@@ -1723,19 +2009,54 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 
 	bool bAttackAdj = pMonster->wType == M_WATERSKIPPER || pMonster->wType == M_SEEP;
 	bool bAttackInFront = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
+	bool bSurprisedBehind = pMonster->wType == M_EYE || pMonster->wType == M_MADEYE;
 	bool bAttackInFrontWhenBack = pMonster->wType == M_GOBLIN || pMonster->wType == M_GOBLINKING;
+	bool bSpawnEggs = pMonster->wType == M_QROACH;
+	bool bGoblinWeakness = pMonster->HasGoblinWeakness();
+	bool bSerpentWeakness = pMonster->HasSerpentWeakness();
+	bool bCustomWeakness = false, bCustomDescription = false;
+	bool bExplosiveSafe = pMonster->IsExplosiveSafe();
+	bool bMistImmune = pMonster->IsMistImmune();
 
 	if (pMonster->wType == M_CHARACTER)
 	{
 		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 		bAttackAdj |= pCharacter->AttacksWhenAdjacent();
 		bAttackInFront |= pCharacter->AttacksInFront();
+		bSurprisedBehind |= pCharacter->TurnToFacePlayerWhenFighting();
 		bAttackInFrontWhenBack |= pCharacter->AttacksInFrontWhenBackTurned();
+		bSpawnEggs |= pCharacter->CanSpawnEggs();
+		bCustomWeakness = pCharacter->HasCustomWeakness();
+		bCustomDescription = pCharacter->HasCustomDescription();
+		bMistImmune = pCharacter->IsMistImmune();
 	}
 
 	if (pMonster->HasRayGun())
 	{
-		wstr += g_pTheDB->GetMessageText(MID_AumtlichAbility);
+		int beamVal = this->pCurrentGame->pPlayer->st.beamVal;
+
+		if (beamVal == 50) {
+			wstr += g_pTheDB->GetMessageText(MID_AumtlichAbility);
+		} else if (beamVal >= 0) {
+			//Percentage damage
+			WCHAR temp[16];
+			WSTRING value = _itoW(beamVal, temp, 10);
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_AumtlichAbilityPercentage),
+				wszStringToken,
+				value
+			);
+		} else {
+			//Flat-rate damage
+			WCHAR temp[16];
+			WSTRING value = _itoW(abs(beamVal), temp, 10);
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_AumtlichAbilityFlatRate),
+				wszStringToken,
+				value
+			);
+		}
+		
 		++count;
 	}
 
@@ -1782,6 +2103,16 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_GoblinAbility);
 		++count;
 	}
+	if (bSurprisedBehind)
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
+		++count;
+	}
 	if (pMonster->CanAttackFirst())
 	{
 		if (count)
@@ -1802,15 +2133,156 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		wstr += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
 		++count;
 	}
+	if (bSpawnEggs) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_RoachQueenAbility);
+		++count;
+	}
+	if (pMonster->IsWallDwelling())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_SeepAbility);
+		++count;
+	} else if (pMonster->IsSwimming()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_WaterSkipperAbility);
+		++count;
+	}
+	if (!pMonster->DamagedByHotTiles())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_HotTileImmune);
+		++count;
+	}
+	if (!pMonster->DamagedByFiretraps())
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_FiretrapImmune);
+		++count;
+	}
+	if (bMistImmune)
+	{
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_MistImmune);
+		++count;
+	}
+	if (bExplosiveSafe) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_ExplosiveSafe);
+		++count;
+	}
+	if (pMonster->IsWallAndMirrorSafe()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_WallMirrorSafe);
+		++count;
+	}
+	if (bGoblinWeakness) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+
+		wstr += WCSReplace(
+			g_pTheDB->GetMessageText(MID_CustomType),
+			wszStringToken,
+			g_pTheDB->GetMessageText(MID_Goblin)
+		);
+
+		++count;
+	}
+	if (bSerpentWeakness) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+
+		wstr += WCSReplace(
+			g_pTheDB->GetMessageText(MID_CustomType),
+			wszStringToken,
+			g_pTheDB->GetMessageText(MID_Wyrm)
+		);
+
+		++count;
+	}
+	if (bCustomWeakness) {
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+		std::set<WSTRING> weaknesses = pCharacter->GetCustomWeaknesses();
+		for (std::set<WSTRING>::const_iterator iter = weaknesses.cbegin();
+			iter != weaknesses.cend(); ++iter) {
+			const WSTRING weakness = *iter;
+			if (count)
+			{
+				wstr += wszComma;
+				wstr += wszSpace;
+			}
+		
+			wstr += WCSReplace(
+				g_pTheDB->GetMessageText(MID_CustomType),
+				wszStringToken,
+				weakness
+			);
+			++count;
+		}
+	}
+	if (bCustomDescription) {
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+		vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
+
+		for (size_t i = 0; i < descriptions.size(); ++i) {
+			WSTRING description = descriptions[i];
+			if (description.empty()) continue;
+
+			if(count)
+			{
+				wstr += wszComma;
+				wstr += wszSpace;
+			}
+			wstr += description;
+			++count;
+		}
+	}
 
 	//Unique.
 	UINT mid=0;
 	switch (pMonster->wType)
 	{
 		case M_MIMIC: mid = MID_MimicAbility; break;
-		case M_QROACH: mid = MID_RoachQueenAbility; break;
-		case M_WATERSKIPPER: mid = MID_WaterSkipperAbility; break;
-		case M_SEEP: mid = MID_SeepAbility; break;
 		case M_TARMOTHER: case M_MUDMOTHER: case M_GELMOTHER: mid = MID_TarMotherAbility; break;
 		default: break;
 	}
@@ -1822,6 +2294,66 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 			wstr += wszSpace;
 		}
 		wstr += g_pTheDB->GetMessageText(mid);
+	}
+
+	return wstr;
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::GetInvisibleCharacterInfo(const UINT wX, const UINT wY) const
+{
+	WSTRING wstr;
+	bool needCR = false;
+
+	CMonster* pMonster = this->pRoom->pFirstMonster;
+	while (pMonster) {
+		if (pMonster->wX != wX || pMonster->wY != wY || pMonster->wType != M_CHARACTER) {
+			pMonster = pMonster->pNext;
+			continue;
+		}
+
+		CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+		ASSERT(pCharacter);
+
+		if (pCharacter->IsVisible() || !pCharacter->IsInvisibleInspectable()) {
+			pMonster = pMonster->pNext;
+			continue;
+		}
+
+		if (needCR) {
+			wstr += wszCRLF;
+		}
+
+		wstr += GetMonsterName(pMonster);
+
+		if (pCharacter->HasCustomDescription()) {
+			vector<WSTRING> descriptions = pCharacter->GetCustomDescriptions();
+			WSTRING ability;
+			int count = 0;
+
+			for (size_t i = 0; i < descriptions.size(); ++i) {
+				WSTRING description = descriptions[i];
+				if (description.empty()) continue;
+
+				if (count)
+				{
+					ability += wszComma;
+					ability += wszSpace;
+				}
+				ability += description;
+				++count;
+			}
+
+			if (count) {
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += ability;
+				wstr += wszRightParen;
+			}
+		}
+
+		needCR = true;
+		pMonster = pMonster->pNext;
 	}
 
 	return wstr;
@@ -1840,17 +2372,23 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 	} else {
 		//Get NPC type name.
 		CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-		if (IsValidMonsterType(pCharacter->wLogicalIdentity))
-			wstr += g_pTheDB->GetMessageText(TILE_MID[pCharacter->wLogicalIdentity + M_OFFSET]);
-		else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST)
-		{
+		bool bCharacterName = false;
+		if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+			bCharacterName = true;
+			wstr += pCharacter->GetCustomName();
+		} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+			//Show custom character name.
+			ASSERT(this->pCurrentGame->pHold);
 			HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(pCharacter->wLogicalIdentity);
-			if (pCustomChar)
+			if (pCustomChar) {
+				bCharacterName = true;
 				wstr += pCustomChar->charNameText;
-			else //custom character type was deleted, and this NPC's type left dangling
+			} else {
+				//custom character type was deleted, and this NPC's type left dangling
 				wstr += wszQuestionMark;
-		} else {
-			ASSERT(pCharacter->wIdentity >= CHARACTER_FIRST);
+			}
+		} else if (pCharacter->wIdentity >= CHARACTER_FIRST) {
+			bCharacterName = true;
 			UINT eMID = MID_UNKNOWN;
 			switch (pCharacter->wIdentity)
 			{
@@ -1864,9 +2402,18 @@ WSTRING CRoomWidget::GetMonsterName(CMonster* pMonster) const
 				case M_CITIZEN3: eMID = MID_Citizen3; break;
 				case M_CITIZEN4: eMID = MID_Citizen4; break;
 				case M_STALWART: eMID = MID_Stalwart; break;
+				case M_ARCHIVIST: eMID = MID_Archivist; break;
+				case M_ARCHITECT: eMID = MID_Architect; break;
+				case M_PATRON: eMID = MID_Patron; break;
+				case M_ROACHIE: eMID = MID_Roachie; break;
 				default: ASSERT(!"Unrecognized character"); break;
 			}
 			wstr += eMID == MID_UNKNOWN ? wszQuestionMark : g_pTheDB->GetMessageText(eMID);
+		}
+
+		if (!bCharacterName) {
+			if (IsValidMonsterType(pCharacter->wLogicalIdentity))
+				wstr += g_pTheDB->GetMessageText(TILE_MID[pCharacter->wLogicalIdentity + M_OFFSET]);
 		}
 	}
 	return wstr;
@@ -1974,7 +2521,7 @@ void CRoomWidget::GetWeather()
 		//No weather effects on lower graphics modes.
 		this->bOutside = this->bSkyVisible = this->bLightning = this->bClouds =
 				this->bSunlight = this->bSkipLightfade = this->bFog = false;
-		this->cFogLayer = this->wSnow = 0;
+		this->cFogLayer = this->wSnow = this->rain = 0;
 		return;
 	}
 
@@ -2006,6 +2553,9 @@ void CRoomWidget::GetWeather()
 	ASSERT(this->wSnow < SNOW_INCREMENTS);
 
 	this->sky = this->pRoom->weather.sky;
+
+	this->rain = this->pRoom->weather.rain;
+	ASSERT(this->rain < RAIN_INCREMENTS);
 }
 
 //*****************************************************************************
@@ -2132,13 +2682,18 @@ void CRoomWidget::LoadRoomImages()
 	//Load new floor image mosaic, if any.
 	if (g_pTheDBM->pTextures[FLOOR_IMAGE])
 		SDL_FreeSurface(g_pTheDBM->pTextures[FLOOR_IMAGE]);
+	if (g_pTheDBM->pTextures[OVERHEAD_IMAGE])
+		SDL_FreeSurface(g_pTheDBM->pTextures[OVERHEAD_IMAGE]);
+
 	CDbRoom *pThisRoom = this->pCurrentGame ? this->pCurrentGame->pRoom : this->pRoom;
 	const UINT dwDataID = pThisRoom->dwDataID;
 	g_pTheDBM->pTextures[FLOOR_IMAGE] = g_pTheDBM->LoadImageSurface(dwDataID);
+	g_pTheDBM->pTextures[OVERHEAD_IMAGE] = g_pTheDBM->LoadImageSurface(pThisRoom->dwOverheadDataID);
 
 	//Generate room model for lighting.
 	this->bRenderRoomLight = true;
 	this->bCeilingLightsRendered = false;
+	this->ceilingLightChanges.reset();
 
 	//Load sky image, if applicable.
 	if (this->bSkyVisible)
@@ -2311,11 +2866,89 @@ void CRoomWidget::ToggleVarDisplay()
 }
 
 //*****************************************************************************
+void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
+{
+	if (!this->pCurrentGame)
+		return;
+
+	if (this->pCurrentGame->persistingImageOverlays.empty())
+		return;
+
+	//Don't duplicate the persistent effects drawn above when we get to ProcessImageEvents.
+	static const CUEEVENT_ID cid = CID_ImageOverlay;
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(cid);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+
+		if (pImageOverlay->loopsForever()) {
+			// These effects were already added to `persistingImageOverlays`
+			CueEvents.Remove(cid, pObj);
+			pObj = CueEvents.GetFirstPrivateData(cid);
+			continue;
+		}
+
+		//Don't wait for additional images to be added to the room widget before clearing effects.
+		bool bClearedEffect = false;
+		const int clearsLayer = pImageOverlay->clearsImageOverlays();
+		if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			CueEvents.Remove(cid, pObj);
+			pObj = CueEvents.GetFirstPrivateData(cid);
+			bClearedEffect = true;
+		}
+
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+			RemoveGroupEffects(clearsGroup);
+			bClearedEffect = true;
+		}
+
+		if (bClearedEffect)
+			continue;
+
+		pObj = CueEvents.GetNextPrivateData();
+	}
+
+	const UINT currentTurn = this->pCurrentGame->wTurnNo;
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
+
+	for (vector<CImageOverlay>::const_iterator it = this->pCurrentGame->persistingImageOverlays.begin();
+		it != this->pCurrentGame->persistingImageOverlays.end(); ++it)
+	{
+		const CImageOverlay& overlay = *it;
+		const int layer = overlay.getLayer();
+		CEffectList* pEffectList = GetEffectListForLayer(layer);
+		if (!IsPersistentEffectPlaying(pEffectList, overlay.instanceID)) {
+			CImageOverlayEffect* pEffect = new CImageOverlayEffect(this, &overlay, currentTurn, dwNow);
+			AddLayerEffect(pEffect, layer);
+		}
+	}
+}
+
+//*****************************************************************************
+bool CRoomWidget::IsPersistentEffectPlaying(CEffectList* pEffectList, const UINT instanceID) const
+{
+	ASSERT(pEffectList);
+	std::list<CEffect*> pEffects = pEffectList->Effects;
+	for (std::list<CEffect*>::const_iterator it = pEffects.begin(); it != pEffects.end(); ++it)
+	{
+		const CEffect* pEffect = *it;
+		if (pEffect->GetEffectType() == EIMAGEOVERLAY) {
+			const CImageOverlayEffect* pIOE = DYN_CAST(const CImageOverlayEffect*, const CEffect*, pEffect);
+			if (pIOE->getInstanceID() == instanceID)
+				return true;
+		}
+	}
+	return false;
+}
+
+//*****************************************************************************
 void CRoomWidget::FadeToLightLevel(
 //Crossfades room image from old to new light level.
 //
 //Params:
-	const UINT wNewLight)
+	const UINT wNewLight, CCueEvents& CueEvents)
 {
 	StopSleeping();
 
@@ -2380,6 +3013,8 @@ void CRoomWidget::FadeToLightLevel(
 
 		//Render room objects.
 		this->x = this->y = 0;
+		AddDamagePreviews();
+		DisplayPersistingImageOverlays(CueEvents);
 		RenderRoomLayers(pNewRoomSurface);
 		this->x = rect.x;
 		this->y = rect.y;
@@ -2416,16 +3051,17 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 
 	RenderFogInPit(pSurface);
 	DrawPlatformsAndTLayer(pSurface);
-//	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pTLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
 	if (bDrawPlayer && this->pCurrentGame)
 		DrawPlayer(*this->pCurrentGame->pPlayer, pSurface);
 	DrawMonsters(this->pRoom->pFirstMonster, pSurface, false);
-//	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pMLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 
-//	DrawOverheadLayer(pSurface);
+	DrawOverheadLayer(pSurface);
 //	DrawGhostOverheadCharacters(pSurface, false);
-//	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EDAMAGEPREVIEW);
 
 	RenderEnvironment(pSurface);
 
@@ -2438,6 +3074,7 @@ void CRoomWidget::ShowRoomTransition(
 //
 //Params:
 	const UINT wExitOrientation,  //(in) direction of exit
+	CCueEvents& CueEvents,  //(in)
 	const bool bShowPlayer) //[default=false]
 {
 	StopSleeping();
@@ -2507,6 +3144,7 @@ void CRoomWidget::ShowRoomTransition(
 					pNewRoomSurface, &tempRect);
 
 		this->x = this->y = 0;
+		DisplayPersistingImageOverlays(CueEvents);
 		RenderRoomLayers(pNewRoomSurface, bShowPlayer);
 
 		this->x = rect.x;
@@ -2933,6 +3571,9 @@ void CRoomWidget::RenderPlayerLight()
 // Pre-condition: player light vars are clear
 void CRoomWidget::PropagatePlayerLight()
 {
+	this->pActiveLightedTiles = &this->lightedPlayerTiles;
+	this->lightMaps.pActiveLight = this->lightMaps.psPlayerLight;
+
 	CEntity *pEntity = GetLightholder();
 	if (pEntity)
 	{
@@ -2951,8 +3592,6 @@ void CRoomWidget::PropagatePlayerLight()
 		static const UINT wPlayerLightRadius = 3;
 		static const UINT wLightParam = (wPlayerLightRadius-1)*NUM_LIGHT_TYPES+0; //white light
 
-		this->pActiveLightedTiles = &this->lightedPlayerTiles;
-		this->lightMaps.pActiveLight = this->lightMaps.psPlayerLight;
 		PropagateLight(fxPos, fyPos, fZ, wLightParam);
 
 		this->wLastPlayerLightX = pEntity->wX;
@@ -3109,12 +3748,12 @@ const
 	//Must have an offset, otherwise we would've been better off using AddLight
 	ASSERT(blit.wXOffset || blit.wYOffset);
 
-	const UINT yRaised = blit.bDrawRaised ? -int(CY_RAISED) : 0;
+	const int yRaised = blit.getRaisedPixels();
 
 	const UINT xIndex = blit.wCol * CX_TILE + blit.wXOffset; //blit position relative to room origin
 	const UINT yIndex = blit.wRow * CY_TILE + blit.wYOffset;
 	const UINT wXPos = this->x + xIndex;
-	const UINT wYPos = this->y + yIndex + yRaised;
+	const UINT wYPos = this->y + yIndex - yRaised;
 
 	const UINT wOX    = xIndex / CX_TILE;
 	const UINT wOY    = yIndex / CY_TILE;
@@ -3551,7 +4190,7 @@ bool CRoomWidget::CropTileBlitToRoomBounds(SDL_Rect*& crop, int dest_x, int dest
 		}
 
 		return ClipTileArea(dest_x, dest_y, *crop);
-	}
+		}
 
 	return true;
 }
@@ -3598,6 +4237,9 @@ UINT CRoomWidget::GetTextureIndexForTile(const UINT tileNo, const bool bForceBas
 		case T_WALL_IMAGE: wTextureIndex =
 				!bForceBaseImage && g_pTheDBM->pTextures[FLOOR_IMAGE] ? FLOOR_IMAGE : WALL_MOSAIC;
 		break;
+		case T_OVERHEAD_IMAGE:
+			wTextureIndex = g_pTheDBM->pTextures[OVERHEAD_IMAGE] ? OVERHEAD_IMAGE : WALL_MOSAIC;
+		break;
 		default:
 			if (!bForceBaseImage)
 			{
@@ -3624,16 +4266,16 @@ void CRoomWidget::RenderRoom(
 //Render o- and t-layers in room for either game play or the room editor.
 //
 //Params:
-	int wCol, int wRow,     //(in) top-left tile coords [default=(0,0) to (xSize,ySize)]
-	int wWidth, int wHeight,
+	int nCol, int nRow,     //(in) top-left tile coords [default=(0,0) to (xSize,ySize)]
+	int nWidth, int nHeight,
 	const bool bEditor)     //[default=true]
 {
-	BoundsCheckRect(wCol,wRow,wWidth,wHeight);
-	const UINT wRowOffset = this->pRoom->wRoomCols - wWidth;
+	BoundsCheckRect(nCol,nRow,nWidth,nHeight);
+	const UINT wRowOffset = this->pRoom->wRoomCols - nWidth;
 	const UINT wLightRowOffset = wRowOffset * wLightValuesPerTile;
-	const UINT wStartPos = wRow * this->pRoom->wRoomCols + wCol;
-	const UINT wXEnd = wCol + wWidth;
-	const UINT wYEnd = wRow + wHeight;
+	const UINT wStartPos = nRow * this->pRoom->wRoomCols + nCol;
+	const UINT wXEnd = nCol + nWidth;
+	const UINT wYEnd = nRow + nHeight;
 
 	//For pit rendering.
 	SDL_Surface *pPitsideTexture = g_pTheDBM->pTextures[PITSIDE_MOSAIC];
@@ -3660,9 +4302,9 @@ void CRoomWidget::RenderRoom(
 	UINT wX, wY, wTI;
 	int nX, nY;
 
-	for (wY = wRow; wY < wYEnd; ++wY)
+	for (wY = nRow; wY < wYEnd; ++wY)
 	{
-		for (wX = wCol; wX < wXEnd; ++wX)
+		for (wX = nCol; wX < wXEnd; ++wX)
 		{
 			if (this->bAllDirty || pTI->dirty)
 			{
@@ -3685,7 +4327,7 @@ void CRoomWidget::RenderRoom(
 				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
 
 				//1. Draw opaque (floor) layer.
-				const bool bWater = bIsWater(wOTileNo) || wOTileNo == T_PLATFORM_W;
+				const bool bWater = bIsWater(wOTileNo) || wOTileNo == T_PLATFORM_W || bIsThinIce(wOTileNo);
 				if (bWater)
 					goto OLayerDone; //water is handled below
 				if (!bMosaicTile && !bTransparentOTile)
@@ -3702,17 +4344,35 @@ void CRoomWidget::RenderRoom(
 					if (bIsStairs(wOTileNo))
 					{
 						UINT wColIgnored, wRow;
+						float fLight;
 						if (wOTileNo == T_STAIRS)
 						{
+							//Lighting decreases further down the stairs
 							CalcStairPosition(this->pRoom, wX, wY, wColIgnored, wRow);
-							float fLight = 1.0f - (wRow-1)*0.08f;
-							if (fLight < 0.1) fLight = 0.1f;
-							g_pTheDBM->DarkenTile(nX, nY, fLight, pDestSurface);
+							if (wRow > 1) { //value is 1-based; topmost stair (half tile) is fully lit
+								fLight = 1.0f - (wRow - 1) * 0.08f;
+								if (fLight < 0.1f)
+									fLight = 0.1f;
+								g_pTheDBM->DarkenRect(nX, nY, CX_TILE, CY_TILE / 2, fLight, pDestSurface); //top half
+							}
+
+							fLight = 1.0f - (wRow - 0.5f) * 0.08f; //bottom half -- a half-step darker
+							if (fLight < 0.1f)
+								fLight = 0.1f;
+							g_pTheDBM->DarkenRect(nX, nY + CY_TILE / 2, CX_TILE, CY_TILE / 2, fLight, pDestSurface);
 						} else {
 							CalcStairUpPosition(this->pRoom, wX, wY, wColIgnored, wRow);
-							float fLight = 1.0f + (wRow-1)*0.08f;
-							if (fLight > 1.7) fLight = 1.7f;
-							g_pTheDBM->LightenTile(pDestSurface, nX, nY, fLight);
+							if (wRow > 1) { //value is 1-based; bottommost stair (half tile) is not lightened
+								fLight = 1.0f + (wRow - 1) * 0.08f;
+								if (fLight > 1.7f)
+									fLight = 1.7f;
+								g_pTheDBM->LightenRect(pDestSurface, nX, nY + CY_TILE / 2, CX_TILE, CY_TILE / 2, fLight); //bottom half
+							}
+
+							fLight = 1.0f + (wRow - 0.5f) * 0.08f; //top half -- a half-step lighter
+							if (fLight > 1.7f)
+								fLight = 1.7f;
+							g_pTheDBM->LightenRect(pDestSurface, nX, nY, CX_TILE, CY_TILE / 2, fLight);
 						}
 					}
 				} else {
@@ -3924,7 +4584,7 @@ OLayerDone:
 										dest, pDestSurface, 128);
 						}
 
-						//5. Draw sky/water bottom.
+						//4. Draw sky/water bottom.
 						if (this->bOutside && this->pSkyImage)
 						{
 							const int wXOffset = this->dwSkyX % this->pSkyImage->w;
@@ -3948,10 +4608,17 @@ OLayerDone:
 										pDeepBottom, dest, pDestSurface, 50);
 						}
 
+						//5. Draw thin ice on top of water.
+						if (bIsThinIce(wOTileNo))
+						{
+							const UINT wTileImageNo = CalcTileImageForWater(this->pRoom, wX, wY, T_THINICE);
+							DrawTransparentRoomTile(wTileImageNo, THIN_ICE_OPACITY);
+						}
+
 						// All lighting is applied when drawing T-Layer
 					}
 				}
-			}
+				}
 
 			//Advance all pointers to next square.
 			++pTI;
@@ -3961,6 +4628,28 @@ OLayerDone:
 		//Advance to next row.
 		pTI += wRowOffset;
 		psL += wLightRowOffset;
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
+{
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (CueEvents.HasOccurred(CID_ExitRoom) || this->ceilingLightChanges.empty()) {
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_LightTilesChanged)) {
+		this->ceilingLightChanges.add(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+		return;
+	}
+
+	if (!ceilingLightChanges.isAfterLatest(currentTurn + 1)) {
+		this->ceilingLightChanges.removeAfter(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
 	}
 }
 
@@ -3983,6 +4672,7 @@ void CRoomWidget::DrawTLayerTile(
 {
 	ASSERT(this->pRoom);
 	const UINT wTTileNo = this->pRoom->GetTSquare(wX, wY);
+	const UINT wCoveredTTile = this->pRoom->coveredTSquares.GetAt(wX, wY);
 
 	//Pits show only dark.  Light only shines on f+t-layer items.
 	//Deal with darkening the pit tile now.
@@ -3998,8 +4688,9 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	bool bTar = bIsTar(wTTileNo);
+	bool bMist = (wTTileNo == T_MIST);
 	bool bTIsTransparent = bTar && bEditor;
-	bool bTIsTranslucent = bTar && this->pRoom->bBetterVision;
+	bool bTIsTranslucent = bTar && (this->pRoom->bBetterVision || g_pTheDBM->tarstuffAlpha != 255);
 
 	//3. Draw floor (object) layer.
 	if (ti.f != TI_TEMPTY)
@@ -4010,8 +4701,15 @@ void CRoomWidget::DrawTLayerTile(
 	}
 
 	//4. Draw transparent (item) layer.
+	//4a. Draw covered tile beneath covering object
+	if (wCoveredTTile == T_MIST) {
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.tCovered);
+	} else if (wCoveredTTile != T_EMPTY) {
+		DrawRoomTile(ti.tCovered);
+	}
+
 	bool bIsMoving = false;
-	if (ti.t != TI_TEMPTY && !bTar)
+	if (ti.t != TI_TEMPTY && !(bTar || bMist))
 	{
 		switch (wTTileNo)
 		{
@@ -4023,6 +4721,8 @@ void CRoomWidget::DrawTLayerTile(
 					DrawRoomTile(ti.t);
 			break;
 			case T_MIRROR:
+			case T_CRATE:
+			case T_POWDER_KEG:
 				//Render moving objects later.
 				if (this->dwMovementStepsLeft && this->pRoom->GetPushedObjectAt(wX, wY) != NULL) {
 					bIsMoving = true;
@@ -4045,6 +4745,12 @@ void CRoomWidget::DrawTLayerTile(
 		UINT lightVal = this->pRoom->tileLights.GetAt(wX,wY);
 		if (bIsWallLightValue(lightVal))
 			DrawTransparentRoomTile(TI_WALLLIGHT, 180);
+	}
+
+	//4b. Mist does its own thing - but needs to come before shadows
+	if (bMist) {
+		DrawMistTile(wX, wY, nX, nY, pDestSurface, ti.t);
+		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
 	}
 
 	//5. Cast shadows onto environment, except onto pit.
@@ -4080,11 +4786,74 @@ void CRoomWidget::DrawTLayerTile(
 		{
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
+			static const Uint8 TRANSLUCENT_ALPHA = 166;
+			Uint8 tar_alpha = this->pRoom->bBetterVision ? TRANSLUCENT_ALPHA : 255;
+			if (g_pTheDBM->tarstuffAlpha < tar_alpha) {
+				tar_alpha = g_pTheDBM->tarstuffAlpha;
+			}
 			DrawTransparentRoomTile(ti.t, 166);
 		} else {
 			DrawRoomTile(ti.t);
 		}
 		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+	}
+}
+
+//*****************************************************************************
+void CRoomWidget::DrawMistTile(
+	const UINT wX, const UINT wY,
+	const int nX, const int nY,
+	SDL_Surface* pDestSurface,
+	const UINT& ti
+)
+{
+	bool adj[3][3] = { {false} };
+
+	//mark where adjacent mist tiles are
+	const UINT endX = wX + 2, endY = wY + 2;
+	UINT x, y;
+	for (y = wY - 1; y != endY; ++y)
+	{
+		if (y >= this->pRoom->wRoomRows)
+			continue;
+		const int dy = y - wY + 1;
+		for (x = wX - 1; x != endX; ++x)
+		{
+			if (x >= this->pRoom->wRoomCols)
+				continue;
+			const int dx = x - wX + 1;
+			if (dx == 1 && dy == 1)
+				continue;
+			adj[dx][dy] = (this->pRoom->IsEitherTSquare(x, y, T_MIST));
+		}
+	}
+
+	int cx = CX_TILE / 2;
+	int cy = CY_TILE / 2;
+
+	if (adj[0][0] && adj[0][1] && adj[1][0]) //upper-left corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX, nY, 0, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX, nY, 0, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[0][2] && adj[0][1] && adj[1][2]) //lower-left corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX, nY + cy, 0, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX, nY + cy, 0, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[2][0] && adj[2][1] && adj[1][0]) //upper-right corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX + cx, nY, cx, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX + cx, nY, cx, 0, cx, cy, pDestSurface, false, MIST_OPACITY);
+	}
+	if (adj[2][2] && adj[2][1] && adj[1][2]) //lower-right corner
+	{
+		g_pTheBM->BlitTileImagePart(TI_MIST_C, nX +cx, nY + cy, cx, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
+	} else {
+		g_pTheBM->BlitTileImagePart(ti, nX +cx, nY + cy, cx, cy, cx, cy, pDestSurface, false, MIST_OPACITY);
 	}
 }
 #undef DrawRoomTile
@@ -4187,6 +4956,9 @@ void CRoomWidget::Paint(
 	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation, redraw entire room
 		this->bAllDirty = true;
 
+	if ((this->bAllDirty || bMoveMade || this->bRedrawDamagePreview) && bPlayerIsAlive)
+		AddDamagePreviews();
+
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
 		AddPlayerLight(true);
@@ -4241,40 +5013,42 @@ void CRoomWidget::Paint(
 	//3. Draw room sprites.
 	const bool monstersAreAnimated = bMoveAnimationInProgress || bWasApplyingJitter;
 
-	//3a. Draw effects that go on top of room image, under monsters/player.
-	RenderFogInPit(pDestSurface);
+			//3a. Draw effects that go on top of room image, under monsters/player.
+			RenderFogInPit(pDestSurface);
 
 	DrawPlatformsAndTLayer(pDestSurface, false, bMoveAnimationInProgress);
 
 	this->pTLayerEffects->DrawEffects();
-	this->pTLayerEffects->DirtyTiles();
+			this->pTLayerEffects->DirtyTiles();
 
-	//3b. Repaint monsters.
-	if (this->bAllDirty || monstersAreAnimated)
-	{
-		//Draw monsters (that aren't killing swordsman).
-		DrawMonsters(room.pFirstMonster, pDestSurface, false,
-			monstersAreAnimated);
-	} else {
-		RedrawMonsters(pDestSurface);
-	}
+			//3b. Repaint monsters.
+			if (this->bAllDirty || monstersAreAnimated)
+			{
+				//Draw monsters (that aren't killing swordsman).
+				DrawMonsters(room.pFirstMonster, pDestSurface, false,
+					monstersAreAnimated);
+			} else {
+				RedrawMonsters(pDestSurface);
+			}
 
-	//4. Draw player.
+		//4. Draw player.
 	if (this->bShowingPlayer && bPlayerIsAlive) // Dying player is rendered later
-		DrawPlayer(*this->pCurrentGame->pPlayer, pDestSurface);
+			DrawPlayer(*this->pCurrentGame->pPlayer, pDestSurface);
 
-	//5. If monster is killing swordsman, draw it on top.
-	if (!bPlayerIsAlive)
-		DrawMonsterKillingPlayer(pDestSurface);
+		//5. If monster is killing swordsman, draw it on top.
+		if (!bPlayerIsAlive)
+			DrawMonsterKillingPlayer(pDestSurface);
 
-	//5a. Draw effects that go on top of monsters/player.
+		//5a. Draw effects that go on top of monsters/player.
 	this->pMLayerEffects->DrawEffects();
-	this->pMLayerEffects->DirtyTiles();
+		this->pMLayerEffects->DirtyTiles();
+
+	DrawOverheadLayer(pDestSurface);
 
 	ReduceJitter();
 
 	//6. Environmental effects
-	RenderEnvironment(pDestSurface);
+		RenderEnvironment(pDestSurface);
 
 //	ApplyDisplayFilterToRoom(getDisplayFilter(), pDestSurface);
 
@@ -4347,6 +5121,13 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 	if (!IsWeatherRendered())
 		return;	//disabled
 
+	bool bHasted = false;
+	if (this->pCurrentGame)
+	{
+		const CSwordsman& player = *this->pCurrentGame->pPlayer;
+		bHasted = player.IsHasted();
+	}
+
 	// Prevent creating new snowflakes/raindrobs when they couldn't animate and disappear, to prevent
 	// game crashing/lagging, looking weird
 	if (!this->pMLayerEffects->GetEffectsFrozen()) {
@@ -4354,14 +5135,12 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 		if (this->wSnow && RAND(SNOW_INCREMENTS-1) < this->wSnow &&
 				this->w && this->y) //hack: snowflakes draw on room edges during transition -- this should stop it
 			AddMLayerEffect(new CSnowflakeEffect(this));
-	}
 
-/*
-	//Add a new raindrop to the room every ~X frames.
-	if (this->rain && RAND(RAIN_INCREMENTS-1) < this->rain && !bIsPlacingDouble &&
+		//Add a new raindrop to the room every ~X frames.
+		if (this->rain && RAND(RAIN_INCREMENTS - 1) < this->rain &&
 			this->w && this->y) //hack: rain draws on room edges during transition -- this should stop it
-		AddMLayerEffect(new CRaindropEffect(this, bHasted));
-*/
+			AddMLayerEffect(new CRaindropEffect(this, bHasted));
+	}
 
 	if (!(this->dwLightning || this->bFog || this->bClouds || this->bSunlight))
 		return;	//Nothing else to do.
@@ -4438,7 +5217,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 						{
 							default: break;
 							case 2: //over floor
-								bShowFogHere = !(bIsWall(wOSquare) || bIsCrumblyWall(wOSquare) || bIsDoor(wOSquare));
+								bShowFogHere = !(bIsSolidOTile(wOSquare));
 							break;
 							case 3: //over walls (i.e. everything)
 								bShowFogHere = true;
@@ -4765,6 +5544,52 @@ void CRoomWidget::UpdateRoomRects()
 }
 
 //*****************************************************************************
+void CRoomWidget::RemoveEffectsQueuedForRemoval()
+{
+	for (multimap<EffectType, int>::const_iterator it = this->queued_layer_effect_type_removal.begin();
+		it != this->queued_layer_effect_type_removal.end(); ++it)
+	{
+		const EffectType eEffectType = it->first;
+		const int layer = it->second;
+		RemoveLayerEffects(eEffectType, layer);
+	}
+
+	this->queued_layer_effect_type_removal.clear();
+}
+
+//*****************************************************************************
+void CRoomWidget::RemoveGroupEffects(int clearGroup)
+{
+	ASSERT(this->pOLayerEffects);
+	this->pOLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pTLayerEffects);
+	this->pTLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pMLayerEffects);
+	this->pMLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pLastLayerEffects);
+	this->pLastLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+}
+
+//*****************************************************************************
+void CRoomWidget::RemoveLayerEffects(const EffectType eEffectType, int layer)
+{
+	switch (layer) {
+	case 0: RemoveOLayerEffectsOfType(eEffectType); break;
+	case 1: RemoveTLayerEffectsOfType(eEffectType); break;
+	case 2: RemoveMLayerEffectsOfType(eEffectType); break;
+	case 3: RemoveLastLayerEffectsOfType(eEffectType); break;
+	default:
+		if (layer == ImageOverlayCommand::ALL_LAYERS) {
+			RemoveOLayerEffectsOfType(eEffectType);
+			RemoveTLayerEffectsOfType(eEffectType);
+			RemoveMLayerEffectsOfType(eEffectType);
+			RemoveLastLayerEffectsOfType(eEffectType);
+		}
+		break;
+	}
+}
+
+//*****************************************************************************
 void CRoomWidget::RemoveLastLayerEffectsOfType(
 //Removes all last-layer effects of given type in the room.
 //
@@ -4890,6 +5715,9 @@ UINT CRoomWidget::GetSwordMID(const UINT param)
 		case SerpentSword: return MID_Sword8;
 		case BriarSword: return MID_Sword9;
 		case WeaponSlot: return MID_Sword10;
+		case Dagger: return MID_Sword11;
+		case Staff: return MID_Sword12;
+		case Spear: return MID_Sword13;
 	}
 }
 
@@ -4908,6 +5736,9 @@ UINT CRoomWidget::GetShieldMID(const UINT param)
 		case KiteShield: return MID_Shield4;
 		case OremiteShield: return MID_Shield5;
 		case ArmorSlot: return MID_Shield6;
+		case MirrorShield: return MID_Shield7;
+		case LeatherShield: return MID_Shield8;
+		case AluminumShield: return MID_Shield9;
 	}
 }
 
@@ -5107,7 +5938,7 @@ void CRoomWidget::SetFrameVars(const bool bMoveMade)
 					{
 						CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*, pScreen);
 						ASSERT(pGameScreen);
-						pGameScreen->GetFaceWidget()->SetSleeping();
+						pGameScreen->GetFaceWidget()->SetSleeping(true);
 					}
 				}
 			}
@@ -5346,11 +6177,21 @@ void CRoomWidget::TranslateMonsterColor(
 void CRoomWidget::AddColorToTile(
 	SDL_Surface* pDestSurface, //surface to render to
 	const int nAddColor,     //color code (<=0 : don't add color)
+	const std::array<float, 3> hsv,//hue, saturation and value
 	const UINT wTileImageNo, //tile mask
 	const UINT nPixelX, const UINT nPixelY, //pixel location of blit
 	const UINT wWidth, const UINT wHeight,  //dimensions of blit
 	const int nXOffset, const int nYOffset) //relative offset [default=(0,0)]
 {
+	//Apply optional hue change
+	if (hsv[0] >= 0 || hsv[1] >= 0 || hsv[2] >= 0)
+	{
+		g_pTheBM->HsvToRectWithTileMask(pDestSurface,
+			nPixelX + nXOffset, nPixelY + nYOffset, wWidth, wHeight,
+			hsv[0], hsv[1], hsv[2],
+			wTileImageNo, nXOffset, nYOffset);
+	}
+
 	//Add optional color filter.
 	if (nAddColor > 0) //>= 0 ; -1 = none, 0 = also no color addition
 	{
@@ -5572,7 +6413,7 @@ void CRoomWidget::DrawDamagedMonsters(
 				pTI = this->pTileImages + this->pRoom->ARRAYINDEX(wSX, wSY);
 				if (pTI->dirty || pTI->damaged) {
 					bDrawMonster = true;
-				} else if (wSY > this->wShowRow && DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY)))
+				} else if (wSY > this->wShowRow && DrawRaised(pMonster->wX, pMonster->wY) > 0.0f)
 				{
 					//If it's raised and the monster above it is being redrawn, then it must be too.
 					pTI = this->pTileImages + this->pRoom->ARRAYINDEX(wSX, wSY-1);
@@ -5588,7 +6429,7 @@ void CRoomWidget::DrawDamagedMonsters(
 			pTI = this->pTileImages + this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY);
 			if (pTI->dirty || pTI->damaged) {
 				bDrawMonster = true;
-			} else if (pMonster->wY > this->wShowRow && DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY)))
+			} else if (pMonster->wY > this->wShowRow && DrawRaised(pMonster->wX, pMonster->wY) > 0.0f)
 			{
 				//If it's raised and the monster above it is being redrawn, then it must be too.
 				pTI = this->pTileImages + this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY-1);
@@ -5627,8 +6468,9 @@ void CRoomWidget::DrawDamagedMonsterSwords(SDL_Surface *pDestSurface)
 					JitterBoundsCheck(wSX, wSY, wXOffset, wYOffset);
 
 					TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false,
-						DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY)));
+						DrawRaised(pMonster->wX, pMonster->wY));
 					blit.nAddColor = pMonster->getColor();
+					blit.hsv = pMonster->getHSV();
 					DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 				}
 			}
@@ -5741,7 +6583,7 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 			AddPlatformPitMasks(blit, pitMasks);
 	}
 
-	//Re-render room items located on top of each platform tile.
+ 	//Re-render room items located on top of each platform tile.
 	DrawTLayerTiles(tilesDrawn, pitMasks, pDestSurface, fLightLevel, bAddLight, bEditor);
 }
 
@@ -5932,11 +6774,12 @@ void CRoomWidget::DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surf
 			if (!NeedsSwordRedrawing(pMonster))
 				continue;
 
-			const bool draw_raised = DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY));
+			const float fRaised = DrawRaised(pMonster->wX, pMonster->wY);
 			UINT wXOffset = 0, wYOffset = 0;
 			JitterBoundsCheck(wSX, wSY, wXOffset, wYOffset);
-			TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false, draw_raised);
+			TileImageBlitParams blit(wSX, wSY, 0, wXOffset, wYOffset, false, fRaised);
 			blit.nAddColor = pMonster->getColor();
+			blit.hsv = pMonster->getHSV();
 			DrawSwordFor(pMonster, pMonster->GetIdentity(), blit, pDestSurface);
 		}
 	}
@@ -6065,7 +6908,8 @@ void CRoomWidget::AnimateMonsters()
 				{
 					if (pCharacter->pCustomChar->animationSpeed) {
 						ti.dirty = 1;
-						if (pMonster->wY > 0 && DrawRaised(this->pRoom->GetOSquare(pMonster->wX, pMonster->wY)))
+						//Dirty tile above NPC when raised
+						if (pMonster->wY > 0 && DrawRaised(pMonster->wX, pMonster->wY) > 0.0f)
 							this->pTileImages[this->pRoom->ARRAYINDEX(pMonster->wX, pMonster->wY-1)].dirty = 1;
 					}
 				}
@@ -6134,33 +6978,25 @@ void CRoomWidget::DrawMonster(
 	const bool bMoveInProgress, //(in) Whether movement animation is not yet completed [default=true]
 	const bool bDrawPieces)     //(in) Draw monster pieces [default=true]
 {
-	bool bDrawRaised =
-			DrawRaised(pRoom->GetOSquare(pMonster->wX, pMonster->wY));
+	float fRaised = DrawRaised(pMonster->wX, pMonster->wY);
 	Uint8 opacity = 255;
 	switch (pMonster->wType)
 	{
-/*
-		case M_CITIZEN:
-			DrawCitizen(DYN_CAST(CCitizen*, CMonster*, pMonster), bDrawRaised, pDestSurface, bMoveInProgress);
-			break;
-*/
 		case M_SLAYER:
-//			DrawSlayerWisp(DYN_CAST(const CPlayerDouble*, CMonster*, pMonster), pDestSurface);
-			//FALL-THROUGH
 		case M_MIMIC: case M_CLONE: case M_DECOY:
 		case M_GUARD: case M_PIRATE:
-			DrawDouble(DYN_CAST(const CPlayerDouble*, CMonster*, pMonster), bDrawRaised, pDestSurface, bMoveInProgress);
+			DrawDouble(DYN_CAST(const CPlayerDouble*, CMonster*, pMonster), fRaised, pDestSurface, bMoveInProgress);
 			break;
 		case M_CHARACTER:
-			DrawCharacter(DYN_CAST(CCharacter*, CMonster*, pMonster), bDrawRaised, pDestSurface, bMoveInProgress);
+			DrawCharacter(DYN_CAST(CCharacter*, CMonster*, pMonster), fRaised, pDestSurface, bMoveInProgress, bActionIsFrozen);
 			break;
 		case M_ROCKGIANT:
-			DrawRockGiant(pMonster, bDrawRaised, pDestSurface, bMoveInProgress);
+			DrawRockGiant(pMonster, fRaised, pDestSurface, bMoveInProgress);
 			break;
 		case M_SERPENT:
 		case M_SERPENTG:
 		case M_SERPENTB:
-			bDrawRaised = false;
+			fRaised = 0.0f;
 			if (bDrawPieces)
 				DrawSerpentBody(pMonster, pDestSurface, bMoveInProgress);
 			//no break
@@ -6184,16 +7020,17 @@ void CRoomWidget::DrawMonster(
 			if (pMonster->eMovement == WALL)
 			{
 				//Monsters in walls are not raised, and are transparent.
-				bDrawRaised = false;
+				fRaised = 0.0f;
 				if (!bActionIsFrozen) //only draw transparent when play is in progress
 					opacity = this->ghostOpacity;
 			}
 			else if (bIsMother(pMonster->wType))
-				bDrawRaised = false; //tarstuff is never raised
+				fRaised = 0.0f; //tarstuff is never raised
 
-			TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+			TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, fRaised);
 			blit.nOpacity = opacity;
 			blit.nAddColor = pMonster->getColor();
+			blit.hsv = pMonster->getHSV();
 			DrawTileImage(blit, pDestSurface);
 		}
 		break;
@@ -6423,9 +7260,10 @@ void CRoomWidget::DrawTileImageWithoutLight(
 	//Determine pixel positions.
 	const int nRoomPixelX = (CX_TILE * wCol) + blit.wXOffset;
 	int nRoomPixelY = (CY_TILE * wRow) + blit.wYOffset;
-	if (blit.bDrawRaised)
+	const int raisedPixels = blit.getRaisedPixels();
+	if (raisedPixels > 0)
 	{
-		nRoomPixelY -= CY_RAISED;
+		nRoomPixelY -= raisedPixels;
 		if (wRow == 0)
 			bClipped = true;
 	}
@@ -6455,7 +7293,7 @@ void CRoomWidget::DrawTileImageWithoutLight(
 		BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
 		pDestSurface, true, blit.nOpacity);
 
-	AddColorToTile(pDestSurface, blit.nAddColor, blit.wTileImageNo,
+	AddColorToTile(pDestSurface, blit.nAddColor, blit.hsv, blit.wTileImageNo,
 		nPixelX, nPixelY,
 		BlitRect.w, BlitRect.h);
 
@@ -6492,9 +7330,10 @@ void CRoomWidget::DrawTileLight(
 	//Determine pixel positions.
 	const int nRoomPixelX = (CX_TILE * blit.wCol) + blit.wXOffset;
 	int nRoomPixelY = (CY_TILE * blit.wRow) + blit.wYOffset;
-	if (blit.bDrawRaised)
+	const int raisedPixels = blit.getRaisedPixels();
+	if (raisedPixels > 0)
 	{
-		nRoomPixelY -= CY_RAISED;
+		nRoomPixelY -= raisedPixels;
 		if (blit.wRow == 0)
 			bClipped = true;
 	}
@@ -6518,7 +7357,7 @@ void CRoomWidget::DrawTileLight(
 	ASSERT(nPixelX + BlitRect.w <= this->x + int(this->w));
 	ASSERT(nPixelY + BlitRect.h <= this->y + int(this->h));
 
-	const bool bMoving = blit.wXOffset || blit.wYOffset;
+		const bool bMoving = blit.wXOffset || blit.wYOffset;
 
 	int nCol = int(blit.wCol);
 	int nRow = int(blit.wRow);
@@ -6534,46 +7373,46 @@ void CRoomWidget::DrawTileLight(
 			this->pRoom->ClampCoordsToRoom(nCol, nRow);
 	}
 
-	SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;
+		SDL_Rect* pCropRect = TileImageBlitParams::crop_display || bClipped ? &BlitRect : NULL;
 
-	//Add cast shadows to sprite.
-	if (blit.bCastShadowsOnTop && !blit.bDrawRaised)
-	{
-		if (!bMoving)
+		//Add cast shadows to sprite.
+		if (blit.bCastShadowsOnTop && blit.raisedFactor == 0.0f)
 		{
+			if (!bMoving)
+			{
 			const vector<UINT> &shadows = this->pTileImages[this->pRoom->ARRAYINDEX(nCol,nRow)].shadowMasks;
-			if (!shadows.empty())
-				g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
-					blit.wTileImageNo, nPixelX, nPixelY, pDestSurface, pCropRect);
-		}
-		else if (!pCropRect) { //routine doesn't support cropping
-			BlitTileShadowsOnMovingSprite(blit, pDestSurface);
-		}
-	}
-
-	//Apply lighting.
-	if (bMoving && !pCropRect)
-	{
-		AddLightOffset(pDestSurface, blit);
-	}
-	else {
-		//Add dark to sprite.
-		const float fDark = GetOverheadDarknessAt(nCol, nRow, blit.appliedDarkness);
-
-		//Add light to sprite.
-		if (this->pRoom->tileLights.Exists(nCol,nRow) ||
-				this->lightedRoomTiles.has(nCol,nRow) || this->lightedPlayerTiles.has(nCol,nRow))
-		{
-			LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (nRow * this->pRoom->wRoomCols + nCol) * wLightValuesPerTile;
-			if (bMoving) {
-				AddLight(pDestSurface, nPixelX - BlitRect.x, nPixelY - BlitRect.y, psL, fDark,
-						blit.wTileImageNo, blit.nOpacity, pCropRect); //faster lighting when moving
-			} else {
-				AddLightInterp(pDestSurface, nCol, nRow, psL, fDark, blit.wTileImageNo,
-						blit.nOpacity, blit.bDrawRaised ? -int(CY_RAISED) : 0, pCropRect);
+				if (!shadows.empty())
+					g_pTheBM->BlitTileShadowsWithTileMask(&(shadows[0]), shadows.size(),
+						blit.wTileImageNo, nPixelX, nPixelY, pDestSurface, pCropRect);
+			}
+			else if (!pCropRect) { //routine doesn't support cropping
+				BlitTileShadowsOnMovingSprite(blit, pDestSurface);
 			}
 		}
-	}
+
+	//Apply lighting.
+		if (bMoving && !pCropRect)
+		{
+			AddLightOffset(pDestSurface, blit);
+		}
+		else {
+			//Add dark to sprite.
+		const float fDark = GetOverheadDarknessAt(nCol, nRow, blit.appliedDarkness);
+
+			//Add light to sprite.
+		if (this->pRoom->tileLights.Exists(nCol,nRow) ||
+				this->lightedRoomTiles.has(nCol,nRow) || this->lightedPlayerTiles.has(nCol,nRow))
+			{
+			LIGHTTYPE *psL = this->lightMaps.psDisplayedLight + (nRow * this->pRoom->wRoomCols + nCol) * wLightValuesPerTile;
+				if (bMoving) {
+				AddLight(pDestSurface, nPixelX - BlitRect.x, nPixelY - BlitRect.y, psL, fDark,
+						blit.wTileImageNo, blit.nOpacity, pCropRect); //faster lighting when moving
+				} else {
+				AddLightInterp(pDestSurface, nCol, nRow, psL, fDark, blit.wTileImageNo,
+						blit.nOpacity, -blit.getRaisedPixels(), pCropRect);
+				}
+			}
+		}
 }
 
 //*****************************************************************************
@@ -6591,7 +7430,7 @@ void CRoomWidget::BlitTileShadowsOnMovingSprite(
 	const UINT wRow = blit.wRow - (yOffset < 0 ? 1 : 0);
 
 	ASSERT(IS_COLROW_IN_DISP(wCol, wRow));
-	ASSERT(!blit.bDrawRaised);
+	ASSERT(blit.raisedFactor == 0.0f);
 
 	//Get positive offset values.
 	while (xOffset < 0)
@@ -6803,6 +7642,78 @@ void CRoomWidget::DrawInvisibilityRange(
 }
 
 //*****************************************************************************
+//Returns: z-axis amount from [0, 1] to draw a sprite raised above floor level
+float CRoomWidget::DrawRaisedOnTiles(const UINT wOTileNo, const UINT wTTileNo) const {
+	if (bIsDoor(wOTileNo))
+		return wTTileNo == T_CRATE ? 0.8f : 0.6f;
+
+	if (bIsElevatedTile(wOTileNo))
+		// if (wOTileNo != T_WALL_M)
+		return 1.0f;
+
+	if (wTTileNo == T_CRATE)
+		return 0.34f;
+
+	return 0.0f;
+}
+
+float CRoomWidget::DrawRaised(const UINT wX, const UINT wY) const
+{
+	ASSERT(this->pRoom);
+	return DrawRaisedOnTiles(this->pRoom->GetOSquare(wX, wY), this->pRoom->GetTSquare(wX, wY));
+}
+
+//*****************************************************************************
+void CRoomWidget::DrawOverheadLayer(SDL_Surface* pDestSurface)
+{
+	ASSERT(pDestSurface);
+
+	const CCoordIndex& tiles = this->pRoom->overheadTiles;
+	if (tiles.empty())
+		return;
+
+	SDL_Surface* pTileTexture = g_pTheDBM->pTextures[OVERHEAD_IMAGE];
+	if (!pTileTexture)
+		return;
+
+	const UINT wWidth = pTileTexture->w;
+	const UINT wHeight = pTileTexture->h;
+	int nI;
+
+	UINT index = 0;
+	for (UINT wY = 0; wY < this->pRoom->wRoomRows; ++wY) {
+		for (UINT wX = 0; wX < this->pRoom->wRoomCols; ++wX, ++index) {
+			if (tiles.Exists(wX, wY)) {
+				TileImages& ti = this->pTileImages[index];
+				if (this->bAllDirty || ti.dirty || ti.damaged)
+				{
+					ti.dirty = 1;
+
+					//Calculate coords for custom texture from indicated origin.
+					const int pixelX = this->x + wX * CX_TILE;
+					const int pixelY = this->y + wY * CY_TILE;
+
+					SDL_Rect src = MAKE_SDL_RECT(0, 0, CX_TILE, CY_TILE);
+					SDL_Rect dest = MAKE_SDL_RECT(pixelX, pixelY, CX_TILE, CY_TILE);
+
+					nI = (int(wX) - int(this->pRoom->wOverheadImageStartX)) * CX_TILE;
+					while (nI < 0)
+						nI += wWidth;
+					src.x = nI % wWidth;
+
+					nI = (int(wY) - int(this->pRoom->wOverheadImageStartY)) * CY_TILE;
+					while (nI < 0)
+						nI += wHeight;
+					src.y = nI % wHeight;
+
+					SDL_BlitSurface(pTileTexture, &src, pDestSurface, &dest);
+				}
+			}
+		}
+	}
+}
+
+//*****************************************************************************
 void CRoomWidget::DrawPlayer(
 //Draws player along with his sword (if applicable) to game screen.
 //
@@ -6818,7 +7729,7 @@ void CRoomWidget::DrawPlayer(
 	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return; //Don't show anything if player is not being shown.
-		case M_BRAIN: case M_SKIPPERNEST: wDisplayO = NO_ORIENTATION; break;
+		case M_BRAIN: case M_SKIPPERNEST: case M_FLUFFBABY: wDisplayO = NO_ORIENTATION; break;
 		default: wDisplayO = swordsman.wO; break;
 	}
 
@@ -6906,8 +7817,7 @@ void CRoomWidget::DrawPlayer(
 	else nOpacity = 255;
 
 	//Draw swordsman raised above floor?
-	const UINT wOSquare = this->pRoom->GetOSquare(swordsman.wX, swordsman.wY);
-	const bool bDrawRaised = DrawRaised(wOSquare);// && wOSquare != T_WALL_M;
+	const float fRaised = DrawRaised(swordsman.wX, swordsman.wY);
 
 	//Calculate animation offset.
 	UINT wXOffset = 0, wYOffset = 0;
@@ -6941,7 +7851,7 @@ void CRoomWidget::DrawPlayer(
 
 	//Blit the player.
 	{
-		TileImageBlitParams blit(swordsman.wX, swordsman.wY, wSManTI, wXOffset, wYOffset, true, bDrawRaised);
+		TileImageBlitParams blit(swordsman.wX, swordsman.wY, wSManTI, wXOffset, wYOffset, true, fRaised);
 		blit.nOpacity = nOpacity;
 		//blit.nAddColor = nAddColor;
 		DrawTileImage(blit, pDestSurface);
@@ -6952,6 +7862,7 @@ void CRoomWidget::DrawPlayer(
 		return;
 
 	//Special case: don't draw sword when going down stairs and sword is occluded.
+	const UINT wOSquare = this->pRoom->GetOSquare(swordsman.wX, swordsman.wY);
 	if (bIsStairs(wOSquare) &&
 			wSwordO != (wOSquare == T_STAIRS ? N : S) &&
 			(!this->pRoom->IsValidColRow(wSX, wSY) ||
@@ -6968,7 +7879,7 @@ void CRoomWidget::DrawPlayer(
 		bClipped = !IS_COLROW_IN_DISP(prevSX, prevSY);
 	}
 
-	TileImageBlitParams blit(wSX, wSY, wSwordTI, wXOffset, wYOffset, true, bDrawRaised);
+	TileImageBlitParams blit(wSX, wSY, wSwordTI, wXOffset, wYOffset, true, fRaised);
 	blit.nOpacity = nOpacity;
 	blit.bClipped = bClipped;
 	DrawTileImage(blit, pDestSurface);
@@ -6984,7 +7895,7 @@ const
 	switch ((unsigned int)(swordsman.wAppearance))
 	{
 		case M_NONE: return false; //Don't show anything if player is not being shown.
-		case M_BRAIN: case M_SKIPPERNEST: wO = NO_ORIENTATION; break;
+		case M_BRAIN: case M_SKIPPERNEST: case M_FLUFFBABY: wO = NO_ORIENTATION; break;
 		default: wO = swordsman.wO; break;
 	}
 	ASSERT(IsValidOrientation(wO));
@@ -7061,18 +7972,20 @@ void CRoomWidget::DrawCharacter(
 //
 //Params:
 	CCharacter *pCharacter,    //(in)   Pointer to CCharacter monster.
-	const bool bDrawRaised,    //(in)   Draw Character raised above floor?
+	const float fRaised,    //(in)   Draw Character raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool bMoveInProgress)
+	const bool bMoveInProgress,
+	const bool bActionIsFrozen) //(in) Whether action is currently stopped.
 {
 	if (!pCharacter->IsVisible() && !pCharacter->IsGhostImage())
 		return;
 
+	Uint8 opacity = 255;
 	const UINT wIdentity = pCharacter->GetIdentity();
 	ASSERT(wIdentity < MONSTER_COUNT ||
 			(wIdentity >= CHARACTER_FIRST && wIdentity < CHARACTER_TYPES) ||
 			wIdentity == M_NONE);
-	const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST ?
+	const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST || wIdentity == M_FLUFFBABY ?
 			NO_ORIENTATION : pCharacter->wO;
 
 	//If a sword-wielding character is swordless, try to get its swordless frame.
@@ -7097,15 +8010,34 @@ void CRoomWidget::DrawCharacter(
 
 	AddJitterOffset(pCharacter->wX, pCharacter->wY, wXOffset, wYOffset);
 
+	//Characters with wall movement type are not raised and are transparent
+	float fRaisedFactor = fRaised;
+	if (pCharacter->eMovement == WALL)
+	{
+		fRaisedFactor = 0.0f;
+		if (!bActionIsFrozen) //only draw transparent when play is in progress
+			opacity = this->ghostOpacity;
+	}
+
 	//Draw character.
-	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+	// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+	this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].dirty = 1;
+
+	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset,
+			bMoveInProgress || wXOffset || wYOffset, fRaisedFactor);
+	blit.nOpacity = opacity;
 	blit.nAddColor = pCharacter->getColor();
+	blit.hsv = pCharacter->getHSV();
 	DrawTileImage(blit, pDestSurface);
 
 	//Draw character with sword.
 	if (bHasSword) {
 		blit.wCol = wSX;
 		blit.wRow = wSY;
+
+		// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+		if (this->pRoom->IsValidColRow(pCharacter->GetSwordX(), pCharacter->GetSwordY()))
+			this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->GetSwordX(), pCharacter->GetSwordY())].dirty = 1;
 		DrawSwordFor(pCharacter, wIdentity, blit, pDestSurface);
 	}
 }
@@ -7116,7 +8048,7 @@ void CRoomWidget::DrawDouble(
 //
 //Params:
 	const CPlayerDouble *pDouble,    //(in)   Pointer to monster.
-	const bool bDrawRaised,    //(in)   Draw double raised above floor?
+	const float fRaised,    //(in)   Draw double raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
 	const bool bMoveInProgress,
 	const Uint8 nOpacity)      //(in)   Opacity of double [default=255]
@@ -7138,8 +8070,10 @@ void CRoomWidget::DrawDouble(
 	const bool bHasSword = pDouble->HasSword();
 	const UINT wFrame = bHasSword ? 0 : SWORDLESS_FRAME;
 	const UINT wDoubleTI = GetTileImageForEntity(pDouble->wType, pDouble->wO, wFrame);
-	TileImageBlitParams blit(pDouble->wX, pDouble->wY, wDoubleTI, wXOffset, wYOffset, bMoveInProgress || wXOffset || wYOffset, bDrawRaised);
+	TileImageBlitParams blit(pDouble->wX, pDouble->wY, wDoubleTI, wXOffset, wYOffset,
+			bMoveInProgress || wXOffset || wYOffset, fRaised);
 	blit.nAddColor = pDouble->getColor();
+	blit.hsv = pDouble->getHSV();
 	blit.nOpacity = nOpacity;
 
 	// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
@@ -7168,7 +8102,7 @@ void CRoomWidget::DrawRockGiant(
 //
 //Params:
 	const CMonster *pMonster,    //(in)   Pointer to splitter monster.
-	const bool /*bDrawRaised*/,    //(in)   never raised
+	const float /*fRaised*/,    //(in)   never raised
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
 	const bool bMoveInProgress)
 {
@@ -7196,6 +8130,9 @@ void CRoomWidget::DrawRockGiant(
 		blit.wCol = (*piece)->wX;
 		blit.wRow = (*piece)->wY;
 		blit.wTileImageNo = GetTileImageForRockGiantPiece(wI, pMonster->wO, wFrame);
+
+		// must dirty their tiles to ensure RedrawMonsters doesn't cause flickering
+		this->pTileImages[this->pRoom->ARRAYINDEX((*piece)->wX, (*piece)->wY)].dirty = 1;
 		DrawTileImage(blit, pDestSurface);
 	}
 }
@@ -7291,8 +8228,19 @@ void CRoomWidget::DrawSwordFor(
 
 	//Sword isn't fully in display -- just draw it clipped.
 	//(This is needed for when stepping onto room edge.)
-	UINT offsetCol = ((blit.wCol * CX_TILE) + blit.wXOffset) / CX_TILE;
-	UINT offsetRow = ((blit.wRow * CY_TILE) + blit.wYOffset) / CY_TILE;
+	signed int columnOffset = 0;
+	if ((signed int)blit.wXOffset > 0)
+		columnOffset = 1;
+	if ((signed int)blit.wXOffset < 0)
+		columnOffset = -1;
+	UINT offsetCol = blit.wCol + columnOffset;
+
+	signed int rowOffset = 0;
+	if ((signed int)blit.wYOffset > 0)
+		rowOffset = 1;
+	if ((signed int)blit.wYOffset < 0)
+		rowOffset = -1;
+	UINT offsetRow = blit.wRow + rowOffset;
 
 	if (!IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
 		!IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY) ||
@@ -7413,14 +8361,14 @@ void CRoomWidget::CastLightOnTile(
 				return;
 			}
 
-			const bool bHoriz = abs_dx > abs_dy;
-			if (tileLight[MAX_LIGHT_DISTANCE + (bHoriz?closerDX:dx)][MAX_LIGHT_DISTANCE + (bHoriz?dy:closerDY)] == L_Dark)
-			{
-				tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] = L_Dark;
-				return;
+				const bool bHoriz = abs_dx > abs_dy;
+				if (tileLight[MAX_LIGHT_DISTANCE + (bHoriz?closerDX:dx)][MAX_LIGHT_DISTANCE + (bHoriz?dy:closerDY)] == L_Dark)
+				{
+					tileLight[MAX_LIGHT_DISTANCE + dx][MAX_LIGHT_DISTANCE + dy] = L_Dark;
+					return;
+				}
 			}
 		}
-	}
 
 	const float fElevAtLight = bGeometry ? fLightSourceZTileElev : 0.0f;
 	const UINT wOTile = this->pRoom->GetOSquare(wX,wY);
@@ -7922,6 +8870,7 @@ float CRoomWidget::getTileElev(const UINT wOTile) const
 
 		case T_WALL: case T_WALL2:	case T_WALL_IMAGE:
 		case T_WALL_B: case T_WALL_H:
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			return 1.0f;
 
 		case T_DOOR_MONEY:
@@ -8446,7 +9395,7 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 
 			//Tiles below ground level don't ever affect lighting.
 			UINT wOTile = this->pRoom->GetOSquare(nX,nY);
-			const bool bNotPit = !(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile));
+			const bool bNotPit = !(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile) || bIsThinIce(wOTile));
 			if (bNotPit)
 			{
 				int nI, nJ;
@@ -8456,7 +9405,7 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 						{
 							//Tiles below ground level don't ever affect lighting.
 							wOTile = this->pRoom->GetOSquare(nI,nJ);
-							if (!(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile)) &&
+							if (!(bIsPit(wOTile) || wOTile == T_WATER || bIsPlatform(wOTile) || bIsThinIce(wOTile)) &&
 									//If light was drawn here last turn, then
 									//this plot might have affected the light casting.
 									(this->lightedPlayerTiles.has(nI,nJ) || this->lightedRoomTiles.has(nI,nJ)))
@@ -8666,6 +9615,30 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 				pTI->dirty = 1;
 				pTI->t = wTileImage;
 			}
+			if (bIsMistTI(wTileImage)) {
+				BYTE corners = GetMistCorners(this->pRoom, wCol, wRow);
+				if (corners != pTI->mistCorners) {
+					pTI->dirty = 1;
+					pTI->mistCorners = corners;
+				}
+			}
+
+			wTileImage = GetTileImageForTileNo(this->pRoom->GetCoveredTSquare(wCol, wRow));
+			if (wTileImage == CALC_NEEDED) {
+				wTileImage = CalcTileImageForCoveredTSquare(this->pRoom, wCol, wRow);
+			}
+			if (wTileImage != pTI->tCovered)
+			{
+				pTI->dirty = 1;
+				pTI->tCovered = wTileImage;
+			}
+			if (bIsMistTI(wTileImage)) {
+				BYTE corners = GetMistCorners(this->pRoom, wCol, wRow);
+				if (corners != pTI->mistCorners) {
+					pTI->dirty = 1;
+					pTI->mistCorners = corners;
+				}
+			}
 
 			}	//recalc
 
@@ -8799,7 +9772,7 @@ bool CRoomWidget::SetupDrawSquareInfo()
 	for (UINT wIndex = 0; wIndex<wSquareCount; ++wIndex) {
 		TileImages& ti = this->pTileImages[wIndex];
 		ti.o = TI_FLOOR;
-		ti.f = /*ti.tCovered = */ ti.t = T_EMPTY;
+		ti.f = ti.tCovered = ti.t = T_EMPTY;
 		ti.wallShadow = TI_UNSPECIFIED;
 
 		//Give each m-layer tile a random animation frame

@@ -57,10 +57,11 @@ void CTilesWidget::AddTile(
 //
 //Params:
 	const UINT tileNo, const int x, const int y,
+	const std::array<float, 3> hsv,
 	const float r, const float g, const float b) //[default=(1,1,1)]
 {
 	if (tileNo < g_pTheBM->GetNextCustomTileNo()) //if tile can be displayed
-		this->tiles.push_back(TILEDATA(tileNo, x, y, r, g, b));
+		this->tiles.push_back(TILEDATA(tileNo, x, y, hsv, r, g, b));
 }
 
 //*****************************************************************************
@@ -96,6 +97,10 @@ void CTilesWidget::Paint(bool bUpdateRect)
 			const int x = dest.x + tile.x;
 			const int y = dest.y + tile.y;
 			g_pTheBM->BlitTileImage(tile.wTileNo, x, y, pDestSurface);
+			g_pTheBM->HsvToRectWithTileMask(pDestSurface,
+				x, y, g_pTheBM->CX_TILE, g_pTheBM->CY_TILE,
+				tile.hsv[0], tile.hsv[1], tile.hsv[2],
+				tile.wTileNo, 0, 0);
 			g_pTheBM->LightenRectWithTileMask(pDestSurface, x, y,
 				g_pTheBM->CX_TILE, g_pTheBM->CY_TILE,
 				tile.r, tile.g, tile.b, tile.wTileNo, 0, 0);

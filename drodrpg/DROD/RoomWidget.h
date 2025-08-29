@@ -33,6 +33,7 @@
 
 #include "DrodBitmapManager.h"
 #include "DrodEffect.h"
+#include "EffectChangeHistory.h"
 #include "FaceWidget.h"
 #include "Light.h"
 #include "TileImageCalcs.h"
@@ -45,6 +46,8 @@
 #include <BackEndLib/Coord.h>
 #include <BackEndLib/CoordStack.h>
 #include <BackEndLib/Types.h>
+
+#include <array>
 
 //Range of weather parameters.
 #define LIGHT_LEVELS (7)	//number of light levels
@@ -70,7 +73,7 @@ struct EDGES {
 
 struct TileImages
 {
-	UINT o, f, t, /*tCovered,*/ wallShadow;
+	UINT o, f, t, tCovered, wallShadow;
 	EDGES edges; //black edges separating tile types
 	vector<UINT> shadowMasks;
 
@@ -79,6 +82,7 @@ struct TileImages
 	BYTE damaged : 1;    //damaged tile must be updated on screen this frame
 	BYTE dirty : 1;      //tile is dirty and needs to be repainted
 	BYTE monster : 1;    //monster piece is on this tile
+	BYTE mistCorners: 4; //diagonally adjacent mist tiles
 };
 
 typedef USHORT LIGHTTYPE; //represents a light value on one color channel
@@ -167,18 +171,8 @@ struct LightMaps
 
 //******************************************************************************
 struct TileImageBlitParams {
-	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset = 0, UINT yOffset = 0, bool dirtyTiles = false, bool drawRaised = false)
-		: wCol(col), wRow(row)
-		, wTileImageNo(tile)
-		, wXOffset(xOffset), wYOffset(yOffset)
-		, bDirtyTiles(dirtyTiles)
-		, bDrawRaised(drawRaised)
-		, nOpacity(255)
-		, bClipped(false)
-		, nAddColor(-1)
-		, bCastShadowsOnTop(true)
-		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
-	{ }
+	TileImageBlitParams(UINT col, UINT row, UINT tile, UINT xOffset = 0, UINT yOffset = 0,
+		bool dirtyTiles = false, float raisedFactor = 0.0f);
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
 	static inline bool CropRectToTileDisplayArea(SDL_Rect& BlitRect);
@@ -187,21 +181,23 @@ struct TileImageBlitParams {
 	static bool crop_display;
 	static SDL_Rect display_area;
 
+	int getRaisedPixels() const;
+
 	UINT wCol, wRow;
 	UINT wTileImageNo;
 	UINT wXOffset, wYOffset;
 	bool bDirtyTiles;
-	bool bDrawRaised;
+	float raisedFactor;
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
+	std::array<float, 3> hsv; //hue, saturation, value
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 						   // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
 };
 
 typedef map<ROOMCOORD, vector<TweeningTileMask> > t_PitMasks;
-
 //******************************************************************************
 class CCurrentGame;
 class CRoomEffectList;
@@ -221,13 +217,14 @@ public:
 	CRoomWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW,
 			UINT wSetH);
 
-	void           AddColorToTile(SDL_Surface* pDestSurface, const int nAddColor, const UINT wTileImageNo,
+	void           AddColorToTile(SDL_Surface* pDestSurface, const int nAddColor, const std::array<float, 3> hsv, const UINT wTileImageNo,
 			const UINT nPixelX, const UINT nPixelY, const UINT wWidth, const UINT wHeight, const int nXOffset=0, const int nYOffset=0);
 	bool           AddDoorEffect(COrbAgentData *pOrbAgent);
 	void           AddInfoSubtitle(CMoveCoord *pCoord, const WSTRING& wstr,
 			const Uint32 dwDuration, const UINT displayLines=1, const SDL_Color& color=Black,
 			const UINT fadeDuration=500);
 	void           AddJitter(const CMoveCoord& coord, const float fDamagePercent);
+	void           AddLayerEffect(CEffect* pEffect, int layer);
 	void           AddLastLayerEffect(CEffect *pEffect);
 	void           AddMLayerEffect(CEffect *pEffect);
 	void           AddOLayerEffect(CEffect *pEffect);
@@ -245,6 +242,7 @@ public:
 	bool           AreCheckpointsVisible() const {return this->bShowCheckpoints;}
 	void           ClearEffects(const bool bKeepFrameRate = true);
 	void           DirtyRoom() {this->bAllDirty = true;}
+	void           DisplayPersistingImageOverlays(CCueEvents& CueEvents);
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
 	void				DisplayRoomCoordSubtitle(const int nMouseX, const int nMouseY);
 	void           DisplaySubtitle(const WCHAR *pText, const UINT wX, const UINT wY,
@@ -255,8 +253,10 @@ public:
 	virtual void   DrawMonsters(CMonster *const pMonsterList,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=false);
-	void				FadeToLightLevel(const UINT wNewLight);
+	void				FadeToLightLevel(const UINT wNewLight, CCueEvents& CueEvents);
 	void           FinishMoveAnimation() {this->dwCurrentDuration = this->dwMoveDuration;}
+	CRoomEffectList* GetEffectListForLayer(const int layer) const;
+	WSTRING        GetInvisibleCharacterInfo(const UINT wX, const UINT wY) const;
 	void           GetSquareRect(UINT wCol, UINT wRow, SDL_Rect &SquareRect) const;
 	static UINT    GetKeyMID(const UINT param);
 	static UINT    GetOrbMID(const UINT type);
@@ -272,6 +272,9 @@ public:
 	UINT           GetEntityTile(const UINT wApparentIdentity,
 			const UINT wLogicalIdentity, const UINT wO, const UINT wFrame) const;
 	UINT           GetLastTurn() const {return this->wLastTurn;}
+	CMonster*      GetMonsterForStatDisplay(const UINT wX, const UINT wY) const;
+	WSTRING        GetMonsterNameAndAbility(CMonster* pMonster) const;
+	WSTRING        GetCombatAnalysis(CMonster* pMonster, const UINT wX, const UINT wY, bool bFullCombat) const;
 	WSTRING        GetMonsterInfo(const UINT wX, const UINT wY, const bool bFull) const;
 	WSTRING        GetMonsterAbility(CMonster* pMonster) const;
 	WSTRING        GetMonsterName(CMonster* pMonster) const;
@@ -284,12 +287,14 @@ public:
 	void           HideCheckpoints() {this->bShowCheckpoints = false;}
 	void           HidePlayer() {this->bShowingPlayer = false;}
 	void           HighlightSelectedTile();
+	void           HighlightBombExplosion(const UINT x, const UINT y, const UINT tTile);
 	virtual bool   IsDoubleClickable() const {return false;}
 	bool           IsLightingRendered() const;
 	bool           IsMonsterInvolvedInDeath(CMonster *pMonster) const;
 	bool           IsMoveAnimating() const {return this->dwMovementStepsLeft != 0;}
 	virtual bool   IsPlayerLightRendered() const;
 	bool           IsPlayerLightShowing() const;
+	bool           IsShowingMoveCount() const { return this->bShowMoveCount; }
 	bool           IsWeatherRendered() const;
 	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame, const bool bLoad=true);
 	bool           LoadFromRoom(CDbRoom *pRoom, const bool bLoad=true);
@@ -303,24 +308,31 @@ public:
 	bool           PlayerLightTurnedOff() const;
 	void           PutTLayerEffectsOnMLayer();
 
+	void           RedrawDamagePreview(const bool val=true) { this->bRedrawDamagePreview = val; }
 	void           RedrawMonsters(SDL_Surface* pDestSurface);
+	void           RemoveGroupEffects(int clearGroup);
 	void           RemoveLastLayerEffectsOfType(const EffectType eEffectType, const bool bForceClearAll=true);
+	void           RemoveLayerEffects(const EffectType eEffectType, int layer);
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveOLayerEffectsOfType(const EffectType eEffectType);
 	void           RemoveTLayerEffectsOfType(const EffectType eEffectType);
 	void				RenderEnvironment(SDL_Surface *pDestSurface=NULL);
-	void           RenderRoom(int wCol=0, int wRow=0,
-			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS,
+	void           RenderRoom(int nCol=0, int nRow=0,
+			int nWidth=CDrodBitmapManager::DISPLAY_COLS, int nHeight=CDrodBitmapManager::DISPLAY_ROWS,
 			const bool bEditor=true);
 	void           RenderRoomInPlay(int wCol=0, int wRow=0,
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
+	void           RerenderRoomCeilingLight(CCueEvents& CueEvents);
 	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,
 			const float fDark, const bool bAddLight,
 			const bool bEditor, const vector<TweeningTileMask>* pPitPlatformMasks=NULL);
+	void           DrawMistTile(const UINT wX, const UINT wY,
+		const int nX, const int nY, SDL_Surface* pDestSurface,
+		const UINT& ti);
 	void           ResetForPaint();
 	void           ResetJitter();
 	void           ResetRoom() {this->pRoom = NULL;}
@@ -331,7 +343,8 @@ public:
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
-	void           ShowRoomTransition(const UINT wExitOrientation, const bool bShowPlayer = false);
+	void           ShowDamagePreview(const bool bVal = true) { this->bShowDamagePreview = bVal; }
+	void           ShowRoomTransition(const UINT wExitOrientation, CCueEvents& CueEvents, const bool bShowPlayer = false);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
 	void           StopSleeping();
 	bool           SubtitlesHas(CSubtitleEffect *pEffect) const;
@@ -404,21 +417,20 @@ protected:
 	void           DrawDamagedMonsterSwords(SDL_Surface *pDestSurface);
 	void           DrawInvisibilityRange(const int nX, const int nY,
 			SDL_Surface *pDestSurface, CCoordIndex *pCoordIndex=NULL, const int nRange=DEFAULT_SMELL_RANGE);
-	virtual void   DrawCharacter(CCharacter *pCharacter, const bool bDrawRaised,
-			SDL_Surface *pDestSurface, const bool bMoveInProgress);
+	virtual void   DrawCharacter(CCharacter *pCharacter, const float fRaised,
+			SDL_Surface *pDestSurface, const bool bMoveInProgress, const bool bActionIsFrozen);
 	virtual bool   DrawingSwordFor(const CMonster* /*pMonster*/) const { return true; }
-//	void           DrawCitizen(CCitizen *pCitizen, const bool bDrawRaised,
-//			SDL_Surface *pDestSurface, const bool bMoveInProgress);
-	void           DrawDouble(const CPlayerDouble *pDouble, const bool bDrawRaised,
+	void           DrawDouble(const CPlayerDouble *pDouble, const float  fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress, const Uint8 nOpacity=255);
-//	void           DrawDoubleCursor(const UINT wCol, const UINT wRow, SDL_Surface *pDestSurface);
 	void           DrawMonster(CMonster *const pMonster, CDbRoom *const pRoom,
 			SDL_Surface *pDestSurface, const bool bActionIsFrozen,
 			const bool bMoveInProgress=true, const bool bDrawPieces=true);
 	void           DrawMonsterKillingPlayer(SDL_Surface *pDestSurface);
+	void           DrawOverheadLayer(SDL_Surface* pDestSurface);
 	void           DrawPlayer(const CSwordsman &swordsman, SDL_Surface *pDestSurface);
-	bool           DrawRaised(const UINT wTileNo) const {return bIsElevatedTile(wTileNo);}
-	void           DrawRockGiant(const CMonster *pMonster,	const bool bDrawRaised,
+	float          DrawRaisedOnTiles(const UINT wOTileNo, const UINT wTTileNo) const;
+	float          DrawRaised(const UINT wX, const UINT wY) const;
+	void           DrawRockGiant(const CMonster *pMonster,	const float fRaised,
 			SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	void           DrawSerpentBody(CMonster *pMonster, SDL_Surface *pDestSurface, const bool bMoveInProgress);
 	void           DrawSwordFor(const CMonster* pMonster, const UINT wType,
@@ -442,6 +454,7 @@ protected:
 	float          getTileElev(const UINT i, const UINT j) const;
 	float          getTileElev(const UINT wOTile) const;
 	void           GetWeather();
+	bool           IsPersistentEffectPlaying(CEffectList* pEffectList, const UINT instanceID) const;
 	void           JitterBoundsCheck(const UINT wX, const UINT wY,
 			UINT& wXOffset, UINT& wYOffset);
 	void           LowPassLightFilter(LIGHTTYPE *pSrc, LIGHTTYPE *pDest,
@@ -524,6 +537,7 @@ protected:
 	bool              bPlayerSleeping;  //fidget
 	bool              bJitterThisFrame;      //jitter updating
 	Uint32            dwLastJitterReduction;
+	bool              bRedrawDamagePreview;
 
 	//Environmental effects.
 	bool					bOutside, bSkyVisible; //outside, sky/ceiling is visible
@@ -541,6 +555,7 @@ protected:
 	float					fCloudAngle;      //direction of wind
 	bool              bSunlight;        //shining through clouds onto ground
 	UINT              wSnow;            //snowflakes are falling (0 = off)
+	UINT              rain;             //rain drops are falling (0 = off)
 	bool              bSkipLightfade;   //whether light crossfade is skipped
 	WSTRING           sky;              //non-default sky image
 	queue<UINT>       playThunder;      //when to play a thunder sound
@@ -555,11 +570,12 @@ protected:
 	UINT              wLastTurn;  //turn # at last frame
 	UINT              wLastOrientation; //direction swords were pointing last turn
 	UINT              wLastX, wLastY;   //position of player last turn
-	bool              bLastRaised;      //was player raised last turn
 
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddDamagePreviews();
+
 	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
 
 	void           BlitTileShadowsOnMovingSprite(const TileImageBlitParams& blit, SDL_Surface* pDestSurface);
@@ -583,6 +599,7 @@ private:
 
 	void           PlacePlayerLightAt(int pixel_x, int pixel_y);
 	void           PropagatePlayerLight();
+	void           RemoveEffectsQueuedForRemoval();
 	void           RenderPlayerLight();
 	void           ResetPlayerLightMap();
 	void           ResetUserLightsource();
@@ -591,12 +608,18 @@ private:
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
 
+	EffectChangeHistory ceilingLightChanges;
+
 	float          fDeathFadeOpacity;
 	Uint32         time_of_last_weather_render;
 	int            redrawingRowForWeather;
 	bool           need_to_update_room_weather;
 
 	Uint32         time_of_last_sky_move;
+
+	bool           bShowDamagePreview;
+
+	multimap<EffectType, int> queued_layer_effect_type_removal;
 };
 
 #endif //#ifndef ROOMWIDGET_H

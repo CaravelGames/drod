@@ -50,6 +50,7 @@ const UINT TAG_LIGHTFADE = 1105;
 const UINT TAG_FOG = 1110;
 const UINT TAG_LIGHT = 1111;
 const UINT TAG_SNOW = 1112;
+const UINT TAG_RAIN = 1113;
 
 const UINT TAG_SKYIMAGE = 1120;
 
@@ -57,7 +58,7 @@ const UINT TAG_CANCEL = 1191;
 
 
 const UINT CX_DIALOG = 600;
-const UINT CY_DIALOG = 355;
+const UINT CY_DIALOG = 400;
 
 const UINT CX_SPACE = 20;
 const UINT CY_SPACE = 10;
@@ -140,6 +141,10 @@ CWeatherDialogWidget::CWeatherDialogWidget(
 			CY_STANDARD_SLIDER, F_Button, g_pTheDB->GetMessageText(MID_Snow)));
 	AddWidget(new CSliderWidget(TAG_SNOW, X_RIGHT, SLIDER_Y(wIndex++),
 			CX_RIGHT, CY_STANDARD_SLIDER, 0, SNOW_INCREMENTS));
+	AddWidget(new CLabelWidget(0L, X_RIGHTLABEL, SLIDER_Y(wIndex), CX_RIGHTLABEL,
+			CY_STANDARD_SLIDER, F_Button, g_pTheDB->GetMessageText(MID_Rain)));
+	AddWidget(new CSliderWidget(TAG_RAIN, X_RIGHT, SLIDER_Y(wIndex++),
+			CX_RIGHT, CY_STANDARD_SLIDER, 0, RAIN_INCREMENTS));
 
 	//Sky list.
 	CListBoxWidget *pSkyList = new CListBoxWidget(TAG_SKYIMAGE,
@@ -280,6 +285,9 @@ void CWeatherDialogWidget::SetWidgetStates()
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SNOW));
 	pSliderWidget->SetValue(this->pRoom->weather.wSnow);
 
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_RAIN));
+	pSliderWidget->SetValue(this->pRoom->weather.rain);
+
 	CListBoxWidget *pList = DYN_CAST(CListBoxWidget*, CWidget*, GetWidget(TAG_SKYIMAGE));
 	if (this->pRoom->weather.sky.empty())
 		pList->SelectItem(0); //select default
@@ -319,6 +327,9 @@ void CWeatherDialogWidget::UpdateRoom(CDbRoom*const pRoom)
 
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SNOW));
 	pRoom->weather.wSnow = pSliderWidget->GetValue();
+
+	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_RAIN));
+	pRoom->weather.rain = pSliderWidget->GetValue();
 
 	CListBoxWidget *pList = DYN_CAST(CListBoxWidget*, CWidget*, GetWidget(TAG_SKYIMAGE));
 	if (pList->GetSelectedItem() == 0)

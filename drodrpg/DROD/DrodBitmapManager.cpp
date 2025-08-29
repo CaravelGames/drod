@@ -50,6 +50,8 @@ const UINT CDrodBitmapManager::NUM_TILEIMAGESURFACES = 1 + ((TI_COUNT-1) / TILES
 
 const float CDrodBitmapManager::fMinGamma = 0.5f;
 const float CDrodBitmapManager::fMaxGamma = 2.0f;
+Uint8 CDrodBitmapManager::tarstuffAlpha = 255;
+Uint8 CDrodBitmapManager::mapIconAlpha = 255;
 
 const WCHAR wszSKIES[] = { We('S'),We('k'),We('i'),We('e'),We('s'),We(0) };
 const WCHAR wszTILES[] = { We('T'),We('i'),We('l'),We('e'),We('s'),We(0) };
@@ -59,7 +61,7 @@ const WCHAR wszDefaultStyleName[] = { We('D'),We('e'),We('e'),We('p'),We(' '),We
 const char textureTileNames[TEXTURE_COUNT][13] = {
 	"Road", "Grass", "Dirt", "Alt",
 	"Floor", "Mosaic", "Pit", "Wall", "Pitside", "PitsideSmall",
-	"DONT_USE"  //no default FLOOR_IMAGE
+	"DONT_USE", "DONT_USE"  //no default FLOOR_IMAGE, OVERHEAD_IMAGE
 };
 
 const UINT TI_DONT_USE = (UINT)-1;
@@ -374,7 +376,7 @@ bool CDrodBitmapManager::LoadTileImagesForStyle(
 	WSTRING wstrCurrentName;
 	list<WSTRING>::reverse_iterator rStr;
 	UINT wI;
-	for (wI=TEXTURE_COUNT-1; wI--; ) //skip loading for FLOOR_IMAGE
+	for (wI=TEXTURE_COUNT-2; wI--; ) //skip loading for FLOOR_IMAGE and OVERHEAD_IMAGE
 	{
 		//Last images in list override first ones.
 		bool bFoundImage = false;
@@ -574,7 +576,8 @@ bool CDrodBitmapManager::LoadTexture(
 	//Load a tile from these images for editor to display a sample.
 	static const UINT textureTiles[TEXTURE_COUNT] = {
 		TI_ROAD, TI_GRASS, TI_DIRT, TI_ALT, TI_FLOOR, TI_FLOOR_M,
-		TI_PIT_M, TI_WALL_M, TI_SPIKE, TI_SPIKE, TI_FLOOR_IMAGE
+		TI_PIT_M, TI_WALL_M, TI_SPIKE, TI_SPIKE, TI_FLOOR_IMAGE,
+		TI_OVERHEAD_IMAGE
 	};
 	const UINT textureTile = textureTiles[wI];
 	if (textureTile != TI_DONT_USE) {

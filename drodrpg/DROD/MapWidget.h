@@ -80,6 +80,10 @@ protected:
 	virtual void   HandleKeyDown(const SDL_KeyboardEvent &Key);
  
 private:
+	void           DrawBackground();
+	void           DrawGridlines(UINT includedLeft, UINT includedRight,
+			UINT includedTop, UINT includedBottom);
+
 	void MergeHoldData(CDbHold *pHold, CDbRoom *pRoom, ENTRANCE_VECTOR& entrances,
 			const UINT uSrcHoldID, CImportInfo& info) const;
 	inline SURFACECOLOR  GetMapColorFromTile(const UINT wOpaqueTile,
