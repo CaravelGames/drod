@@ -440,6 +440,17 @@ void CCharacter::ChangeHoldForCommands(
 					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
 					break;
 
+				case CCharacterCommand::CC_Equipment:
+				{
+					//Sync character data if the command is using reference equipment
+					ScriptFlag::TransactionType trans = (ScriptFlag::TransactionType)c.w;
+					if (trans == ScriptFlag::Trade || trans == ScriptFlag::QueryStatus ||
+						trans == ScriptFlag::Generate) {
+						SyncCustomCharacterData(c.y, pOldHold, pNewHold, info);
+					}
+				}
+				break;
+
 				case CCharacterCommand::CC_LevelEntrance:
 					SyncEntranceID(info, c.x);
 				break;
