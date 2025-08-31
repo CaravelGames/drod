@@ -1709,7 +1709,7 @@ MESSAGE_ID CDrodScreen::ImportFiles(
 
 	//Each iteration processes one file.
 	MESSAGE_ID result = MID_NoText;
-	CImportInfo::ImportType type = CImportInfo::None;
+	CImportInfo::ImportType type = CImportInfo::NoImport;
 	for (vector<WSTRING>::const_iterator wFilename = wstrImportFiles.begin();
 			wFilename != wstrImportFiles.end(); ++wFilename)
 	{
