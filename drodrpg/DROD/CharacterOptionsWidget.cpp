@@ -154,7 +154,7 @@ void CCharacterOptionsDialog::SetCharacter(
 		CalculatePreviewTile(pHoldCharacter);
 	} else {
 		const UINT wIdentity = pCharacter->wLogicalIdentity;
-		this->previewTileNumber = GetTileImageForEntity(wIdentity == M_NONE ?
+		this->previewTileNumber = GetTileImageForEntityOrDefault(wIdentity == M_NONE ?
 			static_cast<UINT>(CHARACTER_FIRST) : wIdentity, S, 0);
 	}
 	UpdatePreview();
@@ -197,7 +197,7 @@ void CCharacterOptionsDialog::CalculatePreviewTile(const HoldCharacter* pCharact
 	if (this->previewTileNumber == TI_UNSPECIFIED) {
 		this->previewTileNumber = g_pTheBM->GetCustomTileNo(pCharacter->dwDataID_Tiles, 0, 0);
 		if (this->previewTileNumber == TI_UNSPECIFIED) {
-			this->previewTileNumber = GetTileImageForEntity(pCharacter->wType == M_NONE ?
+			this->previewTileNumber = GetTileImageForEntityOrDefault(pCharacter->wType == M_NONE ?
 				static_cast<UINT>(CHARACTER_FIRST) : pCharacter->wType, S, 0);
 		}
 	}
