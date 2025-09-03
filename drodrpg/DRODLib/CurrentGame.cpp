@@ -6858,7 +6858,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		CIDSet roomsInLevel = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
 		CIDSet roomsWithStatesToUpdate;
 		const bool bShowDetail = wNewTSquare == T_MAP_DETAIL; //whether to mark room explored
-		MapState mapState = bShowDetail ? MapState::Explored : MapState::NoDetail;
+		MapState mapState = bShowDetail ? MapState::Preview : MapState::NoDetail;
 		roomsInLevel -= GetExploredRooms(!bShowDetail, !bShowDetail); //non-detailed map ignores rooms already marked
 		roomsInLevel -= room.dwRoomID;  //ignore current room
 		for (CIDSet::const_iterator roomIter = roomsInLevel.begin();
