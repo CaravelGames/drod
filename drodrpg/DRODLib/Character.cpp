@@ -2655,6 +2655,15 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 
+			case CCharacterCommand::CC_WaitForOpenTile:
+			{
+				//Wait for target tile to not contain an obstacle (not accounting for movement direction)
+				if (!IsOpenTileAt(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+
 			case CCharacterCommand::CC_Label:
 				//A comment or destination marker for a GoTo command.
 				bProcessNextCommand = true;
