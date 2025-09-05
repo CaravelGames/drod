@@ -1388,23 +1388,31 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 					WSTRING equipText;
 					bool needComma = false;
 
-					if (diffATK != 0 || tTile == T_SWORD) {
+					if (newATK != 0 || diffATK != 0 || tTile == T_SWORD) {
+						equipText += to_WSTRING(newATK);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_ATKStat);
+						equipText += wszSpace;
+						equipText += wszLeftParen;
 						if (diffATK >= 0)
 							equipText += wszPlus;
 						equipText += _itoW(diffATK, temp, 10);
-						equipText += wszSpace;
-						equipText += g_pTheDB->GetMessageText(MID_ATKStat);
+						equipText += wszRightParen;
 						needComma = true;
 					}
-					if (diffDEF != 0 || tTile == T_SHIELD) {
+					if (newDEF != 0 || diffDEF != 0 || tTile == T_SHIELD) {
 						if (needComma) {
 							equipText += wszCommaSpace;
 						}
+						equipText += to_WSTRING(newDEF);
+						equipText += wszSpace;
+						equipText += g_pTheDB->GetMessageText(MID_DEFStat);
+						equipText += wszSpace;
+						equipText += wszLeftParen;
 						if (diffDEF >= 0)
 							equipText += wszPlus;
 						equipText += _itoW(diffDEF, temp, 10);
-						equipText += wszSpace;
-						equipText += g_pTheDB->GetMessageText(MID_DEFStat);
+						equipText += wszRightParen;
 						needComma = true;
 					}
 					if (!ability.empty()) {
