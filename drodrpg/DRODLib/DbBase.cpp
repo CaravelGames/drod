@@ -836,6 +836,7 @@ const WCHAR* CDbBase::GetMessageText(
 	string strText;
 	switch (eMessageID)
 	{
+		case MID_LogicalWaitAnd: strText = "Wait for All:"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
