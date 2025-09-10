@@ -13,99 +13,102 @@
 in inventory slots.
 There are three types of equipment: weapons, armor, and accessories.
 The player has one inventory slot for each type.</p>
+<p>The internal id number is used in some scripting commands.</p>
 <p><b>Weapons</b> - Increases the player's ATK rating.</p>
 <hr />
 <table>
  <tr>
-  <td width="150"><b>Name</b></td><td><b>ATK bonus</b></td><td><b>Properties</b></td>
+  <td width="100"><b>Internal id</b></td><td width="150"><b>Name</b></td><td><b>ATK bonus</b></td><td><b>Properties</b></td>
  </tr><tr>
-  <td>Wooden blade</td><td>+10</td><td></td>
+  <td>1</td><td>Wooden blade</td><td>+10</td><td></td>
  </tr><tr>
-  <td>Dagger</td><td>+10</td><td>metal, small sword</td>
+  <td>11</td><td>Dagger</td><td>+10</td><td>metal, small sword</td>
  </tr><tr>
-  <td>Lucky Blade</td><td>+10</td><td>metal, lucky</td>
+  <td>7</td><td>Lucky Blade</td><td>+10</td><td>metal, lucky</td>
  </tr><tr>
-  <td>Briar Hacker</td><td>+10</td><td>metal, can cut briars</td>
+  <td>9</td><td>Briar Hacker</td><td>+10</td><td>metal, can cut briars</td>
  </tr><tr>
-  <td>Short sword</td><td>+30</td><td>metal</td>
+  <td>2</td><td>Short sword</td><td>+30</td><td>metal</td>
  </tr><tr>
-  <td>Goblin-biter</td><td>+30</td><td>metal, strong against goblins</td>
+  <td>3</td><td>Goblin-biter</td><td>+30</td><td>metal, strong against goblins</td>
  </tr><tr>
-  <td>Staff</td><td>+30</td><td>does not set off explosives, cannot destroy broken walls and mirrors</td>
+  <td>12</td><td>Staff</td><td>+30</td><td>does not set off explosives, cannot destroy</td>
  </tr><tr>
-  <td>Spear</td><td>+50</td><td>metal, can cut tarstuff anywhere</td>
+  <td></td><td></td><td></td><td>broken walls and mirrors</td>
  </tr><tr>
-  <td>Long sword</td><td>+70</td><td>metal</td>
+  <td>13</td><td>Spear</td><td>+50</td><td>metal, can cut tarstuff anywhere</td>
  </tr><tr>
-  <td>Hook</td><td>+120</td><td>metal</td>
+  <td>4</td><td>Long sword</td><td>+70</td><td>metal</td>
  </tr><tr>
-  <td>Wyrmsmiter</td><td>+120</td><td>metal, strong against giant wyrms</td>
+  <td>5</td><td>Hook</td><td>+120</td><td>metal</td>
  </tr><tr>
-  <td>Really Big Sword</td><td>+220</td><td>metal, blocks beams</td>
+  <td>8</td><td>Wyrmsmiter</td><td>+120</td><td>metal, strong against giant wyrms</td>
+ </tr><tr>
+  <td>6</td><td>Really Big Sword</td><td>+220</td><td>metal, blocks beams</td>
  </tr>
 </table>
 <p><b>Armor</b> - Increases the player's DEF rating.</p>
 <hr />
 <table>
  <tr>
-  <td width="150"><b>Name</b></td><td><b>ATK bonus</b></td><td><b>Properties</b></td>
+  <td width="100"><b>Internal id</b></td><td width="150"><b>Name</b></td><td><b>DEF bonus</b></td><td><b>Properties</b></td>
  </tr><tr>
-  <td>Wooden shield</td><td>+10</td><td></td>
+  <td>1</td><td>Wooden shield</td><td>+10</td><td></td>
  </tr><tr>
-  <td>Bronze shield</td><td>+30</td><td>metal</td>
+  <td>2</td><td>Bronze shield</td><td>+30</td><td>metal</td>
  </tr><tr>
-  <td>Mirror shield</td><td>+30</td><td>metal, blocks beams</td>
+  <td>7</td><td>Mirror shield</td><td>+30</td><td>metal, blocks beams</td>
  </tr><tr>
-  <td>Leather shield</td><td>+50</td><td></td>
+  <td>8</td><td>Leather shield</td><td>+50</td><td></td>
  </tr><tr>
-  <td>Aluminum shield</td><td>+50</td><td>metal, protection from mist</td>
+  <td>9</td><td>Aluminum shield</td><td>+50</td><td>metal, protection from mist</td>
  </tr><tr>
-  <td>Steel shield</td><td>+70</td><td>metal</td>
+  <td>3</td><td>Steel shield</td><td>+70</td><td>metal</td>
  </tr><tr>
-  <td>Knight shield</td><td>+120</td><td>metal</td>
+  <td>4</td><td>Knight shield</td><td>+120</td><td>metal</td>
  </tr><tr>
-  <td>Oremite shield</td><td>+220</td><td></td>
+  <td>5</td><td>Oremite shield</td><td>+220</td><td></td>
  </tr>
 </table>
 <p><b>Accessories</b> - Gives the player a special ability.</p>
 <hr />
 <table>
  <tr>
-  <td width="150"><b>Name</b></td><td width="400"><b>Ability</b></td><td><b>Limitations</b></td>
+  <td width="100"><b>Internal id</b></td><td width="150"><b>Name</b></td><td width="380"><b>Ability</b></td><td><b>Limitations</b></td>
  </tr><tr>
-  <td>Grappling hook</td><td>jump forward across one-tile pits</td><td></td>
+  <td>1</td><td>Grappling hook</td><td>jump forward across one-tile pits</td><td></td>
  </tr><tr>
-  <td>Flippers</td><td>walk on water</td><td></td>
+  <td>2</td><td>Flippers</td><td>walk on water</td><td></td>
  </tr><tr>
-  <td>Lucky greckle</td><td>earn x2 GR from combat</td><td></td>
+  <td>9</td><td>Lucky greckle</td><td>earn x2 GR from combat</td><td></td>
  </tr><tr>
-  <td>VIP card</td><td>earn x2 REP from combat</td><td></td>
+  <td>11</td><td>VIP card</td><td>earn x2 REP from combat</td><td></td>
  </tr><tr>
-  <td>Invisibility potion</td><td>monsters won't attack,</td><td>lasts one room or combat when activated</td>
+  <td>3</td><td>Invisibility potion</td><td>monsters won't attack,</td><td>lasts one room or</td>
  </tr><tr>
-  <td></td><td>can walk through monsters,</td><td></td>
+  <td></td><td></td><td>can walk through monsters,</td><td>combat when</td>
  </tr><tr>
-  <td></td><td>surprise attack gives x2 ATK</td><td></td>
+  <td></td><td></td><td>surprise attack gives x2 ATK</td><td>activated</td>
  </tr><tr>
-  <td>Speed potion</td><td>hit twice as often during combat,</td><td>lasts one room when activated</td>
+  <td>4</td><td>Speed potion</td><td>hit twice as often during combat,</td><td>lasts one room</td>
  </tr><tr>
-  <td></td><td>1/2 damage from explosions, hot tiles,</td><td></td>
+  <td></td><td></td><td>1/2 damage from explosions, hot tiles,</td><td>when activated</td>
  </tr><tr>
-  <td></td><td>and beam weapons</td><td></td>
+  <td></td><td></td><td>and beam weapons</td><td></td>
  </tr><tr>
-  <td>Hand bomb</td><td>explosion with a one-tile radius</td><td>single use</td>
+  <td>5</td><td>Hand bomb</td><td>explosion with a one-tile radius</td><td>single use</td>
  </tr><tr>
-  <td>Pickaxe</td><td>knock down one wall</td><td>single use</td>
+  <td>6</td><td>Pickaxe</td><td>knock down one wall</td><td>single use</td>
  </tr><tr>
-  <td>Warp token</td><td>be transported to the opposite</td><td>single use</td>
+  <td>7</td><td>Warp token</td><td>be transported to the opposite</td><td>single use</td>
  </tr><tr>
-  <td></td><td>side of the room</td><td></td>
+  <td></td><td></td><td>side of the room</td><td></td>
  </tr><tr>
-  <td>Portable orb</td><td>open any door in front of you</td><td>single use</td>
+  <td>8</td><td>Portable orb</td><td>open any door in front of you</td><td>single use</td>
  </tr><tr>
-  <td>Wall walking</td><td>pass forward through one tile</td><td>single use</td>
+  <td>10</td><td>Wall walking</td><td>pass forward through one tile</td><td>single use</td>
  </tr><tr>
-  <td></td><td>of solid matter</td><td></td>
+  <td></td><td></td><td>of solid matter</td><td></td>
  </tr>
 </table>
 
