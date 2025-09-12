@@ -981,6 +981,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 	static const int COMMAND_COLUMNS[BUTTON_COLUMNS][15] = {
 		{
 			DCMD_SkipSpeech, DCMD_OpenChat, DCMD_ChatHistory,
+			SKIP_SPACE,
 			DCMD_Screenshot, DCMD_SaveRoomImage, DCMD_ShowHelp, DCMD_Settings,
 			DCMD_ToggleFullScreen,
 			SKIP_SPACE,
@@ -991,7 +992,8 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 			DCMD_EditVars, DCMD_LogVars, DCMD_ReloadStyle,
 			DCMD_Editor_Cut, DCMD_Editor_Copy, DCMD_Editor_Paste,
 			DCMD_Editor_Undo, DCMD_Editor_Redo, DCMD_Editor_Delete,
-			DCMD_Script_SelectAll, DCMD_Script_ToText, DCMD_Script_FromText,
+			DCMD_Script_SelectAll, DCMD_Script_AddCommand,
+			DCMD_Script_ToText, DCMD_Script_FromText,
 			NO_COMMAND
 		},
 		{
@@ -1001,6 +1003,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 			DCMD_Editor_ToggleCharacterPreview,
 			DCMD_Editor_PrevLevel, DCMD_Editor_NextLevel, DCMD_Editor_LogVarRefs,
 			DCMD_Editor_HoldStats, DCMD_Editor_LevelStats,
+			DCMD_Script_CharacterOptions,
 			NO_COMMAND
 		}
 	};

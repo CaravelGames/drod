@@ -838,6 +838,8 @@ const WCHAR* CDbBase::GetMessageText(
 	{
 		case MID_NPCDefeated: strText = "NPC defeated"; break;
 		case MID_LogicalWaitAnd: strText = "Wait for All:"; break;
+		case MID_Command_Script_AddCommand: strText = "Add Script Command"; break;
+		case MID_Command_Script_CharacterOptions: strText = "Show Character Options"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
