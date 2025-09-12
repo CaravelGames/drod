@@ -1045,7 +1045,7 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 		case ScriptVars::P_CharacterType:
 		{
 			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
-			if (!pMonster) {
+			if (!pMonster || pMonster->wType != M_CHARACTER) {
 				return -1;
 			}
 
