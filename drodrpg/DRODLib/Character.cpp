@@ -142,6 +142,7 @@ const UINT MAX_SATURATION = 1000;
 #define FiretrapImmuneStr "FiretrapImmune"
 #define MistImmuneStr "MistImmune"
 #define WallDwellingStr "WallDwelling"
+#define ReplacedWithDefaultStr "ReplacedWithDefault"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -289,6 +290,7 @@ CCharacter::CCharacter(
 	, bIfBlock(false)
 	, eachAttackLabelIndex(NO_LABEL), eachDefendLabelIndex(NO_LABEL), eachUseLabelIndex(NO_LABEL)
 	, eachVictoryLabelIndex(NO_LABEL)
+	, bReplacedWithDefault(false)
 	, customSpeechColor(0)
 	, wLastSpeechLineNumber(0)
 
@@ -3317,6 +3319,7 @@ void CCharacter::Process(
 					++wVarSets; //Count as setting a variable for loop avoidence
 					const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
 					LoadCommands(initalCharacter->ExtraVars, commands);
+					bReplacedWithDefault = true;
 				}	else {
 					// Index does not automatically increment after this command is executed
 					++this->wCurrentCommandIndex;
@@ -6312,7 +6315,7 @@ void CCharacter::SetCurrentGame(
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
-	if (this->pCustomChar && this->commands.empty())
+	if (this->pCustomChar && (this->commands.empty() || bReplacedWithDefault))
 	{
 		if (this->wInitialIdentity == M_NONE) {
 			LoadCommands(this->pCustomChar->ExtraVars, this->commands);
@@ -6656,6 +6659,8 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Custom tooltip
 	this->customDescription = vars.GetVar(TooltipStr, this->customDescription.c_str());
+
+	this->bReplacedWithDefault = vars.GetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************
@@ -6852,6 +6857,10 @@ const
 		vars.SetVar(scriptDoneStr, this->bScriptDone);
 
 	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
+
+	//Has the script of the character been replaced by its default script?
+	if (this->bReplacedWithDefault)
+		vars.SetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************

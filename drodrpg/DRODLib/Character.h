@@ -359,6 +359,8 @@ private:
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
 
+	bool bReplacedWithDefault; //If a local script has been replaced by the NPC's default script
+
 	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
 
 	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
