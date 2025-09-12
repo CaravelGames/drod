@@ -1344,6 +1344,8 @@ enum MID_CONSTANT {
   MID_EnableAutosaves = 2076,
   MID_ShowPercentOptimal = 2114,
   MID_NoBrowserToRequestKey = 2160,
+  MID_Command_Script_AddCommand = 2161,
+  MID_Command_Script_CharacterOptions = 2162,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

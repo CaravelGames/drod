@@ -125,6 +125,8 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+41)
 #define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+42)
 #define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+43)
+#define CMD_EXTRA_SCRIPT_ADD_COMMAND (COMMAND_COUNT+44)
+#define CMD_EXTRA_SCRIPT_CHAR_OPTIONS (COMMAND_COUNT+45)
 
 //Sword orientation.
 static const UINT NW = 0;
@@ -245,6 +247,8 @@ namespace InputCommands
 		DCMD_Script_SelectAll,
 		DCMD_Script_ToText,
 		DCMD_Script_FromText,
+		DCMD_Script_AddCommand,
+		DCMD_Script_CharacterOptions,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
