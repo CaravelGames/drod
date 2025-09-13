@@ -543,7 +543,7 @@ UINT PlayerStats::getVar(const Predefined var) const
 		case P_SCORE_XP: return this->scoreXP;
 		case P_SCORE_SHOVEL: return this->scoreShovels;
 
-		case (UINT)ScriptVars::P_RETURN_X: return this->scriptReturnX;
+		case ScriptVars::P_RETURN_X: return this->scriptReturnX;
 
 		case P_NoVar:
 		default: return 0;

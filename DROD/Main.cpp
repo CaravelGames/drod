@@ -146,10 +146,12 @@ char windowTitle[] = GAMETITLE " BETA - DO NOT DISTRIBUTE (buggy releases make u
 char windowTitle[] = GAMETITLE;
 #endif
 
+#ifdef STEAMBUILD
 #ifdef WIN32
 //On Windows, support selecting whether to create and find the user's Data directory
 //in their userspace or in a common location (e.g., "ProgramData")
 bool bWindowsDataFilesInUserSpecificDir = false;
+#endif
 #endif
 
 //This is a filename that will probably exist in this specific game only.
@@ -691,7 +693,7 @@ MESSAGE_ID Init(
 	if (!bSteamInit)
 		DisplayInitErrorMessage(MID_SteamAPIInitError);
 	if (SteamUserStats())
-		SteamUserStats()->RequestCurrentStats();
+		SteamUserStats()->RequestUserStats(SteamUser()->GetSteamID());
 #endif
 
 	srand(int(time(NULL)));

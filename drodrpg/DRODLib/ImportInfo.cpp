@@ -36,7 +36,7 @@ CImportInfo::CImportInfo()
 	, bReplaceOldPlayers(false), bReplaceOldHolds(false)
 	, bImportingSavedGames(false)
 //	, bQuickPlayerExport(false)
-	, typeBeingImported(None)
+	, typeBeingImported(NoImport)
 	, bAllowHoldUpgrade(true), bAllowHoldDowngrade(false)
 	, dwPlayerImportedID(0), dwHoldImportedID(0), dwDemoImportedID(0), importedSavedGameID(0), dwDataImportedID(0)
 	, ImportStatus(MID_ImportSuccessful)
@@ -85,7 +85,7 @@ void CImportInfo::Clear(
 		this->bReplaceOldHolds = false;
 		this->bReplaceOldPlayers = false;
 //		this->bQuickPlayerExport = false;
-		this->typeBeingImported = None;
+		this->typeBeingImported = NoImport;
 
 		this->localHoldIDs.clear();
 		this->exportedDemos.resize(0);

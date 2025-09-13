@@ -33,8 +33,6 @@
 #include "DrodScreenManager.h"
 #include "EditRoomScreen.h"
 
-extern CDrodDialogs *g_pTheDialogs;
-
 class CDrodDialogs {
 public:
 	CDrodDialogs() {}
@@ -54,5 +52,7 @@ public:
 private:
 	CEditRoomScreen *GetEditRoomScreen() const;
 };
+
+extern CDrodDialogs *g_pTheDialogs;
 
 #endif //...#ifndef _DRODDIALOGS_H
