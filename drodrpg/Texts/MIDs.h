@@ -1346,6 +1346,7 @@ enum MID_CONSTANT {
   MID_NoBrowserToRequestKey = 2160,
   MID_Command_Script_AddCommand = 2161,
   MID_Command_Script_CharacterOptions = 2162,
+  MID_Command_ShowMap = 2163,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

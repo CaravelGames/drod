@@ -2734,6 +2734,10 @@ void CGameScreen::OnKeyDown(
 			}
 		break;
 
+		case CMD_EXTRA_SHOW_MAP:
+			ToggleBigMap();
+		break;
+
 		//Skip cutscene/clear playing speech.
 		case CMD_EXTRA_SKIP_SPEECH:
 			if (this->pCurrentGame && this->pCurrentGame->InCombat()) {

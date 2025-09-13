@@ -661,3 +661,7 @@ Add Script Command
 [MID_Command_Script_CharacterOptions]
 [eng]
 Show Character Options
+
+[MID_Command_ShowMap]
+[eng]
+Open Map
