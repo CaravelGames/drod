@@ -852,7 +852,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 			NO_COMMAND,
 		},
 		{
-			DCMD_Battle, DCMD_ShowScore,
+			DCMD_Battle, DCMD_ShowScore, DCMD_ShowMap,
 			NO_COMMAND
 		},
 		{
