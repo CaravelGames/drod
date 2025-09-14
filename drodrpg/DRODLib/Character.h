@@ -273,6 +273,7 @@ private:
 	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
 	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool HasUnansweredQuestion(CCueEvents &CueEvents) const;
+	bool IsCommandTypeIn(const int startIndex, const int endIndex, const CCharacterCommand::CharCommand command) const;
 	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);

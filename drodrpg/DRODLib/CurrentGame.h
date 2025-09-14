@@ -412,6 +412,7 @@ public:
 	UINT     wPlayerTurn;      //player move #
 	UINT     wSpawnCycleCount; //monster move #
 	bool     bHalfTurn;        //half a turn taken 
+	UINT     lastProcessedCommand; //most recently processed comand, for read-only script access
 //	UINT     wMonsterKills; //total monsters killed in current room
 //	bool     bBrainSensesSwordsman;
 //	UINT     wLastCheckpointX, wLastCheckpointY;
