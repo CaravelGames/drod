@@ -360,7 +360,13 @@ the state of the room and wait indefinitely until certain events occur.</p>
       the number of game turns you specify has passed.  <b>Wait 0</b> will stop
       the script at the current point until the next turn.</li>
   <li><a name="waitevent"><b>Wait for event</b></a> - The NPC waits until the
-      specified game event has taken place.</li>
+      specified game event has taken place. If the event has not taken place, and
+      the command is not being used as a condition for an If command, another check
+      will be performed at the end of the turn, and the script will continue on the
+      next turn if the specified event has taken place. This also occurs if it is in a
+      <a href="#logical-wait">multi-expression wait</a>. In this case, be
+      aware that other conditions may have changed between the intial check and
+      end-of-turn check.</li>
   <li><a name="waitentity"><b>Wait for entity</b></a> - The NPC waits for any of
       the selected entity type (or entities) to enter the room region you
       specify.  Hold &lt;Ctrl&gt; while clicking to select and unselect multiple
