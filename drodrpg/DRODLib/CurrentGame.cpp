@@ -2971,6 +2971,7 @@ void CCurrentGame::ProcessCommand(
 
 //	const UINT dwStart = GetTicks();
 	
+	this->lastProcessedCommand = nCommand;
 	this->pPlayer->bHasTeleported = false;
 
 	const bool bPlayerIsAnsweringQuestion = this->UnansweredQuestions.size() != 0;
@@ -7434,6 +7435,7 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->wPlayerTurn = Src.wPlayerTurn;
 	this->wSpawnCycleCount = Src.wSpawnCycleCount;
 	this->bHalfTurn = Src.bHalfTurn;
+	this->lastProcessedCommand = Src.lastProcessedCommand;
 /*
 	this->bIsDemoRecording = Src.bIsDemoRecording;
 	this->wMonsterKills = Src.wMonsterKills;
