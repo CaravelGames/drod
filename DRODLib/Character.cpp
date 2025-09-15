@@ -1494,6 +1494,26 @@ int CCharacter::parsePrimitive(
 }
 
 //*****************************************************************************
+bool CCharacter::IsCommandTypeIn(
+//Returns: If a command of the given type is in the given range (inclusive)
+	const int startIndex,
+	const int endIndex,
+	const CCharacterCommand::CharCommand command
+) const
+{
+	ASSERT(startIndex < commands.size());
+	ASSERT(endIndex < commands.size());
+
+	for (int i = startIndex; i <= endIndex; ++i) {
+		if (this->commands[i].command == command) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 void CCharacter::Process(
 //Process a character for movement.
 //
@@ -3763,15 +3783,22 @@ void CCharacter::Process(
 
 			case CCharacterCommand::CC_LogicalWaitAnd:
 			{
-				//Wait until all conditions are true.
-				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
-					STOP_COMMAND;
-
 				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
-
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
 					STOP_COMMAND;
+
+				//Wait until all conditions are true.
+				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
 
 				//Jump to position after logic end.
 				this->wJumpLabel = wNextIndex + 1;
@@ -3781,15 +3808,22 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_LogicalWaitOr:
 			{
-				//Wait until at least one condition is true.
-				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
-					STOP_COMMAND;
-
 				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
-
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
 					STOP_COMMAND;
+
+				//Wait until at least one condition is true.
+				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
 
 				//Jump to position after logic end.
 				this->wJumpLabel = wNextIndex + 1;
@@ -3799,15 +3833,22 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_LogicalWaitXOR:
 			{
-				//Wait until exactly one condition is true.
-				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents))
-					STOP_COMMAND;
-
 				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
-
 				//Malformed statement - just stop.
 				if (wNextIndex == NO_LABEL)
 					STOP_COMMAND;
+
+				//Wait until exactly one condition is true.
+				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
 
 				//Jump to position after logic end.
 				this->wJumpLabel = wNextIndex + 1;
@@ -4318,14 +4359,41 @@ void CCharacter::CheckForCueEvent(CCueEvents &CueEvents) //(in)
 		return;
 	ASSERT(this->wCurrentCommandIndex < this->commands.size());
 	CCharacterCommand& command = this->commands[this->wCurrentCommandIndex];
-	ASSERT(command.command == CCharacterCommand::CC_WaitForCueEvent);
+	ASSERT(command.command == CCharacterCommand::CC_WaitForCueEvent ||
+		command.IsLogicalWaitCommand());
 
-	//Wait for cue event X to fire.
-	const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
-	if (CueEvents.HasOccurred(cid))
-	{
-		++this->wCurrentCommandIndex;
-		this->bWaitingForCueEvent = false; //no longer waiting for the event
+	if (command.IsLogicalWaitCommand()) {
+		//Reprocess logical block
+		CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+		UINT nLastCommand = pGame->lastProcessedCommand;
+		bool passed;
+		switch (command.command) {
+			case CCharacterCommand::CC_LogicalWaitAnd:
+				passed = EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			case CCharacterCommand::CC_LogicalWaitOr:
+				passed = EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				passed = EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			default: passed = false; break;
+		}
+
+		if (passed) {
+			int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+			ASSERT(wNextIndex != NO_LABEL);
+			this->wCurrentCommandIndex = wNextIndex + 1;
+			this->bWaitingForCueEvent = false; //no longer waiting for the event
+		}
+	} else {
+		//Wait for cue event X to fire.
+		const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+		if (CueEvents.HasOccurred(cid))
+		{
+			++this->wCurrentCommandIndex;
+			this->bWaitingForCueEvent = false; //no longer waiting for the event
+		}
 	}
 }
 
