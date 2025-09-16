@@ -43,6 +43,7 @@ class CRenameDialogWidget : public CDialogWidget
 public:
 	CRenameDialogWidget(const UINT dwSetTagNo, const int nSetX, const int nSetY,
 		const UINT wSetW, const UINT wSetH, const bool bListBoxDoubleClickReturns=false);
+	void FakeClick(const UINT dwTagNo);
 	virtual void   OnBetweenEvents();
 
 protected:

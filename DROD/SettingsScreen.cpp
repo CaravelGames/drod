@@ -1011,6 +1011,7 @@ void CSettingsScreen::SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu)
 			DCMD_Editor_SetOverheadImage, DCMD_Editor_PrevLevel, DCMD_Editor_NextLevel,
 			DCMD_Editor_HoldStats, DCMD_Editor_LevelStats,
 			DCMD_Script_SelectAll, DCMD_Script_ToText, DCMD_Script_FromText,
+			DCMD_Script_AddCommand, DCMD_Script_CharacterOptions,
 			NO_COMMAND
 		}
 	};

@@ -761,3 +761,11 @@ Show swirl at double placement position
 [MID_NoBrowserToRequestKey]
 [eng]
 Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet
+
+[MID_Command_Script_AddCommand]
+[eng]
+Add Script Command
+
+[MID_Command_Script_CharacterOptions]
+[eng]
+Show Character Options
