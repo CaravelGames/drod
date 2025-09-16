@@ -1422,6 +1422,8 @@ enum MID_CONSTANT {
   MID_ShowHalphEffects = 2160,
   MID_ShowPlaceDoubleEffect = 2161,
   MID_NoBrowserToRequestKey = 2164,
+  MID_Command_Script_AddCommand = 2166,
+  MID_Command_Script_CharacterOptions = 2167,
 
   //Messages from Speech.uni:
   MID_CustomizeCharacter = 964,

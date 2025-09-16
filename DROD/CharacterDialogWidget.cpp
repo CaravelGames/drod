@@ -295,6 +295,13 @@ CRenameDialogWidget::CRenameDialogWidget(
 }
 
 //*****************************************************************************
+void CRenameDialogWidget::FakeClick(const UINT dwTagNo)
+//Pass-through function to emulate clicks as CDialogWidget::OnClick is protected
+{
+	OnClick(dwTagNo);
+}
+
+//*****************************************************************************
 void CRenameDialogWidget::OnBetweenEvents()
 {
 	//When reentering the dialog, after having prompted the user for parameter
@@ -2778,6 +2785,24 @@ void CCharacterDialogWidget::OnKeyDown(
 			else
 				SetWidgetStates();
 			Paint();
+		}
+		break;
+		case CMD_EXTRA_SCRIPT_ADD_COMMAND:
+		{
+			if (this->bEditingDefaultScript) {
+				this->pScriptDialog->FakeClick(TAG_ADDCOMMAND2);
+			} else {
+				OnClick(TAG_ADDCOMMAND);
+			}
+		}
+		break;
+		case CMD_EXTRA_SCRIPT_CHAR_OPTIONS:
+		{
+			if (this->bEditingDefaultScript) {
+				this->pScriptDialog->FakeClick(TAG_CHAROPTIONS2);
+			} else {
+				OnClick(TAG_CHAROPTIONS);
+			}
 		}
 		break;
 

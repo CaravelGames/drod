@@ -134,7 +134,9 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+49)
 #define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+50)
 #define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+51)
-#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+52)
+#define CMD_EXTRA_SCRIPT_ADD_COMMAND (COMMAND_COUNT+52)
+#define CMD_EXTRA_SCRIPT_CHAR_OPTIONS (COMMAND_COUNT+53)
+#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+54)
 
 // Hardcoded commands used by DemoScreen that cannot be remapped
 #define CMD_DEMO_SEEK_010 (EXTRA_COMMAND_COUNT + 1)
@@ -275,6 +277,8 @@ namespace InputCommands
 		DCMD_Script_SelectAll,
 		DCMD_Script_ToText,
 		DCMD_Script_FromText,
+		DCMD_Script_AddCommand,
+		DCMD_Script_CharacterOptions,
 
 		DCMD_Count,
 		DCMD_NotFound=DCMD_Count,
@@ -410,7 +414,7 @@ static inline bool bIsEditorCommand(const int command)
 			(command >= CMD_EXTRA_WATCH_DEMOS && command <= CMD_EXTRA_SHOW_HELP) ||
 			command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
 			command == CMD_EXTRA_STATS || command == CMD_EXTRA_RELOAD_STYLE ||
-			(command >= CMD_EXTRA_SCRIPT_SELECT_ALL && command <= CMD_EXTRA_SCRIPT_FROM_TEXT);
+			(command >= CMD_EXTRA_SCRIPT_SELECT_ALL && command <= CMD_EXTRA_SCRIPT_CHAR_OPTIONS);
 }
 
 static inline bool bIsEditSelectCommand(const int command)

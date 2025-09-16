@@ -128,6 +128,8 @@ namespace InputCommands
 		keyDefinitions[DCMD_Script_SelectAll] = new KeyDefinition(CMD_EXTRA_SCRIPT_SELECT_ALL, "Key_Script_SelectAll", MID_Command_Script_SelectAll, BuildInputKey(SDLK_a, false, false, true));
 		keyDefinitions[DCMD_Script_ToText] = new KeyDefinition(CMD_EXTRA_SCRIPT_TO_TEXT, "Key_Script_ToText", MID_Command_Script_ToText, BuildInputKey(SDLK_b, false, false, true));
 		keyDefinitions[DCMD_Script_FromText] = new KeyDefinition(CMD_EXTRA_SCRIPT_FROM_TEXT, "Key_Script_FromText", MID_Command_Script_FromText, BuildInputKey(SDLK_b, true, false, true));
+		keyDefinitions[DCMD_Script_AddCommand] = new KeyDefinition(CMD_EXTRA_SCRIPT_ADD_COMMAND, "Key_Script_AddCommand", MID_Command_Script_AddCommand, SDLK_INSERT);
+		keyDefinitions[DCMD_Script_CharacterOptions] = new KeyDefinition(CMD_EXTRA_SCRIPT_CHAR_OPTIONS, "Key_Script_CharacterOptions", MID_Command_Script_CharacterOptions, SDLK_c);
 
 		return keyDefinitions;
 	}

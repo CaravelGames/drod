@@ -1051,6 +1051,8 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_VarMonsterSaturation: strText = "_MySaturation"; break;
 	case MID_NoBrowserToRequestKey: strText = "Failed to open web browser to https://forum.caravelgames.com/member.php?Action=editcaravelnet"; break;
 	case MID_MonsterTunnel: strText = "Monster used tunnel"; break;
+	case MID_Command_Script_AddCommand: strText = "Add Script Command"; break;
+	case MID_Command_Script_CharacterOptions: strText = "Show Character Options"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
