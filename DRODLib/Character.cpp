@@ -4535,6 +4535,14 @@ bool CCharacter::IsMonsterTarget() const
 }
 
 //*****************************************************************************
+bool CCharacter::WakesEyes() const
+//Returns: if an Evil Eye will wake up if it sees this character
+{
+	return HasBehavior(ScriptFlag::WakesEyes) ||
+		(HasBehavior(ScriptFlag::WakesEyesWhenMonsterTarget) && IsMonsterTarget());
+}
+
+//*****************************************************************************
 bool CCharacter::IsNPCPathmapObstacle() const
 {
 	return this->bNPCPathmapObstacle;

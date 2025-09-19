@@ -174,6 +174,7 @@ namespace ScriptFlag
 		CanKillNonTargetPlayer = 33,
 		WakesEyes = 34,
 		AppearOnWeapons = 35,
+		WakesEyesWhenMonsterTarget = 36,
 	};
 
 	enum DisplayFilter

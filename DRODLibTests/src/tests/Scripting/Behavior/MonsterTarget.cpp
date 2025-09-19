@@ -47,6 +47,30 @@ TEST_CASE("Scripting: Monster Targeting Behaviors", "[game][scripting][behavior]
 		AssertMonster(4, 11);
 	}
 
+	SECTION("Test Eye will only see character with eye-waking when target behavior when that character is target") {
+		// For simplicity, we will make this character move before monsters
+		pCharacter->wProcessSequence = 100;
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::WakesEyesWhenMonsterTarget, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_MoveRel, 0, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Wait, 1);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTarget, 1);
+		RoomBuilder::AddMonster(M_EYE, 5, 11, E);
+
+		CCurrentGame* pGame = Runner::StartGame(1, 11);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		// Eye should be asleep and stay in place
+		CHECK_FALSE(pGame->pRoom->GetMonsterOfType(M_EYE)->IsAggressive());
+		AssertMonster(5, 11);
+
+		Runner::ExecuteCommand(CMD_WAIT);
+		Runner::ExecuteCommand(CMD_WAIT);
+
+		// Eye should wake up and make move
+		CHECK(Runner::GetCurrentGame()->pRoom->GetMonsterOfType(M_EYE)->IsAggressive());
+		AssertMonster(4, 11);
+	}
+
 	SECTION("Test monster is not attracted to conditional character target until stealth is broken") {
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::MonsterTargetWhenPlayerIsTarget, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_SetPlayerStealth, Stealth_On);
