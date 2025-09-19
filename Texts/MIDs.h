@@ -1934,6 +1934,7 @@ enum MID_CONSTANT {
   MID_WakesEvilEyes = 2158,
   MID_AppearOnWeapons = 2159,
   MID_MonsterTunnel = 2165,
+  MID_WakesEyesWhenMonsterTarget = 2168,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

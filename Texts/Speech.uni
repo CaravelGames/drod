@@ -3350,3 +3350,7 @@ Can Appear On Weapons
 [MID_MonsterTunnel]
 [eng]
 Monster used tunnel
+
+[MID_WakesEyesWhenMonsterTarget]
+[eng]
+Wakes Evil Eyes When Monster Target
