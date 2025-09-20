@@ -448,6 +448,7 @@ public:
 		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
 		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 		CC_AddRoomToMap,        //Add room at (x,y) to player's mapped rooms.
+		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
 
 		CC_Count
 	};
@@ -472,6 +473,7 @@ public:
 			case CC_LogicalWaitAnd:
 			case CC_LogicalWaitOr:
 			case CC_LogicalWaitXOR:
+			case CC_LogicalWaitNOR:
 				return true;
 			default:
 				return false;

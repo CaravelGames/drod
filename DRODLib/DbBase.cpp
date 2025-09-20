@@ -1054,6 +1054,7 @@ const WCHAR* CDbBase::GetMessageText(
 	case MID_Command_Script_AddCommand: strText = "Add Script Command"; break;
 	case MID_Command_Script_CharacterOptions: strText = "Show Character Options"; break;
 	case MID_WakesEyesWhenMonsterTarget: strText = "Wakes Evil Eyes When Monster Target"; break;
+	case MID_LogicalWaitNOR: strText = "Wait for None:"; break;
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
 		default: break;
