@@ -45,6 +45,21 @@ const char gzID[] = "\x1f\x8b"; //gzip file header id
 const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024 * 1024; //10 MB
 const int XML_PARSER_BUFF_SIZE = 128 * 1024; //uncompressed buffer chunk size for import
 
+//Custom allocation function for zlib when Z_SOLO is defined.
+//Required because SDL2_ttf's zlib implementation doesn't provide default allocators.
+static voidpf zlib_alloc(voidpf opaque, uInt items, uInt size)
+{
+	(void)opaque;
+	return malloc(items * size);
+}
+
+//Custom allocation function for zlib when Z_SOLO is defined.
+static void zlib_free(voidpf opaque, voidpf address)
+{
+	(void)opaque;
+	free(address);
+}
+
 //Static vars
 CImportInfo CDbXML::info;
 //vector<DEMO_UPLOAD> CDbXML::upgradedHoldVictoryDemos;
@@ -218,8 +233,8 @@ struct ImportBuffer
 		ASSERT(!d_stream);
 
 		z_stream* ds = new z_stream; // decompression stream (gzip/zlib format)
-		ds->zalloc = (alloc_func)0;
-		ds->zfree = (free_func)0;
+		ds->zalloc = zlib_alloc;
+		ds->zfree = zlib_free;
 		ds->opaque = (voidpf)0;
 
 		int err = inflateInit(ds);
