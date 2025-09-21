@@ -449,6 +449,8 @@ public:
 		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 		CC_AddRoomToMap,        //Add room at (x,y) to player's mapped rooms.
 		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
+		CC_IfNot,               //Begin a conditional block if next command is not satisfied.
+		CC_IfElseIfNot,         //Else combined with if not to reduce code nesting
 
 		CC_Count
 	};
@@ -466,6 +468,14 @@ public:
 			default:
 				return false;
 		}
+	}
+
+	bool isIfNotCommand() const {
+		return command == CC_IfNot || command == CC_IfElseIfNot;
+	}
+
+	bool isElseIfCommand() const {
+		return command == CC_IfElseIf || command == CC_IfElseIfNot;
 	}
 
 	bool IsLogicalWaitCommand() const {

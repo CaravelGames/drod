@@ -4574,8 +4574,10 @@ const
 		case CCharacterCommand::CC_WaitForSomeoneToPushMe:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_IfNot:
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
+		case CCharacterCommand::CC_IfElseIfNot:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_ResetOverrides:
@@ -4650,11 +4652,13 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		switch (pCommand->command)
 		{
 			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_IfNot:
 				bIsIfCondition = true;
 				++wNestDepth; //indent inside of if block
 				bUndoOneDepth = true;
 				break;
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 				bIsIfCondition = true;
 				break;
 			case CCharacterCommand::CC_IfEnd:
@@ -4684,6 +4688,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		{
 			case CCharacterCommand::CC_IfElse:
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 				if (wNestDepth)
 					bUndoOneDepth = true;
 				else
@@ -4699,6 +4704,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_IfNot:
 			case CCharacterCommand::CC_Imperative:
 			case CCharacterCommand::CC_Behavior:
 			case CCharacterCommand::CC_LevelEntrance:
@@ -5050,8 +5056,10 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_GoTo, g_pTheDB->GetMessageText(MID_GoTo));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LevelEntrance, g_pTheDB->GetMessageText(MID_GotoLevelEntrance));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_If, g_pTheDB->GetMessageText(MID_If));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_IfNot, g_pTheDB->GetMessageText(MID_IfNot));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElse, g_pTheDB->GetMessageText(MID_IfElse));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIf, g_pTheDB->GetMessageText(MID_IfElseIf));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_IfElseIfNot, g_pTheDB->GetMessageText(MID_IfElseIfNot));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_IfEnd, g_pTheDB->GetMessageText(MID_IfEnd));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ImageOverlay, g_pTheDB->GetMessageText(MID_ImageOverlay));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Imperative, g_pTheDB->GetMessageText(MID_Imperative));
@@ -5919,8 +5927,10 @@ void CCharacterDialogWidget::SetCommandColor(
 			pListBox->SetItemColorAtLine(line, Maroon);
 		break;
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_IfNot:
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
+		case CCharacterCommand::CC_IfElseIfNot:
 		case CCharacterCommand::CC_IfEnd:
 			pListBox->SetItemColorAtLine(line, DarkBlue);
 		break;
@@ -6182,6 +6192,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARQUERY,      //CC_CountArrayEntries
 		NO_WIDGETS,         //CC_AddRoomToMap
 		NO_WIDGETS,         //CC_LogicalWaitNOR
+		NO_WIDGETS,         //CC_IfNot
+		NO_WIDGETS,         //CC_IfElseIfNot
 	};
 
 	static const UINT NUM_LABELS = 35;
@@ -6351,6 +6363,8 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		EXPRESSION_L,       //CC_CountArrayEntries
 		NO_LABELS,          //CC_AddRoomToMap
 		NO_LABELS,          //CC_LogicalWaitNOR
+		NO_LABELS,          //CC_IfNot
+		NO_LABELS,          //CC_IfElseIfNot
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -7525,8 +7539,10 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		case CCharacterCommand::CC_WaitForSomeoneToPushMe:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_IfNot:
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
+		case CCharacterCommand::CC_IfElseIfNot:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_Return:
 		case CCharacterCommand::CC_LogicalWaitAnd:
@@ -8073,8 +8089,10 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_EndScriptOnExit:
 		case CCharacterCommand::CC_If:
+		case CCharacterCommand::CC_IfNot:
 		case CCharacterCommand::CC_IfElse:
 		case CCharacterCommand::CC_IfElseIf:
+		case CCharacterCommand::CC_IfElseIfNot:
 		case CCharacterCommand::CC_IfEnd:
 		case CCharacterCommand::CC_WaitForNoBuilding:
 		case CCharacterCommand::CC_Return:
@@ -8399,8 +8417,10 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
 	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfNot:
 	case CCharacterCommand::CC_IfElse:
 	case CCharacterCommand::CC_IfElseIf:
+	case CCharacterCommand::CC_IfElseIfNot:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_ReplaceWithDefault:
@@ -9365,8 +9385,10 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_EndScript:
 	case CCharacterCommand::CC_EndScriptOnExit:
 	case CCharacterCommand::CC_If:
+	case CCharacterCommand::CC_IfNot:
 	case CCharacterCommand::CC_IfElse:
 	case CCharacterCommand::CC_IfElseIf:
+	case CCharacterCommand::CC_IfElseIfNot:
 	case CCharacterCommand::CC_IfEnd:
 	case CCharacterCommand::CC_TurnIntoMonster:
 	case CCharacterCommand::CC_ReplaceWithDefault:

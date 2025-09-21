@@ -372,6 +372,8 @@ private:
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
+	bool bIfConditionFailed;
+	bool bIfNot; // should if result be inverted
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
 

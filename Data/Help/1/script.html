@@ -448,6 +448,8 @@ continue executing script commands from a different location in the script.</p>
       always follow somewhere after an <a href="#if"><b>If ...</b></a> to be
       meaningful.</li>
   <li><a name="else-if"><b>Else if</b></a> can optionally be used instead of <a href="#else"><b>Else</b></a> to avoid nesting script commands. It works exactly the same as nesting an <a href="#if"><b>If ...</b></a> <a href="#ifend"><b>If End</b></a> block inside an <a href="#else"><b>Else</b></a></li>
+  <li><a name="if-not"><b>If Not ...</b></a> works as a logically reversed <a href="if">If ...</a>, such that the commands within the code block
+      will run if the given query is not satisfied.</li>
   <li><a name="ifend"><b>If End</b></a> - Marks the end of
       <a href="#if"><b>If ...</b></a> and <a href="#else"><b>Else</b></a> blocks.<br />
       <a name="condnotes">Notes:</a>
