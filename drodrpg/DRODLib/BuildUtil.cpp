@@ -194,6 +194,11 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		if (tile == T_ORB && room.GetOSquare(x, y) == T_PRESSPLATE)
 			bValid = false;
 
+		//Can't build mist on solid tiles or hot tiles
+		if (tile == T_MIST &&
+			(bIsSolidOTile(room.GetOSquare(x, y)) || room.GetOSquare(x, y) == T_HOT))
+			bValid = false;
+
 		//Most items can be replaced.
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
