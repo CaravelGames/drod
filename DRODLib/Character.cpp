@@ -204,6 +204,8 @@ CCharacter::CCharacter(
 
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
+	, bIfConditionFailed(false)
+	, bIfNot(false)
 	, wLastSpeechLineNumber(0)
 
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
@@ -1525,10 +1527,10 @@ void CCharacter::Process(
 {
 //If executing a command normally, calling this will end the character's turn.
 //If the command was being evaluated as an If conditional, continue processing the next command.
-#define STOP_COMMAND {if (!this->wJumpLabel) goto Finish; this->wJumpLabel=0; bProcessNextCommand=true; break;}
+#define STOP_COMMAND {if (!this->wJumpLabel) goto Finish; this->bIfConditionFailed = true; bProcessNextCommand=true; break;}
 
 //Call this one instead if evaluating the condition took a turn and no more commands should be executed now.
-#define STOP_DONECOMMAND {if (!this->wJumpLabel) goto Finish; this->wJumpLabel=0; break;}
+#define STOP_DONECOMMAND {if (!this->wJumpLabel) goto Finish; bIfConditionFailed = true; break;}
 
 	//If stunned, skip turn
 	if (IsStunned())
@@ -1560,7 +1562,7 @@ void CCharacter::Process(
 	//don't require a turn to execute (e.g., visibility, gotos, etc.).
 	bool bExecuteNoMoveCommands = pGame->ExecutingNoMoveCommands();
 
-	this->bWaitingForCueEvent = this->bIfBlock = false;
+	this->bWaitingForCueEvent = this->bIfBlock = this->bIfConditionFailed = this->bIfNot = false;
 	this->wSwordMovement = NO_ORIENTATION;
 	this->wJumpLabel = 0;
 
@@ -3052,16 +3054,19 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_IfNot:
 				//Begin a conditional block if the next command is satisfied.
 				//If it is not satisfied, the code block will be skipped.
 				++this->wCurrentCommandIndex;
 				this->wJumpLabel = this->wCurrentCommandIndex + 1;
 				this->bIfBlock = true;
+				this->bIfNot = command.isIfNotCommand();
 				this->bParseIfElseAsCondition = false;
 				bProcessNextCommand = true;
 			continue;   //perform the jump check below next iteration
 			case CCharacterCommand::CC_IfElse:
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 			{
 				//Marks the beginning of a code block executed when an CC_If condition was not satisfied.
 				//Note that reaching this command indicates an If (true) block has successfully
@@ -3070,10 +3075,11 @@ void CCharacter::Process(
 				//If an Else command is encountered in the code (w/o any previous If)
 				//then it will effective function as an If-false and skip the next block.
 				this->bIfBlock = true; //this will skip the subsequent code block
+				this->bIfNot = command.isIfNotCommand();
 				bProcessNextCommand = true;
 
 				// Are we supposed to parse this ElseIf as a condition 
-				if (command.command == CCharacterCommand::CC_IfElseIf && this->bParseIfElseAsCondition){
+				if (command.isElseIfCommand() && this->bParseIfElseAsCondition) {
 					if (bExecuteNoMoveCommands)
 					{
 						goto Finish;
@@ -3856,6 +3862,31 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_LogicalWaitNOR:
+			{
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Wait until all conditions are false.
+				if (EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_LogicalWaitEnd:
 				//Marks the end of a logical block. Has no other function.
 				bProcessNextCommand = true;
@@ -4021,6 +4052,21 @@ void CCharacter::Process(
 		if (this->bIfBlock)
 			this->bMovingRelative = false;
 
+		//Determine what the jump label should be if we're evaluating an If condition
+		if (this->bIfConditionFailed)
+		{
+			if (!this->bIfNot) {
+				this->wJumpLabel = 0;
+			}
+		}
+		else if (this->bIfBlock && this->bIfNot)
+		{
+			//If the condition passes for an If not, then that If not fails
+			this->wJumpLabel = 0;
+		}
+
+		this->bIfConditionFailed = false;
+
 		//Go to jump point if this command executed successfully.
 		if (this->wJumpLabel)
 		{
@@ -4030,6 +4076,7 @@ void CCharacter::Process(
 				this->wCurrentCommandIndex = wNextIndex;
 			this->wJumpLabel = 0;
 			this->bIfBlock = false;
+			this->bIfNot = false;
 		}
 		else if (this->bIfBlock) //arriving here indicates If condition failed
 			FailedIfCondition();
@@ -4427,12 +4474,13 @@ void CCharacter::FailedIfCondition()
 	ASSERT(this->bIfBlock);
 
 	this->bIfBlock = false;
+	this->bIfNot = false;
 	this->bParseIfElseAsCondition = false;
 
 	//Scan until the end of the If block is encountered.
 	//This could be indicated by either an IfElse or IfEnd command.
 	UINT wNestingDepth = 0;
-	const bool wSkipToIfEnd = this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false;
+	const bool wSkipToIfEnd = this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].isElseIfCommand() : false;
 	bool bScanning = true;
 	do
 	{
@@ -4443,6 +4491,7 @@ void CCharacter::FailedIfCondition()
 		switch (command.command)
 		{
 			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_IfNot:
 				++wNestingDepth;  //entering a nested If block
 			break;
 			case CCharacterCommand::CC_IfElse:
@@ -4450,6 +4499,7 @@ void CCharacter::FailedIfCondition()
 					bScanning = false;  //found the If command's matching Else block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 				if (!wSkipToIfEnd && wNestingDepth == 0){
 					bScanning = false;
 					this->bIfBlock = true;
@@ -6059,6 +6109,12 @@ bool CCharacter::EvaluateLogicalAnd(
 						return false;
 				}
 				break;
+				case CCharacterCommand::CC_LogicalWaitNOR:
+				{
+					if (EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
@@ -6090,7 +6146,8 @@ bool CCharacter::EvaluateLogicalOr(
 	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
 )
 {
-	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitOr);
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitOr ||
+		this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitNOR);
 
 	++wCommandIndex;
 	while (wCommandIndex < this->commands.size()) {
@@ -6117,6 +6174,11 @@ bool CCharacter::EvaluateLogicalOr(
 				case CCharacterCommand::CC_LogicalWaitXOR:
 				{
 					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				case CCharacterCommand::CC_LogicalWaitNOR:
+				{
+					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
 						return true;
 				}
 				break;
@@ -6182,6 +6244,11 @@ bool CCharacter::EvaluateLogicalXOR(
 						EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents);
 				}
 				break;
+				case CCharacterCommand::CC_LogicalWaitNOR:
+				{
+					bLocalFound =
+						!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
 			}
 
 			// Find the end of the nested logic block and jump ahead.
@@ -6259,14 +6326,15 @@ bool CCharacter::OnAnswer(
 		//Primitive yes/no answer given.
 		if (this->bIfBlock)
 		{
-			if (nCommand != CMD_YES)
+			if (nCommand != CMD_YES && !this->bIfNot)
 			{
 				FailedIfCondition(); //skip if block
 				// If we are entering else if, make sure we set proper variables for it to be handled correclty
-				if (this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false)
+				if (this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].isElseIfCommand() : false)
 				{
 					--this->wCurrentCommandIndex;
 					this->bIfBlock = false;
+					this->bIfNot = false;
 					this->wJumpLabel = 0;
 					this->bParseIfElseAsCondition = true;
 				}
@@ -6282,6 +6350,8 @@ bool CCharacter::OnAnswer(
 						this->wCurrentCommandIndex = wNextIndex;
 					this->wJumpLabel = 0;
 					this->bIfBlock = false;
+					this->bIfNot = false;
+
 				}
 			}
 		}
@@ -7827,10 +7897,12 @@ int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
 		CCharacterCommand command = this->commands[wCommandIndex];
 		switch (command.command) {
 			case CCharacterCommand::CC_If:
+			case CCharacterCommand::CC_IfNot:
 				if (wNestingDepth-- == 0)
 					return wCommandIndex; // Found start of if block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 				if (wNestingDepth == 0 && !bIgnoreElseIf)
 					return wCommandIndex; // Found start of else-if block
 			break;
@@ -7862,6 +7934,7 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 					return wCommandIndex; // Found start of else block
 			break;
 			case CCharacterCommand::CC_IfElseIf:
+			case CCharacterCommand::CC_IfElseIfNot:
 				if (wNestingDepth == 0 && !bIgnoreElseIf)
 					return wCommandIndex; // Found start of else-if block
 			break;
@@ -7891,6 +7964,7 @@ int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
 			case CCharacterCommand::CC_LogicalWaitAnd:
 			case CCharacterCommand::CC_LogicalWaitOr:
 			case CCharacterCommand::CC_LogicalWaitXOR:
+			case CCharacterCommand::CC_LogicalWaitNOR:
 				wNestingDepth++; // entering a nested logic block
 			break;
 			case CCharacterCommand::CC_LogicalWaitEnd:

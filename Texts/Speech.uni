@@ -3354,3 +3354,15 @@ Monster used tunnel
 [MID_WakesEyesWhenMonsterTarget]
 [eng]
 Wakes Evil Eyes When Monster Target
+
+[MID_LogicalWaitNOR]
+[eng]
+Wait for None:
+
+[MID_IfNot]
+[eng]
+If Not ...
+
+[MID_IfElseIfNot]
+[eng]
+Else If Not
