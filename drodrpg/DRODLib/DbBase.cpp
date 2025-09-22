@@ -841,6 +841,7 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_Script_AddCommand: strText = "Add Script Command"; break;
 		case MID_Command_Script_CharacterOptions: strText = "Show Character Options"; break;
 		case MID_Command_ShowMap: strText = "Show Map"; break;
+		case MID_Briars: strText = "Any briar"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
