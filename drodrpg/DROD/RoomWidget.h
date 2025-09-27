@@ -267,7 +267,7 @@ public:
 	UINT           GetTextureIndexForTile(const UINT tileNo, const bool bForceBaseImage) const;
 	static UINT    GetTokenMID(const UINT param);
 	UINT           GetCustomEntityTile(const UINT wLogicalIdentity,
-			const UINT wO, const UINT wFrame) const;
+			const UINT wO, const UINT wFrame, bool bAllowAnimation=true) const;
 	static UINT    GetCustomTileIndex(const UINT wO);
 	UINT           GetEntityTile(const UINT wApparentIdentity,
 			const UINT wLogicalIdentity, const UINT wO, const UINT wFrame) const;

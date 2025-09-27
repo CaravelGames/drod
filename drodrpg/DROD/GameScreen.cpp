@@ -323,7 +323,7 @@ UINT CGameScreen::CalcTileImageForEquipment(const UINT type) const
 	if (pCharacter)
 	{
 		UINT tile = this->pRoomWidget->GetCustomEntityTile(
-				pCharacter->wLogicalIdentity, NO_ORIENTATION, 0);
+				pCharacter->wLogicalIdentity, NO_ORIENTATION, 0, false);
 		if (tile == TI_UNSPECIFIED)
 		{
 			//Show a predefined sword if no custom images for custom equipment exist.
@@ -6290,7 +6290,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					const UINT tParam = this->pRoomWidget->pRoom->GetTParam(pCoord->wX, pCoord->wY);
 					if (bIsCustomEquipment(tParam))
 					{
-						wTileNo = this->pRoomWidget->GetCustomEntityTile(tParam, NO_ORIENTATION, 0);
+						wTileNo = this->pRoomWidget->GetCustomEntityTile(tParam, NO_ORIENTATION, 0, false);
 						if (wTileNo == TI_UNSPECIFIED)
 							wTileNo = TI_GENERIC_EQUIPMENT;
 					}
