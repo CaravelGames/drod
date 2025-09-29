@@ -2465,8 +2465,10 @@ const
 		HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(sword);
 		if (pCustomChar)
 		{
+			bool animated = pCustomChar->animationSpeed != 0;
+			UINT yFrame = animated ? SDL_GetTicks() / pCustomChar->animationSpeed : 0U;
 			const UINT tile = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles,
-					GetCustomTileIndex(wO), 0);
+					GetCustomTileIndex(wO), yFrame, animated);
 			if (tile != TI_UNSPECIFIED)
 				return tile;
 		}
