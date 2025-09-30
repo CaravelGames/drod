@@ -1691,7 +1691,8 @@ UINT CRoomWidget::GetCustomEntityTile(
 //
 //Params:
 	const UINT wLogicalIdentity,      //role's logical ID
-	const UINT wO, const UINT wFrame) //orientation and frame number
+	const UINT wO, const UINT wFrame, //orientation and frame number
+	bool bAllowAnimation) //can animation frames be used if the character has animation speed [default=true]
 const
 {
 	//Check for a custom character tileset.
@@ -1717,7 +1718,7 @@ const
 		{
 			//This indicates to display the tiles in the corresponding custom tileset in sequence,
 			//ignoring the frame# passed in above.
-			const UINT animationFrame = SDL_GetTicks() / pCustomChar->animationSpeed;
+			const UINT animationFrame = bAllowAnimation ? SDL_GetTicks() / pCustomChar->animationSpeed : 0U;
 			wCustomTileImageNo = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles, wIndex, animationFrame, true);
 			if (wCustomTileImageNo == TI_UNSPECIFIED && wIndex > 0) //get first orientation frame if this one is unavailable
 				wCustomTileImageNo = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles, 0, animationFrame, true);
@@ -2464,8 +2465,10 @@ const
 		HoldCharacter *pCustomChar = this->pCurrentGame->pHold->GetCharacter(sword);
 		if (pCustomChar)
 		{
+			bool animated = pCustomChar->animationSpeed != 0;
+			UINT yFrame = animated ? SDL_GetTicks() / pCustomChar->animationSpeed : 0U;
 			const UINT tile = g_pTheBM->GetCustomTileNo(pCustomChar->dwDataID_Tiles,
-					GetCustomTileIndex(wO), 0);
+					GetCustomTileIndex(wO), yFrame, animated);
 			if (tile != TI_UNSPECIFIED)
 				return tile;
 		}
@@ -9605,7 +9608,7 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 						if (bIsCustomEquipment(tParam))
 						{
 							//Display custom equipment's image.
-							wTileImage = GetCustomEntityTile(tParam, NO_ORIENTATION, 0);
+							wTileImage = GetCustomEntityTile(tParam, NO_ORIENTATION, 0, false);
 							if (wTileImage == TI_UNSPECIFIED)
 								wTileImage = TI_GENERIC_EQUIPMENT;
 							break;
