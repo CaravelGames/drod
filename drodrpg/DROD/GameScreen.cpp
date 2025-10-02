@@ -6375,6 +6375,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		if (this->pCurrentGame->pRoom->IsMonsterOfTypeAt(M_ROCKGOLEM, pCoord->wX, pCoord->wY))
 			wMonsterType = M_ROCKGIANT;
 		AddKillEffect(wMonsterType, *pCoord);
+		this->pRoomWidget->RedrawDamagePreview(); //killing a piece is a fight
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivated))
 	{
@@ -6604,6 +6605,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const CMonster *pMonster = DYN_CAST(const CMonster*, const CAttachableObject*, pObj);
 		const CMoveCoord coord(pMonster->wX,pMonster->wY,pMonster->wO);
 		AddKillEffect(pMonster->GetIdentity(), coord);
+		this->pRoomWidget->RedrawDamagePreview(); //update view for remaining enemies
 	}
 	if (CueEvents.HasOccurred(CID_EvilEyeWoke))
 		g_pTheSound->PlaySoundEffect(SEID_EVILEYEWOKE, this->fPos);
