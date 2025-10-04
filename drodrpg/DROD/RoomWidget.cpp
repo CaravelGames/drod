@@ -9636,7 +9636,16 @@ bool CRoomWidget::UpdateDrawSquareInfo(
 
 			wTileImage = GetTileImageForTileNo(this->pRoom->GetCoveredTSquare(wCol, wRow));
 			if (wTileImage == CALC_NEEDED) {
-				wTileImage = CalcTileImageForCoveredTSquare(this->pRoom, wCol, wRow);
+				const UINT tParam = this->pRoom->GetTParam(wCol, wRow);
+				if (bIsCustomEquipment(tParam))
+				{
+					//Display custom equipment's image.
+					wTileImage = GetCustomEntityTile(tParam, NO_ORIENTATION, 0, false);
+					if (wTileImage == TI_UNSPECIFIED)
+						wTileImage = TI_GENERIC_EQUIPMENT;
+				} else {
+					wTileImage = CalcTileImageForCoveredTSquare(this->pRoom, wCol, wRow);
+				}
 			}
 			if (wTileImage != pTI->tCovered)
 			{
