@@ -3363,6 +3363,9 @@ bool CGameScreen::SetForActivate()
 	//Eat existing events since early key presses could cause unexpected player movement.
 	ClearEvents();
 
+	//Prevent any effects from animating during a transition
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	//Set button widget states.
 	CWidget *pButton = GetWidget(TAG_SAVE);
 	pButton->Enable(!this->bPlayTesting);
