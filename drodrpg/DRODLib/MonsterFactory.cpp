@@ -37,8 +37,10 @@
 #include "Character.h"
 #include "Citizen.h"
 #include "Clone.h"
+#include "Construct.h"
 #include "Decoy.h"
 #include "EvilEye.h"
+#include "FluffBaby.h"
 #include "Goblin.h"
 #include "GreenSerpent.h"
 #include "Guard.h"
@@ -198,6 +200,12 @@ CMonster * CMonsterFactory::GetNewMonster(
 
 		case M_AUMTLICH:
 		return new CZombie(this->pCurrentGame);
+
+		case M_CONSTRUCT:
+		return new CConstruct(this->pCurrentGame);
+
+		case M_FLUFFBABY:
+		return new CFluffBaby(this->pCurrentGame);
 
 		default:
 			ASSERT(!"Unexpected monster type.");

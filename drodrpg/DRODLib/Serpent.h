@@ -52,6 +52,7 @@ public:
 	void GetTail(UINT &wTailX, UINT &wTailY);
 
 	//define virtual void Process(...) in derived classes
+	virtual void ChangeHP(const UINT HP);
 	virtual bool HasOrientation() const {return false;}
 	virtual bool HasSerpentWeakness() const {return true;}
 	virtual bool IsLongMonster() const {return true;}
@@ -77,8 +78,12 @@ public:
 	void OrderPieces();
 	bool ShortenTail(CCueEvents &CueEvents);
 
+	virtual void  Save(const c4_RowRef& MonsterRowRef, const bool bSaveScript = true);
+	virtual void  SetMembers(const CDbPackedVars& vars);
+
 	UINT tailX, tailY, tailO;
 	UINT wOldTailX, wOldTailY;
+	UINT BaseHP; //To reset HP after non-head combat
 
 protected:
 	bool GetSerpentMovement(const UINT wX, const UINT wY,

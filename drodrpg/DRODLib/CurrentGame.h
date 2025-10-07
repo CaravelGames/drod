@@ -73,12 +73,14 @@
 #  pragma warning(disable:4786)
 #endif
 
+#include "CurrentGameRecords.h"
 #include "DbSavedGames.h"
 #include "DbDemos.h"
 #include "GameConstants.h"
 #include "MonsterMessage.h"
 #include "PlayerDouble.h"
 #include "PlayerStats.h"
+#include "TotalMapStates.h"
 #include <BackEndLib/Assert.h>
 #include <BackEndLib/AttachableObject.h>
 #include <BackEndLib/Coord.h>
@@ -104,6 +106,22 @@ extern void incUINTValueWithBounds(UINT& val, const int inc);
 
 class CDbLevel;
 class CDbHold;
+
+//*******************************************************************************
+class CCharacterCommand;
+struct SpeechLog
+{
+	SpeechLog(WSTRING customName, CCharacterCommand* pSpeechCommand) {
+		this->customName = customName;
+		this->pSpeechCommand = pSpeechCommand;
+	}
+	SpeechLog(CCharacterCommand* pSpeechCommand) {
+		this->pSpeechCommand = pSpeechCommand;
+	}
+
+	WSTRING customName;
+	CCharacterCommand* pSpeechCommand;
+};
 
 //*******************************************************************************
 /*
@@ -162,16 +180,6 @@ struct MusicData
 	WSTRING songMood;  //play music by mood name
 };
 
-//*******************************************************************************
-//To facilitate some var lookup operations.
-struct VarMapInfo {
-	bool bInteger;
-	UINT val;
-	WSTRING wstrVal;
-};
-typedef std::string VarNameType;
-typedef std::map<VarNameType, VarMapInfo> VARMAP;
-
 struct TarstuffStab {
 	TarstuffStab(const CMoveCoord& c, CMonster* m)
 		: moveCoord(c), pTarstuffMonster(m)
@@ -181,10 +189,11 @@ struct TarstuffStab {
 	CMonster* pTarstuffMonster;
 };
 
+typedef pair<ScriptVars::MapIcon, ScriptVars::MapIconState> MapIconPair;
+
 //*******************************************************************************
 class CCombat;
 class CDb;
-class CCharacterCommand;
 class CFiredCharacterCommand;
 class CSwordsman;
 //struct DEMO_UPLOAD;
@@ -209,17 +218,19 @@ public:
 	WSTRING  AbbrevRoomLocation();
 	void     activateCustomEquipment(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     ActivateTokenAt(const UINT wX, const UINT wY);
-	void AddNewEntity(CCueEvents& CueEvents, const UINT identity,
-			const UINT wX, const UINT wY, const UINT wO);
-	void     AddRoomToMap(const UINT roomID, const bool bMarkRoomVisible=false, const bool bSaveRoom=true);
+	CMonster* AddNewEntity(CCueEvents& CueEvents, const UINT identity,
+			const UINT wX, const UINT wY, const UINT wO, const bool bMakeCharacterVisible=false);
+	void     AddRoomToMap(const UINT roomID, const MapState mapState=MapState::NoDetail, const bool bSaveRoom=true);
 	bool     Autosave(const WSTRING& name);
 //	void     BeginDemoRecording(const WCHAR* pwczSetDescription,
 //			const bool bUseCurrentTurnNo=true);
 	bool     CanPlayerCutBriars() const;
+	bool     CanPlayerCutTarAnywhere() const;
 	bool     CanPlayerMoveTo(const UINT wX, const UINT wY) const;
 	bool     changingInventory(CCueEvents& CueEvents, const UINT type, const UINT newEquipment);
 	void     Clear(const bool bNewGame=true);
 	bool     CustomNPCExists(const UINT characterID) const;
+	void     DeserializeScriptArrays();
 	void     DestroyInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
 	static void DiffVarValues(const VARMAP& vars1, const VARMAP& vars2, set<VarNameType>& diff);
 	bool     DoesPlayerAttackFirst() const;
@@ -232,16 +243,24 @@ public:
 //	UINT     EndDemoRecording();
 	bool     equipmentBlocksGaze(const UINT type) const;
 	bool     ExecutingNoMoveCommands() const {return this->bExecuteNoMoveCommands;}
+	int      EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params);
 	WSTRING  ExpandText(const WCHAR* wText, CCharacter *pCharacter=NULL);
 	void     FreezeCommands();
 //	UINT     GetAutoSaveOptions() const {return this->dwAutoSaveOptions;}
 	CCharacter* GetCharacterWithScriptID(const UINT scriptID);
 	UINT     GetChecksum() const;
 	void     getEquipmentStats(const UINT type, int& ATKstat, int &DEFstat) const;
+	float    GetGlobalStatModifier(ScriptVars::StatModifiers statType) const;
+	float    GetTotalStatModifier(ScriptVars::StatModifiers statType) const;
 	UINT     getNewScriptID();
+	UINT     GetNextImageOverlayID();
+	UINT     getSpawnID(UINT defaultMonsterID) const;
+	WSTRING  getStringVar(const UINT varIndex) const;
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
+	void     GetArrayVarValues(VARMAP& vars);
+	WSTRING  GetArrayVarAsString(const UINT varID);
 	int      getItemAmount(const UINT item) const;
 	int      getPlayerATK() const;
 	int      getPlayerDEF() const;
@@ -253,36 +272,50 @@ public:
 	WSTRING  GetScrollTextAt(const UINT wX, const UINT wY);
 	UINT     GetRoomExitDirection(const UINT wMoveO) const;
 	UINT     GetScore() const;
+	static UINT GetScore(const PlayerStats& st);
+	static UINT CalculateStatScore(const int stat, const int scoreMultiplier);
 	CEntity* getSpeakingEntity(CFiredCharacterCommand* pFiredCommand);
 	bool     GetSwordsman(UINT& wSX, UINT& wSY, const bool bIncludeNonTarget=false) const;
 	UINT     GetSwordMovement() const;
 	const CMonsterMessage* GetUnansweredQuestion() const
 			{ return UnansweredQuestions.empty() ? NULL : &UnansweredQuestions.front(); }
 	void     GotoLevelEntrance(CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay=false);
+	void     GotoWorldMap(CCueEvents& CueEvents, const UINT wWorldMap);
 	bool HasUnansweredQuestion(const CMonster *pMonster) const;
 	static void InitRPGStats(PlayerStats& s);
 	bool     IsCurrentRoomExplored(const bool bConsiderCurrentRoom=true) const;
 //	bool     IsDemoRecording() const {return this->bIsDemoRecording;}
 	bool     IsEquipmentValid(const UINT id, const UINT type);
-	bool     IsFighting(CMonster* pMonster) const;
+	bool     IsFighting(const CMonster* pMonster) const;
 	bool     IsLuckyGRItem(const UINT type) const;
 	bool     IsLuckyXPItem(const UINT type) const;
+	bool     IsPlayerSwordRemoved() const;
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
 	bool     IsPlayerAt(const UINT wX, const UINT wY) const;
 	bool     IsPlayerDying() const;
 	bool     IsPlayerSwordAt(const UINT wX, const UINT wY) const;
 	bool     IsRoomAtCoordsExplored(const UINT dwRoomX, const UINT dwRoomY) const;
+	bool     IsRoomBeingDisplayedOnly() const {return this->bRoomDisplayOnly;}
 	bool     IsPlayerAccessoryDisabled() const;
+	bool     IsPlayerItemDisabled(const UINT type) const;
 	bool     IsPlayerShieldDisabled() const;
 	bool     IsPlayerSwordDisabled() const;
+	bool     IsPlayerDamagedByHotTile() const;
+	bool     IsPlayerDamagedByFiretrap() const;
+	bool     IsPlayerMistImmune() const;
+	bool     IsPlayerSwordExplosiveSafe() const;
+	bool     IsPlayerSwordWallAndMirrorSafe() const;
 	bool     IsSwordMetal(const UINT type) const;
 	bool     IsShieldMetal(const UINT type) const;
-	bool     IsSwordStrongAgainst(CMonster* pMonster) const;
-	bool     IsEquipmentStrongAgainst(CMonster* pMonster, const UINT type) const;
+	bool     IsSwordStrongAgainst(const CMonster* pMonster) const;
+	bool     IsEquipmentStrongAgainst(const CMonster* pMonster, const UINT type) const;
+	bool     IsRecordingMoves() const { return !this->Commands.IsFrozen() && !this->bNoSaves; }
 	bool     IsValidatingPlayback() const {return this->bValidatingPlayback;}
+	bool     IsValidWorldMapTransfer(UINT wEntranceID, ExitType exitType) const;
 	bool     LoadFromHold(const UINT dwHoldID, CCueEvents &CueEvents);
 	bool     LoadFromLevelEntrance(const UINT dwHoldID, const UINT dwEntranceID,
 			CCueEvents &CueEvents);
+	bool     LoadFromWorldMap(const UINT worldMapID);
 	bool     LoadFromRoom(const UINT dwRoomID, CCueEvents &CueEvents,
 			const UINT wX, const UINT wY, const UINT wO, const UINT wIdentity,
 			const bool bSwordOff, const bool bNoSaves=false);
@@ -294,6 +327,7 @@ public:
 	bool     MayUseItem(const UINT type) const;
 	bool     PlayCommands(const UINT wCommandCount, CCueEvents &CueEvents,
 			const bool bTruncateInvalidCommands=false);
+	void     ProcessAfterVictory(CCueEvents& CueEvents);
 	void     ProcessCommand(int nCommand, CCueEvents &CueEvents,
 			const UINT wX=(UINT)-1, const UINT wY=(UINT)-1);
 	void     ProcessCommand_EndOfTurnEventHandling(CCueEvents& CueEvents);
@@ -303,15 +337,18 @@ public:
 			CMonster* pDefeatedMonster, const UINT wSX, const UINT wSY,
 			const UINT wSwordMovement);
 	void     ProcessNPCDefeat(CCharacter* pDefeatedNPC, CCueEvents& CueEvents);
+	void     ProcessPostCombatExpansions(CCueEvents& CueEvents);
 	void     ProcessMoveFreeScripts(CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessScripts(int nCommand, CCueEvents& CueEvents, CMonster* pMonsterList);
 	void     ProcessSwordHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			CMonster *pDouble = NULL);
 	void     QuickSave();
+	void     RemoveClearedImageOverlays(const int clearLayers);
 	void     RestartRoom(CCueEvents &CueEvents);
 	void     SaveGame(const SAVETYPE eSaveType, const WSTRING& name);
 	void     SaveToContinue();
 	void     SaveToEndHold();
+	void     SaveToWorldMap();
 /*
 	void     SaveToLevelBegin();
 	void     SaveToRoomBegin();
@@ -319,12 +356,13 @@ public:
 			{this->dwAutoSaveOptions = dwSetAutoSaveOptions;}
 	void     SetComputationTimePerSnapshot(const UINT dwTime);
 */
-	void     SaveExploredRoomData(CDbRoom& room);
+	void     SaveExploredRoomData(const CDbRoom& room, const bool bOmitCompletedScripts=false);
 
 	void     DisableInventory(CCueEvents& CueEvents, const UINT type, const bool bDisable=true);
 	void     EnableInventory(CCueEvents& CueEvents, const UINT type);
 	bool     QueryInventoryStatus(const UINT type) const;
 	void     SellInventory(CCueEvents& CueEvents, const UINT type, const bool bShowStatChanges=true);
+	void     SetArrayVarFromString(const UINT varID, const WSTRING& wstr);
 	void     SetExecuteNoMoveCommands(const bool bVal=true) {this->bExecuteNoMoveCommands = bVal;}
 	bool     SetPlayer(const UINT wSetX, const UINT wSetY);
 	void     TeleportPlayer(const UINT wSetX, const UINT wSetY, CCueEvents& CueEvents, bool bProcess = true);
@@ -332,6 +370,7 @@ public:
 	bool     SetPlayerSwordSheathed();
 	void     SetTurn(UINT wSetTurnNo, CCueEvents &CueEvents);
 	bool     ShowLevelStart() const;
+	void     StashPersistingEvents(CCueEvents& CueEvents);
 //	void     TallyKill();
 	void     ToggleSwordDisarm();
 	void     TradeAccessory(CCueEvents& CueEvents, const UINT newEquipment, const bool bShowStatChanges=true);
@@ -345,9 +384,17 @@ public:
 	bool     UseAccessory(CCueEvents &CueEvents);
 	bool     WalkDownStairs();
 //	UINT     WriteCurrentRoomDieDemo();
+	UINT     WriteLocalHighScore(const WSTRING& name);
 	UINT     WriteScoreCheckpointSave(const WSTRING& name);
 
 	bool     PrepTempGameForRoomDisplay(const UINT roomID);
+
+	//World map.
+	void     SetWorldMapIcon(UINT worldMapID, UINT xPos, UINT yPos, UINT entranceID, ExitType exitType,
+		UINT customCharID, UINT imageID, UINT displayFlags);
+	void     SetWorldMapMusic(UINT worldMapID, const WSTRING& songlist);
+	void     SetWorldMapMusic(UINT worldMapID, const UINT songID, const UINT customID);
+	WorldMapMusic GetWorldMapMusic(UINT worldMapID);
 
 	CDbRoom *   pRoom;
 	CDbLevel *  pLevel;
@@ -360,10 +407,12 @@ public:
 	//Game state vars
 //	bool     bIsDemoRecording;
 	bool     bIsGameActive;
+	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	UINT     wTurnNo;
 	UINT     wPlayerTurn;      //player move #
 	UINT     wSpawnCycleCount; //monster move #
 	bool     bHalfTurn;        //half a turn taken 
+	UINT     lastProcessedCommand; //most recently processed comand, for read-only script access
 //	UINT     wMonsterKills; //total monsters killed in current room
 //	bool     bBrainSensesSwordsman;
 //	UINT     wLastCheckpointX, wLastCheckpointY;
@@ -374,12 +423,23 @@ public:
 	bool     bContinueCutScene;
 //	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
-	CIDSet   roomsExploredAtRoomStart, roomsMappedAtRoomStart;
+	map<UINT, map<int, int>> scriptArraysAtRoomStart;
+	CIDSet   roomsExploredAtRoomStart;
+	RoomMapStates roomsMappedAtRoomStart;
+	map <UINT, MapIconPair> mapIconsAtRoomStart;
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
-	vector<CCharacterCommand*> roomSpeech; //speech played up to this moment in the current room
+	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 //	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 //	PlayerStats playerStatsAtRoomStart;
-	MusicData music; //for front end
+
+	//Front-end effects.
+	MusicData music;
+	WSTRING  customRoomLocationText;
+	vector<CImageOverlay> persistingImageOverlays;
+
+	UINT imageOverlayNextID;
+
+	WSTRING localScoreMessage;
 
 	//Internet.
 //	static queue<DEMO_UPLOAD*> demosForUpload;
@@ -392,6 +452,12 @@ public:
 	CCombat  *pCombat;
 	CMonster *pBlockedSwordHit; //when not NULL, indicates this turn's movement is invalid due to a forbidden attack on this monster
 
+	//TotalMapStates
+	CTotalMapStates TotalMapStates;
+	MapState GetStoredMapStateForRoom(const UINT roomID) const { return TotalMapStates.GetStoredMapStateForRoom(roomID); }
+	void UpdateStoredMapState(const UINT roomID, const MapState state) { TotalMapStates.Update(roomID, state, this->bNoSaves); }
+	void UpdateStoredMapState(const CIDSet& roomIDs, const MapState state) { TotalMapStates.Update(roomIDs, state, this->bNoSaves); }
+
 private:
 	void AdvanceCombat(CCueEvents& CueEvents);
 	void InitiateCombat(CCueEvents& CueEvents, CMonster *pMonster,
@@ -399,11 +465,11 @@ private:
 			const UINT wFromX, const UINT wFromY, const UINT wX, const UINT wY,
 			const bool bDefeatToStabTarTile=false);
 
-	void		AddCompletedScripts();
 	void     AddRoomsToPlayerTally();
 	void     AddQuestionsToList(CCueEvents &CueEvents,
 			list<CMonsterMessage> &QuestionList) const;
 	void     AmbientSoundTracking(CCueEvents &CueEvents);
+	void     CheckGlobalScriptsState();
 	void     DeleteLeakyCueEvents(CCueEvents &CueEvents);
 //	void     DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType);
 	void     ExitCurrentRoom();
@@ -426,7 +492,7 @@ private:
 	void     ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
 		const bool bWasOnSameScroll, const bool bPlayerMove = true, const bool bPlayerTeleported = false);
 	void     ProcessPlayer_HandleLeaveLevel(CCueEvents &CueEvents,
-			const UINT wEntrance=EXIT_LOOKUP, const bool bSkipEntranceDisplay=false);
+		const LevelExit& exit = LevelExit(), const bool bSkipEntranceDisplay=false);
 	bool     ProcessPlayer_HandleLeaveRoom(const UINT wMoveO,
 			CCueEvents &CueEvents);
 	void     ProcessSimultaneousSwordHits(CCueEvents &CueEvents);
@@ -466,7 +532,6 @@ private:
 	CIDSet   CompletedScriptsPending;   //saved permanently on room exit
 
 	bool     bRoomDisplayOnly; //indicates player is not in room and no player interaction should be processed
-	bool     bNoSaves;   //don't save anything to DB when set (e.g., for dummy game sessions)
 	bool     bValidatingPlayback; //for streamlining parts of the playback process
 
 /*
@@ -475,8 +540,9 @@ private:
 	UINT dwComputationTimePerSnapshot; //real movement computation time between game state snapshots
 */
 
-	void     AddRoomsPreviouslyExploredByPlayerToMap(UINT playerID = 0, const bool bMakeRoomsVisible = true);
 	CIDSet   PreviouslyExploredRooms; //cache values
+
+	void     InitializeTotalMapStates(const bool forceLoading = false);
 };
 
 #endif //...#ifndef CURRENTGAME_H

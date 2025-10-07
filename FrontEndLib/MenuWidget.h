@@ -92,6 +92,7 @@ public:
 protected:
 	virtual void   HandleKeyDown(const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   HandleMouseMotion(const SDL_MouseMotionEvent &Motion);
+	virtual void   HandleMouseDown(const SDL_MouseButtonEvent& Button);
 	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &Button);
 
 private:
@@ -101,7 +102,7 @@ private:
 	vector<MenuOption*>  options;
 	UINT           eFontType[MENUFONTCOUNT];
 	UINT           wNextY;
-	int            nSelectedOption, nOnOption;
+	int            nSelectedOption, nOnOption, nClickedOption;
 	int            y_font_offset;
 	
 	UINT seid;

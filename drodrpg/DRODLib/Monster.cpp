@@ -46,6 +46,8 @@
 #define GOLDStr "GOLD"
 #define XPStr "XP"
 
+#define EggSpawnStr "EggSpawn"
+
 CCoordIndex_T<USHORT> CMonster::room;
 CCoordIndex CMonster::swordsInRoom;
 
@@ -63,7 +65,7 @@ public:
 	//For priority queue insertion:
 	//An element being inserted with equal or higher dwScore gets placed later in the queue.
 	//FIXME: The current operator could have different behavior, based on implementation.
-	bool operator <(const CPathNode& mc) const {return this->wScore >= mc.wScore;}
+	bool operator <(const CPathNode& mc) const {return mc.wScore < this->wScore;}
 };
 
 //
@@ -82,6 +84,7 @@ CMonster::CMonster(
 	, eMovement(eMovement)
 	, bAlive(true)
 	, HP(0), ATK(0), DEF(0), GOLD(0), XP(0)
+	, bEggSpawn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
 {
@@ -105,6 +108,7 @@ void CMonster::Clear()
 	this->bIsFirstTurn=false;
 	this->bAlive = true;
 	this->ATK = this->DEF = this->GOLD = this->HP = this->XP = 0;
+	this->bEggSpawn = false;
 	this->ExtraVars.Clear();
 	while (this->Pieces.size())
 	{
@@ -241,7 +245,7 @@ void CMonster::SetHP()
 	if (this->pCurrentGame && this->HP)
 	{
 		ASSERT(this->pCurrentGame->pPlayer);
-		const float fMult = this->pCurrentGame->pPlayer->st.monsterHPmult / 100.0f;
+		const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterHP);
 		this->HP = UINTBounds(this->HP * fMult);
 		if (!this->HP)
 			this->HP = 1; //don't let a small multiplier reduce HP to zero
@@ -267,7 +271,7 @@ void CMonster::SetOrientation(
 	ASSERT(abs((int)dyFirst) <= 1);
 	const UINT wNewO = nGetO(dxFirst, dyFirst);
 	ASSERT(IsValidOrientation(wNewO));
-	if (wNewO != NO_ORIENTATION || !HasOrientation())
+	if (IsValidOrientation(wNewO) && wNewO != NO_ORIENTATION || !HasOrientation())
 		this->wO = wNewO;
 }
 
@@ -313,7 +317,9 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 		return false;
 
 	//Touching a hot tile causes fractional damage.
-	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT)
+	//But standing on crate negates the effect.
+	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT &&
+		this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) != T_CRATE)
 	{
 		if (DamagedByHotTiles() && IsDamageableAt(this->wX, this->wY))
 		{
@@ -902,20 +908,26 @@ const
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
 				bIsPowerUp(wLookTileNo) ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
-				bIsArrow(wLookTileNo)
+				bIsAnyArrow(wLookTileNo)
 			);
 		case WATER:
 			return !(
 				wLookTileNo==T_EMPTY ||
 				bIsWater(wLookTileNo) ||
-				bIsArrow(wLookTileNo) ||
+				bIsAnyArrow(wLookTileNo) ||
 				wLookTileNo==T_NODIAGONAL ||
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_SCROLL ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
 				bIsPowerUp(wLookTileNo) ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
 				wLookTileNo==T_TOKEN
 			);
@@ -925,13 +937,16 @@ const
 				wLookTileNo==T_EMPTY ||
 				bIsFloor(wLookTileNo) ||
 				bIsOpenDoor(wLookTileNo) ||
-				bIsArrow(wLookTileNo) ||
+				bIsAnyArrow(wLookTileNo) ||
 				bIsPlatform(wLookTileNo) ||
 				wLookTileNo==T_NODIAGONAL ||
 				wLookTileNo==T_SCROLL ||
 				wLookTileNo==T_FUSE ||
 				wLookTileNo==T_TOKEN ||
 				wLookTileNo==T_KEY ||
+				wLookTileNo==T_MIST ||
+				bIsMap(wLookTileNo) ||
+				bIsShovel(wLookTileNo) ||
 				bIsPowerUp(wLookTileNo) ||
 				bIsEquipment(wLookTileNo) ||
 				(IsFlying() && (bIsPit(wLookTileNo) || bIsWater(wLookTileNo))) ||
@@ -958,6 +973,126 @@ bool CMonster::IsOpenMove(const UINT wX, const UINT wY, const int dx, const int 
 	return !(DoesSquareContainObstacle(wX + dx, wY + dy) ||
 		DoesArrowPreventMovement(wX, wY, dx, dy) ||
 		this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(wX, wY, dx, dy));
+}
+
+//*****************************************************************************************
+//Returns: whether an egg should be spawned this turn
+bool CMonster::IsSpawnEggTriggered(const CCueEvents& CueEvents) const
+{
+	if (!IsEggSpawner())
+		return false; //not an egg-spawning monster
+
+	//lay an egg any time player fights a monster...
+	if (!CueEvents.HasOccurred(CID_MonsterEngaged))
+		return false;
+
+	if (this->pCurrentGame->pCombat == NULL)    //...fighting someone...
+		return false;
+
+	if (this->pCurrentGame->IsFighting(this)) //...but not me...
+		return false;
+
+	const CMonster* pCombatEnemy = this->pCurrentGame->pCombat->pMonster;
+	if (!this->pCurrentGame->pCombat->PlayerCanHarmMonster(pCombatEnemy)) //doesn't count if player engages a monster that is too shielded
+		return false;
+
+	//don't lay when a monster created by egg-laying is killed
+	if (pCombatEnemy->bEggSpawn)
+		return false;
+
+	//type-checking for backwards compatibility
+	//don't lay more eggs when eggs are killed
+	const UINT spawnID = GetSpawnType(M_REGG);
+
+	const UINT enemyType = pCombatEnemy->wType;
+	if (enemyType != M_CHARACTER)
+		return enemyType != spawnID;
+
+	const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pCombatEnemy);
+	return pCharacter->wLogicalIdentity != spawnID;
+}
+
+//*****************************************************************************
+void CMonster::SpawnEgg(CCueEvents& CueEvents)
+//Attempts to generate an egg monster next to this monster, in the direction of
+//the nearest target.
+{
+	UINT wSX, wSY;
+	if (!GetTarget(wSX, wSY))
+		return;	//no change -- and don't lay eggs
+
+	CCoordSet eggs;
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	float fClosest = 99999.0;
+	for (int y = -1; y <= 1; ++y)
+	{
+		for (int x = -1; x <= 1; ++x)
+		{
+			//The criteria for laying an egg in a square should be:
+			//1. Square does not contain a monster (including mimic).
+			//2. Square does not contain player or a sword.
+			//3. T-square is mostly empty (backwards compatibility).
+			//4. F-tile is open.
+			//5. O-square is open floor/door (except for open yellow doors -- for backwards compatibility).
+			//6. Swordsman is still sensed at the new square moved to (backwards compatibility).
+			const UINT ex = this->wX + x;
+			const UINT ey = this->wY + y;
+			if (!room.IsValidColRow(ex, ey))
+				continue;
+
+			const UINT wOSquare = room.GetOSquare(ex, ey);
+			const UINT wTSquare = room.GetTSquare(ex, ey);
+			CMonster* pMonster = room.GetMonsterAtSquare(ex, ey);
+			if (
+				// Not current queen position
+				!(ex == this->wX && ey == this->wY) &&
+				// Not the player
+				!this->pCurrentGame->IsPlayerAt(ex, ey) &&
+				// Not monster or player double or sword
+				!pMonster && !DoesSquareContainObstacle(ex, ey) &&
+				//And t-square is not occupied with a blocking item.
+				(wTSquare == T_EMPTY || wTSquare == T_FUSE || wTSquare == T_MIST) &&
+				!bIsArrow(room.GetFSquare(ex, ey)) &&
+				//And o-square is floor or open door.
+				((bIsPlainFloor(wOSquare) || wOSquare == T_PRESSPLATE) ||
+					bIsOpenDoor(wOSquare) || bIsMistVent(wOSquare) ||
+					bIsPlatform(wOSquare) || bIsBridge(wOSquare) ||
+					wOSquare == T_GOO || wOSquare == T_FIRETRAP)
+				)
+			{
+				//Spot is open for placing an egg.
+				const float fDist = DistanceToTarget(ex, ey, wSX, wSY);
+				if (fDist < fClosest)
+				{
+					//Place one egg on the tile closest to target.
+					fClosest = fDist;
+					eggs.clear();
+					eggs.insert(ex, ey);
+				}
+			}
+		}
+	}
+
+	//Lay eggs and check for them being laid on pressure plates.
+	const UINT spawnID = GetSpawnType(M_REGG);
+	for (CCoordSet::const_iterator egg = eggs.begin(); egg != eggs.end(); ++egg)
+	{
+		CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
+			CueEvents, spawnID, egg->wX, egg->wY, S, true);
+		m->bEggSpawn = true;
+		UINT wType = m->GetIdentity();
+		if (wType == M_REGG) {
+			m->wO = SW;
+		} else if (!bMonsterHasDirection(wType)) {
+			m->wO = NO_ORIENTATION;
+		}
+		CueEvents.Add(CID_EggSpawned);
+	}
+}
+
+UINT CMonster::GetSpawnType(UINT defaultMonsterID) const
+{
+	return this->pCurrentGame->getSpawnID(M_REGG);
 }
 
 //*****************************************************************************
@@ -1396,12 +1531,12 @@ const
 UINT CMonster::getATK() const
 //Return: monster's ATK
 {
-	UINT val = this->ATK;
+	int val = this->ATK;
 	if (!this->pCurrentGame || !val) //multiply by zero will still be zero, so return now
 		return val;
-	const float fMult = this->pCurrentGame->pPlayer->st.monsterATKmult / 100.0f;
-	val = UINTBounds(val * fMult);
-	return !val ? 1 : val; //ATK always >= 1
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterATK);
+	val = intBounds(val * fMult);
+	return val; //ATK can be negative
 }
 
 //*****************************************************************************
@@ -1412,15 +1547,26 @@ UINT CMonster::getColor() const
 }
 
 //*****************************************************************************
+std::array<float, 3 > CMonster::getHSV() const
+//Return: float-converted color hue, saturation and value
+{
+	return { -1, -1, -1 }; //no changes by default
+}
+
+//*****************************************************************************
 UINT CMonster::getDEF() const
 //Return: monster's DEF
 {
-	UINT val = this->DEF;
+	int val = this->DEF;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = this->pCurrentGame->pPlayer->st.monsterDEFmult / 100.0f;
-	val = UINTBounds(val * fMult);
-	return !val ? 1 : val; //DEF always >= 1
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterDEF);
+	val = intBounds(val * fMult);
+
+	if (val > 0 && IsOnMistTile() && !IsMistImmune())
+		return 0; //Mist tile nullifies positive DEF
+
+	return val; //DEF can be negative
 }
 
 //*****************************************************************************
@@ -1430,7 +1576,7 @@ int CMonster::getGOLD() const
 	int val = this->GOLD;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = int(this->pCurrentGame->pPlayer->st.monsterGRmult) / 100.0f; //may be negative, so treat as a signed int
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterGR); //may be negative
 	val = intBounds(val * fMult); //may be positive, zero or negative
 	if (!val)
 	{
@@ -1469,7 +1615,7 @@ int CMonster::getXP() const
 	int val = this->XP;
 	if (!this->pCurrentGame || !val)
 		return val;
-	const float fMult = int(this->pCurrentGame->pPlayer->st.monsterXPmult) / 100.0f; //may be negative, so treat as a signed int
+	const float fMult = this->pCurrentGame->GetTotalStatModifier(ScriptVars::MonsterXP); //may be negative
 	val = intBounds(val * fMult); //may be positive, zero or negative
 	if (!val)
 	{
@@ -1622,6 +1768,13 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::IsOnMistTile() const
+//Returns: whether the monster's tile has mist
+{
+	return this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) == T_MIST;
+}
+
+//*****************************************************************************
 bool CMonster::IsOnSwordsman()
 //Is the monster in the same square as Beethro?
 const
@@ -1751,6 +1904,28 @@ const
 		
 	//Add cue event with attached monster message.
 	CueEvents.Add(CID_MonsterSpoke, pNewMessage, true);
+}
+
+//*****************************************************************************
+bool CMonster::KillIfOutsideWall(CCueEvents& CueEvents)
+//Kill the monster if it's not on a wall or door.
+//
+//Returns: If it died
+{
+	//If ghost was on a door that opened, kill it.
+	const UINT dwTileNo = this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY);
+	if (bIsOpenDoor(dwTileNo) || bIsFloor(dwTileNo))
+	{
+		CCurrentGame* pGame = (CCurrentGame*)this->pCurrentGame; //non-const
+		if (pGame->IsFighting(this))
+			return false; //if terrain changes during a fight, just let the combat play out
+
+		pGame->pRoom->KillMonster(this, CueEvents);
+		SetKillInfo(NO_ORIENTATION); //center stab effect
+		CueEvents.Add(CID_MonsterDiedFromStab, this);
+		return true;
+	}
+	return false;
 }
 
 //*****************************************************************************
@@ -1909,6 +2084,9 @@ void CMonster::Save(
 	if (this->XP)
 		this->ExtraVars.SetVar(XPStr, this->XP);
 
+	if (this->bEggSpawn)
+		this->ExtraVars.SetVar(EggSpawnStr, this->bEggSpawn);
+
 	UINT dwExtraVarsSize;
 	BYTE *pbytExtraVarsBytes = this->ExtraVars.GetPackedBuffer(dwExtraVarsSize);
 	ASSERT(pbytExtraVarsBytes);
@@ -1951,6 +2129,7 @@ void CMonster::SetMembers(const CDbPackedVars& vars)
 	this->DEF = vars.GetVar(DEFStr, this->DEF);
 	this->GOLD = vars.GetVar(GOLDStr, this->GOLD);
 	this->XP = vars.GetVar(XPStr, this->XP);
+	this->bEggSpawn = vars.GetVar(EggSpawnStr, this->bEggSpawn);
 }
 
 //
@@ -1962,6 +2141,9 @@ bool CMonster::AttackPlayerWhenAdjacent(CCueEvents& CueEvents)
 //If adjacent to the player in a direction without movement forbidden, then attack.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find a target (i.e. the player).
 	//If the player is invisible, he can't be seen.
 	UINT wTX, wTY;
@@ -2002,6 +2184,9 @@ bool CMonster::AttackPlayerInFrontWhenBackIsTurned(CCueEvents &CueEvents)
 //Attack the player when in front of the monster and the player's back is turned.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find a target (i.e. the player).
 	//If the player is invisible, he can't be seen.
 	UINT wTX, wTY;
@@ -2031,6 +2216,11 @@ bool CMonster::AttackPlayerInFrontWhenBackIsTurned(CCueEvents &CueEvents)
 	if (bPlayerIsFacingMe)
 		return false;
 
+	//Attack if movement in this direction is not forbidden.
+	if (DoesArrowPreventMovement(dx, dy) ||
+		this->pCurrentGame->pRoom->DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy))
+		return false;
+
 	//Cannot attack something above me.
 	if (IsTileAboveMe(wTX, wTY))
 		return false;
@@ -2050,6 +2240,9 @@ bool CMonster::AttackPlayerWhenInFront(CCueEvents &CueEvents)
 //Attack the player when the player stands directly in front of the monster.
 //Returns: true if an attack is executed
 {
+	if (this->pCurrentGame->wTurnNo == 0)
+		return false; //not on turn zero
+
 	//Find target.  If player is invisible, player can't be seen.
 	UINT wTX, wTY;
 	if (!GetTarget(wTX,wTY))
@@ -2167,7 +2360,8 @@ bool CMonster::GetNextGaze(
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_CO: case T_DOOR_RO: case T_DOOR_BO:
 		case T_DOOR_MONEYO:
 		case T_TUNNEL_E: case T_TUNNEL_W: case T_TUNNEL_N: case T_TUNNEL_S:
-		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE:
+		case T_TRAPDOOR: case T_TRAPDOOR2: case T_PRESSPLATE: case T_THINICE:
+		case T_MISTVENT: case T_FIRETRAP: case T_FIRETRAP_ON:
 			//Gaze can go over these objects.
 		break;
 		default:
@@ -2195,7 +2389,8 @@ bool CMonster::GetNextGaze(
 		case T_BOMB:
 		case T_OBSTACLE:
 		case T_MIRROR:
-		case T_ORB:
+		case T_CRATE:
+		case T_POWDER_KEG:
 			//These objects stop gaze.
 			return false;
 		case T_FUSE:
@@ -2203,6 +2398,28 @@ bool CMonster::GetNextGaze(
 			if (pCaster)
 				pRoom->LightFuse(CueEvents, cx, cy,	false); //Light it right away next turn.
 			break;
+		case T_ORB:
+			//Gaze damages cracked orbs.
+			if (pCaster)
+			{
+				COrbData* pOrb = pRoom->GetOrbAtCoords(cx, cy);
+				if (!pOrb)
+					pOrb = pRoom->AddOrbToSquare(cx, cy); //add record to track orb state if not present
+				if (pOrb->eType == OT_BROKEN)
+				{
+					pRoom->Plot(cx, cy, T_EMPTY); //broken orb is destroyed
+					CueEvents.Add(CID_CrumblyWallDestroyed, new CMoveCoord(cx, cy, NO_ORIENTATION), true);
+					break; //gaze continues
+				}
+				else if (pOrb->eType == OT_ONEUSE)
+				{
+					pOrb->eType = OT_BROKEN;
+					CueEvents.Add(CID_OrbDamaged, pOrb);
+					pRoom->Plot(CCoordSet(cx, cy));
+					//gaze is blocked
+				}
+			}
+		return false;
 		default: break;
 	}
 
@@ -2229,12 +2446,26 @@ bool CMonster::GetNextGaze(
 				(!pCurrentGame->IsFighting(pCaster)))
 */
 			{
-				if (!pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor) &&
+				const int nPlayerO = player.wO;
+				const int dot = dx * nGetOX(nPlayerO) + dy * nGetOY(nPlayerO);
+
+				if (!(pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor) && dot < 0) &&
 					 !pCurrentGame->equipmentBlocksGaze(ScriptFlag::Accessory))
 				{
-					//Cut player's health in half (one-quarter when hasted).
-					PlayerStats& ps = player.st;
-					UINT delta = ps.HP / (player.IsHasted() ? 4 : 2);
+					//Cut player's health by beam value (halved when hasted).
+					UINT beamVal = player.st.beamVal;
+					if (!beamVal)
+						return false; // no damage, blocks gaze
+
+					UINT delta = 0;
+					if (beamVal == 50) {
+						// Backwards compatibility - CalcDamage rounds up, old way rounds down
+						PlayerStats& ps = player.st;
+						delta = ps.HP / (player.IsHasted() ? 4 : 2);
+					} else {
+						delta = player.CalcDamage(beamVal);
+					}
+
 					if (!delta)
 						delta = 1;
 					player.DecHealth(CueEvents, delta, CID_MonsterKilledPlayer);

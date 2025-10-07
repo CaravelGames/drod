@@ -33,6 +33,9 @@
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "FiretrapEffect.h"
+#include "IceMeltEffect.h"
+#include "ImageOverlayEffect.h"
 #include "RoomWidget.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
@@ -46,8 +49,11 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/GameConstants.h"
 #include "../DRODLib/SettingsKeys.h"
+
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/FlashMessageEffect.h>
 #include <FrontEndLib/ListBoxWidget.h>
 #include <FrontEndLib/ProgressBarWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
@@ -55,10 +61,11 @@
 #include <BackEndLib/Base64.h>
 #include <BackEndLib/Browser.h>
 #include <BackEndLib/Files.h>
+#include <BackEndLib/Metadata.h>
 
 #include <sstream>
 
-#ifdef DEV_BUILD //comment out to embed media to .dats
+#ifdef DEV_BUILD //enable to embed media files to master .dat file
 #	define EMBED_STYLES
 #endif
 
@@ -181,6 +188,7 @@ void CDrodScreen::AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 		break;
 		case M_ROCKGOLEM:
 		case M_ROCKGIANT:
+		case M_CONSTRUCT:
 			pRoomWidget->AddTLayerEffect(
 				new CGolemDebrisEffect(pRoomWidget, coord, 10,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
@@ -195,6 +203,11 @@ void CDrodScreen::AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 			pRoomWidget->AddTLayerEffect(
 				new CBloodEffect(pRoomWidget, coord, 30,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+		break;
+		case M_FLUFFBABY:
+			pRoomWidget->AddTLayerEffect(
+				new CFluffStabEffect(pRoomWidget, coord,
+					GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 		break;
 		default:
 			pRoomWidget->AddTLayerEffect(
@@ -213,6 +226,16 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (!pRoomWidget)
 		return;
 	ASSERT(pGame);
+
+	ProcessImageEvents(CueEvents, pRoomWidget, pGame);
+
+	const int numFlashingTexts = CueEvents.GetOccurrenceCount(CID_FlashingMessage);
+	static const int CY_FLASHING_TEXT = 50;
+	int yFlashingTextOffset = (-numFlashingTexts / 2) * CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MAX = int(pRoomWidget->GetH()) / 2 - CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MIN = -Y_FLASHING_TEXT_MAX + CY_FLASHING_TEXT; //leave space at top for score ranking
+	if (yFlashingTextOffset < Y_FLASHING_TEXT_MIN)
+		yFlashingTextOffset = Y_FLASHING_TEXT_MIN;
 
 	const CAttachableObject *pObj;
 
@@ -282,14 +305,22 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 				new CDebrisEffect(pRoomWidget, *pCoord, 10,
 						GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 	}
-	for (pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
-			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	for (pObj = CueEvents.GetFirstPrivateData(CID_CrateDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-		if (pCoord->wO == NO_ORIENTATION)
-			pRoomWidget->AddTLayerEffect(
-					new CDebrisEffect(pRoomWidget, *pCoord, 3,
-							GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(pRoomWidget, *pCoord, 12,
+				GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
+	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
+		pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(pRoomWidget, moveCoord, 3,
+				GetEffectDuration(pGame, 7), GetParticleSpeed(pGame, 4)));
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
@@ -307,6 +338,12 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(pRoomWidget, *pCoord));
 		}
+	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_ThinIceMelted);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		pRoomWidget->AddOLayerEffect(new CIceMeltEffect(pRoomWidget, *pCoord));
 	}
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CutBriar);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
@@ -430,6 +467,35 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 			break;
 		}
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_MistDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+		switch (pCoord->wValue)
+		{
+		case T_MIST:
+			if (bIsSolidOTile(pGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY)))
+				pRoomWidget->AddTLayerEffect(
+					new CFluffInWallEffect(pRoomWidget, *pCoord));
+			else
+				pRoomWidget->AddTLayerEffect(
+					new CFluffStabEffect(pRoomWidget, *pCoord,
+						GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 4)));
+			break;
+		}
+	}
+
+	if (CueEvents.HasOccurred(CID_Firetrap)) {
+		pRoomWidget->RemoveMLayerEffectsOfType(EFIRETRAP);
+		const UINT duration = GetEffectDuration(pGame, 450);
+		for (pObj = CueEvents.GetFirstPrivateData(CID_Firetrap);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, *pCoord, GetEffectDuration(pGame, duration)));
+		}
+	}
 
 	//Remove old sparks before drawing the current ones.
 	pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);
@@ -438,7 +504,7 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	{
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
 		const UINT wTSquare = pGame->pRoom->GetTSquare(pCoord->wX, pCoord->wY);
-		if (wTSquare == T_FUSE || wTSquare == T_BOMB)	//needed to avoid effects
+		if (bIsCombustibleItem(wTSquare))	//needed to avoid effects
 					//where fuses have already disappeared since the cue event fired
 		{
 			pRoomWidget->AddTLayerEffect(
@@ -507,10 +573,29 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 		pRoomWidget->AddZombieGazeEffect(pMonster);
 	}
 
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FlashingMessage);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		if (yFlashingTextOffset > Y_FLASHING_TEXT_MAX)
+			break; //no room to display
+
+		const CColorText* pColorText = DYN_CAST(const CColorText*, const CAttachableObject*, pObj);
+		const CDbMessageText* pText = pColorText->pText;
+		ASSERT((const WCHAR*)(*pText));
+		CFlashMessageEffect* pFlashText = new CFlashMessageEffect(
+			pRoomWidget, (const WCHAR*)(*pText), yFlashingTextOffset, 2000, 500);
+		pFlashText->SlowExpansion();
+		if (pColorText->customColor)
+			pFlashText->SetColor(pColorText->r, pColorText->g, pColorText->b);
+		pRoomWidget->AddLastLayerEffect(pFlashText);
+		yFlashingTextOffset += CY_FLASHING_TEXT;
+	}
+
 	const bool bLightToggled = CueEvents.HasOccurred(CID_LightToggled);
 	if (bLightToggled)
 		pRoomWidget->RenderRoomLighting();
 	pRoomWidget->AddPlayerLight();
+	pRoomWidget->RerenderRoomCeilingLight(CueEvents);
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
 	{
 		//Do an update of tile image arrays.
@@ -560,7 +645,9 @@ void CDrodScreen::AdvanceDemoPlayback(
 		if ((CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied) ||
 				CueEvents.HasOccurred(CID_WinGame) ||
 				CueEvents.HasOccurred(CID_ExitLevelPending) ||
-				CueEvents.HasOccurred(CID_InvalidAttackMove))) //invalid move indicates play sequence is for a different hold version
+				CueEvents.HasOccurred(CID_ExitToWorldMapPending) ||
+				CueEvents.HasOccurred(CID_InvalidAttackMove)) || //invalid move indicates play sequence is for a different hold version
+				CueEvents.HasOccurred(CID_StalledCombat)) //stalled combat indicates play sequence is for a different hold version
 		{
 			while (commandIter != pGame->Commands.end())
 				commandIter = pGame->Commands.GetNext();
@@ -573,6 +660,52 @@ void CDrodScreen::AdvanceDemoPlayback(
 		pRoomDisplay->RequestPaint();
 	else
 		pRoomWidget->RequestPaint();
+}
+
+//*****************************************************************************
+void CDrodScreen::ProcessImageEvents(
+	//Handle events for displaying image overlay effects.
+	//This must be called both before and after the room is drawn to catch all cases.
+	//
+	//Pre-condition: Persistent image effects were handled previously in DisplayPersistingImageOverlays.
+	CCueEvents& CueEvents,
+	CRoomWidget* pRoomWidget, const CCurrentGame* pGame)
+{
+	static const CUEEVENT_ID cid = CID_ImageOverlay;
+	if (!CueEvents.HasOccurred(cid))
+		return;
+
+	const UINT currentTurn = pGame ? pGame->wTurnNo : 0;
+	const Uint32 dwNow = CScreen::dwCurrentTicks;
+
+	const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(cid);
+	while (pObj)
+	{
+		const CImageOverlay* pImageOverlay = DYN_CAST(const CImageOverlay*, const CAttachableObject*, pObj);
+
+		//Don't wait for additional images to be added to the room widget before clearing effects.
+		const int clearsLayer = pImageOverlay->clearsImageOverlays();
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsLayer == ImageOverlayCommand::NO_LAYERS &&
+			clearsGroup == ImageOverlayCommand::NO_GROUP) {
+			CImageOverlayEffect* pEffect = new CImageOverlayEffect(pRoomWidget, pImageOverlay, currentTurn, dwNow);
+			pRoomWidget->AddLayerEffect(pEffect, pImageOverlay->getLayer());
+		} else {
+			if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+				pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			}
+			if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+				pRoomWidget->RemoveGroupEffects(clearsGroup);
+			}
+		}
+
+		//Don't reprocess these events if this method is called again.
+		//This is done instead of calling ClearEvent so the occurred flag isn't reset.
+		CueEvents.Remove(cid, pObj);
+
+		//The next item is now the first item.
+		pObj = CueEvents.GetFirstPrivateData(cid);
+	}
 }
 
 //*****************************************************************************
@@ -591,6 +724,12 @@ UINT CDrodScreen::GetParticleSpeed(CCurrentGame* pGame, const UINT baseSpeed) co
 	//When player is hasted, particles move at half speed
 	return pGame && pGame->pPlayer->IsHasted() ?
 			(baseSpeed > 1 ? baseSpeed/2 : 1) : baseSpeed;
+}
+
+//******************************************************************************
+CDbHold::HoldStatus CDrodScreen::GetHoldStatus()
+{
+	return CDbHolds::GetStatus(g_pTheDB->GetHoldID());
 }
 
 //*****************************************************************************
@@ -648,9 +787,17 @@ WSTRING CDrodScreen::getStatsText(
 		wstr += wszForwardSlash;
 		wstr += _itoW(st.skeletonKeys, num, 10);
 	}
-	const bool bHasSword = st.sword != NoSword;
-	const bool bHasShield = st.shield != NoShield;
-	const bool bHasAccessory = st.accessory != NoAccessory;
+	wstr += wszSpace;
+	wstr += wszSpace;
+
+	wstr += g_pTheDB->GetMessageText(MID_ShovelsStat);
+	wstr += wszColon;
+	wstr += wszSpace;
+	wstr += _itoW(st.shovels, num, 10);
+
+	const bool bHasSword = st.sword != NoSword && st.sword != WeaponSlot;
+	const bool bHasShield = st.shield != NoShield && st.shield != ArmorSlot;
+	const bool bHasAccessory = st.accessory != NoAccessory && st.accessory != AccessorySlot;
 	const bool bHasEquipment = bHasSword || bHasShield || bHasAccessory;
 	if (bHasEquipment)
 	{
@@ -809,6 +956,7 @@ WSTRING CDrodScreen::getStatsText(
 	appendDoorStatsLine(wstr, MID_MoneyDoor, st.moneyDoorCost, st.openMoneyDoorCost);
 	appendDoorStatsLine(wstr, MID_RedDoor, st.redDoors, st.openRedDoors);
 	appendDoorStatsLine(wstr, MID_BlackDoor, st.blackDoors, st.openBlackDoors);
+	appendDoorStatsLine(wstr, MID_Dirt1, st.dirtBlockCost, 0);
 
 	return wstr;
 }
@@ -984,8 +1132,11 @@ void CDrodScreen::EditGlobalVars(
 			UNPACKEDVARTYPE vType;
 			WSTRING wstrValue;
 			vType = stats.GetVarType(varName);
+			bool bIsArray = pGame->pHold->IsArrayVar(itemID);
 
-			if (vType == UVT_int) {
+			if (bIsArray) {
+				wstrValue = pGame->GetArrayVarAsString(itemID);
+			} else if (vType == UVT_int) {
 				int iVarValue = stats.GetVar(varName, (int)0);
 				std::basic_stringstream<WCHAR_t> stream;
 				stream << iVarValue;
@@ -999,8 +1150,10 @@ void CDrodScreen::EditGlobalVars(
 				wstrValue);
 			if (tagNo == TAG_OK)
 			{
-				// Hold variables can be strings or integers
-				if (isWInteger(wstrValue.c_str())) {
+				// Hold variables can be arrays, strings or integers
+				if (bIsArray) {
+					pGame->SetArrayVarFromString(itemID, wstrValue);
+				} else if (isWInteger(wstrValue.c_str())) {
 					int varValue = _Wtoi(wstrValue.c_str());
 					stats.SetVar(varName, varValue);
 				}
@@ -1020,6 +1173,79 @@ void CDrodScreen::EditGlobalVars(
 	} while (itemID != 0);
 
 	Paint();
+}
+
+//*****************************************************************************
+UINT CDrodScreen::ImportHoldImage(const UINT holdID, const UINT extensionFlags)
+//Load an image file from disk into the hold,
+//using any of the specified supported file extensions.
+//Returns: dataID if operation completed successfully or 0 if it was canceled.
+{
+	static const char importImagePath[] = "ImportImagePath";
+
+	//Get image import path.
+	CFiles Files;
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	WSTRING wstrImportPath = pCurrentPlayer ?
+		pCurrentPlayer->Settings.GetVar(importImagePath, Files.GetDatPath().c_str()) :
+		Files.GetDatPath();
+
+	WSTRING wstrImportFile;
+	for (;;)
+	{
+		const UINT dwTagNo = SelectFile(wstrImportPath,
+			wstrImportFile, MID_ImageSelectPrompt, false, extensionFlags);
+		if (dwTagNo != TAG_OK)
+		{
+			delete pCurrentPlayer;
+			return 0;
+		}
+
+		//Update the path in player settings, so next time dialog
+		//comes up it will have the same path.
+		if (pCurrentPlayer)
+		{
+			pCurrentPlayer->Settings.SetVar(importImagePath, wstrImportPath.c_str());
+			pCurrentPlayer->Update();
+		}
+
+		//Forbid importing multiple images with the same name into a hold.
+		const WSTRING filename = getFilenameFromPath(wstrImportFile.c_str());
+		CDb db;
+		db.Data.FilterByHold(holdID);
+		if (db.Data.FindByName(filename.c_str()) != 0) {
+			ShowOkMessage(MID_HoldImportDuplicateNameError);
+			continue;
+		}
+
+		//Load image.
+		CStretchyBuffer buffer;
+		if (!Files.ReadFileIntoBuffer(wstrImportFile.c_str(), buffer, true)) {
+			ShowOkMessage(MID_FileNotFound);
+		}
+		else {
+			const UINT wDataFormat = g_pTheBM->GetImageType(buffer);
+			if (wDataFormat == DATA_UNKNOWN) {
+				ShowOkMessage(MID_FileCorrupted);
+			}
+			else {
+				CDbDatum* pImage = g_pTheDB->Data.GetNew();
+				pImage->wDataFormat = wDataFormat;
+				pImage->data.Set((const BYTE*)buffer, buffer.Size());
+				pImage->DataNameText = filename;
+				pImage->dwHoldID = holdID; //image belongs to this hold
+				pImage->Update();
+				const UINT dwDataID = pImage->dwDataID;
+				delete pImage;
+				delete pCurrentPlayer;
+				return dwDataID;
+			}
+		}
+	}
+
+	ASSERT(!"Bad logic path.");
+	delete pCurrentPlayer;
+	return 0;
 }
 
 //*****************************************************************************
@@ -1233,9 +1459,11 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 	CDbHold *pHold = g_pTheDB->Holds.GetByID(dwHoldID);
 	if (!pHold) return;
 
+#ifndef STEAMBUILD
 	//Load graphics/music into hold for inclusion in export.
-	if (pHold->status == CDbHold::Main)
-		ImportHoldMedia();
+	if (CDbHold::IsOfficialHold(pHold->status))
+		ImportMedia();
+#endif
 
 	//Default filename is hold name.
 	WSTRING wstrExportFile = (WSTRING)pHold->NameText;
@@ -1384,9 +1612,15 @@ bool CDrodScreen::ExportSelectFile(
 MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 //Returns: a text MID for the specified export format version #
 {
-	if (wVersion >= 401 && wVersion < NEXT_VERSION_NUMBER)
+	if (wVersion >= 401 && wVersion < 406)
 		return MID_DROD_RPG1;   //1.0
-	return MID_DROD_UnsupportedVersion; //???
+	if (wVersion == 406)
+		return MID_DROD_RPG1_2; //1.1/1.2
+	if (wVersion >= 407 && wVersion < 500)
+		return MID_DROD_RPG1_3; //1.3
+	if (wVersion >= 500 && wVersion < NEXT_VERSION_NUMBER)
+		return MID_DROD_RPG2_0;
+	return MID_DROD_UnsupportedVersion;
 }
 
 //*****************************************************************************
@@ -1394,19 +1628,9 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-	string url = "http://www.caravelgames.com/buyRPG.html";
+	string url = "http://www.caravelgames.com/buyRPG2.html";
 #ifdef STEAMBUILD
-	url = "http://store.steampowered.com/app/351330";
-#elif defined(WIN32)
-	//use default
-#elif defined(__linux__)
-	url = "http://www.caravelgames.com/buyRPGLinux.html";
-#elif defined(__FreeBSD__)
-	url = "http://www.caravelgames.com/buyRPGFreeBSD.html";
-#elif defined(__APPLE__)
-	url = "http://www.caravelgames.com/buyRPGOSX.html";
-#else
-#error Add a buy link for this platform ?
+	url = "http://store.steampowered.com/app/3661610";
 #endif
 
 	if (!OpenExtBrowser(url.c_str()))
@@ -1485,7 +1709,7 @@ MESSAGE_ID CDrodScreen::ImportFiles(
 
 	//Each iteration processes one file.
 	MESSAGE_ID result = MID_NoText;
-	CImportInfo::ImportType type = CImportInfo::None;
+	CImportInfo::ImportType type = CImportInfo::NoImport;
 	for (vector<WSTRING>::const_iterator wFilename = wstrImportFiles.begin();
 			wFilename != wstrImportFiles.end(); ++wFilename)
 	{
@@ -1609,12 +1833,45 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 }
 
 //*****************************************************************************
+//Return: a "good enough" threshold to distinguish between the demo and full official game hold
+//        i.e., if the hold has at least this many level entrances defined, this is the full (registered) hold
+UINT CDrodScreen::EntrancesInFullVersion()
+{
+	return 50;
+}
+
+//*****************************************************************************
+CDbHold::HoldStatus CDrodScreen::GetInstalledOfficialHold()
+{
+	static const CDbHold::HoldStatus officialHolds[] = {
+		CDbHold::ACR, CDbHold::Tendry, CDbHold::NoStatus };
+
+	for (UINT i = 0; officialHolds[i] != CDbHold::NoStatus; ++i) {
+		const UINT holdID = g_pTheDB->Holds.GetHoldIDWithStatus(officialHolds[i]);
+		if (holdID)
+			return officialHolds[i];
+	}
+
+	return CDbHold::NoStatus;
+}
+
+//*****************************************************************************
 bool CDrodScreen::IsGameFullVersion()
 //Returns: whether the included hold is the full version (true), otherwise false
 {
-	const UINT mainholdID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::Main);
+#ifdef STEAMBUILD
+	return Metadata::GetInt(MetaKey::DEMO) != 1;
+#endif
+
+	//Programmatic override for embedding game media files in dev build.
+	if (Metadata::GetInt(MetaKey::EMBEDMEDIA) == 1)
+		return Metadata::GetInt(MetaKey::DEMO) != 1;
+
+	const UINT mainholdID = g_pTheDB->Holds.GetHoldIDWithStatus(CDbHold::GetOfficialHoldStatus());
+	if (!mainholdID)
+		return false;
 	CDbHold *pHold = g_pTheDB->Holds.GetByID(mainholdID);
-	const bool bFull = pHold && pHold->Entrances.size() > 50;
+	const bool bFull = pHold && pHold->Entrances.size() >= EntrancesInFullVersion();
 	delete pHold;
 	return bFull;
 }
@@ -1658,8 +1915,12 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 	const WSTRING wstrBasename = styleName.front();
 	for (wI=TEXTURE_COUNT; wI--; )
 	{
+		if (wI == TEXTURE_COUNT - 1) { //skip OVERHEAD_IMAGE texture
+			continue;
+		}
+
 		WSTRING wstrFile = wstrBasename;
-		if (wI == TEXTURE_COUNT-1) { //skip FLOOR_IMAGE texture: load 'tiles' images instead
+		if (wI == TEXTURE_COUNT-2) { //skip FLOOR_IMAGE texture: load 'tiles' images instead
 			wstrFile += wszTILES;
 		} else {
 			//Style textures.
@@ -1721,17 +1982,31 @@ void CDrodScreen::ExportStyle(const WSTRING& style)
 }
 
 //*****************************************************************************
-void CDrodScreen::ImportHoldMedia()
+void CDrodScreen::ImportMedia()
 //Imports sound and graphics files from disk into the DB.
 {
-#if defined(EMBED_STYLES) && defined(CARAVELBUILD)
+#ifdef EMBED_STYLES
 	//Get names of all styles.
 	list<WSTRING> styles;
 	if (!CFiles::GetGameProfileString(INISection::Graphics, INIKey::Style, styles))
 		return;	//styles are missing
 
-	//If hold being exported is for demo, include the City style only.
-	//Otherwise include all of them.
+	CFiles f;
+
+	//Log all files being exported for debugging purposes.
+	WSTRING wstrLog;
+	AsciiToUnicode(".export.log", wstrLog);
+	WSTRING wstrLogFilename = f.GetDatPath();
+	wstrLogFilename += wszSlash;
+	wstrLogFilename += CFiles::wGameName;
+	wstrLogFilename += wstrLog;
+
+#define LOG_TEXT(wtext) { string strLog = UnicodeToUTF8(wtext); strLog += NEWLINE; CStretchyBuffer text(strLog); f.WriteBufferToFile(wstrLogFilename.c_str(), text, true); }
+
+	//Default: if official hold is the demo version, include selected demo styles only. Otherwise include all of them.
+//	CDbHold::HoldStatus status = GetInstalledOfficialHold();
+//	if (status == CDbHold::NoStatus)
+//		status = (CDbHold::HoldStatus)Metadata::GetInt(MetaKey::APPLYHOLDSTATUS);
 	const bool bDemo = !IsGameFullVersion();
 	if (bDemo)
 	{
@@ -1746,7 +2021,6 @@ void CDrodScreen::ImportHoldMedia()
 	//Ensure each song is only imported once.
 	set<WSTRING> embeddedImages, embeddedSongs, embeddedSounds;
 
-	CFiles f;
 	UINT wStyleNo, wI;
 	for (wStyleNo = 1; wStyleNo <= wStylesToExport; ++wStyleNo)
 	{
@@ -1765,9 +2039,9 @@ void CDrodScreen::ImportHoldMedia()
 		WSTRING wstrBasename = styleBasenames.front();
 
 		//Import images.
-		static const UINT NUM_SELL_SCREENS = 2;
+		static const UINT NUM_SELL_SCREENS = 4;
 		static const UINT NUM_EXIT_SCREENS = NUM_SELL_SCREENS;
-		static const UINT NUM_GRAPHICS_FILES = 22;
+		static const UINT NUM_GRAPHICS_FILES = 23;
 		static const char graphicFilename[NUM_GRAPHICS_FILES][32] = {
 			"Background", "Bolts",
 //			"Clock1", "Clock2",
@@ -1775,7 +2049,7 @@ void CDrodScreen::ImportHoldMedia()
 			"Faces", "GameScreen", "GameScreenParts",
 			"LevelStartBackground", "RoomEditScreen",
 			"TitleShadow", "TitleBG", "TitleBG1",
-			"TitleBG2", "TitleDROD", "TitleLightMask",
+			"TitleBG2", "TitleBG_RPG2", "TitleDROD", "TitleLightMask",
 			"Fog1", "Clouds1", "Sunshine1",
 			"SignalBad", "SignalGood", "SignalNo", "SignalYes"
 		};
@@ -1810,6 +2084,8 @@ void CDrodScreen::ImportHoldMedia()
 						continue;
 					static const WCHAR wszSell[] = {{'S'},{'e'},{'l'},{'l'},{'1'},{0}};
 					static const WCHAR wszSellSShots[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{0}};
+					static const WCHAR wszSell2[] = {{'S'},{'e'},{'l'},{'l'},{'2'},{0}};
+					static const WCHAR wszSellSShots2[] = {{'S'},{'e'},{'l'},{'l'},{'S'},{'S'},{'h'},{'o'},{'t'},{'s'},{'2'},{0}};
 
 					const UINT wSellScreenNum = wI - TEXTURE_COUNT - NUM_GRAPHICS_FILES;
 					ASSERT(wStylesToExport == 1 && wSellScreenNum <= NUM_SELL_SCREENS);
@@ -1817,10 +2093,14 @@ void CDrodScreen::ImportHoldMedia()
 					{
 						case 1: wstrImportFile = wszSell; break;
 						case 2: wstrImportFile = wszSellSShots; break;
+						case 3: wstrImportFile = wszSell2; break;
+						case 4: wstrImportFile = wszSellSShots2; break;
 						default: ASSERT(!"Bad sell screen image index"); break;
 					}
 				}
-			} else if (wI == TEXTURE_COUNT-1) {
+			} else if (wI == TEXTURE_COUNT-1) { //skip OVERHEAD_IMAGE texture
+				continue;
+			} else if (wI == TEXTURE_COUNT-2) {
 				wstrImportFile += wszTILES;	//skip FLOOR_IMAGE texture: load 'tiles' images now
 			} else {
 				//Room style image files.
@@ -1832,6 +2112,8 @@ void CDrodScreen::ImportHoldMedia()
 			if (embeddedImages.count(wstrImportFile) != 0)
 				continue; //this image was already processed -- don't reimport it
 			embeddedImages.insert(wstrImportFile);
+
+			LOG_TEXT(wstrImportFile);
 
 			WSTRING wstrFilepath;
 			const UINT wDataFormat = g_pTheBM->GetImageFilepath(wstrImportFile.c_str(), wstrFilepath);
@@ -1852,7 +2134,7 @@ void CDrodScreen::ImportHoldMedia()
 					pImage->DataNameText = wstrImportFile.c_str();
 					pImage->dwHoldID = 0;
 					pImage->data.Set((const BYTE*)data,data.Size());
-					if (wI == TEXTURE_COUNT || wI == TEXTURE_COUNT-1)
+					if (wI == TEXTURE_COUNT || wI == FLOOR_IMAGE)
 					{
 						//Get .tim data.
 						const WSTRING wstrTimFilepath = g_pTheBM->GetTileImageMapFilepath(wstrImportFile.c_str());
@@ -1904,7 +2186,7 @@ void CDrodScreen::ImportHoldMedia()
 
 		//Import music.
 		WSTRING wstrDir;
-		for (wI=SONG_MOOD_COUNT+13; wI--; )	//include other music too
+		for (wI=SONG_MOOD_COUNT+35; wI--; )	//include other music too
 		{
 			list<WSTRING> songlist;
 
@@ -1918,49 +2200,138 @@ void CDrodScreen::ImportHoldMedia()
 			}
 			else switch (wI)
 			{
+				case SONG_MOOD_COUNT+34:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_TITLE_2, songlist);
+					break;
+
 				//Include end game music for full hold/version only.
-				case SONG_MOOD_COUNT+12:
+				case SONG_MOOD_COUNT+33:
 					if (wStyleNo == 2)
 						g_pTheSound->GetSongFilepaths(SONGID_CREDITS, songlist);
 				break;
 
 				//Import other playable songs once.
-				case SONG_MOOD_COUNT+11:
+				case SONG_MOOD_COUNT+32:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_ARCHITECTS, songlist);
 				break;
-				case SONG_MOOD_COUNT+10:
+				case SONG_MOOD_COUNT+31:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_BATTLE, songlist);
 				break;
-				case SONG_MOOD_COUNT+9:
+				case SONG_MOOD_COUNT+30:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_BENEATH, songlist);
 				break;
-				case SONG_MOOD_COUNT+8:
+				case SONG_MOOD_COUNT+29:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_DREAMER, songlist);
 				break;
-				case SONG_MOOD_COUNT+7:
+				case SONG_MOOD_COUNT+28:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_GOBLINS, songlist);
 				break;
-				case SONG_MOOD_COUNT+6:
+				case SONG_MOOD_COUNT+27:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_REDGUARD, songlist);
 				break;
-				case SONG_MOOD_COUNT+5:
+				case SONG_MOOD_COUNT+26:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SEASIDE, songlist);
 				break;
-				case SONG_MOOD_COUNT+4:
+				case SONG_MOOD_COUNT+25:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SERPENTS, songlist);
 				break;
-				case SONG_MOOD_COUNT+3:
+				case SONG_MOOD_COUNT+24:
 					if (wStyleNo == 1)
 						g_pTheSound->GetSongFilepaths(SONGID_SLAYER, songlist);
 				break;
+				case SONG_MOOD_COUNT+23:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_PIRATES, songlist);
+					break;
+				case SONG_MOOD_COUNT+22:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_GOBLINKING, songlist);
+					break;
+				case SONG_MOOD_COUNT+21:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_BIGSERPENT, songlist);
+					break;
+				case SONG_MOOD_COUNT+20:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_TAR, songlist);
+					break;
+				case SONG_MOOD_COUNT+19:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_PUZZLE, songlist);
+					break;
+				case SONG_MOOD_COUNT+18:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_SECRETAREA, songlist);
+					break;
+				case SONG_MOOD_COUNT+17:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_SMALLERPLANS, songlist);
+					break;
+				case SONG_MOOD_COUNT+16:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_GEOMETRY, songlist);
+					break;
+				case SONG_MOOD_COUNT+15:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_SLIPSTAIR, songlist);
+					break;
+				case SONG_MOOD_COUNT+14:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_SYMPATHETIC, songlist);
+					break;
+				case SONG_MOOD_COUNT+13:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_ASCENDANT, songlist);
+					break;
+				case SONG_MOOD_COUNT+12:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_ROACHESRUN, songlist);
+					break;
+				case SONG_MOOD_COUNT+11:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_NEWIDEA, songlist);
+					break;
+				case SONG_MOOD_COUNT+10:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_WALTZ, songlist);
+					break;
+				case SONG_MOOD_COUNT+9:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_SWINGHALLS, songlist);
+					break;
+				case SONG_MOOD_COUNT+8:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_ELIZABETH, songlist);
+					break;
+				case SONG_MOOD_COUNT+7:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_AMBWINDY, songlist);
+					break;
+				case SONG_MOOD_COUNT+6:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_AMBBEACH, songlist);
+					break;
+				case SONG_MOOD_COUNT+5:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_AMBFOREST, songlist);
+					break;
+				case SONG_MOOD_COUNT+4:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_AMBDRIPS, songlist);
+					break;
+				case SONG_MOOD_COUNT+3:
+					if (wStyleNo == 1)
+						g_pTheSound->GetSongFilepaths(SONGID_AMBROACHES, songlist);
+					break;
 
 				//Import intro, exit, and end hold music once.
 				case SONG_MOOD_COUNT+2:
@@ -1987,6 +2358,8 @@ void CDrodScreen::ImportHoldMedia()
 				if (embeddedSongs.count(wstrSongFilename) != 0)
 					continue; //this song was already processed -- don't redo it
 				embeddedSongs.insert(wstrSongFilename);
+
+				LOG_TEXT(wstrSongFilename);
 
 				wstrSongFilepath = wstrDir + wstrSongFilename;
 
@@ -2027,6 +2400,8 @@ void CDrodScreen::ImportHoldMedia()
 				continue; //this sound file has already been imported -- skip it
 			embeddedSounds.insert(*iFilename);
 
+			LOG_TEXT(*iFilename);
+
 			wstrSoundPath = wstrDir + *iFilename;
 
 			CStretchyBuffer data;
@@ -2051,6 +2426,7 @@ void CDrodScreen::ImportHoldMedia()
 	}
 
 	HideStatusMessage();
+#undef LOG_TEXT
 #endif
 }
 
@@ -2068,6 +2444,8 @@ void CDrodScreen::EnablePlayerSettings(
 		return;
 	}
 
+	CDbPlayer::ConvertInputSettings(pPlayer->Settings);
+
 	g_pTheSound->EnableSoundEffects(pPlayer->Settings.GetVar(Settings::SoundEffects, true));
 	g_pTheSound->SetSoundEffectsVolume(pPlayer->Settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME));
 
@@ -2081,6 +2459,17 @@ void CDrodScreen::EnablePlayerSettings(
 	g_pTheBM->bAlpha = pPlayer->Settings.GetVar(Settings::Alpha, true);
 	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne()));
 	g_pTheBM->eyeCandy = (pPlayer->Settings.GetVar(Settings::EyeCandy, true) ? 1 : 0);
+	g_pTheDBM->tarstuffAlpha = pPlayer->Settings.GetVar(Settings::TarstuffAlpha, BYTE(255));
+	g_pTheDBM->mapIconAlpha = pPlayer->Settings.GetVar(Settings::MapIconAlpha, BYTE(255));
+
+	CScreen::inputKeyFullScreen = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_ToggleFullScreen)->settingName,
+		(InputKey)SDLK_F10
+	);
+	CScreen::inputKeyScreenshot = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_Screenshot)->settingName,
+		(InputKey)SDLK_F11
+	);
 
 	//RepeatRate is queried in CGameScreen::ApplyPlayerSettings().
 
@@ -2088,16 +2477,21 @@ void CDrodScreen::EnablePlayerSettings(
 }
 
 //*****************************************************************************
-void CDrodScreen::ImportQueuedFiles()
+bool CDrodScreen::ImportQueuedFiles()
 //Import queued filenames.
 {
 	if (importFiles.empty())
-		return;
+		return false;
 
 	CIDSet ignored;
 	set<WSTRING> importedStyles;
 	ImportFiles(CDrodScreen::importFiles, ignored, importedStyles);
 	importFiles.clear();
+
+#ifdef DEV_BUILD
+	return true; //signal to exit app
+#endif
+	return false;
 }
 
 //*****************************************************************************
@@ -2153,6 +2547,75 @@ bool CDrodScreen::IsStyleOnDisk(
 
 	//No style files are available on disk.
 	return false;
+}
+
+//*****************************************************************************
+bool CDrodScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return false;
+}
+
+//*****************************************************************************
+int CDrodScreen::GetCommandForInputKey(InputKey inputKey) const
+{
+	std::map<InputKey, int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
+	if (it != this->InputKeyToCommandMap.end())
+		return it->second;
+
+	return CMD_UNSPECIFIED;
+}
+
+//*****************************************************************************
+InputKey CDrodScreen::GetInputKeyForCommand(const UINT wCommand) const
+//Returns: keysym currently set for indicated command
+{
+	for (std::map<InputKey, int>::const_iterator it = InputKeyToCommandMap.begin(); it != InputKeyToCommandMap.end(); ++it)
+		if (it->second == (int)wCommand)
+			return it->first;
+
+	ASSERT(!"Command not assigned");
+	return UNKNOWN_INPUT_KEY;
+}
+
+//*****************************************************************************
+void CDrodScreen::InitKeysymToCommandMap(
+//Set the keysym-to-command map with values from player settings that will determine
+//which commands correspond to which keys.
+//
+//Params:
+	CDbPackedVars& PlayerSettings)   //(in)   Player settings to load from.
+{
+	//Clear the map.
+	this->InputKeyToCommandMap.clear();
+
+	//Check whether default is for keyboard or laptop.
+	CFiles Files;
+	string strKeyboard;
+	UINT wKeyboard = 0;	//default to numpad
+	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
+	{
+		wKeyboard = atoi(strKeyboard.c_str());
+		if (wKeyboard > 1) wKeyboard = 0;	//invalid setting
+	}
+
+	//Get key command values from current player settings.
+	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex)
+	{
+		const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+		const int command = (int)keyDefinition->eCommand;
+
+		//Different screens support different commands
+		if (!IsCommandSupported(command))
+			continue;
+
+		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
+		const bool bInvalidSDL1mapping = inputKey >= 128 && inputKey <= 323;
+		this->InputKeyToCommandMap[inputKey] = command;
+
+		if (InputCommands::DoesCommandUseModifiers((InputCommands::DCMD)wIndex)) // Support for macros
+			this->InputKeyToCommandMap[BuildInputKey(int32_t(inputKey), false, false, true)] = command;
+	}
 }
 
 //*****************************************************************************

@@ -28,14 +28,17 @@
 #define SETTINGSSCREEN_H
 
 #include "DrodScreen.h"
+#include "KeypressDialogWidget.h"
 
+#include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/LabelWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
-#include <FrontEndLib/KeypressDialogWidget.h>
+#include <FrontEndLib/TabbedMenuWidget.h>
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Types.h>
 
-extern const SDL_Keycode COMMANDKEY_ARRAY[2][InputCommands::DCMD_Count];	//desktop or notebook
+using namespace InputCommands;
 
 //*****************************************************************************************
 class CSettingsScreen : public CDrodScreen
@@ -49,9 +52,17 @@ protected:
 	virtual bool   SetForActivate();
 
 private:
+	void       SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu);
+	void       SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu);
+	const DCMD ButtonTagToDcmd(const UINT dwTagNo) const;
+	void       DoKeyRedefinition(const UINT dwTagNo);
+	const KeyDefinition* GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const;
+
 	bool     AllCommandsAreAssignedToKeys(CDbPackedVars &Settings) const;
 	bool     AreCNetDetailsChanged(CDbPlayer *pPlayer);
-	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const SDL_Keycode CurrentKey, SDL_Keycode &NewKey);
+	bool     CanCommandsShareInput(int command, int otherCommand) const;
+	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const InputKey CurrentKey, InputKey& NewKey,
+		const bool bAllowSpecial);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void OnClick(const UINT dwTagNo);
 	virtual void OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
@@ -67,11 +78,12 @@ private:
 	void     UpdateWidgetsFromPlayerData(CDbPlayer *pPlayer);
 	void     UploadScores();
 	void     UploadScoreCheckpointSaves(const UINT dwPlayerID);
+	void     UpdateCommandKeyLabel(const InputKey inputKey, const UINT wCommandIndex);
 
-	CKeypressDialogWidget * pDialogBox;
-	CLabelWidget *       pCommandLabel;
-	CWidget  *           pCommandLabelWidgets[InputCommands::DCMD_Count];
-	CDbPlayer *          pCurrentPlayer;
+	CKeypressDialogWidget* pKeypressDialog;
+	CButtonWidget*         pCommandButtonWidgets[InputCommands::DCMD_Count];
+	CLabelWidget*          pCommandLabelWidgets[InputCommands::DCMD_Count];
+	CDbPlayer *            pCurrentPlayer;
 
 	CTextBoxWidget * pNameWidget;
 	CTextBoxWidget * pCaravelNetNameWidget;

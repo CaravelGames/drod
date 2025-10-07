@@ -56,6 +56,7 @@ public:
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
 	UINT CalcDamage(int damageVal) const;
+	bool CanDropTrapdoor(UINT wTileNo) const;
 	bool CanJump(const int dx, const int dy) const;
 	bool CanWalkOnWater() const;
 	void Clear(const bool bNewGame);
@@ -68,6 +69,7 @@ public:
 	bool IsHasted() const {return this->bHasted;}
 	bool IsInRoom() const;
 	bool IsInvisible() const {return this->bInvisible;}
+	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool Move(const UINT wSetX, const UINT wSetY);
 	void ResetRoomStats();
 	void RotateClockwise();

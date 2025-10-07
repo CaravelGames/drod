@@ -28,21 +28,28 @@
 #ifndef KEYPRESSDIALOGWIDGET_H
 #define KEYPRESSDIALOGWIDGET_H
 
-#include "DialogWidget.h"
-
+#include <FrontEndLib/DialogWidget.h>
+#include <FrontEndLib/LabelWidget.h>
 #include <BackEndLib/InputKey.h>
+
+#include <SDL.h>
 
 class CKeypressDialogWidget : public CDialogWidget
 {
 public:
-	CKeypressDialogWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW, UINT wSetH);
+	CKeypressDialogWidget(UINT dwSetTagNo);
 
 	InputKey    GetKey(void) const {return this->Key;}
+	void        SetupDisplay(const MESSAGE_ID wCommand, const bool bAllowModifiers);
 
 private:
+	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void   OnKeyUp(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 
 	InputKey    Key;
+	bool bAllowModifiers;
+	CLabelWidget* pCommandLabel;
+	CLabelWidget* pInstructionsLabel;
 };
 
 #endif

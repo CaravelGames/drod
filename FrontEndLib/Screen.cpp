@@ -407,7 +407,7 @@ void CScreen::OnKeyDown(
 
 	if (inputKey == CScreen::inputKeyFullScreen)
 		ToggleScreenSize();
-	
+
 	else if (inputKey == CScreen::inputKeyScreenshot)
 		SaveSurface();
 
@@ -442,8 +442,7 @@ void CScreen::OnMouseDown(
 	const UINT /*dwTagNo*/, const SDL_MouseButtonEvent &Button)
 {
 	ShowCursor();
-	this->pEffects->RemoveEffectsOfType(EFFECTLIB::ETOOLTIP);
-	this->bShowingTip = false;
+	RemoveToolTip();
 
 	this->dwLastMouseMove = SDL_GetTicks();
 	this->wLastMouseX = Button.x;

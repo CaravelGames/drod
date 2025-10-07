@@ -147,6 +147,8 @@ public:
 	bool        PlayNextSong();
 	bool        PlaySong(const UINT nSongID);
 	bool        PlaySong(list<WSTRING>* pSonglist);
+	void        PlaySoundEffect(const UINT eSEID,
+			const float frequencyMultiplier, const float fVolumeMultiplier = 1.0f);
 	void        PlaySoundEffect(const UINT eSEID, float* pos=NULL, float* vel=NULL,
 			const bool bUseVoiceVolume=false, const float frequencyMultiplier=1.0f,
 			const float fVolumeMultiplier = 1.0f);

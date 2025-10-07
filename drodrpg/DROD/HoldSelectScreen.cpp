@@ -89,6 +89,23 @@ const UINT gameTurnTick = 100; //for the miniroom animation (ms)
 
 inline bool hold_is_installed(UINT holdID) { return int(holdID) > 0; }
 
+bool CanDeleteHold(const CDbHold::HoldStatus status)
+{
+	//Player is not allowed to delete pre-installed holds.
+	if (status == CDbHold::Tutorial)
+		return false;
+
+#ifdef STEAMBUILD
+	if (CDbHold::IsOfficialHold(status) || status == CDbHold::Official) //DLC is managed via Steam UI
+		return false;
+#else
+	if (status == CDbHold::GetOfficialHoldStatus())
+		return false;
+#endif
+
+	return true;
+}
+
 //
 //Public methods.
 //
@@ -282,6 +299,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	this->pHoldListBoxWidget->SetHotkeyItemSelection(true);
 	this->pHoldListBoxWidget->IgnoreLeadingArticlesInSort();
 	AddWidget(this->pHoldListBoxWidget);
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
 	//Used for storing hold info.  Not added to the screen as a child widget.
 	this->pFullHoldList = new CListBoxWidget(0, X_HOLDLISTBOX, Y_HOLDLISTBOX,
 			CX_HOLDLISTBOX, CY_HOLDLISTBOX, true, false, true);
@@ -640,7 +658,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 		CDbHold *pHold = g_pTheDB->Holds.GetByID(*id, true);
 		ASSERT(pHold);
 #ifndef ENABLE_CHEATS
-		if (pHold->status == CDbHold::Main || pHold->status == CDbHold::Tutorial)
+		if (!CanDeleteHold(pHold->status))
 		{
 			//Player is not allowed to delete the pre-installed holds.
 			delete pHold;
@@ -655,7 +673,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 
 		g_pTheDB->Holds.Delete(*id);
 	}
-	g_pTheDB->SavedGames.CleanupPlayerTallies();
+	g_pTheDB->SavedGames.CleanupPlayerTalliesAndMapStates();
 
 	HideStatusMessage();
 	g_pTheNet->MatchCNetHolds();
@@ -1381,8 +1399,7 @@ void CHoldSelectScreen::SetHoldDesc()
 	const bool bHoldAuthor = pHold->dwPlayerID == g_pTheDB->GetPlayerID();
 	this->pExportButton->Enable(bHoldAuthor);
 	//Only authored and non-preinstalled holds may be deleted.
-	this->pDeleteButton->Enable(bHoldAuthor || pHold->status == CDbHold::Homemade ||
-			pHold->status == CDbHold::Official);
+	this->pDeleteButton->Enable(bHoldAuthor || CanDeleteHold(pHold->status));
 #endif
 	delete pHold;
 
@@ -1484,7 +1501,7 @@ void CHoldSelectScreen::SetHoldFilter()
 					!bLocalHold, -1, true); //place non-local holds last
 			this->pHoldListBoxWidget->EnableItemAtIndex(insertedAtIndex);
 
-			if (h.status == CDbHold::Official || h.status == CDbHold::Main) //make official holds stand out
+			if (h.status == CDbHold::Official || CDbHold::IsOfficialHold(CDbHold::HoldStatus(h.status))) //make official holds stand out
 			{
 				static const SDL_Color Purple = {96, 0, 96, 0};
 				this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, Purple);
@@ -1493,10 +1510,12 @@ void CHoldSelectScreen::SetHoldFilter()
 			} else if (!bLocalHold)	{
 				//Color-code holds on CaravelNet by game version.
 				static const SDL_Color DarkGold = {114, 85, 2, 0};
-				if (h.version < 406) //RPG 1.2
+				if (h.version < 406) //RPG pre-1.2
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkGold);
-				else if (h.version < NEXT_VERSION_NUMBER) //before unknown version
+				else if (h.version < 407) //1.2
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkBlue);
+				else if (h.version < NEXT_VERSION_NUMBER) //1.3, before unknown version
+					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkGreen);
 				else //not supported by this engine version
 					this->pHoldListBoxWidget->SetItemColorAtLine(insertedAtIndex, DarkBrown);
 			}
@@ -1802,6 +1821,9 @@ void CHoldSelectScreen::ShowActiveRoom(const UINT dwHoldID)
 	if (bGame)
 	{
 		VERIFY(this->pRoomWidget->LoadFromCurrentGame(this->pCurrentRestoreGame));
+		CCueEvents Ignored;
+		this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
+
 		this->pRoomWidget->RequestPaint();
 		wstrDesc += (const WCHAR*)this->pCurrentRestoreGame->pLevel->NameText;
 		wstrDesc += wszColon;

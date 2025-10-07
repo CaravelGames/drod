@@ -45,4 +45,12 @@ public:
 			const UINT wParticleMinDuration, const UINT wParticleSpeed);
 };
 
+//****************************************************************************************
+class CDigDebrisEffect : public CParticleExplosionEffect
+{
+public:
+	CDigDebrisEffect(CWidget* pSetWidget, const CMoveCoord& MoveCoord, const UINT wMinParticles,
+		const UINT wParticleMinDuration, const UINT wParticleSpeed);
+};
+
 #endif //...#ifndef DEBRISEFFECT_H

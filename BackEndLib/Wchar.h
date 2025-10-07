@@ -36,6 +36,7 @@
 #include "Types.h"  //need BYTE, UINT
 
 #include <cstring>
+#include <set>
 #include <vector>
 
 #define STRFY(x) #x
@@ -79,11 +80,12 @@ typedef std::basic_string<WCHAR, std::char_traits<WCHAR>, std::allocator<WCHAR> 
 
 //Some common small strings.  Larger strings are localizable and should be kept in database.
 extern const WCHAR wszAmpersand[], wszAsterisk[], wszOpenAngle[], wszCloseAngle[], wszColon[],
-	wszComma[], wszCRLF[], wszDollarSign[], wszElipsis[], wszEmpty[], wszEqual[],
-	wszExclamation[], wszForwardSlash[], wszHyphen[], wszTilde[], wszParentDir[],
+	wszComma[], wszCommaSpace[], wszCRLF[], wszDollarSign[], wszElipsis[], wszEmpty[], wszEqual[],
+	wszExclamation[], wszForwardSlash[], wszTimes[], wszHyphen[], wszTilde[], wszParentDir[],
 	wszPercent[], wszPeriod[], wszPoundSign[], wszPlus[], wszQuestionMark[], wszQuote[],
 	wszLeftBracket[], wszRightBracket[], wszLeftParen[], wszRightParen[],
-	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszOne[], wszTwo[];
+	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszOne[], wszTwo[],
+	wszStringToken[];
 
 //HTML formatting strings.
 extern const WCHAR wszHtml[], wszEndHtml[], wszBody[], wszEndBody[], wszHeader[],
@@ -93,7 +95,7 @@ void SanitizeSingleLineString(WSTRING& wstr);
 void SanitizeMultiLineString(WSTRING& wstr);
 void AsciiToUnicode(const char *psz, WSTRING &wstr);
 void AsciiToUnicode(const std::string& str, WSTRING &wstr);
-const WSTRING AsciiToUnicode(const char *psz);
+const WSTRING AsciiToUnicode(const char* psz);
 void CTextToUnicode(const char *psz, WSTRING &wstr);
 bool UnicodeToAscii(const WSTRING& wstr, char *psz);
 bool UnicodeToAscii(const WSTRING& wstr, std::string &str);
@@ -162,9 +164,10 @@ void     fputWs(const WCHAR* wsz, FILE* pFile);
 
 std::string strReplace(std::string const &source, std::string const &from, std::string const &to);
 WSTRING WCSReplace(WSTRING const &source, WSTRING const &from, WSTRING const &to);
-WSTRING WCSToLower(WSTRING const &source);
-const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimiter);
-bool WCSContainsAll(WSTRING const &haystack, std::vector<WSTRING> const &needles);
+WSTRING WCSToLower(WSTRING const& source);
+const std::vector<WSTRING> WCSExplode(WSTRING const& source, WCHAR const delimiter);
+const std::set<WSTRING>    WCSExplodeSet(WSTRING const& source, WCHAR const delimiter);
+bool WCSContainsAll(WSTRING const& haystack, std::vector<WSTRING> const& needles);
 
 WSTRING to_WSTRING(int value);
 

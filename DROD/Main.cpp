@@ -190,9 +190,11 @@ int main(int argc, char *argv[])
 
 	InitMetadata();
 
+#ifdef WIN32
 #ifdef STEAMBUILD
 	//Steam default: place player data files in a user-specific location.
 	bWindowsDataFilesInUserSpecificDir = true;
+#endif
 #endif
 
 	//command line arguments
@@ -694,7 +696,7 @@ MESSAGE_ID Init(
 	if (!bSteamInit)
 		DisplayInitErrorMessage(MID_SteamAPIInitError);
 	if (SteamUserStats())
-		SteamUserStats()->RequestCurrentStats();
+		SteamUserStats()->RequestUserStats(SteamUser()->GetSteamID());
 #endif
 
 	srand(int(time(NULL)));

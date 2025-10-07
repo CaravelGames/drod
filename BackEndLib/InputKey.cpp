@@ -38,11 +38,11 @@ const InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isC
 
 	if (keycode == SDLK_LALT || keycode == SDLK_RALT)
 		return AltBit;
-	
+
 	if (keycode == SDLK_LCTRL || keycode == SDLK_RCTRL)
 		return CtrlBit;
-	
-	
+
+
 	return int64_t(keycode)
 		| (isShift ? ShiftBit : 0)
 		| (isAlt ? AltBit : 0)

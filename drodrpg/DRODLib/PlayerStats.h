@@ -29,10 +29,29 @@ namespace ScriptVars
 		Equals=0,
 		Greater=1,
 		Less=2,
-		EqualsText=3
+		EqualsText=3,
+		LessThanOrEqual = 8, //to avoid collision with Op values
+		GreaterThanOrEqual = 9,
+		Inequal = 10
+	};
+
+	enum StatModifiers
+	{
+		MonsterHP = 0,
+		MonsterATK = 1,
+		MonsterDEF = 2,
+		MonsterGR = 3,
+		MonsterXP = 4,
+		ItemAll = 5,
+		ItemHP = 6,
+		ItemATK = 7,
+		ItemDEF = 8,
+		ItemGR = 9,
+		ItemShovels = 10
 	};
 
 	//Predefined global and relative game state vars, accessed through these key values.
+	//DO NOT CHANGE
 	enum Predefined
 	{
 		P_NoVar  =  0,
@@ -99,23 +118,137 @@ namespace ScriptVars
 		P_ACCESSORY_ATK = -61,
 		P_ACCESSORY_DEF = -62,
 		P_ACCESSORY_GR = -63,
-		FirstPredefinedVar = P_ACCESSORY_GR, //set this to the last var in the enumeration
+		P_SCRIPT_MONSTER_HP_MULT = -64,
+		P_SCRIPT_MONSTER_ATK_MULT = -65,
+		P_SCRIPT_MONSTER_DEF_MULT = -66,
+		P_SCRIPT_MONSTER_GOLD_MULT = -67,
+		P_SCRIPT_MONSTER_XP_MULT = -68,
+		P_SCRIPT_ITEM_MULT = -69,
+		P_SCRIPT_ITEM_HP_MULT = -70,
+		P_SCRIPT_ITEM_ATK_MULT = -71,
+		P_SCRIPT_ITEM_DEF_MULT = -72,
+		P_SCRIPT_ITEM_GR_MULT = -73,
+		P_MUD_SPAWN = -74,
+		P_TAR_SPAWN = -75,
+		P_GEL_SPAWN = -76,
+		P_QUEEN_SPAWN = -77,
+		P_MONSTER_NAME = -78,
+		P_SCRIPT_MONSTER_SPAWN = - 79,
+		P_SCORE_HP = -80,
+		P_SCORE_ATK = -81,
+		P_SCORE_DEF = -82,
+		P_SCORE_YKEY = -83,
+		P_SCORE_GKEY = -84,
+		P_SCORE_BKEY = -85,
+		P_SCORE_SKEY = -86,
+		P_SCORE_GOLD = -87,
+		P_SCORE_XP = -88,
+		P_MONSTER_CUSTOM_WEAKNESS = -89,
+		P_LEVEL_MULT = -90,
+		P_ROOM_X = -91,
+		P_ROOM_Y = -92,
+		P_MONSTER_CUSTOM_DESCRIPTION = -93,
+		P_SHOVEL = -94,
+		P_SCORE_SHOVEL = -95,
+		P_ITEM_SHOVEL_MULT = -96,
+		P_SCRIPT_ITEM_SHOVEL_MULT = -97,
+		P_BEAM = -98,
+		P_FIRETRAP = -99,
+		P_TOTAL_ATK = -100,
+		P_TOTAL_DEF = -101,
+		P_MUD_SWAP = -102,
+		P_TAR_SWAP = -103,
+		P_GEL_SWAP = -104,
+		P_MONSTER_HUE = -105,
+		P_MONSTER_SATURATION = -106,
+		P_RETURN_X = -107,
+		FirstPredefinedVar = P_RETURN_X, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
 	};
 
+	//Predefined functions (that take a set of arguments to calculate a value)
+	//
+	//To add new primitives, add a new enumeration here and in the following locations:
+	// primitiveNames
+	// getPrimitiveRequiredParameters
+	// CCurrentGame::EvalPrimitive
+	enum PrimitiveType {
+		NoPrimitive = -1,
+		P_Abs,       //x --> abs(x)
+		P_Min,       //(x,y) --> min(x,y)
+		P_Max,       //(x,y) --> max(x,y)
+		P_Orient,    //(dx,dy) --> o
+		P_Facing,    //(dx,dy) --> o
+		P_OrientX,   //o --> dx
+		P_OrientY,   //o --> dy
+		P_RotateCW,  //o --> cw(o)
+		P_RotateCCW, //o --> ccw(o)
+		P_RotateDist,//(o1, o2) --> number of turns between the two
+		P_Dist0,     //L-infinity norm
+		P_Dist1,     //L-1 norm (Manhattan distance)
+		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
+		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
+		P_SlotItem,  //(x,y) --> id of item in item slot at (x,y), or -1 if no slot
+		P_EnemyStat, //(x,y,stat) --> stat value of enemy at (x,y)
+		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
+		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
+		PrimitiveCount
+	};
+
+	enum MapIcon {
+		MI_None = 0,
+		MI_Sword = 1,
+		MI_Shield = 2,
+		MI_Star = 3,
+		MI_Skull = 4,
+		MI_NorthArrow = 5,
+		MI_EastArrow = 6,
+		MI_SouthArrow = 7,
+		MI_WestArrow = 8,
+		MI_StairsUp = 9,
+		MI_StairsDown = 10,
+		MI_Chest = 11,
+		MI_Gear = 12,
+		MI_MoneyBag = 13,
+		MI_KeyBlue = 14,
+		MI_KeyWhite = 15,
+		MI_QuestionMark = 16,
+		MapIconCount
+	};
+
+	enum MapIconState {
+		MIS_Normal = 0,
+		MIS_Greyscale = 1,
+		MIS_Negative = 2,
+		MIS_Sepia = 3
+	};
+
 	void init();
+	UINT getVarDefault(const ScriptVars::Predefined var);
 	string getVarName(const ScriptVars::Predefined var);
 	WSTRING getVarNameW(const ScriptVars::Predefined var);
+	bool IsStringVar(Predefined val);
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 
+	PrimitiveType parsePrimitive(const string& str);
+	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
+	PrimitiveType parsePrimitive(const WSTRING& wstr);
+
+	bool IsCharacterArrayVar(const WSTRING& wstr);
+	bool IsCharacterArrayVar(const WCHAR* wstr);
+
+	bool IsIndexInArrayRange(const int index);
+
 	//All predefined vars.
-	extern const char predefinedVarTexts[PredefinedVarCount][13];
+	extern const char predefinedVarTexts[PredefinedVarCount][16];
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 
 	//Global game var subset quick reference.
-	static const UINT numGlobals=26;
+	static const UINT numGlobals=47;
 	extern const Predefined globals[numGlobals];
 	extern const UINT globalVarMIDs[numGlobals];
 	extern const char* globalVarShortNames[numGlobals];
@@ -128,21 +261,22 @@ public:
 	PlayerStats() {clear();}
 	virtual ~PlayerStats() {}
 
-	void Pack(CDbPackedVars& stats);
-	void Unpack(CDbPackedVars& stats);
-
 	virtual void clear() {
 		HP = 0;
 		ATK = DEF = 0;
 		GOLD = XP = 0;
 		speed = 0;
 		yellowKeys = greenKeys = blueKeys = skeletonKeys = 0;
+		shovels = 0;
 		sword = shield = accessory = 0;
 		monsterHPmult = monsterATKmult = monsterDEFmult = monsterGRmult = monsterXPmult = 0;
-		itemMult = itemHPmult = itemATKmult = itemDEFmult = itemGRmult = 0;
-		hotTileVal = explosionVal = 0;
+		itemMult = itemHPmult = itemATKmult = itemDEFmult = itemGRmult = itemShovelMult = 0;
+		hotTileVal = explosionVal = beamVal = firetrapVal = 0;
 		totalMoves = totalTime = 0;
 		priorRoomID = priorX = priorY = priorO = 0;
+		mudSpawnID = tarSpawnID = gelSpawnID = queenSpawnID = mudSwapID = tarSwapID = gelSwapID = UINT(-1); //negative indicates default
+		scoreHP = scoreATK = scoreDEF = scoreYellowKeys = scoreGreenKeys = scoreBlueKeys = scoreSkeletonKeys = scoreGOLD = scoreXP = scoreShovels = 0;
+		scriptReturnX = 0;
 	}
 
 	UINT getVar(const WSTRING& wstr) const
@@ -152,22 +286,32 @@ public:
 	UINT getVar(const ScriptVars::Predefined var) const;
 	void setVar(const ScriptVars::Predefined var, const UINT val);
 
+	static bool IsGlobalStatIndex(UINT i);
+	void Pack(CDbPackedVars& stats);
+	void Unpack(CDbPackedVars& stats);
+
 //protected:
 	UINT HP;
 	int  ATK, DEF;            //stats
 	int  GOLD, XP;            //may be negative
 	UINT speed;               //attack rate
 	UINT yellowKeys, greenKeys, blueKeys, skeletonKeys;  //keys
+	UINT shovels;
 	UINT sword, shield, accessory;         //equipment
 	UINT totalMoves, totalTime; //tally stats
 
 	//Global modifiers
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; //global monster stat modifiers
-	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult; //global item value modifiers
-	UINT hotTileVal, explosionVal; //damage modifiers
+	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult, itemShovelMult; //global item value modifiers
+	UINT hotTileVal, explosionVal, beamVal, firetrapVal; //damage modifiers
 
 	//Prior location before level warp.
 	UINT priorRoomID, priorX, priorY, priorO;
+
+	int mudSpawnID, tarSpawnID, gelSpawnID, queenSpawnID, mudSwapID, tarSwapID, gelSwapID;
+	int scoreHP, scoreATK, scoreDEF, scoreYellowKeys, scoreGreenKeys, scoreBlueKeys, scoreSkeletonKeys, scoreGOLD, scoreXP, scoreShovels;
+
+	int scriptReturnX;
 };
 
 //More stats used for various tally operations.
@@ -182,12 +326,14 @@ public:
 		yellowDoors = greenDoors = blueDoors = redDoors = blackDoors = 0;
 		openYellowDoors = openGreenDoors = openBlueDoors = openRedDoors = openBlackDoors = 0;
 		moneyDoorCost = openMoneyDoorCost = 0;
+		dirtBlockCost = 0;
 		rooms = secrets = levels = 0;
 	}
 
 	UINT yellowDoors, greenDoors, blueDoors, redDoors, blackDoors;
 	UINT openYellowDoors, openGreenDoors, openBlueDoors, openRedDoors, openBlackDoors;
 	UINT moneyDoorCost, openMoneyDoorCost;
+	UINT dirtBlockCost;
 	UINT rooms, secrets, levels;
 };
 

@@ -42,31 +42,57 @@
 #include <BackEndLib/Ports.h>
 #include <BackEndLib/Files.h>
 
+//*****************************************************************************
 #define NO_LABEL (-1)
 
 #define NO_OVERRIDE (UINT(-9999))
 
 const UINT MAX_ANSWERS = 9;
 
+const UINT MAX_HUE = 6000;
+const UINT MAX_SATURATION = 1000;
+
 //Literals used to query and store values for the NPC in the packed vars object.
+//DO NOT CHANGE
 #define commandStr "Commands"
 #define idStr "id"
+#define initialIdStr "initialId"
 #define numCommandsStr "NumCommands"
 #define scriptIDstr "ScriptID"
 #define startLineStr "StartLine"
+#define scriptDoneStr "ScriptDone"
 #define visibleStr "visible"
 #define equipTypeStr "equipType"
 
 #define EachAttackStr "EachAttack"
 #define EachDefendStr "EachDefend"
 #define EachUseStr "EachUse"
+#define EachVictoryStr "EachVictory"
 
-#define ColorStr "Color"
+#define CustomNameStr "Name"
+
 #define ParamXStr "XParam"
 #define ParamYStr "YParam"
 #define ParamWStr "WParam"
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
+
+#define MonsterHPMultStr "MonsterHPMultiplier"
+#define MonsterATKMultStr "MonsterATKMultiplier"
+#define MonsterDEFMultStr "MonsterDEFMultiplier"
+#define MonsterGRMultStr "MonsterGRMultiplier"
+#define MonsterXPMultStr "MonsterXPMultiplier"
+
+#define ItemMultStr "ItemMultiplier"
+#define ItemHPMultStr "ItemHPMultiplier"
+#define ItemATKMultStr "ItemATKMultiplier"
+#define ItemDEFMultStr "ItemDEFMultiplier"
+#define ItemGRMultStr "ItemGRMultiplier"
+#define ItemShovelMultStr "ItemShovelMultiplier"
+
+#define SpawnTypeStr "SpawnType"
+#define WeaknessStr "Weakness"
+#define TooltipStr "Tooltip"
 
 #define TurnDelayStr "TurnDelay"
 #define XRelStr "XRel"
@@ -79,7 +105,7 @@ const UINT MAX_ANSWERS = 9;
 #define SwordSafeToPlayerStr "SwSafeToPlayer"
 #define DefeatedStr "Defeated"
 #define ShowStatChangesStr "SStatChanges"
-#define GhostImageStr "GhostImage"
+#define InvisibleInspectableStr "InvisibleInspectable"
 #define SwordStr "Sword"
 #define RestartScriptOnEntranceStr "RestartOnEntrance"
 #define GlobalStr "Global"
@@ -90,6 +116,7 @@ const UINT MAX_ANSWERS = 9;
 #define AttackInFrontWhenBackIsTurnedStr "AttackInFrontWhenBackIsTurned"
 #define FaceTargetStr "FaceTarget"
 #define RayGunStr "RayGun"
+#define RayBlockingStr "RayBlocking"
 #define SurprisedFromBehindStr "SurprisedFromBehind"
 #define FaceAwayFromTargetStr "FaceAwayFromTarget"
 #define GoblinWeaknessStr "GoblinWeakness"
@@ -105,13 +132,33 @@ const UINT MAX_ANSWERS = 9;
 #define DropTrapdoorsStr "DropTrapdoors"
 #define MoveIntoSwordsStr "MoveIntoSwords"
 #define PushObjectsStr "PushObjects"
-
+#define SpawnEggsStr "SpawnEggs"
+#define RemovesSwordStr "RemovesSword"
+#define ExplosiveKegSafeStr "ExplosiveSafe"
+#define CutTarAnywhereStr "CutTarAnywhere"
+#define MovementTypeStr "MovementType"
+#define WallMirrorSafeStr "WallMirrorSafe"
+#define HotTileImmuneStr "HotTileImmune"
+#define FiretrapImmuneStr "FiretrapImmune"
+#define MistImmuneStr "MistImmune"
+#define WallDwellingStr "WallDwelling"
+#define ReplacedWithDefaultStr "ReplacedWithDefault"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
+//*****************************************************************************
 inline bool isVarCharValid(WCHAR wc)
 {
 	return iswalnum(wc) || wc == W_t('_');
+}
+
+void LogParseError(const WCHAR* pwStr, const char* message)
+{
+	CFiles f;
+	string str = UnicodeToUTF8(pwStr);
+	str += ": ";
+	str += message;
+	f.AppendErrorLog(str.c_str());
 }
 
 //*****************************************************************************
@@ -145,9 +192,30 @@ inline bool bCommandHasData(const UINT eCommand)
 		case CCharacterCommand::CC_AmbientSoundAt:
 		case CCharacterCommand::CC_PlayVideo:
 		case CCharacterCommand::CC_SetMusic:
+		case CCharacterCommand::CC_ImageOverlay:
+		case CCharacterCommand::CC_WorldMapMusic:
+		case CCharacterCommand::CC_WorldMapImage:
 			return true;
 		default:
 			return false;
+	}
+}
+
+std::function<bool(int, int)> getComparator(ScriptVars::Comp comparison) {
+	switch (comparison) {
+	case ScriptVars::Equals:
+	default:
+		return [](int lhs, int rhs) { return lhs == rhs; };
+	case ScriptVars::Greater:
+		return [](int lhs, int rhs) { return lhs > rhs; };
+	case ScriptVars::Less:
+		return [](int lhs, int rhs) { return lhs < rhs; };
+	case ScriptVars::GreaterThanOrEqual:
+		return [](int lhs, int rhs) { return lhs >= rhs; };
+	case ScriptVars::LessThanOrEqual:
+		return [](int lhs, int rhs) { return lhs <= rhs; };
+	case ScriptVars::Inequal:
+		return [](int lhs, int rhs) { return lhs != rhs; };
 	}
 }
 
@@ -170,14 +238,18 @@ CCharacter::CCharacter(
 	, pCustomChar(NULL)
 	, dwScriptID(0)
 	, wIdentity(M_NONE)
+	, wInitialIdentity(M_NONE)
 	, wLogicalIdentity(M_NONE)
 	, bVisible(false)
+	, bInvisibleInspectable(false)
 	, bScriptDone(false), bReplaced(false), bGlobal(false)
 	, bYesNoQuestion(false)
 	, bPlayerTouchedMe(false)
 	, bAttacked(false)
 	, equipType(ScriptFlag::NotEquipment)
 	, movementIQ(SmartDiagonalOnly)
+	, bMovementChanged(false)
+	, worldMapID(0)
 
 	, wCurrentCommandIndex(0)
 	, wTurnDelay(0)
@@ -202,21 +274,31 @@ CCharacter::CCharacter(
 	, bFaceAwayFromTarget(false)
 	, bFaceTarget(false)
 	, bHasRayGun(false)
+	, bHasRayBlocking(false)
 	, bSurprisedFromBehind(false)
 	, bGoblinWeakness(false)
 	, bSerpentWeakness(false)
 	, bMetal(false), bLuckyGR(false), bLuckyXP(false), bBriar(false), bNoEnemyDEF(false)
 	, bAttackFirst(false), bAttackLast(false)
-	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false)
+	, bDropTrapdoors(false), bMoveIntoSwords(false), bPushObjects(false), bSpawnEggs(false)
+	, bRemovesSword(false) , bExplosiveSafe(false), bMinimapTreasure(false), bCutTarAnywhere(false)
+	, bWallMirrorSafe(false), bHotTileImmune(false), bFiretrapImmune(false), bMistImmune(false)
+	, bWallDwelling(false)
 
 	, wJumpLabel(0)
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
 	, eachAttackLabelIndex(NO_LABEL), eachDefendLabelIndex(NO_LABEL), eachUseLabelIndex(NO_LABEL)
+	, eachVictoryLabelIndex(NO_LABEL)
+	, bReplacedWithDefault(false)
+	, customSpeechColor(0)
 	, wLastSpeechLineNumber(0)
 
-	, color(0), sword(NPC_DEFAULT_SWORD)
+	, color(0), hue(0), saturation(0), sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
+	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
+	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100), itemShovelMult(100)
+	, wSpawnType(-1)
 {
 }
 
@@ -245,6 +327,7 @@ void CCharacter::SyncCustomCharacterData(
 	CImportInfo& info)
 {
 	SyncCustomCharacterData(this->wLogicalIdentity, pSrcHold, pDestHold, info);
+	this->wInitialIdentity = this->wLogicalIdentity;
 }
 
 //Returns: whether something was changed
@@ -273,6 +356,7 @@ void CCharacter::SyncCustomCharacterData(
 				pDestCustomChar->dwDataID_Avatar = pCustomChar->dwDataID_Avatar;
 				pDestCustomChar->dwDataID_Tiles = pCustomChar->dwDataID_Tiles;
 				pDestCustomChar->ExtraVars = pCustomChar->ExtraVars;
+				pDestCustomChar->ExtraVars.SetVar(initialIdStr, charID);
 
 				pSrcHold->CopyCustomCharacterData(*pDestCustomChar, pDestHold, info);
 			}
@@ -311,12 +395,19 @@ void CCharacter::ChangeHoldForCommands(
 			{
 				case CCharacterCommand::CC_WaitForVar:
 				case CCharacterCommand::CC_VarSet:
+				case CCharacterCommand::CC_VarSetAt:
+				case CCharacterCommand::CC_ArrayVarSet:
+				case CCharacterCommand::CC_ArrayVarSetAt:
+				case CCharacterCommand::CC_ClearArrayVar:
+				case CCharacterCommand::CC_WaitForArrayEntry:
+				case CCharacterCommand::CC_CountArrayEntries:
 				{
 					//Update var refs.
-					if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
 						break; //predefined var IDs remain the same
 
-					const WCHAR *pVarName = pOldHold->GetVarName(c.x);
+					const WCHAR *pVarName = pOldHold->GetVarName(wRef);
 					UINT uVarID = pNewHold->GetVarID(pVarName);
 					if (!uVarID && pVarName)
 					{
@@ -326,21 +417,41 @@ void CCharacter::ChangeHoldForCommands(
 					}
 					//Update the var ID to match the ID of the var with this
 					//name in the destination hold.
-					c.x = uVarID;
+					if (c.command == CCharacterCommand::CC_VarSetAt) {
+						c.w = uVarID;
+					} else {
+						c.x = uVarID;
+					}
 				}
 				break;
 				case CCharacterCommand::CC_AmbientSound:
 				case CCharacterCommand::CC_AmbientSoundAt:
 				case CCharacterCommand::CC_PlayVideo:
+				case CCharacterCommand::CC_ImageOverlay:
 					//Make a copy of the media object in the new hold.
 					CDbData::CopyObject(info, c.w, pNewHold->dwHoldID);
 				break;
 				case CCharacterCommand::CC_SetMusic:
 					CDbData::CopyObject(info, c.w, pNewHold->dwHoldID);
 				break;
+				case CCharacterCommand::CC_SetNPCAppearance:
+				case CCharacterCommand::CC_SetPlayerAppearance:
+					SyncCustomCharacterData(c.x, pOldHold, pNewHold, info);
+					break;
 				case CCharacterCommand::CC_GenerateEntity:
 					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
 					break;
+
+				case CCharacterCommand::CC_Equipment:
+				{
+					//Sync character data if the command is using reference equipment
+					ScriptFlag::TransactionType trans = (ScriptFlag::TransactionType)c.w;
+					if (trans == ScriptFlag::Trade || trans == ScriptFlag::QueryStatus ||
+						trans == ScriptFlag::Generate) {
+						SyncCustomCharacterData(c.y, pOldHold, pNewHold, info);
+					}
+				}
+				break;
 
 				case CCharacterCommand::CC_LevelEntrance:
 					SyncEntranceID(info, c.x);
@@ -349,6 +460,18 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_Speech:
 					if (c.pSpeech)
 						SyncCustomCharacterData(c.pSpeech->wCharacter, pOldHold, pNewHold, info);
+				break;
+
+				case CCharacterCommand::CC_WorldMapMusic:
+					CDbData::CopyObject(info, c.y, pNewHold->dwHoldID);
+				break;
+				case CCharacterCommand::CC_WorldMapIcon:
+					SyncCustomCharacterData(c.h, pOldHold, pNewHold, info);
+					SyncEntranceID(info, c.w);
+				break;
+				case CCharacterCommand::CC_WorldMapImage:
+					CDbData::CopyObject(info, c.h, pNewHold->dwHoldID);
+					SyncEntranceID(info, c.w);
 				break;
 
 				default: break;
@@ -369,7 +492,22 @@ void CCharacter::ChangeHoldForCommands(
 }
 
 //*****************************************************************************
-UINT CCharacter::getPredefinedVar(const UINT varIndex) const
+WSTRING CCharacter::getPredefinedVar(const UINT varIndex) const
+{
+	WSTRING wstr;
+	if (ScriptVars::IsStringVar(ScriptVars::Predefined(varIndex))) {
+		wstr = getPredefinedVarString(varIndex);
+	}
+	else {
+		WCHAR wIntText[20];
+		const UINT val = getPredefinedVarInt(varIndex);
+		wstr = _itoW(int(val), wIntText, 10);
+	}
+	return wstr;
+}
+
+//*****************************************************************************
+UINT CCharacter::getPredefinedVarInt(const UINT varIndex) const
 //Returns: the value of the predefined var with this relative index
 {
 	ASSERT(this->pCurrentGame);
@@ -390,6 +528,10 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 			return this->color;
 		case (UINT)ScriptVars::P_MONSTER_SWORD:
 			return this->sword;
+		case (UINT)ScriptVars::P_MONSTER_HUE:
+			return this->hue;
+		case (UINT)ScriptVars::P_MONSTER_SATURATION:
+			return this->saturation;
 
 		//Room position.
 		case (UINT)ScriptVars::P_MONSTER_X:
@@ -411,6 +553,35 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 		case (UINT)ScriptVars::P_SCRIPT_F:
 			return this->paramF;
 
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			return this->monsterHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			return this->monsterATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			return this->monsterDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			return this->monsterGRmult;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			return this->monsterXPmult;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			return this->itemMult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			return this->itemHPmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			return this->itemATKmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			return this->itemDEFmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			return this->itemGRmult;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_SHOVEL_MULT:
+			return this->itemShovelMult;
+
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			return this->wSpawnType;
+
 		//Hidden global values
 		case (UINT)ScriptVars::P_TOTALTIME:
 			return 0;
@@ -421,7 +592,54 @@ UINT CCharacter::getPredefinedVar(const UINT varIndex) const
 }
 
 //*****************************************************************************
-bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
+WSTRING CCharacter::getPredefinedVarString(const UINT varIndex) const
+//Returns: the value of the predefined var with this relative index
+{
+	ASSERT(this->pCurrentGame);
+	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
+	switch (varIndex)
+	{
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+			return this->customName;
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+			return this->customWeakness;
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+			return this->customDescription;
+		default:
+			ASSERT(!"getPredefinedStringVar val not supported");
+			return WSTRING();
+	}
+}
+
+//*****************************************************************************
+int CCharacter::getArrayValue(
+	const ScriptArrayMap& scriptArrays, //[in] map of variable ids to script arrays
+	const UINT& varId, //[in] id of script array to read
+	const int arrayIndex //[in] index of value to get
+)
+//Returns: the value at the given index in the specified script array.
+//If the value has not been set, a default value of 0 is returned.
+{
+	if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+		return 0; //Out of range value is always 0
+	}
+
+	ScriptArrayMap::const_iterator array = scriptArrays.find(varId);
+
+	if (array == scriptArrays.end()) {
+		return 0; //Array hasn't been initialized yet, so return 0 as default.
+	}
+
+	map<int, int>::const_iterator value = array->second.find(arrayIndex);
+	if (value == array->second.end()) {
+		return 0; //Value hasn't been set yet, so return 0 as default.
+	}
+
+	return value->second;
+}
+
+//*****************************************************************************
+bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEvents& CueEvents)
 //Sets the value of the predefined var with this relative index to the specified value
 //Returns: false if command cannot be allowed to execute (e.g., killing player on turn 0), otherwise true
 {
@@ -455,6 +673,12 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		break;
 		case (UINT)ScriptVars::P_MONSTER_SWORD:
 			this->sword = val;
+		break;
+		case (UINT)ScriptVars::P_MONSTER_HUE:
+			this->SetHue(val);
+		break;
+		case (UINT)ScriptVars::P_MONSTER_SATURATION:
+			this->SetSaturation(val);
 		break;
 
 		//Room position.
@@ -516,6 +740,47 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 			this->paramF = val;
 		break;
 
+		//Local statistic modifiers
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_HP_MULT:
+			this->monsterHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_ATK_MULT:
+			this->monsterATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_DEF_MULT:
+			this->monsterDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_GOLD_MULT:
+			this->monsterGRmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_XP_MULT:
+			this->monsterXPmult = val;
+		break;
+
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_MULT:
+			this->itemMult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_HP_MULT:
+			this->itemHPmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_ATK_MULT:
+			this->itemATKmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_DEF_MULT:
+			this->itemDEFmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_GR_MULT:
+			this->itemGRmult = val;
+		break;
+		case (UINT)ScriptVars::P_SCRIPT_ITEM_SHOVEL_MULT:
+			this->itemShovelMult = val;
+		break;
+
+		//Spawn type
+		case (UINT)ScriptVars::P_SCRIPT_MONSTER_SPAWN:
+			this->wSpawnType = val;
+		break;
+
 		//Combat enemy stats.
 		case (UINT)ScriptVars::P_ENEMY_HP:
 		case (UINT)ScriptVars::P_ENEMY_ATK:
@@ -530,14 +795,24 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 			ASSERT(pCombat);
 			CMonster *pMonster = pCombat->pMonster;
 			ASSERT(pMonster);
+			bool bRefreshCombat = false;
 			switch (varIndex)
 			{
 				case (UINT)ScriptVars::P_ENEMY_HP: pMonster->HP = (int)val > 0 ? val : 0; break;
-				case (UINT)ScriptVars::P_ENEMY_ATK: pMonster->ATK = (int)val > 0 ? val : 0; break;
-				case (UINT)ScriptVars::P_ENEMY_DEF: pMonster->DEF = (int)val > 0 ? val : 0; break;
+				case (UINT)ScriptVars::P_ENEMY_ATK:
+					pMonster->ATK = val;
+					bRefreshCombat = true;
+				break;
+				case (UINT)ScriptVars::P_ENEMY_DEF:
+					pMonster->DEF = val;
+					bRefreshCombat = true;
+				break;
 				case (UINT)ScriptVars::P_ENEMY_GOLD: pMonster->GOLD = val; break;
 				case (UINT)ScriptVars::P_ENEMY_XP: pMonster->XP = val; break;
 			}
+
+			if (bRefreshCombat)
+				pCombat->InitMonsterStats(false);
 		}
 		break;
 
@@ -577,6 +852,12 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 		}
 		break;
 
+		case (UINT)ScriptVars::P_MONSTER_NAME:
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+		case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+			//string vars
+		break;
+
 		//Stat modifications that may display the change as a special effect.
 		default:
 		{
@@ -591,6 +872,7 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 				case (UINT)ScriptVars::P_GKEY:
 				case (UINT)ScriptVars::P_BKEY:
 				case (UINT)ScriptVars::P_SKEY:
+				case (UINT)ScriptVars::P_SHOVEL:
 					if (int(val) < 0)
 						newVal = 0;
 				break;
@@ -635,6 +917,9 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 					case (UINT)ScriptVars::P_SKEY:
 						type = CET_SKEY;
 					break;
+					case (UINT)ScriptVars::P_SHOVEL:
+						type = CET_SHOVEL;
+					break;
 					case (UINT)ScriptVars::P_MONSTER_ATK_MULT:
 					case (UINT)ScriptVars::P_MONSTER_DEF_MULT:
 					case (UINT)ScriptVars::P_MONSTER_HP_MULT:
@@ -645,8 +930,29 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 					case (UINT)ScriptVars::P_ITEM_ATK_MULT:
 					case (UINT)ScriptVars::P_ITEM_DEF_MULT:
 					case (UINT)ScriptVars::P_ITEM_GR_MULT:
+					case (UINT)ScriptVars::P_ITEM_SHOVEL_MULT:
 					case (UINT)ScriptVars::P_HOTTILE:
 					case (UINT)ScriptVars::P_EXPLOSION:
+					case (UINT)ScriptVars::P_BEAM:
+					case (UINT)ScriptVars::P_FIRETRAP:
+					case (UINT)ScriptVars::P_MUD_SPAWN:
+					case (UINT)ScriptVars::P_TAR_SPAWN:
+					case (UINT)ScriptVars::P_GEL_SPAWN:
+					case (UINT)ScriptVars::P_QUEEN_SPAWN:
+					case (UINT)ScriptVars::P_SCORE_HP:
+					case (UINT)ScriptVars::P_SCORE_ATK:
+					case (UINT)ScriptVars::P_SCORE_DEF:
+					case (UINT)ScriptVars::P_SCORE_YKEY:
+					case (UINT)ScriptVars::P_SCORE_GKEY:
+					case (UINT)ScriptVars::P_SCORE_BKEY:
+					case (UINT)ScriptVars::P_SCORE_SKEY:
+					case (UINT)ScriptVars::P_SCORE_GOLD:
+					case (UINT)ScriptVars::P_SCORE_XP:
+					case (UINT)ScriptVars::P_SCORE_SHOVEL:
+					case (UINT)ScriptVars::P_MUD_SWAP:
+					case (UINT)ScriptVars::P_TAR_SWAP:
+					case (UINT)ScriptVars::P_GEL_SWAP:
+					case (UINT)ScriptVars::P_RETURN_X:
 						//display nothing
 					break;
 
@@ -668,6 +974,11 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 					case (UINT)ScriptVars::P_SPEED:
 					case (UINT)ScriptVars::P_TOTALMOVES:
 					case (UINT)ScriptVars::P_TOTALTIME:
+					case (UINT)ScriptVars::P_LEVEL_MULT:
+					case (UINT)ScriptVars::P_ROOM_X:
+					case (UINT)ScriptVars::P_ROOM_Y:
+					case (UINT)ScriptVars::P_TOTAL_ATK:
+					case (UINT)ScriptVars::P_TOTAL_DEF:
 						//cannot alter
 					break;
 
@@ -710,6 +1021,29 @@ bool CCharacter::setPredefinedVar(const UINT varIndex, const UINT val, CCueEvent
 }
 
 //*****************************************************************************
+void CCharacter::setPredefinedVarString(
+	const UINT varIndex, const WSTRING val,
+	CCueEvents& CueEvents)
+	//Sets the value of the predefined var with this relative index to the specified value
+{
+//	CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+
+	ASSERT(varIndex >= (UINT)ScriptVars::FirstPredefinedVar);
+	switch (varIndex)
+	{
+	case (UINT)ScriptVars::P_MONSTER_NAME:
+		this->customName = val;
+		break;
+	case (UINT)ScriptVars::P_MONSTER_CUSTOM_WEAKNESS:
+		this->customWeakness = val;
+		break;
+	case (UINT)ScriptVars::P_MONSTER_CUSTOM_DESCRIPTION:
+		this->customDescription = val;
+		break;
+	}
+}
+
+//*****************************************************************************
 bool CCharacter::HasSpecialDeath() const
 //Returns: whether NPC's monster type has special death behavior
 {
@@ -738,12 +1072,22 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_Speech:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				command->x = (pRoom->wRoomCols-1) - command->x;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
+			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -789,12 +1133,22 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_Speech:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				command->y = (pRoom->wRoomRows-1) - command->y;
 			break;
 			case CCharacterCommand::CC_WaitForRect:
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
+			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -841,6 +1195,11 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_ActivateItemAt:
 			case CCharacterCommand::CC_WaitForDoorTo:
 			case CCharacterCommand::CC_GameEffect:
+			case CCharacterCommand::CC_SetMonsterVar:
+			case CCharacterCommand::CC_VarSetAt:
+			case CCharacterCommand::CC_WaitForOpenTile:
+			case CCharacterCommand::CC_SetWallLight:
+			case CCharacterCommand::CC_AttackTile:
 				wNewX = (pRoom->wRoomRows-1) - command->y;
 				command->y = command->x;
 				command->x = wNewX;
@@ -849,6 +1208,11 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_WaitForNotRect:
 			case CCharacterCommand::CC_BuildTile:
 			case CCharacterCommand::CC_WaitForItem:
+			case CCharacterCommand::CC_WaitForWeapon:
+			case CCharacterCommand::CC_WaitForItemGroup:
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			case CCharacterCommand::CC_SetDarkness:
+			case CCharacterCommand::CC_SetCeilingLight:
 				//SW corner of rectangle will become the new NW corner after rotation.
 				wNewX = (pRoom->wRoomRows-1) - (command->y + command->h);
 				command->y = command->x;
@@ -964,7 +1328,7 @@ bool CCharacter::IsValidExpression(
 //
 //Params:
 	const WCHAR *pwStr, UINT& index, CDbHold *pHold,
-	const bool bExpectCloseParen) //[default=false] whether a close paren should mark the end of this (nested) expression
+	const char closingChar) //[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
 {
 	ASSERT(pwStr);
 	ASSERT(pHold);
@@ -982,8 +1346,8 @@ bool CCharacter::IsValidExpression(
 		//Parse another term.
 		if (pwStr[index] == W_t('+') || pwStr[index] == W_t('-'))
 			++index;
-		else if (bExpectCloseParen && pwStr[index] == W_t(')')) //closing nested expression
-			return true; //caller will parse the close paren
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
+			return true; //caller will parse the closing character
 		else
 			return false; //invalid symbol between terms
 
@@ -1020,6 +1384,9 @@ bool CCharacter::IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 }
 
 //*****************************************************************************
+//
+// factor = var | number | "(" expression ")" | primitive "(" comma-separated expressions as input parameters ")"
+//
 bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 //Returns: whether a factor in an expression is valid
 {
@@ -1029,7 +1396,7 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 	if (pwStr[index] == W_t('('))
 	{
 		++index;
-		if (!IsValidExpression(pwStr, index, pHold, true)) //recursive call
+		if (!IsValidExpression(pwStr, index, pHold, ')')) //recursive call
 			return false;
 		if (pwStr[index] != W_t(')')) //should be parsing the close parenthesis at this point
 			return false; //missing close parenthesis
@@ -1060,7 +1427,9 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		while (isVarCharValid(pwStr[endIndex]))
 			++endIndex;
 
-		WSTRING wVarName(pwStr + index, endIndex - index);
+		const WSTRING wVarName(pwStr + index, endIndex - index);
+
+		//Continue parsing after identifier
 		index = endIndex;
 
 		//Is it a predefined var?
@@ -1072,12 +1441,97 @@ bool CCharacter::IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold)
 		if (pHold->GetVarID(wVarName.c_str()))
 			return true;
 
+		//Is it a function primitive?
+		ScriptVars::PrimitiveType ePrimitive = ScriptVars::parsePrimitive(wVarName);
+		if (ePrimitive != ScriptVars::NoPrimitive)
+			return IsValidPrimitiveParameters(ePrimitive, pwStr, index, pHold);
+
 		//Unrecognized identifier.
 		return false;
+	}
+	else if (pwStr[index] == W_t('#')) {
+		//Check that array variable has index
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (isVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		index = endIndex;
+
+		//Is it a hold var?
+		if (!pHold->GetVarID(wVarName.c_str()))
+			return false;
+
+		if (pwStr[index] != W_t('['))
+			return false;
+		++index;
+
+		if (!IsValidExpression(pwStr, index, pHold, ']')) //recursive call
+			return false;
+		if (pwStr[index] != W_t(']')) //should be parsing the close bracket at this point
+			return false; //missing close bracket
+
+		++index;
+
+		return true;
 	}
 
 	//Invalid identifier
 	return false;
+}
+
+//*****************************************************************************
+bool CCharacter::IsValidPrimitiveParameters(
+	ScriptVars::PrimitiveType ePrimitive,
+	const WCHAR* pwStr, UINT& index, CDbHold* pHold)
+{
+	SKIP_WHITESPACE(pwStr, index);
+
+	//Parse arguments surrounded by parens
+	if (pwStr[index] != W_t('('))
+		return false;
+	++index;
+
+	SKIP_WHITESPACE(pwStr, index);
+
+	UINT numArgs = 0;
+	if (pwStr[index] != W_t(')'))
+	{
+		UINT lookaheadIndex = index;
+		while (IsValidExpression(pwStr, lookaheadIndex, pHold, ',')) //recursive call
+		{
+			index = lookaheadIndex;
+			if (pwStr[index] != W_t(','))
+				return false;
+
+			++index;
+			++numArgs;
+			lookaheadIndex = index;
+		}
+
+		//no more commas; parse final argument
+		if (!IsValidExpression(pwStr, index, pHold, ')')) //recursive call
+			return false;
+		++numArgs;
+	}
+
+	if (pwStr[index] != W_t(')')) //should be parsing the close parenthesis at this point
+		return false; //missing close parenthesis
+	++index;
+
+	//Confirm correct parameter count for this primitive
+	if (numArgs != ScriptVars::getPrimitiveRequiredParameters(ePrimitive))
+		return false;
+
+	return true;
 }
 
 //*****************************************************************************
@@ -1086,13 +1540,9 @@ int CCharacter::parseExpression(
 //
 // expression = ["+"|"-"] term {("+"|"-") term}
 //
-// term = factor {("*"|"/"|"%") factor}
-//
-// factor = var | number | "(" expression ")" 
-//
 //Params:
 	const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC, //[default=NULL]
-	const bool bExpectCloseParen) //[default=false] whether a close paren should mark the end of this (nested) expression
+	const char closingChar) //[default=0] if set, indicates that the specified character (e.g., close paren) can mark the end of this (nested) expression
 {
 	ASSERT(pwStr);
 	ASSERT(pGame);
@@ -1124,15 +1574,12 @@ int CCharacter::parseExpression(
 			bAdd = false;
 			++index;
 		}
-		else if (bExpectCloseParen && pwStr[index] == W_t(')')) //closing nested expression
-			return val; //caller will parse the close paren
+		else if (closingChar && pwStr[index] == W_t(closingChar)) //closing nested expression
+			return val; //caller will parse the closing character
 		else
 		{
 			//parse error -- return the current value
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr + index);
-			str += ": Parse error (bad symbol)";
-			f.AppendErrorLog(str.c_str());
+			LogParseError(pwStr + index, "Parse error (bad symbol)");
 			return val;
 		}
 
@@ -1144,8 +1591,11 @@ int CCharacter::parseExpression(
 }
 
 //*****************************************************************************
-int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
 //Parse and evaluate a term in an expression.
+//
+// term = factor {("*"|"/"|"%") factor}
+//
+int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
 {
 	int val = parseFactor(pwStr, index, pGame, pNPC);
 
@@ -1193,56 +1643,63 @@ int CCharacter::parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, 
 }
 
 //*****************************************************************************
+int CCharacter::parseNestedExpression(const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC)
+//Parse and evaluate a nested expression.
+{
+	ASSERT(pwStr[index] == W_t('('));
+	++index; //pass left paren
+
+	int val = parseExpression(pwStr, index, pGame, pNPC, ')'); //recursive call
+	SKIP_WHITESPACE(pwStr, index);
+	if (pwStr[index] == W_t(')'))
+		++index;
+	else
+	{
+		//parse error -- return the current value
+		LogParseError(pwStr, "Parse error (missing close parenthesis)");
+	}
+	return val;
+}
+
+//*****************************************************************************
+int CCharacter::parseNumber(const WCHAR* pwStr, UINT& index)
+{
+	ASSERT(iswdigit(pwStr[index]));
+
+	const int val = _Wtoi(pwStr + index);
+
+	//Parse past digits.
+	++index;
+	while (iswdigit(pwStr[index]))
+		++index;
+
+	if (iswalpha(pwStr[index])) //i.e. of form <digits><alphas>
+	{
+		//Invalid var name -- skip to end of it and return zero value.
+		while (isVarCharValid(pwStr[index]))
+			++index;
+
+		LogParseError(pwStr, "Parse error (invalid var name)");
+
+		return 0;
+	}
+
+	return val;
+}
+
+//*****************************************************************************
 int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC)
-//Parse and evaluate a term in an expression.
+//Parse and evaluate a factor in an expression.
 {
 	SKIP_WHITESPACE(pwStr, index);
 
 	//A nested expression?
 	if (pwStr[index] == W_t('('))
-	{
-		++index;
-		int val = parseExpression(pwStr, index, pGame, pNPC, true); //recursive call
-		SKIP_WHITESPACE(pwStr, index);
-		if (pwStr[index] == W_t(')'))
-			++index;
-		else
-		{
-			//parse error -- return the current value
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr);
-			str += ": Parse error (missing close parenthesis)";
-			f.AppendErrorLog(str.c_str());
-		}
-		return val;
-	}
+		return parseNestedExpression(pwStr, index, pGame, pNPC);
 
 	//Number?
 	if (iswdigit(pwStr[index]))
-	{
-		int val = _Wtoi(pwStr + index);
-
-		//Parse past digits.
-		++index;
-		while (iswdigit(pwStr[index]))
-			++index;
-
-		if (iswalpha(pwStr[index])) //i.e. of form <digits><alphas>
-		{
-			//Invalid var name -- skip to end of it and return zero value.
-			while (isVarCharValid(pwStr[index]))
-				++index;
-
-			CFiles f;
-			string str = UnicodeToUTF8(pwStr);
-			str += ": Parse error (invalid var name)";
-			f.AppendErrorLog(str.c_str());
-
-			return 0;
-		}
-
-		return val;
-	}
+		return parseNumber(pwStr, index);
 
 	//Variable identifier?
 	if (pwStr[index] == W_t('_') || iswalpha(pwStr[index])) //valid first char
@@ -1252,35 +1709,122 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		while (isVarCharValid(pwStr[endIndex]))
 			++endIndex;
 
-		WSTRING wVarName(pwStr + index, endIndex - index);
+		const WSTRING wVarName(pwStr + index, endIndex - index);
+
+		//Continue parsing after identifier
 		index = endIndex;
 
 		//Is it a predefined var?
-		int val = 0;
 		const ScriptVars::Predefined eVar = ScriptVars::parsePredefinedVar(wVarName);
 		if (eVar != ScriptVars::P_NoVar)
 		{
-			if (pNPC)
-				val = int(pNPC->getPredefinedVar(eVar));
-			else
-				val = pGame->getVar(eVar);
-		} else {
-			//Is it a local hold var?
-			char *varName = pGame->pHold->getVarAccessToken(wVarName.c_str());
+			if (!ScriptVars::IsStringVar(eVar)) {
+				if (pNPC)
+					return int(pNPC->getPredefinedVarInt(eVar));
+
+				return pGame->getVar(eVar);
+			}
+		}
+
+		//Is it a local hold var?
+		if (pGame->pHold->GetVarID(wVarName.c_str())) {
+			char* varName = pGame->pHold->getVarAccessToken(wVarName.c_str());
 			const UNPACKEDVARTYPE vType = pGame->stats.GetVarType(varName);
 			if (vType == UVT_int || vType == UVT_unknown) //valid int type
-				val = pGame->stats.GetVar(varName, (int)0);
-			//else: unrecognized identifier -- just return a zero value
+			{
+				return pGame->stats.GetVar(varName, (int)0);
+			}
 		}
-		return val;
+
+		//Is it a function primitive?
+		ScriptVars::PrimitiveType ePrimitive = ScriptVars::parsePrimitive(wVarName);
+		if (ePrimitive != ScriptVars::NoPrimitive)
+			return parsePrimitive(ePrimitive, pwStr, index, pGame, pNPC);
+
+		//else: unrecognized identifier -- just return a zero value below
+	}
+	else if (pwStr[index] == W_t('#')) {
+		//Parse array index, then look up the value if the index if valid
+		//Find spot where var identifier ends.
+		int endIndex = index + 1;
+		int spcTrail = 0;
+		while (isVarCharValid(pwStr[endIndex]))
+		{
+			if (pwStr[endIndex] == W_t(' '))
+				++spcTrail;
+			else
+				spcTrail = 0;
+			++endIndex;
+		}
+
+		const WSTRING wVarName(pwStr + index, endIndex - index - spcTrail);
+		index = endIndex;
+
+		ASSERT(pwStr[index] == W_t('['));
+		++index; //pass left bracket
+
+		int arrayIndex = parseExpression(pwStr, index, pGame, pNPC, ']'); //recursive call
+		SKIP_WHITESPACE(pwStr, index);
+		if (pwStr[index] == W_t(']'))
+			++index;
+		else
+		{
+			//parse error -- return the current value
+			LogParseError(pwStr, "Parse error (missing close bracket)");
+		}
+
+		UINT varId = pGame->pHold->GetVarID(wVarName.c_str());
+		ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+		return getArrayValue(scriptArrays, varId, arrayIndex);
 	}
 
 	//Invalid identifier
-	CFiles f;
-	string str = UnicodeToUTF8(pwStr + index);
-	str += ": Parse error (invalid var name)";
-	f.AppendErrorLog(str.c_str());
+	LogParseError(pwStr, "Parse error(invalid var name)");
 
+	return 0;
+}
+
+//*****************************************************************************
+//Parses and evaluates a primitive function call in the context of the game object.
+//
+//Returns: calculated value from call to primitive
+int CCharacter::parsePrimitive(
+	ScriptVars::PrimitiveType ePrimitive,
+	const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC)
+{
+	SKIP_WHITESPACE(pwStr, index);
+
+	ASSERT(pwStr[index] == W_t('('));
+	++index; //pass left paren
+
+	SKIP_WHITESPACE(pwStr, index);
+
+	vector<int> params;
+
+	if (pwStr[index] != W_t(')')) {
+		UINT lookaheadIndex = index;
+		while (IsValidExpression(pwStr, lookaheadIndex, pGame->pHold, ',')) //recursive call
+		{
+			params.push_back(parseExpression(pwStr, index, pGame, pNPC, ',')); //recursive call
+			ASSERT(pwStr[index] == W_t(','));
+			++index;
+			lookaheadIndex = index;
+		}
+
+		//no more commas; parse final argument
+		params.push_back(parseExpression(pwStr, index, pGame, pNPC, ')')); //recursive call
+	}
+
+	if (pwStr[index] == W_t(')')) {
+		++index;
+	} else {
+		LogParseError(pwStr, "Parse error in primitive parameter list (missing close parenthesis)");
+	}
+
+	if (params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive))
+		return pGame->EvalPrimitive(ePrimitive, params);
+
+	LogParseError(pwStr, "Parse error in primitive parameter list (incorrect argument count)");
 	return 0;
 }
 
@@ -1293,6 +1837,26 @@ bool CCharacter::HasUnansweredQuestion(CCueEvents &CueEvents) const
 		const CMonsterMessage *pMessage = DYN_CAST(const CMonsterMessage*, const CAttachableObject*, pObj);
 		if (pMessage->pSender == this)
 			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCharacter::IsCommandTypeIn(
+//Returns: If a command of the given type is in the given range (inclusive)
+	const int startIndex,
+	const int endIndex,
+	const CCharacterCommand::CharCommand command
+) const
+{
+	ASSERT(startIndex < commands.size());
+	ASSERT(endIndex < commands.size());
+
+	for (int i = startIndex; i <= endIndex; ++i) {
+		if (this->commands[i].command == command) {
+			return true;
+		}
 	}
 
 	return false;
@@ -1318,6 +1882,13 @@ void CCharacter::Process(
 	//Only character monsters taking up a single tile are implemented.
 	ASSERT(!bIsSerpent(GetResolvedIdentity()));
 
+	//Being outside of a wall is instantly lethal for wall-dwellers
+	if (IsWallDwelling()) {
+		if (KillIfOutsideWall(CueEvents)) {
+			return;
+		}
+	}
+
 	//Skip script execution if no commands to play.
 	if (this->wCurrentCommandIndex >= this->commands.size())
 		goto Finish;
@@ -1337,6 +1908,14 @@ void CCharacter::Process(
 
 	CDbRoom& room = *(pGame->pRoom);
 	CSwordsman& player = *pGame->pPlayer;
+
+	// Some commands should not have side effects when previewing a room remotely
+	const bool bRoomBeingDisplayedOnly = pGame->IsRoomBeingDisplayedOnly();
+
+	// Don't process a character script when previewing a room if the script is marked as ended
+	// This prevents removed characters from coming back when previewing the room you are currently in
+	if (bRoomBeingDisplayedOnly && this->bScriptDone)
+		goto Finish;
 
 	//Keep track of swordsman's orientation on previous and current turn.
 	this->wLastSO = this->wSO;
@@ -1813,8 +2392,7 @@ void CCharacter::Process(
 						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
 						{
 							//Explode a bomb immediately.  Doesn't expend a turn.
-							CCoordStack bomb(px, py);
-							room.BombExplode(CueEvents, bomb);
+							room.ExplodeBomb(CueEvents, px, py);
 							if (IsAlive())
 								bProcessNextCommand = true;
 						} else {
@@ -1822,6 +2400,18 @@ void CCharacter::Process(
 							STOP_COMMAND;
 						}
 					break;
+					case T_POWDER_KEG:
+						if (pGame->wTurnNo > 0) //not on room entrance, since the player could die immediately
+						{
+							//Explode a keg immediately.  Doesn't expend a turn.
+							room.ExplodePowderKeg(CueEvents, px, py);
+							if (IsAlive())
+								bProcessNextCommand = true;
+						} else {
+							//Pause script until after first turn to explode the keg.
+							STOP_COMMAND;
+						}
+						break;
 					case T_FUSE:
 						//Light fuse.  Doesn't expend a turn.
 						room.LightFuse(CueEvents, px, py,
@@ -1863,7 +2453,7 @@ void CCharacter::Process(
 							case T_DOOR_Y: case T_DOOR_B: case T_DOOR_G: case T_DOOR_R: case T_DOOR_C: case T_DOOR_MONEY:
 							case T_DOOR_YO: case T_DOOR_BO: case T_DOOR_GO: case T_DOOR_RO: case T_DOOR_CO: case T_DOOR_MONEYO:
 								//Toggle this door.
-								room.ToggleDoor(px, py);
+								room.ToggleDoor(px, py, CueEvents);
 								bProcessNextCommand = true;
 							break;
 							default:
@@ -1878,22 +2468,37 @@ void CCharacter::Process(
 			break;
 			case CCharacterCommand::CC_AddRoomToMap:
 			{
-				//Add room at (x,y) to player's mapped rooms.
-				const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
-						command.x, pGame->pLevel->dwLevelID*100 + command.y);
-				if (roomID)
+				if (!bRoomBeingDisplayedOnly)
 				{
-					pGame->AddRoomToMap(roomID, command.w != 0);
-					CueEvents.Add(CID_LevelMap);
+					//Add room at (x,y) to player's mapped rooms.
+					const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+						command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+					if (roomID)
+					{
+						const bool bMarkExplored = command.w != 0;
+						const MapState mapState = bMarkExplored ? MapState::Explored : MapState::NoDetail;
+						pGame->AddRoomToMap(roomID, mapState);
+						pGame->UpdateStoredMapState(roomID, mapState);
+						CueEvents.Add(CID_LevelMap, new CAttachableWrapper<UINT>(
+							bMarkExplored ? T_MAP_DETAIL : T_MAP));
+					}
 				}
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_SetMapIcon:
+				SetMapIcon(command, pGame, CueEvents);
+				bProcessNextCommand = true;
+			break;
 			case CCharacterCommand::CC_Autosave:
 			{
-				//Autosave with identifier 'label'.
-				if (pGame->Autosave(command.label))
-					CueEvents.Add(CID_Autosave);
+				if (!bRoomBeingDisplayedOnly)
+				{
+					//Autosave with identifier 'label'.
+					WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
+					if (pGame->Autosave(saveName))
+						CueEvents.Add(CID_Autosave);
+				}
 				bProcessNextCommand = true;
 			}
 			break;
@@ -1943,121 +2548,28 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_WaitForRect:
-			case CCharacterCommand::CC_WaitForNotRect:
 			{
 				//Wait until a specified entity is in rect (x,y,w,h).
-				// -OR-
+				//
+				//Note that width and height are zero-indexed.
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (!IsEntityAt(command, room, player))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotRect:
+			{
 				//Wait until NONE of the specified entities are in rect (x,y,w,h).
 				//
 				//Note that width and height are zero-indexed.
-				bool bFound = false;
-				getCommandParams(command, px, py, pw, ph, pflags);
-				if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px+pw, py+ph))
+				if (!IsValidEntityWait(command, room))
+					STOP_COMMAND;
+				if (IsEntityAt(command, room, player))
 					STOP_COMMAND;
 
-				if (!bFound && (!pflags || (pflags & ScriptFlag::PLAYER) != 0))
-				{
-					//Check for player by default if no flags are selected.
-					if (
-						player.IsInRoom() &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::HALPH) != 0)
-				{
-					if (player.wAppearance == M_HALPH &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_HALPH, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::MONSTER) != 0)
-				{
-					//excludes NPCs
-					if (room.IsMonsterInRect(px, py,
-							px + pw, py + ph))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::NPC) != 0)
-				{
-					//visible characters only
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CHARACTER))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::PDOUBLE) != 0)
-				{
-					//All player double types
-					if (bIsBeethroDouble(player.wAppearance) && player.wAppearance != M_BEETHRO &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_MIMIC))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_DECOY))
-						bFound = true;
-					else if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_CLONE))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SELF) != 0)
-				{
-					if (this->wX >= px && this->wX <= px + pw &&
-							this->wY >= py && this->wY <= py + ph)
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::SLAYER) != 0)
-				{
-					if (player.wAppearance == M_SLAYER &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_SLAYER, true))
-						bFound = true;
-				}
-				if (!bFound && (pflags & ScriptFlag::BEETHRO) != 0)
-				{
-					//Check for Beethro (can detect NPC Beethros).
-					if (player.wAppearance == M_BEETHRO)
-					{
-						if (player.wX >= px && player.wX <= px + pw &&
-								player.wY >= py && player.wY <= py + ph)
-							bFound = true;
-					}
-					CMonster *pNPCBeethro = pGame->pRoom->GetNPCBeethro();
-					if (pNPCBeethro)
-					{
-						const UINT wSX = pNPCBeethro->wX;
-						const UINT wSY = pNPCBeethro->wY;
-						if (wSX >= px && wSX <= px + pw &&
-								wSY >= py && wSY <= py + ph)
-							bFound = true;
-					}
-				}
-				if (!bFound && (pflags & ScriptFlag::STALWART) != 0)
-				{
-					if (player.wAppearance == M_STALWART &&
-							player.wX >= px && player.wX <= px + pw &&
-							player.wY >= py && player.wY <= py + ph)
-						bFound = true;
-					else
-					if (room.IsMonsterInRectOfType(px, py,
-							px + pw, py + ph, M_STALWART, true))
-						bFound = true;
-				}
-
-				if ((command.command == CCharacterCommand::CC_WaitForRect && !bFound) ||
-					 (command.command == CCharacterCommand::CC_WaitForNotRect && bFound))
-					STOP_COMMAND;
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2065,12 +2577,9 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForDoorTo:
 			{
 				//Wait for door at (x,y) to (w=close/open).
-				getCommandXY(command, px, py);
-				const UINT wTile = room.GetOSquare(px, py);
-				if (command.w==(UINT)OA_CLOSE && !bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't closed yet
-				if (command.w==(UINT)OA_OPEN && bIsDoor(wTile))
-					STOP_COMMAND;  //door hasn't opened yet
+				if (!IsDoorStateAt(command, room))
+					STOP_COMMAND;
+
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2086,62 +2595,25 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForPlayerToFace:
 			{
 				//Wait until player faces orientation X.
-				if (!player.IsInRoom())
+				if (!IsPlayerFacing(command, player))
 					STOP_COMMAND;
-				ASSERT(this->wLastSO != NO_ORIENTATION);
-				ASSERT(this->wSO != NO_ORIENTATION);
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (this->wSO != nNextCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (this->wSO != nNextCCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (this->wSO != px)
-							STOP_COMMAND;
-					break;
-				}
+
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToMove:
 			{
 				//Wait until player moves in direction X.
-				if (!player.IsInRoom())
+				if (!DidPlayerMove(command, player, nLastCommand))
 					STOP_COMMAND;
-				ASSERT(this->wLastSO != NO_ORIENTATION);
-				ASSERT(this->wSO != NO_ORIENTATION);
-				const bool bPlayerMoved = player.wX != player.wPrevX ||
-						player.wY != player.wPrevY;
-				getCommandX(command, px);
-				switch (px)
-				{
-					case CMD_C:
-						if (this->wSO != nNextCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					case CMD_CC:
-						if (this->wSO != nNextCCO(this->wLastSO))
-							STOP_COMMAND;
-						break;
-					default:
-						if (!bPlayerMoved || CSwordsman::GetSwordMovement( //conversion routine
-								nLastCommand, NO_ORIENTATION) != px)
-							STOP_COMMAND;
-					break;
-				}
+
 				bProcessNextCommand = true;
 			}
 			break;
 			case CCharacterCommand::CC_WaitForPlayerToTouchMe:
 			{
 				//Wait until player bumps into me (on this turn).
-				if (player.wX == this->wX && player.wY == this->wY)
+				if (player.wX == this->wX && player.wY == this->wY && !bRoomBeingDisplayedOnly)
 					this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
 
 				if (!this->bPlayerTouchedMe)
@@ -2205,21 +2677,44 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 
+			case CCharacterCommand::CC_WaitForOpenTile:
+			{
+				//Wait for target tile to not contain an obstacle (not accounting for movement direction)
+				if (!IsOpenTileAt(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+
 			case CCharacterCommand::CC_Label:
 				//A comment or destination marker for a GoTo command.
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_GoSub:
 			case CCharacterCommand::CC_GoTo:
 			{
 				//Continue executing script commands from marked jump point.
 				//Will continue script if jump point is invalid.
 				const int wNextIndex = GetIndexOfCommandWithLabel(command.x);
-				if (wNextIndex != NO_LABEL)
+				this->bParseIfElseAsCondition = false;
+				if (wNextIndex != NO_LABEL) {
+					if (command.command == CCharacterCommand::CC_GoSub)
+						this->jumpStack.push_back(this->wCurrentCommandIndex + 1);
 					this->wCurrentCommandIndex = wNextIndex;
-				else
+				} else {
 					++this->wCurrentCommandIndex; //invalid jump -- just play next command
+				}
 				bProcessNextCommand = true;
 			}
+			continue;   //don't increment wCurrentCommandIndex again
+			case CCharacterCommand::CC_Return:
+				if (this->jumpStack.empty()) {
+					this->wCurrentCommandIndex = this->commands.size(); //done with script execution
+				} else {
+					this->wCurrentCommandIndex = this->jumpStack.back();
+					this->jumpStack.pop_back();
+				}
+				bProcessNextCommand = true;
 			continue;   //don't increment wCurrentCommandIndex again
 
 			case CCharacterCommand::CC_Speech:
@@ -2361,6 +2856,9 @@ void CCharacter::Process(
 					//Whether a not-visible NPC (i.e. not occupying a room tile) is displayed on screen.
 					case ScriptFlag::NoGhostDisplay:
 						this->bGhostImage = false;
+						if (this->bMinimapTreasure) {
+							room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+						}
 					break;
 					case ScriptFlag::GhostDisplay:
 						this->bGhostImage = true;
@@ -2388,6 +2886,14 @@ void CCharacter::Process(
 						this->bExecuteScriptOnCombat = false;
 					break;
 
+					//Whether character name and description are shown when invisible and right-clicked.
+					case ScriptFlag::InvisibleInspectable:
+						this->bInvisibleInspectable = true;
+					break;
+					case ScriptFlag::NoInvisibleInspectable:
+						this->bInvisibleInspectable = false;
+					break;
+
 					default:
 						ASSERT(!"Unknown imperative");
 					break;
@@ -2409,12 +2915,14 @@ void CCharacter::Process(
 						this->bAttackInFrontWhenBackIsTurned =
 						this->bFaceAwayFromTarget =
 						this->bFaceTarget =
-						this->bHasRayGun =
+						this->bHasRayGun = this->bHasRayBlocking =
 						this->bSurprisedFromBehind =
 						this->bGoblinWeakness = this->bSerpentWeakness =
 						this->bMetal = this->bLuckyGR = this->bLuckyXP = this->bBriar = this->bNoEnemyDEF =
-						this->bAttackFirst = this->bAttackLast =
-						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects =
+						this->bAttackFirst = this->bAttackLast = this->bRemovesSword =
+						this->bDropTrapdoors = this->bMoveIntoSwords = this->bPushObjects = this->bSpawnEggs =
+						this->bExplosiveSafe = this->bMinimapTreasure = this->bCutTarAnywhere = this->bWallMirrorSafe =
+						this->bHotTileImmune = this->bFiretrapImmune = this->bMistImmune = this->bWallDwelling =
 							false;
 						this->movementIQ = SmartDiagonalOnly;
 					break;
@@ -2438,6 +2946,9 @@ void CCharacter::Process(
 					case ScriptFlag::BeamAttack:
 						this->bHasRayGun = true;
 					break;
+					case ScriptFlag::BeamBlock:
+						this->bHasRayBlocking = true;
+						break;
 					case ScriptFlag::SurprisedFromBehind:
 						this->bSurprisedFromBehind = true;
 					break;
@@ -2493,11 +3004,52 @@ void CCharacter::Process(
 					case ScriptFlag::PushObjects:
 						this->bPushObjects = true;
 					break;
+					case ScriptFlag::SpawnEggs:
+						this->bSpawnEggs = true;
+					break;
+					case ScriptFlag::RemovesSword:
+						this->bRemovesSword = true;
+					break;
+					case ScriptFlag::ExplosiveSafe:
+						this->bExplosiveSafe = true;
+					break;
+					case ScriptFlag::WallMirrorSafe:
+						this->bWallMirrorSafe = true;
+					break;
+					case ScriptFlag::CutTarAnywhere:
+						this->bCutTarAnywhere = true;
+					break;
+					case ScriptFlag::MinimapTreasure:
+						this->bMinimapTreasure = true;
+					break;
+					case ScriptFlag::HotTileImmune:
+						this->bHotTileImmune = true;
+					break;
+					case ScriptFlag::FiretrapImmune:
+						this->bFiretrapImmune = true;
+					break;
+					case ScriptFlag::MistImmune:
+						this->bMistImmune = true;
+					break;
+					case ScriptFlag::WallDwelling:
+						this->bWallDwelling = true;
+					break;
 
 					default:
 						ASSERT(!"Unknown behavior");
 					break;
 				}
+			}
+			break;
+
+			case CCharacterCommand::CC_SetMovementType:
+			{
+				//Set movement type X
+				bProcessNextCommand = true;
+
+				const MovementType eNewMovementType = (MovementType)command.x;
+				this->eMovement = eNewMovementType;
+				bMovementChanged = true;
 			}
 			break;
 
@@ -2516,6 +3068,12 @@ void CCharacter::Process(
 				this->eachUseLabelIndex = GetIndexOfCommandWithLabel(command.x);
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_EachVictory:
+				//Goto label X each time combat victory occurs.
+				this->eachVictoryLabelIndex = GetIndexOfCommandWithLabel(command.x);
+				bProcessNextCommand = true;
+			break;
+
 			case CCharacterCommand::CC_Equipment:
 			{
 				//Give/take player equipment type X, defined by hold custom charID Y.
@@ -2556,6 +3114,22 @@ void CCharacter::Process(
 						if (!pGame->QueryInventoryStatus(command.x))
 							STOP_COMMAND;
 					break;
+					case ScriptFlag::Generate:
+						ScriptFlag::EquipmentType type = (ScriptFlag::EquipmentType)command.x;
+						if (CCharacterCommand::IsRealEquipmentType(type) &&
+							room.GetTSquare(this->wX, this->wY) == T_EMPTY) {
+							UINT slotTile = T_EMPTY;
+
+							switch (type) {
+								case ScriptFlag::Weapon: slotTile = T_SWORD; break;
+								case ScriptFlag::Armor: slotTile = T_SHIELD; break;
+								case ScriptFlag::Accessory: slotTile = T_ACCESSORY; break;
+							}
+
+							room.Plot(this->wX, this->wY, slotTile);
+							room.SetTParam(this->wX, this->wY, command.y);
+						}
+					break;
 				}
 			}
 			break;
@@ -2589,6 +3163,79 @@ void CCharacter::Process(
 			}
 			break;
 
+			case CCharacterCommand::CC_SetMonsterVar:
+				//Sets monster at (x,y) attribute(w) to value (h).
+				//No effects accompany this command.
+				//It's intended to operate invisibly.
+				{
+					getCommandRect(command, px, py, pw, ph);
+
+					CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+					if (pMonster) {
+						int nValue = int(ph); //expect an integer value by default
+						if (!nValue && !command.label.empty())
+						{
+							//Operand is not just an integer, but a text expression.
+							UINT index = 0;
+							nValue = parseExpression(command.label.c_str(), index, pGame, this);
+						}
+						const UINT value = UINT(nValue > 0 ? nValue : 0); //support only non-negative values
+						bool bRefreshCombat = false;
+
+						switch (pw) {
+							case ScriptFlag::HP: pMonster->ChangeHP(max(1U, value)); break; //cannot kill monster via this command
+							case ScriptFlag::ATK:
+								pMonster->ATK = value;
+								bRefreshCombat = true;
+							break;
+							case ScriptFlag::DEF:
+								pMonster->DEF = value;
+								bRefreshCombat = true;
+							break;
+							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
+							case ScriptFlag::XP: pMonster->XP = value; break;
+							default: break; //do nothing
+						}
+
+						CCombat* pCombat = this->pCurrentGame->pCombat;
+						if (bRefreshCombat && pCombat && pCombat->pMonster == pMonster &&
+							!pCombat->bEndCombat)
+							pCombat->InitMonsterStats(false);
+					}
+				}
+				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_AttackTile:
+			{
+				getCommandRect(command, px, py, pw, ph);
+				int damage = 0;
+				CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+				CMonster* pTarget = NULL;
+				if (pMonster && pMonster->getHP() > 0) {
+					//Attack monster
+					pTarget = pMonster;
+					int reduction = ph ? 0 : pMonster->getDEF();
+					damage = pw - reduction;
+					damage = max(0, damage);
+					room.DamageMonster(pMonster, -damage, CueEvents); //-ve for flat damage
+				} else if (pCurrentGame->IsPlayerAt(px, py)) {
+					//Attack player
+					pTarget = &player;
+					int reduction = ph ? 0 : pCurrentGame->getPlayerDEF();
+					damage = pw - reduction;
+					damage = max(0, damage);
+					player.Damage(CueEvents, -damage, CID_MonsterKilledPlayer); //-ve for flat damage
+				}
+
+				if (damage == 0 && pTarget) {
+					CueEvents.Add(CID_EntityAffected, new CCombatEffect(pTarget, CET_NODAMAGE), true);
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_GameEffect:
 			{
 				//Cues the front end to generate a graphic+sound effect (w,h,flags) at (x,y).
@@ -2604,21 +3251,60 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			}
 			break;
+			case CCharacterCommand::CC_RoomLocationText:
+			{
+				//Sets the room location text.
+				CDbSpeech* pSpeech = command.pSpeech;
+				ASSERT(pSpeech);
+				pGame->customRoomLocationText = pGame->ExpandText((const WCHAR*)pSpeech->MessageText, this);
+				CueEvents.Add(CID_RoomLocationTextUpdate);
 
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_FlashingText:
+			{
+				//Flashes a large message onscreen.  Use hex code RRGGBB color (x,y,w) when h is set.
+				getCommandRect(command, px, py, pw, ph);
+
+				CDbSpeech* pSpeech = command.pSpeech;
+				ASSERT(pSpeech);
+				const WSTRING text = pGame->ExpandText((const WCHAR*)pSpeech->MessageText, this);
+				CDbMessageText* pText = new CDbMessageText();
+				*pText = text.c_str();
+				CColorText* pColorText = new CColorText(pText, px, py, pw, ph);
+				CueEvents.Add(CID_FlashingMessage, pColorText, true);
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ImageOverlay:
+			{
+				//Display image (w) with display strategy (label).
+				const WSTRING text = pGame->ExpandText(command.label.c_str(), this);
+				CueEvents.Add(CID_ImageOverlay, new CImageOverlay(text, command.w, pGame->GetNextImageOverlayID()), true);
+
+				bProcessNextCommand = true;
+			}
+			break;
 			case CCharacterCommand::CC_ScoreCheckpoint:
 			{
-				//Defines a scoring point with identifier 'label'.
-				const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
-				if (bNotFrozen ||  //when playing back commands, don't do this stuff
-						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+				if (!bRoomBeingDisplayedOnly)
 				{
-					CDbMessageText *pScoreIDText = new CDbMessageText();
-					*pScoreIDText = command.label.c_str();
-					CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
-					if (bNotFrozen)
-						const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+					//Defines a scoring point with identifier 'label'.
+					const bool bNotFrozen = !this->pCurrentGame->Commands.IsFrozen();
+					if (bNotFrozen ||  //when playing back commands, don't do this stuff
+						this->pCurrentGame->IsValidatingPlayback()) //unless we're validating
+					{
+						CDbMessageText* pScoreIDText = new CDbMessageText();
+						*pScoreIDText = command.label.c_str();
+						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
+						if (bNotFrozen) {
+							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
+							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteLocalHighScore(command.label);
+						}
+					}
 				}
-
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2630,10 +3316,34 @@ void CCharacter::Process(
 				//Remove character from any future play in the current game.
 				this->bScriptDone = true;
 				this->wCurrentCommandIndex = this->commands.size();
+				if (this->bMinimapTreasure) {
+					room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+				}
 			goto Finish;
 			case CCharacterCommand::CC_EndScriptOnExit:
 				//Remove character from any future play in the current game once the room is exited.
 				this->bScriptDone = true;
+				bProcessNextCommand = true;
+				if (this->bMinimapTreasure) {
+					room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
+				}
+			break;
+
+			case CCharacterCommand::CC_ReplaceWithDefault:
+				//Replace the script with the character's default script if possible.
+				//Nothing will happen for non-custom characters.
+				if (this->pCustomChar) {
+					this->commands.clear();
+					this->wCurrentCommandIndex = 0;
+					wTurnCount = 0;
+					++wVarSets; //Count as setting a variable for loop avoidence
+					const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
+					LoadCommands(initalCharacter->ExtraVars, commands);
+					bReplacedWithDefault = true;
+				}	else {
+					// Index does not automatically increment after this command is executed
+					++this->wCurrentCommandIndex;
+				}
 				bProcessNextCommand = true;
 			break;
 
@@ -2643,9 +3353,11 @@ void CCharacter::Process(
 				++this->wCurrentCommandIndex;
 				this->wJumpLabel = this->wCurrentCommandIndex + 1;
 				this->bIfBlock = true;
+				this->bParseIfElseAsCondition = false;
 				bProcessNextCommand = true;
 			continue;   //perform the jump check below next iteration
 			case CCharacterCommand::CC_IfElse:
+			case CCharacterCommand::CC_IfElseIf:
 			{
 				//Marks the beginning of a code block executed when an CC_If condition was not satisfied.
 				//Note that reaching this command indicates an If (true) block has successfully
@@ -2655,14 +3367,29 @@ void CCharacter::Process(
 				//then it will effective function as an If-false and skip the next block.
 				this->bIfBlock = true; //this will skip the subsequent code block
 				bProcessNextCommand = true;
+
+				// Are we supposed to parse this ElseIf as a condition 
+				if (command.command == CCharacterCommand::CC_IfElseIf && this->bParseIfElseAsCondition) {
+					if (bExecuteNoMoveCommands)
+					{
+						goto Finish;
+					}
+
+					++this->wCurrentCommandIndex;
+					this->wJumpLabel = this->wCurrentCommandIndex + 1;
+					continue;
+				}
 			}
 			break;
 			case CCharacterCommand::CC_IfEnd:
 				//Ends a conditional If or IfElse block.
 				bProcessNextCommand = true;
+				this->bParseIfElseAsCondition = false;
 			break;
 
 			case CCharacterCommand::CC_LevelEntrance:
+				if (bRoomBeingDisplayedOnly)
+					return;
 				//Takes player to level entrance X.  If Y is set, skip level entrance display.
 				if (!pGame->wTurnNo)
 					return; //don't execute on the room entrance move -- execute next turn
@@ -2673,108 +3400,36 @@ void CCharacter::Process(
 				++this->wCurrentCommandIndex;
 
 				getCommandXY(command, px, py); //NOTE: only py is considered here
-				if (!CueEvents.HasOccurred(CID_ExitLevelPending)) //don't queue more than one level exit
+				if (!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+					!CueEvents.HasOccurred(CID_ExitToWorldMapPending)) //don't queue more than one level exit
 					pGame->GotoLevelEntrance(CueEvents, command.x, py != 0);
 
 				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
 			break;
 
+			case CCharacterCommand::CC_GoToWorldMap:
+				if (bRoomBeingDisplayedOnly)
+					return;
+				//Takes player to world map X.
+				if (!pGame->wTurnNo)
+					return; //don't execute on the room entrance move -- execute next turn
+
+				//When saving room data in GotoLevelEntrance,
+				//this NPC should start at the next script command
+				//next time the script is processed.
+				++this->wCurrentCommandIndex;
+
+				if (!CueEvents.HasOccurred(CID_ExitLevelPending) &&
+					!CueEvents.HasOccurred(CID_ExitToWorldMapPending)) //don't queue more than one level exit
+					pGame->GotoWorldMap(CueEvents, command.x);
+
+				--this->wCurrentCommandIndex; //revert to current command so it increments correctly for global scripts
+				break;
+
 			case CCharacterCommand::CC_VarSet:
 			{
 				//Sets var X (operation Y) W, e.g. X += 5
-
-				//Get variable.
-				CDbPackedVars& stats = pGame->stats;
-				char varID[10], varName[11] = "v";
-				UNPACKEDVARTYPE vType = UVT_int;
-
-				const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
-				int predefinedVarVal;
-				bool bValidInt = true;
-				if (!bPredefinedVar)
-				{
-					//Get local hold var.
-					_itoa(command.x, varID, 10);
-					strcat(varName, varID);
-
-					//Enforce basic type checking.
-					vType = stats.GetVarType(varName);
-					bValidInt = vType == UVT_int || vType == UVT_unknown;
-				} else {
-					predefinedVarVal = int(getPredefinedVar(command.x));
-				}
-
-				const bool bSetNumber = !(command.y == ScriptVars::AssignText ||
-						command.y == ScriptVars::AppendText);
-
-				int operand = int(command.w); //expect an integer value by default
-				if (!operand && !command.label.empty() && bSetNumber)
-				{
-					//Operand is not just an integer, but a text expression.
-					UINT index=0;
-					operand = parseExpression(command.label.c_str(), index, pGame, this);
-				}
-
-				int x=0;
-
-				switch (command.y)
-				{
-					case ScriptVars::Assign:
-						x = operand;
-					break;
-					case ScriptVars::Inc:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						addWithClamp(x, operand);
-					break;
-					case ScriptVars::Dec:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						addWithClamp(x, -operand);
-					break;
-					case ScriptVars::MultiplyBy:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						multWithClamp(x, operand);
-					break;
-					case ScriptVars::DivideBy:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						if (operand)
-							x /= operand;
-					break;
-					case ScriptVars::Mod:
-						if (bValidInt)
-							x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
-						if (operand)
-							x = x % operand;
-					break;
-
-					case ScriptVars::AssignText:
-					{
-						WSTRING text = pGame->ExpandText(command.label.c_str());
-						stats.SetVar(varName, text.c_str());
-					}
-					break;
-					case ScriptVars::AppendText:
-					{
-						WSTRING text = stats.GetVar(varName, wszEmpty);
-						text += pGame->ExpandText(command.label.c_str());
-						stats.SetVar(varName, text.c_str());
-					}
-					break;
-					default: break;
-				}
-				if (bSetNumber)
-				{
-					if (bPredefinedVar) {
-						if (!setPredefinedVar(command.x, x, CueEvents)) {
-							STOP_COMMAND;
-						}
-					} else {
-						stats.SetVar(varName, x);
-					}
-				}
+				SetVariable(command, pGame, CueEvents);
 
 				//When a var is set, this might get it out of an otherwise infinite loop.
 				++wVarSets;
@@ -2786,56 +3441,123 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForVar:
 			{
 				//Wait until var X (comparison Y) W, e.g. X >= 5
+				if (!DoesVarSatisfy(command, pGame))
+					STOP_COMMAND;
 
-				//Get variable.
-				CDbPackedVars& stats = pGame->stats;
-				char varID[10], varName[11] = "v";
-				UNPACKEDVARTYPE vType = UVT_int;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_VarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				bool success = false;
+				getCommandXY(command, wX, wY);
 
-				const bool bPredefinedVar = command.x >= UINT(ScriptVars::FirstPredefinedVar);
-				bool bValidInt = true;
-				if (!bPredefinedVar)
-				{
-					//Get local hold var.
-					_itoa(command.x, varID, 10);
-					strcat(varName, varID);
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter) {
+						// Transfer var set information to a temporary command.
+						CCharacterCommand setCommand;
+						setCommand.x = command.w;
+						setCommand.y = command.h;
+						setCommand.w = command.flags;
+						setCommand.label = command.label;
+						pCharacter->SetVariable(setCommand, pGame, CueEvents);
+						success = true;
 
-					//Enforce basic type checking.
-					vType = stats.GetVarType(varName);
-					bValidInt = vType == UVT_int || vType == UVT_unknown;
-				}
-
-				int operand = int(command.w); //expect an integer value by default
-				if (!operand && !command.label.empty() && command.y != ScriptVars::EqualsText)
-				{
-					//Operand is not just an integer, but a text expression.
-					UINT index=0;
-					operand = parseExpression(command.label.c_str(), index, pGame, this);
-				}
-
-				int x=0;
-				const bool bNumber = bValidInt && command.y != ScriptVars::EqualsText;
-				if (bNumber)
-					x = (bPredefinedVar ? int(getPredefinedVar(command.x))
-							: stats.GetVar(varName, (int)0));
-
-				switch (command.y)
-				{
-					case ScriptVars::Equals: if (x != operand) STOP_COMMAND; break;
-					case ScriptVars::Greater: if (x <= operand) STOP_COMMAND; break;
-					case ScriptVars::Less: if (x >= operand) STOP_COMMAND; break;
-					case ScriptVars::EqualsText:
-					{
-						WSTRING wStr;
-						if (vType == UVT_wchar_string)
-							wStr = stats.GetVar(varName, wszEmpty);
-						const WSTRING operand = pGame->ExpandText(command.label.c_str(), this);
-						if (wStr.compare(operand) != 0) STOP_COMMAND;
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
 					}
-					break;
-					default: break;
 				}
 
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForExpression:
+			{
+				if (!IsExpressionSatisfied(command, pGame))
+					STOP_COMMAND;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ArrayVarSet:
+			{
+				SetArrayVariable(command, pGame, CueEvents);
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ArrayVarSetAt:
+			{
+				//Remotely set local variable w (with operation h) of NPC at (x,y)
+				UINT wX, wY;
+				bool success = false;
+				getCommandXY(command, wX, wY);
+
+				CMonster* pMonster = room.GetMonsterAtSquare(wX, wY);
+				if (pMonster) {
+					CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+					if (pCharacter) {
+						pCharacter->SetArrayVariable(command, pGame, CueEvents);
+						success = true;
+
+						//When a var is set, this might get it out of an otherwise infinite loop.
+						++wVarSets;
+						wTurnCount = 0;
+					}
+				}
+
+				if (this->bIfBlock && !success) {
+					//As an if condition, query if the command was able to invoke
+					//remote variable set.
+					STOP_COMMAND;
+				}
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_ClearArrayVar:
+			{
+				UINT varId = command.x;
+				ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+
+				const ScriptArrayMap::iterator& array = scriptArrays.find(varId);
+				if (array != scriptArrays.end()) {
+					//Only clear a script array that is initialized
+					array->second.clear();
+				}
+
+				//When a var is set, this might get it out of an otherwise infinite loop.
+				++wVarSets;
+				wTurnCount = 0;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForArrayEntry:
+			{
+				if (!DoesArrayVarSatisfy(command, pGame))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_CountArrayEntries:
+			{
+				int count = CountArrayVarEntries(command, pGame);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, count);
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2848,9 +3570,13 @@ void CCharacter::Process(
 					//the player is in this role.
 					if (player.wIdentity != command.x)
 						STOP_COMMAND;
-				} else {
-					//Sets player's identity to entity X.
-					pGame->SetPlayerRole(command.x);
+				}
+				else {
+					if (!bRoomBeingDisplayedOnly)
+					{
+						//Sets player's identity to entity X.
+						pGame->SetPlayerRole(command.x);
+					}
 				}
 				bProcessNextCommand = true;
 			}
@@ -2860,6 +3586,7 @@ void CCharacter::Process(
 				//Sets this NPC to look like entity X.
 				this->wIdentity = this->wLogicalIdentity = command.x;
 				ResolveLogicalIdentity(pGame->pHold);
+				SetDefaultMovementType();
 				bProcessNextCommand = true;
 			}
 			break;
@@ -2896,6 +3623,29 @@ void CCharacter::Process(
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			break;
+			case CCharacterCommand::CC_WaitForItemGroup:
+			{
+				//Wait for element in group (flags) to exist in rect (x,y,w,h).
+				if (!IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WaitForNotItemGroup:
+			{
+				//Wait while element in group (flags) exist in rect (x,y,w,h).
+				if (IsTileGroupAt(command))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_WaitForWeapon:
+				//Wait for weapon to exist in rect (x,y,w,h).
+				if (!IsWeaponAt(command, pGame))
+					STOP_COMMAND;
+				bProcessNextCommand = true;
+			break;
 
 			case CCharacterCommand::CC_AmbientSound:
 				//Play sound with DataID w (0 stops ambient sounds).
@@ -2917,6 +3667,231 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_WorldMapSelect:
+				//Sets the world map that other world map commands operate on to X.
+				this->worldMapID = command.x;
+				bProcessNextCommand = true;
+				break;
+			case CCharacterCommand::CC_WorldMapMusic:
+				//Sets the music to be played on preselected world map.
+				if (!command.label.empty())
+					pGame->SetWorldMapMusic(this->worldMapID, command.label);
+				else
+					pGame->SetWorldMapMusic(this->worldMapID, command.x, command.y);
+				bProcessNextCommand = true;
+				break;
+			case CCharacterCommand::CC_WorldMapIcon:
+			{
+				//Places an icon on the preselected world map at (x,y), to level entrance (w), displayed as custom NPC (h), of display type (flags).
+				getCommandParams(command, px, py, pw, ph, pflags);
+				UINT targetID;
+				ExitType exitType;
+				if (int(pw) < 0) {
+					targetID = LevelExit::ConvertWorldMapID(pw);
+					exitType = ExitType::ET_WorldMap;
+				} else {
+					targetID = pw;
+					exitType = ExitType::ET_Entrance;
+				}
+
+				pGame->SetWorldMapIcon(this->worldMapID, px, py, targetID, exitType, ph, 0, pflags);
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_WorldMapImage:
+			{
+				//Places an icon on the preselected world map at (x,y), to level entrance (w), displayed as image (h), of display type (flags).
+				getCommandParams(command, px, py, pw, ph, pflags);
+				UINT targetID;
+				ExitType exitType;
+				if (int(pw) < 0) {
+					targetID = LevelExit::ConvertWorldMapID(pw);
+					exitType = ExitType::ET_WorldMap;
+				}
+				else {
+					targetID = pw;
+					exitType = ExitType::ET_Entrance;
+				}
+
+				pGame->SetWorldMapIcon(this->worldMapID, px, py, targetID, exitType, 0, ph, pflags);
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			{
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Wait until all conditions are true.
+				if (!EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitOr:
+			{
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Wait until at least one condition is true.
+				if (!EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitXOR:
+			{
+				int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+				//Malformed statement - just stop.
+				if (wNextIndex == NO_LABEL)
+					STOP_COMMAND;
+
+				//Wait until exactly one condition is true.
+				if (!EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents)) {
+					if (!this->wJumpLabel &&
+						IsCommandTypeIn(this->wCurrentCommandIndex + 1, wNextIndex - 1, CCharacterCommand::CC_WaitForCueEvent)) {
+						//If NPC is waiting, try to catch event at end of game turn in CheckForCueEvent().
+						//!!NOTE: This won't work for conditional "If <late cue event>".
+						bWaitingForCueEvent = true;
+					}
+
+					STOP_COMMAND;
+				}
+
+				//Jump to position after logic end.
+				this->wJumpLabel = wNextIndex + 1;
+				this->bIfBlock = true;
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				//Marks the end of a logical block. Has no other function.
+				bProcessNextCommand = true;
+			break;
+
+			case CCharacterCommand::CC_SetDarkness:
+			{
+				getCommandParams(command, px, py, pw, ph, pflags);
+				bool bCeilingLightChanged = false;
+
+				//clamp pflag to lighting type range
+				pflags = max(0U, min(pflags, UINT(NUM_DARK_TYPES)));
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							bCeilingLightChanged |= bIsLightTileValue(room.tileLights.GetAt(x, y));
+							room.tileLights.Add(x, y, LIGHT_OFF + pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				if (bCeilingLightChanged)
+					CueEvents.Add(CID_LightTilesChanged);
+
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_SetCeilingLight:
+			{
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+
+				if (!(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (pflags == 0) {
+					//Remove tile lights
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Remove(x, y);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				} else {
+					for (UINT y = py; y <= py + ph && y < room.wRoomRows; ++y) {
+						for (UINT x = px; x <= px + pw && x < room.wRoomCols; ++x) {
+							room.tileLights.Add(x, y, pflags);
+							room.ForceTileRedraw(x, y, false);
+						}
+					}
+				}
+
+				CueEvents.Add(CID_LightTilesChanged);
+			}
+			break;
+			case CCharacterCommand::CC_SetWallLight: {
+				bProcessNextCommand = true;
+				getCommandParams(command, px, py, pw, ph, pflags);
+				pw = max(0U, min(pw, UINT(MAX_LIGHT_DISTANCE)));
+
+				if (!room.IsValidColRow(px, py) || !(bIsLightTileValue(pflags) || pflags == 0))
+					break;
+
+				if (bIsLightTileValue(room.tileLights.GetAt(px, py)))
+					CueEvents.Add(CID_LightTilesChanged);
+
+				if (pw == 0 || pflags == 0) {
+					//Remove tile light
+					room.tileLights.Remove(px, py);
+					room.ForceTileRedraw(px, py, false);
+				}
+				else {
+					UINT wLightParam = (pflags - 1);
+					wLightParam += (pw - 1) * NUM_LIGHT_TYPES;
+					room.tileLights.Add(px, py, WALL_LIGHT + wLightParam);
+					room.ForceTileRedraw(px, py, false);
+				}
+
+				CueEvents.Add(CID_LightToggled);
+			}
+			break;
+
+			case CCharacterCommand::CC_ResetOverrides: {
+				bProcessNextCommand = true;
+				paramX = paramY = paramW = paramH = paramF = NO_OVERRIDE;
+			}
+			break;
+
 			//Deprecated commands
 			case CCharacterCommand::CC_GotoIf:
 			case CCharacterCommand::CC_WaitForCleanRoom:
@@ -2933,7 +3908,7 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		if (this->wCurrentCommandIndex < this->commands.size())
+		if (this->wCurrentCommandIndex < this->commands.size() && command.command != CCharacterCommand::CC_ReplaceWithDefault)
 			++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative
@@ -2981,30 +3956,262 @@ Finish:
 		}
 */
 		//Behavior patterns.
-		if (this->bFaceTarget)
-			FaceTarget();
-		if (this->bFaceAwayFromTarget)
-			FaceAwayFromTarget();
+		if (!this->pCurrentGame->bHalfTurn) {
+			if (this->bFaceTarget)
+				FaceTarget();
+			if (this->bFaceAwayFromTarget)
+				FaceAwayFromTarget();
 
-		if (this->bAttackAdjacent && !this->bAttacked)
-		{
-			this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
-			this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
-		}
-		if (this->bAttackInFront && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			this->bAttacked = AttackPlayerWhenInFront(CueEvents);
-		}
-		if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
-		{
-			this->bAttacked = true;
-			this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+			if (this->bAttackAdjacent && !this->bAttacked)
+			{
+				this->bAttacked = true; //setting this prevents these methods from being called endlessly when EachAttack is set
+				this->bAttacked = AttackPlayerWhenAdjacent(CueEvents);
+				if (this->bAttacked)
+					CueEvents.Add(CID_EnemySneakAttack);
+			}
+			if (this->bAttackInFront && !this->bAttacked)
+			{
+				this->bAttacked = true;
+				bool bIsEye = false;
+				if (this->pCustomChar) {
+					bIsEye = (this->pCustomChar->wType == M_EYE || this->pCustomChar->wType == M_MADEYE);
+				} else {
+					bIsEye = (this->wIdentity == M_EYE || this->wIdentity == M_MADEYE);
+				}
+
+				if (this->bAttacked = AttackPlayerWhenInFront(CueEvents))
+					if (bIsEye)
+						CueEvents.Add(CID_EvilEyeWoke);
+					else
+						CueEvents.Add(CID_EnemySneakAttack);
+			}
+
+			if (this->bAttackInFrontWhenBackIsTurned && !this->bAttacked)
+			{
+				this->bAttacked = AttackPlayerInFrontWhenBackIsTurned(CueEvents);
+				if (this->bAttacked)
+					CueEvents.Add(CID_EnemySneakAttack);
+			}
 		}
 	}
 
 #undef STOP_COMMAND
 #undef STOP_DONECOMMAND
+}
+
+//*****************************************************************************
+void CCharacter::SetVariable(const CCharacterCommand& command, CCurrentGame* pGame, CCueEvents& CueEvents)
+{
+	const UINT varIndex = command.x;
+	if (pGame->pHold && pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set array var as normal var
+
+	//Get variable.
+	CDbPackedVars& stats = pGame->stats;
+	char varID[10], varName[11] = "v";
+	UNPACKEDVARTYPE vType = UVT_int;
+
+	const bool bPredefinedVar = varIndex >= UINT(ScriptVars::FirstPredefinedVar);
+	int predefinedVarVal = 0;
+	WSTRING predefinedVarValStr;
+	bool bValidInt = true;
+	if (bPredefinedVar) {
+		if (ScriptVars::IsStringVar(ScriptVars::Predefined(varIndex))) {
+			predefinedVarValStr = getPredefinedVarString(varIndex);
+		} else {
+			predefinedVarVal = int(getPredefinedVarInt(varIndex));
+		}
+	} else {
+		//Get local hold var.
+		_itoa(varIndex, varID, 10);
+		strcat(varName, varID);
+
+		//Enforce basic type checking.
+		vType = stats.GetVarType(varName);
+		bValidInt = vType == UVT_int || vType == UVT_unknown;
+	}
+
+	const bool bSetNumber = !(command.y == ScriptVars::AssignText ||
+		command.y == ScriptVars::AppendText);
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty() && bSetNumber)
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	int x = 0;
+
+	switch (command.y)
+	{
+	case ScriptVars::Assign:
+		x = operand;
+		break;
+	case ScriptVars::Inc:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		addWithClamp(x, operand);
+		break;
+	case ScriptVars::Dec:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		addWithClamp(x, -operand);
+		break;
+	case ScriptVars::MultiplyBy:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		multWithClamp(x, operand);
+		break;
+	case ScriptVars::DivideBy:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		if (operand)
+			x /= operand;
+		break;
+	case ScriptVars::Mod:
+		if (bValidInt)
+			x = bPredefinedVar ? predefinedVarVal : stats.GetVar(varName, (int)0);
+		if (operand)
+			x = x % operand;
+		break;
+
+	case ScriptVars::AssignText:
+	{
+		const WSTRING text = pGame->ExpandText(command.label.c_str(), this);
+		if (bPredefinedVar)
+			setPredefinedVarString(varIndex, text, CueEvents);
+		else
+			stats.SetVar(varName, text.c_str());
+	}
+	break;
+	case ScriptVars::AppendText:
+	{
+		WSTRING text = bPredefinedVar ? getPredefinedVarString(varIndex) : stats.GetVar(varName, wszEmpty);
+		text += pGame->ExpandText(command.label.c_str(), this);
+		if (bPredefinedVar)
+			setPredefinedVarString(varIndex, text, CueEvents);
+		else
+			stats.SetVar(varName, text.c_str());
+	}
+	break;
+	default: break;
+	}
+	if (bSetNumber)
+	{
+		if (bPredefinedVar) {
+			setPredefinedVarInt(command.x, x, CueEvents);
+		} else {
+			stats.SetVar(varName, x);
+		}
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetArrayVariable(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	CCueEvents& CueEvents)
+{
+	const UINT varIndex = command.w;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varIndex))
+		return; //Don't set normal var as an array var
+
+	int arrayIndex = (int)(this->paramF == NO_OVERRIDE ? command.flags : this->paramF);
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+
+	vector<WSTRING> expressions = WCSExplode(command.label, *wszSemicolon);
+	for (vector<WSTRING>::const_iterator expression = expressions.begin();
+		expression != expressions.end(); ++expression) {
+		if (!ScriptVars::IsIndexInArrayRange(arrayIndex)) {
+			++arrayIndex;
+			continue; //Don't set value outside of allowed range. continue instead of break as negative values can end up in range
+		}
+
+		UINT index = 0;
+		int x = getArrayValue(scriptArrays, varIndex, arrayIndex);
+		//Note: [] operator will initialize missing values. This gives a default of 0.
+		int operand = scriptArrays[varIndex][arrayIndex];
+		operand = parseExpression(expression->c_str(), index, pGame, this);
+
+		switch (command.h)
+		{
+		case ScriptVars::Assign:
+			x = operand;
+			break;
+		case ScriptVars::Inc:
+			addWithClamp(x, operand);
+			break;
+		case ScriptVars::Dec:
+			addWithClamp(x, -operand);
+			break;
+		case ScriptVars::MultiplyBy:
+			multWithClamp(x, operand);
+			break;
+		case ScriptVars::DivideBy:
+			if (operand)
+				x /= operand;
+			break;
+		case ScriptVars::Mod:
+			if (operand)
+				x = x % operand;
+			break;
+		default: break;
+		}
+
+		if (x == 0) {
+			//Save memory by clearing value
+			scriptArrays[varIndex].erase(arrayIndex);
+		}
+		else {
+			scriptArrays[varIndex][arrayIndex] = x;
+		}
+		++arrayIndex;
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetMapIcon(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	CCueEvents& CueEvents)
+{
+	//Check icon is valid before expensive db calls
+	ScriptVars::MapIcon icon = (ScriptVars::MapIcon)command.w;
+	ScriptVars::MapIconState iconState = (ScriptVars::MapIconState)command.h;
+	if (icon >= ScriptVars::MapIconCount) {
+		return;
+	}
+
+	const UINT roomID = pGame->pLevel->GetRoomIDAtCoords(
+		command.x, pGame->pLevel->dwLevelID * 100 + command.y);
+
+	if (!roomID) {
+		return;
+	}
+
+	ExploredRoom* pExpRoom = pGame->getExploredRoom(roomID);
+	//Explore the room on the map so it can have icons, but don't make it revealed
+	if (!pExpRoom) {
+		pGame->AddRoomToMap(roomID, MapState::Invisible);
+		pExpRoom = pGame->getExploredRoom(roomID);
+		if (!pExpRoom) {
+			return; //Can this happen?
+		}
+	} else if (!pExpRoom->bSave) {
+		//When adding an icon, always need to save this room to preserve the icon
+		if (icon != ScriptVars::MapIcon::MI_None) {
+			pExpRoom->bSave = true;
+		}
+	}
+
+	pExpRoom->mapIcon = icon;
+	pExpRoom->mapIconState = iconState;
+
+	if (CDbSavedGames::IsMoreDetailedMapState(pExpRoom->mapState, MapState::Invisible)) {
+		CueEvents.Add(CID_MapIcon);
+	}
 }
 
 //*****************************************************************************
@@ -3016,6 +4223,153 @@ bool CCharacter::BuildTiles(const CCharacterCommand& command, CCueEvents &CueEve
 
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	return BuildUtil::BuildTilesAt(room, pflags, px, py, pw, ph, false, CueEvents);
+}
+
+//*****************************************************************************
+// Returns: if the command has a valid rect (x,y,w,h) and target entity (flags)
+bool CCharacter::IsValidEntityWait(
+	const CCharacterCommand& command,
+	const CDbRoom& room
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (pflags == M_NONE)
+		return false;
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+		return false;
+
+	return true;
+}
+
+//*****************************************************************************
+//Returns: whether the specified game entity (flags) is in rect (x,y,w,h).
+bool CCharacter::IsEntityAt(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player
+) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	if (!pflags || (pflags & ScriptFlag::PLAYER) != 0)
+	{
+		//Check for player by default if no flags are selected.
+		if (player.IsInRoom() &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph &&
+			!this->pCurrentGame->IsRoomBeingDisplayedOnly())
+			return true;
+	}
+	if ((pflags & ScriptFlag::HALPH) != 0)
+	{
+		if ((player.wAppearance == M_HALPH) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_HALPH, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::MONSTER) != 0)
+	{
+		if (room.IsMonsterInRect(px, py,
+			px + pw, py + ph))
+			return true;
+	}
+	if ((pflags & ScriptFlag::NPC) != 0)
+	{
+		//visible characters only
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CHARACTER))
+			return true;
+	}
+	if ((pflags & ScriptFlag::PDOUBLE) != 0)
+	{
+		//All player double types
+		if (bIsBeethroDouble(player.wAppearance) && !player.wAppearance != M_BEETHRO && //!!fix bad logic and correct for RPG
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_MIMIC))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_DECOY))
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_CLONE))
+			return true;
+	}
+	if ((pflags & ScriptFlag::SELF) != 0)
+	{
+		if (this->wX >= px && this->wX <= px + pw &&
+			this->wY >= py && this->wY <= py + ph)
+			return true;
+	}
+	if ((pflags & ScriptFlag::SLAYER) != 0)
+	{
+		if ((player.wAppearance == M_SLAYER) &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_SLAYER, true))
+			return true;
+	}
+	if ((pflags & ScriptFlag::BEETHRO) != 0)
+	{
+		//Check for Beethro (can detect NPC Beethros).
+		if (player.wAppearance == M_BEETHRO)
+		{
+			if (player.wX >= px && player.wX <= px + pw &&
+				player.wY >= py && player.wY <= py + ph)
+				return true;
+		}
+		CMonster* pNPCBeethro = room.GetNPCBeethro();
+		if (pNPCBeethro)
+		{
+			const UINT wSX = pNPCBeethro->wX;
+			const UINT wSY = pNPCBeethro->wY;
+			if (wSX >= px && wSX <= px + pw &&
+				wSY >= py && wSY <= py + ph)
+				return true;
+		}
+	}
+	if ((pflags & ScriptFlag::STALWART) != 0)
+	{
+		if (player.wAppearance == M_STALWART &&
+			player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			return true;
+		if (room.IsMonsterInRectOfType(px, py,
+			px + pw, py + ph, M_STALWART, true))
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+// Returns: if the tile at (x,y) has the given door state (w)
+bool CCharacter::IsDoorStateAt(
+	const CCharacterCommand& command, const CDbRoom& room
+) const
+{
+	UINT px, py;  //command parameters
+	getCommandXY(command, px, py);
+	if (!room.IsValidColRow(px, py))
+		return false;
+
+	const UINT wTile = room.GetOSquare(px, py);
+	if (command.w == (UINT)OA_CLOSE && !bIsDoor(wTile))
+		return false;  //door hasn't closed yet
+	if (command.w == (UINT)OA_OPEN && bIsDoor(wTile))
+		return false;  //door hasn't opened yet
+
+	return true;
 }
 
 //*****************************************************************************
@@ -3064,6 +4418,8 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case 0:  //o-layer
 						if (room.GetOSquare(x,y) == tile)
 							return true;
+						if (tile == T_OVERHEAD_IMAGE && room.overheadTiles.Exists(x, y))
+							return true;
 					break;
 					case 1:  //t-layer
 						if (room.GetTSquare(x,y) == tile)
@@ -3088,10 +4444,11 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case TV_EXPLOSION: break; //handled above
 					case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
 					case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
+					case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
 						realTile = T_SWORD;
 					break;
 					case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
-					case TV_SHIELD6:
+					case TV_SHIELD6: case TV_SHIELD7: case TV_SHIELD8: case TV_SHIELD9:
 						realTile = T_SHIELD;
 					break;
 					case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
@@ -3121,12 +4478,18 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 					case TV_SWORD8: param = SerpentSword; break;
 					case TV_SWORD9: param = BriarSword; break;
 					case TV_SWORD10: param = WeaponSlot; break;
+					case TV_SWORD11: param = Dagger; break;
+					case TV_SWORD12: param = Staff; break;
+					case TV_SWORD13: param = Spear; break;
 					case TV_SHIELD1: param = WoodenShield; break;
 					case TV_SHIELD2: param = BronzeShield; break;
 					case TV_SHIELD3: param = SteelShield; break;
 					case TV_SHIELD4: param = KiteShield; break;
 					case TV_SHIELD5: param = OremiteShield; break;
 					case TV_SHIELD6: param = ArmorSlot; break;
+					case TV_SHIELD7: param = MirrorShield; break;
+					case TV_SHIELD8: param = LeatherShield; break;
+					case TV_SHIELD9: param = AluminumShield; break;
 					case TV_ACCESSORY1: param = GrapplingHook; break;
 					case TV_ACCESSORY2: param = WaterBoots; break;
 					case TV_ACCESSORY3: param = InvisibilityPotion; break;
@@ -3151,6 +4514,786 @@ bool CCharacter::IsTileAt(const CCharacterCommand& command, CCueEvents &CueEvent
 }
 
 //*****************************************************************************
+TileCheckFunc getItemGroupFunction(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+	case ScriptFlag::IG_PlainFloor: return bIsPlainFloor;
+	case ScriptFlag::IG_Wall: return bIsWall;
+	case ScriptFlag::IG_BreakableWall: return bIsCrumblyWall;
+	case ScriptFlag::IG_AnyWall: return bIsAnyWall;
+	case ScriptFlag::IG_Pit: return bIsPit;
+	case ScriptFlag::IG_Stairs: return bIsStairs;
+	case ScriptFlag::IG_Bridge: return bIsBridge;
+	case ScriptFlag::IG_Trapdoor: return bIsTrapdoor;
+	case ScriptFlag::IG_FallingTile: return bIsFallingTile;
+	case ScriptFlag::IG_Tunnel: return bIsTunnel;
+	case ScriptFlag::IG_Firetrap: return bIsFiretrap;
+	case ScriptFlag::IG_Platform: return bIsPlatform;
+	case ScriptFlag::IG_OpenDoor: return bIsOpenDoor;
+	case ScriptFlag::IG_ClosedDoor: return bIsDoor;
+	case ScriptFlag::IG_YellowDoor: return bIsYellowDoor;
+	case ScriptFlag::IG_GreenDoor: return bIsGreenDoor;
+	case ScriptFlag::IG_BlueDoor: return bIsBlueDoor;
+	case ScriptFlag::IG_RedDoor: return bIsRedDoor;
+	case ScriptFlag::IG_BlackDoor: return bIsBlackDoor;
+	case ScriptFlag::IG_MoneyDoor: return bIsMoneyDoor;
+	case ScriptFlag::IG_DirtBlock: return bIsDiggableBlock;
+	case ScriptFlag::IG_SoldOTile: return bIsSolidOTile;
+	case ScriptFlag::IG_ActiveArrow: return bIsArrow;
+	case ScriptFlag::IG_DisabledArrow: return bIsDisabledArrow;
+	case ScriptFlag::IG_AnyArrow: return bIsAnyArrow;
+	case ScriptFlag::IG_Tarstuff: return bIsTar;
+	case ScriptFlag::IG_Briar: return bIsBriar;
+	case ScriptFlag::IG_Explosive: return bIsExplodingItem;
+	case ScriptFlag::IG_Pushable: return bIsTLayerCoveringItem;
+	case ScriptFlag::IG_Health: return bIsHealth;
+	case ScriptFlag::IG_AttackUp: return bIsATKUp;
+	case ScriptFlag::IG_DefenseUp: return bIsDEFUp;
+	case ScriptFlag::IG_Powerup: return bIsPowerUp;
+	case ScriptFlag::IG_Shovels: return bIsShovel;
+	case ScriptFlag::IG_Map: return bIsMap;
+	case ScriptFlag::IG_Equipment: return bIsEquipment;
+	case ScriptFlag::IG_Keys: return bIsKey;
+	case ScriptFlag::IG_Collectable: return bIsCollectable;
+	default: return bIsPlainFloor;
+	}
+}
+
+//*****************************************************************************
+UINT getItemGroupLayer(ScriptFlag::ItemGroup group)
+{
+	ASSERT(group < ScriptFlag::ItemGroupCount);
+
+	switch (group) {
+	case ScriptFlag::IG_PlainFloor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Wall: return LAYER_OPAQUE;
+	case ScriptFlag::IG_BreakableWall: return LAYER_OPAQUE;
+	case ScriptFlag::IG_AnyWall: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Pit: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Stairs: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Bridge: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Trapdoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_FallingTile: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Tunnel: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Firetrap: return LAYER_OPAQUE;
+	case ScriptFlag::IG_Platform: return LAYER_OPAQUE;
+	case ScriptFlag::IG_OpenDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_ClosedDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_YellowDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_GreenDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_BlueDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_RedDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_BlackDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_MoneyDoor: return LAYER_OPAQUE;
+	case ScriptFlag::IG_DirtBlock: return LAYER_OPAQUE;
+	case ScriptFlag::IG_SoldOTile: return LAYER_OPAQUE;
+	case ScriptFlag::IG_ActiveArrow: return LAYER_FLOOR;
+	case ScriptFlag::IG_DisabledArrow: return LAYER_FLOOR;
+	case ScriptFlag::IG_AnyArrow: return LAYER_FLOOR;
+	case ScriptFlag::IG_Tarstuff: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Briar: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Explosive: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Pushable: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Health: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_AttackUp: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_DefenseUp: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Powerup: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Shovels: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Map: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Equipment: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Keys: return LAYER_TRANSPARENT;
+	case ScriptFlag::IG_Collectable: return LAYER_TRANSPARENT;
+	default: return LAYER_OPAQUE;
+	}
+}
+
+//*****************************************************************************
+//Returns: whether a game element from the specified group (flags) is in rect (x,y,w,h).
+//Element groups correspond to functions in TileConstants.h that check for two or more elements
+bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
+{
+	UINT px, py, pw, ph; //command parameters
+	getCommandRect(command, px, py, pw, ph);
+	UINT pflags = command.flags;
+
+	if (pflags >= ScriptFlag::ItemGroupCount) {
+		return false;
+	}
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	if (px >= room.wRoomCols)
+		return false;
+	if (py >= room.wRoomRows)
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	TileCheckFunc tileCheck = getItemGroupFunction((ScriptFlag::ItemGroup)pflags);
+	UINT layer = getItemGroupLayer((ScriptFlag::ItemGroup)pflags);
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x) {
+			if (!room.IsValidColRow(x, y))
+				continue;
+
+			switch (layer) {
+			case LAYER_OPAQUE: {
+				if (tileCheck(room.GetOSquare(x, y))) {
+					return true;
+				}
+			}
+			break;
+			case LAYER_FLOOR: {
+				if (tileCheck(room.GetFSquare(x, y))) {
+					return true;
+				}
+			}
+			break;
+			case LAYER_TRANSPARENT: {
+				if (tileCheck(room.GetTSquare(x, y)) || tileCheck(room.GetCoveredTSquare(x, y))) {
+					return true;
+				}
+			}
+			break;
+			default: return false;
+			}
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+//Returns: if the tile at (x,y) is open for the specified movement type (w)
+// Weapons (h) and entity types (flags) can be ignored.
+bool CCharacter::IsOpenTileAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame
+)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	CDbRoom& room = *(pGame->pRoom);
+
+	// For practical purposes, an invalid tile isn't open
+	if (!room.IsValidColRow(px, py))
+		return false;
+
+	MovementType eOldMovement = eMovement;
+	eMovement = (MovementType)pw;
+
+	bool bBlocked = CMonster::IsTileObstacle(room.GetOSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetFSquare(px, py));
+	bBlocked |= CMonster::IsTileObstacle(room.GetTSquare(px, py));
+
+	eMovement = eOldMovement;
+
+	// Blocked by room tile
+	if (bBlocked)
+		return false;
+
+	const CSwordsman* player = pGame->pPlayer;
+
+	// Check if weapon blocks tile unless ignoring weapons
+	// NPC will not be blocked by its own weapon
+	if (!ph && (player->IsWeaponAt(px, py) || room.IsMonsterSwordAt(px, py, this)))
+		return false;
+
+	// Check if player blocks tile
+	if ((pflags & ScriptFlag::PLAYER) == 0 && player->IsInRoom() &&
+		player->wX == px && player->wY == py)
+		return false;
+
+	// Monster can block tile
+	// These checks are skipped if already blocked
+	CMonster* pMonster = room.GetMonsterAtSquare(px, py);
+	if (pMonster && !(pMonster == this && (pflags & ScriptFlag::NPC) != 0)) {
+		// If a type if flagged to be ignored, it will not be considered as blocking the tile
+		UINT wMonsterType = pMonster->wType;
+		switch (wMonsterType) {
+		case M_CHARACTER:
+			return ((pflags & ScriptFlag::NPC) == 0);
+		case M_STALWART:
+			return ((pflags & ScriptFlag::STALWART) == 0);
+		default:
+			return ((pflags & ScriptFlag::MONSTER) == 0);
+		}
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+// Returns: is player facing the specified direction (x)
+bool CCharacter::IsPlayerFacing(
+	const CCharacterCommand& command,
+	const CSwordsman& player
+) const
+{
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
+		return false;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+
+	ASSERT(this->wLastSO != NO_ORIENTATION);
+	ASSERT(this->wSO != NO_ORIENTATION);
+
+	switch (px)
+	{
+	case CMD_C:
+		return (wSO == nNextCO(wLastSO));
+	case CMD_CC:
+		return (wSO == nNextCCO(wLastSO));
+	default:
+		return (wSO == px);
+	}
+}
+
+//*****************************************************************************
+// Returns: did the player move in the specified direction (x)
+bool CCharacter::DidPlayerMove(
+	const CCharacterCommand& command,
+	const CSwordsman& player,
+	const int nLastCommand
+) const
+{
+	if (!player.IsInRoom() || this->pCurrentGame->IsRoomBeingDisplayedOnly())
+		return false;
+
+	const bool bPlayerMoved = player.wX != player.wPrevX ||
+		player.wY != player.wPrevY;
+
+	UINT px;  //command parameter
+	getCommandX(command, px);
+
+	ASSERT(this->wLastSO != NO_ORIENTATION);
+	ASSERT(this->wSO != NO_ORIENTATION);
+
+	switch (px)
+	{
+	case CMD_C:
+		return (wSO == nNextCO(wLastSO));
+	case CMD_CC:
+		return (wSO == nNextCCO(wLastSO));
+	default:
+		return (bPlayerMoved && CSwordsman::GetSwordMovement( //conversion routine
+			nLastCommand, NO_ORIENTATION) == px);
+	}
+}
+
+//*****************************************************************************
+// Returns: is there a weapon at the given region (x,y,w,h)
+bool CCharacter::IsWeaponAt(
+	const CCharacterCommand& command,
+	const CCurrentGame* pGame)
+	const
+{
+	UINT px, py, pw, ph;  //command parameters
+	getCommandRect(command, px, py, pw, ph);
+
+	CDbRoom& room = *(pGame->pRoom);
+	const CSwordsman* player = pGame->pPlayer;
+
+	if (!room.IsValidColRow(px, py) || !room.IsValidColRow(px + pw, py + ph))
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x)
+		{
+			if (player->IsWeaponAt(x, y) || room.IsMonsterSwordAt(x, y, this))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+//******************************************************************************************
+bool CCharacter::DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	const UINT varIndex = command.x;
+
+	//Get variable.
+	CDbPackedVars& stats = pGame->stats;
+	char varID[10], varName[11] = "v";
+	UNPACKEDVARTYPE vType = UVT_int;
+
+	const bool bPredefinedVar = varIndex >= UINT(ScriptVars::FirstPredefinedVar);
+	bool bValidInt = true;
+	if (!bPredefinedVar)
+	{
+		//Get local hold var.
+		_itoa(varIndex, varID, 10);
+		strcat(varName, varID);
+
+		//Enforce basic type checking.
+		vType = stats.GetVarType(varName);
+		bValidInt = vType == UVT_int || vType == UVT_unknown;
+	}
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty() && command.y != ScriptVars::EqualsText)
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	int x = 0;
+	const bool bNumber = bValidInt && command.y != ScriptVars::EqualsText;
+	if (bNumber) {
+		if (bPredefinedVar) {
+			x = int(getPredefinedVarInt(varIndex));
+		} else {
+			x = stats.GetVar(varName, (int)0);
+		}
+	}
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return x == operand;
+		case ScriptVars::Greater: return x > operand;
+		case ScriptVars::GreaterThanOrEqual: return x >= operand;
+		case ScriptVars::Less: return x < operand;
+		case ScriptVars::LessThanOrEqual: return x <= operand;
+		case ScriptVars::Inequal: return x != operand;
+		case ScriptVars::EqualsText:
+		{
+			WSTRING wStr;
+			if (vType == UVT_wchar_string)
+				wStr = stats.GetVar(varName, wszEmpty);
+			const WSTRING operand = pGame->ExpandText(command.label.c_str(), this);
+			return wStr == operand;
+		}
+		break;
+		default: break;
+	}
+	ASSERT(!"Unrecognized var operator");
+	return false;
+}
+
+//*****************************************************************************
+bool CCharacter::DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	const UINT varId = command.x;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return false; //Only for array vars
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	ScriptArrayMap::const_iterator finder = scriptArrays.find(varId);
+
+	if (finder == scriptArrays.end()) {
+		return false; //Array hasn't been initialized yet, so it can't contain the target value
+	}
+
+	const map<int, int>& array = finder->second;
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+int CCharacter::CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	const UINT varId = command.x;
+	if (pGame->pHold && !pGame->pHold->IsArrayVar(varId))
+		return 0; //Only for array vars
+
+	ScriptArrayMap& scriptArrays = pGame->scriptArrays;
+	ScriptArrayMap::const_iterator finder = scriptArrays.find(varId);
+
+	if (finder == scriptArrays.end()) {
+		return 0; //Array hasn't been initialized yet, so must have zero of anything
+	}
+
+	const map<int, int>& array = finder->second;
+
+	int operand = int(command.w); //expect an integer value by default
+	if (!operand && !command.label.empty())
+	{
+		//Operand is not just an integer, but a text expression.
+		UINT index = 0;
+		operand = parseExpression(command.label.c_str(), index, pGame, this);
+	}
+
+	std::function<bool(int, int)> comparator = getComparator((ScriptVars::Comp)command.y);
+	int count = 0;
+
+	for (map<int, int>::const_iterator it = array.cbegin(); it != array.cend(); ++it) {
+		if (comparator(it->second, operand)) {
+			count++;
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
+//
+bool CCharacter::EvaluateConditionalCommand(
+	const CCharacterCommand& command,
+	CCurrentGame* pGame,
+	const int nLastCommand,
+	CCueEvents& CueEvents
+)
+{
+	CDbRoom& room = *(pGame->pRoom);
+
+	switch (command.command) {
+		case CCharacterCommand::CC_WaitForCueEvent:
+		{
+			const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+			return CueEvents.HasOccurred(cid);
+		}
+		case CCharacterCommand::CC_WaitForRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& IsEntityAt(command, room, *pGame->pPlayer));
+		}
+		case CCharacterCommand::CC_WaitForNotRect:
+		{
+			return (IsValidEntityWait(command, room)
+				&& !IsEntityAt(command, room, *pGame->pPlayer));
+		}
+		case CCharacterCommand::CC_WaitForDoorTo:
+		{
+			return IsDoorStateAt(command, room);
+		}
+		case CCharacterCommand::CC_WaitForTurn:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return pGame->wSpawnCycleCount >= px;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToFace:
+		{
+			return IsPlayerFacing(command, *pGame->pPlayer);
+		}
+		case CCharacterCommand::CC_WaitForVar:
+		{
+			return DoesVarSatisfy(command, pGame);
+		}
+		case CCharacterCommand::CC_SetPlayerAppearance:
+		{
+			//As a condition, this acts as a query that is true when
+			//the player is in this role.
+			return pGame->pPlayer->wIdentity == command.x;
+		}
+		case CCharacterCommand::CC_WaitForPlayerToMove:
+		{
+			return DidPlayerMove(command, *pGame->pPlayer, nLastCommand);
+		}
+		case CCharacterCommand::CC_WaitForPlayerToTouchMe:
+		{
+			if (pGame->pPlayer->wX == this->wX && pGame->pPlayer->wY == this->wY && !pGame->IsRoomBeingDisplayedOnly())
+				this->bPlayerTouchedMe = true; //standing on an invisible NPC counts
+
+			return this->bPlayerTouchedMe;
+		}
+		case CCharacterCommand::CC_WaitForDefeat:
+		{
+			return this->bDefeated;
+		}
+		case CCharacterCommand::CC_WaitForItem:
+		{
+			return IsTileAt(command, CueEvents);
+		}
+		case CCharacterCommand::CC_WaitForOpenMove:
+		{
+			UINT px;
+			getCommandX(command, px);
+			return this->IsOpenMove(nGetOX(px), nGetOY(px));
+		}
+		case CCharacterCommand::CC_SetMovementType:
+		{
+			//As a condition, check if movement type equals X
+			return (this->eMovement != (MovementType)command.x);
+		}
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			return IsExpressionSatisfied(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForWeapon:
+		{
+			return IsWeaponAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForOpenTile:
+		{
+			return IsOpenTileAt(command, pGame);
+		}
+		case CCharacterCommand::CC_WaitForItemGroup:
+		{
+			return IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForNotItemGroup:
+		{
+			return !IsTileGroupAt(command);
+		}
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		{
+			return DoesArrayVarSatisfy(command, pGame);
+		}
+		break;
+		default:
+		{
+			ASSERT(!"Bad Conditional Command");
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to false, returns false. Otherwise,
+// returns true.
+bool CCharacter::EvaluateLogicalAnd(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitAnd);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (!EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (!EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return false;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (!EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return false;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to true.
+	return true;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If any evaluate to true, returns true. Otherwise,
+// returns false.
+bool CCharacter::EvaluateLogicalOr(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitOr);
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+				{
+					if (EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					if (EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
+						return true;
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			if (EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
+				return true;
+		}
+
+		++wCommandIndex;
+	}
+
+	// If we got this far, all included commands evaluated to false.
+	return false;
+}
+
+//*****************************************************************************
+// Evaluates all conditional commands between the given command and the next
+// logic end command. If exactly one evaluates to true, return true, otherwise
+// returns false.
+bool CCharacter::EvaluateLogicalXOR(
+	UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents
+)
+{
+	ASSERT(this->commands[wCommandIndex].command == CCharacterCommand::CC_LogicalWaitXOR);
+
+	bool bFound = false;
+
+	++wCommandIndex;
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		bool bLocalFound = false;
+
+		if (command.command == CCharacterCommand::CC_LogicalWaitEnd) {
+			// End of the logic block.
+			break;
+		}
+		else if (command.IsLogicalWaitCommand()) {
+			switch (command.command) {
+				case CCharacterCommand::CC_LogicalWaitAnd:
+					bLocalFound =
+						EvaluateLogicalAnd(wCommandIndex, pGame, nLastCommand, CueEvents);
+				break;
+				case CCharacterCommand::CC_LogicalWaitOr:
+				{
+					bLocalFound =
+						EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+				case CCharacterCommand::CC_LogicalWaitXOR:
+				{
+					bLocalFound =
+						EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents);
+				}
+				break;
+			}
+
+			// Find the end of the nested logic block and jump ahead.
+			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			if (wNextIndex == NO_LABEL) {
+				// Malformed statement - just return false
+				return false;
+			}
+
+			wCommandIndex = wNextIndex;
+		}
+		else if (command.IsLogicalWaitCondition()) {
+			bLocalFound =
+				EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents);
+		}
+
+		if (bLocalFound) {
+			if (bFound) {
+				// More than one condition is true, so return false
+				return false;
+			}
+
+			bFound = true;
+		}
+
+		++wCommandIndex;
+	}
+
+	return bFound;
+}
+
+//*****************************************************************************
+bool CCharacter::IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame)
+{
+	int constant = (int)command.x;
+	//operand is an expression
+	UINT index = 0;
+	int operand = parseExpression(command.label.c_str(), index, pGame, this);
+
+	switch (command.y)
+	{
+		case ScriptVars::Equals: return operand == constant;
+		case ScriptVars::Greater: return operand > constant;
+		case ScriptVars::GreaterThanOrEqual: return operand >= constant;
+		case ScriptVars::Less: return operand < constant;
+		case ScriptVars::LessThanOrEqual: return operand <= constant;
+		case ScriptVars::Inequal: return operand != constant;
+		case ScriptVars::EqualsText:
+		{
+			ASSERT(!"Unsupported var operator for expression");
+			return false;
+		}
+	}
+	ASSERT(!"Unrecognized var operator");
+	return false;
+}
+
+//*****************************************************************************
 void CCharacter::CheckForCueEvent(CCueEvents &CueEvents) //(in)
 //Called once all cue events have been gathered.
 //If the current command is waiting for a cue event, satisfying this
@@ -3160,14 +5303,41 @@ void CCharacter::CheckForCueEvent(CCueEvents &CueEvents) //(in)
 		return;
 	ASSERT(this->wCurrentCommandIndex < this->commands.size());
 	CCharacterCommand& command = this->commands[this->wCurrentCommandIndex];
-	ASSERT(command.command == CCharacterCommand::CC_WaitForCueEvent);
+	ASSERT(command.command == CCharacterCommand::CC_WaitForCueEvent ||
+		command.IsLogicalWaitCommand());
 
-	//Wait for cue event X to fire.
-	const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
-	if (CueEvents.HasOccurred(cid))
-	{
-		++this->wCurrentCommandIndex;
-		this->bWaitingForCueEvent = false; //no longer waiting for the event
+	if (command.IsLogicalWaitCommand()) {
+		//Reprocess logical block
+		CCurrentGame* pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
+		UINT nLastCommand = pGame->lastProcessedCommand;
+		bool passed;
+		switch (command.command) {
+			case CCharacterCommand::CC_LogicalWaitAnd:
+				passed = EvaluateLogicalAnd(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			case CCharacterCommand::CC_LogicalWaitOr:
+				passed = EvaluateLogicalOr(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				passed = EvaluateLogicalXOR(this->wCurrentCommandIndex, pGame, nLastCommand, CueEvents);
+			break;
+			default: passed = false; break;
+		}
+
+		if (passed) {
+			int wNextIndex = GetIndexOfNextLogicEnd(this->wCurrentCommandIndex + 1);
+			ASSERT(wNextIndex != NO_LABEL);
+			this->wCurrentCommandIndex = wNextIndex + 1;
+			this->bWaitingForCueEvent = false; //no longer waiting for the event
+		}
+	} else {
+		//Wait for cue event X to fire.
+		const CUEEVENT_ID cid = static_cast<CUEEVENT_ID>(command.x);
+		if (CueEvents.HasOccurred(cid))
+		{
+			++this->wCurrentCommandIndex;
+			this->bWaitingForCueEvent = false; //no longer waiting for the event
+		}
 	}
 }
 
@@ -3190,7 +5360,8 @@ bool CCharacter::CheckForDamage(CCueEvents& CueEvents)
 	if (!IsFlying()) //airborne monsters are not damaged by oremites
 	{
 		//Damage to metal monster on oremites is the same as on hot tiles.
-		if (IsMetal() && this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_GOO)
+		if (IsMetal() && this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_GOO &&
+			this->pCurrentGame->pRoom->GetTSquare(this->wX, this->wY) != T_CRATE)
 		{
 			if (IsDamageableAt(this->wX, this->wY))
 			{
@@ -3310,13 +5481,24 @@ bool CCharacter::ProcessAfterUse(CCueEvents &CueEvents)
 {
 	if (this->eachUseLabelIndex != NO_LABEL)
 	{
-		//Goto this label and process special commands.
+		//Goto this label and process commands.
 		this->wCurrentCommandIndex = this->eachUseLabelIndex+1; //start past label
-		const CCoord oldPos(*this);
 		Process(CMD_WAIT, CueEvents);
 	}
 
 	return true;
+}
+
+//*****************************************************************************
+void CCharacter::ProcessAfterVictory(CCueEvents& CueEvents)
+//Go to the specified label and execute a script turn.
+{
+	if (this->eachVictoryLabelIndex != NO_LABEL)
+	{
+		//Goto this label and process commands.
+		this->wCurrentCommandIndex = this->eachVictoryLabelIndex + 1; //start past label
+		Process(CMD_WAIT, CueEvents);
+	}
 }
 
 //*****************************************************************************
@@ -3325,9 +5507,13 @@ void CCharacter::FailedIfCondition()
 {
 	ASSERT(this->bIfBlock);
 
+	this->bIfBlock = false;
+	this->bParseIfElseAsCondition = false;
+
 	//Scan until the end of the If block is encountered.
 	//This could be indicated by either an IfElse or IfEnd command.
 	UINT wNestingDepth = 0;
+	const bool wSkipToIfEnd = this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false;
 	bool bScanning = true;
 	do
 	{
@@ -3341,9 +5527,16 @@ void CCharacter::FailedIfCondition()
 				++wNestingDepth;  //entering a nested If block
 			break;
 			case CCharacterCommand::CC_IfElse:
-				if (wNestingDepth == 0)
+				if (!wSkipToIfEnd && wNestingDepth == 0)
 					bScanning = false;  //found the If command's matching Else block
 			break;
+			case CCharacterCommand::CC_IfElseIf:
+				if (!wSkipToIfEnd && wNestingDepth == 0) {
+					bScanning = false;
+					this->bIfBlock = true;
+					this->wJumpLabel = this->wCurrentCommandIndex + 2;
+				}
+				break;
 			case CCharacterCommand::CC_IfEnd:
 				if (wNestingDepth-- == 0)	//exiting an If block
 					bScanning = false;  //found the end of the If block (no Else was found in between)
@@ -3352,8 +5545,6 @@ void CCharacter::FailedIfCondition()
 		}
 		++this->wCurrentCommandIndex;
 	} while (bScanning);
-
-	this->bIfBlock = false;
 }
 
 //*****************************************************************************
@@ -3366,18 +5557,68 @@ UINT CCharacter::GetResolvedIdentity() const
 }
 
 //*****************************************************************************
+//Returns: custom tooltips for the NPC, divided into a vector
+vector<WSTRING> CCharacter::GetCustomDescriptions() const
+{
+	return WCSExplode(this->customDescription, *wszSemicolon);
+}
+
+//*****************************************************************************
+//Returns: custom weaknesses for the NPC, divided into a set
+set<WSTRING> CCharacter::GetCustomWeaknesses() const
+{
+	return WCSExplodeSet(this->customWeakness, *wszSemicolon);
+}
+
+UINT CCharacter::GetSpawnType(UINT defaultMonsterID) const
+{
+	if (this->wSpawnType >= 0) {
+		return this->wSpawnType;
+	}
+
+	return CMonster::GetSpawnType(defaultMonsterID);
+}
+
+//*****************************************************************************
+float CCharacter::GetStatModifier(ScriptVars::StatModifiers statType) const
+//Returns: the NPC's local modifier value for the given type
+{
+	// When calculating, treat values that can be negative as signed int
+	switch (statType) {
+		case ScriptVars::StatModifiers::MonsterHP:
+			return this->monsterHPmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterATK:
+			return this->monsterATKmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterDEF:
+			return this->monsterDEFmult / 100.0f;
+		case ScriptVars::StatModifiers::MonsterGR:
+			return int(this->monsterGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::MonsterXP:
+			return int(this->monsterXPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemAll:
+			return int(this->itemMult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemHP:
+			return int(this->itemHPmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemATK:
+			return int(this->itemATKmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemDEF:
+			return int(this->itemDEFmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemGR:
+			return int(this->itemGRmult) / 100.0f;
+		case ScriptVars::StatModifiers::ItemShovels:
+			return int(this->itemShovelMult) / 100.0f;
+		default:
+			return 1.0f;
+	}
+
+	return 1.0f;
+}
+
+//*****************************************************************************
 bool CCharacter::IsDamageableAt(const UINT /*wX*/, const UINT /*wY*/) const
 //Returns: whether player may attack this character
 {
 	return IsCombatable();
-}
-
-//*****************************************************************************
-bool CCharacter::IsFlying() const
-//Returns: whether character is flying
-{
-	const UINT identity = GetResolvedIdentity();
-	return bIsEntityFlying(identity);
 }
 
 //*****************************************************************************
@@ -3387,14 +5628,6 @@ bool CCharacter::IsFriendly() const
 //	const UINT identity = GetResolvedIdentity();
 	return //identity == M_HALPH || identity == M_STALWART ||
 			this->bSafeToPlayer;
-}
-
-//*****************************************************************************
-bool CCharacter::IsSwimming() const
-//Returns: whether character is swimming
-{
-	const UINT identity = GetResolvedIdentity();
-	return identity == M_WATERSKIPPER;
 }
 
 //*****************************************************************************
@@ -3414,8 +5647,17 @@ bool CCharacter::OnAnswer(
 		//Primitive yes/no answer given.
 		if (this->bIfBlock)
 		{
-			if (nCommand != CMD_YES)
+			if (nCommand != CMD_YES) {
 				FailedIfCondition(); //skip if block
+				// If we are entering else if, make sure we set proper variables for it to be handled correctly
+				if (this->wCurrentCommandIndex > 0 ? this->commands[this->wCurrentCommandIndex - 1].command == CCharacterCommand::CC_IfElseIf : false)
+				{
+					--this->wCurrentCommandIndex;
+					this->bIfBlock = false;
+					this->wJumpLabel = 0;
+					this->bParseIfElseAsCondition = true;
+				}
+			}
 			else
 			{
 				//Enter if block.
@@ -3694,15 +5936,17 @@ const
 		switch (wLookTileNo)
 		{
 			case T_MIRROR:
+			case T_CRATE:
+			case T_POWDER_KEG:
 				if (this->bPushObjects)
 				{
 					const int dx = (int)wCol - (int)this->wX;
 					const int dy = (int)wRow - (int)this->wY;
 					if (room.CanPushTo(wCol, wRow, wCol + dx, wRow + dy))
-						break; //mirror is not an obstacle
+						break; //not an obstacle
 				}
 			//NO BREAK
-			default:	return true;
+			default: return true;
 		}
 	}
 
@@ -3750,6 +5994,31 @@ UINT CCharacter::getColor() const
 		return this->color;
 
 	return CPlayerDouble::getColor();
+}
+
+//*****************************************************************************
+UINT CCharacter::getHue() const
+//Return: monster's hue
+{
+	return this->hue;
+}
+
+//*****************************************************************************
+UINT CCharacter::getSaturation() const
+//Return: monster's saturation
+{
+	return this->saturation;
+}
+
+//*****************************************************************************
+std::array<float, 3> CCharacter::getHSV() const
+//Return: float-converted color hue, saturation and value
+{
+	float hue = this->hue ? float(this->hue) / MAX_HUE : -1;
+	float saturation = this->saturation ? float(this->saturation) / MAX_SATURATION : -1;
+
+	//Chaning value currently isn't supported
+	return { hue, saturation, -1 };
 }
 
 //*****************************************************************************
@@ -3841,6 +6110,24 @@ bool CCharacter::IsCombatable() const
 }
 
 //*****************************************************************************
+bool CCharacter::IsMinimapTreasure() const
+//Returns: whether this character should allow the room to be marked as having
+//a collectable item. It only counts if the character can be seen by the player
+{
+	return bMinimapTreasure && !bScriptDone && (bVisible || bGhostImage);
+}
+
+//*****************************************************************************
+bool CCharacter::IsOnMistTile() const
+{
+	// If immune to mist, always act as if not on mist
+	if (bMistImmune)
+		return false;
+
+	return CMonster::IsOnMistTile();
+}
+
+//*****************************************************************************
 bool CCharacter::IsTileObstacle(
 //Override for NPCs.
 //
@@ -3852,26 +6139,45 @@ bool CCharacter::IsTileObstacle(
 //True if tile is an obstacle, false if not.
 const
 {
-	switch (GetResolvedIdentity())
+	//All the things characters can step on
+	bool bIsObstacle = !(wTileNo == T_EMPTY ||
+		bIsFloor(wTileNo) ||
+		bIsOpenDoor(wTileNo) ||
+		bIsAnyArrow(wTileNo) ||
+		bIsPlatform(wTileNo) ||
+		wTileNo == T_NODIAGONAL ||
+		wTileNo == T_SCROLL ||
+		wTileNo == T_FUSE ||
+		wTileNo == T_TOKEN ||
+		wTileNo == T_KEY ||
+		wTileNo == T_MIST ||
+		bIsPowerUp(wTileNo) ||
+		bIsMap(wTileNo) ||
+		bIsShovel(wTileNo) ||
+		bIsEquipment(wTileNo) ||
+		bIsStairs(wTileNo) ||
+		bIsTunnel(wTileNo)
+	);
+
+	switch (eMovement)
 	{
 		//These types can move through wall.
 		//NOTE: For greater scripting flexibility, these types will also be allowed
 		//to perform normal movement.
-		case M_SEEP:
+		case MovementType::WALL:
 		{
-			return CMonster::IsTileObstacle(wTileNo) &&
+			return bIsObstacle &&
 				!(bIsWall(wTileNo) || bIsCrumblyWall(wTileNo) || bIsDoor(wTileNo));
 			//i.e. tile is considered an obstacle only when it blocks both movement types
 		}
 
 		//Flying types may also move over pits.
-		case M_WWING: case M_FEGUNDO:
-			return CMonster::IsTileObstacle(wTileNo) &&
+		case MovementType::AIR:
+			return bIsObstacle &&
 					!bIsWater(wTileNo) && !bIsPit(wTileNo);
 
-		case M_WATERSKIPPER:
-		case M_SKIPPERNEST:
-			return CMonster::IsTileObstacle(wTileNo) && !bIsWater(wTileNo);
+		case MovementType::WATER:
+			return bIsObstacle && !bIsWater(wTileNo);
 
 		default:	return CMonster::IsTileObstacle(wTileNo);
 	}
@@ -3957,6 +6263,16 @@ void CCharacter::ResolveLogicalIdentity(CDbHold *pHold)
 			if (this->pCustomChar)
 			{
 				this->wIdentity = this->pCustomChar->wType;
+
+				if (this->commands.empty()) {
+					this->wProcessSequence = this->pCustomChar->ExtraVars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+					this->color = this->pCustomChar->ExtraVars.GetVar(ColorStr, this->color);
+					this->hue = this->pCustomChar->ExtraVars.GetVar(HueStr, this->hue);
+					this->saturation = this->pCustomChar->ExtraVars.GetVar(SaturationStr, this->saturation);
+					this->customSpeechColor = this->pCustomChar->ExtraVars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
+					this->bGhostImage = this->pCustomChar->ExtraVars.GetVar(GhostImageStr, this->bGhostImage);
+					this->bMinimapTreasure = this->pCustomChar->ExtraVars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
+				}
 			}
 			else
 				//When character has a dangling reference to a custom character definition
@@ -3990,6 +6306,7 @@ void CCharacter::RestartScript()
 	this->wExitingRoomO = NO_ORIENTATION;
 
 	this->eachAttackLabelIndex = this->eachDefendLabelIndex = this->eachUseLabelIndex = NO_LABEL;
+	this->eachVictoryLabelIndex = NO_LABEL;
 
 	this->bVulnerable = true;
 	this->bMissionCritical = false;
@@ -3998,6 +6315,7 @@ void CCharacter::RestartScript()
 	this->bDefeated = false;
 	this->bShowStatChanges = true;
 	this->bGhostImage = false;
+	this->bInvisibleInspectable = false;
 	this->bRestartScriptOnRoomEntrance = false;
 //	this->bGlobal = false; //this flag doesn't get reset -- once a script's in the global list, it stays there
 	this->bExecuteScriptOnCombat = true;
@@ -4007,6 +6325,7 @@ void CCharacter::RestartScript()
 	this->bAttackInFrontWhenBackIsTurned =
 	this->bFaceTarget =
 	this->bHasRayGun =
+	this->bHasRayBlocking =
 	this->bSurprisedFromBehind = false;
 	this->movementIQ = SmartDiagonalOnly;
 
@@ -4016,11 +6335,25 @@ void CCharacter::RestartScript()
 	this->GOLD = 0;
 	this->XP = 0;
 	this->color = 0;
+	this->hue = 0;
+	this->saturation = 0;
 	this->sword = NPC_DEFAULT_SWORD;
 
 	//These values are reloaded as they were on setup.
 	this->wLogicalIdentity = this->ExtraVars.GetVar(idStr, this->wLogicalIdentity);
 	this->bVisible = this->ExtraVars.GetVar(visibleStr, this->bVisible);
+}
+
+//*****************************************************************************
+void CCharacter::SetHue(const UINT hue)
+{
+	this->hue = max(0U, min(hue, MAX_HUE));
+}
+
+//*****************************************************************************
+void CCharacter::SetSaturation(const UINT saturation)
+{
+	this->saturation = max(0U, min(saturation, MAX_SATURATION));
 }
 
 //*****************************************************************************
@@ -4044,10 +6377,52 @@ void CCharacter::SetCurrentGame(
 	//Check for a custom character.
 	ResolveLogicalIdentity(this->pCurrentGame ? this->pCurrentGame->pHold : NULL);
 
+	//Set the movement type
+	if(!bMovementChanged)
+		SetDefaultMovementType();
+
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
-	if (this->pCustomChar && this->commands.empty())
-		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+	if (this->pCustomChar && (this->commands.empty() || bReplacedWithDefault))
+	{
+		if (this->wInitialIdentity == M_NONE) {
+			LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+		}
+		else
+		{
+			const HoldCharacter* initalCharacter = this->pCurrentGame->pHold->GetCharacter(this->wInitialIdentity);
+			LoadCommands(initalCharacter->ExtraVars, commands);
+		}
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultMovementType()
+//Sets the character's eMovement to the appropriate type for its identity
+{
+	switch (GetResolvedIdentity())
+	{
+		//These types can move through wall.
+		case M_SEEP:
+			eMovement = MovementType::WALL;
+		break;
+
+		//Flying types may also move over pits.
+		case M_WWING: case M_FEGUNDO: case M_FLUFFBABY:
+			eMovement = MovementType::AIR;
+		break;
+
+		case M_WATERSKIPPER:
+		case M_SKIPPERNEST:
+			eMovement = MovementType::WATER;
+		break;
+
+		default:
+			eMovement = MovementType::GROUND;
+		break;
+	}
+
+	bMovementChanged = false;
 }
 
 //*****************************************************************************
@@ -4057,14 +6432,16 @@ void CCharacter::SaveCommands(CDbPackedVars& ExtraVars, const COMMAND_VECTOR& co
 	SaveSpeech(commands);
 
 	const UINT wNumCommands = commands.size();
-	if (wNumCommands)
-		ExtraVars.SetVar(numCommandsStr, wNumCommands);
+	ExtraVars.SetVar(numCommandsStr, wNumCommands);
 
 	//Serialize commands into a single buffer.
 	string buffer;
 	SerializeCommands(buffer, commands);
-	if (!buffer.empty())
+	if (!buffer.empty()) {
 		ExtraVars.SetVar(commandStr, (void*)(buffer.c_str()), buffer.size(), UVT_byte_buffer);
+	} else {
+		ExtraVars.Unset(commandStr);
+	}
 }
 
 //*****************************************************************************
@@ -4074,14 +6451,16 @@ void CCharacter::SaveCommands(CDbPackedVars& ExtraVars, const COMMANDPTR_VECTOR&
 	SaveSpeech(commands);
 
 	const UINT wNumCommands = commands.size();
-	if (wNumCommands)
-		ExtraVars.SetVar(numCommandsStr, wNumCommands);
+	ExtraVars.SetVar(numCommandsStr, wNumCommands);
 
 	//Serialize commands into a single buffer.
 	string buffer;
 	SerializeCommands(buffer, commands);
-	if (!buffer.empty())
+	if (!buffer.empty()) {
 		ExtraVars.SetVar(commandStr, (void*)(buffer.c_str()), buffer.size(), UVT_byte_buffer);
+	} else {
+		ExtraVars.Unset(commandStr);
+	}
 }
 
 //********************* Current serialization ********************************/
@@ -4090,35 +6469,14 @@ void CCharacter::SaveCommands(CDbPackedVars& ExtraVars, const COMMANDPTR_VECTOR&
 UINT CCharacter::readBpUINT(const BYTE* buffer, UINT& index)
 //Deserialize 1..5 bytes --> UINT
 {
-	const BYTE *buffer2 = buffer + (index++);
-	ASSERT(*buffer2); // should not be zero (indicating a negative number)
-	UINT n = 0;
-	for (;;index++)
-	{
-		n = (n << 7) + *buffer2;
-		if (*buffer2++ & 0x80)
-			break;
-	}
-
-	return n - 0x80;
+	return CDbSavedGame::readBpUINT(buffer, index);
 }
 
 //*****************************************************************************
 void CCharacter::writeBpUINT(string& buffer, UINT n)
 //Serialize UINT --> 1..5 bytes
 {
-	int s = 7;
-	while ((n >> s) && s < 32)
-		s += 7;
-
-	while (s)
-	{
-		s -= 7;
-		BYTE b = BYTE((n >> s) & 0x7f);
-		if (!s)
-			b |= 0x80;
-		buffer.append(1, b);
-	}
+	CDbSavedGame::writeBpUINT(buffer, n);
 }
 
 //*****************************************************************************
@@ -4257,6 +6615,10 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	this->wIdentity = this->wLogicalIdentity; //by default, these are the same
 
+	this->wInitialIdentity = vars.GetVar(initialIdStr, this->wLogicalIdentity); // Note the default is wLogicalIdentity
+
+	this->bScriptDone = vars.GetVar(scriptDoneStr, false);
+
 	this->bVisible = vars.GetVar(visibleStr, this->bVisible);
 	if (!this->bVisible)
 		this->bSwordSheathed = true;
@@ -4273,6 +6635,9 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->eachAttackLabelIndex = vars.GetVar(EachAttackStr, this->eachAttackLabelIndex);
 	this->eachDefendLabelIndex = vars.GetVar(EachDefendStr, this->eachDefendLabelIndex);
 	this->eachUseLabelIndex = vars.GetVar(EachUseStr, this->eachUseLabelIndex);
+	this->eachVictoryLabelIndex = vars.GetVar(EachVictoryStr, this->eachVictoryLabelIndex);
+
+	this->customName = vars.GetVar(CustomNameStr, this->customName.c_str());
 
 	//Imperatives.
 	this->bVulnerable = vars.GetVar(VulnerableStr, this->bVulnerable);
@@ -4282,6 +6647,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDefeated = vars.GetVar(DefeatedStr, this->bDefeated);
 	this->bShowStatChanges = vars.GetVar(ShowStatChangesStr, this->bShowStatChanges);
 	this->bGhostImage = vars.GetVar(GhostImageStr, this->bGhostImage);
+	this->bInvisibleInspectable = vars.GetVar(InvisibleInspectableStr, this->bInvisibleInspectable);
 	this->bRestartScriptOnRoomEntrance = vars.GetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
 	this->bGlobal = vars.GetVar(GlobalStr, this->bGlobal);
 	this->bExecuteScriptOnCombat = vars.GetVar(ExecuteScriptOnCombatStr, this->bExecuteScriptOnCombat);
@@ -4293,6 +6659,7 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bFaceAwayFromTarget = vars.GetVar(FaceAwayFromTargetStr, this->bFaceAwayFromTarget);
 	this->bFaceTarget = vars.GetVar(FaceTargetStr, this->bFaceTarget);
 	this->bHasRayGun = vars.GetVar(RayGunStr, this->bHasRayGun);
+	this->bHasRayBlocking = vars.GetVar(RayBlockingStr, this->bHasRayBlocking);
 	this->bSurprisedFromBehind = vars.GetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
 	this->bGoblinWeakness = vars.GetVar(GoblinWeaknessStr, this->bGoblinWeakness);
 	this->bSerpentWeakness = vars.GetVar(SerpentWeaknessStr, this->bSerpentWeakness);
@@ -4307,15 +6674,61 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	this->bDropTrapdoors = vars.GetVar(DropTrapdoorsStr, this->bDropTrapdoors);
 	this->bMoveIntoSwords = vars.GetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	this->bPushObjects = vars.GetVar(PushObjectsStr, this->bPushObjects);
+	this->bSpawnEggs = vars.GetVar(SpawnEggsStr, this->bSpawnEggs);
+	this->bRemovesSword = vars.GetVar(RemovesSwordStr, this->bRemovesSword);
+	this->bExplosiveSafe = vars.GetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
+	this->bMinimapTreasure = vars.GetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	this->bCutTarAnywhere = vars.GetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	this->bWallMirrorSafe = vars.GetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
+	this->bHotTileImmune = vars.GetVar(HotTileImmuneStr, this->bHotTileImmune);
+	this->bFiretrapImmune = vars.GetVar(FiretrapImmuneStr, this->bFiretrapImmune);
+	this->bMistImmune = vars.GetVar(MistImmuneStr, this->bMistImmune);
+	this->bWallDwelling = vars.GetVar(WallDwellingStr, this->bWallDwelling);
+
+	if (vars.DoesVarExist(MovementTypeStr)) {
+		this->eMovement = (MovementType)vars.GetVar(MovementTypeStr, this->eMovement);
+		bMovementChanged = true;
+	} else {
+		SetDefaultMovementType();
+	}
 
 	//Stats.
 	this->color = vars.GetVar(ColorStr, this->color);
+	this->hue = vars.GetVar(HueStr, this->hue);
+	this->saturation = vars.GetVar(SaturationStr, this->saturation);
 	this->sword = vars.GetVar(SwordStr, this->sword);
 	this->paramX = vars.GetVar(ParamXStr, this->paramX);
 	this->paramY = vars.GetVar(ParamYStr, this->paramY);
 	this->paramW = vars.GetVar(ParamWStr, this->paramW);
 	this->paramH = vars.GetVar(ParamHStr, this->paramH);
 	this->paramF = vars.GetVar(ParamFStr, this->paramF);
+	this->wProcessSequence = vars.GetVar(ParamProcessSequenceStr, this->wProcessSequence);
+	this->customSpeechColor = vars.GetVar(ParamSpeechColorStr, this->customSpeechColor);
+
+	//Modifiers
+	this->monsterHPmult = vars.GetVar(MonsterHPMultStr, this->monsterHPmult);
+	this->monsterATKmult = vars.GetVar(MonsterATKMultStr, this->monsterATKmult);
+	this->monsterDEFmult = vars.GetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	this->monsterGRmult = vars.GetVar(MonsterGRMultStr, this->monsterGRmult);
+	this->monsterXPmult = vars.GetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	this->itemMult = vars.GetVar(ItemMultStr, this->itemMult);
+	this->itemHPmult = vars.GetVar(ItemHPMultStr, this->itemHPmult);
+	this->itemATKmult = vars.GetVar(ItemATKMultStr, this->itemATKmult);
+	this->itemDEFmult = vars.GetVar(ItemDEFMultStr, this->itemDEFmult);
+	this->itemGRmult = vars.GetVar(ItemGRMultStr, this->itemGRmult);
+	this->itemShovelMult = vars.GetVar(ItemShovelMultStr, this->itemShovelMult);
+
+	//Spawn type
+	this->wSpawnType = vars.GetVar(SpawnTypeStr, this->wSpawnType);
+
+	//Custom weakness
+	this->customWeakness = vars.GetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	this->customDescription = vars.GetVar(TooltipStr, this->customDescription.c_str());
+
+	this->bReplacedWithDefault = vars.GetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************
@@ -4327,6 +6740,7 @@ const
 	vars.Clear();
 
 	vars.SetVar(idStr, this->wLogicalIdentity);
+	vars.SetVar(initialIdStr, this->wInitialIdentity);
 	vars.SetVar(visibleStr, this->bVisible);
 	vars.SetVar(equipTypeStr, (int)this->equipType);
 
@@ -4349,6 +6763,11 @@ const
 		vars.SetVar(EachDefendStr, this->eachDefendLabelIndex);
 	if (this->eachUseLabelIndex != NO_LABEL)
 		vars.SetVar(EachUseStr, this->eachUseLabelIndex);
+	if (this->eachVictoryLabelIndex != NO_LABEL)
+		vars.SetVar(EachVictoryStr, this->eachVictoryLabelIndex);
+
+	if (!this->customName.empty())
+		vars.SetVar(CustomNameStr, this->customName.c_str());
 
 	//Imperatives.
 	if (!this->bVulnerable)
@@ -4365,6 +6784,8 @@ const
 		vars.SetVar(ShowStatChangesStr, this->bShowStatChanges);
 	if (this->bGhostImage)
 		vars.SetVar(GhostImageStr, this->bGhostImage);
+	if (this->bInvisibleInspectable)
+		vars.SetVar(InvisibleInspectableStr, this->bInvisibleInspectable);
 	if (this->bRestartScriptOnRoomEntrance)
 		vars.SetVar(RestartScriptOnEntranceStr, this->bRestartScriptOnRoomEntrance);
 	if (this->bGlobal)
@@ -4385,6 +6806,8 @@ const
 		vars.SetVar(FaceTargetStr, this->bFaceTarget);
 	if (this->bHasRayGun)
 		vars.SetVar(RayGunStr, this->bHasRayGun);
+	if (this->bHasRayBlocking)
+		vars.SetVar(RayBlockingStr, this->bHasRayBlocking);
 	if (this->bSurprisedFromBehind)
 		vars.SetVar(SurprisedFromBehindStr, this->bSurprisedFromBehind);
 	if (this->bGoblinWeakness)
@@ -4413,10 +6836,36 @@ const
 		vars.SetVar(MoveIntoSwordsStr, this->bMoveIntoSwords);
 	if (this->bPushObjects)
 		vars.SetVar(PushObjectsStr, this->bPushObjects);
+	if (this->bSpawnEggs)
+		vars.SetVar(SpawnEggsStr, this->bSpawnEggs);
+	if (this->bRemovesSword)
+		vars.SetVar(RemovesSwordStr, this->bRemovesSword);
+	if (this->bExplosiveSafe)
+		vars.SetVar(ExplosiveKegSafeStr, this->bExplosiveSafe);
+	if (this->bMinimapTreasure)
+		vars.SetVar(MinimapTreasureStr, this->bMinimapTreasure);
+	if (this->bCutTarAnywhere)
+		vars.SetVar(CutTarAnywhereStr, this->bCutTarAnywhere);
+	if (this->bWallMirrorSafe)
+		vars.SetVar(WallMirrorSafeStr, this->bWallMirrorSafe);
+	if (this->bHotTileImmune)
+		vars.SetVar(HotTileImmuneStr, this->bHotTileImmune);
+	if (this->bFiretrapImmune)
+		vars.SetVar(FiretrapImmuneStr, this->bFiretrapImmune);
+	if (this->bMistImmune)
+		vars.SetVar(MistImmuneStr, this->bMistImmune);
+	if (this->bWallDwelling)
+		vars.SetVar(WallDwellingStr, this->bWallDwelling);
+	if (this->bMovementChanged)
+		vars.SetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
 	if (this->color)
 		vars.SetVar(ColorStr, this->color);
+	if (this->hue)
+		vars.SetVar(HueStr, this->hue);
+	if (this->saturation)
+		vars.SetVar(SaturationStr, this->saturation);
 	if (this->sword != NPC_DEFAULT_SWORD)
 		vars.SetVar(SwordStr, this->sword);
 	if (this->paramX != NO_OVERRIDE)
@@ -4429,10 +6878,57 @@ const
 		vars.SetVar(ParamHStr, this->paramH);
 	if (this->paramF != NO_OVERRIDE)
 		vars.SetVar(ParamFStr, this->paramF);
+	if (this->wProcessSequence != 9999)
+		vars.SetVar(ParamProcessSequenceStr, this->wProcessSequence);
+	if (this->customSpeechColor)
+		vars.SetVar(ParamSpeechColorStr, this->customSpeechColor);
+
+	// Modifiers
+	if (this->monsterHPmult != 100)
+		vars.SetVar(MonsterHPMultStr, this->monsterHPmult);
+	if (this->monsterATKmult != 100)
+		vars.SetVar(MonsterATKMultStr, this->monsterATKmult);
+	if (this->monsterDEFmult != 100)
+		vars.SetVar(MonsterDEFMultStr, this->monsterDEFmult);
+	if (this->monsterGRmult != 100)
+		vars.SetVar(MonsterGRMultStr, this->monsterGRmult);
+	if (this->monsterXPmult != 100)
+		vars.SetVar(MonsterXPMultStr, this->monsterXPmult);
+
+	if (this->itemMult != 100)
+		vars.SetVar(ItemMultStr, this->itemMult);
+	if (this->itemHPmult != 100)
+		vars.SetVar(ItemHPMultStr, this->itemHPmult);
+	if (this->itemATKmult != 100)
+		vars.SetVar(ItemATKMultStr, this->itemATKmult);
+	if (this->itemDEFmult != 100)
+		vars.SetVar(ItemDEFMultStr, this->itemDEFmult);
+	if (this->itemGRmult != 100)
+		vars.SetVar(ItemGRMultStr, this->itemGRmult);
+	if (this->itemShovelMult != 100)
+		vars.SetVar(ItemShovelMultStr, this->itemShovelMult);
+
+	// Spawn type
+	if (this->wSpawnType != -1)
+		vars.SetVar(SpawnTypeStr, this->wSpawnType);
+
+	//Custom weakness
+	if (!this->customWeakness.empty())
+		vars.SetVar(WeaknessStr, this->customWeakness.c_str());
+
+	//Custom tooltip
+	if (!this->customDescription.empty())
+		vars.SetVar(TooltipStr, this->customDescription.c_str());
 
 	vars.SetVar(scriptIDstr, this->dwScriptID);
+	if (this->bScriptDone)
+		vars.SetVar(scriptDoneStr, this->bScriptDone);
 
 	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
+
+	//Has the script of the character been replaced by its default script?
+	if (this->bReplacedWithDefault)
+		vars.SetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************
@@ -4531,21 +7027,138 @@ void CCharacter::Disappear()
 		CDbRoom& room = *(this->pCurrentGame->pRoom);
 		ASSERT(room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] == this);
 		room.pMonsterSquares[room.ARRAYINDEX(this->wX,this->wY)] = NULL;
+		room.Plot(CCoordSet(this->wX, this->wY)); //map redraw if needed
 	}
 }
 
 //*****************************************************************************
-int CCharacter::GetIndexOfCommandWithLabel(const UINT label) const
+int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 //Returns: index of command with specified label, or NO_LABEL if none
 {
-	if (label)
-		for (UINT wIndex=this->commands.size(); wIndex--; )
+	if (label > 0) {
+		for (UINT wIndex = this->commands.size(); wIndex--; )
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-					label == command.x)
+				label == command.x)
 				return wIndex;
 		}
+	} else if (label < 0) {
+		const ScriptFlag::GotoSmartType eGotoType = (ScriptFlag::GotoSmartType) label;
+		switch (eGotoType) {
+			case ScriptFlag::GotoSmartType::PreviousIf:
+				return GetIndexOfPreviousIf(true);
+			case ScriptFlag::GotoSmartType::NextElseOrElseIfSkipCondition:
+			{
+				int wIndex = GetIndexOfNextElse(false);
+				if (wIndex != NO_LABEL) {
+					if (this->commands[wIndex].command == CCharacterCommand::CC_IfElseIf)
+						return wIndex + 2;
+
+					return wIndex + 1;
+				}
+			}
+			break;
+			default:
+				return NO_LABEL;
+		}
+	}
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+//Return: Index of the if or else if command at the beginning of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex > 0) {
+		--wCommandIndex;
+
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			if (wNestingDepth-- == 0)
+				return wCommandIndex; // Found start of if block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				return wCommandIndex; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		}
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the else or else if command at the end of the block or
+// NO_LABEL if not in a block
+int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
+{
+	UINT wCommandIndex = this->wCurrentCommandIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+		case CCharacterCommand::CC_If:
+			wNestingDepth++; // entering a nested if-block
+			break;
+		case CCharacterCommand::CC_IfElse:
+			if (wNestingDepth == 0)
+				return wCommandIndex; // Found start of else block
+			break;
+		case CCharacterCommand::CC_IfElseIf:
+			if (wNestingDepth == 0 && !bIgnoreElseIf)
+				return wCommandIndex; // Found start of else-if block
+			break;
+		case CCharacterCommand::CC_IfEnd:
+			if (wNestingDepth > 0)
+				wNestingDepth--; // exiting a nested if-block
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
+	return NO_LABEL;
+}
+
+//*****************************************************************************
+// Return: Index of the Logic end command at the end of the block or NO_LABEL
+// if not in a block.
+int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
+{
+	UINT wCommandIndex = wStartIndex;
+	UINT wNestingDepth = 0;
+
+	while (wCommandIndex < this->commands.size()) {
+		CCharacterCommand command = this->commands[wCommandIndex];
+		switch (command.command) {
+			case CCharacterCommand::CC_LogicalWaitAnd:
+			case CCharacterCommand::CC_LogicalWaitOr:
+			case CCharacterCommand::CC_LogicalWaitXOR:
+				wNestingDepth++; // entering a nested logic block
+			break;
+			case CCharacterCommand::CC_LogicalWaitEnd:
+				if (wNestingDepth == 0) {
+					return wCommandIndex; // Found end of logic block
+				}
+				else {
+					wNestingDepth--; // exiting a nested logic block
+				}
+			break;
+		}
+
+		++wCommandIndex;
+	}
+
 	return NO_LABEL;
 }
 
@@ -4593,10 +7206,10 @@ void CCharacter::MoveCharacter(
 
 		//Process any and all of these item interactions.
 		UINT tTile = room.GetTSquare(this->wX, this->wY);
-		if (tTile==T_MIRROR)
+		if (tTile==T_MIRROR || tTile==T_CRATE || tTile==T_POWDER_KEG)
 		{
 			room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
-			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the mirror
+			tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object
 		}
 		if (tTile==T_TOKEN)
 			room.ActivateToken(CueEvents, this->wX, this->wY);

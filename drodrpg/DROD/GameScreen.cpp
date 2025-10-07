@@ -34,12 +34,16 @@
 #include "DrodFontManager.h"
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
+#include "EquipmentDescription.h"
 #include "TileImageCalcs.h"
 #include "TileImageConstants.h"
 
 #include "BloodEffect.h"
 #include "DebrisEffect.h"
 #include "ExplosionEffect.h"
+#include "FiretrapEffect.h"
+#include "IceMeltEffect.h"
+#include "PuffExplosionEffect.h"
 #include "SparkEffect.h"
 #include "SplashEffect.h"
 #include "SteamEffect.h"
@@ -127,6 +131,7 @@ const UINT TAG_CHATENABLE = 1035;
 const UINT TAG_CHATWHISPERSONLY = 1036;
 const UINT TAG_CHATINPUT = 1037;
 const UINT TAG_CHATUSERS = 1038;
+const UINT TAG_SIGN_AREA = 1039;
 
 const UINT TAG_UNDO = 1040;
 const UINT TAG_ROT_CW = 1041;
@@ -141,14 +146,17 @@ const UINT TAG_BATTLETEXT = 1052;
 const UINT TAG_BATTLEFRAME = 1053;
 const UINT TAG_BATTLEOK = 1054;
 
-const UINT TAG_SCORENAME = 1060;
-const UINT TAG_SCORE_OK = 1061;
-const UINT TAG_SCORETEXT = 1062;
-const UINT TAG_SCORETOTAL = 1063;
+const UINT TAG_SCOREDIALOG = 1060;
+const UINT TAG_SCORENAME = 1061;
+const UINT TAG_SCOREFRAME = 1062;
+const UINT TAG_SCORETEXT = 1063;
+const UINT TAG_SCORETOTAL = 1064;
+const UINT TAG_SCORE_OK = 1065;
+const UINT TAG_SCORETILES = 1066;
 
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
-const UINT CX_SIDEBAR = 260; //width of active sidebar widget area
+const UINT CX_SIDEBAR = 268; //width of active sidebar widget area
 
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
@@ -161,7 +169,7 @@ typedef map<ROOMCOORD, vector<UINT> > TilesMap;
 
 struct MonsterStats {
 	MonsterStats(UINT monsterType, UINT ATK, UINT DEF, UINT HP, UINT GR, UINT color)
-		: monsterType(monsterType), ATK(ATK), DEF(DEF), HP(HP), GR(GR), color(color)
+		: monsterType(monsterType), ATK(ATK), DEF(DEF), HP(HP), GR(GR), color(color), name()
 	{}
 	bool operator==(const MonsterStats& that) const
 	{
@@ -171,9 +179,11 @@ struct MonsterStats {
 			this->DEF == that.DEF &&
 			this->HP == that.HP &&
 			this->GR == that.GR &&
-			this->color == that.color;
+			this->color == that.color &&
+			this->name == that.name;
 	}
 	UINT monsterType, ATK, DEF, HP, GR, color;
+	WSTRING name;
 };
 
 //const SURFACECOLOR lockColor = {255, 255, 128};
@@ -186,7 +196,7 @@ const UINT numMenuPics = 4+3; //monster tiles (4), sword, shield, accessory
 const int X_PIC[numMenuPics] = {160, 160+44, 160,    160+44,  135, 135, 135};
 const int Y_PIC[numMenuPics] = {427, 427,    427+44, 427+44,  205, 255, 305};
 
-const int rightEndOfEquipmentSlot = 259; //same as value in CX_SWORD in RoomScreen.cpp
+const int rightEndOfEquipmentSlot = 265; //same as value used in CX_SWORD in RoomScreen.cpp
 
 #ifdef STEAMBUILD
 CSteamLeaderboards::CSteamLeaderboards() { }
@@ -313,7 +323,7 @@ UINT CGameScreen::CalcTileImageForEquipment(const UINT type) const
 	if (pCharacter)
 	{
 		UINT tile = this->pRoomWidget->GetCustomEntityTile(
-				pCharacter->wLogicalIdentity, NO_ORIENTATION, 0);
+				pCharacter->wLogicalIdentity, NO_ORIENTATION, 0, false);
 		if (tile == TI_UNSPECIFIED)
 		{
 			//Show a predefined sword if no custom images for custom equipment exist.
@@ -362,7 +372,7 @@ UINT CGameScreen::GetMonsterDisplayTile(CMonster *pMonster, const UINT x, const 
 					TI_HALPH_S, TI_SLAYER_S, TI_FEGUNDO_S, TI_UNSPECIFIED,
 					TI_GUARD_S, TI_UNSPECIFIED, TI_MUDEYE_WO, TI_MUDBABY_S,
 					TI_GELEYE_WO, TI_GELBABY_S, TI_CITIZEN_S, TI_ROCKGIANT_S,
-					TI_EYE_WS, TI_GOBLINKING_S
+					TI_EYE_WS, TI_GOBLINKING_S, TI_CONSTRUCT_S, TI_FLUFFBABY
 				};
 				val = tile[pMonster->wType];
 				//NPC special appearance.
@@ -501,17 +511,18 @@ void CGameScreen::RedrawStats(
 	const bool bCombat = pCombat != NULL;
 
 	//Refresh texts.
-	static const UINT numStats = 17;
+	static const UINT numStats = 18;
 	static const UINT statTag[numStats] = {
 		TAG_HP, TAG_ATK, TAG_DEF, TAG_GOLD,
 		TAG_YKEY, TAG_GKEY, TAG_BKEY,
 		TAG_MONNAME, TAG_MONHP, TAG_MONATK, TAG_MONDEF,
 		TAG_SWORD, TAG_SHIELD, TAG_ACCESSORY,
-		TAG_SKEY, TAG_XP, TAG_ITEMMULT
+		TAG_SKEY, TAG_XP, TAG_ITEMMULT, TAG_SHOVEL
 	};
 
 	//Refresh sprites.
 	static const UINT MAX_KEY_DISPLAY = 99;
+	static const UINT MAX_SHOVEL_DISPLAY = 999;
 
 	const bool bSwordDisabled = this->pCurrentGame->IsPlayerSwordDisabled();
 	const bool bShieldDisabled = this->pCurrentGame->IsPlayerShieldDisabled();
@@ -533,6 +544,7 @@ void CGameScreen::RedrawStats(
 	for (i=0; i<numStats; ++i)
 	{
 		int val = 0, val_percent = 0, val_mod = 0;
+		bool hasValue = true;
 		switch (i)
 		{
 			case 0: val = ps.HP; if (val < 0) val = 0; break;
@@ -543,9 +555,30 @@ void CGameScreen::RedrawStats(
 			case 5: val = ps.greenKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.greenKeys ; break;
 			case 6: val = ps.blueKeys >= MAX_KEY_DISPLAY ? MAX_KEY_DISPLAY : ps.blueKeys; break;
 			case 7: wstr = (bCombat ? this->pRoomWidget->GetMonsterName(pCombat->pMonster) : wszEmpty); break;
-			case 8: val = bCombat ? pCombat->pMonster->getHP() : BLANK_ITEM; break;
-			case 9: val = bCombat ? pCombat->monATK : BLANK_ITEM; break;
-			case 10: val = bCombat ? pCombat->monDEF : BLANK_ITEM; break;
+			case 8:
+				if (pCombat)
+				{
+					val = pCombat->pMonster->getHP();
+				} else {
+					hasValue = false;
+				}
+			break;
+			case 9:
+				if (pCombat)
+				{
+					val = pCombat->monATK;
+				} else {
+					hasValue = false;
+				}
+			break;
+			case 10:
+				if (pCombat)
+				{
+					val = pCombat->monDEF;
+				} else {
+					hasValue = false;
+				}
+			break;
 			case 11: val = ps.sword != NoSword ? CRoomWidget::GetSwordMID(ps.sword) : (UINT)MID_NoText; break;
 			case 12: val = ps.shield != NoShield ? CRoomWidget::GetShieldMID(ps.shield) : (UINT)MID_NoText; break;
 			case 13: val = ps.accessory != NoAccessory ? CRoomWidget::GetAccessoryMID(ps.accessory) : (UINT)MID_NoText; break;
@@ -570,6 +603,7 @@ void CGameScreen::RedrawStats(
 				}
 			}
 			break;
+			case 17: val = ps.shovels >= MAX_SHOVEL_DISPLAY ? MAX_SHOVEL_DISPLAY : ps.shovels; break;
 			default: break;
 		}
 
@@ -593,12 +627,17 @@ void CGameScreen::RedrawStats(
 				if (bIsCustomEquipment(item))
 				{
 					ASSERT(this->pCurrentGame);
+					UINT equipType = i == 11 ? ScriptFlag::Weapon : i == 12 ? ScriptFlag::Armor :
+						ScriptFlag::Accessory;
 					if (this->pCurrentGame->pHold)
 					{
-						HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(item);
-						if (pChar)
-						{
-							pLabel->SetText(pChar->charNameText.c_str());
+						CCharacter *pChar = this->pCurrentGame->getCustomEquipment(equipType);
+						if (pChar->GetCustomName() != DefaultCustomCharacterName) {
+							pLabel->SetText(pChar->GetCustomName().c_str());
+							break;
+						} else {
+							HoldCharacter *pHoldChar = this->pCurrentGame->pHold->GetCharacter(item);
+							pLabel->SetText(pHoldChar->charNameText.c_str());
 							break;
 						}
 					}
@@ -635,7 +674,7 @@ void CGameScreen::RedrawStats(
 			break;
 			default:
 				//allow values to be blank
-				pLabel->SetText(val == (int)BLANK_ITEM ? wszEmpty : _itoW(val, temp, 10));
+				pLabel->SetText(hasValue ? _itoW(val, temp, 10): wszEmpty);
 			break;
 		}
 		pLabel->RequestPaint();
@@ -700,7 +739,8 @@ void CGameScreen::RedrawStats(
 			if (i==0)
 			{
 				ASSERT(pCombat->pMonster);
-				this->pRoomWidget->AddColorToTile(pDestSurface, pCombat->pMonster->getColor(), val, X_PIC[i], Y_PIC[i],
+				this->pRoomWidget->AddColorToTile(pDestSurface, pCombat->pMonster->getColor(),
+					pCombat->pMonster->getHSV(), val, X_PIC[i], Y_PIC[i],
 						CBitmapManager::CX_TILE, CBitmapManager::CY_TILE);
 			}
 		}
@@ -837,6 +877,19 @@ void CGameScreen::MarkCurrentEntranceExplored()
 }
 
 //*****************************************************************************
+SCREENTYPE CGameScreen::SelectGotoScreen()
+//When entering a game, which screen should be displayed at first?
+{
+	if (this->pCurrentGame && this->pCurrentGame->OnWorldMap())
+		return SCR_WorldMap;
+
+	if (ShouldShowLevelStart())
+		return SCR_LevelStart;
+
+	return SCR_Game;
+}
+
+//*****************************************************************************
 bool CGameScreen::ShouldShowLevelStart()
 //Used by screen-changing code outside of CGameScreen to determine if the
 //level start screen should be shown before the game screen.
@@ -856,6 +909,24 @@ bool CGameScreen::ShouldShowLevelStart()
 		this->bIsSavedGameStale = true;
 
 	return bShowLevelStart;
+}
+
+//*****************************************************************************
+//Currently, used by CWorldMapScreen to prepare transition to an area.
+void CGameScreen::GotoEntrance(UINT entranceID, ExitType exitType)
+{
+	this->bIsSavedGameStale = false;
+
+	if (exitType == ExitType::ET_WorldMap) {
+		this->pCurrentGame->LoadFromWorldMap(entranceID);
+	} else {
+		this->pCurrentGame->LoadFromLevelEntrance(
+			this->pCurrentGame->pHold->dwHoldID, entranceID, this->sCueEvents);
+	}
+
+	if (this->pCurrentGame->IsRecordingMoves()) {
+		this->pCurrentGame->moves.AppendWorldMapCommand(entranceID, exitType);
+	}
 }
 
 //*****************************************************************************
@@ -923,7 +994,7 @@ void CGameScreen::SetMusicStyle()
 	//Default music mood -- based on room style and game environment.
 	ASSERT(this->pCurrentGame);
 	ASSERT(this->pCurrentGame->pRoom);
-	nDangerLevel = this->pCurrentGame->pRoom->DangerLevel();
+	//nDangerLevel = this->pCurrentGame->pRoom->DangerLevel();
 	UINT wMood = SONG_PUZZLE; //!nDangerLevel ? SONG_AMBIENT : nDangerLevel < 30 ? SONG_PUZZLE : SONG_ATTACK;
 
 	CRoomScreen::SetMusicStyle(this->pCurrentGame->pRoom->style, wMood);
@@ -1056,8 +1127,8 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	this->fPos[0] = this->fPos[1] = this->fPos[2] = 0.0;
 
 	//Room widgets.
-	static const int X_ROOM = 163 + 44*3;
-	static const int Y_ROOM = 40;
+	static const int X_ROOM = 166 + 44*3;
+	static const int Y_ROOM = 45;
 	static const int X_FACE = 15;
 	static const int Y_FACE = 15;
 //	static const int X_CLOCK = 4;
@@ -1151,7 +1222,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	static const int X_OK1 = (CX_MESSAGE - CX_MESSAGE_BUTTON) / 2;
 
 	//Score dialog.
-	static const UINT CX_SCOREDIALOG = 400;
+	static const UINT CX_SCOREDIALOG = 500;
 	static const UINT CY_SCOREDIALOG = 320;
 
 	static const int Y_SCORENAME = 15;
@@ -1160,9 +1231,13 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	static const int Y_SCOREFRAME = Y_SCORENAME + CY_SCORENAME;
 	static const UINT CX_SCOREFRAME = CX_SCOREDIALOG - CX_SPACE * 2;
 
-	static const int X_SCORETEXT = 15;
-	static const int Y_SCORETEXT = 15;
-	static const UINT CX_SCORETEXT = 300;
+	static const int X_SCORETILES = 140;
+	static const int Y_SCORETILES = CY_SPACE;
+	const UINT CX_SCORETILES = CDrodBitmapManager::CX_TILE;
+
+	static const int X_SCORETEXT = X_SCORETILES + CX_SCORETILES;
+	static const int Y_SCORETEXT = Y_SCORETILES - 5;
+	static const UINT CX_SCORETEXT = 500;
 	static const UINT CY_SCORETEXT = 140;
 
 //	static const int X_SCORETOTAL = X_SCORETEXT;
@@ -1204,6 +1279,12 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel->SetClickable(true);
 		AddWidget(pLabel);
 */
+		const SDL_Rect& EntireSign = GetEntireSignRect();
+		CLabelWidget *pLabel = new CLabelWidget(TAG_SIGN_AREA,
+			EntireSign.x, EntireSign.y, EntireSign.w, EntireSign.h, F_Button, wszEmpty);
+		pLabel->SetClickable(true);
+		AddWidget(pLabel);
+
 		CButtonWidget *pButton;
 		pButton = new CButtonWidget(TAG_ESC, X_ESC, Y_ESC, CX_ESC, CY_ESC,
 				g_pTheDB->GetMessageText(MID_EscMenu));
@@ -1262,7 +1343,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		this->pMenuDialog->Hide();
 		AddWidget(this->pMenuDialog);
 
-		CLabelWidget *pLabel = new CLabelWidget(TAG_MENUPROMPT, X_TEXT, Y_TEXT,
+		pLabel = new CLabelWidget(TAG_MENUPROMPT, X_TEXT, Y_TEXT,
 				CX_TEXT, CY_TEXT, FONTLIB::F_Message, wszEmpty);
 		this->pMenuDialog->AddWidget(pLabel);
 
@@ -1314,6 +1395,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel = new CLabelWidget(TAG_BATTLETEXT,
 				X_BATTLETEXT, Y_BATTLETILES, CX_BATTLETEXT, 0,
 				F_Message, wszEmpty);
+		pLabel->SetPrintLeadingSpacesAfterFirstLine();
 		pFrame->AddWidget(pLabel);
 
 		pButton = new CButtonWidget(TAG_BATTLEOK, X_OK1, Y_MESSAGE_BUTTON,
@@ -1321,7 +1403,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pFrame->AddWidget(pButton);
 
 		//Score checkpoint dialog.
-		this->pScoreDialog = new CDialogWidget(0L, 0, 0, CX_SCOREDIALOG, CY_SCOREDIALOG);
+		this->pScoreDialog = new CDialogWidget(TAG_SCOREDIALOG, 0, 0, CX_SCOREDIALOG, CY_SCOREDIALOG);
 		this->pScoreDialog->Hide();
 		this->pRoomWidget->AddWidget(this->pScoreDialog);
 
@@ -1331,9 +1413,12 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		this->pScoreDialog->AddWidget(pLabel);
 
-		pFrame = new CFrameWidget(0, CX_SPACE, Y_SCOREFRAME,
+		pFrame = new CFrameWidget(TAG_SCOREFRAME, CX_SPACE, Y_SCOREFRAME,
 				CX_SCOREFRAME, CY_SCOREFRAME, NULL);
 		this->pScoreDialog->AddWidget(pFrame);
+		
+		pFrame->AddWidget(new CTilesWidget(TAG_SCORETILES,
+				X_SCORETILES, Y_SCORETILES, CX_SCORETILES, CY_SCORETEXT));
 
 		//Score texts.
 		pLabel = new CLabelWidget(TAG_SCORETEXT, X_SCORETEXT, Y_SCORETEXT,
@@ -1346,28 +1431,6 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 					F_ScoreTotal, wszEmpty);
 		pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		pFrame->AddWidget(pLabel);
-
-		/*
-		//Score info.
-		pFrame->AddWidget(
-				new CLabelWidget(0L, X_TEXT_LABEL, Y_MOVES, CX_TEXT_LABEL, CY_TEXT_LABEL,
-						F_Message, g_pTheDB->GetMessageText(MID_MovesMade)));
-		pFrame->AddWidget(
-				new CLabelWidget(0L, X_TEXT_LABEL, Y_KILLS, CX_TEXT_LABEL, CY_TEXT_LABEL,
-						F_Message, g_pTheDB->GetMessageText(MID_MonstersKilled)));
-
-		//Moves made and monsters killed in room.
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_MOVES, X_VALUE_LABEL, Y_MOVES, CX_VALUE_LABEL, CY_TEXT_LABEL,
-						F_Message, wszEmpty));
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_KILLS, X_VALUE_LABEL, Y_KILLS, CX_VALUE_LABEL, CY_TEXT_LABEL,
-						F_Message, wszEmpty));
-		//Current game stats.
-		pFrame->AddWidget(
-				new CLabelWidget(TAG_GAMESTATS, X_TEXT_LABEL, Y_ROOMS, CX_TITLE, CY_ROOMS,
-						F_Message, wszEmpty));
-		*/
 
 		//Score buttons.
 		pButton = new CButtonWidget(TAG_SCORE_OK,
@@ -1485,6 +1548,10 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 			case VET_PARRY: soundID = SEID_SHIELDED; break;
 			case VET_STRONGHIT: soundID = SEID_HIT; break;
 			case VET_EQUIP: soundID = SEID_SWORDS; break;
+			case VET_ICEMELT: soundID = SEID_ICEMELT; break;
+			case VET_FIRETRAP: soundID = SEID_FIRETRAP_START; break;
+			case VET_PUFFEXPLOSION: soundID = SEID_PUFF_EXPLOSION; break;
+			case VET_CONSTRUCTSPLAT: soundID = SEID_CONSTRUCT_SMASH; break;
 			default: break;
 		}
 
@@ -1519,6 +1586,7 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 				new CBloodInWallEffect(this->pRoomWidget, coord, particles));
 		break;
 		case VET_GOLEMSPLAT:
+		case VET_CONSTRUCTSPLAT:
 			this->pRoomWidget->AddTLayerEffect(
 				new CGolemDebrisEffect(this->pRoomWidget, coord, particles,
 						GetEffectDuration(7), GetParticleSpeed(3)));
@@ -1580,6 +1648,18 @@ void CGameScreen::AddVisualEffect(const VisualEffectInfo* pEffect)
 		case VET_STRONGHIT:
 			this->pRoomWidget->AddMLayerEffect(
 					new CFadeTileEffect(this->pRoomWidget, coord, TI_STRONGHIT, 500));
+		break;
+		case VET_ICEMELT:
+			pRoomWidget->AddOLayerEffect(
+				new CIceMeltEffect(pRoomWidget, coord));
+		break;
+		case VET_FIRETRAP:
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, coord));
+		break;
+		case VET_PUFFEXPLOSION:
+			pRoomWidget->AddMLayerEffect(
+				new CPuffExplosionEffect(pRoomWidget, coord));
 		break;
 		default: break; //do nothing
 	}
@@ -1668,7 +1748,6 @@ void CGameScreen::ClearSpeech(const bool bForceClearAll) //[default=false]
 			} else {
 				pCommand->pExecutingNPC = pCommand->pSpeakingEntity =
 						pCurrentGame->GetCharacterWithScriptID(pCommand->scriptID);
-				ASSERT(pCommand->pExecutingNPC);
 				if (pCommand->pExecutingNPC) //robustness
 				{
 					//This speech command may be reliably retained.
@@ -1704,7 +1783,7 @@ void CGameScreen::ClearSpeech(const bool bForceClearAll) //[default=false]
 			g_pTheSound->FreeSoundDump();
 
 		//Show player when no one is speaking.
-		ShowPlayerFace(true);
+		this->pFaceWidget->SetSpeaker(false);
 	}
 
 	SetGameAmbience();
@@ -1751,6 +1830,8 @@ void CGameScreen::DrawCurrentTurn()
 	//Refresh pointers but don't reload front-end resources.
 	this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame, false);
 
+	DisplayPersistentEffects();
+
 	this->bPersistentEventsDrawn = this->bNeedToProcessDelayedQuestions = false;
 	ProcessCueEventsBeforeRoomDraw(this->sCueEvents);
 
@@ -1761,7 +1842,7 @@ void CGameScreen::DrawCurrentTurn()
 	this->pFaceWidget->Paint();
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 	this->pMapWidget->RequestPaint();
-	SynchScroll();
+	UpdateScroll();
 	PaintClock();
 
 	RedrawStats(this->pCurrentGame->pCombat, true);
@@ -1774,9 +1855,7 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 	//Get equipment properties.
 	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
 	int atk=0, def=0;
-	bool bMetal=false, bBeamBlock=false, bBriar=false, bLuckyGR=false,
-		bAttackFirst=false, bAttackLast=false, bBackstab=false, bNoEnemyDEF=false,
-		bGoblinWeakness=false, bSerpentWeakness=false, bLuckyXP=false;
+	WSTRING ability;
 
 	CCharacter *pCharacter = NULL; //custom equipment
 	switch (eCommand)
@@ -1792,17 +1871,11 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 				if (pCharacter)
 				{
 					def = (int)pCharacter->getDEF();
-					bGoblinWeakness = pCharacter->HasGoblinWeakness();
-					bSerpentWeakness = pCharacter->HasSerpentWeakness();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Weapon, wszCRLF);
 				}
+			} else if (st.sword) {
+				ability = EquipmentDescription::GetPredefinedWeaponAbility(st.sword, wszCRLF);
 			}
-			bMetal = this->pCurrentGame->IsSwordMetal(st.sword);
-			bBeamBlock = this->pCurrentGame->equipmentBlocksGaze(ScriptFlag::Weapon);
-			bBriar = (st.sword == BriarSword);
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Weapon);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Weapon);
-			bGoblinWeakness |= (st.sword == GoblinSword);
-			bSerpentWeakness |= (st.sword == SerpentSword);
 		break;
 		case CMD_USE_ARMOR:
 			if (this->pCurrentGame->IsPlayerShieldDisabled())
@@ -1812,13 +1885,13 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 			if (bIsCustomEquipment(st.shield))
 			{
 				pCharacter = this->pCurrentGame->getCustomEquipment(ScriptFlag::Armor);
-				if (pCharacter)
+				if (pCharacter) {
 					atk = (int)pCharacter->getATK();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Armor, wszCRLF);
+				}
+			} else if (st.shield) {
+				ability = EquipmentDescription::GetPredefinedShieldAbility(st.shield, wszCRLF);
 			}
-			bMetal = this->pCurrentGame->IsShieldMetal(st.shield);
-			bBeamBlock = this->pCurrentGame->equipmentBlocksGaze(ScriptFlag::Armor);
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Armor);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Armor);
 		break;
 		case CMD_USE_ACCESSORY:
 			if (this->pCurrentGame->IsPlayerAccessoryDisabled())
@@ -1831,24 +1904,12 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 				{
 					atk = (int)pCharacter->getATK();
 					def = (int)pCharacter->getDEF();
-					bMetal = pCharacter->IsMetal();
-					bBeamBlock = pCharacter->HasRayGun();
-					bGoblinWeakness = pCharacter->HasGoblinWeakness();
-					bSerpentWeakness = pCharacter->HasSerpentWeakness();
+					ability = EquipmentDescription::GetEquipmentAbility(pCharacter, ScriptFlag::Accessory, wszCRLF);
 				}
+			} else if (st.accessory) {
+				ability = EquipmentDescription::GetPredefinedAccessoryAbility(st.accessory);
 			}
-			bLuckyGR = this->pCurrentGame->IsLuckyGRItem(ScriptFlag::Accessory);
-			bLuckyXP = this->pCurrentGame->IsLuckyXPItem(ScriptFlag::Accessory);
 		break;
-	}
-	//Properties available to custom equipment.
-	if (pCharacter)
-	{
-		bBriar |= pCharacter->CanCutBriar();
-		bAttackFirst |= pCharacter->CanAttackFirst();
-		bAttackLast |= pCharacter->CanAttackLast();
-		bBackstab |= pCharacter->TurnToFacePlayerWhenFighting();
-		bNoEnemyDEF |= pCharacter->HasNoEnemyDefense();
 	}
 
 	//Format as text.
@@ -1875,82 +1936,11 @@ WSTRING CGameScreen::GetEquipmentPropertiesText(const UINT eCommand)
 		text += g_pTheDB->GetMessageText(MID_DEFStat);
 		bNeedCR = true;
 	}
-	if (bMetal)
+	if (!ability.empty())
 	{
 		if (bNeedCR)
 			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorMetal);
-		bNeedCR = true;
-	}
-	if (bGoblinWeakness)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorGoblinWeakness);
-		bNeedCR = true;
-	}
-	if (bSerpentWeakness)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSerpentWeakness);
-		bNeedCR = true;
-	}
-	if (bBeamBlock)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBeamAttack);
-		bNeedCR = true;
-	}
-	if (bBriar)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorBriarCut);
-		bNeedCR = true;
-	}
-	if (bLuckyGR)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorLuckyGR);
-		bNeedCR = true;
-	}
-	if (bLuckyXP)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_DoubleXP);
-		bNeedCR = true;
-	}
-	if (bAttackFirst)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_AttackFirst);
-		bNeedCR = true;
-	}
-	if (bAttackLast)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_AttackLast);
-		bNeedCR = true;
-	}
-	if (bBackstab)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_BehaviorSurprisedBehind);
-		bNeedCR = true;
-	}
-	if (bNoEnemyDEF)
-	{
-		if (bNeedCR)
-			text += wszCRLF;
-		text += g_pTheDB->GetMessageText(MID_NoEnemyDefense);
-		bNeedCR = true;
+		text += ability;
 	}
 
 	return text;
@@ -1962,8 +1952,11 @@ MESSAGE_ID CGameScreen::GetHintTextForRegion(int nX, int nY)
 {
 	static const int xStat = 16;
 	static const int x2Stat = xStat + 112;
+	static const int x3Stat = x2Stat + 32;
+	static const int xItemMult = 170;
+	static const int x2ItemMult = xItemMult + 90;
 
-	if (nX >= xStat && nX <= x2Stat)
+	if (nX >= xStat && nX <= x2ItemMult)
 	{
 		//Player stats.
 		static const int yStat[7] = {202, 236, 264, 291, 325, 352, 400};
@@ -1980,6 +1973,10 @@ MESSAGE_ID CGameScreen::GetHintTextForRegion(int nX, int nY)
 			return MID_REPTooltip;
 		if (IsInRect(nX, nY, xStat, yStat[5], x2Stat, yStat[6]))
 			return MID_KeysTooltip;
+		if (IsInRect(nX, nY, x2Stat, yStat[5], x3Stat, yStat[6]))
+			return MID_ShovelTooltip;
+		if (IsInRect(nX, nY, xItemMult, yStat[5], x2ItemMult, yStat[6]))
+			return MID_LevelMultiplierTooltip;
 
 		//Monster stats.
 		static const int y2Stat[4] = {450, 482, 512, 542};
@@ -2066,8 +2063,10 @@ void CGameScreen::LogHoldVars()
 		str += UnicodeToUTF8(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
-		if (bInteger)
-		{
+
+		if (this->pCurrentGame->pHold->IsArrayVar(wVarID)) {
+			str += UnicodeToUTF8(this->pCurrentGame->GetArrayVarAsString(wVarID));
+		} else if (bInteger) {
 			const int nVal = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), (int)0);
 			str += _itoa(nVal, temp, 10);
 		} else {
@@ -2207,8 +2206,7 @@ void CGameScreen::OnBetweenEvents()
 		if ((this->pCurrentGame->dwCutScene != 0) != this->bShowingCutScene)
 		{
 			this->bShowingCutScene = (this->pCurrentGame->dwCutScene != 0);
-			SetSignTextToCurrentRoom();
-			PaintSign();
+			UpdateSign();
 		}
 
 		//Combat must be resolved before any questions can be answered.
@@ -2249,6 +2247,13 @@ void CGameScreen::OnBetweenEvents()
 		} else {
 			//No combat and no questions.
 			this->wThisCombatTickSpeed = this->wCombatTickSpeed; //default preference
+
+			if (!this->pCurrentGame->localScoreMessage.empty()) {
+				this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
+					this->pRoomWidget, this->pCurrentGame->localScoreMessage.c_str(),
+					-300, 3000));	//show at top of room for 3s
+				this->pCurrentGame->localScoreMessage.clear();
+			}
 
 			if (!this->pCurrentGame->dwCutScene)
 			{
@@ -2299,74 +2304,11 @@ void CGameScreen::OnBetweenEvents()
 		{
 			int nX, nY;
 			const Uint8 buttons = GetMouseState(&nX, &nY);
-			if (buttons == SDL_BUTTON_LMASK && !this->bDisableMouseMovement && !this->bNoMoveByCurrentMouseClick)
+			if (buttons == SDL_BUTTON_LMASK && !this->bDisableMouseMovement && !this->bNoMoveByCurrentMouseClick) {
 				MovePlayerToward(nX, nY);
-			else if (!buttons)
-			{
-				//Tool tips when hovering over stat labels on sidebar.
+			} else if (!buttons) { //no movement being input
 				if (IsCursorVisible())
-				{
-					MESSAGE_ID mid = this->bIsScrollVisible ? 0 : GetHintTextForRegion(nX, nY);
-
-					//Tool tip for minimap, if allowed.
-					if (!mid && this->pMapWidget->ContainsCoords(nX, nY) && this->pCurrentGame)
-					{
-						UINT roomX, roomY;
-						this->pMapWidget->GetRoomAtCoords(nX, nY, roomX, roomY);
-						const UINT roomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
-						if (roomID)
-						{
-							CDbRoom *pRoom = NULL;
-							bool bCurrentRoom = false;
-							if (this->pCurrentGame->pRoom->dwRoomID == roomID)
-							{
-								pRoom = this->pCurrentGame->pRoom;
-								bCurrentRoom = true;
-							}
-							if (!pRoom)
-							{
-								ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-								if (pExpRoom && !pExpRoom->bMapOnly)
-								{
-									//Determine room state.
-									//!!This might be a time-intensive operation, and could be optimized.
-									pRoom = g_pTheDB->Rooms.GetByID(roomID);
-									pRoom->SetMembersFromExploredRoomData(pExpRoom);
-								}
-							}
-
-							if (pRoom)
-							{
-								//Minimap room color-coding information.
-								if (pRoom->HasGrabbableItems())
-									mid = MID_RoomHasTreasure;
-								else if (pRoom->HasCombatableMonsters())
-									mid = MID_RoomHasEnemies;
-								else if (pRoom->HasClosedDoors())
-									mid = MID_RoomHasClosedDoors;
-
-								if (!bCurrentRoom)
-									delete pRoom;
-							}
-						}
-					}
-
-					if (mid)
-						RequestToolTip(mid);
-					else
-					{
-						//Tool tip describing the equipment item hovered over.
-						WSTRING text;
-						if (IsInRect(nX, nY, X_PIC[4], Y_PIC[4], rightEndOfEquipmentSlot, Y_PIC[4] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_WEAPON);
-						else if (IsInRect(nX, nY, X_PIC[5], Y_PIC[5], rightEndOfEquipmentSlot, Y_PIC[5] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_ARMOR);
-						else if (IsInRect(nX, nY, X_PIC[6], Y_PIC[6], rightEndOfEquipmentSlot, Y_PIC[6] + g_pTheDBM->CY_TILE))
-							text = GetEquipmentPropertiesText(CMD_USE_ACCESSORY);
-						if (!text.empty())
-							CScreen::RequestToolTip(text.c_str());
-					}
-				}
+					ShowStatTooltip(nX, nY);
 			}
 
 			//Whenever a destination tile has been specified,
@@ -2381,13 +2323,82 @@ void CGameScreen::OnBetweenEvents()
 			if (SDL_GetTicks() >= this->pRoomWidget->playThunder.front())
 			{
 				this->pRoomWidget->playThunder.pop();
-				g_pTheSound->PlaySoundEffect(SEID_THUNDER, NULL, NULL, false, 1.0f + fRAND_MID(0.2f));
+				g_pTheSound->PlaySoundEffect(SEID_THUNDER, 1.0f + fRAND_MID(0.2f));
 			}
 		}
 	}
 
 	CRoomScreen::OnBetweenEvents();
 	ProcessSpeech();
+}
+
+//*****************************************************************************
+// Tool tips when hovering mouse over stat labels on sidebar.
+void CGameScreen::ShowStatTooltip(int nX, int nY)
+{
+	if (this->wRoomQuickExitDirection != NO_ORIENTATION)
+		return; //avoid tooltip flicker
+
+	MESSAGE_ID mid = this->bIsScrollVisible ? 0 : GetHintTextForRegion(nX, nY);
+
+	//Tool tip for minimap, if allowed.
+	if (!mid && this->pMapWidget->ContainsCoords(nX, nY) && this->pCurrentGame)
+	{
+		UINT roomX, roomY;
+		this->pMapWidget->GetRoomAtCoords(nX, nY, roomX, roomY);
+		const UINT roomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
+		if (roomID)
+		{
+			CDbRoom *pRoom = NULL;
+			bool bCurrentRoom = false;
+			if (this->pCurrentGame->pRoom->dwRoomID == roomID)
+			{
+				pRoom = this->pCurrentGame->pRoom;
+				bCurrentRoom = true;
+			}
+			if (!pRoom)
+			{
+				ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
+				if (pExpRoom && pExpRoom->HasDetail())
+				{
+					//Determine room state.
+					//!!This might be a time-intensive operation, and could be optimized.
+					pRoom = g_pTheDB->Rooms.GetByID(roomID);
+					pRoom->SetMembersFromExploredRoomData(pExpRoom);
+				}
+			}
+
+			if (pRoom)
+			{
+				//Minimap room color-coding information.
+				if (pRoom->HasGrabbableItems())
+					mid = MID_RoomHasTreasure;
+				else if (pRoom->HasCombatableMonsters())
+					mid = MID_RoomHasEnemies;
+				else if (pRoom->HasClosedDoors())
+					mid = MID_RoomHasClosedDoors;
+
+				if (!bCurrentRoom)
+					delete pRoom;
+			}
+		}
+	}
+
+	if (mid) {
+		RequestToolTip(mid);
+	} else {
+		//Tool tip describing the equipment item hovered over.
+		WSTRING text;
+		if (IsInRect(nX, nY, X_PIC[4], Y_PIC[4], rightEndOfEquipmentSlot, Y_PIC[4] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_WEAPON);
+		} else if (IsInRect(nX, nY, X_PIC[5], Y_PIC[5], rightEndOfEquipmentSlot, Y_PIC[5] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_ARMOR);
+		} else if (IsInRect(nX, nY, X_PIC[6], Y_PIC[6], rightEndOfEquipmentSlot, Y_PIC[6] + g_pTheDBM->CY_TILE)) {
+			text = GetEquipmentPropertiesText(CMD_USE_ACCESSORY);
+		}
+		if (!text.empty())
+			CScreen::RequestToolTip(text.c_str());
+	}
 }
 
 //*****************************************************************************
@@ -2440,9 +2451,13 @@ void CGameScreen::OnClick(
 					if (!this->pCurrentGame->InCombat() && !this->bNeedToProcessDelayedQuestions)
 					{
 						ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-						if (pExpRoom && !pExpRoom->bMapOnly)
+						if ((pExpRoom && pExpRoom->HasDetail()) ||
+							CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(roomID), MapState::NoDetail))
+						{
 							ShowRoomTemporarily(roomID);
-						else ToggleBigMap();
+						} else {
+							ToggleBigMap();
+						}
 					}
 				}
 			}
@@ -2483,9 +2498,14 @@ void CGameScreen::OnClick(
 					ToggleBigMap();
 				} else {
 					ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(roomID);
-					if (pExpRoom && !pExpRoom->bMapOnly)
+					if ((pExpRoom && pExpRoom->HasDetail()) ||
+						CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(roomID), MapState::NoDetail))
+					{
 						ShowRoomTemporarily(roomID);
-					else ToggleBigMap(); //no room to show -- close map
+					}
+					else {
+						ToggleBigMap(); //no room to show -- close map
+					}
 				}
 			}
 			break;
@@ -2556,6 +2576,22 @@ void CGameScreen::OnClick(
 		case TAG_ACCESSORY:
 			ClickOnEquipment(CMD_USE_ACCESSORY, RightMouseButton());
 		return;
+
+		case TAG_SIGN_AREA:
+			//When custom room location text is displayed,
+			//clicking on it will display a tooltip with the standard room location text.
+			if (this->pCurrentGame && !this->pCurrentGame->customRoomLocationText.empty())
+			{
+				ASSERT(this->pCurrentGame->pRoom);
+
+				WSTRING wstrSignText = (const WCHAR*)this->pCurrentGame->pLevel->NameText;
+				wstrSignText += wszColon;
+				wstrSignText += wszSpace;
+				this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
+
+				ShowToolTip(wstrSignText.c_str());
+			}
+			break;
 
 		default: break;
 	}
@@ -2644,8 +2680,172 @@ void CGameScreen::OnKeyDown(
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Check for a game command.
-	int nCommand = GetCommandForKeysym(Key.keysym.sym);
-	if (nCommand != CMD_UNSPECIFIED)
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+	switch (nCommand)
+	{
+		case CMD_BATTLE_KEY:
+			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
+		break;
+
+		case CMD_SCORE_KEY:
+			ASSERT(this->pCurrentGame);
+			ASSERT(this->pCurrentGame->pPlayer);
+			ShowScoreDialog(g_pTheDB->GetMessageText(MID_Score), this->pCurrentGame->pPlayer->st);
+		break;
+
+		case CMD_EXTRA_SAVE_GAME:
+			SaveGame();
+		break;
+		case CMD_EXTRA_LOAD_GAME:
+			LoadGame();
+		break;
+		case CMD_EXTRA_QUICK_SAVE:
+			if (!this->bPlayTesting)
+			{
+				this->pCurrentGame->QuickSave();
+				CTextEffect* pTextEffect = new CTextEffect(this->pRoomWidget,
+					g_pTheDB->GetMessageText(MID_QuickSaveCompleted), F_Stats, 500, 1000, false, true);
+				pTextEffect->Move(5, 5);
+				this->pRoomWidget->AddLastLayerEffect(pTextEffect);
+			}
+		break;
+		case CMD_EXTRA_QUICK_LOAD:
+			if (!this->bPlayTesting)
+			{
+				const UINT quicksaveID = g_pTheDB->SavedGames.FindByContinue(ST_Quicksave);
+				if (!quicksaveID)
+				{
+					ShowOkMessage(MID_QuickSave_NoneAvailable);
+					break;
+				}
+				if (ShowYesNoMessage(MID_QuickLoadQuestion) == TAG_YES)
+				{
+					SetCursor(CUR_Wait);
+					if (LoadQuicksave())
+					{
+						this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+						this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame);
+						this->pMapWidget->RequestPaint();
+						Paint();
+					}
+					SetCursor();
+					HideCursor();
+				}
+			}
+		break;
+
+		case CMD_EXTRA_SHOW_MAP:
+			ToggleBigMap();
+		break;
+
+		//Skip cutscene/clear playing speech.
+		case CMD_EXTRA_SKIP_SPEECH:
+			if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
+				//Speed up combat x2.
+				this->wThisCombatTickSpeed /= 2;
+				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
+				{
+					this->wThisCombatTickSpeed = 0;
+					this->pCurrentGame->bQuickCombat = true;
+				}
+			} else if (this->pCurrentGame && this->pCurrentGame->dwCutScene) {
+				if (this->pCurrentGame->dwCutScene == 1)
+				{
+					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
+					ClearSpeech(true);
+				}
+				else {
+					this->pCurrentGame->dwCutScene = 1; //run cutscene quickly to its conclusion
+				}
+			} else {
+				//Clear all speech and subtitles of any sort
+				ClearSpeech(true);
+				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
+			}
+		break;
+
+		//Show chat dialog.
+		case CMD_EXTRA_OPEN_CHAT:
+			ShowCursor();
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			this->pCurrentGame->UpdateTime(SDL_GetTicks());  //make time current
+			//DisplayRoomStats();
+			DisplayChatDialog();
+		break;
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pSpeechBox);
+		break;
+
+		//Room screenshot.
+		case CMD_EXTRA_SAVE_ROOM_IMAGE:
+		{
+			SDL_Surface* pRoomSurface = SDL_CreateRGBSurface(
+				SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
+				g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
+			if (!pRoomSurface) break;
+			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
+				this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
+			SaveSurface(pRoomSurface);
+			SDL_FreeSurface(pRoomSurface);
+		}
+		break;
+
+		case CMD_EXTRA_SHOW_HELP:
+			GotoHelpPage();
+		break;
+
+		case CMD_EXTRA_SETTINGS:
+			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
+				GoToScreen(SCR_Settings);
+			}
+			else {
+				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			}
+		break;
+
+		case CMD_EXTRA_TOGGLE_TURN_COUNT:
+			this->pRoomWidget->ToggleMoveCount();
+		break;
+		case CMD_EXTRA_TOGGLE_HOLD_VARS:
+#ifdef ENABLE_CHEATS
+			this->pRoomWidget->ToggleVarDisplay();
+#else
+			if (CanShowVarUpdates()) {
+				this->pRoomWidget->ToggleVarDisplay();
+			}
+#endif
+		break;
+		case CMD_EXTRA_TOGGLE_FRAME_RATE:
+			this->pRoomWidget->ToggleFrameRate();
+		break;
+
+		//Global var editor.
+		case CMD_EXTRA_EDIT_VARS:
+			if (!this->bShowingBigMap && !this->bShowingTempRoom && GetScreenType() == SCR_Game)
+			{
+				if (!this->pCurrentGame->InCombat() && !this->pCurrentGame->dwCutScene && //don't allow altering vars during self-advancing play segments
+					this->pCurrentGame->GetUnansweredQuestion() == NULL) //or when constrained to a specific type of response
+				{
+#ifndef ENABLE_CHEATS
+					if (this->bPlayTesting)
+#endif
+						EditGlobalVars(this->pSpeechBox, NULL, this->pCurrentGame);
+				}
+			}
+		break;
+		case CMD_EXTRA_LOG_VARS:
+			LogHoldVars();
+		break;
+
+		//Force full style reload.
+		case CMD_EXTRA_RELOAD_STYLE:
+			this->pRoomWidget->UpdateFromCurrentGame(true);
+		break;
+	}
+
+	if (!bIsVirtualCommand(nCommand) && nCommand != CMD_UNSPECIFIED)
 	{
 		//Hide mouse cursor while playing.
 		HideCursor();
@@ -2670,15 +2870,6 @@ void CGameScreen::OnKeyDown(
 			//Only allow inputting player movement commands when no cutscene is playing.
 			if (!this->pCurrentGame->dwCutScene || nCommand >= CMD_WAIT)
 			{
-				//Ctrl and Shift key modifiers use weapon and armor instead of accessory.
-				if (nCommand == CMD_USE_ACCESSORY)
-				{
-					if (bShift)
-						nCommand = CMD_USE_WEAPON;
-					else if (bCtrl)
-						nCommand = CMD_USE_ARMOR;
-				}
-
 				if (!ProcessCommandWrapper(nCommand))
 					return;
 
@@ -2691,39 +2882,12 @@ void CGameScreen::OnKeyDown(
 		}
 	}
 
+	if (nCommand) // We handled one of the mapped commands, do nothing else here
+		return;
+
 	//Check for other keys.
 	switch (Key.keysym.sym)
 	{
-		//Help screen.
-		case SDLK_F1:
-			GotoHelpPage();
-		break;
-
-		//Save game.
-		case SDLK_F2:
-			SaveGame();
-		break;
-
-		//Load game.
-		case SDLK_F3:
-			LoadGame();
-		break;
-
-		//Global var editor.
-		case SDLK_F4:
-			if (!this->bShowingBigMap && !this->bShowingTempRoom && GetScreenType() == SCR_Game)
-			{
-				if (!this->pCurrentGame->InCombat() && !this->pCurrentGame->dwCutScene && //don't allow altering vars during self-advancing play segments
-						this->pCurrentGame->GetUnansweredQuestion() == NULL) //or when constrained to a specific type of response
-				{
-#ifndef ENABLE_CHEATS
-					if (this->bPlayTesting)
-#endif
-						EditGlobalVars(this->pSpeechBox, NULL, this->pCurrentGame);
-				}
-			}
-		break;
-
 /*
 		case SDLK_F4:
 #if defined(__linux__) || defined(__FreeBSD__)
@@ -2749,50 +2913,6 @@ void CGameScreen::OnKeyDown(
 		break;
 */
 
-		case SDLK_F6:
-			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
-				GoToScreen(SCR_Settings);
-			} else {
-				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-			}
-		return;
-
-		//Quick save/load.
-		case SDLK_F5:
-			if (!this->bPlayTesting)
-			{
-				this->pCurrentGame->QuickSave();
-				CTextEffect *pTextEffect = new CTextEffect(this->pRoomWidget,
-						g_pTheDB->GetMessageText(MID_QuickSaveCompleted), F_Stats, 500, 1000, false, true);
-				pTextEffect->Move(5, 5);
-				this->pRoomWidget->AddLastLayerEffect(pTextEffect);
-			}
-		break;
-		case SDLK_F9:
-			if (!this->bPlayTesting)
-			{
-				const UINT quicksaveID = g_pTheDB->SavedGames.FindByContinue(ST_Quicksave);
-				if (!quicksaveID)
-				{
-					ShowOkMessage(MID_QuickSave_NoneAvailable);
-					break;
-				}
-				if (ShowYesNoMessage(MID_QuickLoadQuestion) == TAG_YES)
-				{
-					SetCursor(CUR_Wait);
-					if (LoadQuicksave())
-					{
-						this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-						this->pRoomWidget->LoadFromCurrentGame(this->pCurrentGame);
-						this->pMapWidget->RequestPaint();
-						Paint();
-					}
-					SetCursor();
-					HideCursor();
-				}
-			}
-		break;
-
 /*
 		case SDLK_F5:
 			if (this->bPlayTesting) break;
@@ -2800,8 +2920,7 @@ void CGameScreen::OnKeyDown(
 			{
 				//End recording and save demo.
 				const UINT dwTagNo = this->pCurrentGame->EndDemoRecording();
-				SetSignTextToCurrentRoom();
-				PaintSign();
+				UpdateSign();
 
 				if (!dwTagNo)
 					ShowOkMessage(MID_DemoNotSaved);
@@ -2819,8 +2938,7 @@ void CGameScreen::OnKeyDown(
 							wszEmpty : wstrDescription.c_str() );
 
 					//Repaint sign to show new recording status.
-					SetSignTextToCurrentRoom();
-					PaintSign();
+					UpdateSign();
 				}
 			}
 		break;
@@ -2847,37 +2965,6 @@ void CGameScreen::OnKeyDown(
 		break;
 */
 
-		//Room screenshot.
-		case SDLK_F11:
-		if (Key.keysym.mod & KMOD_CTRL)
-		{
-			SDL_Surface *pRoomSurface = SDL_CreateRGBSurface(
-					SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
-					g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
-			if (!pRoomSurface) break;
-			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
-					this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
-			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
-			SaveSurface(pRoomSurface);
-			SDL_FreeSurface(pRoomSurface);
-		}
-		break;
-
-		//Show chat dialog.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				ShowCursor();
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				this->pCurrentGame->UpdateTime(SDL_GetTicks());  //make time current
-//				DisplayRoomStats();
-				DisplayChatDialog();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pSpeechBox);
-			}
-		break;
 /*
 		//Toggle room lock.
 		case SDLK_LSHIFT: case SDLK_RSHIFT:
@@ -2888,75 +2975,41 @@ void CGameScreen::OnKeyDown(
 		break;
 */
 
-		//Skip cutscene/clear playing speech.
-		case SDLK_SPACE:
-			if (this->pCurrentGame && this->pCurrentGame->dwCutScene)
-			{
-				if (this->pCurrentGame->dwCutScene == 1)
-				{
-					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
-					ClearSpeech(true);
-				} else {
-					this->pCurrentGame->dwCutScene = 1; //run cutscene quickly to its conclusion
-				}
-			} else if (this->pCurrentGame && this->pCurrentGame->InCombat()) {
-				//Speed up combat x2.
-				this->wThisCombatTickSpeed /= 2;
-				if (this->wThisCombatTickSpeed < 8) //speed up to instantaneous resolution
-				{
-					this->wThisCombatTickSpeed = 0;
-					this->pCurrentGame->bQuickCombat = true;
-				}
-			} else {
-				//Clear all speech and subtitles of any sort
-				ClearSpeech(true);
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
-			}
-		break;
-
-		//Force full style reload.
-		case SDLK_F8:
-			this->pRoomWidget->UpdateFromCurrentGame(true);
-		break;
-		//Persistent move count display / Frame rate / Game var output.
-		case SDLK_F7:
-			if (Key.keysym.mod & KMOD_SHIFT) {
-				LogHoldVars();
-			} else if (Key.keysym.mod & KMOD_CTRL) {
-#ifndef ENABLE_CHEATS
-				if (CanShowVarUpdates())
-#endif
-					this->pRoomWidget->ToggleVarDisplay();
-			} else if (Key.keysym.mod & KMOD_ALT) {
-				this->pRoomWidget->ToggleFrameRate();
-			} else {
-				this->pRoomWidget->ToggleMoveCount();
-			}
-		break;
-
 		case SDLK_UP: //Up arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(N);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_N);
+			}
 		return;
 		case SDLK_DOWN:   //Down arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(S);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_S);
+			}
 		return;
 		case SDLK_LEFT: //Left arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(W);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_W);
+			}
 		return;
 		case SDLK_RIGHT: //Right arrow.
-			if (Key.keysym.mod & KMOD_CTRL)
+			if (Key.keysym.mod & KMOD_CTRL) {
+				HideCursor();
 				SearchForPathToNextRoom(E);
-			else if (GetCommandForKeysym(Key.keysym.sym) == CMD_UNSPECIFIED)
+			} else if (GetCommandForInputKey(BuildInputKey(Key)) == CMD_UNSPECIFIED) {
+				HideCursor();
 				ProcessCommandWrapper(CMD_E);
+			}
 		return;
 
 		default: break;
@@ -2982,6 +3035,11 @@ void CGameScreen::OnMouseDown(
 		case TAG_UNDO:
 		case TAG_LOAD:	case TAG_SAVE:
 		case TAG_ROT_CW: case TAG_ROT_CCW:
+		break;
+
+		case TAG_SIGN_AREA:
+			if (this->pCurrentGame && !this->pCurrentGame->customRoomLocationText.empty())
+				this->bNoMoveByCurrentMouseClick = true;
 		break;
 
 		default:
@@ -3114,13 +3172,16 @@ void CGameScreen::PlayHitObstacleSound(const UINT wAppearance, CCueEvents& CueEv
 		case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 		case M_CITIZEN1: case M_CITIZEN2:
 		case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-		case M_CITIZEN: eSoundID = SEID_CIT_OOF; break;
+		case M_CITIZEN: case M_ARCHIVIST: case M_PATRON:
+			eSoundID = SEID_CIT_OOF; break;
 		case M_STALWART: eSoundID = SEID_STALWART_OOF; break;
 		case M_WUBBA: eSoundID = SEID_WUBBA; break;
 		case M_NEGOTIATOR: case M_INSTRUCTOR:
 		case M_CITIZEN3: case M_CITIZEN4:
 			eSoundID = SEID_WOM_OOF; break;
 		case M_SLAYER: eSoundID = SEID_SLAYER_OOF; break;
+		case M_CONSTRUCT: eSoundID = SEID_CONSTRUCT_OOF; break;
+		case M_ARCHITECT: eSoundID = SEID_ENGINEER_OOF; break;
 		default: eSoundID = SEID_MON_OOF; break;
 	}
 	if (eSoundID != (UINT)SEID_NONE &&
@@ -3134,10 +3195,11 @@ void CGameScreen::PlaySoundEffect(
 //Wrapper function to set the frequency multiplier for sound effects
 //based on game context.
 	const UINT eSEID, float* pos, float* vel, //default=[NULL,NULL]
-	const bool bUseVoiceVolume)
+	const bool bUseVoiceVolume, //[default=false]
+	float frequencyMultiplier,  //[default=1.0]
+	float volumeMultiplier)     //[default=1.0]
 {
 	//Special contexts where sounds are played back differently for effect.
-	float frequencyMultiplier = 1.0f;
 	if (this->pCurrentGame)
 	{
 		ASSERT(this->pCurrentGame->pRoom);
@@ -3146,6 +3208,7 @@ void CGameScreen::PlaySoundEffect(
 		if (player.IsHasted())// || player.bFrozen)
 			frequencyMultiplier = 0.8f;
 
+		/*
 		switch (eSEID)
 		{
 			case SEID_STABTAR:
@@ -3154,9 +3217,10 @@ void CGameScreen::PlaySoundEffect(
 			break;
 			default: break;
 		}
+		*/
 	}
 
-	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier);
+	g_pTheSound->PlaySoundEffect(eSEID, pos, vel, bUseVoiceVolume, frequencyMultiplier, volumeMultiplier);
 }
 
 //*****************************************************************************
@@ -3218,7 +3282,7 @@ bool CGameScreen::SetForActivate()
 		this->pRoomWidget->ShowVarUpdates(false);
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 	SetSignTextToCurrentRoom();
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	SynchScroll();
 	PaintClock(true);
 
@@ -3233,6 +3297,7 @@ bool CGameScreen::SetForActivate()
 	ClearSpeech();
 	SetGameAmbience(true);
 	AmbientSoundSetup();
+	DisplayPersistentEffects();
 
 	SelectFirstWidget(false);
 
@@ -3271,6 +3336,8 @@ bool CGameScreen::SetForActivate()
 
 	this->signColor = Black;
 
+	this->mapIconChanges.reset();
+
 	//When coming from another screen, cue events might have been generated that
 	//need to be displayed when returning to this screen.
 	//Examples of this are the "exit level!" or "secret room!" cues that should
@@ -3296,6 +3363,9 @@ bool CGameScreen::SetForActivate()
 	//Eat existing events since early key presses could cause unexpected player movement.
 	ClearEvents();
 
+	//Prevent any effects from animating during a transition
+	this->pRoomWidget->SetEffectsFrozen(true);
+
 	//Set button widget states.
 	CWidget *pButton = GetWidget(TAG_SAVE);
 	pButton->Enable(!this->bPlayTesting);
@@ -3312,21 +3382,26 @@ bool CGameScreen::SetForActivate()
 void CGameScreen::SetSignTextToCurrentRoom()
 //Set sign text to description of current room and repaint it.
 {
-	static const WCHAR wszSignSep[] = { We(':'),We(' '),We(0) };
-	WSTRING wstrSignText;
+	ASSERT(this->pCurrentGame);
 
-	wstrSignText += (const WCHAR *)this->pCurrentGame->pLevel->NameText;
+	WSTRING wstrSignText = this->pCurrentGame->customRoomLocationText;
+	if (wstrSignText.empty()) {
+		wstrSignText = (const WCHAR*)this->pCurrentGame->pLevel->NameText;
+	}
 	if (this->bShowingCutScene)
 	{
 		wstrSignText += wszSpace;
 		wstrSignText += (const WCHAR *) CDbMessageText(MID_PlayingCutScene);
 		this->signColor = Red;
 	} else {
-		ASSERT(this->pCurrentGame);
-		ASSERT(this->pCurrentGame->pRoom);
-		wstrSignText += wszSignSep;
-		this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
 		this->signColor = Black;
+
+		if (this->pCurrentGame->customRoomLocationText.empty()) {
+			ASSERT(this->pCurrentGame->pRoom);
+			wstrSignText += wszColon;
+			wstrSignText += wszSpace;
+			this->pCurrentGame->pRoom->GetLevelPositionDescription(wstrSignText);
+		}
 	}
 
 /*
@@ -3397,43 +3472,47 @@ void CGameScreen::ShowMonsterStats(CDbRoom *pRoom, CRoomWidget *pRoomWidget)
 
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
 	std::multimap<UINT, CCoord> damageFromMonsters;
-	vector<MonsterStats> monsterNPCStats;
+	vector<MonsterStats> monsterStats;
 
 	CDialogWidget *pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
 	CTilesWidget *pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
 	pTilesWidget->ClearTiles();
 
 	//Sort monsters by damage to player, w/ "can't be hurt" ones indicated by UINT(-1) value
-	CIDSet encounteredMonsterTypes;
 	CMonster *pMonster = pRoom->pFirstMonster;
 	while (pMonster)
 	{
-		bool bDistinctType = pMonster->wType == M_CHARACTER || !encounteredMonsterTypes.has(pMonster->wType);
-		if (bDistinctType && pMonster->IsCombatable())
+		bool bDistinctType = true;
+		if (pMonster->IsCombatable())
 		{
-			if (pMonster->wType == M_CHARACTER)
-			{
-				//Track NPCs type, stats and color -- if they all match a previous NPC, ignore this one.
-				MonsterStats npcStats(pMonster->GetIdentity(), pMonster->getATK(), pMonster->getDEF(),
-						pMonster->getHP(), pMonster->getGOLD(), pMonster->getColor());
-				UINT i;
-				for (i=0; i<monsterNPCStats.size(); ++i)
-					if (monsterNPCStats[i] == npcStats)
-						break;
-				if (i<monsterNPCStats.size())
-					bDistinctType = false;
-				else {
-					//Remember this NPC's values.
-					monsterNPCStats.push_back(npcStats);
+			//Track monster type, stats and color -- if they all match a previous monster, ignore this one.
+			MonsterStats stats(pMonster->GetIdentity(), pMonster->getATK(), pMonster->getDEF(),
+					pMonster->getHP(), pMonster->getGOLD(), pMonster->getColor());
+
+			if (pMonster->wType == M_CHARACTER) {
+				CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+				if (pCharacter) {
+					stats.name = pCharacter->GetCustomName();
 				}
 			}
+
+			UINT i;
+			for (i=0; i<monsterStats.size(); ++i)
+				if (monsterStats[i] == stats)
+					break;
+			if (i<monsterStats.size())
+				bDistinctType = false;
+			else {
+				//Remember this monster's values.
+				monsterStats.push_back(stats);
+			}
+
 			if (bDistinctType)
 			{
 				CCombat combat(pRoom->GetCurrentGame(), pMonster, player.HasSword(),
 						player.wX, player.wY, pMonster->wX, pMonster->wY);
 				const int damage = combat.GetExpectedDamage();
 				damageFromMonsters.insert(std::make_pair(static_cast<UINT>(damage), CCoord(pMonster->wX, pMonster->wY)));
-				encounteredMonsterTypes += pMonster->wType;
 			}
 		}
 		pMonster = pMonster->pNext;
@@ -3489,25 +3568,95 @@ bool CGameScreen::AddMonsterStats(
 	CDbRoom* pRoom, //current room
 	CRoomWidget* pRoomWidget, //the display widget for the room
 	CMonster* pMonster, //monster to display information for
-	WSTRING& text) //string to append to. may be non-empty.
+	WSTRING& text) //(in/out) string to append to. may be non-empty.
 //
 //Returns: If the text was appended
 {
+	CCurrentGame* pGame = pRoom->GetCurrentGame();
 	CDialogWidget* pStatsDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_BATTLEDIALOG));
+	CWidget* pFrame = pStatsDialog->GetWidget(TAG_BATTLEFRAME);
 	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETILES));
 	CLabelWidget* pText = DYN_CAST(CLabelWidget*, CWidget*, pStatsDialog->GetWidget(TAG_BATTLETEXT));
 
-	WSTRING newText = pRoomWidget->GetMonsterInfo(pMonster->wX, pMonster->wY, true);
-	UINT wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+	CMonster* pStatMonster = pRoomWidget->GetMonsterForStatDisplay(pMonster->wX, pMonster->wY);
+ 	ASSERT(pStatMonster);
+	WSTRING wstr;
+	if (!text.empty()) {
+		wstr += wszCRLF; // separate entries with a blank line
+	}
+	wstr += pRoomWidget->GetMonsterNameAndAbility(pStatMonster);
 
-	if (!text.empty()) //determine text height
+	CSwordsman& player = *pGame->pPlayer;
+	const int gold = pStatMonster->getGOLD() * player.getGoldMultiplier();
+	const int xp = pStatMonster->getXP() * player.getXPMultiplier();
+	bool bStrongHitIgnored;
+
+	//Calculate where to put stat icons and text values
+	const UINT eFontType = pText->GetFontType();
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(eFontType);
+	UINT yEnemyIcon = 0, wTextWidth = 0, wCurrentTextHeight = 0, wNewTextHeight = 0;
+	if (!text.empty()) {
+		//determine height of input text
 		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
 			text.c_str(), pText->GetW(), wTextWidth, wCurrentTextHeight);
+		yEnemyIcon = wCurrentTextHeight + wLineHeight;
+	}
 
-	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-		newText.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
+	vector<pair<int, int> > xyIcon; //where to place stat icons
+	if (pStatMonster->IsCombatable()) {
+		//calc placement of text line w/ stats
+		g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+			wstr.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
+		const int yIcons = int(wCurrentTextHeight + wNewTextHeight);
+
+		wstr += wszCRLF;
+
+		vector<int> stat;
+		stat.push_back(pStatMonster->getHP());
+		stat.push_back(CCombat::getMonsterATK(pStatMonster, pGame, bStrongHitIgnored));
+		stat.push_back(pStatMonster->getDEF());
+		stat.push_back(gold);
+		stat.push_back(xp);
+
+		const UINT wSpaceWidth = g_pTheFM->GetSpaceWidth(eFontType);
+		const UINT wIconSpaces = 1 + CDrodBitmapManager::CX_TILE / wSpaceWidth;
+		UINT lineW = 0, wWidth; //aggregate text line width
+		WSTRING wStat;
+		WCHAR temp[12];
+
+		for (UINT i = 0; i < stat.size(); ++i) {
+			if (i == 3 && !gold) {
+				xyIcon.push_back(make_pair(-1,-1)); //skip this icon
+				continue;
+			}
+			if (i == 4 && !xp) {
+				xyIcon.push_back(make_pair(-1,-1));
+				continue;
+			}
+
+			wstr.append(wIconSpaces, We(' ')); //render next text value past icon
+			lineW += wIconSpaces * wSpaceWidth;
+
+			xyIcon.push_back(make_pair(int(lineW - CDrodBitmapManager::CX_TILE), yIcons));
+
+			wStat = _itoW(stat[i], temp, 10);
+			wstr += wStat;
+
+			//start next icon past text and some trailing spaces
+			g_pTheFM->GetWordWidth(eFontType, wStat.c_str(), wWidth);
+			lineW += wWidth;
+			static const int SPACES = 2;
+			wstr.append(SPACES, We(' '));
+			lineW += SPACES * wSpaceWidth;
+		}
+
+		wstr += wszCRLF;
+		wstr += pRoomWidget->GetCombatAnalysis(pStatMonster, pMonster->wX, pMonster->wY, true);
+	}
 
 	//If the resulting text will make the dialog to large, don't add it
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
+		wstr.c_str(), pText->GetW(), wTextWidth, wNewTextHeight);
 	if (wCurrentTextHeight + wNewTextHeight > CDrodBitmapManager::CY_ROOM - 60) {
 		return false;
 	}
@@ -3516,6 +3665,7 @@ bool CGameScreen::AddMonsterStats(
 	//Draw monster tiles at current text height.
 	float r, g, b;
 	pRoomWidget->TranslateMonsterColor(pMonster->getColor(), r, g, b);
+	const std::array<float, 3> hsv = pMonster->getHSV();
 	UINT tileNo = TI_UNSPECIFIED;
 	for (UINT i = 2 * 2; i--; )
 	{
@@ -3528,13 +3678,25 @@ bool CGameScreen::AddMonsterStats(
 			const int xPixel = x * CDrodBitmapManager::CX_TILE +
 				(bCentered ? CDrodBitmapManager::CX_TILE / 2 : 0);
 			pTilesWidget->AddTile(tileNo, xPixel,
-				wCurrentTextHeight + y * CDrodBitmapManager::CY_TILE, r, g, b);
+				yEnemyIcon + y * CDrodBitmapManager::CY_TILE, hsv, r, g, b);
+		}
+	}
+
+	if (pStatMonster->IsCombatable()) {
+		//Add stat icons in the calculated positions
+		static UINT tile[5] = { TI_STAT_ICON_HP, TI_STAT_ICON_ATK, TI_STAT_ICON_DEF, TI_STAT_ICON_GR, TI_STAT_ICON_REP };
+		const UINT xPos = pText->GetX() - pFrame->GetX(); //relative pos in parent widget
+		for (UINT i = 0; i < xyIcon.size(); ++i) {
+			const pair<int, int> xy = xyIcon[i];
+			if (xy.first >= 0) {
+				pTilesWidget->AddTile(tile[i], xPos + xy.first, xy.second);
+			}
 		}
 	}
 
 	if (!text.empty())
 		text += wszCRLF;
-	text += newText;
+	text += wstr;
 
 	return true;
 }
@@ -3603,7 +3765,7 @@ void CGameScreen::MovePlayerInDirection(const int dx, const int dy)
 						eSoundID = SEID_SPLAT; break;
 					case M_CITIZEN1: case M_CITIZEN2: case M_GUARD:
 					case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-					case M_CITIZEN:
+					case M_CITIZEN: case M_ARCHIVIST:
 						eSoundID = SEID_CIT_HI; break;
 					case M_ROCKGOLEM: case M_ROCKGIANT:
 						eSoundID = SEID_ROCK_HI; break;
@@ -3937,8 +4099,8 @@ MovePlayer:
 	//If the player couldn't move, interrupt path to destination.
 	if (p.wX == wPX && p.wY == wPY)
 		this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
-	//If player used a tunnel warp, then reset path to avoid oscillations.
-	else if (this->sCueEvents.HasOccurred(CID_Tunnel))
+	//If player used a tunnel warp or grappling hook, then reset path to avoid oscillations.
+	else if (this->sCueEvents.HasOccurred(CID_Tunnel) || this->sCueEvents.HasOccurred(CID_Jump))
 		this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
 }
 
@@ -3949,7 +4111,8 @@ void CGameScreen::AddDamageEffect(
 //Params:
 	const UINT wMonsterType,
 	const CMoveCoord& coord,
-	float fDamagePercent) //[default=1.0]
+	float fDamagePercent, //[default=1.0]
+	const bool bApplyJitter) //[default=true]
 {
 	if (fDamagePercent > 1.0)
 		fDamagePercent = 1.0;
@@ -4001,6 +4164,7 @@ void CGameScreen::AddDamageEffect(
 		break;
 		case M_ROCKGOLEM:
 		case M_ROCKGIANT:
+		case M_CONSTRUCT:
 		{
 			UINT particles = UINT(10 * fDamagePercent);
 			if (!particles)
@@ -4032,6 +4196,16 @@ void CGameScreen::AddDamageEffect(
 						GetEffectDuration(7), GetParticleSpeed(3)));
 		}
 		break;
+		case M_FLUFFBABY:
+		{
+			UINT particles = UINT(20 * fDamagePercent);
+			if (!particles)
+				particles = 1;
+			pRoomWidget->AddTLayerEffect(
+				new CFluffStabEffect(pRoomWidget, coord,
+					GetEffectDuration(7), GetParticleSpeed(4), particles));
+		}
+		break;
 		default:
 		{
 			UINT particles = UINT(16 * fDamagePercent);
@@ -4044,7 +4218,8 @@ void CGameScreen::AddDamageEffect(
 		break;
 	}
 
-	this->pRoomWidget->AddJitter(coord, fDamagePercent);
+	if (bApplyJitter)
+		this->pRoomWidget->AddJitter(coord, fDamagePercent);
 }
 
 //*****************************************************************************
@@ -4067,11 +4242,16 @@ void CGameScreen::AddKillEffect(const UINT wMonsterType, const CMoveCoord& coord
 	{
 		case M_SLAYER: soundID = SEID_SLAYERDIE; break;
 		case M_ROCKGOLEM: case M_ROCKGIANT: soundID = SEID_BREAKWALL; break;
+		case M_CONSTRUCT: soundID = SEID_CONSTRUCT_SMASH; break;
+		case M_FLUFFBABY:
+			pRoomWidget->AddTLayerEffect(new CPuffExplosionEffect(pRoomWidget, coord));
+			soundID = SEID_PUFF_EXPLOSION;
+			break;
 		default: soundID = SEID_SPLAT; break;
 	}
 	g_pTheSound->PlaySoundEffect(soundID, this->fPos);
 
-	AddDamageEffect(wMonsterType, coord);
+	AddDamageEffect(wMonsterType, coord, 1.0, false);
 }
 
 //*****************************************************************************
@@ -4137,6 +4317,15 @@ void CGameScreen::ApplyPlayerSettings()
 
 	SetQuickCombat();
 
+	const bool bShowDamagePreview = settings.GetVar(Settings::DamagePreview, true);
+	this->pRoomWidget->ShowDamagePreview(bShowDamagePreview);
+	this->pTempRoomWidget->ShowDamagePreview(bShowDamagePreview);
+
+	//Enable/disable move counter.
+	if (this->pRoomWidget->IsShowingMoveCount() !=
+		settings.GetVar(Settings::MoveCounter, false))
+		this->pRoomWidget->ToggleMoveCount();
+
 /*
 	//Set times when saved games and demos are saved automatically.
 	if (!this->bPlayTesting)
@@ -4194,7 +4383,8 @@ void CGameScreen::SearchForPathToNextRoom(
 		}
 		const UINT newRoomID = pRoom->dwRoomID;
 		delete pRoom;
-		if (!this->pCurrentGame->roomsExploredAtRoomStart.has(newRoomID))
+		if (!this->pCurrentGame->IsRoomExplored(newRoomID) &&
+			!CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(newRoomID), MapState::Invisible))
 		{
 			this->pRoomWidget->DisplaySubtitle(
 					g_pTheDB->GetMessageText(MID_QuickPathNotAvailable), wPX, wPY, true);
@@ -4373,6 +4563,19 @@ void CGameScreen::TakeStepTowardQuickExit()
 }
 
 //*****************************************************************************
+void CGameScreen::UpdateSign()
+{
+	SetSignTextToCurrentRoom();
+	PaintSign();
+}
+
+void CGameScreen::UpdateScroll()
+{
+	SynchScroll();
+	PaintScroll();
+}
+
+//*****************************************************************************
 SCREENTYPE CGameScreen::LevelExit_OnKeydown(
 //Handles SDL_KEYDOWN events for the game screen when exiting level.
 //
@@ -4469,6 +4672,7 @@ void CGameScreen::DeleteCurrentGame()
 //	this->bHoldConquered = false;
 
 	this->pRoomWidget->RemoveHighlight();
+	this->mapIconChanges.reset();
 }
 
 //*****************************************************************************
@@ -4514,7 +4718,7 @@ void CGameScreen::DisplayChatDialog()
 }
 
 //*****************************************************************************
-void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
+void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration, CCueEvents& CueEvents)
 {
 	//Prepare fade surface.
 	SDL_Rect srcRect;
@@ -4529,6 +4733,7 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 	{
 		SDL_BlitSurface(this->pRoomWidget->pRoomSnapshotSurface, &srcRect,
 				pSurface, &srcRect);
+		this->pRoomWidget->DisplayPersistingImageOverlays(CueEvents);
 		this->pRoomWidget->RenderRoomLayers(pSurface);
 	} else {
 		SDL_BlitSurface(pDestSurface, &srcRect, pSurface, &srcRect);
@@ -4554,74 +4759,14 @@ void CGameScreen::FadeRoom(const bool bFadeIn, const Uint32 dwDuration)
 
 //*****************************************************************************
 void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
-//Displays score checkpoint stats.
+//Displays score checkpoint stats and uploads the score.
 {
-	WSTRING wstrLevelStats;
-
-	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwScore;
-
 	//Stats involved in score tallying.
 	ASSERT(this->pCurrentGame);
 	ASSERT(this->pCurrentGame->pPlayer);
 	const PlayerStats& st = this->pCurrentGame->pPlayer->st;
-	dwHP = st.HP;
-	dwATK = this->pCurrentGame->getPlayerATK();
-	dwDEF = this->pCurrentGame->getPlayerDEF();
-	dwYKeys = st.yellowKeys;
-	dwGKeys = st.greenKeys;
-	dwBKeys = st.blueKeys;
-	dwSKeys = st.skeletonKeys;
-	dwScore = this->pCurrentGame->GetScore();
+	UINT dwTotalScore = this->pCurrentGame->GetScore();
 
-	/*
-	wstrLevelStats = pScoreIDText;
-	wstrLevelStats += wszCRLF;
-	*/
-	WCHAR temp[16];
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_MonsterHP);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwHP, temp, 10);
-	wstrLevelStats += wszCRLF;
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_ATKStat);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwATK, temp, 10);
-	wstrLevelStats += wszCRLF;
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_DEFStat);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwDEF, temp, 10);
-	wstrLevelStats += wszCRLF;
-
-	wstrLevelStats += g_pTheDB->GetMessageText(MID_Keys);
-	wstrLevelStats += wszColon;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwYKeys, temp, 10);
-	wstrLevelStats += wszForwardSlash;
-	wstrLevelStats += _itoW(dwGKeys, temp, 10);
-	wstrLevelStats += wszForwardSlash;
-	wstrLevelStats += _itoW(dwBKeys, temp, 10);
-	if (dwSKeys)
-	{
-		wstrLevelStats += wszForwardSlash;
-		wstrLevelStats += _itoW(dwSKeys, temp, 10);
-	}
-	wstrLevelStats += wszCRLF;
-
-/*
-	if (st.XP)
-	{
-		wstrLevelStats += g_pTheDB->GetMessageText(MID_XPStat);
-		wstrLevelStats += wszColon;
-		wstrLevelStats += wszSpace;
-		wstrLevelStats += _itoW(st.XP, temp, 10);
-		wstrLevelStats += wszCRLF;
-	}
-*/
 /*
 	wstrLevelStats += wszCRLF;
 
@@ -4629,29 +4774,162 @@ void CGameScreen::ScoreCheckpoint(const WCHAR* pScoreIDText)
 		this->pRoomWidget, wstrLevelStats.c_str(), F_Stats, 5000, 8000, true));
 */
 
-	//Set texts.
-	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
-	pLabel->SetText(pScoreIDText);
+	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwTotalScore);
 
-	pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
-	pLabel->SetText(wstrLevelStats.c_str());
+	//Display.
+	ShowScoreDialog(pScoreIDText, st);
+}
+
+void CGameScreen::ShowScoreDialog(const WSTRING pTitle, const PlayerStats& st)
+//Displays score stats.
+{
+	WSTRING wstrLevelStats;
+
+	UINT dwHP, dwATK, dwDEF, dwYKeys, dwGKeys, dwBKeys, dwSKeys, dwGOLD, dwXP, dwShovels;
+	UINT dwHPScore, dwATKScore, dwDEFScore, dwYKeysScore, dwGKeysScore, dwBKeysScore, dwSKeysScore, dwGOLDScore, dwXPScore, dwShovelsScore, dwTotalScore;
+
+	//Stats involved in score tallying.
+	ASSERT(this->pCurrentGame);
+	dwHP = st.HP;
+	dwATK = this->pCurrentGame->getPlayerATK();
+	dwDEF = this->pCurrentGame->getPlayerDEF();
+	dwYKeys = st.yellowKeys;
+	dwGKeys = st.greenKeys;
+	dwBKeys = st.blueKeys;
+	dwSKeys = st.skeletonKeys;
+	dwGOLD = st.GOLD;
+	dwXP = st.XP;
+	dwShovels = st.shovels;
+
+	dwHPScore = CCurrentGame::CalculateStatScore(dwHP, st.scoreHP);
+	dwATKScore = CCurrentGame::CalculateStatScore(dwATK, st.scoreATK);
+	dwDEFScore = CCurrentGame::CalculateStatScore(dwDEF, st.scoreDEF);
+	dwGOLDScore = CCurrentGame::CalculateStatScore(dwGOLD, st.scoreGOLD);
+	dwXPScore = CCurrentGame::CalculateStatScore(dwXP, st.scoreXP);
+	dwYKeysScore = CCurrentGame::CalculateStatScore(dwYKeys, st.scoreYellowKeys);
+	dwGKeysScore = CCurrentGame::CalculateStatScore(dwGKeys, st.scoreGreenKeys);
+	dwBKeysScore = CCurrentGame::CalculateStatScore(dwBKeys, st.scoreBlueKeys);
+	dwSKeysScore = CCurrentGame::CalculateStatScore(dwSKeys, st.scoreSkeletonKeys);
+	dwShovelsScore = CCurrentGame::CalculateStatScore(dwShovels, st.scoreShovels);
+	dwTotalScore = this->pCurrentGame->GetScore();
+
+	CTilesWidget* pTilesWidget = DYN_CAST(CTilesWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETILES));
+	pTilesWidget->ClearTiles();
+
+	vector<UINT> tile;
+	if (st.scoreHP != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_MonsterHP, dwHP, st.scoreHP, dwHPScore);
+		tile.push_back(TI_STAT_ICON_HP);
+	}
+	if (st.scoreATK != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_ATKStat, dwATK, st.scoreATK, dwATKScore);
+		tile.push_back(TI_STAT_ICON_ATK);
+	}
+	if (st.scoreDEF != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_DEFStat, dwDEF, st.scoreDEF, dwDEFScore);
+		tile.push_back(TI_STAT_ICON_DEF);
+	}
+	if (st.scoreGOLD != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_GRStat, dwGOLD, st.scoreGOLD, dwGOLDScore);
+		tile.push_back(TI_STAT_ICON_GR);
+	}
+	if (st.scoreXP != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_XPStat, dwXP, st.scoreXP, dwXPScore);
+		tile.push_back(TI_STAT_ICON_REP);
+	}
+	if (st.scoreYellowKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_YKEYStatFull, dwYKeys, st.scoreYellowKeys, dwYKeysScore);
+		tile.push_back(TI_STAT_ICON_YK);
+	}
+	if (st.scoreGreenKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_GKEYStatFull, dwGKeys, st.scoreGreenKeys, dwGKeysScore);
+		tile.push_back(TI_STAT_ICON_GK);
+	}
+	if (st.scoreBlueKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_BKEYStatFull, dwBKeys, st.scoreBlueKeys, dwBKeysScore);
+		tile.push_back(TI_STAT_ICON_BK);
+	}
+	if (st.scoreSkeletonKeys != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_SKEYStatFull, dwSKeys, st.scoreSkeletonKeys, dwSKeysScore);
+		tile.push_back(TI_STAT_ICON_SK);
+	}
+	if (st.scoreShovels != 0) {
+		wstrLevelStats += GetScoreCheckpointLine(MID_ShovelsStat, dwShovels, st.scoreShovels, dwShovelsScore);
+		tile.push_back(TI_STAT_ICON_SHOVEL);
+	}
+
+	//Set texts.
+	CLabelWidget* pNameLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORENAME));
+	pNameLabel->SetText(pTitle.c_str());
+
+	CLabelWidget* pTextLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETEXT));
+	pTextLabel->SetText(wstrLevelStats.c_str());
+	SDL_Rect rect;
+	pTextLabel->GetRect(rect);
+	UINT wTextHeight, wIgnored;
+	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message, wstrLevelStats.c_str(), rect.w, wIgnored, wTextHeight);
+	pTextLabel->SetHeight(wTextHeight);
+	pTilesWidget->SetHeight(wTextHeight);
+
+	//Add stat icons
+	const UINT wLineHeight = g_pTheFM->GetFontLineHeight(pTextLabel->GetFontType());
+	for (UINT i = 0; i < tile.size(); ++i) {
+		pTilesWidget->AddTile(tile[i], 0, wLineHeight * i);
+	}
+
+	CLabelWidget* pTotalLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
+	pTotalLabel->Move(0, wTextHeight - (CY_SPACE*3/2));
+
+	CDialogWidget* pDialog = DYN_CAST(CDialogWidget*, CWidget*, GetWidget(TAG_SCOREDIALOG));
+	CButtonWidget* pButton = DYN_CAST(CButtonWidget*, CWidget*, GetWidget(TAG_SCORE_OK));
+	static const UINT CX_OK_BUTTON = 100;
+	static const UINT CX_SCOREFRAME = pDialog->GetW() - CX_SPACE * 2;
+	const UINT wButtonY = wTextHeight + pTotalLabel->GetH() - CY_SPACE;
+	pButton->Move((CX_SCOREFRAME - CX_OK_BUTTON) / 2, wButtonY);
+
+	static const UINT FRAME_BUFFER = 3;
+	const UINT wTotalHeight = pNameLabel->GetH() + wTextHeight + pTotalLabel->GetH() + pButton->GetH() + FRAME_BUFFER * 2 + CY_SPACE * 2;
+	pDialog->SetHeight(wTotalHeight);
+
+	CWidget* pFrame = DYN_CAST(CWidget*, CWidget*, GetWidget(TAG_SCOREFRAME));
+	const UINT wFrameHeight = wTextHeight + pTotalLabel->GetH() + pButton->GetH();
+	pFrame->SetHeight(wFrameHeight);
+
+	WCHAR temp[16];
 
 	wstrLevelStats = g_pTheDB->GetMessageText(MID_Score);
+	wstrLevelStats += wszColon;
 	wstrLevelStats += wszSpace;
-	wstrLevelStats += wszEqual;
-	wstrLevelStats += wszSpace;
-	wstrLevelStats += _itoW(dwScore, temp, 10);
+	wstrLevelStats += _itoW(dwTotalScore, temp, 10);
 
-	pLabel = DYN_CAST(CLabelWidget*, CWidget*, this->pScoreDialog->GetWidget(TAG_SCORETOTAL));
-	pLabel->SetText(wstrLevelStats.c_str());
-
-	SendAchievement(UnicodeToUTF8(pScoreIDText).c_str(), dwScore);
+	pTotalLabel->SetText(wstrLevelStats.c_str());
 
 	//Display.
 	SetCursor();
 	this->pScoreDialog->Center();
 	this->pScoreDialog->Display();
 	Paint();
+}
+
+//*****************************************************************************
+WSTRING CGameScreen::GetScoreCheckpointLine(const MID_CONSTANT statName, const UINT statAmount, const int scoreMultiplier, const UINT statScore)
+//Returns: A line for the score breakdown of a particular stat on the Score Checkpoint dialog
+{
+	WSTRING wstrText;
+	WCHAR temp[16];
+
+	wstrText += _itoW(statAmount, temp, 10);
+	wstrText += wszSpace;
+	wstrText += scoreMultiplier < 0 ? wszForwardSlash : wszTimes;
+	wstrText += wszSpace;
+	wstrText += _itoW(abs(scoreMultiplier), temp, 10);
+	wstrText += wszSpace;
+	wstrText += wszEqual;
+	wstrText += wszSpace;
+	wstrText += _itoW(statScore, temp, 10);
+	wstrText += wszCRLF;
+
+	return wstrText;
 }
 
 //*****************************************************************************
@@ -4828,7 +5106,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 
 	HideScroll();
 	this->pFaceWidget->SetReading(false);
-	this->pFaceWidget->SetMood(Mood_Happy);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Happy);
 	this->pRoomWidget->AllowSleep(false);
 
 	//Show the screen after first arriving here.
@@ -4896,7 +5174,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 				this->pRoomWidget->Paint();
 
 				//Player is thinking about the next level now.
-				this->pFaceWidget->SetMood(Mood_Normal);
+				this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 			}
 			dwLastStep = dwNow;
 		}
@@ -4923,7 +5201,7 @@ SCREENTYPE CGameScreen::HandleEventsForLevelExit()
 	}
 
 Done:
-	this->pFaceWidget->SetMood(Mood_Normal);
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 	g_pTheSound->StopSong();
 	if (GetScreenType() == SCR_Game)	//don't redraw player at end of demo
 		this->pRoomWidget->ShowPlayer();
@@ -4955,6 +5233,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	//If player hits undo, then speech will continue at the next line.
 	CutSpeech();
 
+	//Interrupts any mouse-selected pathing.
+	this->wMoveDestX = this->wMoveDestY = NO_DESTINATION;
+
 	//Shows current stats.
 	RedrawStats(this->pCurrentGame->pCombat, true);
 
@@ -4975,6 +5256,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 //	const bool bNPCBeethroDied = CueEvents.HasOccurred(CID_NPCBeethroDied);
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied);
 //			|| (!bPlayerDied && !bNPCBeethroDied && player.wAppearance != M_BEETHRO);
+
+	// And we want image events to be rendered too
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 
 	ProcessFuseBurningEvents(CueEvents);
 
@@ -5003,6 +5287,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	//Show the screen after first arriving here.
 	this->pFaceWidget->SetReading(false);
+	UpdatePlayerFace();
 //	this->pRoomWidget->RemoveMLayerEffectsOfType(EPENDINGBUILD); //stop showing where pending building was
 	this->pRoomWidget->RemoveHighlight();
 	this->pRoomWidget->AllowSleep(false);
@@ -5011,9 +5296,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	bool bNonMonsterDeath = false;
 //	CMonster *pNPCBeethro = bNPCBeethroDied ? this->pCurrentGame->pRoom->GetNPCBeethro() : NULL;
 	if (bCriticalNPCDied)
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetDying(true, Mood_Nervous);
 	else {
-		this->pFaceWidget->SetMood(Mood_Dying);
+		this->pFaceWidget->SetDying(true, Mood_Dying);
 		UINT eSoundID;
 		switch (player.wAppearance)
 		{
@@ -5028,13 +5313,16 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-			case M_CITIZEN: eSoundID = SEID_CIT_DIE; break;
+			case M_CITIZEN: case M_ARCHIVIST: case M_PATRON:
+				eSoundID = SEID_CIT_DIE; break;
 			case M_NEGOTIATOR: case M_INSTRUCTOR:
 			case M_CITIZEN3: case M_CITIZEN4:
 				eSoundID = SEID_WOM_DIE; break;
 			case M_STALWART: eSoundID = SEID_STALWART_DIE; break;
 			case M_WUBBA: eSoundID = SEID_WUBBA; break;
 			case M_SLAYER: eSoundID = SEID_SLAYERDIE; break;
+			case M_CONSTRUCT: eSoundID = SEID_CONSTRUCT_DIE; break;
+			case M_ARCHITECT: eSoundID = SEID_ENGINEER_DIE; break;
 			default: eSoundID = SEID_MON_OOF; break;
 		}
 		PlaySoundEffect(eSoundID);
@@ -5096,7 +5384,7 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				break;
 				case SDL_KEYDOWN:
 				{
-					const int nCommand = GetCommandForKeysym(event.key.keysym.sym);
+					const int nCommand = GetCommandForInputKey(BuildInputKey(event.key));
 					if (nCommand == CMD_UNDO)
 						bUndoDeath = true;
 					else if (nCommand == CMD_RESTART)
@@ -5198,6 +5486,9 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
+	this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
+	this->pFaceWidget->SetDying(false);
+
 	if (bUndoDeath)
 	{
 		this->pRoomWidget->DirtyRoom();	//remove fading
@@ -5207,7 +5498,6 @@ bool CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 
 	StopAmbientSounds();
 	ClearSpeech();
-	this->pFaceWidget->SetMood(Mood_Normal);
 	return true;
 }
 
@@ -5258,57 +5548,17 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 	ASSERT(nCommand != CMD_UNSPECIFIED);
 	ASSERT(nCommand < COMMAND_COUNT || nCommand == CMD_ADVANCE_CUTSCENE ||
-			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY);
+			nCommand == CMD_ADVANCE_COMBAT || nCommand == CMD_BATTLE_KEY ||
+			nCommand == CMD_SCORE_KEY);
 	switch (nCommand)
 	{
 		case CMD_RESTART: //case CMD_RESTART_PARTIAL: case CMD_RESTART_FULL:
-		{
-			//Restart the room.
-/*
 			//Rewind moves to previous checkpoints or restart the room.
-			if (nCommand == CMD_RESTART_FULL)
-				this->pCurrentGame->RestartRoom(this->sCueEvents);
-			else if (nCommand == CMD_RESTART_PARTIAL)
-				this->pCurrentGame->RestartRoomFromLastDifferentCheckpoint(this->sCueEvents);
-			else
-				this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
-*/
-			const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
-
-			delete g_pPredictedCombat;
-			g_pPredictedCombat = NULL;
-
-			this->pCurrentGame->RestartRoom(this->sCueEvents);
-
-			this->pRoomWidget->RenderRoomLighting();
-			this->pRoomWidget->ResetForPaint();
-
-			//Refresh map.
-			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
-			if (nowMappedRooms.size() != mappedRooms.size() ||
-				roomPreviews.containsAny(mappedRooms)) //preview state could have changed for these rooms
-			{
-				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
-			} else {
-				this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
-			}
-			this->pMapWidget->RequestPaint();
-
-			SetSignTextToCurrentRoom();
-			PaintSign();
-			this->pRoomWidget->ClearEffects();
-			StopAmbientSounds();
-			ClearSpeech();
 			g_pTheSound->StopAllSoundEffects(); //stop any game sounds that were playing
-			SetGameAmbience(true);
-			AmbientSoundSetup(); //determine what sounds should be playing now
-			SwirlEffect();
-//			this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
-			this->wUndoToTurn = this->pCurrentGame->wTurnNo;
+			RestartRoom(nCommand, this->sCueEvents);
+
 			if (GetScreenType() == SCR_Demo)
 				return SCR_Game; //can skip everything below
-		}
 		break;
 
 		case CMD_UNDO:
@@ -5320,10 +5570,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 			//was already handled in the calling ProcessCommand
 //			this->bUndoJustMade = false;
 		break;
-
-		case CMD_BATTLE_KEY:
-			ShowMonsterStats(this->pCurrentGame->pRoom, this->pRoomWidget);
-		return SCR_Game;
 
 		default:
 		{
@@ -5358,6 +5604,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				//If light level is changing, save value for a light fade below.
 				bPlayerDied = this->sCueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied);
 				if (!bPlayerDied && !this->sCueEvents.HasOccurred(CID_ExitLevelPending) &&
+						!this->sCueEvents.HasOccurred(CID_ExitToWorldMapPending) &&
 						this->pCurrentGame->bIsGameActive &&
 						this->pRoomWidget->IsLightingRendered() &&
 						!this->pCurrentGame->pRoom->weather.bSkipLightfade)
@@ -5379,6 +5626,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				g_pPredictedCombat = NULL;
 
 				this->wRoomQuickExitDirection = NO_ORIENTATION;
+				this->mapIconChanges.reset();
 			}
 			else if (nCommand < CMD_C || nCommand == CMD_NW)
 			{
@@ -5387,7 +5635,8 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				this->pRoomWidget->RemoveMLayerEffectsOfType(EFADETILE); //no damage shield
 			}
 
-			if (this->sCueEvents.HasOccurred(CID_InvalidAttackMove))
+			if (this->sCueEvents.HasOccurred(CID_InvalidAttackMove) ||
+				this->sCueEvents.HasOccurred(CID_StalledCombat))
 			{
 				//This move was just undone.
 				//Speech pointers need to be relinked and room state refreshed.
@@ -5407,6 +5656,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 
 	if (!this->sCueEvents.HasOccurred(CID_ExitLevelPending) &&
 			!this->sCueEvents.HasOccurred(CID_ExitRoomPending) &&
+			!this->sCueEvents.HasOccurred(CID_ExitToWorldMapPending) &&
 			!this->sCueEvents.HasOccurred(CID_ExitRoom))
 		UpdateSound();
 	const Uint32 dwNow = SDL_GetTicks();
@@ -5441,11 +5691,6 @@ SCREENTYPE CGameScreen::ProcessCommand(
 		{
 			SwirlEffect(); //must call after ProcessCueEventsBeforeRoomDraw()
 			ProcessSpeechCues(this->sCueEvents); //start showing speech at room start
-/*
-		} else if (nCommand == CMD_CLONE) {
-			SwirlEffect();
-			g_pTheSound->PlaySoundEffect(SEID_POTION);
-*/
 		}
 
 		//Option to log vars each time a new room is entered.
@@ -5463,7 +5708,7 @@ SCREENTYPE CGameScreen::ProcessCommand(
 	if (bFadeLight)
 	{
 		this->pCurrentGame->pRoom->weather.wLight = wNewLightLevel;
-		this->pRoomWidget->FadeToLightLevel(wNewLightLevel);
+		this->pRoomWidget->FadeToLightLevel(wNewLightLevel, this->sCueEvents);
 	}
 
 	return eNextScreen;
@@ -5491,6 +5736,36 @@ SCREENTYPE CGameScreen::ProcessCommand(
 }
 
 //*****************************************************************************
+UINT GetTileForCueEvent(CCueEvents& CueEvents, const CUEEVENT_ID id, const UINT defaultTile=T_EMPTY)
+{
+	const CAttachableWrapper<UINT>* pTile =
+		DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+			CueEvents.GetFirstPrivateData(id));
+	return pTile ? pTile->data : defaultTile;
+}
+
+//*****************************************************************************
+//Orb sound frequency changes subtly based on room location. Range: 0.95 to 1.05x
+float getOrbFrequencyMult(const UINT x, const UINT y)
+{
+	return 0.95f + (0.1f * (x + y) /
+		(CDrodBitmapManager::CDrodBitmapManager::DISPLAY_COLS +
+			CDrodBitmapManager::CDrodBitmapManager::DISPLAY_ROWS - 1));
+}
+
+//When multiple instances of a sound play at once around the room, the sound can be very loud.
+//Reducing the volume of the sounds will keep from overwhelming the player's speakers.
+//
+//Returns: percent to reduce sfx based on the number of sounds that are going to play
+float getVolumeMultiplier(const UINT count)
+{
+	if (!count)
+		return 1.0f;
+
+	return 1.0f / min(count, CSound::CHANNEL_COUNT / 4); //heuristic to make it sound good
+}
+
+//*****************************************************************************
 SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 //Process cue events list to create effects that should occur before
 //room is drawn.
@@ -5512,6 +5787,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom);
 	const CAttachableObject *pObj;
 	CSwordsman& player = *this->pCurrentGame->pPlayer;
+
+	float frequencyMult;
+	float volumeMultiplier;
 
 	ProcessMovieEvents(CueEvents);
 
@@ -5556,13 +5834,16 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			case M_CLONE: case M_DECOY: case M_MIMIC: case M_GUARD: case M_PIRATE:
 			case M_CITIZEN1: case M_CITIZEN2:
 			case M_MUDCOORDINATOR: case M_TARTECHNICIAN:
-			case M_CITIZEN: eSoundID = SEID_CIT_SCARED; break;
+			case M_CITIZEN: case M_ARCHIVIST: case M_PATRON:
+				eSoundID = SEID_CIT_SCARED; break;
 			case M_STALWART: eSoundID = SEID_STALWART_SCARED; break;
 			case M_WUBBA: eSoundID = SEID_WUBBA; break;
 			case M_NEGOTIATOR: case M_INSTRUCTOR:
 			case M_CITIZEN3: case M_CITIZEN4:
 				eSoundID = SEID_WOM_SCARED; break;
 			case M_SLAYER: eSoundID = SEID_SLAYER_SCARED; break;
+			case M_CONSTRUCT: eSoundID = SEID_CONSTRUCT_SCARED; break;
+			case M_ARCHITECT: eSoundID = SEID_ENGINEER_SCARED; break;
 			default: eSoundID = SEID_MON_OOF; break;
 		}
 		if (eSoundID != (UINT)SEID_NONE &&
@@ -5612,18 +5893,46 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 	if (CueEvents.HasOccurred(CID_DrankPotion))
 		g_pTheSound->PlaySoundEffect(SEID_POTION);
-/*
-	if (CueEvents.HasOccurred(CID_DoublePlaced))
-	{
-		g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-		this->pRoomWidget->RenderRoomInPlay(); //remove double placement effect
+	if (CueEvents.HasOccurred(CID_ReceivedATK)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedATK);
+		g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP, getFrequencyMultForItem(tile));
 	}
-*/
+	if (CueEvents.HasOccurred(CID_ReceivedDEF)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedDEF);
+		g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP, getFrequencyMultForItem(tile));
+	}
+	if (CueEvents.HasOccurred(CID_ReceivedHP)) {
+		const UINT tile = GetTileForCueEvent(CueEvents, CID_ReceivedHP);
+		g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP, getFrequencyMultForItem(tile));
+	}
+
+	if (CueEvents.HasOccurred(CID_ReceivedShovel)) {
+		const UINT shovel = GetTileForCueEvent(CueEvents, CID_ReceivedShovel);
+
+		g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP, getFrequencyMultForItem(shovel));
+
+		//Effect showing shovel entering player inventory.
+		//Get destination of effect.
+		CLabelWidget* pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_SHOVEL));
+		if (pLabel)
+		{
+			UINT destX = pLabel->GetX();
+			UINT destY = pLabel->GetY();
+
+			const UINT shovelTile = GetTileImageForTileNo(shovel);
+			CMovingTileEffect* pEffect = new CMovingTileEffect(this->pRoomWidget,
+				shovelTile, CCoord(player.wX, player.wY),
+				CCoord(destX, destY), 50.0);
+			this->pRoomWidget->AddLastLayerEffect(pEffect);
+		}
+	}
+
 	if (CueEvents.HasOccurred(CID_CompleteLevel))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
 		this->pMapWidget->RequestPaint();
 	}
+
 	if (CueEvents.HasOccurred(CID_LevelMap))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
@@ -5634,13 +5943,22 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		CWidget *pMapWidget = GetWidget(TAG_MAP);
 		if (pMapWidget)
 		{
-			const UINT tMapTile = GetTileImageForTileNo(T_MAP);
+			const UINT tile = GetTileForCueEvent(CueEvents, CID_LevelMap, T_MAP);
+			const UINT tMapTile = GetTileImageForTileNo(tile);
 			ASSERT(tMapTile != CALC_NEEDED);
 			CMovingTileEffect *pEffect = new CMovingTileEffect(this->pRoomWidget,
 					tMapTile, CCoord(player.wX, player.wY),
 					CCoord(pMapWidget->GetX(), pMapWidget->GetY()), 50.0);
 			this->pRoomWidget->AddLastLayerEffect(pEffect); //add on top of game screen
 		}
+	}
+
+	if (CueEvents.HasOccurred(CID_MapIcon))
+	{
+		this->pMapWidget->UpdateFromCurrentGame();
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom);
+		this->pMapWidget->RequestPaint();
+		this->mapIconChanges.add(this->pCurrentGame->wTurnNo);
 	}
 
 	if (CueEvents.HasOccurred(CID_MoneyDoorOpened) || CueEvents.HasOccurred(CID_MoneyDoorLocked))
@@ -5654,10 +5972,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	else if (CueEvents.HasOccurred(CID_OrbActivatedByPlayer))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivatedByPlayer);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_ORBHIT);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			//If player hits orb, center sound on player for nicer effect.
 			if (player.GetSwordX() == pOrbData->wX && player.GetSwordY() == pOrbData->wY)
@@ -5668,14 +5985,17 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				this->fPos[0] = static_cast<float>(pOrbData->wX);
 				this->fPos[1] = static_cast<float>(pOrbData->wY);
 			}
+			frequencyMult = getOrbFrequencyMult(pOrbData->wX, pOrbData->wY);
 			g_pTheSound->PlaySoundEffect(pOrbData->eType == OT_BROKEN ?
-					SEID_ORBBROKE : SEID_ORBHIT, this->fPos);
+					SEID_ORBBROKE : SEID_ORBHIT, this->fPos, NULL, false, frequencyMult);
 			this->pRoomWidget->AddStrikeOrbEffect(*pOrbData);
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
 	if (CueEvents.HasOccurred(CID_Tunnel))
 		g_pTheSound->PlaySoundEffect(SEID_TUNNEL);
+	if (CueEvents.HasOccurred(CID_EggSpawned))
+		PlaySoundEffect(SEID_ROACH_EGG_SPAWNED);
 
 	//2nd. Important room events.
 	if (CueEvents.HasOccurred(CID_RedGatesToggled) ||
@@ -5738,7 +6058,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_MonsterEngaged))
 	{
-		if (this->pCurrentGame->pCombat)
+		if (this->pCurrentGame->pCombat && !this-pCurrentGame->pCombat->bCombatStalled)
 		{
 			//If a monster can't be harmed, report on it
 			CMonster *pMonster = this->pCurrentGame->pCombat->PlayerCantHarmAQueuedMonster();
@@ -5786,23 +6106,22 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 	if (CueEvents.HasOccurred(CID_ReceivedKey))
 	{
-		g_pTheSound->PlaySoundEffect(SEID_KEY);
-
 		//Effect showing key entering player inventory.
 		const CAttachableWrapper<BYTE> *pKeyType =
 				DYN_CAST(const CAttachableWrapper<BYTE>*, const CAttachableObject*,
 				CueEvents.GetFirstPrivateData(CID_ReceivedKey));
 
 		//Get destination of effect.
-		UINT destX = 0, destY = 0, keyTag = 0;
+		UINT destX = 0, destY = 0, keyTag = 0, virtualTile = 0;
 		switch (pKeyType->data)
 		{
-			case YellowKey: keyTag = TAG_YKEY; break;
-			case GreenKey: keyTag = TAG_GKEY; break;
-			case BlueKey: keyTag = TAG_BKEY; break;
-			case SkeletonKey: keyTag = TAG_SKEY; break;
+			case YellowKey: keyTag = TAG_YKEY; virtualTile = TV_KEY_Y; break;
+			case GreenKey: keyTag = TAG_GKEY; virtualTile = TV_KEY_G; break;
+			case BlueKey: keyTag = TAG_BKEY; virtualTile = TV_KEY_B; break;
+			case SkeletonKey: keyTag = TAG_SKEY; virtualTile = TV_KEY_S; break;
 			default: break;
 		}
+
 		CLabelWidget *pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(keyTag));
 		if (pLabel)
 		{
@@ -5815,6 +6134,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					CCoord(destX, destY), 50.0);
 			this->pRoomWidget->AddLastLayerEffect(pEffect);
 		}
+
+		g_pTheSound->PlaySoundEffect(SEID_KEY, getFrequencyMultForItem(virtualTile));
 	}
 
 	if (CueEvents.HasOccurred(CID_ReceivedEquipment))
@@ -5828,6 +6149,8 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				pMonster->wProcessSequence : NO_ORIENTATION;
 		const CMoveCoord coord(pMonster->wX,pMonster->wY,wO);
 		AddKillEffect(pMonster->GetIdentity(), coord);
+
+		this->pRoomWidget->RedrawDamagePreview(); //update view for remaining enemies
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TrapDoorRemoved);
@@ -5856,6 +6179,24 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
 		}
+	}
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_ThinIceMelted);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+		//If player drops ice, center sound on player for nicer effect.
+		if (player.wPrevX == pCoord->wX && player.wPrevY == pCoord->wY)
+		{
+			this->fPos[0] = static_cast<float>(player.wX);
+			this->fPos[1] = static_cast<float>(player.wY);
+		}
+		else {
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+		}
+		PlaySoundEffect(SEID_ICEMELT, this->fPos);
+		this->pRoomWidget->AddOLayerEffect(new CIceMeltEffect(this->pRoomWidget, *pCoord));
 	}
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CutBriar);
@@ -5928,9 +6269,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					}
 				}
 			}
-			else if (bIsSerpentTile(pCoord->wValue))
+			else if (bIsSerpentTile(pCoord->wValue)) {
 				wTileNo = GetTileImageForSerpentPiece(pCoord->wO, pCoord->wValue);
-			else {
+			} else {
 				wTileNo = GetTileImageForTileNo(pCoord->wValue);
 				if (bIsBriar(pCoord->wValue))
 				{
@@ -5946,6 +6287,17 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				if (wTileNo == CALC_NEEDED)
 					wTileNo = CalcTileImageFor(this->pCurrentGame->pRoom, pCoord->wValue,
 							pCoord->wX, pCoord->wY);
+				if (wTileNo == TI_UNSPECIFIED)
+				{
+					// Still don't know what the tile is, it might be custom equipment dropped onto the trapdoor
+					const UINT tParam = this->pRoomWidget->pRoom->GetTParam(pCoord->wX, pCoord->wY);
+					if (bIsCustomEquipment(tParam))
+					{
+						wTileNo = this->pRoomWidget->GetCustomEntityTile(tParam, NO_ORIENTATION, 0, false);
+						if (wTileNo == TI_UNSPECIFIED)
+							wTileNo = TI_GENERIC_EQUIPMENT;
+					}
+				}
 			}
 			fallingTiles[ROOMCOORD(pCoord->wX, pCoord->wY)].push_back(wTileNo);
 			pObj = CueEvents.GetNextPrivateData();
@@ -5970,10 +6322,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_PressurePlate))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_PressurePlate);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_PRESSPLATE);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -5985,10 +6336,9 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_PressurePlateReleased))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_PressurePlateReleased);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_PRESSPLATEUP);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -5998,6 +6348,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_CrumblyWallDestroyed));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_CrumblyWallDestroyed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6011,7 +6362,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos);
+		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(5), GetParticleSpeed(4)));
@@ -6027,14 +6378,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		if (this->pCurrentGame->pRoom->IsMonsterOfTypeAt(M_ROCKGOLEM, pCoord->wX, pCoord->wY))
 			wMonsterType = M_ROCKGIANT;
 		AddKillEffect(wMonsterType, *pCoord);
+		this->pRoomWidget->RedrawDamagePreview(); //killing a piece is a fight
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivated))
 	{
 		pObj = CueEvents.GetFirstPrivateData(CID_OrbActivated);
-		if (!pObj)
+		if (!pObj) {
 			g_pTheSound->PlaySoundEffect(SEID_ORBHITQUIET);   //just play sound
-		else while (pObj)
-		{
+		} else while (pObj) {
 			const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 			this->fPos[0] = static_cast<float>(pOrbData->wX);
 			this->fPos[1] = static_cast<float>(pOrbData->wY);
@@ -6044,16 +6395,15 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
-/*
 	for (pObj = CueEvents.GetFirstPrivateData(CID_OrbDamaged);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
-		COrbData *pOrbData = DYN_CAST(COrbData*, CAttachableObject*, pObj);
+		const COrbData *pOrbData = DYN_CAST(const COrbData*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pOrbData->wX);
 		this->fPos[1] = static_cast<float>(pOrbData->wY);
 		g_pTheSound->PlaySoundEffect(SEID_ORBBROKE, this->fPos);
 	}
-*/
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_MirrorShattered));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_MirrorShattered);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6066,30 +6416,51 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_SHATTER, this->fPos);
+		frequencyMult = 0.9f + (0.2f * (RAND(3) + RAND(3)) / 4.0f); //triangle distribution around mean
+		g_pTheSound->PlaySoundEffect(SEID_SHATTER, this->fPos, NULL, false, frequencyMult, volumeMultiplier);
 		this->pRoomWidget->AddTLayerEffect(
 				new CDebrisEffect(this->pRoomWidget, *pCoord, 10,
 						GetEffectDuration(7), GetParticleSpeed(4))); //!!ShatteringGlass effect
 	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_CrateDestroyed);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+
+		this->fPos[0] = static_cast<float>(pCoord->wX);
+		this->fPos[1] = static_cast<float>(pCoord->wY);
+		g_pTheSound->PlaySoundEffect(SEID_BREAKWALL, this->fPos);
+
+		this->pRoomWidget->AddTLayerEffect(
+			new CDebrisEffect(this->pRoomWidget, *pCoord, 12,
+				GetEffectDuration(7), GetParticleSpeed(4)));
+	}
 	if (CueEvents.HasOccurred(CID_BombExploded))
 	{
-		const UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded) /
-				(g_pTheBM->bAlpha ? (g_pTheBM->eyeCandy > 0 ? 100 : 50) : 10);
+		UINT wRandMod = CueEvents.GetOccurrenceCount(CID_BombExploded);
+		UINT wRandMax = 25 + (25 * g_pTheBM->eyeCandy);
+
+		vector<CCoord> tiles;
 		pObj = CueEvents.GetFirstPrivateData(CID_BombExploded);
 		while (pObj)
 		{
-			const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
-			if (RAND(wRandMod) == 0)
+			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			if (RAND(wRandMod) < wRandMax)
 			{
-				if (pCoord->wO == NO_ORIENTATION) //show debris only for this wO
-					this->pRoomWidget->AddTLayerEffect(
-							new CDebrisEffect(this->pRoomWidget, *pCoord, 3,
-									GetEffectDuration(7), GetParticleSpeed(4)));
-				this->fPos[0] = static_cast<float>(pCoord->wX);
-				this->fPos[1] = static_cast<float>(pCoord->wY);
-				g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos);
+				const CMoveCoord moveCoord(pCoord->wX, pCoord->wY, NO_ORIENTATION);
+				this->pRoomWidget->AddTLayerEffect(
+						new CDebrisEffect(this->pRoomWidget, moveCoord, 3,
+								GetEffectDuration(7), GetParticleSpeed(4)));
+				tiles.push_back(*pCoord);
 			}
 			pObj = CueEvents.GetNextPrivateData();
+		}
+
+		volumeMultiplier = getVolumeMultiplier(tiles.size());
+		for (vector<CCoord>::const_iterator it=tiles.begin(); it!=tiles.end(); it++) {
+			this->fPos[0] = static_cast<float>(it->wX);
+			this->fPos[1] = static_cast<float>(it->wY);
+			PlaySoundEffect(SEID_BOMBEXPLODE, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		}
 	}
 	if (CueEvents.HasOccurred(CID_OrbActivatedByDouble))
@@ -6110,6 +6481,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_TarstuffDestroyed));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_TarstuffDestroyed);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
@@ -6127,7 +6499,6 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->fPos[0] = static_cast<float>(pCoord->wX);
 			this->fPos[1] = static_cast<float>(pCoord->wY);
 		}
-		g_pTheSound->PlaySoundEffect(SEID_STABTAR, this->fPos);
 		switch (pCoord->wValue)
 		{
 			case T_TAR:
@@ -6147,6 +6518,33 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			break;
 			default: ASSERT(!"Invalid tar type"); break;
 		}
+		g_pTheSound->PlaySoundEffect(SEID_STABTAR, this->fPos, NULL, false, getFrequencyMultForItem(pCoord->wValue), volumeMultiplier);
+
+		this->pRoomWidget->RedrawDamagePreview(); //cutting tar can spawn in new monsters late in the turn processing
+	}
+	if (CueEvents.HasOccurred(CID_MistDestroyed))
+	{
+		for (pObj = CueEvents.GetFirstPrivateData(CID_MistDestroyed);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+			switch (pCoord->wValue)
+			{
+			case T_MIST:
+				PlaySoundEffect(SEID_PUFF_EXPLOSION, this->fPos);
+				if (bIsSolidOTile(this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY)))
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffInWallEffect(this->pRoomWidget, *pCoord));
+				else
+					this->pRoomWidget->AddTLayerEffect(
+						new CFluffStabEffect(this->pRoomWidget, *pCoord,
+							GetEffectDuration(6), GetParticleSpeed(2)));
+				break;
+			default: ASSERT(!"Invalid tar type"); break;
+			}
+		}
 	}
 	if (CueEvents.HasOccurred(CID_StepOnScroll))
 	{
@@ -6158,13 +6556,42 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		ShowScroll();
 	}
 
+	if (CueEvents.HasOccurred(CID_FiretrapActivated)) {
+		if (!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP_START))
+			PlaySoundEffect(SEID_FIRETRAP_START);
+	}
+	if (CueEvents.HasOccurred(CID_Firetrap)) {
+		//play one instance
+		if (!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP) &&
+			!g_pTheSound->IsSoundEffectPlaying(SEID_FIRETRAP_START))
+			PlaySoundEffect(SEID_FIRETRAP);
+
+		this->pRoomWidget->RemoveMLayerEffectsOfType(EFIRETRAP);
+
+		const UINT duration = GetEffectDuration(450);
+		for (pObj = CueEvents.GetFirstPrivateData(CID_Firetrap);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			pRoomWidget->AddMLayerEffect(
+				new CFiretrapEffect(pRoomWidget, *pCoord, duration));
+		}
+	}
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FiretrapHit);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+
+		this->fPos[0] = static_cast<float>(pCoord->wX);
+		this->fPos[1] = static_cast<float>(pCoord->wY);
+		PlaySoundEffect(SEID_HIT, this->fPos);
+
+		this->pRoomWidget->AddMLayerEffect(
+			new CFadeTileEffect(this->pRoomWidget, *pCoord, TI_STRONGHIT, 300));
+	}
+
 	//Remove old sparks before drawing the current ones.
-/*	if (//Leave sparks burning while double is being placed.
-		(!player.wPlacingDoubleType ||
-				CueEvents.HasOccurred(CID_DrankPotion)) &&
-				!CueEvents.HasOccurred(CID_DoublePlaced))
-*/
-		this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);
+	this->pRoomWidget->RemoveTLayerEffectsOfType(ESPARK);
 
 	//Spark rendering must come both before and after room is drawn so it will
 	//show up correctly both on room entrance and  in double-placing freeze frame.
@@ -6172,7 +6599,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		ProcessFuseBurningEvents(CueEvents);
 
 	//3rd. Monster actions.
-	if (CueEvents.HasOccurred(CID_GoblinAttacks))
+	if (CueEvents.HasOccurred(CID_EnemySneakAttack))
 		g_pTheSound->PlaySoundEffect(SEID_HIT);
 
 	for (pObj = CueEvents.GetFirstPrivateData(CID_SnakeDiedFromTruncation);
@@ -6181,6 +6608,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		const CMonster *pMonster = DYN_CAST(const CMonster*, const CAttachableObject*, pObj);
 		const CMoveCoord coord(pMonster->wX,pMonster->wY,pMonster->wO);
 		AddKillEffect(pMonster->GetIdentity(), coord);
+		this->pRoomWidget->RedrawDamagePreview(); //update view for remaining enemies
 	}
 	if (CueEvents.HasOccurred(CID_EvilEyeWoke))
 		g_pTheSound->PlaySoundEffect(SEID_EVILEYEWOKE, this->fPos);
@@ -6227,16 +6655,39 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 				new CSteamEffect(this->pRoomWidget, coord));
 	}
 */
+	volumeMultiplier = getVolumeMultiplier(CueEvents.GetOccurrenceCount(CID_Splash));
 	for (pObj = CueEvents.GetFirstPrivateData(CID_Splash);
 			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
 	{
 		const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
 		this->fPos[0] = static_cast<float>(pCoord->wX);
 		this->fPos[1] = static_cast<float>(pCoord->wY);
-		g_pTheSound->PlaySoundEffect(SEID_SPLASH, this->fPos);
+		g_pTheSound->PlaySoundEffect(SEID_SPLASH, this->fPos, NULL, false, 1.0f, volumeMultiplier);
 		if (this->pCurrentGame->pRoom->GetOSquare(pCoord->wX, pCoord->wY) == T_WATER)
 			this->pRoomWidget->AddTLayerEffect(
 					new CSplashEffect(this->pRoomWidget, *pCoord));
+	}
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_Dig);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoordEx* pCoord = DYN_CAST(const CMoveCoordEx*, const CAttachableObject*, pObj);
+
+		//If player dug the block, center sound on player for nicer effect.
+		if (player.wX == pCoord->wX && player.wY == pCoord->wY)
+		{
+			this->fPos[0] = static_cast<float>(player.wX);
+			this->fPos[1] = static_cast<float>(player.wY);
+		} else {
+			this->fPos[0] = static_cast<float>(pCoord->wX);
+			this->fPos[1] = static_cast<float>(pCoord->wY);
+		}
+		g_pTheSound->PlaySoundEffect(SEID_DIG, this->fPos, NULL, false, getFrequencyMultForItem(pCoord->wValue));
+		CMoveCoord mc(*pCoord);
+		mc.wO = nGetReverseO(mc.wO); //dirt particles fly backwards
+		this->pRoomWidget->AddMLayerEffect(
+			new CDigDebrisEffect(this->pRoomWidget, mc, 10,
+				GetEffectDuration(10), GetParticleSpeed(1)));
 	}
 
 	//Events w/o accompanying sounds.
@@ -6277,6 +6728,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (bLightToggled)
 		this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->AddPlayerLight();
+	this->pRoomWidget->RerenderRoomCeilingLight(CueEvents);
 
 	//
 	//Begin section where room load can occur.  If room load occurs then
@@ -6304,8 +6756,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		//but before room restart so speech on room start can be retained
 
 		//Repaint the sign in case demo recording ended.
-		SetSignTextToCurrentRoom();
-		PaintSign();
+		UpdateSign();
 
 		ASSERT(!(this->pCurrentGame->bIsGameActive && bDeathNotUndone));
 		if (GetScreenType() == SCR_Demo)
@@ -6321,8 +6772,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					CFiles f;
 					f.AppendErrorLog("Failed to save a demo when recording ended.\r\n");
 				}
-				SetSignTextToCurrentRoom();
-				PaintSign();
+				UpdateSign();
 			}
 */
 /*
@@ -6347,12 +6797,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pRoomWidget->RenderRoomLighting();
 			this->pRoomWidget->ResetForPaint();
 
+			DisplayPersistentEffects();
+
 			//Refresh map.
 			const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
 			if (nowMappedRooms.size() != mappedRooms.size())
 				this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
 		}
-		SynchScroll();
+		UpdateScroll();
 		RedrawStats(this->pCurrentGame->pCombat, true);
 		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 		this->pMapWidget->RequestPaint();
@@ -6394,15 +6846,14 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 
 			wExitOrientation = static_cast<UINT>(*pExitOrientation);
 
-			this->pRoomWidget->ShowRoomTransition(wExitOrientation);
+			this->pRoomWidget->ShowRoomTransition(wExitOrientation, CueEvents);
 			ClearEventBuffer(); //don't buffer up commands while transitioning, but don't reset pressed keys/buttons
 
 			//Update other UI elements that may have changed.
 			this->pMapWidget->UpdateFromCurrentGame();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
 			this->pMapWidget->RequestPaint();
-			SetSignTextToCurrentRoom();
-			PaintSign();
+			UpdateSign();
 			StopAmbientSounds();
 			ClearSpeech();
 			SetGameAmbience(true);
@@ -6429,6 +6880,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			this->pMapWidget->RequestPaint();
 		}
 */
+		ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	}
 
 	return eNextScreen;
@@ -6463,10 +6915,36 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	SetMusicStyle();
 
 	//Allow handling either before or after room is drawn.
+	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 	ProcessMovieEvents(CueEvents);
 
-	if (CueEvents.HasOccurred(CID_InvalidAttackMove))
+	//ensure texts aren't on top of each other
+	int numFlashingTexts = CueEvents.GetOccurrenceCount(CID_FlashingMessage);
+/*
+	if (bLevelComplete)
+		++numFlashingTexts;
+	if (bSecretFound)
+		++numFlashingTexts;
+	if (bHoldMastered)
+		++numFlashingTexts;
+*/
+	static const int CY_FLASHING_TEXT = 50;
+	int yFlashingTextOffset = (-numFlashingTexts / 2) * CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MAX = int(this->pRoomWidget->GetH()) / 2 - CY_FLASHING_TEXT;
+	const int Y_FLASHING_TEXT_MIN = -Y_FLASHING_TEXT_MAX + CY_FLASHING_TEXT; //leave space at top for score ranking
+	if (yFlashingTextOffset < Y_FLASHING_TEXT_MIN)
+		yFlashingTextOffset = Y_FLASHING_TEXT_MIN;
+
+	if (CueEvents.HasOccurred(CID_StalledCombat))
 	{
+		pObj = CueEvents.GetFirstPrivateData(CID_StalledCombat);
+		ASSERT(pObj);
+		const CMoveCoord* pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		static CMoveCoord coord;
+		coord = *pCoord;
+		this->pRoomWidget->AddInfoSubtitle(&coord, g_pTheDB->GetMessageText(MID_CombatStalled), 2000);
+		ShowStatsForMonsterAt(pCoord->wX, pCoord->wY);
+	} else if (CueEvents.HasOccurred(CID_InvalidAttackMove)) {
 		pObj = CueEvents.GetFirstPrivateData(CID_InvalidAttackMove);
 		ASSERT(pObj);
 		const CMoveCoord *pCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
@@ -6532,13 +7010,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 //				, bLevelComplete ? 50 : 0));	//ensure texts aren't on top of each other
 	}
 	//Priority of player moods
-	ShowPlayerFace();
+	UpdatePlayerFace();
 	if (CueEvents.HasOccurred(CID_SwordsmanAfraid))
-		this->pFaceWidget->SetMood(Mood_Nervous);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous);
 	else if (CueEvents.HasOccurred(CID_SwordsmanAggressive))
-		this->pFaceWidget->SetMood(Mood_Aggressive);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive);
 	else if (CueEvents.HasOccurred(CID_SwordsmanNormal))
-		this->pFaceWidget->SetMood(Mood_Normal);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Normal);
 
 /*
 	if (CueEvents.HasOccurred(CID_AllMonstersKilled))  //priority of temporary moods
@@ -6567,13 +7045,13 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 */
 	}
 	else if (CueEvents.HasOccurred(CID_Scared))
-		this->pFaceWidget->SetMood(Mood_Nervous,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous,250);
 	else if (CueEvents.HasOccurred(CID_HitObstacle))
-		this->pFaceWidget->SetMood(Mood_Aggressive,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Aggressive,250);
 
 	if (CueEvents.HasOccurred(CID_PlayerOnWaterEdge))
 	{
-		this->pFaceWidget->SetMood(Mood_Nervous,250);
+		this->pFaceWidget->SetMood(PlayerRole, Mood_Nervous,250);
 		g_pTheSound->PlaySoundEffect(SEID_WATERSTEP);
 	}
 
@@ -6647,6 +7125,27 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 	if (CueEvents.HasOccurred(CID_Swordfight))
 		g_pTheSound->PlaySoundEffect(SEID_SWORDS);
 
+	if (CueEvents.HasOccurred(CID_RoomLocationTextUpdate))
+		UpdateSign();
+
+	for (pObj = CueEvents.GetFirstPrivateData(CID_FlashingMessage);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		if (yFlashingTextOffset > Y_FLASHING_TEXT_MAX)
+			break; //no room to display
+
+		const CColorText* pColorText = DYN_CAST(const CColorText*, const CAttachableObject*, pObj);
+		const CDbMessageText* pText = pColorText->pText;
+		ASSERT((const WCHAR*)(*pText));
+		CFlashMessageEffect* pFlashText = new CFlashMessageEffect(
+			this->pRoomWidget, (const WCHAR*)(*pText), yFlashingTextOffset, 2000, 500);
+		pFlashText->SlowExpansion();
+		if (pColorText->customColor)
+			pFlashText->SetColor(pColorText->r, pColorText->g, pColorText->b);
+		this->pRoomWidget->AddLastLayerEffect(pFlashText);
+		yFlashingTextOffset += CY_FLASHING_TEXT;
+	}
+
 	//Process both before and after room is drawn.
 	if (!this->bPersistentEventsDrawn)
 		ProcessFuseBurningEvents(CueEvents);
@@ -6684,7 +7183,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 			//Fade out.
 			if (!CueEvents.HasOccurred(CID_PlayVideo))
 				Paint();
-			FadeRoom(false, 750);
+			FadeRoom(false, 750, CueEvents);
 		}
 		CueEvents.Clear();
 		this->pRoomWidget->ClearEffects();
@@ -6710,15 +7209,25 @@ SCREENTYPE CGameScreen::ProcessCueEventsAfterRoomDraw(
 bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNextScreen)
 //Returns: whether the game screen should be exited
 {
+	UINT dwEntranceID = 0;
+	bool bGotoWorldMap = false;
+	bool bSkipEntranceScreen = false;
 	//Check for level exiting.
-	if (!CueEvents.HasOccurred(CID_ExitLevelPending))
-		return false;
-
-	const CCoord *pExitInfo =
+	if (CueEvents.HasOccurred(CID_ExitLevelPending)) {
+		const CCoord* pExitInfo =
 			DYN_CAST(const CCoord*, const CAttachableObject*,
-			CueEvents.GetFirstPrivateData(CID_ExitLevelPending));
-	const UINT dwEntranceID = pExitInfo->wX;
-	const bool bSkipEntranceScreen = pExitInfo->wY != 0;
+				CueEvents.GetFirstPrivateData(CID_ExitLevelPending));
+		dwEntranceID = pExitInfo->wX;
+		bSkipEntranceScreen = pExitInfo->wY != 0;
+	} else if (CueEvents.HasOccurred(CID_ExitToWorldMapPending)) {
+		const CAttachableWrapper<UINT>* pInfo = DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+			CueEvents.GetFirstPrivateData(CID_ExitToWorldMapPending));
+		dwEntranceID = pInfo->data;
+		bGotoWorldMap = true;
+	} else {
+		return false;
+	}
+
 	if (!dwEntranceID)
 		return false; //not a valid event field value -- ignore it
 
@@ -6753,20 +7262,25 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 			Paint();
 	}
 
-	//Fade out when level entrance screen is not shown.
-	CEntranceData *pEntrance = this->pCurrentGame->pHold->GetEntrance(dwEntranceID);
-	bool bShowLevelEntranceDescription =
+	bool bShowLevelEntranceDescription = false;
+	if (bGotoWorldMap) {
+		eNextScreen = SCR_WorldMap;
+	} else {
+		//Fade out when level entrance screen is not shown.
+		CEntranceData* pEntrance = this->pCurrentGame->pHold->GetEntrance(dwEntranceID);
+		bShowLevelEntranceDescription =
 			pEntrance && pEntrance->eShowDescription != CEntranceData::DD_No && !bSkipEntranceScreen;
-	if (pEntrance && pEntrance->eShowDescription == CEntranceData::DD_Once &&
+		if (pEntrance && pEntrance->eShowDescription == CEntranceData::DD_Once &&
 			this->pCurrentGame->entrancesExplored.has(dwEntranceID))
-		bShowLevelEntranceDescription = false; //this entrance has been entered before
-	if (bShowLevelEntranceDescription)
-		eNextScreen = SCR_LevelStart;
-	else
-	{
-		if (eNextScreen == SCR_LevelStart)
-			eNextScreen = SCR_Game;
-		FadeRoom(false, 600);
+			bShowLevelEntranceDescription = false; //this entrance has been entered before
+		if (bShowLevelEntranceDescription)
+			eNextScreen = SCR_LevelStart;
+		else
+		{
+			if (eNextScreen == SCR_LevelStart)
+				eNextScreen = SCR_Game;
+			FadeRoom(false, 600, CueEvents);
+		}
 	}
 
 	//Reset these things.
@@ -6781,6 +7295,12 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 		//Handle uploads before loading new level data so room isn't
 		//redrawn in incorrect style on error.
 		WaitToUploadDemos();
+
+		if (bGotoWorldMap) {
+			this->pCurrentGame->LoadFromWorldMap(dwEntranceID);
+			this->pRoomWidget->ResetRoom();
+			return true;
+		}
 
 		this->pCurrentGame->LoadFromLevelEntrance(this->pCurrentGame->pHold->dwHoldID,
 				dwEntranceID, CueEvents);
@@ -6798,17 +7318,15 @@ bool CGameScreen::ProcessExitLevelEvents(CCueEvents& CueEvents, SCREENTYPE& eNex
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom,
 					this->pCurrentGame->pRoom->mapMarker);
 			this->pMapWidget->RequestPaint();
-			SetSignTextToCurrentRoom();
-			PaintSign();
-			SynchScroll();
-			PaintScroll();
+			UpdateSign();
+			UpdateScroll();
 			UpdateSound();
 			ProcessSpeechCues(CueEvents);
 			PaintClock(true);
 			RedrawStats(this->pCurrentGame->pCombat, true);
 
 			//Fade in.
-			FadeRoom(true, 400);
+			FadeRoom(true, 400, CueEvents);
 
 			//Throw away everything that happened during fade.
 			ClearEvents();
@@ -6843,7 +7361,7 @@ void CGameScreen::ProcessFuseBurningEvents(CCueEvents& CueEvents)
 	while (pCoord)
 	{
 		const UINT wTSquare = this->pCurrentGame->pRoom->GetTSquare(pCoord->wX, pCoord->wY);
-		if (wTSquare == T_FUSE || wTSquare == T_BOMB)	//needed to avoid effects
+		if (bIsCombustibleItem(wTSquare))	//needed to avoid effects
 					//where fuses have already disappeared since the cue event fired
 		{
 			if (pCoord->wO == NO_ORIENTATION && wTSquare == T_FUSE)
@@ -6877,6 +7395,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 	UINT count=0, incCount;
 	int healDelta=0, atkDelta=0, defDelta=0, goldDelta=0, xpDelta=0;
 	int yKeyDelta=0, gKeyDelta=0, bKeyDelta=0, sKeyDelta=0;
+	int shovelDelta = 0;
 	while (pObj)
 	{
 		const CCombatEffect *pEffect = DYN_CAST(const CCombatEffect*, const CAttachableObject*, pObj);
@@ -6902,7 +7421,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 				}
 				this->pRoomWidget->AddMLayerEffect(
 						new CFadeTileEffect(this->pRoomWidget, *pEntity, tile, 500));
-				g_pTheSound->PlaySoundEffect(SEID_SHIELDED, NULL);
+				g_pTheSound->PlaySoundEffect(SEID_SHIELDED);
 			}
 			break;
 			case CET_STRONGHIT:
@@ -6941,7 +7460,7 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 
 						//Monster strikes player,
 						const SEID seid = GetMonsterAttackSoundEffect(pCombat);
-						g_pTheSound->PlaySoundEffect(seid, NULL);
+						g_pTheSound->PlaySoundEffect(seid);
 					}
 
 					//Don't overlap display of multiple hit number on player.
@@ -6963,10 +7482,11 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 					//Play attack sound when player/mimic hits monster.
 					if (pCombat)
 					{
-						if (this->pCurrentGame->pRoom->GetMonsterAtSquare(pCombat->wFromX, pCombat->wFromY))
-							g_pTheSound->PlaySoundEffect(SEID_SPLAT, NULL); //mimic is attacking
-						else
-							g_pTheSound->PlaySoundEffect(player.HasSword() ? SEID_SPLAT : SEID_PUNCH, NULL);
+						if (this->pCurrentGame->pRoom->GetMonsterAtSquare(pCombat->wFromX, pCombat->wFromY)) {
+							g_pTheSound->PlaySoundEffect(SEID_SPLAT); //mimic is attacking
+						} else {
+							g_pTheSound->PlaySoundEffect(player.HasSword() ? SEID_SPLAT : SEID_PUNCH);
+						}
 					}
 				}
 
@@ -7033,6 +7553,12 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 				else
 					showStat(pEffect->eType, pEffect->amount, pEntity, incCount);
 			break;
+			case CET_SHOVEL:
+				if (pEntity == &player)
+					shovelDelta += pEffect->amount;
+				else
+					showStat(pEffect->eType, pEffect->amount, pEntity, incCount);
+				break;
 			default: break;
 		}
 		pObj = CueEvents.GetNextPrivateData();
@@ -7058,6 +7584,8 @@ void CGameScreen::ProcessStatEffects(CCueEvents& CueEvents)
 		showStat(CET_GOLD, goldDelta, &player, incCount);
 	if (xpDelta != 0)
 		showStat(CET_XP, xpDelta, &player, incCount);
+	if (shovelDelta != 0)
+		showStat(CET_SHOVEL, shovelDelta, &player, incCount);
 }
 
 //*****************************************************************************
@@ -7178,6 +7706,12 @@ void CGameScreen::ProcessMovieEvents(CCueEvents& CueEvents)
 		//The next item is now the first item.
 		pObj = CueEvents.GetFirstPrivateData(CID_PlayVideo);
 	}
+}
+
+void CGameScreen::DisplayPersistentEffects()
+{
+	AmbientSoundSetup();
+	this->pRoomWidget->DisplayPersistingImageOverlays(this->sCueEvents);
 }
 
 //*****************************************************************************
@@ -7394,7 +7928,7 @@ void CGameScreen::ProcessSpeech()
 		this->dwNextSpeech = 0;
 
 		//Return to showing player again.
-		ShowPlayerFace(true);
+		this->pFaceWidget->SetSpeaker(false);
 		return;
 	}
 
@@ -7556,59 +8090,48 @@ bool CGameScreen::ProcessSpeechSpeaker(CFiredCharacterCommand *pCommand)
 	UINT speaker = pSpeech->wCharacter;
 
 	//Show custom speaker, if set.
-	HoldCharacter *pCustomChar = NULL;
+	HoldCharacter* pCustomChar = NULL;
 	if (speaker >= CUSTOM_CHARACTER_FIRST && speaker != M_NONE)
 		pCustomChar = this->pCurrentGame->pHold->GetCharacter(speaker);
+	else if (speaker == Speaker_Player) {
+		SPEAKER ePlayerSpeaker = Speaker_Beethro;
+		ResolvePlayerFace(ePlayerSpeaker, &pCustomChar);
+		speaker = ePlayerSpeaker;
+	}
 
 	if (speaker >= Speaker_Count && !pCustomChar) //indicates a dangling reference
-		speaker = Speaker_None;
-	if (speaker == Speaker_None || //Just show player if no speaker is being shown.
-			speaker == Speaker_Player)
+		pSpeech->wCharacter = Speaker_None;
+	if (pSpeech->wCharacter == Speaker_None)
 	{
-		ShowPlayerFace(true);
-	} else {
+		//Just show player if no speaker is being shown.
+		this->pFaceWidget->SetSpeaker(false);
+	}
+	else {
 		//Show who is speaking.
-		this->pFaceWidget->SetMood((MOOD)pSpeech->wMood, 0, true);
-		if (speaker != Speaker_Custom && speaker != Speaker_Self)
+		if (pSpeech->wCharacter != Speaker_Custom && pSpeech->wCharacter != Speaker_Self)
 		{
-			if (pCustomChar && pCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pCustomChar->dwDataID_Avatar);
-			} else {
-				if (pCustomChar)
-					speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
-				this->pFaceWidget->SetCharacter((SPEAKER)speaker, true);
-			}
-		} else {
+			if (pCustomChar)
+				speaker = getSpeakerType(MONSTERTYPE(pCustomChar->wType));
+			this->pFaceWidget->SetSpeaker(true, (SPEAKER)speaker, pCustomChar, (MOOD)pSpeech->wMood);
+		}
+		else {
 			//Determine who is speaking.  Show their face, if applicable.
-			HoldCharacter *pRemoteCustomChar = NULL;
+			HoldCharacter* pRemoteCustomChar = NULL;
 			if (pCommand->pSpeakingEntity->wType == M_CHARACTER) //another custom speaker?
 			{
-				CCharacter *pRemoteCharacter = DYN_CAST(CCharacter*, CMonster*,
-						pCommand->pSpeakingEntity);
+				CCharacter* pRemoteCharacter = DYN_CAST(CCharacter*, CMonster*,
+					pCommand->pSpeakingEntity);
 				pRemoteCustomChar = this->pCurrentGame->pHold->GetCharacter(
-						pRemoteCharacter->wLogicalIdentity);
+					pRemoteCharacter->wLogicalIdentity);
 			}
-			if (pRemoteCustomChar && pRemoteCustomChar->dwDataID_Avatar)
-			{
-				//Show custom character avatar.
-				this->pFaceWidget->SetImage(pRemoteCustomChar->dwDataID_Avatar);
-			} else {
-				UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
-/*				if (wIdentity == M_EYE_ACTIVE)
-					wIdentity = M_EYE;       //map to same type
-*/
-
-				wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
-				if (wIdentity != Speaker_None)
-					this->pFaceWidget->SetCharacter((SPEAKER)wIdentity, true);
+			UINT wIdentity = pCommand->pSpeakingEntity->GetIdentity();
+			/*if (wIdentity == M_EYE_ACTIVE)
+				wIdentity = M_EYE;       //map to same type
+			*/
+			wIdentity = getSpeakerType((MONSTERTYPE)wIdentity);
+			if (wIdentity != Speaker_None) {
+				this->pFaceWidget->SetSpeaker(true, (SPEAKER)wIdentity, pRemoteCustomChar, (MOOD)pSpeech->wMood);
 			}
-		}
-		if (this->pFaceWidget->ResolveFace() == FF_Default)
-		{
-			//Face doesn't exist; show player face instead of default face
-			ShowPlayerFace(true);
 		}
 	}
 	return true;
@@ -7652,6 +8175,69 @@ void CGameScreen::ReattachRetainedSubtitles()
 			}
 		}
 	}
+}
+
+//*****************************************************************************
+void CGameScreen::RestartRoom(int nCommand, CCueEvents& CueEvents)
+{
+	/*
+		//Rewind moves to previous checkpoints or restart the room.
+		if (nCommand == CMD_RESTART_FULL)
+			this->pCurrentGame->RestartRoom(this->sCueEvents);
+		else if (nCommand == CMD_RESTART_PARTIAL)
+			this->pCurrentGame->RestartRoomFromLastDifferentCheckpoint(this->sCueEvents);
+		else
+			this->pCurrentGame->RestartRoomFromLastCheckpoint(this->sCueEvents);
+	*/
+	const CIDSet mappedRooms = this->pCurrentGame->GetExploredRooms(true);
+	const CIDSet roomPreviews = this->pCurrentGame->GetPreviouslyExploredRooms();
+
+	delete g_pPredictedCombat;
+	g_pPredictedCombat = NULL;
+
+	this->pCurrentGame->RestartRoom(this->sCueEvents);
+
+	//	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
+	this->wUndoToTurn = this->pCurrentGame->wTurnNo;
+
+	bool bReloadEntireMap = roomPreviews.containsAny(mappedRooms); //preview state could have changed for these rooms
+	bReloadEntireMap |= !this->mapIconChanges.isAfterLatest(1);
+	this->mapIconChanges.reset();
+	if (!bReloadEntireMap) {
+		const CIDSet nowMappedRooms = this->pCurrentGame->GetExploredRooms(true);
+		if (nowMappedRooms.size() != mappedRooms.size())
+			bReloadEntireMap = true;
+	}
+		
+	UpdateUIAfterRoomRestart(bReloadEntireMap);
+}
+
+void CGameScreen::UpdateUIAfterRoomRestart(const bool bReloadEntireMap) //[default=false]
+{
+	ClearSpeech();
+
+	StopAmbientSounds();
+	g_pTheSound->StopAllSoundEffects(); //stop any game sounds that were playing
+	SetGameAmbience(true);
+	AmbientSoundSetup(); //determine what sounds should be playing now
+
+	this->pRoomWidget->ceilingLightChanges.reset();
+	this->pRoomWidget->ClearEffects();
+	this->pRoomWidget->RenderRoomLighting();
+	this->pRoomWidget->ResetForPaint();
+
+	DisplayPersistentEffects();
+
+	if (bReloadEntireMap) {
+		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
+	} else {
+		this->pMapWidget->DrawMapSurfaceFromRoom(this->pCurrentGame->pRoom, this->pCurrentGame->pRoom->mapMarker);
+	}
+	this->pMapWidget->RequestPaint();
+
+	UpdateSign();
+
+	SwirlEffect();
 }
 
 //*****************************************************************************
@@ -7824,6 +8410,22 @@ void CGameScreen::showStat(const UINT eType, const int delta, CEntity *pEntity, 
 				text, whitish, F_Title, 1000, 20.0));
 		}
 		break;
+		case CET_SHOVEL:
+		if (delta != 0)
+		{
+			static const SURFACECOLOR brown = {128, 128, 32};
+			WCHAR temp[12];
+			WSTRING text;
+			if (delta > 0)
+				text += wszPlus;
+			text += _itoW(delta, temp, 10);
+			text += wszSpace;
+			text += g_pTheDB->GetMessageText(MID_ShovelsStat);
+			this->pRoomWidget->AddLastLayerEffect(new CFloatTextEffect(this->pRoomWidget,
+				px, py,
+				text, brown, F_Title, 1000, 20.0));
+		}
+		break;
 	}
 	++count;
 }
@@ -7901,13 +8503,14 @@ void CGameScreen::ShowStatsForMonster(CMonster *pMonster)
 
 		if (g_pPredictedCombat)
 			delete g_pPredictedCombat;
-		g_pPredictedCombat = new CCombat(this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY);
+		g_pPredictedCombat = new CCombat(
+			this->pCurrentGame, pMonster, true, pOrigMonster->wX, pOrigMonster->wY, pOrigMonster->wX, pOrigMonster->wY);
 		RedrawStats(NULL, true); //predicted combat will be shown if no combat is actually in progress
 	}
 }
 
 //*****************************************************************************
-UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
+UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to display
 //Temporarily display another room in place of the current room.
 //
 //Returns: roomID of a different room to display, or 0 for none
@@ -7920,12 +8523,14 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 	this->pTempRoomWidget->HidePlayer();
 	VERIFY(this->pTempRoomWidget->LoadFromRoom(pRoom));
 	this->pTempRoomWidget->pCurrentGame = pRoom->GetCurrentGame();
+	this->pTempRoomWidget->pCurrentGame->pPlayer->wIdentity = this->pTempRoomWidget->pCurrentGame->pPlayer->wAppearance = M_NONE;
 
 	if (this->bShowingBigMap)
 		this->pBigMapWidget->Hide(); //hide big map while displaying another room
 	this->pRoomWidget->Hide();
 	this->pTempRoomWidget->Show();
 
+	pTempRoomWidget->DisplayPersistingImageOverlays(CueEvents);
 	this->pTempRoomWidget->Paint();
 	ShowRoomCoords(this->pTempRoomWidget->pRoom);
 	UpdateRect();
@@ -7974,7 +8579,15 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 						case SDLK_DOWN: nCommand = CMD_S; break;
 						case SDLK_LEFT: nCommand = CMD_W; break;
 						case SDLK_RIGHT: nCommand = CMD_E; break;
-						default: nCommand = GetCommandForKeysym(event.key.keysym.sym); break;
+						case SDLK_LSHIFT:
+						case SDLK_RSHIFT:
+						case SDLK_LCTRL:
+						case SDLK_RCTRL:
+						case SDLK_LALT:
+						case SDLK_RALT:
+							nCommand = -1; // Allow modifier keys to be pressed in case any needed commands are mapped to use them
+							break;
+						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
 					}
 					switch (nCommand)
 					{
@@ -7995,6 +8608,8 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 							break;
 						case CMD_E:
 							DisplayAdjacentTempRoom(E);
+							break;
+						case -1: // modifier key
 							break;
 						default:
 							bShow = false;
@@ -8030,7 +8645,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom) //room to display
 	this->pRoomWidget->Show();
 	this->pRoomWidget->LoadRoomImages();
 	this->pRoomWidget->UpdateFromCurrentGame();
-	SetSignTextToCurrentRoom();
+	UpdateSign();
 	Paint();
 
 	//Show a new room?
@@ -8054,7 +8669,11 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 		default: ASSERT(!"Unsupported temp room pan direction"); return;
 	}
 
-	if (!this->pCurrentGame->IsRoomAtCoordsExplored(newRoomX, newRoomY)) {
+	const UINT dwNewRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(newRoomX, newRoomY);
+
+	if (!this->pCurrentGame->IsRoomExplored(dwNewRoomID) &&
+		!CDbSavedGames::IsMoreDetailedMapState(this->pCurrentGame->GetStoredMapStateForRoom(dwNewRoomID), MapState::NoDetail))
+	{
 		g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
 		return;
 	}
@@ -8074,7 +8693,7 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 			pTempGame->UpdatePrevCoords();
 		}
 		this->pTempRoomWidget->ShowPlayer(bShowPlayer);
-		this->pTempRoomWidget->ShowRoomTransition(direction, bShowPlayer);
+		this->pTempRoomWidget->ShowRoomTransition(direction, this->sCueEvents, bShowPlayer);
 		this->pTempRoomWidget->Paint();
 		ShowRoomCoords(this->pTempRoomWidget->pRoom);
 		UpdateRect();
@@ -8112,6 +8731,10 @@ void CGameScreen::ShowRoomTemporarily(UINT roomID)
 Loop:
 	CCurrentGame *pTempGame = g_pTheDB->GetDummyCurrentGame();
 	*pTempGame = *this->pCurrentGame;
+	//PrepTempGameForRoomDisplay will restart the room, which replaces the monster
+	//list with the start of turn version. This is not really what we want, so we
+	//update the starting list to be the current list.
+	pTempGame->SetMonsterListAtRoomStart();
 	if (!pTempGame->PrepTempGameForRoomDisplay(roomID)) {
 		delete pTempGame;
 		return;
@@ -8120,7 +8743,8 @@ Loop:
 	this->bShowingTempRoom = true;
 	this->bNoMoveByCurrentMouseClick = true;
 
-	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom);
+	CCueEvents CueEvents;
+	const UINT showNewRoomID = ShowRoom(pTempGame->pRoom, CueEvents);
 	delete pTempGame;
 
 	this->bShowingTempRoom = false;
@@ -8130,7 +8754,7 @@ Loop:
 	if (showNewRoomID)
 	{
 		ExploredRoom *pExpRoom = this->pCurrentGame->getExploredRoom(showNewRoomID);
-		if (pExpRoom && !pExpRoom->bMapOnly)
+		if (pExpRoom && pExpRoom->HasDetail())
 		{
 			roomID = showNewRoomID;
 			goto Loop;
@@ -8177,8 +8801,44 @@ void CGameScreen::ShowLockIcon(const bool bShow)
 */
 
 //*****************************************************************************
-void CGameScreen::ShowPlayerFace(const bool bOverrideLock) //[default=false]
-//Show the face of the role the player is in.
+void CGameScreen::UpdatePlayerFace()
+// Refresh player face to match reality
+{
+	if (!this->pCurrentGame)
+		return;
+
+	HoldCharacter* pPlayerHoldCharacter = NULL;
+
+	//Handle custom character images specially.
+	UINT dwCharID = this->pCurrentGame->pPlayer->wIdentity;
+	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
+	{
+		pPlayerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
+	}
+
+	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (pPlayerHoldCharacter) {
+		player = getSpeakerType(MONSTERTYPE(pPlayerHoldCharacter->wType));
+	}
+
+	if (player == Speaker_None)
+	{
+		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.
+		CMonster* pNPCBeethro = this->pCurrentGame->pRoom->GetNPCBeethro();
+		if (pNPCBeethro) {
+			player = Speaker_Beethro;
+		}
+	}
+
+	this->pFaceWidget->SetSleeping(false);
+	this->pFaceWidget->SetCharacter(PlayerRole, player, pPlayerHoldCharacter);
+}
+
+//*****************************************************************************
+void CGameScreen::ResolvePlayerFace(
+	SPEAKER& pSpeaker, //(out) player's speaker
+	HoldCharacter** playerHoldCharacter) //(out) custom player character if
+// Refresh player face to match reality
 {
 	if (!this->pCurrentGame)
 		return;
@@ -8187,63 +8847,17 @@ void CGameScreen::ShowPlayerFace(const bool bOverrideLock) //[default=false]
 	UINT dwCharID = this->pCurrentGame->pPlayer->wIdentity;
 	if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
 	{
-		HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(dwCharID);
-		if (pChar && pChar->dwDataID_Avatar)
-		{
-			//Show custom character image.
-			if (bOverrideLock || (this->pFaceWidget->GetImageID() != pChar->dwDataID_Avatar &&
-					!this->pFaceWidget->IsMoodLocked()))
-				this->pFaceWidget->SetImage(pChar->dwDataID_Avatar);
-			return;
-		}
-		//otherwise show character's functional image below
-		if (pChar)
-			dwCharID = pChar->wType;
+		*playerHoldCharacter = this->pCurrentGame->pHold->GetCharacter(dwCharID);
 	}
 
-	SPEAKER player = getSpeakerType(MONSTERTYPE(dwCharID));
-	if (player == Speaker_None)
+	pSpeaker = getSpeakerType(MONSTERTYPE(dwCharID));
+	if (pSpeaker == Speaker_None)
 	{
-		//If player is not in the room, show the face of the first visible NPC.
-		CMonster *pMonster = this->pCurrentGame->pRoom->pFirstMonster;
-		while (pMonster)
-		{
-			if (pMonster->wType == M_CHARACTER)
-			{
-				CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-				if (pCharacter->IsVisible())
-				{
-					dwCharID = pCharacter->wLogicalIdentity;
-					if (dwCharID >= CUSTOM_CHARACTER_FIRST && dwCharID != M_NONE)
-					{
-						HoldCharacter *pChar = this->pCurrentGame->pHold->GetCharacter(dwCharID);
-						if (pChar && pChar->dwDataID_Avatar)
-						{
-							//Show custom character image.
-							if (bOverrideLock || (this->pFaceWidget->GetImageID() != pChar->dwDataID_Avatar &&
-									!this->pFaceWidget->IsMoodLocked()))
-								this->pFaceWidget->SetImage(pChar->dwDataID_Avatar);
-							return;
-						}
-						//otherwise show character's functional image below
-						if (pChar)
-							dwCharID = pChar->wType;
-					}
-					player = getSpeakerType(MONSTERTYPE(dwCharID));
-					break;
-				}
-			}
-			pMonster = pMonster->pNext;
+		//If player is not in the room, show Beethro's face if NPC Beethro is in the room.
+		CMonster* pNPCBeethro = this->pCurrentGame->pRoom->GetNPCBeethro();
+		if (pNPCBeethro) {
+			pSpeaker = Speaker_Beethro;
 		}
-	}
-
-	//Show player face when forced.
-	//Otherwise, only show it when the widget is not locked.
-	if (bOverrideLock || (this->pFaceWidget->GetCharacter() != player &&
-			!this->pFaceWidget->IsMoodLocked()))
-	{
-		this->pFaceWidget->SetCharacter(player, false);
-		this->pFaceWidget->SetMood(Mood_Normal);
 	}
 }
 
@@ -8279,7 +8893,7 @@ void CGameScreen::ShowSpeechLog()
 		{
 			//Play any attached speech for this line.
 			ASSERT(this->pCurrentGame->roomSpeech.size() >= dwItemID);
-			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1];
+			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1].pSpeechCommand;
 			ASSERT(pCmd);
 
 			const CDbDatum *pSound = pCmd->pSpeech->GetSound();
@@ -8423,10 +9037,6 @@ void CGameScreen::UndoMove()
 		this->pCurrentGame->UndoCommand(this->sCueEvents);
 	}
 
-	this->pRoomWidget->pRoom = this->pCurrentGame->pRoom; //synch
-	StopAmbientSounds();
-	ClearSpeech(false);  //retain speech that started before the previous turn
-
 /*
 	//Refresh game screen display info.
 	if (bRecordingDemo)
@@ -8435,24 +9045,45 @@ void CGameScreen::UndoMove()
 		{
 			//Don't show a long delay between last move and next move in the recorded demo.
 			this->pCurrentGame->Commands.ResetTimeOfLastAdd();
-		} else {
-			//Remove recording text.
-			SetSignTextToCurrentRoom();
-			PaintSign();
 		}
 	}
 */
+
+	//Refresh map if something changed by undoing.
+	bool bReloadEntireMap = previewedRooms.containsAny(exploredRooms); //these may have changed
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (!bReloadEntireMap) {
+		if (!mapIconChanges.isAfterLatest(currentTurn + 1)) {
+			bReloadEntireMap = true;
+		}
+	}
+	this->mapIconChanges.removeAfter(currentTurn);
+
+	if (!bReloadEntireMap) {
+		const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
+		const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
+		if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms)
+			bReloadEntireMap = true;
+	}
+
+	UpdateUIAfterMoveUndo(bReloadEntireMap);
+}
+
+void CGameScreen::UpdateUIAfterMoveUndo(bool bReloadEntireMap) //[default=false]
+{
+	this->pRoomWidget->pRoom = this->pCurrentGame->pRoom; //synch
+
+	StopAmbientSounds();
+	ClearSpeech(false);  //retain speech that started before the previous turn
+
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
 
+	UpdateSign();
+
 	ReattachRetainedSubtitles(); //after clearing effects, rejoin subtitles to current room objects
 
-	//Refresh map if something changed by undoing.
-	const CIDSet nowExploredRooms = this->pCurrentGame->GetExploredRooms();
-	const CIDSet nowMappedRooms = this->pCurrentGame->GetMappedRooms();
-	if (nowMappedRooms != mappedRooms || nowExploredRooms != exploredRooms ||
-		previewedRooms.containsAny(exploredRooms)) //these may have changed
-	{
+	if (bReloadEntireMap) {
 		this->pMapWidget->LoadFromCurrentGame(this->pCurrentGame);
 	}
 
@@ -8560,7 +9191,7 @@ bool CGameScreen::UploadDemoPolling()
 						WSTRING wStr;
 						UTF8ToUnicode(pwczRank, wStr);
 						this->pRoomWidget->AddLastLayerEffect(new CFlashMessageEffect(
-								this->pRoomWidget, wStr.c_str(), -300, 3000));	//show at top of room for 3s
+								this->pRoomWidget, wStr.c_str(), -230, 3000));	//show at top of room for 3s
 					}
 /*
 					const int nRanking = atoi(pwczRank);
@@ -8708,7 +9339,7 @@ void CGameScreen::SendAchievement(const char* achievement, const UINT dwScore)
 {
 #ifdef STEAMBUILD
 	if (GetScreenType() == SCR_Game && !this->bPlayTesting &&
-			(this->pCurrentGame->pHold && this->pCurrentGame->pHold->status == CDbHold::Main) &&
+			this->pCurrentGame->pHold && CDbHold::IsOfficialHold(this->pCurrentGame->pHold->status) &&
 			SteamUserStats())
 	{
 		const WSTRING holdName = static_cast<const WCHAR *>(this->pCurrentGame->pHold->NameText);

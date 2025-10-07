@@ -51,7 +51,8 @@ enum CombatEffectType {
 	CET_YKEY,      //entity's YKEYs was affected
 	CET_GKEY,      //entity's GKEYs was affected
 	CET_BKEY,      //entity's BKEYs was affected
-	CET_SKEY       //entity's SKEYs was affected
+	CET_SKEY,      //entity's SKEYs was affected
+	CET_SHOVEL     //entity's SHOVELS was affected
 };
 
 struct CombatInfo
@@ -98,10 +99,10 @@ public:
 			const UINT wX=UINT(-1), const UINT wY=UINT(-1),
 			const bool bDefeatToStabTarTile=false);
 
-	bool Advance(CCueEvents& CueEvents, bool bQuickResolution);
+	bool Advance(CCueEvents& CueEvents, bool bQuickResolution, const UINT maxStrikesToPerform=0);
 
 	bool AttackIsFromBehindMonster(int &dx, int &dy) const;
-	int  GetExpectedDamage();
+	int  GetExpectedDamage(const UINT maxStrikesToPerform = 0);
 	UINT GetMonsterSingleAttackDamage() const;
 	UINT GetMonsterAttacksMade() const { return monsterAttacksMade; }
 	static UINT GetMonsterType(CMonster *pMonster);
@@ -109,15 +110,18 @@ public:
 
 	void InitMonsterStats(const bool bCombatStart=true);
 	bool IsCurrent() const;
-	bool IsFighting(CMonster* pMonster) const;
+	bool IsExpectedDamageApproximate() const { return bExpectedDamageIsApproximate; }
+	bool IsFighting(const CMonster* pMonster) const;
 	void MonsterAttacksPlayerOnce(CCueEvents& CueEvents);
 	bool MonsterCanHarmPlayer(CMonster *pMonster) const;
 	static UINT MonsterATKDoubles(const CCurrentGame* pGame);
 	bool PlayerAttacksFirst(const bool bPlayerHitWithWeapon) const;
-	bool PlayerCanHarmMonster(CMonster *pMonster) const;
+	bool PlayerCanHarmMonster(const CMonster *pMonster) const;
 	bool PlayerCanHarmQueuedMonster() const;
 	CMonster* PlayerCantHarmAQueuedMonster() const;
-	bool PlayerDoesStrongHit(CMonster* pMonster) const;
+	bool PlayerDoesStrongHit(const CMonster* pMonster) const;
+	bool PlayerIgnoresEnemyDefense() const;
+	bool PlayerHasStrongShield(const CMonster* pMonster) const;
 	bool QueueMonster(CMonster* pMonster, const bool bPlayerHitsFirst,
 			const UINT wFromX, const UINT wFromY,
 			const UINT wX, const UINT wY,
@@ -156,6 +160,8 @@ public:
 
 	//combat progress
 	UINT playerTicks, monsterTicks; //progress toward next hit
+	UINT playerStalls, monsterStalls; //how many hits resulted in no progress (hp was same or higher than before hit)
+	bool bCombatStalled; //indicates combat ended due to not having enough progress
 
 private:
 	UINT playerAttacksMade, monsterAttacksMade;
@@ -166,6 +172,8 @@ private:
 
 	int  getPlayerATK();
 	int  getPlayerDEF();
+
+	bool bExpectedDamageIsApproximate;
 };
 
 #endif //COMBAT_H

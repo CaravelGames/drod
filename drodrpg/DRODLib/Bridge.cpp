@@ -77,7 +77,7 @@ void CBridge::HandleBridgeAdded(const UINT wX, const UINT wY)
 			const UINT wOTile = this->pRoom->GetOSquare(wAX,wAY);
 			if (!DoesTileSupportBridges(wOTile))
 				continue;
-			if (bIsTrapdoor(wOTile))
+			if (bIsFallingTile(wOTile))
 			{
 				//These tiles temporarily support bridges.
 				supportTiles.insert(wAX,wAY);

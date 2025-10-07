@@ -37,6 +37,7 @@
 #include "DbHolds.h"
 #include "DbData.h"
 #include "DbLevels.h"
+#include "DbLocalHighScores.h"
 #include "DbRooms.h"
 #include "DbPlayers.h"
 #include "DbSavedGameMoves.h"
@@ -104,6 +105,7 @@ public:
 	CDbSavedGameMoves SavedGameMoves;
 	CDbSavedGames  SavedGames;
 	CDbSpeeches    Speech;
+	CDbLocalHighScores HighScores;
 
 	//Accelerated lookups.
 	static void   addDataToHold(const UINT dataID, const UINT holdID);
@@ -124,6 +126,7 @@ public:
 	static CIDSet getDemosInRoom(const UINT roomID);
 	static UINT   getHoldOfDemo(const UINT demoID);
 	static CIDSet getLevelsInHold(const UINT holdID);
+	static CIDSet getLocalHighscoresForHold(const UINT holdID);
 	static CIDSet getRoomsInHold(const UINT holdID);
 	static CIDSet getRoomsInLevel(const UINT levelID);
 	static UINT   getSavedGameOfDemo(const UINT demoID);

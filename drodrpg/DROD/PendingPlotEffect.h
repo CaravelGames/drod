@@ -44,9 +44,6 @@ protected:
 	virtual void Draw(SDL_Surface& destSurface);
 
 private:
-	void PlotStaircase(const UINT wStartX, const UINT wStartY,
-			const UINT wEndX, const UINT wEndY, const UINT wStairType,
-			SDL_Surface& pDestSurface);
 	void PlotSwordsman(const UINT wSwordsmanX, const UINT wSwordsmanY, SDL_Surface& pDestSurface);
 	void PlotTile(const UINT wX, const UINT wY, const UINT wObjectNo,
 			const UINT wTileNo, SDL_Surface& pDestSurface);

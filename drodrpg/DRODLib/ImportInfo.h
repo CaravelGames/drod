@@ -47,6 +47,7 @@ using std::vector;
 //Used during DB import.
 //Maps old local IDs to new local IDs and stores other needed information.
 typedef std::map<UINT, UINT> PrimaryKeyMap;
+typedef std::multimap<UINT, UINT> PrimaryKeyMultiMap;
 
 //Used during export.
 //Tracks records with owner IDs.  May be used to test for duplicate entries.
@@ -79,13 +80,14 @@ public:
 	PrimaryKeyMap EntranceIDMap; //for copying levels
 	PrimaryKeyMap HoldIDMap;
 	PrimaryKeyMap LevelIDMap;
-	PrimaryKeyMap PlayerIDMap;
+	PrimaryKeyMultiMap PlayerIDMap; //for DLC, need to support multiple instances of same player profile being present for hold joins
 	PrimaryKeyMap RoomIDMap;
 	PrimaryKeyMap SavedGameIDMap;
 	PrimaryKeyMap SpeechIDMap;
+	PrimaryKeyMap HighScoreIDMap;
 
 	bool bPreparsed;
-	UINT  nData, nDemos, nHolds, nLevels, nPlayers, nRooms, nSavedGames, nSpeech;
+	UINT  nData, nDemos, nHolds, nLevels, nPlayers, nRooms, nSavedGames, nSpeech, nHighScore;
 
 	bool  bReplaceOldPlayers;
 	bool  bReplaceOldHolds;     //confirm upgrading saved games in hold
@@ -94,13 +96,14 @@ public:
 
 	enum ImportType
 	{
-		None=0,
+		NoImport=0,
 		Data,
 		Demo,
 		Hold,
 		Player,
 		SavedGame,
-		LanguageMod
+		LanguageMod,
+		HighScore,
 	};
 	ImportType  typeBeingImported;
 
@@ -112,7 +115,8 @@ public:
 	CIDSet localHoldIDs;
 	std::set<WSTRING> roomStyles; //room style references encountered in import
 
-	string   exportedDemos, exportedSavedGames;  //saved games temporarily exported while hold is being upgraded
+	string   exportedDemos, exportedSavedGames,
+		exportedHighScores;  //saved games temporarily exported while hold is being upgraded
 	WSTRING  userMessages;     //text messages for the user's convenience
 
 	MESSAGE_ID ImportStatus;   //result of import process
@@ -124,6 +128,10 @@ public:
 	HoldCharacter importChar;
 //	CEntranceData *pEntrance; //single level entrance (1.6, deprecated since 2.0)
 	CEntranceData *pImportEntrance; //hold entrances
+
+	HoldWorldMap importWorldMap;
+	UINT importWorldMapID;
+	WorldMapIcon importWorldMapIcon;
 };
 
 #endif //...#ifndef IMPORTINFO_H

@@ -46,6 +46,18 @@ CMimic::CMimic(
 { }
 
 //******************************************************************************************
+bool CMimic::CanDropTrapdoor(const UINT wTileNo)
+{
+	if (!bIsFallingTile(wTileNo))
+		return false;
+
+	if (bIsThinIce(wTileNo))
+		return true;
+
+	return HasSword();
+}
+
+//******************************************************************************************
 bool CMimic::DoesSquareContainObstacle(
 //Override for mimics.  Parts copied from CMonster::DoesSquareContainObstacle.
 //
@@ -98,14 +110,16 @@ const
 		switch (wLookTileNo)
 		{
 			case T_MIRROR:
+			case T_CRATE:
+			case T_POWDER_KEG:
 			{
 				const int dx = (int)wCol - (int)this->wX;
 				const int dy = (int)wRow - (int)this->wY;
 				if (room.CanPushTo(wCol, wRow, wCol + dx, wRow + dy))
-					break; //mirror is not an obstacle
+					break; //not an obstacle
 			}
 			//NO BREAK
-			default:	return true;
+			default: return true;
 		}
 	}
 
@@ -207,7 +221,7 @@ void CMimic::Process(
 
 			//Before he moves, remember important square contents.
 			const UINT wOTile = room.GetOSquare(this->wX, this->wY);
-			const bool bWasOnTrapdoor = bIsTrapdoor(wOTile);
+			const bool bWasOnTrapdoor = bIsFallingTile(wOTile);
 			const bool bWasOnPlatform = bIsPlatform(wOTile);
 
 			//Move mimic to new destination square.
@@ -219,7 +233,7 @@ void CMimic::Process(
 
 			//Check for movement off of a trapdoor.
 			ASSERT(dx || dy);
-			if (bWasOnTrapdoor && HasSword())
+			if (bWasOnTrapdoor && CanDropTrapdoor(wOTile))
 				room.DestroyTrapdoor(this->wX - dx, this->wY - dy, CueEvents);
 
 			//Check for platform movement.
@@ -236,10 +250,10 @@ void CMimic::Process(
 */
 			//Process any and all of these item interactions.
 			UINT tTile = room.GetTSquare(this->wX, this->wY);
-			if (tTile==T_MIRROR)
+			if (tTile==T_MIRROR || tTile==T_CRATE || tTile==T_POWDER_KEG)
 			{
 				room.PushObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
-				tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the mirror
+				tTile = room.GetTSquare(this->wX, this->wY); //also check what was under the object
 			}
 			if (tTile==T_TOKEN)
 				const_cast<CCurrentGame*>(this->pCurrentGame)->ActivateTokenAt(this->wX, this->wY);

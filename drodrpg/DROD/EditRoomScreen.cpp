@@ -93,6 +93,7 @@ const UINT TAG_SWORD_MENU = 1036;
 const UINT TAG_SHIELD_MENU = 1037;
 const UINT TAG_ACCESSORY_MENU = 1038;
 const UINT TAG_KEY_MENU = 1039;
+const UINT TAG_HEALTH_MENU = 1043;
 
 const UINT TAG_UNDO = 1040;
 const UINT TAG_REDO = 1041;
@@ -216,11 +217,40 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_DARK_CEILING},                                 //T_DARK_CEILING
 	{TI_WALLLIGHT},                                    //T_WALLLIGHT
 	{TI_YELLOWKEY},                                    //T_KEY
-	{TI_SWORD1},                                       //T_SWORD
+	{TI_DAGGER_SWORD},                                 //T_SWORD
 	{TI_MONEYDOOR_O},                                  //T_DOOR_MONEY
 	{TI_SHIELD1},                                      //T_SHIELD
 	{TI_HEALTH_SM},                                    //T_HEALTH_SM
 	{TI_ACCESSORY1},                                   //T_ACCESSORY
+	{TI_MAP_DETAIL},                                   //T_MAP_DETAIL
+	{TI_HEALTH_HUGE},                                  //T_HEALTH_HUGE
+	{TI_ATK_UP3},                                      //T_ATK_UP3
+	{TI_ATK_UP10},                                     //T_ATK_UP10
+	{TI_DEF_UP3},                                      //T_DEF_UP3
+	{TI_DEF_UP10},                                     //T_DEF_UP10
+	{TI_CRATE},                                        //T_CRATE
+	{DONT_USE},                                        //T_PRESSPLATE_BROKEN_VIRTUAL
+	{TI_SHOVEL_1},                                     //T_SHOVEL1
+	{TI_SHOVEL_3},                                     //T_SHOVEL3
+	{TI_SHOVEL_10},                                    //T_SHOVEL10
+	{TI_DIRT_1},                                       //T_DIRT1
+	{TI_DIRT_3},                                       //T_DIRT3
+	{TI_DIRT_5},                                       //T_DIRT5
+	{TI_THINICE_NSWE},                                 //T_THINICE
+	{ TI_ARROW_OFF_N },                                //T_ARROW_OFF_N
+	{ TI_ARROW_OFF_NE },                               //T_ARROW_OFF_NE
+	{ TI_ARROW_OFF_E },                                //T_ARROW_OFF_E
+	{ TI_ARROW_OFF_SE },                               //T_ARROW_OFF_SE
+	{ TI_ARROW_OFF_S },                                //T_ARROW_OFF_S
+	{ TI_ARROW_OFF_SW },                               //T_ARROW_OFF_SW
+	{ TI_ARROW_OFF_W },                                //T_ARROW_OFF_W
+	{ TI_ARROW_OFF_NW },                               //T_ARROW_OFF_NW
+	{ TI_MIST },                                       //T_MIST
+	{ TI_MISTVENT },                                   //T_MISTVENT
+	{ TI_FIRETRAP },                                   //T_FIRETRAP
+	{ TI_FIRETRAP_ON },                                //T_FIRETRAP_ON
+	{ TI_POWDER_KEG},                                  //T_POWDER_KEG
+	{ TI_OVERHEAD_IMAGE },                             //T_OVERHEAD_IMAGE
 
 	//monsters
 	{TI_ROACH_S},
@@ -230,14 +260,14 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_HALPH_S},
 	{TI_WW_S},
 	{TI_EYE_S},
-	{TI_SNKT_W,/*TI_SNK_EW,*/TI_SNK_E},
+	{TI_SNK_S},
 	{TI_TAREYE_WO,TI_TAREYE_EO},
 	{TI_TARBABY_S},
 	{TI_BRAIN},
 	{TI_MIMIC_S},
 	{TI_SPIDER_S},
-	{TI_SNKT_G_W,/*TI_SNK_G_EW,*/TI_SNK_G_E},
-	{TI_SNKT_B_W,/*TI_SNK_B_EW,*/TI_SNK_B_E},
+	{TI_SNK_G_S},
+	{TI_SNK_B_S},
 	{TI_ROCK_S},
 	{TI_WATERSKIPPER_S},
 	{TI_SKIPPERNEST},
@@ -261,6 +291,8 @@ const UINT MenuDisplayTiles[TOTAL_EDIT_TILE_COUNT][4] =
 	{TI_ROCKGIANT_S,TI_ROCKGIANT_S1,TI_ROCKGIANT_S2,TI_ROCKGIANT_S3},
 	{TI_EYE_WS},
 	{TI_GOBLINKING_S},
+	{TI_CONSTRUCT_S},
+	{TI_FLUFFBABY},
 
 	//pseudo tiles
 	{TI_STALWART_E, TI_SWORD_YE},
@@ -349,7 +381,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	1, //T_LIGHT         74
 	0, //T_HOT           75
 	0, //T_GEL           76
-	0, //T_MAP           77
+	1, //T_MAP           77
 	0, //T_PRESSPLATE    78
 	0, //T_BRIDGE        79
 	0, //T_BRIDGE_H      80
@@ -364,6 +396,35 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	1, //T_SHIELD        89
 	0, //T_HEALTH_SM     90
 	1, //T_ACCESSORY     91
+	1, //T_MAP_DETAIL    92
+	0, //T_HEALTH_HUGE   93
+	0, //T_ATK_UP3       94
+	0, //T_ATK_UP10      95
+	0, //T_DEF_UP3       96
+	0, //T_DEF_UP10      97
+	0, //T_CRATE         98
+	0, //T_PRESSPLATE_BROKEN_VIRTUAL 99
+	0, //T_SHOVEL1       100
+	0, //T_SHOVEL3       101
+	0, //T_SHOVEL10      102
+	0, //T_DIRT1         103
+	0, //T_DIRT3         104
+	0, //T_DIRT5         105
+	0, //T_THINICE       106
+	0, //T_ARROW_OFF_N   107
+	0, //T_ARROW_OFF_NE  108
+	0, //T_ARROW_OFF_E   109
+	0, //T_ARROW_OFF_SE  110
+	0, //T_ARROW_OFF_S   111
+	0, //T_ARROW_OFF_SW  112
+	0, //T_ARROW_OFF_W   113
+	0, //T_ARROW_OFF_NW  114
+	0, //T_MIST          115
+	0, //T_MISTVENT      116
+	0, //T_FIRETRAP      117
+	0, //T_FIRETRAP_ON   118
+	0, //T_POWDER_KEG    119
+	0, //T_OVERHEAD_IMAGE 120
 
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
@@ -403,6 +464,8 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_ROCKGIANT     +35
 	0, //T_MADEYE        +36
 	0, //T_GOBLINKING    +37
+	0, //T_CONSTRUCT     +38
+	0, //T_FLUFFBABY     +39
 
 	1, //T_SWORDSMAN     TOTAL+0
 	0, //T_NOMONSTER     TOTAL+1
@@ -423,9 +486,18 @@ const UINT wItemX[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1,
-	1, 1, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
-	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, //M+13
+	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
+	1, //crate
+	0, //unused
+	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
+	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
+	1, 1, //mist, vent
+	1, 1, //firetraps
+	1, //powder keg
+	1, //overhead image
+	1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
+	1, 1, 1, 1, 1, 2, 1, 2, 1, 1, 2, 1, 1, 1, 1,//M+15
 	2, 1, 1 //psuedo tiles
 };
 
@@ -443,9 +515,18 @@ const UINT wItemY[TOTAL_EDIT_TILE_COUNT] = {
 	1, 1, 1, //bridges
 	1, 1, 1, 1, //image/lights
 	1, 1, 1, 1, //inventory
-	1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, //power-ups
+	1, //crate
+	0, //unused
+	1, 1, 1, 1, 1, 1, //shovels, dirt
+	1, //ice
+	1, 1, 1, 1, 1, 1, 1, 1,  //8 disabled arrows
+	1, 1, //mist, vent
+	1, 1, //firetraps
+	1, //powder keg
+	1, //overhead image
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+25
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, //M+13
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,//M+15
 	1, 1, 1 //pseudo tiles
 };
 
@@ -468,14 +549,31 @@ const UINT TokenDisplayTiles[RoomTokenCount] =
 
 const UINT SwordDisplayTiles[SwordCount] =
 {
-	TI_SWORD1, TI_SWORD2, TI_SWORD6, TI_SWORD3, TI_SWORD4,
-	TI_SWORD5, TI_SWORD7, TI_SWORD8, TI_SWORD9, TI_SWORD10
+	TI_DAGGER_SWORD, TI_SWORD1, TI_SWORD7, TI_SWORD9, TI_SWORD2,
+	TI_SWORD6, TI_STAFF_SWORD_NEUTRAL, TI_SPEAR_SWORD_NEUTRAL, TI_SWORD3, TI_SWORD4,
+	TI_SWORD8, TI_SWORD5, TI_SWORD10
 };
+
+const UINT SwordOrder[SwordCount] =
+{
+	Dagger, WoodenBlade, LuckySword, BriarSword, ShortSword,
+	GoblinSword, Staff, Spear, LongSword, HookSword,
+	SerpentSword, ReallyBigSword, WeaponSlot
+};
+const UINT SwordOrderSize = 13; // number of items in the above array
 
 const UINT ShieldDisplayTiles[ShieldCount] =
 {
-	TI_SHIELD1, TI_SHIELD2, TI_SHIELD3, TI_SHIELD4, TI_SHIELD5, TI_SHIELD6
+	TI_SHIELD1, TI_SHIELD2, TI_SHIELD7, TI_SHIELD8, TI_SHIELD9,
+	TI_SHIELD3, TI_SHIELD4, TI_SHIELD5, TI_SHIELD6
 };
+
+const UINT ShieldOrder[ShieldCount] =
+{
+	WoodenShield, BronzeShield, MirrorShield, LeatherShield, AluminumShield,
+	SteelShield, KiteShield, OremiteShield, ArmorSlot
+};
+const UINT ShieldOrderSize = 9; // number of items in the above array
 
 const UINT AccessoryDisplayTiles[AccessoryCount] =
 {
@@ -521,41 +619,41 @@ const UINT oLayerFullEntries[numOLayerFullEntries] = {
 };
 */
 
-const UINT numOLayerEntries = 25;
+const UINT numOLayerEntries = 29;
 const UINT oLayerEntries[numOLayerEntries] = {
 	T_WALL, T_WALL2, T_WALL_B, T_WALL_H, T_STAIRS_UP,
 	T_DOOR_Y, T_DOOR_G, T_DOOR_C, T_PRESSPLATE, T_STAIRS,
 	T_DOOR_R, T_DOOR_B, T_DOOR_MONEY, T_GOO, T_HOT,
 	T_TRAPDOOR, T_PIT, T_PLATFORM_P, T_BRIDGE, T_TUNNEL_E,
-	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_FLOOR, T_FLOOR_IMAGE
+	T_TRAPDOOR2, T_WATER, T_PLATFORM_W, T_THINICE, T_FLOOR,
+	T_DIRT1, T_MISTVENT, T_FIRETRAP, T_FLOOR_IMAGE
 };
 
-const UINT numFLayerEntries = 6;
+const UINT numFLayerEntries = 7;
 const UINT fLayerEntries[numFLayerEntries] = {
-	T_ARROW_NE, T_NODIAGONAL, //T_CHECKPOINT,
+	T_ARROW_NE, T_ARROW_OFF_NE, T_NODIAGONAL, //T_CHECKPOINT,
 	T_WALLLIGHT, T_LIGHT_CEILING, T_DARK_CEILING,
 	T_SWORDSMAN
 };
 
-const UINT numTLayerEntries = 21;
+const UINT numTLayerEntries = 23;
 const UINT tLayerEntries[numTLayerEntries] = {
-	T_SWORD, T_SHIELD, T_ACCESSORY, T_DEF_UP, T_ATK_UP,
-	T_MAP, T_KEY, T_HEALTH_SM, T_HEALTH_MED, T_HEALTH_BIG,
-	T_SCROLL, T_BOMB, T_FUSE, T_BRIAR_SOURCE, T_BRIAR_DEAD,
-	T_MIRROR, T_ORB, T_TOKEN, T_LIGHT, T_OBSTACLE,
-	T_TAR
+	T_SWORD, T_SHIELD, T_ACCESSORY, T_SCROLL, T_MAP,
+	T_ATK_UP, T_DEF_UP, T_HEALTH_SM, T_KEY, T_SHOVEL1,
+	T_FUSE, T_BOMB, T_MIRROR, T_CRATE, T_POWDER_KEG,
+	T_TOKEN, T_BRIAR_SOURCE, T_BRIAR_DEAD, T_ORB, T_TAR,
+	T_OBSTACLE, T_MIST, T_LIGHT
 };
 
-const UINT numMLayerEntries = 31;  //35
+const UINT numMLayerEntries = 33;
 const UINT mLayerEntries[numMLayerEntries] = {
 	T_BRAIN, T_ROACH, T_WWING, T_EYE, T_QROACH,
 	T_SPIDER, T_MUDBABY, T_SKIPPERNEST, T_MUDMOTHER,
-	T_CITIZEN, T_MADEYE, T_NEATHER, T_ROCKGOLEM, T_GOBLIN,
-	T_TARBABY, T_DECOY, T_MIMIC, T_CLONE, T_GUARD,
-	T_GELBABY, T_FEGUNDO, T_WATERSKIPPER, T_SEEP, T_PIRATE,
-	T_AUMTLICH, T_WUBBA, T_GOBLINKING, T_SLAYER,
-	//T_TARMOTHER, T_GELMOTHER, T_SERPENT, T_SERPENTG,
-	T_ROCKGIANT, T_SERPENTB, T_CHARACTER
+	T_CITIZEN, T_FLUFFBABY, T_MADEYE, T_NEATHER, T_ROCKGOLEM,
+	T_GOBLIN, T_TARBABY, T_DECOY, T_MIMIC, T_CLONE,
+	T_GUARD, T_GELBABY, T_FEGUNDO, T_WATERSKIPPER, T_SEEP,
+	T_PIRATE, T_CONSTRUCT, T_AUMTLICH, T_WUBBA, T_GOBLINKING,
+	T_SLAYER, T_ROCKGIANT, T_SERPENTB, T_CHARACTER
 };
 
 //Ordering of obstacle types on pop-up menu.
@@ -569,11 +667,10 @@ const UINT mObstacleEntries[numObstacles] = {
 
 const UINT wLightMult = 2, wDarkMult = 25;
 
-const int X_ROOM = 163 + 44*3;
-const int Y_ROOM = 40;
+const int X_ROOM = 166 + 44*3;
+const int Y_ROOM = 45;
 const UINT CX_SPACE = 12;
 const UINT CY_SPACE = 12;
-
 
 const int X_OBJECTMENU = 6;
 const int Y_OBJECTMENU = 4;
@@ -584,7 +681,6 @@ const UINT CX_INNERMENU = CX_OBJECTMENU - X_INNERMENU;
 const UINT CY_ITEMTEXT = 55;
 const UINT CX_MENUSPACE = 10;
 const UINT CY_MENUSPACE = 8; //CX_MENUSPACE;
-
 
 //*****************************************************************************
 bool bIsLightingTile(const UINT wT)
@@ -664,7 +760,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, pHold(NULL), pLevel(NULL), pRoom(NULL)
 	, pRoomWidget(NULL), pTabbedMenu(NULL)
 	, pCharacterDialog(NULL)
-	, pEntranceBox(NULL), pLevelEntranceDialog(NULL)
+	, pEntranceBox(NULL), pLevelEntranceDialog(NULL), pSelectMediaDialog(NULL)
 
 	, wSelectedObject(static_cast<UINT>(-1))
 	, wSelectedObjectSave(static_cast<UINT>(-1))
@@ -687,7 +783,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, wSelOrbType(OT_NORMAL), wSelPlateType(OT_TOGGLE)
 	, wSelTokenType(RotateArrowsCW)
 	, wSelKeyType(YellowKey)
-	, wSelSwordType(WoodenBlade), wSelShieldType(WoodenShield), wSelAccessoryType(GrapplingHook)
+	, wSelSwordType(Dagger), wSelShieldType(WoodenShield), wSelAccessoryType(GrapplingHook)
 	, wLastFloorSelected(T_FLOOR)
 	, wLastEntranceSelected(static_cast<UINT>(-1))
 	, bSelectingImageStart(false)
@@ -733,7 +829,7 @@ CEditRoomScreen::CEditRoomScreen()
 	static const UINT CY_HELP = 32;
 
 	static const int X_OBSMENU = X_OBJECTMENU + CX_OBJECTMENU + 2;
-	const int Y_OBSMENU = Y_ROOM + (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+	const int Y_OBSMENU = Y_ROOM + (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
 	const UINT CX_OBSMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 8; //8x4
 	const UINT CY_OBSMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
 
@@ -751,19 +847,28 @@ CEditRoomScreen::CEditRoomScreen()
 	const UINT CY_FLOORMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
 	static const int X_TOKENMENU = X_OBSMENU;
-	const int Y_TOKENMENU = Y_OBSMENU + CDrodBitmapManager::CY_TILE + CY_MENUSPACE;
+	const int Y_TOKENMENU = Y_OBSMENU + CDrodBitmapManager::CY_TILE;
 	const UINT CX_TOKENMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x2
 	const UINT CY_TOKENMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
 	static const int X_EQUIPMENU = X_OBSMENU;
 	static const int Y_EQUIPMENU = Y_LIGHTMENU;
-	const UINT CX_EQUIPMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
-	const UINT CY_EQUIPMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
+	const UINT CX_SWORDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x4
+	const UINT CY_SWORDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 4;
+	const UINT CX_SHIELDMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
+	const UINT CY_SHIELDMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
+	const UINT CX_ACCESSORYMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 4; //4x3
+	const UINT CY_ACCESSORYMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 3;
 
 	static const int X_KEYMENU = X_OBSMENU;
 	static const int Y_KEYMENU = Y_LIGHTMENU + CDrodBitmapManager::CY_TILE/2;
 	const UINT CX_KEYMENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 3; //3x2
 	const UINT CY_KEYMENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
+
+	static const int X_HEALTH_MENU = X_OBSMENU;
+	static const int Y_HEALTH_MENU = Y_LIGHTMENU + CDrodBitmapManager::CY_TILE/2;
+	const UINT CX_HEALTH_MENU = (CDrodBitmapManager::CX_TILE + CX_MENUSPACE) * 2; //2x2
+	const UINT CY_HEALTH_MENU = (CDrodBitmapManager::CY_TILE + CY_MENUSPACE) * 2;
 
 	//Pop-up map
 	static const UINT BIGMAP_MARGIN = 100;
@@ -879,25 +984,25 @@ CEditRoomScreen::CEditRoomScreen()
 
 	//Equipment pop-up menus.
 	pObjectMenu = new CObjectMenuWidget(TAG_SWORD_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_SWORDMENU, CY_SWORDMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT sword=1; sword<SwordCount; ++sword)
-		pObjectMenu->AddObject(sword, 1, 1, SwordDisplayTiles + sword-1);
+		pObjectMenu->AddObject(SwordOrder[sword - 1], 1, 1, SwordDisplayTiles + sword - 1);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
 	pObjectMenu = new CObjectMenuWidget(TAG_SHIELD_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_SHIELDMENU, CY_SHIELDMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT shield=1; shield<ShieldCount; ++shield)
-		pObjectMenu->AddObject(shield, 1, 1, ShieldDisplayTiles + shield-1);
+		pObjectMenu->AddObject(ShieldOrder[shield - 1], 1, 1, ShieldDisplayTiles + shield - 1);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
 	pObjectMenu = new CObjectMenuWidget(TAG_ACCESSORY_MENU, X_EQUIPMENU, Y_EQUIPMENU,
-			CX_EQUIPMENU, CY_EQUIPMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+			CX_ACCESSORYMENU, CY_ACCESSORYMENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
 	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
 	pObjectMenu->DrawBackground(true);
 	for (UINT accessory=1; accessory<AccessoryCount; ++accessory)
@@ -911,6 +1016,17 @@ CEditRoomScreen::CEditRoomScreen()
 	pObjectMenu->DrawBackground(true);
 	for (UINT key=0; key<KeyCount; ++key)
 		pObjectMenu->AddObject(key, 1, 1, KeyDisplayTiles + key);
+	pObjectMenu->Hide();
+	AddWidget(pObjectMenu);
+
+	pObjectMenu = new CObjectMenuWidget(TAG_HEALTH_MENU, X_HEALTH_MENU, Y_HEALTH_MENU,
+		CX_HEALTH_MENU, CY_HEALTH_MENU, CX_MENUSPACE, CY_MENUSPACE, MenuBGColor);
+	if (!pObjectMenu) throw CException("CEditRoomScreen: Couldn't allocate resources");
+	pObjectMenu->DrawBackground(true);
+	pObjectMenu->AddObject(T_HEALTH_SM, 1, 1, MenuDisplayTiles[T_HEALTH_SM]);
+	pObjectMenu->AddObject(T_HEALTH_MED, 1, 1, MenuDisplayTiles[T_HEALTH_MED]);
+	pObjectMenu->AddObject(T_HEALTH_BIG, 1, 1, MenuDisplayTiles[T_HEALTH_BIG]);
+	pObjectMenu->AddObject(T_HEALTH_HUGE, 1, 1, MenuDisplayTiles[T_HEALTH_HUGE]);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
 
@@ -971,6 +1087,7 @@ CEditRoomScreen::CEditRoomScreen()
 
 	AddChatDialog();
 	AddLevelEntranceDialog();
+	AddMediaSelectionDialog();
 }
 
 //*****************************************************************************
@@ -1105,6 +1222,18 @@ void CEditRoomScreen::AddLevelEntranceDialog()
 }
 
 //*****************************************************************************
+void CEditRoomScreen::AddMediaSelectionDialog()
+//Dialog box for selecting and managing hold media.
+{
+		this->pSelectMediaDialog = new CSelectMediaDialogWidget(0L);
+		AddWidget(this->pSelectMediaDialog);
+		this->pSelectMediaDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSelectMediaDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSelectMediaDialog->GetH()) / 2);   //center over room widget
+		this->pSelectMediaDialog->Hide();
+}
+
+//*****************************************************************************
 void CEditRoomScreen::ApplyINISettings()
 //(Re)query the INI for current values and apply them.
 {
@@ -1178,6 +1307,7 @@ bool CEditRoomScreen::SetForActivate()
 	this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
 	this->bRoomDirty = false;
 	SetLightLevel();
+	SetItemLabelText(this->wSelectedObject);
 
 	//If returning from play-testing, delete the temp player.
 	if (this->dwTestPlayerID)
@@ -1217,11 +1347,6 @@ void CEditRoomScreen::AddPlotEffect(
 	UINT wCX, wCY;
 	switch (wObjectNo)
 	{
-		case T_STAIRS:
-		case T_STAIRS_UP:
-			wCX = wCY = 3; //at least 3x3
-			break;
-
 		case T_TARMOTHER:
 		case T_MUDMOTHER:
 		case T_GELMOTHER:
@@ -1378,6 +1503,7 @@ void CEditRoomScreen::ClickRoom()
 			const UINT wX = this->pRoomWidget->wEndX, wY = this->pRoomWidget->wEndY;
 			const UINT wOTileNo = this->pRoom->GetOSquare(wX,wY);
 			const UINT wTSquare = this->pRoom->GetTSquare(wX,wY);
+			const UINT wFSquare = this->pRoom->GetFSquare(wX,wY);
 			if (wTSquare == T_ORB || wOTileNo == T_PRESSPLATE)
 			{
 				//Start editing this orb/pressure plate.
@@ -1397,7 +1523,7 @@ void CEditRoomScreen::ClickRoom()
 				}
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
 				this->pRoomWidget->AddOrbAgentsEffect(this->pOrb);
-			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare)) {
+			} else if (bIsDoor(wOTileNo) || bIsOpenDoor(wOTileNo) || bIsLight(wTSquare) || bIsAnyArrow(wFSquare) || bIsFiretrap(wOTileNo)) {
 				//A door or light exists here -- add, modify or delete its orb agent.
 				Changing();
 				//Is this door already affected by the orb?
@@ -1542,8 +1668,13 @@ void CEditRoomScreen::ClickRoom()
 			if (this->bSelectingImageStart)
 			{
 				VERIFY(SetState(ES_PLACING));   //resets this->bSelectingImageStart
-				this->pRoom->wImageStartX = this->pRoomWidget->wEndX;
-				this->pRoom->wImageStartY = this->pRoomWidget->wEndY;
+				if (GetSelectedObject() == T_OVERHEAD_IMAGE) {
+					this->pRoom->wOverheadImageStartX = this->pRoomWidget->wEndX;
+					this->pRoom->wOverheadImageStartY = this->pRoomWidget->wEndY;
+				} else {
+					this->pRoom->wImageStartX = this->pRoomWidget->wEndX;
+					this->pRoom->wImageStartY = this->pRoomWidget->wEndY;
+				}
 				this->pRoomWidget->Paint();
 			} else {
 				this->pCharacterDialog->FinishCommand(this->pRoomWidget->wEndX,
@@ -1647,6 +1778,13 @@ void CEditRoomScreen::DisplayChatText(const WSTRING& text, const SDL_Color& colo
 }
 
 //*****************************************************************************
+bool CEditRoomScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return bIsEditorCommand(command);
+}
+
+//*****************************************************************************
 CObjectMenuWidget* CEditRoomScreen::GetActiveMenu()
 //Returns: pointer to active menu widget in tabbed menu
 {
@@ -1663,60 +1801,99 @@ CObjectMenuWidget* CEditRoomScreen::GetActiveMenu()
 }
 
 //*****************************************************************************
-void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
-//Select an image for display as this room's special floor mosaic, either from
-//the DB or from disk.
+UINT CEditRoomScreen::SelectMediaID(
+//UI for importing, deleting and selecting media data belonging to this hold.
+//
+//Returns: a new value or 0 if nothing was changed
+//
+//Params:
+	const UINT dwSelectedValue,                     //(in) currently selected value
+	const CSelectMediaDialogWidget::DATATYPE eType) //media type
 {
-	//ID only needs to be assigned once.
-	if (this->pRoom->dwDataID && !bReselect) return;
+	MESSAGE_ID midPrompt = 0;
+	switch (eType)
+	{
+	case CSelectMediaDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
+	case CSelectMediaDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
+	case CSelectMediaDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
+	default: ASSERT(!"UI for this media type not implemented"); return 0;
+	}
+
+	ASSERT(midPrompt);
+	ASSERT(this->pHold);
+
+	this->pSelectMediaDialog->SetForDisplay(midPrompt, this->pHold, eType);
+	this->pSelectMediaDialog->SelectItem(dwSelectedValue);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return 0;
+	}
+
+	return this->pSelectMediaDialog->GetSelectedItem();
+}
+
+//*****************************************************************************
+CEntranceSelectDialogWidget::BUTTONTYPE CEditRoomScreen::SelectEntrance(
+	CEntranceSelectDialogWidget* pEntranceBox,
+	CDbHold* pHold,
+	ExitChoice& exitChoice,
+	const MESSAGE_ID messagePromptID,
+	const CEntranceSelectDialogWidget::DATATYPE datatype
+)
+{
+	ASSERT(pEntranceBox);
+	ASSERT(pHold);
+	ASSERT(pEntranceBox->IsLoaded());
+	ASSERT(datatype == CEntranceSelectDialogWidget::Entrances ||
+		datatype == CEntranceSelectDialogWidget::WorldMaps ||
+		datatype == CEntranceSelectDialogWidget::EntrancesAndMaps ||
+		datatype == CEntranceSelectDialogWidget::StairTargets);
+
+	pEntranceBox->SetPrompt(messagePromptID);
+	pEntranceBox->SetSourceHold(pHold);
+	pEntranceBox->PopulateList(datatype);
+
+	//Select current choice
+	pEntranceBox->SelectItem(exitChoice);
+
+	const CEntranceSelectDialogWidget::BUTTONTYPE eButton =
+		(CEntranceSelectDialogWidget::BUTTONTYPE)pEntranceBox->Display();
+	Paint();
+
+	//Get selected value.
+	exitChoice = pEntranceBox->GetSelectedExitChoice();
+	return eButton;
+}
+
+//*****************************************************************************
+void CEditRoomScreen::GetCustomImageID(
+	UINT& roomDataID,
+	UINT& imageStartX, UINT& imageStartY,
+	const bool bReselect) //[default=false]
+{
+	//ID needs to be assigned once.
+	if (roomDataID && !bReselect)
+		return;
 
 	//Can only access this operation to change the DB for holds you own.
 	if (this->pHold->dwPlayerID != g_pTheDB->GetPlayerID() && !SaveRoomToDB())
 		return;
 
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = this->pRoom->dwDataID;
-		eButton = SelectListID(
-				this->pEntranceBox, this->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
+	this->pSelectMediaDialog->SetForDisplay(MID_ImageSelectPrompt, this->pHold, CSelectMediaDialogWidget::Images);
+	this->pSelectMediaDialog->SelectItem(roomDataID);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return;
+	}
 
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			//It's safe if other rooms remain set to this old image ID.
-			//They will now show the default floor mosaic.
-			if (dwDataID)
-				this->pHold->MarkDataForDeletion(dwDataID);
-
-			this->pRoom->dwDataID = 0;
-			this->pRoomWidget->LoadRoomImages();
-			this->pRoomWidget->Paint();
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
+	roomDataID = this->pSelectMediaDialog->GetSelectedItem();
 
 	Changing();
 
-	if (dwDataID)
-		this->pRoom->dwDataID = dwDataID;   //selected image from DB
-	else
-	{
-		//Load new image from disk.
-		const UINT dwID = ImportHoldImage(EXT_JPEG | EXT_PNG);
-		if (dwID)
-			this->pRoom->dwDataID = dwID;
-		goto SelectImage;	//return to image select menu
-	}
-
 	if (!bReselect)
 	{
-		this->pRoom->wImageStartX = this->pRoomWidget->wStartX;
-		this->pRoom->wImageStartY = this->pRoomWidget->wStartY;
+		imageStartX = this->pRoomWidget->wStartX;
+		imageStartY = this->pRoomWidget->wStartY;
 	} else {
 		this->bSelectingImageStart = true;
 		VERIFY(SetState(ES_GETSQUARE));
@@ -1725,6 +1902,25 @@ SelectImage:
 	this->pRoomWidget->LoadRoomImages();
 	SetLightLevel();
 	this->pRoomWidget->Paint();
+}
+
+
+//*****************************************************************************
+void CEditRoomScreen::GetFloorImageID(const bool bReselect) //[default=false]
+//Select an image for display as this room's special floor mosaic, either from
+//the DB or from disk.
+{
+	GetCustomImageID(this->pRoom->dwDataID,
+		this->pRoom->wImageStartX, this->pRoom->wImageStartY,
+		bReselect);
+}
+
+//*****************************************************************************
+void CEditRoomScreen::GetOverheadImageID(const bool bReselect)
+{
+	GetCustomImageID(this->pRoom->dwOverheadDataID,
+		this->pRoom->wOverheadImageStartX, this->pRoom->wOverheadImageStartY,
+		bReselect);
 }
 
 //*****************************************************************************
@@ -1803,7 +1999,9 @@ const
 		{TI_MUD_NSEW},
 		{TI_WALL_H},
 		{TI_GEL_NSEW},
-		{TI_PPT}
+		{TI_PPB},
+		{TI_PPT},
+		{TI_MIST_C}
 	};
 
 	if (wObjectNo < M_OFFSET)
@@ -1824,8 +2022,8 @@ const
 			case T_PRESSPLATE:
 				switch (this->wSelPlateType)
 				{
-//					case OT_ONEUSE: return Tiles[12]; //not used in RPG
-					case OT_TOGGLE: return Tiles[11];
+					case OT_ONEUSE: return Tiles[11];
+					case OT_TOGGLE: return Tiles[12];
 					default: return MenuDisplayTiles[T_PRESSPLATE];
 				}
 			break;
@@ -1834,6 +2032,7 @@ const
 			case T_TAR: return Tiles[5];
 			case T_MUD: return Tiles[8];
 			case T_GEL: return Tiles[10];
+			case T_MIST: return Tiles[13];
 			case T_OBSTACLE:
 			{
 				//Show from the smallest obstacle of the selected type.
@@ -1887,6 +2086,7 @@ const
 				return MenuDisplayTiles[wObjectNo];
 			case T_BRAIN: return GetTileImageForMonsterType(M_BRAIN, NO_ORIENTATION, 0);
 			case T_SKIPPERNEST: return GetTileImageForMonsterType(M_SKIPPERNEST, NO_ORIENTATION, 0);
+			case T_FLUFFBABY: return GetTileImageForMonsterType(M_FLUFFBABY, NO_ORIENTATION, 0);
 			case T_ROCKGIANT:
 			{
 				//Generate 2x2 RockGiant image for this orientation.
@@ -2014,6 +2214,7 @@ void CEditRoomScreen::ApplyPlayerSettings()
 
 	//Set room editing options.
 	this->bAutoSave = pCurrentPlayer->Settings.GetVar(Settings::AutoSave, true);
+	this->pRoomWidget->characterPreview = pCurrentPlayer->Settings.GetVar(Settings::CharacterPreview, false);
 
 	COptionButtonWidget *pOptionButton = static_cast<COptionButtonWidget *>(
 			GetWidget(TAG_SHOWERRORS));
@@ -2053,69 +2254,6 @@ void CEditRoomScreen::HighlightPendingPaste()
 				this->wCopyX2 - this->wCopyX1, this->wCopyY2 - this->wCopyY1,
 				Gray, !bShowSource);
 	}
-}
-
-//*****************************************************************************
-UINT CEditRoomScreen::ImportHoldImage(const UINT extensionFlags)
-//Load an image file from disk into the hold,
-//using any of the specified supported file extensions.
-//Returns: dataID if operation completed successfully or 0 if it was canceled.
-{
-	static const char importImagePath[] = "ImportImagePath";
-
-	//Get image import path.
-	CFiles Files;
-	CDbPlayer *pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
-	WSTRING wstrImportPath = pCurrentPlayer ?
-			pCurrentPlayer->Settings.GetVar(importImagePath, Files.GetDatPath().c_str()) :
-			Files.GetDatPath();
-
-	WSTRING wstrImportFile;
-	do {
-		const UINT dwTagNo = SelectFile(wstrImportPath,
-				wstrImportFile, MID_ImageSelectPrompt, false, extensionFlags);
-		if (dwTagNo != TAG_OK)
-		{
-			delete pCurrentPlayer;
-			return 0;
-		}
-
-		//Update the path in player settings, so next time dialog
-		//comes up it will have the same path.
-		if (pCurrentPlayer)
-		{
-			pCurrentPlayer->Settings.SetVar(importImagePath, wstrImportPath.c_str());
-			pCurrentPlayer->Update();
-		}
-
-		//Load image.
-		CStretchyBuffer buffer;
-		if (!Files.ReadFileIntoBuffer(wstrImportFile.c_str(), buffer, true))
-			ShowOkMessage(MID_FileNotFound);
-		else
-		{
-			const UINT wDataFormat = g_pTheBM->GetImageType(buffer);
-			if (wDataFormat == DATA_UNKNOWN)
-				ShowOkMessage(MID_FileCorrupted);
-			else
-			{
-				CDbDatum *pImage = g_pTheDB->Data.GetNew();
-				pImage->wDataFormat = wDataFormat;
-				pImage->data.Set((const BYTE*)buffer, buffer.Size());
-				pImage->DataNameText = getFilenameFromPath(wstrImportFile.c_str());
-				pImage->dwHoldID = this->pHold->dwHoldID; //image belongs to this hold
-				pImage->Update();
-				const UINT dwDataID = pImage->dwDataID;
-				delete pImage;
-				delete pCurrentPlayer;
-				return dwDataID;
-			}
-		}
-	} while (true);
-
-	ASSERT(!"Bad logic path.");
-	delete pCurrentPlayer;
-	return 0;
 }
 
 //*****************************************************************************
@@ -2258,6 +2396,19 @@ void CEditRoomScreen::IncrementMenuSelection(const bool bForward) //[default=tru
 			this->pRoomWidget->SetAnimateMoves(false);
 			pObsMenu->PopUp();
 			SetMenuItem(wLastFloor, pObsMenu->GetSelectedObject());
+			this->pRoomWidget->SetAnimateMoves(true);
+			Paint();
+		}
+		break;
+
+		case T_HEALTH_SM: case T_HEALTH_MED:
+		case T_HEALTH_BIG: case T_HEALTH_HUGE:
+		{
+			CObjectMenuWidget* pObsMenu = DYN_CAST(CObjectMenuWidget*, CWidget*, GetWidget(TAG_HEALTH_MENU));
+			pObsMenu->SetSelectedObject(this->wSelectedObject);
+			this->pRoomWidget->SetAnimateMoves(false);
+			pObsMenu->PopUp();
+			SetMenuItem(this->wSelectedObject, pObsMenu->GetSelectedObject());
 			this->pRoomWidget->SetAnimateMoves(true);
 			Paint();
 		}
@@ -2521,7 +2672,8 @@ void CEditRoomScreen::OnBetweenEvents()
 				case T_SERPENTB: case T_SERPENT: case T_SERPENTG:
 				case T_TARMOTHER: case T_MUDMOTHER: case T_GELMOTHER:
 				case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
-				case T_FLOOR_IMAGE: case T_PIT_IMAGE: case T_WALL_IMAGE: 
+				case T_FLOOR_IMAGE: case T_PIT_IMAGE: case T_WALL_IMAGE:
+				case T_OVERHEAD_IMAGE:
 					RequestToolTip(MID_RotateToChangeType);
 				break;
 				case T_OBSTACLE:
@@ -2865,111 +3017,66 @@ void CEditRoomScreen::OnKeyDown(
 	if (this->eState == ES_PLACING)
 		CScreen::OnKeyDown(dwTagNo, Key);
 
-	//Check for other keys.
-	switch (Key.keysym.sym)
+	//Check for a command.
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+	switch (nCommand)
 	{
-		//Exit screen.
-		case SDLK_ESCAPE:
-			//Handle some cleanup on screen exit.
-			if (this->eState != ES_PLACING)
-			{
-				if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT || this->eState == ES_GETMAPROOM)
-					break;
-				VERIFY(SetState(ES_PLACING));
-				Paint(); //redraw room highlights
-			} else {
-				UnloadPlaytestSession();
-			}
+		//Show chat dialog.
+		case CMD_EXTRA_OPEN_CHAT:
+			ShowCursor();
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			DisplayChatDialog();
 		break;
-
-		//Chat dialogs.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				ShowCursor();
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				DisplayChatDialog();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pEntranceBox);
-			}
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pEntranceBox);
 		break;
 
 		//Help screen.
-		case SDLK_F1:
+		case CMD_EXTRA_SHOW_HELP:
 			CBrowserScreen::SetPageToLoad("editroom.html");
 			GoToScreen(SCR_Browser);
 		break;
 
 		//dev keys
-		case SDLK_F2:
+		case CMD_EXTRA_EDITOR_LOG_VAR_REFS:
 			//Output all scripts where each hold var is referenced.
 			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
 			SetCursor(CUR_Wait);
 			g_pTheDB->Holds.LogScriptVarRefs(this->pHold->dwHoldID);
 			SetCursor();
 		break;
-		case SDLK_F3:
+		case CMD_EXTRA_RELOAD_STYLE:
 			ForceFullStyleReload();
 		break;
-
-		case SDLK_F4:
+		case CMD_EXTRA_EDIT_VARS:
 			//Playtest global var defaults editor.
 		{
-			const bool bAltCtrl = (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL)) != 0;
-			if (!bAltCtrl)
-			{
-				PlayerStats st;
-				CCurrentGame::InitRPGStats(st); //set original defaults
-				GetGlobalVarDefaults(st); //load any user-defined defaults
-				EditGlobalVars(this->pEntranceBox, &st);
-				SetGlobalVarDefaults(st);
-				break;
-			}
-			if (bAltCtrl)
-			{
-				//Save on exit.
-				SaveRoom();
-			}
+			PlayerStats st;
+			CCurrentGame::InitRPGStats(st); //set original defaults
+			GetGlobalVarDefaults(st); //load any user-defined defaults
+			EditGlobalVars(this->pEntranceBox, &st);
+			SetGlobalVarDefaults(st);
+			break;
 		}
 		break;
 
-		case SDLK_F5:
+		case CMD_EXTRA_EDITOR_PLAYTEST_ROOM:
 			SetState(ES_TESTROOM);	//no verify
 		break;
-/*
-		case SDLK_F6:
-		{
-			if (!SetState(ES_PLACING)) break;
 
-			CScreen *pScreen = g_pTheSM->GetScreen(SCR_Demos);
-			if (!pScreen)
-			{
-				ShowOkMessage(MID_CouldNotLoadResources);
-				break;
-			}
-			CDemosScreen *pDemosScreen = DYN_CAST(CDemosScreen*, CScreen*, pScreen);
-			ASSERT(pDemosScreen);
-			pDemosScreen->ShowRoom(this->pRoom->dwRoomID);
-			GoToScreen(SCR_Demos);
-		}
+		case CMD_EXTRA_EDITOR_TOGGLE_CHARACTER_PREVIEW:
+			this->pRoomWidget->characterPreview = !this->pRoomWidget->characterPreview;
 		break;
-*/
-		case SDLK_F7:
+
+		case CMD_EXTRA_EDITOR_REFLECT_X:
 			if (!SetState(ES_PLACING)) break;
-			if (Key.keysym.mod & KMOD_CTRL)
-			{
-				RotateRoomC();
-			} else {
-				ReflectRoomX();
-			}
+			ReflectRoomX();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
 			this->pRoomWidget->bCeilingLightsRendered = false;
 			this->pRoomWidget->RenderRoomLighting();
 			Paint();
 		break;
-
-		case SDLK_F8:
+		case CMD_EXTRA_EDITOR_REFLECT_Y:
 			if (!SetState(ES_PLACING)) break;
 			ReflectRoomY();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
@@ -2977,77 +3084,44 @@ void CEditRoomScreen::OnKeyDown(
 			this->pRoomWidget->RenderRoomLighting();
 			Paint();
 		break;
+		case CMD_EXTRA_EDITOR_ROTATE_CW:
+			RotateRoomC();
+			this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
+			this->pRoomWidget->bCeilingLightsRendered = false;
+			this->pRoomWidget->RenderRoomLighting();
+			Paint();
+		break;
 
-		case SDLK_F9:
-			Changing(RoomAndHold);
+		case CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE:
 			GetFloorImageID(true);
 		break;
+		case CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE:
+			GetOverheadImageID(true);
+		break;
 
-		case SDLK_PAGEUP: case SDLK_KP_9:
+		case CMD_EXTRA_EDITOR_PREV_LEVEL:
 			WarpToNextLevel(false);
 		break;
-		case SDLK_PAGEDOWN: case SDLK_KP_3:
+		case CMD_EXTRA_EDITOR_NEXT_LEVEL:
 			WarpToNextLevel(true);
 		break;
 
-		case SDLK_SPACE:
+		case CMD_EXTRA_SKIP_SPEECH:
 			//Remove chat subtitles.
 			this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
 		break;
 
-		//Menu tab hotkeys.
-		case SDLK_LEFT:
-		case SDLK_KP_4:
-		case SDLK_RIGHT:
-		case SDLK_KP_6:
-			if ((Key.keysym.mod & KMOD_CTRL) && dwTagNo != this->pTabbedMenu->GetTagNo())
-			{
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
-				this->pTabbedMenu->HandleKeyDown(Key);
-
-				//Set focus to new menu.
-				CObjectMenuWidget *pMenu = GetActiveMenu();
-				ASSERT(pMenu);
-				SelectWidget(pMenu);
-			}
-		break;
-		case SDLK_1:
-		case SDLK_2:
-		case SDLK_3:
-		case SDLK_4:
-			if ((Key.keysym.mod & KMOD_CTRL))
-			{
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
-				UINT tab;
-				switch (Key.keysym.sym)
-				{
-					default:
-					case SDLK_1: tab = 0; break;
-					case SDLK_2: tab = 1; break;
-					case SDLK_3: tab = 2; break;
-					case SDLK_4: tab = 3; break;
-				}
-				this->pTabbedMenu->SelectTab(tab);
-
-				//Set focus to new menu.
-				CObjectMenuWidget *pMenu = GetActiveMenu();
-				ASSERT(pMenu);
-				SelectWidget(pMenu);
-			}
-		break;
-
-
-		case SDLK_x:
-		case SDLK_c:
+		case CMD_EXTRA_EDITOR_COPY:
+		case CMD_EXTRA_EDITOR_CUT:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			if (this->eState != ES_PLACING) break;
+
+			bool bIsCut = nCommand == CMD_EXTRA_EDITOR_CUT;
 
 			//Only allow paste when mouse button is down in room widget
 			//when Ctrl-C is pressed.
 			StopKeyRepeating();  //don't repeat this operation
-			CWidget *pWidget = MouseDraggingInWidget();
+			CWidget* pWidget = MouseDraggingInWidget();
 			if (pWidget && pWidget->GetTagNo() == TAG_ROOM && !RightMouseButton())
 			{
 				ASSERT(this->pRoomWidget->wEndX != static_cast<UINT>(-1));
@@ -3061,17 +3135,17 @@ void CEditRoomScreen::OnKeyDown(
 				delete this->pCopyRoom;
 
 				{
-				CImportInfo info;
-				const UINT roomDataID = this->pRoom->dwDataID;
-				this->pRoom->dwDataID = 0; //don't copy room media data
-				this->pCopyRoom = this->pRoom->MakeCopy(info, 0); //same hold
-				this->pRoom->dwDataID = roomDataID;
+					CImportInfo info;
+					const UINT roomDataID = this->pRoom->dwDataID;
+					this->pRoom->dwDataID = 0; //don't copy room media data
+					this->pCopyRoom = this->pRoom->MakeCopy(info, 0, true); //same hold
+					this->pRoom->dwDataID = roomDataID;
 				}
 
 				this->pCopyRoom->dwRoomID = this->pRoom->dwRoomID;
 				this->pCopyRoom->dwLevelID = this->pRoom->dwLevelID;
 
-				if ((this->bCutAndPaste = (Key.keysym.sym == SDLK_x)))
+				if ((this->bCutAndPaste = bIsCut))
 					EraseRegion();
 
 				this->bAreaJustCopied = true;
@@ -3081,30 +3155,28 @@ void CEditRoomScreen::OnKeyDown(
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(EPENDINGPLOT);
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
 			} else {
-				CWidget *pWidget = GetSelectedWidget();
+				CWidget* pWidget = GetSelectedWidget();
 				ASSERT(pWidget);
 				if (pWidget->GetTagNo() == TAG_MAP)
 				{
 					//Require user to save room changes before making copy of room.
 					if (SaveRoomToDB())
 					{
-						CMapWidget *pMap = DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_MAP));
+						CMapWidget* pMap = DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_MAP));
 						ASSERT(pMap);
-						pMap->CopyRoom(Key.keysym.sym == SDLK_c); //Ctrl-C copies
+						pMap->CopyRoom(!bIsCut);
 					}
 				}
 			}
 		}
 		break;
 
-		case SDLK_v:
+		case CMD_EXTRA_EDITOR_PASTE:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			if (this->eState != ES_PLACING) break;
 
 			StopKeyRepeating();  //don't repeat this operation
-			CWidget *pWidget = GetSelectedWidget();
+			CWidget* pWidget = GetSelectedWidget();
 			ASSERT(pWidget);
 			switch (pWidget->GetTagNo())
 			{
@@ -3123,10 +3195,9 @@ void CEditRoomScreen::OnKeyDown(
 						{
 							ShowOkMessage(MID_CantDeleteEntranceRoom);
 							break;
+						} else if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES) {
+							break;
 						}
-						else
-							if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES)
-								break;
 					}
 					this->bRoomDirty = false;  //don't save old room
 					const bool bUpdate = this->pMapWidget->PasteRoom(this->pHold);
@@ -3168,13 +3239,100 @@ void CEditRoomScreen::OnKeyDown(
 		}
 		break;
 
-		case SDLK_y:
-			if (Key.keysym.mod & KMOD_CTRL)
-				UndoCommand(false);
+		case CMD_EXTRA_EDITOR_UNDO:
+			UndoCommand(true);
 		break;
-		case SDLK_z:
-			if (Key.keysym.mod & KMOD_CTRL)
-				UndoCommand(true);
+		case CMD_EXTRA_EDITOR_REDO:
+			UndoCommand(false);
+		break;
+	}
+
+	//Check for other keys.
+	switch (Key.keysym.sym)
+	{
+		case SDLK_F4:
+		{
+			const bool bAltCtrl = (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL)) != 0;
+			if (bAltCtrl)
+			{
+				//Save on ALT-F4 exit.
+				SaveRoom();
+			}
+		}
+		break;
+
+		//Exit screen.
+		case SDLK_ESCAPE:
+			//Handle some cleanup on screen exit.
+			if (this->eState != ES_PLACING)
+			{
+				if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT || this->eState == ES_GETMAPROOM)
+					break;
+				VERIFY(SetState(ES_PLACING));
+				Paint(); //redraw room highlights
+			} else {
+				UnloadPlaytestSession();
+			}
+		break;
+
+/*
+		case SDLK_F6:
+		{
+			if (!SetState(ES_PLACING)) break;
+
+			CScreen *pScreen = g_pTheSM->GetScreen(SCR_Demos);
+			if (!pScreen)
+			{
+				ShowOkMessage(MID_CouldNotLoadResources);
+				break;
+			}
+			CDemosScreen *pDemosScreen = DYN_CAST(CDemosScreen*, CScreen*, pScreen);
+			ASSERT(pDemosScreen);
+			pDemosScreen->ShowRoom(this->pRoom->dwRoomID);
+			GoToScreen(SCR_Demos);
+		}
+		break;
+*/
+
+		//Menu tab hotkeys.
+		case SDLK_LEFT:
+		case SDLK_KP_4:
+		case SDLK_RIGHT:
+		case SDLK_KP_6:
+			if ((Key.keysym.mod & KMOD_CTRL) && dwTagNo != this->pTabbedMenu->GetTagNo())
+			{
+				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
+				this->pTabbedMenu->HandleKeyDown(Key);
+
+				//Set focus to new menu.
+				CObjectMenuWidget *pMenu = GetActiveMenu();
+				ASSERT(pMenu);
+				SelectWidget(pMenu);
+			}
+		break;
+		case SDLK_1:
+		case SDLK_2:
+		case SDLK_3:
+		case SDLK_4:
+			if ((Key.keysym.mod & KMOD_CTRL))
+			{
+				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
+				UINT tab;
+				switch (Key.keysym.sym)
+				{
+					default:
+					case SDLK_1: tab = 0; break;
+					case SDLK_2: tab = 1; break;
+					case SDLK_3: tab = 2; break;
+					case SDLK_4: tab = 3; break;
+				}
+				this->pTabbedMenu->SelectTab(tab);
+
+				//Set focus to new menu.
+				CObjectMenuWidget *pMenu = GetActiveMenu();
+				ASSERT(pMenu);
+				SelectWidget(pMenu);
+			}
 		break;
 		default: break;
 	}
@@ -3204,7 +3362,6 @@ void CEditRoomScreen::OnKeyDown(
 	const UINT wOldSwordType = this->wSelSwordType;
 	const UINT wOldShieldType = this->wSelShieldType;
 	const UINT wOldAccessoryType = this->wSelAccessoryType;
-	const int nCommand = GetCommandForKeysym(Key.keysym.sym);
 	switch (nCommand)
 	{
 		//Rotate orientation.
@@ -3881,10 +4038,12 @@ COrbAgentData* CEditRoomScreen::FindOrbAgentFor(
 
 	//Gather set of all squares this door is on.
 	CCoordSet coords;
+	const UINT oTile = this->pRoom->GetOSquare(wX,wY);
 	if (bIsLight(this->pRoom->GetTSquare(wX,wY)))
 		coords.insert(wX,wY);
-	else {
-		const UINT oTile = this->pRoom->GetOSquare(wX,wY);
+	else if (bIsAnyArrow(this->pRoom->GetFSquare(wX, wY)) || bIsFiretrap(oTile)) {
+		coords.insert(wX, wY);
+	} else {
 		ASSERT(bIsDoor(oTile) || bIsOpenDoor(oTile));
 		this->pRoom->GetAllDoorSquares(wX, wY, coords, oTile);
 	}
@@ -3933,7 +4092,8 @@ void CEditRoomScreen::SetDestinationEntrance(
 {
 	g_pTheSound->PlaySoundEffect(SEID_WALK);
 	UINT dwEntranceID;
-	const bool bFound = this->pRoom->GetExitEntranceIDAt(wX1,wY1,dwEntranceID);
+	ExitType exitType;
+	const bool bFound = this->pRoom->GetExitEntranceInfoAt(wX1,wY1,dwEntranceID, exitType);
 	const UINT wOSquare = this->pRoom->GetOSquare(wX1,wY1);
 	if (!bFound)
 	{
@@ -3943,7 +4103,7 @@ void CEditRoomScreen::SetDestinationEntrance(
 			if (wY1 == 0) break;
 			if (this->pRoom->GetOSquare(wX1,wY1-1) != wOSquare) break;
 			--wY1;
-		} while (!this->pRoom->GetExitEntranceIDAt(wX1,wY1,dwEntranceID));
+		} while (!this->pRoom->GetExitEntranceInfoAt(wX1, wY1, dwEntranceID, exitType));
 		do {
 			if (wY2 == this->pRoom->wRoomRows - 1) break;
 			if (this->pRoom->GetOSquare(wX1,wY2+1) != wOSquare) break;
@@ -3960,14 +4120,16 @@ void CEditRoomScreen::SetDestinationEntrance(
 	}
 	bool bValueSet = false;
 	do {
+		ExitChoice exitChoice = { exitType, dwEntranceID };
 		CEntranceSelectDialogWidget::BUTTONTYPE button =
-				SelectListID(this->pEntranceBox, this->pHold, dwEntranceID,
-			MID_ExitLevelPrompt);
+				SelectEntrance(this->pEntranceBox, this->pHold, exitChoice,
+			MID_SelectExitDestination, CEntranceSelectDialogWidget::StairTargets);
 		switch(button)
 		{
 			case CEntranceSelectDialogWidget::OK:
 				Changing();
-				this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
+				this->pRoom->SetExit(
+					exitChoice.entrance, wX1, wY1, wX2, wY2, exitChoice.exitType);
 				bValueSet = true;
 			break;
 
@@ -4114,10 +4276,28 @@ void CEditRoomScreen::PaintHighlights()
 	if (this->bShowErrors && this->eState != ES_LONGMONSTER)
 		ShowErrors();
 //	DrawHalphSlayerEntrances();
+	MarkOverheadLayerTiles();
 
 	ASSERT(this->pRoom);
 	this->pRoom->ResetPressurePlatesState();
 	this->pRoom->SetPressurePlatesState();
+}
+
+//*****************************************************************************
+void CEditRoomScreen::MarkOverheadLayerTiles()
+{
+	const CCoordIndex& tiles = this->pRoom->overheadTiles;
+	if (tiles.empty())
+		return;
+
+	//Highlight tiles set with an overhead layer.
+	static const SURFACECOLOR OverheadColor = { 40, 90, 220 };
+	for (UINT wY = 0; wY < this->pRoom->wRoomRows; ++wY) {
+		for (UINT wX = 0; wX < this->pRoom->wRoomCols; ++wX) {
+			if (tiles.Exists(wX, wY))
+				this->pRoomWidget->AddShadeEffect(wX, wY, OverheadColor);
+		}
+	}
 }
 
 //*****************************************************************************
@@ -4173,6 +4353,9 @@ void CEditRoomScreen::EraseRegion()
 				room.tileLights.Remove(xDest, yDest);
 				this->pRoomWidget->bCeilingLightsRendered = false;
 			}
+
+			//Erase overhead layer.
+			room.overheadTiles.Set(xDest, yDest, 0);
 
 			//Erase f-layer.
 			EraseAndPlot(xDest, yDest, T_EMPTY_F, false);
@@ -4419,6 +4602,10 @@ void CEditRoomScreen::PasteRegion(
 					this->pRoomWidget->bCeilingLightsRendered = false;
 				}
 
+				//Copy overhead layer.
+				room.overheadTiles.Set(xDest, yDest,
+					pSrcRoom->overheadTiles.GetAt(xSrc, ySrc));
+
 				//Copy f-layer.
 				wSrcTile = pSrcRoom->GetFSquare(xSrc, ySrc);
 				if (wSrcTile == T_EMPTY)
@@ -4434,8 +4621,8 @@ void CEditRoomScreen::PasteRegion(
 				if (pOldMonster && (pOldMonster->IsLongMonster() || pOldMonster->IsPiece()))
 				{
 					if (wSrcTile == T_ORB || bIsTar(wSrcTile) || wSrcTile == T_BOMB ||
-							bIsBriar(wSrcTile) || wSrcTile == T_MIRROR ||
-							wSrcTile == T_LIGHT) // || wSrcTile == T_STATION)
+							bIsBriar(wSrcTile) || wSrcTile == T_MIRROR || wSrcTile == T_CRATE ||
+							wSrcTile == T_POWDER_KEG || wSrcTile == T_LIGHT) // || wSrcTile == T_STATION)
 						bPasteAllowed = false;
 				}
 				if (bPasteAllowed)
@@ -4550,6 +4737,14 @@ void CEditRoomScreen::PasteRegion(
 										param += OBSTACLE_LEFT;
 									room.SetTParam(wX, wY, param);
 								}
+						}
+						break;
+
+						case T_MIRROR: case T_CRATE: case T_POWDER_KEG:
+						{
+							const UINT coveredTLayerObject = pSrcRoom->GetCoveredTSquare(xSrc, ySrc);
+							if (coveredTLayerObject == T_FUSE || coveredTLayerObject == T_MIST)
+								room.coveredTSquares.Add(xDest, yDest, coveredTLayerObject);
 						}
 						break;
 
@@ -4725,8 +4920,9 @@ void CEditRoomScreen::PasteRegion(
 			{
 				COrbAgentData *pAgent = pOrb->agents[wAgentI];
 				const UINT oTile = room.GetOSquare(pAgent->wX, pAgent->wY);
-				if (!(bIsDoor(oTile) || bIsOpenDoor(oTile) ||
-						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY))))
+				if (!(bIsDoor(oTile) || bIsOpenDoor(oTile) || bIsFiretrap(oTile) ||
+						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY)) ||
+						 bIsAnyArrow(room.GetFSquare(pAgent->wX, pAgent->wY))))
 					VERIFY(pOrb->DeleteAgent(pAgent));
 			}
 		}
@@ -5152,6 +5348,11 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
 					GetFloorImageID();
 					break;
+				case T_OVERHEAD_IMAGE:
+					//Assign a user-defined image texture to this custom tile type.
+					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
+					GetOverheadImageID();
+				break;
 				case T_EMPTY:
 				case T_PIT:
 					g_pTheSound->PlaySoundEffect(SEID_BREAKWALL);   break;
@@ -5166,16 +5367,21 @@ void CEditRoomScreen::PlotObjects()
 
 				case T_ARROW_NW: case T_ARROW_N: case T_ARROW_NE: case T_ARROW_E:
 				case T_ARROW_SE: case T_ARROW_S: case T_ARROW_SW: case T_ARROW_W:
+				case T_ARROW_OFF_NW: case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_E:
+				case T_ARROW_OFF_SE: case T_ARROW_OFF_S: case T_ARROW_OFF_SW: case T_ARROW_OFF_W:
 				case T_EMPTY_F:
 				case T_LIGHT_CEILING: case T_DARK_CEILING: case T_WALLLIGHT:
 				case T_NODIAGONAL:
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR); break;
 
 				case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
-				case T_MIRROR: case T_TOKEN:
+				case T_MIRROR: case T_TOKEN: case T_CRATE:
 				case T_LIGHT:
-				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR); break;
+
+				case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
+					g_pTheSound->PlaySoundEffect(SEID_BRIAR_BREAK); break;
+
 				case T_DOOR_Y: case T_DOOR_YO:
 				case T_DOOR_G: case T_DOOR_GO:
 				case T_DOOR_C: case T_DOOR_CO:
@@ -5190,12 +5396,33 @@ void CEditRoomScreen::PlotObjects()
 				case T_WATER:
 					g_pTheSound->PlaySoundEffect(SEID_SPLASH); break;
 
-				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-				case T_DEF_UP:	case T_ATK_UP:
-					g_pTheSound->PlaySoundEffect(SEID_POTION);
+				case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+					g_pTheSound->PlaySoundEffect(SEID_ATK_PICKUP, getFrequencyMultForItem(wPlottedObject));
 					break;
-				case T_MAP:
+				case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
+					g_pTheSound->PlaySoundEffect(SEID_DEF_PICKUP, getFrequencyMultForItem(wPlottedObject));
+					break;
+				case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+					g_pTheSound->PlaySoundEffect(SEID_HP_PICKUP, getFrequencyMultForItem(wPlottedObject));
+					break;
+				case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
+					g_pTheSound->PlaySoundEffect(SEID_SHOVEL_PICKUP, getFrequencyMultForItem(wPlottedObject));
+				break;
+				case T_DIRT1: case T_DIRT3: case T_DIRT5:
+					g_pTheSound->PlaySoundEffect(SEID_DIG, getFrequencyMultForItem(wPlottedObject));
+				break;
+				case T_THINICE:
+					g_pTheSound->PlaySoundEffect(SEID_ICEMELT);
+				break;
+				case T_FIRETRAP:
+					g_pTheSound->PlaySoundEffect(SEID_FIRETRAP);
+				break;
+				case T_FIRETRAP_ON:
+					g_pTheSound->PlaySoundEffect(SEID_FIRETRAP_START);
+				break;
+				case T_MAP: case T_MAP_DETAIL:
 					g_pTheSound->PlaySoundEffect(SEID_READ); break;
+
 				case T_SCROLL:
 				{
 					g_pTheSound->PlaySoundEffect(SEID_READ);
@@ -5250,15 +5477,33 @@ void CEditRoomScreen::PlotObjects()
 				}
 				break;
 				case T_FUSE:
-					g_pTheSound->PlaySoundEffect(SEID_STARTFUSE);   break;
+					g_pTheSound->PlaySoundEffect(SEID_STARTFUSE);
+				break;
 				case T_BOMB:
-					g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE); break;
-				case T_KEY: case T_SWORD: case T_SHIELD: case T_ACCESSORY:
-					g_pTheSound->PlaySoundEffect(SEID_TRAPDOOR);
+				case T_POWDER_KEG:
+					g_pTheSound->PlaySoundEffect(SEID_BOMBEXPLODE);
+				break;
+				case T_KEY:
+				{
+					UINT virtualTile = 0;
+					switch (this->wSelKeyType) {
+						case YellowKey: virtualTile = TV_KEY_Y; break;
+						case GreenKey: virtualTile = TV_KEY_G; break;
+						case BlueKey: virtualTile = TV_KEY_B; break;
+						case SkeletonKey: virtualTile = TV_KEY_S; break;
+						default: break;
+					}
+
+					g_pTheSound->PlaySoundEffect(SEID_KEY, getFrequencyMultForItem(virtualTile));
+				}
+				break;
+				case T_SWORD:
+				case T_SHIELD:
+				case T_ACCESSORY:
+					g_pTheSound->PlaySoundEffect(SEID_SWORDS);
 				break;
 
 				case T_ROACH:
-				case T_QROACH:
 				case T_GOBLIN: case T_GOBLINKING:
 				case T_WWING:
 				case T_SPIDER:
@@ -5271,18 +5516,24 @@ void CEditRoomScreen::PlotObjects()
 				case T_NOMONSTER:
 				case T_NEATHER:
 					g_pTheSound->PlaySoundEffect(SEID_SPLAT); break;
+				case T_QROACH:
+					g_pTheSound->PlaySoundEffect(SEID_ROACH_EGG_SPAWNED); break;
 				case T_EYE:
 				case T_MADEYE:
 					g_pTheSound->PlaySoundEffect(SEID_EVILEYEWOKE); break;
 				case T_TAR:	case T_MUD: case T_GEL:
-					//Remove illegal tar formations.
-					FixUnstableTar();
-					//NO BREAK
+					FixUnstableTar(); //Remove illegal tar formations.
+					g_pTheSound->PlaySoundEffect(SEID_STABTAR, getFrequencyMultForItem(wPlottedObject));
+					break;
 				case T_TARMOTHER:	case T_TARBABY:
 				case T_MUDMOTHER:	case T_MUDBABY:
 				case T_GELMOTHER:	case T_GELBABY:
 				case T_GOO:
 					g_pTheSound->PlaySoundEffect(SEID_STABTAR);  break;
+				case T_MIST:
+				case T_MISTVENT:
+				case T_FLUFFBABY:
+					g_pTheSound->PlaySoundEffect(SEID_PUFF_EXPLOSION); break;
 				case T_ROCKGOLEM:
 				case T_ROCKGIANT:
 					g_pTheSound->PlaySoundEffect(SEID_BREAKWALL);   break;
@@ -5297,6 +5548,8 @@ void CEditRoomScreen::PlotObjects()
 //					g_pTheSound->PlaySoundEffect(SEID_SLAYERENTERFAR);
 //					UniquePlacement(this->pRoomWidget->wEndX, this->pRoomWidget->wEndY, M_SLAYER);
 					break;
+				case T_CONSTRUCT:
+					g_pTheSound->PlaySoundEffect(SEID_CONSTRUCT_SMASH); break;
 				case T_CHARACTER:
 				case T_CITIZEN:
 					break;
@@ -5347,7 +5600,8 @@ bool CEditRoomScreen::PlotObjectAt(
 	if (!IsMonsterTileNo(wObject))
 	{
 		//Was an object of this type already on this square?
-		const bool bObjectWasHere = this->pRoom->GetTSquare(wX,wY) == wObject;
+		const UINT tTile = this->pRoom->GetTSquare(wX, wY);
+		const bool bObjectWasHere = tTile == wObject;
 		COrbData *pOldOrb = NULL;
 		if (wObject == T_ORB)
 		{
@@ -5401,6 +5655,11 @@ bool CEditRoomScreen::PlotObjectAt(
 				break;
 				case T_ACCESSORY:
 					this->pRoom->SetTParam(wX,wY, this->wSelAccessoryType);
+				break;
+				case T_MIRROR: case T_CRATE: case T_POWDER_KEG:
+					//Allow items to be covered
+					if (tTile != T_EMPTY)
+						this->pRoom->coveredTSquares.Add(wX, wY, tTile);
 				break;
 				default:
 					//Keep track of what kind of floor is in room.
@@ -5481,6 +5740,7 @@ bool CEditRoomScreen::PlotObjectAt(
 		{
 		case M_BRAIN:
 		case M_SKIPPERNEST:
+		case M_FLUFFBABY:
 			pMonster->wO = NO_ORIENTATION;
 			break;
 		case M_TARMOTHER:
@@ -5587,6 +5847,11 @@ bool CEditRoomScreen::EraseAndPlot(
 		this->pRoomWidget->bCeilingLightsRendered = false;
 		return true;
 	}
+	if (wObjectToPlot == T_OVERHEAD_IMAGE) {
+		//Overhead image is on its own layer and won't overwrite anything else.
+		this->pRoom->overheadTiles.Add(wX, wY);
+		return true;
+	}
 
 	bool bObRemoved=false;  //obstacle tile was removed
 	bool bTarRemoved=false;
@@ -5635,31 +5900,15 @@ void CEditRoomScreen::PlotStaircase(const UINT wStairType)
 	const UINT wStartY = this->pRoomWidget->wStartY;
 	UINT wEndX = this->pRoomWidget->wEndX;
 	UINT wEndY = this->pRoomWidget->wEndY;
-	UINT wX, wY, wObjectNo;
-
-	//3x3 minimum
-	if (wEndX - wStartX < 2)
-		wEndX = wStartX + 2;
-	if (wEndY - wStartY < 2)
-		wEndY = wStartY + 2;
-
-	//Determine where staircase entrance should be.
-	const UINT wBaseY = wStairType == T_STAIRS ? wEndY : wStartY;
-	const UINT wEntranceY = wStairType == T_STAIRS ? wStartY : wEndY;
+	UINT wX, wY;
 
 	//If all spots aren't safe, don't plot anything
 	this->pRoomWidget->ResetPlot();
-	for (wY=wStartY; wY<=wEndY; ++wY)
-		for (wX=wStartX; wX<=wEndX; ++wX)
+	for (wY = wStartY; wY <= wEndY; ++wY)
+		for (wX = wStartX; wX <= wEndX; ++wX)
 		{
 			//Determine what part of staircase is being plotted at this square.
-			if (wX == wStartX || wX == wEndX || wY == wBaseY)
-				wObjectNo = T_WALL;
-			else if (wY == wEntranceY)
-				continue;   //stair entrance -- nothing will be plotted here
-			else
-				wObjectNo = wStairType;
-			if (!this->pRoomWidget->IsSafePlacement(wObjectNo, wX, wY))
+			if (!this->pRoomWidget->IsSafePlacement(wStairType, wX, wY))
 			{
 				EditObjects();
 				PaintHighlights();
@@ -5673,21 +5922,11 @@ void CEditRoomScreen::PlotStaircase(const UINT wStairType)
 	Changing();
 
 	//Plot staircase.
-	for (wY=wStartY; wY<=wEndY; ++wY)
-		for (wX=wStartX; wX<=wEndX; ++wX)
-		{
-			//Determine what part of staircase is being plotted at this square.
-			if (wX == wStartX || wX == wEndX || wY == wBaseY)
-				wObjectNo = T_WALL;
-			else if (wY == wEntranceY)
-				continue;   //stair entrance -- nothing will be plotted here
-			else
-				wObjectNo = wStairType;
+	for (wY = wStartY; wY <= wEndY; ++wY)
+		for (wX = wStartX; wX <= wEndX; ++wX)
+			PlotObjectAt(wX, wY, wStairType, this->wO);
 
-			PlotObjectAt(wX,wY,wObjectNo,this->wO);
-		}
-
-	SetDestinationEntrance(wStartX + 1, wStartY + 1, wEndX - 1, wEndY - 1);
+	SetDestinationEntrance(wStartX, wStartY, wEndX, wEndY);
 
 	this->pRoom->InitRoomStats();
 	PaintHighlights();
@@ -5802,6 +6041,10 @@ void CEditRoomScreen::EraseObjects(
 				case T_DARK_CEILING:
 					this->pRoom->tileLights.Remove(wX,wY);
 					this->pRoomWidget->bCeilingLightsRendered = false;
+					bSomethingPlotted = true;
+				break;
+				case T_OVERHEAD_IMAGE:
+					this->pRoom->overheadTiles.Remove(wX, wY);
 					bSomethingPlotted = true;
 				break;
 
@@ -6224,7 +6467,7 @@ void CEditRoomScreen::FixCorruptStaircase(
 				break;
 			this->pRoom->DeleteExitAtSquare(wEvalX, wEvalY);
 
-			this->pRoom->Plot(wEvalX, wEvalY, T_FLOOR);  //remove stairs
+			this->pRoom->Plot(wEvalX, wEvalY, this->wLastFloorSelected);  //remove stairs
 
 			//Add adjacent (4-neighbor) coords to eval stack.
 			if (wEvalX > 0)
@@ -6247,60 +6490,8 @@ void CEditRoomScreen::FixCorruptStaircase(
 				wMaxY = wEvalY;
 			}
 			break;
-
-		case T_WALL:
-			//Remove the wall surrounding the stairs if it doesn't
-			//have another wall tile adjacent to it.
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wEvalX, wEvalY);
-			break;
 		}
 	}
-
-	//Handle corners.
-	if (wMinX > 0)
-	{
-		if (wMinY > 0)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMinX-1, wMinY-1);
-		if (wMaxY < this->pRoom->wRoomRows - 1)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMinX-1, wMaxY+1);
-	}
-	if (wMaxX < this->pRoom->wRoomCols - 1)
-	{
-		if (wMinY > 0)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMaxX+1, wMinY-1);
-		if (wMaxY < this->pRoom->wRoomRows - 1)
-			FixCorruptStaircaseEdge(wMinX, wMaxX, wMinY, wMaxY, wMaxX+1, wMaxY+1);
-	}
-}
-
-//*****************************************************************************
-void CEditRoomScreen::FixCorruptStaircaseEdge(
-//Remove lone wall tiles around a staircase being removed.
-//
-//Params:
-	const UINT wMinX, const UINT wMaxX,          //(in) bounds of stairs
-	const UINT wMinY, const UINT wMaxY,          //(in) bounds of stairs
-	const UINT wEvalX, const UINT wEvalY)  //(in) Where to check wall tile
-{
-	ASSERT(this->pRoom->IsValidColRow(wEvalX, wEvalY));
-
-	//This check is needed just for the corner cases.
-	if (!bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY))) return;
-
-	if (wEvalX < wMinX && wEvalX > 0)   //left
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX-1, wEvalY)))
-			return;
-	if (wEvalX > wMaxX && wEvalX < this->pRoom->wRoomCols - 1)  //right
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX+1, wEvalY)))
-			return;
-	if (wEvalY < wMinY && wEvalY > 0)   //top (have to handle it)
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY-1)))
-			return;
-	if (wEvalY > wMaxY && wEvalY < this->pRoom->wRoomRows - 1)  //bottom
-		if (bIsWall(this->pRoom->GetOSquare(wEvalX, wEvalY+1)))
-			return;
-
-	this->pRoom->Plot(wEvalX, wEvalY, T_FLOOR);  //remove wall
 }
 
 //*****************************************************************************
@@ -6420,6 +6611,7 @@ bool CEditRoomScreen::RemoveObjectAt(
 {
 	CDbRoom& room = *(this->pRoom);
 	const UINT wOTileNo = room.GetOSquare(wX,wY),
+			fTile = room.GetFSquare(wX, wY),
 			wTTileNo = room.GetTSquare(wX,wY),
 			wLayer = TILE_LAYER[wPlottedObject];
 	CMonster *pMonster;
@@ -6444,6 +6636,10 @@ bool CEditRoomScreen::RemoveObjectAt(
 			case T_DOOR_B: case T_DOOR_BO:
 			case T_DOOR_MONEY: case T_DOOR_MONEYO:
 				room.RemoveDoorTile(wX,wY,wOTileNo);
+			break;
+			case T_FIRETRAP:
+			case T_FIRETRAP_ON:
+				RemoveOrbAssociationAt(wX, wY);
 			break;
 			case T_PRESSPLATE:
 				if (room.RemovePressurePlateTile(wX,wY))
@@ -6526,12 +6722,38 @@ bool CEditRoomScreen::RemoveObjectAt(
 	break;
 
 	case 3:
+		switch (fTile)
+		{
+			case T_ARROW_N: case T_ARROW_NE: case T_ARROW_E: case T_ARROW_SE:
+			case T_ARROW_S: case T_ARROW_SW: case T_ARROW_W: case T_ARROW_NW:
+			case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_E: case T_ARROW_OFF_SE:
+			case T_ARROW_OFF_S: case T_ARROW_OFF_SW: case T_ARROW_OFF_W: case T_ARROW_OFF_NW:
+				if (!bIsLight(wTTileNo) && !bIsYellowDoor(wOTileNo) && !bIsFiretrap(wOTileNo)) {
+					if (!bIsAnyArrow(fTile) || !bIsAnyArrow(wPlottedObject)) {
+						RemoveOrbAssociationAt(wX, wY);
+					}
+				}
+			break;
+		}
 	break;
 
 	default: ASSERT(!"Invalid layer"); break;
 	}  //layer
 
 	return bSuccess;
+}
+
+//*****************************************************************************
+void CEditRoomScreen::RemoveOrbAssociationAt(const UINT wX, const UINT wY)
+{
+	CDbRoom& room = *(this->pRoom);
+	for (UINT wIndex = 0; wIndex < room.orbs.size(); ++wIndex)
+	{
+		COrbData* pOrb = room.orbs[wIndex];
+		COrbAgentData* pAgent = FindOrbAgentFor(wX, wY, pOrb);
+		if (pAgent)
+			VERIFY(pOrb->DeleteAgent(pAgent));
+	}
 }
 
 //*****************************************************************************
@@ -6555,7 +6777,7 @@ void CEditRoomScreen::Changing(
 			changes.push_back(new CDbHold(*(this->pHold)));
 			//NO BREAK
 		case Room:
-			changes.push_back(new CDbRoom(*(this->pRoom)));
+			changes.push_back(new CDbRoom(*(this->pRoom), true, true));
 		break;
 		case Hold:
 			changes.push_back(new CDbHold(*(this->pHold)));
@@ -6587,6 +6809,7 @@ void CEditRoomScreen::RotateClockwise()
 		return;
 	}
 
+	UINT swordOrderIndex, shieldOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6623,7 +6846,6 @@ void CEditRoomScreen::RotateClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6633,13 +6855,12 @@ void CEditRoomScreen::RotateClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				case OT_TOGGLE: this->wSelPlateType = OT_NORMAL; break;
-				//case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
+				case OT_TOGGLE: this->wSelPlateType = OT_ONEUSE; break;
+				case OT_ONEUSE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
 		break;
@@ -6660,15 +6881,29 @@ void CEditRoomScreen::RotateClockwise()
 		case T_SWORD:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid sword type.
+			for (swordOrderIndex = 0; swordOrderIndex < SwordOrderSize; swordOrderIndex++)
+			{
+				if (this->wSelSwordType == SwordOrder[swordOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelSwordType =
-					this->wSelSwordType == SwordCount-1 ? 1 : this->wSelSwordType + 1;
+				swordOrderIndex == SwordOrderSize - 1 ? SwordOrder[0] : SwordOrder[swordOrderIndex + 1];
 			UpdateMenuGraphic(T_SWORD);
 		break;
 		case T_SHIELD:
 			if (this->eState != ES_PLACING) return;
 			//Select next valid shield type.
+			for (shieldOrderIndex = 0; shieldOrderIndex < ShieldOrderSize; shieldOrderIndex++)
+			{
+				if (this->wSelShieldType == ShieldOrder[shieldOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelShieldType =
-					this->wSelShieldType == ShieldCount-1 ? 1 : this->wSelShieldType + 1;
+				shieldOrderIndex == ShieldOrderSize - 1 ? ShieldOrder[0] : ShieldOrder[shieldOrderIndex + 1];
 			UpdateMenuGraphic(T_SHIELD);
 		break;
 		case T_ACCESSORY:
@@ -6707,6 +6942,7 @@ void CEditRoomScreen::RotateCounterClockwise()
 		return;
 	}
 
+	UINT swordOrderIndex, shieldOrderIndex = 0;
 	switch (this->wSelectedObject)
 	{
 		case T_LIGHT: case T_WALLLIGHT:
@@ -6743,7 +6979,6 @@ void CEditRoomScreen::RotateCounterClockwise()
 			UpdateMenuGraphic(T_OBSTACLE);
 		}
 		break;
-/*
 		case T_ORB:
 			switch (this->wSelOrbType)
 			{
@@ -6753,12 +6988,11 @@ void CEditRoomScreen::RotateCounterClockwise()
 			}
 			UpdateMenuGraphic(T_ORB);
 		break;
-*/
 		case T_PRESSPLATE:
 			switch (this->wSelPlateType)
 			{
-				case OT_NORMAL: this->wSelPlateType = OT_TOGGLE; break;
-				//case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
+				case OT_NORMAL: this->wSelPlateType = OT_ONEUSE; break;
+				case OT_ONEUSE: this->wSelPlateType = OT_TOGGLE; break;
 				case OT_TOGGLE: default: this->wSelPlateType = OT_NORMAL; break;
 			}
 			UpdateMenuGraphic(T_PRESSPLATE);
@@ -6781,15 +7015,29 @@ void CEditRoomScreen::RotateCounterClockwise()
 		case T_SWORD:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid sword type.
+			for (swordOrderIndex = 0; swordOrderIndex < SwordOrderSize; swordOrderIndex++)
+			{
+				if (this->wSelSwordType == SwordOrder[swordOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelSwordType =
-					this->wSelSwordType == 1 ? SwordCount-1 : this->wSelSwordType - 1;
+				swordOrderIndex == 0 ? SwordOrder[SwordOrderSize - 1] : SwordOrder[swordOrderIndex - 1];
 			UpdateMenuGraphic(T_SWORD);
 		break;
 		case T_SHIELD:
 			if (this->eState != ES_PLACING) return;
 			//Select previous valid shield type.
+			for (shieldOrderIndex = 0; shieldOrderIndex < ShieldOrderSize; shieldOrderIndex++)
+			{
+				if (this->wSelShieldType == ShieldOrder[shieldOrderIndex])
+				{
+					break;
+				}
+			}
 			this->wSelShieldType =
-					this->wSelShieldType == 1 ? ShieldCount-1 : this->wSelShieldType - 1;
+				shieldOrderIndex == 0 ? ShieldOrder[ShieldOrderSize - 1] : ShieldOrder[shieldOrderIndex - 1];
 			UpdateMenuGraphic(T_SHIELD);
 		break;
 		case T_ACCESSORY:
@@ -6960,6 +7208,14 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 	if (int(wObject) < 0)
 		return;
 
+	SetItemLabelText(wObject);
+}
+
+//*****************************************************************************
+void CEditRoomScreen::SetItemLabelText(const UINT wObject)
+//Sets text on editor item menu.
+//Provides context-sensitive information where useful.
+{
 	UINT wMID = 0;
 	switch (wObject)
 	{
@@ -6991,9 +7247,18 @@ void CEditRoomScreen::SetSelectedObject(const UINT wObject)
 	if (wMID)
 	{
 		WSTRING wstr = g_pTheDB->GetMessageText(wMID);
-		if (IsMonsterTileNo(wObject))
+		WCHAR temp[16];
+		if (bIsHealth(wObject) || bIsATKUp(wObject) || bIsDEFUp(wObject) || bIsShovel(wObject)) {
+			const int val = (int)(this->pLevel->getItemAmount(wObject));
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			if (val >= 0)
+				wstr += wszPlus;
+			wstr += _itoW(val, temp, 10);
+			wstr += wszRightParen;
+		}
+		else if (IsMonsterTileNo(wObject))
 		{
-			WCHAR temp[16];
 			wstr += wszCRLF;
 			wstr += _itoW(MON_HP[wObject - M_OFFSET],temp,10);
 			wstr += wszSpace;
@@ -7258,6 +7523,8 @@ void CEditRoomScreen::ShowErrors()
 //	static const SURFACECOLOR LightGreen = {128, 255, 128};
 //	static const SURFACECOLOR LightBlack = {192, 192, 192};
 	static const SURFACECOLOR Orange = {255, 128, 0};
+	static const SURFACECOLOR PaleGreen = { 230, 255, 230 };
+	static const SURFACECOLOR Purple = { 255, 128, 255 };
 
 	UINT wTileNo[4], wAdjTile[4];
 	bool bMatchingEdge;
@@ -7387,10 +7654,20 @@ void CEditRoomScreen::ShowErrors()
 
 			case T_STAIRS: case T_STAIRS_UP:
 			{
-				//Mark stairs that end hold (visual cue).
+				//Mark stairs that end hold, etc (visual cue).
 				const UINT index = this->pRoom->GetExitIndexAt(wX,wY);
-				if (index == NO_EXIT || !this->pRoom->Exits[index]->dwEntranceID)
-					AddShadeToTile(Orange);
+				const CExitData* pStairs = index != NO_EXIT ? this->pRoom->Exits[index] : nullptr;
+				if (index == NO_EXIT || !pStairs->dwEntranceID) {
+					AddShadeToTile(Orange); //ends hold
+				} else if (pStairs->IsWorldMapExit()) {
+					if (this->pHold->DoesWorldMapExist(pStairs->dwEntranceID)) {
+						AddShadeToTile(PaleGreen); //world map
+					} else {
+						AddShadeToTile(Purple); //bad world map
+					}
+				} else if (pStairs->dwEntranceID == EXIT_PRIOR_LOCATION) {
+					AddShadeToTile(PaleYellow); //return to prior location
+				}
 			}
 			break;
 			}
@@ -7534,7 +7811,8 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 //         implying the common orientation should not be rotated.
 {
 	UINT wNewTile = T_EMPTY;
-	if (bIsTunnel(wObject) || bIsArrow(wObject))
+	const bool bIsForceArrow = bIsAnyArrow(wObject);
+	if (bIsTunnel(wObject) || bIsForceArrow)
 	{
 		switch (wObject)
 		{
@@ -7551,8 +7829,23 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 			case T_ARROW_W:  wNewTile = bCW ? T_ARROW_NW : T_ARROW_SW; break;
 			case T_ARROW_NW: wNewTile = bCW ? T_ARROW_N : T_ARROW_W; break;
 			case T_ARROW_N:  wNewTile = bCW ? T_ARROW_NE : T_ARROW_NW; break;
+
+			case T_ARROW_OFF_NE: wNewTile = bCW ? T_ARROW_OFF_E : T_ARROW_OFF_N; break;
+			case T_ARROW_OFF_E:  wNewTile = bCW ? T_ARROW_OFF_SE : T_ARROW_OFF_NE; break;
+			case T_ARROW_OFF_SE: wNewTile = bCW ? T_ARROW_OFF_S : T_ARROW_OFF_E; break;
+			case T_ARROW_OFF_S:  wNewTile = bCW ? T_ARROW_OFF_SW : T_ARROW_OFF_SE; break;
+			case T_ARROW_OFF_SW: wNewTile = bCW ? T_ARROW_OFF_W : T_ARROW_OFF_S; break;
+			case T_ARROW_OFF_W:  wNewTile = bCW ? T_ARROW_OFF_NW : T_ARROW_OFF_SW; break;
+			case T_ARROW_OFF_NW: wNewTile = bCW ? T_ARROW_OFF_N : T_ARROW_OFF_W; break;
+			case T_ARROW_OFF_N:  wNewTile = bCW ? T_ARROW_OFF_NE : T_ARROW_OFF_NW; break;
 		}
 		SetMenuItem(wObject, wNewTile);
+		//Rotate both force arrow menu items in tandem
+		if (bIsForceArrow) {
+			const UINT alterate_object = getToggledForceArrow(wObject);
+			const UINT alternate_new_tile = getToggledForceArrow(wNewTile);
+			SetMenuItem(alterate_object, alternate_new_tile);
+		}
 		return true;
 	}
 
@@ -7571,6 +7864,8 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_DOOR_RO: wNewTile = T_DOOR_R; break;
 		case T_DOOR_BO: wNewTile = T_DOOR_B; break;
 		case T_DOOR_MONEYO: wNewTile = T_DOOR_MONEY; break;
+		case T_FIRETRAP: wNewTile = T_FIRETRAP_ON; break;
+		case T_FIRETRAP_ON: wNewTile = T_FIRETRAP; break;
 
 /*
 		case T_STAIRS: wNewTile = T_STAIRS_UP; break;
@@ -7595,13 +7890,38 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 		case T_FLOOR_DIRT: wNewTile = bCW ? T_FLOOR_ALT : T_FLOOR_GRASS; break;
 		case T_FLOOR_ALT: wNewTile = bCW ? T_FLOOR : T_FLOOR_DIRT; break;
 
-		case T_FLOOR_IMAGE: wNewTile = bCW ? T_PIT_IMAGE : T_WALL_IMAGE; break;
+		case T_FLOOR_IMAGE: wNewTile = bCW ? T_PIT_IMAGE : T_OVERHEAD_IMAGE; break;
 		case T_PIT_IMAGE: wNewTile = bCW ? T_WALL_IMAGE : T_FLOOR_IMAGE; break;
-		case T_WALL_IMAGE: wNewTile = bCW ? T_FLOOR_IMAGE : T_PIT_IMAGE; break;
+		case T_WALL_IMAGE: wNewTile = bCW ? T_OVERHEAD_IMAGE : T_PIT_IMAGE; break;
+		case T_OVERHEAD_IMAGE: wNewTile = bCW ? T_FLOOR_IMAGE : T_WALL_IMAGE; break;
 
 		case T_BRIDGE: wNewTile = bCW ? T_BRIDGE_H : T_BRIDGE_V; break;
 		case T_BRIDGE_H: wNewTile = bCW ? T_BRIDGE_V : T_BRIDGE; break;
 		case T_BRIDGE_V: wNewTile = bCW ? T_BRIDGE : T_BRIDGE_H; break;
+
+		case T_DIRT1: wNewTile = bCW ? T_DIRT3 : T_DIRT5; break;
+		case T_DIRT3: wNewTile = bCW ? T_DIRT5 : T_DIRT1; break;
+		case T_DIRT5: wNewTile = bCW ? T_DIRT1 : T_DIRT3; break;
+
+		case T_MAP: wNewTile = T_MAP_DETAIL; break;
+		case T_MAP_DETAIL: wNewTile = T_MAP; break;
+
+		case T_SHOVEL1: wNewTile = bCW ? T_SHOVEL3 : T_SHOVEL10; break;
+		case T_SHOVEL3: wNewTile = bCW ? T_SHOVEL10 : T_SHOVEL1; break;
+		case T_SHOVEL10: wNewTile = bCW ? T_SHOVEL1 : T_SHOVEL3; break;
+
+		case T_HEALTH_SM: wNewTile = bCW ? T_HEALTH_MED : T_HEALTH_HUGE; break;
+		case T_HEALTH_MED: wNewTile = bCW ? T_HEALTH_BIG : T_HEALTH_SM; break;
+		case T_HEALTH_BIG: wNewTile = bCW ? T_HEALTH_HUGE : T_HEALTH_MED; break;
+		case T_HEALTH_HUGE: wNewTile = bCW ? T_HEALTH_SM : T_HEALTH_BIG; break;
+
+		case T_ATK_UP: wNewTile = bCW ? T_ATK_UP3 : T_ATK_UP10; break;
+		case T_ATK_UP3: wNewTile = bCW ? T_ATK_UP10 : T_ATK_UP; break;
+		case T_ATK_UP10: wNewTile = bCW ? T_ATK_UP : T_ATK_UP3; break;
+
+		case T_DEF_UP: wNewTile = bCW ? T_DEF_UP3 : T_DEF_UP10; break;
+		case T_DEF_UP3: wNewTile = bCW ? T_DEF_UP10 : T_DEF_UP; break;
+		case T_DEF_UP10: wNewTile = bCW ? T_DEF_UP : T_DEF_UP3; break;
 
 		//sets linked to other items whose state should match the semantic type of this one
 		case T_MUD: wNewTile = bCW ? T_TAR : T_GEL; break;
@@ -7663,6 +7983,13 @@ bool CEditRoomScreen::ToggleMenuItem(const UINT wObject, const bool bCW) //rotat
 			case T_DOOR_BO: Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_YO); Also(T_DOOR_MONEYO); break;
 			case T_DOOR_YO: Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_BO); Also(T_DOOR_MONEYO); break;
 			case T_DOOR_MONEYO: Also(T_DOOR_YO); Also(T_DOOR_GO); Also(T_DOOR_RO); Also(T_DOOR_CO); Also(T_DOOR_BO); break;
+
+			case T_ATK_UP: Also(T_DEF_UP); break;
+			case T_ATK_UP3: Also(T_DEF_UP3); break;
+			case T_ATK_UP10: Also(T_DEF_UP10); break;
+			case T_DEF_UP: Also(T_ATK_UP); break;
+			case T_DEF_UP3: Also(T_ATK_UP3); break;
+			case T_DEF_UP10: Also(T_ATK_UP10); break;
 
 			default: break;
 		}
@@ -7855,8 +8182,8 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			switch (this->wSelOrbType)
 			{
 				case OT_NORMAL: wTileI = TI_ORB_D; break;
-//				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break; //not used in RPG
-//				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;  //not used in RPG
+				case OT_ONEUSE: wTileI = TI_ORB_CRACKING; break;
+				case OT_BROKEN: wTileI = TI_ORB_CRACKED; break;
 				default: ASSERT(!"Bad orb type"); break;
 			}
 			pObjectMenu->SetObjectTiles(wTile, 1, 1, &wTileI);
@@ -7868,7 +8195,7 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			switch (this->wSelPlateType)
 			{
 				case OT_NORMAL: wTileI = TI_PP; break;
-//				case OT_ONEUSE: wTileI = TI_PP_BROKE1; break;	//not used in RPG
+				case OT_ONEUSE: wTileI = TI_PPB; break;
 				case OT_TOGGLE: wTileI = TI_PPT; break;
 				default: ASSERT(!"Bad plate type"); break;
 			}

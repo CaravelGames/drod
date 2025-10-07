@@ -63,7 +63,12 @@ enum EffectType
 	EVARMONITOR,      //variable monitor
 	ESTEAM,           //rising steam/smoke puff
 	ESPLASH,          //water splash
-	ECHATTEXT         //CaravelNet chat text display
+	ECHATTEXT,        //CaravelNet chat text display
+	ERAINDROP,        //a falling rain drop
+	EDAMAGEPREVIEW,   //hovering enemy damage display
+	EIMAGEOVERLAY,    //image overlay
+	EFIRETRAP,        //fire trap
+	EPUFFEXPLOSION,   //puff explosion
 };
 
 //*****************************************************************************
@@ -89,7 +94,11 @@ enum VisualEffectType
 	VET_PARRY=16,
 	VET_JITTER=17,
 	VET_STRONGHIT=18,
-	VET_EQUIP=19
+	VET_EQUIP=19,
+	VET_ICEMELT=20,
+	VET_FIRETRAP=21,
+	VET_PUFFEXPLOSION=22,
+	VET_CONSTRUCTSPLAT=23,
 };
 
 #endif //...#ifndef DRODEFFECT_H

@@ -142,10 +142,6 @@ void CPendingPlotEffect::Draw(SDL_Surface& destSurface)
 	case T_SWORDSMAN:
 		PlotSwordsman(this->wDrawStartX, this->wDrawStartY, destSurface);
 		break;
-	case T_STAIRS:
-	case T_STAIRS_UP:
-		PlotStaircase(this->wDrawStartX, this->wDrawStartY, this->wDrawEndX, this->wDrawEndY, this->wObjectNo, destSurface);
-		break;
 	default:
 	{
 		UINT wX, wY, wTileNo;
@@ -160,36 +156,6 @@ void CPendingPlotEffect::Draw(SDL_Surface& destSurface)
 	}
 	break;
 	}
-}
-
-//*****************************************************************************
-void CPendingPlotEffect::PlotStaircase(
-//Staircase is drawn with a wall around the left, bottom and right sides.
-//(And nothing on top.)
-//
-//Params:
-	const UINT wStartX, const UINT wStartY, const UINT wEndX, const UINT wEndY,
-	const UINT wStairType,     //(in)
-	SDL_Surface& destSurface) //(in)
-{
-	ASSERT(bIsStairs(wStairType));
-	const UINT wBaseY = wStairType == T_STAIRS ? wEndY : wStartY;
-	const UINT wEntranceY = wStairType == T_STAIRS ? wStartY : wEndY;
-	UINT wX, wY, wObjectNo, wTileNo;
-	for (wY=wStartY; wY<=wEndY; ++wY)
-		for (wX=wStartX; wX<=wEndX; ++wX)
-		{
-			//Determine what part of staircase is being plotted at this square.
-			if (wX == wStartX || wX == wEndX || wY == wBaseY)
-				wObjectNo = T_WALL;
-			else if (wY == wEntranceY)
-				continue;   //stair entrance -- nothing will be plotted here
-			else
-				wObjectNo = wStairType;
-
-			wTileNo = (bIsWall(wObjectNo) ? TI_WALL : TI_STAIRS);
-			PlotTile(wX, wY, wObjectNo, wTileNo, destSurface);
-		}
 }
 
 //*****************************************************************************

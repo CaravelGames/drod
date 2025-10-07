@@ -24,23 +24,25 @@ Reference</a> for more information.</p>
 
 <p><a name="health" /><img src="images/health.jpg" />
 Find <b>health</b> to raise your HP.
-Small potions give 15 HP, medium ones give 50 HP, and large ones give 200 HP.
+Small potions give 15 HP, medium ones give 50 HP, large ones give 200 HP and huge ones give 1000 HP.
 Your HP has no limit, but don't squander it fighting tough monsters.  If you
 waste too much, you may find your way blocked by monsters you can not defeat,
 and you will have to restore back to an earlier save point and try again.</p>
 
 <p><a name="powerups" /><img src="images/powerups.jpg" />
-<b>Power-ups</b> will permanently raise your ATK or DEF by one point.
+<b>Power-ups</b> will permanently raise your ATK or DEF.
 The damage you inflict each hit in combat is the difference between your ATK and the
 enemy's DEF, and vice-versa.  This means that acquiring an ATK point causes
 your hits do one more point of damage, while a DEF point will cause enemy
-hits to inflict one less point of damage.</p>
+hits to inflict one less point of damage.
+They come in varieties providing 1, 3 and 10 of their respective stat.</p>
 
 <p><a name="equipment" /><img src="images/equipment.jpg" />
 Search for equipment, such as <b>swords and shields</b>, to
 fight more difficult monsters.  Swords typically increase your ATK and shields
 increase your DEF.  Certain equipment gives you unique abilities.
-There are also rare accessory items that give you special powers.</p>
+There are also rare accessory items that give you special powers. See
+<a href="equipment.html">Equipment</a> for more information.</p>
 
 <p><a name="walls" /><img src="images/walls.jpg" />
 Like <b>walls</b> in the real world, these are obstacles that prevent movement.</p>
@@ -73,16 +75,16 @@ green or blue door.</p>
 <p><a name="orbs" /><img src="images/orb.jpg" />
 Striking <b>orbs</b> with
 your sword will cause them to shoot bolts of energy out to open, close,
-or toggle one or more doors in the room.  Right-click orbs to see what doors
-they affect.</p>
+or toggle one or more doors, force arrows, fire traps and lights in the room.
+Right-click orbs to see what they affect. Some orbs are damaged and can only be used once.</p>
 
 <p><img src="images/plates.jpg" />
-Like orbs, <a name="pressureplates"><b>pressure plates</b></a> affect
-doors when activated.  Some orbs and pressure plates open doors
-that you can't unlock with a key.  Pressure plates are activated each time
-they're depressed (weighed down by something) and also when they are released
-by removing the weight on top of them.
-Right-click plates to see what doors they affect.</p>
+Like orbs, <a name="pressureplates"><b>pressure plates</b></a> are used to affect
+doors, force arrows, fire traps and lights. They are activated when something weighs them down.
+Three kinds of plates exist: one-time plates are only activated the first time
+they're depressed, multi-use plates are activated each time they're depressed,
+and on-off plates are activated both when they are depressed and when they are released.
+Right-click pressure plates to see what they affect.</p>
 
 <p><a name="trapdoorgates" /><a name="reddoors" /><a name="trapdoors" />
 <img src="images/rdoors.jpg" />
@@ -107,6 +109,21 @@ You may also close greckle gates by standing on them and using the <b>Lock</b> c
 command (expending a key or money).
 Be careful not to close gates you will need to pass through later.</p>
 
+<p><a name="crates" /><img src="images/crate.jpg" />
+<b>Crates</b> can be used to reach the tops of closed doors so you can walk along them.
+Crates can be pushed, but only by your body and not your sword. You will step onto a crate when
+you try to push it in a direction where movement is blocked.
+While on a crate you are immune to oremites, mist and hot tiles.</p>
+
+<p><a name="shovels" /><a name="ditblocks" /><img src="images/shovelsanddirt.jpg" />
+<b>Shovels</b> allow you to remove <b>dirt blocks</b>. Shovels come in groups of 1, 3 and 10,
+while dirt blocks come in varieties costing 1, 3 and 5 shovels.
+Shovels are affected by the level multiplier, while dirt blocks are not.</p>
+
+<p><img src="images/thinice.jpg" />
+<a name="thin-ice"><b>Thin ice</b></a> can appear in water.
+Thin ice will melt as soon as the player steps off it.</p>
+
 <p><a name="multiplier" /><img src="images/multiplier.jpg" />
 The <b>item multiplier</b> shows the effect items will have relative to their
 base value in the current area (x1 = normal).  For example, an attack power-up normally
@@ -125,7 +142,8 @@ Cleared rooms are white.</p>
 <p><a name="levelmap" /><img src="images/levelmap.jpg" />
 Acquiring a <b>level map</b> will mark rooms on your minimap
 that you have not yet explored in the current area.
-There are some secret rooms not marked on maps.  Try to find them!</p>
+There are some secret rooms not marked on maps.  Try to find them!
+There are two varieties, providing different levels of detail.</p>
 
 <p><a name="exitstairs" /><img src="images/stairs.jpg" />
 <b>Stairways</b> connect areas of dungeons together.
@@ -141,8 +159,11 @@ to remain in place. If all its anchor points are removed, the bridge falls down 
 everything it supported with it.</p>
 
 <p><a name="hottile" /><img src="images/hottile.jpg" />
-<b>Hot tiles</b> are dangerous to stand on.
-You will lose 5% of your HP each time you touch one.</p>
+<b>Hot tiles</b> are dangerous to stand on. You will lose HP each time you touch one.</p>
+
+<p><img src="images/firetrap.jpg" />
+<a name="fire-traps"><b>Fire traps</b></a> can be turned on or off by orbs or pressure plates.
+A fire trap is harmless until activated; an active fire trap will harm any creature that steps on it.</p>
 
 <p><a name="oremites" /><img src="images/oremites.jpg" />
 <b>Oremites</b> are small creatures that feed on metal.
@@ -150,10 +171,15 @@ They are not dangerous by themselves, but you are forced to put metal items, lik
 away when walking around in an area covered with them.
 </p>
 
+<p><a name="mist" /><img src="images/mist.jpg" />
+<b>Mist</b> is a deathly cold gas that will reduce the DEF of most creatures to zero.
+A <b>mist vent</b> will produce mist every time a combat occurs.
+If mist is connected to a mist vent, the mist will expand outwards.</p>
+
 <p><a name="briar" /><img src="images/briars.jpg" />
 Dead <b>briars</b> block your way, but are not otherwise dangerous. However,
 a patch of briars connected to a <a name="briarroot"><b>briar root</b></a> will grow outwards
-each time a threat is sensed.
+each time a combat occurs.
 Standing next to a briar patch when fighting a monster is a very bad idea.</p>
 
 <p><a name="scrolls" /><img src="images/scroll.jpg" />
@@ -161,26 +187,31 @@ Standing next to a briar patch when fighting a monster is a very bad idea.</p>
 &nbsp;Step on the same square they are in to read them.</p>
 
 <p><a name="forcearrows" /><img src="images/forcearrow.jpg" />
-<b>Force arrows</b> prevent movement in the opposite direction they
-point. &nbsp;The north-pointing force arrow could be stepped onto from
-all directions except northwest, north, and northeast. &nbsp;Once
-you step onto a north-pointing force arrow you can leave in all
-directions except southwest, south, and southeast.</p>
+<a name="forcearrows"><b>Force arrows</b></a> prevent movement
+opposite to the direction they point.
+The north-pointing force arrow could be stepped onto from
+all directions except northwest, north, and northeast. Once
+anything steps onto a north-pointing force arrow, it can leave in all
+directions except southwest, south, and southeast.
+Force arrows can also be enabled or disabled by orbs and pressure plates.
+Disabled force arrows allow movement in all directions.</p>
 
-<p><a name="bomb" /><img src="images/bombfuse.jpg" />
-<b>Bombs</b> can be detonated with a 
-burning <a name="fuse"><b>fuse</b></a> or striking them with a sword.
-When a bomb explodes, anything within a range of 3 squares of the bomb will
-be damaged.
-If another bomb is located within that range, it will explode as well in a chain reaction.
-A fuse can be activated by walking away from a fuse endpoint, or by an explosion.
-They will not burn against the direction of force arrows.</p>
+<p><img src="images/bombfuse.jpg" /></p><p>
+<a name="bomb"><b>Bombs</b></a> and <b>powder kegs</b> can be detonated either by a weapon strike or a 
+burning <a name="fuse"><b>fuse</b></a>.
+Bombs are immobile, but powder kegs can be pushed by the player and certain monsters.
+Bombs have an explosion range of three tiles and powder kegs a range of one tile.
+Most entities, including the player, will be killed if they are within range of an explosion.
+If another bomb or powder keg is located within that 
+range, it will explode as well. &nbsp;A fuse can be activated by stepping on a 
+fuse endpoint or by an explosion. Fuses and explosions will not burn against the direction of force arrows.</p>
 
 <p><a name="tunnels" /><img src="images/tunnel.jpg" />
 <b>Tunnels</b> allow you to quickly move
 from one area of the room to another.  When Tendry is standing on a tunnel
 square and moves in the direction the tunnel faces, he will reappear on the
-closest tunnel square in the same column/row of that direction.</p>
+closest tunnel square in the same column/row of that direction.
+If there is no other tunnel in that direction, then the destination tunnel will be in the opposite direction.</p>
 
 <p><a name="mirrors" /><img src="images/mirror.jpg" />
 <b>Mirrors</b> reflect the aumtlich's gaze,
@@ -194,8 +225,8 @@ all force arrows in the room are turned 45 degrees in the direction indicated.
 The token then changes direction, and stepping on it again will rotate arrows back.</p>
 
 <p><a name="tarstuffswitcher" /><img src="images/tarswitcher.jpg" />
-When Tendry steps on a <b>tar/mud switcher</b>,
-all tar in the room changes to mud, and vice-versa. Other versions also exist.</p>
+When Tendry steps on a <b>tar/mud switcher</b>, all tar in the room changes to mud, and vice-versa.
+Other versions also exist, including those that can switch gel.</p>
 
 <p><a name="visiontoken" /><img src="images/visiontoken.jpg" />
 Stepping on a <b>vision token</b> gives Tendry
