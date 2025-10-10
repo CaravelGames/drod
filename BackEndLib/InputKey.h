@@ -27,9 +27,9 @@
 #ifndef _INPUTKEY_H
 #define _INPUTKEY_H
 
+#include "Types.h"
 #include <SDL_syswm.h>
 #include <SDL_events.h>
-#include "Types.h"
 
 #define UNKNOWN_INPUT_KEY InputKey(0)
 

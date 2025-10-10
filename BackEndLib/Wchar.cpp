@@ -41,6 +41,7 @@ const WCHAR wszOpenAngle[] =    { We('<'),We(0) };
 const WCHAR wszCloseAngle[] =   { We('>'),We(0) };
 const WCHAR wszColon[] =        { We(':'),We(0) };
 const WCHAR wszComma[] =        { We(','),We(0) };
+const WCHAR wszCommaSpace[] =   { We(','),We(' '),We(0) };
 #ifdef WIN32
 const WCHAR wszCRLF[] =         { We('\r'),We('\n'),We(0) };
 #else
@@ -52,6 +53,7 @@ const WCHAR wszEmpty[] =        { We(0) };
 const WCHAR wszEqual[] =        { We('='),We(0) };
 const WCHAR wszExclamation[] =  { We('!'),We(0) };
 const WCHAR wszForwardSlash[] = { We('/'),We(0) };
+const WCHAR wszTimes[] =        { We('x'),We(0) };
 const WCHAR wszHyphen[] =       { We('-'),We(0) };
 const WCHAR wszTilde[] =        { We('~'),We(0) };
 const WCHAR wszParentDir[] =    { We('.'),We('.'),We(0) };
@@ -69,6 +71,7 @@ const WCHAR wszSemicolon[] =    { We(';'),We(0) };
 const WCHAR wszSpace[] =        { We(' '),We(0) };
 const WCHAR wszUnderscore[] =   { We('_'),We(0) };
 const WCHAR wszZero[] =         { We('0'),We(0) };
+const WCHAR wszStringToken[] =  { We('%'),We('s'),We(0) };
 const WCHAR wszOne[] =          { We('1'),We(0) };
 const WCHAR wszTwo[] =          { We('2'),We(0) };
 #ifdef WIN32
@@ -902,6 +905,22 @@ const std::vector<WSTRING> WCSExplode(WSTRING const &source, WCHAR const delimit
 	{
 		if (!token.empty())
 			result.push_back(token);
+	}
+
+	return result;
+}
+
+//*****************************************************************************
+const std::set<WSTRING> WCSExplodeSet(WSTRING const& source, WCHAR const delimiter)
+// Explodes a string into pieces, and put them into a set
+{
+	std::set<WSTRING> result;
+	std::basic_istringstream<WCHAR> iss(source);
+
+	for (WSTRING token; std::getline(iss, token, delimiter); )
+	{
+		if (!token.empty())
+			result.insert(token);
 	}
 
 	return result;

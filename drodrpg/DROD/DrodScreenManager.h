@@ -47,7 +47,8 @@ enum SCREENTYPE
 	SCR_Demo,
 	SCR_Demos,
 	SCR_LevelStart,
-	SCR_Credits,
+	SCR_CreditsTendry,
+	SCR_CreditsACR,
 	SCR_NewPlayer,
 	SCR_SelectPlayer,
 	SCR_EditSelect,
@@ -56,7 +57,8 @@ enum SCREENTYPE
 	SCR_Browser,
 	SCR_Sell,
 	SCR_Mod,
-	SCR_Chat
+	SCR_Chat,
+	SCR_WorldMap
 };
 
 //Cursor icons.

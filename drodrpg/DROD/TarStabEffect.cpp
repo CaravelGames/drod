@@ -98,3 +98,51 @@ CGelStabEffect::CGelStabEffect(
 	this->xDims[1] = this->yDims[1] = 16;
 	InitParticles();
 }
+
+//********************************************************************************
+CFluffStabEffect::CFluffStabEffect(
+	//Constructor.
+	//
+	//Params:
+	CWidget* pSetWidget,       //(in)   Should be a room widget.
+	const CMoveCoord& MoveCoord,  //(in)   Location of debris and direction of its movement.
+	const UINT wParticleMinDuration,
+	const UINT baseSpeed,
+	const UINT particles)  //[default=FLUFF_PARTICLES]
+	: CParticleExplosionEffect(pSetWidget, MoveCoord, 8, 8, 2, particles,
+		wParticleMinDuration, baseSpeed)
+{
+	this->bRotatingParticles = false;
+
+	this->tileNums[0] = TI_FLUFFBLOOD_1;
+	this->tileNums[1] = TI_FLUFFBLOOD_2;
+	this->xDims[0] = this->yDims[0] = 8;
+	this->xDims[1] = this->yDims[1] = 4;
+	InitParticles();
+}
+
+//********************************************************************************
+CFluffInWallEffect::CFluffInWallEffect(
+	//Particles move more slowly than for the normal effect.
+	//
+	//Params:
+	CWidget* pSetWidget,       //(in)   Should be a room widget.
+	const CMoveCoord& MoveCoord)  //(in)   Location of debris and direction of its movement.
+	: CParticleExplosionEffect(pSetWidget, MoveCoord, 6, 6, 2, FLUFF_PARTICLES, 12, 1)
+{
+	this->bRotatingParticles = false;
+
+	this->tileNums[0] = TI_FLUFFBLOOD_1;
+	this->tileNums[1] = TI_FLUFFBLOOD_2;
+	this->xDims[0] = this->yDims[0] = 6;
+	this->xDims[1] = this->yDims[1] = 4;
+	InitParticles();
+}
+
+//*****************************************************************************
+bool CFluffInWallEffect::HitsObstacle(const CDbRoom* pRoom, const PARTICLE&/*particle*/) const
+//Nothing is an obstacle to this effect.
+{
+	ASSERT(pRoom);
+	return false;
+}

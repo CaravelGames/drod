@@ -31,25 +31,45 @@
 #include <FrontEndLib/LabelWidget.h>
 #include <BackEndLib/Types.h>
 
+class CFaceWidget;
 class CScrollingTextWidget;
 class CCreditsScreen : public CDrodScreen
 {
 protected:
 	friend class CDrodScreenManager;
 
-	CCreditsScreen();
+	CCreditsScreen(SCREENTYPE screentype);
 
 	virtual void   Paint(bool bUpdateRect = true);
-	virtual bool   SetForActivate();
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void   OnBetweenEvents();
 	virtual bool   OnQuit();
 
-private:
-	CScrollingTextWidget *     pScrollingText;
+	void   SetForActivateStart();
+	void   SetForActivateComplete();
 
+	CFaceWidget* pFaceWidget;
+	CScrollingTextWidget* pScrollingText;
+
+private:
 	static float         fScrollRateMultiplier;
 	static UINT          wNormalScrollRate;
+};
+
+class CCreditsTendryScreen : public CCreditsScreen
+{
+protected:
+	friend class CDrodScreenManager;
+	CCreditsTendryScreen();
+	virtual bool SetForActivate();
+};
+
+class CCreditsACRScreen : public CCreditsScreen
+{
+protected:
+	friend class CDrodScreenManager;
+	CCreditsACRScreen();
+	virtual bool SetForActivate();
 };
 
 #endif //...#ifndef CREDITSSCREEN_H

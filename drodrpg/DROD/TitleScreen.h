@@ -71,8 +71,17 @@ protected:
 private:
 	void     Animate();
 
+	bool     ConfirmNewGame();
+
+	void     DrawRPG1Screen();
+	void     DrawRPG2Screen();
+
+	void     AnimateCaravelLogo(SDL_Surface* pDestSurface);
+	void     AnimateWaves(SDL_Surface* pDestSurface, bool update);
+	void     AnimateFlag(SDL_Surface* pDestSurface, bool update);
+
 	void     RequestNews();
-	UINT    GetNextDemoID();
+	UINT     GetNextDemoID();
 	virtual void   Paint(bool bUpdateRect=true);
 	SCREENTYPE  ProcessMenuSelection(TitleSelection wMenuPos);
 
@@ -80,19 +89,19 @@ private:
 
 	virtual void   OnBetweenEvents();
 	virtual void   OnClick(const UINT dwTagNo);
-   virtual void   OnDeactivate();
+	virtual void   OnDeactivate();
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &KeyboardEvent);
 	virtual void   OnMouseDown(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
-	virtual void   OnMouseMotion(const UINT dwTagNo,
-			const SDL_MouseMotionEvent &MotionEvent);
+	virtual void   OnMouseMotion(const UINT dwTagNo, const SDL_MouseMotionEvent &MotionEvent);
 	virtual void   OnSelectChange(const UINT dwTagNo);
 	bool     PollForHoldList();
 	bool     PollForNews();
 
-	void		RedrawScreen(const bool bUpdate=true);
+	void     RedrawScreen(const bool bUpdate=true);
 	void     ResetCNetStatus();
 	void     SetMenuOptionStatus();
 	void     SetNewsText();
+	void     SetTitleScreenSkin();
 	virtual bool   UnloadOnDeactivate() const;
 
 	//Vermin.
@@ -123,9 +132,17 @@ private:
 	CMarqueeWidget *pMarqueeWidget;
 	bool bWaitingForHoldlist;
 
-	//Graphics.
+	//Background and Graphics.
+	bool IsRPG1BG() const;
+	int GetMenuXPosition(const int width) const;
+	CDbHold::HoldStatus hold_status;
+	UINT imageNum;
+	UINT backgroundIndex;
 	bool bPredarken;
 	bool bReloadGraphics;
+
+	//New game
+	bool bNewGamePrompt;
 };
 
 #endif //...#ifndef TITLESCREEN_H

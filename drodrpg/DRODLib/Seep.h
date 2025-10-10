@@ -40,7 +40,7 @@ public:
 	CSeep(CCurrentGame *pSetCurrentGame = NULL) : CMonster(M_SEEP, pSetCurrentGame, WALL) {}
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CSeep);
 
-	bool           KillIfOutsideWall(CCueEvents &CueEvents);
+	virtual bool   IsWallDwelling() const { return true; }
 	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 

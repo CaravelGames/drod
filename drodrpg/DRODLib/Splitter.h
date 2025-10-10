@@ -43,6 +43,7 @@ public:
 	virtual bool CheckForDamage(CCueEvents& CueEvents);
 
 	virtual bool IsLongMonster() const {return true;}
+	virtual bool IsOnMistTile() const override;
 	virtual bool IsOpenMove(const int dx, const int dy) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 

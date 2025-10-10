@@ -47,6 +47,9 @@
       <td colspan="3"><a name="battle"><b>+ (keypad)</b></a> - View stats of all monsters in the room ("battle" key)</td>
     </tr>
     <tr>
+      <td colspan="3"><a name="score"><b>- (keypad)</b></a> - View your score, and how it is calculated from your current statistics</td>
+    </tr>
+    <tr>
       <td colspan="3"><a name="lock"><b>0 (keypad)</b></a> - Lock door at this tile (uses a key)</td>
     </tr>
     <tr>
@@ -118,7 +121,7 @@ this game session's CaravelNet chat history.</td>
       <td><a name="scriptvarchange"><b>Ctrl-F7</b></a> - Toggle var change notifier (in holds you author, beta holds, or when playtesting)</td>
     </tr>
     <tr>
-      <td><b>F8</b> - Reload game sprites (for modders)</td>
+      <td><b>Alt-F8</b> - Reload game sprites (for modders)</td>
     </tr>
     <tr>
       <td><a name="fullscreen"><b>F10</b></a> - toggle between full screen and windowed mode </td>
@@ -142,10 +145,14 @@ contextual information.  For instance, right-clicking <b>door openers</b> will
 highlight the doors affected (green: opens, orange: toggles, red: closes).</p>
 <p><b>Right-clicking a monster</b> will display its stats, any special properties,
 the damage you should expect to receive from fighting it, and the expected reward.</p>
+<p>If you hold control while right-clicking, only contextual information will be shown.
+This can be helpful if the tooltip is blocking an area of interest in the room.</p>
 <p><b>Clicking the <a name="minimap">minimap</a></b> will display a larger
 map of all the explored rooms in the level.  Clicking a room will temporarily
-display the current state of that room.
-Press any key or click off the map to return to play.</p>
+display the current state of that room. While remotely viewing a room, you can use
+the battle key to view the stats of monstetrs in that room, and scroll to adjacent rooms
+by moving North, South, East or West.
+Press any other key or click off the map to return to play.</p>
 <p><a name="markingrooms"><b>Mark rooms on the minimap</b></a> by right clicking
 them.  You may shade rooms with any of three colors to help you remember
 something important there.</p>

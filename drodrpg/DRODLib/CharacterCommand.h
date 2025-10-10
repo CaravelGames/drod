@@ -30,6 +30,9 @@ enum SPEAKER
 	Speaker_Self=48,
 	Speaker_Player=49,
 	Speaker_Stalwart=50,
+	Speaker_Archivist=51,
+	Speaker_Architect = 52,
+	Speaker_Patron = 53,
 
 	//Monster speakers.
 	Speaker_Halph=1,
@@ -68,8 +71,10 @@ enum SPEAKER
 	Speaker_RockGiant=44,
 	Speaker_MadEye=15,
 	Speaker_GoblinKing=8,
+	Speaker_Construct = 54,
+	Speaker_FluffBaby = 55,
 
-	Speaker_Count=51
+	Speaker_Count=56
 };
 
 //Flags bits.
@@ -108,7 +113,9 @@ namespace ScriptFlag
 		RestartScriptOnRoomEntrance=14,   //restart script execution from beginning on room entrance
 		MakeGlobal=15,        //move NPC-script to the global NPC-script list
 		RunOnCombat=16,       //execute script when combat is initiated (default)
-		PauseOnCombat=17      //do not execute any script commands when combat is initiated
+		PauseOnCombat=17,     //do not execute any script commands when combat is initiated,
+		InvisibleInspectable=18, //Appears in right-click tooltip even when invsible
+		NoInvisibleInspectable=19
 	};
 
 	//Behavior patterns for NPCs/monsters.
@@ -137,7 +144,18 @@ namespace ScriptFlag
 		MoveIntoSwords=20,      //can move onto swords instead of being blocked by them
 		PushObjects=21,         //can push movable objects
 		LuckyXP=22,             //x2 XP from fights
-		AttackLast=23           //I always attack last in combat
+		AttackLast=23,          //I always attack last in combat
+		BeamBlock=24,           //blocks beam attacks
+		SpawnEggs=25,           //will spawn eggs in reaction to combats
+		RemovesSword=26,        //prevents player having sword when equipped
+		ExplosiveSafe=27,       //sword does not detonate powder kegs
+		MinimapTreasure=28,     //counts as collectable item for minimap when visible and not ended
+		CutTarAnywhere=29,      //can cut tarstuff on otherwise non-vulnerable areas
+		WallMirrorSafe=30,      //sword doesn't break walls or mirrors
+		HotTileImmune=31,       //not damaged by hotiles
+		FiretrapImmune=32,      //not damaged by firetraps
+		MistImmune=33,          //DEF not negated by mist
+		WallDwelling=34,        //dies outside of solid tile
 	};
 
 	//Inventory and global script types.
@@ -157,9 +175,100 @@ namespace ScriptFlag
 		Sell=2,          //sell current equipment for GR
 		Disable=3,       //this equipment type is disabled (as if the player had an empty slot)
 		Enable=4,        //this equipment type is (re)enabled
-		QueryStatus=5    //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
+		QueryStatus=5,   //query the status of this equipment type (not simply whether enabled or disabled, but whether it is currently wielded in play)
+		Generate=6       //create this equipment at character position if possible
+	};
+
+	enum GotoSmartType {
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
+	};
+
+	enum StatType {
+		HP = 0,
+		ATK = 1,
+		DEF = 2,
+		GOLD = 3,
+		XP = 4
+	};
+
+	enum ItemGroup
+	{
+		IG_PlainFloor = 0, //Plain floor tiles
+		IG_Wall = 1, //All non-breakable walls
+		IG_BreakableWall = 2, //Crumbly and secret walls
+		IG_AnyWall = 3, //All types of wall and closed doors
+		IG_Pit = 4, //Both types of pit
+		IG_Stairs = 5, //Both types of staircase
+		IG_Bridge = 6, //All types of bridge
+		IG_Trapdoor = 7, //Both trapdoors
+		IG_FallingTile = 8, //Trapdoors and thin ice
+		IG_Tunnel = 9, //All tunnel directions
+		IG_Firetrap = 10, //Both firetrap states
+		IG_Platform = 11, //Platform and raft
+		IG_OpenDoor = 12, //All types of open door
+		IG_ClosedDoor = 13, //All types of closed door
+		IG_YellowDoor = 14,
+		IG_GreenDoor = 15,
+		IG_BlueDoor = 16,
+		IG_RedDoor = 17,
+		IG_BlackDoor = 18,
+		IG_MoneyDoor = 19,
+		IG_DirtBlock = 20, //All sizes of dirt block
+		IG_SoldOTile = 21, //All walls and closed doors
+		IG_ActiveArrow = 22, //All active arrow directions
+		IG_DisabledArrow = 23, //All disabled arrow directions
+		IG_AnyArrow = 24, //All types of arrow
+		IG_Tarstuff = 25, //Tar, mud and gel
+		IG_Briar = 26, //All briar components
+		IG_Explosive = 27, //Bomb and keg
+		IG_Pushable = 28, //Mirror, crate, keg
+		IG_Health = 29,
+		IG_AttackUp = 30,
+		IG_DefenseUp = 31,
+		IG_Powerup = 32, //Health, atk or def
+		IG_Shovels = 33, //All sizes of shovel
+		IG_Map = 34, //Map and detailed map
+		IG_Equipment = 35, //Any equipment slot
+		IG_Keys = 36, //Any key
+		IG_Collectable = 37, //Any item the player can pick up
+		ItemGroupCount //Total number of defined groups
+	};
+
+	enum LightColors
+	{
+		LC_None = 0,
+		LC_White = 1,
+		LC_Red = 2,
+		LC_Green = 3,
+		LC_Blue = 4,
+		LC_PaleRed = 5,
+		LC_PaleGreen = 6,
+		LC_PaleBlue = 7,
+		LC_Yellow = 8,
+		LC_Cyan = 9,
+		LC_Mauve = 10,
+		LC_Orange = 11,
+		LC_Pink = 12,
+		LC_Lime = 13,
+		LC_Turquoise = 14,
+		LC_Violet = 15,
+		LC_Azure = 16
+	};
+
+	//World map icons
+	enum WorldMapFlags {
+		WMI_Off = 0,        //remove icon when no flags are set
+		WMI_On = 1,         //basic display
+		WMI_LevelState = 2, //display supplemental level state on icon
+		WMI_Cleared = 3,    //display clear state on icon
+		WMI_Disabled = 4,   //disabled area
+		WMI_Locked = 5,     //locked area
+		WMI_NoLabel = 6,    //disabled area with no label shown
 	};
 };
+
+typedef bool (*TileCheckFunc)(UINT t);
 
 class CDbSpeech;
 class CCharacterCommand
@@ -171,6 +280,7 @@ public:
 	CCharacterCommand& operator=(const CCharacterCommand& that);
 	void swap(CCharacterCommand &that);
 
+	//DO NOT rearrange (i.e., reassign values given to these commands).
 	enum CharCommand
 	{
 		CC_Appear=0,            //Appear at current square.
@@ -239,6 +349,42 @@ public:
 		CC_WaitForItem,         //Wait for game element (flags) to exist in rect (x,y,w,h).
 		CC_GenerateEntity,      //Generates a new entity of type h in the room at (x,y) with orientation w.
 		CC_GameEffect,          //Cues the front end to generate a graphic+sound effect (w,h,flags) at (x,y).
+		CC_IfElseIf,            //Else combined with if to reduce code nesting
+		CC_Return,              //Return to just after the previous CC_GoSub command executed.
+		CC_GoSub,               //Jumps script execution to the indicated label.
+		CC_EachVictory,         //Goto label X each time an enemy is defeated.
+		CC_RoomLocationText,    //Sets the room location text for the current room.
+		CC_FlashingText,        //Flashes a large message onscreen.  Use hex code RRGGBB color (x,y,w) when h is set.
+		CC_SetMonsterVar,       //Sets monster at (x,y) attribute(w) to value (h).
+		CC_SetMovementType,     //Sets the NPC's movement type to X.
+		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
+		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
+		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
+		CC_LogicalWaitAnd,      //Begins a logical wait block. Waits until all conditions are true.
+		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
+		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
+		CC_LogicalWaitEnd,      //Ends a logical wait block.
+		CC_ImageOverlay,        //Display image (w) with display strategy (text).
+		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
+		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
+		CC_ClearArrayVar,       //Reset array var X
+		CC_ResetOverrides,      //Resets command parameter override values to no override
+		CC_WaitForWeapon,       //Wait until a weapon is in rect (x,y,w,h)
+		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
+		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
+		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
+		CC_SetMapIcon,          //Set icon for map room at (x,y) to w, with state h
+		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
+		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
+		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
+		CC_AttackTile,          //Attack the entity at (x,y) with a power of (w) ATK. Ignores DEF if (h) is set
+		CC_WorldMapSelect,      //Sets the world map that other world map commands operate on to X.
+		CC_WorldMapMusic,       //Sets the music to be played to X (optionally, custom Y/label).
+		CC_WorldMapIcon,        //Places an icon on the world map at (x,y), to level entrance (w), displayed as character type (h), of display type (flags).
+		CC_WorldMapImage,       //Places an icon on the world map at (x,y), to level entrance (w), displayed as image (h), of display type (flags).
+		CC_GoToWorldMap,        //Takes player to world map X.
+		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
+		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 		CC_Count
 	};
 
@@ -246,6 +392,149 @@ public:
 	UINT x, y, w, h, flags;
 	WSTRING label;    //goto identifier
 	CDbSpeech *pSpeech;
+
+	static bool IsEachEventCommand(CharCommand command);
+	static bool IsRealEquipmentType(ScriptFlag::EquipmentType type);
+	bool IsLogicalWaitCommand() const {
+		switch (command) {
+			case CC_LogicalWaitAnd:
+			case CC_LogicalWaitOr:
+			case CC_LogicalWaitXOR:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	// Can the command be processed in a logical wait block?
+	bool IsLogicalWaitCondition() const;
+
+	// For front-end command formatting
+	bool IsAllowedInLogicBlock() const {
+		return command == CC_LogicalWaitEnd ||
+			IsLogicalWaitCommand() || IsLogicalWaitCondition();
+	}
+
+	bool IsMusicCommand() const {
+		switch (command) {
+		case CC_SetMusic:
+		case CC_WorldMapMusic:
+			return true;
+		default:
+			return false;
+		}
+	}
+
+	// If the command has a variable reference, return it. Otherwise returns zero.
+	UINT getVarID() const;
+
+	// Set the variable reference for a command.
+	// Has no effect on commands that don't reference a variable.
+	void setVarID(const UINT varID);
+};
+
+class CDbMessageText;
+class CColorText : public CAttachableObject
+{
+public:
+	CColorText(CDbMessageText* pText, int r, int g, int b, int customColor)
+		: CAttachableObject()
+		, pText(pText)
+		, r(r), g(g), b(b)
+		, customColor(customColor)
+	{ }
+	~CColorText();
+
+	CDbMessageText* pText;
+	int r, g, b;
+	int customColor;
+};
+
+struct ImageOverlayCommand
+{
+	static const int NO_LOOP_MAX;
+	static const int DEFAULT_LAYER;
+	static const int ALL_LAYERS;
+	static const int NO_LAYERS;
+	static const int DEFAULT_GROUP;
+	static const int NO_GROUP;
+
+	enum IOC {
+		AddX,
+		AddY,
+		CancelAll,
+		CancelGroup,
+		CancelLayer,
+		Center,
+		DisplayDuration,
+		DisplayRect,
+		DisplayRectModify,
+		DisplaySize,
+		FadeToAlpha,
+		Group,
+		Grow,
+		Jitter,
+		Layer,
+		Loop,
+		Move,
+		MoveTo,
+		ParallelFadeToAlpha,
+		ParallelGrow,
+		ParallelJitter,
+		ParallelMove,
+		ParallelMoveTo,
+		ParallelRotate,
+		Repeat,
+		Rotate,
+		Scale,
+		SetAlpha,
+		SetAngle,
+		SetX,
+		SetY,
+		SrcXY,
+		TileGrid,
+		TimeLimit,
+		TurnDuration,
+		TurnLimit,
+		Invalid
+	};
+
+	ImageOverlayCommand(IOC type, int val[4])
+		: type(type)
+	{
+		memcpy(this->val, val, 4 * sizeof(int));
+	}
+
+	IOC type;
+	int val[4];
+};
+typedef std::vector<ImageOverlayCommand> ImageOverlayCommands;
+
+class CImageOverlay : public CAttachableObject
+{
+public:
+	CImageOverlay(const WSTRING& text, UINT imageID, UINT instanceID)
+		: CAttachableObject()
+		, imageID(imageID)
+		, instanceID(instanceID)
+	{
+		parse(text, commands);
+	}
+	~CImageOverlay();
+
+	static bool parse(const WSTRING& wtext, ImageOverlayCommands& commands);
+
+	int getLayer() const;
+	int getGroup() const;
+	UINT getTimeLimit() const;
+	UINT getTurnLimit() const;
+	int clearsImageOverlays() const;
+	int clearsImageOverlayGroup() const;
+	bool loopsForever() const;
+
+	ImageOverlayCommands commands;
+	UINT imageID;
+	UINT instanceID; //for merging effect sets during play on move undo/checkpoint restore
 };
 
 typedef std::vector<CCharacterCommand> COMMAND_VECTOR;

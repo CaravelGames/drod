@@ -64,15 +64,28 @@ public:
 
 	virtual ~CDbHold();
 
+	enum HoldStatus
+	{
+		NoStatus = -1,
+		Homemade = 0,
+		Tendry = 1, //Tendry's Tale
+		Official = 2,
+		Tutorial = 3,
+		ACR = 4, //A Courageous Rescue
+	};
+
 	UINT        AddCharacter(const WCHAR* pwszName);
 	void        AddEntrance(CEntranceData* pEntrance, const bool bReplaceMainEntrance=true);
 	UINT        AddVar(const WCHAR* pwszName);
+	UINT        AddWorldMap(const WCHAR* pwszName);
 	bool        ChangeAuthor(const UINT dwNewAuthorID);
 	void        CopyCustomCharacterData(HoldCharacter& ch, CDbHold *pNewHold, CImportInfo& info) const;
 	bool        DeleteCharacter(const UINT dwCharID);
 	bool        DeleteEntrance(CEntranceData *pEntrance);
 	void        DeleteEntrancesForRoom(const UINT dwRoomID);
 	bool        DeleteVar(const UINT dwVarID);
+	bool        DeleteWorldMap(const UINT dwWorldMapID);
+	bool        DoesWorldMapExist(UINT worldMapID) const;
 	const WCHAR *  GetAuthorText() const;
 	HoldCharacter* GetCharacter(const UINT dwCharID) { return const_cast<HoldCharacter*>(GetCharacterConst(dwCharID)); }
 	const HoldCharacter* GetCharacterConst(const UINT dwCharID) const;
@@ -93,7 +106,13 @@ public:
 	char*       getVarAccessToken(const WCHAR* pName) const;
 	UINT        GetVarID(const WCHAR* pwszName) const;
 	const WCHAR* GetVarName(const UINT dwVarID) const;
+	UINT        GetWorldMapID(const WCHAR* pwszName) const;
+	UINT        GetWorldMapDataID(const UINT worldMapID) const;
+	HoldWorldMap::DisplayType GetWorldMapDisplayType(const UINT worldMapID) const;
+	WSTRING     GetWorldMapName(const UINT worldMapID) const;
 	void        InsertLevel(CDbLevel *pLevel);
+	static bool IsOfficialHold(HoldStatus holdstatus);
+	bool        IsArrayVar(UINT varID) const { return this->arrayScriptVars.count(varID); }
 	static bool IsVarNameGoodSyntax(const WCHAR* pName);
 	bool        Load(const UINT dwHoldID, const bool bQuick=false);
 	CDbHold*    MakeCopy();
@@ -104,8 +123,13 @@ public:
 	void        RemoveLevel(const UINT dwLevelID, const UINT dwNewEntranceID);
 	bool        RenameCharacter(const UINT dwCharID, const WSTRING& newName);
 	bool        RenameVar(const UINT dwVarID, const WSTRING& newName);
+	bool        RenameWorldMap(const UINT dwWorldMapID, const WSTRING& newName);
 	bool        Repair();
 	bool        SaveCopyOfLevels(CDbHold *pHold, CImportInfo& info);
+	bool        SetDataIDForWorldMap(const UINT worldMapID, const UINT dataID);
+	bool        SetDisplayTypeForWorldMap(const UINT worldMapID, HoldWorldMap::DisplayType type);
+	bool        SetOrderIndexForWorldMap(const UINT worldMapID, const UINT orderIndex);
+	void        UnmarkDataForDeletion(const UINT dataID);
 
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,
@@ -128,6 +152,7 @@ public:
 	ENTRANCE_VECTOR Entrances;   //all level entrance positions in the hold
 	vector<HoldVar> vars;        //all the vars used in the hold
 	vector<HoldCharacter*> characters; //all custom characters used in the hold
+	vector<HoldWorldMap> worldMaps;
 
 	enum EditAccess
 	{
@@ -138,28 +163,23 @@ public:
 	};
 	EditAccess     editingPrivileges;  //who can edit the hold
 
-	enum HoldStatus
-	{
-		NoStatus=-1,
-		Homemade=0,
-		Main=1,
-		Official=2,
-		Tutorial=3
-	};
+	static HoldStatus GetOfficialHoldStatus();
 	HoldStatus		status;	//type of hold
 	bool           bCaravelNetMedia; //whether d/led from CaravelNet
 
 private:
 	void     Clear();
 	void     ClearEntrances();
-	UINT     GetLocalID(const HoldStatus eStatusMatching=NoStatus) const;
+	UINT     GetLocalID(const HoldStatus eStatusMatching, const CIDSet& playerIDs, UINT& matchedPlayerID) const;
 	UINT     GetNewCharacterID();
 	bool     LoadCharacters(c4_View &CharsView);
 	bool     LoadEntrances(c4_View& EntrancesView);
 	bool     LoadVars(c4_View& VarsView);
+	bool     LoadWorldMaps(c4_View& WorldMapsView);
 	void     SaveCharacters(c4_View &CharsView);
 	void     SaveEntrances(c4_View& EntrancesView);
 	void     SaveVars(c4_View& VarsView);
+	void     SaveWorldMaps(c4_View& WorldMapsView);
 	bool     SetMembers(const CDbHold& Src, const bool bCopyLocalInfo=true);
 	bool     UpdateExisting();
 	bool     UpdateNew();
@@ -169,10 +189,13 @@ private:
 	UINT          dwScriptID; //incremented ID for scripts in hold
 	UINT          dwVarID;    //incremented ID for hold vars
 	UINT          dwCharID;   //incremented ID for hold characters
+	UINT          dwWorldMapID;
 
 	vector<UINT> deletedTextIDs;   //message text IDs to be deleted on Update
 	vector<UINT> deletedSpeechIDs; //speech IDs to be deleted on Update
 	vector<UINT> deletedDataIDs;   //data IDs to be deleted on Update
+
+	map<UINT, WSTRING> arrayScriptVars;
 };
 
 //******************************************************************************************
@@ -187,6 +210,14 @@ protected:
 	{}
 
 public:
+	//For compiling the location of scripts that reference variables.
+	typedef map<UINT, CCoordIndex> VARROOMS;
+	struct VAR_LOCATIONS {
+		VARROOMS rooms;
+		set<WSTRING> characterNames;
+	};
+	typedef map<WSTRING, VAR_LOCATIONS> VARCOORDMAP;
+
 	virtual void      Delete(const UINT dwHoldID);
 	virtual bool      Exists(const UINT dwID) const;
 	void					ExportRoomHeader(WSTRING& roomText, CDbLevel *pLevel,
@@ -203,19 +234,33 @@ public:
 	static UINT       GetHoldID(const CDate& Created,
 			CDbMessageText& HoldNameText, CDbMessageText& origAuthorText);
 	WSTRING     GetHoldName(const UINT holdID) const;
+	static CDbHold::HoldStatus GetNewestInstalledOfficialHoldStatus();
 	void        GetRooms(const UINT dwHoldID, HoldStats& stats) const;
 	static void GetRoomsExplored(const UINT dwHoldID, const UINT dwPlayerID,
 			CIDSet& rooms);
+	static void   GetScriptScorepointRefs(const CDbHold* pHold, VARCOORDMAP& varMap, CIDSet& roomIDs);
+	static CIDSet GetScriptCommandRefs(const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);
+	static void GetScriptCommandRefsForRoom(const UINT roomID,
+		const CDbHold* pHold, const bool bChallenges, VARCOORDMAP& varMap);
 	WSTRING     GetScriptSpeechText(const COMMAND_VECTOR& commands,
 			CDbHold *pHold, CCharacter *pCharacter, WSTRING& roomText,
 			CDbLevel *pLevel, CDbRoom *pRoom, ENTRANCE_VECTOR& entrancesIgnored) const;
 	UINT        GetSecretsDone(HoldStats& stats, const UINT dwHoldID,	const UINT dwPlayerID) const;
+	static CDbHold::HoldStatus GetStatus(const UINT dwHoldID);
 	static UINT GetHoldIDWithStatus(const CDbHold::HoldStatus status);
 	bool        IsHoldMastered(const UINT dwHoldID, const UINT playerID) const;
-	void        LogScriptVarRefs(const UINT holdID);
+	void        LogScriptVarRefs(const UINT holdID, const bool bScorepoints = false);
 	bool        PlayerCanEditHold(const UINT dwHoldID) const;
 
 	static UINT deletingHoldID; //ID of hold in process of being deleted
+
+private:
+	static void AddScriptVarRef(VARCOORDMAP& varMap, const WCHAR* varName,
+		const CDbRoom* pRoom, const CCharacter* pCharacter, const WSTRING& characterName);
+	static void CheckForVarRefs(const CCharacterCommand& c, const bool bScorepoints, VARCOORDMAP& varMap,
+		const CDbHold* pHold, const CDbRoom* pRoom, const CCharacter* pCharacter,
+		const WSTRING& characterName);
+	static WSTRING GetTextForVarMap(const VARCOORDMAP& varMap);
 };
 
 #endif //...#ifndef DBHOLDS_H

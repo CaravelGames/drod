@@ -9,6 +9,19 @@
 
 const UINT NPC_DEFAULT_SWORD = UINT(-1);
 
+const int ImageOverlayCommand::NO_LOOP_MAX = -1;
+const int ImageOverlayCommand::DEFAULT_LAYER = 3; //last layer
+const int ImageOverlayCommand::ALL_LAYERS = -2;
+const int ImageOverlayCommand::NO_LAYERS = -3;
+const int ImageOverlayCommand::DEFAULT_GROUP = 0;
+const int ImageOverlayCommand::NO_GROUP = -1;
+
+//*****************************************************************************
+CColorText::~CColorText() { delete pText; }
+
+CImageOverlay::~CImageOverlay() { }
+
+//*****************************************************************************
 CCharacterCommand::CCharacterCommand()
 	: command((CharCommand)0)
 	, x(0), y(0), w(0), h(0), flags(0), pSpeech(NULL)
@@ -42,6 +55,105 @@ void CCharacterCommand::swap(CCharacterCommand &that) {
 	std::swap(flags, that.flags);
 	std::swap(label, that.label);
 	std::swap(pSpeech, that.pSpeech);
+}
+
+//*****************************************************************************
+bool CCharacterCommand::IsEachEventCommand(CharCommand command)
+{
+	switch (command) {
+		case CCharacterCommand::CC_EachAttack:
+		case CCharacterCommand::CC_EachDefend:
+		case CCharacterCommand::CC_EachUse:
+		case CCharacterCommand::CC_EachVictory:
+			return true;
+		default:
+			return false;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
+bool CCharacterCommand::IsRealEquipmentType(ScriptFlag::EquipmentType type)
+{
+	switch (type) {
+	case ScriptFlag::Weapon:
+	case ScriptFlag::Armor:
+	case ScriptFlag::Accessory:
+		return true;
+	default:
+		return false;
+	}
+
+	return false;
+}
+
+bool CCharacterCommand::IsLogicalWaitCondition() const {
+	switch (command) {
+	case CC_WaitForCueEvent:
+	case CC_WaitForRect:
+	case CC_WaitForNotRect:
+	case CC_WaitForDoorTo:
+	case CC_WaitForTurn:
+	case CC_WaitForCleanRoom:
+	case CC_WaitForPlayerToFace:
+	case CC_WaitForVar:
+	case CC_SetPlayerAppearance:
+	case CC_WaitForNoBuilding:
+	case CC_WaitForPlayerToMove:
+	case CC_WaitForPlayerToTouchMe:
+	case CC_WaitForDefeat:
+	case CC_WaitForItem:
+	case CC_WaitForOpenMove:
+	case CC_SetMovementType:
+	case CC_WaitForExpression:
+	case CC_WaitForWeapon:
+	case CC_WaitForOpenTile:
+	case CC_WaitForItemGroup:
+	case CC_WaitForNotItemGroup:
+	case CC_WaitForArrayEntry:
+		return true;
+	default:
+		return false;
+	}
+}
+
+UINT CCharacterCommand::getVarID() const
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
+			return x;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			return w;
+		default:
+			return 0;
+	}
+}
+
+void CCharacterCommand::setVarID(const UINT varID)
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
+			x = varID;
+			break;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			w = varID;
+			break;
+		default:
+			break;
+	}
 }
 
 //*****************************************************************************
@@ -83,6 +195,10 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_MUDCOORDINATOR: return Speaker_MudCoordinator;
 		case M_TARTECHNICIAN: return Speaker_TarTechnician;
 		case M_STALWART: return Speaker_Stalwart;
+		case M_ARCHIVIST: return Speaker_Archivist;
+		case M_ARCHITECT: return Speaker_Architect;
+		case M_PATRON: return Speaker_Patron;
+		case M_ROACHIE: return Speaker_Roach;
 
 		//Monster types.
 		case M_ROACH: return Speaker_Roach;
@@ -122,6 +238,8 @@ SPEAKER getSpeakerType(const MONSTERTYPE eType)
 		case M_GELBABY: return Speaker_GelBaby;
 		case M_CITIZEN: return Speaker_Citizen;
 		case M_ROCKGIANT: return Speaker_RockGiant;
+		case M_CONSTRUCT: return Speaker_Construct;
+		case M_FLUFFBABY: return Speaker_FluffBaby;
 
 		default: return Speaker_None;
 	}
@@ -151,6 +269,9 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		case Speaker_Self: dwSpeakerTextID = MID_Self; color = "000000"; break;
 		case Speaker_Player: dwSpeakerTextID = MID_Player; color = "0000A0"; break;
 		case Speaker_Stalwart: dwSpeakerTextID = MID_Stalwart; color = "A0A080"; break;
+		case Speaker_Archivist: dwSpeakerTextID = MID_Archivist; color = "9265A5"; break;
+		case Speaker_Architect: dwSpeakerTextID = MID_Architect; color = "E0E040"; break;
+		case Speaker_Patron: dwSpeakerTextID = MID_Patron; color = "3487A8"; break;
 
 		//Monster speakers.
 		case Speaker_Halph: dwSpeakerTextID = MID_Halph; color = "804020"; break;
@@ -189,7 +310,267 @@ UINT getSpeakerNameText(const UINT wSpeaker, string& color)
 		case Speaker_GelBaby: dwSpeakerTextID = MID_GelBaby; color = "00FF00"; break;
 		case Speaker_Citizen: dwSpeakerTextID = MID_Citizen; color = "A0A000"; break;
 		case Speaker_RockGiant: dwSpeakerTextID = MID_Splitter; color = "800000"; break;
+		case Speaker_Construct: dwSpeakerTextID = MID_Construct; color = "DAB889"; break;
+		case Speaker_FluffBaby: dwSpeakerTextID = MID_FluffBaby; color = "000000"; break;
+		
 		default: dwSpeakerTextID = MID_None; color = "FF0000"; break;
 	}
 	return dwSpeakerTextID;
+}
+
+//*****************************************************************************
+typedef std::map<string, ImageOverlayCommand::IOC> CommandMap;
+CommandMap commandMap;
+
+ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
+{
+	ASSERT(pText);
+
+	if (commandMap.empty()) {
+		commandMap[string("addx")] = ImageOverlayCommand::AddX;
+		commandMap[string("addy")] = ImageOverlayCommand::AddY;
+		commandMap[string("cancelall")] = ImageOverlayCommand::CancelAll;
+		commandMap[string("cancelgroup")] = ImageOverlayCommand::CancelGroup;
+		commandMap[string("cancellayer")] = ImageOverlayCommand::CancelLayer;
+		commandMap[string("center")] = ImageOverlayCommand::Center;
+		commandMap[string("display ")] = ImageOverlayCommand::DisplayDuration;
+		commandMap[string("displayms")] = ImageOverlayCommand::DisplayDuration; //deprecated
+		commandMap[string("displayrect")] = ImageOverlayCommand::DisplayRect;
+		commandMap[string("displayrectmodify")] = ImageOverlayCommand::DisplayRectModify;
+		commandMap[string("displaysize")] = ImageOverlayCommand::DisplaySize;
+		commandMap[string("displayturns")] = ImageOverlayCommand::TurnDuration;
+		commandMap[string("fadetoalpha")] = ImageOverlayCommand::FadeToAlpha;
+		commandMap[string("group")] = ImageOverlayCommand::Group;
+		commandMap[string("grow")] = ImageOverlayCommand::Grow;
+		commandMap[string("jitter")] = ImageOverlayCommand::Jitter;
+		commandMap[string("layer")] = ImageOverlayCommand::Layer;
+		commandMap[string("loop")] = ImageOverlayCommand::Loop;
+		commandMap[string("move ")] = ImageOverlayCommand::Move;
+		commandMap[string("moveto")] = ImageOverlayCommand::MoveTo;
+		commandMap[string("pfadetoalpha")] = ImageOverlayCommand::ParallelFadeToAlpha;
+		commandMap[string("pgrow")] = ImageOverlayCommand::ParallelGrow;
+		commandMap[string("pjitter")] = ImageOverlayCommand::ParallelJitter;
+		commandMap[string("pmove ")] = ImageOverlayCommand::ParallelMove;
+		commandMap[string("pmoveto")] = ImageOverlayCommand::ParallelMoveTo;
+		commandMap[string("protate")] = ImageOverlayCommand::ParallelRotate;
+		commandMap[string("repeat")] = ImageOverlayCommand::Repeat;
+		commandMap[string("rotate")] = ImageOverlayCommand::Rotate;
+		commandMap[string("scale")] = ImageOverlayCommand::Scale;
+		commandMap[string("setalpha")] = ImageOverlayCommand::SetAlpha;
+		commandMap[string("setangle")] = ImageOverlayCommand::SetAngle;
+		commandMap[string("setx")] = ImageOverlayCommand::SetX;
+		commandMap[string("sety")] = ImageOverlayCommand::SetY;
+		commandMap[string("srcxy")] = ImageOverlayCommand::SrcXY;
+		commandMap[string("timelimit")] = ImageOverlayCommand::TimeLimit;
+		commandMap[string("tilegrid")] = ImageOverlayCommand::TileGrid;
+		commandMap[string("turnlimit")] = ImageOverlayCommand::TurnLimit;
+	}
+
+	for (CommandMap::const_iterator it = commandMap.begin(); it != commandMap.end(); ++it) {
+		const string& command = it->first;
+		if (!_strnicmp(command.c_str(), pText + index, command.size())) {
+			index += command.size();
+			return it->second;
+		}
+	}
+
+	return ImageOverlayCommand::Invalid;
+}
+
+#define skipWhitespace while (pos < textLength && isspace(pText[pos])) ++pos
+
+bool parseNumber(
+	const char* pText, const UINT textLength,
+	UINT& pos, int& val) //(out)
+{
+	skipWhitespace;
+
+	if (pText[pos] == '$') {
+		//support parse validation only
+		++pos;
+		while (pos < textLength && pText[pos] != '$')
+			++pos;
+		if (pos == textLength)
+			return false; //no matching '$'
+		++pos;
+
+		val = 0;
+		return true;
+	}
+
+	const UINT oldPos = pos;
+	if (pos < textLength && pText[pos] == '-')
+		++pos;
+	while (pos < textLength && isdigit(pText[pos]))
+		++pos;
+	if (pos == oldPos)
+		return false;
+
+	val = atoi(pText + oldPos);
+	return true;
+}
+
+bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
+{
+	commands.clear();
+
+	if (wtext.empty())
+		return true;
+
+	const string text = UnicodeToUTF8(wtext);
+	const UINT textLength = text.length();
+	const char* pText = (const char*)text.c_str();
+	UINT pos = 0;
+
+	while (pos < textLength) {
+		skipWhitespace;
+		if (pos >= textLength)
+			return true;
+
+		ImageOverlayCommand::IOC eCommand = matchCommand(pText, pos);
+		if (eCommand == ImageOverlayCommand::Invalid)
+			return false;
+
+		int val[4] = { 0,0,0,0 };
+		int arg_index = 0;
+		switch (eCommand) {
+		case ImageOverlayCommand::DisplayRect:
+		case ImageOverlayCommand::DisplayRectModify:
+			//four arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::Move:
+		case ImageOverlayCommand::ParallelMove:
+		case ImageOverlayCommand::MoveTo:
+		case ImageOverlayCommand::ParallelMoveTo:
+		case ImageOverlayCommand::Repeat:
+			//three arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::DisplaySize:
+		case ImageOverlayCommand::FadeToAlpha:
+		case ImageOverlayCommand::Grow:
+		case ImageOverlayCommand::Jitter:
+		case ImageOverlayCommand::ParallelFadeToAlpha:
+		case ImageOverlayCommand::ParallelGrow:
+		case ImageOverlayCommand::ParallelJitter:
+		case ImageOverlayCommand::ParallelRotate:
+		case ImageOverlayCommand::Rotate:
+		case ImageOverlayCommand::SrcXY:
+		case ImageOverlayCommand::TileGrid:
+			//two arguments
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		default:
+			//one argument
+			if (!parseNumber(pText, textLength, pos, val[arg_index++]))
+				return false;
+			//no break
+		case ImageOverlayCommand::CancelAll:
+		case ImageOverlayCommand::Center:
+			//no arguments
+			break;
+		}
+		commands.push_back(ImageOverlayCommand(eCommand, val));
+	}
+
+	return true;
+}
+
+#undef skipWhitespace
+
+int CImageOverlay::clearsImageOverlays() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelAll)
+			return ImageOverlayCommand::ALL_LAYERS;
+		if (c.type == ImageOverlayCommand::CancelLayer)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_LAYERS;
+}
+
+int CImageOverlay::clearsImageOverlayGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelGroup)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_GROUP;
+}
+
+int CImageOverlay::getLayer() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Layer)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_LAYER;
+}
+
+int CImageOverlay::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
+UINT CImageOverlay::getTimeLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TimeLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
+}
+
+UINT CImageOverlay::getTurnLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TurnLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
+}
+
+bool CImageOverlay::loopsForever() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Loop && c.val[0] == ImageOverlayCommand::NO_LOOP_MAX)
+			return true;
+	}
+
+	return false;
 }

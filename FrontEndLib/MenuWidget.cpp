@@ -72,14 +72,14 @@ void CMenuWidget::clear()
 	this->options.clear();
 
 	this->wNextY = 0;
-	this->nSelectedOption = this->nOnOption = -1;
+	this->nSelectedOption = this->nOnOption = this->nClickedOption = -1;
 }
 
 //*****************************************************************************
 void CMenuWidget::ResetSelection()
 //Resets menu option selection/highlighting.
 {
-	this->nSelectedOption = this->nOnOption = -1;
+	this->nSelectedOption = this->nOnOption = this->nClickedOption = -1;
 }
 
 //*****************************************************************************
@@ -152,6 +152,8 @@ void CMenuWidget::Enable(const UINT dwTag, const bool bVal)
 				this->nOnOption = -1;
 			if (wIndex == (UINT)this->nSelectedOption)
 				this->nSelectedOption = -1;
+			if (wIndex == (UINT)this->nClickedOption)
+				this->nClickedOption = -1;
 		}
 }
 
@@ -231,8 +233,28 @@ void CMenuWidget::HandleMouseMotion(
 }
 
 //******************************************************************************
-void CMenuWidget::HandleMouseUp(
+void CMenuWidget::HandleMouseDown(
 //Handles mouse down event.
+//
+//Params:
+	const SDL_MouseButtonEvent& Button) //(in) Event to handle.
+{
+	this->nClickedOption = -1;
+	for (UINT wIndex = this->options.size(); wIndex--; )
+	{
+		if (InOption(wIndex, Button.x, Button.y))
+		{
+			this->nClickedOption = wIndex;
+			// Menus can appear immediately after clicking to move while playing
+			// We want to ensure both the down and up mouse button presses occured on the option
+			// So we don't mis-interpret mouse moves as intent to select an option
+		}
+	}
+}
+
+//******************************************************************************
+void CMenuWidget::HandleMouseUp(
+//Handles mouse up event.
 //
 //Params:
 	const SDL_MouseButtonEvent &Button) //(in) Event to handle.
@@ -240,7 +262,7 @@ void CMenuWidget::HandleMouseUp(
 	UINT wIndex;
 	for (wIndex=this->options.size(); wIndex--; )
 	{
-		if (InOption(wIndex, Button.x, Button.y))
+		if (InOption(wIndex, Button.x, Button.y) && this->nClickedOption == wIndex)
 		{
 			SelectOption(wIndex);
 			break;

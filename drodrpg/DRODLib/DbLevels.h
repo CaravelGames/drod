@@ -131,6 +131,7 @@ public:
 	virtual void   ExportXML(const UINT dwLevelID, CDbRefs &dbRefs, string &str, const bool bRef=false);
 	void     FilterBy(const UINT dwSetFilterByHoldID);
 	static UINT   GetHoldIDForLevel(const UINT dwLevelID);
+	static WSTRING GetLevelName(const UINT levelID);
 	virtual CDbLevel *   GetNew();
 	static void GetSecretRoomsInSet(CIDSet& roomsInLevel,
 			CIDSet& roomIDs,

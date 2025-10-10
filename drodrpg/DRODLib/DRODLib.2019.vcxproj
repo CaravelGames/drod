@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="BuildDats|Win32">
@@ -270,6 +270,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CompileAs>Default</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -395,6 +396,7 @@
     <ClCompile Include="Citizen.cpp" />
     <ClCompile Include="Clone.cpp" />
     <ClCompile Include="Combat.cpp" />
+    <ClCompile Include="Construct.cpp" />
     <ClCompile Include="CueEvents.cpp" />
     <ClCompile Include="CurrentGame.cpp" />
     <ClCompile Include="Db.cpp" />
@@ -404,6 +406,7 @@
     <ClCompile Include="DbDemos.cpp" />
     <ClCompile Include="DbHolds.cpp" />
     <ClCompile Include="DbLevels.cpp" />
+    <ClCompile Include="DbLocalHighScores.cpp" />
     <ClCompile Include="DbMessageText.cpp" />
     <ClCompile Include="DbPackedVars.cpp" />
     <ClCompile Include="DbPlayers.cpp" />
@@ -416,11 +419,13 @@
     <ClCompile Include="Decoy.cpp" />
     <ClCompile Include="EntranceData.cpp" />
     <ClCompile Include="EvilEye.cpp" />
+    <ClCompile Include="FluffBaby.cpp" />
     <ClCompile Include="GameConstants.cpp" />
     <ClCompile Include="Goblin.cpp" />
     <ClCompile Include="GreenSerpent.cpp" />
     <ClCompile Include="Guard.cpp" />
     <ClCompile Include="Halph.cpp" />
+    <ClCompile Include="I18N.cpp" />
     <ClCompile Include="ImportInfo.cpp" />
     <ClCompile Include="Mimic.cpp" />
     <ClCompile Include="Monster.cpp" />
@@ -450,11 +455,13 @@
     <ClCompile Include="Swordsman.cpp" />
     <ClCompile Include="TarBaby.cpp" />
     <ClCompile Include="TarMother.cpp" />
+    <ClCompile Include="TotalMapStates.cpp" />
     <ClCompile Include="WraithWing.cpp" />
     <ClCompile Include="Wubba.cpp" />
     <ClCompile Include="Zombie.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Texts\MIDs.h" />
     <ClInclude Include="Ant.h" />
     <ClInclude Include="AntHill.h" />
     <ClInclude Include="BlueSerpent.h" />
@@ -468,8 +475,10 @@
     <ClInclude Include="Citizen.h" />
     <ClInclude Include="Clone.h" />
     <ClInclude Include="Combat.h" />
+    <ClInclude Include="Construct.h" />
     <ClInclude Include="CueEvents.h" />
     <ClInclude Include="CurrentGame.h" />
+    <ClInclude Include="CurrentGameRecords.h" />
     <ClInclude Include="Db.h" />
     <ClInclude Include="DbBase.h" />
     <ClInclude Include="DbCommands.h" />
@@ -477,6 +486,7 @@
     <ClInclude Include="DbDemos.h" />
     <ClInclude Include="DbHolds.h" />
     <ClInclude Include="DbLevels.h" />
+    <ClInclude Include="DbLocalHighScores.h" />
     <ClInclude Include="DbMessageText.h" />
     <ClInclude Include="DbPackedVars.h" />
     <ClInclude Include="DbPlayers.h" />
@@ -491,12 +501,14 @@
     <ClInclude Include="Decoy.h" />
     <ClInclude Include="EntranceData.h" />
     <ClInclude Include="EvilEye.h" />
+    <ClInclude Include="FluffBaby.h" />
     <ClInclude Include="GameConstants.h" />
     <ClInclude Include="Goblin.h" />
     <ClInclude Include="GreenSerpent.h" />
     <ClInclude Include="Guard.h" />
     <ClInclude Include="Halph.h" />
     <ClInclude Include="HoldRecords.h" />
+    <ClInclude Include="I18N.h" />
     <ClInclude Include="ImportInfo.h" />
     <ClInclude Include="Mimic.h" />
     <ClInclude Include="Monster.h" />
@@ -518,6 +530,7 @@
     <ClInclude Include="RoachQueen.h" />
     <ClInclude Include="RockGiant.h" />
     <ClInclude Include="RoomData.h" />
+    <ClInclude Include="TotalMapStates.h" />
     <ClInclude Include="Seep.h" />
     <ClInclude Include="Serpent.h" />
     <ClInclude Include="SettingsKeys.h" />

@@ -32,6 +32,7 @@
 #include "DrodFileDialogWidget.h"
 #include "EntranceSelectDialogWidget.h"
 #include <FrontEndLib/Screen.h>
+#include "../DRODLib/DbHolds.h"
 #include "../DRODLib/NetInterface.h"
 
 #define TAG_OK_WHOLELEVEL	(TAG_OK + 1) //apply setting change to whole level
@@ -55,18 +56,27 @@ public:
 	virtual void   Callbackf(float fVal);
 	virtual void   CallbackText(const WCHAR* wpText);
 
+	UINT    ImportHoldImage(const UINT holdID, const UINT extensionFlags = EXT_JPEG | EXT_PNG);
+
 	void     EditGlobalVars(CEntranceSelectDialogWidget *pListBox, PlayerStats* st,
 			CCurrentGame* pGame=NULL);
+
+	int            GetCommandForInputKey(InputKey input) const;
 
 	static WSTRING getStatsText(const PlayerStats& st, CCurrentGame* pGame=NULL);
 	static WSTRING getStatsText(const RoomStats& st, CCurrentGame* pGame=NULL);
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
+	static UINT    EntrancesInFullVersion();
 	static bool    IsGameFullVersion();
+
+	bool ValidateVideo(CStretchyBuffer& buffer) { return PlayVideoBuffer(buffer, NULL); }
 
 	static vector<WSTRING> importFiles;
 	WSTRING        callbackContext; //set to provide more contextual callback messages to user
 
 protected:
+	friend class CDrodDialogs;
+
 	void     AddDamageEffect(CRoomWidget* pRoomWidget, CCurrentGame* pGame,
 			const UINT monsterType, const CMoveCoord& coord);
 	void     AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget, CCurrentGame* pGame);
@@ -74,7 +84,7 @@ protected:
 			const UINT containerWidgetTag);
 	UINT     GetEffectDuration(CCurrentGame* pGame, const UINT baseDuration) const;
 	UINT     GetParticleSpeed(CCurrentGame* pGame, const UINT baseSpeed) const;
-
+	static CDbHold::HoldStatus GetHoldStatus();
 	virtual void   ApplyINISettings();
 	virtual void   ChatPolling(const UINT tagUserList);
 	virtual void   DisplayChatText(const WSTRING& /*text*/, const SDL_Color& /*color*/) {}
@@ -86,6 +96,7 @@ protected:
 	bool           ExportSelectFile(const MESSAGE_ID messageID,
 			WSTRING &wstrExportFile, const UINT extensionTypes);
 	void           ExportStyle(const WSTRING& style);
+	InputKey       GetInputKeyForCommand(const UINT wCommand) const;
 	void           GoToBuyNow();
 	void           GoToForum();
 	MESSAGE_ID     Import(const UINT extensionTypes, CIDSet& importedIDs,
@@ -93,9 +104,11 @@ protected:
 	bool           ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename=NULL);
 	MESSAGE_ID     ImportFiles(const vector<WSTRING>& wstrImportFiles,
 			CIDSet& importedIDs, set<WSTRING>& importedStyles, const bool bSilent=false);
-	void		      ImportHoldMedia();
-	void           ImportQueuedFiles();
+	void           ImportMedia();
+	bool           ImportQueuedFiles();
 	bool           IsStyleOnDisk(list<WSTRING>& styleName, list<WSTRING>& skies);
+	virtual bool   IsCommandSupported(int command) const;
+	void           InitKeysymToCommandMap(CDbPackedVars& PlayerSettings);
 
 	void           EnablePlayerSettings(const UINT dwPlayerID);
 	virtual bool   OnQuit();
@@ -103,6 +116,7 @@ protected:
 	virtual bool   PlayVideo(const WCHAR *pFilename, const UINT dwHoldID, const int x=0, const int y=0);
 	bool           PlayVideo(const UINT dwDataID, const int x=0, const int y=0);
 	void           PopulateChatUserList(const UINT tagUserList);
+	void           ProcessImageEvents(CCueEvents& CueEvents, CRoomWidget* pRoomWidget, const CCurrentGame* pGame);
 	void           ProcessReceivedChatData(const UINT tagUserList);
 	bool           PollForCNetInterrupt();
 	void           ReformatChatText(const UINT chatInputTextTag, const bool bNextOption=false);
@@ -143,10 +157,13 @@ public:
 	static void    logoutFromChat();
 
 private:
+	CDbHold::HoldStatus GetInstalledOfficialHold();
 	void  PrepareDatumForExport(const WSTRING& modName, const WSTRING& wstrFile, CIDSet& ids, const UINT dataType);
 
 	UINT ShowMessage(const MESSAGE_ID dwMessageID);
 	UINT ShowMessage(const WCHAR *pwczText);
+
+	std::map<InputKey, int> InputKeyToCommandMap;
 };
 
 #endif //...#ifndef DRODSCREEN_H

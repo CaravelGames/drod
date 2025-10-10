@@ -48,6 +48,7 @@ enum Textures
 	PITSIDE_MOSAIC,
 	PITSIDE_SMALL,
 	FLOOR_IMAGE,
+	OVERHEAD_IMAGE,
 
 	TEXTURE_COUNT
 };
@@ -88,6 +89,8 @@ public:
 	static BYTE GetGammaOne();
 	bool        SetGamma(const BYTE val);
 	static const float fMinGamma, fMaxGamma;
+	static Uint8 tarstuffAlpha;
+	static Uint8 mapIconAlpha;
 
 protected:
 	SDL_Surface *   LoadJPEGSurface(BYTE* imageBuffer, const UINT wSize);

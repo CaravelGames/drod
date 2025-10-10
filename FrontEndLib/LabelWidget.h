@@ -72,6 +72,7 @@ public:
 	void           SetFontYOffset(const int y) { y_font_offset = y; }
 	void           SetAlign(const TEXTALIGN eSetAlign) { this->eTextAlign = eSetAlign; }
 	void           SetVAlign(const TEXTALIGN eSetAlign) { this->eTextVAlign = eSetAlign; }
+	void           SetPrintLeadingSpacesAfterFirstLine(const bool bVal = true) { this->bPrintLeadingSpacesAfterFirstLine = bVal; }
 	void           SetText(const WCHAR *pwczSetText, const bool bResizeToFit=false,
 			const UINT wFirstIndent=0, const bool bFitWidth=false);
 
@@ -85,6 +86,7 @@ private:
 	UINT              wFirstIndent;
 	mutable UINT      wLastWidth;  //Cached; always use GetLastWidth() to read
 	bool              bClickable; //whether clicks on label will be caught and handled
+	bool              bPrintLeadingSpacesAfterFirstLine;
 
 	bool              bCacheRendering;
 	SDL_Surface      *pRenderedText;

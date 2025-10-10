@@ -88,7 +88,8 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 	if (!room.CropRegion(px, py, endX, endY))
 		return true;
 
-	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F;
+	const bool bRealTile = IsValidTileNo(tile) || tile == T_EMPTY_F ||
+		tile == T_REMOVE_TRANSPARENT;
 	const bool bVirtualTile = IsVirtualTile(tile);
 	if (!bRealTile && !bVirtualTile)
 		return true; //unrecognized tile ID
@@ -120,7 +121,7 @@ bool BuildUtil::BuildTilesAt(CDbRoom& room, const UINT tile, UINT px, UINT py, c
 		}
 	}
 
-	if (TILE_LAYER[tile] == LAYER_OPAQUE) {
+	if (tile < TOTAL_EDIT_TILE_COUNT && TILE_LAYER[tile] == LAYER_OPAQUE) {
 		for (UINT y = py; y <= endY; ++y)
 			for (UINT x = px; x <= endX; ++x) {
 				//When o-layer changes, refresh bridge supports.
@@ -150,6 +151,11 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		if (wOTile == tile)
 			bValid = bAllowSame;
 
+		if (tile == T_OVERHEAD_IMAGE) {
+			if (room.overheadTiles.Exists(x, y))
+				bValid = bAllowSame;
+		}
+
 		//Adding tiles to platforms is not currently supported by the engine.
 		if (bIsPlatform(tile))
 			return false;
@@ -176,6 +182,10 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 			break;
 		}
 
+		//Special removal build can clear anything.
+		if (tile == T_REMOVE_TRANSPARENT)
+			return true;
+
 		//Obstacles may not be built -- only queried in IsTileAt.
 		if (tile == T_OBSTACLE)
 			bValid = false;
@@ -184,12 +194,19 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 		if (tile == T_ORB && room.GetOSquare(x, y) == T_PRESSPLATE)
 			bValid = false;
 
+		//Can't build mist on solid tiles or hot tiles
+		if (tile == T_MIST &&
+			(bIsSolidOTile(room.GetOSquare(x, y)) || room.GetOSquare(x, y) == T_HOT))
+			bValid = false;
+
 		//Most items can be replaced.
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
+			wTTile == T_CRATE || wTTile == T_POWDER_KEG ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-			wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
-			wTTile == T_TOKEN || bIsTar(wTTile))
+			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
+			wTTile == T_TOKEN || bIsTar(wTTile) || wTTile == T_MIST ||
+			bIsShovel(wTTile))
 			break;
 		//No other item can be built over.
 		bValid = false;
@@ -226,9 +243,11 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 			break;
 		case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
 		case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
+		case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
 			newTile = T_SWORD;
 			break;
-		case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5: case TV_SHIELD6:
+		case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
+		case TV_SHIELD6: case TV_SHIELD7: case TV_SHIELD8: case TV_SHIELD9:
 			newTile = T_SHIELD;
 			break;
 		case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
@@ -239,18 +258,29 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 
 		case TV_EXPLOSION:
 		{
-			const bool bBombHere = room.GetTSquare(x, y) == T_BOMB;
+			const UINT wTTile = room.GetTSquare(x, y);
 			room.ProcessExplosionSquare(CueEvents, x, y);
-			if (bBombHere)
+			if (wTTile == T_BOMB)
 			{
-				CCoordStack bombs(x, y);
-				room.BombExplode(CueEvents, bombs);
+				room.ExplodeBomb(CueEvents, x, y);
+			} else if (wTTile == T_POWDER_KEG) {
+				room.ExplodePowderKeg(CueEvents, x, y);
 			}
 			room.ConvertUnstableTar(CueEvents);
 
 			CueEvents.Add(CID_BombExploded, new CMoveCoord(x, y, 0), true);
 		}
 		return true;
+
+		case TV_REMOVE_OVERHEAD_IMAGE:
+			if (room.overheadTiles.Exists(x, y)) {
+				room.overheadTiles.Remove(x, y);
+				return true;
+			}
+		return false;
+
+		case TV_REMOVE_TRANSPARENT:
+			return BuildRealTile(room, T_REMOVE_TRANSPARENT, x, y, bAllowSame, CueEvents);
 
 		default: break;
 	}
@@ -264,9 +294,10 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		//(Same logic as the t-layer check for real tiles.)
 		if (wTTile == T_EMPTY || wTTile == T_BOMB || wTTile == T_FUSE ||
 			bIsPowerUp(wTTile) || bIsBriar(wTTile) || wTTile == T_MIRROR ||
+			wTTile == T_CRATE || wTTile == T_POWDER_KEG ||
 			bIsEquipment(wTTile) || wTTile == T_KEY || wTTile == T_LIGHT ||
-			wTTile == T_SCROLL || wTTile == T_MAP || wTTile == T_ORB ||
-			wTTile == T_TOKEN || bIsTar(wTTile))
+			wTTile == T_SCROLL || bIsMap(wTTile) || wTTile == T_ORB ||
+			wTTile == T_TOKEN || bIsTar(wTTile) || bIsShovel(wTTile))
 		{
 			if (TILE_LAYER[newTile] == LAYER_TRANSPARENT && bIsTar(wTTile) && newTile != wTTile) {
 				room.RemoveStabbedTar(x, y, CueEvents);
@@ -294,12 +325,18 @@ bool BuildUtil::BuildVirtualTile(CDbRoom& room, const UINT tile, const UINT x, c
 		case TV_SWORD8: room.SetTParam(x, y, SerpentSword); break;
 		case TV_SWORD9: room.SetTParam(x, y, BriarSword); break;
 		case TV_SWORD10: room.SetTParam(x, y, WeaponSlot); break;
+		case TV_SWORD11: room.SetTParam(x, y, Dagger); break;
+		case TV_SWORD12: room.SetTParam(x, y, Staff); break;
+		case TV_SWORD13: room.SetTParam(x, y, Spear); break;
 		case TV_SHIELD1: room.SetTParam(x, y, WoodenShield); break;
 		case TV_SHIELD2: room.SetTParam(x, y, BronzeShield); break;
 		case TV_SHIELD3: room.SetTParam(x, y, SteelShield); break;
 		case TV_SHIELD4: room.SetTParam(x, y, KiteShield); break;
 		case TV_SHIELD5: room.SetTParam(x, y, OremiteShield); break;
 		case TV_SHIELD6: room.SetTParam(x, y, ArmorSlot); break;
+		case TV_SHIELD7: room.SetTParam(x, y, MirrorShield); break;
+		case TV_SHIELD8: room.SetTParam(x, y, LeatherShield); break;
+		case TV_SHIELD9: room.SetTParam(x, y, AluminumShield); break;
 		case TV_ACCESSORY1: room.SetTParam(x, y, GrapplingHook); break;
 		case TV_ACCESSORY2: room.SetTParam(x, y, WaterBoots); break;
 		case TV_ACCESSORY3: room.SetTParam(x, y, InvisibilityPotion); break;
@@ -327,6 +364,18 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	const bool bValid = CanBuildAt(room, tile, x, y, bAllowSame);
 	if (!bValid)
 		return false;
+
+	const CCurrentGame* pCurrentGame = room.GetCurrentGame();
+	if (bIsWall(tile) || bIsCrumblyWall(tile) || bIsBriar(tile))
+	{
+		//If the build tile would fill a square, the tile must be vacant now.
+		CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+		if (pMonster || pCurrentGame->IsPlayerAt(x, y))
+		{
+			//Build tile is occupied and invalid.
+			return false;
+		}
+	}
 
 	const UINT wOldOTile = room.GetOSquare(x, y);
 	if (tile == wOldOTile && !bAllowSame)
@@ -364,7 +413,13 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 
 		//When water or doors are plotted (or overwritted), redraw edges.
 		//WARNING: Where plots are needed is front-end implementation dependent.
-		if (bIsWater(tile) || bIsWater(wOldOTile) || bIsDoor(wOldOTile) || bIsDoor(tile))
+		if (
+			bIsWater(tile) ||
+			bIsWater(wOldOTile) ||
+			bIsDoor(wOldOTile) ||
+			bIsDoor(tile) ||
+			bIsThinIce(wOldOTile) ||
+			bIsThinIce(tile))
 		{
 			CCoordSet plots;
 			for (UINT nx = x - 1; nx != x + 2; ++nx)
@@ -372,7 +427,7 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 					for (UINT ny = y - 1; ny != y + 2; ++ny)
 						if (ny < room.wRoomRows)
 							plots.insert(nx, ny);
-			room.Plot(plots);
+			room.Plot(plots, true);
 		}
 		//When pit is added/removed, redraw this tile's pit edge.
 		//WARNING: Where plots are needed is front-end implementation dependent.
@@ -388,15 +443,53 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	else if (wLayer == LAYER_TRANSPARENT) {
 		const UINT oldTTile = room.GetTSquare(x, y);
 		if (bIsTar(oldTTile) && tile != oldTTile) {
-			room.RemoveStabbedTar(x, y, CueEvents);
-			room.ConvertUnstableTar(CueEvents);
+			room.StabTar(x, y, CueEvents, true, NO_ORIENTATION);
+		}
+		else if (tile == T_BRIAR_SOURCE && tile != oldTTile) {
+			room.briars.insert(x, y);
+			//room.briars.forceRecalc();
+		}
+		else if (oldTTile == T_BRIAR_SOURCE && tile != oldTTile) {
+			room.briars.removeSource(x, y);
+			//room.briars.forceRecalc();
+		}
+		else if (oldTTile == T_BRIAR_LIVE && tile == T_BRIAR_DEAD) {
+			//this case isn't handled in briars.plotted() via room plot below
+			//room.briars.forceRecalc();
+		}
+		else if (oldTTile == T_OBSTACLE && tile == T_REMOVE_TRANSPARENT) {
+			RecalculateObstacle(room, x, y);
+		}
+
+		//Update room tarstuff state
+		if (bIsTar(tile)) {
+			if (pCurrentGame->IsPlayerAt(x, y)) {
+				return false;
+			}
+
+			if (pCurrentGame->pRoom->GetMonsterAtSquare(x, y) != NULL) {
+				return false;
+			}
+
+			//room.bTarWasBuilt = true;
+
+			if (!bIsTar(room.GetTSquare(x, y))) {
+				if (room.wTarLeft == 0) {
+					room.ToggleBlackGates(CueEvents);
+				}
+				++room.wTarLeft;
+			}
 		}
 	}
 
 	room.Plot(x, y, tile);
 
+	if (bIsSolidOTile(tile) || tile == T_HOT)
+	{
+		room.DestroyMist(x, y, CueEvents);
+	}
+
 	//When placing a hole, things might fall.
-	const CCurrentGame* pCurrentGame = room.GetCurrentGame();
 	if ((bIsPit(tile) || bIsWater(tile) || wLayer == LAYER_TRANSPARENT) &&
 		pCurrentGame->wTurnNo > 0) //don't allow player falling on room entrance
 	{
@@ -418,4 +511,64 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 	CueEvents.Add(CID_ObjectBuilt, new CMoveCoord(x, y, tile), true);
 
 	return true;
+}
+
+void BuildUtil::RecalculateObstacle(CDbRoom& room, const UINT wCol, const UINT wRow)
+// Collapse obstacle into 1x1 units
+{
+	const BYTE obType = calcObstacleType(room.GetTParam(wCol, wRow));
+	ASSERT(obType);
+
+	//Find obstacle edges to figure out which relative x/y position this tile is at.
+	UINT xPos = 0;
+	UINT yPos = 0;
+	UINT x = wCol, y = wRow;
+	while (x > 0) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break; //found left edge
+		if (room.GetTSquare(x - 1, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x - 1, wRow)) != obType) break;
+		++xPos;
+		--x;
+	}
+
+	UINT leftX = x;
+
+	x = wCol + 1;
+	while (x < room.wRoomCols) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break;
+		if (room.GetTSquare(x, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x, wRow)) != obType) break;
+		++x;
+	}
+
+	x -= wCol - xPos; //x dimension of this obstacle
+	ASSERT(xPos < x);
+
+	while (y > 0) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;  //found top edge
+		if (room.GetTSquare(wCol, y - 1) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y - 1)) != obType) break;
+		++yPos;
+		--y;
+	}
+
+	UINT topY = y;
+
+	y = wRow + 1;
+	while (y < room.wRoomRows) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;
+		if (room.GetTSquare(wCol, y) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y)) != obType) break;
+		++y;
+	}
+
+	y -= wRow - yPos; //y dimension of this obstacle
+	ASSERT(yPos < y);
+
+	for (UINT i = 0; i < x; i++) {
+		for (UINT j = 0; j < y; j++) {
+			room.SetTParam(leftX + i, topY + j, OBSTACLE_TOP | OBSTACLE_LEFT | obType);
+			room.ForceTileRedraw(leftX + i, topY + j, true);
+		}
+	}
 }

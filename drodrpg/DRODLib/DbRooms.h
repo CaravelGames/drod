@@ -86,12 +86,13 @@ protected:
 
 public:
 	CDbRoom(const CDbRoom &Src);
+	CDbRoom(const CDbRoom &Src, const bool copyGame, const bool copyForEditor=false);
 	CDbRoom &operator= (const CDbRoom &Src) {
 		SetMembers(Src);
 		return *this;
 	}
 	void MakeCopy(const CDbRoom &Src) {SetMembers(Src, false);}
-	CDbRoom* MakeCopy(CImportInfo& info, const UINT newHoldID) const;
+	CDbRoom* MakeCopy(CImportInfo& info, const UINT newHoldID, const bool bCopyForEditor = false) const;
 
 	virtual ~CDbRoom();
 
@@ -106,10 +107,13 @@ public:
 	bool           bIsSecret;     //room is marked as a secret
 	UINT          dwDataID;      //for special floor image mosaic
 	UINT           wImageStartX, wImageStartY;   //where mosaic starts tiling
+	UINT           dwOverheadDataID; //for custom overhead image texture
+	UINT           wOverheadImageStartX, wOverheadImageStartY; //where texture starts tiling
 	char *            pszOSquares;   //currently supports up to 256 tile types
 	char *            pszFSquares;
 	char *            pszTSquares;
 	UINT *            pszTParams;
+	CCoordIndex       overheadTiles;
 	vector<COrbData*> orbs;
 	vector<CScrollData*> Scrolls;
 	vector<CExitData*>   Exits;
@@ -146,24 +150,29 @@ public:
 	Weather        weather;	//environmental weather conditions
 	CBridge        bridges;
 //	CBuilding      building; //tiles marked for building
+	CCoordSet      mistVents;
+	CCoordSet      activeFiretraps;
 
 	CCoordSet      geometryChanges, disabledLights; //for front end -- where lighting must be updated
 
 	//Uniform way of accessing 2D information in 1D array (column-major).
 	inline UINT    ARRAYINDEX(const UINT x, const UINT y) const {return (y * this->wRoomCols) + x;}
+	inline UINT    ROOMINDEX_TO_X(const UINT index) const { return index % this->wRoomCols; }
+	inline UINT    ROOMINDEX_TO_Y(const UINT index) const { return index / this->wRoomCols; }
 
+	void           ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           ActivateOrb(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const OrbActivationType eActivationType);
 	void           ActivateToken(CCueEvents &CueEvents, const UINT wX, const UINT wY);
 //	void           AddDiagonalDoorAssociations();
 	CMonster *     AddNewMonster(const UINT wMonsterType, const UINT wX,
-			const UINT wY, const bool bInRoom=true);
+			const UINT wY, const bool bInRoom=true, const bool bLinkMonster=true);
 	bool           AddOrb(COrbData *pOrb);
 	COrbData *     AddOrbToSquare(const UINT wX, const UINT wY);
 	bool           AddPressurePlateTiles(COrbData* pPlate);
 	bool           AddScroll(CScrollData *pScroll);
 	bool           AddExit(CExitData *pExit);
-	void           BombExplode(CCueEvents &CueEvents, CCoordStack& bombs);
+	bool           AllocTileLayers();
 	void           BurnFuses(CCueEvents &CueEvents);
 	void           BurnFuseEvents(CCueEvents &CueEvents);
 //	bool           BrainSensesSwordsman() const;
@@ -177,7 +186,8 @@ public:
 	bool           CanPushTo(const UINT wFromX, const UINT wFromY,
 			const UINT wX, const UINT wY) const;
 	bool           CanJumpTo(const UINT wFromX, const UINT wFromY,
-			const UINT wX, const UINT wY, const bool bFromRaisedTile) const;
+			const UINT wX, const UINT wY,
+			const bool bFromRaisedTile, const bool bFromCrate) const;
 	void           ChangeTiles(const RoomTokenType tType);
 	void           CharactersCheckForCueEvents(CCueEvents &CueEvents, CMonster* pMonsterList);
 	void           CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEvents, const bool bTrapdoorFell=false);
@@ -191,6 +201,7 @@ public:
 */
 	bool           CropRegion(UINT& x1, UINT &y1, UINT &x2, UINT &y2) const;
 
+	void           DamageMonster(CMonster* pMonster, int damageVal, CCueEvents& CueEvents);
 	int            DangerLevel() const;
 //	void           DecMonsterCount();
 	void           DecTrapdoor(CCueEvents &CueEvents);
@@ -199,21 +210,33 @@ public:
 	void           DeleteScrollTextAtSquare(const UINT wX, const UINT wY);
 	void           DestroyCrumblyWall(const UINT wX, const UINT wY,
 			CCueEvents &CueEvents, const UINT wStabO=NO_ORIENTATION);
+	void           DestroyMist(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           DestroyTar(const UINT wX, const UINT wY, CCueEvents &CueEvents);
 	void           DestroyTrapdoor(const UINT wX, const UINT wY, CCueEvents &CueEvents);
+	void           Dig(const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
+	void           DisableFiretrap(const UINT wX, const UINT wY);
+	void           DisableForceArrow(const UINT wX, const UINT wY);
 /*	bool           DoesMonsterEnterRoomLater(const UINT wX, const UINT wY,
 			const UINT wMonsterType) const;
 	bool           DoesSquareContainDoublePlacementObstacle(const UINT wX, const UINT wY) const;
 	bool           DoesSquareContainPathMapObstacle(const UINT wX, const UINT wY,
 			const MovementType eMovement) const;
 */
+	void           DoExplode(CCueEvents& CueEvents, CCoordStack& bombs, CCoordStack& powder_kegs);
+	void           DoExplodeTile(CCueEvents& CueEvents, CCoordStack& bombs, CCoordStack& powder_kegs,
+		CCoordSet& explosion, UINT wCol, UINT wRow, UINT explosion_radius,
+		bool bAddCueEvent = true);
 	bool           DoesSquareContainPlayerObstacle(const UINT wX, const UINT wY,
-			const UINT wO, const bool bRaisedSrc) const;
+			const UINT wO, const bool bRaisedSrc,
+			const bool bCrateSrc=false, const bool bAllowCrateClimbing=false) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 
+	void           EnableFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
+	void           EnableForceArrow(const UINT wX, const UINT wY);
 	void           ExpandBriars(CCueEvents& CueEvents);
+	void           ExpandMist(CCueEvents& CueEvents);
 //	CMonster*      FindNextClone();
 	void           FixUnstableTar(CCueEvents& CueEvents);
 	void           FindOrbsToOpenDoor(CCoordSet& orbs, CCoordSet& doorSquares) const;
@@ -229,9 +252,12 @@ public:
 	void           GetConnectedTiles(const UINT wX, const UINT wY,
 			const CTileMask &tileMask, const bool b8Neighbor, CCoordSet& squares,
 			const CCoordSet* pIgnoreSquares=NULL, const CCoordSet* pRegionMask=NULL) const;
+	void           GetConnectedMistTiles(const UINT wX, const UINT wY, CCoordSet& mistSquares) const;
 	CCurrentGame*  GetCurrentGame() const {return this->pCurrentGame;}
 	UINT           GetExitIndexAt(const UINT wX, const UINT wY) const;
 	bool           GetExitEntranceIDAt(const UINT wX, const UINT wY, UINT &dwEntranceID) const;
+	bool           GetExitEntranceInfoAt(const UINT wX, const UINT wY,
+		UINT &dwEntranceID, ExitType& exitType) const;
 	UINT          GetImportCharacterSpeechID();
 	CDbLevel*      GetLevel() const;
 	void           GetLevelPositionDescription(WSTRING &wstrDescription,
@@ -247,8 +273,10 @@ public:
 	COrbData*      GetOrbAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetOSquare(const UINT wX, const UINT wY) const;
 	UINT           GetOSquareWithGuessing(int nX, int nY) const;
+	void           GetPositionInLevel(int& dx, int& dy) const;
 	COrbData*      GetPressurePlateAtCoords(const UINT wX, const UINT wY) const;
 	UINT           GetPrimaryKey() const {return this->dwRoomID;}
+	float          GetStatModifierFromCharacters(ScriptVars::StatModifiers statType) const;
 	void           getStats(RoomStats& stats, const CDbLevel *pLevel) const;
 	const WCHAR*   GetScrollTextAtSquare(const UINT wX, const UINT wY) const;
 	CScrollData*   GetScrollAtSquare(const UINT wX, const UINT wY) const;
@@ -259,17 +287,22 @@ public:
 			CCoordSet& tiles, const bool bAddAdjOnly=false) const;
 	UINT           GetTSquare(const UINT wX, const UINT wY) const;
 	UINT           GetTParam(const UINT wX, const UINT wY) const;
+	UINT           GetCoveredTSquare(const UINT wX, const UINT wY) const;
 	UINT           GetTSquareWithGuessing(int nX, int nY) const;
 	bool           HasClosedDoors() const;
 	bool           HasCombatableMonsters() const;
 	bool           HasGrabbableItems() const;
 
+	void           ForceTileRedraw(const UINT wX, const UINT wY, const bool bGeometryChanges);
+
 	void           IncTrapdoor(CCueEvents& CueEvents);
 	void           InitCoveredTiles();
 	void           InitRoomStats(const bool bSkipPlatformInit=false);
+	void           InitStateForThisTurn();
 	UINT           GetBrainsPresent() const;
 	bool           IsDisarmTokenActive() const;
 	bool           IsDoorOpen(const int nCol, const int nRow);
+	bool           IsEitherTSquare(const UINT wX, const UINT wY, const UINT wTile) const;
 	bool           IsOrbBeingStruck(const UINT wX, const UINT wY) const;
 	bool           IsMonsterInRect(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const bool bConsiderPieces=true) const;
@@ -330,7 +363,10 @@ public:
 	void           ProcessTurn(CCueEvents &CueEvents, const bool bFullMove);
 	void           ExpandExplosion(CCueEvents &CueEvents, CCoordStack& cs,
 			const UINT wBombX, const UINT wBombY, const UINT wX, const UINT wY,
-			CCoordStack& bombs, CCoordSet& explosion);
+			CCoordStack& bombs, CCoordStack& powder_kegs, CCoordSet& explosion, const UINT radius);
+	void           ExplodeBomb(CCueEvents& CueEvents, const UINT x, const UINT y) { CCoordStack bombs(x, y); CCoordStack cs; DoExplode(CueEvents, bombs, cs); }
+	void           ExplodePowderKeg(CCueEvents& CueEvents, const UINT x, const UINT y) { CCoordStack cs; CCoordStack powder_kegs(x, y); DoExplode(CueEvents, cs, powder_kegs); }
+
 	void           ProcessExplosionSquare(CCueEvents &CueEvents, const UINT wX, const UINT wY,
 			const bool bHarmsPlayer=true);
 	void           ProcessAumtlichGaze(CCueEvents &CueEvents);
@@ -378,14 +414,16 @@ public:
 
 	void           SetScrollTextAtSquare(const UINT wX, const UINT wY, const WCHAR* pwczScrollText);
 	void           SetExit(const UINT dwEntranceID, const UINT wX, const UINT wY,
-			const UINT wX2=(UINT)-1, const UINT wY2=(UINT)-1);
+			const UINT wX2=(UINT)-1, const UINT wY2=(UINT)-1, ExitType exitType = ExitType::ET_Entrance);
 	bool           SomeMonsterCanSmellSwordsman() const;
 	bool           StabTar(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			const bool removeTarNow, const UINT wStabO=NO_ORIENTATION);
 	void           SwitchTarstuff(const UINT wType1, const UINT wType2);
 	bool           SwordfightCheck() const;
 	void           ToggleBlackGates(CCueEvents& CueEvents);
-	void           ToggleDoor(const UINT wX, const UINT wY);
+	void           ToggleFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
+	void           ToggleForceArrow(const UINT wX, const UINT wY);
+	void           ToggleDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	bool           ToggleTiles(const UINT wOldTile, const UINT wNewTile);
 	void           ToggleLight(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	bool     TunnelGetExit(const UINT wStartX, const UINT wStartY,
@@ -396,19 +434,26 @@ public:
 	bool           UnpackSquares(const BYTE *pSrc, const UINT dwSrcSize);
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);
+	bool           WasObjectPushedThisTurn(const UINT wX, const UINT wY) const {
+		return HasObjectAtMoved(wX, wY); }
 
 	//scope: used while processing the current turn
 	const RoomObject* GetPushedObjectAt(const UINT wX, const UINT wY) const;
+	bool HasObjectAtMoved(const UINT wX, const UINT wY) const;
 
 private:
 	set<const RoomObject*> pushed_objects; //a simplified implementation of pushed objects to facilitate mirror movement animation
+	CCoordSet moved_objects; //objects that have been moved this processing step, to prevent body + weapon push from single entity
 
 	enum tartype {oldtar, newtar, notar};
 
 	void           AddPlatformPiece(const UINT wX, const UINT wY, CCoordIndex &plots);
+	bool           CanExpandMist(const UINT wX, const UINT wY) const;
 	void           Clear();
 	void           ClearPushInfo();
-	void           CloseDoor(const UINT wX, const UINT wY);
+	void           ClearMovedInfo();
+	void           ClearStateVarsUsedDuringTurn();
+	void           CloseDoor(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 //	void           DeletePathMaps();
 	CMonster*      FindLongMonster(const UINT wX, const UINT wY,
 			const UINT wFromDirection=10) const;
@@ -416,6 +461,8 @@ private:
 			const int dx, const int dy, const bool bAbbrev=false);
 	UINT           GetLocalID() const;
 	void           GetNumber_English(const UINT num, WCHAR *str);
+	CCoordStack    GetPowderKegsStillOnHotTiles() const;
+	void           ExplodeStabbedPowderKegs(CCueEvents& CueEvents);
 	bool           LoadOrbs(c4_View &OrbsView);
 	bool           LoadMonsters(c4_View &MonstersView);
 	bool           LoadScrolls(c4_View &ScrollsView);
@@ -429,8 +476,9 @@ private:
 	bool           NewTarWouldBeStable(const vector<tartype> &addedTar, const UINT tx, const UINT ty);
 	void           ObstacleFill(CCoordIndex& obstacles);
 	void           OpenDoor(const UINT wX, const UINT wY);
-	c4_Bytes *     PackSquares() const;
+	c4_Bytes *     PackSquares(const bool bSaveGameData=false) const;
 	c4_Bytes *     PackTileLights() const;
+	void           ProcessActiveFiretraps(CCueEvents& CueEvents);
 	void           ReevalBriarNear(const UINT wX, const UINT wY, const UINT wTileNo);
 	void           ReflectSquare(const bool bHoriz, UINT &wSquare) const;
 //	bool           RemoveLongMonsterPieces(CMonster *pMonster);
@@ -441,7 +489,8 @@ private:
 	void           SaveExits(c4_View &ExitsView) const;
 	void           SetCurrentGameForMonsters(const CCurrentGame *pSetCurrentGame);
 	void           SetExtraVarsFromMembers();
-	bool           SetMembers(const CDbRoom &Src, const bool bCopyLocalInfo=true);
+	bool           SetMembers(
+		const CDbRoom &Src, const bool bCopyLocalInfo=true, const bool bCopyGame=true, const bool bCopyForEditor = false);
 	void           SetMembersFromExtraVars();
 
 	bool           UnpackTileLights(const BYTE *pSrc, const UINT dwSrcSize);
@@ -455,6 +504,8 @@ private:
 	vector<UINT> deletedDataIDs;    //data IDs to be deleted on Update
 	CCurrentGame * pCurrentGame;
 //	bool           bCheckForHoldMastery;
+	CCoordSet   stationary_powder_kegs;
+	CCoordStack stabbed_powder_kegs;
 };
 
 //******************************************************************************************

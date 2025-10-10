@@ -371,10 +371,12 @@ bool CParticleExplosionEffect::HitsObstacle(const CDbRoom *pRoom, const PARTICLE
 		case T_WATER: case T_GOO:
 		case T_DOOR_YO: case T_DOOR_GO: case T_DOOR_CO:
 		case T_DOOR_RO: case T_DOOR_BO: case T_DOOR_MONEYO:
-		case T_TRAPDOOR: case T_TRAPDOOR2:
+		case T_TRAPDOOR: case T_TRAPDOOR2: case T_THINICE:
 		case T_STAIRS: case T_STAIRS_UP:
 		case T_HOT:
+		case T_MISTVENT:
 		case T_PRESSPLATE:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			return false;  //particle can go through these things
 		default: return true;
 	}

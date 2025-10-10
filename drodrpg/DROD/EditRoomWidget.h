@@ -122,11 +122,13 @@ public:
 	MonsterSegment monsterSegment;   //long monster being plotted
 	CCoordIndex    swords;           //double swords in room
 
+	bool           characterPreview; //automatic preview of scripted characters
+
 protected:
 	virtual  ~CEditRoomWidget();
 
-	virtual void   DrawCharacter(CCharacter *pCharacter, const bool bDrawRaised,
-			SDL_Surface *pDestSurface, const bool bMoveInProgress);
+	virtual void   DrawCharacter(CCharacter *pCharacter, const float fRaised,
+			SDL_Surface *pDestSurface, const bool bMoveInProgress, const bool bActionIsFrozen);
 	virtual bool   DrawingSwordFor(const CMonster *pMonster) const;
 
 	virtual void   HandleAnimate() {if (this->pRoom) Paint(false);}   //parent must handle calling UpdateRect()

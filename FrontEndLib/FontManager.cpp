@@ -61,6 +61,7 @@ const SDL_Color Gold = {227, 171, 4, 0};
 const SDL_Color Blue = {0, 0, 255, 0};
 const SDL_Color DarkBlue = {0, 0, 128, 0};
 const SDL_Color LightBlue = {96, 96, 255, 0};
+const SDL_Color LightCyan = {128, 255, 255, 0};
 const SDL_Color FullRed = {255, 0, 0, 0};
 const SDL_Color LightRed = {255, 128, 128, 0};
 const SDL_Color LightBlue2 = {164, 164, 255, 0};
@@ -262,7 +263,8 @@ void CFontManager::DrawTextToRect(
 	UINT wW, UINT wH,        //(in) Dest width and height to draw within.
 	SDL_Surface *pSurface,   //(in) Dest surface.
 	const UINT wFirstIndent, //(in) First line pixel indent [default=0].
-	const Uint8 opacity)     //(in) Transparency [default=255].
+	const Uint8 opacity,     //(in) Transparency [default=255].
+	const bool bPrintLeadingSpaces) //(in) On lines after the first one [default=false]
 const
 {
 	const LOADEDFONT *pFont = this->LoadedFonts+eFontType;
@@ -280,10 +282,11 @@ const
 	const WCHAR *pwczSeek = pwczText;
 	UINT wSpaceCount, wCRLFCount;
 	pwczSeek = DrawText_SkipOverNonWord(pwczSeek, wSpaceCount, wCRLFCount);
-	if (wCRLFCount)
+	if (wCRLFCount) {
 		yDraw += (wCRLFCount * pFont->wLineSkipHeight);
-	else
+	} else {
 		xDraw += (wSpaceCount * pFont->wSpaceWidth);
+	}
 
 	//Each iteration draws one word to surface.
 	SDL_Surface *pText = NULL;
@@ -368,12 +371,25 @@ const
 		}
 
 		//Adjust drawing position for spaces and CRLFs found after word.
-		pwczSeek = DrawText_SkipOverNonWord(pwczSeek, wSpaceCount, wCRLFCount);
+		pwczSeek = DrawText_SkipOverNonWord(pwczSeek, wSpaceCount, wCRLFCount, bPrintLeadingSpaces); //retain spaces after CRLF?
 		if (wCRLFCount)
 		{
 			xDraw = nX;
 			yDraw += (pFont->wLineSkipHeight * wCRLFCount);
 			wSpaceLength = 0;
+
+			if (bPrintLeadingSpaces) {
+				do {
+					pwczSeek = DrawText_SkipOverNonWord(pwczSeek, wSpaceCount, wCRLFCount, true);
+					if (wCRLFCount) {
+						yDraw += (pFont->wLineSkipHeight * wCRLFCount);
+					}
+				} while (wCRLFCount); //move over completely blank lines
+
+				//leading spaces
+				wSpaceLength = pFont->wSpaceWidth * wSpaceCount;
+				xDraw += wSpaceLength;
+			}
 		} else {
 			wSpaceLength = pFont->wSpaceWidth * wSpaceCount;
 			xDraw += wSpaceLength;
@@ -975,7 +991,8 @@ const WCHAR *CFontManager::DrawText_SkipOverNonWord(
 //Params:
 	const WCHAR *pwczStart, //(in)   Place to begin reading from.
 	UINT &wSpaceCount,   //(out)  Number of space chars.
-	UINT &wCRLFCount) //(out)  Number of CRLF pairs.
+	UINT &wCRLFCount,    //(out)  Number of CRLF pairs.
+	bool bStopAtCRLF)    //(in)   If a CRLF is encountered, tally it and return immediately [default=false]
 //
 //Returns:
 //Read position after non-word chars.
@@ -988,14 +1005,19 @@ const
 	wCRLFCount = 0;
 	while (*pwczSeek == ' ' || *pwczSeek == '\r' || *pwczSeek == '\n')
 	{
-		if (*pwczSeek == ' ') ++wSpaceCount;
+		if (*pwczSeek == ' ')
+			++wSpaceCount;
 #ifdef WIN32
-		if (*pwczSeek == '\r') ++wCRLFCount;
+		if (*pwczSeek == '\r')
+			++wCRLFCount;
 #else
 		if (*pwczSeek == '\n' || (*pwczSeek == '\r' && *(pwczSeek+1) != '\n'))
 			++wCRLFCount;
 #endif
 		++pwczSeek;
+
+		if (wCRLFCount && bStopAtCRLF)
+			break;
 	}
 
 	return pwczSeek;

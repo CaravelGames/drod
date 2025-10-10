@@ -48,6 +48,8 @@ public:
 			const int yOffset = 0, const Uint32 wDuration = 3000, const Uint32 fadeTime = 1000);
 	virtual ~CFlashMessageEffect();
 
+	virtual long   GetDrawSequence() const { return 999L; }   //draw almost last (only below tooltips)
+
 	void SetColor(int r, int g, int b);
 	void SetMovement(bool val) { this->movement = val; }
 	void SlowExpansion(bool val=true) { this->bSlowExpansion = val; }

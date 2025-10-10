@@ -191,10 +191,10 @@ enum CUEEVENT_ID
 	//Private data: CDbMessageText *pScrollText (one)
 	CID_StepOnScroll,
 
-	//A goblin attacks the player from behind.
+	//An enemy attacks the player from behind.
 	//
 	//Private data: NONE
-	CID_GoblinAttacks,
+	CID_EnemySneakAttack,
 
 	//A score checkpoint is triggered.
 	//
@@ -264,7 +264,7 @@ enum CUEEVENT_ID
 	//Private data: CCoord *pDoorLocation (one)
 	CID_BumpedLockedDoor,
 
-	//Swordsman drank (speed/invisibility) potion.
+	//Player consumed a speed/invisibility potion.
 	//
 	//Private data: NONE
 	CID_DrankPotion,
@@ -412,7 +412,7 @@ enum CUEEVENT_ID
 
 	//Player obtained a level map.
 	//
-	//Private data: NONE
+	//Private data: UINT (map tile type)
 	CID_LevelMap,
 
 	//Red gates were toggled.
@@ -587,7 +587,7 @@ enum CUEEVENT_ID
 
 	//An object was built.
 	//
-	//Private data: UINT (one or more)
+	//Private data: CMoveCoord* (one or more)
 	CID_ObjectBuilt,
 
 	//Signal to play a video: at (x,y) with dataID==wO.
@@ -625,6 +625,108 @@ enum CUEEVENT_ID
 	//Private data: NONE
 	CID_ReceivedEquipment,
 
+	//Player received ATK gem.
+	//
+	//Private data: NONE
+	CID_ReceivedATK,
+
+	//Player received DEF gem.
+	//
+	//Private data: NONE
+	CID_ReceivedDEF,
+
+	//Player received HP elixir.
+	//
+	//Private data: NONE
+	CID_ReceivedHP,
+
+	//Change to custom room location text.
+	//
+	//Private data: NONE
+	CID_RoomLocationTextUpdate,
+
+	//Change to custom room location text.
+	//
+	//Private data: CColorText* (one or more)
+	CID_FlashingMessage,
+
+	//An orb was damaged (and not activated).
+	//
+	//Private data: COrbData *pOrbData (none, one or more)
+	CID_OrbDamaged,
+
+	//Player received Shovel item.
+	//
+	//Private data: UINT (one) -- type of shovel
+	CID_ReceivedShovel,
+
+	//A diggable block was dug out.
+	//
+	//Private data: CMoveCoord* (one or more)
+	CID_Dig,
+
+	//A thin ice tile melts
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_ThinIceMelted,
+
+	//Image overlay script command
+	//
+	//Private data: CImageOverlay* (one or more)
+	CID_ImageOverlay,
+
+	//A mist tile is destroyed
+	//
+	//Private data: CMoveCoord *pSquareDestroyedAt (one or more)
+	CID_MistDestroyed,
+
+	//Firetrap burning this turn.
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_Firetrap,
+
+	//Firetrap has been activated.
+	//
+	//Private data: CCoord *pSquare (one or more)
+	CID_FiretrapActivated,
+
+	//A crate was destroyed
+	//
+	//Private data: CMoveCoord *pSquare
+	CID_CrateDestroyed,
+
+	//Fire trap hits a player or monster
+	//
+	//Private data: CCoord *pSquare
+	CID_FiretrapHit,
+
+	//A roach queen spawned a roach egg.
+	//
+	//Private data: CMonster *pMonster (one or more)
+	CID_EggSpawned,
+
+	//A change has been made to the room's lighting tiles.
+	//
+	//Private data: NONE
+	CID_LightTilesChanged,
+
+	//An icon was changed on a visible room
+	//
+	//Private data: NONE
+	CID_MapIcon,
+
+	//The swordsman has exited to world map, but the map has not been loaded yet.
+	//The destination map ID is attached for the ProcessCommand() caller to
+	//initiate the map load in response.
+	//
+	//Private data: (UINT) World map to go to
+	CID_ExitToWorldMapPending,
+
+	//Player engaged in a combat that seemed unlikely to ever end
+	//
+	//Private data: CMoveCoord *pMoveCoord
+	CID_StalledCombat,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };
@@ -640,7 +742,7 @@ static inline bool IS_VALID_CID(const CUEEVENT_ID cid)   {return (UINT)(cid) < C
 
 //Has player left room or will he shortly be leaving/restarting?  Another way
 //of looking at: are any more commands going to be processed in the current room.
-extern const CUEEVENT_ID CIDA_PlayerLeftRoom[10];
+extern const CUEEVENT_ID CIDA_PlayerLeftRoom[11];
 
 //Did something kill the player?  This array should be checked for death instead
 //of these separate events so that future causes of death will be checked without

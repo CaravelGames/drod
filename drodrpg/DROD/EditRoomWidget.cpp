@@ -70,6 +70,7 @@ CEditRoomWidget::CEditRoomWidget(
 	, eEditState(ES_PLACING)
 	, pLevelEntrances(NULL)
 	, wOX(NO_BOLT), wOY(NO_BOLT)
+	, characterPreview(false)
 	, pPlotted(NULL)
 {
 }
@@ -593,12 +594,14 @@ const
 		//Floor types can replace themselves,
 		//except for doors: to facilitate editing them when clicked on.
 		if (bIsPlainFloor(wTileNo)) return true; //anything can replace floor
-		if (wTileNo == T_HOT || wTileNo == T_GOO) return true;
+		if (wTileNo == T_HOT || wTileNo == T_GOO || bIsFiretrap(wTileNo)) return true;
 		if (bIsWall(wTileNo) && bIsWall(wObject)) return true;
 		if (bIsCrumblyWall(wTileNo) && bIsCrumblyWall(wObject)) return true;
 		if (bIsTunnel(wTileNo) && bIsTunnel(wObject)) return true;
-		if ((bIsPit(wTileNo) || bIsWater(wTileNo) || bIsTrapdoor(wTileNo) || bIsPlatform(wTileNo) || bIsBridge(wTileNo)) &&
-			 (bIsPit(wObject) || bIsWater(wObject) || bIsTrapdoor(wObject) || bIsPlatform(wObject) || bIsBridge(wObject)))
+		if ((bIsPit(wTileNo) || bIsWater(wTileNo) || bIsFallingTile(wTileNo) || bIsPlatform(wTileNo) || bIsBridge(wTileNo)) &&
+			 (bIsPit(wObject) || bIsWater(wObject) || bIsFallingTile(wObject) || bIsPlatform(wObject) || bIsBridge(wObject)))
+			return true;
+		if (bIsDiggableBlock(wTileNo) && bIsDiggableBlock(wObject))
 			return true;
 		if (bIsDoor(wObject) || bIsOpenDoor(wObject))
 			return false;
@@ -607,7 +610,7 @@ const
 		return wObject == wTileNo;
 	case 3:
 		//Arrows can replace arrows.
-		if (bIsArrow(wObject) && bIsArrow(wTileNo))
+		if (bIsAnyArrow(wObject) && bIsAnyArrow(wTileNo))
 			return true;
 		if (wObject == T_WALLLIGHT)
 			return false;
@@ -616,12 +619,28 @@ const
 		//Can't replace customizable objects: scrolls, obstacles and lights.
 		if (wObject == T_SCROLL || wObject == T_OBSTACLE || bIsLight(wObject))
 			return false;
+		if (bIsTLayerCoveringItem(wObject) && (wTileNo == T_FUSE || wTileNo == T_MIST))
+			return true;
+		if (wObject == T_FUSE && bIsTLayerCoveringItem(wTileNo))
+			return true;
 		if (wObject == T_BOMB)
 			return false; //facilitate explosion range highlighting
 		if (bIsBriar(wTileNo) && bIsBriar(wObject))
 			return true;
 		if (bIsHealth(wTileNo) && bIsHealth(wObject))
 			return true;
+		if (bIsShovel(wTileNo) && bIsShovel(wObject))
+			return true;
+		if (bIsATKUp(wTileNo) && bIsATKUp(wObject))
+			return true;
+		if (bIsDEFUp(wTileNo) && bIsDEFUp(wObject))
+			return true;
+		if (wTileNo == T_MIRROR && wObject == T_MIRROR)
+			return false;
+		if (wTileNo == T_CRATE && wObject == T_CRATE)
+			return false;
+		if (wTileNo == T_POWDER_KEG && wObject == T_POWDER_KEG)
+			return false;
 		return wObject == wTileNo;
 	case 2:
 		//Same type of monster can replace itself, except long monsters and special character.
@@ -639,7 +658,8 @@ inline bool bIsEmptyTile(const UINT wObject, const UINT wLayer)
 {
 	switch (wLayer)
 	{
-		case LAYER_OPAQUE: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT;
+		case LAYER_OPAQUE: return bIsPlainFloor(wObject) || wObject == T_CHECKPOINT ||
+			wObject == T_OVERHEAD_IMAGE;
 		case LAYER_TRANSPARENT: return wObject == T_EMPTY;
 		case LAYER_MONSTER: return wObject == T_NOMONSTER;
 		case LAYER_FLOOR: return wObject == T_EMPTY || wObject == T_EMPTY_F ||
@@ -717,7 +737,7 @@ const
 
 		wTile = wTileLayer == LAYER_TRANSPARENT ? wSelectedObject : wTileNo[LAYER_TRANSPARENT];
 		if (bIsTar(wTile) || wTile == T_ORB || wTile == T_BOMB ||
-				bIsBriar(wTile) || wTile == T_MAP)
+				bIsBriar(wTile) || bIsMap(wTile))
 			return false;
 		if (pMonster || (wSelectedObject == T_SWORDSMAN && !bAllowSelf))
 			return false;
@@ -730,6 +750,7 @@ const
 		case T_CHECKPOINT:
 		case T_LIGHT_CEILING:
 		case T_DARK_CEILING:
+		case T_OVERHEAD_IMAGE:
 			//Can go anywhere.
 			return true;
 
@@ -745,8 +766,10 @@ const
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
 		case T_PLATFORM_W: case T_PLATFORM_P:
 		case T_TRAPDOOR: case T_TRAPDOOR2:
+		case T_THINICE:
 		case T_GOO:
 		case T_HOT:
+		case T_FIRETRAP: case T_FIRETRAP_ON:
 			//Anything can be on these.
 			return true;
 		case T_FLOOR: case T_FLOOR_M:
@@ -771,16 +794,19 @@ const
 			if (bIsPit(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE || wTileNo[1] == T_OBSTACLE ||
-					  wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
-					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO || wTileNo[2] == M_CHARACTER);
+					  wTileNo[1] == T_TOKEN || wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
+					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
+					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_FLUFFBABY);
 		case T_WATER:
 			//Water -- flying+water monsters can be on it.
 			if (bIsWater(wTileNo[0]))
 				return true;
 			return (wTileNo[1] == T_EMPTY || wTileNo[1] == T_FUSE ||
-						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN || bIsLight(wTileNo[1])) &&
+						wTileNo[1] == T_OBSTACLE || wTileNo[1] == T_TOKEN ||
+						wTileNo[1] == T_MIST || bIsLight(wTileNo[1])) &&
 					(!pMonster || wTileNo[2] == M_WWING || wTileNo[2] == M_FEGUNDO ||
-					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER);// || wTileNo[2] == M_SKIPPERNEST);
+					 wTileNo[2] == M_CHARACTER || wTileNo[2] == M_WATERSKIPPER ||
+				     wTileNo[2] == M_FLUFFBABY);// || wTileNo[2] == M_SKIPPERNEST);
 		case T_STAIRS:
 		case T_STAIRS_UP:
 			//Don't allow stair juxtaposition w/ t-layer items (except tar and obstacles).
@@ -817,7 +843,7 @@ const
 			// FALL-THROUGH
 		case T_WALL_B:
 		case T_WALL_H:
-			if (bIsBriar(wTileNo[1]))
+			if (bIsBriar(wTileNo[1]) || wTileNo[1] == T_MIST)
 				return false;
 			if (wTileNo[2] != T_NOMONSTER && wTileNo[2] != M_SEEP &&
 					!bIsMother(wTileNo[2]) && //tarstuff mothers allowed on walls
@@ -831,9 +857,13 @@ const
 		case T_DOOR_Y:	case T_DOOR_G:	case T_DOOR_C:	case T_DOOR_R:	case T_DOOR_B:
 			//Doors can't have orbs on them.
 			//But can have tar.
-			if (wTileNo[1] == T_ORB)// || wTileNo[1] == T_STATION)
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_MIST)// || wTileNo[1] == T_STATION)
 				return false;
 			if (bIsTar(wTileNo[1])) return true;
+			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
+				return true;
+			break;
+		case T_DIRT1: case T_DIRT3: case T_DIRT5:
 			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
 				return true;
 			break;
@@ -844,6 +874,8 @@ const
 			return true;
 		case T_ARROW_NW: case T_ARROW_N: case T_ARROW_NE: case T_ARROW_W:
 		case T_ARROW_E: case T_ARROW_SW: case T_ARROW_S: case T_ARROW_SE:
+		case T_ARROW_OFF_NW: case T_ARROW_OFF_N: case T_ARROW_OFF_NE: case T_ARROW_OFF_W:
+		case T_ARROW_OFF_E: case T_ARROW_OFF_SW: case T_ARROW_OFF_S: case T_ARROW_OFF_SE:
 			//Not on stairs.
 			return !bIsStairs(wTileNo[0]);
 
@@ -858,34 +890,39 @@ const
 						bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
 						wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
-						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+						wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0]) ||
+						bIsFiretrap(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BOMB:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
 			return !bSwordsmanAt &&
-				(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
+				(bIsPlainFloor(wTileNo[0]) || bIsFallingTile(wTileNo[0]) ||
 					bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 					bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 					bIsBridge(wTileNo[0]) || wTileNo[0] == T_HOT ||
 					wTileNo[0] == T_GOO || bIsTunnel(wTileNo[0]) ||
-					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0])) &&
+					wTileNo[0] == T_PRESSPLATE || bIsPlatform(wTileNo[0]) ||
+					wTileNo[0] == T_MISTVENT || bIsFiretrap(wTileNo[0])) &&
 				(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
 			//On normal floor, platforms, goo or water.
 			return !bSwordsmanAt &&
-					(bIsPlainFloor(wTileNo[0]) || bIsTrapdoor(wTileNo[0]) ||
+					(bIsPlainFloor(wTileNo[0]) || bIsFallingTile(wTileNo[0]) ||
 						bIsOpenDoor(wTileNo[0]) || bIsBridge(wTileNo[0]) ||
 						bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_HOT || wTileNo[0] == T_GOO ||
-						bIsWater(wTileNo[0])) &&
+						bIsWater(wTileNo[0]) || wTileNo[0] == T_MISTVENT ||
+						bIsFiretrap(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
-			//Only on floor, open doors or platforms.
+		case T_CRATE:
+		case T_POWDER_KEG:
+			//Only on floor, doors or platforms.
 			return !bSwordsmanAt &&
 					(bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
 						bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
 						bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
-						wTileNo[0] == T_GOO) &&
+						wTileNo[0] == T_GOO || bIsFiretrap(wTileNo[0])) &&
 						(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_LIGHT:
 			//Light -- only on floor, walls, pit.
@@ -899,10 +936,15 @@ const
 		case T_FUSE:
 			//Not on monsters that use/affect the t-layer.
 			return !bIsMother(wTileNo[2]);
-		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG:
-		case T_DEF_UP:	case T_ATK_UP:
+		case T_MIST:
+			return !(bIsMother(wTileNo[2]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
+				bIsDoor(wTileNo[0]));
+		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
+		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
+		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
 		case T_SCROLL:
-		case T_MAP:
+		case T_MAP: case T_MAP_DETAIL:
+		case T_SHOVEL1: case T_SHOVEL3: case T_SHOVEL10:
 			//Not on monsters that use/affect the t-layer.
 			if (bIsMother(wTileNo[2])) return false;
 			//Can't go on things player never steps on.
@@ -954,7 +996,7 @@ const
 		case T_SERPENTG:
 		case T_SERPENTB:
 			if (!(wTileNo[1] == T_EMPTY ||
-					wTileNo[1] == T_FUSE || wTileNo[1] == T_TOKEN || wTileNo[1] == T_SCROLL))
+					wTileNo[1] == T_FUSE || wTileNo[1] == T_TOKEN || wTileNo[1] == T_SCROLL || wTileNo[1] == T_MIST))
 				return false;
 			//Serpents can never overwrite serpents.
 			if (pMonster && !bAllowSelf)
@@ -976,6 +1018,7 @@ const
 		case T_CITIZEN:
 		case T_SKIPPERNEST:
 		case T_HALPH: case T_SLAYER:
+		case T_CONSTRUCT:
 			//Ground movement types
 			if (bSwordsmanAt) return false;
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
@@ -1008,13 +1051,15 @@ const
 					(wTileNo[1] == T_GEL || wTileNo[1] == T_EMPTY);
 		case T_WWING:
 		case T_FEGUNDO:
+		case T_FLUFFBABY:
 			//Air movement types
 			if (bSwordsmanAt) return false;
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
 					bIsPit(wTileNo[0]) || bIsWater(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR);// || wTileNo[1] == T_STATION);
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG);// || wTileNo[1] == T_STATION);
 
 		case T_SEEP:
 			//Wall movement types
@@ -1030,7 +1075,8 @@ const
 					((bIsFloor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
 							wTileNo[1] == T_OBSTACLE || //wTileNo[1] == T_STATION ||
-							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR));
+							bIsBriar(wTileNo[1]) || wTileNo[1] == T_LIGHT || wTileNo[1] == T_MIRROR ||
+							wTileNo[1] == T_CRATE || wTileNo[1] == T_POWDER_KEG));
 
 		case T_CHARACTER:
 			//Can't go on monsters.
@@ -1195,7 +1241,10 @@ void CEditRoomWidget::Paint(
 	this->pMLayerEffects->UpdateAndDrawEffects();
 	this->pMLayerEffects->DirtyTiles();
 
-	//5b. Draw effects that go on top of everything else drawn in the room.
+	//6. Overhead layer.
+	DrawOverheadLayer(pDestSurface);
+
+	//7. Draw effects that go on top of everything else drawn in the room.
 	this->pLastLayerEffects->UpdateAndDrawEffects();
 	this->pLastLayerEffects->DirtyTiles();
 
@@ -1276,20 +1325,22 @@ void CEditRoomWidget::DrawCharacter(
 //
 //Params:
 	CCharacter *pCharacter,    //(in)   Pointer to CCharacter monster.
-	const bool bDrawRaised,    //(in)   Draw Character raised above floor?
+	const float fRaised,    //(in)   Draw Character raised above floor?
 	SDL_Surface *pDestSurface, //(in)   Surface to draw to.
-	const bool /*bMoveInProgress*/)
+	const bool /*bMoveInProgress*/,
+	const bool /*bActionIsFrozen*/)  //(in) Whether action is currently stopped.
 {
 	const bool bAlt = (SDL_GetModState() & KMOD_ALT) != 0;
+	const bool preview = (bAlt != characterPreview);
 	const UINT wIdentity = pCharacter->GetIdentity();
-	UINT wFrameIndex = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES;
-	if (wIdentity != M_NONE && IsAnimated() && bAlt)
+	UINT wFrameIndex = IsAnimated() ? this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame % ANIMATION_FRAMES : 0;
+	if (wIdentity != M_NONE && preview)
 	{
 		//Draw NPC's actual in-game image.
 		ASSERT(wIdentity < MONSTER_COUNT ||
 				(wIdentity >= CHARACTER_FIRST && wIdentity < CHARACTER_TYPES) ||
 				wIdentity == M_NONE);
-		const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST ?
+		const UINT wO = wIdentity == M_BRAIN || wIdentity == M_SKIPPERNEST || wIdentity == M_FLUFFBABY ?
 				NO_ORIENTATION : pCharacter->wO;
 
 		//If a sword-wielding character is swordless, try to get its swordless frame.
@@ -1301,9 +1352,10 @@ void CEditRoomWidget::DrawCharacter(
 
 		//Draw character.
 		const Uint8 opacity = pCharacter->IsVisible() ? 255 : 128;
-		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, bDrawRaised);
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, fRaised);
 		blit.nOpacity = opacity;
 		blit.nAddColor = pCharacter->getColor();
+		blit.hsv = pCharacter->getHSV();
 		DrawTileImage(blit, pDestSurface);
 
 		//Draw character with sword.
@@ -1316,7 +1368,7 @@ void CEditRoomWidget::DrawCharacter(
 	} else {
 		//Draw generic NPC image.
 		const UINT wTileImageNo = GetTileImageForEntity(pCharacter->wType, pCharacter->wO, wFrameIndex);
-		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, wIdentity != M_NONE ? bDrawRaised : false);
+		TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, 0, 0, true, wIdentity != M_NONE ? fRaised : 0.0f);
 		if (bAlt && !pCharacter->IsVisible())
 			blit.nOpacity = 128;
 		DrawTileImage(blit, pDestSurface);
@@ -1512,32 +1564,14 @@ void CEditRoomWidget::HandleMouseUp(
 		}
 */
 
-	switch (this->pRoom->GetTSquare(x2,y2))
+	UINT tTile = this->pRoom->GetTSquare(x2, y2);
+	switch (tTile)
 	{
 		case T_BOMB:
-		{
-			//Show all explosions caused by this bomb.
+		case T_POWDER_KEG:
+			//Show all explosions caused by this explosion.
 			this->pLastLayerEffects->RemoveEffectsOfType(ESHADE);
-
-			CCueEvents CueEvents;
-			CDbRoom room(*this->pRoom);
-			room.InitRoomStats();
-			CCoordStack bombs(x2,y2);
-			room.BombExplode(CueEvents, bombs);
-
-			CCoordSet coords;
-			const CCoord *pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-				CueEvents.GetFirstPrivateData(CID_Explosion));
-			while (pCoord)
-			{
-				coords.insert(pCoord->wX, pCoord->wY);
-				pCoord = DYN_CAST(const CCoord*, const CAttachableObject*,
-						CueEvents.GetNextPrivateData());
-			}
-			static const SURFACECOLOR ExpColor = {224, 160, 0};
-			for (CCoordSet::const_iterator coord=coords.begin(); coord!=coords.end(); ++coord)
-				AddShadeEffect(coord->wX, coord->wY, ExpColor);
-		}
+			HighlightBombExplosion(x2, y2, tTile);
 		return;
 		default: break;
 	}
