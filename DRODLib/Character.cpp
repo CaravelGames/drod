@@ -3024,22 +3024,23 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_ReplaceWithDefault:
 				//Replace the script with the character's default script if possible.
 				//Nothing will happen for non-custom characters.
-				if (this->pCustomChar) {
-					this->commands.clear();
-					this->wCurrentCommandIndex = 0;
-					this->wJumpLabel = 0;
-
-					this->bIfBlock = false;
-					this->bParseIfElseAsCondition = false;
-
-					wTurnCount = 0;
-					++wVarSets; //Count as setting a variable for loop avoidence
-
-					LoadCommands(this->pCustomChar->ExtraVars, this->commands);
-
-					bProcessNextCommand = true;
-					continue; //We don't want to increment the command index
-				}
+				//Currently disabled, as it causes crashes if speech commands are replaced.
+				//if (this->pCustomChar) {
+				//	this->commands.clear();
+				//	this->wCurrentCommandIndex = 0;
+				//	this->wJumpLabel = 0;
+				//
+				//	this->bIfBlock = false;
+				//	this->bParseIfElseAsCondition = false;
+				//
+				//	wTurnCount = 0;
+				//	++wVarSets; //Count as setting a variable for loop avoidence
+				//
+				//	LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+				//
+				//	bProcessNextCommand = true;
+				//	continue; //We don't want to increment the command index
+				//}
 				bProcessNextCommand = true;
 			break;
 
