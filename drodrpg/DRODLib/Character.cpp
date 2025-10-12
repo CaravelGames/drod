@@ -3332,18 +3332,19 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_ReplaceWithDefault:
 				//Replace the script with the character's default script if possible.
 				//Nothing will happen for non-custom characters.
-				if (this->pCustomChar) {
-					this->commands.clear();
-					this->wCurrentCommandIndex = 0;
-					wTurnCount = 0;
-					++wVarSets; //Count as setting a variable for loop avoidence
-					const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
-					LoadCommands(initalCharacter->ExtraVars, commands);
-					bReplacedWithDefault = true;
-				}	else {
-					// Index does not automatically increment after this command is executed
-					++this->wCurrentCommandIndex;
-				}
+				//Currently disabled, as it causes crashes if speech commands are replaced.
+				//if (this->pCustomChar) {
+				//	this->commands.clear();
+				//	this->wCurrentCommandIndex = 0;
+				//	wTurnCount = 0;
+				//	++wVarSets; //Count as setting a variable for loop avoidence
+				//	const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
+				//	LoadCommands(initalCharacter->ExtraVars, commands);
+				//	bReplacedWithDefault = true;
+				//}	else {
+				//	// Index does not automatically increment after this command is executed
+				//	++this->wCurrentCommandIndex;
+				//}
 				bProcessNextCommand = true;
 			break;
 
@@ -3908,7 +3909,7 @@ void CCharacter::Process(
 			default: ASSERT(!"Bad CCharacter command"); break;
 		}
 
-		if (this->wCurrentCommandIndex < this->commands.size() && command.command != CCharacterCommand::CC_ReplaceWithDefault)
+		if (this->wCurrentCommandIndex < this->commands.size())
 			++this->wCurrentCommandIndex;
 
 		//If MoveRel command was used as an If condition, then reset the relative
@@ -6383,7 +6384,7 @@ void CCharacter::SetCurrentGame(
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
-	if (this->pCustomChar && (this->commands.empty() || bReplacedWithDefault))
+	if (this->pCustomChar && this->commands.empty())
 	{
 		if (this->wInitialIdentity == M_NONE) {
 			LoadCommands(this->pCustomChar->ExtraVars, this->commands);
