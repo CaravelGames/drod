@@ -391,8 +391,9 @@ bool BuildUtil::BuildRealTile(CDbRoom& room, const UINT tile, const UINT x, cons
 		{
 			room.Plot(x, y, T_FLOOR);                        //...plot floor first to update the covered o-layer
 		}
+
 		//Update room's trapdoor stats when a trapdoor is removed this special way.
-		else if (!bIsTrapdoor(tile) && bIsTrapdoor(wOldOTile))
+		if (!bIsTrapdoor(tile) && bIsTrapdoor(wOldOTile))
 			room.DecTrapdoor(CueEvents);
 		else if (bIsTrapdoor(tile) && !bIsTrapdoor(wOldOTile)) {
 			room.IncTrapdoor(CueEvents);
