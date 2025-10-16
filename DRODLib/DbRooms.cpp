@@ -3706,6 +3706,47 @@ void CDbRoom::UnlinkMonster(
 }
 
 //*****************************************************************************
+void CDbRoom::ReplaceCharacter(
+//Add a scripted character to the room by replacing another in the monster list
+//Used for implementation of CC_ReplaceWithDefault command.
+	CCharacter* pOldCharacter, CCharacter* pNewCharacter)
+{
+	//It's currently expected that this state is the same for both characters
+	ASSERT(pOldCharacter->IsRequiredToConquer() == pNewCharacter->IsRequiredToConquer());
+
+	//Remove old character from square, flag it as dead and to be unlinked
+	ASSERT(pOldCharacter->bAlive && !pOldCharacter->bUnlink);
+	RemoveMonsterFromTileArray(pOldCharacter);
+	pOldCharacter->bAlive = false;
+	pOldCharacter->bUnlink = true;
+	this->DeadMonsters.push_back(pOldCharacter);
+
+	//Place new character into the monster list directly after the old one
+	if (pOldCharacter->pNext) {
+		pNewCharacter->pNext = pOldCharacter->pNext;
+		pNewCharacter->pNext->pPrevious = pNewCharacter;
+	}
+	pOldCharacter->pNext = pNewCharacter;
+	pNewCharacter->pPrevious = pOldCharacter;
+	if (pOldCharacter == this->pLastMonster) {
+		this->pLastMonster = pNewCharacter;
+	}
+
+	//Update monster targets if required
+	if (pOldCharacter->IsMonsterTarget()){
+		RemoveMonsterEnemy(pOldCharacter);
+	}
+	if (pNewCharacter->IsMonsterTarget()) {
+		this->monsterEnemies.push_back(pNewCharacter);
+	}
+
+	//If the new character is visible, set its square
+	if (pNewCharacter->IsVisible()) {
+		SetMonsterSquare(pNewCharacter);
+	}
+}
+
+//*****************************************************************************
 CMonster* CDbRoom::GetMonsterAtSquare(
 //Gets a monster located within the room at specified coordinates.
 //Supports monsters covering multiple squares.
