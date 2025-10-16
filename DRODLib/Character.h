@@ -312,6 +312,7 @@ private:
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
 	void RefreshBriars();
+	void ReplaceWithDefault(const UINT nLastCommand, CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
@@ -376,6 +377,8 @@ private:
 	bool bIfNot; // should if result be inverted
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
 	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
+
+	bool bIsDefaultScript; //is the character running a default script
 
 	UINT wLastSpeechLineNumber; //used during language import
 	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name

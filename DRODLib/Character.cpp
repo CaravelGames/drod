@@ -206,6 +206,7 @@ CCharacter::CCharacter(
 	, bIfBlock(false)
 	, bIfConditionFailed(false)
 	, bIfNot(false)
+	, bIsDefaultScript(false)
 	, wLastSpeechLineNumber(0)
 
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
@@ -3022,26 +3023,11 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_ReplaceWithDefault:
-				//Replace the script with the character's default script if possible.
-				//Nothing will happen for non-custom characters.
-				//Currently disabled, as it causes crashes if speech commands are replaced.
-				//if (this->pCustomChar) {
-				//	this->commands.clear();
-				//	this->wCurrentCommandIndex = 0;
-				//	this->wJumpLabel = 0;
-				//
-				//	this->bIfBlock = false;
-				//	this->bParseIfElseAsCondition = false;
-				//
-				//	wTurnCount = 0;
-				//	++wVarSets; //Count as setting a variable for loop avoidence
-				//
-				//	LoadCommands(this->pCustomChar->ExtraVars, this->commands);
-				//
-				//	bProcessNextCommand = true;
-				//	continue; //We don't want to increment the command index
-				//}
-				bProcessNextCommand = true;
+				if (bExecuteNoMoveCommands || !this->bProcessing)
+					return; //only replace during actual monster processing
+
+				ReplaceWithDefault(nLastCommand, CueEvents);
+				bProcessNextCommand = !this->bReplaced; //no-op if not replaced
 			break;
 
 			case CCharacterCommand::CC_StartGlobalScript:
@@ -7198,8 +7184,10 @@ void CCharacter::SetCurrentGame(
 
 	//If this NPC is a custom character with no script,
 	//then use the default script for this custom character type.
-	if (this->pCustomChar && this->commands.empty())
+	if (this->pCustomChar && this->commands.empty()) {
 		LoadCommands(this->pCustomChar->ExtraVars, this->commands);
+		this->bIsDefaultScript = true;
+	}
 
 	//Global scripts started without commands should be flagged as done
 	//and removed on room exit
@@ -8315,5 +8303,51 @@ void CCharacter::TurnIntoMonster(
 	}
 
 	this->bReplaced = true;
+	CueEvents.Add(CID_NPCTypeChange);
+}
+
+//*****************************************************************************
+//Replaces the character with one running the default script for the character's
+//indentity.
+//Precondition: the character is currently processing its turn.
+void CCharacter::ReplaceWithDefault(
+	const UINT nLastCommand, CCueEvents& CueEvents)
+{
+	ASSERT(this->bProcessing);
+	//Don't do anything if this isn't a custom character, or if it's already
+	//running a default script
+	if (!this->pCustomChar || this->bIsDefaultScript) {
+		return;
+	}
+
+	CMonster* pNew = this->Clone();
+	ASSERT(pNew);
+	CCharacter* pNewCharacter = dynamic_cast<CCharacter*>(pNew);
+	ASSERT(pNewCharacter);
+
+	//Clear command vector and processing information
+	pNewCharacter->commands.clear();
+	pNewCharacter->wCurrentCommandIndex = 0;
+	pNewCharacter->wJumpLabel = 0;
+	pNewCharacter->bIfBlock = false;
+	pNewCharacter->bIfNot = false;
+	pNewCharacter->bParseIfElseAsCondition = false;
+	LoadCommands(pNewCharacter->pCustomChar->ExtraVars, pNewCharacter->commands);
+
+	//New character neeeds to be flagged and given a new id
+	pNewCharacter->bIsFirstTurn = true;
+	pNewCharacter->bNewEntity = true;
+	pNewCharacter->bIsDefaultScript = true;
+	pNewCharacter->dwScriptID = this->pCurrentGame->pHold->GetNewScriptID();
+
+	//Deal with room monster list
+	CDbRoom* pRoom = this->pCurrentGame->pRoom;
+	pRoom->ReplaceCharacter(this, pNewCharacter);
+
+	//Immediately process the new character
+	pNewCharacter->bProcessing = true;
+	pNewCharacter->Process(nLastCommand, CueEvents);
+	pNewCharacter->bProcessing = false;
+
 	CueEvents.Add(CID_NPCTypeChange);
 }

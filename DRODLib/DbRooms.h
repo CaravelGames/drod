@@ -391,6 +391,7 @@ public:
 	void           LightFuseEnd(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LinkMonster(CMonster *pMonster, const bool bInRoom=true, const bool bReverseRule=false);
 	void           UnlinkMonster(CMonster *pMonster);
+	void           ReplaceCharacter(CCharacter* pOldCharacter, CCharacter* pNewCharacter);
 	bool           Load(const UINT dwLoadRoomID, const bool bQuick=false);
 	CMonster*      LoadMonster(const c4_RowRef& row, CDbHold* &pHold);
 	bool           LoadTiles();
