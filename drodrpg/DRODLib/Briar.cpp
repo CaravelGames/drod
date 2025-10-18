@@ -321,6 +321,8 @@ void CBriars::process(
 			}
 
 			room.Plot(wX,wY,T_BRIAR_LIVE);
+			//Any covered item is destroyed (mist would have already blocked growth)
+			room.coveredTSquares.Remove(wX, wY);
 
 			//If dead tiles are adjacent to the newly-grown piece, they now become alive.
 			for (UINT k=0; k<4; ++k)
