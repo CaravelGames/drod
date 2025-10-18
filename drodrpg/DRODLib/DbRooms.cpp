@@ -4394,6 +4394,15 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 		break;
 		default: break; //nothing else falls
 	}
+	if (bIsTLayerCoveringItem(wTSquare))
+	{
+		//What was under the object?
+		wTSquare = GetTSquare(wX, wY);
+		if (wTSquare == T_SCROLL || bIsCollectable(wTSquare) || bIsEquipment(wTSquare) ||
+			(wTSquare == T_FUSE && bTrapdoorFell))
+			//A CID_ObjectFell was already created for the item, and the front end will animate that.  Just delete the second object.
+			Plot(wX, wY, T_EMPTY);
+	}
 
 	//Player falls?
 	if (this->pCurrentGame && this->pCurrentGame->wTurnNo > 0 && this->pCurrentGame->IsPlayerAt(wX, wY))
