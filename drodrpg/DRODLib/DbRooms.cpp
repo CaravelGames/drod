@@ -4929,12 +4929,13 @@ void CDbRoom::ProcessExplosionSquare(
 		default: break;
 	}
 
-	//Covered mist is destroyed before covering item
-	if (this->coveredTSquares.GetAt(wX, wY) == T_MIST) {
-		this->coveredTSquares.Remove(wX, wY);
-	}
-
 	UINT wTileNo = GetTSquare(wX,wY);
+	// Destroy covering item first, and then deal with anything that was under it.
+	if (bIsTLayerCoveringItem(wTileNo))
+	{
+		Plot(wX, wY, T_EMPTY);
+		wTileNo = GetTSquare(wX, wY);
+	}
 	switch (wTileNo)
 	{
 		case T_OBSTACLE:
