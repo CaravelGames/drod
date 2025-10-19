@@ -768,10 +768,12 @@ const
 		case T_TRAPDOOR: case T_TRAPDOOR2:
 		case T_THINICE:
 		case T_GOO:
-		case T_HOT:
 		case T_FIRETRAP: case T_FIRETRAP_ON:
 			//Anything can be on these.
 			return true;
+		case T_HOT:
+			//Not under mist
+			return wTileNo[1] != T_MIST;
 		case T_FLOOR: case T_FLOOR_M:
 		case T_FLOOR_ROAD: case T_FLOOR_GRASS:
 		case T_FLOOR_DIRT: case T_FLOOR_ALT:
@@ -864,6 +866,13 @@ const
 				return true;
 			break;
 		case T_DIRT1: case T_DIRT3: case T_DIRT5:
+			if (wTileNo[1] == T_ORB || wTileNo[1] == T_MIST || wTileNo[1] == T_BOMB ||
+				wTileNo[1] == T_LIGHT || bIsTLayerCoveringItem(wTileNo[1]) || bIsBriar(wTileNo[1]))
+				return false;
+			if (wTileNo[2] != T_NOMONSTER && wTileNo[2] != M_SEEP &&
+				!bIsMother(wTileNo[2]) && //tarstuff mothers allowed on dirt
+				wTileNo[2] != M_CHARACTER)
+				return false;
 			if (IsObjectReplaceable(wSelectedObject, wTileLayer, wTileNo[wTileLayer]))
 				return true;
 			break;
@@ -938,7 +947,7 @@ const
 			return !bIsMother(wTileNo[2]);
 		case T_MIST:
 			return !(bIsMother(wTileNo[2]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
-				bIsDoor(wTileNo[0]));
+				wTileNo[0] == T_HOT || bIsDoor(wTileNo[0]) || bIsDiggableBlock(wTileNo[0]) || bIsStairs(wTileNo[0]));
 		case T_HEALTH_SM: case T_HEALTH_MED: case T_HEALTH_BIG: case T_HEALTH_HUGE:
 		case T_ATK_UP: case T_ATK_UP3: case T_ATK_UP10:
 		case T_DEF_UP: case T_DEF_UP3: case T_DEF_UP10:
