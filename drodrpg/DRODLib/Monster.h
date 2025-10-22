@@ -286,6 +286,7 @@ public:
 	UINT          wType;          //monster type
 	UINT          wProcessSequence;  //priority in movement sequence
 	bool          bIsFirstTurn;
+	bool          bProcessing; //Is the monster currently taking its turn?
 	MovementType  eMovement;   //movement capability
 	bool          bAlive;  //whether monster is alive/active
 

@@ -6410,6 +6410,41 @@ void CDbRoom::UnlinkMonster(CMonster* pMonster)
 }
 
 //*****************************************************************************
+void CDbRoom::ReplaceCharacter(
+//Add a scripted character to the room by replacing another in the monster list
+//Used for implementation of CC_ReplaceWithDefault command.
+	CCharacter* pOldCharacter, CCharacter* pNewCharacter)
+{
+	//Remove old character from square, flag it as dead
+	ASSERT(pOldCharacter->bAlive);
+	UINT tileNo = ARRAYINDEX(pOldCharacter->wX, pOldCharacter->wY);
+	if (pOldCharacter == this->pMonsterSquares[tileNo])
+		this->pMonsterSquares[tileNo] = NULL;
+
+	pOldCharacter->bAlive = false;
+	this->DeadMonsters.push_back(pOldCharacter);
+
+	//Place new character into the monster list directly after the old one
+	if (pOldCharacter->pNext) {
+		pNewCharacter->pNext = pOldCharacter->pNext;
+		pNewCharacter->pNext->pPrevious = pNewCharacter;
+	}
+	pOldCharacter->pNext = pNewCharacter;
+	pNewCharacter->pPrevious = pOldCharacter;
+	if (pOldCharacter == this->pLastMonster) {
+		this->pLastMonster = pNewCharacter;
+	}
+
+	//If the new character is visible, set its square
+	if (pNewCharacter->IsVisible()) {
+		SetMonsterSquare(pNewCharacter);
+	}
+
+	//Unlink the old character now since we don't do deferred unlinking in RPG
+	UnlinkMonster(pOldCharacter);
+}
+
+//*****************************************************************************
 bool CDbRoom::UnpackTileLights(
 //Unpacks tile lights from database (version 3.0) into a format that the game will use.
 //This routine will fail if the data is incompatible with the game engine.

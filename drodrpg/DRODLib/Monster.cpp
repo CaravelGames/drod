@@ -81,6 +81,7 @@ CMonster::CMonster(
 	, wType(wSetType)
 	, wProcessSequence(wSetProcessSequence)
 	, bIsFirstTurn(false)
+	, bProcessing(false)
 	, eMovement(eMovement)
 	, bAlive(true)
 	, HP(0), ATK(0), DEF(0), GOLD(0), XP(0)
@@ -105,7 +106,7 @@ void CMonster::Clear()
 	this->pPrevious=this->pNext=NULL;
 	this->wType=this->wX=this->wY=this->wO=this->wProcessSequence=0;
 	this->wPrevX = this->wPrevY = this->wPrevO = 0;
-	this->bIsFirstTurn=false;
+	this->bIsFirstTurn = this->bProcessing = false;
 	this->bAlive = true;
 	this->ATK = this->DEF = this->GOLD = this->HP = this->XP = 0;
 	this->bEggSpawn = false;

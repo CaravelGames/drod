@@ -431,6 +431,7 @@ public:
 	void           TurnOffLight(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           TurnOnLight(const UINT wX, const UINT wY, CCueEvents& CueEvents);
 	void           UnlinkMonster(CMonster *pMonster);
+	void           ReplaceCharacter(CCharacter* pOldCharacter, CCharacter* pNewCharacter);
 	bool           UnpackSquares(const BYTE *pSrc, const UINT dwSrcSize);
 	virtual bool   Update();
 //	void           UpdatePathMapAt(const UINT wX, const UINT wY);

@@ -142,7 +142,6 @@ const UINT MAX_SATURATION = 1000;
 #define FiretrapImmuneStr "FiretrapImmune"
 #define MistImmuneStr "MistImmune"
 #define WallDwellingStr "WallDwelling"
-#define ReplacedWithDefaultStr "ReplacedWithDefault"
 
 #define SKIP_WHITESPACE(str, index) while (iswspace(str[index])) ++index
 
@@ -290,7 +289,7 @@ CCharacter::CCharacter(
 	, bIfBlock(false)
 	, eachAttackLabelIndex(NO_LABEL), eachDefendLabelIndex(NO_LABEL), eachUseLabelIndex(NO_LABEL)
 	, eachVictoryLabelIndex(NO_LABEL)
-	, bReplacedWithDefault(false)
+	, bIsDefaultScript(false)
 	, customSpeechColor(0)
 	, wLastSpeechLineNumber(0)
 
@@ -3330,22 +3329,11 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_ReplaceWithDefault:
-				//Replace the script with the character's default script if possible.
-				//Nothing will happen for non-custom characters.
-				//Currently disabled, as it causes crashes if speech commands are replaced.
-				//if (this->pCustomChar) {
-				//	this->commands.clear();
-				//	this->wCurrentCommandIndex = 0;
-				//	wTurnCount = 0;
-				//	++wVarSets; //Count as setting a variable for loop avoidence
-				//	const HoldCharacter* initalCharacter = pGame->pHold->GetCharacter(this->wInitialIdentity);
-				//	LoadCommands(initalCharacter->ExtraVars, commands);
-				//	bReplacedWithDefault = true;
-				//}	else {
-				//	// Index does not automatically increment after this command is executed
-				//	++this->wCurrentCommandIndex;
-				//}
-				bProcessNextCommand = true;
+				if (bExecuteNoMoveCommands || !this->bProcessing)
+					return; //only replace during actual monster processing
+
+				ReplaceWithDefault(nLastCommand, CueEvents);
+				bProcessNextCommand = !this->bReplaced; //no-op if not replaced
 			break;
 
 			case CCharacterCommand::CC_If:
@@ -6394,6 +6382,8 @@ void CCharacter::SetCurrentGame(
 			const HoldCharacter* initalCharacter = this->pCurrentGame->pHold->GetCharacter(this->wInitialIdentity);
 			LoadCommands(initalCharacter->ExtraVars, commands);
 		}
+
+		this->bIsDefaultScript = true;
 	}
 }
 
@@ -6728,8 +6718,6 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Custom tooltip
 	this->customDescription = vars.GetVar(TooltipStr, this->customDescription.c_str());
-
-	this->bReplacedWithDefault = vars.GetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************
@@ -6926,10 +6914,6 @@ const
 		vars.SetVar(scriptDoneStr, this->bScriptDone);
 
 	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
-
-	//Has the script of the character been replaced by its default script?
-	if (this->bReplacedWithDefault)
-		vars.SetVar(ReplacedWithDefaultStr, this->bReplacedWithDefault);
 }
 
 //*****************************************************************************
@@ -7297,4 +7281,49 @@ void CCharacter::TurnIntoMonster(
 
 	this->bReplaced = true;
 //	CueEvents.Add(CID_NPCTypeChange);
+}
+
+//*****************************************************************************
+//Replaces the character with one running the default script for the character's
+//indentity.
+//Precondition: the character is currently processing its turn.
+void CCharacter::ReplaceWithDefault(
+	const UINT nLastCommand, CCueEvents& CueEvents)
+{
+	ASSERT(this->bProcessing);
+	//Don't do anything if this isn't a custom character, or if it's already
+	//running a default script
+	if (!this->pCustomChar || this->bIsDefaultScript) {
+		return;
+	}
+
+	CMonster* pNew = this->Clone();
+	ASSERT(pNew);
+	CCharacter* pNewCharacter = dynamic_cast<CCharacter*>(pNew);
+	ASSERT(pNewCharacter);
+
+	//Clear command vector and processing information
+	pNewCharacter->commands.clear();
+	pNewCharacter->wCurrentCommandIndex = 0;
+	pNewCharacter->wJumpLabel = 0;
+	pNewCharacter->bIfBlock = false;
+	pNewCharacter->bParseIfElseAsCondition = false;
+	pNewCharacter->jumpStack.clear();
+	LoadCommands(pNewCharacter->pCustomChar->ExtraVars, pNewCharacter->commands);
+
+	//New character neeeds to be flagged and given a new id
+	pNewCharacter->bIsFirstTurn = true;
+	pNewCharacter->bIsDefaultScript = true;
+	pNewCharacter->dwScriptID = this->pCurrentGame->pHold->GetNewScriptID();
+
+	//Deal with room monster list
+	CDbRoom* pRoom = this->pCurrentGame->pRoom;
+	pRoom->ReplaceCharacter(this, pNewCharacter);
+
+	//Immediately process the new character
+	pNewCharacter->bProcessing = true;
+	pNewCharacter->Process(nLastCommand, CueEvents);
+	pNewCharacter->bProcessing = false;
+
+	//CueEvents.Add(CID_NPCTypeChange);
 }
