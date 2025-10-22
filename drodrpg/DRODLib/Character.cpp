@@ -1005,8 +1005,10 @@ bool CCharacter::setPredefinedVarInt(const UINT varIndex, const UINT val, CCueEv
 			switch (varIndex)
 			{
 				case (UINT)ScriptVars::P_HP:
-					if (int(newVal) <= 0)
+					if (int(newVal) <= 0) {
 						CueEvents.Add(CID_MonsterKilledPlayer); //player died
+						newVal = 0;
+					}
 					st.setVar(ScriptVars::Predefined(varIndex), newVal);
 				break;
 
