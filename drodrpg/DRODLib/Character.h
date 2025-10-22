@@ -277,6 +277,7 @@ private:
 	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
+	void ReplaceWithDefault(const UINT nLastCommand, CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 
@@ -360,8 +361,6 @@ private:
 	int  eachAttackLabelIndex, eachDefendLabelIndex, eachUseLabelIndex;
 	int  eachVictoryLabelIndex; //if set, jump script execution here on each combat victory
 
-	bool bReplacedWithDefault; //If a local script has been replaced by the NPC's default script
-
 	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
 
 	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
@@ -369,6 +368,8 @@ private:
 	UINT wLastSpeechLineNumber; //used during language import
 
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
+
+	bool bIsDefaultScript; //is the character running a default script
 
 	//Predefined vars.
 	UINT color, sword, hue, saturation; //cosmetic details

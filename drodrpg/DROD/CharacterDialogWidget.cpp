@@ -4397,6 +4397,7 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_SetPlayerSword:
 		case CCharacterCommand::CC_Speech:
 		case CCharacterCommand::CC_TurnIntoMonster:
+		case CCharacterCommand::CC_ReplaceWithDefault:
 		case CCharacterCommand::CC_ClearArrayVar:
 		case CCharacterCommand::CC_ResetOverrides:
 		case CCharacterCommand::CC_SetMapIcon:
@@ -4522,7 +4523,6 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 		case CCharacterCommand::CC_WaitForNotMonster:
 		case CCharacterCommand::CC_WaitForCharacter:
 		case CCharacterCommand::CC_WaitForNotCharacter:
-		case CCharacterCommand::CC_ReplaceWithDefault:
 			wstr += wszAsterisk;
 			break;
 		default:
@@ -4637,7 +4637,7 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ClearArrayVar, g_pTheDB->GetMessageText(MID_ClearArrayVar));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Speech, g_pTheDB->GetMessageText(MID_Speech));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_TurnIntoMonster, g_pTheDB->GetMessageText(MID_TurnIntoMonster));
-	//this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, g_pTheDB->GetMessageText(MID_ReplaceWithDefault));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_ReplaceWithDefault, g_pTheDB->GetMessageText(MID_ReplaceWithDefault));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_ResetOverrides, g_pTheDB->GetMessageText(MID_ResetOverrides));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_Wait, g_pTheDB->GetMessageText(MID_WaitTurns));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_WaitForArrayEntry, g_pTheDB->GetMessageText(MID_WaitForArrayEntry));

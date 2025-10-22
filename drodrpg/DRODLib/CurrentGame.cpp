@@ -5724,6 +5724,8 @@ void CCurrentGame::ProcessMonsters(
 
 		this->pRoom->ClearMovedInfo();
 
+		pMonster->bProcessing = true;
+
 		//Platforms fall when mimics are done moving.
 		const bool bIsMimic = pMonster->wType == M_MIMIC;
 		if (!bMimicsMoved && !bIsMimic)
@@ -5871,6 +5873,8 @@ void CCurrentGame::ProcessMonsters(
 
 		// Kegs stabbed by pushes should explode after each monster
 		this->pRoom->ExplodeStabbedPowderKegs(CueEvents);
+
+		pMonster->bProcessing = false;
 	}
 
 	//Run global scripts.
