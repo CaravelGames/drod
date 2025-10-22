@@ -7840,6 +7840,7 @@ void CCurrentGame::SetPlayerToRoomStart()
 //	this->checkpointTurns.clear();
 	this->CompletedScriptsPending.clear();
 	this->stats = this->statsAtRoomStart;
+	this->scriptArrays = this->scriptArraysAtRoomStart;
 
 	RemoveMappedRoomsNotIn(this->roomsExploredAtRoomStart, this->roomsMappedAtRoomStart,
 			this->PreviouslyExploredRooms);
@@ -7917,6 +7918,7 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->wStartRoomY = this->pPlayer->wY;
 	PackData(this->stats);
 	this->statsAtRoomStart = this->stats;
+	this->scriptArraysAtRoomStart = this->scriptArrays;
 	this->roomsExploredAtRoomStart = GetExploredRooms();
 	this->roomsMappedAtRoomStart = GetMappedRoomsWithState();
 	this->roomsMappedAtRoomStart[this->pRoom->dwRoomID] = MapState::Explored;
