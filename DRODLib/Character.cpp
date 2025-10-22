@@ -8332,6 +8332,7 @@ void CCharacter::ReplaceWithDefault(
 	pNewCharacter->bIfBlock = false;
 	pNewCharacter->bIfNot = false;
 	pNewCharacter->bParseIfElseAsCondition = false;
+	pNewCharacter->jumpStack.clear();
 	LoadCommands(pNewCharacter->pCustomChar->ExtraVars, pNewCharacter->commands);
 
 	//New character neeeds to be flagged and given a new id
