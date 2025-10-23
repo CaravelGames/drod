@@ -63,6 +63,7 @@ const UINT MAX_SATURATION = 1000;
 #define scriptDoneStr "ScriptDone"
 #define visibleStr "visible"
 #define equipTypeStr "equipType"
+#define jumpStackStr "jumpStack"
 
 #define EachAttackStr "EachAttack"
 #define EachDefendStr "EachDefend"
@@ -6720,6 +6721,20 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 
 	//Custom tooltip
 	this->customDescription = vars.GetVar(TooltipStr, this->customDescription.c_str());
+
+	//Jump stack
+	if (vars.DoesVarExist(jumpStackStr)) {
+		BYTE* buffer = (BYTE*)vars.GetVar(jumpStackStr, (const void*)(NULL));
+		ASSERT(buffer);
+
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			UINT line = readBpUINT(buffer, index);
+			this->jumpStack.push_back(line);
+			--size;
+		}
+	}
 }
 
 //*****************************************************************************
@@ -6916,6 +6931,18 @@ const
 		vars.SetVar(scriptDoneStr, this->bScriptDone);
 
 	vars.SetVar(startLineStr, this->wCurrentCommandIndex);
+
+	//Jump stack
+	if (!this->jumpStack.empty()) {
+		string buffer;
+		CDbSavedGame::writeBpUINT(buffer, this->jumpStack.size());
+		for (vector<UINT>::const_iterator it = this->jumpStack.cbegin();
+			it != this->jumpStack.cend(); ++it) {
+			CDbSavedGame::writeBpUINT(buffer, *it);
+		}
+
+		vars.SetVar(jumpStackStr, buffer.c_str());
+	}
 }
 
 //*****************************************************************************
