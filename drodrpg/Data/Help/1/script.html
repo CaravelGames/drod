@@ -700,7 +700,7 @@ The variable names are case-insensitive.
   </tr><tr>
     <td>_MySaturation</td><td>NPC's color strength modifier (<a href="#mysaturation">*</a>)</td><td>0</td><td>0,1000</td>
   </tr><tr>
-    <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,9</td>
+    <td>_MySword</td><td>NPC's sword type (<a href="#mysword">*</a>)</td><td>-1 (use base type)</td><td>-1,13</td>
 	</tr><tr>
     <td>_MyWeakness</td><td>NPC's custom weakness type (<a href="#myweakness">*</a>)</td><td></td><td>Text</td>
   </tr><tr>
@@ -911,8 +911,8 @@ The variable names are case-insensitive.
   sword the NPC wields.  This affects the NPC's appearance only, and does
   not alter the NPC's ATK rating.
   See <a href="equipment.html">Equipment</a> for
-  available choices, numbered in order of appearance.
-  A value of 0 indicates no sword.
+  available choices.
+  A value of 0 indicates no sword, and -1 sets it back to that character's default.
 </p>
 <p><a name="myweakness"><b>*_MyWeakness</b></a> - Allows a custom weakness to be set for a monster or equipment. A semi-colon can be used to split the weakness into multiple weaknessess that are checked separately. A weapon or accessory is strong (i.e. player gets x2 ATK) against a monster if the two have a matching _MyWeakness value. A shield can also be strong against a monster, and will give x2 DEF against attacks from it. The comparison is case-sensitive, so for example the values "Eyeball" and "eyeball" would not be considered the same.
 </p>
