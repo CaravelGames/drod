@@ -1820,7 +1820,7 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 
 #ifndef STEAMBUILD
 	//Load graphics/music into hold for inclusion in export.
-	if (pHold->status == CDbHold::GetOfficialHoldStatus())
+	if (CDbHold::IsOfficialHold(pHold->status))
 		ImportMedia();
 #endif
 
