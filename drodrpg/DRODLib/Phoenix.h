@@ -40,6 +40,7 @@ public:
 	CPhoenix(CCurrentGame *pSetCurrentGame = NULL);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CPhoenix);
 	
+	virtual bool DamagedByFiretraps() const override { return false; }
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 };
 
