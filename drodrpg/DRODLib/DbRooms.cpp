@@ -6124,6 +6124,10 @@ void CDbRoom::ActivateFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEven
 			Plot(wX, wY, T_EMPTY);
 			CueEvents.Add(CID_CrateDestroyed, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
 		break;
+		case T_BRIAR_SOURCE: case T_BRIAR_DEAD: case T_BRIAR_LIVE:
+			Plot(wX, wY, T_EMPTY);
+			CueEvents.Add(CID_CutBriar, new CMoveCoord(wX, wY, NO_ORIENTATION), true);
+		break;
 	}
 
 	//Damage
