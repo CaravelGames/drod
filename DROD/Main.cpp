@@ -158,6 +158,14 @@ bool bWindowsDataFilesInUserSpecificDir = false;
 static const WCHAR wszUniqueResFile[] = {
 #ifdef STEAMBUILD_TSS_APP
     We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(KDD_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(JTRH_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('j'),We('t'),We('r'),We('h'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(TCB_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('c'),We('b'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(GATEB_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
 #else
     We('d'),We('r'),We('o'),We('d'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
 #endif
@@ -276,6 +284,18 @@ int main(int argc, char *argv[])
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
 	gameName = wszDRODTSS;
+#elif defined(KDD_STANDALONE)
+	const WCHAR wszDRODKDD[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We(0) };
+	gameName = wszDRODKDD;
+#elif defined(JTRH_STANDALONE)
+	const WCHAR wszDRODJtRH[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('j'),We('t'),We('r'),We('h'),We(0) };
+	gameName = wszDRODJtRH;
+#elif defined(TCB_STANDALONE)
+	const WCHAR wszDRODTCB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('c'),We('b'),We(0) };
+	gameName = wszDRODTCB;
+#elif defined(GATEB_STANDALONE)
+	const WCHAR wszDRODGatEB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We(0) };
+	gameName = wszDRODGatEB;
 #endif
 	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo);
 	if (CFiles::bad_data_path_file) {
