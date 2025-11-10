@@ -2057,10 +2057,10 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-	string url = "http://www.caravelgames.com/buyTSS.html";
+	string url = "https://caravelgames.com/buyTSS.html";
 #ifdef STEAMBUILD
 	const CDbHold::HoldStatus holdStatus = CDbHolds::GetNewestInstalledOfficialHoldStatus();
-	url = "http://store.steampowered.com/app/";
+	url = "https://store.steampowered.com/app/";
 	switch (holdStatus) {
 		case CDbHold::KDD: url += "422180"; break;
 		case CDbHold::JtRH: url += "422181"; break;
@@ -2069,14 +2069,20 @@ void CDrodScreen::GoToBuyNow()
 		case CDbHold::GatEB: url += "314330"; break;
 		case CDbHold::TSS: url += "351320"; break;
 	}
+#elif defined(KDD_STANDALONE)
+	url = "https://caravelgames.com/buyKDD.html";
+#elif defined(JTRH_STANDALONE)
+	url = "https://caravelgames.com/buyJtRH.html";
+#elif defined(TCB_STANDALONE)
+	url = "https://caravelgames.com/buyTCB.html";
+#elif defined(GATEB_STANDALONE)
+	url = "https://caravelgames.com/buyGatEB.html";
 #elif defined(WIN32)
 	//use default
 #elif defined(__linux__)
-	url = "http://www.caravelgames.com/buyTSSLinux.html";
-#elif defined(__FreeBSD__)
-	url = "http://www.caravelgames.com/buyTSSFreeBSD.html";
+	url = "https://caravelgames.com/buyTSSLinux.html";
 #elif defined(__APPLE__)
-	url = "http://www.caravelgames.com/buyTSSOSX.html";
+	url = "https://caravelgames.com/buyTSSOSX.html";
 #else
 #	error Add a buy link for this platform ?
 #endif
@@ -2309,7 +2315,15 @@ MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 //        i.e., if the hold has at least this many level entrances defined, this is the full (registered) hold
 UINT CDrodScreen::EntrancesInFullVersion()
 {
+#if defined(KDD_STANDALONE) || defined(JTRH_STANDALONE)
+	return 25;
+#elif defined(TCB_STANDALONE)
+	return 45;
+#elif defined(GATEB_STANDALONE)
+	return 30;
+#else
 	return 50;
+#endif
 }
 
 //*****************************************************************************

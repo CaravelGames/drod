@@ -1758,7 +1758,17 @@ CDbHold::~CDbHold()
 //Returns: the official hold status code for this game release
 CDbHold::HoldStatus CDbHold::GetOfficialHoldStatus()
 {
+#ifdef KDD_STANDALONE
+	return KDD;
+#elif defined (JTRH_STANDALONE)
+	return JtRH;
+#elif defined (TCB_STANDALONE)
+	return TCB;
+#elif defined (GATEB_STANDALONE)
+	return GatEB;
+#else
 	return TSS;
+#endif
 }
 
 //*****************************************************************************
