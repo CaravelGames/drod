@@ -129,7 +129,17 @@ ULONGLONG qwAvailablePhysical=0, qwAvailableTotal=0;
 CFiles * m_pFiles = NULL;
 unsigned long dwInitAORefCount = 0;
 
+#ifdef KDD_STANDALONE
+#define GAMETITLE "DROD: King Dugan's Dungeon"
+#elif defined(JTRH_STANDALONE)
+#define GAMETITLE "DROD: Journey to Rooted Hold"
+#elif defined(TCB_STANDALONE)
+#define GAMETITLE "DROD: The City Beneath"
+#elif defined(GATEB_STANDALONE)
+#define GAMETITLE "DROD: Gunthro and the Epic Blunder"
+#else
 #define GAMETITLE "DROD 5"
+#endif
 
 #ifndef __linux__  // the linux build thing has build profiles; use the beta profile if you want to enable beta
 #ifndef BETA
