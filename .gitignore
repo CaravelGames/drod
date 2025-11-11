@@ -27,6 +27,7 @@ DROD/Release/
 DROD/Release-Temp/
 DROD/CaravelRelease/
 DROD/CaravelRelease-Temp/
+DRODLib/Debug/
 DRODLib/Debug-Temp/
 DRODLib/DebugVS2008/
 DRODLib/DebugVS2013/
@@ -62,6 +63,9 @@ FrontEndLib/Release/
 FrontEndLib/Release-Temp/
 FrontEndLib/CaravelRelease/
 FrontEndLib/CaravelRelease-Temp/
+*/BuildDats/
+*/SteamBuildDats/
+*/*-Temp/
 Master/Linux/build.*
 Master/Linux/builds/
 Master/Linux/drod-sdl2.sublime-*
@@ -94,6 +98,9 @@ drodrpg/DRODUtil/Release/
 drodrpg/DRODUtil/Release-Temp/
 drodrpg/DRODUtil/CaravelRelease/
 drodrpg/DRODUtil/CaravelRelease-Temp/
+drodrpg/*/BuildDats/
+drodrpg/*/SteamBuildDats/
+drodrpg/*/*-Temp/
 
 # Various things we don't want.
 **/.vs/
@@ -114,6 +121,7 @@ drodrpg/DRODUtil/CaravelRelease-Temp/
 **/*.opensdf
 **/*.vspx
 **/*.tlog
+**/*.pdb
 
 # OS X specific files/folders
 Master/Darwin/custom/
