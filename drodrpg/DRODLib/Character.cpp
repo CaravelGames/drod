@@ -403,7 +403,7 @@ void CCharacter::ChangeHoldForCommands(
 				case CCharacterCommand::CC_CountArrayEntries:
 				{
 					//Update var refs.
-					UINT wRef = c.command == CCharacterCommand::CC_VarSetAt ? c.w : c.x;
+					UINT wRef = c.getVarID();
 					if (wRef >= (UINT)ScriptVars::FirstPredefinedVar)
 						break; //predefined var IDs remain the same
 
@@ -417,11 +417,7 @@ void CCharacter::ChangeHoldForCommands(
 					}
 					//Update the var ID to match the ID of the var with this
 					//name in the destination hold.
-					if (c.command == CCharacterCommand::CC_VarSetAt) {
-						c.w = uVarID;
-					} else {
-						c.x = uVarID;
-					}
+					c.setVarID(uVarID);
 				}
 				break;
 				case CCharacterCommand::CC_AmbientSound:
