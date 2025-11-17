@@ -1366,12 +1366,14 @@ void CMapWidget::DrawMapSurfaceFromRoom(
 	if (this->pCurrentGame)
 	{
 		pExpRoom = this->pCurrentGame->getExploredRoom(pRoom->dwRoomID);
-		if (pExpRoom)
-			drawState = max(pExpRoom->mapState, this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
+		if (this->pCurrentGame->pRoom->dwRoomID == pRoom->dwRoomID)
+		{
+			drawState = MapState::Explored;
+		}
 		else
 		{
-			if (this->pCurrentGame->pRoom->dwRoomID == pRoom->dwRoomID)
-				drawState = MapState::Explored;
+			if (pExpRoom)
+				drawState = max(pExpRoom->mapState, this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID));
 			else
 				drawState = this->pCurrentGame->GetStoredMapStateForRoom(pRoom->dwRoomID);
 		}
