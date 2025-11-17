@@ -1504,7 +1504,7 @@ void CEditRoomScreen::ClickRoom()
 			const UINT wOTileNo = this->pRoom->GetOSquare(wX,wY);
 			const UINT wTSquare = this->pRoom->GetTSquare(wX,wY);
 			const UINT wFSquare = this->pRoom->GetFSquare(wX,wY);
-			if (wTSquare == T_ORB || wOTileNo == T_PRESSPLATE)
+			if (wTSquare == T_ORB || (wOTileNo == T_PRESSPLATE && !bIsAnyArrow(wFSquare)))
 			{
 				//Start editing this orb/pressure plate.
 				COrbData *pNewOrb;
