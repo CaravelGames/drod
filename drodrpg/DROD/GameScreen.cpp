@@ -8531,6 +8531,19 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 	this->pTempRoomWidget->Show();
 
 	pTempRoomWidget->DisplayPersistingImageOverlays(CueEvents);
+
+	{
+		//Draw monster beams
+		CMonster* pMonster = pRoom->pFirstMonster;
+		while (pMonster) {
+			if (pMonster->HasRayGun()) {
+				pTempRoomWidget->AddZombieGazeEffect(pMonster);
+			}
+
+			pMonster = pMonster->pNext;
+		}
+	}
+
 	this->pTempRoomWidget->Paint();
 	ShowRoomCoords(this->pTempRoomWidget->pRoom);
 	UpdateRect();
@@ -8633,6 +8646,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 		//Update music (switch song or continue music fade if one is in progress).
 		g_pTheSound->UpdateMusic();
 		SDL_Delay(1); //be nice to the CPU
+		RequestPaint();
 	}
 
 	this->pTempRoomWidget->Hide();
