@@ -1080,6 +1080,10 @@ void CMonster::SpawnEgg(CCueEvents& CueEvents)
 	{
 		CMonster* m = const_cast<CCurrentGame*>(this->pCurrentGame)->AddNewEntity(
 			CueEvents, spawnID, egg->wX, egg->wY, S, true);
+		if (!m) {
+			continue;
+		}
+
 		m->bEggSpawn = true;
 		UINT wType = m->GetIdentity();
 		if (wType == M_REGG) {
