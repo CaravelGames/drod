@@ -238,6 +238,22 @@ CCurrentGame *CDb::GetNewTestGame(
 			pCCG=NULL;
 		}
 	}
+
+	//Activate any custom equipment
+	const PlayerStats& stats = pCCG->pPlayer->st;
+	if (bIsCustomEquipment(stats.sword)) {
+		CCueEvents ignore;
+		pCCG->activateCustomEquipment(ignore, ScriptFlag::Weapon, stats.sword);
+	}
+	if (bIsCustomEquipment(stats.shield)) {
+		CCueEvents ignore;
+		pCCG->activateCustomEquipment(ignore, ScriptFlag::Armor, stats.shield);
+	}
+	if (bIsCustomEquipment(stats.accessory)) {
+		CCueEvents ignore;
+		pCCG->activateCustomEquipment(ignore, ScriptFlag::Accessory, stats.accessory);
+	}
+
 	return pCCG;
 }
 
