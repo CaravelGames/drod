@@ -6322,14 +6322,14 @@ void CCharacter::RestartScript()
 	this->DEF = 0;
 	this->GOLD = 0;
 	this->XP = 0;
-	this->color = 0;
-	this->hue = 0;
-	this->saturation = 0;
 	this->sword = NPC_DEFAULT_SWORD;
 
 	//These values are reloaded as they were on setup.
 	this->wLogicalIdentity = this->ExtraVars.GetVar(idStr, this->wLogicalIdentity);
 	this->bVisible = this->ExtraVars.GetVar(visibleStr, this->bVisible);
+	this->color = this->ExtraVars.GetVar(ColorStr, this->color);
+	this->hue = this->ExtraVars.GetVar(HueStr, this->hue);
+	this->saturation = this->ExtraVars.GetVar(SaturationStr, this->saturation);
 }
 
 //*****************************************************************************
