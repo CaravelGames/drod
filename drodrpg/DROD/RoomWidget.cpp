@@ -7304,9 +7304,12 @@ void CRoomWidget::DrawTileImageWithoutLight(
 		BlitRect.x, BlitRect.y, BlitRect.w, BlitRect.h,
 		pDestSurface, true, blit.nOpacity);
 
+	//If the blit was clipped, the color mask will be misaligned. Adjust the position
+	//and offset to compensate.
+	int yAdjust = bClipped ? raisedPixels : 0;
 	AddColorToTile(pDestSurface, blit.nAddColor, blit.hsv, blit.wTileImageNo,
-		nPixelX, nPixelY,
-		BlitRect.w, BlitRect.h);
+		nPixelX, nPixelY - yAdjust,
+		BlitRect.w, BlitRect.h, 0, yAdjust);
 
 	if (!blit.bDirtyTiles)
 	{
