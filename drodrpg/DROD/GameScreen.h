@@ -97,6 +97,7 @@ protected:
 	virtual void   DisplayChatText(const WSTRING& text, const SDL_Color& color);
 	void           DisplayPersistentEffects();
 	void           DrawCurrentTurn();
+	void           DrawMonsterEffects(CDbRoom* pRoom, CRoomWidget* pRoomWidget);
 	WSTRING        GetEquipmentPropertiesText(const UINT eCommand);
 	void           GotoHelpPage();
 	virtual bool   IsDoubleClickable() const {return false;}

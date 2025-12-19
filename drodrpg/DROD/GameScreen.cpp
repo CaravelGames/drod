@@ -8530,19 +8530,9 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 	this->pRoomWidget->Hide();
 	this->pTempRoomWidget->Show();
 
-	pTempRoomWidget->DisplayPersistingImageOverlays(CueEvents);
+	this->pTempRoomWidget->DisplayPersistingImageOverlays(CueEvents);
 
-	{
-		//Draw monster beams
-		CMonster* pMonster = pRoom->pFirstMonster;
-		while (pMonster) {
-			if (pMonster->HasRayGun()) {
-				pTempRoomWidget->AddZombieGazeEffect(pMonster);
-			}
-
-			pMonster = pMonster->pNext;
-		}
-	}
+	DrawMonsterEffects(pRoom, this->pTempRoomWidget);
 
 	this->pTempRoomWidget->Paint();
 	ShowRoomCoords(this->pTempRoomWidget->pRoom);
@@ -8667,6 +8657,20 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 }
 
 //*****************************************************************************
+//Draw monster beams
+void CGameScreen::DrawMonsterEffects(CDbRoom* pRoom, CRoomWidget* pRoomWidget)
+{
+	CMonster* pMonster = pRoom->pFirstMonster;
+	while (pMonster) {
+		if (pMonster->HasRayGun()) {
+			pRoomWidget->AddZombieGazeEffect(pMonster);
+		}
+
+		pMonster = pMonster->pNext;
+	}
+}
+
+//*****************************************************************************
 void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 {
 	ASSERT(this->pTempRoomWidget);
@@ -8708,6 +8712,7 @@ void CGameScreen::DisplayAdjacentTempRoom(const UINT direction)
 		}
 		this->pTempRoomWidget->ShowPlayer(bShowPlayer);
 		this->pTempRoomWidget->ShowRoomTransition(direction, this->sCueEvents, bShowPlayer);
+		DrawMonsterEffects(pTempGame->pRoom, this->pTempRoomWidget);
 		this->pTempRoomWidget->Paint();
 		ShowRoomCoords(this->pTempRoomWidget->pRoom);
 		UpdateRect();
