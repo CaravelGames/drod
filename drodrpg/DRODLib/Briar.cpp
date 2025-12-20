@@ -268,6 +268,7 @@ void CBriars::process(
 				case T_TUNNEL_N: case T_TUNNEL_S: case T_TUNNEL_E: case T_TUNNEL_W:
 				case T_WATER: case T_PLATFORM_W:
 				case T_PLATFORM_P:
+				case T_THINICE: case T_FIRETRAP: case T_FIRETRAP_ON: case T_MISTVENT:
 				break;
 
 				//Can't grow onto anything else.
