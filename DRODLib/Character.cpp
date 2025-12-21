@@ -5192,26 +5192,26 @@ bool CCharacter::IsOpenTileAt(
 		switch (wMonsterType) {
 		case M_HALPH:
 		case M_HALPH2:
-			return ((pflags & ScriptFlag::HALPH) == 0);
+			return ((pflags & ScriptFlag::HALPH) != 0);
 		case M_CHARACTER:
-			return ((pflags & ScriptFlag::NPC) == 0);
+			return ((pflags & ScriptFlag::NPC) != 0);
 		case M_MIMIC:
 		case M_DECOY:
 		case M_CLONE:
 		case M_TEMPORALCLONE:
-			return ((pflags & ScriptFlag::PDOUBLE) == 0);
+			return ((pflags & ScriptFlag::PDOUBLE) != 0);
 		case M_SLAYER:
 		case M_SLAYER2:
-			return ((pflags & ScriptFlag::SLAYER) == 0);
+			return ((pflags & ScriptFlag::SLAYER) != 0);
 		case M_STALWART:
 		case M_STALWART2:
-			return ((pflags & ScriptFlag::STALWART) == 0);
+			return ((pflags & ScriptFlag::STALWART) != 0);
 		case M_FLUFFBABY:
 			if ((pflags & ScriptFlag::PUFFBABY) != 0)
 				break;
 			// Fall through to default case if puff isn't excluded
 		default:
-			return ((pflags & ScriptFlag::MONSTER) == 0);
+			return ((pflags & ScriptFlag::MONSTER) != 0);
 			break;
 		}
 	}
