@@ -4659,7 +4659,9 @@ void CRoomWidget::DrawTLayerTile(
 		} else if (ti.t != TI_TEMPTY) {
 			DrawRoomTile(ti.t);
 		}
-		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+
+		if (bAddLight)
+			AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
 	}
 }
 #undef DrawRoomTile
