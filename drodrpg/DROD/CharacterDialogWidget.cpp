@@ -1683,7 +1683,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 			F_Small, g_pTheDB->GetMessageText(MID_VarNameText)));
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_ARRAYVAR_TEXTLABEL,
-		X_VARTEXTLABEL, Y_VARTEXTLABEL, CX_VARTEXTLABEL, CY_VARTEXTLABEL,
+		X_VARTEXTLABEL, Y_VARTEXTLABEL, CX_VARTEXTLABEL * 2, CY_VARTEXTLABEL,
 		F_Small, g_pTheDB->GetMessageText(MID_ArrayVarNameExpression)));
 
 	this->pVarListBox = new CListBoxWidget(TAG_VARLIST,
