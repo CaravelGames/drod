@@ -9141,7 +9141,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		}
 
 		UINT tempIndex = 0;
-		pCommand->w = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		pCommand->w = findTextMatch(this->pArrayVarListBox, varName.c_str(), tempIndex, bFound);
 		if (!bFound)
 		{
 			pCommand->w = AddVar(varName.c_str());
@@ -9172,7 +9172,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		}
 
 		UINT tempIndex = 0;
-		pCommand->x = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		pCommand->x = findTextMatch(this->pArrayVarListBox, varName.c_str(), tempIndex, bFound);
 		if (!bFound)
 		{
 			pCommand->x = AddVar(varName.c_str());
@@ -9198,7 +9198,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		}
 
 		UINT tempIndex = 0;
-		pCommand->x = findTextMatch(this->pVarListBox, varName.c_str(), tempIndex, bFound);
+		pCommand->x = findTextMatch(this->pArrayVarListBox, varName.c_str(), tempIndex, bFound);
 		if (!bFound)
 		{
 			pCommand->x = AddVar(varName.c_str());
@@ -9974,7 +9974,7 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.flags);
 		UINT varId = c.w;
 		UINT operation = c.h;
-		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);
 		wstr += wszQuote;
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
@@ -9997,7 +9997,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_ClearArrayVar:
 	{
 		UINT varId = c.x;
-		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);
 		wstr += wszQuote;
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
@@ -10008,7 +10008,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_CountArrayEntries:
 	{
 		UINT varId = c.x;
-		const WCHAR* wszVarName = this->pVarListBox->GetTextForKey(varId);
+		const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(varId);
 		wstr += wszQuote;
 		wstr += WCSlen(wszVarName) ? wszVarName : wszQuestionMark;
 		wstr += wszQuote;
