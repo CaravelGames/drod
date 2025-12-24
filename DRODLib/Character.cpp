@@ -3693,9 +3693,13 @@ void CCharacter::Process(
 						int dx, dy, dxFirst, dyFirst;
 						dx = dy = 0;
 
-						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
-						wX = this->wX + dx;
-						wY = this->wY + dy;
+						if (GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ)) {
+							wX = this->wX + dx;
+							wY = this->wY + dy;
+						} else {
+							wX = this->wX;
+							wY = this->wY;
+						}
 					}
 					break;
 					case ScriptFlag::BestBrainDirection:
@@ -3705,9 +3709,13 @@ void CCharacter::Process(
 						int dx, dy, dxFirst, dyFirst;
 						dx = dy = 0;
 
-						GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ);
-						wX = nGetO(dx, dy);
-						wY = nGetO(dxFirst, dyFirst);
+						if (GetBrainDirectedMovement(dxFirst, dyFirst, dx, dy, this->movementIQ)) {
+							wX = nGetO(dx, dy);
+							wY = nGetO(dxFirst, dyFirst);
+						} else {
+							wX = NO_ORIENTATION;
+							wY = NO_ORIENTATION;
+						}
 					}
 					break;
 					case ScriptFlag::NearestOpenRoomEdge:
