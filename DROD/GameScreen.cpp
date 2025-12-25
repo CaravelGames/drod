@@ -6176,6 +6176,7 @@ void CGameScreen::ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents)
 				break;
 
 				case SDL_KEYDOWN:
+					int nCommand;
 					//Process other commands in the context of the displayed room.
 					switch (event.key.keysym.sym)
 					{
@@ -6187,13 +6188,18 @@ void CGameScreen::ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents)
 						case SDLK_RALT:
 						case SDLK_LGUI:
 						case SDLK_RGUI:
-							break; // Don't exit the room preview when modifier keys are pressed
-
-						case SDLK_F6:
+							nCommand = -1; // Don't exit the room preview when modifier keys are pressed
+							break;
+						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
+					}
+					switch (nCommand)
+					{
+						case CMD_EXTRA_WATCH_DEMOS:
 							bShow = false;
 							bShowDemosForRoom = true;
 							break;
-
+						case -1: // modifier key
+							break;
 						default:
 							bShow = false;
 							break;
