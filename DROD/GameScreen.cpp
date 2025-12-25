@@ -1524,7 +1524,22 @@ void CGameScreen::OnKeyDown(
 
 	if (this->bShowingBigMap)
 	{
-		HideBigMap();
+		switch (Key.keysym.sym)
+		{
+			case SDLK_LSHIFT:
+			case SDLK_RSHIFT:
+			case SDLK_LCTRL:
+			case SDLK_RCTRL:
+			case SDLK_LALT:
+			case SDLK_RALT:
+			case SDLK_LGUI:
+			case SDLK_RGUI:
+				break; // Don't hide the map when modifier keys are pressed
+			default:
+				HideBigMap();
+				break;
+		}
+
 		return;
 	}
 
@@ -6161,16 +6176,27 @@ void CGameScreen::ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents)
 				break;
 
 				case SDL_KEYDOWN:
-					bShow = false;
-
 					//Process other commands in the context of the displayed room.
 					switch (event.key.keysym.sym)
 					{
-						case SDLK_F6:
-							bShowDemosForRoom = true;
-						break;
+						case SDLK_LSHIFT:
+						case SDLK_RSHIFT:
+						case SDLK_LCTRL:
+						case SDLK_RCTRL:
+						case SDLK_LALT:
+						case SDLK_RALT:
+						case SDLK_LGUI:
+						case SDLK_RGUI:
+							break; // Don't exit the room preview when modifier keys are pressed
 
-						default: break;
+						case SDLK_F6:
+							bShow = false;
+							bShowDemosForRoom = true;
+							break;
+
+						default:
+							bShow = false;
+							break;
 					}
 				break;
 
