@@ -176,6 +176,12 @@ bool CHTMLWidget::GoHome()
 }
 
 //*****************************************************************************
+bool CHTMLWidget::HasLoadedFile() const
+{
+	return !this->wstrTitle.empty();
+}
+
+//*****************************************************************************
 bool CHTMLWidget::LoadFile(
 //Load a file and parse it.
 //

@@ -283,7 +283,10 @@ void CDemoScreen::OnKeyDown(
 			CHtmlDialogWidget *pHtmlDialogWidget = GetWidget<CHtmlDialogWidget>(TAG_HELPDIALOG);
 			ASSERT(pHtmlDialogWidget);
 			pHtmlDialogWidget->SetPageToLoad("standalone\\demoplayback.html");
-			pHtmlDialogWidget->Display();
+			if (pHtmlDialogWidget->GetHTMLBrowser()->HasLoadedFile())
+			{
+				pHtmlDialogWidget->Display();
+			}
 			RequestPaint();
 		}
 			break;

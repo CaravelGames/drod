@@ -89,6 +89,8 @@ public:
 	bool           GoForward(UINT wCount=1);
 	bool           GoHome();
 
+	bool           HasLoadedFile() const;
+
 	void           ScrollUp(const UINT wLines=7);
 	void           ScrollUpPage();
 	void           ScrollDown(const UINT wLines=7);
