@@ -77,8 +77,10 @@ CHtmlDialogWidget::CHtmlDialogWidget(const UINT dwTagNo, const UINT wWidth, cons
 
 	// Widgets
 	{
+		WSTRING titleStr(g_pTheDB->GetMessageText(MID_Help));
+		titleStr.erase(std::remove(titleStr.begin(), titleStr.end(), '&'), titleStr.end());
 		this->pTitle = new CLabelWidget(0,
-			TITLE_X, TITLE_Y, TITLE_W, TITLE_H, F_Header, g_pTheDB->GetMessageText(MID_Help));
+			TITLE_X, TITLE_Y, TITLE_W, TITLE_H, F_Header, titleStr.c_str());
 		this->pTitle->SetAlign(CLabelWidget::TA_CenterGroup);
 		AddWidget(this->pTitle);
 	}
