@@ -601,23 +601,20 @@ void CDemoScreen::SetSignTextToCurrentRoom()
 	const SDL_Color Red = { 196, 0, 0, 0 };
 
 	CGameScreen::SetSignTextToCurrentRoom();
-
-	bool bAppendMove = true;
 	this->signColor = Black;
 
 	if (IsAtDemoEnd()) {
 		this->wstrSignText = g_pTheDB->GetMessageText(MID_DemoEnded);
 		this->signColor = Red;
-		bAppendMove = false;
-
 	} else if (!this->pCurrentGame->bIsGameActive) {
 		this->wstrSignText = g_pTheDB->GetMessageText(MID_DemoEndedEarly);
 		this->signColor = Red;
 	}
 
-	if (bAppendMove) {
+	{
+		this->wstrSignText += wszSpace;
 		const UINT wMoveNow = CGameScreen::pCurrentGame->wTurnNo - this->pDemo->wBeginTurnNo;
-		const UINT wMovesTotal = this->pDemo->wEndTurnNo - this->pDemo->wBeginTurnNo;
+		const UINT wMovesTotal = (this->pDemo->wEndTurnNo - this->pDemo->wBeginTurnNo) + 1;
 
 		WCHAR temp[10];
 		WSTRING suffix = g_pTheDB->GetMessageText(MID_DemoMoveNumberSuffix);
