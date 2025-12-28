@@ -1364,7 +1364,6 @@ void CDbSavedGame::Clear(
 	this->wStartRoomX=this->wStartRoomY=this->wStartRoomO=0;
 	this->wStartRoomAppearance = defaultPlayerType(); //use default value
 	this->bStartRoomSwordOff = false;
-	this->scriptArrays.clear();
 	this->eType = ST_Unknown;
 
 	this->dwPlayerID = 0L;
@@ -1377,6 +1376,7 @@ void CDbSavedGame::Clear(
 		this->CompletedScripts.clear();
 		this->entrancesExplored.clear();
 		this->stats.Clear();
+		this->scriptArrays.clear();
 		this->moves.clear();
 
 		DeleteExploredRooms();
