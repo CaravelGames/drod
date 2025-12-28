@@ -1779,6 +1779,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		const bool bWeaponOff_ = this->swordsman.bWeaponOff;
 		const UINT wWaterTraversal_ = this->swordsman.wWaterTraversal;
 		const WeaponType weaponType_ = this->swordsman.weaponType;
+		const PlayerBehaviors behaviorOverrides_ = this->swordsman.behaviorOverrides;
 
 		LoadPrep(false);
 
@@ -1786,6 +1787,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		this->swordsman.bWeaponOff = bWeaponOff_;
 		this->swordsman.wWaterTraversal = wWaterTraversal_;
 		this->swordsman.weaponType = weaponType_;
+		this->swordsman.behaviorOverrides = behaviorOverrides_;
 	}
 
 	this->pEntrance = this->pHold->GetEntrance(dwEntranceID);
