@@ -664,7 +664,6 @@ void CDbSavedGame::Clear(
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
 	this->startRoomPlayerBehaviorOverrides.clear();
-	this->scriptArrays.clear();
 	this->eType = ST_Unknown;
 
 	this->dwPlayerID = 0L;
@@ -678,6 +677,7 @@ void CDbSavedGame::Clear(
 		this->entrancesExplored.clear();
 		this->worldMapIcons.clear();
 		this->stats.Clear();
+		this->scriptArrays.clear();
 		this->dwLevelDeaths = this->dwLevelKills = this->dwLevelMoves = this->dwLevelTime = 0L;
 	}
 	this->Commands.Clear();
