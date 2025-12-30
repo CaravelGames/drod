@@ -156,6 +156,7 @@ private:
 //	void           HandleEventsForHoldExit();
 	SCREENTYPE     HandleEventsForLevelExit();
 	bool           HandleEventsForPlayerDeath(CCueEvents &CueEvents);
+	bool           HandlePreviewClick(const SDL_MouseButtonEvent &Button, const UINT& originalRoomID, UINT& newShowRoomID);
 	void           HideBigMap();
 	bool           IsOpenMove(const int dx, const int dy) const;
 	SCREENTYPE     LevelExit_OnKeydown(const SDL_KeyboardEvent &KeyboardEvent);

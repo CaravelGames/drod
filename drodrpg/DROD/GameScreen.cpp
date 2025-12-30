@@ -1253,7 +1253,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	this->pRoomWidget = new CRoomWidget(TAG_ROOM, X_ROOM, Y_ROOM,
 			CDrodBitmapManager::CX_ROOM, CDrodBitmapManager::CY_ROOM);
 	AddWidget(this->pRoomWidget);
-	this->pTempRoomWidget = new CRoomWidget(0,
+	this->pTempRoomWidget = new CRoomWidget(TAG_TEMPROOM,
 			this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
 			this->pRoomWidget->GetW(),this->pRoomWidget->GetH());
 	this->pTempRoomWidget->Hide();
@@ -8557,19 +8557,7 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 
 				case SDL_MOUSEBUTTONDOWN:
 				{
-					bShow = false;
-
-					//If the map widget was clicked on, then temporarily display the new room immediately.
-					CWidget *pWidget = GetWidgetContainingCoords(event.button.x, event.button.y, WT_Unspecified);
-					if (pWidget && pWidget->GetTagNo() == TAG_MAP)
-					{
-						UINT roomX, roomY;
-						this->pMapWidget->GetRoomAtCoords(event.button.x, event.button.y, roomX, roomY);
-						newShowRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
-						if (newShowRoomID == this->pCurrentGame->pRoom->dwRoomID ||
-								newShowRoomID == originalRoomID)
-							newShowRoomID = 0; //no new room to display
-					}
+					bShow = HandlePreviewClick(event.button, originalRoomID, newShowRoomID);
 				}
 				break;
 
@@ -8654,6 +8642,44 @@ UINT CGameScreen::ShowRoom(CDbRoom *pRoom, CCueEvents& CueEvents) //room to disp
 
 	//Show a new room?
 	return newShowRoomID;
+}
+
+//*****************************************************************************
+//Handle mouse clicks when previewing a room.
+//Returns: If the preview should continue.
+bool CGameScreen::HandlePreviewClick(
+	const SDL_MouseButtonEvent& Button,
+	const UINT& originalRoomID,
+	UINT& newShowRoomID //[in/out] id of new room to display, 0 = no room
+)
+{
+	CWidget* pWidget = GetWidgetContainingCoords(Button.x, Button.y, WT_Unspecified);
+
+	if (!pWidget) {
+		return false;
+	}
+
+	switch (pWidget->GetTagNo()) {
+		case TAG_MAP: {
+			//If the map widget was clicked on, then temporarily display the new room immediately.
+			UINT roomX, roomY;
+			this->pMapWidget->GetRoomAtCoords(Button.x, Button.y, roomX, roomY);
+			newShowRoomID = this->pCurrentGame->pLevel->GetRoomIDAtCoords(roomX, roomY);
+			if (newShowRoomID == this->pCurrentGame->pRoom->dwRoomID ||
+				newShowRoomID == originalRoomID)
+				newShowRoomID = 0; //no new room to display
+
+			return false;
+		}
+		case TAG_TEMPROOM: {
+			if (Button.button == SDL_BUTTON_RIGHT) {
+				this->pTempRoomWidget->DisplayRoomCoordSubtitle(Button.x, Button.y);
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 //*****************************************************************************

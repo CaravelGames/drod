@@ -40,6 +40,7 @@
 
 static const UINT TAG_ROOM = 2000;
 static const UINT TAG_MAP = 2001;
+static const UINT TAG_TEMPROOM = 2002;
 
 static const UINT TAG_HP  = 2010;
 static const UINT TAG_ATK = 2011;
