@@ -242,8 +242,7 @@ public:
 	void           ResolveLogicalIdentity(CDbHold *pHold);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
 	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
-	void           SetDefaultBehaviors();
-	void           SetDefaultMovementType();
+	void           SetDefaultProperties();
 	void   SetImperative(const ScriptFlag::Imperative eVal) {this->eImperative = eVal;}
 	virtual void   SetExtraVarsFromMembers(const bool bHoldChar=false);
 	void           SetExtraVarsFromMembersWithoutScript(const bool bHoldChar=false);
@@ -322,6 +321,10 @@ private:
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
+
+	void SetDefaultBehaviors();
+	void SetDefaultImperatives();
+	void SetDefaultMovementType();
 
 	void GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
 
