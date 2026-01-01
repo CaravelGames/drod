@@ -7170,24 +7170,7 @@ void CCharacter::SetCurrentGame(
 	//Assign these when room play is first starting.
 	if (pSetCurrentGame->wTurnNo == 0)
 	{
-		switch (GetIdentity())
-		{
-			case M_CITIZEN: case M_ARCHITECT:
-			case M_WUBBA:
-				SetImperative(ScriptFlag::Invulnerable);
-			break;
-			case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: case M_GUNTHRO:
-			case M_CLONE:
-			case M_TEMPORALCLONE:
-			case M_HALPH: case M_HALPH2:
-				SetImperative(ScriptFlag::MissionCritical);
-				bFriendly = true;
-			break;
-			default: break;
-		}
-
-		SetDefaultMovementType();
-		SetDefaultBehaviors();
+		SetDefaultProperties();
 	}
 
 	//If this NPC is a custom character with no script,
@@ -7201,6 +7184,14 @@ void CCharacter::SetCurrentGame(
 	//and removed on room exit
 	if (this->bGlobal && this->commands.empty())
 		this->bScriptDone = true;
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultProperties()
+{
+	SetDefaultImperatives();
+	SetDefaultBehaviors();
+	SetDefaultMovementType();
 }
 
 //*****************************************************************************
@@ -7264,6 +7255,27 @@ void CCharacter::SetDefaultBehaviors()
 	}
 	if (!bCanFluffKill(wResolvedIdentity)) {
 		behaviorFlags.insert(ScriptFlag::PuffImmune);
+	}
+}
+
+//*****************************************************************************
+void CCharacter::SetDefaultImperatives()
+// Certain character types have default imperatives.
+{
+	switch (GetIdentity())
+	{
+		case M_CITIZEN: case M_ARCHITECT:
+		case M_WUBBA:
+			SetImperative(ScriptFlag::Invulnerable);
+			break;
+		case M_BEETHRO: case M_BEETHRO_IN_DISGUISE: case M_GUNTHRO:
+		case M_CLONE:
+		case M_TEMPORALCLONE:
+		case M_HALPH: case M_HALPH2:
+			SetImperative(ScriptFlag::MissionCritical);
+			bFriendly = true;
+			break;
+		default: break;
 	}
 }
 
