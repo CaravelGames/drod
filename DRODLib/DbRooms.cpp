@@ -5721,9 +5721,11 @@ void CDbRoom::PreprocessMonsters(CCueEvents& CueEvents)
 //require a turn to execute (e.g. visibility, gotos, speech).
 {
 	CMonster *pMonster;
+	CMonster* pFinal = this->pLastMonster;
+	bool bPassedOriginalLastMonster = false;
 	for (pMonster = this->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		if (pMonster->wType == M_CHARACTER)
+		if (pMonster->wType == M_CHARACTER && !bPassedOriginalLastMonster)
 		{
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			pCharacter->SetWeaponSheathed();
@@ -5735,6 +5737,12 @@ void CDbRoom::PreprocessMonsters(CCueEvents& CueEvents)
 			//Spiders far from player always start invisible.
 			CSpider *pSpider = DYN_CAST(CSpider*, CMonster*, pMonster);
 			pSpider->SetVisibility();
+		}
+
+		//Don't process any characters that have been added during this turn.
+		//Not a break since we might need to deal with generated spiders.
+		if (pMonster == pFinal) {
+			bPassedOriginalLastMonster = true;
 		}
 	}
 
