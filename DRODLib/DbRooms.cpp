@@ -5731,6 +5731,11 @@ void CDbRoom::PreprocessMonsters(CCueEvents& CueEvents)
 			pCharacter->SetWeaponSheathed();
 			pCharacter->Process(CMD_WAIT, CueEvents);
 			this->pCurrentGame->PostProcessCharacter(pCharacter, CueEvents);
+
+			//If the replace with default command was executed, we need to unlink.
+			if (pMonster->bUnlink) {
+				UnlinkMonster(pMonster);
+			}
 		}
 		else if (pMonster->wType == M_SPIDER)
 		{
