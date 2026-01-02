@@ -3023,9 +3023,6 @@ void CCharacter::Process(
 			break;
 
 			case CCharacterCommand::CC_ReplaceWithDefault:
-				if (bExecuteNoMoveCommands || !this->bProcessing)
-					return; //only replace during actual monster processing
-
 				ReplaceWithDefault(nLastCommand, CueEvents);
 				bProcessNextCommand = !this->bReplaced; //no-op if not replaced
 			break;
@@ -8329,11 +8326,9 @@ void CCharacter::TurnIntoMonster(
 //*****************************************************************************
 //Replaces the character with one running the default script for the character's
 //indentity.
-//Precondition: the character is currently processing its turn.
 void CCharacter::ReplaceWithDefault(
 	const UINT nLastCommand, CCueEvents& CueEvents)
 {
-	ASSERT(this->bProcessing);
 	//Don't do anything if this isn't a custom character, or if it's already
 	//running a default script
 	if (!this->pCustomChar || this->bIsDefaultScript) {
