@@ -1789,7 +1789,15 @@ MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 //*****************************************************************************
 MESSAGE_ID CDbXML::ImportXML()
 {
-	info.ImportStatus = ImportXML(&importBuf);
+	if (importBuf.uncompressedBuffer && !importBuf.compressedBuffer) {
+		//Everything is already uncompressed, so go through the string-based version
+		//of ImportXML.
+		BYTE* bytes = (BYTE*)importBuf.uncompressedBuffer;
+		std::string xml((char*)bytes);
+		info.ImportStatus = ImportXML(xml);
+	} else {
+		info.ImportStatus = ImportXML(&importBuf);
+	}
 
 	//Clean up.
 	//If an import is interrupted in the middle by a request for user input,
