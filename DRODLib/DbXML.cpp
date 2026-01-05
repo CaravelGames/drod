@@ -1769,9 +1769,6 @@ MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 		PerformCallback(MID_ImportingData);
 		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
 
-		importBuf.closeStream();
-		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
-
 		Import_ParseRecords(xml);
 
 		//Free parser.
