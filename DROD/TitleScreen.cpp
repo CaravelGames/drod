@@ -1062,6 +1062,7 @@ bool CTitleScreen::PollForHoldList()
 			{
 				AddTextToMarquee(g_pTheDB->GetMessageText(MID_UnsentCaravelNetProgress));
 			}
+#ifdef ENABLE_CLOUDSYNC
 			if (pPlayer->Settings.GetVar(Settings::CloudActivated, false)) {
 				pInternetIcon->SetImage(wszSignalCloud);
 				// Get any pending cloud demo updates
@@ -1092,6 +1093,7 @@ bool CTitleScreen::PollForHoldList()
 				ExportCleanup();
 				Paint();
 			}
+#endif // ENABLE_CLOUDSYNC
 		}
 	} else {
 		//Determine whether player is a registered CaravelNet user.

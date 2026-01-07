@@ -112,12 +112,19 @@ CSelectPlayerScreen::CSelectPlayerScreen() : CDrodScreen(SCR_SelectPlayer)
 #endif
 
 	static const int Y_BUTTONS3 = Y_BUTTONS2 + 40;
+#ifdef ENABLE_CLOUDSYNC
 	static const int X_IMPORTBUTTON = 15;
 	static const UINT CX_IMPORTBUTTON = 100;
 	static const int X_CLOUDIMPORTBUTTON = X_IMPORTBUTTON + CX_IMPORTBUTTON + CX_SPACE;
 	static const UINT CX_CLOUDIMPORTBUTTON = 250;
 	static const int X_CANCEL = X_CLOUDIMPORTBUTTON + CX_CLOUDIMPORTBUTTON + CX_SPACE;
 	static const UINT CX_CANCEL = 100;
+#else
+	static const UINT CX_IMPORTBUTTON = 100;
+	static const int X_IMPORTBUTTON = (CX_BOX - CX_SPACE) / 2 - CX_IMPORTBUTTON;
+	static const int X_CANCEL = (CX_BOX + CX_SPACE) / 2;
+	static const UINT CX_CANCEL = 100;
+#endif // ENABLE_CLOUDSYNC
 
 	static const UINT CY_BOX = Y_BUTTONS3 + CY_STANDARD_BUTTON + CY_SPACE;
 
@@ -160,7 +167,7 @@ CSelectPlayerScreen::CSelectPlayerScreen() : CDrodScreen(SCR_SelectPlayer)
 	this->pPlayerBox->AddWidget(new CButtonWidget(TAG_IMPORT,
 			X_IMPORTBUTTON, Y_BUTTONS3, CX_IMPORTBUTTON, CY_STANDARD_BUTTON,
 			g_pTheDB->GetMessageText(MID_Import)));
-#ifndef STEAMBUILD
+#ifdef ENABLE_CLOUDSYNC
 	this->pPlayerBox->AddWidget(new CButtonWidget(TAG_GET_PLAYER_FROM_CLOUD,
 			X_CLOUDIMPORTBUTTON, Y_BUTTONS3, CX_CLOUDIMPORTBUTTON, CY_STANDARD_BUTTON,
 			g_pTheDB->GetMessageText(MID_GetPlayerFromCloud)));

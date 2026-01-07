@@ -289,7 +289,7 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 	static const int Y_UPLOADSCORES = Y_REQUESTKEY;
 	static const UINT CY_UPLOADSCORES = CY_STANDARD_BUTTON;
 
-#ifdef STEAMBUILD
+#ifndef ENABLE_CLOUDSYNC
 	static const UINT CY_PERSONAL_FRAME = CY_NAME_LABEL + CY_CNETNAME +
 		CY_CNETPASSWORD + CY_CNETCONNECT + CY_REQUESTKEY + CY_SPACE * 6;
 #else
@@ -422,7 +422,7 @@ void CSettingsScreen::SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu)
 		new CButtonWidget(TAG_UPLOADSCORES, X_UPLOADSCORES, Y_UPLOADSCORES,
 			CX_UPLOADSCORES, CY_UPLOADSCORES, g_pTheDB->GetMessageText(MID_UploadScores)));
 
-#ifndef STEAMBUILD
+#ifdef ENABLE_CLOUDSYNC
 	pPersonalFrame->AddWidget(
 		new COptionButtonWidget(TAG_CLOUD_ACTIVATE, X_CLOUD_ACTIVATE, Y_CLOUD_ACTIVATE,
 			CX_CLOUD_ACTIVATE, CY_CLOUD_ACTIVATE, g_pTheDB->GetMessageText(MID_ActivateCloudSync)));
@@ -1616,7 +1616,9 @@ void CSettingsScreen::SetWidgetStates()
 	if (bButtonsVisible)
 		pButton->RequestPaint();
 
+#ifdef ENABLE_CLOUDSYNC
 	SetCloudWidgetStates();
+#endif // ENABLE_CLOUDSYNC
 }
 
 //************************************************************************************

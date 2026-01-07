@@ -6825,8 +6825,10 @@ void CGameScreen::WaitToUploadDemos()
 		HideStatusMessage();
 	}
 
+#ifdef ENABLE_CLOUDSYNC
 	if (this->pCurrentGame)
 		UploadPlayerProgressToCloud(this->pCurrentGame->pHold->dwHoldID);
+#endif
 }
 
 //*****************************************************************************

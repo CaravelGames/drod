@@ -703,6 +703,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 
 		const UINT holdID = *id;
 
+#ifdef ENABLE_CLOUDSYNC
 		if (g_pTheNet->IsEnabled()) {
 			const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 			if (settings.GetVar(Settings::CloudActivated, false)) {
@@ -711,6 +712,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 				g_pTheNet->CloudSetHoldInstalled(holdID, false);
 			}
 		}
+#endif // ENABLE_CLOUDSYNC
 
 		CDbHold *pHold = g_pTheDB->Holds.GetByID(holdID, true);
 		ASSERT(pHold);
@@ -912,12 +914,14 @@ void CHoldSelectScreen::DownloadSelectedHolds()
 		if (CDbXML::info.dwHoldImportedID)
 		{
 			//Mark hold as imported.
+#ifdef ENABLE_CLOUDSYNC
 			if (g_pTheNet->IsEnabled()) {
 				const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 				if (settings.GetVar(Settings::CloudActivated, false)) {
 					g_pTheNet->CloudSetHoldInstalled(CDbXML::info.dwHoldImportedID, true);
 				}
 			}
+#endif // ENABLE_CLOUDSYNC
 			importedHoldIDs += CDbXML::info.dwHoldImportedID;
 			for (set<WSTRING>::const_iterator iter = CDbXML::info.roomStyles.begin();
 					iter != CDbXML::info.roomStyles.end(); ++iter)
@@ -1066,6 +1070,7 @@ void CHoldSelectScreen::OnClick(
 			}
 			if (!importedHoldIDs.empty())
 			{
+#ifdef ENABLE_CLOUDSYNC
 				if (g_pTheNet->IsEnabled()) {
 					const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 					if (settings.GetVar(Settings::CloudActivated, false)) {
@@ -1074,6 +1079,7 @@ void CHoldSelectScreen::OnClick(
 						}
 					}
 				}
+#endif // ENABLE_CLOUDSYNC
 				if (!importedStyles.empty())
 				{
 					//Automatically download and import new referenced room styles
