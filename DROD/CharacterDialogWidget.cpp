@@ -7233,12 +7233,9 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->w = 0; //default
 
 			const bool bTextVar =
-				(c == CCharacterCommand::CC_VarSet &&
+				((c == CCharacterCommand::CC_VarSet || c == CCharacterCommand::CC_VarSetAt) &&
 					(this->pCommand->y == ScriptVars::AssignText ||
 					this->pCommand->y == ScriptVars::AppendText)) ||
-				(c == CCharacterCommand::CC_VarSetAt &&
-					(this->pCommand->h == ScriptVars::AssignText ||
-						this->pCommand->h == ScriptVars::AppendText)) ||
 				(c == CCharacterCommand::CC_WaitForVar &&
 					this->pCommand->y == ScriptVars::EqualsText);
 			if (bTextVar)
