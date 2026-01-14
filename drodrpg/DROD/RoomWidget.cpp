@@ -2168,6 +2168,14 @@ WSTRING CRoomWidget::GetMonsterAbility(CMonster* pMonster) const
 		}
 		wstr += g_pTheDB->GetMessageText(MID_WaterSkipperAbility);
 		++count;
+	} else if (pMonster->IsFlying()) {
+		if (count)
+		{
+			wstr += wszComma;
+			wstr += wszSpace;
+		}
+		wstr += g_pTheDB->GetMessageText(MID_FlyingAbility);
+		++count;
 	}
 	if (!pMonster->DamagedByHotTiles())
 	{

@@ -684,6 +684,7 @@ enum MID_CONSTANT {
   MID_CombatStalled = 2115,
   MID_ShovelTooltip = 2158,
   MID_LevelMultiplierTooltip = 2159,
+  MID_FlyingAbility = 2164,
 
   //Messages from General.uni:
   MID_SDLInitFailed = 464,
