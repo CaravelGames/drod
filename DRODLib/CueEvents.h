@@ -279,7 +279,7 @@ enum CUEEVENT_ID
 
 	//Swordsman placed a double.
 	//
-	//Private data: NONE
+	//Private data: CCoord (one)
 	CID_DoublePlaced,
 
 	//Swordsman ran into obstacle.
@@ -832,6 +832,36 @@ enum CUEEVENT_ID
 	//
 	//Private data: CMonster *pMonster
 	CID_MonsterExistenceCeased,
+
+	//A change has been made to the room's lighting tiles.
+	//
+	//Private data: NONE
+	CID_LightTilesChanged,
+
+	//Second Command Key was used.
+	//
+	//Private data: NONE
+	CID_CommandKeyTwoPressed,
+
+	//Third Command Key was used.
+	//
+	//Private data: NONE
+	CID_CommandKeyThreePressed,
+
+	//Platform or raft couldn't be moved by player
+	//
+	//Private data: CCoord *pSquare
+	CID_PlatformBlocked,
+
+	//Script added a room to the explored rooms list
+	//
+	//Private data: NONE
+	CID_AddedRoomToMap,
+
+	//Monster walked through a tunnel.
+	//
+	//Private data: NONE
+	CID_MonsterTunnel,
 
 #ifdef TEST_SPIDER
 	//Custom CueEvent to cause failure in test spider

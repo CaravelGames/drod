@@ -229,9 +229,10 @@ protected:
 	virtual bool   SetForActivate() {return true;}
 	void        SetBetweenEventsInterval(const UINT dwSetMSecs);
 	void        SetKeyRepeat(const UINT dwContinueMSecs, const UINT dwStartMSecs=300L);
+	Uint32      GetKeyRepeatDuration() const;
 
-	bool bPaused;  //whether animation is paused
-	bool bUpdateMotion; //whether widgets moved
+	bool bPaused;         //whether animation is paused
+	bool bUpdateMotion;   //whether widgets moved
 	bool bAllowRepeating; //whether widget supports automatic key/mouse repeating
 
 private:

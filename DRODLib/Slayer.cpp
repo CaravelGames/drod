@@ -280,6 +280,7 @@ void CSlayer::Process(
 		if (bWispOnTarget || ExtendWisp(CueEvents)) //assuming left-to-right evaluation
 		{
 			CueEvents.Add(CID_WispOnPlayer);
+			StopOpeningDoor();
 			AdvanceAlongWisp(CueEvents);
 		}
 		return;
@@ -307,6 +308,7 @@ void CSlayer::Process(
 				//The wisp continues to stretch towards the target each turn using the above rules
 				//with the goal of maintaining a constant connection to the target.
 				CueEvents.Add(CID_WispOnPlayer);
+				StopOpeningDoor();
 				AdvanceAlongWisp(CueEvents);
 			}
 		break;
@@ -477,6 +479,35 @@ bool CSlayer::IsOpenMove(const UINT wX, const UINT wY, const int dx, const int d
 }
 
 //*****************************************************************************
+//Returns: true if standing at (wX, wY) with sword orientation at wSO won't stab anything
+//that explodes
+bool CSlayer::IsExplosiveSafe(const UINT& wX, const UINT& wY, const UINT& wSO) const
+{
+	ASSERT(this->pCurrentGame->pRoom);
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	ASSERT(room.IsValidColRow(wX, wY));
+
+	//Determine where the sword would be.
+	const UINT wSX = wX + nGetOX(wSO);
+	const UINT wSY = wY + nGetOY(wSO);
+
+	if (!room.IsValidColRow(wSX, wSY))
+		return true; //sword would be out-of-bounds and wouldn't hit anything
+
+	//If sword is put away on this tile, no stabbing would occur, so this position is always safe.
+	if (DoesSquareRemoveWeapon(wX, wY))
+		return true;
+
+	//Never stab a bomb.
+	const UINT wTSquare = room.GetTSquare(wSX, wSY);
+	if (this->weaponType != WT_Staff && bIsExplodingItem(wTSquare))
+		return false;
+
+	//Don't care about anything else for this check.
+	return true;
+}
+
+//*****************************************************************************
 bool CSlayer::IsSafeToStab(const UINT wFromX, const UINT wFromY, const UINT wSO) const
 //Returns: true if standing at (wFromX, wFromY) with sword orientation at wSO won't stab anything
 //dangerous, or a guard or Slayer.  Otherwise false.
@@ -591,6 +622,9 @@ bool CSlayer::CheckWispIntegrity()
 		{
 			++piece;
 			SeverWispAt(piece);  //don't need any wisp past target
+			if (this->state == OpeningDoor) {
+				StopOpeningDoor();
+			}
 			return true;
 		}
 
@@ -631,6 +665,54 @@ bool CSlayer::CheckWispIntegrity()
 	if (!bPieceIsAdjacent)
 		this->Pieces.clear();
 
+	return false;
+}
+
+//***************************************************************************************
+bool CSlayer::ConfirmGoal()
+//Checks whether our chosen orb or plate still exists.
+//
+//Returns: whether the orb or plate we were going to use at
+//   the end of our path is still available
+{
+	//A seeking slayer will always have a goal.
+	if (state == Seeking)
+		return true;
+
+	UINT wGoalX, wGoalY;
+	if (!this->pathToDest.Bottom(wGoalX, wGoalY))
+		return false; //There is no path?
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (platesToDepress.has(CCoord(wGoalX, wGoalY))) {
+		UINT wTile = room.GetOSquare(wGoalX, wGoalY);
+		COrbData* pOrb = room.GetPressurePlateAtCoords(wGoalX, wGoalY);
+		//Reject activated one-use or missing plate and remove from platesToDepress
+		if (wTile != T_PRESSPLATE || !pOrb || pOrb->eType == OT_BROKEN) {
+			platesToDepress.erase(CCoord(wGoalX, wGoalY));
+			return false;
+		}
+		return true;
+	}
+
+	//Check if any valid orb is adjacent to goal
+	for (CCoordSet::const_iterator orb = this->orbsToHit.begin(); orb != this->orbsToHit.end(); ++orb) {
+		if (nDist(wGoalX, wGoalY, orb->wX, orb->wY) > 1) {
+			continue;
+		}
+
+		UINT wTile = room.GetTSquare(orb->wX, orb->wY);
+		COrbData* pOrb = room.GetOrbAtCoords(orb->wX, orb->wY);
+		//Reject broken or missing orb and remove from orbsToHit
+		if (wTile != T_ORB || !pOrb || pOrb->eType == OT_BROKEN) {
+			orbsToHit.erase(*orb);
+			continue;
+		}
+		return true;
+	}
+
+	//If the orb or plate is gone, it's not available.
 	return false;
 }
 
@@ -941,7 +1023,7 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 	}
 
 	//Confirm path to goal is still open.
-	if (!ConfirmPath())
+	if (!(ConfirmGoal() && ConfirmPath()))
 	{
 		//If it's not, search for a new path to the goal.
 		bool bOrbPathFound = FindOptimalPathTo(this->wX, this->wY, this->orbsToHit, true);
@@ -951,10 +1033,11 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		if (!plates.empty())
 		{
 			CCoordStack orbPath = this->pathToDest;
-			bPathFound |= FindOptimalPathTo(this->wX, this->wY, plates, false);
+			bool bPlatePathFound = FindOptimalPathTo(this->wX, this->wY, plates, false);
+			bPathFound = bOrbPathFound || bPlatePathFound;
 
 			//Choose shorter path.  With a tie, paths to orbs take preference.
-			if (bOrbPathFound && this->pathToDest.GetSize() >= orbPath.GetSize())
+			if (!bPlatePathFound || (bOrbPathFound && this->pathToDest.GetSize() >= orbPath.GetSize()))
 				this->pathToDest = orbPath;
 		}
 		if (!bPathFound)
@@ -977,7 +1060,20 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		UINT wNextX, wNextY;
 		this->pathToDest.Pop(wNextX, wNextY);  //Slayer is now making this move
 		this->wSwordMovement = nGetO(wNextX - this->wX, wNextY - this->wY);
-		Move(wNextX, wNextY, &CueEvents);
+		//Move to the next tile in the path, as long as that doesn't stab an explosive
+		if (IsExplosiveSafe(wNextX, wNextY, this->wO)) {
+			Move(wNextX, wNextY, &CueEvents);
+		} else {
+			//Try turning to get around explosives
+			if (IsExplosiveSafe(wNextX, wNextY, nNextCO(this->wO))) {
+				this->wO = nNextCO(this->wO);
+				this->wSwordMovement = CSwordsman::GetSwordMovement(CMD_C, this->wO);
+			}
+			else if (IsExplosiveSafe(wNextX, wNextY, nNextCCO(this->wO))) {
+				this->wO = nNextCCO(this->wO);
+				this->wSwordMovement = CSwordsman::GetSwordMovement(CMD_CC, this->wO);
+			}
+		}
 	} else {
 		//If we think we're next to our destination but there are no orbs to hit,
 		//then we must be on a plate.  Start chasing the player again.
@@ -993,8 +1089,11 @@ void CSlayer::MoveToOpenDoor(CCueEvents &CueEvents)     //(in/out)
 		ASSERT(room.IsValidColRow(destX, destY));
 		const UINT orbStrikingOrientation = GetOrientationFacingTarget(destX, destY);
 		ASSERT(orbStrikingOrientation != NO_ORIENTATION);
-		if (!MakeSlowTurnIfOpen(orbStrikingOrientation))
-		{
+		if (this->weaponType == WT_Dagger) {
+			//Use dagger to bump orb (rotation won't work)
+			this->wO = orbStrikingOrientation;
+			this->wSwordMovement = orbStrikingOrientation;
+		} else if (!MakeSlowTurnIfOpen(orbStrikingOrientation)) {
 			//Slayer can't turn to strike the orb.  Start searching for player again.
 			StopStrikingOrb(CueEvents);
 			StopOpeningDoor();

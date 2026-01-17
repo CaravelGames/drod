@@ -82,7 +82,7 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	, pDemoListBoxWidget(NULL), pCNetDemoListBoxWidget(NULL)
 	, pRoomWidget(NULL)
 	, pDemoCurrentGame(NULL)
-	, pAuthorWidget(NULL), pCreatedWidget(NULL), pDurationWidget(NULL)
+	, pNameWidget(NULL), pAuthorWidget(NULL), pCreatedWidget(NULL), pDurationWidget(NULL)
 	, pDescriptionWidget(NULL)
 	, pLBoxHeaderWidget(NULL), pNoDemoWidget(NULL)
 	, pDetailsFrame(NULL)
@@ -100,7 +100,7 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 
 	static const UINT CX_SPACE = 8;
 	static const UINT CY_SPACE = 8;
-	static const UINT CY_TITLE = 52;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 	static const UINT CY_TITLE_SPACE = 14;
 	static const int Y_TITLE = CY_TITLE_SPACE;
 
@@ -193,8 +193,13 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	static const int X_MINIROOM = CX_SPACE;
 	const int Y_MINIROOM = CY_DETAILS_FRAME - CY_SPACE - CY_MINIROOM;
 
+	static const int X_NAME = X_MINIROOM;
+	static const int Y_NAME = CY_SPACE;
+	static const UINT CX_NAME = CX_DETAILS_FRAME - CX_SPACE;
+	static const UINT CY_NAME = 25;
+
 	static const int X_AUTHOR_LABEL = X_MINIROOM;
-	static const int Y_AUTHOR_LABEL = CY_SPACE;
+	static const int Y_AUTHOR_LABEL = Y_NAME + CY_NAME;
 	static const UINT CX_AUTHOR_LABEL = 100;
 	static const UINT CY_AUTHOR_LABEL = 25;
 
@@ -281,6 +286,9 @@ CDemosScreen::CDemosScreen() : CDrodScreen(SCR_Demos)
 	AddWidget(this->pDetailsFrame);
 
 	//Details frame widgets.
+	this->pNameWidget = new CLabelWidget(0L, X_NAME, Y_NAME,
+		CX_NAME, CY_NAME, F_Small, wszEmpty);
+	this->pDetailsFrame->AddWidget(this->pNameWidget);
 	this->pDetailsFrame->AddWidget(new CLabelWidget(0L, X_AUTHOR_LABEL, Y_AUTHOR_LABEL,
 					CX_AUTHOR_LABEL, CY_AUTHOR_LABEL, F_Small,
 					g_pTheDB->GetMessageText(MID_Author)));
@@ -379,6 +387,12 @@ CDemosScreen::~CDemosScreen()
 	delete this->pDemoCurrentGame;
 }
 
+//************************************************************************************
+bool CDemosScreen::IsCommandSupported(int command) const
+{
+	return command == CMD_EXTRA_EDITOR_DELETE;
+}
+
 //******************************************************************************
 bool CDemosScreen::SetForActivate()
 //Called before screen is activated and first paint.
@@ -402,6 +416,7 @@ bool CDemosScreen::SetForActivate()
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 
 	this->pLBoxHeaderWidget->SetText(wszEmpty);
+	this->pNameWidget->SetText(wszEmpty);
 	this->pAuthorWidget->SetText(wszEmpty);
 	this->pCreatedWidget->SetText(wszEmpty);
 	this->pDurationWidget->SetText(wszEmpty);
@@ -445,6 +460,12 @@ bool CDemosScreen::SetForActivate()
 	this->bHoldPublished = true;
 	this->bIsAuthor = g_pTheDB->GetPlayerID() == g_pTheDB->Holds.GetAuthorID(dwHoldID);
 	DownloadRoomDemos(this->dwRoomID);
+
+	{
+		CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+		InitKeysymToCommandMap(pPlayer->Settings);
+		delete pPlayer;
+	}
 
 	return true;
 }
@@ -851,7 +872,8 @@ void CDemosScreen::OnClick(
 			if (pDemo)
 			{
 				//Default filename is demo description.
-				WSTRING wstrExportFile = (WSTRING)pDemo->DescriptionText;
+				WSTRING wstrExportFile = demoIDs.size() == 1 ?
+					(WSTRING)pDemo->DescriptionText : GetSelectedDemosDescription(demoIDs, pDemo);
 				if (ExportSelectFile(MID_SaveDemoPath, wstrExportFile, EXT_DEMO))
 				{
 					//Write the demo file.
@@ -1093,7 +1115,14 @@ const
 	if (!pSavedGame) {delete pDemo; return false;}
 
 	//Copy date/time to beginning of item.
-	pSavedGame->Created.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
+	CDate date = pSavedGame->Created;
+	CDbPlayer* pCurrentPlayer = g_pTheDB->GetCurrentPlayer();
+	if (pCurrentPlayer)
+	{
+		date.SetDateFormat((CDate::DateFormat)pCurrentPlayer->Settings.GetVar(Settings::DemoDateFormat, CDate::MDY));
+		delete pCurrentPlayer;
+	}
+	date.GetLocalFormattedText(DF_SHORT_DATE | DF_SHORT_TIME, wstrText);
 	dwRoomID = pSavedGame->dwRoomID;
 	delete pSavedGame;
 
@@ -1129,6 +1158,47 @@ const
 
 	delete pDemo;
 	return true;
+}
+
+//*****************************************************************************
+WSTRING CDemosScreen::GetSelectedDemosDescription(
+// Gets text to describe a group of demos. Assumes they're all in the same level.
+// If something goes wrong, it returns the description of pDemo
+	const CIDSet demoIDs,
+	const CDbDemo* pDemo) const
+{
+	ASSERT(pDemo);
+	//Get the level and hold IDs
+	UINT roomID = CDbSavedGames::GetRoomIDofSavedGame(pDemo->dwSavedGameID);
+	UINT levelID = CDbRooms::GetLevelIDForRoom(roomID);
+	UINT holdID = CDbRooms::GetHoldIDForRoom(roomID);
+
+	//Hold name.
+	WSTRING descText;
+	WSTRING holdName = CDbHolds::GetHoldName(holdID);
+	WSTRING abbrevHoldName;
+	static const UINT MAX_HOLD_NAME = 8;
+	if (holdName.size() <= MAX_HOLD_NAME)
+		descText += holdName;
+	else
+	{
+		//Try to abbreviate by taking only the first letter from each word
+		abbrevHoldName = filterFirstLettersAndNumbers(holdName);
+		descText += abbrevHoldName;
+	}
+	descText += wszColon;
+	descText += wszSpace;
+
+	//Level name.
+	descText += CDbLevels::GetLevelName(levelID);
+	descText += wszSpace;
+
+	//Append total number of demos
+	descText += to_WSTRING(demoIDs.size());
+	descText += wszSpace;
+	descText += g_pTheDB->GetMessageText(MID_Demos);
+
+	return descText;
 }
 
 //*****************************************************************************
@@ -1414,6 +1484,8 @@ void CDemosScreen::SetWidgetsToDemo(
 	//Enable upload button if this is a CaravelNet hold.
 	pButton = GetWidget(TAG_UPLOAD);
 	pButton->Enable(g_pTheNet->IsLocalHold(this->pDemoCurrentGame->pHold->dwHoldID));
+
+	this->pNameWidget->SetText(pDemo->DescriptionText);
 
 	//Get author text from a couple of lookups.
 	const WCHAR *pwczAuthor = pDemo->GetAuthorText();

@@ -27,26 +27,22 @@
 #ifndef SWORDSMANSWIRLEFFECT_H
 #define SWORDSMANSWIRLEFFECT_H
 
-#include "DrodEffect.h"
+#include "SwirlEffect.h"
 #include <BackEndLib/Coord.h>
 
 
 class CCurrentGame;
-class CSwordsmanSwirlEffect : public CEffect
+class CSwordsmanSwirlEffect : public CSwirlEffect
 {
 public:
 	CSwordsmanSwirlEffect(CWidget *pSetWidget, const CCurrentGame *pCurrentGame);
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
-	virtual void Draw(SDL_Surface& destSurface);
 
 private:
 	const CCurrentGame *pCurrentGame;
 	UINT wOldX, wOldY;
-
-	Uint8 nOpacity;
-	std::vector<CMoveCoordEx> drawSwirls; //wO = width & height, wValue=frame
 };
 
 #endif //...#ifndef SWORDSMANSWIRLEFFECT_H

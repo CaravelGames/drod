@@ -76,11 +76,10 @@ CChatScreen::CChatScreen()
 	static const UINT CY_BUTTON = CY_STANDARD_BUTTON;
 	static const UINT CY_BUTTON_SPACE = 10;
 
-	static const UINT CY_TITLE_SPACE = 14;
 	static const UINT CX_TITLE = 300;
-	static const UINT CY_TITLE = 52;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 	const int X_TITLE = (this->w - CX_TITLE) / 2;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	//Chat window.
 	static const int X_CHATLIST = CX_SPACE;

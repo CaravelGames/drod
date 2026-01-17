@@ -74,7 +74,7 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 
 	//Check player location first as a baseline
 	UINT wSX = player.wX, wSY = player.wY;
-	if (player.IsInRoom() && bCanFluffTrack(player.wAppearance) &&
+	if (player.IsInRoom() && player.CanFluffTrack() &&
 			(player.IsVisible() || CanSmellObjectAt(player.wX, player.wY)))
 	{
 		//Player is Beethro or a comparable target that is somehow sensed by this monster,
@@ -87,18 +87,11 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 
 	for (const CMonster *pMonster = room.pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		if (bCanFluffTrack(pMonster->GetResolvedIdentity()))
+		if (pMonster->CanFluffTrack())
 		{
 			if (pMonster->IsHiding() && !CanSmellObjectAt(pMonster->wX, pMonster->wY))
 			{
 				continue;
-			}
-
-			if (pMonster->wType == M_CHARACTER)
-			{
-				const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-				if (!pCharacter) continue;
-				if (!pCharacter->IsVisible()) continue;
 			}
 
 			wDistance = nDist(pMonster->wX, pMonster->wY, this->wX, this->wY);
@@ -123,6 +116,18 @@ bool CFluffBaby::GetGoal(UINT& wX, UINT& wY) const
 
 	// No target found
 	return false;
+}
+
+//*****************************************************************************
+bool CFluffBaby::CanPushOntoOTile(UINT wTile) const
+//Override for Fluff puffs
+{
+	//Pushing onto Hot Tiles should fail, causing a "Puff Attack" instead
+	if (wTile == T_HOT) {
+		return false;
+	}
+
+	return CMonster::CanPushOntoOTile(wTile);
 }
 
 //*****************************************************************************

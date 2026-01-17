@@ -112,6 +112,9 @@ const UINT TAG_SHOWDESCRIPTION_ONCE = 1063;
 const UINT TAG_LEVELENTRANCEAUDIO = 1064;
 const UINT TAG_LEVELENTRANCEAUDIONAME = 1065;
 
+const UINT TAG_BIGMAPCONTAINER = 1070;
+const UINT TAG_BIGMAP = 1071;
+
 #define NO_ENTRANCE (static_cast<UINT>(-1))
 
 const SURFACECOLOR PaleYellow = {255, 255, 128};
@@ -702,7 +705,7 @@ CEditRoomScreen::CEditRoomScreen()
 	, pHold(NULL), pLevel(NULL), pRoom(NULL)
 	, pRoomWidget(NULL), pTabbedMenu(NULL)
 	, pCharacterDialog(NULL)
-	, pEntranceBox(NULL), pLevelEntranceDialog(NULL)
+	, pEntranceBox(NULL), pLevelEntranceDialog(NULL), pSelectMediaDialog(NULL)
 
 	, wSelectedObject(static_cast<UINT>(-1))
 	, wSelectedObjectSave(static_cast<UINT>(-1))
@@ -817,6 +820,11 @@ CEditRoomScreen::CEditRoomScreen()
 	static const UINT CX_HELP = 64;
 	static const UINT CY_HELP = 32;
 #endif
+
+	//Pop-up map
+	static const UINT BIGMAP_MARGIN = 100;
+	const UINT CX_BIGMAP = CDrodBitmapManager::CX_ROOM - 2 * BIGMAP_MARGIN;
+	const UINT CY_BIGMAP = CDrodBitmapManager::CY_ROOM - 2 * BIGMAP_MARGIN;
 
 	this->pMapWidget->Enable();
 
@@ -959,12 +967,24 @@ CEditRoomScreen::CEditRoomScreen()
 	AddWidget(pLabel);
 
 	//Level list dialog box.
-	this->pEntranceBox = new CEntranceSelectDialogWidget(0L);
-	AddWidget(this->pEntranceBox);
-	this->pEntranceBox->Move(
-		X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pEntranceBox->GetW()) / 2,
-		Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pEntranceBox->GetH()) / 2);   //center over room widget
-	this->pEntranceBox->Hide();
+	{
+		this->pEntranceBox = new CEntranceSelectDialogWidget(0L);
+		AddWidget(this->pEntranceBox);
+		this->pEntranceBox->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pEntranceBox->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pEntranceBox->GetH()) / 2);   //center over room widget
+		this->pEntranceBox->Hide();
+	}
+
+	// Select media dialog
+	{
+		this->pSelectMediaDialog = new CSelectMediaDialogWidget(0L);
+		AddWidget(this->pSelectMediaDialog);
+		this->pSelectMediaDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSelectMediaDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSelectMediaDialog->GetH()) / 2);   //center over room widget
+		this->pSelectMediaDialog->Hide();
+	}
 
 	//Character monster customization box.
 	this->pCharacterDialog = new CCharacterDialogWidget(0L);
@@ -973,6 +993,18 @@ CEditRoomScreen::CEditRoomScreen()
 		X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pCharacterDialog->GetW()) / 2,
 		Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pCharacterDialog->GetH()) / 2);   //center over room widget
 	this->pCharacterDialog->Hide();
+
+	//Pop-up map.
+	CScrollableWidget* pScrollingMap = new CScrollableWidget(TAG_BIGMAPCONTAINER, 0, 0,
+		CX_BIGMAP, CY_BIGMAP);
+	pScrollingMap->Hide();
+	this->pRoomWidget->AddWidget(pScrollingMap);
+	pScrollingMap->Center();
+	CMapWidget* pPopUpMap = new CMapWidget(TAG_BIGMAP, 0, 0,
+		CDrodBitmapManager::DISPLAY_COLS, CDrodBitmapManager::DISPLAY_ROWS, NULL);
+	pPopUpMap->bUserMoveable = false;
+	pPopUpMap->Hide();
+	pScrollingMap->AddWidget(pPopUpMap);
 
 	AddChatDialog();
 	AddLevelEntranceDialog();
@@ -993,7 +1025,7 @@ void CEditRoomScreen::AddChatDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 30;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const int X_CHATOPTION = X_HEADER;
 	static const int Y_CHATOPTION = Y_HEADER + CY_HEADER + CY_STANDARD_OPTIONBUTTON + CY_SPACE;
@@ -1628,6 +1660,28 @@ void CEditRoomScreen::ClickRoom()
 			Paint();
 		}
 		break;
+		case ES_GETSQUARES1:
+		{
+			this->wSelectedX = this->pRoomWidget->wEndX;
+			this->wSelectedY = this->pRoomWidget->wEndY;
+			VERIFY(SetState(ES_GETSQUARES2, true));
+			Paint();
+		}
+		break;
+		case ES_GETSQUARES2:
+		{
+			this->pCharacterDialog->FinishCommand(
+				this->wSelectedX, this->wSelectedY,
+				this->pRoomWidget->wEndX, this->pRoomWidget->wEndY
+			);
+			VERIFY(SetState(ES_PLACING));
+			this->pCharacterDialog->Display();
+			Paint();
+		}
+		break;
+		case ES_GETMAPROOM:
+			//do nothing here
+		break;
 
 		default: ASSERT(false); break;
 	}
@@ -1710,6 +1764,13 @@ void CEditRoomScreen::DisplayChatText(const WSTRING& text, const SDL_Color& colo
 }
 
 //*****************************************************************************
+bool CEditRoomScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return bIsEditorCommand(command);
+}
+
+//*****************************************************************************
 CObjectMenuWidget* CEditRoomScreen::GetActiveMenu()
 //Returns: pointer to active menu widget in tabbed menu
 {
@@ -1739,42 +1800,16 @@ void CEditRoomScreen::GetCustomImageID(
 	if (this->pHold->dwPlayerID != g_pTheDB->GetPlayerID() && !SaveRoomToDB())
 		return;
 
-SelectImage:
-	UINT dwDataID;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwDataID = roomDataID;
-		eButton = SelectListID(
-				this->pEntranceBox, this->pHold, dwDataID,
-				MID_ImageSelectPrompt, CEntranceSelectDialogWidget::Images);
-		if (eButton != CEntranceSelectDialogWidget::OK &&
-				eButton != CEntranceSelectDialogWidget::Delete)
-			return;
+	this->pSelectMediaDialog->SetForDisplay(MID_ImageSelectPrompt, this->pHold, CSelectMediaDialogWidget::Images);
+	this->pSelectMediaDialog->SelectItem(roomDataID);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return;
+	}
 
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this image from the database and make another selection.
-			//It's safe if other rooms remain set to this old image ID.
-			//They will now show the default texture.
-			if (dwDataID)
-				this->pHold->MarkDataForDeletion(dwDataID);
-			roomDataID = 0;
-			this->pRoomWidget->LoadRoomImages();
-			this->pRoomWidget->Paint();
-		}
-	} while (eButton != CEntranceSelectDialogWidget::OK);
+	roomDataID = this->pSelectMediaDialog->GetSelectedItem();
 
 	Changing();
-
-	if (dwDataID) {
-		roomDataID = dwDataID;   //selected image from DB
-	} else {
-		//Load new image from disk.
-		const UINT dwID = ImportHoldImage(this->pHold->dwHoldID, EXT_JPEG | EXT_PNG);
-		if (dwID)
-			roomDataID = dwID;
-		goto SelectImage;	//return to image select menu
-	}
 
 	if (!bReselect)
 	{
@@ -2056,6 +2091,10 @@ void CEditRoomScreen::ApplyPlayerSettings()
 
 	//Set room editing options.
 	this->bAutoSave = pCurrentPlayer->Settings.GetVar(Settings::AutoSave, true);
+
+	//Set if citizen groups are subtitled as numbers or colors
+	this->pRoomWidget->DescribeCitizenColor(
+		pCurrentPlayer->Settings.GetVar(Settings::DescribeCitizenColor, false));
 
 	COptionButtonWidget *pOptionButton = static_cast<COptionButtonWidget *>(
 			GetWidget(TAG_SHOWERRORS));
@@ -2414,6 +2453,9 @@ bool CEditRoomScreen::LoadRoom(
 void CEditRoomScreen::OnBetweenEvents()
 //Called periodically when no events are being processed.
 {
+	if (this->eState == ES_GETMAPROOM)
+		return; //don't animate anything in this state
+
 	if (this->bEnableChat)
 	{
 		ChatPolling(TAG_CHATUSERS);
@@ -2536,6 +2578,8 @@ void CEditRoomScreen::OnBetweenEvents()
 		break;
 
 		case ES_GETSQUARE:
+		case ES_GETSQUARES1:
+		case ES_GETSQUARES2:
 			RequestToolTip(MID_GetRoomSquareTip);
 			//Show room coords along with tooltip.
 			if (SDL_GetTicks() - this->dwLastMouseMove > 500) //ms
@@ -2594,6 +2638,37 @@ void CEditRoomScreen::OnClick(
 			if ((SDL_GetModState() & KMOD_CTRL) == 0)
 				ClickRoom();
 		break;
+
+		case TAG_BIGMAP:
+		{
+			ASSERT(this->eState == ES_GETMAPROOM); //should only be clickable in this state
+
+			//Determine clicked room.
+			CMapWidget* pPopUpMap =
+				DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_BIGMAP));
+			const UINT roomID = this->pLevel->GetRoomIDAtCoords(
+				pPopUpMap->dwClickedRoomX, pPopUpMap->dwClickedRoomY);
+			if (!roomID)
+			{
+				//No room clicked.
+				g_pTheSound->PlaySoundEffect(SEID_WISP);
+			}
+			else {
+				//Return local (x,y) coords of clicked room.
+				this->pCharacterDialog->FinishCommand(pPopUpMap->dwClickedRoomX,
+					pPopUpMap->dwClickedRoomY % 100);
+
+				pPopUpMap->Hide();
+				CScrollableWidget* pScrollingMap =
+					DYN_CAST(CScrollableWidget*, CWidget*, GetWidget(TAG_BIGMAPCONTAINER));
+				pScrollingMap->Hide();
+
+				VERIFY(SetState(ES_PLACING));
+				this->pCharacterDialog->Display();
+				Paint();
+			}
+		}
+		break;
 	}
 }
 
@@ -2639,67 +2714,30 @@ void CEditRoomScreen::OnKeyDown(
 	if (this->eState == ES_PLACING)
 		CScreen::OnKeyDown(dwTagNo, Key);
 
-	//Check for other keys.
-	switch (Key.keysym.sym)
-	{
-		case SDLK_ESCAPE:
-			//Handle some cleanup on screen exit.
-			if (this->eState != ES_PLACING)
-			{
-				if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT) break;
-				VERIFY(SetState(ES_PLACING));
-				Paint(); //redraw room highlights
-			} else {
-				UnloadPlaytestSession();
-			}
+	//Check for a game command.
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+
+	switch (nCommand) {
+		case CMD_EXTRA_STATS:
+			ShowCursor();
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			DisplayChatDialog();
 		break;
 
-		//Show room/game stats.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				ShowCursor();
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				DisplayChatDialog();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pEntranceBox);
-			}
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pEntranceBox);
 		break;
 
-		case SDLK_F1:
+		case CMD_EXTRA_SHOW_HELP:
 			CBrowserScreen::SetPageToLoad("editroom.html");
 			GoToScreen(SCR_Browser);
 		break;
 
-		//dev keys
-		case SDLK_F2:
-			//Output all scripts where each hold var (or Alt=challenge) is referenced.
-			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-			SetCursor(CUR_Wait);
-			g_pTheDB->Holds.LogScriptVarRefs(this->pHold->dwHoldID, (Key.keysym.mod & KMOD_ALT) != 0);
-			SetCursor();
-		break;
-		case SDLK_F3:
-			ForceFullStyleReload();
-		break;
-
-		case SDLK_F4:
-#if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:
-#endif
-			if (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL))
-			{
-				//Save on exit.
-				SaveRoom();
-			}
-		break;
-
-		case SDLK_F5:
+		case CMD_EXTRA_EDITOR_PLAYTEST_ROOM:
 			SetState(ES_TESTROOM);	//no verify
 		break;
 
-		case SDLK_F6:
+		case CMD_EXTRA_WATCH_DEMOS:
 		{
 			if (!SetState(ES_PLACING)) break;
 
@@ -2709,14 +2747,14 @@ void CEditRoomScreen::OnKeyDown(
 				ShowOkMessage(MID_CouldNotLoadResources);
 				break;
 			}
-			CDemosScreen *pDemosScreen = DYN_CAST(CDemosScreen*, CScreen*, pScreen);
+			CDemosScreen *pDemosScreen = DYN_CAST(CDemosScreen *, CScreen *, pScreen);
 			ASSERT(pDemosScreen);
 			pDemosScreen->ShowRoom(this->pRoom->dwRoomID);
 			GoToScreen(SCR_Demos);
 		}
 		break;
 
-		case SDLK_F7:
+		case CMD_EXTRA_EDITOR_REFLECT_X:
 			if (!SetState(ES_PLACING)) break;
 			ReflectRoomX();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
@@ -2725,7 +2763,7 @@ void CEditRoomScreen::OnKeyDown(
 			Paint();
 		break;
 
-		case SDLK_F8:
+		case CMD_EXTRA_EDITOR_REFLECT_Y:
 			if (!SetState(ES_PLACING)) break;
 			ReflectRoomY();
 			this->pMapWidget->DrawMapSurfaceFromRoom(this->pRoom);
@@ -2734,73 +2772,32 @@ void CEditRoomScreen::OnKeyDown(
 			Paint();
 		break;
 
-		case SDLK_F9:
+		case CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE:
 			Changing(RoomAndHold);
-			if (Key.keysym.mod & (KMOD_SHIFT)) {
-				GetOverheadImageID(true);
-			} else {
-				GetFloorImageID(true);
-			}
+			GetFloorImageID(true);
 		break;
 
-		case SDLK_PAGEUP: case SDLK_KP_9:
+		case CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE:
+			Changing(RoomAndHold);
+			GetOverheadImageID(true);
+		break;
+
+		case CMD_EXTRA_EDITOR_NEXT_LEVEL:
 			WarpToNextLevel(false);
 		break;
-		case SDLK_PAGEDOWN: case SDLK_KP_3:
+
+		case CMD_EXTRA_EDITOR_PREV_LEVEL:
 			WarpToNextLevel(true);
 		break;
 
-		case SDLK_SPACE:
-			//Remove chat subtitles.
+		case CMD_EXTRA_SKIP_SPEECH:
 			this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
 		break;
 
-		//Menu tab hotkeys.
-		case SDLK_LEFT:
-		case SDLK_KP_4:
-		case SDLK_RIGHT:
-		case SDLK_KP_6:
-			if ((Key.keysym.mod & KMOD_CTRL) && dwTagNo != this->pTabbedMenu->GetTagNo())
-			{
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
-				this->pTabbedMenu->HandleKeyDown(Key);
 
-				//Set focus to new menu.
-				CObjectMenuWidget *pMenu = GetActiveMenu();
-				ASSERT(pMenu);
-				SelectWidget(pMenu);
-			}
-		break;
-		case SDLK_1:
-		case SDLK_2:
-		case SDLK_3:
-		case SDLK_4:
-			if ((Key.keysym.mod & KMOD_CTRL))
-			{
-				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
-				UINT tab;
-				switch (Key.keysym.sym)
-				{
-					default:
-					case SDLK_1: tab = 0; break;
-					case SDLK_2: tab = 1; break;
-					case SDLK_3: tab = 2; break;
-					case SDLK_4: tab = 3; break;
-				}
-				this->pTabbedMenu->SelectTab(tab);
-
-				//Set focus to new menu.
-				CObjectMenuWidget *pMenu = GetActiveMenu();
-				ASSERT(pMenu);
-				SelectWidget(pMenu);
-			}
-		break;
-
-		case SDLK_x:
-		case SDLK_c:
+		case CMD_EXTRA_EDITOR_CUT:
+		case CMD_EXTRA_EDITOR_COPY:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			if (this->eState != ES_PLACING) break;
 
 			//Only allow paste when mouse button is down in room widget
@@ -2820,20 +2817,20 @@ void CEditRoomScreen::OnKeyDown(
 				delete this->pCopyRoom;
 
 				{
-				CImportInfo info;
-				const UINT roomDataID = this->pRoom->dwDataID;
-				const UINT roomOverheadDataID = this->pRoom->dwOverheadDataID;
-				this->pRoom->dwDataID = this->pRoom->dwOverheadDataID = 0; //don't copy room media data
-				this->pCopyRoom = this->pRoom->MakeCopy(info, 0, true); //same hold
-				this->pRoom->dwDataID = roomDataID;
-				this->pRoom->dwOverheadDataID = roomOverheadDataID;
+					CImportInfo info;
+					const UINT roomDataID = this->pRoom->dwDataID;
+					const UINT roomOverheadDataID = this->pRoom->dwOverheadDataID;
+					this->pRoom->dwDataID = this->pRoom->dwOverheadDataID = 0; //don't copy room media data
+					this->pCopyRoom = this->pRoom->MakeCopy(info, 0, true); //same hold
+					this->pRoom->dwDataID = roomDataID;
+					this->pRoom->dwOverheadDataID = roomOverheadDataID;
 				}
 
 				this->pCopyRoom->dwRoomID = this->pRoom->dwRoomID;
 				this->pCopyRoom->dwOverheadDataID = this->pRoom->dwOverheadDataID;
 				this->pCopyRoom->dwLevelID = this->pRoom->dwLevelID;
 
-				if ((this->bCutAndPaste = (Key.keysym.sym == SDLK_x)))
+				if ((this->bCutAndPaste = nCommand == CMD_EXTRA_EDITOR_CUT))
 					EraseRegion();
 
 				this->bAreaJustCopied = true;
@@ -2842,7 +2839,8 @@ void CEditRoomScreen::OnKeyDown(
 				//Stop any plotting effects.
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(EPENDINGPLOT);
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ETRANSTILE);
-			} else {
+			}
+			else {
 				CWidget *pWidget = GetSelectedWidget();
 				ASSERT(pWidget);
 				if (pWidget->GetTagNo() == TAG_MAP)
@@ -2850,19 +2848,17 @@ void CEditRoomScreen::OnKeyDown(
 					//Require user to save room changes before making copy of room.
 					if (SaveRoomToDB())
 					{
-						CMapWidget *pMap = DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_MAP));
+						CMapWidget *pMap = DYN_CAST(CMapWidget *, CWidget *, GetWidget(TAG_MAP));
 						ASSERT(pMap);
-						pMap->CopyRoom(Key.keysym.sym == SDLK_c); //Ctrl-C copies
+						pMap->CopyRoom(nCommand == CMD_EXTRA_EDITOR_COPY); //Ctrl-C copies
 					}
 				}
 			}
 		}
 		break;
 
-		case SDLK_v:
+		case CMD_EXTRA_EDITOR_PASTE:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			if (this->eState != ES_PLACING) break;
 
 			StopKeyRepeating();  //don't repeat this operation
@@ -2870,49 +2866,50 @@ void CEditRoomScreen::OnKeyDown(
 			ASSERT(pWidget);
 			switch (pWidget->GetTagNo())
 			{
-				case TAG_MAP:
+			case TAG_MAP:
+			{
+				//Paste a room.
+				if (!SaveRoomToDB()) return;
+				if (this->pMapWidget->IsDeletingRoom())
 				{
-					//Paste a room.
-					if (!SaveRoomToDB()) return;
-					if (this->pMapWidget->IsDeletingRoom())
+					//Not allowed to delete level entrance room.
+					UINT dwSX, dwSY, dwMapX, dwMapY;
+					ASSERT(this->pLevel);
+					this->pLevel->GetStartingRoomCoords(dwSX, dwSY);
+					this->pMapWidget->GetSelectedRoomXY(dwMapX, dwMapY);
+					if (dwMapX == dwSX && dwMapY == dwSY)
 					{
-						//Not allowed to delete level entrance room.
-						UINT dwSX, dwSY, dwMapX, dwMapY;
-						ASSERT(this->pLevel);
-						this->pLevel->GetStartingRoomCoords(dwSX, dwSY);
-						this->pMapWidget->GetSelectedRoomXY(dwMapX, dwMapY);
-						if (dwMapX == dwSX && dwMapY == dwSY)
-						{
-							ShowOkMessage(MID_CantDeleteEntranceRoom);
-							break;
-						} else {
-							if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES)
-								break;
-						}
+						ShowOkMessage(MID_CantDeleteEntranceRoom);
+						break;
 					}
-					this->bRoomDirty = false;  //don't save old room
-					const bool bUpdate = this->pMapWidget->PasteRoom(this->pHold);
-					if (bUpdate)
-					{
-						//Refresh level instance to resynch data.
-						const UINT dwLevelID = this->pLevel->dwLevelID;
-						delete this->pLevel;
-						this->pLevel = g_pTheDB->Levels.GetByID(dwLevelID);
-
-						//Update hold's and level's timestamp.
-						//this->pHold->Update(); //hold was updated in PasteRoom().
-						this->pLevel->Update();
-
-						UINT dwRoomX, dwRoomY;
-						this->pMapWidget->GetSelectedRoomXY(dwRoomX, dwRoomY);
-						this->pMapWidget->LoadFromLevel(this->pLevel);
-						LoadRoomAtCoords(dwRoomX, dwRoomY, true);
-						return;
+					else {
+						if (ShowYesNoMessage(MID_DeleteRoomPrompt) != TAG_YES)
+							break;
 					}
 				}
-				break;
+				this->bRoomDirty = false;  //don't save old room
+				const bool bUpdate = this->pMapWidget->PasteRoom(this->pHold);
+				if (bUpdate)
+				{
+					//Refresh level instance to resynch data.
+					const UINT dwLevelID = this->pLevel->dwLevelID;
+					delete this->pLevel;
+					this->pLevel = g_pTheDB->Levels.GetByID(dwLevelID);
 
-				default: break;
+					//Update hold's and level's timestamp.
+					//this->pHold->Update(); //hold was updated in PasteRoom().
+					this->pLevel->Update();
+
+					UINT dwRoomX, dwRoomY;
+					this->pMapWidget->GetSelectedRoomXY(dwRoomX, dwRoomY);
+					this->pMapWidget->LoadFromLevel(this->pLevel);
+					LoadRoomAtCoords(dwRoomX, dwRoomY, true);
+					return;
+				}
+			}
+			break;
+
+			default: break;
 			}
 
 			//If a room wasn't just pasted, Ctrl-V will indicate that the next
@@ -2930,17 +2927,103 @@ void CEditRoomScreen::OnKeyDown(
 		}
 		break;
 
-		case SDLK_z:
+		case CMD_EXTRA_EDITOR_UNDO:
 			if (Key.keysym.mod & KMOD_CTRL)
 				UndoCommand(true);
 		break;
-		case SDLK_y:
+
+		case CMD_EXTRA_EDITOR_REDO:
 			if (Key.keysym.mod & KMOD_CTRL)
 				UndoCommand(false);
 		break;
 
-		default: break;
+		case CMD_EXTRA_EDITOR_LOG_VAR_REFS:
+		case CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS:
+			//Output all scripts where each hold var or challenge is referenced.
+			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
+			SetCursor(CUR_Wait);
+			g_pTheDB->Holds.LogScriptVarRefs(this->pHold->dwHoldID, nCommand == CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS);
+			SetCursor();
+		break;
+		case CMD_EXTRA_RELOAD_STYLE:
+			ForceFullStyleReload();
+		break;
 	}
+
+	//Check for other keys.
+	if (!bIsVirtualCommand(nCommand))
+		switch (Key.keysym.sym)
+		{
+			case SDLK_ESCAPE:
+				//Handle some cleanup on screen exit.
+				if (this->eState != ES_PLACING)
+				{
+					if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT ||
+						this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2 ||
+						this->eState == ES_GETMAPROOM) {
+						break;
+					}
+					VERIFY(SetState(ES_PLACING));
+					Paint(); //redraw room highlights
+				} else {
+					UnloadPlaytestSession();
+				}
+			break;
+
+			case SDLK_F4:
+	#if defined(__linux__) || defined(__FreeBSD__)
+			case SDLK_PAUSE:
+	#endif
+				if (Key.keysym.mod & (KMOD_ALT | KMOD_CTRL))
+				{
+					//Save on exit.
+					SaveRoom();
+				}
+			break;
+
+			//Menu tab hotkeys.
+			case SDLK_LEFT:
+			case SDLK_KP_4:
+			case SDLK_RIGHT:
+			case SDLK_KP_6:
+				if ((Key.keysym.mod & KMOD_CTRL) && dwTagNo != this->pTabbedMenu->GetTagNo())
+				{
+					this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
+					this->pTabbedMenu->HandleKeyDown(Key);
+
+					//Set focus to new menu.
+					CObjectMenuWidget *pMenu = GetActiveMenu();
+					ASSERT(pMenu);
+					SelectWidget(pMenu);
+				}
+			break;
+			case SDLK_1:
+			case SDLK_2:
+			case SDLK_3:
+			case SDLK_4:
+				if ((Key.keysym.mod & KMOD_CTRL))
+				{
+					this->pRoomWidget->RemoveLastLayerEffectsOfType(ETOOLTIP);
+					UINT tab;
+					switch (Key.keysym.sym)
+					{
+						default:
+						case SDLK_1: tab = 0; break;
+						case SDLK_2: tab = 1; break;
+						case SDLK_3: tab = 2; break;
+						case SDLK_4: tab = 3; break;
+					}
+					this->pTabbedMenu->SelectTab(tab);
+
+					//Set focus to new menu.
+					CObjectMenuWidget *pMenu = GetActiveMenu();
+					ASSERT(pMenu);
+					SelectWidget(pMenu);
+				}
+			break;
+
+			default: break;
+		}
 
 	switch (dwTagNo)
 	{
@@ -2966,7 +3049,6 @@ void CEditRoomScreen::OnKeyDown(
 	const UINT wOldWaterType = this->wSelWaterType;
 	if ((Key.keysym.mod & KMOD_CTRL) == 0)
 	{
-		const int nCommand = GetCommandForKeysym(Key.keysym.sym);
 		switch (nCommand)
 		{
 			//Rotate orientation.
@@ -3147,7 +3229,9 @@ void CEditRoomScreen::OnMouseWheel(
 	}
 
 	//Don't display the active object in the region being selected or change the selection parameters.
-	if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT)
+	if (this->eState == ES_GETSQUARE || this->eState == ES_GETRECT ||
+			this->eState == ES_GETSQUARES1 || this->eState == ES_GETSQUARES2 ||
+			this->eState == ES_GETMAPROOM)
 		return;
 
 	//Update room widget if a plot is occurring.
@@ -3360,60 +3444,32 @@ void CEditRoomScreen::PopulateItemMenus()
 UINT CEditRoomScreen::SelectMediaID(
 //UI for importing, deleting and selecting media data belonging to this hold.
 //
+//Returns: a new value or 0 if nothing was changed
+//
 //Params:
-	const UINT dwDefault, //default selected value
-	const CEntranceSelectDialogWidget::DATATYPE eType) //media type
+	const UINT dwSelectedValue,                     //(in) currently selected value
+	const CSelectMediaDialogWidget::DATATYPE eType) //media type
 {
 	MESSAGE_ID midPrompt = 0;
 	switch (eType)
 	{
-		case CEntranceSelectDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
-		case CEntranceSelectDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
-		case CEntranceSelectDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
+		case CSelectMediaDialogWidget::Images: midPrompt = MID_ImageSelectPrompt; break;
+		case CSelectMediaDialogWidget::Sounds: midPrompt = MID_SoundSelectPrompt; break;
+		case CSelectMediaDialogWidget::Videos: midPrompt = MID_VideoSelectPrompt; break;
 		default: ASSERT(!"UI for this media type not implemented"); return 0;
 	}
-	ASSERT(midPrompt);
 
+	ASSERT(midPrompt);
 	ASSERT(this->pHold);
 
-	UINT dwVal;
-	bool bDeletedDefault = false;
-	CEntranceSelectDialogWidget::BUTTONTYPE eButton;
-	do {
-		dwVal = (bDeletedDefault ? 0 : dwDefault);
-		eButton = SelectListID(this->pEntranceBox, this->pHold,
-				dwVal, midPrompt, eType);
-
-		if (eButton == CEntranceSelectDialogWidget::Delete)
-		{
-			//Remove this media object from the database and make another selection.
-			//It's okay if other references to this object remain set to this old record ID.
-			//They will robustly default to do nothing.
-			this->pHold->MarkDataForDeletion(dwVal);
-			if (dwVal == dwDefault)
-				bDeletedDefault = true;
-		}
-	} while (eButton == CEntranceSelectDialogWidget::Delete);
-
-	const bool bSelected = eButton == CEntranceSelectDialogWidget::OK;
-	if (bSelected && !dwVal)
-	{
-		//Import media from disk into this hold.
-		switch (eType)
-		{
-			case CEntranceSelectDialogWidget::Images:
-				dwVal = ImportHoldImage(this->pHold->dwHoldID, EXT_JPEG | EXT_PNG);
-			break;
-			case CEntranceSelectDialogWidget::Sounds:
-				dwVal = ImportHoldSound();
-			break;
-			case CEntranceSelectDialogWidget::Videos:
-				dwVal = ImportHoldVideo();
-			break;
-			default: break;
-		}
+	this->pSelectMediaDialog->SetForDisplay(midPrompt, this->pHold, eType);
+	this->pSelectMediaDialog->SelectItem(dwSelectedValue);
+	if (this->pSelectMediaDialog->Display() != TAG_OK) {
+		RequestPaint();
+		return 0;
 	}
-	return bSelected ? dwVal : 0;
+
+	return this->pSelectMediaDialog->GetSelectedItem();
 }
 
 //*****************************************************************************
@@ -3696,7 +3752,7 @@ bool CEditRoomScreen::EditLevelEntrance(
 		switch (dwTagNo)
 		{
 			case TAG_LEVELENTRANCEAUDIO:
-				newDataID = SelectMediaID(newDataID, CEntranceSelectDialogWidget::Sounds);
+				newDataID = SelectMediaID(newDataID, CSelectMediaDialogWidget::Sounds);
 			break;
 			default:
 				bLoop = false;
@@ -4001,12 +4057,22 @@ void CEditRoomScreen::SetDestinationEntrance(
 	}
 	bool bValueSet = false;
 	do {
-		if (SelectListID(this->pEntranceBox, this->pHold, dwEntranceID,
-			MID_ExitLevelPrompt) == CEntranceSelectDialogWidget::OK)
+		CEntranceSelectDialogWidget::BUTTONTYPE button =
+			SelectListID(this->pEntranceBox, this->pHold, dwEntranceID, MID_ExitLevelPrompt);
+
+		switch (button)
 		{
-			Changing();
-			this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
-			bValueSet = true;
+			case CEntranceSelectDialogWidget::OK:
+				Changing();
+				this->pRoom->SetExit(dwEntranceID, wX1, wY1, wX2, wY2);
+				bValueSet = true;
+			break;
+
+			case CEntranceSelectDialogWidget::ESC:
+			case CEntranceSelectDialogWidget::QUIT:
+			return;
+
+			default: break;
 		}
 	} while (!bValueSet);
 }
@@ -7208,8 +7274,21 @@ void CEditRoomScreen::SetSignTextToCurrentRoom(
 	case ES_GETSQUARE:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomSquare);
 		break;
+	case ES_GETSQUARES1:
+	case ES_GETSQUARES2:
+		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomSquare);
+		wstrSignText += wszSpace;
+		wstrSignText += wszLeftParen;
+		wstrSignText += this->eState == ES_GETSQUARES1 ? wszOne : wszTwo;
+		wstrSignText += wszForwardSlash;
+		wstrSignText += wszTwo;
+		wstrSignText += wszRightParen;
+		break;
 	case ES_GETRECT:
 		wstrSignText += g_pTheDB->GetMessageText(MID_GetRoomRect);
+		break;
+	case ES_GETMAPROOM:
+		wstrSignText += g_pTheDB->GetMessageText(MID_GetMapRoom);
 		break;
 	case ES_PASTING:
 		wstrSignText += g_pTheDB->GetMessageText(MID_PastingRegionStatus);
@@ -7258,6 +7337,28 @@ bool CEditRoomScreen::SetState(
 			this->bSelectingImageStart = false;
 
 			this->pRoomWidget->bPlacing = true;
+		break;
+
+		case ES_GETMAPROOM:
+		{
+			//Display pop-up map.
+			CMapWidget* pPopUpMap =
+				DYN_CAST(CMapWidget*, CWidget*, GetWidget(TAG_BIGMAP));
+			ASSERT(pPopUpMap);
+			VERIFY(pPopUpMap->LoadFromLevel(this->pLevel));
+
+			//Select previously chosen room, if any.
+			pPopUpMap->SelectRoomIfValid(this->pCharacterDialog->mapQueryX,
+				this->pLevel->dwLevelID * 100 + this->pCharacterDialog->mapQueryY);
+
+			pPopUpMap->Show();
+			CScrollableWidget* pScrollingMap =
+				DYN_CAST(CScrollableWidget*, CWidget*, GetWidget(TAG_BIGMAPCONTAINER));
+			pScrollingMap->Show();
+			Paint();
+
+			this->pRoomWidget->bPlacing = false;
+		}
 		break;
 
 		default:

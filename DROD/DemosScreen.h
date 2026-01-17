@@ -65,6 +65,7 @@ protected:
 	CDemosScreen();
 	virtual ~CDemosScreen();
 
+	virtual bool   IsCommandSupported(int command) const;
 	virtual bool   SetForActivate();
 	void     ResetRoom() {this->dwRoomID = this->dwLevelID = 0;}
 
@@ -83,6 +84,7 @@ private:
 	void     ExportDemos();
 	void		GetCNetDemos(CNetResult* pResult);
 	bool     GetItemTextForDemo(UINT dwDemoID,  WSTRING &wstrText, UINT& dwRoomID) const;
+	WSTRING  GetSelectedDemosDescription(const CIDSet demoIDs, const CDbDemo* pDemo) const;
 	bool     IsDemoAccessible(CDbDemo* pDemo, const UINT dwPlayerID,
 			const bool bPlayerIsHoldAuthor) const;
 	void		ListCNetDemos();
@@ -101,7 +103,7 @@ private:
 	CListBoxWidget *  pDemoListBoxWidget, *pCNetDemoListBoxWidget;
 	CRoomWidget *     pRoomWidget;
 	CCurrentGame *    pDemoCurrentGame;
-	CLabelWidget *    pAuthorWidget, *pCreatedWidget, *pDurationWidget;
+	CLabelWidget *    pNameWidget, *pAuthorWidget, *pCreatedWidget, *pDurationWidget;
 	CLabelWidget *    pDescriptionWidget;
 	COptionButtonWidget *pShowButton;
 	CLabelWidget *    pLBoxHeaderWidget;

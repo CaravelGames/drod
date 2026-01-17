@@ -39,15 +39,29 @@ CTemporalClone::CTemporalClone(
 { }
 
 //*****************************************************************************
+bool CTemporalClone::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath) const
+//Override for Temporal clone to support kill step player behavior
+{
+	return HasStepAttack() || CMonster::CanDaggerStep(pMonster, bIgnoreSheath);
+}
+
+//*****************************************************************************
 bool CTemporalClone::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
 		return false;
 
-	if (this->wIdentity == M_CONSTRUCT)
+	bool active;
+	if (HasBehavior(PB_DropTrapdoors, active)) {
+		return active;
+	} else if (HasBehavior(PB_DropTrapdoorsArmed, active)) {
+		return active && (bIsThinIce(oTile) || (HasSword() && bIsHeavyWeapon(GetWeaponType())));
+	}
+
+	if (this->wAppearance == M_CONSTRUCT)
 		return true;
 	
-	if (CanLightFuses()) {
+	if (bIsSmitemaster(this->wAppearance) || this->pCurrentGame->swordsman.bCanGetItems) {
 		if (bIsThinIce(oTile))
 			return true;
 
@@ -58,12 +72,187 @@ bool CTemporalClone::CanDropTrapdoor(const UINT oTile) const
 	return false;
 }
 
+bool CTemporalClone::CanEnterTunnel() const
+{
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return bIsMonsterTarget(this->wAppearance) || player.bCanGetItems;
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanFluffTrack() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffTarget, active)) {
+		return active;
+	}
+
+	return bCanFluffTrack(this->wAppearance);
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanFluffKill() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffImmune, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	return bCanFluffKill(this->wAppearance);
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanHaveWeapon() const
+{
+	bool active;
+	if (HasBehavior(PB_HasWeapon, active)) {
+		return active;
+	}
+
+	return bEntityHasSword(this->wAppearance);
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanMovePlatform() const
+{
+	bool active;
+	if (HasBehavior(PB_MovePlatforms, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanPushMonsters() const
+{
+	bool active;
+	if (HasBehavior(PB_PushMonsters, active)) {
+		return active;
+	}
+
+	return this->wAppearance == M_CONSTRUCT || bIsHuman(this->wAppearance);
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanPushObjects() const
+{
+	bool active;
+	if (HasBehavior(PB_PushObjects, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************************
+bool CTemporalClone::CanPushOntoOTile(const UINT wTile) const
+{
+	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))
+		return true;
+
+	bool bSafeOnly;
+	HasBehavior(PB_FatalPushImmune, bSafeOnly);
+
+	if (!bSafeOnly) {
+		// We don't care that these tiles might be deadly
+		return bIsPit(wTile) || bIsWater(wTile);
+	}
+
+	bool bFlying = bIsEntityFlying(this->wAppearance);
+	if (bIsPit(wTile) && IsFlying())
+		return true;
+
+	bool bIsSwimming = bIsEntitySwimming(this->wAppearance);
+	if (bIsDeepWater(wTile) && (bIsSwimming || bFlying))
+		return true;
+
+	if (bIsShallowWater(wTile) && (CanWadeInShallowWater() || bIsSwimming || bFlying))
+		return true;
+
+	return false;
+}
+
+//*****************************************************************************
+bool CTemporalClone::FacesMovementDirection() const
+{
+	bool active;
+	if (HasBehavior(PB_FaceMovementDirection, active)) {
+		return active;
+	}
+
+	return CMimic::FacesMovementDirection();
+}
+
 //*****************************************************************************
 bool CTemporalClone::CanLightFuses() const
 {
-	const CSwordsman& player = this->pCurrentGame->swordsman;
+	bool active;
+	if (HasBehavior(PB_LightFuses, active)) {
+		return active;
+	}
 
-	return bIsSmitemaster(this->wIdentity) || player.bCanGetItems;
+	const CSwordsman& player = this->pCurrentGame->swordsman;
+	return bIsSmitemaster(this->wAppearance) || player.bCanGetItems;
+}
+
+//*****************************************************************************
+bool CTemporalClone::HasBehavior(
+//Returns: If the given behavior is overridden. Output argument describes if it
+//appplies to the temporal clone.
+	const PlayerBehavior& behavior, //(in) behavior to check
+	bool& active //(out) does the behavior apply
+) const
+{
+	if (this->behaviorOverrides.count(behavior) == 0) {
+		active = false;
+		return false;
+	}
+
+	//Power token state is inherited from player.
+	bool bCanGetItems = this->pCurrentGame ? this->pCurrentGame->swordsman.bCanGetItems : false;
+
+	PlayerBehaviorState state = this->behaviorOverrides.at(behavior);
+	switch (state) {
+		case PBS_On: {
+			active = true;
+			return true;
+		}
+		case PBS_Off: {
+			active = false;
+			return true;
+		}
+		case PBS_Powered: {
+			active = bCanGetItems;
+			return true;
+		}
+		case PBS_Unpowered: {
+			active = !bCanGetItems;
+			return true;
+		}
+		default: {
+			active = false;
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************************
+bool CTemporalClone::HasDamageImmunity(const WeaponType& weaponType, bool& active) const
+{
+	PlayerBehavior behavior;
+	switch (weaponType) {
+	case WT_Sword: behavior = PB_SwordDamageImmune; break;
+	case WT_Pickaxe: behavior = PB_PickaxeDamageImmune; break;
+	case WT_Spear: behavior = PB_SpearDamageImmune; break;
+	case WT_Dagger: behavior = PB_DaggerDamageImmune; break;
+	case WT_Caber: behavior = PB_CaberDamageImmune; break;
+	case WT_FloorSpikes: behavior = PB_FloorSpikeImmune; break;
+	case WT_Firetrap: behavior = PB_FiretrapImmune; break;
+	case WT_HotTile: behavior = PB_HotTileImmune; break;
+	default: behavior = PB_SwordDamageImmune; break;
+	}
+
+	return HasBehavior(behavior, active);
 }
 
 //*****************************************************************************************
@@ -114,7 +303,7 @@ bool CTemporalClone::IsHiding() const
 	//Otherwise, temporal clones are invisible if the player can hide in water
 	//and the clone is standing in shallow water
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (IsWading() && player.GetWaterTraversalState(this->wIdentity) == WTrv_CanHide)
+	if (IsWading() && player.GetWaterTraversalState(this->wAppearance) == WTrv_CanHide)
 		return true;
 
 	return false;
@@ -135,10 +324,63 @@ bool CTemporalClone::IsTarget() const
 }
 
 //*****************************************************************************
+bool CTemporalClone::IsVulnerableToAdder() const
+{
+	bool active;
+	HasBehavior(PB_AdderImmune, active);
+	return !active; //No immunity = edible
+}
+
+//*****************************************************************************
+bool CTemporalClone::IsVulnerableToBodyAttack() const
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	return bIsVulnerableToBodyAttack(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CTemporalClone::IsVulnerableToExplosion() const
+{
+	bool active;
+	HasBehavior(PB_ExplosionImmune, active);
+	return !active; //No immunity = it hurts
+}
+
+//*****************************************************************************
+bool CTemporalClone::IsVulnerableToPlayerBodyAttack() const
+//Returns: If a body attack from the player can kill this.
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	//Slightly differet roles are safe from being attacked by players than by
+	//monsters.
+	return !(this->wAppearance == M_ROCKGOLEM || this->wAppearance == M_WUBBA ||
+		this->wAppearance == M_FEGUNDO || this->wAppearance == M_CONSTRUCT);
+}
+
+//*****************************************************************************
+bool CTemporalClone::HasStepAttack() const
+{
+	bool active;
+	if (HasBehavior(PB_StepKill, active)) {
+		return active;
+	}
+
+	return bCanEntityStepOnMonsters(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CTemporalClone::KillIfOnDeadlyTile(CCueEvents & CueEvents)
 //Kill the Temporal Clone if it is on a tile that would kill its role.
 {
-	if (!(this->wIdentity == M_CONSTRUCT || this->wIdentity == M_FLUFFBABY)) {
+	if (!(this->wAppearance == M_CONSTRUCT || this->wAppearance == M_FLUFFBABY)) {
 		// Only Constructs and Puffs die from being on a specific tile.
 		return false;
 	}
@@ -146,8 +388,8 @@ bool CTemporalClone::KillIfOnDeadlyTile(CCueEvents & CueEvents)
 	CCurrentGame *pGame = const_cast<CCurrentGame*>(this->pCurrentGame);
 	const UINT dwTileNo = pGame->pRoom->GetOSquare(this->wX, this->wY);
 
-	if ((this->wIdentity == M_CONSTRUCT && dwTileNo == T_GOO) ||
-		(this->wIdentity == M_FLUFFBABY && dwTileNo == T_HOT) ) {
+	if ((this->wAppearance == M_CONSTRUCT && dwTileNo == T_GOO) ||
+		(this->wAppearance == M_FLUFFBABY && dwTileNo == T_HOT) ) {
 		pGame->pRoom->KillMonster(this, CueEvents);
 		SetKillInfo(NO_ORIENTATION); //center stab effect
 		CueEvents.Add(CID_MonsterDiedFromStab, this);
@@ -166,19 +408,34 @@ bool CTemporalClone::OnStabbed(
 	WeaponType weaponType
 )
 {
-	if ((this->wIdentity == M_WUBBA || this->wIdentity == M_FLUFFBABY)
-		&& !(weaponType == WT_Firetrap || weaponType == WT_HotTile)) {
-		// Wubbas and Puffs can only be killed by Firetrap or Hot tile stabs.
-		return false;
-	}
-
-	if (this->wIdentity == M_FEGUNDO) {
-		// Fegundoes are immune to all weapon types.
+	if (!IsVulnerableToWeapon(weaponType)) {
 		return false;
 	}
 
 	//Monster dies.
 	CueEvents.Add(CID_MonsterDiedFromStab, this);
+	return true;
+}
+
+//*****************************************************************************
+bool CTemporalClone::IsVulnerableToWeapon(const WeaponType weaponType) const
+{
+	bool active;
+	if (HasDamageImmunity(weaponType, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	if ((this->wAppearance == M_WUBBA || this->wAppearance == M_FLUFFBABY)
+		&& !(weaponType == WT_Firetrap || weaponType == WT_HotTile)) {
+		// Wubbas and Puffs can only be killed by Firetrap or Hot tile stabs.
+		return false;
+	}
+
+	if (this->wAppearance == M_FEGUNDO) {
+		// Fegundoes are immune to all weapon types.
+		return false;
+	}
+
 	return true;
 }
 
@@ -220,9 +477,9 @@ void CTemporalClone::Process(const int /*nLastCommand*/, CCueEvents &CueEvents)
 			command = ConvertToBumpCommand(command);
 			applying_command = false;
 		} else {
-			bEnteredTunnel = this->pCurrentGame->PlayerEnteredTunnel(
-					this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY), nGetO(dx, dy), this->wIdentity) &&
-				!DoesArrowPreventMovement(this->wX, this->wY, dx, dy);
+			CDbRoom* pRoom = this->pCurrentGame->pRoom;
+			bEnteredTunnel = CanEnterTunnel() &&
+				pRoom->IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 			if (bEnteredTunnel) {
 				//If tunnel cannot be exited, then don't expend a turn.
 				UINT destX, destY;
@@ -261,8 +518,8 @@ void CTemporalClone::PushInDirection(int dx, int dy, bool bStun, CCueEvents &Cue
 {
 	const CDbRoom& room = *(this->pCurrentGame->pRoom);
 	const UINT wPushO = nGetO(dx, dy);
-	const bool bEnteredTunnel = this->pCurrentGame->PlayerEnteredTunnel(room.GetOSquare(this->wX, this->wY), wPushO, this->wIdentity)
-				&& !DoesArrowPreventMovement(this->wX, this->wY, dx, dy);
+	const bool bEnteredTunnel = CanEnterTunnel() &&
+		room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy);
 	if (bEnteredTunnel)
 	{
 		UINT destX, destY;
@@ -298,7 +555,7 @@ bool CTemporalClone::SetWeaponSheathed()
 		return true;
 	//If player or player's identity type is marked to not have a sword, then clones do not either.
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (!bEntityHasSword(this->wAppearance) || player.bWeaponOff || player.bNoWeapon)
+	if (!CanHaveWeapon() || player.bWeaponOff || player.bNoWeapon)
 	{
 		this->bWeaponSheathed = true;
 		return true;
@@ -310,7 +567,7 @@ bool CTemporalClone::SetWeaponSheathed()
 void CTemporalClone::SetMovementType()
 //Sets the movement type depending on the identity
 {
-	switch (wIdentity){
+	switch (wAppearance){
 	case(M_SEEP) :
 		eMovement = WALL;
 		break;

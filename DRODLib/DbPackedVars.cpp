@@ -111,7 +111,7 @@ void CDbPackedVars::Unset(const char *pszVarName)
 {
 	this->vars.erase(pszVarName);
 
-	this->varIter = this->vars.end(); //invalidate
+	this->lastQueryIter = this->varIter = this->vars.end(); //invalidate
 }
 
 //*******************************************************************************************
@@ -238,6 +238,21 @@ bool CDbPackedVars::GetVar(const char *pszVarName, bool bNotFoundValue) const
 		return (wRet & 0xff) ? true : false; //consider only smallest byte
 	}
 	return bNotFoundValue;
+}
+int64_t CDbPackedVars::GetVar(const char* pszVarName, int64_t notFoundValue) const
+//Overload for returning a long long int value.
+{
+	const int64_t* pwRet = (int64_t*)GetVar(pszVarName, (int64_t*)NULL);
+	if (pwRet)
+	{
+		int64_t wRet(*pwRet);
+#if (GAME_BYTEORDER == GAME_BYTEORDER_BIG)
+		LittleToBig(&wRet);
+#endif
+		ASSERT(GetVarValueSize(pszVarName) == sizeof(int64_t));
+		return wRet;
+	}
+	return notFoundValue;
 }
 
 //*******************************************************************************************

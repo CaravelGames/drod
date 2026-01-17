@@ -75,6 +75,8 @@ const UINT TAG_HELP = 1093;
 const UINT TAG_CHALLENGES = 1094;
 const UINT TAG_CHALLENGES_LIST = 1095;
 
+const UINT TAG_EXPORT_HOLD_SAVES = 1096;
+
 //Reserve 2000 to (2000+room size) for checkpoint tags.
 const UINT TAG_CHECKPOINT = 2000;
 #define IS_CHECKPOINT_TAG(t) ((t) >= 2000 && (t) < (2000+(38*32)))
@@ -98,6 +100,7 @@ CRestoreScreen::CRestoreScreen()
 	, pScaledWorldMapWidget(NULL)
 	, pChallengesDialog(NULL)
 	, pChallengesListBox(NULL)
+	, pChallengesCountLabel(NULL)
 //Constructor.
 {
 	SetKeyRepeat(66);
@@ -106,35 +109,37 @@ CRestoreScreen::CRestoreScreen()
 
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
-	static const UINT CY_TITLE = 50;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 
 #ifdef RUSSIAN_BUILD
 	static const UINT CX_RESTORE_BUTTON = 140;
 	static const UINT CX_ROOM_START = 160;
-	static const UINT CY_TITLE_SPACE = 12;
+	static const int Y_TITLE = 12;
 #else
 	static const UINT CX_RESTORE_BUTTON = 110;
 	static const UINT CX_ROOM_START = 130;
-	static const UINT CY_TITLE_SPACE = 15;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 #endif
-
-	static const int Y_TITLE = CY_TITLE_SPACE;
 
 	static const UINT CY_RESTORE_BUTTON = CY_STANDARD_BUTTON;
 	static const UINT CX_CANCEL_BUTTON = 110;
 	static const UINT CY_CANCEL_BUTTON = CY_RESTORE_BUTTON;
 	static const UINT CX_HELP_BUTTON = CX_CANCEL_BUTTON;
 	static const UINT CY_HELP_BUTTON = CY_RESTORE_BUTTON;
+	static const UINT CX_EXPORT_SAVES_BUTTON = 120;
+	static const UINT CY_EXPORT_SAVES_BUTTON = CY_RESTORE_BUTTON;
 	const int X_CANCEL_BUTTON = this->w / 2;
 	const int X_RESTORE_BUTTON = X_CANCEL_BUTTON - CX_RESTORE_BUTTON - CX_SPACE;
 	const int X_HELP_BUTTON = X_CANCEL_BUTTON + CX_CANCEL_BUTTON + CX_SPACE;
+	const int X_EXPORT_SAVES_BUTTON = X_HELP_BUTTON + CX_HELP_BUTTON + CX_SPACE;
 	const int Y_RESTORE_BUTTON = this->h - CY_SPACE - CY_RESTORE_BUTTON;
 	const int Y_CANCEL_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_HELP_BUTTON = Y_RESTORE_BUTTON;
+	const int Y_EXPORT_SAVES_BUTTON = Y_RESTORE_BUTTON;
 
 	//Mini-room widget has strict proportions and its dimensions will define 
 	//placement of most everything else.
-	static const int Y_CHOOSE_POS_LABEL = Y_TITLE + CY_TITLE + CY_TITLE_SPACE;
+	static const int Y_CHOOSE_POS_LABEL = Y_TITLE + CY_TITLE + Y_TITLE;
 	static const UINT CY_CHOOSE_POS_LABEL = CY_STANDARD_BUTTON;
 	static const int Y_POSITION_LABEL = Y_CHOOSE_POS_LABEL + CY_CHOOSE_POS_LABEL;
 	static const UINT CY_POSITION_LABEL = 25;
@@ -226,6 +231,10 @@ CRestoreScreen::CRestoreScreen()
 	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
 
+	pButton = new CButtonWidget(TAG_EXPORT_HOLD_SAVES, X_EXPORT_SAVES_BUTTON, Y_EXPORT_SAVES_BUTTON,
+		CX_EXPORT_SAVES_BUTTON, CY_EXPORT_SAVES_BUTTON, g_pTheDB->GetMessageText(MID_ExportSaves));
+	AddWidget(pButton);
+
 	//Level selection area.
 	AddWidget(new CLabelWidget(0L, X_CHOOSE_LEVEL_LABEL, Y_CHOOSE_LEVEL_LABEL, 
 				CX_CHOOSE_LEVEL_LABEL, CY_CHOOSE_LEVEL_LABEL, F_Header,
@@ -237,6 +246,7 @@ CRestoreScreen::CRestoreScreen()
 	this->pLevelListBoxWidget = new CListBoxWidget(TAG_LEVEL_LBOX,
 			X_LEVEL_LBOX, Y_LEVEL_LBOX, CX_LEVEL_LBOX, CY_LEVEL_LBOX);
 	AddWidget(this->pLevelListBoxWidget);
+	this->pLevelListBoxWidget->SetAllowFiltering(true);
 
 	//Room selection area.
 	AddWidget(new CLabelWidget(TAG_CHOOSE_ROOM_LABEL, X_CHOOSE_ROOM_LABEL, Y_CHOOSE_ROOM_LABEL, 
@@ -307,7 +317,7 @@ CRestoreScreen::CRestoreScreen()
 
 	const int CX_CHALLENGES_OKAY = 100;
 	static const UINT CY_CHALLENGES_OKAY = CY_STANDARD_BUTTON;
-	static const int X_CHALLENGES_OKAY = (CX_CHALLENGES_DIALOG - CX_CHALLENGES_OKAY) / 2;
+	static const int X_CHALLENGES_OKAY = CX_CHALLENGES_DIALOG - CX_CHALLENGES_OKAY - CX_SPACE;
 	static const int Y_CHALLENGES_OKAY = CY_CHALLENGES_DIALOG - CY_CHALLENGES_OKAY - CY_SPACE - 5;
 
 	pButton = new CButtonWidget(TAG_CHALLENGES, X_CHALLENGES_BUTTON, Y_CHALLENGES_BUTTON, 
@@ -331,6 +341,12 @@ CRestoreScreen::CRestoreScreen()
 			FONTLIB::F_Message, g_pTheDB->GetMessageText(MID_CompletedChallenges));
 	pLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 	this->pChallengesDialog->AddWidget(pLabel);
+
+	this->pChallengesCountLabel = new CLabelWidget(0, CX_SPACE, Y_CHALLENGES_OKAY,
+		CX_CHALLENGES_DIALOG - 2 * CX_SPACE, CY_CHALLENGES_TITLE,
+		FONTLIB::F_Message, WS("0/0"));
+	this->pChallengesCountLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	this->pChallengesDialog->AddWidget(this->pChallengesCountLabel);
 
 	pButton = new CButtonWidget(TAG_OK,
 			X_CHALLENGES_OKAY, Y_CHALLENGES_OKAY,
@@ -468,6 +484,10 @@ void CRestoreScreen::OnClick(
 		case TAG_CHALLENGES:
 			DisplayChallengesDialog();
 			Paint();
+		break;
+
+		case TAG_EXPORT_HOLD_SAVES:
+			ExportSaves(g_pTheDB->GetPlayerID(), g_pTheDB->GetHoldID(), true);
 		break;
 
 		default:
@@ -1032,7 +1052,7 @@ void CRestoreScreen::DisplayChallengesDialog()
 {
 	if (this->pChallengesListBox->IsEmpty()) {
 		SetCursor(CUR_Wait);
-		PopulateChallenges(this->pChallengesListBox);
+		PopulateChallenges(this->pChallengesListBox, this->pChallengesCountLabel);
 		SetCursor();
 	}
 
@@ -1067,7 +1087,8 @@ void CRestoreScreen::AddChallengesCompletedInDemo(const UINT demoID)
 }
 
 //*****************************************************************************
-void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
+void CRestoreScreen::PopulateChallenges(
+	CListBoxWidget* pListBoxWidget, CLabelWidget* pLabelWidget)
 {
 	//Complete scanning any remaining rooms for challenges.
 	for (CIDSet::const_iterator roomIt=this->challengeScanRoomIDs.begin();
@@ -1094,10 +1115,12 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 	CIDSet exploredRoomIDs;
 	if (this->challengeVarMap.empty()) {
 		pListBoxWidget->AddItem(0, g_pTheDB->GetMessageText(MID_None), true);
+		pLabelWidget->Hide();
 	} else {
 		CDb db;
 		const UINT savedGameID = db.SavedGames.FindByType(ST_PlayerTotal, g_pTheDB->GetPlayerID(), false);
 		exploredRoomIDs = db.SavedGames.GetExploredRooms(savedGameID); //roomIDs for all holds
+		pLabelWidget->Show();
 	}
 
 #ifndef ENABLE_CHEATS
@@ -1144,6 +1167,14 @@ void CRestoreScreen::PopulateChallenges(CListBoxWidget* pListBoxWidget)
 	}
 
 	pListBoxWidget->SelectLine(0);
+
+	// Count of challenges
+	WSTRING countString = wszLeftParen;
+	countString += to_WSTRING(this->completedChallenges.size());
+	countString += wszForwardSlash;
+	countString += to_WSTRING(this->challengeVarMap.size());
+	countString += wszRightParen;
+	pLabelWidget->SetText(countString.c_str());
 }
 
 //*****************************************************************************

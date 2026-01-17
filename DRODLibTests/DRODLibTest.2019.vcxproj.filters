@@ -153,8 +153,17 @@
     <ClCompile Include="src\tests\Elements\Briars.cpp">
       <Filter>Tests\Elements</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp">
       <Filter>Tests\Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\SmartGotoLabels.cpp">
+      <Filter>Tests\Scripting</Filter>
     </ClCompile>
     <ClCompile Include="src\tests\Elements\SquadHorn.cpp">
       <Filter>Tests\Elements</Filter>
@@ -195,6 +204,27 @@
     <ClCompile Include="src\tests\Monsters\ArmedMonsters\DisarmedArmedMonsters.cpp">
       <Filter>Tests\Monsters\ArmedMonsters</Filter>
     </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\PushingBehaviors.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivatePlates.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\DamageImmunity.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivateTokens.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\MovePlatforms.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\DropTrapdoors.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\PushTile.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
     <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp">
       <Filter>Tests\Scripting\Build</Filter>
     </ClCompile>
@@ -218,6 +248,36 @@
     </ClCompile>
     <ClCompile Include="src\tests\PlayerRoles\WaterskipperPlayerRole.cpp">
       <Filter>Tests\PlayerRoles</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\ImperativeFriendly.cpp">
+      <Filter>Tests\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\MonsterTarget.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\NPCBeethro.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\SetMovementType.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\PrimitiveFunctions.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Build\RemovingTransparentObjects.cpp">
+      <Filter>Tests\Scripting\Build</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Monsters\Construct\BrainedConstruct.cpp">
+      <Filter>Tests\Monsters\Construct</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp">
+      <Filter>Tests\TemporalToken</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\InstantMovement.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
+    </ClCompile>
+    <ClCompile Include="src\tests\Scripting\Behavior\UseTunnels.cpp">
+      <Filter>Tests\Scripting\Behavior</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -317,6 +377,12 @@
     </Filter>
     <Filter Include="Tests\Monsters\Guard">
       <UniqueIdentifier>{8693b0a4-8e13-462a-9adc-740ac9ecad17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Scripting\Behavior">
+      <UniqueIdentifier>{b4b0c8c7-58a6-4f30-9fe5-770cc1698fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\Monsters\Construct">
+      <UniqueIdentifier>{32171c16-acdd-4281-aae8-b48bbb27aac5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

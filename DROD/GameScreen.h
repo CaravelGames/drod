@@ -29,6 +29,8 @@
 #define GAMESCREEN_H
 
 #include "RoomScreen.h"
+#include "PuzzleModeOptionsDialogWidget.h"
+#include "PuzzleModeOptions.h"
 
 #include "../DRODLib/CurrentGame.h"
 #include <BackEndLib/Types.h>
@@ -118,10 +120,16 @@ protected:
 	void           ProcessQuestionPrompts(CCueEvents& CueEvents, SCREENTYPE& eNextScreen);
 	void           RetainEffectCleanup(const bool bVal=false);
 	virtual bool   SetForActivate();
+	void           SetShowVoicedSubtitle(bool showSubtitle) { this->bShowingSubtitlesWithVoice = showSubtitle; }
+	void           SetShowHalphEffects(bool showEffects) { this->bShowHalphEffects = showEffects; }
+	void           SetShowPlaceDoubleSwirl(bool showSwirl) { this->bShowDoublePlacementSwirl = showSwirl; }
 	virtual bool   UnloadOnDeactivate() const {return false;}
 
 	//These are called by CDemoScreen.
-	void           SetSignTextToCurrentRoom();
+	virtual int    HandleEventsForPlayerDeath(CCueEvents &CueEvents);
+	virtual void   SetSignTextToCurrentRoom();
+	void           ShowPuzzleModeOptions();
+	void           UpdateSign();
 
 	//These are accessed by CDemoScreen.
 	CCurrentGame * pCurrentGame;
@@ -149,7 +157,6 @@ private:
 	void           GotoHelpPage();
 	void           HandleEventsForHoldExit();
 	SCREENTYPE     HandleEventsForLevelExit();
-	int            HandleEventsForPlayerDeath(CCueEvents &CueEvents);
 	void           HideBigMap();
 	SCREENTYPE     LevelExit_OnKeydown(const SDL_KeyboardEvent &KeyboardEvent);
 	void           LogHoldVars();
@@ -193,7 +200,6 @@ private:
 	void           UpdateUIAfterRoomRestart();
 	void           UpdateUIAfterMoveUndo();
 	void           UpdateScroll();
-	void           UpdateSign();
 	void           UpdateSound();
 	bool           UploadDemoPolling();
 	void           UploadPlayerProgressToCloud(const UINT holdID);
@@ -213,12 +219,15 @@ private:
 	CClockWidget  *pClockWidget;
 	CDialogWidget *pMenuDialog;
 	CEntranceSelectDialogWidget *pSpeechBox;
+	CPuzzleModeOptionsDialogWidget *pPuzzleModeOptionsDialog;
 	CMapWidget *pBigMapWidget;
 
 	//Speech.
 	deque<CFiredCharacterCommand*> speech; //speech dialog queued to play
 	Uint32 dwNextSpeech; //time next speech can begin
 	bool   bShowingSubtitlesWithVoice;	//whether subtitles are shown when voices are playing
+	bool   bShowHalphEffects; //are effects shown for Halph actions (door-knocking, path becoming blocked)
+	bool   bShowDoublePlacementSwirl; //is a swirl effect added when placing a player double
 	Uint32 dwTimeMinimized; //time game is minimized
 	Uint32 dwLastCutSceneMove, dwSavedMoveDuration;
 

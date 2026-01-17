@@ -66,6 +66,23 @@ bool CPlatform::IsAt(const UINT wX, const UINT wY) const
 }
 
 //*****************************************************************************
+void CPlatform::Merge(CPlatform* other)
+//Merge two platforms by adding all the other platform's blocks to this plaform,
+//then clear the other platform.
+{
+	this->blocks += other->blocks;
+	other->blocks.Clear();
+	PrepareEdgeSet();
+}
+
+//*****************************************************************************
+void CPlatform::AddTile(const UINT wX, const UINT wY)
+{
+	this->blocks.Push(wX, wY);
+	PrepareEdgeSet();
+}
+
+//*****************************************************************************
 bool CPlatform::CanMove(const UINT wO)
 //Returns: whether platform can be moved in specified direction
 {

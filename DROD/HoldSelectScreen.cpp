@@ -128,6 +128,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	, pCurrentRestoreGame(NULL)
 	, filter(F_ALL)
 	, pSelCNetHold(NULL)
+	, playDemo(true)
 //Constructor
 {
 	this->imageFilenames.push_back(string("Background"));
@@ -139,15 +140,14 @@ CHoldSelectScreen::CHoldSelectScreen()
 	static const UINT CY_BUTTON = CY_STANDARD_BUTTON;
 	static const UINT CX_BUTTON_SPACE = CX_SPACE;
 
-	static const UINT CY_TITLE_SPACE = 14;
 #ifdef RUSSIAN_BUILD
 	static const UINT CX_TITLE = 440;
 #else
 	static const UINT CX_TITLE = 300;
 #endif
-	static const UINT CY_TITLE = 52;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 	const int X_TITLE = (this->w - CX_TITLE) / 2;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	//List box.
 	static const int X_LBOX_HEADER = CX_SPACE;
@@ -158,7 +158,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	static const UINT CY_LBOX_HEADER = 54;
 #else
 	static const int Y_LBOX_HEADER = Y_TITLE + CY_TITLE + 22;
-	static const UINT CY_LBOX_HEADER = 32;
+	static const UINT CY_LBOX_HEADER = CY_LABEL_FONT_HEADER;
 #endif
 
 	static const int X_HOLDLISTBOX = X_LBOX_HEADER;
@@ -549,6 +549,8 @@ bool CHoldSelectScreen::SetForActivate()
 		this->dwLastNotice = updates.back().id;
 	}
 
+	this->playDemo = pCurrentPlayer->Settings.GetVar(Settings::PlayHoldManagementDemo, true);
+
 	pCurrentPlayer->Settings.SetVar(Settings::LastNotice, this->dwLastNotice);
 	pCurrentPlayer->Update();
 	delete pCurrentPlayer;
@@ -559,6 +561,8 @@ bool CHoldSelectScreen::SetForActivate()
 
 	PopulateHoldListBox();
 	SetHoldDesc();
+
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
 
 	//Never return to the win screen (for rating a hold).  Yank it out of the return list so
 	//that we go back to the title screen instead.
@@ -699,6 +703,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 
 		const UINT holdID = *id;
 
+#ifdef ENABLE_CLOUDSYNC
 		if (g_pTheNet->IsEnabled()) {
 			const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 			if (settings.GetVar(Settings::CloudActivated, false)) {
@@ -707,6 +712,7 @@ void CHoldSelectScreen::DeleteSelectedHolds()
 				g_pTheNet->CloudSetHoldInstalled(holdID, false);
 			}
 		}
+#endif // ENABLE_CLOUDSYNC
 
 		CDbHold *pHold = g_pTheDB->Holds.GetByID(holdID, true);
 		ASSERT(pHold);
@@ -840,6 +846,11 @@ void CHoldSelectScreen::DownloadSelectedHolds()
 		if (!hold_is_installed(dwKey)) {
 			holdName = this->pHoldListBoxWidget->GetTextAtLine(*line);
 #ifdef STEAMBUILD
+			const HoldInfo& h = this->holdInfo[dwKey];
+			if (h.status == CDbHold::Official || CDbHold::IsOfficialHold(CDbHold::HoldStatus(h.status))) {
+				ShowOkMessage(MID_SteamErrorAttemptingToImportOfficialHold);
+				return;
+			}
 //TODO: attempting to download official DLC holds from Steam should open a browser to the Steam game purchase page
 #endif
 		} else {
@@ -903,12 +914,14 @@ void CHoldSelectScreen::DownloadSelectedHolds()
 		if (CDbXML::info.dwHoldImportedID)
 		{
 			//Mark hold as imported.
+#ifdef ENABLE_CLOUDSYNC
 			if (g_pTheNet->IsEnabled()) {
 				const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 				if (settings.GetVar(Settings::CloudActivated, false)) {
 					g_pTheNet->CloudSetHoldInstalled(CDbXML::info.dwHoldImportedID, true);
 				}
 			}
+#endif // ENABLE_CLOUDSYNC
 			importedHoldIDs += CDbXML::info.dwHoldImportedID;
 			for (set<WSTRING>::const_iterator iter = CDbXML::info.roomStyles.begin();
 					iter != CDbXML::info.roomStyles.end(); ++iter)
@@ -988,7 +1001,7 @@ void CHoldSelectScreen::OnBetweenEvents()
 		RequestThumbnail(this->pSelCNetHold);
 
 	//Advance play of the featured saved game.
-	if (dwNow - lastGameTurnTick >= gameTurnTick)
+	if (dwNow - lastGameTurnTick >= gameTurnTick && this->playDemo)
 	{
 		AdvanceRestoreGameTurn();
 		lastGameTurnTick = dwNow;
@@ -1057,6 +1070,7 @@ void CHoldSelectScreen::OnClick(
 			}
 			if (!importedHoldIDs.empty())
 			{
+#ifdef ENABLE_CLOUDSYNC
 				if (g_pTheNet->IsEnabled()) {
 					const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
 					if (settings.GetVar(Settings::CloudActivated, false)) {
@@ -1065,6 +1079,7 @@ void CHoldSelectScreen::OnClick(
 						}
 					}
 				}
+#endif // ENABLE_CLOUDSYNC
 				if (!importedStyles.empty())
 				{
 					//Automatically download and import new referenced room styles

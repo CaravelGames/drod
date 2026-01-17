@@ -31,6 +31,8 @@ to create a script that runs in each room instead of just one particular room.
 Click <b>"Custom avatar"</b> to import a custom face from an image file (130x164 pixels)
 on disk into your hold.
 When this actor speaks, this image will be shown in the game screen's face box.
+The custom face may be extended to the right to provide protraits for speaking moods, with each additional portrait being 130 pixels wide.
+The supported moods, in the order they should appear in the image are <b>Normal</b>, <b>Aggressive</b>, <b>Nervous</b>, <b>Striking</b>, <b>Happy</b>, <b>Dying</b>, and <b>Talking</b>.
 Click <a name="customtiles">"Custom Tiles"</a> to import a custom tileset for this
 character.<br />
 <br />
@@ -63,7 +65,12 @@ script continues to play but it otherwise behaves as if it were not in the room.
 Hint: making a character with a "None" graphic visible will set it to the
 "Citizen" type.</p>
 
-<p><a name="options"><b>Options</b></a> - Click to set the NPC's processing sequence, or the relative order in which the NPC takes its turn in relation to other entities in the room.</p>
+<p><a name="options"><b>Options</b></a> - Click to set the NPC's options:</p>
+<ul>
+<li><b>Speech Color</b>, which controls the color of the character's speech subtitles. Each input takes a value of 0 to 255, and the three values are combined into a single RGB color value. If all inputs are zero, the default subtitle color will be used.</li>
+<li><b>Processing sequence</b>, the relative order in which the NPC takes its turn in relation to other entities in the room.</li>
+</ul>
+
 <p><a name="addcommand"><b>Add Command</b></a> - Click to add another <a href="script.html">command</a>
 to the script.</p>
 <p><a name="deletecommand"><b>Delete Command</b></a> - Deletes the selected commands from the script.  Also

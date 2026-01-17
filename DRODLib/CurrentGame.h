@@ -101,6 +101,20 @@ class CDbHold;
 
 static const UINT TIRED_TURN_COUNT = 40;   //# previous turns to check for player becoming tired
 
+struct SpeechLog
+{
+	SpeechLog(const WSTRING customName, CCharacterCommand* pSpeechCommand) {
+		this->customName = customName;
+		this->pSpeechCommand = pSpeechCommand;
+	}
+	SpeechLog(CCharacterCommand* pSpeechCommand) {
+		this->pSpeechCommand = pSpeechCommand;
+	}
+
+	WSTRING customName;
+	CCharacterCommand* pSpeechCommand;
+};
+
 //*******************************************************************************
 struct TemporalSplitData
 {
@@ -187,6 +201,7 @@ public:
 	static void DiffVarValues(const VARMAP& vars1, const VARMAP& vars2, set<VarNameType>& diff);
 	UINT     EndDemoRecording();
 	bool     ExecutingNoMoveCommands() const {return this->bExecuteNoMoveCommands;}
+	int EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params);
 	WSTRING  ExpandText(const WCHAR* wText, CCharacter *pCharacter=NULL);
 	WSTRING  getTextForInputCommandKey(InputCommands::DCMD id) const;
 	void     FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents);
@@ -211,6 +226,8 @@ public:
 			{ return UnansweredQuestions.empty() ? NULL : &UnansweredQuestions.front(); }
 	UINT     getVar(const UINT varIndex) const;
 	void     GetVarValues(VARMAP& vars);
+	void     GetArrayVarValues(VARMAP& vars);
+	WSTRING  GetArrayVarAsString(const UINT varID);
 	WSTRING  getStringVar(const UINT varIndex) const;
 	void     GotoLevelEntrance(CCueEvents& CueEvents, const UINT wEntrance, const bool bSkipEntranceDisplay=false);
 	bool     IsCurrentLevelComplete() const;
@@ -220,6 +237,8 @@ public:
 	bool     IsCurrentRoomExplored() const;
 	bool     IsCutScenePlaying() const {return this->dwCutScene && !this->swordsman.wPlacingDoubleType;}
 	bool     IsDemoRecording() const {return this->bIsDemoRecording;}
+	bool     IsHoldCompleteWallPassable() const { return this->bHoldCompleted && !this->bRoomExitLocked; }
+	bool     IsMasterWallPassable() const { return this->bHoldMastered && !this->bRoomExitLocked; }
 	bool     IsMusicStyleFrozen() const {return this->bMusicStyleFrozen;}
 	bool     IsNewRoom() const {return this->bIsNewRoom;}
 	bool     IsPlayerAnsweringQuestions() const {return this->UnansweredQuestions.size() != 0;}
@@ -244,7 +263,7 @@ public:
 	bool     PlayAllCommands(CCueEvents &CueEvents,
 			const bool bTruncateInvalidCommands=false);
 	bool     PlayCommandsToTurn(const UINT wEndTurnNo, CCueEvents &CueEvents);
-	bool     PlayerEnteredTunnel(const UINT wOTileNo, const UINT wMoveO, UINT wRole = M_NONE) const;
+	bool     PlayerEnteredTunnel(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	void     PostProcessCharacter(CCharacter* pCharacter, CCueEvents& CueEvents);
 	void     ProcessCommandSetVar(const UINT itemID, UINT newVal);
 	void     ProcessCommand(int nCommand, CCueEvents &CueEvents,
@@ -253,6 +272,7 @@ public:
 	void     ProcessPlayerWeapon(int dx, int dy, CCueEvents& CueEvents);
 	void     ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueEvents,
 			const bool bWasOnSameScroll, const bool bPlayerMove = true, const bool bPlayerTeleported = false);
+	void     ProcessScriptedPush(const WeaponStab& push, CCueEvents& CueEvents, CCharacter* pCharacter);
 	void     ProcessWeaponHit(const UINT wX, const UINT wY, CCueEvents &CueEvents,
 			CArmedMonster *pArmedMonster = NULL);
 	void     QueryCheckpoint(CCueEvents& CueEvents, const UINT wX, const UINT wY) const;
@@ -338,10 +358,12 @@ public:
 	bool     bContinueCutScene;
 	bool     bWaitedOnHotFloorLastTurn;
 	CDbPackedVars statsAtRoomStart; //stats when room was begun
+	map<UINT, map<int, int>> scriptArraysAtRoomStart; //
 	vector<CMoveCoordEx> ambientSounds;  //ambient sounds playing now
-	vector<CCharacterCommand*> roomSpeech; //speech played up to this moment in the current room
+	vector<SpeechLog> roomSpeech; //speech played up to this moment in the current room
 	bool     bRoomExitLocked; //safety to prevent player from exiting room when set
 	UINT     conquerTokenTurn; //turn player touched a Conquer token
+	UINT     lastProcessedCommand; //most recently processed comand, for read-only script var access
 
 	UINT     wMonsterKills; //total monsters killed in current room
 	UINT     wMonsterKillCombo; //total monsters killed without interruption
@@ -377,6 +399,7 @@ private:
 	void     DeleteLeakyCueEvents(CCueEvents &CueEvents);
 	void     DrankPotion(CCueEvents &CueEvents, const UINT wDoubleType,
 							const UINT wPotionX, const UINT wPotionY);
+	void     DeserializeScriptArrays();
 	void     FlagChallengesCompleted(CCueEvents &CueEvents);
 	bool     IsActivatingTemporalSplit() const;
 	bool     IsSwordsmanTired();
@@ -394,6 +417,7 @@ private:
 	void     PreprocessMonsters(CCueEvents &CueEvents);
 	void     ProcessMonsters(int nLastCommand, CCueEvents &CueEvents);
 	void     ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEvents &CueEvents);
+	void     ProcessNoMoveCharacters(CCueEvents& CueEvents);
 	void     ProcessReactionToPlayerMove(int nCommand, CCueEvents& CueEvents);
 	void     ProcessRoomCompletion(RoomCompletionData roomCompletionData, CCueEvents& CueEvents);
 	void     ProcessPlayer(const int nCommand, CCueEvents &CueEvents);
@@ -407,7 +431,7 @@ private:
 			const OrbActivationType eActivationType, CCueEvents &CueEvents, CArmedMonster *pArmedMonster = NULL);
 	bool     PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents);
 	bool     RemoveInvalidCommand(const CCueEvents& CueEvents);
-	void     RemoveClearedImageOverlays(const int clearLayers);
+	void     RemoveClearedImageOverlays(const int clearLayers, const int clearGroup = ImageOverlayCommand::NO_GROUP);
 	void     ResetCutSceneStartTurn() { cutSceneStartTurn = -1; }
 	void     ResetPendingTemporalSplit(CCueEvents& CueEvents);
 	void     ResetTemporalSplitQueuingIfInvalid(CCueEvents& CueEvents);

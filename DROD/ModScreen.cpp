@@ -93,15 +93,14 @@ CModScreen::CModScreen()
 	static const UINT CY_BUTTON = CY_STANDARD_BUTTON;
 	static const UINT CX_BUTTON_SPACE = CX_SPACE;
 
-	static const UINT CY_TITLE_SPACE = 14;
 #ifdef RUSSIAN_BUILD
 	static const UINT CX_TITLE = 400;
 #else
 	static const UINT CX_TITLE = 300;
 #endif
-	static const UINT CY_TITLE = 52;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
 	const int X_TITLE = (this->w - CX_TITLE) / 2;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	//List box.
 	static const int X_LBOX_HEADER = CX_SPACE;
@@ -112,7 +111,7 @@ CModScreen::CModScreen()
 	static const UINT CY_LBOX_HEADER = 54;
 #else
 	static const int Y_LBOX_HEADER = Y_TITLE + CY_TITLE + 22;
-	static const UINT CY_LBOX_HEADER = 32;
+	static const UINT CY_LBOX_HEADER = CY_LABEL_FONT_HEADER;
 #endif
 
 	static const int X_MODLISTBOX = X_LBOX_HEADER;

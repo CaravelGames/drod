@@ -173,6 +173,24 @@ bool CCitizen::GetGoal(UINT& wX, UINT& wY) const
 }
 
 //******************************************************************************
+CCoordSet CCitizen::GetVisitedStations() const
+//Call to query which station locations a citizen has visited
+//
+//Returns: set of positions of each station before the current target station
+{
+	CCoordSet visitedStations;
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	for (int i = 0; i < this->nVisitingStation && i < this->visitingSequence.size(); ++i) {
+		int index = this->visitingSequence[i];
+		CStation* pStation = room.stations[index];
+		visitedStations.insert(pStation->X(), pStation->Y());
+	}
+
+	return visitedStations;
+}
+
+//******************************************************************************
 void CCitizen::Process(
 //Process a citizen for movement.
 //

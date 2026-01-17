@@ -112,12 +112,19 @@ CSelectPlayerScreen::CSelectPlayerScreen() : CDrodScreen(SCR_SelectPlayer)
 #endif
 
 	static const int Y_BUTTONS3 = Y_BUTTONS2 + 40;
+#ifdef ENABLE_CLOUDSYNC
 	static const int X_IMPORTBUTTON = 15;
 	static const UINT CX_IMPORTBUTTON = 100;
 	static const int X_CLOUDIMPORTBUTTON = X_IMPORTBUTTON + CX_IMPORTBUTTON + CX_SPACE;
 	static const UINT CX_CLOUDIMPORTBUTTON = 250;
 	static const int X_CANCEL = X_CLOUDIMPORTBUTTON + CX_CLOUDIMPORTBUTTON + CX_SPACE;
 	static const UINT CX_CANCEL = 100;
+#else
+	static const UINT CX_IMPORTBUTTON = 100;
+	static const int X_IMPORTBUTTON = (CX_BOX - CX_SPACE) / 2 - CX_IMPORTBUTTON;
+	static const int X_CANCEL = (CX_BOX + CX_SPACE) / 2;
+	static const UINT CX_CANCEL = 100;
+#endif // ENABLE_CLOUDSYNC
 
 	static const UINT CY_BOX = Y_BUTTONS3 + CY_STANDARD_BUTTON + CY_SPACE;
 
@@ -160,7 +167,7 @@ CSelectPlayerScreen::CSelectPlayerScreen() : CDrodScreen(SCR_SelectPlayer)
 	this->pPlayerBox->AddWidget(new CButtonWidget(TAG_IMPORT,
 			X_IMPORTBUTTON, Y_BUTTONS3, CX_IMPORTBUTTON, CY_STANDARD_BUTTON,
 			g_pTheDB->GetMessageText(MID_Import)));
-#ifndef STEAMBUILD
+#ifdef ENABLE_CLOUDSYNC
 	this->pPlayerBox->AddWidget(new CButtonWidget(TAG_GET_PLAYER_FROM_CLOUD,
 			X_CLOUDIMPORTBUTTON, Y_BUTTONS3, CX_CLOUDIMPORTBUTTON, CY_STANDARD_BUTTON,
 			g_pTheDB->GetMessageText(MID_GetPlayerFromCloud)));
@@ -543,58 +550,7 @@ void CSelectPlayerScreen::SetPlayerID(
 		case TAG_EXPORTSAVES:
 		{
 			const UINT dwPlayerID = this->pPlayerListBoxWidget->GetSelectedItem();
-			if (!dwPlayerID) break;
-
-			//Compile IDs of this player's saved games.
-			//The export will exclude hidden saved game records (e.g. those attached to demos, room tallies, etc.)
-			//but will include records for conquering secret rooms and ending holds.
-			CDb db;
-			db.SavedGames.FilterByPlayer(dwPlayerID);
-			db.SavedGames.FindHiddens(true);
-			CIDSet savedGameIDs, allSavedGameIDs = db.SavedGames.GetIDs();
-			for (CIDSet::const_iterator id=allSavedGameIDs.begin();
-					id!=allSavedGameIDs.end(); ++id)
-			{
-				CDbSavedGame *pSavedGame = db.SavedGames.GetByID(*id, true);
-				if (!pSavedGame->bIsHidden ||
-						pSavedGame->eType == ST_SecretConquered ||
-						pSavedGame->eType == ST_EndHold ||
-						pSavedGame->eType == ST_HoldMastered)
-					savedGameIDs += *id;
-				delete pSavedGame;
-			}
-			if (savedGameIDs.empty()) break;
-
-			CDbPlayer *pPlayer = g_pTheDB->Players.GetByID(dwPlayerID);
-			if (!pPlayer) break;
-
-			//Quick player export if requested.
-			bool bQuickExport = false;
-			string str;
-			if (CFiles::GetGameProfileString(INISection::Customizing, "QuickPlayerExport", str))
-				bQuickExport = atoi(str.c_str()) != 0;
-			if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
-				CDbXML::info.bQuickPlayerExport = true;
-
-			//Default filename is player name.
-			WSTRING wstrExportFile = (WSTRING)pPlayer->NameText;
-			CDrodScreen::callbackContext = wstrExportFile;
-			wstrExportFile += wszSpace;
-			wstrExportFile += g_pTheDB->GetMessageText(MID_Saves);
-			if (ExportSelectFile(MID_SavePlayerPath, wstrExportFile, EXT_PLAYER))
-			{
-				//Write the player saves file.
-				SetCursor(CUR_Wait);
-				Callback(MID_Exporting);
-				CDbXML::SetCallback(this);
-
-				const bool bResult = CDbXML::ExportXML(V_SavedGames, savedGameIDs,
-					wstrExportFile.c_str());
-				ExportCleanup();
-				ShowOkMessage(bResult ? MID_SavedGamesSaved : MID_PlayerFileNotSaved);
-			}
-			CDrodScreen::callbackContext.resize(0);
-			delete pPlayer;
+			ExportSaves(dwPlayerID);
 		}
 		break;
 

@@ -31,6 +31,7 @@
 #include "Swordsman.h"
 #include "Weapons.h"
 #include "TileConstants.h"
+#include "Character.h"
 #include <BackEndLib/Assert.h>
 
 //
@@ -44,15 +45,56 @@ bool CSwordsman::CanAttackTowards(int dx, int dy) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanBlowSquadHorn() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSquadHorn, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanBlowSoldierHorn() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSoldierHorn, active)) {
+		return active;
+	}
+
+	return bIsMonsterTarget(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanBumpActivateOrb() const
+{
+	bool active;
+	if (HasBehavior(PB_BumpActivateOrb, active)) {
+		return active;
+	}
+
+	return (bIsHuman(this->wAppearance) && !bEntityHasSword(this->wAppearance)) ||
+		this->bCanGetItems;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 {
 	if (!bIsFallingTile(oTile))
 		return false;
 
+	bool active;
+	if (HasBehavior(PB_DropTrapdoors, active)) {
+		return active;
+	} else if (HasBehavior(PB_DropTrapdoorsArmed, active)) {
+		return active && (bIsThinIce(oTile) || HasHeavyWeapon());
+	}
+
 	if (this->wAppearance == M_CONSTRUCT)
 		return true;
 
-	if (CanLightFuses()) {
+	if (CanGetItems()) {
 		if (bIsThinIce(oTile) && !bIsEntityFlying(this->wAppearance))
 			return true;
 
@@ -64,21 +106,49 @@ bool CSwordsman::CanDropTrapdoor(const UINT oTile) const
 }
 
 //*****************************************************************************
+bool CSwordsman::CanFluffTrack() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffTarget, active)) {
+		return active;
+	}
+
+	return bCanFluffTrack(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanGetItems() const
+//Returns: whether the player is able to collect in-room items
+{
+	return bIsSmitemaster(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
 bool CSwordsman::CanLightFuses() const
 //Returns: whether the player is able to light fuses
 {
-	return bIsSmitemaster(this->wAppearance) || this->bCanGetItems;
+	bool active;
+	if (HasBehavior(PB_LightFuses, active)) {
+		return active;
+	}
+
+	return CanGetItems();
 }
 
 //*****************************************************************************
 bool CSwordsman::CanStepOnMonsters() const
 //Returns: true if player in current role can step on (and kill) other monsters
 {
+	bool active;
+	if (HasBehavior(PB_StepKill, active)) {
+		return active;
+	}
+
 	return bCanEntityStepOnMonsters(this->wAppearance);
 }
 
 //*****************************************************************************
-bool CSwordsman::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) const
+bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath) const
 //Returns: true if player is capable of killing the target monster with a "dagger step"
 {
 	//You can't "dagger step" without a dagger
@@ -94,13 +164,181 @@ bool CSwordsman::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath
 		
 	//Citizens are the only entities that can be stepped on
 	//  when they are invulnerable to weapons
-	switch(wMonsterType)
+	switch(pMonster->wType)
 	{
 		case M_CITIZEN: case M_ARCHITECT:
 			return false;
+		case M_CLONE: case M_TEMPORALCLONE: {
+			const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+			if (pDouble) {
+				return pDouble->IsVulnerableToWeapon(WT_Dagger);
+			}
+		}
+		case M_CHARACTER: {
+			const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+			if (!pCharacter || !pCharacter->IsVisible()) {
+				return true; // You can always step on something that isn't there
+			} 
+			return !pCharacter->IsImmuneToWeapon(WT_Dagger);
+		}
 		default:
 			return true;
 	}
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkClonePotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseClonePotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkDecoyPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseDecoyPotion, active)) {
+		return active;
+	}
+
+	return bIsSmitemaster(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkInvisibilityPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseInvisibilityPotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkMimicPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseMimicPotion, active)) {
+		return active;
+	}
+
+	return bIsSmitemaster(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkSpeedPotion() const
+{
+	bool active;
+	if (HasBehavior(PB_UseSpeedPotion, active)) {
+		return active;
+	}
+
+	return CanGetItems();
+}
+
+//*****************************************************************************
+bool CSwordsman::CanDrinkPotionType(const UINT wTile) const
+{
+	switch (wTile) {
+		case T_POTION_K: return CanDrinkMimicPotion();
+		case T_POTION_I: return CanDrinkInvisibilityPotion();
+		case T_POTION_D: return CanDrinkDecoyPotion();
+		case T_POTION_SP: return CanDrinkSpeedPotion();
+		case T_POTION_C: return CanDrinkClonePotion();
+		default: return false;
+	}
+}
+
+//*****************************************************************************
+bool CSwordsman::CanEnterTunnel() const
+{
+	bool active;
+	if (HasBehavior(PB_UseTunnels, active)) {
+		return active;
+	}
+
+	return bIsMonsterTarget(this->wAppearance) || this->bCanGetItems;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanHaveWeapon() const
+//Returns: Does the player's appearance or behaviors allow them to have a weapon
+{
+	bool active;
+	if (HasBehavior(PB_HasWeapon, active)) {
+		return active;
+	}
+
+	return bEntityHasSword(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::CanMovePlatform() const
+//Returns: If the player can move a platform or raft. Assumes player is not
+//flying or swimming.
+{
+	bool active;
+	if (HasBehavior(PB_MovePlatforms, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanPushObject() const
+{
+	bool active;
+	if (HasBehavior(PB_PushObjects, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanPushMonster() const
+{
+	bool active;
+	if (HasBehavior(PB_PushMonsters, active)) {
+		return active;
+	}
+
+	return true;
+}
+
+//*****************************************************************************
+bool CSwordsman::CanPushOntoOTile(const UINT wTile) const
+{
+	if (bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile))
+		return true;
+
+	bool bSafeOnly;
+	HasBehavior(PB_FatalPushImmune, bSafeOnly);
+
+	if (!bSafeOnly) {
+		// We don't care that these tiles might be deadly
+		return bIsPit(wTile) || bIsWater(wTile);
+	}
+
+	bool bFlying = bIsEntityFlying(this->wAppearance);
+
+	if (bIsPit(wTile) && bFlying)
+		return true;
+
+	bool bIsSwimming = bIsEntitySwimming(this->wAppearance);
+	if (bIsDeepWater(wTile) && (bIsSwimming || bFlying))
+		return true;
+
+	if (bIsShallowWater(wTile) && (CanWadeInShallowWater() || bIsSwimming || bFlying))
+		return true;
+
+	return false;
 }
 
 //*****************************************************************************
@@ -110,6 +348,17 @@ bool CSwordsman::CanWadeInShallowWater() const
 	return bIsEntitySwimming(this->wAppearance) ||
 			bIsEntityFlying(this->wAppearance) ||
 			this->GetWaterTraversalState() >= WTrv_CanWade;
+}
+
+//*****************************************************************************
+bool CSwordsman::FacesMovementDirection() const
+{
+	bool active;
+	if (HasBehavior(PB_FaceMovementDirection, active)) {
+		return active;
+	}
+
+	return !HasWeapon() || GetActiveWeapon() == WT_Dagger;;
 }
 
 //*****************************************************************************
@@ -123,6 +372,7 @@ void CSwordsman::Clear()
 	this->bWeaponOff = false;
 	this->wWaterTraversal = WTrv_AsPlayerRole;
 	this->bHasTeleported = false;
+	this->behaviorOverrides.clear();
 	EquipWeapon(WT_Sword);
 
 	ResetStats();
@@ -184,9 +434,81 @@ MovementType CSwordsman::GetMovementType() const
 }
 
 //*****************************************************************************
+bool CSwordsman::HasBehavior(
+//Returns: If the given behavior is overridden. Output argument describes if it
+//appplies to the player.
+	const PlayerBehavior& behavior, //(in) behavior to check
+	bool& active //(out) does the behavior apply
+) const
+{
+	if (this->behaviorOverrides.count(behavior) == 0) {
+		active = false;
+		return false;
+	}
+
+	PlayerBehaviorState state = this->behaviorOverrides.at(behavior);
+	switch (state) {
+		case PBS_On: {
+			active = true;
+			return true;
+		}
+		case PBS_Off: {
+			active = false;
+			return true;
+		}
+		case PBS_Powered: {
+			active = bCanGetItems;
+			return true;
+		}
+		case PBS_Unpowered: {
+			active = !bCanGetItems;
+			return true;
+		}
+		default: {
+			active = false;
+			return false;
+		}
+	}
+}
+
+//*****************************************************************************
+bool CSwordsman::HasDamageImmunity(const WeaponType& weaponType, bool& active) const
+{
+	PlayerBehavior behavior;
+	switch (weaponType) {
+		case WT_Sword: behavior = PB_SwordDamageImmune; break;
+		case WT_Pickaxe: behavior = PB_PickaxeDamageImmune; break;
+		case WT_Spear: behavior = PB_SpearDamageImmune; break;
+		case WT_Dagger: behavior = PB_DaggerDamageImmune; break;
+		case WT_Caber: behavior = PB_CaberDamageImmune; break;
+		case WT_FloorSpikes: behavior = PB_FloorSpikeImmune; break;
+		case WT_Firetrap: behavior = PB_FiretrapImmune; break;
+		case WT_HotTile: behavior = PB_HotTileImmune; break;
+		default: behavior = PB_SwordDamageImmune; break;
+	}
+
+	return HasBehavior(behavior, active);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsAt(UINT wX, UINT wY) const
 {
 	return IsInRoom() && wX == this->wX && wY == this->wY;
+}
+
+//*****************************************************************************
+bool CSwordsman::IsCloneVulnerableToThisBodyAttack() const
+//Returns if a clone of the player can be body attacked by the player.
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	//Slightly differet roles are safe from being attacked by players than by
+	//monsters.
+	return !(this->wAppearance == M_ROCKGOLEM || this->wAppearance == M_WUBBA ||
+		this->wAppearance == M_FEGUNDO || this->wAppearance == M_CONSTRUCT);
 }
 
 //*****************************************************************************
@@ -217,20 +539,92 @@ bool CSwordsman::IsStabbable() const
 }
 
 //*****************************************************************************
+bool CSwordsman::IsVulnerableToAdder() const
+{
+	bool active;
+	HasBehavior(PB_AdderImmune, active);
+	return !active; //No immunity = edible
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToExplosion() const
+{
+	bool active;
+	HasBehavior(PB_ExplosionImmune, active);
+	return !active; //No immunity = it hurts
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToFluff() const
+{
+	bool active;
+	if (HasBehavior(PB_PuffImmune, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	return bCanFluffKill(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToHeat() const
+{
+	bool active;
+	if (HasBehavior(PB_HotTileImmune, active)) {
+		return !active; //No immunity = it hurts
+	}
+
+	return bIsEntityTypeVulnerableToHeat(this->wAppearance);
+}
+
+//*****************************************************************************
 bool CSwordsman::IsVulnerableToWeapon(const WeaponType weaponType) const
 //Returns: true if player in current role is vulnerable to sword hits
 {
+	bool active;
+	if (HasDamageImmunity(weaponType, active)) {
+		return !active; //No immunity = it hurts
+	}
+
 	const bool bIsStabbable = this->IsStabbable();
 
 	switch (weaponType)
 	{
+		case WT_HotTile:
+			return bIsEntityTypeVulnerableToHeat(this->wAppearance);
 		case WT_Firetrap:
 			return this->wAppearance != M_FEGUNDO;
 		case WT_FloorSpikes:
-			return !bIsEntityFlying(this->wAppearance) && this->IsStabbable();
+			return !bIsEntityFlying(this->wAppearance) && bIsStabbable;
 		default:
-			return this->IsStabbable();
+			return bIsStabbable;
 	}
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToBodyAttack() const
+//Return whether the player can be stepped on by monsters
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	return bIsVulnerableToBodyAttack(this->wAppearance);
+}
+
+//*****************************************************************************
+bool CSwordsman::IsVulnerableToDoubleBodyAttack(bool bStepAttack) const
+//Return whether the player can be stepped on by player doubles
+{
+	bool active;
+	if (HasBehavior(PB_BodyAttackImmune, active)) {
+		return !active; //No immunity = can be attacked
+	}
+
+	if (wAppearance == M_CITIZEN || wAppearance == M_ARCHITECT)
+		return !bStepAttack;
+
+	return !(wAppearance == M_WUBBA || wAppearance == M_FEGUNDO);
 }
 
 //*****************************************************************************
@@ -370,6 +764,16 @@ void CSwordsman::SetWeaponType(const UINT type, const bool bPersist)
 }
 
 //*****************************************************************************
+void CSwordsman::SetBehavior(const PlayerBehavior behavior, const PlayerBehaviorState state)
+{
+	if (state == PBS_Default) {
+		this->behaviorOverrides.erase(behavior);
+	} else {
+		this->behaviorOverrides[behavior] = state;
+	}
+}
+
+//*****************************************************************************
 bool CSwordsman::HasHeavyWeapon() const
 {
 	return HasWeapon() && GetActiveWeapon() != WT_Dagger;
@@ -382,8 +786,20 @@ bool CSwordsman::HasMetalWeapon() const
 
 bool CSwordsman::HasWeapon() const
 {
-	return bEntityHasSword(this->wAppearance) &&
+	return CanHaveWeapon() &&
 			!(this->bNoWeapon || this->bWeaponSheathed || this->bWeaponOff || this->bIsHiding);
+}
+
+bool CSwordsman::HasWeaponType(WeaponType type) const
+{
+	switch (type) {
+		case WT_Off:
+			return (this->bNoWeapon || this->bWeaponOff);
+		case WT_On:
+			return !this->bWeaponOff;
+		default:
+			return (type == this->localRoomWeaponType);
+	}
 }
 
 //*****************************************************************************

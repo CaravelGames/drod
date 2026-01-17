@@ -48,8 +48,6 @@ bool BuildUtil::bIsValidBuildTile(const UINT wTileNo)
 	case T_SNK_SW:
 	case T_CHECKPOINT:
 	case T_LIGHT_CEILING:
-	case T_PLATFORM_W:
-	case T_PLATFORM_P:
 	case T_WALL_M:
 	case T_STAIRS_UP:
 	case T_STAIRS:
@@ -212,6 +210,11 @@ bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const U
 				if (!room.GetFSquare(x, y))
 					bValid = false;
 				break;
+			case T_EMPTY_TRANSPARENT:
+			case T_REMOVE_TRANSPARENT:
+				if (!room.GetTSquare(x, y))
+					bValid = false;
+				break;
 		}
 	}
 	return bValid;
@@ -274,6 +277,13 @@ bool BuildUtil::BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile
 				}
 				pOrb->eType = OT_BROKEN;
 				room.ForceTileRedraw(x, y, false);
+				return true;
+			}
+		return false;
+		case T_PLATFORM_W:
+		case T_PLATFORM_P:
+			if (BuildNormalTile(room, baseTile, tile, x, y, false, CueEvents)) {
+				room.PlotPlatform(x, y, tile);
 				return true;
 			}
 		return false;
@@ -344,8 +354,9 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 	else if (wLayer == LAYER_TRANSPARENT)
 	{
 		const UINT wOldTTile = room.GetTSquare(x, y);
-		if (bIsTar(wOldTTile) && baseTile != wOldTTile)
-		{
+		if (bIsTarOrFluff(wOldTTile) && baseTile == T_EMPTY_TRANSPARENT) {
+			room.bTarWasBuilt = true;
+		} else if (bIsTar(wOldTTile) && baseTile != wOldTTile) {
 			if (room.StabTar(x, y, CueEvents, true, NO_ORIENTATION))
 				room.ConvertUnstableTar(CueEvents);
 		} else if (wOldTTile == T_FLUFF && baseTile != wOldTTile) {
@@ -361,6 +372,10 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 			room.briars.forceRecalc();
 		} else if (baseTile == T_STATION) {
 			room.stations.push_back(new CStation(x, y, &room));
+		} else if (wOldTTile == T_LIGHT) {
+			room.SetRoomLightingChanged();
+		} else if (wOldTTile == T_OBSTACLE) {
+			RecalculateObstacle(room, x, y);
 		}
 	}
 
@@ -372,7 +387,9 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		|| bIsThinIce(baseTile)
 		|| bIsThinIce(wOldOTile)
 		|| bIsDoor(wOldOTile)
-		|| bIsDoor(baseTile))
+		|| bIsDoor(baseTile)
+		|| baseTile == T_PLATFORM_W
+		|| wOldOTile == T_PLATFORM_W)
 	{
 		CCoordSet plots;
 		for (int nJ = -1; nJ <= 1; ++nJ){
@@ -524,4 +541,64 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		room.building.remove(x, y);
 
 	return true;
+}
+
+void BuildUtil::RecalculateObstacle(CDbRoom& room, const UINT wCol, const UINT wRow)
+// Collapse obstacle into 1x1 units
+{
+	const BYTE obType = calcObstacleType(room.GetTParam(wCol, wRow));
+	ASSERT(obType);
+
+	//Find obstacle edges to figure out which relative x/y position this tile is at.
+	UINT xPos = 0;
+	UINT yPos = 0;
+	UINT x = wCol, y = wRow;
+	while (x > 0) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break; //found left edge
+		if (room.GetTSquare(x - 1, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x - 1, wRow)) != obType) break;
+		++xPos;
+		--x;
+	}
+
+	UINT leftX = x;
+
+	x = wCol + 1;
+	while (x < room.wRoomCols) {
+		if (bObstacleLeft(room.GetTParam(x, wRow))) break;
+		if (room.GetTSquare(x, wRow) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(x, wRow)) != obType) break;
+		++x;
+	}
+
+	x -= wCol - xPos; //x dimension of this obstacle
+	ASSERT(xPos < x);
+
+	while (y > 0) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;  //found top edge
+		if (room.GetTSquare(wCol, y - 1) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y - 1)) != obType) break;
+		++yPos;
+		--y;
+	}
+
+	UINT topY = y;
+
+	y = wRow + 1;
+	while (y < room.wRoomRows) {
+		if (bObstacleTop(room.GetTParam(wCol, y))) break;
+		if (room.GetTSquare(wCol, y) != T_OBSTACLE) break;
+		if (calcObstacleType(room.GetTParam(wCol, y)) != obType) break;
+		++y;
+	}
+
+	y -= wRow - yPos; //y dimension of this obstacle
+	ASSERT(yPos < y);
+
+	for (UINT i = 0; i < x; i++) {
+		for (UINT j = 0; j < y; j++) {
+			room.SetTParam(leftX + i, topY + j, OBSTACLE_TOP | OBSTACLE_LEFT | obType);
+			room.ForceTileRedraw(leftX + i, topY + j, true);
+		}
+	}
 }

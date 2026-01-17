@@ -43,6 +43,7 @@ class CRenameDialogWidget : public CDialogWidget
 public:
 	CRenameDialogWidget(const UINT dwSetTagNo, const int nSetX, const int nSetY,
 		const UINT wSetW, const UINT wSetH, const bool bListBoxDoubleClickReturns=false);
+	void FakeClick(const UINT dwTagNo);
 	virtual void   OnBetweenEvents();
 
 protected:
@@ -77,7 +78,13 @@ public:
 	virtual void   OnBetweenEvents();
 
 	bool RenameCharacter();
-	bool RenameVar();
+	bool RenameVar(const bool bIsArrayVar = false);
+
+	UINT mapQueryX, mapQueryY; //for querying the user for map position
+
+	static const UINT INDENT_PREFIX_SIZE;
+	static const UINT INDENT_TAB_SIZE;
+	static const UINT INDENT_IF_CONDITION_SIZE;
 
 private:
 	void  AddCharacterDialog();
@@ -91,7 +98,7 @@ private:
 	void  ClearPasteBuffer();
 	void  DeleteCommands(CListBoxWidget *pActiveCommandList, COMMANDPTR_VECTOR& commands);
 	void  DeleteCustomCharacter();
-	void  DeleteVar();
+	void  DeleteVar(const bool bArrayVar = false);
 	void  EditCustomCharacters();
 	UINT  findStartTextMatch(CListBoxWidget* pListBoxWidget, const WCHAR* pText, UINT& index, bool& bFound) const;
 	UINT  findTextMatch(CListBoxWidget* pListBoxWidget, const WCHAR* pText, const UINT index, bool& bFound) const;
@@ -108,10 +115,11 @@ private:
 			const WCHAR* pText) const;
 	HoldCharacter* GetCustomCharacter();
 	WSTRING GetDataName(const UINT dwID) const;
-	WSTRING GetPrettyPrinting(const COMMANDPTR_VECTOR& commands,
-			CCharacterCommand* pCommand,
-			const UINT ifIndent, const UINT tabSize) const;
+	UINT ExtractCommandIndent(const CListBoxWidget* pCommandList, const UINT wCommandIndex) const;
+	void    PrettyPrintCommands(CListBoxWidget* pCommandList, const COMMANDPTR_VECTOR &commands);
 	WSTRING GetEntranceName(CEditRoomScreen *pEditRoomScreen, UINT entranceID) const;
+	void AppendGotoDestination(WSTRING& wstr, const COMMANDPTR_VECTOR& commands,
+		const CCharacterCommand& pCommand) const;
 	WSTRING GetWorldMapNameText(CEditRoomScreen *pEditRoomScreen, UINT worldMapID) const;
 
 	virtual void   OnClick(const UINT dwTagNo);
@@ -131,16 +139,23 @@ private:
 	void  PopulateGotoLabelList(const COMMANDPTR_VECTOR& commands);
 	void  PopulateGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateItemListBox(CListBoxWidget *pListBox, const bool bIsBuild, const bool bIsBuildMarker, const bool bIsWaitForItem);
+	void  PopulateItemGroupListBox(CListBoxWidget* pListBox);
+	void  PopulatePlayerBehaviorListBox();
 	void  PopulatePlayerGraphicListBox(CListBoxWidget *pListBox);
 	void  PopulateImperativeListBox(const bool bDefaultScript=false);
+	void  PopulateBehaviorListBox();
 	void  PopulateMainGraphicList();
 	void  PopulateSpeakerList(CListBoxWidget *pListBox);
 	void  PopulateVarList();
+	void  PopulateEntityList(CListBoxWidget* pListBox);
+	void  UpdateVarDeleteButton(UINT widgetTag, CListBoxWidget* varListBox);
 
 	void  prepareForwardReferences(const COMMANDPTR_VECTOR& newCommands);
 
+	void  QueryMapRoom();
 	void  QueryRect();
 	void  QueryXY();
+	void  QueryXYWH();
 
 	void  RefreshCustomCharacterList(CListBoxWidget *pListBox);
 	void  resolveForwardReferences(const COMMANDPTR_VECTOR& newCommands);
@@ -165,9 +180,13 @@ private:
 
 	//For text editing of script commands.
 	CCharacterCommand* fromText(WSTRING text);
-	WSTRING toText(const COMMANDPTR_VECTOR& commands, CCharacterCommand* pCommand);
+	WSTRING toText(
+		const COMMANDPTR_VECTOR& commands,
+		CCharacterCommand* pCommand,
+		const CListBoxWidget* pCommandList,
+		const UINT wCommandIndex);
 
-	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox, *pAddCommandGraphicListBox;
+	CListBoxWidget *pGraphicListBox, *pPlayerGraphicListBox, *pAddCommandGraphicListBox, *pEntityListBox;
 	COptionButtonWidget *pIsVisibleButton;
 	CListBoxWidget *pCommandsListBox;
 	CRenameDialogWidget *pAddCommandDialog, *pAddCharacterDialog;
@@ -188,14 +207,23 @@ private:
 	CListBoxWidget *pMusicListBox;
 	CListBoxWidget *pVarListBox, *pVarOpListBox, *pVarCompListBox, *pWaitFlagsListBox,
 		*pImperativeListBox, *pBuildItemsListBox, *pBuildMarkerListBox, *pWaitForItemsListBox,
-		*pNaturalTargetTypesListBox;
+		*pNaturalTargetTypesListBox, *pBehaviorListBox, *pRemainsListBox, *pVarCompListBox2,
+		*pArrayVarListBox, *pArrayVarOpListBox, *pItemGroupListBox, *pPlayerStateListBox,
+		*pPlayerStateListBox2;
 	CTextBoxWidget *pCharNameText;
 	CListBoxWidget *pCharListBox;
 	CListBoxWidget *pDisplayFilterListBox;
 	CListBoxWidget *pWorldMapIconFlagListBox;
 	CListBoxWidget *pWorldMapImageFlagListBox;
-	CListBoxWidget *pWeaponListBox;
+	CListBoxWidget *pWeaponListBox, *pWeaponListBox2, *pWeaponFlagsListBox;
 	CListBoxWidget *pAttackTileListBox;
+	CListBoxWidget *pMovementTypeListBox;
+	CListBoxWidget *pIgnoreFlagsListBox;
+	CListBoxWidget* pColorListBox;
+	CListBoxWidget* pOrbAgentListBox;
+	CListBoxWidget* pPlayerBehaviorListBox, * pPlayerBehaviorStateListBox;
+
+	map<UINT, pair<UINT, UINT>> onOffListBox3Positions;
 
 	CCharacter *pCharacter;       //character being edited
 	COMMANDPTR_VECTOR commands,  //copy of commands for character being edited

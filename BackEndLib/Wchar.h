@@ -81,10 +81,10 @@ typedef std::basic_string<WCHAR, std::char_traits<WCHAR>, std::allocator<WCHAR> 
 //Some common small strings.  Larger strings are localizable and should be kept in database.
 extern const WCHAR wszAmpersand[], wszAsterisk[], wszOpenAngle[], wszCloseAngle[], wszColon[],
 	wszComma[], wszCommaSpace[], wszCRLF[], wszDollarSign[], wszElipsis[], wszEmpty[], wszEqual[],
-	wszExclamation[], wszForwardSlash[], wszTimes[], wszHyphen[], wszParentDir[],
+	wszExclamation[], wszForwardSlash[], wszTimes[], wszHyphen[], wszTilde[], wszParentDir[],
 	wszPercent[], wszPeriod[], wszPoundSign[], wszPlus[], wszQuestionMark[], wszQuote[],
 	wszLeftBracket[], wszRightBracket[], wszLeftParen[], wszRightParen[],
-	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszTilde[],
+	wszSemicolon[], wszSpace[], wszSlash[], wszUnderscore[], wszZero[], wszOne[], wszTwo[],
 	wszStringToken[];
 
 //HTML formatting strings.

@@ -232,6 +232,9 @@
     <ClCompile Include="OrbUtil.cpp">
       <Filter>GameInfo</Filter>
     </ClCompile>
+    <ClCompile Include="I18N.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Architect.h">
@@ -491,6 +494,9 @@
     </ClInclude>
     <ClInclude Include="OrbUtil.h">
       <Filter>GameInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="I18N.h">
+      <Filter>General</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

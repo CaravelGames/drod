@@ -45,6 +45,8 @@ public:
 private:
 	static bool BuildAnyTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
 	static bool BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT tile, const UINT x, const UINT y, const bool bAllowSame, CCueEvents& CueEvents);
+
+	static void RecalculateObstacle(CDbRoom& room, const UINT wCol, const UINT wRow);
 };
 
 #endif //...#ifndef BUILD_UTIL_H

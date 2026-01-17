@@ -94,7 +94,7 @@ bool CArmedMonster::CheckForDamage(CCueEvents& CueEvents)
 	{
 		const UINT wIdentity = GetResolvedIdentity();
 		//Flying and tarstuff identities are safe from hot tiles.
-		if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(wIdentity))
+		if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(this->wType))
 			return false;
 
 		if (!this->pCurrentGame->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn)

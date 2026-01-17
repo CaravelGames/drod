@@ -53,7 +53,8 @@ CPathMap::CPathMap(
 	const UINT wCols, const UINT wRows,     //Size to initialize map to.
 	const UINT xTarget, const UINT yTarget, //[default: (-1,-1) = none]
 	const UINT dwPathThroughObstacleCost,   //[default=0]
-	const bool bSupportPartialObstacles     //[default=false]
+	const bool bSupportPartialObstacles,    //[default=false]
+	const bool bMakeSubPath                 //[default=false]
 	)
 	: wCols(wCols)
 	, wRows(wRows)
@@ -68,9 +69,18 @@ CPathMap::CPathMap(
 	for (wSquareI=wArea; wSquareI--; )
 		this->squares[wSquareI].eBlockedDirections = DMASK_NONE;
 
+	if (bMakeSubPath)
+		this->subPath = new CPathMap(*this);
+
 	//Get ready for path calculation if target is specified.
 	if (xTarget < wCols && yTarget < wRows)
 		Reset();
+}
+
+//**********************************************************************************
+CPathMap::~CPathMap()
+{
+	delete this->subPath;
 }
 
 //**********************************************************************************
@@ -116,6 +126,8 @@ void CPathMap::CalcPaths()
 				(this->bSupportPartialObstacles ? parent_square.eBlockedDirections : 0) |
 						square.eBlockedDirections) & rdirmask[nIndex]) != 0;
 
+			const bool bIsSemiObstacle = (!bIsObstacle && (square.eBlockedDirections & DMASK_SEMI));
+
 			//If this square is considered a valid candidate...
 			if (!bIsObstacle || this->dwPathThroughObstacleCost)
 			{
@@ -134,6 +146,11 @@ void CPathMap::CalcPaths()
 						//then leave it, but on re-entering an obstacle, the path cost
 						//will be set as though it never left the obstacle.
 						dwScore = (coord.wMoves+1) * (this->dwPathThroughObstacleCost + 1);
+				} else if (bIsSemiObstacle) {
+					//Penalize moving into "semi-obstacle" area
+					ASSERT(this->subPath);
+					const SQUARE& refSquare = this->subPath->GetSquare(wNewX, wNewY);
+					dwScore = refSquare.dwTargetDist * 1000;
 				}
 				if (dwScore < square.dwTargetDist)
 				{
@@ -174,7 +191,7 @@ void CPathMap::GetEntrances(
 	CalcPaths();
 	sortPoints.clear();
 
-	std::priority_queue<SORTPOINT> ecopy(this->entrySquares);
+	SortedEntrances ecopy(this->entrySquares);
 
 	while (!ecopy.empty())
 	{
@@ -289,6 +306,10 @@ void CPathMap::SetMembers(const CPathMap& Src)
 	this->bSupportPartialObstacles = Src.bSupportPartialObstacles;
 
 	this->dwPathThroughObstacleCost = Src.dwPathThroughObstacleCost;
+
+	if (Src.subPath) {
+		this->subPath = new CPathMap(*Src.subPath);
+	}
 }
 
 //*****************************************************************************
@@ -312,6 +333,11 @@ void CPathMap::SetSquare(
 		Reset();
 
 	square.eBlockedDirections = eBlockedDirections;
+
+	if (this->subPath) {
+		this->subPath->SetSquare(
+			wX, wY, eBlockedDirections & DMASK_ALL);
+	}
 }
 
 //**********************************************************************************
@@ -329,6 +355,9 @@ void CPathMap::SetTarget(
 		this->xTarget=xTarget;
 		this->yTarget=yTarget;
 		Reset();
+	}
+	if (this->subPath) {
+		this->subPath->SetTarget(xTarget, yTarget);
 	}
 }
 
@@ -419,4 +448,24 @@ const
 		//Append end of row CR/LF.
 		strOutput += NEWLINE;
 	}
+}
+
+//**************************************************************************************
+//Returns if a sortpoint is less than another, accounting for relative room position in
+//addition to tile score. If scores are equal, compare the y position, then x position.
+bool CompareEntrances::operator()(const SORTPOINT& lhs, const SORTPOINT& rhs)
+{
+	if (lhs < rhs)
+		return true;
+
+	if (rhs < lhs)
+		return false;
+
+	if (lhs.wY > rhs.wY)
+		return true;
+
+	if (lhs.wY < rhs.wY)
+		return false;
+
+	return (lhs.wX > rhs.wX);
 }

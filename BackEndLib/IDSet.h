@@ -144,6 +144,29 @@ public:
 	inline UINT getLast() const {return size() ? *rbegin() : 0;}
 	inline UINT getMax() const {return size() ? *(this->ids.rbegin()) : 0;}
 
+	// Split the given set into a number of sets that are no larger than the given amount
+	static std::vector<CIDSet> divide(CIDSet& set, size_t amount) {
+		if (set.size() <= amount) {
+			return { set };
+		}
+
+		std::vector<CIDSet> result;
+		result.push_back(CIDSet());
+		size_t n = 0;
+		size_t count = 0;
+		for (IDSet::const_iterator it = set.begin(); it != set.end(); ++it) {
+			result[n] += *it;
+			++count;
+			if (count >= amount) {
+				count = 0;
+				++n;
+				result.push_back(CIDSet());
+			}
+		}
+
+		return result;
+	}
+
 private:
 	std::set<UINT> ids;
 };

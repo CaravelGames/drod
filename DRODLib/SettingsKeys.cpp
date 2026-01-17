@@ -19,6 +19,8 @@ namespace INIKey
 	DEF(AlwaysFullBlit);
 	DEF(AutoLogin);
 	DEF(CrossfadeDuration);
+	DEF(ExportDemoThreshold);
+	DEF(ExportSavedGamesThreshold);
 	DEF(ExportSpeech);
 	DEF(ExportText);
 	DEF(FullScoreUpload);
@@ -48,6 +50,8 @@ namespace Settings
 	DEF(CloudHoldDemosVersion);
 	DEF(CNetProgressIsOld);
 	DEF(ConnectToInternet);
+	DEF(DemoDateFormat);
+	DEF(DescribeCitizenColor);
 	DEF(DisplayCombos);
 	DEF(EnableChatInGame);
 	DEF(ExportPath);
@@ -55,22 +59,28 @@ namespace Settings
 	DEF(Fullscreen);
 	DEF(Gamma);
 	DEF(GEMI); //groupEditorMenuItems
+	DEF(ImportImagePath);
 	DEF(ImportSoundPath);
 	DEF(ImportVideoPath);
 	DEF(ItemTips);
 	DEF(Language);
 	DEF(LastNotice);
 	DEF(MoveCounter);
+	DEF(MovementOrderHint);
 	DEF(Music);
 	DEF(MusicVolume);
 	DEF(NoFocusPlaysMusic);
+	DEF(PlayHoldManagementDemo);
 	DEF(PlaySessions);
 	DEF(PuzzleMode);
 	DEF(ReceiveWhispersOnlyInGame);
 	DEF(RepeatRate);
+	DEF(ResizableWindow);
 	DEF(ShowCheckpoints);
 	DEF(ShowDemosFromLevel);
+	DEF(ShowDoublePlacementEffect);
 	DEF(ShowErrors);
+	DEF(ShowHalphEffects);
 	DEF(ShowSubtitlesWithVoices);
 	DEF(SoundEffects);
 	DEF(SoundEffectsVolume);
@@ -81,4 +91,18 @@ namespace Settings
 	DEF(UndoLevel);
 	DEF(Voices);
 	DEF(VoicesVolume);
+
+	DEF(PuzzleMode_VisibilityEyeBeams);
+	DEF(PuzzleMode_VisibilityReverseEyeBeams);
+	DEF(PuzzleMode_VisibilityBrokenWalls);
+	DEF(PuzzleMode_VisibilitySecretWalls);
+	DEF(PuzzleMode_VisibilitySpiders);
+
+	DEF(PuzzleMode_VisibilityHideAnimations);
+	DEF(PuzzleMode_VisibilityHideBuildMarkers);
+	DEF(PuzzleMode_VisibilityHideLighting);
+	DEF(PuzzleMode_VisibilityHideWeather);
+
+	DEF(PuzzleMode_GridOpacity);
+	DEF(PuzzleMode_GridStyle);
 }

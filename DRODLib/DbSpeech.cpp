@@ -469,7 +469,8 @@ void CDbSpeech::SetSound(
 	CDbDatum *pSound, const bool bDeleteSound)  //[default=true]
 {
 	this->bDirtySound = true;  //dirty sound even if pointer is identical
-	if (this->pSound == pSound) return; //same object -- nothing to do
+	if (this->pSound == pSound)
+		return; //same object -- nothing to do
 	if (bDeleteSound)
 		delete this->pSound;
 	this->pSound = pSound;

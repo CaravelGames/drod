@@ -140,6 +140,7 @@ public:
 
 
 	CPathMap *     pPathMap[NumMovementTypes];
+	CPathMap *     pExtraPathMap[NumMovementTypes]; //for paths that have non-player target
 	CCoordSet      LitFuses, NewFuses;  //all fuse pieces (and bombs) burning this turn
 	CCoordSet      Beacons;   //all beacons in the room
 	CCoordStack    NewBabies; //unstable tar tiles marked for baby conversion
@@ -212,6 +213,8 @@ public:
 	void           ClearTLayer();
 	void           CreatePathMap(const UINT wX, const UINT wY,
 			const MovementType eMovement);
+	CPathMap*           MakePathMap(const UINT wX, const UINT wY,
+			const MovementType eMovement);
 	void           CreatePathMaps();
 	bool           CropRegion(UINT& x1, UINT &y1, UINT &x2, UINT &y2) const;
 	int            DangerLevel() const;
@@ -245,6 +248,7 @@ public:
 			const int dx, const int dy) const;
 	bool           DoesOrthoSquarePreventDiagonal(const UINT wX, const UINT wY,
 		const int dx, const int dy) const;
+	bool           DoesSquareContainTile(const UINT wX, const UINT wY, const UINT wTileNo) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 	bool           DoubleCanActivateToken(RoomTokenType type) const;
 
@@ -349,6 +353,8 @@ public:
 	bool           IsMonsterInRectOfType(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const UINT wType,
 			const bool bConsiderNPCIdentity=false, const bool bUseNPCLogicalIdentity=false) const;
+	bool           IsMonsterRemainsInRectOfType(const UINT wLeft, const UINT wTop,
+		const UINT wRight, const UINT wBottom, const UINT wType) const;
 	bool           IsMonsterNextTo(const UINT wX, const UINT wY, const UINT wType) const;
 	bool           IsMonsterOfTypeAt(const UINT eType, const UINT wX, const UINT wY,
 			const bool bConsiderNPCIdentity=false, const bool bOnlyLiveMonsters=true) const;
@@ -356,9 +362,13 @@ public:
 			const UINT wSquares, const bool bConsiderPieces=true) const;
 	bool           IsMonsterSwordAt(const UINT wX, const UINT wY,
 			const bool bIgnoreDagger=false, const CMonster *pIgnore=NULL) const;
+	bool           IsMonsterWeaponTypeAt(const UINT wX, const UINT wY,
+		const WeaponType wt, const CMonster *pIgnore = NULL) const;
 	bool           IsPathmapNeeded() const;
 	bool           IsTimerNeeded() const;
 	static bool    IsRequired(const UINT dwRoomID);
+	bool           IsRequiredMonsterInRect(const UINT wLeft, const UINT wTop,
+		const UINT wRight, const UINT wBottom) const;
 	bool           IsRoomLightingChanged() const { return room_lighting_changed; }
 	static bool    IsSecret(const UINT dwRoomID);
 	bool           IsSwordAt(const UINT wX, const UINT wY) const;
@@ -368,6 +378,7 @@ public:
 	bool           IsTarVulnerableToStab(const UINT wX, const UINT wY) const;
 	bool           IsTileInRectOfType(const UINT wLeft, const UINT wTop,
 			const UINT wRight, const UINT wBottom, const UINT wType) const;
+	bool           IsTunnelTraversableInDirection(const UINT wX, const UINT wY, const int dx, const int dy) const;
 	bool           IsValidColRow(const UINT wX, const UINT wY) const;
 	void           KillFluffOnHazard(CCueEvents &CueEvents);
 	void           KillMonstersOnHazard(CCueEvents &CueEvents);
@@ -380,6 +391,7 @@ public:
 	void           LightFuseEnd(CCueEvents &CueEvents, const UINT wCol, const UINT wRow);
 	void           LinkMonster(CMonster *pMonster, const bool bInRoom=true, const bool bReverseRule=false);
 	void           UnlinkMonster(CMonster *pMonster);
+	void           ReplaceCharacter(CCharacter* pOldCharacter, CCharacter* pNewCharacter);
 	bool           Load(const UINT dwLoadRoomID, const bool bQuick=false);
 	CMonster*      LoadMonster(const c4_RowRef& row, CDbHold* &pHold);
 	bool           LoadTiles();
@@ -399,6 +411,7 @@ public:
 			CMonster *pMonster=NULL, bool bUnderObject=false);
 	void           Plot(const CCoordSet& plots, const bool bChangesRoomGeometry=false);
 	void           PlotMonster(UINT wX, UINT wY, UINT wTileNo, CMonster *pMonster);
+	void           PlotPlatform(UINT wX, UINT wY, UINT wTileNo);
 	void           PreprocessMonsters(CCueEvents& CueEvents);
 	static bool    PressurePlateIsDepressedBy(const UINT item);
 	void           ProcessTurn(CCueEvents &CueEvents, const bool bFullMove);

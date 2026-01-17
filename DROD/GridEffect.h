@@ -33,7 +33,9 @@ class CRoomWidget;
 class CGridEffect : public CEffect
 {
 public:
-	CGridEffect(CWidget *pSetWidget);
+	CGridEffect(CWidget *pSetWidget, const UINT wGridStyle, const Uint8 uOpacity);
+
+	static const UINT wGridStylesCount;
 
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
@@ -41,7 +43,11 @@ protected:
 
 private:
 
+	UINT GetTileImageForGridStyle(const UINT wGridStyle);
+
 	CRoomWidget *pRoomWidget;
+	UINT wTileNo;
+	Uint8 uOpacity;
 };
 
 #endif //...#ifndef GRIDEFFECT_H

@@ -258,8 +258,12 @@ const
 	if (IsTileObstacle(room.GetFSquare(wCol, wRow)))
 		return true;
 
-	//Check o-square obstacle.
+	//Check player
 	const CSwordsman& player = this->pCurrentGame->swordsman;
+	if (!player.IsVulnerableToAdder() && this->pCurrentGame->IsPlayerAt(wCol, wRow))
+		return true; //inedible player blocks tile
+
+	//Check o-square obstacle.
 	wLookTileNo = room.GetOSquare(wCol, wRow);
 	if (IsTileObstacle(wLookTileNo))
 	{
@@ -276,14 +280,8 @@ const
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster)
 	{
-		if (pMonster->IsLongMonster() || pMonster->IsPiece())
+		if (!pMonster->IsVulnerableToAdder())
 			return true;
-		if (pMonster->wType == M_CHARACTER)
-		{
-			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsInvulnerable())
-				return true;
-		}
 	}
 
 	//No obstacle.

@@ -92,6 +92,8 @@ namespace ScriptFlag
 	static const UINT SLAYER  = 0x00000040;
 	static const UINT BEETHRO = 0x00000080;
 	static const UINT STALWART= 0x00000100;
+	static const UINT PUFFBABY= 0x00000200;
+	static const UINT REQUIRED= 0x00000400;
 
 	//How killing NPC affects the game
 	enum Imperative
@@ -125,7 +127,54 @@ namespace ScriptFlag
 		NotNPCPathmapObstacle=26,
 		NormalBeelining=27,  //use Roach-like movement
 		SmartBeelining=28,   //use Roach-like movement but with better orthogonal choice when diagonal is blocked
-		PathfindingOpenOnly=29 //pathfinding movement, no movement when blocked
+		PathfindingOpenOnly=29, //pathfinding movement, no movement when blocked
+		InvisibleInspectable=30,   // Causes disappeared characters to be included when right clicking in the room
+		InvisibleNotInspectable=31,
+		InvisibleCountMoveOrder = 32,   // Causes disappeared characters to be counted when displaying move order on right click
+		InvisibleNotCountMoveOrder = 33,
+		Friendly = 34, // the character becomes 'friendly'. Allies will avoid stabbing it, and killing it won't break stealth.
+		Unfriendly = 35 // the character becomes 'unfriendly'. Allies will stab it, and killing it will break stealth.
+	};
+
+	enum Behavior
+	{
+		ActivateTokens = 0,
+		DropTrapdoors = 1,
+		DropTrapdoorsArmed = 2,
+		PushObjects = 3,
+		MovePlatforms = 4,
+		MonsterAttackable = 5,
+		MonsterTarget = 6,
+		MonsterTargetWhenPlayerIsTarget = 7,
+		AllyTarget = 8,
+		PuffTarget = 9,
+		SwordDamageImmune = 10,
+		PickaxeDamageImmune = 11,
+		SpearDamageImmune = 12,
+		DaggerDamageImmune = 13,
+		CaberDamageImmune = 14,
+		FloorSpikeImmune = 15,
+		FiretrapImmune = 16,
+		HotTileImmune = 17,
+		ExplosionImmune = 18,
+		BriarImmune = 19,
+		AdderImmune = 20,
+		PuffImmune = 21,
+		ActivatePlates = 22,
+		PushMonsters = 23,
+		FatalPushImmune = 24,
+		CanBeNPCBeethro = 25,
+		RestrictedMovement = 26,
+		InstantMovement = 27,
+		UseTunnels = 28,
+		AvoidFiretraps = 29,
+		AvoidPuffs = 30,
+		OnlyProcessOnFullTurn = 31,
+		LightFuses = 32,
+		CanKillNonTargetPlayer = 33,
+		WakesEyes = 34,
+		AppearOnWeapons = 35,
+		WakesEyesWhenMonsterTarget = 36,
 	};
 
 	enum DisplayFilter
@@ -142,16 +191,96 @@ namespace ScriptFlag
 		AT_Stab=0,
 		AT_Explode=1,
 		AT_Damage=2,
-		AT_Kill=3
+		AT_Kill=3,
+		AT_Remove=4,
+		AT_OneTurnStun=5,
+		AT_TwoTurnStun=6,
+		AT_FloorSpikes=7,
+		AT_Firetrap=8
 	};
 
 	enum TargettingType
 	{
 		RegularMonster = 0,
 		BrainedMonster = 1,
-		Guard=2,
-		Puff=3,
-		Stalwart=4
+		BestBrainTile = 2,
+		BestBrainDirection=3,
+		NearestOpenRoomEdge = 4,
+		NearestOpenRoomEdgePlayer = 5,
+		Puff=6,
+		Stalwart=7
+	};
+
+	enum GotoSmartType
+	{
+		PreviousIf = -1,
+		NextElseOrElseIfSkipCondition = -2
+	};
+
+	enum LightColors
+	{
+		LC_None = 0,
+		LC_White = 1,
+		LC_Red = 2,
+		LC_Green = 3,
+		LC_Blue = 4,
+		LC_PaleRed = 5,
+		LC_PaleGreen = 6,
+		LC_PaleBlue = 7,
+		LC_Yellow = 8,
+		LC_Cyan = 9,
+		LC_Mauve = 10,
+		LC_Orange = 11,
+		LC_Pink = 12,
+		LC_Lime = 13,
+		LC_Turquoise = 14,
+		LC_Violet = 15,
+		LC_Azure = 16
+	};
+
+	enum ItemGroup
+	{
+		IG_PlainFloor = 0, //Plain floor tiles
+		IG_Wall = 1, //All non-breakable walls
+		IG_BreakableWall = 2, //Crumbly and secret walls
+		IG_AnyWall = 3, //All types of wall and closed doors
+		IG_Pit = 4, //Both types of pit
+		IG_Water = 5, //All types of water
+		IG_Stairs = 6, //Both types of staircase
+		IG_Bridge = 7, //All types of bridge
+		IG_Trapdoor = 8, //Both trapdoors
+		IG_ThinIce = 9, //Both types of thin ice
+		IG_FallingTile = 10, //Trapdoors and thin ice
+		IG_Tunnel = 11, //All tunnel directions
+		IG_Firetrap = 12, //Both firetrap states
+		IG_Platform = 13, //Platform and raft
+		IG_OpenDoor = 14, //All types of open door
+		IG_ClosedDoor = 15, //All types of closed door
+		IG_YellowDoor = 16,
+		IG_GreenDoor = 17,
+		IG_BlueDoor = 18,
+		IG_RedDoor = 19,
+		IG_BlackDoor = 20,
+		IG_SoldOTile = 21, //All walls and closed doors
+		IG_ActiveArrow = 22, //All active arrow directions
+		IG_DisabledArrow = 23, //All disabled arrow directions
+		IG_AnyArrow = 24, //All types of arrow
+		IG_Tarstuff = 25, //Tar, mud and gel
+		IG_TarFluff = 26, //Tar, mud, gel and fluff
+		IG_Briar = 27, //All briar components
+		IG_Beacon = 28, //Both seeding beacon states
+		IG_Explosive = 29, //Bomb and keg
+		IG_Pushable = 30, //Mirror and keg
+		IG_Potion = 31, //All types of potion and horn
+		ItemGroupCount //Total number of defined groups
+	};
+
+	enum PlayerState
+	{
+		PS_Invisible = 0, //Taken invisibility potion
+		PS_Hasted = 1, //Taken speed potion
+		PS_Powered = 2, //Activated power token
+		PS_Hiding = 3, //Invisible or in shallow water
 	};
 
 	//World map icons
@@ -161,7 +290,24 @@ namespace ScriptFlag
 	static const UINT WMI_DISABLED   = 0x00000004; //disabled area
 	static const UINT WMI_LOCKED     = 0x00000008; //locked area
 	static const UINT WMI_NOLABEL    = 0x00000010; //disabled area with no label shown
+
+	//Weapons
+	static const UINT WEAPON_SWORD = 0x00000001; // Sword
+	static const UINT WEAPON_PICKAXE = 0x00000002; // Pickaxe
+	static const UINT WEAPON_SPEAR = 0x00000004; // Spear
+	static const UINT WEAPON_STAFF = 0x00000008; // Staff
+	static const UINT WEAPON_DAGGER = 0x00000010; // Dagger
+	static const UINT WEAPON_CABER = 0x00000020; // Caber
+
+	//Weather settings
+	static const UINT WEATHER_OUTSIDE = 0x00000001;
+	static const UINT WEATHER_LIGHTNING = 0x00000002;
+	static const UINT WEATHER_CLOUDS = 0x00000004;
+	static const UINT WEATHER_SUNSHINE = 0x00000008;
+	static const UINT WEATHER_SKIP_LIGHTFADE = 0x00000010;
 };
+
+typedef bool (*TileCheckFunc)(UINT t);
 
 class CDbSpeech;
 class CCharacterCommand
@@ -178,8 +324,8 @@ public:
 		CC_Appear=0,            //Appear at current square.
 		CC_AppearAt,            //Appear at square (x,y).
 		CC_MoveTo,              //Move to square (x,y) or target set in flags.
-		                        //If w is set, then forbid turning while moving.
-		                        //If h is set, then take only a single step before advancing to next command.
+								//If w is set, then forbid turning while moving.
+								//If h is set, then take only a single step before advancing to next command.
 		CC_Wait,                //Wait X turns.
 		CC_WaitForCueEvent,     //Wait for cue event X to fire.
 		CC_WaitForRect,         //Wait until an entity in flags is in rect (x,y,w,h).
@@ -217,7 +363,7 @@ public:
 		CC_SetPlayerAppearance, //Sets player to look like entity X.
 		CC_CutScene,            //Begin cut scene (if X is set), else ends cut scene.
 		CC_MoveRel,             //Move (x,y) relative to current position. If w is set, then forbid turning while moving.
-		                        //If h is set, then take only a single step before advancing to next command.
+								//If h is set, then take only a single step before advancing to next command.
 		CC_PlayerEquipsWeapon,  //(deprecated) If X is set, player is given a weapon, else it is taken away.
 		CC_AnswerOption,        //Text answer option (speech text) for a Question command that jumps to Label (x).
 		CC_BuildMarker,         //Mark rect (x,y,w,h) for building game element (flags).
@@ -265,6 +411,46 @@ public:
 		CC_FaceTowards,         //Makes the character face a specific other entity or position
 		CC_GetNaturalTarget,   //Finds the location of closest natural target
 		CC_GetEntityDirection, //Finds the direction an entity at a given tile is facing
+		CC_WaitForWeapon,		//Wait until a weapon is at (x,y).
+		CC_Behavior,			// Set behavior X on or off.
+		CC_WaitForRemains,      //Wait until a dead monster type in flags is in rect (x,y,w,h).
+		CC_PushTile,            //Push object or entity at (x,y) in direction (w)
+		CC_SetMovementType,     //Sets the character's movement type to X.
+		CC_ReplaceWithDefault,  //Replaces the character's script with its default script (if possible)
+		CC_VarSetAt,            //Remotely set local variable w (with operation h) of NPC at (x,y) to value in flags
+		CC_WaitForOpenTile,     //Check if tile at (x,y) is open for movement type (w). Ignores weapons if (h) is set and ignores entities in flags
+		CC_LogicalWaitAnd,      //Begins a logical wait block. Waits until all conditions are true.
+		CC_LogicalWaitOr,       //Begins a logical wait block. Waits until at least one condition is true.
+		CC_LogicalWaitXOR,      //Begins a logical wait block. Waits until exactly one condition is true.
+		CC_LogicalWaitEnd,      //Ends a logical wait block.
+		CC_SetDarkness,         //Set darkness level in rect (x,y,w,h) to value in flags. Zero value removes darkness
+		CC_SetCeilingLight,     //Set ceiling light value in rect (x,y,w,h) to value in flags. Zero value removes light
+		CC_SetWallLight,        //Set wall light value at (x,y) to intensity (w) with value in flags. Zero intensity or value removes light
+		CC_SetEntityWeapon,     //Set weapon of non-player entity at (x,y) to weapon (w), including on/off
+		CC_WaitForExpression,   //Wait until the expression in string (operation Y) X, e.g. _MyX - _X < 5. Only numeric comparisons are possible.
+		CC_LinkOrb,             //Change orb/plate connection between (x,y) and (w,h) to agent type in flags
+		CC_WaitForBuilding,     //Wait until build markers are queued in rect (x,y,w,h).
+		CC_WaitForBuildType,    //Wait until build marker type specified in flags is queued in rect (x,y,w,h)
+		CC_WaitForNotBuildType, //Wait until no build marker type specified in flags is queued in rect (x,y,w,h)
+		CC_ResetOverrides,      //Resets command parameter override values to no override
+		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
+		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
+		CC_SetPlayerBehavior,   //Set player behavior X to behavior state Y
+		CC_ArrayVarSet,         //Set array var W with operation H using expressions, starting at index f
+		CC_ArrayVarSetAt,       //Remotely invoke ArrayVarSet with NPC at (x,y)
+		CC_ClearArrayVar,       //Reset array var X
+		CC_WaitForItemGroup,    //Wait for game element in group (flags) to exist in rect (x,y,w,h).
+		CC_WaitForNotItemGroup, //Wait until no game element in group (flags) exists in rect (x,y,w,h).
+		CC_WaitForPlayerState,  //Wait until player state (Y) is on or off (x).
+		CC_SetPlayerState,      //Change player state (Y) to on or off (x).
+		CC_SelectSquare,        //Prompt the player to select a position in the room.
+		CC_WaitForBrainSense,   //Wait until a brain senses the player.
+		CC_WaitForArrayEntry,   //Wait until array X has entry satisfying comparison Y expression.
+		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
+		CC_AddRoomToMap,        //Add room at (x,y) to player's mapped rooms.
+		CC_LogicalWaitNOR,      //Begins a logical wait block. Waits until all conditions are false.
+		CC_IfNot,               //Begin a conditional block if next command is not satisfied.
+		CC_IfElseIfNot,         //Else combined with if not to reduce code nesting
 
 		CC_Count
 	};
@@ -283,6 +469,42 @@ public:
 				return false;
 		}
 	}
+
+	bool isIfNotCommand() const {
+		return command == CC_IfNot || command == CC_IfElseIfNot;
+	}
+
+	bool isElseIfCommand() const {
+		return command == CC_IfElseIf || command == CC_IfElseIfNot;
+	}
+
+	bool IsLogicalWaitCommand() const {
+		switch (command) {
+			case CC_LogicalWaitAnd:
+			case CC_LogicalWaitOr:
+			case CC_LogicalWaitXOR:
+			case CC_LogicalWaitNOR:
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	// Can the command be processed in a logical wait block?
+	bool IsLogicalWaitCondition() const;
+
+	// For front-end command formatting
+	bool IsAllowedInLogicBlock() const {
+		return command == CC_LogicalWaitEnd ||
+			IsLogicalWaitCommand() || IsLogicalWaitCondition();
+	}
+
+	// If the command has a variable reference, return it. Otherwise returns zero.
+	UINT getVarID() const;
+
+	// Set the variable reference for a command.
+	// Has no effect on commands that don't reference a variable.
+	void setVarID(const UINT varID);
 };
 
 class CDbMessageText;
@@ -308,15 +530,22 @@ struct ImageOverlayCommand
 	static const int DEFAULT_LAYER;
 	static const int ALL_LAYERS;
 	static const int NO_LAYERS;
+	static const int DEFAULT_GROUP;
+	static const int NO_GROUP;
 
 	enum IOC {
+		AddX,
+		AddY,
 		CancelAll,
+		CancelGroup,
 		CancelLayer,
 		Center,
 		DisplayDuration,
 		DisplayRect,
+		DisplayRectModify,
 		DisplaySize,
 		FadeToAlpha,
+		Group,
 		Grow,
 		Jitter,
 		Layer,
@@ -329,6 +558,7 @@ struct ImageOverlayCommand
 		ParallelMove,
 		ParallelMoveTo,
 		ParallelRotate,
+		Repeat,
 		Rotate,
 		Scale,
 		SetAlpha,
@@ -336,7 +566,10 @@ struct ImageOverlayCommand
 		SetX,
 		SetY,
 		SrcXY,
+		TileGrid,
+		TimeLimit,
 		TurnDuration,
+		TurnLimit,
 		Invalid
 	};
 
@@ -366,7 +599,11 @@ public:
 	static bool parse(const WSTRING& wtext, ImageOverlayCommands& commands);
 
 	int getLayer() const;
+	int getGroup() const;
+	UINT getTimeLimit() const;
+	UINT getTurnLimit() const;
 	int clearsImageOverlays() const;
+	int clearsImageOverlayGroup() const;
 	bool loopsForever() const;
 
 	ImageOverlayCommands commands;

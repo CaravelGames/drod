@@ -6,20 +6,57 @@
 using namespace ScriptVars;
 
 //*****************************************************************************
-//Symbols of predefined in-game variables.
+//Symbols of predefined in-game variables. - Must be in the same order as Predefined enum
 const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarMonsterWeapon,
-	0, 0,
+	0,
+	MID_VarMonsterColor,
 	MID_VarX, MID_VarY, MID_VarO,
 	MID_VarMonsterX, MID_VarMonsterY, MID_VarMonsterO,
 	0, 0,
 	MID_VarMonsterParamX, MID_VarMonsterParamY, MID_VarMonsterParamW, MID_VarMonsterParamH, MID_VarMonsterParamF,
 	MID_VarRoomImageX, MID_VarRoomImageY, MID_VarOverheadImageX, MID_VarOverheadImageY,
 	MID_VarLevelName, MID_VarThreatClock, MID_VarPlayerLight, MID_VarPlayerLightType,
-	MID_VarReturnX, MID_VarReturnY
+	MID_VarReturnX, MID_VarReturnY,
+	MID_VarMonsterName, 
+	MID_VarRoomX, MID_VarRoomY,
+	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain,
+	MID_SpawnCycle, MID_SpawnCycleFast,
+	MID_VarPlayerWeapon, MID_VarPlayerLocalWeapon,
+	MID_VarInput, MID_VarInputDirection,
+	MID_VarCombo,
+	MID_VarMonsterHue, MID_VarMonsterSaturation
 };
 
 string ScriptVars::midTexts[PredefinedVarCount]; //inited on first call
+
+//*****************************************************************************
+// Values are not case sensitive; caps added here for readability
+const char ScriptVars::primitiveNames[PrimitiveCount][15] =
+{
+	"_abs",
+	"_min",
+	"_max",
+	"_orient",
+	"_facing",
+	"_ox",
+	"_oy",
+	"_rotateCW",
+	"_rotateCCW",
+	"_rotateDist",
+	"_dist0",
+	"_dist1",
+	"_dist2",
+	"_ArrowDir",
+	"_RoomTile",
+	"_MonsterType",
+	"_CharacterType",
+	"_EntityWeapon",
+	"_MonsterSize",
+	"_BrainScore",
+	"_BrainDist",
+	"_CleanRooms"
+};
 
 //*****************************************************************************
 string ScriptVars::getVarName(const Predefined var)
@@ -47,6 +84,58 @@ WSTRING ScriptVars::getVarNameW(const Predefined var)
 }
 
 //*****************************************************************************
+PrimitiveType ScriptVars::parsePrimitive(const WSTRING& wstr)
+{
+	const string str = UnicodeToUTF8(wstr);
+	return parsePrimitive(str);
+}
+
+PrimitiveType ScriptVars::parsePrimitive(const string& str)
+{
+	for (int i = 0; i < PrimitiveCount; ++i) {
+		if (!_stricmp(str.c_str(), primitiveNames[i]))
+			return PrimitiveType(i);
+	}
+	return NoPrimitive;
+}
+
+//Returns: the number of parameter arguments each primitive function requires
+UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
+{
+	switch (eType)
+	{
+		case P_Abs:
+		case P_OrientX:
+		case P_OrientY:
+		case P_RotateCW:
+		case P_RotateCCW:
+		case P_CleanRooms:
+			return 1;
+		case P_Min:
+		case P_Max:
+		case P_Orient:
+		case P_Facing:
+		case P_RotateDist:
+		case P_ArrowDir:
+		case P_MonsterType:
+		case P_CharacterType:
+		case P_EntityWeapon:
+		case P_MonsterSize:
+			return 2;
+		case P_RoomTile:
+		case P_BrainScore:
+			return 3;
+		case P_Dist0:
+		case P_Dist1:
+		case P_Dist2:
+			return 4;
+		case P_BrainDist:
+			return 5;
+	}
+	return 0;
+}
+
+//*****************************************************************************
 void ScriptVars::init()
 //Init 'midTexts' on first call.
 //Much faster than repeated multiple DB queries.
@@ -68,7 +157,7 @@ void ScriptVars::init()
 //*****************************************************************************
 bool ScriptVars::IsStringVar(Predefined val)
 {
-	return val == P_LEVELNAME;
+	return val == P_LEVELNAME || val == P_MONSTER_NAME;
 }
 
 //*****************************************************************************
@@ -107,7 +196,23 @@ bool ScriptVars::IsCharacterLocalVar(const WSTRING& wstr)
 
 bool ScriptVars::IsCharacterLocalVar(const WCHAR* wstr)
 {
-	return wstr && wstr[0] == '.';
+	return wstr && (wstr[0] == '.' || wstr[0] == '@');
+}
+
+bool ScriptVars::IsCharacterArrayVar(const WSTRING& wstr)
+{
+	return IsCharacterArrayVar(wstr.c_str());
+}
+
+bool ScriptVars::IsCharacterArrayVar(const WCHAR* wstr)
+{
+	return wstr && (wstr[0] == '#' || wstr[0] == '@');
+}
+
+//*****************************************************************************
+bool ScriptVars::IsIndexInArrayRange(const int index)
+{
+	return abs(index) <= 50000;
 }
 
 //*****************************************************************************

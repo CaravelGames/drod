@@ -44,10 +44,12 @@ public:
 	static void clearFallTiles() {CPlatform::fallTiles.clear();}
 	static bool fallTilesPending() {return !CPlatform::fallTiles.empty();}
 
+	void AddTile(const UINT wX, const UINT wY);
 	bool CanMove(const UINT wO);
 	void GetTiles(CCoordSet& tiles) const;
 	CIDSet GetTypes() const;
 	bool IsAt(const UINT wX, const UINT wY) const;
+	void Merge(CPlatform* other);
 	void Move(const UINT wO);
 	void Move(CDbRoom& room, const int nOX, const int nOY, const bool bPlotToRoom);
 	void RemoveTile(const UINT wX, const UINT wY);

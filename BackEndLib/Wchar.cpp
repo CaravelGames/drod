@@ -55,6 +55,7 @@ const WCHAR wszExclamation[] =  { We('!'),We(0) };
 const WCHAR wszForwardSlash[] = { We('/'),We(0) };
 const WCHAR wszTimes[] =        { We('x'),We(0) };
 const WCHAR wszHyphen[] =       { We('-'),We(0) };
+const WCHAR wszTilde[] =        { We('~'),We(0) };
 const WCHAR wszParentDir[] =    { We('.'),We('.'),We(0) };
 const WCHAR wszPercent[] =      { We('%'),We(0) };
 const WCHAR wszPeriod[] =       { We('.'),We(0) };
@@ -70,8 +71,9 @@ const WCHAR wszSemicolon[] =    { We(';'),We(0) };
 const WCHAR wszSpace[] =        { We(' '),We(0) };
 const WCHAR wszUnderscore[] =   { We('_'),We(0) };
 const WCHAR wszZero[] =         { We('0'),We(0) };
-const WCHAR wszTilde[] =        { We('~'),We(0) };
 const WCHAR wszStringToken[] =  { We('%'),We('s'),We(0) };
+const WCHAR wszOne[] =          { We('1'),We(0) };
+const WCHAR wszTwo[] =          { We('2'),We(0) };
 #ifdef WIN32
 const WCHAR wszSlash[] = { We('\\'),We(0) };
 #else

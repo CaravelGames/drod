@@ -56,14 +56,14 @@ CStalwart::CStalwart(
 	if (CStalwart::typesToAttack.empty())
 	{
 		//Attack non-friendly monster types.
-		static const UINT NUM_TYPES = 29;
+		static const UINT NUM_TYPES = 30;
 		static const UINT types[NUM_TYPES] = {
 			M_ROACH, M_QROACH, M_REGG, M_GOBLIN, M_WWING,
 			M_EYE, M_TARBABY, M_BRAIN, M_SPIDER, M_SERPENTG,
 			M_ROCKGOLEM, M_WATERSKIPPER, M_SKIPPERNEST, M_AUMTLICH, M_SEEP,
 			M_SLAYER, M_SLAYER2, M_GUARD, M_MUDBABY, M_GELBABY,
 			M_ROCKGIANT, M_TARMOTHER, M_MUDMOTHER, M_GELMOTHER, M_SERPENTB,
-			M_SERPENTG, M_SERPENT, M_WUBBA, M_CONSTRUCT
+			M_SERPENTG, M_SERPENT, M_WUBBA, M_CONSTRUCT, M_CHARACTER
 			//not M_GENTRYII?
 		};
 		for (UINT wI=NUM_TYPES; wI--; )
@@ -96,9 +96,9 @@ const
 	//No monsters can ever be stepped on unless you have a dagger
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster){
-		if (!CStalwart::typesToAttack.has(pMonster->wType))
+		if (!(CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget()))
 			return true;
-		else if (!this->CanDaggerStep(pMonster->wType))
+		else if (!this->CanDaggerStep(pMonster))
 			return true;
 		if (pMonster->wType == M_STALWART || pMonster->wType == M_STALWART2)
 			return true;
@@ -222,7 +222,7 @@ bool CStalwart::GetGoal(UINT& wX, UINT& wY)
 	const CMonster *pMonster = this->pCurrentGame->pRoom->pFirstMonster;
 	while (pMonster)
 	{
-		if (CStalwart::typesToAttack.has(pMonster->GetIdentity()))
+		if (CStalwart::typesToAttack.has(pMonster->wType) && pMonster->IsPlayerAllyTarget())
 			break;  //There is a monster to kill.
 		pMonster = pMonster->pNext;
 	}

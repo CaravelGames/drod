@@ -99,6 +99,9 @@
     <ClCompile Include="..\DROD\VarMonitorEffect.cpp">
       <Filter>DRODRefs</Filter>
     </ClCompile>
+    <ClCompile Include="..\DROD\MovementOrderHintEffect.cpp">
+      <Filter>DRODRefs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameScreenDummy.h" />
@@ -131,6 +134,9 @@
       <Filter>DRODRefs</Filter>
     </ClInclude>
     <ClInclude Include="..\DROD\Sphere.h">
+      <Filter>DRODRefs</Filter>
+    </ClInclude>
+    <ClInclude Include="..\DROD\MovementOrderHintEffect.h">
       <Filter>DRODRefs</Filter>
     </ClInclude>
   </ItemGroup>

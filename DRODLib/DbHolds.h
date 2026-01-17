@@ -118,6 +118,8 @@ public:
 	HoldWorldMap::DisplayType GetWorldMapDisplayType(const UINT worldMapID) const;
 	WSTRING     GetWorldMapName(const UINT worldMapID) const;
 	void        InsertLevel(CDbLevel *pLevel);
+	bool        IsArrayVar(UINT varID) const { return this->arrayScriptVars.count(varID); }
+	bool        IsLocalVar(UINT varID) const { return this->localScriptVars.count(varID); }
 	static bool IsOfficialHold(HoldStatus holdstatus);
 	static bool IsVarNameGoodSyntax(const WCHAR* pName);
 	static bool IsVarCharValid(WCHAR wc);
@@ -138,7 +140,7 @@ public:
 	bool        SetDataIDForWorldMap(const UINT worldMapID, const UINT dataID);
 	bool        SetDisplayTypeForWorldMap(const UINT worldMapID, HoldWorldMap::DisplayType type);
 	bool        SetOrderIndexForWorldMap(const UINT worldMapID, const UINT orderIndex);
-
+	void        UnmarkDataForDeletion(const UINT dataID);
 	//Import handling
 	virtual MESSAGE_ID SetProperty(const PROPTYPE pType, const char** atts,
 			CImportInfo &info);
@@ -205,6 +207,7 @@ private:
 	vector<UINT> deletedSpeechIDs; //speech IDs to be deleted on Update
 
 	map<UINT, WSTRING> localScriptVars; //in-game optimization: IDs and names of local script vars
+	map<UINT, WSTRING> arrayScriptVars;
 };
 
 //******************************************************************************************

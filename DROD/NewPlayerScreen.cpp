@@ -28,7 +28,7 @@
 #include "GameScreen.h"
 #include "DrodFontManager.h"
 #include "DrodSound.h"
-#include "SettingsScreen.h" //for COMMANDKEY_ARRAY
+#include "SettingsScreen.h"
 
 #include <FrontEndLib/BitmapManager.h>
 #include <FrontEndLib/ButtonWidget.h>
@@ -318,8 +318,9 @@ UINT CNewPlayerScreen::AddPlayer()
 
 	for (UINT wIndex = 0; wIndex<InputCommands::DCMD_Count; ++wIndex)
 	{
-		const SDL_Keycode nKey = COMMANDKEY_ARRAY[wKeyboard][wIndex];
-		pPlayer->Settings.SetVar(InputCommands::COMMANDNAME_ARRAY[wIndex], nKey);
+		const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+
+		pPlayer->Settings.SetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
 	}
 
 	pPlayer->Update();

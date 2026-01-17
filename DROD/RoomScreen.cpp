@@ -302,97 +302,10 @@ void CRoomScreen::PaintSign()
 }
 
 //*****************************************************************************
-SDL_Keycode CRoomScreen::GetKeysymForCommand(const UINT wCommand) const
-//Returns: keysym currently set for indicated command
+bool CRoomScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
 {
-	for (std::map<SDL_Keycode,int>::const_iterator it = KeysymToCommandMap.begin(); it != KeysymToCommandMap.end(); ++it)
-		if (it->second == (int)wCommand)
-			return it->first;
-
-	ASSERT(!"Command not assigned");
-	return SDLK_UNKNOWN;
-}
-
-//*****************************************************************************
-void CRoomScreen::InitKeysymToCommandMap(
-//Set the keysym-to-command map with values from player settings that will determine
-//which commands correspond to which keys.
-//
-//Params:
-	CDbPackedVars &PlayerSettings)   //(in)   Player settings to load from.
-{
-	//Clear the map.
-	this->KeysymToCommandMap.clear();
-
-	//Check whether default is for desktop or notebook keyboard configuration.
-	CFiles Files;
-	string strKeyboard;
-	UINT wKeyboard = 0;	//default to numpad
-	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
-	{
-		wKeyboard = atoi(strKeyboard.c_str());
-		if (wKeyboard > 1)
-			wKeyboard = 0; //invalid setting
-	}
-
-	static const int commands[InputCommands::DCMD_Count] = {
-		CMD_NW, CMD_N, CMD_NE, CMD_W, CMD_WAIT, CMD_E, CMD_SW, CMD_S, CMD_SE,
-		CMD_C, CMD_CC,
-		CMD_RESTART, CMD_UNDO, CMD_BATTLE_KEY, CMD_EXEC_COMMAND, CMD_CLONE
-	};
-
-	//Get values from current player settings.
-	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex) {
-		const int nKey = PlayerSettings.GetVar(InputCommands::COMMANDNAME_ARRAY[wIndex],
-				COMMANDKEY_ARRAY[wKeyboard][wIndex]);
-		const bool bInvalidSDL1mapping = nKey >= 128 && nKey <= 323;
-		this->KeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : nKey] = commands[wIndex];
-
-		// Numlock being off can cause the numpad to be treated as different keys, but only the arrows for some reason
-		// So we store an alternative key map that flips arrow keys and some numpad keys so we can check for both
-		int altKey = nKey;
-		switch (nKey) {
-			case SDLK_KP_8:
-				altKey = SDLK_UP;
-				break;
-			case SDLK_KP_4:
-				altKey = SDLK_LEFT;
-				break;
-			case SDLK_KP_6:
-				altKey = SDLK_RIGHT;
-				break;
-			case SDLK_KP_2:
-				altKey = SDLK_DOWN;
-				break;
-			case SDLK_UP:
-				altKey = SDLK_KP_8;
-				break;
-			case SDLK_LEFT:
-				altKey = SDLK_KP_4;
-				break;
-			case SDLK_RIGHT:
-				altKey = SDLK_KP_6;
-				break;
-			case SDLK_DOWN:
-				altKey = SDLK_KP_2;
-				break;
-		}
-		this->AlternativeKeysymToCommandMap[bInvalidSDL1mapping ? COMMANDKEY_ARRAY[wKeyboard][wIndex] : altKey] = commands[wIndex];
-	}
-}
-
-//*****************************************************************************
-int CRoomScreen::GetCommandForKeysym(const SDL_Keycode& sym) const
-{
-	std::map<SDL_Keycode,int>::const_iterator it = this->KeysymToCommandMap.find(sym);
-	if (it != this->KeysymToCommandMap.end())
-		return it->second;
-
-	std::map<SDL_Keycode, int>::const_iterator itAlternative = this->AlternativeKeysymToCommandMap.find(sym);
-	if (itAlternative != this->AlternativeKeysymToCommandMap.end())
-		return itAlternative->second;
-
-	return CMD_UNSPECIFIED;
+	return bIsGameScreenCommand(command);
 }
 
 //*****************************************************************************
@@ -404,7 +317,7 @@ void CRoomScreen::AddNoticesDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 36;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const UINT CX_SPACE = 12;
 	static const UINT CY_SPACE = 12;

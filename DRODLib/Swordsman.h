@@ -57,26 +57,98 @@ enum WaterTraversal
 	WTrv_CanHide=3			//Can hide in Shallow Water (sheathes sword)
 };
 
+enum PlayerBehaviorState : int
+{
+	PBS_Default = 0,	//User Player Role properties
+	PBS_On = 1,				//Always active
+	PBS_Off = 2,			//Always inactive
+	PBS_Powered = 3,	//Active for powered player
+	PBS_Unpowered = 4	//Active for non-powered player
+};
+
+enum PlayerBehavior : int
+{
+	PB_Null = 0, //Not used
+	PB_BumpActivateOrb = 1,
+	PB_LightFuses = 2,
+	PB_StepKill = 3,
+	PB_HasWeapon = 4,
+	PB_DropTrapdoors = 5,
+	PB_DropTrapdoorsArmed = 6,
+	PB_UseMimicPotion = 7,
+	PB_UseDecoyPotion = 8,
+	PB_UseClonePotion = 9,
+	PB_UseInvisibilityPotion = 10,
+	PB_UseSpeedPotion = 11,
+	PB_UseSquadHorn = 12,
+	PB_UseSoldierHorn = 13,
+	PB_SwordDamageImmune = 14,
+	PB_PickaxeDamageImmune = 15,
+	PB_SpearDamageImmune = 16,
+	PB_DaggerDamageImmune = 17,
+	PB_CaberDamageImmune = 18,
+	PB_FloorSpikeImmune = 19,
+	PB_FiretrapImmune = 20,
+	PB_HotTileImmune = 21,
+	PB_ExplosionImmune = 22,
+	PB_AdderImmune = 23,
+	PB_PuffImmune = 24,
+	PB_FatalPushImmune = 25,
+	PB_FaceMovementDirection = 26,
+	PB_UseTunnels = 27,
+	PB_PuffTarget = 28,
+	PB_BodyAttackImmune = 29,
+	PB_PushObjects = 30,
+	PB_PushMonsters = 31,
+	PB_MovePlatforms = 32,
+};
+
+typedef std::map<const PlayerBehavior, PlayerBehaviorState> PlayerBehaviors;
+
 class CSwordsman : public CEntity
 {
 public:
 	CSwordsman() : CEntity() {Clear();}
 
 	bool CanAttackTowards(int dx, int dy) const;
+	bool CanBlowSquadHorn() const;
+	bool CanBlowSoldierHorn() const;
+	bool CanBumpActivateOrb() const;
 	bool CanDropTrapdoor(const UINT oTile) const;
+	bool CanFluffTrack() const;
+	bool CanGetItems() const;
 	bool CanLightFuses() const;
 	bool CanStepOnMonsters() const;
-	bool CanDaggerStep(const UINT wMonsterType = M_NONE, const bool bIgnoreSheath = false) const;
+	bool CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath = false) const;
+	bool CanDrinkClonePotion() const;
+	bool CanDrinkDecoyPotion() const;
+	bool CanDrinkInvisibilityPotion() const;
+	bool CanDrinkMimicPotion() const;
+	bool CanDrinkSpeedPotion() const;
+	bool CanDrinkPotionType(const UINT wTile) const;
+	bool CanEnterTunnel() const;
+	bool CanHaveWeapon() const;
+	bool CanMovePlatform() const;
+	bool CanPushObject() const;
+	bool CanPushMonster() const;
+	bool CanPushOntoOTile(const UINT wTile) const;
 	bool CanWadeInShallowWater() const;
 	void Clear();
 	void EquipWeapon(const UINT type);
+	bool FacesMovementDirection() const;
 	UINT GetWaterTraversalState(UINT wRole = M_NONE) const;
 	MovementType GetMovementType() const;
 	bool IsAt(UINT wX, UINT wY) const;
+	bool IsCloneVulnerableToThisBodyAttack() const;
 	bool IsInRoom() const;
 	bool IsStabbable() const;
+	bool IsVulnerableToAdder() const;
+	bool IsVulnerableToExplosion() const;
+	bool IsVulnerableToFluff() const;
+	bool IsVulnerableToHeat() const;
 	bool IsVulnerableToWeapon(const WeaponType weaponType) const;
-	bool IsVulnerableToBodyAttack() const { return bIsVulnerableToBodyAttack(this->wAppearance); }
+	bool IsVulnerableToBodyAttack() const;
+	bool IsVulnerableToDoubleBodyAttack(bool bStepAttack) const;
 	bool IsTarget() const;
 	bool IsWeaponAt(UINT wX, UINT wY) const;
 	bool IsVisible() const { return !(this->bIsInvisible || this->bIsHiding); }
@@ -84,6 +156,7 @@ public:
 	void ResetStats();
 	void RotateClockwise();
 	void RotateCounterClockwise();
+	void SetBehavior(const PlayerBehavior behavior, const PlayerBehaviorState state);
 	void SetOrientation(const UINT wO, const bool updatePrevO=true);
 	void SetWeaponType(const UINT type, const bool bPersist=true);
 
@@ -91,6 +164,7 @@ public:
 	bool HasHeavyWeapon() const;
 	bool HasMetalWeapon() const;
 	bool HasWeapon() const;
+	bool HasWeaponType(WeaponType type) const;
 	WeaponType GetActiveWeapon() const;
 
 	//Sword position
@@ -121,8 +195,12 @@ public:
 	UINT     wWaterTraversal; //can override player role's natural (in)ability to wade or hide in Shallow Water
 	WeaponType weaponType;
 	WeaponType localRoomWeaponType; //active value, reverts back to 'weaponType' on room exit
+	PlayerBehaviors behaviorOverrides;
 
 private:
+	bool HasBehavior(const PlayerBehavior& behavior, bool& active) const;
+	bool HasDamageImmunity(const WeaponType& weaponType, bool& active) const;
+
 	void SetSwordCoords();
 };
 

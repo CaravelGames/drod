@@ -53,8 +53,10 @@ CVarMonitorEffect::CVarMonitorEffect(CWidget *pSetWidget)
 
 	//Get current var state.
 	CCurrentGame *pGame = (CCurrentGame*)pRoomWidget->GetCurrentGame();
-	if (pGame)
+	if (pGame) {
 		pGame->GetVarValues(this->lastVars);
+		pGame->GetArrayVarValues(this->lastArrayVars);
+	}
 }
 
 CVarMonitorEffect::~CVarMonitorEffect()
@@ -72,19 +74,23 @@ void CVarMonitorEffect::SetTextForNewTurn()
 
 	//Check vars for updated state.
 	CCurrentGame *pGame = (CCurrentGame*)pRoomWidget->GetCurrentGame();
+	if (!pGame) {
+		this->lastTurn = turn;
+		return;
+	}
+
 	VARMAP curVars;
 	set<VarNameType> diff, diff2;
-	if (pGame)
-	{
-		pGame->GetVarValues(curVars);
-		pGame->DiffVarValues(this->lastVars,curVars,diff);
-		pGame->DiffVarValues(curVars,this->lastVars,diff2);
-		diff.insert(diff2.begin(), diff2.end());
-	}
+	WSTRING newText;
+
+	pGame->GetVarValues(curVars);
+	pGame->DiffVarValues(this->lastVars,curVars,diff);
+	pGame->DiffVarValues(curVars,this->lastVars,diff2);
+	diff.insert(diff2.begin(), diff2.end());
+
 	if (!diff.empty())
 	{
 		//Vars have changed.  Update display.
-		WSTRING newText;
 		for (set<VarNameType>::const_iterator var = diff.begin(); var != diff.end(); ++var)
 		{
 			//Print changed var names and values.
@@ -109,10 +115,45 @@ void CVarMonitorEffect::SetTextForNewTurn()
 			newText += wszCRLF;
 		}
 		this->lastVars = curVars;
-
-		SetText(newText.c_str());
 	}
 
+	//Now do array vars. Containers are cleared by functions so we can reuse them
+	pGame->GetArrayVarValues(curVars);
+	pGame->DiffVarValues(this->lastArrayVars, curVars, diff);
+	pGame->DiffVarValues(curVars, this->lastArrayVars, diff2);
+	diff.insert(diff2.begin(), diff2.end());
+
+	if (!diff.empty())
+	{
+		//Vars have changed. Update display.
+		for (set<VarNameType>::const_iterator var = diff.begin(); var != diff.end(); ++var)
+		{
+			WSTRING temp;
+			const char* pVarName = var->c_str();
+			UTF8ToUnicode(pVarName, temp);
+			vector<WSTRING> parts = WCSExplode(temp, L'/');
+			int value = curVars[pVarName].val;
+
+			ASSERT(parts.size() == 2);
+			newText += parts[0];
+			newText += wszLeftBracket;
+			newText += parts[1];
+			newText += wszRightBracket;
+
+			newText += wszSpace;
+			newText += wszEqual;
+			newText += wszSpace;
+			newText += to_WSTRING(value);
+
+			newText += wszCRLF;
+		}
+
+		this->lastArrayVars = curVars;
+	}
+
+	if (!newText.empty()) {
+		SetText(newText.c_str());
+	}
 	this->lastTurn = turn;
 }
 

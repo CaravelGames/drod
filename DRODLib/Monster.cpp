@@ -105,7 +105,7 @@ CMonster::CMonster(
 	, bAlive(true)
 	, bForceWeaponAttack(false)
 	, stunned(0), bNewStun(false)
-	, bPushedThisTurn(false)
+	, bPushedThisTurn(false), bPushedOtherMonster(false)
 	, bWaitedOnHotFloorLastTurn(false)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
@@ -134,6 +134,7 @@ void CMonster::Clear()
 	this->stunned = 0;
 	this->bNewStun = false;
 	this->bPushedThisTurn = false;
+	this->bPushedOtherMonster = false;
 	this->ExtraVars.Clear();
 	while (this->Pieces.size())
 	{
@@ -381,13 +382,13 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 
 	const UINT wIdentity = GetResolvedIdentity();
 	//Flying and tarstuff identities are safe from hot tiles.
-	if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(wIdentity))
+	if (bIsEntityFlying(wIdentity) || bIsMonsterTarstuff(this->wType))
 		return false;
 
 	if (this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY) == T_HOT)
 	{
 		CCueEvents Ignored;
-		if (OnStabbed(Ignored, this->wX, this->wY, WT_HotTile))
+		if (OnStabbed(Ignored, this->wX, this->wY, WeaponType::WT_HotTile))
 		{
 			//Add special cue events here instead of inside OnStabbed.
 			CueEvents.Add(CID_MonsterBurned, this);
@@ -439,7 +440,7 @@ const
 	{
 		const SQUARE square = this->pCurrentGame->pRoom->pPathMap[this->eMovement]->
 				GetSquare(this->wX, this->wY);
-		if (square.eBlockedDirections != DMASK_ALL && square.dwTargetDist > 2 &&
+		if ((square.eBlockedDirections & DMASK_ALL) != DMASK_ALL && square.dwTargetDist > 2 &&
 				square.dwTargetDist != static_cast<UINT>(-1))
 		{
 			//Brain-directed "avoid-sword movement".
@@ -571,16 +572,15 @@ CheckMonster:
 
 		if (
 			pMonster->wType != M_FLUFFBABY // Fluff babies can be stepped on regardless of anything
-			&& !this->CanDaggerStep(pMonster->wType, false)
+			&& !this->CanDaggerStep(pMonster, false)
 			// Even when attackable, body-attack-invulnerable targets just can't be killed by a body-attack
-			&& (!pMonster->IsAttackableTarget() || !bIsVulnerableToBodyAttack(pMonster->GetIdentity()))
+			&& (!pMonster->IsAttackableTarget() || !pMonster->IsVulnerableToBodyAttack())
 			&& ( // If object is pushable AND cannot be pushed
 				!this->CanPushObjects()
 				|| !pMonster->IsPushableByBody()
 				|| !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy)
 			)
 		){
-
 			if (!CMonster::calculatingPathmap || pMonster->IsNPCPathmapObstacle())
 				return true;
 		}
@@ -984,7 +984,7 @@ bool CMonster::FindOptimalPathToClosestMonster(
 			if (!wGoalDistance)
 			{
 				CMonster *pMonster = curGameRoom.GetMonsterAtSquare(wNewX, wNewY);
-				if (pMonster && monsterTypes.has(pMonster->wType) && pMonster->IsAlive())
+				if (pMonster && monsterTypes.has(pMonster->wType) && pMonster->IsPlayerAllyTarget())
 				{
 					//Goal found.
 					wGoalDistance = wCostPlusOne;
@@ -1865,6 +1865,22 @@ bool CMonster::GetTarget(
 }
 
 //*****************************************************************************
+bool CMonster::HasPieceAt(const UINT wX, const UINT wY) const
+//Returns: if part of this monster is at (x,y)
+{
+	for (MonsterPieces::const_iterator piece = this->Pieces.begin();
+		piece != this->Pieces.end(); ++piece)
+	{
+		const CMonsterPiece* pPiece = *piece;
+		if (pPiece->wX == wX && pPiece->wY == wY) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CMonster::HasSwordAt(const UINT wX, const UINT wY) const
 //Returns: whether this monster has a sword at (x,y)
 {
@@ -1960,6 +1976,24 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::IsVulnerableToAdder() const
+{
+	return !(IsLongMonster() || IsPiece());
+}
+
+//*****************************************************************************
+bool CMonster::IsVulnerableToBodyAttack() const
+{
+	return bIsVulnerableToBodyAttack(this->GetIdentity());
+}
+
+//*****************************************************************************
+bool CMonster::IsVulnerableToExplosion() const
+{
+	return true;
+}
+
+//*****************************************************************************
 bool CMonster::IsWading() const
 {
 	if (!this->pCurrentGame)
@@ -2025,6 +2059,29 @@ const
 }
 
 //*****************************************************************************
+bool CMonster::CanFluffTrack() const
+{
+	return bCanFluffTrack(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanFluffKill() const
+{
+	return bCanFluffKill(this->wType);
+}
+
+//*****************************************************************************
+bool CMonster::CanPushOntoOTile(const UINT wTile) const
+//Returns whether the monster can be pushed onto the given tile type
+{
+	return bIsFloor(wTile) ||
+		bIsOpenDoor(wTile) ||
+		bIsPlatform(wTile) ||
+		bIsPit(wTile) ||
+		bIsWater(wTile);
+}
+
+//*****************************************************************************
 bool CMonster::CanSmellObjectAt(
 //Returns: whether (wX,wY) is within smelling range.
 //
@@ -2035,6 +2092,15 @@ const
 	UINT wMyCX, wMyCY;
 	MyClosestTile(wX, wY, wMyCX, wMyCY); //get closest part of me that might smell this tile
 	return nDist(wX, wY, wMyCX, wMyCY) <= DEFAULT_SMELL_RANGE;
+}
+
+//*****************************************************************************
+bool CMonster::CanWadeInShallowWater() const
+//Returns: If this monster can move onto shallow water tiles
+{
+	return this->eMovement == GROUND_AND_SHALLOW_WATER ||
+		this->eMovement == GROUND_AND_SHALLOW_WATER_FORCE ||
+		this->eMovement == GROUND_AND_SHALLOW_WATER_NO_OREMITES;
 }
 
 //*****************************************************************************
@@ -2152,12 +2218,14 @@ void CMonster::Move(
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	CMonster *pMonster = room.GetMonsterAtSquare(wDestX,wDestY);
 	bool bFluffPoison = false;
+	bPushedOtherMonster = false;
 	if (pMonster)
 	{
 		ASSERT(pCueEvents);
 
-		if (pMonster->IsPushableByBody() && this->CanPushObjects()){
+		if (pMonster->IsPushableByBody() && this->CanPushMonsters()){
 			pMonster->PushInDirection(sgn(wDestX - this->wX), sgn(wDestY - this->wY), false, *pCueEvents);
+			bPushedOtherMonster = true;
 		}
 		else 
 		{
@@ -2165,8 +2233,8 @@ void CMonster::Move(
 			{
 			case M_CHARACTER:
 			{
-				const bool bCanStrike = bIsStalwart(pMonster->GetIdentity()) ||
-					this->CanDaggerStep(pMonster->wType, false);
+				const bool bCanStrike = pMonster->IsAttackableTarget() ||
+					this->CanDaggerStep(pMonster, false);
 				ASSERT(bIsSmitemaster(pMonster->GetIdentity()) ||
 					pMonster->GetIdentity() == M_BEETHRO_IN_DISGUISE ||
 					bCanStrike);
@@ -2193,7 +2261,7 @@ void CMonster::Move(
 				bFluffPoison = true;
 				break;
 			default:
-				ASSERT(this->CanDaggerStep(pMonster->wType, false));
+				ASSERT(this->CanDaggerStep(pMonster, false));
 				ASSERT(bIsStalwart(this->wType) || this->wType == M_GUARD || this->wType == M_SLAYER || this->wType == M_SLAYER2);
 
 				pCueEvents->Add(CID_MonsterDiedFromStab, pMonster);
@@ -2355,7 +2423,7 @@ bool CMonster::SensesTarget() const
 }
 
 //*****************************************************************************
-bool CMonster::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) const
+bool CMonster::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath) const
 //Returns: true if monster is capable of killing the target monster with a "dagger step"
 {
 	//You can't "dagger step" without a dagger
@@ -2369,11 +2437,24 @@ bool CMonster::CanDaggerStep(const UINT wMonsterType, const bool bIgnoreSheath) 
 		return false;
 
 	// These monsters can't be dagger stepped because they are either invulnerable or leave a dead body
-	switch (wMonsterType)
+	switch (pMonster->wType)
 	{
 	case M_CITIZEN: case M_ARCHITECT: case M_ROCKGOLEM:
 	case M_CONSTRUCT: case M_WUBBA:
 		return false;
+	case M_CLONE: case M_TEMPORALCLONE: {
+		const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+		if (pDouble) {
+			return pDouble->IsVulnerableToWeapon(WT_Dagger);
+		}
+	}
+	case M_CHARACTER: {
+		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+		if (!pCharacter || !pCharacter->IsVisible()) {
+			return true; // You can always step on something that isn't there
+		}
+		return !pCharacter->IsImmuneToWeapon(WT_Dagger);
+	}
 	default:
 		return true;
 	}

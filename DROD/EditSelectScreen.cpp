@@ -200,9 +200,8 @@ CEditSelectScreen::CEditSelectScreen()
 	//Title bar
 	static const UINT CX_SPACE = 10;
 	static const UINT CY_SPACE = 10;
-	static const UINT CY_TITLE = 50;
-	static const UINT CY_TITLE_SPACE = 15;
-	static const int Y_TITLE = CY_TITLE_SPACE;
+	static const UINT CY_TITLE = CY_LABEL_FONT_TITLE;
+	static const int Y_TITLE = Y_TITLE_LABEL_CENTER_DARK_BAR;
 
 	//Buttons
 #ifdef RUSSIAN_BUILD
@@ -454,6 +453,7 @@ CEditSelectScreen::CEditSelectScreen()
 			X_HOLD_LBOX, Y_HOLD_LBOX, CX_HOLD_LBOX, CY_HOLD_LBOX, true);
 	AddWidget(this->pHoldListBoxWidget);
 	this->pHoldListBoxWidget->IgnoreLeadingArticlesInSort();
+	this->pHoldListBoxWidget->SetAllowFiltering(true);
 
 	//Hold buttons.
 	pButton = new CButtonWidget(TAG_COPY_HOLD, X_COPY_HOLD, Y_COPY_HOLD,
@@ -748,6 +748,13 @@ WSTRING CEditSelectScreen::GetSelectedStyle() const
 }
 
 //*****************************************************************************
+bool CEditSelectScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return bIsEditSelectCommand(command);
+}
+
+//*****************************************************************************
 bool CEditSelectScreen::SetForActivate()
 //Called before screen is activated and first paint.
 //
@@ -774,6 +781,12 @@ bool CEditSelectScreen::SetForActivate()
 
 	this->dwPrevHoldID = 0;
 	SelectFirstWidget(false);
+
+	{
+		CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
+		InitKeysymToCommandMap(pPlayer->Settings);
+		delete pPlayer;
+	}
 
 	SetCursor();
 
@@ -998,25 +1011,27 @@ void CEditSelectScreen::OnKeyDown(
 {
 	CScreen::OnKeyDown(dwTagNo, Key);
 
-	switch (Key.keysym.sym)
+	const int nCommand = GetCommandForInputKey(BuildInputKey(Key));
+	switch (nCommand)
 	{
-		case SDLK_F1:
+		case CMD_EXTRA_SHOW_HELP:
 			CBrowserScreen::SetPageToLoad("editselect.html");
 			GoToScreen(SCR_Browser);
 		break;
 
-		case SDLK_F2:
+		case CMD_EXTRA_EDITOR_LOG_VAR_REFS:
+		case CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS:
 			//Output all scripts where each hold var is referenced.
 			if (this->pSelectedHold)
 			{
 				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
 				SetCursor(CUR_Wait);
-				g_pTheDB->Holds.LogScriptVarRefs(this->pSelectedHold->dwHoldID, (Key.keysym.mod & KMOD_ALT) != 0);
+				g_pTheDB->Holds.LogScriptVarRefs(this->pSelectedHold->dwHoldID, nCommand == CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS);
 				SetCursor();
 			}
 		break;
 
-		case SDLK_F3:
+		case CMD_EXTRA_EDITOR_HOLD_STATS:
 			//Hold stats.
 			if (this->pSelectedHold)
 			{
@@ -1030,7 +1045,7 @@ void CEditSelectScreen::OnKeyDown(
 			}
 		break;
 
-		case SDLK_F4:
+		case CMD_EXTRA_EDITOR_LEVEL_STATS:
 			//Level stats.
 			if (this->pSelectedLevel)
 			{
@@ -1042,12 +1057,12 @@ void CEditSelectScreen::OnKeyDown(
 			}
 		break;
 
-		case SDLK_F5:
+		case CMD_EXTRA_EDITOR_PLAYTEST_ROOM:
 			//User probably wants to playtest, so go to room editor for this.
 			GoToRoomEditor();
 		break;
 
-		case SDLK_DELETE:
+		case CMD_EXTRA_EDITOR_DELETE:
 		{
 			CWidget *pWidget = GetSelectedWidget();
 			switch (pWidget->GetTagNo())
@@ -1084,9 +1099,8 @@ void CEditSelectScreen::OnKeyDown(
 		break;
 
 		//Cutting, copying and pasting selected level
-		case SDLK_x:
-		case SDLK_c:
-			if (Key.keysym.mod & KMOD_CTRL)
+		case CMD_EXTRA_EDITOR_CUT:
+		case CMD_EXTRA_EDITOR_COPY:
 			{
 				CWidget *pWidget = GetSelectedWidget();
 				ASSERT(pWidget);
@@ -1105,16 +1119,14 @@ void CEditSelectScreen::OnKeyDown(
 					break;
 
 					case TAG_MAP:
-						this->pMapWidget->CopyRoom(Key.keysym.sym == SDLK_c); //Ctrl-C copies
+						this->pMapWidget->CopyRoom(nCommand == CMD_EXTRA_EDITOR_COPY);
 					break;
 				}
 			}
 			return;
 
-		case SDLK_v:
+		case CMD_EXTRA_EDITOR_PASTE:
 		{
-			if ((Key.keysym.mod & KMOD_CTRL) == 0) break;
-
 			StopKeyRepeating();  //don't repeat this operation
 			CWidget *pWidget = GetSelectedWidget();
 			ASSERT(pWidget);
@@ -1176,10 +1188,10 @@ void CEditSelectScreen::OnKeyDown(
 		}
 		break;
 
-		case SDLK_F7:
+		case CMD_EXTRA_EDITOR_REFLECT_X:
 			ReflectLevelX();
 		break;
-		case SDLK_F8:
+		case CMD_EXTRA_EDITOR_REFLECT_Y:
 			ReflectLevelY();
 		break;
 

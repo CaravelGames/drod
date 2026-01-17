@@ -49,6 +49,28 @@ CMimic::CMimic(const UINT wSetType, CCurrentGame *pSetCurrentGame, UINT processi
 	: CPlayerDouble(wSetType, pSetCurrentGame, GROUND_AND_SHALLOW_WATER, processingSequence)
 { }
 
+//*****************************************************************************************
+bool CMimic::CanBumpActivateOrb() const
+{
+	const UINT wRole = this->pCurrentGame->pHold->getRoleForLogicalIdentity(GetIdentity());
+	return (bIsHuman(wRole) && !bEntityHasSword(wRole)) ||
+	this->pCurrentGame->swordsman.bCanGetItems; //power token allows this too
+}
+
+//*****************************************************************************************
+//Can this Mimic step onto (and thus kill) the player?
+bool CMimic::CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const
+{
+	if (bStepAttack)
+		return player.IsVulnerableToDoubleBodyAttack(true);
+
+	if (!(HasSword() && GetWeaponType() == WT_Dagger))
+		return false;
+
+	//Check if player is invulnerable to "dagger stepping".
+	return player.IsVulnerableToWeapon(WT_Dagger);
+}
+
 //******************************************************************************************
 bool CMimic::DoesSquareContainObstacle(
 //Override for mimics.  Parts copied from CMonster::DoesSquareContainObstacle.
@@ -64,8 +86,6 @@ const
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 	if (!room.IsValidColRow(wCol,wRow)) return true;
 
-	const UINT wRole = this->pCurrentGame->pHold->getRoleForLogicalIdentity(GetIdentity());
-
 	//Check o-square for obstacle.
 	UINT wLookTileNo = room.GetOSquare(wCol, wRow);
 	if (IsTileObstacle(wLookTileNo))
@@ -79,7 +99,7 @@ const
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
+					if (CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
 			return true;
@@ -87,7 +107,7 @@ const
 				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_W)
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					if (room.CanMovePlatform(this->wX, this->wY, nFirstO))
+					if (CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
 			return true;
@@ -104,7 +124,7 @@ const
 	{
 		//There is something at the destination that is normally an obstacle,
 		//but some of them are handled specially.  Check for special handling first.
-		if (bIsTLayerCoveringItem(wLookTileNo))
+		if (bIsTLayerCoveringItem(wLookTileNo) && this->CanPushObjects())
 		{
 			//item is not an obstacle if it can be pushed away
 			const int dx = (int)wCol - (int)this->wX;
@@ -120,7 +140,7 @@ const
 		return true;
 
 	//Can only move onto monsters when "dagger stepping".
-	const bool bStepAttack = bCanEntityStepOnMonsters(wRole);
+	const bool bStepAttack = HasStepAttack();
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
 	if (pMonster && pMonster->wType != M_FLUFFBABY)
 	{
@@ -141,13 +161,19 @@ const
 				case M_CHARACTER:
 				{
 					const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-					if (pCharacter->IsInvulnerable())
+					if (pCharacter->IsInvulnerable() || (!bStepAttack && pCharacter->IsImmuneToWeapon(WT_Dagger)))
 						return true;
+				}
+				case M_CLONE: case M_TEMPORALCLONE: {
+					const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+					if (pDouble) {
+						return !(bStepAttack || pDouble->IsVulnerableToWeapon(WT_Dagger));
+					}
 				}
 				default: break;
 			}
 		}
-		else if (!pMonster->IsPushableByBody() || !this->CanPushObjects()){
+		else if (!pMonster->IsPushableByBody() || !this->CanPushMonsters()){
 			return true;
 		} else {
 			const int dx = (int)wCol - (int)this->wX;
@@ -162,23 +188,8 @@ const
 	const CSwordsman& player = this->pCurrentGame->swordsman;
 	if (player.IsInRoom() && player.wX == wCol && player.wY == wRow)
 	{
-		if ((HasSword() && GetWeaponType() == WT_Dagger) || bStepAttack)
-		{
-			//Check if player is invulnerable to "dagger stepping".
-			switch(player.wAppearance)
-			{
-				case M_WUBBA: case M_FEGUNDO:
-				case M_ROCKGOLEM: case M_CONSTRUCT:
-					return true;
-				case M_CITIZEN: case M_ARCHITECT:
-					if (!bStepAttack)
-						return true;
-					break;
-				default: break;
-			}
-		} else {
+		if (!CanStepAttackPlayer(player, bStepAttack))
 			return true;
-		}
 	}
 	
 	//Check for player's sword at square.
@@ -190,6 +201,20 @@ const
 		return true;
 
 	//No obstacle.
+	return false;
+}
+
+//*****************************************************************************************
+bool CMimic::FacesMovementDirection() const
+//Return: Does this mimic turn to face the direction it moved.
+{
+	return !HasSword() || GetWeaponType() == WT_Dagger;
+}
+
+//*****************************************************************************************
+bool CMimic::HasStepAttack() const
+//Returns: Can this mimic kill things by moving onto them.
+{
 	return false;
 }
 
@@ -225,7 +250,7 @@ void CMimic::Process(
 			this->wPrevX = this->wX;
 			this->wPrevY = this->wY;
 
-			if ((!HasSword() || GetWeaponType() == WT_Dagger) && wMovementO != NO_ORIENTATION) //they can face this direction when swordless
+			if (FacesMovementDirection() && wMovementO != NO_ORIENTATION) //they can face this direction when swordless
 				this->wO = wMovementO;
 
 			//Player bumped into something, so mimics can "bump" into something in this
@@ -275,7 +300,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 	if (!bBumpCommand && (dx || dy))
 	{
 		ASSERT(nCommand != CMD_C && nCommand != CMD_CC && nCommand != CMD_WAIT
-				&& nCommand != CMD_EXEC_COMMAND);
+				&& !bIsSpecialCommand(nCommand));
 
 		//Before he moves, remember important square contents.
 		const UINT wOTile = room.GetOSquare(this->wX, this->wY);
@@ -295,10 +320,11 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 			const UINT wDestX = this->wX + dx;
 			const UINT wDestY = this->wY + dy;
 			//Process "dagger stepping" first if appropriate
-			if ((HasSword() && GetWeaponType() == WT_Dagger) || bCanEntityStepOnMonsters(wRole))
+			if ((HasSword() && GetWeaponType() == WT_Dagger) || HasStepAttack())
 			{
 				CMonster *pMonster = room.GetMonsterAtSquare(wDestX,wDestY);
-				if (pMonster && pMonster->GetIdentity() != M_FLUFFBABY)
+				if (pMonster && pMonster->GetIdentity() != M_FLUFFBABY &&
+					!(pMonster->IsPushableByBody() && this->CanPushMonsters()))
 				{
 					ASSERT(!pMonster->IsPiece() && !pMonster->IsLongMonster());
 					CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
@@ -323,7 +349,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 		}
 
 		//face the direction moved when w/o sword, or with dagger
-		if (!HasSword() || GetWeaponType() == WT_Dagger)
+		if (FacesMovementDirection())
 			this->wPrevO = this->wO = nGetO(dx,dy);
 		ASSERT(IsValidOrientation(this->wO));
 
@@ -341,6 +367,10 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 				if (bIsPit(wOTile) || bIsDeepWater(wOTile))
 					room.MovePlatform(this->wX - dx, this->wY - dy, nGetO(dx,dy));
 			}
+
+			//If another monster was pushed, the destination tile may have fallen
+			if (this->bPushedOtherMonster)
+				room.CheckForFallingAt(this->wX, this->wY, CueEvents);
 		}
 
 		//Check for movement onto a checkpoint.
@@ -375,7 +405,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 				if (this->bFrozen
 						|| DoesArrowPreventMovement(this->wX, this->wY, dx, dy)
 						|| room.DoesSquarePreventDiagonal(this->wX, this->wY, dx, dy)
-						|| this->pCurrentGame->PlayerEnteredTunnel(wOTile, nGetO(dx, dy), wRole))
+						|| (CanEnterTunnel() && room.IsTunnelTraversableInDirection(this->wX, this->wY, dx, dy)))
 					bBumpOrb = false;
 				if (bBumpOrb)
 				{
@@ -385,7 +415,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 							//Flying roles do not consider pit an obstacle
 							if (!bIsEntityFlying(wRole))
 							//If standing on a platform, check whether it can move.
-								if (wOTile != T_PLATFORM_P || !room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy)))
+								if (!(wOTile == T_PLATFORM_P && CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy))))
 									bBumpOrb = false;
 						break;
 						case T_SHALLOW_WATER:
@@ -397,7 +427,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 						case T_WATER:
 							//Flying/Swimming roles do not consider water an obstacle
 							if (!(bIsEntityFlying(wRole) || bIsEntitySwimming(wRole)))
-								if (wOTile != T_PLATFORM_W || !room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy)))
+								if (!(wOTile == T_PLATFORM_W && CanMovePlatform() && room.CanMovePlatform(this->wX, this->wY, nGetO(dx, dy))))
 									bBumpOrb = false;
 						break;
 						case T_DOOR_Y:
@@ -423,8 +453,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 					{
 						case T_ORB:
 						case T_BEACON: case T_BEACON_OFF:
-							if ((bIsHuman(wRole) && !bEntityHasSword(wRole)) ||
-								this->pCurrentGame->swordsman.bCanGetItems) //power token allows this too
+							if (CanBumpActivateOrb())
 							{
 								if (wNewTTile == T_ORB)
 								{
@@ -448,7 +477,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 		}
 
 		//face the initial movement direction when w/o sword, or with dagger
-		if ((!HasSword() || GetWeaponType() == WT_Dagger) && wMovementO != NO_ORIENTATION)
+		if (FacesMovementDirection() && wMovementO != NO_ORIENTATION)
 			this->wO = wMovementO;
 
 		//Mimics can smash mirrors by bumping into them even when they don't move.

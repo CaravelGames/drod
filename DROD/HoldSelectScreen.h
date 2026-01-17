@@ -169,6 +169,7 @@ private:
 	CCurrentGame *pCurrentRestoreGame;
 	HoldTypeFilter filter;
 	CNetMedia *pSelCNetHold; //set if thumbnail image pending
+	bool playDemo;
 };
 
 #endif

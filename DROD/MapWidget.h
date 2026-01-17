@@ -58,6 +58,7 @@ public:
 	virtual void   Resize(const UINT wSetW, const UINT wSetH);
 	void           SelectRoom(const UINT dwRoomX, const UINT dwRoomY);
 	void           SelectRoomAtCoords(const int nX, const int nY);
+	bool           SelectRoomIfValid(const UINT dwRoomX, const UINT dwRoomY);
 	void           SetDarkenedRooms(CIDSet &RoomIDs);
 	void           SetDestSurface(SDL_Surface *pNewSurface);
 	void           UpdateFromCurrentGame();
@@ -89,7 +90,6 @@ private:
 	bool           IsAdjacentToValidRoom(const UINT dwRoomX, const UINT dwRoomY);
 	inline void       LockMapSurface();
 	void           MarkEntrancesAsNotMain(CDbHold *pHold, CIDSet &entranceIDs) const;
-	bool           SelectRoomIfValid(const UINT dwRoomX, const UINT dwRoomY);
 	inline void       UnlockMapSurface();
 	void           UpdateMapSurface(const bool bRefreshSelectedRoom = false);
 

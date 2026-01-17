@@ -59,7 +59,9 @@ public:
 
 	enum BUTTONTYPE
 	{
-		OK,
+		ESC = -2,
+		QUIT = -1,
+		OK = 0,
 		Delete,
 		Other
 	};

@@ -241,6 +241,36 @@
     <ClCompile Include="WorldMapWidget.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="PuzzleModeOptionsDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="HtmlDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectMediaDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="DrodDialogs.cpp">
+      <Filter>General</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandListBoxWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="SwirlEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="TileSwirlEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DottedLineEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementOrderHintEffect.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AumtlichGazeEffect.h">
@@ -491,6 +521,39 @@
     </ClInclude>
     <ClInclude Include="WorldMapWidget.h">
       <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="PuzzleModeOptionsDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="PuzzleModeOptions.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="HtmlDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectMediaDialogWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="DrodDialogs.h">
+      <Filter>General</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandListBoxWidget.h">
+      <Filter>Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="SwirlEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="TileSwirlEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DottedLineEffect.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementOrderHintEffect.h">
+      <Filter>Effects</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

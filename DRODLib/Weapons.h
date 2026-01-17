@@ -33,7 +33,7 @@
 //  Do not change these constant values.
 enum WeaponType
 {
-	WT_HotTile = -5,
+	WT_HotTile=-5,
 	WT_Firetrap=-4,
 	WT_FloorSpikes=-3,
 	WT_Off=-2,
@@ -46,6 +46,11 @@ enum WeaponType
 	WT_Caber=5,
 	WT_NumWeapons
 };
+
+static inline bool bIsRealWeapon(const UINT wt)
+{
+	return wt >= WT_Sword && wt < WT_NumWeapons;
+}
 
 static inline bool bIsMetalWeapon(const UINT wt)
 {

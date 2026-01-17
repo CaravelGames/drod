@@ -64,6 +64,8 @@ Uint8 CTransTileEffect::UpdateStaticState()
 	if (CScreen::dwPresentsCount == lastUpdatePresentCount)
 		return nOpacity;
 
+	lastUpdatePresentCount = CScreen::dwPresentsCount;
+
 	//Value is modified by only one of the instances.
 	if (bRising)
 	{

@@ -359,6 +359,7 @@
     <ClCompile Include="src\tests\Monsters\Aumtlich\GenericAumtlich.cpp" />
     <ClCompile Include="src\tests\Monsters\Citizen\CitizenPuffObstacle.cpp" />
     <ClCompile Include="src\tests\Monsters\Clone.cpp" />
+    <ClCompile Include="src\tests\Monsters\Construct\BrainedConstruct.cpp" />
     <ClCompile Include="src\tests\Monsters\Fegundo.cpp" />
     <ClCompile Include="src\tests\Monsters\Guard\GuardPuffObstacle.cpp" />
     <ClCompile Include="src\tests\Monsters\Halph\HalphPuffObstacle.cpp" />
@@ -387,6 +388,17 @@
     <ClCompile Include="src\tests\Player\Bugs\PushPlayerAgainstChain.cpp" />
     <ClCompile Include="src\tests\Player\TurnZero\StairsOnTurnZero.cpp" />
     <ClCompile Include="src\tests\RoomProcessing\TarstuffGates\TarstuffGatesToggleBug.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivatePlates.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\ActivateTokens.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\DamageImmunity.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\DropTrapdoors.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\InstantMovement.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\MonsterTarget.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\MovePlatforms.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\NPCBeethro.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\PushingBehaviors.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\SetMovementType.cpp" />
+    <ClCompile Include="src\tests\Scripting\Behavior\UseTunnels.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingBombs.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingDoors.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingFuse.cpp" />
@@ -396,19 +408,26 @@
     <ClCompile Include="src\tests\Scripting\Build\BuildingRelayStations.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildingTarstuff.cpp" />
     <ClCompile Include="src\tests\Scripting\Build\BuildSanityTest.cpp" />
+    <ClCompile Include="src\tests\Scripting\Build\RemovingTransparentObjects.cpp" />
     <ClCompile Include="src\tests\Scripting\GoToLevelEntrance.cpp" />
+    <ClCompile Include="src\tests\Scripting\ImperativeFriendly.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByBody.cpp" />
     <ClCompile Include="src\tests\Scripting\ImperativePushable\PushableByWeapon.cpp" />
     <ClCompile Include="src\tests\Scripting\Imperative_BrainPathmapObstacle.cpp" />
     <ClCompile Include="src\tests\Scripting\Imperative_Vulnerable_Invulnerable.cpp" />
+    <ClCompile Include="src\tests\Scripting\PrimitiveFunctions.cpp" />
+    <ClCompile Include="src\tests\Scripting\PushTile.cpp" />
     <ClCompile Include="src\tests\Scripting\SetPlayerWeapon.cpp" />
+    <ClCompile Include="src\tests\Scripting\SmartGotoLabels.cpp" />
     <ClCompile Include="src\tests\Scripting\TeleportPlayer\TeleportPlayer.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForLight.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForOrb.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForPressurePlates.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForItem\WaitForToken.cpp" />
     <ClCompile Include="src\tests\Scripting\WaitForSomeoneToPushMe\WaitForSomeoneToPushMe.cpp" />
+    <ClCompile Include="src\tests\Scripting\WaitForWeapon\WaitForWeapon.cpp" />
     <ClCompile Include="src\tests\TemporalToken\DoublePlacementPreventsRecording.cpp" />
+    <ClCompile Include="src\tests\TemporalToken\TemporalProjectionTunnels.cpp" />
     <ClCompile Include="src\tests\TemporalToken\TemporalProjectionVsFluff.cpp" />
   </ItemGroup>
   <ItemGroup>
