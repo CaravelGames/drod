@@ -43,7 +43,7 @@ namespace ScriptVars
 		P_NoVar  =  0,
 		P_MONSTER_WEAPON = -1,
 		//P_SWORD = -2,
-		//P_MONSTER_COLOR = -3,
+		P_MONSTER_COLOR = -3,
 		P_PLAYER_X = -4,
 		P_PLAYER_Y = -5,
 		P_PLAYER_O = -6,
@@ -67,8 +67,58 @@ namespace ScriptVars
 		P_PLAYERLIGHTTYPE = -24,
 		P_RETURN_X = -25,
 		P_RETURN_Y = -26,
-		FirstPredefinedVar = P_RETURN_Y, //set this to the last var in the enumeration
+		P_MONSTER_NAME = -27,
+		P_ROOM_X = -28,
+		P_ROOM_Y = -29,
+		P_ROOM_WEATHER = -30,
+		P_ROOM_DARKNESS = -31,
+		P_ROOM_FOG = -32,
+		P_ROOM_SNOW = -33,
+		P_ROOM_RAIN = -34,
+		P_SPAWNCYCLE = -35,
+		P_SPAWNCYCLE_FAST = -36,
+		P_PLAYER_WEAPON = -37,
+		P_PLAYER_LOCAL_WEAPON = -38,
+		P_INPUT = -39,
+		P_INPUT_DIRECTION = -40,
+		P_COMBO = -41,
+		P_MONSTER_HUE = -42,
+		P_MONSTER_SATURATION = -43,
+		FirstPredefinedVar = P_MONSTER_SATURATION, //set this to the last var in the enumeration
 		PredefinedVarCount = -int(FirstPredefinedVar)
+	};
+
+	//Predefined functions (that take a set of arguments to calculate a value)
+	//
+	//To add new primitives, add a new enumeration here and in the following locations:
+	// primitiveNames
+	// getPrimitiveRequiredParameters
+	// CCurrentGame::EvalPrimitive
+	enum PrimitiveType {
+		NoPrimitive = -1,
+		P_Abs,       //x --> abs(x)
+		P_Min,       //(x,y) --> min(x,y)
+		P_Max,       //(x,y) --> max(x,y)
+		P_Orient,    //(dx,dy) --> o
+		P_Facing,    //(dx,dy) --> o
+		P_OrientX,   //o --> dx
+		P_OrientY,   //o --> dy
+		P_RotateCW,  //o --> cw(o)
+		P_RotateCCW, //o --> ccw(o)
+		P_RotateDist,//(o1, o2) --> number of turns between the two
+		P_Dist0,     //L-infinity norm
+		P_Dist1,     //L-1 norm (Manhattan distance)
+		P_Dist2,     //L-2 norm (Euclidean distance)
+		P_ArrowDir,  //(x,y) --> direction of arrow at (x,y)
+		P_RoomTile,  //(x,y,z) --> id of room tile at (x,y) on layer z
+		P_MonsterType,//(x,y) --> type of monster at (x,y), or -1 if no monster is there
+		P_CharacterType,//(x,y) --> appearance of character at (x,y) or -1 if no character is there
+		P_EntityWeapon,//(x,y) --> weapon type of monster/player at (x,y), or -1 if no weapon holder is there
+		P_MonsterSize,//(x,y) --> number of tiles monster at (x,y) occupies, or 0 if no monster is there
+		P_BrainScore,//(x,y,t) --> pathmap score of tile at (x,y) for movement type t
+		P_BrainDist,//(tx,tx,x,y,t) --> path score of tile at (x,y) for target (tx, ty) for movement type t
+		P_CleanRooms,//(f) -> number of cleared rooms in level matching bitmap flags (1 required, 2 secret, 4 unrequired)
+		PrimitiveCount
 	};
 
 	void init();
@@ -78,12 +128,21 @@ namespace ScriptVars
 	Predefined parsePredefinedVar(const string& str);
 	Predefined parsePredefinedVar(const WSTRING& wstr);
 
+	PrimitiveType parsePrimitive(const string& str);
+	UINT getPrimitiveRequiredParameters(PrimitiveType eType);
+	PrimitiveType parsePrimitive(const WSTRING& wstr);
+
 	bool IsCharacterLocalVar(const WSTRING& wstr);
 	bool IsCharacterLocalVar(const WCHAR* wstr);
+	bool IsCharacterArrayVar(const WSTRING& wstr);
+	bool IsCharacterArrayVar(const WCHAR* wstr);
+
+	bool IsIndexInArrayRange(const int index);
 
 	//All predefined vars.
 	extern const UINT predefinedVarMIDs[PredefinedVarCount];
 	extern string midTexts[PredefinedVarCount];
+	extern const char primitiveNames[PrimitiveCount][15]; //expand buffer size as needed
 };
 
 //Stats used for various tally operations.

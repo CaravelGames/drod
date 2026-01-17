@@ -28,14 +28,18 @@
 #define SETTINGSSCREEN_H
 
 #include "DrodScreen.h"
+#include "KeypressDialogWidget.h"
 
 #include <FrontEndLib/TextBoxWidget.h>
-#include <FrontEndLib/KeypressDialogWidget.h>
+#include <FrontEndLib/TabbedMenuWidget.h>
+#include <FrontEndLib/LabelWidget.h>
+#include <FrontEndLib/ButtonWidget.h>
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/GameConstants.h"
 #include <BackEndLib/Types.h>
+#include <BackEndLib/InputKey.h>
 
-extern const SDL_Keycode COMMANDKEY_ARRAY[2][InputCommands::DCMD_Count];	//desktop or notebook
+using namespace InputCommands;
 
 //*****************************************************************************************
 class CSettingsScreen : public CDrodScreen
@@ -49,10 +53,23 @@ protected:
 	virtual bool   SetForActivate();
 
 private:
+	void     SetupPersonalTab(CTabbedMenuWidget* pTabbedMenu);
+	void     SetupMediaTab(CTabbedMenuWidget* pTabbedMenu);
+	void     SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu);
+	void     SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu);
+
+	const DCMD ButtonTagToDcmd(const UINT dwTagNo) const;
+	void       DoKeyRedefinition(const UINT dwTagNo);
+	const KeyDefinition *GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const;
+
 	bool     AllCommandsAreAssignedToKeys(CDbPackedVars &Settings) const;
 	bool     AreCNetDetailsChanged(CDbPlayer *pPlayer);
+	bool     CanCommandsShareInput(int command, int otherCommand) const;
 	void     CloudActivate();
-	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const SDL_Keycode CurrentKey, SDL_Keycode &NewKey);
+	void     CloudReactivate();
+	void     CloudToggle();
+	bool     DoesCloudPlayerMatchLocalPlayer(CDbPlayer* pPlayer, const string cloudPlayerXML) const;
+	bool     GetCommandKeyRedefinition(const InputCommands::DCMD eCommand, const InputKey CurrentKey, InputKey &NewKey, const bool bAllowSpecial);
 	virtual void OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
 	virtual void OnClick(const UINT dwTagNo);
 	virtual void OnDragUp(const UINT dwTagNo, const SDL_MouseButtonEvent &Button);
@@ -63,16 +80,18 @@ private:
 	void     SetUndoLevelNumLabel();
 	void     SetUnspecifiedPlayerSettings(CDbPackedVars &Settings);
 	void     SetWidgetStates();
+	void     SetCloudWidgetStates();
 	void     SynchOption(const UINT dwTagNo);
 	void     SynchScreenSizeWidget();
 	void     UpdatePlayerDataFromWidgets(CDbPlayer *pPlayer);
 	void     UpdateWidgetsFromPlayerData(CDbPlayer *pPlayer);
 	void     UploadScores();
 	void     UploadUnsubmittedDemos(const UINT dwPlayerID);
+	void     UpdateCommandKeyLabel(const InputKey inputKey, const UINT wCommandIndex);
 
-	CKeypressDialogWidget * pDialogBox;
-	CLabelWidget *       pCommandLabel;
-	CWidget  *           pCommandLabelWidgets[InputCommands::DCMD_Count];
+	CKeypressDialogWidget * pKeypressDialog;
+	CButtonWidget*       pCommandButtonWidgets[InputCommands::DCMD_Count];
+	CLabelWidget*        pCommandLabelWidgets[InputCommands::DCMD_Count];
 	CDbPlayer *          pCurrentPlayer;
 
 	CTextBoxWidget * pNameWidget;

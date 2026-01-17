@@ -33,6 +33,9 @@
 
 #include "PlayerDouble.h"
 
+//Pre-declare class to avoid includes
+class CSwordsman;
+
 class CMimic : public CPlayerDouble
 {
 public:
@@ -40,8 +43,13 @@ public:
 	CMimic(const UINT wSetType, CCurrentGame *pSetCurrentGame = NULL, UINT processingSequence=SPD_PDOUBLE);
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CMimic);
 
+	virtual bool CanBumpActivateOrb() const;
+	virtual bool CanMovePlatform() const { return true; }
+  virtual bool CanStepAttackPlayer(const CSwordsman& player, const bool bStepAttack) const;
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
+	virtual bool FacesMovementDirection() const;
 	virtual bool IsTarget() const { return true; }
+	virtual bool HasStepAttack() const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
 protected:

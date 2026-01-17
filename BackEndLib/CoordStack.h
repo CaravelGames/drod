@@ -131,6 +131,18 @@ public:
 
 		return true;
 	}
+	bool Bottom(UINT& wX, UINT& wY) const
+	//Return value in bottom of stack w/o removing it.
+	{
+		if (IsEmpty())
+			return false;
+
+		const ROOMCOORD& first = this->data.front();
+		wX = first.wX;
+		wY = first.wY;
+
+		return true;
+	}
 	bool GetAt(const UINT wIndex, UINT &wX, UINT &wY) const
 	//Return values in indexth element w/o removing it.
 	{

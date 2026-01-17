@@ -51,6 +51,7 @@ class CDbHold;
 class CProgressBarWidget;
 class CRoomWidget;
 class CCurrentGame;
+class CDrodDialogs;
 struct VisualEffectInfo;
 class CDrodScreen : public CScreen
 {
@@ -61,16 +62,18 @@ public:
 	virtual void   Callbackf(float fVal);
 	virtual void   CallbackText(const WCHAR* wpText);
 
+	virtual bool IsCommandSupported(int command) const;
 	UINT    ImportHoldImage(const UINT holdID, const UINT extensionFlags=EXT_JPEG|EXT_PNG);
+	void    InitKeysymToCommandMap(const CDbPackedVars& PlayerSettings);
 
+	virtual int    GetCommandForInputKey(const InputKey inputKey) const;
 	static WSTRING getStatsText(const RoomStats& st);
 	static MESSAGE_ID GetVersionMID(const UINT wVersion);
 	static bool    IsGameFullVersion();
 
-	UINT           PublicShowOkMessage(const MESSAGE_ID dwMessageID) {return ShowOkMessage(dwMessageID);}
-	void           PublicShowStatusMessage(const MESSAGE_ID dwMessageID) {ShowStatusMessage(dwMessageID);}
-	UINT           PublicShowYesNoMessage(const MESSAGE_ID dwMessageID) {return ShowYesNoMessage(dwMessageID);}
 	void           PublicHideProgressWidget();
+
+	bool           ValidateVideo(CStretchyBuffer &buffer) { return PlayVideoBuffer(buffer, NULL); }
 
 	static vector<WSTRING> importFiles;
 	WSTRING        callbackContext; //set to provide more contextual callback messages to user
@@ -78,6 +81,7 @@ public:
 	static UINT    EntrancesInFullVersion();
 
 protected:
+friend class CDrodDialogs;
 	void     AddCloudDialog();
 	void     AddDamageEffect(CRoomWidget* pRoomWidget, const CCurrentGame* pGame,
 			const UINT monsterType, const CMoveCoord& coord);
@@ -101,6 +105,7 @@ protected:
 	void           ExportHold(const UINT dwHoldID);
 	void           ExportHoldScripts(CDbHold *pHold);
 	void           ExportHoldTexts(CDbHold *pHold);
+	void           ExportSaves(const UINT& playerId, const UINT& holdId = 0, const bool singleHold = false);
 	bool           ExportSelectFile(const MESSAGE_ID messageID,
 			WSTRING &wstrExportFile, const UINT extensionTypes);
 	void           ExportStyle(const WSTRING& style);
@@ -119,6 +124,7 @@ protected:
 	bool           IsStyleOnDisk(list<WSTRING>& styleName, list<WSTRING>& skies);
 
 	void           EnablePlayerSettings(const UINT dwPlayerID);
+	InputKey       GetInputKeyForCommand(const UINT wCommand) const;
 	virtual bool   OnQuit();
 	bool           ParseConsoleCommand(const WCHAR *pText);
 	virtual bool   PlayVideo(const WCHAR *pFilename, const UINT dwHoldID, const int x=0, const int y=0);
@@ -173,6 +179,9 @@ private:
 
 	UINT ShowMessage(const MESSAGE_ID dwMessageID);
 	UINT ShowMessage(const WCHAR *pwczText);
+
+	std::map<InputKey, int> InputKeyToCommandMap;
+	std::map<InputKey, int> AlternativeKeyToCommandMap;
 };
 
 #endif //...#ifndef DRODSCREEN_H

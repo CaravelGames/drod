@@ -34,6 +34,8 @@
 #include "DrodSound.h"
 #include "../DRODLib/DbPackedVars.h"
 
+#include <DRODLib/GameConstants.h>
+
 //Base class for displaying a room,
 //including basically everything that goes on "gamescreen.png"
 //(i.e. RoomWidget, Scroll, Map, and Sign).
@@ -53,8 +55,7 @@ class CRoomScreen : public CDrodScreen
 {
 public:
 	static void    SetMusicStyle(WSTRING style, const UINT wMood, const UINT fadeDuration=3000);
-	void	AddNoticesDialog();
-	int     GetCommandForKeysym(const SDL_Keycode& sym) const;
+	void	       AddNoticesDialog();
 
 protected:
 	friend class CScreenManager;
@@ -63,9 +64,8 @@ protected:
 	virtual ~CRoomScreen() { }
 
 	SDL_Rect& GetEntireSignRect() const;
-	SDL_Keycode GetKeysymForCommand(const UINT wCommand) const;
 	void     HideScroll() {this->bIsScrollVisible = false; PaintScroll();}
-	void     InitKeysymToCommandMap(CDbPackedVars &PlayerSettings);
+	virtual bool IsCommandSupported(int command) const;
 	void     PaintBackground();
 	void     PaintScroll();
 	void     PaintSign();
@@ -88,10 +88,6 @@ protected:
 	std::map<UINT, CNetNotice> notices;
 
 	bool              bIsScrollVisible;
-
-private:
-	std::map<SDL_Keycode,int> KeysymToCommandMap;
-	std::map<SDL_Keycode, int> AlternativeKeysymToCommandMap;
 };
 
 #endif //...#ifndef ROOMSCREEN_H

@@ -366,13 +366,15 @@ public:
 	void        GetRect(SDL_Rect &rect) const
 			{rect.x = this->x; rect.y = this->y; rect.w = this->w; rect.h = this->h;}
 	void        GetRectContainingChildren(SDL_Rect &ChildContainerRect) const;
-	UINT       GetTagNo() const {return this->dwTagNo;}
+	UINT        GetTagNo() const {return this->dwTagNo;}
 	WIDGETTYPE  GetType() const {return this->eType;}
 	CWidget *   GetWidget(const UINT dwTagNo, const bool bFindVisibleOnly=false);
 	virtual CWidget * GetWidgetContainingCoords(const int nX, const int nY,
 			const WIDGETTYPE eWidgetType) const;
 	int         GetX() const {return this->x;}
 	int         GetY() const {return this->y;}
+	int         GetRelativeX() const { return this->x - (this->pParent ? this->pParent->x : 0); }
+	int         GetRelativeY() const { return this->y - (this->pParent ? this->pParent->y : 0); }
 	UINT        GetW() const {return this->w;}
 	UINT        GetH() const {return this->h;}
 
@@ -402,10 +404,18 @@ public:
 	void        ScrollAbsolute(const int nScrollX, const int nScrollY);
 	void        SetHeight(const UINT wHeight);
 	void        SetWidth(const UINT wWidth);
+	void        SetRelativeX(const UINT wX);
+	void        SetRelativeY(const UINT wY);
 	void        Show(const bool bFlag = true);
 	void        ShowChildren();
 	static WCHAR TranslateUnicodeKeysym(const SDL_Keysym& keysym, const bool bConsiderCaps=true);
 	static void  TranslateUnicodeKeysym(WCHAR& wc, const SDL_Keycode sym, const bool bCaps);
+
+	template<typename TWidget>
+	TWidget *GetWidget(const UINT dwTagNo, const bool bFindVisibleOnly = false) {
+		return dynamic_cast<TWidget *>(GetWidget(dwTagNo, bFindVisibleOnly));
+		//return DYN_CAST(TWidget *, CWidget *, GetWidget(dwFindTagNo, bFindVisibleOnly));
+	}
 
 	//SDL helper functions that act on screen surface.
 	void        DrawCol(int nX, int nY, UINT wH,

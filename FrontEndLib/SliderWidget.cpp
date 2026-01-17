@@ -171,10 +171,11 @@ void CSliderWidget::Paint(
 	std::vector< std::pair<UINT, UINT> > ticks;
 	ticks.reserve(this->bytTickMarks);
 
-	if (this->bDrawTickMarks && this->bytTickMarks > 0) {
-		for (BYTE i = 0; i < this->bytTickMarks; i += 1) {
+	if (this->bDrawTickMarks && this->bytTickMarks > 2) {
+		const UINT tickRangeW = this->w - SliderRect.w; // To ensure proper tick placement
+		for (BYTE i = 0; i < this->bytTickMarks; ++i) {
 			ticks.push_back(std::make_pair(
-				this->x + (this->w * i / this->bytTickMarks) + SliderRect.w / 2,
+				this->x + (tickRangeW * i / (this->bytTickMarks - 1)) + SliderRect.w / 2,
 				std::find(this->pBiggerTicks.begin(), this->pBiggerTicks.end(), i) != this->pBiggerTicks.end()
 				? TickMarkBig : TickMarkSmall
 			));

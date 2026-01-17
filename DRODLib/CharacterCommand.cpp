@@ -11,6 +11,8 @@ const int ImageOverlayCommand::NO_LOOP_MAX = -1;
 const int ImageOverlayCommand::DEFAULT_LAYER = 3; //last layer
 const int ImageOverlayCommand::ALL_LAYERS = -2;
 const int ImageOverlayCommand::NO_LAYERS = -3;
+const int ImageOverlayCommand::DEFAULT_GROUP = 0;
+const int ImageOverlayCommand::NO_GROUP = -1;
 
 //*****************************************************************************
 CColorText::~CColorText() { delete pText; }
@@ -51,6 +53,86 @@ void CCharacterCommand::swap(CCharacterCommand &that) {
 	std::swap(flags, that.flags);
 	std::swap(label, that.label);
 	std::swap(pSpeech, that.pSpeech);
+}
+
+bool CCharacterCommand::IsLogicalWaitCondition() const {
+	switch (command) {
+		case CC_WaitForCueEvent:
+		case CC_WaitForRect:
+		case CC_WaitForNotRect:
+		case CC_WaitForDoorTo:
+		case CC_WaitForTurn:
+		case CC_WaitForCleanRoom:
+		case CC_WaitForPlayerToFace:
+		case CC_WaitForVar:
+		case CC_SetPlayerAppearance:
+		case CC_WaitForNoBuilding:
+		case CC_WaitForPlayerToMove:
+		case CC_WaitForPlayerToTouchMe:
+		case CC_WaitForItem:
+		case CC_SetPlayerWeapon:
+		case CC_WaitForSomeoneToPushMe:
+		case CC_WaitForOpenMove:
+		case CC_WaitForCleanLevel:
+		case CC_WaitForPlayerInput:
+		case CC_WaitForEntityType:
+		case CC_WaitForNotEntityType:
+		case CC_FaceTowards:
+		case CC_WaitForWeapon:
+		case CC_WaitForRemains:
+		case CC_SetMovementType:
+		case CC_WaitForOpenTile:
+		case CC_WaitForExpression:
+		case CC_WaitForBuilding:
+		case CC_WaitForBuildType:
+		case CC_WaitForNotBuildType:
+		case CC_WaitForItemGroup:
+		case CC_WaitForNotItemGroup:
+		case CC_WaitForPlayerState:
+		case CC_WaitForBrainSense:
+		case CC_WaitForArrayEntry:
+			return true;
+		default:
+			return false;
+	}
+}
+
+UINT CCharacterCommand::getVarID() const
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
+			return x;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			return w;
+		default:
+			return 0;
+	}
+}
+
+void CCharacterCommand::setVarID(const UINT varID)
+{
+	switch (command) {
+		case CC_VarSet:
+		case CC_WaitForVar:
+		case CC_ClearArrayVar:
+		case CC_WaitForArrayEntry:
+		case CC_CountArrayEntries:
+			x = varID;
+		break;
+		case CC_VarSetAt:
+		case CC_ArrayVarSet:
+		case CC_ArrayVarSetAt:
+			w = varID;
+		break;
+		default:
+		break;
+	}
 }
 
 //*****************************************************************************
@@ -208,15 +290,20 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 	ASSERT(pText);
 
 	if (commandMap.empty()) {
+		commandMap[string("addx")] = ImageOverlayCommand::AddX;
+		commandMap[string("addy")] = ImageOverlayCommand::AddY;
 		commandMap[string("cancelall")] = ImageOverlayCommand::CancelAll;
+		commandMap[string("cancelgroup")] = ImageOverlayCommand::CancelGroup;
 		commandMap[string("cancellayer")] = ImageOverlayCommand::CancelLayer;
 		commandMap[string("center")] = ImageOverlayCommand::Center;
 		commandMap[string("display ")] = ImageOverlayCommand::DisplayDuration;
 		commandMap[string("displayms")] = ImageOverlayCommand::DisplayDuration; //deprecated
 		commandMap[string("displayrect")] = ImageOverlayCommand::DisplayRect;
+		commandMap[string("displayrectmodify")] = ImageOverlayCommand::DisplayRectModify;
 		commandMap[string("displaysize")] = ImageOverlayCommand::DisplaySize;
 		commandMap[string("displayturns")] = ImageOverlayCommand::TurnDuration;
 		commandMap[string("fadetoalpha")] = ImageOverlayCommand::FadeToAlpha;
+		commandMap[string("group")] = ImageOverlayCommand::Group;
 		commandMap[string("grow")] = ImageOverlayCommand::Grow;
 		commandMap[string("jitter")] = ImageOverlayCommand::Jitter;
 		commandMap[string("layer")] = ImageOverlayCommand::Layer;
@@ -229,6 +316,7 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("pmove ")] = ImageOverlayCommand::ParallelMove;
 		commandMap[string("pmoveto")] = ImageOverlayCommand::ParallelMoveTo;
 		commandMap[string("protate")] = ImageOverlayCommand::ParallelRotate;
+		commandMap[string("repeat")] = ImageOverlayCommand::Repeat;
 		commandMap[string("rotate")] = ImageOverlayCommand::Rotate;
 		commandMap[string("scale")] = ImageOverlayCommand::Scale;
 		commandMap[string("setalpha")] = ImageOverlayCommand::SetAlpha;
@@ -236,6 +324,9 @@ ImageOverlayCommand::IOC matchCommand(const char* pText, UINT& index)
 		commandMap[string("setx")] = ImageOverlayCommand::SetX;
 		commandMap[string("sety")] = ImageOverlayCommand::SetY;
 		commandMap[string("srcxy")] = ImageOverlayCommand::SrcXY;
+		commandMap[string("timelimit")] = ImageOverlayCommand::TimeLimit;
+		commandMap[string("tilegrid")] = ImageOverlayCommand::TileGrid;
+		commandMap[string("turnlimit")] = ImageOverlayCommand::TurnLimit;
 	}
 
 	for (CommandMap::const_iterator it=commandMap.begin(); it!=commandMap.end(); ++it) {
@@ -307,6 +398,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 		int arg_index=0;
 		switch (eCommand) {
 			case ImageOverlayCommand::DisplayRect:
+			case ImageOverlayCommand::DisplayRectModify:
 				//four arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
@@ -315,6 +407,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 			case ImageOverlayCommand::ParallelMove:
 			case ImageOverlayCommand::MoveTo:
 			case ImageOverlayCommand::ParallelMoveTo:
+			case ImageOverlayCommand::Repeat:
 				//three arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
@@ -329,6 +422,7 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 			case ImageOverlayCommand::ParallelRotate:
 			case ImageOverlayCommand::Rotate:
 			case ImageOverlayCommand::SrcXY:
+			case ImageOverlayCommand::TileGrid:
 				//two arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
@@ -366,6 +460,19 @@ int CImageOverlay::clearsImageOverlays() const
 	return ImageOverlayCommand::NO_LAYERS;
 }
 
+int CImageOverlay::clearsImageOverlayGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::CancelGroup)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::NO_GROUP;
+}
+
 int CImageOverlay::getLayer() const
 {
 	for (ImageOverlayCommands::const_iterator it=commands.begin();
@@ -377,6 +484,45 @@ int CImageOverlay::getLayer() const
 	}
 
 	return ImageOverlayCommand::DEFAULT_LAYER;
+}
+
+int CImageOverlay::getGroup() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::Group)
+			return c.val[0];
+	}
+
+	return ImageOverlayCommand::DEFAULT_GROUP;
+}
+
+UINT CImageOverlay::getTimeLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TimeLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
+}
+
+UINT CImageOverlay::getTurnLimit() const
+{
+	for (ImageOverlayCommands::const_iterator it = commands.begin();
+		it != commands.end(); ++it)
+	{
+		const ImageOverlayCommand& c = *it;
+		if (c.type == ImageOverlayCommand::TurnLimit)
+			return c.val[0] > 0 ? c.val[0] : 0;
+	}
+
+	return 0;
 }
 
 bool CImageOverlay::loopsForever() const

@@ -26,7 +26,7 @@ public:
 	static CCueEvents& GetLastCueEvents();
 
 private:
-	static char *pErrorLogPath;
+	static string errorLogPath;
 	static UINT GetErrorLogSize();
 	static CCurrentGame* currentGame;
 	static CCueEvents lastCueEvents;

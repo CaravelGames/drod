@@ -34,6 +34,7 @@
 #include "EvilEyeGazeEffect.h"
 #include "GridEffect.h"
 #include "ImageOverlayEffect.h"
+#include "MovementOrderHintEffect.h"
 #include "PendingBuildEffect.h"
 #include "RoomEffectList.h"
 #include "SnowflakeEffect.h"
@@ -269,6 +270,8 @@ TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	, nAddColor(rhs.nAddColor)
 	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
 	, appliedDarkness(rhs.appliedDarkness)
+	, nCustomColor(rhs.nCustomColor)
+	, hsv(rhs.hsv)
 { }
 
 bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)
@@ -376,6 +379,8 @@ CRoomWidget::CRoomWidget(
 	, redrawingRowForWeather(0)
 	, need_to_update_room_weather(false)
 	, time_of_last_sky_move(0)
+
+	, bShowMovementOrderHints(false)
 {
 	this->imageFilenames.push_back(string("Bolts"));
 	this->imageFilenames.push_back(string("Fog1"));
@@ -787,6 +792,19 @@ CSubtitleEffect* CRoomWidget::AddSubtitle(
 		}
 	}
 
+	//Check for custom speech color
+	CCharacter* pCharacter = dynamic_cast<CCharacter*>(pCoord);
+	if (pCharacter)
+	{
+		const int colorIndex = pCharacter->GetCustomSpeechColor();
+		if (colorIndex)
+		{
+			color.byt1 = Uint8((colorIndex >> 16) & 255);
+			color.byt2 = Uint8((colorIndex >> 8) & 255);
+			color.byt3 = Uint8(colorIndex & 255);
+		}
+	}
+
 	//Speaker text effect.
 	CSubtitleEffect *pSubtitle = new CSubtitleEffect(this, pCoord,
 			wStr.c_str(), Black, color, dwDuration);
@@ -1050,6 +1068,10 @@ void CRoomWidget::HighlightSelectedTile()
 						AddShadeEffect(wX, wY, PaleYellow);
 					}
 				}
+				CCoordSet visitedStations = pCitizen->GetVisitedStations();
+				for (auto& visitedStation : visitedStations) {
+					AddShadeEffect(visitedStation.wX, visitedStation.wY, Red);
+				}
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
@@ -1114,6 +1136,15 @@ void CRoomWidget::HighlightSelectedTile()
 				bRemoveHighlightNextTurn = false;
 			}
 			break;
+
+			case M_TEMPORALCLONE:
+			{
+				const CTemporalClone* pClone = DYN_CAST(const CTemporalClone*, const CMonster*, pMonster);
+				if (pClone->bInvisible) {
+					DrawInvisibilityRange(wX, wY, NULL);
+					bRemoveHighlightNextTurn = false;
+				}
+			}
 
 			default: break;
 		}
@@ -1387,7 +1418,7 @@ void CRoomWidget::ClearEffects(
 
 	//If these effects were removed, then reset their display flags.
 	if (!bKeepInfoTexts)
-		this->bShowFrameRate = this->bShowMoveCount = this->bShowVarUpdates = this->bShowPuzzleMode = false;
+		this->puzzleModeOptions.bIsEnabled = this->bShowFrameRate = this->bShowMoveCount = this->bShowVarUpdates = this->bShowPuzzleMode = false;
 }
 
 //*****************************************************************************
@@ -1484,13 +1515,29 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	}
 
 	//Monster.
-	const CMonster *pMonster = this->pRoom->GetOwningMonsterOnSquare(wX, wY);
-	if (pMonster)
+	const CMonster* pMonster = this->pRoom->pFirstMonster;
+	int index = 1;
+	while (pMonster)
 	{
 		const CCharacter *pCharacter = dynamic_cast<const CCharacter*>(pMonster);
 		bool bCharacterName = false;
+		bool bShowMoveOrder = pMonster->IsVisible();
 		if (pCharacter) {
-			if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
+			if (!pCharacter->IsVisible() && !pCharacter->IsInvisibleInspectable()) {
+				goto SkipDescribingMonster;
+			}
+
+			bShowMoveOrder = bShowMoveOrder || pCharacter->IsInvisibleCountMoveOrder();
+
+			if (pMonster->wX != wX || pMonster->wY != wY)
+				goto SkipDescribingMonster;
+
+			if (pCharacter->GetCustomName() != DefaultCustomCharacterName) {
+				wstr += wszCRLF;
+				wstr += pCharacter->GetCustomName();
+				bCharacterName = true;
+
+			} else if (pCharacter->wLogicalIdentity >= CUSTOM_CHARACTER_FIRST) {
 				//Show custom character name.
 				ASSERT(this->pRoom);
 				if (this->pCurrentGame) {
@@ -1512,6 +1559,10 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 				}
 			}
 		}
+
+		if ((pMonster->wX != wX || pMonster->wY != wY) && !pMonster->HasPieceAt(wX, wY))
+			goto SkipDescribingMonster;
+
 		if (!bCharacterName) {
 			mid = getMIDForMonster(pMonster->wType);
 			AppendLine(mid);
@@ -1524,9 +1575,16 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 			const int stationType = pCitizen->StationType();
 			if (stationType >= 0)
 			{
-				wstr += wszSpace;
-				wstr += wszPoundSign;
-				wstr += _itoW(stationType, temp, 10);
+				if (bDescribeCitizenColor) {
+					wstr += wszSpace;
+					wstr += wszHyphen;
+					wstr += wszSpace;
+					wstr += DescribeStationColor(stationType);
+				} else {
+					wstr += wszSpace;
+					wstr += wszPoundSign;
+					wstr += _itoW(stationType, temp, 10);
+				}
 			}
 		}
 
@@ -1549,23 +1607,20 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		}
 
 		//Indicate monster's position in movement order sequence.
-		UINT index=1;
-		for (const CMonster *pTrav = this->pRoom->pFirstMonster; pTrav != NULL; pTrav = pTrav->pNext)
-		{
-			if (pMonster == pTrav)
-			{
-				wstr += wszSpace;
-				wstr += wszLeftParen;
-				wstr += wszPoundSign;
-				wstr += _itoW(index, temp, 10);
-				wstr += wszRightParen;
-				break;
-			}
-			//Only count monsters that are in the room
-			if (pTrav->IsVisible())
-				++index;
+		if (bShowMoveOrder) {
+			wstr += wszSpace;
+			wstr += wszLeftParen;
+			wstr += wszPoundSign;
+			wstr += _itoW(index, temp, 10);
+			wstr += wszRightParen;
 		}
 
+SkipDescribingMonster:
+		//Only count monsters that are in the room
+		if (bShowMoveOrder)
+			++index;
+
+		pMonster = pMonster->pNext;
 	}
 
 	//Items.
@@ -1589,11 +1644,19 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 		//Indicate station color.
 		if (tTile == T_STATION)
 		{
-			wstr += wszSpace;
-			wstr += wszLeftParen;
-			wstr += wszPoundSign;
-			wstr += _itoW(this->pRoom->GetTParam(wX, wY), temp, 10);
-			wstr += wszRightParen;
+			int stationType = (int)(this->pRoom->GetTParam(wX, wY));
+			if (bDescribeCitizenColor) {
+				wstr += wszSpace;
+				wstr += wszHyphen;
+				wstr += wszSpace;
+				wstr += DescribeStationColor(stationType);
+			} else {
+				wstr += wszSpace;
+				wstr += wszLeftParen;
+				wstr += wszPoundSign;
+				wstr += _itoW(stationType, temp, 10);
+				wstr += wszRightParen;
+			}
 		}
 	}
 
@@ -1662,7 +1725,14 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	//Build marker.
 	if (this->pRoom->building.get(wX,wY))
 	{
-		mid = getBuildMarkerTileMID(this->pRoom->building.get(wX,wY) - 1);
+		UINT wBuildTile = this->pRoom->building.get(wX, wY) - 1;
+
+		if (bIsFakeTokenType(wBuildTile)) {
+			mid = GetTokenMID(ConvertFakeTokenType(wBuildTile));
+		}	else {
+			mid = getBuildMarkerTileMID(wBuildTile);
+		}
+
 		if (mid)
 		{
 			wstr += wszCRLF;
@@ -1830,6 +1900,56 @@ const
 }
 
 //*****************************************************************************
+void CRoomWidget::SyncWeather(CCueEvents& CueEvents)
+//Update environmental conditions if they have changed.
+{
+	if (CueEvents.HasOccurred(CID_ExitRoom))
+		return;
+
+	Weather roomWeather = this->pRoom->weather;
+
+	if (IsLightingRendered() && (this->wDark != roomWeather.wLight))
+	{
+		if (!roomWeather.bSkipLightfade) {
+			FadeToLightLevel(roomWeather.wLight, CueEvents);
+		}	else {
+			//Just show at new light level.
+			this->wDark = roomWeather.wLight;
+			ASSERT(this->wDark < LIGHT_LEVELS);
+			g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
+			ClearEffects();
+			UpdateFromCurrentGame();
+			ResetForPaint();
+			Paint();
+		}
+	}
+
+	if (!IsWeatherRendered())
+		return;
+
+	bool bWeatherSame = true;
+	bWeatherSame &= (this->cFogLayer == (BYTE)roomWeather.wFog);
+	bWeatherSame &= (this->wSnow == roomWeather.wSnow);
+	bWeatherSame &= (this->rain == roomWeather.rain);
+	bool bOutsideSame = (this->bOutside == roomWeather.bOutside);
+	bWeatherSame &= bOutsideSame;
+	bWeatherSame &= (this->bLightning == roomWeather.bLightning);
+	bWeatherSame &= (this->bClouds == roomWeather.bClouds);
+	bWeatherSame &= (this->bSkipLightfade == roomWeather.bSkipLightfade);
+
+	if (bWeatherSame)
+		return;
+
+	GetWeather();
+	LoadSkyImage(this->pRoom);
+
+	if (!bOutsideSame) {
+		ResetForPaint();
+		Paint();
+	}
+}
+
+//*****************************************************************************
 void CRoomWidget::GetWeather()
 //Get environmental conditions from room data.
 {
@@ -1907,7 +2027,7 @@ CEntity* CRoomWidget::GetLightholder() const
 bool CRoomWidget::IsLightingRendered() const
 //Returns: whether light level effects should be rendered
 {
-	return g_pTheBM->bAlpha;
+	return g_pTheBM->bAlpha && !this->puzzleModeOptions.GetHideLighting();
 }
 
 //*****************************************************************************
@@ -2035,54 +2155,64 @@ void CRoomWidget::LoadRoomImages()
 	//Generate room model for lighting.
 	this->bRenderRoomLight = true;
 	this->bCeilingLightsRendered = false;
+	this->ceilingLightChanges.reset();
 
 	//Load sky image, if applicable.
-	if (this->bSkyVisible)
-	{
-		//Get name of sky image.  Look up default name for this style+light level if none specified.
-		WSTRING wstrSkyImageName = this->sky;
-		if (wstrSkyImageName.empty())
-		{
-			WSTRING style = pThisRoom->style;
-			g_pTheDBM->ConvertStyle(style);
-			style += wszSpace;
-			style += wszSKIES;
-			list<WSTRING> skies;
-			if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
-			{
-				//Sky images specified.  Choose the one closest to specified light level.
-				UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size()-1;
-				list<WSTRING>::const_iterator sky = skies.begin();
-				while (wSkyIndex--)
-					++sky;
-				wstrSkyImageName = *sky;
-			}
-		}
+	LoadSkyImage(pThisRoom);
+}
 
-		if (wstrSkyImageName.empty())
+//*****************************************************************************
+void CRoomWidget::LoadSkyImage(CDbRoom* pRoom)
+//Load sky image, if applicable.
+{
+	if (!this->bSkyVisible)
+		return;
+
+	//Get name of sky image.  Look up default name for this style+light level if none specified.
+	WSTRING wstrSkyImageName = this->sky;
+	if (wstrSkyImageName.empty())
+	{
+		WSTRING style = pRoom->style;
+		g_pTheDBM->ConvertStyle(style);
+		style += wszSpace;
+		style += wszSKIES;
+		list<WSTRING> skies;
+		if (CFiles::GetGameProfileString(INISection::Graphics, style.c_str(), skies) && !skies.empty())
 		{
-			//No sky image listed.
+			//Sky images specified.  Choose the one closest to specified light level.
+			UINT wSkyIndex = skies.size() > this->wDark ? this->wDark : skies.size() - 1;
+			list<WSTRING>::const_iterator sky = skies.begin();
+			while (wSkyIndex--)
+				++sky;
+			wstrSkyImageName = *sky;
+		}
+	}
+
+	if (wstrSkyImageName.empty())
+	{
+		//No sky image listed.
+		if (this->pSkyImage)
+		{
+			SDL_FreeSurface(this->pSkyImage);
+			this->pSkyImage = NULL;
+		}
+		this->wstrSkyImage.resize(0);
+	}
+	else
+	{
+		//If image name is different than the one already loaded, load new sky.
+		if (wstrSkyImageName.compare(this->wstrSkyImage))
+		{
 			if (this->pSkyImage)
-			{
 				SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = NULL;
-			}
-			this->wstrSkyImage.resize(0);
-		} else {
-			//If image name is different than the one already loaded, load new sky.
-			if (wstrSkyImageName.compare(this->wstrSkyImage))
+			this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
+			if (!this->pSkyImage)
+				this->wstrSkyImage = wszEmpty;
+			else
 			{
-				if (this->pSkyImage)
-					SDL_FreeSurface(this->pSkyImage);
-				this->pSkyImage = g_pTheDBM->LoadImageSurface(wstrSkyImageName.c_str(), 0);
-				if (!this->pSkyImage)
-					this->wstrSkyImage = wszEmpty;
-				else
-				{
-					ASSERT((UINT)this->pSkyImage->w == this->w);
-					ASSERT((UINT)this->pSkyImage->h == this->h);
-					this->wstrSkyImage = wstrSkyImageName;
-				}
+				ASSERT((UINT)this->pSkyImage->w == this->w);
+				ASSERT((UINT)this->pSkyImage->h == this->h);
+				this->wstrSkyImage = wstrSkyImageName;
 			}
 		}
 	}
@@ -2171,24 +2301,58 @@ void CRoomWidget::ShowMoveCount(const bool bVal)
 	}
 }
 
+
+//*****************************************************************************
+void CRoomWidget::SetPuzzleModeOptions(const PuzzleModeOptions &puzzleModeOptions)
+//Enables puzzle mode (display for easier puzzle solving).
+{
+	this->puzzleModeOptions = puzzleModeOptions;
+	this->puzzleModeOptions.bIsEnabled = this->bShowPuzzleMode;
+
+	if (this->bShowPuzzleMode) {
+		// If puzzle mode is currently active we need to turn it off and on again to refresh it fully
+		TogglePuzzleMode();
+		TogglePuzzleMode();
+	}
+}
 //*****************************************************************************
 void CRoomWidget::ShowPuzzleMode(const bool bVal)
 //Enables puzzle mode (display for easier puzzle solving).
 {
 	if (this->bShowPuzzleMode == bVal)
 		return;
+	
+	this->RerenderRoom();
 	this->bShowPuzzleMode = bVal;
+	this->bRenderPlayerLight = true;
+	this->bRenderRoomLight = true;
+	this->puzzleModeOptions.bIsEnabled = this->bShowPuzzleMode;
 
 	if (bVal)
 	{
-		CGridEffect *pEffect = new CGridEffect(this);
-		pEffect->RequestRetainOnClear(true);
-		AddLastLayerEffect(pEffect);
+		if (this->puzzleModeOptions.GetShowGrid()) {
+			CGridEffect* pEffect = new CGridEffect(this, this->puzzleModeOptions.wGridStyle, this->puzzleModeOptions.uGridOpacity);
+			pEffect->RequestRetainOnClear(true);
+			AddLastLayerEffect(pEffect);
+		}
+
+		if (this->puzzleModeOptions.GetHideLighting())
+			this->wDark = 0;
+
+		if (this->puzzleModeOptions.GetHideWeather()) {
+			RemoveMLayerEffectsOfType(ESNOWFLAKE);
+			RemoveMLayerEffectsOfType(ERAINDROP);
+		}
 	} else {
 		this->pLastLayerEffects->RemoveEffectsOfType(EGRID);
+
+		this->wDark = this->pRoom->weather.wLight;
 	}
 
+	g_pTheDBM->fLightLevel = fRoomLightLevel[this->wDark];
+
 	BetterVisionQuery();
+	UpdateDrawSquareInfo();
 }
 
 //*****************************************************************************
@@ -2221,6 +2385,14 @@ void CRoomWidget::ToggleMoveCount()
 //Shows/hides current move count.
 {
 	ShowMoveCount(!this->bShowMoveCount);
+}
+
+//*****************************************************************************
+//Shows/hides movement order of all monsters.
+void CRoomWidget::ToggleMovementOrderHint()
+{
+	ShowMovementOrderHints(!this->bShowMovementOrderHints);
+	AddMovementOrderHints();
 }
 
 //*****************************************************************************
@@ -2261,13 +2433,23 @@ void CRoomWidget::DisplayPersistingImageOverlays(CCueEvents& CueEvents)
 		}
 
 		//Don't wait for additional images to be added to the room widget before clearing effects.
+		bool bClearedEffect = false;
 		const int clearsLayer = pImageOverlay->clearsImageOverlays();
 		if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
 			RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
 			CueEvents.Remove(cid, pObj);
 			pObj = CueEvents.GetFirstPrivateData(cid);
-			continue;
+			bClearedEffect = true;
 		}
+
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+			RemoveGroupEffects(clearsGroup);
+			bClearedEffect = true;
+		}
+
+		if (bClearedEffect)
+			continue;
 
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -2377,6 +2559,7 @@ void CRoomWidget::FadeToLightLevel(
 		//Render room objects.
 		this->x = this->y = 0;
 		DisplayPersistingImageOverlays(CueEvents);
+		AddMovementOrderHints();
 		RenderRoomLayers(pNewRoomSurface);
 		this->x = rect.x;
 		this->y = rect.y;
@@ -2425,10 +2608,42 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 	DrawGhostOverheadCharacters(pSurface, false);
 	
 	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
+	this->pLastLayerEffects->DrawEffects(pSurface, EMOVEORDERHINT);
 
 	RenderEnvironment(pSurface);
 
 	ApplyDisplayFilterToRoom(getDisplayFilter(), pSurface);
+}
+
+//*****************************************************************************
+void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
+{
+	UINT currentTurn = this->pCurrentGame->wTurnNo;
+	if (CueEvents.HasOccurred(CID_ExitRoom) || this->ceilingLightChanges.empty()) {
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_LightTilesChanged)) {
+		this->ceilingLightChanges.add(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+		return;
+	}
+
+	if (CueEvents.HasOccurred(CID_ActivatedTemporalSplit)) {
+		UINT spawnTurn = this->pCurrentGame->wSpawnCycleCount + 1;
+		if (!ceilingLightChanges.isAfterLatest(spawnTurn)) {
+			this->bCeilingLightsRendered = false;
+			ProcessLightmap();
+			return;
+		}
+	}
+
+	if (!ceilingLightChanges.isAfterLatest(currentTurn + 1)) {
+		this->ceilingLightChanges.removeAfter(currentTurn);
+		this->bCeilingLightsRendered = false;
+		ProcessLightmap();
+	}
 }
 
 //*****************************************************************************
@@ -3778,6 +3993,8 @@ void CRoomWidget::RenderRoom(
 		water[(wX-1)][(wY)] == T_SHALLOW_WATER || water[(wX+1)][(wY)] == T_SHALLOW_WATER ||\
 		water[(wX)][(wY-1)] == T_SHALLOW_WATER || water[(wX)][(wY+1)] == T_SHALLOW_WATER)))
 
+	static const SURFACECOLOR SecretWallHighlightColor = { 128, 255, 255 };
+
 	BoundsCheckRect(wCol,wRow,wWidth,wHeight);
 	const UINT wRowOffset = this->pRoom->wRoomCols - wWidth;
 	const UINT wLightRowOffset = wRowOffset * wLightValuesPerTile;
@@ -3836,7 +4053,7 @@ void CRoomWidget::RenderRoom(
 						(wOTileNo == T_WALL_WIN && this->pCurrentGame && this->pCurrentGame->bHoldCompleted);
 				bTar = bIsTarOrFluff(wTTileNo);
 				bTIsTransparent = (bTar && bEditor);
-				bTIsTranslucent = bTar && IsShowingBetterVision();
+				bTIsTranslucent = bTar && this->bRequestTranslucentTar;
 
 				//Determine this tile's darkness.
 				fDark = fLightLevel * GetOverheadDarknessAt(wX, wY);
@@ -3848,6 +4065,14 @@ void CRoomWidget::RenderRoom(
 				if (!bMosaicTile && !bTransparentOTile)
 				{
 					DrawRoomTile(pTI->o);
+
+					wTileNo = bTransparentOTile ?
+						this->pRoom->coveredOSquares.GetAt(wX, wY) : wOTileNo;
+
+					if (wOTileNo == T_WALL_B && this->puzzleModeOptions.GetShowBrokenWalls())
+						ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
+					else if (wOTileNo == T_WALL_H && this->puzzleModeOptions.GetShowSecretWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
 
 					//In cases where doors are 2x2 tiles or thicker, draw filler to
 					//remove the dimple on the edge.
@@ -3991,8 +4216,14 @@ void CRoomWidget::RenderRoom(
 										pDestSurface, false, 196);
 							else
 								DrawTransparentRoomTile(TI_WALL_H, 196);
-						}
+						} else if (this->puzzleModeOptions.GetShowSecretWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
 					break;
+
+					case T_WALL_B:
+						if (this->puzzleModeOptions.GetShowBrokenWalls())
+							ShadeRect(pDestSurface, SecretWallHighlightColor, wX, wY, 1, 1);
+						break;
 
 					case T_WALL_M:
 					case T_WALL_WIN:
@@ -4307,7 +4538,7 @@ void CRoomWidget::DrawTLayerTile(
 
 	bool bTar = bIsTarOrFluff(wTTileNo);
 	bool bTIsTransparent = (bTar && bEditor);
-	bool bTIsTranslucent = bTar && (IsShowingBetterVision() || g_pTheDBM->tarstuffAlpha != 255);
+	bool bTIsTranslucent = bTar && (this->bRequestTranslucentTar || g_pTheDBM->tarstuffAlpha != 255);
 
 	//2b. Add checkpoints on top of o-layer.
 	const bool bIsCheckpoint = (this->bShowCheckpoints || bEditor) &&
@@ -4420,7 +4651,7 @@ void CRoomWidget::DrawTLayerTile(
 			DrawTransparentRoomTile(ti.t, 128);
 		} else if (bTIsTranslucent) {
 			static const Uint8 TRANSLUCENT_ALPHA = 166;
-			Uint8 tar_alpha = IsShowingBetterVision() ? TRANSLUCENT_ALPHA : 255;
+			Uint8 tar_alpha = this->bRequestTranslucentTar ? TRANSLUCENT_ALPHA : 255;
 			if (g_pTheDBM->tarstuffAlpha < tar_alpha) {
 				tar_alpha = g_pTheDBM->tarstuffAlpha;
 			}
@@ -4428,7 +4659,9 @@ void CRoomWidget::DrawTLayerTile(
 		} else if (ti.t != TI_TEMPTY) {
 			DrawRoomTile(ti.t);
 		}
-		AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
+
+		if (bAddLight)
+			AddLight(pDestSurface, nX, nY, psL, fDark, ti.t);
 	}
 }
 #undef DrawRoomTile
@@ -4531,6 +4764,9 @@ void CRoomWidget::Paint(
 	const bool bPlayerIsAlive = !this->pCurrentGame->IsPlayerDying();
 	if (!bPlayerIsAlive) // To ensure everything draws properly during death animation everything must be made dirty
 		this->bAllDirty = true;
+
+	if ((this->bAllDirty || bMoveMade) && bPlayerIsAlive)
+		AddMovementOrderHints();
 
 	//Real-time shadow casting animation.
 	if (bMoveAnimationInProgress && ShowShadowCastingAnimation())
@@ -4724,6 +4960,18 @@ void CRoomWidget::RemoveEffectsQueuedForRemoval()
 	this->queued_layer_effect_type_removal.clear();
 }
 
+void CRoomWidget::RemoveGroupEffects(int clearGroup)
+{
+	ASSERT(this->pOLayerEffects);
+	this->pOLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pTLayerEffects);
+	this->pTLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pMLayerEffects);
+	this->pMLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+	ASSERT(this->pLastLayerEffects);
+	this->pLastLayerEffects->RemoveOverlayEffectsInGroup(clearGroup);
+}
+
 //*****************************************************************************
 void CRoomWidget::RemoveLayerEffects(const EffectType eEffectType, int layer)
 {
@@ -4771,6 +5019,10 @@ void CRoomWidget::PaintClipped(int /*nX*/, int /*nY*/, UINT /*wW*/, UINT /*wH*/,
 void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 {
 	this->pMLayerEffects->RemoveEffectsOfType(EPENDINGBUILD);
+
+	if (this->puzzleModeOptions.GetHideBuildMarkers())
+		return;
+
 	if (!room.building.empty())
 	{
 		bool bFirst = true;
@@ -4784,7 +5036,8 @@ void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 					--wTile; //convert from 1-based
 
 					//Display empty item as the o-tile below it.
-					if (wTile == T_EMPTY || wTile == T_EMPTY_F || wTile == T_REMOVE_FLOOR_ITEM) {
+					if (wTile == T_EMPTY || wTile == T_EMPTY_F || wTile == T_REMOVE_FLOOR_ITEM ||
+						wTile == T_EMPTY_TRANSPARENT || wTile == T_REMOVE_TRANSPARENT) {
 						wTile = room.GetOSquare(wX,wY);
 						bRemove = true;
 					}
@@ -4830,6 +5083,8 @@ void CRoomWidget::PopulateBuildMarkerEffects(const CDbRoom& room)
 						case T_BRIAR_SOURCE: wTileNo = TI_BRIARROOT; break;
 						default: wTileNo = GetTileImageForTileNo(wTile); break;
 					}
+					if (bIsFakeTokenType(wTile))
+						wTileNo = CalcTileImageForToken(ConvertFakeTokenType(wTile));
 					if (wTileNo == CALC_NEEDED)
 						wTileNo = CalcTileImageFor(&room, wTile, wX, wY);
 					if (wTileNo != CALC_NEEDED)
@@ -4861,7 +5116,7 @@ void CRoomWidget::RenderEnvironment(SDL_Surface *pDestSurface)	//[default=NULL]
 {
 	static float fBrilliance = 1.0;	//lightning
 
-	if (!IsWeatherRendered())
+	if (!IsWeatherRendered() || this->puzzleModeOptions.GetHideWeather())
 		return;
 
 	bool bHasted = false, bIsPlacingDouble = false;
@@ -5565,6 +5820,33 @@ void CRoomWidget::DeleteArrays()
 	this->pTileImages = NULL;
 
 	this->lightMaps.clear();
+}
+
+//*****************************************************************************
+WSTRING CRoomWidget::DescribeStationColor(const int& stationType) const
+//Returns a string describing the color of the given station type
+{
+	UINT mid;
+	switch (stationType) {
+		default: case 0: mid = MID_White; break;
+		case 1: mid = MID_Red; break;
+		case 2: mid = MID_Green; break;
+		case 3: mid = MID_Blue; break;
+		case 4: mid = MID_PaleRed; break;
+		case 5: mid = MID_PaleGreen; break;
+		case 6: mid = MID_PaleBlue; break;
+		case 7: mid = MID_Yellow; break;
+		case 8: mid = MID_Cyan; break;
+		case 9: mid = MID_Mauve; break;
+		case 10: mid = MID_Orange; break;
+		case 11: mid = MID_Pink; break;
+		case 12: mid = MID_Lime; break;
+		case 13: mid = MID_Turquoise; break;
+		case 14: mid = MID_Violet; break;
+		case 15: mid = MID_Azure; break;
+	}
+
+	return g_pTheDB->GetMessageText(mid);
 }
 
 //*****************************************************************************
@@ -6321,6 +6603,32 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 }
 
 //*****************************************************************************
+void CRoomWidget::AddMovementOrderHints()
+{
+	this->pLastLayerEffects->RemoveEffectsOfType(EMOVEORDERHINT);
+
+	if (!bShowMovementOrderHints)
+		return;
+
+	int index = 1;
+	for (CMonster* pMonster = this->pRoom->pFirstMonster; pMonster != NULL;
+		pMonster = pMonster->pNext)
+	{
+		const CCharacter* pCharacter = dynamic_cast<const CCharacter*>(pMonster);
+
+		if (!pMonster->IsVisible()) {
+			if (pCharacter && pCharacter->IsInvisibleCountMoveOrder())
+				++index; //count but don't show to avoid potential overlaps
+
+				continue;
+		}
+
+		AddLastLayerEffect(new CMovementOrderHintEffect(this, pMonster, index));
+		++index;
+	}
+}
+
+//*****************************************************************************
 void CRoomWidget::AddPlatformPitMasks(
 	const TileImageBlitParams& blit,
 	t_PitMasks& pitMasks) //(in/out)
@@ -6532,9 +6840,6 @@ void CRoomWidget::DrawSwordsFor(const vector<CMonster*>& drawnMonsters, SDL_Surf
 //*****************************************************************************
 bool CRoomWidget::IsShowingBetterVision() const
 {
-	if (this->bShowPuzzleMode)
-		return true;
-
 	return this->pRoom && this->pRoom->bBetterVision;
 }
 
@@ -6557,7 +6862,8 @@ bool CRoomWidget::NeedsSwordRedrawing(const CMonster *pMonster) const
 void CRoomWidget::AnimateMonsters()
 //Randomly change monsters' animation frame.
 {
-	if (!this->bAnimateMoves) return;
+	if (!this->bAnimateMoves || this->puzzleModeOptions.GetHideAnimations())
+		return;
 
 	//Animate monsters in real time.
 	const Uint32 dwNow=SDL_GetTicks();
@@ -6694,7 +7000,9 @@ void CRoomWidget::BetterVisionQuery()
 //Display visual effects for vision power up.
 {
 	//Evil eye gazes are seen.
-	this->bRequestEvilEyeGaze = IsShowingBetterVision();
+	this->bRequestEvilEyeGaze = IsShowingBetterVision() || this->puzzleModeOptions.GetShowEvilEyeBeams();
+	this->bRequestSpiderVisibility = IsShowingBetterVision() || this->puzzleModeOptions.GetShowSpiders();
+	this->bRequestTranslucentTar = IsShowingBetterVision() || this->puzzleModeOptions.bIsEnabled;
 
 	//Remove old persistent evil eye gazes.
 	//Note that normal wake up gaze effects are displayed on the m-layer,
@@ -6847,7 +7155,7 @@ void CRoomWidget::DrawMonster(
 					opacity = PUFF_OPACITY;
 				break;
 				case M_SPIDER:
-					if (IsShowingBetterVision()) {
+					if (this->bRequestSpiderVisibility) {
 						//display, even when invisible
 					} else if (this->pCurrentGame) {
 						const CSpider *pSpider = DYN_CAST(const CSpider*, const CMonster*, pMonster);
@@ -6873,10 +7181,14 @@ void CRoomWidget::DrawMonster(
 					const CEvilEye *pEye = DYN_CAST(const CEvilEye*, const CMonster*, pMonster);
 					if (pEye->IsAggressive())
 						wTileImageNo = GetTileImageForEntity(M_EYE_ACTIVE, pMonster->wO, animFrame);
-					else if (this->bRequestEvilEyeGaze) {
-						//Show eye beams with vision power-up.
-						AddLastLayerEffect(new CEvilEyeGazeEffect(this,pMonster->wX,
-								pMonster->wY,pMonster->wO, (UINT)-1));
+					else {
+						if (this->bRequestEvilEyeGaze) // Vision token or puzzle mode can show it
+							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
+								pMonster->wY, pMonster->wO, (UINT)-1));
+						
+						if (this->puzzleModeOptions.GetShowReverseEvilEyeBeams())
+							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
+								pMonster->wY, nGetReverseO(pMonster->wO), (UINT)-1));
 					}
 				}
 				break;
@@ -7188,6 +7500,25 @@ void CRoomWidget::DrawTileImageWithoutLight(
 				BlitRect.w, BlitRect.h,
 				1.0f+lightMap[0][blit.nAddColor], 1.0f+lightMap[1][blit.nAddColor], 1.0f+lightMap[2][blit.nAddColor],
 				blit.wTileImageNo, BlitRect.x, BlitRect.y);
+
+	//Apply optional hue change
+	if (blit.hsv[0] >= 0 || blit.hsv[1] >= 0 || blit.hsv[2] >= 0)
+	{
+		g_pTheBM->HsvToRectWithTileMask(pDestSurface,
+			nPixelX, nPixelY, BlitRect.w, BlitRect.h,
+			blit.hsv[0], blit.hsv[1], blit.hsv[2],
+			blit.wTileImageNo, BlitRect.x, BlitRect.y);
+	}
+
+	if (blit.nCustomColor != -1) {
+		float fR, fG, fB;
+		TranslateMonsterColor(blit.nCustomColor, fR, fG, fB);
+
+		g_pTheBM->LightenRectWithTileMask(pDestSurface, nPixelX, nPixelY,
+			BlitRect.w, BlitRect.h,
+			fR, fG, fB,
+			blit.wTileImageNo, BlitRect.x, BlitRect.y);
+	}
 
 	if (!blit.bDirtyTiles)
 	{
@@ -7762,7 +8093,7 @@ const
 		wSManTI = GetStockEntityTile(swordsman.wAppearance == static_cast<UINT>(-1) ?
 			static_cast<UINT>(CHARACTER_FIRST) : swordsman.wAppearance, wO, wFrame);
 	}
-	if (wSwordTI == TI_UNSPECIFIED && bEntityHasSword(swordsman.wAppearance))
+	if (wSwordTI == TI_UNSPECIFIED && swordsman.HasWeapon())
 		wSwordTI = GetSwordTile(swordsman.wAppearance, wO, swordsman.GetActiveWeapon());
 
 	return true;
@@ -7816,7 +8147,7 @@ void CRoomWidget::DrawCharacter(
 	UINT wSX, wSY;
 	const bool bHasSword = pCharacter->GetSwordCoords(wSX, wSY);
 	UINT wFrame;
-	if (bHasSword || (!bEntityHasSword(wIdentity) && pCharacter->bNoWeapon)) {
+	if (bHasSword || !pCharacter->HasInactiveWeapon()) {
 		wFrame = this->pTileImages[this->pRoom->ARRAYINDEX(pCharacter->wX, pCharacter->wY)].animFrame;
 		if (!IsMonsterTypeAnimated(wIdentity))
 			wFrame = wFrame % ANIMATION_FRAMES;
@@ -7845,6 +8176,8 @@ void CRoomWidget::DrawCharacter(
 	//Draw character.
 	TileImageBlitParams blit(pCharacter->wX, pCharacter->wY, wTileImageNo, wXOffset, wYOffset, bMoveInProgress, bDrawRaised);
 	blit.nOpacity = nOpacity;
+	blit.nCustomColor = pCharacter->nColor;
+	blit.hsv = pCharacter->getHSV();
 	blit.nAddColor = nAddColor;
 	DrawTileImage(blit, pDestSurface);
 
@@ -7940,7 +8273,7 @@ void CRoomWidget::DrawArmedMonster(
 			if (this->pCurrentGame)
 			{
 				CSwordsman& player = this->pCurrentGame->swordsman;
-				const UINT wSManTI = GetCustomEntityTile(player.wIdentity, pArmedMonster->wO, wFrame);
+				const UINT wSManTI = GetEntityTile(logicalIdentity, player.wIdentity, pArmedMonster->wO, wFrame);
 				if (wSManTI != TI_UNSPECIFIED)
 					blit.wTileImageNo = wSManTI;
 
@@ -8037,7 +8370,7 @@ void CRoomWidget::AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, cons
 	if (this->dwMovementStepsLeft)
 		return;
 
-	if (pTC->IsStunned() || pTC->bFrozen)
+	if (pTC->IsStunned())
 		return;
 
 	const int command = pTC->getNextCommand();
@@ -8228,8 +8561,22 @@ void CRoomWidget::DrawSwordFor(
 
 	//Sword isn't fully in display -- just draw it clipped.
 	//(This is needed for when stepping onto room edge.)
+	signed int columnOffset = 0;
+	if ((signed int)blit.wXOffset > 0)
+		columnOffset = 1;
+	if ((signed int)blit.wXOffset < 0)
+		columnOffset = -1;
+	UINT offsetCol = blit.wCol + columnOffset;
+
+	signed int rowOffset = 0;
+	if ((signed int)blit.wYOffset > 0)
+		rowOffset = 1;
+	if ((signed int)blit.wYOffset < 0)
+		rowOffset = -1;
+	UINT offsetRow = blit.wRow + rowOffset;
 	if (!IS_COLROW_IN_DISP(blit.wCol, blit.wRow) ||
-			 !IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY))
+		!IS_COLROW_IN_DISP(blit.wCol + nSgnX, blit.wRow + nSgnY) ||
+		!IS_COLROW_IN_DISP(offsetCol, offsetRow))
 		blit.bClipped = true;
 
 	DrawTileImage(blit, pDestSurface);
@@ -8266,6 +8613,9 @@ void CRoomWidget::DrawDoubleCursor(
 	if (bObstacle)
 	{
 		g_pTheBM->ShadeTile(xPixel,yPixel,Red,GetDestSurface());
+		this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].dirty = 1;
+	} else if (bIsSelectSquare(player.wPlacingDoubleType)) {
+		g_pTheBM->ShadeTile(xPixel, yPixel, BlueGreen, GetDestSurface());
 		this->pTileImages[this->pRoom->ARRAYINDEX(wCol, wRow)].dirty = 1;
 	} else {
 		//Fade in and out.
@@ -9992,6 +10342,24 @@ void CRoomWidget::HighlightBombExplosion(const UINT x, const UINT y, const UINT 
 	static const SURFACECOLOR ExpColor = { 224, 160, 0 };
 	for (CCoordSet::const_iterator coord = coords.begin(); coord != coords.end(); ++coord)
 		AddShadeEffect(coord->wX, coord->wY, ExpColor);
+}
+
+//*****************************************************************************
+void CRoomWidget::TranslateMonsterColor(
+	//Converts a single specially-formatted color value to rgb values
+	//
+	//Params:
+	const int nColor,
+	float& fR, float& fG, float& fB) //Out: rgb tinting values
+{
+	if (nColor < 0)
+		fR = fG = fB = 1.0f;
+	else {
+		//nColor consists of three two-digit pairs: RRGGBB, where a value of "50" is normal.
+		fR = (nColor % 1000000) / 500000.0f;
+		fG = (nColor % 10000) / 5000.0f;
+		fB = (nColor % 100) / 50.0f;
+	}
 }
 
 //*****************************************************************************

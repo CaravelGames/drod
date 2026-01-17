@@ -65,6 +65,7 @@ public:
 	{
 		MDY,
 		DMY,
+		YMD,
 		DateFormatCount
 	};
 

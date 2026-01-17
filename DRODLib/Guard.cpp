@@ -64,16 +64,14 @@ const
 	//Can't move onto monsters -- even target ones.
 	CMonster *pMonster = this->pCurrentGame->pRoom->GetMonsterAtSquare(wCol, wRow);
 	if (pMonster){
-		if (!CanDaggerStep(pMonster->wType))
+		if (!CanDaggerStep(pMonster))
 			return true;
 		if (pMonster->wType == M_GUARD || pMonster->wType == M_SLAYER || pMonster->wType == M_SLAYER2 ||
 			  pMonster->wType == M_FLUFFBABY)
 			return true;
 		if (pMonster->wType == M_CHARACTER) {
 			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
-			if (pCharacter->IsInvulnerable()
-					|| pCharacter->IsPushableByWeaponAttack()
-					|| !this->CanDaggerStep(pCharacter->wType)) // wType instead of GetIdentity() to make it consistent with Player behavior
+			if (pCharacter->IsInvulnerable() || pCharacter->IsPushableByWeaponAttack() || !this->CanDaggerStep(pCharacter))
 				return true;
 		}
 

@@ -25,6 +25,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include "ImageOverlayEffect.h"
 #include "RoomEffectList.h"
 #include "RoomWidget.h"
 #include <BackEndLib/Assert.h>
@@ -160,6 +161,42 @@ void CRoomEffectList::RemoveEffectsOfType(
 			++iSeek;
 			this->Effects.remove(pDelete);
 			delete pDelete;
+		}
+		else
+			++iSeek;
+	}
+}
+
+void CRoomEffectList::RemoveOverlayEffectsInGroup(
+//Removes all image overlay effects in the given group from the list.
+//
+//Params:
+	const int clearGroup,//(in) Overlay group to remove
+	const bool bForceClearAll) //if set [default=true], delete all effects,
+	                     //including those that request to be retained
+{
+	list<CEffect*>::const_iterator iSeek = this->Effects.begin();
+	while (iSeek != this->Effects.end())
+	{
+		if ((*iSeek)->GetEffectType() == EIMAGEOVERLAY)
+		{
+			//Remove from list.
+			CEffect* pDelete = *iSeek;
+			ASSERT(pDelete);
+			if (pDelete->RequestsRetainOnClear() && !bForceClearAll)
+			{
+				++iSeek;
+				continue;
+			}
+
+			CImageOverlayEffect* pDeleteOverlay = DYN_CAST(CImageOverlayEffect*, CEffect*, pDelete);
+
+			if (pDeleteOverlay->getGroup() == clearGroup) {
+				DirtyTilesForRects(pDelete->dirtyRects);  //touch up area before deleting
+				++iSeek;
+				this->Effects.remove(pDelete);
+				delete pDelete;
+			}
 		}
 		else
 			++iSeek;

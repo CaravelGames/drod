@@ -35,11 +35,13 @@
 #include "DrodFileDialogWidget.h"
 #include "DrodFontManager.h"
 #include "DrodBitmapManager.h"
+#include "DrodDialogs.h"
 #include "DrodScreen.h"
 #include "DrodScreenManager.h"
 #include "DrodSound.h"
 #include "GameScreen.h"
 
+#include <FrontEndLib/ListBoxWidget.h> // To init i18n
 #include <FrontEndLib/ImageWidget.h>
 
 #include "../DRODLib/Db.h"
@@ -127,7 +129,17 @@ ULONGLONG qwAvailablePhysical=0, qwAvailableTotal=0;
 CFiles * m_pFiles = NULL;
 unsigned long dwInitAORefCount = 0;
 
+#ifdef KDD_STANDALONE
+#define GAMETITLE "DROD: King Dugan's Dungeon"
+#elif defined(JTRH_STANDALONE)
+#define GAMETITLE "DROD: Journey to Rooted Hold"
+#elif defined(TCB_STANDALONE)
+#define GAMETITLE "DROD: The City Beneath"
+#elif defined(GATEB_STANDALONE)
+#define GAMETITLE "DROD: Gunthro and the Epic Blunder"
+#else
 #define GAMETITLE "DROD 5"
+#endif
 
 #ifndef __linux__  // the linux build thing has build profiles; use the beta profile if you want to enable beta
 #ifndef BETA
@@ -156,6 +168,14 @@ bool bWindowsDataFilesInUserSpecificDir = false;
 static const WCHAR wszUniqueResFile[] = {
 #ifdef STEAMBUILD_TSS_APP
     We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(KDD_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(JTRH_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('j'),We('t'),We('r'),We('h'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(TCB_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('c'),We('b'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
+#elif defined(GATEB_STANDALONE)
+    We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
 #else
     We('d'),We('r'),We('o'),We('d'),We('5'),We('_'),We('0'),We('.'),We('d'),We('a'),We('t'),We(0)
 #endif
@@ -274,6 +294,18 @@ int main(int argc, char *argv[])
 #ifdef STEAMBUILD_TSS_APP
 	const WCHAR wszDRODTSS[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('s'),We('s'),We(0) };
 	gameName = wszDRODTSS;
+#elif defined(KDD_STANDALONE)
+	const WCHAR wszDRODKDD[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('k'),We('d'),We('d'),We(0) };
+	gameName = wszDRODKDD;
+#elif defined(JTRH_STANDALONE)
+	const WCHAR wszDRODJtRH[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('j'),We('t'),We('r'),We('h'),We(0) };
+	gameName = wszDRODJtRH;
+#elif defined(TCB_STANDALONE)
+	const WCHAR wszDRODTCB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('t'),We('c'),We('b'),We(0) };
+	gameName = wszDRODTCB;
+#elif defined(GATEB_STANDALONE)
+	const WCHAR wszDRODGatEB[] = { We('d'),We('r'),We('o'),We('d'),We('-'),We('g'),We('a'),We('t'),We('e'),We('b'),We(0) };
+	gameName = wszDRODGatEB;
 #endif
 	m_pFiles = new CFiles(wstrPath.c_str(), gameName, wszDROD_VER, bIsDemo);
 	if (CFiles::bad_data_path_file) {
@@ -373,7 +405,7 @@ int main(int argc, char *argv[])
 		if (ret != static_cast<MESSAGE_ID>(-1))
 			DisplayInitErrorMessage(ret);
 	} else {
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		try
 		{
 #endif
@@ -540,9 +572,9 @@ int main(int argc, char *argv[])
 				delete pCurrentPlayer;
 			}
 
-#ifndef _DEBUG
+#ifndef NO_EXCEPTIONS
 		}
-		catch (CException& e)
+		catch (std::exception& e)
 		{
 		  m_pFiles->AppendErrorLog(e.what());
 		  if (g_pTheDB->IsOpen())
@@ -552,6 +584,7 @@ int main(int argc, char *argv[])
 		}
 		catch (...)
 		{
+			m_pFiles->AppendErrorLog("Unkown exception");
 		  if (g_pTheDB->IsOpen())
 		  {
 			  g_pTheDB->Close();
@@ -697,6 +730,9 @@ MESSAGE_ID Init(
 #endif
 
 	srand(int(time(NULL)));
+
+	// Init FrontendLocalization
+	CListBoxWidget::wstrFilterWord = g_pTheDB->GetMessageText(MID_ListboxFilter);
 
 	//Success.
 	return bRestoredFromCorruption ? MID_DatCorrupted_Restored :
@@ -976,6 +1012,7 @@ sdl_error:
 	ASSERT(!g_pTheFM);
 	g_pTheDFM = new CDrodFontManager();
 	g_pTheFM = (CFontManager*)g_pTheDFM;
+	g_pTheDialogs = new CDrodDialogs();
 	if (!g_pTheFM) return MID_OutOfMemory;
 	ret = (MESSAGE_ID)g_pTheDFM->Init();
 	if (ret) return ret;
@@ -1876,6 +1913,8 @@ void RepairMissingINIKeys(const bool bFullVersion)
 	AddIfMissing(INISection::Customizing, INIKey::AutoLogin, "0");
 	AddIfMissing(INISection::Customizing, INIKey::CrossfadeDuration, "400");
 	AddIfMissing(INISection::Customizing, INIKey::ExportSpeech, "0");
+	AddIfMissing(INISection::Customizing, INIKey::ExportDemoThreshold, "500");
+	AddIfMissing(INISection::Customizing, INIKey::ExportSavedGamesThreshold, "1000");
 	AddIfMissing(INISection::Customizing, INIKey::FullScoreUpload, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScreenMinimize, "0");
 	AddIfMissing(INISection::Customizing, INIKey::FullScreenMode, "0");

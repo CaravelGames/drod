@@ -1,5 +1,3 @@
-// $Id$
-
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1
  *
@@ -17,32 +15,32 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 2002, 2005
- * Caravel Software. All Rights Reserved.
+ * Portions created by the Initial Developer are Copyright (C) 2025 Caravel Software.
+ * All Rights Reserved.
+ *
+ * Contributor(s):
  *
  * ***** END LICENSE BLOCK ***** */
 
-//This is just a CDialog that has been changed so that it deactivates when a 
-//keydown event is received.
+#ifndef LINEEFFECT_H
+#define LINEEFFECT_H
 
-#ifndef KEYPRESSDIALOGWIDGET_H
-#define KEYPRESSDIALOGWIDGET_H
+#include "DrodEffect.h"
+#include <BackEndLib/CoordSet.h>
 
-#include "DialogWidget.h"
-
-#include <SDL.h>
-
-class CKeypressDialogWidget : public CDialogWidget
-{
+class CDottedLineEffect : public CEffect {
 public:
-	CKeypressDialogWidget(UINT dwSetTagNo, int nSetX, int nSetY, UINT wSetW, UINT wSetH);
+	CDottedLineEffect(CWidget* pSetOwnerWidget, const UINT dwDuration, const CCoord& startTile, const CCoord& endTile);
 
-	SDL_Keycode    GetKey(void) const {return this->Key;}
+protected:
+	bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
+	void Draw(SDL_Surface& destSurface);
 
 private:
-	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
+	void CalculatePositions(const CCoord& startTile, const CCoord& endTile);
 
-	SDL_Keycode    Key;
+	CCoordSet positions;
+	Uint8 nOpacity;
 };
 
 #endif

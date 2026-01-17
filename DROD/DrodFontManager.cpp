@@ -225,6 +225,12 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_Small].BackColor = LightBrown;
 	this->LoadedFonts[F_Small].bAntiAlias = true;
 
+	this->LoadedFonts[F_SettingsKeymaps].pTTFFont = pFont;
+	this->LoadedFonts[F_SettingsKeymaps].wLineSkipHeight = 18;
+	this->LoadedFonts[F_SettingsKeymaps].wSpaceWidth = 3;
+	this->LoadedFonts[F_SettingsKeymaps].BackColor = LightBrown;
+	this->LoadedFonts[F_SettingsKeymaps].bAntiAlias = true;
+
 	//Load header font.
 	pFont = GetFont(wstrFontFilepath, wHeaderPoint, TTF_STYLE_BOLD);
 	if (!pFont) return false;
@@ -523,6 +529,20 @@ bool CDrodFontManager::LoadFonts()
 	this->LoadedFonts[F_ExpandText].bOutline = true;
 	this->LoadedFonts[F_ExpandText].OutlineColor = Black;
 	this->LoadedFonts[F_ExpandText].wOutlineWidth = 2;	
+
+	//Load movement order hint font.
+	pFont = GetFont(wstrFont2Filepath, 14);
+	if (!pFont) return false;
+	this->LoadedFonts[F_MovementOrderHint].pTTFFont = pFont;
+	this->LoadedFonts[F_MovementOrderHint].wLineSkipHeight = GetFontHeight(F_MovementOrderHint);
+	this->LoadedFonts[F_MovementOrderHint].ForeColor = White;
+	this->LoadedFonts[F_MovementOrderHint].BackColor = Black;
+	this->LoadedFonts[F_MovementOrderHint].bAntiAlias = true;
+	this->LoadedFonts[F_MovementOrderHint].bOutline = true;
+	this->LoadedFonts[F_MovementOrderHint].OutlineColor = Black;
+	this->LoadedFonts[F_MovementOrderHint].wOutlineWidth = 1;
+	GetWordWidth(F_MovementOrderHint, wszSpace, wSpaceWidth);
+	this->LoadedFonts[F_MovementOrderHint].wSpaceWidth = wSpaceWidth;
 
 	//Make sure all fonts were loaded.
 #ifdef _DEBUG

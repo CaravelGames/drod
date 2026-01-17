@@ -42,12 +42,19 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CClone);
 
 	virtual bool CanDropTrapdoor(const UINT oTile) const;
+	virtual bool CanFluffTrack() const;
+	virtual bool CanFluffKill() const;
+	virtual bool CanPushOntoOTile(const UINT wTile) const;
   virtual bool CanWadeInShallowWater() const;
 	virtual UINT GetIdentity() const;
 	virtual bool IsFlying() const;
 	virtual bool IsMonsterTarget() const;
   virtual bool IsSwimming() const;
 	virtual bool IsHiding() const;
+	virtual bool IsVulnerableToAdder() const;
+	virtual bool IsVulnerableToExplosion() const;
+	virtual bool IsVulnerableToPlayerBodyAttack() const;
+	virtual bool IsVulnerableToWeapon(WeaponType weaponType) const;
   bool KillIfOnDeadlyTile(CCueEvents& CueEvents);
   virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX = (UINT)-1, const UINT wY = (UINT)-1,
 		WeaponType weaponType = WT_Sword);

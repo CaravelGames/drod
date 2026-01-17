@@ -33,6 +33,7 @@
 #include "BloodEffect.h"
 #include "CheckpointEffect.h"
 #include "DebrisEffect.h"
+#include "DottedLineEffect.h"
 #include "ExplosionEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "FiretrapEffect.h"
@@ -48,6 +49,7 @@
 #include "SwordSwingEffect.h"
 #include "SwordsmanSwirlEffect.h"
 #include "TarStabEffect.h"
+#include "TileSwirlEffect.h"
 #include "TrapdoorFallEffect.h"
 #include "VerminEffect.h"
 #include "WadeEffect.h"
@@ -56,6 +58,7 @@
 #include "../DRODLib/Db.h"
 #include "../DRODLib/DbPlayers.h"
 #include "../DRODLib/DbXML.h"
+#include "../DRODLib/GameConstants.h"
 #include "../DRODLib/SettingsKeys.h"
 
 #include <FrontEndLib/ButtonWidget.h>
@@ -73,6 +76,8 @@
 #include <BackEndLib/Ports.h>
 
 #include <sstream>
+
+using namespace InputCommands;
 
 vector<WSTRING> CDrodScreen::importFiles;
 CNetChat::Interface CDrodScreen::chat;
@@ -397,6 +402,15 @@ void CDrodScreen::AddVisualEffect(const VisualEffectInfo* pEffect, CRoomWidget* 
 			pRoomWidget->AddMLayerEffect(
 				new CFluffStabEffect(pRoomWidget, coord,
 					GetEffectDuration(pGame, 6), GetParticleSpeed(pGame, 2)));
+		break;
+		case VET_TILESWIRL:
+			pRoomWidget->AddMLayerEffect(
+				new CTileSwirlEffect(pRoomWidget, coord));
+		break;
+		case VET_DOTTEDLINE:
+			pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(pRoomWidget, GetEffectDuration(pGame, 500),
+					src, coord));
 		break;
 		default: break; //do nothing
 	}
@@ -830,6 +844,9 @@ void CDrodScreen::AddVisualCues(CCueEvents& CueEvents, CRoomWidget* pRoomWidget,
 	if (bLightToggled)
 		pRoomWidget->RenderRoomLighting();
 	pRoomWidget->AddPlayerLight();
+	pRoomWidget->RerenderRoomCeilingLight(CueEvents);
+	//Update room weather as needed.
+	pRoomWidget->SyncWeather(CueEvents);
 	if (CueEvents.HasOccurred(CID_Plots) || bLightToggled)
 	{
 		//Do an update of tile image arrays.
@@ -951,11 +968,18 @@ void CDrodScreen::ProcessImageEvents(
 
 		//Don't wait for additional images to be added to the room widget before clearing effects.
 		const int clearsLayer = pImageOverlay->clearsImageOverlays();
-		if (clearsLayer == ImageOverlayCommand::NO_LAYERS) {
+		const int clearsGroup = pImageOverlay->clearsImageOverlayGroup();
+		if (clearsLayer == ImageOverlayCommand::NO_LAYERS &&
+				clearsGroup == ImageOverlayCommand::NO_GROUP) {
 			CImageOverlayEffect *pEffect = new CImageOverlayEffect(pRoomWidget, pImageOverlay, currentTurn, dwNow);
 			pRoomWidget->AddLayerEffect(pEffect, pImageOverlay->getLayer());
 		} else {
-			pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			if (clearsLayer != ImageOverlayCommand::NO_LAYERS) {
+				pRoomWidget->RemoveLayerEffects(EIMAGEOVERLAY, clearsLayer);
+			}
+			if (clearsGroup != ImageOverlayCommand::NO_GROUP) {
+				pRoomWidget->RemoveGroupEffects(clearsGroup);
+			}
 		}
 
 		//Don't reprocess these events if this method is called again.
@@ -1196,6 +1220,13 @@ void CDrodScreen::CloudTransactionWait(MESSAGE_ID mid, const float progressStart
 }
 
 //*****************************************************************************
+bool CDrodScreen::IsCommandSupported(int command) const
+//Returns: if the given command does something on this screen.
+{
+	return false;
+}
+
+//*****************************************************************************
 UINT CDrodScreen::ImportHoldImage(const UINT holdID, const UINT extensionFlags)
 //Load an image file from disk into the hold,
 //using any of the specified supported file extensions.
@@ -1264,6 +1295,106 @@ UINT CDrodScreen::ImportHoldImage(const UINT holdID, const UINT extensionFlags)
 	ASSERT(!"Bad logic path.");
 	delete pCurrentPlayer;
 	return 0;
+}
+
+//*****************************************************************************
+void CDrodScreen::InitKeysymToCommandMap(
+	//Set the keysym-to-command map with values from player settings that will determine
+	//which commands correspond to which keys.
+	//
+	//Params:
+	const CDbPackedVars& PlayerSettings)   //(in)   Player settings to load from.
+{
+	//Clear the map.
+	this->InputKeyToCommandMap.clear();
+
+	//Check whether default is for desktop or notebook keyboard configuration.
+	CFiles Files;
+	string strKeyboard;
+	UINT wKeyboard = 0;	//default to numpad
+	if (Files.GetGameProfileString(INISection::Localization, INIKey::Keyboard, strKeyboard))
+	{
+		wKeyboard = atoi(strKeyboard.c_str());
+		if (wKeyboard > 1)
+			wKeyboard = 0; //invalid setting
+	}
+
+	//Get values from current player settings.
+	for (UINT wIndex = 0; wIndex < InputCommands::DCMD_Count; ++wIndex)
+	{
+		const InputCommands::KeyDefinition* keyDefinition = InputCommands::GetKeyDefinition(wIndex);
+		const int command = (int)keyDefinition->eCommand;
+
+		if (!IsCommandSupported(command))
+			continue;
+
+		const InputKey inputKey = PlayerSettings.GetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboard));
+		this->InputKeyToCommandMap[inputKey] = command;
+		bool bCmdUseModifier = DoesCommandUseModifiers((DCMD)wIndex);
+
+		if (bCmdUseModifier) // Support for macros
+			this->InputKeyToCommandMap[BuildInputKey(ReadInputKey(inputKey), false, false, true)] = command;
+
+		// Numlock being off can cause the numpad to be treated as different keys, but only the arrows for some reason
+		// So we store an alternative key map that flips arrow keys and some numpad keys so we can check for both
+		InputKey altKey = inputKey;
+		switch (inputKey) {
+		case SDLK_KP_8:
+			altKey = SDLK_UP;
+			break;
+		case SDLK_KP_4:
+			altKey = SDLK_LEFT;
+			break;
+		case SDLK_KP_6:
+			altKey = SDLK_RIGHT;
+			break;
+		case SDLK_KP_2:
+			altKey = SDLK_DOWN;
+			break;
+		case SDLK_UP:
+			altKey = SDLK_KP_8;
+			break;
+		case SDLK_LEFT:
+			altKey = SDLK_KP_4;
+			break;
+		case SDLK_RIGHT:
+			altKey = SDLK_KP_6;
+			break;
+		case SDLK_DOWN:
+			altKey = SDLK_KP_2;
+			break;
+		}
+
+		this->AlternativeKeyToCommandMap[altKey] = command;
+		if (bCmdUseModifier) // Support for macros
+			this->AlternativeKeyToCommandMap[BuildInputKey(ReadInputKey(altKey), false, false, true)] = command;
+	}
+}
+
+//******************************************************************************
+int CDrodScreen::GetCommandForInputKey(const InputKey inputKey) const
+{
+	std::map<InputKey, int>::const_iterator it = this->InputKeyToCommandMap.find(inputKey);
+	if (it != this->InputKeyToCommandMap.end())
+		return it->second;
+
+	std::map<InputKey, int>::const_iterator itAlternative = this->AlternativeKeyToCommandMap.find(inputKey);
+	if (itAlternative != this->AlternativeKeyToCommandMap.end())
+		return itAlternative->second;
+
+	return CMD_UNSPECIFIED;
+}
+
+//******************************************************************************
+InputKey CDrodScreen::GetInputKeyForCommand(const UINT wCommand) const
+//Returns: keysym currently set for indicated command
+{
+	for (std::map<InputKey, int>::const_iterator it = InputKeyToCommandMap.begin(); it != InputKeyToCommandMap.end(); ++it)
+		if (it->second == (int)wCommand)
+			return it->first;
+
+	ASSERT(!"Command not assigned");
+	return UNKNOWN_INPUT_KEY;
 }
 
 //*****************************************************************************
@@ -1689,7 +1820,7 @@ void CDrodScreen::ExportHold(const UINT dwHoldID)
 
 #ifndef STEAMBUILD
 	//Load graphics/music into hold for inclusion in export.
-	if (pHold->status == CDbHold::GetOfficialHoldStatus())
+	if (CDbHold::IsOfficialHold(pHold->status))
 		ImportMedia();
 #endif
 
@@ -1793,6 +1924,93 @@ void CDrodScreen::ExportHoldTexts(CDbHold *pHold)
 }
 
 //*****************************************************************************
+void CDrodScreen::ExportSaves(
+	const UINT& playerID,  //(in) player to export data for
+	const UINT& holdID,    //(in) hold to export for [default = 0]
+	const bool singleHold) //(in) export saves only for a specified hold [default=false]
+{
+	//Compile IDs of this player's saved games.
+	//The export will exclude hidden saved game records (e.g. those attached to demos, room tallies, etc.)
+	//but will include records for conquering secret rooms and ending holds.
+	CDb db;
+	db.SavedGames.FilterByPlayer(playerID);
+	db.SavedGames.FindHiddens(true);
+	if (singleHold)
+	{
+		db.SavedGames.FilterByHold(holdID);
+	}
+
+	CIDSet savedGameIDs, allSavedGameIDs = db.SavedGames.GetIDs();
+	for (CIDSet::const_iterator id = allSavedGameIDs.begin();
+		id != allSavedGameIDs.end(); ++id)
+	{
+		CDbSavedGame* pSavedGame = db.SavedGames.GetByID(*id, true);
+		if (!pSavedGame->bIsHidden ||
+			pSavedGame->eType == ST_SecretConquered ||
+			pSavedGame->eType == ST_EndHold ||
+			pSavedGame->eType == ST_HoldMastered)
+			savedGameIDs += *id;
+		delete pSavedGame;
+	}
+	if (savedGameIDs.empty()) return;
+
+	CDbPlayer* pPlayer = g_pTheDB->Players.GetByID(playerID);
+	if (!pPlayer) return;
+
+	//Quick player export if requested.
+	bool bQuickExport = false;
+	string str;
+	if (CFiles::GetGameProfileString(INISection::Customizing, INIKey::QuickPlayerExport, str))
+		bQuickExport = atoi(str.c_str()) != 0;
+	if (bQuickExport && ShowYesNoMessage(MID_ExportPlayerQuickPrompt) == TAG_YES)
+		CDbXML::info.bQuickPlayerExport = true;
+
+	//Default filename is player name.
+	WSTRING wstrExportFile = (WSTRING)pPlayer->NameText;
+	CDrodScreen::callbackContext = wstrExportFile;
+	wstrExportFile += wszSpace;
+
+	//Add hold name if exporting for single hold
+	if (singleHold)
+	{
+		CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID);
+		if (pHold)
+		{
+			WSTRING holdName(pHold->NameText);
+			static const UINT MAX_HOLD_NAME = 16;
+			if (holdName.size() <= MAX_HOLD_NAME)
+			{
+				wstrExportFile += holdName;
+			}
+			else
+			{
+				//Abbreviate by taking only the first letter from each word
+				wstrExportFile += filterFirstLettersAndNumbers(holdName);
+			}
+
+			wstrExportFile += wszSpace;
+			delete pHold;
+		}
+	}
+
+	wstrExportFile += g_pTheDB->GetMessageText(MID_Saves);
+	if (ExportSelectFile(MID_SavePlayerPath, wstrExportFile, EXT_PLAYER))
+	{
+		//Write the player saves file.
+		SetCursor(CUR_Wait);
+		Callback(MID_Exporting);
+		CDbXML::SetCallback(this);
+
+		const bool bResult = CDbXML::ExportXML(V_SavedGames, savedGameIDs,
+			wstrExportFile.c_str());
+		ExportCleanup();
+		ShowOkMessage(bResult ? MID_SavedGamesSaved : MID_PlayerFileNotSaved);
+	}
+	CDrodScreen::callbackContext.resize(0);
+	delete pPlayer;
+}
+
+//*****************************************************************************
 bool CDrodScreen::ExportSelectFile(
 //Select a file to export data to.
 //
@@ -1839,10 +2057,10 @@ void CDrodScreen::GoToBuyNow()
 //Sets the game to windowed mode and opens a browser with appropriate sell link.
 {
 	SetFullScreen(false);
-	string url = "http://www.caravelgames.com/buyTSS.html";
+	string url = "https://caravelgames.com/buyTSS.html";
 #ifdef STEAMBUILD
 	const CDbHold::HoldStatus holdStatus = CDbHolds::GetNewestInstalledOfficialHoldStatus();
-	url = "http://store.steampowered.com/app/";
+	url = "https://store.steampowered.com/app/";
 	switch (holdStatus) {
 		case CDbHold::KDD: url += "422180"; break;
 		case CDbHold::JtRH: url += "422181"; break;
@@ -1851,14 +2069,20 @@ void CDrodScreen::GoToBuyNow()
 		case CDbHold::GatEB: url += "314330"; break;
 		case CDbHold::TSS: url += "351320"; break;
 	}
+#elif defined(KDD_STANDALONE)
+	url = "https://caravelgames.com/buyKDD.html";
+#elif defined(JTRH_STANDALONE)
+	url = "https://caravelgames.com/buyJtRH.html";
+#elif defined(TCB_STANDALONE)
+	url = "https://caravelgames.com/buyTCB.html";
+#elif defined(GATEB_STANDALONE)
+	url = "https://caravelgames.com/buyGatEB.html";
 #elif defined(WIN32)
 	//use default
 #elif defined(__linux__)
-	url = "http://www.caravelgames.com/buyTSSLinux.html";
-#elif defined(__FreeBSD__)
-	url = "http://www.caravelgames.com/buyTSSFreeBSD.html";
+	url = "https://caravelgames.com/buyTSSLinux.html";
 #elif defined(__APPLE__)
-	url = "http://www.caravelgames.com/buyTSSOSX.html";
+	url = "https://caravelgames.com/buyTSSOSX.html";
 #else
 #	error Add a buy link for this platform ?
 #endif
@@ -2030,6 +2254,7 @@ bool CDrodScreen::ImportConfirm(MESSAGE_ID& result, const WSTRING* pwFilename)
 	{
 		//Not continuing import
 		CDbXML::CleanUp();
+		CDbXML::info.ClearTempFiles();
 		return false;
 	}
 
@@ -2078,8 +2303,10 @@ MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 		return MID_DROD_TCB3_3; //3.3
 	if (wVersion >= 323 && wVersion <= 400)
 		return MID_DROD_FnM;    //4.0
-	if (wVersion >= 500 && wVersion < NEXT_VERSION_NUMBER)
-		return MID_DROD_TSS;    //5.0
+	if (wVersion >= 500 && wVersion < 509)
+		return MID_DROD_TSS;    //5.0, 5.1
+	if (wVersion >= 509 && wVersion < NEXT_VERSION_NUMBER)
+		return MID_DROD_TSS5_2; //5.2
 	return MID_DROD_UnsupportedVersion; //???
 }
 
@@ -2088,7 +2315,15 @@ MESSAGE_ID CDrodScreen::GetVersionMID(const UINT wVersion)
 //        i.e., if the hold has at least this many level entrances defined, this is the full (registered) hold
 UINT CDrodScreen::EntrancesInFullVersion()
 {
+#if defined(KDD_STANDALONE) || defined(JTRH_STANDALONE)
+	return 25;
+#elif defined(TCB_STANDALONE)
+	return 45;
+#elif defined(GATEB_STANDALONE)
+	return 30;
+#else
 	return 50;
+#endif
 }
 
 //*****************************************************************************
@@ -2611,6 +2846,8 @@ void CDrodScreen::EnablePlayerSettings(
 		return;
 	}
 
+	CDbPlayer::ConvertInputSettings(pPlayer->Settings);
+
 	g_pTheSound->EnableSoundEffects(pPlayer->Settings.GetVar(Settings::SoundEffects, true));
 	g_pTheSound->SetSoundEffectsVolume(pPlayer->Settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME));
 
@@ -2625,6 +2862,9 @@ void CDrodScreen::EnablePlayerSettings(
 #else
 	SetFullScreen(pPlayer->Settings.GetVar(Settings::Fullscreen, false));
 #endif
+
+	SetResizableScreen(pPlayer->Settings.GetVar(Settings::ResizableWindow, CScreen::bAllowWindowResizing));
+
 	g_pTheBM->bAlpha = pPlayer->Settings.GetVar(Settings::Alpha, true);
 	g_pTheDBM->SetGamma(pPlayer->Settings.GetVar(Settings::Gamma, (BYTE)CDrodBitmapManager::GetGammaOne()));
 	g_pTheBM->eyeCandy = pPlayer->Settings.GetVar(Settings::EyeCandy, BYTE(Metadata::GetInt(MetaKey::MAX_EYE_CANDY)));
@@ -2633,6 +2873,15 @@ void CDrodScreen::EnablePlayerSettings(
 	//Increment number of play sessions.
 	pPlayer->Settings.SetVar(Settings::PlaySessions, pPlayer->Settings.GetVar(Settings::PlaySessions, UINT(0)) + 1);
 	pPlayer->Update();
+
+	CScreen::inputKeyFullScreen = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_ToggleFullScreen)->settingName,
+		(InputKey)SDLK_F10
+	);
+	CScreen::inputKeyScreenshot = pPlayer->Settings.GetVar(
+		InputCommands::GetKeyDefinition(InputCommands::DCMD_Screenshot)->settingName,
+		(InputKey)SDLK_F11
+	);
 
 	//RepeatRate and UndoLevel are queried in CGameScreen::ApplyPlayerSettings().
 
@@ -3025,7 +3274,7 @@ UINT CDrodScreen::ShowYesNoMessage(
 	} else {
 		//Resize width to fit text.
 		g_pTheFM->GetTextWidthHeight(F_Button, pText, wTextW, wTextH);
-		pButton->SetWidth(wTextW + CX_SPACE);
+		pButton->SetWidth(wTextW + CX_SPACE * 2);
 	}
 	pButton->SetCaption(pText);
 	pButton->SetHotkeyFromText(pText);
@@ -3040,7 +3289,7 @@ UINT CDrodScreen::ShowYesNoMessage(
 	} else {
 		//Resize width to fit text.
 		g_pTheFM->GetTextWidthHeight(F_Button, pText, wTextW, wTextH);
-		pButton->SetWidth(wTextW + CX_SPACE);
+		pButton->SetWidth(wTextW + CX_SPACE * 2);
 	}
 	pButton->SetCaption(pText);
 	pButton->SetHotkeyFromText(pText);

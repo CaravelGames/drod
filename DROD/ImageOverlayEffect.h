@@ -72,6 +72,8 @@ public:
 	UINT getInstanceID() const { return instanceID; }
 	UINT getStartTurn() const { return turnNo; }
 
+	int getGroup() const;
+
 protected:
 	virtual bool Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed);
 	virtual void Draw(SDL_Surface& destSurface);
@@ -79,13 +81,18 @@ protected:
 private:
 	bool AdvanceState(const UINT wDeltaTime);
 
+	void DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* destSurface);
+
 	Uint32 UpdateCommand(const ImageOverlayCommand& command, CommandExecution& ce, const Uint32 dwRemainingTime);
 	Uint32 UpdateParallelCommands(const Uint32 dwDeltaTime);
 	bool IsCurrentCommandFinished() const;
 	bool CanContinuePlayingEffect(const Uint32 dwRemainingTime) const;
 	bool CanLoop() const;
+	UINT GetGameTurn() const;
 	inline bool IsCommandQueueFinished() const;
 	bool IsImageDrawn();
+	bool IsRepeated() const;
+	bool IsTiled() const;
 	void PrepareDrawProperties();
 	void StartNextCommand();
 	void FinishCommand(const ImageOverlayCommand& command, const CommandExecution& ce);
@@ -102,9 +109,11 @@ private:
 
 	void PrepareAlteredImage();
 
+	SDL_Surface* TileSurface(SDL_Surface* pSurface);
+
 	long drawSequence;
 
-	SDL_Surface *pImageSurface, *pAlteredSurface;
+	SDL_Surface *pImageSurface, *pAlteredSurface, *pTiledSurface;
 	bool bPrepareAlteredImage;
 
 	int x, y; // Real position of the image
@@ -112,6 +121,8 @@ private:
 	int angle;
 	int scale;
 	int jitter;
+	int xTile, yTile;
+	int repetitions, xRepeatOffset, yRepeatOffset;
 	SDL_Rect sourceClipRect;
 
 	// Properties used for the drawing
@@ -123,13 +134,13 @@ private:
 	ImageOverlayCommands commands;
 	UINT index;
 	int loopIteration, maxLoops;
-	Uint32 startOfNextEffect;
+	Uint32 startOfNextEffect, endTime;
 
 	CommandExecution executionState;
 	vector<ParallelCommand> parallelCommands;
 
 	CRoomWidget *pRoomWidget;
-	UINT turnNo;
+	UINT turnNo, endTurn;
 
 	UINT instanceID; //for merging effect sets during play after move undo/checkpoint restore
 };

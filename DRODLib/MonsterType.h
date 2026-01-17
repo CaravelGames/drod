@@ -74,6 +74,10 @@ enum MONSTERTYPE {
 	M_BEETHRO_IN_DISGUISE,
 	M_GUNTHRO,
 
+	//Pseudo-types for tile selection command
+	M_SELECT_SQUARE,
+	M_SELECT_SQUARE_RESTRICTED,
+
 	CHARACTER_TYPES,
 
 	CUSTOM_CHARACTER_FIRST=20000, //for custom character IDs
@@ -307,7 +311,7 @@ static inline bool bIsVulnerableToBodyAttack(const UINT mt) {
 static inline bool bCanFluffKill(const UINT mt) {
 	switch(mt) {
 		case M_ROCKGOLEM: case M_ROCKGIANT: case M_CONSTRUCT:
-		case M_GENTRYII: case M_FLUFFBABY: case M_SEEP:
+		case M_GENTRYII: case M_FLUFFBABY:
 			return false;
 		default:
 			return true;
@@ -323,6 +327,10 @@ static inline bool bMonsterCanActivateCheckpoint(const UINT mt) {
 		default:
 			return false;
 	}
+}
+
+static inline bool bIsSelectSquare(const UINT mt) {
+	return mt == M_SELECT_SQUARE || mt == M_SELECT_SQUARE_RESTRICTED;
 }
 
 #endif

@@ -66,10 +66,12 @@ struct streamingOutParams
 	streamingOutParams()
 		: pOutBuffer(NULL)
 		, pGzf(NULL)
+		, hasFlushed(false)
 	{ }
 	void reset() {
 		pOutBuffer = NULL;
 		pGzf = NULL;
+		hasFlushed = false;
 	}
 	void set(string* str, gzFile* gzf)
 	{
@@ -80,6 +82,7 @@ struct streamingOutParams
 
 	string* pOutBuffer;
 	gzFile* pGzf;
+	bool hasFlushed;
 };
 
 //*****************************************************************************
@@ -153,6 +156,9 @@ private:
 
 	static void ImportSavedGames();
 	static void VerifySavedGames();
+
+	static WSTRING prepareTemporaryFile(const WCHAR* wszFilename, const WSTRING& holdName);
+	static gzFile openGZipFile(const WCHAR* wszFilename);
 
 	static vector <CDbBase*> dbRecordStack;   //stack of records being parsed
 	static vector <UINT> dbImportedRecordIDs;  //imported record IDs (primary keys)

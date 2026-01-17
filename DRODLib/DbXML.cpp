@@ -40,6 +40,7 @@
 #include <BackEndLib/Ports.h>
 
 #include <cstdio>
+#include <ctime>
 
 const char gzID[] = "\x1f\x8b"; //gzip file header id
 const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
@@ -69,6 +70,9 @@ bool bImportComplete = false;
 
 const char szDRODVersion[] = "Version";
 static const char szDRODHeaderInfo[] = "Info";
+
+const WCHAR szTempDemoFilename[] = WS("exportedDemos.demo");
+const WCHAR szTempSavedGamesFilename[] = WS("exportedSavedGames.player");
 
 struct roomSet {
 	CIDSet conquered, explored;
@@ -297,6 +301,17 @@ void InitTokens()
 			propMap[string(propTypeStr[pType])] = pType;
 }
 
+//*****************************************************************************
+UINT getExportThreshold(const char* pszKey, UINT fallback)
+{
+	string str;
+	if (CFiles::GetGameProfileString(INISection::Customizing, pszKey, str)) {
+		return std::stoi(str);
+	}
+
+	return fallback;
+}
+
 //If buffer has more data than indicated amount, flush it to the file.
 bool streamingOutParams::flush(const ULONG maxSizeThreshold) //[default=0]
 {
@@ -307,6 +322,7 @@ bool streamingOutParams::flush(const ULONG maxSizeThreshold) //[default=0]
 
 		const ULONG bytesWritten = gzwrite(*this->pGzf, (const BYTE*)pOutBuffer->c_str(), (unsigned int)srcLen);
 		pOutBuffer->erase(0, bytesWritten);
+		hasFlushed = true;
 		return bytesWritten == srcLen;
 	}
 	return true; //no-op
@@ -1265,22 +1281,32 @@ bool CDbXML::ExportSavedGames(
 	const UINT dwHoldID)   //(in) hold to export saved games from
 {
 	ASSERT(dwHoldID);
-
 	bool bSomethingExported = false;
 	CAttachableObject *pSaveCallbackObject = pCallbackObject;   //don't reset this
+	WSTRING holdName = filterFirstLettersAndNumbers(g_pTheDB->Holds.GetHoldName(dwHoldID));
 
 	//Compile list of all (non-hidden) demo IDs in hold.
 	//The demo export will include saved game records attached to demos.
 	CIDSet demoIDs = CDb::getDemosInHold(dwHoldID);
 
-	bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemos);
+	if (demoIDs.size() <= getExportThreshold(INIKey::ExportDemoThreshold, 500)) {
+		bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemos);
+	} else {
+		info.exportedDemosFile = prepareTemporaryFile(szTempDemoFilename, holdName);
+		bSomethingExported |= ExportXML(V_Demos, demoIDs, info.exportedDemosFile.c_str());
+	}
 	pCallbackObject = pSaveCallbackObject;
 
 	//Compile list of all saved game IDs in hold.
 	//The saved game export will exclude saved game records attached to demos.
 	CIDSet savedGameIDs = CDb::getSavedGamesInHold(dwHoldID);
 
-	bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGames);
+	if (savedGameIDs.size() <= getExportThreshold(INIKey::ExportSavedGamesThreshold, 1000)) {
+		bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGames);
+	} else {
+		info.exportedSavedGamesFile = prepareTemporaryFile(szTempSavedGamesFilename, holdName);
+		bSomethingExported |= ExportXML(V_SavedGames, savedGameIDs, info.exportedSavedGamesFile.c_str());
+	}
 	pCallbackObject = pSaveCallbackObject;
 
 	return bSomethingExported;
@@ -1303,6 +1329,10 @@ void CDbXML::ImportSavedGames()
 	if (info.exportedDemos.size()) {
 		VERIFY(ImportXML(info.exportedDemos) == MID_ImportSuccessful);
 		info.exportedDemos.resize(0);
+	} else if (!info.exportedDemosFile.empty() &&
+		CFiles::DoesFileExist(info.exportedDemosFile.c_str())) {
+		importBuf.clear();
+		VERIFY(ImportXML(info.exportedDemosFile.c_str(), CImportInfo::Demo) == MID_ImportSuccessful);
 	}
 
 	info.ImportStatus = importState; //ignore import state changes in saved game restoration
@@ -1310,8 +1340,13 @@ void CDbXML::ImportSavedGames()
 	if (info.exportedSavedGames.size()) {
 		VERIFY(ImportXML(info.exportedSavedGames) == MID_ImportSuccessful);
 		info.exportedSavedGames.resize(0);
+	} else if (!info.exportedSavedGamesFile.empty() &&
+		CFiles::DoesFileExist(info.exportedSavedGamesFile.c_str())) {
+		importBuf.clear();
+		VERIFY(ImportXML(info.exportedSavedGamesFile.c_str(), CImportInfo::SavedGame) == MID_ImportSuccessful);
 	}
 
+	info.ClearTempFiles();
 	info.typeBeingImported = importType;
 	info.ImportStatus = importState;
 	info.bImportingSavedGames = false;
@@ -1734,9 +1769,6 @@ MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 		PerformCallback(MID_ImportingData);
 		VERIFY(XML_ParserReset(parser, NULL) == XML_TRUE);
 
-		importBuf.closeStream();
-		VERIFY(importBuf.initStream() == MID_Success); //reset and reinitialize compression object for second pass
-
 		Import_ParseRecords(xml);
 
 		//Free parser.
@@ -1757,7 +1789,15 @@ MESSAGE_ID CDbXML::ImportXML(const string& xml) //(in) string of XML text
 //*****************************************************************************
 MESSAGE_ID CDbXML::ImportXML()
 {
-	info.ImportStatus = ImportXML(&importBuf);
+	if (importBuf.uncompressedBuffer && !importBuf.compressedBuffer) {
+		//Everything is already uncompressed, so go through the string-based version
+		//of ImportXML.
+		BYTE* bytes = (BYTE*)importBuf.uncompressedBuffer;
+		std::string xml((char*)bytes);
+		info.ImportStatus = ImportXML(xml);
+	} else {
+		info.ImportStatus = ImportXML(&importBuf);
+	}
 
 	//Clean up.
 	//If an import is interrupted in the middle by a request for user input,
@@ -2367,14 +2407,8 @@ bool CDbXML::ExportXML(
 	{
 		string text; //only in scope until compressed
 
-#ifdef DROD_VERSION_5_2 //new export file format, not readable in previous game builds -- remove this guard for 5.2
 		// Compress the data in gzip format (previously, zlib format w/ stretchy buffer encoding).
-#ifdef WIN32
-		gzFile gzf = gzopen_w(wszFilename, "wb");
-#else
-		const string filename = UnicodeToUTF8(wszFilename);
-		gzFile gzf = gzopen(filename.c_str(), "wb");
-#endif
+		gzFile gzf = openGZipFile(wszFilename);
 
 		CDbXML::streamingOut.set(&text, &gzf);
 		if (!ExportXML(vType, primaryKeys, text))
@@ -2393,42 +2427,6 @@ bool CDbXML::ExportXML(
 
 		bRes = success && closeval == 0;
 	}
-#else //pre 5.2 -- delete this section's code when moving to 5.2
-		if (!ExportXML(vType, primaryKeys, text))
-			return false;
-
-		g_pTheDB->Close(); //reset memory used by DB during export lookups
-		g_pTheDB->Open();
-
-		// Compress the data.  Output to specified file.
-		const ULONG srcLen = (ULONG)(text.size() * sizeof(char));
-		const uLongf max_size_needed = compressBound(srcLen);
-		const uLongf min_size_to_attempt = max_size_needed / 10;
-
-		destLen = max_size_needed;
-		do {
-			try {
-				dest = new BYTE[destLen];
-			}
-			catch (std::bad_alloc&) {
-				//try again with smaller buffer
-				destLen = uLongf(destLen * 0.9f);
-			}
-		} while (!dest && destLen > min_size_to_attempt);
-		if (!dest)
-			return false;
-
-		const int res = compress(dest, &destLen, (const BYTE*)text.c_str(), srcLen);
-		bRes = res == Z_OK;
-	}
-	if (bRes)
-	{
-		CStretchyBuffer buffer(dest, destLen); //no terminating null
-		buffer.Encode();
-		bRes = CFiles::WriteBufferToFile(wszFilename, buffer);
-	}
-	delete[] dest;
-#endif
 
 	return bRes;
 }
@@ -2486,7 +2484,7 @@ bool CDbXML::ExportXML(
 	}
 
 	pCallbackObject = NULL; //release hook
-	bSomethingExported = (text.size() > headerSize);
+	bSomethingExported = (text.size() > headerSize) || CDbXML::streamingOut.hasFlushed;
 
 	text += getXMLfooter();
 
@@ -2592,4 +2590,36 @@ bool CDbXML::ExportXMLRecords(
 		}
 	}
 	return true;
+}
+
+//*****************************************************************************
+WSTRING CDbXML::prepareTemporaryFile(const WCHAR* wszFilename, const WSTRING& holdName)
+//Returns: Path for a temporary export file
+//Will erase any existing file of that name
+{
+	WSTRING filePath = CFiles::GetDatPath();
+	filePath += wszSlash;
+	filePath += wszTilde;
+	filePath += holdName;
+	filePath += wszHyphen; 
+	filePath += to_WSTRING(std::time(NULL));
+	filePath += wszHyphen;
+	filePath += wszFilename;
+
+	if (CFiles::DoesFileExist(filePath.c_str())) {
+		CFiles::EraseFile(filePath.c_str());
+	}
+
+	return filePath;
+}
+
+//*****************************************************************************
+gzFile CDbXML::openGZipFile(const WCHAR* wszFilename)
+{
+#ifdef WIN32
+	return gzopen_w(wszFilename, "wb");
+#else
+	const string filename = UnicodeToUTF8(wszFilename);
+	return gzopen(filename.c_str(), "wb");
+#endif
 }

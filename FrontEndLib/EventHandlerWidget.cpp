@@ -45,6 +45,7 @@
 SDL_KeyboardEvent m_RepeatingKey; //Will be initialized in constructor.
 UINT              m_dwLastKeyDown = 0;
 UINT              m_dwLastKeyRepeat = 0;
+UINT              m_dwKeyRepeatStart = 0;
 UINT              m_dwLastUserInput = 0;
 
 //************************************************************************************
@@ -641,7 +642,7 @@ void CEventHandlerWidget::Activate_HandleKeyDown(
 	//if user holds the key down long enough.
 	if (KeyboardEvent.repeat != 0)
 		return; //we're implementing our own key repeat logic here
-	m_dwLastUserInput = m_dwLastKeyDown = SDL_GetTicks();
+	m_dwKeyRepeatStart = m_dwLastUserInput = m_dwLastKeyDown = SDL_GetTicks();
 	m_dwLastKeyRepeat = m_dwLastKeyDown;
 	m_RepeatingKey = KeyboardEvent;
 	
@@ -1203,4 +1204,10 @@ UINT CEventHandlerWidget::GetHotkeyTag(
 
 	//No hotkey mappings found for this key.
 	return wTag;
+}
+
+//***************************************************************************
+Uint32 CEventHandlerWidget::GetKeyRepeatDuration() const
+{
+	return m_dwKeyRepeatStart ? SDL_GetTicks() - m_dwKeyRepeatStart : 0;
 }

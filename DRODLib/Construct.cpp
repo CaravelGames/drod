@@ -104,7 +104,8 @@ const
 
 	//Can only move onto attackable monsters.
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
-	if (pMonster && !pMonster->IsAttackableTarget() && pMonster->wType != M_FLUFFBABY){
+	if (pMonster && (!pMonster->IsAttackableTarget() || !pMonster->IsVulnerableToBodyAttack())
+		&& pMonster->wType != M_FLUFFBABY){
 		const int dx = (int)wCol - (int)this->wX;
 		const int dy = (int)wRow - (int)this->wY;
 		if (!pMonster->IsPushableByBody() || !room.CanPushMonster(pMonster, wCol, wRow, wCol + dx, wRow + dy)){
@@ -232,6 +233,9 @@ void CConstruct::Process(
 		UINT tTile = room.GetTSquare(this->wX, this->wY);
 		if (bIsTLayerCoveringItem(tTile))
 			room.PushTLayerObject(this->wX, this->wY, this->wX + dx, this->wY + dy, CueEvents);
+		//If another monster was pushed, the destination tile may have fallen
+		if (this->bPushedOtherMonster)
+			room.CheckForFallingAt(this->wX, this->wY, CueEvents);
 	}
 }
 

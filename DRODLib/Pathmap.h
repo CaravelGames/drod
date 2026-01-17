@@ -58,6 +58,7 @@
 #define DMASK_SW   0x20
 #define DMASK_W    0x40
 #define DMASK_NW   0x80
+#define DMASK_SEMI 0x100
 #define DMASK_ALL  0xff
 
 //Path map square that contains only information needed for determining paths.
@@ -86,9 +87,14 @@ public:
 		: wX(wX), wY(wY), wMoves(wMoves), dwScore(dwScore) { }
 	UINT wX, wY, wMoves;
 	UINT dwScore;
-	bool operator <(const SORTPOINT& rhs) const { return this->dwScore >= rhs.dwScore; }
+	bool operator <(const SORTPOINT& rhs) const { return this->dwScore > rhs.dwScore; }
 };
 typedef std::vector<SORTPOINT> SORTPOINTS;
+
+struct CompareEntrances {
+		bool operator()(const SORTPOINT& lhs, const SORTPOINT& rhs);
+};
+typedef std::priority_queue<SORTPOINT, SORTPOINTS, CompareEntrances> SortedEntrances;
 
 class CCoord;
 class CPathMap
@@ -97,12 +103,14 @@ public:
 	CPathMap(const UINT wCols, const UINT wRows,
 			const UINT xTarget=(UINT)-1, const UINT yTarget=(UINT)-1,
 			const UINT dwPathThroughObstacleCost=(UINT)-1,
-			const bool bSupportPartialObstacles=false);
+			const bool bSupportPartialObstacles=false,
+			const bool bMakeSubPath=false);
 	CPathMap(const CPathMap &Src) {SetMembers(Src);}
 	CPathMap &operator= (const CPathMap &Src) {
 		SetMembers(Src);
 		return *this;
 	}
+	~CPathMap();
 
 	void CalcPaths();
 	void GetDebugOutput(bool bShowDirection, bool bShowState, bool bShowDistance,
@@ -127,7 +135,7 @@ private:
 	std::priority_queue<SORTPOINT> recalcSquares;
 
 	//closest entrance squares to target
-	std::priority_queue<SORTPOINT> entrySquares;
+	SortedEntrances entrySquares;
 
 	//This value is set for use when no obstacle-free path to the target exists,
 	//but a mostly-valid path needs to be calculated anyway.
@@ -136,6 +144,10 @@ private:
 	//Support force arrows, orthosquares, etc. If false (default), these are
 	//treated as full obstacles.
 	bool bSupportPartialObstacles;
+
+	//Optional sub path to calculate secondary path values
+	//Currently only used for semi-obstacle scoring
+	CPathMap* subPath = NULL;
 };
 
 #endif //...#ifndef PATHMAP_H

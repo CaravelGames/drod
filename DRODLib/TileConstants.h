@@ -199,7 +199,8 @@ static inline bool IsValidTileNo(const UINT t) {return t < TILE_COUNT;}
 #define T_PLATE_ON_OFF (UINT(-55))
 #define T_REMOVE_FLOOR_ITEM (UINT(-56))
 #define T_ORB_NORMAL (UINT(-57))
-#define LAST_FAKE_TILE_INDEX (UINT(-57))
+#define T_REMOVE_TRANSPARENT (UINT(-58))
+#define LAST_FAKE_TILE_INDEX (UINT(-58))
 
 static inline bool bIsFakeTokenType(const UINT t) { return t >= T_TOKEN_RESERVED_SPACE && t <= T_ACTIVETOKEN; }
 static inline bool bIsFakeOrbType(const UINT t) { return t == T_ORB_CRACKED || t == T_ORB_BROKEN || t == T_ORB_NORMAL; }
@@ -295,6 +296,7 @@ static inline bool bIsWall(const UINT t) {
 }
 
 static inline bool bIsCrumblyWall(const UINT t) {return t==T_WALL_B || t==T_WALL_H;}
+static inline bool bIsAnyWall(const UINT t) {return bIsWall(t) || bIsCrumblyWall(t); }
 
 static inline bool bIsStairs(const UINT t) {return t==T_STAIRS || t==T_STAIRS_UP;}
 
@@ -330,6 +332,21 @@ static inline UINT getToggledForceArrow(const UINT t) {
 		case T_ARROW_OFF_N:  return T_ARROW_N;
 
 		default: return T_EMPTY;
+	}
+}
+
+static inline UINT getForceArrowDirection(const UINT t) {
+	switch (t) {
+		case T_ARROW_NE: return NE;
+		case T_ARROW_E:  return E;
+		case T_ARROW_SE: return SE;
+		case T_ARROW_S:  return S;
+		case T_ARROW_SW: return SW;
+		case T_ARROW_W:  return W;
+		case T_ARROW_NW: return NW;
+		case T_ARROW_N:  return N;
+
+		default: return NO_ORIENTATION;
 	}
 }
 
@@ -514,8 +531,9 @@ static inline bool IsMonsterTileNo(const UINT t) {return t>=TILE_COUNT && t<TOTA
 #define T_NOMONSTER           (TOTAL_TILE_COUNT + 1)  //for erasing monsters only
 #define T_EMPTY_F             (TOTAL_TILE_COUNT + 2)  //for erasing f-layer objects only
 #define T_GENTRYII_CHAIN      (TOTAL_TILE_COUNT + 3)  //for having different placement rules than gentryii head
+#define T_EMPTY_TRANSPARENT   (TOTAL_TILE_COUNT + 4)  //for erasing t-layer objects only
 
-#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 4)
+#define TOTAL_EDIT_TILE_COUNT (TOTAL_TILE_COUNT + 5)
 
 enum TILELAYERS {
 	LAYER_OPAQUE = 0,
@@ -688,7 +706,8 @@ static const UINT TILE_LAYER[TOTAL_EDIT_TILE_COUNT] =
 	LAYER_MONSTER, //T_SWORDSMAN     TOTAL+0
 	LAYER_MONSTER, //T_NOMONSTER     TOTAL+1
 	LAYER_FLOOR,   //T_EMPTY_F       TOTAL+2
-	LAYER_MONSTER  //T_NOMONSTER     TOTAL+3
+	LAYER_MONSTER, //T_NOMONSTER     TOTAL+3
+	LAYER_TRANSPARENT, //T_EMPTY_TRANSPARENT TOTAL+4
 };
 
 static const UINT TILE_MID[TOTAL_EDIT_TILE_COUNT] =
@@ -862,6 +881,8 @@ static inline UINT getBuildMarkerTileMID(const UINT wTile){
 		case T_EMPTY: return MID_RemoveItem;
 		case T_REMOVE_FLOOR_ITEM: return MID_RemoveFloorLayer;
 		case T_EMPTY_F: return MID_RemoveFloorLayer;
+		case T_REMOVE_TRANSPARENT: return MID_RemoveTransparentLayer;
+		case T_EMPTY_TRANSPARENT: return MID_RemoveTransparentLayer;
 		case T_REMOVE_OVERHEAD_IMAGE: return MID_RemoveOverheadImage;
 		default: return TILE_MID[wTile];
 	}
@@ -911,6 +932,9 @@ static inline UINT bConvertFakeElement(const UINT t) {
 	}
 	if (t == T_REMOVE_FLOOR_ITEM){
 		return T_EMPTY_F;
+	}
+	if (t == T_REMOVE_TRANSPARENT) {
+		return T_EMPTY_TRANSPARENT;
 	}
 	return t;
 }

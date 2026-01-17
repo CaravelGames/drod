@@ -37,6 +37,18 @@
 //
 
 //*****************************************************************************************
+bool CSeep::CanPushOntoOTile(const UINT wTile) const
+//Override for Seep
+{
+	//Seep can be pushed onto wall and door tiles
+	if (bIsDoor(wTile) || bIsWall(wTile) || bIsCrumblyWall(wTile)) {
+		return true;
+	}
+
+	return CMonster::CanPushOntoOTile(wTile);
+}
+
+//*****************************************************************************************
 bool CSeep::KillIfOutsideWall(CCueEvents &CueEvents)
 //Kill the monster if outside wall.
 {

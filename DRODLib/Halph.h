@@ -47,7 +47,9 @@ public:
 	virtual bool IsTileObstacle(const UINT wTileNo) const;
 	virtual void Process(const int nLastCommand, CCueEvents &CueEvents);
 
+	CCoord GetCurrentGoal() const;
 	bool GetPathTo(CCueEvents &CueEvents, const CCoordSet &adjDests, const CCoordSet *pDirectDests=NULL);
+	CCoord GetLatestRequest() const;
 	virtual bool IsAggressive() const {return false;}
 	virtual bool IsFriendly() const {return true;}
 	bool IsOpeningDoorAt(const CCoordSet& doorSquares) const;
@@ -77,6 +79,7 @@ private:
 	bool bPlateIsGoal; //Whether a Plate or an Orb is the current striking goal
 	CCoord orbLocation; //Exact location of the chosen orb/plate (used to determine whether goal is still valid)
 	CCoord openingDoorAt;
+	CCoord latestRequest; //Most recent door the player requested opened (for front end)
 	CCoordSet originSquare;
 	CCoordSet orbsToHit, platesToDepress;  //set of possible destination orbs/plates
 };

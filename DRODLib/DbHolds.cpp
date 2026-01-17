@@ -1497,19 +1497,26 @@ void CDbHolds::CheckForVarRefs(
 				AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
 		break;
 		case CCharacterCommand::CC_VarSet:
+		case CCharacterCommand::CC_VarSetAt:
 		case CCharacterCommand::CC_WaitForVar:
+		case CCharacterCommand::CC_ArrayVarSet:
+		case CCharacterCommand::CC_ArrayVarSetAt:
+		case CCharacterCommand::CC_ClearArrayVar:
+		case CCharacterCommand::CC_WaitForArrayEntry:
+		case CCharacterCommand::CC_CountArrayEntries:
 		{
 			if (bChallenges)
 				break;
 
+			UINT refVarID = c.getVarID();
 			const WCHAR *pVarName;
 			WSTRING wstr;
-			if (c.x >= (UINT)ScriptVars::FirstPredefinedVar)
+			if (refVarID >= (UINT)ScriptVars::FirstPredefinedVar)
 			{
-				wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(c.x));
+				wstr = ScriptVars::getVarNameW(ScriptVars::Predefined(refVarID));
 				pVarName = wstr.c_str();
 			} else {
-				pVarName = pHold->GetVarName(c.x);
+				pVarName = pHold->GetVarName(refVarID);
 			}
 
 			AddScriptVarRef(varMap, pVarName, pRoom, pCharacter, characterName);
@@ -1538,7 +1545,7 @@ void CDbHolds::CheckForVarRefs(
 					break;
 					default: break;
 				}
-			} else {
+			} else if (c.command == CCharacterCommand::CC_WaitForVar) {
 				switch (c.y)
 				{
 					case ScriptVars::Equals:
@@ -1563,6 +1570,20 @@ void CDbHolds::CheckForVarRefs(
 			}
 		}
 		break;
+		case CCharacterCommand::CC_WaitForExpression:
+		{
+			//Search for a variable name in the expression.
+			if (!c.label.empty())
+			{
+				//parse expression
+				ScriptVars::Predefined varID = ScriptVars::parsePredefinedVar(c.label);
+				if (varID != ScriptVars::P_NoVar || pHold->GetVarID(c.label.c_str()))
+				{
+					//Mark reference to variable.
+					AddScriptVarRef(varMap, c.label.c_str(), pRoom, pCharacter, characterName);
+				}
+			}
+		}
 		default: break;
 	}
 }
@@ -1737,7 +1758,17 @@ CDbHold::~CDbHold()
 //Returns: the official hold status code for this game release
 CDbHold::HoldStatus CDbHold::GetOfficialHoldStatus()
 {
+#ifdef KDD_STANDALONE
+	return KDD;
+#elif defined (JTRH_STANDALONE)
+	return JtRH;
+#elif defined (TCB_STANDALONE)
+	return TCB;
+#elif defined (GATEB_STANDALONE)
+	return GatEB;
+#else
 	return TSS;
+#endif
 }
 
 //*****************************************************************************
@@ -1902,7 +1933,8 @@ bool CDbHold::IsVarNameGoodSyntax(const WCHAR* pName)
 {
 	if (!pName)
 		return false;
-	if (!iswalpha(*pName) && *pName != W_t('.')) //first char must be a letter or period
+	//first char must be a letter, period, hash or at symbol
+	if (!(iswalpha(*pName) || *pName == W_t('.') || *pName == W_t('#') || *pName == W_t('@')))
 		return false;
 	++pName;
 	while (WCv(*pName))
@@ -2417,6 +2449,8 @@ bool CDbHold::LoadVars(
 		//In-play optimization: not kept current during hold var editing
 		if (ScriptVars::IsCharacterLocalVar(name))
 			this->localScriptVars[varID] = name;
+		if (ScriptVars::IsCharacterArrayVar(name))
+			this->arrayScriptVars[varID] = name;
 	}
 
 	return true;
@@ -3070,6 +3104,14 @@ void CDbHold::MarkDataForDeletion(const UINT dataID)
 }
 
 //*****************************************************************************
+void CDbHold::UnmarkDataForDeletion(const UINT dataID)
+//Keep track of data IDs so that data object is deleted if Update is called.
+{
+	if (dataID)
+		this->deletedDataIDs.erase(std::remove(this->deletedDataIDs.begin(), this->deletedDataIDs.end(), dataID), this->deletedDataIDs.end());
+}
+
+//*****************************************************************************
 void CDbHold::MarkSpeechForDeletion(
 //Keep track of speech IDs so that speech object is deleted if Update is called.
 //
@@ -3222,6 +3264,7 @@ bool CDbHold::SetMembers(
 	}
 	this->vars = Src.vars;
 	this->localScriptVars = Src.localScriptVars;
+	this->arrayScriptVars = Src.arrayScriptVars;
 	this->worldMaps = Src.worldMaps;
 	for (vector<HoldCharacter*>::const_iterator chIter = Src.characters.begin();
 			chIter != Src.characters.end(); ++chIter)
@@ -3874,9 +3917,11 @@ void CDbHold::SaveCharacters(
 
 			//Repack the script, saving any owned data objects.
 			const UINT processingSequence_ = ch.ExtraVars.GetVar(ParamProcessSequenceStr, SPD_CHARACTER);
+			const UINT speechColor_ = ch.ExtraVars.GetVar(ParamSpeechColorStr, 0);
 			ch.ExtraVars.Clear();
 			ch.ExtraVars.SetVar(scriptIDstr, ch.dwScriptID);
 			ch.ExtraVars.SetVar(ParamProcessSequenceStr, processingSequence_);
+			ch.ExtraVars.SetVar(ParamSpeechColorStr, speechColor_);
 			CCharacter::SaveCommands(ch.ExtraVars, *ch.pCommands);
 
 			//Now the working copy of the default script can be cleared.
@@ -4114,6 +4159,7 @@ void CDbHold::Clear()
 	ClearEntrances();
 	this->vars.clear();
 	this->localScriptVars.clear();
+	this->arrayScriptVars.clear();
 
 	for (vector<HoldCharacter*>::iterator chIt=this->characters.begin();
 			chIt!=this->characters.end(); ++chIt)

@@ -27,13 +27,17 @@
 #ifndef GAMECONSTANTS_H
 #define GAMECONSTANTS_H
 
+#include <BackEndLib/InputKey.h>
 #include <BackEndLib/MessageIDs.h>
 #include <BackEndLib/Types.h>
 #include <BackEndLib/UtilFuncs.h>
 #include <BackEndLib/Wchar.h>
 #include <BackEndLib/Ports.h>
 
+#include "../Texts/MIDs.h"
+
 #include <SDL.h>
+#include <unordered_map>
 
 //Global app parameters.
 extern const char szCompanyName[];
@@ -74,7 +78,9 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_ANSWER    (22)
 #define CMD_EXEC_COMMAND (23)
 #define CMD_SETVAR    (24) //tracks vars altered through the playtest/cheat terminal popup
-#define COMMAND_COUNT (25)
+#define CMD_EXEC_COMMAND_TWO (25)
+#define CMD_EXEC_COMMAND_THREE (26)
+#define COMMAND_COUNT (27)
 #define CMD_ADVANCE_CUTSCENE (COMMAND_COUNT+1) //access hook for front end call only
 #define CMD_BATTLE_KEY (COMMAND_COUNT+2)       //access hook for front end processing only
 #define CMD_BUMP_N (COMMAND_COUNT+3)           //bump commands for Temporal Splits only
@@ -86,6 +92,70 @@ extern const WCHAR wszVersionReleaseNumber[];
 #define CMD_BUMP_SE (COMMAND_COUNT+9)
 #define CMD_BUMP_NW (COMMAND_COUNT+10)
 #define CMD_ESCAPE (COMMAND_COUNT+11) // Used only in front end for tracking wish to exit game
+
+// Access hooks for front end options
+#define CMD_EXTRA_LOCK_ROOM (COMMAND_COUNT+12)
+#define CMD_EXTRA_SKIP_SPEECH (COMMAND_COUNT+13)
+#define CMD_EXTRA_TOGGLE_PUZZLE_MODE (COMMAND_COUNT+14)
+#define CMD_EXTRA_TOGGLE_FULL_SCREEN (COMMAND_COUNT+15)
+#define CMD_EXTRA_SCREENSHOT (COMMAND_COUNT+16)
+#define CMD_EXTRA_SAVE_ROOM_IMAGE (COMMAND_COUNT+17)
+#define CMD_EXTRA_STATS (COMMAND_COUNT+18)
+#define CMD_EXTRA_CHAT_HISTORY (COMMAND_COUNT+19)
+#define CMD_EXTRA_PUZZLE_MODE_OPTIONS (COMMAND_COUNT+20)
+#define CMD_EXTRA_TOGGLE_TURN_COUNT (COMMAND_COUNT+21)
+#define CMD_EXTRA_QUICK_DEMO_RECORD (COMMAND_COUNT+22)
+#define CMD_EXTRA_TOGGLE_DEMO_RECORD (COMMAND_COUNT+23)
+#define CMD_EXTRA_WATCH_DEMOS (COMMAND_COUNT+24)
+#define CMD_EXTRA_EDITOR_CUT (COMMAND_COUNT+25)
+#define CMD_EXTRA_EDITOR_COPY (COMMAND_COUNT+26)
+#define CMD_EXTRA_EDITOR_PASTE (COMMAND_COUNT+27)
+#define CMD_EXTRA_EDITOR_UNDO (COMMAND_COUNT+28)
+#define CMD_EXTRA_EDITOR_REDO (COMMAND_COUNT+29)
+#define CMD_EXTRA_EDITOR_DELETE (COMMAND_COUNT+30)
+#define CMD_EXTRA_EDITOR_PLAYTEST_ROOM (COMMAND_COUNT+31)
+#define CMD_EXTRA_EDITOR_REFLECT_X (COMMAND_COUNT+32)
+#define CMD_EXTRA_EDITOR_REFLECT_Y (COMMAND_COUNT+33)
+#define CMD_EXTRA_EDITOR_SET_FLOOR_IMAGE (COMMAND_COUNT+34)
+#define CMD_EXTRA_EDITOR_SET_OVERHEAD_IMAGE (COMMAND_COUNT+35)
+#define CMD_EXTRA_EDITOR_PREV_LEVEL (COMMAND_COUNT+36)
+#define CMD_EXTRA_EDITOR_NEXT_LEVEL (COMMAND_COUNT+37)
+#define CMD_EXTRA_EDITOR_LOG_VAR_REFS (COMMAND_COUNT+38)
+#define CMD_EXTRA_EDITOR_LOG_CHALLENGE_REFS (COMMAND_COUNT+39)
+#define CMD_EXTRA_EDITOR_HOLD_STATS (COMMAND_COUNT+40)
+#define CMD_EXTRA_EDITOR_LEVEL_STATS (COMMAND_COUNT+41)
+#define CMD_EXTRA_SHOW_HELP (COMMAND_COUNT+42)
+#define CMD_EXTRA_TOGGLE_HOLD_VARS (COMMAND_COUNT+43)
+#define CMD_EXTRA_TOGGLE_FRAME_RATE (COMMAND_COUNT+44)
+#define CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT (COMMAND_COUNT+45)
+#define CMD_EXTRA_SETTINGS (COMMAND_COUNT+46)
+#define CMD_EXTRA_RELOAD_STYLE (COMMAND_COUNT+47)
+#define CMD_EXTRA_LOG_VARS (COMMAND_COUNT+48)
+#define CMD_EXTRA_SCRIPT_SELECT_ALL (COMMAND_COUNT+49)
+#define CMD_EXTRA_SCRIPT_TO_TEXT (COMMAND_COUNT+50)
+#define CMD_EXTRA_SCRIPT_FROM_TEXT (COMMAND_COUNT+51)
+#define CMD_EXTRA_SCRIPT_ADD_COMMAND (COMMAND_COUNT+52)
+#define CMD_EXTRA_SCRIPT_CHAR_OPTIONS (COMMAND_COUNT+53)
+#define EXTRA_COMMAND_COUNT (COMMAND_COUNT+54)
+
+// Hardcoded commands used by DemoScreen that cannot be remapped
+#define CMD_DEMO_SEEK_010 (EXTRA_COMMAND_COUNT + 1)
+#define CMD_DEMO_SEEK_020 (EXTRA_COMMAND_COUNT + 2)
+#define CMD_DEMO_SEEK_030 (EXTRA_COMMAND_COUNT + 3)
+#define CMD_DEMO_SEEK_040 (EXTRA_COMMAND_COUNT + 4)
+#define CMD_DEMO_SEEK_050 (EXTRA_COMMAND_COUNT + 5)
+#define CMD_DEMO_SEEK_060 (EXTRA_COMMAND_COUNT + 6)
+#define CMD_DEMO_SEEK_070 (EXTRA_COMMAND_COUNT + 7)
+#define CMD_DEMO_SEEK_080 (EXTRA_COMMAND_COUNT + 8)
+#define CMD_DEMO_SEEK_090 (EXTRA_COMMAND_COUNT + 9)
+#define CMD_DEMO_SEEK_100 (EXTRA_COMMAND_COUNT + 10)
+#define CMD_DEMO_NEXT (EXTRA_COMMAND_COUNT + 11)
+#define CMD_DEMO_PREV (EXTRA_COMMAND_COUNT + 12)
+#define CMD_DEMO_SPEED_DOWN (EXTRA_COMMAND_COUNT + 13)
+#define CMD_DEMO_SPEED_UP (EXTRA_COMMAND_COUNT + 14)
+#define CMD_DEMO_PAUSE (EXTRA_COMMAND_COUNT + 15)
+#define CMD_DEMO_UNIFORM_SPEED (EXTRA_COMMAND_COUNT + 16)
+#define CMD_DEMO_GOTO (EXTRA_COMMAND_COUNT + 17)
 
 //Sword orientation.
 //TODO make an enum?
@@ -100,9 +170,44 @@ static const UINT SE = 8;
 static const UINT NO_ORIENTATION = 4;
 static const UINT ORIENTATION_COUNT = 9;
 
+//Max weather values.
+#define MAX_ROOM_LIGHT (6U)
+#define MAX_ROOM_FOG (3U)
+#define MAX_ROOM_SNOW (9U)
+#define MAX_ROOM_RAIN (19U)
+
 //******************************************************************************************
 namespace InputCommands
 {
+	const InputKey UseDesktopKey = 0;
+
+	class KeyDefinition {
+	public:
+		KeyDefinition(const UINT eCommand,
+			const char *settingName,
+			MID_CONSTANT commandMID,
+			const InputKey defaultKeyDesktop,
+			const InputKey defaultKeyNotebook = UseDesktopKey)
+			: eCommand(eCommand),
+			settingName(settingName),
+			commandMID(commandMID),
+			defaultKeyDesktop(defaultKeyDesktop),
+			defaultKeyNotebook(defaultKeyNotebook == UseDesktopKey ? defaultKeyDesktop : defaultKeyNotebook)
+		{}
+
+		const InputKey GetDefaultKey(const UINT wKeyboardMode) const
+		{
+			return wKeyboardMode == 1 ? this->defaultKeyNotebook : this->defaultKeyDesktop;
+		}
+
+		const UINT eCommand;
+
+		const InputKey defaultKeyDesktop;
+		const InputKey defaultKeyNotebook;
+		const char *settingName;
+		const MID_CONSTANT commandMID;
+	};
+	
 	enum DCMD
 	{
 		DCMD_NW = 0,
@@ -120,15 +225,71 @@ namespace InputCommands
 		DCMD_Undo,
 		DCMD_Battle,
 		DCMD_Command,
+		DCMD_CommandTwo,
+		DCMD_CommandThree,
 		DCMD_CloneSwitch,
+		
+		// Below are keymaps which are not commands but other actions in the game
+		// Toggles/actions
+		DCMD_LockRoom,
+		DCMD_SkipSpeech,
+		DCMD_TogglePuzzleMode,
+		DCMD_ToggleFullScreen,
+		DCMD_Screenshot,
+		DCMD_SaveRoomImage,
+
+		// Dialogs/screens
+		DCMD_Stats,
+		DCMD_ChatHistory,
+		DCMD_PuzzleModeOptions,
+		DCMD_ToggleTurnCount,
+		DCMD_ToggleHoldVars,
+		DCMD_ToggleFrameRate,
+		DCMD_ToggleMovementOrderHint,
+		DCMD_QuickDemoRecord,
+		DCMD_ToggleDemoRecord,
+		DCMD_WatchDemos,
+		DCMD_ShowHelp,
+		DCMD_Settings,
+		DCMD_ReloadStyle,
+		DCMD_LogVars,
+
+		// Editor
+		DCMD_Editor_Cut,
+		DCMD_Editor_Copy,
+		DCMD_Editor_Paste,
+		DCMD_Editor_Undo,
+		DCMD_Editor_Redo,
+		DCMD_Editor_Delete,
+		DCMD_Editor_PlaytestRoom,
+		DCMD_Editor_ReflectX,
+		DCMD_Editor_ReflectY,
+		DCMD_Editor_SetFloorImage,
+		DCMD_Editor_SetOverheadImage,
+		DCMD_Editor_PrevLevel,
+		DCMD_Editor_NextLevel,
+		DCMD_Editor_LogVarRefs,
+		DCMD_Editor_LogChallengeRefs,
+		DCMD_Editor_HoldStats,
+		DCMD_Editor_LevelStats,
+
+		//Script editor
+		DCMD_Script_SelectAll,
+		DCMD_Script_ToText,
+		DCMD_Script_FromText,
+		DCMD_Script_AddCommand,
+		DCMD_Script_CharacterOptions,
 
 		DCMD_Count,
-		DCMD_NotFound=DCMD_Count
+		DCMD_NotFound=DCMD_Count,
+		DCMD_ExtraKeys=DCMD_LockRoom
 	};
-	extern const char *COMMANDNAME_ARRAY[DCMD_Count];
-	extern const UINT COMMAND_MIDS[DCMD_Count];
+	
+	extern const std::unordered_map<DCMD, KeyDefinition*> COMMAND_MAP;
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
+	extern const KeyDefinition *GetKeyDefinition(const UINT nCommand);
+	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }
@@ -160,6 +321,16 @@ enum RoomTokenType
 };
 
 //******************************************************************************************
+static inline bool bIsGameCommand(const int command)
+{
+	return command < COMMAND_COUNT;
+}
+
+static inline bool bIsVirtualCommand(const int command)
+{
+	return command > COMMAND_COUNT;
+}
+
 static inline bool bIsMovementCommand(const int command)
 {
 	switch (command)
@@ -169,6 +340,18 @@ static inline bool bIsMovementCommand(const int command)
 			return true;
 		default:
 			return false;
+	}
+}
+
+static inline bool bIsSpecialCommand(const int command)
+{
+	switch (command)
+	{
+		case CMD_EXEC_COMMAND:
+		case CMD_EXEC_COMMAND_TWO:
+		case CMD_EXEC_COMMAND_THREE:
+			return true;
+		default: return false;
 	}
 }
 
@@ -216,6 +399,28 @@ static inline int ConvertToBumpCommand(const int command)
 		case CMD_SE: return CMD_BUMP_SE;
 		default: return CMD_WAIT;
 	}
+}
+
+static inline bool bIsGameScreenCommand(const int command)
+{
+	return bIsGameCommand(command) ||
+		(command >= CMD_ADVANCE_CUTSCENE && command <= CMD_EXTRA_WATCH_DEMOS) ||
+		(command >= CMD_EXTRA_SHOW_HELP && command <= CMD_EXTRA_LOG_VARS);
+}
+
+static inline bool bIsEditorCommand(const int command)
+{
+		return bIsGameCommand(command) ||
+			(command >= CMD_EXTRA_WATCH_DEMOS && command <= CMD_EXTRA_SHOW_HELP) ||
+			command == CMD_EXTRA_SKIP_SPEECH || command == CMD_EXTRA_CHAT_HISTORY ||
+			command == CMD_EXTRA_STATS || command == CMD_EXTRA_RELOAD_STYLE ||
+			(command >= CMD_EXTRA_SCRIPT_SELECT_ALL && command <= CMD_EXTRA_SCRIPT_CHAR_OPTIONS);
+}
+
+static inline bool bIsEditSelectCommand(const int command)
+{
+	return(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_REFLECT_Y) || 
+		(command >= CMD_EXTRA_EDITOR_LOG_VAR_REFS && command <= CMD_EXTRA_SHOW_HELP);
 }
 
 static inline bool IsValidOrientation(const UINT o) {return o<ORIENTATION_COUNT;}

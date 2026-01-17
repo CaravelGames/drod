@@ -120,7 +120,7 @@ void CTestDb::InitializeHold()
 
 	const WCHAR NameText[] = { We('_'), We('_'), We('T'), We('e'), We('s'), We('t'), We(0) };
 	CTestDb::hold->NameText = NameText;
-	CTestDb::hold->DescriptionText = L"";
+	CTestDb::hold->DescriptionText = WS("");
 	CTestDb::hold->dwPlayerID = CTestDb::globalPlayerID;
 	if (!CTestDb::hold->Update())
 	{
@@ -169,7 +169,7 @@ void CTestDb::InitializeRoom()
 	CTestDb::room->dwRoomY = 25;
 	CTestDb::room->wRoomCols = DISPLAY_COLS;
 	CTestDb::room->wRoomRows = DISPLAY_ROWS;
-	CTestDb::room->style = L"Badlands";
+	CTestDb::room->style = WS("Badlands");
 	CTestDb::room->bIsRequired = true;
 	CTestDb::room->bIsSecret = false;
 
@@ -203,7 +203,7 @@ void CTestDb::InitializeEntrance()
 	CEntranceData *pEntrance = new CEntranceData(0, 0, globalRoomID,
 		DISPLAY_COLS / 2, DISPLAY_ROWS / 2,
 		SE, true, CEntranceData::DD_Always, 0);
-	pEntrance->DescriptionText = L"";
+	pEntrance->DescriptionText = WS("");
 	hold->AddEntrance(pEntrance);
 	hold->Update();
 }

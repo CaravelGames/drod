@@ -74,6 +74,10 @@
 #define ParamHStr "HParam"
 #define ParamFStr "FParam"
 #define ParamProcessSequenceStr "ProcessSequenceParam"
+#define ParamSpeechColorStr "SpeechColorParam"
+
+#define DefaultCustomCharacterName wszEmpty
+#define NoCustomColor -1
 
 enum CharacterDisplayMode {
 	CDM_Normal,
@@ -81,7 +85,10 @@ enum CharacterDisplayMode {
 	CDM_GhostOverhead
 };
 
+class CSwordsman;
 struct HoldCharacter;
+typedef map<UINT, map<int, int>> ScriptArrayMap;
+
 class CCharacter : public CPlayerDouble
 {
 public:
@@ -89,15 +96,28 @@ public:
 	IMPLEMENT_CLONE(CMonster, CCharacter);
 	virtual CMonster* Replicate() const;
 
+	bool           CanBeNPCBeethro() const;
 	virtual bool   CanDropTrapdoor(const UINT oTile) const;
-	virtual bool   CanPressPressurePlates() const { return !this->IsFlying() && this->GetIdentity() != M_SEEP; }
+	virtual bool   CanEnterTunnel() const { return HasBehavior(ScriptFlag::UseTunnels); }
+	virtual bool   CanPressPressurePlates() const { return HasBehavior(ScriptFlag::ActivatePlates); }
+	virtual bool   CanFluffKill() const override;
+	virtual bool   CanFluffTrack() const override;
 	virtual bool   CanPushObjects() const;
+	virtual bool   CanPushMonsters() const;
+	bool           CanPushOntoOTile(UINT wTileNo) const override;
 	void           ChangeHold(const CDbHold* pSrcHold, CDbHold* pDestHold, CImportInfo& info, const bool bGetNewScriptID=true);
 	static void    ChangeHoldForCommands(COMMAND_VECTOR& commands, const CDbHold* pOldHold, CDbHold* pNewHold, CImportInfo& info, bool bUpdateSpeech);
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	void           CriticalNPCDied(CCueEvents& CueEvents);
 	virtual bool   DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
+	bool           DidPlayerInput(
+		const CCharacterCommand& command,
+		const CSwordsman& player,
+		const int nLastCommand,
+		CCueEvents& CueEvents
+	) const;
+	bool           DidPlayerMove(const CCharacterCommand& command, const CSwordsman& player, const int nLastCommand) const;
 
 	bool           Display() const { return IsVisible() || IsGhostImage(); }
 	bool           DisplayGhostImage() const { return IsGhostImage() && !IsVisible(); }
@@ -111,12 +131,18 @@ public:
 
 	void           FailedIfCondition();
 	const CCharacterCommand* GetCommandWithLabel(const UINT label) const;
+	CCoord*        GetFaceTowardsTarget(UINT pflags, const CDbRoom& room, const CSwordsman& player) const;
 	virtual UINT   GetIdentity() const {return this->wIdentity;}
 	virtual UINT   GetResolvedIdentity() const;
 	UINT           GetNextSpeechID();
+	bool           HasBehavior(ScriptFlag::Behavior behavior) const { return behaviorFlags.count(behavior) == 1; };
+	bool           HasInactiveWeapon() const;
+	bool           HasInstantMovement() const { return HasBehavior(ScriptFlag::Behavior::InstantMovement); }
 	bool           HasSpecialDeath() const;
 	virtual bool   HasSword() const;
 
+	WSTRING        GetCustomName() const { return this->customName; }
+	UINT           GetCustomSpeechColor() const { return this->customSpeechColor; }
 	void           getCommandParams(const CCharacterCommand& command,
 			UINT& x, UINT& y, UINT& w, UINT& h, UINT& f) const;
 	void           getCommandRect(const CCharacterCommand& command,
@@ -125,6 +151,12 @@ public:
 			UINT& x) const;
 	void           getCommandXY(const CCharacterCommand& command,
 			UINT& x, UINT& y) const;
+	void           getCommandXYW(const CCharacterCommand& command,
+		UINT& x, UINT& y, UINT& w) const;
+	void           getCommandXYF(const CCharacterCommand& command,
+		UINT& x, UINT& y, UINT& f) const;
+
+	std::array<float, 3> getHSV() const;
 
 	WSTRING getPredefinedVar(const UINT varIndex) const;
 	UINT getPredefinedVarInt(const UINT varIndex) const;
@@ -133,41 +165,73 @@ public:
 	int getLocalVarInt(const WSTRING& varName) const;
 	WSTRING getLocalVarString(const WSTRING& varName) const;
 
+	static int getArrayValue(const ScriptArrayMap& scriptArrays, const UINT& varId, const int arrayIndex);
+
+	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	int            CountTile(const CCharacterCommand& command) const;
 	virtual bool   IsAlive() const {return this->bAlive && !this->bReplaced;}
 	virtual bool   IsAttackableTarget() const;
 	virtual bool   IsBrainPathmapObstacle() const;
-	virtual bool   IsFlying() const;
+	bool           IsBriarImmune() const { return HasBehavior(ScriptFlag::BriarImmune); }
+	bool           IsBuildMarkerAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsBuildMarkerTypeAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsDoorStateAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	bool           IsMonsterRemainsAt(const CCharacterCommand& command, const CDbRoom& room) const;
+	bool           IsEntityTypeAt(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	bool           IsExplosionImmune() const {return HasBehavior(ScriptFlag::ExplosionImmune); }
 	virtual bool   IsFriendly() const;
 	bool           IsGhostImage() const {return this->eDisplayMode != CDM_Normal;}
 	bool           IsGhostImageFloor() const {return this->eDisplayMode == CDM_GhostFloor;}
 	bool           IsGhostImageOverhead() const {return this->eDisplayMode == CDM_GhostOverhead;}
+	bool           IsInvisibleInspectable() const { return this->bInvisibleInspectable; }
+	bool           IsInvisibleCountMoveOrder() const { return this->bInvisibleCountsMoveOrder; }
+	bool           IsImmuneToWeapon(WeaponType type) const;
 	bool           IsInvulnerable() const {return GetImperative() == ScriptFlag::Invulnerable;}
 	bool           IsMissionCritical() const {return GetImperative() == ScriptFlag::MissionCritical;}
 	virtual bool   IsMonsterTarget() const;
 	virtual bool   IsNPCPathmapObstacle() const;
 	virtual bool   IsOpenMove(const int dx, const int dy) const;
+	bool           IsOpenTileAt(const CCharacterCommand& command, const CCurrentGame* pGame);
+	virtual bool   IsPlayerAllyTarget() const;
+	bool           IsPlayerFacing(const CCharacterCommand& command, const CSwordsman& player) const;
+	bool           IsPlayerState(const CCharacterCommand& command, const CSwordsman& player) const;
 	virtual bool   IsPushableByBody() const;
 	virtual bool   IsPushableByWeaponAttack() const;
 	bool           IsRequiredToConquer() const {return GetImperative() == ScriptFlag::RequiredToConquer;}
 	bool           IsSafeToPlayer() const {return this->bSafeToPlayer;}
-	virtual bool   IsSwimming() const;
 	bool           IsSwordSafeToPlayer() const {return this->bSwordSafeToPlayer;}
-	virtual bool   IsTarget() const { return this->IsVisible() && this->IsMonsterTarget(); }
+	virtual bool   IsTarget() const { return (this->IsVisible() && this->IsMonsterTarget()) || CanBeNPCBeethro(); }
 	bool           IsTileAt(const CCharacterCommand& command) const;
+	bool           IsTileGroupAt(const CCharacterCommand& command) const;
 	virtual bool   IsTileObstacle(const UINT wTileNo) const;
-	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const bool bExpectCloseParen=false);
+	bool           IsValidEntityWait(const CCharacterCommand& command, const CDbRoom& room) const;
+	virtual bool   IsVulnerableToAdder() const override;
+	virtual bool   IsVulnerableToExplosion() const override;
+
+	static bool    IsValidExpression(const WCHAR *pwStr, UINT& index, CDbHold *pHold, const char closingChar=0);
 	static bool    IsValidTerm(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
 	static bool    IsValidFactor(const WCHAR *pwStr, UINT& index, CDbHold *pHold);
+	static bool    IsValidPrimitiveParameters(ScriptVars::PrimitiveType ePrimitive,
+		const WCHAR* pwStr, UINT& index, CDbHold* pHold);
+
 	virtual bool   IsVisible() const {return this->bVisible;}
+	bool           IsWeaponAt(const CCharacterCommand& command, const CCurrentGame* pGame) const;
 	bool           JumpToCommandWithLabel(const WCHAR *pText);
 	bool           JumpToCommandWithLabel(const UINT num);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMAND_VECTOR& commands);
 	static void    LoadCommands(CDbPackedVars& ExtraVars, COMMANDPTR_VECTOR& commands);
 	virtual bool   OnAnswer(int nCommand, CCueEvents &CueEvents);
 	virtual bool   OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/=-1, const UINT /*wY*/=-1, WeaponType weaponType=WT_Sword);
-	static int     parseExpression(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC=NULL, const bool bExpectCloseParen=false);
+
+	static int     parseExpression(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC=NULL, const char closingChar=0);
+	static int     parseNestedExpression(const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC);
+	static int     parseNumber(const WCHAR* pwStr, UINT& index);
 	static int     parseTerm(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC);
 	static int     parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame, CCharacter *pNPC);
+	static int     parsePrimitive(ScriptVars::PrimitiveType ePrimitive,
+		const WCHAR* pwStr, UINT& index, CCurrentGame* pGame, CCharacter* pNPC);
+
 	virtual void   Process(const int nLastCommand, CCueEvents &CueEvents);
 	virtual void   PushInDirection(int dx, int dy, bool bStun, CCueEvents &CueEvents);
 
@@ -177,6 +241,8 @@ public:
 
 	void           ResolveLogicalIdentity(CDbHold *pHold);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
+	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
+	void           SetDefaultProperties();
 	void   SetImperative(const ScriptFlag::Imperative eVal) {this->eImperative = eVal;}
 	virtual void   SetExtraVarsFromMembers(const bool bHoldChar=false);
 	void           SetExtraVarsFromMembersWithoutScript(const bool bHoldChar=false);
@@ -191,6 +257,7 @@ public:
 	virtual void   Delete();
 
 	virtual bool SetWeaponSheathed();
+	virtual bool WakesEyes() const;
 
 	COMMAND_VECTOR commands;
 	UINT dwScriptID;       //charater script ref
@@ -210,26 +277,54 @@ public:
 	CIDSet answerOptions;   //optional answers supplied to a Question command
 	bool  bPlayerTouchedMe; //player bumped into this NPC this turn
 	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
+	
+	int nColor;
+
 
 private:
 	void BuildMarker(const CCharacterCommand& command);
 	void BuildTiles(const CCharacterCommand& command, CCueEvents& CueEvents);
+	bool CanEnterTunnelInDirection(const int dx, const int dy) const;
 	bool ConfirmPathWithNextMoveOpen();
+	int CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame);
 	void Disappear();
 	bool DoesVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
+	bool DoesArrayVarSatisfy(const CCharacterCommand& command, CCurrentGame *pGame);
+
+	bool EvaluateConditionalCommand(
+		const CCharacterCommand& command, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalAnd(
+		UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalOr(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+	bool EvaluateLogicalXOR(UINT wCommandIndex, CCurrentGame* pGame, const int nLastCommand, CCueEvents& CueEvents);
+
 	ScriptFlag::Imperative GetImperative() const {return this->eImperative;}
-	int  GetIndexOfCommandWithLabel(const UINT label) const;
+	int  GetIndexOfCommandWithLabel(const int label) const;
+	int  GetIndexOfPreviousIf(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextElse(const bool bIgnoreElseIf) const;
+	int  GetIndexOfNextLogicEnd(const UINT wStartIndex) const;
 	bool GetMovement(const UINT wDestX, const UINT wDestY, int& dx, int& dy,
 			int& dxFirst, int& dyFirst, bool& bPathmapping, const bool bAllowTurning=true);
+	bool IsCommandTypeIn(const int startIndex, const int endIndex, const CCharacterCommand::CharCommand command) const;
+	bool IsExpressionSatisfied(const CCharacterCommand& command, CCurrentGame* pGame);
+	void LinkOrb(const CCharacterCommand& command, CDbRoom& room);
 	void MoveCharacter(const int dx, const int dy, const bool bFaceDirection,
 			CCueEvents& CueEvents);
+	void RefreshBriars();
+	void ReplaceWithDefault(const UINT nLastCommand, CCueEvents& CueEvents);
 	void TeleportCharacter(const UINT wDestX, const UINT wDestY, CCueEvents& CueEvents);
 	void TurnIntoMonster(CCueEvents& CueEvents, const bool bSpecial=false);
 	bool TurnsSlowly() const;
 
-	void setPredefinedVar(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarInt(UINT varIndex, const UINT val, CCueEvents& CueEvents);
+	void setPredefinedVarString(UINT varIndex, const WSTRING val, CCueEvents& CueEvents);
 	void SetVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
+	void SetArrayVariable(const CCharacterCommand& command, CCurrentGame *pGame, CCueEvents& CueEvents);
 	void SetLocalVar(const WSTRING& varName, const WSTRING& val);
+
+	void SetDefaultBehaviors();
+	void SetDefaultImperatives();
+	void SetDefaultMovementType();
 
 	void GenerateEntity(const UINT identity, const UINT wX, const UINT wY, const UINT wO, CCueEvents& CueEvents);
 
@@ -267,23 +362,37 @@ private:
 	bool bPushableByBody;		//if true, the character can be pushed with body
 	bool bPushableByWeapon;	//if true, the character can be pushed with any weapon
 	bool bStunnable;         //if false, the character will never be stunned
+	bool bInvisibleInspectable;  // Whether the character is included in the description when right clicking while not part of the room
+	bool bInvisibleCountsMoveOrder;  // Whether the character is counted for calculating move order while not part of the room
 	bool bBrainPathmapObstacle, bNPCPathmapObstacle;
 	bool bWeaponOverride;   //Whether P_MONSTER_WEAPON now overrides the NPCs default properties
+	bool bFriendly;
 	MovementIQ movementIQ;  //movement behavior
 	UINT worldMapID;        //the world map that "world map *" script commands will operate on
+
+	int nHue;
+	int nSaturation;
 
 	UINT wJumpLabel;			//if non-zero, jump to the label if this command is satisfied
 	bool bWaitingForCueEvent;
 	bool bIfBlock;
+	bool bIfConditionFailed;
+	bool bIfNot; // should if result be inverted
 	vector<UINT> jumpStack; //maintains index of GoTo commands executed, for Return commands
+	std::set<ScriptFlag::Behavior> behaviorFlags; //stores which behaviors are active
+
+	bool bIsDefaultScript; //is the character running a default script
 
 	UINT wLastSpeechLineNumber; //used during language import
+	WSTRING customName; // Custom name for this character, used for any display purpose, empty means use the default character name
+	UINT customSpeechColor; //Value to represent custom speech color. empty means use default color
 
 	//Predefined vars.
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
 
 	typedef map<WSTRING, WSTRING> LocalScriptMap;
 	LocalScriptMap localScriptVars;
+	ScriptArrayMap localScriptArrays;
 };
 
 class CFiredCharacterCommand : public CAttachableObject

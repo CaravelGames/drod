@@ -39,11 +39,13 @@
 #include "BloodEffect.h"
 #include "CheckpointEffect.h"
 #include "DebrisEffect.h"
+#include "DottedLineEffect.h"
 #include "EvilEyeGazeEffect.h"
 #include "ExplosionEffect.h"
 #include "FiretrapEffect.h"
 #include "IceMeltEffect.h"
 #include "ImageOverlayEffect.h"
+#include "MovementOrderHintEffect.h"
 #include "PuffExplosionEffect.h"
 #include "SparkEffect.h"
 #include "SpikeEffect.h"
@@ -54,6 +56,7 @@
 #include "SwordsmanSwirlEffect.h"
 #include "SwordSwingEffect.h"
 #include "TarStabEffect.h"
+#include "TileSwirlEffect.h"
 #include "TrapdoorFallEffect.h"
 #include "VerminEffect.h"
 #include "WadeEffect.h"
@@ -70,6 +73,7 @@
 #include <FrontEndLib/ButtonWidget.h>
 #include <FrontEndLib/DialogWidget.h>
 #include <FrontEndLib/ExpandingTextEffect.h>
+#include <FrontEndLib/FadeTileEffect.h>
 #include <FrontEndLib/FlashMessageEffect.h>
 #include <FrontEndLib/FrameWidget.h>
 #include <FrontEndLib/LabelWidget.h>
@@ -89,6 +93,7 @@
 #include "../DRODLib/DbRooms.h"
 #include "../DRODLib/DbXML.h"
 #include "../DRODLib/GameConstants.h"
+#include "../DRODLib/Halph.h"
 #include "../DRODLib/Mimic.h"
 #include "../DRODLib/Monster.h"
 #include "../DRODLib/MonsterFactory.h"
@@ -137,6 +142,8 @@ const UINT TAG_CHATINPUT = 1037;
 const UINT TAG_CHATUSERS = 1038;
 const UINT TAG_SIGN_AREA = 1039;
 // 1040-1042 used
+
+const UINT TAG_PUZZLE_MODE_OPTIONS = 1054;
 
 const UINT TAG_UNDO_FROM_QUESTION = UINT(-9); //unused value
 
@@ -216,7 +223,7 @@ bool CGameScreen::LoadSavedGame(
 		return false;
 
 	this->bPlayTesting = false;
-	this->undo.setRewindLimit(this->pCurrentGame->wTurnNo);
+	this->undo.setRewindLimit(this->pCurrentGame->wPlayerTurn);
 	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
 
 	SetSignTextToCurrentRoom();
@@ -448,6 +455,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, pClockWidget(NULL)
 	, pMenuDialog(NULL)
 	, pSpeechBox(NULL)
+	, pPuzzleModeOptionsDialog(NULL)
 	, pBigMapWidget(NULL)
 
 	, dwNextSpeech(0)
@@ -596,8 +604,17 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 		AddWidget(this->pSpeechBox);
 		this->pSpeechBox->Move(
 			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pSpeechBox->GetW()) / 2,
-			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSpeechBox->GetH()) / 2);   //center over room widget
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pSpeechBox->GetH()) / 2);
 		this->pSpeechBox->Hide();
+
+		//Puzzle mode options
+		this->pPuzzleModeOptionsDialog = new CPuzzleModeOptionsDialogWidget(0L);
+		AddWidget(this->pPuzzleModeOptionsDialog);
+		this->pPuzzleModeOptionsDialog->Move(
+			X_ROOM + (CDrodBitmapManager::CX_ROOM - this->pPuzzleModeOptionsDialog->GetW()) / 2,
+			Y_ROOM + (CDrodBitmapManager::CY_ROOM - this->pPuzzleModeOptionsDialog->GetH()) / 2);
+		this->pPuzzleModeOptionsDialog->Hide();
+
 
 		//Pop-up map.
 		CScrollableWidget *pScrollingMap = new CScrollableWidget(TAG_BIGMAPCONTAINER, 0, 0,
@@ -637,7 +654,7 @@ void CGameScreen::AddRoomStatsDialog()
 	static const int Y_HEADER = 15;
 	static const int X_HEADER = 20;
 	static const UINT CX_HEADER = CX_DIALOG - 2*X_HEADER;
-	static const UINT CY_HEADER = 36;
+	static const UINT CY_HEADER = CY_LABEL_FONT_HEADER;
 
 	static const UINT CY_TEXT_LABEL = 40;
 	static const int X_TEXT_LABEL = 5;
@@ -930,8 +947,9 @@ void CGameScreen::LogHoldVars()
 		str += UnicodeToUTF8(this->pCurrentGame->pHold->GetVarName(wVarID));
 		str += ": ";
 		const bool bInteger = pVar->eType == UVT_int;
-		if (bInteger)
-		{
+		if (this->pCurrentGame->pHold->IsArrayVar(wVarID)) {
+			str += UnicodeToUTF8(this->pCurrentGame->GetArrayVarAsString(wVarID));
+		} else if (bInteger) {
 			const int nVal = this->pCurrentGame->stats.GetVar(pVar->name.c_str(), (int)0);
 			str += _itoa(nVal, temp, 10);
 		} else {
@@ -1410,6 +1428,7 @@ void CGameScreen::OnDeactivate()
 		vars.SetVar(Settings::EnableChatInGame, this->bEnableChat);
 		vars.SetVar(Settings::ReceiveWhispersOnlyInGame, this->bReceiveWhispersOnly);
 		vars.SetVar(Settings::MoveCounter, this->pRoomWidget->IsShowingMoveCount());
+		vars.SetVar(Settings::MovementOrderHint, this->pRoomWidget->IsShowingMovementOrder());
 		vars.SetVar(Settings::PuzzleMode, this->pRoomWidget->IsShowingPuzzleMode());
 
 		pCurrentPlayer->Update();
@@ -1462,6 +1481,9 @@ void CGameScreen::OnDeactivate()
 
 		delete pCurrentPlayer;
 
+		//Don't retain this cache while not playing.
+		CMovementOrderHintEffect::ClearSurfaceCache();
+
 		//Ensure all internet upload requests have been sent.
 		WaitToUploadDemos();
 	}
@@ -1502,14 +1524,29 @@ void CGameScreen::OnKeyDown(
 
 	if (this->bShowingBigMap)
 	{
-		HideBigMap();
+		switch (Key.keysym.sym)
+		{
+			case SDLK_LSHIFT:
+			case SDLK_RSHIFT:
+			case SDLK_LCTRL:
+			case SDLK_RCTRL:
+			case SDLK_LALT:
+			case SDLK_RALT:
+			case SDLK_LGUI:
+			case SDLK_RGUI:
+				break; // Don't hide the map when modifier keys are pressed
+			default:
+				HideBigMap();
+				break;
+		}
+
 		return;
 	}
 
 	CScreen::OnKeyDown(dwTagNo, Key);
 
 	//Check for a game command.
-	int nCommand = GetCommandForKeysym(Key.keysym.sym);
+	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 	bool bMacro = (Key.keysym.mod & KMOD_CTRL) != 0; //two-move combo activation
 
 	//Battle key indicates performing the reverse of the last movement command.
@@ -1550,75 +1587,35 @@ void CGameScreen::OnKeyDown(
 		case CMD_CLONE:
 			bMacro = false;
 		break;
-	}
-	if (nCommand != CMD_UNSPECIFIED)
-	{
-		//Sometimes, SDL will send the same input twice. If this happens for long waits, we don't
-		//want two of them to happen. Repeated inputs are counted, so for the first repeat, a
-		//duplicated command is not sent to the engine. This allows the player to chain long waits
-		//purposefully, but not accidentally.
-		if (nCommand == CMD_WAIT && bMacro && Key.repeat == 1) {
-			return;
-		}
 
-		//Hide mouse cursor while playing.
-		HideCursor();
-
-		//Only allow inputting player movement commands when no cutscene is playing.
-		if (!this->pCurrentGame->IsCutScenePlaying() ||
-				(nCommand >= CMD_WAIT && nCommand != CMD_EXEC_COMMAND))
-		{
-			SCREENTYPE eNextScreen = ProcessCommand(nCommand, bMacro);
-			if (eNextScreen != SCR_Game)
-			{
-				if (IsDeactivating())
-					SetDestScreenType(eNextScreen); //override any other specified destination screen
-				else
-					GoToScreen(eNextScreen);
-				return;
-			}
-		}
-	}
-
-	//Check for other keys.
-	switch (Key.keysym.sym)
-	{
-		case SDLK_F1:
-			GotoHelpPage();
+		case CMD_EXTRA_LOCK_ROOM:
+			this->pCurrentGame->bRoomExitLocked = !this->pCurrentGame->bRoomExitLocked;
+			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bRoomExitLocked ?
+				SEID_WISP : SEID_CHECKPOINT);
+			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
 		break;
-
-		case SDLK_F2:
-			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
-				GoToScreen(SCR_Settings);
-			} else {
-				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-			}
-		return;
-
-		case SDLK_F4:
-#if defined(__linux__) || defined(__FreeBSD__)
-		case SDLK_PAUSE:
-#endif
-		if ((Key.keysym.mod & (KMOD_CTRL | KMOD_ALT)) == 0)
+		
+		case CMD_EXTRA_QUICK_DEMO_RECORD:
 		{
 			if (this->bPlayTesting) break;
 			if (!this->pCurrentGame->wTurnNo) break;
 			//Save a demo for the current room from entrance up to the present turn.
 			WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
 			const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
-					wstrDescription);
+				wstrDescription);
 			if (dwTagNo == TAG_OK)
 			{
-				this->pCurrentGame->BeginDemoRecording( (wstrDescription.size()==0) ?
-						wszEmpty : wstrDescription.c_str(), false);
+				this->pCurrentGame->BeginDemoRecording((wstrDescription.size() == 0) ?
+					wszEmpty : wstrDescription.c_str(), false);
 				ShowOkMessage(this->pCurrentGame->EndDemoRecording() ?
-						MID_DemoSaved : MID_DemoNotSaved);
+					MID_DemoSaved : MID_DemoNotSaved);
 				PaintSign();
 			}
 		}
 		break;
 
-		case SDLK_F5:
+		case CMD_EXTRA_TOGGLE_DEMO_RECORD:
+		{
 			if (this->bPlayTesting) break;
 			if (this->pCurrentGame->IsDemoRecording())
 			{
@@ -1635,115 +1632,155 @@ void CGameScreen::OnKeyDown(
 			{
 				WSTRING wstrDescription = this->pCurrentGame->AbbrevRoomLocation();
 				const UINT dwTagNo = ShowTextInputMessage(MID_DescribeDemo,
-						wstrDescription);
+					wstrDescription);
 				if (dwTagNo == TAG_OK)
 				{
-					this->pCurrentGame->BeginDemoRecording( (wstrDescription.size()==0) ?
-							wszEmpty : wstrDescription.c_str() );
+					this->pCurrentGame->BeginDemoRecording((wstrDescription.size() == 0) ?
+						wszEmpty : wstrDescription.c_str());
 
 					//Repaint sign to show new recording status.
 					UpdateSign();
 				}
 			}
+		}
 		break;
-
-		//Room demos displayed will be of active room in current game.
-		case SDLK_F6:
+		case CMD_EXTRA_STATS:
+			g_pTheSound->PlaySoundEffect(SEID_BUTTON);
+			OpenStatsBox();
+		break;
+		case CMD_EXTRA_CHAT_HISTORY:
+			ShowChatHistory(this->pSpeechBox);
+		break;
+		case CMD_EXTRA_WATCH_DEMOS:
 			ASSERT(this->pCurrentGame);
 			ASSERT(this->pCurrentGame->pRoom);
 			ShowDemosForRoom(this->pCurrentGame->pRoom->dwRoomID);
 		break;
-
-		//Room screenshot.
-		case SDLK_F11:
-		if (Key.keysym.mod & KMOD_CTRL)
+		case CMD_EXTRA_SAVE_ROOM_IMAGE:
 		{
 			SDL_Surface *pRoomSurface = SDL_CreateRGBSurface(
-					SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
-					g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
+				SDL_SWSURFACE, this->pRoomWidget->GetW(), this->pRoomWidget->GetH(),
+				g_pTheBM->BITS_PER_PIXEL, 0, 0, 0, 0);
 			if (!pRoomSurface) break;
 			SDL_Rect screenRect = MAKE_SDL_RECT(this->pRoomWidget->GetX(), this->pRoomWidget->GetY(),
-					this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
+				this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
 			SDL_Rect roomRect = MAKE_SDL_RECT(0, 0, this->pRoomWidget->GetW(), this->pRoomWidget->GetH());
 			SDL_BlitSurface(GetDestSurface(), &screenRect, pRoomSurface, &roomRect);
 			SaveSurface(pRoomSurface);
 			SDL_FreeSurface(pRoomSurface);
 		}
 		break;
-
-		//Show room/game stats.
-		case SDLK_RETURN:
-		case SDLK_KP_ENTER:
-			if (!(Key.keysym.mod & (KMOD_ALT|KMOD_CTRL)))
-			{
-				g_pTheSound->PlaySoundEffect(SEID_BUTTON);
-				OpenStatsBox();
-			} else if (Key.keysym.mod & (KMOD_CTRL)) {
-				ShowChatHistory(this->pSpeechBox);
-			}
+		case CMD_EXTRA_PUZZLE_MODE_OPTIONS:
+			ShowPuzzleModeOptions();
+			this->pRoomWidget->ShowPuzzleMode(true);
 		break;
-
-		//Toggle room lock.
-		case SDLK_LSHIFT: case SDLK_RSHIFT:
-			this->pCurrentGame->bRoomExitLocked = !this->pCurrentGame->bRoomExitLocked;
-			g_pTheSound->PlaySoundEffect(this->pCurrentGame->bRoomExitLocked ?
-					SEID_WISP : SEID_CHECKPOINT);
-			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
+		case CMD_EXTRA_TOGGLE_PUZZLE_MODE:
+			g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
+			this->pRoomWidget->TogglePuzzleMode();
+			this->pRoomWidget->DirtyRoom();
 		break;
-
-		//Skip cutscene/clear playing speech.
-		case SDLK_SPACE:
-		{
+		case CMD_EXTRA_TOGGLE_MOVE_ORDER_HINT:
+			this->pRoomWidget->ToggleMovementOrderHint();
+		break;
+		case CMD_EXTRA_SKIP_SPEECH:
 			if (this->pCurrentGame && this->pCurrentGame->IsCutScenePlaying()) {
 				if (this->bSkipCutScene)
 				{
 					//When speeding past a cutscene, space clears all speech and subtitles of any sort.
 					//Keep looping ambient sounds
 					ClearSpeech(true, true);
-				} else {
+				}
+				else {
 					this->bSkipCutScene = true; //run cutscene quickly to its conclusion
 					this->pCurrentGame->dwCutScene = 1;
 				}
-			} else {
+			}
+			else {
 				//Clear all speech and subtitles of any sort.
 				//Keep looping ambient sounds
 				ClearSpeech(true, true);
 				this->pRoomWidget->RemoveLastLayerEffectsOfType(ECHATTEXT);
 			}
-		}
+		break;
+		case CMD_EXTRA_TOGGLE_TURN_COUNT:
+			this->pRoomWidget->ToggleMoveCount();
+		break;
+		case CMD_EXTRA_TOGGLE_HOLD_VARS:
+#ifdef ENABLE_CHEATS
+			this->pRoomWidget->ToggleVarDisplay();
+#else
+			if (CanShowVarUpdates()) {
+				this->pRoomWidget->ToggleVarDisplay();
+			}
+#endif
+		break;
+		case CMD_EXTRA_TOGGLE_FRAME_RATE:
+			this->pRoomWidget->ToggleFrameRate();
+		break;
+		case CMD_EXTRA_SHOW_HELP:
+			GotoHelpPage();
 		break;
 
-		//display modes
-		case SDLK_F3:
-			if (Key.keysym.mod & KMOD_CTRL) {
-				//Force full style reload.
-				g_pTheSound->PlaySoundEffect(SEID_MIMIC);
-				this->pRoomWidget->UpdateFromCurrentGame(true);
+		case CMD_EXTRA_SETTINGS:
+			if (GetScreenType() == SCR_Game && !this->bPlayTesting) {
+				GoToScreen(SCR_Settings);
 			} else {
 				g_pTheSound->PlaySoundEffect(SEID_CHECKPOINT);
-				this->pRoomWidget->TogglePuzzleMode();
-				this->pRoomWidget->DirtyRoom();
-			}
-		break;
-		//Persistent move count display / Frame rate / Game var output.
-		case SDLK_F7:
-#ifdef ENABLE_CHEATS
-			if (Key.keysym.mod & KMOD_SHIFT)
-				LogHoldVars();
-			else
-#endif
-			if (Key.keysym.mod & KMOD_CTRL) {
-#ifndef ENABLE_CHEATS
-				if (CanShowVarUpdates())
-#endif
-					this->pRoomWidget->ToggleVarDisplay();
-			} else if (Key.keysym.mod & KMOD_ALT) {
-				this->pRoomWidget->ToggleFrameRate();
-			} else {
-				this->pRoomWidget->ToggleMoveCount();
 			}
 		break;
 
+		case CMD_EXTRA_RELOAD_STYLE:
+			//Force full style reload.
+			g_pTheSound->PlaySoundEffect(SEID_MIMIC);
+			this->pRoomWidget->UpdateFromCurrentGame(true);
+		break;
+
+		//Game var output.
+		case CMD_EXTRA_LOG_VARS:
+#ifdef ENABLE_CHEATS
+			LogHoldVars();
+#else
+			if (g_pTheDB->Holds.PlayerCanEditHold(this->pCurrentGame->pHold->dwHoldID)) {
+				LogHoldVars();
+			}
+#endif
+		break;
+	}
+	if (!bIsVirtualCommand(nCommand) && nCommand != CMD_UNSPECIFIED)
+	{
+		//Sometimes, SDL will send the same input twice. If this happens for long waits, we don't
+		//want two of them to happen. Repeated inputs are counted, so for the first repeat, a
+		//duplicated command is not sent to the engine. This allows the player to chain long waits
+		//purposefully, but not accidentally.
+		if (nCommand == CMD_WAIT && bMacro && Key.repeat == 1) {
+			return;
+		}
+
+		//Hide mouse cursor while playing.
+		HideCursor();
+
+		//Only allow inputting player movement commands when no cutscene is playing.
+		if (!this->pCurrentGame->IsCutScenePlaying() ||
+				(nCommand >= CMD_WAIT && !bIsSpecialCommand(nCommand)))
+		{
+			SCREENTYPE eNextScreen = ProcessCommand(nCommand, bMacro);
+			if (eNextScreen != SCR_Game)
+			{
+				if (IsDeactivating())
+					SetDestScreenType(eNextScreen); //override any other specified destination screen
+				else
+					GoToScreen(eNextScreen);
+				return;
+			}
+		}
+	}
+
+	if (nCommand) // We handled one of the mapped commands, do nothing else here
+		return;
+
+	//Check for other keys.
+	switch (Key.keysym.sym)
+	{
 #ifdef ENABLE_CHEATS
 		//cheat keys
 		case SDLK_F8:
@@ -2029,6 +2066,8 @@ void CGameScreen::ApplyPlayerSettings()
 	CDbPackedVars &settings = pCurrentPlayer->Settings;
 	InitKeysymToCommandMap(settings);
 
+	this->pRoomWidget->SetPuzzleModeOptions(PuzzleModeOptions(settings));
+
 	//Set room widget to either show checkpoints or not.
 	this->pRoomWidget->ShowCheckpoints(
 			settings.GetVar(Settings::ShowCheckpoints, true));
@@ -2045,6 +2084,19 @@ void CGameScreen::ApplyPlayerSettings()
 	if (this->pRoomWidget->IsShowingPuzzleMode() !=
 			settings.GetVar(Settings::PuzzleMode, false))
 		this->pRoomWidget->TogglePuzzleMode();
+
+	//Enable/disable movement order effect
+	if (this->pRoomWidget->IsShowingMovementOrder() !=
+		settings.GetVar(Settings::MovementOrderHint, false))
+		this->pRoomWidget->ToggleMovementOrderHint();
+
+	//Set if citizen groups are subtitled as numbers or colors
+	this->pRoomWidget->DescribeCitizenColor(
+		settings.GetVar(Settings::DescribeCitizenColor, false));
+
+	//Set extra hinting effects
+	this->bShowHalphEffects = settings.GetVar(Settings::ShowHalphEffects, false);
+	this->bShowDoublePlacementSwirl = settings.GetVar(Settings::ShowDoublePlacementEffect, false);
 
 	this->bAutoUndoOnDeath = settings.GetVar(Settings::AutoUndoOnDeath, false);
 
@@ -2802,7 +2854,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 //Note that the On*() handlers are not going to be called by CEventHandlerWidget's
 //Activate() loop until after this method exits.  Events must be handled here.
 //
-//Returns: player command response to death, or CMD_WAIT (default)
+//Returns: player command response to death
 {
 	static const Uint32 dwDeathDuration = 2000;
 
@@ -2816,7 +2868,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	const CSwordsman& player = this->pCurrentGame->swordsman;
 	const UINT wOrigO = player.wO;	//save value for demo record
 	bool bSwordSwingsClockwise = true;
-	int cmd_response = CMD_WAIT;
+	int cmd_response = CMD_UNSPECIFIED;
 
 	const bool bHalphDied = CueEvents.HasOccurred(CID_HalphDied);
 	const bool bPlayerFellInPit = CueEvents.HasOccurred(CID_PlayerFellIntoPit);
@@ -2979,7 +3031,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 				case SDL_KEYDOWN:
 				{
 					const SDL_Keysym& keysym = event.key.keysym;
-					int nCommand = GetCommandForKeysym(keysym.sym);
+					int nCommand = GetCommandForInputKey(keysym.sym);
 					switch (nCommand) {
 						case CMD_RESTART:
 							if ((keysym.mod & KMOD_CTRL) != 0)
@@ -3096,8 +3148,11 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
-	if (cmd_response == CMD_WAIT && this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
-		cmd_response = CMD_UNDO;
+	if (cmd_response == CMD_UNSPECIFIED)
+		if (this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
+			cmd_response = CMD_UNDO;
+		else
+			cmd_response = CMD_RESTART;
 
 	if (cmd_response == CMD_UNDO)
 	{
@@ -3710,27 +3765,46 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	}
 	else if (CueEvents.HasOccurred(CID_HalphStriking))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphStriking) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHSTRIKING : SEID_HALPH2STRIKING);
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphCantOpen))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphCantOpen) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHCANTOPEN : SEID_HALPH2CANTOPEN);
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, pHalph->GetLatestRequest(), TI_CHECKPOINT, 750));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphInterrupted))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphInterrupted) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHINTERRUPTED : SEID_HALPH2INTERRUPTED);
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, *pHalph, TI_CHECKPOINT, 750));
+			this->pRoomWidget->AddMLayerEffect(
+				new CFadeTileEffect(this->pRoomWidget, pHalph->GetCurrentGoal(), TI_CHECKPOINT, 750));
+		}
 	}
 	else if (CueEvents.HasOccurred(CID_HalphHurryUp))
 	{
-		const CMonster *pHalph = DYN_CAST(const CMonster*, const CAttachableObject*,
+		const CHalph *pHalph = DYN_CAST(const CHalph*, const CAttachableObject*,
 			CueEvents.GetFirstPrivateData(CID_HalphHurryUp) );
 		PlaySpeakerSoundEffect(pHalph->wType == M_HALPH ? SEID_HALPHHURRYUP : SEID_HALPH2HURRYUP);
+		if (this->bShowHalphEffects) {
+			this->pRoomWidget->AddMLayerEffect(
+				new CDottedLineEffect(this->pRoomWidget, 750, *pHalph, pHalph->GetCurrentGoal()));
+		}
 	}
 
 	//Handle dynamically-allocated sound channels -- give most important sounds priority.
@@ -3776,6 +3850,11 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	{
 		PlaySoundEffect(SEID_MIMIC);
 		this->pRoomWidget->RenderRoomInPlay(); //remove double placement effect
+		pObj = CueEvents.GetFirstPrivateData(CID_DoublePlaced);
+		if (pObj && this->bShowDoublePlacementSwirl) {
+			const CCoord* pCoord = DYN_CAST(const CCoord*, const CAttachableObject*, pObj);
+			this->pRoomWidget->AddMLayerEffect(new CTileSwirlEffect(this->pRoomWidget, CMoveCoord(pCoord->wX, pCoord->wY, 0)));
+		}
 	}
 	if (CueEvents.HasOccurred(CID_SeedingBeaconActivated))
 		PlaySoundEffect(SEID_SEEDING_BEACON_ON);
@@ -3797,7 +3876,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (CueEvents.HasOccurred(CID_GentryiiPulledTaut))
 		PlaySoundEffect(SEID_CHAIN_PULL);
 
-	if (CueEvents.HasOccurred(CID_CompleteLevel))
+	if (CueEvents.HasOccurred(CID_CompleteLevel) || CueEvents.HasOccurred(CID_AddedRoomToMap))
 	{
 		this->pMapWidget->UpdateFromCurrentGame();
 		this->pMapWidget->RequestPaint();
@@ -3838,7 +3917,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 			pObj = CueEvents.GetNextPrivateData();
 		}
 	}
-	if (CueEvents.HasOccurred(CID_Tunnel))
+	if (CueEvents.HasOccurred(CID_Tunnel) || CueEvents.HasOccurred(CID_MonsterTunnel))
 		PlaySoundEffect(SEID_TUNNEL);
 	if (CueEvents.HasOccurred(CID_Horn_Squad))
 		PlaySoundEffect(SEID_HORN_SQUAD);
@@ -4553,6 +4632,29 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 	}
 
+	for (pObj = CueEvents.GetFirstPrivateData(CID_PlatformBlocked);
+		pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+	{
+		const CMoveCoord* pMoveCoord = DYN_CAST(const CMoveCoord*, const CAttachableObject*, pObj);
+		const CDbRoom* pRoom = this->pCurrentGame->pRoom;
+		CPlatform* platform = pRoom->GetPlatformAt(pMoveCoord->wX, pMoveCoord->wY);
+		CCoordSet platformTiles;
+		platform->GetTiles(platformTiles);
+		for (CCoordSet::const_iterator coord = platformTiles.begin(); coord != platformTiles.end(); ++coord)
+		{
+			if (bIsTar(pRoom->GetTSquare(coord->wX, coord->wY))) {
+				this->pRoomWidget->AddMLayerEffect(new CBumpObstacleEffect(this->pRoomWidget,
+					coord->wX, coord->wY, pMoveCoord->wO));
+				continue;
+			}
+			CMonster* pMonster = pRoom->GetMonsterAtSquare(coord->wX, coord->wY);
+			if (pMonster && (pMonster->IsLongMonster() || pMonster->IsPiece())) {
+				this->pRoomWidget->AddMLayerEffect(new CBumpObstacleEffect(this->pRoomWidget,
+					coord->wX, coord->wY, pMoveCoord->wO));
+			}
+		}
+	}
+
 	if (CueEvents.HasOccurred(CID_MonsterSpoke))
 		//complete turn animation immediately in preparation for question
 		this->pRoomWidget->FinishMoveAnimation();
@@ -4562,6 +4664,10 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 	if (bLightToggled)
 		this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->AddPlayerLight();
+	this->pRoomWidget->RerenderRoomCeilingLight(CueEvents);
+
+	//Update room weather as needed.
+	this->pRoomWidget->SyncWeather(CueEvents);
 
 	//
 	//Begin section where room load can occur.  If room load occurs then
@@ -4604,7 +4710,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		if (GetScreenType() == SCR_Demo)
 			return eNextScreen;	//stop showing demo on death
 
-		if (!bUndoDeath)
+		if (cmd_response == CMD_RESTART)
 		{
 			//Create demo/End demo recording if game is now inactive.
 			if (this->pCurrentGame->IsDemoRecording())  //End a demo that is recording.
@@ -5329,7 +5435,7 @@ void CGameScreen::RestartRoom(int nCommand, CCueEvents& CueEvents)
 	this->bRoomClearedOnce = this->pCurrentGame->IsCurrentRoomPendingExit();
 
 	if (!this->bPlayTesting)
-		this->undo.setRewindLimit(this->pCurrentGame->wTurnNo); //can't undo past restart point
+		this->undo.setRewindLimit(this->pCurrentGame->wPlayerTurn); //can't undo past restart point
 
 	ClearEventsThatOnlyShowOnInitialRoomEntrance(CueEvents);
 
@@ -5341,6 +5447,7 @@ void CGameScreen::UpdateUIAfterRoomRestart()
 	ClearSpeech();
 	SetGameAmbience(true);
 
+	this->pRoomWidget->ceilingLightChanges.reset();
 	this->pRoomWidget->ClearEffects();
 	this->pRoomWidget->RenderRoomLighting();
 	this->pRoomWidget->ResetForPaint();
@@ -6069,16 +6176,33 @@ void CGameScreen::ShowRoom(CCurrentGame *pGame, CCueEvents& CueEvents)
 				break;
 
 				case SDL_KEYDOWN:
-					bShow = false;
-
+					int nCommand;
 					//Process other commands in the context of the displayed room.
 					switch (event.key.keysym.sym)
 					{
-						case SDLK_F6:
+						case SDLK_LSHIFT:
+						case SDLK_RSHIFT:
+						case SDLK_LCTRL:
+						case SDLK_RCTRL:
+						case SDLK_LALT:
+						case SDLK_RALT:
+						case SDLK_LGUI:
+						case SDLK_RGUI:
+							nCommand = -1; // Don't exit the room preview when modifier keys are pressed
+							break;
+						default: nCommand = GetCommandForInputKey(BuildInputKey(event.key)); break;
+					}
+					switch (nCommand)
+					{
+						case CMD_EXTRA_WATCH_DEMOS:
+							bShow = false;
 							bShowDemosForRoom = true;
-						break;
-
-						default: break;
+							break;
+						case -1: // modifier key
+							break;
+						default:
+							bShow = false;
+							break;
 					}
 				break;
 
@@ -6145,6 +6269,8 @@ void CGameScreen::ShowRoomTemporarily(const UINT roomID)
 	pTempGame->statsAtRoomStart = this->pCurrentGame->stats;
 	pRoom->SetCurrentGame(pTempGame);
 	pTempGame->SetTurn(0, CueEvents);
+	//Allow clones to be drawn using current player role
+	pTempGame->swordsman.wIdentity = this->pCurrentGame->swordsman.wIdentity;
 
 	ShowRoom(pTempGame, CueEvents);
 
@@ -6296,7 +6422,7 @@ void CGameScreen::ShowSpeechLog()
 		{
 			//Play any attached speech for this line.
 			ASSERT(this->pCurrentGame->roomSpeech.size() >= dwItemID);
-			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1];
+			CCharacterCommand *pCmd = this->pCurrentGame->roomSpeech[dwItemID - 1].pSpeechCommand;
 			ASSERT(pCmd);
 
 			const CDbDatum *pSound = pCmd->pSpeech->GetSound();
@@ -6314,6 +6440,31 @@ void CGameScreen::ShowSpeechLog()
 
 	if (playingChannel >= 0)
 		g_pTheSound->StopSoundOnChannel(playingChannel);
+
+	// We compute remaining speech time and replace it instead of just calculating the time the dialog
+	// was visible because dwNextSpeech can also be updated by focus changes
+	if (this->dwNextSpeech)
+		this->dwNextSpeech = SDL_GetTicks() + dwSpeechRemaining;
+	this->bIsDialogDisplayed = false;
+
+	g_pTheSound->UnpauseSounds();
+
+	Paint();
+}
+
+//*****************************************************************************
+void CGameScreen::ShowPuzzleModeOptions()
+//Pop up a dialog box that contains options for the puzzle mode
+{
+	g_pTheSound->PauseSounds();
+
+	const Uint32 dwSpeechRemaining = this->dwNextSpeech - SDL_GetTicks();
+	this->bIsDialogDisplayed = true;
+	this->pRoomWidget->SetEffectsFrozen(true);
+
+	ShowCursor();
+	this->pPuzzleModeOptionsDialog->Display();
+	ApplyPlayerSettings();
 
 	// We compute remaining speech time and replace it instead of just calculating the time the dialog
 	// was visible because dwNextSpeech can also be updated by focus changes
@@ -6674,8 +6825,10 @@ void CGameScreen::WaitToUploadDemos()
 		HideStatusMessage();
 	}
 
+#ifdef ENABLE_CLOUDSYNC
 	if (this->pCurrentGame)
 		UploadPlayerProgressToCloud(this->pCurrentGame->pHold->dwHoldID);
+#endif
 }
 
 //*****************************************************************************

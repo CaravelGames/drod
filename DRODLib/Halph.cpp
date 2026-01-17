@@ -184,6 +184,21 @@ void CHalph::Process(
 }
 
 //*****************************************************************************************
+CCoord CHalph::GetCurrentGoal() const
+//Returns: Tile location of Halph's current orb/plate target
+{
+	return this->orbLocation;
+}
+
+//*****************************************************************************************
+CCoord CHalph::GetLatestRequest() const
+//Returns: Tile location of thew latest door the player requested opened. This may not be
+//a door Halph can open.
+{
+	return this->latestRequest;
+}
+
+//*****************************************************************************************
 bool CHalph::GetPathTo(
 //A path to the destination is rechecked each turn in case something got
 //in the way since the previous turn.  If the path is no longer open,
@@ -550,6 +565,7 @@ void CHalph::RequestOpenDoor(
 
 	CCoordSet doorSquares;
 	room.GetAllYellowDoorSquares(wX, wY, doorSquares);
+	this->latestRequest = CCoord(wX, wY);
 
 	//Is Halph already going to activate this object?  If so, then shouldn't do anything here.
 	if (IsOpeningDoorAt(doorSquares))

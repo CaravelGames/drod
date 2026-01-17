@@ -658,6 +658,16 @@ void CScreen::GetScreenSize(int &nW, int &nH)
 }
 
 //*****************************************************************************
+void CScreen::SetResizableScreen(const bool bResizable)
+{
+	// Can't resize while fullscreen
+	if (IsFullScreen())
+		return;
+
+	SDL_SetWindowResizable(GetMainWindow(), (SDL_bool)bResizable);
+}
+
+//*****************************************************************************
 void CScreen::GetWindowPos(int &nX, int &nY)
 //OUT: windowed app position on screen
 {
@@ -905,20 +915,15 @@ UINT CScreen::ShowTextInputMessage(
 //waits for a button to be pushed before returning.
 //
 //Params:
-	const WCHAR* pwczMessage,  //(in)      Indicates message to display.
-	WSTRING &wstrUserInput,    //(in/out)  Default text/text entered by user.
-	const bool bMultiLineText, //(in)      if true, show 2D text box, else single-line text box
-	const bool bMustEnterText) //(in)      if true, OK button is disabled
-										//          when text box is empty
-										//          (default = true)
-//
+	WSTRING &wstrUserInput,               //(in/out) Default text and text entered by user
+	const TextInputDialogOptions options) //(in) Dialog options
 //Returns:
 //TAG_OK or TAG_CANCEL (button pressed).
 //or TAG_QUIT (SDL_Quit was received).
 {
 	CLabelWidget *pText = DYN_CAST(CLabelWidget*, CWidget*,
 			this->pInputTextDialog->GetWidget(TAG_TEXT));
-	pText->SetText(pwczMessage);
+	pText->SetText(options.pwczMessage);
 
 	//Resize label text for text height.
 	UINT wIgnored;
@@ -926,7 +931,7 @@ UINT CScreen::ShowTextInputMessage(
 	pText->GetRect(rect);
 	UINT wTextHeight;
 	g_pTheFM->GetTextRectHeight(FONTLIB::F_Message,
-			pwczMessage, rect.w, wIgnored, wTextHeight);
+			options.pwczMessage, rect.w, wIgnored, wTextHeight);
 	pText->Resize(rect.w, wTextHeight);
 
 	//Resize frame around text prompt to correct size.
@@ -939,7 +944,7 @@ UINT CScreen::ShowTextInputMessage(
 	CTextBoxWidget *pTextBox;
 	UINT dwTextBoxTag;
 	UINT CY_TEXTBOX;
-	if (bMultiLineText)
+	if (options.bMultiline)
 	{
 		CTextBox2DWidget *pTextBox2D = DYN_CAST(CTextBox2DWidget*, CWidget*,
 			   this->pInputTextDialog->GetWidget(TAG_TEXTBOX2D));
@@ -955,9 +960,10 @@ UINT CScreen::ShowTextInputMessage(
 	}
 	pTextBox->Move(X_TEXTBOX, wTextHeight + CY_SPACE * 2);
 	pTextBox->SetText(wstrUserInput.c_str());
+	pTextBox->SetDigitsOnly(options.bDigitsOnly);
 	pTextBox->Show();
 
-	this->pInputTextDialog->SetEnterText(bMustEnterText ? dwTextBoxTag : 0L);
+	this->pInputTextDialog->SetEnterText(options.bRequireText ? dwTextBoxTag : 0L);
 
 	//Resize the rest of the dialog.
 	const int yButtons = wTextHeight + CY_TEXTBOX + (CY_SPACE * 3);
@@ -992,6 +998,29 @@ UINT CScreen::ShowTextInputMessage(
 	if (dwRet == TAG_OK)
 		wstrUserInput = pTextBox->GetText();
 	return dwRet;
+}
+
+//*****************************************************************************
+UINT CScreen::ShowTextInputMessage(
+//Display a message in a dialog, prompting user for input.
+//Dialog has an OK and Cancel button and execution
+//waits for a button to be pushed before returning.
+//
+//Params:
+	const WCHAR* pwczMessage,  //(in)      Indicates message to display.
+	WSTRING &wstrUserInput,    //(in/out)  Default text/text entered by user.
+	const bool bMultiLineText, //(in)      if true, show 2D text box, else single-line text box
+	const bool bMustEnterText) //(in)      if true, OK button is disabled
+										//          when text box is empty
+										//          (default = true)
+//
+//Returns:
+//TAG_OK or TAG_CANCEL (button pressed).
+//or TAG_QUIT (SDL_Quit was received).
+{
+	TextInputDialogOptions options(pwczMessage, bMultiLineText, bMustEnterText, false);
+	
+	return ShowTextInputMessage(wstrUserInput, options);
 }
 
 //*****************************************************************************

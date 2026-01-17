@@ -38,6 +38,7 @@
 #include "Construct.h"
 #include "GameConstants.h"
 #include "Halph.h"
+#include "I18N.h"
 #include "Monster.h"
 #include "MonsterFactory.h"
 #include "MonsterPiece.h"
@@ -262,6 +263,7 @@ CMonster* CCurrentGame::AddNewEntity(
 	CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pNew);
 	pCharacter->wLogicalIdentity = identity;
 	pCharacter->SetCurrentGame(this); //will assign the default script for custom NPCs
+	pCharacter->SetDefaultProperties();
 	pCharacter->dwScriptID = this->pHold->GetNewScriptID();
 	pCharacter->bNewEntity = true;
 
@@ -375,9 +377,9 @@ void CCurrentGame::Clear(
 	this->bHalfTurn = false;
 
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	this->wMonsterKills = this->wMonsterKillCombo = 0;
@@ -391,6 +393,7 @@ void CCurrentGame::Clear(
 
 	this->bRoomExitLocked = false;
 	this->conquerTokenTurn = NO_CONQUER_TOKEN_TURN;
+	this->lastProcessedCommand = CMD_WAIT;
 
 	this->bSwordsmanOutsideRoom = false;
 	this->dwAutoSaveOptions = ASO_DEFAULT;
@@ -507,6 +510,221 @@ UINT CCurrentGame::EndDemoRecording()
 }
 
 
+//***************************************************************************************
+//Evaluate a calculated function in context of the current game
+int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vector<int>& params)
+{
+	ASSERT(params.size() == ScriptVars::getPrimitiveRequiredParameters(ePrimitive));
+
+	switch (ePrimitive) {
+		case ScriptVars::P_Abs:
+			return abs(params[0]);
+		case ScriptVars::P_Orient:
+		{
+			const int dx = sgn(params[0]);
+			const int dy = sgn(params[1]);
+			return nGetO(dx, dy);
+		}
+		case ScriptVars::P_Facing:
+		{
+			int dx = params[0];
+			int dy = params[1];
+			//If one of the four compass directions is more direct than a diagonal,
+			//snap to it.
+			const int absDx = abs(dx), absDy = abs(dy);
+			if (absDx > 2 * absDy)
+				dy = 0;
+			else if (absDy > 2 * absDx)
+				dx = 0;
+			return nGetO(sgn(dx), sgn(dy));
+		}
+		case ScriptVars::P_OrientX:
+		case ScriptVars::P_OrientY:
+		case ScriptVars::P_RotateCW:
+		case ScriptVars::P_RotateCCW:
+		{
+			const int o = params[0];
+			if (!IsValidOrientation(o))
+				return o;
+			switch (ePrimitive) {
+				case ScriptVars::P_OrientX: return nGetOX(o);
+				case ScriptVars::P_OrientY: return nGetOY(o);
+				case ScriptVars::P_RotateCW: return nNextCO(o);
+				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+			}
+		}
+		case ScriptVars::P_RotateDist:
+		{
+			UINT wO1 = params[0];
+			UINT wO2 = params[1];
+			UINT wTurns = 0;
+
+			if (!(IsValidOrientation(wO1) && IsValidOrientation(wO2)) ||
+				wO1 == NO_ORIENTATION || wO2 == NO_ORIENTATION) {
+				return 0;
+			}
+
+			while (wO1 != wO2) {
+				wO1 = nNextCO(wO1);
+				++wTurns;
+				ASSERT(wTurns < 8);
+			}
+
+			return wTurns <= 4 ? wTurns : 8 - wTurns;
+		}
+		case ScriptVars::P_Min:
+			return min(params[0], params[1]);
+		case ScriptVars::P_Max:
+			return max(params[0], params[1]);
+		case ScriptVars::P_Dist0: //L-infinity norm
+		{
+			const int deltaX = abs(params[2] - params[0]);
+			const int deltaY = abs(params[3] - params[1]);
+			return max(deltaX, deltaY);
+		}
+		case ScriptVars::P_Dist1: //L-1 norm (Manhattan distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return abs(deltaX) + abs(deltaY);
+		}
+		case ScriptVars::P_Dist2: //L-2 norm (Euclidean distance)
+		{
+			const int deltaX = params[2] - params[0];
+			const int deltaY = params[3] - params[1];
+			return int(sqrt(deltaX * deltaX + deltaY * deltaY));
+		}
+		case ScriptVars::P_ArrowDir:
+		{
+			const UINT tile = this->pRoom->GetFSquare(params[0], params[1]);
+			return getForceArrowDirection(tile);
+		}
+		case ScriptVars::P_RoomTile:
+		{
+			switch (params[2]) {
+				case 0: return this->pRoom->GetOSquare(params[0], params[1]);
+				case 1: return this->pRoom->GetFSquare(params[0], params[1]);
+				case 2: return this->pRoom->GetTSquare(params[0], params[1]);
+				default: return 0;
+			}
+		}
+		case ScriptVars::P_MonsterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (pMonster) {
+				return pMonster->wType;
+			}
+			return -1;
+		}
+		break;
+		case ScriptVars::P_CharacterType:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster || pMonster->wType != M_CHARACTER) {
+				return -1;
+			}
+
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (!pCharacter) {
+				return -1;
+			}
+
+			return pCharacter->wLogicalIdentity;
+		}
+		break;
+		case ScriptVars::P_EntityWeapon:
+		{
+			if (IsPlayerAt(params[0], params[1])) {
+				return this->swordsman.GetActiveWeapon();
+			}
+
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster || !bEntityHasSword(pMonster->wType))
+				return -1;
+
+			CArmedMonster* pArmedMonster = DYN_CAST(CArmedMonster*, CMonster*, pMonster);
+			if (!pArmedMonster)
+				return -1;
+
+			return pArmedMonster->weaponType;
+		}
+		case ScriptVars::P_MonsterSize:
+		{
+			CMonster* pMonster = this->pRoom->GetMonsterAtSquare(params[0], params[1]);
+			if (!pMonster) {
+				return 0;
+			}
+
+			if (pMonster->IsPiece()) {
+				pMonster = pMonster->GetOwningMonster();
+			}
+
+			return pMonster->Pieces.size() + 1;
+		}
+		case ScriptVars::P_BrainScore:
+		{
+			int x = params[0];
+			int y = params[1];
+			MovementType movement = (MovementType)params[2];
+
+			if (!this->pRoom->IsValidColRow(x, y) || movement >= NumMovementTypes) {
+				return -1;
+			}
+
+			//Make sure pathmap exists
+			this->pRoom->CreatePathMap(this->swordsman.wX, this->swordsman.wY, movement);
+			const SQUARE& square = this->pRoom->pPathMap[movement]->GetSquare(x, y);
+			return square.dwTargetDist;
+		}
+		case ScriptVars::P_BrainDist:
+		{
+			int tX = params[0];
+			int tY = params[1];
+			int x = params[2];
+			int y = params[3];
+			MovementType movement = (MovementType)params[4];
+
+			if (!this->pRoom->IsValidColRow(tX, tY) || !this->pRoom->IsValidColRow(x, y) ||
+				movement >= NumMovementTypes) {
+				return -1;
+			}
+
+			//Make sure pathmap exists
+			if (!this->pRoom->pExtraPathMap[movement]) {
+				this->pRoom->pExtraPathMap[movement] = pRoom->MakePathMap(tX, tY, movement);
+			} else {
+				this->pRoom->pExtraPathMap[movement]->SetTarget(tX, tY);
+			}
+			const SQUARE& square = this->pRoom->pExtraPathMap[movement]->GetSquare(x, y);
+			return square.dwTargetDist;
+		}
+		case ScriptVars::P_CleanRooms:
+		{
+			int flags = params[0];
+			CIDSet rooms = CDb::getRoomsInLevel(this->pLevel->dwLevelID);
+			CIDSet cleanRooms;
+
+			for (CIDSet::const_iterator iter = rooms.begin(); iter != rooms.end(); ++iter) {
+				UINT roomId = *iter;
+				if (!this->ConqueredRooms.has(roomId)) {
+					continue;
+				}
+
+				if ((flags & 1 && CDbRoom::IsRequired(roomId)) ||
+						(flags & 2 && CDbRoom::IsSecret(roomId)) ||
+						(flags & 4 && !CDbRoom::IsRequired(roomId)))
+				{
+					cleanRooms += roomId;
+				}
+			}
+
+			return cleanRooms.size();
+		}
+	}
+
+	return 0;
+}
+
 //*****************************************************************************
 WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 	CCharacter *pCharacter) //character, to query its local vars [default=NULL]
@@ -552,7 +770,7 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 								wStr += _itoW(int(val), wIntText, 10);
 							}
 						}
-					} else if (ScriptVars::IsCharacterLocalVar(wEscapeStr) && pCharacter) {
+					} else if (ScriptVars::IsCharacterLocalVar(wEscapeStr) && !ScriptVars::IsCharacterArrayVar(wEscapeStr) && pCharacter) {
 						wStr += pCharacter->getLocalVarString(wEscapeStr);
 					} else if ((reserved_lookup_id = InputCommands::getCommandIDByVarName(wEscapeStr)) < InputCommands::DCMD_Count) {
 						//Is it a player input button?
@@ -581,7 +799,7 @@ WSTRING CCurrentGame::ExpandText(const WCHAR* wText,
 							if (CCharacter::IsValidExpression(wEscapeStr.c_str(), index, this->pHold))
 							{
 								index=0;
-								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this);
+								const int nVal = CCharacter::parseExpression(wEscapeStr.c_str(), index, this, pCharacter);
 								wStr += _itoW(nVal, wIntText, 10);
 							}
 						}
@@ -631,10 +849,15 @@ WSTRING CCurrentGame::getTextForInputCommandKey(InputCommands::DCMD id) const
 	ASSERT(id < InputCommands::DCMD_Count);
 
 	const CDbPackedVars settings = g_pTheDB->GetCurrentPlayerSettings();
-	const InputCommands::DCMD eCommand = InputCommands::DCMD(
-			settings.GetVar(InputCommands::COMMANDNAME_ARRAY[id], 0));
+	const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(id);
 
-	return g_pTheDB->GetMessageText(KeyToMID(eCommand));
+	InputKey inputKey = settings.GetVar(keyDefinition->settingName, (int64_t)0);
+
+	if (inputKey == SDLK_UNKNOWN) {
+		inputKey = keyDefinition->GetDefaultKey(settings.GetVar(INIKey::Keyboard, 0));
+	}
+
+	return I18N::DescribeInputKey(inputKey);
 }
 
 //*****************************************************************************
@@ -876,6 +1099,73 @@ UINT CCurrentGame::getVar(const UINT varIndex) const
 			return this->scriptReturnX;
 		case (UINT)ScriptVars::P_RETURN_Y:
 			return this->scriptReturnY;
+		case (UINT)ScriptVars::P_ROOM_X:
+		case (UINT)ScriptVars::P_ROOM_Y:
+		{
+			int dX, dY;
+			this->pRoom->GetPositionInLevel(dX, dY);
+			return varIndex == (UINT)ScriptVars::P_ROOM_X ? dX : dY;
+		}
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+		{
+			UINT retVal = 0;
+			if (this->pRoom->weather.bOutside)
+				retVal += ScriptFlag::WEATHER_OUTSIDE;
+
+			if (this->pRoom->weather.bLightning)
+				retVal += ScriptFlag::WEATHER_LIGHTNING;
+
+			if (this->pRoom->weather.bClouds)
+				retVal += ScriptFlag::WEATHER_CLOUDS;
+
+			if (this->pRoom->weather.bSunshine)
+				retVal += ScriptFlag::WEATHER_SUNSHINE;
+
+			if (this->pRoom->weather.bSkipLightfade)
+				retVal += ScriptFlag::WEATHER_SKIP_LIGHTFADE;
+
+			return retVal;
+		}
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+			return this->pRoom->weather.wLight;
+		case (UINT)ScriptVars::P_ROOM_FOG:
+			return this->pRoom->weather.wFog;
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+			return this->pRoom->weather.wSnow;
+		case (UINT)ScriptVars::P_ROOM_RAIN:
+			return this->pRoom->weather.rain;
+		case (UINT)ScriptVars::P_SPAWNCYCLE:
+			return this->wSpawnCycleCount % TURNS_PER_CYCLE;
+		case (UINT)ScriptVars::P_SPAWNCYCLE_FAST:
+		{
+			UINT cycleTurn = this->wSpawnCycleCount % TURNS_PER_CYCLE;
+			cycleTurn *= 2;
+			return this->bHalfTurn ? cycleTurn + 1 : cycleTurn;
+		}
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			return this->swordsman.weaponType;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			return this->swordsman.localRoomWeaponType;
+		case (UINT)ScriptVars::P_INPUT:
+		{
+			return this->lastProcessedCommand;
+		}
+		case (UINT)ScriptVars::P_INPUT_DIRECTION:
+		{
+			switch(this->lastProcessedCommand) {
+				case CMD_N: return N;
+				case CMD_NE: return NE;
+				case CMD_W: return W;
+				case CMD_E: return E;
+				case CMD_SW: return SW;
+				case CMD_S: return S;
+				case CMD_SE: return SE;
+				case CMD_NW: return NW;
+				default: return NO_ORIENTATION;
+			}
+		}
+		case (UINT)ScriptVars::P_COMBO:
+			return this->wMonsterKillCombo;
 		default:
 			return 0;
 	}
@@ -956,6 +1246,53 @@ void CCurrentGame::ProcessCommandSetVar(
 		case (UINT)ScriptVars::P_RETURN_Y:
 			this->scriptReturnY = int(newVal);
 		break;
+		case (UINT)ScriptVars::P_ROOM_WEATHER:
+			this->pRoom->weather.bOutside = newVal & ScriptFlag::WEATHER_OUTSIDE;
+			this->pRoom->weather.bLightning = newVal & ScriptFlag::WEATHER_LIGHTNING;
+			this->pRoom->weather.bClouds = newVal & ScriptFlag::WEATHER_CLOUDS;
+			this->pRoom->weather.bSunshine = newVal & ScriptFlag::WEATHER_SUNSHINE;
+			this->pRoom->weather.bSkipLightfade = newVal & ScriptFlag::WEATHER_SKIP_LIGHTFADE;
+		break;
+		case (UINT)ScriptVars::P_ROOM_DARKNESS:
+		{
+			UINT wLight = max(0U, min(newVal, MAX_ROOM_LIGHT));
+			this->pRoom->weather.wLight = wLight;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_FOG:
+		{
+			UINT wFog = max(0U, min(newVal, MAX_ROOM_FOG));
+			this->pRoom->weather.wFog = wFog;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_SNOW:
+		{
+			UINT wSnow = max(0U, min(newVal, MAX_ROOM_SNOW));
+			this->pRoom->weather.wSnow = wSnow;
+		}
+		break;
+		case (UINT)ScriptVars::P_ROOM_RAIN:
+		{
+			UINT wRain = max(0U, min(newVal, MAX_ROOM_RAIN));
+			this->pRoom->weather.rain = wRain;
+		}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_WEAPON:
+			if (bIsRealWeapon(newVal) || newVal == WT_On || newVal == WT_Off) {
+				this->swordsman.EquipWeapon(newVal);
+			}
+		break;
+		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
+			if (bIsRealWeapon(newVal)) {
+				this->swordsman.SetWeaponType(newVal, false);
+			} else if (newVal == WT_On) {
+				this->swordsman.bNoWeapon = false;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			} else if (newVal == WT_Off) {
+				this->swordsman.bNoWeapon = true;
+				this->pRoom->ChangeTiles(WeaponDisarm);
+			}
+		break;
 		default:
 		break;
 	}
@@ -989,6 +1326,56 @@ void CCurrentGame::GetVarValues(VARMAP& vars)
 		}
 		vars[varName] = info;
 	}
+}
+
+//*****************************************************************************
+void CCurrentGame::GetArrayVarValues(VARMAP& vars)
+//Outputs a mapping of combined array name and index to value info for all array vars
+{
+	vars.clear();
+
+	for (ScriptArrayMap::const_iterator iter = this->scriptArrays.begin();
+		iter != this->scriptArrays.end(); ++iter) {
+		//Get var name.
+		const UINT wVarID = iter->first;
+		const string varName = UnicodeToUTF8(this->pHold->GetVarName(wVarID));
+		const map<int, int> array = iter->second;
+
+		for (map<int, int>::const_iterator arrayIter = array.begin(); arrayIter != array.end(); ++arrayIter) {
+			//Create a key for each entry in the format v[id]/[index]
+			const string key = varName + "/" + to_string(arrayIter->first);
+			VarMapInfo info;
+			info.bInteger = true;
+			info.val = arrayIter->second;
+			vars[key] = info;
+		}
+	}
+}
+
+//*****************************************************************************
+WSTRING CCurrentGame::GetArrayVarAsString(const UINT varID)
+//
+{
+	ScriptArrayMap::const_iterator array = this->scriptArrays.find(varID);
+	if (array == this->scriptArrays.end()) {
+		return WS(""); //Array hasn't been initialized yet
+	}
+
+	WSTRING wstr;
+	bool bNeedComma = false;
+	for (map<int, int>::const_iterator iter = array->second.cbegin();
+		iter != array->second.cend(); ++iter) {
+		if (bNeedComma) {
+			wstr += wszComma;
+		}
+
+		wstr += to_WSTRING(iter->first);
+		wstr += wszColon;
+		wstr += to_WSTRING(iter->second);
+		bNeedComma = true;
+	}
+
+	return wstr;
 }
 
 //*****************************************************************************
@@ -1335,6 +1722,7 @@ bool CCurrentGame::LoadFromHold(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->pLevel->dwStartingRoomID = pEntrance->dwRoomID;
 
@@ -1390,6 +1778,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		const bool bWeaponOff_ = this->swordsman.bWeaponOff;
 		const UINT wWaterTraversal_ = this->swordsman.wWaterTraversal;
 		const WeaponType weaponType_ = this->swordsman.weaponType;
+		const PlayerBehaviors behaviorOverrides_ = this->swordsman.behaviorOverrides;
 
 		LoadPrep(false);
 
@@ -1397,6 +1786,7 @@ bool CCurrentGame::LoadFromLevelEntrance(
 		this->swordsman.bWeaponOff = bWeaponOff_;
 		this->swordsman.wWaterTraversal = wWaterTraversal_;
 		this->swordsman.weaponType = weaponType_;
+		this->swordsman.behaviorOverrides = behaviorOverrides_;
 	}
 
 	this->pEntrance = this->pHold->GetEntrance(dwEntranceID);
@@ -1537,6 +1927,7 @@ bool CCurrentGame::LoadFromRoom(
 	this->bStartRoomSwordOff = false;
 	this->wStartRoomWaterTraversal = WTrv_AsPlayerRole;
 	this->wStartRoomWeaponType = WT_Sword;
+	this->startRoomPlayerBehaviorOverrides.clear();
 
 	this->swordsman.wX = this->swordsman.wPrevX = CDbSavedGame::wStartRoomX;
 	this->swordsman.wY = this->swordsman.wPrevY = CDbSavedGame::wStartRoomY;
@@ -1595,6 +1986,9 @@ bool CCurrentGame::LoadFromSavedGame(
 	this->pHold = this->pLevel->GetHold();
 	if (!this->pHold) throw CException("CCurrentGame::LoadFromSavedGame");
 
+	//Load script arrays
+	DeserializeScriptArrays();
+
 	//Set room start vars.
 	this->swordsman.wX = this->swordsman.wPrevX = CDbSavedGame::wStartRoomX;
 	this->swordsman.wY = this->swordsman.wPrevY = CDbSavedGame::wStartRoomY;
@@ -1602,6 +1996,7 @@ bool CCurrentGame::LoadFromSavedGame(
 	SetPlayerRole(CDbSavedGame::wStartRoomAppearance, CueEvents);
 	this->swordsman.bWeaponOff = CDbSavedGame::bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = CDbSavedGame::wStartRoomWaterTraversal;
+	this->swordsman.behaviorOverrides = CDbSavedGame::startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetWeaponType(CDbSavedGame::wStartRoomWeaponType);
 	SetRoomStartToPlayer();
 
@@ -1750,6 +2145,42 @@ void CCurrentGame::LoadPrep(
 			this->DemoRecInfo = demoInfo;
 			this->bIsDemoRecording = bDemoRecording;
 		}
+	}
+}
+
+//***************************************************************************************
+void CCurrentGame::DeserializeScriptArrays()
+//Load hold script arrays from raw buffers stored in CDbPackedVars
+{
+	if (!pHold)
+		return;
+
+	this->scriptArrays.clear();
+
+	for (map<UINT, WSTRING>::const_iterator it = pHold->arrayScriptVars.begin();
+		it != pHold->arrayScriptVars.end(); ++it) {
+		if (pHold->IsLocalVar(it->first))
+			continue;
+
+		string varName("v");
+		varName += std::to_string(it->first);
+
+		BYTE* buffer = (BYTE*)this->stats.GetVar(varName.c_str(), (const void*)(NULL));
+		if (!buffer)
+			continue;
+
+		map<int, int> scriptArray;
+		UINT index = 0;
+		UINT size = readBpUINT(buffer, index);
+		while (size) {
+			int key = (int)readBpUINT(buffer, index);
+			int value = (int)readBpUINT(buffer, index);
+			ASSERT(value != 0);
+			scriptArray[key] = value;
+			--size;
+		}
+
+		scriptArrays[it->first] = scriptArray;
 	}
 }
 
@@ -1971,6 +2402,7 @@ void CCurrentGame::ProcessCommand(
 	ASSERT(this->bIsGameActive);
 
 	const UINT dwStart = GetTicks();
+	this->lastProcessedCommand = nCommand;
 
 	//Reset relative movement for the current turn.
 	UpdatePrevCoords();
@@ -2116,16 +2548,7 @@ void CCurrentGame::ProcessCommand(
 		//After answering all questions, allow NPCs to execute non turn-expending commands.
 		if (this->UnansweredQuestions.empty())
 		{
-			this->bExecuteNoMoveCommands = true;
-			CMonster *pMonster = this->pRoom->pFirstMonster;
-			while (pMonster)
-			{
-				if (pMonster->wType == M_CHARACTER)
-					pMonster->Process(CMD_WAIT, CueEvents);
-				pMonster = pMonster->pNext;
-			}
-			this->bExecuteNoMoveCommands = false;
-			this->pRoom->ProcessTurn(CueEvents, false);
+			ProcessNoMoveCharacters(CueEvents);
 		}
 	} else {
 		bool bPlayerLeftRoom = false;
@@ -2138,10 +2561,16 @@ void CCurrentGame::ProcessCommand(
 			if (bIsComplexCommand(nCommand))
 				return;
 
-			//If CMD Key was used, trigger the event
+			//If a CMD Key was used, trigger the event
 			if (nCommand == CMD_EXEC_COMMAND)
 			{
 				CueEvents.Add(CID_CommandKeyPressed);
+				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
+			} else if (nCommand == CMD_EXEC_COMMAND_TWO) {
+				CueEvents.Add(CID_CommandKeyTwoPressed);
+				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
+			} else if (nCommand == CMD_EXEC_COMMAND_THREE) {
+				CueEvents.Add(CID_CommandKeyThreePressed);
 				nCommand = CMD_WAIT; //For all other interactions, treat as a Wait
 			}
 
@@ -2338,9 +2767,15 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 
 		UndoCommands(num_commands_to_undo, CueEvents);
 
+		UINT returnedTo = this->wTurnNo;
 		this->wPlayerTurn = playerTurn_;
 		this->wTurnNo = turnNo_;
 		this->checkpointTurns = checkpointTurns_;
+
+		//If the player rewinds to the exact turn a cutscene starts, update the tracked turn
+		//number so that undoing doesn't undo too far.
+		if (this->cutSceneStartTurn == returnedTo)
+			this->cutSceneStartTurn = this->wTurnNo;
 
 		ASSERT(this->activatingTemporalSplit > 0);
 		--this->activatingTemporalSplit;
@@ -2363,6 +2798,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 	pClone->weaponType = this->swordsman.GetActiveWeapon();
 	pClone->wIdentity = this->swordsman.wIdentity;
 	pClone->wAppearance = this->swordsman.wAppearance;
+	pClone->behaviorOverrides = this->swordsman.behaviorOverrides;
 	pClone->SetWeaponSheathed();
 	pClone->SetMovementType();
 	pClone->InputCommands(player_commands);
@@ -2658,6 +3094,16 @@ void CCurrentGame::ProcessWeaponPush(
 	WeaponPushback(push, pushX, pushY, eActivationType, CueEvents, pArmedMonster);
 }
 
+//***************************************************************************************
+void CCurrentGame::ProcessScriptedPush(
+	const WeaponStab& push,
+	CCueEvents& CueEvents,
+	CCharacter* pCharacter
+)
+{
+	ProcessWeaponPush(push, 0, 0, OrbActivationType::OAT_Monster, CueEvents, pCharacter);
+}
+
 //*****************************************************************************
 bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 // Returns true if the player has been moved
@@ -2667,7 +3113,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 	const UINT wDestX = wFromX + dx;
 	const UINT wDestY = wFromY + dy;
 	const UINT wPushO = nGetO(dx, dy);
-	const bool bEnteredTunnel = PlayerEnteredTunnel(this->pRoom->GetOSquare(wFromX, wFromY), wPushO);
+	const bool bEnteredTunnel = PlayerEnteredTunnel(wFromX, wFromY, dx, dy);
 
 	if (!this->pRoom->IsValidColRow(wDestX, wDestY))
 		return false;
@@ -2684,7 +3130,7 @@ bool CCurrentGame::PushPlayerInDirection(int dx, int dy, CCueEvents &CueEvents)
 		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(wDestX, wDestY);
 		if (pMonster != NULL && pMonster->wType != M_FLUFFBABY)
 			return false;
-		if (!this->pRoom->CanPushOntoOTile(wDestX, wDestY))
+		if (!this->swordsman.CanPushOntoOTile(this->pRoom->GetOSquare(wDestX, wDestY)))
 			return false;
 		if (!this->pRoom->CanPushOntoTTile(wDestX, wDestY))
 			return false;
@@ -3646,6 +4092,7 @@ void CCurrentGame::RoomEntranceAsserts()
 	ASSERT(this->swordsman.wIdentity == this->wStartRoomAppearance);
 	ASSERT(this->swordsman.bWeaponOff == this->bStartRoomSwordOff);
 	ASSERT(this->swordsman.wWaterTraversal == this->wStartRoomWaterTraversal);
+	ASSERT(this->swordsman.behaviorOverrides == this->startRoomPlayerBehaviorOverrides);
 	ASSERT((UINT)this->swordsman.weaponType == this->wStartRoomWeaponType);
 }
 
@@ -3867,7 +4314,7 @@ void CCurrentGame::TeleportPlayer(
 		}
 		else if (pMonster->wType == M_FEGUNDOASHES ||  //fegundo ashes
 			this->swordsman.CanStepOnMonsters() ||  //player in monster-role attacked another monster
-			this->swordsman.CanDaggerStep(pMonster->wType, true))  //player stabbed with a dagger
+			this->swordsman.CanDaggerStep(pMonster, true))  //player stabbed with a dagger
 		{
 			CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);
@@ -4264,7 +4711,6 @@ void CCurrentGame::SetTurn(
 		const UINT d_ = this->dwLevelDeaths, k_ = this->dwLevelKills,
 				m_ = this->dwLevelMoves, t_ = this->dwLevelTime,
 				st_ = this->dwStartTime;
-		const bool rl_ = this->bRoomExitLocked;
 		const UINT dwAutoSaveOptions_ = this->dwAutoSaveOptions;
 
 		//Restore game to state of selected snapshot.
@@ -4288,7 +4734,7 @@ void CCurrentGame::SetTurn(
 		this->dwLevelMoves = m_;
 		this->dwLevelTime = t_;
 		this->dwStartTime = st_;
-		this->bRoomExitLocked = rl_;
+		this->bRoomExitLocked = bOldIsRoomLocked;
 		this->dwAutoSaveOptions = dwAutoSaveOptions_;
 
 		return;
@@ -4708,7 +5154,7 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 			if (this->roomSpeech.size() >= MAX_SPEECH_HISTORY)
 			{
 				//Pop first item from speech sequence.
-				delete this->roomSpeech[0];
+				delete this->roomSpeech[0].pSpeechCommand;
 				const UINT sizeMinusOne = this->roomSpeech.size()-1;
 				for (UINT i=0; i<sizeMinusOne; ++i)
 					this->roomSpeech[i] = this->roomSpeech[i+1];
@@ -4719,6 +5165,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 			ASSERT(pCommand->pSpeech);
 			pCommand->pSpeech->MessageText = pCmd->text.c_str(); //get interpolated text
 			UINT& characterType = pCommand->pSpeech->wCharacter;
+			WSTRING customName = DefaultCustomCharacterName;
+
 			if (characterType == Speaker_Self)
 			{
 				//Resolve now because there won't be any hook to the executing NPC later.
@@ -4728,6 +5176,8 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 				//Convert to the speaker type.
 				if (characterType < CUSTOM_CHARACTER_FIRST)
 					characterType = getSpeakerType(MONSTERTYPE(characterType));
+
+				customName = pCharacter->GetCustomName();
 			}
 			else if (characterType == Speaker_Player)
 			{
@@ -4745,11 +5195,17 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 					pCommand->x, pCommand->y);
 				if (pMonster)
 				{
+					if (pMonster->wType == M_CHARACTER) {
+						const CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+
+						customName = pCharacter->GetCustomName();
+					}
+					
 					characterType = getSpeakerType(MONSTERTYPE(pMonster->GetResolvedIdentity()));
 				}
 			}
 
-			this->roomSpeech.push_back(pCommand);
+			this->roomSpeech.push_back(SpeechLog(customName, pCommand));
 		}
 		pObj = CueEvents.GetNextPrivateData();
 	}
@@ -4785,28 +5241,26 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 		if (pDouble->wType == M_CLONE)
 		{
 			pDouble->SetWeaponSheathed(); //Need to set sheath status before using items
-			const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-			const bool bCanGetItems = this->swordsman.CanLightFuses();
 			UINT wNewTSquare = this->pRoom->GetTSquare(pDouble->wX, pDouble->wY);
 			switch(wNewTSquare)
 			{
 				case T_POTION_K:  //Mimic potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 						DrankPotion(CueEvents, M_MIMIC, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_D:  //Decoy potion.
-					if (bSmitemaster)
+					if (this->swordsman.CanDrinkDecoyPotion())
 						DrankPotion(CueEvents, M_DECOY, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_C:  //Clone potion.
-					if (this->swordsman.CanLightFuses())
+					if (this->swordsman.CanDrinkClonePotion())
 						DrankPotion(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_POTION_I:  //Invisibility potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkInvisibilityPotion())
 					{
 						this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -4815,7 +5269,7 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_POTION_SP:  //Speed potion.
-					if (bCanGetItems)
+					if (this->swordsman.CanDrinkSpeedPotion())
 					{
 						this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 						this->pRoom->Plot(pDouble->wX, pDouble->wY, T_EMPTY);
@@ -4824,12 +5278,12 @@ void CCurrentGame::BlowHorn(CCueEvents &CueEvents, const UINT wSummonType,
 				break;
 
 				case T_HORN_SQUAD:    //Squad horn.
-					if (this->swordsman.CanLightFuses())  //same condition as clone potion..
+					if (this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 						BlowHorn(CueEvents, M_CLONE, pDouble->wX, pDouble->wY);
 				break;
 
 				case T_HORN_SOLDIER:  //Soldier horn.
-					if (bIsMonsterTarget(this->swordsman.wAppearance) || this->swordsman.bCanGetItems)
+					if (this->swordsman.CanBlowSoldierHorn())
 						BlowHorn(CueEvents, M_STALWART2, pDouble->wX, pDouble->wY);
 				break;
 
@@ -4907,7 +5361,7 @@ void CCurrentGame::FegundoToAsh(CMonster *pMonster, CCueEvents &CueEvents)
 		{
 			case T_PIT: case T_PIT_IMAGE:
 				CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(wX, wY,
-					S, M_OFFSET + M_FEGUNDOASHES, 0), true);
+					S, M_OFFSET + M_FEGUNDOASHES, -2), true);
 			break;
 			case T_WATER: case T_SHALLOW_WATER:
 				CueEvents.Add(CID_Splash, new CCoord(wX,wY), true);
@@ -5243,56 +5697,82 @@ void CCurrentGame::ProcessDoublePlacement(
       if (!this->pRoom->DoesSquareContainDoublePlacementObstacle(this->swordsman.wDoubleCursorX,
 				this->swordsman.wDoubleCursorY, this->swordsman.wPlacingDoubleType))
       {
-         CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pRoom->AddNewMonster(
+				if (!bIsSelectSquare(this->swordsman.wPlacingDoubleType))
+				{
+					CPlayerDouble *pDouble = DYN_CAST(CPlayerDouble*, CMonster*, pRoom->AddNewMonster(
 					this->swordsman.wPlacingDoubleType,
 					this->swordsman.wDoubleCursorX, this->swordsman.wDoubleCursorY));
-         this->swordsman.wPlacingDoubleType=0;
+					this->swordsman.wPlacingDoubleType=0;
 
-         if (pDouble) //Yes, adding a Double worked.
-         {
-				//Count double placement as one command.
-				if (!this->Commands.IsFrozen())
-				{
-					this->Commands.Add(CMD_DOUBLE);
-					this->Commands.AddData(pDouble->wX, pDouble->wY);
+					if (pDouble) //Yes, adding a Double worked.
+					{
+						//Count double placement as one command.
+						if (!this->Commands.IsFrozen())
+						{
+							this->Commands.Add(CMD_DOUBLE);
+							this->Commands.AddData(pDouble->wX, pDouble->wY);
+						}
+						++this->wTurnNo;
+						++this->dwLevelMoves;
+						ASSERT(this->dwLevelMoves > 0);
+
+						CueEvents.Add(CID_DoublePlaced, new CCoord(pDouble->wX, pDouble->wY), true);
+						pDouble->SetCurrentGame(this);
+						pDouble->wPrevX = pDouble->wX;
+						pDouble->wPrevY = pDouble->wY;
+						pDouble->wPrevO = pDouble->wO = this->swordsman.wO;
+						pDouble->weaponType = this->swordsman.GetActiveWeapon();
+						pDouble->Process(CMD_WAIT, CueEvents);
+
+						QueryCheckpoint(CueEvents, pDouble->wX, pDouble->wY);
+
+						//Activate pressure plate at destination if not flying.
+						if (this->pRoom->GetOSquare(pDouble->wX, pDouble->wY) == T_PRESSPLATE &&
+							(pDouble->wType != M_CLONE || bCanEntityPressPressurePlates(this->swordsman.wAppearance)))
+							this->pRoom->ActivateOrb(pDouble->wX, pDouble->wY, CueEvents, OAT_PressurePlate);
+
+						this->pRoom->ActivateToken(CueEvents, pDouble->wX, pDouble->wY, pDouble);
+						pDouble->SetWeaponSheathed();
+						if (pDouble->HasSword())
+						{
+							ProcessArmedMonsterWeapon(pDouble, CueEvents);
+							ResolveSimultaneousTarstuffStabs(CueEvents);
+						}
+
+					 //Start immediately at clone's position, if the player didn't die by placement.
+					 if (pDouble->wType == M_CLONE &&
+							!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
+							SwitchToCloneAt(pDouble->wX, pDouble->wY);
+
+						//Handle events possible after double placement.
+						this->pRoom->ProcessTurn(CueEvents, false);
+
+						UpdatePrevCoords();
+					}
+				} else {
+					//Put selected position into script return vars
+					this->scriptReturnX = int(this->swordsman.wDoubleCursorX);
+					this->scriptReturnY = int(this->swordsman.wDoubleCursorY);
+
+					if (!this->Commands.IsFrozen())
+					{
+						this->Commands.Add(CMD_DOUBLE);
+						this->Commands.AddData(this->swordsman.wDoubleCursorX, this->swordsman.wDoubleCursorY);
+					}
+					++this->wTurnNo;
+					++this->dwLevelMoves;
+					ASSERT(this->dwLevelMoves > 0);
+
+					//Allow characters to process now that the return values are set
+					//Reset placing type to allow scripters more control over what happens
+					this->swordsman.wPlacingDoubleType = 0;
+					ProcessNoMoveCharacters(CueEvents);
+
+					//We didn't exactly set a filter, but we need to prompt a screen rerender somehow.
+					CueEvents.Add(CID_SetDisplayFilter);
 				}
-				++this->wTurnNo;
-				++this->dwLevelMoves;
-				ASSERT(this->dwLevelMoves > 0);
 
-				CueEvents.Add(CID_DoublePlaced);
-				pDouble->SetCurrentGame(this);
-				pDouble->wPrevX=pDouble->wX;
-				pDouble->wPrevY=pDouble->wY;
-				pDouble->wPrevO=pDouble->wO=this->swordsman.wO;
-				pDouble->weaponType = this->swordsman.GetActiveWeapon();
-				pDouble->Process(CMD_WAIT, CueEvents);
-
-				QueryCheckpoint(CueEvents, pDouble->wX, pDouble->wY);
-
-				//Activate pressure plate at destination if not flying.
-				if (this->pRoom->GetOSquare(pDouble->wX, pDouble->wY) == T_PRESSPLATE &&
-						(pDouble->wType != M_CLONE || bCanEntityPressPressurePlates(this->swordsman.wAppearance)))
-					this->pRoom->ActivateOrb(pDouble->wX, pDouble->wY, CueEvents, OAT_PressurePlate);
-
-				this->pRoom->ActivateToken(CueEvents, pDouble->wX, pDouble->wY, pDouble);
-				pDouble->SetWeaponSheathed();
-				if (pDouble->HasSword())
-				{
-					ProcessArmedMonsterWeapon(pDouble, CueEvents);
-					ResolveSimultaneousTarstuffStabs(CueEvents);
-				}
-
-				//Start immediately at clone's position, if the player didn't die by placement.
-				if (pDouble->wType == M_CLONE &&
-						!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerDied), CIDA_PlayerDied))
-					SwitchToCloneAt(pDouble->wX, pDouble->wY);
-
-				//Handle events possible after double placement.
-				this->pRoom->ProcessTurn(CueEvents, false);
-
-				UpdatePrevCoords();
-         }
+				this->swordsman.wPlacingDoubleType = 0;
       }
    }
 	//Move double placement cursor.
@@ -5347,7 +5827,8 @@ void CCurrentGame::PreprocessMonsters(
 	this->swordsman.wAppearance = M_BEETHRO; //this type of player
 	bool bIgnored;
 	const bool bClosed = room.DoesSquareContainPlayerObstacle(wX, wY, wO, bIgnored) ||
-			IsPlayerAt(wX, wY) || IsPlayerWeaponAt(wX, wY);
+		room.DoesOrthoSquarePreventDiagonal(wX, wY, nOX, nOY) || room.GetOSquare(wX, wY) == T_FIRETRAP_ON ||
+		room.IsMonsterOfTypeAt(M_FLUFFBABY, wX, wY) || IsPlayerAt(wX, wY) || IsPlayerWeaponAt(wX, wY);
 	this->swordsman.wAppearance = wAppearance;
 	if (bClosed)
 		return;  //No.
@@ -5632,6 +6113,26 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 }
 
 //***************************************************************************************
+void CCurrentGame::ProcessNoMoveCharacters(CCueEvents& CueEvents)
+//Allow NPCs to execute non turn-expending commands.
+{
+	this->bExecuteNoMoveCommands = true;
+	CMonster* pMonster = this->pRoom->pFirstMonster;
+	while (pMonster)
+	{
+		if (pMonster->wType == M_CHARACTER) {
+			pMonster->Process(CMD_WAIT, CueEvents);
+			CCharacter* pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
+			if (pCharacter && pCharacter->bScriptDone)
+				ScriptCompleted(pCharacter);
+		}
+		pMonster = pMonster->pNext;
+	}
+	this->bExecuteNoMoveCommands = false;
+	this->pRoom->ProcessTurn(CueEvents, false);
+}
+
+//***************************************************************************************
 void CCurrentGame::ResolveSimultaneousTarstuffStabs(
 //Processes results of all weapon stabs entering tarstuff tiles that
 //must be stabbed simultaneously.
@@ -5731,6 +6232,7 @@ void CCurrentGame::ProcessPlayer(
 	const UINT wTTileNo = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 	bool bEnteredTunnel = false;
 	bool bMovingPlatform = false;
+	bool bPushedCharacter = false;
 
 	//Look for obstacles and set dx/dy accordingly.
 	const UINT wMoveO = nGetO(dx, dy);
@@ -5762,7 +6264,7 @@ void CCurrentGame::ProcessPlayer(
 	{ // scope to prevent new variables from tripping up gotos to MakeMove
 
 	//Check for tunnel entrance before checking for room exit.
-	bEnteredTunnel = PlayerEnteredTunnel(wOTileNo, wMoveO);
+	bEnteredTunnel = PlayerEnteredTunnel(this->swordsman.wX, this->swordsman.wY, dx, dy);
 	if (bEnteredTunnel)
 		goto MakeMove;
 
@@ -5823,12 +6325,16 @@ void CCurrentGame::ProcessPlayer(
 				if (bIsEntityFlying(this->swordsman.wAppearance))
 					goto CheckFLayer;
 				//If standing on a platform, check whether it can move.
-				if (wOTileNo == T_PLATFORM_P)
-					if (this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
+				if (wOTileNo == T_PLATFORM_P) {
+					if (this->swordsman.CanMovePlatform() &&
+						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
 					}
+					CueEvents.Add(CID_PlatformBlocked, new CMoveCoord(
+						this->swordsman.wX, this->swordsman.wY, wMoveO), true);
+				}
 				CueEvents.Add(CID_Scared);
 			break;
 			case T_SHALLOW_WATER:
@@ -5844,12 +6350,16 @@ void CCurrentGame::ProcessPlayer(
 				if (bIsEntityFlying(this->swordsman.wAppearance) ||
 						bIsEntitySwimming(this->swordsman.wAppearance))
 					goto CheckFLayer;
-				if (wOTileNo == T_PLATFORM_W)
-					if (this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
+				if (wOTileNo == T_PLATFORM_W) {
+					if (this->swordsman.CanMovePlatform() &&
+						this->pRoom->CanMovePlatform(this->swordsman.wX, this->swordsman.wY, nFirstO))
 					{
 						bMovingPlatform = bNotAnObstacle = true;
 						goto CheckFLayer;
 					}
+					CueEvents.Add(CID_PlatformBlocked, new CMoveCoord(
+						this->swordsman.wX, this->swordsman.wY, wMoveO), true);
+				}
 				CueEvents.Add(CID_Scared);
 			break;
 			case T_DOOR_Y:
@@ -5871,7 +6381,7 @@ void CCurrentGame::ProcessPlayer(
 					CueEvents.Add(CID_HitObstacle, new CMoveCoord(destX, destY, wMoveO), true);
 			break;
 			case T_WALL_M:
-				if (!this->bHoldMastered)
+				if (!IsMasterWallPassable())
 				{
 					//Player hit "master wall" and couldn't go through.
 					//Don't allow this move to be made.
@@ -5881,7 +6391,7 @@ void CCurrentGame::ProcessPlayer(
 				goto CheckFLayer;
 			break;
 			case T_WALL_WIN:
-				if (!this->bHoldCompleted)
+				if (!IsHoldCompleteWallPassable())
 				{
 					//Player hit "hold completion wall" and couldn't go through.
 					//Don't allow this move to be made.
@@ -5917,9 +6427,7 @@ CheckFLayer:
 			//If player is in humanoid, non-sworded role, allow hitting orbs directly.
 			case T_ORB:
 			case T_BEACON: case T_BEACON_OFF:
-				if ((bIsHuman(this->swordsman.wAppearance) &&
-						!bEntityHasSword(this->swordsman.wAppearance)) ||
-						this->swordsman.bCanGetItems) //power token allows this too
+				if (this->swordsman.CanBumpActivateOrb()) //power token allows this too
 					if (wNewTTile == T_ORB)
 					{
 						this->pRoom->ActivateOrb(destX, destY, CueEvents, OAT_Player);
@@ -5936,6 +6444,7 @@ CheckFLayer:
 				//Player ran into item.  Push if possible.
 				if (this->pRoom->CanPlayerMoveOnThisElement(
 							this->swordsman.wAppearance, this->pRoom->GetOSquare(destX, destY)) &&
+						this->swordsman.CanPushObject() &&
 						this->pRoom->CanPushTo(destX, destY, destX + dx, destY + dy))
 				{
 					//Push, if monster layer doesn't have an obstacle too.
@@ -5987,10 +6496,7 @@ CheckMonsterLayer:
 					//Player bumps into an NPC, see if we can push him first
 					CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 
-
-					bool bPushedCharacter = false;
-
-					if (pCharacter->IsPushableByBody()){
+					if (pCharacter->IsPushableByBody() && this->swordsman.CanPushMonster()){
 						const UINT wDestX = pCharacter->wX + dx;
 						const UINT wDestY = pCharacter->wY + dy;
 
@@ -6074,10 +6580,8 @@ MakeMove:
 			this->swordsman.wSwordMovement != this->swordsman.wO) //pushing forward is valid
 		this->swordsman.wSwordMovement = NO_ORIENTATION;
 
-	const bool bWeaponWasSheathed = !this->swordsman.HasWeapon();
 	//Swordless entities automatically face the way they're trying to move.
-	const bool face_movement_direction = bWeaponWasSheathed || this->swordsman.GetActiveWeapon() == WT_Dagger;
-	if (face_movement_direction && nFirstO != NO_ORIENTATION)
+	if (this->swordsman.FacesMovementDirection() && nFirstO != NO_ORIENTATION)
 	{
 		this->swordsman.SetOrientation(nFirstO);
 		this->swordsman.wSwordMovement = nFirstO;
@@ -6095,6 +6599,10 @@ MakeMove:
 		this->pRoom->DestroyTrapdoor(this->swordsman.wX - dx,
 				this->swordsman.wY - dy, CueEvents);
 
+	//If a character was pushed, the destination tile may have fallen
+	if (bPushedCharacter)
+		this->pRoom->CheckForFallingAt(this->swordsman.wX, this->swordsman.wY, CueEvents);
+
 	//Check for stepping on monster
 	CMonster* pMonster = this->pRoom->GetMonsterAtSquare(this->swordsman.wX, this->swordsman.wY);
 	if (pMonster)
@@ -6106,7 +6614,7 @@ MakeMove:
 		}
 		else if (pMonster->wType == M_FEGUNDOASHES ||  //fegundo ashes
 			this->swordsman.CanStepOnMonsters() ||  //player in monster-role attacked another monster
-			this->swordsman.CanDaggerStep(pMonster->wType, true))  //player stabbed with a dagger
+			this->swordsman.CanDaggerStep(pMonster, true))  //player stabbed with a dagger
 		{
 			CueEvents.Add(CID_MonsterDiedFromStab, pMonster);
 			this->pRoom->KillMonster(pMonster, CueEvents, false, &this->swordsman);
@@ -6149,7 +6657,7 @@ MakeMove:
 			{
 				//Player dies if on same hot tile two (non-hasted) turns in a row.
 				if ((!this->swordsman.bIsHasted || this->bWaitedOnHotFloorLastTurn) &&
-						bIsEntityTypeVulnerableToHeat(this->swordsman.wAppearance))
+						this->swordsman.IsVulnerableToHeat())
 				{
 					SetDyingEntity(&this->swordsman);
 					CueEvents.Add(CID_PlayerBurned);
@@ -6176,8 +6684,6 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	const bool bWasOnSameScroll, const bool bPlayerMove, const bool bPlayerTeleported)
 {
 	const bool bMoved = dx!=0 || dy!=0 || bPlayerTeleported;
-	const bool bSmitemaster = bIsSmitemaster(this->swordsman.wAppearance);
-	const bool bCanGetItems = this->swordsman.CanLightFuses();
 	const UINT wOSquare = this->pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wTSquare = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
 
@@ -6201,22 +6707,22 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	switch (wTSquare)
 	{
 		case T_POTION_K:  //Mimic potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkMimicPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_MIMIC, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_D:  //Decoy potion.
-			if (bPlayerMove && bSmitemaster && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkDecoyPotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_DECOY, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_C:  //Clone potion.
-			if (bPlayerMove && this->swordsman.CanLightFuses() && this->swordsman.wPlacingDoubleType == 0)
+			if (bPlayerMove && this->swordsman.CanDrinkClonePotion() && this->swordsman.wPlacingDoubleType == 0)
 				DrankPotion(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
 		case T_POTION_I:  //Invisibility potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkInvisibilityPotion())
 			{
 				this->swordsman.bIsInvisible = !this->swordsman.bIsInvisible;   //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6226,7 +6732,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_POTION_SP:  //Speed potion.
-			if (bPlayerMove && bCanGetItems)
+			if (bPlayerMove && this->swordsman.CanDrinkSpeedPotion())
 			{
 				this->swordsman.bIsHasted = !this->swordsman.bIsHasted;  //Toggle effect.
 				this->pRoom->Plot(this->swordsman.wX, this->swordsman.wY, T_EMPTY);
@@ -6236,7 +6742,7 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 		break;
 
 		case T_HORN_SQUAD:    //Squad horn.
-			if (bPlayerMove && this->swordsman.CanLightFuses())  //same condition as clone potion..
+			if (bPlayerMove && this->swordsman.CanBlowSquadHorn())  //same condition as clone potion..
 				BlowHorn(CueEvents, M_CLONE, this->swordsman.wX, this->swordsman.wY);
 		break;
 
@@ -6269,34 +6775,18 @@ void CCurrentGame::ProcessPlayerMoveInteraction(int dx, int dy, CCueEvents& CueE
 	{
 		case T_FUSE:
 			//Light the fuse.
-			if (bCanGetItems)
+			if (this->swordsman.CanLightFuses())
 				this->pRoom->LightFuseEnd(CueEvents, this->swordsman.wX, this->swordsman.wY);
 		break;
 	}
 }
 
 //***************************************************************************************
-bool CCurrentGame::PlayerEnteredTunnel(const UINT wOTileNo, const UINT wMoveO, UINT wRole) const
+bool CCurrentGame::PlayerEnteredTunnel(const UINT wX, const UINT wY, const int dx, const int dy) const
 {
-	//Entity enters tunnel when moving off of a tunnel in its entrance direction.
-	if (!bIsTunnel(wOTileNo))
-		return false;
-	
-	//As default, use player's identity
-	if (wRole == M_NONE)
-		wRole = this->swordsman.wAppearance;
-
-	const bool bCanEnterTunnel = bIsMonsterTarget(wRole) || this->swordsman.bCanGetItems;
-	if (bCanEnterTunnel)
+	if (this->swordsman.CanEnterTunnel())
 	{
-		switch (wOTileNo)
-		{
-			case T_TUNNEL_N: return wMoveO == N;
-			case T_TUNNEL_S: return wMoveO == S;
-			case T_TUNNEL_E: return wMoveO == E;
-			case T_TUNNEL_W: return wMoveO == W;
-			default: ASSERT(!"Unrecognized tunnel type"); return false;
-		}
+		return this->pRoom->IsTunnelTraversableInDirection(wX, wY, dx, dy);
 	}
 	return false;
 }
@@ -6691,20 +7181,22 @@ void CCurrentGame::SetMembers(const CCurrentGame &Src)
 	this->bMusicStyleFrozen = Src.bMusicStyleFrozen;
 	this->bWaitedOnHotFloorLastTurn = Src.bWaitedOnHotFloorLastTurn;
 	this->statsAtRoomStart = Src.statsAtRoomStart;
+	this->scriptArraysAtRoomStart = Src.scriptArraysAtRoomStart;
 	this->ambientSounds = Src.ambientSounds;
 	this->conquerTokenTurn = Src.conquerTokenTurn;
+	this->lastProcessedCommand = Src.lastProcessedCommand;
 	this->bWasRoomConqueredAtTurnStart = Src.bWasRoomConqueredAtTurnStart;
 	this->bIsLeavingLevel = Src.bIsLeavingLevel;
 
 	//Speech log.
-	vector<CCharacterCommand*>::const_iterator iter;
+	vector<SpeechLog>::const_iterator iter;
 	for (iter = this->roomSpeech.begin();	iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 	for (iter = Src.roomSpeech.begin();	iter != Src.roomSpeech.end(); ++iter)
 	{
-		CCharacterCommand& c = *(*iter);
-		this->roomSpeech.push_back(new CCharacterCommand(c));
+		CCharacterCommand& c = *iter->pSpeechCommand;
+		this->roomSpeech.push_back(SpeechLog(iter->customName, new CCharacterCommand(c)));
 	}
 
 	//"swordsman exhausted/relieved" event logic
@@ -6982,9 +7474,9 @@ void CCurrentGame::SetMembersAfterRoomLoad(
 
 	//Reset ambient sounds and speech.
 	this->ambientSounds.clear();
-	for (vector<CCharacterCommand*>::const_iterator iter = this->roomSpeech.begin();
+	for (vector<SpeechLog>::const_iterator iter = this->roomSpeech.begin();
 			iter != this->roomSpeech.end(); ++iter)
-		delete *iter;
+		delete iter->pSpeechCommand;
 	this->roomSpeech.clear();
 
 	StashPersistingEvents(CueEvents);
@@ -7115,12 +7607,14 @@ void CCurrentGame::SetPlayerToRoomStart()
 	this->swordsman.bWeaponOff = this->bStartRoomSwordOff;
 	this->swordsman.wWaterTraversal = this->wStartRoomWaterTraversal;
 	this->swordsman.SetWeaponType(this->wStartRoomWeaponType);
+	this->swordsman.behaviorOverrides = this->startRoomPlayerBehaviorOverrides;
 	this->swordsman.SetOrientation(this->wStartRoomO);
 	SetPlayer(this->wStartRoomX, this->wStartRoomY);
 	this->wLastCheckpointX = this->wLastCheckpointY = NO_CHECKPOINT;
 	this->checkpointTurns.clear();
 	this->CompletedScriptsPending.clear();
 	this->stats = this->statsAtRoomStart;
+	this->scriptArrays = this->scriptArraysAtRoomStart;
 
 	//There should be no commands at the beginning of the room, unless
 	//the command sequence is being replayed.
@@ -7168,12 +7662,14 @@ void CCurrentGame::SetRoomStartToPlayer()
 	this->bStartRoomSwordOff = this->swordsman.bWeaponOff;
 	this->wStartRoomWaterTraversal = this->swordsman.wWaterTraversal;
 	this->wStartRoomWeaponType = this->swordsman.weaponType;
+	this->startRoomPlayerBehaviorOverrides = this->swordsman.behaviorOverrides;
 
 	this->wStartRoomO = this->swordsman.wO;
 	this->wStartRoomX = this->swordsman.wX;
 	this->wStartRoomY = this->swordsman.wY;
 
 	this->statsAtRoomStart = this->stats;
+	this->scriptArraysAtRoomStart = this->scriptArrays;
 	this->checkpointTurns.clear();
 }
 
@@ -7191,16 +7687,18 @@ void CCurrentGame::StashPersistingEvents(CCueEvents& CueEvents)
 		if (pImageOverlay->loopsForever())
 			this->persistingImageOverlays.push_back(*pImageOverlay);
 		const int clearLayer = pImageOverlay->clearsImageOverlays();
-		RemoveClearedImageOverlays(clearLayer);
+		const int clearGroup = pImageOverlay->clearsImageOverlayGroup();
+		RemoveClearedImageOverlays(clearLayer, clearGroup);
 
 		pObj = CueEvents.GetNextPrivateData();
 	}
 }
 
 //*****************************************************************************
-void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
+void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers, const int clearGroup)
 {
-	if (clearLayers == ImageOverlayCommand::NO_LAYERS)
+	if (clearLayers == ImageOverlayCommand::NO_LAYERS && 
+			clearGroup == ImageOverlayCommand::NO_GROUP)
 		return;
 
 	if (clearLayers == ImageOverlayCommand::ALL_LAYERS) {
@@ -7214,7 +7712,7 @@ void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers)
 			imageIt!=this->persistingImageOverlays.end(); ++imageIt)
 	{
 		const CImageOverlay& image = *imageIt;
-		if (clearLayers != image.getLayer())
+		if (clearLayers != image.getLayer() && clearGroup != image.getGroup())
 			keptImages.push_back(image);
 	}
 

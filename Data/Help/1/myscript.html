@@ -1,0 +1,246 @@
+<html>
+<head>
+  <title>Help for Deadly Rooms of Death</title>
+</head>
+<body bgcolor="#FFFFFF">
+<img src="images/drodlogo.jpg" />
+<hr />
+<h3><u>_MyScript Variable Injections</u></h3>
+<p>Many commands in DROD Script can accept dynamic values for certain options by taking values from any of the _MyScript variables. When a _MyScript variable is equal to -9999 it indicates its value should not be used - anything else and commands will take their values, overriding whatever you input in the command itself.</p>
+<p>Below is a table of all the ways this can be used:</p>
+
+<table>
+<tr>
+<td width="180">Command</td>
+<td width="95">X</td>
+<td width="95">Y</td>
+<td width="95">W</td>
+<td width="95">H</td>
+<td width="95">F</td>
+</tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Activate item</b></td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Amb. Sound at</b></td>        <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Appear at</b></td>            <td>Target X</td>     <td> Target Y</td>     <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Attack Tile</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Attack type</td></tr>
+<tr><td><b>Push Tile</b></td>          <td>Target X</td>     <td>Target Y</td>        <td>Direction</td>             <td></td>             <td></td></tr>
+<tr><td><b>Build</b></td>                <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Build marker</b></td>         <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>Cut scene</b></td>            <td>Ms per frame</td> <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Destroy trapdoor</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>Display filter</b></td>       <td>Filter</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Face Direction</b></td>       <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Face Towards</b></td>         <td>Target X</td>     <td>Target Y</td>      <td>Single Step</td>  <td></td>             <td>Entity bitmap</td></tr>
+<tr><td><b>Flash mess.</b></td>          <td>Red, 0-255</td>   <td>Green, 0-255</td>  <td>Blue, 0-255</td> <td>Use color?</td>   <td></td></tr>
+<tr><td><b>Game effect</b></td>          <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Game effect</td>  <td>Play sound</td></tr>
+<tr><td><b>Generate entity</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Orientation</td>  <td>Entity</td>       <td></td></tr>
+<tr><td><b>Get entity dir.</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Get natural target</b></td>   <td>Target type</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Goto lev. entrance</b></td>   <td></td>             <td>Skip e. screen</td><td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Link Orb</b></td>             <td>Target 1 X</td>   <td>Target 1 Y</td>   <td>Target 2 X</td>    <td>Target 2 Y</td>   <td>Connection type</td></tr>
+<tr><td><b>Move</b></td>                 <td>X Move</td>       <td>Y Move</td>        <td>Allow Turn.</td>  <td>Single Step</td>  <td></td></tr>
+<tr><td><b>Move to</b></td>              <td>Target X</td>     <td>Target Y</td>      <td>Allow Turn.</td>  <td>Single Step</td>  <td>Entity bitmap</td></tr>
+<tr><td><b>Play Video</b></td>           <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>Set player weapon</b></td>    <td>Weapon</td>       <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Set ceiling darkness</b></td> <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Darkness level</td></tr>
+<tr><td><b>Set ceiling light</b></td>    <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Light color</td></tr>
+<tr><td><b>Set wall light</b></td>       <td>X</td>            <td>Y</td>             <td>Intensity</td>    <td></td>           <td>Light color</td></tr>
+<tr><td><b>Set var at</b></td><td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Set array var</b></td><td></td>     <td></td>      <td></td>             <td></td>             <td>Starting Index</td></tr>
+<tr><td><b>Set array var at</b></td><td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td>Starting Index</td></tr>
+<tr><td><b>Teleport Player</b></td>      <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Teleport To</b></td>          <td>Target X</td>     <td>Target Y</td>      <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>Wait</b></td>                 <td>Wait turns</td>   <td>Y</td>             <td> </td>            <td> </td>            <td> </td></tr>
+<tr><td><b>W. entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. entity type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td><b>W. door</b></td>        <td>X</td>            <td>Y</td>             <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. item</b></td>        <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>W. item group</b></td>        <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>W. build mark.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>W. no build mark.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td></td></tr>
+<tr><td><b>W. b.m. type.</b></td>  <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Tile type</td></tr>
+<tr><td><b>W. open move</b></td>         <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. player to face</b></td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. player state</b></td>    <td>On or off</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. player to input</b></td>   <td>Command</td>      <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. player to move</b></td>    <td>Orientation</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td><b>W. remains</b></td>     <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Remains</td></tr>
+<tr><td><b>W. turn</b></td>        <td>Turn number</td>  <td></td>              <td></td>             <td></td>             <td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><b>W. weapon</b></td>            <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Weapon</td></tr>
+<tr><td><b>W. while entity</b></td>      <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity bitmap</td></tr>
+<tr><td><b>W. while ent. type</b></td>   <td>Rect X</td>       <td>Rect Y</td>        <td>Rect Width</td>   <td>Rect Height</td>  <td>Entity</td></tr>
+<tr><td><b>W.Map Tile Icon</b></td>      <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Entity</td>       <td>Map display</td></tr>
+<tr><td><b>W.Map Image Icon</b></td>     <td>Target X</td>     <td>Target Y</td>      <td>Entrance</td>     <td>Image</td>        <td>Map display</td></tr>
+</table>
+
+<p>Below are the values that can be used for specific override types:</p>
+<br />
+
+<b>Entity bitmap</b><br />
+This is a bit map value, meaning it can contain multiple values created by just adding them.<br/>
+<b>1 (0x001)</b> - Player<br/>
+<b>2 (0x002)</b> - Halph<br/>
+<b>4 (0x004)</b> - Monster<br/>
+<b>8 (0x008)</b> - NPC<br/>
+<b>16 (0x010)</b> - Double<br/>
+<b>32 (0x020)</b> - Self<br/>
+<b>64 (0x040)</b> - Slayer<br/>
+<b>128 (0x080)</b> - Beethro<br/>
+<b>256 (0x100)</b> - Stalwart<br/>
+<b>512 (0x200)</b> - Fluff Baby (Wait for open tile only)<br/>
+<b>1024 (0x400)</b> - Required Monster<br/>
+<br/>
+
+<b>Attack type</b>:<br />
+<b>0</b> - Stab<br/>
+<b>1</b> - Explode<br/>
+<b>2</b> - Damage<br/>
+<b>3</b> - Kill<br/>
+<b>4</b> - Remove Monster<br/>
+<b>5</b> - One-turn stun<br/>
+<b>6</b> - Two-turn stun<br/>
+<b>7</b> - Floor spikes<br/>
+<b>8</b> - Fire trap<br/>
+<br/>
+
+<b>Remains</b><br />
+<b>15</b> - Rock golem<br/>
+<b>26</b> - Fegundo<br/>
+<b>40</b> - Construct<br/>
+<br/>
+
+<b>Orb Connection type</b>: <br/>
+<b>0</b> - None<br/>
+<b>1</b> - Toggle<br/>
+<b>2</b> - Open<br/>
+<b>3</b> - Close<br/>
+<br/>
+
+<b>Weapon</b><br />
+<b>-2</b> - Off<br/>
+<b>-1</b> - On<br/>
+<b>0</b> - Sword<br/>
+<b>1</b> - Pickaxe<br/>
+<b>2</b> - Spear<br/>
+<b>3</b> - Staff<br/>
+<b>4</b> - Dagger<br/>
+<b>5</b> - Caber<br/>
+<br />
+
+<b>Game effect</b><br />
+<b>0</b> - Blood splatter<br/>
+<b>1</b> - Mud splatter<br/>
+<b>2</b> - Tar splatter<br/>
+<b>3</b> - Gel splatter<br/>
+<b>4</b> - Seep splatter<br/>
+<b>5</b> - Golem splatter<br/>
+<b>6</b> - Slayer splatter<br/>
+<b>7</b> - Debris<br/>
+<b>8</b> - Sparks<br/>
+<b>9</b> - Explosion<br/>
+<b>10</b> - Splash<br/>
+<b>11</b> - Steam<br/>
+<b>12</b> - Swirl<br/>
+<b>13</b> - Vermin<br/>
+<b>14</b> - Bolt<br/>
+<b>15</b> - Jitter<br/>
+<b>16</b> - Floor spikes<br/>
+<b>17</b> - Puff explosion<br/>
+<b>18</b> - Fire trap<br/>
+<b>19</b> - Ice melting<br/>
+<b>20</b> - Puff merged into fluff<br/>
+<br />
+
+<p><a name="valuesfilters"><b>Filter</b></a></p>
+<b>0</b> - Normal<br/>
+<b>1</b> - Black and White<br/>
+<b>2</b> - Sepia<br/>
+<b>3</b> - Negative<br/>
+<br/>
+
+<p><a name="valuesmapdisplay"><b>Map display</b></a></p>
+<b>0</b> - Off<br />
+<b>1</b> - On<br />
+<b>2</b> - Level state<br />
+<b>4</b> - Locked<br />
+<b>8</b> - Disabled<br />
+<b>16</b> - Image only<br />
+<br />
+
+<p><a name="valuestargettype"><b>Target type</b></a></p>
+<b>0</b> - Regular Monster<br />
+<b>1</b> - Brained Monster<br />
+<b>2</b> - Best Brain Tile<br />
+<b>3</b> - Best Brain Direction<br />
+<br />
+
+<b>Tile type</b><br />
+ID of the tile. Please refer to the source code DRODLib\TileConstants.h for a list of all tiles and their IDs.<br />
+<br />
+
+<b>Entity</b><br />
+ID of the entity. Please refer to the source code DRODLib\MonsterType.h for a list of all entities and their IDs.<br />
+You can also use IDs of custom entities, visible above the list of custom entities on the "Character Management" dialog<br/>
+<br />
+
+<p><a name="valuesorientation"><b>Orientation values:</b></a></p>
+<b>0</b> - North-West<br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>4</b> - No Orientation<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Clockwise<br />
+<b>10</b> - Counter clockwise<br />
+<br />
+<b>Command values:</b><br />
+<b>1</b> - North<br />
+<b>2</b> - North-East<br />
+<b>3</b> - West<br />
+<b>5</b> - East<br />
+<b>6</b> - South-West<br />
+<b>7</b> - South<br />
+<b>8</b> - South-East<br />
+<b>9</b> - Rotate Clockwise<br />
+<b>10</b> - Rotate Counter clockwise<br />
+<b>11</b> - North-West<br />
+<b>12</b> - Wait<br />
+<b>23</b> - Special command<br />
+<b>25</b> - Special command 2<br />
+<b>26</b> - Special command 3<br />
+<br />
+<p><a name="valueslight"><b>Light colors:</b></a></p>
+<b>0</b> - None/Remove light<br />
+<b>1</b> - White<br />
+<b>2</b> - Red<br />
+<b>3</b> - Green<br />
+<b>4</b> - Blue<br />
+<b>5</b> - Pale Red<br />
+<b>6</b> - Pale Green<br />
+<b>7</b> - Pale Blue<br />
+<b>8</b> - Yellow<br />
+<b>9</b> - Cyan<br />
+<b>10</b> - Mauve<br />
+<b>11</b> - Orange<br />
+<b>12</b> - Pink<br />
+<b>13</b> - Lime<br />
+<b>14</b> - Turquoise<br />
+<b>15</b> - Violet<br />
+<b>16</b> - Azure<br />
+
+<hr />
+<a href="script.html">Command list</a><br />
+<a href="character.html">Character Scripting</a><br />
+
+</body>
+</html>

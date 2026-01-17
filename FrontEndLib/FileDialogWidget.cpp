@@ -80,7 +80,7 @@ CFileDialogWidget::CFileDialogWidget(
 	const int nSetX, const int nSetY)         //    constructor.
 	: CDialogWidget(dwSetTagNo, nSetX, nSetY, CX_FILEDIALOG, CY_FILEDIALOG)
 	, pDirNameTextBox(NULL)
-	, pPromptLabel(NULL)
+	, pHeaderLabel(NULL)
 	, pDirListBoxWidget(NULL)
 	, pFileListBoxWidget(NULL)
 	, pExtensionListBoxWidget(NULL)
@@ -127,10 +127,10 @@ CFileDialogWidget::CFileDialogWidget(
 
 	//Prompt.
 	CFrameWidget *pFrame = new CFrameWidget(0L, X_FRAME, Y_FRAME, CX_FRAME, CY_FRAME, NULL);
-	this->pPromptLabel = new CLabelWidget(0L, 0, Y_PROMPT_LABEL,
+	this->pHeaderLabel = new CLabelWidget(0L, 0, Y_PROMPT_LABEL,
 			CX_FRAME, CY_PROMPT_LABEL, FONTLIB::F_Small, wszEmpty);
-	this->pPromptLabel->SetAlign(CLabelWidget::TA_CenterGroup);
-	pFrame->AddWidget(this->pPromptLabel);
+	this->pHeaderLabel->SetAlign(CLabelWidget::TA_CenterGroup);
+	pFrame->AddWidget(this->pHeaderLabel);
 	AddWidget(pFrame);
 
 	//Current directory.
@@ -565,5 +565,5 @@ void CFileDialogWidget::SetPrompt(
 //Params:
 	const WCHAR *pwczText)  //(in)
 {
-	this->pPromptLabel->SetText(pwczText);
+	this->pHeaderLabel->SetText(pwczText);
 }

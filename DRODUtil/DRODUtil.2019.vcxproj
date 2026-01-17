@@ -490,6 +490,7 @@
     <ClCompile Include="..\DROD\ImageOverlayEffect.cpp" />
     <ClCompile Include="..\DROD\Light.cpp" />
     <ClCompile Include="..\DROD\MapWidget.cpp" />
+    <ClCompile Include="..\DROD\MovementOrderHintEffect.cpp" />
     <ClCompile Include="..\DROD\ParticleExplosionEffect.cpp" />
     <ClCompile Include="..\DROD\PendingBuildEffect.cpp" />
     <ClCompile Include="..\DROD\PendingPlotEffect.cpp" />
@@ -523,6 +524,7 @@
     <ClInclude Include="..\DROD\Color.h" />
     <ClInclude Include="..\DROD\Light.h" />
     <ClInclude Include="..\DROD\MapWidget.h" />
+    <ClInclude Include="..\DROD\MovementOrderHintEffect.h" />
     <ClInclude Include="..\DROD\Point.h" />
     <ClInclude Include="..\DROD\Rectangle.h" />
     <ClInclude Include="..\DROD\Scene.h" />

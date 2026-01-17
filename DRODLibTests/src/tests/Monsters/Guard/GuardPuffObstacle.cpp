@@ -3,7 +3,6 @@
 
 TEST_CASE("Guard interaction with puffs", "[game][guard][puff]") {
 	RoomBuilder::ClearRoom();
-	CDbRoom* pRoom;
 
 	SECTION("Guard paths around puff") {
 		RoomBuilder::AddMonster(M_GUARD, 10, 10, S);

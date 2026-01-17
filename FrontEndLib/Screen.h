@@ -143,6 +143,28 @@ class CScreen : public CEventHandlerWidget
 friend class CDialogWidget;
 
 public:
+	struct TextInputDialogOptions {
+		TextInputDialogOptions() :
+			pwczMessage(NULL),
+			bMultiline(false),
+			bRequireText(false),
+			bDigitsOnly(false) {}
+
+		TextInputDialogOptions(const WCHAR *pwczMessage,
+			bool bMultiline,
+			bool bRequireText,
+			bool bDigitsOnly) :
+			pwczMessage(pwczMessage),
+			bMultiline(bMultiline),
+			bRequireText(bRequireText),
+			bDigitsOnly(bDigitsOnly) {}
+
+		const WCHAR *pwczMessage;
+		bool bMultiline;
+		bool bRequireText;
+		bool bDigitsOnly;
+	};
+
 	static int     GetDisplayForDesktopResOfAtLeast(UINT wX, UINT wY);
 	UINT           GetScreenType() const {return this->eType;}
 	static void    GetScreenSize(int &nW, int &nH);
@@ -181,7 +203,6 @@ protected:
 	CScreen(const UINT eSetType);
 	virtual ~CScreen();
 
-	void           AllocFocusArray();
 	UINT           GetDestScreenType() const {return this->eDestScreenType;}
 	void           GoToScreen(const UINT eNextScreen);
 	void           HideCursor();
@@ -202,20 +223,22 @@ protected:
 
 	void           RemoveToolTip();
 	void           RequestToolTip(const WCHAR *pwczText);
-	UINT          SelectFile(WSTRING& filePath, WSTRING& fileName, const bool bWrite);
-	UINT          SelectFiles(WSTRING& filePath, vector<WSTRING>& fileName);
+	UINT           SelectFile(WSTRING& filePath, WSTRING& fileName, const bool bWrite);
+	UINT           SelectFiles(WSTRING& filePath, vector<WSTRING>& fileName);
 	void           SetDestScreenType(const UINT eSet) {this->eDestScreenType = eSet;}
 	void           SetFullScreen(const bool bSetFull);
 	virtual bool   SetForActivate();
+	void           SetResizableScreen(const bool bResizable);
 	void           SetScreenType(const UINT eSetType) {this->eType = eSetType;}
 	void           ShowCursor();
-	UINT          ShowMessage(const WCHAR* pwczMessage);
+	UINT           ShowMessage(const WCHAR* pwczMessage);
 	void           ShowStatusMessage(const WCHAR *pwczMessage);
-	UINT          ShowTextInputMessage(const WCHAR* pwczMessage,
+	UINT           ShowTextInputMessage(const WCHAR* pwczMessage,
 			WSTRING &wstrUserInput, const bool bMultiLineText=false,
 			const bool bMustEnterText=true);
-	void          ShowToolTip(const WCHAR* pwczText);
-	virtual UINT  ShowYesNoMessage(const MESSAGE_ID /*dwMessageID*/,
+	UINT           ShowTextInputMessage(WSTRING &wstrUserInput, const TextInputDialogOptions options);
+	void           ShowToolTip(const WCHAR* pwczText);
+	virtual UINT   ShowYesNoMessage(const MESSAGE_ID /*dwMessageID*/,
 			const MESSAGE_ID /*dwYesButtonText*/, const MESSAGE_ID /*dwNoButtonText*/) //don't use default zero parameter values
 		{return TAG_NO;}
 	virtual UINT  ShowYesNoMessage(const MESSAGE_ID dwMessageID) {return ShowYesNoMessage(dwMessageID, 0, 0);}

@@ -48,6 +48,7 @@ public:
 	virtual bool IsTileObstacle(const UINT wTileNo) const;
 	virtual bool IsOpenMove(const int dx, const int dy) const;
 	virtual bool IsOpenMove(const UINT wX, const UINT wY, const int dx, const int dy) const;
+	virtual bool IsExplosiveSafe(const UINT& wX, const UINT& wY, const UINT& wSO) const;
 	virtual bool IsSafeToStab(const UINT wFromX, const UINT wFromY, const UINT wSO) const;
 	virtual bool OnStabbed(CCueEvents &CueEvents, const UINT wX=(UINT)-1, const UINT wY=(UINT)-1,
 			WeaponType weaponType=WT_Sword);
@@ -59,6 +60,7 @@ private:
 
 	void AdvanceAlongWisp(CCueEvents &CueEvents);
 	bool CheckWispIntegrity();
+	bool ConfirmGoal();
 	bool ExtendWisp(CCueEvents &CueEvents, const bool bMoveAllowed=true);
 	WISP GetWispAt(const UINT wX, const UINT wY);
 	const_WISP GetWispAt(const UINT wX, const UINT wY) const {

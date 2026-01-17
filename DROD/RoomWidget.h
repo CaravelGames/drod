@@ -37,6 +37,7 @@
 #include "TileImageCalcs.h"
 #include "Light.h"
 #include "Scene.h"
+#include "PuzzleModeOptions.h"
 #include <FrontEndLib/Widget.h>
 #include <FrontEndLib/SubtitleEffect.h>
 #include "NoticeEffect.h"
@@ -48,11 +49,13 @@
 #include <BackEndLib/CoordStack.h>
 #include <BackEndLib/Types.h>
 
+#include <array>
+
 //Range of weather parameters.
-#define LIGHT_LEVELS (7) //number of light levels
-#define FOG_INCREMENTS (4)
-#define SNOW_INCREMENTS (10)
-#define RAIN_INCREMENTS (20)
+#define LIGHT_LEVELS (MAX_ROOM_LIGHT + 1) //number of light levels
+#define FOG_INCREMENTS (MAX_ROOM_FOG + 1)
+#define SNOW_INCREMENTS (MAX_ROOM_SNOW + 1)
+#define RAIN_INCREMENTS (MAX_ROOM_RAIN + 1)
 extern const float fRoomLightLevel[LIGHT_LEVELS];
 extern const float lightMap[3][NUM_LIGHT_TYPES];
 extern const float darkMap[NUM_DARK_TYPES];
@@ -195,6 +198,8 @@ struct TileImageBlitParams {
 		, nAddColor(-1)
 		, bCastShadowsOnTop(true)
 		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
+		, nCustomColor(-1)
+		, hsv({ -1.0f, -1.0f, -1.0f })
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
@@ -212,9 +217,50 @@ struct TileImageBlitParams {
 	Uint8 nOpacity;
 	bool bClipped;
 	int nAddColor;
+	int nCustomColor;
+	std::array<float, 3> hsv; //hue, saturation, value
 	bool bCastShadowsOnTop;
 	float appliedDarkness; // Normally monsters are drawn with 75% ceiling darkness, but moving T-Objects need to be drawn with the
 	                       // same opacity as the stationary ones, which is 100% ceiling darkness, otherwise things look weird.
+};
+
+//******************************************************************************
+//Class to record when changes to effects that require specific refreshing are made.
+//When the room goes "back in time", these effects can then be downdated.
+//It is assumed that adding a record means that any records in its future are now invalid
+class EffectChangeHistory {
+public:
+	EffectChangeHistory() = default;
+	~EffectChangeHistory() = default;
+
+	bool isAfterLatest(UINT turn) {
+		return turn > changeTurns.back();
+	}
+
+	//Remove all records after a given turn.
+	void removeAfter(UINT turn) {
+		while (!empty() && changeTurns.back() >= turn) {
+			changeTurns.pop_back();
+		}
+	}
+
+	//Add a new record. Any records from later turns are removed.
+	void add(UINT turn) {
+		removeAfter(turn);
+		changeTurns.push_back(turn);
+	}
+
+	void reset() {
+		changeTurns.clear();
+		changeTurns.push_back(0);
+	}
+
+	bool empty() {
+		return changeTurns.empty();
+	}
+
+private:
+	std::vector<UINT> changeTurns;
 };
 
 //******************************************************************************
@@ -262,6 +308,7 @@ public:
 	bool           AreCheckpointsVisible() const {return this->bShowCheckpoints;}
 	void           ClearEffects(const bool bKeepFrameRate = true);
 	void           CountDirtyTiles(UINT& damaged, UINT& dirty, UINT& monster) const;
+	void           DescribeCitizenColor(bool desribeAsColor) { bDescribeCitizenColor = desribeAsColor; }
 	void           DirtyRoom() {this->bAllDirty = true;}
 	void           DisplayPersistingImageOverlays(CCueEvents& CueEvents);
 	void           DisplayRoomCoordSubtitle(const int nMouseX, const int nMouseY);
@@ -298,12 +345,14 @@ public:
 	virtual bool   IsPlayerLightRendered() const;
 	bool           IsPlayerLightShowing() const;
 	bool           IsShowingMoveCount() const {return this->bShowMoveCount;}
+	bool           IsShowingMovementOrder() const {return this->bShowMovementOrderHints;}
 	bool           IsShowingPuzzleMode() const {return this->bShowPuzzleMode;}
 	bool           IsTemporalCloneAnimated() const { return this->temporalCloneEffectHeight >= 0; }
 	bool           IsWeatherRendered() const;
 	bool           LoadFromCurrentGame(CCurrentGame *pSetCurrentGame, const bool bLoad=true);
 	bool           LoadFromRoom(CDbRoom *pRoom, const bool bLoad=true);
 	void           LoadRoomImages();
+	void           LoadSkyImage(CDbRoom* pRoom);
 
 	virtual void   HandleMouseMotion(const SDL_MouseMotionEvent &Motion);
 	virtual void   HandleMouseUp(const SDL_MouseButtonEvent &Button);
@@ -317,6 +366,7 @@ public:
 		queued_layer_effect_type_removal.insert(make_pair(eEffectType, layer)); }
 
 	void           RedrawMonsters(SDL_Surface* pDestSurface);
+	void           RemoveGroupEffects(int clearGroup);
 	void           RemoveLayerEffects(const EffectType eEffectType, int layer);
 	void           RemoveLastLayerEffectsOfType(const EffectType eEffectType, const bool bForceClearAll=true);
 	void           RemoveMLayerEffectsOfType(const EffectType eEffectType);
@@ -330,6 +380,7 @@ public:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS, int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer=true);
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
+	void           RerenderRoomCeilingLight(CCueEvents& CueEvents);
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
 	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,
@@ -346,7 +397,9 @@ public:
 	void           SetOpacityForMLayerEffectsOfType(const EffectType eEffectType, float fOpacity);
 	void           SetOpacityForEffectsOfType(const EffectType eEffectType, float fOpacity);
 	virtual void   SetPlot(const UINT /*wCol*/, const UINT /*wRow*/) {}
+	void           SetPuzzleModeOptions(const PuzzleModeOptions &puzzleModeOptions);
 	void           ShowCheckpoints(const bool bVal=true) {this->bShowCheckpoints = bVal;}
+	void           ShowMovementOrderHints(const bool bVal = true) { this->bShowMovementOrderHints = bVal; }
 	void           ShowRoomTransition(const UINT wExitOrientation, CCueEvents& CueEvents);
 	void           ShowPlayer(const bool bFlag=true) {this->bShowingPlayer = bFlag;}
 	void           ShowPuzzleMode(const bool bVal);
@@ -354,10 +407,13 @@ public:
 	void           StopSleeping();
 	bool           SubtitlesHas(CSubtitleEffect *pEffect) const;
 	UINT           SwitchAnimationFrame(const UINT wCol, const UINT wRow);
+	void           SyncWeather(CCueEvents& CueEvents);
 	void           ToggleFrameRate();
 	void           ToggleMoveCount();
+	void           ToggleMovementOrderHint();
 	void           TogglePuzzleMode();
 	void           ToggleVarDisplay();
+	static void    TranslateMonsterColor(const int nColor, float& fR, float& fG, float& fB);
 	void           UnloadCurrentGame();
 	void           UpdateFromCurrentGame(const bool bForceReload=false);
 	void           UpdateFromPlots(const CCoordSet *pSet, const CCoordSet *pGeometryChanges);
@@ -411,6 +467,7 @@ protected:
 			int wWidth=CDrodBitmapManager::DISPLAY_COLS,
 			int wHeight=CDrodBitmapManager::DISPLAY_ROWS);
 	void           DeleteArrays();
+	WSTRING        DescribeStationColor(const int& stationType) const;
 	void           DirtyTileRect(const int x1, const int y1,
 			const int x2, const int y2);
 	void           DirtyTilesForSpriteAt(UINT pixel_x, UINT pixel_y, UINT w, UINT h);
@@ -540,6 +597,8 @@ protected:
 	bool              bShowFrameRate, bShowMoveCount, bShowVarUpdates, bShowPuzzleMode;
 	bool              bAddNEffect;   //for 'Neather striking orb
 	bool              bRequestEvilEyeGaze; //for vision power-up
+	bool              bRequestTranslucentTar;
+	bool              bRequestSpiderVisibility;
 	Uint8             ghostOpacity;
 	int               temporalCloneEffectHeight;
 	UINT              wHighlightX, wHighlightY; //user highlight position
@@ -599,6 +658,7 @@ protected:
 	int               CX_TILE, CY_TILE;
 
 private:
+	void           AddMovementOrderHints();
 	void           AddPlatformPitMasks(const TileImageBlitParams& blit, t_PitMasks& pitMasks);
 	void           AddTemporalCloneNextMoveEffect(const CTemporalClone *pTC, const UINT frame);
 	inline void    ApplyDisplayFilter(int displayFilter, SDL_Surface* pDestSurface, UINT wX, UINT wY);
@@ -652,12 +712,18 @@ private:
 	void           flag_weather_refresh();
 	void           SetFrameVarsForWeather();
 
-	float          fDeathFadeOpacity;
-	Uint32         time_of_last_weather_render;
-	int            redrawingRowForWeather;
-	bool           need_to_update_room_weather;
+	EffectChangeHistory ceilingLightChanges;
 
-	Uint32         time_of_last_sky_move;
+	PuzzleModeOptions puzzleModeOptions;
+	float             fDeathFadeOpacity;
+	Uint32            time_of_last_weather_render;
+	int               redrawingRowForWeather;
+	bool              need_to_update_room_weather;
+
+	Uint32            time_of_last_sky_move;
+
+	bool              bShowMovementOrderHints;
+	bool              bDescribeCitizenColor;
 
 	multimap<EffectType, int> queued_layer_effect_type_removal;
 };

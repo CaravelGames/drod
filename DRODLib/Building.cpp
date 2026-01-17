@@ -57,9 +57,6 @@ UINT CBuilding::get(const UINT wX, const UINT wY) const
 void CBuilding::plot(const UINT wX, const UINT wY, const UINT wTile)
 //Set build tile at (x,y) to specified tile.
 {
-	//Only supported in immediate building at this time
-	if (bIsFakeTokenType(wTile)) return;
-
 	switch (wTile) {
 		case T_REMOVE_BUILD_MARKER:
 			remove(wX,wY);
@@ -69,6 +66,10 @@ void CBuilding::plot(const UINT wX, const UINT wY, const UINT wTile)
 		break; //do nothing -- only supported in immediate building
 		case T_REMOVE_FLOOR_ITEM:
 			this->tiles.Add(wX, wY, T_EMPTY_F + 1); //1-based
+			this->tileSet.insert(wX, wY);    //goal-finding optimization
+			break;
+		case T_REMOVE_TRANSPARENT:
+			this->tiles.Add(wX, wY, T_EMPTY_TRANSPARENT + 1); //1-based
 			this->tileSet.insert(wX, wY);    //goal-finding optimization
 			break;
 		default:

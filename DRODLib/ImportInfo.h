@@ -73,6 +73,7 @@ public:
 	~CImportInfo();
 
 	void Clear(const bool bPartialClear=false);
+	void ClearTempFiles();
 
 	bool isDemoImport() const { return typeBeingImported == CImportInfo::Demo || typeBeingImported == CImportInfo::DemosAndSavedGames; }
 	bool isSavedGameImport() const { return typeBeingImported == CImportInfo::SavedGame || typeBeingImported == CImportInfo::DemosAndSavedGames; }
@@ -117,6 +118,7 @@ public:
 	std::set<WSTRING> roomStyles; //room style references encountered in import
 
 	string   exportedDemos, exportedSavedGames;  //saved games temporarily exported while hold is being upgraded
+	WSTRING  exportedDemosFile, exportedSavedGamesFile;  //saved games temporarily exported to external file while hold is being upgraded
 	WSTRING  userMessages;     //text messages for the user's convenience
 
 	MESSAGE_ID ImportStatus;   //result of import process

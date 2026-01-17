@@ -42,6 +42,7 @@ public:
 	IMPLEMENT_CLONE_REPLICATE(CMonster, CFluffBaby);
 
 	virtual bool BrainAffects() const {return false;}
+	bool         CanPushOntoOTile(UINT wTile) const override;
 	virtual bool DoesSquareContainObstacle(const UINT wCol, const UINT wRow) const;
 	virtual bool IsOpenMove(const int dx, const int dy) const;
 	bool         KillIfInWall(CCueEvents &CueEvents);

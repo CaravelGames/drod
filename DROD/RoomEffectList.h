@@ -44,6 +44,7 @@ public:
 	void           DirtyTilesInRect(const UINT xStart, const UINT yStart,
 			const UINT xEnd, const UINT yEnd) const;
 	virtual void   RemoveEffectsOfType(const UINT eEffectType, const bool bForceClearAll=true);
+	virtual void   RemoveOverlayEffectsInGroup(const int clearGroup, const bool bForceClearAll=true);
 
 protected:
 	CRoomWidget *pOwnerWidget;
