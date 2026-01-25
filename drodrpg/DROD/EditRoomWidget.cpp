@@ -924,7 +924,6 @@ const
 						bIsFiretrap(wTileNo[0])) &&
 					(!pMonster || wTileNo[2] == M_CHARACTER);
 		case T_MIRROR:
-		case T_CRATE:
 		case T_POWDER_KEG:
 			//Only on floor, doors or platforms.
 			return !bSwordsmanAt &&
@@ -933,6 +932,14 @@ const
 						bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
 						wTileNo[0] == T_GOO || bIsFiretrap(wTileNo[0])) &&
 						(!pMonster || wTileNo[2] == M_CHARACTER);
+		case T_CRATE:
+			//Only on floor, doors or platforms.
+			return (bIsFloor(wTileNo[0]) || bIsWall(wTileNo[0]) || bIsCrumblyWall(wTileNo[0]) ||
+					bIsOpenDoor(wTileNo[0]) || bIsDoor(wTileNo[0]) ||
+					bIsTunnel(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||
+					wTileNo[0] == T_GOO || bIsFiretrap(wTileNo[0])) &&
+					!(wTileNo[2] == M_SERPENT || wTileNo[2] == M_SERPENTB ||
+						wTileNo[2] == M_SERPENTG || wTileNo[2] == M_ROCKGIANT);
 		case T_LIGHT:
 			//Light -- only on floor, walls, pit.
 			return !bSwordsmanAt &&
@@ -1042,7 +1049,9 @@ const
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) ||
 					bIsPlatform(wTileNo[0])) &&
 					!(wTileNo[1] == T_ORB || bIsTar(wTileNo[1]) || wTileNo[1] == T_BOMB ||
-							wTileNo[1] == T_OBSTACLE || bIsBriar(wTileNo[1]));// || wTileNo[1] == T_STATION);
+						wTileNo[1] == T_OBSTACLE || bIsBriar(wTileNo[1]) ||
+						wTileNo[1] == T_MIRROR || wTileNo[1] == T_POWDER_KEG ||
+						wTileNo[1] == T_CRATE);// || wTileNo[1] == T_STATION);
 		case T_TARMOTHER:
 			//Also can (should) be on tar.
 			if (bSwordsmanAt) return false;
