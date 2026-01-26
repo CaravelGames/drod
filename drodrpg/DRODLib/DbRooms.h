@@ -300,6 +300,7 @@ public:
 	void           InitRoomStats(const bool bSkipPlatformInit=false);
 	void           InitStateForThisTurn();
 	UINT           GetBrainsPresent() const;
+	int            GetGazeElevation(const UINT wX, const UINT wY) const;
 	bool           IsDisarmTokenActive() const;
 	bool           IsDoorOpen(const int nCol, const int nRow);
 	bool           IsEitherTSquare(const UINT wX, const UINT wY, const UINT wTile) const;

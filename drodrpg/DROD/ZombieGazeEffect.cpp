@@ -162,15 +162,14 @@ void CZombieGazeEffect::PrepareBeam(const CMonster *pMonster)
 		this->endCoord.wO = NO_ORIENTATION; //don't show effect
 	} else {
 		//Begin gaze at next tile.
-		const bool bElevatedSource = bIsElevatedTile(
-				pRoom->GetOSquare(this->origin.wX, this->origin.wY));
+		int elevation = pRoom->GetGazeElevation(this->origin.wX, this->origin.wY);
 		UINT wX = this->origin.wX + oX;   //start in front of zombie
 		UINT wY = this->origin.wY + oY;
 
 		CCueEvents Ignored;
 		int destX = this->pRoomWidget->GetX() + wX * CBitmapManager::CX_TILE;
 		int destY = this->pRoomWidget->GetY() + wY * CBitmapManager::CY_TILE;
-		while (CMonster::GetNextGaze(Ignored, NULL, pRoom, bElevatedSource, wX, wY, oX, oY))
+		while (CMonster::GetNextGaze(Ignored, NULL, pRoom, elevation, wX, wY, oX, oY))
 		{
 			//Draw beam.
 			UINT wTileNo = 0;

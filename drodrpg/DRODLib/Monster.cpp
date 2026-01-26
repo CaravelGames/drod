@@ -2344,7 +2344,7 @@ bool CMonster::GetNextGaze(
 	CCueEvents &CueEvents,	//(in/out)
 	CMonster *pCaster,		//non-NULL (i.e. pointer to casting monster) if game state is affected
 	CDbRoom *pRoom,			//active room
-	const bool bElevatedSource, //whether gaze comes from an elevated source
+	const int elevation, //whether gaze comes from an elevated source
 	UINT& cx, UINT& cy, int& dx, int& dy)	//(cx,cy) + (dx,dy)
 {
 	ASSERT(pRoom);
@@ -2354,6 +2354,7 @@ bool CMonster::GetNextGaze(
 		return false;
 
 	const UINT oTile = pRoom->GetOSquare(cx,cy);
+	bool elevationCheck = false;
 	switch (oTile)
 	{
 		case T_BRIDGE: case T_BRIDGE_H: case T_BRIDGE_V:
@@ -2373,8 +2374,10 @@ bool CMonster::GetNextGaze(
 			//Door tiles may be traversed if the source is also elevated.
 			if (bIsDoor(oTile))
 			{
-				if (!bElevatedSource)
+				if (elevation < pRoom->GetGazeElevation(cx, cy))
 					return false;
+
+				elevationCheck = true;
 				break;
 			}
 			//All other objects stop gaze.
@@ -2394,10 +2397,14 @@ bool CMonster::GetNextGaze(
 		case T_BOMB:
 		case T_OBSTACLE:
 		case T_MIRROR:
-		case T_CRATE:
 		case T_POWDER_KEG:
 			//These objects stop gaze.
 			return false;
+		case T_CRATE:
+			//Crate tiles may be traversed if source is elevated enough.
+			if (!elevationCheck && elevation < pRoom->GetGazeElevation(cx, cy)) {
+				return false;
+			}
 		case T_FUSE:
 			//Gaze lights fuses.
 			if (pCaster)
@@ -2507,11 +2514,12 @@ void CMonster::UpdateGaze(
 	{
 		CueEvents.Add(CID_ZombieGaze, this);
 
-		const bool bElevatedSource = bIsElevatedTile(
-				this->pCurrentGame->pRoom->GetOSquare(this->wX, this->wY));
+		CDbRoom* pRoom = this->pCurrentGame->pRoom;
+		int elevation = pRoom->GetGazeElevation(this->wX, this->wY);
+
 		UINT wX = this->wX + oX;   //begin processing from the tile in front of me
 		UINT wY = this->wY + oY;
-		while (GetNextGaze(CueEvents, this, this->pCurrentGame->pRoom, bElevatedSource, wX, wY, oX, oY))
+		while (GetNextGaze(CueEvents, this, pRoom, elevation, wX, wY, oX, oY))
 			; //continue until blocked
 	}
 }

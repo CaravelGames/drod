@@ -7651,6 +7651,21 @@ UINT CDbRoom::GetBrainsPresent() const
 }
 
 //*****************************************************************************
+int CDbRoom::GetGazeElevation(const UINT wX, const UINT wY) const
+//Calculate how elavated tile is for gaze propagation
+{
+	int elevation = 0;
+	if (this->GetTSquare(wX, wY) == T_CRATE) {
+		elevation += 1;
+	}
+	if (bIsElevatedTile(this->GetOSquare(wX, wY))) {
+		elevation += 2;
+	}
+
+	return elevation;
+}
+
+//*****************************************************************************
 bool CDbRoom::IsTarStableAt(
 //Determines whether tar placed at this square would not turn into a tar baby,
 //according to the rule that a minimum of a 2x2 square of tar can exist.
