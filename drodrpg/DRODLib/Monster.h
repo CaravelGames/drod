@@ -197,7 +197,7 @@ public:
 	virtual UINT  GetIdentity() const {return this->wType;}
 	virtual UINT  GetLogicalIdentity() const {return this->wType;}
 	static  bool  GetNextGaze(CCueEvents &CueEvents, CMonster *pCaster, CDbRoom *pRoom,
-			const bool bElevatedSource, UINT& cx, UINT& cy, int& dx, int& dy);
+			const int elevation, UINT& cx, UINT& cy, int& dx, int& dy);
 	UINT          GetOrientationFacingTarget(const UINT wX, const UINT wY) const;
 	const CMonster* GetOwningMonsterConst() const;
 	inline CMonster* GetOwningMonster() { return const_cast<CMonster*>(GetOwningMonsterConst()); }
