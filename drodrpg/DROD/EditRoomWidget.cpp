@@ -817,6 +817,9 @@ const
 			//Allowing stairs under a level start can trap the player in a loop of stairs.
 			if (bSwordsmanAt)
 				return false;
+			//No monsters allowed on stairs
+			if (pMonster && wTileNo[2] != M_CHARACTER)
+				return false;
 			if (bIsTar(wTileNo[1]))
 				return true;
 			break;
