@@ -205,7 +205,7 @@ CRoomScreen::CRoomScreen(
 	//Monster stats.
 	static const int X_MONNAME = 22;
 	static const int Y_MONNAME = 420;
-	static const UINT CX_MONNAME = 160 - X_MONNAME;
+	static const UINT CX_MONNAME = 240 - X_MONNAME;
 	static const UINT CY_MONNAME = 30;
 
 	static const int X_MONHP = X_HP;
