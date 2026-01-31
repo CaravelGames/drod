@@ -736,7 +736,7 @@ void CGameScreen::RedrawStats(
 			g_pTheDBM->BlitTileImage(val, X_PIC[i], Y_PIC[i], pDestSurface);
 
 			//Add monster color to display image.
-			if (i==0)
+			if (i >= 0 && i <= 3)
 			{
 				ASSERT(pCombat->pMonster);
 				this->pRoomWidget->AddColorToTile(pDestSurface, pCombat->pMonster->getColor(),
