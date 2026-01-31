@@ -194,7 +194,7 @@ CCombat *g_pPredictedCombat = NULL;
 
 const UINT numMenuPics = 4+3; //monster tiles (4), sword, shield, accessory
 const int X_PIC[numMenuPics] = {160, 160+44, 160,    160+44,  135, 135, 135};
-const int Y_PIC[numMenuPics] = {427, 427,    427+44, 427+44,  205, 255, 305};
+const int Y_PIC[numMenuPics] = {449, 449,    449+44, 449+44,  205, 255, 305};
 
 const int rightEndOfEquipmentSlot = 265; //same as value used in CX_SWORD in RoomScreen.cpp
 
