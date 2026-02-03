@@ -238,6 +238,10 @@ namespace InputCommands
 		DCMD_Screenshot,
 		DCMD_SaveRoomImage,
 
+		// Restart modes
+		DCMD_RestartPartial,
+		DCMD_RestartFull,
+
 		// Dialogs/screens
 		DCMD_Stats,
 		DCMD_ChatHistory,

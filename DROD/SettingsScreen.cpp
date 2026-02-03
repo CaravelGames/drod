@@ -1329,6 +1329,16 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 	//Update current player settings for this command to newKey.
 	this->pCurrentPlayer->Settings.SetVar(keyDefinition->settingName, newKey);
 
+	//Alternate restart bindings are derived from the main restart binding.
+	if (eCommand == DCMD_Restart)
+	{
+		const SDL_Keycode baseKey = ReadInputKey(newKey);
+		const KeyDefinition* partialRestart = GetKeyDefinition(DCMD_RestartPartial);
+		const KeyDefinition* fullRestart = GetKeyDefinition(DCMD_RestartFull);
+		this->pCurrentPlayer->Settings.SetVar(partialRestart->settingName, BuildInputKey(baseKey, false, false, true));
+		this->pCurrentPlayer->Settings.SetVar(fullRestart->settingName, BuildInputKey(baseKey, false, true, false));
+	}
+
 	//Update label of command that was changed.
 	UpdateCommandKeyLabel(newKey, eCommand);
 
@@ -1831,6 +1841,9 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	//Command settings.
 	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
 	{
+		if (nCommand == DCMD_RestartPartial || nCommand == DCMD_RestartFull)
+			continue; //These commands don't have independent bindings
+
 		const KeyDefinition *keyDefinition = GetKeyDefinition(nCommand);
 
 		const InputKey nKey = settings.GetVar(keyDefinition->settingName, UNKNOWN_INPUT_KEY);
