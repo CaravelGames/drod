@@ -76,6 +76,8 @@ namespace InputCommands
 		keyDefinitions[DCMD_C] = new KeyDefinition(CMD_C, "SwingClockwise", MID_SwingClockwise, SDLK_w);
 		keyDefinitions[DCMD_CC] = new KeyDefinition(CMD_CC, "SwingCounterclockwise", MID_SwingCounterclockwise, SDLK_q);
 		keyDefinitions[DCMD_Restart] = new KeyDefinition(CMD_RESTART, "Restart", MID_RestartRoom, SDLK_r);
+		keyDefinitions[DCMD_RestartPartial] = new KeyDefinition(CMD_RESTART_PARTIAL, "RestartPartial", MID_RestartRoom, BuildInputKey(SDLK_r, false, false, true));
+		keyDefinitions[DCMD_RestartFull] = new KeyDefinition(CMD_RESTART_FULL, "RestartFull", MID_RestartRoom, BuildInputKey(SDLK_r, false, true, false));
 		keyDefinitions[DCMD_Undo] = new KeyDefinition(CMD_UNDO, "Undo", MID_UndoMove, SDLK_BACKSPACE);
 		keyDefinitions[DCMD_Battle] = new KeyDefinition(CMD_BATTLE_KEY, "Battle", MID_BattleKey, SDLK_KP_PLUS, SDLK_0);
 		keyDefinitions[DCMD_Command] = new KeyDefinition(CMD_EXEC_COMMAND, "UseCommand", MID_UseCommandKey, SDLK_KP_PERIOD);
