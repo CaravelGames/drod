@@ -528,6 +528,20 @@ void CTitleScreen::OnKeyDown(
 	const UINT /*dwTagNo*/,         //(in)   Widget that event applied to.
 	const SDL_KeyboardEvent &Key) //(in)   Key event.
 {
+	{
+		InputKey inputKey = BuildInputKey(Key);
+		if (inputKey == CScreen::inputKeyFullScreen)
+		{
+			ToggleScreenSize();
+			return;
+		}
+		else if (inputKey == CScreen::inputKeyScreenshot)
+		{
+			SaveSurface();
+			return;
+		}
+	}
+
 	TitleSelection wSetPos;
 	switch (Key.keysym.sym)
 	{
@@ -536,12 +550,7 @@ void CTitleScreen::OnKeyDown(
 			{
 				wSetPos = MNU_CONTINUE; break;
 			}
-			//else going to next case
-		case SDLK_F10:
 			ToggleScreenSize();
-		return;
-		case SDLK_F11:
-			SaveSurface();
 		return;
 
 		case SDLK_F4:
