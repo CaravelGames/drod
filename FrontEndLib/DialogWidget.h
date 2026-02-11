@@ -94,6 +94,8 @@ protected:
 	virtual void      OnWindowEvent_GetFocus();
 	virtual void      OnWindowEvent_LoseFocus();
 
+	bool              ProcessScreenCommandInput(const SDL_KeyboardEvent& Key);
+
 	UINT          dwDeactivateValue;
 
 private:

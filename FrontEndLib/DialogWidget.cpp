@@ -364,6 +364,9 @@ void CDialogWidget::OnKeyDown(
 	const UINT /*dwTagNo*/,         //(in)   Widget that event applied to.
 	const SDL_KeyboardEvent &Key) //(in)   Event.
 {
+	if (ProcessScreenCommandInput(Key))
+		return;
+
 	switch (Key.keysym.sym)
 	{
 		case SDLK_KP_ENTER:
@@ -384,9 +387,7 @@ void CDialogWidget::OnKeyDown(
 			}
 
 			if ((Key.keysym.mod & KMOD_ALT) == 0) break;
-		//NO BREAK
 
-		case SDLK_F10:
 			if (this->pParent && this->pParent->GetType() == WT_Screen)
 			{
 				CScreen *const pScreen = static_cast<CScreen *const>(this->pParent);
@@ -474,6 +475,29 @@ void CDialogWidget::OnWindowEvent_LoseFocus()
 		pParent->OnWindowEvent_LoseFocus();
 	else
 		CEventHandlerWidget::OnWindowEvent_LoseFocus();
+}
+
+//*****************************************************************************
+bool CDialogWidget::ProcessScreenCommandInput(const SDL_KeyboardEvent& Key)
+{
+	if (this->pParent && this->pParent->GetType() == WT_Screen) {
+		InputKey inputKey = BuildInputKey(Key);
+		if (inputKey == CScreen::inputKeyFullScreen)
+		{
+			CScreen* const pScreen = static_cast<CScreen* const>(this->pParent);
+			pScreen->ToggleScreenSize();
+			RequestPaint();
+			return true;
+		}
+		else if (inputKey == CScreen::inputKeyScreenshot)
+		{
+			CScreen* const pScreen = static_cast<CScreen* const>(this->pParent);
+			pScreen->SaveSurface();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //*****************************************************************************
