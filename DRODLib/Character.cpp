@@ -7186,9 +7186,9 @@ void CCharacter::SetCurrentGame(
 //*****************************************************************************
 void CCharacter::SetDefaultProperties()
 {
+	SetDefaultMovementType();
 	SetDefaultImperatives();
 	SetDefaultBehaviors();
-	SetDefaultMovementType();
 }
 
 //*****************************************************************************
