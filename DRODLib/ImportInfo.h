@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -98,7 +98,7 @@ public:
 
 	enum ImportType
 	{
-		None=0,
+		NoType=0, // DO NOT rename to `None`, breaks Linux builds
 		Data,
 		Demo,
 		Hold,
