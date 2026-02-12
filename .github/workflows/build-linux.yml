@@ -10,19 +10,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     strategy:
       matrix:
         config:
           - { name: "Release x64", arch: "x86_64", build: "release", flags: "-64 -release" }
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         submodules: recursive
         fetch-depth: 0
-    
+
     - name: Cache APT packages
       uses: actions/cache@v4
       with:
@@ -33,7 +33,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-apt-packages-
           ${{ runner.os }}-apt-
-    
+
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -53,34 +53,34 @@ jobs:
           libx11-dev \
           libxext-dev \
           libwayland-dev
-    
+
     - name: Cache downloaded sources
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/deps
-        key: ${{ runner.os }}-sources-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        key: ${{ runner.os }}-sources-${{ hashFiles('Scripts/build-deps-linux.sh') }}
         restore-keys: |
           ${{ runner.os }}-sources-
-    
-    - name: Cache static libraries  
+
+    - name: Cache static libraries
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-libs-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/Master/Linux/build-deps.sh') }}
+        key: ${{ runner.os }}-libs-${{ matrix.config.arch }}-${{ hashFiles('Scripts/build-deps-linux.sh') }}
         restore-keys: |
           ${{ runner.os }}-libs-${{ matrix.config.arch }}-
           ${{ runner.os }}-libs-
-    
+
     - name: Build static dependencies
-      working-directory: drodrpg/Master/Linux
+      working-directory: Scripts
       run: |
         chmod +x build-deps.sh
         ./build-deps.sh
-        
+
         # Debug: List what's in libs
         echo "=== Static libraries built ==="
         ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
-    
+
     - name: Cache build objects
       uses: actions/cache@v4
       with:
@@ -89,7 +89,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-
           ${{ runner.os }}-build-${{ matrix.config.build }}-
-    
+
     - name: Show cache status
       run: |
         echo "=== Cache Status ==="
@@ -97,24 +97,24 @@ jobs:
         echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
         echo "Static libraries: $([ -d drodrpg/Master/Linux/libs ] && echo "exists" || echo "missing")"
         echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
-    
+
     - name: Generate ninja build files
       working-directory: drodrpg/Master/Linux
       run: |
         chmod +x ninjamaker
         ./ninjamaker ${{ matrix.config.flags }}
-    
+
     - name: Build DRODRPG
       working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build
         ./build
-    
+
     - name: List build artifacts
       working-directory: drodrpg/Master/Linux
       run: |
         find builds/ -type f -executable -name "drod" -exec ls -la {} \;
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -123,18 +123,18 @@ jobs:
           drodrpg/Master/Linux/builds/*/drod
           drodrpg/Master/Linux/builds/*/*.dbg
         retention-days: 30
-    
+
     - name: Create release archive
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       working-directory: drodrpg/Master/Linux
       run: |
         BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
-        if [ -n "$BUILD_DIR" ]; then         
+        if [ -n "$BUILD_DIR" ]; then
           cd "$BUILD_DIR"
           tar -czf "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod
           mv "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
         fi
-    
+
     - name: Upload release archive
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v4
