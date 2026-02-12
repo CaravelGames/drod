@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -37,7 +37,7 @@ CImportInfo::CImportInfo()
 	, bReplaceOldPlayers(false), bReplaceOldHolds(false)
 	, bImportingSavedGames(false)
 	, bQuickPlayerExport(false)
-	, typeBeingImported(None)
+	, typeBeingImported(NoType)
 	, bAllowHoldUpgrade(true), bAllowHoldDowngrade(false)
 	, dwPlayerImportedID(0), dwHoldImportedID(0), dwDemoImportedID(0), dwDataImportedID(0)
 	, ImportStatus(MID_ImportSuccessful)
@@ -88,7 +88,7 @@ void CImportInfo::Clear(
 		this->bReplaceOldHolds = false;
 		this->bReplaceOldPlayers = false;
 		this->bQuickPlayerExport = false;
-		this->typeBeingImported = None;
+		this->typeBeingImported = NoType;
 
 		this->localHoldIDs.clear();
 		this->exportedDemos.resize(0);
