@@ -1,0 +1,11 @@
+services:
+  drod-linux-builder:
+    build: .
+    container_name: drod-linux-builder
+    # Run container processes as UID:GID 1000:1000 to match host 'drod-dev' user
+    user: "1000:1000"
+    volumes:
+      - ../../:/drod
+    working_dir: /drod
+    stdin_open: true     # equivalent to -i
+    tty: true            # equivalent to -t
