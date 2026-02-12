@@ -66,6 +66,8 @@ FrontEndLib/CaravelRelease-Temp/
 */BuildDats/
 */SteamBuildDats/
 */*-Temp/
+Master/Linux/deps
+Master/Linux/static-libs
 Master/Linux/build.*
 Master/Linux/builds/
 Master/Linux/drod-sdl2.sublime-*
@@ -101,6 +103,8 @@ drodrpg/DRODUtil/CaravelRelease-Temp/
 drodrpg/*/BuildDats/
 drodrpg/*/SteamBuildDats/
 drodrpg/*/*-Temp/
+drodrpg/Master/Linux/deps
+drodrpg/Master/Linux/static-libs
 
 # Various things we don't want.
 **/.vs/
