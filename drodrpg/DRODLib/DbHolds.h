@@ -247,6 +247,7 @@ public:
 			CDbLevel *pLevel, CDbRoom *pRoom, ENTRANCE_VECTOR& entrancesIgnored) const;
 	UINT        GetSecretsDone(HoldStats& stats, const UINT dwHoldID,	const UINT dwPlayerID) const;
 	static CDbHold::HoldStatus GetStatus(const UINT dwHoldID);
+	static CDbHold::HoldStatus GetCosmeticHoldStatus();
 	static UINT GetHoldIDWithStatus(const CDbHold::HoldStatus status);
 	bool        IsHoldMastered(const UINT dwHoldID, const UINT playerID) const;
 	void        LogScriptVarRefs(const UINT holdID, const bool bScorepoints = false);

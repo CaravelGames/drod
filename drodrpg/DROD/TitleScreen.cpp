@@ -317,32 +317,7 @@ bool CTitleScreen::SetForActivate()
 //*****************************************************************************
 void CTitleScreen::SetTitleScreenSkin()
 {
-	this->hold_status = GetHoldStatus();
-	if (!CDbHold::IsOfficialHold(this->hold_status)) {
-		//Check CaravelNet data to determine which game version the hold is from.
-		const UINT holdID = g_pTheDB->GetHoldID();
-		if (holdID) {
-			CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID, true);
-			if (pHold) {
-				vector<CNetMedia*>& cNetMedia = g_pTheNet->GetCNetMedia();
-				const int nIndex = g_pTheNet->getIndexForName((const WCHAR*)pHold->NameText);
-				if (nIndex >= 0) {
-					CNetMedia* pHoldData = cNetMedia[nIndex];
-					const UINT version = pHoldData->wVersion;
-					if (version < 500)
-						this->hold_status = CDbHold::Tendry;
-					else if (version < 600)
-						this->hold_status = CDbHold::ACR;
-				}
-				delete pHold;
-			}
-		}
-
-		//To provide consistency w/o CaravelNet, set skin based on the newest installed official hold.
-		if (!CDbHold::IsOfficialHold(this->hold_status)) {
-			this->hold_status = CDbHolds::GetNewestInstalledOfficialHoldStatus();
-		}
-	}
+	this->hold_status = CDbHolds::GetCosmeticHoldStatus();
 
 	switch (this->hold_status) {
 		case CDbHold::Tendry:

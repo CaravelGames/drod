@@ -35,6 +35,7 @@
 #include "DbXML.h"
 #include "GameConstants.h"
 #include "MonsterFactory.h"
+#include "NetInterface.h"
 #include "../Texts/MIDs.h"
 #include <BackEndLib/Base64.h>
 #include <BackEndLib/Clipboard.h>
@@ -1126,6 +1127,41 @@ CDbHold::HoldStatus CDbHolds::GetStatus(const UINT dwHoldID)
 	if (dwHoldRowI == ROW_NO_MATCH) return CDbHold::NoStatus;
 
 	return (CDbHold::HoldStatus)(int)p_Status(HoldsView[dwHoldRowI]);
+}
+
+//*****************************************************************************
+CDbHold::HoldStatus CDbHolds::GetCosmeticHoldStatus()
+{
+	CDbHold::HoldStatus hold_status = GetStatus(g_pTheDB->GetHoldID());
+	if (CDbHold::IsOfficialHold(hold_status)) {
+		return hold_status;
+	}
+
+	//Check CaravelNet data to determine which game version the hold is from.
+	const UINT holdID = g_pTheDB->GetHoldID();
+	if (holdID) {
+		CDbHold* pHold = g_pTheDB->Holds.GetByID(holdID, true);
+		if (pHold) {
+			vector<CNetMedia*>& cNetMedia = g_pTheNet->GetCNetMedia();
+			const int nIndex = g_pTheNet->getIndexForName((const WCHAR*)pHold->NameText);
+			if (nIndex >= 0) {
+				CNetMedia* pHoldData = cNetMedia[nIndex];
+				const UINT version = pHoldData->wVersion;
+				if (version < 500)
+					hold_status = CDbHold::Tendry;
+				else if (version < 600)
+					hold_status = CDbHold::ACR;
+			}
+			delete pHold;
+		}
+	}
+
+	//To provide consistency w/o CaravelNet, set skin based on the newest installed official hold.
+	if (!CDbHold::IsOfficialHold(hold_status)) {
+		hold_status = CDbHolds::GetNewestInstalledOfficialHoldStatus();
+	}
+
+	return hold_status;
 }
 
 //*****************************************************************************
