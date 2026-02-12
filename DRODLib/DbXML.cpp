@@ -46,6 +46,21 @@ const char gzID[] = "\x1f\x8b"; //gzip file header id
 const UINT EXPORT_MAX_SIZE_THRESHOLD = 10 * 1024*1024; //10 MB
 const int XML_PARSER_BUFF_SIZE = 128 * 1024; //uncompressed buffer chunk size for import
 
+#if defined(__linux__) || defined(__FreeBSD__)
+//Custom allocation function for zlib when Z_SOLO is defined.
+//Required because SDL2_ttf's zlib implementation doesn't provide default allocators.
+static voidpf zlib_alloc(voidpf opaque, uInt items, uInt size) {
+	(void)opaque;
+	return malloc(items * size);
+}
+
+//Custom allocation function for zlib when Z_SOLO is defined.
+static void zlib_free(voidpf opaque, voidpf address) {
+	(void)opaque;
+	free(address);
+}
+#endif
+
 //Literals used to query and store values for Hold Characters in the packed vars object.
 #define scriptIDstr "ScriptID"
 
@@ -221,8 +236,13 @@ struct ImportBuffer
 		ASSERT(!d_stream);
 
 		z_stream* ds = new z_stream; // decompression stream (gzip/zlib format)
+#if defined(__linux__) || defined(__FreeBSD__)
+		ds->zalloc = zlib_alloc;
+		ds->zfree = zlib_free;
+#else
 		ds->zalloc = (alloc_func)0;
 		ds->zfree = (free_func)0;
+#endif
 		ds->opaque = (voidpf)0;
 
 		int err = inflateInit(ds);
@@ -1365,7 +1385,7 @@ void CDbXML::VerifySavedGames()
 	CCueEvents Ignored;
 	CCurrentGame *pCurrentGame;
 
-	const UINT dwActivePlayer = g_pTheDB->GetPlayerID(); 
+	const UINT dwActivePlayer = g_pTheDB->GetPlayerID();
 	UINT dwCurrentPlayerID = 0;
 	if (info.bImportingSavedGames)
 		dwCurrentPlayerID = dwActivePlayer;
@@ -1565,7 +1585,7 @@ void CDbXML::VerifySavedGames()
 			}
 			tallyIter->second.conquered += pCurrentGame->ConqueredRooms;
 			tallyIter->second.explored += pCurrentGame->ExploredRooms;
-			
+
 			//Full validation:
 			//0 - Only determine whether saved game may be loaded to its initial state
 			//1 - Replay move sequence and truncate any invalid moves.
@@ -2125,7 +2145,7 @@ void CDbXML::Import_ParseRecords(
 	ImportBuffer* pBuffer)
 {
 	ASSERT(parser); //pre-condition: parser is inited and ready to parse new data
-					
+
 	//These callback methods are invoked as XML records and attributes are parsed.
 	//Internal database records will be constructed incrementally as these
 	//values are read in. The 'EndElement' callback is used to indicate the
@@ -2601,7 +2621,7 @@ WSTRING CDbXML::prepareTemporaryFile(const WCHAR* wszFilename, const WSTRING& ho
 	filePath += wszSlash;
 	filePath += wszTilde;
 	filePath += holdName;
-	filePath += wszHyphen; 
+	filePath += wszHyphen;
 	filePath += to_WSTRING(std::time(NULL));
 	filePath += wszHyphen;
 	filePath += wszFilename;
