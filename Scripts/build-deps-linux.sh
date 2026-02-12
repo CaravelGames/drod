@@ -27,8 +27,13 @@ while [[ $# -gt 0 ]]; do
 done
 
 SCRIPT_DIR="$(pwd)"
-DEPS_DIR="$SCRIPT_DIR/deps"
-INSTALL_DIR="$SCRIPT_DIR/static-libs"
+DROD_ROOT_DIR="$SCRIPT_DIR/../Master/Linux"
+DEPS_DIR="$DROD_ROOT_DIR/deps"
+INSTALL_DIR="$DROD_ROOT_DIR/static-libs"
+
+RPG_ROOT_DIR="$SCRIPT_DIR/../drodrpg/Master/Linux"
+RPG_DEPS_DIR="$RPG_ROOT_DIR/deps"
+RPG_INSTALL_DIR="$RPG_ROOT_DIR/static-libs"
 
 mkdir -p "$DEPS_DIR"
 mkdir -p "$INSTALL_DIR"
@@ -40,12 +45,12 @@ download_extract() {
     local url="$1"
     local filename="$2"
     local dirname="$3"
-    
+
     if [ ! -f "$filename" ]; then
         echo "Downloading $filename..."
         wget "$url" -O "$filename"
     fi
-    
+
     if [ ! -d "$dirname" ]; then
         echo "Extracting $filename..."
         case "$filename" in
@@ -71,13 +76,13 @@ download_extract "https://github.com/libsdl-org/SDL_ttf/releases/download/releas
     "SDL2_ttf-2.20.2.tar.gz" "SDL2_ttf-2.20.2"
 
 # Audio/Video libraries
-download_extract "https://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2" \
+download_extract "https://ftp.osuosl.org/pub/xiph/releases/theora/libtheora-1.1.1.tar.bz2" \
     "libtheora-1.1.1.tar.bz2" "libtheora-1.1.1"
 
-download_extract "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz" \
+download_extract "https://ftp.osuosl.org/pub/xiph/releases/vorbis/libvorbis-1.3.7.tar.xz" \
     "libvorbis-1.3.7.tar.xz" "libvorbis-1.3.7"
 
-download_extract "https://downloads.xiph.org/releases/ogg/libogg-1.3.5.tar.xz" \
+download_extract "https://ftp.osuosl.org/pub/xiph/releases/ogg/libogg-1.3.5.tar.xz" \
     "libogg-1.3.5.tar.xz" "libogg-1.3.5"
 
 # Graphics libraries
@@ -125,20 +130,20 @@ build_library() {
     local config_opts="$2"
     local make_opts="$3"
     local lib_name="$4"
-    
+
     if ! $FORCE_REBUILD && library_exists "$lib_name"; then
         echo "=== Skipping $src_dir (lib${lib_name}.a already exists) ==="
         return 0
     fi
-    
+
     echo "=== Building $src_dir ==="
     cd "$DEPS_DIR/$src_dir"
-    
+
     # Clean up any previous failed builds
     if [ -f "Makefile" ]; then
         make clean 2>/dev/null || true
     fi
-    
+
     if [ ! -f "Makefile" ] && [ ! -f "configure" ]; then
         if [ -f "autogen.sh" ]; then
             ./autogen.sh
@@ -146,7 +151,7 @@ build_library() {
             ./bootstrap
         fi
     fi
-    
+
     if [ -f "Configure" ]; then
         # OpenSSL uses Configure (capital C) instead of configure
         ./Configure --prefix="$INSTALL_DIR" linux-x86_64 $config_opts
@@ -170,13 +175,13 @@ build_library() {
         make -j$(nproc) $make_opts
         make install
     fi
-    
+
     # Verify the library was built successfully
     if ! library_exists "$lib_name"; then
         echo "ERROR: Failed to build lib${lib_name}.a"
         return 1
     fi
-    
+
     echo "✓ Successfully built lib${lib_name}.a"
 }
 
@@ -209,14 +214,14 @@ if ! $FORCE_REBUILD && library_exists "mk4"; then
     echo "=== Skipping metakit (libmk4.a already exists) ==="
 else
     echo "=== Building metakit ==="
-    METAKIT_DIR="$SCRIPT_DIR/../../../metakit/unix"
+    METAKIT_DIR="$SCRIPT_DIR/../../metakit/unix"
     cd "$METAKIT_DIR"
-    
+
     # Clean up any previous builds
     if [ -f "Makefile" ]; then
         make clean 2>/dev/null || true
     fi
-    
+
     if [ -f "configure" ]; then
         ./configure --prefix="$INSTALL_DIR" --enable-static --disable-shared
         make
@@ -225,7 +230,7 @@ else
         echo "ERROR: metakit configure script not found"
         exit 1
     fi
-    
+
     # Verify metakit was built successfully
     if ! library_exists "mk4"; then
         echo "ERROR: Failed to build libmk4.a"
@@ -234,6 +239,14 @@ else
         echo "✓ Successfully built libmk4.a"
     fi
 fi
+
+echo "=== Copying libraries over to DROD RPG ==="
+
+mkdir -p "$RPG_DEPS_DIR"
+mkdir -p "$RPG_INSTALL_DIR"
+
+rsync -a "$DEPS_DIR" "$(dirname "$RPG_DEPS_DIR")"
+rsync -a "$INSTALL_DIR" "$(dirname "$RPG_INSTALL_DIR")"
 
 echo "=== Build complete ==="
 echo "Static libraries installed in: $INSTALL_DIR"
