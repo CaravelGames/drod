@@ -1640,8 +1640,10 @@ void CSettingsScreen::SynchOption(const UINT dwTagNo)
 		case TAG_ENABLE_MUSIC:
 			pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*, GetWidget(dwTagNo));
 			g_pTheSound->EnableMusic(pOptionButton->IsChecked());
-			if (pOptionButton->IsChecked())
-				g_pTheSound->PlaySong(SONGID_INTRO);
+			if (pOptionButton->IsChecked()) {
+				CDbHold::HoldStatus hold_status = CDbHolds::GetCosmeticHoldStatus();
+				g_pTheSound->PlaySong(hold_status == CDbHold::Tendry ? SONGID_INTRO : SONGID_TITLE_2);
+			}
 		break;
 	}
 }
