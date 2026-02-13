@@ -6,9 +6,9 @@
 #include "../../DRODLib/DbHolds.h"
 #include "../../DRODLib/DbPlayers.h"
 #include "../../DRODLib/DbLevels.h"
-#include <BackEndLib\Wchar.h>
-#include <BackEndLib\Files.h>
-#include <BackEndLib\Types.h>
+#include <BackEndLib/Wchar.h>
+#include <BackEndLib/Files.h>
+#include <BackEndLib/Types.h>
 
 #define DISPLAY_ROWS     32
 #define DISPLAY_COLS     38
@@ -22,6 +22,7 @@ public:
 	static void Init(int argc, char* const argv[]);
 	static void Teardown();
 	static void NameCurrentLevel(WCHAR* name);
+	static void NameCurrentLevel(const char* name);
 
 	const static std::string *currentTestCaseName;
 
@@ -39,14 +40,14 @@ private:
 	static void InitializeEntrance();
 	static void RegenerateRoom();
 	static void GetAppPath(const char *pszArg0, WSTRING &wstrAppPath);
-	
+
 	static CDb* db;
 	static CFiles* files;
 	static CDbPlayer* player;
 	static CDbHold* hold;
 	static CDbLevel* level;
 	static CDbRoom* room;
-	
+
 	static CCurrentGame* lastCurrentGame;
 
 	static UINT globalPlayerID;

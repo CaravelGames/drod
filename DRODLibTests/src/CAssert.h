@@ -6,9 +6,9 @@
 #include "../../DRODLib/DbHolds.h"
 #include "../../DRODLib/DbPlayers.h"
 #include "../../DRODLib/DbLevels.h"
-#include <BackEndLib\Wchar.h>
-#include <BackEndLib\Files.h>
-#include <BackEndLib\Types.h>
+#include <BackEndLib/Wchar.h>
+#include <BackEndLib/Files.h>
+#include <BackEndLib/Types.h>
 
 #define DISPLAY_ROWS     32
 #define DISPLAY_COLS     38

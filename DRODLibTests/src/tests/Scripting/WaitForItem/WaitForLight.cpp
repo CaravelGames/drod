@@ -14,13 +14,13 @@ static void TestWallLight(UINT lightType, UINT tileTypeToCheck, bool shouldPass,
 		RoomBuilder::AddWallLight(10, 10, lightType);
 
 		CCharacter* character = RoomBuilder::AddCharacter(1, 1);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForItem, 10, 10, 0, 0, tileTypeToCheck);
-		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted, 0, 0, 0, 0, 0, L"");
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_WaitForItem,        10, 10, 0, 0, tileTypeToCheck);
+		RoomBuilder::AddCommand(character, CCharacterCommand::CC_ChallengeCompleted,  0,  0, 0, 0, 0, "");
 
 		CCueEvents CueEvents;
 		Runner::StartGame(10, 25, N, CueEvents);
-		bool eventOccured = CueEvents.HasOccurred(CID_ChallengeCompleted);
-		REQUIRE(eventOccured == shouldPass);
+		bool eventOccurred = CueEvents.HasOccurred(CID_ChallengeCompleted);
+		REQUIRE(eventOccurred == shouldPass);
 	}
 }
 
@@ -34,8 +34,8 @@ static void TestCeilingLight(UINT lightType, UINT tileTypeToCheck, bool shouldPa
 
 		CCueEvents CueEvents;
 		Runner::StartGame(10, 25, N, CueEvents);
-		bool eventOccured = CueEvents.HasOccurred(CID_ChallengeCompleted);
-		REQUIRE(eventOccured == shouldPass);
+		bool eventOccurred = CueEvents.HasOccurred(CID_ChallengeCompleted);
+		REQUIRE(eventOccurred == shouldPass);
 	}
 }
 
@@ -49,8 +49,8 @@ static void TestCeilingDarkness(UINT lightType, UINT tileTypeToCheck, bool shoul
 
 		CCueEvents CueEvents;
 		Runner::StartGame(10, 25, N, CueEvents);
-		bool eventOccured = CueEvents.HasOccurred(CID_ChallengeCompleted);
-		REQUIRE(eventOccured == shouldPass);
+		bool eventOccurred = CueEvents.HasOccurred(CID_ChallengeCompleted);
+		REQUIRE(eventOccurred == shouldPass);
 	}
 }
 

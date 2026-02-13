@@ -23,6 +23,7 @@ public:
 	static void SaveRoom();
 	static void AddCommand(CCharacter* character, CCharacterCommand::CharCommand command, UINT x = 0, UINT y = 0, UINT w = 0, UINT h = 0, UINT flags = 0);
 	static void AddCommand(CCharacter* character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags, WSTRING label);
+	static void AddCommand(CCharacter* character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags, const char * label);
 	static COrbData* AddOrbDataToTile(const UINT wX, const UINT wY, const OrbType eOrbType = OT_NORMAL);
 	static void LinkOrb(const UINT wOrbX, const UINT wOrbY, const UINT wDoorX, const UINT wDoorY, const OrbAgentType eLinkType);
 	static void Plot(const UINT tileType, const UINT wX, const UINT wY);
@@ -33,8 +34,8 @@ public:
 private:
 	static CDbRoom* GetRoom();
 
-	static UINT RoomBuilder::GetSerpentTile(const UINT prevTileX, const UINT prevTileY, 
-		const UINT thisTileX, const UINT thisTileY, 
+	static UINT GetSerpentTile(const UINT prevTileX, const UINT prevTileY,
+		const UINT thisTileX, const UINT thisTileY,
 		const UINT nextTileX = UINT(-1), const UINT nextTileY = UINT(-1));
 
 	static CMonsterPiece* GetPieceAtIndex(MonsterPieces piecesList, const UINT index);

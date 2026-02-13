@@ -13,6 +13,9 @@
 
 #define TWOBLUECUBES_CATCH_HPP_INCLUDED
 
+// SIGSTKSZ was used previously but is no longer a compile constant in some versions of the compiler
+#define SIGSTKSZ_ 8192
+
 #ifdef __clang__
 #    pragma clang system_header
 #elif defined __GNUC__
@@ -3249,7 +3252,7 @@ namespace Catch {
 
     struct TestCaseInfo {
         enum SpecialProperties{
-            None = 0,
+            None_ = 0,
             IsHidden = 1 << 1,
             ShouldFail = 1 << 2,
             MayFail = 1 << 3,
@@ -3717,7 +3720,7 @@ namespace Catch {
 namespace Catch {
 
     class TestSpecParser {
-        enum Mode{ None, Name, QuotedName, Tag, EscapedName };
+        enum Mode{ None_, Name, QuotedName, Tag, EscapedName };
         Mode m_mode;
         bool m_exclusion;
         std::size_t m_start, m_pos;
@@ -3728,10 +3731,10 @@ namespace Catch {
         ITagAliasRegistry const* m_tagAliases;
 
     public:
-        TestSpecParser( ITagAliasRegistry const& tagAliases ) :m_mode(None), m_exclusion(false), m_start(0), m_pos(0), m_tagAliases( &tagAliases ) {}
+        TestSpecParser( ITagAliasRegistry const& tagAliases ) :m_mode(None_), m_exclusion(false), m_start(0), m_pos(0), m_tagAliases( &tagAliases ) {}
 
         TestSpecParser& parse( std::string const& arg ) {
-            m_mode = None;
+            m_mode = None_;
             m_exclusion = false;
             m_start = std::string::npos;
             m_arg = m_tagAliases->expandAliases( arg );
@@ -3748,7 +3751,7 @@ namespace Catch {
         }
     private:
         void visitChar( char c ) {
-            if( m_mode == None ) {
+            if( m_mode == None_ ) {
                 switch( c ) {
                 case ' ': return;
                 case '~': m_exclusion = true; return;
@@ -3785,7 +3788,7 @@ namespace Catch {
             m_start = start;
         }
         void escape() {
-            if( m_mode == None )
+            if( m_mode == None_ )
                 m_start = m_pos;
             m_mode = EscapedName;
             m_escapeChars.push_back( m_pos );
@@ -3808,7 +3811,7 @@ namespace Catch {
                 m_currentFilter.m_patterns.push_back( pattern );
             }
             m_exclusion = false;
-            m_mode = None;
+            m_mode = None_;
         }
         void addFilter() {
             if( !m_currentFilter.m_patterns.empty() ) {
@@ -4620,7 +4623,7 @@ namespace Clara {
     }
 
     class Parser {
-        enum Mode { None, MaybeShortOpt, SlashOpt, ShortOpt, LongOpt, Positional };
+        enum Mode { None_, MaybeShortOpt, SlashOpt, ShortOpt, LongOpt, Positional };
         Mode mode;
         std::size_t from;
         bool inQuotes;
@@ -4633,7 +4636,7 @@ namespace Clara {
             std::string data;
         };
 
-        Parser() : mode( None ), from( 0 ), inQuotes( false ){}
+        Parser() : mode( None_ ), from( 0 ), inQuotes( false ){}
 
         void parseIntoTokens( std::vector<std::string> const& args, std::vector<Token>& tokens ) {
             const std::string doubleDash = "--";
@@ -4652,7 +4655,7 @@ namespace Clara {
         }
         Mode handleMode( std::size_t i, char c, std::string const& arg, std::vector<Token>& tokens ) {
             switch( mode ) {
-                case None: return handleNone( i, c );
+                case None_: return handleNone( i, c );
                 case MaybeShortOpt: return handleMaybeShortOpt( i, c );
                 case ShortOpt:
                 case LongOpt:
@@ -4694,7 +4697,7 @@ namespace Clara {
                 tokens.push_back( Token( Token::ShortOpt, optName ) );
             else
                 tokens.push_back( Token( Token::LongOpt, optName ) );
-            return None;
+            return None_;
         }
         Mode handlePositional( std::size_t i, char c, std::string const& arg, std::vector<Token>& tokens ) {
             if( inQuotes || std::string( "\0", 1 ).find( c ) == std::string::npos )
@@ -4702,7 +4705,7 @@ namespace Clara {
 
             std::string data = arg.substr( from, i-from );
             tokens.push_back( Token( Token::Positional, data ) );
-            return None;
+            return None_;
         }
     };
 
@@ -5549,7 +5552,7 @@ namespace Catch {
 
     struct Colour {
         enum Code {
-            None = 0,
+            None_ = 0,
 
             White,
             Red,
@@ -5884,7 +5887,7 @@ namespace Catch {
             TestCaseInfo const& testCaseInfo = it->getTestCaseInfo();
             Colour::Code colour = testCaseInfo.isHidden()
                 ? Colour::SecondaryText
-                : Colour::None;
+                : Colour::None_;
             Colour colourGuard( colour );
 
             Catch::cout() << Text( testCaseInfo.name, nameAttr ) << std::endl;
@@ -6540,7 +6543,7 @@ namespace Catch {
         static bool isSet;
         static struct sigaction oldSigActions [sizeof(signalDefs)/sizeof(SignalDefs)];
         static stack_t oldSigStack;
-        static char altStackMem[SIGSTKSZ];
+        static char altStackMem[SIGSTKSZ_];
 
         static void handleSignal( int sig ) {
             std::string name = "<unknown signal>";
@@ -6560,7 +6563,7 @@ namespace Catch {
             isSet = true;
             stack_t sigStack;
             sigStack.ss_sp = altStackMem;
-            sigStack.ss_size = SIGSTKSZ;
+            sigStack.ss_size = SIGSTKSZ_;
             sigStack.ss_flags = 0;
             sigaltstack(&sigStack, &oldSigStack);
             struct sigaction sa = { 0 };
@@ -6591,7 +6594,7 @@ namespace Catch {
     bool FatalConditionHandler::isSet = false;
     struct sigaction FatalConditionHandler::oldSigActions[sizeof(signalDefs)/sizeof(SignalDefs)] = {};
     stack_t FatalConditionHandler::oldSigStack = {};
-    char FatalConditionHandler::altStackMem[SIGSTKSZ] = {};
+    char FatalConditionHandler::altStackMem[SIGSTKSZ_] = {};
 
 } // namespace Catch
 
@@ -7947,7 +7950,7 @@ namespace {
 
         virtual void use( Colour::Code _colourCode ) {
             switch( _colourCode ) {
-                case Colour::None:      return setTextAttribute( originalForegroundAttributes );
+                case Colour::None_:      return setTextAttribute( originalForegroundAttributes );
                 case Colour::White:     return setTextAttribute( FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_BLUE );
                 case Colour::Red:       return setTextAttribute( FOREGROUND_RED );
                 case Colour::Green:     return setTextAttribute( FOREGROUND_GREEN );
@@ -8008,7 +8011,7 @@ namespace {
     public:
         virtual void use( Colour::Code _colourCode ) {
             switch( _colourCode ) {
-                case Colour::None:
+                case Colour::None_:
                 case Colour::White:     return setColour( "[0m" );
                 case Colour::Red:       return setColour( "[0;31m" );
                 case Colour::Green:     return setColour( "[0;32m" );
@@ -8068,7 +8071,7 @@ namespace Catch {
 
     Colour::Colour( Code _colourCode ) : m_moved( false ) { use( _colourCode ); }
     Colour::Colour( Colour const& _other ) : m_moved( false ) { const_cast<Colour&>( _other ).m_moved = true; }
-    Colour::~Colour(){ if( !m_moved ) use( None ); }
+    Colour::~Colour(){ if( !m_moved ) use( None_ ); }
 
     void Colour::use( Code _colourCode ) {
         static IColourImpl* impl = platformColourInstance();
@@ -8270,10 +8273,10 @@ namespace Catch {
         else if( tag == "!nonportable" )
             return TestCaseInfo::NonPortable;
         else
-            return TestCaseInfo::None;
+            return TestCaseInfo::None_;
     }
     inline bool isReservedTag( std::string const& tag ) {
-        return parseSpecialTag( tag ) == TestCaseInfo::None && tag.size() > 0 && !std::isalnum( tag[0] );
+        return parseSpecialTag( tag ) == TestCaseInfo::None_ && tag.size() > 0 && !std::isalnum( tag[0] );
     }
     inline void enforceNotReservedTag( std::string const& tag, SourceLineInfo const& _lineInfo ) {
         if( isReservedTag( tag ) ) {
@@ -8312,7 +8315,7 @@ namespace Catch {
                     TestCaseInfo::SpecialProperties prop = parseSpecialTag( tag );
                     if( prop == TestCaseInfo::IsHidden )
                         isHidden = true;
-                    else if( prop == TestCaseInfo::None )
+                    else if( prop == TestCaseInfo::None_ )
                         enforceNotReservedTag( tag, _lineInfo );
 
                     tags.insert( tag );
@@ -8356,7 +8359,7 @@ namespace Catch {
         className( _className ),
         description( _description ),
         lineInfo( _lineInfo ),
-        properties( None )
+        properties( None_ )
     {
         setTags( *this, _tags );
     }
@@ -10760,7 +10763,7 @@ namespace Catch {
             :   stream( _stream ),
                 stats( _stats ),
                 result( _stats.assertionResult ),
-                colour( Colour::None ),
+                colour( Colour::None_ ),
                 message( result.getMessage() ),
                 messages( _stats.infoMessages ),
                 printInfoMessages( _printInfoMessages )
@@ -11015,7 +11018,7 @@ namespace Catch {
             else {
 
                 std::vector<SummaryColumn> columns;
-                columns.push_back( SummaryColumn( "", Colour::None )
+                columns.push_back( SummaryColumn( "", Colour::None_ )
                                         .addRow( totals.testCases.total() )
                                         .addRow( totals.assertions.total() ) );
                 columns.push_back( SummaryColumn( "passed", Colour::Success )
@@ -11182,7 +11185,7 @@ namespace Catch {
                         printOriginalExpression();
                         printReconstructedExpression();
                         if ( ! result.hasExpression() )
-                            printRemainingMessages( Colour::None );
+                            printRemainingMessages( Colour::None_ );
                         else
                             printRemainingMessages();
                         break;
@@ -11216,19 +11219,19 @@ namespace Catch {
                         printRemainingMessages();
                         break;
                     case ResultWas::Info:
-                        printResultType( Colour::None, "info" );
+                        printResultType( Colour::None_, "info" );
                         printMessage();
                         printRemainingMessages();
                         break;
                     case ResultWas::Warning:
-                        printResultType( Colour::None, "warning" );
+                        printResultType( Colour::None_, "warning" );
                         printMessage();
                         printRemainingMessages();
                         break;
                     case ResultWas::ExplicitFailure:
                         printResultType( Colour::Error, failedString() );
                         printIssue( "explicitly" );
-                        printRemainingMessages( Colour::None );
+                        printRemainingMessages( Colour::None_ );
                         break;
                     // These cases are here to prevent compiler warnings
                     case ResultWas::Unknown:

@@ -1,5 +1,10 @@
 #define CATCH_CONFIG_RUNNER
+
+// Breaks linux builds
+#if !defined(__linux__) &&  !defined(__linux) && !defined(linux)
 #define CATCH_CONFIG_COLOUR_WINDOWS
+#endif
+
 #include "catch.hpp"
 
 #include <iostream>
@@ -27,7 +32,9 @@ int main(int argc, char* const argv[])
 
 	CTestDb::Teardown();
 
+#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32) || defined(_MSC_VER)
 	system("pause");
+#endif
 
 	return result;
 }

@@ -2,8 +2,14 @@
 #include "../../CAssert.h"
 
 static void TestValidity(const wstring& expression, CDbHold* pHold, bool bValid = true) {
+	// Convert std::wstring (wchar_t-based) to project WSTRING (WCHAR-based)
+	WSTRING wexpr;
+	wexpr.reserve(expression.size());
+	for (wchar_t ch : expression)
+		wexpr.push_back(std::char_traits<WCHAR>::to_char_type((WCHAR_t)ch));
+
 	UINT index = 0;
-	CHECK(CCharacter::IsValidExpression(expression.c_str(), index, pHold) == bValid);
+	CHECK(CCharacter::IsValidExpression(wexpr.c_str(), index, pHold) == bValid);
 }
 
 static void TestParsedValue(
@@ -12,8 +18,14 @@ static void TestParsedValue(
 	CCurrentGame* pGame,
 	CCharacter* pCharacter
 ) {
+	// Convert std::wstring (wchar_t-based) to project WSTRING (WCHAR-based)
+	WSTRING wexpr;
+	wexpr.reserve(expression.size());
+	for (wchar_t ch : expression)
+		wexpr.push_back(std::char_traits<WCHAR>::to_char_type((WCHAR_t)ch));
+
 	UINT index = 0;
-	CHECK(CCharacter::parseExpression(expression.c_str(), index, pGame, pCharacter) == expectedValue);
+	CHECK(CCharacter::parseExpression(wexpr.c_str(), index, pGame, pCharacter) == expectedValue);
 }
 
 TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
@@ -26,7 +38,7 @@ TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
 		wstring absExpression(L"_abs(-5)");
 		wstring absExpression2(L"_abs(7)");
 		wstring absBad(L"_abs(-6");
-		
+
 		TestValidity(absExpression, pHold);
 		TestValidity(absExpression2, pHold);
 		TestValidity(absBad, pHold, false);
@@ -85,25 +97,25 @@ TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
 			}
 
 			TestParsedValue(
-				wstring(L"_rotateCW(") + to_WSTRING(wO) + wstring(L")"),
+				wstring(L"_rotateCW(") + to_wstring(wO) + wstring(L")"),
 				nNextCO(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_rotateCCW(") + to_WSTRING(wO) + wstring(L")"),
+				wstring(L"_rotateCCW(") + to_wstring(wO) + wstring(L")"),
 				nNextCCO(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_ox(") + to_WSTRING(wO) + wstring(L")"),
+				wstring(L"_ox(") + to_wstring(wO) + wstring(L")"),
 				nGetOX(wO),
 				pGame,
 				pCharacter
 			);
 			TestParsedValue(
-				wstring(L"_oy(") + to_WSTRING(wO) + wstring(L")"),
+				wstring(L"_oy(") + to_wstring(wO) + wstring(L")"),
 				nGetOY(wO),
 				pGame,
 				pCharacter
