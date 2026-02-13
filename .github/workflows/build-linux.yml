@@ -74,8 +74,8 @@ jobs:
     - name: Build static dependencies
       working-directory: Scripts
       run: |
-        chmod +x build-deps.sh
-        ./build-deps.sh
+        chmod +x build-deps-linux.sh
+        ./build-deps-linux.sh
 
         # Debug: List what's in libs
         echo "=== Static libraries built ==="
