@@ -50,11 +50,7 @@ void CTestDb::Init(int argc, char* const argv[])
 
 void CTestDb::Teardown()
 {
-	CTestDb::db->Rooms.Delete(CTestDb::globalRoomID);
-	CTestDb::db->Levels.Delete(CTestDb::globalLevelID);
 	CTestDb::db->Holds.Delete(CTestDb::globalHoldID);
-	CTestDb::db->Players.Delete(CTestDb::globalPlayerID, false);
-	CTestDb::db->Commit();
 }
 
 CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UINT playerO){

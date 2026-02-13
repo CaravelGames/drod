@@ -117,7 +117,6 @@ if [[ -z ${options[name]} ]]; then
 else
 	NAME=${options[name]}
 fi
-
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
@@ -171,7 +170,7 @@ rule link
 rule link-tests
 X
 # To make sure catch.hpp can detect tests `DRODLibTests.a` MUST be linked via whole-archive directive
-  	echo "  command = \$cxx -o \$out \$ldflags -Wl,--whole-archive $BUILDDIR/DRODLibTests.a -Wl,--no-whole-archive \$in \$libs && rm -f \${out}-*.dbg && objcopy --only-keep-debug \$out \${out}\${debugsuffix} && objcopy --add-gnu-debuglink=\${out}\${debugsuffix} \$out && strip --strip-all \$out"
+  	echo "  command = cp -rf $TOPDIR/Data $BUILDDIR && \$cxx -o \$out \$ldflags -Wl,--whole-archive $BUILDDIR/DRODLibTests.a -Wl,--no-whole-archive \$in \$libs && rm -f \${out}-*.dbg && objcopy --only-keep-debug \$out \${out}\${debugsuffix} && objcopy --add-gnu-debuglink=\${out}\${debugsuffix} \$out && strip --strip-all \$out"
 	cat <<'X'
   description = Link $out
 
@@ -219,6 +218,7 @@ gen_lib_build () {
 	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
 	local objs=()
 	for file in ${files[@]}; do
+		# Fix windows-style paths
 		file="${file//\\//}"
 		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"
 		objs+=($obj)
@@ -242,7 +242,6 @@ gen_lib_build () {
 }
 
 out=build.$NAME.ninja
-
 gen_rules >$out
 for lib in "${libs[@]}"; do
 	gen_lib_build "$lib" >>$out

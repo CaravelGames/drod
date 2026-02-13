@@ -25,7 +25,11 @@ static void CanRemoveTLayerObject(UINT wTile) {
 
 TEST_CASE("Test removal of single T-layer objects", "[game][building]") {
 	SECTION("Test removing T_OBSTACLE") {
-		CanRemoveTLayerObject(T_OBSTACLE);
+		RoomBuilder::ClearRoom();
+		RoomBuilder::PlotObstacle(1, 10, 10);
+
+		AddRemover();
+		CheckRemoval();
 	}
 	SECTION("Test removing T_POTION_I") {
 		CanRemoveTLayerObject(T_POTION_I);

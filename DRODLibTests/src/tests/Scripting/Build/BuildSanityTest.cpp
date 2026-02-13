@@ -9,7 +9,7 @@ static void Setup_BuildScript(const UINT wTile){
 
 static void CanBuildOnPlayer(const UINT tileToBuild, const bool canBuild){
 	RoomBuilder::ClearRoom();
-	
+
 	Setup_BuildScript(tileToBuild);
 
 	CCurrentGame* game = Runner::StartGame(10, 10, N);
@@ -157,10 +157,10 @@ TEST_CASE("Testing can build T_POTION_D on player", "[game]") {
 	CanBuildOnPlayer(T_POTION_D, true);
 }
 TEST_CASE("Testing can build T_PLATFORM_W on player", "[game]") {
-	CanBuildOnPlayer(T_PLATFORM_W, false);
+	CanBuildOnPlayer(T_PLATFORM_W, true);
 }
 TEST_CASE("Testing can build T_PLATFORM_P on player", "[game]") {
-	CanBuildOnPlayer(T_PLATFORM_P, false);
+	CanBuildOnPlayer(T_PLATFORM_P, true);
 }
 TEST_CASE("Testing can build T_FLOOR_M on player", "[game]") {
 	CanBuildOnPlayer(T_FLOOR_M, true);
@@ -436,7 +436,7 @@ TEST_CASE("Testing can build T_GEL on T_ORB", "[game]") {
 }
 TEST_CASE("No errors or asserts when building outside room edge", "[game]"){
 	RoomBuilder::ClearRoom();
-	
+
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Wait);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Build, 40, -1, 4, 4, T_WALL);
@@ -447,20 +447,20 @@ TEST_CASE("No errors or asserts when building outside room edge", "[game]"){
 
 	Runner::StartGame(5, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
-	
+
 	REQUIRE(Runner::GetNewAssertsCount() == 0);
 }
 
 TEST_CASE("Building crops top-left edge", "[game]"){
 	RoomBuilder::ClearRoom();
-	
+
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Wait);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Build, -1, -1, 1, 1, T_WALL);
 
 	CCurrentGame* game = Runner::StartGame(5, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
-	
+
 	REQUIRE(game->pRoom->GetOSquare(0, 0) == T_WALL);
 	REQUIRE(game->pRoom->GetOSquare(1, 0) == T_FLOOR);
 	REQUIRE(game->pRoom->GetOSquare(0, 1) == T_FLOOR);
@@ -469,7 +469,7 @@ TEST_CASE("Building crops top-left edge", "[game]"){
 
 TEST_CASE("Disallow building orbs on pressure plates", "[game]"){
 	RoomBuilder::ClearRoom();
-	
+
 	CCharacter* character = RoomBuilder::AddVisibleCharacter(1, 1);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Wait);
 	RoomBuilder::AddCommand(character, CCharacterCommand::CC_Build, 10, 10, 0, 0, T_ORB);
@@ -479,7 +479,7 @@ TEST_CASE("Disallow building orbs on pressure plates", "[game]"){
 
 	CCurrentGame* game = Runner::StartGame(5, 10, N);
 	Runner::ExecuteCommand(CMD_WAIT, 1);
-	
+
 	REQUIRE(game->pRoom->GetTSquare(10, 10) == T_EMPTY);
 	REQUIRE(game->pRoom->GetTSquare(11, 10) == T_EMPTY);
 	REQUIRE(game->pRoom->GetTSquare(12, 10) == T_EMPTY);

@@ -127,7 +127,7 @@ bool BuildUtil::BuildTileAt(
 
 //*****************************************************************************
 bool BuildUtil::CanBuildAt(CDbRoom& room, const UINT tile, const UINT x, const UINT y, const bool bAllowSame)
-{	
+{
 	if (x >= room.wRoomCols || y >= room.wRoomRows)
 		return false; //build area is completely out of room bounds -- do nothing
 
@@ -486,19 +486,19 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 		switch (tile)
 		{
 		case T_TOKEN_DISARM:
-			if (pCurrentGame->swordsman.bNoWeapon) 
+			if (pCurrentGame->swordsman.bNoWeapon)
 				tTokenType += TOKEN_ACTIVE;
 			break;
 		case T_TOKEN_POWER:
-			if (pCurrentGame->swordsman.bCanGetItems) 
+			if (pCurrentGame->swordsman.bCanGetItems)
 				tTokenType += TOKEN_ACTIVE;
 			break;
 		case T_TOKEN_CONQUER:
-			if (pCurrentGame->conquerTokenTurn != NO_CONQUER_TOKEN_TURN) 
+			if (pCurrentGame->conquerTokenTurn != NO_CONQUER_TOKEN_TURN)
 				tTokenType += TOKEN_ACTIVE;
 			break;
 		case T_TOKEN_VISION:
-			if (room.bBetterVision) 
+			if (room.bBetterVision)
 				tTokenType += TOKEN_ACTIVE;
 			break;
 		default: break;
@@ -525,7 +525,7 @@ bool BuildUtil::BuildNormalTile(CDbRoom& room, const UINT baseTile, const UINT t
 	}
 
 	CueEvents.Add(CID_ObjectBuilt, new CAttachableWrapper<UINT>(baseTile), true);
-	
+
 	if (wLayer == LAYER_OPAQUE) {
 		// Building/removing tiles that (can) affect weapon sheathing should refresh it immediately
 		if (bIsSheatheAffecting(wOldOTile) || bIsSheatheAffecting(baseTile)) {
