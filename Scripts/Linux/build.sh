@@ -21,9 +21,11 @@ Actions:
     all               Run docker-up, build-deps, build-drod, build-drod-rpg (in that order)
     docker-up         Start the docker compose container (detached)
     docker-down       Stop and remove the docker compose containers
+    docker-bash       Open bash in the docker container
     build-deps        Build project dependencies inside the docker container
     build-drod        Build DROD (Master/Linux) inside the docker container
     build-drod-rpg    Build DROD RPG (drodrpg/Master/Linux) inside the docker container
+    run-tests         Build & run DROD tests
 
 Options:
     -r, --root        Use root user where applicable
@@ -121,6 +123,12 @@ action_build_drod_rpg() {
     docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -release && ./build"
 }
 
+action_run_tests() {
+    echo "=> run-tests: running DROD tests"
+    docker_exec "cd /drod/Master/Linux && [ ! -f 'build.custom.debug.x86_64.ninja' ] && ./ninjamaker -64 -debug"
+    docker_exec "cd /drod/Master/Linux && ninja -f build.custom.debug.x86_64.ninja builds/custom.debug.x86_64/drod_tests"
+}
+
 # Dispatch the selected action
 case "$ACTION" in
     all)
@@ -143,6 +151,9 @@ case "$ACTION" in
         ;;
     build-drod-rpg)
         action_build_drod_rpg
+        ;;
+    run-tests)
+        action_run_tests
         ;;
     *)
         echo "Unknown action: $ACTION"

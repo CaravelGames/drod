@@ -177,6 +177,19 @@ void RoomBuilder::Plot(const UINT tileType, const UINT wX, const UINT wY){
 	PlotRect(tileType, wX, wY, wX, wY);
 }
 
+void RoomBuilder::PlotObstacle(const UINT obstacleType, const UINT wX, const UINT wY) {
+	PlotObstacle(obstacleType, wX, wY, wX, wY);
+}
+
+void RoomBuilder::PlotObstacle(const UINT obstacleType, const UINT startX, const UINT startY, const UINT endX, const UINT endY) {
+	for (UINT x = startX; x <= endX; ++x){
+		for (UINT y = startY; y <= endY; ++y){
+			GetRoom()->Plot(x, y, T_OBSTACLE);
+			GetRoom()->SetTParam(x, y, obstacleType);
+		}
+	}
+}
+
 void RoomBuilder::PlotToken(const RoomTokenType tokenType, const UINT wX, const UINT wY){
 	PlotRect(T_TOKEN, wX, wY, wX, wY);
 	GetRoom()->SetTParam(wX, wY, tokenType);

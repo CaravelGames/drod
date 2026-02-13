@@ -16,6 +16,11 @@ jobs:
         config:
           - { name: "Release x64", arch: "x86_64", build: "release", flags: "-64 -release" }
 
+
+
+    # CHECKOUT AND PREPARING ENVIRONMENT
+    # ----------------------------------
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -54,22 +59,44 @@ jobs:
           libxext-dev \
           libwayland-dev
 
-    - name: Cache downloaded sources
+
+
+    # BUILDING & CACHING DEPENDENCIES
+    # -------------------------------
+
+    - name: Cache downloaded sources (DROD)
+      uses: actions/cache@v4
+      with:
+        path: Master/Linux/deps
+        key: ${{ runner.os }}-drod-sources-${{ hashFiles('Scripts/build-deps-linux.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-drod-sources-
+
+    - name: Cache downloaded sources (DROD RPG)
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/deps
-        key: ${{ runner.os }}-sources-${{ hashFiles('Scripts/build-deps-linux.sh') }}
+        key: ${{ runner.os }}-rpg-sources-${{ hashFiles('Scripts/build-deps-linux.sh') }}
         restore-keys: |
-          ${{ runner.os }}-sources-
+          ${{ runner.os }}-rpg-sources-
 
-    - name: Cache static libraries
+    - name: Cache static libraries (DROD)
+      uses: actions/cache@v4
+      with:
+        path: Master/Linux/static-libs
+        key: ${{ runner.os }}-drod-libs-${{ matrix.config.arch }}-${{ hashFiles('Scripts/build-deps-linux.sh') }}
+        restore-keys: |
+          ${{ runner.os }}-drod-libs-${{ matrix.config.arch }}-
+          ${{ runner.os }}-drod-libs-
+
+    - name: Cache static libraries (DROD RPG)
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/static-libs
-        key: ${{ runner.os }}-libs-${{ matrix.config.arch }}-${{ hashFiles('Scripts/build-deps-linux.sh') }}
+        key: ${{ runner.os }}-rpg-libs-${{ matrix.config.arch }}-${{ hashFiles('Scripts/build-deps-linux.sh') }}
         restore-keys: |
-          ${{ runner.os }}-libs-${{ matrix.config.arch }}-
-          ${{ runner.os }}-libs-
+          ${{ runner.os }}-rpg-libs-${{ matrix.config.arch }}-
+          ${{ runner.os }}-rpg-libs-
 
     - name: Build static dependencies
       working-directory: Scripts
@@ -81,41 +108,105 @@ jobs:
         echo "=== Static libraries built ==="
         ls -la static-libs/lib/ || echo "static-libs/lib directory not found"
 
-    - name: Cache build objects
+
+
+    # CACHING BUILD OBJECTS
+    # ---------------------
+
+    - name: Cache build objects (DROD)
+      uses: actions/cache@v4
+      with:
+        path: Master/Linux/builds
+        key: ${{ runner.os }}-drod-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-${{ hashFiles('BackEndLib/**/*', 'CaravelNet/**/*', 'DROD/**/*', 'DRODLib/**/*', 'DRODLibTests/**/*', 'FrontEndLib/**/*', 'Master/Linux/ninjamaker') }}
+        restore-keys: |
+          ${{ runner.os }}-drod-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-
+          ${{ runner.os }}-drod-build-${{ matrix.config.build }}-
+
+    - name: Cache build objects (DROD RPG)
       uses: actions/cache@v4
       with:
         path: drodrpg/Master/Linux/builds
-        key: ${{ runner.os }}-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/**/*.cpp', 'drodrpg/**/*.h', 'drodrpg/Master/Linux/ninjamaker') }}
+        key: ${{ runner.os }}-rpg-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-${{ hashFiles('drodrpg/**/*.cpp', 'drodrpg/**/*.h', 'drodrpg/Master/Linux/ninjamaker') }}
         restore-keys: |
-          ${{ runner.os }}-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-
-          ${{ runner.os }}-build-${{ matrix.config.build }}-
+          ${{ runner.os }}-rpg-build-${{ matrix.config.build }}-${{ matrix.config.arch }}-
+          ${{ runner.os }}-rpg-build-${{ matrix.config.build }}-
+
+
+
+    # SHOW CACHE STATUS
+    # -----------------
 
     - name: Show cache status
       run: |
         echo "=== Cache Status ==="
         echo "APT cache: $([ -d /var/cache/apt/archives ] && echo "exists" || echo "missing")"
-        echo "Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
-        echo "Static libraries: $([ -d drodrpg/Master/Linux/libs ] && echo "exists" || echo "missing")"
-        echo "Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
+        echo "(DROD) Downloaded sources: $([ -d Master/Linux/deps ] && echo "$(ls Master/Linux/deps | wc -l) items" || echo "missing")"
+        echo "(DROD) Static libraries: $([ -d Master/Linux/libs ] && echo "exists" || echo "missing")"
+        echo "(DROD) Build objects: $([ -d Master/Linux/builds ] && echo "exists" || echo "missing")"
+        echo "(RPG) Downloaded sources: $([ -d drodrpg/Master/Linux/deps ] && echo "$(ls drodrpg/Master/Linux/deps | wc -l) items" || echo "missing")"
+        echo "(RPG) Static libraries: $([ -d drodrpg/Master/Linux/libs ] && echo "exists" || echo "missing")"
+        echo "(RPG) Build objects: $([ -d drodrpg/Master/Linux/builds ] && echo "exists" || echo "missing")"
 
-    - name: Generate ninja build files
+
+
+    # BUILD DROD
+    # --------------
+
+    - name: Generate ninja build files (DROD)
+      working-directory: Master/Linux
+      run: |
+        chmod +x ninjamaker
+        ./ninjamaker ${{ matrix.config.flags }}
+
+    - name: Build (DROD)
+      working-directory: Master/Linux
+      run: |
+        chmod +x build
+        ./build
+
+
+
+    # BUILD DROD RPG
+    # --------------
+
+    - name: Generate ninja build files (DROD RPG)
       working-directory: drodrpg/Master/Linux
       run: |
         chmod +x ninjamaker
         ./ninjamaker ${{ matrix.config.flags }}
 
-    - name: Build DRODRPG
+    - name: Build (DROD RPG)
       working-directory: drodrpg/Master/Linux
       run: |
         chmod +x build
         ./build
 
-    - name: List build artifacts
-      working-directory: drodrpg/Master/Linux
-      run: |
-        find builds/ -type f -executable -name "drod" -exec ls -la {} \;
 
-    - name: Upload build artifacts
+
+    # RUN DROD TESTS
+    # --------------
+
+    - name: Run DROD tests
+      working-directory: Master/Linux/builds
+      run: |
+        cd custom.${{ matrix.config.build }}.${{ matrix.config.arch }}
+        ./drod_tests
+
+
+
+    # UPLOAD ARTIFACTS
+    # ----------------
+
+    - name: Upload build artifacts (DROD)
+      uses: actions/upload-artifact@v4
+      with:
+        name: drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        path: |
+          Master/Linux/builds/*/drod
+          Master/Linux/builds/*/*.dbg
+        retention-days: 30
+
+    - name: Upload build artifacts (DROD RPG)
       uses: actions/upload-artifact@v4
       with:
         name: drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}
@@ -124,7 +215,23 @@ jobs:
           drodrpg/Master/Linux/builds/*/*.dbg
         retention-days: 30
 
-    - name: Create release archive
+
+
+    # UPLOAD RELEASE ARCHIVES
+    # -----------------------
+
+    - name: Create release archive (DROD)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      working-directory: Master/Linux
+      run: |
+        BUILD_DIR=$(find builds -name "drod" -type f | head -1 | xargs dirname)
+        if [ -n "$BUILD_DIR" ]; then
+          cd "$BUILD_DIR"
+          tar -czf "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" drod
+          mv "drod-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
+        fi
+
+    - name: Create release archive (DROD RPG)
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       working-directory: drodrpg/Master/Linux
       run: |
@@ -135,7 +242,15 @@ jobs:
           mv "drodrpg-linux-${{ matrix.config.arch }}-${{ matrix.config.build }}.tar.gz" ../../
         fi
 
-    - name: Upload release archive
+    - name: Upload release archive (DROD)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      uses: actions/upload-artifact@v4
+      with:
+        name: drod-linux-release-${{ matrix.config.arch }}-${{ matrix.config.build }}
+        path: drod/Master/Linux/drod-linux-*.tar.gz
+        retention-days: 90
+
+    - name: Upload release archive (DROD RPG)
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
       uses: actions/upload-artifact@v4
       with:

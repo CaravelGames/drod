@@ -29,6 +29,8 @@ static void TestParsedValue(
 }
 
 TEST_CASE("Scripting: Primitive Functions", "[game][scripting][functions]") {
+	RoomBuilder::ClearRoom();
+
 	SECTION("Mathematical Functions") {
 		CCurrentGame* pGame = Runner::StartGame(10, 10);
 		CDbHold* pHold = pGame->pHold;

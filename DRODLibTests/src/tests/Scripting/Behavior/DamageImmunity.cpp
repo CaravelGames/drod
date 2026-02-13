@@ -3,21 +3,21 @@
 
 static void TestUnsafePushPrevented(const UINT identity, const UINT tileType) {
 	string name =
-		"Character with identity #" + 
-		std::to_string(identity) + 
-		" should not be pushed to tile #" + 
+		"Character with identity #" +
+		std::to_string(identity) +
+		" should not be pushed to tile #" +
 		std::to_string(tileType);
 
 	SECTION(name) {
-		RoomBuilder::Plot(tileType, 10, 11);
-		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(10, 10, S, identity);
+		RoomBuilder::Plot(tileType, 15, 11);
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(15, 10, S, identity);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::FatalPushImmune, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_SetPlayerWeapon, WeaponType::WT_Staff);
 
-		CCurrentGame* pGame = Runner::StartGame(10, 8, S);
+		CCurrentGame* pGame = Runner::StartGame(15, 8, S);
 		Runner::ExecuteCommand(CMD_S);
 
-		AssertMonster(10, 10);
+		AssertMonster(15, 10);
 	}
 }
 
@@ -27,17 +27,17 @@ static void TestSafePushAllowed(const UINT identity, const UINT tileType) {
 		std::to_string(identity) +
 		" should be pushed to tile #" +
 		std::to_string(tileType);
-	
+
 	SECTION(name) {
-		RoomBuilder::Plot(tileType, 10, 11);
-		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(10, 10, S, identity);
+		RoomBuilder::Plot(tileType, 15, 11);
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(15, 10, S, identity);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_Behavior, ScriptFlag::FatalPushImmune, 1);
 		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_SetPlayerWeapon, WeaponType::WT_Staff);
-	
-		CCurrentGame* pGame = Runner::StartGame(10, 8, S);
+
+		CCurrentGame* pGame = Runner::StartGame(15, 8, S);
 		Runner::ExecuteCommand(CMD_S);
-	
-		AssertMonster(10, 11);
+
+		AssertMonster(15, 11);
 	}
 }
 
@@ -154,7 +154,7 @@ TEST_CASE("Scripting: Damage Immunity Behaviors", "[game][scripting][behavior]")
 		Runner::ExecuteCommand(CMD_WAIT);
 
 		AssertMonster(10, 10);
-		
+
 		// Check that turning off immunity causes briar to grow
 		Runner::ExecuteCommand(CMD_WAIT, 5);
 
@@ -169,7 +169,7 @@ TEST_CASE("Scripting: Damage Immunity Behaviors", "[game][scripting][behavior]")
 		RoomBuilder::Plot(T_WALL, 11, 10);
 		RoomBuilder::Plot(T_WALL, 9, 9);
 		RoomBuilder::Plot(T_WALL, 11, 9);
-		
+
 		CMonster* pMonster = RoomBuilder::AddMonster(M_SERPENTG, 10, 9, S);
 		CSerpent* pAdder = DYN_CAST(CSerpent*, CMonster*, pMonster);
 		RoomBuilder::AddSerpentPiece(pAdder, 10, 8);
