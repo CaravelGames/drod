@@ -303,6 +303,7 @@ CHoldSelectScreen::CHoldSelectScreen()
 	//Used for storing hold info.  Not added to the screen as a child widget.
 	this->pFullHoldList = new CListBoxWidget(0, X_HOLDLISTBOX, Y_HOLDLISTBOX,
 			CX_HOLDLISTBOX, CY_HOLDLISTBOX, true, false, true);
+	this->pFullHoldList->IgnoreLeadingArticlesInSort();
 
 	AddWidget(new CLabelWidget(0L, X_HOLDFILTER_LABEL, Y_HOLDFILTER_LABEL, CX_HOLDFILTER_LABEL,
 			CY_HOLDFILTER_LABEL, F_Small, g_pTheDB->GetMessageText(MID_HoldFilter)));
