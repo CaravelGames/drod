@@ -57,7 +57,7 @@ void RoomBuilder::AddSerpentPiece(CSerpent* serpent, const UINT pieceX, const UI
 		ultimatePiece->Clear();
 		delete ultimatePiece;
 	}
-	else 
+	else
 	{
 		CMonsterPiece* ultimatePiece = GetPieceAtIndex(serpent->Pieces, serpent->Pieces.size() - 1);
 		CMonsterPiece* penultimatePiece = GetPieceAtIndex(serpent->Pieces, serpent->Pieces.size() - 2);
@@ -121,8 +121,14 @@ void RoomBuilder::AddCommand(CCharacter* character, CCharacterCommand::CharComma
 
 	character->commands.push_back(pCommand);
 }
-COrbData* RoomBuilder::AddOrbDataToTile(const UINT wX, const UINT wY, const OrbType eOrbType){
-	COrbData* pOrbData = GetRoom()->AddOrbToSquare(wX, wY);
+void RoomBuilder::AddCommand(CCharacter *character, CCharacterCommand::CharCommand command, UINT x, UINT y, UINT w, UINT h, UINT flags, const char *label)
+{
+	AddCommand(character, command, x, y, w, h, flags, UTF8ToUnicode(label).c_str());
+}
+
+COrbData *RoomBuilder::AddOrbDataToTile(const UINT wX, const UINT wY, const OrbType eOrbType)
+{
+    COrbData* pOrbData = GetRoom()->AddOrbToSquare(wX, wY);
 	pOrbData->eType = eOrbType;
 
 	return pOrbData;

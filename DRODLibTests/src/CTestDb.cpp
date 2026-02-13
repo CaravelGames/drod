@@ -13,6 +13,11 @@
 #include <BackEndLib/Metadata.h>
 #include <BackEndLib/StretchyBuffer.h>
 
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+# include <unistd.h>
+# include <limits.h>
+#endif
+
 CDbHold *g_pTheHold = NULL;
 
 CDb* CTestDb::db = NULL;
@@ -60,6 +65,10 @@ CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UIN
 
 void CTestDb::NameCurrentLevel(WCHAR* name){
 	level->NameText = name;
+}
+
+void CTestDb::NameCurrentLevel(const char* name){
+	level->NameText = UTF8ToUnicode(name).c_str();
 }
 
 CCurrentGame* CTestDb::GetGame(const UINT playerX, const UINT playerY, const UINT playerO, CCueEvents &CueEvents){
@@ -214,7 +223,7 @@ void CTestDb::RegenerateRoom(){
 		UTF8ToUnicode(CTestDb::currentTestCaseName->c_str(), buffer);
 		level->NameText = buffer.c_str();
 		level->NameText.Update();
-		
+
 		room->Update();
 		level->Update();
 		hold->Update();
@@ -242,11 +251,16 @@ void CTestDb::GetAppPath(
 	//
 
 #if defined(__linux__)
-	char exepath[MAX_PATH];
-	int len = readlink("/proc/self/exe", exepath, MAX_PATH - 1);
-	if (len && len != -1)
+	char exepath[PATH_MAX];
+	ssize_t len = readlink("/proc/self/exe", exepath, (ssize_t)sizeof(exepath) - 1);
+	if (len > 0)
 	{
-		exepath[len] = 0;
+		if (len >= (ssize_t)sizeof(exepath))
+		{
+			printf("Unable to start - executable's path is longer than the max allowed path. Move this somewhere else please.\n");
+			throw 1;
+		}
+		exepath[len] = '\0';
 		UTF8ToUnicode(exepath, wstrAppPath);
 		return;
 	}

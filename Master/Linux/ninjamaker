@@ -117,6 +117,7 @@ if [[ -z ${options[name]} ]]; then
 else
 	NAME=${options[name]}
 fi
+
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
@@ -130,6 +131,7 @@ libs=(
 	${TOPDIR}/CaravelNet
 	${TOPDIR}/FrontEndLib
 	${TOPDIR}/BackEndLib
+	${TOPDIR}/DRODLibTests
 )
 
 gen_rules () {
@@ -166,6 +168,13 @@ rule link
   command = $cxx -o $out $ldflags $in $libs && rm -f ${out}-*.dbg && objcopy --only-keep-debug $out ${out}${debugsuffix} && objcopy --add-gnu-debuglink=${out}${debugsuffix} $out && strip --strip-all $out
   description = Link $out
 
+rule link-tests
+X
+# To make sure catch.hpp can detect tests `DRODLibTests.a` MUST be linked via whole-archive directive
+  	echo "  command = \$cxx -o \$out \$ldflags -Wl,--whole-archive $BUILDDIR/DRODLibTests.a -Wl,--no-whole-archive \$in \$libs && rm -f \${out}-*.dbg && objcopy --only-keep-debug \$out \${out}\${debugsuffix} && objcopy --add-gnu-debuglink=\${out}\${debugsuffix} \$out && strip --strip-all \$out"
+	cat <<'X'
+  description = Link $out
+
 rule ar
   command = $ar cr $out $in && $ranlib $out
   description = Archive $out
@@ -191,6 +200,8 @@ includes = ${idirs[@]} -Istatic-libs/include $(${SDL2_CONFIG} --cflags)
 staticlibs = -Lstatic-libs/lib -lSDL2_mixer -lSDL2_ttf -lSDL2 -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lcurl -lssl -lcrypto -lexpat -ljsoncpp
 dynamiclibs = $(${SDL2_CONFIG} --libs) -lnghttp2 -lz -lpthread -lm -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
+# To make sure we rebuild the binary dependency on DRODTestLib.a must be kept here
+build $BUILDDIR/drod_tests: link-tests $BUILDDIR/DRODLib.a $BUILDDIR/BackEndLib.a | $BUILDDIR/DRODLibTests.a
 X
 	if ${options[nostatic]}; then
 		echo "libs = \$staticlibs \$dynamiclibs"
@@ -208,12 +219,18 @@ gen_lib_build () {
 	local files=($(grep 'Include=.*\.cpp' "$vcproj" | sed 's,^.*Include="\(.\\\)\?\([^"]*\)".*$,'"$path/\2," | sort -u))
 	local objs=()
 	for file in ${files[@]}; do
+		file="${file//\\//}"
 		local obj="$BUILDDIR/$lib/$(basename ${file/.cpp}).o"
 		objs+=($obj)
 		echo -n "build $obj: cxx $file"
 		case "$file" in
 			*/GameConstants.cpp)
 				echo " | $BUILDDIR/drod-revision.h"
+				;;
+			*/main.cpp)
+			    if [ "$lib" = "DRODLibTests" ]; then
+					echo " | ../../DRODLibTests/src/catch.hpp"
+				fi
 				;;
 			*)
 				echo
@@ -225,6 +242,7 @@ gen_lib_build () {
 }
 
 out=build.$NAME.ninja
+
 gen_rules >$out
 for lib in "${libs[@]}"; do
 	gen_lib_build "$lib" >>$out
