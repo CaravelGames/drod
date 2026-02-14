@@ -9,8 +9,12 @@
 
 #include <iostream>
 #include "CTestDb.h"
+#include "RoomBuilder.h"
 #include "Runner.h"
 #undef main
+
+// Used to only clear the room at the start of a new test case-section
+int sectionDepth = 0;
 
 // Used to extract test name to name the Level when saving the hold
 struct MyListener : Catch::TestEventListenerBase {
@@ -19,12 +23,23 @@ struct MyListener : Catch::TestEventListenerBase {
 
 	virtual void testCaseStarting(Catch::TestCaseInfo const& testInfo) override {
 		// printf("Starting test %s:\n", testInfo.name.c_str());
+
 		CTestDb::currentTestCaseName = &(testInfo.name);
+		sectionDepth = 0;
 	}
 	virtual void sectionStarting(Catch::SectionInfo const& sectionInfo) override {
-		// printf("  - [SECTION START] %s\n", sectionInfo.name.c_str());
+		// printf("  - [SECTION START] %d%s\n", sectionDepth, sectionInfo.name.c_str());
+
+		// Automatically clear room when each outermost section starts to avoid
+		// cross-test failures
+		if (sectionDepth == 0) {
+			RoomBuilder::ClearRoom();
+		}
+		sectionDepth++;
 	}
 	virtual void sectionEnded(Catch::SectionStats const& sectionStats) override {
+		sectionDepth--;
+
 		// printf("  - [SECTION END] %s\n", sectionStats.sectionInfo.name.c_str());
 	}
 };

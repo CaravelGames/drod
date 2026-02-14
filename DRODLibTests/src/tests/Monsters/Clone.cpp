@@ -10,7 +10,7 @@
 namespace {
 
 	void _AssertProcessingSequence(const char* file, int line, const UINT expectedIndex, const UINT wX, const UINT wY, const UINT wO, const UINT wType) {
-		INFO(MakeLogMessage(file, line));
+		INFO("Assert processing sequence from: " << file << ":" << line);
 
 		stringstream message;
 
@@ -61,7 +61,7 @@ namespace {
 			case 1: expectedIndex = 3; break;
 			case 2: expectedIndex = 6; break;
 		}
-		
+
 		_AssertProcessingSequence(file, line, expectedIndex, wExpectedX, wExpectedY, wO, M_CLONE);
 	}
 }

@@ -5,19 +5,11 @@
 
 #include <sstream>
 
-const char* MakeLogMessage(const char* file, int line) {
-	std::stringstream message;
-	message << "From: ";
-	message << file;
-	message << "(";
-	message << line;
-	message << ")";
-
-	return message.str().c_str();
-}
+#define LOG_INFO(file, line, context) \
+	INFO( "Assert from: " << file << "::" << line << " (" << context << ")");
 
 void Assert::Event(const char* file, int line, const CUEEVENT_ID eEventType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "Event");
 
 	CCueEvents& CueEvents = Runner::GetLastCueEvents();
 
@@ -25,15 +17,15 @@ void Assert::Event(const char* file, int line, const CUEEVENT_ID eEventType) {
 }
 
 void Assert::NoEvent(const char* file, int line, const CUEEVENT_ID eEventType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "NoEvent");
 
 	CCueEvents& CueEvents = Runner::GetLastCueEvents();
 
-	REQUIRE(!CueEvents.HasOccurred(eEventType));
+	REQUIRE_FALSE(CueEvents.HasOccurred(eEventType));
 }
 
 void Assert::PlayerAt(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "PlayerAt");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 
@@ -42,7 +34,7 @@ void Assert::PlayerAt(const char* file, int line, const UINT wExpectedX, const U
 }
 
 void Assert::PlayerIsAlive(const char* file, int line) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "PlayerIsAlive");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 
@@ -56,7 +48,7 @@ void Assert::PlayerIsDead(const char* file, int line) {
 }
 
 void Assert::RoomHasMonster(const char* file, int line, const long int wExpectedType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "RoomHasMonster");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
@@ -65,7 +57,7 @@ void Assert::RoomHasMonster(const char* file, int line, const long int wExpected
 }
 
 void Assert::RoomHasNoMonster(const char* file, int line, const long int wExpectedType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "RoomHasNoMonster");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CMonster* monster = game->pRoom->MonsterOfTypeExists(wExpectedType);
@@ -74,7 +66,7 @@ void Assert::RoomHasNoMonster(const char* file, int line, const long int wExpect
 }
 
 void Assert::Monster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const long int wExpectedType, const long int wExpectedO) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "Monster");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CMonster* monster = game->pRoom->GetMonsterAtSquare(wExpectedX, wExpectedY);
@@ -89,7 +81,7 @@ void Assert::Monster(const char* file, int line, const UINT wExpectedX, const UI
 }
 
 void Assert::NoMonster(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "NoMonster");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 	CMonster* monster = game->pRoom->GetMonsterAtSquare(wExpectedX, wExpectedY);
@@ -98,19 +90,19 @@ void Assert::NoMonster(const char* file, int line, const UINT wExpectedX, const 
 }
 
 void Assert::Tile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "Tile");
 
 	REQUIRE(HasTile(wExpectedX, wExpectedY, wExpectedType));
 }
 
 void Assert::NoTile(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const UINT wExpectedType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "NoTile");
 
 	REQUIRE(!HasTile(wExpectedX, wExpectedY, wExpectedType));
 }
 
 void Assert::OrbState(const char* file, int line, const UINT wExpectedX, const UINT wExpectedY, const OrbType expectedType) {
-	INFO(MakeLogMessage(file, line));
+	LOG_INFO(file, line, "OrbState");
 
 	CCurrentGame* game = Runner::GetCurrentGame();
 
@@ -145,7 +137,7 @@ bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wE
 
 		return wTTile == baseTile || wTObject == baseTile;
 	}
-	
+
 	case LAYER_FLOOR:
 		return room->GetFSquare(wExpectedX, wExpectedY) == baseTile;
 
@@ -154,3 +146,5 @@ bool Assert::HasTile(const UINT wExpectedX, const UINT wExpectedY, const UINT wE
 		return false;
 	}
 }
+
+#undef LOG_INFO
