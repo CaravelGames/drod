@@ -31,4 +31,14 @@ TEST_CASE("Scripting: Activate Pressure Plate Behavior", "[game][scripting][beha
 
 		AssertTile(10, 12, T_DOOR_Y);
 	}
+
+	SECTION("Test Wraithwing-characters don't activate plates by default") {
+		CCharacter* pCharacter = RoomBuilder::AddVisibleCharacter(9, 10, 0, M_WWING);
+		RoomBuilder::AddCommand(pCharacter, CCharacterCommand::CC_MoveRel, 1, 0);
+
+		CCurrentGame* game = Runner::StartGame(15, 15, N);
+		Runner::ExecuteCommand(CMD_WAIT, 1);
+
+		AssertTile(10, 12, T_DOOR_Y);
+	}
 }

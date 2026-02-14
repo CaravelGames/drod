@@ -29,6 +29,7 @@ Actions:
 
 Options:
     -r, --root        Use root user where applicable
+    --release         Use release builds where applicable (defaults to debug)
     -f, --force       Force rebuild all libraries even if they exist (passed to build-deps)
     -h, --help        Show this help message
 EOF
@@ -51,6 +52,7 @@ ACTION="$1"
 shift
 
 BASH_USER=1000
+BUILD=debug
 
 # Parse command line arguments for the action
 while [[ $# -gt 0 ]]; do
@@ -61,6 +63,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -r|--root)
             BASH_USER=0
+            shift
+            ;;
+        --release)
+            BUILD=release
             shift
             ;;
         -h|--help)
@@ -125,8 +131,12 @@ action_build_drod_rpg() {
 
 action_run_tests() {
     echo "=> run-tests: running DROD tests"
-    docker_exec "cd /drod/Master/Linux && [ ! -f 'build.custom.debug.x86_64.ninja' ] && ./ninjamaker -64 -debug"
-    docker_exec "cd /drod/Master/Linux && ninja -f build.custom.debug.x86_64.ninja builds/custom.debug.x86_64/drod_tests"
+    # Only run ninjamaker when it's not already built
+    docker_exec "cd /drod/Master/Linux && [ ! -f 'build.custom.$BUILD.x86_64.ninja' ] && ./ninjamaker -64 -$BUILD"
+    # Build DRODLibTests
+    docker_exec "cd /drod/Master/Linux && ninja -f build.custom.$BUILD.x86_64.ninja builds/custom.$BUILD.x86_64/drod_tests"
+    # Run the tests
+    docker_exec "cd /drod/Master/Linux && builds/custom.$BUILD.x86_64/drod_tests"
 }
 
 # Dispatch the selected action
