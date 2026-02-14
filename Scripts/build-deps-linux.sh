@@ -27,11 +27,12 @@ while [[ $# -gt 0 ]]; do
 done
 
 SCRIPT_DIR="$(pwd)"
-DROD_ROOT_DIR="$SCRIPT_DIR/../Master/Linux"
+TOP_DIR=$(realpath "$SCRIPT_DIR/..")
+DROD_ROOT_DIR="$TOP_DIR/Master/Linux"
 DEPS_DIR="$DROD_ROOT_DIR/deps"
 INSTALL_DIR="$DROD_ROOT_DIR/static-libs"
 
-RPG_ROOT_DIR="$SCRIPT_DIR/../drodrpg/Master/Linux"
+RPG_ROOT_DIR="$TOP_DIR/drodrpg/Master/Linux"
 RPG_DEPS_DIR="$RPG_ROOT_DIR/deps"
 RPG_INSTALL_DIR="$RPG_ROOT_DIR/static-libs"
 
@@ -214,7 +215,7 @@ if ! $FORCE_REBUILD && library_exists "mk4"; then
     echo "=== Skipping metakit (libmk4.a already exists) ==="
 else
     echo "=== Building metakit ==="
-    METAKIT_DIR="$SCRIPT_DIR/../../metakit/unix"
+    METAKIT_DIR="$TOP_DIR/metakit/unix"
     cd "$METAKIT_DIR"
 
     # Clean up any previous builds

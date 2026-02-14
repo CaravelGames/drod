@@ -125,8 +125,12 @@ action_build_drod_rpg() {
 
 action_run_tests() {
     echo "=> run-tests: running DROD tests"
+    # Only run ninjamaker when it's not already built
     docker_exec "cd /drod/Master/Linux && [ ! -f 'build.custom.debug.x86_64.ninja' ] && ./ninjamaker -64 -debug"
+    # Build DRODLibTests
     docker_exec "cd /drod/Master/Linux && ninja -f build.custom.debug.x86_64.ninja builds/custom.debug.x86_64/drod_tests"
+    # Run the tests
+    docker_exec "cd /drod/Master/Linux && builds/custom.debug.x86_64/drod_tests"
 }
 
 # Dispatch the selected action
