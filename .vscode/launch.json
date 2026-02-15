@@ -1,0 +1,69 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug existing binary (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Master/Linux/builds/custom.debug.x86_64/drod",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Map build source root to local workspace",
+                    "text": "set substitute-path /drod ${workspaceFolder}",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Add workspace as gdb source directory",
+                    "text": "directory ${workspaceFolder}",
+                    "ignoreFailures": true
+                }
+            ],
+            "sourceFileMap": {
+                "/drod": "${workspaceFolder}",
+                "/home/skell/projects/DrodCPP": "${workspaceFolder}"
+            },
+            "logging": {
+                "engineLogging": false
+            },
+            "preLaunchTask": "build-drod"
+        },
+        {
+            "name": "Attach to gdbserver",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Master/Linux/builds/custom.debug.x86_64/drod",
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "miDebuggerServerAddress": "localhost:1234",
+            "cwd": "${workspaceFolder}",
+            "externalConsole": false,
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Map remote build source root to local workspace (edit the remote path)",
+                    "text": "set substitute-path /remote/build/root ${workspaceFolder}",
+                    "ignoreFailures": true
+                }
+            ],
+            "sourceFileMap": {
+                "/drod": "${workspaceFolder}"
+            }
+        }
+    ]
+}
