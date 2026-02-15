@@ -137,7 +137,7 @@ CRestoreScreen::CRestoreScreen()
 	const int Y_HELP_BUTTON = Y_RESTORE_BUTTON;
 	const int Y_EXPORT_SAVES_BUTTON = Y_RESTORE_BUTTON;
 
-	//Mini-room widget has strict proportions and its dimensions will define 
+	//Mini-room widget has strict proportions and its dimensions will define
 	//placement of most everything else.
 	static const int Y_CHOOSE_POS_LABEL = Y_TITLE + CY_TITLE + Y_TITLE;
 	static const UINT CY_CHOOSE_POS_LABEL = CY_STANDARD_BUTTON;
@@ -218,7 +218,7 @@ CRestoreScreen::CRestoreScreen()
 	AddWidget(pTitle);
 
 	//Restore, cancel and help buttons.
-	pButton = new CButtonWidget(TAG_RESTORE, X_RESTORE_BUTTON, Y_RESTORE_BUTTON, 
+	pButton = new CButtonWidget(TAG_RESTORE, X_RESTORE_BUTTON, Y_RESTORE_BUTTON,
 				CX_RESTORE_BUTTON, CY_RESTORE_BUTTON, g_pTheDB->GetMessageText(MID_Restore));
 	AddWidget(pButton);
 
@@ -226,7 +226,7 @@ CRestoreScreen::CRestoreScreen()
 				CX_CANCEL_BUTTON, CY_CANCEL_BUTTON, g_pTheDB->GetMessageText(MID_Cancel));
 	AddWidget(pButton);
 
-	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON, 
+	pButton = new CButtonWidget(TAG_HELP, X_HELP_BUTTON, Y_HELP_BUTTON,
 				CX_HELP_BUTTON, CY_HELP_BUTTON, g_pTheDB->GetMessageText(MID_Help));
 	AddWidget(pButton);
 	AddHotkey(SDLK_F1,TAG_HELP);
@@ -236,10 +236,10 @@ CRestoreScreen::CRestoreScreen()
 	AddWidget(pButton);
 
 	//Level selection area.
-	AddWidget(new CLabelWidget(0L, X_CHOOSE_LEVEL_LABEL, Y_CHOOSE_LEVEL_LABEL, 
+	AddWidget(new CLabelWidget(0L, X_CHOOSE_LEVEL_LABEL, Y_CHOOSE_LEVEL_LABEL,
 				CX_CHOOSE_LEVEL_LABEL, CY_CHOOSE_LEVEL_LABEL, F_Header,
 				g_pTheDB->GetMessageText(MID_ChooseLevel)));
-	pButton = new CButtonWidget(TAG_HOLD_START, X_GAME_START, Y_GAME_START, 
+	pButton = new CButtonWidget(TAG_HOLD_START, X_GAME_START, Y_GAME_START,
 				CX_GAME_START, CY_GAME_START, g_pTheDB->GetMessageText(MID_HoldStart));
 	AddWidget(pButton);
 
@@ -249,10 +249,10 @@ CRestoreScreen::CRestoreScreen()
 	this->pLevelListBoxWidget->SetAllowFiltering(true);
 
 	//Room selection area.
-	AddWidget(new CLabelWidget(TAG_CHOOSE_ROOM_LABEL, X_CHOOSE_ROOM_LABEL, Y_CHOOSE_ROOM_LABEL, 
-				CX_CHOOSE_ROOM_LABEL, CY_CHOOSE_ROOM_LABEL, F_Header, 
+	AddWidget(new CLabelWidget(TAG_CHOOSE_ROOM_LABEL, X_CHOOSE_ROOM_LABEL, Y_CHOOSE_ROOM_LABEL,
+				CX_CHOOSE_ROOM_LABEL, CY_CHOOSE_ROOM_LABEL, F_Header,
 				g_pTheDB->GetMessageText(MID_ChooseRoom)));
-	pButton = new CButtonWidget(TAG_LEVEL_START, X_LEVEL_START, Y_LEVEL_START, 
+	pButton = new CButtonWidget(TAG_LEVEL_START, X_LEVEL_START, Y_LEVEL_START,
 				CX_LEVEL_START, CY_LEVEL_START, g_pTheDB->GetMessageText(MID_LevelStart));
 	AddWidget(pButton);
 
@@ -286,10 +286,10 @@ CRestoreScreen::CRestoreScreen()
 				CX_ROOM_START, CY_ROOM_START, g_pTheDB->GetMessageText(MID_RoomStart));
 	AddWidget(pButton);
 
-	AddWidget(new CLabelWidget(TAG_POSITION_LABEL, X_POSITION_LABEL, Y_POSITION_LABEL, 
+	AddWidget(new CLabelWidget(TAG_POSITION_LABEL, X_POSITION_LABEL, Y_POSITION_LABEL,
 				CX_POSITION_LABEL, CY_POSITION_LABEL, F_Small, wszEmpty));
 
-	this->pScaledRoomWidget = new CScalerWidget(TAG_ROOM_WIDGET, X_MINIROOM, Y_MINIROOM, 
+	this->pScaledRoomWidget = new CScalerWidget(TAG_ROOM_WIDGET, X_MINIROOM, Y_MINIROOM,
 			CX_MINIROOM, CY_MINIROOM, false);
 	AddWidget(this->pScaledRoomWidget);
 	this->pRoomWidget = new CRoomWidget(0L, 0, 0, CDrodBitmapManager::CX_ROOM,
@@ -299,7 +299,7 @@ CRestoreScreen::CRestoreScreen()
 	//World map.
 	const UINT CX_WORLDMAP = CX_MINIROOM;
 	const UINT CY_WORLDMAP = CX_WORLDMAP * CScreen::CY_SCREEN / CScreen::CX_SCREEN;
-	this->pScaledWorldMapWidget = new CScalerWidget(TAG_SCALED_WORLD_MAP, X_MINIROOM, Y_MINIROOM, 
+	this->pScaledWorldMapWidget = new CScalerWidget(TAG_SCALED_WORLD_MAP, X_MINIROOM, Y_MINIROOM,
 			CX_WORLDMAP, CY_WORLDMAP, false);
 	AddWidget(this->pScaledWorldMapWidget);
 	this->pWorldMapWidget = new CWorldMapWidget(TAG_WORLD_MAP,
@@ -320,7 +320,7 @@ CRestoreScreen::CRestoreScreen()
 	static const int X_CHALLENGES_OKAY = CX_CHALLENGES_DIALOG - CX_CHALLENGES_OKAY - CX_SPACE;
 	static const int Y_CHALLENGES_OKAY = CY_CHALLENGES_DIALOG - CY_CHALLENGES_OKAY - CY_SPACE - 5;
 
-	pButton = new CButtonWidget(TAG_CHALLENGES, X_CHALLENGES_BUTTON, Y_CHALLENGES_BUTTON, 
+	pButton = new CButtonWidget(TAG_CHALLENGES, X_CHALLENGES_BUTTON, Y_CHALLENGES_BUTTON,
 				CX_CHALLENGES_BUTTON, CY_CHALLENGES_BUTTON, g_pTheDB->GetMessageText(MID_Challenges));
 	AddWidget(pButton);
 
@@ -473,7 +473,7 @@ void CRestoreScreen::OnClick(
 			ChooseRoomStart(this->pCurrentRestoreGame->pRoom->dwRoomX,
 					this->pCurrentRestoreGame->pRoom->dwRoomY);
 			Paint();
-		break;      
+		break;
 
 		case TAG_FURTHEST_SAVE:
 			ChooseFurthestSave();
@@ -610,7 +610,7 @@ bool CRestoreScreen::SetWidgets()
 	this->pChallengesListBox->Clear();
 
 	//Load current room and level from game screen if it has a game loaded.
-	CCueEvents Ignored;
+	CCueEvents CueEvents;
 	CGameScreen *pGameScreen = DYN_CAST(CGameScreen*, CScreen*,
 			g_pTheSM->GetScreen(SCR_Game));
 	ASSERT(pGameScreen);
@@ -627,7 +627,7 @@ bool CRestoreScreen::SetWidgets()
 
 			if (!this->dwLastGameID) {bSuccess=false; goto Cleanup;}
 			this->pCurrentRestoreGame = g_pTheDB->GetSavedCurrentGame(
-					this->dwLastGameID, Ignored, false,
+					this->dwLastGameID, CueEvents, false,
 					true); //don't save anything to DB during playback
 			if (!this->pCurrentRestoreGame) {bSuccess=false; goto Cleanup;}
 
@@ -644,13 +644,13 @@ bool CRestoreScreen::SetWidgets()
 		//Load game from the continue slot.
 		this->dwLastGameID = g_pTheDB->SavedGames.FindByContinue();
 		this->pCurrentRestoreGame = this->dwLastGameID ? g_pTheDB->GetSavedCurrentGame(
-				this->dwLastGameID, Ignored, false,
+				this->dwLastGameID, CueEvents, false,
 				true) : //don't save anything to DB during playback
 			NULL;
 		if (!this->pCurrentRestoreGame)
 		{
 			//No continue slot yet, load from beginning of game.
-			this->pCurrentRestoreGame = g_pTheDB->GetNewCurrentGame(g_pTheDB->GetHoldID(), Ignored);
+			this->pCurrentRestoreGame = g_pTheDB->GetNewCurrentGame(g_pTheDB->GetHoldID(), CueEvents);
 			if (!this->pCurrentRestoreGame) {bSuccess=false; goto Cleanup;}
 			this->pCurrentRestoreGame->eType = ST_Continue;
 			this->pCurrentRestoreGame->Update();
@@ -658,7 +658,7 @@ bool CRestoreScreen::SetWidgets()
 		this->dwSelectedSavedGameID = this->pCurrentRestoreGame->dwSavedGameID;
 		this->wConqueredRooms = this->pCurrentRestoreGame->ConqueredRooms.size();
 
-		UpdateWidgets();
+		UpdateWidgets(CueEvents);
 
 		if (this->pCurrentRestoreGame->OnWorldMap()) {
 			ClearCheckpoints();
@@ -777,7 +777,7 @@ void CRestoreScreen::ClearCheckpoints()
 }
 
 void CRestoreScreen::SetCheckpoints()
-//Adds and removes widgets so that a checkpoint button exists over each 
+//Adds and removes widgets so that a checkpoint button exists over each
 //checkpoint in the room widget with a corresponding saved game.
 {
 	ClearCheckpoints();
@@ -794,7 +794,7 @@ void CRestoreScreen::SetCheckpoints()
 	while (pSavedGame)
 	{
 		//Is it a checkpoint saved game?
-		if (pSavedGame->eType == ST_Checkpoint) 
+		if (pSavedGame->eType == ST_Checkpoint)
 		{
 			//Yes--add a new button for it.
 			CButtonWidget *pCheckpointButton;
@@ -802,9 +802,9 @@ void CRestoreScreen::SetCheckpoints()
 			SDL_Rect ScaledRoomRect;
 			this->pScaledRoomWidget->GetRect(ScaledRoomRect);
 
-			this->pRoomWidget->GetSquareRect(pSavedGame->wCheckpointX, 
+			this->pRoomWidget->GetSquareRect(pSavedGame->wCheckpointX,
 					pSavedGame->wCheckpointY, SquareRect);
-			SquareRect.x = this->pScaledRoomWidget->GetScaledX(SquareRect.x) - 
+			SquareRect.x = this->pScaledRoomWidget->GetScaledX(SquareRect.x) -
 					ScaledRoomRect.x - 5;
 			SquareRect.y = this->pScaledRoomWidget->GetScaledY(SquareRect.y) -
 					ScaledRoomRect.y - 5;
@@ -816,7 +816,7 @@ void CRestoreScreen::SetCheckpoints()
 					SquareRect.w, SquareRect.h, wszX);
 			this->pScaledRoomWidget->AddWidget(pCheckpointButton, true);
 			++dwTagNo;
-			
+
 			//Add button to checkpoint button list.
 			if (!pCheckpointButton)
 			{
@@ -910,7 +910,7 @@ void CRestoreScreen::ChooseRoomStart(
 		//Find the saved game.
 		const UINT dwSavedGameID = g_pTheDB->SavedGames.FindByRoomBegin(dwRoomID);
 		if (!dwSavedGameID) return;
-		
+
 		ChooseRoomSavedGame(dwSavedGameID);
 	}
 }
@@ -927,8 +927,8 @@ void CRestoreScreen::ChooseRoomSavedGame(
 	SetCursor(CUR_Wait);
 
 	//Load the saved game.
-	CCueEvents Ignored;
-	CCurrentGame *pNewGame = g_pTheDB->GetSavedCurrentGame(dwSavedGameID, Ignored, false,
+	CCueEvents CueEvents;
+	CCurrentGame *pNewGame = g_pTheDB->GetSavedCurrentGame(dwSavedGameID, CueEvents, false,
 			true); //don't save anything to DB here
 	if (pNewGame)
 	{
@@ -938,17 +938,18 @@ void CRestoreScreen::ChooseRoomSavedGame(
 		delete this->pCurrentRestoreGame;
 		this->pCurrentRestoreGame = pNewGame;
 
-		UpdateWidgets();
+		UpdateWidgets(CueEvents);
+
 		this->pMapWidget->SelectRoom(this->pCurrentRestoreGame->pRoom->dwRoomX,
 				this->pCurrentRestoreGame->pRoom->dwRoomY);
-						
+
 		//Update room label.
 		WSTRING wstrDesc;
 		this->pCurrentRestoreGame->pRoom->GetLevelPositionDescription(wstrDesc);
 		CLabelWidget *pRoomLabel = DYN_CAST(CLabelWidget*, CWidget*,
 				GetWidget(TAG_POSITION_LABEL));
 		pRoomLabel->SetText(wstrDesc.c_str());
-		
+
 		//Put buttons over the room corresponding to saved games.
 		SetCheckpoints();
 		ShowCheckpointButtonsForSavedGame(dwSavedGameID);
@@ -1016,8 +1017,8 @@ void CRestoreScreen::ChooseLevelSavedGame(
 	ASSERT(dwSavedGameID);
 
 	//Load the saved game.
-	CCueEvents Ignored;
-	CCurrentGame *pNewGame = g_pTheDB->GetSavedCurrentGame(dwSavedGameID, Ignored, false,
+	CCueEvents CueEvents;
+	CCurrentGame *pNewGame = g_pTheDB->GetSavedCurrentGame(dwSavedGameID, CueEvents, false,
 			true); //don't save anything to DB here
 	if (pNewGame)
 	{
@@ -1027,7 +1028,7 @@ void CRestoreScreen::ChooseLevelSavedGame(
 		delete this->pCurrentRestoreGame;
 		this->pCurrentRestoreGame = pNewGame;
 
-		UpdateWidgets();
+		UpdateWidgets(CueEvents);
 
 		if (pNewGame->OnWorldMap()) {
 			ClearCheckpoints();
@@ -1234,7 +1235,7 @@ void CRestoreScreen::GetLevelStats(const UINT dwLevelID)
 }
 
 //*****************************************************************************
-void CRestoreScreen::UpdateWidgets()
+void CRestoreScreen::UpdateWidgets(CCueEvents& CueEvents)
 //Update the map and room widgets to reflect the current game.
 //Update the map widget to show rooms which are not explored in the saved game.
 {
@@ -1245,8 +1246,15 @@ void CRestoreScreen::UpdateWidgets()
 		this->pMapWidget->ClearMap();
 	} else {
 		VERIFY(this->pRoomWidget->LoadFromCurrentGame(this->pCurrentRestoreGame));
-		CCueEvents Ignored;
-		this->pRoomWidget->DisplayPersistingImageOverlays(Ignored);
+
+		// Always clear events before new ones are added to avoid persistence
+		// when changing rooms/checkpoints
+		this->pRoomWidget->ClearEffects();
+
+		// Load the image overlays and freeze them so they don't disappear nor animate.
+		this->pRoomWidget->DisplayPersistingImageOverlays(CueEvents);
+		ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentRestoreGame);
+		this->pRoomWidget->SetEffectsFrozen(true);
 
 		VERIFY(this->pMapWidget->LoadFromCurrentGame(this->pCurrentRestoreGame, false));
 
@@ -1270,7 +1278,7 @@ void CRestoreScreen::UpdateStatsLabel(CCurrentGame& game)
 	WSTRING wstr = g_pTheDB->GetMessageText(MID_TotalRoomStats), wtemp;
 	UTF8ToUnicode(str.str().c_str(), wtemp);
 	wstr += wtemp;
-	
+
 	pStatsLabel->SetText(wstr.c_str());
 }
 
