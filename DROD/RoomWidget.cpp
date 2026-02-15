@@ -570,7 +570,7 @@ CRoomEffectList* CRoomWidget::GetEffectListForLayer(const int layer) const
 		case 0: return this->pOLayerEffects;
 		case 1: return this->pTLayerEffects;
 		case 2: return this->pMLayerEffects;
-		case 3: 
+		case 3:
 		default: return this->pLastLayerEffects;
 	}
 }
@@ -1007,7 +1007,7 @@ void CRoomWidget::HighlightSelectedTile()
 		this->wHighlightX = this->pHighlitMonster->wX;
 		this->wHighlightY = this->pHighlitMonster->wY;
 	}
-	
+
 	const UINT wX = this->wHighlightX, wY = this->wHighlightY;
 	if (!this->pRoom->IsValidColRow(wX,wY))
 		return;
@@ -2088,6 +2088,11 @@ bool CRoomWidget::LoadFromCurrentGame(
 //True if successful, false if not.
 {
 	ASSERT(pSetCurrentGame);
+	if (this->pCurrentGame == pSetCurrentGame) {
+		// Otherwise if we open settings in-game or leave to main menu and
+		// continue the effects will be unloaded
+		RetainImageOverlay(true);
+	}
 	this->pCurrentGame = pSetCurrentGame;
 	return LoadFromRoom(pSetCurrentGame->pRoom, bLoad);
 }
@@ -2321,7 +2326,7 @@ void CRoomWidget::ShowPuzzleMode(const bool bVal)
 {
 	if (this->bShowPuzzleMode == bVal)
 		return;
-	
+
 	this->RerenderRoom();
 	this->bShowPuzzleMode = bVal;
 	this->bRenderPlayerLight = true;
@@ -2606,7 +2611,7 @@ void CRoomWidget::RenderRoomLayers(SDL_Surface* pSurface, const bool bDrawPlayer
 
 	DrawOverheadLayer(pSurface);
 	DrawGhostOverheadCharacters(pSurface, false);
-	
+
 	this->pLastLayerEffects->DrawEffects(pSurface, EIMAGEOVERLAY);
 	this->pLastLayerEffects->DrawEffects(pSurface, EMOVEORDERHINT);
 
@@ -2643,6 +2648,40 @@ void CRoomWidget::RerenderRoomCeilingLight(CCueEvents& CueEvents)
 		this->ceilingLightChanges.removeAfter(currentTurn);
 		this->bCeilingLightsRendered = false;
 		ProcessLightmap();
+	}
+}
+
+
+//*****************************************************************************
+void CRoomWidget::RetainImageOverlay(const bool bVal)
+//Mark image overlays to be retained - usen when undoing a move or when
+//reactivating a game screen, ensures overlays are retained between the
+//changes
+{
+	RetainImageOverlay(this->pOLayerEffects, bVal);
+	RetainImageOverlay(this->pTLayerEffects, bVal);
+	RetainImageOverlay(this->pMLayerEffects, bVal);
+	RetainImageOverlay(this->pLastLayerEffects, bVal);
+}
+
+void CRoomWidget::RetainImageOverlay(CRoomEffectList *pEffectList, const bool bVal)
+{
+	ASSERT(pEffectList);
+	const UINT currentTurn = this->pCurrentGame ? this->pCurrentGame->wTurnNo : 0;
+
+	list<CEffect*>& effects = pEffectList->Effects;
+	for (list<CEffect*>::iterator it=effects.begin(); it!=effects.end(); ++it)
+	{
+		CEffect *pEffect = *it;
+		if (pEffect->GetEffectType() == EIMAGEOVERLAY) {
+			bool thisVal = bVal;
+			if (thisVal) {
+				CImageOverlayEffect *pImageEffect = DYN_CAST(CImageOverlayEffect*, CEffect*, pEffect);
+				UINT startTurn = pImageEffect->getStartTurn();
+				thisVal = startTurn <= currentTurn;
+			}
+			pEffect->RequestRetainOnClear(thisVal);
+		}
 	}
 }
 
@@ -3140,7 +3179,7 @@ void CRoomWidget::PropagatePlayerLight()
 			PropagatePlayerLikeEntityLight(DYN_CAST(CEntity*, CMonster*, pMonster));
 		}
 	}
-	
+
 }
 
 
@@ -4087,7 +4126,7 @@ void CRoomWidget::RenderRoom(
 						if (wOTileNo == T_STAIRS)
 						{
 							CalcStairPosition(this->pRoom, wX, wY, wColIgnored, wRow);
-							float fLight = 1.0f - (wRow-1)*0.04f; 
+							float fLight = 1.0f - (wRow-1)*0.04f;
 							if (fLight < 0.1) fLight = 0.1f;
 							g_pTheDBM->DarkenTile(nX, nY, fLight, pDestSurface);
 						} else {
@@ -5721,7 +5760,7 @@ void CRoomWidget::AdvanceAnimationFrame(
 	if (it == this->monsterAnimations.end()) {
 		const UINT delay = 10 + RAND(50);
 		it = this->monsterAnimations.insert(make_pair(
-			pMonster, 
+			pMonster,
 			MonsterAnimation(RAND(ANIMATION_FRAMES), RAND(delay), delay, RAND(randomPauseDelay), RAND(randomPauseDuration))
 		)).first;
 	}
@@ -6547,7 +6586,7 @@ void CRoomWidget::DrawPlatformsAndTLayer(
 				UINT wTileImageNo = GetTileImageForTileNo(oTile);
 				if (wTileImageNo == CALC_NEEDED)
 				{
-					
+
 					wTileImageNo = CalcTileImageFor(this->pRoom, oTile, wX, wY);
 					TileImageBlitParams blit(wX, wY, wTileImageNo, wXOffset, wYOffset,
 						bPlatformAnimating); // || wXOffset || wYOffset); -- only needed if platform has jitter independent of movement animation
@@ -7185,7 +7224,7 @@ void CRoomWidget::DrawMonster(
 						if (this->bRequestEvilEyeGaze) // Vision token or puzzle mode can show it
 							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
 								pMonster->wY, pMonster->wO, (UINT)-1));
-						
+
 						if (this->puzzleModeOptions.GetShowReverseEvilEyeBeams())
 							AddLastLayerEffect(new CEvilEyeGazeEffect(this, pMonster->wX,
 								pMonster->wY, nGetReverseO(pMonster->wO), (UINT)-1));
@@ -9476,7 +9515,7 @@ void CRoomWidget::modelVertTileface(
 void CRoomWidget::PropagateLight(
 	const float fSX, const float fSY,
 	const float fZ, //elevation of tile light source is on
-	const UINT tParam, 
+	const UINT tParam,
 	const bool bCenterOnTile, //[default=true]
 	const Point& direction) //[default=(0,0,0), indicating everywhere
 {

@@ -382,6 +382,8 @@ public:
 	void           RerenderRoom() {this->bRenderRoom = true; DirtyRoom(); }
 	void           RerenderRoomCeilingLight(CCueEvents& CueEvents);
 	void           RenderRoomLighting() {this->bRenderRoomLight = true;}
+	void           RetainImageOverlay(const bool bVal);
+	void           RetainImageOverlay(CRoomEffectList *pEffectList, const bool bVal);
 	void           DrawTLayerTile(const UINT wX, const UINT wY,
 			const int nX, const int nY, SDL_Surface *pDestSurface,
 			const UINT wOTileNo, const TileImages& ti, LIGHTTYPE *psL,

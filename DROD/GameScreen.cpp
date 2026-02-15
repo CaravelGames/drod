@@ -1594,7 +1594,7 @@ void CGameScreen::OnKeyDown(
 				SEID_WISP : SEID_CHECKPOINT);
 			ShowLockIcon(this->pCurrentGame->bRoomExitLocked);
 		break;
-		
+
 		case CMD_EXTRA_QUICK_DEMO_RECORD:
 		{
 			if (this->bPlayTesting) break;
@@ -2880,7 +2880,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			CueEvents.HasOccurred(CID_PlayerBurned) || bExplosionKilledPlayer ||
 			CueEvents.HasOccurred(CID_BriarKilledPlayer) || bPlayerEatenByOremites ||
 			bPlayerImpaledOnSpikes || bPlayerFellInPit || bPlayerDrowned;
-	
+
 	const bool bNPCBeethroDied = CueEvents.HasOccurred(CID_NPCBeethroDied);
 	const bool bCriticalNPCDied = CueEvents.HasOccurred(CID_CriticalNPCDied) ||
 			(!bPlayerDied && !bNPCBeethroDied && !bIsSmitemaster(player.wAppearance));
@@ -2898,7 +2898,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	ProcessImageEvents(CueEvents, this->pRoomWidget, this->pCurrentGame);
 
 	ProcessFuseBurningEvents(CueEvents);
-	
+
 	//Need player falling to draw last (on top of) other effects migrated below to the m-layer
 	if (bPlayerFellInPit && bPlayerDied) {
 		this->pRoomWidget->HidePlayer();
@@ -3087,7 +3087,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 			this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(remainingFraction);
 			this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(remainingFraction);
 			this->pRoomWidget->DirtyRoom();  //repaint whole room each fade
-			
+
 			dwLastFade = dwNow;
 		}
 
@@ -3139,7 +3139,7 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 		if (dwNow - dwStart > dwDeathDuration)
 			break;
 	}
-	
+
 	this->pRoomWidget->SetDeathFadeOpacity(0);
 	this->pRoomWidget->pMLayerEffects->SetOpacityForEffects(1);
 	this->pRoomWidget->pLastLayerEffects->SetOpacityForEffects(1);
@@ -3872,7 +3872,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		this->fPos[1] = static_cast<float>(pCoord->wY);
 		PlaySoundEffect(SEID_TEMPORAL_SPLIT_REWIND, this->fPos, NULL, false, 0.8f);
 		this->pRoomWidget->AddMLayerEffect(new CSparkEffect(this->pRoomWidget, *pCoord, 30, false));
-	}	
+	}
 	if (CueEvents.HasOccurred(CID_GentryiiPulledTaut))
 		PlaySoundEffect(SEID_CHAIN_PULL);
 
@@ -4404,7 +4404,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 
 		//When tarstuff babies are created in a clean room, change the music style.
-		if (wMood == SONG_AMBIENT && 
+		if (wMood == SONG_AMBIENT &&
 		   (CueEvents.HasOccurred(CID_TarBabyFormed) ||
 			CueEvents.HasOccurred(CID_MudBabyFormed) ||
 			CueEvents.HasOccurred(CID_GelBabyFormed)))
@@ -4695,7 +4695,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 		}
 
 		const bool bUndoDeath = (
-			cmd_response == CMD_UNDO 
+			cmd_response == CMD_UNDO
 			|| cmd_response == CMD_ESCAPE // Undo the death move when exiting from death so that state is saved
 		);
 		if (bUndoDeath) {
@@ -5999,37 +5999,7 @@ void CGameScreen::ReattachRetainedSubtitles()
 void CGameScreen::RetainEffectCleanup(const bool bVal) //[default=false]
 {
 	RetainSubtitleCleanup(bVal);
-	RetainImageOverlay(bVal);
-}
-
-//*****************************************************************************
-void CGameScreen::RetainImageOverlay(const bool bVal)
-//As a move is undone, mark image overlay effects that need to be retained
-{
-	RetainImageOverlay(this->pRoomWidget->pOLayerEffects, bVal);
-	RetainImageOverlay(this->pRoomWidget->pTLayerEffects, bVal);
-	RetainImageOverlay(this->pRoomWidget->pMLayerEffects, bVal);
-	RetainImageOverlay(this->pRoomWidget->pLastLayerEffects, bVal);
-}
-
-void CGameScreen::RetainImageOverlay(CRoomEffectList *pEffectList, const bool bVal)
-{
-	ASSERT(pEffectList);
-	const UINT currentTurn = this->pCurrentGame ? this->pCurrentGame->wTurnNo : 0;
-
-	list<CEffect*>& effects = pEffectList->Effects;
-	for (list<CEffect*>::iterator it=effects.begin(); it!=effects.end(); ++it)
-	{
-		CEffect *pEffect = *it;
-		if (pEffect->GetEffectType() == EIMAGEOVERLAY) {
-			bool thisVal = bVal;
-			if (thisVal) {
-				CImageOverlayEffect *pImageEffect = DYN_CAST(CImageOverlayEffect*, CEffect*, pEffect);
-				thisVal = pImageEffect->getStartTurn() < currentTurn;
-			}
-			pEffect->RequestRetainOnClear(thisVal);
-		}
-	}
+	this->pRoomWidget->RetainImageOverlay(bVal);
 }
 
 //*****************************************************************************
@@ -6588,7 +6558,7 @@ void CGameScreen::UpdateUIAfterMoveUndo()
 
 	//retain speech and image effects that started before the previous turn
 	ClearSpeech(false);
-	RetainImageOverlay(true);
+	this->pRoomWidget->RetainImageOverlay(true);
 	SyncMusic(false);
 
 	this->pRoomWidget->ClearEffects();
