@@ -1572,6 +1572,9 @@ void CDbHolds::CheckForVarRefs(
 		break;
 		case CCharacterCommand::CC_WaitForExpression:
 		{
+			if (bChallenges)
+				break;
+
 			//Search for a variable name in the expression.
 			if (!c.label.empty())
 			{
