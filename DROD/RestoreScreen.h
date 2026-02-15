@@ -86,7 +86,7 @@ private:
 	bool     SetWidgets();
 	void     SetWidgetDisplay();
 	void     ShowCheckpointButtonsForSavedGame(const UINT dwSavedGameID);
-	void     UpdateWidgets();
+	void     UpdateWidgets(CCueEvents& CueEvents);
 	void     UpdateStatsLabel(CCurrentGame& game);
 
 	UINT       dwSelectedSavedGameID;
