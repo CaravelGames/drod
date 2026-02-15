@@ -861,7 +861,7 @@ void CTextBoxWidget::DrawCursor(
 //******************************************************************************
 void CTextBoxWidget::TypeCharacters(const WCHAR* wcs, size_t length)
 {
-	WSTRING inputText(wcs);
+	WSTRING inputText(wcs, length);
 
 	SanitizeText(inputText);
 	length = inputText.length();
@@ -871,7 +871,7 @@ void CTextBoxWidget::TypeCharacters(const WCHAR* wcs, size_t length)
 	if (HasSelection())
 		DeleteSelected(); //replace selection with typed char
 	bool ok = false;
-	
+
 	for (size_t i = 0; i < length && (ok = InsertAtCursor(inputText[i])); ++i) {}
 	if (ok)
 	{
