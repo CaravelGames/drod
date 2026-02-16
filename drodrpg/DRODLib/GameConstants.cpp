@@ -53,7 +53,7 @@ const UINT NEXT_VERSION_NUMBER = 600;
 const WCHAR wszVersionReleaseNumber[] = WS("2.0.7.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('2'),We('.'),We('0'),We('.'),We('7'),We('.'),We('1'),We('0'),We('2'),We('8'),We(0)   // 2.0.* -- full version number plus build number
+	We('2'),We('.'),We('0'),We('.'),We('8'),We('.'),We('1'),We('0'),We('7'),We('2'),We(0)   // 2.0.* -- full version number plus build number
 };
 #endif
 
