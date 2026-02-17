@@ -2435,6 +2435,7 @@ void CCharacter::Process(
 				getCommandParams(command, px, py, pw, ph, pflags);
 				WeaponStab push(px, py, pw, WeaponType::WT_Staff);
 				pGame->ProcessScriptedPush(push, CueEvents, this);
+				bProcessNextCommand = true;
 			}
 			break;
 
