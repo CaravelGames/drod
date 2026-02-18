@@ -595,7 +595,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				const UINT dwPlayerI = CDbBase::LookupRowByPrimaryKey(
 						dwLocalPlayerID, V_Players, PlayersView);
 				if (dwPlayerI == ROW_NO_MATCH) return MID_FileCorrupted;
-				
+
 				if (this->bIsLocal)
 				{
 					//Local players are only imported when it's their data being
@@ -709,7 +709,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 			this->Settings = (const BYTE*)data;
 			delete[] data;
 			if (info.wVersion < 500) {
-				UpgradeKeyDefintions();
+				UpgradeKeyDefinitions();
 			}
 
 			break;
@@ -775,7 +775,7 @@ void CDbPlayer::Clear()
 }
 
 //*****************************************************************************
-void CDbPlayer::UpgradeKeyDefintions()
+void CDbPlayer::UpgradeKeyDefinitions()
 //In pre-2.0 versions, control settings were stored as int rather than as int64.
 //Since int might be smaller than int64, this can cause problems, so this function
 //converts all key settings to be int64.

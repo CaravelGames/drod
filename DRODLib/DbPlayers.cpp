@@ -553,6 +553,14 @@ bool CDbPlayer::Load(
 	packedChallenges = p_Challenges(row);
 	this->challenges.deserialize(packedChallenges);
 
+	// We had an issue with a user having assertions caused by int32 stored in
+	// the key definitions in their player profile. Because we can't detect
+	// the version of the player profile we just update it always for local
+	// players.
+	if (this->bIsLocal) {
+		UpgradeKeyDefinitions();
+	}
+
 	}
 	catch (CException&)
 	{
@@ -658,7 +666,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 					for (CIDSet::const_iterator it=localPlayerIDs.begin(); it!=localPlayerIDs.end(); ++it)
 						info.PlayerIDMap.insert(make_pair(this->dwPlayerID, *it));
 				}
-				
+
 				bSaveRecord = false;
 				break;
 			}
@@ -817,7 +825,7 @@ MESSAGE_ID CDbPlayer::SetProperty(
 				this->Settings.SetVar(Settings::EyeCandy, BYTE(bEyeCandy ? Metadata::GetInt(MetaKey::MAX_EYE_CANDY) : 0));
 			}
 			if (info.wVersion < 509) {
-				UpgradeKeyDefintions();
+				UpgradeKeyDefinitions();
 			}
 			delete[] data;
 			break;
@@ -894,7 +902,7 @@ void CDbPlayer::Clear()
 }
 
 //*****************************************************************************
-void CDbPlayer::UpgradeKeyDefintions()
+void CDbPlayer::UpgradeKeyDefinitions()
 //In pre-5.2 versions, control settings were stored as int rather than as int64.
 //Since int might be smaller than int64, this can cause problems, so this function
 //converts all key settings to be int64.
@@ -1105,15 +1113,15 @@ void CDbPlayer::ConvertInputSettings(CDbPackedVars& settings)
 	for (int i = 0; i < InputCommands::DCMD_Count; ++i)
 	{
 		const KeyDefinition *keyDefinition = GetKeyDefinition(i);
-		
+
 		if (!settings.DoesVarExist(keyDefinition->settingName))
 			settings.SetVar(keyDefinition->settingName, keyDefinition->GetDefaultKey(wKeyboardMode));
 			continue;
-		
+
 		const UNPACKEDVARTYPE varType = settings.GetVarType(keyDefinition->settingName);
 		if (varType == UVT_int) {
 			InputKey oldKey = settings.GetVar(keyDefinition->settingName, SDLK_UNKNOWN);
-			
+
 			// Convert old SDL1 mappings
 			const bool bInvalidSDL1mapping = oldKey >= 128 && oldKey <= 323;
 			if (bInvalidSDL1mapping)
