@@ -97,7 +97,7 @@ private:
 	bool        UpdateNew();
 	void        Clear();
 
-	void        UpgradeKeyDefintions();
+	void        UpgradeKeyDefinitions();
 };
 
 #endif //...#ifndef DBPLAYERS_H
