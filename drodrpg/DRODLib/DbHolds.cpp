@@ -1770,8 +1770,8 @@ bool CDbHold::IsVarNameGoodSyntax(const WCHAR* pName)
 	++pName;
 	while (WCv(*pName))
 	{
-		//No punctuation except underscore and space
-		if (!(iswalnum(*pName) || *pName == W_t(' ') || *pName == W_t('_')))
+		//No punctuation except underscore
+		if (!(iswalnum(*pName) || *pName == W_t('_')))
 			return false;
 		++pName;
 	}
