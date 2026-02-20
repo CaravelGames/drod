@@ -1953,7 +1953,7 @@ bool CDbHold::IsVarNameGoodSyntax(const WCHAR* pName)
 
 bool CDbHold::IsVarCharValid(WCHAR wc)
 {
-	return iswalnum(wc) || wc == W_t('_') || wc == W_t(' ');
+	return iswalnum(wc) || wc == W_t('_');
 }
 
 bool CDbHold::IsFunctionCharValid(WCHAR wc)

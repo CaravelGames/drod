@@ -1365,7 +1365,8 @@ int CCharacter::parseFactor(const WCHAR *pwStr, UINT& index, CCurrentGame *pGame
 		//Find spot where var identifier ends.
 		int endIndex = index + 1;
 		int spcTrail = 0;
-		while (CDbHold::IsVarCharValid(pwStr[endIndex]))
+		//For a while, spaces were allowed in var names, so we need to be able to parse that
+		while (CDbHold::IsVarCharValid(pwStr[endIndex]) || pwStr[endIndex] == W_t(' '))
 		{
 			if (pwStr[endIndex] == W_t(' '))
 				++spcTrail;
