@@ -249,6 +249,8 @@ mkdir -p "$RPG_INSTALL_DIR"
 rsync -a "$DEPS_DIR" "$(dirname "$RPG_DEPS_DIR")"
 rsync -a "$INSTALL_DIR" "$(dirname "$RPG_INSTALL_DIR")"
 
+rm -f "$INSTALL_DIR/lib/libSDL2.a"
+
 echo "=== Build complete ==="
 echo "Static libraries installed in: $INSTALL_DIR"
 echo "Include headers in: $INSTALL_DIR/include"

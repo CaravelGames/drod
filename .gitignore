@@ -66,6 +66,7 @@ FrontEndLib/CaravelRelease-Temp/
 */BuildDats/
 */SteamBuildDats/
 */*-Temp/
+Master/Linux/steam
 Master/Linux/deps
 Master/Linux/static-libs
 Master/Linux/build.*

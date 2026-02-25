@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     ninja-build \
     libssl-dev \
     libnghttp2-dev \
+    libsdl2-dev \
+    libsdl2-mixer-dev \
+    libsdl2-ttf-dev \
     zlib1g-dev \
     wget \
     unzip \

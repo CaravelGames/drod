@@ -6,7 +6,7 @@ die () {
 }
 
 cpucount=$(grep processor /proc/cpuinfo | wc -l)
-steamworks_sdk="${STEAMWORKS_SDK:-}"
+steamworks_sdk="${STEAMWORKS_SDK:-"steam"}"
 
 args=("$@")
 declare -A options
@@ -26,12 +26,20 @@ distflags=(
 	[steam-tss]="-DCARAVELBUILD -DSTEAMBUILD -I${steamworks_sdk}/public/steam -DSTEAMBUILD_TSS_APP"
 )
 
-declare -A distlinkflags
-distlinkflags=(
+declare -A distlinkflags_pre
+distlinkflags_pre=(
 	[custom]=""
 	[caravel]=""
-	[steam]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32 -lsteam_api"
-	[steam-tss]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32 -lsteam_api"
+	[steam]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32"
+	[steam-tss]="-L${steamworks_sdk}/redistributable_bin/linux64 -L${steamworks_sdk}/redistributable_bin/linux32"
+)
+
+declare -A distlinkflags_post
+distlinkflags_post=(
+	[custom]=""
+	[caravel]=""
+	[steam]="-lsteam_api"
+	[steam-tss]="-lsteam_api"
 )
 
 declare -A buildflags
@@ -120,7 +128,7 @@ fi
 BUILDDIR=builds/$NAME
 EXEC="${options[archexec]} ${options[exec]}"
 
-SDL2_CONFIG="$EXEC static-libs/bin/sdl2-config"
+SDL2_CONFIG="$EXEC sdl2-config"
 PKG_CONFIG="$EXEC pkg-config"
 
 declare -a libs
@@ -139,7 +147,8 @@ gen_rules () {
 	echo "archflags = ${archflags[${options[arch]}]}"
 	echo "distflags = ${distflags[${options[dist]}]}"
 	echo "buildflags = ${buildflags[${options[build]}]} -DDROD_AUTODETECT_REVISION"
-	echo "linkflags = ${linkflags[${options[build]}]} ${distlinkflags[${options[dist]}]}"
+	echo "linkflagspre = ${linkflags[${options[build]}]} ${distlinkflags_pre[${options[dist]}]}"
+	echo "linkflagspost = ${distlinkflags_post[${options[dist]}]}"
 	echo "cxxbin = ${options[cxx]}"
 	cat <<'X'
 
@@ -152,7 +161,7 @@ config = $distflags -DUSE_SDL_MIXER
 optflags = -std=c++11 $archflags $buildflags -g
 
 cflags = $optflags -pipe -W -Wall -Wno-unused -Wno-unused-parameter -Wno-uninitialized
-ldflags = $optflags $linkflags -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
+ldflags = $optflags $linkflagspre -pipe -Wl,-rpath,'$$ORIGIN' -Wl,--as-needed
 
 revision = $$(git rev-parse --short HEAD)
 debugsuffix = -${arch}-${revision}.dbg
@@ -164,7 +173,7 @@ rule cxx
   description = Compile $out
 
 rule link
-  command = $cxx -o $out $ldflags $in $libs && rm -f ${out}-*.dbg && objcopy --only-keep-debug $out ${out}${debugsuffix} && objcopy --add-gnu-debuglink=${out}${debugsuffix} $out && strip --strip-all $out
+  command = $cxx -o $out $ldflags $in $libs $linkflagspost && rm -f ${out}-*.dbg && objcopy --only-keep-debug $out ${out}${debugsuffix} && objcopy --add-gnu-debuglink=${out}${debugsuffix} $out && strip --strip-all $out
   description = Link $out
 
 rule link-tests
@@ -191,17 +200,23 @@ X
 	local idirs=("-I$BUILDDIR")
 	local ilibs=()
 	for dir in ${libs[@]}; do
+		# Test library are only required for drod_tests target
+	    [[ "$(basename $dir)" == *DRODLibTests ]] && continue
 		idirs+=(-I$(dirname $dir))
 		ilibs+=($BUILDDIR/$(basename $dir).a)
 	done
 	cat <<X
 includes = ${idirs[@]} -Istatic-libs/include $(${SDL2_CONFIG} --cflags)
-staticlibs = -Lstatic-libs/lib -lSDL2_mixer -lSDL2_ttf -lSDL2 -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lcurl -lssl -lcrypto -lexpat -ljsoncpp
-dynamiclibs = $(${SDL2_CONFIG} --libs) -lnghttp2 -lz -lpthread -lm -lrt -ldl
+staticlibs = -Lstatic-libs/lib -lSDL2_mixer -lSDL2_ttf -ltheora -lvorbisfile -lvorbis -logg -ljpeg -lmk4 -lfreetype -lpng16 -lnghttp2 -lcurl -lssl -lcrypto -lexpat -ljsoncpp
+dynamiclibs = $(${SDL2_CONFIG} --libs) -lSDL2 -lz -lpthread -lm -lrt -ldl
 build $BUILDDIR/drod: link ${ilibs[@]}
-# To make sure we rebuild the binary dependency on DRODTestLib.a must be kept here
-build $BUILDDIR/drod_tests: link-tests $BUILDDIR/DRODLib.a $BUILDDIR/BackEndLib.a | $BUILDDIR/DRODLibTests.a
 X
+
+	# There is no point building tests when doing a steam build
+	if [[ ! " ${options[dist]} " =~ "steam" ]]; then
+		# To make sure we rebuild the binary dependency on DRODTestLib.a must be kept here
+		echo "build $BUILDDIR/drod_tests: link-tests $BUILDDIR/DRODLib.a $BUILDDIR/BackEndLib.a | $BUILDDIR/DRODLibTests.a"
+	fi
 	if ${options[nostatic]}; then
 		echo "libs = \$staticlibs \$dynamiclibs"
 	else
