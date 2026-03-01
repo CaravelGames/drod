@@ -316,11 +316,12 @@ bool video_write(SDL_Renderer *renderer, SDL_Texture *background, SDL_Texture *y
 	SDL_UnlockTexture(yuv_texture);
 
 	// Show frame to surface!
-	SDL_Rect rect = MAKE_SDL_RECT(x, y, out_width, out_height);
+	SDL_Rect rect = MAKE_SDL_RECT(x, y,
+		out_width * CScreen::WindowScaleFactor, out_height * CScreen::WindowScaleFactor);
 
 	// Blit background first (the SDL_WINDOWEVENT_EXPOSED event isn't reliable at the moment)
 	SDL_RenderClear(renderer); // clear border, if any
-	if (!SDL_RenderCopy(renderer, background, NULL, NULL)
+	if (!SDL_RenderCopy(renderer, background, NULL, &CScreen::WindowTargetRect)
 			&& !SDL_RenderCopy(renderer, yuv_texture, NULL, &rect))
 	{
 #ifdef STEAMBUILD
@@ -419,7 +420,12 @@ bool CScreen::PlayVideoBuffer(
 		background = GetWindowTexture(window);
 		yuv_overlay = open_video(renderer);
 	}
-  
+
+	// Ensure video appears in the correct position
+	int targetX = x;
+	int targetY = y;
+	ConvertLogicalCoordsToPhysical(&targetX, &targetY);
+
 	// single frame video buffering
 	ogg_packet op;
 	ogg_int64_t  videobuf_granulepos=-1;
@@ -524,7 +530,7 @@ bool CScreen::PlayVideoBuffer(
 			// time to write our cached frame
 			if (window)
 			{
-				const bool bRes = video_write(renderer, background, yuv_overlay, x, y);
+				const bool bRes = video_write(renderer, background, yuv_overlay, targetX, targetY);
 				if (!bRes) //couldn't display image
 					playbackdone = bBreakout = true;
 			}
