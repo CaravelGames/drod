@@ -19,8 +19,9 @@ Usage: $0 ACTION [OPTIONS]
 
 Actions:
     all               Run docker-up, build-deps, build-drod, build-drod-rpg (in that order)
-    docker-up         Start the docker compose container (detached)
+    docker-build      Build the docker image
     docker-down       Stop and remove the docker compose containers
+    docker-up         Start the docker compose container (detached)
     docker-bash       Open bash in the docker container
     build-deps        Build project dependencies inside the docker container
     build-drod        Build DROD (Master/Linux) inside the docker container
@@ -93,10 +94,16 @@ docker_exec() {
 
 # Action implementations
 action_all() {
+    action_docker_build || return $?
     action_docker_up || return $?
     action_build_deps || return $?
     action_build_drod || return $?
     action_build_drod_rpg || return $?
+}
+
+action_docker_build() {
+    echo "=> docker-build: building container"
+    (cd "$SCRIPT_DIR" && docker compose build)
 }
 
 action_docker_up() {
@@ -143,6 +150,9 @@ action_run_tests() {
 case "$ACTION" in
     all)
         action_all
+        ;;
+    docker-build)
+        action_docker_build
         ;;
     docker-up)
         action_docker_up
