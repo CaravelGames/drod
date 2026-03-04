@@ -52,7 +52,7 @@ const UINT NEXT_VERSION_NUMBER = 600;
 const WCHAR wszVersionReleaseNumber[] = WS("5.2.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('5'),We('.'),We('2'),We('.'),We('0'),We('.'),We('1'),We('0'),We('8'),We('0'),We(0)   // 5.2.0.*
+	We('5'),We('.'),We('2'),We('.'),We('0'),We('.'),We('1'),We('0'),We('8'),We('1'),We(0)   // 5.2.0.*
 };
 #endif
 
@@ -63,7 +63,7 @@ namespace InputCommands
 	const std::unordered_map<DCMD, KeyDefinition*> BuildKeyDefinitions()
 	{
 		std::unordered_map<DCMD, KeyDefinition*> keyDefinitions;
-		
+
 		keyDefinitions[DCMD_NW] = new KeyDefinition(CMD_NW, "MoveNorthwest", MID_MoveNorthwest, SDLK_KP_7, SDLK_7);
 		keyDefinitions[DCMD_N] = new KeyDefinition(CMD_N, "MoveNorth", MID_MoveNorth, SDLK_KP_8, SDLK_8);
 		keyDefinitions[DCMD_NE] = new KeyDefinition(CMD_NE, "MoveNortheast", MID_MoveNortheast, SDLK_KP_9, SDLK_9);
