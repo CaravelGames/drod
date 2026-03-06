@@ -51,8 +51,8 @@ const UINT TAG_SAVE_LBOX = 1020;
 const UINT TAG_SORT_LBOX = 1021;
 
 const UINT TAG_HOLD_EXPLORED = 1030;
-const UINT TAG_HOLD_SECRETS = 1031;
-const UINT TAG_HOLD_SECRETS_GLOBAL = 1032;
+const UINT TAG_HOLD_SECRETS_LABEL = 1031;
+const UINT TAG_HOLD_SECRETS = 1032;
 
 const UINT TAG_RESTORE = 1091;
 const UINT TAG_CANCEL = 1092;
@@ -171,18 +171,22 @@ CRestoreScreen::CRestoreScreen()
 	const UINT CY_MAP = Y_RESTORE_BUTTON - Y_MAP - CY_SPACE - 6;
 
 	static const int X_HOLD_EXPLORED_LABEL = X_MAP;
-	static const UINT CX_HOLD_EXPLORED_LABEL = 140;
+	static const UINT CX_HOLD_EXPLORED_LABEL = 135;
 	static const int Y_HOLD_EXPLORED_LABEL = Y_MAP + CY_MAP;
-	const UINT CY_HOLD_EXPLORED_LABEL = this->h - Y_HOLD_EXPLORED_LABEL;
+	const UINT CY_HOLD_EXPLORED_LABEL = (this->h - Y_HOLD_EXPLORED_LABEL) / 2;
 	static const int X_HOLD_EXPLORED = X_HOLD_EXPLORED_LABEL + CX_HOLD_EXPLORED_LABEL;
-	static const UINT CX_HOLD_EXPLORED = 50;
+	static const UINT CX_HOLD_EXPLORED = X_SCOREPOINT_BUTTON - X_HOLD_EXPLORED_LABEL;
 	static const int Y_HOLD_EXPLORED = Y_HOLD_EXPLORED_LABEL;
 	const UINT CY_HOLD_EXPLORED = CY_HOLD_EXPLORED_LABEL;
 
-	static const int X_HOLD_SECRET_LABEL = X_HOLD_EXPLORED + CX_HOLD_EXPLORED;
-	static const UINT CX_HOLD_SECRET_LABEL = X_SCOREPOINT_BUTTON - X_HOLD_SECRET_LABEL;
-	static const int Y_HOLD_SECRET_LABEL = Y_HOLD_EXPLORED_LABEL;
+	static const int X_HOLD_SECRET_LABEL = X_HOLD_EXPLORED_LABEL;
+	static const UINT CX_HOLD_SECRET_LABEL = CX_HOLD_EXPLORED_LABEL;
+	static const int Y_HOLD_SECRET_LABEL = Y_HOLD_EXPLORED_LABEL + CY_HOLD_EXPLORED_LABEL;
 	const UINT CY_HOLD_SECRET_LABEL = 22U;
+	static const int X_HOLD_SECRET = X_HOLD_EXPLORED;
+	static const UINT CX_HOLD_SECRET = X_SCOREPOINT_BUTTON - X_HOLD_SECRET;
+	static const int Y_HOLD_SECRET = Y_HOLD_SECRET_LABEL;
+	const UINT CY_HOLD_SECRET = CY_HOLD_SECRET_LABEL;
 
 	CButtonWidget *pButton;
 
@@ -254,14 +258,11 @@ CRestoreScreen::CRestoreScreen()
 				g_pTheDB->GetMessageText(MID_Complete)));
 	AddWidget(new CLabelWidget(TAG_HOLD_EXPLORED, X_HOLD_EXPLORED, Y_HOLD_EXPLORED,
 				CX_HOLD_EXPLORED, CY_HOLD_EXPLORED, F_Small, wszQuestionMark));
-	AddWidget(new CLabelWidget(TAG_HOLD_SECRETS, X_HOLD_SECRET_LABEL, Y_HOLD_SECRET_LABEL,
+	AddWidget(new CLabelWidget(TAG_HOLD_SECRETS_LABEL, X_HOLD_SECRET_LABEL, Y_HOLD_SECRET_LABEL,
 				CX_HOLD_SECRET_LABEL, CY_HOLD_SECRET_LABEL, F_Small,
 				g_pTheDB->GetMessageText(MID_SecretsFound)));
-	CLabelWidget* pGlobalSecretsLabel = new CLabelWidget(TAG_HOLD_SECRETS_GLOBAL, X_HOLD_SECRET_LABEL,
-		Y_HOLD_SECRET_LABEL + CY_HOLD_SECRET_LABEL, CX_HOLD_SECRET_LABEL, CY_HOLD_SECRET_LABEL,
-		F_Small, wszQuestionMark);
-	pGlobalSecretsLabel->SetAlign(CLabelWidget::TA_CenterGroup);
-	AddWidget(pGlobalSecretsLabel);
+	AddWidget(new CLabelWidget(TAG_HOLD_SECRETS, X_HOLD_SECRET, Y_HOLD_SECRET,
+		CX_HOLD_SECRET, CY_HOLD_SECRET, F_Small, wszQuestionMark));
 
 	AddWidget(new CLabelWidget(TAG_STATS_LABEL, X_STATS_LABEL, Y_STATS_LABEL,
 				CX_STATS_LABEL, CY_STATS_LABEL, F_Small, wszEmpty));
@@ -701,8 +702,8 @@ void CRestoreScreen::ShowSaveStats()
 		pStatsLabel->SetText(wszEmpty);
 		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS));
 		pStatsLabel->SetText(wszEmpty);
-		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS_GLOBAL));
-		pStatsLabel->SetText(wszEmpty);
+		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS_LABEL));
+		pStatsLabel->Hide();
 		return;
 	}
 
@@ -722,21 +723,50 @@ void CRestoreScreen::ShowSaveStats()
 	playerRoomsExplored += this->pCurrentRestoreGame->dwRoomID; //consider current room explored
 
 	//Display percent of rooms in level explored.
-	WCHAR num[16];
 	pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_EXPLORED));
-	wstr = _itoW(playerRoomsExplored.size(), num, 10);
+	wstr = to_WSTRING(playerRoomsExplored.size());
 
 	if (this->bHoldConquered)
 	{
-		//When hold has been finished, reveal much of the hold has been explored in this game.
-		wstr += wszSpace;
-		wstr += wszLeftParen;
-		wstr += _itoW(static_cast<int>(playerRoomsExplored.size() * 100.0 /
-				(float)roomsInHold.rooms.size()), num, 10);
-		wstr += wszPercent;
-		wstr += wszRightParen;
+		//When hold has been finished, reveal how much of the hold has been explored in this game.
+		wstr += wszForwardSlash;
+		wstr += to_WSTRING(roomsInHold.rooms.size());
 	}
+
+	//Display rooms explored across all saves
+	CIDSet globalRoomsExplored;
+	g_pTheDB->Holds.GetRoomsExplored(g_pTheDB->GetHoldID(), g_pTheDB->GetPlayerID(), globalRoomsExplored);
+	wstr += wszSpace;
+	wstr += wszLeftParen;
+	wstr += to_WSTRING(globalRoomsExplored.size());
+	if (this->bHoldConquered)
+	{
+		//When hold has been finished, reveal how much of the hold has been explored overall.
+		wstr += wszForwardSlash;
+		wstr += to_WSTRING(roomsInHold.rooms.size());
+		wstr += wszComma;
+		wstr += wszSpace;
+		wstr += to_WSTRING(static_cast<int>(globalRoomsExplored.size() * 100.0 /
+			(float)roomsInHold.rooms.size()));
+		wstr += wszPercent;
+	}
+	wstr += wszRightParen;
 	pStatsLabel->SetText(wstr.c_str());
+
+	if (!roomsInHold.secretRooms.size())
+	{
+		//Don't show any secret information if a hold has no secret rooms
+		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS_LABEL));
+		pStatsLabel->Hide();
+		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS));
+		pStatsLabel->SetText(wszEmpty);
+		return;
+	}
+	else
+	{
+		pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS_LABEL));
+		pStatsLabel->Show();
+	}
 
 	//Display how many secret rooms have been found.
 	pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS));
@@ -747,41 +777,38 @@ void CRestoreScreen::ShowSaveStats()
 		if (roomsInHold.secretRooms.has(*room))
 			++secretRoomsFound;
 	}
-	if (!secretRoomsFound)
-	{
-		pStatsLabel->SetText(wszEmpty);
-	} else {
-		wstr = g_pTheDB->GetMessageText(MID_SecretsFound);
-		wstr += wszSpace;
 
-		wstr += _itoW(secretRoomsFound, num, 10);
-		if (this->bHoldConquered)
-		{
-			//When hold is finished, reveal how many secret rooms are in this hold.
-			wstr += wszForwardSlash;
-			wstr += _itoW(roomsInHold.secretRooms.size(), num, 10);
-		}
-		pStatsLabel->SetText(wstr.c_str());
+	wstr.clear();
+	wstr += to_WSTRING(secretRoomsFound);
+	if (this->bHoldConquered)
+	{
+		//When hold is finished, reveal how many secret rooms are in this hold.
+		wstr += wszForwardSlash;
+		wstr += to_WSTRING(roomsInHold.secretRooms.size());
 	}
 
-	pStatsLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_HOLD_SECRETS_GLOBAL));
 	HoldStats stats;
 	UINT globalSecretsFound = g_pTheDB->Holds.GetSecretsDone(stats,
 		g_pTheDB->GetHoldID(), g_pTheDB->GetPlayerID());
-	if (!globalSecretsFound) {
-		pStatsLabel->SetText(wszEmpty);
-	} else {
-		wstr = wszLeftParen;
-		wstr += _itoW(globalSecretsFound, num, 10);
+	if (globalSecretsFound) {
+		wstr += wszSpace;
+		wstr += wszLeftParen;
+		wstr += to_WSTRING(globalSecretsFound);
 		if (this->bHoldConquered)
 		{
 			//When hold is finished, reveal how many secret rooms are in this hold.
 			wstr += wszForwardSlash;
-			wstr += _itoW(roomsInHold.secretRooms.size(), num, 10);
+			wstr += to_WSTRING(roomsInHold.secretRooms.size());
+			wstr += wszComma;
+			wstr += wszSpace;
+			wstr += to_WSTRING(static_cast<int>(globalSecretsFound * 100.0 /
+				(float)roomsInHold.secretRooms.size()));
+			wstr += wszPercent;
 		}
 		wstr += wszRightParen;
-		pStatsLabel->SetText(wstr.c_str());
 	}
+
+	pStatsLabel->SetText(wstr.c_str());
 }
 
 //*****************************************************************************
