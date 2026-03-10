@@ -93,6 +93,7 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, alpha(255), drawAlpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
+	, lastJitterX(0), lastJitterY(0)
 	, xTile(0), yTile(0)
 	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
 	, index(UINT(-1))
