@@ -189,13 +189,13 @@ namespace InputCommands
 			const InputKey defaultKeyDesktop,
 			const InputKey defaultKeyNotebook = UseDesktopKey)
 			: eCommand(eCommand),
-			settingName(settingName),
-			commandMID(commandMID),
 			defaultKeyDesktop(defaultKeyDesktop),
-			defaultKeyNotebook(defaultKeyNotebook == UseDesktopKey ? defaultKeyDesktop : defaultKeyNotebook)
+			defaultKeyNotebook(defaultKeyNotebook == UseDesktopKey ? defaultKeyDesktop : defaultKeyNotebook),
+			settingName(settingName),
+			commandMID(commandMID)
 		{}
 
-		const InputKey GetDefaultKey(const UINT wKeyboardMode) const
+		InputKey GetDefaultKey(const UINT wKeyboardMode) const
 		{
 			return wKeyboardMode == 1 ? this->defaultKeyNotebook : this->defaultKeyDesktop;
 		}
@@ -207,7 +207,7 @@ namespace InputCommands
 		const char *settingName;
 		const MID_CONSTANT commandMID;
 	};
-	
+
 	enum DCMD
 	{
 		DCMD_NW = 0,
@@ -228,7 +228,7 @@ namespace InputCommands
 		DCMD_CommandTwo,
 		DCMD_CommandThree,
 		DCMD_CloneSwitch,
-		
+
 		// Below are keymaps which are not commands but other actions in the game
 		// Toggles/actions
 		DCMD_LockRoom,
@@ -288,7 +288,7 @@ namespace InputCommands
 		DCMD_NotFound=DCMD_Count,
 		DCMD_ExtraKeys=DCMD_LockRoom
 	};
-	
+
 	extern const std::unordered_map<DCMD, KeyDefinition*> COMMAND_MAP;
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
@@ -423,7 +423,7 @@ static inline bool bIsEditorCommand(const int command)
 
 static inline bool bIsEditSelectCommand(const int command)
 {
-	return(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_REFLECT_Y) || 
+	return(command >= CMD_EXTRA_EDITOR_CUT && command <= CMD_EXTRA_EDITOR_REFLECT_Y) ||
 		(command >= CMD_EXTRA_EDITOR_LOG_VAR_REFS && command <= CMD_EXTRA_SHOW_HELP);
 }
 

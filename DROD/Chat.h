@@ -67,7 +67,7 @@ namespace CNetChat
 
 	struct Data
 	{
-		Data() : chatID(0), opType(0), timestamp(0), bAdminMessage(false), bAFK(false), color({0, 0, 0, 0})
+		Data() : chatID(0), opType(0), timestamp(0), bAdminMessage(false), color({0, 0, 0, 0}), bAFK(false)
 		{
 		}
 

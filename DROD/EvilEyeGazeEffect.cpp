@@ -42,8 +42,8 @@ CEvilEyeGazeEffect::CEvilEyeGazeEffect(
 	: CEffect(pSetWidget, dwDuration, dwDuration != (UINT)-1 ? EGENERIC : EEVILEYEGAZE)
 	, wX(wX)
 	, wY(wY)
-	, dwDuration(dwDuration)
 	, opacity(255)
+	, dwDuration(dwDuration)
 {
 	ASSERT(pSetWidget->GetType() == WT_Room);
 	this->pRoomWidget = DYN_CAST(CRoomWidget*, CWidget*, pSetWidget);

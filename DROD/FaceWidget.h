@@ -157,11 +157,19 @@ typedef std::map<UINT, SDL_Surface*> SurfaceMap;
 
 struct Face {
 	Face(FaceWidgetLayer eLayer) :
-		eLayer(eLayer),
-		pHoldCharacter(NULL), eCharacter(Speaker_Beethro), dwImageID(0), eMoodSEID(SEID_NONE),
-		eMood(Mood_Normal), ePrevMood(Mood_Normal), dwMoodUntil(0),
-		bIsActive(false), bIsReading(false), bIsSleeping(false), bIsBlinking(false),
-		bIsDrawn(false)
+		eLayer(eLayer)
+		, pHoldCharacter(NULL)
+		, eCharacter(Speaker_Beethro)
+		, dwImageID(0)
+		, eMood(Mood_Normal)
+		, ePrevMood(Mood_Normal)
+		, dwMoodUntil(0)
+		, eMoodSEID(SEID_NONE)
+		, bIsActive(false)
+		, bIsReading(false)
+		, bIsSleeping(false)
+		, bIsBlinking(false)
+		, bIsDrawn(false)
 	{}
 
 	FaceWidgetLayer eLayer;
@@ -170,7 +178,7 @@ struct Face {
 	Uint32          dwImageID;
 	MOOD            eMood;
 	MOOD            ePrevMood;
-	
+
 	Uint32          dwMoodUntil;
 	SEID            eMoodSEID; // Show current mood until this sound ends
 

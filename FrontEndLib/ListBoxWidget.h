@@ -39,8 +39,8 @@ struct LBOX_ITEM
 {
 	LBOX_ITEM()
 		: bGrayed(false)
-		, rearrangeable(true)
 		, color({0, 0, 0, 0})
+		, rearrangeable(true)
     {
     }
 
