@@ -34,18 +34,18 @@
 
 struct PuzzleModeOptions {
 	PuzzleModeOptions() :
-		bIsEnabled(false),
-		wGridStyle(1),
-		uGridOpacity(128),
-		bHideAnimations(false),
-		bHideBuildMarkers(false),
-		bHideLighting(false),
-		bHideWeather(false),
-		bShowEvilEyeBeams(true),
-		bShowReverseEvilEyeBeams(false),
-		bShowBrokenWalls(false),
-		bShowSecretWalls(false),
-		bShowSpiders(true) {}
+		bIsEnabled(false)
+		, wGridStyle(1)
+		, uGridOpacity(128)
+		, bShowEvilEyeBeams(true)
+		, bShowReverseEvilEyeBeams(false)
+		, bShowBrokenWalls(false)
+		, bShowSecretWalls(false)
+		, bShowSpiders(true)
+		, bHideAnimations(false)
+		, bHideBuildMarkers(false)
+		, bHideLighting(false)
+		, bHideWeather(false) {}
 
 	PuzzleModeOptions(CDbPackedVars& playerSettings) {
 		this->bIsEnabled = false;

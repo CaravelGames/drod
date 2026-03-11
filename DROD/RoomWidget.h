@@ -196,10 +196,10 @@ struct TileImageBlitParams {
 		, nOpacity(255)
 		, bClipped(false)
 		, nAddColor(-1)
-		, bCastShadowsOnTop(true)
-		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
 		, nCustomColor(-1)
 		, hsv({ -1.0f, -1.0f, -1.0f })
+		, bCastShadowsOnTop(true)
+		, appliedDarkness(0.75) //reduce overhead darkness applied to entities to make them a bit more visible
 	{ }
 	TileImageBlitParams(const TileImageBlitParams& rhs);
 
