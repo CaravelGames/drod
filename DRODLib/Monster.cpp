@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -107,16 +107,16 @@ CMonster::CMonster(
 	, stunned(0), bNewStun(false)
 	, bPushedThisTurn(false), bPushedOtherMonster(false)
 	, bWaitedOnHotFloorLastTurn(false)
+	, bSafeToDelete(true)
 	, pNext(NULL), pPrevious(NULL)
 	, pCurrentGame(NULL)
-	, bSafeToDelete(true)
 {
 	if (pSetCurrentGame)
 		SetCurrentGame(pSetCurrentGame);
 }
 
 //*****************************************************************************
-CMonster::~CMonster() 
+CMonster::~CMonster()
 {
 	Clear();
 }
@@ -124,7 +124,7 @@ CMonster::~CMonster()
 //*****************************************************************************
 void CMonster::Clear()
 //Frees resources and zeroes members.
-{  
+{
 	CEntity::Clear();
 
 	this->pPrevious=this->pNext=NULL;
@@ -211,7 +211,7 @@ void CMonster::ResetCurrentGame()
 
 //*****************************************************************************
 void CMonster::SetCurrentGame(
-//Sets current game pointer for monster.  This is necessary for many methods of 
+//Sets current game pointer for monster.  This is necessary for many methods of
 //the monster class to work.
 //
 //Params:
@@ -378,7 +378,7 @@ bool CMonster::CheckForDamage(CCueEvents& CueEvents)
 		// to make pushing on hot tiles more logical - they are simply damaged when not moved and it is a full turn
 		return false;
 	}
-	
+
 
 	const UINT wIdentity = GetResolvedIdentity();
 	//Flying and tarstuff identities are safe from hot tiles.
@@ -529,7 +529,7 @@ bool CMonster::DoesSquareContainObstacle(
 	const UINT wCol, const UINT wRow) //(in) Coords of square to evaluate.
 const
 {
-	//Routine is not written to check the square on which this monster is 
+	//Routine is not written to check the square on which this monster is
 	//standing.
 	ASSERT(wCol != this->wX || wRow != this->wY || this->wType == M_GENTRYII);
 
@@ -565,7 +565,7 @@ const
 CheckMonster:
 	//Can only move onto attackable monsters.
 	CMonster *pMonster = room.GetMonsterAtSquare(wCol, wRow);
-	
+
 	if (pMonster){
 		const int dx = (int)wCol - (int)this->wX;
 		const int dy = (int)wRow - (int)this->wY;
@@ -592,7 +592,7 @@ CheckMonster:
 			!(player.IsTarget() && player.IsVulnerableToBodyAttack()) &&
 			player.wX == wCol && player.wY == wRow)
 		return true;
-	
+
 	//Check for player's sword at square.
 	if (this->pCurrentGame->IsPlayerWeaponAt(wCol, wRow, true))
 		return true;
@@ -1110,7 +1110,7 @@ bool CMonster::IsTileObstacle(
 //else besides the tile# to determine if the tile is an obstacle.  If a tile
 //is sometimes an obstacle, but not always, IsTileObstacle() should return true,
 //and the caller can use extra context to figure it out.  An example of this would
-//be arrows, which can be an obstacle to a monster depending on direction of 
+//be arrows, which can be an obstacle to a monster depending on direction of
 //movement.
 //
 //Params:
@@ -1229,7 +1229,7 @@ const
 			return;
 		}
 	}
-	   
+
 	//No open direction has been found -- set movement deltas to zero.
 	dx=dy=0;
 }
@@ -1387,7 +1387,7 @@ void CMonster::GetAvoidSwordMovement(
 //Calculates movement of monsters who try to avoid the target's sword.
 //
 //Params:
-	const UINT wX, const UINT wY, //(in) target (usually player) 
+	const UINT wX, const UINT wY, //(in) target (usually player)
 	int &dxFirst,  //(out) Horizontal delta for where the monster would
 					//    go if there weren't obstacles.
 	int &dyFirst,  //(out) Vertical delta for same.
@@ -1555,12 +1555,12 @@ const
 
 		//1. Stupider monsters only move when brain-directed if the best path option is open.
 		//2. Stupider monsters should not get stuck on gentryii-chains-diagonals because those are brain-aware obstacles
-		//@TODO: If this additional call ever proves to be a bottleneck we should consider refactoring it out 
+		//@TODO: If this additional call ever proves to be a bottleneck we should consider refactoring it out
 		//3. Wall monsters should not beeline when brain-directed moves don't work,
 		//as this could take them away from the target, according to the search cost heuristic
 		//(causing oscillations).
 		if ((
-				movementIQ == DirectOnly 
+				movementIQ == DirectOnly
 				&& !this->pCurrentGame->pRoom->DoesGentryiiPreventDiagonal(this->wX, this->wY, (int)paths[i].wX, (int)paths[i].wY)
 			) || (this->eMovement == WALL && i==paths.size()-1))
 		{
@@ -1734,7 +1734,7 @@ bool CMonster::GetTarget(
 		bMainTarget = true;
 	} else {
 		CMonster *pNPCBeethro = room.GetNPCBeethro();
-		
+
 		if (pNPCBeethro && pNPCBeethro->IsTarget() && (!pNPCBeethro->IsHiding() ||
 				CanSmellObjectAt(pNPCBeethro->wX, pNPCBeethro->wY)))
 		{
@@ -1783,7 +1783,7 @@ bool CMonster::GetTarget(
 	}
 	if (wClosestMonsterEnemyDistance <= DEFAULT_SMELL_RANGE)
 		//This entity takes precedence over decoys even if decoys are in smell range.
-		return true; 
+		return true;
 
 	// No primary targets are in smelling range.
 	// Rule 2.  Is a decoy in smelling range?
@@ -2024,7 +2024,7 @@ const
 //*****************************************************************************
 bool CMonster::CanFindSwordsman()
 //Overridable method for determining if a monster can find the swordsman on
-//its own.  
+//its own.
 //Currently used by movement routines to see if monster will attempt to move
 //towards the swordsman or not (w/o help of a brain).
 //
@@ -2132,9 +2132,9 @@ const
 	ASSERT(eMessageID > (MESSAGE_ID)0);
 
 	//Create the monster message.
-	CMonsterMessage *pNewMessage = 
+	CMonsterMessage *pNewMessage =
 			new CMonsterMessage(MMT_OK, eMessageID, const_cast<CMonster *>(this));
-	
+
 	//Add cue event with attached monster message.
 	CueEvents.Add(CID_MonsterSpoke, pNewMessage, true);
 }
@@ -2151,9 +2151,9 @@ const
 	ASSERT(eMessageID > (MESSAGE_ID)0);
 
 	//Create the monster message.
-	CMonsterMessage *pNewMessage = 
+	CMonsterMessage *pNewMessage =
 		new CMonsterMessage(MMT_YESNO, eMessageID, const_cast<CMonster *>(this));
-		
+
 	//Add cue event with attached monster message.
 	CueEvents.Add(CID_MonsterSpoke, pNewMessage, true);
 }
@@ -2227,7 +2227,7 @@ void CMonster::Move(
 			pMonster->PushInDirection(sgn(wDestX - this->wX), sgn(wDestY - this->wY), false, *pCueEvents);
 			bPushedOtherMonster = true;
 		}
-		else 
+		else
 		{
 			switch (pMonster->wType)
 			{

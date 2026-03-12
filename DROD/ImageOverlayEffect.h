@@ -37,6 +37,7 @@ struct CommandExecution
 		, startAlpha(0)
 		, startX(0), startY(0)
 		, startAngle(0), startScale(0)
+		, endTurn(static_cast<UINT>(-1))
 	{ }
 
 	Uint32 duration, remainingTime;

@@ -449,6 +449,7 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 	, bPersistentEventsDrawn(false)
 	, bNeedToProcessDelayedQuestions(false)
 	, bShowingBigMap(false), bShowingCutScene(false)
+	, bIsDialogDisplayed(false)
 	, bAutoUndoOnDeath(false)
 
 	, pFaceWidget(NULL)
@@ -460,13 +461,14 @@ CGameScreen::CGameScreen(const SCREENTYPE eScreen) : CRoomScreen(eScreen)
 
 	, dwNextSpeech(0)
 	, bShowingSubtitlesWithVoice(true)
+	, bShowHalphEffects(true)
+	, bShowDoublePlacementSwirl(true)
 	, dwTimeMinimized(0), dwLastCutSceneMove(0), dwSavedMoveDuration(0)
 
 	, bIsSavedGameStale(false)
 	, bPlayTesting(false)
 	, bRoomClearedOnce(false)
 	, bSkipCutScene(false)
-	, bIsDialogDisplayed(false)
 
 	, fPos(NULL)
 

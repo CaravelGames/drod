@@ -178,6 +178,8 @@ CCharacter::CCharacter(
 	, bNewEntity(false)
 	, bYesNoQuestion(false)
 	, bPlayerTouchedMe(false)
+	, bParseIfElseAsCondition(false)
+	, nColor(-1)
 	, wCurrentCommandIndex(0)
 	, wTurnDelay(0)
 	, eImperative(ScriptFlag::Vulnerable)
@@ -190,25 +192,23 @@ CCharacter::CCharacter(
 	, bPushableByBody(false)
 	, bPushableByWeapon(false)
 	, bStunnable(true)
-	, bBrainPathmapObstacle(false), bNPCPathmapObstacle(true)
-	, bWeaponOverride(false)
 	, bInvisibleInspectable(false)
 	, bInvisibleCountsMoveOrder(false)
+	, bBrainPathmapObstacle(false)
+	, bNPCPathmapObstacle(true)
+	, bWeaponOverride(false)
 	, bFriendly(true)
 	, movementIQ(SmartOmniDirection)
 	, worldMapID(0)
-	, nColor(-1)
 	, nHue(0)
 	, nSaturation(0)
-	, customSpeechColor(0)
-
 	, bWaitingForCueEvent(false)
 	, bIfBlock(false)
 	, bIfConditionFailed(false)
 	, bIfNot(false)
 	, bIsDefaultScript(false)
 	, wLastSpeechLineNumber(0)
-
+	, customSpeechColor(0)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
 {
 	this->goal.wX = UINT(-1); //invalid
@@ -899,7 +899,7 @@ bool CCharacter::OnStabbed(CCueEvents &CueEvents, const UINT /*wX*/, const UINT 
 		&& weaponType != WT_Firetrap
 		&& weaponType != WT_FloorSpikes
 		&& weaponType != WT_HotTile;
-	if (this->eImperative == ScriptFlag::Invulnerable || 
+	if (this->eImperative == ScriptFlag::Invulnerable ||
 			bIsPushableSafe ||
 			this->IsImmuneToWeapon(weaponType))
 		return false;
@@ -2105,19 +2105,19 @@ void CCharacter::Process(
 					if (wO != this->wO){
 						STOP_COMMAND;
 					}
-					else 
+					else
 					{
 						bProcessNextCommand = true;
 					}
 				}
-				else 
+				else
 				{
 					const UINT wOldO = this->wO;
 					if (pw == 1)
 					{
 						this->MakeSlowTurn(wO);
 					}
-					else 
+					else
 					{
 						this->wO = wO;
 						SetWeaponSheathed();
@@ -2367,7 +2367,7 @@ void CCharacter::Process(
 								}
 								break;
 								default:
-									room.KillMonster(pMonster, CueEvents, false, this);						
+									room.KillMonster(pMonster, CueEvents, false, this);
 									pGame->CheckTallyKill(pMonster->wType);
 									if (bIsMother(pMonster->wType))
 										room.FixUnstableTar(CueEvents);
@@ -2387,7 +2387,7 @@ void CCharacter::Process(
 						if (pMonster)
 						{
 							pMonster = pMonster->GetOwningMonster();
-							room.KillMonster(pMonster, CueEvents, false, this);						
+							room.KillMonster(pMonster, CueEvents, false, this);
 							pGame->CheckTallyKill(pMonster->wType);
 							if (bIsMother(pMonster->wType))
 								room.FixUnstableTar(CueEvents);
@@ -3064,7 +3064,7 @@ void CCharacter::Process(
 				this->bIfNot = command.isIfNotCommand();
 				bProcessNextCommand = true;
 
-				// Are we supposed to parse this ElseIf as a condition 
+				// Are we supposed to parse this ElseIf as a condition
 				if (command.isElseIfCommand() && this->bParseIfElseAsCondition) {
 					if (bExecuteNoMoveCommands)
 					{
@@ -3639,7 +3639,7 @@ void CCharacter::Process(
 				UINT wX = this->wX;
 				UINT wY = this->wY;
 				getCommandX(command, px);
-				
+
 				switch (px){
 					case(ScriptFlag::RegularMonster):
 						this->GetTarget(wX, wY, true);
@@ -3660,7 +3660,7 @@ void CCharacter::Process(
 						doBrainMove &= !room.IsMonsterOfTypeAt(M_DECOY, wX, wY, true);
 
 						//The monster must be able to 'see' the player
-						doBrainMove &= (swordsman.IsVisible() || CanSmellObjectAt(swordsman.wX, swordsman.wY) || 
+						doBrainMove &= (swordsman.IsVisible() || CanSmellObjectAt(swordsman.wX, swordsman.wY) ||
 							pGame->bBrainSensesSwordsman);
 
 						//If nothing is stopping a brained move, get the directions
@@ -3729,7 +3729,7 @@ void CCharacter::Process(
 					}
 					break;
 				}
-				
+
 				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_X, wX);
 				pGame->ProcessCommandSetVar(ScriptVars::P_RETURN_Y, wY);
 				bProcessNextCommand = true;
@@ -3739,7 +3739,7 @@ void CCharacter::Process(
 			{
 				UINT wOrientation = NO_ORIENTATION;
 				getCommandXY(command, px, py);
-				
+
 
 				if (pGame->swordsman.IsAt(px, py)){
 					wOrientation = pGame->swordsman.wO;
@@ -4206,7 +4206,7 @@ void CCharacter::BuildMarker(const CCharacterCommand& command)
 {
 	UINT px, py, pw, ph, pflags;  //command parameters
 	getCommandParams(command, px, py, pw, ph, pflags);
-	
+
 	if (!BuildUtil::bIsValidBuildTile(pflags))
 		return;
 
@@ -4378,7 +4378,7 @@ bool CCharacter::CanDropTrapdoor(const UINT oTile) const
 
 	if (HasBehavior(ScriptFlag::DropTrapdoors))
 		return true;
-	
+
 	if (HasBehavior(ScriptFlag::DropTrapdoorsArmed)) {
 		if (bIsThinIce(oTile))
 			return true;
@@ -5290,10 +5290,10 @@ bool CCharacter::DidPlayerInput(
 		return false;  //nLastCommand is a false "wait"
 	if (px == CMD_EXEC_COMMAND) {
 		return CueEvents.HasOccurred(CID_CommandKeyPressed); //only way to detect
-	} 
+	}
 	if (px == CMD_EXEC_COMMAND_TWO) {
 		return CueEvents.HasOccurred(CID_CommandKeyTwoPressed);
-	} 
+	}
 	if (px == CMD_EXEC_COMMAND_THREE) {
 		return CueEvents.HasOccurred(CID_CommandKeyThreePressed);
 	}
@@ -6694,7 +6694,7 @@ const
 		{
 			//If standing on a platform, check whether it can move.
 			case T_PIT: case T_PIT_IMAGE:
-				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P 
+				if (room.GetOSquare(this->wX, this->wY) == T_PLATFORM_P
 						&& HasBehavior(ScriptFlag::MovePlatforms))
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
@@ -6708,7 +6708,7 @@ const
 						&& HasBehavior(ScriptFlag::MovePlatforms))
 				{
 					const int nFirstO = nGetO((int)wCol - (int)this->wX, (int)wRow - (int)this->wY);
-					// @FIXME - nDist is a temporary fix to prevent hard crashes 
+					// @FIXME - nDist is a temporary fix to prevent hard crashes
 					if (nDist(wCol, wRow, this->wX, this->wY) == 1 && room.CanMovePlatform(this->wX, this->wY, nFirstO))
 						break;
 				}
@@ -6926,7 +6926,7 @@ void CCharacter::GenerateEntity(const UINT identity, const UINT wX, const UINT w
 				pEvilEye->SetActive(true);
 				break;
 		}
-	
+
 }
 
 
@@ -6987,7 +6987,7 @@ const
 
 		case MovementType::WATER:
 			return bIsObstacle && !bIsWater(wTileNo);
-			
+
 		default:	return CMonster::IsTileObstacle(wTileNo);
 	}
 }
@@ -7645,7 +7645,7 @@ void CCharacter::SetMembersFromExtraVars()
 //Reads vars from ExtraVars to reconstruct the character's ID and command sequence.
 {
 	SetBaseMembersFromExtraVars();
-	
+
 	LoadCommands(this->ExtraVars, this->commands);
 
 	this->dwScriptID = this->ExtraVars.GetVar(scriptIDstr, UINT(0));
@@ -8104,7 +8104,7 @@ void CCharacter::MoveCharacter(
 		SetOrientation(dx, dy);	//character faces the direction it actually moves
 		this->wPrevO = this->wO;
 	}
-	
+
 	if (CanDropTrapdoor(wOTile))
 		room.DestroyTrapdoor(this->wX - dx, this->wY - dy, CueEvents);
 

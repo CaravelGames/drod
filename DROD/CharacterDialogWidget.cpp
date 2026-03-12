@@ -432,8 +432,12 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	const UINT dwSetTagNo,                //(in)   Required params for CWidget
 	const int nSetX, const int nSetY)         //    constructor.
 	: CDialogWidget(dwSetTagNo, nSetX, nSetY, CX_DIALOG, CY_DIALOG)
-	, pGraphicListBox(NULL), pCommandsListBox(NULL)
+	, pGraphicListBox(NULL), pPlayerGraphicListBox(NULL)
+	, pAddCommandGraphicListBox(NULL), pEntityListBox(NULL)
+	, pIsVisibleButton(NULL)
+	, pCommandsListBox(NULL)
 	, pAddCommandDialog(NULL), pAddCharacterDialog(NULL)
+	, pCharOptionsDialog(NULL)
 	, pDefaultScriptCommandsListBox(NULL)
 	, pScriptDialog(NULL)
 	, pDirectionListBox2(NULL), pDirectionListBox3(NULL)
@@ -445,25 +449,24 @@ CCharacterDialogWidget::CCharacterDialogWidget(
 	, pStealthListBox(NULL), pWaterTraversalListBox(NULL), pGlobalScriptListBox(NULL)
 	, pOnOffListBox(NULL), pOnOffListBox2(NULL), pOpenCloseListBox(NULL)
 	, pGotoLabelListBox(NULL), pMusicListBox(NULL)
-	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL), pVarCompListBox2(NULL)
-	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL)
+	, pVarListBox(NULL), pVarOpListBox(NULL), pVarCompListBox(NULL)
 	, pWaitFlagsListBox(NULL), pImperativeListBox(NULL), pBuildItemsListBox(NULL)
-	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL), pItemGroupListBox(NULL)
-	, pPlayerStateListBox(NULL)
-	, pCharNameText(NULL), pCharListBox(NULL)
+	, pBuildMarkerListBox(NULL), pWaitForItemsListBox(NULL), pNaturalTargetTypesListBox(NULL)
+	, pBehaviorListBox(NULL), pRemainsListBox(NULL), pVarCompListBox2(NULL)
+	, pArrayVarListBox(NULL), pArrayVarOpListBox(NULL), pItemGroupListBox(NULL)
+	, pPlayerStateListBox(NULL), pPlayerStateListBox2(NULL)
+	, pCharNameText(NULL)
+	, pCharListBox(NULL)
 	, pDisplayFilterListBox(NULL)
 	, pWorldMapIconFlagListBox(NULL)
 	, pWorldMapImageFlagListBox(NULL)
-	, pWeaponListBox(NULL)
-	, pWeaponListBox2(NULL)
-	, pWeaponFlagsListBox(NULL)
+	, pWeaponListBox(NULL), pWeaponListBox2(NULL), pWeaponFlagsListBox(NULL)
 	, pAttackTileListBox(NULL)
 	, pMovementTypeListBox(NULL)
 	, pIgnoreFlagsListBox(NULL)
 	, pColorListBox(NULL)
 	, pOrbAgentListBox(NULL)
-	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL), pPlayerStateListBox2(NULL)
-
+	, pPlayerBehaviorListBox(NULL), pPlayerBehaviorStateListBox(NULL)
 	, pCharacter(NULL)
 	, pCommand(NULL)
 	, pSound(NULL)
@@ -966,7 +969,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const UINT CX_TITLE = 350;
 	static const UINT CX_ACTIONLISTBOX = 265;
 #else
-	
+
 	static const UINT CX_COMMAND_DIALOG = 775;
 	static const UINT CX_TITLE = 250;
 	static const UINT CX_ACTIONLISTBOX = 245;
@@ -1960,7 +1963,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	pVarOperand->SetText(wszZero);
 	pVarOperand->AddHotkey(SDLK_RETURN, TAG_OK);
 	this->pAddCommandDialog->AddWidget(pVarOperand);
-	
+
 	this->pPlayerGraphicListBox = new CListBoxWidget(TAG_GRAPHICLISTBOX2,
 			X_GRAPHICLISTBOX2, Y_GRAPHICLISTBOX2, CX_GRAPHICLISTBOX2, CY_GRAPHICLISTBOX2, true);
 	this->pPlayerGraphicListBox->SetHotkeyItemSelection(true);
@@ -2178,7 +2181,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 
 	//Add to main dialog.
 	AddWidget(this->pAddCommandDialog);
-	
+
 	this->pAddCommandDialog->Center();
 	this->pAddCommandDialog->Hide();
 }
@@ -2407,7 +2410,7 @@ void CCharacterDialogWidget::OnClick(
 				this->pCharacter->wProcessSequence = this->pCharOptionsDialog->GetProcessSequence();
 				this->pCharacter->SetCustomSpeechColor(this->pCharOptionsDialog->GetSpeechColor());
 			}
-			
+
 			Paint();
 		}
 		break;
@@ -2987,10 +2990,10 @@ void CCharacterDialogWidget::AddSound()
 
 	delete this->pSound;
 	this->pSound = NULL;
-	if (bDeletingSound) { 
-		SetActionWidgetStates(); 
-		Paint(); 
-		return; 
+	if (bDeletingSound) {
+		SetActionWidgetStates();
+		Paint();
+		return;
 	}
 
 	const UINT dwSoundId = pEditRoomScreen->SelectMediaID(0, CSelectMediaDialogWidget::Sounds);
@@ -3395,7 +3398,7 @@ void CCharacterDialogWidget::EditDefaultScriptForCustomNPC()
 					pChar->ExtraVars.SetVar(ParamProcessSequenceStr, this->pCharOptionsDialog->GetProcessSequence());
 					pChar->ExtraVars.SetVar(ParamSpeechColorStr, this->pCharOptionsDialog->GetSpeechColor());
 				}
-				
+
 				Paint();
 			}
 			break;
@@ -5221,13 +5224,13 @@ void CCharacterDialogWidget::PopulateEventListBox()
 	this->pEventListBox->AddItem(CID_MonsterTunnel, g_pTheDB->GetMessageText(MID_MonsterTunnel));
 	this->pEventListBox->AddItem(CID_WispOnPlayer, g_pTheDB->GetMessageText(MID_WispOnPlayer));
 	this->pEventListBox->AddItem(CID_WubbaStabbed, g_pTheDB->GetMessageText(MID_WubbaStabbed));
-	
+
 	this->pEventListBox->SelectLine(0);
 	this->pEventListBox->SetAllowFiltering(true);
 }
 
 //*****************************************************************************
-void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox, 
+void CCharacterDialogWidget::PopulateItemListBox(CListBoxWidget *pListBox,
 	const bool bIsBuild, const bool bIsBuildMarker, const bool bIsWaitForItem)
 //Add all common items for build and wait for item lists
 {
@@ -5521,7 +5524,7 @@ void CCharacterDialogWidget::PopulateCommandDescriptions(
 				GetCommandDesc(commands, pCommand).c_str());
 		SetCommandColor(pCommandList, insertedIndex, pCommand->command);
 	}
-	
+
 	PrettyPrintCommands(pCommandList, commands);
 
 	if (commands.size())
@@ -5942,7 +5945,7 @@ void CCharacterDialogWidget::SetCommandColor(
 		case CCharacterCommand::CC_ClearArrayVar:
 			pListBox->SetItemColorAtLine(line, FullRed);
 		break;
-		case CCharacterCommand::CC_Wait: 
+		case CCharacterCommand::CC_Wait:
 			pListBox->SetItemColorAtLine(line, DarkGray);
 		break;
 		case CCharacterCommand::CC_LogicalWaitAnd:
@@ -6709,7 +6712,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 				QueryXY();
 		}
 		break;
-		
+
 		case CCharacterCommand::CC_MoveRel:
 		{
 			CTextBoxWidget *pRel = DYN_CAST(CTextBoxWidget*, CWidget*,
@@ -6963,7 +6966,7 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			this->pCommand->x = this->pDirectionListBox->GetSelectedItem();
 			AddCommand();
 		break;
-		
+
 		case CCharacterCommand::CC_FaceTowards:
 		{
 			this->pCommand->w = this->pOnOffListBox->GetSelectedItem();
@@ -7602,7 +7605,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 			this->pOnOffListBox2->SelectItem(this->pCommand->h);
 		}
 		break;
-		
+
 		case CCharacterCommand::CC_MoveTo:
 			this->pOnOffListBox->SelectItem(this->pCommand->w);
 			this->pOnOffListBox2->SelectItem(this->pCommand->h);
@@ -8171,7 +8174,7 @@ void CCharacterDialogWidget::SetBitFlags()
 	for (UINT wBits = 0; wBits<32; ++wBits, wBitfield *= 2)
 	{
 		if ((this->pCommand->flags & wBitfield) == wBitfield) {
-			switch (c) 
+			switch (c)
 			{
 				case CCharacterCommand::CC_WaitForRect:
 				case CCharacterCommand::CC_WaitForNotRect:
@@ -8181,7 +8184,7 @@ void CCharacterDialogWidget::SetBitFlags()
 					this->pWaitFlagsListBox->SelectItem(wBitfield, true);
 				}
 				break;
-				case CCharacterCommand::CC_WaitForWeapon: 
+				case CCharacterCommand::CC_WaitForWeapon:
 				{
 					this->pWeaponFlagsListBox->SelectItem(wBitfield, true);
 				}
@@ -8191,7 +8194,7 @@ void CCharacterDialogWidget::SetBitFlags()
 					this->pIgnoreFlagsListBox->SelectItem(wBitfield, true);
 				}
 				break;
-				default: 
+				default:
 				{
 					ASSERT(!"Bad CCharacter command"); break;
 				}
@@ -8515,7 +8518,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseOptionalNumber(pCommand->w); skipComma;
 		parseOptionalNumber(pCommand->h);
 	break;
-	
+
 	case CCharacterCommand::CC_FaceTowards:
 		UINT flag;
 		do {
@@ -9470,7 +9473,7 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.w);
 		concatNum(c.h);
 	break;
-	
+
 	case CCharacterCommand::CC_FaceTowards:
 	{
 		UINT wBitfield = 1;
@@ -9754,7 +9757,7 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_DisplayFilter:
 		wstr += this->pDisplayFilterListBox->GetTextForKey(c.x);
 	break;
-	
+
 	case CCharacterCommand::CC_SetPlayerAppearance:
 	{
 		const WSTRING charName = this->pPlayerGraphicListBox->GetTextForKey(c.x);

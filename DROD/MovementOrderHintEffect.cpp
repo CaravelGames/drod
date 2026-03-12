@@ -38,8 +38,8 @@ static map<int, SDL_Surface*> s_surfaceCache;
 CMovementOrderHintEffect::CMovementOrderHintEffect(
 	CWidget* pSetWidget, const CMonster* pMonster, int moveOrder)
 	: CEffect(pSetWidget, (UINT)-1, EMOVEORDERHINT)
-	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
 	, wMoveOrder(moveOrder)
+	, pMonster(const_cast<CMonster*>(pMonster))  //Though non-const, everything in this effect should leave monster state as-is
 	, pTextSurface(NULL)
 {
 	ASSERT(pSetWidget);
@@ -144,7 +144,7 @@ SDL_Surface* CMovementOrderHintEffect::GetSurfaceForOrder(int order)
 		return finder->second;
 	}
 
-	WSTRING wstr; 
+	WSTRING wstr;
 	if (order == 1000) {
 		wstr = WS(">999");
 	} else {
