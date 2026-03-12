@@ -32,6 +32,7 @@ public:
 	Color operator * (Color const &c) const;
 	Color operator / (const float val) const;
 
+	Color& operator= (const Color& color);
 	void operator += (const float val);
 	void operator += (Color &c);
 	void operator *= (const float val);
