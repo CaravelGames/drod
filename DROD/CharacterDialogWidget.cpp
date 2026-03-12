@@ -3704,7 +3704,8 @@ const
 				}
 			}
 		}
-		//no break
+
+		// fall through -- shared parts of description
 		case CCharacterCommand::CC_WaitForHalph:
 		case CCharacterCommand::CC_WaitForNotHalph:
 		case CCharacterCommand::CC_WaitForMonster:
@@ -4172,7 +4173,8 @@ const
 				wstr += _itoW((int)command.w, temp, 16);
 				wstr += wszSpace;
 			}
-		//no break
+
+		// fall through -- shared parts of description
 		case CCharacterCommand::CC_Question:
 		case CCharacterCommand::CC_RoomLocationText:
 		{
@@ -4326,7 +4328,8 @@ const
 			wstr += wszRightParen;
 			wstr += wszSpace;
 		}
-		// no break
+
+		// fall through -- shared parts of description
 		case CCharacterCommand::CC_VarSet:
 		{
 			UINT varId = command.getVarID();
@@ -4336,7 +4339,8 @@ const
 			wstr += wszSpace;
 			switch (operation)
 			{
-				case ScriptVars::AppendText: wstr += wszPlus; //no break
+				case ScriptVars::AppendText: wstr += wszPlus;
+				// fall through -- shared parts of description
 				case ScriptVars::Assign:
 				case ScriptVars::AssignText: wstr += wszEqual; break;
 				case ScriptVars::Inc: wstr += wszPlus; break;
@@ -4400,7 +4404,8 @@ const
 			wstr += wszRightParen;
 			wstr += wszSpace;
 		}
-		//no break
+
+		// fall through -- shared parts of description
 		case CCharacterCommand::CC_ArrayVarSet:
 		{
 			const WCHAR* wszVarName = this->pArrayVarListBox->GetTextForKey(command.w);
@@ -4486,8 +4491,8 @@ const
 			wstr += _itoW(command.y, temp, 10);
 			wstr += wszRightParen;
 			wstr += wszSpace;
-			//NO BREAK
 
+		// fall through -- shared parts of description
 		case CCharacterCommand::CC_AmbientSound:
 			if (command.h && command.w)
 			{
@@ -4696,7 +4701,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 					bUndoOneDepth = true;
 				else
 					wstr += wszExclamation;	//superfluous IfEnd
-			//no break
+
+			// fall through -- shared parts of description
 			case CCharacterCommand::CC_IfEnd:
 			case CCharacterCommand::CC_Disappear:
 			case CCharacterCommand::CC_MoveTo:
@@ -4758,7 +4764,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_VarSet:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
-			//no break
+
+			// fall through -- shared parts of description
 			case CCharacterCommand::CC_VarSetAt:
 			case CCharacterCommand::CC_WaitForVar:
 			{
@@ -4789,7 +4796,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_ArrayVarSet:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
-				//no break
+
+			// fall through -- shared parts of description
 			case CCharacterCommand::CC_ArrayVarSetAt:
 			{
 				vector<WSTRING> expressions = WCSExplode(pCommand->label, *wszSemicolon);
@@ -4822,7 +4830,8 @@ void CCharacterDialogWidget::PrettyPrintCommands(CListBoxWidget* pCommandList, c
 			case CCharacterCommand::CC_CountArrayEntries:
 				if (bLastWasIfCondition || wLogicNestDepth)
 					wstr += wszQuestionMark;	//questionable If condition
-			//no break
+
+			// fall through -- shared parts of description
 			case CCharacterCommand::CC_WaitForArrayEntry:
 			{
 				if (!pCommand->label.empty()) //an expression is used as an operand
@@ -6732,7 +6741,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 
 		case CCharacterCommand::CC_WaitForDoorTo:
 			this->pCommand->w = this->pOpenCloseListBox->GetSelectedItem();
-			//NO BREAK
+
+		// fall through -- shared logic
 		case CCharacterCommand::CC_AppearAt:
 		case CCharacterCommand::CC_ActivateItemAt:
 		case CCharacterCommand::CC_TeleportTo:
@@ -7108,7 +7118,8 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 			const WCHAR *pColorText = pLabelText->GetText();
 			TranslateColorText(WSTRING(pColorText), this->pCommand);
 		}
-		//no break
+
+		// fall through -- shared logic
 		case CCharacterCommand::CC_Question:
 		case CCharacterCommand::CC_RoomLocationText:
 			{
@@ -7826,7 +7837,8 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 				pLabelText->SetText(colorText.c_str());
 			}
 		}
-		//no break
+
+		// fall through -- shared logic
 		case CCharacterCommand::CC_Question:
 		case CCharacterCommand::CC_RoomLocationText:
 		{
@@ -8504,7 +8516,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			skipWhitespace;
 		} while (bFound);
 	}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_MoveRel:
 		if (!pCommand->flags) //MoveTo
 		{
@@ -8539,7 +8552,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		skipLeftParen;
 		parseOptionalNumber(pCommand->w);
 	break;
-	//no break
+
 	case CCharacterCommand::CC_WaitForRect:
 	case CCharacterCommand::CC_WaitForNotRect:
 	{
@@ -8551,7 +8564,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			skipWhitespace;
 		} while (bFound);
 	}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_WaitForNoBuilding:
 	case CCharacterCommand::CC_DestroyTrapdoor:
 	case CCharacterCommand::CC_WaitForBuilding:
@@ -8647,7 +8661,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->y);
 		skipRightParen;
 		skipComma;
-		//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_AmbientSound:
 		skipLeftParen;
 		parseNumber(pCommand->w); skipComma;
@@ -8800,7 +8815,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 			skipRightParen;
 			skipComma;
 		}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_Question:
 	case CCharacterCommand::CC_RoomLocationText:
 	{
@@ -8970,7 +8986,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y); skipComma;
 	}
-	// no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_VarSet:
 	{
 		//Var name is all text between outermost quotes.
@@ -9125,7 +9142,8 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 		parseNumber(pCommand->x); skipComma;
 		parseNumber(pCommand->y); skipComma;
 	}
-	// no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_ArrayVarSet:
 	{
 		parseNumber(pCommand->flags);
@@ -9463,7 +9481,8 @@ WSTRING CCharacterDialogWidget::toText(
 			}
 		}
 	}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_MoveRel:
 		if (!c.flags) //MoveTo
 		{
@@ -9508,7 +9527,8 @@ WSTRING CCharacterDialogWidget::toText(
 			}
 		}
 	}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_WaitForNoBuilding:
 	case CCharacterCommand::CC_DestroyTrapdoor:
 	case CCharacterCommand::CC_WaitForBuilding:
@@ -9590,7 +9610,8 @@ WSTRING CCharacterDialogWidget::toText(
 	case CCharacterCommand::CC_AmbientSoundAt:
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
-		//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_AmbientSound:
 		concatNumWithComma(c.w);
 		concatNum(c.h);
@@ -9685,7 +9706,8 @@ WSTRING CCharacterDialogWidget::toText(
 			wstr += wszRightParen;
 			wstr += wszComma;
 		}
-	//no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_Question:
 	case CCharacterCommand::CC_RoomLocationText:
 	{
@@ -9895,7 +9917,8 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 	}
-	// no break
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_VarSet:
 	{
 		UINT varId = c.getVarID();
@@ -9969,6 +9992,8 @@ WSTRING CCharacterDialogWidget::toText(
 		concatNumWithComma(c.x);
 		concatNumWithComma(c.y);
 	}
+
+	// fall through -- shared logic
 	case CCharacterCommand::CC_ArrayVarSet:
 	{
 		concatNumWithComma(c.flags);

@@ -4646,7 +4646,7 @@ void CDbRoom::BurnFuses(
 			case T_POWDER_KEG:
 				powder_kegs.Push(wX,wY);
 				Plot(wX,wY,T_EMPTY);
-				//No break -- fallthrough to Fuse burning
+			// fall through -- to Fuse burning
 			case T_FUSE:
 			{
 				//Start adjacent fuse pieces burning.
@@ -5325,7 +5325,7 @@ void CDbRoom::ChangeTiles(const RoomTokenType tType)
 				for (wX=this->wRoomCols; wX--; )
 					if (bIsTar(GetTSquare(wX,wY)))
 						this->PlotsMade.insert(wX,wY);
-			//NO BREAK
+		// fall through -- state of the translucent tar token needs to be updated
 		case WeaponDisarm:
 		case PowerTarget:
 		case ConquerToken:
@@ -7567,7 +7567,7 @@ const
 				bSemiObstacle = true;
 				break;
 			}
-		//no break
+		// fall through -- rest of the logic is there
 		case GROUND_AND_SHALLOW_WATER:
 		case GROUND_AND_SHALLOW_WATER_FORCE:
 			if (!(bIsFloor(wOSquare) || bIsOpenDoor(wOSquare) || bIsPlatform(wOSquare) ||

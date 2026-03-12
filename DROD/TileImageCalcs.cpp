@@ -1944,14 +1944,16 @@ UINT GetTileImageForEntity(
 				if (tile)
 					return tile;
 			}
-			//no break
+
+			// fall through -- shared logic
 			case SWORDLESS_FRAME:
 			{
 				const UINT tile = GetSwordlessEntityTile(wType, wO);
 				if (tile)
 					return tile;
 			}
-			//no break
+
+			// fall through -- shared logic
 			default:
 				if ((wAnimFrame % ANIMATION_FRAMES) == 0)
 					return MonsterTileImageArray[wType][wO];

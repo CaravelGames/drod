@@ -57,7 +57,7 @@ CEntranceSelectDialogWidget::CEntranceSelectDialogWidget(
 //Constructor.
 //
 //Params:
-	const UINT dwSetTagNo,                //(in)   Required params for CWidget 
+	const UINT dwSetTagNo,                //(in)   Required params for CWidget
 	const int nSetX, const int nSetY)         //    constructor.
 	: CDialogWidget(dwSetTagNo, nSetX, nSetY, CX_DIALOG, CY_DIALOG, true)   //double-click on list box disables
 	, pListBoxWidget(NULL)
@@ -300,7 +300,8 @@ void CEntranceSelectDialogWidget::PopulateList(const DATATYPE datatype) //[defau
 			for (UINT wIndex=0; wIndex<entrances.size(); ++wIndex)
 				AddEntranceToList(entrances[wIndex]);
 		}
-		//no break -- include world maps as selectable level entrances too
+
+		// fall through -- include world maps as selectable level entrances too
 		case WorldMaps:
 		{
 			//Get maps.  Sort by order index in hold.

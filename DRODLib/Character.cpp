@@ -2759,7 +2759,8 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::DieSpecial:
 						bChangeImperative = !HasSpecialDeath();
-						//no break
+
+					// fall through
 					case ScriptFlag::Die:
 						if (bExecuteNoMoveCommands && bChangeImperative)
 							return; //wait until first move to die
@@ -5216,7 +5217,8 @@ bool CCharacter::IsOpenTileAt(
 		case M_FLUFFBABY:
 			if ((pflags & ScriptFlag::PUFFBABY) != 0)
 				break;
-			// Fall through to default case if puff isn't excluded
+
+		// fall through -- default case if puff isn't excluded
 		default:
 			return ((pflags & ScriptFlag::MONSTER) != 0);
 			break;
@@ -6170,6 +6172,7 @@ bool CCharacter::EvaluateLogicalOr(
 					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
 						return true;
 				}
+				break;
 				case CCharacterCommand::CC_LogicalWaitNOR:
 				{
 					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
@@ -8309,7 +8312,8 @@ void CCharacter::TurnIntoMonster(
 				CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
 				pEye->SetActive();
 			}
-		//NO BREAK
+
+		// fall through
 		default: pMonster->wO = this->wO; break;
 	}
 
