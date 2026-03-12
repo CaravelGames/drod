@@ -6659,7 +6659,7 @@ void CRoomWidget::AddMovementOrderHints()
 			if (pCharacter && pCharacter->IsInvisibleCountMoveOrder())
 				++index; //count but don't show to avoid potential overlaps
 
-				continue;
+			continue;
 		}
 
 		AddLastLayerEffect(new CMovementOrderHintEffect(this, pMonster, index));
