@@ -6111,6 +6111,9 @@ bool CCharacter::EvaluateLogicalAnd(
 						return false;
 				}
 				break;
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					return false;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
@@ -6179,6 +6182,9 @@ bool CCharacter::EvaluateLogicalOr(
 						return true;
 				}
 				break;
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					return false;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
@@ -6246,6 +6252,9 @@ bool CCharacter::EvaluateLogicalXOR(
 					bLocalFound =
 						!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
 				}
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					break;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
@@ -7920,6 +7929,7 @@ int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
 			case CCharacterCommand::CC_IfEnd:
 				wNestingDepth++; // entering a nested if-block
 			break;
+			default: break; // Silently ignore
 		}
 	}
 
@@ -7953,6 +7963,7 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 				if (wNestingDepth > 0)
 					wNestingDepth--; // exiting a nested if-block
 			break;
+			default: break; // Silently ignore
 		}
 
 		++wCommandIndex;
@@ -7985,6 +7996,7 @@ int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
 					wNestingDepth--; // exiting a nested logic block
 				}
 			break;
+			default: break; // Silently ignore
 		}
 
 		++wCommandIndex;
