@@ -5522,7 +5522,7 @@ const
 		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
 			pMonster->wX, pMonster->wY, wO,
 			M_OFFSET + id,
-			pMonster->HasSword() ? pMonster->GetWeaponType() : (UINT)WT_Off
+			(UINT)(pMonster->HasSword() ? pMonster->GetWeaponType() : WT_Off)
 		), true);
 		return true;
 	}
