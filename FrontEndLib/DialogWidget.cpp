@@ -55,7 +55,7 @@ CDialogWidget::CDialogWidget(
 //Constructor.
 //
 //Params:
-	const UINT dwSetTagNo,                //(in)   Required params for CWidget 
+	const UINT dwSetTagNo,                //(in)   Required params for CWidget
 	const int nSetX, const int nSetY,      //    constructor.
 	const UINT wSetW, const UINT wSetH,    //
 	const bool bListBoxDoubleClickReturns) //[default = false]
@@ -92,8 +92,8 @@ void CDialogWidget::Center()
 
 //******************************************************************************
 UINT CDialogWidget::Display(const bool bSelectFirstWidget) //[default=true]
-//All-in-one method to show a dialog, paint it, activate it, and hide the 
-//dialog again.  Caller should probably repaint parent widget of dialog to 
+//All-in-one method to show a dialog, paint it, activate it, and hide the
+//dialog again.  Caller should probably repaint parent widget of dialog to
 //erase the dialog.
 //
 //Returns:
@@ -340,7 +340,7 @@ bool CDialogWidget::OnQuit()
 {
 	if (this->pParent && this->pParent->GetType() == WT_Screen)
 	{
-		CScreen *const pScreen = static_cast<CScreen *const>(this->pParent);
+		CScreen *const pScreen = static_cast<CScreen*>(this->pParent);
 		if (!pScreen->OnQuit())
 		{
 			if (!pScreen->IsDeactivating())
@@ -390,7 +390,7 @@ void CDialogWidget::OnKeyDown(
 
 			if (this->pParent && this->pParent->GetType() == WT_Screen)
 			{
-				CScreen *const pScreen = static_cast<CScreen *const>(this->pParent);
+				CScreen *const pScreen = static_cast<CScreen*>(this->pParent);
 				pScreen->ToggleScreenSize();
 				RequestPaint();
 			}
@@ -484,14 +484,14 @@ bool CDialogWidget::ProcessScreenCommandInput(const SDL_KeyboardEvent& Key)
 		InputKey inputKey = BuildInputKey(Key);
 		if (inputKey == CScreen::inputKeyFullScreen)
 		{
-			CScreen* const pScreen = static_cast<CScreen* const>(this->pParent);
+			CScreen* const pScreen = static_cast<CScreen*>(this->pParent);
 			pScreen->ToggleScreenSize();
 			RequestPaint();
 			return true;
 		}
 		else if (inputKey == CScreen::inputKeyScreenshot)
 		{
-			CScreen* const pScreen = static_cast<CScreen* const>(this->pParent);
+			CScreen* const pScreen = static_cast<CScreen*>(this->pParent);
 			pScreen->SaveSurface();
 			return true;
 		}

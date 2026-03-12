@@ -579,7 +579,7 @@ void CDbXML::StartElement(
 				delete pDbBase;
 				return;
 			}
-			status = pDbBase->SetProperty(pType, (char* const)atts[i + 1], info, bSaveRecord);
+			status = pDbBase->SetProperty(pType, (char*)atts[i + 1], info, bSaveRecord);
 			if (!ContinueImport(status))
 			{
 				delete pDbBase;
@@ -607,7 +607,7 @@ void CDbXML::StartElement(
 		//Set members.
 		for (i = 0; atts[i]; i += 2) {
 			const PROPTYPE pType = ParsePropType(atts[i]);
-			status = pBase->SetProperty(vpType, pType, (char* const)atts[i + 1], info);
+			status = pBase->SetProperty(vpType, pType, (char*)atts[i + 1], info);
 			if (!ContinueImport(status))
 				return;
 		}

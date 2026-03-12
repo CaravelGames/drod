@@ -4566,7 +4566,7 @@ void CEditRoomScreen::PasteRegion(
 						case T_STATION:
 						{
 							const UINT wOldParam = pSrcRoom->GetTParam(xSrc, ySrc);
-							room.SetTParam(xDest, yDest, static_cast<const BYTE>(wOldParam));
+							room.SetTParam(xDest, yDest, static_cast<BYTE>(wOldParam));
 						}
 						break;
 

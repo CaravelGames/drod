@@ -187,7 +187,7 @@ Face* CFaceWidget::GetFace(const FaceWidgetLayer layer) {
 	}
 }
 
-const FaceWidgetLayer CFaceWidget::GetActiveLayer() const{
+FaceWidgetLayer CFaceWidget::GetActiveLayer() const{
 	if (faceSpeaker.bIsActive)
 		return faceSpeaker.eLayer;
 
