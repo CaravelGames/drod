@@ -6252,6 +6252,7 @@ bool CCharacter::EvaluateLogicalXOR(
 					bLocalFound =
 						!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
 				}
+				break;
 				default:
 					ASSERT(!"Impossible logical wait command value");
 					break;
