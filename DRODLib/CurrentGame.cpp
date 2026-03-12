@@ -551,6 +551,9 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 				case ScriptVars::P_OrientY: return nGetOY(o);
 				case ScriptVars::P_RotateCW: return nNextCO(o);
 				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+				default:
+					ASSERT(!"Impossible primitive value");
+					return o;
 			}
 			break;
 		}
@@ -721,6 +724,8 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 
 			return cleanRooms.size();
 		}
+		case ScriptVars::NoPrimitive: return 0;
+		case ScriptVars::PrimitiveCount: return 0;
 	}
 
 	return 0;

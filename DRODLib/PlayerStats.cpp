@@ -18,7 +18,7 @@ const UINT ScriptVars::predefinedVarMIDs[PredefinedVarCount] = {
 	MID_VarRoomImageX, MID_VarRoomImageY, MID_VarOverheadImageX, MID_VarOverheadImageY,
 	MID_VarLevelName, MID_VarThreatClock, MID_VarPlayerLight, MID_VarPlayerLightType,
 	MID_VarReturnX, MID_VarReturnY,
-	MID_VarMonsterName, 
+	MID_VarMonsterName,
 	MID_VarRoomX, MID_VarRoomY,
 	MID_RoomWeather, MID_RoomDarkness, MID_RoomFog, MID_RoomSnow, MID_RoomRain,
 	MID_SpawnCycle, MID_SpawnCycleFast,
@@ -131,6 +131,9 @@ UINT ScriptVars::getPrimitiveRequiredParameters(PrimitiveType eType)
 			return 4;
 		case P_BrainDist:
 			return 5;
+		case NoPrimitive:
+		case PrimitiveCount:
+			return 0;
 	}
 	return 0;
 }

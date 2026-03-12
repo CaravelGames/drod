@@ -560,6 +560,8 @@ void CImageOverlayEffect::StartNextCommand()
 	case ImageOverlayCommand::CancelLayer:
 	case ImageOverlayCommand::Group:
 	case ImageOverlayCommand::Layer:
+	case ImageOverlayCommand::TimeLimit:
+	case ImageOverlayCommand::TurnLimit:
 		// Do nothing, these are handled externally
 		return;
 
@@ -647,8 +649,6 @@ void CImageOverlayEffect::StartNextCommand()
 	}
 	break;
 
-		break;
-
 	case ImageOverlayCommand::Loop:
 		this->maxLoops = val;
 		break;
@@ -734,6 +734,7 @@ void CImageOverlayEffect::StartNextCommand()
 		this->executionState.endTurn = gameTurn + max(0, val);
 	}
 	break;
+	case ImageOverlayCommand::Invalid: return; // Ignore, nothing to do
 	}
 }
 
