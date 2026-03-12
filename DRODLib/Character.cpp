@@ -1505,8 +1505,8 @@ bool CCharacter::IsCommandTypeIn(
 	const CCharacterCommand::CharCommand command
 ) const
 {
-	ASSERT(startIndex < commands.size());
-	ASSERT(endIndex < commands.size());
+	ASSERT(startIndex < (int)commands.size());
+	ASSERT(endIndex < (int)commands.size());
 
 	for (int i = startIndex; i <= endIndex; ++i) {
 		if (this->commands[i].command == command) {
@@ -6114,13 +6114,13 @@ bool CCharacter::EvaluateLogicalAnd(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			if (!EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
@@ -6182,13 +6182,13 @@ bool CCharacter::EvaluateLogicalOr(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			if (EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
@@ -6249,13 +6249,13 @@ bool CCharacter::EvaluateLogicalXOR(
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			bLocalFound =
@@ -7867,7 +7867,7 @@ int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-				label == command.x)
+				label == (int)command.x)
 				return wIndex;
 		}
 	} else if (label < 0) {

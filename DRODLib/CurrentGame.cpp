@@ -1279,17 +1279,17 @@ void CCurrentGame::ProcessCommandSetVar(
 		}
 		break;
 		case (UINT)ScriptVars::P_PLAYER_WEAPON:
-			if (bIsRealWeapon(newVal) || newVal == WT_On || newVal == WT_Off) {
+			if (bIsRealWeapon(newVal) || newVal == (UINT)WT_On || newVal == (UINT)WT_Off) {
 				this->swordsman.EquipWeapon(newVal);
 			}
 		break;
 		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
 			if (bIsRealWeapon(newVal)) {
 				this->swordsman.SetWeaponType(newVal, false);
-			} else if (newVal == WT_On) {
+			} else if (newVal == (UINT)WT_On) {
 				this->swordsman.bNoWeapon = false;
 				this->pRoom->ChangeTiles(WeaponDisarm);
-			} else if (newVal == WT_Off) {
+			} else if (newVal == (UINT)WT_Off) {
 				this->swordsman.bNoWeapon = true;
 				this->pRoom->ChangeTiles(WeaponDisarm);
 			}
@@ -2775,7 +2775,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 
 		//If the player rewinds to the exact turn a cutscene starts, update the tracked turn
 		//number so that undoing doesn't undo too far.
-		if (this->cutSceneStartTurn == returnedTo)
+		if (this->cutSceneStartTurn == (int)returnedTo)
 			this->cutSceneStartTurn = this->wTurnNo;
 
 		ASSERT(this->activatingTemporalSplit > 0);
