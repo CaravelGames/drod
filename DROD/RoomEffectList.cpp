@@ -146,24 +146,20 @@ void CRoomEffectList::RemoveEffectsOfType(
 	list<CEffect *>::const_iterator iSeek = this->Effects.begin();
 	while (iSeek != this->Effects.end())
 	{
+		CEffect *pEffect = *iSeek;
+		ASSERT(pEffect);
+		++iSeek;
 		if (eEffectType == (*iSeek)->GetEffectType())
 		{
 			//Remove from list.
-			CEffect *pDelete = *iSeek;
-			ASSERT(pDelete);
-			if (pDelete->RequestsRetainOnClear() && !bForceClearAll)
-			{
-				++iSeek;
+			if (pEffect->RequestsRetainOnClear() && !bForceClearAll) {
 				continue;
 			}
 
-			DirtyTilesForRects(pDelete->dirtyRects);  //touch up area before deleting
-			++iSeek;
-			this->Effects.remove(pDelete);
-			delete pDelete;
+			DirtyTilesForRects(pEffect->dirtyRects);  //touch up area before deleting
+			this->Effects.remove(pEffect);
+			delete pEffect;
 		}
-		else
-			++iSeek;
 	}
 }
 
