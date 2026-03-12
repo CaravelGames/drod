@@ -161,7 +161,7 @@ bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheat
 	//Only check for Oremites/Shallow Water sheathing before movement
 	if (!bIgnoreSheath && (this->bWeaponSheathed || this->bIsHiding))
 		return false;
-		
+
 	//Citizens are the only entities that can be stepped on
 	//  when they are invulnerable to weapons
 	switch(pMonster->wType)
@@ -174,11 +174,12 @@ bool CSwordsman::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheat
 				return pDouble->IsVulnerableToWeapon(WT_Dagger);
 			}
 		}
+		// fall through -- handle as a character if they are actually one
 		case M_CHARACTER: {
 			const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 			if (!pCharacter || !pCharacter->IsVisible()) {
 				return true; // You can always step on something that isn't there
-			} 
+			}
 			return !pCharacter->IsImmuneToWeapon(WT_Dagger);
 		}
 		default:

@@ -829,7 +829,8 @@ void CTitleScreen::OnKeyDown(
 			{
 				wSetPos = MNU_CONTINUE; break;
 			}
-			//else going to next case
+
+		// fall through -- shared logic
 		case SDLK_F10:
 			ToggleScreenSize();
 		return;
@@ -1053,7 +1054,7 @@ bool CTitleScreen::PollForHoldList()
 	{
 		pInternetIcon->SetImage(wszSignalGood);
 		this->pPlayMenu->Enable(MNU_CHAT, true);
-		
+
 		if (pPlayer)
 		{
 			//Prompt the user if the player has unsent scores for holds that might be on CaravelNet.
@@ -1235,8 +1236,8 @@ SCREENTYPE CTitleScreen::ProcessMenuSelection(
 
 			g_pTheDB->SetHoldID(dwTutorialHoldID);
 		}
-		//NO BREAK
 
+		// fall through -- tutorial is just a hidden hold so play it like a new, preselected hold
 		case MNU_NEWGAME:
 		{
 			const UINT dwCurrentHoldID = g_pTheDB->GetHoldID();
@@ -1801,7 +1802,7 @@ void CTitleScreen::AnimateWaves(SDL_Surface *pDestSurface, bool update)
 	UpdateRect(Dest);
 
 	//Draw right side of waves.
-	if (wIndex)  
+	if (wIndex)
 	{
 		Src.x = X_WAVES;
 		Src.w = wIndex;
@@ -1842,7 +1843,7 @@ void CTitleScreen::AnimateFlag(SDL_Surface *pDestSurface, bool update)
 	UpdateRect(Dest);
 
 	//Draw right side of flag.
-	if (wIndex)  
+	if (wIndex)
 	{
 		Src.x = X_FLAG;
 		Src.w = wIndex;
@@ -2047,7 +2048,7 @@ void CTitleScreen::DrawLightMask(SDL_Surface *pDestSurface, int nMouseX, int nMo
 	{
 		static const int nLightMaskW = this->images[LIGHT_MASK]->w;
 		static const int nLightMaskH = this->images[LIGHT_MASK]->h;
-		SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH); 
+		SDL_Rect src = MAKE_SDL_RECT(0, 0, nLightMaskW, nLightMaskH);
 		SDL_Rect dest = MAKE_SDL_RECT(nMouseX + nXOffset - nLightMaskW/2, nMouseY + nYOffset - nLightMaskH/2,
 				nLightMaskW, nLightMaskH);
 		g_pTheBM->AddMask(this->images[LIGHT_MASK], src, pDestSurface, dest, fFactor);

@@ -2448,6 +2448,7 @@ bool CMonster::CanDaggerStep(const CMonster* pMonster, const bool bIgnoreSheath)
 			return pDouble->IsVulnerableToWeapon(WT_Dagger);
 		}
 	}
+	// fall through -- handle as a character if they are actually one
 	case M_CHARACTER: {
 		const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
 		if (!pCharacter || !pCharacter->IsVisible()) {

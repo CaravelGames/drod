@@ -591,6 +591,7 @@ void CImageOverlayEffect::StartNextCommand()
 		this->sourceClipRect.y = max(0, this->sourceClipRect.y + command.val[1]);
 		this->sourceClipRect.w = min(max(0, this->sourceClipRect.w + command.val[2]), this->pImageSurface->w);
 		this->sourceClipRect.h = min(max(0, this->sourceClipRect.h + command.val[3]), this->pImageSurface->h);
+		break;
 
 	case ImageOverlayCommand::DisplaySize:
 		this->sourceClipRect.w = min(max(0, val), this->pImageSurface->w);

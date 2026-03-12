@@ -79,7 +79,7 @@ bool CMimic::DoesSquareContainObstacle(
 	const UINT wCol, const UINT wRow) //(in) Coords of square to evaluate.
 const
 {
-	//Routine is not written to check the square on which this monster is 
+	//Routine is not written to check the square on which this monster is
 	//standing.
 	ASSERT(wCol != this->wX || wRow != this->wY);
 
@@ -161,14 +161,20 @@ const
 				case M_CHARACTER:
 				{
 					const CCharacter *pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
-					if (pCharacter->IsInvulnerable() || (!bStepAttack && pCharacter->IsImmuneToWeapon(WT_Dagger)))
+					if (pCharacter->IsInvulnerable() || (!bStepAttack && pCharacter->IsImmuneToWeapon(WT_Dagger))) {
 						return true;
+					}
+					break;
 				}
 				case M_CLONE: case M_TEMPORALCLONE: {
 					const CPlayerDouble* pDouble = DYN_CAST(const CPlayerDouble*, const CMonster*, pMonster);
+					// @FIXME - In theory this can cause a visual bug where a daggered mimic can step onto a tile
+					// blocked by player's/enemy's weapon (which is handled after this switch case)
+					// but either way the clone would be killed by the dagger so mechanically it's the same.
 					if (pDouble) {
 						return !(bStepAttack || pDouble->IsVulnerableToWeapon(WT_Dagger));
 					}
+					break;
 				}
 				default: break;
 			}
@@ -191,7 +197,7 @@ const
 		if (!CanStepAttackPlayer(player, bStepAttack))
 			return true;
 	}
-	
+
 	//Check for player's sword at square.
 	if (this->pCurrentGame->IsPlayerWeaponAt(wCol, wRow, true))
 		return true;
@@ -392,7 +398,7 @@ void CMimic::ApplyMimicMove(int dx, int dy, int nCommand, const UINT wMovementO,
 		{
 			const UINT wDestX = this->wX + dx;
 			const UINT wDestY = this->wY + dy;
-			
+
 			if (room.IsValidColRow(wDestX, wDestY))
 			{
 				//Find out if we can affect the next square by figuring out exactly what stopped our movement

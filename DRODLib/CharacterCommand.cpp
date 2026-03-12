@@ -402,7 +402,8 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 				//four arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
-			//no break
+
+			// fall through -- parse arguments
 			case ImageOverlayCommand::Move:
 			case ImageOverlayCommand::ParallelMove:
 			case ImageOverlayCommand::MoveTo:
@@ -411,7 +412,8 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 				//three arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
-			//no break
+
+			// fall through -- parse arguments
 			case ImageOverlayCommand::DisplaySize:
 			case ImageOverlayCommand::FadeToAlpha:
 			case ImageOverlayCommand::Grow:
@@ -426,12 +428,14 @@ bool CImageOverlay::parse(const WSTRING& wtext, ImageOverlayCommands& commands)
 				//two arguments
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
-			//no break
+
+			// fall through -- parse arguments
 			default:
 				//one argument
 				if (!parseNumber(pText, textLength, pos, val[arg_index++]))
 					return false;
-			//no break
+
+			// fall through -- parse arguments
 			case ImageOverlayCommand::CancelAll:
 			case ImageOverlayCommand::Center:
 				//no arguments

@@ -87,25 +87,31 @@ bool WeaponCanAttackTowards(UINT wt, UINT wO, UINT wPrevO, int dx, int dy, UINT 
 RoomTokenType getTokenForWeaponType(WeaponType type)
 {
 	switch (type) {
-		default: ASSERT(!"Invalid weapon type"); //no break
 		case WT_Sword: return SwordToken;
 		case WT_Pickaxe: return PickaxeToken;
 		case WT_Spear: return SpearToken;
 		case WT_Staff: return StaffToken;
 		case WT_Dagger: return DaggerToken;
 		case WT_Caber: return CaberToken;
+		default:
+			ASSERT(!"Invalid weapon type");
+			// Return sane default to avoid crashing the game
+			return SwordToken;
 	}
 }
 
 WeaponType getWeaponForTokenType(RoomTokenType type)
 {
 	switch (type) {
-		default: ASSERT(!"Invalid weapon token type"); //no break
 		case SwordToken: return WT_Sword;
 		case PickaxeToken: return WT_Pickaxe;
 		case SpearToken: return WT_Spear;
 		case StaffToken: return WT_Staff;
 		case DaggerToken: return WT_Dagger;
 		case CaberToken: return WT_Caber;
+		default:
+			ASSERT(!"Invalid weapon token type");
+			// Return sane default to avoid crashing the game
+			return WT_Sword;
 	}
 }
