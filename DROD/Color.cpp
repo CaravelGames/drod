@@ -38,6 +38,15 @@ Color Color::operator / (const float val) const
 	return Color(A[0] * oneOverVal, A[1] * oneOverVal, A[2] * oneOverVal, A[3] * oneOverVal);
 }
 
+Color& Color::operator=(const Color& color) {
+    if (this != &color) {
+        A[0] = color.A[0];
+        A[1] = color.A[1];
+        A[2] = color.A[2];
+        A[3] = color.A[3];
+    }
+    return *this;
+}
 void Color::operator += (const float val)
 {
 	A[0] += val; A[1] += val; A[2] += val; A[3] += val;
