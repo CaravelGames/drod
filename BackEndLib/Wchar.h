@@ -155,7 +155,7 @@ WCHAR*   WCSncpy(WCHAR* wszDest, const WCHAR* wszSrc, UINT n);
 WCHAR*   WCScat(WCHAR* pwcz1, const WCHAR* pwcz2);
 WCHAR*   WCStok(WCHAR *wszStart, const WCHAR *wszDelim);
 
-struct WSTRINGicmp : public std::binary_function<WSTRING, WSTRING, bool> {
+struct WSTRINGicmp {
 	bool operator()(const WSTRING& x, const WSTRING& y) const { return WCSicmp(x.c_str(), y.c_str()) < 0;}
 };
 
