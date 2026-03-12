@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -34,7 +34,7 @@
 #include "Types.h"
 #include "Assert.h"
 #include "Wchar.h"
-#include <mk4.h>
+#include "mk4_NoWarnings.h"
 #ifdef __sgi
 #include <string.h>
 #else
@@ -83,7 +83,7 @@ public:
 	operator const BYTE * () const {return pBuf;}
 	BYTE operator[] (UINT index) const {return pBuf[index];}
 	UINT GetUINTat(UINT& index) const;
-	
+
 	CStretchyBuffer & operator += (UINT wAdd);
 	CStretchyBuffer & operator += (int nAdd) { return operator += (UINT(nAdd)); }
 	CStretchyBuffer & operator += (const char *pszAdd) {Append((const BYTE *) pszAdd, strlen(pszAdd)); return *this;}

@@ -30,7 +30,7 @@
 #ifndef DBPROPS_H
 #define DBPROPS_H
 
-#include <mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 //*****************************************************************************
 #ifdef INCLUDED_FROM_DBBASE_CPP
