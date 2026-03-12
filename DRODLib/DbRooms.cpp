@@ -846,7 +846,7 @@ void CDbRooms::LoadMembership()
 }
 
 //*****************************************************************************
-CDbRoom::CDbRoom(const CDbRoom &Src, 
+CDbRoom::CDbRoom(const CDbRoom &Src,
 	const bool bCopyCurrentGame, //[default=true]
 	const bool bCopyForEditor //[default=false]
 )//Set pointers to NULL so Clear() won't try to delete them.
@@ -3580,7 +3580,7 @@ CMonster* CDbRoom::AddNewMonster(
 //Pointer to new monster object.
 {
 	//Set up a new monster.
-	const MONSTERTYPE eMonsterType = (const MONSTERTYPE)wMonsterType;
+	const MONSTERTYPE eMonsterType = (MONSTERTYPE)wMonsterType;
 	CMonster *pNew = CMonsterFactory::GetNewMonster(eMonsterType);
 	if (this->pCurrentGame)
 		pNew->SetCurrentGame(this->pCurrentGame);
@@ -3890,7 +3890,7 @@ CMonster* CDbRoom::GetNPCBeethro(bool bDeadOnly) const
 				break;
 				default: break;
 			}
-		}		
+		}
 	}
 	return NULL;
 }
@@ -4477,7 +4477,7 @@ void CDbRoom::ActivateToken(
 		case TemporalSplit:
 			//Touching a temporal split point for the first time.
 			if (!bOn && this->pCurrentGame->swordsman.wX == wX &&
-					this->pCurrentGame->swordsman.wY == wY && 
+					this->pCurrentGame->swordsman.wY == wY &&
 					this->pCurrentGame->swordsman.wPlacingDoubleType == 0 &&
 					this->pCurrentGame->StartTemporalSplit()) {
 				SetTParam(wX, wY, tParam + TOKEN_ACTIVE);  //toggle on-off
@@ -4946,7 +4946,7 @@ void CDbRoom::ProcessPuffAttack(
 					KillMonster(pSerpent,CueEvents);
 					this->pCurrentGame->TallyKill();
 				}
-			}				
+			}
 			break;
 			default:
 				if (pMonster->CanFluffKill())
@@ -5118,7 +5118,7 @@ void CDbRoom::CalcFluffGrowth(
 
 		ASSERT(GetOSquare(wX,wY) == T_FLUFFVENT);
 		const UINT wTSquare = GetTSquare(wX,wY);
-		
+
 		//Fluff on top of a vent will grow
 		if (wTSquare == T_FLUFF)
 		{
@@ -5445,7 +5445,7 @@ void CDbRoom::CheckForFallingAt(const UINT wX, const UINT wY, CCueEvents& CueEve
 	{
 		const UINT wPlayerRole = this->pCurrentGame->swordsman.wAppearance;
 		if (!bIsEntityFlying(wPlayerRole) &&
-				!(bIsWater(wOSquare) && bIsEntitySwimming(wPlayerRole)) &&				
+				!(bIsWater(wOSquare) && bIsEntitySwimming(wPlayerRole)) &&
 				!(bIsShallowWater(wOSquare) &&
 				this->pCurrentGame->swordsman.GetWaterTraversalState() >= WTrv_CanWade))
 		{
@@ -5520,8 +5520,8 @@ const
 		}
 
 		CueEvents.Add(CID_ObjectFell, new CMoveCoordEx2(
-			pMonster->wX, pMonster->wY, wO, 
-			M_OFFSET + id, 
+			pMonster->wX, pMonster->wY, wO,
+			M_OFFSET + id,
 			pMonster->HasSword() ? pMonster->GetWeaponType() : (UINT)WT_Off
 		), true);
 		return true;
@@ -5848,7 +5848,7 @@ void CDbRoom::ProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
 
 //*****************************************************************************
 void CDbRoom::PostProcessTurn(CCueEvents &CueEvents, const bool bFullMove)
-// Process some things which need to happen after all room-state-changing things are finished 
+// Process some things which need to happen after all room-state-changing things are finished
 {
 	// This flag is used in a situation where tar mother in a room with 0 tar grows but its tar is
 	// then destroyed by, for example, spike-induced keg explosion, which normally would cause
@@ -6175,7 +6175,7 @@ void CDbRoom::ProcessExplosionSquare(
 				//Prevent FegundoToAsh from being called
 				if (CueEvents.Remove(CID_FegundoToAsh,pMonster) &&
 						CueEvents.GetOccurrenceCount(CID_FegundoToAsh) == 0)
-					CueEvents.ClearEvent(CID_FegundoToAsh);					
+					CueEvents.ClearEvent(CID_FegundoToAsh);
 				bRebirthFegundo = true;
 			}
 			break;
@@ -7525,7 +7525,7 @@ const
 {
 	//O-square obstacle?
 	const UINT wOSquare = GetOSquare(wX, wY);
-	
+
 	//Active firetraps are always pathmap obstacles
 	if (wOSquare == T_FIRETRAP_ON)
 		return DMASK_ALL;
@@ -8601,7 +8601,7 @@ void CDbRoom::ClearDeadMonsters(
 		ASSERT(pDelete);
 		delete pDelete;
 	}
-	
+
 	this->DeadMonsters.clear();
 }
 
@@ -9400,7 +9400,7 @@ void CDbRoom::GrowTar(
 			wTile = GetOSquare(x, y);
 			UINT wFTile = GetFSquare(x, y);
 			if ((bIsFloor(wTile) || bIsOpenDoor(wTile) || bIsPlatform(wTile)) &&
-				(wFTile == T_EMPTY || bIsDisabledArrow(wFTile)) && 
+				(wFTile == T_EMPTY || bIsDisabledArrow(wFTile)) &&
 				GetTSquare(x, y) == T_EMPTY &&
 				!(x == wSManX && y == wSManY) &&
 					(!pMonster || pMonster->wType == wMotherType ||
@@ -10128,7 +10128,7 @@ void CDbRoom::SwitchTarstuff(const UINT wType1, const UINT wType2, CCueEvents& C
 						this->pCurrentGame->TallyKill();
 					} else {
 						//Create new monster and insert in list where old monster was.
-						CMonster *pNew = CMonsterFactory::GetNewMonster((const MONSTERTYPE)nType);
+						CMonster *pNew = CMonsterFactory::GetNewMonster((MONSTERTYPE)nType);
 						pNew->SetCurrentGame(this->pCurrentGame);
 						pNew->wX = pNew->wPrevX = wX;
 						pNew->wY = pNew->wPrevY = wY;
@@ -10316,7 +10316,7 @@ const
 {
 	GetDoubleSwordCoords(SwordCoords, bIgnoreDagger, bIgnoreNonCuts, pIgnore);
 	const CSwordsman& player = this->pCurrentGame->swordsman;
-	if (this->pCurrentGame && player.HasWeapon() && 
+	if (this->pCurrentGame && player.HasWeapon() &&
 		!(bIgnoreDagger && player.GetActiveWeapon() == WT_Dagger) &&
 		!(bIgnoreNonCuts && !bWeaponCutsWhenStationary(player.GetActiveWeapon())) &&
 		IsValidColRow(player.wSwordX, player.wSwordY))
@@ -10748,7 +10748,7 @@ void CDbRoom::DestroyFluff(
 		RemoveStabbedTar(wX, wY, CueEvents, true);
 		CueEvents.Add(CID_FluffDestroyed, new CMoveCoordEx(wX, wY, NO_ORIENTATION, T_FLUFF), true);
 	}
-	
+
 	CMonster *pMonster = GetMonsterAtSquare(wX, wY);
 	if (pMonster && pMonster->wType == M_FLUFFBABY)
 	{
@@ -11009,7 +11009,7 @@ void CDbRoom::Plot(
 	CMonster *pMonster,  //(in) default=NULL
 	bool bUnderObject)   //(in) default=false
 {
-	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F 
+	ASSERT(IsValidTileNo(wTileNo) || wTileNo == T_NOMONSTER || wTileNo == T_EMPTY_F
 		|| wTileNo == T_REMOVE_FLOOR_ITEM || wTileNo == T_EMPTY_TRANSPARENT);
 	ASSERT(IsValidColRow(wX, wY));
 
@@ -11486,7 +11486,7 @@ int CDbRoom::DangerLevel() const
 		case M_SPIDER:	case M_WUBBA: case M_FLUFFBABY: case M_SEEP:
 		case M_SERPENT: case M_SERPENTB: case M_SERPENTG:
 		case M_TARBABY: case M_MUDBABY: case M_GELBABY:
-		case M_WATERSKIPPER: 
+		case M_WATERSKIPPER:
 		case M_AUMTLICH: case M_FEGUNDO: case M_FEGUNDOASHES:
 		case M_ARCHITECT:
 		case M_GENTRYII:

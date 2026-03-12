@@ -243,7 +243,7 @@ private:
 	bool            IsSpeakerAnimated(const Face* face) const;
 	Face*           GetFace(const FaceWidgetLayer layer);
 	Face*           GetActiveFace();
-	const FaceWidgetLayer GetActiveLayer() const;
+	FaceWidgetLayer GetActiveLayer() const;
 
 	bool           bDoBlink;      //when set, do a blink at next possible time
 

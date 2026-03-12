@@ -31,7 +31,7 @@ const int64_t AltBit = int64_t(1) << 62;
 const int64_t CtrlBit = int64_t(1) << 61;
 const int64_t KeycodeBitmask = 0x2FFFFFFFFFFFFFFF;
 
-const InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl)
+InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isCtrl)
 {
 	if (keycode == SDLK_LSHIFT || keycode == SDLK_RSHIFT)
 		return ShiftBit;
@@ -49,7 +49,7 @@ const InputKey BuildInputKey(int32_t keycode, bool isShift, bool isAlt, bool isC
 		| (isCtrl ? CtrlBit : 0);
 }
 
-const InputKey BuildInputKey(SDL_KeyboardEvent keyEvent)
+InputKey BuildInputKey(SDL_KeyboardEvent keyEvent)
 {
 	return BuildInputKey(
 		keyEvent.keysym.sym,
@@ -67,7 +67,7 @@ void ReadInputKey(InputKey inputKey, SDL_Keycode& keycode, bool& isShift, bool& 
 	isCtrl = inputKey & CtrlBit;
 }
 
-const SDL_Keycode ReadInputKey(InputKey inputKey)
+SDL_Keycode ReadInputKey(InputKey inputKey)
 {
 	return static_cast<SDL_Keycode>(inputKey & KeycodeBitmask);
 }

@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s): Mike Rimer (mrimer)
@@ -869,14 +869,14 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 		//Command buttons.
 		this->pCommandButtonWidgets[wButtonTagI] = new CButtonWidget(TAG_KEY_BUTTON_START + wButtonTagI,
 			buttonX, buttonY,
-			CMD_BUTTON_W, CMD_BUTTON_H, 
+			CMD_BUTTON_W, CMD_BUTTON_H,
 			g_pTheDB->GetMessageText(eCommandNameMID));
 		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], KEYMAP_1_TAB);
 
 		//Command labels.
 		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
 			labelX, labelY,
-			CMD_LABEL_W, CMD_LABEL_H, 
+			CMD_LABEL_W, CMD_LABEL_H,
 			F_SettingsKeymaps, wszEmpty);
 		this->pCommandLabelWidgets[wButtonTagI]->SetVAlign(CLabelWidget::TA_VCenter);
 		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], KEYMAP_1_TAB);
@@ -900,14 +900,14 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 
 		this->pCommandButtonWidgets[wButtonTagI] = new CButtonWidget(TAG_KEY_BUTTON_START + wButtonTagI,
 			buttonX, buttonY,
-			CMD_BUTTON_W, CMD_BUTTON_H, 
+			CMD_BUTTON_W, CMD_BUTTON_H,
 			g_pTheDB->GetMessageText(eCommandMID));
 		pTabbedMenu->AddWidgetToTab(this->pCommandButtonWidgets[wButtonTagI], KEYMAP_1_TAB);
 
 		//Command labels.
 		this->pCommandLabelWidgets[wButtonTagI] = new CLabelWidget(0,
 			labelX, labelY,
-			CMD_LABEL_W, CMD_LABEL_H, 
+			CMD_LABEL_W, CMD_LABEL_H,
 			F_SettingsKeymaps, wszEmpty);
 		this->pCommandLabelWidgets[wButtonTagI]->SetVAlign(CLabelWidget::TA_VCenter);
 		pTabbedMenu->AddWidgetToTab(this->pCommandLabelWidgets[wButtonTagI], KEYMAP_1_TAB);
@@ -919,7 +919,7 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 			REPEAT_RATE_LABEL_W, REPEAT_RATE_LABEL_H, F_Small,
 			g_pTheDB->GetMessageText(MID_RepeatRate));
 		pTabbedMenu->AddWidgetToTab(pLabelWidget, KEYMAP_1_TAB);
-		
+
 		pLabelWidget = new CLabelWidget(0, SLOW_LABEL_X, LABEL_SLOW_Y,
 			SLOW_LABEL_W, SLOW_LABEL_H, F_Small, g_pTheDB->GetMessageText(MID_Slow));
 		pTabbedMenu->AddWidgetToTab(pLabelWidget, KEYMAP_1_TAB);
@@ -928,8 +928,8 @@ void CSettingsScreen::SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu)
 			FAST_LABEL_W, FAST_LABEL_H, F_Small, g_pTheDB->GetMessageText(MID_Fast));
 		pTabbedMenu->AddWidgetToTab(pLabelWidget, KEYMAP_1_TAB);
 
-		pSliderWidget = new CSliderWidget(TAG_REPEATRATE, 
-			REPEAT_RATE_SLIDER_X, REPEAT_RATE_SLIDER_Y, REPEAT_RATE_SLIDER_W, REPEAT_RATE_SLIDER_H, 
+		pSliderWidget = new CSliderWidget(TAG_REPEATRATE,
+			REPEAT_RATE_SLIDER_X, REPEAT_RATE_SLIDER_Y, REPEAT_RATE_SLIDER_W, REPEAT_RATE_SLIDER_H,
 			128);
 		pTabbedMenu->AddWidgetToTab(pSliderWidget, KEYMAP_1_TAB);
 	}
@@ -1108,7 +1108,7 @@ void CSettingsScreen::OnKeyDown(
 }
 
 
-const DCMD CSettingsScreen::ButtonTagToDcmd(const UINT dwTagNo) const
+DCMD CSettingsScreen::ButtonTagToDcmd(const UINT dwTagNo) const
 {
 	ASSERT(dwTagNo - TAG_KEY_BUTTON_START >= 0);
 	ASSERT(dwTagNo - TAG_KEY_BUTTON_START < DCMD_Count);
@@ -1128,7 +1128,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 //Called when widget receives click.
 {
 	switch (dwTagNo) {
-					
+
 		case TAG_ESCAPE:
 		case TAG_CANCEL:
 			RestorePlayerSettings();
@@ -1154,7 +1154,7 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 			UpdatePlayerDataFromWidgets(this->pCurrentPlayer);
 			delete this->pCurrentPlayer;
 			this->pCurrentPlayer = NULL;
-			
+
 			if (bCNetDetailsChanged){
 				//Use new player settings to get latest hold list.
 				g_pTheNet->DownloadHoldList();	//must be done after UpdatePlayerData...
@@ -1310,7 +1310,7 @@ void CSettingsScreen::DoKeyRedefinition(const UINT dwTagNo) {
 			return;
 		}
 	}
-		
+
 	//Overwritten key commands set to undefined.
 	for (int nCommand = DCMD_NW; nCommand < DCMD_Count; ++nCommand)
 	{
@@ -1532,7 +1532,7 @@ void CSettingsScreen::SetUndoLevelNumLabel()
 
 	CLabelWidget *pLabel = DYN_CAST(CLabelWidget*,
 		CWidget*, GetWidget(TAG_UNDOLEVEL_NUM_LABEL));
-	
+
 	const UINT val = pSliderWidget->GetValue();
 	WSTRING wstr;
 	if (val >= UNDO_LEVEL_INCREMENTS-1) {
@@ -1560,7 +1560,7 @@ void CSettingsScreen::SetUnspecifiedPlayerSettings(
 #  define SETMISSING(name, value) if (!Settings.DoesVarExist(name)) Settings.SetVar(name, value);
 
 	SETMISSING(Settings::Language, Language::English);
-	
+
 	SETMISSING(Settings::Fullscreen, IsFullScreen());
 	SETMISSING(Settings::ResizableWindow, CScreen::bAllowWindowResizing);
 	SETMISSING(Settings::Alpha, true);
@@ -1750,7 +1750,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_ENABLE_SOUNDEFF));
 	pOptionButton->SetChecked(settings.GetVar(Settings::SoundEffects, g_pTheSound->IsSoundEffectsOn()));
-	
+
 	BYTE bytVolume = settings.GetVar(Settings::SoundEffectsVolume, (BYTE)DEFAULT_SOUND_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_SOUNDEFF_VOLUME));
 	pSliderWidget->SetValue(bytVolume);
@@ -1762,7 +1762,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton->SetChecked(settings.GetVar(Settings::Voices, g_pTheSound->IsSoundEffectsOn()));
 	pLabel = DYN_CAST(CLabelWidget*, CWidget*, GetWidget(TAG_VOICE_VALUE_LABEL));
 	pLabel->SetText(to_WSTRING(bytVolume).c_str());
-	
+
 	bytVolume = settings.GetVar(Settings::VoicesVolume, (BYTE)DEFAULT_VOICE_VOLUME);
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*,
 			GetWidget(TAG_VOICES_VOLUME));
@@ -1791,8 +1791,8 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SHOWCHECKPOINTS));
 	pOptionButton->SetChecked(settings.GetVar(Settings::ShowCheckpoints, true));
-	
-	const UINT dwAutoSaveOptions = settings.GetVar(Settings::AutoSaveOptions, 
+
+	const UINT dwAutoSaveOptions = settings.GetVar(Settings::AutoSaveOptions,
 			ASO_DEFAULT | ASO_CONQUERDEMO);
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 			GetWidget(TAG_SAVEONCONQUER));
@@ -1828,7 +1828,7 @@ void CSettingsScreen::UpdateWidgetsFromPlayerData(
 			GetWidget(TAG_GROUPEDITORMENUITEMS));
 	pOptionButton->SetChecked(settings.GetVar(Settings::GEMI, false));
 	//Check above line
-	
+
 	//Demo settings
 	pOptionButton = DYN_CAST(COptionButtonWidget*, CWidget*,
 		GetWidget(TAG_PLAY_HOLDMANAGE_DEMO));
@@ -2008,7 +2008,7 @@ void CSettingsScreen::UpdatePlayerDataFromWidgets(
 		GetWidget(TAG_DEMO_DATE_FORMAT));
 	settings.SetVar(Settings::DemoDateFormat, pDemoDateFormat->GetSelectedItem());
 
-	//Command settings--these were updated in response to previous UI events, 
+	//Command settings--these were updated in response to previous UI events,
 	//so nothing to do here.
 	pSliderWidget = DYN_CAST(CSliderWidget*, CWidget*, GetWidget(TAG_REPEATRATE));
 	settings.SetVar(Settings::RepeatRate, pSliderWidget->GetValue());
@@ -2032,7 +2032,7 @@ bool CSettingsScreen::AreCNetDetailsChanged(
 {
 
 	CTextBoxWidget *pTextBox;
-	
+
 	pTextBox = DYN_CAST(CTextBoxWidget*, CWidget*, GetWidget(TAG_CNETNAME));
 	if (pPlayer->CNetNameText != pTextBox->GetText()){
 		return true;
@@ -2277,7 +2277,7 @@ void CSettingsScreen::Paint(
 
 //************************************************************************************
 bool CSettingsScreen::GetCommandKeyRedefinition(
-//Returns false if SDL_Quit/ALT-F4 occurred, true otherwise. 
+//Returns false if SDL_Quit/ALT-F4 occurred, true otherwise.
 //
 //Params:
 	const DCMD eCommand,       //(in) Command being redefined
@@ -2293,8 +2293,8 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 	SDL_Keycode readKeyCode;
 	bool bIsShift, bIsAlt, bIsCtrl;
 
-	bool bInvalidKey; 
-	do 
+	bool bInvalidKey;
+	do
 	{
 		dwRetTagNo = this->pKeypressDialog->Display();
 		if (dwRetTagNo == TAG_QUIT || dwRetTagNo == TAG_CANCEL || dwRetTagNo == TAG_ESCAPE)
@@ -2309,7 +2309,7 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 			if ((dialogKey >= SDLK_F1 && dialogKey <= SDLK_F12) || dialogKey >= SDLK_F13)
 				bInvalidKey = true;
 		}
-		
+
 		if (bInvalidKey)
 			ShowOkMessage(MID_InvalidCommandKey);
 	} while (bInvalidKey);
@@ -2406,7 +2406,7 @@ void CSettingsScreen::CloudActivate()
 	}
 
 	// If we get here, there was no player file on the server.  Just do an Initialize, which will
-	// push the current player to the cloud.  
+	// push the current player to the cloud.
 	handle = g_pTheNet->CloudInitialize();
 	GenericNetTransactionWait(handle, MID_CloudSynchInProgress, 0.01f, 0.1f);
 
