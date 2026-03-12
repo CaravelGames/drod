@@ -35,7 +35,7 @@
 #include <BackEndLib/MessageIDs.h>
 using namespace Language;
 
-#include <mk4.h>
+#include <BackEndLib/mk4.h>
 
 #include <list>
 #include <map>
@@ -48,7 +48,7 @@ private:
 	 typedef map<string,UINT> ASSIGNEDMIDS;
 public:
 	CUtil3_0(const WCHAR* pszSetPath) : CUtil(v3_0, pszSetPath) { };
-	
+
 	virtual bool  PrintCreate(const COptionList &Options) const;
 	virtual bool  PrintDelete(const COptionList &Options) const;
 	virtual bool  PrintImport(const COptionList &Options, const WCHAR* pszSrcPath, VERSION eSrcVersion) const;
@@ -60,11 +60,11 @@ private:
 	static void AddMessageText(c4_Storage &TextStorage, const UINT dwMessageID,
 		  const Language::LANGUAGE eLanguage, const WCHAR *pwszText);
 	static bool DeleteDat(const WCHAR *pwszFilepath);
-	void        GetAssignedMIDs(const WCHAR *pwzMIDFilepath, ASSIGNEDMIDS &AssignedMIDs, 
+	void        GetAssignedMIDs(const WCHAR *pwzMIDFilepath, ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwMaxMessageID) const;
 	void        GetMasterFilepath(WSTRING &wstrFilepath) const;
 	bool        ImportBasicMessages(const WCHAR *pwzSrcPath, c4_Storage &TextStorage) const;
-	bool        ImportMessageTexts(c4_Storage &SourceStorage, c4_Storage &DestStorage, 
+	bool        ImportMessageTexts(c4_Storage &SourceStorage, c4_Storage &DestStorage,
 				const list<UINT> &NeededMessages) const;
 	bool        ImportUNI(const WCHAR *pwzFilepath, c4_Storage &TextStorage, const ASSIGNEDMIDS &AssignedMIDs,
 				UINT &dwMaxMessageID, string &strMIDs) const;

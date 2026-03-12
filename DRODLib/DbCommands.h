@@ -32,7 +32,7 @@
 #define DBCOMMANDS_H
 
 #include <BackEndLib/Types.h>
-#include <mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 #include <vector>
 using std::vector;

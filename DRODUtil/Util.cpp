@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,7 +35,7 @@
 #include "Util.h"
 #undef INCLUDED_FOR_UTIL_CPP
 
-#include <mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 #ifdef WIN32
 #include <direct.h>
 #elif defined __linux__ || defined __FreeBSD__
@@ -77,8 +77,8 @@ bool CUtil::DoesFileExist(
 //Does a file exist?
 //
 //Params:
-	const WCHAR* pszFilepath)  //(in)   Either full path to file or just the 
-								//    filename.  In the latter case, the 
+	const WCHAR* pszFilepath)  //(in)   Either full path to file or just the
+								//    filename.  In the latter case, the
 								//    object path is used.
 //
 //Returns:
@@ -98,7 +98,7 @@ const
 		strFullPath += wszSlash;
 		strFullPath += pszFilepath;
 	}
-	
+
 	//Open the file to verify its existence.  The call below will not leave
 	//the file open.
 	return CFiles::DoesFileExist(strFullPath.c_str());
@@ -133,11 +133,11 @@ bool CUtil::CopyViewDef(
 //have same structure as source.
 //
 //Params:
-  const WCHAR *pwzSrcFilepath,  //(in)  Path to storage file containing 
+  const WCHAR *pwzSrcFilepath,  //(in)  Path to storage file containing
 										  //      viewdef.
-  const WCHAR *pwzDestFilepath, //(in)  Destination storage file where copy 
+  const WCHAR *pwzDestFilepath, //(in)  Destination storage file where copy
 										  //      will be made.
-  const char *pszViewDefName)   //(in)  Name of viewdef in source storage 
+  const char *pszViewDefName)   //(in)  Name of viewdef in source storage
 										  //      file.
 {
   bool bSuccess = false;
