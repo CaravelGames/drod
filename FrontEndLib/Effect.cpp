@@ -32,12 +32,12 @@
 //*****************************************************************************
 CEffect::CEffect(CWidget *pSetOwnerWidget, const UINT dwDuration, const UINT eType)
 	: pOwnerWidget(pSetOwnerWidget)
+	, dwDuration(dwDuration)
+	, dwTimeElapsed(0)
 	, dwTimeOfLastMove(CScreen::dwLastRenderTicks)
 	, eEffectType(eType)
 	, bRequestRetainOnClear(false)
 	, fOpacity(1.0)
-	, dwTimeElapsed(0)
-	, dwDuration(dwDuration)
 //Constructor.
 {
 	ASSERT(pSetOwnerWidget);
@@ -62,7 +62,7 @@ void CEffect::Draw(
 {
 	if (!pDestSurface)
 		pDestSurface = GetDestSurface();
-	
+
 	ASSERT(pDestSurface);
 	if (pDestSurface)
 		Draw(*pDestSurface);
@@ -78,7 +78,7 @@ float CEffect::GetElapsedFraction() const
 
 	if (fraction < 0)
 		return 0.0f;
-	
+
 	if (fraction > 1)
 		return 1.0f;
 

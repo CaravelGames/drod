@@ -268,10 +268,10 @@ TileImageBlitParams::TileImageBlitParams(const TileImageBlitParams& rhs)
 	, nOpacity(rhs.nOpacity)
 	, bClipped(rhs.bClipped)
 	, nAddColor(rhs.nAddColor)
-	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
-	, appliedDarkness(rhs.appliedDarkness)
 	, nCustomColor(rhs.nCustomColor)
 	, hsv(rhs.hsv)
+	, bCastShadowsOnTop(rhs.bCastShadowsOnTop)
+	, appliedDarkness(rhs.appliedDarkness)
 { }
 
 bool TileImageBlitParams::CropRectToTileDisplayArea(SDL_Rect& BlitRect)

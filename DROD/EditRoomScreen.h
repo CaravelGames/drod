@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -140,7 +140,7 @@ private:
 	bool     MergePressurePlate(const UINT wX, const UINT wY, const bool bUpdateType=false);
 	CObjectMenuWidget* ObjectMenuForTile(const UINT wTile);
 	void     ObstacleFill();
-	
+
 	virtual void   OnBetweenEvents();
 	virtual void   OnClick(const UINT dwTagNo);
 	virtual void   OnDeactivate();
@@ -223,7 +223,7 @@ private:
 	COrbData *        pOrb;          //orb being modified
 	bool              bShowErrors;   //visually display objects with errors
 	bool              bAutoSave;     //always save the room when leaving it
-	bool              bSafetyOn;     //safe editing
+	bool              bSafetyOn;     //safe editing @FIXME - Unused, delete
 	bool              bRoomDirty;    //whether a save is needed
 	int               nUndoSize;     //facilitates dirty checking
 	bool              bPaintItemText; //whether item text must be refreshed
@@ -233,7 +233,7 @@ private:
 
 	UINT              wO;            //current placement orientation
 	UINT              wSelectedObType;      //current obstacle selected
-	UINT					wSelectedLightType;   //current light selected
+	UINT              wSelectedLightType;   //current light selected
 	UINT              wSelectedDarkType;    //current dark level selected
 	UINT              wSelOrbType, wSelPlateType; //current orb/pressure plate type selected
 	UINT              wSelTokenType;   //token type currently selected

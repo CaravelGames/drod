@@ -45,9 +45,9 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 	const UINT type)
 	: CAnimatedTileEffect(pSetWidget, CCoord(SetCoord.wX,SetCoord.wY),
 		TOTAL_DURATION, wTI, true, type)
+	, isBump(isBump)
 	, startDelay(START_DELAY)
 	, endDelay(END_DELAY)
-	, isBump(isBump)
 	, nOpacity(0)
 	, wDrawX(0), wDrawY(0)
 {
@@ -71,7 +71,7 @@ CTemporalMoveEffect::CTemporalMoveEffect(
 bool CTemporalMoveEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
 	const CDbRoom* pRoom = this->pRoomWidget->GetRoom();
-	if (!pRoom) 
+	if (!pRoom)
 		return false;
 
 	const CCurrentGame* pGame = pRoom->GetCurrentGame();

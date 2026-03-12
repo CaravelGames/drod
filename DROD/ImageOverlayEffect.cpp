@@ -89,21 +89,23 @@ CImageOverlayEffect::CImageOverlayEffect(
 	, pImageSurface(NULL), pAlteredSurface(NULL), pTiledSurface(NULL)
 	, bPrepareAlteredImage(false)
 	, x(0), y(0)
-	, drawX(0), drawY(0)
-	, alpha(255), drawAlpha(255)
+	, alpha(255)
 	, angle(0), scale(ORIGINAL_SCALE)
 	, jitter(0)
-	, lastJitterX(0), lastJitterY(0)
 	, xTile(0), yTile(0)
 	, repetitions(0), xRepeatOffset(0), yRepeatOffset(0)
+	, drawX(0), drawY(0)
+	, lastJitterX(0), lastJitterY(0)
+	, drawAlpha(255)
+	, drawSourceRect(MAKE_SDL_RECT(0, 0, 0, 0))
+	, drawDestinationRect(MAKE_SDL_RECT(0, 0, 0, 0))
 	, index(UINT(-1))
 	, loopIteration(0), maxLoops(0)
 	, startOfNextEffect(dwStartTime), endTime(0)
+
 	, pRoomWidget(NULL)
 	, turnNo(turnNo) , endTurn(0)
 	, instanceID(0)
-	, drawSourceRect(MAKE_SDL_RECT(0, 0, 0, 0))
-	, drawDestinationRect(MAKE_SDL_RECT(0, 0, 0, 0))
 {
 	ASSERT(pSetWidget);
 	ASSERT(pSetWidget->GetType() == WT_Room);

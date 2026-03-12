@@ -47,7 +47,7 @@ CSliderWidget::CSliderWidget(
 //Constructor.
 //
 //Params:
-	const UINT dwSetTagNo,                //(in)   Required params for CWidget 
+	const UINT dwSetTagNo,                //(in)   Required params for CWidget
 	const int nSetX, const int nSetY,      //    constructor.
 	const UINT wSetW, const UINT wSetH,    //
 	const BYTE bytSetValue,                //(in)   0 = left, 255 = right.
@@ -55,10 +55,10 @@ CSliderWidget::CSliderWidget(
 	: CFocusWidget(WT_Slider, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
 	, bytValue(bytSetValue), bytPrevValue(bytSetValue)
 	, bytTickMarks(bytNumTicks)
+	, bDrawTickMarks(false)
 	, bWasSliderDrawn(false)
 	, bFocusRegionsSaved(false)
 	, pEraseSurface(NULL)
-	, bDrawTickMarks(false)
 {
 	this->pBiggerTicks = std::vector<UINT>();
 	this->imageFilenames.push_back(string("Dialog"));
@@ -136,9 +136,9 @@ void CSliderWidget::Paint(
 
 	//Calc surface colors if needed.
 	SDL_Surface *pDestSurface = GetDestSurface();
-	const SURFACECOLOR Light = GetSurfaceColor(pDestSurface, 225, 214, 192), 
+	const SURFACECOLOR Light = GetSurfaceColor(pDestSurface, 225, 214, 192),
 			Dark = GetSurfaceColor(pDestSurface, 145, 132, 109);
-	
+
 	//Save spots where focus lines are drawn.
 	if (!this->bFocusRegionsSaved)
 	{

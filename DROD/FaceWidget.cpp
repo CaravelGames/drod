@@ -131,12 +131,14 @@ CFaceWidget::CFaceWidget(
 	const int nSetX, const int nSetY,               //    constructor.
 	const UINT wSetW, const UINT wSetH)             //
 	: CWidget((WIDGETTYPE)WT_Face, dwSetTagNo, nSetX, nSetY, wSetW, wSetH)
-	, nPupilX(0), nPupilY(0), nPupilTargetX(0), nPupilTargetY(0)
-	, dwLastFrame(0), bAlwaysPaintFull(false)
-	, pImage(NULL)
 	, facePlayer(Face(PlayerRole))
 	, faceSpeaker(Face(Speaker))
 	, faceDying(Face(Death))
+	, bDoBlink(false)
+	, nPupilX(0), nPupilY(0)
+	, nPupilTargetX(0), nPupilTargetY(0)
+	, dwLastFrame(0), bAlwaysPaintFull(false)
+	, pImage(NULL)
 {
 	this->imageFilenames.push_back(string("Faces"));
 
@@ -191,7 +193,7 @@ const FaceWidgetLayer CFaceWidget::GetActiveLayer() const{
 
 	if (faceDying.bIsActive)
 		return faceDying.eLayer;
-	
+
 	return facePlayer.eLayer;
 }
 
@@ -911,7 +913,7 @@ void CFaceWidget::HandleAnimate()
 	const bool bFrameEnded = dwNow - this->dwLastFrame > dwFrameLength;
 	const bool bForceDraw = !GetActiveFace()->bIsDrawn;
 
-	//Animate widget 
+	//Animate widget
 	//Animation frame rate is slower (probably) than screen animation rate.
 	if (bForceDraw || bFrameEnded)
 	{

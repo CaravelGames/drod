@@ -406,7 +406,7 @@ const bool SinglePlacement[TOTAL_EDIT_TILE_COUNT] =
 	0, //T_FIRETRAP      107
 	0, //T_FIRETRAP_ON   108
 	0, //T_WALL_WIN      109
-	
+
 	0, //T_ROACH         +0
 	0, //T_QROACH        +1
 	0, //T_REGG          +2
@@ -705,21 +705,21 @@ CEditRoomScreen::CEditRoomScreen()
 	, pHold(NULL), pLevel(NULL), pRoom(NULL)
 	, pRoomWidget(NULL), pTabbedMenu(NULL)
 	, pCharacterDialog(NULL)
-	, pEntranceBox(NULL), pLevelEntranceDialog(NULL), pSelectMediaDialog(NULL)
-
+	, pEntranceBox(NULL)
+	, pSelectMediaDialog(NULL)
+	, pLevelEntranceDialog(NULL)
 	, wSelectedObject(static_cast<UINT>(-1))
 	, wSelectedObjectSave(static_cast<UINT>(-1))
-
 	, eState(ES_PLACING)
 	, pLongMonster(NULL)
 	, pOrb(NULL)
 	, bShowErrors(true)
 	, bAutoSave(true)
+	, bSafetyOn(false)
 	, bRoomDirty(false)
 	, nUndoSize(0)
 	, bPaintItemText(false)
 	, bGroupMenuItems(false)
-
 	, wTestX(static_cast<UINT>(-1)), wTestY(static_cast<UINT>(-1))
 	, wTestO(static_cast<UINT>(-1))
 	, wO(SE)
@@ -732,12 +732,11 @@ CEditRoomScreen::CEditRoomScreen()
 	, wLastFloorSelected(T_FLOOR)
 	, wLastEntranceSelected(static_cast<UINT>(-1))
 	, bSelectingImageStart(false)
-
+	, wSelectedX(0), wSelectedY(0)
 	, pCopyRoom(NULL)
 	, wCopyX1(static_cast<UINT>(-1)), wCopyY1(static_cast<UINT>(-1))
 	, wCopyX2(static_cast<UINT>(-1)), wCopyY2(static_cast<UINT>(-1))
 	, bAreaJustCopied(false), bCutAndPaste(false)
-
 	, dwSavePlayerID(0), dwTestPlayerID(0)
 {
 	this->pAdjRoom[0] = this->pAdjRoom[1] = this->pAdjRoom[2] = this->pAdjRoom[3] = NULL;
@@ -876,7 +875,7 @@ CEditRoomScreen::CEditRoomScreen()
 		pObjectMenu->AddObject(mObstacleEntries[ob], 1, 1, ObstacleDisplayTiles + mObstacleEntries[ob]);
 	pObjectMenu->Hide();
 	AddWidget(pObjectMenu);
-	
+
 	//Light palette pop-up menu.
 	pObjectMenu = new CObjectMenuWidget(TAG_LIGHT_MENU, X_LIGHTMENU, Y_LIGHTMENU,
 			CX_LIGHTMENU, CY_LIGHTMENU, CX_MENUSPACE, CY_MENUSPACE, 0); //black BG
@@ -1564,7 +1563,7 @@ void CEditRoomScreen::ClickRoom()
 					break;
 				}
 			}
-				
+
 			if (!this->pRoomWidget->IsSafePlacement(T_SWORDSMAN, wX, wY, wStartO, true))
 				return;
 
@@ -2214,7 +2213,7 @@ UINT CEditRoomScreen::ImportHoldVideo()
 			Files.GetDatPath();
 
 	WSTRING wstrImportFile;
-	do { 
+	do {
 		const UINT dwTagNo = SelectFile(wstrImportPath,
 				wstrImportFile, MID_ImportVideo, false, EXT_THEORA);
 		if (dwTagNo != TAG_OK)
@@ -3813,7 +3812,7 @@ void CEditRoomScreen::EditGentryii(CMonster* pMonster)
 	this->pRoomWidget->monsterSegment.wTailY = this->pRoomWidget->monsterSegment.wSY = tailY;
 
 	this->pRoomWidget->monsterSegment.wDirection = pMonster->wO;
-	
+
 	//don't need to set bHorizontal, wEX and wEY
 	this->pLongMonster = pMonster;
 	Changing();
@@ -4240,7 +4239,7 @@ void CEditRoomScreen::EraseRegion()
 			//Erase checkpoints.
 			if (room.checkpoints.has(xDest, yDest))
 				room.checkpoints.erase(xDest, yDest);
-		
+
 			//Erase light layer.
 			if (room.tileLights.GetAt(xDest, yDest))
 			{
@@ -4292,7 +4291,7 @@ void CEditRoomScreen::EraseRegion()
 					for (wY = yDest; wY < yDest + wYDim; ++wY)
 						for (wX = xDest; wX < xDest + wXDim; ++wX)
 							EraseAndPlot(wX, wY, T_EMPTY, false);
-		
+
 					break;
 				}
 
@@ -4336,7 +4335,7 @@ void CEditRoomScreen::EraseRegion()
 							RemoveMonster(pMonster);
 					}
 					break;
-		
+
 					default:
 						RemoveMonster(pMonster);
 					break;
@@ -4849,7 +4848,7 @@ void CEditRoomScreen::PasteRegion(
 				COrbAgentData *pAgent = pOrb->agents[wAgentI];
 				const UINT oTile = room.GetOSquare(pAgent->wX, pAgent->wY);
 				if (!(bIsYellowDoor(oTile) || bIsFiretrap(oTile) ||
-						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY)) || 
+						 bIsLight(room.GetTSquare(pAgent->wX, pAgent->wY)) ||
 						 bIsAnyArrow(room.GetFSquare(pAgent->wX, pAgent->wY))))
 					VERIFY(pOrb->DeleteAgent(pAgent));
 			}
@@ -8180,7 +8179,7 @@ void CEditRoomScreen::UpdateMenuGraphic(const UINT wTile)
 			}
 			pObjectMenu->SetObjectTiles(wTile, 1, 1, &wTileI);
 		}
-		break;			
+		break;
 		case T_TOKEN:
 		{
 			UINT wTokenTI = CalcTileImageForToken(this->wSelTokenType);
