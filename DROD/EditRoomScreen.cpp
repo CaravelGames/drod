@@ -7513,6 +7513,7 @@ void CEditRoomScreen::ShowErrors()
 
 	UINT wSquareIndex = 0;
 	for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
+	{
 		for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
 		{
 			//Verify one square.
@@ -7718,36 +7719,37 @@ void CEditRoomScreen::ShowErrors()
 
 			++wSquareIndex;
 		}
+	}
 
-		//Check for inconsistencies in general room state.
-		if ((bRedDoors && !bTrapdoors) || (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken) || (bBlackDoors && !bTar))
-		{
-			wSquareIndex = 0;
-			for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
-				for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
+	//Check for inconsistencies in general room state.
+	if ((bRedDoors && !bTrapdoors) || (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken) || (bBlackDoors && !bTar))
+	{
+		wSquareIndex = 0;
+		for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
+			for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
+			{
+				//Verify one square.
+				wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
+				switch (wTileNo[0])
 				{
-					//Verify one square.
-					wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
-					switch (wTileNo[0])
-					{
-					case T_DOOR_M: case T_DOOR_GO:
-						//Green door w/o any monsters or conquer token
-						if (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken)
-							AddShadeToTile(LightGreen);
-						break;
-					case T_DOOR_R: case T_DOOR_RO:
-						if (bRedDoors && !bTrapdoors)
-							AddShadeToTile(LightRed);  //red door w/o any trapdoors
-						break;
-					case T_DOOR_B: case T_DOOR_BO:
-						if (bBlackDoors && !bTar)
-							AddShadeToTile(LightBlack);   //tar door w/o any tarstuff
-						break;
-					}
-
-					++wSquareIndex;
+				case T_DOOR_M: case T_DOOR_GO:
+					//Green door w/o any monsters or conquer token
+					if (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken)
+						AddShadeToTile(LightGreen);
+					break;
+				case T_DOOR_R: case T_DOOR_RO:
+					if (bRedDoors && !bTrapdoors)
+						AddShadeToTile(LightRed);  //red door w/o any trapdoors
+					break;
+				case T_DOOR_B: case T_DOOR_BO:
+					if (bBlackDoors && !bTar)
+						AddShadeToTile(LightBlack);   //tar door w/o any tarstuff
+					break;
 				}
-		}
+
+				++wSquareIndex;
+			}
+	}
 
 #undef AddShadeToTile
 #undef AddShadeToTileXY
