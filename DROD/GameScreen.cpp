@@ -3152,11 +3152,12 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
-	if (cmd_response == CMD_UNSPECIFIED)
+	if (cmd_response == CMD_UNSPECIFIED) {
 		if (this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
 			cmd_response = CMD_UNDO;
 		else
 			cmd_response = CMD_RESTART;
+	}
 
 	if (cmd_response == CMD_UNDO)
 	{
