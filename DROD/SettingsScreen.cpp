@@ -1110,8 +1110,8 @@ void CSettingsScreen::OnKeyDown(
 
 DCMD CSettingsScreen::ButtonTagToDcmd(const UINT dwTagNo) const
 {
-	ASSERT(dwTagNo - TAG_KEY_BUTTON_START >= 0);
-	ASSERT(dwTagNo - TAG_KEY_BUTTON_START < DCMD_Count);
+	ASSERT(dwTagNo >= TAG_KEY_BUTTON_START);
+	ASSERT(dwTagNo < TAG_KEY_BUTTON_START + DCMD_Count);
 
 	return DCMD(dwTagNo - TAG_KEY_BUTTON_START);
 }
