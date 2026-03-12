@@ -4126,7 +4126,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
 				}
 
-				if (pCoord->wValue2 != WT_Off) {
+				if (pCoord->wValue2 != (UINT)WT_Off) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
 					if (swordTile) {
 						const int wSwordX = pCoord->wX + nGetOX(pCoord->wO);
