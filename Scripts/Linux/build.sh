@@ -152,7 +152,7 @@ action_build_drod() {
 
 action_build_drod_rpg() {
     echo "=> build-drod-rpg: running ninjamaker and build in /drod/drodrpg/Master/Linux"
-    docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -release && ./build"
+    docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -$MODE -$BUILD && ninja -f build.$MODE.$BUILD.x86_64.ninja"
 }
 
 action_run_tests() {
