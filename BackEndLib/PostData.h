@@ -35,8 +35,7 @@
 class CPostData
 {
 private:
-	curl_httppost* pFormPostBegin;
-	curl_httppost* pFormPostEnd;
+	curl_mime* pMime;
 public:
 	CPostData();
 	~CPostData();
@@ -45,7 +44,7 @@ public:
 	void Add(const string& strName, const std::string& value);
 	void Add(const string& strName, const std::vector<std::string>& values);
 
-	const curl_httppost* PostData() const { return pFormPostBegin; }
+	curl_mime* PostData() const { return pMime; }
 };
 
 #endif
