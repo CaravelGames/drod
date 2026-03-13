@@ -35,7 +35,7 @@
 #include <BackEndLib/MessageIDs.h>
 using namespace Language;
 
-#include <BackEndLib/mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 #include <list>
 #include <map>

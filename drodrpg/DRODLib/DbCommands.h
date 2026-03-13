@@ -33,7 +33,7 @@
 
 #include <BackEndLib/StretchyBuffer.h>
 #include <BackEndLib/Types.h>
-#include <BackEndLib/mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 #include <vector>
 using std::vector;

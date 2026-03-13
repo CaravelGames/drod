@@ -35,7 +35,7 @@
 #include "Util.h"
 #undef INCLUDED_FOR_UTIL_CPP
 
-#include <BackEndLib/mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 #ifdef WIN32
 #include <direct.h>
 #elif defined __linux__ || defined __FreeBSD__
