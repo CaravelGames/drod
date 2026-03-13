@@ -149,7 +149,7 @@ void CRoomEffectList::RemoveEffectsOfType(
 		CEffect *pEffect = *iSeek;
 		ASSERT(pEffect);
 		++iSeek;
-		if (eEffectType == (*iSeek)->GetEffectType())
+		if (eEffectType == pEffect->GetEffectType())
 		{
 			//Remove from list.
 			if (pEffect->RequestsRetainOnClear() && !bForceClearAll) {
