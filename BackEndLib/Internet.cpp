@@ -320,10 +320,10 @@ void CInternet::OutputError(const UINT handle)
 
 	if (found->second->eRetVal > 0)
 	{
-		char errorStr[256];
-		_snprintf(errorStr, 256, "Internet warning %d: %s\n", found->second->eRetVal, found->second->errorBuffer);
+		char errorStr[512];
+		_snprintf(errorStr, sizeof(errorStr), "Internet warning %d: %s\n", found->second->eRetVal, found->second->errorBuffer);
 		CFiles Files;
-		Files.AppendErrorLog((char *)errorStr);
+		Files.AppendErrorLog(errorStr);
 	}
 }
 
