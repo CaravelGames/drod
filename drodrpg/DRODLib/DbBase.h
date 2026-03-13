@@ -43,7 +43,7 @@
 #include <BackEndLib/Types.h>
 #include <BackEndLib/Wchar.h>
 
-#include <BackEndLib/mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 #define ROW_NO_MATCH ((UINT)-1)
 

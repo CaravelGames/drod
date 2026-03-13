@@ -56,7 +56,7 @@
 #include <cstring>
 #include <map>
 
-#include <BackEndLib/mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
 enum UNPACKEDVARTYPE
 {
