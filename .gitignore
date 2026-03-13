@@ -104,8 +104,11 @@ drodrpg/DRODUtil/CaravelRelease-Temp/
 drodrpg/*/BuildDats/
 drodrpg/*/SteamBuildDats/
 drodrpg/*/*-Temp/
+drodrpg/Master/Linux/build.*
+drodrpg/Master/Linux/builds
 drodrpg/Master/Linux/deps
 drodrpg/Master/Linux/static-libs
+drodrpg/Master/Linux/steam
 
 # Various things we don't want.
 **/.vs/
