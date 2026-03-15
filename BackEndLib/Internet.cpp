@@ -79,7 +79,8 @@ size_t CInternet_HandleDataStretchyBuffer(
 int CInternet_HTTP_Get_Worker(void* pPtr)
 {
 	CInternet_Thread_Info* pInfo = (CInternet_Thread_Info *)pPtr;
-	curl_mime* pMime = pInfo->pPostData ? pInfo->pPostData->PostData() : NULL;
+	const curl_httppost* pPost = pInfo->pPostData ? pInfo->pPostData->PostData() : NULL;
+//	curl_httppost* pEnd = CInternet::pFormPostEnd;
 
 	//Send HTTP post.
 	static const UINT MAX_ATTEMPTS = 2;
@@ -109,8 +110,8 @@ int CInternet_HTTP_Get_Worker(void* pPtr)
 		if (!cookies.empty())
 			curl_easy_setopt(pHandle, CURLOPT_COOKIE, cookies.c_str());
 
-		if (pMime)
-			curl_easy_setopt(pHandle, CURLOPT_MIMEPOST, pMime);
+		if (pPost)
+			curl_easy_setopt(pHandle, CURLOPT_HTTPPOST, pPost);
 
 		//Send.
 		code = curl_easy_perform(pHandle);
@@ -300,7 +301,7 @@ files.AppendErrorLog(NEWLINE);
 	f.AppendErrorLog("CINTERNET GETRESULTS\n");
 	f.AppendErrorLog(str.c_str());
 */
-
+	
 		return pBuffer;
 	}
 

@@ -27,14 +27,15 @@
 #include "PostData.h"
 
 CPostData::CPostData()
+	: pFormPostBegin(NULL)
+	, pFormPostEnd(NULL)
 {
-	pMime = curl_mime_init(NULL);
 }
 
 CPostData::~CPostData()
 {
-	if (pMime) {
-		curl_mime_free(pMime);
+	if (pFormPostBegin) {
+		curl_formfree(pFormPostBegin);
 	}
 }
 
@@ -46,10 +47,12 @@ void CPostData::Add(
 	const string& strName,          //(in) Name
 	const CStretchyBuffer& value)   //(in) Value
 {
-	curl_mimepart* part = curl_mime_addpart(pMime);
-	curl_mime_name(part, strName.c_str());
-	curl_mime_data(part, (const char*)(BYTE*)value, value.Size());
-	curl_mime_type(part, "application/binary");
+	curl_formadd(&pFormPostBegin, &pFormPostEnd,
+		CURLFORM_COPYNAME, strName.c_str(),
+		CURLFORM_COPYCONTENTS, (char*)(BYTE*)value,
+		CURLFORM_CONTENTSLENGTH, value.Size(),
+		CURLFORM_CONTENTTYPE, "application/binary", 
+		CURLFORM_END);
 }
 
 void CPostData::Add(
@@ -59,9 +62,11 @@ void CPostData::Add(
 	const string& strName,     //(in) Name
 	const string& value)       //(in) Value
 {
-	curl_mimepart* part = curl_mime_addpart(pMime);
-	curl_mime_name(part, strName.c_str());
-	curl_mime_data(part, value.c_str(), value.length());
+	curl_formadd(&pFormPostBegin, &pFormPostEnd,
+		CURLFORM_COPYNAME, strName.c_str(),
+		CURLFORM_COPYCONTENTS, value.c_str(),
+		CURLFORM_CONTENTSLENGTH, value.length(),
+		CURLFORM_END);
 }
 
 void CPostData::Add(
@@ -71,10 +76,20 @@ void CPostData::Add(
 	const string& strName,     //(in) Name
 	const std::vector<string>& values)       //(in) Value
 {
-	for (const auto& value : values)
+	UINT numValues = values.size();
+	struct curl_forms* pForms = new struct curl_forms[numValues+1];
+
+	for (UINT i=0; i<numValues; ++i)
 	{
-		curl_mimepart* part = curl_mime_addpart(pMime);
-		curl_mime_name(part, strName.c_str());
-		curl_mime_data(part, value.c_str(), value.length());
+		pForms[i].option = CURLFORM_COPYCONTENTS;
+		pForms[i].value  = values[i].c_str();
 	}
+	pForms[numValues].option = CURLFORM_END;
+
+	curl_formadd(&pFormPostBegin, &pFormPostEnd,
+		CURLFORM_COPYNAME, strName.c_str(),
+		CURLFORM_ARRAY, pForms,
+		CURLFORM_END);
+
+	delete[] pForms;
 }

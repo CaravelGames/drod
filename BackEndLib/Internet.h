@@ -81,6 +81,8 @@ public:
 	static void OutputError(const UINT handle);
 	static bool CancelRequest(const UINT handle);
 
+	static curl_httppost* pFormPostBegin;
+	static curl_httppost* pFormPostEnd;
 	static string userAgent;
 	static std::vector<CURL*> usedHandles;
 private:
