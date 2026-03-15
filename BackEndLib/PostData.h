@@ -32,6 +32,11 @@
 #include <vector>
 #include <string>
 
+// In case curl version used on Windows is too old to have this macro
+#ifndef CURL_IGNORE_DEPRECATION
+#define CURL_IGNORE_DEPRECATION(statements)     statements
+#endif
+
 class CPostData
 {
 private:
