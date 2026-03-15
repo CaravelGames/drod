@@ -551,7 +551,11 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 				case ScriptVars::P_OrientY: return nGetOY(o);
 				case ScriptVars::P_RotateCW: return nNextCO(o);
 				case ScriptVars::P_RotateCCW: return nNextCCO(o);
+				default:
+					ASSERT(!"Impossible primitive value");
+					return o;
 			}
+			break;
 		}
 		case ScriptVars::P_RotateDist:
 		{
@@ -720,6 +724,8 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 
 			return cleanRooms.size();
 		}
+		case ScriptVars::NoPrimitive: return 0;
+		case ScriptVars::PrimitiveCount: return 0;
 	}
 
 	return 0;
@@ -1278,17 +1284,17 @@ void CCurrentGame::ProcessCommandSetVar(
 		}
 		break;
 		case (UINT)ScriptVars::P_PLAYER_WEAPON:
-			if (bIsRealWeapon(newVal) || newVal == WT_On || newVal == WT_Off) {
+			if (bIsRealWeapon(newVal) || newVal == (UINT)WT_On || newVal == (UINT)WT_Off) {
 				this->swordsman.EquipWeapon(newVal);
 			}
 		break;
 		case (UINT)ScriptVars::P_PLAYER_LOCAL_WEAPON:
 			if (bIsRealWeapon(newVal)) {
 				this->swordsman.SetWeaponType(newVal, false);
-			} else if (newVal == WT_On) {
+			} else if (newVal == (UINT)WT_On) {
 				this->swordsman.bNoWeapon = false;
 				this->pRoom->ChangeTiles(WeaponDisarm);
-			} else if (newVal == WT_Off) {
+			} else if (newVal == (UINT)WT_Off) {
 				this->swordsman.bNoWeapon = true;
 				this->pRoom->ChangeTiles(WeaponDisarm);
 			}
@@ -2368,7 +2374,7 @@ void CCurrentGame::PostProcessCharacter(CCharacter* pCharacter, CCueEvents& CueE
 		CMonster *pMonster = this->pRoom->GetMonsterAtSquare(
 				pCharacter->wX, pCharacter->wY);
 		//The monster may have died during the replacement
-		//ASSERT(pMonster); 
+		//ASSERT(pMonster);
 
 		//The new monster might require changes to room state (e.g. pathmapping).
 		this->pRoom->CreatePathMaps();
@@ -2774,7 +2780,7 @@ void CCurrentGame::ActivateTemporalSplit(CCueEvents& CueEvents)
 
 		//If the player rewinds to the exact turn a cutscene starts, update the tracked turn
 		//number so that undoing doesn't undo too far.
-		if (this->cutSceneStartTurn == returnedTo)
+		if (this->cutSceneStartTurn == (int)returnedTo)
 			this->cutSceneStartTurn = this->wTurnNo;
 
 		ASSERT(this->activatingTemporalSplit > 0);
@@ -2879,7 +2885,7 @@ void CCurrentGame::ProcessRoomCompletion(RoomCompletionData roomCompletionData, 
 
 	const bool bIsKillMonstersSatisfied = (
 		!roomCompletionData.bConquerTokenNeedsActivating
-		&& roomCompletionData.wOriginalMonsterCount 
+		&& roomCompletionData.wOriginalMonsterCount
 		&& !this->pRoom->wMonsterCount
 	);
 	const bool bIsConquerTokenSatisfied = (
@@ -3593,7 +3599,7 @@ void CCurrentGame::WeaponPushback(
 						stab.pArmedMonster = pArmedMonster;
 					else
 						stab.pPlayer = &this->swordsman;
-				
+
 					StabMonsterAt(stab, CueEvents);
 				}
 
@@ -4291,18 +4297,18 @@ void CCurrentGame::TeleportPlayer(
 	const UINT wOTileNo = this->pRoom->GetOSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wFTileNo = this->pRoom->GetFSquare(this->swordsman.wX, this->swordsman.wY);
 	const UINT wTTileNo = this->pRoom->GetTSquare(this->swordsman.wX, this->swordsman.wY);
-	
+
 	this->swordsman.wSwordMovement = NO_ORIENTATION;
-	
+
 	const bool bWeaponWasSheathed = !this->swordsman.HasWeapon();
 	const bool bWasOnSameScroll = wTTileNo==T_SCROLL;
-	
+
 	SetPlayer(wSetX, wSetY);
-	
+
 	pRoom->ExplodeStabbedPowderKegs(CueEvents);
-	
+
 	SetPlayerWeaponSheathedState();
-	
+
 	//Check for stepping on monster
 	CMonster* pMonster = this->pRoom->GetMonsterAtSquare(this->swordsman.wX, this->swordsman.wY);
 	if (pMonster)
@@ -4323,7 +4329,7 @@ void CCurrentGame::TeleportPlayer(
 			SetPlayerAsTarget();  //monsters will attack the player now
 		}
 	}
-	
+
 	ProcessPlayerMoveInteraction(0, 0, CueEvents, bWasOnSameScroll, true, true);
 
 	this->pRoom->CheckForFallingAt(wSetX, wSetY, CueEvents);
@@ -5200,7 +5206,7 @@ void CCurrentGame::AmbientSoundTracking(CCueEvents &CueEvents)
 
 						customName = pCharacter->GetCustomName();
 					}
-					
+
 					characterType = getSpeakerType(MONSTERTYPE(pMonster->GetResolvedIdentity()));
 				}
 			}
@@ -5957,7 +5963,7 @@ void CCurrentGame::ProcessMonsters(
 			pMonster->bPushedThisTurn = false;
 		}
 	}
-	
+
 	//If we got this far without a brain check, then run it now
 	if (!bBrainCheck)
 		this->bBrainSensesSwordsman = this->pRoom->BrainSensesSwordsman();
@@ -6522,8 +6528,8 @@ CheckMonsterLayer:
 					bNotAnObstacle = false;
 				break;
 			}
-		} 
-		
+		}
+
 		//Every special obstacle check should have been performed by now.
 
 		//If a seeming obstacle could actually be moved on, do it now.
@@ -6632,7 +6638,7 @@ MakeMove:
 		TunnelMove(dx,dy);
 	}
 
-	if (bIsMovementCommand(nCommand) && (this->swordsman.wX != this->swordsman.wPrevX || 
+	if (bIsMovementCommand(nCommand) && (this->swordsman.wX != this->swordsman.wPrevX ||
 		this->swordsman.wY != this->swordsman.wPrevY))
 	{
 		QueryCheckpoint(CueEvents, this->swordsman.wX, this->swordsman.wY);
@@ -7697,7 +7703,7 @@ void CCurrentGame::StashPersistingEvents(CCueEvents& CueEvents)
 //*****************************************************************************
 void CCurrentGame::RemoveClearedImageOverlays(const int clearLayers, const int clearGroup)
 {
-	if (clearLayers == ImageOverlayCommand::NO_LAYERS && 
+	if (clearLayers == ImageOverlayCommand::NO_LAYERS &&
 			clearGroup == ImageOverlayCommand::NO_GROUP)
 		return;
 

@@ -30,7 +30,12 @@ Actions:
 
 Options:
     -r, --root        Use root user where applicable
+    --debug           Use debug builds where applicable (the default)
     --release         Use release builds where applicable (defaults to debug)
+    --mode=custom     Make a non-official build without internet capabilities (default)
+    --mode=caravel    Make a standalone, official caravel build
+    --mode=steam      Make an official Steam GatEB build
+    --mode=tss        Make an official Steam TSS build
     -f, --force       Force rebuild all libraries even if they exist (passed to build-deps)
     -h, --help        Show this help message
 EOF
@@ -54,21 +59,34 @@ shift
 
 BASH_USER=1000
 BUILD=debug
+MODE=custom
 
 # Parse command line arguments for the action
 while [[ $# -gt 0 ]]; do
     case $1 in
         -f|--force)
             FORCE_REBUILD=true
-            shift
             ;;
         -r|--root)
             BASH_USER=0
-            shift
+            ;;
+        --debug)
+            BUILD=debug
             ;;
         --release)
             BUILD=release
-            shift
+            ;;
+        --mode=custom)
+            MODE=custom
+            ;;
+        --mode=caravel)
+            MODE=caravel
+            ;;
+        --mode=steam-tss)
+            MODE=steam-tss
+            ;;
+        --mode=steam)
+            MODE=steam
             ;;
         -h|--help)
             show_help
@@ -80,6 +98,7 @@ while [[ $# -gt 0 ]]; do
             exit 1
             ;;
     esac
+    shift
 done
 
 # Directory of this script (so docker-compose.yml is referenced correctly)
@@ -128,12 +147,12 @@ action_build_deps() {
 
 action_build_drod() {
     echo "=> build-drod: running ninjamaker and build in /drod/Master/Linux"
-    docker_exec "cd /drod/Master/Linux && ./ninjamaker -64 -release && ./build"
+    docker_exec "cd /drod/Master/Linux && ./ninjamaker -64 -$MODE -$BUILD && ninja -f build.$MODE.$BUILD.x86_64.ninja"
 }
 
 action_build_drod_rpg() {
     echo "=> build-drod-rpg: running ninjamaker and build in /drod/drodrpg/Master/Linux"
-    docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -release && ./build"
+    docker_exec "cd /drod/drodrpg/Master/Linux && ./ninjamaker -64 -$MODE -$BUILD && ninja -f build.$MODE.$BUILD.x86_64.ninja"
 }
 
 action_run_tests() {

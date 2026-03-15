@@ -274,7 +274,7 @@ void CEffectList::DrawEffect(
 	SDL_Surface* pDestSurface) //(in) where to draw effects (default = NULL)
 // Returns: true if the effect is still running, false if it's finished
 {
-	
+
 	ASSERT(pEffect);
 	pEffect->Draw(pDestSurface);
 }
@@ -387,7 +387,9 @@ void CEffectList::RemoveEffectsOfType(
 //Removes all effects of given type from the list.
 //
 //Params:
-	const UINT eEffectType) //(in)   Type of effect to remove.
+	const UINT eEffectType, //(in)   Type of effect to remove.
+	const bool bForceClearAll) //if set [default=true], delete all effects,
+	                     //including those that request to be retained
 {
 	bool bRepaint = false;
 
@@ -401,6 +403,9 @@ void CEffectList::RemoveEffectsOfType(
 		if (eEffectType == pEffect->GetEffectType())
 		{
 			//Remove from list.
+			if (pEffect->RequestsRetainOnClear() && !bForceClearAll) {
+				continue;
+			}
 
 			//Damage screen area.
 			bRepaint = true;

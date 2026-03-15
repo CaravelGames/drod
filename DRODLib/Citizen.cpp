@@ -181,7 +181,8 @@ CCoordSet CCitizen::GetVisitedStations() const
 	CCoordSet visitedStations;
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
-	for (int i = 0; i < this->nVisitingStation && i < this->visitingSequence.size(); ++i) {
+	const int limit = min(this->nVisitingStation, (int)this->visitingSequence.size());
+	for (int i = 0; i < limit; ++i) {
 		int index = this->visitingSequence[i];
 		CStation* pStation = room.stations[index];
 		visitedStations.insert(pStation->X(), pStation->Y());

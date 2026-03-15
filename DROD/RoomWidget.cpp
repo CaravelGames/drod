@@ -1505,7 +1505,7 @@ void CRoomWidget::DisplayRoomCoordSubtitle(const UINT wX, const UINT wY)
 	wstr += wszRightParen;
 
 	//Identify items on tile.
-#define AppendLine(mid) if (mid) {wstr += wszCRLF; wstr += g_pTheDB->GetMessageText(mid);}
+#define AppendLine(mid) if ((mid) != 0) {wstr += wszCRLF; wstr += g_pTheDB->GetMessageText(mid);}
 	UINT mid = 0;
 
 	//Player.
@@ -6659,7 +6659,7 @@ void CRoomWidget::AddMovementOrderHints()
 			if (pCharacter && pCharacter->IsInvisibleCountMoveOrder())
 				++index; //count but don't show to avoid potential overlaps
 
-				continue;
+			continue;
 		}
 
 		AddLastLayerEffect(new CMovementOrderHintEffect(this, pMonster, index));

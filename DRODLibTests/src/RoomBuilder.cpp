@@ -135,7 +135,7 @@ COrbData *RoomBuilder::AddOrbDataToTile(const UINT wX, const UINT wY, const OrbT
 }
 
 void RoomBuilder::AddWallLight(const UINT wX, const UINT wY, const UINT type){
-	if (type < 0 || type >= NUM_LIGHT_TYPES){
+	if (type >= NUM_LIGHT_TYPES){
 		throw "Invalid light type selected";
 	}
 
@@ -143,7 +143,7 @@ void RoomBuilder::AddWallLight(const UINT wX, const UINT wY, const UINT type){
 }
 
 void RoomBuilder::AddCeilingLight(const UINT wX, const UINT wY, const UINT type){
-	if (type < 0 || type >= NUM_LIGHT_TYPES){
+	if (type >= NUM_LIGHT_TYPES){
 		throw "Invalid light type selected";
 	}
 
@@ -151,7 +151,7 @@ void RoomBuilder::AddCeilingLight(const UINT wX, const UINT wY, const UINT type)
 }
 
 void RoomBuilder::AddCeilingDarkness(const UINT wX, const UINT wY, const UINT type){
-	if (type < 0 || type >= NUM_DARK_TYPES){
+	if (type >= NUM_DARK_TYPES){
 		throw "Invalid darkness type selected";
 	}
 

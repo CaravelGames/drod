@@ -262,7 +262,7 @@ void CMenuWidget::HandleMouseUp(
 	UINT wIndex;
 	for (wIndex=this->options.size(); wIndex--; )
 	{
-		if (InOption(wIndex, Button.x, Button.y) && this->nClickedOption == wIndex)
+		if (InOption(wIndex, Button.x, Button.y) && this->nClickedOption == (int)wIndex)
 		{
 			SelectOption(wIndex);
 			break;

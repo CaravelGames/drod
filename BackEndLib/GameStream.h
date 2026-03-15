@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2003, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -35,7 +35,7 @@
 #  pragma warning(disable:4786)
 #endif
 
-#include <mk4.h>
+#include "mk4_NoWarnings.h"
 #include <stdio.h>
 #include "Wchar.h"
 

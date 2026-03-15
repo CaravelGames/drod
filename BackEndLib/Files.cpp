@@ -46,7 +46,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <mk4.h>
+#include "mk4_NoWarnings.h"
 #ifdef WIN32
 #	include <io.h>
 #	include <shlobj.h>
@@ -403,7 +403,7 @@ const WSTRING CFiles::GetGameConfPath() {
 		+ CFiles::wGameName + wszHyphen	+ CFiles::wGameVer;
 	if (CFiles::bIsDemo)
 		path += CFiles::wszDemo;
-	
+
 	if (CFiles::bIsRunningTests)
 		path += wszTests;
 

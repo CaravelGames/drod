@@ -4301,7 +4301,8 @@ void CEditRoomScreen::EraseRegion()
 					if (coveredTLayerObject == T_FUSE)
 						room.SetCoveredTLayerObject(xDest, yDest, RoomObject::emptyTile());
 				}
-				//no break
+
+				// fall through -- still need to be erased
 				default:
 					EraseAndPlot(xDest, yDest, T_EMPTY, false);
 				break;
@@ -4566,7 +4567,7 @@ void CEditRoomScreen::PasteRegion(
 						case T_STATION:
 						{
 							const UINT wOldParam = pSrcRoom->GetTParam(xSrc, ySrc);
-							room.SetTParam(xDest, yDest, static_cast<const BYTE>(wOldParam));
+							room.SetTParam(xDest, yDest, static_cast<BYTE>(wOldParam));
 						}
 						break;
 
@@ -5259,6 +5260,8 @@ void CEditRoomScreen::PlotObjects()
 					EditObjects();
 					return;
 				}
+
+			// fall through -- shared logic
 			case T_SERPENT:
 			case T_SERPENTG:
 			case T_SERPENTB:
@@ -5429,7 +5432,8 @@ void CEditRoomScreen::PlotObjects()
 			this->pRoomWidget->wEndY = this->pRoomWidget->wStartY;
 			this->pRoomWidget->wEndX = this->pRoomWidget->wStartX;
 		}
-	//NO BREAK
+
+	// fall through -- shared logic
 	case T_SLAYER2: //not constrained to single placement
 	default:
 	{
@@ -5525,7 +5529,7 @@ void CEditRoomScreen::PlotObjects()
 					g_pTheSound->PlaySoundEffect(SEID_BRIAR_BREAK); break;
 				case T_DOOR_Y: case T_DOOR_YO:
 					RepairYellowDoors(wPlottedObject);
-					//no break
+				// fall through - want the sound played
 				case T_DOOR_M: case T_DOOR_C: case T_DOOR_R: case T_DOOR_B:
 				case T_DOOR_GO: case T_DOOR_CO: case T_DOOR_RO: case T_DOOR_BO:
 					g_pTheSound->PlaySoundEffect(SEID_DOOROPEN); break;
@@ -5868,7 +5872,7 @@ bool CEditRoomScreen::PlotObjectAt(
 			break;
 		case M_GENTRYII:
 			g_pTheSound->PlaySoundEffect(SEID_CHAIN_PULL);
-			//no break
+		// fall through -- shared logic
 		case M_SERPENT:
 		case M_SERPENTG:
 		case M_SERPENTB:
@@ -6835,7 +6839,7 @@ void CEditRoomScreen::Changing(
 	{
 		case RoomAndHold:
 			changes.push_back(new CDbHold(*(this->pHold)));
-			//NO BREAK
+		// fall through
 		case Room:
 			changes.push_back(new CDbRoom(*(this->pRoom), true, true));
 		break;
@@ -7509,6 +7513,7 @@ void CEditRoomScreen::ShowErrors()
 
 	UINT wSquareIndex = 0;
 	for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
+	{
 		for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
 		{
 			//Verify one square.
@@ -7714,36 +7719,37 @@ void CEditRoomScreen::ShowErrors()
 
 			++wSquareIndex;
 		}
+	}
 
-		//Check for inconsistencies in general room state.
-		if ((bRedDoors && !bTrapdoors) || (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken) || (bBlackDoors && !bTar))
-		{
-			wSquareIndex = 0;
-			for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
-				for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
+	//Check for inconsistencies in general room state.
+	if ((bRedDoors && !bTrapdoors) || (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken) || (bBlackDoors && !bTar))
+	{
+		wSquareIndex = 0;
+		for (wY=0; wY<this->pRoom->wRoomRows; ++wY)
+			for (wX=0; wX<this->pRoom->wRoomCols; ++wX)
+			{
+				//Verify one square.
+				wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
+				switch (wTileNo[0])
 				{
-					//Verify one square.
-					wTileNo[0] = this->pRoom->pszOSquares[wSquareIndex];
-					switch (wTileNo[0])
-					{
-					case T_DOOR_M: case T_DOOR_GO:
-						//Green door w/o any monsters or conquer token
-						if (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken)
-							AddShadeToTile(LightGreen);
-						break;
-					case T_DOOR_R: case T_DOOR_RO:
-						if (bRedDoors && !bTrapdoors)
-							AddShadeToTile(LightRed);  //red door w/o any trapdoors
-						break;
-					case T_DOOR_B: case T_DOOR_BO:
-						if (bBlackDoors && !bTar)
-							AddShadeToTile(LightBlack);   //tar door w/o any tarstuff
-						break;
-					}
-
-					++wSquareIndex;
+				case T_DOOR_M: case T_DOOR_GO:
+					//Green door w/o any monsters or conquer token
+					if (bGreenDoors && !bMonsters && !pRoom->bHasConquerToken)
+						AddShadeToTile(LightGreen);
+					break;
+				case T_DOOR_R: case T_DOOR_RO:
+					if (bRedDoors && !bTrapdoors)
+						AddShadeToTile(LightRed);  //red door w/o any trapdoors
+					break;
+				case T_DOOR_B: case T_DOOR_BO:
+					if (bBlackDoors && !bTar)
+						AddShadeToTile(LightBlack);   //tar door w/o any tarstuff
+					break;
 				}
-		}
+
+				++wSquareIndex;
+			}
+	}
 
 #undef AddShadeToTile
 #undef AddShadeToTileXY

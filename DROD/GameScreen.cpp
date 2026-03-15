@@ -2019,7 +2019,8 @@ void CGameScreen::AddDamageEffect(const UINT wMonsterType, const CMoveCoord& coo
 			//!!needs to be a distinct effect that doesn't get removed with other spark effects each turn
 			this->pRoomWidget->AddTLayerEffect(
 				new CSparkEffect(this->pRoomWidget, coord, 10));
-		//no break
+
+		// fall through -- shared logic
 		case M_ROCKGOLEM:
 		case M_ROCKGIANT:
 			this->pRoomWidget->AddTLayerEffect(
@@ -3040,7 +3041,8 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 								nCommand = CMD_RESTART_PARTIAL;
 							if ((keysym.mod & KMOD_ALT) != 0)
 								nCommand = CMD_RESTART_FULL;
-							//no break
+
+						// fall through -- shared logic
 						case CMD_UNDO:
 							if (this->undo.wMaxUndos > 0 || this->bPlayTesting) {
 								cmd_response = nCommand;
@@ -3150,11 +3152,12 @@ int CGameScreen::HandleEventsForPlayerDeath(CCueEvents &CueEvents)
 	if (bPlayerFellInPit)
 		this->pRoomWidget->ShowPlayer();
 
-	if (cmd_response == CMD_UNSPECIFIED)
+	if (cmd_response == CMD_UNSPECIFIED) {
 		if (this->bAutoUndoOnDeath && this->undo.wMaxUndos > 0)
 			cmd_response = CMD_UNDO;
 		else
 			cmd_response = CMD_RESTART;
+	}
 
 	if (cmd_response == CMD_UNDO)
 	{
@@ -3297,10 +3300,12 @@ SCREENTYPE CGameScreen::ProcessCommand(
 				SwirlEffect();
 				return SCR_Game; //everything below has already been handled in UpdateUIAfterMoveUndo
 			}
-			//no break
+
+		// fall through -- shared logic
 		case CMD_DOUBLE:
 			UpdateScroll(); //might have changed a scroll being displayed
-			//no break
+			break;
+
 		case CMD_ANSWER:
 			//was already handled in the calling ProcessCommand
 			break;
@@ -4122,7 +4127,7 @@ SCREENTYPE CGameScreen::ProcessCueEventsBeforeRoomDraw(
 					wTileNo = this->pRoomWidget->GetEntityTile(eMonsterType, eLogicalType, pCoord->wO, 0);
 				}
 
-				if (pCoord->wValue2 != WT_Off) {
+				if (pCoord->wValue2 != (UINT)WT_Off) {
 					const UINT swordTile = this->pRoomWidget->GetSwordTileFor(pCoord->wValue - M_OFFSET, pCoord->wO, pCoord->wValue2);
 					if (swordTile) {
 						const int wSwordX = pCoord->wX + nGetOX(pCoord->wO);

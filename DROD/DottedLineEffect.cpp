@@ -88,7 +88,12 @@ void CDottedLineEffect::CalculatePositions(const CCoord& startTile, const CCoord
 
   for (CCoordSet::const_iterator coord = this->positions.begin(); coord != this->positions.end(); ++coord)
   {
-    SDL_Rect rect = { coord->wX, coord->wY, coord->wX + SPRITE_SIZE, coord->wY + SPRITE_SIZE };
+    SDL_Rect rect = {
+      (int)coord->wX,
+      (int)coord->wY,
+      (int)coord->wX + SPRITE_SIZE,
+      (int)coord->wY + SPRITE_SIZE
+    };
     this->dirtyRects.push_back(rect);
   }
 }

@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s): Mike Rimer (mrimer)
@@ -58,7 +58,7 @@ private:
 	void     SetupKeymap1Tab(CTabbedMenuWidget* pTabbedMenu);
 	void     SetupKeymap2Tab(CTabbedMenuWidget* pTabbedMenu);
 
-	const DCMD ButtonTagToDcmd(const UINT dwTagNo) const;
+	DCMD       ButtonTagToDcmd(const UINT dwTagNo) const;
 	void       DoKeyRedefinition(const UINT dwTagNo);
 	const KeyDefinition *GetOverwrittenModifiableKey(const InputKey newKey, const DCMD eChangedCommand) const;
 

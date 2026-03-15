@@ -293,7 +293,7 @@ namespace InputCommands
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
 	extern const KeyDefinition *GetKeyDefinition(const UINT nCommand);
-	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
+	extern bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }

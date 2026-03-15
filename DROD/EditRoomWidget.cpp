@@ -960,7 +960,7 @@ const
 			//Can't place orbs on pressure plates (conflicting room data).
 			if (wTileNo[0] == T_PRESSPLATE)
 				return false;
-			//no break
+		// fall through -- shared logic
 		case T_BEACON: case T_BEACON_OFF:
 			//On normal floor, wall, goo, tunnels, or pressure plates.
 			return !bSwordsmanAt &&
@@ -1091,7 +1091,7 @@ const
 			//Serpents can never overwrite serpents.
 			if (pMonster && !bAllowSelf)
 				return false;
-			//NO BREAK
+		// fall through -- shared logic
 		case T_ROACH:
 		case T_QROACH:
 		case T_GOBLIN:
@@ -1116,7 +1116,7 @@ const
 					wSelectedObject == T_GUARD ||
 					wSelectedObject == T_STALWART2 || wSelectedObject == T_CLONE ||
 					wSelectedObject == T_DECOY || wSelectedObject == T_MIMIC ||
-					wSelectedObject == T_CITIZEN || wSelectedObject == T_ARCHITECT || 
+					wSelectedObject == T_CITIZEN || wSelectedObject == T_ARCHITECT ||
 					wSelectedObject == T_SERPENT ||
 					wSelectedObject == T_SERPENTG || wSelectedObject == T_SERPENTB;
 			return (bIsFloor(wTileNo[0]) || bIsDoor(wTileNo[0]) || bIsOpenDoor(wTileNo[0]) || bIsPlatform(wTileNo[0]) ||

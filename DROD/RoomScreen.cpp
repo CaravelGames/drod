@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -108,7 +108,7 @@ CRoomScreen::CRoomScreen(
 	this->pMapWidget->Disable();
 	AddWidget(this->pMapWidget);
 
-	this->pScrollLabel = new CLabelWidget(0L, X_SCROLL_LABEL, Y_SCROLL_LABEL, 
+	this->pScrollLabel = new CLabelWidget(0L, X_SCROLL_LABEL, Y_SCROLL_LABEL,
 			CX_SCROLL_LABEL, CY_SCROLL_LABEL, F_Scroll, wszEmpty);
 	AddWidget(this->pScrollLabel);
 	this->pScrollLabel->Hide();
@@ -160,7 +160,7 @@ void CRoomScreen::SetSignText(
 //Set text that appears on sign.
 //
 //Params:
-	const WCHAR *pwczSetText)  //(in)   New text.  NULL will make the sign 
+	const WCHAR *pwczSetText)  //(in)   New text.  NULL will make the sign
 								//    disappear on next paint.
 {
 	this->wstrSignText = pwczSetText ? pwczSetText : wszEmpty;
@@ -195,7 +195,7 @@ void CRoomScreen::PaintScroll()
 	if (this->bIsScrollVisible)
 	{
 		ASSERT(this->images[PARTS_SURFACE]);
-		SDL_BlitSurface(this->images[PARTS_SURFACE], &ScrollRect, 
+		SDL_BlitSurface(this->images[PARTS_SURFACE], &ScrollRect,
 				pDestSurface, &ScreenRect);
 		this->pScrollLabel->Show();
 		this->pScrollLabel->Paint();
@@ -203,11 +203,11 @@ void CRoomScreen::PaintScroll()
 	else
 	{
 		ASSERT(this->images[BG_SURFACE]);
-		SDL_BlitSurface(this->images[BG_SURFACE], &ScreenRect, 
+		SDL_BlitSurface(this->images[BG_SURFACE], &ScreenRect,
 				pDestSurface, &ScreenRect);
 		this->pScrollLabel->Hide();
 	}
-	
+
 	UpdateRect(ScreenRect);
 }
 
@@ -241,7 +241,7 @@ void CRoomScreen::PaintSign()
 		//Figure out how wide it will be.
 		g_pTheFM->GetTextWidthHeight(F_Sign, this->wstrSignText.c_str(), wTextWidth, wTextHeight);
 		ASSERT(wTextWidth > 0);
-			
+
 		//Figure how many middle sign parts will be needed to display the text.
 		wMiddleCount = (wTextWidth / CX_MIDDLE_SIGN);
 		if (wTextWidth % CX_MIDDLE_SIGN != 0) ++wMiddleCount; //Round up.
@@ -257,7 +257,7 @@ void CRoomScreen::PaintSign()
 		}
 
 		//Blit left part of sign.
-		SDL_Rect Dest = MAKE_SDL_RECT(X_SIGN + ((CX_SIGN - wSignWidth) / 2), Y_SIGN, 
+		SDL_Rect Dest = MAKE_SDL_RECT(X_SIGN + ((CX_SIGN - wSignWidth) / 2), Y_SIGN,
 				CX_LEFT_SIGN, CY_SIGN);
 		Uint32 TransparentColor = SDL_MapRGB(this->images[PARTS_SURFACE]->format, 226, 0, 0);
 		SetColorKey(this->images[PARTS_SURFACE], SDL_TRUE, TransparentColor);
@@ -366,7 +366,7 @@ void CRoomScreen::AddNoticesDialog()
 	pButton = new CButtonWidget(TAG_OK, X_OK_BUTTON, Y_OK_BUTTON,
 			CX_OK_BUTTON, CY_OK_BUTTON, g_pTheDB->GetMessageText(MID_Okay));
 	this->pNoticesDialog->AddWidget(pButton);
-	
+
 	AddWidget(this->pNoticesDialog,true);
 	this->pNoticesDialog->Center();
 	this->pNoticesDialog->Hide();
@@ -390,7 +390,7 @@ void CRoomScreen::OpenNoticesBox(CRoomWidget* pRoomWidget)
 
 	switch (returnTag) {
 	case TAG_NOTICESNOTICE:
-		// This button should go to whatever the notice was about. 
+		// This button should go to whatever the notice was about.
 		UINT selected = this->pNoticesList->GetSelectedItem();
 		std::map<UINT, CNetNotice>::const_iterator item = this->notices.find(selected);
 		if (item != this->notices.end()) {
@@ -409,7 +409,7 @@ void CRoomScreen::OpenNoticesBox(CRoomWidget* pRoomWidget)
 				break;
 
 			case NOTICE_ROOMSPECIFIC:
-				// Go to the hold/level/room specified.  
+				// Go to the hold/level/room specified.
 				break;
 			}
 		}
@@ -427,16 +427,10 @@ void CRoomScreen::UpdateNoticesButton()
 {
 	const int num = this->notices.size();
 	CButtonWidget* pButton = dynamic_cast<CButtonWidget*>(this->GetWidget(TAG_OPEN_NOTICES));
-	string label;
+	string label = num >= 10
+		? "..."
+		: to_string(num);
 	WSTRING wLabel;
-	if (num >= 10) {
-		label = "...";
-	}
-	else {
-		char buffer[5];
-		sprintf(buffer, "%d", num);
-		label = buffer;
-	}
 	UTF8ToUnicode(label, wLabel);
 	pButton->SetCaption(wLabel.c_str());
 	pButton->RequestPaint();

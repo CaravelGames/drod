@@ -282,8 +282,8 @@ void CImageOverlayEffect::DrawRepeated(SDL_Surface* srcSurface, SDL_Surface* des
 	SDL_Rect widgetRect = {
 		this->pOwnerWidget->GetX(),
 		this->pOwnerWidget->GetY(),
-		this->pOwnerWidget->GetW(),
-		this->pOwnerWidget->GetH()
+		(int)this->pOwnerWidget->GetW(),
+		(int)this->pOwnerWidget->GetH()
 	};
 
 	int repeats = 0;
@@ -560,6 +560,8 @@ void CImageOverlayEffect::StartNextCommand()
 	case ImageOverlayCommand::CancelLayer:
 	case ImageOverlayCommand::Group:
 	case ImageOverlayCommand::Layer:
+	case ImageOverlayCommand::TimeLimit:
+	case ImageOverlayCommand::TurnLimit:
 		// Do nothing, these are handled externally
 		return;
 
@@ -591,6 +593,7 @@ void CImageOverlayEffect::StartNextCommand()
 		this->sourceClipRect.y = max(0, this->sourceClipRect.y + command.val[1]);
 		this->sourceClipRect.w = min(max(0, this->sourceClipRect.w + command.val[2]), this->pImageSurface->w);
 		this->sourceClipRect.h = min(max(0, this->sourceClipRect.h + command.val[3]), this->pImageSurface->h);
+		break;
 
 	case ImageOverlayCommand::DisplaySize:
 		this->sourceClipRect.w = min(max(0, val), this->pImageSurface->w);
@@ -645,8 +648,6 @@ void CImageOverlayEffect::StartNextCommand()
 		this->parallelCommands.push_back(c);
 	}
 	break;
-
-		break;
 
 	case ImageOverlayCommand::Loop:
 		this->maxLoops = val;
@@ -733,6 +734,7 @@ void CImageOverlayEffect::StartNextCommand()
 		this->executionState.endTurn = gameTurn + max(0, val);
 	}
 	break;
+	case ImageOverlayCommand::Invalid: return; // Ignore, nothing to do
 	}
 }
 

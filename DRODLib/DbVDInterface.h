@@ -17,7 +17,7 @@
  *
  * The Initial Developer of the Original Code is
  * Caravel Software.
- * Portions created by the Initial Developer are Copyright (C) 1995, 1996, 
+ * Portions created by the Initial Developer are Copyright (C) 1995, 1996,
  * 1997, 2000, 2001, 2002, 2005 Caravel Software. All Rights Reserved.
  *
  * Contributor(s):
@@ -30,20 +30,20 @@
 
 //#define DEV_BUILD  //uncomment to prepare official .dats for a release build
 
-#ifdef WIN32 
-#  pragma warning(disable:4786) 
-#endif 
+#ifdef WIN32
+#  pragma warning(disable:4786)
+#endif
 
 #include "DbBase.h"
 #include "DbRefs.h"
 #include <BackEndLib/IDSet.h>
 #include <BackEndLib/StretchyBuffer.h>
 
-#include <mk4.h>
+#include <BackEndLib/mk4_NoWarnings.h>
 
-#ifdef WIN32 
-#  pragma warning(disable:4786) 
-#endif 
+#ifdef WIN32
+#  pragma warning(disable:4786)
+#endif
 
 //******************************************************************************************
 class CDb;
@@ -204,7 +204,7 @@ VDElement* CDbVDInterface<VDElement>::GetByID(
 	const bool bQuick)   //(in) load only certain data members [default=false]
 //
 //Returns:
-//Pointer to loaded element which caller must delete, or NULL if no matching element 
+//Pointer to loaded element which caller must delete, or NULL if no matching element
 //was found.
 {
 	VDElement *pVDElement = new VDElement();
@@ -320,7 +320,7 @@ VDElement* CDbVDInterface<VDElement>::GetNew()
 	this->bIsMembershipLoaded = false;
 
 	//Return new object.
-	return new VDElement;   
+	return new VDElement;
 }
 
 //

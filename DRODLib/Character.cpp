@@ -1505,8 +1505,8 @@ bool CCharacter::IsCommandTypeIn(
 	const CCharacterCommand::CharCommand command
 ) const
 {
-	ASSERT(startIndex < commands.size());
-	ASSERT(endIndex < commands.size());
+	ASSERT(startIndex < (int)commands.size());
+	ASSERT(endIndex < (int)commands.size());
 
 	for (int i = startIndex; i <= endIndex; ++i) {
 		if (this->commands[i].command == command) {
@@ -2759,7 +2759,8 @@ void CCharacter::Process(
 					break;
 					case ScriptFlag::DieSpecial:
 						bChangeImperative = !HasSpecialDeath();
-						//no break
+
+					// fall through
 					case ScriptFlag::Die:
 						if (bExecuteNoMoveCommands && bChangeImperative)
 							return; //wait until first move to die
@@ -5216,7 +5217,8 @@ bool CCharacter::IsOpenTileAt(
 		case M_FLUFFBABY:
 			if ((pflags & ScriptFlag::PUFFBABY) != 0)
 				break;
-			// Fall through to default case if puff isn't excluded
+
+		// fall through -- default case if puff isn't excluded
 		default:
 			return ((pflags & ScriptFlag::MONSTER) != 0);
 			break;
@@ -6109,16 +6111,19 @@ bool CCharacter::EvaluateLogicalAnd(
 						return false;
 				}
 				break;
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					return false;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			if (!EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
@@ -6170,22 +6175,26 @@ bool CCharacter::EvaluateLogicalOr(
 					if (EvaluateLogicalXOR(wCommandIndex, pGame, nLastCommand, CueEvents))
 						return true;
 				}
+				break;
 				case CCharacterCommand::CC_LogicalWaitNOR:
 				{
 					if (!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents))
 						return true;
 				}
 				break;
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					return false;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			if (EvaluateConditionalCommand(command, pGame, nLastCommand, CueEvents))
@@ -6243,16 +6252,20 @@ bool CCharacter::EvaluateLogicalXOR(
 					bLocalFound =
 						!EvaluateLogicalOr(wCommandIndex, pGame, nLastCommand, CueEvents);
 				}
+				break;
+				default:
+					ASSERT(!"Impossible logical wait command value");
+					break;
 			}
 
 			// Find the end of the nested logic block and jump ahead.
-			UINT wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
+			int wNextIndex = GetIndexOfNextLogicEnd(wCommandIndex + 1);
 			if (wNextIndex == NO_LABEL) {
 				// Malformed statement - just return false
 				return false;
 			}
 
-			wCommandIndex = wNextIndex;
+			wCommandIndex = static_cast<UINT>(wNextIndex);
 		}
 		else if (command.IsLogicalWaitCondition()) {
 			bLocalFound =
@@ -7864,7 +7877,7 @@ int CCharacter::GetIndexOfCommandWithLabel(const int label) const
 		{
 			const CCharacterCommand& command = this->commands[wIndex];
 			if (command.command == CCharacterCommand::CC_Label &&
-				label == command.x)
+				label == (int)command.x)
 				return wIndex;
 		}
 	} else if (label < 0) {
@@ -7917,6 +7930,7 @@ int CCharacter::GetIndexOfPreviousIf(const bool bIgnoreElseIf) const
 			case CCharacterCommand::CC_IfEnd:
 				wNestingDepth++; // entering a nested if-block
 			break;
+			default: break; // Silently ignore
 		}
 	}
 
@@ -7950,6 +7964,7 @@ int CCharacter::GetIndexOfNextElse(const bool bIgnoreElseIf) const
 				if (wNestingDepth > 0)
 					wNestingDepth--; // exiting a nested if-block
 			break;
+			default: break; // Silently ignore
 		}
 
 		++wCommandIndex;
@@ -7982,6 +7997,7 @@ int CCharacter::GetIndexOfNextLogicEnd(const UINT wStartIndex) const
 					wNestingDepth--; // exiting a nested logic block
 				}
 			break;
+			default: break; // Silently ignore
 		}
 
 		++wCommandIndex;
@@ -8309,7 +8325,8 @@ void CCharacter::TurnIntoMonster(
 				CEvilEye *pEye = DYN_CAST(CEvilEye*, CMonster*, pMonster);
 				pEye->SetActive();
 			}
-		//NO BREAK
+
+		// fall through
 		default: pMonster->wO = this->wO; break;
 	}
 

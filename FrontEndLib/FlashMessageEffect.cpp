@@ -151,11 +151,12 @@ void CFlashMessageEffect::Draw(SDL_Surface& destSurface)
 		pSurfaceToDraw = pScaledSurface;
 	}
 
-	if (this->nOpacity < 255)
+	if (this->nOpacity < 255) {
 		if (this->bBlendedFontRender)
 			g_pTheBM->SetSurfaceAlpha(pSurfaceToDraw, this->nOpacity);
 		else
 			EnableSurfaceBlending(pSurfaceToDraw, this->nOpacity);
+	}
 
 	SDL_BlitSurface(pSurfaceToDraw, NULL, &destSurface, &this->drawRect);
 

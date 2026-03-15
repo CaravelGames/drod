@@ -161,7 +161,7 @@ namespace InputCommands
 		{
 		}
 
-		const InputKey GetDefaultKey(const UINT wKeyboardMode) const
+		InputKey GetDefaultKey(const UINT wKeyboardMode) const
 		{
 			return wKeyboardMode == 1 ? this->defaultKeyNotebook : this->defaultKeyDesktop;
 		}
@@ -261,7 +261,7 @@ namespace InputCommands
 
 	extern DCMD getCommandIDByVarName(const WSTRING& wtext);
 	extern const KeyDefinition* GetKeyDefinition(const UINT nCommand);
-	extern const bool DoesCommandUseModifiers(const DCMD eCommand);
+	extern bool DoesCommandUseModifiers(const DCMD eCommand);
 
 	extern MESSAGE_ID KeyToMID(const SDL_Keycode nKey);
 }

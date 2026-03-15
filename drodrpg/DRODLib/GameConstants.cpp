@@ -171,7 +171,7 @@ namespace InputCommands
 		return COMMAND_MAP.at(eCommand);
 	}
 
-	const bool DoesCommandUseModifiers(const DCMD eCommand)
+	bool DoesCommandUseModifiers(const DCMD eCommand)
 	// These commands by default support Ctrl (and other) modifiers, and as such they can't
 	// be mapped to keys with modifiers nor other commands may map to modifer-versions
 	// of these commands
