@@ -181,7 +181,7 @@ CCoordSet CCitizen::GetVisitedStations() const
 	CCoordSet visitedStations;
 	CDbRoom& room = *(this->pCurrentGame->pRoom);
 
-	const int limit = std::min(this->nVisitingStation, (int)this->visitingSequence.size());
+	const int limit = min(this->nVisitingStation, (int)this->visitingSequence.size());
 	for (int i = 0; i < limit; ++i) {
 		int index = this->visitingSequence[i];
 		CStation* pStation = room.stations[index];
