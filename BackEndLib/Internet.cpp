@@ -92,26 +92,33 @@ int CInternet_HTTP_Get_Worker(void* pPtr)
 		CURL* pHandle = curl_easy_init();
 
 		//Set transfer options.
-		curl_easy_setopt(pHandle, CURLOPT_NOPROGRESS, 1);
-		curl_easy_setopt(pHandle, CURLOPT_NOSIGNAL, 1);
-		curl_easy_setopt(pHandle, CURLOPT_CONNECTTIMEOUT, 5);  //fail if connect takes longer than this (s)
-		curl_easy_setopt(pHandle, CURLOPT_LOW_SPEED_LIMIT, 1); //the client must receive at least 1 byte...
-		curl_easy_setopt(pHandle, CURLOPT_LOW_SPEED_TIME, 10); //...every 10 seconds, otherwise fail
-		curl_easy_setopt(pHandle, CURLOPT_DNS_CACHE_TIMEOUT, -1);	//preserve name resolves forever
+		CURL_IGNORE_DEPRECATION(
+			curl_easy_setopt(pHandle, CURLOPT_NOPROGRESS, 1);
+			curl_easy_setopt(pHandle, CURLOPT_NOSIGNAL, 1);
+			curl_easy_setopt(pHandle, CURLOPT_CONNECTTIMEOUT, 5);  //fail if connect takes longer than this (s)
+			curl_easy_setopt(pHandle, CURLOPT_LOW_SPEED_LIMIT, 1); //the client must receive at least 1 byte...
+			curl_easy_setopt(pHandle, CURLOPT_LOW_SPEED_TIME, 10); //...every 10 seconds, otherwise fail
+			curl_easy_setopt(pHandle, CURLOPT_DNS_CACHE_TIMEOUT, -1);	//preserve name resolves forever
+		);
 
 		//URL and response.
-		curl_easy_setopt(pHandle, CURLOPT_WRITEDATA, pInfo);
-		curl_easy_setopt(pHandle, CURLOPT_URL, pInfo->strUrl.c_str());
-		curl_easy_setopt(pHandle, CURLOPT_WRITEFUNCTION, CInternet_HandleDataStretchyBuffer);
-		curl_easy_setopt(pHandle, CURLOPT_USERAGENT, CInternet::userAgent.c_str());
-		curl_easy_setopt(pHandle, CURLOPT_ERRORBUFFER, pInfo->errorBuffer);
+		CURL_IGNORE_DEPRECATION(
+			curl_easy_setopt(pHandle, CURLOPT_WRITEDATA, pInfo);
+			curl_easy_setopt(pHandle, CURLOPT_URL, pInfo->strUrl.c_str());
+			curl_easy_setopt(pHandle, CURLOPT_WRITEFUNCTION, CInternet_HandleDataStretchyBuffer);
+			curl_easy_setopt(pHandle, CURLOPT_USERAGENT, CInternet::userAgent.c_str());
+			curl_easy_setopt(pHandle, CURLOPT_ERRORBUFFER, pInfo->errorBuffer);
+		);
 
 		string cookies = CInternet::GetCookies();
 		if (!cookies.empty())
 			curl_easy_setopt(pHandle, CURLOPT_COOKIE, cookies.c_str());
 
-		if (pPost)
-			curl_easy_setopt(pHandle, CURLOPT_HTTPPOST, pPost);
+		if (pPost) {
+			CURL_IGNORE_DEPRECATION(
+				curl_easy_setopt(pHandle, CURLOPT_HTTPPOST, pPost);
+			);
+		}
 
 		//Send.
 		code = curl_easy_perform(pHandle);
@@ -301,7 +308,7 @@ files.AppendErrorLog(NEWLINE);
 	f.AppendErrorLog("CINTERNET GETRESULTS\n");
 	f.AppendErrorLog(str.c_str());
 */
-	
+
 		return pBuffer;
 	}
 

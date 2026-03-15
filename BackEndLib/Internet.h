@@ -36,6 +36,11 @@
 #include <json/json.h>
 using std::string;
 
+// In case curl version used on Windows is too old to have this macro
+#ifndef CURL_IGNORE_DEPRECATION
+#define CURL_IGNORE_DEPRECATION(statements)     statements
+#endif
+
 #ifndef INTERNET_H
 #define INTERNET_H
 

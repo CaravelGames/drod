@@ -35,7 +35,9 @@ CPostData::CPostData()
 CPostData::~CPostData()
 {
 	if (pFormPostBegin) {
-		curl_formfree(pFormPostBegin);
+		CURL_IGNORE_DEPRECATION(
+			curl_formfree(pFormPostBegin);
+		);
 	}
 }
 
@@ -47,12 +49,14 @@ void CPostData::Add(
 	const string& strName,          //(in) Name
 	const CStretchyBuffer& value)   //(in) Value
 {
-	curl_formadd(&pFormPostBegin, &pFormPostEnd,
-		CURLFORM_COPYNAME, strName.c_str(),
-		CURLFORM_COPYCONTENTS, (char*)(BYTE*)value,
-		CURLFORM_CONTENTSLENGTH, value.Size(),
-		CURLFORM_CONTENTTYPE, "application/binary", 
-		CURLFORM_END);
+	CURL_IGNORE_DEPRECATION(
+		curl_formadd(&pFormPostBegin, &pFormPostEnd,
+			CURLFORM_COPYNAME, strName.c_str(),
+			CURLFORM_COPYCONTENTS, (char*)(BYTE*)value,
+			CURLFORM_CONTENTSLENGTH, value.Size(),
+			CURLFORM_CONTENTTYPE, "application/binary",
+			CURLFORM_END);
+	);
 }
 
 void CPostData::Add(
@@ -62,11 +66,13 @@ void CPostData::Add(
 	const string& strName,     //(in) Name
 	const string& value)       //(in) Value
 {
-	curl_formadd(&pFormPostBegin, &pFormPostEnd,
-		CURLFORM_COPYNAME, strName.c_str(),
-		CURLFORM_COPYCONTENTS, value.c_str(),
-		CURLFORM_CONTENTSLENGTH, value.length(),
-		CURLFORM_END);
+	CURL_IGNORE_DEPRECATION(
+		curl_formadd(&pFormPostBegin, &pFormPostEnd,
+			CURLFORM_COPYNAME, strName.c_str(),
+			CURLFORM_COPYCONTENTS, value.c_str(),
+			CURLFORM_CONTENTSLENGTH, value.length(),
+			CURLFORM_END);
+	);
 }
 
 void CPostData::Add(
@@ -81,15 +87,19 @@ void CPostData::Add(
 
 	for (UINT i=0; i<numValues; ++i)
 	{
-		pForms[i].option = CURLFORM_COPYCONTENTS;
+		CURL_IGNORE_DEPRECATION(
+			pForms[i].option = CURLFORM_COPYCONTENTS;
+		);
 		pForms[i].value  = values[i].c_str();
 	}
 	pForms[numValues].option = CURLFORM_END;
 
-	curl_formadd(&pFormPostBegin, &pFormPostEnd,
-		CURLFORM_COPYNAME, strName.c_str(),
-		CURLFORM_ARRAY, pForms,
-		CURLFORM_END);
+	CURL_IGNORE_DEPRECATION(
+		curl_formadd(&pFormPostBegin, &pFormPostEnd,
+			CURLFORM_COPYNAME, strName.c_str(),
+			CURLFORM_ARRAY, pForms,
+			CURLFORM_END);
+	);
 
 	delete[] pForms;
 }
