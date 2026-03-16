@@ -30,6 +30,7 @@
 #include <BackEndLib/Coord.h>
 #include <BackEndLib/Ports.h>
 
+#include <algorithm>
 #include <utility>      //std::swap
 
 #ifdef _DEBUG
@@ -162,7 +163,7 @@ void CPathMap::CalcPaths()
 							(wNewX == 0 || (UINT)wNewX == this->wCols - 1 || wNewY == 0 || (UINT)wNewY == this->wRows - 1))
 					{
 						this->entrySquares.push(SORTPOINT(wNewX, wNewY,  //v- prefer less diagonals
-							dwScore*100 + min(abs((int)(origin.wX - wNewX)), abs((int)(origin.wY - wNewY))),
+							dwScore*100 + std::min(abs((int)(origin.wX - wNewX)), abs((int)(origin.wY - wNewY))),
 							square.dwSteps));
 					}
 				}

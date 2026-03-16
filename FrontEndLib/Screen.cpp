@@ -46,6 +46,7 @@
 
 #include <SDL_syswm.h>
 
+#include <algorithm>
 #include <math.h>
 
 #ifdef STEAMBUILD
@@ -134,7 +135,7 @@ void UpdateWindowSize (int ww, int wh)
 
 	double scalex = (double)ww / (double)CScreen::CX_SCREEN;
 	double scaley = (double)wh / (double)CScreen::CY_SCREEN;
-	CScreen::WindowScaleFactor = min(scalex, scaley);
+	CScreen::WindowScaleFactor = std::min(scalex, scaley);
 
 	CScreen::WindowTargetRect.w = (int)floor(CScreen::CX_SCREEN * CScreen::WindowScaleFactor + 0.5);
 	CScreen::WindowTargetRect.h = (int)floor(CScreen::CY_SCREEN * CScreen::WindowScaleFactor + 0.5);

@@ -32,6 +32,8 @@
 #include <BackEndLib/Ports.h>
 #include <BackEndLib/UtilFuncs.h>
 
+#include <algorithm>
+
 //
 //Public methods.
 //
@@ -217,7 +219,7 @@ bool CFloatTextEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 	Uint32 dwOpacity = 255;
 	if (dwTimeElapsed > periodBeforeFade)
 		dwOpacity = static_cast<Uint32>(dwOpacity * (1.0 - (dwTimeElapsed - periodBeforeFade) / float(fadeDuration)));
-	this->nOpacity = min(255U, dwOpacity);
+	this->nOpacity = std::min(255U, dwOpacity);
 
 	if (this->bPerPixelTransparency) {
 		//manual clipping potentially required
