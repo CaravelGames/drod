@@ -30,6 +30,7 @@
 #include "Assert.h"
 #include "Types.h"
 #include "Ports.h"  // for towlower, iswspace
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <sstream>
@@ -597,7 +598,7 @@ int _Wtoi(const WCHAR* wsz)
 WCHAR* _itoW(int value, WCHAR* wcz, int radix, int bufferLength)
 {
 	// Internal buffer's max length should never ever be exceeded
-	bufferLength = min(WCHAR_INTERNAL_BUFFER, bufferLength);
+	bufferLength = std::min(WCHAR_INTERNAL_BUFFER, bufferLength);
 
 	int i = 0;
 	bool bNegative = false;

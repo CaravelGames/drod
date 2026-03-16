@@ -32,23 +32,6 @@
 
 #include "PortsBase.h" //must be first include
 
-#if defined(WIN32) && !defined(__GNU__)
-//VS doesn't have std::min/max
-#ifndef min
-#	define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-#ifndef max
-#	define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-//template<typename T> static inline T& min (T &a, T &b) { return a < b ? a : b; }
-//template<typename T> static inline T& max (T &a, T &b) { return a > b ? a : b; }
-#else
-#include <algorithm>
-using std::min;
-using std::max;
-using std::abs;
-#endif
-
 #ifndef WIN32
 
 #include "Types.h"
