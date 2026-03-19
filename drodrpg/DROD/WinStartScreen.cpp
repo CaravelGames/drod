@@ -196,13 +196,9 @@ bool CWinStartScreen::SetForActivate()
 		playerRoomsExplored += pEndHoldGame->dwRoomID; //consider current room explored
 	}
 
-	UINT secretRoomsFound=0;
-	for (CIDSet::const_iterator room = playerRoomsExplored.begin();
-			room != playerRoomsExplored.end(); ++room)
-	{
-		if (roomsInHold.secretRooms.has(*room))
-			++secretRoomsFound;
-	}
+	HoldStats stats;
+	UINT secretRoomsFound= g_pTheDB->Holds.GetSecretsDone(stats,
+		g_pTheDB->GetHoldID(), g_pTheDB->GetPlayerID());
 
 	if (secretRoomsFound)
 	{
