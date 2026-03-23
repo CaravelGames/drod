@@ -702,10 +702,9 @@ void CDemosScreen::DeleteDemo()
 			delete pDemo;
 			
 			//Delete the demo.
-			//Update demo list to no longer show this demo.
+			//Demo list will be updated after all demos are handled
 			if (!bHideDemo)
 				g_pTheDB->Demos.Delete(dwDemoID);
-			this->pDemoListBoxWidget->RemoveItem(dwDemoID);
 
 			dwDemoID = dwNextDemoID;
 		} while (dwNextDemoID && bDeleteChildDemos);
@@ -713,6 +712,8 @@ void CDemosScreen::DeleteDemo()
 	this->pDemoListBoxWidget->SelectLine(0);
 
 	ListCNetDemos();	//update state
+	this->pDemoListBoxWidget->Clear();
+	PopulateDemoListBox();
 	const UINT dwDemoID = this->pDemoListBoxWidget->GetSelectedItem();
 	SetWidgetsToDemo(dwDemoID);
 	Paint();
