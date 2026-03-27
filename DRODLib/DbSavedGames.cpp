@@ -806,6 +806,7 @@ bool CDbSavedGame::UpdateNew()
 	this->dwSavedGameID = GetIncrementedID(p_SavedGameID);
 
 	SerializeBehaviorOverrides();
+	SerializeScriptArrays();
 
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
