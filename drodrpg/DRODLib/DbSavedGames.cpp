@@ -1677,6 +1677,8 @@ bool CDbSavedGame::UpdateNew()
 	c4_View WorldMapIconsView;
 	SaveWorldMapIcons(WorldMapIconsView);
 
+	SerializeScriptArrays();
+
 	//Get stats into a buffer that can be written to db.
 	UINT dwStatsSize;
 	BYTE *pbytStatsBytes = this->stats.GetPackedBuffer(dwStatsSize);
