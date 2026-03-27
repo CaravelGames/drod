@@ -755,6 +755,8 @@ const WCHAR* CDbBase::GetMessageText(
 	{
 //		case MID_DRODUpgradingDataFiles: strText = "DROD is upgrading your data files." NEWLINE "This could take a moment.  Please be patient..."; break;
 //		case MID_No: strText = "&No"; break;
+		case MID_Explosives: strText = "Explosives"; break;
+		case MID_PushableObjects: strText = "Pushable Objects"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
