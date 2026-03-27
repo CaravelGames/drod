@@ -5415,6 +5415,8 @@ void CCharacterDialogWidget::PopulateItemGroupListBox(CListBoxWidget* pListBox)
 	pListBox->AddItem(ScriptFlag::IG_TarFluff, g_pTheDB->GetMessageText(MID_TarFluffGroup));
 	pListBox->AddItem(ScriptFlag::IG_Briar, g_pTheDB->GetMessageText(MID_Briars));
 	pListBox->AddItem(ScriptFlag::IG_Beacon, g_pTheDB->GetMessageText(MID_Beacon));
+	pListBox->AddItem(ScriptFlag::IG_Explosive, g_pTheDB->GetMessageText(MID_Explosives));
+	pListBox->AddItem(ScriptFlag::IG_Pushable, g_pTheDB->GetMessageText(MID_PushableObjects));
 	pListBox->AddItem(ScriptFlag::IG_Potion, g_pTheDB->GetMessageText(MID_PotionOrHorn));
 }
 
@@ -5768,7 +5770,7 @@ void CCharacterDialogWidget::PopulateVarList()
 	this->pVarListBox->AddItem(ScriptVars::P_OVERHEADIMAGE_Y, g_pTheDB->GetMessageText(MID_VarOverheadImageY));
 
 	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycle));
-	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE, g_pTheDB->GetMessageText(MID_SpawnCycleFast));
+	this->pVarListBox->AddItem(ScriptVars::P_SPAWNCYCLE_FAST, g_pTheDB->GetMessageText(MID_SpawnCycleFast));
 
 	this->pVarListBox->AddItem(ScriptVars::P_COMBO, g_pTheDB->GetMessageText(MID_VarCombo));
 
