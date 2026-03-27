@@ -1938,6 +1938,8 @@ enum MID_CONSTANT {
   MID_LogicalWaitNOR = 2169,
   MID_IfNot = 2170,
   MID_IfElseIfNot = 2171,
+  MID_Explosives = 2172,
+  MID_PushableObjects = 2173,
 
   //Messages from Stats.uni:
   MID_VarMonsterColor = 1963,

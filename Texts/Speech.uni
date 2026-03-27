@@ -3366,3 +3366,11 @@ If Not ...
 [MID_IfElseIfNot]
 [eng]
 Else If Not
+
+[MID_Explosives]
+[eng]
+Explosives
+
+[MID_PushableObjects]
+[eng]
+Pushable Objects
