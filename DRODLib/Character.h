@@ -278,6 +278,8 @@ public:
 	bool  bPlayerTouchedMe; //player bumped into this NPC this turn
 	bool  bParseIfElseAsCondition; //a multi-turn elseif sequence is in play
 	
+	bool  bNoTurnZeroProcess; //if true, the character will not be processed on the turn the player enters a room
+
 	int nColor;
 
 

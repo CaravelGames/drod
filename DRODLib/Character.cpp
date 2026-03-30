@@ -179,6 +179,7 @@ CCharacter::CCharacter(
 	, bYesNoQuestion(false)
 	, bPlayerTouchedMe(false)
 	, bParseIfElseAsCondition(false)
+	, bNoTurnZeroProcess(false)
 	, nColor(-1)
 	, wCurrentCommandIndex(0)
 	, wTurnDelay(0)

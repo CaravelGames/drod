@@ -304,6 +304,7 @@ CMonster* CCurrentGame::AddNewEntity(
 		str += NEWLINE;
 		CFiles f;
 		f.AppendUserLog(str.c_str());
+		pCharacter->bNoTurnZeroProcess = true; //also prevent processing in CDbRoom::PreprocessMonsters
 	} else {
 		const bool bExec = ExecutingNoMoveCommands();
 		SetExecuteNoMoveCommands();
