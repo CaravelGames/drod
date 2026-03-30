@@ -5725,10 +5725,15 @@ void CDbRoom::PreprocessMonsters(CCueEvents& CueEvents)
 	bool bPassedOriginalLastMonster = false;
 	for (pMonster = this->pFirstMonster; pMonster != NULL; pMonster = pMonster->pNext)
 	{
-		if (pMonster->wType == M_CHARACTER && !bPassedOriginalLastMonster)
+		if (pMonster->wType == M_CHARACTER)
 		{
 			CCharacter *pCharacter = DYN_CAST(CCharacter*, CMonster*, pMonster);
 			pCharacter->SetWeaponSheathed();
+
+			if (pCharacter->bNoTurnZeroProcess) {
+				continue;
+			}
+
 			pCharacter->Process(CMD_WAIT, CueEvents);
 			this->pCurrentGame->PostProcessCharacter(pCharacter, CueEvents);
 
