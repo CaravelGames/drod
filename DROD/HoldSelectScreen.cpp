@@ -811,6 +811,7 @@ void CHoldSelectScreen::DownloadNewRoomStyles(set<WSTRING>& importedStyles)
 			Base64::decode(CDbXML::info.headerInfo, wstr);
 			CFiles f;
 			f.WriteGameProfileBuffer(wstr,false,false);
+			CDbXML::info.headerInfo.clear();
 		}
 		delete pResults;
 	}
@@ -1066,7 +1067,10 @@ void CHoldSelectScreen::OnClick(
 				WSTRING wstr;
 				Base64::decode(CDbXML::info.headerInfo, wstr);
 				if (!wstr.empty())
-					f.WriteGameProfileBuffer(wstr,false,false);
+				{
+					f.WriteGameProfileBuffer(wstr, false, false);
+					CDbXML::info.headerInfo.clear();
+				}
 			}
 			if (!importedHoldIDs.empty())
 			{

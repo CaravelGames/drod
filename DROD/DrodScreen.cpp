@@ -2205,6 +2205,7 @@ MESSAGE_ID CDrodScreen::ImportFiles(
 					WSTRING wstr;
 					Base64::decode(CDbXML::info.headerInfo, wstr);
 					f.WriteGameProfileBuffer(wstr,false,false);
+					CDbXML::info.headerInfo.clear();
 				}
 				break;
 			case CImportInfo::Demo: dwImportedID = 1; break;   //value not used -- indicates a demo was in fact imported
