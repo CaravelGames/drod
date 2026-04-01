@@ -4575,15 +4575,19 @@ void CCurrentGame::RestartRoom(
 	SavePrep();
 */
 
+	//Move the player back to the beginning of the room.
+	//We need to set up player stats before monsters are loaded, as the stats include
+	//the monster HP multiplier value
+	SetPlayerToRoomStart();
+
 	//Return room to the state it had on entry.
 	ASSERT(this->pRoom);
 	this->pRoom->Reload();
 	CDbSavedGame::ReloadMonsterList();
 	RetrieveExploredRoomData(*this->pRoom);
 
-	//Move the player back to the beginning of the room.
+	//Do post-load processing
 	CueEvents.Clear();
-	SetPlayerToRoomStart();
 	SetMembersAfterRoomLoad(CueEvents);
 	ProcessCommand_EndOfTurnEventHandling(CueEvents);
 /*
