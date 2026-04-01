@@ -492,6 +492,7 @@ void CModScreen::DownloadSelectedMods()
 		WSTRING wstr;
 		Base64::decode(CDbXML::info.headerInfo, wstr);
 		f.WriteGameProfileBuffer(wstr,false,false);
+		CDbXML::info.headerInfo.clear();
 		delete pBuffer;
 		if (firstImportedName.empty())
 			firstImportedName = name.c_str();
@@ -587,6 +588,7 @@ void CModScreen::OnClick(
 				WSTRING wstr;
 				Base64::decode(CDbXML::info.headerInfo, wstr);
 				f.WriteGameProfileBuffer(wstr,false,false);
+				CDbXML::info.headerInfo.clear();
 			}
 			if (!importedIDs.empty())
 			{
