@@ -6094,6 +6094,7 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 						m->stunned = stunned;
 						m->bNewStun = bNewStun;
 						m->bPushedThisTurn = bPushedThisTurn;
+						CueEvents.Add(CID_Stun, new CStunTarget(m, stunned), true);
 					}
 				break;
 				case M_FEGUNDO:
