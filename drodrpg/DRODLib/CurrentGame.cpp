@@ -449,7 +449,7 @@ bool CCurrentGame::Autosave(const WSTRING& name)
 //
 //Returns: whether a record was saved to the DB
 {
-	if (this->bNoSaves)
+	if (this->bNoSaves || this->InCombat())
 		return false;
 
 	CDbPlayer* pPlayer = g_pTheDB->GetCurrentPlayer();
@@ -3299,6 +3299,22 @@ void CCurrentGame::ProcessCommand(
 			UndoCommand(CueEvents); //can't undo when move sequence is frozen (avoid infinite recursion)
 		CueEvents.Clear(); //don't show events from previous turn again
 		CueEvents.Add(CID_StalledCombat, &coord); //add an event to let the front-end know what happened
+	}
+
+	//Now everything else is done, make any autosaves that have been queued
+	//Autosave function will make all checks for whether it is valid to save at this point
+	if (CueEvents.HasOccurred(CID_MakeAutosave)) {
+		for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_MakeAutosave);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CDbMessageText* pAutosaveName = DYN_CAST(const CDbMessageText*, const CAttachableObject*, pObj);
+			ASSERT((const WCHAR*)(*pAutosaveName));
+			const WSTRING wstrAutosaveName((WSTRING)(*pAutosaveName));
+			if (this->Autosave(wstrAutosaveName))
+			{
+				CueEvents.Add(CID_Autosave);
+			}
+		}
 	}
 }
 

@@ -727,6 +727,11 @@ enum CUEEVENT_ID
 	//Private data: CMoveCoord *pMoveCoord
 	CID_StalledCombat,
 
+	//A CC_Autosave command has been processed to create a new autosave
+	//
+	//Private data: CDbMessageText *pAutosaveName (one)
+	CID_MakeAutosave,
+
 	//End of enumeration typedef.
 	CUEEVENT_COUNT
 };
