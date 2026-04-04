@@ -6094,7 +6094,11 @@ void CCurrentGame::ProcessMonster(CMonster* pMonster, int nLastCommand, CCueEven
 						m->stunned = stunned;
 						m->bNewStun = bNewStun;
 						m->bPushedThisTurn = bPushedThisTurn;
-						CueEvents.Add(CID_Stun, new CStunTarget(m, stunned), true);
+
+						// If the egg was stunned make the roach inherit the visual effect
+						if (stunned > 0) {
+							CueEvents.Add(CID_Stun, new CStunTarget(m, stunned), true);
+						}
 					}
 				break;
 				case M_FEGUNDO:
