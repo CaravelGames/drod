@@ -2492,10 +2492,10 @@ void CCharacter::Process(
 			{
 				if (!bRoomBeingDisplayedOnly)
 				{
-					//Autosave with identifier 'label'.
-					WSTRING saveName = pGame->ExpandText(command.label.c_str(), this);
-					if (pGame->Autosave(saveName))
-						CueEvents.Add(CID_Autosave);
+					//Creat an autosave with identifier 'label' after room processing is done
+					CDbMessageText* pAutosaveName = new CDbMessageText();
+					*pAutosaveName = command.label.c_str();
+					CueEvents.Add(CID_MakeAutosave, pAutosaveName, true);
 				}
 				bProcessNextCommand = true;
 			}
