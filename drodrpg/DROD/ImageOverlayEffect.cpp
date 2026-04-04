@@ -652,8 +652,8 @@ void CImageOverlayEffect::StartNextCommand()
 			: ImageOverlayCommand::MoveTo;
 		c.executionState.startX = this->x;
 		c.executionState.startY = this->y;
-		c.executionState.duration = max(0, command.val[1]);
-		c.executionState.remainingTime = max(0, command.val[1]);
+		c.executionState.duration = max(0, command.val[2]);
+		c.executionState.remainingTime = max(0, command.val[2]);
 		this->parallelCommands.push_back(c);
 	}
 	break;
@@ -663,7 +663,7 @@ void CImageOverlayEffect::StartNextCommand()
 		this->xRepeatOffset = command.val[1];
 		this->yRepeatOffset = command.val[2];
 	}
-																	break;
+	break;
 
 	case ImageOverlayCommand::Rotate:
 		this->executionState.startAngle = this->angle;
