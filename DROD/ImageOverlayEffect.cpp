@@ -344,8 +344,9 @@ bool CImageOverlayEffect::IsTiled() const
 
 bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
 {
+	UINT wDeltaTime2 = wDeltaTime > 16 ? 16 : wDeltaTime;
 	// We execute commands one by one and use up the time we have allocated for this rendering pass
-	Uint32 dwRemainingTime = wDeltaTime;
+	Uint32 dwRemainingTime = wDeltaTime2;
 	// For infinite loop protection
 	const UINT wInitialIndex = this->index;
 
@@ -378,7 +379,7 @@ bool CImageOverlayEffect::AdvanceState(const UINT wDeltaTime)
 		dwRemainingTime -= UpdateParallelCommands(dwRemainingTime);
 
 	if (dwRemainingTime > 0 && IsCommandQueueFinished()) {
-		if (wInitialIndex == (UINT)-1 && dwRemainingTime == wDeltaTime)
+		if (wInitialIndex == (UINT)-1 && dwRemainingTime == wDeltaTime2)
 			return false; // Infinite loop protection
 
 		++this->loopIteration;
@@ -668,8 +669,8 @@ void CImageOverlayEffect::StartNextCommand()
 			: ImageOverlayCommand::MoveTo;
 		c.executionState.startX = this->x;
 		c.executionState.startY = this->y;
-		c.executionState.duration = max(0, command.val[1]);
-		c.executionState.remainingTime = max(0, command.val[1]);
+		c.executionState.duration = max(0, command.val[2]);
+		c.executionState.remainingTime = max(0, command.val[2]);
 		this->parallelCommands.push_back(c);
 	}
 	break;
