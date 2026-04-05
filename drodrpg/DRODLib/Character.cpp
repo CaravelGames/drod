@@ -3297,10 +3297,10 @@ void CCharacter::Process(
 						CDbMessageText* pScoreIDText = new CDbMessageText();
 						*pScoreIDText = command.label.c_str();
 						CueEvents.Add(CID_ScoreCheckpoint, pScoreIDText, true);
-						if (bNotFrozen) {
-							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteScoreCheckpointSave(command.label);
-							const_cast<CCurrentGame*>(this->pCurrentGame)->WriteLocalHighScore(command.label);
-						}
+						//Score save and local highscore data will be created at end of turn process
+						//Creating a score during turn processing can cause problems with validation, as it
+						//will only check the end state of a turn. We also don't know if this turn will finish
+						//yet - it might have to be rewound due to blocked or stalled combat.
 					}
 				}
 				bProcessNextCommand = true;
