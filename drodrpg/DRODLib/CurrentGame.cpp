@@ -3316,6 +3316,21 @@ void CCurrentGame::ProcessCommand(
 			}
 		}
 	}
+
+	//Create any pending scorepoint saves and local highscore entries.
+	//Due to how validation works, it's not valid to make a scorepoint when leaving a room
+	if (CueEvents.HasOccurred(CID_ScoreCheckpoint) && !this->Commands.IsFrozen() &&
+		!CueEvents.HasAnyOccurred(IDCOUNT(CIDA_PlayerLeftRoom), CIDA_PlayerLeftRoom)) {
+		for (const CAttachableObject* pObj = CueEvents.GetFirstPrivateData(CID_ScoreCheckpoint);
+			pObj != NULL; pObj = CueEvents.GetNextPrivateData())
+		{
+			const CDbMessageText* pScoreIDText = DYN_CAST(const CDbMessageText*, const CAttachableObject*, pObj);
+			ASSERT((const WCHAR*)(*pScoreIDText));
+			const WSTRING wstrScoreIDText((WSTRING)(*pScoreIDText));
+			this->WriteScoreCheckpointSave(wstrScoreIDText);
+			this->WriteLocalHighScore(wstrScoreIDText);
+		}
+	}
 }
 
 //Checks that happen at the end of ProcessCommand.
