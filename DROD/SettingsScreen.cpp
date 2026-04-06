@@ -227,7 +227,8 @@ CSettingsScreen::CSettingsScreen()
 		AddHotkey(SDLK_F1,TAG_HELP);
 	}
 
-	this->pKeypressDialog = new CKeypressDialogWidget(0L);
+	this->pKeypressDialog = new CKeypressDialogWidget(0L, g_pTheDB->GetMessageText(MID_GetKeyCommand),
+		g_pTheDB->GetMessageText(MID_GetKeyDescription_YesModifiers), g_pTheDB->GetMessageText(MID_GetKeyDescription_NoModifiers));
 	AddWidget(this->pKeypressDialog);
 
 	this->pKeypressDialog->Center();
@@ -2289,7 +2290,7 @@ bool CSettingsScreen::GetCommandKeyRedefinition(
 	const bool bAllowSpecial)  //(in) Whether to allow keys in the F range and modifiers
 {
 	const MESSAGE_ID eButtonMID = GetKeyDefinition(eCommand)->commandMID;
-	this->pKeypressDialog->SetupDisplay(eButtonMID, bAllowSpecial);
+	this->pKeypressDialog->SetupDisplay(g_pTheDB->GetMessageText(eButtonMID), bAllowSpecial);
 
 	UINT dwRetTagNo;
 	InputKey dialogKey = UNKNOWN_INPUT_KEY;

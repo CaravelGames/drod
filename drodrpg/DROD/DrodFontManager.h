@@ -56,7 +56,7 @@ enum FONTTYPE
 	F_TextBold = FONTLIB::F_TextBold,
 	F_TextItalic = FONTLIB::F_TextItalic,
 	F_TextUnderline = FONTLIB::F_TextUnderline,
-	F_Header,
+	F_Header = FONTLIB::F_Header,
 	F_HeaderWhite,
 	F_Title,
 	F_Scroll,

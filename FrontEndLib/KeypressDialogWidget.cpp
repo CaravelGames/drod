@@ -23,7 +23,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "KeypressDialogWidget.h"
-#include "DrodFontManager.h"
+#include "FontManager.h"
 
 #include <DRODLib/Db.h>
 #include "../Texts/MIDs.h"
@@ -36,9 +36,11 @@ CKeypressDialogWidget::CKeypressDialogWidget(
 //Constructor.
 //
 //Params:
-	UINT dwSetTagNo) //(in)
+	UINT dwSetTagNo, WSTRING wstrGetKeyText,
+	WSTRING wstrSetYesModifiersText, WSTRING wstrSetNoModifiersText) //(in)
 	: CDialogWidget(dwSetTagNo, 0, 0, DIALOG_W, DIALOG_H),
 	bAllowModifiers(false)
+	, wstrYesModifiersText(wstrSetYesModifiersText), wstrNoModifiersText(wstrSetNoModifiersText)
 {
 	this->Key = SDLK_UNKNOWN;
 
@@ -61,7 +63,7 @@ CKeypressDialogWidget::CKeypressDialogWidget(
 	{ //Header
 		CLabelWidget *pLabelWidget = new CLabelWidget(0L,
 			HEADER_X, HEADER_Y, LABEL_W, LABEL_H,
-			F_Small, g_pTheDB->GetMessageText(MID_GetKeyCommand));
+			FONTLIB::F_Small, wstrGetKeyText.c_str());
 		pLabelWidget->SetAlign(CLabelWidget::TA_CenterGroup);
 		this->AddWidget(pLabelWidget);
 	}
@@ -69,7 +71,7 @@ CKeypressDialogWidget::CKeypressDialogWidget(
 	{ // Current command
 		this->pCommandLabel = new CLabelWidget(0L,
 			COMMAND_X, COMMAND_Y, LABEL_W, LABEL_H,
-			F_Header, wszEmpty);
+			FONTLIB::F_Header, wszEmpty);
 		this->pCommandLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		this->AddWidget(this->pCommandLabel);
 	}
@@ -77,7 +79,7 @@ CKeypressDialogWidget::CKeypressDialogWidget(
 	{ // Instructions
 		this->pInstructionsLabel = new CLabelWidget(0L,
 			INSTRUCTIONS_X, INSTRUCTIONS_Y, LABEL_W, INSTRUCTIONS_H,
-			F_Small, wszEmpty);
+			FONTLIB::F_Small, wszEmpty);
 		pInstructionsLabel->SetAlign(CLabelWidget::TA_CenterGroup);
 		this->AddWidget(pInstructionsLabel);
 	}
@@ -143,9 +145,9 @@ void CKeypressDialogWidget::OnKeyUp(
 }
 
 //********************************************************************************
-void CKeypressDialogWidget::SetupDisplay(const MESSAGE_ID eCommandMid, const bool bAllowModifiers)
+void CKeypressDialogWidget::SetupDisplay(const WSTRING& wstrCommandDesc, const bool bAllowModifiers)
 {
 	this->bAllowModifiers = bAllowModifiers;
-	this->pCommandLabel->SetText(g_pTheDB->GetMessageText(eCommandMid));
-	this->pInstructionsLabel->SetText(g_pTheDB->GetMessageText(bAllowModifiers ? MID_GetKeyDescription_YesModifiers : MID_GetKeyDescription_NoModifiers));
+	this->pCommandLabel->SetText(wstrCommandDesc.c_str());
+	this->pInstructionsLabel->SetText(bAllowModifiers ? wstrYesModifiersText.c_str() : wstrNoModifiersText.c_str());
 }

@@ -973,7 +973,6 @@
     <ClCompile Include="HoldSelectScreen.cpp" />
     <ClCompile Include="IceMeltEffect.cpp" />
     <ClCompile Include="ImageOverlayEffect.cpp" />
-    <ClCompile Include="KeypressDialogWidget.cpp" />
     <ClCompile Include="LevelStartScreen.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="DottedLineEffect.cpp" />
@@ -1066,7 +1065,6 @@
     <ClInclude Include="HoldSelectScreen.h" />
     <ClInclude Include="IceMeltEffect.h" />
     <ClInclude Include="ImageOverlayEffect.h" />
-    <ClInclude Include="KeypressDialogWidget.h" />
     <ClInclude Include="LevelStartScreen.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="DottedLineEffect.h" />

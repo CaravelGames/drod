@@ -28,9 +28,9 @@
 #define SETTINGSSCREEN_H
 
 #include "DrodScreen.h"
-#include "KeypressDialogWidget.h"
 
 #include <FrontEndLib/ButtonWidget.h>
+#include <FrontEndLib/KeypressDialogWidget.h>
 #include <FrontEndLib/LabelWidget.h>
 #include <FrontEndLib/TextBoxWidget.h>
 #include <FrontEndLib/TabbedMenuWidget.h>
