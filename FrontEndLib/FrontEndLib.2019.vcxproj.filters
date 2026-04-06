@@ -175,6 +175,9 @@
     <ClCompile Include="Pan.cpp">
       <Filter>Gfx</Filter>
     </ClCompile>
+    <ClCompile Include="KeypressDialogWidget.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AnimatedTileEffect.h">
@@ -350,6 +353,9 @@
     </ClInclude>
     <ClInclude Include="Pan.h">
       <Filter>Gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="KeypressDialogWidget.h">
+      <Filter>Widgets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

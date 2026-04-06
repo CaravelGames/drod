@@ -37,10 +37,11 @@
 class CKeypressDialogWidget : public CDialogWidget
 {
 public:
-	CKeypressDialogWidget(UINT dwSetTagNo);
+	CKeypressDialogWidget(UINT dwSetTagNo, WSTRING wstrGetKeyText,
+		WSTRING wstrSetYesModifiersText, WSTRING wstrSetNoModifiersText);
 
 	InputKey    GetKey(void) const {return this->Key;}
-	void        SetupDisplay(const MESSAGE_ID wCommand, const bool bAllowModifiers);
+	void        SetupDisplay(const WSTRING& wstrCommandDesc, const bool bAllowModifiers);
 
 private:
 	virtual void   OnKeyDown(const UINT dwTagNo, const SDL_KeyboardEvent &Key);
@@ -50,6 +51,9 @@ private:
 	bool bAllowModifiers;
 	CLabelWidget* pCommandLabel;
 	CLabelWidget* pInstructionsLabel;
+
+	WSTRING wstrYesModifiersText;
+	WSTRING wstrNoModifiersText;
 };
 
 #endif

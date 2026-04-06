@@ -103,7 +103,8 @@ namespace FONTLIB
 		F_TextActiveExtHyperlink,
 		F_TextBold,
 		F_TextItalic,
-		F_TextUnderline
+		F_TextUnderline,
+		F_Header
 	};
 };
 
