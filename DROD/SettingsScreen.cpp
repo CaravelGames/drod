@@ -1180,6 +1180,9 @@ void CSettingsScreen::OnClick(const UINT dwTagNo)
 
 				for (UINT wIndex = 0; wIndex<DCMD_Count; ++wIndex)
 				{
+					if (wIndex == DCMD_RestartPartial || wIndex == DCMD_RestartFull)
+						continue; //These commands don't have independent bindings
+
 					const InputCommands::KeyDefinition *keyDefinition = InputCommands::GetKeyDefinition(wIndex);
 
 					const InputKey nKey = keyDefinition->GetDefaultKey(wKeyboard);
