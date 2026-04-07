@@ -36,8 +36,8 @@ CKeypressDialogWidget::CKeypressDialogWidget(
 //Constructor.
 //
 //Params:
-	UINT dwSetTagNo, WSTRING wstrGetKeyText,
-	WSTRING wstrSetYesModifiersText, WSTRING wstrSetNoModifiersText) //(in)
+	UINT dwSetTagNo, const WSTRING& wstrGetKeyText,
+	const WSTRING& wstrSetYesModifiersText, const WSTRING& wstrSetNoModifiersText) //(in)
 	: CDialogWidget(dwSetTagNo, 0, 0, DIALOG_W, DIALOG_H),
 	bAllowModifiers(false)
 	, wstrYesModifiersText(wstrSetYesModifiersText), wstrNoModifiersText(wstrSetNoModifiersText)
