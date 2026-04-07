@@ -37,8 +37,8 @@
 class CKeypressDialogWidget : public CDialogWidget
 {
 public:
-	CKeypressDialogWidget(UINT dwSetTagNo, WSTRING wstrGetKeyText,
-		WSTRING wstrSetYesModifiersText, WSTRING wstrSetNoModifiersText);
+	CKeypressDialogWidget(UINT dwSetTagNo, const WSTRING& wstrGetKeyText,
+		const WSTRING& wstrSetYesModifiersText, const WSTRING& wstrSetNoModifiersText);
 
 	InputKey    GetKey(void) const {return this->Key;}
 	void        SetupDisplay(const WSTRING& wstrCommandDesc, const bool bAllowModifiers);
