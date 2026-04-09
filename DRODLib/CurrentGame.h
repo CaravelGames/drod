@@ -344,10 +344,16 @@ public:
 	bool     bIsDemoRecording;
 	bool     bIsLeavingLevel;
 	bool     bIsGameActive;
+	// Increments on all meaningful actions including: placing a double, switching
+	// clones, ending Temporal Clone recording, answering question. Can be out
+	// of sync with wPlayerTurn.
 	UINT     wTurnNo;
+	// Increments on all actions which cause room processing to happen.
 	UINT     wPlayerTurn;      //player move #
+	// Current cycle count value. Can be out of sync with wPlayerTurn when
+	// temporal clone recording comes into play.
 	UINT     wSpawnCycleCount; //monster move #
-	bool     bHalfTurn;        //half a turn taken 
+	bool     bHalfTurn;        //half a turn taken
 	bool     bBrainSensesSwordsman;
 	UINT     wLastCheckpointX, wLastCheckpointY;
 	vector<UINT> checkpointTurns; //turn #s a checkpoint was activated

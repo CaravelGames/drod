@@ -56,13 +56,13 @@ CStunEffect::CStunEffect(
 		++turnDuration;
 	}
 
-	this->wExpiresOnTurn = pRoom ? pRoom->GetCurrentGame()->wTurnNo + (turnDuration-1) : 0;
+	this->wExpiresOnTurn = pRoom ? pRoom->GetCurrentGame()->wPlayerTurn + (turnDuration-1) : 0;
 }
 
 //********************************************************************************
 bool CStunEffect::Update(const UINT wDeltaTime, const Uint32 dwTimeElapsed)
 {
-	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wTurnNo;
+	const UINT wTurnNow = this->pRoomWidget->GetRoom()->GetCurrentGame()->wPlayerTurn;
 	if (wTurnNow >= this->wExpiresOnTurn)
 		return false;
 
