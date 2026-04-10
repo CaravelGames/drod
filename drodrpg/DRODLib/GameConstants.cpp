@@ -44,16 +44,16 @@ const char szDROD_VER[] = "2_0";
 const WCHAR wszDROD_VER[] = { We('2'),We('_'),We('0'),We(0) };
 const char szUserspaceFolder[] = "DRODRPG";
 
-const UINT VERSION_NUMBER = 500; //2.0 data format version -- increment when exported data format changes
+const UINT VERSION_NUMBER = 501; //2.1 data format version -- increment when exported data format changes
 const UINT NEXT_VERSION_NUMBER = 600;
 
 //#define DROD_VERSION_REVISION alpha.2020-11-01
 #ifdef DROD_VERSION_REVISION
 // (the WS macro requires c++11 or windows)
-const WCHAR wszVersionReleaseNumber[] = WS("2.0.7.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
+const WCHAR wszVersionReleaseNumber[] = WS("2.1.0.") WS(STRFY_EXPAND(DROD_VERSION_REVISION));
 #else
 const WCHAR wszVersionReleaseNumber[] = {
-	We('2'),We('.'),We('0'),We('.'),We('9'),We('.'),We('1'),We('1'),We('0'),We('1'),We(0)   // 2.0.* -- full version number plus build number
+	We('2'),We('.'),We('1'),We('.'),We('0'),We('.'),We('1'),We('1'),We('0'),We('5'),We(0)   // 2.1.* -- full version number plus build number
 };
 #endif
 
