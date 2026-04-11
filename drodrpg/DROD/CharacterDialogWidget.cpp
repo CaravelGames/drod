@@ -1534,6 +1534,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pVisualEffectsListBox->AddItem(VET_STRONGHIT, g_pTheDB->GetMessageText(MID_StrongHitEffect));
 	this->pVisualEffectsListBox->AddItem(VET_EQUIP, g_pTheDB->GetMessageText(MID_EquipEffect));
 	this->pVisualEffectsListBox->AddItem(VET_ICEMELT, g_pTheDB->GetMessageText(MID_IceMeltEffect));
+	this->pVisualEffectsListBox->AddItem(VET_FIRETRAP, g_pTheDB->GetMessageText(MID_Firetrap));
 	this->pVisualEffectsListBox->AddItem(VET_PUFFEXPLOSION, g_pTheDB->GetMessageText(MID_PuffExplosionEffect));
 	this->pVisualEffectsListBox->AddItem(VET_CONSTRUCTSPLAT, g_pTheDB->GetMessageText(MID_ConstructSplatterEffect));
 	this->pVisualEffectsListBox->SelectLine(0);
