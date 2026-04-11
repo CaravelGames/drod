@@ -84,6 +84,11 @@ using std::list;
 
 static const UINT DEFAULT_PROCESS_SEQUENCE = 1000;
 
+//Save keys for color variables. Required in header for UI access
+#define ColorStr "Color"
+#define HueStr "Hue"
+#define SaturationStr "Saturation"
+
 //Within this radius, a monster can sense the player when invisible.
 #define DEFAULT_SMELL_RANGE (5)
 
@@ -210,6 +215,8 @@ public:
 
 	virtual UINT  getATK() const;
 	virtual UINT  getColor() const;
+	virtual UINT  getHue() const;
+	virtual UINT  getSaturation() const;
 	virtual UINT  getDEF() const;
 	virtual int   getGOLD() const; //may be negative
 	virtual UINT  getHP() const;
@@ -276,7 +283,11 @@ public:
 	virtual void  SetCurrentGame(const CCurrentGame *pSetCurrentGame);
 	virtual void  SetExtraVarsForExport() { } //monsters typically do not write any extra vars
 	void          SetHP();
+	virtual void  SetColor(const UINT color) { this->color = color; }
+	virtual void  SetHue(const UINT hue);
+	virtual void  SetSaturation(const UINT saturation);
 	void          SetKillInfo(const UINT wKillDirection);
+	void          SetStatsFromOther(const CMonster& other);
 	virtual void  SetMembers(const CDbPackedVars& vars);
 	void          SetOrientation(const int dxFirst, const int dyFirst);
 	void          SpawnEgg(CCueEvents& CueEvents);
@@ -315,6 +326,8 @@ protected:
 	float         DistanceToTarget(const UINT wX, const UINT wY, const UINT x, const UINT y) const;
 //			const bool bUseBrainDistance=true) const;
 	UINT          RotationalDistanceCO(const UINT wTargetO) const;
+
+	UINT color, hue, saturation; //cosmetic details
 
 	const CCurrentGame * pCurrentGame;
 	CCoordStack pathToDest; //sequence of squares that lead to preferred goal coord
