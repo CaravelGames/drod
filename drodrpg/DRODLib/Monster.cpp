@@ -51,6 +51,9 @@
 CCoordIndex_T<USHORT> CMonster::room;
 CCoordIndex CMonster::swordsInRoom;
 
+const UINT MAX_HUE = 6000;
+const UINT MAX_SATURATION = 1000;
+
 //Node object used in pathfinding search.
 class CPathNode : public CCoord
 {
@@ -87,6 +90,7 @@ CMonster::CMonster(
 	, HP(0), ATK(0), DEF(0), GOLD(0), XP(0)
 	, bEggSpawn(false)
 	, pNext(NULL), pPrevious(NULL)
+	, color(0), hue(0), saturation(0)
 	, pCurrentGame(NULL)
 {
 	if (pSetCurrentGame)
@@ -116,6 +120,21 @@ void CMonster::Clear()
 		delete this->Pieces.back();
 		this->Pieces.pop_back();
 	}
+}
+
+//*****************************************************************************
+void CMonster::SetStatsFromOther(const CMonster& other)
+//Set monster's combat and color stats from another monster.
+{
+	this->HP = other.HP;
+	this->DEF = other.DEF;
+	this->GOLD = other.GOLD;
+	this->HP = other.HP;
+	this->XP = other.XP;
+	this->bEggSpawn = other.bEggSpawn;
+	this->color = other.color;
+	this->hue = other.hue;
+	this->saturation = other.saturation;
 }
 
 //*****************************************************************************
@@ -1548,14 +1567,44 @@ UINT CMonster::getATK() const
 UINT CMonster::getColor() const
 //Return: monster's color
 {
-	return 0; //no color addition by default
+	return color;
+}
+
+//*****************************************************************************
+UINT CMonster::getHue() const
+//Return: monster's hue
+{
+	return this->hue;
+}
+
+//*****************************************************************************
+void CMonster::SetHue(const UINT hue)
+{
+	this->hue = max(0U, min(hue, MAX_HUE));
+}
+
+//*****************************************************************************
+UINT CMonster::getSaturation() const
+//Return: monster's saturation
+{
+	return this->saturation;
+}
+
+//*****************************************************************************
+void CMonster::SetSaturation(const UINT saturation)
+{
+	this->saturation = max(0U, min(saturation, MAX_SATURATION));
 }
 
 //*****************************************************************************
 std::array<float, 3 > CMonster::getHSV() const
 //Return: float-converted color hue, saturation and value
 {
-	return { -1, -1, -1 }; //no changes by default
+	float hue = this->hue ? float(this->hue) / MAX_HUE : -1;
+	float saturation = this->saturation ? float(this->saturation) / MAX_SATURATION : -1;
+
+	//Chaning value currently isn't supported
+	return { hue, saturation, -1 };
 }
 
 //*****************************************************************************
@@ -2092,6 +2141,13 @@ void CMonster::Save(
 	if (this->bEggSpawn)
 		this->ExtraVars.SetVar(EggSpawnStr, this->bEggSpawn);
 
+	if (this->color)
+		this->ExtraVars.SetVar(ColorStr, this->color);
+	if (this->hue)
+		this->ExtraVars.SetVar(HueStr, this->hue);
+	if (this->saturation)
+		this->ExtraVars.SetVar(SaturationStr, this->saturation);
+
 	UINT dwExtraVarsSize;
 	BYTE *pbytExtraVarsBytes = this->ExtraVars.GetPackedBuffer(dwExtraVarsSize);
 	ASSERT(pbytExtraVarsBytes);
@@ -2135,6 +2191,9 @@ void CMonster::SetMembers(const CDbPackedVars& vars)
 	this->GOLD = vars.GetVar(GOLDStr, this->GOLD);
 	this->XP = vars.GetVar(XPStr, this->XP);
 	this->bEggSpawn = vars.GetVar(EggSpawnStr, this->bEggSpawn);
+	this->color = vars.GetVar(ColorStr, this->color);
+	this->hue = vars.GetVar(HueStr, this->hue);
+	this->saturation = vars.GetVar(SaturationStr, this->saturation);
 }
 
 //

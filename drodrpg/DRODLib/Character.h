@@ -58,9 +58,6 @@ using std::vector;
 
 #define DefaultCustomCharacterName wszEmpty
 #define ParamProcessSequenceStr "ProcessSequenceParam"
-#define ColorStr "Color"
-#define HueStr "Hue"
-#define SaturationStr "Saturation"
 #define ParamSpeechColorStr "SpeechColorParam"
 #define GhostImageStr "GhostImage"
 #define MinimapTreasureStr "MinimapTreasure"
@@ -128,11 +125,7 @@ public:
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
 	virtual bool   HasSerpentWeakness() const {return this->bSerpentWeakness;}
 
-	virtual UINT   getATK() const;   //allow "negative" values to be returned
-	virtual UINT   getColor() const;
-	virtual UINT   getHue() const;
-	virtual UINT   getSaturation() const;
-	virtual std::array<float, 3> getHSV() const;
+	virtual UINT   getATK() const;   //allow "negative" values to be returned;
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
 	virtual UINT   getSword() const;
 
@@ -223,9 +216,6 @@ public:
 	static void    SaveCommands(CDbPackedVars& ExtraVars, const COMMANDPTR_VECTOR& commands);
 	static void    SaveSpeech(const COMMAND_VECTOR& commands);
 	static void    SaveSpeech(const COMMANDPTR_VECTOR& commands);
-	virtual void   SetColor(const UINT color) { this->color = color; }
-	virtual void   SetHue(const UINT hue);
-	virtual void   SetSaturation(const UINT saturation);
 	virtual void   SetCurrentGame(const CCurrentGame *pSetCurrentGame);
 	virtual void   SetCustomSpeechColor(const UINT color) { this->customSpeechColor = color; }
 	virtual void   SetExtraVarsForExport() { PackExtraVars(true); } //include config params and script
@@ -372,7 +362,7 @@ private:
 	bool bIsDefaultScript; //is the character running a default script
 
 	//Predefined vars.
-	UINT color, sword, hue, saturation; //cosmetic details
+	UINT sword; //cosmetic detail
 	UINT paramX, paramY, paramW, paramH, paramF; //script-definable script command parameter overrides
 	UINT monsterHPmult, monsterATKmult, monsterDEFmult, monsterGRmult, monsterXPmult; // monster stat modifiers
 	UINT itemMult, itemHPmult, itemATKmult, itemDEFmult, itemGRmult, itemShovelMult; // item value modifiers

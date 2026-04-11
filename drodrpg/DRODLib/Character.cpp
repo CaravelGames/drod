@@ -49,9 +49,6 @@
 
 const UINT MAX_ANSWERS = 9;
 
-const UINT MAX_HUE = 6000;
-const UINT MAX_SATURATION = 1000;
-
 //Literals used to query and store values for the NPC in the packed vars object.
 //DO NOT CHANGE
 #define commandStr "Commands"
@@ -294,7 +291,7 @@ CCharacter::CCharacter(
 	, customSpeechColor(0)
 	, wLastSpeechLineNumber(0)
 
-	, color(0), hue(0), saturation(0), sword(NPC_DEFAULT_SWORD)
+	, sword(NPC_DEFAULT_SWORD)
 	, paramX(NO_OVERRIDE), paramY(NO_OVERRIDE), paramW(NO_OVERRIDE), paramH(NO_OVERRIDE), paramF(NO_OVERRIDE)
 	, monsterHPmult(100), monsterATKmult(100), monsterDEFmult(100), monsterGRmult(100), monsterXPmult(100)
 	, itemMult(100), itemHPmult(100), itemATKmult(100), itemDEFmult(100), itemGRmult(100), itemShovelMult(100)
@@ -5975,41 +5972,6 @@ UINT CCharacter::getATK() const
 }
 
 //*****************************************************************************
-UINT CCharacter::getColor() const
-//Return: monster's color
-{
-	if (this->color)
-		return this->color;
-
-	return CPlayerDouble::getColor();
-}
-
-//*****************************************************************************
-UINT CCharacter::getHue() const
-//Return: monster's hue
-{
-	return this->hue;
-}
-
-//*****************************************************************************
-UINT CCharacter::getSaturation() const
-//Return: monster's saturation
-{
-	return this->saturation;
-}
-
-//*****************************************************************************
-std::array<float, 3> CCharacter::getHSV() const
-//Return: float-converted color hue, saturation and value
-{
-	float hue = this->hue ? float(this->hue) / MAX_HUE : -1;
-	float saturation = this->saturation ? float(this->saturation) / MAX_SATURATION : -1;
-
-	//Chaning value currently isn't supported
-	return { hue, saturation, -1 };
-}
-
-//*****************************************************************************
 UINT CCharacter::getDEF() const
 //Return: monster's DEF
 //
@@ -6330,18 +6292,6 @@ void CCharacter::RestartScript()
 	this->color = this->ExtraVars.GetVar(ColorStr, this->color);
 	this->hue = this->ExtraVars.GetVar(HueStr, this->hue);
 	this->saturation = this->ExtraVars.GetVar(SaturationStr, this->saturation);
-}
-
-//*****************************************************************************
-void CCharacter::SetHue(const UINT hue)
-{
-	this->hue = max(0U, min(hue, MAX_HUE));
-}
-
-//*****************************************************************************
-void CCharacter::SetSaturation(const UINT saturation)
-{
-	this->saturation = max(0U, min(saturation, MAX_SATURATION));
 }
 
 //*****************************************************************************
@@ -6683,9 +6633,6 @@ void CCharacter::setBaseMembers(const CDbPackedVars& vars)
 	}
 
 	//Stats.
-	this->color = vars.GetVar(ColorStr, this->color);
-	this->hue = vars.GetVar(HueStr, this->hue);
-	this->saturation = vars.GetVar(SaturationStr, this->saturation);
 	this->sword = vars.GetVar(SwordStr, this->sword);
 	this->paramX = vars.GetVar(ParamXStr, this->paramX);
 	this->paramY = vars.GetVar(ParamYStr, this->paramY);
@@ -6862,12 +6809,6 @@ const
 		vars.SetVar(MovementTypeStr, this->eMovement);
 
 	//Stats.
-	if (this->color)
-		vars.SetVar(ColorStr, this->color);
-	if (this->hue)
-		vars.SetVar(HueStr, this->hue);
-	if (this->saturation)
-		vars.SetVar(SaturationStr, this->saturation);
 	if (this->sword != NPC_DEFAULT_SWORD)
 		vars.SetVar(SwordStr, this->sword);
 	if (this->paramX != NO_OVERRIDE)
