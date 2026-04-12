@@ -125,7 +125,7 @@ public:
 	virtual bool   HasNoEnemyDefense() const {return this->bNoEnemyDEF;}
 	virtual bool   HasSerpentWeakness() const {return this->bSerpentWeakness;}
 
-	virtual UINT   getATK() const;   //allow "negative" values to be returned;
+	virtual UINT   getATK() const;   //allow "negative" values to be returned
 	virtual UINT   getDEF() const;   //allow "negative" values to be returned
 	virtual UINT   getSword() const;
 
