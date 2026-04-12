@@ -1026,7 +1026,7 @@ Hint: Each layer corresponds to a tab in the editor's tile selection dialog.
 <p><a name="enemystat">* <b>_EnemyStat(x,y,stat)</b></a> - Returns the stat value of the
   enemy at room location (x,y).  If no enemy is at the current location, the result
   is zero.<br />
-  Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP<br />
+  Supported stat values: 0=HP 1=ATK 2=DEF 3=GR 4=REP 5=Color 6=Hue 7=Saturation<br />
   <i>Hint:</i> Use within the value expression of <i>Set monster var</i> to make
   relative offsets to an enemy's stats.<br />
   <i>Example to reduce HP of the enemy at room position (10,10) by 1:</i> Set monster var HP,10,10,_EnemyStat(10, 10, 0) - 1

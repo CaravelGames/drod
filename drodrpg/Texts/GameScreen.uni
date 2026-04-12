@@ -142,6 +142,18 @@ SKEY
 [eng]
 Shovels
 
+[MID_ColorStat]
+[eng]
+Color
+
+[MID_HueStat]
+[eng]
+Hue
+
+[MID_SaturationStat]
+[eng]
+Saturation
+
 [MID_Score]
 [eng]
 Score

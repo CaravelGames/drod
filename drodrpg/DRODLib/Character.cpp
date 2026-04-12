@@ -3189,6 +3189,9 @@ void CCharacter::Process(
 							break;
 							case ScriptFlag::GOLD: pMonster->GOLD = value; break;
 							case ScriptFlag::XP: pMonster->XP = value; break;
+							case ScriptFlag::Color: pMonster->SetColor(value); break;
+							case ScriptFlag::Hue: pMonster->SetHue(value); break;
+							case ScriptFlag::Saturation: pMonster->SetSaturation(value); break;
 							default: break; //do nothing
 						}
 

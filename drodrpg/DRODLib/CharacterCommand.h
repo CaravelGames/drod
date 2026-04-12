@@ -189,7 +189,10 @@ namespace ScriptFlag
 		ATK = 1,
 		DEF = 2,
 		GOLD = 3,
-		XP = 4
+		XP = 4,
+		Color = 5,
+		Hue = 6,
+		Saturation = 7
 	};
 
 	enum ItemGroup
