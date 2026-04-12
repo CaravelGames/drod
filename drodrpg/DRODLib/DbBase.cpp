@@ -843,6 +843,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_Command_ShowMap: strText = "Show Map"; break;
 		case MID_Briars: strText = "Any briar"; break;
 		case MID_FlyingAbility: strText = "Airborne"; break;
+		case MID_ColorStat: strText = "Color"; break;
+		case MID_HueStat: strText = "Hue"; break;
+		case MID_SaturationStat: strText = "Saturation"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

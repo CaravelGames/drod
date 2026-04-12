@@ -1220,7 +1220,7 @@ void CCharacterDialogWidget::AddCommandDialog()
 	static const int X_STATLISTBOX = X_ONOFFLISTBOX;
 	static const int Y_STATLISTBOX = Y_TEXT + CY_TEXT + CY_SPACE * 2;
 	static const UINT CX_STATLISTBOX = 200;
-	static const UINT CY_STATLISTBOX = 5 * LIST_LINE_HEIGHT + 4;
+	static const UINT CY_STATLISTBOX = 8 * LIST_LINE_HEIGHT + 4;
 
 	static const UINT CX_MOVETYPELISTBOX = 200;
 	static const UINT CY_MOVETYPELISTBOX = 4 * LIST_LINE_HEIGHT + 4;
@@ -1850,6 +1850,9 @@ void CCharacterDialogWidget::AddCommandDialog()
 	this->pStatListBox->AddItem(ScriptFlag::DEF, g_pTheDB->GetMessageText(MID_DEFStat));
 	this->pStatListBox->AddItem(ScriptFlag::GOLD, g_pTheDB->GetMessageText(MID_GRStat));
 	this->pStatListBox->AddItem(ScriptFlag::XP, g_pTheDB->GetMessageText(MID_XPStat));
+	this->pStatListBox->AddItem(ScriptFlag::Color, g_pTheDB->GetMessageText(MID_ColorStat));
+	this->pStatListBox->AddItem(ScriptFlag::Hue, g_pTheDB->GetMessageText(MID_HueStat));
+	this->pStatListBox->AddItem(ScriptFlag::Saturation, g_pTheDB->GetMessageText(MID_SaturationStat));
 	this->pStatListBox->SelectLine(0);
 
 	this->pAddCommandDialog->AddWidget(new CLabelWidget(TAG_VALUE_OR_EXPRESSION, X_TEXTLABEL,

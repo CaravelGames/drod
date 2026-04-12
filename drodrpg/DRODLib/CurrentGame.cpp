@@ -1029,6 +1029,9 @@ int CCurrentGame::EvalPrimitive(ScriptVars::PrimitiveType ePrimitive, const vect
 					case ScriptFlag::DEF: return pMonster->DEF;
 					case ScriptFlag::GOLD: return pMonster->GOLD;
 					case ScriptFlag::XP: return pMonster->XP;
+					case ScriptFlag::Color: return pMonster->getColor();
+					case ScriptFlag::Hue: return pMonster->getHue();
+					case ScriptFlag::Saturation: return pMonster->getSaturation();
 				}
 			}
 		}
