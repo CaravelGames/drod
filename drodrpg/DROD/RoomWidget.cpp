@@ -6405,7 +6405,9 @@ void CRoomWidget::DrawDamagedMonsters(
 				if (pTI->dirty || pTI->damaged)
 				{
 					//Copied from DrawSerpent().
-					const TileImageBlitParams blit(piece.wX, piece.wY, GetTileImageForSerpentPiece(pMonster->wType, piece.wTileNo));
+					TileImageBlitParams blit(piece.wX, piece.wY, GetTileImageForSerpentPiece(pMonster->wType, piece.wTileNo));
+					blit.nAddColor = pMonster->getColor();
+					blit.hsv = pMonster->getHSV();
 					DrawTileImage(blit, pDestSurface);
 				}
 			}
@@ -8142,6 +8144,7 @@ void CRoomWidget::DrawRockGiant(
 	const UINT wTopLeftTI = GetTileImageForEntity(M_ROCKGIANT, pMonster->wO, wFrame);
 	TileImageBlitParams blit(pMonster->wX, pMonster->wY, wTopLeftTI, wXOffset, wYOffset, bMoveInProgress);
 	blit.nAddColor = pMonster->getColor();
+	blit.hsv = pMonster->getHSV();
 	DrawTileImage(blit, pDestSurface);
 
 	UINT wI = 0;
@@ -8288,6 +8291,7 @@ void CRoomWidget::DrawSerpentBody(
 	//No animation of pieces.
 	TileImageBlitParams blit(0, 0, 0, 0, 0, bMoveInProgress);
 	blit.nAddColor = pMonster->getColor();
+	blit.hsv = pMonster->getHSV();
 	for (MonsterPieces::iterator piece = pMonster->Pieces.begin();
 			piece != pMonster->Pieces.end(); ++piece)
 	{
