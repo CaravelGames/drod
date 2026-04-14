@@ -5859,12 +5859,7 @@ void CCharacter::SetArrayVariable(
 			default: break;
 		}
 
-		if (x == 0) {
-			//Save memory by clearing value
-			scriptArrays[varIndex].erase(arrayIndex);
-		} else {
-			scriptArrays[varIndex][arrayIndex] = x;
-		}
+		scriptArrays[varIndex][arrayIndex] = x;
 		++arrayIndex;
 	}
 }
