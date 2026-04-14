@@ -1634,10 +1634,6 @@ void CDbSavedGame::SerializeScriptArrays()
 		UINT size = 0;
 		for (map<int, int>::const_iterator arrayIt = arrayMap.cbegin();
 			arrayIt != arrayMap.cend(); ++arrayIt) {
-			if (arrayIt->second == 0) {
-				continue; //save space by skipping zero-value entries
-			}
-
 			writeBpUINT(buffer, (UINT)arrayIt->first);
 			writeBpUINT(buffer, (UINT)arrayIt->second);
 			++size;
