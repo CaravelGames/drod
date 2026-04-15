@@ -3620,7 +3620,11 @@ void CCharacter::Process(
 			case CCharacterCommand::CC_WaitForOpenMove:
 				getCommandX(command, px);
 
-				if (!this->IsOpenMove(nGetOX(px), nGetOY(px)))
+				if (
+					px != NO_ORIENTATION
+					&& IsValidOrientation(px)
+					&& !this->IsOpenMove(nGetOX(px), nGetOY(px))
+				)
 					STOP_COMMAND;
 				bProcessNextCommand = true;
 			break;
