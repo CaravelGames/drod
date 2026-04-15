@@ -227,13 +227,10 @@ void CDemoScreen::OnKeyDown(
 
 	int nCommand = GetCommandForInputKey(BuildInputKey(Key));
 
-	if (nCommand == CMD_ESCAPE) {
+	if (nCommand == CMD_ESCAPE || !this->bCanInteract) {
 		Deactivate();
 		return;
 	}
-
-	if (!this->bCanInteract)
-		return;
 
 	// The longer forward/backwards key is pressed the faster frames should pass
 	UINT wMovesToDo = static_cast<UINT>(max(
@@ -534,26 +531,32 @@ void CDemoScreen::AdvanceTurn()
 					(this->bCanInteract ? this->fMoveRateMultiplier : 1.0f)));
 
 	//If one room in a multi-room demo just ended, show room transition immediately.
-	if (this->currentCommandIter == CGameScreen::pCurrentGame->Commands.end() &&
-			this->pDemo->dwNextDemoID) //Multi-room demo.
+	if (this->currentCommandIter == CGameScreen::pCurrentGame->Commands.end()) //Multi-room demo.
 	{
-		//Show transition to new room once it is loaded.
-		UINT wExitOrientation = NO_ORIENTATION;
-		const CAttachableWrapper<UINT> *pExitOrientation =
-				DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
-				CGameScreen::sCueEvents.GetFirstPrivateData(CID_ExitRoomPending));
-		if (pExitOrientation)
-			wExitOrientation = static_cast<UINT>(*pExitOrientation);
-
-		//Load next demo and get first command.
-		if (LoadDemoGame(this->pDemo->dwNextDemoID))
+		if (this->pDemo->dwNextDemoID) //Multi-room demo.
 		{
-			//Load succeeded -- start playing it next frame.
-			this->pRoomWidget->ShowRoomTransition(wExitOrientation, CGameScreen::sCueEvents);
-			this->pMapWidget->DrawMapSurfaceFromRoom(CGameScreen::pCurrentGame->pRoom);
-			this->pMapWidget->RequestPaint();
-			this->currentCommandIter = CGameScreen::pCurrentGame->Commands.GetFirst();
-			bClearFlashingMessages = false;
+			//Show transition to new room once it is loaded.
+			UINT wExitOrientation = NO_ORIENTATION;
+			const CAttachableWrapper<UINT>* pExitOrientation =
+				DYN_CAST(const CAttachableWrapper<UINT>*, const CAttachableObject*,
+					CGameScreen::sCueEvents.GetFirstPrivateData(CID_ExitRoomPending));
+			if (pExitOrientation)
+				wExitOrientation = static_cast<UINT>(*pExitOrientation);
+
+			//Load next demo and get first command.
+			if (LoadDemoGame(this->pDemo->dwNextDemoID))
+			{
+				//Load succeeded -- start playing it next frame.
+				this->pRoomWidget->ShowRoomTransition(wExitOrientation, CGameScreen::sCueEvents);
+				this->pMapWidget->DrawMapSurfaceFromRoom(CGameScreen::pCurrentGame->pRoom);
+				this->pMapWidget->RequestPaint();
+				this->currentCommandIter = CGameScreen::pCurrentGame->Commands.GetFirst();
+				bClearFlashingMessages = false;
+			}
+		} else if (!this->bCanInteract) {
+			//Automatically return to previous screen
+			Deactivate();
+			return;
 		}
 	}
 
