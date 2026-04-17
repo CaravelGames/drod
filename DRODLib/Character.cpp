@@ -3752,7 +3752,13 @@ void CCharacter::Process(
 				} else {
 					CMonster* pMonster = pGame->pRoom->GetMonsterAtSquare(px, py);
 					if (pMonster != NULL){
-						wOrientation = pMonster->wO;
+						if (pMonster->IsPiece()) {
+							if (!bIsSerpentOrGentryii(pMonster->GetIdentity())) {
+								wOrientation = pMonster->GetOwningMonster()->wO;
+							}
+						} else {
+							wOrientation = pMonster->wO;
+						}
 					}
 				}
 
