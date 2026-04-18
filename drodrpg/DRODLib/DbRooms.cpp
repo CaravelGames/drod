@@ -2694,6 +2694,121 @@ const
 }
 
 //*****************************************************************************
+bool CDbRoom::DoesSquareContainTile(
+//Return: Does the square have a specific tile.
+	const UINT wX, const UINT wY, //(in)   Square to check
+	const UINT wTileNo //(in)   Base type to check for, may be "virtual" tile.
+) const
+{
+	if (!IsValidColRow(wX, wY)) {
+		return false;
+	}
+
+	if (wTileNo == TV_EXPLOSION) {
+		//Not checked here, as it requires CueEvent information
+		return false;
+	}
+
+	const bool bRealTile = IsValidTileNo(wTileNo);
+	if (bRealTile)
+	{
+		switch (TILE_LAYER[wTileNo])
+		{
+		case 0:  //o-layer
+			if (GetOSquare(wX, wY) == wTileNo)
+				return true;
+			if (wTileNo == T_OVERHEAD_IMAGE && overheadTiles.Exists(wX, wY))
+				return true;
+			break;
+		case 1:  //t-layer
+			if (GetTSquare(wX, wY) == wTileNo)
+				return true;
+			break;
+		case 3:  //f-layer
+			if (GetFSquare(wX, wY) == wTileNo)
+				return true;
+			break;
+		default: break;
+		}
+	} else if (IsVirtualTile(wTileNo)) {
+		//Virtual tiles must be queried by t-tile and param.
+		UINT realTile = T_EMPTY;
+		switch (wTileNo)
+		{
+			case TV_KEY_Y: case TV_KEY_G: case TV_KEY_B: case TV_KEY_S:
+				realTile = T_KEY;
+				break;
+			case TV_EXPLOSION: break; //not handled in this function
+			case TV_SWORD1: case TV_SWORD2: case TV_SWORD3: case TV_SWORD4: case TV_SWORD5:
+			case TV_SWORD6: case TV_SWORD7: case TV_SWORD8: case TV_SWORD9: case TV_SWORD10:
+			case TV_SWORD11: case TV_SWORD12: case TV_SWORD13:
+				realTile = T_SWORD;
+				break;
+			case TV_SHIELD1: case TV_SHIELD2: case TV_SHIELD3: case TV_SHIELD4: case TV_SHIELD5:
+			case TV_SHIELD6: case TV_SHIELD7: case TV_SHIELD8: case TV_SHIELD9:
+				realTile = T_SHIELD;
+				break;
+			case TV_ACCESSORY1: case TV_ACCESSORY2: case TV_ACCESSORY3: case TV_ACCESSORY4:
+			case TV_ACCESSORY5: case TV_ACCESSORY6: case TV_ACCESSORY7: case TV_ACCESSORY8:
+			case TV_ACCESSORY9: case TV_ACCESSORY10: case TV_ACCESSORY11: case TV_ACCESSORY12:
+				realTile = T_ACCESSORY;
+				break;
+			default: break;
+		}
+		if (realTile != GetTSquare(wX, wY))
+			return false;
+
+		UINT param = UINT(-1);
+		switch (wTileNo) //2nd pass -- query T-layer param
+		{
+			case TV_KEY_Y: param = YellowKey; break;
+			case TV_KEY_G: param = GreenKey; break;
+			case TV_KEY_B: param = BlueKey; break;
+			case TV_KEY_S: param = SkeletonKey; break;
+			case TV_SWORD1: param = WoodenBlade; break;
+			case TV_SWORD2: param = ShortSword; break;
+			case TV_SWORD3: param = GoblinSword; break;
+			case TV_SWORD4: param = LongSword; break;
+			case TV_SWORD5: param = HookSword; break;
+			case TV_SWORD6: param = ReallyBigSword; break;
+			case TV_SWORD7: param = LuckySword; break;
+			case TV_SWORD8: param = SerpentSword; break;
+			case TV_SWORD9: param = BriarSword; break;
+			case TV_SWORD10: param = WeaponSlot; break;
+			case TV_SWORD11: param = Dagger; break;
+			case TV_SWORD12: param = Staff; break;
+			case TV_SWORD13: param = Spear; break;
+			case TV_SHIELD1: param = WoodenShield; break;
+			case TV_SHIELD2: param = BronzeShield; break;
+			case TV_SHIELD3: param = SteelShield; break;
+			case TV_SHIELD4: param = KiteShield; break;
+			case TV_SHIELD5: param = OremiteShield; break;
+			case TV_SHIELD6: param = ArmorSlot; break;
+			case TV_SHIELD7: param = MirrorShield; break;
+			case TV_SHIELD8: param = LeatherShield; break;
+			case TV_SHIELD9: param = AluminumShield; break;
+			case TV_ACCESSORY1: param = GrapplingHook; break;
+			case TV_ACCESSORY2: param = WaterBoots; break;
+			case TV_ACCESSORY3: param = InvisibilityPotion; break;
+			case TV_ACCESSORY4: param = SpeedPotion; break;
+			case TV_ACCESSORY5: param = HandBomb; break;
+			case TV_ACCESSORY6: param = PickAxe; break;
+			case TV_ACCESSORY7: param = WarpToken; break;
+			case TV_ACCESSORY8: param = PortableOrb; break;
+			case TV_ACCESSORY9: param = LuckyGold; break;
+			case TV_ACCESSORY10: param = WallWalking; break;
+			case TV_ACCESSORY11: param = XPDoubler; break;
+			case TV_ACCESSORY12: param = AccessorySlot; break;
+			default: break; //nothing else to do here
+		}
+		if (param == GetTParam(wX, wY))
+			return true;
+	}
+
+	return false;
+}
+
+//*****************************************************************************
 bool CDbRoom::DoesSquareContainTeleportationObstacle(
 	// Checks if an entity of given type can teleport to this position.
 	// Ignores monster layer, as player can step through monsters in certain states, e.g., when invisible

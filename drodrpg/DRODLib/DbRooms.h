@@ -231,6 +231,7 @@ public:
 			const bool bCrateSrc=false, const bool bAllowCrateClimbing=false) const;
 	bool           DoesSquarePreventDiagonal(const UINT wX, const UINT wY,
 			const int dx, const int dy) const;
+	bool           DoesSquareContainTile(const UINT wX, const UINT wY, const UINT wTileNo) const;
 	bool           DoesSquareContainTeleportationObstacle(const UINT wX, const UINT wY, const UINT wIdentity) const;
 
 	void           EnableFiretrap(const UINT wX, const UINT wY, CCueEvents& CueEvents);
