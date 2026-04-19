@@ -846,6 +846,8 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_ColorStat: strText = "Color"; break;
 		case MID_HueStat: strText = "Hue"; break;
 		case MID_SaturationStat: strText = "Saturation"; break;
+		case MID_WaitForEntityType: strText = "Wait for entity type"; break;
+		case MID_WaitWhileEntityType: strText = "Wait while entity type"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))
