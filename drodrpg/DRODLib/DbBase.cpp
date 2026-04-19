@@ -848,6 +848,9 @@ const WCHAR* CDbBase::GetMessageText(
 		case MID_SaturationStat: strText = "Saturation"; break;
 		case MID_WaitForEntityType: strText = "Wait for entity type"; break;
 		case MID_WaitWhileEntityType: strText = "Wait while entity type"; break;
+		case MID_CountEntityType: strText = "Count entity type"; break;
+		case MID_CountItem: strText = "Count item"; break;
+		case MID_CountItemGroup: strText = "Count item group"; break;
 		default: break;
 	}
 	if (!strText.empty() && (Language::GetLanguage() == Language::English))

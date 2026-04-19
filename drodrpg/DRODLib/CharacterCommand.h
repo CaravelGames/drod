@@ -390,6 +390,9 @@ public:
 		CC_CountArrayEntries,   //Count number of entries in array X satisfying comparison Y expression.
 		CC_WaitForEntityType,   //Wait until an entity type in flags is in rect (x,y,w,h).
 		CC_WaitForNotEntityType,//Wait until an entity type in flags is not in rect (x,y,w,h).
+		CC_CountEntityType,     //Count how many entities of a specific type in flag are in rect (x,y,w,h)
+		CC_CountItem,           //Count number of game element (flags) that exist in rect (x,y,w,h).
+		CC_CountItemGroup,      //Count number of game elements from group (flags) that exist in rect (x,y,w,h).
 		CC_Count
 	};
 

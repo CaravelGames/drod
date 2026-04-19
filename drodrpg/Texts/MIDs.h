@@ -1813,6 +1813,9 @@ enum MID_CONSTANT {
   MID_RemoveTransparentLayer = 2112,
   MID_WaitForEntityType = 2168,
   MID_WaitWhileEntityType = 2169,
+  MID_CountEntityType = 2170,
+  MID_CountItem = 2171,
+  MID_CountItemGroup = 2172,
 
   //Messages from Stats.uni:
   MID_VarHP = 1536,

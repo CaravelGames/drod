@@ -469,6 +469,7 @@ void CCharacter::ChangeHoldForCommands(
 
 				case CCharacterCommand::CC_WaitForEntityType:
 				case CCharacterCommand::CC_WaitForNotEntityType:
+				case CCharacterCommand::CC_CountEntityType:
 					SyncCustomCharacterData(c.flags, pOldHold, pNewHold, info);
 				break;
 
@@ -1090,6 +1091,9 @@ void CCharacter::ReflectX(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetCeilingLight:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_CountItemGroup:
 				command->x = (pRoom->wRoomCols-1) - command->x - command->w;
 			break;
 
@@ -1153,6 +1157,9 @@ void CCharacter::ReflectY(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetCeilingLight:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_CountItemGroup:
 				command->y = (pRoom->wRoomRows-1) - command->y - command->h;
 			break;
 
@@ -1219,6 +1226,9 @@ void CCharacter::RotateClockwise(CDbRoom *pRoom)
 			case CCharacterCommand::CC_SetCeilingLight:
 			case CCharacterCommand::CC_WaitForEntityType:
 			case CCharacterCommand::CC_WaitForNotEntityType:
+			case CCharacterCommand::CC_CountEntityType:
+			case CCharacterCommand::CC_CountItem:
+			case CCharacterCommand::CC_CountItemGroup:
 				//SW corner of rectangle will become the new NW corner after rotation.
 				wNewX = (pRoom->wRoomRows-1) - (command->y + command->h);
 				command->y = command->x;
@@ -3822,6 +3832,29 @@ void CCharacter::Process(
 				bProcessNextCommand = true;
 			break;
 
+			case CCharacterCommand::CC_CountEntityType:
+			{
+				int count = CountEntityType(command, room, player);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
+
+			case CCharacterCommand::CC_CountItem:
+			{
+				int count = CountTile(command);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
+			case CCharacterCommand::CC_CountItemGroup:
+			{
+				int count = CountTileGroup(command);
+				pGame->ProcessCommandSetVar(CueEvents, ScriptVars::P_RETURN_X, count);
+				bProcessNextCommand = true;
+			}
+			break;
+
 			case CCharacterCommand::CC_SetDarkness:
 			{
 				getCommandParams(command, px, py, pw, ph, pflags);
@@ -4394,6 +4427,61 @@ bool CCharacter::IsEntityTypeAt(
 }
 
 //*****************************************************************************
+int CCharacter::CountEntityType(
+	const CCharacterCommand& command,
+	const CDbRoom& room,
+	const CSwordsman& player) const
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+	int count = 0;
+
+	if (player.wIdentity == pflags)
+	{
+		if (player.wX >= px && player.wX <= px + pw &&
+			player.wY >= py && player.wY <= py + ph)
+			++count;
+	}
+
+	//To avoid counting multi-tile monsters more than once, track which ones we've seen
+	std::set<const CMonster*> seenHeads;
+
+	for (UINT y = py; y <= py + ph; ++y) {
+		for (UINT x = px; x <= px + pw; ++x) {
+			const CMonster* pMonster = room.GetMonsterAtSquare(x, y);
+			if (!pMonster) {
+				continue;
+			}
+
+			if (pMonster->wType == pflags) {
+				if (pMonster->IsPiece()) {
+					pMonster = pMonster->GetOwningMonsterConst();
+					if (seenHeads.count(pMonster)) {
+						continue;
+					}
+
+					seenHeads.insert(pMonster);
+				}
+
+				++count;
+				continue;
+			}
+
+			if (pMonster->wType == M_CHARACTER)
+			{
+				const CCharacter* pCharacter = DYN_CAST(const CCharacter*, const CMonster*, pMonster);
+				if (pCharacter->wLogicalIdentity == pflags) {
+					++count;
+					continue;
+				}
+			}
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
 // Returns: if the tile at (x,y) has the given door state (w)
 bool CCharacter::IsDoorStateAt(
 	const CCharacterCommand& command, const CDbRoom& room
@@ -4616,6 +4704,101 @@ bool CCharacter::IsTileGroupAt(const CCharacterCommand& command) const
 	}
 
 	return false;
+}
+
+//*****************************************************************************
+int CCharacter::CountTile(const CCharacterCommand& command) const
+//Returns: how many of the specified game element (flags) are in rect (x,y,w,h)
+{
+	UINT px, py, pw, ph, pflags;  //command parameters
+	getCommandParams(command, px, py, pw, ph, pflags);
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+
+	if (px >= room.wRoomCols)
+		return 0;
+	if (py >= room.wRoomRows)
+		return 0;
+
+	int count = 0;
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x) {
+			if (room.DoesSquareContainTile(x, y, pflags)) {
+				++count;
+			}
+		}
+	}
+
+	return count;
+}
+
+//*****************************************************************************
+int CCharacter::CountTileGroup(const CCharacterCommand& command) const
+{
+	int count = 0;
+	UINT px, py, pw, ph; //command parameters
+	getCommandRect(command, px, py, pw, ph);
+	UINT pflags = command.flags;
+
+	if (pflags >= ScriptFlag::ItemGroupCount) {
+		return false;
+	}
+
+	CDbRoom& room = *(this->pCurrentGame->pRoom);
+	if (px >= room.wRoomCols)
+		return false;
+	if (py >= room.wRoomRows)
+		return false;
+
+	UINT endX = px + pw;
+	UINT endY = py + ph;
+	if (endX >= room.wRoomCols)
+		endX = room.wRoomCols - 1;
+	if (endY >= room.wRoomRows)
+		endY = room.wRoomRows - 1;
+
+	TileCheckFunc tileCheck = getItemGroupFunction((ScriptFlag::ItemGroup)pflags);
+	UINT layer = getItemGroupLayer((ScriptFlag::ItemGroup)pflags);
+
+	for (UINT y = py; y <= endY; ++y)
+	{
+		for (UINT x = px; x <= endX; ++x) {
+			if (!room.IsValidColRow(x, y))
+				continue;
+
+			switch (layer) {
+			case LAYER_OPAQUE: {
+				if (tileCheck(room.GetOSquare(x, y))) {
+					++count;
+				}
+			}
+			break;
+			case LAYER_FLOOR: {
+				if (tileCheck(room.GetFSquare(x, y))) {
+					++count;
+				}
+			}
+			break;
+			case LAYER_TRANSPARENT: {
+				if (tileCheck(room.GetTSquare(x, y)) || tileCheck(room.GetCoveredTSquare(x, y))) {
+					++count;
+				}
+			}
+			break;
+			default: break;
+			}
+		}
+	}
+
+	return count;
 }
 
 //*****************************************************************************

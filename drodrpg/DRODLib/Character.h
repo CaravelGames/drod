@@ -88,6 +88,9 @@ public:
 	void           CheckForCueEvent(CCueEvents &CueEvents);
 	virtual bool   CheckForDamage(CCueEvents& CueEvents);
 	int            CountArrayVarEntries(const CCharacterCommand& command, CCurrentGame* pGame);
+	int            CountEntityType(const CCharacterCommand& command, const CDbRoom& room, const CSwordsman& player) const;
+	int            CountTile(const CCharacterCommand& command) const;
+	int            CountTileGroup(const CCharacterCommand& command) const;
 	virtual bool   DamagedByFiretraps() const { return !bFiretrapImmune; }
 	virtual bool   DamagedByHotTiles() const { return !bHotTileImmune; }
 	void           Defeat();

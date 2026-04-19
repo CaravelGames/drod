@@ -3499,6 +3499,7 @@ const
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 		{
 			WSTRING charName = this->pEntityListBox->GetTextForKey(command.flags);
 			wstr += charName.length() ? charName : wszQuestionMark;
@@ -3566,6 +3567,7 @@ const
 
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			wstr += this->pBuildItemsListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -3585,6 +3587,7 @@ const
 
 		case CCharacterCommand::CC_WaitForItemGroup:
 		case CCharacterCommand::CC_WaitForNotItemGroup:
+		case CCharacterCommand::CC_CountItemGroup:
 			wstr += this->pItemGroupListBox->GetTextForKey(command.flags);
 			wstr += wszSpace;
 			wstr += g_pTheDB->GetMessageText(MID_At);
@@ -4701,6 +4704,9 @@ void CCharacterDialogWidget::PopulateCommandListBox()
 	this->pActionListBox->AddItem(CCharacterCommand::CC_LogicalWaitEnd, g_pTheDB->GetMessageText(MID_LogicalWaitEnd));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_CountArrayEntries, g_pTheDB->GetMessageText(MID_CountArrayEntries));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountEntityType, g_pTheDB->GetMessageText(MID_CountEntityType));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItem, g_pTheDB->GetMessageText(MID_CountItem));
+	this->pActionListBox->AddItem(CCharacterCommand::CC_CountItemGroup, g_pTheDB->GetMessageText(MID_CountItemGroup));
 
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetDarkness, g_pTheDB->GetMessageText(MID_SetDarkness));
 	this->pActionListBox->AddItem(CCharacterCommand::CC_SetCeilingLight, g_pTheDB->GetMessageText(MID_SetCeilingLight));
@@ -5737,6 +5743,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		ARRAYVARQUERY,      //CC_CountArrayEntries
 		ENTITY_LIST,        //CC_WaitForEntityType
 		ENTITY_LIST,        //CC_WaitForNotEntityType
+		ENTITY_LIST,        //CC_CountEntityType
+		ITEMS,              //CC_CountItem
+		WAITFORITEMGROUP,   //CC_CountItemGroup
 	};
 
 	static const UINT NUM_LABELS = 34;
@@ -5883,6 +5892,9 @@ void CCharacterDialogWidget::SetActionWidgetStates()
 		EXPRESSION_L,       //CC_CountArrayEntries
 		NO_LABELS,          //CC_WaitForEntityType
 		NO_LABELS,          //CC_WaitForNotEntityType
+		NO_LABELS,          //CC_CountEntityType
+		NO_LABELS,          //CC_CountItem
+		NO_LABELS,          //CC_CountItemType
 	};
 	ASSERT(this->pActionListBox->GetSelectedItem() < CCharacterCommand::CC_Count);
 
@@ -6352,18 +6364,21 @@ void CCharacterDialogWidget::SetCommandParametersFromWidgets(
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 			this->pCommand->flags = this->pEntityListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			this->pCommand->flags = this->pBuildItemsListBox->GetSelectedItem();
 			QueryRect();
 		break;
 
 		case CCharacterCommand::CC_WaitForItemGroup:
 		case CCharacterCommand::CC_WaitForNotItemGroup:
+		case CCharacterCommand::CC_CountItemGroup:
 			this->pCommand->flags = this->pItemGroupListBox->GetSelectedItem();
 			QueryRect();
 		break;
@@ -7201,11 +7216,13 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 
 		case CCharacterCommand::CC_BuildTile:
 		case CCharacterCommand::CC_WaitForItem:
+		case CCharacterCommand::CC_CountItem:
 			this->pBuildItemsListBox->SelectItem(this->pCommand->flags);
 		break;
 
 		case CCharacterCommand::CC_WaitForItemGroup:
 		case CCharacterCommand::CC_WaitForNotItemGroup:
+		case CCharacterCommand::CC_CountItemGroup:
 			this->pItemGroupListBox->SelectItem(this->pCommand->flags);
 		break;
 
@@ -7336,6 +7353,7 @@ void CCharacterDialogWidget::SetWidgetsFromCommandParameters()
 		break;
 		case CCharacterCommand::CC_WaitForEntityType:
 		case CCharacterCommand::CC_WaitForNotEntityType:
+		case CCharacterCommand::CC_CountEntityType:
 			this->pEntityListBox->SelectItem(this->pCommand->flags);
 		break;
 
@@ -8012,6 +8030,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
+	case CCharacterCommand::CC_CountEntityType:
 		parseMandatoryOption(pCommand->flags, this->pEntityListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -8052,6 +8071,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 
 	case CCharacterCommand::CC_BuildTile:
 	case CCharacterCommand::CC_WaitForItem:
+	case CCharacterCommand::CC_CountItem:
 		parseMandatoryOption(pCommand->flags,this->pBuildItemsListBox,bFound);
 		skipComma;
 		skipLeftParen;
@@ -8065,6 +8085,7 @@ CCharacterCommand* CCharacterDialogWidget::fromText(
 
 	case CCharacterCommand::CC_WaitForItemGroup:
 	case CCharacterCommand::CC_WaitForNotItemGroup:
+	case CCharacterCommand::CC_CountItemGroup:
 		parseMandatoryOption(pCommand->flags, this->pItemGroupListBox, bFound);
 		skipComma;
 		skipLeftParen;
@@ -8854,6 +8875,7 @@ WSTRING CCharacterDialogWidget::toText(
 
 	case CCharacterCommand::CC_WaitForEntityType:
 	case CCharacterCommand::CC_WaitForNotEntityType:
+	case CCharacterCommand::CC_CountEntityType:
 	{
 		WSTRING charName = this->pEntityListBox->GetTextForKey(c.flags);
 		wstr += charName.length() ? charName : wszQuestionMark;
@@ -8887,6 +8909,7 @@ WSTRING CCharacterDialogWidget::toText(
 
 	case CCharacterCommand::CC_BuildTile:
 	case CCharacterCommand::CC_WaitForItem:
+	case CCharacterCommand::CC_CountItem:
 		wstr += this->pBuildItemsListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);
@@ -8897,6 +8920,7 @@ WSTRING CCharacterDialogWidget::toText(
 
 	case CCharacterCommand::CC_WaitForItemGroup:
 	case CCharacterCommand::CC_WaitForNotItemGroup:
+	case CCharacterCommand::CC_CountItemGroup:
 		wstr += this->pItemGroupListBox->GetTextForKey(c.flags);
 		wstr += wszComma;
 		concatNumWithComma(c.x);
